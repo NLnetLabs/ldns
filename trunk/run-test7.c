@@ -8,7 +8,7 @@
 
 #include <config.h>
 #include <ldns/resolver.h>
-        
+#include <ldns/host2str.h>        
 
 void
 print_usage(char *file)
@@ -25,9 +25,9 @@ main(int argc, char **argv)
         ldns_rdf *qname;
         ldns_rdf *nameserver;
         ldns_pkt *pkt;
-        char *server_ip;
-        char *name;
-        char *type;
+        char *server_ip = NULL;
+        char *name = NULL;
+        char *type = NULL;
         
         if (argc < 4) {
         	print_usage(argv[0]);

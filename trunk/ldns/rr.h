@@ -260,5 +260,6 @@ const ldns_rr_descriptor *ldns_rr_descript(uint16_t type);
 size_t ldns_rr_descriptor_minimum(const ldns_rr_descriptor *descriptor);
 size_t ldns_rr_descriptor_maximum(const ldns_rr_descriptor *descriptor);
 ldns_rdf_type ldns_rr_descriptor_field_type(const ldns_rr_descriptor *descriptor, size_t index);
+ldns_rr_type ldns_rr_get_type_by_name(char *name);
 
 #endif /* _LDNS_RR_H */

@@ -94,5 +94,8 @@ ldns_pkt * ldns_resolver_query(ldns_resolver *, ldns_rdf*, ldns_rr_type, ldns_rr
 ldns_pkt * ldns_resolver_search(ldns_resolver *, ldns_rdf*, ldns_rr_type, ldns_rr_class, uint16_t);
 
 ldns_resolver *ldns_resolver_new(void);
+void ldns_resolver_set_configured(ldns_resolver *r, uint8_t c);
+void ldns_resolver_set_defnames(ldns_resolver *r, bool d);
+void ldns_resolver_set_usevc(ldns_resolver *r, bool vc);
 
 #endif  /* !_LDNS_RESOLVER_H */

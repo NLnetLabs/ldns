@@ -15,6 +15,7 @@
 #include <ldns/rdata.h>
 #include <ldns/rr.h>
 #include <util.h>
+#include <strings.h>
 
 #include <stdio.h>
 

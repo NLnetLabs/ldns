@@ -14,6 +14,7 @@
 
 #include <ldns/packet.h>
 #include <ldns/str2host.h>
+#include <ldns/host2str.h>
 
 #include "util.h"
 
@@ -511,5 +512,7 @@ void
 ldns_pkt_reply_type(ldns_pkt *p)
 {
 	/* i'm looking in the packet */
-
+	/* for now only print so parameter is used :p */
+	printf("Determining packet type of packet:\n");
+	ldns_pkt_print(stdout, p);
 }
