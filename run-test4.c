@@ -24,14 +24,13 @@ main(void)
         if (!res)
                 return 1;
 
-	ldns_resolver_set_port(res, 55);
         /* create a default domain and add it */
         default_dom = ldns_rdf_new_frm_str("miek.nl.", LDNS_RDF_TYPE_DNAME);
 	if (!default_dom) {
 		printf("error default dom\n");
 		return 1;
 	}
-        nameserver  = ldns_rdf_new_frm_str("192.168.1.1", LDNS_RDF_TYPE_A);
+        nameserver  = ldns_rdf_new_frm_str("127.0.0.1", LDNS_RDF_TYPE_A);
 	if (!nameserver) {
 		printf("error default dom\n");
 		return 1;
