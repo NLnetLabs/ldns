@@ -42,6 +42,8 @@
                 return false;                           \
         }                                         
 
+/*@ignore@*/
+
 /* handle A / AAAA records */
 ldns_rdf *
 ldns_rr_address(ldns_rr *r)
@@ -197,3 +199,4 @@ ldns_rr_set_sig(ldns_rr *r, ldns_rdf *f)
 {
 	_LDNS_RR_SET_FUNCTION(LDNS_RR_TYPE_RRSIG, r, f, 8);
 }
+/*@end@*/
