@@ -3,3 +3,79 @@ ldns tutorial
 
 In this tutorial we will explain how to make a simple application with
 ldns.
+
+* Introduction
+
+The following paragraphs will introduce some concepts used in ldns. It is 
+assumed that the reader is familiar with DNS (knowledge of DNSSEC is not
+a problem). 
+
+Take for instance the following RR:
+open.nlnetlabs.nl	8600	IN	A 	213.154.224.1
+
+This RR consists out of 4 elements:
+1. 'open.nlnetlabs.nl' -  the ownername of the RR
+2. '8600'              -  the TTL of the RR
+3. 'IN'                -  the class of the RR
+4. 'A'                 -  the type of the RR
+5. '213.154.224.1'     -  1 rdata field
+
+'213.154.224.1'
+To begin with the last element, ldns calls that a RDATA FIELD, or rdf. This
+is the smallest type in ldns. An RR's rdata consists of 1 or several rdf's.
+All these rdf's have a type, in the case of an A record, this type is
+LDNS_RDF_TYPE_A.
+
+The data in a rdf is stored in network byte order.
+
+'A'
+This is the type of the whole RR, this type is called LDNS_RR_TYPE_A in
+ldns.
+
+'IN'
+the class
+
+'8600'
+The TTL of a RR, stored in host order 
+
+'open.nlnetlabs.nl'
+The ownername of the RR, this owner name is stored in wire data, this this
+particaliar name is stored as 04open09nlnetlabs02nl00.
+
+RDF TYPES
+The following rdf types exist in ldns:
+LDNS_RDF_TYPE_A		- for ip4 addresses
+LDNS_RDF_TYPE_AAAA	- for ip6 addresses
+LDNS_RDF_TYPE_TXT	- for txt
+LDNS_RDF_TYPE_INT8	- for 8 bit numbers
+LDNS_RDF_TYPE_INT16	- for 16 bit numbers
+LDNS_RDF_TYPE_INT32	- for 32 bit numbers
+...
+etc.
+
+
+RR TYPES
+ldns knows about the following RR types:
+LDNS_RR_TYPE_A
+LDNS_RR_TYPE_AAAA
+LDNS_RR_TYPE_TXT
+LDNS_RR_TYPE_DNSKEY
+...
+etc.
+
+
+RR CLASSES
+LDNS_RR_CLASS_IN
+LDNS_RR_CLASS_HS
+LDNS_RR_CLASS_CH
+...
+etc.
+
+* Making a small application with ldns
+
+In this tutorial we will make a small application which takes a domain name
+and looks up the MX records for this domain. We will call this program:
+'mx'.
+
+todo
+
