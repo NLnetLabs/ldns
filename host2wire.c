@@ -137,6 +137,44 @@ ldns_rrsig2buffer_wire(ldns_buffer *buffer, ldns_rr *rr)
 }
 
 /**
+ * convert a rr's rdata to wireformat, while excluding
+ * the ownername and all the crap before the rdata.
+ * This is needed in DNSSEC keytag calculation and maybe
+ * elsewhere.
+ * \param[out] *buffer buffer where to put the result
+ * \param[in] *rr rr to operate on
+ */
+ldns_status
+ldns_rr_rdata2buffer_wire(ldns_buffer *buffer, ldns_rr *rr)
+{
+	uint16_t i;
+#if 0
+	if (ldns_rr_owner(rr)) {
+		(void) ldns_dname2buffer_wire(buffer, ldns_rr_owner(rr));
+	}
+	
+	if (ldns_buffer_reserve(buffer, 4)) {
+		(void) ldns_buffer_write_u16(buffer, ldns_rr_get_type(rr));
+		(void) ldns_buffer_write_u16(buffer, ldns_rr_get_class(rr));
+	}
+
+	if (ldns_buffer_reserve(buffer, 6)) {
+		ldns_buffer_write_u32(buffer, ldns_rr_ttl(rr));
+		/* remember pos for later */
+		rdl_pos = ldns_buffer_position(buffer);
+		ldns_buffer_write_u16(buffer, 0);
+	}	
+#endif
+
+	/* now convert all the rdf */
+	for (i = 0; i < ldns_rr_rd_count(rr); i++) {
+		(void) ldns_rdf2buffer_wire(buffer, ldns_rr_rdf(rr, i));
+	}
+
+	return ldns_buffer_status(buffer);
+}
+
+/**
  * Copy the packet header data to the buffer in wire format
  */
 static ldns_status

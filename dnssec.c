@@ -10,10 +10,7 @@
  * See the file LICENSE for the license
  */
 
-#include "common.h"
-#include <assert.h>
-
-#include <ldns/config.h>
+#include <config.h>
 #include <ldns/ldns.h>
 
 #include <openssl/ssl.h>
@@ -22,6 +19,57 @@
 #include <openssl/bn.h>
 #include <openssl/bio.h>
 #include <openssl/evp.h>
+
+#define LDNS_ALG_RSAMD5 10
+
+/** 
+ * calcalutes a keytag of a key for use in DNSSEC
+ * \param[in] key the key to use for the calc.
+ * \return the keytag
+ */
+uint16_t
+ldns_keytag(ldns_rr *key)
+{
+	unsigned int i;
+	uint32_t ac;
+	ldns_buffer *keybuf;
+	size_t keysize;
+	
+	ac = 0;
+
+	if (ldns_rr_get_type(key) != LDNS_RR_TYPE_DNSKEY) {
+		return 0;
+	}
+
+	/* rdata to buf - only put the rdata in a buffer */
+	/* XXX waaayyy too much */
+	keybuf = ldns_buffer_new(MAX_PACKETLEN);
+	ldns_rr_rdata2buffer_wire(keybuf, key);
+	keysize= ldns_buffer_capacity(keybuf);
+
+	/* look at the algorithm field */
+	if (ldns_rdf2native_int8(ldns_rr_rdf(key, 2)) == LDNS_ALG_RSAMD5) {
+		/* rsamd5 must be handled seperately */
+		/* weird stuff copied from drill0.x XXX */
+		if (keysize > 4) {
+			memcpy(&ac, &key[keysize-3], 2);
+		}
+		ac = ntohs(ac);
+	        return (uint16_t) ac;
+	} else {
+		/* copied from 2535bis */
+		/* look at this again */
+		for (i = 0; i < keysize; ++i) {
+			ac += (i & 1) ? *ldns_buffer_at(keybuf, i) : 
+				*ldns_buffer_at(keybuf, i) << 8;
+		}
+		ac += (ac >> 16) & 0xFFFF;
+		return (uint16_t) (ac & 0xFFFF);
+	}
+}
+
+
+#if 0
 
 /**
  * Verify an rrsig with the DSA algorithm, see RFC 2536
@@ -312,3 +360,4 @@ print_rr(rrsig, FOLLOW);
 	
 	return result;
 }
+#endif
