@@ -397,7 +397,8 @@ ldns_pkt_set_querytime(ldns_pkt *packet, uint32_t time)
 void
 ldns_pkt_set_answerfrom(ldns_pkt *packet, ldns_rdf *answerfrom)
 {
-	/* TODO if exists free? */
+	/* TODO if exists free?  packet is not the owner of the
+	 * rdf  -  So no */
 	packet->_answerfrom = answerfrom;
 }
 
@@ -461,7 +462,6 @@ ldns_pkt_push_rr(ldns_pkt *packet, ldns_pkt_section section, ldns_rr *rr)
 	/* push the rr */
 	ldns_rr_list_push_rr(rrs, rr);
 	
-	/* TODO: move this to separate function? */
 	switch(section) {
 		case LDNS_SECTION_QUESTION:
 			ldns_pkt_set_qdcount(packet, ldns_pkt_qdcount(packet) + 1);
@@ -709,11 +709,9 @@ ldns_pkt_type
 ldns_pkt_reply_type(ldns_pkt *p)
 {
 	/* check for NXDOMAIN */
-
-	/* check DNSSEC records... */
+	/* check DNSSEC records... this is a big one */
 
 	if (!p) {
-		/* XXX new type? LDNS_PACKET_EMPTY? */
 		return LDNS_PACKET_UNKNOWN;
 	}
 
