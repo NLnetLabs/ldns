@@ -13,8 +13,6 @@
 #else
 #define _PROTOTYPE_H
 
-#include "common.h"
-
 /* util.c */
 void 		*xmalloc(size_t);
 void		xprintf_rd_field(t_rdata_field *);

@@ -9,7 +9,7 @@ mandir 		= @mandir@
 
 CC 		= @CC@
 OURCFLAGS	= -g -Wall -Wwrite-strings #-Wunused-value -Wunused-parameter
-CFLAGS 		= @CFLAGS@ $(OURCFLAGS)
+CFLAGS 		= @CFLAGS@ -I$(srcdir) $(OURCFLAGS)
 LDFLAGS		= @LDFLAGS@
 LIBS 		= @LIBS@
 

@@ -3,7 +3,7 @@
  *
  */
 
-#include "common.h"
+#include <config.h>
 
 #include "rdata.h"
 #include "rr.h"
