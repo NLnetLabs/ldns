@@ -64,6 +64,14 @@ struct ldns_struct_pkt
 {
 	/** \brief header section */
 	ldns_hdr *_header;
+	/* extra items needed in a packet */
+	/** \brief the size in bytes of the pkt */
+	uint16_t answersize;
+	/** \brief the server ip */
+	ldns_rdf *answerfrom;
+	/** \brief query duration */
+	unsigned long querytime;
+	/** \brief query data */
 	/** \brief question section */
 	ldns_rr_list	*_question;
 	/** \brief answer section */
