@@ -161,8 +161,6 @@ ldns_rr_new_frm_str(const char *str)
 
 	/* rdata (rdf's) */
 	for(rd = strtok(rdata, "\t \0"), r_cnt =0; rd; rd = strtok(NULL, "\t \0"), r_cnt++) {
-		printf("[%s] %d\n", rd, r_cnt);
-		
 		r = ldns_rdf_new_frm_str(rd,
 				ldns_rr_descriptor_field_type(desc, r_cnt));
 		if (!r) {
