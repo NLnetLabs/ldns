@@ -87,7 +87,7 @@ ldns_status ldns_resolver_push_nameserver(ldns_resolver *, ldns_rdf *);
 ldns_pkt * ldns_resolver_search();
 ldns_pkt * ldns_resolver_query();
 ldns_pkt * ldns_resolver_bgsend();
-ldns_pkt * ldns_resolver_send(ldns_resolver *, ldns_rdf*, ldns_rr_type, ldns_rr_class);
+ldns_pkt * ldns_resolver_send(ldns_resolver *, ldns_rdf*, ldns_rr_type, ldns_rr_class, uint16_t);
 
 ldns_resolver *ldns_resolver_new(void);
 

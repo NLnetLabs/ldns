@@ -264,7 +264,8 @@ ldns_resolver_query()
  * \return ldns_pkt* a packet with the reply from the nameserver
  */
 ldns_pkt *
-ldns_resolver_send(ldns_resolver *r, ldns_rdf *name, ldns_rr_type type, ldns_rr_class class)
+ldns_resolver_send(ldns_resolver *r, ldns_rdf *name, ldns_rr_type type, ldns_rr_class class,
+		uint16_t flags)
 {
 	ldns_pkt *query_pkt;
 	ldns_pkt *answer_pkt;
@@ -292,7 +293,7 @@ ldns_resolver_send(ldns_resolver *r, ldns_rdf *name, ldns_rr_type type, ldns_rr_
 	
 	/* prepare a question pkt from the parameters
 	 * and then send this */
-	query_pkt = ldns_pkt_query_new(name, type, class, LDNS_RD);
+	query_pkt = ldns_pkt_query_new(name, type, class, flags);
 	if (!query_pkt) {
 		printf("Failed to generate pkt\n");
 	}
