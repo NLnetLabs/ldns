@@ -808,6 +808,23 @@ ldns_rr2buffer_str(ldns_buffer *output, ldns_rr *rr)
 }
 
 /**
+ * convert a rr_list
+ * \param[in] output the buffer to output to
+ * \param[in] list the list to print
+ * \return ldns_status
+ */
+ldns_status
+ldns_rr_list2buffer_str(ldns_buffer *output, ldns_rr_list *list)
+{
+	uint16_t i;
+
+	for(i = 0; i < ldns_rr_list_rr_count(list); i++) {
+		ldns_rr2buffer_str(output, ldns_rr_list_rr(list, i));
+	}
+	return ldns_buffer_status(output);
+}
+
+/**
  * Prints the header in default format in the given buffer
  */
 ldns_status

@@ -617,12 +617,37 @@ ldns_get_class_by_name(char *name)
 /**
  * sort an rr_list. the sorting is done inband
  * \param[in] unsorted the rr_list to be sorted
- * \return ldns_status wether or not we are succesfull
  */
-ldns_status
+void
 ldns_rr_sort(ldns_rr_list **unsorted)
 {
-	return LDNS_STATUS_OK;
+	/* we have a small amount of data (usually) go with the good
+	 * old bubble sort ;-) */
+	uint16_t rr_count;
+	uint16_t i,j;
+	ldns_rr *ri, *rj;
+
+	rr_count = ldns_rr_list_rr_count(*unsorted);
+	for(i = 0; i < rr_count; i++) {
+		ri = ldns_rr_list_rr(*unsorted, i);
+		for(j = i; j < rr_count; j++) {
+			rj = ldns_rr_list_rr(*unsorted, j);
+
+			switch(ldns_rr_compare(ri, rj)) {
+				/* equal */
+				case 0:
+					/* equal - nop */
+				case -1:
+					/* i before j - nop */
+					break;
+				case 1:
+					/* switch */
+					(*unsorted)->_rrs[i] = rj;
+					(*unsorted)->_rrs[j] = ri;
+					break;
+			}
+		}
+	}
 }
 
 

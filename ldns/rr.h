@@ -267,7 +267,7 @@ ldns_rr_type ldns_rr_get_type_by_name(char *);
 ldns_rr_class ldns_get_class_by_name(char *);
 size_t ldns_rr_uncompressed_size(ldns_rr *);
 int ldns_rr_compare(ldns_rr *, ldns_rr *);
-ldns_status ldns_rr_sort(ldns_rr_list **);
+void ldns_rr_sort(ldns_rr_list **);
 
 
 
