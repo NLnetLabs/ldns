@@ -601,8 +601,8 @@ ldns_resolver_send(ldns_resolver *r, ldns_rdf *name, ldns_rr_type type, ldns_rr_
 	}
 	
 	/* TODO: time is a terrible seed */
-	srand((unsigned) time(NULL));
-	id = (uint16_t) rand();
+	srandom((unsigned) time(NULL));
+	id = (uint16_t) (0xffff & random() & getpid());
 
 	ldns_pkt_set_id(query_pkt, id);
 
