@@ -44,7 +44,7 @@ ldns_keytag(ldns_rr *key)
 	/* rdata to buf - only put the rdata in a buffer */
 	/* XXX waaayyy too much */
 	keybuf = ldns_buffer_new(MAX_PACKETLEN);
-	ldns_rr_rdata2buffer_wire(keybuf, key);
+	(void)ldns_rr_rdata2buffer_wire(keybuf, key);
 	keysize= ldns_buffer_capacity(keybuf);
 
 	/* look at the algorithm field */
@@ -59,7 +59,7 @@ ldns_keytag(ldns_rr *key)
 	} else {
 		/* copied from 2535bis */
 		/* look at this again */
-		for (i = 0; i < keysize; ++i) {
+		for (i = 0; (size_t)i < keysize; ++i) {
 			ac += (i & 1) ? *ldns_buffer_at(keybuf, i) : 
 				*ldns_buffer_at(keybuf, i) << 8;
 		}
