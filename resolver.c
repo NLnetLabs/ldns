@@ -175,6 +175,30 @@ ldns_resolver_push_nameserver_rr(ldns_resolver *r, ldns_rr *rr)
 	return ldns_resolver_push_nameserver(r, address);
 }
 
+/**
+ * push a new nameserver rr_list to the resolver.
+ * \param[in] r the resolver
+ * \param[in] rrlist the rr_list to push
+ * \return ldns_status a status
+ */
+ldns_status
+ldns_resolver_push_nameserver_rr_list(ldns_resolver *r, ldns_rr_list *rrlist)
+{
+	ldns_rr *rr;
+	ldns_status stat;
+	uint16_t i;
+
+	stat = LDNS_STATUS_OK;
+	for(i = 0; i < ldns_rr_list_rr_count(rrlist); i++) {
+		rr = ldns_rr_list_rr(rrlist, i);
+		if (ldns_resolver_push_nameserver_rr(r, rr) !=
+				LDNS_STATUS_OK) {
+			stat = LDNS_STATUS_ERR;
+		}
+	}
+	return stat;
+}
+
 void
 ldns_resolver_set_recursive(ldns_resolver *r, bool re)
 {
