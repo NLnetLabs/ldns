@@ -328,6 +328,28 @@ ldns_packet_new()
 	return packet;
 }
 
+void
+ldns_packet_free(ldns_packet_type *packet)
+{
+	FREE(packet->_header);
+	if (packet->_question) {
+		/*ldns_rrset_destroy(packet->_question);*/
+	}
+	if (packet->_answer) {
+		/*ldns_rrset_destroy(packet->_answer);*/
+		FREE(packet->_answer);
+	}
+	if (packet->_authority) {
+		/*ldns_rrset_destroy(packet->_authority);*/
+		FREE(packet->_authority);
+	}
+	if (packet->_additional) {
+		/*ldns_rrset_destroy(packet->_additional);*/
+		FREE(packet->_authority);
+	}
+	FREE(packet);
+}
+
 static size_t
 ldns_wire2packet_header(ldns_packet_type *packet,
 			const uint8_t *wire,

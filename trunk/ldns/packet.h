@@ -113,6 +113,13 @@ void packet_set_arcount(ldns_packet_type *, uint16_t);
 ldns_packet_type *ldns_packet_new();
 
 /**
+ * Frees the packet structure and all data that it contains
+ *
+ * @param packet The packet structure to free
+ */
+void ldns_packet_free(ldns_packet_type *packet);
+
+/**
  * Converts the data on the uint8_t bytearray (in wire format) to a DNS packet
  *
  * @param data pointer to the buffer with the data

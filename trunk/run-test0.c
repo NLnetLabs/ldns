@@ -48,5 +48,7 @@ main(void)
 	printf("ancount: %d\n",(int) packet_ancount(packet));
 	printf("nscount: %d\n",(int) packet_nscount(packet));
 	printf("arcount: %d\n",(int) packet_arcount(packet));
+
+	ldns_packet_free(packet);
 	return 0;
 }
