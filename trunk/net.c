@@ -21,6 +21,7 @@
 #include <ldns/host2wire.h>
 #include <ldns/host2str.h>
 #include <ldns/resolver.h>
+#include <ldns/net.h>
 
 #include <netinet/in.h>
 #include <sys/socket.h>
@@ -56,14 +57,14 @@ ldns_send(ldns_resolver *r, ldns_pkt *query_pkt)
 	struct sockaddr_storage *ns;
 	struct sockaddr_in *ns4;
 	struct sockaddr_in6 *ns6;
-	size_t ns_len;
+	socklen_t ns_len;
 
 	ldns_rdf **ns_array;
 	ldns_pkt *reply;
 	ldns_buffer *qb;
 
 	ns_array = ldns_resolver_nameservers(r);
-	reply = NULL;
+	reply = NULL; ns_len = 0;
 	
 	printf("we are in ldns_send()\n");
 	qb = ldns_buffer_new(MAX_PACKET_SIZE);
@@ -73,8 +74,6 @@ ldns_send(ldns_resolver *r, ldns_pkt *query_pkt)
 		return NULL;
 	}
 
-	printf("nameservers %d\n",ldns_resolver_nameserver_count(r));
-	
 	/* loop through all defined nameservers */
 	for (i = 0; i < ldns_resolver_nameserver_count(r); i++) {
 
@@ -208,7 +207,7 @@ ldns_send_tcp(ldns_buffer *qbin, const struct sockaddr_storage *to, socklen_t to
 
 	gettimeofday(&tv_s, NULL);
 
-	if ((sockfd = socket((int)((struct sockaddr*)to)->sa_family, SOCK_DGRAM, IPPROTO_UDP)) == -1) {
+	if ((sockfd = socket((int)((struct sockaddr*)to)->sa_family, SOCK_STREAM, IPPROTO_UDP)) == -1) {
 		printf("could not open socket\n");
 		return NULL;
 	}

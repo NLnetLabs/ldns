@@ -66,6 +66,10 @@ uint16_t ldns_resolver_port(ldns_resolver *);
 /* ldns_rr_list * ldns_resolver_nameservers(ldns_resolver *) pop>? */
 uint8_t ldns_resolver_recursive(ldns_resolver *);
 uint8_t ldns_resolver_debug(ldns_resolver *);
+uint8_t ldns_resolver_usevc(ldns_resolver *);
+
+size_t ldns_resolver_nameserver_count(ldns_resolver *);
+
 ldns_rdf * ldns_resolver_domain(ldns_resolver *);
 ldns_rdf ** ldns_resolver_searchlist(ldns_resolver *);
 ldns_rdf ** ldns_resolver_nameservers(ldns_resolver *);
