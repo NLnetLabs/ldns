@@ -36,11 +36,26 @@ ldns_lookup_table ldns_signing_algorithms[] = {
 
 struct ldns_struct_key {
 	ldns_signing_algorithm algorithm;
+	/* types of keys supported */
 	union {
 		RSA	*rsa;
 		DSA	*dsa;
 		unsigned char *hmac;
 	} key;
+	/* depending on the key we can have 
+	 * extra data
+	 */
+	union {
+		struct {
+			uint32_t ttl;
+			uint32_t inception;
+			uint32_t expiration;
+		}  dnssec;
+		struct {
+			uint16_t fudge;
+			char *   name; /* needed? */
+		} tsig;
+	} extra;
 };
 typedef struct ldns_struct_key ldns_key;
 
