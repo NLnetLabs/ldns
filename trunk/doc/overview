@@ -1,0 +1,119 @@
+ldns - Overview document
+
+1. Introduction
+
+
+2. Different parts of ldns:
+
+                              - CLIENT -
+                     Any programing making use of ldns
+            _________/\            /\                 /\
+           /                       |                   \
+          \/                       \/                  \/
+- WIRE module -  <---->  - CENTRAL structures - <-> - RESOLVER module -
+ from_wire                pkt structure              stub resolver
+ to_wire                  rrlist structure           send()
+ -convert from and        rrset structure            query()
+  to wireformat           rr structure               bgsend()
+ -all name decoding       rdf structure              axfr()
+  encoding is contained   dname structure             /\ 
+  in these functions          /\                      | 
+                              /                       |
+                        _____/                        |
+                       /                              \/
+- STR module -        \/                            - NET module -
+ from_str                                            all network interfacing
+ to_str                                              code
+ -convert from and to string		               /\
+ -dig-like output                                      |
+ -no pretty printing                                   \/
+ -depends on some OS/libc calls                     - OS/libc layer -
+
+
+Currently not there:
+A zone structure
+A encoder/decoder object which can be overloaded to 
+use specific functions. NSD likes to have this, for instance.
+Tsig functionality
+Dynamic update function
+
+
+3. CENTRAL structures
+
+nlnetlabs.nl.   600     IN      MX      10    open.nlnetlabs.nl.
+ \              \       \       \       \_                  _/
+   _owner        _ttl    _klass   _type    \_  rdf[]      _/
+  (dname)  (uint16_t) (rr_class) (rr_type)
+                                           10          := rdf[0]
+                                    open.nlnetlabs.nl. := rdf[1]
+
+The LHS is put in a dname structure, which is a special rdf structure
+that can only hold a dname. An rdf structure has 3 members; the size,
+the type is carrying and a void * pointer to the data.
+
+A dname struct is equal to a rdf, except that its type is always
+set to LDNS_RDF_TYPE_DNAME. Everything is type LDNS_RDF_TYPE_DNAME
+is always in uncompressed wireformat.
+
+The RSH (rdata) is put in an array of rdf's (in this case 2).
+
+The entire resource record is put in a RR structure, which has
+the fields described above (under the RR):
+  _owner	(nlnetlabs.nl.)
+  _ttl		(600)
+  _klass	(LDNS_RR_CLASS_IN: 'IN')
+  _type         (LDNS_RR_TYPE_MX: 'MX')
+  _rd_count	(2)
+  _rdata_fields[rd_count]
+                rdf[0]  (10)
+                rdf[1]  (open.nlnetlabs.nl.)
+
+
+An RR list structure is simply structure with a counter
+and an array of RR structures.
+
+An RR set structure is an RR list structure, but its accessor
+function check if the RR's in there are: 
+ - from the same type
+ - have the same TTL
+ - have the same ownername
+
+A pkt structure consists out of a header structure where 
+packet specific flags are kept, TC, RD, IP from server which
+sent the packet, etc.
+Further more it is divided in 4 sections: question, authority, answer
+and additional.
+
+All four sections have the type RRlist that simple hold a list of RR's
+
+
+4. WIRE module and CENTRAL structures Interface
+As the WIRE module takes care of the compression/decompression
+it needs a buffer which holds all the binary DNS data.
+All functions will operate on such buffer to extract specific
+information which is then stored in RR structures.
+
+5. RESOLVER module and CENTRAL structures Interface
+The resolver module always returns pkt structure.
+The function-call parameters have not yet been 
+decided on.
+
+6. STR module and CENTRAL structures Interface
+Convert to and from strings. This module could be used
+to read in a zone file and convert the text strings to
+the format used by ldns. Or vice verse.
+
+7. NET Module and RESOLVER module Interface
+The resolver module will get a packet and will mold it so that
+it can be sent off to a nameserver. 
+It might need to interface with the wire module (arrow not drawn).
+
+8. NET Module and OS/libc Interface
+OS/network calls will be used here.
+
+9. Client program ldns Interface
+Any client program will have access to
+- WIRE module
+- CENTRAL structure
+- RESOLVER module
+- STR module (arrow not drawn in the above figure)
