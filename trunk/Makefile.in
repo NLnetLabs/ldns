@@ -34,7 +34,7 @@ LIBDNS_HEADERS	=	ldns/error.h		\
 			util.h
 LIBDNS_OBJECTS	=	$(LIBDNS_SOURCES:.c=.o)
 
-ALL_SOURCES	=	run-test0.c run-test1.c $(LIBDNS_SOURCES)
+ALL_SOURCES	=	run-test0.c run-test1.c run-test2.c $(LIBDNS_SOURCES)
 
 COMPILE		= $(CC) $(CPPFLAGS) $(CFLAGS)
 LINK		= $(CC) $(CFLAGS) $(LDFLAGS)
@@ -44,12 +44,15 @@ LINK		= $(CC) $(CFLAGS) $(LDFLAGS)
 
 .PHONY:	clean realclean docclean doc lint
 
-all:	run-test0 run-test1
+all:	run-test0 run-test1 run-test2
 
 run-test0:	run-test0.o $(LIBDNS_OBJECTS) $(LIBOBJS)
 		$(LINK) -o $@ $+
 
 run-test1:	run-test1.o $(LIBDNS_OBJECTS) $(LIBOBJS)
+		$(LINK) -o $@ $+
+
+run-test2:	run-test2.o $(LIBDNS_OBJECTS) $(LIBOBJS)
 		$(LINK) -o $@ $+
 
 doc:	
@@ -58,6 +61,8 @@ doc:
 clean:	
 	rm -f *.o *.d
 	rm -f run-test0
+	rm -f run-test1
+	rm -f run-test2
 	rm -rf autom4te.cache/
 	rm -f aclocal.m4
 
@@ -78,7 +83,10 @@ test0: run-test0
 test1: run-test1
 	./run-test1
 
-test: test0 test1
+test2: run-test2
+	./run-test2
+
+test: test0 test1 test2
 
 lint:
 	for i in $(ALL_SOURCES); do \
