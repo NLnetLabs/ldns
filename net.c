@@ -28,6 +28,7 @@
 #include <netdb.h>
 #include <arpa/inet.h>
 #include <sys/time.h>
+#include <errno.h>
 
 #include "util.h"
 
@@ -212,6 +213,8 @@ ldns_send_tcp(ldns_buffer *qbin, const struct sockaddr_storage *to, socklen_t to
 		return NULL;
 	}
 
+	return NULL;
+
 	bytes = sendto(sockfd, ldns_buffer_begin(qbin),
 			ldns_buffer_position(qbin), 0, (struct sockaddr *)to, tolen);
 
@@ -261,4 +264,54 @@ ldns_send_tcp(ldns_buffer *qbin, const struct sockaddr_storage *to, socklen_t to
 
 		return answer_pkt;
 	}
+}
+
+/*
+ * Read SIZE bytes from the socket into BUF.  Keep reading unless an
+ * error occurs (except for EINTR) or EOF is reached.
+ */
+static bool 
+read_socket(int s, void *buf, size_t size)
+{
+        char *data = buf;
+        size_t total_count = 0;
+
+        while (total_count < size) {
+                ssize_t count = read(s, data + total_count, size -
+                total_count);
+                if (count == -1) {
+                        if (errno != EINTR) {
+                                return false;
+                        } else {
+                                continue;
+                        }
+                }
+                total_count += count;
+        }
+        return true;
+}
+
+/*
+ * Write the complete buffer to the socket, irrespective of short
+ * writes or interrupts.
+ */
+static bool
+write_socket(int s, const void *buf, size_t size)
+{
+        const char *data = buf;
+        size_t total_count = 0;
+
+        while (total_count < size) {
+                ssize_t count = write(s, data + total_count, size -
+                total_count);
+                if (count == -1) {
+                        if (errno != EINTR) {
+                                return false;
+                        } else {
+                                continue;
+                        }
+                }
+                total_count += count;
+        }
+        return true;
 }
