@@ -55,13 +55,13 @@ ldns_resolver_configured(ldns_resolver *r)
 	return r->_configured;
 }
 
-ldns_dname *
+ldns_rdf *
 ldns_resolver_domain(ldns_resolver *r)
 {
 	return r->_domain;
 }
 
-ldns_dname **
+ldns_rdf **
 ldns_resolver_searchlist(ldns_resolver *r)
 {
 	return r->_searchlist;
@@ -113,7 +113,7 @@ ldns_resolver_set_debug(ldns_resolver *r, uint8_t d)
 }
 
 ldns_status
-ldns_resolver_set_domain(ldns_resolver *r, ldns_dname *d)
+ldns_resolver_set_domain(ldns_resolver *r, ldns_rdf *d)
 {
 	r->_domain = d;
 	return LDNS_STATUS_OK;
@@ -121,7 +121,7 @@ ldns_resolver_set_domain(ldns_resolver *r, ldns_dname *d)
 
 /* this is not the way to go for the search list XXX */
 ldns_status
-ldns_resolver_push_searchlist(ldns_resolver *r, ldns_dname *d)
+ldns_resolver_push_searchlist(ldns_resolver *r, ldns_rdf *d)
 {
 	r->_searchlist[++r->_searchlist_count] = d;
 	return LDNS_STATUS_OK;
@@ -159,7 +159,7 @@ ldns_resolver_new(void)
 
 	r = MALLOC(ldns_resolver);
 
-	r->_searchlist = XMALLOC(ldns_dname *, 3);
+	r->_searchlist = XMALLOC(ldns_rdf *, 3);
 	r->_nameservers = XMALLOC(ldns_rdf *, 3);
 	
 	r->_configured = 0; /* no config has happened yet */
@@ -195,7 +195,7 @@ ldns_resolver_query()
  * \return ldns_pkt* a packet with the reply from the nameserver
  */
 ldns_pkt *
-ldns_resolver_send(ldns_resolver *r, ldns_dname *name, ldns_rr_type type, ldns_rr_class class)
+ldns_resolver_send(ldns_resolver *r, ldns_rdf *name, ldns_rr_type type, ldns_rr_class class)
 {
 	ldns_pkt *query_pkt;
 	ldns_pkt *answer_pkt;

@@ -86,21 +86,6 @@ struct ldns_struct_rdf
 };
 typedef struct ldns_struct_rdf ldns_rdf;
 
-/**
- * \brief type to hold dname's
- *
- * The data is a network ordered array of bytes, which size is specified by
- * the (16-bit) size field. It is always of the LDNS_RDF_TYPE_DNAME
- */
-struct ldns_struct_dname
-{
-	/** \brief The size of the dname (in bytes) */
-	uint16_t _size;
-	/** \brief Pointer to the dname (byte buffer) */
-	void  *_data;
-};
-typedef struct ldns_struct_dname ldns_dname;
-
 /* prototypes */
 uint16_t        ldns_rdf_size(ldns_rdf *);
 void            ldns_rdf_set_size(ldns_rdf *, uint16_t);
@@ -112,12 +97,6 @@ ldns_rdf	*ldns_rdf_new_frm_data(uint16_t, ldns_rdf_type, void *);
 uint8_t         *ldns_rdf_data(ldns_rdf *);
 void            ldns_rdf_free(ldns_rdf *);
 void            ldns_rdf_free_data(ldns_rdf *);
-ldns_dname	*ldns_dname_new_frm_str(const char *);
-ldns_dname	*ldns_dname_new(uint16_t s, void *data);
-uint16_t	ldns_dname_size(ldns_dname *name);
-void *		ldns_dname_data(ldns_dname *name);
-void		ldns_dname_set_size(ldns_dname *name, uint16_t size);
-void		ldns_dname_set_data(ldns_dname *name, void *data);
 ldns_rdf 	*ldns_rdf_new_frm_str(const char *, ldns_rdf_type);
 
 #endif	/* !_LDNS_RDATA_H */

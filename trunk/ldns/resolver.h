@@ -40,10 +40,10 @@ struct ldns_struct_resolver
 	uint8_t _debug;
 	
 	/** \brief Default domain to add */
-	ldns_dname *_domain; 
+	ldns_rdf *_domain; 
 
 	/** \brief Searchlist array */
-	ldns_dname **_searchlist;
+	ldns_rdf **_searchlist;
 	size_t _searchlist_count;
 
 	/** \brief How many retries */
@@ -68,22 +68,22 @@ uint16_t ldns_resolver_port(ldns_resolver *);
 /* ldns_rr_list * ldns_resolver_nameservers(ldns_resolver *) pop>? */
 uint8_t ldns_resolver_recursive(ldns_resolver *);
 uint8_t ldns_resolver_debug(ldns_resolver *);
-ldns_dname * ldns_resolver_domain(ldns_resolver *);
-ldns_dname ** ldns_resolver_searchlist(ldns_resolver *);
-ldns_dname ** ldns_resolver_nameservers(ldns_resolver *);
+ldns_rdf * ldns_resolver_domain(ldns_resolver *);
+ldns_rdf ** ldns_resolver_searchlist(ldns_resolver *);
+ldns_rdf ** ldns_resolver_nameservers(ldns_resolver *);
 
 void ldns_resolver_set_port(ldns_resolver *, uint16_t);
 void ldns_resolver_set_recursive(ldns_resolver *, uint8_t);
 void ldns_resolver_set_debug(ldns_resolver *, uint8_t);
 
-ldns_status ldns_resolver_set_domain(ldns_resolver *, ldns_dname *);
-ldns_status ldns_resolver_push_searchlist(ldns_resolver *, ldns_dname *);
+ldns_status ldns_resolver_set_domain(ldns_resolver *, ldns_rdf *);
+ldns_status ldns_resolver_push_searchlist(ldns_resolver *, ldns_rdf *);
 ldns_status ldns_resolver_push_nameserver(ldns_resolver *, ldns_rdf *);
 
 ldns_pkt * ldns_resolver_search();
 ldns_pkt * ldns_resolver_query();
 ldns_pkt * ldns_resolver_bgsend();
-ldns_pkt * ldns_resolver_send(ldns_resolver *, ldns_dname*, ldns_rr_type, ldns_rr_class);
+ldns_pkt * ldns_resolver_send(ldns_resolver *, ldns_rdf*, ldns_rr_type, ldns_rr_class);
 
 ldns_resolver *ldns_resolver_new(void);
 

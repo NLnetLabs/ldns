@@ -213,7 +213,8 @@ ldns_wire2dname(ldns_rdf **dname, const uint8_t *wire, size_t max, size_t *pos)
 	}
 	memcpy(dname_ar, tmp_dname, dname_pos);
 	
-	*dname = ldns_rdf_new((uint16_t) dname_pos, LDNS_RDF_TYPE_DNAME,
+	*dname = ldns_rdf_new((uint16_t) dname_pos,
+			      LDNS_RDF_TYPE_DNAME,
 	                      dname_ar);
 	if (!*dname) {
 		FREE(dname_ar);
