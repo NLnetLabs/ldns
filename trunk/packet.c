@@ -332,11 +332,21 @@ ldns_pkt_free(ldns_pkt *packet)
 }
 
 ldns_pkt *
-ldns_pkt_query_new(char *name, ldns_rr_type rr_type, ldns_rr_class rr_class)
+ldns_pkt_query_new_frm_str(char *name, ldns_rr_type rr_type, ldns_rr_class rr_class)
 {
-	ldns_pkt *packet = ldns_pkt_new();
-	ldns_rr *question_rr = ldns_rr_new();
+	ldns_pkt *packet;
+	ldns_rr *question_rr;
 	ldns_rdf *name_rdf;
+
+	packet = ldns_pkt_new();
+	if (!packet) {
+		return NULL;
+	}
+	
+	question_rr = ldns_rr_new();
+	if (!question_rr) {
+		return NULL;
+	}
 
 	if (rr_type == 0) {
 		rr_type = LDNS_RR_TYPE_A;
@@ -357,5 +367,44 @@ ldns_pkt_query_new(char *name, ldns_rr_type rr_type, ldns_rr_class rr_class)
 		return NULL;
 	}
 	
+	return packet;
+}
+
+/**
+ * Create a packet with a query in it
+ * \param[in] name the name to query for
+ * \param[in] type the type to query for
+ * \param[in] class the class to query for
+ * \return ldns_pkt* a pointer to the new pkt
+ */
+ldns_pkt *
+ldns_pkt_query_new(ldns_rdf *rr_name, ldns_rr_type rr_type, ldns_rr_class rr_class)
+{
+	ldns_pkt *packet;
+	ldns_rr *question_rr;
+	ldns_rdf *name_rdf;
+
+	packet = ldns_pkt_new();
+	if (!packet) {
+		return NULL;
+	}
+	
+	question_rr = ldns_rr_new();
+	if (!question_rr) {
+		return NULL;
+	}
+
+	if (rr_type == 0) {
+		rr_type = LDNS_RR_TYPE_A;
+	}
+	if (rr_class == 0) {
+		rr_class = LDNS_RR_CLASS_IN;
+	}
+
+	ldns_rr_set_owner(question_rr, rr_name);
+	ldns_rr_set_type(question_rr, rr_type);
+	ldns_rr_set_class(question_rr, rr_class);
+	
+	ldns_pkt_push_rr(packet, LDNS_SECTION_QUESTION, question_rr);
 	return packet;
 }
