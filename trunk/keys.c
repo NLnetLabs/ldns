@@ -8,9 +8,9 @@
 
 #include <config.h>
 
+#include <util.h>
 #include <ldns/keys.h>
 
-#include <util.h>
 
 
 ldns_lookup_table ldns_signing_algorithms[] = {
