@@ -365,7 +365,7 @@ ldns_pkt2buffer(ldns_buffer *output, ldns_pkt *pkt)
 /*
  * Zero terminate the buffer and fix it to the size of the string.
  */
-static char *
+char *
 buffer2str(ldns_buffer *buffer)
 {
 	if (!ldns_buffer_reserve(buffer, 1)) {

@@ -30,7 +30,7 @@
  * convert a short into wireformat 
  */
 ldns_status
-ldns_conv_short(ldns_rdf *rd, const char *shortstr)
+ldns_conv_int16(ldns_rdf **rd, const char *shortstr)
 {
 	char *end = NULL;    
 	uint16_t *r;
@@ -42,7 +42,7 @@ ldns_conv_short(ldns_rdf *rd, const char *shortstr)
 		FREE(r);
 		return LDNS_STATUS_INT_EXP;
 	} else {
-		rd = ldns_rdf_new(sizeof(uint16_t), LDNS_RDF_TYPE_INT16, (uint8_t*)r);
+		*rd = ldns_rdf_new(sizeof(uint16_t), LDNS_RDF_TYPE_INT16, (uint8_t*)r);
 		return LDNS_STATUS_OK;
 	}
 }
@@ -51,7 +51,7 @@ ldns_conv_short(ldns_rdf *rd, const char *shortstr)
  * convert a time value to wireformat 
  */
 ldns_status
-ldns_conv_time(ldns_rdf *rd, const char *time)
+ldns_conv_time(ldns_rdf **rd, const char *time)
 {
 	/* convert a time YYHM to wireformat */
 	uint16_t *r = NULL;
@@ -67,7 +67,7 @@ ldns_conv_time(ldns_rdf *rd, const char *time)
 	} else {
 		l = htonl(timegm(&tm));
 		memcpy(r, &l, sizeof(uint32_t));
-		rd = ldns_rdf_new(sizeof(uint32_t), LDNS_RDF_TYPE_TIME, (uint8_t*)r);
+		*rd = ldns_rdf_new(sizeof(uint32_t), LDNS_RDF_TYPE_TIME, (uint8_t*)r);
 		return LDNS_STATUS_OK;
 	}
 }
@@ -76,7 +76,7 @@ ldns_conv_time(ldns_rdf *rd, const char *time)
  * convert a long (32 bits)
  */
 ldns_status 
-ldns_conv_long(ldns_rdf *rd, const char *longstr)
+ldns_conv_int32(ldns_rdf **rd, const char *longstr)
 {
 	char *end;  
 	uint16_t *r = NULL;
@@ -90,7 +90,7 @@ ldns_conv_long(ldns_rdf *rd, const char *longstr)
 		return LDNS_STATUS_ERR;
         } else {
 		memcpy(r, &l, sizeof(uint32_t));
-		rd = ldns_rdf_new(sizeof(uint32_t), LDNS_RDF_TYPE_INT32, (uint8_t*)r);
+		*rd = ldns_rdf_new(sizeof(uint32_t), LDNS_RDF_TYPE_INT32, (uint8_t*)r);
 		return LDNS_STATUS_OK;
 	}
 }
@@ -99,7 +99,7 @@ ldns_conv_long(ldns_rdf *rd, const char *longstr)
  * convert a byte (8 bits)
  */
 ldns_status
-ldns_conv_byte(ldns_rdf *rd, const char *bytestr)
+ldns_conv_int8(ldns_rdf **rd, const char *bytestr)
 {
 	char *end;     
 	uint8_t *r = NULL;
@@ -112,7 +112,7 @@ ldns_conv_byte(ldns_rdf *rd, const char *bytestr)
 		FREE(r);
 		return LDNS_STATUS_ERR;
         } else {
-		rd = ldns_rdf_new(sizeof(uint8_t), LDNS_RDF_TYPE_INT8, r);
+		*rd = ldns_rdf_new(sizeof(uint8_t), LDNS_RDF_TYPE_INT8, r);
 		return LDNS_STATUS_OK;
         }
 }
