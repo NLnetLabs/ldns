@@ -18,12 +18,7 @@
  * internal representation
  */
 ssize_t
-rdata_wireformat_to_rdata_atoms(region_type *region,
-                                domain_table_type *owners,
-                                uint16_t rrtype,
-                                uint16_t data_size,
-                                buffer_type *packet,
-                                rdata_atom_type **rdatas)
+rdata_buf_to_rdf(ldns_rdf *rd, ldns_buf *buffer)
 {
         size_t end = buffer_position(packet) + data_size;
         ssize_t i;
