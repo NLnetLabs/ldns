@@ -38,6 +38,12 @@ ldns_resolver_port(ldns_resolver *r)
 	return r->_port;
 }
 
+uint16_t
+ldns_resolver_edns_udp_size(ldns_resolver *r)
+{
+	        return r->_edns_udp_size;
+}
+
 uint8_t
 ldns_resolver_retry(ldns_resolver *r)
 {
@@ -256,6 +262,12 @@ ldns_resolver_push_nameserver_rr_list(ldns_resolver *r, ldns_rr_list *rrlist)
 }
 
 void
+ldns_resolver_set_edns_udp_size(ldns_resolver *r, uint16_t s)
+{
+	        r->_edns_udp_size = s;
+}
+
+void
 ldns_resolver_set_recursive(ldns_resolver *r, bool re)
 {
 	r->_recursive = re;
@@ -410,6 +422,7 @@ ldns_resolver_new(void)
 	ldns_resolver_set_retry(r, 4);
 	ldns_resolver_set_retrans(r, 5);
 	ldns_resolver_set_fail(r, false);
+	ldns_resolver_set_edns_udp_size(r, 0);
 
 	r->_timeout.tv_sec = LDNS_DEFAULT_TIMEOUT_SEC;
 	r->_timeout.tv_usec = LDNS_DEFAULT_TIMEOUT_USEC;
@@ -641,6 +654,12 @@ ldns_resolver_send(ldns_resolver *r, ldns_rdf *name, ldns_rr_type type, ldns_rr_
 		printf("Failed to generate pkt\n");
 		return NULL;
 	}
+	/* transfer the udp_edns_size from the resolver to the packet */
+	if (ldns_resolver_edns_udp_size(r) != 0) {
+		ldns_pkt_set_edns_udp_size(query_pkt,
+				ldns_resolver_edns_udp_size(r));
+	}
+
 	if (ldns_resolver_debug(r)) {
 		ldns_pkt_print(stdout, query_pkt);
 	}

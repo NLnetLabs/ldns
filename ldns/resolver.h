@@ -86,6 +86,8 @@ struct ldns_struct_resolver
 	   keep the current pkt */
 	ldns_pkt *_cur_axfr_pkt;
 	uint16_t _axfr_i;
+	/* EDNS0 stuff only bufsize atm */
+	uint16_t _edns_udp_size;
 };
 typedef struct ldns_struct_resolver ldns_resolver;
 
@@ -124,6 +126,7 @@ ldns_status ldns_resolver_push_nameserver_rr_list(ldns_resolver *, ldns_rr_list 
 uint8_t ldns_resolver_retry(ldns_resolver *);
 uint8_t ldns_resolver_retrans(ldns_resolver *);
 uint8_t ldns_resolver_ip6(ldns_resolver *);
+uint16_t ldns_resolver_edns_udp_size(ldns_resolver *);
 
 ldns_pkt * ldns_resolver_bgsend();
 ldns_pkt * ldns_resolver_send(ldns_resolver *, ldns_rdf*, ldns_rr_type, ldns_rr_class, uint16_t);
@@ -141,6 +144,7 @@ void ldns_resolver_set_retrans(ldns_resolver *, uint8_t);
 void ldns_resolver_set_retry(ldns_resolver *, uint8_t);
 void ldns_resolver_set_ip6(ldns_resolver *, uint8_t);
 void ldns_resolver_set_fail(ldns_resolver *, bool);
+void ldns_resolver_set_edns_udp_size(ldns_resolver *, uint16_t);
 
 /**
  * Prepares the resolver for an axfr query
