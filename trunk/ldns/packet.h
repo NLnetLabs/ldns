@@ -94,6 +94,19 @@ enum ldns_enum_pkt_section {
 };
 typedef enum ldns_enum_pkt_section ldns_pkt_section;	
 
+/**
+ * the different types of packets
+ * \todo Do we need this??? MIEK
+ */
+enum ldns_enum_pkt_type {
+	LDNS_PACKET_QUESTION,
+	LDNS_PACKET_REFERRAL,
+	LDNS_PACKET_ANSWER,
+	LDNS_PACKET_NXDOMAIN,
+	LDNS_PACKET_NODATA
+};
+typedef enum ldns_enum_pkt_type ldns_pkt_type;
+
 /* prototypes */
 uint16_t ldns_pkt_id(ldns_pkt *);
 bool ldns_pkt_qr(ldns_pkt *);

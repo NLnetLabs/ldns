@@ -58,14 +58,20 @@ main(int argc, char **argv)
 	}
 	/* HACK */
 	ldns_resolver_set_configured(res, 1);
-	/* TCP query */
-	ldns_resolver_set_usevc(res, true);
+	/* UDP query */
+	ldns_resolver_set_usevc(res, false);
         qname = ldns_rdf_new_frm_str(name, LDNS_RDF_TYPE_DNAME);
 	if (!qname) {
 		printf("error making qname\n");
 		return -1;
 	}
         
+        pkt = ldns_resolver_send(res, qname, ldns_rr_get_type_by_name(type), 0, LDNS_RD);
+	if (!pkt)  {
+		printf("error pkt sending\n");
+	} else {
+        	ldns_pkt_print(stdout, pkt);
+	}
         pkt = ldns_resolver_send(res, qname, ldns_rr_get_type_by_name(type), 0, LDNS_RD);
 	if (!pkt)  {
 		printf("error pkt sending\n");

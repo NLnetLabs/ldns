@@ -53,7 +53,8 @@ TESTS		=	run-test0		\
 			run-test5 		\
 			run-test6 		\
 			run-test7		\
-			run-test8
+			run-test8		\
+			run-test-trace	
 
 COMPILE		= $(CC) $(CPPFLAGS) $(CFLAGS)
 LINK		= $(CC) $(CFLAGS) $(LDFLAGS)
@@ -96,6 +97,9 @@ run-test7:	run-test7.o $(LIBDNS_OBJECTS) $(LIBOBJS)
 		$(LINK) ${LIBS} -o $@ $+
 
 run-test8:	run-test8.o $(LIBDNS_OBJECTS) $(LIBOBJS)
+		$(LINK) ${LIBS} -o $@ $+
+
+run-test-trace:	run-test-trace.o $(LIBDNS_OBJECTS) $(LIBOBJS)
 		$(LINK) ${LIBS} -o $@ $+
 
 doc:	

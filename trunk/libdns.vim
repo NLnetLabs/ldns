@@ -58,7 +58,15 @@ syn keyword  ldnsConstant	LDNS_TC
 syn keyword  ldnsConstant	LDNS_CD
 syn keyword  ldnsConstant	LDNS_RA
 syn keyword  ldnsConstant	LDNS_AD
-
+syn keyword  ldnsConstant	LDNS_PACKET_QUESTION
+syn keyword  ldnsConstant	LDNS_PACKET_REFERRAL
+syn keyword  ldnsConstant	LDNS_PACKET_ANSWER
+syn keyword  ldnsConstant	LDNS_PACKET_NXDOMAIN
+syn keyword  ldnsConstant	LDNS_PACKET_NODATA
+syn keyword  ldnsConstant	LDNS_SECTION_QUESTION
+syn keyword  ldnsConstant	LDNS_SECTION_ANSWER
+syn keyword  ldnsConstant	LDNS_SECTION_AUTHORITY
+syn keyword  ldnsConstant	LDNS_SECTION_ADDITIONAL
 
 " dns/error.h
 syn keyword ldnsMacro	LDNS_STATUS_OK
