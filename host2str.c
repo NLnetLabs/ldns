@@ -92,6 +92,7 @@ ldns_rdf2buffer_str_dname(ldns_buffer *output, ldns_rdf *dname)
 	if (1 == ldns_rdf_size(dname)) {
 		ldns_buffer_printf(output, ".", 2);
 	} else {
+		/* XXX repeated calls to ldns_rdf_size */
 		while ((len > 0) && src_pos < ldns_rdf_size(dname)) {
 			src_pos++;
 			ldns_buffer_write(output, &data[src_pos], len);

@@ -33,6 +33,7 @@ doit(void)
 {
 	ldns_buffer *buf;
 	ldns_rdf *rdata;
+	ldns_rdf *cnt_test;
 
 	buf = ldns_buffer_new(10); /* alloc away! */
 	if (!buf) {
@@ -46,6 +47,22 @@ doit(void)
 	
 	(void) ldns_rdf2buffer_str_int16(buf, rdata); 
 	fprintf(stderr, "%s\n", buffer2str(buf));
+
+	/* test the label counter */
+ 	cnt_test = ldns_rdf_new_frm_str("miek.nl.", LDNS_RDF_TYPE_DNAME);
+	printf("Labels miek.nl. %d\n", ldns_rdf_label_count(cnt_test));
+
+ 	cnt_test = ldns_rdf_new_frm_str("miek.nl", LDNS_RDF_TYPE_DNAME);
+	printf("Labels miek.nl %d\n", ldns_rdf_label_count(cnt_test));
+	
+ 	cnt_test = ldns_rdf_new_frm_str("miek", LDNS_RDF_TYPE_DNAME);
+	printf("Labels miek %d\n", ldns_rdf_label_count(cnt_test));
+	
+ 	cnt_test = ldns_rdf_new_frm_str(".", LDNS_RDF_TYPE_DNAME);
+	printf("Labels . %d\n", ldns_rdf_label_count(cnt_test));
+	
+ 	cnt_test = ldns_rdf_new_frm_str(".www.miek.nl.", LDNS_RDF_TYPE_DNAME);
+	printf("Labels .www.miek.nl. %d\n", ldns_rdf_label_count(cnt_test));
 }
 
 
