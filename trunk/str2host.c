@@ -185,7 +185,15 @@ ldns_str2rdf_dname(ldns_rdf **d, const char *str)
 	}
 	if (0 == len) {
 		return LDNS_STATUS_DOMAINNAME_UNDERFLOW;
+	} 
+	
+	/* root label */
+	if (1 == len) {
+		*d = ldns_rdf_new_frm_data(LDNS_RDF_TYPE_DNAME, 1, "."); 
+		return LDNS_STATUS_OK;
 	}
+
+	/* get on with the rest */
 
 	/* s is on the current dot
 	 * p on the previous one
@@ -243,6 +251,7 @@ ldns_str2rdf_dname(ldns_rdf **d, const char *str)
 		*q = 0;
 	}
 	len++;
+	printf("len: %d\n", len);
 
 	/* s - buf_str works because no magic is done in the above for-loop */
 	*d = ldns_rdf_new_frm_data(LDNS_RDF_TYPE_DNAME, len, buf); 
