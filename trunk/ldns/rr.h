@@ -199,7 +199,6 @@ struct ldns_struct_rr_descriptor
 };
 typedef struct ldns_struct_rr_descriptor ldns_rr_descriptor;
 
-
 /* prototypes */
 ldns_rr * ldns_rr_new(void);
 void ldns_rr_set_owner(ldns_rr *, ldns_rdf *);
