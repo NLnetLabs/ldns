@@ -354,6 +354,118 @@ ldns_rdf_new_frm_str(ldns_rdf_type type, const char *str)
 }
 
 /**
+ * reverse an rdf, only actually usefull for AAAA and A records
+ * the returned rdf has the type LDNS_RDF_TYPE_DNAME!
+ * \param[in] *rdf rdf to be reversed
+ * \return the reversed rdf (a newly created rdf)
+ */
+ldns_rdf *
+ldns_rdf_address_reverse(ldns_rdf *rdf)
+{
+	uint8_t buf_4[LDNS_IP4ADDRLEN];
+	uint8_t buf_6[LDNS_IP6ADDRLEN * 2];
+	ldns_rdf *rev;
+	ldns_rdf *in_addr;
+	ldns_rdf *ret_dname;
+	uint8_t octet;
+	uint8_t nnibble;
+	uint8_t nibble;
+	uint8_t i, j;
+
+	char *char_dname;
+	int nbit;
+
+	if (ldns_rdf_get_type(rdf) != LDNS_RDF_TYPE_A &&
+			ldns_rdf_get_type(rdf) != LDNS_RDF_TYPE_AAAA) {
+		return NULL;
+	}
+
+	in_addr = NULL;
+	ret_dname = NULL;
+
+	switch(ldns_rdf_get_type(rdf)) {
+		case LDNS_RDF_TYPE_A:
+			/* the length of the buffer is 4 */
+			buf_4[3] = ldns_rdf_data(rdf)[0];
+			buf_4[2] = ldns_rdf_data(rdf)[1];
+			buf_4[1] = ldns_rdf_data(rdf)[2];
+			buf_4[0] = ldns_rdf_data(rdf)[3];
+			in_addr = ldns_dname_new_frm_str("in-addr.arpa.");
+			if (!in_addr) {
+				return NULL;
+			}
+			/* make a new rdf and convert that back  */
+			rev = ldns_rdf_new_frm_data(
+					LDNS_RDF_TYPE_A,
+					LDNS_IP4ADDRLEN,
+					(void*)&buf_4);
+
+			/* convert rev to a string */
+			char_dname = ldns_rdf2str(rev);
+			if (!char_dname) {
+				return NULL;
+			}
+			/* transform back to rdf with type dname */
+			ret_dname = ldns_dname_new_frm_str(char_dname);
+			if (!ret_dname) {
+				return NULL;
+			}
+			/* not needed anymore */
+			ldns_rdf_free(rev);
+			FREE(char_dname);
+			break;
+		case LDNS_RDF_TYPE_AAAA:
+			/* some foo magic to reverse the nibbles ... */
+
+			for (nbit = 127; nbit >= 0; nbit = nbit - 4) {
+				/* calculate octett (8 bit) */
+				octet = ( ((unsigned int) nbit) & 0x78) >> 3;
+				/* calculate nibble */
+				nnibble = ( ((unsigned int) nbit) & 0x04) >> 2;
+				/* extract nibble */
+				nibble = (ldns_rdf_data(rdf)[octet] & ( 0xf << (4 * (1 - nnibble)) ) ) >> ( 4 * (1 - nnibble));
+				buf_6[(LDNS_IP6ADDRLEN * 2 - 1) -
+					(octet * 2 + nnibble)] = (uint8_t)int_to_hexdigit((int)nibble);
+			}
+
+			char_dname = XMALLOC(char, (LDNS_IP6ADDRLEN * 4));
+			if (!char_dname) {
+				return NULL;
+			}
+			char_dname[LDNS_IP6ADDRLEN * 4 - 1] = '\0'; /* closure */
+
+			/* walk the string and add . 's */
+			for (i = 0, j = 0; i < LDNS_IP6ADDRLEN * 2; i++, j = j + 2) {
+				char_dname[j] = (char)buf_6[i];
+				if (i != LDNS_IP6ADDRLEN * 2 - 1) {
+					char_dname[j + 1] = '.';
+				}
+			}
+			in_addr = ldns_dname_new_frm_str("ip6.arpa.");
+			if (!in_addr) {
+				return NULL;
+			}
+		
+			/* convert rev to a string */
+			ret_dname = ldns_dname_new_frm_str(char_dname);
+			if (!ret_dname) {
+				return NULL;
+			}
+			FREE(char_dname);
+			break;
+		default:
+			break;
+	}
+	/* add the suffix */
+	rev = ldns_dname_cat(ret_dname, in_addr);
+	
+	ldns_rdf_free(ret_dname);
+	ldns_rdf_free(in_addr);
+	return rev;
+}
+
+
+/**
  * remove \\DDD, \\[space] and other escapes from the input
  * See RFC 1035, section 5.1
  * \param[in] word what to check
