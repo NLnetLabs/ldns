@@ -212,11 +212,12 @@ ldns_rdf *ldns_rr_owner(ldns_rr *);
 uint8_t ldns_rr_ttl(ldns_rr *);
 uint16_t ldns_rr_rd_count(ldns_rr *);
 ldns_rr_type ldns_rr_get_type(ldns_rr *);
+ldns_rr_class ldns_rr_get_class(ldns_rr *);
 
 
 const ldns_rr_descriptor *ldns_rr_descript(uint16_t type);
-size_t ldns_rr_descriptor_minimum(ldns_rr_descriptor *descriptor);
-size_t ldns_rr_descriptor_maximum(ldns_rr_descriptor *descriptor);
-ldns_rdf_type ldns_rr_descriptor_field_type(ldns_rr_descriptor *descriptor, size_t index);
+size_t ldns_rr_descriptor_minimum(const ldns_rr_descriptor *descriptor);
+size_t ldns_rr_descriptor_maximum(const ldns_rr_descriptor *descriptor);
+ldns_rdf_type ldns_rr_descriptor_field_type(const ldns_rr_descriptor *descriptor, size_t index);
 
 #endif /* _LDNS_RR_H */
