@@ -297,6 +297,7 @@ ldns_resolver_send(ldns_resolver *r, ldns_rdf *name, ldns_rr_type type, ldns_rr_
 	if (!query_pkt) {
 		printf("Failed to generate pkt\n");
 	}
+	ldns_pkt_print(stdout, query_pkt);
 
 	/* return NULL on error */
 	answer_pkt = ldns_send(r, query_pkt);
