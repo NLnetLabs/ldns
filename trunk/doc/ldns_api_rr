@@ -1,0 +1,65 @@
+Structure and function of ldns_rr
+
+API
+   From Net::DNS::RR - DNS Resource Record class
+
+   ldns_rr is the base structure for DNS Recorce Records.
+   [ See also the manual pages for each RR type. - TODO??]
+ 
+
+  ldns_rr *ldns_rr_new(void)
+    Returns a pointer to a newly created ldns_rr structure.
+    
+  [TODO: do we want the stuff descibed below?]
+  ldns_rr_new (from string)
+     $a     = Net::DNS::RR->new("foo.example.com. 86400 A 10.1.2.3");
+     $mx    = Net::DNS::RR->new("example.com. 7200 MX 10 mailhost.example.com.");
+     $cname = Net::DNS::RR->new("www.example.com 300 IN CNAME www1.example.com");
+     $txt   = Net::DNS::RR->new("baz.example.com 3600 HS TXT 'text record'");
+
+    Returns a "Net::DNS::RR" object of the appropriate type and initialized
+    from the string passed by the user. The format of the string is that
+    used in zone files, and is compatible with the string returned by
+    "Net::DNS::RR->string".
+
+    The name and RR type are required; all other information is optional. If
+    omitted, the TTL defaults to 0 and the RR class defaults to IN. Omitting
+    the optional fields is useful for creating the empty RDATA sections
+    required for certain dynamic update operations. See the
+    "Net::DNS::Update" manual page for additional examples.
+
+    All names must be fully qualified. The trailing dot (.) is optional.
+
+  void ldns_rr_print(ldns_rr *r)
+    Prints the record to the standard output. 
+
+  ldns_buffer *ldns_rr_string(ldns_rr *r)
+    Returns a ldns_buffer with the string representation of the RR. Calls the rdatastr method to
+    get the RR-specific data.
+
+  ldns_buffer ldns_rr_rdatastr(ldns_rr *r)
+    Returns a pointer to a ldns_buffer containing with string containing
+    RR-specific data. 
+
+  ldns_rdf *ldns_rr_name(ldns_rr *r)
+    Returns the record's domain name as a ldns_rdf type. [XXX how should we
+    return stuff like this? ldns_rdf, uint8_t, ldns_buffer?
+
+  ldns_rdf_type ldns_rr_get_type(ldns_rr *r)
+    Returns the record's type.
+
+  ldns_rr_class ldns_rr_get_class(ldns_rr *r)
+    Returns the record's class.
+
+  uint32_t ldns_rr_get_ttl(ldns_rr *r)
+    Returns the record's time-to-live (TTL).
+
+  [TODO nodig??] rdlength
+        $rdlength = $rr->rdlength;
+
+    Returns the length of the record's data section.
+
+  [TODO nodig??] rdata
+        $rdata = $rr->rdata
+
+    Returns the record's data section as binary data.

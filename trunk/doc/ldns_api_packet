@@ -1,0 +1,147 @@
+Structure and function of ldns_pkt
+
+
+API
+   From Net::DNS::Packet - DNS packet object class
+
+  ldns_pkt * ldns_pkt_new()
+    Creates a new empty packet.
+
+  ldns_buffer* ldns_pkt_data(ldns_pkt *pkt)
+    Returns the packet data in binary format, suitable for sending to a
+    nameserver. [XXX, suitable for sending to a NS?]
+
+  ldns_hdr *ldns_header(ldn_pkt *pkt)
+    Returns a ldns_hdr structure representing the header section of
+    the packet.
+
+[Again here we have all the dynamic update stuff. NOT IMPL, for now]
+
+  ldns_rr_list *ldns_question(ldns_pkt *pkt)
+    Returns a pointer to a ldns_rr_list representing the question section
+    of the packet.
+
+    [XXX] In dynamic update packets, this section is known as "zone" and specifies
+    the zone to be updated.
+
+  ldns_rr_list *ldns_answer(ldns_pkt *pkt)
+    Returns a pointer to a ldns_rr_list representing the answer section of
+    the packet.
+
+    [XXX] In dynamic update packets, this section is known as "pre" or
+    "prerequisite" and specifies the RRs or RRsets which must or must not
+    preexist.
+
+  ldns_rr_list *ldns_authority(ldns_pkt *pkt)
+    Returns a pointer to a ldns_rr_list representing the authority section
+    of the packet.
+
+    [XXX] In dynamic update packets, this section is known as "update" and
+    specifies the RRs or RRsets to be added or delted.
+
+  ldns_rr_list *ldns_additional(ldns_pkt *pkt)
+    Returns a pointer to a ldns_rr_list of representing the additional
+    section of the packet.
+
+  void ldsn_pkt_print(ldns_pkt *pkt)
+    Prints the packet data on the standard output in an ASCII format similar
+    to that used in DNS zone files. See RFC1035.
+
+  ldns_buffer *ldns_pkt_string(ldns_pkt *pkt)
+    Returns a ldns_buffer containing the string representation of the packet.
+
+  <return type unknown> ldns_pkt_answerfrom(ldns_pkt *pkt)
+    Returns the IP address from which we received this packet. User-created
+    packets will return NULL.
+
+  uint16_t ldns_pkt_answersize(ldns_pkt *pkt)
+    Returns the size of the packet in bytes as it was received from a
+    nameserver. User-created packets will return 0. [XXX user-created??]
+
+  ldns_status ldns_push(ldns_pkt *pkt, ldns_pkt_section section, ldns_rr *rr)
+    Adds *rr to the specified section of the packet. Return LDNS_STATUS_OK
+    on success, LDNS_STATUS_ERR otherwise.
+
+  ldns_status ldns_unique_push(ldns_pkt *pkt, ldns_pkt_section section, ldns_rr *rr)
+    Adds *rr to the specified section of the packet provided that the RR
+    does not already exist in the packet. Return LDNS_STATUS_OK
+    on success, LDNS_STATUS_ERR otherwise.
+
+  ldns_rr *ldns_pop(ldns_pkt, ldns_pkt_section)
+    Removes a RR from the specified section of the packet. Returns NULL if
+    no RR's could be popped.
+
+  <NEW, not in Net::DNS>
+  ldns_rr_list *ldns_pkt_rrset(ldns_pkt *pkt, ....
+
+-- STUFF BELOW IS TODO ---
+
+  dn_comp [TODO]
+        $compname = $packet->dn_comp("foo.example.com", $offset);
+
+    Returns a domain name compressed for a particular packet object, to be
+    stored beginning at the given offset within the packet data. The name
+    will be added to a running list of compressed domain names for future
+    use.
+
+  dn_expand [TODO]
+        use Net::DNS::Packet qw(dn_expand);
+        ($name, $nextoffset) = dn_expand(\$data, $offset);
+
+        ($name, $nextoffset) = Net::DNS::Packet::dn_expand(\$data, $offset);
+
+    Expands the domain name stored at a particular location in a DNS packet.
+    The first argument is a reference to a scalar containing the packet
+    data. The second argument is the offset within the packet where the
+    (possibly compressed) domain name is stored.
+
+    Returns the domain name and the offset of the next location in the
+    packet.
+
+  sign_tsig
+        $key_name = "tsig-key";
+        $key      = "awwLOtRfpGE+rRKF2+DEiw==";
+
+        $update = Net::DNS::Update->new("example.com");
+        $update->push("update", rr_add("foo.example.com A 10.1.2.3"));
+
+        $update->sign_tsig($key_name, $key);
+
+        $response = $res->send($update);
+
+    Signs a packet with a TSIG resource record (see RFC 2845). Uses the
+    following defaults:
+
+        algorithm   = HMAC-MD5.SIG-ALG.REG.INT
+        time_signed = current time
+        fudge       = 300 seconds
+
+    If you wish to customize the TSIG record, you'll have to create it
+    yourself and call the appropriate Net::DNS::RR::TSIG methods. The
+    following example creates a TSIG record and sets the fudge to 60
+    seconds:
+
+        $key_name = "tsig-key";
+        $key      = "awwLOtRfpGE+rRKF2+DEiw==";
+
+        $tsig = Net::DNS::RR->new("$key_name TSIG $key");
+        $tsig->fudge(60);
+
+        $query = Net::DNS::Packet->new("www.example.com");
+        $query->sign_tsig($tsig);
+
+        $response = $res->send($query);
+
+    You shouldn't modify a packet after signing it; otherwise authentication
+    will probably fail.
+
+  sign_sig0
+    SIG0 support is provided through the Net::DNS::RR::SIG class. This class
+    is not part of the default Net::DNS distribution but resides in the
+    Net::DNS::SEC distribution.
+
+        $update = Net::DNS::Update->new("example.com");
+        $update->push("update", rr_add("foo.example.com A 10.1.2.3"));
+        $update->sign_sig0("Kexample.com+003+25317.private");
+
+    SIG0 support is experimental see Net::DNS::RR::SIG for details.
