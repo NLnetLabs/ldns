@@ -55,10 +55,9 @@ main(void)
 		printf("error pkt sending\n");
 		return 1;
 	}
-
         
         /* print the resulting pkt to stdout */
-        /* DISABLE FOR NOW ldns_pkt_print(stdout, pkt); */
+        ldns_pkt_print(stdout, pkt);
 
         return 0;
 }

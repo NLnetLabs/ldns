@@ -18,7 +18,9 @@
 #include <ldns/resolver.h>
 #include <ldns/buffer.h>
 #include <ldns/wire2host.h>
+#include <ldns/host2wire.h>
 #include <ldns/host2str.h>
+#include <ldns/resolver.h>
 
 #include <netinet/in.h>
 #include <sys/socket.h>
@@ -64,7 +66,9 @@ ldns_send(ldns_resolver *r, ldns_pkt *query_pkt)
 	ns_array = ldns_resolver_nameservers(r);
 	reply = NULL;
 	
-	if (ldns_pkt2buffer_str(qb, query_pkt) != LDNS_STATUS_OK) {
+	qb = ldns_buffer_new(MAX_PACKET_SIZE);
+
+	if (ldns_pkt2buffer_wire(qb, query_pkt) != LDNS_STATUS_OK) {
 		return NULL;
 	}
 
@@ -72,6 +76,9 @@ ldns_send(ldns_resolver *r, ldns_pkt *query_pkt)
 	for (i = 0; i < ldns_resolver_nameserver_count(r); i++) {
 		ns_ip = ldns_rdf2native_aaaaa(ns_array[i]);
 		ns_ip_len = ldns_rdf_size(ns_array[i]);
+
+		ldns_rdf_print(stdout, ns_ip);
+		printf("\n");
 
 		/* query */
 		reply = ldns_send_udp(qb, ns_ip, ns_ip_len);
