@@ -23,6 +23,8 @@
 #include <ldns/resolver.h>
 #include <ldns/dns.h>
 #include <ldns/net.h>
+#include <ldns/dnssec.h>
 #include <ldns/keys.h>
+#include <ldns/rr_functions.h>
 
 #endif	/* _LDNS_H */

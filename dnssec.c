@@ -765,16 +765,39 @@ ldns_sign_public(ldns_rr_list *rrset, ldns_key_list *keys)
 		/* set the ttl from the priv key on the rrset */
 		for (i = 0; i < ldns_rr_list_rr_count(rrset); i++) {
 			ldns_rr_set_ttl(
-					ldns_rr_list_rr(rrset_clone, i),
-					orig_ttl);
+					ldns_rr_list_rr(rrset_clone, i), orig_ttl);
 		}
 		/* fill in what we now of the signature */
+		/* set the orig_ttl */
+		ldns_rr_set_origttl(current_sig, ldns_native2rdf_int32(LDNS_RDF_TYPE_INT32, orig_ttl));
+		/* the signers name */
+		ldns_rr_set_signame(current_sig, 
+				ldns_key_pubkey_owner(current_key));
+		/* label count - get it from the first rr in the rr_list */
+		ldns_rr_set_labels(current_sig, 
+				ldns_native2rdf_int8(LDNS_RDF_TYPE_INT8, ldns_rr_label_count(
+						ldns_rr_list_rr(rrset_clone, 0))));
+		/* inception, expiration */
+		ldns_rr_set_inception(current_sig,
+				ldns_native2rdf_int32(LDNS_RDF_TYPE_INT32, ldns_key_inception(current_key)));
+		ldns_rr_set_expiration(current_sig,
+				ldns_native2rdf_int32(LDNS_RDF_TYPE_INT32, ldns_key_expiration(current_key)));
+		/* key-tag */
+		ldns_rr_set_keytag(current_sig,
+				ldns_native2rdf_int16(LDNS_RDF_TYPE_INT16, ldns_key_keytag(current_key)));
 
+		/* algorithm - check the key and substitute that */
+		ldns_rr_set_algorithm(current_sig,
+				ldns_native2rdf_int8(LDNS_RDF_TYPE_ALG, ldns_key_algorithm(current_key)));
 		
-		/* right now, we have: a key, a semi-sig and an rrset */
+		/* type-covered */
+		ldns_rr_set_typecovered(current_sig,
+				ldns_native2rdf_int16(LDNS_RDF_TYPE_TYPE,
+					ldns_rr_get_type(ldns_rr_list_rr(rrset_clone, 0))));
 
-
-		
+		/* right now, we have: a key, a semi-sig and an rrset. For
+		 * which we can create the sig and base64 encode that and
+		 * add that to the signature */
 
 	}
 

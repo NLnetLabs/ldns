@@ -28,6 +28,8 @@
 #include <ldns/rr.h>
 #include <ldns/str2host.h>
 #include <ldns/wire2host.h>
+#include <ldns/rr_functions.h>
+#include <ldns/keys.h>
 
 #define LDNS_IP4ADDRLEN      (32/8)
 #define LDNS_IP6ADDRLEN      (128/8)

@@ -284,8 +284,11 @@ void ldns_rr_list2canonical(ldns_rr_list *);
 void ldns_rr2canonical(ldns_rr *);
 
 ldns_rr * ldns_rr_new_frm_fp(FILE *fp);
-
-
-
+/** 
+ * count the number of labels of the ownername
+ * \param[in] rr 
+ * \return the number of labels
+ */
+uint8_t ldns_rr_label_count(ldns_rr *rr);
 
 #endif /* _LDNS_RR_H */

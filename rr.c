@@ -1411,3 +1411,13 @@ ldns_rr_list2canonical(ldns_rr_list *rr_list)
 		ldns_rr2canonical(ldns_rr_list_rr(rr_list, i));
 	}
 }
+
+uint8_t 
+ldns_rr_label_count(ldns_rr *rr)
+{
+	if (!rr) {
+		return 0;
+	}
+	return ldns_dname_label_count(
+			ldns_rr_owner(rr));
+}

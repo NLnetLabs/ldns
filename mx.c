@@ -5,7 +5,7 @@
 
 #include <stdio.h>
 #include <config.h>
-#include <ldns/dns.h>
+#include <ldns/ldns.h>
 
 int
 usage(FILE *fp, char *prog) {

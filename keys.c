@@ -82,6 +82,11 @@ ldns_key_set_pubkey_owner(ldns_key *k, ldns_rdf *r)
 	k->_pubkey_owner = r;
 }
 
+void
+ldns_key_set_keytag(ldns_key *k, uint16_t tag)
+{
+	k->_extra.dnssec.keytag = tag;
+}
 
 /* read */
 size_t
@@ -140,6 +145,12 @@ uint32_t
 ldns_key_expiration(ldns_key *k)
 {
 	return k->_extra.dnssec.expiration;
+}
+
+uint16_t
+ldns_key_keytag(ldns_key *k)
+{
+	return k->_extra.dnssec.keytag;
 }
 
 /* todo also for tsig */

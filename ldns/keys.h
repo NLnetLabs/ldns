@@ -15,18 +15,19 @@
 #define _LDNS_KEYS_H
 
 #include <openssl/ssl.h>
-
 #include <util.h>
+
+#include <ldns/dnssec.h>
 
 extern ldns_lookup_table ldns_signing_algorithms[];
 
 enum ldns_enum_signing_algorithm
 {
-	LDNS_SIGN_ALG_RSAMD5	 = 1,
-	LDNS_SIGN_ALG_RSASHA1	 = 2,
-	LDNS_SIGN_ALG_DSAMD5	 = 3,
-	LDNS_SIGN_ALG_DSASHA1	 = 4,
-	LDNS_SIGN_ALG_HMACMD5	 = 5
+	LDNS_SIGN_ALG_RSAMD5	 = LDNS_RSAMD5,
+	LDNS_SIGN_ALG_RSASHA1	 = LDNS_RSASHA1,
+	LDNS_SIGN_ALG_DSAMD5	 = LDNS_DSA,
+	LDNS_SIGN_ALG_DSASHA1	 = 140,	/* not official! */
+	LDNS_SIGN_ALG_HMACMD5	 = 150	/* not official! */
 };
 typedef enum ldns_enum_signing_algorithm ldns_signing_algorithm;
 
@@ -47,6 +48,7 @@ struct ldns_struct_key {
 			uint32_t orig_ttl;
 			uint32_t inception;
 			uint32_t expiration;
+			uint16_t keytag;
 		}  dnssec;
 		struct {
 			uint16_t fudge;
@@ -76,7 +78,7 @@ void ldns_key_set_ttl(ldns_key *k, uint32_t t);
 void ldns_key_set_inception(ldns_key *k, uint32_t i);
 void ldns_key_set_expiration(ldns_key *k, uint32_t e);
 void ldns_key_set_pubkey_owner(ldns_key *k, ldns_rdf *r);
-
+void ldns_key_set_keytag(ldns_key *k, uint16_t tag);
 size_t ldns_key_list_key_count(ldns_key_list *key_list);
 ldns_key * ldns_key_list_key(ldns_key_list *key, size_t nr);
 
@@ -87,6 +89,7 @@ unsigned char * ldns_key_hmac_key(ldns_key *k);
 uint32_t ldns_key_ttl(ldns_key *k);
 uint32_t ldns_key_inception(ldns_key *k);
 uint32_t ldns_key_expiration(ldns_key *k);
+uint16_t ldns_key_keytag(ldns_key *k);
 void ldns_key_list_set_key_count(ldns_key_list *key, size_t count);
 ldns_rdf * ldns_key_pubkey_owner(ldns_key *k);
 bool ldns_key_list_push_key(ldns_key_list *key_list, ldns_key *key);
