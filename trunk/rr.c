@@ -264,6 +264,30 @@ ldns_rr_set_class(ldns_rr *rr, ldns_rr_class rr_class)
 }
 
 /**
+ * set a rdf member, it will be set on the 
+ * position given. The old value is returned, like pop
+ */
+ldns_rdf *
+ldns_rr_set_rdf(ldns_rr *rr, ldns_rdf *f, uint16_t position)
+{
+	uint16_t rd_count;
+	ldns_rdf *pop;
+	ldns_rdf **rdata_fields;
+
+	rd_count = ldns_rr_rd_count(rr);
+	if (position > rd_count) {
+		return NULL;
+	}
+
+	rdata_fields = rr->_rdata_fields;
+	/* dicard the old one */
+	pop = rr->_rdata_fields[position];
+	rr->_rdata_fields[position] = f;
+	return pop;
+}
+
+
+/**
  * set rd_field member, it will be 
  * placed in the next available spot
  * \param[in] *rr rr to operate on
