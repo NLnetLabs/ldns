@@ -26,6 +26,40 @@
 
 #include "util.h"
 
+
+/**
+ * send a query packet by using the stuff defined
+ * in the resolver
+ */
+ldns_pkt *
+ldns_send_pkt(ldns_resolver *r, ldns_pkt *query)
+{
+	/* the resolver has a lot of flags,
+	 * make one giant switch the handles them */
+	uint8_t config;
+
+	/* binary */
+	config = ldns_resolver_ip6(r) * 2 +
+		ldns_resolver_usevc(r);
+
+	switch(config) {
+		case 0:
+			/* ip4/udp */
+			break;
+		case 1:
+			/* ip4/tcp */
+			break;
+		case 2:
+			/* ip6/udp */
+			break;
+		case 3:
+			/* ip6/tcp */
+			break;
+	}
+	return NULL;
+}
+
+
 /* send off an buffer and return any reply packet
  * this is done synchronus. Send using udp
  *

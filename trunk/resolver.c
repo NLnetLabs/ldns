@@ -32,6 +32,12 @@ ldns_resolver_port(ldns_resolver *r)
 }
 
 uint8_t
+ldns_resolver_ip6(ldns_resolver *r)
+{
+	return r->_ip6;
+}
+
+uint8_t
 ldns_resolver_recursive(ldns_resolver *r)
 {
 	return r->_recursive;
