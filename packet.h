@@ -20,14 +20,14 @@
 struct struct_header_type
 {
 	uint16_t id;		/* id of a packet */
-	uint8_t qr;
+	uint8_t qr:1;
+	uint8_t aa:1;
+	uint8_t tc:1;
+	uint8_t rd:1;
+	uint8_t cd:1;
+	uint8_t ra:1;
+	uint8_t ad:1;
 	uint8_t opcode;
-	uint8_t aa;
-	uint8_t tc;
-	uint8_t rd;
-	uint8_t cd;
-	uint8_t ra;
-	uint8_t ad;
 	uint8_t rcode;
 	uint8_t qdcount;	/* question sec */
 	uint8_t ancount;	/* answer sec */
