@@ -32,6 +32,7 @@
 #define LDNS_IP6ADDRLEN      (128/8)
 #define LDNS_PORT	53
 #define LDNS_ROOT_LABEL	'\0'
+#define LDNS_DEFTTL		3600
 
 /* lookup tables for standard DNS stuff  */
 

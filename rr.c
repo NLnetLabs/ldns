@@ -34,6 +34,7 @@ ldns_rr_new(void)
 	
 	ldns_rr_set_rd_count(rr, 0);
 	rr->_rdata_fields = NULL; /* XXX */
+	ldns_rr_set_ttl(rr, 0);
         return rr;
 }
 
