@@ -12,8 +12,6 @@ o network code
 	- axfr
 	- tsig?
 o DNSSEC
-o Implement flags
-	- pkt_query_new (rd etc)
 
 Documentation:
 --------------
