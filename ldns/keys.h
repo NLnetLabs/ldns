@@ -23,11 +23,10 @@ extern ldns_lookup_table ldns_signing_algorithms[];
 
 enum ldns_enum_signing_algorithm
 {
-	LDNS_SIGN_ALG_RSAMD5	 = LDNS_RSAMD5,
-	LDNS_SIGN_ALG_RSASHA1	 = LDNS_RSASHA1,
-	LDNS_SIGN_ALG_DSAMD5	 = LDNS_DSA,
-	LDNS_SIGN_ALG_DSASHA1	 = 140,	/* not official! */
-	LDNS_SIGN_ALG_HMACMD5	 = 150	/* not official! */
+	LDNS_SIGN_RSAMD5	 = LDNS_RSAMD5,
+	LDNS_SIGN_RSASHA1	 = LDNS_RSASHA1,
+	LDNS_SIGN_DSA		 = LDNS_DSA,
+	LDNS_SIGN_HMACMD5	 = 150	/* not official! */
 };
 typedef enum ldns_enum_signing_algorithm ldns_signing_algorithm;
 

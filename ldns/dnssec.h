@@ -49,4 +49,9 @@ ldns_status ldns_pkt_tsig_sign(ldns_pkt *pkt, const char *key_name, const char *
 
 ldns_rr *ldns_key_rr2ds(const ldns_rr *key);
 
+/* signing */
+ldns_rdf *ldns_sign_public_rsamd5(ldns_buffer *to_sign, RSA *key);
+ldns_rdf *ldns_sign_public_rsasha1(ldns_buffer *to_sign, RSA *key);
+ldns_rdf *ldns_sign_public_dsa(ldns_buffer *to_sign, DSA *key);
+
 #endif /* _DNSSEC_H_ */

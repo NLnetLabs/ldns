@@ -15,11 +15,10 @@
 
 
 ldns_lookup_table ldns_signing_algorithms[] = {
-        { LDNS_SIGN_ALG_RSAMD5, "RSAMD5" },
-        { LDNS_SIGN_ALG_RSASHA1, "RSASHA1" },
-        { LDNS_SIGN_ALG_DSAMD5, "DSAMD5" },
-        { LDNS_SIGN_ALG_DSASHA1, "DSASHA1" },
-        { LDNS_SIGN_ALG_HMACMD5, "hmac-md5.sig-alg.reg.int" },
+        { LDNS_SIGN_RSAMD5, "RSAMD5" },
+        { LDNS_SIGN_RSASHA1, "RSASHA1" },
+        { LDNS_SIGN_DSA, "DSAMD5" },
+        { LDNS_SIGN_HMACMD5, "hmac-md5.sig-alg.reg.int" },
         { 0, NULL }
 };
 
