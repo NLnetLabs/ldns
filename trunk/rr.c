@@ -619,7 +619,7 @@ ldns_get_class_by_name(char *name)
  * \param[in] unsorted the rr_list to be sorted
  */
 void
-ldns_rr_sort(ldns_rr_list **unsorted)
+ldns_rr_list_sort(ldns_rr_list **unsorted)
 {
 	/* we have a small amount of data (usually) go with the good
 	 * old bubble sort ;-) */
@@ -648,6 +648,13 @@ ldns_rr_sort(ldns_rr_list **unsorted)
 			}
 		}
 	}
+	
+	/*
+	qsort((void *)(*unsorted)->_rrs, rr_count, sizeof(ldns_rr),
+			ldns_rr_compare);
+	...segfaults...
+			*/
+
 }
 
 
@@ -660,7 +667,7 @@ ldns_rr_sort(ldns_rr_list **unsorted)
  *         +1 if rr2 comes before rr1
  */
 int
-ldns_rr_compare(ldns_rr *rr1, ldns_rr *rr2)
+ldns_rr_compare(const void *rr1, const void *rr2)
 {
 	ldns_buffer *rr1_buf;
 	ldns_buffer *rr2_buf;
@@ -668,8 +675,8 @@ ldns_rr_compare(ldns_rr *rr1, ldns_rr *rr2)
 	size_t rr2_len;
 	size_t i;
 
-	rr1_len = ldns_rr_uncompressed_size(rr1);
-	rr2_len = ldns_rr_uncompressed_size(rr2);
+	rr1_len = ldns_rr_uncompressed_size((ldns_rr*)rr1);
+	rr2_len = ldns_rr_uncompressed_size((ldns_rr*)rr2);
 
 	if (rr1_len < rr2_len) {
 		return -1;
@@ -681,10 +688,10 @@ ldns_rr_compare(ldns_rr *rr1, ldns_rr *rr2)
 		rr1_buf = ldns_buffer_new(rr1_len);
 		rr2_buf = ldns_buffer_new(rr2_len);
 
-		if (ldns_rr2buffer_wire(rr1_buf, rr1, LDNS_SECTION_ANY) != LDNS_STATUS_OK) {
+		if (ldns_rr2buffer_wire(rr1_buf, (ldns_rr*)rr1, LDNS_SECTION_ANY) != LDNS_STATUS_OK) {
 			return 0; /* XXX uhm, tja */
 		}
-		if (ldns_rr2buffer_wire(rr2_buf, rr2, LDNS_SECTION_ANY) != LDNS_STATUS_OK) {
+		if (ldns_rr2buffer_wire(rr2_buf, (ldns_rr*)rr2, LDNS_SECTION_ANY) != LDNS_STATUS_OK) {
 			return 0;
 		}
 		/* now compare the buffer's byte for byte */
