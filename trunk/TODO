@@ -21,7 +21,8 @@ o create a bunch of small programs:
 	dig
 	host
 	?
-o printing of none defined TTLS
+o printing of none defined TTL's
+o SSL_load_error_str()? 
 o resolver_frm_file (better parser)
 o per RR functions:
   - RRSIG
