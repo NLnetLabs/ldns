@@ -157,7 +157,9 @@ ldns_rr_new_frm_str(const char *str)
 	r_max = ldns_rr_descriptor_maximum(desc);
 	r_min = ldns_rr_descriptor_minimum(desc);
 
+	/* this breaks with nsec */
 	for(rd = strtok(rdata, "\t \0"), r_cnt =0; rd; rd = strtok(NULL, "\t \0"), r_cnt++) {
+		printf("rd found %s\n", rd);
 		r = ldns_rdf_new_frm_str(
 			ldns_rr_descriptor_field_type(desc, r_cnt),
 			rd);

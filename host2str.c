@@ -491,7 +491,6 @@ ldns_rdf2buffer_str_nsec(ldns_buffer *output, ldns_rdf *rdf)
 		bitmap_length = data[pos+1];
 		pos += 2;
 		
-
 		for (bit_pos = 0; bit_pos < (bitmap_length) * 8; bit_pos++) {
 			if (get_bit(&data[pos], bit_pos)) {
 				type = 256 * (uint16_t) window_block_nr + bit_pos;
