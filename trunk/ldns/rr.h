@@ -95,28 +95,42 @@ enum ldns_enum_rr_type
 	LDNS_RR_TYPE_RT = 21,
 	/**  RFC1706 */
 	LDNS_RR_TYPE_NSAP = 22,
+	/**  RFC1348 */
+	LDNS_RR_TYPE_NSAP_PTR = 23,
 	/**  2535typecode */
 	LDNS_RR_TYPE_SIG = 24,
 	/**  2535typecode */
 	LDNS_RR_TYPE_KEY = 25,
 	/**  RFC2163 */
 	LDNS_RR_TYPE_PX = 26,
+	/**  RFC1712 */
+	LDNS_RR_TYPE_GPOS = 27,
 	/**  ipv6 address */
 	LDNS_RR_TYPE_AAAA = 28,
 	/**  LOC record  RFC1876 */
 	LDNS_RR_TYPE_LOC = 29,
 	/**  2535typecode */
 	LDNS_RR_TYPE_NXT = 30,
+	/**  draft-ietf-nimrod-dns-01.txt */
+	LDNS_RR_TYPE_EID = 31,
+	/**  draft-ietf-nimrod-dns-01.txt */
+	LDNS_RR_TYPE_NIMLOC = 32,
 	/**  SRV record RFC2782 */
 	LDNS_RR_TYPE_SRV = 33,
+	/**  http://www.jhsoft.com/rfc/af-saa-0069.000.rtf */
+	LDNS_RR_TYPE_ATMA = 34,
 	/**  RFC2915 */
 	LDNS_RR_TYPE_NAPTR = 35,
 	/**  RFC2230 */
 	LDNS_RR_TYPE_KX = 36,
 	/**  RFC2538 */
 	LDNS_RR_TYPE_CERT = 37,
+	/**  RFC2874 */
+	LDNS_RR_TYPE_A6 = 38,
 	/**  RFC2672 */
 	LDNS_RR_TYPE_DNAME = 39,
+	/**  dnsind-kitchen-sink-02.txt */
+	LDNS_RR_TYPE_SINK = 40,
 	/**  Pseudo OPT record... */
 	LDNS_RR_TYPE_OPT = 41,
 	/**  RFC3123 */
@@ -125,10 +139,17 @@ enum ldns_enum_rr_type
 	LDNS_RR_TYPE_DS = 43,
 	/**  SSH Key Fingerprint */
 	LDNS_RR_TYPE_SSHFP = 44,
+	/**  draft-richardson-ipseckey-rr-11.txt */
+	LDNS_RR_TYPE_IPSECKEY = 45,
 	/**  draft-ietf-dnsext-dnssec-25 */
 	LDNS_RR_TYPE_RRSIG = 46,
 	LDNS_RR_TYPE_NSEC = 47,      
 	LDNS_RR_TYPE_DNSKEY = 48,
+
+	LDNS_RR_TYPE_UINFO = 100,
+	LDNS_RR_TYPE_UID = 101,
+	LDNS_RR_TYPE_GID = 102,
+	LDNS_RR_TYPE_UNSPEC = 103,
 
 	LDNS_RR_TYPE_TSIG = 250,
 	LDNS_RR_TYPE_IXFR = 251,

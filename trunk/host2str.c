@@ -19,6 +19,7 @@
 #include <netdb.h>
 
 #include <ldns/host2str.h>
+#include <ldns/wire2host.h>
 
 #include <util.h>
 
@@ -573,6 +574,72 @@ ldns_rdf2buffer_str_todo(ldns_buffer *output, ldns_rdf *rdf)
 	return ldns_rdf2buffer_str_hex(output, rdf);
 }
 
+ldns_status
+ldns_rdf2buffer_str_ipseckey(ldns_buffer *output, ldns_rdf *rdf)
+{
+	/* wire format from 
+	   http://www.ietf.org/internet-drafts/draft-ietf-ipseckey-rr-12.txt
+	*/
+	uint8_t *data = ldns_rdf_data(rdf);
+	uint8_t precedence;
+	uint8_t gateway_type;
+	uint8_t algorithm;
+	
+	ldns_rdf *gateway;
+	uint8_t *gateway_data;
+	
+	size_t public_key_size;
+	uint8_t *public_key_data;
+	ldns_rdf *public_key;
+	
+	size_t offset = 0;
+	ldns_status status;
+	
+	
+	precedence = data[0];
+	gateway_type = data[1];
+	algorithm = data[2];
+	offset = 3;
+	
+	switch (gateway_type) {
+		case 0:
+			/* no gateway */
+			break;
+		case 1:
+			gateway_data = XMALLOC(uint8_t, 4);
+			memcpy(gateway_data, &data[offset], 4);
+			gateway = ldns_rdf_new(4, LDNS_RDF_TYPE_A, gateway_data);
+			break;
+		case 2:
+			gateway_data = XMALLOC(uint8_t, 16);
+			memcpy(gateway_data, &data[offset], 16);
+			gateway = ldns_rdf_new(16, LDNS_RDF_TYPE_AAAA, gateway_data);
+			break;
+		case 3:
+			status = ldns_wire2dname(&gateway, data, ldns_rdf_size(rdf), &offset);
+			break;
+		default:
+			/* error? */
+			break;
+	}
+
+	public_key_size = ldns_rdf_size(rdf) - offset;
+	public_key_data = XMALLOC(uint8_t, public_key_size);
+	memcpy(public_key_data, &data[offset], public_key_size);
+	public_key = ldns_rdf_new(public_key_size, LDNS_RDF_TYPE_B64, public_key_data);
+	
+	ldns_buffer_printf(output, "%u %u %u ", precedence, gateway_type,
+	                   algorithm);
+	(void) ldns_rdf2buffer_str(output, gateway);
+	ldns_buffer_printf(output, " ");
+	(void) ldns_rdf2buffer_str(output, public_key);	
+
+	ldns_rdf_free(gateway);
+	ldns_rdf_free(public_key);
+	
+	return ldns_buffer_status(output);
+}
+
 /**
  * Returns string representation of the specified rdf
  * Data is not static
@@ -647,6 +714,9 @@ ldns_rdf2buffer_str(ldns_buffer *buffer, ldns_rdf *rdf)
 		break;
 	case LDNS_RDF_TYPE_NSAP:
 		res = ldns_rdf2buffer_str_nsap(buffer, rdf);
+		break;
+	case LDNS_RDF_TYPE_IPSECKEY:
+		res = ldns_rdf2buffer_str_ipseckey(buffer, rdf);
 		break;
 	case LDNS_RDF_TYPE_SERVICE:
 		/* XXX todo */

@@ -64,7 +64,9 @@ enum ldns_enum_rdf_type
 	/** well known services */
 	LDNS_RDF_TYPE_WKS,
 	/** NSAP */
-	LDNS_RDF_TYPE_NSAP
+	LDNS_RDF_TYPE_NSAP,
+	/** IPSECKEY */
+	LDNS_RDF_TYPE_IPSECKEY
 };
 typedef enum ldns_enum_rdf_type ldns_rdf_type;
 
