@@ -258,15 +258,6 @@ ldns_resolver_new(void)
 void
 ldns_resolver_free(ldns_resolver *res)
 {
-	size_t i;
-/*
-	for (i = 0; i < res->_nameserver_count; i++) {
-		ldns_rdf_free(res->_nameservers[i]);
-	}
-	for (i = 0; i < res->_searchlist_count; i++) {
-		ldns_rdf_free(res->_searchlist[i]);
-	}
-*/
 	FREE(res->_searchlist);
 	FREE(res->_nameservers);
 	FREE(res);
@@ -304,7 +295,6 @@ ldns_pkt *
 ldns_resolver_query(ldns_resolver *r, ldns_rdf *name, ldns_rr_type type, ldns_rr_class class,
                 uint16_t flags)
 {
-	ldns_rdf *domainname;
 	ldns_rdf *newname;
 	ldns_pkt *pkt;
 	
@@ -321,10 +311,7 @@ ldns_resolver_query(ldns_resolver *r, ldns_rdf *name, ldns_rr_type type, ldns_rr
 	if (!newname) {
 		return NULL;
 	}
-	ldns_rdf_print(stdout, newname);
-	printf("the new name\n");
 	pkt = ldns_resolver_send(r, newname, type, class, flags);
-	
 	ldns_rdf_free(newname);
 	return pkt;
 }
