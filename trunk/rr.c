@@ -229,6 +229,34 @@ ldns_rr_push_rdf(ldns_rr *rr, ldns_rdf *f)
 }
 
 /**
+ * remove a rd_field member, it will be 
+ * popped from the last place
+ * \param[in] *rr rr to operate on
+ * \return rdf which was popped (null if nothing)
+ */
+ldns_rdf *
+ldns_rr_pop_rdf(ldns_rr *rr)
+{
+	uint16_t rd_count;
+	ldns_rdf *pop;
+	
+	rd_count = ldns_rr_rd_count(rr);
+
+	if (rd_count == 0) {
+		return NULL;
+	}
+
+	pop = rr->_rdata_fields[rd_count];
+	
+	/* grow the array */
+	rr->_rdata_fields = XREALLOC(
+		rr->_rdata_fields, ldns_rdf *, rd_count - 1);
+
+	ldns_rr_set_rd_count(rr, rd_count - 1);
+	return pop;
+}
+
+/**
  * set the rdata field member counter
  * \param[in] *rr rr to operate on
  * \param[in] nr the number to set
@@ -337,6 +365,7 @@ ldns_rr_list_free(ldns_rr_list *rr_list)
 	FREE(rr_list);
 }
 
+/* need a pop here too */
 bool
 ldns_rr_list_push_rr(ldns_rr_list *rr_list, ldns_rr *rr)
 {
