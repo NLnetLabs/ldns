@@ -47,3 +47,8 @@ o Dependency on openSSL?
 o ldns_lookup_by_name works for types, classes
 	should be shielded, only use ldns_get_class_by_name/type
 o private key type?
+	to many algs:
+	ldns_algorithms[] host2str.c
+	ldns_algorithm    dnssec.h
+	ldns_signing_algorithm keys.h (new!?)
+	
