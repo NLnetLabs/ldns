@@ -23,38 +23,38 @@
 
 /* read */
 uint16_t
-_ldns_rdf_size(ldns_rdf *rd)
+ldns_rdf_size(ldns_rdf *rd)
 {
 	return rd->_size;
 }
 
 ldns_rdf_type
-_ldns_rdf_type(ldns_rdf *rd)
+ldns_rdf_get_type(ldns_rdf *rd)
 {
 	return rd->_type;
 }
 
 uint8_t *
-_ldns_rdf_data(ldns_rdf *rd)
+ldns_rdf_data(ldns_rdf *rd)
 {
 	return rd->_data;
 }
 
 /* write */
 void
-_ldns_rdf_set_size(ldns_rdf *rd, uint16_t s)
+ldns_rdf_set_size(ldns_rdf *rd, uint16_t s)
 {
 	rd->_size = s;
 }
 
 void
-_ldns_rdf_set_type(ldns_rdf *rd, ldns_rdf_type t)
+ldns_rdf_set_type(ldns_rdf *rd, ldns_rdf_type t)
 {
 	rd->_type = t;
 }
 
 void
-_ldns_rdf_set_data(ldns_rdf *rd, uint8_t *d)
+ldns_rdf_set_data(ldns_rdf *rd, uint8_t *d)
 {
 	/* only copy the pointer */
 	rd->_data = d;
@@ -73,14 +73,14 @@ ldns_rdf_new(uint16_t s, ldns_rdf_type t, uint8_t *d)
 		return NULL;
 	}
 
-	_ldns_rdf_set_size(rd, s);
-	_ldns_rdf_set_type(rd, t);
-	_ldns_rdf_set_data(rd, d);
+	ldns_rdf_set_size(rd, s);
+	ldns_rdf_set_type(rd, t);
+	ldns_rdf_set_data(rd, d);
 	return rd;
 }
 
 void 
-_ldns_rdf_destroy(ldns_rdf *rd)
+ldns_rdf_destroy(ldns_rdf *rd)
 {
 	rd = NULL; /* kuch */
 	/* empty */
@@ -93,7 +93,7 @@ _ldns_rdf_destroy(ldns_rdf *rd)
  * code
  */
 ldns_status
-_ldns_octet(char *word, size_t *length)
+ldns_octet(char *word, size_t *length)
 {
     char *s; char *p;
     *length = 0;
