@@ -156,7 +156,7 @@ ldns_buffer_capacity(ldns_buffer *buffer)
  * pointers to the data may become invalid.  The buffer's limit is set
  * to the buffer's new capacity.
  */
-void ldns_buffer_set_capacity(ldns_buffer *buffer, size_t capacity);
+bool ldns_buffer_set_capacity(ldns_buffer *buffer, size_t capacity);
 
 /*
  * Ensure BUFFER can contain at least AMOUNT more bytes.  The buffer's
@@ -165,7 +165,7 @@ void ldns_buffer_set_capacity(ldns_buffer *buffer, size_t capacity);
  * The buffer's limit is always set to the (possibly increased)
  * capacity.
  */
-void ldns_buffer_reserve(ldns_buffer *buffer, size_t amount);
+bool ldns_buffer_reserve(ldns_buffer *buffer, size_t amount);
 
 /*
  * Return a pointer to the data at the indicated position.
@@ -376,12 +376,20 @@ ldns_buffer_read_u32(ldns_buffer *buffer)
  * Print to the buffer, increasing the capacity if required using
  * buffer_reserve(). The buffer's position is set to the terminating
  * '\0'. Returns the number of characters written (not including the
- * terminating '\0').
+ * terminating '\0') or -1 on failure.
  */
 int ldns_buffer_printf(ldns_buffer *buffer, const char *format, ...)
 	ATTR_FORMAT(printf, 2, 3);
 
-void ldns_buffer_destroy(ldns_buffer *buffer);
-char *ldns_buffer_export(ldns_buffer *buffer);
+/*
+ * Frees the buffer.
+ */
+void ldns_buffer_free(ldns_buffer *buffer);
+
+/*
+ * Makes the buffer fixed and returns a pointer to the data.  The
+ * caller is responsible for free'ing the result.
+ */
+void *ldns_buffer_export(ldns_buffer *buffer);
 
 #endif /* _BUFFER_H_ */
