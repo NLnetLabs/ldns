@@ -68,6 +68,7 @@ struct ldns_struct_pkt
 	/** \brief the size in bytes of the pkt */
 	uint16_t _answersize;
 	char *_answerfrom;
+	char *_when;
 	/** \brief query duration */
 	uint32_t _querytime;
 	/** \brief the packet size */
@@ -125,6 +126,7 @@ uint16_t ldns_pkt_ancount(ldns_pkt *);
 uint16_t ldns_pkt_nscount(ldns_pkt *);
 uint16_t ldns_pkt_arcount(ldns_pkt *);
 char *ldns_pkt_answerfrom(ldns_pkt *packet);
+char *ldns_pkt_when(ldns_pkt *packet);
 uint32_t ldns_pkt_querytime(ldns_pkt *);
 size_t ldns_pkt_size(ldns_pkt *);
 
@@ -150,6 +152,7 @@ void ldns_pkt_set_arcount(ldns_pkt *, uint16_t);
 void ldns_pkt_set_answerfrom(ldns_pkt *, char *);
 void ldns_pkt_set_querytime(ldns_pkt *, uint32_t);
 void ldns_pkt_set_size(ldns_pkt *, size_t);
+void ldns_pkt_set_when(ldns_pkt *, char *);
 
 /**
  * Allocates and initializes a ldns_pkt structure

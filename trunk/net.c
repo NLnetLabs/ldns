@@ -104,12 +104,13 @@ ldns_send(ldns_resolver *r, ldns_pkt *query_pkt)
 			reply = ldns_send_udp(qb, ns, ns_len);
 		}
 		gettimeofday(&tv_e, NULL);
-		
+
 		if (reply) {
 			ldns_pkt_set_querytime(reply,
 				((tv_e.tv_sec - tv_s.tv_sec) * 1000) +
 				(tv_e.tv_usec - tv_s.tv_usec) / 1000);
 			ldns_pkt_set_answerfrom(reply, ldns_rdf2str(ns_array[i]));
+			ldns_pkt_set_when(reply,  ctime((time_t*)&tv_s.tv_sec));
 			break;
 		}
 	}
