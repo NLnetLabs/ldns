@@ -38,48 +38,47 @@
 enum ldns_enum_rdf_type
 {
 	/** none */
-	RD_NONE_T,
+	RDF_TYPE_NONE,
 	/** domain name */
-	RD_DNAME_T,
+	RDF_TYPE_DNAME,
 	/** 8 bits */
-	RD_INT8_T,
+	RDF_TYPE_INT8,
 	/** 16 bits */
-	RD_INT16_T,
+	RDF_TYPE_INT16,
 	/** 32 bits */
-	RD_INT32_T,
+	RDF_TYPE_INT32,
 	/** 48 bits? */
-	RD_INT48_T,
+	RDF_TYPE_INT48,
 	/** A record */
-	RD_A_T,	
+	RDF_TYPE_A,	
 	/** AAAA record */
-	RD_AAAA_T,
+	RDF_TYPE_AAAA,
 	/** txt string */
-	RD_STR_T,
+	RDF_TYPE_STR,
 	/** apl data */
-	RD_APL_T,
+	RDF_TYPE_APL,
 	/** b64 string */
-	RD_B64_T,
+	RDF_TYPE_B64,
 	/** hex string */
-	RD_HEX_T,
+	RDF_TYPE_HEX,
 	/** nsec type codes */
-	RD_NSEC_T, 
+	RDF_TYPE_NSEC, 
 	/** a RR type */
-	RD_TYPE_T, 
+	RDF_TYPE_TYPE, 
 	/** a class */
-	RD_CLASS_T,
+	RDF_TYPE_CLASS,
 	/** certificates */
-	RD_CERT_T,
+	RDF_TYPE_CERT,
 	/** a key algorithm */
-	RD_ALG_T,
+	RDF_TYPE_ALG,
 	/** unknown types */
-	RD_UNKNOWN_T,
+	RDF_TYPE_UNKNOWN,
 	/** time */
-	RD_TIME_T,
+	RDF_TYPE_TIME,
 	/** protocol and port bitmaps */
-	RD_SERVICE_T,
+	RDF_TYPE_SERVICE,
 	/** location data */
-	RD_LOC_T
-	
+	RDF_TYPE_LOC
 };
 typedef enum ldns_enum_rdf_type ldns_rdf_type;
 
