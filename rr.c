@@ -61,7 +61,7 @@ ldns_rr_new_frm_type(ldns_rr_type t)
 	desc = ldns_rr_descript(t);
 
 	printf("min %d\n",
-			ldns_rr_descriptor_minimum(desc));
+			(int) ldns_rr_descriptor_minimum(desc));
 	
 	rr->_rdata_fields = XMALLOC(ldns_rdf *, 
 			ldns_rr_descriptor_minimum(desc) - 1);
