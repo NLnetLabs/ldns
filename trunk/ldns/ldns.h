@@ -20,6 +20,7 @@
 #include <ldns/packet.h>
 #include <ldns/wire2host.h>
 #include <ldns/host2str.h>
+#include <ldns/resolver.h>
 #include <ldns/dns.h>
 
 #endif	/* _LDNS_H */
