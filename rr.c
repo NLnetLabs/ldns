@@ -345,7 +345,7 @@ ldns_rdata_field_type
 ldns_rr_descriptor_field_type(ldns_rr_descriptor_type *descriptor,
                               size_t index)
 {
-	assert(descriptor);
+	assert(descriptor != NULL);
 	assert(index < descriptor->_maximum
 	       || descriptor->_variable != RD_NONE_T);
 	if (index < descriptor->_maximum) {
