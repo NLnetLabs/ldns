@@ -46,15 +46,12 @@ main(void)
 	name = ldns_dname_new_frm_str("www.miek.nl");
 	
 	pkt = ldns_pkt_query_new(name, LDNS_RR_TYPE_AAAA, 0, LDNS_RD);
-	ldns_pkt_set_answerfrom(pkt, name);
 	ldns_pkt_print(stdout, pkt);
 
 	pkt = ldns_pkt_query_new(name, LDNS_RR_TYPE_AAAA, 0, LDNS_RD);
-	ldns_pkt_set_answerfrom(pkt, name);
 	ldns_pkt_print(stdout, pkt);
 	
 	pkt = ldns_pkt_query_new(name, LDNS_RR_TYPE_AAAA, 0, LDNS_RD);
-	ldns_pkt_set_answerfrom(pkt, name);
 	ldns_pkt_print(stdout, pkt);
         return 0;
 }

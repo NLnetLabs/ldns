@@ -89,5 +89,15 @@ main(int argc, char **argv)
         /* print the resulting pkt to stdout */
         ldns_pkt_print(stdout, pkt);
 
+        pkt = ldns_resolver_send(res, qname, ldns_rr_get_type_by_name(type), 0, LDNS_RD);
+
+	if (!pkt)  {
+		printf("error pkt sending\n");
+		return 1;
+	}
+        
+        /* print the resulting pkt to stdout */
+        ldns_pkt_print(stdout, pkt);
+
         return 0;
 }

@@ -131,16 +131,16 @@ ldns_pkt_additional(ldns_pkt *packet)
 	return packet->_additional;
 }
 
-ldns_rdf *
-ldns_pkt_answerfrom(ldns_pkt *packet)
-{
-	return packet->_answerfrom;
-}
-
 uint32_t 
 ldns_pkt_querytime(ldns_pkt *packet)
 {
 	return packet->_querytime;
+}
+
+char *
+ldns_pkt_answerfrom(ldns_pkt *packet)
+{
+	return packet->_answerfrom;
 }
 
 uint16_t
@@ -261,15 +261,16 @@ ldns_pkt_set_arcount(ldns_pkt *packet, uint16_t arcount)
 }
 
 void
-ldns_pkt_set_answerfrom(ldns_pkt *packet, ldns_rdf *answerfrom)
-{
-	packet->_answerfrom = answerfrom;
-}
-
-void
 ldns_pkt_set_querytime(ldns_pkt *packet, uint32_t time) 
 {
 	packet->_querytime = time;
+}
+
+void
+ldns_pkt_set_answerfrom(ldns_pkt *packet, char *answerfrom)
+{
+	/* TODO if exists free? */
+	packet->_answerfrom = answerfrom;
 }
 
 /** 
@@ -334,7 +335,6 @@ ldns_pkt_new()
 	packet->_additional = ldns_rr_list_new();
 
 	ldns_pkt_set_querytime(packet, 0);
-	packet->_answerfrom = MALLOC(ldns_rdf);
 	ldns_pkt_set_answerfrom(packet, NULL);
 	
 	return packet;
@@ -438,6 +438,8 @@ ldns_pkt_query_new_frm_str(const char *name, ldns_rr_type rr_type, ldns_rr_class
 		ldns_pkt_free(packet);
 		return NULL;
 	}
+	
+	ldns_pkt_set_answerfrom(packet, NULL);
 	
 	return packet;
 }
