@@ -40,6 +40,14 @@ main()
 	rr = ldns_rr_new_frm_str("a.miek.nl. 1800    IN     MX     10    www.atoom.net");
 	ldns_rr_print(stdout, rr);
 	printf("\n");
+
+	rr = ldns_rr_new_frm_str("a.miek.nl. 1800    IN     MX     10    w\065.atoom.net");
+	ldns_rr_print(stdout, rr);
+	printf("\n");
+
+	rr = ldns_rr_new_frm_str("a.miek.nl. 1800    IN     MX     10    w\65.atoom.net");
+	ldns_rr_print(stdout, rr);
+	printf("\n");
 	
 	/* miss formed */
 	rr = ldns_rr_new_frm_str("a.miek.nl. 1800 IN MX 10");
