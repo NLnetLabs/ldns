@@ -22,6 +22,12 @@ o create a bunch of small programs:
 	host
 	?
 o printing of none defined TTLS
+o resolver_frm_file (better parser)
+o per RR functions:
+  - RRSIG
+       ->keytag
+       ->typecovered
+   etc etc. For all types we have
 
 Documentation:
 --------------
