@@ -193,6 +193,9 @@ ldns_send_udp(ldns_buffer *qbin, const struct sockaddr_storage *to, socklen_t to
  * \param[in] tolen length of the ip addr
  * \return a packet with the answer
  */
+/* keep in mind that in DNS tcp messages the first 2 bytes signal the
+ * amount data to expect
+ */
 ldns_pkt *
 ldns_send_tcp(ldns_buffer *qbin, const struct sockaddr_storage *to, socklen_t tolen)
 {
@@ -208,6 +211,12 @@ ldns_send_tcp(ldns_buffer *qbin, const struct sockaddr_storage *to, socklen_t to
 
 	if ((sockfd = socket((int)((struct sockaddr*)to)->sa_family, SOCK_STREAM, IPPROTO_UDP)) == -1) {
 		printf("could not open socket\n");
+		return NULL;
+	}
+
+	if (bind(sockfd, (struct sockaddr*)to, tolen) == -1) {
+		close(sockfd);
+		printf("could no bin socket\n");
 		return NULL;
 	}
 
