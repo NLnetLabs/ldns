@@ -367,7 +367,7 @@ ldns_octet(char *word, size_t *length)
 		    return LDNS_STATUS_EMPTY_LABEL;
                 }
                 *p = *s;
-                *length++;
+                (*length)++;
                 break;
             case '\\':
                 if ('0' <= s[1] && s[1] <= '9' &&
@@ -382,7 +382,7 @@ ldns_octet(char *word, size_t *length)
                         /* this also handles \0 */
                         s += 3;
                         *p = val;
-                        *length++;
+                        (*length)++;
                     } else {
                         return LDNS_STATUS_DDD_OVERFLOW;
                     }
@@ -390,7 +390,7 @@ ldns_octet(char *word, size_t *length)
                     /* an espaced character, like \<space> ? 
                     * remove the '\' keep the rest */
                     *p = *++s;
-                    *length++;
+                    (*length)++;
                 }
                 break;
             case '\"':
@@ -398,7 +398,7 @@ ldns_octet(char *word, size_t *length)
                  * the string */
 
                 *p = *++s; /* skip it */
-                *length++;
+                (*length)++;
 		/* I'm not sure if this is needed in libdns... MG */
                 if ( *s == '\0' ) {
                     /* ok, it was the last one */
@@ -408,7 +408,7 @@ ldns_octet(char *word, size_t *length)
                 break;
             default:
                 *p = *s;
-                *length++;
+                (*length)++;
                 break;
         }
     }
