@@ -248,7 +248,7 @@ ldns_rr_pop_rdf(ldns_rr *rr)
 
 	pop = rr->_rdata_fields[rd_count];
 	
-	/* grow the array */
+	/* shrink the array */
 	rr->_rdata_fields = XREALLOC(
 		rr->_rdata_fields, ldns_rdf *, rd_count - 1);
 

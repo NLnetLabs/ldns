@@ -39,14 +39,14 @@ ldns_lookup_table ldns_certificate_types[] = {
 
 /* Taken from RFC 2535, section 7.  */
 ldns_lookup_table ldns_algorithms[] = {
-        { 1, "RSAMD5" },
-        { 2, "DS" },
-        { 3, "DSA" },
-        { 4, "ECC" },
-        { 5, "RSASHA1" },
-        { 252, "INDIRECT" },
-        { 253, "PRIVATEDNS" },
-        { 254, "PRIVATEOID" },
+        { LDNS_RSAMD5, "RSAMD5" },
+        { LDNS_DH, "DH" },
+        { LDNS_DSA, "DSA" },
+        { LDNS_ECC, "ECC" },
+        { LDNS_RSASHA1, "RSASHA1" },
+        { LDNS_INDIRECT, "INDIRECT" },
+        { LDNS_PRIVATEDNS, "PRIVATEDNS" },
+        { LDNS_PRIVATEOID, "PRIVATEOID" },
         { 0, NULL }
 };
 

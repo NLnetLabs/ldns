@@ -15,7 +15,7 @@
 #include <ldns/buffer.h>
 #include <ldns/common.h>
 #include <ldns/dname.h>
-#include <ldns/dns.h>
+#include <ldns/dnssec.h>
 #include <ldns/error.h>
 #include <ldns/host2str.h>
 #include <ldns/host2wire.h>

@@ -414,17 +414,18 @@ ldns_axfr_start(ldns_resolver *resolver,
 	ns = ldns_rdf2native_sockaddr_storage(resolver->_nameservers[0]);
 
 	/* Determine the address size.
-	 * This is a nice one for a convenience funtion
 	 */
 	switch(ns->ss_family) {
 		case AF_INET:
 			ns4 = (struct sockaddr_in*) ns;
-			ns4->sin_port = htons(53);
+			ns4->sin_port = htons(
+					ldns_resolver_port(resolver));
 			ns_len = (socklen_t)sizeof(struct sockaddr_in);
 			break;
 		case AF_INET6:
 			ns6 = (struct sockaddr_in6*) ns;
-			ns6->sin6_port = htons(53);
+			ns6->sin6_port = htons(
+					ldns_resolver_port(resolver));
 			ns_len = (socklen_t)sizeof(struct sockaddr_in6);
 			break;
                 default:

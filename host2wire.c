@@ -5,8 +5,6 @@
  * This will usually just a re-ordering of the
  * data (as we store it in network format)
  *
- * XXX not sure if we need to keep this around
- *
  * a Net::DNS like library for C
  *
  * (c) NLnet Labs, 2004
@@ -119,8 +117,8 @@ ldns_rrsig2buffer_wire(ldns_buffer *buffer, ldns_rr *rr)
 		ldns_buffer_write_u16(buffer, 0);
 	}	
 
-	/* now convert all the rdf, except the actual signature data
-	 * rdf number 8 */
+	/* now convert all the rdfs, except the actual signature data
+	 * rdf number 8  - the last, hence: -1 */
 	for (i = 0; i < ldns_rr_rd_count(rr) - 1; i++) {
 		(void) ldns_rdf2buffer_wire(buffer, ldns_rr_rdf(rr, i));
 	}

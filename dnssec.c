@@ -20,8 +20,6 @@
 #include <openssl/bio.h>
 #include <openssl/evp.h>
 
-#define LDNS_ALG_RSAMD5 10
-
 /** 
  * calcalutes a keytag of a key for use in DNSSEC
  * \param[in] key the key to use for the calc.
@@ -48,7 +46,7 @@ ldns_keytag(ldns_rr *key)
 	keysize= ldns_buffer_capacity(keybuf);
 
 	/* look at the algorithm field */
-	if (ldns_rdf2native_int8(ldns_rr_rdf(key, 2)) == LDNS_ALG_RSAMD5) {
+	if (ldns_rdf2native_int8(ldns_rr_rdf(key, 2)) == LDNS_RSAMD5) {
 		/* rsamd5 must be handled seperately */
 		/* weird stuff copied from drill0.x XXX */
 		if (keysize > 4) {
@@ -68,14 +66,93 @@ ldns_keytag(ldns_rr *key)
 	}
 }
 
+#if 0
+
+/**
+ * verify an rrsig 
+ * \param[in] rrset the rrset to check
+ * \param[in] rrsig the signature of the rrset
+ * \param[in] keys the keys to try
+ */
+bool
+ldns_verify_rrsig(ldns_rr_list *rrset, ldns_rr_list *rrsig, ldns_rr_list *keys)
+{
+
+	
+	ldns_buffer *rawsig_buf;
+	ldns_rdf *orig_ttl;
+
+
+
+
+
+	/* create a buffer which will certainly hold the
+	 * raw data */
+	rawsig_buf = ldns_buffer_new(MAX_PACKETLEN);
+	
+	ldns_rrsig2buffer_wire(rawsig_buf, rrsig);
+
+	/* sort the rrset in canonical order */
+	ldns_rr_list_sort(rrset);
+
+	/* 4 or 3... */
+	orig_ttl = ldns_rdf_rr(rrsig, 4);
+	/* reset the ttl in the rrset with the orig_ttl
+	 * from the sig */
+	
+	
+
+	/* set the ttl in the rrset... */
+	int32 = rdata2uint32(rrsig->rdata[3]);
+	rrset_set_ttl(rrset, int32);
+	length += rrset2wire(rrset, verifybuf, length, MAX_PACKET);
+	key_bytes = (unsigned char *) base64_decode((unsigned char *) dnskey->rdata[3]->data,
+		(int) dnskey->rdata[3]->length, (size_t *) &keylen);
+
+	if (keylen < 0) {
+		warning("Error in base64 decode of key data:");
+		/* XXX TODO */
+		print_rd(dnskey->rdata[3]);
+		printf("\n");
+		return RET_FAIL;
+	}
+	switch (rdata2uint8(rrsig->rdata[1])) {
+		case ALG_DSA:
+			result = verify_rrsig_dsa(verifybuf, length, sigbuf,
+					siglen, key_bytes, keylen);
+			break;
+		case ALG_RSASHA1:
+			result = verify_rrsig_rsasha1(verifybuf, length, sigbuf,
+					siglen,	key_bytes, keylen);
+			break;
+		case ALG_RSAMD5:
+			result = verify_rrsig_rsamd5(verifybuf, length, sigbuf,
+					siglen, key_bytes, keylen);
+			break;
+		default:
+			warning("unknown or unimplemented algorithm (alg %s nr %d)", namebyint(rdata2uint8(rrsig->rdata[1]), dnssec_algos), rdata2uint8(rrsig->rdata[1]));
+print_rr(rrsig, FOLLOW);
+			exit(EXIT_FAILURE);
+			break;
+	}
+
+	xfree(key_bytes);
+	xfree(verifybuf);
+	xfree(sigbuf);
+	
+	return result;
+}
+#endif
+
 
 #if 0
 
 /**
  * Verify an rrsig with the DSA algorithm, see RFC 2536
+ * \param[in]
  */
-int
-verify_rrsig_dsa(uint8_t *verifybuf, unsigned long length, unsigned char *sigbuf, unsigned int siglen,
+bool
+ldns_verify_rrsig_dsa(uint8_t *verifybuf, unsigned long length, unsigned char *sigbuf, unsigned int siglen,
 		unsigned char *key_bytes, unsigned int keylen)
 {
 	uint8_t T = (uint8_t) key_bytes[0];
@@ -300,64 +377,4 @@ verify_rrsig_rsamd5(uint8_t *verifybuf, unsigned long length, unsigned char *sig
 	return result;
 }
 
-bool
-verify_rrsig(ldns_rr_list rrset, ldns_rr_list *rrsig, ldns_rr_list *dnskey)
-{
-	/* translate rrsig+rrset to binary data */
-	uint8_t *verifybuf;
-	unsigned char *sigbuf;
-	unsigned char *key_bytes;
-	uint32_t int32;
-	unsigned long length = 0;
-	unsigned int siglen;
-	unsigned int keylen;
-	int result;
-	
-	verifybuf = xmalloc(MAX_PACKET);
-	sigbuf = (unsigned char *) base64_decode((unsigned char *) rrsig->rdata[8]->data,
-		(int) rrsig->rdata[8]->length, (size_t *) &siglen);
-
-	length += sig2verifybytes(rrsig, verifybuf, length, MAX_PACKET);
-	rrset_sort(&rrset);
-
-	/* set the ttl in the rrset... */
-	int32 = rdata2uint32(rrsig->rdata[3]);
-	rrset_set_ttl(rrset, int32);
-	length += rrset2wire(rrset, verifybuf, length, MAX_PACKET);
-	key_bytes = (unsigned char *) base64_decode((unsigned char *) dnskey->rdata[3]->data,
-		(int) dnskey->rdata[3]->length, (size_t *) &keylen);
-
-	if (keylen < 0) {
-		warning("Error in base64 decode of key data:");
-		/* XXX TODO */
-		print_rd(dnskey->rdata[3]);
-		printf("\n");
-		return RET_FAIL;
-	}
-	switch (rdata2uint8(rrsig->rdata[1])) {
-		case ALG_DSA:
-			result = verify_rrsig_dsa(verifybuf, length, sigbuf,
-					siglen, key_bytes, keylen);
-			break;
-		case ALG_RSASHA1:
-			result = verify_rrsig_rsasha1(verifybuf, length, sigbuf,
-					siglen,	key_bytes, keylen);
-			break;
-		case ALG_RSAMD5:
-			result = verify_rrsig_rsamd5(verifybuf, length, sigbuf,
-					siglen, key_bytes, keylen);
-			break;
-		default:
-			warning("unknown or unimplemented algorithm (alg %s nr %d)", namebyint(rdata2uint8(rrsig->rdata[1]), dnssec_algos), rdata2uint8(rrsig->rdata[1]));
-print_rr(rrsig, FOLLOW);
-			exit(EXIT_FAILURE);
-			break;
-	}
-
-	xfree(key_bytes);
-	xfree(verifybuf);
-	xfree(sigbuf);
-	
-	return result;
-}
 #endif
