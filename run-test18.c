@@ -47,10 +47,14 @@ main(int argc, char *argv[])
 	dnskey = ldns_key2rr(privkey);
 	if (dnskey) {
 		ldns_rr_print(stdout, dnskey);
+		printf("; {%d}\n", 
+				ldns_calc_keytag(dnskey));
 		printf("\n");
+		ldns_key_set_keytag(privkey, ldns_calc_keytag(dnskey));
 	}
 
 	signatures = ldns_sign_public(rrs, keys);
+		printf("\n");
 
 	ldns_rr_list_print(stdout, signatures);
 
