@@ -2,6 +2,7 @@
 # See the file LICENSE for the license
 SHELL 		= @SHELL@
 srcdir 		= @srcdir@
+basesrcdir	= $(shell basename `pwd`)
 prefix  	= @prefix@
 exec_prefix 	= @exec_prefix@
 bindir 		= @bindir@
@@ -75,8 +76,9 @@ libldns.a:	$(LIBDNS_OBJECTS) b64_pton$U.o b64_ntop$U.o
 		ranlib libldns.a
 
 snapshot:	clean testclean
+		echo $(basesrcdir)
 		(rm -rf ../ldns-snap-$(DATE)/)
-		(cd .. ; cp -r libdns/ ldns-snap-$(DATE)/)
+		(cd .. ; cp -r $(basesrcdir)/ ldns-snap-$(DATE)/)
 		(cd .. ; tar --verbose  --exclude ".svn" --create --file ldns-snap-$(DATE).tar.gz --gzip ldns-snap-$(DATE)/)
 		(rm -rf ../ldns-snap-$(DATE)/)
 
