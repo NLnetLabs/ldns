@@ -56,8 +56,10 @@ ldns_rdf2buffer_a(ldns_buffer *output, ldns_rdf *rd)
 	ldns_status result = LDNS_STATUS_INTERNAL_ERR;
 	
 	if (inet_ntop(AF_INET, ldns_rdf_data(rd), r, INET_ADDRSTRLEN)) {
-		result = ldns_buffer_printf(output, "%s", r);
-	} 
+		if (ldns_buffer_printf(output, "%s", r) >= 0) {
+			result = LDNS_STATUS_OK;
+		}
+	}
 
 	return result;
 }
@@ -154,8 +156,11 @@ ldns_rdf2str(ldns_rdf *rdf)
 
 	if (ldns_rdf2buffer(tmp_buffer, rdf) == LDNS_STATUS_OK) {
 		/* export and return string, destroy rest */
-		result = ldns_buffer_export(tmp_buffer);
-		ldns_buffer_destroy(tmp_buffer);
+		if (ldns_buffer_reserve(tmp_buffer, 1)) {
+			ldns_buffer_write_u8(tmp_buffer, '\0');
+			result = (char *) ldns_buffer_export(tmp_buffer);
+		}
+		ldns_buffer_free(tmp_buffer);
 	}
 	
 	return result;

@@ -29,8 +29,8 @@ LIBDNS_HEADERS	=	ldns/error.h		\
 			ldns/wire2host.h	\
 			ldns/host2str.h		\
 			ldns/str2host.h		\
-			util.h			\
-			buffer.h	
+			ldns/buffer.h		\
+			util.h
 LIBDNS_OBJECTS	=	$(LIBDNS_SOURCES:.c=.o)
 
 ALL_SOURCES	=	run-test0.c $(LIBDNS_SOURCES)
