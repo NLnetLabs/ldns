@@ -90,7 +90,7 @@ t_rdata_field *
 rd_field_new_frm_string(t_rd_type t, char *s)
 {
 	t_rdata_field *new;
-	new = malloc(1 * sizeof t_rdata_field ) ;
+	MALLOC(new, t_rdata_field);
 
 	if (!new)
 		return NULL;

@@ -81,8 +81,7 @@ rr_push_rd_field(t_rr *rr, t_rdata_field *f)
 	rd_count = rr_rd_count(rr);
 	
 	/* grow the array */
-	rr->rdata_fields = xrealloc(rr->rdata_fields, 
-			(rd_count + 1) * sizeof(t_rdata_field *));
+	XREALLOC(rr->rdata_fields, t_rdata_field, (rd_count + 1));
 
 	/* add the new member */
 	rr->rdata_fields[rd_count] = f;
