@@ -86,6 +86,8 @@ ldns_key_new_frm_algorithm(ldns_signing_algorithm alg, uint16_t size)
 			break;
 	}
 	ldns_key_set_algorithm(k, alg);
+	/* some defaults - not sure wether to this there or not */
+	ldns_key_set_flags(k, 256);
 	return k;
 }
 
@@ -93,6 +95,12 @@ void
 ldns_key_set_algorithm(ldns_key *k, ldns_signing_algorithm l) 
 {
 	k->_alg = l;
+}
+
+void
+ldns_key_set_flags(ldns_key *k, uint16_t f)
+{
+	k->_extra.dnssec.flags = f;
 }
 
 void
@@ -190,6 +198,12 @@ uint32_t
 ldns_key_ttl(ldns_key *k)
 {
 	return k->_extra.dnssec.orig_ttl;
+}
+
+uint16_t
+ldns_key_flags(ldns_key *k)
+{
+	return k->_extra.dnssec.flags;
 }
 
 uint32_t
@@ -353,7 +367,8 @@ ldns_key2rr(ldns_key *k)
 	ldns_rr_set_type(pubkey, LDNS_RR_TYPE_DNSKEY);
 	/* zero-th rdf - flags */
 	ldns_rr_push_rdf(pubkey,
-			ldns_native2rdf_int16(LDNS_RDF_TYPE_INT16, 0));
+			ldns_native2rdf_int16(LDNS_RDF_TYPE_INT16, 
+				ldns_key_flags(k)));
 	/* first - proto */
 	ldns_rr_push_rdf(pubkey, 
 			ldns_native2rdf_int8(LDNS_RDF_TYPE_INT8, DNSSEC_KEYPROTO));
@@ -389,7 +404,7 @@ ldns_key2rr(ldns_key *k)
 	}
 	/* fourth the key bin material */
 	keybin = ldns_rdf_new_frm_data(LDNS_RDF_TYPE_B64, size, bin);
-	/*FREE(bin);*/
+	FREE(bin);
 	ldns_rr_push_rdf(pubkey, keybin);
 	return pubkey;
 }

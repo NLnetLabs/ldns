@@ -47,6 +47,7 @@ struct ldns_struct_key {
 			uint32_t inception;
 			uint32_t expiration;
 			uint16_t keytag;
+			uint16_t flags;
 		}  dnssec;
 		struct {
 			uint16_t fudge;
@@ -78,6 +79,7 @@ void ldns_key_set_inception(ldns_key *k, uint32_t i);
 void ldns_key_set_expiration(ldns_key *k, uint32_t e);
 void ldns_key_set_pubkey_owner(ldns_key *k, ldns_rdf *r);
 void ldns_key_set_keytag(ldns_key *k, uint16_t tag);
+void ldns_key_set_flags(ldns_key *k, uint16_t flags);
 size_t ldns_key_list_key_count(ldns_key_list *key_list);
 ldns_key * ldns_key_list_key(ldns_key_list *key, size_t nr);
 
@@ -98,5 +100,6 @@ ldns_key * ldns_key_new_frm_algorithm(ldns_signing_algorithm a, uint16_t size);
 
 ldns_rr * ldns_key2rr(ldns_key *k);
 uint16_t ldns_key_calc_keytag(ldns_key *k);
+uint16_t ldns_key_flags(ldns_key *k);
 
 #endif /* _LDNS_KEYS_H */
