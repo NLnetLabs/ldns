@@ -39,7 +39,7 @@
 #define FREE(ptr) \
 	do { free((ptr)); (ptr) = NULL; } while (0)
 
-#define DEP     printf("DEPRICATED FUNCTION!\n");
+#define DEP     printf("DEPRECATED FUNCTION!\n");
 
 /*
  * Copy data allowing for unaligned accesses in network byte order
@@ -117,5 +117,20 @@ ldns_lookup_table *ldns_lookup_by_name(ldns_lookup_table table[],
  * Looks up the table entry by id, returns NULL if not found.
  */
 ldns_lookup_table *ldns_lookup_by_id(ldns_lookup_table table[], int id);
+
+/**
+ * Returns the value of the specified bit
+ * The bits are counted from left to right, so bit #0 is the
+ * left most bit.
+ */
+int get_bit(uint8_t bits[], size_t index);
+
+
+/**
+ * Returns the value of the specified bit
+ * The bits are counted from right to left, so bit #0 is the
+ * right most bit.
+ */
+int get_bit_r(uint8_t bits[], size_t index);
 
 #endif /* !_UTIL_H */

@@ -64,3 +64,24 @@ ldns_lookup_by_id(ldns_lookup_table *table, int id)
 	return NULL;
 }
 
+int 
+get_bit(uint8_t bits[], size_t index)
+{
+	/*
+	 * The bits are counted from left to right, so bit #0 is the
+	 * left most bit.
+	 */
+	return (int) (bits[index / 8] & (1 << (7 - index % 8)));
+}
+
+
+int 
+get_bit_r(uint8_t bits[], size_t index)
+{
+	/*
+	 * The bits are counted from right to left, so bit #0 is the
+	 * right most bit.
+	 */
+	return (int) bits[index / 8] & (1 << (index % 8));
+}
+

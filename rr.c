@@ -266,7 +266,7 @@ static const ldns_rdf_type type_mb_wireformat[] = { LDNS_RDF_TYPE_DNAME };
 static const ldns_rdf_type type_mg_wireformat[] = { LDNS_RDF_TYPE_DNAME };
 static const ldns_rdf_type type_mr_wireformat[] = { LDNS_RDF_TYPE_DNAME };
 static const ldns_rdf_type type_wks_wireformat[] = {
-	LDNS_RDF_TYPE_A, LDNS_RDF_TYPE_INT8, LDNS_RDF_TYPE_SERVICE
+	LDNS_RDF_TYPE_A, LDNS_RDF_TYPE_WKS
 };
 static const ldns_rdf_type type_ptr_wireformat[] = { LDNS_RDF_TYPE_DNAME };
 static const ldns_rdf_type type_hinfo_wireformat[] = {
@@ -433,7 +433,7 @@ static ldns_rr_descriptor rdata_field_descriptors[] = {
 	/* 46 */
 	{LDNS_RR_TYPE_RRSIG, "RRSIG", 9, 9, type_rrsig_wireformat, LDNS_RDF_TYPE_NONE },
 	/* 47 */
-	{LDNS_RR_TYPE_NSEC, "NSEC", 2, 2, type_nsec_wireformat, LDNS_RDF_TYPE_NONE },
+	{LDNS_RR_TYPE_NSEC, "NSEC", 2, 2, type_nsec_wireformat, LDNS_RDF_TYPE_NSEC },
 	/* 48 */
 	{LDNS_RR_TYPE_DNSKEY, "DNSKEY", 4, 4, type_dnskey_wireformat, LDNS_RDF_TYPE_NONE }
 };

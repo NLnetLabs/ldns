@@ -79,7 +79,9 @@ enum ldns_enum_rdf_type
 	/** protocol and port bitmaps */
 	LDNS_RDF_TYPE_SERVICE,
 	/** location data */
-	LDNS_RDF_TYPE_LOC
+	LDNS_RDF_TYPE_LOC,
+	/** well known services */
+	LDNS_RDF_TYPE_WKS
 };
 typedef enum ldns_enum_rdf_type ldns_rdf_type;
 
