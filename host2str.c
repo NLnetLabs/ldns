@@ -165,9 +165,6 @@ ldns_rdf2buffer_str_time(ldns_buffer *output, ldns_rdf *rdf)
 	return ldns_buffer_status(output);
 }
 
-/** 
- * Converts A address 
- */
 ldns_status
 ldns_rdf2buffer_str_a(ldns_buffer *output, ldns_rdf *rdf)
 {
@@ -179,9 +176,6 @@ ldns_rdf2buffer_str_a(ldns_buffer *output, ldns_rdf *rdf)
 	return ldns_buffer_status(output);
 }
 
-/** 
- * converts AAAA address 
- */
 ldns_status
 ldns_rdf2buffer_str_aaaa(ldns_buffer *output, ldns_rdf *rdf)
 {
@@ -194,9 +188,6 @@ ldns_rdf2buffer_str_aaaa(ldns_buffer *output, ldns_rdf *rdf)
 	return ldns_buffer_status(output);
 }
 
-/**
- * Converts TXT rdata
- */
 ldns_status
 ldns_rdf2buffer_str_str(ldns_buffer *output, ldns_rdf *rdf)
 {
@@ -220,9 +211,6 @@ ldns_rdf2buffer_str_str(ldns_buffer *output, ldns_rdf *rdf)
 	return ldns_buffer_status(output);
 }
 
-/**
- * Converts Base 64 encoded data
- */
 ldns_status
 ldns_rdf2buffer_str_b64(ldns_buffer *output, ldns_rdf *rdf)
 {
@@ -235,10 +223,6 @@ ldns_rdf2buffer_str_b64(ldns_buffer *output, ldns_rdf *rdf)
 	return ldns_buffer_status(output);
 }	
 
-/**
- * Converts Hex encoded data
- * move this to general func?
- */
 ldns_status
 ldns_rdf2buffer_str_hex(ldns_buffer *output, ldns_rdf *rdf)
 {
@@ -261,9 +245,6 @@ ldns_buffer_printf(output, "HEX: ");
 	return ldns_buffer_status(output);
 }	
 
-/**
- * Converts type encoded data
- */
 ldns_status
 ldns_rdf2buffer_str_type(ldns_buffer *output, ldns_rdf *rdf)
 {
@@ -279,9 +260,6 @@ ldns_rdf2buffer_str_type(ldns_buffer *output, ldns_rdf *rdf)
 	return ldns_buffer_status(output);
 }	
 
-/**
- * Converts class encoded data
- */
 ldns_status
 ldns_rdf2buffer_str_class(ldns_buffer *output, ldns_rdf *rdf)
 {
@@ -722,10 +700,6 @@ ldns_status ldns_rdf2buffer_str_tsig(ldns_buffer *output, ldns_rdf *rdf)
 }
 
 
-/**
- * Returns string representation of the specified rdf
- * Data is not static
- */
 ldns_status
 ldns_rdf2buffer_str(ldns_buffer *buffer, ldns_rdf *rdf)
 {
@@ -880,12 +854,6 @@ ldns_rr2buffer_str(ldns_buffer *output, ldns_rr *rr)
 	return ldns_buffer_status(output);
 }
 
-/**
- * convert a rr_list
- * \param[in] output the buffer to output to
- * \param[in] list the list to print
- * \return ldns_status
- */
 ldns_status
 ldns_rr_list2buffer_str(ldns_buffer *output, ldns_rr_list *list)
 {
@@ -898,9 +866,6 @@ ldns_rr_list2buffer_str(ldns_buffer *output, ldns_rr_list *list)
 	return ldns_buffer_status(output);
 }
 
-/**
- * Prints the header in default format in the given buffer
- */
 ldns_status
 ldns_pktheader2buffer_str(ldns_buffer *output, ldns_pkt *pkt)
 {

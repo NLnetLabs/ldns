@@ -11,11 +11,11 @@
 #ifndef _DNSSEC_H_
 #define _DNSSEC_H_
 
-#include <openssl/ssl.h>
 #include <ldns/common.h>
 #include <ldns/dns.h>
 #include <ldns/buffer.h>
 #include <ldns/packet.h>
+#include <openssl/ssl.h>
 
 #define MAX_KEYLEN	2048
 #define DNSSEC_KEYPROTO	3
