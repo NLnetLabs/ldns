@@ -309,7 +309,7 @@ packet_set_arcount(t_packet *packet, uint16_t arcount)
  */
  
 t_packet *
-dns_packet_new()
+ldns_packet_new()
 {
 	t_packet *packet;
 	MALLOC(packet, t_packet);
@@ -330,7 +330,7 @@ dns_packet_new()
 }
 
 size_t
-dns_wire2packet_header(uint8_t *wire, size_t max, size_t *pos, t_packet *packet)
+ldns_wire2packet_header(uint8_t *wire, size_t max, size_t *pos, t_packet *packet)
 {
 	if (*pos + HEADER_SIZE > *wire + max) {
 		// TODO: set t_status error
@@ -362,11 +362,11 @@ dns_wire2packet_header(uint8_t *wire, size_t max, size_t *pos, t_packet *packet)
 }
 
 size_t
-dns_wire2packet(uint8_t *wire, size_t max, t_packet *packet)
+ldns_wire2packet(uint8_t *wire, size_t max, t_packet *packet)
 {
 	size_t pos = 0;
 
-	pos += dns_wire2packet_header(wire, max, &pos, packet);
+	pos += ldns_wire2packet_header(wire, max, &pos, packet);
 
 	/* TODO: rrs :) */
 
