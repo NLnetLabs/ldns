@@ -526,7 +526,6 @@ ldns_pkt_tsig_verify(ldns_pkt *pkt,
 	ldns_rdf *key_name_rdf = ldns_rdf_new_frm_str(LDNS_RDF_TYPE_DNAME, key_name);
 	uint16_t pkt_id, orig_pkt_id;
 	
-	size_t i;
 	ldns_rr *orig_tsig = ldns_pkt_tsig(pkt);
 	
 	if (!orig_tsig) {
@@ -544,11 +543,9 @@ ldns_pkt_tsig_verify(ldns_pkt *pkt,
 	
 	/* remove temporarily */
 	ldns_pkt_set_tsig(pkt, NULL);
-	/* TODO temporarily change the id */
-	/* TODO rdf2native? */
+	/* temporarily change the id to the original id */
 	pkt_id = ldns_pkt_id(pkt);
-	memcpy(&orig_pkt_id, ldns_rdf_data(orig_id_rdf), 2);
-	orig_pkt_id = ntohs(orig_pkt_id);
+	orig_pkt_id = ldns_rdf2native_int16(orig_id_rdf);
 	ldns_pkt_set_id(pkt, orig_pkt_id);
 
 	my_mac_rdf = ldns_create_tsig_mac(pkt,
@@ -562,59 +559,20 @@ ldns_pkt_tsig_verify(ldns_pkt *pkt,
 	                                  orig_mac_rdf
 	                                  );
 	
+	/* Put back the values */
 	ldns_pkt_set_tsig(pkt, orig_tsig);
 	ldns_pkt_set_id(pkt, pkt_id);
 	
 	ldns_rdf_free(key_name_rdf);
 	
 	/* TODO: ldns_rdf_cmp in rdata.[ch] */
-	if (ldns_rdf_size(pkt_mac_rdf) != ldns_rdf_size(my_mac_rdf)) {
-		/*
-		printf("Mac mismatch:\npkt mac: ");
-		ldns_rdf_print(stdout, pkt_mac_rdf);
-		printf("\n");
-		for(i=0; i<ldns_rdf_size(pkt_mac_rdf); i++) {
-			printf("%02x ", ldns_rdf_data(pkt_mac_rdf)[i]);
-		}
-		printf("\nmy mac:  ");
-		ldns_rdf_print(stdout, my_mac_rdf);
-		printf("\n");
-		for(i=0; i<ldns_rdf_size(my_mac_rdf); i++) {
-			printf("%02x ", ldns_rdf_data(my_mac_rdf)[i]);
-		}
-		printf("\n");
-		*/
+	if (ldns_rdf_compare(pkt_mac_rdf, my_mac_rdf) == 0) {
+		ldns_rdf_free(my_mac_rdf);
+		return true;
+	} else {
 		ldns_rdf_free(my_mac_rdf);
 		return false;
-	} else {
-		for (i = 0; i < ldns_rdf_size(pkt_mac_rdf); i++) {
-			if (
-				ldns_rdf_data(pkt_mac_rdf)[i] !=
-				ldns_rdf_data(my_mac_rdf)[i]
-			) {
-				/*
-				printf("Mac mismatch:\npkt mac: ");
-				ldns_rdf_print(stdout, pkt_mac_rdf);
-				printf("\n");
-				for(i=0; i<ldns_rdf_size(pkt_mac_rdf); i++) {
-					printf("%02x ", ldns_rdf_data(pkt_mac_rdf)[i]);
-				}
-				printf("\nmy mac:  ");
-				ldns_rdf_print(stdout, my_mac_rdf);
-				printf("\n");
-				for(i=0; i<ldns_rdf_size(my_mac_rdf); i++) {
-					printf("%02x ", ldns_rdf_data(my_mac_rdf)[i]);
-				}
-				printf("\n");
-				*/
-				ldns_rdf_free(my_mac_rdf);
-				return false;
-			}
-		}
 	}
-
-	ldns_rdf_free(my_mac_rdf);
-	return true;
 }
 
 
@@ -637,21 +595,16 @@ ldns_pkt_tsig_sign(ldns_pkt *pkt, const char *key_name, const char *key_data, ui
 	int key_size = 0;
 	ldns_rr *tsig_rr;
 	ldns_rdf *key_name_rdf = ldns_rdf_new_frm_str(LDNS_RDF_TYPE_DNAME, key_name);
-	uint8_t *fudge_data;
 	ldns_rdf *fudge_rdf;
-	uint16_t orig_id;
 	ldns_rdf *orig_id_rdf;
 	ldns_rdf *algorithm_rdf = ldns_rdf_new_frm_str(LDNS_RDF_TYPE_DNAME, algorithm_name);
-	uint8_t *error_data;
 	ldns_rdf *error_rdf;
 	ldns_rdf *mac_rdf;
+	ldns_rdf *other_data_rdf;
 	
 	struct timeval tv_time_signed;
 	uint8_t *time_signed;
 	ldns_rdf *time_signed_rdf;
-	
-	uint8_t *other_data;
-	ldns_rdf *other_data_rdf;
 	
 	/* eww don't have create tsigtime rdf yet :( */
 	/* bleh :p */
@@ -662,26 +615,20 @@ ldns_pkt_tsig_sign(ldns_pkt *pkt, const char *key_name, const char *key_data, ui
 		return LDNS_STATUS_INTERNAL_ERR;
 	}
 
-	time_signed_rdf = ldns_rdf_new(6, LDNS_RDF_TYPE_TSIGTIME, time_signed);
-	
-	fudge_data = XMALLOC(uint8_t, 2);
-	write_uint16(fudge_data, fudge);
-	fudge_rdf = ldns_rdf_new(2, LDNS_RDF_TYPE_INT16, fudge_data);
-
-	orig_id = htons(ldns_pkt_id(pkt));
-	orig_id_rdf = ldns_rdf_new_frm_data(LDNS_RDF_TYPE_INT16, 2, &orig_id);
-
-	error_data = XMALLOC(uint8_t, 2);
-	write_uint16(error_data, 0);
-	error_rdf = ldns_rdf_new(2, LDNS_RDF_TYPE_INT16, error_data);
-
 	if (key_size < 0) {
 		return LDNS_STATUS_INVALID_B64;
 	}
+
+	time_signed_rdf = ldns_rdf_new(6, LDNS_RDF_TYPE_TSIGTIME, time_signed);
 	
-	other_data = XMALLOC(uint8_t, 2);
-	write_uint16(other_data, 0);
-	other_data_rdf = ldns_rdf_new(2, LDNS_RDF_TYPE_INT16_DATA, other_data);
+	fudge_rdf = ldns_native2rdf_int16(LDNS_RDF_TYPE_INT16, fudge);
+
+	orig_id_rdf = ldns_native2rdf_int16(LDNS_RDF_TYPE_INT16, ldns_pkt_id(pkt));
+
+	error_rdf = ldns_native2rdf_int16(LDNS_RDF_TYPE_INT16, 0);
+	
+	other_data_rdf = ldns_native2rdf_int16_data(0, NULL);
+
 	mac_rdf = ldns_create_tsig_mac(pkt, 
 				       key_data,
 	                               key_name_rdf, 

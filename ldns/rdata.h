@@ -118,6 +118,10 @@ int		ldns_rdf_compare(const ldns_rdf *, const ldns_rdf *);
 uint8_t		ldns_rdf2native_int8(ldns_rdf *);
 uint16_t	ldns_rdf2native_int16(ldns_rdf *);
 uint32_t	ldns_rdf2native_int32(ldns_rdf *);
+ldns_rdf *	ldns_native2rdf_int8(ldns_rdf_type type, uint8_t value);
+ldns_rdf *	ldns_native2rdf_int16(ldns_rdf_type type, uint16_t value);
+ldns_rdf *	ldns_native2rdf_int32(ldns_rdf_type type, uint32_t value);
+ldns_rdf *	ldns_native2rdf_int16_data(uint16_t size, uint8_t *data);
 uint32_t	ldns_str2period(const char *, const char **);
 ldns_rdf	*ldns_rdf_address_reverse(ldns_rdf *);
 
