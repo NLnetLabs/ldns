@@ -48,8 +48,6 @@ enum ldns_enum_rdf_type
 	LDNS_RDF_TYPE_INT16,
 	/** 32 bits */
 	LDNS_RDF_TYPE_INT32,
-	/** 48 bits? */
-	LDNS_RDF_TYPE_INT48,
 	/** A record */
 	LDNS_RDF_TYPE_A,	
 	/** AAAA record */

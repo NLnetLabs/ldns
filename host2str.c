@@ -40,7 +40,7 @@ ldns_lookup_table ldns_algorithms[] = {
         { 2, "DS" },
         { 3, "DSA" },
         { 4, "ECC" },
-        { 5, "RSASHA1" },       /* XXX: Where is this specified? */
+        { 5, "RSASHA1" },       
         { 252, "INDIRECT" },
         { 253, "PRIVATEDNS" },
         { 254, "PRIVATEOID" },
@@ -115,14 +115,6 @@ ldns_rdf2buffer_int32(ldns_buffer *output, ldns_rdf *rdf)
 {
 	uint32_t data = read_uint32(ldns_rdf_data(rdf));
 	ldns_buffer_printf(output, "%lu", (unsigned long) data);
-	return ldns_buffer_status(output);
-}
-
-ldns_status
-ldns_rdf2buffer_int48(ldns_buffer *output, ldns_rdf *rdf)
-{
-	/* TODO */
-	ldns_buffer_printf(output, "INT48 TODO");
 	return ldns_buffer_status(output);
 }
 
@@ -201,9 +193,6 @@ ldns_rdf2buffer(ldns_buffer *buffer, ldns_rdf *rdf)
 		break;
 	case LDNS_RDF_TYPE_INT32:
 		res = ldns_rdf2buffer_int32(buffer, rdf);
-		break;
-	case LDNS_RDF_TYPE_INT48:
-		res = ldns_rdf2buffer_int48(buffer, rdf);
 		break;
 	case LDNS_RDF_TYPE_A:
 		res = ldns_rdf2buffer_a(buffer, rdf);
