@@ -27,19 +27,6 @@
 #include "util.h"
 
 
-/**
- * send a query packet by using the stuff defined
- * in the resolver
- */
-ldns_pkt *
-ldns_send_pkt(ldns_resolver *r, ldns_pkt *query)
-{
-	/* the resolver has a lot of flags,
-	 * make one giant switch the handles them */
-	return NULL;
-}
-
-
 /* send off an buffer and return any reply packet
  * this is done synchronus. Send using udp
  *
@@ -110,25 +97,34 @@ ldns_sendbuf_axfr(ldns_buffer *buf, int *sockfd, struct sockaddr *dest)
 ldns_pkt *
 ldns_send(ldns_resolver *r, ldns_pkt *query_pkt)
 {
-	uint8_t flags;
+	uint8_t i;
 	
-	/* create a socket 
-	 * create a binary packet
-	 * call the lowlevel send stuff
-	 * and fire it off
-	 */
-	/* try all nameservers in sequence */
+	struct sockaddr *ns_ip;
+	socklen_t ns_ip_len;
+	ldns_rdf **ns_array;
+	ldns_buffer *buf;
+	ldns_buffer *qb;
+
+	ns_array = ldns_resolver_nameservers(r);
+	buf = NULL;
 	
-	switch (flags) {
-		case 0 /*LDNS_RESOLVER_FL_UDP:*/:
-			
-	
-		
-			break;
-		case 1: /*LDNS_RESOLVER_FL_TCP:*/
-			break;
+	if (ldns_pkt2buffer(qb, *query_pkt) != LDNS_STATUS_OK) {
+		return NULL;
 	}
-	return NULL;
+
+	/* loop through all defined nameservers */
+	for (i = 0; i < ldns_resolver_nameserver_count(r); i++) {
+		ns_ip = ldns_rdf2native_aaaaa(ns_array[i]);
+		ns_ip_len = ldns_rdf_size(ns_array[i]);
+
+		/* query */
+		buf = ldns_send_udp(qb, ns_ip, ns_ip_len);
+		
+		if (!buf) {
+			break;
+		}
+	}
+	return buf;
 }
 
 
