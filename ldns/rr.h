@@ -14,8 +14,9 @@
 #ifndef _LDNS_RR_H
 #define _LDNS_RR_H
 
-#include "ldns/rdata.h"
-#include "ldns/rr.h"
+#include <ldns/common.h>
+#include <ldns/rdata.h>
+#include <ldns/rr.h>
 
 /* the different RR types */
 /**  a host address */
@@ -164,7 +165,7 @@ void ldns_rr_set_owner(t_rr *, uint8_t *);
 void ldns_rr_set_ttl(t_rr *, uint16_t);
 void ldns_rr_set_rd_count(t_rr *, uint16_t);
 void ldns_rr_set_class(t_rr *, t_class);
-void ldns_rr_push_rd_field(t_rr *, t_rdata_field *);
+bool ldns_rr_push_rd_field(t_rr *, t_rdata_field *);
 uint8_t *ldns_rr_owner(t_rr *);
 uint8_t ldns_rr_ttl(t_rr *);
 uint16_t ldns_rr_rd_count(t_rr *);

@@ -73,18 +73,23 @@ ldns_rr_set_class(t_rr *rr, t_class klass)
  * set rd_field member in the rr, it will be 
  * placed in the next available spot
  */
-void
+bool
 ldns_rr_push_rd_field(t_rr *rr, t_rdata_field *f)
 {
 	uint16_t rd_count;
-
+	t_rdata_field **rdata_fields;
+	
 	rd_count = ldns_rr_rd_count(rr);
 	
 	/* grow the array */
-	rr->_rdata_fields = XREALLOC(
+	rdata_fields = XREALLOC(
 		rr->_rdata_fields, t_rdata_field *, rd_count + 1);
-
+	if (!rdata_fields) {
+		return false;
+	}
+	
 	/* add the new member */
+	rr->_rdata_fields = rdata_fields;
 	rr->_rdata_fields[rd_count] = f;
 
 	ldns_rr_set_rd_count(rr, rd_count + 1);
