@@ -194,7 +194,8 @@ ldns_str2rdf_dname(ldns_rdf **d, const uint8_t* str)
 	*q = (uint8_t*)'\00'; /* end the string */
 
 	/* s - buf_str works because no magic is done * in the above for-loop */
-	*d = ldns_rdf_new_frm_data((s - buf_str + 1) , LDNS_RDF_TYPE_DNAME , buf); 
+	*d = ldns_rdf_new_frm_data((s - buf_str + 2) , LDNS_RDF_TYPE_DNAME , buf); 
+
 	return LDNS_STATUS_OK;
 }
 
