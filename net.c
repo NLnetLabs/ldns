@@ -27,26 +27,19 @@
 #include <netdb.h>
 #include <arpa/inet.h>
 #include <sys/time.h>
-#include <errno.h>
 
 #include "util.h"
 
 
-extern int errno;
 
-/* send a buffer using tcp */
-ldns_pkt *
-ldns_sendbuf_tcp(ldns_buffer *buf, int *sockfd, struct sockaddr *dest)
-{
-	return NULL;
-}
-
+#if 0
 /* axfr is a hack - handle it different */
 ldns_pkt *
 ldns_sendbuf_axfr(ldns_buffer *buf, int *sockfd, struct sockaddr *dest)
 {
 	return NULL;
 }
+#endif 
 
 /**
  * Send to ptk to the nameserver at ipnumber. Return the data
@@ -89,7 +82,6 @@ ldns_send(ldns_resolver *r, ldns_pkt *query_pkt)
 
 		/* setup some family specific stuff */
 		switch(ns->ss_family) {
-
 			case AF_INET:
 				ns4 = (struct sockaddr_in*) ns;
 				ns4->sin_port = htons(ldns_resolver_port(r));
@@ -120,6 +112,11 @@ ldns_send(ldns_resolver *r, ldns_pkt *query_pkt)
 
 
 /**
+ * Send a buffer to an ip using udp and return the respons as a ldns_pkt
+ * \param[in] qbin the ldns_buffer to be send
+ * \param[in] to the ip addr to send to
+ * \param[in] tolen length of the ip addr
+ * \return a packet with the answer
  */
 ldns_pkt *
 ldns_send_udp(ldns_buffer *qbin, const struct sockaddr_storage *to, socklen_t tolen)
@@ -145,7 +142,83 @@ ldns_send_udp(ldns_buffer *qbin, const struct sockaddr_storage *to, socklen_t to
 	gettimeofday(&tv_e, NULL);
 
 	if (bytes == -1) {
-		printf("error with sending: %s\n", strerror(errno));
+		printf("error with sending: %s\n");
+		close(sockfd);
+		return NULL;
+	}
+
+	if ((size_t) bytes != ldns_buffer_position(qbin)) {
+		printf("amount mismatch\n");
+		close(sockfd);
+		return NULL;
+	}
+	
+	/* wait for an response*/
+	answer = XMALLOC(uint8_t, MAX_PACKET_SIZE);
+	if (!answer) {
+		printf("respons alloc error\n");
+		return NULL;
+	}
+
+	bytes = recv(sockfd, answer, MAX_PACKET_SIZE, 0);
+
+	close(sockfd);
+
+	if (bytes == -1) {
+		printf("received too little\n");
+		FREE(answer);
+		return NULL;
+	}
+	
+	/* resize accordingly */
+	XREALLOC(answer, uint8_t *, (size_t) bytes);
+
+        if (ldns_wire2pkt(&answer_pkt, answer, (size_t) bytes) != 
+			LDNS_STATUS_OK) {
+		printf("could not create packet\n");
+		return NULL;
+	} else {
+		/* set some extra values in the pkt */
+		ldns_pkt_set_querytime(answer_pkt,
+				((tv_e.tv_sec - tv_s.tv_sec)*1000) +
+				((tv_e.tv_usec - tv_s.tv_usec)/1000));
+
+		return answer_pkt;
+	}
+}
+
+/**
+ * Send a buffer to an ip using tcp and return the respons as a ldns_pkt
+ * \param[in] qbin the ldns_buffer to be send
+ * \param[in] to the ip addr to send to
+ * \param[in] tolen length of the ip addr
+ * \return a packet with the answer
+ */
+ldns_pkt *
+ldns_send_tcp(ldns_buffer *qbin, const struct sockaddr_storage *to, socklen_t tolen)
+{
+	int sockfd;
+	ssize_t bytes;
+	uint8_t *answer;
+	ldns_pkt *answer_pkt;
+
+	struct timeval tv_s;
+        struct timeval tv_e;
+
+	gettimeofday(&tv_s, NULL);
+
+	if ((sockfd = socket(((struct sockaddr*)to)->sa_family, SOCK_DGRAM, IPPROTO_UDP)) == -1) {
+		printf("could not open socket\n");
+		return NULL;
+	}
+
+	bytes = sendto(sockfd, ldns_buffer_begin(qbin),
+			ldns_buffer_position(qbin), 0, (struct sockaddr *)to, tolen);
+
+	gettimeofday(&tv_e, NULL);
+
+	if (bytes == -1) {
+		printf("error with sending\n");
 		close(sockfd);
 		return NULL;
 	}
