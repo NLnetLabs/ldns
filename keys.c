@@ -52,7 +52,7 @@ ldns_key_new()
  * generate a new key based on the algorithm
  */
 ldns_key *
-ldns_key_new_frm_algorithm(ldns_signing_algorithm alg, int size)
+ldns_key_new_frm_algorithm(ldns_signing_algorithm alg, uint16_t size)
 {
 	ldns_key *k;
 	DSA *d;
@@ -68,15 +68,15 @@ ldns_key_new_frm_algorithm(ldns_signing_algorithm alg, int size)
 	switch(alg) {
 		case LDNS_SIGN_RSAMD5:
 		case LDNS_SIGN_RSASHA1:
-			r = RSA_generate_key(size, RSA_F4, NULL, NULL);
+			r = RSA_generate_key((int)size, RSA_F4, NULL, NULL);
 			if (RSA_check_key(r) != 1) {
 				printf("keygen failed\n");
 				return NULL;
 			}
-			break;
 			ldns_key_set_rsa_key(k, r);
+			break;
 		case LDNS_SIGN_DSA:
-			d = DSA_generate_parameters(size, NULL, 0, NULL, NULL, NULL, NULL);
+			d = DSA_generate_parameters((int)size, NULL, 0, NULL, NULL, NULL, NULL);
 			DSA_generate_key(d);
 			ldns_key_set_dsa_key(k, d);
 			break;
