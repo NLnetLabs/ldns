@@ -282,14 +282,14 @@ static const ldns_rdf_type type_rp_wireformat[] = {
 	LDNS_RDF_TYPE_DNAME, LDNS_RDF_TYPE_DNAME
 };
 static const ldns_rdf_type type_afsdb_wireformat[] = {
-	LDNS_RDF_TYPE_INT8, LDNS_RDF_TYPE_DNAME
+	LDNS_RDF_TYPE_INT16, LDNS_RDF_TYPE_DNAME
 };
 static const ldns_rdf_type type_x25_wireformat[] = { LDNS_RDF_TYPE_STR };
 static const ldns_rdf_type type_isdn_wireformat[] = {
 	LDNS_RDF_TYPE_STR, LDNS_RDF_TYPE_STR
 };
 static const ldns_rdf_type type_rt_wireformat[] = {
-	LDNS_RDF_TYPE_INT8, LDNS_RDF_TYPE_DNAME
+	LDNS_RDF_TYPE_INT16, LDNS_RDF_TYPE_DNAME
 };
 static const ldns_rdf_type type_sig_wireformat[] = {
 	LDNS_RDF_TYPE_INT8, LDNS_RDF_TYPE_INT8, LDNS_RDF_TYPE_INT8, LDNS_RDF_TYPE_TIME,
@@ -327,7 +327,7 @@ static const ldns_rdf_type type_sshfp_wireformat[] = {
 	LDNS_RDF_TYPE_INT8, LDNS_RDF_TYPE_INT8, LDNS_RDF_TYPE_HEX
 };
 static const ldns_rdf_type type_rrsig_wireformat[] = {
-	LDNS_RDF_TYPE_TYPE, LDNS_RDF_TYPE_INT8, LDNS_RDF_TYPE_INT8, LDNS_RDF_TYPE_INT32,
+	LDNS_RDF_TYPE_TYPE, LDNS_RDF_TYPE_ALG, LDNS_RDF_TYPE_INT8, LDNS_RDF_TYPE_INT32,
 	LDNS_RDF_TYPE_INT32, LDNS_RDF_TYPE_INT32, LDNS_RDF_TYPE_INT16, LDNS_RDF_TYPE_DNAME, LDNS_RDF_TYPE_B64
 };
 static const ldns_rdf_type type_nsec_wireformat[] = {

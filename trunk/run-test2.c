@@ -84,10 +84,11 @@ file2pkt(const char *filename)
 	 * 2 = unprintable character found, read binary data directly
 	 */
 	int state = 0;
-	uint8_t *hexbuf = XMALLOC(uint8_t, MAX_PACKET);
+	size_t buflen = MAX_PACKET;
+	uint8_t *hexbuf = XMALLOC(uint8_t, buflen);
 	int hexbufpos = 0;
 	size_t wirelen;
-	uint8_t *wire = XMALLOC(uint8_t, MAX_PACKET);
+	uint8_t *wire = XMALLOC(uint8_t, buflen);
 	
 	if (strncmp(filename, "-", 2) == 0) {
 		fp = stdin;
@@ -102,7 +103,7 @@ file2pkt(const char *filename)
 	printf("Opened %s\n", filename);
 	
 	c = fgetc(fp);
-	while (c != EOF && hexbufpos < MAX_PACKET) {
+	while (c != EOF) {
 		if (state < 2 && !isascii(c)) {
 			printf("non ascii character found in file: (%d) switching to raw mode\n", c);
 			state = 2;
@@ -136,6 +137,13 @@ file2pkt(const char *filename)
 				break;
 		}
 		c = fgetc(fp);
+
+		if (hexbufpos >= buflen) {
+			buflen = buflen * 2;
+			hexbuf = XREALLOC(hexbuf, uint8_t, buflen);
+			wire = XREALLOC(wire, uint8_t, buflen);
+		}
+		
 	}
 	if (c == EOF) {
 		if (state < 2) {
@@ -145,10 +153,6 @@ file2pkt(const char *filename)
 			printf("Not printing wire because it contains non ascii data\n");
 		}
 	}
-	if (hexbufpos >= MAX_PACKET) {
-		printf("packet size reached\n");
-	}
-	
 	/* lenient mode: length must be multiple of 2 */
 	if (hexbufpos % 2 != 0) {
 		hexbuf[hexbufpos] = (uint8_t) '0';
