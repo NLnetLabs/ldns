@@ -171,9 +171,10 @@ ldns_rr_new_frm_str(const char *str)
 		r = ldns_rdf_new_frm_str(
 			ldns_rr_descriptor_field_type(desc, r_cnt),
 			rd);
-#ifdef DEBUG
+
 		printf("rd str [%s] %d\n", rd, r_cnt);
-#endif
+		printf("type %d\n",ldns_rr_descriptor_field_type(desc, r_cnt));
+
 		if (!r) {
 			printf("rdf conversion mismatch\n");
 			return NULL;
@@ -645,8 +646,8 @@ static const ldns_rdf_type type_nsap_ptr_wireformat[] = {
 	LDNS_RDF_TYPE_STR
 };
 static const ldns_rdf_type type_sig_wireformat[] = {
-	LDNS_RDF_TYPE_INT8, LDNS_RDF_TYPE_INT8, LDNS_RDF_TYPE_INT8, LDNS_RDF_TYPE_TIME,
-	LDNS_RDF_TYPE_INT32, LDNS_RDF_TYPE_INT32, LDNS_RDF_TYPE_INT16,
+	LDNS_RDF_TYPE_TYPE, LDNS_RDF_TYPE_ALG, LDNS_RDF_TYPE_INT8, LDNS_RDF_TYPE_INT32,
+	LDNS_RDF_TYPE_TIME, LDNS_RDF_TYPE_TIME, LDNS_RDF_TYPE_INT16,
 	LDNS_RDF_TYPE_DNAME, LDNS_RDF_TYPE_B64
 };
 static const ldns_rdf_type type_key_wireformat[] = {
@@ -705,7 +706,8 @@ static const ldns_rdf_type type_ipseckey_wireformat[] = {
 };
 static const ldns_rdf_type type_rrsig_wireformat[] = {
 	LDNS_RDF_TYPE_TYPE, LDNS_RDF_TYPE_ALG, LDNS_RDF_TYPE_INT8, LDNS_RDF_TYPE_INT32,
-	LDNS_RDF_TYPE_INT32, LDNS_RDF_TYPE_INT32, LDNS_RDF_TYPE_INT16, LDNS_RDF_TYPE_DNAME, LDNS_RDF_TYPE_B64
+	LDNS_RDF_TYPE_TIME, LDNS_RDF_TYPE_TIME, LDNS_RDF_TYPE_INT16, 
+	LDNS_RDF_TYPE_DNAME, LDNS_RDF_TYPE_B64
 };
 static const ldns_rdf_type type_nsec_wireformat[] = {
 	LDNS_RDF_TYPE_DNAME, LDNS_RDF_TYPE_NSEC
