@@ -355,10 +355,6 @@ ldns_rr_descriptor_field_type(ldns_rr_descriptor_type *descriptor,
 	}
 }
 
-/* TODO: is this a good way? */
-#define READ_INT16(wirebuf) (ntohs(*(uint16_t *) wirebuf))
-#define READ_INT32(wirebuf) (ntohl(*(uint32_t *) wirebuf))
-
 /* TODO: general rdata2str or dname2str, with error
          checks and return status etc */
 /* this is temp function for debugging wire2rr */
@@ -480,17 +476,17 @@ ldns_wire2rr(ldns_rr_type *rr, const uint8_t *wire, size_t max,
 	printf("owner: %s\n", owner_str);
 	FREE(owner_str);	
 	
-	ldns_rr_set_class(rr, READ_INT16(&wire[*pos]));
+	ldns_rr_set_class(rr, read_uint16(&wire[*pos]));
 	*pos = *pos + 2;
 	/*
-	ldns_rr_set_type(rr, READ_INT16(&wire[*pos]));
+	ldns_rr_set_type(rr, read_uint16(&wire[*pos]));
 	*/
 	*pos = *pos + 2;
 
 	if (section > 0) {
-		ldns_rr_set_ttl(rr, READ_INT32(&wire[*pos]));	
+		ldns_rr_set_ttl(rr, read_uint32(&wire[*pos]));	
 		*pos = *pos + 4;
-		rd_length = READ_INT16(&wire[*pos]);
+		rd_length = read_uint16(&wire[*pos]);
 		*pos = *pos + 2;
 		/* TODO: wire2rdata */
 		*pos = *pos + rd_length;
