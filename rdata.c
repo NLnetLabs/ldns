@@ -291,8 +291,10 @@ ldns_rdf_deep_clone(const ldns_rdf *r)
 void
 ldns_rdf_free_data(ldns_rdf *rd)
 {
-	FREE(rd->_data);
-	FREE(rd);
+	if (rd) {
+		FREE(rd->_data);
+		FREE(rd);
+	}
 }
 
 /**
@@ -305,9 +307,6 @@ void
 ldns_rdf_free(ldns_rdf *rd)
 {
 	if (rd) {
-		if (rd->_data) {
-			FREE(rd->_data);
-		}
 		FREE(rd);
 	}
 }

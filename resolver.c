@@ -496,9 +496,11 @@ ldns_resolver_new_frm_file(const char *filename)
 void
 ldns_resolver_free(ldns_resolver *res)
 {
-	FREE(res->_searchlist);
-	FREE(res->_nameservers);
-	FREE(res);
+	if (res) {
+		FREE(res->_searchlist);
+		FREE(res->_nameservers);
+		FREE(res);
+	}
 }
 
 /** 

@@ -47,16 +47,15 @@ void
 ldns_rr_free(ldns_rr *rr)
 {
 	uint16_t i;
-	if (ldns_rr_owner(rr)) {
-		ldns_rdf_free(ldns_rr_owner(rr));
+	if (rr) {
+		if (ldns_rr_owner(rr)) {
+			ldns_rdf_free(ldns_rr_owner(rr));
+		}
+		for (i = 0; i < ldns_rr_rd_count(rr); i++) {
+			ldns_rdf_free(ldns_rr_rdf(rr, i));
+		}
+		FREE(rr);
 	}
-	for (i = 0; i < ldns_rr_rd_count(rr); i++) {
-		ldns_rdf_free(ldns_rr_rdf(rr, i));
-	}
-	/*
-	FREE(ldns_rr_owner(rr));
-	*/
-	FREE(rr);
 }
 
 /** 
@@ -396,11 +395,13 @@ ldns_rr_list_free(ldns_rr_list *rr_list)
 {
 	uint16_t i;
 	
-	for (i=0; i < ldns_rr_list_rr_count(rr_list); i++) {
-		ldns_rr_free(ldns_rr_list_rr(rr_list, i));
+	if (rr_list) {
+		for (i=0; i < ldns_rr_list_rr_count(rr_list); i++) {
+			ldns_rr_free(ldns_rr_list_rr(rr_list, i));
+		}
+		
+		FREE(rr_list);
 	}
-	
-	FREE(rr_list);
 }
 
 
