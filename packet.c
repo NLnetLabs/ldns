@@ -334,6 +334,7 @@ ldns_pkt_new()
 	packet->_additional = ldns_rr_list_new();
 
 	ldns_pkt_set_querytime(packet, 0);
+	packet->_answerfrom = MALLOC(ldns_rdf);
 	ldns_pkt_set_answerfrom(packet, NULL);
 	
 	return packet;

@@ -65,7 +65,7 @@ ldns_send(ldns_resolver *r, ldns_pkt *query_pkt)
 	ldns_rdf **ns_array;
 	ldns_pkt *reply;
 	ldns_buffer *qb;
-
+	
 	ns_array = ldns_resolver_nameservers(r);
 	reply = NULL; ns_len = 0;
 	
@@ -109,6 +109,9 @@ ldns_send(ldns_resolver *r, ldns_pkt *query_pkt)
 			ldns_pkt_set_querytime(reply,
 				((tv_e.tv_sec - tv_s.tv_sec) * 1000) +
 				(tv_e.tv_usec - tv_s.tv_usec) / 1000);
+			printf("%x", ns_array[i]);
+			printf("the answerfrom server\n");
+			ldns_rdf_print(stdout, ns_array[i]);
 			ldns_pkt_set_answerfrom(reply, ns_array[i]);
 			break;
 		}
