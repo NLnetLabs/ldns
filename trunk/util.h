@@ -162,9 +162,4 @@ int hexdigit_to_int(char ch);
  */
 char int_to_hexdigit(int ch);
 
-/**
- * return a word from a stream
- */
-int readword(char *, FILE *, const char *, size_t);
-
 #endif /* !_UTIL_H */

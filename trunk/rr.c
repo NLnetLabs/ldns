@@ -194,7 +194,7 @@ ldns_rr_new_frm_fp(FILE *fp)
         }
 
         /* read an entire line in from the file */
-        if (readword(line, fp,  "\n", MAXLINE_LEN) == -1) {
+        if (ldns_get_token(fp, line, LDNS_PARSE_SKIP_SPACE) == -1) {
                 return NULL;
         }
         return ldns_rr_new_frm_str((const char*) line);
