@@ -30,7 +30,7 @@ void
 xprintf_rd_field(t_rdata_field *rd)
 {
 	/* assume printable string */
-	fprintf(stdout, "size\t:%u\n", (unsigned int)rd_size(rd));
-	fprintf(stdout, "type\t:%u\n", (unsigned int)rd_type(rd));
-	fprintf(stdout, "data\t:[%.*s]\n", (int)rd_size(rd), (char*)rd_data(rd));
+	fprintf(stdout, "size\t:%u\n", (unsigned int)rd_field_size(rd));
+	fprintf(stdout, "type\t:%u\n", (unsigned int)rd_field_type(rd));
+	fprintf(stdout, "data\t:[%.*s]\n", (int)rd_field_size(rd), (char*)rd_field_data(rd));
 }

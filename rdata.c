@@ -21,38 +21,38 @@
 
 /* read */
 uint16_t
-rd_size(t_rdata_field *rd)
+rd_field_size(t_rdata_field *rd)
 {
 	return rd->_size;
 }
 
 t_rd_type
-rd_type(t_rdata_field *rd)
+rd_field_type(t_rdata_field *rd)
 {
 	return rd->_type;
 }
 
 uint8_t *
-rd_data(t_rdata_field *rd)
+rd_field_data(t_rdata_field *rd)
 {
 	return rd->_data;
 }
 
 /* write */
 void
-rd_set_size(t_rdata_field *rd, uint16_t s)
+rd_field_set_size(t_rdata_field *rd, uint16_t s)
 {
 	rd->_size = s;
 }
 
 void
-rd_set_type(t_rdata_field *rd, t_rd_type t)
+rd_field_set_type(t_rdata_field *rd, t_rd_type t)
 {
 	rd->_type = t;
 }
 
 void
-rd_set_data(t_rdata_field *rd, uint8_t *d, uint16_t s)
+rd_field_set_data(t_rdata_field *rd, uint8_t *d, uint16_t s)
 {
 	rd->_data = xmalloc(s);
 	memcpy(rd->_data, d, s);
@@ -62,7 +62,7 @@ rd_set_data(t_rdata_field *rd, uint8_t *d, uint16_t s)
  * and return it
  */
 t_rdata_field *
-rd_new(uint16_t s, t_rd_type t, uint8_t *d)
+rd_field_new(uint16_t s, t_rd_type t, uint8_t *d)
 {
 	t_rdata_field *new;
 	new = xmalloc(sizeof(t_rdata_field));
@@ -70,9 +70,9 @@ rd_new(uint16_t s, t_rd_type t, uint8_t *d)
 	if (NULL == new)
 		return NULL;
 
-	rd_set_size(new, s);
-	rd_set_type(new, t);
-	rd_set_data(new, d, s);
+	rd_field_set_size(new, s);
+	rd_field_set_type(new, t);
+	rd_field_set_data(new, d, s);
 
 	return(new);
 }
@@ -84,7 +84,7 @@ rd_new(uint16_t s, t_rd_type t, uint8_t *d)
  * uint8_t == char !!!!
  */
 t_rdata_field *
-rd_new_frm_string(t_rd_type t, char *s)
+rd_field_new_frm_string(t_rd_type t, char *s)
 {
 	t_rdata_field *new;
 	new = xmalloc(sizeof(t_rdata_field));
@@ -92,14 +92,14 @@ rd_new_frm_string(t_rd_type t, char *s)
 	if (NULL == new)
 		return NULL;
 
-	rd_set_size(new, (uint16_t)strlen(s));
-	rd_set_type(new, t);
-	rd_set_data(new, (uint8_t*) s, (uint16_t)strlen(s));
+	rd_field_set_size(new, (uint16_t)strlen(s));
+	rd_field_set_type(new, t);
+	rd_field_set_data(new, (uint8_t*) s, (uint16_t)strlen(s));
 
 	return(new);
 }
 
-void rd_destroy(t_rdata_field *rd)
+void rd_field_destroy(t_rdata_field *rd)
 {
 	rd = NULL; /* kuch */
 	/* empty */
