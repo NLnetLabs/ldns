@@ -263,6 +263,7 @@ ldns_rr2buffer(ldns_buffer *output, ldns_rr *rr)
 
 	for (i = 0; i < ldns_rr_rd_count(rr); i++) {
 		status = ldns_rdf2buffer(output, ldns_rr_rdf(rr, i));
+		ldns_buffer_printf(output, " ");
 	}
 	
 	return status;
