@@ -46,6 +46,9 @@ syn keyword  ldnsConstant	LDNS_RDF_TYPE_LOC
 syn keyword  ldnsConstant	LDNS_RDF_TYPE_WKS
 syn keyword  ldnsConstant	LDNS_RDF_TYPE_NSAP
 
+" ldns/dns.h
+syn keyword  ldnsConstant	LDNS_PORT
+
 " ldns/packet.h
 syn keyword  ldnsType           ldns_pkt
 syn keyword  ldnsType           ldns_pkt_section

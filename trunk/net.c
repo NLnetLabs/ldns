@@ -93,10 +93,12 @@ ldns_send(ldns_resolver *r, ldns_pkt *query_pkt)
 			case AF_INET:
 				ns4 = (struct sockaddr_in*) ns;
 				ns4->sin_port = htons(ldns_resolver_port(r));
+				printf("port %d\n", ntohs(ns4->sin_port));
 				break;
 			case AF_INET6:
 				ns6 = (struct sockaddr_in6*) ns;
 				ns6->sin6_port = htons(ldns_resolver_port(r));
+				printf("port %d\n", ntohs(ns6->sin6_port));
 				break;
 		}
 
@@ -124,24 +126,27 @@ ldns_send_udp(ldns_buffer *qbin, const struct sockaddr_storage *to, socklen_t to
 	uint8_t *answer;
 	ldns_pkt *answer_pkt;
 	struct sockaddr_in *to4;
-	struct sockaddr_in6 *to6;
 
-	switch(to->ss_family) {
-		case AF_INET:
-			to4 = (struct sockaddr_in*) to;
-			break;
-		case AF_INET6:
-			to6 = (struct sockaddr_in6*) to;
-			break;
-	}
+	struct in_addr *b;
 
+	b = (struct in_addr *) to;
+
+	printf("family %d [4=%d %d] [6=%d %d]\n", ((struct sockaddr*)to)->sa_family,
+			AF_INET, PF_INET, AF_INET6, PF_INET6);
+	
 	if ((sockfd = socket(((struct sockaddr*)to)->sa_family, SOCK_DGRAM, IPPROTO_UDP)) == -1) {
 		printf("could not open socket\n");
 		return NULL;
 	}
 
+	to4 = (struct sockaddr_in*) to;
+
+	printf("port %d len %d\n", 
+			ntohs(to4->sin_port), tolen);
+	printf("address %s\n", inet_ntoa(*b));
+
 	bytes =  sendto(sockfd, ldns_buffer_begin(qbin),
-			ldns_buffer_capacity(qbin), 0, to, tolen);
+			ldns_buffer_capacity(qbin), 0, (struct sockaddr*)to, tolen);
 
 	if (bytes == -1) {
 		printf("error with sending: %s\n", strerror(errno));

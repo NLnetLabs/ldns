@@ -15,6 +15,7 @@
 #include <ldns/rdata.h>
 #include <ldns/error.h>
 #include <ldns/str2host.h>
+#include <ldns/dns.h>
 
 #include "util.h"
 #include <netinet/in.h>
@@ -147,14 +148,14 @@ ldns_rdf2native_sockaddr_storage(ldns_rdf *rd)
 		case LDNS_RDF_TYPE_A:
 			data->ss_family = AF_INET;
 			data_in = (struct sockaddr_in*) data;
-			data_in->sin_port = htons(53); /* default */
+			data_in->sin_port = htons(LDNS_PORT); 
 			
 			memcpy(&data_in->sin_addr, ldns_rdf_data(rd), ldns_rdf_size(rd));
 			return data;
 		case LDNS_RDF_TYPE_AAAA:
 			data->ss_family = AF_INET6;
 			data_in6 = (struct sockaddr_in6*) data;
-			data_in6->sin6_port = htons(53); /* default */
+			data_in6->sin6_port = htons(LDNS_PORT); 
 
 			memcpy(&data_in6->sin6_addr, ldns_rdf_data(rd), ldns_rdf_size(rd));
 			return data;

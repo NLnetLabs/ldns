@@ -225,7 +225,7 @@ ldns_str2rdf_a(ldns_rdf **rd, const uint8_t* str)
 ldns_status
 ldns_str2rdf_aaaa(ldns_rdf **rd, const uint8_t* str)
 {
-	uint8_t address[IP6ADDRLEN];
+	uint8_t address[LDNS_IP6ADDRLEN];
 
 	if (inet_pton(AF_INET6, (char*)str, address) != 1) {
 		return LDNS_STATUS_INVALID_IP6;
@@ -674,17 +674,17 @@ uint16_t *
 zparser_conv_a6(region_type *region, const char *a6)
 {
 	/* convert ip v6 address to wireformat */
-	char pin[IP6ADDRLEN];
+	char pin[LDNS_IP6ADDRLEN];
 	uint16_t *r = NULL;
 
-	r = (uint16_t *) region_alloc(region, sizeof(uint16_t) + IP6ADDRLEN);
+	r = (uint16_t *) region_alloc(region, sizeof(uint16_t) + LDNS_IP6ADDRLEN);
 
         /* Try to convert it */
         if (inet_pton(AF_INET6, a6, pin) != 1) {
 		error_prev_line("invalid IPv6 address");
         } else {
-		*r = IP6ADDRLEN;
-		memcpy(r + 1, pin, IP6ADDRLEN);
+		*r = LDNS_IP6ADDRLEN;
+		memcpy(r + 1, pin, LDNS_IP6ADDRLEN);
         }
         return r;
 }
@@ -1061,7 +1061,7 @@ zparser_conv_apl_rdata(region_type *region, char *str)
 	uint8_t prefix;
 	uint8_t maximum_prefix;
 	uint8_t length;
-	uint8_t address[IP6ADDRLEN];
+	uint8_t address[LDNS_IP6ADDRLEN];
 	char *colon = strchr(str, ':');
 	char *slash = strchr(str, '/');
 	int af;
@@ -1097,7 +1097,7 @@ zparser_conv_apl_rdata(region_type *region, char *str)
 	} else if (strcmp(str, "2") == 0) {
 		address_family = 2;
 		af = AF_INET6;
-		length = IP6ADDRLEN;
+		length = LDNS_IP6ADDRLEN;
 		maximum_prefix = length * 8;
 	} else {
 		error("invalid address family '%s'", str);
