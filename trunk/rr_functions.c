@@ -34,15 +34,22 @@ ldns_rr_address(ldns_rr *r)
 	return ldns_rr_rdf(r, 0);
 }
 
-void
-ldns_rr_set_address(ldns_rr *r)
+/* write */
+bool
+ldns_rr_set_address(ldns_rr *r, ldns_rdf *f)
 {
+	ldns_rdf *pop;
 	if (!r || (ldns_rr_get_type(r) != LDNS_RR_TYPE_A &&
 			ldns_rr_get_type(r) != LDNS_RR_TYPE_AAAA)) {
-		return;
+		return false;
 	}
-	/* pop it? or need a set function which can 
-	 * set specific rfd's? */
+	pop = ldns_rr_set_rdf(r, f, 0);
+	if (pop) {
+		FREE(pop);
+		return true;
+	} else {
+		return false;
+	}
 }
 
 /* NS records */
