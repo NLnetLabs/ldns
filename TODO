@@ -39,4 +39,4 @@ o Second layer (higher level convenience functions)? (Later)
 o Dependency on openSSL?
 o ldns_lookup_by_name works for types, classes
 	should be shielded, only use ldns_get_class_by_name/type
-
+o private key type?
