@@ -687,7 +687,7 @@ ldns_rdf2buffer_str(ldns_buffer *buffer, ldns_rdf *rdf)
 		case LDNS_RDF_TYPE_NONE:
 			break;
 		case LDNS_RDF_TYPE_DNAME:
-			res = ldns_rdf2buffer_str_dname(buffer, rdf);
+			res = ldns_rdf2buffer_str_dname(buffer, rdf); 
 			break;
 		case LDNS_RDF_TYPE_INT8:
 			res = ldns_rdf2buffer_str_int8(buffer, rdf);
@@ -757,7 +757,6 @@ ldns_rdf2buffer_str(ldns_buffer *buffer, ldns_rdf *rdf)
 			break;
 		}
 	}
-
 	return LDNS_STATUS_OK;
 }
 
@@ -771,7 +770,7 @@ ldns_rr2buffer_str(ldns_buffer *output, ldns_rr *rr)
 	const ldns_rr_descriptor *descriptor;
 	
 	if (ldns_rr_owner(rr)) {
-		status = ldns_rdf2buffer_str_dname(output, ldns_rr_owner(rr));  
+		status = ldns_rdf2buffer_str_dname(output, ldns_rr_owner(rr)); 
 	}
 	if (status != LDNS_STATUS_OK) {
 		return status;
@@ -941,6 +940,8 @@ ldns_pkt2buffer_str(ldns_buffer *output, ldns_pkt *pkt)
 		/* add some futher fields */
 		ldns_buffer_printf(output, ";; Query time: %d msec\n", ldns_pkt_querytime(pkt));
 		ldns_buffer_printf(output, ";; SERVER: %s\n", ldns_rdf2str(ldns_pkt_answerfrom(pkt))); 
+#if 0
+#endif
 	} else {
 		return ldns_buffer_status(output);
 	}
@@ -982,6 +983,7 @@ char *
 ldns_rr2str(ldns_rr *rr)
 {
 	char *result = NULL;
+	/* XXX MACTEXTSTR???? */
 	ldns_buffer *tmp_buffer = ldns_buffer_new(1000);
 
 	if (ldns_rr2buffer_str(tmp_buffer, rr) == LDNS_STATUS_OK) {
@@ -997,6 +999,7 @@ char *
 ldns_pkt2str(ldns_pkt *pkt)
 {
 	char *result = NULL;
+	/* XXX MAXTEXTPACKET?? */
 	ldns_buffer *tmp_buffer = ldns_buffer_new(65535);
 
 	if (ldns_pkt2buffer_str(tmp_buffer, pkt) == LDNS_STATUS_OK) {
