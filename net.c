@@ -38,6 +38,9 @@ ldns_send_pkt(ldns_resolver *r, ldns_pkt *query)
 	 * make one giant switch the handles them */
 	uint8_t config;
 
+	struct sockaddr_in src, dest;
+	int sockfd;
+
 	/* binary */
 	config = ldns_resolver_ip6(r) * 2 +
 		ldns_resolver_usevc(r);
@@ -45,6 +48,8 @@ ldns_send_pkt(ldns_resolver *r, ldns_pkt *query)
 	switch(config) {
 		case 0:
 			/* ip4/udp */
+			src.sin_family = AF_INET;
+			src.sin_addr.s_addr(in_addr_t)htonl(INADDR_ANY);
 			break;
 		case 1:
 			/* ip4/tcp */
