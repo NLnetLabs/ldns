@@ -13,9 +13,9 @@
 #include <config.h>
 
 #include <ldns/rdata.h>
+#include <ldns/error.h>
 
 #include "util.h"
-#include "error.h"
 
 /* Access functions 
  * do this as functions to get type checking
@@ -101,24 +101,24 @@ _ldns_rd_field_destroy(t_rdata_field *rd)
 /**
  * remove \DDD, \[space] and other escapes from the input
  * See RFC 1035, section 5.1
- * Return the lenght of the string or a negative error
+ * Return the length of the string or a negative error
  * code
  */
-ldns_t_status
-_ldns_octet(char *word)
+ldns_status_type
+_ldns_octet(char *word, size_t *length)
 {
     char *s; char *p;
-    unsigned int length = 0;
+    *length = 0;
 
     for (s = p = word; *s != '\0'; s++,p++) {
         switch (*s) {
             case '.':
                 if (s[1] == '.') {
                     fprintf(stderr,"Empty label");
-		    return EEMPTY_LABEL;
+		    return LDNS_E_EMPTY_LABEL;
                 }
                 *p = *s;
-                length++;
+                *length++;
                 break;
             case '\\':
                 if ('0' <= s[1] && s[1] <= '9' &&
@@ -133,15 +133,15 @@ _ldns_octet(char *word)
                         /* this also handles \0 */
                         s += 3;
                         *p = val;
-                        length++;
+                        *length++;
                     } else {
-                        fprintf(stderr,"ASCII \\DDD overflow");
+                        return LDNS_E_DDD_OVERFLOW;
                     }
                 } else {
                     /* an espaced character, like \<space> ? 
                     * remove the '\' keep the rest */
                     *p = *++s;
-                    length++;
+                    *length++;
                 }
                 break;
             case '\"':
@@ -149,19 +149,20 @@ _ldns_octet(char *word)
                  * the string */
 
                 *p = *++s; /* skip it */
-                length++;
+                *length++;
 		/* I'm not sure if this is needed in libdns... MG */
                 if ( *s == '\0' ) {
                     /* ok, it was the last one */
-                    *p  = '\0'; return length;
+                    *p  = '\0'; 
+		    return LDNS_E_OK;
                 }
                 break;
             default:
                 *p = *s;
-                length++;
+                *length++;
                 break;
         }
     }
     *p = '\0';
-    return length;
+    return LDNS_E_OK;
 }
