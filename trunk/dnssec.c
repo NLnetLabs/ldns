@@ -396,9 +396,114 @@ ldns_key_buf2rsa(ldns_buffer *key)
 	return rsa;
 }
 
+/**
+ *  Makes an exact copy of the wire, but with the tsig rr removed
+ */
+uint8_t *
+ldns_tsig_prepare_pkt_wire(uint8_t *wire, size_t wire_len, size_t *result_len)
+{
+	uint8_t *wire2 = NULL;
+	uint16_t qd_count;
+	uint16_t an_count;
+	uint16_t ns_count;
+	uint16_t ar_count;
+	ldns_rr *rr;
+	
+	size_t pos;
+	uint16_t i;
+	
+	ldns_status status;
+
+	/* fake parse the wire */
+	qd_count = QDCOUNT(wire);
+	an_count = ANCOUNT(wire);
+	ns_count = NSCOUNT(wire);
+	ar_count = ARCOUNT(wire);
+	
+	if (ar_count > 0) {
+		ar_count--;
+	} else {
+		return NULL;
+	}
+
+printf("\n\n\n\n\n");
+printf("WIRE:\n");
+for(i=0; i<wire_len; i++) {
+	printf("%02x ", wire[i]);
+}
+printf("\n\n");
+
+printf("count: %u\n", qd_count);
+printf("count: %u\n", an_count);
+printf("count: %u\n", ns_count);
+printf("count: %u\n", ar_count);
+	
+	pos = HEADER_SIZE;
+	
+	for (i = 0; i < qd_count; i++) {
+		status = ldns_wire2rr(&rr, wire, wire_len, &pos,
+		                      LDNS_SECTION_QUESTION);
+printf("skip: ");
+ldns_rr_print(stdout, rr);
+printf("\n");
+		if (status != LDNS_STATUS_OK) {
+			return NULL;
+		}
+		free(rr);
+	}
+	
+	for (i = 0; i < an_count; i++) {
+		status = ldns_wire2rr(&rr, wire, wire_len, &pos,
+		                      LDNS_SECTION_ANSWER);
+		if (status != LDNS_STATUS_OK) {
+			return NULL;
+		}
+printf("skip: ");
+ldns_rr_print(stdout, rr);
+printf("\n");
+		free(rr);
+	}
+	
+	for (i = 0; i < ns_count; i++) {
+		status = ldns_wire2rr(&rr, wire, wire_len, &pos,
+		                      LDNS_SECTION_AUTHORITY);
+		if (status != LDNS_STATUS_OK) {
+			return NULL;
+		}
+printf("skip: ");
+ldns_rr_print(stdout, rr);
+printf("\n");
+		free(rr);
+	}
+	
+	for (i = 0; i < ar_count; i++) {
+		status = ldns_wire2rr(&rr, wire, wire_len, &pos,
+		                      LDNS_SECTION_ADDITIONAL);
+		if (status != LDNS_STATUS_OK) {
+			return NULL;
+		}
+printf("skip: ");
+ldns_rr_print(stdout, rr);
+printf("\n");
+		free(rr);
+	}
+	
+	*result_len = pos;
+printf("pos %u so len %u\n", pos, *result_len);
+	
+	wire2 = XMALLOC(uint8_t, *result_len);
+	memcpy(wire2, wire, *result_len);
+	
+	write_uint16(wire2 + ARCOUNT_OFF, ar_count);
+	
+	return wire2;
+}
+
+
 ldns_rdf *
 ldns_create_tsig_mac(
-	ldns_pkt *pkt,
+	uint8_t *pkt_wire,
+	size_t pkt_wire_size,
 	const char *key_data,
 	ldns_rdf *key_name_rdf,
 	ldns_rdf *fudge_rdf,
@@ -417,16 +522,16 @@ ldns_create_tsig_mac(
 	unsigned int md_len = EVP_MAX_MD_SIZE;
 	unsigned char *key_bytes;
 	int key_size;
-	
 	/* 
 	 * prepare the digestable information
 	 */
 	data_buffer = ldns_buffer_new(MAX_PACKETLEN);
-	/* if orig_buf is not NULL, add it too */
-	if (orig_mac_rdf && ldns_pkt_qr(pkt)) {
+	/* if orig_mac is not NULL, add it too */
+	if (orig_mac_rdf) {
 		(void) ldns_rdf2buffer_wire(data_buffer, orig_mac_rdf);
-	}
-	(void) ldns_pkt2buffer_wire(data_buffer, pkt);
+ 	}
+/*	(void) ldns_pkt2buffer_wire(data_buffer, pkt);*/
+	ldns_buffer_write(data_buffer, pkt_wire, pkt_wire_size);
 	(void) ldns_rdf2buffer_wire(data_buffer, key_name_rdf);
 	ldns_buffer_write_u16(data_buffer, LDNS_RR_CLASS_ANY);
 	ldns_buffer_write_u32(data_buffer, 0);
@@ -464,8 +569,11 @@ ldns_create_tsig_mac(
 }
 
 
+/* THIS FUNC WILL REMOVE TSIG ITSELF */
 bool
 ldns_pkt_tsig_verify(ldns_pkt *pkt, 
+                     uint8_t *wire,
+                     size_t wirelen,
                      const char *key_name, 
                      const char *key_data, 
                      ldns_rdf *orig_mac_rdf)
@@ -481,13 +589,18 @@ ldns_pkt_tsig_verify(ldns_pkt *pkt,
 	ldns_rdf *key_name_rdf = ldns_rdf_new_frm_str(LDNS_RDF_TYPE_DNAME, key_name);
 	uint16_t pkt_id, orig_pkt_id;
 	
+	uint8_t *prepared_wire = NULL;
+	size_t prepared_wire_size = 0;
+	
 	ldns_rr *orig_tsig = ldns_pkt_tsig(pkt);
+printf("origtsig: ");
+ldns_rr_print(stdout, orig_tsig);
+printf("\n");
 	
 	if (!orig_tsig) {
 		ldns_rdf_free(key_name_rdf);
 		return false;
 	}
-	
 	algorithm_rdf = ldns_rr_rdf(orig_tsig, 0);
 	time_signed_rdf = ldns_rr_rdf(orig_tsig, 1);
 	fudge_rdf = ldns_rr_rdf(orig_tsig, 2);
@@ -503,7 +616,16 @@ ldns_pkt_tsig_verify(ldns_pkt *pkt,
 	orig_pkt_id = ldns_rdf2native_int16(orig_id_rdf);
 	ldns_pkt_set_id(pkt, orig_pkt_id);
 
-	my_mac_rdf = ldns_create_tsig_mac(pkt,
+	prepared_wire = ldns_tsig_prepare_pkt_wire(wire, wirelen, &prepared_wire_size);
+printf("orig size: %u\n", wirelen);
+printf("prepared size: %u\n", prepared_wire_size);
+for(pkt_id = 0; pkt_id < prepared_wire_size; pkt_id++) {
+	printf("%02x ", prepared_wire[pkt_id]);
+}
+printf("\n");
+	
+	my_mac_rdf = ldns_create_tsig_mac(prepared_wire,
+	                                  prepared_wire_size,
 	                                  key_data, 
 	                                  key_name_rdf,
 	                                  fudge_rdf,
@@ -546,6 +668,9 @@ ldns_pkt_tsig_sign(ldns_pkt *pkt, const char *key_name, const char *key_data, ui
 	ldns_rdf *mac_rdf;
 	ldns_rdf *other_data_rdf;
 	
+	uint8_t *pkt_wire;
+	size_t pkt_wire_len;
+	
 	struct timeval tv_time_signed;
 	uint8_t *time_signed;
 	ldns_rdf *time_signed_rdf;
@@ -573,7 +698,10 @@ ldns_pkt_tsig_sign(ldns_pkt *pkt, const char *key_name, const char *key_data, ui
 	
 	other_data_rdf = ldns_native2rdf_int16_data(0, NULL);
 
-	mac_rdf = ldns_create_tsig_mac(pkt, 
+	pkt_wire = ldns_pkt2wire(pkt, &pkt_wire_len);
+printf("signing with name %s and keydata %s\n", ldns_rdf2str(key_name_rdf), key_data);
+	mac_rdf = ldns_create_tsig_mac(pkt_wire,
+	                               pkt_wire_len,
 				       key_data,
 	                               key_name_rdf, 
 	                               fudge_rdf, 
@@ -587,6 +715,8 @@ ldns_pkt_tsig_sign(ldns_pkt *pkt, const char *key_name, const char *key_data, ui
 	if (!mac_rdf) {
 		return LDNS_STATUS_ERR;
 	}
+	
+	FREE(pkt_wire);
 	
 	/* Create the TSIG RR */
 	tsig_rr = ldns_rr_new();

@@ -22,7 +22,6 @@
 #include <ldns/host2str.h>
 #include <ldns/resolver.h>
 #include <ldns/net.h>
-
 #include <netinet/in.h>
 #include <sys/socket.h>
 #include <netdb.h>
@@ -55,16 +54,26 @@ ldns_send(ldns_resolver *r, ldns_pkt *query_pkt)
 	ldns_rdf **ns_array;
 	ldns_pkt *reply;
 	ldns_buffer *qb;
+
+	uint8_t *reply_bytes = NULL;
+	size_t reply_size = 0;
+	
+	ldns_rdf *tsig_mac = NULL;
 	
 	ns_array = ldns_resolver_nameservers(r);
 	reply = NULL; ns_len = 0;
 	
 	qb = ldns_buffer_new(MAX_PACKETLEN);
 
+	if (ldns_pkt_tsig(query_pkt)) {
+		tsig_mac = ldns_rr_rdf(ldns_pkt_tsig(query_pkt), 3);
+	}
+
 	if (ldns_pkt2buffer_wire(qb, query_pkt) != LDNS_STATUS_OK) {
 		printf("could not convert to wire fmt\n");
 		return NULL;
 	}
+
 
 	/* loop through all defined nameservers */
 	for (i = 0; i < ldns_resolver_nameserver_count(r); i++) {
@@ -97,11 +106,18 @@ ldns_send(ldns_resolver *r, ldns_pkt *query_pkt)
 		gettimeofday(&tv_s, NULL);
 		/* query */
 		if (1 == ldns_resolver_usevc(r)) {
-			reply = ldns_send_tcp(qb, ns, ns_len, ldns_resolver_timeout(r));
+			reply_bytes = ldns_send_tcp(qb, ns, ns_len, ldns_resolver_timeout(r), &reply_size);
 		} else {
 			/* udp here, please */
-			reply = ldns_send_udp(qb, ns, ns_len, ldns_resolver_timeout(r));
+			reply_bytes = ldns_send_udp(qb, ns, ns_len, ldns_resolver_timeout(r), &reply_size);
 		}
+		
+		if (ldns_wire2pkt(&reply, reply_bytes, reply_size) !=
+		    LDNS_STATUS_OK) {
+			printf("malformed answer\n");
+			return NULL;
+		}
+		
 		FREE(ns);
 		gettimeofday(&tv_e, NULL);
 
@@ -110,7 +126,7 @@ ldns_send(ldns_resolver *r, ldns_pkt *query_pkt)
 				((tv_e.tv_sec - tv_s.tv_sec) * 1000) +
 				(tv_e.tv_usec - tv_s.tv_usec) / 1000);
 			ldns_pkt_set_answerfrom(reply, ns_array[i]);
-			ldns_pkt_set_when(reply,  ctime((time_t*)&tv_s.tv_sec));
+			ldns_pkt_set_when(reply, ctime((time_t*)&tv_s.tv_sec));
 			break;
 		} else {
 			if (ldns_resolver_fail(r)) {
@@ -122,6 +138,19 @@ ldns_send(ldns_resolver *r, ldns_pkt *query_pkt)
 
 		/* wait retrans seconds... */
 	}
+
+	if (tsig_mac && reply_bytes) {
+		if (!ldns_pkt_tsig_verify(reply,
+		                          reply_bytes,
+					  reply_size,
+		                          ldns_resolver_tsig_keyname(r),
+		                          ldns_resolver_tsig_keydata(r),
+		                          tsig_mac)) {
+			/* TODO: no print, feedback */
+			printf(";; WARNING: TSIG VERIFICATION OF ANSWER FAILED!\n");
+		}
+	}
+	
 	ldns_buffer_free(qb);
 	return reply;
 }
@@ -134,15 +163,15 @@ ldns_send(ldns_resolver *r, ldns_pkt *query_pkt)
  * \param[in] timeout the timeout value for the network
  * \return a packet with the answer
  */
-ldns_pkt *
-ldns_send_udp(ldns_buffer *qbin, const struct sockaddr_storage *to, socklen_t tolen, struct timeval timeout)
+uint8_t *
+ldns_send_udp(ldns_buffer *qbin, const struct sockaddr_storage *to, socklen_t tolen, struct timeval timeout, size_t *answer_size)
 {
 	int sockfd;
 	ssize_t bytes;
 	uint8_t *answer;
-	ldns_pkt *answer_pkt;
-
 /*
+
+	ldns_pkt *answer_pkt;
         struct timeval timeout;
         
         timeout.tv_sec = LDNS_DEFAULT_TIMEOUT_SEC;
@@ -199,16 +228,9 @@ ldns_send_udp(ldns_buffer *qbin, const struct sockaddr_storage *to, socklen_t to
 	
 	/* resize accordingly */
 	answer = (uint8_t*)XREALLOC(answer, uint8_t *, (size_t) bytes);
+	*answer_size = (size_t) bytes;
 
-        if (ldns_wire2pkt(&answer_pkt, answer, (size_t) bytes) != 
-			LDNS_STATUS_OK) {
-		FREE(answer);
-		return NULL;
-	} else {
-		ldns_pkt_set_size(answer_pkt, (size_t) bytes);
-		FREE(answer);
-		return answer_pkt;
-	}
+	return answer;
 }
 
 /**
@@ -275,10 +297,9 @@ ldns_tcp_send_query(ldns_buffer *qbin, int sockfd, const struct sockaddr_storage
  * Creates a new ldns_pkt structure and reads the header data from the given
  * socket
  */
-ldns_pkt *
-ldns_tcp_read_packet(int sockfd)
+uint8_t *
+ldns_tcp_read_wire(int sockfd, size_t *size)
 {
-	ldns_pkt *pkt;
 	uint8_t *wire;
 	uint16_t wire_size;
 	ssize_t bytes = 0;
@@ -291,7 +312,6 @@ ldns_tcp_read_packet(int sockfd)
 				fprintf(stderr, "socket timeout\n");
 			}
 			perror("error receiving tcp packet");
-			FREE(pkt);
 			return NULL;
 		}
 	}
@@ -313,17 +333,10 @@ ldns_tcp_read_packet(int sockfd)
 			return NULL;
 		}
 	}
+	
+	*size = (size_t) bytes;
 
-        if (ldns_wire2pkt(&pkt, wire, (size_t) wire_size) != 
-			LDNS_STATUS_OK) {
-		printf("could not create packet\n");
-		FREE(wire);
-		return NULL;
-	} else {
-		ldns_pkt_set_size(pkt, (size_t) bytes);
-		FREE(wire);
-		return pkt;
-	}
+	return wire;
 }
 
 /**
@@ -337,11 +350,11 @@ ldns_tcp_read_packet(int sockfd)
 /* keep in mind that in DNS tcp messages the first 2 bytes signal the
  * amount data to expect
  */
-ldns_pkt *
-ldns_send_tcp(ldns_buffer *qbin, const struct sockaddr_storage *to, socklen_t tolen, struct timeval timeout)
+uint8_t *
+ldns_send_tcp(ldns_buffer *qbin, const struct sockaddr_storage *to, socklen_t tolen, struct timeval timeout, size_t *answer_size)
 {
 	int sockfd;
-	ldns_pkt *answer;
+	uint8_t *answer;
 	
 	sockfd = ldns_tcp_connect(to, tolen, timeout);
 	
@@ -353,7 +366,7 @@ ldns_send_tcp(ldns_buffer *qbin, const struct sockaddr_storage *to, socklen_t to
 		return NULL;
 	}
 	
-	answer = ldns_tcp_read_packet(sockfd);
+	answer = ldns_tcp_read_wire(sockfd, answer_size);
 	
 	close(sockfd);
 	

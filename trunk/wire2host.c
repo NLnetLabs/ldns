@@ -47,93 +47,6 @@
  *
  */
 
-/* The length of the header */
-#define	HEADER_SIZE	12
-
-/* First octet of flags */
-#define	RD_MASK		0x01U
-#define	RD_SHIFT	0
-#define	RD(wirebuf)	(*(wirebuf+2) & RD_MASK)
-#define	RD_SET(wirebuf)	(*(wirebuf+2) |= RD_MASK)
-#define	RD_CLR(wirebuf)	(*(wirebuf+2) &= ~RD_MASK)
-
-#define TC_MASK		0x02U
-#define TC_SHIFT	1
-#define	TC(wirebuf)	(*(wirebuf+2) & TC_MASK)
-#define	TC_SET(wirebuf)	(*(wirebuf+2) |= TC_MASK)
-#define	TC_CLR(wirebuf)	(*(wirebuf+2) &= ~TC_MASK)
-
-#define	AA_MASK		0x04U
-#define	AA_SHIFT	2
-#define	AA(wirebuf)	(*(wirebuf+2) & AA_MASK)
-#define	AA_SET(wirebuf)	(*(wirebuf+2) |= AA_MASK)
-#define	AA_CLR(wirebuf)	(*(wirebuf+2) &= ~AA_MASK)
-
-#define	OPCODE_MASK	0x78U
-#define	OPCODE_SHIFT	3
-#define	OPCODE(wirebuf)	((*(wirebuf+2) & OPCODE_MASK) >> OPCODE_SHIFT)
-#define	OPCODE_SET(wirebuf, opcode) \
-	(*(wirebuf+2) = ((*(wirebuf+2)) & ~OPCODE_MASK) | ((opcode) << OPCODE_SHIFT))
-
-#define	QR_MASK		0x80U
-#define	QR_SHIFT	7
-#define	QR(wirebuf)	(*(wirebuf+2) & QR_MASK)
-#define	QR_SET(wirebuf)	(*(wirebuf+2) |= QR_MASK)
-#define	QR_CLR(wirebuf)	(*(wirebuf+2) &= ~QR_MASK)
-
-/* Second octet of flags */
-#define	RCODE_MASK	0x0fU
-#define	RCODE_SHIFT	0
-#define	RCODE(wirebuf)	(*(wirebuf+3) & RCODE_MASK)
-#define	RCODE_SET(wirebuf, rcode) \
-	(*(wirebuf+3) = ((*(wirebuf+3)) & ~RCODE_MASK) | (rcode))
-
-#define	CD_MASK		0x10U
-#define	CD_SHIFT	4
-#define	CD(wirebuf)	(*(wirebuf+3) & CD_MASK)
-#define	CD_SET(wirebuf)	(*(wirebuf+3) |= CD_MASK)
-#define	CD_CLR(wirebuf)	(*(wirebuf+3) &= ~CD_MASK)
-
-#define	AD_MASK		0x20U
-#define	AD_SHIFT	5
-#define	AD(wirebuf)	(*(wirebuf+3) & AD_MASK)
-#define	AD_SET(wirebuf)	(*(wirebuf+3) |= AD_MASK)
-#define	AD_CLR(wirebuf)	(*(wirebuf+3) &= ~AD_MASK)
-
-#define	Z_MASK		0x40U
-#define	Z_SHIFT		6
-#define	Z(wirebuf)	(*(wirebuf+3) & Z_MASK)
-#define	Z_SET(wirebuf)	(*(wirebuf+3) |= Z_MASK)
-#define	Z_CLR(wirebuf)	(*(wirebuf+3) &= ~Z_MASK)
-
-#define	RA_MASK		0x80U
-#define	RA_SHIFT	7
-#define	RA(wirebuf)	(*(wirebuf+3) & RA_MASK)
-#define	RA_SET(wirebuf)	(*(wirebuf+3) |= RA_MASK)
-#define	RA_CLR(wirebuf)	(*(wirebuf+3) &= ~RA_MASK)
-
-/* Query ID */
-#define	ID(wirebuf)			(read_uint16(wirebuf))
-
-/* Counter of the question section */
-#define QDCOUNT_OFF		4
-/*
-#define	QDCOUNT(wirebuf)		(ntohs(*(uint16_t *)(wirebuf+QDCOUNT_OFF)))
-*/
-#define	QDCOUNT(wirebuf)		(read_uint16(wirebuf+QDCOUNT_OFF))
-
-/* Counter of the answer section */
-#define ANCOUNT_OFF		6
-#define	ANCOUNT(wirebuf)		(read_uint16(wirebuf+ANCOUNT_OFF))
-
-/* Counter of the authority section */
-#define NSCOUNT_OFF		8
-#define	NSCOUNT(wirebuf)		(read_uint16(wirebuf+NSCOUNT_OFF))
-
-/* Counter of the additional section */
-#define ARCOUNT_OFF		10
-#define	ARCOUNT(wirebuf)		(read_uint16(wirebuf+ARCOUNT_OFF))
-
 
 /* allocates memory to *dname! */
 ldns_status
@@ -512,6 +425,9 @@ printf("\n");
 			ldns_rr_free(rr);
 			ldns_pkt_set_arcount(packet, ldns_pkt_arcount(packet) - 1);
 		} else if (ldns_rr_get_type(rr) == LDNS_RR_TYPE_TSIG) {
+printf("PACKET HAD TSIG: ");
+ldns_rr_print(stdout, rr);
+printf("\n");
 			ldns_pkt_set_tsig(packet, rr);
 			ldns_pkt_set_arcount(packet, ldns_pkt_arcount(packet) - 1);
 		} else if (!ldns_rr_list_push_rr(ldns_pkt_additional(packet), rr)) {

@@ -16,6 +16,7 @@
 #include <ldns/packet.h>
 #include <ldns/buffer.h>
 #include <ldns/resolver.h>
+#include <ldns/keys.h>
 
 #include <sys/socket.h>
 
@@ -24,12 +25,12 @@
 
 
 /* prototypes */
-ldns_pkt * ldns_send_udp(ldns_buffer *, const struct sockaddr_storage *, socklen_t, struct timeval timeout);
-ldns_pkt * ldns_send_tcp(ldns_buffer *, const struct sockaddr_storage *, socklen_t, struct timeval timeout);
+uint8_t * ldns_send_udp(ldns_buffer *, const struct sockaddr_storage *, socklen_t, struct timeval timeout, size_t *);
+uint8_t * ldns_send_tcp(ldns_buffer *, const struct sockaddr_storage *, socklen_t, struct timeval timeout, size_t *);
 ldns_pkt * ldns_send(ldns_resolver *, ldns_pkt *);
 
 int ldns_tcp_connect(const struct sockaddr_storage *to, socklen_t tolen, struct timeval timeout);
 ssize_t ldns_tcp_send_query(ldns_buffer *qbin, int sockfd, const struct sockaddr_storage *to, socklen_t tolen);
-ldns_pkt *ldns_tcp_read_packet(int sockfd);
+uint8_t *ldns_tcp_read_wire(int sockfd, size_t *size);
 
 #endif  /* !_LDNS_NET_H */
