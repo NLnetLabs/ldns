@@ -1,0 +1,28 @@
+/* 
+ * common.h
+ * local header file includes
+ * .in file for autoconf
+ *
+ * (c) NLnet Labs, 2004
+ *
+ * See the file LICENSE for the license
+ *
+ */
+
+#undef HAVE_GETOPT_H
+#undef HAVE_STDINT_H
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+#include <assert.h>
+
+/* gnu long options */
+#ifdef HAVE_GETOPT_H  
+#include <getopt.h>   
+#endif /*HAVE_GETOPT_H*/
+
+#ifdef HAVE_STDINT_H
+#include <stdint.h>
+#endif
