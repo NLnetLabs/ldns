@@ -77,16 +77,16 @@ rr_push_rd_field(t_rr *rr, t_rdata_field *f)
 {
 	uint16_t rd_count;
 
-	rd_count = rr_rd_count(rr) + 1;
+	rd_count = rr_rd_count(rr);
 	
 	/* grow the array */
 	rr->rdata_fields = xrealloc(rr->rdata_fields, 
-			rd_count * sizeof(t_rdata_field *));
+			(rd_count + 1) * sizeof(t_rdata_field *));
 
 	/* add the new member */
 	rr->rdata_fields[rd_count] = f;
 
-	rr_set_rd_count(rr, rd_count);
+	rr_set_rd_count(rr, rd_count + 1);
 }
 
 /**

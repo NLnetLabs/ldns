@@ -21,5 +21,7 @@ main(void)
 	xprintf_rd_field(rd_f);
 	
 	rr_push_rd_field(rr, rd_f);
+
+	xprintf_rr(rr);
 	return 0;
 }
