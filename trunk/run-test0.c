@@ -20,7 +20,7 @@ main(void)
 {
 	t_rdata_field *rd_f;
 	t_rr *rr;
-	t_packet *packet;
+	ldns_packet_type *packet;
 	
 	rr = ldns_rr_new();
 

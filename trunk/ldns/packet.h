@@ -52,7 +52,7 @@ struct type_struct_header
 	/** \brief add sec */
 	uint16_t _arcount;
 };
-typedef struct type_struct_header t_header;
+typedef struct type_struct_header ldns_header_type;
 
 /**
  * \brief DNS packet
@@ -62,7 +62,7 @@ typedef struct type_struct_header t_header;
 struct type_struct_packet
 {
 	/** \brief header section */
-	t_header *_header;
+	ldns_header_type *_header;
 	/** \brief question section */
 	t_rrset	*_question;
 	/** \brief answer section */
@@ -72,45 +72,45 @@ struct type_struct_packet
 	/** \brief add section */
 	t_rrset	*_additional;
 };
-typedef struct type_struct_packet t_packet;
+typedef struct type_struct_packet ldns_packet_type;
 
 /* prototypes */
-uint16_t packet_id(t_packet *);
-bool packet_qr(t_packet *);
-bool packet_aa(t_packet *);
-bool packet_tc(t_packet *);
-bool packet_rd(t_packet *);
-bool packet_cd(t_packet *);
-bool packet_ra(t_packet *);
-bool packet_ad(t_packet *);
-uint8_t packet_opcode(t_packet *);
-uint8_t packet_rcode(t_packet *);
-uint16_t packet_qdcount(t_packet *);
-uint16_t packet_ancount(t_packet *);
-uint16_t packet_nscount(t_packet *);
-uint16_t packet_arcount(t_packet *);
+uint16_t packet_id(ldns_packet_type *);
+bool packet_qr(ldns_packet_type *);
+bool packet_aa(ldns_packet_type *);
+bool packet_tc(ldns_packet_type *);
+bool packet_rd(ldns_packet_type *);
+bool packet_cd(ldns_packet_type *);
+bool packet_ra(ldns_packet_type *);
+bool packet_ad(ldns_packet_type *);
+uint8_t packet_opcode(ldns_packet_type *);
+uint8_t packet_rcode(ldns_packet_type *);
+uint16_t packet_qdcount(ldns_packet_type *);
+uint16_t packet_ancount(ldns_packet_type *);
+uint16_t packet_nscount(ldns_packet_type *);
+uint16_t packet_arcount(ldns_packet_type *);
 
-void packet_set_id(t_packet *, uint16_t);
-void packet_set_qr(t_packet *, bool);
-void packet_set_aa(t_packet *, bool);
-void packet_set_tc(t_packet *, bool);
-void packet_set_rd(t_packet *, bool);
-void packet_set_cd(t_packet *, bool);
-void packet_set_ra(t_packet *, bool);
-void packet_set_ad(t_packet *, bool);
-void packet_set_opcode(t_packet *, uint8_t);
-void packet_set_rcode(t_packet *, uint8_t);
-void packet_set_qdcount(t_packet *, uint16_t);
-void packet_set_ancount(t_packet *, uint16_t);
-void packet_set_nscount(t_packet *, uint16_t);
-void packet_set_arcount(t_packet *, uint16_t);
+void packet_set_id(ldns_packet_type *, uint16_t);
+void packet_set_qr(ldns_packet_type *, bool);
+void packet_set_aa(ldns_packet_type *, bool);
+void packet_set_tc(ldns_packet_type *, bool);
+void packet_set_rd(ldns_packet_type *, bool);
+void packet_set_cd(ldns_packet_type *, bool);
+void packet_set_ra(ldns_packet_type *, bool);
+void packet_set_ad(ldns_packet_type *, bool);
+void packet_set_opcode(ldns_packet_type *, uint8_t);
+void packet_set_rcode(ldns_packet_type *, uint8_t);
+void packet_set_qdcount(ldns_packet_type *, uint16_t);
+void packet_set_ancount(ldns_packet_type *, uint16_t);
+void packet_set_nscount(ldns_packet_type *, uint16_t);
+void packet_set_arcount(ldns_packet_type *, uint16_t);
 
 /**
- * Allocates and initializes a t_packet structure
+ * Allocates and initializes a ldns_packet_type structure
  *
  * @return pointer to the new packet
  */
-t_packet *ldns_packet_new();
+ldns_packet_type *ldns_packet_new();
 
 /**
  * Converts the data on the uint8_t bytearray (in wire format) to a DNS packet
@@ -120,6 +120,6 @@ t_packet *ldns_packet_new();
  * @param packet pointer to the structure to hold the packet
  * @return the number of bytes read from the wire
  */
-size_t ldns_wire2packet(t_packet *packet, const uint8_t *data, size_t len);
+size_t ldns_wire2packet(ldns_packet_type *packet, const uint8_t *data, size_t len);
 
 #endif  /* !_LDNS_PACKET_H */
