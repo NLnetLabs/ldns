@@ -3,7 +3,7 @@
 
 AC_PREREQ(2.57)
 AC_INIT(libdns, 0.01, libdns@nlnetlabs.nl, libdns0.01)
-AC_CONFIG_SRCDIR([prototype.h])
+AC_CONFIG_SRCDIR([packet.c])
 
 AC_AIX
 # Checks for programs.
