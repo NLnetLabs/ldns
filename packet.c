@@ -126,8 +126,6 @@
 #define ARCOUNT_OFF		10
 #define	ARCOUNT(wirebuf)		(ntohs(*(uint16_t *)(wirebuf+ARCOUNT_OFF)))
 
-#define HEADER_SIZE		12
-
 /* Access functions 
  * do this as functions to get type checking
  */
@@ -336,7 +334,7 @@ ldns_wire2packet_header(t_packet *packet,
 			size_t max,
 			size_t *pos)
 {
-	if (*pos + HEADER_SIZE >= max) {
+	if (*pos + QHEADERSZ >= max) {
 		/* TODO: set t_status error.  */
 		return 0;
 	} else {
@@ -358,7 +356,7 @@ ldns_wire2packet_header(t_packet *packet,
 		packet_set_nscount(packet, NSCOUNT(wire));
 		packet_set_arcount(packet, ARCOUNT(wire));
 
-		*pos += HEADER_SIZE;
+		*pos += QHEADERSZ;
 		
 		/* TODO t_status succ.  */
 		return 0;
