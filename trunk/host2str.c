@@ -1029,7 +1029,7 @@ ldns_pkt2buffer_str(ldns_buffer *output, ldns_pkt *pkt)
 			                   );
 			if (ldns_pkt_edns_data(pkt)) {
 				ldns_buffer_printf(output, ";; Data: ");
-				ldns_rdf2buffer_str(output, ldns_pkt_edns_data(pkt));
+				(void)ldns_rdf2buffer_str(output, ldns_pkt_edns_data(pkt));
 				ldns_buffer_printf(output, "\n");
 			}
 		}
@@ -1204,8 +1204,8 @@ ldns_resolver_print(FILE *output, ldns_resolver *r)
 	}
 	n = ldns_resolver_nameservers(r);
 
-	fprintf(output, "port: %d\n", ldns_resolver_port(r));
-	fprintf(output, "edns0 size: %d\n", ldns_resolver_edns_udp_size(r));
+	fprintf(output, "port: %d\n", (int)ldns_resolver_port(r));
+	fprintf(output, "edns0 size: %d\n", (int)ldns_resolver_edns_udp_size(r));
 
 	fprintf(output, "recursive: %d\n", ldns_resolver_recursive(r));
 	fprintf(output, "usevc: %d\n", ldns_resolver_usevc(r));

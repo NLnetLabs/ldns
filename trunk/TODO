@@ -6,6 +6,7 @@ o NSEC conversion frm str to host
 o Signing
 o Different digests for DS
  - need a digest type?
+o NSEC generation??
 
 Implementation:
 ---------------
@@ -32,11 +33,8 @@ o create a bunch of small programs:
 o SSL_load_error_str()? 
 o resolver_frm_file (better parser)
 o Remove all the printf's - and tie them into error handling
-o per RR functions:
-  - RRSIG
-       ->keytag
-       ->typecovered
-   etc etc. For all types we have
+o Set rdf's on a specific spot in a RR??
+o per RR functions (started, see rr_functions.c)
 o Remove/Handle all XXX and TODO/todos'
   checked:
   - rr.c/rr.h		- util.c

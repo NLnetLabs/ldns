@@ -75,6 +75,7 @@ ldns_keytag(ldns_rr *key)
  * rr in the given packet
  * Allocates and copies, so don't forget to free!
  * TODO: helper for rr copying?
+ * ldns_rr_deep_clone????
  */
 ldns_rr_list *
 ldns_pkt_get_sigs(ldns_pkt *pkt, ldns_rr *rr)
@@ -82,7 +83,7 @@ ldns_pkt_get_sigs(ldns_pkt *pkt, ldns_rr *rr)
 	ldns_rr_list *sigs = ldns_rr_list_new();
 	ldns_rr_list *pkt_rrs;
 	ldns_rr *cur_rr;
-	int i;
+	uint16_t i;
 	
 	pkt_rrs = ldns_pkt_answer(pkt);
 	if (pkt_rrs) {
@@ -210,7 +211,6 @@ ldns_verify_rrsig(ldns_rr_list *rrset, ldns_rr *rrsig, ldns_rr_list *keys)
 	orig_ttl = ldns_rdf2native_int32(
 			ldns_rr_rdf(rrsig, 3));
 
-	/* should work on copies */
 	/* reset the ttl in the rrset with the orig_ttl from the sig */
 	for(i = 0; i < ldns_rr_list_rr_count(rrset_clone); i++) {
 		ldns_rr_set_ttl(
@@ -821,8 +821,54 @@ ldns_sign_shared(void)
  * return the created signatures
  */
 ldns_rr_list *
-/*ldns_sign_public(ldns_rr_list *rrset, ldns_key_list *keys)*/
-ldns_sign_public(void)
+ldns_sign_public(ldns_rr_list *rrset, ldns_key_list *keys)
 {
-	return LDNS_STATUS_OK;
+	/* The keys we have enough data to actually sign */
+	ldns_rr_list *signatures;
+	ldns_rr_list *rrset_clone;
+	ldns_rr *current_sig;
+	ldns_key *current_key;
+	size_t key_count;
+	uint16_t i;
+	ldns_buffer *rawsig_buf;
+	ldns_buffer *sign_buf;
+	uint32_t orig_ttl;
+
+	key_count = 0;
+	signatures = ldns_rr_list_new();
+
+	/* prepare a signature and add all the know data
+	 * prepare the rrset
+	 * sign this together
+	 */
+	rrset_clone = ldns_rr_list_deep_clone(rrset);
+
+	/* make it canonical */
+	for(i = 0; i < ldns_rr_list_rr_count(rrset_clone); i++) {
+		ldns_rr2canonical(ldns_rr_list_rr(rrset_clone, i));
+	}
+	/* sort */
+	ldns_rr_list_sort(rrset_clone);
+	
+	rawsig_buf = ldns_buffer_new(MAX_PACKETLEN);
+	sign_buf = ldns_buffer_new(MAX_PACKETLEN);
+	
+	for (key_count = 0; key_count < ldns_key_list_key_count(keys); key_count++) {
+
+		current_key = ldns_key_list_key(keys, key_count);
+		current_sig = ldns_rr_new();
+		orig_ttl = ldns_key_ttl(current_key);
+
+
+		/* set the ttl from the priv key on the rrset */
+		for (i = 0; i < ldns_rr_list_rr_count(rrset); i++) {
+			ldns_rr_set_ttl(
+					ldns_rr_list_rr(rrset_clone, i),
+					orig_ttl);
+		}
+
+	}
+
+	
+	return NULL;
 }
