@@ -670,7 +670,7 @@ ldns_pkt_tsig_sign(ldns_pkt *pkt, const char *key_name, const char *key_data, ui
  * Returns a new DS rr that represents the given key rr
  */
 ldns_rr *
-ldns_key_rr2ds(ldns_rr *key)
+ldns_key_rr2ds(const ldns_rr *key)
 {
         ldns_rdf *tmp;
         ldns_rr *ds;

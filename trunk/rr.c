@@ -1325,9 +1325,9 @@ ldns_rr_compare(const ldns_rr *rr1, const ldns_rr *rr2)
 		}
 		/* now compare the buffer's byte for byte */
 		for(i = 0; i < rr1_len; i++) {
-			if (rr1_buf->_data[i] < rr2_buf->_data[i]) {
+			if (*ldns_buffer_at(rr1_buf,i) < *ldns_buffer_at(rr2_buf,i)) {
 				return -1;
-			} else if (rr1_buf->_data[i] > rr2_buf->_data[i]) {
+			} else if (*ldns_buffer_at(rr1_buf,i) > *ldns_buffer_at(rr2_buf,i)) {
 				return +1;
 			}
 		}
