@@ -13,7 +13,6 @@
 #include <stdint.h>
 
 #include "prototype.h"
-#include "rdata.h"
 
 /* Access functions 
  * do this as functions to get type checking

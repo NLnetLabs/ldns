@@ -10,6 +10,9 @@
  * See the file LICENSE for the license
  */
 
+#include <stdint.h>
+#include <stdlib.h>
+
 void *
 xmalloc(size_t s)
 {
