@@ -79,7 +79,7 @@ bottom-layer, this is what lDNS needs to compile and function.
 </t>
 </section> <!-- "Introduction" -->
 
-<section title="Differences with other libraries">
+<section title="Differences With Other Libraries">
 <t>
 Short intermezzo detailing differences with other libraries. Most important
 ones are the libc resolver interface (from BIND8) and the lwres_ interface
@@ -107,6 +107,54 @@ This API document was written by carefully looking at the documentation
 contained in the Net::DNS Perl module.
 </t>
 </section> <!-- "Interfaces" -->
+
+<section title="RDF Structure">
+<t>
+The rdf structure, the RData Field, is a type that contains the different 
+types in the rdata of an RR. Consider the following example:
+<artwork>
+example.com.	IN	MX	10 mx.example.com.
+</artwork>
+The "10 mx.example.com." is the rdata in this case. It consists of two
+fields, "10" and "mx.example.com". These have the types (in this case)
+LDNS_RDF_TYPE_INT8 and LDNS_RDF_TYPE_DNAME.
+</t>
+<t>
+The following functions operate on this structure.
+</t>
+<t>
+<list style="hanging">
+<t hangText="dns_rdf *ldns_rdf_new(uint16_t s, ldns_rdf_type t, uint8_t *d):">
+Create a new rdf structure. Return a pointer to it.
+</t>
+<t hangText="uint16_t ldns_rdf_size(ldns_rdf *r):">
+Get the size of a rdf structure.
+</t>
+<t hangText="void ldns_rdf_set_size(ldns_rdf *r, uint16_t):">
+Set the size of a rdf structure.
+</t>
+<t hangText="void ldns_rdf_set_type(ldns_rdf *r, ldns_rdf_type t):">
+Set the type of a rdf structure.
+</t>
+<t hangText="ldns_rdf_type ldns_rdf_get_type(ldns_rdf *r):">
+Get the type of a rdf structure.
+</t>
+<t hangText="void ldns_rdf_set_data(ldns_rdf *r, uint8_t *n):">
+Set the (binary/network order) data of a rdf structure.
+</t>
+<t hangText="uint8_t *ldns_rdf_data(ldns_rdf *r):">
+Get a pointer to the data in a rdf structure.
+</t>
+<t hangText="void ldns_rdf_free(ldns_rdf *r):">
+Free a rdf structure.
+</t>
+<t hangText="ldns_rdf_new_frm_str(uint8_t *s, ldns_rdf_type t):">
+Create a new rdf structure from a string and a specific rdf_type.
+The type is needed to perform the correct conversion.
+</t>
+</list>
+</t>
+</section> <!-- "RDF Structure" -->
 
 <section title="RR Structure">
 <t>
@@ -340,13 +388,13 @@ Those are detailed here. XXX TODO don't exist (yet?).
 </t>
 </section> <!-- "Specific RR Structures" -->
 
-<section title="Exported defines and macros">
+<section title="Exported Defines and Macros">
 <t>
 insert your long list here.
 </t>
 </section> <!-- "Exported defines and macros" -->
 
-<section title="Short Example">
+<section title="Examples">
 <t>
 A small example, which queries a nameserver on localhost
 to diplay the MX records for miek.nl.
@@ -382,7 +430,7 @@ main(void)
 	
 	/* create a default domain and add it */
 	default_dom = ldns_rdf_new_frm_str("miek.nl.", LDNS_RDF_TYPE_DNAME);
-	nameserver  = ldns_rdf_new_from_str("127.0.0.1", LDNS_RDF_TYPE_A);
+	nameserver  = ldns_rdf_new_frm_str("127.0.0.1", LDNS_RDF_TYPE_A);
 
 	if (ldns_resolver_domain(res, default_dom) != LDNS_STATUS_OK)
 		return 1;
