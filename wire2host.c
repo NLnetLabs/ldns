@@ -297,7 +297,7 @@ ldns_wire2rdf(ldns_rr *rr, const uint8_t *wire,
 			cur_rdf_length = 6;
 			break;
 		case LDNS_RDF_TYPE_AAAA:
-			cur_rdf_length = 32;
+			cur_rdf_length = 16;
 			break;
 		case LDNS_RDF_TYPE_STR:
 			/* len is stored in first byte 
@@ -423,6 +423,17 @@ ldns_wire2pkt(ldns_pkt **packet_p, const uint8_t *wire, size_t max)
 	ldns_rr *rr;
 	ldns_pkt *packet = ldns_pkt_new();
 	ldns_status status = LDNS_STATUS_OK;
+
+/*
+size_t j;
+for (j=0; j<max; j++) {
+	if (j % 20 == 0 && j > 0) {
+		printf("\t; %u - %u\n", j - 20, j - 1);
+	}
+	printf(" %02x", wire[j]);
+}
+printf("\n");
+*/
 	
 	status = ldns_wire2pkt_hdr(packet, wire, max, &pos);
 	STATUS_CHECK_GOTO(status, status_error);
