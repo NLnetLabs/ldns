@@ -326,7 +326,7 @@ ldns_wire2rr(ldns_rr *rr, const uint8_t *wire, size_t max,
 	ldns_status status = LDNS_STATUS_OK;
 	
 	status = ldns_wire2dname(&owner, wire, max, pos);
-	char *owner_str = XMALLOC(char, MAXDOMAINLEN);
+	owner_str = XMALLOC(char, MAXDOMAINLEN);
 	if (!owner_str) {
 		return LDNS_STATUS_MEM_ERR;
 	}
