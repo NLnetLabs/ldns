@@ -116,23 +116,19 @@ ldns_dname_new_frm_str(const char *str)
 /**
  * Put a dname into canonical fmt - ie. lowercase it
  * \param[in] rdf the dname to lowercase
- * \return the lowercased dname
  */
-ldns_rdf *
+void
 ldns_dname2canonical(const ldns_rdf *rd)
 {
-	ldns_rdf *new;
 	uint8_t *rdd;
 	uint16_t i;
 
 	if (ldns_rdf_get_type(rd) != LDNS_RDF_TYPE_DNAME) {
-		return NULL;
+		return;
 	}
 
-	new = ldns_rdf_clone(rd);
 	rdd = (uint8_t*)ldns_rdf_data(rd);
 	for (i = 0; i < ldns_rdf_size(rd); i++, rdd++) {
 		DNAME_NORMALIZE(*rdd);
 	}
-	return new;
 }

@@ -1042,3 +1042,17 @@ ldns_rr_uncompressed_size(const ldns_rr *r)
 	rrsize += RR_OVERHEAD;
 	return rrsize;
 }
+
+/** 
+ * convert each dname in a rr to its canonical form
+ * \param[in] rr the rr to work on
+ * \return void
+ */
+void
+ldns_rr2canonical(ldns_rr *rr)
+{
+	uint16_t i;
+	for (i = 0; i < ldns_rr_rd_count(rr); i++) {
+		ldns_rdata2canonical(ldns_rr_rdf(rrm i));
+	}
+}
