@@ -414,6 +414,25 @@ ldns_key_buf2rsa(ldns_buffer *key)
 ldns_rr_list *
 ldns_sign(ldns_rr_list *ATTR_UNUSED(rrset), ldns_rr_list *ATTR_UNUSED(keys))
 {
+	/* how to sign
+	 * - create the correct openSSL keys from the keys
+	 * - sort and extract the original ttl from the rrset
+	 * - type covered, labels, wildcards?!?!
+	 * - inception, expiration?!?!
+	 *
+	 *  signature = sign(RRSIG_RDATA | RR(1) | RR(2)... ) 
+	 */
+
+	/* create a hash and sign that??? */
+#if 0
+	        int RSA_sign(NID_sha1 | NID_md5, unsigned char *m, unsigned int m_len,
+           unsigned char *sigret, unsigned int *siglen, RSA *rsa);
+
+        int    DSA_sign(int type, const unsigned char *dgst, int len,
+			                       unsigned char *sigret, unsigned int *siglen, DSA *dsa);
+#endif 
+
+	/* convert the sigstuff to base64 ... */
 
 	return NULL;
 }
