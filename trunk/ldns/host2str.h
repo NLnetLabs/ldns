@@ -13,6 +13,175 @@
 
 #include "util.h"
 
+/** 
+ * Converts an LDNS_RDF_TYPE_A rdata element to string format and adds it to the output buffer 
+ * @param *rdf The rdata to convert
+ * @param *output The buffer to add the data to
+ * @return LDNS_STATUS_OK on success, and error status on failure
+ */
+ldns_status ldns_rdf2buffer_str_a(ldns_buffer *output, ldns_rdf *rdf);
+
+/** 
+ * Converts an LDNS_RDF_TYPE_AAAA rdata element to string format and adds it to the output buffer 
+ * @param *rdf The rdata to convert
+ * @param *output The buffer to add the data to
+ * @return LDNS_STATUS_OK on success, and error status on failure
+ */
+ldns_status ldns_rdf2buffer_str_aaaa(ldns_buffer *output, ldns_rdf *rdf);
+
+/** 
+ * Converts an LDNS_RDF_TYPE_STR rdata element to string format and adds it to the output buffer 
+ * @param *rdf The rdata to convert
+ * @param *output The buffer to add the data to
+ * @return LDNS_STATUS_OK on success, and error status on failure
+ */
+ldns_status ldns_rdf2buffer_str_str(ldns_buffer *output, ldns_rdf *rdf);
+
+/** 
+ * Converts an LDNS_RDF_TYPE_B64 rdata element to string format and adds it to the output buffer 
+ * @param *rdf The rdata to convert
+ * @param *output The buffer to add the data to
+ * @return LDNS_STATUS_OK on success, and error status on failure
+ */
+ldns_status ldns_rdf2buffer_str_b64(ldns_buffer *output, ldns_rdf *rdf);
+
+/** 
+ * Converts an LDNS_RDF_TYPE_HEX rdata element to string format and adds it to the output buffer 
+ * @param *rdf The rdata to convert
+ * @param *output The buffer to add the data to
+ * @return LDNS_STATUS_OK on success, and error status on failure
+ */
+ldns_status ldns_rdf2buffer_str_hex(ldns_buffer *output, ldns_rdf *rdf);
+
+/** 
+ * Converts an LDNS_RDF_TYPE_TYPE rdata element to string format and adds it to the output buffer 
+ * @param *rdf The rdata to convert
+ * @param *output The buffer to add the data to
+ * @return LDNS_STATUS_OK on success, and error status on failure
+ */
+ldns_status ldns_rdf2buffer_str_type(ldns_buffer *output, ldns_rdf *rdf);
+
+/** 
+ * Converts an LDNS_RDF_TYPE_CLASS rdata element to string format and adds it to the output buffer 
+ * @param *rdf The rdata to convert
+ * @param *output The buffer to add the data to
+ * @return LDNS_STATUS_OK on success, and error status on failure
+ */
+ldns_status ldns_rdf2buffer_str_class(ldns_buffer *output, ldns_rdf *rdf);
+
+/** 
+ * Converts an LDNS_RDF_TYPE_ALG rdata element to string format and adds it to the output buffer 
+ * @param *rdf The rdata to convert
+ * @param *output The buffer to add the data to
+ * @return LDNS_STATUS_OK on success, and error status on failure
+ */
+ldns_status ldns_rdf2buffer_str_alg(ldns_buffer *output, ldns_rdf *rdf);
+
+/** 
+ * Converts an LDNS_RDF_TYPE_CERT rdata element to string format and adds it to the output buffer 
+ * @param *rdf The rdata to convert
+ * @param *output The buffer to add the data to
+ * @return LDNS_STATUS_OK on success, and error status on failure
+ */
+ldns_status ldns_rdf2buffer_str_cert(ldns_buffer *output, ldns_rdf *rdf);
+
+/** 
+ * Converts an LDNS_RDF_TYPE_LOC rdata element to string format and adds it to the output buffer 
+ * @param *rdf The rdata to convert
+ * @param *output The buffer to add the data to
+ * @return LDNS_STATUS_OK on success, and error status on failure
+ */
+ldns_status ldns_rdf2buffer_str_loc(ldns_buffer *output, ldns_rdf *rdf);
+
+/** 
+ * Converts an LDNS_RDF_TYPE_UNKNOWN rdata element to string format and adds it to the output buffer 
+ * @param *rdf The rdata to convert
+ * @param *output The buffer to add the data to
+ * @return LDNS_STATUS_OK on success, and error status on failure
+ */
+ldns_status ldns_rdf2buffer_str_unknown(ldns_buffer *output, ldns_rdf *rdf);
+
+/** 
+ * Converts an LDNS_RDF_TYPE_NSAP rdata element to string format and adds it to the output buffer 
+ * @param *rdf The rdata to convert
+ * @param *output The buffer to add the data to
+ * @return LDNS_STATUS_OK on success, and error status on failure
+ */
+ldns_status ldns_rdf2buffer_str_nsap(ldns_buffer *output, ldns_rdf *rdf);
+
+/** 
+ * Converts an LDNS_RDF_TYPE_WKS rdata element to string format and adds it to the output buffer 
+ * @param *rdf The rdata to convert
+ * @param *output The buffer to add the data to
+ * @return LDNS_STATUS_OK on success, and error status on failure
+ */
+ldns_status ldns_rdf2buffer_str_wks(ldns_buffer *output, ldns_rdf *rdf);
+
+/** 
+ * Converts an LDNS_RDF_TYPE_NSEC rdata element to string format and adds it to the output buffer 
+ * @param *rdf The rdata to convert
+ * @param *output The buffer to add the data to
+ * @return LDNS_STATUS_OK on success, and error status on failure
+ */
+ldns_status ldns_rdf2buffer_str_nsec(ldns_buffer *output, ldns_rdf *rdf);
+
+/** 
+ * Converts an LDNS_RDF_TYPE_PERIOD rdata element to string format and adds it to the output buffer 
+ * @param *rdf The rdata to convert
+ * @param *output The buffer to add the data to
+ * @return LDNS_STATUS_OK on success, and error status on failure
+ */
+ldns_status ldns_rdf2buffer_str_period(ldns_buffer *output, ldns_rdf *rdf);
+
+/** 
+ * Converts an LDNS_RDF_TYPE_TSIGTIME rdata element to string format and adds it to the output buffer 
+ * @param *rdf The rdata to convert
+ * @param *output The buffer to add the data to
+ * @return LDNS_STATUS_OK on success, and error status on failure
+ */
+ldns_status ldns_rdf2buffer_str_tsigtime(ldns_buffer *output, ldns_rdf *rdf);
+
+/** 
+ * Converts an LDNS_RDF_TYPE_APL rdata element to string format and adds it to the output buffer 
+ * @param *rdf The rdata to convert
+ * @param *output The buffer to add the data to
+ * @return LDNS_STATUS_OK on success, and error status on failure
+ */
+ldns_status ldns_rdf2buffer_str_apl(ldns_buffer *output, ldns_rdf *rdf);
+
+/** 
+ * Converts an LDNS_RDF_TYPE_TODO rdata element to string format and adds it to the output buffer 
+ * @param *rdf The rdata to convert
+ * @param *output The buffer to add the data to
+ * @return LDNS_STATUS_OK on success, and error status on failure
+ */
+ldns_status ldns_rdf2buffer_str_todo(ldns_buffer *output, ldns_rdf *rdf);
+
+/** 
+ * Converts an LDNS_RDF_TYPE_INT16_DATA rdata element to string format and adds it to the output buffer 
+ * @param *rdf The rdata to convert
+ * @param *output The buffer to add the data to
+ * @return LDNS_STATUS_OK on success, and error status on failure
+ */
+ldns_status ldns_rdf2buffer_str_int16_data(ldns_buffer *output, ldns_rdf *rdf);
+
+/** 
+ * Converts an LDNS_RDF_TYPE_IPSECKEY rdata element to string format and adds it to the output buffer 
+ * @param *rdf The rdata to convert
+ * @param *output The buffer to add the data to
+ * @return LDNS_STATUS_OK on success, and error status on failure
+ */
+ldns_status ldns_rdf2buffer_str_ipseckey(ldns_buffer *output, ldns_rdf *rdf);
+
+/** 
+ * Converts an LDNS_RDF_TYPE_TSIG rdata element to string format and adds it to the output buffer 
+ * @param *rdf The rdata to convert
+ * @param *output The buffer to add the data to
+ * @return LDNS_STATUS_OK on success, and error status on failure
+ */
+ldns_status ldns_rdf2buffer_str_tsig(ldns_buffer *output, ldns_rdf *rdf);
+
+
 /**
  * Converts the data in the rdata field to presentation
  * format (as char *) and appends it to the given buffer
@@ -119,7 +288,24 @@ void ldns_rr_print(FILE *output, ldns_rr *rr);
  */
 void ldns_pkt_print(FILE *output, ldns_pkt *pkt);
 
-ldns_status ldns_rr_list2buffer_str(ldns_buffer *, ldns_rr_list *);
+/**
+ * Converts a rr_list to presentation format and appends it to
+ * the output buffer
+ * \param[in] output the buffer to append output to
+ * \param[in] list the ldns_rr_list to print
+ * \return ldns_status
+ */
+ldns_status ldns_rr_list2buffer_str(ldns_buffer *output, ldns_rr_list *list);
+
+/**
+ * Converts the header of a packet to presentation format and appends it to
+ * the output buffer
+ * \param[in] output the buffer to append output to
+ * \param[in] pkt the packet to convert the header of
+ * \return ldns_status
+ */
+ldns_status ldns_pktheader2buffer_str(ldns_buffer *output, ldns_pkt *pkt);
+
 void ldns_rr_list_print(FILE *, ldns_rr_list *);
 
 void ldns_resolver_print(FILE *, ldns_resolver *);

@@ -98,12 +98,6 @@ ldns_rr2buffer_wire(ldns_buffer *buffer, const ldns_rr *rr, int section)
 	return ldns_buffer_status(buffer);
 }
 
-/**
- * convert a rrsig to wireformat BUT EXCLUDE the rrsig rdata
- * This is needed in DNSSEC verification
- * \param[out] *buffer buffer where to put the result
- * \param[in] *rr sigrr to operate on
- */
 ldns_status
 ldns_rrsig2buffer_wire(ldns_buffer *buffer, ldns_rr *rr)
 {
@@ -123,15 +117,6 @@ ldns_rrsig2buffer_wire(ldns_buffer *buffer, ldns_rr *rr)
 	return ldns_buffer_status(buffer);
 }
 
-/**
- * convert a rr's rdata to wireformat, while excluding
- * the ownername and all the crap before the rdata.
- * This is needed in DNSSEC keytag calculation, the ds
- * calcalution from the key and maybe elsewhere.
- *
- * \param[out] *buffer buffer where to put the result
- * \param[in] *rr rr to operate on
- */
 ldns_status
 ldns_rr_rdata2buffer_wire(ldns_buffer *buffer, ldns_rr *rr)
 {
@@ -163,7 +148,7 @@ ldns_rr_rdata2buffer_wire(ldns_buffer *buffer, ldns_rr *rr)
 }
 
 /**
- * Copy the packet header data to the buffer in wire format
+ * Copies the packet header data to the buffer in wire format
  */
 static ldns_status
 ldns_hdr2buffer_wire(ldns_buffer *buffer, const ldns_pkt *packet)
@@ -203,9 +188,6 @@ ldns_hdr2buffer_wire(ldns_buffer *buffer, const ldns_pkt *packet)
 	return ldns_buffer_status(buffer);
 }
 
-/**
- * Copy the packet data to the buffer in wire format
- */
 ldns_status
 ldns_pkt2buffer_wire(ldns_buffer *buffer, const ldns_pkt *packet)
 {
@@ -275,12 +257,6 @@ ldns_pkt2buffer_wire(ldns_buffer *buffer, const ldns_pkt *packet)
 	return LDNS_STATUS_OK;
 }
 
-/**
- * Allocates an array of uint8_t, and puts the wireformat of the
- * given rdf in that array. The result_size value contains the
- * length of the array, if it succeeds, and 0 otherwise (in which case
- * the function also returns NULL)
- */
 uint8_t *
 ldns_rdf2wire(const ldns_rdf *rdf, size_t *result_size)
 {
@@ -297,15 +273,6 @@ ldns_rdf2wire(const ldns_rdf *rdf, size_t *result_size)
 	return result;
 }
 
-/**
- * Allocates an array of uint8_t, and puts the wireformat of the
- * given rr in that array. The result_size value contains the
- * length of the array, if it succeeds, and 0 otherwise (in which case
- * the function also returns NULL)
- *
- * If the section argument is LDNS_SECTION_QUESTION, data like ttl and rdata
- * are not put into the result
- */
 uint8_t *
 ldns_rr2wire(const ldns_rr *rr, int section, size_t *result_size)
 {
@@ -322,12 +289,6 @@ ldns_rr2wire(const ldns_rr *rr, int section, size_t *result_size)
 	return result;
 }
 
-/**
- * Allocates an array of uint8_t, and puts the wireformat of the
- * given packet in that array. The result_size value contains the
- * length of the array, if it succeeds, and 0 otherwise (in which case
- * the function also returns NULL)
- */
 uint8_t *
 ldns_pkt2wire(const ldns_pkt *packet, size_t *result_size)
 {
