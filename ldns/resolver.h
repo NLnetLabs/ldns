@@ -29,7 +29,7 @@ struct ldns_struct_resolver
 	uint16_t _port;
 
 	/** \brief List of nameservers to query */
-	ldns_rr_list _nameservers; 
+	ldns_rr_list *_nameservers; 
 
 	/** \brief Wether or not to be recursive */
 	uint8_t _recursive;
@@ -37,17 +37,32 @@ struct ldns_struct_resolver
 	/** \brief Print debug information */
 	uint8_t _debug;
 	
-	/* XXX both types below could be done better */
+	/* XXX both types below could be done better, mabye rr_list? */
 	/** \brief Default domain to add */
-	ldns_rdf_type _domain; /* LDNS_RDF_TYPE_DNAME */
+	ldns_rdf *_domain; /* LDNS_RDF_TYPE_DNAME */
 
 	/** \brief Searchlist */
-	ldns_rdf_type _searchlist[3]; /* LDNS_RFD_TYPE_DNAME */
+	ldns_rdf *_searchlist; /* LDNS_RFD_TYPE_DNAME */
 
 	/** \brief How many retries */
 	uint8_t _retry;
 };
 	
 typedef struct ldns_struct_resolver ldns_resolver;
+
+/* prototypes */
+uint16_t ldns_resolver_port(ldns_resolver *);
+ldns_rr_list * ldns_resolver_nameservers(ldns_resolver *);
+uint8_t ldns_resolver_recursive(ldns_resolver *);
+uint8_t ldns_resolver_debug(ldns_resolver *);
+ldns_rdf * ldns_resolver_domain(ldns_resolver *);
+ldns_rdf * ldns_resolver_searchlist(ldns_resolver *);
+
+void ldns_resolver_set_port(ldns_resolver *, uint16_t);
+void ldns_resolver_set_nameservers(ldns_resolver *, ldns_rr_list *);
+void ldns_resolver_set_recursive(ldns_resolver *, uint8_t);
+void ldns_resolver_set_debug(ldns_resolver *, uint8_t);
+void ldns_resolver_set_domain(ldns_resolver *, ldns_rdf *);
+void ldns_resolver_set_searchlist(ldns_resolver *, ldns_rdf *);
 
 #endif  /* !_LDNS_RESOLVER_H */
