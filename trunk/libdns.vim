@@ -17,16 +17,17 @@ syn keyword  ldnsConstant       true
 syn keyword  ldnsConstant       false
 
 " dns/error.h
-syn keyword ldnsMacro	LDNS_STATUS_OK,	
-syn keyword ldnsMacro	LDNS_STATUS_EMPTY_LABEL,
-syn keyword ldnsMacro	LDNS_STATUS_LABEL_OVERFLOW,
-syn keyword ldnsMacro	LDNS_STATUS_DOMAINNAME_OVERFLOW,
-syn keyword ldnsMacro	LDNS_STATUS_DDD_OVERFLOW,
-syn keyword ldnsMacro	LDNS_STATUS_PACKET_OVERFLOW,
-syn keyword ldnsMacro	LDNS_STATUS_INVALID_POINTER,
-syn keyword ldnsMacro	LDNS_STATUS_MEM_ERR,
-syn keyword ldnsMacro	LDNS_STATUS_INTERNAL_ERR,
+syn keyword ldnsMacro	LDNS_STATUS_OK
+syn keyword ldnsMacro	LDNS_STATUS_EMPTY_LABEL
+syn keyword ldnsMacro	LDNS_STATUS_LABEL_OVERFLOW
+syn keyword ldnsMacro	LDNS_STATUS_DOMAINNAME_OVERFLOW
+syn keyword ldnsMacro	LDNS_STATUS_DDD_OVERFLOW
+syn keyword ldnsMacro	LDNS_STATUS_PACKET_OVERFLOW
+syn keyword ldnsMacro	LDNS_STATUS_INVALID_POINTER
+syn keyword ldnsMacro	LDNS_STATUS_MEM_ERR
+syn keyword ldnsMacro	LDNS_STATUS_INTERNAL_ERR
 syn keyword ldnsMacro	LDNS_STATUS_INT_EXP
+syn keyword ldnsMacro	LDNS_STATUS_ERR
 
 " ldns/rr.h 
 syn keyword  ldnsConstant TYPE_A          

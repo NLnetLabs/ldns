@@ -5,8 +5,8 @@ AC_PREREQ(2.57)
 AC_INIT(libdns, 0.01, libdns@nlnetlabs.nl, libdns0.01)
 AC_CONFIG_SRCDIR([packet.c])
 
-dnl OURCPPFLAGS='-ansi -pedantic -D_POSIX_C_SOURCE=200112 -D_XOPEN_SOURCE=600'
-OURCPPFLAGS='-ansi'
+OURCPPFLAGS='-ansi -pedantic -D_POSIX_C_SOURCE=200112 -D_XOPEN_SOURCE=600'
+dnl OURCPPFLAGS='-ansi'
 CPPFLAGS=${CPPFLAGS:-${OURCPPFLAGS}}
 OURCFLAGS='-g -O2 -Wall -W -Wwrite-strings'
 CFLAGS=${CFLAGS:-${OURCFLAGS}}
