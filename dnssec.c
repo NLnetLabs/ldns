@@ -483,7 +483,7 @@ ldns_create_tsig_mac(
 
 	/* prepare the key */
 	key_bytes = XMALLOC(unsigned char, b64_pton_calculate_size(strlen(key_data)));
-	key_size = b64_pton(key_data, key_bytes, strlen(key_data)*2);
+	key_size = b64_pton(key_data, key_bytes, strlen(key_data) * 2);
 	
 	if (key_size < 0) {
 		return NULL;
@@ -492,7 +492,7 @@ ldns_create_tsig_mac(
 	/* 2 spare bytes for the length */
 	mac_bytes = malloc(md_len);
 	memset(mac_bytes, 0, md_len);
-	(void) HMAC(EVP_md5(), key_bytes, key_size, (void *) wireformat, wiresize, mac_bytes+2, &md_len);
+	(void) HMAC(EVP_md5(), key_bytes, key_size, (void *)wireformat, wiresize, mac_bytes + 2, &md_len);
 	
 	write_uint16(mac_bytes, md_len);
 	mac_rdf = ldns_rdf_new(md_len + 2, LDNS_RDF_TYPE_INT16_DATA, mac_bytes);
@@ -668,7 +668,7 @@ ldns_pkt_tsig_sign(ldns_pkt *pkt, const char *key_name, const char *key_data, ui
 
 	/* prepare the key */
 	key_bytes = XMALLOC(unsigned char, b64_pton_calculate_size(strlen(key_data)));
-	key_size = b64_pton(key_data, key_bytes, strlen(key_data)*2);
+	key_size = b64_pton(key_data, key_bytes, strlen(key_data) * 2);
 	
 	if (key_size < 0) {
 		return LDNS_STATUS_INVALID_B64;
@@ -711,4 +711,3 @@ ldns_pkt_tsig_sign(ldns_pkt *pkt, const char *key_name, const char *key_data, ui
 
 	return LDNS_STATUS_OK;
 }
-
