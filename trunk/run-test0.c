@@ -35,37 +35,37 @@ static const uint8_t wire[] = {
 int
 main(void)
 {
-	t_rdata_field *rd_f;
-	ldns_rr_type *rr;
-	ldns_packet_type *packet;
+	ldns_rdf *rd_f;
+	ldns_rr *rr;
+	ldns_pkt *packet;
 	
 	rr = ldns_rr_new();
 
-	rd_f = _ldns_rd_field_new(20, RD_DNAME_T, (uint8_t*)"hallo.nl");
-	xprintf_rd_field(rd_f);
+	rd_f = _ldns_rdf_new(20, RD_DNAME_T, (uint8_t*)"hallo.nl");
+	xprintf_rdf(rd_f);
 	
-	ldns_rr_push_rd_field(rr, rd_f);
+	ldns_rr_push_rdf(rr, rd_f);
 
 	xprintf_rr(rr);
 
-	packet = ldns_packet_new();
-	(void) ldns_wire2packet(packet, wire, sizeof(wire));
+	packet = ldns_pkt_new();
+	(void) ldns_wire2pkt(packet, wire, sizeof(wire));
 	
-	printf("packet id: %d\n", (int) packet_id(packet));
-	printf("qr bit: %d\n", (int) packet_qr(packet));
-	printf("opcode: %d\n",(int) packet_opcode(packet));
-	printf("aa bit: %d\n",(int) packet_aa(packet));
-	printf("tc bit: %d\n",(int) packet_tc(packet));
-	printf("rd bit: %d\n",(int) packet_rd(packet));
-	printf("cd bit: %d\n",(int) packet_cd(packet));
-	printf("ra bit: %d\n",(int) packet_ra(packet));
-	printf("ad bit: %d\n",(int) packet_ad(packet));
-	printf("rcode: %d\n",(int) packet_rcode(packet));
-	printf("qdcount: %d\n",(int) packet_qdcount(packet));
-	printf("ancount: %d\n",(int) packet_ancount(packet));
-	printf("nscount: %d\n",(int) packet_nscount(packet));
-	printf("arcount: %d\n",(int) packet_arcount(packet));
+	printf("packet id: %d\n", (int) pkt_id(packet));
+	printf("qr bit: %d\n", (int) pkt_qr(packet));
+	printf("opcode: %d\n",(int) pkt_opcode(packet));
+	printf("aa bit: %d\n",(int) pkt_aa(packet));
+	printf("tc bit: %d\n",(int) pkt_tc(packet));
+	printf("rd bit: %d\n",(int) pkt_rd(packet));
+	printf("cd bit: %d\n",(int) pkt_cd(packet));
+	printf("ra bit: %d\n",(int) pkt_ra(packet));
+	printf("ad bit: %d\n",(int) pkt_ad(packet));
+	printf("rcode: %d\n",(int) pkt_rcode(packet));
+	printf("qdcount: %d\n",(int) pkt_qdcount(packet));
+	printf("ancount: %d\n",(int) pkt_ancount(packet));
+	printf("nscount: %d\n",(int) pkt_nscount(packet));
+	printf("arcount: %d\n",(int) pkt_arcount(packet));
 
-	ldns_packet_free(packet);
+	ldns_pkt_free(packet);
 	return 0;
 }

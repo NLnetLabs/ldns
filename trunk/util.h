@@ -71,7 +71,7 @@ read_uint32(const void *src)
 #endif /* !S_SPLINT_S */
 
 /* prototypes */
-void    xprintf_rd_field(t_rdata_field *);
-void    xprintf_rr(ldns_rr_type *);
+void    xprintf_rdf(ldns_rdf *);
+void    xprintf_rr(ldns_rr *);
 
 #endif /* !_UTIL_H */

@@ -125,7 +125,7 @@
  *
  * This is the basic DNS element that contains actual data
  */
-struct type_struct_rr
+struct ldns_struct_rr
 {
 	/** \brief Owner name, uncompressed */
 	uint8_t		*_owner;	
@@ -139,12 +139,12 @@ struct type_struct_rr
 	 *
 	 * name chosen to avoid clash with class keyword
 	 */
-	t_class		_klass;	
+	ldns_class	 _klass;
 	/* everything in the rdata is in network order */
 	/** \brief The list of rdata's */
-	t_rdata_field	**_rdata_fields;
+	ldns_rdf	 **_rdata_fields;
 };
-typedef struct type_struct_rr ldns_rr_type;
+typedef struct ldns_struct_rr ldns_rr;
 
 /**
  * \brief Resource Record Set
@@ -152,12 +152,12 @@ typedef struct type_struct_rr ldns_rr_type;
  * Contains a list of rr's <br>
  * No official RFC-like checks are made 
  */
-struct type_struct_rrset
+struct ldns_struct_rrset
 {
-	ldns_rr_type *rrs;
+	ldns_rr *rrs;
 
 };
-typedef struct type_struct_rrset t_rrset;
+typedef struct ldns_struct_rrset ldns_rrset;
 
 /* 
  * \brief struct to hold the whole set of rd_fields
@@ -165,38 +165,37 @@ typedef struct type_struct_rrset t_rrset;
  * How does the whole rdata_field list look. This is called
  * the rdata in dns speak
  */
-struct ldns_struct_rr_descriptor_type
+struct ldns_struct_rr_descriptor
 {
         uint16_t    _type;       /* RR type */
         const char *_name;       /* Textual name.  */
         uint8_t     _minimum;    /* Minimum number of RDATA FIELDs.  */
         uint8_t     _maximum;    /* Maximum number of RDATA FIELDs.  */
-        const ldns_rdata_field_type *_wireformat;
-	ldns_rdata_field_type _variable;
+        const ldns_rdf_type *_wireformat;
+	ldns_rdf_type _variable;
 };
-typedef struct ldns_struct_rr_descriptor_type ldns_rr_descriptor_type;
+typedef struct ldns_struct_rr_descriptor ldns_rr_descriptor;
 
 
 /* prototypes */
-ldns_rr_type * ldns_rr_new(void);
-void ldns_rr_set_owner(ldns_rr_type *, uint8_t *);
-void ldns_rr_set_ttl(ldns_rr_type *, uint16_t);
-void ldns_rr_set_rd_count(ldns_rr_type *, uint16_t);
-void ldns_rr_set_class(ldns_rr_type *, t_class);
-bool ldns_rr_push_rd_field(ldns_rr_type *, t_rdata_field *);
-uint8_t *ldns_rr_owner(ldns_rr_type *);
-uint8_t ldns_rr_ttl(ldns_rr_type *);
-uint16_t ldns_rr_rd_count(ldns_rr_type *);
+ldns_rr * ldns_rr_new(void);
+void ldns_rr_set_owner(ldns_rr *, uint8_t *);
+void ldns_rr_set_ttl(ldns_rr *, uint16_t);
+void ldns_rr_set_rd_count(ldns_rr *, uint16_t);
+void ldns_rr_set_class(ldns_rr *, ldns_class);
+bool ldns_rr_push_rdf(ldns_rr *, ldns_rdf *);
+uint8_t *ldns_rr_owner(ldns_rr *);
+uint8_t ldns_rr_ttl(ldns_rr *);
+uint16_t ldns_rr_rd_count(ldns_rr *);
 
-const ldns_rr_descriptor_type *ldns_rr_descriptor(uint16_t type);
-size_t ldns_rr_descriptor_minimum(ldns_rr_descriptor_type *descriptor);
-size_t ldns_rr_descriptor_maximum(ldns_rr_descriptor_type *descriptor);
-ldns_rdata_field_type ldns_rr_descriptor_field_type(
-    ldns_rr_descriptor_type *descriptor, size_t index);
+const ldns_rr_descriptor *ldns_rr_descript(uint16_t type);
+size_t ldns_rr_descriptor_minimum(ldns_rr_descriptor *descriptor);
+size_t ldns_rr_descriptor_maximum(ldns_rr_descriptor *descriptor);
+ldns_rdf_type ldns_rr_descriptor_field_type(ldns_rr_descriptor *descriptor, size_t index);
 
 size_t ldns_wire2dname(uint8_t *dname, const uint8_t *wire, size_t max, 
                        size_t *pos);
-size_t ldns_wire2rr(ldns_rr_type *rr, const uint8_t *wire, size_t max,
+size_t ldns_wire2rr(ldns_rr *rr, const uint8_t *wire, size_t max,
                     size_t *pos, int section);
 
 #endif /* _LDNS_RR_H */

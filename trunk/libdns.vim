@@ -4,15 +4,17 @@
 " Last change:  2004-12-15
 
 " ldns/rdata.h
-syn keyword  ldnsType           t_rdata_field
-syn keyword  ldnsType           t_rr
-syn keyword  ldnsType           ldns_rdata_field_type
-syn keyword  ldnsType           ldns_rr_descriptor_type
-syn keyword  ldnsType           ldns_header_type
-syn keyword  ldnsType           ldns_packet_type
-syn keyword  ldnsType           t_rrset
-syn keyword  ldnsType           true
-syn keyword  ldnsType           false
+syn keyword  ldnsType           ldns_rdf_type
+syn keyword  ldnsType           ldns_rdf
+syn keyword  ldnsType           ldns_rr
+syn keyword  ldnsType           ldns_rr_descriptor
+syn keyword  ldnsType           ldns_hdr
+syn keyword  ldnsType           ldns_pkt
+syn keyword  ldnsType           ldns_status
+syn keyword  ldnsType           ldns_rrset
+syn keyword  ldnsType           ldns_class
+syn keyword  ldnsConstant       true
+syn keyword  ldnsConstant       false
 
 " ldns/rr.h 
 syn keyword  ldnsConstant TYPE_A          
