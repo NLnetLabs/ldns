@@ -320,6 +320,7 @@ ldns_rdf_new_frm_str(const char *str, ldns_rdf_type t)
 			break;
 		default:
 			/* default default ??? */
+			stat = LDNS_STATUS_ERR;
 			break;
 	}
 	if (LDNS_STATUS_OK != stat) {
