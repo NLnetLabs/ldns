@@ -271,5 +271,7 @@ void ldns_rr_list_sort(ldns_rr_list *);
 
 ldns_rr *ldns_rr_clone(ldns_rr *rr);
 ldns_rr *ldns_rr_new_frm_str(const char *);
+ldns_rr *ldns_rr_list_pop_rr(ldns_rr_list *);
+ldns_rr *ldns_rr_set_pop_rr(ldns_rr_list *);
 
 #endif /* _LDNS_RR_H */
