@@ -19,6 +19,7 @@ main(int argc, char **argv)
         ldns_rdf *nameserver;
         ldns_pkt *pkt;
 	ldns_rr_list *bla;
+	ldns_rr *RR;
         const char *nameserver_address = "127.0.0.1";
 
 	if (argc >= 2) {
@@ -29,6 +30,13 @@ main(int argc, char **argv)
         res = ldns_resolver_new(); 
         if (!res)
                 return -1;
+
+	RR = ldns_rr_new_frm_str("miek.nl. 3600 IN MX 10 elektron.atoom.net.");
+	ldns_rr_print(stdout, RR);
+	printf("\n");
+	RR = ldns_rr_new_frm_str("miek.nl.   3600   IN   MX   10    elektron.atoom.net.");
+	ldns_rr_print(stdout, RR);
+	printf("\n");
 
         nameserver = ldns_rdf_new_frm_str(nameserver_address, LDNS_RDF_TYPE_A);
         if (ldns_resolver_push_nameserver(res, nameserver) != LDNS_STATUS_OK) {
