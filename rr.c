@@ -75,7 +75,7 @@ ldns_rr_str_normalize(const char *rr)
 	char *s;
 	char *orig_s;
 
-	s = XMALLOC(char, strlen(rr)+1); /* for the newly created string */
+	s = XMALLOC(char, strlen(rr) + 1); /* for the newly created string */
 	orig_s = s;
 
 	/* walk through the rr and fix it. Whitespace is handled in
