@@ -91,7 +91,7 @@ run-test7:	run-test7.o $(LIBDNS_OBJECTS) $(LIBOBJS)
 run-test11:	run-test11.o $(LIBDNS_OBJECTS) $(LIBOBJS)
 		$(LINK) ${LIBS} -o $@ $+
 run-test18:	run-test18.o $(LIBDNS_OBJECTS) $(LIBOBJS)
-		$(LINK) ${LIBS} -o $@ $+
+		$(LINK) ${LIBS} -lssl -o $@ $+
 
 doc:	
 	doxygen libdns.doxygen

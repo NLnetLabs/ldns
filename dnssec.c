@@ -720,7 +720,7 @@ ldns_sign_public(ldns_rr_list *rrset, ldns_key_list *keys)
 		current_sig = ldns_rr_new_frm_type(LDNS_RR_TYPE_RRSIG);
 		
 		/* set the type on the new signature */
-		orig_ttl = ldns_key_ttl(current_key);
+		orig_ttl = ldns_key_origttl(current_key);
 
 		/* set the ttl from the priv key on the rrset */
 		for (i = 0; i < ldns_rr_list_rr_count(rrset); i++) {
@@ -733,6 +733,7 @@ ldns_sign_public(ldns_rr_list *rrset, ldns_key_list *keys)
 
 		/* fill in what we now of the signature */
 		/* set the orig_ttl */
+		printf("orig ttl %d\n", orig_ttl);
 		(void)ldns_rr_rrsig_set_origttl(current_sig, ldns_native2rdf_int32(LDNS_RDF_TYPE_INT32, orig_ttl));
 		/* the signers name */
 		(void)ldns_rr_rrsig_set_signame(current_sig, 
@@ -757,6 +758,9 @@ ldns_sign_public(ldns_rr_list *rrset, ldns_key_list *keys)
 		(void)ldns_rr_rrsig_set_typecovered(current_sig,
 				ldns_native2rdf_int16(LDNS_RDF_TYPE_TYPE,
 					ldns_rr_get_type(ldns_rr_list_rr(rrset_clone, 0))));
+		printf("Sig before signing\n\n[");
+		ldns_rr_print(stdout, current_sig);
+		printf("]\n");
 
 		/* right now, we have: a key, a semi-sig and an rrset. For
 		 * which we can create the sig and base64 encode that and
@@ -830,7 +834,6 @@ ldns_sign_public_dsa(ldns_buffer *to_sign, DSA *key)
 	
 	sigdata_rdf = ldns_rdf_new_frm_data(LDNS_RDF_TYPE_B64, siglen, 
 			ldns_buffer_begin(b64sig));
-	/* FREE(sha1_hash); - don't free -> invalid pointer */
 	ldns_buffer_free(b64sig);
 	return sigdata_rdf;
 }
@@ -860,7 +863,7 @@ ldns_sign_public_rsasha1(ldns_buffer *to_sign, RSA *key)
 			&siglen, key);
 	sigdata_rdf = ldns_rdf_new_frm_data(LDNS_RDF_TYPE_B64, siglen, 
 			ldns_buffer_begin(b64sig));
-	/* ldns_buffer_free(b64sig); can't free this buffer ?? */
+	ldns_buffer_free(b64sig); /* can't free this buffer ?? */
 	return sigdata_rdf;
 }
 
