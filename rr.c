@@ -51,6 +51,7 @@ ldns_rr_new_frm_type(ldns_rr_type t)
 {
 	ldns_rr *rr;
 	const ldns_rr_descriptor *desc;
+	uint16_t i;
 
 	rr = MALLOC(ldns_rr);
         if (!rr) {
@@ -60,6 +61,10 @@ ldns_rr_new_frm_type(ldns_rr_type t)
 	desc = ldns_rr_descript(t);
 	rr->_rdata_fields = XMALLOC(ldns_rdf *, 
 			ldns_rr_descriptor_minimum(desc));
+	for (i = 0; i < ldns_rr_descriptor_minimum(desc); i++) {
+		rr->_rdata_fields[i] = NULL;
+	}
+	
 	ldns_rr_set_rd_count(rr, 0);
 	ldns_rr_set_class(rr, LDNS_RR_CLASS_IN);
 	ldns_rr_set_ttl(rr, LDNS_DEFTTL);
