@@ -10,5 +10,11 @@ LINK		= $(CC) $(CFLAGS) $(LDFLAGS)
 %.o:	%.c $(HEADER)
 	$(CC) $(CFLAGS) -c $<
 
+.PHONY:	clean
+
 main:	main.o $(LIBOBJ)
 	$(LINK) -o $@ main.o $(LIBOBJ)
+
+clean:	
+	rm -f *.o
+	rm -f main

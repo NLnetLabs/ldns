@@ -27,7 +27,11 @@ enum enum_rdata_type {
 	RD_TYPE_T, 	/* a RR type */
 	RD_CLASS_T,	/* a class */
 	RD_CERT_T,	/* certificates */
-	RD_ALG_T	/* a key algorithm */
+	RD_ALG_T,	/* a key algorithm */
+	RD_UNKNOWN_T,	/* unknown types */
+	RD_TIME_T,	/* time */
+	RD_SERVICE_T,	/* protocol and port bitmaps */
+	RD_LOC_T	/* location data */
 };
 typedef enum enum_rdata_type rd_type_t;
 
@@ -39,9 +43,9 @@ typedef enum enum_rdata_type rd_type_t;
  * data = network order, expanded (no compression)
  */
 
-struct {
+struct struct_rdata_t {
 	uint16_t _size;
 	rd_type_t _type;
 	uint8_t  *_data;
-} struct_rdata_t;
+};
 typedef struct struct_rdata_t rdata_t;
