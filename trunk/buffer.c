@@ -94,32 +94,25 @@ ldns_buffer_reserve(ldns_buffer *buffer, size_t amount)
 int
 ldns_buffer_printf(ldns_buffer *buffer, const char *format, ...)
 {
-	int result;
 	va_list args;
-	va_start(args, format);
-	result = ldns_buffer_vprintf(buffer, format, args);
-	va_end(args);
-	return result;
-}
-
-int
-ldns_buffer_vprintf(ldns_buffer *buffer, const char *format, va_list args)
-{
 	int written;
 	size_t remaining;
 	
 	ldns_buffer_invariant(buffer);
 	assert(buffer->_limit == buffer->_capacity);
 
-	/* TODO this is probably not good  (see recent nsd loggin bug)*/
 	remaining = ldns_buffer_remaining(buffer);
+	va_start(args, format);
 	written = vsnprintf((char *) ldns_buffer_current(buffer), remaining,
 			    format, args);
-	if (written >= 0 && ((size_t) written >= remaining)) {
+	va_end(args);
+	if (written >= 0 && (size_t) written >= remaining) {
 		ldns_buffer_reserve(buffer, (size_t) written + 1);
+		va_start(args, format);
 		written = vsnprintf((char *) ldns_buffer_current(buffer),
 				    ldns_buffer_remaining(buffer),
 				    format, args);
+		va_end(args);
 	}
 	buffer->_position += written;
 	return written;

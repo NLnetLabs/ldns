@@ -380,6 +380,5 @@ ldns_buffer_read_u32(ldns_buffer *buffer)
  */
 int ldns_buffer_printf(ldns_buffer *buffer, const char *format, ...)
 	ATTR_FORMAT(printf, 2, 3);
-int ldns_buffer_vprintf(ldns_buffer *buffer, const char *format, va_list args);
 
 #endif /* _BUFFER_H_ */
