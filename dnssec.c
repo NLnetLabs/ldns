@@ -87,17 +87,19 @@ ldns_verify_rrsig(ldns_rr_list *rrset, ldns_rr *rrsig, ldns_rr_list *keys)
 	bool result;
 	ldns_rr *current_key;
 
-	/* TODO remove */
-	key_buf = NULL;
-	rrset_buf = NULL;
-
-	/* create a buffer which will certainly hold the
+	/* create the buffers which will certainly hold the
 	 * raw data */
 	rawsig_buf = ldns_buffer_new(MAX_PACKETLEN);
+	rrset_buf  = ldns_buffer_new(MAX_PACKETLEN);
+	
 	sig_algo = ldns_rdf2native_int8(ldns_rr_rdf(rrsig, 1));
 	result = false;
 	
-	(void)ldns_rrsig2buffer_wire(rawsig_buf, rrsig);
+	if (ldns_rrsig2buffer_wire(rawsig_buf, rrsig) != LDNS_STATUS_OK) {
+		ldns_buffer_free(rawsig_buf);
+		ldns_buffer_free(rrset_buf);
+		return false;
+	}
 
 	orig_ttl = ldns_rdf2native_int32(
 			ldns_rr_rdf(rrsig, 3));
@@ -116,11 +118,21 @@ ldns_verify_rrsig(ldns_rr_list *rrset, ldns_rr *rrsig, ldns_rr_list *keys)
 	ldns_rr_list_sort(rrset);
 
 	/* put the rrset in a wirefmt buf */
+	if (ldns_rr_list2buffer_wire(rrset_buf, rrset) != LDNS_STATUS_OK) {
+		ldns_buffer_free(rawsig_buf);
+		ldns_buffer_free(rrset_buf);
+		return false;
+	}
 
 	for(i = 0; i < ldns_rr_list_rr_count(keys); i++) {
 		current_key = ldns_rr_list_rr(keys, i);
-
-		/* put the key-data in a buffer */
+		key_buf = ldns_buffer_new(MAX_PACKETLEN);
+		/* put the key-data in a buffer, that's the third rdf, with
+		 * the base64 encoded key data */
+		if (ldns_rdf2buffer_wire(key_buf,
+				ldns_rr_rdf(current_key, 3)) != LDNS_STATUS_OK) {
+			return false;
+		}
 
 		switch(sig_algo) {
 			case LDNS_DSA:
@@ -136,11 +148,11 @@ ldns_verify_rrsig(ldns_rr_list *rrset, ldns_rr *rrsig, ldns_rr_list *keys)
 						rawsig_buf, rrset_buf, key_buf);
 				break;
 			default:
-				/* no fucking way man! */
+				/* do you know this alg?! */
 				break;
 		}
 
-		/* ldns_buffer_free(key_buf); TODO */
+		ldns_buffer_free(key_buf); 
 		if (result) {
 			/* one of the keys has matched */
 			break;
@@ -149,7 +161,6 @@ ldns_verify_rrsig(ldns_rr_list *rrset, ldns_rr *rrsig, ldns_rr_list *keys)
 
 	ldns_buffer_free(rawsig_buf);
 	ldns_buffer_free(rrset_buf);
-
 	return result;
 }
 
