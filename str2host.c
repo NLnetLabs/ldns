@@ -47,7 +47,8 @@ ldns_str2rdf_int16(ldns_rdf **rd, const char *shortstr)
 		FREE(r);
 		return LDNS_STATUS_INT_EXP;
 	} else {
-		*rd = ldns_rdf_new_frm_data(sizeof(uint16_t), LDNS_RDF_TYPE_INT16, (uint8_t*)r);
+		*rd = ldns_rdf_new_frm_data(
+			LDNS_RDF_TYPE_INT16, sizeof(uint16_t), r);
 		FREE(r);
 		return LDNS_STATUS_OK;
 	}
@@ -76,7 +77,8 @@ ldns_str2rdf_time(ldns_rdf **rd, const char *time)
 	} else {
 		l = htonl(timegm(&tm));
 		memcpy(r, &l, sizeof(uint32_t));
-		*rd = ldns_rdf_new_frm_data(sizeof(uint32_t), LDNS_RDF_TYPE_TIME, (uint8_t*)r);
+		*rd = ldns_rdf_new_frm_data(
+			LDNS_RDF_TYPE_TIME, sizeof(uint32_t), r);
 		FREE(r);
 		return LDNS_STATUS_OK;
 	}
@@ -96,7 +98,8 @@ ldns_str2rdf_period(ldns_rdf **rd,const char *period)
 		return LDNS_STATUS_ERR;
         } else {
                 p = (uint32_t) htonl(p);
-		*rd = ldns_rdf_new_frm_data(sizeof(uint32_t), LDNS_RDF_TYPE_PERIOD, (uint8_t*)&p);
+		*rd = ldns_rdf_new_frm_data(
+			LDNS_RDF_TYPE_PERIOD, sizeof(uint32_t), &p);
         }
 	return LDNS_STATUS_OK;
 }
@@ -122,7 +125,8 @@ ldns_str2rdf_int32(ldns_rdf **rd, const char *longstr)
 		return LDNS_STATUS_ERR;
         } else {
 		memcpy(r, &l, sizeof(uint32_t));
-		*rd = ldns_rdf_new_frm_data(sizeof(uint32_t), LDNS_RDF_TYPE_INT32, (uint8_t*)r);
+		*rd = ldns_rdf_new_frm_data(
+			LDNS_RDF_TYPE_INT32, sizeof(uint32_t), r);
 		return LDNS_STATUS_OK;
 	}
 }
@@ -147,7 +151,8 @@ ldns_str2rdf_int8(ldns_rdf **rd, const char *bytestr)
 		FREE(r);
 		return LDNS_STATUS_ERR;
         } else {
-		*rd = ldns_rdf_new_frm_data(sizeof(uint8_t), LDNS_RDF_TYPE_INT8, r);
+		*rd = ldns_rdf_new_frm_data(
+			LDNS_RDF_TYPE_INT8, sizeof(uint8_t), r);
 		return LDNS_STATUS_OK;
         }
 }
@@ -240,7 +245,7 @@ ldns_str2rdf_dname(ldns_rdf **d, const char *str)
 	len++;
 
 	/* s - buf_str works because no magic is done in the above for-loop */
-	*d = ldns_rdf_new_frm_data(len , LDNS_RDF_TYPE_DNAME , buf); 
+	*d = ldns_rdf_new_frm_data(LDNS_RDF_TYPE_DNAME, len, buf); 
 	return LDNS_STATUS_OK;
 }
 
@@ -257,7 +262,8 @@ ldns_str2rdf_a(ldns_rdf **rd, const char *str)
         if (inet_pton(AF_INET, (char*)str, &address) != 1) {
                 return LDNS_STATUS_INVALID_IP4;
         } else {
-		*rd = ldns_rdf_new_frm_data(sizeof(address), LDNS_RDF_TYPE_A, &address);
+		*rd = ldns_rdf_new_frm_data(
+			LDNS_RDF_TYPE_A, sizeof(address), &address);
         }
 	return LDNS_STATUS_OK;
 }
@@ -276,7 +282,8 @@ ldns_str2rdf_aaaa(ldns_rdf **rd, const char *str)
 	if (inet_pton(AF_INET6, (char*)str, address) != 1) {
 		return LDNS_STATUS_INVALID_IP6;
 	} else {
-		*rd = ldns_rdf_new_frm_data(sizeof(address), LDNS_RDF_TYPE_AAAA, &address);
+		*rd = ldns_rdf_new_frm_data(
+			LDNS_RDF_TYPE_AAAA, sizeof(address), &address);
 	}
 	return LDNS_STATUS_OK;
 }
@@ -290,10 +297,10 @@ ldns_str2rdf_aaaa(ldns_rdf **rd, const char *str)
 ldns_status
 ldns_str2rdf_str(ldns_rdf **rd, const char *str)
 {
-	if (strlen((char *) str) > 255) {
+	if (strlen(str) > 255) {
 		return LDNS_STATUS_INVALID_STR;
 	}
-	*rd = ldns_rdf_new_frm_data(strlen((char*)str), LDNS_RDF_TYPE_STR, (void*)str);
+	*rd = ldns_rdf_new_frm_data(LDNS_RDF_TYPE_STR, strlen(str), str);
 	return LDNS_STATUS_OK;
 }
 
@@ -325,7 +332,8 @@ ldns_str2rdf_b64(ldns_rdf **rd, const char *str)
 	if (-1 == i) {
 		return LDNS_STATUS_INVALID_B64;
 	} else {
-		*rd = ldns_rdf_new_frm_data((uint16_t)i, LDNS_RDF_TYPE_B64, buffer);
+		*rd = ldns_rdf_new_frm_data(
+			LDNS_RDF_TYPE_B64, (uint16_t) i, buffer);
 	}
 	return LDNS_STATUS_OK;
 }
@@ -365,7 +373,7 @@ ldns_str2rdf_hex(ldns_rdf **rd, const char *str)
                         }
                         ++t;
                 }
-		*rd = ldns_rdf_new_frm_data(len / 2, LDNS_RDF_TYPE_HEX, t);
+		*rd = ldns_rdf_new_frm_data(LDNS_RDF_TYPE_HEX, len / 2, t);
         }
         return LDNS_STATUS_OK;
 }
@@ -394,7 +402,8 @@ ldns_str2rdf_type(ldns_rdf **rd, const char *str)
 	uint16_t type;
 	type = htons(ldns_get_rr_type_by_name(str));
 	/* ldns_rr_type is a 16 bit value */
-	*rd = ldns_rdf_new_frm_data(sizeof(uint16_t), LDNS_RDF_TYPE_TYPE, (uint8_t*)&type);
+	*rd = ldns_rdf_new_frm_data(
+		LDNS_RDF_TYPE_TYPE, sizeof(uint16_t), &type);
 	return LDNS_STATUS_OK;
 }
 
@@ -410,7 +419,8 @@ ldns_str2rdf_class(ldns_rdf **ATTR_UNUSED(rd), const char *str)
 	uint16_t klass;
 	klass = htons(ldns_get_rr_class_by_name(str));
 	/* class is 16 bit */
-	*rd = ldns_rdf_new_frm_data(sizeof(uint16_t), LDNS_RDF_TYPE_CLASS, (uint8_t*)&klass);
+	*rd = ldns_rdf_new_frm_data(
+		LDNS_RDF_TYPE_CLASS, sizeof(uint16_t), &klass);
 	return LDNS_STATUS_OK;
 }
 
@@ -446,7 +456,8 @@ ldns_str2rdf_alg(ldns_rdf **rd, const char *str)
 
 	if (lt) {
 		/* it was given as a integer */
-		*rd = ldns_rdf_new_frm_data(sizeof(uint8_t), LDNS_RDF_TYPE_INT8, &lt->id);
+		*rd = ldns_rdf_new_frm_data(
+			LDNS_RDF_TYPE_INT8, sizeof(uint8_t), &lt->id);
 		if (!*rd) {
 			st = LDNS_STATUS_ERR;
 		}

@@ -56,8 +56,7 @@ ldns_dname_cat(ldns_rdf *rd1, ldns_rdf *rd2)
 	memcpy(buf + ldns_rdf_size(rd1) - 1,
 			ldns_rdf_data(rd2), ldns_rdf_size(rd2));
 	
-	new = ldns_rdf_new_frm_data(new_size, LDNS_RDF_TYPE_DNAME,
-			buf);
+	new = ldns_rdf_new_frm_data(LDNS_RDF_TYPE_DNAME, new_size, buf);
 
 	FREE(buf);
 	return new;

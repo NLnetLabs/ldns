@@ -222,8 +222,8 @@ ldns_rdf *
 ldns_rdf_clone(const ldns_rdf *r)
 {
 	return (ldns_rdf_new_frm_data(
-				ldns_rdf_size(r), 
 				ldns_rdf_get_type(r),
+				ldns_rdf_size(r), 
 				ldns_rdf_data(r)));
 }
 
