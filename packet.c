@@ -696,13 +696,37 @@ ldns_pkt_query_new(ldns_rdf *rr_name, ldns_rr_type rr_type, ldns_rr_class rr_cla
  * what kind of packet it is, AUTH, NXDOMAIN, REFERRAL, etc.
  * \param[in] p the packet to examine
  * \return the type of packet
- * \todo there are no packet types!
  */
-void
+ldns_pkt_type
 ldns_pkt_reply_type(ldns_pkt *p)
 {
-	/* i'm looking in the packet */
-	/* for now only print so parameter is used :p */
-	printf("Determining packet type of packet:\n");
-	ldns_pkt_print(stdout, p);
+	/* check for NXDOMAIN */
+
+	/* check DNSSEC records... */
+
+	if (ldns_pkt_ancount(p) == 0 && ldns_pkt_arcount(p) == 0
+			&& ldns_pkt_nscount(p) == 1) {
+		if (ldns_pkt_rr_list_by_type(p, LDNS_RR_TYPE_SOA, 
+					LDNS_SECTION_AUTHORITY)) {
+			/* there is a SOA */
+			return LDNS_PACKET_NODATA;
+		} else {
+			/* I have no idea ... */
+		}
+	}
+
+	if (ldns_pkt_ancount(p) == 0 & ldns_pkt_nscount(p) > 0) {
+		if (ldns_pkt_rr_list_by_type(p, LDNS_RR_TYPE_NS,
+					LDNS_SECTION_AUTHORITY)) {
+			/* there are nameservers here */
+			return LDNS_PACKET_REFERRAL;
+		} else {
+			/* I have no idea */
+		}
+	}
+	
+	/* if we cannot determine the packet type, we say it's an 
+	 * answer...
+	 */
+	return LDNS_PACKET_ANSWER;
 }
