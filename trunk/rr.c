@@ -59,7 +59,7 @@ ldns_rr_free(ldns_rr *rr)
  * \return void
  */
 void
-ldns_rr_set_owner(ldns_rr *rr, ldns_rdf *owner)
+ldns_rr_set_owner(ldns_rr *rr, ldns_dname *owner)
 {
 	rr->_owner = owner;
 }
@@ -163,7 +163,7 @@ ldns_rr_rdf(ldns_rr *rr, uint16_t nr)
  * \param[in] *rr rr to operate on
  * \return ldns_rdf * 
  */
-ldns_rdf *
+ldns_dname *
 ldns_rr_owner(ldns_rr *rr)
 {
 	return rr->_owner;
