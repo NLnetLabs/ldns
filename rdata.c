@@ -101,5 +101,6 @@ rd_new_frm_string(rd_type_t t, char *s)
 
 void rd_destroy(rdata_t *rd)
 {
+	rd = NULL; /* kuch */
 	/* empty */
 }
