@@ -56,6 +56,7 @@ struct ldns_struct_key {
 			char *   name; /* needed? */
 		} tsig;
 	} extra;
+	ldns_rr *pubkey;
 };
 typedef struct ldns_struct_key ldns_key;
 
