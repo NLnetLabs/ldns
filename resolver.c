@@ -535,7 +535,7 @@ ldns_resolver_query(ldns_resolver *r, ldns_rdf *name, ldns_rr_type type, ldns_rr
 {
 	ldns_rdf *newname;
 	ldns_pkt *pkt;
-	
+
 	if (!ldns_resolver_defnames(r)) {
 		return ldns_resolver_send(r, name, type, class, flags);
 	}
@@ -545,7 +545,6 @@ ldns_resolver_query(ldns_resolver *r, ldns_rdf *name, ldns_rr_type type, ldns_rr
 	}
 
 	newname = ldns_dname_cat(name, ldns_resolver_domain(r));
-
 	if (!newname) {
 		return NULL;
 	}
@@ -603,6 +602,8 @@ ldns_resolver_send(ldns_resolver *r, ldns_rdf *name, ldns_rr_type type, ldns_rr_
 	id = (uint16_t) (0xffff & random() & getpid());
 
 	ldns_pkt_set_id(query_pkt, id);
+
+	ldns_pkt_print(stdout, query_pkt);
 
 	/* return NULL on error */
 	answer_pkt = ldns_send(r, query_pkt);
