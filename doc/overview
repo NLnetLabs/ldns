@@ -12,6 +12,7 @@ ldns - Overview document
   o I you know what you do you should be able to bypass the resolver
     module and directly talk to the network module.
   o All modules will export functions to be used to client applications.
+  o All the stuff from the network is put in ldns_buffer's
 
 2. Different parts of ldns:
 

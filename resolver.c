@@ -293,11 +293,11 @@ ldns_resolver_send(ldns_resolver *r, ldns_rdf *name, ldns_rr_type type, ldns_rr_
 	query_pkt = ldns_pkt_query_new(name, type, class);
 	if (!query_pkt) {
 		printf("Failed to generate pkt\n");
+		return NULL;
 	}
 
 	/* return NULL on error */
-/*	answer_pkt = ldns_send(*r, query_pkt);
- */
+	answer_pkt = ldns_send(r, query_pkt);
 		
 	return answer_pkt;
 }
