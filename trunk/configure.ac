@@ -5,10 +5,19 @@ AC_PREREQ(2.57)
 AC_INIT(libdns, 0.01, libdns@nlnetlabs.nl, libdns0.01)
 AC_CONFIG_SRCDIR([packet.c])
 
+OURCPPFLAGS='-ansi -pedantic'
+CPPFLAGS=${CPPFLAGS:-${OURCPPFLAGS}}
+OURCFLAGS='-g -O2 -Wall -W -Wwrite-strings'
+CFLAGS=${CFLAGS:-${OURCFLAGS}}
+
 AC_AIX
 # Checks for programs.
 AC_PROG_CC
 AC_PROG_MAKE_SET
+
+# Checks for typedefs, structures, and compiler characteristics.
+AC_C_CONST
+AC_C_INLINE
 
 # my own checks
 AC_PATH_PROG(doxygen, doxygen, "/usr/bin/doxygen")
@@ -16,11 +25,11 @@ AC_PATH_PROG(doxygen, doxygen, "/usr/bin/doxygen")
 # Checks for libraries.
 
 # Checks for header files.
-#AC_HEADER_STDC
+AC_HEADER_STDC
 #AC_HEADER_SYS_WAIT
 #AC_CHECK_HEADERS([getopt.h fcntl.h stdlib.h string.h strings.h unistd.h])
 # do the very minimum - we can always extend this
-AC_CHECK_HEADERS([getopt.h stdbool.h stdlib.h stdio.h openssl/ssl.h assert.h netinet/in.h ctype.h])
+AC_CHECK_HEADERS([getopt.h stdbool.h openssl/ssl.h netinet/in.h])
 AC_CHECK_HEADERS(sys/param.h sys/mount.h,,,
 [
   [
