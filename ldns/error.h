@@ -26,7 +26,8 @@ enum ldns_enum_status
 	LDNS_STATUS_PACKET_OVERFLOW 	= 5 * __X,
 	LDNS_STATUS_INVALID_POINTER 	= 6 * __X,
 	LDNS_STATUS_MEM_ERR	 	= 7 * __X,
-	LDNS_STATUS_INT_EXP		= 8 * __X
+	LDNS_STATUS_INTERNAL_ERR	= 8 * __X,
+	LDNS_STATUS_INT_EXP		= 9 * __X
 };
 typedef enum ldns_enum_status ldns_status;
 

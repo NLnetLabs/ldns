@@ -11,6 +11,6 @@
 #include <ctype.h>
 
 char *ldns_rdf2str(ldns_rdf *);
-char *ldns_conv_a(ldns_rdf *);
+ldns_status ldns_rdf2buffer(ldns_buffer *buffer, ldns_rdf *rdf);
 
 #endif

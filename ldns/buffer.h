@@ -68,14 +68,14 @@ ldns_buffer_invariant(ldns_buffer *buffer)
 /*
  * Create a new buffer with the specified capacity.
  */
-ldns_buffer *ldns_buffer_create(size_t capacity);
+ldns_buffer *ldns_buffer_new(size_t capacity);
 
 /*
  * Create a buffer with the specified data.  The data is not copied
  * and no memory allocations are done.  The buffer is fixed and cannot
  * be resized using buffer_reserve().
  */
-void ldns_ldns_buffer_create_from(ldns_buffer *buffer, void *data, size_t size);
+void ldns_ldns_buffer_new_from(ldns_buffer *buffer, void *data, size_t size);
 
 /*
  * Clear the buffer and make it ready for writing.  The buffer's limit
@@ -380,5 +380,8 @@ ldns_buffer_read_u32(ldns_buffer *buffer)
  */
 int ldns_buffer_printf(ldns_buffer *buffer, const char *format, ...)
 	ATTR_FORMAT(printf, 2, 3);
+
+void ldns_buffer_destroy(ldns_buffer *buffer);
+char *ldns_buffer_export(ldns_buffer *buffer);
 
 #endif /* _BUFFER_H_ */

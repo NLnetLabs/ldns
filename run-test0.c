@@ -83,7 +83,12 @@ main(void)
 
 	printf("host2str:\n");
 	rdfstr = ldns_rdf2str(rr->_rdata_fields[0]);
-	printf("%s\n", rdfstr);
+	if (rdfstr) {
+		printf("%s\n", rdfstr);
+	} else {
+		printf("error\n");
+	}
+	
 	return 0;
 }
 
