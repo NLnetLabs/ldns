@@ -144,5 +144,9 @@ long power(long a, long b);
  */
 int hexdigit_to_int(char ch);
 
+/**
+ * return a word from a stream
+ */
+int readword(char *, FILE *, size_t);
 
 #endif /* !_UTIL_H */

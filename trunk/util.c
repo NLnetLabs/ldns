@@ -126,3 +126,29 @@ hexdigit_to_int(char ch)
 		abort();
 	}
 }
+
+/**
+ * read a word from a stream. Return the number
+ * of character read or -1 on failure or EOF
+ */
+int
+readword(char *line, FILE *from, size_t lim)
+{
+	int c;
+	char *l;
+	int i;
+
+	l = line; i = 0;
+	while ((c = getc(from)) != EOF) {
+		if (c != '\n' && c != ' ' && c != '\t') {
+			*l++ = c; lim--; i++;
+		} else {
+			*l = '\0'; 
+			return i;
+		}
+		if ((size_t)i > lim)  {
+			return -1;
+		}
+	}
+	return -1;
+}
