@@ -24,6 +24,7 @@ main(int argc, char **argv)
         ldns_resolver *res;
         ldns_rdf *qname;
         ldns_rdf *nameserver;
+	ldns_rdf *defdomain;
         ldns_pkt *pkt;
         char *server_ip;
         char *name;
@@ -47,6 +48,9 @@ main(int argc, char **argv)
 		printf("Bad server ip\n");
 		return -1;
 	}
+	defdomain = ldns_dname_new_frm_str("miek.nl");
+	ldns_resolver_set_domain(res, defdomain);
+	ldns_resolver_set_defnames(res, true);
 
         if (ldns_resolver_push_nameserver(res, nameserver) != LDNS_STATUS_OK) {
 		printf("error push nameserver\n");
@@ -65,9 +69,16 @@ main(int argc, char **argv)
         pkt = ldns_resolver_send(res, qname, ldns_rr_get_type_by_name(type), 0, LDNS_RD);
 	if (!pkt)  {
 		printf("error pkt sending\n");
-		return -1;
+	} else {
+        	ldns_pkt_print(stdout, pkt);
 	}
-        ldns_pkt_print(stdout, pkt);
+
+        pkt = ldns_resolver_query(res, qname, ldns_rr_get_type_by_name(type), 0, LDNS_RD);
+	if (!pkt)  {
+		printf("error pkt sending\n");
+	} else {
+        	ldns_pkt_print(stdout, pkt);
+	}
         
         return 0;
 }
