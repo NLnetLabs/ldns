@@ -470,8 +470,8 @@ uint32_t
 ldns_str2period(const char *nptr, const char **endptr)
 {
 	int sign = 0;
-	long i = 0;
-	long seconds = 0;
+	uint32_t i = 0;
+	uint32_t seconds = 0;
 
 	for(*endptr = nptr; **endptr; (*endptr)++) {
 		switch (**endptr) {
@@ -482,14 +482,14 @@ ldns_str2period(const char *nptr, const char **endptr)
 				if(sign == 0) {
 					sign = -1;
 				} else {
-					return (sign == -1) ? -seconds : seconds;
+					return seconds;
 				}
 				break;
 			case '+':
 				if(sign == 0) {
 					sign = 1;
 				} else {
-					return (sign == -1) ? -seconds : seconds;
+					return seconds;
 				}
 				break;
 			case 's':
@@ -532,10 +532,12 @@ ldns_str2period(const char *nptr, const char **endptr)
 				break;
 			default:
 				seconds += i;
-				return (sign == -1) ? -seconds : seconds;
+				/* disregard signedness */
+				return seconds;
 		}
 	}
 	seconds += i;
-	return (sign == -1) ? -seconds : seconds;
+	/* disregard signedness */
+	return seconds;
 }
 
