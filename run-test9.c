@@ -43,6 +43,11 @@ main(void)
 		bla = ldns_pkt_authority(pkt);
 
 		ldns_rr_list_print(stdout, bla);
+
+		ldns_rr_list_sort(&bla);
+		
+		printf("sorted\n");
+		ldns_rr_list_print(stdout, bla);
 	}
 	
         return 0;
