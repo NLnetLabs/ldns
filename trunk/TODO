@@ -7,6 +7,7 @@ o Signing
 o Different digests for DS
  - need a digest type?
 o NSEC generation??
+o openssl's setup function (esp. random)
 
 Implementation:
 ---------------

@@ -80,6 +80,7 @@ ldns_key_new_frm_algorithm(ldns_signing_algorithm alg, int size)
 			/* do your hmac thing here */
 			break;
 	}
+	ldns_key_set_algorithm(k, alg);
 	return k;
 }
 
@@ -283,5 +284,11 @@ ldns_key_list_pop_key(ldns_key_list *key_list)
 ldns_rr *
 ldns_key2rr(ldns_key *ATTR_UNUSED(k))
 {
+	/* need a owner, 
+	 * keytag
+	 * pub key values
+	 * proto
+	 * algorthm
+	 */
 	return NULL;
 }
