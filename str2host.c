@@ -21,7 +21,7 @@
 #include <limits.h>
 
 /**
- * convert a short in to wireformat 
+ * convert a short into wireformat 
  */
 ldns_status
 zparser_conv_short(ldns_rdf *rd, const char *shortstr)
