@@ -123,10 +123,6 @@ ldns_verify_rrsig(ldns_rr_list *rrset, ldns_rr *rrsig, ldns_rr_list *keys)
 	sig_algo = ldns_rdf2native_int8(ldns_rr_rdf(rrsig, 1));
 	result = false;
 
-	printf("sig\n\n");
-	ldns_rr_print(stdout, rrsig);
-	printf("\n");
-	
 	/* create a buffer with b64 signature rdata */
 	if (ldns_rdf2buffer_wire(rawsig_buf,
 				ldns_rr_rdf(rrsig, 8)) != LDNS_STATUS_OK) {
@@ -388,6 +384,10 @@ ldns_key_buf2rsa(ldns_buffer *key)
 	rsa->n = modulus;
 	rsa->e = exponent;
 
+	printf("my key\n");
+	RSA_print_fp(stdout, rsa, 0);
+	printf("\n");
+	
 	return rsa;
 }
 
@@ -733,7 +733,6 @@ ldns_sign_public(ldns_rr_list *rrset, ldns_key_list *keys)
 
 		/* fill in what we now of the signature */
 		/* set the orig_ttl */
-		printf("orig ttl %d\n", orig_ttl);
 		(void)ldns_rr_rrsig_set_origttl(current_sig, ldns_native2rdf_int32(LDNS_RDF_TYPE_INT32, orig_ttl));
 		/* the signers name */
 		(void)ldns_rr_rrsig_set_signame(current_sig, 
@@ -758,10 +757,6 @@ ldns_sign_public(ldns_rr_list *rrset, ldns_key_list *keys)
 		(void)ldns_rr_rrsig_set_typecovered(current_sig,
 				ldns_native2rdf_int16(LDNS_RDF_TYPE_TYPE,
 					ldns_rr_get_type(ldns_rr_list_rr(rrset_clone, 0))));
-		printf("Sig before signing\n\n[");
-		ldns_rr_print(stdout, current_sig);
-		printf("]\n");
-
 		/* right now, we have: a key, a semi-sig and an rrset. For
 		 * which we can create the sig and base64 encode that and
 		 * add that to the signature */
