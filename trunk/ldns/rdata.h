@@ -61,6 +61,8 @@ enum ldns_enum_rdf_type
 	/** time */
 	LDNS_RDF_TYPE_TIME,
 	/** tsig time 48 bits */
+	/** period */
+	LDNS_RDF_TYPE_PERIOD,
 	LDNS_RDF_TYPE_TSIGTIME,
 	/** protocol and port bitmaps */
 	LDNS_RDF_TYPE_SERVICE,

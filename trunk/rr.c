@@ -163,9 +163,11 @@ ldns_rr_new_frm_str(const char *str)
 	r_min = ldns_rr_descriptor_minimum(desc);
 
 	/* rdata (rdf's) */
+	printf("tot rd [%s]\n", rdata);
 	for(rd = strtok(rdata, "\t \0"), r_cnt =0; rd; rd = strtok(NULL, "\t \0"), r_cnt++) {
 		r = ldns_rdf_new_frm_str(rd,
 				ldns_rr_descriptor_field_type(desc, r_cnt));
+		printf("rd str [%s] %d\n", rd, r_cnt);
 		if (!r) {
 			printf("rdf conversion mismatch\n");
 			return NULL;
@@ -535,7 +537,10 @@ ldns_rr_set_push_rr(ldns_rr_list *rr_list, ldns_rr *rr)
 	uint16_t i;
 	ldns_rr *last;
 
+	assert(rr != NULL);
+
 	rr_count = ldns_rr_list_rr_count(rr_list);
+
 
 	if (rr_count == 0) {
 		/* nothing there, so checking it is 
@@ -596,8 +601,8 @@ static const ldns_rdf_type type_mf_wireformat[] = { LDNS_RDF_TYPE_DNAME };
 static const ldns_rdf_type type_cname_wireformat[] = { LDNS_RDF_TYPE_DNAME };
 static const ldns_rdf_type type_soa_wireformat[] = {
 	LDNS_RDF_TYPE_DNAME, LDNS_RDF_TYPE_DNAME, LDNS_RDF_TYPE_INT32, 
-	LDNS_RDF_TYPE_TIME, LDNS_RDF_TYPE_TIME, LDNS_RDF_TYPE_TIME,
-	LDNS_RDF_TYPE_TIME
+	LDNS_RDF_TYPE_PERIOD, LDNS_RDF_TYPE_PERIOD, LDNS_RDF_TYPE_PERIOD,
+	LDNS_RDF_TYPE_PERIOD
 };
 static const ldns_rdf_type type_mb_wireformat[] = { LDNS_RDF_TYPE_DNAME };
 static const ldns_rdf_type type_mg_wireformat[] = { LDNS_RDF_TYPE_DNAME };

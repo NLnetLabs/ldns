@@ -40,6 +40,7 @@ syn keyword  ldnsConstant	LDNS_RDF_TYPE_CERT
 syn keyword  ldnsConstant	LDNS_RDF_TYPE_ALG
 syn keyword  ldnsConstant 	LDNS_RDF_TYPE_UNKNOWN
 syn keyword  ldnsConstant	LDNS_RDF_TYPE_TIME
+syn keyword  ldnsConstant	LDNS_RDF_TYPE_PERIOD
 syn keyword  ldnsConstant	LDNS_RDF_TYPE_TSIGTIME
 syn keyword  ldnsConstant	LDNS_RDF_TYPE_SERVICE
 syn keyword  ldnsConstant	LDNS_RDF_TYPE_LOC

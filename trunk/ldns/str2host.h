@@ -14,6 +14,7 @@ ldns_status ldns_str2rdf_int8(ldns_rdf **, const char *);
 ldns_status ldns_str2rdf_int16(ldns_rdf **, const char *);
 ldns_status ldns_str2rdf_int32(ldns_rdf **, const char *);
 ldns_status ldns_str2rdf_time(ldns_rdf **, const char *);
+ldns_status ldns_str2rdf_period(ldns_rdf **, const char *);
 ldns_status ldns_str2rdf_a(ldns_rdf **, const char *);
 ldns_status ldns_str2rdf_aaaa(ldns_rdf **, const char *);
 ldns_status ldns_str2rdf_str(ldns_rdf **, const char *);
