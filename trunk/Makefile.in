@@ -36,3 +36,7 @@ clean:
 	rm -rf autom4te.cache/
 	rm -f config.status
 	rm -f config.log
+	rm -f Makefile
+	rm -f config.h
+	rm -f config.h.in
+	rm -f configure
