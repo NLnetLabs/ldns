@@ -105,7 +105,7 @@ void            ldns_rdf_set_size(ldns_rdf *, uint16_t);
 void            ldns_rdf_set_type(ldns_rdf *, ldns_rdf_type);
 void            ldns_rdf_set_data(ldns_rdf *, void *);
 ldns_rdf_type   ldns_rdf_get_type(const ldns_rdf *);
-ldns_rdf	*ldns_rdf_new(uint16_t, ldns_rdf_type, void *);
+ldns_rdf	*ldns_rdf_new(ldns_rdf_type, uint16_t, void *);
 ldns_rdf	*ldns_rdf_new_frm_data(ldns_rdf_type, uint16_t, const void *);
 ldns_rdf 	*ldns_rdf_new_frm_str(ldns_rdf_type, const char *);
 ldns_status     ldns_octet(char *word, size_t *length);

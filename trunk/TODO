@@ -3,7 +3,6 @@ Current TODO list
 
 Implementation:
 ---------------
-o sync argument order in rdf_new and rdf_new_frm_data 
 o deep free
 o check all conversion routines on missing types
 	- wire2host

@@ -190,7 +190,7 @@ ldns_native2rdf_int16(ldns_rdf_type type, uint16_t value)
 {
 	uint16_t *rdf_data = XMALLOC(uint16_t, 1);
 	write_uint16(rdf_data, value);
-	return ldns_rdf_new(2, type, rdf_data);
+	return ldns_rdf_new(type, 2, rdf_data);
 }
 
 /**
@@ -204,7 +204,7 @@ ldns_native2rdf_int32(ldns_rdf_type type, uint32_t value)
 {
 	uint32_t *rdf_data = XMALLOC(uint32_t, 1);
 	write_uint32(rdf_data, value);
-	return ldns_rdf_new(4, type, rdf_data);
+	return ldns_rdf_new(type, 4, rdf_data);
 }
 
 /**
@@ -219,7 +219,7 @@ ldns_native2rdf_int16_data(uint16_t size, uint8_t *data)
 	uint8_t *rdf_data = XMALLOC(uint8_t, (size_t) size + 2);
 	write_uint16(rdf_data, size);
 	memcpy(rdf_data + 2, data, size);
-	return ldns_rdf_new(size + 2, LDNS_RDF_TYPE_INT16_DATA, rdf_data);
+	return ldns_rdf_new(LDNS_RDF_TYPE_INT16_DATA, size + 2, rdf_data);
 }
 
 /**
@@ -227,7 +227,7 @@ ldns_native2rdf_int16_data(uint16_t size, uint8_t *data)
  * fill it and return it
  */
 ldns_rdf *
-ldns_rdf_new(uint16_t s, ldns_rdf_type t, void *d)
+ldns_rdf_new(ldns_rdf_type t, uint16_t s, void *d)
 {
 	ldns_rdf *rd;
 	rd = MALLOC(ldns_rdf);
@@ -277,8 +277,8 @@ ldns_rdf *
 ldns_rdf_deep_clone(const ldns_rdf *r)
 {
 	return (ldns_rdf_new_frm_data(
-				ldns_rdf_get_type(r),
 				ldns_rdf_size(r), 
+				ldns_rdf_get_type(r),
 				ldns_rdf_data(r)));
 }
 
