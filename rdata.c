@@ -14,6 +14,7 @@
 
 #include <ldns/rdata.h>
 #include <ldns/error.h>
+#include <ldns/str2host.h>
 
 #include "util.h"
 
