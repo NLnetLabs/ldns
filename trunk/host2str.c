@@ -47,12 +47,30 @@ ldns_lookup_table ldns_algorithms[] = {
         { 0, NULL }
 };
 
-/* rr types (TODO: maybe these should be in rr.c? */
+/* rr types (TODO: maybe these should be in rr.c? add enum? */
 ldns_lookup_table ldns_rr_classes[] = {
 	{ LDNS_RR_CLASS_IN, "IN" },
 	{ LDNS_RR_CLASS_CHAOS, "CH" },
 	{ LDNS_RR_CLASS_HS, "HS" },
 	{ LDNS_RR_CLASS_ANY, "ANY" },
+	{ 0, NULL }
+};
+
+/* if these are used elsewhere, move to packet.c? */
+ldns_lookup_table ldns_rcodes[] = {
+	{ 0, "NOERROR" },
+	{ 1, "FORMERR" },
+	{ 2, "SERVFAIL" },
+	{ 3, "NAMEERR" },
+	{ 4, "NOTIMPL" },
+	{ 5, "REFUSED" },
+	{ 0, NULL }
+};
+
+ldns_lookup_table ldns_opcodes[] = {
+	{ 0, "QUERY" },
+	{ 1, "IQUERY" },
+	{ 2, "STATUS" },
 	{ 0, NULL }
 };
 
@@ -310,8 +328,14 @@ ldns_pktheader2buffer(ldns_buffer *output, ldns_pkt *pkt)
 	/* TODO: strings for known names instead of numbers, flags etc */
 	if (
 	    ldns_buffer_printf(output, ";; ->>HEADER<<- ") < 0 ||
-	    ldns_buffer_printf(output, "opcode: %u, ", ldns_pkt_opcode(pkt)) < 0 ||
-	    ldns_buffer_printf(output, "status: %u, ", ldns_pkt_rcode(pkt)) < 0 ||
+	    ldns_buffer_printf(output, "opcode: %s, ", 
+	                       ldns_lookup_by_id(ldns_opcodes,
+                                                 (int) ldns_pkt_opcode(pkt))->name
+			      ) < 0 ||
+	    ldns_buffer_printf(output, "status: %s, ",
+	                       ldns_lookup_by_id(ldns_rcodes,
+	                                         (int) ldns_pkt_rcode(pkt))->name
+			      ) < 0 ||
 	    ldns_buffer_printf(output, "id %lu\n", ldns_pkt_id(pkt)) < 0 ||
 	    ldns_buffer_printf(output, ";; flags: ") < 0
 	   )
