@@ -87,6 +87,56 @@ ldns_rr2buffer_wire(ldns_buffer *buffer, ldns_rr *rr, int section)
 }
 
 /**
+ * convert a rrsig to wireformat BUT EXCLUDE the rrsig rdata
+ * This is needed in DNSSEC verification
+ * \param[out] *buffer buffer where to put the result
+ * \param[in] *rr sigrr to operate on
+ */
+ldns_status
+ldns_rrsig2buffer_wire(ldns_buffer *buffer, ldns_rr *rr)
+{
+	uint16_t i;
+	uint16_t rdl_pos = 0;
+
+	/* it must be a sig RR */
+	if (ldns_rr_get_type(rr) != LDNS_RR_TYPE_RRSIG) {
+		return LDNS_STATUS_ERR;
+	}
+	
+	if (ldns_rr_owner(rr)) {
+		(void) ldns_dname2buffer_wire(buffer, ldns_rr_owner(rr));
+	}
+	
+	if (ldns_buffer_reserve(buffer, 4)) {
+		(void) ldns_buffer_write_u16(buffer, ldns_rr_get_type(rr));
+		(void) ldns_buffer_write_u16(buffer, ldns_rr_get_class(rr));
+	}
+
+	if (ldns_buffer_reserve(buffer, 6)) {
+		ldns_buffer_write_u32(buffer, ldns_rr_ttl(rr));
+		/* remember pos for later */
+		rdl_pos = ldns_buffer_position(buffer);
+		ldns_buffer_write_u16(buffer, 0);
+	}	
+
+	/* now convert all the rdf, except the actual signature data
+	 * rdf number 8 */
+	for (i = 0; i < ldns_rr_rd_count(rr) - 1; i++) {
+		(void) ldns_rdf2buffer_wire(buffer, ldns_rr_rdf(rr, i));
+	}
+
+	if (rdl_pos != 0) {
+		ldns_buffer_write_u16_at(buffer,
+				rdl_pos,
+				ldns_buffer_position(buffer)
+				- rdl_pos
+				- 2
+				);
+	}
+	return ldns_buffer_status(buffer);
+}
+
+/**
  * Copy the packet header data to the buffer in wire format
  */
 ldns_status
