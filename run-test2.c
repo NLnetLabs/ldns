@@ -13,7 +13,7 @@
 
 #include "util.h"
 
-#define MAX_PACKET 1000
+#define MAX_PACKET 10000
 
 /**
  * Converts a hex string to binary data
