@@ -413,7 +413,11 @@ ldns_rr_get_class(const ldns_rr *rr)
 uint16_t
 ldns_rr_list_rr_count(ldns_rr_list *rr_list)
 {
-	return rr_list->_rr_count;
+	if (rr_list) {
+		return rr_list->_rr_count;
+	} else {
+		return 0;
+	}
 }
 
 void
