@@ -94,7 +94,7 @@ ldns_send(ldns_resolver *r, ldns_pkt *query_pkt)
 				ns_len = (socklen_t)sizeof(struct sockaddr_in6);
 				break;
 		}
-
+		
 		gettimeofday(&tv_s, NULL);
 		/* query */
 		if (1 == ldns_resolver_usevc(r)) {
@@ -103,6 +103,7 @@ ldns_send(ldns_resolver *r, ldns_pkt *query_pkt)
 			/* udp here, please */
 			reply = ldns_send_udp(qb, ns, ns_len);
 		}
+		FREE(ns);
 		gettimeofday(&tv_e, NULL);
 
 		if (reply) {
@@ -192,9 +193,11 @@ ldns_send_udp(ldns_buffer *qbin, const struct sockaddr_storage *to, socklen_t to
 
         if (ldns_wire2pkt(&answer_pkt, answer, (size_t) bytes) != 
 			LDNS_STATUS_OK) {
+		FREE(answer);
 		return NULL;
 	} else {
 		ldns_pkt_set_size(answer_pkt, (size_t) bytes);
+		FREE(answer);
 		return answer_pkt;
 	}
 }

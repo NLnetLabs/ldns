@@ -874,6 +874,7 @@ ldns_pkt2buffer_str(ldns_buffer *output, ldns_pkt *pkt)
 {
 	uint16_t i;
 	ldns_status status = LDNS_STATUS_OK;
+	char *tmp;
 	
 	if (ldns_buffer_status_ok(output)) {
 		status = ldns_pktheader2buffer_str(output, pkt);
@@ -935,7 +936,9 @@ ldns_pkt2buffer_str(ldns_buffer *output, ldns_pkt *pkt)
 		/* add some futher fields */
 		ldns_buffer_printf(output, ";; Query time: %d msec\n", ldns_pkt_querytime(pkt));
 		if (ldns_pkt_answerfrom(pkt)) {
-			ldns_buffer_printf(output, ";; SERVER: %s\n", ldns_rdf2str(ldns_pkt_answerfrom(pkt)));
+			tmp = ldns_rdf2str(ldns_pkt_answerfrom(pkt));
+			ldns_buffer_printf(output, ";; SERVER: %s\n", tmp);
+			FREE(tmp);
 		}
 		if (ldns_pkt_when(pkt)) {
 			/* \n included in when buffer, see ctime(3) */
@@ -971,6 +974,11 @@ buffer2str(ldns_buffer *buffer)
 
 	tmp_str = ldns_buffer_export(buffer);
 	str = XMALLOC(char, strlen(tmp_str) + 1);
+/*
+if(str == 0x80530f0){
+memcpy(0, "a", 1);
+}
+*/
 	memcpy(str, tmp_str, strlen(tmp_str) + 1);
 
 	return str;
@@ -1031,6 +1039,7 @@ ldns_rdf_print(FILE *output, ldns_rdf *rdf)
 	} else {
 		fprintf(output, "Unable to convert rdf to string\n");
 	}
+	FREE(str);
 }
 
 void

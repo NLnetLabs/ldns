@@ -38,29 +38,39 @@ doit(void)
 	ldns_rdf *cat_test1;
 	ldns_rdf *cat_test2;
 	ldns_rdf *concat;
-
+	char *str;
+	
 	buf = ldns_buffer_new(10); /* alloc away! */
 	if (!buf) {
 		printf("Nooooo\n");
 	}
 
 	printf("Setting 15242\n");
+	
 	if (ldns_str2rdf_int16(&rdata, "15242") != LDNS_STATUS_OK) {
 		printf("_short: ah man, shit hit the fan\n");
 	}
 	
 	(void) ldns_rdf2buffer_str_int16(buf, rdata); 
-	fprintf(stderr, "%s\n", buffer2str(buf));
+	str = buffer2str(buf);
+	fprintf(stderr, "%s\n", str);
+
+	FREE(str);
+	ldns_buffer_free(buf);
+	ldns_rdf_free(rdata);
 
 	/* test the label counter */
  	cnt_test = ldns_dname_new_frm_str("miek.nl.");
 	printf("Labels miek.nl. %d\n", ldns_rdf_dname_label_count(cnt_test));
+	ldns_rdf_free(cnt_test);
 
  	cnt_test = ldns_dname_new_frm_str("miek.nl");
 	printf("Labels miek.nl %d\n", ldns_rdf_dname_label_count(cnt_test));
+	ldns_rdf_free(cnt_test);
 	
  	cnt_test = ldns_dname_new_frm_str("miek");
 	printf("Labels miek %d\n", ldns_rdf_dname_label_count(cnt_test));
+	ldns_rdf_free(cnt_test);
 	
 /* this errors
  	cnt_test = ldns_dname_new_frm_str(".");
@@ -76,6 +86,7 @@ printf("counting: %s\n", ldns_rdf2str(cnt_test));
 
  	cnt_test = ldns_dname_new_frm_str("nl");
 	printf("Labels nl %d\n", ldns_rdf_dname_label_count(cnt_test));
+	ldns_rdf_free(cnt_test);
 
 
 	/* concat tests */
@@ -84,8 +95,13 @@ printf("counting: %s\n", ldns_rdf2str(cnt_test));
 	concat = ldns_dname_concat(cat_test1, cat_test2);
 
 	ldns_rdf_print(stdout, concat);
+
 	printf(" [%d]\n", ldns_rdf_size(concat));
 	printf("Labels nl %d\n", ldns_rdf_dname_label_count(concat));
+
+	ldns_rdf_free(cat_test1);
+	ldns_rdf_free(cat_test2);
+	ldns_rdf_free(concat);
 }
 
 
@@ -96,10 +112,13 @@ main(void)
 	if (ldns_str2rdf_int16(&bla, "15242") != LDNS_STATUS_OK) {
 		printf("_int16: ah man, shit hit the fan\n");
 	}
+	ldns_rdf_free(bla);
+	
 	/* %Y%m%d%H%M%S */
 	if (ldns_str2rdf_time(&bla, "20041222134100") != LDNS_STATUS_OK) {
 		printf("_time: ah man, shit hit the fan\n");
 	}
+	ldns_rdf_free(bla);
 
 	printf("succes\n");
 	doit();

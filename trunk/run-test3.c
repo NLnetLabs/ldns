@@ -18,12 +18,20 @@ main(void)
 
 	fprintf(stdout, "www.\n");
 	(void) ldns_str2rdf_dname(&rd, "www.");
+	ldns_rdf_free(rd);
+
 	fprintf(stdout, "www.miek.nl\n");
 	(void) ldns_str2rdf_dname(&rd, "www.miek.nl");
+	ldns_rdf_free(rd);
+
 	fprintf(stdout, "www\n");
 	(void) ldns_str2rdf_dname(&rd, "www");
+	ldns_rdf_free(rd);
+
 	fprintf(stdout, "www.miek.nl..\n");
 	(void) ldns_str2rdf_dname(&rd, "www.miek.nl..");
+	
+	ldns_rdf_free(rd);
 
 	return 0;
 }

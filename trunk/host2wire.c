@@ -222,6 +222,7 @@ uint8_t *
 ldns_pkt2wire(ldns_pkt *packet, size_t *result_size)
 {
 	ldns_buffer *buffer = ldns_buffer_new(MAX_PACKETLEN);
+	uint8_t *result2 = NULL;
 	uint8_t *result = NULL;
 	*result_size = 0;
 	if (ldns_pkt2buffer_wire(buffer, packet) == LDNS_STATUS_OK) {
@@ -230,7 +231,13 @@ ldns_pkt2wire(ldns_pkt *packet, size_t *result_size)
 	} else {
 		/* TODO: what about the error? */
 	}
+	
+	if (result) {
+		result2 = XMALLOC(uint8_t, ldns_buffer_position(buffer));
+		memcpy(result2, result, ldns_buffer_position(buffer));
+	}
+	
 	ldns_buffer_free(buffer);
-	return result;
+	return result2;
 }
 

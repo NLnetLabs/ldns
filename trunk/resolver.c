@@ -250,6 +250,28 @@ ldns_resolver_new(void)
 	return r;
 }
 
+/**
+ * Frees the allocated space for this resolver and all it's data
+ *
+ * \param res resolver to free
+ */
+void
+ldns_resolver_free(ldns_resolver *res)
+{
+	size_t i;
+/*
+	for (i = 0; i < res->_nameserver_count; i++) {
+		ldns_rdf_free(res->_nameservers[i]);
+	}
+	for (i = 0; i < res->_searchlist_count; i++) {
+		ldns_rdf_free(res->_searchlist[i]);
+	}
+*/
+	FREE(res->_searchlist);
+	FREE(res->_nameservers);
+	FREE(res);
+}
+
 /** 
  * Send the query 
  * \param[in] *r operate using this resolver
@@ -338,7 +360,7 @@ ldns_resolver_send(ldns_resolver *r, ldns_rdf *name, ldns_rr_type type, ldns_rr_
 	}
 	/* prepare a question pkt from the parameters
 	 * and then send this */
-	query_pkt = ldns_pkt_query_new(name, type, class, flags);
+	query_pkt = ldns_pkt_query_new(ldns_rdf_clone(name), type, class, flags);
 	if (!query_pkt) {
 		printf("Failed to generate pkt\n");
 		return NULL;
@@ -346,6 +368,8 @@ ldns_resolver_send(ldns_resolver *r, ldns_rdf *name, ldns_rr_type type, ldns_rr_
 
 	/* return NULL on error */
 	answer_pkt = ldns_send(r, query_pkt);
+	
+	ldns_pkt_free(query_pkt);
 		
 	return answer_pkt;
 }

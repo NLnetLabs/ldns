@@ -45,6 +45,9 @@ void
 ldns_rr_free(ldns_rr *rr)
 {
 	uint16_t i;
+	if (ldns_rr_owner(rr)) {
+		ldns_rdf_free(ldns_rr_owner(rr));
+	}
 	for (i = 0; i < ldns_rr_rd_count(rr); i++) {
 		ldns_rdf_free(ldns_rr_rdf(rr, i));
 	}
