@@ -26,5 +26,6 @@
 #include <ldns/dnssec.h>
 #include <ldns/keys.h>
 #include <ldns/rr_functions.h>
+#include <ldns/parse.h>
 
 #endif	/* _LDNS_H */

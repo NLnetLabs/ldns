@@ -84,8 +84,6 @@ main()
 
 	ldns_rr_list_print(stdout, signatures);
 
-	return 0;
-	/* END */
 	printf("Now we are going to verify\n");
 
 	printf("\n[%d]\n", ldns_verify(rrs, signatures, dnskeys));
