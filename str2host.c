@@ -12,30 +12,53 @@
  */
 #include <config.h>
 
-#include <limits.h>
+
+#include <ldns/host2str.h>
 
 #include <sys/socket.h>
 #include <arpa/inet.h>
+#include <limits.h>
 
-uint16_t *
-zparser_conv_hex(region_type *region, const char *hex)
+/**
+ * convert a short in to wireformat 
+ */
+ldns_status
+zparser_conv_short(ldns_rdf *rd, const char *shortstr)
 {
-	/* convert a hex value to wireformat */
-	uint16_t *r = NULL;
+	char *end;      /* Used to parse longs, ttls, etc.  */
+	rd->_size = 2;
+	rd->_data = (uint8_t*)htons((uint16_t)strtol(shortstr, &end, 0));
+            
+	if(*end != 0) {
+		return LDNS_STATUS_INT_EXP;
+	} else {
+		return LDNS_STATUS_OK;
+	}
+}
+
+#if 0
+
+/**
+ * convert a hex value to wireformat
+ */
+ldns_status
+zparser_conv_hex(ldns_rdf *rd, const char *hex)
+{
+	uint16_t *rd = NULL;
 	uint8_t *t;
 	size_t len;
 	int i;
 	
 	len = strlen(hex);
 	if (len % 2 != 0) {
-		error_prev_line("number of hex digits must be a multiple of 2");
+		return NULL;
+	//	error_prev_line("number of hex digits must be a multiple of 2");
 	} else if (len > MAX_RDLENGTH * 2) {
-		error_prev_line("hex data exceeds maximum rdata length (%d)",
-				MAX_RDLENGTH);
+		//error_prev_line("hex data exceeds maximum rdata length (%d)", MAX_RDLENGTH);
+		return NULL
 	} else {
 		/* the length part */
-		r = (uint16_t *) region_alloc(region,
-					      sizeof(uint16_t) + len/2);
+		r = (uint16_t *) XMALLOC(uint16, len/2);
 		*r = len/2;
 		t = (uint8_t *)(r + 1);
     
@@ -73,7 +96,7 @@ zparser_conv_hex(region_type *region, const char *hex)
 					*t += (*hex - 'A' + 10) * i;
 					break;
 				default:
-					error_prev_line("illegal hex character '%c'", (int)*hex);
+					//error_prev_line("illegal hex character '%c'", (int)*hex);
 					return NULL;
 				}
 				++hex;
@@ -84,8 +107,11 @@ zparser_conv_hex(region_type *region, const char *hex)
 	return r;
 }
 
+/**
+ * convert a time value to wireformat 
+ */
 uint16_t *
-zparser_conv_time(region_type *region, const char *time)
+zparser_conv_time(ldns_rdf *rd, const char *time)
 {
 	/* convert a time YYHM to wireformat */
 	uint16_t *r = NULL;
@@ -187,25 +213,6 @@ zparser_conv_period(region_type *region, const char *periodstr)
 	return r;
 }
 
-uint16_t *
-zparser_conv_short(region_type *region, const char *shortstr)
-{
-	/* convert a short INT to wire format */
-
-	char *end;      /* Used to parse longs, ttls, etc.  */
-	uint16_t *r = NULL;
-   
-	r = (uint16_t *) region_alloc(
-		region, sizeof(uint16_t) + sizeof(uint16_t));
-    	*(r+1)  = htons((uint16_t)strtol(shortstr, &end, 0));
-            
-	if(*end != 0) {
-		error_prev_line("Unsigned short value is expected");
-	} else {
-		*r = sizeof(uint16_t);
-	}
-	return r;
-}
 
 uint16_t *
 zparser_conv_long(region_type *region, const char *longstr)
@@ -807,3 +814,4 @@ zparser_conv_apl_rdata(region_type *region, char *str)
 
 	return r;
 }
+#endif
