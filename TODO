@@ -17,8 +17,6 @@ o check all conversion routines on missing types
 	- host2wire
 	- str2host
 	- host2str
-o network code
-	- tsig?
 o use size_t where needed
 o DNSSEC
 	- signing
@@ -28,17 +26,12 @@ o Thread safety, strtok is used...
 o NSEC cannot be converted from str to host fmt
 o ssl autoconf
 o create a bunch of small programs, mx is created, todo: SOA
-o SSL_load_error_str()? 
 o resolver_frm_file (better parser)
 o Remove all the printf's - and tie them into error handling
 o per RR functions (started, see rr_functions.c)
-o Remove/Handle all XXX and TODO/todos'
-  checked:
-  - rr.c/rr.h		- util.c
-  - data.c/data.h	- dname.c
-  - packet.c (partially)
 o conversion from  ldns_key to key rr's
 o init function? random - load_ssl_errors()
+	- SSL_load_error_str()? 
 
 Documentation:
 --------------
