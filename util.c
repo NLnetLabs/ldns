@@ -15,6 +15,8 @@
 #include <ldns/rdata.h>
 #include <ldns/rr.h>
 
+#include <stdio.h>
+
 /* put this here tmp. for debugging */
 void
 xprintf_rdf(ldns_rdf *rd)
