@@ -974,11 +974,6 @@ buffer2str(ldns_buffer *buffer)
 
 	tmp_str = ldns_buffer_export(buffer);
 	str = XMALLOC(char, strlen(tmp_str) + 1);
-/*
-if(str == 0x80530f0){
-memcpy(0, "a", 1);
-}
-*/
 	memcpy(str, tmp_str, strlen(tmp_str) + 1);
 
 	return str;
@@ -1051,6 +1046,7 @@ ldns_rr_print(FILE *output, ldns_rr *rr)
 	} else {
 		fprintf(output, "Unable to convert rr to string\n");
 	}
+	FREE(str);
 }
 
 void
@@ -1062,5 +1058,6 @@ ldns_pkt_print(FILE *output, ldns_pkt *pkt)
 	} else {
 		fprintf(output, "Unable to convert packet to string\n");
 	}
+	FREE(str);
 }
 
