@@ -394,3 +394,8 @@ ldns_key2rr(ldns_key *k)
 	return pubkey;
 }
 
+uint16_t
+ldns_key_calc_keytag(ldns_key *k)
+{
+	return 0;
+}

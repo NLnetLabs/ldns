@@ -53,8 +53,6 @@ main(int argc, char *argv[])
 	signatures = ldns_sign_public(rrs, keys);
 
 	ldns_rr_list_print(stdout, signatures);
-	printf("\n");
 
-	
         return 0;
 }

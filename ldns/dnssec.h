@@ -41,7 +41,7 @@ typedef enum ldns_enum_algorithm ldns_algorithm;
  * \param[in] key the key to use for the calc.
  * \return the keytag
  */
-uint16_t ldns_keytag(ldns_rr *key);
+uint16_t ldns_calc_keytag(ldns_rr *key);
 
 /**
  * verify an rrsig rrset
