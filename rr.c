@@ -114,8 +114,6 @@ ldns_rr_new_frm_str(const char *str)
 
 	new = ldns_rr_new();
 	unquoted_len = ldns_unquote((char *)str, &unquoted);
-	printf("unq: [%s]\n", unquoted);
-	printf("unq: [%d] %d\n", strlen(unquoted), unquoted_len);
 
 	owner = XMALLOC(char, MAX_DOMAINLEN + 1);
 	ttl = XMALLOC(char, 21);
