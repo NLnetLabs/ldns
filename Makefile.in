@@ -44,6 +44,7 @@ LIBDNS_OBJECTS	=	$(LIBDNS_SOURCES:.c=.o)
 ALL_SOURCES	=	run-test0.c run-test1.c run-test2.c run-test3.c \
 			run-test4.c run-test5.c run-test6.c run-test7.c \
 			run-test8.c run-test9.c run-test10.c run-test11.c \
+			run-test12.c \
 			$(LIBDNS_SOURCES)
 
 TESTS		=	run-test0		\
@@ -57,7 +58,8 @@ TESTS		=	run-test0		\
 			run-test8		\
 			run-test9		\
 			run-test10		\
-			run-test11
+			run-test11		\
+			run-test12
 
 COMPILE		= $(CC) $(CPPFLAGS) $(CFLAGS)
 COMP_LIB	= $(LIBTOOL) $(CC) $(CPPFLAGS) $(CFLAGS)
@@ -108,6 +110,8 @@ run-test10:	run-test10.o $(LIBDNS_OBJECTS) $(LIBOBJS)
 		$(LINK) ${LIBS} -o $@ $+
 run-test11:	run-test11.o $(LIBDNS_OBJECTS) $(LIBOBJS)
 		$(LINK) ${LIBS} -o $@ $+
+run-test12:	run-test12.o $(LIBDNS_OBJECTS) $(LIBOBJS)
+		$(LINK) -lpcap ${LIBS} -o $@ $+
 
 run-test-trace:	run-test-trace.o $(LIBDNS_OBJECTS) $(LIBOBJS)
 		$(LINK) ${LIBS} -o $@ $+
