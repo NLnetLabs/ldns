@@ -13,6 +13,7 @@
 #include <config.h>
 
 #include <ldns/str2host.h>
+#include <ldns/dns.h>
 
 #include "util.h"
 
@@ -173,6 +174,13 @@ ldns_str2rdf_a(ldns_rdf **rd, const uint8_t* str)
 ldns_status
 ldns_str2rdf_aaaa(ldns_rdf **rd, const uint8_t* str)
 {
+	uint8_t address[IP6ADDRLEN];
+
+	if (inet_pton(AF_INET6, (char*)str, address) != 1) {
+		return LDNS_STATUS_INVALID_IP6;
+	} else {
+		*rd = ldns_rdf_new(sizeof(address), LDNS_RDF_TYPE_AAAA, &address);
+	}
 	return LDNS_STATUS_OK;
 }
 
