@@ -135,63 +135,6 @@
 #define	ARCOUNT(wirebuf)		(read_uint16(wirebuf+ARCOUNT_OFF))
 
 
-/**
- * transform a wireformatted rdata to our
- * internal representation. We need to the
- * length, and the type and put the data in
- */
-/*
-ssize_t
-rdata_buf_to_rdf(ldns_rdf *rd, ldns_rdf *buffer)
-{
-	switch(RDATA_TYPESS) {
-		case RDF_TYPE_NONE:
-			break;
-		case RDF_TYPE_DNAME:
-			break;
-		case RDF_TYPE_INT8:
-			break;
-		case RDF_TYPE_INT16:
-			break;
-		case RDF_TYPE_INT32:
-			break;
-		case RDF_TYPE_INT48:
-			break;
-		case RDF_TYPE_A:     
-			break;
-		case RDF_TYPE_AAAA:
-			break;
-		case RDF_TYPE_STR:
-			break;
-		case RDF_TYPE_APL:
-			break;
-		case RDF_TYPE_B64:
-			break;
-		case RDF_TYPE_HEX:
-			break;
-		case RDF_TYPE_NSEC: 
-			break;
-		case RDF_TYPE_TYPE: 
-			break;
-		case RDF_TYPE_CLASS:
-			break;
-		case RDF_TYPE_CERT:
-			break;
-		case RDF_TYPE_ALG:
-			break;
-		case RDF_TYPE_UNKNOWN:
-			break;
-		case RDF_TYPE_TIME:
-			break;
-		case RDF_TYPE_SERVICE:
-			break;
-		case RDF_TYPE_LOC:
-			break;
-	}	
-
-}
-*/
-
 /* TODO: general rdata2str or dname2str, with error
          checks and return status etc */
 /* this is temp function for debugging wire2rr */
@@ -503,7 +446,6 @@ ldns_wire2pkt(ldns_pkt **packet_p, const uint8_t *wire, size_t max)
 	status = ldns_wire2pkt_hdr(packet, wire, max, &pos);
 	STATUS_CHECK_GOTO(status, status_error);
 	
-	/* TODO: section enum :) */
 	for (i = 0; i < pkt_qdcount(packet); i++) {
 		status = ldns_wire2rr(&rr, wire, max, &pos,
 		                      LDNS_SECTION_QUESTION);
@@ -532,4 +474,3 @@ ldns_wire2pkt(ldns_pkt **packet_p, const uint8_t *wire, size_t max)
 	FREE(packet);
 	return status;
 }
-
