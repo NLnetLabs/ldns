@@ -46,10 +46,10 @@ LINK		= $(CC) $(CFLAGS) $(LDFLAGS)
 
 all:	run-test0 run-test1
 
-run-test0:	run-test0.o $(LIBDNS_OBJECTS)
+run-test0:	run-test0.o $(LIBDNS_OBJECTS) $(LIBOBJS)
 		$(LINK) -o $@ $+
 
-run-test1:	run-test1.o $(LIBDNS_OBJECTS)
+run-test1:	run-test1.o $(LIBDNS_OBJECTS) $(LIBOBJS)
 		$(LINK) -o $@ $+
 
 doc:	
