@@ -134,6 +134,22 @@ ldns_rdf_free(ldns_rdf *rd)
 }
 
 /**
+ * Create a new ldns_dname from a string
+ * \param[in] str string to use
+ * \return ldns_dname*
+ */
+ldns_dname *
+ldns_dname_new_frm_str(const char *str)
+{
+	ldns_rdf *rd;
+	if (ldns_str2rdf_dname(&rd, (const uint8_t*) str) != LDNS_STATUS_OK) {
+		return NULL ;
+	}
+	return rd;
+}
+	
+
+/**
  * Create a new rdf from a string
  * \param[in] str string to use
  * \param[in] t   type to use

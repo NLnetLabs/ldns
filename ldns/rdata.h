@@ -112,5 +112,7 @@ ldns_rdf	*ldns_rdf_new_frm_data(uint16_t, ldns_rdf_type, void *);
 uint8_t         *ldns_rdf_data(ldns_rdf *);
 void            ldns_rdf_free(ldns_rdf *);
 void            ldns_rdf_free_data(ldns_rdf *);
+ldns_dname	*ldns_dname_new_frm_str(const char *);
+ldns_rdf 	*ldns_rdf_new_frm_str(const char *, ldns_rdf_type);
 
 #endif	/* !_LDNS_RDATA_H */

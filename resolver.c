@@ -31,12 +31,6 @@ ldns_resolver_port(ldns_resolver *r)
 	return r->_port;
 }
 
-ldns_rr_list *
-ldns_resolver_nameservers(ldns_resolver *r)
-{
-	return r->_nameservers;
-}
-
 uint8_t
 ldns_resolver_recursive(ldns_resolver *r)
 {
@@ -49,13 +43,13 @@ ldns_resolver_debug(ldns_resolver *r)
 	return r->_debug;
 }
 
-ldns_rdf *
+ldns_dname *
 ldns_resolver_domain(ldns_resolver *r)
 {
 	return r->_domain;
 }
 
-ldns_rdf *
+ldns_dname **
 ldns_resolver_searchlist(ldns_resolver *r)
 {
 	return r->_searchlist;
@@ -68,10 +62,12 @@ ldns_resolver_set_port(ldns_resolver *r, uint16_t p)
 	r->_port = p;
 }
 
-void 
-ldns_resolver_set_nameservers(ldns_resolver *r, ldns_rr_list *n)
+ldns_status
+ldns_resolver_push_nameserver(ldns_resolver *r, ldns_rdf *n)
 {
-	r->_nameservers = n;
+	/* LDNS_RDF_TYPE_A | LDNS_RDF_TYPE_AAAA | LDNS_RDF_TYPE_DNAME */
+	r->_nameservers[++r->_nameserver_count] = n;
+	return LDNS_STATUS_OK;
 }
 
 void
@@ -105,22 +101,17 @@ ldns_resolver_set_debug(ldns_resolver *r, uint8_t d)
 }
 
 void 
-ldns_resolver_set_domain(ldns_resolver *r, ldns_rdf *d)
+ldns_resolver_set_domain(ldns_resolver *r, ldns_dname *d)
 {
-	if (ldns_rdf_get_type(d) != LDNS_RDF_TYPE_DNAME) {
-		return;
-	} 
 	r->_domain = d;
 }
 
 /* this is not the way to go for the search list XXX */
-void 
-ldns_resolver_set_searchlist(ldns_resolver *r, ldns_rdf *s)
+ldns_status
+ldns_resolver_push_searchlist(ldns_resolver *r, ldns_dname *d)
 {
-	if (ldns_rdf_get_type(s) != LDNS_RDF_TYPE_DNAME) {
-		return;
-	} 
-	r->_searchlist = s;
+	r->_searchlist[++r->_searchlist_count] = d;
+	return LDNS_STATUS_OK;
 }
 
 uint8_t
@@ -156,6 +147,7 @@ ldns_resover_new(void)
 	r = MALLOC(ldns_resolver);
 
 	r->_configured = 0; /* no config has happened yet */
+	r->_searchlist_count = 0; /* no searchlist */
 
 	/* no defaults are filled out (yet) */
 	return r;
