@@ -10,7 +10,7 @@
  * See the file LICENSE for the license
  */
 
-ff#include <config.h>
+#include <config.h>
 
 #include "rdata.h"
 #include "prototype.h"
