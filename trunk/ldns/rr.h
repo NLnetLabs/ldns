@@ -271,6 +271,7 @@ ldns_rr_type ldns_get_rr_type_by_name(const char *);
 ldns_rr_class ldns_get_rr_class_by_name(const char *);
 size_t ldns_rr_uncompressed_size(const ldns_rr *);
 int ldns_rr_compare(const ldns_rr *rr1, const ldns_rr *rr2);
+bool ldns_rr_compare_ds(const ldns_rr *rr1, const ldns_rr *rr2);
 void ldns_rr_list_sort(ldns_rr_list *);
 
 ldns_rr *ldns_rr_deep_clone(ldns_rr *rr);

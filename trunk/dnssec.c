@@ -71,74 +71,8 @@ ldns_keytag(ldns_rr *key)
 }
 
 /**
- * Returns an rr_list that contains the possible rrsigs for the given 
- * rr in the given packet
- * Allocates and copies, so don't forget to free!
- * TODO: helper for rr copying?
- * ldns_rr_deep_clone????
- */
-ldns_rr_list *
-ldns_pkt_get_sigs(ldns_pkt *pkt, ldns_rr *rr)
-{
-	ldns_rr_list *sigs = ldns_rr_list_new();
-	ldns_rr_list *pkt_rrs;
-	ldns_rr *cur_rr;
-	uint16_t i;
-	
-	pkt_rrs = ldns_pkt_answer(pkt);
-	if (pkt_rrs) {
-		for (i = 0; i < ldns_rr_list_rr_count(pkt_rrs); i++) {
-			cur_rr = ldns_rr_list_rr(pkt_rrs, i);
-			if (ldns_rdf_compare(ldns_rr_owner(rr),
-			                 ldns_rr_owner(cur_rr)
-			                )
-			   &&
-			   	ldns_rr_get_type(cur_rr) == LDNS_RR_TYPE_RRSIG
-			   ) {
-			   	ldns_rr_list_push_rr(sigs,
-			   	                     ldns_rr_deep_clone(cur_rr));
-			}
-		}
-	}
-	pkt_rrs = ldns_pkt_authority(pkt);
-	if (pkt_rrs) {
-		for (i = 0; i < ldns_rr_list_rr_count(pkt_rrs); i++) {
-			cur_rr = ldns_rr_list_rr(pkt_rrs, i);
-			if (ldns_rdf_compare(ldns_rr_owner(rr),
-			                 ldns_rr_owner(cur_rr)
-			                )
-			   &&
-			   	ldns_rr_get_type(cur_rr) == LDNS_RR_TYPE_RRSIG
-			   ) {
-			   	ldns_rr_list_push_rr(sigs,
-			   	                     ldns_rr_deep_clone(cur_rr));
-			}
-		}
-	}
-	pkt_rrs = ldns_pkt_additional(pkt);
-	if (pkt_rrs) {
-		for (i = 0; i < ldns_rr_list_rr_count(pkt_rrs); i++) {
-			cur_rr = ldns_rr_list_rr(pkt_rrs, i);
-			if (ldns_rdf_compare(ldns_rr_owner(rr),
-			                 ldns_rr_owner(cur_rr)
-			                )
-			   &&
-			   	ldns_rr_get_type(cur_rr) == LDNS_RR_TYPE_RRSIG
-			   ) {
-			   	ldns_rr_list_push_rr(sigs,
-			   	                     ldns_rr_deep_clone(cur_rr));
-			}
-		}
-	}
-		
-	return sigs;
-}
-
-
-/**
  * verify an rrsig rrset
  */
-
 bool
 ldns_verify(ldns_rr_list *rrset, ldns_rr_list *rrsig, ldns_rr_list *keys)
 {
@@ -732,7 +666,9 @@ ldns_pkt_tsig_sign(ldns_pkt *pkt, const char *key_name, const char *key_data, ui
 	return LDNS_STATUS_OK;
 }
 
-
+/** 
+ * Returns a new DS rr that represents the given key rr
+ */
 ldns_rr *
 ldns_key_rr2ds(ldns_rr *key)
 {
