@@ -27,7 +27,7 @@
 #endif
 
 /**
- * convert a short into wireformat 
+ * convert a short str into wireformat 
  */
 ldns_status
 ldns_conv_int16(ldns_rdf **rd, const char *shortstr)
@@ -48,7 +48,7 @@ ldns_conv_int16(ldns_rdf **rd, const char *shortstr)
 }
 
 /**
- * convert a time value to wireformat 
+ * convert a time str value to wireformat 
  */
 ldns_status
 ldns_conv_time(ldns_rdf **rd, const char *time)

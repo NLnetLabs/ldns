@@ -93,6 +93,9 @@ lint:
 		$(LINT) $(LINTFLAGS) -I. -I$(srcdir) $(srcdir)/$$i ; \
 	done
 
+tags:	*.c *.h
+	ctags *.[ch]
+
 timegm$U.o:	compat/timegm.c
 	$(COMPILE) -c compat/timegm.c -o $@
 
