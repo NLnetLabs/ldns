@@ -130,10 +130,13 @@ ldns_str2rdf_int8(ldns_rdf **rd, const uint8_t *bytestr)
 }
 
 /**
- * convert .... into wireformat
+ * convert a dname string into wireformat
  * \param[in] rd the rdf where to put the data
  * \param[in] str the string to be converted
  * \return ldns_status
+ *
+ * No special care is taken, all dots are translated into
+ * label seperators.
  */
 ldns_status
 ldns_str2rdf_dname(ldns_rdf **rd, const uint8_t* str)
@@ -150,6 +153,14 @@ ldns_str2rdf_dname(ldns_rdf **rd, const uint8_t* str)
 ldns_status
 ldns_str2rdf_a(ldns_rdf **rd, const uint8_t* str)
 {
+	in_addr_t address;
+        uint16_t *r = NULL;
+
+        if (inet_pton(AF_INET, (char*)str, &address) != 1) {
+                return LDNS_STATUS_INVALID_IP4;
+        } else {
+		*rd = ldns_rdf_new(sizeof(address), LDNS_RDF_TYPE_A, &address);
+        }
 	return LDNS_STATUS_OK;
 }
 
