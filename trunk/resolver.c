@@ -598,6 +598,9 @@ ldns_resolver_send(ldns_resolver *r, ldns_rdf *name, ldns_rr_type type, ldns_rr_
 		printf("Failed to generate pkt\n");
 		return NULL;
 	}
+	if (ldns_resolver_debug(r)) {
+		ldns_pkt_print(stdout, query_pkt);
+	}
 	
 	/* TODO: time is a terrible seed */
 	srandom((unsigned) time(NULL) ^ getpid());
