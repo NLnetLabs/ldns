@@ -108,6 +108,7 @@ ldns_send(ldns_resolver *r, ldns_pkt *query_pkt)
 		if (ldns_wire2pkt(&reply, reply_bytes, reply_size) !=
 		    LDNS_STATUS_OK) {
 			printf("malformed answer\n");
+			FREE(reply_bytes);
 			return NULL;
 		}
 		
@@ -144,6 +145,7 @@ ldns_send(ldns_resolver *r, ldns_pkt *query_pkt)
 		}
 	}
 	
+	FREE(reply_bytes);
 	ldns_buffer_free(qb);
 	return reply;
 }
