@@ -32,19 +32,19 @@ typedef enum ldns_enum_signing_algorithm ldns_signing_algorithm;
 
 
 struct ldns_struct_key {
-	ldns_signing_algorithm alg;
+	ldns_signing_algorithm _alg;
 	/* types of keys supported */
 	union {
 		RSA	*rsa;
 		DSA	*dsa;
 		unsigned char *hmac;
-	} key;
+	} _key;
 	/* depending on the key we can have 
 	 * extra data
 	 */
 	union {
 		struct {
-			uint32_t ttl;
+			uint32_t orig_ttl;
 			uint32_t inception;
 			uint32_t expiration;
 		}  dnssec;
@@ -52,8 +52,8 @@ struct ldns_struct_key {
 			uint16_t fudge;
 			char *   name; /* needed? */
 		} tsig;
-	} extra;
-	ldns_rdf *pubkey_owner;
+	} _extra;
+	ldns_rdf *_pubkey_owner;
 };
 typedef struct ldns_struct_key ldns_key;
 
@@ -66,5 +66,31 @@ struct ldns_struct_key_list
 	ldns_key **_keys;
 };
 typedef struct ldns_struct_key_list ldns_key_list;
+
+ldns_key_list * ldns_key_list_new();
+void ldns_key_set_algorithm(ldns_key *k, ldns_signing_algorithm l);
+void ldns_key_set_rsa_key(ldns_key *k, RSA *r);
+void ldns_key_set_dsa_key(ldns_key *k, DSA *d);
+void ldns_key_set_hmac_key(ldns_key *k, unsigned char *hmac);
+void ldns_key_set_ttl(ldns_key *k, uint32_t t);
+void ldns_key_set_inception(ldns_key *k, uint32_t i);
+void ldns_key_set_expiration(ldns_key *k, uint32_t e);
+void ldns_key_set_pubkey_owner(ldns_key *k, ldns_rdf *r);
+
+size_t ldns_key_list_key_count(ldns_key_list *key_list);
+ldns_key * ldns_key_list_key(ldns_key_list *key, size_t nr);
+
+ldns_signing_algorithm ldns_key_algorithm(ldns_key *k);
+RSA * ldns_key_rsa_key(ldns_key *k);
+DSA * ldns_key_dsa_key(ldns_key *k);
+unsigned char * ldns_key_hmac_key(ldns_key *k);
+uint32_t ldns_key_ttl(ldns_key *k);
+uint32_t ldns_key_inception(ldns_key *k);
+uint32_t ldns_key_expiration(ldns_key *k);
+void ldns_key_list_set_key_count(ldns_key_list *key, size_t count);
+ldns_rdf * ldns_key_pubkey_owner(ldns_key *k);
+bool ldns_key_list_push_key(ldns_key_list *key_list, ldns_key *key);
+ldns_key * ldns_key_list_pop_key(ldns_key_list *key_list);
+
 
 #endif /* _LDNS_KEYS_H */

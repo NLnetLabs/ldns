@@ -7,6 +7,7 @@
  */
 
 #include <config.h>
+#include <openssl/ssl.h>
 
 #include <util.h>
 #include <ldns/keys.h>
@@ -31,6 +32,56 @@ ldns_key_list_new()
 	return key_list;
 }
 
+void
+ldns_key_set_algorithm(ldns_key *k, ldns_signing_algorithm l) 
+{
+	k->_alg = l;
+}
+
+void
+ldns_key_set_rsa_key(ldns_key *k, RSA *r)
+{
+	k->_key.rsa = r;
+}
+
+void
+ldns_key_set_dsa_key(ldns_key *k, DSA *d)
+{
+	k->_key.dsa  = d;
+}
+
+void
+ldns_key_set_hmac_key(ldns_key *k, unsigned char *hmac)
+{
+	k->_key.hmac = hmac;
+}
+
+void
+ldns_key_set_ttl(ldns_key *k, uint32_t t)
+{
+	k->_extra.dnssec.orig_ttl = t;
+}
+
+void
+ldns_key_set_inception(ldns_key *k, uint32_t i)
+{
+	k->_extra.dnssec.inception = i;
+}
+
+void
+ldns_key_set_expiration(ldns_key *k, uint32_t e)
+{
+	k->_extra.dnssec.expiration = e;
+}
+
+/* todo also for tsig */
+
+void
+ldns_key_set_pubkey_owner(ldns_key *k, ldns_rdf *r)
+{
+	k->_pubkey_owner = r;
+}
+
 
 /* read */
 size_t
@@ -47,6 +98,56 @@ ldns_key_list_key(ldns_key_list *key, size_t nr)
 	} else {
 		return NULL;
 	}
+}
+
+ldns_signing_algorithm
+ldns_key_algorithm(ldns_key *k) 
+{
+	return k->_alg;
+}
+
+RSA *
+ldns_key_rsa_key(ldns_key *k)
+{
+	return k->_key.rsa;
+}
+
+DSA *
+ldns_key_dsa_key(ldns_key *k)
+{
+	return k->_key.dsa;
+}
+
+unsigned char *
+ldns_key_hmac_key(ldns_key *k)
+{
+	return k->_key.hmac;
+}
+
+uint32_t
+ldns_key_ttl(ldns_key *k)
+{
+	return k->_extra.dnssec.orig_ttl;
+}
+
+uint32_t
+ldns_key_inception(ldns_key *k)
+{
+	return k->_extra.dnssec.inception;
+}
+
+uint32_t
+ldns_key_expiration(ldns_key *k)
+{
+	return k->_extra.dnssec.expiration;
+}
+
+/* todo also for tsig */
+
+ldns_rdf *
+ldns_key_pubkey_owner(ldns_key *k)
+{
+	return k->_pubkey_owner;
 }
 
 /* write */

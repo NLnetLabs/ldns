@@ -229,6 +229,7 @@ syn keyword  ldnsType	ldns_lookup_table
 " ldns/keys.h
 syn keyword  ldnsType   ldns_key
 syn keyword  ldnsType   ldns_key_list
+syn keyword  ldnsType   ldns_signing_algorithm
 
 
 " Default highlighting
