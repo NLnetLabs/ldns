@@ -160,11 +160,11 @@ int_to_hexdigit(int i)
  * It defaults to '\n\t ' (newline, tab, space);
  */
 int
-readword(char *word, FILE *from, char *del, size_t lim)
+readword(char *word, FILE *from, const char *del, size_t lim)
 {
 	int c;
 	char *l;
-	char *d;
+	const char *d;
 	const char *delim;
 	int i;
 
