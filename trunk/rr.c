@@ -81,7 +81,8 @@ ldns_rr_push_rd_field(t_rr *rr, t_rdata_field *f)
 	rd_count = ldns_rr_rd_count(rr);
 	
 	/* grow the array */
-	XREALLOC(rr->_rdata_fields, t_rdata_field *, rd_count + 1);
+	rr->_rdata_fields = XREALLOC(
+		rr->_rdata_fields, t_rdata_field *, rd_count + 1);
 
 	/* add the new member */
 	rr->_rdata_fields[rd_count] = f;
