@@ -159,7 +159,7 @@ ldns_str2rdf_int8(ldns_rdf **rd, const char *bytestr)
 
 /**
  * convert a dname string into wireformat
- * \param[in] rd the rdf where to put the data
+ * \param[in] d the rdf where to put the data
  * \param[in] str the string to be converted
  * \return ldns_status
  *
@@ -319,8 +319,10 @@ ldns_str2rdf_str(ldns_rdf **rd, const char *str)
  * \return ldns_status
  */
 ldns_status
-ldns_str2rdf_apl(ldns_rdf **ATTR_UNUSED(rd), const char *ATTR_UNUSED(str))
+ldns_str2rdf_apl(ldns_rdf **rd, const char *str)
 {
+	rd = rd;
+	str = str;
 	abort();
 }
 
@@ -397,8 +399,10 @@ ldns_str2rdf_hex(ldns_rdf **rd, const char *str)
  * \return ldns_status
  */
 ldns_status
-ldns_str2rdf_nsec(ldns_rdf **ATTR_UNUSED(rd), const char *ATTR_UNUSED(str))
+ldns_str2rdf_nsec(ldns_rdf **rd, const char *str)
 {
+	rd = rd;
+	str = str;
 	abort();
 }
 
@@ -426,7 +430,7 @@ ldns_str2rdf_type(ldns_rdf **rd, const char *str)
  * \return ldns_status
  */
 ldns_status
-ldns_str2rdf_class(ldns_rdf **ATTR_UNUSED(rd), const char *str)
+ldns_str2rdf_class(ldns_rdf **rd, const char *str)
 {
 	uint16_t klass;
 	klass = htons(ldns_get_rr_class_by_name(str));
@@ -443,8 +447,10 @@ ldns_str2rdf_class(ldns_rdf **ATTR_UNUSED(rd), const char *str)
  * \return ldns_status
  */
 ldns_status
-ldns_str2rdf_cert(ldns_rdf **ATTR_UNUSED(rd), const char *ATTR_UNUSED(str))
+ldns_str2rdf_cert(ldns_rdf **rd, const char *str)
 {
+	rd = rd;
+	str = str;
 	abort();
 }
 
@@ -482,13 +488,13 @@ ldns_str2rdf_alg(ldns_rdf **rd, const char *str)
 		
 /**
  * convert .... into wireformat
- * \param[in] rd the rdf where to put the data
- * \param[in] str the string to be converted
  * \return ldns_status
  */
 ldns_status
-ldns_str2rdf_unknown(ldns_rdf **ATTR_UNUSED(rd), const char *ATTR_UNUSED(str))
+ldns_str2rdf_unknown(ldns_rdf **rd, const char *str)
 {
+	rd = rd;
+	str = str;
 	abort();
 }
 
@@ -499,8 +505,10 @@ ldns_str2rdf_unknown(ldns_rdf **ATTR_UNUSED(rd), const char *ATTR_UNUSED(str))
  * \return ldns_status
  */
 ldns_status
-ldns_str2rdf_tsig(ldns_rdf **ATTR_UNUSED(rd), const char *ATTR_UNUSED(str))
+ldns_str2rdf_tsig(ldns_rdf **rd, const char *str)
 {
+	rd = rd;
+	str = str;
 	abort();
 }
 
@@ -511,8 +519,10 @@ ldns_str2rdf_tsig(ldns_rdf **ATTR_UNUSED(rd), const char *ATTR_UNUSED(str))
  * \return ldns_status
  */
 ldns_status
-ldns_str2rdf_service(ldns_rdf **ATTR_UNUSED(rd), const char *ATTR_UNUSED(str))
+ldns_str2rdf_service(ldns_rdf **rd, const char *str)
 {
+	rd = rd;
+	str = str;
 	abort();
 }
 
@@ -523,8 +533,22 @@ ldns_str2rdf_service(ldns_rdf **ATTR_UNUSED(rd), const char *ATTR_UNUSED(str))
  * \return ldns_status
  */
 ldns_status
-ldns_str2rdf_loc(ldns_rdf **ATTR_UNUSED(rd), const char *ATTR_UNUSED(str))
+ldns_str2rdf_loc(ldns_rdf **rd, const char *str)
 {
+	rd = rd;
+	str = str;
+	abort();
+}
+
+/**
+ * convert .... into wireformat
+ * \return ldns_status
+ */
+ldns_status
+ldns_str2rdf_wks(ldns_rdf **rd, const char *str)
+{
+	rd = rd;
+	str = str;
 	abort();
 }
 
@@ -535,20 +559,10 @@ ldns_str2rdf_loc(ldns_rdf **ATTR_UNUSED(rd), const char *ATTR_UNUSED(str))
  * \return ldns_status
  */
 ldns_status
-ldns_str2rdf_wks(ldns_rdf **ATTR_UNUSED(rd), const char *ATTR_UNUSED(str))
+ldns_str2rdf_nsap(ldns_rdf **rd, const char *str)
 {
-	abort();
-}
-
-/**
- * convert .... into wireformat
- * \param[in] rd the rdf where to put the data
- * \param[in] str the string to be converted
- * \return ldns_status
- */
-ldns_status
-ldns_str2rdf_nsap(ldns_rdf **ATTR_UNUSED(rd), const char *ATTR_UNUSED(str))
-{
+	rd = rd;
+	str = str;
 	abort();
 }
 

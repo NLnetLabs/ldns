@@ -21,11 +21,6 @@
 #include <openssl/evp.h>
 #include <openssl/hmac.h>
 
-/** 
- * calcalutes a keytag of a key for use in DNSSEC
- * \param[in] key the key to use for the calc.
- * \return the keytag
- */
 uint16_t
 ldns_keytag(ldns_rr *key)
 {
@@ -70,9 +65,6 @@ ldns_keytag(ldns_rr *key)
 	}
 }
 
-/**
- * verify an rrsig rrset
- */
 bool
 ldns_verify(ldns_rr_list *rrset, ldns_rr_list *rrsig, ldns_rr_list *keys)
 {
@@ -96,12 +88,6 @@ ldns_verify(ldns_rr_list *rrset, ldns_rr_list *rrsig, ldns_rr_list *keys)
 }
 
 
-/**
- * verify an rrsig 
- * \param[in] rrset the rrset to check
- * \param[in] rrsig the signature of the rrset
- * \param[in] keys the keys to try
- */
 /* 
  * to verify:
  * - create the wire fmt of the b64 key rdata
@@ -316,11 +302,6 @@ ldns_verify_rrsig_rsamd5(ldns_buffer *sig, ldns_buffer *rrset, ldns_buffer *key)
 }
 
 /* some helper functions */
-/**
- * convert a buffer holding key material to a DSA key in openssl 
- * \param[in] key the key to convert
- * \return a DSA * structure with the key material
- */
 DSA *
 ldns_key_buf2dsa(ldns_buffer *key)
 {
@@ -361,11 +342,6 @@ ldns_key_buf2dsa(ldns_buffer *key)
 	return dsa;
 }
 
-/**
- * convert a buffer holding key material to a RSA key in openssl 
- * \param[in] key the key to convert
- * \return a RSA * structure with the key material
- */
 RSA *
 ldns_key_buf2rsa(ldns_buffer *key)
 {
@@ -475,10 +451,6 @@ ldns_create_tsig_mac(
 }
 
 
-/**
- * Verifies the tsig rr for the given packet and key (string?)
- * @return true if tsig is correct, false if not, or if tsig is not set
- */
 bool
 ldns_pkt_tsig_verify(ldns_pkt *pkt, 
                      const char *key_name, 
@@ -547,17 +519,6 @@ ldns_pkt_tsig_verify(ldns_pkt *pkt,
 
 
 
-/**
- * Creates a tsig rr for the given packet and key (string?)
- *
- * @param pkt the packet to sign
- * @param key_name the name of the shared key
- * @param key_data the key in base 64 format
- * @param fudge seconds of error permitted in time signed
- * @param algorithm_name the name of the algorithm used (TODO more than only hmac-md5.sig-alg.reg.int.?)
- * @param querymac is added to the digest if not NULL (so NULL is for signing queries, not NULL is for signing answers)
- * @return status (OK if success)
- */
 /* TODO: memory :p */
 ldns_status
 ldns_pkt_tsig_sign(ldns_pkt *pkt, const char *key_name, const char *key_data, uint16_t fudge, const char *algorithm_name, ldns_rdf *query_mac)
@@ -634,9 +595,6 @@ ldns_pkt_tsig_sign(ldns_pkt *pkt, const char *key_name, const char *key_data, ui
 	return LDNS_STATUS_OK;
 }
 
-/** 
- * Returns a new DS rr that represents the given key rr
- */
 ldns_rr *
 ldns_key_rr2ds(const ldns_rr *key)
 {
@@ -711,16 +669,7 @@ ldns_key_rr2ds(const ldns_rr *key)
         return ds;
 }
 
-/**
- * use this function for tsig signing - need to port above coded function
- */
-ldns_status
-ldns_sign_shared(void)
-{
-	return LDNS_STATUS_OK;
-}
-
-/**
+/*
  * use this function to sign with a public/private key alg
  * return the created signatures
  */

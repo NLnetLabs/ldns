@@ -28,7 +28,7 @@ ldns_status ldns_rdf2buffer_str(ldns_buffer *output, ldns_rdf *rdf);
  * format (as char *) and appends it to the given buffer
  *
  * @param output pointer to the buffer to append the data to
- * @param rdf the pointer to the rdafa field containing the data
+ * @param rr the pointer to the rr field to convert
  * @return status
  */
 ldns_status ldns_rr2buffer_str(ldns_buffer *output, ldns_rr *rr);
@@ -38,7 +38,7 @@ ldns_status ldns_rr2buffer_str(ldns_buffer *output, ldns_rr *rr);
  * format (as char *) and appends it to the given buffer
  *
  * @param output pointer to the buffer to append the data to
- * @param rdf the pointer to the rdafa field containing the data
+ * @param pkt the pointer to the packet to convert
  * @return status
  */
 ldns_status ldns_pkt2buffer_str(ldns_buffer *output, ldns_pkt *pkt);
@@ -102,11 +102,11 @@ char *buffer2str(ldns_buffer *buffer);
 void ldns_rdf_print(FILE *output, ldns_rdf *rdf);
 
 /**
- * Prints the data in the rresource record to the given file stream
+ * Prints the data in the resource record to the given file stream
  * (in presentation format)
  *
  * @param output the file stream to print to
- * @param rdf the resource record to print
+ * @param rr the resource record to print
  */
 void ldns_rr_print(FILE *output, ldns_rr *rr);
 

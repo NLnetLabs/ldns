@@ -157,7 +157,7 @@ int_to_hexdigit(int i)
  * read a word from a stream. Return the number
  * of character read or -1 on failure or EOF
  * All the chars in *del are used to stop when reading.
- * It defaults to '\n\t ' (newline, tab, space);
+ * It defaults to '\\n\\t ' (newline, tab, space);
  */
 int
 readword(char *word, FILE *from, const char *del, size_t lim)
