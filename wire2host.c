@@ -113,7 +113,7 @@
 #define	RA_CLR(wirebuf)	(*(wirebuf+3) &= ~RA_MASK)
 
 /* Query ID */
-#define	ID(wirebuf)		(ntohs(*(uint16_t *)(wirebuf)))
+#define	ID(wirebuf)			(read_uint16(wirebuf))
 
 /* Counter of the question section */
 #define QDCOUNT_OFF		4
@@ -250,7 +250,7 @@ ldns_wire2dname(ldns_rdf **dname, const uint8_t *wire, size_t max, size_t *pos)
 			pointer_target_buf[0] = wire[*pos] & 63;
 			pointer_target_buf[1] = wire[*pos+1];
 			memcpy(&pointer_target, pointer_target_buf, 2);
-			pointer_target = ntohs(pointer_target);
+			pointer_target = read_uint16(pointer_target_buf);
 
 			if (pointer_target == 0) {
 				fprintf(stderr, "POINTER TO 0\n");
@@ -361,7 +361,6 @@ ldns_wire2pkt_hdr(ldns_pkt *packet,
 	} else {
 
 		pkt_set_id(packet, ID(wire));
-
 		pkt_set_qr(packet, QR(wire));
 		pkt_set_opcode(packet, OPCODE(wire));
 		pkt_set_aa(packet, AA(wire));
