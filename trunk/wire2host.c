@@ -225,11 +225,11 @@ ldns_wire2dname(ldns_rdf **dname, const uint8_t *wire, size_t max, size_t *pos)
 {
 	uint8_t label_size;
 	uint16_t pointer_target;
-	uint8_t *pointer_target_buf;
+	uint8_t pointer_target_buf[2];
 	size_t dname_pos = 0;
 	size_t uncompressed_length = 0;
 	size_t compression_pos = 0;
-	uint8_t *tmp_dname = XMALLOC(uint8_t, MAXDOMAINLEN);
+	uint8_t tmp_dname[MAXDOMAINLEN];
 
 	if (*pos > max) {
 		/* TODO set error */
@@ -246,7 +246,6 @@ ldns_wire2dname(ldns_rdf **dname, const uint8_t *wire, size_t max, size_t *pos)
 
 			/* remove first two bits */
 			/* TODO: can this be done in a better way? */
-			pointer_target_buf = malloc(2);
 			pointer_target_buf[0] = wire[*pos] & 63;
 			pointer_target_buf[1] = wire[*pos+1];
 			memcpy(&pointer_target, pointer_target_buf, 2);
@@ -298,7 +297,6 @@ ldns_wire2dname(ldns_rdf **dname, const uint8_t *wire, size_t max, size_t *pos)
 	(*dname)->_size = (uint16_t) dname_pos;
 	(*dname)->_data = XMALLOC(uint8_t, dname_pos);
 	memcpy((*dname)->_data, tmp_dname, dname_pos);
-	FREE(tmp_dname);
 	
 	return LDNS_STATUS_OK;
 }
