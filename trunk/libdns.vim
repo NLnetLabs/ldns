@@ -14,8 +14,6 @@ syn keyword  ldnsMacro DEP
 " ldns/rdata.h
 syn keyword  ldnsType           ldns_rdf_type
 syn keyword  ldnsType           ldns_rdf
-syn keyword  ldnsType           ldns_rr
-syn keyword  ldnsType           ldns_rr_descriptor
 syn keyword  ldnsType           ldns_hdr
 syn keyword  ldnsType           ldns_pkt
 syn keyword  ldnsType           ldns_status
@@ -37,7 +35,13 @@ syn keyword ldnsMacro	LDNS_STATUS_INTERNAL_ERR
 syn keyword ldnsMacro	LDNS_STATUS_INT_EXP
 syn keyword ldnsMacro	LDNS_STATUS_ERR
 
+" ldns/resolver.h
+syn keyword  ldnsType	  	ldns_resolver
+
 " ldns/rr.h 
+syn keyword  ldnsType	  	ldns_rr_list 
+syn keyword  ldnsType           ldns_rr_descriptor
+syn keyword  ldnsType           ldns_rr
 syn keyword  ldnsConstant TYPE_A          
 syn keyword  ldnsConstant TYPE_NS        
 syn keyword  ldnsConstant TYPE_MD       
