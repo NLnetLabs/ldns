@@ -65,7 +65,7 @@ docclean:
 
 lint:
 	for i in $(ALL_SOURCES); do \
-		$(LINT) $(LINTFLAGS) -I. -I$(srcdir) $$i ; \
+		$(LINT) $(LINTFLAGS) -I. -I$(srcdir) $(srcdir)/$$i ; \
 	done
 
 # Automatic dependencies.
