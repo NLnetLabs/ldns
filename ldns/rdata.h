@@ -33,67 +33,55 @@
  * An rrset is an array of rr's.
  */ 
 
-#define MAXRDATALEN 64
-
+/*
+ * The different types of RDATA fields.
+ */
 enum ldns_enum_rdf_type
 {
 	/** none */
-	RDF_TYPE_NONE,
+	LDNS_RDF_TYPE_NONE,
 	/** domain name */
-	RDF_TYPE_DNAME,
+	LDNS_RDF_TYPE_DNAME,
 	/** 8 bits */
-	RDF_TYPE_INT8,
+	LDNS_RDF_TYPE_INT8,
 	/** 16 bits */
-	RDF_TYPE_INT16,
+	LDNS_RDF_TYPE_INT16,
 	/** 32 bits */
-	RDF_TYPE_INT32,
+	LDNS_RDF_TYPE_INT32,
 	/** 48 bits? */
-	RDF_TYPE_INT48,
+	LDNS_RDF_TYPE_INT48,
 	/** A record */
-	RDF_TYPE_A,	
+	LDNS_RDF_TYPE_A,	
 	/** AAAA record */
-	RDF_TYPE_AAAA,
+	LDNS_RDF_TYPE_AAAA,
 	/** txt string */
-	RDF_TYPE_STR,
+	LDNS_RDF_TYPE_STR,
 	/** apl data */
-	RDF_TYPE_APL,
+	LDNS_RDF_TYPE_APL,
 	/** b64 string */
-	RDF_TYPE_B64,
+	LDNS_RDF_TYPE_B64,
 	/** hex string */
-	RDF_TYPE_HEX,
+	LDNS_RDF_TYPE_HEX,
 	/** nsec type codes */
-	RDF_TYPE_NSEC, 
+	LDNS_RDF_TYPE_NSEC, 
 	/** a RR type */
-	RDF_TYPE_TYPE, 
+	LDNS_RDF_TYPE_TYPE, 
 	/** a class */
-	RDF_TYPE_CLASS,
+	LDNS_RDF_TYPE_CLASS,
 	/** certificates */
-	RDF_TYPE_CERT,
+	LDNS_RDF_TYPE_CERT,
 	/** a key algorithm */
-	RDF_TYPE_ALG,
+	LDNS_RDF_TYPE_ALG,
 	/** unknown types */
-	RDF_TYPE_UNKNOWN,
+	LDNS_RDF_TYPE_UNKNOWN,
 	/** time */
-	RDF_TYPE_TIME,
+	LDNS_RDF_TYPE_TIME,
 	/** protocol and port bitmaps */
-	RDF_TYPE_SERVICE,
+	LDNS_RDF_TYPE_SERVICE,
 	/** location data */
-	RDF_TYPE_LOC
+	LDNS_RDF_TYPE_LOC
 };
 typedef enum ldns_enum_rdf_type ldns_rdf_type;
-
-enum ldns_enum_class
-{
-	/** the Internet */
-	CLASS_IN 	= 1,
-	/** Chaos class */
-	CLASS_CHAOS	= 3,
-	/** Hesiod (Dyer 87) */
-	CLASS_HS	= 4,
-	/** Any class */
-	CLASS_ANY	= 255
-};
-typedef enum ldns_enum_class ldns_class;
 
 /**
  * \brief Resource record data
