@@ -50,12 +50,16 @@ main(void)
 	ldns_rr *ns;
 	ldns_rr_list *list;
 	ldns_resolver *res;
+	ldns_rdf **nss;
+	size_t i;
 
+#if 0
 	printf("Test some simple ipvX reverse functions\n");
 	doit();
 	doit();
 	doit();
 	doit();
+#endif
 	
 	res = ldns_resolver_new();
 	list = ldns_rr_list_new();
@@ -73,10 +77,131 @@ main(void)
 	printf("------\n");
 
 	/*ldns_resolver_push_nameserver_rr(res, ns);*/
+	if (ldns_resolver_push_nameserver(res, ldns_rr_rdf(ns,0)) != LDNS_STATUS_OK) {
+		printf("err\n");
+	}
+	if (ldns_resolver_push_nameserver(res, ldns_rr_rdf(ns,0)) != LDNS_STATUS_OK) {
+		printf("err\n");
+	}
+	printf("the whole shebang\n");
 	ldns_resolver_push_nameserver_rr_list(res, list);
+	ldns_resolver_push_nameserver_rr_list(res, list);
+	ldns_resolver_push_nameserver_rr_list(res, list);
+	ldns_resolver_push_nameserver_rr_list(res, list);
+	ldns_resolver_push_nameserver_rr_list(res, list);
+	ldns_resolver_push_nameserver_rr_list(res, list);
+	ldns_resolver_push_nameserver_rr_list(res, list);
+	
+	nss = ldns_resolver_nameservers(res);
+	if (!nss) {
+		printf("ook hier gaat wat fout!\n");
+	}
+	for (i = 0; i < ldns_resolver_nameserver_count(res); i++) {
+		ldns_rdf_print(stdout, nss[i]);
+		printf("\n");
+	}
+	printf("removing whole shebang\n");
 
 	ldns_resolver_pop_nameserver(res);
 	ldns_resolver_pop_nameserver(res);
+	ldns_resolver_pop_nameserver(res);
+	ldns_resolver_pop_nameserver(res);
+	ldns_resolver_pop_nameserver(res);
+	ldns_resolver_pop_nameserver(res);
+	ldns_resolver_push_nameserver_rr_list(res, list);
+	ldns_resolver_pop_nameserver(res);
+	ldns_resolver_pop_nameserver(res);
+	ldns_resolver_push_nameserver_rr_list(res, list);
+	ldns_resolver_pop_nameserver(res);
+	ldns_resolver_pop_nameserver(res);
+	ldns_resolver_pop_nameserver(res);
+	ldns_resolver_pop_nameserver(res);
+	ldns_resolver_pop_nameserver(res);
+	ldns_resolver_pop_nameserver(res);
+	ldns_resolver_pop_nameserver(res);
+	ldns_resolver_pop_nameserver(res);
+	ldns_resolver_pop_nameserver(res);
+	ldns_resolver_pop_nameserver(res);
+	ldns_resolver_pop_nameserver(res);
+	ldns_resolver_pop_nameserver(res);
+	ldns_resolver_pop_nameserver(res);
+	ldns_resolver_pop_nameserver(res);
+	ldns_resolver_pop_nameserver(res);
+	ldns_resolver_pop_nameserver(res);
+	ldns_resolver_pop_nameserver(res);
+	ldns_resolver_pop_nameserver(res);
+	ldns_resolver_pop_nameserver(res);
+	ldns_resolver_pop_nameserver(res);
+	ldns_resolver_pop_nameserver(res);
+	ldns_resolver_pop_nameserver(res);
+	ldns_resolver_pop_nameserver(res);
+	ldns_resolver_pop_nameserver(res);
+	ldns_resolver_pop_nameserver(res);
+	ldns_resolver_pop_nameserver(res);
+	ldns_resolver_pop_nameserver(res);
+	ldns_resolver_pop_nameserver(res);
+	ldns_resolver_pop_nameserver(res);
+	ldns_resolver_pop_nameserver(res);
+	ldns_resolver_pop_nameserver(res);
+	ldns_resolver_pop_nameserver(res);
+	ldns_resolver_pop_nameserver(res);
+	ldns_resolver_pop_nameserver(res);
+	ldns_resolver_pop_nameserver(res);
+	ldns_resolver_pop_nameserver(res);
+	ldns_resolver_pop_nameserver(res);
+	ldns_resolver_pop_nameserver(res);
+	ldns_resolver_pop_nameserver(res);
+	ldns_resolver_pop_nameserver(res);
+	ldns_resolver_pop_nameserver(res);
+	ldns_resolver_pop_nameserver(res);
+	ldns_resolver_pop_nameserver(res);
+	ldns_resolver_pop_nameserver(res);
+	ldns_resolver_pop_nameserver(res);
+	ldns_resolver_pop_nameserver(res);
+	ldns_resolver_pop_nameserver(res);
+	ldns_resolver_pop_nameserver(res);
+	ldns_resolver_pop_nameserver(res);
+	ldns_resolver_pop_nameserver(res);
+	ldns_resolver_pop_nameserver(res);
+	ldns_resolver_pop_nameserver(res);
+	ldns_resolver_pop_nameserver(res);
+	ldns_resolver_pop_nameserver(res);
+	ldns_resolver_pop_nameserver(res);
+	ldns_resolver_pop_nameserver(res);
+	ldns_resolver_pop_nameserver(res);
+	ldns_resolver_pop_nameserver(res);
+	ldns_resolver_pop_nameserver(res);
+	ldns_resolver_pop_nameserver(res);
+	ldns_resolver_pop_nameserver(res);
+	ldns_resolver_pop_nameserver(res);
+	ldns_resolver_pop_nameserver(res);
+	ldns_resolver_pop_nameserver(res);
+	ldns_resolver_pop_nameserver(res);
+	ldns_resolver_pop_nameserver(res);
+	ldns_resolver_pop_nameserver(res);
+	ldns_resolver_pop_nameserver(res);
+	ldns_resolver_pop_nameserver(res);
+	ldns_resolver_pop_nameserver(res);
+	ldns_resolver_pop_nameserver(res);
+	ldns_resolver_pop_nameserver(res);
+	ldns_resolver_pop_nameserver(res);
+	ldns_resolver_pop_nameserver(res);
+	ldns_resolver_pop_nameserver(res);
+	ldns_resolver_pop_nameserver(res);
+	ldns_resolver_pop_nameserver(res);
+	ldns_resolver_pop_nameserver(res);
+	ldns_resolver_pop_nameserver(res);
+	ldns_resolver_pop_nameserver(res);
+	ldns_resolver_pop_nameserver(res);
+	ldns_resolver_pop_nameserver(res);
+
+	printf("printing what is left\n");
+	nss = ldns_resolver_nameservers(res);
+
+	for (i = 0; i < ldns_resolver_nameserver_count(res); i++) {
+		ldns_rdf_print(stdout, nss[i]);
+		printf("\n");
+	}
 
 	return 0;
 }

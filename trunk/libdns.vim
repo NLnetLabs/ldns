@@ -219,7 +219,8 @@ syn keyword  ldnsMacro  ARCOUNT_OFF
 syn keyword  ldnsMacro 	ARCOUNT
 
 " ldns/buffer.h
-syn keyword  ldnsType	ldns_buffer
+syn keyword  ldnsType		ldns_buffer
+syn keyword  ldnsConstant	MIN_BUFLEN
 
 " ldns/host2str.h
 syn keyword  ldnsType	ldns_lookup_table
