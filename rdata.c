@@ -62,6 +62,69 @@ ldns_rdf_set_data(ldns_rdf *rd, void *d)
 	rd->_data = d;
 }
 
+
+/* for types that allow it return
+ * the native/host order type
+ */
+/** return the native uint8_t repr. from the rdf
+ * \param[in] rd the ldns_rdf to operate on
+ * \return uint8_t the value extracted
+ */
+uint8_t
+ldns_rdf2native_int8(ldns_rdf *rd)
+{
+	uint8_t data;
+	
+	switch(ldns_rdf_get_type(rd)) {
+		case LDNS_RDF_TYPE_CLASS:
+		case LDNS_RDF_TYPE_ALG:
+		case LDNS_RDF_TYPE_INT8:
+			memcpy(&data, ldns_rdf_data(rd), sizeof(data));
+			break;
+		default:
+			data = 0;
+	}
+	return data;
+}
+
+/** return the native uint16_t repr. from the rdf
+ * \param[in] rd the ldns_rdf to operate on
+ * \return uint16_t the value extracted
+ */
+uint16_t
+ldns_rdf2native_int16(ldns_rdf *rd)
+{
+	uint16_t data;
+	
+	switch(ldns_rdf_get_type(rd)) {
+		case LDNS_RDF_TYPE_INT16:
+			memcpy(&data, ldns_rdf_data(rd), sizeof(data));
+			break;
+		default:
+			data = 0;
+	}
+	return data;
+}
+
+/** return the native uint32_t repr. from the rdf
+ * \param[in] rd the ldns_rdf to operate on
+ * \return uint32_t the value extracted
+ */
+uint32_t
+ldns_rdf2native_int32(ldns_rdf *rd)
+{
+	uint32_t data;
+	
+	switch(ldns_rdf_get_type(rd)) {
+		case LDNS_RDF_TYPE_INT32:
+			memcpy(&data, ldns_rdf_data(rd), sizeof(data));
+			break;
+		default:
+			data = 0;
+	}
+	return data;
+}
+
 /**
  * Allocate a new ldns_rdf structure 
  * fill it and return it
