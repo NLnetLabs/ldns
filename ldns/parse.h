@@ -13,20 +13,10 @@
 #include <ldns/common.h>
 
 
-#define MAXTOKEN_LEN		1024
-#define LDNS_EAT_SPACE		"\f\n\r\t\v"
+#define LDNS_PARSE_SKIP_SPACE		"\f\n\r\t\v"
+#define LDNS_PARSE_NORMAL		" \f\n\r\t\v"
 #define MAXLINE_LEN		512
 #define MAXKEYWORD_LEN		32
-
-/* what we can parse */
-enum ldns_enum_parse
-{
-	LDNS_SPACE_STR,		/* str with spaces */
-	LDNS_STR,		/* str without spaces */
-	LDNS_QUOTE_STR,		/* str with \ in it */
-	LDNS_QUOTE_SPACE_STR	/* str with \ in it and spaces */
-};
-typedef enum ldns_enum_parse ldns_parse;
 
 /* 
  * get a token/char from the stream F
@@ -38,14 +28,11 @@ typedef enum ldns_enum_parse ldns_parse;
 ssize_t ldns_get_token(FILE *f, char *token, const char *delim);
 
 /* 
- * get the next string and supply the type we want
- * return 0 on error, otherwise the length
- */
-ssize_t ldns_get_str(FILE *f, char *word, ldns_parse type);
-
-/* 
  * search for keyword and delim. Give everything back
- * after the delimeter(s) 
+ * after the keyword + k_del until we hit d_del
  */
+ssize_t 
+ldns_get_keyword_data(FILE *f, const char *keyword, const char *k_del, char *data, const char *d_del);
+
 
 #endif /*  _PARSE_H_ */

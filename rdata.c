@@ -426,7 +426,7 @@ ldns_rdf_new_frm_fp(ldns_rdf_type type, FILE *fp)
 	}
 
 	/* read an entire line in from the file */
-	if ((t = ldns_get_str(fp, line, LDNS_SPACE_STR)) == -1) {
+	if ((t = ldns_get_token(fp, line, LDNS_PARSE_SKIP_SPACE)) == -1) {
 		FREE(line);
 		return NULL;
 	}

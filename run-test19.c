@@ -27,7 +27,7 @@ main()
 
 	tok = XMALLOC(char, 1024);
 
-	while ((b = ldns_get_str(f, tok, LDNS_SPACE_STR)) != 0) {
+	while ((b = ldns_get_token(f, tok, LDNS_PARSE_SKIP_SPACE)) != 0) {
 		fprintf(stdout, "%d: %s\n", (int)b, tok);
 	}
 	fclose(f);
@@ -36,8 +36,12 @@ main()
 		exit(1);
 	}
 	
-	ldns_get_keyword_data(f, "Algorithm", ":", tok, LDNS_STR);
-	
+	/* ldns_get_keyword_data(f, "Algorithm", ": \t", tok, LDNS_STR);*/
+	if (ldns_get_keyword_data(f, "Private-key-format", 
+				":", tok, LDNS_PARSE_SKIP_SPACE) != -1) {
+		printf("found it, found it\n");
+		printf("%s\n", tok);
+	}
 
 	fclose(f);
 	return 0;

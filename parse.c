@@ -20,51 +20,32 @@
 #include <ldns/dns.h>
 #include "util.h"
 
-
-
-/* 
- * search for keyword and delim. Give everything back
- * after the delimeter(s) 
- */
 ssize_t
-ldns_get_keyword_data(FILE *f, char *keyword, char *del	, char *data, ldns_parse d_type)
+ldns_get_keyword_data(FILE *f, const char *keyword, const char *k_del, char *data, const char *d_del)
 {
 	/* we assume: keyword|sep|data */
 	char *fkeyword;
-
-	fkeyword = XMALLOC(char, MAXKEYWORD_LEN);
-
-	ldns_get_str(f, fkeyword, LDNS_STR);
-
-	printf("%s\n", fkeyword);
-	return 0;
-}
-
-
-ssize_t
-ldns_get_str(FILE *f, char *word, ldns_parse type)
-{
 	ssize_t i;
 
+	fkeyword = XMALLOC(char, MAXKEYWORD_LEN);
 	i = 0;
-	switch (type) {
-	case LDNS_SPACE_STR:
-		i = ldns_get_token(f, word, LDNS_EAT_SPACE);
-		return i;	
-	case LDNS_STR:
-		i = ldns_get_token(f, word, NULL);
+
+	i = ldns_get_token(f, fkeyword, k_del);
+
+	printf("[%s]\n", fkeyword);
+
+	/* case??? */
+	if (strncmp(fkeyword, keyword, strlen(keyword)) == 0) {
+		/* whee, the match! */
+		printf("Matching keyword\n\n");
+		/* retrieve it's data */
+		i = ldns_get_token(f, data, d_del);
 		return i;
-	case LDNS_QUOTE_STR:
-		i = ldns_get_token(f, word, NULL);
-		break;
-	case LDNS_QUOTE_SPACE_STR:
-		i = ldns_get_token(f, word, LDNS_EAT_SPACE);
-		break;
+	} else {
+		return -1;
 	}
-	/* only reach this spot if the str was quoted */
-	/* mangle the quoted string and return what we got */
-	return i;
 }
+
 
 ssize_t
 ldns_get_token(FILE *f, char *token, const char *delim)
@@ -79,7 +60,7 @@ ldns_get_token(FILE *f, char *token, const char *delim)
 	/* standard delimeters */
 	if (!delim) {
 		/* from isspace(3) */
-		del = " \f\n\r\t\v";
+		del = LDNS_PARSE_NORMAL;
 	} else {
 		del = delim;
 	}
