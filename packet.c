@@ -144,7 +144,7 @@ ldns_pkt_querytime(ldns_pkt *packet)
 	return packet->_querytime;
 }
 
-char *
+ldns_rdf *
 ldns_pkt_answerfrom(ldns_pkt *packet)
 {
 	return packet->_answerfrom;
@@ -280,7 +280,7 @@ ldns_pkt_set_querytime(ldns_pkt *packet, uint32_t time)
 }
 
 void
-ldns_pkt_set_answerfrom(ldns_pkt *packet, char *answerfrom)
+ldns_pkt_set_answerfrom(ldns_pkt *packet, ldns_rdf *answerfrom)
 {
 	/* TODO if exists free? */
 	packet->_answerfrom = answerfrom;
