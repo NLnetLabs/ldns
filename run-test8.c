@@ -64,7 +64,7 @@ main(int argc, char **argv)
 		return -1;
 	}
 
-        pkt = ldns_resolver_query(res, qname, ldns_rr_get_type_by_name(type), 0, LDNS_RD);
+        pkt = ldns_resolver_query(res, qname, ldns_get_rr_type_by_name(type), 0, LDNS_RD);
 	if (!pkt)  {
 		printf("error pkt sending\n");
 	} else {
