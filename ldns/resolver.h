@@ -58,7 +58,6 @@ struct ldns_struct_resolver
 	uint8_t _ip6;
 	/** \brief 1 if the resolver is properly configured */
 	uint8_t _configured;
-	
 };
 	
 typedef struct ldns_struct_resolver ldns_resolver;
@@ -75,6 +74,8 @@ ldns_rdf ** ldns_resolver_nameservers(ldns_resolver *);
 void ldns_resolver_set_port(ldns_resolver *, uint16_t);
 void ldns_resolver_set_recursive(ldns_resolver *, uint8_t);
 void ldns_resolver_set_debug(ldns_resolver *, uint8_t);
+void ldns_resolver_incr_nameserver_count(ldns_resolver *);
+void ldns_resolver_set_nameserver_count(ldns_resolver *, size_t);
 
 ldns_status ldns_resolver_set_domain(ldns_resolver *, ldns_rdf *);
 ldns_status ldns_resolver_push_searchlist(ldns_resolver *, ldns_rdf *);
