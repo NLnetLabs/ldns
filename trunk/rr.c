@@ -153,9 +153,9 @@ ldns_rr_new_frm_str(const char *str)
 	ldns_rr_set_owner(new, ldns_dname_new_frm_str(owner));
 	/* ttl might be more complicated, like 2h, or 3d5h */
 	ldns_rr_set_ttl(new, (uint32_t) atoi(ttl));
-	ldns_rr_set_class(new, ldns_rr_get_class_by_name(clas));
+	ldns_rr_set_class(new, ldns_get_rr_class_by_name(clas));
 
-	rr_type = ldns_rr_get_type_by_name(type);
+	rr_type = ldns_get_rr_type_by_name(type);
 	desc = ldns_rr_descript((uint16_t)rr_type);
 	ldns_rr_set_type(new, rr_type);
 
@@ -867,7 +867,7 @@ ldns_rr_descriptor_field_type(const ldns_rr_descriptor *descriptor,
 }
 
 ldns_rr_type
-ldns_rr_get_type_by_name(const char *name)
+ldns_get_rr_type_by_name(const char *name)
 {
 	unsigned int i;
 	const char *desc_name;
@@ -908,7 +908,7 @@ ldns_rr_get_type_by_name(const char *name)
 }
 
 ldns_rr_class
-ldns_rr_get_class_by_name(const char *name)
+ldns_get_rr_class_by_name(const char *name)
 {
 	ldns_lookup_table *lt;
 	
