@@ -18,6 +18,7 @@
 #include <ldns/packet.h>
 
 #define MAX_KEYLEN	2048
+#define DNSSEC_KEYPROTO	3
 
 /**
  * algorigthms used in dns

@@ -19,26 +19,29 @@ main(int argc, char *argv[])
 {
 	ldns_rr *dnskey;
 	ldns_key *privkey;
+	ldns_rdf *owner;
 
 	privkey = ldns_key_new_frm_algorithm(LDNS_SIGN_RSASHA1, 1024);
 	if (!privkey) {
 		printf("Ah, keygen failed");
 		exit(1);
 	}
+
+	owner = ldns_dname_new_frm_str("miek.nl");
+	ldns_key_set_pubkey_owner(privkey, owner);
+	
+	/*
 	RSA_print_fp(stdout, ldns_key_rsa_key(privkey), 0);
 	printf("did it print\n");
+	*/
 
 	dnskey = ldns_key2rr(privkey);
 	if (dnskey) {
+		printf("[\n");
 		ldns_rr_print(stdout, dnskey);
+		printf("]\n");
 	}
 	printf("\n");
 	
-	if (argc != 2) {
-		usage(stdout, argv[0]);
-		exit(1);
-	} 
-
-        
         return 0;
 }

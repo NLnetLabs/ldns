@@ -44,6 +44,7 @@ ldns_key_new()
 	if (!newkey) {
 		return NULL;
 	} else {
+		ldns_key_set_pubkey_owner(newkey, NULL);
 		return newkey;
 	}
 }
@@ -328,13 +329,6 @@ ldns_key_dsa2bin(unsigned char *data, DSA *k, uint16_t *size)
 ldns_rr *
 ldns_key2rr(ldns_key *k)
 {
-	/* need a owner, 
-	 * keytag
-	 * pub key values
-	 * proto
-	 * algorthm
-	 */
-
 	/* this function will convert a the keydata contained in
 	 * rsa/dsa pointers to a DNSKEY rr. It will fill in as
 	 * much as it can, but it does not know about key-flags
@@ -357,28 +351,33 @@ ldns_key2rr(ldns_key *k)
 	}
 
 	ldns_rr_set_type(pubkey, LDNS_RR_TYPE_DNSKEY);
+	/* zero-th rdf - flags */
+	ldns_rr_push_rdf(pubkey,
+			ldns_native2rdf_int16(LDNS_RDF_TYPE_INT16, 0));
+	/* first - proto */
+	ldns_rr_push_rdf(pubkey, 
+			ldns_native2rdf_int8(LDNS_RDF_TYPE_INT8, DNSSEC_KEYPROTO));
 	
-	if (!ldns_key_pubkey_owner(k)) {
-		ldns_rr_set_owner(pubkey, ldns_key_pubkey_owner(k));
-	}
+	ldns_rr_set_owner(pubkey, ldns_key_pubkey_owner(k));
 
+	/* third - da algorithm */
 	switch(ldns_key_algorithm(k)) {
 		case LDNS_SIGN_RSAMD5:
-			ldns_rr_dnskey_set_algorithm(pubkey,
+			ldns_rr_push_rdf(pubkey,
 					ldns_native2rdf_int8(LDNS_RDF_TYPE_ALG, LDNS_RSAMD5));
 			if (!ldns_key_rsa2bin(bin, ldns_key_rsa_key(k), &size)) {
 				return NULL;
 			}
 			break;
 		case LDNS_SIGN_RSASHA1:
-			ldns_rr_dnskey_set_algorithm(pubkey,
+			ldns_rr_push_rdf(pubkey,
 					ldns_native2rdf_int8(LDNS_RDF_TYPE_ALG, LDNS_RSASHA1));
 			if (!ldns_key_rsa2bin(bin, ldns_key_rsa_key(k), &size)) {
 				return NULL;
 			}
 			break;
 		case LDNS_SIGN_DSA:
-			ldns_rr_dnskey_set_algorithm(pubkey,
+			ldns_rr_push_rdf(pubkey,
 					ldns_native2rdf_int8(LDNS_RDF_TYPE_ALG, LDNS_DSA));
 			if (!ldns_key_dsa2bin(bin, ldns_key_dsa_key(k), &size)) {
 				return NULL;
@@ -388,9 +387,10 @@ ldns_key2rr(ldns_key *k)
 			/* tja */
 			break;
 	}
+	/* fourth the key bin material */
 	keybin = ldns_rdf_new_frm_data(LDNS_RDF_TYPE_B64, size, bin);
-	FREE(bin);
-	ldns_rr_dnskey_set_key(pubkey, keybin);
+	/*FREE(bin);*/
+	ldns_rr_push_rdf(pubkey, keybin);
 	return pubkey;
 }
 
