@@ -98,5 +98,6 @@ uint8_t         *ldns_rdf_data(ldns_rdf *);
 void            ldns_rdf_free(ldns_rdf *);
 void            ldns_rdf_free_data(ldns_rdf *);
 ldns_rdf 	*ldns_rdf_new_frm_str(const char *, ldns_rdf_type);
+struct sockaddr_storage * ldns_rdf2native_sockaddr_storage(ldns_rdf *);
 
 #endif	/* !_LDNS_RDATA_H */
