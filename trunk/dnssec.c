@@ -205,8 +205,8 @@ ldns_verify_rrsig_dsa(ldns_buffer *sig, ldns_buffer *rrset, ldns_buffer *key)
 	}
 
 	/* extract the R and S field from the sig buffer */
-	R = BN_bin2bn(ldns_buffer_at(sig, 1), SHA_DIGEST_LENGTH, NULL);
-	S = BN_bin2bn(ldns_buffer_at(sig, 21), SHA_DIGEST_LENGTH, NULL);
+	R = BN_bin2bn((unsigned char*)ldns_buffer_at(sig, 1), SHA_DIGEST_LENGTH, NULL);
+	S = BN_bin2bn((unsigned char*)ldns_buffer_at(sig, 21), SHA_DIGEST_LENGTH, NULL);
 	
 	dsasig = DSA_SIG_new();
 	if (!dsasig) {
@@ -223,7 +223,7 @@ ldns_verify_rrsig_dsa(ldns_buffer *sig, ldns_buffer *rrset, ldns_buffer *key)
 	*/
 	dsasig->r = R;
 	dsasig->s = S;
-	sha1_hash = SHA1(ldns_buffer_begin(rrset), ldns_buffer_position(rrset), NULL);
+	sha1_hash = SHA1((unsigned char*)ldns_buffer_begin(rrset), ldns_buffer_position(rrset), NULL);
 	if (!sha1_hash) {
 		return false;
 	}
@@ -246,13 +246,14 @@ ldns_verify_rrsig_rsasha1(ldns_buffer *sig, ldns_buffer *rrset, ldns_buffer *key
 		return false;
 	}
 
-	sha1_hash = SHA1(ldns_buffer_begin(rrset), ldns_buffer_position(rrset), NULL);
+	sha1_hash = SHA1((unsigned char*)ldns_buffer_begin(rrset), ldns_buffer_position(rrset), NULL);
 	if (!sha1_hash) {
 		return false;
 	}
 	
-	if (RSA_verify(NID_sha1, sha1_hash, SHA_DIGEST_LENGTH, ldns_buffer_begin(sig),
-			ldns_buffer_position(sig), rsakey) == 1) {
+	if (RSA_verify(NID_sha1, sha1_hash, SHA_DIGEST_LENGTH, 
+				(unsigned char*)ldns_buffer_begin(sig),
+			(unsigned int)ldns_buffer_position(sig), rsakey) == 1) {
 		return true;
 	} else {
 		  ERR_load_crypto_strings();
@@ -273,12 +274,14 @@ ldns_verify_rrsig_rsamd5(ldns_buffer *sig, ldns_buffer *rrset, ldns_buffer *key)
 	if (!rsakey) {
 		return false;
 	}
-	md5_hash = MD5(ldns_buffer_begin(rrset), ldns_buffer_position(rrset), NULL);
+	md5_hash = MD5((unsigned char*)ldns_buffer_begin(rrset), 
+			(unsigned int)ldns_buffer_position(rrset), NULL);
 	if (!md5_hash) {
 		return false;
 	}
-	if (RSA_verify(NID_md5, md5_hash, MD5_DIGEST_LENGTH, ldns_buffer_begin(sig),
-			ldns_buffer_position(sig), rsakey) == 1) {
+	if (RSA_verify(NID_md5, md5_hash, MD5_DIGEST_LENGTH, 
+				(unsigned char*)ldns_buffer_begin(sig),
+			(unsigned int)ldns_buffer_position(sig), rsakey) == 1) {
 		return true;
 	} else {
 		return false;
