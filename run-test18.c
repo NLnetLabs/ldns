@@ -36,8 +36,8 @@ main()
 	ldns_rr_print(stdout, rr);
 	printf("\n");
 
-	privkey = ldns_key_new_frm_algorithm(LDNS_SIGN_RSASHA1, 1024);
-	privkey_dsa = ldns_key_new_frm_algorithm(LDNS_SIGN_DSA, 1024);
+	privkey = ldns_key_new_frm_algorithm(LDNS_SIGN_RSASHA1, 512);
+	privkey_dsa = ldns_key_new_frm_algorithm(LDNS_SIGN_DSA, 512);
 	if (!privkey || !privkey_dsa) {
 		printf("Ah, keygen failed");
 		exit(1);
@@ -52,7 +52,7 @@ main()
 	/*	SSL_load_error_strings();*/
 
 	ldns_key_list_push_key(keys, privkey);
-	ldns_key_list_push_key(keys, privkey_dsa);
+	/* ldns_key_list_push_key(keys, privkey_dsa); */
 
 	ldns_rr_list_push_rr(rrs, rr);
 	
@@ -76,14 +76,16 @@ main()
 	} else {
 		exit(1);
 	}
+	/* no verify */
 	ldns_rr_list_push_rr(dnskeys, dnskey);
-	/* only rsa for now */
-/*	ldns_rr_list_push_rr(dnskeys, dnskey_dsa); */
+	ldns_rr_list_push_rr(dnskeys, dnskey_dsa); 
 
 	signatures = ldns_sign_public(rrs, keys);
 
 	ldns_rr_list_print(stdout, signatures);
 
+	return 0;
+	/* END */
 	printf("Now we are going to verify\n");
 
 	printf("\n[%d]\n", ldns_verify(rrs, signatures, dnskeys));
