@@ -17,6 +17,7 @@
 #include <strings.h>
 
 #include "util.h"
+#include <ldns/dns.h>
 
 /**
  * \brief create a new rr structure.
@@ -562,8 +563,7 @@ ldns_rr_get_type_by_name(char *name)
 	
 	/* TYPEXX representation */
 	if (strlen(name) > 4 && strncasecmp(name, "TYPE", 4) == 0) {
-		name += 4;
-		return atoi(name);
+		return atoi(name + 4);
 	}
 	
 	/* Normal types */
@@ -592,6 +592,24 @@ ldns_rr_get_type_by_name(char *name)
 		return 255;
 	}
 	
-	fprintf(stderr, "Warning: type not found, assuming A\n");
+	return 0;
+}
+
+ldns_rr_class
+ldns_get_class_by_name(char *name)
+{
+	ldns_lookup_table *lt;
+	
+	/* CLASSXX representation */
+	if (strlen(name) > 5 && strncasecmp(name, "CLASS", 5) == 0) {
+		return atoi(name + 5);
+	}
+	
+	/* Normal types */
+	lt = ldns_lookup_by_name(ldns_rr_classes, name);
+
+	if (lt) {
+		return lt->id;
+	}
 	return 0;
 }

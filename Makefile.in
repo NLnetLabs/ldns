@@ -67,9 +67,15 @@ LINK_LIB	= $(LIBTOOL) $(CC) $(CFLAGS) $(LDFLAGS)
 	$(COMPILE) -c $<
 #	$(COMP_LIB) -c $<
 
-.PHONY:	clean realclean docclean doc lint test all
+.PHONY:	clean realclean docclean doc lint test all ar
 
-all:		$(TESTS)
+all:		$(TESTS) libldns.a
+
+ar:		libldns.a
+
+libldns.a:	$(LIBDNS_OBJECTS) b64_pton$U.o b64_ntop$U.o
+		ar rc libldns.a $(LIBDNS_OBJECTS) b64_pton$U.o b64_ntop$U.o
+		ranlib libldns.a
 
 snapshot:	clean testclean
 		(rm -rf ../ldns-snap-$(DATE)/)
@@ -112,6 +118,7 @@ clean:
 	rm -rf autom4te.cache/
 	rm -f config.status
 	rm -f config.log
+	rm -f libldns.a
 
 testclean:
 	rm -f $(TESTS)
