@@ -20,7 +20,9 @@
 #include <ldns/packet.h>
 
 /* prototypes */
+#if 0
 ldns_pkt * ldns_send(ldns_resolver *, ldns_pkt *);
-ldns_buffer * ldns_send_udp(ldns_buffer *, const struct sockaddr *, socklen_t)
+ldns_pkt * ldns_send_udp(ldns_buffer *, const struct sockaddr *, socklen_t)
+#endif
 
 #endif  /* !_LDNS_NET_H */
