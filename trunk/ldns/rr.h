@@ -143,6 +143,8 @@ typedef enum ldns_enum_rr_type ldns_rr_type;
 #define MAXLABELLEN     63
 /** Maximum length of a complete dname */
 #define MAXDOMAINLEN    255
+/** Maximum number of pointers in 1 dname */
+#define MAXPOINTERS	126
 
 /**
  * \brief Resource Record type
@@ -152,7 +154,7 @@ typedef enum ldns_enum_rr_type ldns_rr_type;
 struct ldns_struct_rr
 {
 	/** \brief Owner name, uncompressed */
-	uint8_t		*_owner;	
+	ldns_rdf	*_owner;	
 	/** \brief Time to live  */
 	uint32_t	_ttl;	
 	/** \brief Number of data fields */
@@ -200,14 +202,17 @@ typedef struct ldns_struct_rr_descriptor ldns_rr_descriptor;
 
 /* prototypes */
 ldns_rr * ldns_rr_new(void);
-void ldns_rr_set_owner(ldns_rr *, uint8_t *);
+void ldns_rr_set_owner(ldns_rr *, ldns_rdf *);
 void ldns_rr_set_ttl(ldns_rr *, uint16_t);
 void ldns_rr_set_rd_count(ldns_rr *, uint16_t);
+void ldns_rr_set_type(ldns_rr *, ldns_rr_type);
 void ldns_rr_set_class(ldns_rr *, ldns_rr_class);
 bool ldns_rr_push_rdf(ldns_rr *, ldns_rdf *);
-uint8_t *ldns_rr_owner(ldns_rr *);
+ldns_rdf *ldns_rr_owner(ldns_rr *);
 uint8_t ldns_rr_ttl(ldns_rr *);
 uint16_t ldns_rr_rd_count(ldns_rr *);
+ldns_rr_type ldns_rr_get_type(ldns_rr *);
+
 
 const ldns_rr_descriptor *ldns_rr_descript(uint16_t type);
 size_t ldns_rr_descriptor_minimum(ldns_rr_descriptor *descriptor);

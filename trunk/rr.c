@@ -39,7 +39,7 @@ ldns_rr_new(void)
  * set the owner in the rr structure
  */
 void
-ldns_rr_set_owner(ldns_rr *rr, uint8_t *owner)
+ldns_rr_set_owner(ldns_rr *rr, ldns_rdf *owner)
 {
 	rr->_owner = owner;
 }
@@ -60,6 +60,15 @@ void
 ldns_rr_set_rd_count(ldns_rr *rr, uint16_t count)
 {
 	rr->_rd_count = count;
+}
+
+/**
+ * set the type in the rr
+ */
+void
+ldns_rr_set_type(ldns_rr *rr, ldns_rr_type rr_type)
+{
+	rr->_rr_type = rr_type;
 }
 
 /**
@@ -101,7 +110,7 @@ ldns_rr_push_rdf(ldns_rr *rr, ldns_rdf *f)
 /**
  * return the owner name of an rr structure
  */
-uint8_t *
+ldns_rdf *
 ldns_rr_owner(ldns_rr *rr)
 {
 	return rr->_owner;
@@ -124,6 +133,25 @@ ldns_rr_rd_count(ldns_rr *rr)
 {
 	return rr->_rd_count;
 }
+
+/**
+ * Returns the type of the rr
+ */
+ldns_rr_type
+ldns_rr_get_type(ldns_rr *rr)
+{
+        return rr->_rr_type;
+}
+
+/**
+ * Returns the class of the rr
+ */
+ldns_rr_class
+ldns_rr_get_class(ldns_rr *rr)
+{
+        return rr->_rr_class;
+}
+
 
 static const ldns_rdf_type type_0_wireformat[] = { LDNS_RDF_TYPE_UNKNOWN };
 static const ldns_rdf_type type_a_wireformat[] = { LDNS_RDF_TYPE_A };
