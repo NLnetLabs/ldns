@@ -56,8 +56,6 @@ ldns_lookup_table ldns_rr_classes[] = {
 	{ 0, NULL }
 };
 
-/* TODO: general rdata2str or dname2str, with error
-         checks and return status etc */
 /* this is temp function for debugging wire2rr */
 /* do NOT pass compressed data here :p */
 ldns_status
@@ -331,7 +329,7 @@ ldns_pkt2buffer(ldns_buffer *output, ldns_pkt *pkt)
 	ldns_buffer_printf(output, ";; QUESTION SECTION:\n;; ");
 	for (i = 0; i < ldns_pkt_qdcount(pkt); i++) {
 		status = ldns_rr2buffer(output, 
-		               ldns_rrset_rr(ldns_pkt_question(pkt), i));
+		               ldns_rr_list_rr(ldns_pkt_question(pkt), i));
 		ldns_buffer_printf(output, "\n");
 	}
 	ldns_buffer_printf(output, "\n");
@@ -339,7 +337,7 @@ ldns_pkt2buffer(ldns_buffer *output, ldns_pkt *pkt)
 	ldns_buffer_printf(output, ";; ANSWER SECTION:\n");
 	for (i = 0; i < ldns_pkt_ancount(pkt); i++) {
 		status = ldns_rr2buffer(output, 
-		               ldns_rrset_rr(ldns_pkt_answer(pkt), i));
+		               ldns_rr_list_rr(ldns_pkt_answer(pkt), i));
 		ldns_buffer_printf(output, "\n");
 	}
 	ldns_buffer_printf(output, "\n");
@@ -347,7 +345,7 @@ ldns_pkt2buffer(ldns_buffer *output, ldns_pkt *pkt)
 	ldns_buffer_printf(output, ";; AUTHORITY SECTION:\n");
 	for (i = 0; i < ldns_pkt_nscount(pkt); i++) {
 		status = ldns_rr2buffer(output, 
-		               ldns_rrset_rr(ldns_pkt_authority(pkt), i));
+		               ldns_rr_list_rr(ldns_pkt_authority(pkt), i));
 		ldns_buffer_printf(output, "\n");
 	}
 	ldns_buffer_printf(output, "\n");
@@ -355,7 +353,7 @@ ldns_pkt2buffer(ldns_buffer *output, ldns_pkt *pkt)
 	ldns_buffer_printf(output, ";; ADDITIONAL SECTION:\n");
 	for (i = 0; i < ldns_pkt_arcount(pkt); i++) {
 		status = ldns_rr2buffer(output, 
-		               ldns_rrset_rr(ldns_pkt_additional(pkt), i));
+		               ldns_rr_list_rr(ldns_pkt_additional(pkt), i));
 		ldns_buffer_printf(output, "\n");
 	}
 	ldns_buffer_printf(output, "\n");

@@ -30,7 +30,7 @@
  * So the entire rdata field of an RR is put in the rdata_fields[] array. This
  * is defined in the
  * 
- * An rrset is an array of rr's.
+ * An rr_list is an array of rr's.
  */ 
 
 /*

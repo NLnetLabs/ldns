@@ -65,13 +65,13 @@ struct ldns_struct_pkt
 	/** \brief header section */
 	ldns_hdr *_header;
 	/** \brief question section */
-	ldns_rrset	*_question;
+	ldns_rr_list	*_question;
 	/** \brief answer section */
-	ldns_rrset	*_answer;
+	ldns_rr_list	*_answer;
 	/** \brief auth section */
-	ldns_rrset	*_authority;
+	ldns_rr_list	*_authority;
 	/** \brief add section */
-	ldns_rrset	*_additional;
+	ldns_rr_list	*_additional;
 };
 typedef struct ldns_struct_pkt ldns_pkt;
 
@@ -102,10 +102,10 @@ uint16_t ldns_pkt_ancount(ldns_pkt *);
 uint16_t ldns_pkt_nscount(ldns_pkt *);
 uint16_t ldns_pkt_arcount(ldns_pkt *);
 
-ldns_rrset *ldns_pkt_question(ldns_pkt *packet);
-ldns_rrset *ldns_pkt_answer(ldns_pkt *packet);
-ldns_rrset *ldns_pkt_authority(ldns_pkt *packet);
-ldns_rrset *ldns_pkt_additional(ldns_pkt *packet);
+ldns_rr_list *ldns_pkt_question(ldns_pkt *packet);
+ldns_rr_list *ldns_pkt_answer(ldns_pkt *packet);
+ldns_rr_list *ldns_pkt_authority(ldns_pkt *packet);
+ldns_rr_list *ldns_pkt_additional(ldns_pkt *packet);
 
 void ldns_pkt_set_id(ldns_pkt *, uint16_t);
 void ldns_pkt_set_qr(ldns_pkt *, bool);
