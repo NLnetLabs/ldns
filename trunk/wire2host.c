@@ -15,111 +15,58 @@
 
 /**
  * transform a wireformatted rdata to our
- * internal representation
+ * internal representation. We need to the
+ * length, and the type and put the data in
  */
 ssize_t
 rdata_buf_to_rdf(ldns_rdf *rd, ldns_buf *buffer)
 {
-        size_t end = buffer_position(packet) + data_size;
-        ssize_t i;
-        rdata_atom_type temp_rdatas[MAXRDATALEN];
-        rrtype_descriptor_type *descriptor = rrtype_descriptor_by_type(rrtype);
-        region_type *temp_region;
-        
-        assert(descriptor->maximum <= MAXRDATALEN);
+	/* TODO TODO */
+	switch(RDATA_TYPESS) {
+		case RDF_TYPE_NONE:
+			break;
+		case RDF_TYPE_DNAME:
+			/* can be compressed or not */
+			break;
+		case RDF_TYPE_INT8:
+			break;
+		case RDF_TYPE_INT16:
+			break;
+		case RDF_TYPE_INT32:
+			break;
+		case RDF_TYPE_INT48:
+			break;
+		case RDF_TYPE_A:     
+			break;
+		case RDF_TYPE_AAAA:
+			break;
+		case RDF_TYPE_STR:
+			break;
+		case RDF_TYPE_APL:
+			break;
+		case RDF_TYPE_B64:
+			break;
+		case RDF_TYPE_HEX:
+			break;
+		case RDF_TYPE_NSEC: 
+			break;
+		case RDF_TYPE_TYPE: 
+			break;
+		case RDF_TYPE_CLASS:
+			break;
+		case RDF_TYPE_CERT:
+			break;
+		case RDF_TYPE_ALG:
+			break;
+		case RDF_TYPE_UNKNOWN:
+			break;
+		case RDF_TYPE_TIME:
+			break;
+		case RDF_TYPE_SERVICE:
+			break;
+		case RDF_TYPE_LOC:
+			break;
+	}	
 
-        if (!buffer_available(packet, data_size)) {
-                return -1;
-        }
-        
-        temp_region = region_create(xalloc, free);
-        
-        for (i = 0; i < descriptor->maximum; ++i) {
-                int is_domain = 0;
-                size_t length = 0;
-
-                if (buffer_position(packet) == end) {
-                        if (i < descriptor->minimum) {
-                                region_destroy(temp_region);
-                                return -1;
-                        } else {
-                                break;
-                        }
-                }
-                
-                switch (rdata_atom_wireformat_type(rrtype, i)) {
-                case RDATA_WF_COMPRESSED_DNAME:
-                case RDATA_WF_UNCOMPRESSED_DNAME:
-                        is_domain = 1;
-                        break;
-                case RDATA_WF_BYTE:
-                        length = sizeof(uint8_t);
-                        break;
-                case RDATA_WF_SHORT:
-                        length = sizeof(uint16_t);
-                        break;
-                case RDATA_WF_LONG:
-                        length = sizeof(uint32_t);
-                        break;
-                case RDATA_WF_TEXT:
-                        /* Length is stored in the first byte.  */
-                        length = 1 + buffer_current(packet)[0];
-                        break;
-                case RDATA_WF_A:
-                        length = sizeof(in_addr_t);
-                        break;
-                case RDATA_WF_AAAA:
-                        length = IP6ADDRLEN;
-                        break;
-                case RDATA_WF_BINARY:
-                        /* Remaining RDATA is binary.  */
-                        length = end - buffer_position(packet);
-                        break;
-                case RDATA_WF_APL:
-                        length = (sizeof(uint16_t)    /* address family */
-                                  + sizeof(uint8_t)   /* prefix */
-                                  + sizeof(uint8_t)); /* length */
-                        if (buffer_position(packet) + length <= end) {
-                                length += (buffer_current(packet)[sizeof(uint16_t) + sizeof(uint8_t)
-]) & 0x7f;
-                        }
-
-                        break;
-                }
-
-                if (is_domain) {
-                        const dname_type *dname = dname_make_from_packet(
-                                temp_region, packet, 1, 1);
-                        if (!dname) {
-                                region_destroy(temp_region);
-                                return -1;
-                        }
-                        temp_rdatas[i].domain
-                        temp_rdatas[i].domain
-                                = domain_table_insert(owners, dname);
-                } else {
-                        if (buffer_position(packet) + length > end) {
-/*                              zc_error_prev_line("unknown RDATA is truncated"); */
-                                region_destroy(temp_region);
-                                return -1;
-                        }
-                        
-                        temp_rdatas[i].data = (uint16_t *) region_alloc(
-                                region, sizeof(uint16_t) + length);
-                        temp_rdatas[i].data[0] = length;
-                        buffer_read(packet, temp_rdatas[i].data + 1, length);
-                }
-        }
-
-        if (buffer_position(packet) < end) {
-/*              zc_error_prev_line("unknown RDATA has trailing garbage"); */
-                region_destroy(temp_region);
-                return -1;
-        }
-
-        *rdatas = (rdata_atom_type *) region_alloc_init(
-                region, temp_rdatas, i * sizeof(rdata_atom_type));
-        region_destroy(temp_region);
-        return i;
 }
 
