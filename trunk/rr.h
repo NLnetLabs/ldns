@@ -15,12 +15,7 @@
 
 #include "prototype.h"
 
-/* RFC1035 */
-#define CLASS_IN        1       /* Class IN */
-#define CLASS_CHAOS     3       /* Class CHAOS */
-#define CLASS_HS        4       /* Class HS */
-#define CLASS_ANY       255     /* Class IN */
-
+/* the different RR types */
 #define TYPE_A          1       /* a host address */
 #define TYPE_NS         2       /* an authoritative name server */
 #define TYPE_MD         3       /* a mail destination (Obsolete - use MX) */
