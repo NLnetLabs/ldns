@@ -129,6 +129,8 @@ void ldns_pkt_set_qdcount(ldns_pkt *, uint16_t);
 void ldns_pkt_set_ancount(ldns_pkt *, uint16_t);
 void ldns_pkt_set_nscount(ldns_pkt *, uint16_t);
 void ldns_pkt_set_arcount(ldns_pkt *, uint16_t);
+void ldns_pkt_set_answerfrom(ldns_pkt *, ldns_rdf *);
+void ldns_pkt_set_querytime(ldns_pkt *, uint32_t);
 
 /**
  * Allocates and initializes a ldns_pkt structure
