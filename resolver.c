@@ -65,12 +65,6 @@ ldns_resolver_defnames(ldns_resolver *r)
 	return r->_defnames;
 }
 
-uint8_t 
-ldns_resolver_configured(ldns_resolver *r)
-{
-	return r->_configured;
-}
-
 ldns_rdf *
 ldns_resolver_domain(ldns_resolver *r)
 {
@@ -183,12 +177,6 @@ ldns_resolver_set_debug(ldns_resolver *r, bool d)
 	r->_debug = d;
 }
 
-void 
-ldns_resolver_set_configured(ldns_resolver *r, uint8_t c)
-{
-	r->_configured = c;
-}
-
 void
 ldns_resolver_set_searchlist_count(ldns_resolver *r, size_t c)
 {
@@ -253,7 +241,6 @@ ldns_resolver_new(void)
 	r->_nameservers = MALLOC(ldns_rdf *);
 	
 	/* defaults are filled out */
-	ldns_resolver_set_configured(r, 0);
 	ldns_resolver_set_searchlist_count(r, 0);
 	ldns_resolver_set_nameserver_count(r, 0);
 	ldns_resolver_set_port(r, LDNS_PORT);
@@ -334,13 +321,13 @@ ldns_resolver_send(ldns_resolver *r, ldns_rdf *name, ldns_rr_type type, ldns_rr_
 	/* do all the preprocessing here, then fire of an query to 
 	 * the network */
 
-	if (type == 0) {
+	if (0 == type) {
 		type = LDNS_RR_TYPE_A;
 	}
-	if (class == 0) {
+	if (0 == class) {
 		class = LDNS_RR_CLASS_IN;
 	}
-	if (0 == ldns_resolver_configured(r)) {
+	if (0 == ldns_resolver_nameserver_count(r)) {
 		printf("resolver is not configued\n");
 		return NULL;
 	}

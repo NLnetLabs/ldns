@@ -30,8 +30,6 @@ main(void)
                 printf("error push nameserver\n");
                 return -1;
         }
-        /* HACK */
-        ldns_resolver_set_configured(res, 1);
 
         qname = ldns_dname_new_frm_str("www.miek.nl.");
         pkt = ldns_resolver_send(res, qname, LDNS_RR_TYPE_A, 0, LDNS_RD);

@@ -56,8 +56,6 @@ main(int argc, char **argv)
 		printf("error push nameserver\n");
 		return -1;
 	}
-	/* HACK */
-	ldns_resolver_set_configured(res, 1);
 	/* UDP query */
 	ldns_resolver_set_usevc(res, false);
         qname = ldns_rdf_new_frm_str(name, LDNS_RDF_TYPE_DNAME);
