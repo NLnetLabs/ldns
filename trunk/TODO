@@ -11,6 +11,7 @@ o check all conversion routines on missing types
 	- host2wire
 	- str2host
 	- host2str
+o need LDNS_RDF_TYPE_PROTO??
 o network code
 	- tcp
 	- axfr
