@@ -404,3 +404,16 @@ ldns_key_buf2rsa(ldns_buffer *key)
 
 	return rsa;
 }
+
+/**
+ * sign the rrset with all the keys.
+ * \param[in] rrset the rrset to sign
+ * \param[in] keys the keys to use for the signing
+ * \return the signatures created
+ */
+ldns_rr_list *
+ldns_sign(ldns_rr_list *ATTR_UNUSED(rrset), ldns_rr_list *ATTR_UNUSED(keys))
+{
+
+	return NULL;
+}

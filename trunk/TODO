@@ -10,7 +10,6 @@ o check all conversion routines on missing types
 	- host2str
 o network code
 	- tsig?
-o printing of signatures dates/times
 o DNSSEC
 	- signing
 o Make a shared library and test compile some programs
