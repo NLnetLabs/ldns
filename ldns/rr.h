@@ -1,8 +1,7 @@
-
-/*
- * rr.h
+/**
+ * \file rr.h
  *
- * resource record definitions
+ * \brief resource record definitions
  *
  * a Net::DNS like library for C
  *
@@ -20,7 +19,7 @@
 #include <ldns/error.h>
 
 /**
- * The different RR classes.
+ * \brief The different RR classes.
  */
 enum ldns_enum_rr_class
 {
@@ -200,6 +199,11 @@ struct ldns_struct_rr_descriptor
 typedef struct ldns_struct_rr_descriptor ldns_rr_descriptor;
 
 /* prototypes */
+/**
+ * \fn ldns_rr * ldns_rr_new(void)
+ * \brief create a new ldns_rr structur
+ * \param none 
+ */
 ldns_rr * ldns_rr_new(void);
 void ldns_rr_set_owner(ldns_rr *, ldns_rdf *);
 void ldns_rr_set_ttl(ldns_rr *, uint32_t);

@@ -1,25 +1,24 @@
+/** \file rr.c
+ *
+ * \brief access functions for ldns_rr - 
+ * \brief a Net::DNS like library for C
+ * \author LibDNS Team @ NLnet Labs
+ * \version 0.01
+ */
+
 /*
- * rr.c
- *
- * access function for ldns_rr
- *
- * a Net::DNS like library for C
- *
  * (c) NLnet Labs, 2004
- *
  * See the file LICENSE for the license
  */
 
 #include <config.h>
-
 #include <limits.h>
-
 #include <ldns/rr.h>
-
 #include "util.h"
 
 /**
- * create a new rr structure.
+ * \brief create a new rr structure.
+ * \return ldns_rr *
  */
 ldns_rr *
 ldns_rr_new(void)
@@ -36,7 +35,9 @@ ldns_rr_new(void)
 }
 
 /**
- * Frees the rr structure TODO
+ * \brief free a RR structure
+ * \param[in] *rr the RR to be freed 
+ * \return void
  */
 void
 ldns_rr_free(ldns_rr *rr)
@@ -52,7 +53,10 @@ ldns_rr_free(ldns_rr *rr)
 }
 
 /**
- * set the owner in the rr structure
+ * \brief set the owner in the rr structure
+ * \param[in] *rr rr to operate on
+ * \param[in] *owner set to this owner
+ * \return void
  */
 void
 ldns_rr_set_owner(ldns_rr *rr, ldns_rdf *owner)
@@ -61,7 +65,10 @@ ldns_rr_set_owner(ldns_rr *rr, ldns_rdf *owner)
 }
 
 /**
- * set the owner in the rr structure
+ * \brief set the ttl in the rr structure
+ * \param[in] *rr rr to operate on
+ * \param[in] ttl set to this ttl
+ * \return void
  */
 void
 ldns_rr_set_ttl(ldns_rr *rr, uint32_t ttl)
@@ -70,7 +77,10 @@ ldns_rr_set_ttl(ldns_rr *rr, uint32_t ttl)
 }
 
 /**
- * set the rd_count in the rr
+ * \brief set the rd_count in the rr
+ * \param[in] *rr rr to operate on
+ * \param[in] count set to this count
+ * \return void
  */
 void
 ldns_rr_set_rd_count(ldns_rr *rr, uint16_t count)
@@ -79,7 +89,10 @@ ldns_rr_set_rd_count(ldns_rr *rr, uint16_t count)
 }
 
 /**
- * set the type in the rr
+ * \brief set the type in the rr
+ * \param[in] *rr rr to operate on
+ * \param[in] tt_type set to this type
+ * \return void
  */
 void
 ldns_rr_set_type(ldns_rr *rr, ldns_rr_type rr_type)
@@ -88,7 +101,10 @@ ldns_rr_set_type(ldns_rr *rr, ldns_rr_type rr_type)
 }
 
 /**
- * set the class in the rr
+ * \brief set the class in the rr
+ * \param[in] *rr rr to operate on
+ * \param[in] rr_class set to this class
+ * \return void
  */
 void
 ldns_rr_set_class(ldns_rr *rr, ldns_rr_class rr_class)
@@ -97,8 +113,11 @@ ldns_rr_set_class(ldns_rr *rr, ldns_rr_class rr_class)
 }
 
 /**
- * set rd_field member in the rr, it will be 
+ * set rd_field member, it will be 
  * placed in the next available spot
+ * \param[in] *rr rr to operate on
+ * \param[in] *f the data field member to set
+ * \return bool
  */
 bool
 ldns_rr_push_rdf(ldns_rr *rr, ldns_rdf *f)
@@ -124,7 +143,10 @@ ldns_rr_push_rdf(ldns_rr *rr, ldns_rdf *f)
 }
 
 /**
- *
+ * set the rdata field member counter
+ * \param[in] *rr rr to operate on
+ * \param[in] nr the number to set
+ * \return ldns_rdf *
  */
 ldns_rdf *
 ldns_rr_rdf(ldns_rr *rr, uint16_t nr)
@@ -138,6 +160,8 @@ ldns_rr_rdf(ldns_rr *rr, uint16_t nr)
 
 /**
  * return the owner name of an rr structure
+ * \param[in] *rr rr to operate on
+ * \return ldns_rdf * 
  */
 ldns_rdf *
 ldns_rr_owner(ldns_rr *rr)
@@ -251,6 +275,7 @@ ldns_rr_list_push_rr(ldns_rr_list *rr_list, ldns_rr *rr)
 
 }
 
+/** \cond */
 static const ldns_rdf_type type_0_wireformat[] = { LDNS_RDF_TYPE_UNKNOWN };
 static const ldns_rdf_type type_a_wireformat[] = { LDNS_RDF_TYPE_A };
 static const ldns_rdf_type type_ns_wireformat[] = { LDNS_RDF_TYPE_DNAME };
@@ -336,7 +361,9 @@ static const ldns_rdf_type type_nsec_wireformat[] = {
 static const ldns_rdf_type type_dnskey_wireformat[] = {
 	LDNS_RDF_TYPE_INT16, LDNS_RDF_TYPE_INT8, LDNS_RDF_TYPE_ALG, LDNS_RDF_TYPE_B64
 };
+/** \endcond */
 
+/** \cond */
 static ldns_rr_descriptor rdata_field_descriptors[] = {
 	/* 0 */
 	{ 0, NULL, 1, 1, type_0_wireformat, LDNS_RDF_TYPE_NONE },
@@ -437,7 +464,12 @@ static ldns_rr_descriptor rdata_field_descriptors[] = {
 	/* 48 */
 	{LDNS_RR_TYPE_DNSKEY, "DNSKEY", 4, 4, type_dnskey_wireformat, LDNS_RDF_TYPE_NONE }
 };
+/** \endcond */
 
+/** 
+ * \def RDATA_FIELD_DESCRIPTORS_COUNT
+ * computes the number of rdata fields
+ */
 #define RDATA_FIELD_DESCRIPTORS_COUNT \
 	(sizeof(rdata_field_descriptors)/sizeof(rdata_field_descriptors[0]))
 
