@@ -122,6 +122,10 @@ ldns_verify_rrsig(ldns_rr_list *rrset, ldns_rr *rrsig, ldns_rr_list *keys)
 	
 	sig_algo = ldns_rdf2native_int8(ldns_rr_rdf(rrsig, 1));
 	result = false;
+
+	printf("sig\n\n");
+	ldns_rr_print(stdout, rrsig);
+	printf("\n");
 	
 	/* create a buffer with b64 signature rdata */
 	if (ldns_rdf2buffer_wire(rawsig_buf,
