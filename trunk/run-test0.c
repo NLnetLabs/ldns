@@ -5,10 +5,8 @@
 
 #include <config.h>
 
-#include "rdata.h"
-#include "rr.h"
-#include "packet.h"
-#include "prototype.h"
+#include <ldns/ldns.h>
+
 #include "util.h"
 
 int

@@ -20,7 +20,7 @@ AC_PATH_PROG(doxygen, doxygen, "/usr/bin/doxygen")
 #AC_HEADER_SYS_WAIT
 #AC_CHECK_HEADERS([getopt.h fcntl.h stdlib.h string.h strings.h unistd.h])
 # do the very minimum - we can always extend this
-AC_CHECK_HEADERS([getopt.h stdlib.h stdio.h openssl/ssl.h assert.h netinet/in.h ctype.h])
+AC_CHECK_HEADERS([getopt.h stdbool.h stdlib.h stdio.h openssl/ssl.h assert.h netinet/in.h ctype.h])
 AC_CHECK_HEADERS(sys/param.h sys/mount.h,,,
 [
   [

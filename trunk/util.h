@@ -10,9 +10,10 @@
  * See the file LICENSE for the license
  */
 
-#ifdef _UTIL_H
-#else
+#ifndef _UTIL_H
 #define _UTIL_H
+
+#include <ldns/rr.h>
 
 /**
  * Memory management macro's
@@ -38,4 +39,4 @@
 void    xprintf_rd_field(t_rdata_field *);
 void    xprintf_rr(t_rr *);
 
-#endif /* _UTIL_H */
+#endif /* !_UTIL_H */

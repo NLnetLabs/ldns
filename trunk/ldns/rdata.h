@@ -9,11 +9,9 @@
  *
  * See the file LICENSE for the license
  */
-#ifdef _RDATA_H
-#else
-#define _RDATA_H
 
-#include <config.h>
+#ifndef _LDNS_RDATA_H
+#define _LDNS_RDATA_H
 
 /**
  * LibDNS DESIGN 
@@ -139,4 +137,5 @@ t_rd_type       _ldns_rd_field_type(t_rdata_field *);
 t_rdata_field   *_ldns_rd_field_new(uint16_t, t_rd_type, uint8_t *);
 uint8_t         *_ldns_rd_field_data(t_rdata_field *);
 void            _ldns_rd_field_destroy(t_rdata_field *);
-#endif	/* _RDATA_H */
+
+#endif	/* !_LDNS_RDATA_H */

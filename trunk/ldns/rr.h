@@ -10,12 +10,12 @@
  *
  * See the file LICENSE for the license
  */
-#ifdef _RR_H
-#else
-#define _RR_H
 
-#include "rdata.h"
-#include "rr.h"
+#ifndef _LDNS_RR_H
+#define _LDNS_RR_H
+
+#include "ldns/rdata.h"
+#include "ldns/rr.h"
 
 /* the different RR types */
 /**  a host address */
@@ -168,4 +168,5 @@ void ldns_rr_push_rd_field(t_rr *, t_rdata_field *);
 uint8_t *ldns_rr_owner(t_rr *);
 uint8_t ldns_rr_ttl(t_rr *);
 uint16_t ldns_rr_rd_count(t_rr *);
-#endif /* _RR_H */
+
+#endif /* _LDNS_RR_H */
