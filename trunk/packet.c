@@ -405,5 +405,6 @@ ldns_pkt_query_new(ldns_rdf *rr_name, ldns_rr_type rr_type, ldns_rr_class rr_cla
 	ldns_rr_set_class(question_rr, rr_class);
 	
 	ldns_pkt_push_rr(packet, LDNS_SECTION_QUESTION, question_rr);
+
 	return packet;
 }

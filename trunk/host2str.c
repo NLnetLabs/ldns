@@ -84,14 +84,14 @@ ldns_rdf2buffer_str_dname(ldns_buffer *output, ldns_rdf *dname)
 	uint8_t len;
 	uint8_t *data = (uint8_t *) dname->_data;
 	len = data[src_pos];
-	while (len > 0) {
+
+	while (len > 0 && src_pos < ldns_rdf_size(dname)) {
 		src_pos++;
 		ldns_buffer_write(output, &data[src_pos], len);
 		src_pos += len;
 		len = data[src_pos];
 		ldns_buffer_printf(output, ".");
 	}
-	
 	return ldns_buffer_status(output);
 }
 
@@ -685,7 +685,6 @@ ldns_rr2buffer_str(ldns_buffer *output, ldns_rr *rr)
 		}
 	}
 	
-
 	for (i = 0; i < ldns_rr_rd_count(rr); i++) {
 		status = ldns_rdf2buffer_str(output, ldns_rr_rdf(rr, i));
 		ldns_buffer_printf(output, " ");
