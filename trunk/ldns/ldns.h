@@ -14,6 +14,7 @@
 #define _LDNS_H
 
 #include <ldns/common.h>
+#include <ldns/error.h>
 #include <ldns/rdata.h>
 #include <ldns/rr.h>
 #include <ldns/packet.h>
