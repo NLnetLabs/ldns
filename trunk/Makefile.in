@@ -55,7 +55,8 @@ TEST_SOURCES	=	run-test0.c run-test1.c run-test2.c run-test3.c \
 			run-test13.c run-test14.c run-test15.c run-test16.c \
 			run-test17.c
 
-ALL_SOURCES	=	$(TEST_SOURCES) $(LIBDNS_SOURCES) $(PROG_SOURCES)
+#ALL_SOURCES	=	$(TEST_SOURCES) $(LIBDNS_SOURCES) $(PROG_SOURCES)
+ALL_SOURCES	=	$(LIBDNS_SOURCES) $(PROG_SOURCES)
 
 TESTS		=	$(TEST_SOURCES:.c=)
 
