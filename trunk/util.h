@@ -133,4 +133,10 @@ int get_bit(uint8_t bits[], size_t index);
  */
 int get_bit_r(uint8_t bits[], size_t index);
 
+/**
+ * Returns the value of a to the power of b
+ * (or 1 of b < 1)
+ */
+long power(long a, long b); 
+
 #endif /* !_UTIL_H */

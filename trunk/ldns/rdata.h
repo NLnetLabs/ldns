@@ -81,7 +81,9 @@ enum ldns_enum_rdf_type
 	/** location data */
 	LDNS_RDF_TYPE_LOC,
 	/** well known services */
-	LDNS_RDF_TYPE_WKS
+	LDNS_RDF_TYPE_WKS,
+	/** NSAP */
+	LDNS_RDF_TYPE_NSAP
 };
 typedef enum ldns_enum_rdf_type ldns_rdf_type;
 

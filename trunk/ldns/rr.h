@@ -143,7 +143,7 @@ typedef enum ldns_enum_rr_type ldns_rr_type;
 /** Maximum length of a complete dname */
 #define MAXDOMAINLEN    255
 /** Maximum number of pointers in 1 dname */
-#define MAXPOINTERS	126
+#define MAXPOINTERS	65535
 
 /**
  * \brief Resource Record type

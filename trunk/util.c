@@ -85,3 +85,12 @@ get_bit_r(uint8_t bits[], size_t index)
 	return (int) bits[index / 8] & (1 << (index % 8));
 }
 
+inline long
+power(long a, long b) {
+	if (b < 1) {	
+		return 1;
+	} else {
+		return a * power(a, b-1);
+	}
+}
+

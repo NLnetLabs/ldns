@@ -317,6 +317,7 @@ ldns_wire2rdf(ldns_rr *rr, const uint8_t *wire,
 		case LDNS_RDF_TYPE_SERVICE:
 		case LDNS_RDF_TYPE_LOC:
 		case LDNS_RDF_TYPE_WKS:
+		case LDNS_RDF_TYPE_NSAP:
 		case LDNS_RDF_TYPE_NONE:
 			/*
 			 * Read to end of rr rdata
@@ -367,7 +368,8 @@ ldns_wire2rr(ldns_rr **rr_p, const uint8_t *wire, size_t max,
 	ldns_rr_set_class(rr, read_uint16(&wire[*pos]));
 	*pos = *pos + 2;
 
-	if (section != LDNS_SECTION_QUESTION) {
+	if (section != LDNS_SECTION_QUESTION &&
+	    ldns_rr_get_type(rr) != LDNS_RR_TYPE_OPT) {
 		ldns_rr_set_ttl(rr, read_uint32(&wire[*pos]));	
 		*pos = *pos + 4;
 		status = ldns_wire2rdf(rr, wire, max, pos);
