@@ -731,10 +731,10 @@ ldns_sign_public(ldns_rr_list *rrset, ldns_key_list *keys)
 	ldns_rr_list *signatures;
 	ldns_rr_list *rrset_clone;
 	ldns_rr *current_sig;
+	ldns_rdf *b64rdf;
 	ldns_key *current_key;
 	size_t key_count;
 	uint16_t i;
-	ldns_buffer *rawsig_buf;
 	ldns_buffer *sign_buf;
 	uint32_t orig_ttl;
 
@@ -753,10 +753,10 @@ ldns_sign_public(ldns_rr_list *rrset, ldns_key_list *keys)
 	/* sort */
 	ldns_rr_list_sort(rrset_clone);
 	
-	rawsig_buf = ldns_buffer_new(MAX_PACKETLEN);
-	sign_buf = ldns_buffer_new(MAX_PACKETLEN);
-	
 	for (key_count = 0; key_count < ldns_key_list_key_count(keys); key_count++) {
+
+		sign_buf = ldns_buffer_new(MAX_PACKETLEN);
+		b64rdf = NULL;
 
 		current_key = ldns_key_list_key(keys, key_count);
 		current_sig = ldns_rr_new();
@@ -798,18 +798,134 @@ ldns_sign_public(ldns_rr_list *rrset, ldns_key_list *keys)
 		/* right now, we have: a key, a semi-sig and an rrset. For
 		 * which we can create the sig and base64 encode that and
 		 * add that to the signature */
+		if (ldns_rrsig2buffer_wire(sign_buf, current_sig) != LDNS_STATUS_OK) {
+			ldns_buffer_free(sign_buf);
+			/* ERROR */
+			return NULL;
+		}
+		/* add the rrset in sign_buf */
+		if (ldns_rr_list2buffer_wire(sign_buf, rrset_clone) != LDNS_STATUS_OK) {
+			ldns_buffer_free(sign_buf);
+			return NULL;
+		}
 
+		
+		switch(ldns_key_algorithm(current_key)) {
+			case LDNS_SIGN_DSA:
+				b64rdf = ldns_sign_public_dsa(sign_buf, ldns_key_dsa_key(current_key));
+				break;
+			case LDNS_SIGN_RSASHA1:
+				b64rdf = ldns_sign_public_rsasha1(sign_buf, ldns_key_rsa_key(current_key));
+				break;
+			case LDNS_SIGN_RSAMD5:
+				b64rdf = ldns_sign_public_rsamd5(sign_buf, ldns_key_rsa_key(current_key));
+				break;
+			default:
+				/* do _you_ know this alg? */
+				break;
+		}
+		if (!b64rdf) {
+			/* signing went wrong */
+			return NULL;
+		}
+		ldns_rr_set_sig(current_sig, b64rdf);
+
+		/* push the signature to the signatures list */
+		ldns_rr_list_push_rr(signatures, current_sig);
+
+		ldns_buffer_free(sign_buf); /* restart for the next key */
+        }
+	return signatures;
+}
+
+ldns_rdf *
+ldns_sign_public_dsa(ldns_buffer *to_sign, DSA *key)
+{
+	unsigned char *sha1_hash;
+	unsigned int siglen;
+	ldns_rdf *sigdata_rdf;
+	ldns_buffer *b64sig;
+
+	b64sig = ldns_buffer_new(MAX_PACKETLEN);
+	if (!b64sig) {
+		return NULL;
+	}
+	
+	sha1_hash = SHA1((unsigned char*)ldns_buffer_begin(to_sign),
+			ldns_buffer_position(to_sign), NULL);
+	if (!sha1_hash) {
+		ldns_buffer_free(b64sig);
+		return NULL;
+	}
+	
+	DSA_sign(NID_sha1, sha1_hash, SHA_DIGEST_LENGTH,
+			(unsigned char*)ldns_buffer_begin(b64sig),
+			&siglen, key);
+	
+	sigdata_rdf = ldns_rdf_new_frm_data(LDNS_RDF_TYPE_B64, siglen, 
+			ldns_buffer_begin(b64sig));
+	FREE(sha1_hash);
+	ldns_buffer_free(b64sig);
+	return sigdata_rdf;
+}
+
+ldns_rdf *
+ldns_sign_public_rsasha1(ldns_buffer *to_sign, RSA *key)
+{
+	unsigned char *sha1_hash;
+	unsigned int siglen;
+	ldns_rdf *sigdata_rdf;
+	ldns_buffer *b64sig;
+
+	b64sig = ldns_buffer_new(MAX_PACKETLEN);
+	if (!b64sig) {
+		return NULL;
 	}
 
-#if 0
-	        int RSA_sign(NID_sha1 | NID_md5, unsigned char *m, unsigned int m_len,
-           unsigned char *sigret, unsigned int *siglen, RSA *rsa);
+	sha1_hash = SHA1((unsigned char*)ldns_buffer_begin(to_sign),
+			ldns_buffer_position(to_sign), NULL);
+	if (!sha1_hash) {
+		ldns_buffer_free(b64sig);
+		return NULL;
+	}
 
-        int    DSA_sign(int type, const unsigned char *dgst, int len,
-			                       unsigned char *sigret, unsigned int *siglen, DSA *dsa);
-#endif 
+	RSA_sign(NID_sha1, sha1_hash, SHA_DIGEST_LENGTH,
+			(unsigned char*)ldns_buffer_begin(b64sig),
+			&siglen, key);
+	sigdata_rdf = ldns_rdf_new_frm_data(LDNS_RDF_TYPE_B64, siglen, 
+			ldns_buffer_begin(b64sig));
+	FREE(sha1_hash);
+	ldns_buffer_free(b64sig);
+	return sigdata_rdf;
+}
 
+ldns_rdf *
+ldns_sign_public_rsamd5(ldns_buffer *to_sign, RSA *key)
+{
+	unsigned char *md5_hash;
+	unsigned int siglen;
+	ldns_rdf *sigdata_rdf;
+	ldns_buffer *b64sig;
 
+	b64sig = ldns_buffer_new(MAX_PACKETLEN);
+	if (!b64sig) {
+		return NULL;
+	}
 	
-	return NULL;
+	md5_hash = MD5((unsigned char*)ldns_buffer_begin(to_sign),
+			ldns_buffer_position(to_sign), NULL);
+	if (!md5_hash) {
+		ldns_buffer_free(b64sig);
+		return NULL;
+	}
+
+	RSA_sign(NID_md5, md5_hash, MD5_DIGEST_LENGTH,
+			(unsigned char*)ldns_buffer_begin(b64sig),
+			&siglen, key);
+
+	sigdata_rdf = ldns_rdf_new_frm_data(LDNS_RDF_TYPE_B64, siglen, 
+			ldns_buffer_begin(b64sig));
+	FREE(md5_hash);
+	ldns_buffer_free(b64sig);
+	return sigdata_rdf;
 }
