@@ -23,6 +23,24 @@
 
 #include "util.h"
 
+#define _LDNS_RR_FUNCTION(TYPE, RR, POS)                \
+        if (!(RR) || (ldns_rr_get_type((RR)) != (TYPE))) {      \
+                return false;                           \
+        }                                               \
+        return ldns_rr_rdf((RR), (POS));                
+
+#define _LDNS_RR_SET_FUNCTION(TYPE, RR, RDF, POS)       \
+        ldns_rdf *pop;                                  \
+        if (!(RR) || (ldns_rr_get_type((RR)) != (TYPE))) {      \
+                return false;                           \
+        }                                               \
+        pop = ldns_rr_set_rdf((RR), (RDF), (POS));      \
+        if (pop) {                                      \
+                FREE(pop);                              \
+                return true;                            \
+        } else {                                        \
+                return false;                           \
+        }                                         
 
 /* handle A / AAAA records */
 ldns_rdf *
@@ -61,121 +79,121 @@ ldns_rr_set_address(ldns_rr *r, ldns_rdf *f)
 ldns_rdf *
 ldns_rr_nsdname(ldns_rr *r)
 {
-	_LDNS_RR_FUNCTION(r, 0, LDNS_RR_TYPE_NS);
+	_LDNS_RR_FUNCTION(LDNS_RR_TYPE_NS, r, 0);
 }
 
 /* MX records */
 ldns_rdf *
 ldns_rr_preference(ldns_rr *r)
 {
-	_LDNS_RR_FUNCTION(r, 0, LDNS_RR_TYPE_MX);
+	_LDNS_RR_FUNCTION(LDNS_RR_TYPE_MX, r, 0);
 }
 
 ldns_rdf *
 ldns_rr_exchange(ldns_rr *r)
 {
-	_LDNS_RR_FUNCTION(r, 1, LDNS_RR_TYPE_MX);
+	_LDNS_RR_FUNCTION(LDNS_RR_TYPE_MX, r, 1);
 }
 
 /* RRSIG record */
 ldns_rdf *
 ldns_rr_typecovered(ldns_rr *r)
 {
-	_LDNS_RR_FUNCTION(r, 0, LDNS_RR_TYPE_RRSIG);
+	_LDNS_RR_FUNCTION(LDNS_RR_TYPE_RRSIG, r, 0);
 }
 
 bool
 ldns_rr_set_typecovered(ldns_rr *r, ldns_rdf *f)
 {
-	_LDNS_RR_SET_FUNCTION(r, f, 0, LDNS_RR_TYPE_RRSIG);
+	_LDNS_RR_SET_FUNCTION(LDNS_RR_TYPE_RRSIG, r, f, 0);
 }
 
 ldns_rdf *
 ldns_rr_algorithm(ldns_rr *r)
 {
-	_LDNS_RR_FUNCTION(r, 1, LDNS_RR_TYPE_RRSIG);
+	_LDNS_RR_FUNCTION(LDNS_RR_TYPE_RRSIG, r, 1);
 }
 
 bool
 ldns_rr_set_algorithm(ldns_rr *r, ldns_rdf *f)
 {
-	_LDNS_RR_SET_FUNCTION(r, f, 1, LDNS_RR_TYPE_RRSIG);
+	_LDNS_RR_SET_FUNCTION(LDNS_RR_TYPE_RRSIG, r, f, 1);
 }
 
 ldns_rdf *
 ldns_rr_labels(ldns_rr *r)
 {
-	_LDNS_RR_FUNCTION(r, 2, LDNS_RR_TYPE_RRSIG);
+	_LDNS_RR_FUNCTION(LDNS_RR_TYPE_RRSIG, r, 2);
 }
 bool
 ldns_rr_set_labels(ldns_rr *r, ldns_rdf *f)
 {
-	_LDNS_RR_SET_FUNCTION(r, f, 2, LDNS_RR_TYPE_RRSIG);
+	_LDNS_RR_SET_FUNCTION(LDNS_RR_TYPE_RRSIG, r, f, 2);
 }
 
 ldns_rdf *
 ldns_rr_origttl(ldns_rr *r)
 {
-	_LDNS_RR_FUNCTION(r, 3, LDNS_RR_TYPE_RRSIG);
+	_LDNS_RR_FUNCTION(LDNS_RR_TYPE_RRSIG, r, 3);
 }
 bool
-ldns_rr_set_origtll(ldns_rr *r, ldns_rdf *f)
+ldns_rr_set_origttl(ldns_rr *r, ldns_rdf *f)
 {
-	_LDNS_RR_SET_FUNCTION(r, f, 3, LDNS_RR_TYPE_RRSIG);
+	_LDNS_RR_SET_FUNCTION(LDNS_RR_TYPE_RRSIG, r, f, 3);
 }
 	
 ldns_rdf *
 ldns_rr_expiration(ldns_rr *r)
 {
-	_LDNS_RR_FUNCTION(r, 4, LDNS_RR_TYPE_RRSIG);
+	_LDNS_RR_FUNCTION(LDNS_RR_TYPE_RRSIG, r, 4);
 }
 bool
 ldns_rr_set_expiration(ldns_rr *r, ldns_rdf *f)
 {
-	_LDNS_RR_SET_FUNCTION(r, f, 4, LDNS_RR_TYPE_RRSIG);
+	_LDNS_RR_SET_FUNCTION(LDNS_RR_TYPE_RRSIG, r, f, 4);
 }
 
 ldns_rdf *
 ldns_rr_inception(ldns_rr *r)
 {
-	_LDNS_RR_FUNCTION(r, 5, LDNS_RR_TYPE_RRSIG);
+	_LDNS_RR_FUNCTION(LDNS_RR_TYPE_RRSIG, r, 5);
 }
 bool
 ldns_rr_set_inception(ldns_rr *r, ldns_rdf *f)
 {
-	_LDNS_RR_SET_FUNCTION(r, f, 5, LDNS_RR_TYPE_RRSIG);
+	_LDNS_RR_SET_FUNCTION(LDNS_RR_TYPE_RRSIG, r, f, 5);
 }
 
 ldns_rdf *
 ldns_rr_keytag(ldns_rr *r)
 {
-	_LDNS_RR_FUNCTION(r, 6, LDNS_RR_TYPE_RRSIG);
+	_LDNS_RR_FUNCTION(LDNS_RR_TYPE_RRSIG, r, 6);
 }
 
 bool
 ldns_rr_set_keytag(ldns_rr *r, ldns_rdf *f)
 {
-	_LDNS_RR_SET_FUNCTION(r, f, 6, LDNS_RR_TYPE_RRSIG);
+	_LDNS_RR_SET_FUNCTION(LDNS_RR_TYPE_RRSIG, r, f, 6);
 }
 ldns_rdf *
 ldns_rr_signame(ldns_rr *r)
 {
-	_LDNS_RR_FUNCTION(r, 7, LDNS_RR_TYPE_RRSIG);
+	_LDNS_RR_FUNCTION(LDNS_RR_TYPE_RRSIG, r, 7);
 }
 bool
 ldns_rr_set_signame(ldns_rr *r, ldns_rdf *f)
 {
-	_LDNS_RR_SET_FUNCTION(r, f, 7, LDNS_RR_TYPE_RRSIG);
+	_LDNS_RR_SET_FUNCTION(LDNS_RR_TYPE_RRSIG, r, f, 7);
 }
 
 ldns_rdf *
 ldns_rr_sig(ldns_rr *r)
 {
-	_LDNS_RR_FUNCTION(r, 8, LDNS_RR_TYPE_RRSIG);
+	_LDNS_RR_FUNCTION(LDNS_RR_TYPE_RRSIG, r, 8);
 }
 
 bool
 ldns_rr_set_sig(ldns_rr *r, ldns_rdf *f)
 {
-	_LDNS_RR_SET_FUNCTION(r, f, 8, LDNS_RR_TYPE_RRSIG);
+	_LDNS_RR_SET_FUNCTION(LDNS_RR_TYPE_RRSIG, r, f, 8);
 }
