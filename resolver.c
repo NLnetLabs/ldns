@@ -210,9 +210,8 @@ ldns_status
 ldns_resolver_push_nameserver_rr(ldns_resolver *r, ldns_rr *rr)
 {
 	ldns_rdf *address;
-
-	if (ldns_rr_get_type(rr) != LDNS_RR_TYPE_A &&
-			ldns_rr_get_type(rr) != LDNS_RR_TYPE_AAAA) {
+	if ((!rr) || (ldns_rr_get_type(rr) != LDNS_RR_TYPE_A &&
+			ldns_rr_get_type(rr) != LDNS_RR_TYPE_AAAA)) {
 		return LDNS_STATUS_ERR;
 	}
 	address = ldns_rr_rdf(rr, 0); /* extract the ip number */
