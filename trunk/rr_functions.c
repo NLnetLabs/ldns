@@ -44,7 +44,7 @@ ldns_rr_set_function(ldns_rr_type type, ldns_rr *rr, ldns_rdf *rdf, size_t pos)
  		FREE(pop);
                 return true;
         } else {
-                return false;
+                return true;
         }
 }
 

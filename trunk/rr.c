@@ -60,16 +60,15 @@ ldns_rr_new_frm_type(ldns_rr_type t)
 	
 	desc = ldns_rr_descript(t);
 
-	printf("min %d\n",
-			(int) ldns_rr_descriptor_minimum(desc));
-	
 	rr->_rdata_fields = XMALLOC(ldns_rdf *, 
 			ldns_rr_descriptor_minimum(desc) - 1);
 	for (i = 0; i < ldns_rr_descriptor_minimum(desc); i++) {
 		rr->_rdata_fields[i] = NULL;
 	}
 	
-	ldns_rr_set_rd_count(rr, 0);
+	/* set the count to minimum */
+	ldns_rr_set_rd_count(rr, 
+			ldns_rr_descriptor_minimum(desc));
 	ldns_rr_set_class(rr, LDNS_RR_CLASS_IN);
 	ldns_rr_set_ttl(rr, LDNS_DEFTTL);
 	ldns_rr_set_type(rr, t);

@@ -22,7 +22,7 @@
 #include <openssl/hmac.h>
 
 uint16_t
-ldns_keytag(ldns_rr *key)
+ldns_calc_keytag(ldns_rr *key)
 {
 	unsigned int i;
 	uint32_t ac;
@@ -630,7 +630,7 @@ ldns_key_rr2ds(const ldns_rr *key)
         }
 
         /* keytag */
-        keytag = htons(ldns_keytag((ldns_rr*)key));
+        keytag = htons(ldns_calc_keytag((ldns_rr*)key));
         tmp = ldns_rdf_new_frm_data(LDNS_RDF_TYPE_INT16, sizeof(uint16_t), &keytag);
         ldns_rr_push_rdf(ds, tmp);
 
@@ -709,9 +709,7 @@ ldns_sign_public(ldns_rr_list *rrset, ldns_key_list *keys)
 
 		current_key = ldns_key_list_key(keys, key_count);
 		current_sig = ldns_rr_new_frm_type(LDNS_RR_TYPE_RRSIG);
-		printf("printing it\n");
-		ldns_rr_print(stdout, current_sig);
-		printf("\n");
+		
 		/* set the type on the new signature */
 		orig_ttl = ldns_key_ttl(current_key);
 
@@ -721,37 +719,40 @@ ldns_sign_public(ldns_rr_list *rrset, ldns_key_list *keys)
 					ldns_rr_list_rr(rrset_clone, i), orig_ttl);
 		}
 
+		ldns_rr_set_owner(current_sig, 
+				ldns_rr_owner(ldns_rr_list_rr(rrset_clone, 0)));
+
 		/* fill in what we now of the signature */
 		/* set the orig_ttl */
-		ldns_rr_rrsig_set_origttl(current_sig, ldns_native2rdf_int32(LDNS_RDF_TYPE_INT32, orig_ttl));
+		(void)ldns_rr_rrsig_set_origttl(current_sig, ldns_native2rdf_int32(LDNS_RDF_TYPE_INT32, orig_ttl));
 		/* the signers name */
-		ldns_rr_rrsig_set_signame(current_sig, 
+		(void)ldns_rr_rrsig_set_signame(current_sig, 
 				ldns_key_pubkey_owner(current_key));
 		/* label count - get it from the first rr in the rr_list */
-		ldns_rr_rrsig_set_labels(current_sig, 
+		(void)ldns_rr_rrsig_set_labels(current_sig, 
 				ldns_native2rdf_int8(LDNS_RDF_TYPE_INT8, ldns_rr_label_count(
 						ldns_rr_list_rr(rrset_clone, 0))));
 		/* inception, expiration */
-		ldns_rr_rrsig_set_inception(current_sig,
+		(void)ldns_rr_rrsig_set_inception(current_sig,
 				ldns_native2rdf_int32(LDNS_RDF_TYPE_INT32, ldns_key_inception(current_key)));
-		ldns_rr_rrsig_set_expiration(current_sig,
+		(void)ldns_rr_rrsig_set_expiration(current_sig,
 				ldns_native2rdf_int32(LDNS_RDF_TYPE_INT32, ldns_key_expiration(current_key)));
 		/* key-tag */
-		ldns_rr_rrsig_set_keytag(current_sig,
+		(void)ldns_rr_rrsig_set_keytag(current_sig,
 				ldns_native2rdf_int16(LDNS_RDF_TYPE_INT16, ldns_key_keytag(current_key)));
 
 		/* algorithm - check the key and substitute that */
-		ldns_rr_rrsig_set_algorithm(current_sig,
+		(void)ldns_rr_rrsig_set_algorithm(current_sig,
 				ldns_native2rdf_int8(LDNS_RDF_TYPE_ALG, ldns_key_algorithm(current_key)));
-		
 		/* type-covered */
-		ldns_rr_rrsig_set_typecovered(current_sig,
+		(void)ldns_rr_rrsig_set_typecovered(current_sig,
 				ldns_native2rdf_int16(LDNS_RDF_TYPE_TYPE,
 					ldns_rr_get_type(ldns_rr_list_rr(rrset_clone, 0))));
 
 		/* right now, we have: a key, a semi-sig and an rrset. For
 		 * which we can create the sig and base64 encode that and
 		 * add that to the signature */
+		
 		if (ldns_rrsig2buffer_wire(sign_buf, current_sig) != LDNS_STATUS_OK) {
 			ldns_buffer_free(sign_buf);
 			printf("couldn't convert to buffer 1\n");
@@ -764,8 +765,6 @@ ldns_sign_public(ldns_rr_list *rrset, ldns_key_list *keys)
 			ldns_buffer_free(sign_buf);
 			return NULL;
 		}
-		ldns_rr_print(stdout, current_sig);
-		printf("\n");
 		
 		switch(ldns_key_algorithm(current_key)) {
 			case LDNS_SIGN_DSA:
@@ -786,20 +785,12 @@ ldns_sign_public(ldns_rr_list *rrset, ldns_key_list *keys)
 			printf("couldn't sign!\n");
 			return NULL;
 		}
-		ldns_rr_print(stdout, current_sig);
-		printf("\n");
 		ldns_rr_rrsig_set_sig(current_sig, b64rdf);
 
 		/* push the signature to the signatures list */
 		ldns_rr_list_push_rr(signatures, current_sig);
 
-		ldns_rr_print(stdout, current_sig);
-		printf("\n");
-
-		printf("mag ik dit niet free-en?!\n");
-#if 0
 		ldns_buffer_free(sign_buf); /* restart for the next key */
-#endif
         }
 	return signatures;
 }
@@ -830,8 +821,7 @@ ldns_sign_public_dsa(ldns_buffer *to_sign, DSA *key)
 	
 	sigdata_rdf = ldns_rdf_new_frm_data(LDNS_RDF_TYPE_B64, siglen, 
 			ldns_buffer_begin(b64sig));
-	/* FREE(sha1_hash); - don't free -> invalid pointer, huh? Memleak?
-	 */
+	/* FREE(sha1_hash); - don't free -> invalid pointer */
 	ldns_buffer_free(b64sig);
 	return sigdata_rdf;
 }
@@ -862,8 +852,6 @@ ldns_sign_public_rsasha1(ldns_buffer *to_sign, RSA *key)
 	sigdata_rdf = ldns_rdf_new_frm_data(LDNS_RDF_TYPE_B64, siglen, 
 			ldns_buffer_begin(b64sig));
 	ldns_buffer_free(b64sig);
-	ldns_rdf_print(stdout, sigdata_rdf);
-	printf("dat was een rdf\n");
 	return sigdata_rdf;
 }
 
