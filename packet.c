@@ -552,21 +552,11 @@ ldns_pkt_free(ldns_pkt *packet)
 {
 	if (packet) {
 		FREE(packet->_header);
-		if (packet->_question) {
-			ldns_rr_list_free(packet->_question);
-		}
-		if (packet->_answer) {
-			ldns_rr_list_free(packet->_answer);
-		}
-		if (packet->_authority) {
-			ldns_rr_list_free(packet->_authority);
-		}
-		if (packet->_additional) {
-			ldns_rr_list_free(packet->_additional);
-		}
-		if (packet->_tsig_rr) {
-			ldns_rr_free(packet->_tsig_rr);
-		}
+		ldns_rr_list_free(packet->_question);
+		ldns_rr_list_free(packet->_answer);
+		ldns_rr_list_free(packet->_authority);
+		ldns_rr_list_free(packet->_additional);
+		ldns_rr_free(packet->_tsig_rr);
 		FREE(packet);
 	}
 }
