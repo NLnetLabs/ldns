@@ -432,7 +432,7 @@ ldns_resolver_new_frm_file(const char *filename)
 	}
 	/* the file is opened. it's line based - this will be a bit messy */
 
-	while (readword(word, fp, MAXLINE_LEN) != -1) {
+	while (readword(word, fp, "\n\t ", MAXLINE_LEN) != -1) {
 		/* do something */
 		switch(expect) {
 			case RESOLV_KEYWORD:
