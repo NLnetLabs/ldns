@@ -46,8 +46,8 @@ main(int argc, char **argv)
 	ldns_pkt_set_id(pkt, 46789);
 
 	ldns_pkt_tsig_sign(pkt, "jelte.", "vBUWJnkgDw4YTobXtbUD6XED5Qg74tnghYX3tzKzfsI=", 300, "hmac-md5.sig-alg.reg.int", NULL);
-
 	mac = ldns_rr_rdf(ldns_pkt_tsig(pkt), 3);
+
 	/* test our own sign */
 	if (!ldns_pkt_tsig_verify(pkt, "jelte.", "vBUWJnkgDw4YTobXtbUD6XED5Qg74tnghYX3tzKzfsI=", NULL)) {
 		printf("Can't verify my own sig :(\n");
@@ -57,7 +57,7 @@ main(int argc, char **argv)
         /* print the resulting pkt to stdout */
         printf("QUERY:\n");
         ldns_pkt_print(stdout, pkt);
-        
+
         /* Send to resolver */
         
         /* init */
@@ -69,7 +69,6 @@ main(int argc, char **argv)
                 printf("error push nameserver\n");
                 return -1;
         }
-
         answer = ldns_send(res, pkt);
         
         printf("\n\nANSWER:\n");
@@ -82,11 +81,11 @@ main(int argc, char **argv)
 	} else {
 		printf("Failed.\n");
 	}
-/*
+
+	ldns_pkt_free(answer);
         ldns_rdf_free(nameserver);
-        ldns_rdf_free(qname);
         ldns_pkt_free(pkt);
         ldns_resolver_free(res);
-*/
+
         return 0;
 }

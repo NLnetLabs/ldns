@@ -490,12 +490,16 @@ ldns_create_tsig_mac(
 	}
 	/* hmac it */
 	/* 2 spare bytes for the length */
-	mac_bytes = malloc(md_len);
+	mac_bytes = XMALLOC(unsigned char, md_len);
 	memset(mac_bytes, 0, md_len);
 	(void) HMAC(EVP_md5(), key_bytes, key_size, (void *)wireformat, wiresize, mac_bytes + 2, &md_len);
 	
 	write_uint16(mac_bytes, md_len);
-	mac_rdf = ldns_rdf_new(md_len + 2, LDNS_RDF_TYPE_INT16_DATA, mac_bytes);
+	mac_rdf = ldns_rdf_new_frm_data(LDNS_RDF_TYPE_INT16_DATA, md_len + 2, mac_bytes);
+	
+	FREE(mac_bytes);
+	FREE(key_bytes);
+	ldns_buffer_free(data_buffer);
 	
 	return mac_rdf;
 }
@@ -526,6 +530,7 @@ ldns_pkt_tsig_verify(ldns_pkt *pkt,
 	ldns_rr *orig_tsig = ldns_pkt_tsig(pkt);
 	
 	if (!orig_tsig) {
+		ldns_rdf_free(key_name_rdf);
 		return false;
 	}
 	
@@ -560,6 +565,8 @@ ldns_pkt_tsig_verify(ldns_pkt *pkt,
 	ldns_pkt_set_tsig(pkt, orig_tsig);
 	ldns_pkt_set_id(pkt, pkt_id);
 	
+	ldns_rdf_free(key_name_rdf);
+	
 	/* TODO: ldns_rdf_cmp in rdata.[ch] */
 	if (ldns_rdf_size(pkt_mac_rdf) != ldns_rdf_size(my_mac_rdf)) {
 		/*
@@ -577,6 +584,7 @@ ldns_pkt_tsig_verify(ldns_pkt *pkt,
 		}
 		printf("\n");
 		*/
+		ldns_rdf_free(my_mac_rdf);
 		return false;
 	} else {
 		for (i = 0; i < ldns_rdf_size(pkt_mac_rdf); i++) {
@@ -599,11 +607,13 @@ ldns_pkt_tsig_verify(ldns_pkt *pkt,
 				}
 				printf("\n");
 				*/
+				ldns_rdf_free(my_mac_rdf);
 				return false;
 			}
 		}
 	}
 
+	ldns_rdf_free(my_mac_rdf);
 	return true;
 }
 
@@ -624,8 +634,7 @@ ldns_pkt_tsig_verify(ldns_pkt *pkt,
 ldns_status
 ldns_pkt_tsig_sign(ldns_pkt *pkt, const char *key_name, const char *key_data, uint16_t fudge, const char *algorithm_name, ldns_rdf *query_mac)
 {
-	unsigned char *key_bytes;
-	int key_size;
+	int key_size = 0;
 	ldns_rr *tsig_rr;
 	ldns_rdf *key_name_rdf = ldns_rdf_new_frm_str(LDNS_RDF_TYPE_DNAME, key_name);
 	uint8_t *fudge_data;
@@ -666,10 +675,6 @@ ldns_pkt_tsig_sign(ldns_pkt *pkt, const char *key_name, const char *key_data, ui
 	write_uint16(error_data, 0);
 	error_rdf = ldns_rdf_new(2, LDNS_RDF_TYPE_INT16, error_data);
 
-	/* prepare the key */
-	key_bytes = XMALLOC(unsigned char, b64_pton_calculate_size(strlen(key_data)));
-	key_size = b64_pton(key_data, key_bytes, strlen(key_data) * 2);
-	
 	if (key_size < 0) {
 		return LDNS_STATUS_INVALID_B64;
 	}
