@@ -3,6 +3,14 @@
 " Maintainer:   miekg
 " Last change:  2004-12-15
 
+" util.h
+syn keyword  ldnsMacro MALLOC
+syn keyword  ldnsMacro XMALLOC
+syn keyword  ldnsMacro REALLOC
+syn keyword  ldnsMacro XREALLOC
+syn keyword  ldnsMacro FREE
+syn keyword  ldnsMacro DEP  
+
 " ldns/rdata.h
 syn keyword  ldnsType           ldns_rdf_type
 syn keyword  ldnsType           ldns_rdf
