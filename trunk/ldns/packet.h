@@ -116,9 +116,10 @@ t_packet *dns_packet_new();
  * Converts the data on the uint8_t bytearray (in wire format) to a DNS packet
  *
  * @param data pointer to the buffer with the data
+ * @param len the length of the data buffer (in bytes)
  * @param packet pointer to the structure to hold the packet
  * @return the number of bytes read from the wire
  */
-size_t dns_wire2packet(uint8_t *data, t_packet *packet);
+size_t dns_wire2packet(uint8_t *data, size_t len, t_packet *packet);
 
 #endif  /* !_LDNS_PACKET_H */

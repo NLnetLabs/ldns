@@ -16,9 +16,122 @@
 
 #include "util.h"
 
+/*
+ * Set of macro's to deal with the dns message header as specified
+ * in RFC1035 in portable way.
+ *
+ */
+
+/*
+ *
+ *                                    1  1  1  1  1  1
+ *      0  1  2  3  4  5  6  7  8  9  0  1  2  3  4  5
+ *    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+ *    |                      ID                       |
+ *    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+ *    |QR|   Opcode  |AA|TC|RD|RA| Z|AD|CD|   RCODE   |
+ *    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+ *    |                    QDCOUNT                    |
+ *    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+ *    |                    ANCOUNT                    |
+ *    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+ *    |                    NSCOUNT                    |
+ *    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+ *    |                    ARCOUNT                    |
+ *    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+ *
+ */
+
+/* The length of the header */
+#define	QHEADERSZ	12
+
+/* First octet of flags */
+#define	RD_MASK		0x01U
+#define	RD_SHIFT	0
+#define	RD(wirebuf)	(*(wirebuf+2) & RD_MASK)
+#define	RD_SET(wirebuf)	(*(wirebuf+2) |= RD_MASK)
+#define	RD_CLR(wirebuf)	(*(wirebuf+2) &= ~RD_MASK)
+
+#define TC_MASK		0x02U
+#define TC_SHIFT	1
+#define	TC(wirebuf)	(*(wirebuf+2) & TC_MASK)
+#define	TC_SET(wirebuf)	(*(wirebuf+2) |= TC_MASK)
+#define	TC_CLR(wirebuf)	(*(wirebuf+2) &= ~TC_MASK)
+
+#define	AA_MASK		0x04U
+#define	AA_SHIFT	2
+#define	AA(wirebuf)	(*(wirebuf+2) & AA_MASK)
+#define	AA_SET(wirebuf)	(*(wirebuf+2) |= AA_MASK)
+#define	AA_CLR(wirebuf)	(*(wirebuf+2) &= ~AA_MASK)
+
+#define	OPCODE_MASK	0x78U
+#define	OPCODE_SHIFT	3
+#define	OPCODE(wirebuf)	((*(wirebuf+2) & OPCODE_MASK) >> OPCODE_SHIFT)
+#define	OPCODE_SET(wirebuf, opcode) \
+	(*(wirebuf+2) = ((*(wirebuf+2)) & ~OPCODE_MASK) | ((opcode) << OPCODE_SHIFT))
+
+#define	QR_MASK		0x80U
+#define	QR_SHIFT	7
+#define	QR(wirebuf)	(*(wirebuf+2) & QR_MASK)
+#define	QR_SET(wirebuf)	(*(wirebuf+2) |= QR_MASK)
+#define	QR_CLR(wirebuf)	(*(wirebuf+2) &= ~QR_MASK)
+
+/* Second octet of flags */
+#define	RCODE_MASK	0x0fU
+#define	RCODE_SHIFT	0
+#define	RCODE(wirebuf)	(*(wirebuf+3) & RCODE_MASK)
+#define	RCODE_SET(wirebuf, rcode) \
+	(*(wirebuf+3) = ((*(wirebuf+3)) & ~RCODE_MASK) | (rcode))
+
+#define	CD_MASK		0x10U
+#define	CD_SHIFT	4
+#define	CD(wirebuf)	(*(wirebuf+3) & CD_MASK)
+#define	CD_SET(wirebuf)	(*(wirebuf+3) |= CD_MASK)
+#define	CD_CLR(wirebuf)	(*(wirebuf+3) &= ~CD_MASK)
+
+#define	AD_MASK		0x20U
+#define	AD_SHIFT	5
+#define	AD(wirebuf)	(*(wirebuf+3) & AD_MASK)
+#define	AD_SET(wirebuf)	(*(wirebuf+3) |= AD_MASK)
+#define	AD_CLR(wirebuf)	(*(wirebuf+3) &= ~AD_MASK)
+
+#define	Z_MASK		0x40U
+#define	Z_SHIFT		6
+#define	Z(wirebuf)	(*(wirebuf+3) & Z_MASK)
+#define	Z_SET(wirebuf)	(*(wirebuf+3) |= Z_MASK)
+#define	Z_CLR(wirebuf)	(*(wirebuf+3) &= ~Z_MASK)
+
+#define	RA_MASK		0x80U
+#define	RA_SHIFT	7
+#define	RA(wirebuf)	(*(wirebuf+3) & RA_MASK)
+#define	RA_SET(wirebuf)	(*(wirebuf+3) |= RA_MASK)
+#define	RA_CLR(wirebuf)	(*(wirebuf+3) &= ~RA_MASK)
+
+/* Query ID */
+#define	ID(wirebuf)		(ntohs(*(uint16_t *)(wirebuf)))
+
+/* Counter of the question section */
+#define QDCOUNT_OFF		4
+#define	QDCOUNT(wirebuf)		(ntohs(*(uint16_t *)(wirebuf+QDCOUNT_OFF)))
+
+/* Counter of the answer section */
+#define ANCOUNT_OFF		6
+#define	ANCOUNT(wirebuf)		(ntohs(*(uint16_t *)(wirebuf+ANCOUNT_OFF)))
+
+/* Counter of the authority section */
+#define NSCOUNT_OFF		8
+#define	NSCOUNT(wirebuf)		(ntohs(*(uint16_t *)(wirebuf+NSCOUNT_OFF)))
+
+/* Counter of the additional section */
+#define ARCOUNT_OFF		10
+#define	ARCOUNT(wirebuf)		(ntohs(*(uint16_t *)(wirebuf+ARCOUNT_OFF)))
+
+#define HEADER_SIZE		12
+
 /* Access functions 
  * do this as functions to get type checking
  */
+
 
 /* read */
 uint16_t
@@ -217,56 +330,43 @@ dns_packet_new()
 }
 
 size_t
-dns_wire2packet_header(uint8_t *wire, size_t pos, t_packet *packet)
+dns_wire2packet_header(uint8_t *wire, size_t max, size_t *pos, t_packet *packet)
 {
-	size_t len = 0;
-	uint16_t int16;
-	uint8_t int8;
+	if (*pos + HEADER_SIZE > *wire + max) {
+		// TODO: set t_status error
+		return 0;
+	} else {
 
-	memcpy(&int16, &wire[pos + len], 2);
-	packet_set_id(packet, ntohs(int16));
-	len += 2;
+		packet_set_id(packet, ID(wire));
 
-	memcpy(&int8, &wire[pos + len], 1);
-	packet_set_qr(packet, (int8 & (uint8_t) 0x80) >> 7);
-	packet_set_opcode(packet, (int8 & (uint8_t) 0x78) >> 3);
-	packet_set_aa(packet, (int8 & (uint8_t) 0x04) >> 2);
-	packet_set_tc(packet, (int8 & (uint8_t) 0x02) >> 1);
-	packet_set_rd(packet, (int8 & (uint8_t) 0x01));
-	len++;
+		packet_set_qr(packet, QR(wire));
+		packet_set_opcode(packet, OPCODE(wire));
+		packet_set_aa(packet, AA(wire));
+		packet_set_tc(packet, TC(wire));
+		packet_set_rd(packet, RD(wire));
+		packet_set_ra(packet, RA(wire));
+		packet_set_ad(packet, AD(wire));
+		packet_set_cd(packet, CD(wire));
+		packet_set_rcode(packet, RCODE(wire));	 
 
-	memcpy(&int8, &wire[pos + len], 1);
-	packet_set_ra(packet, (int8 & (uint8_t) 0x80) >> 7);
-	packet_set_ad(packet, (int8 & (uint8_t) 0x20) >> 5);
-	packet_set_cd(packet, (int8 & (uint8_t) 0x10) >> 4);
-	packet_set_rcode(packet, (int8 & (uint8_t) 0x0f));	 
-	len++;
+		packet_set_qdcount(packet, QDCOUNT(wire));
+		packet_set_ancount(packet, ANCOUNT(wire));
+		packet_set_nscount(packet, NSCOUNT(wire));
+		packet_set_arcount(packet, ARCOUNT(wire));
 
-	memcpy(&int16, &wire[pos + len], 2);
-	packet_set_qdcount(packet, ntohs(int16));
-	len += 2;
-
-	memcpy(&int16, &wire[pos + len], 2);
-	packet_set_ancount(packet, ntohs(int16));
-	len += 2;
-
-	memcpy(&int16, &wire[pos + len], 2);
-	packet_set_nscount(packet, ntohs(int16));
-	len += 2;
-
-	memcpy(&int16, &wire[pos + len], 2);
-	packet_set_arcount(packet, ntohs(int16));
-	len += 2;
-
-	return len;
+		*pos += HEADER_SIZE;
+		
+		// TODO t_status succ
+		return 0;
+	}
 }
 
 size_t
-dns_wire2packet(uint8_t *wire, t_packet *packet)
+dns_wire2packet(uint8_t *wire, size_t max, t_packet *packet)
 {
 	size_t pos = 0;
 
-	pos += dns_wire2packet_header(wire, pos, packet);
+	pos += dns_wire2packet_header(wire, max, &pos, packet);
 
 	/* TODO: rrs :) */
 

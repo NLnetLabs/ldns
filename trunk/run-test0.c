@@ -49,7 +49,7 @@ main(void)
 	wire[19] = 0x6e;
 	
 	packet = dns_packet_new();
-	(void) dns_wire2packet(wire, packet);
+	(void) dns_wire2packet(wire, 20, packet);
 	
 	printf("packet id: %d\n", (int) packet_id(packet));
 	printf("qr bit: %d\n", (int) packet_qr(packet));
