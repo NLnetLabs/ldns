@@ -14,7 +14,8 @@
 #define _PROTOTYPE_H
 
 /* util.c */
-void 		*xmalloc(size_t);
-void		xprintf_rd_field(t_rdata_field *);
+void 	*xmalloc(size_t);
+void 	*xrealloc(void *, size_t);
+void	xprintf_rd_field(t_rdata_field *);
 
 #endif /* _PROTOTYPE_H */

@@ -96,6 +96,5 @@ void            rd_field_set_data(t_rdata_field *, uint8_t *, uint16_t);
 t_rd_type       rd_field_type(t_rdata_field *);
 t_rdata_field   *rd_field_new(uint16_t, t_rd_type, uint8_t *);
 uint8_t         *rd_field_data(t_rdata_field *);
-void            rd_field__destroy(t_rdata_field *);
+void            rd_field_destroy(t_rdata_field *);
 #endif	/* _RDATA_H */
-

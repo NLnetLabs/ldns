@@ -158,4 +158,15 @@ struct type_struct_rrset
 };
 typedef struct type_struct_rrset t_rrset;
 
+/* prototypes */
+t_rr * rr_new(void);
+void rr_set_owner(t_rr *, uint8_t *);
+void rr_set_ttl(t_rr *, uint16_t);
+void rr_set_rd_count(t_rr *, uint16_t);
+void rr_set_class(t_rr *, t_class);
+void rr_set_rd_field(t_rr *, t_rdata_field);;
+uint8_t * rr_owner(t_rr *);
+uint8_t rr_ttl(t_rr *);
+uint16_t rr_rd_count(t_rr *);
+
 #endif /* _RR_H */
