@@ -614,6 +614,24 @@ ldns_get_class_by_name(const char *name)
 	return 0;
 }
 
+ldns_rr *
+ldns_rr_clone(ldns_rr *rr)
+{
+	uint16_t i;
+	
+	ldns_rr *new_rr = ldns_rr_new();
+	ldns_rr_set_owner(new_rr, ldns_rdf_clone(ldns_rr_owner(rr)));
+	ldns_rr_set_ttl(new_rr, ldns_rr_ttl(rr));
+	ldns_rr_set_type(new_rr, ldns_rr_get_type(rr));
+	ldns_rr_set_class(new_rr, ldns_rr_get_class(rr));
+	
+	for (i = 0; i < ldns_rr_rd_count(rr); i++) {
+		ldns_rr_push_rdf(new_rr, ldns_rdf_clone(ldns_rr_rdf(rr, i)));
+	}
+
+	return new_rr;
+}
+
 static int
 qsort_rr_compare(const void *a, const void *b)
 {

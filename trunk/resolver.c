@@ -247,6 +247,11 @@ ldns_resolver_new(void)
 	ldns_resolver_set_port(r, LDNS_PORT);
 	ldns_resolver_set_domain(r, NULL);
 	ldns_resolver_set_defnames(r, false);
+
+	r->_socket = 0;
+	r->_axfr_soa_count = 0;
+	r->_axfr_i = 0;
+	r->_cur_axfr_pkt = NULL;
 	return r;
 }
 
@@ -373,3 +378,142 @@ ldns_resolver_bgsend()
 {
 	return NULL;
 }
+
+/*
+ * Start an axfr, send the query and keep the connection open
+ */
+ldns_status
+ldns_axfr_start(ldns_resolver *resolver, 
+                ldns_rdf *domain,
+                ldns_rr_class class)
+{
+        ldns_pkt *query;
+        ldns_buffer *query_wire;
+
+        struct sockaddr_storage *ns;
+        struct sockaddr_in *ns4;
+        struct sockaddr_in6 *ns6;
+        socklen_t ns_len = 0;
+        ldns_status status;
+
+        if (!resolver || ldns_resolver_nameserver_count(resolver) < 1) {
+        	return LDNS_STATUS_ERR;
+	}
+	
+        /* Create the query */
+	query = ldns_pkt_query_new(ldns_rdf_clone(domain),
+	                           LDNS_RR_TYPE_AXFR,
+	                           class,
+	                           0);
+	                                    
+
+	if (!query) {
+		return LDNS_STATUS_ADDRESS_ERROR;
+	}
+	/* For AXFR, we have to make the connection ourselves */
+	ns = ldns_rdf2native_sockaddr_storage(resolver->_nameservers[0]);
+
+	/* Determine the address size.
+	 * This is a nice one for a convenience funtion
+	 */
+	switch(ns->ss_family) {
+		case AF_INET:
+			ns4 = (struct sockaddr_in*) ns;
+			ns4->sin_port = htons(53);
+			ns_len = (socklen_t)sizeof(struct sockaddr_in);
+			break;
+		case AF_INET6:
+			ns6 = (struct sockaddr_in6*) ns;
+			ns6->sin6_port = htons(53);
+			ns_len = (socklen_t)sizeof(struct sockaddr_in6);
+			break;
+                default:
+                	printf("unkown inet family\n");
+                	return -1;
+	}
+
+	resolver->_socket = ldns_tcp_connect(ns, ns_len);
+	if (resolver->_socket == 0) {
+               	ldns_pkt_free(query);
+		return LDNS_STATUS_NETWORK_ERROR;
+	}
+	
+	/* Convert the query to a buffer
+	 * Is this necessary?
+	 */
+	query_wire = ldns_buffer_new(MAX_PACKETLEN);
+	status = ldns_pkt2buffer_wire(query_wire, query);
+	if (status != LDNS_STATUS_OK) {
+               	ldns_pkt_free(query);
+		return status;
+	}
+
+	/* Send the query */
+	if (ldns_tcp_send_query(query_wire, resolver->_socket, ns, ns_len) == 0) {
+		ldns_pkt_free(query);
+		ldns_buffer_free(query_wire);
+		return LDNS_STATUS_NETWORK_ERROR;
+	}
+	
+	ldns_pkt_free(query);
+	ldns_buffer_free(query_wire);
+
+	/*
+	 * The AXFR is done once the second SOA record is sent
+	 */
+	resolver->_axfr_soa_count = 0;
+	
+	return LDNS_STATUS_OK;
+}
+
+ldns_rr *
+ldns_axfr_next(ldns_resolver *resolver)
+{
+	ldns_rr *cur_rr;
+	
+	/* check if start() has been called */
+	if (!resolver || resolver->_socket == 0) {
+		return NULL;
+	}
+	
+	if (resolver->_cur_axfr_pkt) {
+		if (resolver->_axfr_i == ldns_pkt_ancount(resolver->_cur_axfr_pkt)) {
+			ldns_pkt_free(resolver->_cur_axfr_pkt);
+			resolver->_cur_axfr_pkt = NULL;
+			return ldns_axfr_next(resolver);
+		}
+		cur_rr = ldns_rr_clone(ldns_rr_list_rr(ldns_pkt_answer(resolver->_cur_axfr_pkt), resolver->_axfr_i));
+		resolver->_axfr_i++;
+		if (ldns_rr_get_type(cur_rr) == LDNS_RR_TYPE_SOA) {
+			resolver->_axfr_soa_count++;
+			if (resolver->_axfr_soa_count >= 2) {
+				close(resolver->_socket);
+				resolver->_socket = 0;
+				ldns_pkt_free(resolver->_cur_axfr_pkt);
+			}
+		}
+		return cur_rr;
+	} else {
+		resolver->_cur_axfr_pkt = ldns_tcp_read_packet(resolver->_socket);
+
+		resolver->_axfr_i = 0;
+		return ldns_axfr_next(resolver);
+		
+		if (!resolver->_cur_axfr_pkt)  {
+			fprintf(stderr, "[ldns_axfr_next] error reading packet\n");
+			return NULL;
+		}
+		
+		if (ldns_pkt_rcode(resolver->_cur_axfr_pkt) != 0) {
+			fprintf(stderr, "Got error code\n");
+			close(resolver->_socket);
+			resolver->_socket = 0;
+			ldns_pkt_free(resolver->_cur_axfr_pkt);
+			resolver->_cur_axfr_pkt = NULL;
+			return NULL;
+		}
+		
+	}
+	
+}
+
