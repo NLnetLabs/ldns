@@ -415,10 +415,10 @@ ldns_wire2dname(uint8_t *dname, const uint8_t *wire, size_t max, size_t *pos)
 
 			if (pointer_target == 0) {
 				fprintf(stderr, "POINTER TO 0\n");
-				exit(0);
+				return 0;
 			} else if (pointer_target > max) {
 				fprintf(stderr, "POINTER TO OUTSIDE PACKET\n");
-				exit(0);
+				return 0 ;
 			}
 			*pos = pointer_target;
 			label_size = wire[*pos];
