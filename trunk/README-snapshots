@@ -1,0 +1,13 @@
+ldns - snapshot releases
+
+These release are a snapshot of the ongoing development of ldns. Each
+snapshot release has a specific date tight to it.
+
+INSTALLATION
+1. Unpack the tarball
+2. cd ldns-snap-<DATE>
+3. ./configure
+4. gmake (it needs gnu make to compile)
+
+After this some test executables are created; run-test[1-8]. These
+are used in development, but can also be used as a basis for development.
