@@ -196,7 +196,6 @@ ldns_bget_token(ldns_buffer *b, char *token, const char *delim, size_t limit)
 		del = delim;
 	}
 
-
 	p = 0;
 	i = 0;
 	t = token;
