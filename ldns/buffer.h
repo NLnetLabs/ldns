@@ -21,8 +21,6 @@
 
 #include "util.h"
 
-#define B64BUFSIZE      65535           /* Buffer size for b64 conversion */
-
 typedef struct buffer ldns_buffer;
 
 struct buffer

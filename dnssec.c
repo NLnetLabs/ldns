@@ -482,8 +482,7 @@ ldns_create_tsig_mac(
 	wiresize = (int) ldns_buffer_position(data_buffer);
 
 	/* prepare the key */
-	/* TODO function for b64 sizes? */
-	key_bytes = XMALLOC(unsigned char, strlen(key_data)*2);
+	key_bytes = XMALLOC(unsigned char, b64_pton_calculate_size(strlen(key_data)));
 	key_size = b64_pton(key_data, key_bytes, strlen(key_data)*2);
 	
 	if (key_size < 0) {
@@ -668,8 +667,7 @@ ldns_pkt_tsig_sign(ldns_pkt *pkt, const char *key_name, const char *key_data, ui
 	error_rdf = ldns_rdf_new(2, LDNS_RDF_TYPE_INT16, error_data);
 
 	/* prepare the key */
-	/* TODO function for b64 sizes? */
-	key_bytes = XMALLOC(unsigned char, strlen(key_data)*2);
+	key_bytes = XMALLOC(unsigned char, b64_pton_calculate_size(strlen(key_data)));
 	key_size = b64_pton(key_data, key_bytes, strlen(key_data)*2);
 	
 	if (key_size < 0) {
