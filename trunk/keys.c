@@ -286,21 +286,21 @@ static bool
 ldns_key_rsa2bin(unsigned char *data, RSA *k, uint16_t *size)
 {
 	 if (BN_num_bytes(k->e) < 256) {
-                data[0] = BN_num_bytes(k->e);
+                data[0] = (unsigned char) BN_num_bytes(k->e);
 
                 BN_bn2bin(k->e, data + 1);  
                 BN_bn2bin(k->n, data + *(data + 1) + 2);
         } else if (BN_num_bytes(k->e) < 65536) {
                 data[0] = 0;
 		/* this writing is not endian save or is it? */
-		write_uint16(data + 1, BN_num_bytes(k->e));
+		write_uint16(data + 1, (uint16_t) BN_num_bytes(k->e));
 
                 BN_bn2bin(k->e, data + 3);
                 BN_bn2bin(k->n, data + 4 + BN_num_bytes(k->e));
 	} else {
 		return false;
 	}
-	*size = BN_num_bytes(k->n) + 4;
+	*size = (uint16_t) BN_num_bytes(k->n) + 4;
 	return true;
 }
 
@@ -310,7 +310,7 @@ ldns_key_dsa2bin(unsigned char *data, DSA *k, uint16_t *size)
 	uint8_t T;
 
 	/* See RFC2536 */
-	T = (DSA_size(k) - 512) / 64;
+	T = (uint8_t) ((DSA_size(k) - 512) / 64);
 	memcpy(data, &T, 1);
 
 	*size = 64 + (T * 8); 
