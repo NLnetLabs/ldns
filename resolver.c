@@ -462,6 +462,7 @@ ldns_resolver_new_frm_fp(FILE *fp)
 	uint8_t expect;
 	uint8_t i;
 	ldns_rdf *tmp;
+	ssize_t gtr;
 
 	/* do this better 
 	 * expect = 
@@ -481,7 +482,8 @@ ldns_resolver_new_frm_fp(FILE *fp)
 		return NULL;
 	}
 
-	while (ldns_get_token(fp, word, LDNS_PARSE_NORMAL) != -1) {
+	gtr = ldns_get_token(fp, word, LDNS_PARSE_NORMAL);
+	while (gtr > 0) {
 		/* do something */
 		switch(expect) {
 			case RESOLV_KEYWORD:
@@ -530,6 +532,7 @@ ldns_resolver_new_frm_fp(FILE *fp)
 				expect = RESOLV_KEYWORD;
 				break;
 		}
+		gtr = ldns_get_token(fp, word, LDNS_PARSE_NORMAL);
 	}
 	return r;
 }
