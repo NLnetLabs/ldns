@@ -277,10 +277,7 @@ ldns_rdf2str(ldns_rdf *rdf)
 
 	if (ldns_rdf2buffer(tmp_buffer, rdf) == LDNS_STATUS_OK) {
 		/* export and return string, destroy rest */
-		if (ldns_buffer_reserve(tmp_buffer, 1)) {
-			ldns_buffer_write_u8(tmp_buffer, (uint8_t) '\0');
-			result = (char *) ldns_buffer_export(tmp_buffer);
-		}
+		result = ldns_buffer_export(tmp_buffer);
 		ldns_buffer_free(tmp_buffer);
 	}
 	
@@ -316,5 +313,3 @@ ldns_pkt2str(ldns_pkt *pkt)
 
 	return result;
 }
-
-
