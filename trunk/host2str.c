@@ -82,10 +82,18 @@ ldns_rdf2buffer_str_dname(ldns_buffer *output, ldns_rdf *dname)
 	/* can we do with 1 pos var? or without at all? */
 	uint8_t src_pos = 0;
 	uint8_t len;
-	uint8_t *data = (uint8_t *) dname->_data;
+	uint8_t *data;
+	
+	data = (uint8_t*)ldns_rdf_data(dname);
 	len = data[src_pos];
 
-	while (len > 0 && src_pos < ldns_rdf_size(dname)) {
+	/* single root label */
+	if (1 == ldns_rdf_size(dname)) {
+		ldns_buffer_printf(output, ".\0", 2);
+		ldns_buffer_status(output);
+	}
+
+	while ((len > 0) && src_pos < ldns_rdf_size(dname)) {
 		src_pos++;
 		ldns_buffer_write(output, &data[src_pos], len);
 		src_pos += len;
