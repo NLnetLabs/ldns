@@ -135,10 +135,12 @@ doc:
 clean:	
 	rm -f *.o *.d
 	rm -f $(TESTS)
+	rm -f $(PROG_TARGETS)
 	rm -rf autom4te.cache/
 	rm -f config.status
 	rm -f config.log
 	rm -f libldns.a
+	rm -f tags
 
 testclean:
 	rm -f $(TESTS)

@@ -281,6 +281,9 @@ ldns_rr_list *ldns_rr_list_deep_clone(ldns_rr_list *);
 void ldns_rr_list2canonical(ldns_rr_list *);
 void ldns_rr2canonical(ldns_rr *);
 
+ldns_rr * ldns_rr_new_frm_fp(FILE *fp);
+
+
 
 
 #endif /* _LDNS_RR_H */
