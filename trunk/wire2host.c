@@ -302,9 +302,11 @@ ldns_wire2rdf(ldns_rr *rr, const uint8_t *wire,
 			cur_rdf_length = 32;
 			break;
 		case LDNS_RDF_TYPE_STR:
-			/* len is stored in first byte */
-			cur_rdf_length = (size_t) wire[*pos];
-			*pos = *pos + 1;
+			/* len is stored in first byte 
+			 * it should be in the rdf too, so just
+			 * copy len+1 from this position
+			 */
+			cur_rdf_length = ((size_t) wire[*pos]) + 1;
 			break;
 		case LDNS_RDF_TYPE_APL:
 			/* TODO */
