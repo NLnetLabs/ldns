@@ -17,6 +17,11 @@
 #include <ldns/str2host.h>
 
 #include "util.h"
+#include <netinet/in.h>
+#include <sys/socket.h>
+#include <netdb.h>
+#include <arpa/inet.h>
+
 
 /*
  * Access functions 
