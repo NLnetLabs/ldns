@@ -325,16 +325,20 @@ ldns_str2rdf_apl(ldns_rdf **ATTR_UNUSED(rd), const char *ATTR_UNUSED(str))
 ldns_status
 ldns_str2rdf_b64(ldns_rdf **rd, const char *str)
 {
-	uint8_t buffer[B64BUFSIZE];
+	uint8_t *buffer;
 	int16_t i;
 	
-	i = (uint16_t) b64_pton((const char*)str, buffer, B64BUFSIZE);
+	buffer = XMALLOC(uint8_t, b64_ntop_calculate_size(strlen(str)));
+	
+	i = (uint16_t) b64_pton((const char*)str, buffer, 
+	                        b64_ntop_calculate_size(strlen(str)));
 	if (-1 == i) {
 		return LDNS_STATUS_INVALID_B64;
 	} else {
 		*rd = ldns_rdf_new_frm_data(
 			LDNS_RDF_TYPE_B64, (uint16_t) i, buffer);
 	}
+	FREE(buffer);
 	return LDNS_STATUS_OK;
 }
 
