@@ -258,6 +258,7 @@ ldns_rr *ldns_rr_list_rr(ldns_rr_list *, uint16_t);
 ldns_rr_list *ldns_rr_list_new(void);
 void ldns_rr_list_free(ldns_rr_list *);
 bool ldns_rr_list_push_rr(ldns_rr_list *, ldns_rr *);
+bool ldns_rr_set_push_rr(ldns_rr_list *, ldns_rr *);
 
 const ldns_rr_descriptor *ldns_rr_descript(uint16_t);
 size_t ldns_rr_descriptor_minimum(const ldns_rr_descriptor *);

@@ -82,6 +82,15 @@ ldns_str2rdf_time(ldns_rdf **rd, const char *time)
 	}
 }
 
+ldns_status
+ldns_str2rdf_period(ldns_rdf **rd,const char *period)
+{
+	assert(*rd != NULL);
+	assert(period != NULL);
+
+	return LDNS_STATUS_OK;
+}
+
 /**
  * convert a strings into a 4 byte int in wireformat
  * \param[in] rd the rdf where to put the data
