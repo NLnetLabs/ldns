@@ -147,10 +147,10 @@ ldns_resolver_new(void)
 
 	r = MALLOC(ldns_resolver);
 
+	/* XXX TODO */
 	r->_searchlist = XMALLOC(ldns_dname, 3);
 	r->_nameservers = XMALLOC(ldns_rdf, 3);
 	
-
 	r->_configured = 0; /* no config has happened yet */
 	r->_searchlist_count = 0; /* no searchlist */
 
@@ -190,9 +190,14 @@ ldns_resolver_send(ldns_resolver *r, ldns_dname *name, ldns_rr_type type, ldns_r
 	assert(name != NULL);
 	
 	/* do all the preprocessing here, then fire of an query to 
-	 * the network
-	 */
+	 * the network */
 
+	if (type == 0) {
+		type = LDNS_RR_TYPE_A;
+	}
+	if (class == 0) {
+		class = LDNS_RR_CLASS_IN;
+	}
 	return NULL;
 }
 

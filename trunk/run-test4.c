@@ -37,6 +37,10 @@ main(void)
         
         /* fire it off. "miek.nl." will be added */
         pkt = ldns_resolver_send(res, qname, LDNS_RR_TYPE_MX, 0);
+
+	if (!pkt) 
+		return 1;
+
         
         /* print the resulting pkt to stdout */
         /* DISABLE FOR NOW ldns_pkt_print(stdout, pkt); */
