@@ -62,10 +62,10 @@ _ldns_rdf_set_data(ldns_rdf *rd, uint8_t *d)
 
 /**
  * Allocate a new ldns_rdf structure 
- * and return it
+ * fill it and return it
  */
 ldns_rdf *
-_ldns_rdf_new(uint16_t s, ldns_rdf_type t, uint8_t *d)
+ldns_rdf_new(uint16_t s, ldns_rdf_type t, uint8_t *d)
 {
 	ldns_rdf *rd;
 	rd = MALLOC(ldns_rdf);
@@ -77,17 +77,6 @@ _ldns_rdf_new(uint16_t s, ldns_rdf_type t, uint8_t *d)
 	_ldns_rdf_set_type(rd, t);
 	_ldns_rdf_set_data(rd, d);
 	return rd;
-}
-
-/**
- * Allocate a new ldns_rdf from
- * a NULL terminated string
- * and return it
- */
-ldns_rdf *
-_ldns_rdf_new_frm_str(ldns_rdf_type t, char *s)
-{
-	return NULL;
 }
 
 void 

@@ -230,7 +230,8 @@ ldns_wire2dname(ldns_rdf **dname, const uint8_t *wire, size_t max, size_t *pos)
 	size_t uncompressed_length = 0;
 	size_t compression_pos = 0;
 	uint8_t tmp_dname[MAXDOMAINLEN];
-
+	uint8_t *dname_ar;
+	
 	if (*pos > max) {
 		/* TODO set error */
 		return LDNS_STATUS_PACKET_OVERFLOW;
@@ -293,11 +294,11 @@ ldns_wire2dname(ldns_rdf **dname, const uint8_t *wire, size_t max, size_t *pos)
 	tmp_dname[dname_pos] = 0;
 	dname_pos++;
 	
-	*dname = MALLOC(ldns_rdf);
-	(*dname)->_type = LDNS_RDF_TYPE_DNAME;
-	(*dname)->_size = (uint16_t) dname_pos;
-	(*dname)->_data = XMALLOC(uint8_t, dname_pos);
-	memcpy((*dname)->_data, tmp_dname, dname_pos);
+	dname_ar = XMALLOC(uint8_t, dname_pos);
+	memcpy(dname_ar, tmp_dname, dname_pos);
+	
+	*dname = ldns_rdf_new((uint16_t) dname_pos, LDNS_RDF_TYPE_DNAME,
+	                      dname_ar);
 	
 	return LDNS_STATUS_OK;
 }

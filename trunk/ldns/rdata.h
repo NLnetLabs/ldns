@@ -101,6 +101,7 @@ struct ldns_struct_rdf
 typedef struct ldns_struct_rdf ldns_rdf;
 
 /* prototypes */
+ldns_rdf 	*ldns_rdf_new(uint16_t s, ldns_rdf_type t, uint8_t *d);
 uint16_t        _ldns_rdf_size(ldns_rdf *);
 void            _ldns_rdf_set_size(ldns_rdf *, uint16_t);
 void            _ldns_rdf_set_type(ldns_rdf *, ldns_rdf_type);

@@ -42,7 +42,7 @@ main(void)
 	
 	rr = ldns_rr_new();
 
-	rd_f = _ldns_rdf_new(20, LDNS_RDF_TYPE_DNAME, (uint8_t*)"hallo.nl");
+	rd_f = ldns_rdf_new(20, LDNS_RDF_TYPE_DNAME, (uint8_t*)"hallo.nl");
 	xprintf_rdf(rd_f);
 	
 	ldns_rr_push_rdf(rr, rd_f);
