@@ -7,8 +7,7 @@
  */
 
 #include <config.h>
-#include <ldns/resolver.h>
-#include <ldns/dname.h>        
+#include <ldns/dns.h>
 
 void
 print_usage(char *file)
@@ -22,7 +21,6 @@ main(int argc, char **argv)
 {       
         ldns_resolver *res;
         ldns_rdf *qname;
-	ldns_rdf *defdomain;
         ldns_pkt *pkt;
         char *name = NULL;
         char *type = NULL;

@@ -40,13 +40,16 @@ LIBDNS_HEADERS	=	ldns/error.h		\
 			ldns/dname.h		\
 			ldns/dnssec.h		\
 			util.h
+PROG_SOURCES	=	mx.c
+PROG_TARGETS	=	$(PROG_SOURCES:.c=)
+
 LIBDNS_OBJECTS	=	$(LIBDNS_SOURCES:.c=.o)
 
 ALL_SOURCES	=	run-test0.c run-test1.c run-test2.c run-test3.c \
 			run-test4.c run-test5.c run-test6.c run-test7.c \
 			run-test8.c run-test9.c run-test10.c run-test11.c \
 			run-test12.c run-test13.c run-test14.c \
-			$(LIBDNS_SOURCES)
+			$(LIBDNS_SOURCES) $(PROG_SOURCES)
 
 TESTS		=	run-test0		\
 			run-test1 		\
@@ -74,7 +77,7 @@ LINK_LIB	= $(LIBTOOL) $(CC) $(CFLAGS) $(LDFLAGS)
 
 .PHONY:	clean realclean docclean doc lint test all ar
 
-all:		$(TESTS) libldns.a
+all:		$(TESTS) $(PROG_TARGETS) libldns.a
 
 ar:		libldns.a
 
@@ -87,6 +90,11 @@ snapshot:	clean testclean
 		(cd .. ; cp -r libdns/ ldns-snap-$(DATE)/)
 		(cd .. ; tar --verbose  --exclude ".svn" --create --file ldns-snap-$(DATE).tar.gz --gzip ldns-snap-$(DATE)/)
 		(rm -rf ../ldns-snap-$(DATE)/)
+
+mx:		mx.o $(LIBDNS_OBJECTS) $(LIBOBJS)
+		$(LINK) ${LIBS} -o $@ $+
+
+# tests
 
 run-test0:	run-test0.o $(LIBDNS_OBJECTS) $(LIBOBJS)
 		$(LINK) ${LIBS} -o $@ $+
