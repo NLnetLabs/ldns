@@ -5,6 +5,7 @@
 
 #include <config.h>
 
+
 #include <ldns/ldns.h>
 
 #include "util.h"

@@ -11,16 +11,19 @@
  */
 
 #ifndef _ERROR_H
-#define _ERORR_H
+#define _ERROR_H
 
 /* we do negative error codes? */
 #define __X 	-1
 
 enum ldns_enum_status 
 {
-	LDNS_E_OK		= 0,
-	LDNS_E_EMPTY_LABEL	= 1 * __X,
-	LDNS_E_DDD_OVERFLOW	= 2 * __X
+	LDNS_STATUS_OK		= 0,
+	LDNS_STATUS_EMPTY_LABEL	= 1 * __X,
+	LDNS_STATUS_LABEL_OVERFLOW = 2 * __X,
+	LDNS_STATUS_DOMAINNAME_OVERFLOW = 3 * __X,
+	LDNS_STATUS_DDD_OVERFLOW = 4 * __X,
+	LDNS_PACKET_OVERFLOW = 5 * __X
 
 };
 typedef enum ldns_enum_status ldns_status;

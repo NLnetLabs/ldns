@@ -17,6 +17,7 @@
 #include <ldns/common.h>
 #include <ldns/rdata.h>
 #include <ldns/rr.h>
+#include <ldns/error.h>
 
 /**
  * The different RR classes.
@@ -212,10 +213,5 @@ const ldns_rr_descriptor *ldns_rr_descript(uint16_t type);
 size_t ldns_rr_descriptor_minimum(ldns_rr_descriptor *descriptor);
 size_t ldns_rr_descriptor_maximum(ldns_rr_descriptor *descriptor);
 ldns_rdf_type ldns_rr_descriptor_field_type(ldns_rr_descriptor *descriptor, size_t index);
-
-size_t ldns_wire2dname(uint8_t *dname, const uint8_t *wire, size_t max, 
-                       size_t *pos);
-size_t ldns_wire2rr(ldns_rr *rr, const uint8_t *wire, size_t max,
-                    size_t *pos, int section);
 
 #endif /* _LDNS_RR_H */

@@ -19,12 +19,13 @@ LINTFLAGS	= +quiet +posixlib -weak -warnposix -unrecog
 #INSTALL = $(srcdir)/install-sh -c
 #INSTALL_PROGRAM = $(INSTALL)
 
-LIBDNS_SOURCES	=	rdata.c util.c rr.c packet.c
+LIBDNS_SOURCES	=	rdata.c util.c rr.c packet.c wire2host.c
 LIBDNS_HEADERS	=	ldns/error.h		\
 			ldns/packet.h		\
 			ldns/prototype.h 	\
 			ldns/rdata.h 		\
 			ldns/rr.h		\
+			ldns/wire2host.h	\
 			util.h			\
 			buf.h
 LIBDNS_OBJECTS	=	$(LIBDNS_SOURCES:.c=.o)

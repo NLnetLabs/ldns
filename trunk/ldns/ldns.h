@@ -18,5 +18,6 @@
 #include <ldns/rdata.h>
 #include <ldns/rr.h>
 #include <ldns/packet.h>
+#include <ldns/wire2host.h>
 
 #endif	/* _LDNS_H */
