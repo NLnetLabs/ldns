@@ -136,4 +136,6 @@ ldns_pkt *ldns_pkt_new();
  */
 void ldns_pkt_free(ldns_pkt *packet);
 
+#define MAX_PACKET_SIZE         65535
+
 #endif  /* !_LDNS_PACKET_H */
