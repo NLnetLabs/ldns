@@ -14,6 +14,7 @@ LDFLAGS		= @LDFLAGS@
 LIBS 		= @LIBS@
 LIBOBJS		= @LIBOBJS@
 DATE		= $(shell date +%Y%m%d)
+LIBTOOL		= @srcdir@/libtool
 
 LINT		= splint
 LINTFLAGS	= +quiet -weak -warnposix -unrecog -Din_addr_t=uint32_t -Du_int=unsigned -Du_char=uint8_t 
@@ -57,10 +58,13 @@ TESTS		=	run-test0		\
 			run-test-trace	
 
 COMPILE		= $(CC) $(CPPFLAGS) $(CFLAGS)
+COMP_LIB	= $(LIBTOOL) $(CC) $(CPPFLAGS) $(CFLAGS)
 LINK		= $(CC) $(CFLAGS) $(LDFLAGS)
+LINK_LIB	= $(LIBTOOL) $(CC) $(CFLAGS) $(LDFLAGS)
 
 %.o:	$(srcdir)/%.c
 	$(COMPILE) -c $<
+#	$(COMP_LIB) -c $<
 
 .PHONY:	clean realclean docclean doc lint test all
 
@@ -123,6 +127,7 @@ realclean: clean docclean testclean
 	rm -f config.h
 	rm -f config.h.in
 	rm -f configure
+	rm -f libtool
 
 docclean:
 	rm -rf doc/html/
