@@ -72,7 +72,8 @@ struct ldns_struct_resolver
 	bool _dnsrch;
 	/** timeout for socket connections */
 	struct timeval _timeout;
-
+	/** \brief only try the first nameserver */
+	bool _fail;
 	/** keep some things for axfr */
 	int _socket;
 	int _axfr_soa_count;
@@ -90,6 +91,7 @@ uint16_t ldns_resolver_port(ldns_resolver *);
 bool ldns_resolver_recursive(ldns_resolver *);
 bool ldns_resolver_debug(ldns_resolver *);
 bool ldns_resolver_usevc(ldns_resolver *);
+bool ldns_resolver_fail(ldns_resolver *);
 
 size_t ldns_resolver_nameserver_count(ldns_resolver *);
 
@@ -133,6 +135,7 @@ void ldns_resolver_set_dnssec(ldns_resolver *, bool);
 void ldns_resolver_set_retrans(ldns_resolver *, uint8_t);
 void ldns_resolver_set_retry(ldns_resolver *, uint8_t);
 void ldns_resolver_set_ip6(ldns_resolver *, uint8_t);
+void ldns_resolver_set_fail(ldns_resolver *, bool);
 
 /**
  * Prepares the resolver for an axfr query

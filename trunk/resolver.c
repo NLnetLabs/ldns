@@ -75,6 +75,12 @@ ldns_resolver_dnsrch(ldns_resolver *r)
 }
 
 bool
+ldns_resolver_fail(ldns_resolver *r)
+{
+	return r->_fail;
+}
+
+bool
 ldns_resolver_defnames(ldns_resolver *r)
 {
 	return r->_defnames;
@@ -286,6 +292,12 @@ ldns_resolver_set_ip6(ldns_resolver *r, uint8_t ip6)
 }
 
 void
+ldns_resolver_set_fail(ldns_resolver *r, bool f)
+{
+	r->_fail =f;
+}
+
+void
 ldns_resolver_set_searchlist_count(ldns_resolver *r, size_t c)
 {
 	r->_searchlist_count = c;
@@ -402,6 +414,7 @@ ldns_resolver_new(void)
 	ldns_resolver_set_defnames(r, false);
 	ldns_resolver_set_retry(r, 4);
 	ldns_resolver_set_retrans(r, 5);
+	ldns_resolver_set_fail(r, false);
 
 	r->_timeout.tv_sec = LDNS_DEFAULT_TIMEOUT_SEC;
 	r->_timeout.tv_usec = LDNS_DEFAULT_TIMEOUT_USEC;

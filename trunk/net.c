@@ -103,7 +103,14 @@ ldns_send(ldns_resolver *r, ldns_pkt *query_pkt)
 			ldns_pkt_set_answerfrom(reply, ns_array[i]);
 			ldns_pkt_set_when(reply,  ctime((time_t*)&tv_s.tv_sec));
 			break;
+		} else {
+			if (ldns_resolver_fail(r)) {
+				/* if fail is set bail out, after the first
+				 * one */
+				break;
+			}
 		}
+
 	}
 	ldns_buffer_free(qb);
 	return reply;
