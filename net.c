@@ -92,6 +92,8 @@ ldns_send(ldns_resolver *r, ldns_pkt *query_pkt)
 		 * todo: how to determine this value?
 		 */
 		ns_len += 12;
+		printf("sockaddr_storage size %d\n", sizeof(struct sockaddr_storage));
+		printf("sockaddr_storage size %d\n", sizeof(struct sockaddr_in));
 		/* setup some family specific stuff */
 		switch(ns->ss_family) {
 
