@@ -149,14 +149,14 @@ ldns_rdf2native_sockaddr_storage(ldns_rdf *rd)
 			data_in = (struct sockaddr_in*) data;
 			data_in->sin_port = htons(53); /* default */
 			
-			memcpy(&data_in->sin_addr.s_addr, ldns_rdf_data(rd), ldns_rdf_size(rd));
+			memcpy(&data_in->sin_addr, ldns_rdf_data(rd), ldns_rdf_size(rd));
 			return data;
 		case LDNS_RDF_TYPE_AAAA:
 			data->ss_family = AF_INET6;
 			data_in6 = (struct sockaddr_in6*) data;
 			data_in6->sin6_port = htons(53); /* default */
 
-			memcpy(&data_in6->sin6_addr.in6_u, ldns_rdf_data(rd), ldns_rdf_size(rd));
+			memcpy(&data_in6->sin6_addr, ldns_rdf_data(rd), ldns_rdf_size(rd));
 			return data;
 		default:
 			FREE(data);
