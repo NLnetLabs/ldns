@@ -27,43 +27,43 @@ packet_id(t_packet *packet)
 	return packet->_header->_id;
 }
 
-uint8_t
+bool
 packet_qr(t_packet *packet)
 {
 	return packet->_header->_qr;
 }
 
-uint8_t
+bool
 packet_aa(t_packet *packet)
 {
 	return packet->_header->_aa;
 }
 
-uint8_t
+bool
 packet_tc(t_packet *packet)
 {
 	return packet->_header->_tc;
 }
 
-uint8_t
+bool
 packet_rd(t_packet *packet)
 {
 	return packet->_header->_rd;
 }
 
-uint8_t
+bool
 packet_cd(t_packet *packet)
 {
 	return packet->_header->_cd;
 }
 
-uint8_t
+bool
 packet_ra(t_packet *packet)
 {
 	return packet->_header->_ra;
 }
 
-uint8_t
+bool
 packet_ad(t_packet *packet)
 {
 	return packet->_header->_ad;
@@ -114,43 +114,43 @@ packet_set_id(t_packet *packet, uint16_t id)
 }
 
 void
-packet_set_qr(t_packet *packet, uint8_t qr)
+packet_set_qr(t_packet *packet, bool qr)
 {
 	packet->_header->_qr = qr;
 }
 
 void
-packet_set_aa(t_packet *packet, uint8_t aa)
+packet_set_aa(t_packet *packet, bool aa)
 {
 	packet->_header->_aa = aa;
 }
 
 void
-packet_set_tc(t_packet *packet, uint8_t tc)
+packet_set_tc(t_packet *packet, bool tc)
 {
 	packet->_header->_tc = tc;
 }
 
 void
-packet_set_rd(t_packet *packet, uint8_t rd)
+packet_set_rd(t_packet *packet, bool rd)
 {
 	packet->_header->_rd = rd;
 }
 
 void
-packet_set_cd(t_packet *packet, uint8_t cd)
+packet_set_cd(t_packet *packet, bool cd)
 {
 	packet->_header->_cd = cd;
 }
 
 void
-packet_set_ra(t_packet *packet, uint8_t ra)
+packet_set_ra(t_packet *packet, bool ra)
 {
 	packet->_header->_ra = ra;
 }
 
 void
-packet_set_ad(t_packet *packet, uint8_t ad)
+packet_set_ad(t_packet *packet, bool ad)
 {
 	packet->_header->_ad = ad;
 }
