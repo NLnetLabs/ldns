@@ -434,10 +434,22 @@ ldns_rr_list_cat(ldns_rr_list *left, ldns_rr_list *right)
 	uint16_t i;
 	ldns_rr_list *cat;
 
-	l_rr_count = ldns_rr_list_rr_count(left);
-	r_rr_count = ldns_rr_list_rr_count(right);
+	l_rr_count = 0;
+	r_rr_count = 0;
 
-	/* check it not exceeding uint16_t size XXX XXX MIEK TODO */
+	if (left) {
+		l_rr_count = ldns_rr_list_rr_count(left);
+	}
+	if (right) {
+		r_rr_count = ldns_rr_list_rr_count(right);
+	}
+
+	/* constant DEFINE? */
+	if (l_rr_count + r_rr_count > 65535 ) {
+		/* overflow error */
+		return NULL;
+	}
+
 	cat = ldns_rr_list_new();
 
 	if (!cat) {
