@@ -715,7 +715,7 @@ ldns_pkt_reply_type(ldns_pkt *p)
 		}
 	}
 
-	if (ldns_pkt_ancount(p) == 0 & ldns_pkt_nscount(p) > 0) {
+	if (ldns_pkt_ancount(p) == 0 && ldns_pkt_nscount(p) > 0) {
 		if (ldns_pkt_rr_list_by_type(p, LDNS_RR_TYPE_NS,
 					LDNS_SECTION_AUTHORITY)) {
 			/* there are nameservers here */
