@@ -667,7 +667,6 @@ ldns_resolver_send(ldns_resolver *r, ldns_rdf *name, ldns_rr_type type, ldns_rr_
 	uint8_t  retries;
 	
 	ldns_status status;
-	ldns_rdf *tsig_mac = NULL;
 
 	assert(r != NULL);
 	assert(name != NULL);
@@ -733,8 +732,6 @@ ldns_resolver_send(ldns_resolver *r, ldns_rdf *name, ldns_rr_type type, ldns_rr_
 		                            300,
 		                            "hmac-md5.sig-alg.reg.int",
 		                            NULL);
-		tsig_mac = ldns_rr_rdf(ldns_pkt_tsig(query_pkt), 3);
-
 		/* TODO: no print and feedback to caller */
 		if (status != LDNS_STATUS_OK) {
 			fprintf(stderr, "error creating tsig: %u\n", status);
@@ -751,16 +748,6 @@ ldns_resolver_send(ldns_resolver *r, ldns_rdf *name, ldns_rr_type type, ldns_rr_
 	}
 	
 	ldns_pkt_free(query_pkt);
-	
-	if (tsig_mac) {
-		if (!ldns_pkt_tsig_verify(answer_pkt,
-		                          ldns_resolver_tsig_keyname(r),
-		                          ldns_resolver_tsig_keydata(r),
-		                          tsig_mac)) {
-			/* TODO: no print, feedback */
-			printf(";; WARNING: TSIG VERIFICATION OF ANSWER FAILED!\n");
-		}
-	}
 	
 	return answer_pkt;
 }
@@ -864,6 +851,8 @@ ldns_rr *
 ldns_axfr_next(ldns_resolver *resolver)
 {
 	ldns_rr *cur_rr;
+	uint8_t *packet_wire;
+	size_t packet_wire_size;
 	
 	/* check if start() has been called */
 	if (!resolver || resolver->_socket == 0) {
@@ -888,7 +877,11 @@ ldns_axfr_next(ldns_resolver *resolver)
 		}
 		return cur_rr;
 	} else {
-		resolver->_cur_axfr_pkt = ldns_tcp_read_packet(resolver->_socket);
+		packet_wire = ldns_tcp_read_wire(resolver->_socket, &packet_wire_size);
+		
+		ldns_wire2pkt(&resolver->_cur_axfr_pkt, packet_wire, packet_wire_size);
+		free(packet_wire);
+/*		resolver->_cur_axfr_pkt = ldns_tcp_read_packet(resolver->_socket);*/
 
 		resolver->_axfr_i = 0;
 		return ldns_axfr_next(resolver);

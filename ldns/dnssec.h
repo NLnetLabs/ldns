@@ -76,9 +76,12 @@ RSA *ldns_key_buf2rsa(ldns_buffer *key);
 
 /**
  * Verifies the tsig rr for the given packet and key (string?)
+ * wire must be given too because tsig does not sign normalized packet
+ * packet is still given (and used, but could be constructed from wire)
+   remove that?
  * @return true if tsig is correct, false if not, or if tsig is not set
  */
-bool ldns_pkt_tsig_verify(ldns_pkt *pkt, const char *key_name, const char *key_data, ldns_rdf *mac);
+bool ldns_pkt_tsig_verify(ldns_pkt *pkt, uint8_t *wire, size_t wire_size, const char *key_name, const char *key_data, ldns_rdf *mac);
 
 /**
  * Creates a tsig rr for the given packet and key (string?)
