@@ -152,11 +152,6 @@ ldns_rdf2native_sockaddr_storage(ldns_rdf *rd)
 			data->ss_family = AF_INET;
 			data_in = (struct sockaddr_in*) data;
 			data_in->sin_port = htons(LDNS_PORT); 
-
-			printf("address native: %s\n", inet_ntoa(*b));
-			printf("address hex: %x\n", &data_in->sin_addr);
-			printf("address hex: %x\n", &data_in->sin_port);
-			
 			memcpy(&(data_in->sin_addr), ldns_rdf_data(rd), ldns_rdf_size(rd));
 			return data;
 		case LDNS_RDF_TYPE_AAAA:

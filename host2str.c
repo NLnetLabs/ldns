@@ -89,16 +89,15 @@ ldns_rdf2buffer_str_dname(ldns_buffer *output, ldns_rdf *dname)
 
 	/* single root label */
 	if (1 == ldns_rdf_size(dname)) {
-		ldns_buffer_printf(output, ".\0", 2);
-		ldns_buffer_status(output);
-	}
-
-	while ((len > 0) && src_pos < ldns_rdf_size(dname)) {
-		src_pos++;
-		ldns_buffer_write(output, &data[src_pos], len);
-		src_pos += len;
-		len = data[src_pos];
-		ldns_buffer_printf(output, ".");
+		ldns_buffer_printf(output, ".", 2);
+	} else {
+		while ((len > 0) && src_pos < ldns_rdf_size(dname)) {
+			src_pos++;
+			ldns_buffer_write(output, &data[src_pos], len);
+			src_pos += len;
+			len = data[src_pos];
+			ldns_buffer_printf(output, ".");
+		}
 	}
 	return ldns_buffer_status(output);
 }
@@ -157,7 +156,7 @@ ldns_rdf2buffer_str_aaaa(ldns_buffer *output, ldns_rdf *rdf)
 {
 	char str[INET6_ADDRSTRLEN];
 
-	if (inet_ntop(AF_INET6, ldns_rdf_data(rdf), str, sizeof(str))) {
+	if (inet_ntop(AF_INET6, ldns_rdf_data(rdf), str, (socklen_t) sizeof(str))) {
 		ldns_buffer_printf(output, "%s", str);
 	}
 
@@ -425,7 +424,7 @@ ldns_rdf2buffer_str_wks(ldns_buffer *output, ldns_rdf *rdf)
 	     current_service < ldns_rdf_size(rdf) * 8;
 	     current_service++) {
 		if (get_bit(&(ldns_rdf_data(rdf)[1]), current_service)) {
-			service = getservbyport(ntohs(current_service),
+			service = getservbyport((int) ntohs(current_service),
 			                        proto_name);
 			if (service && service->s_name) {
 				ldns_buffer_printf(output, "%s ", 
