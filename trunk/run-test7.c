@@ -67,11 +67,6 @@ main(int argc, char **argv)
                 return 1;
 	}
 
-	/* hack to make the resolver appear to
-	 * be configued - don't know if we need this
-	 */
-	ldns_resolver_set_configured(res, 1);
-        
         /* setup the question */
         qname = ldns_rdf_new_frm_str(name, LDNS_RDF_TYPE_DNAME);
 	if (!qname) {
