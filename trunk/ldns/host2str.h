@@ -10,7 +10,8 @@
 #include <ldns/buffer.h>
 #include <ctype.h>
 
-char *ldns_rdf2str(ldns_rdf *rdf);
+char *ldns_rdf2str(ldns_rdf *);
+char *ldns_conv_a(ldns_rdf *);
 
 #endif
 

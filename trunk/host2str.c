@@ -14,6 +14,12 @@
 
 #include <limits.h>
 
+#include <sys/socket.h>
+#include <arpa/inet.h>
+
+
+
+
 #include <ldns/host2str.h>
 
 #include "util.h"
@@ -81,7 +87,7 @@ ldns_rdf2str(ldns_rdf *rdf)
 {
 	char *res = NULL;
 
-	switch(rdf->_type) {
+	switch(ldns_rdf_get_type(rdf)) {
 	case LDNS_RDF_TYPE_NONE:
 		res = XMALLOC(char, 5);
 		snprintf(res, 5, "NONE");
@@ -106,8 +112,7 @@ ldns_rdf2str(ldns_rdf *rdf)
 		snprintf(res, 6, "INT48");
 		break;
 	case LDNS_RDF_TYPE_A:
-		res = XMALLOC(char, 5);
-		snprintf(res, 5, "NONE");
+		res = ldns_conv_a(rdf);
 		break;
 	case LDNS_RDF_TYPE_AAAA:
 		res = XMALLOC(char, 5);
@@ -166,7 +171,23 @@ ldns_rdf2str(ldns_rdf *rdf)
 		snprintf(res, 5, "NONE");
 		break;
 	}
-	
 	return res;
 }
 
+/** 
+ * convert A address 
+ */
+char *
+ldns_conv_a(ldns_rdf *rd)
+{
+	char *r;
+
+	r = XMALLOC(char, INET_ADDRSTRLEN);
+
+	if (!inet_ntop(AF_INET, ldns_rdf_data(rd), r, INET_ADDRSTRLEN)) {
+		/* somehting is wrong */
+		/* TODO NULL HERE??? */
+		return NULL;
+	}
+	return r;
+}
