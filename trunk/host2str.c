@@ -28,34 +28,42 @@
          checks and return status etc */
 /* this is temp function for debugging wire2rr */
 /* do NOT pass compressed data here :p */
-char *
-ldns_dname2str(ldns_rdf *dname)
+ldns_status
+ldns_rdf2buffer_dname(ldns_buffer *output, ldns_rdf *dname)
 {
 	/* can we do with 1 pos var? or without at all? */
 	uint8_t src_pos = 0;
-	uint8_t dest_pos = 0;
 	uint8_t len;
-	char *dest = XMALLOC(char, MAXDOMAINLEN);
-	char *res;
 	len = dname->_data[src_pos];
 	while (len > 0) {
 		src_pos++;
-		memcpy(&dest[dest_pos], &(dname->_data[src_pos]), len);
-		dest_pos += len;
+		ldns_buffer_write(output, &(dname->_data[src_pos]), len);
 		src_pos += len;
 		len = dname->_data[src_pos];
-		dest[dest_pos] = '.';
-		dest_pos++;
+		ldns_buffer_printf(output, ".");
 	}
-	dest[dest_pos] = '\0';
-	res = XMALLOC(char, sizeof(dest));
-	memcpy(res, dest, sizeof(dest));
 	
-	return dest;
+	return LDNS_STATUS_OK;
 }
 
-int
-rdata_text_to_string(ldns_buffer *output, ldns_rdf *rdf)
+/** 
+ * convert A address 
+ */
+ldns_status
+ldns_rdf2buffer_a(ldns_buffer *output, ldns_rdf *rd)
+{
+	char r[INET_ADDRSTRLEN];
+	ldns_status result = LDNS_STATUS_INTERNAL_ERR;
+	
+	if (inet_ntop(AF_INET, ldns_rdf_data(rd), r, INET_ADDRSTRLEN)) {
+		result = ldns_buffer_printf(output, "%s", r);
+	} 
+
+	return result;
+}
+
+ldns_status
+ldns_rdf2buffer_str(ldns_buffer *output, ldns_rdf *rdf)
 {
 	const uint8_t *data = ldns_rdf_data(rdf);
 	uint8_t length = data[0];
@@ -75,119 +83,83 @@ rdata_text_to_string(ldns_buffer *output, ldns_rdf *rdf)
 		}
 	}
 	ldns_buffer_printf(output, "\"");
-	return 1;
+	return LDNS_STATUS_OK;
 }
 
 /**
  * Returns string representation of the specified rdf
  * Data is not static
  */
+ldns_status
+ldns_rdf2buffer(ldns_buffer *buffer, ldns_rdf *rdf)
+{
+	ldns_status res;
+	
+	switch(ldns_rdf_get_type(rdf)) {
+	case LDNS_RDF_TYPE_NONE:
+		break;
+	case LDNS_RDF_TYPE_DNAME:
+		res = ldns_rdf2buffer_dname(buffer, rdf);
+		break;
+	case LDNS_RDF_TYPE_INT8:
+		break;
+	case LDNS_RDF_TYPE_INT16:
+		break;
+	case LDNS_RDF_TYPE_INT32:
+		break;
+	case LDNS_RDF_TYPE_INT48:
+		break;
+	case LDNS_RDF_TYPE_A:
+		res = ldns_rdf2buffer_a(buffer, rdf);
+		break;
+	case LDNS_RDF_TYPE_AAAA:
+		break;
+	case LDNS_RDF_TYPE_STR:
+		res = ldns_rdf2buffer_str(buffer, rdf);
+		break;
+	case LDNS_RDF_TYPE_APL:
+		break;
+	case LDNS_RDF_TYPE_B64:
+		break;
+	case LDNS_RDF_TYPE_HEX:
+		break;
+	case LDNS_RDF_TYPE_NSEC: 
+		break;
+	case LDNS_RDF_TYPE_TYPE: 
+		break;
+	case LDNS_RDF_TYPE_CLASS:
+		break;
+	case LDNS_RDF_TYPE_CERT:
+		break;
+	case LDNS_RDF_TYPE_ALG:
+		break;
+	case LDNS_RDF_TYPE_UNKNOWN:
+		break;
+	case LDNS_RDF_TYPE_TIME:
+		break;
+	case LDNS_RDF_TYPE_SERVICE:
+		break;
+	case LDNS_RDF_TYPE_LOC:
+		break;
+	}
+
+	return LDNS_STATUS_OK;
+}
+
 char *
 ldns_rdf2str(ldns_rdf *rdf)
 {
-	char *res = NULL;
+	char *result = NULL;
+	ldns_buffer *tmp_buffer = ldns_buffer_new(1000);
 
-	switch(ldns_rdf_get_type(rdf)) {
-	case LDNS_RDF_TYPE_NONE:
-		res = XMALLOC(char, 5);
-		snprintf(res, 5, "NONE");
-		break;
-	case LDNS_RDF_TYPE_DNAME:
-		res = ldns_dname2str(rdf);
-		break;
-	case LDNS_RDF_TYPE_INT8:
-		res = XMALLOC(char, 5);
-		snprintf(res, 5, "INT8");
-		break;
-	case LDNS_RDF_TYPE_INT16:
-		res = XMALLOC(char, 6);
-		snprintf(res, 6, "INT16");
-		break;
-	case LDNS_RDF_TYPE_INT32:
-		res = XMALLOC(char, 6);
-		snprintf(res, 6, "INT32");
-		break;
-	case LDNS_RDF_TYPE_INT48:
-		res = XMALLOC(char, 6);
-		snprintf(res, 6, "INT48");
-		break;
-	case LDNS_RDF_TYPE_A:
-		res = ldns_conv_a(rdf);
-		break;
-	case LDNS_RDF_TYPE_AAAA:
-		res = XMALLOC(char, 5);
-		snprintf(res, 5, "NONE");
-		break;
-	case LDNS_RDF_TYPE_STR:
-		res = XMALLOC(char, 5);
-		snprintf(res, 5, "NONE");
-		break;
-	case LDNS_RDF_TYPE_APL:
-		res = XMALLOC(char, 5);
-		snprintf(res, 5, "NONE");
-		break;
-	case LDNS_RDF_TYPE_B64:
-		res = XMALLOC(char, 5);
-		snprintf(res, 5, "NONE");
-		break;
-	case LDNS_RDF_TYPE_HEX:
-		res = XMALLOC(char, 5);
-		snprintf(res, 5, "NONE");
-		break;
-	case LDNS_RDF_TYPE_NSEC: 
-		res = XMALLOC(char, 5);
-		snprintf(res, 5, "NONE");
-		break;
-	case LDNS_RDF_TYPE_TYPE: 
-		res = XMALLOC(char, 5);
-		snprintf(res, 5, "NONE");
-		break;
-	case LDNS_RDF_TYPE_CLASS:
-		res = XMALLOC(char, 5);
-		snprintf(res, 5, "NONE");
-		break;
-	case LDNS_RDF_TYPE_CERT:
-		res = XMALLOC(char, 5);
-		snprintf(res, 5, "NONE");
-		break;
-	case LDNS_RDF_TYPE_ALG:
-		res = XMALLOC(char, 5);
-		snprintf(res, 5, "NONE");
-		break;
-	case LDNS_RDF_TYPE_UNKNOWN:
-		res = XMALLOC(char, 5);
-		snprintf(res, 5, "NONE");
-		break;
-	case LDNS_RDF_TYPE_TIME:
-		res = XMALLOC(char, 5);
-		snprintf(res, 5, "NONE");
-		break;
-	case LDNS_RDF_TYPE_SERVICE:
-		res = XMALLOC(char, 5);
-		snprintf(res, 5, "NONE");
-		break;
-	case LDNS_RDF_TYPE_LOC:
-		res = XMALLOC(char, 5);
-		snprintf(res, 5, "NONE");
-		break;
+	if (ldns_rdf2buffer(tmp_buffer, rdf) == LDNS_STATUS_OK) {
+		/* export and return string, destroy rest */
+		result = ldns_buffer_export(tmp_buffer);
+		ldns_buffer_destroy(tmp_buffer);
 	}
-	return res;
+	
+	return result;
 }
 
-/** 
- * convert A address 
- */
-char *
-ldns_conv_a(ldns_rdf *rd)
-{
-	char *r;
 
-	r = XMALLOC(char, INET_ADDRSTRLEN);
 
-	if (!inet_ntop(AF_INET, ldns_rdf_data(rd), r, INET_ADDRSTRLEN)) {
-		/* somehting is wrong */
-		/* TODO NULL HERE??? */
-		return NULL;
-	}
-	return r;
-}

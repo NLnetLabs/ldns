@@ -12,7 +12,7 @@
 #include <ldns/buffer.h>
 
 ldns_buffer *
-ldns_buffer_create(size_t capacity)
+ldns_buffer_new(size_t capacity)
 {
 	ldns_buffer *buffer
 		= MALLOC(ldns_buffer);
@@ -29,7 +29,7 @@ ldns_buffer_create(size_t capacity)
 }
 
 void
-ldns_buffer_create_from(ldns_buffer *buffer, void *data, size_t size)
+ldns_buffer_new_from(ldns_buffer *buffer, void *data, size_t size)
 {
 	assert(data != NULL);
 
@@ -117,3 +117,27 @@ ldns_buffer_printf(ldns_buffer *buffer, const char *format, ...)
 	buffer->_position += written;
 	return written;
 }
+
+void ldns_buffer_destroy(ldns_buffer *buffer) {
+	/* TODO */
+	FREE(buffer->_data);
+	FREE(buffer);
+}
+
+char *
+ldns_buffer_export(ldns_buffer *buffer)
+{
+	/* copy from begin pointer to end pointer, and add \0 */
+	char *result;
+	/*
+	size_t size = (size_t) (ldns_buffer_limit(buffer) - ldns_buffer_begin(buffer));
+	*/
+	size_t size = ldns_buffer_position(buffer);	
+	result = XMALLOC(char, size+1);
+
+	memcpy(result, ldns_buffer_begin(buffer), size);
+	result[size] = '\0';
+	return result;
+}
+
+
