@@ -215,6 +215,30 @@ ldns_rdf_new_frm_data(uint16_t s, ldns_rdf_type t, void *buf)
 }
 
 /**
+ * clone a rdf structure. The data is copied
+ * \param[in] r rdf to be copied
+ * \return a new rdf structure
+ */
+ldns_rdf *
+ldns_rdf_clone(ldns_rdf *r)
+{
+	ldns_rdf *rd;
+	rd = MALLOC(ldns_rdf);
+	if (!rd) {
+		return NULL;
+	}
+
+	rd->_data = XMALLOC(uint8_t, ldns_rdf_size(r));
+	if (!rd->_data) {
+		return NULL;
+	}
+	ldns_rdf_set_size(rd, ldns_rdf_size(r));
+	ldns_rdf_set_type(rd, ldns_rdf_get_type(r));
+	memcpy(rd->_data, ldns_rdf_data(r), ldns_rdf_size(r));
+	return rd;
+}
+
+/**
  * free a rdf structure _and_ free the
  * data. rdf should be created with _new_frm_data
  * \param[in] rd the rdf structure to be freed
