@@ -6,18 +6,21 @@ ldns - Overview document
 1.1 Global decisions
   o IP4/6 agnostic - only the resolver at is lowest level will handle/see
     this. (there will be an option to force 4 or 6)
-  o Keep an eye on the network API for portability issues. 
+  o Keep an eye on the Windows network API for portability issues. 
   o Compression happens only in the WIRE module. Compressible RRs
     are known by the library.
-  o I you know what you do you should be able to bypass the resolver
-    module and directly talk to the network module.
-  o All modules will export functions to be used to client applications.
-  o All the stuff from the network is put in ldns_buffer's
+  o It is possible to directly communicate with the network module,
+    thereby bypassing the resolver. For simple application going through
+    the Resolver module is preferred.
+  o All modules will export functions to client applications.
+  o All the stuff from the network is put in ldns_buffer's by 
+    the network module. All binary data coming from the network
+    module is encapsulated in the ldns_XX types.
 
 2. Different parts of ldns:
 
                               - CLIENT -
-                     Any programing making use of ldns
+                     Any program making use of ldns
             _________/\            /\                 /\
            /                       |                   \
           \/                       \/                  \/
@@ -44,8 +47,8 @@ ldns - Overview document
 Currently not there:
 o A zone structure
 o A encoder/decoder object which can be overloaded to 
-  use specific functions. NSD likes to have this, for instance.
-o Tsig functionality
+  use specific functions. NSD likes to have this
+o TSIG functionality
 o Dynamic update function
 
 
@@ -109,9 +112,10 @@ All functions will operate on such a buffer to extract specific
 information which is then stored in RR structures.
 
 5. RESOLVER module and CENTRAL structures Interface
-The resolver module always returns pkt structure.
+The resolver module always returns a pkt structure. Either with
+the answer or a SERVFAIL pkt.
 
-The function-call parameters have not yet been 
+The exact function-call parameters have not yet been 
 decided on.
 
 Also the resolver module will need to access some of the
@@ -120,8 +124,8 @@ the data it receives (arrow not drawn).
 
 6. STR module and CENTRAL structures Interface
 Convert to and from strings. This module could be used
-to read in a zone file and convert the text strings to
-the format used by ldns. Or vice verse.
+to read in a zone file (list of RRs) and convert the text strings to
+the format used by ldns. Or the other way around.
 
 7. NET Module and RESOLVER module Interface
 The resolver module will get a packet and will mold it so that
@@ -129,7 +133,8 @@ it can be sent off to a nameserver.
 It might need to interface with the wire module (arrow not drawn).
 
 8. NET Module and OS/libc Interface
-OS/network calls will be used here.
+OS/network calls will be used here. The Net module is the only part of 
+the library where the underlying OS matters. 
 
 9. Client program ldns Interface
 Any client program will have access to
