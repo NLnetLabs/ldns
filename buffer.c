@@ -37,7 +37,7 @@ ldns_buffer_new(size_t capacity)
 }
 
 void
-ldns_buffer_new_from(ldns_buffer *buffer, void *data, size_t size)
+ldns_buffer_new_frm_data(ldns_buffer *buffer, void *data, size_t size)
 {
 	assert(data != NULL);
 
@@ -178,4 +178,19 @@ ldns_buffer_export(ldns_buffer *buffer)
 {
 	buffer->_fixed = 1;
 	return buffer->_data;
+}
+
+int
+ldns_bgetc(ldns_buffer *buffer)
+{
+	if (!ldns_buffer_available_at(buffer, buffer->_position, sizeof(uint8_t))) {
+		ldns_buffer_rewind(buffer);
+		return EOF;
+	}
+
+        /* 
+	 * assert(ldns_buffer_available_at(buffer, at, sizeof(uint8_t)));
+	 */
+
+	return (int)ldns_buffer_read_u8(buffer);
 }

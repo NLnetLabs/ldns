@@ -18,6 +18,7 @@
 
 #include <ldns/rr.h>
 #include <ldns/dns.h>
+#include <ldns/buffer.h>
 
 #include "util.h"
 
@@ -129,6 +130,8 @@ ldns_rr_new_frm_str(const char *str)
 	const ldns_rr_descriptor *desc;
 	ldns_rr_type rr_type;
 	char  *str_normalized;
+	ldns_buffer *rr_buf;
+	ldns_buffer *rd_buf;
 	char  *owner; 
 	char  *ttl; 
 	char  *clas;
@@ -148,23 +151,29 @@ ldns_rr_new_frm_str(const char *str)
 	clas = XMALLOC(char, 11);
 	type = XMALLOC(char, 10);
 	rdata = XMALLOC(char, MAX_PACKETLEN + 1);
+	rr_buf = MALLOC(ldns_buffer);
+	rd_buf = MALLOC(ldns_buffer);
+	rd = XMALLOC(char, MAX_RDFLEN);
+	r_cnt = 0;
+
+	/* kill str normalize */
 	str_normalized = ldns_rr_str_normalize(str);
+
+	ldns_buffer_new_frm_data(
+			rr_buf, str_normalized, 
+			strlen(str_normalized));
 	
-/*
-	sscanf(str_normalized, "%255s%20s%10s%9s%65535c", owner, ttl, clas, type, rdata);
-*/
-	rd = strtok(str_normalized, "\t \0");
-	strncpy(owner, rd, MAX_DOMAINLEN + 1);
-	rd = strtok(NULL, "\t \0");
-	strncpy(ttl, rd, 21);
-	rd = strtok(NULL, "\t \0");
-	strncpy(clas, rd, 11);
-	rd = strtok(NULL, "\t \0");
-	strncpy(type, rd, 10);
-	rd = strtok(NULL, "\0");
-	strncpy(rdata, rd, MAX_PACKETLEN + 1);
+	/* split the rr in its parts */
+	ldns_bget_token(rr_buf, owner, "\t \0", MAX_DOMAINLEN);
+	ldns_bget_token(rr_buf, ttl, "\t \0", 21);
+	ldns_bget_token(rr_buf, clas, "\t \0", 11);
+	ldns_bget_token(rr_buf, type, "\t \0", 10);
+	ldns_bget_token(rr_buf, rdata, "\0", MAX_PACKETLEN);
 	
 	FREE(str_normalized);
+
+	ldns_buffer_new_frm_data(
+			rd_buf, rdata, strlen(rdata));
 
 	ldns_rr_set_owner(new, ldns_dname_new_frm_str(owner));
 	FREE(owner);
@@ -182,7 +191,8 @@ ldns_rr_new_frm_str(const char *str)
 	r_max = ldns_rr_descriptor_maximum(desc);
 	r_min = ldns_rr_descriptor_minimum(desc);
 
-	for(rd = strtok(rdata, "\t \0"), r_cnt =0; rd; rd = strtok(NULL, "\t \0"), r_cnt++) {
+	/* there is no limit, no no */
+	while(ldns_bget_token(rd_buf, rd, "\t \0", MAX_RDFLEN) > 0) {
 		r = ldns_rdf_new_frm_str(
 			ldns_rr_descriptor_field_type(desc, r_cnt),
 			rd);
@@ -193,13 +203,31 @@ ldns_rr_new_frm_str(const char *str)
 			return NULL;
 		}
 		ldns_rr_push_rdf(new, r);
+
 		if (r_cnt > r_max) {
 			printf("rdf data overflow");
 			FREE(rdata);
 			return NULL;
 		}
+		r_cnt++;
 	}
-	
+	/* the last one - in case of EOF of the rdata */
+	r = ldns_rdf_new_frm_str(
+			ldns_rr_descriptor_field_type(desc, r_cnt),
+			rd);
+	if (!r) {
+		printf("rdf conversion mismatch\n");
+		FREE(rdata);
+		return NULL;
+	}
+
+	ldns_rr_push_rdf(new, r);
+
+	FREE(owner);
+	FREE(ttl);
+	FREE(clas);
+	FREE(type);
+
 	FREE(rdata);
 	return new;
 }
@@ -215,7 +243,7 @@ ldns_rr_new_frm_fp(FILE *fp)
         }
 
         /* read an entire line in from the file */
-        if (ldns_get_token(fp, line, LDNS_PARSE_SKIP_SPACE) == -1) {
+        if (ldns_fget_token(fp, line, LDNS_PARSE_SKIP_SPACE, MAXLINE_LEN) == -1) {
                 return NULL;
         }
         return ldns_rr_new_frm_str((const char*) line);

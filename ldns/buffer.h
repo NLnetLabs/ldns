@@ -87,7 +87,7 @@ ldns_buffer *ldns_buffer_new(size_t capacity);
  * and no memory allocations are done.  The buffer is fixed and cannot
  * be resized using buffer_reserve().
  */
-void ldns_ldns_buffer_new_from(ldns_buffer *buffer, void *data, size_t size);
+void ldns_buffer_new_frm_data(ldns_buffer *buffer, void *data, size_t size);
 
 /*
  * Clear the buffer and make it ready for writing.  The buffer's limit
@@ -419,5 +419,12 @@ void ldns_buffer_free(ldns_buffer *buffer);
  * caller is responsible for free'ing the result.
  */
 void *ldns_buffer_export(ldns_buffer *buffer);
+
+/*
+ * Get the next character from a buffer. Advance the position
+ * pointer with 1.
+ * When end of buffer is reached return EOF
+ */
+int ldns_bgetc(ldns_buffer *buffer);
 
 #endif /* _BUFFER_H_ */
