@@ -71,7 +71,7 @@ LINK_LIB	= $(LIBTOOL) $(CC) $(CFLAGS) $(LDFLAGS)
 
 .PHONY:	clean realclean docclean doc lint test all ar
 
-all:		$(TESTS) $(PROG_TARGETS) libldns.a
+all:		$(PROG_TARGETS) libldns.a
 
 ar:		libldns.a
 
