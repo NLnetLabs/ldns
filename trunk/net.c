@@ -13,15 +13,8 @@
 
 #include <config.h>
 
-#include <ldns/rdata.h>
-#include <ldns/error.h>
-#include <ldns/resolver.h>
-#include <ldns/buffer.h>
-#include <ldns/wire2host.h>
-#include <ldns/host2wire.h>
-#include <ldns/host2str.h>
-#include <ldns/resolver.h>
-#include <ldns/net.h>
+#include <ldns/ldns.h>
+
 #include <netinet/in.h>
 #include <sys/socket.h>
 #include <netdb.h>

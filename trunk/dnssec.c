@@ -845,6 +845,9 @@ ldns_sign_public(ldns_rr_list *rrset, ldns_key_list *keys)
 		(void)ldns_rr_rrsig_set_labels(current_sig, 
 				ldns_native2rdf_int8(LDNS_RDF_TYPE_INT8, ldns_rr_label_count(
 						ldns_rr_list_rr(rrset_clone, 0))));
+		printf("label cnt %d\n",
+				ldns_rr_label_count(ldns_rr_list_rr(rrset_clone, 0)));
+		
 		/* inception, expiration */
 		(void)ldns_rr_rrsig_set_inception(current_sig,
 				ldns_native2rdf_int32(LDNS_RDF_TYPE_INT32, ldns_key_inception(current_key)));

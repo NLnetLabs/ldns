@@ -11,15 +11,17 @@
 #ifndef _DNSSEC_H_
 #define _DNSSEC_H_
 
+#include <openssl/ssl.h>
 #include <ldns/common.h>
 #include <ldns/dns.h>
 #include <ldns/buffer.h>
 #include <ldns/packet.h>
-#include <openssl/ssl.h>
+#include <ldns/keys.h>
 
 #define MAX_KEYLEN	2048
 #define DNSSEC_KEYPROTO	3
 
+#if 0
 /**
  * algorigthms used in dns
  */
@@ -35,6 +37,7 @@ enum ldns_enum_algorithm
 	LDNS_PRIVATEOID		= 254
 };
 typedef enum ldns_enum_algorithm ldns_algorithm;
+#endif
 
 /** 
  * Calculates a keytag of a key for use in DNSSEC
@@ -101,8 +104,7 @@ ldns_status ldns_pkt_tsig_sign(ldns_pkt *pkt, const char *key_name, const char *
  */
 ldns_rr *ldns_key_rr2ds(const ldns_rr *key);
 
-ldns_rr_list *ldns_sign(ldns_rr_list*, ldns_rr_list*);
-
+ldns_rr_list * ldns_sign_public(ldns_rr_list *rrset, ldns_key_list *keys);
 ldns_rdf *ldns_sign_public_dsa(ldns_buffer *to_sign, DSA *key);
 ldns_rdf *ldns_sign_public_rsamd5(ldns_buffer *to_sign, RSA *key);
 ldns_rdf *ldns_sign_public_rsasha1(ldns_buffer *to_sign, RSA *key);

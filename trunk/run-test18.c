@@ -49,7 +49,7 @@ main()
 
 	ldns_key_set_origttl(privkey, 1800);
 	ldns_key_set_origttl(privkey_dsa, 1800);
-	SSL_load_error_strings();
+	/*	SSL_load_error_strings();*/
 
 	ldns_key_list_push_key(keys, privkey);
 	ldns_key_list_push_key(keys, privkey_dsa);
@@ -77,18 +77,14 @@ main()
 		exit(1);
 	}
 	ldns_rr_list_push_rr(dnskeys, dnskey);
-	ldns_rr_list_push_rr(dnskeys, dnskey_dsa);
+	/* only rsa for now */
+/*	ldns_rr_list_push_rr(dnskeys, dnskey_dsa); */
 
 	signatures = ldns_sign_public(rrs, keys);
-		printf("\n");
 
 	ldns_rr_list_print(stdout, signatures);
 
 	printf("Now we are going to verify\n");
-	ldns_rdf_print(stdout, ldns_rr_rdf(
-			ldns_rr_list_rr(signatures, 0),
-			8));
-	printf("\n");
 
 	printf("\n[%d]\n", ldns_verify(rrs, signatures, dnskeys));
 	

@@ -38,6 +38,7 @@ o Remove/Handle all XXX and TODO/todos'
   - data.c/data.h	- dname.c
   - packet.c (partially)
 o conversion from  ldns_key to key rr's
+o init function? random - load_ssl_errors()
 
 Documentation:
 --------------
