@@ -38,7 +38,7 @@ main(int argc, char **argv)
 	ldns_rr_print(stdout, RR);
 	printf("\n");
 
-        nameserver = ldns_rdf_new_frm_str(nameserver_address, LDNS_RDF_TYPE_A);
+        nameserver = ldns_rdf_new_frm_str(LDNS_RDF_TYPE_A, nameserver_address);
         if (ldns_resolver_push_nameserver(res, nameserver) != LDNS_STATUS_OK) {
 		printf("error push nameserver\n");
 		return -1;

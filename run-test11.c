@@ -40,7 +40,7 @@ main(int argc, char **argv)
 		server_ip = argv[2];
 	}
 
-        nameserver  = ldns_rdf_new_frm_str(server_ip, LDNS_RDF_TYPE_A);
+        nameserver  = ldns_rdf_new_frm_str(LDNS_RDF_TYPE_A, server_ip);
 	if (!nameserver) {
 		printf("Bad server ip\n");
 		return -1;
@@ -50,7 +50,7 @@ main(int argc, char **argv)
 	ldns_resolver_set_usevc(resolver, true);
 	ldns_resolver_push_nameserver(resolver, nameserver);
 	
-	domain = ldns_rdf_new_frm_str(name, LDNS_RDF_TYPE_DNAME);
+	domain = ldns_dname_new_frm_str(name);
 	if (!domain) {
 		printf("Bad domain\n");
 	}

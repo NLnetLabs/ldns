@@ -195,22 +195,22 @@ ldns_rdf_new(uint16_t s, ldns_rdf_type t, void *d)
  * \return the new rdf structure or NULL on failure
  */
 ldns_rdf *
-ldns_rdf_new_frm_data(uint16_t s, ldns_rdf_type t, void *buf)
+ldns_rdf_new_frm_data(ldns_rdf_type type, uint16_t size, const void *data)
 {
-	ldns_rdf *rd;
-	rd = MALLOC(ldns_rdf);
-	if (!rd) {
+	ldns_rdf *rdf;
+	rdf = MALLOC(ldns_rdf);
+	if (!rdf) {
 		return NULL;
 	}
-	rd->_data = XMALLOC(uint8_t, s);
-	if (!rd->_data) {
+	rdf->_data = XMALLOC(uint8_t, size);
+	if (!rdf->_data) {
 		return NULL;
 	}
 	
-	ldns_rdf_set_size(rd, s);
-	ldns_rdf_set_type(rd, t);
-	memcpy(rd->_data, buf, s);
-	return rd;
+	ldns_rdf_set_type(rdf, type);
+	ldns_rdf_set_size(rdf, size);
+	memcpy(rdf->_data, data, size);
+	return rdf;
 }
 
 /**
@@ -264,7 +264,7 @@ ldns_rdf_free(ldns_rdf *rd)
  * \return ldns_rdf*
  */
 ldns_rdf *
-ldns_rdf_new_frm_str(const char *str, ldns_rdf_type type)
+ldns_rdf_new_frm_str(ldns_rdf_type type, const char *str)
 {
 	ldns_rdf *rdf;
 	ldns_status status;

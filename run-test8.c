@@ -43,7 +43,7 @@ main(int argc, char **argv)
         if (!res)
                 return -1;
 
-        nameserver  = ldns_rdf_new_frm_str(server_ip, LDNS_RDF_TYPE_A);
+        nameserver  = ldns_rdf_new_frm_str(LDNS_RDF_TYPE_A, server_ip);
 	if (!nameserver) {
 		printf("Bad server ip\n");
 		return -1;
@@ -58,7 +58,7 @@ main(int argc, char **argv)
 	}
 	/* UDP query */
 	ldns_resolver_set_usevc(res, false);
-        qname = ldns_rdf_new_frm_str(name, LDNS_RDF_TYPE_DNAME);
+        qname = ldns_dname_new_frm_str(name);
 	if (!qname) {
 		printf("error making qname\n");
 		return -1;

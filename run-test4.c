@@ -25,12 +25,12 @@ main(void)
                 return 1;
 
         /* create a default domain and add it */
-        default_dom = ldns_rdf_new_frm_str("miek.nl.", LDNS_RDF_TYPE_DNAME);
+        default_dom = ldns_dname_new_frm_str("miek.nl.");
 	if (!default_dom) {
 		printf("error default dom\n");
 		return 1;
 	}
-        nameserver  = ldns_rdf_new_frm_str("127.0.0.1", LDNS_RDF_TYPE_A);
+        nameserver  = ldns_rdf_new_frm_str(LDNS_RDF_TYPE_A, "127.0.0.1");
 	if (!nameserver) {
 		printf("error default dom\n");
 		return 1;
@@ -49,7 +49,7 @@ main(void)
 	}
 
         /* setup the question */
-        qname = ldns_rdf_new_frm_str("miekwww", LDNS_RDF_TYPE_DNAME);
+        qname = ldns_dname_new_frm_str("miekwww");
 	if (!qname) {
 		printf("error making qname\n");
                 return 1;

@@ -25,7 +25,7 @@ main(void)
         res = ldns_resolver_new(); 
         if (!res)
                 return -1;
-        nameserver  = ldns_rdf_new_frm_str("127.0.0.1", LDNS_RDF_TYPE_A);
+        nameserver  = ldns_rdf_new_frm_str(LDNS_RDF_TYPE_A, "127.0.0.1");
         if (ldns_resolver_push_nameserver(res, nameserver) != LDNS_STATUS_OK) {
                 printf("error push nameserver\n");
                 return -1;
