@@ -235,9 +235,10 @@ ldns_resolver_send(ldns_resolver *r, ldns_rdf *name, ldns_rr_type type, ldns_rr_
 	 * and then send this */
 	/*query_pkt = somesortofconversion2qpkt(name, type, class, flags); * */
 
+	/* return NULL on error */
 	answer_pkt = ldns_send(*r, query_pkt);
 		
-	return NULL;
+	return answer_pkt;
 }
 
 /* send the query as-is. but use a callback */
