@@ -17,6 +17,8 @@
 #include <stdarg.h>
 #include <string.h>
 
+#include <ldns/common.h>
+
 #include "util.h"
 
 #define B64BUFSIZE      65535           /* Buffer size for b64 conversion */

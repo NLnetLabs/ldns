@@ -19,6 +19,7 @@
 #include <netdb.h>
 
 #include <ldns/host2str.h>
+#include <ldns/packet.h>
 #include <ldns/wire2host.h>
 
 #include <util.h>
@@ -90,7 +91,7 @@ ldns_rdf2buffer_str_dname(ldns_buffer *output, ldns_rdf *dname)
 
 	/* single root label */
 	if (1 == ldns_rdf_size(dname)) {
-		ldns_buffer_printf(output, ".", 2);
+		ldns_buffer_printf(output, ".");
 	} else {
 		/* XXX repeated calls to ldns_rdf_size */
 		while ((len > 0) && src_pos < ldns_rdf_size(dname)) {
@@ -357,36 +358,36 @@ ldns_rdf2buffer_str_loc(ldns_buffer *output, ldns_rdf *rdf)
 		ldns_buffer_printf(output, "%02u %02u %0.3f %c ", h, m, s, easterness);
 
 		meters = (long) altitude - 10000000;
-		ldns_buffer_printf(output, "%u", meters / 100);
+		ldns_buffer_printf(output, "%ld", meters / 100);
 		if (meters % 100 != 0) {
-			ldns_buffer_printf(output, ".%02u", meters % 100);
+			ldns_buffer_printf(output, ".%02ld", meters % 100);
 		}
 		ldns_buffer_printf(output, "m ");
 		
 		value = (short) ((size & 0xf0) >> 4);
 		unit = (short) (size & 0x0f);
 		meters = value * power(10, unit);
-		ldns_buffer_printf(output, "%u", meters / 100);
+		ldns_buffer_printf(output, "%ld", meters / 100);
 		if (meters % 100 != 0) {
-			ldns_buffer_printf(output, ".%02u", meters % 100);
+			ldns_buffer_printf(output, ".%02ld", meters % 100);
 		}
 		ldns_buffer_printf(output, "m ");
 
 		value = (short) ((horizontal_precision & 0xf0) >> 4);
 		unit = (short) (horizontal_precision & 0x0f);
 		meters = value * power(10, unit);
-		ldns_buffer_printf(output, "%u", meters / 100);
+		ldns_buffer_printf(output, "%ld", meters / 100);
 		if (meters % 100 != 0) {
-			ldns_buffer_printf(output, ".%02u", meters % 100);
+			ldns_buffer_printf(output, ".%02ld", meters % 100);
 		}
 		ldns_buffer_printf(output, "m ");
 
 		value = (long) ((vertical_precision & 0xf0) >> 4);
 		unit = (long) (vertical_precision & 0x0f);
 		meters = value * power(10, unit);
-		ldns_buffer_printf(output, "%u", meters / 100);
+		ldns_buffer_printf(output, "%ld", meters / 100);
 		if (meters % 100 != 0) {
-			ldns_buffer_printf(output, ".%02u", meters % 100);
+			ldns_buffer_printf(output, ".%02ld", meters % 100);
 		}
 		ldns_buffer_printf(output, "m ");
 
@@ -486,6 +487,7 @@ ldns_rdf2buffer_str_nsec(ldns_buffer *output, ldns_rdf *rdf)
 ldns_status
 ldns_rdf2buffer_str_tsigtime(ldns_buffer *output, ldns_rdf *rdf)
 {
+	/* TODO: Broken! */
 	/* tsigtime is 48 bits network order unsigned integer */
 	uint64_t result;
 	uint8_t tsigtime[8];
@@ -815,7 +817,7 @@ ldns_pktheader2buffer_str(ldns_buffer *output, ldns_pkt *pkt)
 	ldns_buffer_printf(output, ";; ->>HEADER<<- ");
 	ldns_buffer_printf(output, "opcode: %s, ", opcode_str);
 	ldns_buffer_printf(output, "rcode: %s, ", rcode_str);
-	ldns_buffer_printf(output, "id %lu\n", ldns_pkt_id(pkt));
+	ldns_buffer_printf(output, "id %d\n", ldns_pkt_id(pkt));
 	ldns_buffer_printf(output, ";; flags: ");
 
 	if (ldns_pkt_qr(pkt)) {
