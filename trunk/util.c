@@ -57,7 +57,6 @@ ldns_lookup_table *
 ldns_lookup_by_id(ldns_lookup_table *table, int id)
 {
 	while (table->name != NULL) {
-printf("trying %s with id %d (%d)\n", table->name, table->id, id);
 		if (table->id == id)
 			return table;
 		table++;
