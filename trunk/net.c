@@ -71,6 +71,15 @@ ldns_send(ldns_resolver *r, ldns_pkt *query_pkt)
 
 		ns = ldns_rdf2native_sockaddr_storage(ns_array[i]);
 
+		if ((ns->ss_family == AF_INET && 
+				ldns_resolver_ip6(r) == RESOLV_INET6)
+				||
+				(ns->ss_family == AF_INET6 &&
+				 ldns_resolver_ip6(r) == RESOLV_INET)) {
+			/* mismatch, next please */
+			continue;
+		}
+
 		/* setup some family specific stuff */
 		switch(ns->ss_family) {
 			case AF_INET:

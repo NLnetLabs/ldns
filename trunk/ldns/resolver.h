@@ -27,6 +27,10 @@
 #define RESOLV_DEFDOMAIN	1
 #define RESOLV_NAMESERVER	2
 
+#define LDNS_RESOLV_INETANY		0
+#define LDNS_RESOLV_INET		1
+#define LDNS_RESOLV_INET6		2
+
 /**
  * \brief Structure of a dns resolver
  *

@@ -399,11 +399,6 @@ ldns_resolver_new(void)
 
 	r->_searchlist = NULL;
 	r->_nameservers = NULL;
-#if 0
-	if (!r->_searchlist || !r->_nameservers) {
-		return NULL;
-	}
-#endif
 
 	/* defaults are filled out */
 	ldns_resolver_set_searchlist_count(r, 0);
