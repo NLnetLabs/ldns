@@ -101,7 +101,6 @@ typedef enum ldns_enum_pkt_section ldns_pkt_section;
 
 /**
  * the different types of packets
- * \todo Do we need this??? MIEK
  */
 enum ldns_enum_pkt_type {
 	LDNS_PACKET_QUESTION,
