@@ -13,6 +13,7 @@ CFLAGS 		= @CFLAGS@
 LDFLAGS		= @LDFLAGS@
 LIBS 		= @LIBS@
 LIBOBJS		= @LIBOBJS@
+DATE		= $(shell date +%Y%m%d)
 
 LINT		= splint
 LINTFLAGS	= +quiet -weak -warnposix -unrecog -Din_addr_t=uint32_t -Du_int=unsigned -Du_char=uint8_t 
@@ -54,6 +55,12 @@ LINK		= $(CC) $(CFLAGS) $(LDFLAGS)
 all:	run-test0 run-test1 run-test2 run-test3 run-test4 run-test5 run-test6 run-test7\
 	run-test8
 
+snapshot:	clean testclean
+		(rm -rf ../ldns-snap-$(DATE)/)
+		(cd .. ; cp -r libdns/ ldns-snap-$(DATE)/)
+		(cd .. ; tar --verbose  --exclude ".svn" --create --file ldns-snap-$(DATE).tar.gz --gzip ldns-snap-$(DATE)/)
+		(rm -rf ../ldns-snap-$(DATE)/)
+
 run-test0:	run-test0.o $(LIBDNS_OBJECTS) $(LIBOBJS)
 		$(LINK) ${LIBS} -o $@ $+
 
@@ -91,8 +98,13 @@ clean:
 	rm -f run-test2
 	rm -rf autom4te.cache/
 	rm -f aclocal.m4
+	rm -f config.status
+	rm -f config.log
 
-realclean: clean docclean
+testclean:
+	rm -f run-test?
+
+realclean: clean docclean testclean
 	rm -f config.status
 	rm -f config.log
 	rm -f Makefile
@@ -117,8 +129,16 @@ test4: run-test4
 	./run-test4
 test5: run-test5
 	./run-test5
+test6: run-test6
+	./run-test6
+test7: run-test7
+	./run-test7
+test7: run-test8
+	./run-test8
 
-test: test0 test1 test2 test3 test4 test5
+test: test0 test1 test2 test3 test4 test5 test6 test7 test8
+
+## No need for changes here
 
 lint:
 	for i in $(ALL_SOURCES); do \

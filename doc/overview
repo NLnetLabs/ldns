@@ -20,6 +20,9 @@ ldns - Overview document
     for instance sign(key, rrlist, **sig) and verify(key, rrlist, sig)
     will be defined.
   o DNSSEC is optional as it depends on OpenSSL
+  o IF and rdf is LDNS_RDF_TYPE_DNAME then the dname inside it is
+    always terminated with 00 (the root label). I.e. all dname are
+    stored as absolute domain names.
 
 2. Different parts of ldns:
 

@@ -51,31 +51,24 @@ doit(void)
 	/* test the label counter */
  	cnt_test = ldns_rdf_new_frm_str("miek.nl.", LDNS_RDF_TYPE_DNAME);
 	printf("Labels miek.nl. %d\n", ldns_rdf_dname_label_count(cnt_test));
-	printf("absolute %d\n\n", ldns_rdf_dname_absolute(cnt_test));
 
  	cnt_test = ldns_rdf_new_frm_str("miek.nl", LDNS_RDF_TYPE_DNAME);
 	printf("Labels miek.nl %d\n", ldns_rdf_dname_label_count(cnt_test));
-	printf("absolute %d\n\n", ldns_rdf_dname_absolute(cnt_test));
 	
  	cnt_test = ldns_rdf_new_frm_str("miek", LDNS_RDF_TYPE_DNAME);
 	printf("Labels miek %d\n", ldns_rdf_dname_label_count(cnt_test));
-	printf("absolute %d\n\n", ldns_rdf_dname_absolute(cnt_test));
 	
  	cnt_test = ldns_rdf_new_frm_str(".", LDNS_RDF_TYPE_DNAME);
 	printf("Labels . %d\n", ldns_rdf_dname_label_count(cnt_test));
-	printf("absolute %d\n\n", ldns_rdf_dname_absolute(cnt_test));
 	
  	cnt_test = ldns_rdf_new_frm_str(".www.miek.nl.", LDNS_RDF_TYPE_DNAME);
 	printf("Labels .www.miek.nl. %d\n", ldns_rdf_dname_label_count(cnt_test));
-	printf("absolute %d\n\n", ldns_rdf_dname_absolute(cnt_test));
 
  	cnt_test = ldns_rdf_new_frm_str("www.miek.nl.", LDNS_RDF_TYPE_DNAME);
 	printf("Labels www.miek.nl. %d\n", ldns_rdf_dname_label_count(cnt_test));
-	printf("absolute %d\n\n", ldns_rdf_dname_absolute(cnt_test));
 
  	cnt_test = ldns_rdf_new_frm_str("nl", LDNS_RDF_TYPE_DNAME);
 	printf("Labels nl %d\n", ldns_rdf_dname_label_count(cnt_test));
-	printf("absolute %d\n\n", ldns_rdf_dname_absolute(cnt_test));
 }
 
 
