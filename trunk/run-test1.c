@@ -30,11 +30,11 @@ int
 main(void)
 {
 	ldns_rdf bla;
-	if (zparser_conv_short(&bla, "15242") != LDNS_STATUS_OK) {
+	if (ldns_conv_short(&bla, "15242") != LDNS_STATUS_OK) {
 		printf("_short: ah man, shit hit the fan\n");
 	}
 	/* %Y%m%d%H%M%S */
-	if (zparser_conv_time(&bla, "20041222134100") != LDNS_STATUS_OK) {
+	if (ldns_conv_time(&bla, "20041222134100") != LDNS_STATUS_OK) {
 		printf("_time: ah man, shit hit the fan\n");
 	}
 	printf("succes\n");

@@ -30,7 +30,7 @@
  * convert a short into wireformat 
  */
 ldns_status
-zparser_conv_short(ldns_rdf *rd, const char *shortstr)
+ldns_conv_short(ldns_rdf *rd, const char *shortstr)
 {
 	char *end = NULL;    
 	uint16_t *r;
@@ -39,9 +39,10 @@ zparser_conv_short(ldns_rdf *rd, const char *shortstr)
 	*r = htons((uint16_t)strtol(shortstr, &end, 0));
 	
 	if(*end != 0) {
+		FREE(r);
 		return LDNS_STATUS_INT_EXP;
 	} else {
-		rd = ldns_rdf_new(2, LDNS_RDF_TYPE_INT16, (uint8_t*)r);
+		rd = ldns_rdf_new(sizeof(uint16_t), LDNS_RDF_TYPE_INT16, (uint8_t*)r);
 		return LDNS_STATUS_OK;
 	}
 }
@@ -50,7 +51,7 @@ zparser_conv_short(ldns_rdf *rd, const char *shortstr)
  * convert a time value to wireformat 
  */
 ldns_status
-zparser_conv_time(ldns_rdf *rd, const char *time)
+ldns_conv_time(ldns_rdf *rd, const char *time)
 {
 	/* convert a time YYHM to wireformat */
 	uint16_t *r = NULL;
@@ -61,55 +62,59 @@ zparser_conv_time(ldns_rdf *rd, const char *time)
 	r = (uint16_t*)MALLOC(uint32_t);
 
 	if((char*)strptime(time, "%Y%m%d%H%M%S", &tm) == NULL) {
+		FREE(r);
 		return LDNS_STATUS_ERR;
 	} else {
 		l = htonl(timegm(&tm));
 		memcpy(r, &l, sizeof(uint32_t));
-		rd = ldns_rdf_new(2, LDNS_RDF_TYPE_TIME, (uint8_t*)r);
+		rd = ldns_rdf_new(sizeof(uint32_t), LDNS_RDF_TYPE_TIME, (uint8_t*)r);
+		return LDNS_STATUS_OK;
 	}
-	return LDNS_STATUS_OK;
 }
 
-#if 0
+/**
+ * convert a long (32 bits)
+ */
 ldns_status 
-zparser_conv_long(ldns_rdf *rd, const char *longstr)
+ldns_conv_long(ldns_rdf *rd, const char *longstr)
 {
-	char *end;      /* Used to parse longs, ttls, etc.  */
+	char *end;  
 	uint16_t *r = NULL;
 	uint32_t l;
 
-	r = (uint16_t *) region_alloc(region,
-				      sizeof(uint16_t) + sizeof(uint32_t));
+	r = (uint16_t*)MALLOC(uint32_t);
 	l = htonl((uint32_t)strtol(longstr, &end, 0));
 
 	if(*end != 0) {
-		error_prev_line("Long decimal value is expected");
+		FREE(r);
+		return LDNS_STATUS_ERR;
         } else {
-		memcpy(r + 1, &l, sizeof(uint32_t));
-		*r = sizeof(uint32_t);
+		memcpy(r, &l, sizeof(uint32_t));
+		rd = ldns_rdf_new(sizeof(uint32_t), LDNS_RDF_TYPE_INT32, (uint8_t*)r);
+		return LDNS_STATUS_OK;
 	}
-	return r;
 }
 
+/**
+ * convert a byte (8 bits)
+ */
 ldns_status
-zparser_conv_byte(ldns_rdf *rd, const char *bytestr)
+ldns_conv_byte(ldns_rdf *rd, const char *bytestr)
 {
+	char *end;     
+	uint8_t *r = NULL;
 
-	/* convert a byte value to wireformat */
-	char *end;      /* Used to parse longs, ttls, etc.  */
-	uint16_t *r = NULL;
+	r = MALLOC(uint8_t);
  
-        r = (uint16_t *) region_alloc(region,
-				      sizeof(uint16_t) + sizeof(uint8_t));
-
-        *((uint8_t *)(r+1)) = (uint8_t)strtol(bytestr, &end, 0);
+	*r = (uint8_t)strtol(bytestr, &end, 0);
 
         if(*end != 0) {
-		error_prev_line("Decimal value is expected");
+		FREE(r);
+		return LDNS_STATUS_ERR;
         } else {
-		*r = sizeof(uint8_t);
+		rd = ldns_rdf_new(sizeof(uint8_t), LDNS_RDF_TYPE_INT8, r);
+		return LDNS_STATUS_OK;
         }
-	return r;
 }
 
 #if 0

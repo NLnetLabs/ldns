@@ -10,7 +10,7 @@
 #include <ldns/buffer.h>
 #include <ctype.h>
 
-ldns_status zparser_conv_short(ldns_rdf *, const char *);
-ldns_status zparser_conv_time(ldns_rdf *, const char *);
+ldns_status ldns_conv_short(ldns_rdf *, const char *);
+ldns_status ldns_conv_time(ldns_rdf *, const char *);
 
 #endif
