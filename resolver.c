@@ -570,6 +570,7 @@ ldns_resolver_send(ldns_resolver *r, ldns_rdf *name, ldns_rr_type type, ldns_rr_
 {
 	ldns_pkt *query_pkt;
 	ldns_pkt *answer_pkt;
+	uint16_t id;
 
 	assert(r != NULL);
 	assert(name != NULL);
@@ -598,6 +599,12 @@ ldns_resolver_send(ldns_resolver *r, ldns_rdf *name, ldns_rr_type type, ldns_rr_
 		printf("Failed to generate pkt\n");
 		return NULL;
 	}
+	
+	/* TODO: time is a terrible seed */
+	srand((unsigned) time(NULL));
+	id = (uint16_t) rand();
+
+	ldns_pkt_set_id(query_pkt, id);
 
 	/* return NULL on error */
 	answer_pkt = ldns_send(r, query_pkt);
