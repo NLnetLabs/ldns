@@ -93,9 +93,6 @@ run-test11:	run-test11.o $(LIBDNS_OBJECTS) $(LIBOBJS)
 run-test18:	run-test18.o $(LIBDNS_OBJECTS) $(LIBOBJS)
 		$(LINK) ${LIBS} -o $@ $+
 
-run-test-trace:	run-test-trace.o $(LIBDNS_OBJECTS) $(LIBOBJS)
-		$(LINK) ${LIBS} -o $@ $+
-
 doc:	
 	doxygen libdns.doxygen
 
@@ -138,9 +135,12 @@ test: test7 test11 test18
 ## No need for changes here
 
 lint:
-	for i in $(LIBDNS_SOURCES); do \
-		$(LINT) $(LINTFLAGS) -I. -I$(srcdir) $(srcdir)/$$i ; \
-	done
+	find $(srcdir) -name \*.c -exec $(LINT) $(LINTFLAGS) -I. -I$(srcdir) {} \;
+
+# old
+#	for i in $(LIBDNS_SOURCES); do \
+#		$(LINT) $(LINTFLAGS) -I. -I$(srcdir) $(srcdir)/$$i ; \
+#	done
 
 tags:	*.c *.h ldns/*.[ch]
 	ctags *.[ch] ldns/*.[ch]

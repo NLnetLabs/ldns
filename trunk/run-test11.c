@@ -48,14 +48,14 @@ main(int argc, char **argv)
 	
 	resolver = ldns_resolver_new();
 	ldns_resolver_set_usevc(resolver, true);
-	ldns_resolver_push_nameserver(resolver, nameserver);
+	(void) ldns_resolver_push_nameserver(resolver, nameserver);
 	
 	domain = ldns_dname_new_frm_str(name);
 	if (!domain) {
 		printf("Bad domain\n");
 	}
 	
-	ldns_axfr_start(resolver, domain, LDNS_RR_CLASS_IN);
+	(void) ldns_axfr_start(resolver, domain, LDNS_RR_CLASS_IN);
 	
 	while ((rr = ldns_axfr_next(resolver))) {
 		rr_str = ldns_rr2str(rr);
