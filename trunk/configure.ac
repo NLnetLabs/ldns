@@ -5,7 +5,8 @@ AC_PREREQ(2.57)
 AC_INIT(libdns, 0.01, libdns@nlnetlabs.nl, libdns0.01)
 AC_CONFIG_SRCDIR([packet.c])
 
-OURCPPFLAGS='-ansi -pedantic -D_POSIX_C_SOURCE=200112 -D_XOPEN_SOURCE=600'
+dnl OURCPPFLAGS='-ansi -pedantic -D_POSIX_C_SOURCE=200112 -D_XOPEN_SOURCE=600'
+OURCPPFLAGS='-ansi'
 CPPFLAGS=${CPPFLAGS:-${OURCPPFLAGS}}
 OURCFLAGS='-g -O2 -Wall -W -Wwrite-strings'
 CFLAGS=${CFLAGS:-${OURCFLAGS}}
@@ -136,9 +137,9 @@ AC_LIBGTOP_CHECK_TYPE(uint8_t, unsigned char)
 AC_LIBGTOP_CHECK_TYPE(uint16_t, unsigned short)
 AC_LIBGTOP_CHECK_TYPE(uint32_t, unsigned int)
 AC_LIBGTOP_CHECK_TYPE(uint64_t, unsigned long long)
-AC_LIBGTOP_CHECK_TYPE(u_char, uint8_t)
-AC_LIBGTOP_CHECK_TYPE(u_short, uint16_t)
-AC_LIBGTOP_CHECK_TYPE(u_long, uint32_t)
+dnl AC_LIBGTOP_CHECK_TYPE(u_char, uint8_t)
+dnl AC_LIBGTOP_CHECK_TYPE(u_short, uint16_t)
+dnl AC_LIBGTOP_CHECK_TYPE(u_long, uint32_t)
 AC_LIBGTOP_CHECK_TYPE(socklen_t, int)
 AC_LIBGTOP_CHECK_TYPE(sig_atomic_t, int)
 
