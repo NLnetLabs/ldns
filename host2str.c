@@ -817,6 +817,8 @@ ldns_rdf2buffer_str(ldns_buffer *buffer, ldns_rdf *rdf)
 			/* XXX todo */
 			break;
 		}
+	} else {
+		ldns_buffer_printf(buffer, "(null) ");
 	}
 	return LDNS_STATUS_OK;
 }
@@ -831,7 +833,7 @@ ldns_rr2buffer_str(ldns_buffer *output, ldns_rr *rr)
 	const ldns_rr_descriptor *descriptor;
 	
 	if (!rr) {
-		ldns_buffer_printf(output, "<NIL> ");
+		ldns_buffer_printf(output, "(null) ");
 	} else {
 		if (ldns_rr_owner(rr)) {
 			status = ldns_rdf2buffer_str_dname(output, ldns_rr_owner(rr)); 
@@ -1124,11 +1126,15 @@ ldns_rr_list2str(ldns_rr_list *list)
 	char *result = NULL;
 	ldns_buffer *tmp_buffer = ldns_buffer_new(MIN_BUFLEN); 
 
-	if (ldns_rr_list2buffer_str(tmp_buffer, list) == LDNS_STATUS_OK) {
-		/* export and return string, destroy rest */
-		result = buffer2str(tmp_buffer);
+	if (list) {
+		if (ldns_rr_list2buffer_str(tmp_buffer, list) == LDNS_STATUS_OK) {
+		}
+	} else {
+		ldns_buffer_printf(tmp_buffer, "(null)");
 	}
 
+	/* export and return string, destroy rest */
+	result = buffer2str(tmp_buffer);
 	ldns_buffer_free(tmp_buffer);
 	return result;
 }
@@ -1172,7 +1178,6 @@ ldns_pkt_print(FILE *output, ldns_pkt *pkt)
 void
 ldns_rr_list_print(FILE *output, ldns_rr_list *lst)
 {
-	assert(lst != NULL);
 	char *str = ldns_rr_list2str(lst);
 	if (str) {
 		fprintf(output, "%s", str);
