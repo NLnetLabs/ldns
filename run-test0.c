@@ -54,11 +54,8 @@ main(void)
 	memcpy(rdf_data+10, "net", 3);
 	rdf_data[13] = 0;
 	rd_f = ldns_rdf_new(20, LDNS_RDF_TYPE_DNAME, rdf_data);
-	xprintf_rdf(rd_f);
 	
 	ldns_rr_push_rdf(rr, rd_f);
-
-	xprintf_rr(rr);
 
 	status = ldns_wire2pkt(&packet, wire, sizeof(wire));
 	if (status == LDNS_STATUS_OK) {

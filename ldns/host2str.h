@@ -10,6 +10,8 @@
 #include <ldns/buffer.h>
 #include <ctype.h>
 
+#include "util.h"
+
 ldns_status ldns_rdf2buffer(ldns_buffer *buffer, ldns_rdf *rdf);
 ldns_status ldns_rr2buffer(ldns_buffer *buffer, ldns_rr *rr);
 ldns_status ldns_pkt2buffer(ldns_buffer *buffer, ldns_pkt *pkt);

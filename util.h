@@ -107,18 +107,15 @@ struct lookup_table {
         const char *name;
 };
   
-/*
+/**
  * Looks up the table entry by name, returns NULL if not found.
  */
 ldns_lookup_table *ldns_lookup_by_name(ldns_lookup_table table[],
                                        const char *name);
 
-/*
+/**
  * Looks up the table entry by id, returns NULL if not found.
  */
 ldns_lookup_table *ldns_lookup_by_id(ldns_lookup_table table[], int id);
-
-void    xprintf_rdf(ldns_rdf *);
-void    xprintf_rr(ldns_rr *);
 
 #endif /* !_UTIL_H */
