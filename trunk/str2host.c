@@ -343,12 +343,15 @@ ldns_str2rdf_b64(ldns_rdf **rd, const char *str)
 	i = (uint16_t) b64_pton((const char*)str, buffer, 
 	                        b64_ntop_calculate_size(strlen(str)));
 	if (-1 == i) {
+		/* todo: remove print */
+		printf("BAD B64: %s\n", str);
 		return LDNS_STATUS_INVALID_B64;
 	} else {
 		*rd = ldns_rdf_new_frm_data(
 			LDNS_RDF_TYPE_B64, (uint16_t) i, buffer);
 	}
 	FREE(buffer);
+
 	return LDNS_STATUS_OK;
 }
 
