@@ -1,6 +1,5 @@
 Current TODO list
 
-
 Implementation:
 ---------------
 o deep free
@@ -18,11 +17,9 @@ o Make a shared library and test compile some programs
 o Thread safety, strtok is used
 o ssl autoconf
 o create a bunch of small programs:
-	mx 
 	dig
 	host
 	?
-o printing of none defined TTL's
 o SSL_load_error_str()? 
 o resolver_frm_file (better parser)
 o Remove all the printf's - and tie them into error handling
@@ -31,21 +28,27 @@ o per RR functions:
        ->keytag
        ->typecovered
    etc etc. For all types we have
+o Remove/Handle all XXX and TODO/todos'
+  checked:
+  - rr.c/rr.h
+  - data.c/data.h
+
 
 Documentation:
 --------------
 o Crypto interface for dnssec
 o Doxygen
-o Manpages
+o Manpages - can they be created or not?
 o Introduction
 o Tutorial
 o Webpage
 o Mailing list(s)
+o Move all the documentation to the header files?
+o Check the documentation
 
 To ponder and discuss:
 ----------------------
-o Second layer (higher level convenience functions)? (Later)
-  (some are already implemented)
+o Second layer (higher level convenience functions)? (are already there)
 o Dependency on openSSL?
 o ldns_lookup_by_name works for types, classes
 	should be shielded, only use ldns_get_class_by_name/type
