@@ -209,18 +209,17 @@ ldns_send_tcp(ldns_buffer *qbin, const struct sockaddr_storage *to, socklen_t to
 
 	gettimeofday(&tv_s, NULL);
 
-	if ((sockfd = socket((int)((struct sockaddr*)to)->sa_family, SOCK_STREAM, IPPROTO_UDP)) == -1) {
+	if ((sockfd = socket((int)((struct sockaddr*)to)->sa_family, SOCK_STREAM, IPPROTO_TCP)) == -1) {
 		printf("could not open socket\n");
 		return NULL;
 	}
 
 	if (bind(sockfd, (struct sockaddr*)to, tolen) == -1) {
 		close(sockfd);
-		printf("could no bin socket\n");
+		printf("could not bind socket\n");
 		return NULL;
 	}
 
-	return NULL;
 
 	bytes = sendto(sockfd, ldns_buffer_begin(qbin),
 			ldns_buffer_position(qbin), 0, (struct sockaddr *)to, tolen);
