@@ -11,7 +11,6 @@
 #include "prototype.h"
 
 
-/* bogus comment */
 int
 main(void)
 {
