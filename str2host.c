@@ -251,7 +251,6 @@ ldns_str2rdf_dname(ldns_rdf **d, const char *str)
 		*q = 0;
 	}
 	len++;
-	printf("len: %d\n", len);
 
 	/* s - buf_str works because no magic is done in the above for-loop */
 	*d = ldns_rdf_new_frm_data(LDNS_RDF_TYPE_DNAME, len, buf); 

@@ -603,8 +603,6 @@ ldns_resolver_send(ldns_resolver *r, ldns_rdf *name, ldns_rr_type type, ldns_rr_
 
 	ldns_pkt_set_id(query_pkt, id);
 
-	ldns_pkt_print(stdout, query_pkt);
-
 	/* return NULL on error */
 	answer_pkt = ldns_send(r, query_pkt);
 	
