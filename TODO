@@ -18,7 +18,9 @@ o printing of signatures dates/times
 o DNSSEC
 	- define algorithms?
 	- look again at keytag calc
+	- signing?
 o Make a shared library and test compile some programs
+o ssl autoconf
 
 
 Documentation:
