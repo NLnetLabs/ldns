@@ -10,10 +10,7 @@
  * See the file LICENSE for the license
  */
 
-#include <stdint.h>
-#include <stdlib.h>
-#include <stdio.h>
-
+#include "common.h"
 #include "rdata.h"
 #include "rr.h"
 
