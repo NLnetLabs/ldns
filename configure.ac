@@ -74,10 +74,14 @@ AC_CHECK_HEADERS(sys/param.h sys/mount.h,,,
 # Checks for library functions.
 #AC_FUNC_CHOWN
 #AC_FUNC_FORK
-#AC_FUNC_MALLOC
+AC_FUNC_MALLOC
 #AC_FUNC_MKTIME
 #AC_FUNC_STAT
 #AC_CHECK_FUNCS([mkdir rmdir strchr strrchr strstr])
+
+AC_REPLACE_FUNCS(b64_pton)
+AC_REPLACE_FUNCS(b64_ntop)
+AC_REPLACE_FUNCS(timegm)
 
 #AC_SEARCH_LIBS(RSA_new, [crypto])
 
@@ -118,6 +122,20 @@ AH_BOTTOM([
 #define ATTR_FORMAT(archetype, string_index, first_to_check) /* empty */
 #endif /* !HAVE_ATTR_FORMAT */
 
+])
+
+AH_BOTTOM([
+#ifndef B64_PTON
+int b64_ntop(uint8_t const *src, size_t srclength,
+	     char *target, size_t targsize);
+#endif /* !B64_PTON */
+#ifndef B64_NTOP
+int b64_pton(char const *src, uint8_t *target, size_t targsize);
+#endif /* !B64_NTOP */
+#ifndef TIMEGM
+#include <time.h>
+time_t timegm (struct tm *tm);
+#endif /* !TIMEGM */
 ])
 
 
