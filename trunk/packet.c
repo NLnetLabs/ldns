@@ -330,6 +330,10 @@ ldns_pkt_new()
 	packet->_answer = ldns_rr_list_new();
 	packet->_authority = ldns_rr_list_new();
 	packet->_additional = ldns_rr_list_new();
+
+	ldns_pkt_set_querytime(packet, 0);
+	ldns_pkt_set_answerfrom(packet, NULL);
+	
 	return packet;
 }
 
