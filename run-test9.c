@@ -37,5 +37,6 @@ main(void)
         qname = ldns_dname_new_frm_str("www.miek.nl.");
         pkt = ldns_resolver_send(res, qname, LDNS_RR_TYPE_A, 0, LDNS_RD);
         pkt = ldns_resolver_send(res, qname, LDNS_RR_TYPE_A, 0, LDNS_RD);
+	ldns_pkt_print(stdout, pkt);
         return 0;
 }

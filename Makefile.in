@@ -152,7 +152,7 @@ test: test0 test1 test2 test3 test4 test5 test6 test7 test8
 ## No need for changes here
 
 lint:
-	for i in $(ALL_SOURCES); do \
+	for i in $(LIBDNS_SOURCES); do \
 		$(LINT) $(LINTFLAGS) -I. -I$(srcdir) $(srcdir)/$$i ; \
 	done
 
