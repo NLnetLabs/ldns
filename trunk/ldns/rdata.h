@@ -100,18 +100,17 @@ struct ldns_struct_rdf
 	/** \brief The type of the data */
 	ldns_rdf_type _type;
 	/** \brief Pointer to the data (byte buffer) */
-	uint8_t  *_data;
+	void  *_data;
 };
 typedef struct ldns_struct_rdf ldns_rdf;
 
 /* prototypes */
-ldns_rdf 	*ldns_rdf_new(uint16_t s, ldns_rdf_type t, uint8_t *d);
 uint16_t        ldns_rdf_size(ldns_rdf *);
 void            ldns_rdf_set_size(ldns_rdf *, uint16_t);
 void            ldns_rdf_set_type(ldns_rdf *, ldns_rdf_type);
-void            ldns_rdf_set_data(ldns_rdf *, uint8_t *);
+void            ldns_rdf_set_data(ldns_rdf *, void *);
 ldns_rdf_type   ldns_rdf_get_type(ldns_rdf *);
-ldns_rdf	*ldns_rdf_new(uint16_t, ldns_rdf_type, uint8_t *);
+ldns_rdf	*ldns_rdf_new(uint16_t, ldns_rdf_type, void *);
 uint8_t         *ldns_rdf_data(ldns_rdf *);
 void            ldns_rdf_free(ldns_rdf *);
 

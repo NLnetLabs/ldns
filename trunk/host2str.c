@@ -77,6 +77,8 @@ ldns_lookup_table ldns_opcodes[] = {
 
 /* this is temp function for debugging wire2rr */
 /* do NOT pass compressed data here :p */
+#if 0 
+DOES NOT COMPILE ANY MORE DUE TO void*
 ldns_status
 ldns_rdf2buffer_dname(ldns_buffer *output, ldns_rdf *dname)
 {
@@ -94,6 +96,7 @@ ldns_rdf2buffer_dname(ldns_buffer *output, ldns_rdf *dname)
 	
 	return ldns_buffer_status(output);
 }
+#endif
 
 ldns_status
 ldns_rdf2buffer_int8(ldns_buffer *output, ldns_rdf *rdf)
@@ -579,7 +582,7 @@ ldns_rdf2buffer(ldns_buffer *buffer, ldns_rdf *rdf)
 	case LDNS_RDF_TYPE_NONE:
 		break;
 	case LDNS_RDF_TYPE_DNAME:
-		res = ldns_rdf2buffer_dname(buffer, rdf);
+		/*res = ldns_rdf2buffer_dname(buffer, rdf);*/
 		break;
 	case LDNS_RDF_TYPE_INT8:
 		res = ldns_rdf2buffer_int8(buffer, rdf);
@@ -641,6 +644,9 @@ ldns_rdf2buffer(ldns_buffer *buffer, ldns_rdf *rdf)
 	case LDNS_RDF_TYPE_NSAP:
 		res = ldns_rdf2buffer_nsap(buffer, rdf);
 		break;
+	case LDNS_RDF_TYPE_SERVICE:
+		/* XXX todo */
+		break;
 	}
 
 	return LDNS_STATUS_OK;
@@ -656,7 +662,7 @@ ldns_rr2buffer(ldns_buffer *output, ldns_rr *rr)
 	const ldns_rr_descriptor *descriptor;
 	
 	if (ldns_rr_owner(rr)) {
-		status = ldns_rdf2buffer_dname(output, ldns_rr_owner(rr));
+		/*status = ldns_rdf2buffer_dname(output, ldns_rr_owner(rr));*/
 	}
 	if (status != LDNS_STATUS_OK) {
 		return status;

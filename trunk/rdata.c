@@ -56,7 +56,7 @@ ldns_rdf_set_type(ldns_rdf *rd, ldns_rdf_type t)
 }
 
 void
-ldns_rdf_set_data(ldns_rdf *rd, uint8_t *d)
+ldns_rdf_set_data(ldns_rdf *rd, void *d)
 {
 	/* only copy the pointer */
 	rd->_data = d;
@@ -67,7 +67,7 @@ ldns_rdf_set_data(ldns_rdf *rd, uint8_t *d)
  * fill it and return it
  */
 ldns_rdf *
-ldns_rdf_new(uint16_t s, ldns_rdf_type t, uint8_t *d)
+ldns_rdf_new(uint16_t s, ldns_rdf_type t, void *d)
 {
 	ldns_rdf *rd;
 	rd = MALLOC(ldns_rdf);
