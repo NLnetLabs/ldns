@@ -176,6 +176,28 @@ ldns_rr_new_frm_str(const char *str)
 }
 
 
+/**
+ * Create a new rr from a file containing a string
+ * \param[in] fp the file pointer  to use
+ * \param[in] t   type to use
+ * \return ldns_rr*
+ */
+ldns_rr *
+ldns_rr_new_frm_fp(FILE *fp)
+{
+        char *line;
+
+        line = XMALLOC(char, MAXLINE_LEN + 1);
+        if (!line) {
+                return NULL;
+        }
+
+        /* read an entire line in from the file */
+        if (readword(line, fp,  "\n", MAXLINE_LEN) == -1) {
+                return NULL;
+        }
+        return ldns_rr_new_frm_str((const char*) line);
+}
 
 /**
  * \brief set the owner in the rr structure

@@ -408,6 +408,29 @@ ldns_rdf_new_frm_str(ldns_rdf_type type, const char *str)
 }
 
 /**
+ * Create a new rdf from a file containing a string
+ * \param[in] fp the file pointer  to use
+ * \param[in] t   type to use
+ * \return ldns_rdf*
+ */
+ldns_rdf *
+ldns_rdf_new_frm_fp(ldns_rdf_type type, FILE *fp)
+{
+	char *line;
+
+	line = XMALLOC(char, MAXLINE_LEN + 1);
+	if (!line) {
+		return NULL;
+	}
+
+	/* read an entire line in from the file */
+	if (readword(line, fp,  "\n", MAXLINE_LEN) == -1) {
+		return NULL;
+	} 
+	return ldns_rdf_new_frm_str(type, (const char*) line);
+}
+
+/**
  * reverse an rdf, only actually usefull for AAAA and A records
  * the returned rdf has the type LDNS_RDF_TYPE_DNAME!
  * \param[in] *rdf rdf to be reversed
