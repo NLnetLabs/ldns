@@ -36,7 +36,7 @@ LIBDNS_HEADERS	=	ldns/error.h		\
 			util.h
 LIBDNS_OBJECTS	=	$(LIBDNS_SOURCES:.c=.o)
 
-ALL_SOURCES	=	run-test0.c run-test1.c run-test2.c run-test3.c \
+ALL_SOURCES	=	run-test0.c run-test1.c run-test2.c run-test3.c run-test4.c \
 			$(LIBDNS_SOURCES)
 
 COMPILE		= $(CC) $(CPPFLAGS) $(CFLAGS)
@@ -45,9 +45,9 @@ LINK		= $(CC) $(CFLAGS) $(LDFLAGS)
 %.o:	$(srcdir)/%.c
 	$(COMPILE) -c $<
 
-.PHONY:	clean realclean docclean doc lint
+.PHONY:	clean realclean docclean doc lint test all
 
-all:	run-test0 run-test1 run-test2 run-test3
+all:	run-test0 run-test1 run-test2 run-test3 
 
 run-test0:	run-test0.o $(LIBDNS_OBJECTS) $(LIBOBJS)
 		$(LINK) ${LIBS} -o $@ $+
@@ -59,6 +59,9 @@ run-test2:	run-test2.o $(LIBDNS_OBJECTS) $(LIBOBJS)
 		$(LINK) ${LIBS} -o $@ $+
 
 run-test3:	run-test3.o $(LIBDNS_OBJECTS) $(LIBOBJS)
+		$(LINK) ${LIBS} -o $@ $+
+
+run-test4:	run-test4.o $(LIBDNS_OBJECTS) $(LIBOBJS)
 		$(LINK) ${LIBS} -o $@ $+
 
 doc:	
@@ -87,14 +90,14 @@ docclean:
 
 test0: run-test0
 	./run-test0
-
 test1: run-test1
 	./run-test1
-
 test2: run-test2
 	./run-test2
+test3: run-test3
+	./run-test3
 
-test: test0 test1 test2
+test: test0 test1 test2 test3
 
 lint:
 	for i in $(ALL_SOURCES); do \
