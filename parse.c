@@ -129,7 +129,7 @@ tokenread:
 		return 0;
 	} else {
 		*t = '\0';
-		return i;
+		return (ssize_t)i;
 	}
 }
 
@@ -241,6 +241,6 @@ tokenread:
 		return 0;
 	} else {
 		*t = '\0';
-		return i;
+		return (ssize_t)i;
 	}
 }
