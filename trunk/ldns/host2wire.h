@@ -12,8 +12,8 @@
 
 #include "util.h"
 
-ldns_status ldns_rdf2wire(ldns_buffer *buffer, ldns_rdf *rdf);
-ldns_status ldns_rr2wire(ldns_buffer *buffer, ldns_rr *rr, int section);
-ldns_status ldns_pkt2wire(ldns_buffer *buffer, ldns_pkt *pkt);
+ldns_status ldns_rdf2buffer_wire(ldns_buffer *buffer, ldns_rdf *rdf);
+ldns_status ldns_rr2buffer_wire(ldns_buffer *buffer, ldns_rr *rr, int section);
+ldns_status ldns_pkt2buffer_wire(ldns_buffer *buffer, ldns_pkt *pkt);
 
 #endif
