@@ -318,10 +318,13 @@ ldns_rdf_free(ldns_rdf *rd)
  * \return ldns_rdf*
  */
 ldns_rdf *
-ldns_rdf_new_frm_str(ldns_rdf_type type, const char *str)
+ldns_rdf_new_frm_str(ldns_rdf_type type, const char *str_in)
 {
 	ldns_rdf *rdf;
 	ldns_status status;
+	char *str;
+
+	(void)ldns_unquote(str_in, &str);
 
 	switch (type) {
 	case LDNS_RDF_TYPE_DNAME:
