@@ -11,6 +11,7 @@
  */
 
 #include <config.h>
+#include <stdio.h>
 
 #include <ldns/rdata.h>
 #include <ldns/error.h>
@@ -247,11 +248,16 @@ ldns_resolver_new(void)
 	ldns_resolver *r;
 
 	r = MALLOC(ldns_resolver);
+	if (!r) {
+		return NULL;
+	}
 
-	/* allow for 3 of these each */
 	r->_searchlist = MALLOC(ldns_rdf *);
 	r->_nameservers = MALLOC(ldns_rdf *);
-	
+	if (!r->_searchlist || !r->_nameservers) {
+		return NULL;
+	}
+
 	/* defaults are filled out */
 	ldns_resolver_set_searchlist_count(r, 0);
 	ldns_resolver_set_nameserver_count(r, 0);
@@ -269,6 +275,60 @@ ldns_resolver_new(void)
 	r->_cur_axfr_pkt = NULL;
 	return r;
 }
+
+
+/**
+ * configure a resolver by means of a resolv.conf file
+ * The file may be NULL in which case there will  be
+ * looked the RESOLV_CONF (defaults to /etc/resolv.conf
+ * \param[in] filename the filename to use
+ * \return ldns_resolver pointer
+ */
+/* keyword recognized:
+ * nameserver
+ * domain
+ */
+ldns_resolver *
+ldns_resolver_new_frm_file(const char *filename)
+{
+	ldns_resolver *r;
+	FILE *fp;
+	const char *keyword[3];
+	char *line;
+	size_t len;
+	
+
+	keyword[0] = "nameserver";
+	keyword[1] = "domain";
+	keyword[2] = "searchlist";
+	line = XMALLOC(char, MAXLINE_LEN);
+	len = MAXLINE_LEN;
+
+	r = ldns_resolver_new();
+	if (!r) {
+		return NULL;
+	}
+	if (!filename) {
+		fp = fopen(RESOLV_CONF, "r");
+
+	} else {
+		fp = fopen(filename, "r");
+	}
+	if (!fp) {
+		return NULL;
+	}
+	/* the file is opened. it's line based - this will be a bit messy
+	 */
+	
+	while (getline(&line, &len, fp) != -1) {
+		/* do something */
+		printf("line %s\n", line);
+	}
+
+	fclose(fp);
+	return r;
+}
+
 
 /**
  * Frees the allocated space for this resolver and all it's data
