@@ -50,7 +50,7 @@ ldns_resolver_retrans(ldns_resolver *r)
 	return r->_retrans;
 }
 
-bool
+uint8_t
 ldns_resolver_ip6(ldns_resolver *r)
 {
 	return r->_ip6;
@@ -280,6 +280,12 @@ ldns_resolver_set_debug(ldns_resolver *r, bool d)
 }
 
 void
+ldns_resolver_set_ip6(ldns_resolver *r, uint8_t ip6)
+{
+	r->_ip6 = ip6;
+}
+
+void
 ldns_resolver_set_searchlist_count(ldns_resolver *r, size_t c)
 {
 	r->_searchlist_count = c;
@@ -394,6 +400,8 @@ ldns_resolver_new(void)
 	ldns_resolver_set_port(r, LDNS_PORT);
 	ldns_resolver_set_domain(r, NULL);
 	ldns_resolver_set_defnames(r, false);
+	ldns_resolver_set_retry(r, 4);
+	ldns_resolver_set_retrans(r, 5);
 
 	r->_timeout.tv_sec = LDNS_DEFAULT_TIMEOUT_SEC;
 	r->_timeout.tv_usec = LDNS_DEFAULT_TIMEOUT_USEC;
@@ -594,9 +602,12 @@ ldns_resolver_send(ldns_resolver *r, ldns_rdf *name, ldns_rr_type type, ldns_rr_
 	ldns_pkt *query_pkt;
 	ldns_pkt *answer_pkt;
 	uint16_t id;
+	uint8_t  retries;
 
 	assert(r != NULL);
 	assert(name != NULL);
+
+	answer_pkt = NULL;
 	
 	/* do all the preprocessing here, then fire of an query to 
 	 * the network */
@@ -633,7 +644,12 @@ ldns_resolver_send(ldns_resolver *r, ldns_rdf *name, ldns_rr_type type, ldns_rr_
 	ldns_pkt_set_id(query_pkt, id);
 
 	/* return NULL on error */
-	answer_pkt = ldns_send(r, query_pkt);
+	for (retries = ldns_resolver_retry(r); retries > 0; retries--) {
+		answer_pkt = ldns_send(r, query_pkt);
+		if (answer_pkt) {
+			break;
+		}
+	}
 	
 	ldns_pkt_free(query_pkt);
 		
