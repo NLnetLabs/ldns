@@ -9,6 +9,9 @@
  *
  * See the file LICENSE for the license
  */
+#ifndef _RDATA_H
+#define _RDATA_H
+#else
 
 #include <stdint.h>
 
@@ -60,3 +63,4 @@ struct struct_rdata_t
 	uint8_t  *_data;
 };
 typedef struct struct_rdata_t rdata_t;
+#endif	/* _RDATA_H */

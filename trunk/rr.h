@@ -9,10 +9,12 @@
  *
  * See the file LICENSE for the license
  */
+#ifndef _RR_H
+#define _RR_H
+#else
 
 #include <stdint.h>
 #include <string.h>
-
 #include "prototype.h"
 
 /* the different RR types */
@@ -75,9 +77,9 @@
 #define MAXDOMAINLEN    255
 
 /* the general rr type */
-struct struct_rr_t 
+struct struct_rr_type
 {
-	uint8_t		*dname;		/* domain name, uncompressed */
+	uint8_t		*owner;		/* owner name, uncompressed */
 	uint32_t	ttl;		/* ttl  */
 	uint16_t	rd_count;	/* amount of rdata */
 	uint16_t	type;		/* the type of the RR. A, MX etc. */
@@ -86,4 +88,16 @@ struct struct_rr_t
 	rdata_t		*rdata;		/* a list of data's */
 
 };
-typedef struct struct_rr_t rr_t;
+typedef struct struct_rr_type rr_t;
+
+/* rrset contain a list of rr's 
+ * no official RFC-like checks are made 
+ */
+struct t_rrset_type
+{
+	rr_t *rrs;
+
+};
+typedef struct t_rrset_type rrset_t;
+
+#endif /* _RR_H */

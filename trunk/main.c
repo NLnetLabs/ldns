@@ -6,6 +6,9 @@
 #include <stdio.h>
 
 #include "prototype.h"
+#include "rdata.h"
+#include "rr.h"
+#include "packet.h"
 
 int
 main(void)
