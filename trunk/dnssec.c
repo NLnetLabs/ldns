@@ -70,6 +70,29 @@ ldns_keytag(ldns_rr *key)
 }
 
 /**
+ * verify an rrsig rrset
+ */
+
+bool
+ldns_verify(ldns_rr_list *rrset, ldns_rr_list *rrsig, ldns_rr_list *keys)
+{
+	uint16_t i;
+	bool result;
+
+	result = false;
+	for (i = 0; i < ldns_rr_list_rr_count(rrsig); i++) {
+		result = ldns_verify_rrsig(rrset, 
+				ldns_rr_list_rr(rrsig, i),
+				keys);
+		if (result) {
+			break;
+		}
+	}
+	return result;
+}
+
+
+/**
  * verify an rrsig 
  * \param[in] rrset the rrset to check
  * \param[in] rrsig the signature of the rrset
