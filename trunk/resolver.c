@@ -15,6 +15,7 @@
 #include <ldns/rdata.h>
 #include <ldns/error.h>
 #include <ldns/resolver.h>
+#include <ldns/rdata.h>
 
 #include "util.h"
 
@@ -186,7 +187,7 @@ ldns_query()
  * \return ldns_pkt* a packet with the reply from the nameserver
  */
 ldns_pkt *
-ldns_send(ldns_resolver *r, ldns_dname *name, ldns_rr_type *type, ldns_class *class)
+ldns_send(ldns_resolver *r, ldns_dname *name, ldns_rr_type *type, ldns_rr_class *class)
 {
 	assert(r != NULL);
 	assert(name != NULL);
