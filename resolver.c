@@ -534,6 +534,8 @@ ldns_resolver_new_frm_fp(FILE *fp)
 		}
 		gtr = ldns_get_token(fp, word, LDNS_PARSE_NORMAL);
 	}
+	
+	FREE(word);
 	return r;
 }
 
@@ -583,8 +585,20 @@ ldns_resolver_new_frm_file(const char *filename)
 void
 ldns_resolver_free(ldns_resolver *res)
 {
+	size_t i;
+	
 	if (res) {
+		if (res->_searchlist) {
+			for (i = 0; i < res->_searchlist_count; i++) {
+				ldns_rdf_free_data(res->_searchlist[i]);
+			}
+		}
 		FREE(res->_searchlist);
+		if (res->_nameservers) {
+			for (i = 0; i < res->_nameserver_count; i++) {
+				ldns_rdf_free_data(res->_nameservers[i]);
+			}
+		}
 		FREE(res->_nameservers);
 		FREE(res);
 	}

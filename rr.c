@@ -73,11 +73,12 @@ ldns_rr_free(ldns_rr *rr)
 	uint16_t i;
 	if (rr) {
 		if (ldns_rr_owner(rr)) {
-			ldns_rdf_free(ldns_rr_owner(rr));
+			ldns_rdf_free_data(ldns_rr_owner(rr));
 		}
 		for (i = 0; i < ldns_rr_rd_count(rr); i++) {
-			ldns_rdf_free(ldns_rr_rdf(rr, i));
+			ldns_rdf_free_data(ldns_rr_rdf(rr, i));
 		}
+		FREE(rr->_rdata_fields);
 		FREE(rr);
 	}
 }
@@ -380,7 +381,7 @@ ldns_rr_list_free(ldns_rr_list *rr_list)
 		for (i=0; i < ldns_rr_list_rr_count(rr_list); i++) {
 			ldns_rr_free(ldns_rr_list_rr(rr_list, i));
 		}
-		
+		FREE(rr_list->_rrs);
 		FREE(rr_list);
 	}
 }
@@ -435,10 +436,11 @@ ldns_rr_list_push_rr(ldns_rr_list *rr_list, ldns_rr *rr)
 	ldns_rr **rrs;
 	
 	rr_count = ldns_rr_list_rr_count(rr_list);
-	
+
 	/* grow the array */
 	rrs = XREALLOC(
 		rr_list->_rrs, ldns_rr *, rr_count + 1);
+
 	if (!rrs) {
 		return false;
 	}
