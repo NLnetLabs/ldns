@@ -23,17 +23,13 @@ o DNSSEC
 	- signing
 	- do we call random()?
 o Make a shared library and test compile some programs
-o Thread safety, strtok is used
+o Thread safety, strtok is used...
 o NSEC cannot be converted from str to host fmt
 o ssl autoconf
-o create a bunch of small programs:
-	dig
-	host
-	?
+o create a bunch of small programs, mx is created, todo: SOA
 o SSL_load_error_str()? 
 o resolver_frm_file (better parser)
 o Remove all the printf's - and tie them into error handling
-o Set rdf's on a specific spot in a RR??
 o per RR functions (started, see rr_functions.c)
 o Remove/Handle all XXX and TODO/todos'
   checked:
@@ -56,8 +52,6 @@ o Check the documentation
 
 To ponder and discuss:
 ----------------------
-o Second layer (higher level convenience functions)? (are already there)
-o Dependency on openSSL?
 o ldns_lookup_by_name works for types, classes
 	should be shielded, only use ldns_get_class_by_name/type
 o private key type?
