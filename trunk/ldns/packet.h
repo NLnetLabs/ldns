@@ -110,7 +110,7 @@ void packet_set_arcount(t_packet *, uint16_t);
  *
  * @return pointer to the new packet
  */
-t_packet *dns_packet_new();
+t_packet *ldns_packet_new();
 
 /**
  * Converts the data on the uint8_t bytearray (in wire format) to a DNS packet
@@ -120,6 +120,6 @@ t_packet *dns_packet_new();
  * @param packet pointer to the structure to hold the packet
  * @return the number of bytes read from the wire
  */
-size_t dns_wire2packet(uint8_t *data, size_t len, t_packet *packet);
+size_t ldns_wire2packet(uint8_t *data, size_t len, t_packet *packet);
 
 #endif  /* !_LDNS_PACKET_H */
