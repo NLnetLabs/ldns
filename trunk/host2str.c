@@ -833,7 +833,7 @@ ldns_rr2buffer_str(ldns_buffer *output, ldns_rr *rr)
 	const ldns_rr_descriptor *descriptor;
 	
 	if (!rr) {
-		ldns_buffer_printf(output, "(null) ");
+		ldns_buffer_printf(output, "(null)\n");
 	} else {
 		if (ldns_rr_owner(rr)) {
 			status = ldns_rdf2buffer_str_dname(output, ldns_rr_owner(rr)); 
