@@ -1,0 +1,70 @@
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook V4.1//EN">
+
+<book>
+  <bookinfo>
+    <title>A tutorial for ldns</title>
+    
+    <author>
+      <firstname>Miek</firstname>
+      <surname>Gieben</surname>
+      <affiliation>
+        <address><email>miekg@nlnetlabs.nl</email></address>
+      </affiliation>
+    </author>
+
+    <copyright>
+      <year>2005</year>
+      <holder>Copyright string here</holder>
+    </copyright>
+
+    <abstract>
+      <para>This tutorial will help you make your first ldns application.
+	</para>
+    </abstract>
+  </bookinfo>
+
+  <preface>
+    <title>Preface</title>
+
+    <para>Your book may have a preface, in which case it should be placed
+      here.</para>
+  </preface>
+      
+  <chapter>
+    <title>Introduction</title>
+
+    <para>This is the first chapter in my book.</para>
+
+    <sect1>
+      <title>My first section</title>
+
+      <para>This is the first section in my book.</para>
+    </sect1>
+  </chapter>
+  <chapter>
+	<title>Getting Started</title>
+		<para>
+
+	</para>
+
+<sect1>
+<title>What are we going to make</title>
+<para>
+
+<programlisting>
+int
+main(int argc, char **argv)
+{
+	return 0;
+}
+</programlisting>
+
+</para>
+
+</sect1>
+
+
+  </chapter>
+
+
+</book>
