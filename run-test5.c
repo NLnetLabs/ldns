@@ -9,7 +9,7 @@ main(int argc, char **argv)
 	
 	printf("test 5\n");
 	
-	packet = ldns_pkt_query_new("www.kanariepiet.com",
+	packet = ldns_pkt_query_new_frm_str("www.kanariepiet.com",
 	                            LDNS_RR_TYPE_A,
 	                            LDNS_RR_CLASS_IN);
 

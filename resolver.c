@@ -233,7 +233,7 @@ ldns_resolver_send(ldns_resolver *r, ldns_rdf *name, ldns_rr_type type, ldns_rr_
 	
 	/* prepare a question pkt from the parameters
 	 * and then send this */
-	/*query_pkt = somesortofconversion2qpkt(name, type, class, flags); * */
+	query_pkt = ldns_pkt_query_new(name, type, class);
 
 	/* return NULL on error */
 	answer_pkt = ldns_send(*r, query_pkt);

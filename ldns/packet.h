@@ -147,8 +147,8 @@ void ldns_pkt_free(ldns_pkt *packet);
 /**
  * Creates a query packet for the given name, type, class
  */
-ldns_pkt * ldns_pkt_query_new(char *name, ldns_rr_type rr_type, ldns_rr_class rr_class);
-
+ldns_pkt * ldns_pkt_query_new_frm_str(char *, ldns_rr_type, ldns_rr_class);
+ldns_pkt * ldns_pkt_query_new(ldns_rdf *, ldns_rr_type, ldns_rr_class);
 
 #define MAX_PACKET_SIZE         65535
 
