@@ -46,7 +46,7 @@ ldns_dname_concat(ldns_rdf *rd1, ldns_rdf *rd2)
 
 	/* we overwrite the nullbyte of rd1 */
 	new_size = ldns_rdf_size(rd1) + ldns_rdf_size(rd2) - 1;
-	buf = XMALLOC(uint8_t*, new_size);
+	buf = XMALLOC(uint8_t, new_size);
 	if (!buf) {
 		return NULL;
 	}

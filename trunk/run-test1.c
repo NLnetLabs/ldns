@@ -82,6 +82,7 @@ doit(void)
 
 	ldns_rdf_print(stdout, concat);
 	printf(" [%d]\n", ldns_rdf_size(concat));
+	printf("Labels nl %d\n", ldns_rdf_dname_label_count(concat));
 }
 
 
