@@ -127,16 +127,16 @@ uint16_t ldns_pkt_qdcount(const ldns_pkt *);
 uint16_t ldns_pkt_ancount(const ldns_pkt *);
 uint16_t ldns_pkt_nscount(const ldns_pkt *);
 uint16_t ldns_pkt_arcount(const ldns_pkt *);
-ldns_rdf *ldns_pkt_answerfrom(const ldns_pkt *packet);
-char *ldns_pkt_when(const ldns_pkt *packet);
+ldns_rdf *ldns_pkt_answerfrom(const ldns_pkt *);
+char *ldns_pkt_when(const ldns_pkt *);
 uint32_t ldns_pkt_querytime(const ldns_pkt *);
 size_t ldns_pkt_size(const ldns_pkt *);
-ldns_rr *ldns_pkt_tsig(const ldns_pkt *pkt);
+ldns_rr *ldns_pkt_tsig(const ldns_pkt *);
 
-ldns_rr_list *ldns_pkt_question(const ldns_pkt *packet);
-ldns_rr_list *ldns_pkt_answer(const ldns_pkt *packet);
-ldns_rr_list *ldns_pkt_authority(const ldns_pkt *packet);
-ldns_rr_list *ldns_pkt_additional(const ldns_pkt *packet);
+ldns_rr_list *ldns_pkt_question(const ldns_pkt *);
+ldns_rr_list *ldns_pkt_answer(const ldns_pkt *);
+ldns_rr_list *ldns_pkt_authority(const ldns_pkt *);
+ldns_rr_list *ldns_pkt_additional(const ldns_pkt *);
 ldns_rr_list *ldns_pkt_xxsection(ldns_pkt *, ldns_pkt_section);
 ldns_rr_list *ldns_pkt_rr_list_by_name(ldns_pkt *, ldns_rdf *, ldns_pkt_section);
 ldns_rr_list *ldns_pkt_rr_list_by_type(ldns_pkt *, ldns_rr_type, ldns_pkt_section);
@@ -160,7 +160,8 @@ void ldns_pkt_set_querytime(ldns_pkt *, uint32_t);
 void ldns_pkt_set_size(ldns_pkt *, size_t);
 void ldns_pkt_set_when(ldns_pkt *, char *);
 void ldns_pkt_set_xxcount(ldns_pkt *, ldns_pkt_section, uint16_t);
-void ldns_pkt_set_tsig(ldns_pkt *pkt, ldns_rr *rr);
+void ldns_pkt_set_tsig(ldns_pkt *, ldns_rr *);
+ldns_pkt_type ldns_pkt_reply_type(ldns_pkt *);
 
 /**
  * Allocates and initializes a ldns_pkt structure
