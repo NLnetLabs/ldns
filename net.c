@@ -108,7 +108,7 @@ ldns_send(ldns_resolver *r, ldns_pkt *query_pkt)
 	ns_array = ldns_resolver_nameservers(r);
 	buf = NULL;
 	
-	if (ldns_pkt2buffer(qb, *query_pkt) != LDNS_STATUS_OK) {
+	if (ldns_pkt2buffer_str(qb, *query_pkt) != LDNS_STATUS_OK) {
 		return NULL;
 	}
 
