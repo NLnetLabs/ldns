@@ -14,6 +14,7 @@
 
 #include <ldns/rdata.h>
 #include <ldns/rr.h>
+#include <util.h>
 
 #include <stdio.h>
 
@@ -40,3 +41,26 @@ xprintf_rr(ldns_rr *rr)
 		xprintf_rdf(rr->_rdata_fields[i]);
 	}
 }
+
+ldns_lookup_table *
+lookup_by_name(ldns_lookup_table *table, const char *name)
+{
+	while (table->name != NULL) {
+		if (strcasecmp(name, table->name) == 0)
+			return table;
+		table++;
+	}
+	return NULL;
+}
+
+ldns_lookup_table *
+lookup_by_id(ldns_lookup_table *table, int id)
+{
+	while (table->name != NULL) {
+		if (table->id == id)
+			return table;
+		table++;
+	}
+	return NULL;
+}
+
