@@ -78,6 +78,10 @@ doit(void)
 	/* concat tests */
 	cat_test1 = ldns_dname_new_frm_str("www");
 	cat_test2 = ldns_dname_new_frm_str("miek.nl.");
+	concat = ldns_dname_concat(cat_test1, cat_test2);
+
+	ldns_rdf_print(stdout, concat);
+	printf(" [%d]\n", ldns_rdf_size(concat));
 }
 
 
