@@ -502,7 +502,7 @@ ldns_rdf2buffer_str_apl(ldns_buffer *output, ldns_rdf *rdf)
 	/* todo: use #defines for address families? */
 	
 	/* ipv4 */
-	while (pos < ldns_rdf_size(rdf)) {
+	while (pos < (unsigned int) ldns_rdf_size(rdf)) {
 		address_family = read_uint16(&data[pos]);
 		prefix = data[pos + 2];
 		negation = data[pos + 3] & 0x80;
@@ -518,7 +518,7 @@ ldns_rdf2buffer_str_apl(ldns_buffer *output, ldns_rdf *rdf)
 				if (i > 0) {
 					ldns_buffer_printf(output, ".");
 				}
-				if (i < adf_length) {
+				if (i < (unsigned short) adf_length) {
 					ldns_buffer_printf(output, "%d", 
 					                   data[pos + i + 4]);
 				} else {
@@ -537,7 +537,7 @@ ldns_rdf2buffer_str_apl(ldns_buffer *output, ldns_rdf *rdf)
 				if (i % 2 == 0 && i > 0) {
 					ldns_buffer_printf(output, ":");
 				}
-				if (i < adf_length) {
+				if (i < (unsigned short) adf_length) {
 					ldns_buffer_printf(output, "%02x", 
 					                   data[pos + i + 4]);
 				} else {
@@ -549,7 +549,7 @@ ldns_rdf2buffer_str_apl(ldns_buffer *output, ldns_rdf *rdf)
 		} else {
 			/* unknown address family */
 			ldns_buffer_printf(output, "Unknown address family: %u data: ", address_family);
-			for (i = 1; i < 4 + adf_length; i++) {
+			for (i = 1; i < (unsigned short) (4 + adf_length); i++) {
 				ldns_buffer_printf(output, "%02x", data[i]);
 			}
 		}

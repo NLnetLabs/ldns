@@ -40,7 +40,7 @@ doit(void)
 	}
 
 	printf("Setting 15242\n");
-	if (ldns_str2rdf_int16(&rdata, "15242") != LDNS_STATUS_OK) {
+	if (ldns_str2rdf_int16(&rdata, (uint8_t *) "15242") != LDNS_STATUS_OK) {
 		printf("_short: ah man, shit hit the fan\n");
 	}
 	
@@ -53,11 +53,11 @@ int
 main(void)
 {
 	ldns_rdf *bla;
-	if (ldns_str2rdf_int16(&bla, "15242") != LDNS_STATUS_OK) {
+	if (ldns_str2rdf_int16(&bla, (uint8_t *) "15242") != LDNS_STATUS_OK) {
 		printf("_int16: ah man, shit hit the fan\n");
 	}
 	/* %Y%m%d%H%M%S */
-	if (ldns_str2rdf_time(&bla, "20041222134100") != LDNS_STATUS_OK) {
+	if (ldns_str2rdf_time(&bla, (uint8_t *) "20041222134100") != LDNS_STATUS_OK) {
 		printf("_time: ah man, shit hit the fan\n");
 	}
 

@@ -54,12 +54,12 @@ ldns_rr2buffer_wire(ldns_buffer *buffer, ldns_rr *rr, int section)
 	uint16_t rdl_pos = 0;
 	
 	if (ldns_rr_owner(rr)) {
-		ldns_dname2buffer_wire(buffer, ldns_rr_owner(rr));
+		(void) ldns_dname2buffer_wire(buffer, ldns_rr_owner(rr));
 	}
 	
 	if (ldns_buffer_reserve(buffer, 4)) {
-		ldns_buffer_write_u16(buffer, ldns_rr_get_type(rr));
-		ldns_buffer_write_u16(buffer, ldns_rr_get_class(rr));
+		(void) ldns_buffer_write_u16(buffer, ldns_rr_get_type(rr));
+		(void) ldns_buffer_write_u16(buffer, ldns_rr_get_class(rr));
 	}
 
 	if (section != LDNS_SECTION_QUESTION) {
@@ -71,7 +71,7 @@ ldns_rr2buffer_wire(ldns_buffer *buffer, ldns_rr *rr, int section)
 		}	
 
 		for (i = 0; i < ldns_rr_rd_count(rr); i++) {
-			ldns_rdf2buffer_wire(buffer, ldns_rr_rdf(rr, i));
+			(void) ldns_rdf2buffer_wire(buffer, ldns_rr_rdf(rr, i));
 		}
 		
 		if (rdl_pos != 0) {
@@ -127,12 +127,12 @@ ldns_pkt2buffer_wire(ldns_buffer *buffer, ldns_pkt *packet)
 	ldns_rr_list *rr_list;
 	uint16_t i;
 	
-	ldns_hdr2buffer_wire(buffer, packet);
+	(void) ldns_hdr2buffer_wire(buffer, packet);
 
 	rr_list = ldns_pkt_question(packet);
 	if (rr_list) {
 		for (i = 0; i < ldns_rr_list_rr_count(rr_list); i++) {
-			ldns_rr2buffer_wire(buffer, 
+			(void) ldns_rr2buffer_wire(buffer, 
 			             ldns_rr_list_rr(rr_list, i), 
 			             LDNS_SECTION_QUESTION);
 		}
@@ -140,7 +140,7 @@ ldns_pkt2buffer_wire(ldns_buffer *buffer, ldns_pkt *packet)
 	rr_list = ldns_pkt_answer(packet);
 	if (rr_list) {
 		for (i = 0; i < ldns_rr_list_rr_count(rr_list); i++) {
-			ldns_rr2buffer_wire(buffer, 
+			(void) ldns_rr2buffer_wire(buffer, 
 			             ldns_rr_list_rr(rr_list, i), 
 			             LDNS_SECTION_ANSWER);
 		}
@@ -148,7 +148,7 @@ ldns_pkt2buffer_wire(ldns_buffer *buffer, ldns_pkt *packet)
 	rr_list = ldns_pkt_authority(packet);
 	if (rr_list) {
 		for (i = 0; i < ldns_rr_list_rr_count(rr_list); i++) {
-			ldns_rr2buffer_wire(buffer, 
+			(void) ldns_rr2buffer_wire(buffer, 
 			             ldns_rr_list_rr(rr_list, i), 
 			             LDNS_SECTION_AUTHORITY);
 		}
@@ -156,7 +156,7 @@ ldns_pkt2buffer_wire(ldns_buffer *buffer, ldns_pkt *packet)
 	rr_list = ldns_pkt_additional(packet);
 	if (rr_list) {
 		for (i = 0; i < ldns_rr_list_rr_count(rr_list); i++) {
-			ldns_rr2buffer_wire(buffer, 
+			(void) ldns_rr2buffer_wire(buffer, 
 			             ldns_rr_list_rr(rr_list, i), 
 			             LDNS_SECTION_ADDITIONAL);
 		}

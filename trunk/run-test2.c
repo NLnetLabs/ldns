@@ -205,10 +205,10 @@ main(int argc, char **argv)
 	/*buffer = ldns_buffer_new(65535);*/
 	target_buf = ldns_pkt2wire(pkt, &len);
 
-	printf("Buffer length: %u\n", len);
+	printf("Buffer length: %u\n", (unsigned int) len);
 	
 	for (i=0; i<len; i++) {
-		printf("%02x", target_buf[i]);
+		printf("%02x", (unsigned int) target_buf[i]);
 	}
 	printf("\n\n");
 

@@ -17,13 +17,13 @@ main(void)
 	ldns_rdf *rd;
 
 	fprintf(stdout, "www.\n");
-	ldns_str2rdf_dname(&rd, "www.");
+	(void) ldns_str2rdf_dname(&rd, (uint8_t *) "www.");
 	fprintf(stdout, "www.miek.nl\n");
-	ldns_str2rdf_dname(&rd, "www.miek.nl");
+	(void) ldns_str2rdf_dname(&rd, (uint8_t *) "www.miek.nl");
 	fprintf(stdout, "www\n");
-	ldns_str2rdf_dname(&rd, "www");
+	(void) ldns_str2rdf_dname(&rd, (uint8_t *) "www");
 	fprintf(stdout, "www.miek.nl..\n");
-	ldns_str2rdf_dname(&rd, "www.miek.nl..");
+	(void) ldns_str2rdf_dname(&rd, (uint8_t *) "www.miek.nl..");
 
 	return 0;
 }
