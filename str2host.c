@@ -93,7 +93,7 @@ ldns_str2rdf_int32(ldns_rdf **rd, const uint8_t *longstr)
 	uint32_t l;
 
 	r = (uint16_t*)MALLOC(uint32_t);
-	l = htonl((uint32_t)strtol(longstr, &end, 0));
+	l = htonl((uint32_t)strtol((char*)longstr, &end, 0));
 
 	if(*end != 0) {
 		FREE(r);
@@ -119,7 +119,7 @@ ldns_str2rdf_int8(ldns_rdf **rd, const uint8_t *bytestr)
 
 	r = MALLOC(uint8_t);
  
-	*r = (uint8_t)strtol(bytestr, &end, 0);
+	*r = (uint8_t)strtol((char*)bytestr, &end, 0);
 
         if(*end != 0) {
 		FREE(r);
@@ -157,12 +157,12 @@ ldns_str2rdf_dname(ldns_rdf **d, const uint8_t* str)
 	uint8_t buf[MAXDOMAINLEN];
 	stat = LDNS_STATUS_OK;
 	
-	len = strlen(str);
+	len = strlen((char*)str);
 	if (len > MAXDOMAINLEN) {
 		return LDNS_STATUS_DOMAINNAME_OVERFLOW;
 	}
 	memcpy(buf_str, str, len);
-	buf_str[len] = '\0'; 
+	buf_str[len] = (uint8_t)'\0'; 
 
 	if ((stat = ldns_octet(buf_str, &octet_len)) != LDNS_STATUS_OK) {
 		return stat;
@@ -191,7 +191,7 @@ ldns_str2rdf_dname(ldns_rdf **d, const uint8_t* str)
 	memcpy(q, &label_chars, 1); 
 	memcpy(q + 1, p, label_chars); 
 	q += (label_chars + 1);
-	*q = '\00'; /* end the string */
+	*q = (uint8_t*)'\00'; /* end the string */
 
 	/* s - buf_str works because no magic is done * in the above for-loop */
 	*d = ldns_rdf_new_frm_data((s - buf_str + 1) , LDNS_RDF_TYPE_DNAME , buf); 
@@ -208,8 +208,6 @@ ldns_status
 ldns_str2rdf_a(ldns_rdf **rd, const uint8_t* str)
 {
 	in_addr_t address;
-        uint16_t *r = NULL;
-
         if (inet_pton(AF_INET, (char*)str, &address) != 1) {
                 return LDNS_STATUS_INVALID_IP4;
         } else {
@@ -249,7 +247,7 @@ ldns_str2rdf_str(ldns_rdf **rd, const uint8_t* str)
 	if (strlen(str) > 255) {
 		return LDNS_STATUS_INVALID_STR;
 	}
-	ldns_rdf_new_frm_data(strlen(str), LDNS_RDF_TYPE_STR, (void*)str);
+	*rd = ldns_rdf_new_frm_data(strlen((char*)str), LDNS_RDF_TYPE_STR, (void*)str);
 	return LDNS_STATUS_OK;
 }
 
@@ -275,13 +273,13 @@ ldns_status
 ldns_str2rdf_b64(ldns_rdf **rd, const uint8_t* str)
 {
 	uint8_t buffer[B64BUFSIZE];
-	int i;
+	int16_t i;
 	
 	i = b64_pton((const char*)str, buffer, B64BUFSIZE);
 	if (-1 == i) {
 		return LDNS_STATUS_INVALID_B64;
 	} else {
-		*rd = ldns_rdf_new_frm_data(i, LDNS_RDF_TYPE_B64, buffer);
+		*rd = ldns_rdf_new_frm_data((uint16_t)i, LDNS_RDF_TYPE_B64, buffer);
 	}
 	return LDNS_STATUS_OK;
 }

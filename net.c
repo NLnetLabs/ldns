@@ -86,7 +86,7 @@ ldns_send(ldns_resolver *r, ldns_pkt *query_pkt)
 	for (i = 0; i < ldns_resolver_nameserver_count(r); i++) {
 
 		ns = ldns_rdf2native_sockaddr_storage(ns_array[i]);
-		ns_len = ldns_rdf_size(ns_array[i]);
+		ns_len = (socklen_t) ldns_rdf_size(ns_array[i]);
 
 		/* setup some family specific stuff */
 		switch(ns->ss_family) {
@@ -156,7 +156,7 @@ ldns_send_udp(ldns_buffer *qbin, const struct sockaddr_storage *to, socklen_t to
 	}
 	
 	/* wait for an response*/
-	answer = XMALLOC(uint8_t*, MAX_PACKET_SIZE);
+	answer = XMALLOC(uint8_t, MAX_PACKET_SIZE);
 	if (!answer) {
 		printf("respons alloc error\n");
 		return NULL;
