@@ -43,7 +43,8 @@ ldns_keytag(ldns_rr *key)
 	/* XXX waaayyy too much */
 	keybuf = ldns_buffer_new(MAX_PACKETLEN);
 	(void)ldns_rr_rdata2buffer_wire(keybuf, key);
-	keysize= ldns_buffer_capacity(keybuf);
+	/* the current pos in the buffer is the keysize */
+	keysize= ldns_buffer_position(keybuf);
 
 	/* look at the algorithm field */
 	if (ldns_rdf2native_int8(ldns_rr_rdf(key, 2)) == LDNS_RSAMD5) {
