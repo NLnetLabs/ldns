@@ -60,6 +60,15 @@ struct ldns_struct_resolver
 	bool _defnames;
 	/** \brief if true apply the search list */
 	bool _dnsrch;
+
+	/** keep some things for axfr */
+	int _socket;
+	int _axfr_soa_count;
+	/* when axfring we get complete packets from the server
+	   but we want to give the caller 1 rr at a time, so
+	   keep the current pkt */
+	ldns_pkt *_cur_axfr_pkt;
+	uint16_t _axfr_i;
 };
 typedef struct ldns_struct_resolver ldns_resolver;
 
@@ -96,5 +105,12 @@ void ldns_resolver_free(ldns_resolver *);
 void ldns_resolver_set_defnames(ldns_resolver *, bool);
 void ldns_resolver_set_usevc(ldns_resolver *, bool);
 void ldns_resolver_set_dnsrch(ldns_resolver *, bool);
+
+/**
+ * Prepares the resolver for an axfr query
+ * The query is sent and the answers can be read with ldns_axfr_next
+ */
+ldns_status ldns_axfr_start(ldns_resolver *resolver, ldns_rdf *domain, ldns_rr_class class);
+ldns_rr *ldns_axfr_next(ldns_resolver *resolver);
 
 #endif  /* !_LDNS_RESOLVER_H */
