@@ -148,10 +148,6 @@ ldns_resolver_pop_nameserver(ldns_resolver *r)
 	
 	pop = nameservers[ns_count - 1];
 
-	printf("en dan nu pop ");
-	ldns_rdf_print(stdout, pop);
-	printf("\n");
-
 	nameservers = XREALLOC(nameservers, ldns_rdf *, 
 			(ns_count - 1));
 
@@ -183,7 +179,6 @@ ldns_resolver_push_nameserver(ldns_resolver *r, ldns_rdf *n)
 	nameservers = ldns_resolver_nameservers(r);
 
 	/* make room for the next one */
-	printf("realloc to [%d] \n", ns_count + 1);
 	nameservers = XREALLOC(nameservers, ldns_rdf *, (ns_count + 1));
 
 	/* set the new value in the resolver */
@@ -191,7 +186,6 @@ ldns_resolver_push_nameserver(ldns_resolver *r, ldns_rdf *n)
 
 	/* slide n in its slot */
 	nameservers[ns_count] = n;
-
 	ldns_resolver_incr_nameserver_count(r);
 	return LDNS_STATUS_OK;
 }
