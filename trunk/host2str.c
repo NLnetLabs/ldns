@@ -16,6 +16,7 @@
 
 #include <sys/socket.h>
 #include <arpa/inet.h>
+#include <netdb.h>
 
 #include <ldns/host2str.h>
 
@@ -119,7 +120,7 @@ ldns_rdf2buffer_int32(ldns_buffer *output, ldns_rdf *rdf)
 }
 
 /** 
- * convert A address 
+ * Converts A address 
  */
 ldns_status
 ldns_rdf2buffer_a(ldns_buffer *output, ldns_rdf *rdf)
@@ -133,7 +134,7 @@ ldns_rdf2buffer_a(ldns_buffer *output, ldns_rdf *rdf)
 }
 
 /** 
- * convert AAAA address 
+ * converts AAAA address 
  */
 ldns_status
 ldns_rdf2buffer_aaaa(ldns_buffer *output, ldns_rdf *rdf)
@@ -147,6 +148,9 @@ ldns_rdf2buffer_aaaa(ldns_buffer *output, ldns_rdf *rdf)
 	return ldns_buffer_status(output);
 }
 
+/**
+ * Converts TXT rdata
+ */
 ldns_status
 ldns_rdf2buffer_str(ldns_buffer *output, ldns_rdf *rdf)
 {
@@ -167,6 +171,107 @@ ldns_rdf2buffer_str(ldns_buffer *output, ldns_rdf *rdf)
 		}
 	}
 	ldns_buffer_printf(output, "\"");
+	return ldns_buffer_status(output);
+}
+
+/**
+ * Converts Base 64 encoded data
+ */
+ldns_status
+ldns_rdf2buffer_b64(ldns_buffer *output, ldns_rdf *rdf)
+{
+	ldns_buffer_printf(output, "%s", ldns_rdf_data(rdf));
+	return ldns_buffer_status(output);
+}	
+
+/**
+ * Converts Hex encoded data
+ */
+ldns_status
+ldns_rdf2buffer_hex(ldns_buffer *output, ldns_rdf *rdf)
+{
+	ldns_buffer_printf(output, "%s", ldns_rdf_data(rdf));
+	return ldns_buffer_status(output);
+}	
+
+/**
+ * Converts type encoded data
+ */
+ldns_status
+ldns_rdf2buffer_type(ldns_buffer *output, ldns_rdf *rdf)
+{
+        uint8_t data = ldns_rdf_data(rdf)[0];
+	const ldns_rr_descriptor *descriptor;
+
+	descriptor = ldns_rr_descript(data);
+	if (descriptor->_name) {
+		ldns_buffer_printf(output, "%s", descriptor->_name);
+	} else {
+		ldns_buffer_printf(output, "TYPE%u", data);
+	}
+	return ldns_buffer_status(output);
+}	
+
+/**
+ * Converts class encoded data
+ */
+ldns_status
+ldns_rdf2buffer_class(ldns_buffer *output, ldns_rdf *rdf)
+{
+        uint8_t data = ldns_rdf_data(rdf)[0];
+	ldns_lookup_table *lt;
+
+ 	lt = ldns_lookup_by_id(ldns_rr_classes, (int) data);
+	if (lt) {
+		ldns_buffer_printf(output, "\t%s", lt->name);
+	} else {
+		ldns_buffer_printf(output, "\tCLASS%d", data);
+	}
+	return ldns_buffer_status(output);
+}	
+
+ldns_status
+ldns_rdf2buffer_wks(ldns_buffer *output, ldns_rdf *rdf)
+{
+	/* protocol, followed by bitmap of services */
+	struct protoent *protocol;
+	char *proto_name = NULL;
+	uint8_t protocol_nr;
+	struct servent *service;
+	uint16_t current_service;
+
+	protocol_nr = ldns_rdf_data(rdf)[0];
+	protocol = getprotobynumber((int) protocol_nr);
+	if (protocol && (protocol->p_name != NULL)) {
+		proto_name = protocol->p_name;
+		ldns_buffer_printf(output, "%s ", protocol->p_name);
+	} else {
+		ldns_buffer_printf(output, "%u ", protocol_nr);
+	}
+
+	for (current_service = 0; 
+	     current_service <= ldns_rdf_size(rdf) * 8;
+	     current_service++) {
+		if (get_bit_r(&(ldns_rdf_data(rdf)[1]), current_service)) {
+			service = getservbyport(ntohs(current_service),
+			                        proto_name);
+			if (service && service->s_name) {
+				ldns_buffer_printf(output, "%s ", 
+				                   service->s_name);
+			} else {
+				ldns_buffer_printf(output, "%u ",
+				                   current_service);
+			}
+		}
+	}
+	return ldns_buffer_status(output);
+}
+
+ldns_status
+ldns_rdf2buffer_todo(ldns_buffer *output, ldns_rdf *rdf)
+{
+	(void) ldns_rdf_data(rdf);
+	ldns_buffer_printf(output, "todo: '%s'\n", ldns_rdf2str(rdf));
 	return ldns_buffer_status(output);
 }
 
@@ -194,37 +299,56 @@ ldns_rdf2buffer(ldns_buffer *buffer, ldns_rdf *rdf)
 	case LDNS_RDF_TYPE_INT32:
 		res = ldns_rdf2buffer_int32(buffer, rdf);
 		break;
+        case LDNS_RDF_TYPE_TSIGTIME:
+                res = ldns_rdf2buffer_todo(buffer, rdf);
+                break;
 	case LDNS_RDF_TYPE_A:
 		res = ldns_rdf2buffer_a(buffer, rdf);
 		break;
 	case LDNS_RDF_TYPE_AAAA:
+		res = ldns_rdf2buffer_aaaa(buffer, rdf);
 		break;
 	case LDNS_RDF_TYPE_STR:
 		res = ldns_rdf2buffer_str(buffer, rdf);
 		break;
 	case LDNS_RDF_TYPE_APL:
+		res = ldns_rdf2buffer_todo(buffer, rdf);
 		break;
 	case LDNS_RDF_TYPE_B64:
+		res = ldns_rdf2buffer_b64(buffer, rdf);
 		break;
 	case LDNS_RDF_TYPE_HEX:
+		res = ldns_rdf2buffer_hex(buffer, rdf);
 		break;
 	case LDNS_RDF_TYPE_NSEC: 
+		res = ldns_rdf2buffer_todo(buffer, rdf);
 		break;
 	case LDNS_RDF_TYPE_TYPE: 
+		res = ldns_rdf2buffer_type(buffer, rdf);
 		break;
 	case LDNS_RDF_TYPE_CLASS:
+		res = ldns_rdf2buffer_class(buffer, rdf);
 		break;
 	case LDNS_RDF_TYPE_CERT:
+		res = ldns_rdf2buffer_todo(buffer, rdf);
 		break;
 	case LDNS_RDF_TYPE_ALG:
+		res = ldns_rdf2buffer_todo(buffer, rdf);
 		break;
 	case LDNS_RDF_TYPE_UNKNOWN:
+		res = ldns_rdf2buffer_todo(buffer, rdf);
 		break;
 	case LDNS_RDF_TYPE_TIME:
+		res = ldns_rdf2buffer_todo(buffer, rdf);
 		break;
 	case LDNS_RDF_TYPE_SERVICE:
+		res = ldns_rdf2buffer_todo(buffer, rdf);
 		break;
 	case LDNS_RDF_TYPE_LOC:
+		res = ldns_rdf2buffer_todo(buffer, rdf);
+		break;
+	case LDNS_RDF_TYPE_WKS:
+		res = ldns_rdf2buffer_wks(buffer, rdf);
 		break;
 	}
 

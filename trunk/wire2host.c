@@ -316,8 +316,12 @@ ldns_wire2rdf(ldns_rr *rr, const uint8_t *wire,
 		case LDNS_RDF_TYPE_UNKNOWN:
 		case LDNS_RDF_TYPE_SERVICE:
 		case LDNS_RDF_TYPE_LOC:
+		case LDNS_RDF_TYPE_WKS:
 		case LDNS_RDF_TYPE_NONE:
-			cur_rdf_length = (size_t) rd_length;
+			/*
+			 * Read to end of rr rdata
+			 */
+			cur_rdf_length = end - *pos;
 			break;
 		}
 		/* fixed length rdata */
@@ -371,6 +375,7 @@ ldns_wire2rr(ldns_rr **rr_p, const uint8_t *wire, size_t max,
 	}
 
 	*rr_p = rr;
+
 	return LDNS_STATUS_OK;
 	
 	status_error:
