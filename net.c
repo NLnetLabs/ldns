@@ -33,16 +33,6 @@
 #include "util.h"
 
 
-
-#if 0
-/* axfr is a hack - handle it different */
-ldns_pkt *
-ldns_sendbuf_axfr(ldns_buffer *buf, int *sockfd, struct sockaddr *dest)
-{
-	return NULL;
-}
-#endif 
-
 /**
  * Send to ptk to the nameserver at ipnumber. Return the data
  * as a ldns_pkt
@@ -203,25 +193,13 @@ ldns_send_udp(ldns_buffer *qbin, const struct sockaddr_storage *to, socklen_t to
 }
 
 /**
- * Send a buffer to an ip using tcp and return the respons as a ldns_pkt
- * \param[in] qbin the ldns_buffer to be send
- * \param[in] to the ip addr to send to
- * \param[in] tolen length of the ip addr
- * \return a packet with the answer
+ * Create a tcp socket to the specified address
  */
-/* keep in mind that in DNS tcp messages the first 2 bytes signal the
- * amount data to expect
- */
-ldns_pkt *
-ldns_send_tcp(ldns_buffer *qbin, const struct sockaddr_storage *to, socklen_t tolen)
+int
+ldns_tcp_connect(const struct sockaddr_storage *to, socklen_t tolen)
 {
 	int sockfd;
-	ssize_t bytes, total_bytes;
-	uint8_t *answer;
-	ldns_pkt *answer_pkt;
-	uint16_t answer_size;
-	uint8_t *sendbuf;
-
+	
         struct timeval timeout;
         
         timeout.tv_sec = LDNS_DEFAULT_TIMEOUT_SEC;
@@ -229,21 +207,31 @@ ldns_send_tcp(ldns_buffer *qbin, const struct sockaddr_storage *to, socklen_t to
         
 	if ((sockfd = socket((int)((struct sockaddr*)to)->sa_family, SOCK_STREAM, IPPROTO_TCP)) == -1) {
 		perror("could not open socket");
-		return NULL;
+		return 0;
 	}
 
         if (setsockopt(sockfd, SOL_SOCKET, SO_RCVTIMEO, &timeout,
                         (socklen_t) sizeof(timeout))) {
                 perror("setsockopt");
                 close(sockfd);
-                return NULL;
+                return 0;
         }
 
 	if (connect(sockfd, (struct sockaddr*)to, tolen) == -1) {
  		close(sockfd);
 		perror("could not bind socket");
-		return NULL;
+		return 0;
 	}
+
+	return sockfd;
+}
+
+
+ssize_t
+ldns_tcp_send_query(ldns_buffer *qbin, int sockfd, const struct sockaddr_storage *to, socklen_t tolen)
+{
+	uint8_t *sendbuf;
+	ssize_t bytes;
 
 	/* add length of packet */
 	sendbuf = XMALLOC(uint8_t, ldns_buffer_position(qbin) + 2);
@@ -258,68 +246,102 @@ ldns_send_tcp(ldns_buffer *qbin, const struct sockaddr_storage *to, socklen_t to
 	if (bytes == -1) {
 		printf("error with sending\n");
 		close(sockfd);
-		return NULL;
+		return 0;
 	}
 	if ((size_t) bytes != ldns_buffer_position(qbin)+2) {
 		printf("amount of sent bytes mismatch\n");
 		close(sockfd);
-		return NULL;
+		return 0;
 	}
 	
-	/* wait for an response*/
-	answer = XMALLOC(uint8_t, MAX_PACKETLEN);
-	if (!answer) {
-		printf("respons alloc error\n");
-		return NULL;
-	}
+	return bytes;
+}
 
-	/* first two bytes are the size of the wiredata,
-	   we must be sure that we receive those */
-	total_bytes = 0;
-	while (total_bytes < 2) {
-		bytes = recv(sockfd, answer, MAX_PACKETLEN, 0);
+/**
+ * Creates a new ldns_pkt structure and reads the header data from the given
+ * socket
+ */
+ldns_pkt *
+ldns_tcp_read_packet(int sockfd)
+{
+	ldns_pkt *pkt;
+	uint8_t *wire;
+	uint16_t wire_size;
+	ssize_t bytes = 0;
+
+	wire = XMALLOC(uint8_t, 2);
+	while (bytes < 2) {
+		bytes = recv(sockfd, wire, 2, 0);
 		if (bytes == -1) {
 			if (errno == EAGAIN) {
 				fprintf(stderr, "socket timeout\n");
 			}
 			perror("error receiving tcp packet");
-			FREE(answer);
+			FREE(pkt);
 			return NULL;
-		} else {
-			total_bytes += bytes;
 		}
 	}
 
-	answer_size = read_uint16(answer);
+	wire_size = read_uint16(wire);
 	
-	/* if we did not receive the whole packet in one tcp packet,
-	   we must recv() on */
-	while (total_bytes < (ssize_t) (answer_size + 2)) {
-		bytes = recv(sockfd, answer + total_bytes, (size_t) (MAX_PACKETLEN - total_bytes), 0);
+	FREE(wire);
+	wire = XMALLOC(uint8_t, wire_size);
+	bytes = 0;
+
+	while (bytes < (ssize_t) wire_size) {
+		bytes += recv(sockfd, wire + bytes, (size_t) (wire_size - bytes), 0);
 		if (bytes == -1) {
 			if (errno == EAGAIN) {
 				fprintf(stderr, "socket timeout\n");
 			}
 			perror("error receiving tcp packet");
-			FREE(answer);
+			FREE(wire);
 			return NULL;
-		} else {
-			total_bytes += bytes;
 		}
 	}
 
-	close(sockfd);
-
-	/* resize accordingly */
-	XREALLOC(answer, uint8_t *, (size_t) total_bytes);
-
-        if (ldns_wire2pkt(&answer_pkt, answer+2, (size_t) answer_size) != 
+        if (ldns_wire2pkt(&pkt, wire, (size_t) wire_size) != 
 			LDNS_STATUS_OK) {
 		printf("could not create packet\n");
+		FREE(wire);
 		return NULL;
 	} else {
-		ldns_pkt_set_size(answer_pkt, (size_t) bytes);
-		return answer_pkt;
+		ldns_pkt_set_size(pkt, (size_t) bytes);
+		FREE(wire);
+		return pkt;
 	}
+}
+
+/**
+ * Send a buffer to an ip using tcp and return the respons as a ldns_pkt
+ * \param[in] qbin the ldns_buffer to be send
+ * \param[in] to the ip addr to send to
+ * \param[in] tolen length of the ip addr
+ * \return a packet with the answer
+ */
+/* keep in mind that in DNS tcp messages the first 2 bytes signal the
+ * amount data to expect
+ */
+ldns_pkt *
+ldns_send_tcp(ldns_buffer *qbin, const struct sockaddr_storage *to, socklen_t tolen)
+{
+	int sockfd;
+	ldns_pkt *answer;
+	
+	sockfd = ldns_tcp_connect(to, tolen);
+	
+	if (sockfd == 0) {
+		return NULL;
+	}
+	
+	if (ldns_tcp_send_query(qbin, sockfd, to, tolen) == 0) {
+		return NULL;
+	}
+	
+	answer = ldns_tcp_read_packet(sockfd);
+	
+	close(sockfd);
+	
+	return answer;
 }
 
