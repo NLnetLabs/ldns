@@ -59,6 +59,8 @@ ldns_send(ldns_resolver *r, ldns_pkt *query_pkt)
 	struct sockaddr_in *ns4;
 	struct sockaddr_in6 *ns6;
 	socklen_t ns_len;
+	struct timeval tv_s;
+        struct timeval tv_e;
 
 	ldns_rdf **ns_array;
 	ldns_pkt *reply;
@@ -93,6 +95,7 @@ ldns_send(ldns_resolver *r, ldns_pkt *query_pkt)
 				break;
 		}
 
+		gettimeofday(&tv_s, NULL);
 		/* query */
 		if (1 == ldns_resolver_usevc(r)) {
 			reply = ldns_send_tcp(qb, ns, ns_len);
@@ -100,8 +103,13 @@ ldns_send(ldns_resolver *r, ldns_pkt *query_pkt)
 			/* udp here, please */
 			reply = ldns_send_udp(qb, ns, ns_len);
 		}
+		gettimeofday(&tv_e, NULL);
 		
 		if (reply) {
+			ldns_pkt_set_querytime(reply,
+				((tv_e.tv_sec - tv_s.tv_sec) * 1000) +
+				(tv_e.tv_usec - tv_s.tv_usec) / 1000);
+
 			ldns_pkt_set_answerfrom(reply, ns_array[i]);
 			break;
 		}
@@ -124,14 +132,11 @@ ldns_send_udp(ldns_buffer *qbin, const struct sockaddr_storage *to, socklen_t to
 	uint8_t *answer;
 	ldns_pkt *answer_pkt;
 
-	struct timeval tv_s;
-        struct timeval tv_e;
         struct timeval timeout;
         
         timeout.tv_sec = LDNS_DEFAULT_TIMEOUT_SEC;
         timeout.tv_usec = LDNS_DEFAULT_TIMEOUT_USEC;
         
-	gettimeofday(&tv_s, NULL);
 
 	if ((sockfd = socket((int)((struct sockaddr*)to)->sa_family, SOCK_DGRAM, IPPROTO_UDP)) == -1) {
 		printf("could not open socket\n");
@@ -171,7 +176,6 @@ ldns_send_udp(ldns_buffer *qbin, const struct sockaddr_storage *to, socklen_t to
 	bytes = recv(sockfd, answer, MAX_PACKET_SIZE, 0);
 
 	close(sockfd);
-	gettimeofday(&tv_e, NULL);
 
 	if (bytes == -1) {
 		if (errno == EAGAIN) {
@@ -187,15 +191,8 @@ ldns_send_udp(ldns_buffer *qbin, const struct sockaddr_storage *to, socklen_t to
 
         if (ldns_wire2pkt(&answer_pkt, answer, (size_t) bytes) != 
 			LDNS_STATUS_OK) {
-		printf("could not create packet\n");
 		return NULL;
 	} else {
-		/* set some extra values in the pkt */
-		/* is msec usec here?! */
-		ldns_pkt_set_querytime(answer_pkt,
-				((tv_e.tv_sec - tv_s.tv_sec) * 1000) +
-				(tv_e.tv_usec - tv_s.tv_usec) / 1000);
-
 		return answer_pkt;
 	}
 }
@@ -220,16 +217,11 @@ ldns_send_tcp(ldns_buffer *qbin, const struct sockaddr_storage *to, socklen_t to
 	uint16_t answer_size;
 	uint8_t *sendbuf;
 
-	struct timeval tv_s;
-	struct timeval tv_e;
-
         struct timeval timeout;
         
         timeout.tv_sec = LDNS_DEFAULT_TIMEOUT_SEC;
         timeout.tv_usec = LDNS_DEFAULT_TIMEOUT_USEC;
         
-	gettimeofday(&tv_s, NULL);
-
 	if ((sockfd = socket((int)((struct sockaddr*)to)->sa_family, SOCK_STREAM, IPPROTO_TCP)) == -1) {
 		perror("could not open socket");
 		return NULL;
@@ -257,14 +249,12 @@ ldns_send_tcp(ldns_buffer *qbin, const struct sockaddr_storage *to, socklen_t to
 			ldns_buffer_position(qbin)+2, 0, (struct sockaddr *)to, tolen);
 
         FREE(sendbuf);
-        
 
 	if (bytes == -1) {
 		printf("error with sending\n");
 		close(sockfd);
 		return NULL;
 	}
-	
 	if ((size_t) bytes != ldns_buffer_position(qbin)+2) {
 		printf("amount of sent bytes mismatch\n");
 		close(sockfd);
@@ -314,7 +304,6 @@ ldns_send_tcp(ldns_buffer *qbin, const struct sockaddr_storage *to, socklen_t to
 	}
 
 	close(sockfd);
-	gettimeofday(&tv_e, NULL);
 
 	/* resize accordingly */
 	XREALLOC(answer, uint8_t *, (size_t) total_bytes);
@@ -324,11 +313,6 @@ ldns_send_tcp(ldns_buffer *qbin, const struct sockaddr_storage *to, socklen_t to
 		printf("could not create packet\n");
 		return NULL;
 	} else {
-		/* set some extra values in the pkt */
-		ldns_pkt_set_querytime(answer_pkt,
-				((tv_e.tv_sec - tv_s.tv_sec)*1000) +
-				((tv_e.tv_usec - tv_s.tv_usec)/1000));
-
 		return answer_pkt;
 	}
 }
