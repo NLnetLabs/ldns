@@ -96,8 +96,7 @@ ldns_verify_rrsig(ldns_rr_list *rrset, ldns_rr *rrsig, ldns_rr_list *keys)
 	bool result;
 	ldns_rr *current_key;
 
-	/* create the buffers which will certainly hold the
-	 * raw data */
+	/* create the buffers which will certainly hold the raw data */
 	rawsig_buf = ldns_buffer_new(MAX_PACKETLEN);
 	verify_buf  = ldns_buffer_new(MAX_PACKETLEN);
 	

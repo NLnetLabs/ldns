@@ -22,6 +22,6 @@
 uint8_t         ldns_rdf_dname_label_count(ldns_rdf *);
 ldns_rdf	*ldns_dname_new_frm_str(const char *);
 ldns_rdf 	*ldns_dname_cat(ldns_rdf *, ldns_rdf *);
-ldns_rdf	*ldns_dname_canonical(ldns_rdf *);
+void		ldns_dname2canonical(const ldns_rdf *);
 
 #endif	/* !_LDNS_DNAME_H */
