@@ -51,30 +51,33 @@ API
     4  The authority section, a ldns_rr_list structure.
     5  The additional section, a ldns_rr_list structure.
 
-  Header Structure [ldns_hdr]
+  1. Header Structure [ldns_hdr]
     ldns_hdr represents the header section of a DNS packet.
 
-  Question Section [no special type is used]
+  2. Question Section [no special type is used]
     ldns_rr_list structure. A list of RRs in the Question section of a DNS
     packet.
 
-  Answer Section [no special type is used]
+  3. Answer Section [no special type is used]
     ldns_rr_list structure. A list of RRs in the Question section of a DNS
     packet.
 
-  Authority Section [no special type is used]
+  4. Authority Section [no special type is used]
     ldns_rr_list structure. A list of RRs in the Question section of a DNS
     packet.
     
-  Additional Section [no special type is used]
+  5. Additional Section [no special type is used]
     ldns_rr_list structure. A list of RRs in the Question section of a DNS
     packet.
 
+  Where:
   RR List Structure [ldns_rr_list]
     An array containing Resource Records (RR).
    
   RR Structures [ldns_rr]
     A single Resource Record.
+
+* From: Net::DNS::Resolver - DNS resolver class
 
 Functions on ldns_resolver
 
@@ -87,6 +90,47 @@ Functions on ldns_resolver
     an empty list if the query failed or no MX records were found.
 
     This method does not look up A records -- it only performs MX queries.
+ 
+  ldns_status ldns_resolver_domain(resolver *res, ldns_rdf *domain)
+    Set the default domain for this resolver. This domain is added
+    when a query is made with a name without a trailing dot.
+
+  ldns_status ldns_resolver_nameserver_push(resolver *res, ldns_rdf *ip)
+    [ldns_rdf ip??]
+    Add a new nameserver to the resolver. These nameservers are queried
+    when a search() or query() is done.
+    
+  [IS THIS NEEDED?]
+  ldns_status ldns_resolver_searchlist_push(resolver *res, ldns_rdf *domain)
+    Add a domain to the searchlist of a resolver. 
+
+  For all function here the following applies:
+    if type is NULL it defaults to 'A',
+    if class is NULL it default to 'IN'.
+
+  ldns_pkt * ldns_resolver_search(ldns_resolver *res, 
+  				ldns_rdf *domain, 
+				ldns_rr_type *type, 
+				ldns_class *class)
+    Perform a query. Try all the nameservers in the *res structure. Apply
+    the search list. And default domain.
+
+  ldns_pkt * ldns_resolver_query(ldns_resolver *res, 
+                                 ldns_rdf *dom,
+                                 ldns_type *t, 
+				 ldns_class *cl)
+    Only the default domain is added.
+    
+  ldns_pkt * ldns_resolver_send(ldns_resolver *res,
+                                ldns_rdf *domain, 
+                                ldns_type *type, 
+                                ldns_class *class)
+
+    No search list nor default domain is applied. Return a pointer to a ldns_pkt 
+    strcuture with the information from the nameserver.
+
+ [Then there are a bunch a helper function which set the port etc. etc.]
+
 
 * From: Net::DNS::Packet - DNS packet object class
 
@@ -267,7 +311,7 @@ Tsig is implemented after basic functionality is done
     Returns the record's domain name as a ldns_rdf type. [XXX how should we
     return stuff like this? ldns_rdf, uint8_t, ldns_buffer?
 
-  ldns_rdf_type ldns_rr_get_type(ldns_rr *r)
+  ldns_rdf_rr_type ldns_rr_get_type(ldns_rr *r)
     Returns the record's type.
 
   ldns_rr_class ldns_rr_get_class(ldns_rr *r)
