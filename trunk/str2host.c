@@ -185,14 +185,18 @@ ldns_str2rdf_aaaa(ldns_rdf **rd, const uint8_t* str)
 }
 
 /**
- * convert .... into wireformat
+ * convert a string into wireformat (think txt record)
  * \param[in] rd the rdf where to put the data
- * \param[in] str the string to be converted
+ * \param[in] str the string to be converted (NULL terminated)
  * \return ldns_status
  */
 ldns_status
 ldns_str2rdf_str(ldns_rdf **rd, const uint8_t* str)
 {
+	if (strlen(str) > 255) {
+		return LDNS_STATUS_INVALID_STR;
+	}
+	ldns_rdf_new(strlen(str), LDNS_RDF_TYPE_STR, str);
 	return LDNS_STATUS_OK;
 }
 
