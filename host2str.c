@@ -27,9 +27,9 @@
 
 /* Taken from RFC 2538, section 2.1.  */
 ldns_lookup_table ldns_certificate_types[] = {
-        { 1, "PKIX" },  /* X.509 as per PKIX */
-        { 2, "SPKI" },  /* SPKI cert */
-        { 3, "PGP" },   /* PGP cert */
+        { 0, "PKIX" },  /* X.509 as per PKIX */
+        { 1, "SPKI" },  /* SPKI cert */
+        { 2, "PGP" },   /* PGP cert */
         { 253, "URI" }, /* URI private */
         { 254, "OID" }, /* OID private */
         { 0, NULL }
@@ -119,6 +119,14 @@ ldns_rdf2buffer_int32(ldns_buffer *output, ldns_rdf *rdf)
 	return ldns_buffer_status(output);
 }
 
+ldns_status
+ldns_rdf2buffer_time(ldns_buffer *output, ldns_rdf *rdf)
+{
+	uint32_t data = read_uint32(ldns_rdf_data(rdf));
+	ldns_buffer_printf(output, "%lu", (unsigned long) data);
+	return ldns_buffer_status(output);
+}
+
 /** 
  * Converts A address 
  */
@@ -180,17 +188,39 @@ ldns_rdf2buffer_str(ldns_buffer *output, ldns_rdf *rdf)
 ldns_status
 ldns_rdf2buffer_b64(ldns_buffer *output, ldns_rdf *rdf)
 {
-	ldns_buffer_printf(output, "%s", ldns_rdf_data(rdf));
+	/*ldns_buffer_printf(output, "%s", ldns_rdf_data(rdf));*/
+	size_t size = ldns_rdf_size(rdf) * 4 / 3;
+	char *b64 = XMALLOC(char, size);
+	if (b64_ntop(ldns_rdf_data(rdf), ldns_rdf_size(rdf), b64, size)) {
+		ldns_buffer_printf(output, "%s", b64);
+	}
+	FREE(b64);
 	return ldns_buffer_status(output);
 }	
 
 /**
  * Converts Hex encoded data
+ * move this to general func?
  */
 ldns_status
 ldns_rdf2buffer_hex(ldns_buffer *output, ldns_rdf *rdf)
 {
-	ldns_buffer_printf(output, "%s", ldns_rdf_data(rdf));
+/*
+	char hex_chars[] = { '0', '1', '2', '3', '4', '5', '6', '7', '8',
+	                     '9', 'A', 'B', 'C', 'D', 'E', 'F' };
+
+	size_t i;
+ldns_buffer_printf(output, "HEX: ");
+	for (i = 0; i < ldns_rdf_size(rdf); i++) {
+		ldns_buffer_printf(output, "%c", hex_chars[ldns_rdf_data(rdf)[i] & 0xF0]);
+		ldns_buffer_printf(output, "%c", hex_chars[ldns_rdf_data(rdf)[i] & 0x0F]);
+	}
+*/
+	size_t i;
+	for (i = 0; i < ldns_rdf_size(rdf); i++) {
+		ldns_buffer_printf(output, "%02x", ldns_rdf_data(rdf)[i]);
+	}
+
 	return ldns_buffer_status(output);
 }	
 
@@ -200,7 +230,7 @@ ldns_rdf2buffer_hex(ldns_buffer *output, ldns_rdf *rdf)
 ldns_status
 ldns_rdf2buffer_type(ldns_buffer *output, ldns_rdf *rdf)
 {
-        uint8_t data = ldns_rdf_data(rdf)[0];
+        uint16_t data = read_uint16(ldns_rdf_data(rdf));
 	const ldns_rr_descriptor *descriptor;
 
 	descriptor = ldns_rr_descript(data);
@@ -231,6 +261,36 @@ ldns_rdf2buffer_class(ldns_buffer *output, ldns_rdf *rdf)
 }	
 
 ldns_status
+ldns_rdf2buffer_alg(ldns_buffer *output, ldns_rdf *rdf)
+{
+        uint8_t data = ldns_rdf_data(rdf)[0];
+	ldns_lookup_table *lt;
+
+ 	lt = ldns_lookup_by_id(ldns_algorithms, (int) data);
+	if (lt) {
+		ldns_buffer_printf(output, "%s", lt->name);
+	} else {
+		ldns_buffer_printf(output, "ALG%d", data);
+	}
+	return ldns_buffer_status(output);
+}	
+
+ldns_status
+ldns_rdf2buffer_cert(ldns_buffer *output, ldns_rdf *rdf)
+{
+        uint16_t data = read_uint16(ldns_rdf_data(rdf));
+	ldns_lookup_table *lt;
+
+ 	lt = ldns_lookup_by_id(ldns_certificate_types, (int) data);
+	if (lt) {
+		ldns_buffer_printf(output, "%s", lt->name);
+	} else {
+		ldns_buffer_printf(output, "ALG%d", data);
+	}
+	return ldns_buffer_status(output);
+}	
+
+ldns_status
 ldns_rdf2buffer_wks(ldns_buffer *output, ldns_rdf *rdf)
 {
 	/* protocol, followed by bitmap of services */
@@ -250,9 +310,9 @@ ldns_rdf2buffer_wks(ldns_buffer *output, ldns_rdf *rdf)
 	}
 
 	for (current_service = 0; 
-	     current_service <= ldns_rdf_size(rdf) * 8;
+	     current_service < ldns_rdf_size(rdf) * (8-1);
 	     current_service++) {
-		if (get_bit_r(&(ldns_rdf_data(rdf)[1]), current_service)) {
+		if (get_bit(&(ldns_rdf_data(rdf)[1]), current_service)) {
 			service = getservbyport(ntohs(current_service),
 			                        proto_name);
 			if (service && service->s_name) {
@@ -271,7 +331,8 @@ ldns_status
 ldns_rdf2buffer_todo(ldns_buffer *output, ldns_rdf *rdf)
 {
 	(void) ldns_rdf_data(rdf);
-	ldns_buffer_printf(output, "todo: '%s'\n", ldns_rdf2str(rdf));
+	ldns_buffer_printf(output, "todo: ");
+	ldns_rdf2buffer_hex(output, rdf);
 	return ldns_buffer_status(output);
 }
 
@@ -330,16 +391,16 @@ ldns_rdf2buffer(ldns_buffer *buffer, ldns_rdf *rdf)
 		res = ldns_rdf2buffer_class(buffer, rdf);
 		break;
 	case LDNS_RDF_TYPE_CERT:
-		res = ldns_rdf2buffer_todo(buffer, rdf);
+		res = ldns_rdf2buffer_cert(buffer, rdf);
 		break;
 	case LDNS_RDF_TYPE_ALG:
-		res = ldns_rdf2buffer_todo(buffer, rdf);
+		res = ldns_rdf2buffer_alg(buffer, rdf);
 		break;
 	case LDNS_RDF_TYPE_UNKNOWN:
 		res = ldns_rdf2buffer_todo(buffer, rdf);
 		break;
 	case LDNS_RDF_TYPE_TIME:
-		res = ldns_rdf2buffer_todo(buffer, rdf);
+		res = ldns_rdf2buffer_time(buffer, rdf);
 		break;
 	case LDNS_RDF_TYPE_SERVICE:
 		res = ldns_rdf2buffer_todo(buffer, rdf);
@@ -383,7 +444,12 @@ ldns_rr2buffer(ldns_buffer *output, ldns_rr *rr)
 	if (descriptor->_name) {
 		ldns_buffer_printf(output, "%s\t", descriptor->_name);
 	} else {
-		ldns_buffer_printf(output, "TYPE%d\t", ldns_rr_get_type(rr));
+		/* exceptions for qtype */
+		if (ldns_rr_get_type(rr) == 255) {
+			ldns_buffer_printf(output, "ANY ");
+		} else {
+			ldns_buffer_printf(output, "TYPE%d\t", ldns_rr_get_type(rr));
+		}
 	}
 	
 

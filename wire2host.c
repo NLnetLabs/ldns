@@ -375,7 +375,6 @@ ldns_wire2rr(ldns_rr **rr_p, const uint8_t *wire, size_t max,
 	}
 
 	*rr_p = rr;
-
 	return LDNS_STATUS_OK;
 	
 	status_error:
