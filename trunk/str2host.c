@@ -141,6 +141,7 @@ ldns_str2rdf_int8(ldns_rdf **rd, const uint8_t *bytestr)
  *
  * \todo make this more efficient...
  * we do 3 memcpy's in total...
+ * label_chars2 is used for debugging. TODO: remove
  */
 ldns_status
 ldns_str2rdf_dname(ldns_rdf **rd, const uint8_t* str)
@@ -178,7 +179,7 @@ ldns_str2rdf_dname(ldns_rdf **rd, const uint8_t* str)
 			label_chars2 = label_chars + 39; /* somehting printable */
 			/* put this number in the right spot in buf and
 			 * copy those chars over*/
-			memcpy(q, &label_chars2, 1); 
+			memcpy(q, &label_chars, 1); 
 			memcpy(q + 1, p, label_chars); 
 			q += (label_chars + 1);
 			p = s + 1; /* move the new position after the dot */
@@ -187,7 +188,7 @@ ldns_str2rdf_dname(ldns_rdf **rd, const uint8_t* str)
 	label_chars = s - p; 
 	label_chars2 = label_chars + 39; /* somehting printable */
 	
-	memcpy(q, &label_chars2, 1); 
+	memcpy(q, &label_chars, 1); 
 	memcpy(q + 1, p, label_chars); 
 	q += (label_chars + 1);
 	*q = '\00'; /* end the string */
