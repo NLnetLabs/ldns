@@ -482,3 +482,17 @@ ldns_pkt_query_new(ldns_rdf *rr_name, ldns_rr_type rr_type, ldns_rr_class rr_cla
 
 	return packet;
 }
+
+/**
+ * look inside the packet to determine
+ * what kind of packet it is, AUTH, NXDOMAIN, REFERRAL, etc.
+ * \param[in] p the packet to examine
+ * \return the type of packet
+ * \todo there are no packet types!
+ */
+void
+ldns_pkt_reply_type(ldns_pkt *p)
+{
+	/* i'm looking in the packet */
+
+}
