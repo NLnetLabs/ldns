@@ -59,7 +59,6 @@ struct ldns_struct_resolver
 	/** \brief 1 if the resolver is properly configured */
 	uint8_t _configured;
 };
-	
 typedef struct ldns_struct_resolver ldns_resolver;
 
 /* prototypes */
