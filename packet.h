@@ -22,7 +22,7 @@
  *
  * Contains the information about the packet itself
  */
-struct struct_header_type
+struct type_struct_header
 {
 	/** \brief Id of a packet */
 	uint16_t id;
@@ -41,19 +41,19 @@ struct struct_header_type
 	/** \brief Authentic data */
 	uint8_t ad:1;
 	/** \brief Query type */
-	uint8_t opcode;
+	uint8_t opcode;	 /* XXX 8 bits? */
 	/** \brief Response code */
 	uint8_t rcode;
 	/** \brief question sec */
-	uint8_t qdcount;
+	uint16_t qdcount;
 	/** \brief answer sec */
-	uint8_t ancount;
+	uint16_t ancount;
 	/** \brief auth sec */
-	uint8_t nscount;
+	uint16_t nscount;
 	/** \brief add sec */
-	uint8_t acount;
+	uint16_t acount;
 };
-typedef struct struct_header_type header_t;
+typedef struct type_struct_header t_header;
 
 /**
  * \brief DNS packet
@@ -63,16 +63,16 @@ typedef struct struct_header_type header_t;
 struct struct_packet_type
 {
 	/** \brief header section */
-	header_t *header;
+	t_header *header;
 	/** \brief question section */
-	rrset_t	*question;
+	t_rrset	*question;
 	/** \brief answer section */
-	rrset_t	*answer;
+	t_rrset	*answer;
 	/** \brief auth section */
-	rrset_t	*authority;
+	t_rrset	*authority;
 	/** \brief add section */
-	rrset_t	*additional;
+	t_rrset	*additional;
 };
-typedef struct struct_packet_type packet_t;
+typedef struct type_struct_packet t_packet;
 	
 #endif /* _PACKET_H */

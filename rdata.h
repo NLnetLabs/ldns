@@ -15,7 +15,7 @@
 
 #include <stdint.h>
 
-enum enum_rdata_type 
+enum type_enum_rdata
 {
 	/** domain name */
 	RD_DNAME_T,
@@ -56,9 +56,9 @@ enum enum_rdata_type
 	/** location data */
 	RD_LOC_T
 };
-typedef enum enum_rdata_type rd_type_t;
+typedef enum type_enum_rdata t_rd_type;
 
-enum enum_class_type 
+enum type_enum_class
 {
 	/** the Internet */
 	CLASS_IN 	= 1,
@@ -69,7 +69,7 @@ enum enum_class_type
 	/** Any class */
 	CLASS_ANY	= 255
 };
-typedef enum enum_class_type class_t;
+typedef enum type_enum_class t_class;
 
 /**
  * \brief Resource record data
@@ -77,25 +77,25 @@ typedef enum enum_class_type class_t;
  * The data is a network ordered array of bytes, which size is specified by the (16-bit) size field.<br>
  * To correctly parse it, use the type specified in the (16-bit) type field.
  */
-struct struct_rdata_t 
+struct type_struct_rdata_field 
 {
 	/** \brief The size of the data (in bytes) */
 	uint16_t _size;
 	/** \brief The type of the data */
-	rd_type_t _type;
+	t_rd_type _type;
 	/** \brief Pointer to the data (byte buffer) */
 	uint8_t  *_data;
 };
-typedef struct struct_rdata_t rdata_t;
+typedef struct type_struct_rdata_field t_rdata_field;
 
 /* prototypes */
-uint16_t        rd_size(rdata_t *);
-uint8_t         *rd_data(rdata_t *);
-void            rd_set_size(rdata_t *, uint16_t);
-void            rd_set_type(rdata_t *, rd_type_t);
-void            rd_set_data(rdata_t *, uint8_t *, uint16_t);
-rd_type_t       rd_type(rdata_t *);
-rdata_t         *rd_new(uint16_t, rd_type_t, uint8_t *);
-void            rd_destroy(rdata_t *);
+uint16_t        rd_size(t_rdata_field *);
+uint8_t         *rd_data(t_rdata_field *);
+void            rd_set_size(t_rdata_field *, uint16_t);
+void            rd_set_type(t_rdata_field *, t_rd_type);
+void            rd_set_data(t_rdata_field *, uint8_t *, uint16_t);
+t_rd_type       rd_type(t_rdata_field *);
+t_rdata_field   *rd_new(uint16_t, t_rd_type, uint8_t *);
+void            rd_destroy(t_rdata_field *);
 #endif	/* _RDATA_H */
 

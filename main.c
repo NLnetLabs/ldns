@@ -13,10 +13,9 @@
 int
 main(void)
 {
-	rdata_t *new;
-	printf("size %u\n", (unsigned int)sizeof(struct struct_rdata_t));
+	t_rdata_field *new;
 
 	new = rd_new(20, RD_DNAME_T, (uint8_t*)"hallo.nl");
-	xprintf_rd(new);
+	xprintf_rd_field(new);
 	return 0;
 }

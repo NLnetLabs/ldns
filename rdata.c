@@ -22,51 +22,51 @@
 
 /* read */
 uint16_t
-rd_size(rdata_t *rd)
+rd_size(t_rdata_field *rd)
 {
 	return rd->_size;
 }
 
-rd_type_t
-rd_type(rdata_t *rd)
+t_rd_type
+rd_type(t_rdata_field *rd)
 {
 	return rd->_type;
 }
 
 uint8_t *
-rd_data(rdata_t *rd)
+rd_data(t_rdata_field *rd)
 {
 	return rd->_data;
 }
 
 /* write */
 void
-rd_set_size(rdata_t *rd, uint16_t s)
+rd_set_size(t_rdata_field *rd, uint16_t s)
 {
 	rd->_size = s;
 }
 
 void
-rd_set_type(rdata_t *rd, rd_type_t t)
+rd_set_type(t_rdata_field *rd, t_rd_type t)
 {
 	rd->_type = t;
 }
 
 void
-rd_set_data(rdata_t *rd, uint8_t *d, uint16_t s)
+rd_set_data(t_rdata_field *rd, uint8_t *d, uint16_t s)
 {
 	rd->_data = xmalloc(s);
 	memcpy(rd->_data, d, s);
 }
 
-/* allocate a new rdata_t structure 
+/* allocate a new t_rdata_field structure 
  * and return it
  */
-rdata_t *
-rd_new(uint16_t s, rd_type_t t, uint8_t *d)
+t_rdata_field *
+rd_new(uint16_t s, t_rd_type t, uint8_t *d)
 {
-	rdata_t *new;
-	new = xmalloc(sizeof(rdata_t));
+	t_rdata_field *new;
+	new = xmalloc(sizeof(t_rdata_field));
 
 	if (NULL == new)
 		return NULL;
@@ -78,17 +78,17 @@ rd_new(uint16_t s, rd_type_t t, uint8_t *d)
 	return(new);
 }
 
-/* allocate a new rdata_t from
+/* allocate a new t_rdata_field from
  * a NULL terminated string
  * and return it
  *
  * uint8_t == char !!!!
  */
-rdata_t *
-rd_new_frm_string(rd_type_t t, char *s)
+t_rdata_field *
+rd_new_frm_string(t_rd_type t, char *s)
 {
-	rdata_t *new;
-	new = xmalloc(sizeof(rdata_t));
+	t_rdata_field *new;
+	new = xmalloc(sizeof(t_rdata_field));
 
 	if (NULL == new)
 		return NULL;
@@ -100,7 +100,7 @@ rd_new_frm_string(rd_type_t t, char *s)
 	return(new);
 }
 
-void rd_destroy(rdata_t *rd)
+void rd_destroy(t_rdata_field *rd)
 {
 	rd = NULL; /* kuch */
 	/* empty */

@@ -29,7 +29,7 @@ xmalloc(size_t s)
 
 /* put this here tmp. for debugging */
 void
-xprintf_rd(rdata_t *rd)
+xprintf_rd_field(t_rdata_field *rd)
 {
 	/* assume printable string */
 	fprintf(stdout, "size\t:%u\n", (unsigned int)rd_size(rd));
