@@ -417,6 +417,8 @@ ldns_rdf *
 ldns_rdf_new_frm_fp(ldns_rdf_type type, FILE *fp)
 {
 	char *line;
+	ldns_rdf *r;
+	ssize_t t;
 
 	line = XMALLOC(char, MAXLINE_LEN + 1);
 	if (!line) {
@@ -424,10 +426,13 @@ ldns_rdf_new_frm_fp(ldns_rdf_type type, FILE *fp)
 	}
 
 	/* read an entire line in from the file */
-	if (readword(line, fp,  "\n", MAXLINE_LEN) == -1) {
+	if ((t = ldns_get_str(fp, line, LDNS_SPACE_STR)) == -1) {
+		FREE(line);
 		return NULL;
-	} 
-	return ldns_rdf_new_frm_str(type, (const char*) line);
+	}
+	r =  ldns_rdf_new_frm_str(type, (const char*) line);
+	FREE(line);
+	return r;
 }
 
 /**

@@ -27,9 +27,16 @@ main()
 
 	tok = XMALLOC(char, 1024);
 
-	while ((b = ldns_get_str(f, tok, true)) != 0) {
+	while ((b = ldns_get_str(f, tok, LDNS_SPACE_STR)) != 0) {
 		fprintf(stdout, "%d: %s\n", (int)b, tok);
 	}
+	fclose(f);
+
+  	if (!(f = fopen("Kdnssec.nl.+005+32820.private", "r"))) {
+		exit(1);
+	}
+	
+	ldns_get_keyword_data(f, "Algorithm", ":", tok, LDNS_STR);
 	
 
 	fclose(f);

@@ -14,8 +14,9 @@
 
 
 #define MAXTOKEN_LEN		1024
-#define LDNS_EAT_SPACE		true
-
+#define LDNS_EAT_SPACE		"\f\n\r\t\v"
+#define MAXLINE_LEN		512
+#define MAXKEYWORD_LEN		32
 
 /* what we can parse */
 enum ldns_enum_parse
@@ -34,12 +35,17 @@ typedef enum ldns_enum_parse ldns_parse;
  * This function deals with ( and ) in the stream
  * and ignore \n when it finds them
  */
-size_t ldns_get_token(FILE *f, char *token, bool eat_space);
+ssize_t ldns_get_token(FILE *f, char *token, const char *delim);
 
 /* 
  * get the next string and supply the type we want
  * return 0 on error, otherwise the length
  */
-size_t ldns_get_str(FILE *f, char *word, ldns_parse type);
+ssize_t ldns_get_str(FILE *f, char *word, ldns_parse type);
+
+/* 
+ * search for keyword and delim. Give everything back
+ * after the delimeter(s) 
+ */
 
 #endif /*  _PARSE_H_ */

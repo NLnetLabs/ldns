@@ -45,3 +45,14 @@ sort of stuff we parse:
 private-key-format: v1.2
 rr's on disk (string)
 openssl key formats
+
+=============
+
+We have string with spaces
+quoted strings and any combination
+
+Futher more we encouter:
+resolver.conf
+rr's on disk
+private keys made with bind
+openssl_ stuff

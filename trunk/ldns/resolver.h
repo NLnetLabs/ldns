@@ -22,7 +22,7 @@
 
 /** \brief where to find the resolv.conf file */
 #define RESOLV_CONF	"/etc/resolv.conf"
-#define MAXLINE_LEN	256
+
 #define RESOLV_KEYWORD		0
 #define RESOLV_DEFDOMAIN	1
 #define RESOLV_NAMESERVER	2
