@@ -85,13 +85,13 @@ ldns_send(ldns_resolver *r, ldns_pkt *query_pkt)
 			case AF_INET:
 				ns4 = (struct sockaddr_in*) ns;
 				ns4->sin_port = htons(ldns_resolver_port(r));
-				ns_len = sizeof(struct sockaddr_in);
+				ns_len = (socklen_t)sizeof(struct sockaddr_in);
 				printf("port %d\n", ntohs(ns4->sin_port));
 				break;
 			case AF_INET6:
 				ns6 = (struct sockaddr_in6*) ns;
 				ns6->sin6_port = htons(ldns_resolver_port(r));
-				ns_len = sizeof(struct sockaddr_in6);
+				ns_len = (socklen_t)sizeof(struct sockaddr_in6);
 				printf("port %d\n", ntohs(ns6->sin6_port));
 				break;
 		}
@@ -99,7 +99,12 @@ ldns_send(ldns_resolver *r, ldns_pkt *query_pkt)
 		printf("ip address len %d\n", ns_len);
 
 		/* query */
-		reply = ldns_send_udp(qb, ns, ns_len);
+		if (1 == ldns_resolver_usevc(r)) {
+			reply = ldns_send_tcp(qb, ns, ns_len);
+		} else {
+			/* udp here, please */
+			reply = ldns_send_udp(qb, ns, ns_len);
+		}
 		
 		if (reply) {
 			ldns_pkt_set_answerfrom(reply, ns_array[i]);
@@ -131,7 +136,7 @@ ldns_send_udp(ldns_buffer *qbin, const struct sockaddr_storage *to, socklen_t to
 
 	gettimeofday(&tv_s, NULL);
 
-	if ((sockfd = socket(((struct sockaddr*)to)->sa_family, SOCK_DGRAM, IPPROTO_UDP)) == -1) {
+	if ((sockfd = socket((int)((struct sockaddr*)to)->sa_family, SOCK_DGRAM, IPPROTO_UDP)) == -1) {
 		printf("could not open socket\n");
 		return NULL;
 	}
@@ -207,7 +212,7 @@ ldns_send_tcp(ldns_buffer *qbin, const struct sockaddr_storage *to, socklen_t to
 
 	gettimeofday(&tv_s, NULL);
 
-	if ((sockfd = socket(((struct sockaddr*)to)->sa_family, SOCK_DGRAM, IPPROTO_UDP)) == -1) {
+	if ((sockfd = socket((int)((struct sockaddr*)to)->sa_family, SOCK_DGRAM, IPPROTO_UDP)) == -1) {
 		printf("could not open socket\n");
 		return NULL;
 	}

@@ -13,16 +13,13 @@
 #ifndef _LDNS_NET_H
 #define _LDNS_NET_H
 
-#include <ldns/error.h>
-#include <ldns/common.h>
-#include <ldns/rr.h>
-#include <ldns/rdata.h>
 #include <ldns/packet.h>
+#include <ldns/buffer.h>
+#include <ldns/resolver.h>
 
 /* prototypes */
-#if 0
+ldns_pkt * ldns_send_udp(ldns_buffer *, const struct sockaddr_storage *, socklen_t);
+ldns_pkt * ldns_send_tcp(ldns_buffer *, const struct sockaddr_storage *, socklen_t);
 ldns_pkt * ldns_send(ldns_resolver *, ldns_pkt *);
-ldns_pkt * ldns_send_udp(ldns_buffer *, const struct sockaddr *, socklen_t)
-#endif
 
 #endif  /* !_LDNS_NET_H */
