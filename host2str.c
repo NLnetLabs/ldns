@@ -291,6 +291,110 @@ ldns_rdf2buffer_cert(ldns_buffer *output, ldns_rdf *rdf)
 }	
 
 ldns_status
+ldns_rdf2buffer_loc(ldns_buffer *output, ldns_rdf *rdf)
+{
+	/* we could do checking (ie degrees < 90 etc)? */
+	uint8_t version = ldns_rdf_data(rdf)[0];
+	uint8_t size;
+	uint8_t horizontal_precision;
+	uint8_t vertical_precision;
+	uint32_t longitude;
+	uint32_t latitude;
+	uint32_t altitude;
+	char northerness;
+	char easterness;
+	uint32_t h;
+	uint32_t m;
+	double s;
+	long value, unit, meters;
+	
+	uint32_t equator = (uint32_t) power(2, 32);
+
+	if (version == 0) {
+		size = ldns_rdf_data(rdf)[1];
+		horizontal_precision = ldns_rdf_data(rdf)[2];
+		vertical_precision = ldns_rdf_data(rdf)[3];
+		
+		latitude = read_uint32(&ldns_rdf_data(rdf)[4]);
+		longitude = read_uint32(&ldns_rdf_data(rdf)[8]);
+		altitude = read_uint32(&ldns_rdf_data(rdf)[12]);
+		
+		if (latitude > equator) {
+			northerness = 'N';
+			latitude = latitude - equator;
+		} else {
+			northerness = 'S';
+			latitude = equator - latitude;
+		}
+		h = latitude / (1000 * 60 * 60);
+		latitude = latitude % (1000 * 60 * 60);
+		m = latitude / (1000 * 60);
+		latitude = latitude % (1000 * 60);
+		s = (double) latitude / 1000.0;
+		ldns_buffer_printf(output, "%02u %02u %0.3f %c ", h, m, s, northerness);
+
+		if (longitude > equator) {
+			easterness = 'E';
+			longitude = longitude - equator;
+		} else {
+			easterness = 'W';
+			longitude = equator - longitude;
+		}
+		h = longitude / (1000 * 60 * 60);
+		longitude = longitude % (1000 * 60 * 60);
+		m = longitude / (1000 * 60);
+		longitude = longitude % (1000 * 60);
+		s = (double) longitude / (1000.0);
+		ldns_buffer_printf(output, "%02u %02u %0.3f %c ", h, m, s, easterness);
+
+		meters = (long) altitude - 10000000;
+		ldns_buffer_printf(output, "%u", meters / 100);
+		if (meters % 100 != 0) {
+			ldns_buffer_printf(output, ".%02u", meters % 100);
+		}
+		ldns_buffer_printf(output, "m ");
+		
+		value = (short) ((size & 0xf0) >> 4);
+		unit = (short) (size & 0x0f);
+		meters = value * power(10, unit);
+		ldns_buffer_printf(output, "%u", meters / 100);
+		if (meters % 100 != 0) {
+			ldns_buffer_printf(output, ".%02u", meters % 100);
+		}
+		ldns_buffer_printf(output, "m ");
+
+		value = (short) ((horizontal_precision & 0xf0) >> 4);
+		unit = (short) (horizontal_precision & 0x0f);
+		meters = value * power(10, unit);
+		ldns_buffer_printf(output, "%u", meters / 100);
+		if (meters % 100 != 0) {
+			ldns_buffer_printf(output, ".%02u", meters % 100);
+		}
+		ldns_buffer_printf(output, "m ");
+
+		value = (long) ((vertical_precision & 0xf0) >> 4);
+		unit = (long) (vertical_precision & 0x0f);
+		meters = value * power(10, unit);
+		ldns_buffer_printf(output, "%u", meters / 100);
+		if (meters % 100 != 0) {
+			ldns_buffer_printf(output, ".%02u", meters % 100);
+		}
+		ldns_buffer_printf(output, "m ");
+
+		return ldns_buffer_status(output);
+	} else {
+		return ldns_rdf2buffer_hex(output, rdf);
+	}
+}
+
+ldns_status
+ldns_rdf2buffer_nsap(ldns_buffer *output, ldns_rdf *rdf)
+{
+	ldns_buffer_printf(output, "0x");
+	return ldns_rdf2buffer_hex(output, rdf);
+}
+
+ldns_status
 ldns_rdf2buffer_wks(ldns_buffer *output, ldns_rdf *rdf)
 {
 	/* protocol, followed by bitmap of services */
@@ -332,8 +436,7 @@ ldns_rdf2buffer_todo(ldns_buffer *output, ldns_rdf *rdf)
 {
 	(void) ldns_rdf_data(rdf);
 	ldns_buffer_printf(output, "todo: ");
-	ldns_rdf2buffer_hex(output, rdf);
-	return ldns_buffer_status(output);
+	return ldns_rdf2buffer_hex(output, rdf);
 }
 
 /**
@@ -406,10 +509,13 @@ ldns_rdf2buffer(ldns_buffer *buffer, ldns_rdf *rdf)
 		res = ldns_rdf2buffer_todo(buffer, rdf);
 		break;
 	case LDNS_RDF_TYPE_LOC:
-		res = ldns_rdf2buffer_todo(buffer, rdf);
+		res = ldns_rdf2buffer_loc(buffer, rdf);
 		break;
 	case LDNS_RDF_TYPE_WKS:
 		res = ldns_rdf2buffer_wks(buffer, rdf);
+		break;
+	case LDNS_RDF_TYPE_NSAP:
+		res = ldns_rdf2buffer_nsap(buffer, rdf);
 		break;
 	}
 
@@ -643,7 +749,7 @@ char *
 ldns_pkt2str(ldns_pkt *pkt)
 {
 	char *result = NULL;
-	ldns_buffer *tmp_buffer = ldns_buffer_new(1000);
+	ldns_buffer *tmp_buffer = ldns_buffer_new(65535);
 
 	if (ldns_pkt2buffer(tmp_buffer, pkt) == LDNS_STATUS_OK) {
 		/* export and return string, destroy rest */

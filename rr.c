@@ -316,6 +316,9 @@ static const ldns_rdf_type type_isdn_wireformat[] = {
 static const ldns_rdf_type type_rt_wireformat[] = {
 	LDNS_RDF_TYPE_INT16, LDNS_RDF_TYPE_DNAME
 };
+static const ldns_rdf_type type_nsap_wireformat[] = {
+	LDNS_RDF_TYPE_NSAP
+};
 static const ldns_rdf_type type_sig_wireformat[] = {
 	LDNS_RDF_TYPE_INT8, LDNS_RDF_TYPE_INT8, LDNS_RDF_TYPE_INT8, LDNS_RDF_TYPE_TIME,
 	LDNS_RDF_TYPE_INT32, LDNS_RDF_TYPE_INT32, LDNS_RDF_TYPE_INT16,
@@ -410,7 +413,7 @@ static ldns_rr_descriptor rdata_field_descriptors[] = {
 	/* 21 */
 	{LDNS_RR_TYPE_RT, "RT", 2, 2, type_rt_wireformat, LDNS_RDF_TYPE_NONE },
 	/* 22 */
-	{LDNS_RR_TYPE_NSAP, "NSAP", 1, 1, type_0_wireformat, LDNS_RDF_TYPE_NONE },
+	{LDNS_RR_TYPE_NSAP, "NSAP", 1, 1, type_nsap_wireformat, LDNS_RDF_TYPE_NONE },
 	/* 23 */
 	{ 23, NULL, 1, 1, type_0_wireformat, LDNS_RDF_TYPE_NONE },
 	/* 24 */

@@ -49,13 +49,13 @@ LINK		= $(CC) $(CFLAGS) $(LDFLAGS)
 all:	run-test0 run-test1 run-test2
 
 run-test0:	run-test0.o $(LIBDNS_OBJECTS) $(LIBOBJS)
-		$(LINK) -o $@ $+
+		$(LINK) ${LIBS} -o $@ $+
 
 run-test1:	run-test1.o $(LIBDNS_OBJECTS) $(LIBOBJS)
-		$(LINK) -o $@ $+
+		$(LINK) ${LIBS} -o $@ $+
 
 run-test2:	run-test2.o $(LIBDNS_OBJECTS) $(LIBOBJS)
-		$(LINK) -o $@ $+
+		$(LINK) ${LIBS} -o $@ $+
 
 doc:	
 	doxygen libdns.doxygen
