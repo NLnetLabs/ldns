@@ -84,44 +84,11 @@ ldns_rr_free(ldns_rr *rr)
 	}
 }
 
-static char *
-ldns_rr_str_normalize(const char *rr)
-{
-	char *p;
-	char *s;
-	char *orig_s;
-
-	s = XMALLOC(char, strlen(rr) + 1); /* for the newly created string */
-	orig_s = s;
-
-	/* walk through the rr and fix it. Whitespace is handled in
-	 * ldns_rr_new_frm_str(), so don't worry about that here
-	 * - remove (, ) and \n
-	 * - everything after ; is discarded
-	 * - allow for simple escaping, with \???
-	 */
-	for(p = (char*)rr; *p; p++) {
-		if (*p == '(' || *p == ')' || *p == '\n') {
-			continue;
-		}
-		if (*p == ';') {
-			/* comment seen, bail out */
-			break;
-		}
-	 	*s++ = *p;
-	}
-	*s = '\0';
-	return orig_s;
-}
-
-/* we expect 3 spaces, everything there after is rdata
+/* 
  * So the RR should look like. e.g.
  * miek.nl. 3600 IN MX 10 elektron.atoom.net
- * Everything should be on 1 line, parentheses are not
- * handled. We may need a normalize function.
+ * extra spaces are allowed
  *
- * We cannot(!) handle extranous spaces in the rdata (for instace b64
- * stuff)
  */
 ldns_rr *
 ldns_rr_new_frm_str(const char *str)
@@ -129,7 +96,6 @@ ldns_rr_new_frm_str(const char *str)
 	ldns_rr *new;
 	const ldns_rr_descriptor *desc;
 	ldns_rr_type rr_type;
-	char  *str_normalized;
 	ldns_buffer *rr_buf;
 	ldns_buffer *rd_buf;
 	char  *owner; 
@@ -156,12 +122,7 @@ ldns_rr_new_frm_str(const char *str)
 	rd = XMALLOC(char, MAX_RDFLEN);
 	r_cnt = 0;
 
-	/* kill str normalize */
-	str_normalized = ldns_rr_str_normalize(str);
-
-	ldns_buffer_new_frm_data(
-			rr_buf, str_normalized, 
-			strlen(str_normalized));
+	ldns_buffer_new_frm_data(rr_buf, str, strlen(str));
 	
 	/* split the rr in its parts */
 	(void)ldns_bget_token(rr_buf, owner, "\t \0", MAX_DOMAINLEN);
@@ -170,8 +131,6 @@ ldns_rr_new_frm_str(const char *str)
 	(void)ldns_bget_token(rr_buf, type, "\t \0", 10);
 	(void)ldns_bget_token(rr_buf, rdata, "\0", MAX_PACKETLEN);
 	
-	FREE(str_normalized);
-
 	ldns_buffer_new_frm_data(
 			rd_buf, rdata, strlen(rdata));
 
