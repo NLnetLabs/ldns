@@ -91,6 +91,9 @@ main(void)
 	ldns_resolver_push_nameserver_rr_list(res, list);
 	ldns_resolver_push_nameserver_rr_list(res, list);
 	ldns_resolver_push_nameserver_rr_list(res, list);
+
+	printf("The whole resolver\n\n");
+	ldns_resolver_print(stdout, res);
 	
 	nss = ldns_resolver_nameservers(res);
 	if (!nss) {

@@ -8,6 +8,7 @@
 #include <ldns/rdata.h>
 #include <ldns/packet.h>
 #include <ldns/buffer.h>
+#include <ldns/resolver.h>
 #include <ctype.h>
 
 #include "util.h"
@@ -120,6 +121,8 @@ void ldns_pkt_print(FILE *output, ldns_pkt *pkt);
 
 ldns_status ldns_rr_list2buffer_str(ldns_buffer *, ldns_rr_list *);
 void ldns_rr_list_print(FILE *, ldns_rr_list *);
+
+void ldns_resolver_print(FILE *, ldns_resolver *);
 
 
 #endif
