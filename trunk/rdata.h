@@ -12,7 +12,8 @@
 
 #include <stdint.h>
 
-enum enum_rdata_type {
+enum enum_rdata_type 
+{
 	RD_DNAME_T,	/* domain name */
 	RD_INT8_T,	/* 8 bits */
 	RD_INT16_T,	/* 16 bits */
@@ -43,7 +44,8 @@ typedef enum enum_rdata_type rd_type_t;
  * data = network order, expanded (no compression)
  */
 
-struct struct_rdata_t {
+struct struct_rdata_t 
+{
 	uint16_t _size;
 	rd_type_t _type;
 	uint8_t  *_data;

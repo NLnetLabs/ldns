@@ -25,3 +25,4 @@ void 		rd_set_type(rdata_t *, rd_type_t);
 void 		rd_set_data(rdata_t *, uint8_t *, uint16_t);
 rd_type_t 	rd_type(rdata_t *);
 rdata_t 	*rd_new(uint16_t, rd_type_t, uint8_t *);
+void		rd_destroy(rdata_t *);
