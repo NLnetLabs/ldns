@@ -12,6 +12,7 @@ o network code
 	- axfr
 	- tsig?
 o DNSSEC
+o Make a shared library and test compile some programs
 
 Documentation:
 --------------
