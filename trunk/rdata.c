@@ -151,6 +151,7 @@ ldns_rdf2native_aaaaa(ldns_rdf *rd)
 			memcpy(data->sa_data, ldns_rdf_data(rd), ldns_rdf_size(rd));
 			return data;
 		default:
+			printf("_aaaaa something is wrong, should not reached this\n\n");
 			return NULL;
 	}
 }

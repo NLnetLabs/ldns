@@ -27,9 +27,12 @@
 #include <netdb.h>
 #include <arpa/inet.h>
 #include <sys/time.h>
+#include <errno.h>
 
 #include "util.h"
 
+
+extern int errno;
 
 /* send a buffer using tcp */
 ldns_pkt *
@@ -62,28 +65,37 @@ ldns_send(ldns_resolver *r, ldns_pkt *query_pkt)
 	ldns_rdf **ns_array;
 	ldns_pkt *reply;
 	ldns_buffer *qb;
+	ldns_rdf *tmp;
 
 	ns_array = ldns_resolver_nameservers(r);
 	reply = NULL;
 	
+	printf("we are in ldns_send()\n");
 	qb = ldns_buffer_new(MAX_PACKET_SIZE);
 
 	if (ldns_pkt2buffer_wire(qb, query_pkt) != LDNS_STATUS_OK) {
+		printf("could not convert to wire fmt\n");
 		return NULL;
 	}
 
+	printf("nameservers %d\n",ldns_resolver_nameserver_count(r));
+	
 	/* loop through all defined nameservers */
 	for (i = 0; i < ldns_resolver_nameserver_count(r); i++) {
 		ns_ip = ldns_rdf2native_aaaaa(ns_array[i]);
 		ns_ip_len = ldns_rdf_size(ns_array[i]);
 
-		ldns_rdf_print(stdout, ns_ip);
+		tmp = ns_array[i];
+
+		ldns_rdf_print(stdout, tmp);
 		printf("\n");
+		printf("ip address len %d\n", ns_ip_len);
 
 		/* query */
 		reply = ldns_send_udp(qb, ns_ip, ns_ip_len);
 		
-		if (!reply) {
+		if (reply) {
+			printf("reply found\n");
 			break;
 		}
 	}
@@ -103,6 +115,7 @@ ldns_send_udp(ldns_buffer *qbin, const struct sockaddr *to, socklen_t tolen)
 
 	
 	if ((sockfd = socket(to->sa_family, SOCK_DGRAM, IPPROTO_UDP)) == -1) {
+		printf("could not open socket\n");
 		return NULL;
 	}
 
@@ -110,11 +123,13 @@ ldns_send_udp(ldns_buffer *qbin, const struct sockaddr *to, socklen_t tolen)
 			ldns_buffer_capacity(qbin), 0, to, tolen);
 
 	if (bytes == -1) {
+		printf("error with sending: %s\n", strerror(errno));
 		close(sockfd);
 		return NULL;
 	}
 
 	if ((size_t) bytes != ldns_buffer_capacity(qbin)) {
+		printf("amount mismatch\n");
 		close(sockfd);
 		return NULL;
 	}
@@ -122,6 +137,7 @@ ldns_send_udp(ldns_buffer *qbin, const struct sockaddr *to, socklen_t tolen)
 	/* wait for an response*/
 	answer = XMALLOC(uint8_t*, MAX_PACKET_SIZE);
 	if (!answer) {
+		printf("respons alloc error\n");
 		return NULL;
 	}
 
@@ -130,6 +146,7 @@ ldns_send_udp(ldns_buffer *qbin, const struct sockaddr *to, socklen_t tolen)
 	close(sockfd);
 
 	if (bytes == -1) {
+		printf("received too little\n");
 		FREE(answer);
 		return NULL;
 	}
@@ -139,6 +156,7 @@ ldns_send_udp(ldns_buffer *qbin, const struct sockaddr *to, socklen_t tolen)
 
         if (ldns_wire2pkt(&answer_pkt, answer, (size_t) bytes) != 
 			LDNS_STATUS_OK) {
+		printf("could not create packet\n");
 		return NULL;
 	} else {
 		return answer_pkt;
