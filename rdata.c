@@ -86,7 +86,7 @@ ldns_rdf_new(uint16_t s, ldns_rdf_type t, void *d)
  * the buffer, unlinke ldns_rdf_new()
  * \param[in] s size of the buffer
  * \param[in] t type of the rdf
- * \param[in] d pointer to the buffer to be copied
+ * \param[in] buf pointer to the buffer to be copied
  * \return the new rdf structure or NULL on failure
  */
 ldns_rdf *
@@ -230,7 +230,7 @@ ldns_rdf_new_frm_str(const char *str, ldns_rdf_type t)
  * remove \\DDD, \\[space] and other escapes from the input
  * See RFC 1035, section 5.1
  * \param[in] word what to check
- * \param[in] lenght the string
+ * \param[in] length the string
  * \return ldns_status mesg
  */
 ldns_status

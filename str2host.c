@@ -30,7 +30,7 @@
 /**
  * convert a string to a int16 in wireformat
  * \param[in] rd the rdf where to put the data
- * \param[in] str the string to be converted
+ * \param[in] shortstr the string to be converted
  * \return ldns_status
  */
 ldns_status
@@ -54,7 +54,7 @@ ldns_str2rdf_int16(ldns_rdf **rd, const uint8_t *shortstr)
 /**
  * convert a time string to a time value in wireformat
  * \param[in] rd the rdf where to put the data
- * \param[in] str the string to be converted
+ * \param[in] time the string to be converted
  * \return ldns_status
  */
 ldns_status
@@ -82,7 +82,7 @@ ldns_str2rdf_time(ldns_rdf **rd, const uint8_t *time)
 /**
  * convert a strings into a 4 byte int in wireformat
  * \param[in] rd the rdf where to put the data
- * \param[in] str the string to be converted
+ * \param[in] longstr the string to be converted
  * \return ldns_status
  */
 ldns_status 
@@ -108,7 +108,7 @@ ldns_str2rdf_int32(ldns_rdf **rd, const uint8_t *longstr)
 /**
  * convert a byte into wireformat
  * \param[in] rd the rdf where to put the data
- * \param[in] str the string to be converted
+ * \param[in] bytestr the string to be converted
  * \return ldns_status
  */
 ldns_status
