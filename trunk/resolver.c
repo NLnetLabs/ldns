@@ -100,10 +100,11 @@ ldns_resolver_set_debug(ldns_resolver *r, uint8_t d)
 	r->_debug = d;
 }
 
-void 
+ldns_status
 ldns_resolver_set_domain(ldns_resolver *r, ldns_dname *d)
 {
 	r->_domain = d;
+	return LDNS_STATUS_OK;
 }
 
 /* this is not the way to go for the search list XXX */
@@ -140,7 +141,7 @@ ldns_resolver_usevc(ldns_resolver *r)
  * \return ldns_resolver* pointer to new strcture
  */
 ldns_resolver *
-ldns_resover_new(void)
+ldns_resolver_new(void)
 {
 	ldns_resolver *r;
 
@@ -158,14 +159,14 @@ ldns_resover_new(void)
  * See Net::DNS::Resolver for details
  */
 ldns_pkt *
-ldns_search()
+ldns_resolver_search()
 {
 	return NULL;
 }
 
 /* only adds the default domain */
 ldns_pkt *
-ldns_query()
+ldns_resolver_query()
 {
 	return NULL;
 }
@@ -174,12 +175,12 @@ ldns_query()
  * \brief Send the query for *name as-is 
  * \param[in] *r operate using this resolver
  * \param[in] *name query for this name
- * \param[in] *type query for this type (may be NULL, defaults to A)
- * \param[in] *class query for this class (may be NULL, default to IN)
+ * \param[in] *type query for this type (may be 0, defaults to A)
+ * \param[in] *class query for this class (may be 0, default to IN)
  * \return ldns_pkt* a packet with the reply from the nameserver
  */
 ldns_pkt *
-ldns_send(ldns_resolver *r, ldns_dname *name, ldns_rr_type *type, ldns_rr_class *class)
+ldns_resolver_send(ldns_resolver *r, ldns_dname *name, ldns_rr_type type, ldns_rr_class class)
 {
 	assert(r != NULL);
 	assert(name != NULL);
@@ -193,7 +194,7 @@ ldns_send(ldns_resolver *r, ldns_dname *name, ldns_rr_type *type, ldns_rr_class 
 
 /* send the query as-is. but use a callback */
 ldns_pkt *
-ldns_bgsend()
+ldns_resolver_bgsend()
 {
 	return NULL;
 }

@@ -14,8 +14,8 @@ main(void)
 {       
         ldns_resolver *res;
         ldns_dname *default_dom;
+        ldns_dname *qname;
         ldns_rdf *nameserver;
-        ldns_rdf *qname;
         ldns_pkt *pkt;
                 
         /* init */
@@ -33,13 +33,13 @@ main(void)
                 return 1;
         
         /* setup the question */
-        qname = ldns_rdf_new_frm_str("www", LDNS_RDF_TYPE_DNAME);
+        qname = ldns_dname_new_frm_str("www");
         
         /* fire it off. "miek.nl." will be added */
-        pkt = ldns_resolver_query(res, qname, LDNS_RR_TYPE_MX, NULL);
+        pkt = ldns_resolver_send(res, qname, LDNS_RR_TYPE_MX, 0);
         
         /* print the resulting pkt to stdout */
-        ldns_pkt_print(stdout, pkt);
+        /* DISABLE FOR NOW ldns_pkt_print(stdout, pkt); */
 
         return 0;
 }

@@ -47,7 +47,7 @@ LINK		= $(CC) $(CFLAGS) $(LDFLAGS)
 
 .PHONY:	clean realclean docclean doc lint test all
 
-all:	run-test0 run-test1 run-test2 run-test3 
+all:	run-test0 run-test1 run-test2 run-test3 run-test4
 
 run-test0:	run-test0.o $(LIBDNS_OBJECTS) $(LIBOBJS)
 		$(LINK) ${LIBS} -o $@ $+
