@@ -221,6 +221,15 @@ ldns_str2rdf_apl(ldns_rdf **rd, const uint8_t* str)
 ldns_status
 ldns_str2rdf_b64(ldns_rdf **rd, const uint8_t* str)
 {
+	uint8_t buffer[B64BUFSIZE];
+	int i;
+	
+	i = b64_pton(str, buffer, B64BUFSIZE);
+	if (-1 == i) {
+		return LDNS_STATUS_INVALID_B64;
+	} else {
+		*rd = ldns_rdf_new_frm_data(i, LDNS_RDF_TYPE_B64, buffer);
+	}
 	return LDNS_STATUS_OK;
 }
 

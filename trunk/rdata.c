@@ -74,13 +74,54 @@ ldns_rdf_new(uint16_t s, ldns_rdf_type t, void *d)
 	if (!rd) {
 		return NULL;
 	}
-
 	ldns_rdf_set_size(rd, s);
 	ldns_rdf_set_type(rd, t);
 	ldns_rdf_set_data(rd, d);
 	return rd;
 }
 
+/**
+ * Allocate a new rdf structure and fill it.
+ * This function _does_ copy the contents from
+ * the buffer, unlinke ldns_rdf_new()
+ * \param[in] s size of the buffer
+ * \param[in] t type of the rdf
+ * \param[in] d pointer to the buffer to be copied
+ * \return the new rdf structure or NULL on failure
+ */
+ldns_rdf *
+ldns_rdf_new_frm_data(uint16_t s, ldns_rdf_type t, void *buf)
+{
+	ldns_rdf *rd;
+	rd = MALLOC(ldns_rdf);
+	if (!rd) {
+		return NULL;
+	}
+	ldns_rdf_set_size(rd, s);
+	ldns_rdf_set_type(rd, t);
+	memcpy(rd->_data, buf, s);
+	return rd;
+}
+
+/**
+ * free a rdf structure _and_ free the
+ * data. rdf should be created with _new_frm_data
+ * \param[in] rd the rdf structure to be freed
+ * \return void
+ */
+void
+ldns_rdf_free_data(ldns_rdf *rd)
+{
+	FREE(rd->_data);
+	FREE(rd);
+}
+
+/**
+ * Free a rdf structure leave the 
+ * data pointer intact
+ * \param[in] rd the pointer to be freed
+ * \return void
+ */
 void 
 ldns_rdf_free(ldns_rdf *rd)
 {

@@ -22,7 +22,7 @@ LINTFLAGS	= +quiet +posixlib -weak -warnposix -unrecog -Din_addr_t=uint32_t -Du_
 
 LIBDNS_SOURCES	=	rdata.c util.c rr.c packet.c wire2host.c \
 			host2str.c buffer.c str2host.c resolver.c \
-			net.c
+			net.c 
 LIBDNS_HEADERS	=	ldns/error.h		\
 			ldns/packet.h		\
 			ldns/prototype.h 	\

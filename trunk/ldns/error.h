@@ -28,7 +28,8 @@ enum ldns_enum_status
 	LDNS_STATUS_INT_EXP,
 	LDNS_STATUS_INVALID_IP4,
 	LDNS_STATUS_INVALID_IP6,
-	LDNS_STATUS_INVALID_STR
+	LDNS_STATUS_INVALID_STR,
+	LDNS_STATUS_INVALID_B64
 };
 typedef enum ldns_enum_status ldns_status;
 
