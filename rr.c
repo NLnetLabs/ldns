@@ -103,7 +103,7 @@ ldns_rr_str_normalize(const char *rr)
 /**
  * \brief create a rr from a string
  * string should be a fully filled in rr, like
- * ownername <space> TTL <space> CLASS <space> TYPE <space> RDATA
+ * ownername &lt;space&gt; TTL &lt;space&gt; CLASS &lt;space&gt; TYPE &lt;space&gt; RDATA
  * \param[in] str the string to convert
  * \return the new rr
  */
@@ -183,7 +183,6 @@ ldns_rr_new_frm_str(const char *str)
 /**
  * Create a new rr from a file containing a string
  * \param[in] fp the file pointer  to use
- * \param[in] t   type to use
  * \return ldns_rr*
  */
 ldns_rr *

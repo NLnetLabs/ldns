@@ -594,8 +594,8 @@ ldns_pkt_push_rr(ldns_pkt *packet, ldns_pkt_section section, ldns_rr *rr)
 
 /** 
  * push an rr on a packet, provided the RR is not there.
- * \param[in] packet packet to operatore on
- * \param[in] section where to put it
+ * \param[in] pkt packet to operatore on
+ * \param[in] sec where to put it
  * \param[in] rr rr to push
  * \return ldns_status status
  */
@@ -778,9 +778,10 @@ ldns_pkt_query_new_frm_str(const char *name, ldns_rr_type rr_type, ldns_rr_class
 
 /**
  * Create a packet with a query in it
- * \param[in] name the name to query for
- * \param[in] type the type to query for
- * \param[in] class the class to query for
+ * \param[in] rr_name the name to query for
+ * \param[in] rr_type the type to query for
+ * \param[in] rr_class the class to query for
+ * \param[in] flags packet flags
  * \return ldns_pkt* a pointer to the new pkt
  */
 ldns_pkt *

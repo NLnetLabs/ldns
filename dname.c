@@ -25,12 +25,6 @@
 #include <arpa/inet.h>
 
 
-/**
- * concatenate two dnames together
- * \param[in] rd1 the leftside
- * \param[in] rd2 the rightside
- * \return a new rdf with leftside/rightside
- */
 ldns_rdf *
 ldns_dname_cat(ldns_rdf *rd1, ldns_rdf *rd2)
 {
@@ -62,12 +56,6 @@ ldns_dname_cat(ldns_rdf *rd1, ldns_rdf *rd2)
 	return new;
 }
 
-/**
- * chop one label off a dname. so 
- * wwww.nlnetlabs.nl, becomes nlnetlabs.nl
- * \param[in] d the dname to chop
- * \return the remaining dname
- */
 ldns_rdf *
 ldns_dname_left_chop(ldns_rdf *d)
 {
@@ -90,12 +78,6 @@ ldns_dname_left_chop(ldns_rdf *d)
 	return chop;
 }
 
-/**
- * count the number of labels inside a LDNS_RDF_DNAME type
- * rdf
- * \param[in] *r the rdf
- * \return the number of labels
- */     
 uint8_t         
 ldns_dname_label_count(ldns_rdf *r)
 {       
@@ -127,12 +109,6 @@ ldns_dname_label_count(ldns_rdf *r)
         }
 }
 
-/**
- * Create a new dname rdf from a string
- * \param[in] str string to use
- * \param[in] t   type to use
- * \return ldns_rdf*
- */
 ldns_rdf *
 ldns_dname_new_frm_str(const char *str)
 {
@@ -145,10 +121,6 @@ ldns_dname_new_frm_data(uint16_t size, const void *data)
 	return ldns_rdf_new_frm_data(LDNS_RDF_TYPE_DNAME, size, data);
 }
 
-/**
- * Put a dname into canonical fmt - ie. lowercase it
- * \param[in] rdf the dname to lowercase
- */
 void
 ldns_dname2canonical(const ldns_rdf *rd)
 {

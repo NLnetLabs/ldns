@@ -218,7 +218,7 @@ ldns_resolver_push_nameserver(ldns_resolver *r, ldns_rdf *n)
  * push a new nameserver to the resolver. It must be an 
  * A or AAAA RR record type
  * \param[in] r the resolver
- * \param[in] r the rr 
+ * \param[in] rr the resource record 
  * \return ldns_status a status
  */
 ldns_status
@@ -396,7 +396,6 @@ ldns_resolver_push_searchlist(ldns_resolver *r, ldns_rdf *d)
 
 /** 
  * \brief create a new resolver structure 
- * \param[in] void
  * \return ldns_resolver* pointer to new strcture
  */
 ldns_resolver *
@@ -574,6 +573,7 @@ ldns_resolver_free(ldns_resolver *res)
  * \param[in] *name query for this name
  * \param[in] *type query for this type (may be 0, defaults to A)
  * \param[in] *class query for this class (may be 0, default to IN)
+ * \param[in] flags the query flags
  * \return ldns_pkt* a packet with the reply from the nameserver
  * if _dnsrch is true add the searchlist
  */
@@ -593,6 +593,7 @@ ldns_resolver_search(ldns_resolver *r, ldns_rdf *name, ldns_rr_type type,
  * \param[in] *name query for this name
  * \param[in] *type query for this type (may be 0, defaults to A)
  * \param[in] *class query for this class (may be 0, default to IN)
+ * \param[in] flags the query flags
  * \return ldns_pkt* a packet with the reply from the nameserver
  * if _defnames is true the default domain will be added
  */
@@ -626,6 +627,7 @@ ldns_resolver_query(ldns_resolver *r, ldns_rdf *name, ldns_rr_type type, ldns_rr
  * \param[in] *name query for this name
  * \param[in] *type query for this type (may be 0, defaults to A)
  * \param[in] *class query for this class (may be 0, default to IN)
+ * \param[in] flags the query flags
  * \return ldns_pkt* a packet with the reply from the nameserver
  */
 ldns_pkt *

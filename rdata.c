@@ -244,9 +244,9 @@ ldns_rdf_new(ldns_rdf_type t, uint16_t s, void *d)
  * Allocate a new rdf structure and fill it.
  * This function _does_ copy the contents from
  * the buffer, unlinke ldns_rdf_new()
- * \param[in] s size of the buffer
- * \param[in] t type of the rdf
- * \param[in] buf pointer to the buffer to be copied
+ * \param[in] type type of the rdf
+ * \param[in] size size of the buffer
+ * \param[in] data pointer to the buffer to be copied
  * \return the new rdf structure or NULL on failure
  */
 ldns_rdf *
@@ -313,8 +313,8 @@ ldns_rdf_free(ldns_rdf *rd)
 
 /**
  * Create a new rdf from a string
+ * \param[in] type   type to use
  * \param[in] str string to use
- * \param[in] t   type to use
  * \return ldns_rdf*
  */
 ldns_rdf *
@@ -409,8 +409,8 @@ ldns_rdf_new_frm_str(ldns_rdf_type type, const char *str)
 
 /**
  * Create a new rdf from a file containing a string
+ * \param[in] type   type to use
  * \param[in] fp the file pointer  to use
- * \param[in] t   type to use
  * \return ldns_rdf*
  */
 ldns_rdf *
@@ -615,7 +615,7 @@ ldns_octet(char *word, size_t *length)
 /**
  * Compare two rdf's
  * \param[in] rd1 the first one
- * \parma[in] rd2 the second one
+ * \param[in] rd2 the second one
  * \return 0 if equal
  *         -1 if rd1 comes before rd2
  *         +1 if rd2 comes before rd1
@@ -648,8 +648,8 @@ ldns_rdf_compare(const ldns_rdf *rd1, const ldns_rdf *rd2)
 
 /**
  * convert a ttl value (5d2h) to a long
- * \param[in] nptr, the start of the string
- * \param[out] points to the last char in case of error
+ * \param[in] nptr the start of the string
+ * \param[out] endptr points to the last char in case of error
  * \return the convert duration value
  */
 uint32_t

@@ -226,7 +226,7 @@ ldns_key_list_set_key_count(ldns_key_list *key, size_t count)
 }       
 
 /**     
- * push an key to a keylist
+ * Pushes a key to a keylist
  * \param[in] key_list the key_list to push to 
  * \param[in] key the key to push 
  * \return false on error, otherwise true
@@ -255,8 +255,8 @@ ldns_key_list_push_key(ldns_key_list *key_list, ldns_key *key)
 }
 
 /**     
- * pop the last rr from a rrlist
- * \param[in] rr_list the rr_list to pop from
+ * Pops the last rr from a keylist
+ * \param[in] key_list the rr_list to pop from
  * \return NULL if nothing to pop. Otherwise the popped RR
  */     
 ldns_key *

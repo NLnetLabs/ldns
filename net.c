@@ -34,10 +34,10 @@
 
 
 /**
- * Send to ptk to the nameserver at ipnumber. Return the data
+ * Sends ptk to the nameserver at the resolver object. Returns the data
  * as a ldns_pkt
- * \param[in] resolver to use 
- * \param[in] query to send
+ * \param[in] r the resolver to use 
+ * \param[in] query_pkt the query to send
  * \return the pkt received from the nameserver
  */
 ldns_pkt *
@@ -127,10 +127,11 @@ ldns_send(ldns_resolver *r, ldns_pkt *query_pkt)
 }
 
 /**
- * Send a buffer to an ip using udp and return the respons as a ldns_pkt
+ * Sends a buffer to an ip using udp and return the respons as a ldns_pkt
  * \param[in] qbin the ldns_buffer to be send
  * \param[in] to the ip addr to send to
  * \param[in] tolen length of the ip addr
+ * \param[in] timeout the timeout value for the network
  * \return a packet with the answer
  */
 ldns_pkt *
@@ -330,6 +331,7 @@ ldns_tcp_read_packet(int sockfd)
  * \param[in] qbin the ldns_buffer to be send
  * \param[in] to the ip addr to send to
  * \param[in] tolen length of the ip addr
+ * \param[in] timeout the timeout value for the network
  * \return a packet with the answer
  */
 /* keep in mind that in DNS tcp messages the first 2 bytes signal the
