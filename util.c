@@ -34,7 +34,7 @@ xprintf_rr(t_rr *rr)
 	count = ldns_rr_rd_count(rr);
 
 	for(i = 0; i < count; i++) {
-		printf("print rd %u\n", i);
+		printf("print rd %u\n", (unsigned int) i);
 		xprintf_rd_field(rr->_rdata_fields[i]);
 	}
 }

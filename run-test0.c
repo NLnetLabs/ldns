@@ -51,21 +51,21 @@ main(void)
 	wire[19] = 0x6e;
 	
 	packet = dns_packet_new();
-	dns_wire2packet(wire, packet);
+	(void) dns_wire2packet(wire, packet);
 	
-	printf("packet id: %d\n", packet_id(packet));
-	printf("qr bit: %d\n", packet_qr(packet));
-	printf("opcode: %d\n", packet_opcode(packet));
-	printf("aa bit: %d\n", packet_aa(packet));
-	printf("tc bit: %d\n", packet_tc(packet));
-	printf("rd bit: %d\n", packet_rd(packet));
-	printf("cd bit: %d\n", packet_cd(packet));
-	printf("ra bit: %d\n", packet_ra(packet));
-	printf("ad bit: %d\n", packet_ad(packet));
-	printf("rcode: %d\n", packet_rcode(packet));
-	printf("qdcount: %d\n", packet_qdcount(packet));
-	printf("ancount: %d\n", packet_ancount(packet));
-	printf("nscount: %d\n", packet_nscount(packet));
-	printf("arcount: %d\n", packet_arcount(packet));
+	printf("packet id: %d\n", (int) packet_id(packet));
+	printf("qr bit: %d\n", (int) packet_qr(packet));
+	printf("opcode: %d\n",(int) packet_opcode(packet));
+	printf("aa bit: %d\n",(int) packet_aa(packet));
+	printf("tc bit: %d\n",(int) packet_tc(packet));
+	printf("rd bit: %d\n",(int) packet_rd(packet));
+	printf("cd bit: %d\n",(int) packet_cd(packet));
+	printf("ra bit: %d\n",(int) packet_ra(packet));
+	printf("ad bit: %d\n",(int) packet_ad(packet));
+	printf("rcode: %d\n",(int) packet_rcode(packet));
+	printf("qdcount: %d\n",(int) packet_qdcount(packet));
+	printf("ancount: %d\n",(int) packet_ancount(packet));
+	printf("nscount: %d\n",(int) packet_nscount(packet));
+	printf("arcount: %d\n",(int) packet_arcount(packet));
 	return 0;
 }
