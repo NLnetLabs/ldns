@@ -21,6 +21,11 @@
 
 #include "util.h"
 
+/* number of initial bytes in buffer of
+ * which we cannot tell the size before hand
+ */
+#define MIN_BUFLEN	256
+
 typedef struct buffer ldns_buffer;
 
 struct buffer
