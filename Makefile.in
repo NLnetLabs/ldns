@@ -21,7 +21,7 @@ LIBDNS_SOURCES=rdata.c util.c rr.c
 LIBDNS_HEADERS=rdata.h prototype.h rr.h packet.h
 LIBDNS_OBJECTS=$(LIBDNS_SOURCES:.c=.o)
 
-ALL_SOURCES=main.c $(LIBDNS_SOURCES)
+ALL_SOURCES=run-test0.c $(LIBDNS_SOURCES)
 
 COMPILE		= $(CC) $(CPPFLAGS) $(CFLAGS)
 LINK		= $(CC) $(CFLAGS) $(LDFLAGS)
@@ -31,8 +31,7 @@ LINK		= $(CC) $(CFLAGS) $(LDFLAGS)
 
 .PHONY:	clean realclean
 
-main:	main.o $(LIBDNS_OBJECTS)
-	$(LINK) -o $@ $+
+all:	run-test0
 
 run-test0:	run-test0.o $(LIBDNS_OBJECTS)
 		$(LINK) -o $@ $+
