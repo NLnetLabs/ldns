@@ -136,7 +136,6 @@ ldns_pkt_additional(const ldns_pkt *packet)
 ldns_rr_list *
 ldns_pkt_all(ldns_pkt *packet)
 {
-	/* mem leaks?? :( */
 	ldns_rr_list *all;
 
 	all = ldns_rr_list_cat(
@@ -152,7 +151,6 @@ ldns_pkt_all(ldns_pkt *packet)
 ldns_rr_list *
 ldns_pkt_all_noquestion(ldns_pkt *packet)
 {
-	/* mem leaks?? :( */
 	ldns_rr_list *all;
 
 	all = ldns_rr_list_cat(
