@@ -708,7 +708,8 @@ ldns_sign_public(ldns_rr_list *rrset, ldns_key_list *keys)
 		b64rdf = NULL;
 
 		current_key = ldns_key_list_key(keys, key_count);
-		current_sig = ldns_rr_new();
+		current_sig = ldns_rr_new_frm_type(LDNS_RR_TYPE_RRSIG);
+		/* set the type on the new signature */
 		orig_ttl = ldns_key_ttl(current_key);
 
 		/* set the ttl from the priv key on the rrset */
@@ -749,11 +750,13 @@ ldns_sign_public(ldns_rr_list *rrset, ldns_key_list *keys)
 		 * add that to the signature */
 		if (ldns_rrsig2buffer_wire(sign_buf, current_sig) != LDNS_STATUS_OK) {
 			ldns_buffer_free(sign_buf);
+			printf("couldn't convert to buffer 1\n");
 			/* ERROR */
 			return NULL;
 		}
 		/* add the rrset in sign_buf */
 		if (ldns_rr_list2buffer_wire(sign_buf, rrset_clone) != LDNS_STATUS_OK) {
+			printf("couldn't convert to buffer 2\n");
 			ldns_buffer_free(sign_buf);
 			return NULL;
 		}
@@ -774,6 +777,7 @@ ldns_sign_public(ldns_rr_list *rrset, ldns_key_list *keys)
 		}
 		if (!b64rdf) {
 			/* signing went wrong */
+			printf("couldn't sign!\n");
 			return NULL;
 		}
 		ldns_rr_rrsig_set_sig(current_sig, b64rdf);
