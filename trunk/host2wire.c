@@ -45,6 +45,20 @@ ldns_rdf2buffer_wire(ldns_buffer *buffer, const ldns_rdf *rdf)
 	return ldns_buffer_status(buffer);
 }
 
+/* convert a rr list to wireformat */
+ldns_status
+ldns_rr_list2buffer_wire(ldns_buffer *buffer, ldns_rr_list *rr_list)
+{
+	uint16_t rr_count;
+	uint16_t i;
+
+	rr_count = ldns_rr_list_rr_count(rr_list);
+	for(i = 0; i < rr_count; i++) {
+		ldns_rr2buffer_wire(buffer, ldns_rr_list_rr(rr_list, i), LDNS_SECTION_ANY);
+	}
+	return ldns_buffer_status(buffer);
+}
+
 ldns_status
 ldns_rr2buffer_wire(ldns_buffer *buffer, const ldns_rr *rr, int section)
 {
@@ -164,7 +178,7 @@ ldns_rr_rdata2buffer_wire(ldns_buffer *buffer, ldns_rr *rr)
 	}	
 #endif
 
-	/* now convert all the rdf */
+	/* convert all the rdf */
 	for (i = 0; i < ldns_rr_rd_count(rr); i++) {
 		(void) ldns_rdf2buffer_wire(buffer, ldns_rr_rdf(rr, i));
 	}
