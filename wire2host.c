@@ -135,9 +135,6 @@
 #define	ARCOUNT(wirebuf)		(read_uint16(wirebuf+ARCOUNT_OFF))
 
 
-/* TODO:
-         status_type return and remove printfs
-         #defines */
 /* allocates memory to *dname! */
 ldns_status
 ldns_wire2dname(ldns_rdf **dname, const uint8_t *wire, size_t max, size_t *pos)
