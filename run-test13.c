@@ -52,15 +52,13 @@ main(int argc, char **argv)
 		printf("\n");
 	}
 	
-	ldns_rr_set_push_rr(rrset, ldns_rr_new_frm_str("nlnetlabs.nl.  86400  IN  SOA      open.nlnetlabs.nl. hostmaster.nlnetlabs.nl. ( 2005021500 28800 7200 604800 18000  )"));
+	ldns_rr_set_push_rr(rrset, ldns_rr_new_frm_str("www.nlnetlabs.nl.   86354  IN  A        213.154.224.1"));
 	if (rrset) {
 		ldns_rr_list_print(stdout,rrset);
 		printf("\n");
 	}
 
-	sig = ldns_rr_new_frm_str("nlnetlabs.nl.  86400  IN  RRSIG    SOA RSASHA1 2 86400 1111020602 1108428602 ( 43791 nlnetlabs.nl.  dQrmV3Fnw1zB2Z5IgneDOsVlk1Sd33r6nYsep7zGfgAaybg7b4q0PpMTQ5B3fCQiAhch3BScacFcsudvZiKLBDZMdYrDxBwFTof9YcLqVSg/mGFtJm8TBAfy1acL+JeIkdcbB0t/y0gqPm8gjf1v1v4qtbvDI7iPsLnY20L/nv4= )");
-
-
+	sig = ldns_rr_new_frm_str("www.nlnetlabs.nl.   86400  IN  RRSIG    A RSASHA1 3 86400 1111020602 1108428602 ( 43791 nlnetlabs.nl.  Q/uyU1R/mLWsCONp5yu8F67Rm62yH/ts7PO3tFbZ72XONGlwliztUgHF5Cr0Jei/GsRb2TPpyHZjr5lkeFQU/PnFeUmiKT1tTw24OcYXaiFWbEsZ+ormYGtq+2t5cwvYEbZsMMsMikv+VRmG1y6b8sNObAeIjtRZhrXogQolCm4= )");
 
 	/* try to verify some things */
 	

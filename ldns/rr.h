@@ -265,7 +265,7 @@ size_t ldns_rr_descriptor_minimum(const ldns_rr_descriptor *);
 size_t ldns_rr_descriptor_maximum(const ldns_rr_descriptor *);
 ldns_rdf_type ldns_rr_descriptor_field_type(const ldns_rr_descriptor *, size_t);
 ldns_rr_type ldns_rr_get_type_by_name(const char *);
-ldns_rr_class ldns_get_class_by_name(const char *);
+ldns_rr_class ldns_rr_get_class_by_name(const char *);
 size_t ldns_rr_uncompressed_size(const ldns_rr *);
 int ldns_rr_compare(const ldns_rr *rr1, const ldns_rr *rr2);
 void ldns_rr_list_sort(ldns_rr_list *);
