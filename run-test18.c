@@ -61,7 +61,7 @@ main(int argc, char *argv[])
 	if (dnskey) {
 		ldns_rr_print(stdout, dnskey);
 		printf("; {%d}\n", 
-				ldns_calc_keytag(dnskey));
+				(int) ldns_calc_keytag(dnskey));
 		printf("\n");
 		ldns_key_set_keytag(privkey, ldns_calc_keytag(dnskey));
 	} else {
@@ -70,7 +70,7 @@ main(int argc, char *argv[])
 	if (dnskey_dsa) {
 		ldns_rr_print(stdout, dnskey_dsa);
 		printf("; {%d}\n", 
-				ldns_calc_keytag(dnskey_dsa));
+				(int) ldns_calc_keytag(dnskey_dsa));
 		printf("\n");
 		ldns_key_set_keytag(privkey_dsa, ldns_calc_keytag(dnskey_dsa));
 	} else {

@@ -879,7 +879,7 @@ ldns_axfr_next(ldns_resolver *resolver)
 	} else {
 		packet_wire = ldns_tcp_read_wire(resolver->_socket, &packet_wire_size);
 		
-		ldns_wire2pkt(&resolver->_cur_axfr_pkt, packet_wire, packet_wire_size);
+		(void) ldns_wire2pkt(&resolver->_cur_axfr_pkt, packet_wire, packet_wire_size);
 		free(packet_wire);
 /*		resolver->_cur_axfr_pkt = ldns_tcp_read_packet(resolver->_socket);*/
 
