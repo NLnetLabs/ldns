@@ -36,8 +36,7 @@ zparser_conv_short(ldns_rdf *rd, const char *shortstr)
 
 	r = MALLOC(uint16_t);
 	
-	/* *r = htons((uint16_t)strtol(shortstr, &end, 0)); */
-	*r = 8;
+	*r = htons((uint16_t)strtol(shortstr, &end, 0));
 	
 	if(*end != 0) {
 		return LDNS_STATUS_INT_EXP;
