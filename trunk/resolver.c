@@ -134,17 +134,30 @@ ldns_resolver_pop_nameserver(ldns_resolver *r)
 	ldns_rdf **nameservers;
 	ldns_rdf *pop;
 
+	printf("-- %d --\n", ldns_resolver_nameserver_count(r));
 	if (ldns_resolver_nameserver_count(r) == 0) {
 		return NULL;
 	}
+	printf("-- %d --\n", ldns_resolver_nameserver_count(r) - 1);
 	
 	nameservers = ldns_resolver_nameservers(r);
 	
-	pop = nameservers[ldns_resolver_nameserver_count(r)];
+	/*pop = ldns_rdf_deep_clone(
+		nameservers[ldns_resolver_nameserver_count(r)]);
+		*/
+
+	
+
+	pop = nameservers[1];
+	printf("rdf pop: ");
+	ldns_rdf_print(stdout, pop);
+	printf("\n");
 
 	/* delete the room of the last one */
+#if 0
 	nameservers = XREALLOC(nameservers, ldns_rdf *, 
 			(ldns_resolver_nameserver_count(r) - 1));
+#endif
 
 	ldns_resolver_dec_nameserver_count(r);
 	return pop;
@@ -177,7 +190,12 @@ ldns_resolver_push_nameserver(ldns_resolver *r, ldns_rdf *n)
 	nameservers[
 		ldns_resolver_nameserver_count(r)] = n;
 
+	printf("and finally pushing ");
+	ldns_rdf_print(stdout, n);
+	printf("[ as %d] \n", ldns_resolver_nameserver_count(r));
+
 	ldns_resolver_incr_nameserver_count(r);
+	printf("[ as %d] \n", ldns_resolver_nameserver_count(r));
 	return LDNS_STATUS_OK;
 }
 
@@ -198,6 +216,9 @@ ldns_resolver_push_nameserver_rr(ldns_resolver *r, ldns_rr *rr)
 		return LDNS_STATUS_ERR;
 	}
 	address = ldns_rr_rdf(rr, 0); /* extract the ip number */
+	printf("addres to push: ");
+	ldns_rdf_print(stdout, address);
+	printf("\n");
 	return ldns_resolver_push_nameserver(r, address);
 }
 
@@ -217,6 +238,8 @@ ldns_resolver_push_nameserver_rr_list(ldns_resolver *r, ldns_rr_list *rrlist)
 	stat = LDNS_STATUS_OK;
 	for(i = 0; i < ldns_rr_list_rr_count(rrlist); i++) {
 		rr = ldns_rr_list_rr(rrlist, i);
+		ldns_rr_print(stdout, rr);
+		printf(" push RR\n");
 		if (ldns_resolver_push_nameserver_rr(r, rr) !=
 				LDNS_STATUS_OK) {
 			stat = LDNS_STATUS_ERR;
