@@ -13,19 +13,21 @@
 #ifndef _LDNS_COMMON_H
 #define _LDNS_COMMON_H
 
-#ifdef HAVE_STDBOOL_H
-#include <stdbool.h>
-#else
+#if !defined(__cplusplus) && !defined(__bool_true_false_are_defined)
 
-#ifndef __cplusplus
+# if defined(HAVE_STDBOOL_H)
+#  include <stdbool.h>
+# else
 
 typedef unsigned char bool;
-#define false 0
-#define true  1
+#  define bool bool
+#  define false 0
+#  define true  1
+#  define __bool_true_false_are_defined 1
 
-#endif /* !__cplusplus */
+# endif
 
-#endif /* !HAVE_STDBOOL_H */
+#endif
 
 #ifdef HAVE_ATTR_FORMAT
 #define ATTR_FORMAT(archetype, string_index, first_to_check) \
