@@ -169,7 +169,10 @@ ldns_pkt_xxcount(ldns_pkt *packet, ldns_pkt_section s)
 		case LDNS_SECTION_ADDITIONAL:
 			return ldns_pkt_arcount(packet);
 		case LDNS_SECTION_ANY:
-			return 0;
+			return ldns_pkt_qdcount(packet) +
+				ldns_pkt_ancount(packet) +
+				ldns_pkt_nscount(packet) +
+				ldns_pkt_arcount(packet);
 	}
 	return 0;
 }
