@@ -120,6 +120,6 @@ t_packet *ldns_packet_new();
  * @param packet pointer to the structure to hold the packet
  * @return the number of bytes read from the wire
  */
-size_t ldns_wire2packet(uint8_t *data, size_t len, t_packet *packet);
+size_t ldns_wire2packet(t_packet *packet, const uint8_t *data, size_t len);
 
 #endif  /* !_LDNS_PACKET_H */

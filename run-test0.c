@@ -9,12 +9,17 @@
 
 #include "util.h"
 
+static const uint8_t wire[] = {
+	0xc2, 0xb4, 0x81, 0x80, 0x00, 0x01, 0x00, 0x01,
+	0x00, 0x02, 0x00, 0x02, 0x03, 0x77, 0x77, 0x77,
+	0x0b, 0x6b, 0x61, 0x6e
+};
+
 int
 main(void)
 {
 	t_rdata_field *rd_f;
 	t_rr *rr;
-	uint8_t *wire;
 	t_packet *packet;
 	
 	rr = ldns_rr_new();
@@ -26,30 +31,8 @@ main(void)
 
 	xprintf_rr(rr);
 
-	XMALLOC(wire, uint8_t, 100);
-	wire[0] = 0xc2;
-	wire[1] = 0xb4;
-	wire[2] = 0x81;
-	wire[3] = 0x80;
-	wire[4] = 0x00;
-	wire[5] = 0x01;
-	wire[6] = 0x00;
-	wire[7] = 0x01;
-	wire[8] = 0x00;
-	wire[9] = 0x02;
-	wire[10] = 0x00;
-	wire[11] = 0x02;
-	wire[12] = 0x03;
-	wire[13] = 0x77;
-	wire[14] = 0x77;
-	wire[15] = 0x77;
-	wire[16] = 0x0b;
-	wire[17] = 0x6b;
-	wire[18] = 0x61;
-	wire[19] = 0x6e;
-	
 	packet = ldns_packet_new();
-	(void) ldns_wire2packet(wire, 20, packet);
+	(void) ldns_wire2packet(packet, wire, sizeof(wire));
 	
 	printf("packet id: %d\n", (int) packet_id(packet));
 	printf("qr bit: %d\n", (int) packet_qr(packet));

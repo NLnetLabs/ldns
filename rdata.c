@@ -67,15 +67,16 @@ t_rdata_field *
 _ldns_rd_field_new(uint16_t s, t_rd_type t, uint8_t *d)
 {
 	t_rdata_field *rd;
-	MALLOC(rd, t_rdata_field);
-	if (!rd)
+	rd = MALLOC(t_rdata_field);
+	if (!rd) {
 		return NULL;
+	}
 
 	_ldns_rd_field_set_size(rd, s);
 	_ldns_rd_field_set_type(rd, t);
 	_ldns_rd_field_set_data(rd, d);
 
-	return(rd);
+	return rd;
 }
 
 /**
