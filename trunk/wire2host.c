@@ -295,6 +295,9 @@ ldns_wire2dname(ldns_rdf **dname, const uint8_t *wire, size_t max, size_t *pos)
 	dname_pos++;
 	
 	dname_ar = XMALLOC(uint8_t, dname_pos);
+	if (!dname_ar) {
+		return LDNS_STATUS_MEM_ERR;
+	}
 	memcpy(dname_ar, tmp_dname, dname_pos);
 	
 	*dname = ldns_rdf_new((uint16_t) dname_pos, LDNS_RDF_TYPE_DNAME,
@@ -318,11 +321,16 @@ ldns_wire2rr(ldns_rr *rr, const uint8_t *wire, size_t max,
              size_t *pos, int section)
 {
 	ldns_rdf *owner;
-	char *owner_str = XMALLOC(char, MAXDOMAINLEN);
+	char *owner_str;
 	uint16_t rd_length;
 	ldns_status status = LDNS_STATUS_OK;
 	
 	status = ldns_wire2dname(&owner, wire, max, pos);
+	char *owner_str = XMALLOC(char, MAXDOMAINLEN);
+	if (!owner_str) {
+		return LDNS_STATUS_MEM_ERR;
+	}
+	        
 /*	
 	ldns_rr_set_owner(rr, owner);
 */
