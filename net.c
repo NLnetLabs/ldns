@@ -128,21 +128,49 @@ ldns_send(ldns_resolver *r, ldns_pkt *query_pkt)
 		case 1: /*LDNS_RESOLVER_FL_TCP:*/
 			break;
 	}
+	return NULL;
 }
 
 
-#if 0
 /**
  */
 ldns_buffer *
-ldns_send_udp(ldns_buffer *qbin, const struct sockaddr *from, socklen_t fromlen,
-		const struct sockaddr *to, socklen_t tolen)
+ldns_send_udp(ldns_buffer *qbin, const struct sockaddr *to, socklen_t tolen)
 {
 	int sockfd;
+	ssize_t bytes;
+	ldns_buffer *answer;
 
-	sockfd = socket(
+	if ((sockfd = socket(to->sa_family, SOCK_DGRAM, IPPROTO_UDP)) == -1) {
+		return NULL;
+	}
 
+	bytes =  sendto(sockfd, ldns_buffer_begin(qbin),
+			ldns_buffer_capacity(qbin), 0, to, tolen);
+
+	if (bytes == -1) {
+		close(sockfd);
+		return NULL;
+	}
+
+	if ((size_t) bytes != ldns_buffer_capacity(qbin)) {
+		close(sockfd);
+		return NULL;
+	}
 	
+	/* wait for an response*/
+	answer = ldns_buffer_new(MAX_PACKET_SIZE);
+	bytes = recv(sockfd, ldns_buffer_begin(answer),
+			MAX_PACKET_SIZE, 0);
+	
+	close(sockfd);
 
+	if (bytes == -1) {
+		ldns_buffer_free(answer);
+		return NULL;
+	}
+	/* resize accordingly */
+	ldns_buffer_set_capacity(answer, (size_t) bytes);
+
+	return answer;
 }
-#endif
