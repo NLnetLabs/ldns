@@ -141,11 +141,49 @@ ldns_rdf_free(ldns_rdf *rd)
 ldns_dname *
 ldns_dname_new_frm_str(const char *str)
 {
-	ldns_rdf *rd;
-	if (ldns_str2rdf_dname(&rd, (const uint8_t*) str) != LDNS_STATUS_OK) {
+	ldns_dname *d;
+	if (ldns_str2rdf_dname(&d, (const uint8_t*) str) != LDNS_STATUS_OK) {
 		return NULL ;
 	}
-	return rd;
+	return d;
+}
+
+/**
+ * Allocate a new dname structure and fill it.
+ * This function _does_ copy the contents from
+ * the buffer, unlinke ldns_rdf_new()
+ * \param[in] s size of the buffer
+ * \param[in] buf pointer to the buffer to be copied
+ * \return the new dname structure or NULL on failure
+ */
+ldns_dname *
+ldns_dname_new_frm_data(uint16_t s, void *buf)
+{
+	ldns_dname *d;
+	d = MALLOC(ldns_dname);
+	if (!d) {
+		return NULL;
+	}
+	d->_data = XMALLOC(uint8_t, s);
+	if (!d->_data) {
+		return NULL;
+	}
+	d->_size = s;
+	memcpy(d->_data, buf, s);
+	return d;
+}
+
+/**
+ * free a rdf structure _and_ free the
+ * data. rdf should be created with _new_frm_data
+ * \param[in] rd the rdf structure to be freed
+ * \return void
+ */
+void
+ldns_dname_free_data(ldns_dname *d)
+{
+	FREE(d->_data);
+	FREE(d);
 }
 	
 
@@ -165,7 +203,7 @@ ldns_rdf_new_frm_str(const char *str, ldns_rdf_type t)
         	case LDNS_RDF_TYPE_NONE:
 			break;
 	        case LDNS_RDF_TYPE_DNAME:
-			stat = ldns_str2rdf_dname(&rd, (const uint8_t*) str);
+			printf("use the ldns_dname type!!\n\n");
 			break;
         	case LDNS_RDF_TYPE_INT8:
 			stat = ldns_str2rdf_int8(&rd, (const uint8_t*) str);

@@ -36,31 +36,6 @@ ldns_send_pkt(ldns_resolver *r, ldns_pkt *query)
 {
 	/* the resolver has a lot of flags,
 	 * make one giant switch the handles them */
-	uint8_t config;
-
-	struct sockaddr_in src, dest;
-	int sockfd;
-
-	/* binary */
-	config = ldns_resolver_ip6(r) * 2 +
-		ldns_resolver_usevc(r);
-
-	switch(config) {
-		case 0:
-			/* ip4/udp */
-			src.sin_family = AF_INET;
-			src.sin_addr.s_addr(in_addr_t)htonl(INADDR_ANY);
-			break;
-		case 1:
-			/* ip4/tcp */
-			break;
-		case 2:
-			/* ip6/udp */
-			break;
-		case 3:
-			/* ip6/tcp */
-			break;
-	}
 	return NULL;
 }
 
@@ -124,3 +99,50 @@ ldns_sendbuf_axfr(ldns_buffer *buf, int *sockfd, struct sockaddr *dest)
 {
 	return NULL;
 }
+
+/**
+ * Send to ptk to the nameserver at ipnumber. Return the data
+ * as a ldns_pkt
+ * \param[in] resolver to use 
+ * \param[in] query to send
+ * \return the pkt received from the nameserver
+ */
+ldns_pkt *
+ldns_send(ldns_resolver *r, ldns_pkt *query_pkt)
+{
+	uint8_t flags;
+	
+	/* create a socket 
+	 * create a binary packet
+	 * call the lowlevel send stuff
+	 * and fire it off
+	 */
+	/* try all nameservers in sequence */
+	
+	switch (flags) {
+		case 0 /*LDNS_RESOLVER_FL_UDP:*/:
+			
+	
+		
+			break;
+		case 1: /*LDNS_RESOLVER_FL_TCP:*/
+			break;
+	}
+}
+
+
+#if 0
+/**
+ */
+ldns_buffer *
+ldns_send_udp(ldns_buffer *qbin, const struct sockaddr *from, socklen_t fromlen,
+		const struct sockaddr *to, socklen_t tolen)
+{
+	int sockfd;
+
+	sockfd = socket(
+
+	
+
+}
+#endif
