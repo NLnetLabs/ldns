@@ -17,10 +17,12 @@ main(int argc, char **argv)
 	ldns_rr_list *keys_rrset;
 	ldns_rr *sig;
 	ldns_rr_list *rrset;
+	ldns_rr_list *rrset2;
 
 
 	keys_rrset = ldns_rr_list_new();
 	rrset = ldns_rr_list_new();
+	rrset2 = ldns_rr_list_new();
 
 	if (argc >= 2) {
 		nameserver_address = argv[1];
@@ -57,6 +59,9 @@ main(int argc, char **argv)
 		ldns_rr_list_print(stdout,rrset);
 		printf("\n");
 	}
+	ldns_rr_set_push_rr(rrset2, ldns_rr_new_frm_str("www.nlnetlabs.nl.   86354  IN  A        213.154.224.2"));
+	ldns_rr_list_print(stdout,rrset2);
+	printf("\nrrset2");
 
 	sig = ldns_rr_new_frm_str("www.nlnetlabs.nl.   86400  IN  RRSIG    A RSASHA1 3 86400 1111020602 1108428602 ( 43791 nlnetlabs.nl.  Q/uyU1R/mLWsCONp5yu8F67Rm62yH/ts7PO3tFbZ72XONGlwliztUgHF5Cr0Jei/GsRb2TPpyHZjr5lkeFQU/PnFeUmiKT1tTw24OcYXaiFWbEsZ+ormYGtq+2t5cwvYEbZsMMsMikv+VRmG1y6b8sNObAeIjtRZhrXogQolCm4= )");
 	if (sig) {
@@ -69,8 +74,15 @@ main(int argc, char **argv)
 	
 	printf("Key tag %d\n", ldns_keytag(ldns_rr_list_rr(keys_rrset, 0)));
 	
-	
 	if (ldns_verify_rrsig(rrset, sig, keys_rrset)) {
+		printf("it verifies!!!\n");
+	} else {
+		printf("*bummer*\n");
+	}
+
+	printf("\n*** This one should fail! ***\n\n");
+
+	if (ldns_verify_rrsig(rrset2, sig, keys_rrset)) {
 		printf("it verifies!!!\n");
 	} else {
 		printf("*bummer*\n");

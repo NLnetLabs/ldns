@@ -95,7 +95,11 @@ ldns_verify_rrsig(ldns_rr_list *rrset, ldns_rr *rrsig, ldns_rr_list *keys)
 	uint8_t sig_algo;
 	bool result;
 	ldns_rr *current_key;
+	ldns_rr_list *rrset_clone;
 
+	/* clone the rrset so that we can fiddle with it */
+	rrset_clone = ldns_rr_list_clone(rrset);
+	
 	/* create the buffers which will certainly hold the raw data */
 	rawsig_buf = ldns_buffer_new(MAX_PACKETLEN);
 	verify_buf  = ldns_buffer_new(MAX_PACKETLEN);
@@ -116,14 +120,16 @@ ldns_verify_rrsig(ldns_rr_list *rrset, ldns_rr *rrsig, ldns_rr_list *keys)
 
 	/* should work on copies */
 	/* reset the ttl in the rrset with the orig_ttl from the sig */
-	for(i = 0; i < ldns_rr_list_rr_count(rrset); i++) {
+	for(i = 0; i < ldns_rr_list_rr_count(rrset_clone); i++) {
 		ldns_rr_set_ttl(
-				ldns_rr_list_rr(rrset, i),
+				ldns_rr_list_rr(rrset_clone, i),
 				orig_ttl);
+		/* convert to lowercase */
+		ldns_rr2canonical(ldns_rr_list_rr(rrset_clone, i));
 	}
 
 	/* sort the rrset in canonical order  */
-	ldns_rr_list_sort(rrset);
+	ldns_rr_list_sort(rrset_clone);
 
 	/* put the signature rr (without the b64) to the verify_buf */
 	if (ldns_rrsig2buffer_wire(verify_buf, rrsig) != LDNS_STATUS_OK) {
@@ -133,11 +139,14 @@ ldns_verify_rrsig(ldns_rr_list *rrset, ldns_rr *rrsig, ldns_rr_list *keys)
 	}
 
 	/* add the rrset in verify_buf */
-	if (ldns_rr_list2buffer_wire(verify_buf, rrset) != LDNS_STATUS_OK) {
+	if (ldns_rr_list2buffer_wire(verify_buf, rrset_clone) != LDNS_STATUS_OK) {
 		ldns_buffer_free(rawsig_buf);
 		ldns_buffer_free(verify_buf);
 		return false;
 	}
+
+	/* no longer needed */
+	ldns_rr_list_free(rrset_clone);
 
 	for(i = 0; i < ldns_rr_list_rr_count(keys); i++) {
 		current_key = ldns_rr_list_rr(keys, i);

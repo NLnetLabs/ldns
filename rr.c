@@ -1083,3 +1083,17 @@ ldns_rr2canonical(ldns_rr *rr)
 		ldns_dname2canonical(ldns_rr_rdf(rr, i));
 	}
 }
+
+/** 
+ * convert each dname in each rr in a rr_list to its canonical form
+ * \param[in] rr_list the rr_list to work on
+ * \return void
+ */
+void
+ldns_rr_list2canonical(ldns_rr_list *rr_list)
+{
+	uint16_t i;
+	for (i = 0; i < ldns_rr_list_rr_count(rr_list); i++) {
+		ldns_rr2canonical(ldns_rr_list_rr(rr_list, i));
+	}
+}
