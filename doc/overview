@@ -3,6 +3,14 @@ ldns - Overview document
 1. Introduction
 
 
+1.1 Global decisions
+  o IP4/6 agnostic - only the resolver at is lowest level will handle/see
+    this.
+  o Keep an eye on a windows API for portability issues. 
+  o Compression happens only in the WIRE module. For compressible RR 
+    is known by the library.
+
+
 2. Different parts of ldns:
 
                               - CLIENT -
@@ -95,8 +103,13 @@ information which is then stored in RR structures.
 
 5. RESOLVER module and CENTRAL structures Interface
 The resolver module always returns pkt structure.
+
 The function-call parameters have not yet been 
 decided on.
+
+Also the resolver module will need to access some of the
+to_wire and from_wire function to creates ldn_pkt's from
+the data it receives (arrow not drawn).
 
 6. STR module and CENTRAL structures Interface
 Convert to and from strings. This module could be used
