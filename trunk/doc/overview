@@ -5,11 +5,13 @@ ldns - Overview document
 
 1.1 Global decisions
   o IP4/6 agnostic - only the resolver at is lowest level will handle/see
-    this.
-  o Keep an eye on a windows API for portability issues. 
-  o Compression happens only in the WIRE module. For compressible RR 
-    is known by the library.
-
+    this. (there will be an option to force 4 or 6)
+  o Keep an eye on the network API for portability issues. 
+  o Compression happens only in the WIRE module. Compressible RRs
+    are known by the library.
+  o I you know what you do you should be able to bypass the resolver
+    module and directly talk to the network module.
+  o All modules will export functions to be used to client applications.
 
 2. Different parts of ldns:
 
@@ -39,11 +41,11 @@ ldns - Overview document
 
 
 Currently not there:
-A zone structure
-A encoder/decoder object which can be overloaded to 
-use specific functions. NSD likes to have this, for instance.
-Tsig functionality
-Dynamic update function
+o A zone structure
+o A encoder/decoder object which can be overloaded to 
+  use specific functions. NSD likes to have this, for instance.
+o Tsig functionality
+o Dynamic update function
 
 
 3. CENTRAL structures
@@ -51,17 +53,16 @@ Dynamic update function
 nlnetlabs.nl.   600     IN      MX      10    open.nlnetlabs.nl.
  \              \       \       \       \_                  _/
    _owner        _ttl    _klass   _type    \_  rdf[]      _/
-  (dname)  (uint16_t) (rr_class) (rr_type)
+  (rdf)     (uint16_t) (rr_class) (rr_type)
                                            10          := rdf[0]
                                     open.nlnetlabs.nl. := rdf[1]
 
-The LHS is put in a dname structure, which is a special rdf structure
-that can only hold a dname. An rdf structure has 3 members; the size,
-the type is carrying and a void * pointer to the data.
+* rdf structure:
+The LHS is put in a rdf structure, which is a normal rdf but always has the
+type LDNS_RDF_TYPE_DNAME.
 
-A dname struct is equal to a rdf, except that its type is always
-set to LDNS_RDF_TYPE_DNAME. Everything is type LDNS_RDF_TYPE_DNAME
-is always in uncompressed wireformat.
+An rdf structure has 3 members; the size, the type is carrying and a void *
+pointer to the data. The data is always in uncompressed wireformat.
 
 The RSH (rdata) is put in an array of rdf's (in this case 2).
 
@@ -76,29 +77,34 @@ the fields described above (under the RR):
                 rdf[0]  (10)
                 rdf[1]  (open.nlnetlabs.nl.)
 
-
+* RR list structure:
 An RR list structure is simply structure with a counter
-and an array of RR structures.
+and an array of RR structures. Different kinds of RR's can
+be grouped together this way.
 
+* RR set structure
 An RR set structure is an RR list structure, but its accessor
 function check if the RR's in there are: 
  - from the same type
  - have the same TTL
  - have the same ownername
 
+This is the RFC definition of an RRset.
+
+* pkt structure:
 A pkt structure consists out of a header structure where 
 packet specific flags are kept, TC, RD, IP from server which
 sent the packet, etc.
 Further more it is divided in 4 sections: question, authority, answer
 and additional.
 
-All four sections have the type RRlist that simple hold a list of RR's
+All four sections have the type RRlist that simply hold a list of RR's
 
 
 4. WIRE module and CENTRAL structures Interface
 As the WIRE module takes care of the compression/decompression
 it needs a buffer which holds all the binary DNS data.
-All functions will operate on such buffer to extract specific
+All functions will operate on such a buffer to extract specific
 information which is then stored in RR structures.
 
 5. RESOLVER module and CENTRAL structures Interface
