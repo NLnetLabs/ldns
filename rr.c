@@ -150,7 +150,19 @@ ldns_rr_new_frm_str(const char *str)
 	rdata = XMALLOC(char, MAX_PACKETLEN + 1);
 	str_normalized = ldns_rr_str_normalize(str);
 	
+/*
 	sscanf(str_normalized, "%255s%20s%10s%9s%65535c", owner, ttl, clas, type, rdata);
+*/
+	rd = strtok(str_normalized, "\t \0");
+	strncpy(owner, rd, MAX_DOMAINLEN + 1);
+	rd = strtok(NULL, "\t \0");
+	strncpy(ttl, rd, 21);
+	rd = strtok(NULL, "\t \0");
+	strncpy(clas, rd, 11);
+	rd = strtok(NULL, "\t \0");
+	strncpy(type, rd, 10);
+	rd = strtok(NULL, "\0");
+	strncpy(rdata, rd, MAX_PACKETLEN + 1);
 
 	ldns_rr_set_owner(new, ldns_dname_new_frm_str(owner));
 	/* ttl might be more complicated, like 2h, or 3d5h */
@@ -165,7 +177,6 @@ ldns_rr_new_frm_str(const char *str)
 	r_max = ldns_rr_descriptor_maximum(desc);
 	r_min = ldns_rr_descriptor_minimum(desc);
 
-	/* this breaks with nsec */
 	for(rd = strtok(rdata, "\t \0"), r_cnt =0; rd; rd = strtok(NULL, "\t \0"), r_cnt++) {
 		r = ldns_rdf_new_frm_str(
 			ldns_rr_descriptor_field_type(desc, r_cnt),
@@ -181,6 +192,7 @@ ldns_rr_new_frm_str(const char *str)
 			return NULL;
 		}
 	}
+	
 	return new;
 }
 
