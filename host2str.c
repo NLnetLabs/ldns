@@ -75,28 +75,25 @@ ldns_lookup_table ldns_opcodes[] = {
 	{ 0, NULL }
 };
 
-/* this is temp function for debugging wire2rr */
 /* do NOT pass compressed data here :p */
-#if 0 
-DOES NOT COMPILE ANY MORE DUE TO void*
 ldns_status
 ldns_rdf2buffer_dname(ldns_buffer *output, ldns_rdf *dname)
 {
 	/* can we do with 1 pos var? or without at all? */
 	uint8_t src_pos = 0;
 	uint8_t len;
-	len = dname->_data[src_pos];
+	uint8_t *data = (uint8_t *) dname->_data;
+	len = data[src_pos];
 	while (len > 0) {
 		src_pos++;
-		ldns_buffer_write(output, &(dname->_data[src_pos]), len);
+		ldns_buffer_write(output, &data[src_pos], len);
 		src_pos += len;
-		len = dname->_data[src_pos];
+		len = data[src_pos];
 		ldns_buffer_printf(output, ".");
 	}
 	
 	return ldns_buffer_status(output);
 }
-#endif
 
 ldns_status
 ldns_rdf2buffer_int8(ldns_buffer *output, ldns_rdf *rdf)
@@ -582,7 +579,7 @@ ldns_rdf2buffer(ldns_buffer *buffer, ldns_rdf *rdf)
 	case LDNS_RDF_TYPE_NONE:
 		break;
 	case LDNS_RDF_TYPE_DNAME:
-		/*res = ldns_rdf2buffer_dname(buffer, rdf);*/
+		res = ldns_rdf2buffer_dname(buffer, rdf);
 		break;
 	case LDNS_RDF_TYPE_INT8:
 		res = ldns_rdf2buffer_int8(buffer, rdf);
@@ -662,7 +659,7 @@ ldns_rr2buffer(ldns_buffer *output, ldns_rr *rr)
 	const ldns_rr_descriptor *descriptor;
 	
 	if (ldns_rr_owner(rr)) {
-		/*status = ldns_rdf2buffer_dname(output, ldns_rr_owner(rr));*/
+		status = ldns_rdf2buffer_dname(output, ldns_rr_owner(rr));  
 	}
 	if (status != LDNS_STATUS_OK) {
 		return status;
