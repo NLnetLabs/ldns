@@ -177,8 +177,7 @@ ldns_send_udp(ldns_buffer *qbin, const struct sockaddr_storage *to, socklen_t to
 	}
 	
 	/* wait for an response*/
-	/*answer = XMALLOC(uint8_t, MAX_PACKETLEN);*/
-	answer = (uint8_t*) malloc(MAX_PACKETLEN);
+	answer = XMALLOC(uint8_t, MAX_PACKETLEN);
 	if (!answer) {
 		printf("respons alloc error\n");
 		return NULL;
@@ -198,7 +197,7 @@ ldns_send_udp(ldns_buffer *qbin, const struct sockaddr_storage *to, socklen_t to
 	}
 	
 	/* resize accordingly */
-	answer = XREALLOC(answer, uint8_t *, (size_t) bytes);
+	answer = (uint8_t*)XREALLOC(answer, uint8_t *, (size_t) bytes);
 
         if (ldns_wire2pkt(&answer_pkt, answer, (size_t) bytes) != 
 			LDNS_STATUS_OK) {

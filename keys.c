@@ -7,4 +7,5 @@
  */
 
 #include <config.h>
-#include <ldns/keys.h>
+
+#include <util.h>

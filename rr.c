@@ -12,12 +12,14 @@
  */
 
 #include <config.h>
+
 #include <limits.h>
-#include <ldns/rr.h>
 #include <strings.h>
 
-#include "util.h"
+#include <ldns/rr.h>
 #include <ldns/dns.h>
+
+#include "util.h"
 
 /**
  * \brief create a new rr structure.

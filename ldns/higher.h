@@ -11,6 +11,9 @@
  * See the file LICENSE for the license
  */
 
+#ifndef _LDNS_HIGHER_H
+#define _LDNS_HIGHER_H
+
 #include <ldns/resolver.h>
 #include <ldns/rdata.h>
 #include <ldns/rr.h>
@@ -30,3 +33,4 @@ ldns_get_rr_list_addr_by_name(ldns_resolver *r, ldns_rdf *name, ldns_rr_class c,
  */
 ldns_rr_list *
 ldns_get_rr_list_name_by_addr(ldns_resolver *r, ldns_rdf *addr, ldns_rr_class c, uint16_t flags);
+#endif /* _LDNS_HIGHER_H */

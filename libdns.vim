@@ -226,6 +226,11 @@ syn keyword  ldnsConstant	MIN_BUFLEN
 " ldns/host2str.h
 syn keyword  ldnsType	ldns_lookup_table
 
+" ldns/keys.h
+syn keyword  ldnsType   ldns_key
+syn keyword  ldnsType   ldns_key_list
+
+
 " Default highlighting
 command -nargs=+ HiLink hi def link <args>
 HiLink ldnsType                Type
