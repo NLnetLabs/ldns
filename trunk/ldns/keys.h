@@ -15,9 +15,8 @@
 #define _LDNS_KEYS_H
 
 #include <openssl/ssl.h>
-#include <util.h>
-
 #include <ldns/dnssec.h>
+#include <util.h>
 
 extern ldns_lookup_table ldns_signing_algorithms[];
 

@@ -42,6 +42,31 @@ ldns_rr_new(void)
         return rr;
 }
 
+/** 
+ * create a new rr structure and based on the type
+ * alloc enough space to hold all the rdf's
+ */
+ldns_rr *
+ldns_rr_new_frm_type(ldns_rr_type t)
+{
+	ldns_rr *rr;
+	const ldns_rr_descriptor *desc;
+
+	rr = MALLOC(ldns_rr);
+        if (!rr) {
+                return NULL;
+	}
+	
+	desc = ldns_rr_descript(t);
+	rr->_rdata_fields = XMALLOC(ldns_rdf *, 
+			ldns_rr_descriptor_minimum(desc));
+	ldns_rr_set_rd_count(rr, 0);
+	ldns_rr_set_class(rr, LDNS_RR_CLASS_IN);
+	ldns_rr_set_ttl(rr, LDNS_DEFTTL);
+	ldns_rr_set_type(rr, t);
+	return rr;
+}
+
 /**
  * \brief free a RR structure
  * \param[in] *rr the RR to be freed 
@@ -161,7 +186,6 @@ ldns_rr_new_frm_str(const char *str)
 
 	/* this breaks with nsec */
 	for(rd = strtok(rdata, "\t \0"), r_cnt =0; rd; rd = strtok(NULL, "\t \0"), r_cnt++) {
-		printf("rd found %s\n", rd);
 		r = ldns_rdf_new_frm_str(
 			ldns_rr_descriptor_field_type(desc, r_cnt),
 			rd);

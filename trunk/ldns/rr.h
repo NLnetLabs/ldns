@@ -240,6 +240,7 @@ typedef struct ldns_struct_rr_descriptor ldns_rr_descriptor;
  * \param none 
  */
 ldns_rr * ldns_rr_new(void);
+ldns_rr * ldns_rr_new_frm_type(ldns_rr_type t);
 void ldns_rr_set_owner(ldns_rr *, ldns_rdf *);
 void ldns_rr_set_ttl(ldns_rr *, uint32_t);
 void ldns_rr_set_rd_count(ldns_rr *, uint16_t);
