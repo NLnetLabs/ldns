@@ -12,20 +12,25 @@
 #include <ldns/host2str.h>
 
 int
-main(void)
+main(int argc, char **argv)
 {       
         ldns_resolver *res;
         ldns_rdf *qname;
         ldns_rdf *nameserver;
         ldns_pkt *pkt;
 	ldns_rr_list *bla;
-        
+        const char *nameserver_address = "127.0.0.1";
+
+	if (argc >= 2) {
+		nameserver_address = argv[1];
+	}
+	
         /* init */
         res = ldns_resolver_new(); 
         if (!res)
                 return -1;
 
-        nameserver  = ldns_rdf_new_frm_str("127.0.0.1", LDNS_RDF_TYPE_A);
+        nameserver = ldns_rdf_new_frm_str(nameserver_address, LDNS_RDF_TYPE_A);
         if (ldns_resolver_push_nameserver(res, nameserver) != LDNS_STATUS_OK) {
 		printf("error push nameserver\n");
 		return -1;
@@ -44,7 +49,7 @@ main(void)
 
 		ldns_rr_list_print(stdout, bla);
 
-		ldns_rr_list_sort(&bla);
+		ldns_rr_list_sort(bla);
 		
 		printf("sorted\n");
 		ldns_rr_list_print(stdout, bla);
