@@ -933,8 +933,12 @@ ldns_rr *
 ldns_rr_clone(ldns_rr *rr)
 {
 	uint16_t i;
-	
-	ldns_rr *new_rr = ldns_rr_new();
+	ldns_rr *new_rr;
+		
+	new_rr = ldns_rr_new();
+	if (!new_rr) {
+		return NULL;
+	}
 	ldns_rr_set_owner(new_rr, ldns_rdf_clone(ldns_rr_owner(rr)));
 	ldns_rr_set_ttl(new_rr, ldns_rr_ttl(rr));
 	ldns_rr_set_type(new_rr, ldns_rr_get_type(rr));
@@ -945,6 +949,28 @@ ldns_rr_clone(ldns_rr *rr)
 	}
 
 	return new_rr;
+}
+
+/**
+ * Clone an rr list
+ * \param[in] rrlist the rrlist to clone
+ * \return the cloned rr list
+ */
+ldns_rr_list *
+ldns_rr_list_clone(ldns_rr_list *rrlist)
+{
+	uint16_t i;
+	ldns_rr_list *new_list;
+
+	new_list = ldns_rr_list_new();
+	if (!new_list) {
+		return NULL;
+	}
+	for (i = 0; i < ldns_rr_list_rr_count(rrlist); i++) {
+		ldns_rr_list_push_rr(new_list,
+				ldns_rr_clone(ldns_rr_list_rr(rrlist, i)));
+	}
+	return new_list;
 }
 
 static int
