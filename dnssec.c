@@ -750,9 +750,10 @@ ldns_sign_shared(void)
 
 /**
  * use this function to sign with a public/private key alg
+ * return the created signatures
  */
-ldns_status
-/*ldns_sign_public(ldns_rr_list *rrset, ldns_)*/
+ldns_rr_list *
+/*ldns_sign_public(ldns_rr_list *rrset, ldns_key_list *keys)*/
 ldns_sign_public(void)
 {
 	return LDNS_STATUS_OK;

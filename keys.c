@@ -12,6 +12,16 @@
 
 #include <util.h>
 
+
+ldns_lookup_table ldns_signing_algorithms[] = {
+        { LDNS_SIGN_ALG_RSAMD5, "RSAMD5" },
+        { LDNS_SIGN_ALG_RSASHA1, "RSASHA1" },
+        { LDNS_SIGN_ALG_DSAMD5, "DSAMD5" },
+        { LDNS_SIGN_ALG_DSASHA1, "DSASHA1" },
+        { LDNS_SIGN_ALG_HMACMD5, "hmac-md5.sig-alg.reg.int" },
+        { 0, NULL }
+};
+
 ldns_key_list *
 ldns_key_list_new()
 {
@@ -74,5 +84,3 @@ ldns_key_list_push_key(ldns_key_list *key_list, ldns_key *key)
         ldns_key_list_set_key_count(key_list, key_count + 1);
         return true;
 }
-
-
