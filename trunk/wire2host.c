@@ -295,6 +295,9 @@ ldns_wire2rdf(ldns_rr *rr, const uint8_t *wire,
 		case LDNS_RDF_TYPE_A:
 			cur_rdf_length = 4;
 			break;
+		case LDNS_RDF_TYPE_TSIGTIME:
+			cur_rdf_length = 6;
+			break;
 		case LDNS_RDF_TYPE_AAAA:
 			cur_rdf_length = 32;
 			break;
