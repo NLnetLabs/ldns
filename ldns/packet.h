@@ -13,6 +13,7 @@
 #ifndef _LDNS_PACKET_H
 #define _LDNS_PACKET_H
 
+#include <ldns/error.h>
 #include <ldns/common.h>
 #include <ldns/rr.h>
 
@@ -118,15 +119,5 @@ ldns_pkt *ldns_pkt_new();
  * @param packet The packet structure to free
  */
 void ldns_pkt_free(ldns_pkt *packet);
-
-/**
- * Converts the data on the uint8_t bytearray (in wire format) to a DNS packet
- *
- * @param data pointer to the buffer with the data
- * @param len the length of the data buffer (in bytes)
- * @param packet pointer to the structure to hold the packet
- * @return the number of bytes read from the wire
- */
-size_t ldns_wire2pkt(ldns_pkt *packet, const uint8_t *data, size_t len);
 
 #endif  /* !_LDNS_PACKET_H */

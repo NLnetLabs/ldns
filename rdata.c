@@ -114,7 +114,7 @@ _ldns_octet(char *word, size_t *length)
             case '.':
                 if (s[1] == '.') {
                     fprintf(stderr,"Empty label");
-		    return LDNS_E_EMPTY_LABEL;
+		    return LDNS_STATUS_EMPTY_LABEL;
                 }
                 *p = *s;
                 *length++;
@@ -134,7 +134,7 @@ _ldns_octet(char *word, size_t *length)
                         *p = val;
                         *length++;
                     } else {
-                        return LDNS_E_DDD_OVERFLOW;
+                        return LDNS_STATUS_DDD_OVERFLOW;
                     }
                 } else {
                     /* an espaced character, like \<space> ? 
@@ -153,7 +153,7 @@ _ldns_octet(char *word, size_t *length)
                 if ( *s == '\0' ) {
                     /* ok, it was the last one */
                     *p  = '\0'; 
-		    return LDNS_E_OK;
+		    return LDNS_STATUS_OK;
                 }
                 break;
             default:
@@ -163,5 +163,5 @@ _ldns_octet(char *word, size_t *length)
         }
     }
     *p = '\0';
-    return LDNS_E_OK;
+    return LDNS_STATUS_OK;
 }
