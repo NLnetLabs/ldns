@@ -140,6 +140,18 @@ ldns_resolver_timeout(ldns_resolver *r)
 	return r->_timeout;
 } 
 
+char *
+ldns_resolver_tsig_keyname(ldns_resolver *r)
+{
+	return r->_tsig_keyname;
+}
+
+char *
+ldns_resolver_tsig_keydata(ldns_resolver *r)
+{
+	return r->_tsig_keydata;
+}
+
 /* write */
 void
 ldns_resolver_set_port(ldns_resolver *r, uint16_t p)
@@ -392,6 +404,18 @@ ldns_resolver_push_searchlist(ldns_resolver *r, ldns_rdf *d)
 	r->_searchlist[++r->_searchlist_count] = d;
 }
 
+void
+ldns_resolver_set_tsig_keyname(ldns_resolver *r, char *tsig_keyname)
+{
+	r->_tsig_keyname = tsig_keyname;
+}
+
+void
+ldns_resolver_set_tsig_keydata(ldns_resolver *r, char *tsig_keydata)
+{
+	r->_tsig_keydata = tsig_keydata;
+}
+
 /* more sophisticated functions */
 
 /** 
@@ -430,6 +454,9 @@ ldns_resolver_new(void)
 	r->_axfr_soa_count = 0;
 	r->_axfr_i = 0;
 	r->_cur_axfr_pkt = NULL;
+	
+	r->_tsig_keyname = NULL;
+	r->_tsig_keydata = NULL;
 	return r;
 }
 
@@ -638,6 +665,9 @@ ldns_resolver_send(ldns_resolver *r, ldns_rdf *name, ldns_rr_type type, ldns_rr_
 	ldns_pkt *answer_pkt;
 	uint16_t id;
 	uint8_t  retries;
+	
+	ldns_status status;
+	ldns_rdf *tsig_mac = NULL;
 
 	assert(r != NULL);
 	assert(name != NULL);
@@ -692,6 +722,26 @@ ldns_resolver_send(ldns_resolver *r, ldns_rdf *name, ldns_rr_type type, ldns_rr_
 
 	ldns_pkt_set_id(query_pkt, id);
 
+	/* if tsig values are set, tsign it */
+	/* TODO: make last 3 arguments optional too? maybe make complete
+	         rr instead of seperate values in resolver (and packet)
+	*/
+	if (ldns_resolver_tsig_keyname(r) && ldns_resolver_tsig_keydata(r)) {
+		status = ldns_pkt_tsig_sign(query_pkt,
+		                            ldns_resolver_tsig_keyname(r),
+		                            ldns_resolver_tsig_keydata(r),
+		                            300,
+		                            "hmac-md5.sig-alg.reg.int",
+		                            NULL);
+		tsig_mac = ldns_rr_rdf(ldns_pkt_tsig(query_pkt), 3);
+
+		/* TODO: no print and feedback to caller */
+		if (status != LDNS_STATUS_OK) {
+			fprintf(stderr, "error creating tsig: %u\n", status);
+			return NULL;
+		}
+	}
+	
 	/* return NULL on error */
 	for (retries = ldns_resolver_retry(r); retries > 0; retries--) {
 		answer_pkt = ldns_send(r, query_pkt);
@@ -701,7 +751,17 @@ ldns_resolver_send(ldns_resolver *r, ldns_rdf *name, ldns_rr_type type, ldns_rr_
 	}
 	
 	ldns_pkt_free(query_pkt);
-		
+	
+	if (tsig_mac) {
+		if (!ldns_pkt_tsig_verify(answer_pkt,
+		                          ldns_resolver_tsig_keyname(r),
+		                          ldns_resolver_tsig_keydata(r),
+		                          tsig_mac)) {
+			/* TODO: no print, feedback */
+			printf(";; WARNING: TSIG VERIFICATION OF ANSWER FAILED!\n");
+		}
+	}
+	
 	return answer_pkt;
 }
 

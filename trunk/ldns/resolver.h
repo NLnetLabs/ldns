@@ -88,6 +88,12 @@ struct ldns_struct_resolver
 	uint16_t _axfr_i;
 	/* EDNS0 stuff only bufsize atm */
 	uint16_t _edns_udp_size;
+	
+	/* Optional tsig key for signing queries,
+	outgoing messages are signed if and only if both are set
+	*/
+	char *_tsig_keyname;
+	char *_tsig_keydata;
 };
 typedef struct ldns_struct_resolver ldns_resolver;
 
@@ -129,6 +135,12 @@ uint8_t ldns_resolver_retrans(ldns_resolver *);
 uint8_t ldns_resolver_ip6(ldns_resolver *);
 uint16_t ldns_resolver_edns_udp_size(ldns_resolver *);
 
+char *ldns_resolver_tsig_keyname(ldns_resolver *r);
+char *ldns_resolver_tsig_keydata(ldns_resolver *r);
+
+
+
+
 int ldns_resolver_bgsend();
 ldns_pkt * ldns_resolver_send(ldns_resolver *, ldns_rdf*, ldns_rr_type, ldns_rr_class, uint16_t);
 ldns_pkt * ldns_resolver_query(ldns_resolver *, ldns_rdf*, ldns_rr_type, ldns_rr_class, uint16_t);
@@ -147,6 +159,9 @@ void ldns_resolver_set_ip6(ldns_resolver *, uint8_t);
 void ldns_resolver_set_fail(ldns_resolver *, bool);
 void ldns_resolver_set_igntc(ldns_resolver *, bool);
 void ldns_resolver_set_edns_udp_size(ldns_resolver *, uint16_t);
+void ldns_resolver_set_tsig_keyname(ldns_resolver *r, char *tsig_keyname);
+void ldns_resolver_set_tsig_keydata(ldns_resolver *r, char *tsig_keydata);
+
 
 /**
  * Prepares the resolver for an axfr query
