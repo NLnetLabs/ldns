@@ -53,15 +53,13 @@ ldns_status
 ldns_rdf2buffer_a(ldns_buffer *output, ldns_rdf *rd)
 {
 	char r[INET_ADDRSTRLEN];
-	ldns_status result = LDNS_STATUS_INTERNAL_ERR;
 	
 	if (inet_ntop(AF_INET, ldns_rdf_data(rd), r, INET_ADDRSTRLEN)) {
 		if (ldns_buffer_printf(output, "%s", r) >= 0) {
-			result = LDNS_STATUS_OK;
+			return LDNS_STATUS_OK;
 		}
 	}
-
-	return result;
+	return LDNS_STATUS_INTERNAL_ERR;
 }
 
 ldns_status
