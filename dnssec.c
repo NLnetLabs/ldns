@@ -948,6 +948,7 @@ ldns_sign_public_rsasha1(ldns_buffer *to_sign, RSA *key)
 	ldns_rdf *sigdata_rdf;
 	ldns_buffer *b64sig;
 
+	siglen = 0;
 	b64sig = ldns_buffer_new(MAX_PACKETLEN);
 	if (!b64sig) {
 		return NULL;
