@@ -19,6 +19,7 @@
 #include <ldns/net.h>
 #include <ldns/host2str.h>
 #include <ldns/dns.h>
+#include <ldns/dname.h>
 
 #include "util.h"
 
@@ -271,9 +272,11 @@ ldns_resolver_new(void)
  * if _dnsrch is true add the searchlist
  */
 ldns_pkt *
-ldns_resolver_search(ldns_resolver *r, ldns_rdf *name, ldns_rr_type type, ldns_rr_class class,
-                uint16_t flags)
+ldns_resolver_search(ldns_resolver *r, ldns_rdf *name, ldns_rr_type type, 
+                ldns_rr_class class, uint16_t flags)
 {
+	/* dummy use parameters */
+	printf("%p %p %d %d %02x\n", (void *) r, (void *) name, type, class, flags);
 	return NULL;
 }
 

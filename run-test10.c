@@ -8,6 +8,8 @@
 
 #include <config.h>
 #include <ldns/resolver.h>
+#include <ldns/dname.h>
+#include <ldns/host2str.h>
         
 int
 main(void)

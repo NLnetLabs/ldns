@@ -8,18 +8,16 @@
 
 #include <config.h>
 #include <ldns/resolver.h>
-        
+#include <ldns/dname.h>        
+#include <ldns/host2str.h>
+
 int
 main(void)
 {       
         ldns_resolver *res;
         ldns_rdf *qname;
         ldns_rdf *nameserver;
-	ldns_rdf *defdomain;
         ldns_pkt *pkt;
-        char *server_ip;
-        char *name;
-        char *type;
         
         /* init */
         res = ldns_resolver_new(); 

@@ -14,6 +14,8 @@
 #include <config.h>
 #include <limits.h>
 #include <ldns/rr.h>
+#include <strings.h>
+
 #include "util.h"
 
 /**

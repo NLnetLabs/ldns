@@ -510,16 +510,11 @@ ldns_rdf2buffer_str_nsec(ldns_buffer *output, ldns_rdf *rdf)
 ldns_status
 ldns_rdf2buffer_str_tsigtime(ldns_buffer *output, ldns_rdf *rdf)
 {
-	/* TODO: Broken! */
+	/* TODO */
 	/* tsigtime is 48 bits network order unsigned integer */
-	uint64_t result;
-	uint8_t tsigtime[8];
-	tsigtime[0] = 0;
-	tsigtime[1] = 0;
-	memcpy(&tsigtime[2], ldns_rdf_data(rdf), 6);
-	result = (uint64_t) tsigtime;
-	
-	ldns_buffer_printf(output, "%u ", ntohl(result));
+	ldns_buffer_printf(output, "TODO ");
+	printf("rdf p %p\n", (void *) rdf);
+	abort();
 	return ldns_buffer_status(output);
 }
 
