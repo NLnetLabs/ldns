@@ -164,11 +164,11 @@ ldns_rr_new_frm_str(const char *str)
 			strlen(str_normalized));
 	
 	/* split the rr in its parts */
-	ldns_bget_token(rr_buf, owner, "\t \0", MAX_DOMAINLEN);
-	ldns_bget_token(rr_buf, ttl, "\t \0", 21);
-	ldns_bget_token(rr_buf, clas, "\t \0", 11);
-	ldns_bget_token(rr_buf, type, "\t \0", 10);
-	ldns_bget_token(rr_buf, rdata, "\0", MAX_PACKETLEN);
+	(void)ldns_bget_token(rr_buf, owner, "\t \0", MAX_DOMAINLEN);
+	(void)ldns_bget_token(rr_buf, ttl, "\t \0", 21);
+	(void)ldns_bget_token(rr_buf, clas, "\t \0", 11);
+	(void)ldns_bget_token(rr_buf, type, "\t \0", 10);
+	(void)ldns_bget_token(rr_buf, rdata, "\0", MAX_PACKETLEN);
 	
 	FREE(str_normalized);
 
@@ -222,11 +222,6 @@ ldns_rr_new_frm_str(const char *str)
 	}
 
 	ldns_rr_push_rdf(new, r);
-
-	FREE(owner);
-	FREE(ttl);
-	FREE(clas);
-	FREE(type);
 
 	FREE(rdata);
 	return new;
