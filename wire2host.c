@@ -306,6 +306,9 @@ ldns_wire2rdf(ldns_rr *rr, const uint8_t *wire,
 			 */
 			cur_rdf_length = ((size_t) wire[*pos]) + 1;
 			break;
+		case LDNS_RDF_TYPE_PERIOD:
+			cur_rdf_length = 4;
+			break;
 		case LDNS_RDF_TYPE_APL:
 			/* TODO */
 		case LDNS_RDF_TYPE_B64:
