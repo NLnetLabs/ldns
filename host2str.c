@@ -825,7 +825,9 @@ ldns_pkt2buffer_str(ldns_buffer *output, ldns_pkt *pkt)
 			ldns_buffer_printf(output, "\n");
 		}
 		ldns_buffer_printf(output, "\n");
-		
+		/* add some futher fields */
+		ldns_buffer_printf(output, ";; Query time: %d msec\n", ldns_pkt_querytime(pkt));
+		ldns_buffer_printf(output, ";; SERVER: %s\n", ldns_pkt_answerfrom(pkt));
 	} else {
 		return ldns_buffer_status(output);
 	}
