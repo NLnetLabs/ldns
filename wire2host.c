@@ -302,6 +302,10 @@ ldns_wire2dname(ldns_rdf **dname, const uint8_t *wire, size_t max, size_t *pos)
 	
 	*dname = ldns_rdf_new((uint16_t) dname_pos, LDNS_RDF_TYPE_DNAME,
 	                      dname_ar);
+	if (!*dname) {
+		FREE(dname_ar);
+		return LDNS_STATUS_MEM_ERR;
+	}
 	
 	return LDNS_STATUS_OK;
 }
