@@ -704,7 +704,7 @@ ldns_key_rr2ds(const ldns_rr *key)
         }
 
         /* keytag */
-        keytag = htons(ldns_keytag(key));
+        keytag = htons(ldns_keytag((ldns_rr*)key));
         tmp = ldns_rdf_new_frm_data(LDNS_RDF_TYPE_INT16, sizeof(uint16_t), &keytag);
         ldns_rr_push_rdf(ds, tmp);
 
@@ -725,7 +725,7 @@ ldns_key_rr2ds(const ldns_rr *key)
 	}
 
         /* all the rdata's */
-	if (ldns_rr_rdata2buffer_wire(data_buf, key) !=
+	if (ldns_rr_rdata2buffer_wire(data_buf, (ldns_rr*)key) !=
 			LDNS_STATUS_OK) { 
 		return NULL;
 	}
