@@ -126,7 +126,7 @@
  *
  * This is the basic DNS element that contains actual data
  */
-struct struct_rr_type
+struct type_struct_rr
 {
 	/** \brief Owner name, uncompressed */
 	uint8_t		*owner;	
@@ -140,12 +140,12 @@ struct struct_rr_type
 	 *
 	 * name chosen to avoid clash with class keyword
 	 */
-	class_t		klass;	
+	t_class		klass;	
 	/* everything in the rdata is in network order */
 	/** \brief The list of data's */
-	rdata_t		*rdata;	
+	t_rdata_field	*rdata_fields;
 };
-typedef struct struct_rr_type rr_t;
+typedef struct type_struct_rr t_rr;
 
 /**
  * \brief Resource Record Set
@@ -153,11 +153,11 @@ typedef struct struct_rr_type rr_t;
  * Contains a list of rr's <br>
  * No official RFC-like checks are made 
  */
-struct t_rrset_type
+struct type_struct_rrset
 {
-	rr_t *rrs;
+	t_rr *rrs;
 
 };
-typedef struct t_rrset_type rrset_t;
+typedef struct type_struct_rrset t_rrset;
 
 #endif /* _RR_H */

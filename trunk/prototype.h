@@ -18,6 +18,6 @@
 
 /* util.c */
 void 		*xmalloc(size_t);
-void		xprintf_rd(rdata_t *);
+void		xprintf_rd_field(t_rdata_field *);
 
 #endif /* _PROTOTYPE_H */
