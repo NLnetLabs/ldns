@@ -7,7 +7,6 @@
  */
 
 #include <config.h>
-#include <ldns/resolver.h>
 #include <ldns/ldns.h>
         
 int     
