@@ -36,7 +36,7 @@ o Remove/Handle all XXX and TODO/todos'
   - rr.c/rr.h		- util.c
   - data.c/data.h	- dname.c
   - packet.c (partially)
-
+o conversion from  ldns_key to key rr's
 
 Documentation:
 --------------

@@ -69,6 +69,7 @@ struct ldns_struct_key_list
 typedef struct ldns_struct_key_list ldns_key_list;
 
 ldns_key_list * ldns_key_list_new();
+ldns_key *ldns_key_new();
 void ldns_key_set_algorithm(ldns_key *k, ldns_signing_algorithm l);
 void ldns_key_set_rsa_key(ldns_key *k, RSA *r);
 void ldns_key_set_dsa_key(ldns_key *k, DSA *d);
@@ -93,6 +94,8 @@ void ldns_key_list_set_key_count(ldns_key_list *key, size_t count);
 ldns_rdf * ldns_key_pubkey_owner(ldns_key *k);
 bool ldns_key_list_push_key(ldns_key_list *key_list, ldns_key *key);
 ldns_key * ldns_key_list_pop_key(ldns_key_list *key_list);
+
+ldns_key * ldns_key_new_frm_algorithm(ldns_signing_algorithm a, int size);
 
 
 #endif /* _LDNS_KEYS_H */
