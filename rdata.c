@@ -421,7 +421,6 @@ ldns_octet(char *word, size_t *length)
     return LDNS_STATUS_OK;
 }
 
-#if 0
 /**
  * Compare two rdf's
  * \param[in] rd1 the first one
@@ -431,10 +430,10 @@ ldns_octet(char *word, size_t *length)
  *         +1 if rd2 comes before rd1
  */
 int
-ldns_rdata_compare(const ldns_rdf *rd1, const ldns_rdf *rd2)
+ldns_rdf_compare(const ldns_rdf *rd1, const ldns_rdf *rd2)
 {
 	uint16_t i1, i2, i;
-	void *d1, *d2;
+	uint8_t *d1, *d2;
 	i1 = ldns_rdf_size(rd1);
 	i2 = ldns_rdf_size(rd1);
 
@@ -443,10 +442,10 @@ ldns_rdata_compare(const ldns_rdf *rd1, const ldns_rdf *rd2)
 	} else if (i1 > i2) {
 		return +1;
 	} else {
-		d1 = ldns_rdf_data(rd1);
-		d2 = ldns_rdf_data(rd2);
+		d1 = (uint8_t*)ldns_rdf_data(rd1);
+		d2 = (uint8_t*)ldns_rdf_data(rd2);
 		for(i = 0; i < i1; i++) {
-			if (*d1[i] < *d2[i]) {
+			if (d1[i] < d2[i]) {
 				return -1;
 			} else if (d1[i] > d2[i]) {
 				return +1;
@@ -455,4 +454,3 @@ ldns_rdata_compare(const ldns_rdf *rd1, const ldns_rdf *rd2)
 	}
 	return 0;
 }
-#endif
