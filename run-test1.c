@@ -8,6 +8,7 @@
 #include <ldns/str2host.h>
 #include <ldns/host2str.h>
 #include <ldns/buffer.h>
+#include <ldns/dname.h>
 
 #include "util.h"
 
@@ -34,6 +35,9 @@ doit(void)
 	ldns_buffer *buf;
 	ldns_rdf *rdata;
 	ldns_rdf *cnt_test;
+	ldns_rdf *cat_test1;
+	ldns_rdf *cat_test2;
+	ldns_rdf *concat;
 
 	buf = ldns_buffer_new(10); /* alloc away! */
 	if (!buf) {
@@ -49,26 +53,31 @@ doit(void)
 	fprintf(stderr, "%s\n", buffer2str(buf));
 
 	/* test the label counter */
- 	cnt_test = ldns_rdf_new_frm_str("miek.nl.", LDNS_RDF_TYPE_DNAME);
+ 	cnt_test = ldns_dname_new_frm_str("miek.nl.");
 	printf("Labels miek.nl. %d\n", ldns_rdf_dname_label_count(cnt_test));
 
- 	cnt_test = ldns_rdf_new_frm_str("miek.nl", LDNS_RDF_TYPE_DNAME);
+ 	cnt_test = ldns_dname_new_frm_str("miek.nl");
 	printf("Labels miek.nl %d\n", ldns_rdf_dname_label_count(cnt_test));
 	
- 	cnt_test = ldns_rdf_new_frm_str("miek", LDNS_RDF_TYPE_DNAME);
+ 	cnt_test = ldns_dname_new_frm_str("miek");
 	printf("Labels miek %d\n", ldns_rdf_dname_label_count(cnt_test));
 	
- 	cnt_test = ldns_rdf_new_frm_str(".", LDNS_RDF_TYPE_DNAME);
+ 	cnt_test = ldns_dname_new_frm_str(".");
 	printf("Labels . %d\n", ldns_rdf_dname_label_count(cnt_test));
 	
- 	cnt_test = ldns_rdf_new_frm_str(".www.miek.nl.", LDNS_RDF_TYPE_DNAME);
+ 	cnt_test = ldns_dname_new_frm_str(".www.miek.nl.");
 	printf("Labels .www.miek.nl. %d\n", ldns_rdf_dname_label_count(cnt_test));
 
- 	cnt_test = ldns_rdf_new_frm_str("www.miek.nl.", LDNS_RDF_TYPE_DNAME);
+ 	cnt_test = ldns_dname_new_frm_str("www.miek.nl.");
 	printf("Labels www.miek.nl. %d\n", ldns_rdf_dname_label_count(cnt_test));
 
- 	cnt_test = ldns_rdf_new_frm_str("nl", LDNS_RDF_TYPE_DNAME);
+ 	cnt_test = ldns_dname_new_frm_str("nl");
 	printf("Labels nl %d\n", ldns_rdf_dname_label_count(cnt_test));
+
+
+	/* concat tests */
+	cat_test1 = ldns_dname_new_frm_str("www");
+	cat_test2 = ldns_dname_new_frm_str("miek.nl.");
 }
 
 
