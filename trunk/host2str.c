@@ -509,6 +509,16 @@ ldns_rdf2buffer_str_nsec(ldns_buffer *output, ldns_rdf *rdf)
 }
 
 ldns_status
+ldns_rdf2buffer_str_period(ldns_buffer *output, ldns_rdf *rdf)
+{
+	/* TODO */
+	/* period is the number of seconds */
+	uint32_t p = read_uint32(ldns_rdf_data(rdf));
+	ldns_buffer_printf(output, "%u", p);
+	return ldns_buffer_status(output);
+}
+
+ldns_status
 ldns_rdf2buffer_str_tsigtime(ldns_buffer *output, ldns_rdf *rdf)
 {
 	/* TODO */
@@ -693,6 +703,9 @@ ldns_rdf2buffer_str(ldns_buffer *buffer, ldns_rdf *rdf)
 			break;
 		case LDNS_RDF_TYPE_INT32:
 			res = ldns_rdf2buffer_str_int32(buffer, rdf);
+			break;
+		case LDNS_RDF_TYPE_PERIOD:
+			res = ldns_rdf2buffer_str_period(buffer, rdf);
 			break;
 		case LDNS_RDF_TYPE_TSIGTIME:
 			res = ldns_rdf2buffer_str_tsigtime(buffer, rdf);
