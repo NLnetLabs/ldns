@@ -2,10 +2,9 @@
 #include <ldns/ldns.h>
 
 int
-main(int argc, char **argv)
+main()
 {
 	ldns_pkt *packet;
-	char *str;
 	
 	printf("test 5\n");
 	
@@ -13,9 +12,8 @@ main(int argc, char **argv)
 	                            LDNS_RR_TYPE_A,
 	                            LDNS_RR_CLASS_IN);
 
-	str = ldns_pkt2str(packet);
-	
-	printf("packet:\n%s\n\n", str);
+	printf("Packet:\n");
+	ldns_pkt_print(stdout, packet);
 	
 	
 	return 0;

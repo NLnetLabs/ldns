@@ -20,6 +20,8 @@ char *ldns_rdf2str(ldns_rdf *);
 char *ldns_rr2str(ldns_rr *);
 char *ldns_pkt2str(ldns_pkt *);
 char *buffer2str(ldns_buffer *);
-
+void ldns_rdf_print(FILE *output, ldns_rdf *rdf);
+void ldns_rr_print(FILE *output, ldns_rr *rr);
+void ldns_pkt_print(FILE *output, ldns_pkt *pkt);
 
 #endif
