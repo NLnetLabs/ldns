@@ -199,7 +199,7 @@ ldns_str2rdf_dname(ldns_rdf **d, const uint8_t* str)
 }
 
 /**
- * convert .... into wireformat
+ * convert str with an A record into wireformat
  * \param[in] rd the rdf where to put the data
  * \param[in] str the string to be converted
  * \return ldns_status

@@ -89,6 +89,7 @@ ldns_send(ldns_resolver *r, ldns_pkt *query_pkt)
 		ns_len = (socklen_t) ldns_rdf_size(ns_array[i]);
 
 		/* setup some family specific stuff */
+#if 0
 		switch(ns->ss_family) {
 			case AF_INET:
 				ns4 = (struct sockaddr_in*) ns;
@@ -101,6 +102,7 @@ ldns_send(ldns_resolver *r, ldns_pkt *query_pkt)
 				printf("port %d\n", ntohs(ns6->sin6_port));
 				break;
 		}
+#endif
 
 		printf("ip address len %d\n", ns_len);
 
@@ -146,7 +148,7 @@ ldns_send_udp(ldns_buffer *qbin, const struct sockaddr_storage *to, socklen_t to
 	printf("address %s\n", inet_ntoa(*b));
 
 	bytes =  sendto(sockfd, ldns_buffer_begin(qbin),
-			ldns_buffer_capacity(qbin), 0, (struct sockaddr*)to, tolen);
+			ldns_buffer_capacity(qbin), 0, (struct sockaddr *)to, tolen);
 
 	if (bytes == -1) {
 		printf("error with sending: %s\n", strerror(errno));
