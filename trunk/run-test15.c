@@ -43,7 +43,10 @@ main(int argc, char **argv)
 
 	pkt = ldns_pkt_query_new(qname, ldns_get_rr_type_by_name(type), 0, LDNS_RD);
 
-	ldns_pkt_set_id(pkt, 46789);
+	/* if you make packet yourself, set the id yourself */
+	/* you should not use time as the only seed */
+	srand((unsigned) time(NULL));
+	ldns_pkt_set_id(pkt, (uint16_t) rand());
 
 	ldns_pkt_tsig_sign(pkt, "jelte.", "vBUWJnkgDw4YTobXtbUD6XED5Qg74tnghYX3tzKzfsI=", 300, "hmac-md5.sig-alg.reg.int", NULL);
 	mac = ldns_rr_rdf(ldns_pkt_tsig(pkt), 3);
