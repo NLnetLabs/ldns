@@ -101,7 +101,8 @@ enum ldns_enum_pkt_section {
 	LDNS_SECTION_ANSWER = 1,
 	LDNS_SECTION_AUTHORITY = 2,
 	LDNS_SECTION_ADDITIONAL = 3,
-	LDNS_SECTION_ANY = 4  /* bogus section, if not interested */
+	LDNS_SECTION_ANY = 4,  /* bogus section, if not interested */
+	LDNS_SECTION_ANY_NOQUESTION = 5 /* used to get all non-question rrs from a packet */
 };
 typedef enum ldns_enum_pkt_section ldns_pkt_section;	
 
@@ -147,6 +148,7 @@ ldns_rr_list *ldns_pkt_additional(const ldns_pkt *);
 ldns_rr_list *ldns_pkt_xxsection(ldns_pkt *, ldns_pkt_section);
 ldns_rr_list *ldns_pkt_rr_list_by_name(ldns_pkt *, ldns_rdf *, ldns_pkt_section);
 ldns_rr_list *ldns_pkt_rr_list_by_type(ldns_pkt *, ldns_rr_type, ldns_pkt_section);
+ldns_rr_list *ldns_pkt_rr_list_by_name_and_type(ldns_pkt *packet, ldns_rdf *ownername, ldns_rr_type type, ldns_pkt_section sec);
 
 void ldns_pkt_set_id(ldns_pkt *, uint16_t);
 void ldns_pkt_set_qr(ldns_pkt *, bool);

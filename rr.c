@@ -1325,18 +1325,42 @@ ldns_rr_compare(const ldns_rr *rr1, const ldns_rr *rr2)
 		}
 		/* now compare the buffer's byte for byte */
 		for(i = 0; i < rr1_len; i++) {
-			if (ldns_buffer_at(rr1_buf, i) < 
-				ldns_buffer_at(rr2_buf, i)) {
+			if (rr1_buf->_data[i] < rr2_buf->_data[i]) {
 				return -1;
-			} else if (ldns_buffer_at(rr1_buf, i) >
-					ldns_buffer_at(rr2_buf, i)) {
+			} else if (rr1_buf->_data[i] > rr2_buf->_data[i]) {
 				return +1;
 			}
 		}
-	return 0;
+		return 0;
 	}
 }
 
+/**
+ * Returns true of the given rr's are equal, where
+ * Also returns true if one records is a DS that represents the
+ * other DNSKEY record
+ */
+bool
+ldns_rr_compare_ds(const ldns_rr *rr1, const ldns_rr *rr2)
+{
+	bool result;
+	ldns_rr *ds_repr;
+
+	if (ldns_rr_get_type(rr1) == LDNS_RR_TYPE_DS &&
+	    ldns_rr_get_type(rr2) == LDNS_RR_TYPE_DNSKEY) {
+	    	ds_repr = ldns_key_rr2ds(rr2);
+	    	result = (ldns_rr_compare(rr1, ds_repr) == 0);
+	    	ldns_rr_free(ds_repr);
+	} else if (ldns_rr_get_type(rr1) == LDNS_RR_TYPE_DNSKEY &&
+	    ldns_rr_get_type(rr2) == LDNS_RR_TYPE_DS) {
+	    	ds_repr = ldns_key_rr2ds(rr1);
+	    	result = (ldns_rr_compare(rr2, ds_repr) == 0);
+	    	ldns_rr_free(ds_repr);
+	} else {
+		result = (ldns_rr_compare(rr1, rr2) == 0);
+	}	
+	return result;
+}
 
 /** 
  * calculate the uncompressed size of an RR
