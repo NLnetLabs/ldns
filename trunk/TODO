@@ -13,11 +13,7 @@ o check all conversion routines on missing types
 	- host2str
 o need LDNS_RDF_TYPE_PROTO??
 o network code
-	- tcp
-	- axfr
 	- tsig?
-	- timeouts part of resolver struct with access functions and
-	  sane default values
 o DNSSEC
 	- define algorithms?
 	- look again at keytag calc
