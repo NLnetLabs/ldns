@@ -34,7 +34,7 @@ main(int argc, char **argv)
 	RR = ldns_rr_new_frm_str("miek.nl. 3600 IN MX 10 elektron.atoom.net.");
 	ldns_rr_print(stdout, RR);
 	printf("\n");
-	RR = ldns_rr_new_frm_str("miek.nl.   3600   IN   MX   10    elektron.atoom.net.");
+	RR = ldns_rr_new_frm_str("miek.nl.   3600   IN   MX  (\n\t10\n\telektron.atoom.net.\n\t)");
 	ldns_rr_print(stdout, RR);
 	printf("\n");
 

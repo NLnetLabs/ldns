@@ -77,6 +77,7 @@ ldns_rr_new_frm_str(const char *str)
 	ldns_rr *new;
 	const ldns_rr_descriptor *desc;
 	ldns_rr_type rr_type;
+	char  *str_normalized;
 	char  *owner; 
 	char  *ttl; 
 	char  *clas;
@@ -96,9 +97,10 @@ ldns_rr_new_frm_str(const char *str)
 	clas = XMALLOC(char, 8);
 	type = XMALLOC(char, 10);
 	rdata = XMALLOC(char, MAX_PACKETLEN);
-
-	  /* numbers are bogus */
-	sscanf(str, "%256s%20s%8s%10s%65535c", owner, ttl, clas, type, rdata);
+	str_normalized = ldns_rr_str_normalize(str);
+	
+	  /* numbers are bogus XXX Miek */
+	sscanf(str_normalized, "%256s%20s%8s%10s%65535c", owner, ttl, clas, type, rdata);
 
 #if 0
 	printf("owner [%s]\n", owner);
@@ -135,6 +137,37 @@ ldns_rr_new_frm_str(const char *str)
 		}
 	}
 	return new;
+}
+
+/** 
+ * normalize a RR string; kill newlines and parentheses
+ * and put the whole rr on 1 line
+ * \param[in] rr the rr to normalize
+ * \return the normalized rr
+ */
+/* no need to export this */
+static char *
+ldns_rr_str_normalize(const char *rr)
+{
+	char *p;
+	char *s;
+	char *orig_s;
+
+	s = XMALLOC(char, strlen(rr)); /* for the newly created string */
+	orig_s = s;
+
+	/* walk through the rr and fix it. Whitespace is handled in
+	 * ldns_rr_new_frm_str(), so don't worry about that here
+	 * - remove (, ) and \n
+	 */
+	for(p = (char*)rr; *p; p++) {
+		if (*p == '(' || *p == ')' || *p == '\n') {
+			continue;
+		}
+	 	*s++ = *p;
+	}
+	*s = '\0';
+	return orig_s;
 }
 
 
