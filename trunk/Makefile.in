@@ -34,6 +34,9 @@ LINK		= $(CC) $(CFLAGS) $(LDFLAGS)
 main:	main.o $(LIBDNS_OBJECTS)
 	$(LINK) -o $@ $+
 
+run-test0:	run-test0.o $(LIBDNS_OBJECTS)
+		$(LINK) -o $@ $+
+
 clean:	
 	rm -f *.o *.d
 	rm -f main

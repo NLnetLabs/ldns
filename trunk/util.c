@@ -48,6 +48,8 @@ xprintf_rr(t_rr *rr)
 
 	count = rr_rd_count(rr);
 
-	for(i = 0; i < count; i++)
+	for(i = 0; i < count; i++) {
+		printf("print rd %u\n", i);
 		xprintf_rd_field(rr->rdata_fields[i]);
+	}
 }
