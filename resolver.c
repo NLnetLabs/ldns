@@ -282,9 +282,11 @@ ldns_resolver_send(ldns_resolver *r, ldns_rdf *name, ldns_rr_type type, ldns_rr_
 		class = LDNS_RR_CLASS_IN;
 	}
 	if (0 == ldns_resolver_configured(r)) {
+		printf("resolver is not configued\n");
 		return NULL;
 	}
 	if (ldns_rdf_get_type(name) != LDNS_RDF_TYPE_DNAME) {
+		printf("query type is not correct type\n");
 		return NULL;
 	}
 	
@@ -293,7 +295,6 @@ ldns_resolver_send(ldns_resolver *r, ldns_rdf *name, ldns_rr_type type, ldns_rr_
 	query_pkt = ldns_pkt_query_new(name, type, class);
 	if (!query_pkt) {
 		printf("Failed to generate pkt\n");
-		return NULL;
 	}
 
 	/* return NULL on error */
