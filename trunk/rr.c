@@ -53,7 +53,7 @@ ldns_rr_new_frm_type(ldns_rr_type t)
 	desc = ldns_rr_descript(t);
 
 	rr->_rdata_fields = XMALLOC(ldns_rdf *, 
-			ldns_rr_descriptor_minimum(desc) - 1);
+			ldns_rr_descriptor_minimum(desc));
 	for (i = 0; i < ldns_rr_descriptor_minimum(desc); i++) {
 		rr->_rdata_fields[i] = NULL;
 	}
