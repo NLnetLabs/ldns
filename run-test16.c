@@ -60,17 +60,23 @@ main(void)
 	res = ldns_resolver_new();
 	list = ldns_rr_list_new();
 
-	ns = ldns_rr_new_frm_str("a.root-servers.net. 3600 IN A  198.41.0.4");
+	ns = ldns_rr_new_frm_str("a.root-servers.net. 3600 IN A  198.41.0.1");
 	ldns_rr_list_push_rr(list, ns);
+	ns = ldns_rr_new_frm_str("a.root-servers.net. 3600 IN A  198.41.0.2");
 	ldns_rr_list_push_rr(list, ns);
+	ns = ldns_rr_new_frm_str("a.root-servers.net. 3600 IN A  198.41.0.3");
 	ldns_rr_list_push_rr(list, ns);
 	printf("\nrr:\n");
 	ldns_rr_print(stdout, ns);
 	printf("\nlist:\n");
 	ldns_rr_list_print(stdout, list);
-	ldns_resolver_push_nameserver_rr(res, ns);
+	printf("------\n");
 
+	/*ldns_resolver_push_nameserver_rr(res, ns);*/
 	ldns_resolver_push_nameserver_rr_list(res, list);
+
+	ldns_resolver_pop_nameserver(res);
+	ldns_resolver_pop_nameserver(res);
 
 	return 0;
 }
