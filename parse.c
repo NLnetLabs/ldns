@@ -22,15 +22,29 @@
 
 
 
-
 /* 
- * get the next string and supply the type we 
- * want
+ * search for keyword and delim. Give everything back
+ * after the delimeter(s) 
  */
-size_t
+ssize_t
+ldns_get_keyword_data(FILE *f, char *keyword, char *del	, char *data, ldns_parse d_type)
+{
+	/* we assume: keyword|sep|data */
+	char *fkeyword;
+
+	fkeyword = XMALLOC(char, MAXKEYWORD_LEN);
+
+	ldns_get_str(f, fkeyword, LDNS_STR);
+
+	printf("%s\n", fkeyword);
+	return 0;
+}
+
+
+ssize_t
 ldns_get_str(FILE *f, char *word, ldns_parse type)
 {
-	size_t i;
+	ssize_t i;
 
 	i = 0;
 	switch (type) {
@@ -38,10 +52,10 @@ ldns_get_str(FILE *f, char *word, ldns_parse type)
 		i = ldns_get_token(f, word, LDNS_EAT_SPACE);
 		return i;	
 	case LDNS_STR:
-		i = ldns_get_token(f, word, false);
+		i = ldns_get_token(f, word, NULL);
 		return i;
 	case LDNS_QUOTE_STR:
-		i = ldns_get_token(f, word, false);
+		i = ldns_get_token(f, word, NULL);
 		break;
 	case LDNS_QUOTE_SPACE_STR:
 		i = ldns_get_token(f, word, LDNS_EAT_SPACE);
@@ -52,40 +66,24 @@ ldns_get_str(FILE *f, char *word, ldns_parse type)
 	return i;
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/* 
- * get a token/char from the stream F
- * return 0 on error of EOF of F
- * return >0 length of what is read.
- * This function deals with ( and ) in the stream
- * and ignore \n when it finds them
- */
-size_t
-ldns_get_token(FILE *f, char *token, bool eat_space)
+ssize_t
+ldns_get_token(FILE *f, char *token, const char *delim)
 {	
 	int c;
 	int p; /* 0 -> no parenthese seen, >0 nr of ( seen */
 	char *t;
-	uint8_t i;
+	ssize_t i;
+	const char *d;
+        const char *del;
+
+	/* standard delimeters */
+	if (!delim) {
+		/* from isspace(3) */
+		del = " \f\n\r\t\v";
+	} else {
+		del = delim;
+	}
+
 
 	p = 0;
 	i = 0;
@@ -103,8 +101,7 @@ ldns_get_token(FILE *f, char *token, bool eat_space)
 
 		if (p < 0) {
 			/* more ) then ( */
-			token = NULL;
-			return 0;
+			return -1;
 		}
 
 		if (c == '\n' && p != 0) {
@@ -112,6 +109,13 @@ ldns_get_token(FILE *f, char *token, bool eat_space)
 			continue;
 		}
 
+		/* check if we hit the delim */
+		for (d = del; *d; d++) {
+                        if (c == *d) {
+				goto tokenread;
+                        }
+		}
+#if 0
 		if (isspace(c)) {
 			if (isblank(c) && eat_space) {
 				/* ordered to keep eating */
@@ -121,15 +125,17 @@ ldns_get_token(FILE *f, char *token, bool eat_space)
 			}
 			goto tokenread;
 		}
+#endif
 		
 		*t++ = c;
-		i++;
+		if (i++ > MAXLINE_LEN) {
+			return -1;
+		}
 	}
 
 tokenread:
 	if (p != 0 || c == EOF) {
 		/* ( count doesn't match ) count or EOF reached */
-		token = NULL;
 		return 0;
 	} else {
 		*t = '\0';
