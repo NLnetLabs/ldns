@@ -11,6 +11,9 @@
  * See the file LICENSE for the license
  */
 
+#ifndef _LDNS_KEYS_H
+#define _LDNS_KEYS_H
+
 #include <openssl/ssl.h>
 #include <util.h>
 
@@ -33,9 +36,8 @@ ldns_lookup_table ldns_signing_algorithms[] = {
 	{ 0, NULL }
 };
 
-
 struct ldns_struct_key {
-	ldns_signing_algorithm algorithm;
+	/*ldns_signing_algorithm algorithm;*/
 	/* types of keys supported */
 	union {
 		RSA	*rsa;
@@ -56,7 +58,20 @@ struct ldns_struct_key {
 			char *   name; /* needed? */
 		} tsig;
 	} extra;
-	ldns_rr *pubkey;
+	ldns_rdf *pubkey_owner;
 };
 typedef struct ldns_struct_key ldns_key;
 
+/**
+ * same as rr_list, but now for keys 
+ */
+struct ldns_struct_key_list
+{
+	size_t _key_count;
+	ldns_key **_keys;
+};
+typedef struct ldns_struct_key_list ldns_key_list;
+
+
+
+#endif /* _LDNS_KEYS_H */

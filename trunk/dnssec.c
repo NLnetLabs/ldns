@@ -738,3 +738,22 @@ ldns_key_rr2ds(ldns_rr *key)
 	FREE(digest);
         return ds;
 }
+
+/**
+ * use this function for tsig signing - need to port above coded function
+ */
+ldns_status
+ldns_sign_shared(void)
+{
+	return LDNS_STATUS_OK;
+}
+
+/**
+ * use this function to sign with a public/private key alg
+ */
+ldns_status
+/*ldns_sign_public(ldns_rr_list *rrset, ldns_)*/
+ldns_sign_public(void)
+{
+	return LDNS_STATUS_OK;
+}
