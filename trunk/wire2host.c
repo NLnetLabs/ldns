@@ -248,7 +248,6 @@ ldns_wire2dname(ldns_rdf **dname, const uint8_t *wire, size_t max, size_t *pos)
 			/* TODO: can this be done in a better way? */
 			pointer_target_buf[0] = wire[*pos] & 63;
 			pointer_target_buf[1] = wire[*pos+1];
-			memcpy(&pointer_target, pointer_target_buf, 2);
 			pointer_target = read_uint16(pointer_target_buf);
 
 			if (pointer_target == 0) {
