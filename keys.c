@@ -84,3 +84,32 @@ ldns_key_list_push_key(ldns_key_list *key_list, ldns_key *key)
         ldns_key_list_set_key_count(key_list, key_count + 1);
         return true;
 }
+
+/**     
+ * pop the last rr from a rrlist
+ * \param[in] rr_list the rr_list to pop from
+ * \return NULL if nothing to pop. Otherwise the popped RR
+ */     
+ldns_key *
+ldns_key_list_pop_key(ldns_key_list *key_list)
+{                               
+        size_t key_count;
+        ldns_key *pop;
+        
+        key_count = ldns_key_list_key_count(key_list);
+                                
+        if (key_count == 0) {
+                return NULL;
+        }       
+        
+        pop = ldns_key_list_key(key_list, key_count);
+        
+        /* shrink the array */
+        key_list->_keys = XREALLOC(
+                key_list->_keys, ldns_key *, key_count - 1);
+
+        ldns_key_list_set_key_count(key_list, key_count - 1);
+
+        return pop;
+}       
+
