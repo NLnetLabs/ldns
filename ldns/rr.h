@@ -24,6 +24,8 @@
 #define MAX_DOMAINLEN    255
 /** Maximum number of pointers in 1 dname */
 #define MAX_POINTERS	65535
+/** Maximum number of rr's in a rr_list */
+#define MAX_RR		65535
 /** The bytes TTL, CLASS and length use up in an rr */
 #define RR_OVERHEAD	10
 
