@@ -188,7 +188,7 @@ ldns_bget_token(ldns_buffer *b, char *token, const char *delim, size_t limit)
 	const char *d;
         const char *del;
 
-	/* standard delimeters */
+	/* standard delimiters */
 	if (!delim) {
 		/* from isspace(3) */
 		del = LDNS_PARSE_NORMAL;
@@ -241,6 +241,8 @@ tokenread:
 		return 0;
 	} else {
 		*t = '\0';
+		/* skip delimiters for next token */
+		ldns_bskipcs(b, del);
 		return (ssize_t)i;
 	}
 }
