@@ -44,6 +44,16 @@ ALL_SOURCES	=	run-test0.c run-test1.c run-test2.c run-test3.c \
 			run-test8.c \
 			$(LIBDNS_SOURCES)
 
+TESTS		=	run-test0		\
+			run-test1 		\
+			run-test2 		\
+			run-test3 		\
+			run-test4 		\
+			run-test5 		\
+			run-test6 		\
+			run-test7		\
+			run-test8
+
 COMPILE		= $(CC) $(CPPFLAGS) $(CFLAGS)
 LINK		= $(CC) $(CFLAGS) $(LDFLAGS)
 
@@ -52,8 +62,7 @@ LINK		= $(CC) $(CFLAGS) $(LDFLAGS)
 
 .PHONY:	clean realclean docclean doc lint test all
 
-all:	run-test0 run-test1 run-test2 run-test3 run-test4 run-test5 run-test6 run-test7\
-	run-test8
+all:		$(TESTS)
 
 snapshot:	clean testclean
 		(rm -rf ../ldns-snap-$(DATE)/)
@@ -93,16 +102,14 @@ doc:
 
 clean:	
 	rm -f *.o *.d
-	rm -f run-test0
-	rm -f run-test1
-	rm -f run-test2
+	rm -f $(TESTS)
 	rm -rf autom4te.cache/
 	rm -f aclocal.m4
 	rm -f config.status
 	rm -f config.log
 
 testclean:
-	rm -f run-test?
+	rm -f $(TESTS)
 
 realclean: clean docclean testclean
 	rm -f config.status
