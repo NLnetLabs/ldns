@@ -98,3 +98,8 @@ rd_new_frm_string(rd_type_t t, char *s)
 
 	return(new);
 }
+
+void rd_destroy(rdata_t *rd)
+{
+	/* empty */
+}
