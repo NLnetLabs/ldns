@@ -67,7 +67,7 @@ struct ldns_struct_pkt
 	/* extra items needed in a packet */
 	/** \brief the size in bytes of the pkt */
 	uint16_t _answersize;
-	char *_answerfrom;
+	ldns_rdf *_answerfrom;
 	char *_when;
 	/** \brief query duration */
 	uint32_t _querytime;
@@ -125,7 +125,7 @@ uint16_t ldns_pkt_qdcount(ldns_pkt *);
 uint16_t ldns_pkt_ancount(ldns_pkt *);
 uint16_t ldns_pkt_nscount(ldns_pkt *);
 uint16_t ldns_pkt_arcount(ldns_pkt *);
-char *ldns_pkt_answerfrom(ldns_pkt *packet);
+ldns_rdf *ldns_pkt_answerfrom(ldns_pkt *packet);
 char *ldns_pkt_when(ldns_pkt *packet);
 uint32_t ldns_pkt_querytime(ldns_pkt *);
 size_t ldns_pkt_size(ldns_pkt *);
@@ -149,7 +149,7 @@ void ldns_pkt_set_qdcount(ldns_pkt *, uint16_t);
 void ldns_pkt_set_ancount(ldns_pkt *, uint16_t);
 void ldns_pkt_set_nscount(ldns_pkt *, uint16_t);
 void ldns_pkt_set_arcount(ldns_pkt *, uint16_t);
-void ldns_pkt_set_answerfrom(ldns_pkt *, char *);
+void ldns_pkt_set_answerfrom(ldns_pkt *, ldns_rdf *);
 void ldns_pkt_set_querytime(ldns_pkt *, uint32_t);
 void ldns_pkt_set_size(ldns_pkt *, size_t);
 void ldns_pkt_set_when(ldns_pkt *, char *);

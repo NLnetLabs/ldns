@@ -935,7 +935,7 @@ ldns_pkt2buffer_str(ldns_buffer *output, ldns_pkt *pkt)
 		/* add some futher fields */
 		ldns_buffer_printf(output, ";; Query time: %d msec\n", ldns_pkt_querytime(pkt));
 		if (ldns_pkt_answerfrom(pkt)) {
-			ldns_buffer_printf(output, ";; SERVER: %s\n", ldns_pkt_answerfrom(pkt));
+			ldns_buffer_printf(output, ";; SERVER: %s\n", ldns_rdf2str(ldns_pkt_answerfrom(pkt)));
 		}
 		if (ldns_pkt_when(pkt)) {
 			/* \n included in when buffer, see ctime(3) */
