@@ -34,6 +34,6 @@
 
 /* prototypes */
 void    xprintf_rd_field(t_rdata_field *);
-void    xprintf_rr(t_rr *);
+void    xprintf_rr(ldns_rr_type *);
 
 #endif /* !_UTIL_H */
