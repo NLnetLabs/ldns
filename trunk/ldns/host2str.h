@@ -22,5 +22,4 @@ char *ldns_pkt2str(ldns_pkt *);
 char *buffer2str(ldns_buffer *);
 
 
-
 #endif
