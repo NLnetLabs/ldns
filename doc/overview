@@ -16,6 +16,10 @@ ldns - Overview document
   o All the stuff from the network is put in ldns_buffer's by 
     the network module. All binary data coming from the network
     module is encapsulated in the ldns_XX types.
+  o DNSSEC crypto is handled in a seperate module, where
+    for instance sign(key, rrlist, **sig) and verify(key, rrlist, sig)
+    will be defined.
+  o DNSSEC is optional as it depends on OpenSSL
 
 2. Different parts of ldns:
 
@@ -31,17 +35,23 @@ ldns - Overview document
   to wireformat           rr structure               bgsend()
  -all name decoding       rdf structure              axfr()
   encoding is contained   dname structure             /\ 
-  in these functions          /\                      | 
-                              /                       |
-                        _____/                        |
-                       /                              \/
-- STR module -        \/                            - NET module -
- from_str                                            all network interfacing
- to_str                                              code
- -convert from and to string		               /\
- -dig-like output                                      |
- -no pretty printing                                   \/
- -depends on some OS/libc calls                     - OS/libc layer -
+  in these functions          /\    /\                | 
+                              /     |                 |
+                        _____/      |                 |
+                       /            |                 \/
+- STR module -        \/            |               - NET module -
+ from_str                           |                all network interfacing
+ to_str                             |                code
+ -convert from and to string	    |	               /\
+ -dig-like output                   |                  |
+ -no pretty printing                |                  \/
+ -depends on some OS/libc calls     |               - OS/libc layer -
+                                    |
+                                    \/
+                            - DNSSEC module -
+                             sign()
+                             verify()			 
+
 
 
 Currently not there:
@@ -142,3 +152,8 @@ Any client program will have access to
 - CENTRAL structure
 - RESOLVER module
 - STR module (arrow not drawn in the above figure)
+
+10. DNSSEC module
+The DNSSEC types are handled in the RR module, but the crypto
+routines are contained in this module. This module will depend
+on OpenSSL for the crypto routines. 
