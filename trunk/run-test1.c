@@ -6,6 +6,8 @@
 #include <config.h>
 #include <ldns/ldns.h>
 #include <ldns/str2host.h>
+#include <ldns/host2str.h>
+#include <ldns/buffer.h>
 
 #include "util.h"
 
@@ -26,18 +28,41 @@ static const uint8_t wire[] = {
 };
 #endif 
 
+void
+doit(void)
+{
+	ldns_buffer *buf;
+	ldns_rdf *rdata;
+
+	buf = ldns_buffer_new(10); /* alloc away! */
+	if (!buf) {
+		printf("Nooooo\n");
+	}
+
+	printf("Setting 15242\n");
+	if (ldns_conv_int16(&rdata, "15242") != LDNS_STATUS_OK) {
+		printf("_short: ah man, shit hit the fan\n");
+	}
+	
+	ldns_rdf2buffer_int16(buf, rdata); 
+	fprintf(stderr, "%s\n", buffer2str(buf));
+}
+
+
 int
 main(void)
 {
-	ldns_rdf bla;
-	if (ldns_conv_short(&bla, "15242") != LDNS_STATUS_OK) {
-		printf("_short: ah man, shit hit the fan\n");
+	ldns_rdf *bla;
+	if (ldns_conv_int16(&bla, "15242") != LDNS_STATUS_OK) {
+		printf("_int16: ah man, shit hit the fan\n");
 	}
 	/* %Y%m%d%H%M%S */
 	if (ldns_conv_time(&bla, "20041222134100") != LDNS_STATUS_OK) {
 		printf("_time: ah man, shit hit the fan\n");
 	}
+
 	printf("succes\n");
+	doit();
 	return 0;
 }
 

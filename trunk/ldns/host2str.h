@@ -12,11 +12,15 @@
 
 #include "util.h"
 
-ldns_status ldns_rdf2buffer(ldns_buffer *buffer, ldns_rdf *rdf);
-ldns_status ldns_rr2buffer(ldns_buffer *buffer, ldns_rr *rr);
-ldns_status ldns_pkt2buffer(ldns_buffer *buffer, ldns_pkt *pkt);
+ldns_status ldns_rdf2buffer(ldns_buffer *, ldns_rdf *);
+ldns_status ldns_rr2buffer(ldns_buffer *, ldns_rr *);
+ldns_status ldns_pkt2buffer(ldns_buffer *, ldns_pkt *);
+ldns_status ldns_rdf2buffer_int16(ldns_buffer *, ldns_rdf *);
 char *ldns_rdf2str(ldns_rdf *);
 char *ldns_rr2str(ldns_rr *);
 char *ldns_pkt2str(ldns_pkt *);
+char *buffer2str(ldns_buffer *);
+
+
 
 #endif
