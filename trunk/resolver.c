@@ -108,36 +108,35 @@ ldns_resolver_set_port(ldns_resolver *r, uint16_t p)
 	r->_port = p;
 }
 
+/**
+ * push a new nameserver to the resolver. It must be an IP
+ * address v4 or v6.
+ * \param[in] r the resolver
+ * \param[in] n the ip address
+ * \return ldns_status a status
+ */
 ldns_status
 ldns_resolver_push_nameserver(ldns_resolver *r, ldns_rdf *n)
 {
-	/* LDNS_RDF_TYPE_A | LDNS_RDF_TYPE_AAAA | LDNS_RDF_TYPE_DNAME */
+	/* LDNS_RDF_TYPE_A | LDNS_RDF_TYPE_AAAA */
 	ldns_rdf **nameservers;
+
+	if (ldns_rdf_get_type(n) != LDNS_RDF_TYPE_A &&
+			ldns_rdf_get_type(n) != LDNS_RDF_TYPE_AAAA) {
+		return LDNS_STATUS_ERR;
+	}
 
 	nameservers = ldns_resolver_nameservers(r);
 
-	/* XXX do something smart when 3 is reached,
-	 * or always REALLOC here */
-	printf("number of nameservers %d\n",
-			ldns_resolver_nameserver_count(r));
+	/* make room for the next one */
+	nameservers = XREALLOC(nameservers, ldns_rdf *, 
+			(ldns_resolver_nameserver_count(r) + 1));
 
-	ldns_rdf_print(stdout, n);
-	printf("\n");
-	/*
+	/* slide *n in its slot */
 	nameservers[
 		ldns_resolver_nameserver_count(r)] = n;
-		*/
-	r->_nameservers[0] = n;
 
-	/* increase */
 	ldns_resolver_incr_nameserver_count(r);
-
-	printf("number of nameservers %d\n",
-			ldns_resolver_nameserver_count(r));
-
-	ldns_rdf_print(stdout, r->_nameservers[0]);
-	printf("\n");
-
 	return LDNS_STATUS_OK;
 }
 
@@ -228,8 +227,8 @@ ldns_resolver_new(void)
 	r = MALLOC(ldns_resolver);
 
 	/* allow for 3 of these each */
-	r->_searchlist = XMALLOC(ldns_rdf *, 3);
-	r->_nameservers = XMALLOC(ldns_rdf *, 3);
+	r->_searchlist = MALLOC(ldns_rdf *);
+	r->_nameservers = MALLOC(ldns_rdf *);
 	
 	/* defaults are filled out */
 	ldns_resolver_set_configured(r, 0);
