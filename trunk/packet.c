@@ -105,25 +105,25 @@ ldns_pkt_arcount(ldns_pkt *packet)
 	return packet->_header->_arcount;
 }
 
-ldns_rrset *
+ldns_rr_list *
 ldns_pkt_question(ldns_pkt *packet)
 {
 	return packet->_question;
 }
 
-ldns_rrset *
+ldns_rr_list *
 ldns_pkt_answer(ldns_pkt *packet)
 {
 	return packet->_answer;
 }
 
-ldns_rrset *
+ldns_rr_list *
 ldns_pkt_authority(ldns_pkt *packet)
 {
 	return packet->_authority;
 }
 
-ldns_rrset *
+ldns_rr_list *
 ldns_pkt_additional(ldns_pkt *packet)
 {
 	return packet->_additional;
@@ -234,10 +234,10 @@ ldns_pkt_new()
 		return NULL;
 	}
 
-	packet->_question = ldns_rrset_new();
-	packet->_answer = ldns_rrset_new();
-	packet->_authority = ldns_rrset_new();
-	packet->_additional = ldns_rrset_new();
+	packet->_question = ldns_rr_list_new();
+	packet->_answer = ldns_rr_list_new();
+	packet->_authority = ldns_rr_list_new();
+	packet->_additional = ldns_rr_list_new();
 	return packet;
 }
 
@@ -246,18 +246,18 @@ ldns_pkt_free(ldns_pkt *packet)
 {
 	FREE(packet->_header);
 	if (packet->_question) {
-		/*ldns_rrset_destroy(packet->_question);*/
+		/*ldns_rr_list_destroy(packet->_question);*/
 	}
 	if (packet->_answer) {
-		/*ldns_rrset_destroy(packet->_answer);*/
+		/*ldns_rr_list_destroy(packet->_answer);*/
 		FREE(packet->_answer);
 	}
 	if (packet->_authority) {
-		/*ldns_rrset_destroy(packet->_authority);*/
+		/*ldns_rr_list_destroy(packet->_authority);*/
 		FREE(packet->_authority);
 	}
 	if (packet->_additional) {
-		/*ldns_rrset_destroy(packet->_additional);*/
+		/*ldns_rr_list_destroy(packet->_additional);*/
 		FREE(packet->_authority);
 	}
 	FREE(packet);

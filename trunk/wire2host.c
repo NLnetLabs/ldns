@@ -425,7 +425,7 @@ ldns_wire2pkt(ldns_pkt **packet_p, const uint8_t *wire, size_t max)
 	for (i = 0; i < ldns_pkt_qdcount(packet); i++) {
 		status = ldns_wire2rr(&rr, wire, max, &pos,
 		                      LDNS_SECTION_QUESTION);
-		if (!ldns_rrset_push_rr(ldns_pkt_question(packet), rr)) {
+		if (!ldns_rr_list_push_rr(ldns_pkt_question(packet), rr)) {
 			return LDNS_STATUS_INTERNAL_ERR;
 		}
 		STATUS_CHECK_GOTO(status, status_error);
@@ -433,7 +433,7 @@ ldns_wire2pkt(ldns_pkt **packet_p, const uint8_t *wire, size_t max)
 	for (i = 0; i < ldns_pkt_ancount(packet); i++) {
 		status = ldns_wire2rr(&rr, wire, max, &pos,
 		                      LDNS_SECTION_ANSWER);
-		if (!ldns_rrset_push_rr(ldns_pkt_answer(packet), rr)) {
+		if (!ldns_rr_list_push_rr(ldns_pkt_answer(packet), rr)) {
 			return LDNS_STATUS_INTERNAL_ERR;
 		}
 		STATUS_CHECK_GOTO(status, status_error);
@@ -441,7 +441,7 @@ ldns_wire2pkt(ldns_pkt **packet_p, const uint8_t *wire, size_t max)
 	for (i = 0; i < ldns_pkt_nscount(packet); i++) {
 		status = ldns_wire2rr(&rr, wire, max, &pos,
 		                      LDNS_SECTION_AUTHORITY);
-		if (!ldns_rrset_push_rr(ldns_pkt_authority(packet), rr)) {
+		if (!ldns_rr_list_push_rr(ldns_pkt_authority(packet), rr)) {
 			return LDNS_STATUS_INTERNAL_ERR;
 		}
 		STATUS_CHECK_GOTO(status, status_error);
@@ -449,7 +449,7 @@ ldns_wire2pkt(ldns_pkt **packet_p, const uint8_t *wire, size_t max)
 	for (i = 0; i < ldns_pkt_arcount(packet); i++) {
 		status = ldns_wire2rr(&rr, wire, max, &pos,
 		                      LDNS_SECTION_ADDITIONAL);
-		if (!ldns_rrset_push_rr(ldns_pkt_additional(packet), rr)) {
+		if (!ldns_rr_list_push_rr(ldns_pkt_additional(packet), rr)) {
 			return LDNS_STATUS_INTERNAL_ERR;
 		}
 		STATUS_CHECK_GOTO(status, status_error);

@@ -175,12 +175,12 @@ typedef struct ldns_struct_rr ldns_rr;
  * Contains a list of rr's <br>
  * No official RFC-like checks are made 
  */
-struct ldns_struct_rrset
+struct ldns_struct_rr_list
 {
 	uint16_t _rr_count;
 	ldns_rr **_rrs;
 };
-typedef struct ldns_struct_rrset ldns_rrset;
+typedef struct ldns_struct_rr_list ldns_rr_list;
 
 /* 
  * \brief struct to hold the whole set of rd_fields
@@ -214,12 +214,12 @@ uint16_t ldns_rr_rd_count(ldns_rr *);
 ldns_rr_type ldns_rr_get_type(ldns_rr *);
 ldns_rr_class ldns_rr_get_class(ldns_rr *);
 
-uint16_t ldns_rrset_rr_count(ldns_rrset *rrset);
-void ldns_rrset_set_rr_count(ldns_rrset *rrset, uint16_t count);
-ldns_rr *ldns_rrset_rr(ldns_rrset *rrset, uint16_t nr);
-ldns_rrset *ldns_rrset_new();
-void ldns_rrset_free(ldns_rrset *rrset);
-bool ldns_rrset_push_rr(ldns_rrset *rrset, ldns_rr *rr);
+uint16_t ldns_rr_list_rr_count(ldns_rr_list *rr_list);
+void ldns_rr_list_set_rr_count(ldns_rr_list *rr_list, uint16_t count);
+ldns_rr *ldns_rr_list_rr(ldns_rr_list *rr_list, uint16_t nr);
+ldns_rr_list *ldns_rr_list_new();
+void ldns_rr_list_free(ldns_rr_list *rr_list);
+bool ldns_rr_list_push_rr(ldns_rr_list *rr_list, ldns_rr *rr);
 
 const ldns_rr_descriptor *ldns_rr_descript(uint16_t type);
 size_t ldns_rr_descriptor_minimum(const ldns_rr_descriptor *descriptor);
