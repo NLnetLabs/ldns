@@ -204,7 +204,7 @@ main(int argc, char **argv)
 	
 	printf("And back to wire:\n");
 	buffer = ldns_buffer_new(65535);
-	ldns_pkt2wire(buffer, pkt);
+	ldns_pkt2buffer_wire(buffer, pkt);
 
 	len = ldns_buffer_position(buffer);
 	target_buf = (uint8_t *) ldns_buffer_export(buffer);
