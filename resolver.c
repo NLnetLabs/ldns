@@ -304,7 +304,9 @@ ldns_pkt *
 ldns_resolver_query(ldns_resolver *r, ldns_rdf *name, ldns_rr_type type, ldns_rr_class class,
                 uint16_t flags)
 {
+	ldns_rdf *domainname;
 	ldns_rdf *newname;
+	ldns_pkt *pkt;
 	
 	if (!ldns_resolver_defnames(r)) {
 		return ldns_resolver_send(r, name, type, class, flags);
@@ -315,12 +317,16 @@ ldns_resolver_query(ldns_resolver *r, ldns_rdf *name, ldns_rr_type type, ldns_rr
 	}
 
 	newname = ldns_dname_concat(name, ldns_resolver_domain(r));
+
 	if (!newname) {
 		return NULL;
 	}
 	ldns_rdf_print(stdout, newname);
 	printf("the new name\n");
-	return ldns_resolver_send(r, newname, type, class, flags);
+	pkt = ldns_resolver_send(r, newname, type, class, flags);
+	
+	ldns_rdf_free(newname);
+	return pkt;
 }
 
 /**

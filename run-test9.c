@@ -34,9 +34,17 @@ main(void)
 	if (pkt) {
 		ldns_pkt_print(stdout, pkt);
 	}
+	ldns_pkt_free(pkt);
+
         pkt = ldns_resolver_send(res, qname, LDNS_RR_TYPE_A, 0, LDNS_RD);
 	if (pkt) {
 		ldns_pkt_print(stdout, pkt);
 	}
+	ldns_pkt_free(pkt);
+	
+	ldns_rdf_free(qname);
+	ldns_rdf_free(nameserver);
+	ldns_resolver_free(res);
+	
         return 0;
 }

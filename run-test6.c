@@ -61,5 +61,11 @@ main(void)
         /* print the resulting pkt to stdout */
         ldns_pkt_print(stdout, pkt);
 
+        ldns_resolver_free(res);
+        ldns_rdf_free(default_dom);
+        ldns_rdf_free(qname);
+        ldns_rdf_free(nameserver);
+        ldns_pkt_free(pkt);
+
         return 0;
 }
