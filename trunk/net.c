@@ -192,6 +192,7 @@ ldns_send_udp(ldns_buffer *qbin, const struct sockaddr_storage *to, socklen_t to
 			LDNS_STATUS_OK) {
 		return NULL;
 	} else {
+		ldns_pkt_set_size(answer_pkt, (size_t) bytes);
 		return answer_pkt;
 	}
 }
@@ -312,6 +313,7 @@ ldns_send_tcp(ldns_buffer *qbin, const struct sockaddr_storage *to, socklen_t to
 		printf("could not create packet\n");
 		return NULL;
 	} else {
+		ldns_pkt_set_size(answer_pkt, (size_t) bytes);
 		return answer_pkt;
 	}
 }

@@ -940,8 +940,9 @@ ldns_pkt2buffer_str(ldns_buffer *output, ldns_pkt *pkt)
 		/* add some futher fields */
 		ldns_buffer_printf(output, ";; Query time: %d msec\n", ldns_pkt_querytime(pkt));
 		if (ldns_pkt_answerfrom(pkt)) {
-			ldns_buffer_printf(output, ";; Server: %s\n", ldns_pkt_answerfrom(pkt));
+			ldns_buffer_printf(output, ";; SERVER: %s\n", ldns_pkt_answerfrom(pkt));
 		}
+		ldns_buffer_printf(output, ";; MSG SIZE  rcvd: %d\n", (int)ldns_pkt_size(pkt));
 	} else {
 		return ldns_buffer_status(output);
 	}
@@ -1000,7 +1001,7 @@ ldns_pkt2str(ldns_pkt *pkt)
 {
 	char *result = NULL;
 	/* XXX MAXTEXTPACKET?? */
-	ldns_buffer *tmp_buffer = ldns_buffer_new(65535);
+	ldns_buffer *tmp_buffer = ldns_buffer_new(MAX_PACKET_SIZE);
 
 	if (ldns_pkt2buffer_str(tmp_buffer, pkt) == LDNS_STATUS_OK) {
 		/* export and return string, destroy rest */
