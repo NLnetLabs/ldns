@@ -15,6 +15,7 @@ o DNSSEC
 	- do we call random()?
 o Make a shared library and test compile some programs
 o Thread safety, strtok is used
+o NSEC cannot be converted from str to host fmt
 o ssl autoconf
 o create a bunch of small programs:
 	dig
