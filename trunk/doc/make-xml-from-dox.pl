@@ -8,6 +8,9 @@
 
 use strict;
 
+# get it from cmd line
+my $title = "BOGUS TITLE";
+
 # what to put in front and after
 my $func_head = "<t>
 <artwork>
@@ -15,7 +18,20 @@ my $func_head = "<t>
 my $func_foot = "</artwork>
 </t>
 ";
+my $list_head = "<t>
+<list style=\"symbols\">
+";
+my $list_foot = "</list>
+</t>
+";
 
+my $sec_head="<section title=\"$title\">
+";
+my $sec_foot="</section> <!-- \"$title\">
+";
+
+print $sec_head;
+print $list_head;
 my $indoc = 0;
 my @current_func = ();
 while (<>) {
@@ -37,4 +53,5 @@ while (<>) {
 	}
 	push @current_func, $_;
 }
-
+print $list_foot;
+print $sec_foot;
