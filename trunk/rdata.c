@@ -59,7 +59,8 @@ rd_field_set_data(t_rdata_field *rd, uint8_t *d, uint16_t s)
 	memcpy(rd->_data, d, s);
 }
 
-/* allocate a new t_rdata_field structure 
+/**
+ * Allocate a new t_rdata_field structure 
  * and return it
  */
 t_rdata_field *
@@ -78,11 +79,12 @@ rd_field_new(uint16_t s, t_rd_type t, uint8_t *d)
 	return(rd);
 }
 
-/* allocate a new t_rdata_field from
+/**
+ * aLlocate a new t_rdata_field from
  * a NULL terminated string
  * and return it
  *
- * uint8_t == char !!!!
+ * uint8_t == char?  XXX 
  */
 t_rdata_field *
 rd_field_new_frm_string(t_rd_type t, char *s)
