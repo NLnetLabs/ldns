@@ -247,6 +247,7 @@ void ldns_rr_set_type(ldns_rr *, ldns_rr_type);
 void ldns_rr_set_class(ldns_rr *, ldns_rr_class);
 bool ldns_rr_push_rdf(ldns_rr *, ldns_rdf *);
 ldns_rdf *ldns_rr_rdf(const ldns_rr *, uint16_t);
+ldns_rdf * ldns_rr_set_rdf(ldns_rr *rr, ldns_rdf *f, uint16_t position);
 ldns_rdf *ldns_rr_owner(const ldns_rr *);
 uint32_t ldns_rr_ttl(const ldns_rr *);
 uint16_t ldns_rr_rd_count(const ldns_rr *);
