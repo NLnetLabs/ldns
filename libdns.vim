@@ -73,6 +73,7 @@ syn keyword  ldnsType           ldns_rr_descriptor
 syn keyword  ldnsType           ldns_rr
 syn keyword  ldnsType           ldns_rr_type
 syn keyword  ldnsType           ldns_rr_class
+syn keyword  ldnsType		ldns_rr_compress
 syn keyword  ldnsConstant TYPE_A          
 syn keyword  ldnsConstant TYPE_NS        
 syn keyword  ldnsConstant TYPE_MD       
@@ -121,6 +122,8 @@ syn keyword  ldnsConstant TYPE_MAILA
 syn keyword  ldnsConstant TYPE_ANY        
 syn keyword  ldnsConstant MAXLABELLEN     
 syn keyword  ldnsConstant MAXDOMAINLEN
+syn keyword  ldnsConstant LDNS_RR_COMPRESS
+syn keyword  ldnsConstant LDNS_RR_NO_COMPRESS
 
 syn keyword  ldnsMacro	QHEADERSZ
 syn keyword  ldnsMacro	RD_MASK
