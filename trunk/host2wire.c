@@ -114,40 +114,12 @@ ldns_rrsig2buffer_wire(ldns_buffer *buffer, ldns_rr *rr)
 		return LDNS_STATUS_ERR;
 	}
 	
-#if 0
-	if (ldns_rr_owner(rr)) {
-		(void) ldns_dname2buffer_wire(buffer, ldns_rr_owner(rr));
-	}
-	
-	if (ldns_buffer_reserve(buffer, 4)) {
-		(void) ldns_buffer_write_u16(buffer, ldns_rr_get_type(rr));
-		(void) ldns_buffer_write_u16(buffer, ldns_rr_get_class(rr));
-	}
-
-	if (ldns_buffer_reserve(buffer, 6)) {
-		ldns_buffer_write_u32(buffer, ldns_rr_ttl(rr));
-		/* remember pos for later */
-		rdl_pos = ldns_buffer_position(buffer);
-		ldns_buffer_write_u16(buffer, 0);
-	}	
-#endif
-
-	/* now convert all the rdfs, except the actual signature data
+	/* Convert all the rdfs, except the actual signature data
 	 * rdf number 8  - the last, hence: -1 */
 	for (i = 0; i < ldns_rr_rd_count(rr) - 1; i++) {
 		(void) ldns_rdf2buffer_wire(buffer, ldns_rr_rdf(rr, i));
 	}
 
-#if 0
-	if (rdl_pos != 0) {
-		ldns_buffer_write_u16_at(buffer,
-				rdl_pos,
-				ldns_buffer_position(buffer)
-				- rdl_pos
-				- 2
-				);
-	}
-#endif
 	return ldns_buffer_status(buffer);
 }
 
