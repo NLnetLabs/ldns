@@ -71,8 +71,9 @@ typedef enum ldns_enum_rdf_type ldns_rdf_type;
 /**
  * \brief Resource record data
  *
- * The data is a network ordered array of bytes, which size is specified by the (16-bit) size field.<br>
- * To correctly parse it, use the type specified in the (16-bit) type field.
+ * The data is a network ordered array of bytes, which size is specified by
+ * the (16-bit) size field. To correctly parse it, use the type
+ * specified in the (16-bit) type field.
  */
 struct ldns_struct_rdf
 {
@@ -84,6 +85,21 @@ struct ldns_struct_rdf
 	void  *_data;
 };
 typedef struct ldns_struct_rdf ldns_rdf;
+
+/**
+ * \brief Resource record data for dname's
+ *
+ * The data is a network ordered array of bytes, which size is specified by
+ * the (16-bit) size field. It is always of the LDNS_RDF_TYPE_DNAME
+ */
+struct ldns_struct_dname
+{
+	/** \brief The size of the dname (in bytes) */
+	uint16_t _size;
+	/** \brief Pointer to the dname (byte buffer) */
+	void  *_data;
+};
+typedef struct ldns_struct_dname ldns_dname;
 
 /* prototypes */
 uint16_t        ldns_rdf_size(ldns_rdf *);

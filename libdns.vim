@@ -19,6 +19,7 @@ syn keyword  ldnsType           ldns_pkt
 syn keyword  ldnsType           ldns_status
 syn keyword  ldnsType           ldns_rrset
 syn keyword  ldnsType           ldns_class
+syn keyword  ldnsType           ldns_dname
 syn keyword  ldnsConstant       true
 syn keyword  ldnsConstant       false
 syn keyword  ldnsFunction	ldns_rdf_get_type
@@ -71,6 +72,8 @@ syn keyword  ldnsType	  	ldns_resolver
 syn keyword  ldnsType	  	ldns_rr_list 
 syn keyword  ldnsType           ldns_rr_descriptor
 syn keyword  ldnsType           ldns_rr
+syn keyword  ldnsType           ldns_rr_type
+syn keyword  ldnsType           ldns_rr_class
 syn keyword  ldnsConstant TYPE_A          
 syn keyword  ldnsConstant TYPE_NS        
 syn keyword  ldnsConstant TYPE_MD       

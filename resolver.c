@@ -142,7 +142,11 @@ ldns_resolver_usevc(ldns_resolver *r)
 
 /* more sophisticated functions */
 
-/** \brief create a new resolver structure */
+/** 
+ * \brief create a new resolver structure 
+ * \param[in] void
+ * \return ldns_resolver* pointer to new strcture
+ */
 ldns_resolver *
 ldns_resover_new(void)
 {
@@ -150,8 +154,9 @@ ldns_resover_new(void)
 
 	r = MALLOC(ldns_resolver);
 
-	/* no defaults are filled out yet */
+	r->_configured = 0; /* no config has happened yet */
 
+	/* no defaults are filled out (yet) */
 	return r;
 }
 
@@ -172,9 +177,16 @@ ldns_query()
 	return NULL;
 }
 
-/* send the query as-is */
+/**
+ * \brief Send the query for *name as-is 
+ * \param[in] *r operate using this resolver
+ * \param[in] *name query for this name
+ * \param[in] *type query for this type (may be NULL, defaults to A)
+ * \param[in] *class query for this class (may be NULL, default to IN)
+ * \return ldns_pkt* a packet with the reply from the nameserver
+ */
 ldns_pkt *
-ldns_send(ldns_resolver *r, uint8_t *name, uint8_t *type, uint8_t *class)
+ldns_send(ldns_resolver *r, ldns_dname *name, ldns_rr_type *type, ldns_class *class)
 {
 	assert(r != NULL);
 	assert(name != NULL);

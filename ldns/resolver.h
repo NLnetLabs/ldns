@@ -54,6 +54,8 @@ struct ldns_struct_resolver
 	uint8_t _igntc;
 	/** \brief Wether to use ip6 */
 	uint8_t _ip6;
+	/** \brief 1 if the resolver is properly configured */
+	uint8_t _configured;
 	
 };
 	
@@ -76,7 +78,8 @@ void ldns_resolver_set_searchlist(ldns_resolver *, ldns_rdf *);
 
 ldns_pkt * ldns_search();
 ldns_pkt * ldns_query();
-ldns_pkt * ldns_send(ldns_resolver *, uint8_t*, uint8_t*, uint8_t*);
 ldns_pkt * ldns_bgsend();
+p
+ldns_pkt * ldns_send(ldns_resolver *, uint8_t*, uint8_t*, uint8_t*);
 
 #endif  /* !_LDNS_RESOLVER_H */
