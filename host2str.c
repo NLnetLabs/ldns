@@ -255,15 +255,46 @@ ldns_pktheader2buffer(ldns_buffer *output, ldns_pkt *pkt)
 	return LDNS_STATUS_OK;
 }
 
+/* TODO check status returns */
+
 ldns_status
 ldns_pkt2buffer(ldns_buffer *output, ldns_pkt *pkt)
 {
+	uint16_t i;
 	ldns_status status = LDNS_STATUS_OK;
 	
 	status = ldns_pktheader2buffer(output, pkt);
 	
 	if (status != LDNS_STATUS_OK) {
 		printf("error in pkt2buf %d\n", status);
+	}
+	
+	ldns_buffer_printf(output, ";; QUESTION SECTION:\n;; ");
+	for (i = 0; i < ldns_pkt_qdcount(pkt); i++) {
+		status = ldns_rr2buffer(output, 
+		               ldns_rrset_rr(ldns_pkt_question(pkt), i));
+		ldns_buffer_printf(output, "\n");
+	}
+	
+	ldns_buffer_printf(output, ";; ANSWER SECTION:\n");
+	for (i = 0; i < ldns_pkt_ancount(pkt); i++) {
+		status = ldns_rr2buffer(output, 
+		               ldns_rrset_rr(ldns_pkt_answer(pkt), i));
+		ldns_buffer_printf(output, "\n");
+	}
+	
+	ldns_buffer_printf(output, ";; AUTHORITY SECTION:\n");
+	for (i = 0; i < ldns_pkt_nscount(pkt); i++) {
+		status = ldns_rr2buffer(output, 
+		               ldns_rrset_rr(ldns_pkt_authority(pkt), i));
+		ldns_buffer_printf(output, "\n");
+	}
+	
+	ldns_buffer_printf(output, ";; ADDITIONAL SECTION:\n");
+	for (i = 0; i < ldns_pkt_arcount(pkt); i++) {
+		status = ldns_rr2buffer(output, 
+		               ldns_rrset_rr(ldns_pkt_additional(pkt), i));
+		ldns_buffer_printf(output, "\n");
 	}
 	
 	return status;

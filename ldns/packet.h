@@ -102,6 +102,11 @@ uint16_t ldns_pkt_ancount(ldns_pkt *);
 uint16_t ldns_pkt_nscount(ldns_pkt *);
 uint16_t ldns_pkt_arcount(ldns_pkt *);
 
+ldns_rrset *ldns_pkt_question(ldns_pkt *packet);
+ldns_rrset *ldns_pkt_answer(ldns_pkt *packet);
+ldns_rrset *ldns_pkt_authority(ldns_pkt *packet);
+ldns_rrset *ldns_pkt_additional(ldns_pkt *packet);
+
 void ldns_pkt_set_id(ldns_pkt *, uint16_t);
 void ldns_pkt_set_qr(ldns_pkt *, bool);
 void ldns_pkt_set_aa(ldns_pkt *, bool);

@@ -105,6 +105,30 @@ ldns_pkt_arcount(ldns_pkt *packet)
 	return packet->_header->_arcount;
 }
 
+ldns_rrset *
+ldns_pkt_question(ldns_pkt *packet)
+{
+	return packet->_question;
+}
+
+ldns_rrset *
+ldns_pkt_answer(ldns_pkt *packet)
+{
+	return packet->_answer;
+}
+
+ldns_rrset *
+ldns_pkt_authority(ldns_pkt *packet)
+{
+	return packet->_authority;
+}
+
+ldns_rrset *
+ldns_pkt_additional(ldns_pkt *packet)
+{
+	return packet->_additional;
+}
+
 
 /* write */
 void
@@ -210,10 +234,10 @@ ldns_pkt_new()
 		return NULL;
 	}
 
-	packet->_question = NULL;
-	packet->_answer = NULL;
-	packet->_authority = NULL;
-	packet->_additional = NULL;
+	packet->_question = ldns_rrset_new();
+	packet->_answer = ldns_rrset_new();
+	packet->_authority = ldns_rrset_new();
+	packet->_additional = ldns_rrset_new();
 	return packet;
 }
 

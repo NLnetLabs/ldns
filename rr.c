@@ -36,6 +36,22 @@ ldns_rr_new(void)
 }
 
 /**
+ * Frees the rr structure TODO
+ */
+void
+ldns_rr_free(ldns_rr *rr)
+{
+	uint16_t i;
+	for (i = 0; i < ldns_rr_rd_count(rr); i++) {
+		ldns_rdf_free(ldns_rr_rdf(rr, i));
+	}
+	/*
+	FREE(ldns_rr_owner(rr));
+	*/
+	FREE(rr);
+}
+
+/**
  * set the owner in the rr structure
  */
 void
@@ -108,6 +124,19 @@ ldns_rr_push_rdf(ldns_rr *rr, ldns_rdf *f)
 }
 
 /**
+ *
+ */
+ldns_rdf *
+ldns_rr_rdf(ldns_rr *rr, uint16_t nr)
+{
+	if (nr < ldns_rr_rd_count(rr)) {
+		return rr->_rdata_fields[nr];
+	} else {
+		return NULL;
+	}
+}
+
+/**
  * return the owner name of an rr structure
  */
 ldns_rdf *
@@ -152,6 +181,75 @@ ldns_rr_get_class(ldns_rr *rr)
         return rr->_rr_class;
 }
 
+/* rrsets */
+
+uint16_t
+ldns_rrset_rr_count(ldns_rrset *rrset)
+{
+	return rrset->_rr_count;
+}
+
+void
+ldns_rrset_set_rr_count(ldns_rrset *rrset, uint16_t count)
+{
+	rrset->_rr_count = count;
+}
+
+ldns_rr *
+ldns_rrset_rr(ldns_rrset *rrset, uint16_t nr)
+{
+	if (nr < ldns_rrset_rr_count(rrset)) {
+		return rrset->_rrs[nr];
+	} else {
+		return NULL;
+	}
+}
+
+ldns_rrset *
+ldns_rrset_new()
+{
+	ldns_rrset *rrset = MALLOC(ldns_rrset);
+	rrset->_rr_count = 0;
+	rrset->_rrs = NULL;
+	
+	return rrset;
+}
+
+void
+ldns_rrset_free(ldns_rrset *rrset)
+{
+	uint16_t i;
+	
+	for (i=0; i < ldns_rrset_rr_count(rrset); i++) {
+		ldns_rr_free(ldns_rrset_rr(rrset, i));
+	}
+	
+	FREE(rrset);
+}
+
+bool
+ldns_rrset_push_rr(ldns_rrset *rrset, ldns_rr *rr)
+{
+	uint16_t rr_count;
+	ldns_rr **rrs;
+	
+	rr_count = ldns_rrset_rr_count(rrset);
+	
+	/* grow the array */
+	rrs = XREALLOC(
+		rrset->_rrs, ldns_rr *, rr_count + 1);
+	if (!rrs) {
+		return false;
+	}
+	
+	/* add the new member */
+	rrset->_rrs = rrs;
+	rrset->_rrs[rr_count] = rr;
+
+	ldns_rrset_set_rr_count(rrset, rr_count + 1);
+	return true;
+
+}
 
 static const ldns_rdf_type type_0_wireformat[] = { LDNS_RDF_TYPE_UNKNOWN };
 static const ldns_rdf_type type_a_wireformat[] = { LDNS_RDF_TYPE_A };
