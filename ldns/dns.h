@@ -11,7 +11,8 @@
 #ifndef _DNS_H_
 #define _DNS_H_
 
-#define IP4ADDRLEN      (32/8)
-#define IP6ADDRLEN      (128/8)
+#define LDNS_IP4ADDRLEN      (32/8)
+#define LDNS_IP6ADDRLEN      (128/8)
+#define LDNS_PORT	53
 
 #endif /* _DNS_H_ */

@@ -18,6 +18,7 @@
 #include <ldns/rdata.h>
 #include <ldns/net.h>
 #include <ldns/host2str.h>
+#include <ldns/dns.h>
 
 #include "util.h"
 
@@ -234,7 +235,7 @@ ldns_resolver_new(void)
 	ldns_resolver_set_configured(r, 0);
 	ldns_resolver_set_searchlist_count(r, 0);
 	ldns_resolver_set_nameserver_count(r, 0);
-
+	ldns_resolver_set_port(r, LDNS_PORT);
 	return r;
 }
 
