@@ -269,6 +269,22 @@ ldns_pkt2buffer(ldns_buffer *output, ldns_pkt *pkt)
 	return status;
 }
 
+/*
+ * Zero terminate the buffer and fix it to the size of the string.
+ */
+static char *
+buffer2str(ldns_buffer *buffer)
+{
+	if (!ldns_buffer_reserve(buffer, 1)) {
+		return NULL;
+	}
+	ldns_buffer_write_u8(buffer, '\0');
+	if (!ldns_buffer_set_capacity(buffer, ldns_buffer_position(buffer))) {
+		return NULL;
+	}
+	return ldns_buffer_export(buffer);
+}
+
 char *
 ldns_rdf2str(ldns_rdf *rdf)
 {
@@ -277,10 +293,10 @@ ldns_rdf2str(ldns_rdf *rdf)
 
 	if (ldns_rdf2buffer(tmp_buffer, rdf) == LDNS_STATUS_OK) {
 		/* export and return string, destroy rest */
-		result = ldns_buffer_export(tmp_buffer);
-		ldns_buffer_free(tmp_buffer);
+		result = buffer2str(tmp_buffer);
 	}
 	
+	ldns_buffer_free(tmp_buffer);
 	return result;
 }
 
@@ -292,10 +308,10 @@ ldns_rr2str(ldns_rr *rr)
 
 	if (ldns_rr2buffer(tmp_buffer, rr) == LDNS_STATUS_OK) {
 		/* export and return string, destroy rest */
-		result = ldns_buffer_export(tmp_buffer);
-		ldns_buffer_free(tmp_buffer);
+		result = buffer2str(tmp_buffer);
 	}
 	
+	ldns_buffer_free(tmp_buffer);
 	return result;
 }
 
@@ -307,9 +323,9 @@ ldns_pkt2str(ldns_pkt *pkt)
 
 	if (ldns_pkt2buffer(tmp_buffer, pkt) == LDNS_STATUS_OK) {
 		/* export and return string, destroy rest */
-		result = ldns_buffer_export(tmp_buffer);
-		ldns_buffer_free(tmp_buffer);
+		result = buffer2str(tmp_buffer);
 	}
 
+	ldns_buffer_free(tmp_buffer);
 	return result;
 }
