@@ -17,7 +17,8 @@
 
 #include "util.h"
 
-/* Access functions 
+/*
+ * Access functions 
  * do this as functions to get type checking
  */
 
