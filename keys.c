@@ -300,22 +300,23 @@ ldns_key_list_pop_key(ldns_key_list *key_list)
 static bool
 ldns_key_rsa2bin(unsigned char *data, RSA *k, uint16_t *size)
 {
-	 if (BN_num_bytes(k->e) < 256) {
+	 if (BN_num_bytes(k->e) <= 2) {
                 data[0] = (unsigned char) BN_num_bytes(k->e);
 
                 BN_bn2bin(k->e, data + 1);  
                 BN_bn2bin(k->n, data + *(data + 1) + 2);
-        } else if (BN_num_bytes(k->e) < 65536) {
+		*size = (uint16_t) BN_num_bytes(k->n) + 4;
+        } else if (BN_num_bytes(k->e) <= 16) {
                 data[0] = 0;
 		/* this writing is not endian save or is it? */
 		write_uint16(data + 1, (uint16_t) BN_num_bytes(k->e));
 
                 BN_bn2bin(k->e, data + 3);
                 BN_bn2bin(k->n, data + 4 + BN_num_bytes(k->e));
+                *size = (uint16_t) BN_num_bytes(k->n) + 6;
 	} else {
 		return false;
 	}
-	*size = (uint16_t) BN_num_bytes(k->n) + 4;
 	return true;
 }
 
@@ -325,8 +326,18 @@ ldns_key_dsa2bin(unsigned char *data, DSA *k, uint16_t *size)
 	uint8_t T;
 
 	/* See RFC2536 */
+/*
 	T = (uint8_t) ((DSA_size(k) - 512) / 64);
+*/
+	/* don't know if this is the right size */
+	T = (uint8_t) DSA_size(k) / 8;
 	memcpy(data, &T, 1);
+
+	if (T > 8) {
+		/* todo: other feedback than printf */
+		printf("DSA_size = %d, T > 8, not implemented\n", DSA_size(k));
+		return false;
+	}
 
 	*size = 64 + (T * 8); 
 
@@ -404,7 +415,7 @@ ldns_key2rr(ldns_key *k)
 			break;
 	}
 	/* fourth the key bin material */
-	keybin = ldns_rdf_new_frm_data(LDNS_RDF_TYPE_B64, size, bin);
+	keybin = ldns_rdf_new_frm_data(LDNS_RDF_TYPE_B64, size+1, bin);
 	FREE(bin);
 	ldns_rr_push_rdf(pubkey, keybin);
 	return pubkey;

@@ -103,6 +103,7 @@ ldns_rr *ldns_key_rr2ds(const ldns_rr *key);
 
 ldns_rr_list *ldns_sign(ldns_rr_list*, ldns_rr_list*);
 
+ldns_rdf *ldns_sign_public_dsa(ldns_buffer *to_sign, DSA *key);
 ldns_rdf *ldns_sign_public_rsamd5(ldns_buffer *to_sign, RSA *key);
 ldns_rdf *ldns_sign_public_rsasha1(ldns_buffer *to_sign, RSA *key);
 ldns_rdf *ldns_sign_public_dsa(ldns_buffer *to_sign, DSA *key);

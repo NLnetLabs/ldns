@@ -15,7 +15,7 @@ usage(FILE *fp, char *prog) {
 }
 
 int
-main(int argc, char *argv[])
+main()
 {
 	ldns_rr *dnskey;
 	ldns_key *privkey;

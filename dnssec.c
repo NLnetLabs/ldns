@@ -175,22 +175,25 @@ ldns_verify_rrsig(ldns_rr_list *rrset, ldns_rr *rrsig, ldns_rr_list *keys)
 			return false;
 		}
 
-		switch(sig_algo) {
-			case LDNS_DSA:
-				result = ldns_verify_rrsig_dsa(
-						rawsig_buf, verify_buf, key_buf);
-				break;
-			case LDNS_RSASHA1:
-				result = ldns_verify_rrsig_rsasha1(
-						rawsig_buf, verify_buf, key_buf);
-				break;
-			case LDNS_RSAMD5:
-				result = ldns_verify_rrsig_rsamd5(
-						rawsig_buf, verify_buf, key_buf);
-				break;
-			default:
-				/* do you know this alg?! */
-				break;
+		/* check for right key */
+		if (sig_algo == ldns_rdf2native_int8(ldns_rr_rdf(current_key, 2))) {
+			switch(sig_algo) {
+				case LDNS_DSA:
+					result = ldns_verify_rrsig_dsa(
+							rawsig_buf, verify_buf, key_buf);
+					break;
+				case LDNS_RSASHA1:
+					result = ldns_verify_rrsig_rsasha1(
+							rawsig_buf, verify_buf, key_buf);
+					break;
+				case LDNS_RSAMD5:
+					result = ldns_verify_rrsig_rsamd5(
+							rawsig_buf, verify_buf, key_buf);
+					break;
+				default:
+					/* do you know this alg?! */
+					break;
+			}
 		}
 
 		ldns_buffer_free(key_buf); 
@@ -389,9 +392,11 @@ ldns_key_buf2rsa(ldns_buffer *key)
 	rsa->n = modulus;
 	rsa->e = exponent;
 
+/*
 	printf("my key\n");
 	RSA_print_fp(stdout, rsa, 0);
 	printf("\n");
+*/
 	
 	return rsa;
 }
