@@ -22,6 +22,8 @@
 #include <ldns/dns.h>
 #include <ldns/dname.h>
 
+#include <strings.h>
+
 #include "util.h"
 
 /* Access function for reading 
@@ -293,16 +295,24 @@ ldns_resolver_new_frm_file(const char *filename)
 {
 	ldns_resolver *r;
 	FILE *fp;
-	const char *keyword[3];
-	char *line;
-	size_t len;
-	
+	const char *keyword[2];
+	char *word;
+	uint8_t expect;
+	uint8_t i;
+	ldns_rdf *tmp;
 
-	keyword[0] = "nameserver";
-	keyword[1] = "domain";
-	keyword[2] = "searchlist";
-	line = XMALLOC(char, MAXLINE_LEN);
-	len = MAXLINE_LEN;
+	/* do this better 
+	 * expect = 
+	 * 0: keyword
+	 * 1: default domain dname
+	 * 2: NS aaaa or a record
+	 */
+
+	/* recognized keywords */
+	keyword[0] = "domain";
+	keyword[1] = "nameserver";
+	word = XMALLOC(char, MAXLINE_LEN);
+	expect = 0;
 
 	r = ldns_resolver_new();
 	if (!r) {
@@ -319,12 +329,57 @@ ldns_resolver_new_frm_file(const char *filename)
 	}
 	/* the file is opened. it's line based - this will be a bit messy
 	 */
-#if 0	
-	while (getline(&line, &len, fp) != -1) {
+
+	while (readword(word, fp, MAXLINE_LEN) != -1) {
 		/* do something */
-		printf("line %s\n", line);
+		switch(expect) {
+			case RESOLV_KEYWORD:
+				/* keyword */
+				for(i = 0; i < 2; i++) {
+					if (strcasecmp(keyword[i], word) == 0) {
+						/* chosen the keyword and
+						 * expect values carefully
+						 */
+						expect = i + 1;
+						break;
+					}
+				}
+				/* no keyword recognized */
+				if (expect == 0) {
+					printf("[%s] unreg keyword\n", word);
+				}
+				break;
+			case RESOLV_DEFDOMAIN:
+				/* default domain dname */
+				tmp = ldns_rdf_new_frm_str(LDNS_RDF_TYPE_DNAME, word);
+				if (!tmp) {
+					expect = RESOLV_KEYWORD;
+					break;
+				}
+				ldns_resolver_set_domain(r, tmp);
+				expect = RESOLV_KEYWORD;
+				break;
+			case RESOLV_NAMESERVER:
+				/* NS aaaa or a record */
+				tmp = ldns_rdf_new_frm_str(LDNS_RDF_TYPE_AAAA, word);
+				if (!tmp) {
+					/* try ip4 */
+					tmp = ldns_rdf_new_frm_str(LDNS_RDF_TYPE_A, word);
+				}
+				if (!tmp) {
+					expect = RESOLV_KEYWORD;
+					break;
+				}
+				(void)ldns_resolver_push_nameserver(r, tmp);
+				expect = RESOLV_KEYWORD;
+				break;
+			default:
+				/* huh?! */
+				printf("BIG FAT WARNING should never reach this\n");
+				expect = RESOLV_KEYWORD;
+				break;
+		}
 	}
-#endif
 
 	fclose(fp);
 	return r;

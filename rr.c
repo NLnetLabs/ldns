@@ -172,8 +172,10 @@ ldns_rr_new_frm_str(const char *str)
 			ldns_rr_descriptor_field_type(desc, r_cnt),
 			rd);
 
+#ifdef DEBUG
 		printf("rd str [%s] %d\n", rd, r_cnt);
 		printf("type %d\n",ldns_rr_descriptor_field_type(desc, r_cnt));
+#endif 
 
 		if (!r) {
 			printf("rdf conversion mismatch\n");
