@@ -46,4 +46,6 @@ ldns_status ldns_pkt_tsig_sign(ldns_pkt *pkt, const char *key_name, const char *
 
 ldns_rr *ldns_key_rr2ds(ldns_rr *key);
 
+ldns_rr_list *ldns_pkt_get_sigs(ldns_pkt *pkt, ldns_rr *rr);
+
 #endif /* _DNSSEC_H_ */

@@ -71,6 +71,70 @@ ldns_keytag(ldns_rr *key)
 }
 
 /**
+ * Returns an rr_list that contains the possible rrsigs for the given 
+ * rr in the given packet
+ * Allocates and copies, so don't forget to free!
+ * TODO: helper for rr copying?
+ */
+ldns_rr_list *
+ldns_pkt_get_sigs(ldns_pkt *pkt, ldns_rr *rr)
+{
+	ldns_rr_list *sigs = ldns_rr_list_new();
+	ldns_rr_list *pkt_rrs;
+	ldns_rr *cur_rr;
+	int i;
+	
+	pkt_rrs = ldns_pkt_answer(pkt);
+	if (pkt_rrs) {
+		for (i = 0; i < ldns_rr_list_rr_count(pkt_rrs); i++) {
+			cur_rr = ldns_rr_list_rr(pkt_rrs, i);
+			if (ldns_rdf_compare(ldns_rr_owner(rr),
+			                 ldns_rr_owner(cur_rr)
+			                )
+			   &&
+			   	ldns_rr_get_type(cur_rr) == LDNS_RR_TYPE_RRSIG
+			   ) {
+			   	ldns_rr_list_push_rr(sigs,
+			   	                     ldns_rr_deep_clone(cur_rr));
+			}
+		}
+	}
+	pkt_rrs = ldns_pkt_authority(pkt);
+	if (pkt_rrs) {
+		for (i = 0; i < ldns_rr_list_rr_count(pkt_rrs); i++) {
+			cur_rr = ldns_rr_list_rr(pkt_rrs, i);
+			if (ldns_rdf_compare(ldns_rr_owner(rr),
+			                 ldns_rr_owner(cur_rr)
+			                )
+			   &&
+			   	ldns_rr_get_type(cur_rr) == LDNS_RR_TYPE_RRSIG
+			   ) {
+			   	ldns_rr_list_push_rr(sigs,
+			   	                     ldns_rr_deep_clone(cur_rr));
+			}
+		}
+	}
+	pkt_rrs = ldns_pkt_additional(pkt);
+	if (pkt_rrs) {
+		for (i = 0; i < ldns_rr_list_rr_count(pkt_rrs); i++) {
+			cur_rr = ldns_rr_list_rr(pkt_rrs, i);
+			if (ldns_rdf_compare(ldns_rr_owner(rr),
+			                 ldns_rr_owner(cur_rr)
+			                )
+			   &&
+			   	ldns_rr_get_type(cur_rr) == LDNS_RR_TYPE_RRSIG
+			   ) {
+			   	ldns_rr_list_push_rr(sigs,
+			   	                     ldns_rr_deep_clone(cur_rr));
+			}
+		}
+	}
+		
+	return sigs;
+}
+
+
+/**
  * verify an rrsig rrset
  */
 
@@ -81,6 +145,10 @@ ldns_verify(ldns_rr_list *rrset, ldns_rr_list *rrsig, ldns_rr_list *keys)
 	bool result;
 
 	result = false;
+	if (!rrset || !rrsig || !keys) {
+		return false;
+	}
+	
 	for (i = 0; i < ldns_rr_list_rr_count(rrsig); i++) {
 		result = ldns_verify_rrsig(rrset, 
 				ldns_rr_list_rr(rrsig, i),

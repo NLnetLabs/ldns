@@ -672,6 +672,14 @@ ldns_resolver_send(ldns_resolver *r, ldns_rdf *name, ldns_rr_type type, ldns_rr_
 				ldns_resolver_edns_udp_size(r));
 	}
 
+	/* set DO bit if necessary */
+	/* TODO: macro or inline function for bit */
+	if (ldns_resolver_dnssec(r) != 0) {
+		ldns_pkt_set_edns_z(query_pkt,
+		                    ldns_pkt_edns_z(query_pkt) | 0x8000
+		                   );
+	}
+
 	if (ldns_resolver_debug(r)) {
 		ldns_pkt_print(stdout, query_pkt);
 	}
