@@ -769,29 +769,29 @@ ldns_sign_public(ldns_rr_list *rrset, ldns_key_list *keys)
 		}
 		/* fill in what we now of the signature */
 		/* set the orig_ttl */
-		ldns_rr_set_origttl(current_sig, ldns_native2rdf_int32(LDNS_RDF_TYPE_INT32, orig_ttl));
+		ldns_rr_rrsig_set_origttl(current_sig, ldns_native2rdf_int32(LDNS_RDF_TYPE_INT32, orig_ttl));
 		/* the signers name */
-		ldns_rr_set_signame(current_sig, 
+		ldns_rr_rrsig_set_signame(current_sig, 
 				ldns_key_pubkey_owner(current_key));
 		/* label count - get it from the first rr in the rr_list */
-		ldns_rr_set_labels(current_sig, 
+		ldns_rr_rrsig_set_labels(current_sig, 
 				ldns_native2rdf_int8(LDNS_RDF_TYPE_INT8, ldns_rr_label_count(
 						ldns_rr_list_rr(rrset_clone, 0))));
 		/* inception, expiration */
-		ldns_rr_set_inception(current_sig,
+		ldns_rr_rrsig_set_inception(current_sig,
 				ldns_native2rdf_int32(LDNS_RDF_TYPE_INT32, ldns_key_inception(current_key)));
-		ldns_rr_set_expiration(current_sig,
+		ldns_rr_rrsig_set_expiration(current_sig,
 				ldns_native2rdf_int32(LDNS_RDF_TYPE_INT32, ldns_key_expiration(current_key)));
 		/* key-tag */
-		ldns_rr_set_keytag(current_sig,
+		ldns_rr_rrsig_set_keytag(current_sig,
 				ldns_native2rdf_int16(LDNS_RDF_TYPE_INT16, ldns_key_keytag(current_key)));
 
 		/* algorithm - check the key and substitute that */
-		ldns_rr_set_algorithm(current_sig,
+		ldns_rr_rrsig_set_algorithm(current_sig,
 				ldns_native2rdf_int8(LDNS_RDF_TYPE_ALG, ldns_key_algorithm(current_key)));
 		
 		/* type-covered */
-		ldns_rr_set_typecovered(current_sig,
+		ldns_rr_rrsig_set_typecovered(current_sig,
 				ldns_native2rdf_int16(LDNS_RDF_TYPE_TYPE,
 					ldns_rr_get_type(ldns_rr_list_rr(rrset_clone, 0))));
 
@@ -808,7 +808,6 @@ ldns_sign_public(ldns_rr_list *rrset, ldns_key_list *keys)
 			ldns_buffer_free(sign_buf);
 			return NULL;
 		}
-
 		
 		switch(ldns_key_algorithm(current_key)) {
 			case LDNS_SIGN_DSA:
@@ -828,7 +827,7 @@ ldns_sign_public(ldns_rr_list *rrset, ldns_key_list *keys)
 			/* signing went wrong */
 			return NULL;
 		}
-		ldns_rr_set_sig(current_sig, b64rdf);
+		ldns_rr_rrsig_set_sig(current_sig, b64rdf);
 
 		/* push the signature to the signatures list */
 		ldns_rr_list_push_rr(signatures, current_sig);

@@ -231,6 +231,10 @@ syn keyword  ldnsType   ldns_key
 syn keyword  ldnsType   ldns_key_list
 syn keyword  ldnsType   ldns_signing_algorithm
 
+" ldns/dnssec.h
+syn keyword  ldnsConstant	MAX_KEYLEN
+
+
 
 " Default highlighting
 command -nargs=+ HiLink hi def link <args>

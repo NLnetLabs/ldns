@@ -17,10 +17,11 @@
 #include <ldns/buffer.h>
 #include <ldns/packet.h>
 
+#define MAX_KEYLEN	2048
+
 /**
  * algorigthms used in dns
  */
-
 enum ldns_enum_algorithm
 {
 	LDNS_RSAMD5		= 1,
