@@ -12,7 +12,6 @@ o network code
 	- tsig?
 o printing of signatures dates/times
 o DNSSEC
-	- define algorithms?
 	- signing?
 o Make a shared library and test compile some programs
 o Thread safety

@@ -13,18 +13,24 @@
 
 #include <openssl/ssl.h>
 
-#define LDNS_RSAMD5		1
-#define LDNS_DH			2
-#define LDNS_DSA		3
-#define LDNS_ECC		4
-#define LDNS_RSASHA1		5
-#define LDNS_INDIRECT		252
-#define LDNS_PRIVATEDNS		253
-#define LDNS_PRIVATEOID		254
+/**
+ * algorigthms used in dns
+ */
 
+enum ldns_enum_algorithm
+{
+	LDNS_RSAMD5		= 1,
+	LDNS_DH			= 2,
+	LDNS_DSA		= 3,
+	LDNS_ECC		= 4,
+	LDNS_RSASHA1		= 5,
+	LDNS_INDIRECT		= 252,
+	LDNS_PRIVATEDNS		= 253,
+	LDNS_PRIVATEOID		= 254
+};
+typedef enum ldns_enum_algorithm ldns_algorithm;
 
 /* prototypes */
-
 bool ldns_verify_rrsig_dsa(ldns_buffer *, ldns_buffer *, ldns_buffer *);
 bool ldns_verify_rrsig_rsasha1(ldns_buffer *, ldns_buffer *, ldns_buffer *);
 bool ldns_verify_rrsig_rsamd5(ldns_buffer *, ldns_buffer *, ldns_buffer *);
@@ -33,6 +39,5 @@ bool ldns_verify(ldns_rr_list *, ldns_rr_list *, ldns_rr_list *);
 uint16_t ldns_keytag(ldns_rr *);
 DSA *ldns_key_buf2dsa(ldns_buffer *);
 RSA *ldns_key_buf2rsa(ldns_buffer *);
-	
 
 #endif /* _DNSSEC_H_ */
