@@ -434,23 +434,10 @@ ldns_resolver_new(void)
 	return r;
 }
 
-
-/**
- * configure a resolver by means of a resolv.conf file
- * The file may be NULL in which case there will  be
- * looked the RESOLV_CONF (defaults to /etc/resolv.conf
- * \param[in] filename the filename to use
- * \return ldns_resolver pointer
- */
-/* keyword recognized:
- * nameserver
- * domain
- */
 ldns_resolver *
-ldns_resolver_new_frm_file(const char *filename)
+ldns_resolver_new_frm_fp(FILE *fp)
 {
 	ldns_resolver *r;
-	FILE *fp;
 	const char *keyword[2];
 	char *word;
 	uint8_t expect;
@@ -474,16 +461,6 @@ ldns_resolver_new_frm_file(const char *filename)
 	if (!r) {
 		return NULL;
 	}
-	if (!filename) {
-		fp = fopen(RESOLV_CONF, "r");
-
-	} else {
-		fp = fopen(filename, "r");
-	}
-	if (!fp) {
-		return NULL;
-	}
-	/* the file is opened. it's line based - this will be a bit messy */
 
 	while (readword(word, fp, "\n\t ", MAXLINE_LEN) != -1) {
 		/* do something */
@@ -535,6 +512,41 @@ ldns_resolver_new_frm_file(const char *filename)
 				break;
 		}
 	}
+	return r;
+}
+
+
+
+
+/**
+ * configure a resolver by means of a resolv.conf file
+ * The file may be NULL in which case there will  be
+ * looked the RESOLV_CONF (defaults to /etc/resolv.conf
+ * \param[in] filename the filename to use
+ * \return ldns_resolver pointer
+ */
+/* keyword recognized:
+ * nameserver
+ * domain
+ */
+ldns_resolver *
+ldns_resolver_new_frm_file(const char *filename)
+{
+	ldns_resolver *r;
+	FILE *fp;
+
+	if (!filename) {
+		fp = fopen(RESOLV_CONF, "r");
+
+	} else {
+		fp = fopen(filename, "r");
+	}
+	if (!fp) {
+		return NULL;
+	}
+	/* the file is opened. it's line based - this will be a bit messy */
+
+	r =  ldns_resolver_new_frm_fp(fp);
 
 	fclose(fp);
 	return r;
