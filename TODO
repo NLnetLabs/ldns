@@ -12,15 +12,15 @@ o network code
 	- tsig?
 o DNSSEC
 	- signing
+	- do we call random()?
 o Make a shared library and test compile some programs
-o Thread safety
+o Thread safety, strtok is used
 o ssl autoconf
 o create a bunch of small programs:
 	mx 
 	dig
 	host
 	?
-
 
 Documentation:
 --------------
