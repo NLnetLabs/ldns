@@ -830,52 +830,55 @@ ldns_rr2buffer_str(ldns_buffer *output, ldns_rr *rr)
 	ldns_lookup_table *lt;
 	const ldns_rr_descriptor *descriptor;
 	
-	if (ldns_rr_owner(rr)) {
-		status = ldns_rdf2buffer_str_dname(output, ldns_rr_owner(rr)); 
-	}
-	if (status != LDNS_STATUS_OK) {
-		return status;
-	}
-
-	/* ttl should not be printed if it is a question, but we don't know that anymore... (do we?)*/
-	/* TODO: better way */
-	if (ldns_rr_rd_count(rr) > 0) {
-		ldns_buffer_printf(output, "\t%d", ldns_rr_ttl(rr));
-	}
-	
- 	lt = ldns_lookup_by_id(ldns_rr_classes, ldns_rr_get_class(rr));
-	if (lt) {
-		ldns_buffer_printf(output, "\t%s\t", lt->name);
+	if (!rr) {
+		ldns_buffer_printf(output, "<NIL> ");
 	} else {
-		ldns_buffer_printf(output, "\tCLASS%d\t", ldns_rr_get_class(rr));
-	}
+		if (ldns_rr_owner(rr)) {
+			status = ldns_rdf2buffer_str_dname(output, ldns_rr_owner(rr)); 
+		}
+		if (status != LDNS_STATUS_OK) {
+			return status;
+		}
 
-	descriptor = ldns_rr_descript(ldns_rr_get_type(rr));
-
-	if (descriptor->_name) {
-		ldns_buffer_printf(output, "%s\t", descriptor->_name);
-	} else {
-		/* exceptions for qtype */
-		if (ldns_rr_get_type(rr) == 251) {
-			ldns_buffer_printf(output, "IXFR ");
-		} else if (ldns_rr_get_type(rr) == 252) {
-			ldns_buffer_printf(output, "AXFR ");
-		} else if (ldns_rr_get_type(rr) == 253) {
-			ldns_buffer_printf(output, "MAILB ");
-		} else if (ldns_rr_get_type(rr) == 254) {
-			ldns_buffer_printf(output, "MAILA ");
-		} else if (ldns_rr_get_type(rr) == 255) {
-			ldns_buffer_printf(output, "ANY ");
+		/* ttl should not be printed if it is a question, but we don't know that anymore... (do we?)*/
+		/* TODO: better way */
+		if (ldns_rr_rd_count(rr) > 0) {
+			ldns_buffer_printf(output, "\t%d", ldns_rr_ttl(rr));
+		}
+		
+		lt = ldns_lookup_by_id(ldns_rr_classes, ldns_rr_get_class(rr));
+		if (lt) {
+			ldns_buffer_printf(output, "\t%s\t", lt->name);
 		} else {
-			ldns_buffer_printf(output, "TYPE%d\t", ldns_rr_get_type(rr));
+			ldns_buffer_printf(output, "\tCLASS%d\t", ldns_rr_get_class(rr));
+		}
+
+		descriptor = ldns_rr_descript(ldns_rr_get_type(rr));
+
+		if (descriptor->_name) {
+			ldns_buffer_printf(output, "%s\t", descriptor->_name);
+		} else {
+			/* exceptions for qtype */
+			if (ldns_rr_get_type(rr) == 251) {
+				ldns_buffer_printf(output, "IXFR ");
+			} else if (ldns_rr_get_type(rr) == 252) {
+				ldns_buffer_printf(output, "AXFR ");
+			} else if (ldns_rr_get_type(rr) == 253) {
+				ldns_buffer_printf(output, "MAILB ");
+			} else if (ldns_rr_get_type(rr) == 254) {
+				ldns_buffer_printf(output, "MAILA ");
+			} else if (ldns_rr_get_type(rr) == 255) {
+				ldns_buffer_printf(output, "ANY ");
+			} else {
+				ldns_buffer_printf(output, "TYPE%d\t", ldns_rr_get_type(rr));
+			}
+		}
+		
+		for (i = 0; i < ldns_rr_rd_count(rr); i++) {
+			status = ldns_rdf2buffer_str(output, ldns_rr_rdf(rr, i));
+			ldns_buffer_printf(output, " ");
 		}
 	}
-	
-	for (i = 0; i < ldns_rr_rd_count(rr); i++) {
-		status = ldns_rdf2buffer_str(output, ldns_rr_rdf(rr, i));
-		ldns_buffer_printf(output, " ");
-	}
-	
 	return ldns_buffer_status(output);
 }
 
