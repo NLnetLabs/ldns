@@ -711,6 +711,7 @@ ldns_sign_public(ldns_rr_list *rrset, ldns_key_list *keys)
 		b64rdf = NULL;
 
 		current_key = ldns_key_list_key(keys, key_count);
+
 		current_sig = ldns_rr_new_frm_type(LDNS_RR_TYPE_RRSIG);
 		
 		/* set the type on the new signature */

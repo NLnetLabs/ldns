@@ -99,7 +99,6 @@ ldns_key * ldns_key_list_pop_key(ldns_key_list *key_list);
 ldns_key * ldns_key_new_frm_algorithm(ldns_signing_algorithm a, uint16_t size);
 
 ldns_rr * ldns_key2rr(ldns_key *k);
-uint16_t ldns_key_calc_keytag(ldns_key *k);
 uint16_t ldns_key_flags(ldns_key *k);
 
 #endif /* _LDNS_KEYS_H */

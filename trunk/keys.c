@@ -45,6 +45,7 @@ ldns_key_new()
 		return NULL;
 	} else {
 		ldns_key_set_flags(newkey, 256);
+		ldns_key_set_keytag(newkey, 0);
 		ldns_key_set_inception(newkey, 0);
 		ldns_key_set_expiration(newkey, 0);
 		ldns_key_set_pubkey_owner(newkey, NULL);
@@ -90,9 +91,7 @@ ldns_key_new_frm_algorithm(ldns_signing_algorithm alg, uint16_t size)
 	ldns_key_set_flags(k, 256);
 	ldns_key_set_inception(k, 0);
 	ldns_key_set_expiration(k, 0);
-	ldns_key_set_keytag(k,
-			ldns_key_calc_keytag(k));
-	printf("keytag %d\n", ldns_key_calc_keytag(k));
+	ldns_key_set_keytag(k,0);
 	return k;
 }
 
@@ -412,17 +411,4 @@ ldns_key2rr(ldns_key *k)
 	FREE(bin);
 	ldns_rr_push_rdf(pubkey, keybin);
 	return pubkey;
-}
-
-uint16_t
-ldns_key_calc_keytag(ldns_key *k)
-{
-	ldns_rr *keyrr;
-	uint16_t tag;
-
-	keyrr = ldns_key2rr(k);
-
-	tag = ldns_calc_keytag(keyrr);
-	ldns_rr_free(keyrr);
-	return tag;
 }
