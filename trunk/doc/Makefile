@@ -10,4 +10,5 @@ clean:
 	rm -f *.txt
 	rm -f str2host.xml
 	rm -f API2.xml
+	rm -f *.html
 
