@@ -82,12 +82,22 @@ ldns_str2rdf_time(ldns_rdf **rd, const char *time)
 	}
 }
 
+/* convert a time period (think TTL's) to wireformat) */
 ldns_status
 ldns_str2rdf_period(ldns_rdf **rd,const char *period)
 {
-	assert(*rd != NULL);
-	assert(period != NULL);
+        uint32_t p;
+        const char *end;
 
+        /* Allocate required space... */
+        p = ldns_str2period(period, &end);
+
+        if (*end != 0) {
+		return LDNS_STATUS_ERR;
+        } else {
+                p = (uint32_t) htonl(p);
+		*rd = ldns_rdf_new_frm_data(sizeof(uint32_t), LDNS_RDF_TYPE_PERIOD, (uint8_t*)&p);
+        }
 	return LDNS_STATUS_OK;
 }
 
