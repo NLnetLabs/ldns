@@ -32,7 +32,7 @@ LINK		= $(CC) $(CFLAGS) $(LDFLAGS)
 %.o:	%.c
 	$(COMPILE) -c $<
 
-.PHONY:	clean realclean docclean doc
+.PHONY:	clean realclean docclean doc lint
 
 all:	run-test0
 
@@ -58,7 +58,6 @@ realclean: clean docclean
 
 docclean:
 	rm -rf doc
-
 
 lint:
 	for i in $(ALL_SOURCES); do \
