@@ -71,6 +71,48 @@ zparser_conv_time(ldns_rdf *rd, const char *time)
 }
 
 #if 0
+ldns_status 
+zparser_conv_long(ldns_rdf *rd, const char *longstr)
+{
+	char *end;      /* Used to parse longs, ttls, etc.  */
+	uint16_t *r = NULL;
+	uint32_t l;
+
+	r = (uint16_t *) region_alloc(region,
+				      sizeof(uint16_t) + sizeof(uint32_t));
+	l = htonl((uint32_t)strtol(longstr, &end, 0));
+
+	if(*end != 0) {
+		error_prev_line("Long decimal value is expected");
+        } else {
+		memcpy(r + 1, &l, sizeof(uint32_t));
+		*r = sizeof(uint32_t);
+	}
+	return r;
+}
+
+ldns_status
+zparser_conv_byte(ldns_rdf *rd, const char *bytestr)
+{
+
+	/* convert a byte value to wireformat */
+	char *end;      /* Used to parse longs, ttls, etc.  */
+	uint16_t *r = NULL;
+ 
+        r = (uint16_t *) region_alloc(region,
+				      sizeof(uint16_t) + sizeof(uint8_t));
+
+        *((uint8_t *)(r+1)) = (uint8_t)strtol(bytestr, &end, 0);
+
+        if(*end != 0) {
+		error_prev_line("Decimal value is expected");
+        } else {
+		*r = sizeof(uint8_t);
+        }
+	return r;
+}
+
+#if 0
 
 /**
  * convert a hex value to wireformat
@@ -222,47 +264,6 @@ zparser_conv_period(region_type *region, const char *periodstr)
 	return r;
 }
 
-
-uint16_t *
-zparser_conv_long(region_type *region, const char *longstr)
-{
-	char *end;      /* Used to parse longs, ttls, etc.  */
-	uint16_t *r = NULL;
-	uint32_t l;
-
-	r = (uint16_t *) region_alloc(region,
-				      sizeof(uint16_t) + sizeof(uint32_t));
-	l = htonl((uint32_t)strtol(longstr, &end, 0));
-
-	if(*end != 0) {
-		error_prev_line("Long decimal value is expected");
-        } else {
-		memcpy(r + 1, &l, sizeof(uint32_t));
-		*r = sizeof(uint32_t);
-	}
-	return r;
-}
-
-uint16_t *
-zparser_conv_byte(region_type *region, const char *bytestr)
-{
-
-	/* convert a byte value to wireformat */
-	char *end;      /* Used to parse longs, ttls, etc.  */
-	uint16_t *r = NULL;
- 
-        r = (uint16_t *) region_alloc(region,
-				      sizeof(uint16_t) + sizeof(uint8_t));
-
-        *((uint8_t *)(r+1)) = (uint8_t)strtol(bytestr, &end, 0);
-
-        if(*end != 0) {
-		error_prev_line("Decimal value is expected");
-        } else {
-		*r = sizeof(uint8_t);
-        }
-	return r;
-}
 
 uint16_t *
 zparser_conv_algorithm(region_type *region, const char *algstr)
