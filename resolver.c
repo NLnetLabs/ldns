@@ -67,6 +67,18 @@ ldns_resolver_searchlist(ldns_resolver *r)
 	return r->_searchlist;
 }
 
+ldns_rdf **
+ldns_resolver_nameservers(ldns_resolver *r)
+{
+	return r->_nameservers;
+}
+
+size_t
+ldns_resolver_nameserver_count(ldns_resolver *r)
+{
+	return r->_nameserver_count;
+}
+
 /* write */
 void
 ldns_resolver_set_port(ldns_resolver *r, uint16_t p)
@@ -223,7 +235,7 @@ ldns_resolver_send(ldns_resolver *r, ldns_rdf *name, ldns_rr_type type, ldns_rr_
 	 * and then send this */
 	/*query_pkt = somesortofconversion2qpkt(name, type, class, flags); * */
 
-	/*answer_pkt = ldns_send_lowlevel(resolver *r, query_pkt);*/
+	answer_pkt = ldns_send(*r, query_pkt);
 		
 	return NULL;
 }

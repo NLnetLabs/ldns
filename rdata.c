@@ -68,9 +68,9 @@ ldns_rdf_set_data(ldns_rdf *rd, void *d)
 }
 
 
-/* for types that allow it return
- * the native/host order type
- */
+/* for types that allow it, return
+ * the native/host order type */
+
 /** return the native uint8_t repr. from the rdf
  * \param[in] rd the ldns_rdf to operate on
  * \return uint8_t the value extracted
@@ -128,7 +128,8 @@ ldns_rdf2native_int32(ldns_rdf *rd)
 	return data;
 }
 
-/** return the native sockaddr repr. from the rdf
+/** 
+ * return the native sockaddr repr. from the rdf
  * \param[in] rd the ldns_rdf to operate on
  * \return struct sockaddr* the address in the format so other
  * functions can use it (sendto)
