@@ -21,16 +21,16 @@
         XMALLOC((ptr), type, 1)
 
 #define XMALLOC(ptr, type, count) \
-        (ptr) = (type *) malloc((count) * sizeof(type))
+	do { (ptr) = (type *) malloc((count) * sizeof(type)); } while (0)
 
 #define REALLOC(ptr, type) \
         XREALLOC((ptr), type, 1)
 
 #define XREALLOC(ptr, type, count) \
-        (ptr) == (type *) realloc((ptr), (count) * sizeof(type))
+	do { (ptr) = (type *) realloc((ptr), (count) * sizeof(type)); } while (0)
 
 #define FREE(ptr) \
-    do { free((ptr)); (ptr) = NULL; } while (0)
+	do { free((ptr)); (ptr) = NULL; } while (0)
 
 #define DEP     printf("DEPRICATED FUNCTION!\n");
 
