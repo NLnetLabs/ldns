@@ -9,6 +9,7 @@
 #include "rr.h"
 #include "packet.h"
 #include "prototype.h"
+#include "util.h"
 
 int
 main(void)
@@ -27,7 +28,7 @@ main(void)
 
 	xprintf_rr(rr);
 
-	wire = xmalloc(100);
+	XMALLOC(wire, uint8_t, 100);
 	wire[0] = 0xc2;
 	wire[1] = 0xb4;
 	wire[2] = 0x81;

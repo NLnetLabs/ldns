@@ -15,21 +15,6 @@
 #include "rdata.h"
 #include "rr.h"
 
-void *
-xmalloc(size_t s)
-{
-	void *p;
-	p = (void*)malloc(s);
-	return p;
-}
-
-void *
-xrealloc(void *p, size_t s)
-{
-	p = (void*)realloc(p, s);
-	return p;
-}
-
 /* put this here tmp. for debugging */
 void
 xprintf_rd_field(t_rdata_field *rd)
