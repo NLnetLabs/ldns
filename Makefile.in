@@ -8,7 +8,7 @@ bindir 		= @bindir@
 mandir 		= @mandir@
 
 CC 		= @CC@
-OURCFLAGS	= -g -Wall -Wwrite-strings -Wunused-value -Wunused-parameter
+OURCFLAGS	= -g -Wall -Wwrite-strings #-Wunused-value -Wunused-parameter
 CFLAGS 		= @CFLAGS@ $(OURCFLAGS)
 LDFLAGS		= @LDFLAGS@
 LIBS 		= @LIBS@
