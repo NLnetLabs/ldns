@@ -23,7 +23,7 @@ main(int argc, char **argv)
         ldns_resolver *res;
         ldns_rdf *qname;
         ldns_rdf *nameserver;
-	ldns_rdf *default_dom;
+	/*ldns_rdf *default_dom;*/
         ldns_pkt *pkt;
         char *server_ip = NULL;
         char *name = NULL;
@@ -44,8 +44,8 @@ main(int argc, char **argv)
 
         /* create a default domain and add it */
 
-        default_dom = ldns_dname_new_frm_str("miek.nl.");
 #if 0
+        default_dom = ldns_dname_new_frm_str("miek.nl.");
         ldns_resolver_set_domain(res, default_dom);
 	ldns_resolver_set_defnames(res, true); /* use the suffix */
 #endif

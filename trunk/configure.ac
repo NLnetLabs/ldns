@@ -151,7 +151,7 @@ int b64_ntop(uint8_t const *src, size_t srclength,
 /*@unused@*/
 static inline size_t b64_ntop_calculate_size(size_t srcsize)
 {
-	return ((((srcsize + 2) / 3) * 4) + 1);
+	return (((srcsize + 2) / 3) * 4);
 }
 #endif /* !B64_PTON */
 #ifndef B64_NTOP
@@ -162,7 +162,7 @@ int b64_pton(char const *src, uint8_t *target, size_t targsize);
 /*@unused@*/
 static inline size_t b64_pton_calculate_size(size_t srcsize)
 {
-	return ((((srcsize - 1) / 4) * 3) - 2);
+	return ((((srcsize / 4) * 3) - 2) + 1);
 }
 #endif /* !B64_NTOP */
 #ifndef TIMEGM
