@@ -187,7 +187,7 @@ ldns_key_buf2dsa(ldns_buffer *key)
 	BIGNUM *G; BIGNUM *Y;
 
 	T = *ldns_buffer_at(key, 0);
-	length = (int) (64 + T * 8);
+	length = (64 + T * 8);
 	offset = 1;
 	
 	if (T > 8) {
@@ -195,16 +195,16 @@ ldns_key_buf2dsa(ldns_buffer *key)
 		return NULL;
 	}
 	
-	Q = BN_bin2bn(ldns_buffer_at(key, offset), 20, NULL);
+	Q = BN_bin2bn((unsigned char*)ldns_buffer_at(key, offset), 20, NULL);
 	offset += 20;
 	
-	P = BN_bin2bn(ldns_buffer_at(key, offset), length, NULL);
+	P = BN_bin2bn((unsigned char*)ldns_buffer_at(key, offset), (int)length, NULL);
 	offset += length;
 	
-	G = BN_bin2bn(ldns_buffer_at(key, offset), length, NULL);
+	G = BN_bin2bn((unsigned char*)ldns_buffer_at(key, offset), (int)length, NULL);
 	offset += length;
 	
-	Y = BN_bin2bn(ldns_buffer_at(key, offset), length, NULL);
+	Y = BN_bin2bn((unsigned char*)ldns_buffer_at(key, offset), (int)length, NULL);
 	offset += length;
 	
 	/* 
@@ -256,14 +256,14 @@ ldns_key_buf2rsa(ldns_buffer *key)
 	/* Exponent */
 	exponent = BN_new();
 	(void) BN_bin2bn(
-			 ldns_buffer_at(key, offset), exp, exponent);
+			 (unsigned char*)ldns_buffer_at(key, offset), (int)exp, exponent);
 	offset += exp;
 
 	/* Modulus */
 	modulus = BN_new();
 	/* capicity of the buffer must match the key length! */
-	(void) BN_bin2bn(ldns_buffer_at(key, offset), 
-			 ldns_buffer_capacity(key) - offset, modulus);
+	(void) BN_bin2bn((unsigned char*)ldns_buffer_at(key, offset), 
+			 (int)(ldns_buffer_capacity(key) - offset), modulus);
 
 	rsa = RSA_new();
 	rsa->n = modulus;
