@@ -16,4 +16,16 @@
 #define LDNS_PORT	53
 #define LDNS_ROOT_LABEL	'\0'
 
+/* lookup tables for standard DNS stuff  */
+
+/* Taken from RFC 2538, section 2.1.  */
+extern ldns_lookup_table ldns_certificate_types[];
+/* Taken from RFC 2535, section 7.  */
+extern ldns_lookup_table ldns_algorithms[];
+/* rr types  */
+extern ldns_lookup_table ldns_rr_classes[];
+/* if these are used elsewhere */
+extern ldns_lookup_table ldns_rcodes[];
+extern ldns_lookup_table ldns_opcodes[];
+
 #endif /* _DNS_H_ */
