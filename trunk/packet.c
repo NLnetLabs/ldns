@@ -112,19 +112,22 @@
 
 /* Counter of the question section */
 #define QDCOUNT_OFF		4
+/*
 #define	QDCOUNT(wirebuf)		(ntohs(*(uint16_t *)(wirebuf+QDCOUNT_OFF)))
+*/
+#define	QDCOUNT(wirebuf)		(read_uint16(wirebuf+QDCOUNT_OFF))
 
 /* Counter of the answer section */
 #define ANCOUNT_OFF		6
-#define	ANCOUNT(wirebuf)		(ntohs(*(uint16_t *)(wirebuf+ANCOUNT_OFF)))
+#define	ANCOUNT(wirebuf)		(read_uint16(wirebuf+ANCOUNT_OFF))
 
 /* Counter of the authority section */
 #define NSCOUNT_OFF		8
-#define	NSCOUNT(wirebuf)		(ntohs(*(uint16_t *)(wirebuf+NSCOUNT_OFF)))
+#define	NSCOUNT(wirebuf)		(read_uint16(wirebuf+NSCOUNT_OFF))
 
 /* Counter of the additional section */
 #define ARCOUNT_OFF		10
-#define	ARCOUNT(wirebuf)		(ntohs(*(uint16_t *)(wirebuf+ARCOUNT_OFF)))
+#define	ARCOUNT(wirebuf)		(read_uint16(wirebuf+ARCOUNT_OFF))
 
 /* Access functions 
  * do this as functions to get type checking
