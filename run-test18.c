@@ -19,6 +19,8 @@ main(int argc, char *argv[])
 {
 	ldns_rr *dnskey;
 	ldns_key *privkey;
+	ldns_rr *dnskey_dsa;
+	ldns_key *privkey_dsa;
 	ldns_rdf *owner;
 	ldns_rr *rr;
 	ldns_key_list *keys;
@@ -35,28 +37,47 @@ main(int argc, char *argv[])
 	printf("\n");
 
 	privkey = ldns_key_new_frm_algorithm(LDNS_SIGN_RSASHA1, 1024);
-	if (!privkey) {
+	privkey_dsa = ldns_key_new_frm_algorithm(LDNS_SIGN_DSA, 1024);
+	if (!privkey || !privkey_dsa) {
 		printf("Ah, keygen failed");
 		exit(1);
 	}
 
 	owner = ldns_dname_new_frm_str("miek.nl");
 	ldns_key_set_pubkey_owner(privkey, owner);
+	ldns_key_set_pubkey_owner(privkey_dsa, owner);
+
 	ldns_key_set_origttl(privkey, 1800);
+	ldns_key_set_origttl(privkey_dsa, 1800);
 	SSL_load_error_strings();
 
 	ldns_key_list_push_key(keys, privkey);
+	ldns_key_list_push_key(keys, privkey_dsa);
+
 	ldns_rr_list_push_rr(rrs, rr);
 	
 	dnskey = ldns_key2rr(privkey);
+	dnskey_dsa = ldns_key2rr(privkey_dsa);
 	if (dnskey) {
 		ldns_rr_print(stdout, dnskey);
 		printf("; {%d}\n", 
 				ldns_calc_keytag(dnskey));
 		printf("\n");
 		ldns_key_set_keytag(privkey, ldns_calc_keytag(dnskey));
+	} else {
+		exit(1);
+	}
+	if (dnskey_dsa) {
+		ldns_rr_print(stdout, dnskey_dsa);
+		printf("; {%d}\n", 
+				ldns_calc_keytag(dnskey_dsa));
+		printf("\n");
+		ldns_key_set_keytag(privkey_dsa, ldns_calc_keytag(dnskey_dsa));
+	} else {
+		exit(1);
 	}
 	ldns_rr_list_push_rr(dnskeys, dnskey);
+	ldns_rr_list_push_rr(dnskeys, dnskey_dsa);
 
 	signatures = ldns_sign_public(rrs, keys);
 		printf("\n");
