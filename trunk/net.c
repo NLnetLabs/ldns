@@ -109,7 +109,6 @@ ldns_send(ldns_resolver *r, ldns_pkt *query_pkt)
 	return reply;
 }
 
-
 /**
  * Send a buffer to an ip using udp and return the respons as a ldns_pkt
  * \param[in] qbin the ldns_buffer to be send
@@ -178,9 +177,10 @@ ldns_send_udp(ldns_buffer *qbin, const struct sockaddr_storage *to, socklen_t to
 		return NULL;
 	} else {
 		/* set some extra values in the pkt */
+		/* is msec usec here?! */
 		ldns_pkt_set_querytime(answer_pkt,
 				((tv_e.tv_sec - tv_s.tv_sec)*1000) +
-				((tv_e.tv_usec - tv_s.tv_usec)/1000));
+				(tv_e.tv_usec - tv_s.tv_usec));
 
 		return answer_pkt;
 	}
