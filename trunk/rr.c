@@ -331,12 +331,10 @@ ldns_rr_set_push_rr(ldns_rr_list *rr_list, ldns_rr *rr)
 				return false;
 			}
 		}
-		/* TODO TODO 
-		if (ldns_rdata_compare(ldns_rr_owner(last),
+		if (ldns_rdf_compare(ldns_rr_owner(last),
 					ldns_rr_owner(rr)) != 0) {
 			return false;
 		}
-		*/
 		/* ok, still alive */
 		return ldns_rr_list_push_rr(rr_list, rr);
 	}
