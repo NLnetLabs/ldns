@@ -481,7 +481,7 @@ ldns_resolver_new_frm_fp(FILE *fp)
 		return NULL;
 	}
 
-	while (readword(word, fp, "\n\t ", MAXLINE_LEN) != -1) {
+	while (ldns_get_token(fp, word, LDNS_PARSE_NORMAL) != -1) {
 		/* do something */
 		switch(expect) {
 			case RESOLV_KEYWORD:
