@@ -33,11 +33,11 @@ main()
 	dnskeys = ldns_rr_list_new();
 
 	/* well formed */
-	rr = ldns_rr_new_frm_str("a.miek.nl. 1800 IN A 195.169.222.38");
+	rr = ldns_rr_new_frm_str("a.miek.nl.   1800   IN   A    195.169.222.38");
 	ldns_rr_print(stdout, rr);
 	printf("\n");
 
-	rr = ldns_rr_new_frm_str("a.miek.nl. 1800 IN MX 10 www.atoom.net");
+	rr = ldns_rr_new_frm_str("a.miek.nl. 1800    IN     MX     10    www.atoom.net");
 	ldns_rr_print(stdout, rr);
 	printf("\n");
 	
