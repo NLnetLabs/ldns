@@ -142,7 +142,6 @@ ldns_str2rdf_int8(ldns_rdf **rd, const uint8_t *bytestr)
  * \todo make this more efficient...
  * we do 3 memcpy's in total...
  * label_chars2 is used for debugging. TODO: remove
- * \todo DOES IT WORK...
  */
 ldns_status
 ldns_str2rdf_dname(ldns_rdf **d, const uint8_t* str)
@@ -174,10 +173,10 @@ ldns_str2rdf_dname(ldns_rdf **d, const uint8_t* str)
 			return LDNS_STATUS_DOMAINNAME_OVERFLOW;
 		}
 		buf_str[len] = (uint8_t)'.';
-		buf_str[len + 1] = (uint8_t)'\0';
+		buf_str[len + 1] = (uint8_t) LDNS_ROOT_LABEL;
 		len += 1;
 	} else {
-		buf_str[len] = (uint8_t)'\0'; 
+		buf_str[len] = (uint8_t) LDNS_ROOT_LABEL;
 	}
 	
 	/* extend with 1 - the first char will be the
@@ -212,7 +211,7 @@ ldns_str2rdf_dname(ldns_rdf **d, const uint8_t* str)
 	/* DEBUG memcpy(q, &label_chars2, 1); */
 	memcpy(q + 1, p, label_chars); 
 	q += (label_chars + 1);
-	*q = (uint8_t)'\0'; /* end the string */
+	*q = (uint8_t)LDNS_ROOT_LABEL; /* end the string */
 
 	/* s - buf_str works because no magic is done in the above for-loop */
 	/* *d = ldns_rdf_new_frm_data((s - buf_str + 2) , LDNS_RDF_TYPE_DNAME , buf); */

@@ -229,43 +229,6 @@ ldns_rdf_clone(ldns_rdf *r)
 }
 
 /**
- * count the number of labels inside a LDNS_RDF_DNAME type
- * rdf
- * \param[in] *r the rdf
- * \return the number of labels
- */
-uint8_t
-ldns_rdf_dname_label_count(ldns_rdf *r)
-{
-	uint8_t src_pos;
-        uint8_t len;
-	uint8_t i;
-	size_t r_size;
-
-	i = 0; src_pos = 0;
-	r_size = ldns_rdf_size(r);
-
-	if (ldns_rdf_get_type(r) != LDNS_RDF_TYPE_DNAME) {
-		return 0;
-	} else {
-        	len = ldns_rdf_data(r)[src_pos]; /* start of the label */
-
-        	/* single root label */
-		if (1 == r_size) {
-			return 0;
-		} else {
-			while ((len > 0) && src_pos < r_size) {
-				src_pos++;
-				src_pos += len;
-				len = ldns_rdf_data(r)[src_pos];
-				i++;
-			}
-        	}
-		return i;
-	}
-}
-
-/**
  * free a rdf structure _and_ free the
  * data. rdf should be created with _new_frm_data
  * \param[in] rd the rdf structure to be freed

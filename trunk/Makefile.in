@@ -23,7 +23,7 @@ LINTFLAGS	= +quiet -weak -warnposix -unrecog -Din_addr_t=uint32_t -Du_int=unsign
 
 LIBDNS_SOURCES	=	rdata.c util.c rr.c packet.c wire2host.c \
 			host2str.c buffer.c str2host.c resolver.c \
-			net.c host2wire.c
+			net.c host2wire.c dname.c
 LIBDNS_HEADERS	=	ldns/error.h		\
 			ldns/packet.h		\
 			ldns/prototype.h 	\
@@ -36,6 +36,7 @@ LIBDNS_HEADERS	=	ldns/error.h		\
 			ldns/buffer.h		\
 			ldns/resolver.h		\
 			ldns/net.h		\
+			ldns/dname.h		\
 			util.h
 LIBDNS_OBJECTS	=	$(LIBDNS_SOURCES:.c=.o)
 

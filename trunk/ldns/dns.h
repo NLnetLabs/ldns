@@ -14,5 +14,6 @@
 #define LDNS_IP4ADDRLEN      (32/8)
 #define LDNS_IP6ADDRLEN      (128/8)
 #define LDNS_PORT	53
+#define LDNS_ROOT_LABEL	'\0'
 
 #endif /* _DNS_H_ */
