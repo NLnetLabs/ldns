@@ -460,6 +460,7 @@ ldns_wire2pkt(ldns_pkt **packet_p, const uint8_t *wire, size_t max)
 	ldns_pkt *packet = ldns_pkt_new();
 	ldns_status status = LDNS_STATUS_OK;
 
+	uint8_t data[4];
 /*
 size_t j;
 for (j=0; j<max; j++) {
@@ -501,7 +502,16 @@ printf("\n");
 	for (i = 0; i < ldns_pkt_arcount(packet); i++) {
 		status = ldns_wire2rr(&rr, wire, max, &pos,
 		                      LDNS_SECTION_ADDITIONAL);
-		if (ldns_rr_get_type(rr) == LDNS_RR_TYPE_TSIG) {
+		if (ldns_rr_get_type(rr) == LDNS_RR_TYPE_OPT) {
+			ldns_pkt_set_edns_udp_size(packet, ldns_rr_get_class(rr));
+			write_uint32(data, ldns_rr_ttl(rr));
+			ldns_pkt_set_edns_extended_rcode(packet, data[0]);
+			ldns_pkt_set_edns_version(packet, data[1]);
+			ldns_pkt_set_edns_z(packet, read_uint16(&data[2]));
+			ldns_pkt_set_edns_data(packet, ldns_rr_rdf(rr, 0));
+			ldns_rr_free(rr);
+			ldns_pkt_set_arcount(packet, ldns_pkt_arcount(packet) - 1);
+		} else if (ldns_rr_get_type(rr) == LDNS_RR_TYPE_TSIG) {
 			ldns_pkt_set_tsig(packet, rr);
 			ldns_pkt_set_arcount(packet, ldns_pkt_arcount(packet) - 1);
 		} else if (!ldns_rr_list_push_rr(ldns_pkt_additional(packet), rr)) {
