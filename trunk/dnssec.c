@@ -66,8 +66,6 @@ ldns_keytag(ldns_rr *key)
 	}
 }
 
-#if 0
-
 /**
  * verify an rrsig 
  * \param[in] rrset the rrset to check
@@ -75,74 +73,204 @@ ldns_keytag(ldns_rr *key)
  * \param[in] keys the keys to try
  */
 bool
-ldns_verify_rrsig(ldns_rr_list *rrset, ldns_rr_list *rrsig, ldns_rr_list *keys)
+ldns_verify_rrsig(ldns_rr_list *rrset, ldns_rr *rrsig, ldns_rr_list *keys)
 {
-
-	
 	ldns_buffer *rawsig_buf;
-	ldns_rdf *orig_ttl;
+	ldns_buffer *rrset_buf;
+	ldns_buffer *key_buf;
+	uint32_t orig_ttl;
+	uint16_t i;
+	uint8_t sig_algo;
+	bool result;
+	ldns_rr *current_key;
 
-
-
-
+	/* TODO remove */
+	key_buf = NULL;
+	rrset_buf = NULL;
 
 	/* create a buffer which will certainly hold the
 	 * raw data */
 	rawsig_buf = ldns_buffer_new(MAX_PACKETLEN);
+	sig_algo = ldns_rdf2native_int8(ldns_rr_rdf(rrsig, 1));
+	result = false;
 	
-	ldns_rrsig2buffer_wire(rawsig_buf, rrsig);
+	(void)ldns_rrsig2buffer_wire(rawsig_buf, rrsig);
 
-	/* sort the rrset in canonical order */
-	ldns_rr_list_sort(rrset);
+	orig_ttl = ldns_rdf2native_int32(
+			ldns_rr_rdf(rrsig, 3));
 
-	/* 4 or 3... */
-	orig_ttl = ldns_rdf_rr(rrsig, 4);
 	/* reset the ttl in the rrset with the orig_ttl
 	 * from the sig */
 	
-	
-
-	/* set the ttl in the rrset... */
-	int32 = rdata2uint32(rrsig->rdata[3]);
-	rrset_set_ttl(rrset, int32);
-	length += rrset2wire(rrset, verifybuf, length, MAX_PACKET);
-	key_bytes = (unsigned char *) base64_decode((unsigned char *) dnskey->rdata[3]->data,
-		(int) dnskey->rdata[3]->length, (size_t *) &keylen);
-
-	if (keylen < 0) {
-		warning("Error in base64 decode of key data:");
-		/* XXX TODO */
-		print_rd(dnskey->rdata[3]);
-		printf("\n");
-		return RET_FAIL;
-	}
-	switch (rdata2uint8(rrsig->rdata[1])) {
-		case ALG_DSA:
-			result = verify_rrsig_dsa(verifybuf, length, sigbuf,
-					siglen, key_bytes, keylen);
-			break;
-		case ALG_RSASHA1:
-			result = verify_rrsig_rsasha1(verifybuf, length, sigbuf,
-					siglen,	key_bytes, keylen);
-			break;
-		case ALG_RSAMD5:
-			result = verify_rrsig_rsamd5(verifybuf, length, sigbuf,
-					siglen, key_bytes, keylen);
-			break;
-		default:
-			warning("unknown or unimplemented algorithm (alg %s nr %d)", namebyint(rdata2uint8(rrsig->rdata[1]), dnssec_algos), rdata2uint8(rrsig->rdata[1]));
-print_rr(rrsig, FOLLOW);
-			exit(EXIT_FAILURE);
-			break;
+	for(i = 0; i < ldns_rr_list_rr_count(rrset); i++) {
+		ldns_rr_set_ttl(
+				ldns_rr_list_rr(rrset, i),
+				orig_ttl);
 	}
 
-	xfree(key_bytes);
-	xfree(verifybuf);
-	xfree(sigbuf);
-	
+	/* sort the rrset in canonical order - must this happen
+	 * after setting the orig TTL? or before?? */
+	ldns_rr_list_sort(rrset);
+
+	/* put the rrset in a wirefmt buf */
+
+	for(i = 0; i < ldns_rr_list_rr_count(keys); i++) {
+		current_key = ldns_rr_list_rr(keys, i);
+
+		/* put the key in a buffer */
+
+		switch(sig_algo) {
+			case LDNS_DSA:
+				result = ldns_verify_rrsig_dsa(
+						rawsig_buf, rrset_buf, key_buf);
+				break;
+			case LDNS_RSASHA1:
+				result = ldns_verify_rrsig_rsasha1(
+						rawsig_buf, rrset_buf, key_buf);
+				break;
+			case LDNS_RSAMD5:
+				result = ldns_verify_rrsig_rsamd5(
+						rawsig_buf, rrset_buf, key_buf);
+				break;
+			default:
+				/* no fucking way man! */
+				break;
+		}
+
+		/* ldns_buffer_free(key_buf); TODO */
+		if (result) {
+			/* one of the keys has matched */
+			break;
+		}
+	}
+
+	ldns_buffer_free(rawsig_buf);
+	ldns_buffer_free(rrset_buf);
+
 	return result;
 }
-#endif
+
+bool
+ldns_verify_rrsig_dsa(ldns_buffer *ATTR_UNUSED(sig), ldns_buffer *ATTR_UNUSED(rrset), ldns_buffer *ATTR_UNUSED(key))
+{
+	return true;
+}
+
+bool
+ldns_verify_rrsig_rsasha1(ldns_buffer *ATTR_UNUSED(sig), ldns_buffer *ATTR_UNUSED(rrset), ldns_buffer *ATTR_UNUSED(key))
+{
+	return true;
+}
+
+
+bool
+ldns_verify_rrsig_rsamd5(ldns_buffer *ATTR_UNUSED(sig), ldns_buffer *ATTR_UNUSED(rrset), ldns_buffer *ATTR_UNUSED(key))
+{
+	return true;
+}
+
+
+/* some helper functions */
+/**
+ * convert a buffer holding key material to a DSA key in openssl 
+ * \param[in] key the key to convert
+ * \return a DSA * structure with the key material
+ */
+DSA *
+ldns_key_buf2dsa(ldns_buffer *key)
+{
+	uint8_t T;
+	uint16_t length;
+	uint16_t offset;
+	DSA *dsa;
+	BIGNUM *Q; BIGNUM *P;
+	BIGNUM *G; BIGNUM *Y;
+
+	T = *ldns_buffer_at(key, 0);
+	length = (int) (64 + T * 8);
+	offset = 1;
+	
+	if (T > 8) {
+		printf("DSA type > 8 not implemented, unable to verify signature");
+		return NULL;
+	}
+	
+	Q = BN_bin2bn(ldns_buffer_at(key, offset), 20, NULL);
+	offset += 20;
+	
+	P = BN_bin2bn(ldns_buffer_at(key, offset), length, NULL);
+	offset += length;
+	
+	G = BN_bin2bn(ldns_buffer_at(key, offset), length, NULL);
+	offset += length;
+	
+	Y = BN_bin2bn(ldns_buffer_at(key, offset), length, NULL);
+	offset += length;
+	
+	/* 
+	   TODO uncomment and fix
+	t_sig = (uint8_t) sigbuf[0];
+	
+	if (t_sig != T) {
+		warning("Values for T are different in key and signature, verification of DSA sig failed");
+		return RET_FAIL;
+	}
+	*/
+	/* create the key and set its properties */
+	dsa = DSA_new();
+	dsa->p = P;
+	dsa->q = Q;
+	dsa->g = G;
+	dsa->pub_key = Y;
+	return dsa;
+}
+
+/**
+ * convert a buffer holding key material to a RSA key in openssl 
+ * \param[in] key the key to convert
+ * \return a RSA * structure with the key material
+ */
+RSA *
+ldns_key_buf2rsa(ldns_buffer *key)
+{
+	uint16_t offset;
+	uint16_t exp;
+	uint16_t int16;
+	RSA *rsa;
+	BIGNUM *modulus;
+	BIGNUM *exponent;
+
+	if ((*ldns_buffer_at(key, 0)) == 0) {
+		/* need some smart comment here XXX*/
+		/* the exponent is too large so it's places
+		 * futher...???? */
+		memcpy(&int16,
+				ldns_buffer_at(key, 1), 2);
+		exp = ntohs(int16);
+		offset = 3;
+	} else {
+		exp = *ldns_buffer_at(key, 0);
+		offset = 1;
+	}
+	
+	/* Exponent */
+	exponent = BN_new();
+	(void) BN_bin2bn(
+			 ldns_buffer_at(key, offset), exp, exponent);
+	offset += exp;
+
+	/* Modulus */
+	modulus = BN_new();
+	/* capicity of the buffer must match the key length! */
+	(void) BN_bin2bn(ldns_buffer_at(key, offset), 
+			 ldns_buffer_capacity(key) - offset, modulus);
+
+	rsa = RSA_new();
+	rsa->n = modulus;
+	rsa->e = exponent;
+
+	return rsa;
+}
 
 
 #if 0
@@ -155,44 +283,6 @@ bool
 ldns_verify_rrsig_dsa(uint8_t *verifybuf, unsigned long length, unsigned char *sigbuf, unsigned int siglen,
 		unsigned char *key_bytes, unsigned int keylen)
 {
-	uint8_t T = (uint8_t) key_bytes[0];
-	int numberlength;
-	int offset = 1;
-
-	BIGNUM *Q;
-	BIGNUM *P;
-	BIGNUM *G;
-	BIGNUM *Y;
-	uint8_t t_sig;
-
-	BIGNUM *R;
-	BIGNUM *S;
-	DSA *dsa;
-	uint8_t *hash;
-	DSA_SIG *sig;
-	int dsa_res;
-	int result;
-	
-
-	numberlength = (int) (64 + T * 8);
-	
-	if (T > 8) {
-		warning("DSA type > 8 not implemented, unable to verify signature");
-		return RET_FAIL;
-	}
-	
-	Q = BN_bin2bn(&key_bytes[offset], 20, NULL);
-	offset += 20;
-	
-	P = BN_bin2bn(&key_bytes[offset], numberlength, NULL);
-	offset += numberlength;
-	
-	G = BN_bin2bn(&key_bytes[offset], numberlength, NULL);
-	offset += numberlength;
-	
-	Y = BN_bin2bn(&key_bytes[offset], numberlength, NULL);
-	offset += numberlength;
-	
 	t_sig = (uint8_t) sigbuf[0];
 	
 	if (t_sig != T) {
@@ -257,34 +347,6 @@ verify_rrsig_rsasha1(uint8_t *verifybuf, unsigned long length, unsigned char *si
 
 	int result;
 	
-	if(key_bytes[0] == 0) {
-		memcpy(&int16, &key_bytes[1], 2);
-		int16 = ntohs(int16);
-		explength = (int) int16;
-		offset = 3;
-	} else {
-		explength = (int) key_bytes[0];
-		offset = 1;
-	}
-	
-	/* Exponent */
-	exponent_bytes = xmalloc(explength*sizeof(char));
-	memcpy(exponent_bytes, &key_bytes[offset], explength*sizeof(char));
-	exponent = BN_new();
-	(void) BN_bin2bn(exponent_bytes, explength, exponent);
-	offset += explength;
-
-	/* Modulus */
-	modulus_bytes = xmalloc((keylen-offset)*sizeof(char));
-	memcpy(modulus_bytes, &key_bytes[offset], (keylen-offset)*sizeof(char));
-	modulus = BN_new();
-	(void) BN_bin2bn(&modulus_bytes[0], (int) keylen-offset, modulus);
-	offset = (int) keylen;
-
-	rsa = RSA_new();
-	rsa->n = modulus;
-	rsa->e = exponent;
-
 	digest = SHA1((unsigned char *) verifybuf, length, NULL);
 	if (digest == NULL) {
 		error("Error digesting");
@@ -324,30 +386,6 @@ verify_rrsig_rsamd5(uint8_t *verifybuf, unsigned long length, unsigned char *sig
 
 	int result;
 	
-	if(key_bytes[0] == 0) {
-		memcpy(&int16, &key_bytes[1], 2);
-		int16 = ntohs(int16);
-		explength = (int) int16;
-		offset = 3;
-	} else {
-		explength = (int) key_bytes[0];
-		offset = 1;
-	}
-	
-	/* Exponent */
-	exponent_bytes = xmalloc(explength*sizeof(char));
-	memcpy(exponent_bytes, &key_bytes[offset], explength*sizeof(char));
-	exponent = BN_new();
-	(void) BN_bin2bn(exponent_bytes, explength, exponent);
-	offset += explength;
-
-	/* Modulus */
-	modulus_bytes = xmalloc((keylen-offset)*sizeof(char));
-	memcpy(modulus_bytes, &key_bytes[offset], (keylen-offset)*sizeof(char));
-	modulus = BN_new();
-	(void) BN_bin2bn(&modulus_bytes[0], (int) keylen-offset, modulus);
-	offset = (int) keylen;
-
 	rsa = RSA_new();
 	rsa->n = modulus;
 	rsa->e = exponent;
