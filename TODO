@@ -1,5 +1,10 @@
 Current TODO list
 
+Errors:
+o names starting with a dot .www or not handled correctly
+o absolute/relative dnames???
+
+
 Implementation:
 ---------------
 o check all conversion routines on missing types

@@ -235,7 +235,7 @@ ldns_rdf_clone(ldns_rdf *r)
  * \return the number of labels
  */
 uint8_t
-ldns_rdf_label_count(ldns_rdf *r)
+ldns_rdf_dname_label_count(ldns_rdf *r)
 {
 	uint8_t src_pos;
         uint8_t len;
@@ -263,6 +263,32 @@ ldns_rdf_label_count(ldns_rdf *r)
         	}
 		return i;
 	}
+}
+
+/** 
+ * test wether the dname is absolute or not, ie.
+ * if it ends in a dot
+ * \param[in] *r the rdf
+ * \return true if abs. otherwise false.
+ */
+/* a name is absolute if the last byte of the 
+ * dname data is 00
+ * THIS FUNCTION DOES NOT WORK NEED DISCUSSION
+ */
+bool
+ldns_rdf_dname_absolute(ldns_rdf *r)
+{
+	/* hmmm, XXX do I need tristate */
+	if (ldns_rdf_get_type(r) != LDNS_RDF_TYPE_DNAME) {
+		return false;
+	}
+	printf("char [%c]\n\n", (ldns_rdf_data(r)[ldns_rdf_size(r)]));
+	printf("size [%d]\n\n", ldns_rdf_size(r));
+	
+	if (ldns_rdf_data(r)[ldns_rdf_size(r)] == '\0') {
+		return true;
+	}
+	return false;
 }
 
 /**
