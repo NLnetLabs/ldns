@@ -81,68 +81,6 @@ AC_CHECK_HEADERS(sys/param.h sys/mount.h,,,
 
 #AC_SEARCH_LIBS(RSA_new, [crypto])
 
-dnl LIBGTOP_CHECK_TYPE
-dnl Stolen from Gnome's anjuta
-dnl Improved version of AC_CHECK_TYPE which takes into account
-dnl that we need to #include some other header files on some
-dnl systems to get some types.
-
-dnl AC_LIBGTOP_CHECK_TYPE(TYPE, DEFAULT)
-AC_DEFUN([AC_LIBGTOP_CHECK_TYPE],
-[AC_REQUIRE([AC_HEADER_STDC])dnl
-AC_MSG_CHECKING(for $1)
-AC_CACHE_VAL(ac_cv_type_$1,
-[AC_EGREP_CPP(dnl
-changequote(<<,>>)dnl
-<<(^|[^a-zA-Z_0-9])$1[^a-zA-Z_0-9]>>dnl
-changequote([,]), [
-#include <sys/types.h>
-#if STDC_HEADERS
-#include <stdlib.h>
-#include <stddef.h>
-#endif
-
-#ifdef HAVE_STDINT_H
-#include <stdint.h>
-#endif
-
-#ifdef HAVE_SYS_SOCKET_H
-#include <sys/socket.h>
-#endif
-
-#ifdef HAVE_ARPA_INET_H
-#include <arpa/inet.h>
-#endif
-
-#ifdef HAVE_SIGNAL_H
-#include <signal.h>
-#endif
-
-/* For Tru64 */
-#ifdef HAVE_SYS_BITYPES_H
-#include <sys/bitypes.h>
-#endif
-], ac_cv_type_$1=yes, ac_cv_type_$1=no)])dnl
-AC_MSG_RESULT($ac_cv_type_$1)
-if test $ac_cv_type_$1 = no; then
-  AC_DEFINE($1, $2, Define "$1" to "$2" if "$1" is missing)
-fi
-])
-
-AC_LIBGTOP_CHECK_TYPE(int8_t, char) 
-AC_LIBGTOP_CHECK_TYPE(int16_t, short)
-AC_LIBGTOP_CHECK_TYPE(int32_t, int)
-AC_LIBGTOP_CHECK_TYPE(int64_t, long long)
-AC_LIBGTOP_CHECK_TYPE(uint8_t, unsigned char)
-AC_LIBGTOP_CHECK_TYPE(uint16_t, unsigned short)
-AC_LIBGTOP_CHECK_TYPE(uint32_t, unsigned int)
-AC_LIBGTOP_CHECK_TYPE(uint64_t, unsigned long long)
-dnl AC_LIBGTOP_CHECK_TYPE(u_char, uint8_t)
-dnl AC_LIBGTOP_CHECK_TYPE(u_short, uint16_t)
-dnl AC_LIBGTOP_CHECK_TYPE(u_long, uint32_t)
-AC_LIBGTOP_CHECK_TYPE(socklen_t, int)
-AC_LIBGTOP_CHECK_TYPE(sig_atomic_t, int)
-
 AC_DEFINE([SYSCONFDIR], [$sysconfdir], [System configuration dir])
 
 AH_BOTTOM([
