@@ -22,6 +22,10 @@
 /**
  * Ask the resolver about name
  * and return all address records
+ * \param[in] r the resolver to use
+ * \param[in] name the name to look for
+ * \param[in] c the class to use
+ * \param[in] flags give some optional flags to the query
  */
 ldns_rr_list *
 ldns_get_rr_list_addr_by_name(ldns_resolver *r, ldns_rdf *name, ldns_rr_class c, uint16_t flags);
@@ -29,7 +33,10 @@ ldns_get_rr_list_addr_by_name(ldns_resolver *r, ldns_rdf *name, ldns_rr_class c,
 /**
  * ask the resolver about the address
  * and return the name
- *
+ * \param[in] r the resolver to use
+ * \param[in] name the name to look for
+ * \param[in] c the class to use
+ * \param[in] flags give some optional flags to the query
  */
 ldns_rr_list *
 ldns_get_rr_list_name_by_addr(ldns_resolver *r, ldns_rdf *addr, ldns_rr_class c, uint16_t flags);

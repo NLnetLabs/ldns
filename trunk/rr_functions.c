@@ -23,6 +23,13 @@
 
 #include "util.h"
 
+/**
+ * return a specific rdf
+ * \param[in] type type of RR
+ * \param[in] rr   the rr itself
+ * \param[in] pos  at which postion to get it
+ * \return the rdf sought
+ */
 static ldns_rdf *
 ldns_rr_function(ldns_rr_type type, ldns_rr *rr, size_t pos)
 {
@@ -32,6 +39,14 @@ ldns_rr_function(ldns_rr_type type, ldns_rr *rr, size_t pos)
         return ldns_rr_rdf(rr, pos);
 }
 
+/**
+ * set a specific rdf
+ * \param[in] type type of RR
+ * \param[in] rr   the rr itself
+ * \param[in] rdf  the rdf to set
+ * \param[in] pos  at which postion to set it
+ * \return true or false
+ */
 static bool
 ldns_rr_set_function(ldns_rr_type type, ldns_rr *rr, ldns_rdf *rdf, size_t pos)
 {
@@ -48,7 +63,9 @@ ldns_rr_set_function(ldns_rr_type type, ldns_rr *rr, ldns_rdf *rdf, size_t pos)
         }
 }
 
-/* A-AAAA records */
+/* all function below call the above defined ones */
+
+/* A/AAAA records */
 ldns_rdf *
 ldns_rr_a_address(ldns_rr *r)
 {

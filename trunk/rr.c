@@ -1,9 +1,9 @@
-/** \file rr.c
+/* rr.c
  *
- * \brief access functions for ldns_rr - 
- * \brief a Net::DNS like library for C
- * \author LibDNS Team @ NLnet Labs
- * \version 0.01
+ * access functions for ldns_rr - 
+ * a Net::DNS like library for C
+ * LibDNS Team @ NLnet Labs
+ * 
  */
 
 /*
@@ -21,10 +21,6 @@
 
 #include "util.h"
 
-/**
- * \brief create a new rr structure.
- * \return ldns_rr *
- */
 ldns_rr *
 ldns_rr_new(void)
 {
@@ -42,10 +38,6 @@ ldns_rr_new(void)
         return rr;
 }
 
-/** 
- * create a new rr structure and based on the type
- * alloc enough space to hold all the rdf's
- */
 ldns_rr *
 ldns_rr_new_frm_type(ldns_rr_type t)
 {
@@ -75,11 +67,6 @@ ldns_rr_new_frm_type(ldns_rr_type t)
 	return rr;
 }
 
-/**
- * \brief free a RR structure
- * \param[in] *rr the RR to be freed 
- * \return void
- */
 void
 ldns_rr_free(ldns_rr *rr)
 {
@@ -95,14 +82,6 @@ ldns_rr_free(ldns_rr *rr)
 	}
 }
 
-/** 
- * normalize a RR string; kill newlines and parentheses
- * and put the whole rr on 1 line
- * \param[in] rr the rr to normalize
- * \return the normalized rr
- * \todo Do we want to keep this, then this should be
- * done better, use octet function for this??
- */
 static char *
 ldns_rr_str_normalize(const char *rr)
 {
@@ -133,13 +112,6 @@ ldns_rr_str_normalize(const char *rr)
 	return orig_s;
 }
 
-/**
- * \brief create a rr from a string
- * string should be a fully filled in rr, like
- * ownername &lt;space&gt; TTL &lt;space&gt; CLASS &lt;space&gt; TYPE &lt;space&gt; RDATA
- * \param[in] str the string to convert
- * \return the new rr
- */
 /* we expect 3 spaces, everything there after is rdata
  * So the RR should look like. e.g.
  * miek.nl. 3600 IN MX 10 elektron.atoom.net
@@ -211,12 +183,6 @@ ldns_rr_new_frm_str(const char *str)
 	return new;
 }
 
-
-/**
- * Create a new rr from a file containing a string
- * \param[in] fp the file pointer  to use
- * \return ldns_rr*
- */
 ldns_rr *
 ldns_rr_new_frm_fp(FILE *fp)
 {
@@ -234,70 +200,36 @@ ldns_rr_new_frm_fp(FILE *fp)
         return ldns_rr_new_frm_str((const char*) line);
 }
 
-/**
- * \brief set the owner in the rr structure
- * \param[in] *rr rr to operate on
- * \param[in] *owner set to this owner
- * \return void
- */
 void
 ldns_rr_set_owner(ldns_rr *rr, ldns_rdf *owner)
 {
 	rr->_owner = owner;
 }
 
-/**
- * \brief set the ttl in the rr structure
- * \param[in] *rr rr to operate on
- * \param[in] ttl set to this ttl
- * \return void
- */
 void
 ldns_rr_set_ttl(ldns_rr *rr, uint32_t ttl)
 {
 	rr->_ttl = ttl;
 }
 
-/**
- * \brief set the rd_count in the rr
- * \param[in] *rr rr to operate on
- * \param[in] count set to this count
- * \return void
- */
 void
 ldns_rr_set_rd_count(ldns_rr *rr, uint16_t count)
 {
 	rr->_rd_count = count;
 }
 
-/**
- * \brief set the type in the rr
- * \param[in] *rr rr to operate on
- * \param[in] rr_type set to this type
- * \return void
- */
 void
 ldns_rr_set_type(ldns_rr *rr, ldns_rr_type rr_type)
 {
 	rr->_rr_type = rr_type;
 }
 
-/**
- * \brief set the class in the rr
- * \param[in] *rr rr to operate on
- * \param[in] rr_class set to this class
- * \return void
- */
 void
 ldns_rr_set_class(ldns_rr *rr, ldns_rr_class rr_class)
 {
 	rr->_rr_class = rr_class;
 }
 
-/**
- * set a rdf member, it will be set on the 
- * position given. The old value is returned, like pop
- */
 ldns_rdf *
 ldns_rr_set_rdf(ldns_rr *rr, ldns_rdf *f, uint16_t position)
 {
@@ -317,14 +249,6 @@ ldns_rr_set_rdf(ldns_rr *rr, ldns_rdf *f, uint16_t position)
 	return pop;
 }
 
-
-/**
- * set rd_field member, it will be 
- * placed in the next available spot
- * \param[in] *rr rr to operate on
- * \param[in] *f the data field member to set
- * \return bool
- */
 bool
 ldns_rr_push_rdf(ldns_rr *rr, ldns_rdf *f)
 {
@@ -348,12 +272,6 @@ ldns_rr_push_rdf(ldns_rr *rr, ldns_rdf *f)
 	return true;
 }
 
-/**
- * remove a rd_field member, it will be 
- * popped from the last place
- * \param[in] *rr rr to operate on
- * \return rdf which was popped (null if nothing)
- */
 ldns_rdf *
 ldns_rr_pop_rdf(ldns_rr *rr)
 {
@@ -376,12 +294,6 @@ ldns_rr_pop_rdf(ldns_rr *rr)
 	return pop;
 }
 
-/**
- * return the rdata field member counter
- * \param[in] *rr rr to operate on
- * \param[in] nr the number of the rdf to return
- * \return ldns_rdf *
- */
 ldns_rdf *
 ldns_rr_rdf(const ldns_rr *rr, uint16_t nr)
 {
@@ -392,47 +304,30 @@ ldns_rr_rdf(const ldns_rr *rr, uint16_t nr)
 	}
 }
 
-/**
- * return the owner name of an rr structure
- * \param[in] *rr rr to operate on
- * \return ldns_rdf * 
- */
 ldns_rdf *
 ldns_rr_owner(const ldns_rr *rr)
 {
 	return rr->_owner;
 }
 
-/**
- * return the owner name of an rr structure
- */
 uint32_t
 ldns_rr_ttl(const ldns_rr *rr)
 {
 	return rr->_ttl;
 }
 
-/**
- * return the rd_count of an rr structure
- */
 uint16_t
 ldns_rr_rd_count(const ldns_rr *rr)
 {
 	return rr->_rd_count;
 }
 
-/**
- * Returns the type of the rr
- */
 ldns_rr_type
 ldns_rr_get_type(const ldns_rr *rr)
 {
         return rr->_rr_type;
 }
 
-/**
- * Returns the class of the rr
- */
 ldns_rr_class
 ldns_rr_get_class(const ldns_rr *rr)
 {
@@ -491,12 +386,6 @@ ldns_rr_list_free(ldns_rr_list *rr_list)
 }
 
 
-/**
- * concatenate two ldns_rr_lists together
- * \param[in] left the leftside
- * \param[in] right the rightside
- * \return a new rr_list with leftside/rightside concatenated
- */
 ldns_rr_list *
 ldns_rr_list_cat(ldns_rr_list *left, ldns_rr_list *right)
 {
@@ -539,12 +428,6 @@ ldns_rr_list_cat(ldns_rr_list *left, ldns_rr_list *right)
 	return cat;
 }
 
-/**
- * push an  rr to a rrlist
- * \param[in] rr_list the rr_list to push to 
- * \param[in] rr the rr to push 
- * \return false on error, otherwise true
- */
 bool
 ldns_rr_list_push_rr(ldns_rr_list *rr_list, ldns_rr *rr)
 {
@@ -568,11 +451,6 @@ ldns_rr_list_push_rr(ldns_rr_list *rr_list, ldns_rr *rr)
 	return true;
 }
 
-/**
- * pop the last rr from a rrlist
- * \param[in] rr_list the rr_list to pop from
- * \return NULL if nothing to pop. Otherwise the popped RR
- */
 ldns_rr *
 ldns_rr_list_pop_rr(ldns_rr_list *rr_list)
 {
@@ -596,18 +474,6 @@ ldns_rr_list_pop_rr(ldns_rr_list *rr_list)
 	return pop;
 }
 
-/* rrset stuff 
- * rrset is a rr_list with the following properties
- * 1. owner is equal
- * 2. class is equal
- * 3. type is equal
- * 4. ttl is equal - although not for RRSIG
- */
-
-/**
- * check if an rr_list is a rrset
- * \param[in] rr_list the rr_list to check
- */
 bool
 ldns_is_rrset(ldns_rr_list *rr_list)
 {
@@ -643,12 +509,6 @@ ldns_is_rrset(ldns_rr_list *rr_list)
 	return true;
 }
 
-/**
- * Push an rr to an rrset (which really are rr_list's)
- * \param[in] *rr_list the rrset to push the rr to
- * \param[in] *rr the rr to push
- * \return true or false
- */
 bool
 ldns_rr_set_push_rr(ldns_rr_list *rr_list, ldns_rr *rr)
 {
@@ -697,17 +557,174 @@ ldns_rr_set_push_rr(ldns_rr_list *rr_list, ldns_rr *rr)
 	}
 }
 
-/**
- * pop the last rr from a rrset. This function is there only
- * for the symmetry.
- * \param[in] rr_list the rr_list to pop from
- * \return NULL if nothing to pop. Otherwise the popped RR
- *
- */
 ldns_rr *
 ldns_rr_set_pop_rr(ldns_rr_list *rr_list)
 {
 	return ldns_rr_list_pop_rr(rr_list);
+}
+
+ldns_rr *
+ldns_rr_deep_clone(ldns_rr *rr)
+{
+	uint16_t i;
+	ldns_rr *new_rr;
+		
+	new_rr = ldns_rr_new();
+	if (!new_rr) {
+		return NULL;
+	}
+	ldns_rr_set_owner(new_rr, ldns_rdf_deep_clone(ldns_rr_owner(rr)));
+	ldns_rr_set_ttl(new_rr, ldns_rr_ttl(rr));
+	ldns_rr_set_type(new_rr, ldns_rr_get_type(rr));
+	ldns_rr_set_class(new_rr, ldns_rr_get_class(rr));
+	
+	for (i = 0; i < ldns_rr_rd_count(rr); i++) {
+		ldns_rr_push_rdf(new_rr, ldns_rdf_deep_clone(ldns_rr_rdf(rr, i)));
+	}
+
+	return new_rr;
+}
+
+ldns_rr_list *
+ldns_rr_list_deep_clone(ldns_rr_list *rrlist)
+{
+	uint16_t i;
+	ldns_rr_list *new_list;
+
+	new_list = ldns_rr_list_new();
+	if (!new_list) {
+		return NULL;
+	}
+	for (i = 0; i < ldns_rr_list_rr_count(rrlist); i++) {
+		ldns_rr_list_push_rr(new_list,
+				ldns_rr_deep_clone(ldns_rr_list_rr(rrlist, i)));
+	}
+	return new_list;
+}
+
+static int
+qsort_rr_compare(const void *a, const void *b)
+{
+	const ldns_rr *rr1 = * (const ldns_rr **) a;
+	const ldns_rr *rr2 = * (const ldns_rr **) b;
+	return ldns_rr_compare(rr1, rr2);
+}
+
+void
+ldns_rr_list_sort(ldns_rr_list *unsorted)
+{
+	qsort(unsorted->_rrs,
+	      ldns_rr_list_rr_count(unsorted),
+	      sizeof(ldns_rr *),
+	      qsort_rr_compare);
+}
+
+
+int
+ldns_rr_compare(const ldns_rr *rr1, const ldns_rr *rr2)
+{
+	ldns_buffer *rr1_buf;
+	ldns_buffer *rr2_buf;
+	size_t rr1_len;
+	size_t rr2_len;
+	size_t i;
+
+	rr1_len = ldns_rr_uncompressed_size(rr1);
+	rr2_len = ldns_rr_uncompressed_size(rr2);
+
+	if (rr1_len < rr2_len) {
+		return -1;
+	} else if (rr1_len > rr2_len) {
+		return +1;
+	} else {
+		/* equal length */
+	
+		rr1_buf = ldns_buffer_new(rr1_len);
+		rr2_buf = ldns_buffer_new(rr2_len);
+
+		if (ldns_rr2buffer_wire(rr1_buf, rr1, LDNS_SECTION_ANY) != LDNS_STATUS_OK) {
+			return 0; 
+		}
+		if (ldns_rr2buffer_wire(rr2_buf, rr2, LDNS_SECTION_ANY) != LDNS_STATUS_OK) {
+			return 0;
+		}
+		/* now compare the buffer's byte for byte */
+		for(i = 0; i < rr1_len; i++) {
+			if (*ldns_buffer_at(rr1_buf,i) < *ldns_buffer_at(rr2_buf,i)) {
+				return -1;
+			} else if (*ldns_buffer_at(rr1_buf,i) > *ldns_buffer_at(rr2_buf,i)) {
+				return +1;
+			}
+		}
+		return 0;
+	}
+}
+
+bool
+ldns_rr_compare_ds(const ldns_rr *rr1, const ldns_rr *rr2)
+{
+	bool result;
+	ldns_rr *ds_repr;
+
+	if (ldns_rr_get_type(rr1) == LDNS_RR_TYPE_DS &&
+	    ldns_rr_get_type(rr2) == LDNS_RR_TYPE_DNSKEY) {
+	    	ds_repr = ldns_key_rr2ds(rr2);
+	    	result = (ldns_rr_compare(rr1, ds_repr) == 0);
+	    	ldns_rr_free(ds_repr);
+	} else if (ldns_rr_get_type(rr1) == LDNS_RR_TYPE_DNSKEY &&
+	    ldns_rr_get_type(rr2) == LDNS_RR_TYPE_DS) {
+	    	ds_repr = ldns_key_rr2ds(rr1);
+	    	result = (ldns_rr_compare(rr2, ds_repr) == 0);
+	    	ldns_rr_free(ds_repr);
+	} else {
+		result = (ldns_rr_compare(rr1, rr2) == 0);
+	}	
+	return result;
+}
+
+size_t
+ldns_rr_uncompressed_size(const ldns_rr *r)
+{
+	size_t rrsize;
+	uint16_t i;
+
+	rrsize = 0;
+	/* add all the rdf sizes */
+	for(i = 0; i < ldns_rr_rd_count(r); i++) {
+		rrsize += ldns_rdf_size(ldns_rr_rdf(r, i));
+	}
+	/* ownername */
+	rrsize += ldns_rdf_size(ldns_rr_owner(r));
+	rrsize += RR_OVERHEAD;
+	return rrsize;
+}
+
+void
+ldns_rr2canonical(ldns_rr *rr)
+{
+	uint16_t i;
+	for (i = 0; i < ldns_rr_rd_count(rr); i++) {
+		ldns_dname2canonical(ldns_rr_rdf(rr, i));
+	}
+}
+
+void
+ldns_rr_list2canonical(ldns_rr_list *rr_list)
+{
+	uint16_t i;
+	for (i = 0; i < ldns_rr_list_rr_count(rr_list); i++) {
+		ldns_rr2canonical(ldns_rr_list_rr(rr_list, i));
+	}
+}
+
+uint8_t 
+ldns_rr_label_count(ldns_rr *rr)
+{
+	if (!rr) {
+		return 0;
+	}
+	return ldns_dname_label_count(
+			ldns_rr_owner(rr));
 }
 
 /** \cond */
@@ -1256,203 +1273,3 @@ ldns_get_rr_class_by_name(const char *name)
 	return 0;
 }
 
-ldns_rr *
-ldns_rr_deep_clone(ldns_rr *rr)
-{
-	uint16_t i;
-	ldns_rr *new_rr;
-		
-	new_rr = ldns_rr_new();
-	if (!new_rr) {
-		return NULL;
-	}
-	ldns_rr_set_owner(new_rr, ldns_rdf_deep_clone(ldns_rr_owner(rr)));
-	ldns_rr_set_ttl(new_rr, ldns_rr_ttl(rr));
-	ldns_rr_set_type(new_rr, ldns_rr_get_type(rr));
-	ldns_rr_set_class(new_rr, ldns_rr_get_class(rr));
-	
-	for (i = 0; i < ldns_rr_rd_count(rr); i++) {
-		ldns_rr_push_rdf(new_rr, ldns_rdf_deep_clone(ldns_rr_rdf(rr, i)));
-	}
-
-	return new_rr;
-}
-
-/**
- * Clone an rr list
- * \param[in] rrlist the rrlist to clone
- * \return the cloned rr list
- */
-ldns_rr_list *
-ldns_rr_list_deep_clone(ldns_rr_list *rrlist)
-{
-	uint16_t i;
-	ldns_rr_list *new_list;
-
-	new_list = ldns_rr_list_new();
-	if (!new_list) {
-		return NULL;
-	}
-	for (i = 0; i < ldns_rr_list_rr_count(rrlist); i++) {
-		ldns_rr_list_push_rr(new_list,
-				ldns_rr_deep_clone(ldns_rr_list_rr(rrlist, i)));
-	}
-	return new_list;
-}
-
-static int
-qsort_rr_compare(const void *a, const void *b)
-{
-	const ldns_rr *rr1 = * (const ldns_rr **) a;
-	const ldns_rr *rr2 = * (const ldns_rr **) b;
-	return ldns_rr_compare(rr1, rr2);
-}
-
-/**
- * sort an rr_list. the sorting is done inband
- * \param[in] unsorted the rr_list to be sorted
- */
-void
-ldns_rr_list_sort(ldns_rr_list *unsorted)
-{
-	qsort(unsorted->_rrs,
-	      ldns_rr_list_rr_count(unsorted),
-	      sizeof(ldns_rr *),
-	      qsort_rr_compare);
-}
-
-
-/**
- * Compare two rr
- * \param[in] rr1 the first one
- * \parma[in] rr2 the second one
- * \return 0 if equal
- *         -1 if rr1 comes before rr2
- *         +1 if rr2 comes before rr1
- */
-int
-ldns_rr_compare(const ldns_rr *rr1, const ldns_rr *rr2)
-{
-	ldns_buffer *rr1_buf;
-	ldns_buffer *rr2_buf;
-	size_t rr1_len;
-	size_t rr2_len;
-	size_t i;
-
-	rr1_len = ldns_rr_uncompressed_size(rr1);
-	rr2_len = ldns_rr_uncompressed_size(rr2);
-
-	if (rr1_len < rr2_len) {
-		return -1;
-	} else if (rr1_len > rr2_len) {
-		return +1;
-	} else {
-		/* equal length */
-	
-		rr1_buf = ldns_buffer_new(rr1_len);
-		rr2_buf = ldns_buffer_new(rr2_len);
-
-		if (ldns_rr2buffer_wire(rr1_buf, rr1, LDNS_SECTION_ANY) != LDNS_STATUS_OK) {
-			return 0; 
-		}
-		if (ldns_rr2buffer_wire(rr2_buf, rr2, LDNS_SECTION_ANY) != LDNS_STATUS_OK) {
-			return 0;
-		}
-		/* now compare the buffer's byte for byte */
-		for(i = 0; i < rr1_len; i++) {
-			if (*ldns_buffer_at(rr1_buf,i) < *ldns_buffer_at(rr2_buf,i)) {
-				return -1;
-			} else if (*ldns_buffer_at(rr1_buf,i) > *ldns_buffer_at(rr2_buf,i)) {
-				return +1;
-			}
-		}
-		return 0;
-	}
-}
-
-/**
- * Returns true of the given rr's are equal, where
- * Also returns true if one records is a DS that represents the
- * other DNSKEY record
- */
-bool
-ldns_rr_compare_ds(const ldns_rr *rr1, const ldns_rr *rr2)
-{
-	bool result;
-	ldns_rr *ds_repr;
-
-	if (ldns_rr_get_type(rr1) == LDNS_RR_TYPE_DS &&
-	    ldns_rr_get_type(rr2) == LDNS_RR_TYPE_DNSKEY) {
-	    	ds_repr = ldns_key_rr2ds(rr2);
-	    	result = (ldns_rr_compare(rr1, ds_repr) == 0);
-	    	ldns_rr_free(ds_repr);
-	} else if (ldns_rr_get_type(rr1) == LDNS_RR_TYPE_DNSKEY &&
-	    ldns_rr_get_type(rr2) == LDNS_RR_TYPE_DS) {
-	    	ds_repr = ldns_key_rr2ds(rr1);
-	    	result = (ldns_rr_compare(rr2, ds_repr) == 0);
-	    	ldns_rr_free(ds_repr);
-	} else {
-		result = (ldns_rr_compare(rr1, rr2) == 0);
-	}	
-	return result;
-}
-
-/** 
- * calculate the uncompressed size of an RR
- * \param[in] rr the rr to operate on
- * \return size of the rr
- */
-size_t
-ldns_rr_uncompressed_size(const ldns_rr *r)
-{
-	size_t rrsize;
-	uint16_t i;
-
-	rrsize = 0;
-	/* add all the rdf sizes */
-	for(i = 0; i < ldns_rr_rd_count(r); i++) {
-		rrsize += ldns_rdf_size(ldns_rr_rdf(r, i));
-	}
-	/* ownername */
-	rrsize += ldns_rdf_size(ldns_rr_owner(r));
-	rrsize += RR_OVERHEAD;
-	return rrsize;
-}
-
-/** 
- * convert each dname in a rr to its canonical form
- * \param[in] rr the rr to work on
- * \return void
- */
-void
-ldns_rr2canonical(ldns_rr *rr)
-{
-	uint16_t i;
-	for (i = 0; i < ldns_rr_rd_count(rr); i++) {
-		ldns_dname2canonical(ldns_rr_rdf(rr, i));
-	}
-}
-
-/** 
- * convert each dname in each rr in a rr_list to its canonical form
- * \param[in] rr_list the rr_list to work on
- * \return void
- */
-void
-ldns_rr_list2canonical(ldns_rr_list *rr_list)
-{
-	uint16_t i;
-	for (i = 0; i < ldns_rr_list_rr_count(rr_list); i++) {
-		ldns_rr2canonical(ldns_rr_list_rr(rr_list, i));
-	}
-}
-
-uint8_t 
-ldns_rr_label_count(ldns_rr *rr)
-{
-	if (!rr) {
-		return 0;
-	}
-	return ldns_dname_label_count(
-			ldns_rr_owner(rr));
-}
