@@ -31,7 +31,7 @@ struct ldns_struct_resolver
 
 	/** \brief List of nameservers to query (IP addresses or dname) */
 	ldns_rdf **_nameservers; 
-	uint8_t _nameserver_count; /* how many do we have */
+	size_t _nameserver_count; /* how many do we have */
 
 	/** \brief Wether or not to be recursive */
 	uint8_t _recursive;
@@ -44,7 +44,7 @@ struct ldns_struct_resolver
 
 	/** \brief Searchlist array */
 	ldns_dname **_searchlist;
-	uint8_t _searchlist_count;
+	size_t _searchlist_count;
 
 	/** \brief How many retries */
 	uint8_t _retry;

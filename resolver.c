@@ -147,9 +147,8 @@ ldns_resolver_new(void)
 
 	r = MALLOC(ldns_resolver);
 
-	/* XXX TODO */
-	r->_searchlist = XMALLOC(ldns_dname, 3);
-	r->_nameservers = XMALLOC(ldns_rdf, 3);
+	r->_searchlist = XMALLOC(ldns_dname *, 3);
+	r->_nameservers = XMALLOC(ldns_rdf *, 3);
 	
 	r->_configured = 0; /* no config has happened yet */
 	r->_searchlist_count = 0; /* no searchlist */
