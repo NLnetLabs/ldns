@@ -51,7 +51,7 @@ ldns_keytag(ldns_rr *key)
 		/* rsamd5 must be handled seperately */
 		/* weird stuff copied from drill0.x XXX */
 		if (keysize > 4) {
-			memcpy(&ac, &key[keysize-3], 2);
+			memcpy(&ac, &key[keysize - 3], 2);
 		}
 		ldns_buffer_free(keybuf);
 		ac = ntohs(ac);
@@ -165,24 +165,95 @@ ldns_verify_rrsig(ldns_rr_list *rrset, ldns_rr *rrsig, ldns_rr_list *keys)
 }
 
 bool
-ldns_verify_rrsig_dsa(ldns_buffer *ATTR_UNUSED(sig), ldns_buffer *ATTR_UNUSED(rrset), ldns_buffer *ATTR_UNUSED(key))
+ldns_verify_rrsig_dsa(ldns_buffer *sig, ldns_buffer *rrset, ldns_buffer *key)
 {
-	return true;
+	DSA *dsakey;
+	DSA_SIG *dsasig;
+	BIGNUM *R;
+	BIGNUM *S;
+	unsigned char *sha1_hash;
+
+	dsakey = ldns_key_buf2dsa(key);
+	if (!dsakey) {
+		return false;
+	}
+
+	/* extract the R and S field from the sig buffer */
+	R = BN_bin2bn(ldns_buffer_at(sig, 1), SHA_DIGEST_LENGTH, NULL);
+	S = BN_bin2bn(ldns_buffer_at(sig, 21), SHA_DIGEST_LENGTH, NULL);
+	
+	dsasig = DSA_SIG_new();
+	if (!dsasig) {
+		return false;
+	}
+	/* 
+	   TODO uncomment and fix
+	t_sig = (uint8_t) sigbuf[0];
+	
+	if (t_sig != T) {
+		warning("Values for T are different in key and signature, verification of DSA sig failed");
+		return RET_FAIL;
+	}
+	*/
+	dsasig->r = R;
+	dsasig->s = S;
+	sha1_hash = SHA1(ldns_buffer_begin(rrset), ldns_buffer_position(rrset), NULL);
+	if (!sha1_hash) {
+		return false;
+	}
+	
+	if (DSA_do_verify(sha1_hash, SHA_DIGEST_LENGTH, dsasig, dsakey) == 1) {
+		return true;
+	} else {
+		return false;
+	}
 }
 
 bool
 ldns_verify_rrsig_rsasha1(ldns_buffer *ATTR_UNUSED(sig), ldns_buffer *ATTR_UNUSED(rrset), ldns_buffer *ATTR_UNUSED(key))
 {
-	return true;
+	RSA *rsakey;
+	unsigned char *sha1_hash;
+
+	rsakey = ldns_key_buf2rsa(key);
+	if (!rsakey) {
+		return false;
+	}
+	sha1_hash = SHA1(ldns_buffer_begin(rrset), ldns_buffer_position(rrset), NULL);
+	if (!sha1_hash) {
+		return false;
+	}
+	if (RSA_verify(NID_sha1, sha1_hash, SHA_DIGEST_LENGTH, ldns_buffer_begin(sig),
+			ldns_buffer_position(sig), rsakey) == 1) {
+		return true;
+	} else {
+		return false;
+	}
 }
 
 
 bool
 ldns_verify_rrsig_rsamd5(ldns_buffer *ATTR_UNUSED(sig), ldns_buffer *ATTR_UNUSED(rrset), ldns_buffer *ATTR_UNUSED(key))
 {
+	RSA *rsakey;
+	unsigned char *md5_hash;
+
+	rsakey = ldns_key_buf2rsa(key);
+	if (!rsakey) {
+		return false;
+	}
+	md5_hash = MD5(ldns_buffer_begin(rrset), ldns_buffer_position(rrset), NULL);
+	if (!md5_hash) {
+		return false;
+	}
+	if (RSA_verify(NID_md5, md5_hash, MD5_DIGEST_LENGTH, ldns_buffer_begin(sig),
+			ldns_buffer_position(sig), rsakey) == 1) {
+		return true;
+	} else {
+		return false;
+	}
 	return true;
 }
-
 
 /* some helper functions */
 /**
@@ -209,8 +280,8 @@ ldns_key_buf2dsa(ldns_buffer *key)
 		return NULL;
 	}
 	
-	Q = BN_bin2bn((unsigned char*)ldns_buffer_at(key, offset), 20, NULL);
-	offset += 20;
+	Q = BN_bin2bn((unsigned char*)ldns_buffer_at(key, offset), SHA_DIGEST_LENGTH, NULL);
+	offset += SHA_DIGEST_LENGTH;
 	
 	P = BN_bin2bn((unsigned char*)ldns_buffer_at(key, offset), (int)length, NULL);
 	offset += length;
@@ -221,15 +292,6 @@ ldns_key_buf2dsa(ldns_buffer *key)
 	Y = BN_bin2bn((unsigned char*)ldns_buffer_at(key, offset), (int)length, NULL);
 	offset += length;
 	
-	/* 
-	   TODO uncomment and fix
-	t_sig = (uint8_t) sigbuf[0];
-	
-	if (t_sig != T) {
-		warning("Values for T are different in key and signature, verification of DSA sig failed");
-		return RET_FAIL;
-	}
-	*/
 	/* create the key and set its properties */
 	dsa = DSA_new();
 	dsa->p = P;
@@ -277,7 +339,7 @@ ldns_key_buf2rsa(ldns_buffer *key)
 	modulus = BN_new();
 	/* capicity of the buffer must match the key length! */
 	(void) BN_bin2bn((unsigned char*)ldns_buffer_at(key, offset), 
-			 (int)(ldns_buffer_capacity(key) - offset), modulus);
+			 (int)(ldns_buffer_position(key) - offset), modulus);
 
 	rsa = RSA_new();
 	rsa->n = modulus;
@@ -285,148 +347,3 @@ ldns_key_buf2rsa(ldns_buffer *key)
 
 	return rsa;
 }
-
-
-#if 0
-
-/**
- * Verify an rrsig with the DSA algorithm, see RFC 2536
- * \param[in]
- */
-bool
-ldns_verify_rrsig_dsa(uint8_t *verifybuf, unsigned long length, unsigned char *sigbuf, unsigned int siglen,
-		unsigned char *key_bytes, unsigned int keylen)
-{
-	t_sig = (uint8_t) sigbuf[0];
-	
-	if (t_sig != T) {
-		warning("Values for T are different in key and signature, verification of DSA sig failed");
-		return RET_FAIL;
-	}
-	
-	
-	R = BN_bin2bn(&sigbuf[1], 20, NULL);
-	
-	S = BN_bin2bn(&sigbuf[21], 20, NULL);
-	
-	dsa = DSA_new();
-	
-	dsa->p = P;
-	dsa->q = Q;
-	dsa->g = G;
-	dsa->pub_key = Y;
-	
-	//hash = xmalloc(20);
-	
-	hash = SHA1((unsigned char *) verifybuf, length, NULL);
-	
-	sig = DSA_SIG_new();
-	sig->r = R;
-	sig->s = S;
-	
-	dsa_res = DSA_do_verify((unsigned char *) hash, 20, sig, dsa);
-
-	if (dsa_res == 1) {
-		result = RET_SUC;
-	} else if (dsa_res == 0) {
-		result = RET_FAIL;
-	} else {
-		warning("internal error when verifying: %d", dsa_res);
-		ERR_print_errors_fp(stdout);
-		result = RET_FAIL;
-	}
-
-	return result;
-}
-
-
-
-/**
- * Verify an rrsig with the RSA algorithm and SHA1 hash, see RFC 3110
- */
-int
-verify_rrsig_rsasha1(uint8_t *verifybuf, unsigned long length, unsigned char *sigbuf, unsigned int siglen,
-		unsigned char *key_bytes, unsigned int keylen)
-{
-	BIGNUM *modulus;
-	BIGNUM *exponent;
-	unsigned char *modulus_bytes;
-	unsigned char *exponent_bytes;
-	unsigned char *digest;
-	int offset;
-	int explength;
-	uint16_t int16;
-	RSA *rsa;
-	int rsa_res;
-
-	int result;
-	
-	digest = SHA1((unsigned char *) verifybuf, length, NULL);
-	if (digest == NULL) {
-		error("Error digesting");
-		exit(EXIT_FAILURE);
-	}
-	
-	rsa_res = RSA_verify(NID_sha1,  digest, 20,  sigbuf, siglen, rsa);
-	if (rsa_res == 1) {
-		result = RET_SUC;
-	} else if (rsa_res == 0) {
-		result = RET_FAIL;
-	} else {
-		warning("internal error when verifying: %d\n", rsa_res);
-		ERR_print_errors_fp(stdout);
-		result = RET_FAIL;
-	}
-	
-	xfree(modulus_bytes);
-	xfree(exponent_bytes);
-	RSA_free(rsa);
-	return result;
-}
-
-int
-verify_rrsig_rsamd5(uint8_t *verifybuf, unsigned long length, unsigned char *sigbuf, unsigned int siglen,
-		unsigned char *key_bytes, unsigned int keylen)
-{
-	BIGNUM *modulus;
-	BIGNUM *exponent;
-	unsigned char *modulus_bytes;
-	unsigned char *exponent_bytes;
-	int offset, explength;
-	unsigned char *digest;
-	uint16_t int16;
-	RSA *rsa;
-	int rsa_res;
-
-	int result;
-	
-	rsa = RSA_new();
-	rsa->n = modulus;
-	rsa->e = exponent;
-
-	digest = xmalloc(16);
-	digest =  MD5((unsigned char *) verifybuf, length,  digest);
-	if (digest == NULL) {
-		error("Error digesting\n");
-		exit(EXIT_FAILURE);
-	}
-	
-	rsa_res = RSA_verify(NID_md5, digest, 16,  sigbuf, siglen, rsa);
-	if (rsa_res == 1) {
-		result = RET_SUC;
-	} else if (rsa_res == 0) {
-		result = RET_FAIL;
-	} else {
-		warning("internal error when verifying: %d\n", rsa_res);
-		ERR_print_errors_fp(stdout);
-		result = RET_FAIL;
-	}
-	
-	xfree(digest);
-	xfree(modulus_bytes);
-	xfree(exponent_bytes);
-	RSA_free(rsa);
-	return result;
-}
-
-#endif
