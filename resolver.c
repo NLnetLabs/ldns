@@ -17,6 +17,7 @@
 #include <ldns/resolver.h>
 #include <ldns/rdata.h>
 #include <ldns/net.h>
+#include <ldns/host2str.h>
 
 #include "util.h"
 
@@ -114,14 +115,27 @@ ldns_resolver_push_nameserver(ldns_resolver *r, ldns_rdf *n)
 
 	nameservers = ldns_resolver_nameservers(r);
 
+	/* XXX do something smart when 3 is reached,
+	 * or always REALLOC here */
+	printf("number of nameservers %d\n",
+			ldns_resolver_nameserver_count(r));
+
+	ldns_rdf_print(stdout, n);
+	printf("\n");
+	/*
+	nameservers[
+		ldns_resolver_nameserver_count(r)] = n;
+		*/
+	r->_nameservers[0] = n;
+
 	/* increase */
 	ldns_resolver_incr_nameserver_count(r);
 
-	/* XXX do something smart when 3 is reached,
-	 * or always REALLOC here */
+	printf("number of nameservers %d\n",
+			ldns_resolver_nameserver_count(r));
 
-	nameservers[
-		ldns_resolver_nameserver_count(r)] = n;
+	ldns_rdf_print(stdout, r->_nameservers[0]);
+	printf("\n");
 
 	return LDNS_STATUS_OK;
 }
@@ -282,7 +296,8 @@ ldns_resolver_send(ldns_resolver *r, ldns_rdf *name, ldns_rr_type type, ldns_rr_
 	}
 
 	/* return NULL on error */
-	answer_pkt = ldns_send(*r, query_pkt);
+/*	answer_pkt = ldns_send(*r, query_pkt);
+ */
 		
 	return answer_pkt;
 }
