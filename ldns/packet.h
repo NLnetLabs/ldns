@@ -107,7 +107,8 @@ enum ldns_enum_pkt_type {
 	LDNS_PACKET_REFERRAL,
 	LDNS_PACKET_ANSWER,
 	LDNS_PACKET_NXDOMAIN,
-	LDNS_PACKET_NODATA
+	LDNS_PACKET_NODATA,
+	LDNS_PACKET_UNKNOWN
 };
 typedef enum ldns_enum_pkt_type ldns_pkt_type;
 

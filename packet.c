@@ -182,6 +182,10 @@ ldns_pkt_rr_list_by_name(ldns_pkt *packet, ldns_rdf *ownername, ldns_pkt_section
 	ldns_rr_list *ret;
 	uint16_t i;
 
+	if (!packet) {
+		return NULL;
+	}
+
 	rrs = ldns_pkt_xxsection(packet, sec);
 	new = ldns_rr_list_new();
 	ret = NULL;
@@ -207,6 +211,10 @@ ldns_pkt_rr_list_by_type(ldns_pkt *packet, ldns_rr_type type, ldns_pkt_section s
 	ldns_rr_list *ret;
 	uint16_t i;
 
+	if(!packet) {
+		return NULL;
+	}
+	
 	rrs = ldns_pkt_xxsection(packet, sec);
 	new = ldns_rr_list_new();
 	ret = NULL;
@@ -703,6 +711,11 @@ ldns_pkt_reply_type(ldns_pkt *p)
 	/* check for NXDOMAIN */
 
 	/* check DNSSEC records... */
+
+	if (!p) {
+		/* XXX new type? LDNS_PACKET_EMPTY? */
+		return LDNS_PACKET_UNKNOWN;
+	}
 
 	if (ldns_pkt_ancount(p) == 0 && ldns_pkt_arcount(p) == 0
 			&& ldns_pkt_nscount(p) == 1) {

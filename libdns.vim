@@ -66,6 +66,7 @@ syn keyword  ldnsConstant	LDNS_PACKET_REFERRAL
 syn keyword  ldnsConstant	LDNS_PACKET_ANSWER
 syn keyword  ldnsConstant	LDNS_PACKET_NXDOMAIN
 syn keyword  ldnsConstant	LDNS_PACKET_NODATA
+syn keyword  ldnsConstant	LDNS_PACKET_UNKNOWN
 syn keyword  ldnsConstant	LDNS_SECTION_QUESTION
 syn keyword  ldnsConstant	LDNS_SECTION_ANSWER
 syn keyword  ldnsConstant	LDNS_SECTION_AUTHORITY
