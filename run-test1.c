@@ -92,7 +92,7 @@ printf("counting: %s\n", ldns_rdf2str(cnt_test));
 	/* concat tests */
 	cat_test1 = ldns_dname_new_frm_str("www");
 	cat_test2 = ldns_dname_new_frm_str("miek.nl.");
-	concat = ldns_dname_concat(cat_test1, cat_test2);
+	concat = ldns_dname_cat(cat_test1, cat_test2);
 
 	ldns_rdf_print(stdout, concat);
 

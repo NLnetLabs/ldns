@@ -365,7 +365,50 @@ ldns_rr_list_free(ldns_rr_list *rr_list)
 	FREE(rr_list);
 }
 
-/* need a pop here too */
+
+/**
+ * concatenate two ldns_rr_lists together
+ * \param[in] left the leftside
+ * \param[in] right the rightside
+ * \return a new rr_list with leftside/rightside concatenated
+ */
+ldns_rr_list *
+ldns_rr_list_cat(ldns_rr_list *left, ldns_rr_list *right)
+{
+	uint16_t l_rr_count;
+	uint16_t r_rr_count;
+	uint16_t i;
+	ldns_rr_list *cat;
+
+	l_rr_count = ldns_rr_list_rr_count(left);
+	r_rr_count = ldns_rr_list_rr_count(right);
+
+	/* check it not exceeding uint16_t size XXX XXX MIEK TODO */
+	cat = ldns_rr_list_new();
+
+	if (!cat) {
+		return NULL;
+	}
+
+	/* left */
+	for(i = 0; i < l_rr_count; i++) {
+		ldns_rr_list_push_rr(cat, 
+				ldns_rr_list_rr(left, i));
+	}
+	/* right */
+	for(i = 0; i < r_rr_count; i++) {
+		ldns_rr_list_push_rr(cat, 
+				ldns_rr_list_rr(right, i));
+	}
+	return cat;
+}
+
+/**
+ * push an  rr to a rrlist
+ * \param[in] rr_list the rr_list to push to 
+ * \param[in] rr the rr to push 
+ * \return NULL on error, otherwise true
+ */
 bool
 ldns_rr_list_push_rr(ldns_rr_list *rr_list, ldns_rr *rr)
 {
@@ -446,6 +489,7 @@ bool
 ldns_rr_set_push_rr(ldns_rr_list *rr_list, ldns_rr *rr)
 {
 	uint16_t rr_count;
+	uint16_t i;
 	ldns_rr *last;
 
 	rr_count = ldns_rr_list_rr_count(rr_list);
@@ -474,7 +518,15 @@ ldns_rr_set_push_rr(ldns_rr_list *rr_list, ldns_rr *rr)
 					ldns_rr_owner(rr)) != 0) {
 			return false;
 		}
-		/* ok, still alive */
+		/* ok, still alive - check if the rr already
+		 * exists - if so, dont' add it */
+		for(i = 0; i < rr_count; i++) {
+			if(ldns_rr_compare(
+					ldns_rr_list_rr(rr_list, i), rr) == 0) {
+				return false;
+			}
+		}
+		/* it's safe, push it */
 		return ldns_rr_list_push_rr(rr_list, rr);
 	}
 }
