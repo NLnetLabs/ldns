@@ -121,7 +121,7 @@ ldns_verify_rrsig(ldns_rr_list *rrset, ldns_rr *rrsig, ldns_rr_list *keys)
 	ldns_rr_list *rrset_clone;
 
 	/* clone the rrset so that we can fiddle with it */
-	rrset_clone = ldns_rr_list_clone(rrset);
+	rrset_clone = ldns_rr_list_deep_clone(rrset);
 	
 	/* create the buffers which will certainly hold the raw data */
 	rawsig_buf = ldns_buffer_new(MAX_PACKETLEN);

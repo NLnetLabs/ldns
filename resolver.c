@@ -373,7 +373,7 @@ ldns_resolver_send(ldns_resolver *r, ldns_rdf *name, ldns_rr_type type, ldns_rr_
 	}
 	/* prepare a question pkt from the parameters
 	 * and then send this */
-	query_pkt = ldns_pkt_query_new(ldns_rdf_clone(name), type, class, flags);
+	query_pkt = ldns_pkt_query_new(ldns_rdf_deep_clone(name), type, class, flags);
 	if (!query_pkt) {
 		printf("Failed to generate pkt\n");
 		return NULL;
@@ -416,7 +416,7 @@ ldns_axfr_start(ldns_resolver *resolver,
 	}
 	
         /* Create the query */
-	query = ldns_pkt_query_new(ldns_rdf_clone(domain),
+	query = ldns_pkt_query_new(ldns_rdf_deep_clone(domain),
 	                           LDNS_RR_TYPE_AXFR,
 	                           class,
 	                           0);
@@ -498,7 +498,7 @@ ldns_axfr_next(ldns_resolver *resolver)
 			resolver->_cur_axfr_pkt = NULL;
 			return ldns_axfr_next(resolver);
 		}
-		cur_rr = ldns_rr_clone(ldns_rr_list_rr(ldns_pkt_answer(resolver->_cur_axfr_pkt), resolver->_axfr_i));
+		cur_rr = ldns_rr_deep_clone(ldns_rr_list_rr(ldns_pkt_answer(resolver->_cur_axfr_pkt), resolver->_axfr_i));
 		resolver->_axfr_i++;
 		if (ldns_rr_get_type(cur_rr) == LDNS_RR_TYPE_SOA) {
 			resolver->_axfr_soa_count++;
