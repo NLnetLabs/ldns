@@ -135,12 +135,10 @@ test: test7 test11 test18
 ## No need for changes here
 
 lint:
-	find $(srcdir) -name \*.c -exec $(LINT) $(LINTFLAGS) -I. -I$(srcdir) {} \;
-
-# old
-#	for i in $(LIBDNS_SOURCES); do \
-#		$(LINT) $(LINTFLAGS) -I. -I$(srcdir) $(srcdir)/$$i ; \
-#	done
+	for i in $(LIBDNS_SOURCES); do \
+		$(LINT) $(LINTFLAGS) -I. -I$(srcdir) $(srcdir)/$$i ; \
+		if [ $$? -ne 0 ] ; then exit 1 ; fi ; \
+	done
 
 tags:	*.c *.h ldns/*.[ch]
 	ctags *.[ch] ldns/*.[ch]
