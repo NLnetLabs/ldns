@@ -163,9 +163,13 @@ ldns_buffer_free(ldns_buffer *buffer)
 		return;
 	}
 
+/*
 	if (!buffer->_fixed) {
+*/
 		FREE(buffer->_data);
+/*
 	}
+*/
 	FREE(buffer);
 }
 

@@ -60,11 +60,19 @@ main(void)
 
 	if (!pkt)  {
 		printf("error pkt sending\n");
-		return 1;
-	}
+	} else {
         
         /* print the resulting pkt to stdout */
-        ldns_pkt_print(stdout, pkt);
+/*
+	        ldns_pkt_print(stdout, pkt);
+*/
+	        ldns_pkt_free(pkt);
+	}
+
+        ldns_rdf_free(qname);
+        ldns_rdf_free(default_dom);
+        ldns_rdf_free(nameserver);
+        ldns_resolver_free(res);
 
         return 0;
 }

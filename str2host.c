@@ -48,6 +48,7 @@ ldns_str2rdf_int16(ldns_rdf **rd, const char *shortstr)
 		return LDNS_STATUS_INT_EXP;
 	} else {
 		*rd = ldns_rdf_new_frm_data(sizeof(uint16_t), LDNS_RDF_TYPE_INT16, (uint8_t*)r);
+		FREE(r);
 		return LDNS_STATUS_OK;
 	}
 }
@@ -76,6 +77,7 @@ ldns_str2rdf_time(ldns_rdf **rd, const char *time)
 		l = htonl(timegm(&tm));
 		memcpy(r, &l, sizeof(uint32_t));
 		*rd = ldns_rdf_new_frm_data(sizeof(uint32_t), LDNS_RDF_TYPE_TIME, (uint8_t*)r);
+		FREE(r);
 		return LDNS_STATUS_OK;
 	}
 }
@@ -151,6 +153,7 @@ ldns_str2rdf_dname(ldns_rdf **d, const char *str)
 
 	uint8_t *s,*p,*q, *pq, val, label_len;
 	uint8_t buf[MAX_DOMAINLEN + 1];
+	*d = NULL;
 	
 	len = strlen((char*)str);
 	if (len > MAX_DOMAINLEN) {

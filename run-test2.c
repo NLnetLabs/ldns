@@ -167,7 +167,11 @@ file2pkt(const char *filename)
 		wirelen = (size_t) hexbufpos;
 	}
 	
+	FREE(hexbuf);
+	
 	status = ldns_wire2pkt(&pkt, wire, wirelen);
+	
+	FREE(wire);
 	
 	if (status == LDNS_STATUS_OK) {
 		return pkt;
@@ -186,6 +190,7 @@ main(int argc, char **argv)
 	uint8_t *target_buf;
 	size_t len;
 	uint16_t i;
+	char *str;
 	
 	if (argc == 2) {
 		file = argv[1];
@@ -196,7 +201,9 @@ main(int argc, char **argv)
 	pkt = file2pkt(file);
 	if (pkt) {
 		printf("packet:\n");
-		printf("%s", ldns_pkt2str(pkt));
+		str = ldns_pkt2str(pkt);
+		printf("%s", str);
+		FREE(str);
 	} else {
 		printf("\n");
 	}
@@ -212,6 +219,8 @@ main(int argc, char **argv)
 	}
 	printf("\n\n");
 
+	ldns_pkt_free(pkt);
+	FREE(target_buf);
 	
 	return 0;
 }

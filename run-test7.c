@@ -94,5 +94,6 @@ main(int argc, char **argv)
         /* print the resulting pkt to stdout */
         ldns_pkt_print(stdout, pkt);
 
+        ldns_resolver_free(res);
         return 0;
 }

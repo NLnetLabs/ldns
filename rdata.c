@@ -250,7 +250,12 @@ ldns_rdf_free_data(ldns_rdf *rd)
 void 
 ldns_rdf_free(ldns_rdf *rd)
 {
-	FREE(rd);
+	if (rd) {
+		if (rd->_data) {
+			FREE(rd->_data);
+		}
+		FREE(rd);
+	}
 }
 
 /**

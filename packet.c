@@ -407,19 +407,16 @@ ldns_pkt_free(ldns_pkt *packet)
 {
 	FREE(packet->_header);
 	if (packet->_question) {
-		/*ldns_rr_list_destroy(packet->_question);*/
+		ldns_rr_list_free(packet->_question);
 	}
 	if (packet->_answer) {
-		/*ldns_rr_list_destroy(packet->_answer);*/
-		FREE(packet->_answer);
+		ldns_rr_list_free(packet->_answer);
 	}
 	if (packet->_authority) {
-		/*ldns_rr_list_destroy(packet->_authority);*/
-		FREE(packet->_authority);
+		ldns_rr_list_free(packet->_authority);
 	}
 	if (packet->_additional) {
-		/*ldns_rr_list_destroy(packet->_additional);*/
-		FREE(packet->_authority);
+		ldns_rr_list_free(packet->_additional);
 	}
 	FREE(packet);
 }
