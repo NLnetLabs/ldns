@@ -110,7 +110,7 @@ AC_REPLACE_FUNCS(timegm)
 AC_CHECK_FORMAT_ATTRIBUTE
 AC_CHECK_UNUSED_ATTRIBUTE
 
-AC_DEFINE([SYSCONFDIR], [$sysconfdir], [System configuration dir])
+AC_DEFINE([SYSCONFDIR], [sysconfdir], [System configuration dir])
 
 AH_BOTTOM([
 

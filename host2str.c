@@ -67,6 +67,10 @@ ldns_lookup_table ldns_rcodes[] = {
         { 3, "NAMEERR" },
         { 4, "NOTIMPL" },
         { 5, "REFUSED" },
+        { 6, "?" },
+        { 7, "?" },
+        { 8, "?" },
+        { 9, "NOTAUTH" },
         { 0, NULL }
 };
 
@@ -156,20 +160,8 @@ ldns_rdf2buffer_str_int32(ldns_buffer *output, ldns_rdf *rdf)
 ldns_status
 ldns_rdf2buffer_str_time(ldns_buffer *output, ldns_rdf *rdf)
 {
-	uint32_t data;
-	struct tm *tm;
-	time_t t;
-	char *st;
-
-	data = read_uint32(ldns_rdf_data(rdf));
-	
-	t = (time_t) data;
-	tm = gmtime(&t);
-	st = XMALLOC(char, 15);
-	
-	(void)strftime(st, 15, "%Y%m%d%H%M%S", tm);
-	ldns_buffer_printf(output, "%s", st);
-	FREE(st);
+	uint32_t data = read_uint32(ldns_rdf_data(rdf));
+	ldns_buffer_printf(output, "%lu", (unsigned long) data);
 	return ldns_buffer_status(output);
 }
 
@@ -535,9 +527,21 @@ ldns_rdf2buffer_str_tsigtime(ldns_buffer *output, ldns_rdf *rdf)
 {
 	/* TODO */
 	/* tsigtime is 48 bits network order unsigned integer */
-	ldns_buffer_printf(output, "TODO ");
-	printf("rdf p %p\n", (void *) rdf);
-	abort();
+	uint64_t tsigtime = 0;
+	uint8_t *data = ldns_rdf_data(rdf);
+
+	if (ldns_rdf_size(rdf) != 6) {
+		return LDNS_STATUS_ERR;
+	}
+	
+	tsigtime = read_uint16(data);
+	tsigtime *= 65536;
+	tsigtime += read_uint16(data+2);
+	tsigtime *= 65536;
+	tsigtime += read_uint16(data+4);
+	/* what to do with hihgh numbers on 32 bit machines? */
+	ldns_buffer_printf(output, "%u ", (unsigned int) tsigtime);
+
 	return ldns_buffer_status(output);
 }
 
@@ -626,6 +630,13 @@ ldns_rdf2buffer_str_todo(ldns_buffer *output, ldns_rdf *rdf)
 }
 
 ldns_status
+ldns_rdf2buffer_str_int16_data(ldns_buffer *output, ldns_rdf *rdf)
+{
+	ldns_buffer_printf(output, "%u ", ldns_rdf_size(rdf));
+	return ldns_rdf2buffer_str_b64(output, rdf);
+}
+
+ldns_status
 ldns_rdf2buffer_str_ipseckey(ldns_buffer *output, ldns_rdf *rdf)
 {
 	/* wire format from 
@@ -690,6 +701,16 @@ ldns_rdf2buffer_str_ipseckey(ldns_buffer *output, ldns_rdf *rdf)
 	
 	return ldns_buffer_status(output);
 }
+
+ldns_status ldns_rdf2buffer_str_tsig(ldns_buffer *output, ldns_rdf *rdf)
+{
+	output = output;
+	rdf = rdf;
+	printf("removethisfunctions: ldns_rdf2buffer_str_tsig()\n");
+	abort();
+	return LDNS_STATUS_OK;
+}
+
 
 /**
  * Returns string representation of the specified rdf
@@ -773,6 +794,12 @@ ldns_rdf2buffer_str(ldns_buffer *buffer, ldns_rdf *rdf)
 		case LDNS_RDF_TYPE_IPSECKEY:
 			res = ldns_rdf2buffer_str_ipseckey(buffer, rdf);
 			break;
+		case LDNS_RDF_TYPE_TSIG:
+			res = ldns_rdf2buffer_str_tsig(buffer, rdf);
+			break;
+		case LDNS_RDF_TYPE_INT16_DATA:
+			res = ldns_rdf2buffer_str_int16_data(buffer, rdf);
+			break;
 		case LDNS_RDF_TYPE_SERVICE:
 			/* XXX todo */
 			break;
@@ -797,8 +824,11 @@ ldns_rr2buffer_str(ldns_buffer *output, ldns_rr *rr)
 		return status;
 	}
 
-	/* ttl */
-	ldns_buffer_printf(output, "\t%d", ldns_rr_ttl(rr));
+	/* ttl should not be printed if it is a question, but we don't know that anymore... (do we?)*/
+	/* TODO: better way */
+	if (ldns_rr_rd_count(rr) > 0) {
+		ldns_buffer_printf(output, "\t%d", ldns_rr_ttl(rr));
+	}
 	
  	lt = ldns_lookup_by_id(ldns_rr_classes, ldns_rr_get_class(rr));
 	if (lt) {
@@ -861,26 +891,22 @@ ldns_status
 ldns_pktheader2buffer_str(ldns_buffer *output, ldns_pkt *pkt)
 {
 	/* TODO: strings for known names instead of numbers, flags etc */
-	const char *opcode_str, *rcode_str;
 	ldns_lookup_table *opcode = ldns_lookup_by_id(ldns_opcodes,
 			                    (int) ldns_pkt_opcode(pkt));
 	ldns_lookup_table *rcode = ldns_lookup_by_id(ldns_rcodes,
 			                    (int) ldns_pkt_rcode(pkt));
 
+	ldns_buffer_printf(output, ";; ->>HEADER<<- ");
 	if (opcode) {
-		opcode_str = opcode->name;
+		ldns_buffer_printf(output, "opcode: %s, ", opcode->name);
 	} else {
-		opcode_str = "??";
+		ldns_buffer_printf(output, "opcode: ?? (%u), ", ldns_pkt_opcode(pkt));
 	}
 	if (rcode) {
-		rcode_str = rcode->name;
+		ldns_buffer_printf(output, "rcode: %s, ", rcode->name);
 	} else {
-		rcode_str = "??";
+		ldns_buffer_printf(output, "rcode: ?? (%u), ", ldns_pkt_rcode(pkt));
 	}
-	
-	ldns_buffer_printf(output, ";; ->>HEADER<<- ");
-	ldns_buffer_printf(output, "opcode: %s, ", opcode_str);
-	ldns_buffer_printf(output, "rcode: %s, ", rcode_str);
 	ldns_buffer_printf(output, "id %d\n", ldns_pkt_id(pkt));
 	ldns_buffer_printf(output, ";; flags: ");
 
@@ -982,6 +1008,11 @@ ldns_pkt2buffer_str(ldns_buffer *output, ldns_pkt *pkt)
 		ldns_buffer_printf(output, "\n");
 		/* add some futher fields */
 		ldns_buffer_printf(output, ";; Query time: %d msec\n", ldns_pkt_querytime(pkt));
+		if (ldns_pkt_tsig(pkt)) {
+			ldns_buffer_printf(output, ";; TSIG:\n;; ");
+			(void) ldns_rr2buffer_str(output, ldns_pkt_tsig(pkt));
+			ldns_buffer_printf(output, "\n");
+		}
 		if (ldns_pkt_answerfrom(pkt)) {
 			tmp = ldns_rdf2str(ldns_pkt_answerfrom(pkt));
 			ldns_buffer_printf(output, ";; SERVER: %s\n", tmp);

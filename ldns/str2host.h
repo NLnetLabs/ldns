@@ -27,7 +27,7 @@ ldns_status ldns_str2rdf_class(ldns_rdf **, const char *);
 ldns_status ldns_str2rdf_cert(ldns_rdf **, const char *);
 ldns_status ldns_str2rdf_alg(ldns_rdf **, const char *);
 ldns_status ldns_str2rdf_unknown(ldns_rdf **, const char *);
-ldns_status ldns_str2rdf_tsigtime(ldns_rdf **, const char *);
+ldns_status ldns_str2rdf_tsig(ldns_rdf **, const char *);
 ldns_status ldns_str2rdf_service(ldns_rdf **, const char *);
 ldns_status ldns_str2rdf_loc(ldns_rdf **, const char *);
 ldns_status ldns_str2rdf_wks(ldns_rdf **, const char *);

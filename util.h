@@ -100,6 +100,19 @@ write_uint32(void *dst, uint32_t data)
 #endif
 }
 
+/* warning. */
+INLINE void
+write_uint64_as_uint48(void *dst, uint64_t data)
+{
+	uint8_t *p = (uint8_t *) dst;
+	p[0] = (uint8_t) ((data >> 40) & 0xff);
+	p[1] = (uint8_t) ((data >> 32) & 0xff);
+	p[2] = (uint8_t) ((data >> 24) & 0xff);
+	p[3] = (uint8_t) ((data >> 16) & 0xff);
+	p[4] = (uint8_t) ((data >> 8) & 0xff);
+	p[5] = (uint8_t) (data & 0xff);
+}
+
 /* A general purpose lookup table */
 typedef struct lookup_table ldns_lookup_table;
 struct lookup_table {

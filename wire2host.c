@@ -1,4 +1,4 @@
-/*
+ /* 
  * wire2host.c
  *
  * conversion routines from the wire to the host
@@ -294,6 +294,13 @@ ldns_wire2rdf(ldns_rr *rr, const uint8_t *wire,
 			cur_rdf_length = 4;
 			break;
 		case LDNS_RDF_TYPE_TSIGTIME:
+/*
+printf("TSIG DATA ON WIRE: ");
+for (i=0; i<6; i++) {
+	printf("%02x ", wire[*pos+i]);
+}
+printf("\n");
+*/
 			cur_rdf_length = 6;
 			break;
 		case LDNS_RDF_TYPE_AAAA:
@@ -309,8 +316,17 @@ ldns_wire2rdf(ldns_rr *rr, const uint8_t *wire,
 		case LDNS_RDF_TYPE_PERIOD:
 			cur_rdf_length = 4;
 			break;
+		case LDNS_RDF_TYPE_INT16_DATA:
+			/* experimental */
+			/* the size of 'DATA' is determined by the last rdata
+			   (like twice in TSIG), which should be an uint16
+			   (TODO: check for that)
+			   this would deprecate the general tsig type
+			*/
+			cur_rdf_length = (size_t) read_uint16(&wire[*pos]);
+			*pos += 2;
+			break;
 		case LDNS_RDF_TYPE_APL:
-			/* TODO */
 		case LDNS_RDF_TYPE_B64:
 		case LDNS_RDF_TYPE_HEX:
 		case LDNS_RDF_TYPE_NSEC:
@@ -320,6 +336,7 @@ ldns_wire2rdf(ldns_rr *rr, const uint8_t *wire,
 		case LDNS_RDF_TYPE_WKS:
 		case LDNS_RDF_TYPE_NSAP:
 		case LDNS_RDF_TYPE_IPSECKEY:
+		case LDNS_RDF_TYPE_TSIG:
 		case LDNS_RDF_TYPE_NONE:
 			/*
 			 * Read to end of rr rdata
@@ -359,6 +376,19 @@ ldns_wire2rr(ldns_rr **rr_p, const uint8_t *wire, size_t max,
 	ldns_rr *rr = ldns_rr_new();
 	ldns_status status;
 	
+/*
+size_t i;
+printf("next rr: from %u upto max %u\n", *pos, max);
+for (i=0; i<(max-*pos); i++) {
+*/
+/*
+	if (i>0&&i%20==0){
+		printf("\t; %u-%u\n", i-20, i-1);
+	}
+	printf("%02x ", wire[*pos + i]);
+}
+printf("\n");
+*/
 	status = ldns_wire2dname(&owner, wire, max, pos);
 	STATUS_CHECK_GOTO(status, status_error);
 
@@ -377,8 +407,12 @@ ldns_wire2rr(ldns_rr **rr_p, const uint8_t *wire, size_t max,
 		status = ldns_wire2rdf(rr, wire, max, pos);
 		STATUS_CHECK_GOTO(status, status_error);
 	}
-
+	
 	*rr_p = rr;
+/*
+ldns_rr_print(stdout, rr);
+printf("\n");
+*/
 	return LDNS_STATUS_OK;
 	
 status_error:
@@ -468,7 +502,10 @@ printf("\n");
 	for (i = 0; i < ldns_pkt_arcount(packet); i++) {
 		status = ldns_wire2rr(&rr, wire, max, &pos,
 		                      LDNS_SECTION_ADDITIONAL);
-		if (!ldns_rr_list_push_rr(ldns_pkt_additional(packet), rr)) {
+		if (ldns_rr_get_type(rr) == LDNS_RR_TYPE_TSIG) {
+			ldns_pkt_set_tsig(packet, rr);
+			ldns_pkt_set_arcount(packet, ldns_pkt_arcount(packet) - 1);
+		} else if (!ldns_rr_list_push_rr(ldns_pkt_additional(packet), rr)) {
 			return LDNS_STATUS_INTERNAL_ERR;
 		}
 		STATUS_CHECK_GOTO(status, status_error);

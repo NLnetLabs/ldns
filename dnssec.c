@@ -19,6 +19,7 @@
 #include <openssl/bn.h>
 #include <openssl/bio.h>
 #include <openssl/evp.h>
+#include <openssl/hmac.h>
 
 /** 
  * calcalutes a keytag of a key for use in DNSSEC
@@ -436,3 +437,233 @@ ldns_sign(ldns_rr_list *ATTR_UNUSED(rrset), ldns_rr_list *ATTR_UNUSED(keys))
 
 	return NULL;
 }
+
+ldns_rdf *
+ldns_create_tsig_mac(
+	ldns_pkt *pkt,
+	const char *key_data,
+	ldns_rdf *key_name_rdf,
+	ldns_rdf *fudge_rdf,
+	ldns_rdf *algorithm_rdf,
+	ldns_rdf *time_signed_rdf,
+	ldns_rdf *error_rdf,
+	ldns_rdf *other_data_rdf
+)
+{
+	ldns_buffer *data_buffer;
+	ldns_rdf *mac_rdf;
+	char *wireformat;
+	int wiresize;
+	unsigned char *mac_bytes;
+	unsigned int md_len = EVP_MAX_MD_SIZE;
+	unsigned char *key_bytes;
+	int key_size;
+	
+	/* 
+	 * prepare the digestable information
+	 */
+	data_buffer = ldns_buffer_new(MAX_PACKETLEN);
+	(void) ldns_pkt2buffer_wire(data_buffer, pkt);
+	(void) ldns_rdf2buffer_wire(data_buffer, key_name_rdf);
+	ldns_buffer_write_u16(data_buffer, LDNS_RR_CLASS_ANY);
+	ldns_buffer_write_u32(data_buffer, 0);
+	(void) ldns_rdf2buffer_wire(data_buffer, algorithm_rdf);
+	(void) ldns_rdf2buffer_wire(data_buffer, time_signed_rdf);
+	(void) ldns_rdf2buffer_wire(data_buffer, fudge_rdf);
+	(void) ldns_rdf2buffer_wire(data_buffer, error_rdf);
+	(void) ldns_rdf2buffer_wire(data_buffer, other_data_rdf);
+	
+	wireformat = (char *) data_buffer->_data;
+	wiresize = (int) ldns_buffer_position(data_buffer);
+
+	/* prepare the key */
+	/* TODO function for b64 sizes? */
+	key_bytes = XMALLOC(unsigned char, strlen(key_data)*2);
+	key_size = b64_pton(key_data, key_bytes, strlen(key_data)*2);
+	
+	if (key_size < 0) {
+		return NULL;
+	}
+	/* hmac it */
+	/* 2 spare bytes for the length */
+	mac_bytes = malloc(md_len);
+	memset(mac_bytes, 0, md_len);
+	(void) HMAC(EVP_md5(), key_bytes, key_size, (void *) wireformat, wiresize, mac_bytes+2, &md_len);
+	
+	write_uint16(mac_bytes, md_len);
+	mac_rdf = ldns_rdf_new(md_len + 2, LDNS_RDF_TYPE_INT16_DATA, mac_bytes);
+	
+	return mac_rdf;
+}
+
+
+/**
+ * Verifies the tsig rr for the given packet and key (string?)
+ * @return true if tsig is correct, false if not, or if tsig is not set
+ */
+bool
+ldns_pkt_tsig_verify(ldns_pkt *pkt, const char *key_name, const char *key_data)
+{
+	ldns_rdf *fudge_rdf;
+	ldns_rdf *algorithm_rdf;
+	ldns_rdf *time_signed_rdf;
+	ldns_rdf *orig_id_rdf;
+	ldns_rdf *error_rdf;
+	ldns_rdf *other_data_rdf;
+	ldns_rdf *orig_mac_rdf;
+	ldns_rdf *my_mac_rdf;
+	ldns_rdf *key_name_rdf = ldns_rdf_new_frm_str(LDNS_RDF_TYPE_DNAME, key_name);
+	uint16_t pkt_id;
+	
+	size_t i;
+	ldns_rr *orig_tsig = ldns_pkt_tsig(pkt);
+	
+	if (!orig_tsig) {
+		return false;
+	}
+	
+	algorithm_rdf = ldns_rr_rdf(orig_tsig, 0);
+	time_signed_rdf = ldns_rr_rdf(orig_tsig, 1);
+	fudge_rdf = ldns_rr_rdf(orig_tsig, 2);
+	orig_mac_rdf = ldns_rr_rdf(orig_tsig, 3);
+	orig_id_rdf = ldns_rr_rdf(orig_tsig, 4);
+	error_rdf = ldns_rr_rdf(orig_tsig, 5);
+	other_data_rdf = ldns_rr_rdf(orig_tsig, 6);
+	
+	/* remove temporarily */
+	ldns_pkt_set_tsig(pkt, NULL);
+	/* TODO temporarily change the id */
+	pkt_id = ldns_pkt_id(pkt);
+
+	my_mac_rdf = ldns_create_tsig_mac(pkt,
+	                                  key_data, 
+	                                  key_name_rdf,
+	                                  fudge_rdf,
+	                                  algorithm_rdf,
+	                                  time_signed_rdf,
+	                                  error_rdf,
+	                                  other_data_rdf);
+	
+	ldns_pkt_set_tsig(pkt, orig_tsig);
+
+	/* TODO: ldns_rdf_cmp in rdata.[ch] */
+	if (ldns_rdf_size(orig_mac_rdf) != ldns_rdf_size(my_mac_rdf)) {
+		return false;
+	} else {
+		for (i = 0; i < ldns_rdf_size(orig_mac_rdf); i++) {
+			if (
+				ldns_rdf_data(orig_mac_rdf)[i] !=
+				ldns_rdf_data(my_mac_rdf)[i]
+			) {
+				return false;
+			}
+		}
+	}
+
+	return true;
+}
+
+
+
+/**
+ * Creates a tsig rr for the given packet and key (string?)
+ *
+ * @param pkt the packet to sign
+ * @param key_name the name of the shared key
+ * @param key_data the key in base 64 format
+ * @param fudge seconds of error permitted in time signed
+ * @param algorithm_name the name of the algorithm used (TODO more than only hmac-md5.sig-alg.reg.int.?)
+ * @return status (OK if success)
+ */
+/* TODO: memory :p */
+ldns_status
+ldns_pkt_tsig_sign_query(ldns_pkt *pkt, const char *key_name, const char *key_data, uint16_t fudge, const char *algorithm_name)
+{
+	unsigned char *key_bytes;
+	int key_size;
+	ldns_rr *tsig_rr;
+	ldns_rdf *key_name_rdf = ldns_rdf_new_frm_str(LDNS_RDF_TYPE_DNAME, key_name);
+	uint8_t *fudge_data;
+	ldns_rdf *fudge_rdf;
+	uint16_t orig_id;
+	ldns_rdf *orig_id_rdf;
+	ldns_rdf *algorithm_rdf = ldns_rdf_new_frm_str(LDNS_RDF_TYPE_DNAME, algorithm_name);
+	uint8_t *error_data;
+	ldns_rdf *error_rdf;
+	ldns_rdf *mac_rdf;
+	
+	struct timeval tv_time_signed;
+	uint8_t *time_signed;
+	ldns_rdf *time_signed_rdf;
+	
+	uint8_t *other_data;
+	ldns_rdf *other_data_rdf;
+	
+	/* eww don't have create tsigtime rdf yet :( */
+	/* bleh :p */
+	if (gettimeofday(&tv_time_signed, NULL) == 0) {
+		time_signed = XMALLOC(uint8_t, 6);
+		write_uint64_as_uint48(time_signed, tv_time_signed.tv_sec);
+	} else {
+		return LDNS_STATUS_INTERNAL_ERR;
+	}
+
+	time_signed_rdf = ldns_rdf_new(6, LDNS_RDF_TYPE_TSIGTIME, time_signed);
+	
+	fudge_data = XMALLOC(uint8_t, 2);
+	write_uint16(fudge_data, fudge);
+	fudge_rdf = ldns_rdf_new(2, LDNS_RDF_TYPE_INT16, fudge_data);
+
+	orig_id = htons(ldns_pkt_id(pkt));
+	orig_id_rdf = ldns_rdf_new_frm_data(LDNS_RDF_TYPE_INT16, 2, &orig_id);
+
+	error_data = XMALLOC(uint8_t, 2);
+	write_uint16(error_data, 0);
+	error_rdf = ldns_rdf_new(2, LDNS_RDF_TYPE_INT16, error_data);
+
+	/* prepare the key */
+	/* TODO function for b64 sizes? */
+	key_bytes = XMALLOC(unsigned char, strlen(key_data)*2);
+	key_size = b64_pton(key_data, key_bytes, strlen(key_data)*2);
+	
+	if (key_size < 0) {
+		return LDNS_STATUS_INVALID_B64;
+	}
+	
+	other_data = XMALLOC(uint8_t, 2);
+	write_uint16(other_data, 0);
+	other_data_rdf = ldns_rdf_new(2, LDNS_RDF_TYPE_INT16_DATA, other_data);
+
+	mac_rdf = ldns_create_tsig_mac(pkt, 
+				       key_data,
+	                               key_name_rdf, 
+	                               fudge_rdf, 
+	                               algorithm_rdf,
+	                               time_signed_rdf,
+	                               error_rdf,
+	                               other_data_rdf);
+	
+	if (!mac_rdf) {
+		return LDNS_STATUS_ERR;
+	}
+	
+	/* Create the TSIG RR */
+	tsig_rr = ldns_rr_new();
+	ldns_rr_set_owner(tsig_rr, key_name_rdf);
+	ldns_rr_set_class(tsig_rr, LDNS_RR_CLASS_ANY);
+	ldns_rr_set_type(tsig_rr, LDNS_RR_TYPE_TSIG);
+	ldns_rr_set_ttl(tsig_rr, 0);
+	
+	ldns_rr_push_rdf(tsig_rr, algorithm_rdf);
+	ldns_rr_push_rdf(tsig_rr, time_signed_rdf);
+	ldns_rr_push_rdf(tsig_rr, fudge_rdf);
+	ldns_rr_push_rdf(tsig_rr, mac_rdf);
+	ldns_rr_push_rdf(tsig_rr, orig_id_rdf);
+	ldns_rr_push_rdf(tsig_rr, error_rdf);
+	ldns_rr_push_rdf(tsig_rr, other_data_rdf);
+	
+	ldns_pkt_set_tsig(pkt, tsig_rr);
+
+	return LDNS_STATUS_OK;
+}
+

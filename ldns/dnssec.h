@@ -12,6 +12,7 @@
 #define _DNSSEC_H_
 
 #include <openssl/ssl.h>
+#include <ldns/ldns.h>
 
 /**
  * algorigthms used in dns
@@ -40,5 +41,8 @@ uint16_t ldns_keytag(ldns_rr *);
 ldns_rr_list *ldns_sign(ldns_rr_list*, ldns_rr_list*);
 DSA *ldns_key_buf2dsa(ldns_buffer *);
 RSA *ldns_key_buf2rsa(ldns_buffer *);
+bool ldns_pkt_tsig_verify(ldns_pkt *pkt, const char *key_name, const char *key_data);
+ldns_status ldns_pkt_tsig_sign_query(ldns_pkt *pkt, const char *key_name, const char *key_data, uint16_t fudge, const char *algorithm_name);
+
 
 #endif /* _DNSSEC_H_ */
