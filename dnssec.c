@@ -252,12 +252,8 @@ verify_rrsig_rsamd5(uint8_t *verifybuf, unsigned long length, unsigned char *sig
 	return result;
 }
 
-/**
- * Verifies the rrsig of the rrset with the dnskey
- * What does result?
- */
-int
-verify_rrsig(struct t_rr *rrset, struct t_rr *rrsig, struct t_rr *dnskey)
+bool
+verify_rrsig(ldns_rr_list rrset, ldns_rr_list *rrsig, ldns_rr_list *dnskey)
 {
 	/* translate rrsig+rrset to binary data */
 	uint8_t *verifybuf;

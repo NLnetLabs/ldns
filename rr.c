@@ -281,6 +281,67 @@ ldns_rr_list_push_rr(ldns_rr_list *rr_list, ldns_rr *rr)
 
 }
 
+/* rrset stuff 
+ * rrset is a rr_list with the following properties
+ * 1. owner is equal
+ * 2. class is equal
+ * 3. type is equal
+ * 4. ttl is equal - although not for RRSIG
+ */
+
+/**
+ * check if an rr_list is a rrset
+ * \param[in] rr_list the rr_list to check
+ */
+bool
+ldns_is_rrset(ldns_rr_list *rr_list)
+{
+	ldns_rr_list_print(stdout, rr_list);
+	return false;
+}
+
+/**
+ * add an rr to an rrset 
+ */
+bool
+ldns_rr_set_push_rr(ldns_rr_list *rr_list, ldns_rr *rr)
+{
+	uint16_t rr_count;
+	ldns_rr *last;
+
+	rr_count = ldns_rr_list_rr_count(rr_list);
+
+	if (rr_count == 0) {
+		/* nothing there, so checking it is 
+		 * not needed */
+		return ldns_rr_list_push_rr(rr_list, rr);
+	} else {
+		/* check with the final rr in the rr_list */
+		last = ldns_rr_list_rr(rr_list, rr_count);
+
+		if (ldns_rr_get_class(last) != ldns_rr_get_class(rr)) {
+			return false;
+		}
+		if (ldns_rr_get_type(last) != ldns_rr_get_type(rr)) {
+			return false;
+		}
+		/* only check if not equal to RRSIG */
+		if (ldns_rr_get_type(rr) != LDNS_RR_TYPE_RRSIG) {
+			if (ldns_rr_ttl(last) != ldns_rr_ttl(rr)) {
+				return false;
+			}
+		}
+		/* TODO TODO 
+		if (ldns_rdata_compare(ldns_rr_owner(last),
+					ldns_rr_owner(rr)) != 0) {
+			return false;
+		}
+		*/
+		/* ok, still alive */
+		return ldns_rr_list_push_rr(rr_list, rr);
+	}
+}
+
 /** \cond */
 static const ldns_rdf_type type_0_wireformat[] = { LDNS_RDF_TYPE_UNKNOWN };
 static const ldns_rdf_type type_a_wireformat[] = { LDNS_RDF_TYPE_A };
