@@ -199,17 +199,17 @@ ldns_rdf2buffer(ldns_buffer *buffer, ldns_rdf *rdf)
 ldns_status
 ldns_rr2buffer(ldns_buffer *output, ldns_rr *rr)
 {
-	ldns_status result = LDNS_STATUS_OK;
+	ldns_status status = LDNS_STATUS_OK;
 	
 	if (ldns_rr_owner(rr)) {
-		ldns_rdf2buffer_dname(output, ldns_rr_owner(rr));
+		status = ldns_rdf2buffer_dname(output, ldns_rr_owner(rr));
 	}
 	
-	if (result != LDNS_STATUS_OK) {
-		printf("error in rr2buf %d\n", result);
+	if (status != LDNS_STATUS_OK) {
+		printf("error in rr2buf %d\n", status);
 	}
 	
-	return result;
+	return status;
 }
 
 /**
@@ -278,7 +278,7 @@ ldns_rdf2str(ldns_rdf *rdf)
 	if (ldns_rdf2buffer(tmp_buffer, rdf) == LDNS_STATUS_OK) {
 		/* export and return string, destroy rest */
 		if (ldns_buffer_reserve(tmp_buffer, 1)) {
-			ldns_buffer_write_u8(tmp_buffer, '\0');
+			ldns_buffer_write_u8(tmp_buffer, (uint8_t) '\0');
 			result = (char *) ldns_buffer_export(tmp_buffer);
 		}
 		ldns_buffer_free(tmp_buffer);
