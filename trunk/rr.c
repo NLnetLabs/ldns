@@ -93,6 +93,7 @@ ldns_rr_push_rd_field(t_rr *rr, t_rdata_field *f)
 	rr->_rdata_fields[rd_count] = f;
 
 	ldns_rr_set_rd_count(rr, rd_count + 1);
+	return true;
 }
 
 /**
