@@ -47,10 +47,30 @@ doit(void)
 int
 main(void)
 {
+	ldns_rr *ns;
+	ldns_rr_list *list;
+	ldns_resolver *res;
+
 	printf("Test some simple ipvX reverse functions\n");
 	doit();
 	doit();
 	doit();
 	doit();
+	
+	res = ldns_resolver_new();
+	list = ldns_rr_list_new();
+
+	ns = ldns_rr_new_frm_str("a.root-servers.net. 3600 IN A  198.41.0.4");
+	ldns_rr_list_push_rr(list, ns);
+	ldns_rr_list_push_rr(list, ns);
+	ldns_rr_list_push_rr(list, ns);
+	printf("\nrr:\n");
+	ldns_rr_print(stdout, ns);
+	printf("\nlist:\n");
+	ldns_rr_list_print(stdout, list);
+	ldns_resolver_push_nameserver_rr(res, ns);
+
+	ldns_resolver_push_nameserver_rr_list(res, list);
+
 	return 0;
 }
