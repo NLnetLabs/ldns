@@ -126,13 +126,24 @@ ldns_send_udp(ldns_buffer *qbin, const struct sockaddr_storage *to, socklen_t to
 
 	struct timeval tv_s;
         struct timeval tv_e;
-
+        struct timeval timeout;
+        
+        timeout.tv_sec = LDNS_DEFAULT_TIMEOUT_SEC;
+        timeout.tv_usec = LDNS_DEFAULT_TIMEOUT_USEC;
+        
 	gettimeofday(&tv_s, NULL);
 
 	if ((sockfd = socket((int)((struct sockaddr*)to)->sa_family, SOCK_DGRAM, IPPROTO_UDP)) == -1) {
 		printf("could not open socket\n");
 		return NULL;
 	}
+
+        if (setsockopt(sockfd, SOL_SOCKET, SO_RCVTIMEO, &timeout,
+                        (socklen_t) sizeof(timeout))) {
+                perror("setsockopt");
+                close(sockfd);
+                return NULL;
+        }
 
 	bytes = sendto(sockfd, ldns_buffer_begin(qbin),
 			ldns_buffer_position(qbin), 0, (struct sockaddr *)to, tolen);
@@ -163,6 +174,9 @@ ldns_send_udp(ldns_buffer *qbin, const struct sockaddr_storage *to, socklen_t to
 	close(sockfd);
 
 	if (bytes == -1) {
+		if (errno == EAGAIN) {
+			fprintf(stderr, "socket timeout\n");
+		}
 		printf("received too little\n");
 		FREE(answer);
 		return NULL;
@@ -209,12 +223,24 @@ ldns_send_tcp(ldns_buffer *qbin, const struct sockaddr_storage *to, socklen_t to
 	struct timeval tv_s;
 	struct timeval tv_e;
 
+        struct timeval timeout;
+        
+        timeout.tv_sec = LDNS_DEFAULT_TIMEOUT_SEC;
+        timeout.tv_usec = LDNS_DEFAULT_TIMEOUT_USEC;
+        
 	gettimeofday(&tv_s, NULL);
 
 	if ((sockfd = socket((int)((struct sockaddr*)to)->sa_family, SOCK_STREAM, IPPROTO_TCP)) == -1) {
 		perror("could not open socket");
 		return NULL;
 	}
+
+        if (setsockopt(sockfd, SOL_SOCKET, SO_RCVTIMEO, &timeout,
+                        (socklen_t) sizeof(timeout))) {
+                perror("setsockopt");
+                close(sockfd);
+                return NULL;
+        }
 
 	if (connect(sockfd, (struct sockaddr*)to, tolen) == -1) {
  		close(sockfd);
@@ -259,6 +285,9 @@ ldns_send_tcp(ldns_buffer *qbin, const struct sockaddr_storage *to, socklen_t to
 	while (total_bytes < 2) {
 		bytes = recv(sockfd, answer, MAX_PACKET_SIZE, 0);
 		if (bytes == -1) {
+			if (errno == EAGAIN) {
+				fprintf(stderr, "socket timeout\n");
+			}
 			perror("error receiving tcp packet");
 			FREE(answer);
 			return NULL;
@@ -271,9 +300,12 @@ ldns_send_tcp(ldns_buffer *qbin, const struct sockaddr_storage *to, socklen_t to
 	
 	/* if we did not receive the whole packet in one tcp packet,
 	   we must recv() on */
-	while (total_bytes < answer_size + 2) {
-		bytes = recv(sockfd, answer+total_bytes, MAX_PACKET_SIZE-total_bytes, 0);
+	while (total_bytes < (ssize_t) (answer_size + 2)) {
+		bytes = recv(sockfd, answer+total_bytes, (size_t) (MAX_PACKET_SIZE-total_bytes), 0);
 		if (bytes == -1) {
+			if (errno == EAGAIN) {
+				fprintf(stderr, "socket timeout\n");
+			}
 			perror("error receiving tcp packet");
 			FREE(answer);
 			return NULL;
@@ -301,52 +333,3 @@ ldns_send_tcp(ldns_buffer *qbin, const struct sockaddr_storage *to, socklen_t to
 	}
 }
 
-/*
- * Read SIZE bytes from the socket into BUF.  Keep reading unless an
- * error occurs (except for EINTR) or EOF is reached.
- */
-static bool 
-read_socket(int s, void *buf, size_t size)
-{
-        char *data = buf;
-        size_t total_count = 0;
-
-        while (total_count < size) {
-                ssize_t count = read(s, data + total_count, size -
-                total_count);
-                if (count == -1) {
-                        if (errno != EINTR) {
-                                return false;
-                        } else {
-                                continue;
-                        }
-                }
-                total_count += count;
-        }
-        return true;
-}
-
-/*
- * Write the complete buffer to the socket, irrespective of short
- * writes or interrupts.
- */
-static bool
-write_socket(int s, const void *buf, size_t size)
-{
-        const char *data = buf;
-        size_t total_count = 0;
-
-        while (total_count < size) {
-                ssize_t count = write(s, data + total_count, size -
-                total_count);
-                if (count == -1) {
-                        if (errno != EINTR) {
-                                return false;
-                        } else {
-                                continue;
-                        }
-                }
-                total_count += count;
-        }
-        return true;
-}
