@@ -886,3 +886,37 @@ ldns_pkt2str(ldns_pkt *pkt)
 	ldns_buffer_free(tmp_buffer);
 	return result;
 }
+
+void
+ldns_rdf_print(FILE *output, ldns_rdf *rdf)
+{
+	char *str = ldns_rdf2str(rdf);
+	if (str) {
+		fprintf(output, str);
+	} else {
+		fprintf(output, "Unable to convert rdf to string\n");
+	}
+}
+
+void
+ldns_rr_print(FILE *output, ldns_rr *rr)
+{
+	char *str = ldns_rr2str(rr);
+	if (str) {
+		fprintf(output, str);
+	} else {
+		fprintf(output, "Unable to convert rr to string\n");
+	}
+}
+
+void
+ldns_pkt_print(FILE *output, ldns_pkt *pkt)
+{
+	char *str = ldns_pkt2str(pkt);
+	if (str) {
+		fprintf(output, str);
+	} else {
+		fprintf(output, "Unable to convert packet to string\n");
+	}
+}
+
