@@ -39,3 +39,15 @@ xprintf_rd_field(t_rdata_field *rd)
 	fprintf(stdout, "type\t:%u\n", (unsigned int)rd_field_type(rd));
 	fprintf(stdout, "data\t:[%.*s]\n", (int)rd_field_size(rd), (char*)rd_field_data(rd));
 }
+
+void
+xprintf_rr(t_rr *rr)
+{
+	/* assume printable string */
+	uint16_t count, i;
+
+	count = rr_rd_count(rr);
+
+	for(i = 0; i < count; i++)
+		xprintf_rd_field(rr->rdata_fields[i]);
+}

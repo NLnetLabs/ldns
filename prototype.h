@@ -17,5 +17,6 @@
 void 	*xmalloc(size_t);
 void 	*xrealloc(void *, size_t);
 void	xprintf_rd_field(t_rdata_field *);
+void	xprintf_rr(t_rr *);
 
 #endif /* _PROTOTYPE_H */

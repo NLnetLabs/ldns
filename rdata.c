@@ -13,6 +13,7 @@
 #include <config.h>
 
 #include "rdata.h"
+#include "rr.h"
 #include "prototype.h"
 
 /* Access functions 
@@ -64,17 +65,17 @@ rd_field_set_data(t_rdata_field *rd, uint8_t *d, uint16_t s)
 t_rdata_field *
 rd_field_new(uint16_t s, t_rd_type t, uint8_t *d)
 {
-	t_rdata_field *new;
-	new = xmalloc(sizeof(t_rdata_field));
+	t_rdata_field *rd;
+	rd = xmalloc(sizeof(t_rdata_field));
 
-	if (NULL == new)
+	if (!rd)
 		return NULL;
 
-	rd_field_set_size(new, s);
-	rd_field_set_type(new, t);
-	rd_field_set_data(new, d, s);
+	rd_field_set_size(rd, s);
+	rd_field_set_type(rd, t);
+	rd_field_set_data(rd, d, s);
 
-	return(new);
+	return(rd);
 }
 
 /* allocate a new t_rdata_field from

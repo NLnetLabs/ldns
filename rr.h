@@ -141,7 +141,7 @@ struct type_struct_rr
 	t_class		_klass;	
 	/* everything in the rdata is in network order */
 	/** \brief The list of rdata's */
-	t_rdata_field	*rdata_fields;
+	t_rdata_field	**rdata_fields;
 };
 typedef struct type_struct_rr t_rr;
 
@@ -164,9 +164,8 @@ void rr_set_owner(t_rr *, uint8_t *);
 void rr_set_ttl(t_rr *, uint16_t);
 void rr_set_rd_count(t_rr *, uint16_t);
 void rr_set_class(t_rr *, t_class);
-void rr_set_rd_field(t_rr *, t_rdata_field);;
+void rr_push_rd_field(t_rr *, t_rdata_field *);
 uint8_t * rr_owner(t_rr *);
 uint8_t rr_ttl(t_rr *);
 uint16_t rr_rd_count(t_rr *);
-
 #endif /* _RR_H */
