@@ -270,6 +270,6 @@ int ldns_rr_compare(const ldns_rr *rr1, const ldns_rr *rr2);
 void ldns_rr_list_sort(ldns_rr_list *);
 
 ldns_rr *ldns_rr_clone(ldns_rr *rr);
-
+ldns_rr *ldns_rr_new_frm_str(const char *);
 
 #endif /* _LDNS_RR_H */

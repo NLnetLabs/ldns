@@ -59,6 +59,86 @@ ldns_rr_free(ldns_rr *rr)
 }
 
 /**
+ * \brief create a rr from a string
+ * string should be a fully filled in rr, like
+ * ownername <space> TTL <space> CLASS <space> TYPE <space> RDATA
+ * \param[in] str the string to convert
+ * \return the new rr
+ */
+/* we expect 3 spaces, everything there after is rdata
+ * So the RR should look like. e.g.
+ * miek.nl. 3600 IN MX 10 elektron.atoom.net
+ * Everything should be on 1 line, parentheses are not
+ * handled. We may need a normalize function.
+ */
+ldns_rr *
+ldns_rr_new_frm_str(const char *str)
+{
+	ldns_rr *new;
+	const ldns_rr_descriptor *desc;
+	ldns_rr_type rr_type;
+	char  *owner; 
+	char  *ttl; 
+	char  *clas;
+	char  *type;
+	char  *rdata;
+	char  *rd;
+	
+	ldns_rdf *r;
+	uint16_t r_cnt;
+	uint16_t r_min;
+	uint16_t r_max;
+
+	new = ldns_rr_new();
+
+	owner = XMALLOC(char, 256);
+	ttl = XMALLOC(char, 20);
+	clas = XMALLOC(char, 8);
+	type = XMALLOC(char, 10);
+	rdata = XMALLOC(char, MAX_PACKETLEN);
+
+	  /* numbers are bogus */
+	sscanf(str, "%256s%20s%8s%10s%65535c", owner, ttl, clas, type, rdata);
+
+#if 0
+	printf("owner [%s]\n", owner);
+	printf("ttl [%s]\n", ttl);
+	printf("clas [%s]\n", clas);
+	printf("type [%s]\n", type);
+	printf("rdata [%s]\n", rdata);
+#endif 
+
+	ldns_rr_set_owner(new, ldns_dname_new_frm_str(owner));
+	ldns_rr_set_ttl(new, (uint32_t) atoi(ttl));
+	ldns_rr_set_class(new, ldns_get_class_by_name(clas));
+
+	rr_type = ldns_rr_get_type_by_name(type);
+	desc = ldns_rr_descript((uint16_t)rr_type);
+	ldns_rr_set_type(new, rr_type);
+
+	/* only the rdata remains */
+	r_max = ldns_rr_descriptor_maximum(desc);
+	r_min = ldns_rr_descriptor_minimum(desc);
+
+	/* rdata (rdf's) */
+	for(rd = strtok(rdata, "\t "), r_cnt =0; rd; rd = strtok(NULL, "\t "), r_cnt++) {
+		r = ldns_rdf_new_frm_str(rd,
+				ldns_rr_descriptor_field_type(desc, r_cnt));
+		if (!r) {
+			printf("rdf conversion mismatch\n");
+			return NULL;
+		}
+		ldns_rr_push_rdf(new, r);
+		if (r_cnt > r_max) {
+			printf("rdf data overflow");
+			return NULL;
+		}
+	}
+	return new;
+}
+
+
+/**
  * \brief set the owner in the rr structure
  * \param[in] *rr rr to operate on
  * \param[in] *owner set to this owner
