@@ -937,6 +937,10 @@ ldns_pkt2buffer_str(ldns_buffer *output, ldns_pkt *pkt)
 		if (ldns_pkt_answerfrom(pkt)) {
 			ldns_buffer_printf(output, ";; SERVER: %s\n", ldns_pkt_answerfrom(pkt));
 		}
+		if (ldns_pkt_when(pkt)) {
+			/* \n included in when buffer, see ctime(3) */
+			ldns_buffer_printf(output, ";; WHEN: %s", ldns_pkt_when(pkt));
+		}
 		ldns_buffer_printf(output, ";; MSG SIZE  rcvd: %d\n", (int)ldns_pkt_size(pkt));
 	} else {
 		return ldns_buffer_status(output);

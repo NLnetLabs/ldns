@@ -150,6 +150,12 @@ ldns_pkt_answerfrom(ldns_pkt *packet)
 	return packet->_answerfrom;
 }
 
+char *
+ldns_pkt_when(ldns_pkt *packet)
+{
+	return packet->_when;
+}
+
 uint16_t
 ldns_pkt_xxcount(ldns_pkt *packet, ldns_pkt_section s)
 {
@@ -281,6 +287,13 @@ ldns_pkt_set_answerfrom(ldns_pkt *packet, char *answerfrom)
 }
 
 void
+ldns_pkt_set_when(ldns_pkt *packet, char *when)
+{
+	/* TODO if exists free? */
+	packet->_when = when;
+}
+
+void
 ldns_pkt_set_size(ldns_pkt *packet, size_t s)
 {
 	packet->_size = s;
@@ -350,6 +363,7 @@ ldns_pkt_new()
 	ldns_pkt_set_size(packet, 0);
 	ldns_pkt_set_querytime(packet, 0);
 	ldns_pkt_set_answerfrom(packet, NULL);
+	ldns_pkt_set_when(packet, NULL);
 	
 	return packet;
 }
