@@ -19,6 +19,7 @@ main(int argc, char **argv)
 	ldns_rr_list *rrset;
 	ldns_rr_list *rrset2;
 
+	printf("General test and DNSSEC tests\n");
 
 	keys_rrset = ldns_rr_list_new();
 	rrset = ldns_rr_list_new();

@@ -158,6 +158,11 @@ long power(long a, long b);
 int hexdigit_to_int(char ch);
 
 /**
+ * Returns the char (hex) representation of the given int
+ */
+char int_to_hexdigit(int ch);
+
+/**
  * return a word from a stream
  */
 int readword(char *, FILE *, size_t);
