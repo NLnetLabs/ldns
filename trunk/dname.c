@@ -63,13 +63,41 @@ ldns_dname_cat(ldns_rdf *rd1, ldns_rdf *rd2)
 }
 
 /**
+ * chop one label off a dname. so 
+ * wwww.nlnetlabs.nl, becomes nlnetlabs.nl
+ * \param[in] d the dname to chop
+ * \return the remaining dname
+ */
+ldns_rdf *
+ldns_dname_left_chop(ldns_rdf *d)
+{
+	uint8_t label_pos;
+	ldns_rdf *chop;
+
+	if (ldns_rdf_get_type(d) != LDNS_RDF_TYPE_DNAME) {
+		return NULL;
+	}
+	if (ldns_dname_label_count(d) == 0) {
+		/* root label */
+		return NULL;
+	}
+	/* 05blaat02nl00 */
+	label_pos = ldns_rdf_data(d)[0];
+
+	chop = ldns_dname_new_frm_data(
+			ldns_rdf_size(d) - label_pos,
+			ldns_rdf_data(d) + label_pos + 1);
+	return chop;
+}
+
+/**
  * count the number of labels inside a LDNS_RDF_DNAME type
  * rdf
  * \param[in] *r the rdf
  * \return the number of labels
  */     
 uint8_t         
-ldns_rdf_dname_label_count(ldns_rdf *r)
+ldns_dname_label_count(ldns_rdf *r)
 {       
         uint8_t src_pos;
         uint8_t len;
@@ -109,6 +137,12 @@ ldns_rdf *
 ldns_dname_new_frm_str(const char *str)
 {
 	return ldns_rdf_new_frm_str(LDNS_RDF_TYPE_DNAME, str);
+}
+
+ldns_rdf *
+ldns_dname_new_frm_data(uint16_t size, const void *data)
+{
+	return ldns_rdf_new_frm_data(LDNS_RDF_TYPE_DNAME, size, data);
 }
 
 /**

@@ -19,9 +19,12 @@
 #define DNAME_NORMALIZE        tolower
 
 /* prototypes */
-uint8_t         ldns_rdf_dname_label_count(ldns_rdf *);
+uint8_t         ldns_dname_label_count(ldns_rdf *);
 ldns_rdf	*ldns_dname_new_frm_str(const char *);
+ldns_rdf	*ldns_dname_new_frm_data(uint16_t size, const void *data);
 ldns_rdf 	*ldns_dname_cat(ldns_rdf *, ldns_rdf *);
+ldns_rdf	*ldns_dname_left_chop(ldns_rdf *);
 void		ldns_dname2canonical(const ldns_rdf *);
+
 
 #endif	/* !_LDNS_DNAME_H */
