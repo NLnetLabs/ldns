@@ -110,6 +110,7 @@ uint16_t ldns_pkt_qdcount(ldns_pkt *);
 uint16_t ldns_pkt_ancount(ldns_pkt *);
 uint16_t ldns_pkt_nscount(ldns_pkt *);
 uint16_t ldns_pkt_arcount(ldns_pkt *);
+ldns_rdf *ldns_pkt_answerfrom(ldns_pkt *packet);
 uint32_t ldns_pkt_querytime(ldns_pkt *);
 
 ldns_rr_list *ldns_pkt_question(ldns_pkt *packet);

@@ -42,6 +42,26 @@ if test $ac_cv_c_format_attribute = yes; then
 fi
 ])dnl
 
+AC_DEFUN([AC_CHECK_UNUSED_ATTRIBUTE],
+[AC_REQUIRE([AC_PROG_CC])
+AC_MSG_CHECKING(whether the C compiler (${CC-cc}) accepts the "unused" attribute)
+AC_CACHE_VAL(ac_cv_c_unused_attribute,
+[ac_cv_c_unused_attribute=no
+AC_TRY_COMPILE(
+[#include <stdio.h>
+void f (char *u __attribute__((unused)));
+], [
+   f ("x");
+],
+[ac_cv_c_unused_attribute="yes"],
+[ac_cv_c_unused_attribute="no"])
+])
+
+AC_MSG_RESULT($ac_cv_c_unused_attribute)
+if test $ac_cv_c_unused_attribute = yes; then
+  AC_DEFINE(HAVE_ATTR_UNUSED, 1, [Whether the C compiler accepts the "unused" attribute])
+fi
+])dnl
 
 # my own checks
 AC_PATH_PROG(doxygen, doxygen, "/usr/bin/doxygen")
@@ -85,6 +105,9 @@ AC_REPLACE_FUNCS(timegm)
 
 #AC_SEARCH_LIBS(RSA_new, [crypto])
 
+AC_CHECK_FORMAT_ATTRIBUTE
+AC_CHECK_UNUSED_ATTRIBUTE
+
 AC_DEFINE([SYSCONFDIR], [$sysconfdir], [System configuration dir])
 
 AH_BOTTOM([
@@ -114,14 +137,6 @@ AH_BOTTOM([
 #ifdef HAVE_ARPA_INET_H
 #include <arpa/inet.h>
 #endif
-
-#ifdef HAVE_ATTR_FORMAT
-#define ATTR_FORMAT(archetype, string_index, first_to_check) \
-    __attribute__ ((format (archetype, string_index, first_to_check)))
-#else /* !HAVE_ATTR_FORMAT */
-#define ATTR_FORMAT(archetype, string_index, first_to_check) /* empty */
-#endif /* !HAVE_ATTR_FORMAT */
-
 ])
 
 AH_BOTTOM([

@@ -27,4 +27,19 @@ typedef unsigned char bool;
 
 #endif /* !HAVE_STDBOOL_H */
 
+#ifdef HAVE_ATTR_FORMAT
+#define ATTR_FORMAT(archetype, string_index, first_to_check) \
+    __attribute__ ((format (archetype, string_index, first_to_check)))
+#else /* !HAVE_ATTR_FORMAT */
+#define ATTR_FORMAT(archetype, string_index, first_to_check) /* empty */
+#endif /* !HAVE_ATTR_FORMAT */
+
+#if defined(__cplusplus)
+#define ATTR_UNUSED(x)
+#elif defined(HAVE_ATTR_UNUSED)
+#define ATTR_UNUSED(x)  x __attribute__((unused))
+#else /* !HAVE_ATTR_UNUSED */
+#define ATTR_UNUSED(x)  x
+#endif /* !HAVE_ATTR_UNUSED */
+
 #endif /* !_LDNS_COMMON_H */

@@ -247,6 +247,7 @@ uint32_t ldns_rr_ttl(ldns_rr *);
 uint16_t ldns_rr_rd_count(ldns_rr *);
 ldns_rr_type ldns_rr_get_type(ldns_rr *);
 ldns_rr_class ldns_rr_get_class(ldns_rr *);
+void ldns_rr_free(ldns_rr *rr);
 
 uint16_t ldns_rr_list_rr_count(ldns_rr_list *rr_list);
 void ldns_rr_list_set_rr_count(ldns_rr_list *rr_list, uint16_t count);

@@ -13,6 +13,8 @@
 #include <config.h>
 
 #include <ldns/packet.h>
+#include <ldns/str2host.h>
+
 #include "util.h"
 
 /* Access functions 
@@ -424,7 +426,7 @@ ldns_pkt_query_new_frm_str(const char *name, ldns_rr_type rr_type, ldns_rr_class
 		rr_class = LDNS_RR_CLASS_IN;
 	}
 
-	if (ldns_str2rdf_dname(&name_rdf, name) == LDNS_STATUS_OK) {
+	if (ldns_str2rdf_dname(&name_rdf, (const uint8_t *) name) == LDNS_STATUS_OK) {
 		ldns_rr_set_owner(question_rr, name_rdf);
 		ldns_rr_set_type(question_rr, rr_type);
 		ldns_rr_set_class(question_rr, rr_class);
