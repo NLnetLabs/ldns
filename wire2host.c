@@ -216,7 +216,7 @@ ldns_dname2str(char *dest, ldns_rdf *dname)
 	dest[dest_pos] = '\0';
 }
 
-/* TODO: is there a better place for this function?
+/* TODO:
          status_type return and remove printfs
          #defines */
 /* allocates memory to *dname! */
@@ -231,6 +231,7 @@ ldns_wire2dname(ldns_rdf **dname, const uint8_t *wire, size_t max, size_t *pos)
 	size_t compression_pos = 0;
 	uint8_t tmp_dname[MAXDOMAINLEN];
 	uint8_t *dname_ar;
+	unsigned int pointer_count = 0;
 	
 	if (*pos > max) {
 		/* TODO set error */
@@ -244,34 +245,29 @@ ldns_wire2dname(ldns_rdf **dname, const uint8_t *wire, size_t max, size_t *pos)
 			if (compression_pos == 0) {
 				compression_pos = *pos + 2;
 			}
-
+			
+			pointer_count++;
+			
 			/* remove first two bits */
-			/* TODO: can this be done in a better way? */
 			pointer_target_buf[0] = wire[*pos] & 63;
 			pointer_target_buf[1] = wire[*pos + 1];
 			pointer_target = read_uint16(pointer_target_buf);
 
 			if (pointer_target == 0) {
-				fprintf(stderr, "POINTER TO 0\n");
 				return LDNS_STATUS_INVALID_POINTER;
 			} else if (pointer_target > max) {
-				fprintf(stderr, "POINTER TO OUTSIDE PACKET\n");
 				return LDNS_STATUS_INVALID_POINTER;
-			}
+			} else if (pointer_count > MAXPOINTERS) {
+			        return LDNS_STATUS_INVALID_POINTER;
+                        }
 			*pos = pointer_target;
 			label_size = wire[*pos];
 		}
 		
 		if (label_size > MAXLABELLEN) {
-			/* TODO error: label size too large */
-			fprintf(stderr, "LABEL SIZE ERROR: %d\n",
-			        (int) label_size);
 			return LDNS_STATUS_LABEL_OVERFLOW;
 		}
 		if (*pos + label_size > max) {
-			/* TODO error: out of packet data */
-			fprintf(stderr, "MAX PACKET ERROR: %d\n",
-			        (int) (*pos + label_size));
 			return LDNS_STATUS_LABEL_OVERFLOW;
 		}
 		
@@ -335,18 +331,12 @@ ldns_wire2rr(ldns_rr *rr, const uint8_t *wire, size_t max,
 		return LDNS_STATUS_MEM_ERR;
 	}
 	        
-/*	
 	ldns_rr_set_owner(rr, owner);
-*/
-	ldns_dname2str(owner_str, owner);
-	printf("owner: %s\n", owner_str);
-	FREE(owner_str);	
 	
 	ldns_rr_set_class(rr, read_uint16(&wire[*pos]));
 	*pos = *pos + 2;
-	/*
+
 	ldns_rr_set_type(rr, read_uint16(&wire[*pos]));
-	*/
 	*pos = *pos + 2;
 
 	if (section > 0) {
@@ -368,7 +358,6 @@ ldns_wire2pkt_hdr(ldns_pkt *packet,
 			size_t *pos)
 {
 	if (*pos + QHEADERSZ >= max) {
-		/* TODO: set t_status error.  */
 		return LDNS_STATUS_PACKET_OVERFLOW;
 	} else {
 
@@ -389,7 +378,7 @@ ldns_wire2pkt_hdr(ldns_pkt *packet,
 		pkt_set_arcount(packet, ARCOUNT(wire));
 
 		*pos += QHEADERSZ;
-		/* TODO t_status succ.  */
+
 		return LDNS_STATUS_OK;
 	}
 }
@@ -415,7 +404,6 @@ ldns_wire2pkt(ldns_pkt *packet, const uint8_t *wire, size_t max)
 	for (i = 0; i < pkt_ancount(packet); i++) {
 		rr = ldns_rr_new();
 		status = ldns_wire2rr(rr, wire, max, &pos, 1);
-
 		STATUS_CHECK_RETURN(status);
 	}
 	for (i = 0; i < pkt_nscount(packet); i++) {
