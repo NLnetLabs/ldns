@@ -17,6 +17,8 @@
 #include <ldns/buffer.h>
 #include <ldns/resolver.h>
 
+#include <sys/socket.h>
+
 /* prototypes */
 ldns_pkt * ldns_send_udp(ldns_buffer *, const struct sockaddr_storage *, socklen_t);
 ldns_pkt * ldns_send_tcp(ldns_buffer *, const struct sockaddr_storage *, socklen_t);
