@@ -36,7 +36,8 @@ LIBDNS_HEADERS	=	ldns/error.h		\
 			util.h
 LIBDNS_OBJECTS	=	$(LIBDNS_SOURCES:.c=.o)
 
-ALL_SOURCES	=	run-test0.c run-test1.c run-test2.c $(LIBDNS_SOURCES)
+ALL_SOURCES	=	run-test0.c run-test1.c run-test2.c run-test3.c \
+			$(LIBDNS_SOURCES)
 
 COMPILE		= $(CC) $(CPPFLAGS) $(CFLAGS)
 LINK		= $(CC) $(CFLAGS) $(LDFLAGS)
@@ -46,7 +47,7 @@ LINK		= $(CC) $(CFLAGS) $(LDFLAGS)
 
 .PHONY:	clean realclean docclean doc lint
 
-all:	run-test0 run-test1 run-test2
+all:	run-test0 run-test1 run-test2 run-test3
 
 run-test0:	run-test0.o $(LIBDNS_OBJECTS) $(LIBOBJS)
 		$(LINK) ${LIBS} -o $@ $+
@@ -55,6 +56,9 @@ run-test1:	run-test1.o $(LIBDNS_OBJECTS) $(LIBOBJS)
 		$(LINK) ${LIBS} -o $@ $+
 
 run-test2:	run-test2.o $(LIBDNS_OBJECTS) $(LIBOBJS)
+		$(LINK) ${LIBS} -o $@ $+
+
+run-test3:	run-test3.o $(LIBDNS_OBJECTS) $(LIBOBJS)
 		$(LINK) ${LIBS} -o $@ $+
 
 doc:	

@@ -46,7 +46,7 @@ ldns_str2rdf_int16(ldns_rdf **rd, const uint8_t *shortstr)
 		FREE(r);
 		return LDNS_STATUS_INT_EXP;
 	} else {
-		*rd = ldns_rdf_new(sizeof(uint16_t), LDNS_RDF_TYPE_INT16, (uint8_t*)r);
+		*rd = ldns_rdf_new_frm_data(sizeof(uint16_t), LDNS_RDF_TYPE_INT16, (uint8_t*)r);
 		return LDNS_STATUS_OK;
 	}
 }
@@ -74,7 +74,7 @@ ldns_str2rdf_time(ldns_rdf **rd, const uint8_t *time)
 	} else {
 		l = htonl(timegm(&tm));
 		memcpy(r, &l, sizeof(uint32_t));
-		*rd = ldns_rdf_new(sizeof(uint32_t), LDNS_RDF_TYPE_TIME, (uint8_t*)r);
+		*rd = ldns_rdf_new_frm_data(sizeof(uint32_t), LDNS_RDF_TYPE_TIME, (uint8_t*)r);
 		return LDNS_STATUS_OK;
 	}
 }
@@ -100,7 +100,7 @@ ldns_str2rdf_int32(ldns_rdf **rd, const uint8_t *longstr)
 		return LDNS_STATUS_ERR;
         } else {
 		memcpy(r, &l, sizeof(uint32_t));
-		*rd = ldns_rdf_new(sizeof(uint32_t), LDNS_RDF_TYPE_INT32, (uint8_t*)r);
+		*rd = ldns_rdf_new_frm_data(sizeof(uint32_t), LDNS_RDF_TYPE_INT32, (uint8_t*)r);
 		return LDNS_STATUS_OK;
 	}
 }
@@ -125,7 +125,7 @@ ldns_str2rdf_int8(ldns_rdf **rd, const uint8_t *bytestr)
 		FREE(r);
 		return LDNS_STATUS_ERR;
         } else {
-		*rd = ldns_rdf_new(sizeof(uint8_t), LDNS_RDF_TYPE_INT8, r);
+		*rd = ldns_rdf_new_frm_data(sizeof(uint8_t), LDNS_RDF_TYPE_INT8, r);
 		return LDNS_STATUS_OK;
         }
 }
@@ -142,6 +142,41 @@ ldns_str2rdf_int8(ldns_rdf **rd, const uint8_t *bytestr)
 ldns_status
 ldns_str2rdf_dname(ldns_rdf **rd, const uint8_t* str)
 {
+	unsigned int label_chars;
+	unsigned int label_chars2;
+
+	uint8_t *s,*p,*q;
+	uint8_t buf[MAXDOMAINLEN];
+	
+	q = buf;
+	for (s = p = str; *s; s++) {
+
+		if (*s == '.') {
+			fprintf(stdout, "[%c]\n", *s);
+			
+			label_chars = s - p;
+			label_chars2 = label_chars + 39; /* somehting printable */
+			
+			fprintf(stdout, "labelsize %u\n", s - p);
+			/* put this number in the right spot in buf and
+			 * copy those chars over*/
+			memcpy(q, &label_chars2, 1); 
+			memcpy(q + 1, p, label_chars); 
+			q += (label_chars + 1);
+
+			p = s + 1;
+		}
+	}
+	label_chars = s - p; 
+	label_chars2 = label_chars + 39; /* somehting printable */
+	
+	fprintf(stdout, "labelsize %u\n", s - p);
+	memcpy(q, &label_chars2, 1); 
+	memcpy(q + 1, p, label_chars); 
+	q += (label_chars + 1);
+
+	*q = '\00';
+	fprintf(stdout, "newly [%s]\n", buf);
 	return LDNS_STATUS_OK;
 }
 
@@ -160,7 +195,7 @@ ldns_str2rdf_a(ldns_rdf **rd, const uint8_t* str)
         if (inet_pton(AF_INET, (char*)str, &address) != 1) {
                 return LDNS_STATUS_INVALID_IP4;
         } else {
-		*rd = ldns_rdf_new(sizeof(address), LDNS_RDF_TYPE_A, &address);
+		*rd = ldns_rdf_new_frm_data(sizeof(address), LDNS_RDF_TYPE_A, &address);
         }
 	return LDNS_STATUS_OK;
 }
@@ -179,7 +214,7 @@ ldns_str2rdf_aaaa(ldns_rdf **rd, const uint8_t* str)
 	if (inet_pton(AF_INET6, (char*)str, address) != 1) {
 		return LDNS_STATUS_INVALID_IP6;
 	} else {
-		*rd = ldns_rdf_new(sizeof(address), LDNS_RDF_TYPE_AAAA, &address);
+		*rd = ldns_rdf_new_frm_data(sizeof(address), LDNS_RDF_TYPE_AAAA, &address);
 	}
 	return LDNS_STATUS_OK;
 }
@@ -196,7 +231,7 @@ ldns_str2rdf_str(ldns_rdf **rd, const uint8_t* str)
 	if (strlen(str) > 255) {
 		return LDNS_STATUS_INVALID_STR;
 	}
-	ldns_rdf_new(strlen(str), LDNS_RDF_TYPE_STR, str);
+	ldns_rdf_new_frm_data(strlen(str), LDNS_RDF_TYPE_STR, (void*)str);
 	return LDNS_STATUS_OK;
 }
 
@@ -224,7 +259,7 @@ ldns_str2rdf_b64(ldns_rdf **rd, const uint8_t* str)
 	uint8_t buffer[B64BUFSIZE];
 	int i;
 	
-	i = b64_pton(str, buffer, B64BUFSIZE);
+	i = b64_pton((const char*)str, buffer, B64BUFSIZE);
 	if (-1 == i) {
 		return LDNS_STATUS_INVALID_B64;
 	} else {
@@ -258,7 +293,7 @@ ldns_str2rdf_nsec(ldns_rdf **rd, const uint8_t* str)
 }
 
 /**
- * convert .... into wireformat
+ * convert a rrtype into wireformat
  * \param[in] rd the rdf where to put the data
  * \param[in] str the string to be converted
  * \return ldns_status
@@ -266,6 +301,7 @@ ldns_str2rdf_nsec(ldns_rdf **rd, const uint8_t* str)
 ldns_status
 ldns_str2rdf_type(ldns_rdf **rd, const uint8_t* str)
 {
+	
 	return LDNS_STATUS_OK;
 }
 
