@@ -72,6 +72,14 @@ realclean: clean docclean
 docclean:
 	rm -rf doc
 
+test0: run-test0
+	./run-test0
+
+test1: run-test1
+	./run-test1
+
+test: test0 test1
+
 lint:
 	for i in $(ALL_SOURCES); do \
 		$(LINT) $(LINTFLAGS) -I. -I$(srcdir) $(srcdir)/$$i ; \
