@@ -80,11 +80,10 @@ ldns_rdf2native_int8(ldns_rdf *rd)
 		case LDNS_RDF_TYPE_ALG:
 		case LDNS_RDF_TYPE_INT8:
 			memcpy(&data, ldns_rdf_data(rd), sizeof(data));
-			break;
+			return data;
 		default:
-			data = 0;
+			return 0;
 	}
-	return data;
 }
 
 /** return the native uint16_t repr. from the rdf
@@ -99,11 +98,10 @@ ldns_rdf2native_int16(ldns_rdf *rd)
 	switch(ldns_rdf_get_type(rd)) {
 		case LDNS_RDF_TYPE_INT16:
 			memcpy(&data, ldns_rdf_data(rd), sizeof(data));
-			break;
+			return data;
 		default:
-			data = 0;
+			return 0;
 	}
-	return data;
 }
 
 /** return the native uint32_t repr. from the rdf
@@ -118,11 +116,37 @@ ldns_rdf2native_int32(ldns_rdf *rd)
 	switch(ldns_rdf_get_type(rd)) {
 		case LDNS_RDF_TYPE_INT32:
 			memcpy(&data, ldns_rdf_data(rd), sizeof(data));
-			break;
+			return data;
 		default:
-			data = 0;
+			return 0;
 	}
 	return data;
+}
+
+/** return the native sockaddr repr. from the rdf
+ * \param[in] rd the ldns_rdf to operate on
+ * \return struct sockaddr* the address in the format so other
+ * functions can use it (sendto)
+ */
+struct sockaddr *
+ldns_rdf2native_aaaaa(ldns_rdf *rd)
+{
+	struct sockaddr *data;
+
+	switch(ldns_rdf_get_type(rd)) {
+		case LDNS_RDF_TYPE_A:
+			data = MALLOC(struct sockaddr);
+			data->sa_family = AF_INET;
+			memcpy(data->sa_data, ldns_rdf_data(rd), ldns_rdf_size(rd));
+			return data;
+		case LDNS_RDF_TYPE_AAAA:
+			data = MALLOC(struct sockaddr);
+			data->sa_family = AF_INET6;
+			memcpy(data->sa_data, ldns_rdf_data(rd), ldns_rdf_size(rd));
+			return data;
+		default:
+			return NULL;
+	}
 }
 
 /**
@@ -212,7 +236,7 @@ ldns_rdf_new_frm_str(const char *str, ldns_rdf_type t)
         	case LDNS_RDF_TYPE_NONE:
 			break;
 	        case LDNS_RDF_TYPE_DNAME:
-			printf("use the ldns_dname type!!\n\n");
+			stat = ldns_str2rdf_dname(&rd, (const uint8_t*) str);
 			break;
         	case LDNS_RDF_TYPE_INT8:
 			stat = ldns_str2rdf_int8(&rd, (const uint8_t*) str);
