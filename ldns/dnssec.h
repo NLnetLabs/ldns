@@ -41,8 +41,8 @@ uint16_t ldns_keytag(ldns_rr *);
 ldns_rr_list *ldns_sign(ldns_rr_list*, ldns_rr_list*);
 DSA *ldns_key_buf2dsa(ldns_buffer *);
 RSA *ldns_key_buf2rsa(ldns_buffer *);
-bool ldns_pkt_tsig_verify(ldns_pkt *pkt, const char *key_name, const char *key_data);
-ldns_status ldns_pkt_tsig_sign_query(ldns_pkt *pkt, const char *key_name, const char *key_data, uint16_t fudge, const char *algorithm_name);
+bool ldns_pkt_tsig_verify(ldns_pkt *pkt, const char *key_name, const char *key_data, ldns_rdf *mac);
+ldns_status ldns_pkt_tsig_sign(ldns_pkt *pkt, const char *key_name, const char *key_data, uint16_t fudge, const char *algorithm_name, ldns_rdf *query_mac);
 
 
 #endif /* _DNSSEC_H_ */

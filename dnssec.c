@@ -447,7 +447,8 @@ ldns_create_tsig_mac(
 	ldns_rdf *algorithm_rdf,
 	ldns_rdf *time_signed_rdf,
 	ldns_rdf *error_rdf,
-	ldns_rdf *other_data_rdf
+	ldns_rdf *other_data_rdf,
+	ldns_rdf *orig_mac_rdf
 )
 {
 	ldns_buffer *data_buffer;
@@ -463,6 +464,10 @@ ldns_create_tsig_mac(
 	 * prepare the digestable information
 	 */
 	data_buffer = ldns_buffer_new(MAX_PACKETLEN);
+	/* if orig_buf is not NULL, add it too */
+	if (orig_mac_rdf && ldns_pkt_qr(pkt)) {
+		(void) ldns_rdf2buffer_wire(data_buffer, orig_mac_rdf);
+	}
 	(void) ldns_pkt2buffer_wire(data_buffer, pkt);
 	(void) ldns_rdf2buffer_wire(data_buffer, key_name_rdf);
 	ldns_buffer_write_u16(data_buffer, LDNS_RR_CLASS_ANY);
@@ -502,7 +507,10 @@ ldns_create_tsig_mac(
  * @return true if tsig is correct, false if not, or if tsig is not set
  */
 bool
-ldns_pkt_tsig_verify(ldns_pkt *pkt, const char *key_name, const char *key_data)
+ldns_pkt_tsig_verify(ldns_pkt *pkt, 
+                     const char *key_name, 
+                     const char *key_data, 
+                     ldns_rdf *orig_mac_rdf)
 {
 	ldns_rdf *fudge_rdf;
 	ldns_rdf *algorithm_rdf;
@@ -510,10 +518,10 @@ ldns_pkt_tsig_verify(ldns_pkt *pkt, const char *key_name, const char *key_data)
 	ldns_rdf *orig_id_rdf;
 	ldns_rdf *error_rdf;
 	ldns_rdf *other_data_rdf;
-	ldns_rdf *orig_mac_rdf;
+	ldns_rdf *pkt_mac_rdf;
 	ldns_rdf *my_mac_rdf;
 	ldns_rdf *key_name_rdf = ldns_rdf_new_frm_str(LDNS_RDF_TYPE_DNAME, key_name);
-	uint16_t pkt_id;
+	uint16_t pkt_id, orig_pkt_id;
 	
 	size_t i;
 	ldns_rr *orig_tsig = ldns_pkt_tsig(pkt);
@@ -525,7 +533,7 @@ ldns_pkt_tsig_verify(ldns_pkt *pkt, const char *key_name, const char *key_data)
 	algorithm_rdf = ldns_rr_rdf(orig_tsig, 0);
 	time_signed_rdf = ldns_rr_rdf(orig_tsig, 1);
 	fudge_rdf = ldns_rr_rdf(orig_tsig, 2);
-	orig_mac_rdf = ldns_rr_rdf(orig_tsig, 3);
+	pkt_mac_rdf = ldns_rr_rdf(orig_tsig, 3);
 	orig_id_rdf = ldns_rr_rdf(orig_tsig, 4);
 	error_rdf = ldns_rr_rdf(orig_tsig, 5);
 	other_data_rdf = ldns_rr_rdf(orig_tsig, 6);
@@ -533,7 +541,11 @@ ldns_pkt_tsig_verify(ldns_pkt *pkt, const char *key_name, const char *key_data)
 	/* remove temporarily */
 	ldns_pkt_set_tsig(pkt, NULL);
 	/* TODO temporarily change the id */
+	/* TODO rdf2native? */
 	pkt_id = ldns_pkt_id(pkt);
+	memcpy(&orig_pkt_id, ldns_rdf_data(orig_id_rdf), 2);
+	orig_pkt_id = ntohs(orig_pkt_id);
+	ldns_pkt_set_id(pkt, orig_pkt_id);
 
 	my_mac_rdf = ldns_create_tsig_mac(pkt,
 	                                  key_data, 
@@ -542,19 +554,52 @@ ldns_pkt_tsig_verify(ldns_pkt *pkt, const char *key_name, const char *key_data)
 	                                  algorithm_rdf,
 	                                  time_signed_rdf,
 	                                  error_rdf,
-	                                  other_data_rdf);
+	                                  other_data_rdf,
+	                                  orig_mac_rdf
+	                                  );
 	
 	ldns_pkt_set_tsig(pkt, orig_tsig);
-
+	ldns_pkt_set_id(pkt, pkt_id);
+	
 	/* TODO: ldns_rdf_cmp in rdata.[ch] */
-	if (ldns_rdf_size(orig_mac_rdf) != ldns_rdf_size(my_mac_rdf)) {
+	if (ldns_rdf_size(pkt_mac_rdf) != ldns_rdf_size(my_mac_rdf)) {
+		/*
+		printf("Mac mismatch:\npkt mac: ");
+		ldns_rdf_print(stdout, pkt_mac_rdf);
+		printf("\n");
+		for(i=0; i<ldns_rdf_size(pkt_mac_rdf); i++) {
+			printf("%02x ", ldns_rdf_data(pkt_mac_rdf)[i]);
+		}
+		printf("\nmy mac:  ");
+		ldns_rdf_print(stdout, my_mac_rdf);
+		printf("\n");
+		for(i=0; i<ldns_rdf_size(my_mac_rdf); i++) {
+			printf("%02x ", ldns_rdf_data(my_mac_rdf)[i]);
+		}
+		printf("\n");
+		*/
 		return false;
 	} else {
-		for (i = 0; i < ldns_rdf_size(orig_mac_rdf); i++) {
+		for (i = 0; i < ldns_rdf_size(pkt_mac_rdf); i++) {
 			if (
-				ldns_rdf_data(orig_mac_rdf)[i] !=
+				ldns_rdf_data(pkt_mac_rdf)[i] !=
 				ldns_rdf_data(my_mac_rdf)[i]
 			) {
+				/*
+				printf("Mac mismatch:\npkt mac: ");
+				ldns_rdf_print(stdout, pkt_mac_rdf);
+				printf("\n");
+				for(i=0; i<ldns_rdf_size(pkt_mac_rdf); i++) {
+					printf("%02x ", ldns_rdf_data(pkt_mac_rdf)[i]);
+				}
+				printf("\nmy mac:  ");
+				ldns_rdf_print(stdout, my_mac_rdf);
+				printf("\n");
+				for(i=0; i<ldns_rdf_size(my_mac_rdf); i++) {
+					printf("%02x ", ldns_rdf_data(my_mac_rdf)[i]);
+				}
+				printf("\n");
+				*/
 				return false;
 			}
 		}
@@ -573,11 +618,12 @@ ldns_pkt_tsig_verify(ldns_pkt *pkt, const char *key_name, const char *key_data)
  * @param key_data the key in base 64 format
  * @param fudge seconds of error permitted in time signed
  * @param algorithm_name the name of the algorithm used (TODO more than only hmac-md5.sig-alg.reg.int.?)
+ * @param querymac is added to the digest if not NULL (so NULL is for signing queries, not NULL is for signing answers)
  * @return status (OK if success)
  */
 /* TODO: memory :p */
 ldns_status
-ldns_pkt_tsig_sign_query(ldns_pkt *pkt, const char *key_name, const char *key_data, uint16_t fudge, const char *algorithm_name)
+ldns_pkt_tsig_sign(ldns_pkt *pkt, const char *key_name, const char *key_data, uint16_t fudge, const char *algorithm_name, ldns_rdf *query_mac)
 {
 	unsigned char *key_bytes;
 	int key_size;
@@ -633,7 +679,6 @@ ldns_pkt_tsig_sign_query(ldns_pkt *pkt, const char *key_name, const char *key_da
 	other_data = XMALLOC(uint8_t, 2);
 	write_uint16(other_data, 0);
 	other_data_rdf = ldns_rdf_new(2, LDNS_RDF_TYPE_INT16_DATA, other_data);
-
 	mac_rdf = ldns_create_tsig_mac(pkt, 
 				       key_data,
 	                               key_name_rdf, 
@@ -641,7 +686,9 @@ ldns_pkt_tsig_sign_query(ldns_pkt *pkt, const char *key_name, const char *key_da
 	                               algorithm_rdf,
 	                               time_signed_rdf,
 	                               error_rdf,
-	                               other_data_rdf);
+	                               other_data_rdf,
+	                               query_mac
+	                               );
 	
 	if (!mac_rdf) {
 		return LDNS_STATUS_ERR;
