@@ -163,13 +163,18 @@ ldns_rr_new_frm_str(const char *str)
 	strncpy(type, rd, 10);
 	rd = strtok(NULL, "\0");
 	strncpy(rdata, rd, MAX_PACKETLEN + 1);
+	
+	FREE(str_normalized);
 
 	ldns_rr_set_owner(new, ldns_dname_new_frm_str(owner));
+	FREE(owner);
 	/* ttl might be more complicated, like 2h, or 3d5h */
 	ldns_rr_set_ttl(new, (uint32_t) atoi(ttl));
+	FREE(ttl);
 	ldns_rr_set_class(new, ldns_get_rr_class_by_name(clas));
-
+	FREE(clas);
 	rr_type = ldns_get_rr_type_by_name(type);
+	FREE(type);
 	desc = ldns_rr_descript((uint16_t)rr_type);
 	ldns_rr_set_type(new, rr_type);
 
@@ -184,15 +189,18 @@ ldns_rr_new_frm_str(const char *str)
 
 		if (!r) {
 			printf("rdf conversion mismatch\n");
+			FREE(rdata);
 			return NULL;
 		}
 		ldns_rr_push_rdf(new, r);
 		if (r_cnt > r_max) {
 			printf("rdf data overflow");
+			FREE(rdata);
 			return NULL;
 		}
 	}
 	
+	FREE(rdata);
 	return new;
 }
 
