@@ -27,4 +27,21 @@ Exponent1: zUIb6bWKAScrDETvO4kyYHMWrgb7hpCPr2P+qEEbUDFZZXYUKfr11i7DrGrwl0ngUZ/Cc
 Exponent2: qJlI7Qqivjr87z8IRqCtTNLQLSN7Ap0S+JcdAkB7mp04aYNhhZIlk1VZPxYWCTUA73kqc4LFp7tBtjaSfGmeVw==
 Coefficient: 0FEnBcGwv82eZMG0LZhkbtnio/ZW9DoA9rNhq9BpOKhTFzi/+ZzX42oYN5uPodQ0sdaBQS/hrxursF01pagSBA==
 
+-----
 
+cat /etc/resolv.conf:
+domain miek.nl
+nameserver 192.168.1.1
+search miek.nl atoom.net
+
+Different types of stuff we can encounter:
+
+single keywords: 'Exponent1', 'Exponent2', '8600'
+words with spaces: (nsec lists) 'NS TXT MX'
+parentheses: ( )
+classes: IN HS CH
+
+sort of stuff we parse:
+private-key-format: v1.2
+rr's on disk (string)
+openssl key formats
