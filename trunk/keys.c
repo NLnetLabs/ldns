@@ -5,3 +5,6 @@
  * and give a general interface for private keys and hmac
  * handling
  */
+
+#include <config.h>
+#include <ldns/keys.h>
