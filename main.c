@@ -5,10 +5,10 @@
 
 #include <stdio.h>
 
-#include "prototype.h"
 #include "rdata.h"
 #include "rr.h"
 #include "packet.h"
+#include "prototype.h"
 
 int
 main(void)

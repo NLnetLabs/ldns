@@ -9,9 +9,9 @@
  *
  * See the file LICENSE for the license
  */
-#ifndef _RDATA_H
-#define _RDATA_H
+#ifdef _RDATA_H
 #else
+#define _RDATA_H
 
 #include <stdint.h>
 
@@ -63,4 +63,15 @@ struct struct_rdata_t
 	uint8_t  *_data;
 };
 typedef struct struct_rdata_t rdata_t;
+
+/* prototypes */
+uint16_t        rd_size(rdata_t *);
+uint8_t         *rd_data(rdata_t *);
+void            rd_set_size(rdata_t *, uint16_t);
+void            rd_set_type(rdata_t *, rd_type_t);
+void            rd_set_data(rdata_t *, uint8_t *, uint16_t);
+rd_type_t       rd_type(rdata_t *);
+rdata_t         *rd_new(uint16_t, rd_type_t, uint8_t *);
+void            rd_destroy(rdata_t *);
 #endif	/* _RDATA_H */
+

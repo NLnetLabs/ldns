@@ -14,7 +14,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#include "prototype.h"
+#include "rdata.h"
+#include "rr.h"
 
 void *
 xmalloc(size_t s)
