@@ -619,7 +619,7 @@ ldns_pkt_tsig_sign(ldns_pkt *pkt, const char *key_name, const char *key_data, ui
 		return LDNS_STATUS_INVALID_B64;
 	}
 
-	time_signed_rdf = ldns_rdf_new(6, LDNS_RDF_TYPE_TSIGTIME, time_signed);
+	time_signed_rdf = ldns_rdf_new(LDNS_RDF_TYPE_TSIGTIME, 6, time_signed);
 	
 	fudge_rdf = ldns_native2rdf_int16(LDNS_RDF_TYPE_INT16, fudge);
 

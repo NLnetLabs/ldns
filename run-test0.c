@@ -65,7 +65,7 @@ main(void)
 	rdf_data[9] = 3;
 	memcpy(rdf_data+10, "net", 3);
 	rdf_data[13] = 0;
-	rd_f = ldns_rdf_new(20, LDNS_RDF_TYPE_DNAME, rdf_data);
+	rd_f = ldns_rdf_new(LDNS_RDF_TYPE_DNAME, 20, rdf_data);
 	
 	ldns_rr_push_rdf(rr, rd_f);
 	status = ldns_wire2pkt(&packet, wire, sizeof(wire));
