@@ -1,2 +1,33 @@
 Current TODO list
-o drop ldns_resolver_set_configured() ?
+
+Implementation:
+---------------
+o check all conversion routines on missing types
+	- wire2host
+	- host2wire
+	- str2host
+	- host2str
+o network code
+	- tcp
+	- axfr
+	- tsig?
+o DNSSEC
+o Implement flags
+	- pkt_query_new (rd etc)
+
+Documentation:
+--------------
+o Crypto interface for dnssec
+o Doxygen
+o Manpages
+o Introduction
+o Tuturial
+o Webpage
+o Mailing list(s)
+
+To ponder and discuss:
+----------------------
+o Drop ldns_resolver_set_configured() ?
+o char * <=> uint8_t *
+o Second layer (higher level convenience functions)?
+o Dependency on openSSL?
