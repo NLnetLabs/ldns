@@ -44,7 +44,7 @@ doit(void)
 		printf("_short: ah man, shit hit the fan\n");
 	}
 	
-	ldns_rdf2buffer_int16(buf, rdata); 
+	(void) ldns_rdf2buffer_int16(buf, rdata); 
 	fprintf(stderr, "%s\n", buffer2str(buf));
 }
 
