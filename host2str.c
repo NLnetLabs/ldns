@@ -308,7 +308,7 @@ ldns_rdf2buffer_loc(ldns_buffer *output, ldns_rdf *rdf)
 	double s;
 	long value, unit, meters;
 	
-	uint32_t equator = (uint32_t) power(2, 32);
+	uint32_t equator = (uint32_t) power(2, 31);
 
 	if (version == 0) {
 		size = ldns_rdf_data(rdf)[1];
