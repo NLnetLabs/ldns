@@ -40,10 +40,20 @@ main(void)
 	ldns_rr *rr;
 	ldns_pkt *packet;
 	ldns_status status;
+	char *rdfstr;
+	uint8_t *rdf_data;
 	
 	rr = ldns_rr_new();
 
-	rd_f = ldns_rdf_new(20, LDNS_RDF_TYPE_DNAME, (uint8_t*)"hallo.nl");
+	rdf_data = (uint8_t *) XMALLOC(char, MAXDOMAINLEN);
+	rdf_data[0] = 3;
+	memcpy(rdf_data+1, "www", 3);
+	rdf_data[4] = 4;
+	memcpy(rdf_data+5, "test", 4);
+	rdf_data[9] = 3;
+	memcpy(rdf_data+10, "net", 3);
+	rdf_data[13] = 0;
+	rd_f = ldns_rdf_new(20, LDNS_RDF_TYPE_DNAME, rdf_data);
 	xprintf_rdf(rd_f);
 	
 	ldns_rr_push_rdf(rr, rd_f);
@@ -70,5 +80,10 @@ main(void)
 	} else {
 		printf("error in wire2packet: %d\n", status);
 	}
+
+	printf("host2str:\n");
+	rdfstr = ldns_rdf2str(rr->_rdata_fields[0]);
+	printf("%s\n", rdfstr);
 	return 0;
 }
+
