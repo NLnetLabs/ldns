@@ -205,7 +205,7 @@ dns_packet_new()
 	if (!packet) 
 		return NULL;
 
-	MALLOC(packet_header, t_header);
+	MALLOC(packet->header, t_header);
 	if (!packet->header)
 		return NULL;
 	

@@ -18,19 +18,19 @@
  * Memory management macro's
  */
 #define MALLOC(ptr, type) \
-        XMALLOC((ptr), (type), 1)
+        XMALLOC((ptr), type, 1)
 
 #define XMALLOC(ptr, type, count) \
-        (ptr) = ((type) *) malloc((count) * sizeof(type))
+        (ptr) = (type *) malloc((count) * sizeof(type))
 
 #define REALLOC(ptr, type) \
-        XREALLOC((ptr), (type), 1)
+        XREALLOC((ptr), type, 1)
 
 #define XREALLOC(ptr, type, count) \
-        (ptr) == ((type) *) realloc((count) * sizeof(type))
+        (ptr) == (type *) realloc((ptr), (count) * sizeof(type))
 
 #define FREE(ptr) \
-    do { free(ptr); (ptr) = NULL; } while (0)
+    do { free((ptr)); (ptr) = NULL; } while (0)
 
 #define DEP     printf("DEPRICATED FUNCTION!\n");
 
