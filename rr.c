@@ -1053,6 +1053,6 @@ ldns_rr2canonical(ldns_rr *rr)
 {
 	uint16_t i;
 	for (i = 0; i < ldns_rr_rd_count(rr); i++) {
-		ldns_rdata2canonical(ldns_rr_rdf(rrm i));
+		ldns_dname2canonical(ldns_rr_rdf(rr, i));
 	}
 }

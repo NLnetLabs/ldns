@@ -54,7 +54,7 @@ ldns_rr_list2buffer_wire(ldns_buffer *buffer, ldns_rr_list *rr_list)
 
 	rr_count = ldns_rr_list_rr_count(rr_list);
 	for(i = 0; i < rr_count; i++) {
-		ldns_rr2buffer_wire(buffer, ldns_rr_list_rr(rr_list, i), LDNS_SECTION_ANY);
+		(void)ldns_rr2buffer_wire(buffer, ldns_rr_list_rr(rr_list, i), LDNS_SECTION_ANY);
 	}
 	return ldns_buffer_status(buffer);
 }
