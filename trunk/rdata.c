@@ -224,8 +224,9 @@ ldns_rdf_new_frm_str(const char *str, ldns_rdf_type t)
 /**
  * remove \\DDD, \\[space] and other escapes from the input
  * See RFC 1035, section 5.1
- * Return the length of the string or a negative error
- * code
+ * \param[in] word what to check
+ * \param[in] lenght the string
+ * \return ldns_status mesg
  */
 ldns_status
 ldns_octet(char *word, size_t *length)
