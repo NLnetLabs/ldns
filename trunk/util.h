@@ -32,6 +32,36 @@
 
 #define DEP     printf("DEPRICATED FUNCTION!\n");
 
+/* TODO: is this a good way? */
+/*
+ * Copy data allowing for unaligned accesses in network byte order
+ * (big endian).
+ */
+static inline uint16_t
+read_uint16(const void *src)
+{
+#ifdef ALLOW_UNALIGNED_ACCESSES
+	return ntohs(*(uint16_t *) src);
+#else
+	uint8_t *p = (uint8_t *) src;
+	return ((uint16_t) p[0] << 8) | (uint16_t) p[1];
+#endif
+}
+
+static inline uint32_t
+read_uint32(const void *src)
+{
+#ifdef ALLOW_UNALIGNED_ACCESSES
+	return ntohl(*(uint32_t *) src);
+#else
+	uint8_t *p = (uint8_t *) src;
+	return (((uint32_t) p[0] << 24)
+		| ((uint32_t) p[1] << 16)
+		| ((uint32_t) p[2] << 8)
+		| (uint32_t) p[3]);
+#endif
+}
+
 /* prototypes */
 void    xprintf_rd_field(t_rdata_field *);
 void    xprintf_rr(ldns_rr_type *);
