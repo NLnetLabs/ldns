@@ -48,8 +48,6 @@ ldns_rr_set_function(ldns_rr_type type, ldns_rr *rr, ldns_rdf *rdf, size_t pos)
         }
 }
 
-/*@ignore@*/
-
 /* handle A / AAAA records */
 ldns_rdf *
 ldns_rr_address(ldns_rr *r)
@@ -205,4 +203,3 @@ ldns_rr_set_sig(ldns_rr *r, ldns_rdf *f)
 {
 	return ldns_rr_set_function(LDNS_RR_TYPE_RRSIG, r, f, 8);
 }
-/*@end@*/
