@@ -18,17 +18,14 @@
 /**
  * Memory management macro's
  */
-#define MALLOC(ptr, type) \
-        XMALLOC((ptr), type, 1)
+#define MALLOC(type)		XMALLOC(type, 1)
 
-#define XMALLOC(ptr, type, count) \
-	do { (ptr) = (type *) malloc((count) * sizeof(type)); } while (0)
+#define XMALLOC(type, count)	((type *) malloc((count) * sizeof(type)))
 
-#define REALLOC(ptr, type) \
-        XREALLOC((ptr), type, 1)
+#define REALLOC(ptr, type)	XREALLOC((ptr), type, 1)
 
-#define XREALLOC(ptr, type, count) \
-	do { (ptr) = (type *) realloc((ptr), (count) * sizeof(type)); } while (0)
+#define XREALLOC(ptr, type, count)				\
+	((type *) realloc((ptr), (count) * sizeof(type)))
 
 #define FREE(ptr) \
 	do { free((ptr)); (ptr) = NULL; } while (0)

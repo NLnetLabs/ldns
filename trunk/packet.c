@@ -312,13 +312,14 @@ t_packet *
 ldns_packet_new()
 {
 	t_packet *packet;
-	MALLOC(packet, t_packet);
+	packet = MALLOC(t_packet);
 	if (!packet) {
 		return NULL;
 	}
 
-	MALLOC(packet->_header, t_header);
+	packet->_header = MALLOC(t_header);
 	if (!packet->_header) {
+		FREE(packet);
 		return NULL;
 	}
 
@@ -329,10 +330,13 @@ ldns_packet_new()
 	return packet;
 }
 
-size_t
-ldns_wire2packet_header(uint8_t *wire, size_t max, size_t *pos, t_packet *packet)
+static size_t
+ldns_wire2packet_header(t_packet *packet,
+			const uint8_t *wire,
+			size_t max,
+			size_t *pos)
 {
-	if (*pos + HEADER_SIZE > *wire + max) {
+	if (*pos + HEADER_SIZE >= max) {
 		/* TODO: set t_status error.  */
 		return 0;
 	} else {
@@ -362,11 +366,11 @@ ldns_wire2packet_header(uint8_t *wire, size_t max, size_t *pos, t_packet *packet
 }
 
 size_t
-ldns_wire2packet(uint8_t *wire, size_t max, t_packet *packet)
+ldns_wire2packet(t_packet *packet, const uint8_t *wire, size_t max)
 {
 	size_t pos = 0;
 
-	pos += ldns_wire2packet_header(wire, max, &pos, packet);
+	pos += ldns_wire2packet_header(packet, wire, max, &pos);
 
 	/* TODO: rrs :) */
 

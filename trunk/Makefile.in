@@ -9,7 +9,7 @@ mandir 		= @mandir@
 
 CC 		= @CC@
 CPPFLAGS	= @CPPFLAGS@ @DEFS@ -I$(srcdir)
-OURCFLAGS	= -Wall -W -Wwrite-strings #-Wunused-value -Wunused-parameter
+OURCFLAGS	= -ansi -pedantic -Wall -W -Wwrite-strings #-Wunused-value -Wunused-parameter
 CFLAGS 		= @CFLAGS@ $(OURCFLAGS)
 LDFLAGS		= @LDFLAGS@
 LIBS 		= @LIBS@

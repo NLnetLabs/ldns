@@ -23,13 +23,14 @@ t_rr *
 ldns_rr_new(void)
 {
 	t_rr *rr;
-	MALLOC(rr, t_rr);
-        if (!rr)
+	rr = MALLOC(t_rr);
+        if (!rr) {
                 return NULL;
-
+	}
+	
 	ldns_rr_set_rd_count(rr, 0);
 	rr->_rdata_fields = NULL; /* XXX */
-        return(rr);
+        return rr;
 }
 
 /**
