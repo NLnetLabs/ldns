@@ -9,13 +9,14 @@
  *
  * See the file LICENSE for the license
  */
-#ifndef _RR_H
-#define _RR_H
+#ifdef _RR_H
 #else
+#define _RR_H
 
 #include <stdint.h>
 #include <string.h>
-#include "prototype.h"
+#include "rdata.h"
+#include "rr.h"
 
 /* the different RR types */
 #define TYPE_A          1       /* a host address */

@@ -9,22 +9,13 @@
  *
  * See the file LICENSE for the license
  */
-#ifndef _PACKET_H
-#define _PACKET_H
+#ifdef _PACKET_H
 #else
+#define _PACKET_H
 
 #include <stdint.h>
-#include "prototype.h"
-
-struct struct_packet_type
-{
-	header_t *header	/* header section */
-	rrset_t	*question;	/* question section */
-	rrset_t	*answer;	/* answer section */
-	rrset_t	*authority;	/* auth section */
-	rrset_t	*additional;	/* add section */
-};
-typedef struct struct_packet_type packet_t;
+#include "rdata.h"
+#include "rr.h"
 
 struct struct_header_type
 {
@@ -44,5 +35,15 @@ struct struct_header_type
 	uint8_t acount;		/* add sec */
 };
 typedef struct struct_header_type header_t;
+
+struct struct_packet_type
+{
+	header_t *header;	/* header section */
+	rrset_t	*question;	/* question section */
+	rrset_t	*answer;	/* answer section */
+	rrset_t	*authority;	/* auth section */
+	rrset_t	*additional;	/* add section */
+};
+typedef struct struct_packet_type packet_t;
 	
 #endif /* _PACKET_H */

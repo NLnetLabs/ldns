@@ -13,6 +13,7 @@
 #include <stdint.h>
 #include <string.h>
 
+#include "rdata.h"
 #include "prototype.h"
 
 /* Access functions 
