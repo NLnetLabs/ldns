@@ -27,17 +27,10 @@ enum ldns_enum_signing_algorithm
 };
 typedef enum ldns_enum_signing_algorithm ldns_signing_algorithm;
 
-ldns_lookup_table ldns_signing_algorithms[] = {
-	{ LDNS_SIGN_ALG_RSAMD5, "RSAMD5" },
-	{ LDNS_SIGN_ALG_RSASHA1, "RSASHA1" },
-	{ LDNS_SIGN_ALG_DSAMD5, "DSAMD5" },
-	{ LDNS_SIGN_ALG_DSASHA1, "DSASHA1" },
-	{ LDNS_SIGN_ALG_HMACMD5, "hmac-md5.sig-alg.reg.int" },
-	{ 0, NULL }
-};
+extern ldns_lookup_table ldns_signing_algorithms[];
 
 struct ldns_struct_key {
-	ldns_signing_algorithm algorithm;
+	ldns_signing_algorithm alg;
 	/* types of keys supported */
 	union {
 		RSA	*rsa;
