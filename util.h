@@ -32,11 +32,17 @@
 
 #define DEP     printf("DEPRICATED FUNCTION!\n");
 
-/* TODO: is this a good way? */
 /*
  * Copy data allowing for unaligned accesses in network byte order
  * (big endian).
  */
+#ifdef S_SPLINT_S
+
+uint16_t read_uint16(const void *src);
+uint32_t read_uint32(const void *src);
+
+#else /* S_SPLINT_S */
+
 static inline uint16_t
 read_uint16(const void *src)
 {
@@ -55,12 +61,14 @@ read_uint32(const void *src)
 	return ntohl(*(uint32_t *) src);
 #else
 	uint8_t *p = (uint8_t *) src;
-	return (((uint32_t) p[0] << 24)
+	return (  ((uint32_t) p[0] << 24)
 		| ((uint32_t) p[1] << 16)
 		| ((uint32_t) p[2] << 8)
-		| (uint32_t) p[3]);
+		|  (uint32_t) p[3]);
 #endif
 }
+
+#endif /* !S_SPLINT_S */
 
 /* prototypes */
 void    xprintf_rd_field(t_rdata_field *);
