@@ -127,23 +127,23 @@ ldns_send_udp(ldns_buffer *qbin, const struct sockaddr_storage *to, socklen_t to
 	ssize_t bytes;
 	uint8_t *answer;
 	ldns_pkt *answer_pkt;
-	struct sockaddr_in *to4;
 
-	printf("family %d [4=%d %d] [6=%d %d]\n", ((struct sockaddr*)to)->sa_family,
-			AF_INET, PF_INET, AF_INET6, PF_INET6);
-	
+	struct timeval tv_s;
+        struct timeval tv_e;
+
+	gettimeofday(&tv_s, NULL);
+
 	if ((sockfd = socket(((struct sockaddr*)to)->sa_family, SOCK_DGRAM, IPPROTO_UDP)) == -1) {
 		printf("could not open socket\n");
 		return NULL;
 	}
 
-	to4 = (struct sockaddr_in*) to;
-
-	printf("port %d len %d\n", 
-			ntohs(to4->sin_port), tolen);
-
-	bytes =  sendto(sockfd, ldns_buffer_begin(qbin),
+	bytes = sendto(sockfd, ldns_buffer_begin(qbin),
 			ldns_buffer_position(qbin), 0, (struct sockaddr *)to, tolen);
+
+	gettimeofday(&tv_e, NULL);
+	
+
 
 	if (bytes == -1) {
 		printf("error with sending: %s\n", strerror(errno));
@@ -182,6 +182,11 @@ ldns_send_udp(ldns_buffer *qbin, const struct sockaddr_storage *to, socklen_t to
 		printf("could not create packet\n");
 		return NULL;
 	} else {
+		/* set some extra values in the pkt */
+		ldns_pkt_set_querytime(answer_pkt,
+				((tv_e.tv_sec - tv_s.tv_sec)*1000) +
+				((tv_e.tv_usec - tv_s.tv_usec)/1000));
+
 		return answer_pkt;
 	}
 }
