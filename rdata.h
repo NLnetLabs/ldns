@@ -15,6 +15,8 @@
 
 #include <config.h>
 
+#define MAXRDATALEN 64
+
 enum type_enum_rdata
 {
 	/** domain name */
@@ -33,6 +35,8 @@ enum type_enum_rdata
 	RD_AAAA_T,
 	/** txt string */
 	RD_STR_T,
+	/** apl data */
+	RD_APL_T,
 	/** b64 string */
 	RD_B64_T,
 	/** hex string */
@@ -55,6 +59,7 @@ enum type_enum_rdata
 	RD_SERVICE_T,
 	/** location data */
 	RD_LOC_T
+	
 };
 typedef enum type_enum_rdata t_rd_type;
 
@@ -87,6 +92,23 @@ struct type_struct_rdata_field
 	uint8_t  *_data;
 };
 typedef struct type_struct_rdata_field t_rdata_field;
+
+/* 
+ * \brief struct to hold the whole set of rd_fields
+ *
+ * How does the whole rdata_field list look. This is called
+ * the rdata in dns speak
+ */
+struct type_struct_rdata_field_descriptor
+{
+        uint16_t    type;       /* RR type */
+        const char *name;       /* Textual name.  */
+        uint8_t     minimum;    /* Minimum number of RDATA FIELDs.  */
+        uint8_t     maximum;    /* Maximum number of RDATA FIELDs.  */
+        uint8_t     wireformat[MAXRDATALEN]; /* rdata_wireformat_type */
+};
+typedef struct type_struct_rdata_field_descriptor t_rdata_field_descriptor;
+
 
 /* prototypes */
 uint16_t        rd_field_size(t_rdata_field *);
