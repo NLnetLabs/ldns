@@ -80,10 +80,9 @@ ldns_rdf_new(uint16_t s, ldns_rdf_type t, uint8_t *d)
 }
 
 void 
-ldns_rdf_destroy(ldns_rdf *rd)
+ldns_rdf_free(ldns_rdf *rd)
 {
-	rd = NULL; /* kuch */
-	/* empty */
+	FREE(rd);
 }
 
 /**
