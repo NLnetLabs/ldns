@@ -278,7 +278,7 @@ buffer2str(ldns_buffer *buffer)
 	if (!ldns_buffer_reserve(buffer, 1)) {
 		return NULL;
 	}
-	ldns_buffer_write_u8(buffer, '\0');
+	ldns_buffer_write_u8(buffer, (uint8_t) '\0');
 	if (!ldns_buffer_set_capacity(buffer, ldns_buffer_position(buffer))) {
 		return NULL;
 	}
