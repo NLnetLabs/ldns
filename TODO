@@ -41,3 +41,4 @@ o Dependency on openSSL?
 o ldns_lookup_by_name works for types, classes
 	should be shielded, only use ldns_get_class_by_name/type
 o rr_list or rr in dnssec functions or both?
+o counting of rr's in rr_list and rfd's in rr's

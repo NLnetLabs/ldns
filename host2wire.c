@@ -108,13 +108,13 @@ ldns_status
 ldns_rrsig2buffer_wire(ldns_buffer *buffer, ldns_rr *rr)
 {
 	uint16_t i;
-	uint16_t rdl_pos = 0;
 
 	/* it must be a sig RR */
 	if (ldns_rr_get_type(rr) != LDNS_RR_TYPE_RRSIG) {
 		return LDNS_STATUS_ERR;
 	}
 	
+#if 0
 	if (ldns_rr_owner(rr)) {
 		(void) ldns_dname2buffer_wire(buffer, ldns_rr_owner(rr));
 	}
@@ -130,6 +130,7 @@ ldns_rrsig2buffer_wire(ldns_buffer *buffer, ldns_rr *rr)
 		rdl_pos = ldns_buffer_position(buffer);
 		ldns_buffer_write_u16(buffer, 0);
 	}	
+#endif
 
 	/* now convert all the rdfs, except the actual signature data
 	 * rdf number 8  - the last, hence: -1 */
@@ -137,6 +138,7 @@ ldns_rrsig2buffer_wire(ldns_buffer *buffer, ldns_rr *rr)
 		(void) ldns_rdf2buffer_wire(buffer, ldns_rr_rdf(rr, i));
 	}
 
+#if 0
 	if (rdl_pos != 0) {
 		ldns_buffer_write_u16_at(buffer,
 				rdl_pos,
@@ -145,6 +147,7 @@ ldns_rrsig2buffer_wire(ldns_buffer *buffer, ldns_rr *rr)
 				- 2
 				);
 	}
+#endif
 	return ldns_buffer_status(buffer);
 }
 

@@ -75,11 +75,20 @@ ldns_keytag(ldns_rr *key)
  * \param[in] rrsig the signature of the rrset
  * \param[in] keys the keys to try
  */
+/* 
+ * to verify:
+ * - create the wire fmt of the b64 key rdata
+ * - create the wire fmt of the sorted rrset
+ * - create the wire fmt of the b64 sig rdata
+ * - create the wire fmt of the sig without the b64 rdata
+ * - cat the sig data (without b64 rdata) to the rrset
+ * - verify the rrset+sig, with the b64 data and the b64 key data
+ */
 bool
 ldns_verify_rrsig(ldns_rr_list *rrset, ldns_rr *rrsig, ldns_rr_list *keys)
 {
 	ldns_buffer *rawsig_buf;
-	ldns_buffer *rrset_buf;
+	ldns_buffer *verify_buf;
 	ldns_buffer *key_buf;
 	uint32_t orig_ttl;
 	uint16_t i;
@@ -90,27 +99,27 @@ ldns_verify_rrsig(ldns_rr_list *rrset, ldns_rr *rrsig, ldns_rr_list *keys)
 	/* create the buffers which will certainly hold the
 	 * raw data */
 	rawsig_buf = ldns_buffer_new(MAX_PACKETLEN);
-	rrset_buf  = ldns_buffer_new(MAX_PACKETLEN);
+	verify_buf  = ldns_buffer_new(MAX_PACKETLEN);
 	
 	sig_algo = ldns_rdf2native_int8(ldns_rr_rdf(rrsig, 1));
 	result = false;
 	
 	printf("trying to verify I\n");
 	
-	if (ldns_rrsig2buffer_wire(rawsig_buf, rrsig) != LDNS_STATUS_OK) {
+	/* create a buffer with b64 signature rdata */
+	ldns_rdf_print(stdout, ldns_rr_rdf(rrsig, 8));
+	printf("was sig data\n");
+	if (ldns_rdf2buffer_wire(rawsig_buf,
+				ldns_rr_rdf(rrsig, 8)) != LDNS_STATUS_OK) {
 		ldns_buffer_free(rawsig_buf);
-		ldns_buffer_free(rrset_buf);
+		ldns_buffer_free(verify_buf);
 		return false;
 	}
 
 	orig_ttl = ldns_rdf2native_int32(
 			ldns_rr_rdf(rrsig, 3));
 
-	printf("orig ttl %d\n", orig_ttl);
-
-	/* reset the ttl in the rrset with the orig_ttl
-	 * from the sig */
-	
+	/* reset the ttl in the rrset with the orig_ttl from the sig */
 	for(i = 0; i < ldns_rr_list_rr_count(rrset); i++) {
 		ldns_rr_set_ttl(
 				ldns_rr_list_rr(rrset, i),
@@ -118,16 +127,23 @@ ldns_verify_rrsig(ldns_rr_list *rrset, ldns_rr *rrsig, ldns_rr_list *keys)
 	}
 	ldns_rr_list_print(stdout, rrset);
 
-	/* sort the rrset in canonical order - must this happen
-	 * after setting the orig TTL? or before?? does it matter? */
+	/* sort the rrset in canonical order  */
 	ldns_rr_list_sort(rrset);
 
-	/* put the rrset in a wirefmt buf */
-	if (ldns_rr_list2buffer_wire(rrset_buf, rrset) != LDNS_STATUS_OK) {
+	/* put the signature rr (without the b64) to the verify_buf */
+	if (ldns_rrsig2buffer_wire(verify_buf, rrsig) != LDNS_STATUS_OK) {
 		ldns_buffer_free(rawsig_buf);
-		ldns_buffer_free(rrset_buf);
+		ldns_buffer_free(verify_buf);
 		return false;
 	}
+
+	/* add the rrset in verify_buf */
+	if (ldns_rr_list2buffer_wire(verify_buf, rrset) != LDNS_STATUS_OK) {
+		ldns_buffer_free(rawsig_buf);
+		ldns_buffer_free(verify_buf);
+		return false;
+	}
+
 	printf("trying to verify II\n");
 
 	for(i = 0; i < ldns_rr_list_rr_count(keys); i++) {
@@ -139,21 +155,23 @@ ldns_verify_rrsig(ldns_rr_list *rrset, ldns_rr *rrsig, ldns_rr_list *keys)
 		 * the base64 encoded key data */
 		if (ldns_rdf2buffer_wire(key_buf,
 				ldns_rr_rdf(current_key, 3)) != LDNS_STATUS_OK) {
+			ldns_buffer_free(rawsig_buf);
+			ldns_buffer_free(verify_buf);
 			return false;
 		}
 
 		switch(sig_algo) {
 			case LDNS_DSA:
 				result = ldns_verify_rrsig_dsa(
-						rawsig_buf, rrset_buf, key_buf);
+						rawsig_buf, verify_buf, key_buf);
 				break;
 			case LDNS_RSASHA1:
 				result = ldns_verify_rrsig_rsasha1(
-						rawsig_buf, rrset_buf, key_buf);
+						rawsig_buf, verify_buf, key_buf);
 				break;
 			case LDNS_RSAMD5:
 				result = ldns_verify_rrsig_rsamd5(
-						rawsig_buf, rrset_buf, key_buf);
+						rawsig_buf, verify_buf, key_buf);
 				break;
 			default:
 				/* do you know this alg?! */
@@ -168,7 +186,7 @@ ldns_verify_rrsig(ldns_rr_list *rrset, ldns_rr *rrsig, ldns_rr_list *keys)
 	}
 
 	ldns_buffer_free(rawsig_buf);
-	ldns_buffer_free(rrset_buf);
+	ldns_buffer_free(verify_buf);
 	return result;
 }
 
@@ -232,7 +250,7 @@ ldns_verify_rrsig_rsasha1(ldns_buffer *sig, ldns_buffer *rrset, ldns_buffer *key
 	BN_print_fp(stdout, rsakey->n); printf("\n->n\n");
 	BN_print_fp(stdout, rsakey->e); printf("\n->e\n");
 	printf("trying to verify IV\n");
-	printf("size %x\n", ldns_buffer_position(rrset) );
+	printf("size %d\n", ldns_buffer_position(rrset) );
 	printf("size %x\n", ldns_buffer_begin(rrset) );
 	sha1_hash = SHA1(ldns_buffer_begin(rrset), ldns_buffer_position(rrset), NULL);
 	if (!sha1_hash) {
@@ -244,6 +262,9 @@ ldns_verify_rrsig_rsasha1(ldns_buffer *sig, ldns_buffer *rrset, ldns_buffer *key
 			ldns_buffer_position(sig), rsakey) == 1) {
 		return true;
 	} else {
+		  ERR_load_crypto_strings();
+		  ERR_print_errors_fp(stdout);
+
 		return false;
 	}
 }
