@@ -613,3 +613,89 @@ ldns_get_class_by_name(char *name)
 	}
 	return 0;
 }
+
+/**
+ * sort an rr_list. the sorting is done inband
+ * \param[in] unsorted the rr_list to be sorted
+ * \return ldns_status wether or not we are succesfull
+ */
+ldns_status
+ldns_rr_sort(ldns_rr_list **unsorted)
+{
+	return LDNS_STATUS_OK;
+}
+
+
+/**
+ * Compare two rr
+ * \param[in] rr1 the first one
+ * \parma[in] rr2 the second one
+ * \return 0 if equal
+ *         -1 if rr1 comes before rr2
+ *         +1 if rr2 comes before rr1
+ */
+int
+ldns_rr_compare(ldns_rr *rr1, ldns_rr *rr2)
+{
+	ldns_buffer *rr1_buf;
+	ldns_buffer *rr2_buf;
+	size_t rr1_len;
+	size_t rr2_len;
+	size_t i;
+
+	rr1_len = ldns_rr_uncompressed_size(rr1);
+	rr2_len = ldns_rr_uncompressed_size(rr2);
+
+	if (rr1_len < rr2_len) {
+		return -1;
+	} else if (rr1_len > rr2_len) {
+		return +1;
+	} else {
+		/* equal length */
+	
+		rr1_buf = ldns_buffer_new(rr1_len);
+		rr2_buf = ldns_buffer_new(rr2_len);
+
+		if (ldns_rr2buffer_wire(rr1_buf, rr1, LDNS_SECTION_ANY) != LDNS_STATUS_OK) {
+			return 0; /* XXX uhm, tja */
+		}
+		if (ldns_rr2buffer_wire(rr2_buf, rr2, LDNS_SECTION_ANY) != LDNS_STATUS_OK) {
+			return 0;
+		}
+		/* now compare the buffer's byte for byte */
+		/* < or <= ??? XXX */
+		for(i = 0; i < rr1_len; i++) {
+			if (ldns_buffer_at(rr1_buf, i) < 
+				ldns_buffer_at(rr2_buf, i)) {
+				return -1;
+			} else if (ldns_buffer_at(rr1_buf, i) >
+					ldns_buffer_at(rr2_buf, i)) {
+				return +1;
+			}
+		}
+	return 0;
+	}
+}
+
+
+/** 
+ * calculate the uncompressed size of an RR
+ * \param[in] rr the rr to operate on
+ * \return size of the rr
+ */
+size_t
+ldns_rr_uncompressed_size(ldns_rr *r)
+{
+	size_t rrsize;
+	uint16_t i;
+
+	rrsize = 0;
+	/* add all the rdf sizes */
+	for(i = 0; i < ldns_rr_rd_count(r); i++) {
+		rrsize += ldns_rdf_size(ldns_rr_rdf(r, i));
+	}
+	/* ownername */
+	rrsize += ldns_rdf_size(ldns_rr_owner(r));
+	rrsize += RR_OVERHEAD;
+	return rrsize;
+}

@@ -168,6 +168,8 @@ ldns_pkt_xxcount(ldns_pkt *packet, ldns_pkt_section s)
 			return ldns_pkt_nscount(packet);
 		case LDNS_SECTION_ADDITIONAL:
 			return ldns_pkt_arcount(packet);
+		case LDNS_SECTION_ANY:
+			return 0;
 	}
 	return 0;
 }
@@ -184,6 +186,8 @@ ldns_pkt_xxsection(ldns_pkt *packet, ldns_pkt_section s)
 			return ldns_pkt_authority(packet);
 		case LDNS_SECTION_ADDITIONAL:
 			return ldns_pkt_additional(packet);
+		case LDNS_SECTION_ANY:
+			return 0;
 	}
 	return NULL;
 }
@@ -315,6 +319,8 @@ ldns_pkt_set_xxcount(ldns_pkt *packet, ldns_pkt_section s, uint16_t count)
 		case LDNS_SECTION_ADDITIONAL:
 			ldns_pkt_set_arcount(packet, count);
 			break;
+		case LDNS_SECTION_ANY:
+			break;
 	}
 }
 
@@ -352,6 +358,8 @@ ldns_pkt_push_rr(ldns_pkt *packet, ldns_pkt_section section, ldns_rr *rr)
 			break;
 		case LDNS_SECTION_ADDITIONAL:
 			ldns_pkt_set_arcount(packet, ldns_pkt_arcount(packet) + 1);
+			break;
+		case LDNS_SECTION_ANY:
 			break;
 	}
 	return true;
