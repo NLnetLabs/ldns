@@ -546,14 +546,13 @@ ldns_rr_set_push_rr(ldns_rr_list *rr_list, ldns_rr *rr)
 
 	rr_count = ldns_rr_list_rr_count(rr_list);
 
-
 	if (rr_count == 0) {
 		/* nothing there, so checking it is 
 		 * not needed */
 		return ldns_rr_list_push_rr(rr_list, rr);
 	} else {
 		/* check with the final rr in the rr_list */
-		last = ldns_rr_list_rr(rr_list, rr_count);
+		last = ldns_rr_list_rr(rr_list, rr_count - 1);
 
 		if (ldns_rr_get_class(last) != ldns_rr_get_class(rr)) {
 			return false;
