@@ -203,6 +203,7 @@ ldns_resolver_push_nameserver(ldns_resolver *r, ldns_rdf *n)
 	nameservers = ldns_resolver_nameservers(r);
 
 	/* make room for the next one */
+printf("REALLOCING POINTER %p\n", nameservers);
 	nameservers = XREALLOC(nameservers, ldns_rdf *, (ns_count + 1));
 
 	/* set the new value in the resolver */
