@@ -107,6 +107,7 @@ void ldns_resolver_set_domain(ldns_resolver *, ldns_rdf *);
 void ldns_resolver_set_timeout(ldns_resolver *r, struct timeval timeout);
 void ldns_resolver_push_searchlist(ldns_resolver *, ldns_rdf *);
 ldns_status ldns_resolver_push_nameserver(ldns_resolver *, ldns_rdf *);
+ldns_status ldns_resolver_push_nameserver_rr(ldns_resolver *, ldns_rr *);
 
 ldns_pkt * ldns_resolver_bgsend();
 ldns_pkt * ldns_resolver_send(ldns_resolver *, ldns_rdf*, ldns_rr_type, ldns_rr_class, uint16_t);

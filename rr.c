@@ -311,9 +311,9 @@ ldns_rr_pop_rdf(ldns_rr *rr)
 }
 
 /**
- * set the rdata field member counter
+ * return the rdata field member counter
  * \param[in] *rr rr to operate on
- * \param[in] nr the number to set
+ * \param[in] nr the number of the rdf to return
  * \return ldns_rdf *
  */
 ldns_rdf *
