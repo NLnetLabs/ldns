@@ -215,6 +215,10 @@ ldns_resolver_send(ldns_resolver *r, ldns_rdf *name, ldns_rr_type type, ldns_rr_
 	if (0 == ldns_resolver_configured(r)) {
 		return NULL;
 	}
+	if (ldns_rdf_get_type(name) != LDNS_RDF_TYPE_DNAME) {
+		return NULL;
+	}
+	
 	/* prepare a question pkt from the parameters
 	 * and then send this */
 	/*query_pkt = somesortofconversion2qpkt(name, type, class, flags); * */

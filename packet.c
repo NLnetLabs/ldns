@@ -129,6 +129,37 @@ ldns_pkt_additional(ldns_pkt *packet)
 	return packet->_additional;
 }
 
+uint16_t
+ldns_pkt_xxcount(ldns_pkt *packet, ldns_pkt_section s)
+{
+	switch(s) {
+		case LDNS_SECTION_QUESTION:
+			return ldns_pkt_qdcount(packet);
+		case LDNS_SECTION_ANSWER:
+			return ldns_pkt_ancount(packet);
+		case LDNS_SECTION_AUTHORITY:
+			return ldns_pkt_nscount(packet);
+		case LDNS_SECTION_ADDITIONAL:
+			return ldns_pkt_arcount(packet);
+	}
+	return 0;
+}
+
+ldns_rr_list *
+ldns_pkt_xxsection(ldns_pkt *packet, ldns_pkt_section s)
+{
+	switch(s) {
+		case LDNS_SECTION_QUESTION:
+			return ldns_pkt_question(packet);
+		case LDNS_SECTION_ANSWER:
+			return ldns_pkt_answer(packet);
+		case LDNS_SECTION_AUTHORITY:
+			return ldns_pkt_authority(packet);
+		case LDNS_SECTION_ADDITIONAL:
+			return ldns_pkt_additional(packet);
+	}
+	return NULL;
+}
 
 /* write */
 void
@@ -215,10 +246,31 @@ ldns_pkt_set_arcount(ldns_pkt *packet, uint16_t arcount)
 	packet->_header->_arcount = arcount;
 }
 
+/** 
+ * push an rr on a packet
+ * \param[in] packet packet to operatore on
+ * \param[in] section where to put it
+ * \param[in] rr rr to push
+ * \return ldns_status status
+ */
+bool
+ldns_pkt_push_rr(ldns_pkt *packet, ldns_pkt_section section, ldns_rr *rr)
+{
+	ldns_rr_list *rrs;
+
+	/* get the right rr list for this section */
+	rrs = ldns_pkt_xxsection(packet, section);
+	if (!rrs) {
+		return false;
+	}
+	/* push the rr */
+	ldns_rr_list_push_rr(rrs, rr);
+	return true;
+}
+
 
 /* Create/destroy/convert functions
  */
- 
 ldns_pkt *
 ldns_pkt_new()
 {
