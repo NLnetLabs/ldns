@@ -75,6 +75,17 @@ struct ldns_struct_pkt
 };
 typedef struct ldns_struct_pkt ldns_pkt;
 
+/**
+ * The sections of a packet
+ */
+enum ldns_enum_pkt_section {
+	LDNS_SECTION_QUESTION = 0,
+	LDNS_SECTION_ANSWER = 1,
+	LDNS_SECTION_AUTHORITY = 2,
+	LDNS_SECTION_ADDITIONAL = 3
+};
+typedef enum ldns_enum_pkt_section ldns_pkt_section;	
+
 /* prototypes */
 uint16_t pkt_id(ldns_pkt *);
 bool pkt_qr(ldns_pkt *);
