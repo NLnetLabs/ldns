@@ -37,6 +37,7 @@ bool ldns_verify_rrsig_rsamd5(ldns_buffer *, ldns_buffer *, ldns_buffer *);
 bool ldns_verify_rrsig(ldns_rr_list *, ldns_rr *, ldns_rr_list *);
 bool ldns_verify(ldns_rr_list *, ldns_rr_list *, ldns_rr_list *);	
 uint16_t ldns_keytag(ldns_rr *);
+ldns_rr_list *ldns_sign(ldns_rr_list*, ldns_rr_list*);
 DSA *ldns_key_buf2dsa(ldns_buffer *);
 RSA *ldns_key_buf2rsa(ldns_buffer *);
 
