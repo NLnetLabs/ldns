@@ -1172,6 +1172,7 @@ ldns_pkt_print(FILE *output, ldns_pkt *pkt)
 void
 ldns_rr_list_print(FILE *output, ldns_rr_list *lst)
 {
+	assert(lst != NULL);
 	char *str = ldns_rr_list2str(lst);
 	if (str) {
 		fprintf(output, "%s", str);

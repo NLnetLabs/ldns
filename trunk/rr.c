@@ -525,6 +525,7 @@ ldns_rr_list_pop_rr(ldns_rr_list *rr_list)
 /**
  * check if an rr_list is a rrset
  * \param[in] rr_list the rr_list to check
+ * \todo BIG TODO
  */
 bool
 ldns_is_rrset(ldns_rr_list *rr_list)
