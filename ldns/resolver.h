@@ -103,6 +103,7 @@ void ldns_resolver_set_debug(ldns_resolver *, bool);
 void ldns_resolver_incr_nameserver_count(ldns_resolver *);
 void ldns_resolver_dec_nameserver_count(ldns_resolver *);
 void ldns_resolver_set_nameserver_count(ldns_resolver *, size_t);
+void ldns_resolver_set_nameservers(ldns_resolver *, ldns_rdf **);
 
 void ldns_resolver_set_domain(ldns_resolver *, ldns_rdf *);
 void ldns_resolver_set_timeout(ldns_resolver *r, struct timeval timeout);

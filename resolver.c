@@ -133,32 +133,30 @@ ldns_resolver_pop_nameserver(ldns_resolver *r)
 {
 	ldns_rdf **nameservers;
 	ldns_rdf *pop;
+	size_t ns_count;
 
-	printf("-- %d --\n", ldns_resolver_nameserver_count(r));
-	if (ldns_resolver_nameserver_count(r) == 0) {
+	ns_count = ldns_resolver_nameserver_count(r);
+	if (ns_count == 0) {
 		return NULL;
 	}
-	printf("-- %d --\n", ldns_resolver_nameserver_count(r) - 1);
 	
 	nameservers = ldns_resolver_nameservers(r);
+	if (!nameservers) {
+		printf("grote error, er gaat wat fout\n");
+		return NULL;
+	}
 	
-	/*pop = ldns_rdf_deep_clone(
-		nameservers[ldns_resolver_nameserver_count(r)]);
-		*/
+	pop = nameservers[ns_count - 1];
 
-	
-
-	pop = nameservers[1];
-	printf("rdf pop: ");
+	printf("en dan nu pop ");
 	ldns_rdf_print(stdout, pop);
 	printf("\n");
 
-	/* delete the room of the last one */
-#if 0
 	nameservers = XREALLOC(nameservers, ldns_rdf *, 
-			(ldns_resolver_nameserver_count(r) - 1));
-#endif
+			(ns_count - 1));
 
+	ldns_resolver_set_nameservers(r, nameservers);
+	/* decr the count */
 	ldns_resolver_dec_nameserver_count(r);
 	return pop;
 }
@@ -174,28 +172,27 @@ ldns_status
 ldns_resolver_push_nameserver(ldns_resolver *r, ldns_rdf *n)
 {
 	ldns_rdf **nameservers;
+	uint16_t ns_count;
 
 	if (ldns_rdf_get_type(n) != LDNS_RDF_TYPE_A &&
 			ldns_rdf_get_type(n) != LDNS_RDF_TYPE_AAAA) {
 		return LDNS_STATUS_ERR;
 	}
 
+	ns_count = ldns_resolver_nameserver_count(r);
 	nameservers = ldns_resolver_nameservers(r);
 
 	/* make room for the next one */
-	nameservers = XREALLOC(nameservers, ldns_rdf *, 
-			(ldns_resolver_nameserver_count(r) + 1));
+	printf("realloc to [%d] \n", ns_count + 1);
+	nameservers = XREALLOC(nameservers, ldns_rdf *, (ns_count + 1));
 
-	/* slide *n in its slot */
-	nameservers[
-		ldns_resolver_nameserver_count(r)] = n;
+	/* set the new value in the resolver */
+	ldns_resolver_set_nameservers(r, nameservers);
 
-	printf("and finally pushing ");
-	ldns_rdf_print(stdout, n);
-	printf("[ as %d] \n", ldns_resolver_nameserver_count(r));
+	/* slide n in its slot */
+	nameservers[ns_count] = n;
 
 	ldns_resolver_incr_nameserver_count(r);
-	printf("[ as %d] \n", ldns_resolver_nameserver_count(r));
 	return LDNS_STATUS_OK;
 }
 
@@ -215,9 +212,6 @@ ldns_resolver_push_nameserver_rr(ldns_resolver *r, ldns_rr *rr)
 		return LDNS_STATUS_ERR;
 	}
 	address = ldns_rr_rdf(rr, 0); /* extract the ip number */
-	printf("addres to push: ");
-	ldns_rdf_print(stdout, address);
-	printf("\n");
 	return ldns_resolver_push_nameserver(r, address);
 }
 
@@ -232,13 +226,11 @@ ldns_resolver_push_nameserver_rr_list(ldns_resolver *r, ldns_rr_list *rrlist)
 {
 	ldns_rr *rr;
 	ldns_status stat;
-	uint16_t i;
+	size_t i;
 
 	stat = LDNS_STATUS_OK;
 	for(i = 0; i < ldns_rr_list_rr_count(rrlist); i++) {
 		rr = ldns_rr_list_rr(rrlist, i);
-		ldns_rr_print(stdout, rr);
-		printf(" push RR\n");
 		if (ldns_resolver_push_nameserver_rr(r, rr) !=
 				LDNS_STATUS_OK) {
 			stat = LDNS_STATUS_ERR;
@@ -293,6 +285,12 @@ void
 ldns_resolver_set_dnsrch(ldns_resolver *r, bool d)
 {
 	r->_dnsrch = d;
+}
+
+void
+ldns_resolver_set_nameservers(ldns_resolver *r, ldns_rdf **n)
+{
+	r->_nameservers = n;
 }
 
 void
@@ -359,11 +357,13 @@ ldns_resolver_new(void)
 		return NULL;
 	}
 
-	r->_searchlist = MALLOC(ldns_rdf *);
-	r->_nameservers = MALLOC(ldns_rdf *);
+	r->_searchlist = NULL;
+	r->_nameservers = NULL;
+#if 0
 	if (!r->_searchlist || !r->_nameservers) {
 		return NULL;
 	}
+#endif
 
 	/* defaults are filled out */
 	ldns_resolver_set_searchlist_count(r, 0);
@@ -432,8 +432,7 @@ ldns_resolver_new_frm_file(const char *filename)
 	if (!fp) {
 		return NULL;
 	}
-	/* the file is opened. it's line based - this will be a bit messy
-	 */
+	/* the file is opened. it's line based - this will be a bit messy */
 
 	while (readword(word, fp, MAXLINE_LEN) != -1) {
 		/* do something */
