@@ -377,6 +377,9 @@ ldns_pkt_set_flags(ldns_pkt *packet, uint16_t flags)
 	if ((flags & LDNS_AA) == LDNS_AA) {
 		ldns_pkt_set_aa(packet, true);
 	}
+	if ((flags & LDNS_RD) == LDNS_RD) {
+		ldns_pkt_set_rd(packet, true);
+	}
 	if ((flags & LDNS_TC) == LDNS_TC) {
 		ldns_pkt_set_tc(packet, true);
 	}

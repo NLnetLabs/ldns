@@ -8,7 +8,6 @@
 
 #include <config.h>
 #include <ldns/resolver.h>
-#include <ldns/ldns.h>
         
 
 void
@@ -80,8 +79,11 @@ main(int argc, char **argv)
                 return 1;
 	}
         
-        /* fire it off. "miek.nl." will be added */
+	/*
+        pkt = ldns_resolver_send(res, qname, ldns_rr_get_type_by_name(type), LDNS_RD);
+	*/
         pkt = ldns_resolver_send(res, qname, ldns_rr_get_type_by_name(type), 0);
+
 
 	if (!pkt)  {
 		printf("error pkt sending\n");

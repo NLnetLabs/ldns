@@ -67,7 +67,6 @@ ldns_send(ldns_resolver *r, ldns_pkt *query_pkt)
 	ns_array = ldns_resolver_nameservers(r);
 	reply = NULL; ns_len = 0;
 	
-	printf("we are in ldns_send()\n");
 	qb = ldns_buffer_new(MAX_PACKET_SIZE);
 
 	if (ldns_pkt2buffer_wire(qb, query_pkt) != LDNS_STATUS_OK) {
@@ -104,7 +103,6 @@ ldns_send(ldns_resolver *r, ldns_pkt *query_pkt)
 		
 		if (reply) {
 			ldns_pkt_set_answerfrom(reply, ns_array[i]);
-			printf("reply found\n");
 			break;
 		}
 	}
