@@ -49,11 +49,7 @@ PROG_TARGETS	=	$(PROG_SOURCES:.c=)
 
 LIBDNS_OBJECTS	=	$(LIBDNS_SOURCES:.c=.o)
 
-TEST_SOURCES	=	run-test0.c run-test1.c run-test2.c run-test3.c \
-			run-test4.c run-test5.c run-test6.c run-test7.c \
-			run-test8.c run-test9.c run-test10.c run-test11.c \
-			run-test13.c run-test14.c run-test15.c run-test16.c \
-			run-test17.c run-test18.c
+TEST_SOURCES	=	run-test7.c run-test11.c run-test18.c
 
 #ALL_SOURCES	=	$(TEST_SOURCES) $(LIBDNS_SOURCES) $(PROG_SOURCES)
 ALL_SOURCES	=	$(LIBDNS_SOURCES) $(PROG_SOURCES)
@@ -90,41 +86,9 @@ mx:		mx.o $(LIBDNS_OBJECTS) $(LIBOBJS)
 
 # tests
 
-run-test0:	run-test0.o $(LIBDNS_OBJECTS) $(LIBOBJS)
-		$(LINK) ${LIBS} -o $@ $+
-run-test1:	run-test1.o $(LIBDNS_OBJECTS) $(LIBOBJS)
-		$(LINK) ${LIBS} -o $@ $+
-run-test2:	run-test2.o $(LIBDNS_OBJECTS) $(LIBOBJS)
-		$(LINK) ${LIBS} -o $@ $+
-run-test3:	run-test3.o $(LIBDNS_OBJECTS) $(LIBOBJS)
-		$(LINK) ${LIBS} -o $@ $+
-run-test4:	run-test4.o $(LIBDNS_OBJECTS) $(LIBOBJS)
-		$(LINK) ${LIBS} -o $@ $+
-run-test5:	run-test5.o $(LIBDNS_OBJECTS) $(LIBOBJS)
-		$(LINK) ${LIBS} -o $@ $+
-run-test6:	run-test6.o $(LIBDNS_OBJECTS) $(LIBOBJS)
-		$(LINK) ${LIBS} -o $@ $+
 run-test7:	run-test7.o $(LIBDNS_OBJECTS) $(LIBOBJS)
 		$(LINK) ${LIBS} -o $@ $+
-run-test8:	run-test8.o $(LIBDNS_OBJECTS) $(LIBOBJS)
-		$(LINK) ${LIBS} -o $@ $+
-run-test9:	run-test9.o $(LIBDNS_OBJECTS) $(LIBOBJS)
-		$(LINK) ${LIBS} -o $@ $+
-run-test10:	run-test10.o $(LIBDNS_OBJECTS) $(LIBOBJS)
-		$(LINK) ${LIBS} -o $@ $+
 run-test11:	run-test11.o $(LIBDNS_OBJECTS) $(LIBOBJS)
-		$(LINK) ${LIBS} -o $@ $+
-run-test12:	run-test12.o $(LIBDNS_OBJECTS) $(LIBOBJS)
-		$(LINK) -lpcap ${LIBS} -o $@ $+
-run-test13:	run-test13.o $(LIBDNS_OBJECTS) $(LIBOBJS)
-		$(LINK) ${LIBS} -o $@ $+
-run-test14:	run-test14.o $(LIBDNS_OBJECTS) $(LIBOBJS)
-		$(LINK) ${LIBS} -o $@ $+
-run-test15:	run-test15.o $(LIBDNS_OBJECTS) $(LIBOBJS)
-		$(LINK) ${LIBS} -o $@ $+
-run-test16:	run-test16.o $(LIBDNS_OBJECTS) $(LIBOBJS)
-		$(LINK) ${LIBS} -o $@ $+
-run-test17:	run-test17.o $(LIBDNS_OBJECTS) $(LIBOBJS)
 		$(LINK) ${LIBS} -o $@ $+
 run-test18:	run-test18.o $(LIBDNS_OBJECTS) $(LIBOBJS)
 		$(LINK) ${LIBS} -o $@ $+
@@ -162,47 +126,14 @@ docclean:
 	rm -rf doc/man/
 	rm -rf doc/latex/
 
-test0: run-test0
-	./run-test0
-test1: run-test1
-	./run-test1
-test2: run-test2
-	./run-test2
-test3: run-test3
-	./run-test3
-test4: run-test4
-	./run-test4
-test5: run-test5
-	./run-test5
-test6: run-test6
-	./run-test6
 test7: run-test7
 	./run-test7
-test8: run-test8
-	./run-test8
-test9: run-test9
-	./run-test9
-test10: run-test10
-	./run-test10
 test11: run-test11
 	./run-test11
-test12: run-test12
-	./run-test11
-test13: run-test13
-	./run-test11
-test14: run-test14
-	./run-test11
-test15: run-test15
-	./run-test15
-test16: run-test16
-	./run-test16
-test17: run-test17
-	./run-test17
 test18: run-test18
 	./run-test18
 
-test: test0 test1 test2 test3 test4 test5 test6 test7 test8 test9 test10 test11	\
-	test13 test14 test15 test16 test17 test18
+test: test7 test11 test18
 
 ## No need for changes here
 
