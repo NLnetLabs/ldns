@@ -443,9 +443,8 @@ ldns_rr_list_cat(ldns_rr_list *left, ldns_rr_list *right)
 	if (right) {
 		r_rr_count = ldns_rr_list_rr_count(right);
 	}
-
-	/* constant DEFINE? */
-	if (l_rr_count + r_rr_count > 65535 ) {
+	
+	if (l_rr_count + r_rr_count > MAX_RR ) {
 		/* overflow error */
 		return NULL;
 	}
