@@ -74,7 +74,7 @@ void ldns_resolver_set_searchlist(ldns_resolver *, ldns_rdf *);
 
 ldns_pkt * ldns_search();
 ldns_pkt * ldns_query();
-ldns_pkt * ldns_send();
+ldns_pkt * ldns_send(ldns_resolver *, uint8_t*, uint8_t*, uint8_t*);
 ldns_pkt * ldns_bgsend();
 
 #endif  /* !_LDNS_RESOLVER_H */

@@ -142,6 +142,19 @@ ldns_resolver_usevc(ldns_resolver *r)
 
 /* more sophisticated functions */
 
+/** \brief create a new resolver structure */
+ldns_resolver *
+ldns_resover_new(void)
+{
+	ldns_resolver *r;
+
+	r = MALLOC(ldns_resolver);
+
+	/* no defaults are filled out yet */
+
+	return r;
+}
+
 /* search for information in the DNS.
  * search() applies the search list.
  * See Net::DNS::Resolver for details
@@ -161,8 +174,11 @@ ldns_query()
 
 /* send the query as-is */
 ldns_pkt *
-ldns_send()
+ldns_send(ldns_resolver *r, uint8_t *name, uint8_t *type, uint8_t *class)
 {
+	assert(r != NULL);
+	assert(name != NULL);
+
 	return NULL;
 }
 
