@@ -199,15 +199,16 @@ ldns_rr_new_frm_str(const char *str)
 
 		if (!r) {
 			printf("rdf conversion mismatch\n");
+			/* return what we've got */
 			FREE(rdata);
-			return NULL;
+			return new;
 		}
 		ldns_rr_push_rdf(new, r);
 
 		if (r_cnt > r_max) {
 			printf("rdf data overflow");
 			FREE(rdata);
-			return NULL;
+			return new;
 		}
 		r_cnt++;
 	}
@@ -218,7 +219,7 @@ ldns_rr_new_frm_str(const char *str)
 	if (!r) {
 		printf("rdf conversion mismatch\n");
 		FREE(rdata);
-		return NULL;
+		return new;
 	}
 
 	ldns_rr_push_rdf(new, r);
