@@ -135,30 +135,6 @@
 #define	ARCOUNT(wirebuf)		(read_uint16(wirebuf+ARCOUNT_OFF))
 
 
-/* TODO: general rdata2str or dname2str, with error
-         checks and return status etc */
-/* this is temp function for debugging wire2rr */
-/* do NOT pass compressed data here :p */
-void
-ldns_dname2str(char *dest, ldns_rdf *dname)
-{
-	/* can we do with 1 pos var? or without at all? */
-	uint8_t src_pos = 0;
-	uint8_t dest_pos = 0;
-	uint8_t len;
-	len = dname->_data[src_pos];
-	while (len > 0) {
-		src_pos++;
-		memcpy(&dest[dest_pos], &(dname->_data[src_pos]), len);
-		dest_pos += len;
-		src_pos += len;
-		len = dname->_data[src_pos];
-		dest[dest_pos] = '.';
-		dest_pos++;
-	}
-	dest[dest_pos] = '\0';
-}
-
 /* TODO:
          status_type return and remove printfs
          #defines */

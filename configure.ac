@@ -19,6 +19,29 @@ AC_PROG_MAKE_SET
 AC_C_CONST
 AC_C_INLINE
 
+AC_DEFUN([AC_CHECK_FORMAT_ATTRIBUTE],
+[AC_REQUIRE([AC_PROG_CC])
+AC_MSG_CHECKING(whether the C compiler (${CC-cc}) accepts the "format" attribute)
+AC_CACHE_VAL(ac_cv_c_format_attribute,
+[ac_cv_c_format_attribute=no
+AC_TRY_COMPILE(
+[#include <stdio.h>
+void f (char *format, ...) __attribute__ ((format (printf, 1, 2)));
+void (*pf) (char *format, ...) __attribute__ ((format (printf, 1, 2)));
+], [
+   f ("%s", "str");
+],
+[ac_cv_c_format_attribute="yes"],
+[ac_cv_c_format_attribute="no"])
+])
+
+AC_MSG_RESULT($ac_cv_c_format_attribute)
+if test $ac_cv_c_format_attribute = yes; then
+  AC_DEFINE(HAVE_ATTR_FORMAT, 1, [Whether the C compiler accepts the "format" attribute])
+fi
+])dnl
+
+
 # my own checks
 AC_PATH_PROG(doxygen, doxygen, "/usr/bin/doxygen")
 
@@ -86,6 +109,14 @@ AH_BOTTOM([
 #ifdef HAVE_ARPA_INET_H
 #include <arpa/inet.h>
 #endif
+
+#ifdef HAVE_ATTR_FORMAT
+#define ATTR_FORMAT(archetype, string_index, first_to_check) \
+    __attribute__ ((format (archetype, string_index, first_to_check)))
+#else /* !HAVE_ATTR_FORMAT */
+#define ATTR_FORMAT(archetype, string_index, first_to_check) /* empty */
+#endif /* !HAVE_ATTR_FORMAT */
+
 ])
 
 
