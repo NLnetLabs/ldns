@@ -10,6 +10,8 @@
 #include "packet.h"
 #include "prototype.h"
 
+
+/* bogus comment */
 int
 main(void)
 {
