@@ -133,7 +133,6 @@ ldns_resolver_set_port(ldns_resolver *r, uint16_t p)
 ldns_status
 ldns_resolver_push_nameserver(ldns_resolver *r, ldns_rdf *n)
 {
-	/* LDNS_RDF_TYPE_A | LDNS_RDF_TYPE_AAAA */
 	ldns_rdf **nameservers;
 
 	if (ldns_rdf_get_type(n) != LDNS_RDF_TYPE_A &&
@@ -153,6 +152,27 @@ ldns_resolver_push_nameserver(ldns_resolver *r, ldns_rdf *n)
 
 	ldns_resolver_incr_nameserver_count(r);
 	return LDNS_STATUS_OK;
+}
+
+/**
+ * push a new nameserver to the resolver. It must be an 
+ * A or AAAA RR record type
+ * \param[in] r the resolver
+ * \param[in] r the rr 
+ * \return ldns_status a status
+ */
+ldns_status
+ldns_resolver_push_nameserver_rr(ldns_resolver *r, ldns_rr *rr)
+{
+	ldns_rdf *address;
+
+	if (ldns_rr_get_type(rr) != LDNS_RR_TYPE_A &&
+			ldns_rr_get_type(rr) != LDNS_RR_TYPE_AAAA) {
+		return LDNS_STATUS_ERR;
+	}
+
+	address = ldns_rr_rdf(rr, 1); /* extra the ip number */
+	return ldns_resolver_push_nameserver(r, address);
 }
 
 void
