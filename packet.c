@@ -355,8 +355,42 @@ ldns_pkt_free(ldns_pkt *packet)
 	FREE(packet);
 }
 
+/**
+ * Set the flags in a packet
+ * \param[in] packet the packet to operate on
+ * \param[in] flags ORed values: LDNS_QR| LDNS_AR for instance
+ * \return true on success otherwise false
+ */
+bool
+ldns_pkt_set_flags(ldns_pkt *packet, uint16_t flags)
+{
+	if (!packet) {
+		return false;
+	}
+	if ((flags & LDNS_QR) == LDNS_QR) {
+		ldns_pkt_set_qr(packet, true);
+	}
+	if ((flags & LDNS_AA) == LDNS_AA) {
+		ldns_pkt_set_aa(packet, true);
+	}
+	if ((flags & LDNS_TC) == LDNS_TC) {
+		ldns_pkt_set_tc(packet, true);
+	}
+	if ((flags & LDNS_CD) == LDNS_CD) {
+		ldns_pkt_set_cd(packet, true);
+	}
+	if ((flags & LDNS_RA) == LDNS_RA) {
+		ldns_pkt_set_ra(packet, true);
+	}
+	if ((flags & LDNS_AD) == LDNS_AD) {
+		ldns_pkt_set_ad(packet, true);
+	}
+	return true;
+}
+
 ldns_pkt *
-ldns_pkt_query_new_frm_str(char *name, ldns_rr_type rr_type, ldns_rr_class rr_class)
+ldns_pkt_query_new_frm_str(const char *name, ldns_rr_type rr_type, ldns_rr_class rr_class,
+		uint16_t flags)
 {
 	ldns_pkt *packet;
 	ldns_rr *question_rr;
@@ -364,6 +398,11 @@ ldns_pkt_query_new_frm_str(char *name, ldns_rr_type rr_type, ldns_rr_class rr_cl
 
 	packet = ldns_pkt_new();
 	if (!packet) {
+		return NULL;
+	}
+	
+	/* we're making a query, add this flag */
+	if (!ldns_pkt_set_flags(packet, LDNS_QR | flags)) {
 		return NULL;
 	}
 	
@@ -402,13 +441,18 @@ ldns_pkt_query_new_frm_str(char *name, ldns_rr_type rr_type, ldns_rr_class rr_cl
  * \return ldns_pkt* a pointer to the new pkt
  */
 ldns_pkt *
-ldns_pkt_query_new(ldns_rdf *rr_name, ldns_rr_type rr_type, ldns_rr_class rr_class)
+ldns_pkt_query_new(ldns_rdf *rr_name, ldns_rr_type rr_type, ldns_rr_class rr_class,
+		uint16_t flags)
 {
 	ldns_pkt *packet;
 	ldns_rr *question_rr;
 
 	packet = ldns_pkt_new();
 	if (!packet) {
+		return NULL;
+	}
+
+	if (!ldns_pkt_set_flags(packet, flags)) {
 		return NULL;
 	}
 	
