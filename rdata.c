@@ -23,38 +23,38 @@
 
 /* read */
 uint16_t
-rd_field_size(t_rdata_field *rd)
+_ldns_rd_field_size(t_rdata_field *rd)
 {
 	return rd->_size;
 }
 
 t_rd_type
-rd_field_type(t_rdata_field *rd)
+_ldns_rd_field_type(t_rdata_field *rd)
 {
 	return rd->_type;
 }
 
 uint8_t *
-rd_field_data(t_rdata_field *rd)
+_ldns_rd_field_data(t_rdata_field *rd)
 {
 	return rd->_data;
 }
 
 /* write */
 void
-rd_field_set_size(t_rdata_field *rd, uint16_t s)
+_ldns_rd_field_set_size(t_rdata_field *rd, uint16_t s)
 {
 	rd->_size = s;
 }
 
 void
-rd_field_set_type(t_rdata_field *rd, t_rd_type t)
+_ldns_rd_field_set_type(t_rdata_field *rd, t_rd_type t)
 {
 	rd->_type = t;
 }
 
 void
-rd_field_set_data(t_rdata_field *rd, uint8_t *d)
+_ldns_rd_field_set_data(t_rdata_field *rd, uint8_t *d)
 {
 	/* only copy the pointer */
 	rd->_data = d;
@@ -65,16 +65,16 @@ rd_field_set_data(t_rdata_field *rd, uint8_t *d)
  * and return it
  */
 t_rdata_field *
-rd_field_new(uint16_t s, t_rd_type t, uint8_t *d)
+_ldns_rd_field_new(uint16_t s, t_rd_type t, uint8_t *d)
 {
 	t_rdata_field *rd;
 	MALLOC(rd, t_rdata_field);
 	if (!rd)
 		return NULL;
 
-	rd_field_set_size(rd, s);
-	rd_field_set_type(rd, t);
-	rd_field_set_data(rd, d);
+	_ldns_rd_field_set_size(rd, s);
+	_ldns_rd_field_set_type(rd, t);
+	_ldns_rd_field_set_data(rd, d);
 
 	return(rd);
 }
@@ -85,12 +85,13 @@ rd_field_new(uint16_t s, t_rd_type t, uint8_t *d)
  * and return it
  */
 t_rdata_field *
-rd_field_new_frm_string(t_rd_type t, char *s)
+_ldns_rd_field_new_frm_string(t_rd_type t, char *s)
 {
 	return NULL;
 }
 
-void rd_field_destroy(t_rdata_field *rd)
+void 
+_ldns_rd_field_destroy(t_rdata_field *rd)
 {
 	rd = NULL; /* kuch */
 	/* empty */

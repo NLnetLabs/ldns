@@ -131,12 +131,12 @@ typedef struct type_struct_rdata_field_descriptor t_rdata_field_descriptor;
 
 
 /* prototypes */
-uint16_t        rd_field_size(t_rdata_field *);
-void            rd_field_set_size(t_rdata_field *, uint16_t);
-void            rd_field_set_type(t_rdata_field *, t_rd_type);
-void            rd_field_set_data(t_rdata_field *, uint8_t *);
-t_rd_type       rd_field_type(t_rdata_field *);
-t_rdata_field   *rd_field_new(uint16_t, t_rd_type, uint8_t *);
-uint8_t         *rd_field_data(t_rdata_field *);
-void            rd_field_destroy(t_rdata_field *);
+uint16_t        _ldns_rd_field_size(t_rdata_field *);
+void            _ldns_rd_field_set_size(t_rdata_field *, uint16_t);
+void            _ldns_rd_field_set_type(t_rdata_field *, t_rd_type);
+void            _ldns_rd_field_set_data(t_rdata_field *, uint8_t *);
+t_rd_type       _ldns_rd_field_type(t_rdata_field *);
+t_rdata_field   *_ldns_rd_field_new(uint16_t, t_rd_type, uint8_t *);
+uint8_t         *_ldns_rd_field_data(t_rdata_field *);
+void            _ldns_rd_field_destroy(t_rdata_field *);
 #endif	/* _RDATA_H */

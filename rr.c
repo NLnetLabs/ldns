@@ -21,14 +21,14 @@
  * create a new rr structure.
  */
 t_rr *
-rr_new(void)
+ldns_rr_new(void)
 {
 	t_rr *rr;
 	MALLOC(rr, t_rr);
         if (!rr)
                 return NULL;
 
-	rr_set_rd_count(rr, 0);
+	ldns_rr_set_rd_count(rr, 0);
 	rr->_rdata_fields = NULL; /* XXX */
         return(rr);
 }
@@ -37,7 +37,7 @@ rr_new(void)
  * set the owner in the rr structure
  */
 void
-rr_set_owner(t_rr *rr, uint8_t *owner)
+ldns_rr_set_owner(t_rr *rr, uint8_t *owner)
 {
 	rr->_owner = owner;
 }
@@ -46,7 +46,7 @@ rr_set_owner(t_rr *rr, uint8_t *owner)
  * set the owner in the rr structure
  */
 void
-rr_set_ttl(t_rr *rr, uint16_t ttl)
+ldns_rr_set_ttl(t_rr *rr, uint16_t ttl)
 {
 	rr->_ttl = ttl;
 }
@@ -55,7 +55,7 @@ rr_set_ttl(t_rr *rr, uint16_t ttl)
  * set the rd_count in the rr
  */
 void
-rr_set_rd_count(t_rr *rr, uint16_t count)
+ldns_rr_set_rd_count(t_rr *rr, uint16_t count)
 {
 	rr->_rd_count = count;
 }
@@ -64,7 +64,7 @@ rr_set_rd_count(t_rr *rr, uint16_t count)
  * set the class in the rr
  */
 void
-rr_set_class(t_rr *rr, t_class klass)
+ldns_rr_set_class(t_rr *rr, t_class klass)
 {
 	rr->_klass = klass;
 }
@@ -74,11 +74,11 @@ rr_set_class(t_rr *rr, t_class klass)
  * placed in the next available spot
  */
 void
-rr_push_rd_field(t_rr *rr, t_rdata_field *f)
+ldns_rr_push_rd_field(t_rr *rr, t_rdata_field *f)
 {
 	uint16_t rd_count;
 
-	rd_count = rr_rd_count(rr);
+	rd_count = ldns_rr_rd_count(rr);
 	
 	/* grow the array */
 	XREALLOC(rr->_rdata_fields, t_rdata_field *, rd_count + 1);
@@ -86,32 +86,32 @@ rr_push_rd_field(t_rr *rr, t_rdata_field *f)
 	/* add the new member */
 	rr->_rdata_fields[rd_count] = f;
 
-	rr_set_rd_count(rr, rd_count + 1);
+	ldns_rr_set_rd_count(rr, rd_count + 1);
 }
 
 /**
  * return the owner name of an rr structure
  */
 uint8_t *
-rr_owner(t_rr *rr)
+ldns_rr_owner(t_rr *rr)
 {
-	return (rr->_owner);
+	return rr->_owner;
 }
 
 /**
  * return the owner name of an rr structure
  */
 uint8_t
-rr_ttl(t_rr *rr)
+ldns_rr_ttl(t_rr *rr)
 {
-	return (rr->_ttl);
+	return rr->_ttl;
 }
 
 /**
  * return the rd_count of an rr structure
  */
 uint16_t
-rr_rd_count(t_rr *rr)
+ldns_rr_rd_count(t_rr *rr)
 {
-	return (rr->_rd_count);
+	return rr->_rd_count;
 }

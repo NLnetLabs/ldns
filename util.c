@@ -20,9 +20,9 @@ void
 xprintf_rd_field(t_rdata_field *rd)
 {
 	/* assume printable string */
-	fprintf(stdout, "size\t:%u\n", (unsigned int)rd_field_size(rd));
-	fprintf(stdout, "type\t:%u\n", (unsigned int)rd_field_type(rd));
-	fprintf(stdout, "data\t:[%.*s]\n", (int)rd_field_size(rd), (char*)rd_field_data(rd));
+	fprintf(stdout, "size\t:%u\n", (unsigned int)_ldns_rd_field_size(rd));
+	fprintf(stdout, "type\t:%u\n", (unsigned int)_ldns_rd_field_type(rd));
+	fprintf(stdout, "data\t:[%.*s]\n", (int)_ldns_rd_field_size(rd), (char*)_ldns_rd_field_data(rd));
 }
 
 void
@@ -31,7 +31,7 @@ xprintf_rr(t_rr *rr)
 	/* assume printable string */
 	uint16_t count, i;
 
-	count = rr_rd_count(rr);
+	count = ldns_rr_rd_count(rr);
 
 	for(i = 0; i < count; i++) {
 		printf("print rd %u\n", i);
