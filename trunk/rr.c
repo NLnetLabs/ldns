@@ -58,6 +58,40 @@ ldns_rr_free(ldns_rr *rr)
 	FREE(rr);
 }
 
+/** 
+ * normalize a RR string; kill newlines and parentheses
+ * and put the whole rr on 1 line
+ * \param[in] rr the rr to normalize
+ * \return the normalized rr
+ */
+/* no need to export this */
+static char *
+ldns_rr_str_normalize(const char *rr)
+{
+	char *p;
+	char *s;
+	char *orig_s;
+	int sp_removed;
+
+	s = XMALLOC(char, strlen(rr)); /* for the newly created string */
+	orig_s = s;
+	sp_removed = 0;
+
+	/* walk through the rr and fix it. Whitespace is handled in
+	 * ldns_rr_new_frm_str(), so don't worry about that here
+	 * - remove (, ) and \n
+	 */
+	for(p = (char*)rr; *p; p++) {
+		if (*p == '(' || *p == ')' || *p == '\n') {
+			continue;
+		}
+		sp_removed = 0;
+	 	*s++ = *p;
+	}
+	*s = '\0';
+	return orig_s;
+}
+
 /**
  * \brief create a rr from a string
  * string should be a fully filled in rr, like
@@ -70,6 +104,9 @@ ldns_rr_free(ldns_rr *rr)
  * miek.nl. 3600 IN MX 10 elektron.atoom.net
  * Everything should be on 1 line, parentheses are not
  * handled. We may need a normalize function.
+ *
+ * We cannot(!) handle extranous spaces in the rdata (for instace b64
+ * stuff)
  */
 ldns_rr *
 ldns_rr_new_frm_str(const char *str)
@@ -123,7 +160,9 @@ ldns_rr_new_frm_str(const char *str)
 	r_min = ldns_rr_descriptor_minimum(desc);
 
 	/* rdata (rdf's) */
-	for(rd = strtok(rdata, "\t "), r_cnt =0; rd; rd = strtok(NULL, "\t "), r_cnt++) {
+	for(rd = strtok(rdata, "\t \0"), r_cnt =0; rd; rd = strtok(NULL, "\t \0"), r_cnt++) {
+		printf("[%s] %d\n", rd, r_cnt);
+		
 		r = ldns_rdf_new_frm_str(rd,
 				ldns_rr_descriptor_field_type(desc, r_cnt));
 		if (!r) {
@@ -139,36 +178,6 @@ ldns_rr_new_frm_str(const char *str)
 	return new;
 }
 
-/** 
- * normalize a RR string; kill newlines and parentheses
- * and put the whole rr on 1 line
- * \param[in] rr the rr to normalize
- * \return the normalized rr
- */
-/* no need to export this */
-static char *
-ldns_rr_str_normalize(const char *rr)
-{
-	char *p;
-	char *s;
-	char *orig_s;
-
-	s = XMALLOC(char, strlen(rr)); /* for the newly created string */
-	orig_s = s;
-
-	/* walk through the rr and fix it. Whitespace is handled in
-	 * ldns_rr_new_frm_str(), so don't worry about that here
-	 * - remove (, ) and \n
-	 */
-	for(p = (char*)rr; *p; p++) {
-		if (*p == '(' || *p == ')' || *p == '\n') {
-			continue;
-		}
-	 	*s++ = *p;
-	}
-	*s = '\0';
-	return orig_s;
-}
 
 
 /**

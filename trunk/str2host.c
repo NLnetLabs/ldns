@@ -400,17 +400,36 @@ ldns_str2rdf_cert(ldns_rdf **ATTR_UNUSED(rd), const char *ATTR_UNUSED(str))
 }
 
 /**
- * convert .... into wireformat
+ * convert and algorithm value into wireformat
  * \param[in] rd the rdf where to put the data
  * \param[in] str the string to be converted
  * \return ldns_status
  */
+/* An alg field can either be specified as a 8 bits number
+ * or by its symbolic name. Handle both
+ */
 ldns_status
-ldns_str2rdf_alg(ldns_rdf **ATTR_UNUSED(rd), const char *ATTR_UNUSED(str))
+ldns_str2rdf_alg(ldns_rdf **rd, const char *str)
 {
-	abort();
-}
+	ldns_lookup_table *lt;
+	ldns_status st;
 
+	lt = ldns_lookup_by_name(ldns_algorithms, str);
+	st = LDNS_STATUS_OK;
+
+	if (lt) {
+		/* it was given as a integer */
+		*rd = ldns_rdf_new_frm_data(sizeof(uint8_t), LDNS_RDF_TYPE_INT8, &lt->id);
+		if (!*rd) {
+			st = LDNS_STATUS_ERR;
+		}
+	} else {
+		/* try as-is (a number) */
+		st = ldns_str2rdf_int8(rd, str);
+	}
+	return st;
+}
+		
 /**
  * convert .... into wireformat
  * \param[in] rd the rdf where to put the data

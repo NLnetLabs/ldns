@@ -274,6 +274,5 @@ ldns_rr *ldns_rr_new_frm_str(const char *);
 ldns_rr *ldns_rr_list_pop_rr(ldns_rr_list *);
 ldns_rr *ldns_rr_set_pop_rr(ldns_rr_list *);
 ldns_rr_list *ldns_rr_list_cat(ldns_rr_list *, ldns_rr_list *);
-static char * ldns_rr_str_normalize(const char *);
 
 #endif /* _LDNS_RR_H */
