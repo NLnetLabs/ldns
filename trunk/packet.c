@@ -291,6 +291,16 @@ ldns_pkt_xxsection(ldns_pkt *packet, ldns_pkt_section s)
 	}
 }
 
+ldns_rr *ldns_pkt_tsig(const ldns_pkt *pkt) {
+	return pkt->_tsig_rr;
+}
+
+ldns_status ldns_pkt_tsig_sign(ldns_pkt *pkt) {
+	pkt = pkt;
+	return LDNS_STATUS_OK;
+}
+
+
 /* write */
 void
 ldns_pkt_set_id(ldns_pkt *packet, uint16_t id)
@@ -423,6 +433,11 @@ ldns_pkt_set_xxcount(ldns_pkt *packet, ldns_pkt_section s, uint16_t count)
 	}
 }
 
+void ldns_pkt_set_tsig(ldns_pkt *pkt, ldns_rr *rr)
+{
+	pkt->_tsig_rr = rr;
+}
+
 
 /** 
  * push an rr on a packet
@@ -525,6 +540,8 @@ ldns_pkt_new()
 	ldns_pkt_set_xxcount(packet, LDNS_SECTION_AUTHORITY, 0);
 	ldns_pkt_set_xxcount(packet, LDNS_SECTION_ADDITIONAL, 0);
 	
+	packet->_tsig_rr = NULL;
+	
 	return packet;
 }
 
@@ -543,6 +560,9 @@ ldns_pkt_free(ldns_pkt *packet)
 	}
 	if (packet->_additional) {
 		ldns_rr_list_free(packet->_additional);
+	}
+	if (packet->_tsig_rr) {
+		ldns_rr_free(packet->_tsig_rr);
 	}
 	FREE(packet);
 }
@@ -624,6 +644,8 @@ ldns_pkt_query_new_frm_str(const char *name, ldns_rr_type rr_type, ldns_rr_class
 		return NULL;
 	}
 	
+	packet->_tsig_rr = NULL;
+	
 	ldns_pkt_set_answerfrom(packet, NULL);
 	
 	return packet;
@@ -667,6 +689,8 @@ ldns_pkt_query_new(ldns_rdf *rr_name, ldns_rr_type rr_type, ldns_rr_class rr_cla
 	ldns_rr_set_owner(question_rr, rr_name);
 	ldns_rr_set_type(question_rr, rr_type);
 	ldns_rr_set_class(question_rr, rr_class);
+	
+	packet->_tsig_rr = NULL;
 	
 	ldns_pkt_push_rr(packet, LDNS_SECTION_QUESTION, question_rr);
 

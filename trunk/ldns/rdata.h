@@ -60,10 +60,14 @@ enum ldns_enum_rdf_type
 	LDNS_RDF_TYPE_UNKNOWN,
 	/** time */
 	LDNS_RDF_TYPE_TIME,
+	/** tsig time 48 bits */
 	/** period */
 	LDNS_RDF_TYPE_PERIOD,
-	/** tsig time 48 bits */
 	LDNS_RDF_TYPE_TSIGTIME,
+	LDNS_RDF_TYPE_TSIG,
+	/** variable length any type rdata where the length
+	    is specified by the first 2 bytes */
+	LDNS_RDF_TYPE_INT16_DATA,
 	/** protocol and port bitmaps */
 	LDNS_RDF_TYPE_SERVICE,
 	/** location data */

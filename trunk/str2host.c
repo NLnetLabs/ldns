@@ -67,24 +67,13 @@ ldns_str2rdf_time(ldns_rdf **rd, const char *time)
 	uint16_t *r = NULL;
 	struct tm tm;
 	uint32_t l;
-	char *end;
 
 	/* Try to scan the time... */
 	r = (uint16_t*)MALLOC(uint32_t);
 
 	if((char*)strptime(time, "%Y%m%d%H%M%S", &tm) == NULL) {
-		/* this means it is the date in seconds after 1970 */
-		l = htonl((uint32_t)strtol((char*)time, &end, 0));
-		if(*end != 0) {
-			/* also not */
-			FREE(r);
-			return LDNS_STATUS_ERR;
-		} else {
-			memcpy(r, &l, sizeof(uint32_t));
-			*rd = ldns_rdf_new_frm_data(
-					LDNS_RDF_TYPE_TIME, sizeof(uint32_t), r);
-			return LDNS_STATUS_OK;
-		}
+		FREE(r);
+		return LDNS_STATUS_ERR;
 	} else {
 		l = htonl(timegm(&tm));
 		memcpy(r, &l, sizeof(uint32_t));
@@ -498,7 +487,7 @@ ldns_str2rdf_unknown(ldns_rdf **ATTR_UNUSED(rd), const char *ATTR_UNUSED(str))
  * \return ldns_status
  */
 ldns_status
-ldns_str2rdf_tsigtime(ldns_rdf **ATTR_UNUSED(rd), const char *ATTR_UNUSED(str))
+ldns_str2rdf_tsig(ldns_rdf **ATTR_UNUSED(rd), const char *ATTR_UNUSED(str))
 {
 	abort();
 }

@@ -73,6 +73,8 @@ struct ldns_struct_pkt
 	uint32_t _querytime;
 	/** \brief the packet size */
 	size_t _size;
+	/** optional tsig rr */
+	ldns_rr *_tsig_rr;
 	/** \brief query data */
 	/** \brief question section */
 	ldns_rr_list	*_question;
@@ -130,6 +132,7 @@ ldns_rdf *ldns_pkt_answerfrom(const ldns_pkt *packet);
 char *ldns_pkt_when(const ldns_pkt *packet);
 uint32_t ldns_pkt_querytime(const ldns_pkt *);
 size_t ldns_pkt_size(const ldns_pkt *);
+ldns_rr *ldns_pkt_tsig(const ldns_pkt *pkt);
 
 ldns_rr_list *ldns_pkt_question(const ldns_pkt *packet);
 ldns_rr_list *ldns_pkt_answer(const ldns_pkt *packet);
@@ -158,7 +161,7 @@ void ldns_pkt_set_querytime(ldns_pkt *, uint32_t);
 void ldns_pkt_set_size(ldns_pkt *, size_t);
 void ldns_pkt_set_when(ldns_pkt *, char *);
 void ldns_pkt_set_xxcount(ldns_pkt *, ldns_pkt_section, uint16_t);
-
+void ldns_pkt_set_tsig(ldns_pkt *pkt, ldns_rr *rr);
 
 /**
  * Allocates and initializes a ldns_pkt structure
