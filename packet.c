@@ -299,6 +299,26 @@ ldns_pkt_set_size(ldns_pkt *packet, size_t s)
 	packet->_size = s;
 }
 
+void
+ldns_pkt_set_xxcount(ldns_pkt *packet, ldns_pkt_section s, uint16_t count)
+{
+	switch(s) {
+		case LDNS_SECTION_QUESTION:
+			ldns_pkt_set_qdcount(packet, count);
+			break;
+		case LDNS_SECTION_ANSWER:
+			ldns_pkt_set_ancount(packet, count);
+			break;
+		case LDNS_SECTION_AUTHORITY:
+			ldns_pkt_set_nscount(packet, count);
+			break;
+		case LDNS_SECTION_ADDITIONAL:
+			ldns_pkt_set_arcount(packet, count);
+			break;
+	}
+}
+
+
 /** 
  * push an rr on a packet
  * \param[in] packet packet to operatore on
@@ -360,10 +380,24 @@ ldns_pkt_new()
 	packet->_authority = ldns_rr_list_new();
 	packet->_additional = ldns_rr_list_new();
 
+	/* default everything to false */
+	ldns_pkt_set_qr(packet, false);
+	ldns_pkt_set_aa(packet, false);
+	ldns_pkt_set_tc(packet, false);
+	ldns_pkt_set_rd(packet, false);
+	ldns_pkt_set_ra(packet, false);
+	ldns_pkt_set_ad(packet, false);
+
+	ldns_pkt_set_opcode(packet, 0);
+	ldns_pkt_set_id(packet, 0);
 	ldns_pkt_set_size(packet, 0);
 	ldns_pkt_set_querytime(packet, 0);
 	ldns_pkt_set_answerfrom(packet, NULL);
 	ldns_pkt_set_when(packet, NULL);
+	ldns_pkt_set_xxcount(packet, LDNS_SECTION_QUESTION, 0);
+	ldns_pkt_set_xxcount(packet, LDNS_SECTION_ANSWER, 0);
+	ldns_pkt_set_xxcount(packet, LDNS_SECTION_AUTHORITY, 0);
+	ldns_pkt_set_xxcount(packet, LDNS_SECTION_ADDITIONAL, 0);
 	
 	return packet;
 }
