@@ -342,6 +342,11 @@ ldns_key_buf2dsa(ldns_buffer *key)
 	dsa->q = Q;
 	dsa->g = G;
 	dsa->pub_key = Y;
+
+	printf("my key\n");
+	DSA_print_fp(stdout, dsa, 0);
+	printf("\n");
+	
 	return dsa;
 }
 
