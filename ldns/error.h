@@ -18,10 +18,11 @@
 
 enum ldns_enum_status_type 
 {
-	EEMPTY_LABEL	= 1 * __X,
-	EDDD_OVERFLOW	= 2 * __X
+	LDNS_E_OK		= 0,
+	LDNS_E_EMPTY_LABEL	= 1 * __X,
+	LDNS_E_DDD_OVERFLOW	= 2 * __X
 
 };
-typedef enum ldns_enum_status_type ldns_t_status;
+typedef enum ldns_enum_status_type ldns_status_type;
 
 #endif /* _ERROR_H */
