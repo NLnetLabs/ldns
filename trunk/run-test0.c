@@ -62,25 +62,33 @@ main(void)
 
 	status = ldns_wire2pkt(&packet, wire, sizeof(wire));
 	if (status == LDNS_STATUS_OK) {
-		printf("packet id: %d\n", (int) pkt_id(packet));
-		printf("qr bit: %d\n", (int) pkt_qr(packet));
-		printf("opcode: %d\n",(int) pkt_opcode(packet));
-		printf("aa bit: %d\n",(int) pkt_aa(packet));
-		printf("tc bit: %d\n",(int) pkt_tc(packet));
-		printf("rd bit: %d\n",(int) pkt_rd(packet));
-		printf("cd bit: %d\n",(int) pkt_cd(packet));
-		printf("ra bit: %d\n",(int) pkt_ra(packet));
-		printf("ad bit: %d\n",(int) pkt_ad(packet));
-		printf("rcode: %d\n",(int) pkt_rcode(packet));
-		printf("qdcount: %d\n",(int) pkt_qdcount(packet));
-		printf("ancount: %d\n",(int) pkt_ancount(packet));
-		printf("nscount: %d\n",(int) pkt_nscount(packet));
-		printf("arcount: %d\n",(int) pkt_arcount(packet));
+		printf("packet id: %d\n", (int) ldns_pkt_id(packet));
+		printf("qr bit: %d\n", (int) ldns_pkt_qr(packet));
+		printf("opcode: %d\n",(int) ldns_pkt_opcode(packet));
+		printf("aa bit: %d\n",(int) ldns_pkt_aa(packet));
+		printf("tc bit: %d\n",(int) ldns_pkt_tc(packet));
+		printf("rd bit: %d\n",(int) ldns_pkt_rd(packet));
+		printf("cd bit: %d\n",(int) ldns_pkt_cd(packet));
+		printf("ra bit: %d\n",(int) ldns_pkt_ra(packet));
+		printf("ad bit: %d\n",(int) ldns_pkt_ad(packet));
+		printf("rcode: %d\n",(int) ldns_pkt_rcode(packet));
+		printf("qdcount: %d\n",(int) ldns_pkt_qdcount(packet));
+		printf("ancount: %d\n",(int) ldns_pkt_ancount(packet));
+		printf("nscount: %d\n",(int) ldns_pkt_nscount(packet));
+		printf("arcount: %d\n",(int) ldns_pkt_arcount(packet));
+		printf("pkt2str:\n");
+		rdfstr = ldns_pkt2str(packet);
+		if (rdfstr) {
+			printf("%s\n", rdfstr);
+		} else {
+			printf("error\n");
+		}
 		ldns_pkt_free(packet);
 	} else {
 		printf("error in wire2packet: %d\n", status);
 	}
 
+/*
 	printf("host2str:\n");
 	rdfstr = ldns_rdf2str(rr->_rdata_fields[0]);
 	if (rdfstr) {
@@ -88,6 +96,18 @@ main(void)
 	} else {
 		printf("error\n");
 	}
+	
+	printf("rr2str:\n");
+	rdfstr = ldns_rr2str(rr);
+	if (rdfstr) {
+		printf("%s\n", rdfstr);
+	} else {
+		printf("error\n");
+	}
+	
+
+*/
+	
 	
 	return 0;
 }

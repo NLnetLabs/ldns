@@ -87,35 +87,35 @@ enum ldns_enum_pkt_section {
 typedef enum ldns_enum_pkt_section ldns_pkt_section;	
 
 /* prototypes */
-uint16_t pkt_id(ldns_pkt *);
-bool pkt_qr(ldns_pkt *);
-bool pkt_aa(ldns_pkt *);
-bool pkt_tc(ldns_pkt *);
-bool pkt_rd(ldns_pkt *);
-bool pkt_cd(ldns_pkt *);
-bool pkt_ra(ldns_pkt *);
-bool pkt_ad(ldns_pkt *);
-uint8_t pkt_opcode(ldns_pkt *);
-uint8_t pkt_rcode(ldns_pkt *);
-uint16_t pkt_qdcount(ldns_pkt *);
-uint16_t pkt_ancount(ldns_pkt *);
-uint16_t pkt_nscount(ldns_pkt *);
-uint16_t pkt_arcount(ldns_pkt *);
+uint16_t ldns_pkt_id(ldns_pkt *);
+bool ldns_pkt_qr(ldns_pkt *);
+bool ldns_pkt_aa(ldns_pkt *);
+bool ldns_pkt_tc(ldns_pkt *);
+bool ldns_pkt_rd(ldns_pkt *);
+bool ldns_pkt_cd(ldns_pkt *);
+bool ldns_pkt_ra(ldns_pkt *);
+bool ldns_pkt_ad(ldns_pkt *);
+uint8_t ldns_pkt_opcode(ldns_pkt *);
+uint8_t ldns_pkt_rcode(ldns_pkt *);
+uint16_t ldns_pkt_qdcount(ldns_pkt *);
+uint16_t ldns_pkt_ancount(ldns_pkt *);
+uint16_t ldns_pkt_nscount(ldns_pkt *);
+uint16_t ldns_pkt_arcount(ldns_pkt *);
 
-void pkt_set_id(ldns_pkt *, uint16_t);
-void pkt_set_qr(ldns_pkt *, bool);
-void pkt_set_aa(ldns_pkt *, bool);
-void pkt_set_tc(ldns_pkt *, bool);
-void pkt_set_rd(ldns_pkt *, bool);
-void pkt_set_cd(ldns_pkt *, bool);
-void pkt_set_ra(ldns_pkt *, bool);
-void pkt_set_ad(ldns_pkt *, bool);
-void pkt_set_opcode(ldns_pkt *, uint8_t);
-void pkt_set_rcode(ldns_pkt *, uint8_t);
-void pkt_set_qdcount(ldns_pkt *, uint16_t);
-void pkt_set_ancount(ldns_pkt *, uint16_t);
-void pkt_set_nscount(ldns_pkt *, uint16_t);
-void pkt_set_arcount(ldns_pkt *, uint16_t);
+void ldns_pkt_set_id(ldns_pkt *, uint16_t);
+void ldns_pkt_set_qr(ldns_pkt *, bool);
+void ldns_pkt_set_aa(ldns_pkt *, bool);
+void ldns_pkt_set_tc(ldns_pkt *, bool);
+void ldns_pkt_set_rd(ldns_pkt *, bool);
+void ldns_pkt_set_cd(ldns_pkt *, bool);
+void ldns_pkt_set_ra(ldns_pkt *, bool);
+void ldns_pkt_set_ad(ldns_pkt *, bool);
+void ldns_pkt_set_opcode(ldns_pkt *, uint8_t);
+void ldns_pkt_set_rcode(ldns_pkt *, uint8_t);
+void ldns_pkt_set_qdcount(ldns_pkt *, uint16_t);
+void ldns_pkt_set_ancount(ldns_pkt *, uint16_t);
+void ldns_pkt_set_nscount(ldns_pkt *, uint16_t);
+void ldns_pkt_set_arcount(ldns_pkt *, uint16_t);
 
 /**
  * Allocates and initializes a ldns_pkt structure

@@ -387,21 +387,21 @@ ldns_wire2pkt_hdr(ldns_pkt *packet,
 	if (*pos + HEADER_SIZE > max) {
 		return LDNS_STATUS_PACKET_OVERFLOW;
 	} else {
-		pkt_set_id(packet, ID(wire));
-		pkt_set_qr(packet, QR(wire));
-		pkt_set_opcode(packet, OPCODE(wire));
-		pkt_set_aa(packet, AA(wire));
-		pkt_set_tc(packet, TC(wire));
-		pkt_set_rd(packet, RD(wire));
-		pkt_set_ra(packet, RA(wire));
-		pkt_set_ad(packet, AD(wire));
-		pkt_set_cd(packet, CD(wire));
-		pkt_set_rcode(packet, RCODE(wire));	 
+		ldns_pkt_set_id(packet, ID(wire));
+		ldns_pkt_set_qr(packet, QR(wire));
+		ldns_pkt_set_opcode(packet, OPCODE(wire));
+		ldns_pkt_set_aa(packet, AA(wire));
+		ldns_pkt_set_tc(packet, TC(wire));
+		ldns_pkt_set_rd(packet, RD(wire));
+		ldns_pkt_set_ra(packet, RA(wire));
+		ldns_pkt_set_ad(packet, AD(wire));
+		ldns_pkt_set_cd(packet, CD(wire));
+		ldns_pkt_set_rcode(packet, RCODE(wire));	 
 
-		pkt_set_qdcount(packet, QDCOUNT(wire));
-		pkt_set_ancount(packet, ANCOUNT(wire));
-		pkt_set_nscount(packet, NSCOUNT(wire));
-		pkt_set_arcount(packet, ARCOUNT(wire));
+		ldns_pkt_set_qdcount(packet, QDCOUNT(wire));
+		ldns_pkt_set_ancount(packet, ANCOUNT(wire));
+		ldns_pkt_set_nscount(packet, NSCOUNT(wire));
+		ldns_pkt_set_arcount(packet, ARCOUNT(wire));
 
 		*pos += HEADER_SIZE;
 
@@ -422,22 +422,22 @@ ldns_wire2pkt(ldns_pkt **packet_p, const uint8_t *wire, size_t max)
 	status = ldns_wire2pkt_hdr(packet, wire, max, &pos);
 	STATUS_CHECK_GOTO(status, status_error);
 	
-	for (i = 0; i < pkt_qdcount(packet); i++) {
+	for (i = 0; i < ldns_pkt_qdcount(packet); i++) {
 		status = ldns_wire2rr(&rr, wire, max, &pos,
 		                      LDNS_SECTION_QUESTION);
 		STATUS_CHECK_GOTO(status, status_error);
 	}
-	for (i = 0; i < pkt_ancount(packet); i++) {
+	for (i = 0; i < ldns_pkt_ancount(packet); i++) {
 		status = ldns_wire2rr(&rr, wire, max, &pos,
 		                      LDNS_SECTION_ANSWER);
 		STATUS_CHECK_GOTO(status, status_error);
 	}
-	for (i = 0; i < pkt_nscount(packet); i++) {
+	for (i = 0; i < ldns_pkt_nscount(packet); i++) {
 		status = ldns_wire2rr(&rr, wire, max, &pos,
 		                      LDNS_SECTION_AUTHORITY);
 		STATUS_CHECK_GOTO(status, status_error);
 	}
-	for (i = 0; i < pkt_arcount(packet); i++) {
+	for (i = 0; i < ldns_pkt_arcount(packet); i++) {
 		status = ldns_wire2rr(&rr, wire, max, &pos,
 		                      LDNS_SECTION_ADDITIONAL);
 		STATUS_CHECK_GOTO(status, status_error);

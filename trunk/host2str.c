@@ -17,9 +17,6 @@
 #include <sys/socket.h>
 #include <arpa/inet.h>
 
-
-
-
 #include <ldns/host2str.h>
 
 #include "util.h"
@@ -46,19 +43,68 @@ ldns_rdf2buffer_dname(ldns_buffer *output, ldns_rdf *dname)
 	return LDNS_STATUS_OK;
 }
 
+ldns_status
+ldns_rdf2buffer_int8(ldns_buffer *output, ldns_rdf *rdf)
+{
+	uint8_t data = ldns_rdf_data(rdf)[0];
+	ldns_buffer_printf(output, "%lu", (unsigned long) data);
+	return LDNS_STATUS_OK;
+}
+
+ldns_status
+ldns_rdf2buffer_int16(ldns_buffer *output, ldns_rdf *rdf)
+{
+	uint16_t data = read_uint16(ldns_rdf_data(rdf));
+	ldns_buffer_printf(output, "%lu", (unsigned long) data);
+	return LDNS_STATUS_OK;
+}
+
+ldns_status
+ldns_rdf2buffer_int32(ldns_buffer *output, ldns_rdf *rdf)
+{
+	uint32_t data = read_uint32(ldns_rdf_data(rdf));
+	ldns_buffer_printf(output, "%lu", (unsigned long) data);
+	return LDNS_STATUS_OK;
+}
+
+ldns_status
+ldns_rdf2buffer_int48(ldns_buffer *output, ldns_rdf *rdf)
+{
+	/* TODO */
+	ldns_buffer_printf(output, "INT48 TODO");
+	return LDNS_STATUS_OK;
+}
+
 /** 
  * convert A address 
  */
 ldns_status
-ldns_rdf2buffer_a(ldns_buffer *output, ldns_rdf *rd)
+ldns_rdf2buffer_a(ldns_buffer *output, ldns_rdf *rdf)
 {
-	char r[INET_ADDRSTRLEN];
+	char str[INET_ADDRSTRLEN];
 	
-	if (inet_ntop(AF_INET, ldns_rdf_data(rd), r, INET_ADDRSTRLEN)) {
-		if (ldns_buffer_printf(output, "%s", r) >= 0) {
+	if (inet_ntop(AF_INET, ldns_rdf_data(rdf), str, INET_ADDRSTRLEN)) {
+		if (ldns_buffer_printf(output, "%s", str) >= 0) {
 			return LDNS_STATUS_OK;
 		}
 	}
+	return LDNS_STATUS_INTERNAL_ERR;
+}
+
+/** 
+ * convert AAAA address 
+ */
+ldns_status
+ldns_rdf2buffer_aaaa(ldns_buffer *output, ldns_rdf *rdf)
+{
+	char str[INET6_ADDRSTRLEN];
+
+	if (inet_ntop(AF_INET6, ldns_rdf_data(rdf), str, sizeof(str))) {
+		if (ldns_buffer_printf(output, "%s", str) >= 0) {
+			return LDNS_STATUS_OK;
+		}
+	}
+
 	return LDNS_STATUS_INTERNAL_ERR;
 }
 
@@ -102,12 +148,16 @@ ldns_rdf2buffer(ldns_buffer *buffer, ldns_rdf *rdf)
 		res = ldns_rdf2buffer_dname(buffer, rdf);
 		break;
 	case LDNS_RDF_TYPE_INT8:
+		res = ldns_rdf2buffer_int8(buffer, rdf);
 		break;
 	case LDNS_RDF_TYPE_INT16:
+		res = ldns_rdf2buffer_int16(buffer, rdf);
 		break;
 	case LDNS_RDF_TYPE_INT32:
+		res = ldns_rdf2buffer_int32(buffer, rdf);
 		break;
 	case LDNS_RDF_TYPE_INT48:
+		res = ldns_rdf2buffer_int48(buffer, rdf);
 		break;
 	case LDNS_RDF_TYPE_A:
 		res = ldns_rdf2buffer_a(buffer, rdf);
@@ -146,6 +196,79 @@ ldns_rdf2buffer(ldns_buffer *buffer, ldns_rdf *rdf)
 	return LDNS_STATUS_OK;
 }
 
+ldns_status
+ldns_rr2buffer(ldns_buffer *output, ldns_rr *rr)
+{
+	ldns_status result = LDNS_STATUS_OK;
+	
+	if (ldns_rr_owner(rr)) {
+		ldns_rdf2buffer_dname(output, ldns_rr_owner(rr));
+	}
+	
+	if (result != LDNS_STATUS_OK) {
+		printf("error in rr2buf %d\n", result);
+	}
+	
+	return result;
+}
+
+/**
+ * Prints the header in default format in the given buffer
+ */
+ldns_status
+ldns_pktheader2buffer(ldns_buffer *output, ldns_pkt *pkt)
+{
+	/* TODO: strings for known names instead of numbers, flags etc */
+	ldns_buffer_printf(output, ";; ->>HEADER<<- ");
+	ldns_buffer_printf(output, "opcode: %u, ", ldns_pkt_opcode(pkt));
+	ldns_buffer_printf(output, "status: %u, ", ldns_pkt_rcode(pkt));
+	ldns_buffer_printf(output, "id %lu\n", ldns_pkt_id(pkt));
+
+	ldns_buffer_printf(output, ";; flags: ");
+	if (ldns_pkt_qr(pkt)) {
+		ldns_buffer_printf(output, "qr ");
+	}
+	if (ldns_pkt_aa(pkt)) {
+		ldns_buffer_printf(output, "aa ");
+	}
+	if (ldns_pkt_tc(pkt)) {
+		ldns_buffer_printf(output, "tc ");
+	}
+	if (ldns_pkt_rd(pkt)) {
+		ldns_buffer_printf(output, "rd ");
+	}
+	if (ldns_pkt_cd(pkt)) {
+		ldns_buffer_printf(output, "cd ");
+	}
+	if (ldns_pkt_ra(pkt)) {
+		ldns_buffer_printf(output, "ra ");
+	}
+	if (ldns_pkt_ad(pkt)) {
+		ldns_buffer_printf(output, "ad ");
+	}
+	ldns_buffer_printf(output, "; ");
+	ldns_buffer_printf(output, "QUERY: %u, ", ldns_pkt_qdcount(pkt));
+	ldns_buffer_printf(output, "ANSWER: %u, ", ldns_pkt_ancount(pkt));
+	ldns_buffer_printf(output, "AUTHORITY: %u, ", ldns_pkt_nscount(pkt));
+	ldns_buffer_printf(output, "ADDITIONAL: %u, ", ldns_pkt_arcount(pkt));
+
+	return LDNS_STATUS_OK;
+}
+
+ldns_status
+ldns_pkt2buffer(ldns_buffer *output, ldns_pkt *pkt)
+{
+	ldns_status status = LDNS_STATUS_OK;
+	
+	status = ldns_pktheader2buffer(output, pkt);
+	
+	if (status != LDNS_STATUS_OK) {
+		printf("error in pkt2buf %d\n", status);
+	}
+	
+	return status;
+}
+
 char *
 ldns_rdf2str(ldns_rdf *rdf)
 {
@@ -164,5 +287,34 @@ ldns_rdf2str(ldns_rdf *rdf)
 	return result;
 }
 
+char *
+ldns_rr2str(ldns_rr *rr)
+{
+	char *result = NULL;
+	ldns_buffer *tmp_buffer = ldns_buffer_new(1000);
+
+	if (ldns_rr2buffer(tmp_buffer, rr) == LDNS_STATUS_OK) {
+		/* export and return string, destroy rest */
+		result = ldns_buffer_export(tmp_buffer);
+		ldns_buffer_free(tmp_buffer);
+	}
+	
+	return result;
+}
+
+char *
+ldns_pkt2str(ldns_pkt *pkt)
+{
+	char *result = NULL;
+	ldns_buffer *tmp_buffer = ldns_buffer_new(1000);
+
+	if (ldns_pkt2buffer(tmp_buffer, pkt) == LDNS_STATUS_OK) {
+		/* export and return string, destroy rest */
+		result = ldns_buffer_export(tmp_buffer);
+		ldns_buffer_free(tmp_buffer);
+	}
+
+	return result;
+}
 
 
