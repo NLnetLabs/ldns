@@ -13,7 +13,7 @@
 #else
 #define _RDATA_H
 
-#include "common.h"
+#include <config.h>
 
 enum type_enum_rdata
 {
