@@ -124,6 +124,33 @@ ldns_resolver_set_port(ldns_resolver *r, uint16_t p)
 }
 
 /**
+ * pop the last nameserver from the resolver.
+ * \param[in] r the resolver
+ * \return the popped address or NULL if empty
+ */
+ldns_rdf *
+ldns_resolver_pop_nameserver(ldns_resolver *r)
+{
+	ldns_rdf **nameservers;
+	ldns_rdf *pop;
+
+	if (ldns_resolver_nameserver_count(r) == 0) {
+		return NULL;
+	}
+	
+	nameservers = ldns_resolver_nameservers(r);
+	
+	pop = nameservers[ldns_resolver_nameserver_count(r)];
+
+	/* delete the room of the last one */
+	nameservers = XREALLOC(nameservers, ldns_rdf *, 
+			(ldns_resolver_nameserver_count(r) - 1));
+
+	ldns_resolver_dec_nameserver_count(r);
+	return pop;
+}
+
+/**
  * push a new nameserver to the resolver. It must be an IP
  * address v4 or v6.
  * \param[in] r the resolver
@@ -259,6 +286,19 @@ ldns_resolver_incr_nameserver_count(ldns_resolver *r)
 
 	c = ldns_resolver_nameserver_count(r);
 	ldns_resolver_set_nameserver_count(r, ++c);
+}
+
+void
+ldns_resolver_dec_nameserver_count(ldns_resolver *r)
+{
+	size_t c;
+
+	c = ldns_resolver_nameserver_count(r);
+	if (c == 0) {
+		return;
+	} else {
+		ldns_resolver_set_nameserver_count(r, --c);
+	}
 }
 
 void

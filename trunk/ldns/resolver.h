@@ -101,11 +101,13 @@ void ldns_resolver_set_port(ldns_resolver *, uint16_t);
 void ldns_resolver_set_recursive(ldns_resolver *, bool);
 void ldns_resolver_set_debug(ldns_resolver *, bool);
 void ldns_resolver_incr_nameserver_count(ldns_resolver *);
+void ldns_resolver_dec_nameserver_count(ldns_resolver *);
 void ldns_resolver_set_nameserver_count(ldns_resolver *, size_t);
 
 void ldns_resolver_set_domain(ldns_resolver *, ldns_rdf *);
 void ldns_resolver_set_timeout(ldns_resolver *r, struct timeval timeout);
 void ldns_resolver_push_searchlist(ldns_resolver *, ldns_rdf *);
+ldns_rdf * ldns_resolver_pop_nameserver(ldns_resolver *);
 ldns_status ldns_resolver_push_nameserver(ldns_resolver *, ldns_rdf *);
 ldns_status ldns_resolver_push_nameserver_rr(ldns_resolver *, ldns_rr *);
 ldns_status ldns_resolver_push_nameserver_rr_list(ldns_resolver *, ldns_rr_list *);
