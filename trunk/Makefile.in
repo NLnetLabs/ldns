@@ -38,6 +38,7 @@ LIBDNS_HEADERS	=	ldns/error.h		\
 			ldns/resolver.h		\
 			ldns/net.h		\
 			ldns/dname.h		\
+			ldns/dnssec.h		\
 			util.h
 LIBDNS_OBJECTS	=	$(LIBDNS_SOURCES:.c=.o)
 
