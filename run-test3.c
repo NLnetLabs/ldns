@@ -16,9 +16,13 @@ main(void)
 {
 	ldns_rdf *rd;
 
-	ldns_str2rdf_dname(&rd, "www.miek.nl");
+	fprintf(stdout, "www.\n");
 	ldns_str2rdf_dname(&rd, "www.");
+	fprintf(stdout, "www.miek.nl\n");
+	ldns_str2rdf_dname(&rd, "www.miek.nl");
+	fprintf(stdout, "www\n");
 	ldns_str2rdf_dname(&rd, "www");
+	fprintf(stdout, "www.miek.nl..\n");
 	ldns_str2rdf_dname(&rd, "www.miek.nl..");
 
 	return 0;
