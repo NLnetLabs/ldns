@@ -156,22 +156,35 @@ int_to_hexdigit(int i)
 /**
  * read a word from a stream. Return the number
  * of character read or -1 on failure or EOF
+ * All the chars in *del are used to stop when reading.
+ * It defaults to '\n\t ' (newline, tab, space);
  */
 int
-readword(char *line, FILE *from, size_t lim)
+readword(char *word, FILE *from, char *del, size_t lim)
 {
 	int c;
 	char *l;
+	char *d;
+	char *delim;
 	int i;
 
-	l = line; i = 0;
+	l = word; i = 0;
+	if (!del) {
+		delim = "\n\t ";
+	} else {
+		delim = del;
+	}
+	
 	while ((c = getc(from)) != EOF) {
-		if (c != '\n' && c != ' ' && c != '\t') {
-			*l++ = c; lim--; i++;
-		} else {
-			*l = '\0'; 
-			return i;
+		
+		for (d = del; *d; d++) {
+			if (c == *d) {
+				*l = '\0';
+				return i;
+			}
 		}
+		*l++ = c; lim--; i++;
+
 		if ((size_t)i > lim)  {
 			return -1;
 		}

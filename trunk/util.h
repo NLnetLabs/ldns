@@ -165,6 +165,6 @@ char int_to_hexdigit(int ch);
 /**
  * return a word from a stream
  */
-int readword(char *, FILE *, size_t);
+int readword(char *, FILE *, char *, size_t);
 
 #endif /* !_UTIL_H */
