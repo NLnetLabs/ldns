@@ -11,6 +11,23 @@
 #ifndef _DNS_H_
 #define _DNS_H_
 
+#include <util.h>
+#include <ldns/buffer.h>
+#include <ldns/common.h>
+#include <ldns/dname.h>
+#include <ldns/dns.h>
+#include <ldns/error.h>
+#include <ldns/host2str.h>
+#include <ldns/host2wire.h>
+#include <ldns/ldns.h>
+#include <ldns/net.h>
+#include <ldns/packet.h>
+#include <ldns/rdata.h>
+#include <ldns/resolver.h>
+#include <ldns/rr.h>
+#include <ldns/str2host.h>
+#include <ldns/wire2host.h>
+
 #define LDNS_IP4ADDRLEN      (32/8)
 #define LDNS_IP6ADDRLEN      (128/8)
 #define LDNS_PORT	53
