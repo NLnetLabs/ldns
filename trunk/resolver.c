@@ -582,7 +582,7 @@ ldns_resolver_send(ldns_resolver *r, ldns_rdf *name, ldns_rr_type type, ldns_rr_
 		class = LDNS_RR_CLASS_IN;
 	}
 	if (0 == ldns_resolver_nameserver_count(r)) {
-		printf("resolver is not configued\n");
+		printf("resolver has no nameservers\n");
 		return NULL;
 	}
 	if (ldns_rdf_get_type(name) != LDNS_RDF_TYPE_DNAME) {
