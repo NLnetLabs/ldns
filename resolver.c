@@ -43,6 +43,12 @@ ldns_resolver_debug(ldns_resolver *r)
 	return r->_debug;
 }
 
+uint8_t 
+ldns_resolver_configured(ldns_resolver *r)
+{
+	return r->_configured;
+}
+
 ldns_dname *
 ldns_resolver_domain(ldns_resolver *r)
 {
@@ -185,6 +191,9 @@ ldns_resolver_query()
 ldns_pkt *
 ldns_resolver_send(ldns_resolver *r, ldns_dname *name, ldns_rr_type type, ldns_rr_class class)
 {
+	ldns_pkt *query_pkt;
+	ldns_pkt *answer_pkt;
+
 	assert(r != NULL);
 	assert(name != NULL);
 	
@@ -197,6 +206,15 @@ ldns_resolver_send(ldns_resolver *r, ldns_dname *name, ldns_rr_type type, ldns_r
 	if (class == 0) {
 		class = LDNS_RR_CLASS_IN;
 	}
+	if (0 == ldns_resolver_configured(r)) {
+		return NULL;
+	}
+	/* prepare a question pkt from the parameters
+	 * and then send this */
+	/*query_pkt = somesortofconversion2qpkt(name, type, class, flags); * */
+
+	/*answer_pkt = ldns_send_lowlevel(resolver *r, query_pkt);*/
+		
 	return NULL;
 }
 
