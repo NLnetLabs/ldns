@@ -5,6 +5,31 @@ The libdns coding style guide
 * Spaces only after comma's, and in between operators.
   And after keywords (if, while, for)
 * Underscores to make long names readable
-* prefix (exported) functions with 'dns_'
+* prefix (exported) functions with 'ldns_'
 * no unneeded parentheses after 'return'
+* always curly brackets in if-statements
+* use defines voor (weird) constants, and masks
+* std_bool, configure thing
+
+* Return values:
+	- new/pointer: return pointer or NULL on error
+	- 'read' functions: t_status wire2thing(uint8_t *p, size_t max,
+	                                        size_t pos, *thing);
+	- void functions like destroy
+	- bool functions
+
+* Parameter sequence: (dest, [dest_meta, ] src, [src_meta] etc)
+* field names start with _
+* enum for rcode, opcode, types etc,
+	example:
+	enum rcode {
+		RCODE_OK = 0,
+		...      = .,
+		RCODE_FIRST = RCODE_OK,
+		RCODE_LAST = 15,	
+		RCODE_COUNT = RCODE_LAST + 1
+	}
+* Everything by reference, all data structures an optional _clone() function
+* arrays: ps[] with size_t p_count for the number of elements
+* _size for size in bytes
 

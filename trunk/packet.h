@@ -105,14 +105,18 @@ void packet_set_arcount(t_packet *, uint16_t);
 
 /**
  * Allocates and initializes a t_packet structure
+ *
+ * @return pointer to the new packet
  */
 t_packet *dns_packet_new();
 
 /**
  * Converts the data on the uint8_t bytearray (in wire format) to a DNS packet
  *
- * Returns the number of bytes read from the wire
+ * @param data pointer to the buffer with the data
+ * @param packet pointer to the structure to hold the packet
+ * @return the number of bytes read from the wire
  */
-size_t dns_wire2packet(uint8_t *, t_packet *);
+size_t dns_wire2packet(uint8_t *data, t_packet *packet);
 
 #endif
