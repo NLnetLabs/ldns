@@ -87,15 +87,17 @@ get_bit_r(uint8_t bits[], size_t index)
 
 inline long
 power(long a, long b) {
-    long result = 1;
-    while (b > 0) {
-      if (b & 1) {
-        result *= a;
-        if (b == 1) return result;
-      }
-      a *= a;
-      b /= 2;
-    }
-    return result;
+	long result = 1;
+	while (b > 0) {
+		if (b & 1) {
+			result *= a;
+			if (b == 1) {
+				return result;
+			}
+		}
+		a *= a;
+		b /= 2;
+	}
+	return result;
 }
 
