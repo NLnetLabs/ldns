@@ -98,7 +98,6 @@ ldns_rr_new_frm_str(const char *str)
 	ldns_rr_type rr_type;
 	ldns_buffer *rr_buf;
 	ldns_buffer *rd_buf;
-	char  *unquoted;
 	char  *owner; 
 	char  *ttl; 
 	char  *clas;
@@ -107,13 +106,11 @@ ldns_rr_new_frm_str(const char *str)
 	char  *rd;
 	
 	ldns_rdf *r;
-	size_t  unquoted_len;
 	uint16_t r_cnt;
 	uint16_t r_min;
 	uint16_t r_max;
 
 	new = ldns_rr_new();
-	unquoted_len = ldns_unquote((char *)str, &unquoted);
 
 	owner = XMALLOC(char, MAX_DOMAINLEN + 1);
 	ttl = XMALLOC(char, 21);
@@ -125,7 +122,7 @@ ldns_rr_new_frm_str(const char *str)
 	rd = XMALLOC(char, MAX_RDFLEN);
 	r_cnt = 0;
 
-	ldns_buffer_new_frm_data(rr_buf, unquoted, unquoted_len);
+	ldns_buffer_new_frm_data(rr_buf, str, strlen(str));
 	
 	/* split the rr in its parts -1 signal trouble */
 	if (ldns_bget_token(rr_buf, owner, "\t ", MAX_DOMAINLEN) == -1) {
