@@ -295,7 +295,7 @@ ldns_wire2dname(ldns_rdf **dname, const uint8_t *wire, size_t max, size_t *pos)
 	*dname = MALLOC(ldns_rdf);
 	(*dname)->_type = LDNS_RDF_TYPE_DNAME;
 	(*dname)->_size = (uint16_t) dname_pos;
-	(*dname)->_data = XMALLOC(uint8_t, dname_pos);
+	(*dname)->_data = XMALLOC(uint8_t, dname_pos + 1);
 	memcpy((*dname)->_data, tmp_dname, dname_pos);
 	
 	return LDNS_STATUS_OK;
