@@ -39,5 +39,12 @@ main(int argc, char **argv)
 		printf("\n");
 	}
 
+	RR = ldns_rr_new_frm_str("nlnetlabs.nl.       81310  IN  DNSKEY   257 3 RSASHA1 AQPzzTWMz8qSWIQlfRnPckx2BiVmkVN6LPupO3mbz7FhLSnm26n6iG9NLby97Ji453aWZY3M5/xJBSOS2vWtco2t8C0+xeO1bc/d6ZTy32DHchpW6rDH1vp86Ll+ha0tmwyy9QP7y2bVw5zSbFCrefk8qCUBgfHm9bHzMG1UBYtEIQ== ) ; {id = 43791} {sep}");
+
+	if (RR) {
+		ldns_rr_print(stdout, RR);
+		printf("\n");
+	}
+
         return 0;
 }

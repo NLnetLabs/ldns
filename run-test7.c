@@ -45,8 +45,10 @@ main(int argc, char **argv)
         /* create a default domain and add it */
 
         default_dom = ldns_dname_new_frm_str("miek.nl.");
+#if 0
         ldns_resolver_set_domain(res, default_dom);
 	ldns_resolver_set_defnames(res, true); /* use the suffix */
+#endif
 
         nameserver  = ldns_rdf_new_frm_str(server_ip, LDNS_RDF_TYPE_A);
 	if (!nameserver) {
