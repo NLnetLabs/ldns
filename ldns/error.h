@@ -16,13 +16,13 @@
 /* we do negative error codes? */
 #define __X 	-1
 
-enum ldns_enum_status_type 
+enum ldns_enum_status 
 {
 	LDNS_E_OK		= 0,
 	LDNS_E_EMPTY_LABEL	= 1 * __X,
 	LDNS_E_DDD_OVERFLOW	= 2 * __X
 
 };
-typedef enum ldns_enum_status_type ldns_status_type;
+typedef enum ldns_enum_status ldns_status;
 
 #endif /* _ERROR_H */

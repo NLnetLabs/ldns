@@ -17,16 +17,16 @@
 
 /* put this here tmp. for debugging */
 void
-xprintf_rd_field(t_rdata_field *rd)
+xprintf_rdf(ldns_rdf *rd)
 {
 	/* assume printable string */
-	fprintf(stdout, "size\t:%u\n", (unsigned int)_ldns_rd_field_size(rd));
-	fprintf(stdout, "type\t:%u\n", (unsigned int)_ldns_rd_field_type(rd));
-	fprintf(stdout, "data\t:[%.*s]\n", (int)_ldns_rd_field_size(rd), (char*)_ldns_rd_field_data(rd));
+	fprintf(stdout, "size\t:%u\n", (unsigned int)_ldns_rdf_size(rd));
+	fprintf(stdout, "type\t:%u\n", (unsigned int)_ldns_rdf_type(rd));
+	fprintf(stdout, "data\t:[%.*s]\n", (int)_ldns_rdf_size(rd), (char*)_ldns_rdf_data(rd));
 }
 
 void
-xprintf_rr(ldns_rr_type *rr)
+xprintf_rr(ldns_rr *rr)
 {
 	/* assume printable string */
 	uint16_t count, i;
@@ -35,6 +35,6 @@ xprintf_rr(ldns_rr_type *rr)
 
 	for(i = 0; i < count; i++) {
 		printf("print rd %u\n", (unsigned int) i);
-		xprintf_rd_field(rr->_rdata_fields[i]);
+		xprintf_rdf(rr->_rdata_fields[i]);
 	}
 }

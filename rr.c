@@ -1,7 +1,7 @@
 /*
  * rr.c
  *
- * access function for ldns_rr_type
+ * access function for ldns_rr
  *
  * a Net::DNS like library for C
  *
@@ -21,11 +21,11 @@
 /**
  * create a new rr structure.
  */
-ldns_rr_type *
+ldns_rr *
 ldns_rr_new(void)
 {
-	ldns_rr_type *rr;
-	rr = MALLOC(ldns_rr_type);
+	ldns_rr *rr;
+	rr = MALLOC(ldns_rr);
         if (!rr) {
                 return NULL;
 	}
@@ -39,7 +39,7 @@ ldns_rr_new(void)
  * set the owner in the rr structure
  */
 void
-ldns_rr_set_owner(ldns_rr_type *rr, uint8_t *owner)
+ldns_rr_set_owner(ldns_rr *rr, uint8_t *owner)
 {
 	rr->_owner = owner;
 }
@@ -48,7 +48,7 @@ ldns_rr_set_owner(ldns_rr_type *rr, uint8_t *owner)
  * set the owner in the rr structure
  */
 void
-ldns_rr_set_ttl(ldns_rr_type *rr, uint16_t ttl)
+ldns_rr_set_ttl(ldns_rr *rr, uint16_t ttl)
 {
 	rr->_ttl = ttl;
 }
@@ -57,7 +57,7 @@ ldns_rr_set_ttl(ldns_rr_type *rr, uint16_t ttl)
  * set the rd_count in the rr
  */
 void
-ldns_rr_set_rd_count(ldns_rr_type *rr, uint16_t count)
+ldns_rr_set_rd_count(ldns_rr *rr, uint16_t count)
 {
 	rr->_rd_count = count;
 }
@@ -66,7 +66,7 @@ ldns_rr_set_rd_count(ldns_rr_type *rr, uint16_t count)
  * set the class in the rr
  */
 void
-ldns_rr_set_class(ldns_rr_type *rr, t_class klass)
+ldns_rr_set_class(ldns_rr *rr, ldns_class klass)
 {
 	rr->_klass = klass;
 }
@@ -76,16 +76,16 @@ ldns_rr_set_class(ldns_rr_type *rr, t_class klass)
  * placed in the next available spot
  */
 bool
-ldns_rr_push_rd_field(ldns_rr_type *rr, t_rdata_field *f)
+ldns_rr_push_rdf(ldns_rr *rr, ldns_rdf *f)
 {
 	uint16_t rd_count;
-	t_rdata_field **rdata_fields;
+	ldns_rdf **rdata_fields;
 	
 	rd_count = ldns_rr_rd_count(rr);
 	
 	/* grow the array */
 	rdata_fields = XREALLOC(
-		rr->_rdata_fields, t_rdata_field *, rd_count + 1);
+		rr->_rdata_fields, ldns_rdf *, rd_count + 1);
 	if (!rdata_fields) {
 		return false;
 	}
@@ -102,7 +102,7 @@ ldns_rr_push_rd_field(ldns_rr_type *rr, t_rdata_field *f)
  * return the owner name of an rr structure
  */
 uint8_t *
-ldns_rr_owner(ldns_rr_type *rr)
+ldns_rr_owner(ldns_rr *rr)
 {
 	return rr->_owner;
 }
@@ -111,7 +111,7 @@ ldns_rr_owner(ldns_rr_type *rr)
  * return the owner name of an rr structure
  */
 uint8_t
-ldns_rr_ttl(ldns_rr_type *rr)
+ldns_rr_ttl(ldns_rr *rr)
 {
 	return rr->_ttl;
 }
@@ -120,97 +120,97 @@ ldns_rr_ttl(ldns_rr_type *rr)
  * return the rd_count of an rr structure
  */
 uint16_t
-ldns_rr_rd_count(ldns_rr_type *rr)
+ldns_rr_rd_count(ldns_rr *rr)
 {
 	return rr->_rd_count;
 }
 
-static const ldns_rdata_field_type type_0_wireformat[] = { RD_UNKNOWN_T };
-static const ldns_rdata_field_type type_a_wireformat[] = { RD_A_T };
-static const ldns_rdata_field_type type_ns_wireformat[] = { RD_DNAME_T };
-static const ldns_rdata_field_type type_md_wireformat[] = { RD_DNAME_T };
-static const ldns_rdata_field_type type_mf_wireformat[] = { RD_DNAME_T };
-static const ldns_rdata_field_type type_cname_wireformat[] = { RD_DNAME_T };
-static const ldns_rdata_field_type type_soa_wireformat[] = {
+static const ldns_rdf_type type_0_wireformat[] = { RD_UNKNOWN_T };
+static const ldns_rdf_type type_a_wireformat[] = { RD_A_T };
+static const ldns_rdf_type type_ns_wireformat[] = { RD_DNAME_T };
+static const ldns_rdf_type type_md_wireformat[] = { RD_DNAME_T };
+static const ldns_rdf_type type_mf_wireformat[] = { RD_DNAME_T };
+static const ldns_rdf_type type_cname_wireformat[] = { RD_DNAME_T };
+static const ldns_rdf_type type_soa_wireformat[] = {
 	RD_DNAME_T, RD_DNAME_T, RD_INT32_T, RD_INT32_T,
 	RD_INT32_T, RD_INT32_T, RD_INT32_T
 };
-static const ldns_rdata_field_type type_mb_wireformat[] = { RD_DNAME_T };
-static const ldns_rdata_field_type type_mg_wireformat[] = { RD_DNAME_T };
-static const ldns_rdata_field_type type_mr_wireformat[] = { RD_DNAME_T };
-static const ldns_rdata_field_type type_wks_wireformat[] = {
+static const ldns_rdf_type type_mb_wireformat[] = { RD_DNAME_T };
+static const ldns_rdf_type type_mg_wireformat[] = { RD_DNAME_T };
+static const ldns_rdf_type type_mr_wireformat[] = { RD_DNAME_T };
+static const ldns_rdf_type type_wks_wireformat[] = {
 	RD_A_T, RD_SERVICE_T
 };
-static const ldns_rdata_field_type type_ptr_wireformat[] = { RD_DNAME_T };
-static const ldns_rdata_field_type type_hinfo_wireformat[] = {
+static const ldns_rdf_type type_ptr_wireformat[] = { RD_DNAME_T };
+static const ldns_rdf_type type_hinfo_wireformat[] = {
 	RD_STR_T, RD_STR_T
 };
-static const ldns_rdata_field_type type_minfo_wireformat[] = {
+static const ldns_rdf_type type_minfo_wireformat[] = {
 	RD_DNAME_T, RD_DNAME_T
 };
-static const ldns_rdata_field_type type_mx_wireformat[] = {
+static const ldns_rdf_type type_mx_wireformat[] = {
 	RD_INT8_T, RD_DNAME_T
 };
-static const ldns_rdata_field_type type_rp_wireformat[] = {
+static const ldns_rdf_type type_rp_wireformat[] = {
 	RD_DNAME_T, RD_DNAME_T
 };
-static const ldns_rdata_field_type type_afsdb_wireformat[] = {
+static const ldns_rdf_type type_afsdb_wireformat[] = {
 	RD_INT8_T, RD_DNAME_T
 };
-static const ldns_rdata_field_type type_x25_wireformat[] = { RD_STR_T };
-static const ldns_rdata_field_type type_isdn_wireformat[] = {
+static const ldns_rdf_type type_x25_wireformat[] = { RD_STR_T };
+static const ldns_rdf_type type_isdn_wireformat[] = {
 	RD_STR_T, RD_STR_T
 };
-static const ldns_rdata_field_type type_rt_wireformat[] = {
+static const ldns_rdf_type type_rt_wireformat[] = {
 	RD_INT8_T, RD_DNAME_T
 };
-static const ldns_rdata_field_type type_sig_wireformat[] = {
+static const ldns_rdf_type type_sig_wireformat[] = {
 	RD_INT8_T, RD_INT8_T, RD_INT8_T, RD_INT32_T,
 	RD_INT32_T, RD_INT32_T, RD_INT16_T,
 	RD_DNAME_T, RD_B64_T
 };
-static const ldns_rdata_field_type type_key_wireformat[] = {
+static const ldns_rdf_type type_key_wireformat[] = {
 	RD_INT16_T, RD_INT8_T, RD_INT8_T, RD_B64_T
 };
-static const ldns_rdata_field_type type_px_wireformat[] = {
+static const ldns_rdf_type type_px_wireformat[] = {
 	RD_INT16_T, RD_DNAME_T, RD_DNAME_T
 };
-static const ldns_rdata_field_type type_aaaa_wireformat[] = { RD_AAAA_T };
-static const ldns_rdata_field_type type_loc_wireformat[] = { RD_LOC_T };
-static const ldns_rdata_field_type type_nxt_wireformat[] = {
+static const ldns_rdf_type type_aaaa_wireformat[] = { RD_AAAA_T };
+static const ldns_rdf_type type_loc_wireformat[] = { RD_LOC_T };
+static const ldns_rdf_type type_nxt_wireformat[] = {
 	RD_DNAME_T, RD_UNKNOWN_T
 };
-static const ldns_rdata_field_type type_srv_wireformat[] = {
+static const ldns_rdf_type type_srv_wireformat[] = {
 	RD_INT16_T, RD_INT16_T, RD_INT16_T, RD_DNAME_T
 };
-static const ldns_rdata_field_type type_naptr_wireformat[] = {
+static const ldns_rdf_type type_naptr_wireformat[] = {
 	RD_INT16_T, RD_INT16_T, RD_STR_T, RD_STR_T, RD_STR_T, RD_DNAME_T
 };
-static const ldns_rdata_field_type type_kx_wireformat[] = {
+static const ldns_rdf_type type_kx_wireformat[] = {
 	RD_INT16_T, RD_DNAME_T
 };
-static const ldns_rdata_field_type type_cert_wireformat[] = {
+static const ldns_rdf_type type_cert_wireformat[] = {
 	 RD_CERT_T, RD_INT16_T, RD_ALG_T, RD_B64_T
 };
-static const ldns_rdata_field_type type_dname_wireformat[] = { RD_DNAME_T };
-static const ldns_rdata_field_type type_ds_wireformat[] = {
+static const ldns_rdf_type type_dname_wireformat[] = { RD_DNAME_T };
+static const ldns_rdf_type type_ds_wireformat[] = {
 	RD_INT16_T, RD_INT8_T, RD_INT8_T, RD_HEX_T
 };
-static const ldns_rdata_field_type type_sshfp_wireformat[] = {
+static const ldns_rdf_type type_sshfp_wireformat[] = {
 	RD_INT8_T, RD_INT8_T, RD_HEX_T
 };
-static const ldns_rdata_field_type type_rrsig_wireformat[] = {
+static const ldns_rdf_type type_rrsig_wireformat[] = {
 	RD_TYPE_T, RD_INT8_T, RD_INT8_T, RD_INT32_T,
 	RD_INT32_T, RD_INT32_T, RD_INT16_T, RD_DNAME_T, RD_B64_T
 };
-static const ldns_rdata_field_type type_nsec_wireformat[] = {
+static const ldns_rdf_type type_nsec_wireformat[] = {
 	RD_DNAME_T, RD_NSEC_T
 };
-static const ldns_rdata_field_type type_dnskey_wireformat[] = {
+static const ldns_rdf_type type_dnskey_wireformat[] = {
 	RD_INT16_T, RD_INT8_T, RD_ALG_T, RD_B64_T
 };
 
-static ldns_rr_descriptor_type rdata_field_descriptors[] = {
+static ldns_rr_descriptor rdata_field_descriptors[] = {
 	/* 0 */
 	{ 0, NULL, 1, 1, type_0_wireformat, RD_NONE_T },
 	/* 1 */
@@ -314,8 +314,8 @@ static ldns_rr_descriptor_type rdata_field_descriptors[] = {
 #define RDATA_FIELD_DESCRIPTORS_COUNT \
 	(sizeof(rdata_field_descriptors)/sizeof(rdata_field_descriptors[0]))
 
-const ldns_rr_descriptor_type *
-ldns_rr_descriptor(uint16_t type)
+const ldns_rr_descriptor *
+ldns_rr_descript(uint16_t type)
 {
 	if (type < RDATA_FIELD_DESCRIPTORS_COUNT) {
 		return &rdata_field_descriptors[type];
@@ -325,13 +325,13 @@ ldns_rr_descriptor(uint16_t type)
 }
 
 size_t
-ldns_rr_descriptor_minimum(ldns_rr_descriptor_type *descriptor)
+ldns_rr_descriptor_minimum(ldns_rr_descriptor *descriptor)
 {
 	return descriptor->_minimum;
 }
 
 size_t
-ldns_rr_descriptor_maximum(ldns_rr_descriptor_type *descriptor)
+ldns_rr_descriptor_maximum(ldns_rr_descriptor *descriptor)
 {
 	if (descriptor->_variable != RD_NONE_T) {
 		/* XXX: Should really be SIZE_MAX... bad FreeBSD.  */
@@ -341,8 +341,8 @@ ldns_rr_descriptor_maximum(ldns_rr_descriptor_type *descriptor)
 	}
 }
 
-ldns_rdata_field_type
-ldns_rr_descriptor_field_type(ldns_rr_descriptor_type *descriptor,
+ldns_rdf_type
+ldns_rr_descriptor_field_type(ldns_rr_descriptor *descriptor,
                               size_t index)
 {
 	assert(descriptor != NULL);
@@ -461,7 +461,7 @@ ldns_wire2dname(uint8_t *dname, const uint8_t *wire, size_t max, size_t *pos)
          RR_CLASS(wire)?
 */
 size_t
-ldns_wire2rr(ldns_rr_type *rr, const uint8_t *wire, size_t max, 
+ldns_wire2rr(ldns_rr *rr, const uint8_t *wire, size_t max, 
              size_t *pos, int section)
 {
 	uint8_t *owner = malloc(MAXDOMAINLEN);

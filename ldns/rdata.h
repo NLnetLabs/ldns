@@ -35,7 +35,7 @@
 
 #define MAXRDATALEN 64
 
-enum ldns_enum_rdata_field_type
+enum ldns_enum_rdf_type
 {
 	/** none */
 	RD_NONE_T,
@@ -81,9 +81,9 @@ enum ldns_enum_rdata_field_type
 	RD_LOC_T
 	
 };
-typedef enum ldns_enum_rdata_field_type ldns_rdata_field_type;
+typedef enum ldns_enum_rdf_type ldns_rdf_type;
 
-enum type_enum_class
+enum ldns_enum_class
 {
 	/** the Internet */
 	CLASS_IN 	= 1,
@@ -94,7 +94,7 @@ enum type_enum_class
 	/** Any class */
 	CLASS_ANY	= 255
 };
-typedef enum type_enum_class t_class;
+typedef enum ldns_enum_class ldns_class;
 
 /**
  * \brief Resource record data
@@ -102,25 +102,25 @@ typedef enum type_enum_class t_class;
  * The data is a network ordered array of bytes, which size is specified by the (16-bit) size field.<br>
  * To correctly parse it, use the type specified in the (16-bit) type field.
  */
-struct type_struct_rdata_field 
+struct ldns_struct_rdf
 {
 	/** \brief The size of the data (in bytes) */
 	uint16_t _size;
 	/** \brief The type of the data */
-	ldns_rdata_field_type _type;
+	ldns_rdf_type _type;
 	/** \brief Pointer to the data (byte buffer) */
 	uint8_t  *_data;
 };
-typedef struct type_struct_rdata_field t_rdata_field;
+typedef struct ldns_struct_rdf ldns_rdf;
 
 /* prototypes */
-uint16_t        _ldns_rd_field_size(t_rdata_field *);
-void            _ldns_rd_field_set_size(t_rdata_field *, uint16_t);
-void            _ldns_rd_field_set_type(t_rdata_field *, ldns_rdata_field_type);
-void            _ldns_rd_field_set_data(t_rdata_field *, uint8_t *);
-ldns_rdata_field_type _ldns_rd_field_type(t_rdata_field *);
-t_rdata_field   *_ldns_rd_field_new(uint16_t, ldns_rdata_field_type, uint8_t *);
-uint8_t         *_ldns_rd_field_data(t_rdata_field *);
-void            _ldns_rd_field_destroy(t_rdata_field *);
+uint16_t        _ldns_rdf_size(ldns_rdf *);
+void            _ldns_rdf_set_size(ldns_rdf *, uint16_t);
+void            _ldns_rdf_set_type(ldns_rdf *, ldns_rdf_type);
+void            _ldns_rdf_set_data(ldns_rdf *, uint8_t *);
+ldns_rdf_type   _ldns_rdf_type(ldns_rdf *);
+ldns_rdf	*_ldns_rdf_new(uint16_t, ldns_rdf_type, uint8_t *);
+uint8_t         *_ldns_rdf_data(ldns_rdf *);
+void            _ldns_rdf_destroy(ldns_rdf *);
 
 #endif	/* !_LDNS_RDATA_H */
