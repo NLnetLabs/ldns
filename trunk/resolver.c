@@ -170,7 +170,6 @@ ldns_resolver_push_nameserver_rr(ldns_resolver *r, ldns_rr *rr)
 			ldns_rr_get_type(rr) != LDNS_RR_TYPE_AAAA) {
 		return LDNS_STATUS_ERR;
 	}
-
 	address = ldns_rr_rdf(rr, 0); /* extract the ip number */
 	return ldns_resolver_push_nameserver(r, address);
 }
@@ -191,8 +190,6 @@ ldns_resolver_push_nameserver_rr_list(ldns_resolver *r, ldns_rr_list *rrlist)
 	stat = LDNS_STATUS_OK;
 	for(i = 0; i < ldns_rr_list_rr_count(rrlist); i++) {
 		rr = ldns_rr_list_rr(rrlist, i);
-		ldns_rr_print(stdout, rr);
-		printf("%d \n", i);
 		if (ldns_resolver_push_nameserver_rr(r, rr) !=
 				LDNS_STATUS_OK) {
 			stat = LDNS_STATUS_ERR;
