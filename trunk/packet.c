@@ -333,7 +333,7 @@ size_t
 ldns_wire2packet_header(uint8_t *wire, size_t max, size_t *pos, t_packet *packet)
 {
 	if (*pos + HEADER_SIZE > *wire + max) {
-		// TODO: set t_status error
+		/* TODO: set t_status error.  */
 		return 0;
 	} else {
 
@@ -356,7 +356,7 @@ ldns_wire2packet_header(uint8_t *wire, size_t max, size_t *pos, t_packet *packet
 
 		*pos += HEADER_SIZE;
 		
-		// TODO t_status succ
+		/* TODO t_status succ.  */
 		return 0;
 	}
 }
