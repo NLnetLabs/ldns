@@ -245,7 +245,7 @@ ldns_str2rdf_dname(ldns_rdf **d, const char *str)
 	}
 
 	/* add root label if last char was not '.' */
-	if (str[strlen(str)-1] != '\0') {
+	if (str[strlen(str)-1] != '.') {
 		len += label_len + 1;
 		*pq = label_len;
 		*q = 0;
