@@ -152,6 +152,7 @@ ldns_str2rdf_dname(ldns_rdf **d, const uint8_t* str)
 	size_t len;
 	size_t octet_len;
 	ldns_status stat;
+	int i = 0;
 
 	uint8_t *s,*p,*q;
 	uint8_t buf_str[MAXDOMAINLEN + 1];
@@ -198,7 +199,7 @@ ldns_str2rdf_dname(ldns_rdf **d, const uint8_t* str)
 	 * p on the previous one
 	 * q builds the dname
 	 */
-	q = buf; int i = 0;
+	q = buf;
 	for (s = p = buf_str; *s; s++) {
 		printf("going in %d\n", i++);
 		if (*s == '.') {
