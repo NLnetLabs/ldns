@@ -8,36 +8,50 @@ bindir 		= @bindir@
 mandir 		= @mandir@
 
 CC 		= @CC@
-OURCFLAGS	= -g -Wall -Wwrite-strings #-Wunused-value -Wunused-parameter
-CFLAGS 		= @CFLAGS@ -I$(srcdir) $(OURCFLAGS)
+CPPFLAGS	= @CPPFLAGS@ @DEFS@ -I$(srcdir)
+OURCFLAGS	= -Wall -W -Wwrite-strings #-Wunused-value -Wunused-parameter
+CFLAGS 		= @CFLAGS@ $(OURCFLAGS)
 LDFLAGS		= @LDFLAGS@
 LIBS 		= @LIBS@
 
 #INSTALL = $(srcdir)/install-sh -c
 #INSTALL_PROGRAM = $(INSTALL)
 
-LIBOBJ=rdata.o util.o
-HEADER=rdata.h prototype.h rr.h packet.h
+LIBDNS_SOURCES=rdata.c util.c
+LIBDNS_HEADERS=rdata.h prototype.h rr.h packet.h
+LIBDNS_OBJECTS=$(LIBDNS_SOURCES:.c=.o)
 
-COMPILE		= $(CC) $(CFLAGS)
+ALL_SOURCES=main.c $(LIBDNS_SOURCES)
+
+COMPILE		= $(CC) $(CPPFLAGS) $(CFLAGS)
 LINK		= $(CC) $(CFLAGS) $(LDFLAGS)
 
-%.o:	%.c $(HEADER)
-	$(CC) $(CFLAGS) -c $<
+%.o:	%.c
+	$(COMPILE) -c $<
 
-.PHONY:	clean
+.PHONY:	clean realclean
 
-main:	main.o $(LIBOBJ)
-	$(LINK) -o $@ main.o $(LIBOBJ)
+main:	main.o $(LIBDNS_OBJECTS)
+	$(LINK) -o $@ $+
 
 clean:	
-	rm -f *.o
+	rm -f *.o *.d
 	rm -f main
 	rm -rf autom4te.cache/
 	rm -f aclocal.m4
+
+realclean: clean
 	rm -f config.status
 	rm -f config.log
 	rm -f Makefile
 	rm -f config.h
 	rm -f config.h.in
 	rm -f configure
+
+# Automatic dependencies.
+%.d: %.c
+	$(SHELL) -ec '$(CC) -MM $(CPPFLAGS) $< \
+	              | sed '\''s!\(.*\)\.o[ :]*!$(dir $@)\1.o $@ : !g'\'' > $@; \
+	              [ -s $@ ] || rm -f $@'
+
+include $(ALL_SOURCES:.c=.d)
