@@ -69,6 +69,10 @@ ldns_key_new_frm_algorithm(ldns_signing_algorithm alg, int size)
 		case LDNS_SIGN_RSAMD5:
 		case LDNS_SIGN_RSASHA1:
 			r = RSA_generate_key(size, RSA_F4, NULL, NULL);
+			if (RSA_check_key(r) != 1) {
+				printf("keygen failed\n");
+				return NULL;
+			}
 			break;
 			ldns_key_set_rsa_key(k, r);
 		case LDNS_SIGN_DSA:
@@ -83,7 +87,6 @@ ldns_key_new_frm_algorithm(ldns_signing_algorithm alg, int size)
 	ldns_key_set_algorithm(k, alg);
 	return k;
 }
-
 
 void
 ldns_key_set_algorithm(ldns_key *k, ldns_signing_algorithm l) 
@@ -278,11 +281,52 @@ ldns_key_list_pop_key(ldns_key_list *key_list)
         return pop;
 }       
 
+static bool
+ldns_key_rsa2bin(unsigned char *data, RSA *k, uint16_t *size)
+{
+	 if (BN_num_bytes(k->e) < 256) {
+                data[0] = BN_num_bytes(k->e);
+
+                BN_bn2bin(k->e, data + 1);  
+                BN_bn2bin(k->n, data + *(data + 1) + 2);
+        } else if (BN_num_bytes(k->e) < 65536) {
+                data[0] = 0;
+		/* this writing is not endian save or is it? */
+		write_uint16(data + 1, BN_num_bytes(k->e));
+
+                BN_bn2bin(k->e, data + 3);
+                BN_bn2bin(k->n, data + 4 + BN_num_bytes(k->e));
+	} else {
+		return false;
+	}
+	*size = BN_num_bytes(k->n) + 4;
+	return true;
+}
+
+static bool
+ldns_key_dsa2bin(unsigned char *data, DSA *k, uint16_t *size)
+{
+	uint8_t T;
+
+	/* See RFC2536 */
+	T = (DSA_size(k) - 512) / 64;
+	memcpy(data, &T, 1);
+
+	*size = 64 + (T * 8); 
+
+	BN_bn2bin(k->q, data + 1 ); 		/* 20 octects */
+	BN_bn2bin(k->p, data + 22 ); 		/* offset octects */
+	BN_bn2bin(k->g, data + 23 + *size ); 	/* offset octets */
+	BN_bn2bin(k->pub_key, data + 24 + *size + *size); /* offset octets */
+	*size = 24 + (*size * 3);
+	return true;
+}
+
 /** 
  * convert a ldns_key to a public key rr
  */
 ldns_rr *
-ldns_key2rr(ldns_key *ATTR_UNUSED(k))
+ldns_key2rr(ldns_key *k)
 {
 	/* need a owner, 
 	 * keytag
@@ -290,5 +334,63 @@ ldns_key2rr(ldns_key *ATTR_UNUSED(k))
 	 * proto
 	 * algorthm
 	 */
-	return NULL;
+
+	/* this function will convert a the keydata contained in
+	 * rsa/dsa pointers to a DNSKEY rr. It will fill in as
+	 * much as it can, but it does not know about key-flags
+	 * for instance
+	 */
+
+	ldns_rr *pubkey;
+	ldns_rdf *keybin;
+	unsigned char *bin;
+	uint16_t size;
+	pubkey = ldns_rr_new();
+
+	if (!k) {
+		return NULL;
+	}
+
+	bin = XMALLOC(unsigned char, MAX_KEYLEN);
+	if (!bin) {
+		return NULL;
+	}
+
+	ldns_rr_set_type(pubkey, LDNS_RR_TYPE_DNSKEY);
+	
+	if (!ldns_key_pubkey_owner(k)) {
+		ldns_rr_set_owner(pubkey, ldns_key_pubkey_owner(k));
+	}
+
+	switch(ldns_key_algorithm(k)) {
+		case LDNS_SIGN_RSAMD5:
+			ldns_rr_dnskey_set_algorithm(pubkey,
+					ldns_native2rdf_int8(LDNS_RDF_TYPE_ALG, LDNS_RSAMD5));
+			if (!ldns_key_rsa2bin(bin, ldns_key_rsa_key(k), &size)) {
+				return NULL;
+			}
+			break;
+		case LDNS_SIGN_RSASHA1:
+			ldns_rr_dnskey_set_algorithm(pubkey,
+					ldns_native2rdf_int8(LDNS_RDF_TYPE_ALG, LDNS_RSASHA1));
+			if (!ldns_key_rsa2bin(bin, ldns_key_rsa_key(k), &size)) {
+				return NULL;
+			}
+			break;
+		case LDNS_SIGN_DSA:
+			ldns_rr_dnskey_set_algorithm(pubkey,
+					ldns_native2rdf_int8(LDNS_RDF_TYPE_ALG, LDNS_DSA));
+			if (!ldns_key_dsa2bin(bin, ldns_key_dsa_key(k), &size)) {
+				return NULL;
+			}
+			break;
+		case LDNS_SIGN_HMACMD5:
+			/* tja */
+			break;
+	}
+	keybin = ldns_rdf_new_frm_data(LDNS_RDF_TYPE_B64, size, bin);
+	FREE(bin);
+	ldns_rr_dnskey_set_key(pubkey, keybin);
+	return pubkey;
 }
+
