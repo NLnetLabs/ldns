@@ -29,6 +29,8 @@ ldns_buffer_new(size_t capacity)
 	buffer->_position = 0;
 	buffer->_limit = buffer->_capacity = capacity;
 	buffer->_fixed = 0;
+	buffer->_status = LDNS_STATUS_OK;
+	
 	ldns_buffer_invariant(buffer);
 	
 	return buffer;
@@ -43,6 +45,7 @@ ldns_buffer_new_from(ldns_buffer *buffer, void *data, size_t size)
 	buffer->_limit = buffer->_capacity = size;
 	buffer->_data = (uint8_t *) data;
 	buffer->_fixed = 1;
+	buffer->_status = LDNS_STATUS_OK;
 	
 	ldns_buffer_invariant(buffer);
 }
@@ -51,6 +54,8 @@ void
 ldns_buffer_clear(ldns_buffer *buffer)
 {
 	ldns_buffer_invariant(buffer);
+	
+	/* reset status here? */
 	
 	buffer->_position = 0;
 	buffer->_limit = buffer->_capacity;
@@ -83,6 +88,7 @@ ldns_buffer_set_capacity(ldns_buffer *buffer, size_t capacity)
 
 	data = (uint8_t *) XREALLOC(buffer->_data, uint8_t, capacity);
 	if (!data) {
+		buffer->_status = LDNS_STATUS_MEM_ERR;
 		return false;
 	} else {
 		buffer->_data = data;
@@ -102,6 +108,7 @@ ldns_buffer_reserve(ldns_buffer *buffer, size_t amount)
 			new_capacity = buffer->_position + amount;
 		}
 		if (!ldns_buffer_set_capacity(buffer, new_capacity)) {
+			buffer->_status = LDNS_STATUS_MEM_ERR;
 			return false;
 		}
 	}
@@ -113,33 +120,39 @@ int
 ldns_buffer_printf(ldns_buffer *buffer, const char *format, ...)
 {
 	va_list args;
-	int written;
+	int written = 0;
 	size_t remaining;
 	
-	ldns_buffer_invariant(buffer);
-	assert(buffer->_limit == buffer->_capacity);
+	if (ldns_buffer_status_ok(buffer)) {
+		ldns_buffer_invariant(buffer);
+		assert(buffer->_limit == buffer->_capacity);
 
-	remaining = ldns_buffer_remaining(buffer);
-	va_start(args, format);
-	written = vsnprintf((char *) ldns_buffer_current(buffer), remaining,
-			    format, args);
-	va_end(args);
-	if (written == -1) {
-		return -1;
-	} else if ((size_t) written >= remaining) {
-		if (!ldns_buffer_reserve(buffer, (size_t) written + 1)) {
-			return -1;
-		}
+		remaining = ldns_buffer_remaining(buffer);
 		va_start(args, format);
-		written = vsnprintf((char *) ldns_buffer_current(buffer),
-				    ldns_buffer_remaining(buffer),
+		written = vsnprintf((char *) ldns_buffer_current(buffer), remaining,
 				    format, args);
 		va_end(args);
 		if (written == -1) {
+			buffer->_status = LDNS_STATUS_INTERNAL_ERR;
 			return -1;
+		} else if ((size_t) written >= remaining) {
+			if (!ldns_buffer_reserve(buffer, (size_t) written + 1)) {
+				buffer->_status = LDNS_STATUS_MEM_ERR;
+				return -1;
+			}
+			va_start(args, format);
+			written = vsnprintf((char *) ldns_buffer_current(buffer),
+					    ldns_buffer_remaining(buffer),
+					    format, args);
+			va_end(args);
+			if (written == -1) {
+				buffer->_status = LDNS_STATUS_INTERNAL_ERR;
+				return -1;
+			}
 		}
+		buffer->_position += written;
 	}
-	buffer->_position += written;
+
 	return written;
 }
 
