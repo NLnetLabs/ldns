@@ -135,6 +135,9 @@ ldns_rr_list *ldns_pkt_question(const ldns_pkt *packet);
 ldns_rr_list *ldns_pkt_answer(const ldns_pkt *packet);
 ldns_rr_list *ldns_pkt_authority(const ldns_pkt *packet);
 ldns_rr_list *ldns_pkt_additional(const ldns_pkt *packet);
+ldns_rr_list *ldns_pkt_xxsection(ldns_pkt *, ldns_pkt_section);
+ldns_rr_list *ldns_pkt_rr_list_by_name(ldns_pkt *, ldns_rdf *, ldns_pkt_section);
+ldns_rr_list *ldns_pkt_rr_list_by_type(ldns_pkt *, ldns_rr_type, ldns_pkt_section);
 
 void ldns_pkt_set_id(ldns_pkt *, uint16_t);
 void ldns_pkt_set_qr(ldns_pkt *, bool);
@@ -155,7 +158,7 @@ void ldns_pkt_set_querytime(ldns_pkt *, uint32_t);
 void ldns_pkt_set_size(ldns_pkt *, size_t);
 void ldns_pkt_set_when(ldns_pkt *, char *);
 void ldns_pkt_set_xxcount(ldns_pkt *, ldns_pkt_section, uint16_t);
-ldns_rr_list * ldns_pkt_xxsection(ldns_pkt *, ldns_pkt_section);
+
 
 /**
  * Allocates and initializes a ldns_pkt structure

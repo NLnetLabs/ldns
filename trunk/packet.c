@@ -173,6 +173,48 @@ ldns_pkt_when(const ldns_pkt *packet)
 	return packet->_when;
 }
 
+/* return only those rr that share the ownername */
+ldns_rr_list *
+ldns_pkt_rr_list_by_name(ldns_pkt *packet, ldns_rdf *ownername, ldns_pkt_section sec)
+{
+	ldns_rr_list *rrs;
+	ldns_rr_list *new;
+	uint16_t i;
+
+	rrs = ldns_pkt_xxsection(packet, sec);
+	new = ldns_rr_list_new();
+
+	for(i = 0; i < ldns_rr_list_rr_count(rrs); i++) {
+		if (ldns_rdf_compare(ldns_rr_owner(
+						ldns_rr_list_rr(rrs, i)), 
+					ownername) == 0) {
+			/* owner names match */
+			ldns_rr_list_push_rr(new, ldns_rr_list_rr(rrs, i));
+		}
+	}
+	return new;
+}
+
+/* return only those rr that share a type */
+ldns_rr_list *
+ldns_pkt_rr_list_by_type(ldns_pkt *packet, ldns_rr_type type, ldns_pkt_section sec)
+{
+	ldns_rr_list *rrs;
+	ldns_rr_list *new;
+	uint16_t i;
+
+	rrs = ldns_pkt_xxsection(packet, sec);
+	new = ldns_rr_list_new();
+
+	for(i = 0; i < ldns_rr_list_rr_count(rrs); i++) {
+		if (type == ldns_rr_get_type(ldns_rr_list_rr(rrs, i))) {
+			/* types match */
+			ldns_rr_list_push_rr(new, ldns_rr_list_rr(rrs, i));
+		}
+	}
+	return new;
+}
+
 /** 
  * check to see if an rr exist in the packet
  * \param[in] pkt the packet to examine
@@ -237,7 +279,7 @@ ldns_pkt_xxsection(ldns_pkt *packet, ldns_pkt_section s)
 	case LDNS_SECTION_ADDITIONAL:
 		return ldns_pkt_additional(packet);
 	case LDNS_SECTION_ANY:
-		return NULL;
+		return ldns_pkt_all(packet);
 	default:
 		abort();
 	}
