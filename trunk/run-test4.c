@@ -1,6 +1,5 @@
 /**
  * An example ldns program
- * In semi-C code
  *
  * Setup a resolver
  * Query a nameserver
