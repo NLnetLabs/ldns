@@ -56,7 +56,7 @@ ldns_send(ldns_resolver *r, ldns_pkt *query_pkt)
 	struct sockaddr_storage *ns;
 	struct sockaddr_in *ns4;
 	struct sockaddr_in6 *ns6;
-	socklen_t ns_len;
+	size_t ns_len;
 
 	ldns_rdf **ns_array;
 	ldns_pkt *reply;
@@ -86,17 +86,13 @@ ldns_send(ldns_resolver *r, ldns_pkt *query_pkt)
 				ns4 = (struct sockaddr_in*) ns;
 				ns4->sin_port = htons(ldns_resolver_port(r));
 				ns_len = (socklen_t)sizeof(struct sockaddr_in);
-				printf("port %d\n", ntohs(ns4->sin_port));
 				break;
 			case AF_INET6:
 				ns6 = (struct sockaddr_in6*) ns;
 				ns6->sin6_port = htons(ldns_resolver_port(r));
 				ns_len = (socklen_t)sizeof(struct sockaddr_in6);
-				printf("port %d\n", ntohs(ns6->sin6_port));
 				break;
 		}
-
-		printf("ip address len %d\n", ns_len);
 
 		/* query */
 		if (1 == ldns_resolver_usevc(r)) {
@@ -147,7 +143,7 @@ ldns_send_udp(ldns_buffer *qbin, const struct sockaddr_storage *to, socklen_t to
 	gettimeofday(&tv_e, NULL);
 
 	if (bytes == -1) {
-		printf("error with sending: %s\n");
+		printf("error with sending\n");
 		close(sockfd);
 		return NULL;
 	}

@@ -40,7 +40,7 @@ ldns_str2rdf_int16(ldns_rdf **rd, const uint8_t *shortstr)
 	uint16_t *r;
 	r = MALLOC(uint16_t);
 	
-	*r = htons((uint16_t)strtol(shortstr, &end, 0));
+	*r = htons((uint16_t)strtol((char *)shortstr, &end, 0));
 	
 	if(*end != 0) {
 		FREE(r);
@@ -175,7 +175,7 @@ ldns_str2rdf_dname(ldns_rdf **d, const uint8_t* str)
 	q = buf;
 	for (s = p = buf_str; *s; s++) {
 		if (*s == '.') {
-			label_chars = s - p;
+			label_chars = (unsigned int) (s - p);
 			label_chars2 = label_chars + 39; /* somehting printable */
 			/* put this number in the right spot in buf and
 			 * copy those chars over*/
@@ -185,13 +185,13 @@ ldns_str2rdf_dname(ldns_rdf **d, const uint8_t* str)
 			p = s + 1; /* move the new position after the dot */
 		}
 	}
-	label_chars = s - p; 
+	label_chars = (unsigned int) (s - p); 
 	label_chars2 = label_chars + 39; /* somehting printable */
 	
 	memcpy(q, &label_chars, 1); 
 	memcpy(q + 1, p, label_chars); 
 	q += (label_chars + 1);
-	*q = (uint8_t*)'\00'; /* end the string */
+	q = (uint8_t*)'\00'; /* end the string */
 
 	/* s - buf_str works because no magic is done * in the above for-loop */
 	*d = ldns_rdf_new_frm_data((s - buf_str + 2) , LDNS_RDF_TYPE_DNAME , buf); 
@@ -245,7 +245,7 @@ ldns_str2rdf_aaaa(ldns_rdf **rd, const uint8_t* str)
 ldns_status
 ldns_str2rdf_str(ldns_rdf **rd, const uint8_t* str)
 {
-	if (strlen(str) > 255) {
+	if (strlen((char *) str) > 255) {
 		return LDNS_STATUS_INVALID_STR;
 	}
 	*rd = ldns_rdf_new_frm_data(strlen((char*)str), LDNS_RDF_TYPE_STR, (void*)str);
@@ -276,7 +276,7 @@ ldns_str2rdf_b64(ldns_rdf **rd, const uint8_t* str)
 	uint8_t buffer[B64BUFSIZE];
 	int16_t i;
 	
-	i = b64_pton((const char*)str, buffer, B64BUFSIZE);
+	i = (uint16_t) b64_pton((const char*)str, buffer, B64BUFSIZE);
 	if (-1 == i) {
 		return LDNS_STATUS_INVALID_B64;
 	} else {

@@ -105,8 +105,12 @@ test2: run-test2
 	./run-test2
 test3: run-test3
 	./run-test3
+test4: run-test4
+	./run-test4
+test5: run-test5
+	./run-test5
 
-test: test0 test1 test2 test3
+test: test0 test1 test2 test3 test4 test5
 
 lint:
 	for i in $(ALL_SOURCES); do \
