@@ -62,8 +62,12 @@ main(int argc, char *argv[])
 	ldns_rr_list_print(stdout, signatures);
 
 	printf("Now we are going to verify\n");
+	ldns_rdf_print(stdout, ldns_rr_rdf(
+			ldns_rr_list_rr(signatures, 0),
+			8));
+	printf("\n");
 
-	printf("[%d]\n", ldns_verify(rrs, signatures, dnskeys));
+	printf("\n[%d]\n", ldns_verify(rrs, signatures, dnskeys));
 	
         return 0;
 }
