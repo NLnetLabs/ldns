@@ -391,11 +391,10 @@ ldns_str2rdf_nsec(ldns_rdf **ATTR_UNUSED(rd), const char *ATTR_UNUSED(str))
 ldns_status
 ldns_str2rdf_type(ldns_rdf **rd, const char *str)
 {
-	ldns_rr_type ty;
-	ty - ldns_get_rr_type_by_name(str);
+	uint16_t type;
+	type = htons(ldns_get_rr_type_by_name(str));
 	/* ldns_rr_type is a 16 bit value */
-	
-	*rd = ldns_rdf_new_frm_data(sizeof(uint16_t), LDNS_RDF_TYPE_TYPE, (uint8_t*)&ty);
+	*rd = ldns_rdf_new_frm_data(sizeof(uint16_t), LDNS_RDF_TYPE_TYPE, (uint8_t*)&type);
 	return LDNS_STATUS_OK;
 }
 
@@ -408,11 +407,10 @@ ldns_str2rdf_type(ldns_rdf **rd, const char *str)
 ldns_status
 ldns_str2rdf_class(ldns_rdf **ATTR_UNUSED(rd), const char *str)
 {
-	ldns_rr_class kl;
-	kl = ldns_get_rr_class_by_name(str);
+	uint16_t klass;
+	klass = htons(ldns_get_rr_class_by_name(str));
 	/* class is 16 bit */
-
-	*rd = ldns_rdf_new_frm_data(sizeof(uint16_t), LDNS_RDF_TYPE_CLASS, (uint8_t*)&kl);
+	*rd = ldns_rdf_new_frm_data(sizeof(uint16_t), LDNS_RDF_TYPE_CLASS, (uint8_t*)&klass);
 	return LDNS_STATUS_OK;
 }
 
