@@ -35,7 +35,7 @@
  * \return ldns_status
  */
 ldns_status
-ldns_str2rdf_int16(ldns_rdf **rd, const uint8_t *shortstr)
+ldns_str2rdf_int16(ldns_rdf **rd, const char *shortstr)
 {
 	char *end = NULL;    
 	uint16_t *r;
@@ -59,7 +59,7 @@ ldns_str2rdf_int16(ldns_rdf **rd, const uint8_t *shortstr)
  * \return ldns_status
  */
 ldns_status
-ldns_str2rdf_time(ldns_rdf **rd, const uint8_t *time)
+ldns_str2rdf_time(ldns_rdf **rd, const char *time)
 {
 	/* convert a time YYHM to wireformat */
 	uint16_t *r = NULL;
@@ -87,7 +87,7 @@ ldns_str2rdf_time(ldns_rdf **rd, const uint8_t *time)
  * \return ldns_status
  */
 ldns_status 
-ldns_str2rdf_int32(ldns_rdf **rd, const uint8_t *longstr)
+ldns_str2rdf_int32(ldns_rdf **rd, const char *longstr)
 {
 	char *end;  
 	uint16_t *r = NULL;
@@ -113,7 +113,7 @@ ldns_str2rdf_int32(ldns_rdf **rd, const uint8_t *longstr)
  * \return ldns_status
  */
 ldns_status
-ldns_str2rdf_int8(ldns_rdf **rd, const uint8_t *bytestr)
+ldns_str2rdf_int8(ldns_rdf **rd, const char *bytestr)
 {
 	char *end;     
 	uint8_t *r = NULL;
@@ -145,7 +145,7 @@ ldns_str2rdf_int8(ldns_rdf **rd, const uint8_t *bytestr)
  * label_chars2 is used for debugging. TODO: remove
  */
 ldns_status
-ldns_str2rdf_dname(ldns_rdf **d, const uint8_t* str)
+ldns_str2rdf_dname(ldns_rdf **d, const char *str)
 {
 	unsigned int label_chars;
 	unsigned int label_chars2;
@@ -227,7 +227,7 @@ ldns_str2rdf_dname(ldns_rdf **d, const uint8_t* str)
  * \return ldns_status
  */
 ldns_status
-ldns_str2rdf_a(ldns_rdf **rd, const uint8_t* str)
+ldns_str2rdf_a(ldns_rdf **rd, const char *str)
 {
 	in_addr_t address;
         if (inet_pton(AF_INET, (char*)str, &address) != 1) {
@@ -245,7 +245,7 @@ ldns_str2rdf_a(ldns_rdf **rd, const uint8_t* str)
  * \return ldns_status
  */
 ldns_status
-ldns_str2rdf_aaaa(ldns_rdf **rd, const uint8_t* str)
+ldns_str2rdf_aaaa(ldns_rdf **rd, const char *str)
 {
 	uint8_t address[LDNS_IP6ADDRLEN];
 
@@ -264,7 +264,7 @@ ldns_str2rdf_aaaa(ldns_rdf **rd, const uint8_t* str)
  * \return ldns_status
  */
 ldns_status
-ldns_str2rdf_str(ldns_rdf **rd, const uint8_t* str)
+ldns_str2rdf_str(ldns_rdf **rd, const char *str)
 {
 	if (strlen((char *) str) > 255) {
 		return LDNS_STATUS_INVALID_STR;
@@ -280,7 +280,7 @@ ldns_str2rdf_str(ldns_rdf **rd, const uint8_t* str)
  * \return ldns_status
  */
 ldns_status
-ldns_str2rdf_apl(ldns_rdf **ATTR_UNUSED(rd), const uint8_t *ATTR_UNUSED(str))
+ldns_str2rdf_apl(ldns_rdf **ATTR_UNUSED(rd), const char *ATTR_UNUSED(str))
 {
 	abort();
 }
@@ -292,7 +292,7 @@ ldns_str2rdf_apl(ldns_rdf **ATTR_UNUSED(rd), const uint8_t *ATTR_UNUSED(str))
  * \return ldns_status
  */
 ldns_status
-ldns_str2rdf_b64(ldns_rdf **rd, const uint8_t* str)
+ldns_str2rdf_b64(ldns_rdf **rd, const char *str)
 {
 	uint8_t buffer[B64BUFSIZE];
 	int16_t i;
@@ -313,7 +313,7 @@ ldns_str2rdf_b64(ldns_rdf **rd, const uint8_t* str)
  * \return ldns_status
  */
 ldns_status
-ldns_str2rdf_hex(ldns_rdf **ATTR_UNUSED(rd), const uint8_t *ATTR_UNUSED(str))
+ldns_str2rdf_hex(ldns_rdf **ATTR_UNUSED(rd), const char *ATTR_UNUSED(str))
 {
 	abort();
 }
@@ -325,7 +325,7 @@ ldns_str2rdf_hex(ldns_rdf **ATTR_UNUSED(rd), const uint8_t *ATTR_UNUSED(str))
  * \return ldns_status
  */
 ldns_status
-ldns_str2rdf_nsec(ldns_rdf **ATTR_UNUSED(rd), const uint8_t *ATTR_UNUSED(str))
+ldns_str2rdf_nsec(ldns_rdf **ATTR_UNUSED(rd), const char *ATTR_UNUSED(str))
 {
 	abort();
 }
@@ -337,7 +337,7 @@ ldns_str2rdf_nsec(ldns_rdf **ATTR_UNUSED(rd), const uint8_t *ATTR_UNUSED(str))
  * \return ldns_status
  */
 ldns_status
-ldns_str2rdf_type(ldns_rdf **ATTR_UNUSED(rd), const uint8_t *ATTR_UNUSED(str))
+ldns_str2rdf_type(ldns_rdf **ATTR_UNUSED(rd), const char *ATTR_UNUSED(str))
 {
 	abort();
 }
@@ -349,7 +349,7 @@ ldns_str2rdf_type(ldns_rdf **ATTR_UNUSED(rd), const uint8_t *ATTR_UNUSED(str))
  * \return ldns_status
  */
 ldns_status
-ldns_str2rdf_class(ldns_rdf **ATTR_UNUSED(rd), const uint8_t *ATTR_UNUSED(str))
+ldns_str2rdf_class(ldns_rdf **ATTR_UNUSED(rd), const char *ATTR_UNUSED(str))
 {
 	abort();
 }
@@ -361,7 +361,7 @@ ldns_str2rdf_class(ldns_rdf **ATTR_UNUSED(rd), const uint8_t *ATTR_UNUSED(str))
  * \return ldns_status
  */
 ldns_status
-ldns_str2rdf_cert(ldns_rdf **ATTR_UNUSED(rd), const uint8_t *ATTR_UNUSED(str))
+ldns_str2rdf_cert(ldns_rdf **ATTR_UNUSED(rd), const char *ATTR_UNUSED(str))
 {
 	abort();
 }
@@ -373,7 +373,7 @@ ldns_str2rdf_cert(ldns_rdf **ATTR_UNUSED(rd), const uint8_t *ATTR_UNUSED(str))
  * \return ldns_status
  */
 ldns_status
-ldns_str2rdf_alg(ldns_rdf **ATTR_UNUSED(rd), const uint8_t *ATTR_UNUSED(str))
+ldns_str2rdf_alg(ldns_rdf **ATTR_UNUSED(rd), const char *ATTR_UNUSED(str))
 {
 	abort();
 }
@@ -385,7 +385,7 @@ ldns_str2rdf_alg(ldns_rdf **ATTR_UNUSED(rd), const uint8_t *ATTR_UNUSED(str))
  * \return ldns_status
  */
 ldns_status
-ldns_str2rdf_unknown(ldns_rdf **ATTR_UNUSED(rd), const uint8_t *ATTR_UNUSED(str))
+ldns_str2rdf_unknown(ldns_rdf **ATTR_UNUSED(rd), const char *ATTR_UNUSED(str))
 {
 	abort();
 }
@@ -397,7 +397,7 @@ ldns_str2rdf_unknown(ldns_rdf **ATTR_UNUSED(rd), const uint8_t *ATTR_UNUSED(str)
  * \return ldns_status
  */
 ldns_status
-ldns_str2rdf_tsigtime(ldns_rdf **ATTR_UNUSED(rd), const uint8_t *ATTR_UNUSED(str))
+ldns_str2rdf_tsigtime(ldns_rdf **ATTR_UNUSED(rd), const char *ATTR_UNUSED(str))
 {
 	abort();
 }
@@ -409,7 +409,7 @@ ldns_str2rdf_tsigtime(ldns_rdf **ATTR_UNUSED(rd), const uint8_t *ATTR_UNUSED(str
  * \return ldns_status
  */
 ldns_status
-ldns_str2rdf_service(ldns_rdf **ATTR_UNUSED(rd), const uint8_t *ATTR_UNUSED(str))
+ldns_str2rdf_service(ldns_rdf **ATTR_UNUSED(rd), const char *ATTR_UNUSED(str))
 {
 	abort();
 }
@@ -421,7 +421,7 @@ ldns_str2rdf_service(ldns_rdf **ATTR_UNUSED(rd), const uint8_t *ATTR_UNUSED(str)
  * \return ldns_status
  */
 ldns_status
-ldns_str2rdf_loc(ldns_rdf **ATTR_UNUSED(rd), const uint8_t *ATTR_UNUSED(str))
+ldns_str2rdf_loc(ldns_rdf **ATTR_UNUSED(rd), const char *ATTR_UNUSED(str))
 {
 	abort();
 }
@@ -433,7 +433,7 @@ ldns_str2rdf_loc(ldns_rdf **ATTR_UNUSED(rd), const uint8_t *ATTR_UNUSED(str))
  * \return ldns_status
  */
 ldns_status
-ldns_str2rdf_wks(ldns_rdf **ATTR_UNUSED(rd), const uint8_t *ATTR_UNUSED(str))
+ldns_str2rdf_wks(ldns_rdf **ATTR_UNUSED(rd), const char *ATTR_UNUSED(str))
 {
 	abort();
 }
@@ -445,7 +445,7 @@ ldns_str2rdf_wks(ldns_rdf **ATTR_UNUSED(rd), const uint8_t *ATTR_UNUSED(str))
  * \return ldns_status
  */
 ldns_status
-ldns_str2rdf_nsap(ldns_rdf **ATTR_UNUSED(rd), const uint8_t *ATTR_UNUSED(str))
+ldns_str2rdf_nsap(ldns_rdf **ATTR_UNUSED(rd), const char *ATTR_UNUSED(str))
 {
 	abort();
 }
