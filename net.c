@@ -110,6 +110,7 @@ ldns_send(ldns_resolver *r, ldns_pkt *query_pkt)
 		reply = ldns_send_udp(qb, ns, ns_len);
 		
 		if (reply) {
+			ldns_pkt_set_answerfrom(reply, ns_array[i]);
 			printf("reply found\n");
 			break;
 		}
@@ -142,8 +143,6 @@ ldns_send_udp(ldns_buffer *qbin, const struct sockaddr_storage *to, socklen_t to
 			ldns_buffer_position(qbin), 0, (struct sockaddr *)to, tolen);
 
 	gettimeofday(&tv_e, NULL);
-	
-
 
 	if (bytes == -1) {
 		printf("error with sending: %s\n", strerror(errno));
