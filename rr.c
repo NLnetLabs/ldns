@@ -319,6 +319,9 @@ static const ldns_rdf_type type_rt_wireformat[] = {
 static const ldns_rdf_type type_nsap_wireformat[] = {
 	LDNS_RDF_TYPE_NSAP
 };
+static const ldns_rdf_type type_nsap_ptr_wireformat[] = {
+	LDNS_RDF_TYPE_STR
+};
 static const ldns_rdf_type type_sig_wireformat[] = {
 	LDNS_RDF_TYPE_INT8, LDNS_RDF_TYPE_INT8, LDNS_RDF_TYPE_INT8, LDNS_RDF_TYPE_TIME,
 	LDNS_RDF_TYPE_INT32, LDNS_RDF_TYPE_INT32, LDNS_RDF_TYPE_INT16,
@@ -330,13 +333,27 @@ static const ldns_rdf_type type_key_wireformat[] = {
 static const ldns_rdf_type type_px_wireformat[] = {
 	LDNS_RDF_TYPE_INT16, LDNS_RDF_TYPE_DNAME, LDNS_RDF_TYPE_DNAME
 };
+static const ldns_rdf_type type_gpos_wireformat[] = {
+	LDNS_RDF_TYPE_STR,
+	LDNS_RDF_TYPE_STR,
+	LDNS_RDF_TYPE_STR
+};
 static const ldns_rdf_type type_aaaa_wireformat[] = { LDNS_RDF_TYPE_AAAA };
 static const ldns_rdf_type type_loc_wireformat[] = { LDNS_RDF_TYPE_LOC };
 static const ldns_rdf_type type_nxt_wireformat[] = {
 	LDNS_RDF_TYPE_DNAME, LDNS_RDF_TYPE_UNKNOWN
 };
+static const ldns_rdf_type type_eid_wireformat[] = {
+	LDNS_RDF_TYPE_HEX
+};
+static const ldns_rdf_type type_nimloc_wireformat[] = {
+	LDNS_RDF_TYPE_HEX
+};
 static const ldns_rdf_type type_srv_wireformat[] = {
 	LDNS_RDF_TYPE_INT16, LDNS_RDF_TYPE_INT16, LDNS_RDF_TYPE_INT16, LDNS_RDF_TYPE_DNAME
+};
+static const ldns_rdf_type type_atma_wireformat[] = {
+	LDNS_RDF_TYPE_INT8, LDNS_RDF_TYPE_HEX
 };
 static const ldns_rdf_type type_naptr_wireformat[] = {
 	LDNS_RDF_TYPE_INT16, LDNS_RDF_TYPE_INT16, LDNS_RDF_TYPE_STR, LDNS_RDF_TYPE_STR, LDNS_RDF_TYPE_STR, LDNS_RDF_TYPE_DNAME
@@ -347,7 +364,11 @@ static const ldns_rdf_type type_kx_wireformat[] = {
 static const ldns_rdf_type type_cert_wireformat[] = {
 	 LDNS_RDF_TYPE_CERT, LDNS_RDF_TYPE_INT16, LDNS_RDF_TYPE_ALG, LDNS_RDF_TYPE_B64
 };
+static const ldns_rdf_type type_a6_wireformat[] = { LDNS_RDF_TYPE_DNAME };
 static const ldns_rdf_type type_dname_wireformat[] = { LDNS_RDF_TYPE_DNAME };
+static const ldns_rdf_type type_sink_wireformat[] = { LDNS_RDF_TYPE_INT8,
+	LDNS_RDF_TYPE_INT8, LDNS_RDF_TYPE_INT8, LDNS_RDF_TYPE_B64
+};
 static const ldns_rdf_type type_apl_wireformat[] = {
 	LDNS_RDF_TYPE_APL
 };
@@ -356,6 +377,9 @@ static const ldns_rdf_type type_ds_wireformat[] = {
 };
 static const ldns_rdf_type type_sshfp_wireformat[] = {
 	LDNS_RDF_TYPE_INT8, LDNS_RDF_TYPE_INT8, LDNS_RDF_TYPE_HEX
+};
+static const ldns_rdf_type type_ipseckey_wireformat[] = {
+	LDNS_RDF_TYPE_IPSECKEY
 };
 static const ldns_rdf_type type_rrsig_wireformat[] = {
 	LDNS_RDF_TYPE_TYPE, LDNS_RDF_TYPE_ALG, LDNS_RDF_TYPE_INT8, LDNS_RDF_TYPE_INT32,
@@ -422,7 +446,7 @@ static ldns_rr_descriptor rdata_field_descriptors[] = {
 	/* 22 */
 	{LDNS_RR_TYPE_NSAP, "NSAP", 1, 1, type_nsap_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS },
 	/* 23 */
-	{ 23, NULL, 1, 1, type_0_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS },
+	{LDNS_RR_TYPE_NSAP_PTR, "NSAP-PTR", 1, 1, type_nsap_ptr_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS },
 	/* 24 */
 	{LDNS_RR_TYPE_SIG, "SIG", 9, 9, type_sig_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS },
 	/* 25 */
@@ -430,7 +454,7 @@ static ldns_rr_descriptor rdata_field_descriptors[] = {
 	/* 26 */
 	{LDNS_RR_TYPE_PX, "PX", 3, 3, type_px_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS },
 	/* 27 */
-	{ 27, NULL, 1, 1, type_0_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS },
+	{LDNS_RR_TYPE_GPOS, "GPOS", 1, 1, type_gpos_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS },
 	/* 28 */
 	{LDNS_RR_TYPE_AAAA, "AAAA", 1, 1, type_aaaa_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS },
 	/* 29 */
@@ -438,13 +462,13 @@ static ldns_rr_descriptor rdata_field_descriptors[] = {
 	/* 30 */
 	{LDNS_RR_TYPE_NXT, "NXT", 2, 2, type_nxt_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS },
 	/* 31 */
-	{ 31, NULL, 1, 1, type_0_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS },
+	{LDNS_RR_TYPE_EID, "EID", 1, 1, type_eid_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS },
 	/* 32 */
-	{ 32, NULL, 1, 1, type_0_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS },
+	{LDNS_RR_TYPE_NIMLOC, "NIMLOC", 1, 1, type_nimloc_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS },
 	/* 33 */
 	{LDNS_RR_TYPE_SRV, "SRV", 4, 4, type_srv_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS },
 	/* 34 */
-	{ 34, NULL, 1, 1, type_0_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS },
+	{LDNS_RR_TYPE_ATMA, "ATMA", 1, 1, type_atma_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS },
 	/* 35 */
 	{LDNS_RR_TYPE_NAPTR, "NAPTR", 6, 6, type_naptr_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS },
 	/* 36 */
@@ -452,11 +476,11 @@ static ldns_rr_descriptor rdata_field_descriptors[] = {
 	/* 37 */
 	{LDNS_RR_TYPE_CERT, "CERT", 4, 4, type_cert_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS },
 	/* 38 */
-	{ 38, NULL, 1, 1, type_0_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS },
+	{LDNS_RR_TYPE_A6, "A6", 1, 1, type_a6_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS },
 	/* 39 */
 	{LDNS_RR_TYPE_DNAME, "DNAME", 1, 1, type_dname_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS },
 	/* 40 */
-	{ 40, NULL, 1, 1, type_0_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS },
+	{LDNS_RR_TYPE_SINK, "SINK", 1, 1, type_sink_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS },
 	/* 41 */
 	{LDNS_RR_TYPE_OPT, "OPT", 1, 1, type_0_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS },
 	/* 42 */
@@ -466,7 +490,7 @@ static ldns_rr_descriptor rdata_field_descriptors[] = {
 	/* 44 */
 	{LDNS_RR_TYPE_SSHFP, "SSHFP", 3, 3, type_sshfp_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS },
 	/* 45 */
-	{ 45, NULL, 1, 1, type_0_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS },
+	{LDNS_RR_TYPE_IPSECKEY, "IPSECKEY", 1, 1, type_ipseckey_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS },
 	/* 46 */
 	{LDNS_RR_TYPE_RRSIG, "RRSIG", 9, 9, type_rrsig_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS },
 	/* 47 */
