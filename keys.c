@@ -26,10 +26,63 @@ ldns_key_list *
 ldns_key_list_new()
 {
 	ldns_key_list *key_list = MALLOC(ldns_key_list);
-	key_list->_key_count = 0;
-	key_list->_keys = NULL;
-	return key_list;
+	if (!key_list) {
+		return NULL;
+	} else {
+		key_list->_key_count = 0;
+		key_list->_keys = NULL;
+		return key_list;
+	}
 }
+
+ldns_key *
+ldns_key_new()
+{
+	ldns_key *newkey;
+
+	newkey = MALLOC(ldns_key);
+	if (!newkey) {
+		return NULL;
+	} else {
+		return newkey;
+	}
+}
+
+/**
+ * generate a new key based on the algorithm
+ */
+ldns_key *
+ldns_key_new_frm_algorithm(ldns_signing_algorithm alg, int size)
+{
+	ldns_key *k;
+	DSA *d;
+	RSA *r;
+
+	k = ldns_key_new();
+	if (!k) {
+		return NULL;
+	}
+	/* todo: set the keytag 
+	 * calculate keytag from ldns_key struct */
+
+	switch(alg) {
+		case LDNS_SIGN_RSAMD5:
+		case LDNS_SIGN_RSASHA1:
+			r = RSA_generate_key(size, RSA_F4, NULL, NULL);
+			break;
+			ldns_key_set_rsa_key(k, r);
+		case LDNS_SIGN_DSA:
+			d = DSA_generate_parameters(size, NULL, 0, NULL, NULL, NULL, NULL);
+			DSA_generate_key(d);
+			ldns_key_set_dsa_key(k, d);
+			break;
+		case LDNS_SIGN_HMACMD5:
+			/* do your hmac thing here */
+			break;
+	}
+	return k;
+}
+
 
 void
 ldns_key_set_algorithm(ldns_key *k, ldns_signing_algorithm l) 
@@ -224,3 +277,11 @@ ldns_key_list_pop_key(ldns_key_list *key_list)
         return pop;
 }       
 
+/** 
+ * convert a ldns_key to a public key rr
+ */
+ldns_rr *
+ldns_key2rr(ldns_key *ATTR_UNUSED(k))
+{
+	return NULL;
+}
