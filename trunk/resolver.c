@@ -107,6 +107,11 @@ ldns_resolver_usevc(ldns_resolver *r)
 	return r->_usevc;
 }
 
+struct timeval
+ldns_resolver_timeout(ldns_resolver *r)
+{
+	return r->_timeout;
+} 
 
 /* write */
 void
@@ -217,6 +222,13 @@ ldns_resolver_set_domain(ldns_resolver *r, ldns_rdf *d)
 }
 
 void
+ldns_resolver_set_timeout(ldns_resolver *r, struct timeval timeout)
+{
+	r->_timeout.tv_sec = timeout.tv_sec;
+	r->_timeout.tv_usec = timeout.tv_usec;
+}
+
+void
 ldns_resolver_push_searchlist(ldns_resolver *r, ldns_rdf *d)
 {
 	r->_searchlist[++r->_searchlist_count] = d;
@@ -247,6 +259,9 @@ ldns_resolver_new(void)
 	ldns_resolver_set_port(r, LDNS_PORT);
 	ldns_resolver_set_domain(r, NULL);
 	ldns_resolver_set_defnames(r, false);
+
+	r->_timeout.tv_sec = LDNS_DEFAULT_TIMEOUT_SEC;
+	r->_timeout.tv_usec = LDNS_DEFAULT_TIMEOUT_USEC;
 
 	r->_socket = 0;
 	r->_axfr_soa_count = 0;
@@ -433,7 +448,7 @@ ldns_axfr_start(ldns_resolver *resolver,
                 	return -1;
 	}
 
-	resolver->_socket = ldns_tcp_connect(ns, ns_len);
+	resolver->_socket = ldns_tcp_connect(ns, ns_len, ldns_resolver_timeout(resolver));
 	if (resolver->_socket == 0) {
                	ldns_pkt_free(query);
 		return LDNS_STATUS_NETWORK_ERROR;

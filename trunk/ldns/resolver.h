@@ -18,6 +18,7 @@
 #include <ldns/rr.h>
 #include <ldns/rdata.h>
 #include <ldns/packet.h>
+#include <sys/time.h>
 
 /**
  * \brief Structure of a dns resolver
@@ -61,6 +62,9 @@ struct ldns_struct_resolver
 	/** \brief if true apply the search list */
 	bool _dnsrch;
 
+	/** timeout for socket connections */
+	struct timeval _timeout;
+
 	/** keep some things for axfr */
 	int _socket;
 	int _axfr_soa_count;
@@ -82,6 +86,7 @@ bool ldns_resolver_usevc(ldns_resolver *);
 size_t ldns_resolver_nameserver_count(ldns_resolver *);
 
 ldns_rdf * ldns_resolver_domain(ldns_resolver *);
+struct timeval ldns_resolver_timeout(ldns_resolver *);
 ldns_rdf ** ldns_resolver_searchlist(ldns_resolver *);
 ldns_rdf ** ldns_resolver_nameservers(ldns_resolver *);
 
@@ -92,6 +97,7 @@ void ldns_resolver_incr_nameserver_count(ldns_resolver *);
 void ldns_resolver_set_nameserver_count(ldns_resolver *, size_t);
 
 void ldns_resolver_set_domain(ldns_resolver *, ldns_rdf *);
+void ldns_resolver_set_timeout(ldns_resolver *r, struct timeval timeout);
 void ldns_resolver_push_searchlist(ldns_resolver *, ldns_rdf *);
 ldns_status ldns_resolver_push_nameserver(ldns_resolver *, ldns_rdf *);
 

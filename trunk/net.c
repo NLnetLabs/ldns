@@ -88,10 +88,10 @@ ldns_send(ldns_resolver *r, ldns_pkt *query_pkt)
 		gettimeofday(&tv_s, NULL);
 		/* query */
 		if (1 == ldns_resolver_usevc(r)) {
-			reply = ldns_send_tcp(qb, ns, ns_len);
+			reply = ldns_send_tcp(qb, ns, ns_len, ldns_resolver_timeout(r));
 		} else {
 			/* udp here, please */
-			reply = ldns_send_udp(qb, ns, ns_len);
+			reply = ldns_send_udp(qb, ns, ns_len, ldns_resolver_timeout(r));
 		}
 		FREE(ns);
 		gettimeofday(&tv_e, NULL);
@@ -117,31 +117,32 @@ ldns_send(ldns_resolver *r, ldns_pkt *query_pkt)
  * \return a packet with the answer
  */
 ldns_pkt *
-ldns_send_udp(ldns_buffer *qbin, const struct sockaddr_storage *to, socklen_t tolen)
+ldns_send_udp(ldns_buffer *qbin, const struct sockaddr_storage *to, socklen_t tolen, struct timeval timeout)
 {
 	int sockfd;
 	ssize_t bytes;
 	uint8_t *answer;
 	ldns_pkt *answer_pkt;
 
+/*
         struct timeval timeout;
         
         timeout.tv_sec = LDNS_DEFAULT_TIMEOUT_SEC;
         timeout.tv_usec = LDNS_DEFAULT_TIMEOUT_USEC;
-        
+*/        
 
 	if ((sockfd = socket((int)((struct sockaddr*)to)->sa_family, SOCK_DGRAM, IPPROTO_UDP)) == -1) {
 		printf("could not open socket\n");
 		return NULL;
 	}
 
-        if (setsockopt(sockfd, SOL_SOCKET, SO_RCVTIMEO, &timeout,
-                        (socklen_t) sizeof(timeout))) {
-                perror("setsockopt");
-                close(sockfd);
-                return NULL;
-        }
-
+	if (setsockopt(sockfd, SOL_SOCKET, SO_RCVTIMEO, &timeout,
+			(socklen_t) sizeof(timeout))) {
+		perror("setsockopt");
+		close(sockfd);
+		return NULL;
+	}
+	
 	bytes = sendto(sockfd, ldns_buffer_begin(qbin),
 			ldns_buffer_position(qbin), 0, (struct sockaddr *)to, tolen);
 
@@ -196,15 +197,10 @@ ldns_send_udp(ldns_buffer *qbin, const struct sockaddr_storage *to, socklen_t to
  * Create a tcp socket to the specified address
  */
 int
-ldns_tcp_connect(const struct sockaddr_storage *to, socklen_t tolen)
+ldns_tcp_connect(const struct sockaddr_storage *to, socklen_t tolen, struct timeval timeout)
 {
 	int sockfd;
 	
-        struct timeval timeout;
-        
-        timeout.tv_sec = LDNS_DEFAULT_TIMEOUT_SEC;
-        timeout.tv_usec = LDNS_DEFAULT_TIMEOUT_USEC;
-        
 	if ((sockfd = socket((int)((struct sockaddr*)to)->sa_family, SOCK_STREAM, IPPROTO_TCP)) == -1) {
 		perror("could not open socket");
 		return 0;
@@ -323,12 +319,12 @@ ldns_tcp_read_packet(int sockfd)
  * amount data to expect
  */
 ldns_pkt *
-ldns_send_tcp(ldns_buffer *qbin, const struct sockaddr_storage *to, socklen_t tolen)
+ldns_send_tcp(ldns_buffer *qbin, const struct sockaddr_storage *to, socklen_t tolen, struct timeval timeout)
 {
 	int sockfd;
 	ldns_pkt *answer;
 	
-	sockfd = ldns_tcp_connect(to, tolen);
+	sockfd = ldns_tcp_connect(to, tolen, timeout);
 	
 	if (sockfd == 0) {
 		return NULL;
