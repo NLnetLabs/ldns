@@ -99,7 +99,7 @@ _ldns_rd_field_destroy(t_rdata_field *rd)
 }
 
 /**
- * remove \DDD, \[space] and other escapes from the input
+ * remove \\DDD, \\[space] and other escapes from the input
  * See RFC 1035, section 5.1
  * Return the length of the string or a negative error
  * code
