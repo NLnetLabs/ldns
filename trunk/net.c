@@ -18,9 +18,11 @@
 #include <ldns/resolver.h>
 #include <ldns/buffer.h>
 
+#include <netinet/in.h>
+#include <sys/socket.h>
+#include <netdb.h>
 #include <arpa/inet.h>
 #include <sys/time.h>
-
 
 #include "util.h"
 
