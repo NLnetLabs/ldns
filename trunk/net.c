@@ -285,7 +285,7 @@ ldns_send_tcp(ldns_buffer *qbin, const struct sockaddr_storage *to, socklen_t to
 	close(sockfd);
 
 	/* resize accordingly */
-	XREALLOC(answer, uint8_t *, (size_t) bytes);
+	XREALLOC(answer, uint8_t *, (size_t) total_bytes);
 
         if (ldns_wire2pkt(&answer_pkt, answer+2, (size_t) answer_size) != 
 			LDNS_STATUS_OK) {
