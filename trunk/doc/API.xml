@@ -1,0 +1,75 @@
+<?xml version="1.0"?>
+
+<!DOCTYPE rfc SYSTEM "rfc2629.dtd">
+<!-- $Id -->
+
+<?rfc toc="yes" ?>
+<?rfc compact="yes" ?>
+<?rfc editing="no" ?>
+<?rfc iprnotified="no" ?>
+<?rfc private="LibDNS API" ?>
+
+<rfc ipr="none" category="info" docName="libdns-api-00.txt">
+
+<front>
+<title>LibDNS API</title>
+    <author initials="R." surname="Gieben" fullname="Miek Gieben">
+     <organization>NLnet Labs</organization>
+      <address>
+        <postal>
+          <street>Kruislaan 419</street>
+          <city>Amsterdam</city>
+          <code>1098 VA</code>
+          <country>The Netherlands</country>
+        </postal>
+        <email>miek@nlnetlabs.nl</email>
+        <uri>http://www.nlnetlabs.nl</uri>
+      </address>
+    </author>
+    <author initials="J." surname="Jansen" fullname="Jelte Jansen">
+     <organization>NLnet Labs</organization>
+      <address>
+        <postal>
+          <street>Kruislaan 419</street>
+          <city>Amsterdam</city>
+          <code>1098 VA</code>
+          <country>The Netherlands</country>
+        </postal>
+        <email>jelte@nlnetlabs.nl</email>
+        <uri>http://www.nlnetlabs.nl</uri>
+      </address>
+    </author>
+    <author initials="E." surname="Rozendaal" fullname="Erik Rozendaal">
+     <organization>NLnet Labs</organization>
+      <address>
+        <postal>
+          <street>Kruislaan 419</street>
+          <city>Amsterdam</city>
+          <code>1098 VA</code>
+          <country>The Netherlands</country>
+        </postal>
+        <email>erik@nlnetlabs.nl</email>
+        <uri>http://www.nlnetlabs.nl</uri>
+      </address>
+    </author>
+<date month="January" year="2005" />
+<keyword>DNS</keyword>
+<keyword>Elite</keyword>
+<keyword>Hacking</keyword>
+<abstract>
+<t>
+A small abstract will come here, TBD.
+</t>
+</abstract>
+</front>
+
+<middle>
+
+<section title="API">
+<t>
+</t>
+</section> <!-- API -->
+</middle>  
+<back>
+</back>
+</rfc>
