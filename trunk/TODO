@@ -1,1 +1,2 @@
 Current TODO list
+o drop ldns_resolver_set_configured() ?
