@@ -179,10 +179,12 @@ ldns_pkt_rr_list_by_name(ldns_pkt *packet, ldns_rdf *ownername, ldns_pkt_section
 {
 	ldns_rr_list *rrs;
 	ldns_rr_list *new;
+	ldns_rr_list *ret;
 	uint16_t i;
 
 	rrs = ldns_pkt_xxsection(packet, sec);
 	new = ldns_rr_list_new();
+	ret = NULL;
 
 	for(i = 0; i < ldns_rr_list_rr_count(rrs); i++) {
 		if (ldns_rdf_compare(ldns_rr_owner(
@@ -190,9 +192,10 @@ ldns_pkt_rr_list_by_name(ldns_pkt *packet, ldns_rdf *ownername, ldns_pkt_section
 					ownername) == 0) {
 			/* owner names match */
 			ldns_rr_list_push_rr(new, ldns_rr_list_rr(rrs, i));
+			ret = new;
 		}
 	}
-	return new;
+	return ret;
 }
 
 /* return only those rr that share a type */
@@ -201,18 +204,21 @@ ldns_pkt_rr_list_by_type(ldns_pkt *packet, ldns_rr_type type, ldns_pkt_section s
 {
 	ldns_rr_list *rrs;
 	ldns_rr_list *new;
+	ldns_rr_list *ret;
 	uint16_t i;
 
 	rrs = ldns_pkt_xxsection(packet, sec);
 	new = ldns_rr_list_new();
+	ret = NULL;
 
 	for(i = 0; i < ldns_rr_list_rr_count(rrs); i++) {
 		if (type == ldns_rr_get_type(ldns_rr_list_rr(rrs, i))) {
 			/* types match */
 			ldns_rr_list_push_rr(new, ldns_rr_list_rr(rrs, i));
+			ret = new;
 		}
 	}
-	return new;
+	return ret;
 }
 
 /** 

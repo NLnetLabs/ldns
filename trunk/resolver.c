@@ -346,7 +346,7 @@ ldns_resolver_new_frm_file(const char *filename)
 				}
 				/* no keyword recognized */
 				if (expect == 0) {
-					printf("[%s] unreg keyword\n", word);
+					/*	printf("[%s] unreg keyword\n", word); */
 				}
 				break;
 			case RESOLV_DEFDOMAIN:
