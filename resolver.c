@@ -229,14 +229,18 @@ ldns_resolver_push_nameserver_rr_list(ldns_resolver *r, ldns_rr_list *rrlist)
 	size_t i;
 
 	stat = LDNS_STATUS_OK;
-	for(i = 0; i < ldns_rr_list_rr_count(rrlist); i++) {
-		rr = ldns_rr_list_rr(rrlist, i);
-		if (ldns_resolver_push_nameserver_rr(r, rr) !=
-				LDNS_STATUS_OK) {
-			stat = LDNS_STATUS_ERR;
+	if (rrlist) {
+		for(i = 0; i < ldns_rr_list_rr_count(rrlist); i++) {
+			rr = ldns_rr_list_rr(rrlist, i);
+			if (ldns_resolver_push_nameserver_rr(r, rr) !=
+					LDNS_STATUS_OK) {
+				stat = LDNS_STATUS_ERR;
+			}
 		}
+		return stat;
+	} else {
+		return LDNS_STATUS_ERR;
 	}
-	return stat;
 }
 
 void
