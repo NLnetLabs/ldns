@@ -47,6 +47,11 @@ struct buffer
 	 * If the buffer is fixed it cannot be resized.
 	 */
 	unsigned _fixed : 1;
+
+	/*
+	 * The current state of the buffer
+	 */
+	ldns_status _status;
 };
 
 #ifdef NDEBUG
@@ -370,6 +375,22 @@ ldns_buffer_read_u32(ldns_buffer *buffer)
 	uint32_t result = ldns_buffer_read_u32_at(buffer, buffer->_position);
 	buffer->_position += sizeof(uint32_t);
 	return result;
+}
+
+INLINE ldns_status
+ldns_buffer_status(ldns_buffer *buffer)
+{
+	return buffer->_status;
+}
+
+INLINE bool
+ldns_buffer_status_ok(ldns_buffer *buffer)
+{
+	if (buffer) {
+		return ldns_buffer_status(buffer) == LDNS_STATUS_OK;
+	} else {
+		return false;
+	}
 }
 
 /*
