@@ -38,6 +38,14 @@ enum ldns_enum_rr_class
 };
 typedef enum ldns_enum_rr_class ldns_rr_class;
 
+enum ldns_enum_rr_compress
+{
+	/** compression is allowed */
+	LDNS_RR_COMPRESS,
+	LDNS_RR_NO_COMPRESS
+};
+typedef enum ldns_enum_rr_compress ldns_rr_compress;
+
 /**
  * The different RR types.
  */
@@ -195,6 +203,7 @@ struct ldns_struct_rr_descriptor
         uint8_t     _maximum;    /* Maximum number of RDATA FIELDs.  */
         const ldns_rdf_type *_wireformat;
 	ldns_rdf_type _variable;
+	ldns_rr_compress _compress;
 };
 typedef struct ldns_struct_rr_descriptor ldns_rr_descriptor;
 
