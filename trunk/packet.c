@@ -201,7 +201,13 @@ dns_packet_new()
 {
 	t_packet *packet;
 	packet = xmalloc(sizeof(t_packet));
+	if (!packet) 
+		return NULL;
+
 	packet->header = xmalloc(sizeof(t_header));
+	if (!packet->header)
+		return NULL;
+	
 	packet->question = NULL;
 	packet->answer = NULL;
 	packet->authority = NULL;
