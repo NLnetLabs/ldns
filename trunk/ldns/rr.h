@@ -18,6 +18,16 @@
 #include <ldns/rr.h>
 #include <ldns/error.h>
 
+/** Maximum length of a dname label */
+#define MAX_LABELLEN     63
+/** Maximum length of a complete dname */
+#define MAX_DOMAINLEN    255
+/** Maximum number of pointers in 1 dname */
+#define MAX_POINTERS	65535
+/** The bytes TTL, CLASS and length use up in an rr */
+#define RR_OVERHEAD	10
+
+
 /**
  * \brief The different RR classes.
  */
@@ -167,13 +177,6 @@ enum ldns_enum_rr_type
 };
 typedef enum ldns_enum_rr_type ldns_rr_type;
 
-/** Maximum length of a dname label */
-#define MAX_LABELLEN     63
-/** Maximum length of a complete dname */
-#define MAX_DOMAINLEN    255
-/** Maximum number of pointers in 1 dname */
-#define MAX_POINTERS	65535
-
 /**
  * \brief Resource Record type
  *
@@ -262,6 +265,10 @@ size_t ldns_rr_descriptor_maximum(const ldns_rr_descriptor *);
 ldns_rdf_type ldns_rr_descriptor_field_type(const ldns_rr_descriptor *, size_t);
 ldns_rr_type ldns_rr_get_type_by_name(char *);
 ldns_rr_class ldns_get_class_by_name(char *);
+size_t ldns_rr_uncompressed_size(ldns_rr *);
+int ldns_rr_compare(ldns_rr *, ldns_rr *);
+ldns_status ldns_rr_sort(ldns_rr_list **);
+
 
 
 #endif /* _LDNS_RR_H */

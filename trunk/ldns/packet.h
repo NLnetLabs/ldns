@@ -92,7 +92,8 @@ enum ldns_enum_pkt_section {
 	LDNS_SECTION_QUESTION = 0,
 	LDNS_SECTION_ANSWER = 1,
 	LDNS_SECTION_AUTHORITY = 2,
-	LDNS_SECTION_ADDITIONAL = 3
+	LDNS_SECTION_ADDITIONAL = 3,
+	LDNS_SECTION_ANY = 4  /* bogus section, if not interested */
 };
 typedef enum ldns_enum_pkt_section ldns_pkt_section;	
 
