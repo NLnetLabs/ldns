@@ -181,7 +181,6 @@ ldns_wire2dname(ldns_rdf **dname, const uint8_t *wire, size_t max, size_t *pos)
 			*pos = pointer_target;
 			label_size = wire[*pos];
 		}
-		
 		if (label_size > MAXLABELLEN) {
 			return LDNS_STATUS_LABEL_OVERFLOW;
 		}
@@ -225,8 +224,8 @@ ldns_wire2dname(ldns_rdf **dname, const uint8_t *wire, size_t max, size_t *pos)
 }
 
 /* maybe make this a goto error so data can be freed or something/ */
-#define STATUS_CHECK_RETURN(st) {if (st != LDNS_STATUS_OK) { return st; }}
-#define STATUS_CHECK_GOTO(st, label) {if (st != LDNS_STATUS_OK) { goto label; }}
+#define STATUS_CHECK_RETURN(st) {if (st != LDNS_STATUS_OK) { printf("STR %d\n", __LINE__); return st; }}
+#define STATUS_CHECK_GOTO(st, label) {if (st != LDNS_STATUS_OK) { printf("STG %s:%d: status code %d\n", __FILE__, __LINE__, st);  goto label; }}
 
 /* TODO -doc,
  	-free on error
@@ -335,7 +334,6 @@ ldns_wire2rdf(ldns_rr *rr, const uint8_t *wire,
 
 		ldns_rr_push_rdf(rr, cur_rdf);
 	}
-
 	return LDNS_STATUS_OK;
 }
 

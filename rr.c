@@ -276,7 +276,7 @@ static const ldns_rdf_type type_minfo_wireformat[] = {
 	LDNS_RDF_TYPE_DNAME, LDNS_RDF_TYPE_DNAME
 };
 static const ldns_rdf_type type_mx_wireformat[] = {
-	LDNS_RDF_TYPE_INT8, LDNS_RDF_TYPE_DNAME
+	LDNS_RDF_TYPE_INT16, LDNS_RDF_TYPE_DNAME
 };
 static const ldns_rdf_type type_rp_wireformat[] = {
 	LDNS_RDF_TYPE_DNAME, LDNS_RDF_TYPE_DNAME
