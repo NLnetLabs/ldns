@@ -113,7 +113,6 @@ syn keyword  ldnsConstant TYPE_ANY
 syn keyword  ldnsConstant MAXLABELLEN     
 syn keyword  ldnsConstant MAXDOMAINLEN
 
-
 syn keyword  ldnsMacro	QHEADERSZ
 syn keyword  ldnsMacro	RD_MASK
 syn keyword  ldnsMacro	RD_SHIFT
@@ -172,6 +171,9 @@ syn keyword  ldnsMacro  NSCOUNT_OFF
 syn keyword  ldnsMacro	NSCOUNT
 syn keyword  ldnsMacro  ARCOUNT_OFF
 syn keyword  ldnsMacro 	ARCOUNT
+
+" ldns/buffer.h
+syn keyword  ldnsType	ldns_buffer
 
 " Default highlighting
 command -nargs=+ HiLink hi def link <args>
