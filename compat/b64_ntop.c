@@ -155,7 +155,7 @@ b64_ntop(uint8_t const *src, size_t srclength, char *target, size_t targsize) {
 	/* Now we worry about padding. */
 	if (0 != srclength) {
 		/* Get what's left. */
-		input[0] = input[1] = input[2] = '\0';
+		input[0] = input[1] = input[2] = (uint8_t) '\0';
 		for (i = 0; i < srclength; i++)
 			input[i] = *src++;
 	
@@ -179,5 +179,5 @@ b64_ntop(uint8_t const *src, size_t srclength, char *target, size_t targsize) {
 	if (datalength >= targsize)
 		return (-1);
 	target[datalength] = '\0';	/* Returned value doesn't count \0. */
-	return (datalength);
+	return (int) (datalength);
 }
