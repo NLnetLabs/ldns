@@ -213,6 +213,9 @@ syn keyword  ldnsMacro 	ARCOUNT
 " ldns/buffer.h
 syn keyword  ldnsType	ldns_buffer
 
+" ldns/host2str.h
+syn keyword  ldnsType	ldns_lookup_table
+
 " Default highlighting
 command -nargs=+ HiLink hi def link <args>
 HiLink ldnsType                Type
