@@ -233,7 +233,7 @@ ldns_wire2dname(ldns_rdf **dname, const uint8_t *wire, size_t max, size_t *pos)
 
 	if (*pos > max) {
 		/* TODO set error */
-		return 0;
+		return LDNS_STATUS_PACKET_OVERFLOW;
 	}
 	
 	label_size = wire[*pos];
@@ -247,15 +247,15 @@ ldns_wire2dname(ldns_rdf **dname, const uint8_t *wire, size_t max, size_t *pos)
 			/* remove first two bits */
 			/* TODO: can this be done in a better way? */
 			pointer_target_buf[0] = wire[*pos] & 63;
-			pointer_target_buf[1] = wire[*pos+1];
+			pointer_target_buf[1] = wire[*pos + 1];
 			pointer_target = read_uint16(pointer_target_buf);
 
 			if (pointer_target == 0) {
 				fprintf(stderr, "POINTER TO 0\n");
-				return 0;
+				return LDNS_STATUS_INVALID_POINTER;
 			} else if (pointer_target > max) {
 				fprintf(stderr, "POINTER TO OUTSIDE PACKET\n");
-				return 0 ;
+				return LDNS_STATUS_INVALID_POINTER;
 			}
 			*pos = pointer_target;
 			label_size = wire[*pos];
@@ -265,12 +265,13 @@ ldns_wire2dname(ldns_rdf **dname, const uint8_t *wire, size_t max, size_t *pos)
 			/* TODO error: label size too large */
 			fprintf(stderr, "LABEL SIZE ERROR: %d\n",
 			        (int) label_size);
-			return 0;
+			return LDNS_STATUS_LABEL_OVERFLOW;
 		}
 		if (*pos + label_size > max) {
 			/* TODO error: out of packet data */
 			fprintf(stderr, "MAX PACKET ERROR: %d\n",
 			        (int) (*pos + label_size));
+			return LDNS_STATUS_LABEL_OVERFLOW;
 		}
 		
 		tmp_dname[dname_pos] = label_size;
@@ -315,7 +316,7 @@ ldns_wire2rr(ldns_rr *rr, const uint8_t *wire, size_t max,
              size_t *pos, int section)
 {
 	ldns_rdf *owner;
-	char *owner_str = malloc(MAXDOMAINLEN);
+	char *owner_str = XMALLOC(char, MAXDOMAINLEN);
 	uint16_t rd_length;
 	ldns_status status = LDNS_STATUS_OK;
 	
@@ -343,7 +344,7 @@ ldns_wire2rr(ldns_rr *rr, const uint8_t *wire, size_t max,
 		*pos = *pos + rd_length;
 	}
 
-	return (size_t) 0;
+	return status;
 }
 
 static ldns_status
@@ -354,7 +355,7 @@ ldns_wire2pkt_hdr(ldns_pkt *packet,
 {
 	if (*pos + QHEADERSZ >= max) {
 		/* TODO: set t_status error.  */
-		return LDNS_PACKET_OVERFLOW;
+		return LDNS_STATUS_PACKET_OVERFLOW;
 	} else {
 
 		pkt_set_id(packet, ID(wire));
