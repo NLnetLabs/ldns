@@ -270,12 +270,12 @@ size_t ldns_rr_uncompressed_size(const ldns_rr *);
 int ldns_rr_compare(const ldns_rr *rr1, const ldns_rr *rr2);
 void ldns_rr_list_sort(ldns_rr_list *);
 
-ldns_rr *ldns_rr_clone(ldns_rr *rr);
+ldns_rr *ldns_rr_deep_clone(ldns_rr *rr);
 ldns_rr *ldns_rr_new_frm_str(const char *);
 ldns_rr *ldns_rr_list_pop_rr(ldns_rr_list *);
 ldns_rr *ldns_rr_set_pop_rr(ldns_rr_list *);
 ldns_rr_list *ldns_rr_list_cat(ldns_rr_list *, ldns_rr_list *);
-ldns_rr_list *ldns_rr_list_clone(ldns_rr_list *);
+ldns_rr_list *ldns_rr_list_deep_clone(ldns_rr_list *);
 void ldns_rr_list2canonical(ldns_rr_list *);
 void ldns_rr2canonical(ldns_rr *);
 

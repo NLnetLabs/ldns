@@ -109,7 +109,7 @@ uint8_t         *ldns_rdf_data(const ldns_rdf *);
 void            ldns_rdf_free(ldns_rdf *);
 void            ldns_rdf_free_data(ldns_rdf *);
 struct sockaddr_storage * ldns_rdf2native_sockaddr_storage(ldns_rdf *);
-ldns_rdf	*ldns_rdf_clone(const ldns_rdf *);
+ldns_rdf	*ldns_rdf_deep_clone(const ldns_rdf *);
 int		ldns_rdf_compare(const ldns_rdf *, const ldns_rdf *);
 uint8_t		ldns_rdf2native_int8(ldns_rdf *);
 uint16_t	ldns_rdf2native_int16(ldns_rdf *);
