@@ -64,6 +64,7 @@ syn keyword  ldnsConstant	LDNS_AD
 syn keyword ldnsMacro	LDNS_STATUS_OK
 syn keyword ldnsMacro	LDNS_STATUS_EMPTY_LABEL
 syn keyword ldnsMacro	LDNS_STATUS_LABEL_OVERFLOW
+syn keyword ldnsMacro	LDNS_STATUS_LABEL_UNDERFLOW
 syn keyword ldnsMacro	LDNS_STATUS_DOMAINNAME_OVERFLOW
 syn keyword ldnsMacro	LDNS_STATUS_DDD_OVERFLOW
 syn keyword ldnsMacro	LDNS_STATUS_PACKET_OVERFLOW

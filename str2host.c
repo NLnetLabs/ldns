@@ -154,16 +154,41 @@ ldns_str2rdf_dname(ldns_rdf **d, const uint8_t* str)
 	ldns_status stat;
 
 	uint8_t *s,*p,*q;
-	uint8_t buf_str[MAXDOMAINLEN];
-	uint8_t buf[MAXDOMAINLEN];
+	uint8_t buf_str[MAXDOMAINLEN + 1];
+	uint8_t buf[MAXDOMAINLEN + 1];
 	stat = LDNS_STATUS_OK;
 	
 	len = strlen((char*)str);
 	if (len > MAXDOMAINLEN) {
 		return LDNS_STATUS_DOMAINNAME_OVERFLOW;
 	}
+	if (0 == len) {
+		return LDNS_STATUS_DOMAINNAME_UNDERFLOW;
+	}
+
+	/* if the string does not end with a dot then add the dot */
 	memcpy(buf_str, str, len);
-	buf_str[len] = (uint8_t)'\0'; 
+	printf("length %d\n", len);
+	printf("char [%c]\n", buf_str[len - 1]);
+
+	if (buf_str[len - 1] != '.') {
+		if (len + 1 > MAXDOMAINLEN) {
+			return LDNS_STATUS_DOMAINNAME_OVERFLOW;
+		}
+		buf_str[len] = (uint8_t)'.';
+		buf_str[len + 1] = (uint8_t)'\0';
+		len += 1;
+	} else {
+		buf_str[len] = (uint8_t)'\0'; 
+	}
+	
+	/* extend with 1 - the first char will be the
+	 * lenght of the first label */
+	len += 1;
+	
+	printf("modified dname [%s]\n", buf_str);
+	printf("new length %d\n", len);
+
 
 	if ((stat = ldns_octet(buf_str, &octet_len)) != LDNS_STATUS_OK) {
 		return stat;
@@ -173,29 +198,35 @@ ldns_str2rdf_dname(ldns_rdf **d, const uint8_t* str)
 	 * p on the previous one
 	 * q builds the dname
 	 */
-	q = buf;
+	q = buf; int i = 0;
 	for (s = p = buf_str; *s; s++) {
+		printf("going in %d\n", i++);
 		if (*s == '.') {
+			printf("dot s:%x p: %x  diff %d\n", s, p, s-p);
 			label_chars = (unsigned int) (s - p);
-			label_chars2 = label_chars + 39; /* somehting printable */
-			/* put this number in the right spot in buf and
-			 * copy those chars over*/
+			label_chars2 = label_chars + 48; /* somehting printable */
+			/* put this number in the right spot in buf and copy those chars over*/
 			memcpy(q, &label_chars, 1); 
+			/* DEBUG memcpy(q, &label_chars2, 1); */
 			memcpy(q + 1, p, label_chars); 
 			q += (label_chars + 1);
 			p = s + 1; /* move the new position after the dot */
 		}
 	}
 	label_chars = (unsigned int) (s - p); 
-	label_chars2 = label_chars + 39; /* something printable */
+	label_chars2 = label_chars + 48; /* something printable */
 	
 	memcpy(q, &label_chars, 1); 
+	/* DEBUG memcpy(q, &label_chars2, 1); */
 	memcpy(q + 1, p, label_chars); 
 	q += (label_chars + 1);
-	q = (uint8_t*)'\00'; /* end the string */
+	*q = (uint8_t)'\0'; /* end the string */
 
 	/* s - buf_str works because no magic is done in the above for-loop */
-	*d = ldns_rdf_new_frm_data((s - buf_str + 2) , LDNS_RDF_TYPE_DNAME , buf); 
+	/* *d = ldns_rdf_new_frm_data((s - buf_str + 2) , LDNS_RDF_TYPE_DNAME , buf); */
+	*d = ldns_rdf_new_frm_data(len , LDNS_RDF_TYPE_DNAME , buf); 
+	printf("d size %d\n", (*d)->_size);
+	printf("d data %s\n", (*d)->_data);
 
 	return LDNS_STATUS_OK;
 }
