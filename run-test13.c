@@ -64,8 +64,10 @@ main(int argc, char **argv)
 		printf("\n");
 	}
 
-
 	/* try to verify some things */
+	printf("\n*** Verifying ***\n\n");
+	
+	printf("Key tag %d\n", ldns_keytag(ldns_rr_list_rr(keys_rrset, 0)));
 	
 	
 
