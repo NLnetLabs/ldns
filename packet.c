@@ -133,85 +133,85 @@
 
 /* read */
 uint16_t
-packet_id(t_packet *packet)
+packet_id(ldns_packet_type *packet)
 {
 	return packet->_header->_id;
 }
 
 bool
-packet_qr(t_packet *packet)
+packet_qr(ldns_packet_type *packet)
 {
 	return packet->_header->_qr;
 }
 
 bool
-packet_aa(t_packet *packet)
+packet_aa(ldns_packet_type *packet)
 {
 	return packet->_header->_aa;
 }
 
 bool
-packet_tc(t_packet *packet)
+packet_tc(ldns_packet_type *packet)
 {
 	return packet->_header->_tc;
 }
 
 bool
-packet_rd(t_packet *packet)
+packet_rd(ldns_packet_type *packet)
 {
 	return packet->_header->_rd;
 }
 
 bool
-packet_cd(t_packet *packet)
+packet_cd(ldns_packet_type *packet)
 {
 	return packet->_header->_cd;
 }
 
 bool
-packet_ra(t_packet *packet)
+packet_ra(ldns_packet_type *packet)
 {
 	return packet->_header->_ra;
 }
 
 bool
-packet_ad(t_packet *packet)
+packet_ad(ldns_packet_type *packet)
 {
 	return packet->_header->_ad;
 }
 
 uint8_t
-packet_opcode(t_packet *packet)
+packet_opcode(ldns_packet_type *packet)
 {
 	return packet->_header->_opcode;
 }
 
 uint8_t
-packet_rcode(t_packet *packet)
+packet_rcode(ldns_packet_type *packet)
 {
 	return packet->_header->_rcode;
 }
 
 uint16_t
-packet_qdcount(t_packet *packet)
+packet_qdcount(ldns_packet_type *packet)
 {
 	return packet->_header->_qdcount;
 }
 
 uint16_t
-packet_ancount(t_packet *packet)
+packet_ancount(ldns_packet_type *packet)
 {
 	return packet->_header->_ancount;
 }
 
 uint16_t
-packet_nscount(t_packet *packet)
+packet_nscount(ldns_packet_type *packet)
 {
 	return packet->_header->_nscount;
 }
 
 uint16_t
-packet_arcount(t_packet *packet)
+packet_arcount(ldns_packet_type *packet)
 {
 	return packet->_header->_arcount;
 }
@@ -219,85 +219,85 @@ packet_arcount(t_packet *packet)
 
 /* write */
 void
-packet_set_id(t_packet *packet, uint16_t id)
+packet_set_id(ldns_packet_type *packet, uint16_t id)
 {
 	packet->_header->_id = id;
 }
 
 void
-packet_set_qr(t_packet *packet, bool qr)
+packet_set_qr(ldns_packet_type *packet, bool qr)
 {
 	packet->_header->_qr = qr;
 }
 
 void
-packet_set_aa(t_packet *packet, bool aa)
+packet_set_aa(ldns_packet_type *packet, bool aa)
 {
 	packet->_header->_aa = aa;
 }
 
 void
-packet_set_tc(t_packet *packet, bool tc)
+packet_set_tc(ldns_packet_type *packet, bool tc)
 {
 	packet->_header->_tc = tc;
 }
 
 void
-packet_set_rd(t_packet *packet, bool rd)
+packet_set_rd(ldns_packet_type *packet, bool rd)
 {
 	packet->_header->_rd = rd;
 }
 
 void
-packet_set_cd(t_packet *packet, bool cd)
+packet_set_cd(ldns_packet_type *packet, bool cd)
 {
 	packet->_header->_cd = cd;
 }
 
 void
-packet_set_ra(t_packet *packet, bool ra)
+packet_set_ra(ldns_packet_type *packet, bool ra)
 {
 	packet->_header->_ra = ra;
 }
 
 void
-packet_set_ad(t_packet *packet, bool ad)
+packet_set_ad(ldns_packet_type *packet, bool ad)
 {
 	packet->_header->_ad = ad;
 }
 
 void
-packet_set_opcode(t_packet *packet, uint8_t opcode)
+packet_set_opcode(ldns_packet_type *packet, uint8_t opcode)
 {
 	packet->_header->_opcode = opcode;
 }
 
 void
-packet_set_rcode(t_packet *packet, uint8_t rcode)
+packet_set_rcode(ldns_packet_type *packet, uint8_t rcode)
 {
 	packet->_header->_rcode = rcode;
 }
 
 void
-packet_set_qdcount(t_packet *packet, uint16_t qdcount)
+packet_set_qdcount(ldns_packet_type *packet, uint16_t qdcount)
 {
 	packet->_header->_qdcount = qdcount;
 }
 
 void
-packet_set_ancount(t_packet *packet, uint16_t ancount)
+packet_set_ancount(ldns_packet_type *packet, uint16_t ancount)
 {
 	packet->_header->_ancount = ancount;
 }
 
 void
-packet_set_nscount(t_packet *packet, uint16_t nscount)
+packet_set_nscount(ldns_packet_type *packet, uint16_t nscount)
 {
 	packet->_header->_nscount = nscount;
 }
 
 void
-packet_set_arcount(t_packet *packet, uint16_t arcount)
+packet_set_arcount(ldns_packet_type *packet, uint16_t arcount)
 {
 	packet->_header->_arcount = arcount;
 }
@@ -306,16 +306,16 @@ packet_set_arcount(t_packet *packet, uint16_t arcount)
 /* Create/destroy/convert functions
  */
  
-t_packet *
+ldns_packet_type *
 ldns_packet_new()
 {
-	t_packet *packet;
-	packet = MALLOC(t_packet);
+	ldns_packet_type *packet;
+	packet = MALLOC(ldns_packet_type);
 	if (!packet) {
 		return NULL;
 	}
 
-	packet->_header = MALLOC(t_header);
+	packet->_header = MALLOC(ldns_header_type);
 	if (!packet->_header) {
 		FREE(packet);
 		return NULL;
@@ -329,7 +329,7 @@ ldns_packet_new()
 }
 
 static size_t
-ldns_wire2packet_header(t_packet *packet,
+ldns_wire2packet_header(ldns_packet_type *packet,
 			const uint8_t *wire,
 			size_t max,
 			size_t *pos)
@@ -364,7 +364,7 @@ ldns_wire2packet_header(t_packet *packet,
 }
 
 size_t
-ldns_wire2packet(t_packet *packet, const uint8_t *wire, size_t max)
+ldns_wire2packet(ldns_packet_type *packet, const uint8_t *wire, size_t max)
 {
 	size_t pos = 0;
 
