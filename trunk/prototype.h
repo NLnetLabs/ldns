@@ -13,8 +13,7 @@
 #else
 #define _PROTOTYPE_H
 
-#include <stdint.h>
-#include <stdlib.h>
+#include "common.h"
 
 /* util.c */
 void 		*xmalloc(size_t);

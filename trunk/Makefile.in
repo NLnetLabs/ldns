@@ -1,5 +1,20 @@
-CC	=	gcc
-CFLAGS	=	-g -Wall -Wwrite-strings -Wunused-value -Wunused-parameter
+# Standard installation pathnames
+# See the file LICENSE for the license
+SHELL 		= @SHELL@
+srcdir 		= @srcdir@
+prefix  	= @prefix@
+exec_prefix 	= @exec_prefix@
+bindir 		= @bindir@
+mandir 		= @mandir@
+
+CC 		= @CC@
+OURCFLAGS	= -g -Wall -Wwrite-strings -Wunused-value -Wunused-parameter
+CFLAGS 		= @CFLAGS@ $(OURCFLAGS)
+LDFLAGS		= @LDFLAGS@
+LIBS 		= @LIBS@
+
+#INSTALL = $(srcdir)/install-sh -c
+#INSTALL_PROGRAM = $(INSTALL)
 
 LIBOBJ=rdata.o util.o
 HEADER=rdata.h prototype.h rr.h packet.h
@@ -18,3 +33,6 @@ main:	main.o $(LIBOBJ)
 clean:	
 	rm -f *.o
 	rm -f main
+	rm -rf autom4te.cache/
+	rm -f config.status
+	rm -f config.log

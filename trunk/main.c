@@ -3,13 +3,12 @@
  *
  */
 
-#include <stdio.h>
+#include "common.h"
 
 #include "rdata.h"
 #include "rr.h"
 #include "packet.h"
 #include "prototype.h"
-
 
 int
 main(void)
