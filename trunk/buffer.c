@@ -187,10 +187,5 @@ ldns_bgetc(ldns_buffer *buffer)
 		ldns_buffer_rewind(buffer);
 		return EOF;
 	}
-
-        /* 
-	 * assert(ldns_buffer_available_at(buffer, at, sizeof(uint8_t)));
-	 */
-
 	return (int)ldns_buffer_read_u8(buffer);
 }
