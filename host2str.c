@@ -21,11 +21,11 @@
 #include <ldns/host2str.h>
 #include <ldns/packet.h>
 #include <ldns/wire2host.h>
+#include <ldns/dns.h>
 
 #include <util.h>
 
-/* lookup tables partly stolen from nsd, is there better way?
-   are these used somewhere else? */
+/* lookup tables for standard DNS stuff  */
 
 /* Taken from RFC 2538, section 2.1.  */
 ldns_lookup_table ldns_certificate_types[] = {
@@ -43,38 +43,38 @@ ldns_lookup_table ldns_algorithms[] = {
         { 2, "DS" },
         { 3, "DSA" },
         { 4, "ECC" },
-        { 5, "RSASHA1" },       
+        { 5, "RSASHA1" },
         { 252, "INDIRECT" },
         { 253, "PRIVATEDNS" },
         { 254, "PRIVATEOID" },
         { 0, NULL }
 };
 
-/* rr types (TODO: maybe these should be in rr.c? add enum? */
+/* rr types  */
 ldns_lookup_table ldns_rr_classes[] = {
-	{ LDNS_RR_CLASS_IN, "IN" },
-	{ LDNS_RR_CLASS_CHAOS, "CH" },
-	{ LDNS_RR_CLASS_HS, "HS" },
-	{ LDNS_RR_CLASS_ANY, "ANY" },
-	{ 0, NULL }
+        { LDNS_RR_CLASS_IN, "IN" },
+        { LDNS_RR_CLASS_CHAOS, "CH" },
+        { LDNS_RR_CLASS_HS, "HS" },
+        { LDNS_RR_CLASS_ANY, "ANY" },
+        { 0, NULL }
 };
 
-/* if these are used elsewhere, move to packet.c? */
+/* if these are used elsewhere */
 ldns_lookup_table ldns_rcodes[] = {
-	{ 0, "NOERROR" },
-	{ 1, "FORMERR" },
-	{ 2, "SERVFAIL" },
-	{ 3, "NAMEERR" },
-	{ 4, "NOTIMPL" },
-	{ 5, "REFUSED" },
-	{ 0, NULL }
+        { 0, "NOERROR" },
+        { 1, "FORMERR" },
+        { 2, "SERVFAIL" },
+        { 3, "NAMEERR" },
+        { 4, "NOTIMPL" },
+        { 5, "REFUSED" },
+        { 0, NULL }
 };
 
 ldns_lookup_table ldns_opcodes[] = {
-	{ 0, "QUERY" },
-	{ 1, "IQUERY" },
-	{ 2, "STATUS" },
-	{ 0, NULL }
+        { 0, "QUERY" },
+        { 1, "IQUERY" },
+        { 2, "STATUS" },
+        { 0, NULL }
 };
 
 /* do NOT pass compressed data here :p */
