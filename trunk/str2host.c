@@ -12,8 +12,9 @@
  */
 #include <config.h>
 
+#include <ldns/str2host.h>
 
-#include <ldns/host2str.h>
+#include "util.h"
 
 #include <sys/socket.h>
 #include <arpa/inet.h>
@@ -25,13 +26,18 @@
 ldns_status
 zparser_conv_short(ldns_rdf *rd, const char *shortstr)
 {
-	char *end;      /* Used to parse longs, ttls, etc.  */
-	rd->_size = 2;
-	rd->_data = (uint8_t*)htons((uint16_t)strtol(shortstr, &end, 0));
-            
+	char *end = NULL;      /* Used to parse longs, ttls, etc.  */
+	
+	uint16_t *r;
+
+	r = MALLOC(uint16_t);
+	
+	*r = htons((uint16_t)strtol(shortstr, &end, 0));
+	
 	if(*end != 0) {
 		return LDNS_STATUS_INT_EXP;
 	} else {
+		rd = ldns_rdf_new(2, LDNS_RDF_TYPE_INT16, (uint8_t*)r);
 		return LDNS_STATUS_OK;
 	}
 }
