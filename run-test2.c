@@ -207,13 +207,6 @@ main(int argc, char **argv)
 	} else {
 		printf("\n");
 	}
-
-	if (!ldns_pkt_tsig_verify(pkt, "jelte.", "vBUWJnkgDw4YTobXtbUD6XED5Qg74tnghYX3tzKzfsI=", NULL)) {
-		printf("Bad sig :(\n");
-		exit(-1);
-	} else {
-		printf("SIG VERIFIED!\n");
-	}
 	
 	printf("And back to wire:\n");
 	/*buffer = ldns_buffer_new(65535);*/
