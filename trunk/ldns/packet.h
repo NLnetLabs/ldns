@@ -66,11 +66,11 @@ struct ldns_struct_pkt
 	ldns_hdr *_header;
 	/* extra items needed in a packet */
 	/** \brief the size in bytes of the pkt */
-	uint16_t answersize;
+	uint16_t _answersize;
 	/** \brief the server ip */
-	ldns_rdf *answerfrom;
+	ldns_rdf *_answerfrom;
 	/** \brief query duration */
-	unsigned long querytime;
+	uint32_t _querytime;
 	/** \brief query data */
 	/** \brief question section */
 	ldns_rr_list	*_question;
