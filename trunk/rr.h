@@ -82,7 +82,13 @@
 /* the general rr type */
 struct struct_rr_t 
 {
-
+	uint8_t		*dname;		/* domain name, uncompressed */
+	uint32_t	ttl;		/* ttl  */
+	uint16_t	rd_count;	/* amount of rdata */
+	uint16_t	type;		/* the type of the RR. A, MX etc. */
+	class_t		klass;		/* avoid clash with class keyword */
+	/* everything in the rdata is in network order */
+	rdata_t		*rdata;		/* a list of data's */
 
 };
 typedef struct struct_rr_t rr_t;

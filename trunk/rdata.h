@@ -36,6 +36,15 @@ enum enum_rdata_type
 };
 typedef enum enum_rdata_type rd_type_t;
 
+enum enum_class_type 
+{
+	CLASS_IN 	= 1,
+	CLASS_CHAOS	= 3,
+	CLASS_HS	= 4,
+	CLASS_ANY	= 255
+};
+typedef enum enum_class_type class_t;
+
 /* 
  * the basic data type
  * 16 bits size
