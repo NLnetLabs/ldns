@@ -59,7 +59,7 @@ main(void)
 	}
         
         /* fire it off. "miek.nl." will be added */
-        pkt = ldns_resolver_send(res, qname, LDNS_RR_TYPE_MX, 0, 0);
+        pkt = ldns_resolver_send(res, qname, LDNS_RR_TYPE_MX, 0, LDNS_RD);
 
 	if (!pkt)  {
 		printf("error pkt sending\n");

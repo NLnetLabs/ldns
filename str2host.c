@@ -142,6 +142,7 @@ ldns_str2rdf_int8(ldns_rdf **rd, const uint8_t *bytestr)
  * \todo make this more efficient...
  * we do 3 memcpy's in total...
  * label_chars2 is used for debugging. TODO: remove
+ * \todo DOES IT WORK...
  */
 ldns_status
 ldns_str2rdf_dname(ldns_rdf **d, const uint8_t* str)
@@ -186,14 +187,14 @@ ldns_str2rdf_dname(ldns_rdf **d, const uint8_t* str)
 		}
 	}
 	label_chars = (unsigned int) (s - p); 
-	label_chars2 = label_chars + 39; /* somehting printable */
+	label_chars2 = label_chars + 39; /* something printable */
 	
 	memcpy(q, &label_chars, 1); 
 	memcpy(q + 1, p, label_chars); 
 	q += (label_chars + 1);
 	q = (uint8_t*)'\00'; /* end the string */
 
-	/* s - buf_str works because no magic is done * in the above for-loop */
+	/* s - buf_str works because no magic is done in the above for-loop */
 	*d = ldns_rdf_new_frm_data((s - buf_str + 2) , LDNS_RDF_TYPE_DNAME , buf); 
 
 	return LDNS_STATUS_OK;
