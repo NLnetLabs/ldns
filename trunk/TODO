@@ -19,6 +19,8 @@ o network code
 	- timeouts part of resolver struct with access functions and
 	  sane default values
 o DNSSEC
+	- define algorithms?
+	- look again at keytag calc
 o Make a shared library and test compile some programs
 
 Documentation:

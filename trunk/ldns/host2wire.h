@@ -12,13 +12,13 @@
 
 #include "util.h"
 
-ldns_status ldns_rdf2buffer_wire(ldns_buffer *buffer, const ldns_rdf *rdf);
-ldns_status ldns_rr2buffer_wire(ldns_buffer *buffer, const ldns_rr *rr,
-				int section);
-ldns_status ldns_pkt2buffer_wire(ldns_buffer *buffer, const ldns_pkt *pkt);
+ldns_status ldns_rdf2buffer_wire(ldns_buffer *, const ldns_rdf *);
+ldns_status ldns_rr2buffer_wire(ldns_buffer *, const ldns_rr *, int);
+ldns_status ldns_pkt2buffer_wire(ldns_buffer *, const ldns_pkt *);
+ldns_status ldns_rr_rdata2buffer_wire(ldns_buffer *, ldns_rr *);
+uint8_t *ldns_rdf2wire(const ldns_rdf *, size_t *);
+uint8_t *ldns_rr2wire(const ldns_rr *, int, size_t *);
+uint8_t *ldns_pkt2wire(const ldns_pkt *, size_t *);
 
-uint8_t *ldns_rdf2wire(const ldns_rdf *rdf, size_t *result_size);
-uint8_t *ldns_rr2wire(const ldns_rr *rr, int section, size_t *result_size);
-uint8_t *ldns_pkt2wire(const ldns_pkt *pkt, size_t *result_size);
 
 #endif
