@@ -1,4 +1,3 @@
-" source /home/miekg/.vim/syntax/ldns.vim
 " Vim syntax file
 " Language:     C libdns
 " Maintainer:   miekg
@@ -12,6 +11,10 @@ syn keyword  ldnsType           ldns_rr_descriptor_type
 syn keyword  ldnsType           ldns_header_type
 syn keyword  ldnsType           ldns_packet_type
 syn keyword  ldnsType           t_rrset
+syn keyword  ldnsType           true
+syn keyword  ldnsType           false
+
+" ldns/rr.h 
 syn keyword  ldnsConstant TYPE_A          
 syn keyword  ldnsConstant TYPE_NS        
 syn keyword  ldnsConstant TYPE_MD       
@@ -60,6 +63,66 @@ syn keyword  ldnsConstant TYPE_MAILA
 syn keyword  ldnsConstant TYPE_ANY        
 syn keyword  ldnsConstant MAXLABELLEN     
 syn keyword  ldnsConstant MAXDOMAINLEN
+
+
+syn keyword  ldnsMacro	QHEADERSZ
+syn keyword  ldnsMacro	RD_MASK
+syn keyword  ldnsMacro	RD_SHIFT
+syn keyword  ldnsMacro	RD
+syn keyword  ldnsMacro	RD_SET
+syn keyword  ldnsMacro	RD_CLR
+syn keyword  ldnsMacro  TC_MASK
+syn keyword  ldnsMacro  TC_SHIFT
+syn keyword  ldnsMacro	TC
+syn keyword  ldnsMacro	TC_SET
+syn keyword  ldnsMacro	TC_CLR
+syn keyword  ldnsMacro	AA_MASK
+syn keyword  ldnsMacro	AA_SHIFT
+syn keyword  ldnsMacro	AA
+syn keyword  ldnsMacro	AA_SET
+syn keyword  ldnsMacro	AA_CLR
+syn keyword  ldnsMacro	OPCODE_MASK
+syn keyword  ldnsMacro	OPCODE_SHIFT
+syn keyword  ldnsMacro	OPCODE
+syn keyword  ldnsMacro	OPCODE_SET
+syn keyword  ldnsMacro	QR_MASK
+syn keyword  ldnsMacro	QR_SHIFT
+syn keyword  ldnsMacro	QR
+syn keyword  ldnsMacro	QR_SET
+syn keyword  ldnsMacro	QR_CLR
+syn keyword  ldnsMacro	RCODE_MASK
+syn keyword  ldnsMacro	RCODE_SHIFT
+syn keyword  ldnsMacro	RCODE
+syn keyword  ldnsMacro	RCODE_SET
+syn keyword  ldnsMacro	CD_MASK
+syn keyword  ldnsMacro	CD_SHIFT
+syn keyword  ldnsMacro	CD
+syn keyword  ldnsMacro	CD_SET
+syn keyword  ldnsMacro	CD_CLR
+syn keyword  ldnsMacro	AD_MASK
+syn keyword  ldnsMacro	AD_SHIFT
+syn keyword  ldnsMacro	AD
+syn keyword  ldnsMacro	AD_SET
+syn keyword  ldnsMacro	AD_CLR
+syn keyword  ldnsMacro	Z_MASK
+syn keyword  ldnsMacro	Z_SHIFT
+syn keyword  ldnsMacro	Z
+syn keyword  ldnsMacro	Z_SET
+syn keyword  ldnsMacro	Z_CLR
+syn keyword  ldnsMacro	RA_MASK
+syn keyword  ldnsMacro	RA_SHIFT
+syn keyword  ldnsMacro	RA
+syn keyword  ldnsMacro	RA_SET
+syn keyword  ldnsMacro	RA_CLR
+syn keyword  ldnsMacro	ID
+syn keyword  ldnsMacro  QDCOUNT_OFF
+syn keyword  ldnsMacro	QDCOUNT
+syn keyword  ldnsMacro  ANCOUNT_OFF
+syn keyword  ldnsMacro	ANCOUNT
+syn keyword  ldnsMacro  NSCOUNT_OFF
+syn keyword  ldnsMacro	NSCOUNT
+syn keyword  ldnsMacro  ARCOUNT_OFF
+syn keyword  ldnsMacro 	ARCOUNT
 
 " Default highlighting
 command -nargs=+ HiLink hi def link <args>
