@@ -16,6 +16,7 @@
 #include <ldns/error.h>
 #include <ldns/resolver.h>
 #include <ldns/rdata.h>
+#include <ldns/net.h>
 
 #include "util.h"
 
@@ -109,7 +110,19 @@ ldns_status
 ldns_resolver_push_nameserver(ldns_resolver *r, ldns_rdf *n)
 {
 	/* LDNS_RDF_TYPE_A | LDNS_RDF_TYPE_AAAA | LDNS_RDF_TYPE_DNAME */
-	r->_nameservers[++r->_nameserver_count] = n;
+	ldns_rdf **nameservers;
+
+	nameservers = ldns_resolver_nameservers(r);
+
+	/* increase */
+	ldns_resolver_incr_nameserver_count(r);
+
+	/* XXX do something smart when 3 is reached,
+	 * or always REALLOC here */
+
+	nameservers[
+		ldns_resolver_nameserver_count(r)] = n;
+
 	return LDNS_STATUS_OK;
 }
 
@@ -149,6 +162,27 @@ ldns_resolver_set_configured(ldns_resolver *r, uint8_t c)
 	r->_configured = c;
 }
 
+void
+ldns_resolver_set_searchlist_count(ldns_resolver *r, size_t c)
+{
+	r->_searchlist_count = c;
+}
+
+void
+ldns_resolver_set_nameserver_count(ldns_resolver *r, size_t c)
+{
+	r->_nameserver_count = c;
+}
+
+void
+ldns_resolver_incr_nameserver_count(ldns_resolver *r)
+{
+	size_t c;
+
+	c = ldns_resolver_nameserver_count(r);
+	ldns_resolver_set_nameserver_count(r, ++c);
+}
+
 ldns_status
 ldns_resolver_set_domain(ldns_resolver *r, ldns_rdf *d)
 {
@@ -178,13 +212,15 @@ ldns_resolver_new(void)
 
 	r = MALLOC(ldns_resolver);
 
+	/* allow for 3 of these each */
 	r->_searchlist = XMALLOC(ldns_rdf *, 3);
 	r->_nameservers = XMALLOC(ldns_rdf *, 3);
 	
-	r->_configured = 0; /* no config has happened yet */
-	r->_searchlist_count = 0; /* no searchlist */
+	/* defaults are filled out */
+	ldns_resolver_set_configured(r, 0);
+	ldns_resolver_set_searchlist_count(r, 0);
+	ldns_resolver_set_nameserver_count(r, 0);
 
-	/* no defaults are filled out (yet) */
 	return r;
 }
 
