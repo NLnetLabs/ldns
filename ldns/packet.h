@@ -159,8 +159,9 @@ ldns_pkt * ldns_pkt_query_new(ldns_rdf *, ldns_rr_type, ldns_rr_class, uint16_t)
 #define LDNS_QR		1
 #define LDNS_AA		2
 #define LDNS_TC		4
-#define LDNS_CD		8
-#define LDNS_RA		16
-#define LDNS_AD		32
+#define LDNS_RD		8
+#define LDNS_CD		16
+#define LDNS_RA		32
+#define LDNS_AD		64
 
 #endif  /* !_LDNS_PACKET_H */

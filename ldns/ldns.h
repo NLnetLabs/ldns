@@ -22,5 +22,6 @@
 #include <ldns/host2str.h>
 #include <ldns/resolver.h>
 #include <ldns/dns.h>
+#include <ldns/net.h>
 
 #endif	/* _LDNS_H */
