@@ -15,7 +15,7 @@ LIBS 		= @LIBS@
 LIBOBJS		= @LIBOBJS@
 
 LINT		= splint
-LINTFLAGS	= +quiet +posixlib -weak -warnposix -unrecog -Din_addr_t=uint32_t -Du_int=unsigned -Du_char=uint8_t 
+LINTFLAGS	= +quiet -weak -warnposix -unrecog -Din_addr_t=uint32_t -Du_int=unsigned -Du_char=uint8_t 
 
 #INSTALL = $(srcdir)/install-sh -c
 #INSTALL_PROGRAM = $(INSTALL)
