@@ -15,6 +15,26 @@
 
 #include <config.h>
 
+/**
+ * LibDNS DESIGN 
+ * 
+ * The following is a standard RR from our labs zone. If we parse it
+ * with LibDNS the RR is put in the following structures:
+ * 
+ * t_rr: (the entire rr)
+ * 
+ * nlnetlabs.nl    600     IN      MX      10       open.nlnetlabs.nl.
+ *  \              \       \       \       \_                       _/
+ *   _owner        _ttl    _klass   _type    \_  rdata_fields[]   _/
+ *                                             10          := rdata_fields[0]
+ *                                     open.nlnetlabs.nl. := rdata_fields[1]
+ *                                      
+ * So the entire rdata field of an RR is put in the rdata_fields[] array. This
+ * is defined in the
+ * 
+ * An rrset is an array of rr's.
+ */ 
+
 #define MAXRDATALEN 64
 
 enum type_enum_rdata
