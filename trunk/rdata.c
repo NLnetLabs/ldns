@@ -297,90 +297,89 @@ ldns_rdf_free(ldns_rdf *rd)
  * \return ldns_rdf*
  */
 ldns_rdf *
-ldns_rdf_new_frm_str(const char *str, ldns_rdf_type t)
+ldns_rdf_new_frm_str(const char *str, ldns_rdf_type type)
 {
-	ldns_rdf *rd;
-	ldns_status stat;
+	ldns_rdf *rdf;
+	ldns_status status;
 	
-	switch(t) {
-        	case LDNS_RDF_TYPE_NONE:
-			break;
-	        case LDNS_RDF_TYPE_DNAME:
-			stat = ldns_str2rdf_dname(&rd, (const uint8_t*) str);
-			break;
-        	case LDNS_RDF_TYPE_INT8:
-			stat = ldns_str2rdf_int8(&rd, (const uint8_t*) str);
-			break;
-        	case LDNS_RDF_TYPE_INT16:
-			stat = ldns_str2rdf_int16(&rd, (const uint8_t*) str);
-			break;
-		case LDNS_RDF_TYPE_INT32:
-			stat = ldns_str2rdf_int32(&rd, (const uint8_t*) str);
-			break;
-		case LDNS_RDF_TYPE_A:
-			stat = ldns_str2rdf_a(&rd, (const uint8_t*) str);
-			break;
-        	case LDNS_RDF_TYPE_AAAA:
-			stat = ldns_str2rdf_aaaa(&rd, (const uint8_t*) str);
-			break;
-        	case LDNS_RDF_TYPE_STR:
-			stat = ldns_str2rdf_str(&rd, (const uint8_t*) str);
-			break;
-        	case LDNS_RDF_TYPE_APL:
-			stat = ldns_str2rdf_apl(&rd, (const uint8_t*) str);
-			break;
-        	case LDNS_RDF_TYPE_B64:
-			stat = ldns_str2rdf_b64(&rd, (const uint8_t*) str);
-			break;
-        	case LDNS_RDF_TYPE_HEX:
-			stat = ldns_str2rdf_hex(&rd, (const uint8_t*) str);
-			break;
-        	case LDNS_RDF_TYPE_NSEC:
-			stat = ldns_str2rdf_nsec(&rd, (const uint8_t*) str);
-			break;
-        	case LDNS_RDF_TYPE_TYPE:
-			stat = ldns_str2rdf_type(&rd, (const uint8_t*) str);
-			break;
-        	case LDNS_RDF_TYPE_CLASS:
-			stat = ldns_str2rdf_class(&rd, (const uint8_t*) str);
-			break;
-        	case LDNS_RDF_TYPE_CERT:
-			stat = ldns_str2rdf_cert(&rd, (const uint8_t*) str);
-			break;
-        	case LDNS_RDF_TYPE_ALG:
-			stat = ldns_str2rdf_alg(&rd, (const uint8_t*) str);
-			break;
-        	case LDNS_RDF_TYPE_UNKNOWN:
-			stat = ldns_str2rdf_unknown(&rd, (const uint8_t*) str);
-			break;
-        	case LDNS_RDF_TYPE_TIME:
-			stat = ldns_str2rdf_time(&rd, (const uint8_t*) str);
-			break;
-        	case LDNS_RDF_TYPE_TSIGTIME:
-			stat = ldns_str2rdf_tsigtime(&rd, (const uint8_t*) str);
-			break;
-       		case LDNS_RDF_TYPE_SERVICE:
-			stat = ldns_str2rdf_service(&rd, (const uint8_t*) str);
-			break;
-        	case LDNS_RDF_TYPE_LOC:
-			stat = ldns_str2rdf_loc(&rd, (const uint8_t*) str);
-			break;
-        	case LDNS_RDF_TYPE_WKS:
-			stat = ldns_str2rdf_wks(&rd, (const uint8_t*) str);
-			break;
-       	 	case LDNS_RDF_TYPE_NSAP:
-			stat = ldns_str2rdf_nsap(&rd, (const uint8_t*) str);
-			break;
-		default:
-			/* default default ??? */
-			stat = LDNS_STATUS_ERR;
-			break;
+	switch (type) {
+	case LDNS_RDF_TYPE_DNAME:
+		status = ldns_str2rdf_dname(&rdf, (const uint8_t*) str);
+		break;
+	case LDNS_RDF_TYPE_INT8:
+		status = ldns_str2rdf_int8(&rdf, (const uint8_t*) str);
+		break;
+	case LDNS_RDF_TYPE_INT16:
+		status = ldns_str2rdf_int16(&rdf, (const uint8_t*) str);
+		break;
+	case LDNS_RDF_TYPE_INT32:
+		status = ldns_str2rdf_int32(&rdf, (const uint8_t*) str);
+		break;
+	case LDNS_RDF_TYPE_A:
+		status = ldns_str2rdf_a(&rdf, (const uint8_t*) str);
+		break;
+	case LDNS_RDF_TYPE_AAAA:
+		status = ldns_str2rdf_aaaa(&rdf, (const uint8_t*) str);
+		break;
+	case LDNS_RDF_TYPE_STR:
+		status = ldns_str2rdf_str(&rdf, (const uint8_t*) str);
+		break;
+	case LDNS_RDF_TYPE_APL:
+		status = ldns_str2rdf_apl(&rdf, (const uint8_t*) str);
+		break;
+	case LDNS_RDF_TYPE_B64:
+		status = ldns_str2rdf_b64(&rdf, (const uint8_t*) str);
+		break;
+	case LDNS_RDF_TYPE_HEX:
+		status = ldns_str2rdf_hex(&rdf, (const uint8_t*) str);
+		break;
+	case LDNS_RDF_TYPE_NSEC:
+		status = ldns_str2rdf_nsec(&rdf, (const uint8_t*) str);
+		break;
+	case LDNS_RDF_TYPE_TYPE:
+		status = ldns_str2rdf_type(&rdf, (const uint8_t*) str);
+		break;
+	case LDNS_RDF_TYPE_CLASS:
+		status = ldns_str2rdf_class(&rdf, (const uint8_t*) str);
+		break;
+	case LDNS_RDF_TYPE_CERT:
+		status = ldns_str2rdf_cert(&rdf, (const uint8_t*) str);
+		break;
+	case LDNS_RDF_TYPE_ALG:
+		status = ldns_str2rdf_alg(&rdf, (const uint8_t*) str);
+		break;
+	case LDNS_RDF_TYPE_UNKNOWN:
+		status = ldns_str2rdf_unknown(&rdf, (const uint8_t*) str);
+		break;
+	case LDNS_RDF_TYPE_TIME:
+		status = ldns_str2rdf_time(&rdf, (const uint8_t*) str);
+		break;
+	case LDNS_RDF_TYPE_TSIGTIME:
+		status = ldns_str2rdf_tsigtime(&rdf, (const uint8_t*) str);
+		break;
+	case LDNS_RDF_TYPE_SERVICE:
+		status = ldns_str2rdf_service(&rdf, (const uint8_t*) str);
+		break;
+	case LDNS_RDF_TYPE_LOC:
+		status = ldns_str2rdf_loc(&rdf, (const uint8_t*) str);
+		break;
+	case LDNS_RDF_TYPE_WKS:
+		status = ldns_str2rdf_wks(&rdf, (const uint8_t*) str);
+		break;
+	case LDNS_RDF_TYPE_NSAP:
+		status = ldns_str2rdf_nsap(&rdf, (const uint8_t*) str);
+		break;
+	case LDNS_RDF_TYPE_NONE:
+	default:
+		/* default default ??? */
+		status = LDNS_STATUS_ERR;
+		break;
 	}
-	if (LDNS_STATUS_OK != stat) {
+	if (LDNS_STATUS_OK != status) {
 		return NULL;
 	} else {
-		ldns_rdf_set_type(rd, t);
-		return rd;
+		ldns_rdf_set_type(rdf, type);
+		return rdf;
 	}
 }
 
