@@ -326,15 +326,28 @@ ldns_status
 ldns_pktheader2buffer(ldns_buffer *output, ldns_pkt *pkt)
 {
 	/* TODO: strings for known names instead of numbers, flags etc */
+	const char *opcode_str, *rcode_str;
+	ldns_lookup_table *opcode = ldns_lookup_by_id(ldns_opcodes,
+			                    (int) ldns_pkt_opcode(pkt));
+	ldns_lookup_table *rcode = ldns_lookup_by_id(ldns_rcodes,
+			                    (int) ldns_pkt_rcode(pkt));
+
+	if (opcode) {
+		opcode_str = opcode->name;
+	} else {
+		opcode_str = "??";
+	}
+	if (rcode) {
+		rcode_str = rcode->name;
+	} else {
+		rcode_str = "??";
+	}
+	
 	if (
 	    ldns_buffer_printf(output, ";; ->>HEADER<<- ") < 0 ||
-	    ldns_buffer_printf(output, "opcode: %s, ", 
-	                       ldns_lookup_by_id(ldns_opcodes,
-                                                 (int) ldns_pkt_opcode(pkt))->name
+	    ldns_buffer_printf(output, "opcode: %s, ", opcode_str
 			      ) < 0 ||
-	    ldns_buffer_printf(output, "status: %s, ",
-	                       ldns_lookup_by_id(ldns_rcodes,
-	                                         (int) ldns_pkt_rcode(pkt))->name
+	    ldns_buffer_printf(output, "rcode: %s, ", rcode_str
 			      ) < 0 ||
 	    ldns_buffer_printf(output, "id %lu\n", ldns_pkt_id(pkt)) < 0 ||
 	    ldns_buffer_printf(output, ";; flags: ") < 0
