@@ -32,9 +32,24 @@ main()
 	rrs  = ldns_rr_list_new();
 	dnskeys = ldns_rr_list_new();
 
+	/* well formed */
 	rr = ldns_rr_new_frm_str("a.miek.nl. 1800 IN A 195.169.222.38");
 	ldns_rr_print(stdout, rr);
 	printf("\n");
+
+	rr = ldns_rr_new_frm_str("a.miek.nl. 1800 IN MX 10 www.atoom.net");
+	ldns_rr_print(stdout, rr);
+	printf("\n");
+	
+	/* miss formed */
+	rr = ldns_rr_new_frm_str("a.miek.nl. 1800 IN MX 10");
+	ldns_rr_print(stdout, rr);
+	printf("\n");
+
+	rr = ldns_rr_new_frm_str("a.miek.nl. 1800 IN A 267.271.122.1t");
+	ldns_rr_print(stdout, rr);
+	printf("\n");
+	exit(0);
 
 	privkey = ldns_key_new_frm_algorithm(LDNS_SIGN_RSASHA1, 512);
 	privkey_dsa = ldns_key_new_frm_algorithm(LDNS_SIGN_DSA, 512);

@@ -21,7 +21,7 @@
 #include "util.h"
 
 ssize_t
-ldns_get_keyword_data(FILE *f, const char *keyword, const char *k_del, char *data, 
+ldns_fget_keyword_data(FILE *f, const char *keyword, const char *k_del, char *data, 
 		const char *d_del)
 {
 	/* we assume: keyword|sep|data */
@@ -31,7 +31,7 @@ ldns_get_keyword_data(FILE *f, const char *keyword, const char *k_del, char *dat
 	fkeyword = XMALLOC(char, MAXKEYWORD_LEN);
 	i = 0;
 
-	i = ldns_get_token(f, fkeyword, k_del);
+	i = ldns_fget_token(f, fkeyword, k_del, 0);
 
 	printf("[%s]\n", fkeyword);
 
@@ -40,7 +40,7 @@ ldns_get_keyword_data(FILE *f, const char *keyword, const char *k_del, char *dat
 		/* whee, the match! */
 		printf("Matching keyword\n\n");
 		/* retrieve it's data */
-		i = ldns_get_token(f, data, d_del);
+		i = ldns_fget_token(f, data, d_del, 0);
 		return i;
 	} else {
 		return -1;
@@ -49,10 +49,10 @@ ldns_get_keyword_data(FILE *f, const char *keyword, const char *k_del, char *dat
 
 /* walk along the file until you get a hit */
 ssize_t
-ldns_get_all_keyword_data(FILE *f, const char *keyword, const char *k_del, char *data,
+ldns_fget_all_keyword_data(FILE *f, const char *keyword, const char *k_del, char *data,
 		const char *d_del)
 {
-	while (ldns_get_keyword_data(f, keyword, k_del, data, d_del) == -1) {
+	while (ldns_fget_keyword_data(f, keyword, k_del, data, d_del) == -1) {
 		/* improve ldns_get_keyword_data */
 	
 		/* do something here and a walk through the file */
@@ -65,13 +65,14 @@ ldns_get_all_keyword_data(FILE *f, const char *keyword, const char *k_del, char 
 	return 0;
 }
 
+/* add max_limit here? */
 ssize_t
-ldns_get_token(FILE *f, char *token, const char *delim)
+ldns_fget_token(FILE *f, char *token, const char *delim, size_t limit)
 {	
 	int c;
 	int p; /* 0 -> no parenthese seen, >0 nr of ( seen */
 	char *t;
-	ssize_t i;
+	size_t i;
 	const char *d;
         const char *del;
 
@@ -114,20 +115,10 @@ ldns_get_token(FILE *f, char *token, const char *delim)
 				goto tokenread;
                         }
 		}
-#if 0
-		if (isspace(c)) {
-			if (isblank(c) && eat_space) {
-				/* ordered to keep eating */
-				*t++ = c;
-				i++;
-				continue;
-			}
-			goto tokenread;
-		}
-#endif
-		
+
 		*t++ = c;
-		if (i++ > MAXLINE_LEN) {
+		i++;
+		if (limit > 0 && i > limit) {
 			return -1;
 		}
 	}
@@ -140,5 +131,116 @@ tokenread:
 		*t = '\0';
 		return i;
 	}
+}
+
+ssize_t
+ldns_bget_keyword_data(ldns_buffer *b, const char *keyword, const char *k_del, char *data, 
+		const char *d_del)
+{
+	/* we assume: keyword|sep|data */
+	char *fkeyword;
+	ssize_t i;
+
+	fkeyword = XMALLOC(char, MAXKEYWORD_LEN);
+	i = 0;
+
+	i = ldns_bget_token(b, fkeyword, k_del, 0);
+
+	printf("[%s]\n", fkeyword);
+
+	/* case??? */
+	if (strncmp(fkeyword, keyword, strlen(keyword)) == 0) {
+		/* whee, the match! */
+		printf("Matching keyword\n\n");
+		/* retrieve it's data */
+		i = ldns_bget_token(b, data, d_del, 0);
+		return i;
+	} else {
+		return -1;
+	}
+}
+
+/* walk along the file until you get a hit */
+ssize_t
+ldns_bget_all_keyword_data(ldns_buffer *b, const char *keyword, const char *k_del, char *data,
+		const char *d_del)
+{
+	while (ldns_bget_keyword_data(b, keyword, k_del, data, d_del) == -1) {
+		/* improve ldns_get_keyword_data */
 	
+		/* do something here and a walk through the file */
+	}
+	/* reset for next call, this function is rather expensive, as
+	 * for multiple keywords, it walks the file multiple time. But must
+	 * files are small
+	 */
+	ldns_buffer_rewind(b);
+	return 0;
+}
+
+ssize_t
+ldns_bget_token(ldns_buffer *b, char *token, const char *delim, size_t limit)
+{	
+	int c;
+	int p; /* 0 -> no parenthese seen, >0 nr of ( seen */
+	char *t;
+	size_t i;
+	const char *d;
+        const char *del;
+
+	/* standard delimeters */
+	if (!delim) {
+		/* from isspace(3) */
+		del = LDNS_PARSE_NORMAL;
+	} else {
+		del = delim;
+	}
+
+
+	p = 0;
+	i = 0;
+	t = token;
+	while ((c = ldns_bgetc(b)) != EOF) {
+		if (c == '(') {
+			p++;
+			continue;
+		}
+
+		if (c == ')') {
+			p--;
+			continue;
+		}
+
+		if (p < 0) {
+			/* more ) then ( */
+			return -1;
+		}
+
+		if (c == '\n' && p != 0) {
+			/* in parentheses */
+			continue;
+		}
+
+		/* check if we hit the delim */
+		for (d = del; *d; d++) {
+                        if (c == *d) {
+				goto tokenread;
+                        }
+		}
+		
+		*t++ = c;
+		i++;
+		if (limit > 0 && i > limit) {
+			return -1;
+		}
+	}
+
+tokenread:
+	if (p != 0 || c == EOF) {
+		/* ( count doesn't match ) count or EOF reached */
+		return 0;
+	} else {
+		*t = '\0';
+		return i;
+	}
 }

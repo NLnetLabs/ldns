@@ -482,7 +482,7 @@ ldns_resolver_new_frm_fp(FILE *fp)
 		return NULL;
 	}
 
-	gtr = ldns_get_token(fp, word, LDNS_PARSE_NORMAL);
+	gtr = ldns_fget_token(fp, word, LDNS_PARSE_NORMAL, 0);
 	while (gtr > 0) {
 		/* do something */
 		switch(expect) {
@@ -532,7 +532,7 @@ ldns_resolver_new_frm_fp(FILE *fp)
 				expect = RESOLV_KEYWORD;
 				break;
 		}
-		gtr = ldns_get_token(fp, word, LDNS_PARSE_NORMAL);
+		gtr = ldns_fget_token(fp, word, LDNS_PARSE_NORMAL, 0);
 	}
 	
 	FREE(word);
