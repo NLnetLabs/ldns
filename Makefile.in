@@ -43,7 +43,7 @@ LIBDNS_OBJECTS	=	$(LIBDNS_SOURCES:.c=.o)
 
 ALL_SOURCES	=	run-test0.c run-test1.c run-test2.c run-test3.c \
 			run-test4.c run-test5.c run-test6.c run-test7.c \
-			run-test8.c \
+			run-test8.c run-test9.c \
 			$(LIBDNS_SOURCES)
 
 TESTS		=	run-test0		\
@@ -55,7 +55,7 @@ TESTS		=	run-test0		\
 			run-test6 		\
 			run-test7		\
 			run-test8		\
-			run-test-trace	
+			run-test9
 
 COMPILE		= $(CC) $(CPPFLAGS) $(CFLAGS)
 COMP_LIB	= $(LIBTOOL) $(CC) $(CPPFLAGS) $(CFLAGS)
@@ -78,29 +78,23 @@ snapshot:	clean testclean
 
 run-test0:	run-test0.o $(LIBDNS_OBJECTS) $(LIBOBJS)
 		$(LINK) ${LIBS} -o $@ $+
-
 run-test1:	run-test1.o $(LIBDNS_OBJECTS) $(LIBOBJS)
 		$(LINK) ${LIBS} -o $@ $+
-
 run-test2:	run-test2.o $(LIBDNS_OBJECTS) $(LIBOBJS)
 		$(LINK) ${LIBS} -o $@ $+
-
 run-test3:	run-test3.o $(LIBDNS_OBJECTS) $(LIBOBJS)
 		$(LINK) ${LIBS} -o $@ $+
-
 run-test4:	run-test4.o $(LIBDNS_OBJECTS) $(LIBOBJS)
 		$(LINK) ${LIBS} -o $@ $+
-
 run-test5:	run-test5.o $(LIBDNS_OBJECTS) $(LIBOBJS)
 		$(LINK) ${LIBS} -o $@ $+
-
 run-test6:	run-test6.o $(LIBDNS_OBJECTS) $(LIBOBJS)
 		$(LINK) ${LIBS} -o $@ $+
-
 run-test7:	run-test7.o $(LIBDNS_OBJECTS) $(LIBOBJS)
 		$(LINK) ${LIBS} -o $@ $+
-
 run-test8:	run-test8.o $(LIBDNS_OBJECTS) $(LIBOBJS)
+		$(LINK) ${LIBS} -o $@ $+
+run-test9:	run-test9.o $(LIBDNS_OBJECTS) $(LIBOBJS)
 		$(LINK) ${LIBS} -o $@ $+
 
 run-test-trace:	run-test-trace.o $(LIBDNS_OBJECTS) $(LIBOBJS)
