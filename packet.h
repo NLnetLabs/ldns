@@ -22,33 +22,33 @@
 struct type_struct_header
 {
 	/** \brief Id of a packet */
-	uint16_t id;
+	uint16_t _id;
 	/** \brief Query bit (0=query, 1=answer) */
-	uint8_t qr:1;
+	uint8_t _qr:1;
 	/** \brief Authoritative answer */
-	uint8_t aa:1;
+	uint8_t _aa:1;
 	/** \brief Packet truncated */
-	uint8_t tc:1;
+	uint8_t _tc:1;
 	/** \brief Recursion desired */
-	uint8_t rd:1;
+	uint8_t _rd:1;
 	/** \brief Checking disabled */
-	uint8_t cd:1;
+	uint8_t _cd:1;
 	/** \brief Recursion available */
-	uint8_t ra:1;
+	uint8_t _ra:1;
 	/** \brief Authentic data */
-	uint8_t ad:1;
+	uint8_t _ad:1;
 	/** \brief Query type */
-	uint8_t opcode;	 /* XXX 8 bits? */
+	uint8_t _opcode;	 /* XXX 8 bits? */
 	/** \brief Response code */
-	uint8_t rcode;
+	uint8_t _rcode;
 	/** \brief question sec */
-	uint16_t qdcount;
+	uint16_t _qdcount;
 	/** \brief answer sec */
-	uint16_t ancount;
+	uint16_t _ancount;
 	/** \brief auth sec */
-	uint16_t nscount;
+	uint16_t _nscount;
 	/** \brief add sec */
-	uint16_t arcount;
+	uint16_t _arcount;
 };
 typedef struct type_struct_header t_header;
 
@@ -60,15 +60,15 @@ typedef struct type_struct_header t_header;
 struct type_struct_packet
 {
 	/** \brief header section */
-	t_header *header;
+	t_header *_header;
 	/** \brief question section */
-	t_rrset	*question;
+	t_rrset	*_question;
 	/** \brief answer section */
-	t_rrset	*answer;
+	t_rrset	*_answer;
 	/** \brief auth section */
-	t_rrset	*authority;
+	t_rrset	*_authority;
 	/** \brief add section */
-	t_rrset	*additional;
+	t_rrset	*_additional;
 };
 typedef struct type_struct_packet t_packet;
 
