@@ -35,9 +35,18 @@ main(void)
 		printf("error push nameserver\n");
                 return 1;
 	}
+
+	/* hack to make the resolver appear to
+	 * be configued - don't know if we need this
+	 */
+	ldns_resolver_set_configured(res, 1);
         
         /* setup the question */
         qname = ldns_rdf_new_frm_str("www", LDNS_RDF_TYPE_DNAME);
+	if (!qname) {
+		printf("error making qname\n");
+                return 1;
+	}
         
         /* fire it off. "miek.nl." will be added */
         pkt = ldns_resolver_send(res, qname, LDNS_RR_TYPE_MX, 0);
