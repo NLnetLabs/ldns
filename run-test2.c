@@ -9,6 +9,7 @@
 #include <ldns/ldns.h>
 #include <ldns/str2host.h>
 #include <ldns/host2str.h>
+#include <ldns/host2wire.h>
 #include <ldns/buffer.h>
 
 #include "util.h"
@@ -138,7 +139,7 @@ file2pkt(const char *filename)
 		}
 		c = fgetc(fp);
 
-		if (hexbufpos >= buflen) {
+		if ((size_t) hexbufpos >= buflen) {
 			buflen = buflen * 2;
 			hexbuf = XREALLOC(hexbuf, uint8_t, buflen);
 			wire = XREALLOC(wire, uint8_t, buflen);
@@ -182,6 +183,11 @@ main(int argc, char **argv)
 {
 	const char *file;
 	ldns_pkt *pkt;
+	ldns_buffer *buffer;
+	uint8_t *target_buf;
+	size_t len;
+	uint16_t i;
+	
 	if (argc == 2) {
 		file = argv[1];
 	} else {
@@ -195,6 +201,22 @@ main(int argc, char **argv)
 	} else {
 		printf("\n");
 	}
+	
+	printf("And back to wire:\n");
+	buffer = ldns_buffer_new(65535);
+	ldns_pkt2wire(buffer, pkt);
+
+	len = ldns_buffer_position(buffer);
+	target_buf = (uint8_t *) ldns_buffer_export(buffer);
+
+	printf("Buffer length: %u\n", len);
+	
+	for (i=0; i<len; i++) {
+		printf("%02x", target_buf[i]);
+	}
+	printf("\n\n");
+
+	
 	return 0;
 }
 

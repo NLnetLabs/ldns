@@ -113,6 +113,11 @@ uint8_t         *ldns_rdf_data(ldns_rdf *);
 void            ldns_rdf_free(ldns_rdf *);
 void            ldns_rdf_free_data(ldns_rdf *);
 ldns_dname	*ldns_dname_new_frm_str(const char *);
+ldns_dname	*ldns_dname_new(uint16_t s, void *data);
+uint16_t	ldns_dname_size(ldns_dname *name);
+void *		ldns_dname_data(ldns_dname *name);
+void		ldns_dname_set_size(ldns_dname *name, uint16_t size);
+void		ldns_dname_set_data(ldns_dname *name, void *data);
 ldns_rdf 	*ldns_rdf_new_frm_str(const char *, ldns_rdf_type);
 
 #endif	/* !_LDNS_RDATA_H */

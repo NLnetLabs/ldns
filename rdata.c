@@ -148,6 +148,30 @@ ldns_dname_new_frm_str(const char *str)
 	return d;
 }
 
+uint16_t
+ldns_dname_size(ldns_dname *name)
+{
+	return name->_size;
+}
+
+void *
+ldns_dname_data(ldns_dname *name)
+{
+	return name->_data;
+}
+
+void
+ldns_dname_set_size(ldns_dname *name, uint16_t size)
+{
+	name->_size = size;
+}
+
+void
+ldns_dname_set_data(ldns_dname *name, void *data)
+{
+	name->_data = data;
+}
+
 /**
  * Allocate a new dname structure and fill it.
  * This function _does_ copy the contents from
@@ -185,7 +209,6 @@ ldns_dname_free_data(ldns_dname *d)
 	FREE(d->_data);
 	FREE(d);
 }
-	
 
 /**
  * Create a new rdf from a string
