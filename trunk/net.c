@@ -110,6 +110,8 @@ ldns_send(ldns_resolver *r, ldns_pkt *query_pkt)
 				((tv_e.tv_sec - tv_s.tv_sec) * 1000) +
 				(tv_e.tv_usec - tv_s.tv_usec) / 1000);
 
+			printf("server:\n ");
+			ldns_rdf_print(stdout, ns_array[i]);
 			ldns_pkt_set_answerfrom(reply, ns_array[i]);
 			break;
 		}
