@@ -243,6 +243,7 @@ ldns_resolver_new(void)
 	/* defaults are filled out */
 	ldns_resolver_set_searchlist_count(r, 0);
 	ldns_resolver_set_nameserver_count(r, 0);
+	ldns_resolver_set_usevc(r, 0);
 	ldns_resolver_set_port(r, LDNS_PORT);
 	ldns_resolver_set_domain(r, NULL);
 	ldns_resolver_set_defnames(r, false);
