@@ -12,7 +12,6 @@ syn keyword  ldnsMacro FREE
 syn keyword  ldnsMacro DEP  
 
 " ldns/rdata.h
-syn keyword  ldnsType           ldns_rdf_type
 syn keyword  ldnsType           ldns_rdf
 syn keyword  ldnsType           ldns_hdr
 syn keyword  ldnsType           ldns_pkt
@@ -21,6 +20,29 @@ syn keyword  ldnsType           ldns_rrset
 syn keyword  ldnsType           ldns_class
 syn keyword  ldnsConstant       true
 syn keyword  ldnsConstant       false
+syn keyword  ldnsFunction	ldns_rdf_get_type
+
+syn keyword  ldnsConstant	LDNS_RDF_TYPE_NONE
+syn keyword  ldnsConstant	LDNS_RDF_TYPE_DNAME
+syn keyword  ldnsConstant	LDNS_RDF_TYPE_INT8
+syn keyword  ldnsConstant	LDNS_RDF_TYPE_INT16
+syn keyword  ldnsConstant	LDNS_RDF_TYPE_INT32
+syn keyword  ldnsConstant	LDNS_RDF_TYPE_A
+syn keyword  ldnsConstant	LDNS_RDF_TYPE_AAAA
+syn keyword  ldnsConstant	LDNS_RDF_TYPE_STR
+syn keyword  ldnsConstant	LDNS_RDF_TYPE_APL
+syn keyword  ldnsConstant	LDNS_RDF_TYPE_B64
+syn keyword  ldnsConstant	LDNS_RDF_TYPE_HEX
+syn keyword  ldnsConstant	LDNS_RDF_TYPE_NSEC
+syn keyword  ldnsConstant	LDNS_RDF_TYPE_TYPE
+syn keyword  ldnsConstant	LDNS_RDF_TYPE_CLASS
+syn keyword  ldnsConstant	LDNS_RDF_TYPE_CERT
+syn keyword  ldnsConstant	LDNS_RDF_TYPE_ALG
+syn keyword  ldnsConstant 	LDNS_RDF_TYPE_UNKNOWN
+syn keyword  ldnsConstant	LDNS_RDF_TYPE_TIME
+syn keyword  ldnsConstant	LDNS_RDF_TYPE_TSIGTIME
+syn keyword  ldnsConstant	LDNS_RDF_TYPE_SERVICE
+syn keyword  ldnsConstant	LDNS_RDF_TYPE_LOC
 
 " dns/error.h
 syn keyword ldnsMacro	LDNS_STATUS_OK
