@@ -143,7 +143,6 @@ ldns_rr_new_frm_str(const char *str)
 
 	ldns_buffer_new_frm_data(
 			rd_buf, rdata, strlen(rdata));
-	/* 	FREE(rdata); NO! */
 	ldns_rr_set_owner(new, ldns_dname_new_frm_str(owner));
 	FREE(owner);
 	/* ttl might be more complicated, like 2h, or 3d5h */
@@ -168,6 +167,7 @@ ldns_rr_new_frm_str(const char *str)
 
 		if (!r) {
 			printf("rdf conversion mismatch\n");
+			FREE(rdata);
 			/* return what we've got */
 			return new;
 		}
@@ -175,6 +175,7 @@ ldns_rr_new_frm_str(const char *str)
 
 		if (r_cnt > r_max) {
 			printf("rdf data overflow");
+			FREE(rdata);
 			return new;
 		}
 		r_cnt++;
@@ -186,10 +187,12 @@ ldns_rr_new_frm_str(const char *str)
 			rd);
 	if (!r) {
 		printf("rdf conversion mismatch\n");
+		FREE(rdata);
 		return new;
 	}
 
 	ldns_rr_push_rdf(new, r);
+	FREE(rdata);
 	return new;
 }
 
