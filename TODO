@@ -30,8 +30,9 @@ o per RR functions:
    etc etc. For all types we have
 o Remove/Handle all XXX and TODO/todos'
   checked:
-  - rr.c/rr.h
-  - data.c/data.h
+  - rr.c/rr.h		- util.c
+  - data.c/data.h	- dname.c
+  - packet.c (partially)
 
 
 Documentation:
