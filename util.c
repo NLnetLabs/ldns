@@ -20,9 +20,9 @@ void
 xprintf_rdf(ldns_rdf *rd)
 {
 	/* assume printable string */
-	fprintf(stdout, "size\t:%u\n", (unsigned int)_ldns_rdf_size(rd));
-	fprintf(stdout, "type\t:%u\n", (unsigned int)_ldns_rdf_type(rd));
-	fprintf(stdout, "data\t:[%.*s]\n", (int)_ldns_rdf_size(rd), (char*)_ldns_rdf_data(rd));
+	fprintf(stdout, "size\t:%u\n", (unsigned int)ldns_rdf_size(rd));
+	fprintf(stdout, "type\t:%u\n", (unsigned int)ldns_rdf_get_type(rd));
+	fprintf(stdout, "data\t:[%.*s]\n", (int)ldns_rdf_size(rd), (char*)ldns_rdf_data(rd));
 }
 
 void

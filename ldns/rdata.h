@@ -102,13 +102,13 @@ typedef struct ldns_struct_rdf ldns_rdf;
 
 /* prototypes */
 ldns_rdf 	*ldns_rdf_new(uint16_t s, ldns_rdf_type t, uint8_t *d);
-uint16_t        _ldns_rdf_size(ldns_rdf *);
-void            _ldns_rdf_set_size(ldns_rdf *, uint16_t);
-void            _ldns_rdf_set_type(ldns_rdf *, ldns_rdf_type);
-void            _ldns_rdf_set_data(ldns_rdf *, uint8_t *);
-ldns_rdf_type   _ldns_rdf_type(ldns_rdf *);
-ldns_rdf	*_ldns_rdf_new(uint16_t, ldns_rdf_type, uint8_t *);
-uint8_t         *_ldns_rdf_data(ldns_rdf *);
-void            _ldns_rdf_destroy(ldns_rdf *);
+uint16_t        ldns_rdf_size(ldns_rdf *);
+void            ldns_rdf_set_size(ldns_rdf *, uint16_t);
+void            ldns_rdf_set_type(ldns_rdf *, ldns_rdf_type);
+void            ldns_rdf_set_data(ldns_rdf *, uint8_t *);
+ldns_rdf_type   ldns_rdf_get_type(ldns_rdf *);
+ldns_rdf	*ldns_rdf_new(uint16_t, ldns_rdf_type, uint8_t *);
+uint8_t         *ldns_rdf_data(ldns_rdf *);
+void            ldns_rdf_destroy(ldns_rdf *);
 
 #endif	/* !_LDNS_RDATA_H */
