@@ -178,6 +178,10 @@ ldns_send(ldns_resolver *r, uint8_t *name, uint8_t *type, uint8_t *class)
 {
 	assert(r != NULL);
 	assert(name != NULL);
+	
+	/* do all the preprocessing here, then fire of an query to 
+	 * the network
+	 */
 
 	return NULL;
 }

@@ -18,3 +18,7 @@
 #include <ldns/resolver.h>
 
 #include "util.h"
+
+
+/* send of an packet and return any reply packet(s)
+ */
