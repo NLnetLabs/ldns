@@ -148,7 +148,6 @@ ldns_send_udp(ldns_buffer *qbin, const struct sockaddr_storage *to, socklen_t to
 	bytes = sendto(sockfd, ldns_buffer_begin(qbin),
 			ldns_buffer_position(qbin), 0, (struct sockaddr *)to, tolen);
 
-	gettimeofday(&tv_e, NULL);
 
 	if (bytes == -1) {
 		printf("error with sending\n");
@@ -172,6 +171,7 @@ ldns_send_udp(ldns_buffer *qbin, const struct sockaddr_storage *to, socklen_t to
 	bytes = recv(sockfd, answer, MAX_PACKET_SIZE, 0);
 
 	close(sockfd);
+	gettimeofday(&tv_e, NULL);
 
 	if (bytes == -1) {
 		if (errno == EAGAIN) {
@@ -193,8 +193,8 @@ ldns_send_udp(ldns_buffer *qbin, const struct sockaddr_storage *to, socklen_t to
 		/* set some extra values in the pkt */
 		/* is msec usec here?! */
 		ldns_pkt_set_querytime(answer_pkt,
-				((tv_e.tv_sec - tv_s.tv_sec)*1000) +
-				(tv_e.tv_usec - tv_s.tv_usec));
+				((tv_e.tv_sec - tv_s.tv_sec) * 1000) +
+				(tv_e.tv_usec - tv_s.tv_usec) / 1000);
 
 		return answer_pkt;
 	}
@@ -258,7 +258,6 @@ ldns_send_tcp(ldns_buffer *qbin, const struct sockaddr_storage *to, socklen_t to
 
         FREE(sendbuf);
         
-	gettimeofday(&tv_e, NULL);
 
 	if (bytes == -1) {
 		printf("error with sending\n");
@@ -315,6 +314,7 @@ ldns_send_tcp(ldns_buffer *qbin, const struct sockaddr_storage *to, socklen_t to
 	}
 
 	close(sockfd);
+	gettimeofday(&tv_e, NULL);
 
 	/* resize accordingly */
 	XREALLOC(answer, uint8_t *, (size_t) total_bytes);
