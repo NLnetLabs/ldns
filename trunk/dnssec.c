@@ -663,3 +663,78 @@ ldns_pkt_tsig_sign(ldns_pkt *pkt, const char *key_name, const char *key_data, ui
 
 	return LDNS_STATUS_OK;
 }
+
+
+ldns_rr *
+ldns_key_rr2ds(ldns_rr *key)
+{
+        ldns_rdf *tmp;
+        ldns_rr *ds;
+        uint16_t keytag;
+        uint8_t  sha1hash;
+        uint8_t *digest;
+        ldns_buffer *data_buf;
+
+        if (ldns_rr_get_type(key) != LDNS_RR_TYPE_DNSKEY) {
+                return NULL;
+        }
+
+        ds = ldns_rr_new();
+        if (!ds) {
+                return NULL;
+        }
+	ldns_rr_set_type(ds, LDNS_RR_TYPE_DS);
+	ldns_rr_set_owner(ds, ldns_rdf_deep_clone(
+				ldns_rr_owner(key)));
+	ldns_rr_set_ttl(ds, ldns_rr_ttl(key));
+	ldns_rr_set_class(ds, ldns_rr_get_class(key));
+
+        digest = XMALLOC(uint8_t, SHA_DIGEST_LENGTH);
+        if (!digest) {
+                return NULL;
+        }
+
+        data_buf = ldns_buffer_new(MAX_PACKETLEN);
+        if (!data_buf) {
+                return NULL;
+        }
+
+        /* keytag */
+        keytag = htons(ldns_keytag(key));
+        tmp = ldns_rdf_new_frm_data(LDNS_RDF_TYPE_INT16, sizeof(uint16_t), &keytag);
+        ldns_rr_push_rdf(ds, tmp);
+
+        /* copy the algorithm field */
+        ldns_rr_push_rdf(ds, ldns_rdf_deep_clone(
+                                ldns_rr_rdf(key, 2)));
+
+        /* digest type, only SHA1 is supported */
+        sha1hash = 1;
+        tmp = ldns_rdf_new_frm_data(LDNS_RDF_TYPE_INT8, sizeof(uint8_t), &sha1hash);
+        ldns_rr_push_rdf(ds, tmp);
+
+        /* digest */
+        /* owner name */
+	if (ldns_rdf2buffer_wire(data_buf, ldns_rr_owner(key)) !=
+			LDNS_STATUS_OK) {
+		return NULL;
+	}
+
+        /* all the rdata's */
+	if (ldns_rr_rdata2buffer_wire(data_buf, key) !=
+			LDNS_STATUS_OK) { 
+		return NULL;
+	}
+
+        /* sha1 it */
+        (void) SHA1((unsigned char *) ldns_buffer_begin(data_buf),
+                    ldns_buffer_position(data_buf),
+                    (unsigned char*) digest);
+
+        tmp = ldns_rdf_new_frm_data(LDNS_RDF_TYPE_HEX, SHA_DIGEST_LENGTH,
+                        digest);
+        ldns_rr_push_rdf(ds, tmp);
+
+	FREE(digest);
+        return ds;
+}

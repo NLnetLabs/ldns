@@ -111,6 +111,7 @@ ldns_send(ldns_resolver *r, ldns_pkt *query_pkt)
 			}
 		}
 
+		/* wait retrans seconds... */
 	}
 	ldns_buffer_free(qb);
 	return reply;

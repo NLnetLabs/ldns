@@ -44,5 +44,6 @@ RSA *ldns_key_buf2rsa(ldns_buffer *);
 bool ldns_pkt_tsig_verify(ldns_pkt *pkt, const char *key_name, const char *key_data, ldns_rdf *mac);
 ldns_status ldns_pkt_tsig_sign(ldns_pkt *pkt, const char *key_name, const char *key_data, uint16_t fudge, const char *algorithm_name, ldns_rdf *query_mac);
 
+ldns_rr *ldns_key_rr2ds(ldns_rr *key);
 
 #endif /* _DNSSEC_H_ */
