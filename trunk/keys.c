@@ -44,7 +44,9 @@ ldns_key_new()
 	if (!newkey) {
 		return NULL;
 	} else {
+		/* some defaults - not sure wether to do this */
 		ldns_key_set_flags(newkey, 256);
+		ldns_key_set_origttl(newkey, 0);
 		ldns_key_set_keytag(newkey, 0);
 		ldns_key_set_inception(newkey, 0);
 		ldns_key_set_expiration(newkey, 0);
@@ -87,11 +89,6 @@ ldns_key_new_frm_algorithm(ldns_signing_algorithm alg, uint16_t size)
 			break;
 	}
 	ldns_key_set_algorithm(k, alg);
-	/* some defaults - not sure wether to this there or not */
-	ldns_key_set_flags(k, 256);
-	ldns_key_set_inception(k, 0);
-	ldns_key_set_expiration(k, 0);
-	ldns_key_set_keytag(k,0);
 	return k;
 }
 
@@ -126,7 +123,7 @@ ldns_key_set_hmac_key(ldns_key *k, unsigned char *hmac)
 }
 
 void
-ldns_key_set_ttl(ldns_key *k, uint32_t t)
+ldns_key_set_origttl(ldns_key *k, uint32_t t)
 {
 	k->_extra.dnssec.orig_ttl = t;
 }
@@ -199,7 +196,7 @@ ldns_key_hmac_key(ldns_key *k)
 }
 
 uint32_t
-ldns_key_ttl(ldns_key *k)
+ldns_key_origttl(ldns_key *k)
 {
 	return k->_extra.dnssec.orig_ttl;
 }
