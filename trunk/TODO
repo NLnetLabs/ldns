@@ -3,7 +3,7 @@ Current TODO list
 
 Implementation:
 ---------------
-o sync argument order in rdf_new and rdf_new_frm_data
+o sync argument order in rdf_new and rdf_new_frm_data 
 o deep free
 o check all conversion routines on missing types
 	- wire2host
@@ -26,6 +26,7 @@ o create a bunch of small programs:
 o printing of none defined TTL's
 o SSL_load_error_str()? 
 o resolver_frm_file (better parser)
+o Remove all the printf's - and tie them into error handling
 o per RR functions:
   - RRSIG
        ->keytag
