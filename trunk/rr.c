@@ -355,3 +355,149 @@ ldns_rr_descriptor_field_type(ldns_rr_descriptor_type *descriptor,
 	}
 }
 
+/* TODO: is this a good way? */
+#define READ_INT16(wirebuf) (ntohs(*(uint16_t *) wirebuf))
+#define READ_INT32(wirebuf) (ntohl(*(uint32_t *) wirebuf))
+
+/* TODO: general rdata2str or dname2str, with error
+         checks and return status etc */
+/* this is temp function for debugging wire2rr */
+/* do NOT pass compressed data here :p */
+void
+ldns_dname2str(char *dest, uint8_t *dname)
+{
+	/* can we do with 1 pos var? or without at all? */
+	uint8_t src_pos = 0;
+	uint8_t dest_pos = 0;
+	uint8_t len;
+	len = dname[src_pos];
+	while (len > 0) {
+		src_pos++;
+		memcpy(&dest[dest_pos], &dname[src_pos], len);
+		dest_pos += len;
+		src_pos += len;
+		len = dname[src_pos];
+		dest[dest_pos] = '.';
+		dest_pos++;
+	}
+	dest_pos++;
+	dest[dest_pos] = '\0';
+}
+
+/* TODO: is there a better place for this function?
+         status_type return and remove printfs
+         #defines */
+size_t
+ldns_wire2dname(uint8_t *dname, const uint8_t *wire, size_t max, size_t *pos)
+{
+	uint8_t label_size;
+	uint16_t pointer_target;
+	uint8_t *pointer_target_buf;
+	size_t dname_pos = 0;
+	size_t compression_pos = 0;
+
+	if (*pos > max) {
+		/* TODO set error */
+		return 0;
+	}
+	
+	label_size = wire[*pos];
+	while (label_size > 0) {
+		/* compression */
+		if (label_size >= 192) {
+			if (compression_pos == 0) {
+				compression_pos = *pos + 2;
+			}
+
+			/* remove first two bits */
+			/* TODO: can this be done in a better way? */
+			pointer_target_buf = malloc(2);
+			pointer_target_buf[0] = wire[*pos] & 63;
+			pointer_target_buf[1] = wire[*pos+1];
+			memcpy(&pointer_target, pointer_target_buf, 2);
+			pointer_target = ntohs(pointer_target);
+
+			if (pointer_target == 0) {
+				fprintf(stderr, "POINTER TO 0\n");
+				exit(0);
+			} else if (pointer_target > max) {
+				fprintf(stderr, "POINTER TO OUTSIDE PACKET\n");
+				exit(0);
+			}
+			*pos = pointer_target;
+			label_size = wire[*pos];
+		}
+		
+		if (label_size > MAXLABELLEN) {
+			/* TODO error: label size too large */
+			fprintf(stderr, "LABEL SIZE ERROR: %d\n",
+			        (int) label_size);
+			return 0;
+		}
+		if (*pos + label_size > max) {
+			/* TODO error: out of packet data */
+			fprintf(stderr, "MAX PACKET ERROR: %d\n",
+			        (int) (*pos + label_size));
+		}
+		
+		dname[dname_pos] = label_size;
+		dname_pos++;
+		*pos = *pos + 1;
+		memcpy(&dname[dname_pos], &wire[*pos], label_size);
+		dname_pos += label_size;
+		*pos = *pos + label_size;
+		label_size = wire[*pos];
+	}
+
+	if (compression_pos > 0) {
+		*pos = compression_pos;
+	} else {
+		*pos = *pos + 1;
+	}
+	return *pos;
+}
+
+/* TODO: ldns_status_type and error checking 
+         defines for constants?
+         enum for sections? 
+         remove owner print debug message
+         can *pos be incremented at READ_INT? or maybe use something like
+         RR_CLASS(wire)?
+*/
+size_t
+ldns_wire2rr(ldns_rr_type *rr, const uint8_t *wire, size_t max, 
+             size_t *pos, int section)
+{
+	uint8_t *owner = malloc(MAXDOMAINLEN);
+	char *owner_str = malloc(MAXDOMAINLEN);
+	uint16_t rd_length;
+
+	(void) ldns_wire2dname(owner, wire, max, pos);
+
+	ldns_rr_set_owner(rr, owner);
+	
+	ldns_dname2str(owner_str, owner);
+	printf("owner: %s\n", owner_str);
+	FREE(owner_str);	
+	
+	ldns_rr_set_class(rr, READ_INT16(&wire[*pos]));
+	*pos = *pos + 2;
+	/*
+	ldns_rr_set_type(rr, READ_INT16(&wire[*pos]));
+	*/
+	*pos = *pos + 2;
+
+	if (section > 0) {
+		ldns_rr_set_ttl(rr, READ_INT32(&wire[*pos]));	
+		*pos = *pos + 4;
+		rd_length = READ_INT16(&wire[*pos]);
+		*pos = *pos + 2;
+		/* TODO: wire2rdata */
+		*pos = *pos + rd_length;
+	}
+
+	return (size_t) 0;
+}
+
+
+

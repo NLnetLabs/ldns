@@ -194,4 +194,9 @@ size_t ldns_rr_descriptor_maximum(ldns_rr_descriptor_type *descriptor);
 ldns_rdata_field_type ldns_rr_descriptor_field_type(
     ldns_rr_descriptor_type *descriptor, size_t index);
 
+size_t ldns_wire2dname(uint8_t *dname, const uint8_t *wire, size_t max, 
+                       size_t *pos);
+size_t ldns_wire2rr(ldns_rr_type *rr, const uint8_t *wire, size_t max,
+                    size_t *pos, int section);
+
 #endif /* _LDNS_RR_H */
