@@ -22,7 +22,7 @@ ldns_status ldns_wire2pkt(ldns_pkt **packet, const uint8_t *data, size_t len);
 ldns_status ldns_wire2dname(ldns_rdf **dname, const uint8_t *wire, size_t max, 
                        size_t *pos);
 ldns_status ldns_wire2rr(ldns_rr **rr, const uint8_t *wire, size_t max,
-                    size_t *pos, int section);
+                    size_t *pos, ldns_pkt_section section);
 
 #endif
 

@@ -422,13 +422,12 @@ ldns_wire2rdf(ldns_rr *rr, const uint8_t *wire,
 
 
 /* TODO:
-         enum for sections? 
          can *pos be incremented at READ_INT? or maybe use something like
          RR_CLASS(wire)?
 */
 ldns_status
 ldns_wire2rr(ldns_rr **rr_p, const uint8_t *wire, size_t max, 
-             size_t *pos, int section)
+             size_t *pos, ldns_pkt_section section)
 {
 	ldns_rdf *owner;
 	ldns_rr *rr = ldns_rr_new();
@@ -445,7 +444,7 @@ ldns_wire2rr(ldns_rr **rr_p, const uint8_t *wire, size_t max,
 	ldns_rr_set_class(rr, read_uint16(&wire[*pos]));
 	*pos = *pos + 2;
 
-	if (section > 0) {
+	if (section != LDNS_SECTION_QUESTION) {
 		ldns_rr_set_ttl(rr, read_uint32(&wire[*pos]));	
 		*pos = *pos + 4;
 		status = ldns_wire2rdf(rr, wire, max, pos);
@@ -506,19 +505,23 @@ ldns_wire2pkt(ldns_pkt **packet_p, const uint8_t *wire, size_t max)
 	
 	/* TODO: section enum :) */
 	for (i = 0; i < pkt_qdcount(packet); i++) {
-		status = ldns_wire2rr(&rr, wire, max, &pos, 0);
+		status = ldns_wire2rr(&rr, wire, max, &pos,
+		                      LDNS_SECTION_QUESTION);
 		STATUS_CHECK_GOTO(status, status_error);
 	}
 	for (i = 0; i < pkt_ancount(packet); i++) {
-		status = ldns_wire2rr(&rr, wire, max, &pos, 1);
+		status = ldns_wire2rr(&rr, wire, max, &pos,
+		                      LDNS_SECTION_ANSWER);
 		STATUS_CHECK_GOTO(status, status_error);
 	}
 	for (i = 0; i < pkt_nscount(packet); i++) {
-		status = ldns_wire2rr(&rr, wire, max, &pos, 2);
+		status = ldns_wire2rr(&rr, wire, max, &pos,
+		                      LDNS_SECTION_AUTHORITY);
 		STATUS_CHECK_GOTO(status, status_error);
 	}
 	for (i = 0; i < pkt_arcount(packet); i++) {
-		status = ldns_wire2rr(&rr, wire, max, &pos, 3);
+		status = ldns_wire2rr(&rr, wire, max, &pos,
+		                      LDNS_SECTION_ADDITIONAL);
 		STATUS_CHECK_GOTO(status, status_error);
 	}
 
