@@ -384,16 +384,33 @@ ldns_wire2packet_header(ldns_packet_type *packet,
 	}
 }
 
+/* TODO: error check, return status (of this and of wire2rrs) */
 size_t
 ldns_wire2packet(ldns_packet_type *packet, const uint8_t *wire, size_t max)
 {
 	size_t pos = 0;
 	uint16_t i;
+	ldns_rr_type *rr;
+	size_t ret;
 	
 	pos += ldns_wire2packet_header(packet, wire, max, &pos);
 
-	/* TODO: rrs :) */
+	/* TODO: section enum :) */
+	for (i = 0; i < packet_qdcount(packet); i++) {
+		rr = ldns_rr_new();
+		ret = ldns_wire2rr(rr, wire, max, &pos, 0);
+	}
 	for (i = 0; i < packet_ancount(packet); i++) {
+		rr = ldns_rr_new();
+		ret = ldns_wire2rr(rr, wire, max, &pos, 1);
+	}
+	for (i = 0; i < packet_nscount(packet); i++) {
+		rr = ldns_rr_new();
+		ret = ldns_wire2rr(rr, wire, max, &pos, 2);
+	}
+	for (i = 0; i < packet_arcount(packet); i++) {
+		rr = ldns_rr_new();
+		ret = ldns_wire2rr(rr, wire, max, &pos, 3);
 	}
 
 	return pos;
