@@ -24,9 +24,11 @@ main(int argc, char *argv[])
 	ldns_key_list *keys;
 	ldns_rr_list  *rrs;
 	ldns_rr_list  *signatures;
+	ldns_rr_list  *dnskeys;
 
 	keys = ldns_key_list_new();
 	rrs  = ldns_rr_list_new();
+	dnskeys = ldns_rr_list_new();
 
 	rr = ldns_rr_new_frm_str("a.miek.nl. 1800 IN A 195.169.222.38");
 	ldns_rr_print(stdout, rr);
@@ -52,11 +54,17 @@ main(int argc, char *argv[])
 		printf("\n");
 		ldns_key_set_keytag(privkey, ldns_calc_keytag(dnskey));
 	}
+	ldns_rr_list_push_rr(dnskeys, dnskey);
 
 	signatures = ldns_sign_public(rrs, keys);
 		printf("\n");
 
 	ldns_rr_list_print(stdout, signatures);
+
+	printf("Now we are going to verify\n");
+
+	printf("[%d]\n", ldns_verify(rrs, signatures, dnskeys));
+	
 
         return 0;
 }
