@@ -168,7 +168,8 @@ static ldns_status
 ldns_hdr2buffer_wire(ldns_buffer *buffer, const ldns_pkt *packet)
 {
 	uint8_t flags;
-
+	uint16_t arcount;
+	
 	if (ldns_buffer_reserve(buffer, 12)) {
 		ldns_buffer_write_u16(buffer, ldns_pkt_id(packet));
 		
@@ -187,12 +188,15 @@ ldns_hdr2buffer_wire(ldns_buffer *buffer, const ldns_pkt *packet)
 		ldns_buffer_write_u16(buffer, ldns_pkt_qdcount(packet));
 		ldns_buffer_write_u16(buffer, ldns_pkt_ancount(packet));
 		ldns_buffer_write_u16(buffer, ldns_pkt_nscount(packet));
-		/* add TSIG to additional if it is there */
+		/* add EDNS0 and TSIG to additional if they are there */
+		arcount = ldns_pkt_arcount(packet);
 		if (ldns_pkt_tsig(packet)) {
-			ldns_buffer_write_u16(buffer, ldns_pkt_arcount(packet)+1);
-		} else {
-			ldns_buffer_write_u16(buffer, ldns_pkt_arcount(packet));
+			arcount++;
 		}
+		if (ldns_pkt_edns(packet)) {
+			arcount++;
+		}
+		ldns_buffer_write_u16(buffer, arcount);
 	}
 	
 	return ldns_buffer_status(buffer);
@@ -206,6 +210,10 @@ ldns_pkt2buffer_wire(ldns_buffer *buffer, const ldns_pkt *packet)
 {
 	ldns_rr_list *rr_list;
 	uint16_t i;
+	
+	/* edns tmp vars */
+	ldns_rr *edns_rr;
+	uint8_t edata[4];
 	
 	(void) ldns_hdr2buffer_wire(buffer, packet);
 
@@ -241,7 +249,21 @@ ldns_pkt2buffer_wire(ldns_buffer *buffer, const ldns_pkt *packet)
 			             LDNS_SECTION_ADDITIONAL);
 		}
 	}
-
+	
+	/* add EDNS to additional if it is needed */
+	if (ldns_pkt_edns(packet)) {
+		edns_rr = ldns_rr_new();
+		ldns_rr_set_owner(edns_rr, ldns_rdf_new_frm_str(LDNS_RDF_TYPE_DNAME, "."));
+		ldns_rr_set_type(edns_rr, LDNS_RR_TYPE_OPT);
+		ldns_rr_set_class(edns_rr, ldns_pkt_edns_udp_size(packet));
+		edata[0] = ldns_pkt_edns_extended_rcode(packet);
+		edata[1] = ldns_pkt_edns_version(packet);
+		write_uint16(&edata[2], ldns_pkt_edns_z(packet));
+		ldns_rr_set_ttl(edns_rr, read_uint32(edata));
+		ldns_rr2buffer_wire(buffer, edns_rr, LDNS_SECTION_ADDITIONAL);
+		ldns_rr_free(edns_rr);
+	}
+	
 	/* add TSIG to additional if it is there */
 	if (ldns_pkt_tsig(packet)) {
 		(void) ldns_rr2buffer_wire(buffer,

@@ -75,6 +75,12 @@ struct ldns_struct_pkt
 	size_t _size;
 	/** optional tsig rr */
 	ldns_rr *_tsig_rr;
+	/** EDNS0 values */
+	uint16_t _edns_udp_size;
+	uint8_t _edns_extended_rcode;
+	uint8_t _edns_version;
+	uint16_t _edns_z;
+	ldns_rdf *_edns_data;
 	/** \brief query data */
 	/** \brief question section */
 	ldns_rr_list	*_question;
@@ -163,6 +169,18 @@ void ldns_pkt_set_when(ldns_pkt *, char *);
 void ldns_pkt_set_xxcount(ldns_pkt *, ldns_pkt_section, uint16_t);
 void ldns_pkt_set_tsig(ldns_pkt *, ldns_rr *);
 ldns_pkt_type ldns_pkt_reply_type(ldns_pkt *);
+
+uint16_t ldns_pkt_edns_udp_size(const ldns_pkt *packet);
+uint8_t ldns_pkt_edns_extended_rcode(const ldns_pkt *packet);
+uint8_t ldns_pkt_edns_version(const ldns_pkt *packet);
+uint16_t ldns_pkt_edns_z(const ldns_pkt *packet);
+ldns_rdf *ldns_pkt_edns_data(const ldns_pkt *packet);
+bool ldns_pkt_edns(const ldns_pkt *packet);
+void ldns_pkt_set_edns_udp_size(ldns_pkt *packet, uint16_t s);
+void ldns_pkt_set_edns_extended_rcode(ldns_pkt *packet, uint8_t c);
+void ldns_pkt_set_edns_version(ldns_pkt *packet, uint8_t v);
+void ldns_pkt_set_edns_z(ldns_pkt *packet, uint16_t z);
+void ldns_pkt_set_edns_data(ldns_pkt *packet, ldns_rdf *data);
 
 /**
  * Allocates and initializes a ldns_pkt structure

@@ -1028,6 +1028,19 @@ ldns_pkt2buffer_str(ldns_buffer *output, ldns_pkt *pkt)
 		ldns_buffer_printf(output, "\n");
 		/* add some futher fields */
 		ldns_buffer_printf(output, ";; Query time: %d msec\n", ldns_pkt_querytime(pkt));
+		if (ldns_pkt_edns(pkt)) {
+			ldns_buffer_printf(output,
+			                   ";; EDNS: version %u, flags: %u; udp: %u\n",
+			                   ldns_pkt_edns_version(pkt),
+			                   ldns_pkt_edns_z(pkt),
+			                   ldns_pkt_edns_udp_size(pkt)
+			                   );
+			if (ldns_pkt_edns_data(pkt)) {
+				ldns_buffer_printf(output, ";; Data: ");
+				ldns_rdf2buffer_str(output, ldns_pkt_edns_data(pkt));
+				ldns_buffer_printf(output, "\n");
+			}
+		}
 		if (ldns_pkt_tsig(pkt)) {
 			ldns_buffer_printf(output, ";; TSIG:\n;; ");
 			(void) ldns_rr2buffer_str(output, ldns_pkt_tsig(pkt));

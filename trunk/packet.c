@@ -173,6 +173,36 @@ ldns_pkt_when(const ldns_pkt *packet)
 	return packet->_when;
 }
 
+uint16_t
+ldns_pkt_edns_udp_size(const ldns_pkt *packet)
+{
+	return packet->_edns_udp_size;
+}
+
+uint8_t
+ldns_pkt_edns_extended_rcode(const ldns_pkt *packet)
+{
+	return packet->_edns_extended_rcode;
+}
+
+uint8_t
+ldns_pkt_edns_version(const ldns_pkt *packet)
+{
+	return packet->_edns_version;
+}
+
+uint16_t
+ldns_pkt_edns_z(const ldns_pkt *packet)
+{
+	return packet->_edns_z;
+}
+
+ldns_rdf *
+ldns_pkt_edns_data(const ldns_pkt *packet)
+{
+	return packet->_edns_data;
+}
+
 /* return only those rr that share the ownername */
 ldns_rr_list *
 ldns_pkt_rr_list_by_name(ldns_pkt *packet, ldns_rdf *ownername, ldns_pkt_section sec)
@@ -416,6 +446,36 @@ ldns_pkt_set_size(ldns_pkt *packet, size_t s)
 }
 
 void
+ldns_pkt_set_edns_udp_size(ldns_pkt *packet, uint16_t s)
+{
+	packet->_edns_udp_size = s;
+}
+
+void
+ldns_pkt_set_edns_extended_rcode(ldns_pkt *packet, uint8_t c)
+{
+	packet->_edns_extended_rcode = c;
+}
+
+void
+ldns_pkt_set_edns_version(ldns_pkt *packet, uint8_t v)
+{
+	packet->_edns_version = v;
+}
+
+void
+ldns_pkt_set_edns_z(ldns_pkt *packet, uint16_t z)
+{
+	packet->_edns_z = z;
+}
+
+void
+ldns_pkt_set_edns_data(ldns_pkt *packet, ldns_rdf *data)
+{
+	packet->_edns_data = data;
+}
+
+void
 ldns_pkt_set_xxcount(ldns_pkt *packet, ldns_pkt_section s, uint16_t count)
 {
 	switch(s) {
@@ -500,6 +560,20 @@ ldns_pkt_safe_push_rr(ldns_pkt *pkt, ldns_pkt_section sec, ldns_rr *rr)
 	return ldns_pkt_push_rr(pkt, sec, rr);
 }
 
+/**
+ * Returns true if this packet needs and EDNS rr to be sent
+ * At the moment the only reason is an expected packet
+ * size larger than 512 bytes, but for instance dnssec would
+ * be a good reason too
+ */
+bool
+ldns_pkt_edns(const ldns_pkt *pkt) {
+	return (ldns_pkt_edns_udp_size(pkt) > 0 ||
+		ldns_pkt_edns_extended_rcode(pkt) > 0 ||
+		ldns_pkt_edns_data(pkt)
+	       );
+}
+
 
 /* Create/destroy/convert functions
  */
@@ -541,6 +615,12 @@ ldns_pkt_new()
 	ldns_pkt_set_xxcount(packet, LDNS_SECTION_ANSWER, 0);
 	ldns_pkt_set_xxcount(packet, LDNS_SECTION_AUTHORITY, 0);
 	ldns_pkt_set_xxcount(packet, LDNS_SECTION_ADDITIONAL, 0);
+	
+	ldns_pkt_set_edns_udp_size(packet, 0);
+	ldns_pkt_set_edns_extended_rcode(packet, 0);
+	ldns_pkt_set_edns_version(packet, 0);
+	ldns_pkt_set_edns_z(packet, 0);
+	ldns_pkt_set_edns_data(packet, NULL);
 	
 	packet->_tsig_rr = NULL;
 	
