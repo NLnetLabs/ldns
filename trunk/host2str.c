@@ -1130,7 +1130,7 @@ ldns_rr_list2str(ldns_rr_list *list)
 		if (ldns_rr_list2buffer_str(tmp_buffer, list) == LDNS_STATUS_OK) {
 		}
 	} else {
-		ldns_buffer_printf(tmp_buffer, "(null)");
+		ldns_buffer_printf(tmp_buffer, "(null)\n");
 	}
 
 	/* export and return string, destroy rest */
