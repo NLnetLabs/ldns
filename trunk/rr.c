@@ -91,7 +91,7 @@ ldns_rr_set_rd_count(ldns_rr *rr, uint16_t count)
 /**
  * \brief set the type in the rr
  * \param[in] *rr rr to operate on
- * \param[in] tt_type set to this type
+ * \param[in] rr_type set to this type
  * \return void
  */
 void
