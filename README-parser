@@ -1,0 +1,30 @@
+File to be parsed inside ldns
+
+* be reasonably robust
+* be able to parse
+	www.miek.nl	A 192.168.1.1
+  in fill in the default TTL and default class
+  also do something smart with quoting and ( ) in this case
+
+- private keys, openssl's format
+  and bind9's format
+
+Need to cope with optional stuff:
+(RSA) in the example below
+Need handle spaces in words
+
+
+Examples:
+% cat Kmiek.nl.+005+10324.private 
+Private-key-format: v1.2
+Algorithm: 5 (RSA)
+Modulus: 4VbA5NcAAb9qpB2V5uSXvqPAIVwJEq4mjkf6e1igmfsZz71522Rnkm5ObXmokaTDNjrLVoouQ+4U2yS1UrYXO7h2ewemA/ZBDCia9AuCaBX8+NrLNA+smbKAm5WROmwUWTwtNGWCKsGYxbaBHnmx/ikE0q4nT8DpSH2kDHv9LV8=
+PublicExponent: AQAB
+PrivateExponent: TvVLGeSMSBB+mYsUX5dx5IcUZ5wMQdNsBycJifcAL3RhEv3dmRaRhCnKqWmbu4z0Kihn36cDlyHxhOhT8OuFL+uWEPU6cyGIshN94Hmh68MqwRG59HniCYJ6NcaRIMj7ILqvu9xq4lDpeCjeDzJpWcAh0rAnJoUWm2zkQDjKJsE=
+Prime1: 9Ivh0s7yZ5T7BuzElON4rFSMJHm3FyOyQvVXxesq0lbeAKrvUiCdC6MxH1eNowu51gD8pg2AOyjIHz406s7yaQ==
+Prime2: 6+SSkfQuzz4byW8tjShOYWzNmq60WvcB321iv73hSoCBdH3fF9qto/3F+MsH7+1BOx5hlMRBGC2RDTNDSeWYhw==
+Exponent1: zUIb6bWKAScrDETvO4kyYHMWrgb7hpCPr2P+qEEbUDFZZXYUKfr11i7DrGrwl0ngUZ/CcB4k44L3dkHgaLYLAQ==
+Exponent2: qJlI7Qqivjr87z8IRqCtTNLQLSN7Ap0S+JcdAkB7mp04aYNhhZIlk1VZPxYWCTUA73kqc4LFp7tBtjaSfGmeVw==
+Coefficient: 0FEnBcGwv82eZMG0LZhkbtnio/ZW9DoA9rNhq9BpOKhTFzi/+ZzX42oYN5uPodQ0sdaBQS/hrxursF01pagSBA==
+
+
