@@ -319,11 +319,12 @@ ldns_resolver_new_frm_file(const char *filename)
 	}
 	/* the file is opened. it's line based - this will be a bit messy
 	 */
-	
+#if 0	
 	while (getline(&line, &len, fp) != -1) {
 		/* do something */
 		printf("line %s\n", line);
 	}
+#endif
 
 	fclose(fp);
 	return r;
