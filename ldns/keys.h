@@ -15,19 +15,21 @@
 #define _LDNS_KEYS_H
 
 #include <openssl/ssl.h>
+
 #include <util.h>
+
+extern ldns_lookup_table ldns_signing_algorithms[];
 
 enum ldns_enum_signing_algorithm
 {
-	LDNS_SIGN_ALG_RSAMD5	= 1,
-	LDNS_SIGN_ALG_RSASHA1	= 2,
-	LDNS_SIGN_ALG_DSAMD5	= 3, 
-	LDNS_SIGN_ALG_DSASHA1	= 4,
-	LDNS_SIGN_ALG_HMACMD5	= 5
+	LDNS_SIGN_ALG_RSAMD5	 = 1,
+	LDNS_SIGN_ALG_RSASHA1	 = 2,
+	LDNS_SIGN_ALG_DSAMD5	 = 3,
+	LDNS_SIGN_ALG_DSASHA1	 = 4,
+	LDNS_SIGN_ALG_HMACMD5	 = 5
 };
 typedef enum ldns_enum_signing_algorithm ldns_signing_algorithm;
 
-extern ldns_lookup_table ldns_signing_algorithms[];
 
 struct ldns_struct_key {
 	ldns_signing_algorithm alg;
@@ -64,7 +66,5 @@ struct ldns_struct_key_list
 	ldns_key **_keys;
 };
 typedef struct ldns_struct_key_list ldns_key_list;
-
-
 
 #endif /* _LDNS_KEYS_H */
