@@ -71,21 +71,24 @@ ldns_rr_str_normalize(const char *rr)
 	char *p;
 	char *s;
 	char *orig_s;
-	int sp_removed;
 
 	s = XMALLOC(char, strlen(rr)); /* for the newly created string */
 	orig_s = s;
-	sp_removed = 0;
 
 	/* walk through the rr and fix it. Whitespace is handled in
 	 * ldns_rr_new_frm_str(), so don't worry about that here
 	 * - remove (, ) and \n
+	 * - everything after ; is discard
+	 * - allow for simple escaping, with \??? TODO Miek
 	 */
 	for(p = (char*)rr; *p; p++) {
 		if (*p == '(' || *p == ')' || *p == '\n') {
 			continue;
 		}
-		sp_removed = 0;
+		if (*p == ';') {
+			/* comment seen, bail out */
+			break;
+		}
 	 	*s++ = *p;
 	}
 	*s = '\0';
