@@ -26,7 +26,7 @@ xprintf_rd_field(t_rdata_field *rd)
 }
 
 void
-xprintf_rr(t_rr *rr)
+xprintf_rr(ldns_rr_type *rr)
 {
 	/* assume printable string */
 	uint16_t count, i;

@@ -1,7 +1,7 @@
 /*
  * rr.c
  *
- * access function for t_rr
+ * access function for ldns_rr_type
  *
  * a Net::DNS like library for C
  *
@@ -21,11 +21,11 @@
 /**
  * create a new rr structure.
  */
-t_rr *
+ldns_rr_type *
 ldns_rr_new(void)
 {
-	t_rr *rr;
-	rr = MALLOC(t_rr);
+	ldns_rr_type *rr;
+	rr = MALLOC(ldns_rr_type);
         if (!rr) {
                 return NULL;
 	}
@@ -39,7 +39,7 @@ ldns_rr_new(void)
  * set the owner in the rr structure
  */
 void
-ldns_rr_set_owner(t_rr *rr, uint8_t *owner)
+ldns_rr_set_owner(ldns_rr_type *rr, uint8_t *owner)
 {
 	rr->_owner = owner;
 }
@@ -48,7 +48,7 @@ ldns_rr_set_owner(t_rr *rr, uint8_t *owner)
  * set the owner in the rr structure
  */
 void
-ldns_rr_set_ttl(t_rr *rr, uint16_t ttl)
+ldns_rr_set_ttl(ldns_rr_type *rr, uint16_t ttl)
 {
 	rr->_ttl = ttl;
 }
@@ -57,7 +57,7 @@ ldns_rr_set_ttl(t_rr *rr, uint16_t ttl)
  * set the rd_count in the rr
  */
 void
-ldns_rr_set_rd_count(t_rr *rr, uint16_t count)
+ldns_rr_set_rd_count(ldns_rr_type *rr, uint16_t count)
 {
 	rr->_rd_count = count;
 }
@@ -66,7 +66,7 @@ ldns_rr_set_rd_count(t_rr *rr, uint16_t count)
  * set the class in the rr
  */
 void
-ldns_rr_set_class(t_rr *rr, t_class klass)
+ldns_rr_set_class(ldns_rr_type *rr, t_class klass)
 {
 	rr->_klass = klass;
 }
@@ -76,7 +76,7 @@ ldns_rr_set_class(t_rr *rr, t_class klass)
  * placed in the next available spot
  */
 bool
-ldns_rr_push_rd_field(t_rr *rr, t_rdata_field *f)
+ldns_rr_push_rd_field(ldns_rr_type *rr, t_rdata_field *f)
 {
 	uint16_t rd_count;
 	t_rdata_field **rdata_fields;
@@ -102,7 +102,7 @@ ldns_rr_push_rd_field(t_rr *rr, t_rdata_field *f)
  * return the owner name of an rr structure
  */
 uint8_t *
-ldns_rr_owner(t_rr *rr)
+ldns_rr_owner(ldns_rr_type *rr)
 {
 	return rr->_owner;
 }
@@ -111,7 +111,7 @@ ldns_rr_owner(t_rr *rr)
  * return the owner name of an rr structure
  */
 uint8_t
-ldns_rr_ttl(t_rr *rr)
+ldns_rr_ttl(ldns_rr_type *rr)
 {
 	return rr->_ttl;
 }
@@ -120,7 +120,7 @@ ldns_rr_ttl(t_rr *rr)
  * return the rd_count of an rr structure
  */
 uint16_t
-ldns_rr_rd_count(t_rr *rr)
+ldns_rr_rd_count(ldns_rr_type *rr)
 {
 	return rr->_rd_count;
 }
@@ -342,7 +342,8 @@ ldns_rr_descriptor_maximum(ldns_rr_descriptor_type *descriptor)
 }
 
 ldns_rdata_field_type
-ldns_rr_descriptor_field_type(ldns_rr_descriptor_type *descriptor, size_t index)
+ldns_rr_descriptor_field_type(ldns_rr_descriptor_type *descriptor,
+                              size_t index)
 {
 	assert(descriptor);
 	assert(index < descriptor->_maximum
@@ -353,3 +354,4 @@ ldns_rr_descriptor_field_type(ldns_rr_descriptor_type *descriptor, size_t index)
 		return descriptor->_variable;
 	}
 }
+

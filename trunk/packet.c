@@ -379,7 +379,6 @@ ldns_wire2packet_header(ldns_packet_type *packet,
 		packet_set_arcount(packet, ARCOUNT(wire));
 
 		*pos += QHEADERSZ;
-		
 		/* TODO t_status succ.  */
 		return 0;
 	}
@@ -389,10 +388,13 @@ size_t
 ldns_wire2packet(ldns_packet_type *packet, const uint8_t *wire, size_t max)
 {
 	size_t pos = 0;
-
+	uint16_t i;
+	
 	pos += ldns_wire2packet_header(packet, wire, max, &pos);
 
 	/* TODO: rrs :) */
+	for (i = 0; i < packet_ancount(packet); i++) {
+	}
 
 	return pos;
 }

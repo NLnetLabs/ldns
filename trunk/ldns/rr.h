@@ -144,7 +144,7 @@ struct type_struct_rr
 	/** \brief The list of rdata's */
 	t_rdata_field	**_rdata_fields;
 };
-typedef struct type_struct_rr t_rr;
+typedef struct type_struct_rr ldns_rr_type;
 
 /**
  * \brief Resource Record Set
@@ -154,7 +154,7 @@ typedef struct type_struct_rr t_rr;
  */
 struct type_struct_rrset
 {
-	t_rr *rrs;
+	ldns_rr_type *rrs;
 
 };
 typedef struct type_struct_rrset t_rrset;
@@ -178,15 +178,15 @@ typedef struct ldns_struct_rr_descriptor_type ldns_rr_descriptor_type;
 
 
 /* prototypes */
-t_rr * ldns_rr_new(void);
-void ldns_rr_set_owner(t_rr *, uint8_t *);
-void ldns_rr_set_ttl(t_rr *, uint16_t);
-void ldns_rr_set_rd_count(t_rr *, uint16_t);
-void ldns_rr_set_class(t_rr *, t_class);
-bool ldns_rr_push_rd_field(t_rr *, t_rdata_field *);
-uint8_t *ldns_rr_owner(t_rr *);
-uint8_t ldns_rr_ttl(t_rr *);
-uint16_t ldns_rr_rd_count(t_rr *);
+ldns_rr_type * ldns_rr_new(void);
+void ldns_rr_set_owner(ldns_rr_type *, uint8_t *);
+void ldns_rr_set_ttl(ldns_rr_type *, uint16_t);
+void ldns_rr_set_rd_count(ldns_rr_type *, uint16_t);
+void ldns_rr_set_class(ldns_rr_type *, t_class);
+bool ldns_rr_push_rd_field(ldns_rr_type *, t_rdata_field *);
+uint8_t *ldns_rr_owner(ldns_rr_type *);
+uint8_t ldns_rr_ttl(ldns_rr_type *);
+uint16_t ldns_rr_rd_count(ldns_rr_type *);
 
 const ldns_rr_descriptor_type *ldns_rr_descriptor(uint16_t type);
 size_t ldns_rr_descriptor_minimum(ldns_rr_descriptor_type *descriptor);
