@@ -344,8 +344,6 @@ ldns_resolver_send(ldns_resolver *r, ldns_rdf *name, ldns_rr_type type, ldns_rr_
 		printf("query type is not correct type\n");
 		return NULL;
 	}
-	printf("We are ASKING the question\n\n");
-	
 	/* prepare a question pkt from the parameters
 	 * and then send this */
 	query_pkt = ldns_pkt_query_new(name, type, class, flags);

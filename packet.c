@@ -131,6 +131,12 @@ ldns_pkt_additional(ldns_pkt *packet)
 	return packet->_additional;
 }
 
+size_t
+ldns_pkt_size(ldns_pkt *packet)
+{
+	return packet->_size;
+}
+
 uint32_t 
 ldns_pkt_querytime(ldns_pkt *packet)
 {
@@ -271,6 +277,12 @@ ldns_pkt_set_answerfrom(ldns_pkt *packet, char *answerfrom)
 {
 	/* TODO if exists free? */
 	packet->_answerfrom = answerfrom;
+}
+
+void
+ldns_pkt_set_size(ldns_pkt *packet, size_t s)
+{
+	packet->_size = s;
 }
 
 /** 
