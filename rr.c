@@ -124,16 +124,26 @@ ldns_rr_new_frm_str(const char *str)
 
 	ldns_buffer_new_frm_data(rr_buf, str, strlen(str));
 	
-	/* split the rr in its parts */
-	(void)ldns_bget_token(rr_buf, owner, "\t \0", MAX_DOMAINLEN);
-	(void)ldns_bget_token(rr_buf, ttl, "\t \0", 21);
-	(void)ldns_bget_token(rr_buf, clas, "\t \0", 11);
-	(void)ldns_bget_token(rr_buf, type, "\t \0", 10);
-	(void)ldns_bget_token(rr_buf, rdata, "\0", MAX_PACKETLEN);
-	
+	/* split the rr in its parts -1 signal trouble */
+	if (ldns_bget_token(rr_buf, owner, "\t ", MAX_DOMAINLEN) == -1) {
+		return NULL;
+	}
+	if (ldns_bget_token(rr_buf, ttl, "\t ", 21) == -1) {
+		return NULL;
+	}
+	if (ldns_bget_token(rr_buf, clas, "\t ", 11) == -1) {
+		return NULL;
+	}
+	if (ldns_bget_token(rr_buf, type, "\t ", 10) == -1) {
+		return NULL;
+	}
+	if (ldns_bget_token(rr_buf, rdata, "\0", MAX_PACKETLEN) == -1) {
+		return NULL;
+	}
+
 	ldns_buffer_new_frm_data(
 			rd_buf, rdata, strlen(rdata));
-
+	/* 	FREE(rdata); NO! */
 	ldns_rr_set_owner(new, ldns_dname_new_frm_str(owner));
 	FREE(owner);
 	/* ttl might be more complicated, like 2h, or 3d5h */
@@ -151,7 +161,7 @@ ldns_rr_new_frm_str(const char *str)
 	r_min = ldns_rr_descriptor_minimum(desc);
 
 	/* there is no limit, no no */
-	while(ldns_bget_token(rd_buf, rd, "\t \0", MAX_RDFLEN) > 0) {
+	while(ldns_bget_token(rd_buf, rd, "\t ", MAX_RDFLEN) > 0) {
 		r = ldns_rdf_new_frm_str(
 			ldns_rr_descriptor_field_type(desc, r_cnt),
 			rd);
@@ -159,31 +169,27 @@ ldns_rr_new_frm_str(const char *str)
 		if (!r) {
 			printf("rdf conversion mismatch\n");
 			/* return what we've got */
-			FREE(rdata);
 			return new;
 		}
 		ldns_rr_push_rdf(new, r);
 
 		if (r_cnt > r_max) {
 			printf("rdf data overflow");
-			FREE(rdata);
 			return new;
 		}
 		r_cnt++;
 	}
+	
 	/* the last one - in case of EOF of the rdata */
 	r = ldns_rdf_new_frm_str(
 			ldns_rr_descriptor_field_type(desc, r_cnt),
 			rd);
 	if (!r) {
 		printf("rdf conversion mismatch\n");
-		FREE(rdata);
 		return new;
 	}
 
 	ldns_rr_push_rdf(new, r);
-
-	FREE(rdata);
 	return new;
 }
 
