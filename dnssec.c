@@ -38,6 +38,9 @@ ldns_calc_keytag(ldns_rr *key)
 	/* rdata to buf - only put the rdata in a buffer */
 	/* XXX waaayyy too much */
 	keybuf = ldns_buffer_new(MAX_PACKETLEN);
+	if (!keybuf) {
+		return 0;
+	}
 	(void)ldns_rr_rdata2buffer_wire(keybuf, key);
 	/* the current pos in the buffer is the keysize */
 	keysize= ldns_buffer_position(keybuf);

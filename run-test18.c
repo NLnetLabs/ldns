@@ -40,7 +40,6 @@ main(int argc, char *argv[])
 
 	owner = ldns_dname_new_frm_str("miek.nl");
 	ldns_key_set_pubkey_owner(privkey, owner);
-	ldns_key_set_flags(privkey, 256);
 
 	ldns_key_list_push_key(keys, privkey);
 	ldns_rr_list_push_rr(rrs, rr);
