@@ -66,9 +66,9 @@ ldns_rr_set_rd_count(ldns_rr *rr, uint16_t count)
  * set the class in the rr
  */
 void
-ldns_rr_set_class(ldns_rr *rr, ldns_class klass)
+ldns_rr_set_class(ldns_rr *rr, ldns_rr_class rr_class)
 {
-	rr->_klass = klass;
+	rr->_rr_class = rr_class;
 }
 
 /**
@@ -125,190 +125,190 @@ ldns_rr_rd_count(ldns_rr *rr)
 	return rr->_rd_count;
 }
 
-static const ldns_rdf_type type_0_wireformat[] = { RDF_TYPE_UNKNOWN };
-static const ldns_rdf_type type_a_wireformat[] = { RDF_TYPE_A };
-static const ldns_rdf_type type_ns_wireformat[] = { RDF_TYPE_DNAME };
-static const ldns_rdf_type type_md_wireformat[] = { RDF_TYPE_DNAME };
-static const ldns_rdf_type type_mf_wireformat[] = { RDF_TYPE_DNAME };
-static const ldns_rdf_type type_cname_wireformat[] = { RDF_TYPE_DNAME };
+static const ldns_rdf_type type_0_wireformat[] = { LDNS_RDF_TYPE_UNKNOWN };
+static const ldns_rdf_type type_a_wireformat[] = { LDNS_RDF_TYPE_A };
+static const ldns_rdf_type type_ns_wireformat[] = { LDNS_RDF_TYPE_DNAME };
+static const ldns_rdf_type type_md_wireformat[] = { LDNS_RDF_TYPE_DNAME };
+static const ldns_rdf_type type_mf_wireformat[] = { LDNS_RDF_TYPE_DNAME };
+static const ldns_rdf_type type_cname_wireformat[] = { LDNS_RDF_TYPE_DNAME };
 static const ldns_rdf_type type_soa_wireformat[] = {
-	RDF_TYPE_DNAME, RDF_TYPE_DNAME, RDF_TYPE_INT32, RDF_TYPE_INT32,
-	RDF_TYPE_INT32, RDF_TYPE_INT32, RDF_TYPE_INT32
+	LDNS_RDF_TYPE_DNAME, LDNS_RDF_TYPE_DNAME, LDNS_RDF_TYPE_INT32, LDNS_RDF_TYPE_INT32,
+	LDNS_RDF_TYPE_INT32, LDNS_RDF_TYPE_INT32, LDNS_RDF_TYPE_INT32
 };
-static const ldns_rdf_type type_mb_wireformat[] = { RDF_TYPE_DNAME };
-static const ldns_rdf_type type_mg_wireformat[] = { RDF_TYPE_DNAME };
-static const ldns_rdf_type type_mr_wireformat[] = { RDF_TYPE_DNAME };
+static const ldns_rdf_type type_mb_wireformat[] = { LDNS_RDF_TYPE_DNAME };
+static const ldns_rdf_type type_mg_wireformat[] = { LDNS_RDF_TYPE_DNAME };
+static const ldns_rdf_type type_mr_wireformat[] = { LDNS_RDF_TYPE_DNAME };
 static const ldns_rdf_type type_wks_wireformat[] = {
-	RDF_TYPE_A, RDF_TYPE_SERVICE
+	LDNS_RDF_TYPE_A, LDNS_RDF_TYPE_SERVICE
 };
-static const ldns_rdf_type type_ptr_wireformat[] = { RDF_TYPE_DNAME };
+static const ldns_rdf_type type_ptr_wireformat[] = { LDNS_RDF_TYPE_DNAME };
 static const ldns_rdf_type type_hinfo_wireformat[] = {
-	RDF_TYPE_STR, RDF_TYPE_STR
+	LDNS_RDF_TYPE_STR, LDNS_RDF_TYPE_STR
 };
 static const ldns_rdf_type type_minfo_wireformat[] = {
-	RDF_TYPE_DNAME, RDF_TYPE_DNAME
+	LDNS_RDF_TYPE_DNAME, LDNS_RDF_TYPE_DNAME
 };
 static const ldns_rdf_type type_mx_wireformat[] = {
-	RDF_TYPE_INT8, RDF_TYPE_DNAME
+	LDNS_RDF_TYPE_INT8, LDNS_RDF_TYPE_DNAME
 };
 static const ldns_rdf_type type_rp_wireformat[] = {
-	RDF_TYPE_DNAME, RDF_TYPE_DNAME
+	LDNS_RDF_TYPE_DNAME, LDNS_RDF_TYPE_DNAME
 };
 static const ldns_rdf_type type_afsdb_wireformat[] = {
-	RDF_TYPE_INT8, RDF_TYPE_DNAME
+	LDNS_RDF_TYPE_INT8, LDNS_RDF_TYPE_DNAME
 };
-static const ldns_rdf_type type_x25_wireformat[] = { RDF_TYPE_STR };
+static const ldns_rdf_type type_x25_wireformat[] = { LDNS_RDF_TYPE_STR };
 static const ldns_rdf_type type_isdn_wireformat[] = {
-	RDF_TYPE_STR, RDF_TYPE_STR
+	LDNS_RDF_TYPE_STR, LDNS_RDF_TYPE_STR
 };
 static const ldns_rdf_type type_rt_wireformat[] = {
-	RDF_TYPE_INT8, RDF_TYPE_DNAME
+	LDNS_RDF_TYPE_INT8, LDNS_RDF_TYPE_DNAME
 };
 static const ldns_rdf_type type_sig_wireformat[] = {
-	RDF_TYPE_INT8, RDF_TYPE_INT8, RDF_TYPE_INT8, RDF_TYPE_INT32,
-	RDF_TYPE_INT32, RDF_TYPE_INT32, RDF_TYPE_INT16,
-	RDF_TYPE_DNAME, RDF_TYPE_B64
+	LDNS_RDF_TYPE_INT8, LDNS_RDF_TYPE_INT8, LDNS_RDF_TYPE_INT8, LDNS_RDF_TYPE_INT32,
+	LDNS_RDF_TYPE_INT32, LDNS_RDF_TYPE_INT32, LDNS_RDF_TYPE_INT16,
+	LDNS_RDF_TYPE_DNAME, LDNS_RDF_TYPE_B64
 };
 static const ldns_rdf_type type_key_wireformat[] = {
-	RDF_TYPE_INT16, RDF_TYPE_INT8, RDF_TYPE_INT8, RDF_TYPE_B64
+	LDNS_RDF_TYPE_INT16, LDNS_RDF_TYPE_INT8, LDNS_RDF_TYPE_INT8, LDNS_RDF_TYPE_B64
 };
 static const ldns_rdf_type type_px_wireformat[] = {
-	RDF_TYPE_INT16, RDF_TYPE_DNAME, RDF_TYPE_DNAME
+	LDNS_RDF_TYPE_INT16, LDNS_RDF_TYPE_DNAME, LDNS_RDF_TYPE_DNAME
 };
-static const ldns_rdf_type type_aaaa_wireformat[] = { RDF_TYPE_AAAA };
-static const ldns_rdf_type type_loc_wireformat[] = { RDF_TYPE_LOC };
+static const ldns_rdf_type type_aaaa_wireformat[] = { LDNS_RDF_TYPE_AAAA };
+static const ldns_rdf_type type_loc_wireformat[] = { LDNS_RDF_TYPE_LOC };
 static const ldns_rdf_type type_nxt_wireformat[] = {
-	RDF_TYPE_DNAME, RDF_TYPE_UNKNOWN
+	LDNS_RDF_TYPE_DNAME, LDNS_RDF_TYPE_UNKNOWN
 };
 static const ldns_rdf_type type_srv_wireformat[] = {
-	RDF_TYPE_INT16, RDF_TYPE_INT16, RDF_TYPE_INT16, RDF_TYPE_DNAME
+	LDNS_RDF_TYPE_INT16, LDNS_RDF_TYPE_INT16, LDNS_RDF_TYPE_INT16, LDNS_RDF_TYPE_DNAME
 };
 static const ldns_rdf_type type_naptr_wireformat[] = {
-	RDF_TYPE_INT16, RDF_TYPE_INT16, RDF_TYPE_STR, RDF_TYPE_STR, RDF_TYPE_STR, RDF_TYPE_DNAME
+	LDNS_RDF_TYPE_INT16, LDNS_RDF_TYPE_INT16, LDNS_RDF_TYPE_STR, LDNS_RDF_TYPE_STR, LDNS_RDF_TYPE_STR, LDNS_RDF_TYPE_DNAME
 };
 static const ldns_rdf_type type_kx_wireformat[] = {
-	RDF_TYPE_INT16, RDF_TYPE_DNAME
+	LDNS_RDF_TYPE_INT16, LDNS_RDF_TYPE_DNAME
 };
 static const ldns_rdf_type type_cert_wireformat[] = {
-	 RDF_TYPE_CERT, RDF_TYPE_INT16, RDF_TYPE_ALG, RDF_TYPE_B64
+	 LDNS_RDF_TYPE_CERT, LDNS_RDF_TYPE_INT16, LDNS_RDF_TYPE_ALG, LDNS_RDF_TYPE_B64
 };
-static const ldns_rdf_type type_dname_wireformat[] = { RDF_TYPE_DNAME };
+static const ldns_rdf_type type_dname_wireformat[] = { LDNS_RDF_TYPE_DNAME };
 static const ldns_rdf_type type_ds_wireformat[] = {
-	RDF_TYPE_INT16, RDF_TYPE_INT8, RDF_TYPE_INT8, RDF_TYPE_HEX
+	LDNS_RDF_TYPE_INT16, LDNS_RDF_TYPE_INT8, LDNS_RDF_TYPE_INT8, LDNS_RDF_TYPE_HEX
 };
 static const ldns_rdf_type type_sshfp_wireformat[] = {
-	RDF_TYPE_INT8, RDF_TYPE_INT8, RDF_TYPE_HEX
+	LDNS_RDF_TYPE_INT8, LDNS_RDF_TYPE_INT8, LDNS_RDF_TYPE_HEX
 };
 static const ldns_rdf_type type_rrsig_wireformat[] = {
-	RDF_TYPE_TYPE, RDF_TYPE_INT8, RDF_TYPE_INT8, RDF_TYPE_INT32,
-	RDF_TYPE_INT32, RDF_TYPE_INT32, RDF_TYPE_INT16, RDF_TYPE_DNAME, RDF_TYPE_B64
+	LDNS_RDF_TYPE_TYPE, LDNS_RDF_TYPE_INT8, LDNS_RDF_TYPE_INT8, LDNS_RDF_TYPE_INT32,
+	LDNS_RDF_TYPE_INT32, LDNS_RDF_TYPE_INT32, LDNS_RDF_TYPE_INT16, LDNS_RDF_TYPE_DNAME, LDNS_RDF_TYPE_B64
 };
 static const ldns_rdf_type type_nsec_wireformat[] = {
-	RDF_TYPE_DNAME, RDF_TYPE_NSEC
+	LDNS_RDF_TYPE_DNAME, LDNS_RDF_TYPE_NSEC
 };
 static const ldns_rdf_type type_dnskey_wireformat[] = {
-	RDF_TYPE_INT16, RDF_TYPE_INT8, RDF_TYPE_ALG, RDF_TYPE_B64
+	LDNS_RDF_TYPE_INT16, LDNS_RDF_TYPE_INT8, LDNS_RDF_TYPE_ALG, LDNS_RDF_TYPE_B64
 };
 
 static ldns_rr_descriptor rdata_field_descriptors[] = {
 	/* 0 */
-	{ 0, NULL, 1, 1, type_0_wireformat, RDF_TYPE_NONE },
+	{ 0, NULL, 1, 1, type_0_wireformat, LDNS_RDF_TYPE_NONE },
 	/* 1 */
-	{ TYPE_A, "A", 1, 1, type_a_wireformat, RDF_TYPE_NONE },
+	{LDNS_RR_TYPE_A, "A", 1, 1, type_a_wireformat, LDNS_RDF_TYPE_NONE },
 	/* 2 */
-	{ TYPE_NS, "NS", 1, 1, type_ns_wireformat, RDF_TYPE_NONE },
+	{LDNS_RR_TYPE_NS, "NS", 1, 1, type_ns_wireformat, LDNS_RDF_TYPE_NONE },
 	/* 3 */
-	{ TYPE_MD, "MD", 1, 1, type_md_wireformat, RDF_TYPE_NONE },
+	{LDNS_RR_TYPE_MD, "MD", 1, 1, type_md_wireformat, LDNS_RDF_TYPE_NONE },
 	/* 4 */ 
-	{ TYPE_MF, "MF", 1, 1, type_mf_wireformat, RDF_TYPE_NONE },
+	{LDNS_RR_TYPE_MF, "MF", 1, 1, type_mf_wireformat, LDNS_RDF_TYPE_NONE },
 	/* 5 */
-	{ TYPE_CNAME, "CNAME", 1, 1, type_cname_wireformat, RDF_TYPE_NONE },
+	{LDNS_RR_TYPE_CNAME, "CNAME", 1, 1, type_cname_wireformat, LDNS_RDF_TYPE_NONE },
 	/* 6 */
-	{ TYPE_SOA, "SOA", 7, 7, type_soa_wireformat, RDF_TYPE_NONE },
+	{LDNS_RR_TYPE_SOA, "SOA", 7, 7, type_soa_wireformat, LDNS_RDF_TYPE_NONE },
 	/* 7 */
-	{ TYPE_MB, "MB", 1, 1, type_mb_wireformat, RDF_TYPE_NONE },
+	{LDNS_RR_TYPE_MB, "MB", 1, 1, type_mb_wireformat, LDNS_RDF_TYPE_NONE },
 	/* 8 */
-	{ TYPE_MG, "MG", 1, 1, type_mg_wireformat, RDF_TYPE_NONE },
+	{LDNS_RR_TYPE_MG, "MG", 1, 1, type_mg_wireformat, LDNS_RDF_TYPE_NONE },
 	/* 9 */
-	{ TYPE_MR, "MR", 1, 1, type_mr_wireformat, RDF_TYPE_NONE },
+	{LDNS_RR_TYPE_MR, "MR", 1, 1, type_mr_wireformat, LDNS_RDF_TYPE_NONE },
 	/* 10 */
-	{ TYPE_NULL, "NULL", 1, 1, type_0_wireformat, RDF_TYPE_NONE },
+	{LDNS_RR_TYPE_NULL, "NULL", 1, 1, type_0_wireformat, LDNS_RDF_TYPE_NONE },
 	/* 11 */
-	{ TYPE_WKS, "WKS", 2, 2, type_wks_wireformat, RDF_TYPE_NONE },
+	{LDNS_RR_TYPE_WKS, "WKS", 2, 2, type_wks_wireformat, LDNS_RDF_TYPE_NONE },
 	/* 12 */
-	{ TYPE_PTR, "PTR", 1, 1, type_ptr_wireformat, RDF_TYPE_NONE },
+	{LDNS_RR_TYPE_PTR, "PTR", 1, 1, type_ptr_wireformat, LDNS_RDF_TYPE_NONE },
 	/* 13 */
-	{ TYPE_HINFO, "HINFO", 2, 2, type_hinfo_wireformat, RDF_TYPE_NONE },
+	{LDNS_RR_TYPE_HINFO, "HINFO", 2, 2, type_hinfo_wireformat, LDNS_RDF_TYPE_NONE },
 	/* 14 */
-	{ TYPE_MINFO, "MINFO", 2, 2, type_minfo_wireformat, RDF_TYPE_NONE },
+	{LDNS_RR_TYPE_MINFO, "MINFO", 2, 2, type_minfo_wireformat, LDNS_RDF_TYPE_NONE },
 	/* 15 */
-	{ TYPE_MX, "MX", 2, 2, type_mx_wireformat, RDF_TYPE_NONE },
+	{LDNS_RR_TYPE_MX, "MX", 2, 2, type_mx_wireformat, LDNS_RDF_TYPE_NONE },
 	/* 16 */
-	{ TYPE_TXT, "TXT", 1, 0, NULL, RDF_TYPE_STR },
+	{LDNS_RR_TYPE_TXT, "TXT", 1, 0, NULL, LDNS_RDF_TYPE_STR },
 	/* 17 */
-	{ TYPE_RP, "RP", 2, 2, type_rp_wireformat, RDF_TYPE_NONE },
+	{LDNS_RR_TYPE_RP, "RP", 2, 2, type_rp_wireformat, LDNS_RDF_TYPE_NONE },
 	/* 18 */
-	{ TYPE_AFSDB, "AFSDB", 2, 2, type_afsdb_wireformat, RDF_TYPE_NONE },
+	{LDNS_RR_TYPE_AFSDB, "AFSDB", 2, 2, type_afsdb_wireformat, LDNS_RDF_TYPE_NONE },
 	/* 19 */
-	{ TYPE_X25, "X25", 1, 1, type_x25_wireformat, RDF_TYPE_NONE },
+	{LDNS_RR_TYPE_X25, "X25", 1, 1, type_x25_wireformat, LDNS_RDF_TYPE_NONE },
 	/* 20 */
-	{ TYPE_ISDN, "ISDN", 1, 2, type_isdn_wireformat, RDF_TYPE_NONE },
+	{LDNS_RR_TYPE_ISDN, "ISDN", 1, 2, type_isdn_wireformat, LDNS_RDF_TYPE_NONE },
 	/* 21 */
-	{ TYPE_RT, "RT", 2, 2, type_rt_wireformat, RDF_TYPE_NONE },
+	{LDNS_RR_TYPE_RT, "RT", 2, 2, type_rt_wireformat, LDNS_RDF_TYPE_NONE },
 	/* 22 */
-	{ TYPE_NSAP, "NSAP", 1, 1, type_0_wireformat, RDF_TYPE_NONE },
+	{LDNS_RR_TYPE_NSAP, "NSAP", 1, 1, type_0_wireformat, LDNS_RDF_TYPE_NONE },
 	/* 23 */
-	{ 23, NULL, 1, 1, type_0_wireformat, RDF_TYPE_NONE },
+	{ 23, NULL, 1, 1, type_0_wireformat, LDNS_RDF_TYPE_NONE },
 	/* 24 */
-	{ TYPE_SIG, "SIG", 9, 9, type_sig_wireformat, RDF_TYPE_NONE },
+	{LDNS_RR_TYPE_SIG, "SIG", 9, 9, type_sig_wireformat, LDNS_RDF_TYPE_NONE },
 	/* 25 */
-	{ TYPE_KEY, "KEY", 4, 4, type_key_wireformat, RDF_TYPE_NONE },
+	{LDNS_RR_TYPE_KEY, "KEY", 4, 4, type_key_wireformat, LDNS_RDF_TYPE_NONE },
 	/* 26 */
-	{ TYPE_PX, "PX", 3, 3, type_px_wireformat, RDF_TYPE_NONE },
+	{LDNS_RR_TYPE_PX, "PX", 3, 3, type_px_wireformat, LDNS_RDF_TYPE_NONE },
 	/* 27 */
-	{ 27, NULL, 1, 1, type_0_wireformat, RDF_TYPE_NONE },
+	{ 27, NULL, 1, 1, type_0_wireformat, LDNS_RDF_TYPE_NONE },
 	/* 28 */
-	{ TYPE_AAAA, "AAAA", 1, 1, type_aaaa_wireformat, RDF_TYPE_NONE },
+	{LDNS_RR_TYPE_AAAA, "AAAA", 1, 1, type_aaaa_wireformat, LDNS_RDF_TYPE_NONE },
 	/* 29 */
-	{ TYPE_LOC, "LOC", 1, 1, type_loc_wireformat, RDF_TYPE_NONE },
+	{LDNS_RR_TYPE_LOC, "LOC", 1, 1, type_loc_wireformat, LDNS_RDF_TYPE_NONE },
 	/* 30 */
-	{ TYPE_NXT, "NXT", 2, 2, type_nxt_wireformat, RDF_TYPE_NONE },
+	{LDNS_RR_TYPE_NXT, "NXT", 2, 2, type_nxt_wireformat, LDNS_RDF_TYPE_NONE },
 	/* 31 */
-	{ 31, NULL, 1, 1, type_0_wireformat, RDF_TYPE_NONE },
+	{ 31, NULL, 1, 1, type_0_wireformat, LDNS_RDF_TYPE_NONE },
 	/* 32 */
-	{ 32, NULL, 1, 1, type_0_wireformat, RDF_TYPE_NONE },
+	{ 32, NULL, 1, 1, type_0_wireformat, LDNS_RDF_TYPE_NONE },
 	/* 33 */
-	{ TYPE_SRV, "SRV", 4, 4, type_srv_wireformat, RDF_TYPE_NONE },
+	{LDNS_RR_TYPE_SRV, "SRV", 4, 4, type_srv_wireformat, LDNS_RDF_TYPE_NONE },
 	/* 34 */
-	{ 34, NULL, 1, 1, type_0_wireformat, RDF_TYPE_NONE },
+	{ 34, NULL, 1, 1, type_0_wireformat, LDNS_RDF_TYPE_NONE },
 	/* 35 */
-	{ TYPE_NAPTR, "NAPTR", 6, 6, type_naptr_wireformat, RDF_TYPE_NONE },
+	{LDNS_RR_TYPE_NAPTR, "NAPTR", 6, 6, type_naptr_wireformat, LDNS_RDF_TYPE_NONE },
 	/* 36 */
-	{ TYPE_KX, "KX", 2, 2, type_kx_wireformat, RDF_TYPE_NONE },
+	{LDNS_RR_TYPE_KX, "KX", 2, 2, type_kx_wireformat, LDNS_RDF_TYPE_NONE },
 	/* 37 */
-	{ TYPE_CERT, "CERT", 4, 4, type_cert_wireformat, RDF_TYPE_NONE },
+	{LDNS_RR_TYPE_CERT, "CERT", 4, 4, type_cert_wireformat, LDNS_RDF_TYPE_NONE },
 	/* 38 */
-	{ 38, NULL, 1, 1, type_0_wireformat, RDF_TYPE_NONE },
+	{ 38, NULL, 1, 1, type_0_wireformat, LDNS_RDF_TYPE_NONE },
 	/* 39 */
-	{ TYPE_DNAME, "DNAME", 1, 1, type_dname_wireformat, RDF_TYPE_NONE },
+	{LDNS_RR_TYPE_DNAME, "DNAME", 1, 1, type_dname_wireformat, LDNS_RDF_TYPE_NONE },
 	/* 40 */
-	{ 40, NULL, 1, 1, type_0_wireformat, RDF_TYPE_NONE },
+	{ 40, NULL, 1, 1, type_0_wireformat, LDNS_RDF_TYPE_NONE },
 	/* 41 */
-	{ TYPE_OPT, "OPT", 1, 1, type_0_wireformat, RDF_TYPE_NONE },
+	{LDNS_RR_TYPE_OPT, "OPT", 1, 1, type_0_wireformat, LDNS_RDF_TYPE_NONE },
 	/* 42 */
-	{ TYPE_APL, "APL", 0, 0, NULL, RDF_TYPE_APL },
+	{LDNS_RR_TYPE_APL, "APL", 0, 0, NULL, LDNS_RDF_TYPE_APL },
 	/* 43 */
-	{ TYPE_DS, "DS", 4, 4, type_ds_wireformat, RDF_TYPE_NONE },
+	{LDNS_RR_TYPE_DS, "DS", 4, 4, type_ds_wireformat, LDNS_RDF_TYPE_NONE },
 	/* 44 */
-	{ TYPE_SSHFP, "SSHFP", 3, 3, type_sshfp_wireformat, RDF_TYPE_NONE },
+	{LDNS_RR_TYPE_SSHFP, "SSHFP", 3, 3, type_sshfp_wireformat, LDNS_RDF_TYPE_NONE },
 	/* 45 */
-	{ 45, NULL, 1, 1, type_0_wireformat, RDF_TYPE_NONE },
+	{ 45, NULL, 1, 1, type_0_wireformat, LDNS_RDF_TYPE_NONE },
 	/* 46 */
-	{ TYPE_RRSIG, "RRSIG", 9, 9, type_rrsig_wireformat, RDF_TYPE_NONE },
+	{LDNS_RR_TYPE_RRSIG, "RRSIG", 9, 9, type_rrsig_wireformat, LDNS_RDF_TYPE_NONE },
 	/* 47 */
-	{ TYPE_NSEC, "NSEC", 2, 2, type_nsec_wireformat, RDF_TYPE_NONE },
+	{LDNS_RR_TYPE_NSEC, "NSEC", 2, 2, type_nsec_wireformat, LDNS_RDF_TYPE_NONE },
 	/* 48 */
-	{ TYPE_DNSKEY, "DNSKEY", 4, 4, type_dnskey_wireformat, RDF_TYPE_NONE }
+	{LDNS_RR_TYPE_DNSKEY, "DNSKEY", 4, 4, type_dnskey_wireformat, LDNS_RDF_TYPE_NONE }
 };
 
 #define RDATA_FIELD_DESCRIPTORS_COUNT \
@@ -333,7 +333,7 @@ ldns_rr_descriptor_minimum(ldns_rr_descriptor *descriptor)
 size_t
 ldns_rr_descriptor_maximum(ldns_rr_descriptor *descriptor)
 {
-	if (descriptor->_variable != RDF_TYPE_NONE) {
+	if (descriptor->_variable != LDNS_RDF_TYPE_NONE) {
 		/* XXX: Should really be SIZE_MAX... bad FreeBSD.  */
 		return UINT_MAX;
 	} else {
@@ -347,7 +347,7 @@ ldns_rr_descriptor_field_type(ldns_rr_descriptor *descriptor,
 {
 	assert(descriptor != NULL);
 	assert(index < descriptor->_maximum
-	       || descriptor->_variable != RDF_TYPE_NONE);
+	       || descriptor->_variable != LDNS_RDF_TYPE_NONE);
 	if (index < descriptor->_maximum) {
 		return descriptor->_wireformat[index];
 	} else {
