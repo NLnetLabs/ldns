@@ -33,7 +33,7 @@
  * \return ldns_status
  */
 ldns_status
-ldns_conv_int16(ldns_rdf **rd, const uint8_t *shortstr)
+ldns_str2rdf_int16(ldns_rdf **rd, const uint8_t *shortstr)
 {
 	char *end = NULL;    
 	uint16_t *r;
@@ -57,7 +57,7 @@ ldns_conv_int16(ldns_rdf **rd, const uint8_t *shortstr)
  * \return ldns_status
  */
 ldns_status
-ldns_conv_time(ldns_rdf **rd, const uint8_t *time)
+ldns_str2rdf_time(ldns_rdf **rd, const uint8_t *time)
 {
 	/* convert a time YYHM to wireformat */
 	uint16_t *r = NULL;
@@ -85,7 +85,7 @@ ldns_conv_time(ldns_rdf **rd, const uint8_t *time)
  * \return ldns_status
  */
 ldns_status 
-ldns_conv_int32(ldns_rdf **rd, const uint8_t *longstr)
+ldns_str2rdf_int32(ldns_rdf **rd, const uint8_t *longstr)
 {
 	char *end;  
 	uint16_t *r = NULL;
@@ -111,7 +111,7 @@ ldns_conv_int32(ldns_rdf **rd, const uint8_t *longstr)
  * \return ldns_status
  */
 ldns_status
-ldns_conv_int8(ldns_rdf **rd, const uint8_t *bytestr)
+ldns_str2rdf_int8(ldns_rdf **rd, const uint8_t *bytestr)
 {
 	char *end;     
 	uint8_t *r = NULL;
@@ -135,8 +135,8 @@ ldns_conv_int8(ldns_rdf **rd, const uint8_t *bytestr)
  * \param[in] str the string to be converted
  * \return ldns_status
  */
-ldns_status 
-ldns_conv_none(ldns_rdf **rd, const uint8_t* str)
+ldns_status
+ldns_str2rdf_dname(ldns_rdf **rd, const uint8_t* str)
 {
 	return LDNS_STATUS_OK;
 }
@@ -148,7 +148,7 @@ ldns_conv_none(ldns_rdf **rd, const uint8_t* str)
  * \return ldns_status
  */
 ldns_status
-ldns_conv_dname(ldns_rdf **rd, const uint8_t* str)
+ldns_str2rdf_a(ldns_rdf **rd, const uint8_t* str)
 {
 	return LDNS_STATUS_OK;
 }
@@ -160,7 +160,7 @@ ldns_conv_dname(ldns_rdf **rd, const uint8_t* str)
  * \return ldns_status
  */
 ldns_status
-ldns_conv_a(ldns_rdf **rd, const uint8_t* str)
+ldns_str2rdf_aaaa(ldns_rdf **rd, const uint8_t* str)
 {
 	return LDNS_STATUS_OK;
 }
@@ -172,7 +172,7 @@ ldns_conv_a(ldns_rdf **rd, const uint8_t* str)
  * \return ldns_status
  */
 ldns_status
-ldns_conv_aaaa(ldns_rdf **rd, const uint8_t* str)
+ldns_str2rdf_str(ldns_rdf **rd, const uint8_t* str)
 {
 	return LDNS_STATUS_OK;
 }
@@ -184,7 +184,7 @@ ldns_conv_aaaa(ldns_rdf **rd, const uint8_t* str)
  * \return ldns_status
  */
 ldns_status
-ldns_conv_str(ldns_rdf **rd, const uint8_t* str)
+ldns_str2rdf_apl(ldns_rdf **rd, const uint8_t* str)
 {
 	return LDNS_STATUS_OK;
 }
@@ -196,7 +196,7 @@ ldns_conv_str(ldns_rdf **rd, const uint8_t* str)
  * \return ldns_status
  */
 ldns_status
-ldns_conv_apl(ldns_rdf **rd, const uint8_t* str)
+ldns_str2rdf_b64(ldns_rdf **rd, const uint8_t* str)
 {
 	return LDNS_STATUS_OK;
 }
@@ -208,7 +208,7 @@ ldns_conv_apl(ldns_rdf **rd, const uint8_t* str)
  * \return ldns_status
  */
 ldns_status
-ldns_conv_b64(ldns_rdf **rd, const uint8_t* str)
+ldns_str2rdf_hex(ldns_rdf **rd, const uint8_t* str)
 {
 	return LDNS_STATUS_OK;
 }
@@ -220,7 +220,7 @@ ldns_conv_b64(ldns_rdf **rd, const uint8_t* str)
  * \return ldns_status
  */
 ldns_status
-ldns_conv_hex(ldns_rdf **rd, const uint8_t* str)
+ldns_str2rdf_nsec(ldns_rdf **rd, const uint8_t* str)
 {
 	return LDNS_STATUS_OK;
 }
@@ -232,7 +232,7 @@ ldns_conv_hex(ldns_rdf **rd, const uint8_t* str)
  * \return ldns_status
  */
 ldns_status
-ldns_conv_nsec(ldns_rdf **rd, const uint8_t* str)
+ldns_str2rdf_type(ldns_rdf **rd, const uint8_t* str)
 {
 	return LDNS_STATUS_OK;
 }
@@ -244,7 +244,7 @@ ldns_conv_nsec(ldns_rdf **rd, const uint8_t* str)
  * \return ldns_status
  */
 ldns_status
-ldns_conv_type(ldns_rdf **rd, const uint8_t* str)
+ldns_str2rdf_class(ldns_rdf **rd, const uint8_t* str)
 {
 	return LDNS_STATUS_OK;
 }
@@ -256,7 +256,7 @@ ldns_conv_type(ldns_rdf **rd, const uint8_t* str)
  * \return ldns_status
  */
 ldns_status
-ldns_conv_class(ldns_rdf **rd, const uint8_t* str)
+ldns_str2rdf_cert(ldns_rdf **rd, const uint8_t* str)
 {
 	return LDNS_STATUS_OK;
 }
@@ -268,7 +268,7 @@ ldns_conv_class(ldns_rdf **rd, const uint8_t* str)
  * \return ldns_status
  */
 ldns_status
-ldns_conv_cert(ldns_rdf **rd, const uint8_t* str)
+ldns_str2rdf_alg(ldns_rdf **rd, const uint8_t* str)
 {
 	return LDNS_STATUS_OK;
 }
@@ -280,7 +280,7 @@ ldns_conv_cert(ldns_rdf **rd, const uint8_t* str)
  * \return ldns_status
  */
 ldns_status
-ldns_conv_alg(ldns_rdf **rd, const uint8_t* str)
+ldns_str2rdf_unknown(ldns_rdf **rd, const uint8_t* str)
 {
 	return LDNS_STATUS_OK;
 }
@@ -292,7 +292,7 @@ ldns_conv_alg(ldns_rdf **rd, const uint8_t* str)
  * \return ldns_status
  */
 ldns_status
-ldns_conv_unknown(ldns_rdf **rd, const uint8_t* str)
+ldns_str2rdf_tsigtime(ldns_rdf **rd, const uint8_t* str)
 {
 	return LDNS_STATUS_OK;
 }
@@ -304,7 +304,7 @@ ldns_conv_unknown(ldns_rdf **rd, const uint8_t* str)
  * \return ldns_status
  */
 ldns_status
-ldns_conv_tsigtime(ldns_rdf **rd, const uint8_t* str)
+ldns_str2rdf_service(ldns_rdf **rd, const uint8_t* str)
 {
 	return LDNS_STATUS_OK;
 }
@@ -316,7 +316,7 @@ ldns_conv_tsigtime(ldns_rdf **rd, const uint8_t* str)
  * \return ldns_status
  */
 ldns_status
-ldns_conv_service(ldns_rdf **rd, const uint8_t* str)
+ldns_str2rdf_loc(ldns_rdf **rd, const uint8_t* str)
 {
 	return LDNS_STATUS_OK;
 }
@@ -328,7 +328,7 @@ ldns_conv_service(ldns_rdf **rd, const uint8_t* str)
  * \return ldns_status
  */
 ldns_status
-ldns_conv_loc(ldns_rdf **rd, const uint8_t* str)
+ldns_str2rdf_wks(ldns_rdf **rd, const uint8_t* str)
 {
 	return LDNS_STATUS_OK;
 }
@@ -340,19 +340,7 @@ ldns_conv_loc(ldns_rdf **rd, const uint8_t* str)
  * \return ldns_status
  */
 ldns_status
-ldns_conv_wks(ldns_rdf **rd, const uint8_t* str)
-{
-	return LDNS_STATUS_OK;
-}
-
-/**
- * convert .... into wireformat
- * \param[in] rd the rdf where to put the data
- * \param[in] str the string to be converted
- * \return ldns_status
- */
-ldns_status
-ldns_conv_nsap(ldns_rdf **rd, const uint8_t* str)
+ldns_str2rdf_nsap(ldns_rdf **rd, const uint8_t* str)
 {
 	return LDNS_STATUS_OK;
 }
@@ -365,7 +353,7 @@ ldns_conv_nsap(ldns_rdf **rd, const uint8_t* str)
  * convert a hex value to wireformat
  */
 ldns_status
-zparser_conv_hex(ldns_rdf *rd, const char *hex)
+zparser_str2rdf_hex(ldns_rdf *rd, const char *hex)
 {
 	uint16_t *rd = NULL;
 	uint8_t *t;

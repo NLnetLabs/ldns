@@ -99,73 +99,72 @@ ldns_rdf_new_frm_str(const char *str, ldns_rdf_type t)
 	
 	switch(t) {
         	case LDNS_RDF_TYPE_NONE:
-			stat = ldns_conv_none(&rd, (const uint8_t*) str);
 			break;
 	        case LDNS_RDF_TYPE_DNAME:
-			stat = ldns_conv_dname(&rd, (const uint8_t*) str);
+			stat = ldns_str2rdf_dname(&rd, (const uint8_t*) str);
 			break;
         	case LDNS_RDF_TYPE_INT8:
-			stat = ldns_conv_int8(&rd, (const uint8_t*) str);
+			stat = ldns_str2rdf_int8(&rd, (const uint8_t*) str);
 			break;
         	case LDNS_RDF_TYPE_INT16:
-			stat = ldns_conv_int16(&rd, (const uint8_t*) str);
+			stat = ldns_str2rdf_int16(&rd, (const uint8_t*) str);
 			break;
 		case LDNS_RDF_TYPE_INT32:
-			stat = ldns_conv_int32(&rd, (const uint8_t*) str);
+			stat = ldns_str2rdf_int32(&rd, (const uint8_t*) str);
 			break;
 		case LDNS_RDF_TYPE_A:
-			stat = ldns_conv_a(&rd, (const uint8_t*) str);
+			stat = ldns_str2rdf_a(&rd, (const uint8_t*) str);
 			break;
         	case LDNS_RDF_TYPE_AAAA:
-			stat = ldns_conv_aaaa(&rd, (const uint8_t*) str);
+			stat = ldns_str2rdf_aaaa(&rd, (const uint8_t*) str);
 			break;
         	case LDNS_RDF_TYPE_STR:
-			stat = ldns_conv_str(&rd, (const uint8_t*) str);
+			stat = ldns_str2rdf_str(&rd, (const uint8_t*) str);
 			break;
         	case LDNS_RDF_TYPE_APL:
-			stat = ldns_conv_apl(&rd, (const uint8_t*) str);
+			stat = ldns_str2rdf_apl(&rd, (const uint8_t*) str);
 			break;
         	case LDNS_RDF_TYPE_B64:
-			stat = ldns_conv_b64(&rd, (const uint8_t*) str);
+			stat = ldns_str2rdf_b64(&rd, (const uint8_t*) str);
 			break;
         	case LDNS_RDF_TYPE_HEX:
-			stat = ldns_conv_hex(&rd, (const uint8_t*) str);
+			stat = ldns_str2rdf_hex(&rd, (const uint8_t*) str);
 			break;
         	case LDNS_RDF_TYPE_NSEC:
-			stat = ldns_conv_nsec(&rd, (const uint8_t*) str);
+			stat = ldns_str2rdf_nsec(&rd, (const uint8_t*) str);
 			break;
         	case LDNS_RDF_TYPE_TYPE:
-			stat = ldns_conv_type(&rd, (const uint8_t*) str);
+			stat = ldns_str2rdf_type(&rd, (const uint8_t*) str);
 			break;
         	case LDNS_RDF_TYPE_CLASS:
-			stat = ldns_conv_class(&rd, (const uint8_t*) str);
+			stat = ldns_str2rdf_class(&rd, (const uint8_t*) str);
 			break;
         	case LDNS_RDF_TYPE_CERT:
-			stat = ldns_conv_cert(&rd, (const uint8_t*) str);
+			stat = ldns_str2rdf_cert(&rd, (const uint8_t*) str);
 			break;
         	case LDNS_RDF_TYPE_ALG:
-			stat = ldns_conv_alg(&rd, (const uint8_t*) str);
+			stat = ldns_str2rdf_alg(&rd, (const uint8_t*) str);
 			break;
         	case LDNS_RDF_TYPE_UNKNOWN:
-			stat = ldns_conv_unknown(&rd, (const uint8_t*) str);
+			stat = ldns_str2rdf_unknown(&rd, (const uint8_t*) str);
 			break;
         	case LDNS_RDF_TYPE_TIME:
-			stat = ldns_conv_time(&rd, (const uint8_t*) str);
+			stat = ldns_str2rdf_time(&rd, (const uint8_t*) str);
 			break;
         	case LDNS_RDF_TYPE_TSIGTIME:
-			stat = ldns_conv_tsigtime(&rd, (const uint8_t*) str);
+			stat = ldns_str2rdf_tsigtime(&rd, (const uint8_t*) str);
 			break;
        		case LDNS_RDF_TYPE_SERVICE:
-			stat = ldns_conv_service(&rd, (const uint8_t*) str);
+			stat = ldns_str2rdf_service(&rd, (const uint8_t*) str);
 			break;
         	case LDNS_RDF_TYPE_LOC:
-			stat = ldns_conv_loc(&rd, (const uint8_t*) str);
+			stat = ldns_str2rdf_loc(&rd, (const uint8_t*) str);
 			break;
         	case LDNS_RDF_TYPE_WKS:
-			stat = ldns_conv_wks(&rd, (const uint8_t*) str);
+			stat = ldns_str2rdf_wks(&rd, (const uint8_t*) str);
 			break;
        	 	case LDNS_RDF_TYPE_NSAP:
-			stat = ldns_conv_nsap(&rd, (const uint8_t*) str);
+			stat = ldns_str2rdf_nsap(&rd, (const uint8_t*) str);
 			break;
 		default:
 			/* default default ??? */
