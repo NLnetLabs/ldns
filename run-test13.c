@@ -32,17 +32,23 @@ main(int argc, char **argv)
 	if (RR) {
 		ldns_rr_print(stdout, RR);
 		printf("\n");
+	} else {
+		abort();
 	}
 	RR = ldns_rr_new_frm_str("miek.nl.   3600   IN   MX  (\n\t10\n\telektron.atoom.net.\n\t)");
 	if (RR) {
 		ldns_rr_print(stdout, RR);
 		printf("\n");
+	} else {
+		abort();
 	}
 	RR = ldns_rr_new_frm_str(" nlnetlabs.nl.           84236   IN      DNSKEY  257 3 5 AQPzzTWMz8qSWIQlfRnPckx2BiVmkVN6LPupO3mbz7FhLSnm26n6iG9NLby97Ji453aWZY3M5/xJBSOS2vWtco2t8C0+xeO1bc/d6ZTy32DHchpW6rDH1vp86Ll+ha0tmwyy9QP7y2bVw5zSbFCrefk8qCUBgfHm9bHzMG1UBYtEIQ==");
 
 	if (RR) {
 		ldns_rr_print(stdout, RR);
 		printf("\n");
+	} else {
+		abort();
 	}
 
 	printf("\n*** Okay, now the real dnssec testing ***\n\n");
@@ -58,6 +64,8 @@ main(int argc, char **argv)
 	if (rrset) {
 		ldns_rr_list_print(stdout,rrset);
 		printf("\n");
+	} else {
+		abort();
 	}
 	ldns_rr_set_push_rr(rrset2, ldns_rr_new_frm_str("www.nlnetlabs.nl.   86354  IN  A        213.154.224.2"));
 	ldns_rr_list_print(stdout,rrset2);
@@ -67,6 +75,8 @@ main(int argc, char **argv)
 	if (sig) {
 		ldns_rr_print(stdout,sig);
 		printf("\n");
+	} else {
+		abort();
 	}
 
 	/* try to verify some things */

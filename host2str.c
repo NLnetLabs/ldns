@@ -156,8 +156,20 @@ ldns_rdf2buffer_str_int32(ldns_buffer *output, ldns_rdf *rdf)
 ldns_status
 ldns_rdf2buffer_str_time(ldns_buffer *output, ldns_rdf *rdf)
 {
-	uint32_t data = read_uint32(ldns_rdf_data(rdf));
-	ldns_buffer_printf(output, "%lu", (unsigned long) data);
+	uint32_t data;
+	struct tm *tm;
+	time_t t;
+	char *st;
+
+	data = read_uint32(ldns_rdf_data(rdf));
+	
+	t = (time_t) data;
+	tm = gmtime(&t);
+	st = XMALLOC(char, 15);
+	
+	(void)strftime(st, 15, "%Y%m%d%H%M%S", tm);
+	ldns_buffer_printf(output, "%s", st);
+	FREE(st);
 	return ldns_buffer_status(output);
 }
 
