@@ -408,38 +408,6 @@ ldns_key_buf2rsa(ldns_buffer *key)
 	return rsa;
 }
 
-/**
- * sign the rrset with all the keys.
- * \param[in] rrset the rrset to sign
- * \param[in] keys the keys to use for the signing
- * \return the signatures created
- */
-ldns_rr_list *
-ldns_sign(ldns_rr_list *ATTR_UNUSED(rrset), ldns_rr_list *ATTR_UNUSED(keys))
-{
-	/* how to sign
-	 * - create the correct openSSL keys from the keys
-	 * - sort and extract the original ttl from the rrset
-	 * - type covered, labels, wildcards?!?!
-	 * - inception, expiration?!?!
-	 *
-	 *  signature = sign(RRSIG_RDATA | RR(1) | RR(2)... ) 
-	 */
-
-	/* create a hash and sign that??? */
-#if 0
-	        int RSA_sign(NID_sha1 | NID_md5, unsigned char *m, unsigned int m_len,
-           unsigned char *sigret, unsigned int *siglen, RSA *rsa);
-
-        int    DSA_sign(int type, const unsigned char *dgst, int len,
-			                       unsigned char *sigret, unsigned int *siglen, DSA *dsa);
-#endif 
-
-	/* convert the sigstuff to base64 ... */
-
-	return NULL;
-}
-
 ldns_rdf *
 ldns_create_tsig_mac(
 	ldns_pkt *pkt,
@@ -774,8 +742,7 @@ ldns_sign_public(ldns_rr_list *rrset, ldns_key_list *keys)
 	signatures = ldns_rr_list_new();
 
 	/* prepare a signature and add all the know data
-	 * prepare the rrset
-	 * sign this together
+	 * prepare the rrset. Sign this together
 	 */
 	rrset_clone = ldns_rr_list_deep_clone(rrset);
 
@@ -795,15 +762,30 @@ ldns_sign_public(ldns_rr_list *rrset, ldns_key_list *keys)
 		current_sig = ldns_rr_new();
 		orig_ttl = ldns_key_ttl(current_key);
 
-
 		/* set the ttl from the priv key on the rrset */
 		for (i = 0; i < ldns_rr_list_rr_count(rrset); i++) {
 			ldns_rr_set_ttl(
 					ldns_rr_list_rr(rrset_clone, i),
 					orig_ttl);
 		}
+		/* fill in what we now of the signature */
+
+		
+		/* right now, we have: a key, a semi-sig and an rrset */
+
+
+		
 
 	}
+
+#if 0
+	        int RSA_sign(NID_sha1 | NID_md5, unsigned char *m, unsigned int m_len,
+           unsigned char *sigret, unsigned int *siglen, RSA *rsa);
+
+        int    DSA_sign(int type, const unsigned char *dgst, int len,
+			                       unsigned char *sigret, unsigned int *siglen, DSA *dsa);
+#endif 
+
 
 	
 	return NULL;
