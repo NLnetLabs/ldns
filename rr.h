@@ -141,7 +141,7 @@ struct type_struct_rr
 	t_class		_klass;	
 	/* everything in the rdata is in network order */
 	/** \brief The list of rdata's */
-	t_rdata_field	**rdata_fields;
+	t_rdata_field	**_rdata_fields;
 };
 typedef struct type_struct_rr t_rr;
 

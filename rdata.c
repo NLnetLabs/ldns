@@ -54,10 +54,10 @@ rd_field_set_type(t_rdata_field *rd, t_rd_type t)
 }
 
 void
-rd_field_set_data(t_rdata_field *rd, uint8_t *d, uint16_t s)
+rd_field_set_data(t_rdata_field *rd, uint8_t *d)
 {
-	XMALLOC(rd->_data, uint8_t, s);
-	memcpy(rd->_data, d, s);
+	/* only copy the pointer */
+	rd->_data = d;
 }
 
 /**
@@ -74,7 +74,7 @@ rd_field_new(uint16_t s, t_rd_type t, uint8_t *d)
 
 	rd_field_set_size(rd, s);
 	rd_field_set_type(rd, t);
-	rd_field_set_data(rd, d, s);
+	rd_field_set_data(rd, d);
 
 	return(rd);
 }
@@ -83,23 +83,11 @@ rd_field_new(uint16_t s, t_rd_type t, uint8_t *d)
  * Allocate a new t_rdata_field from
  * a NULL terminated string
  * and return it
- *
- * uint8_t == char?  XXX 
  */
 t_rdata_field *
 rd_field_new_frm_string(t_rd_type t, char *s)
 {
-	t_rdata_field *new;
-	MALLOC(new, t_rdata_field);
-
-	if (!new)
-		return NULL;
-
-	rd_field_set_size(new, (uint16_t)strlen(s));
-	rd_field_set_type(new, t);
-	rd_field_set_data(new, (uint8_t*) s, (uint16_t)strlen(s));
-
-	return(new);
+	return NULL;
 }
 
 void rd_field_destroy(t_rdata_field *rd)

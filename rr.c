@@ -29,7 +29,7 @@ rr_new(void)
                 return NULL;
 
 	rr_set_rd_count(rr, 0);
-	rr->rdata_fields = NULL; /* XXX */
+	rr->_rdata_fields = NULL; /* XXX */
         return(rr);
 }
 
@@ -81,10 +81,10 @@ rr_push_rd_field(t_rr *rr, t_rdata_field *f)
 	rd_count = rr_rd_count(rr);
 	
 	/* grow the array */
-	XREALLOC(rr->rdata_fields, t_rdata_field *, rd_count + 1);
+	XREALLOC(rr->_rdata_fields, t_rdata_field *, rd_count + 1);
 
 	/* add the new member */
-	rr->rdata_fields[rd_count] = f;
+	rr->_rdata_fields[rd_count] = f;
 
 	rr_set_rd_count(rr, rd_count + 1);
 }
