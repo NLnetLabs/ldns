@@ -86,25 +86,20 @@ ldns_send(ldns_resolver *r, ldns_pkt *query_pkt)
 	for (i = 0; i < ldns_resolver_nameserver_count(r); i++) {
 
 		ns = ldns_rdf2native_sockaddr_storage(ns_array[i]);
-		ns_len = (socklen_t) ldns_rdf_size(ns_array[i]);
 
-		/* additional struct data 
-		 * todo: how to determine this value?
-		 */
-		ns_len += 12;
-		printf("sockaddr_storage size %d\n", sizeof(struct sockaddr_storage));
-		printf("sockaddr_storage size %d\n", sizeof(struct sockaddr_in));
 		/* setup some family specific stuff */
 		switch(ns->ss_family) {
 
 			case AF_INET:
 				ns4 = (struct sockaddr_in*) ns;
 				ns4->sin_port = htons(ldns_resolver_port(r));
+				ns_len = sizeof(struct sockaddr_in);
 				printf("port %d\n", ntohs(ns4->sin_port));
 				break;
 			case AF_INET6:
 				ns6 = (struct sockaddr_in6*) ns;
 				ns6->sin6_port = htons(ldns_resolver_port(r));
+				ns_len = sizeof(struct sockaddr_in6);
 				printf("port %d\n", ntohs(ns6->sin6_port));
 				break;
 		}
