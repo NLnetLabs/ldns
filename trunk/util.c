@@ -19,9 +19,14 @@ void *
 xmalloc(size_t s)
 {
 	void *p;
-	
 	p = (void*)malloc(s);
+	return p;
+}
 
+void *
+xrealloc(void *p, size_t s)
+{
+	p = (void*)realloc(p, s);
 	return p;
 }
 

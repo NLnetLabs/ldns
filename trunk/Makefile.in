@@ -17,7 +17,7 @@ LIBS 		= @LIBS@
 #INSTALL = $(srcdir)/install-sh -c
 #INSTALL_PROGRAM = $(INSTALL)
 
-LIBDNS_SOURCES=rdata.c util.c
+LIBDNS_SOURCES=rdata.c util.c rr.c
 LIBDNS_HEADERS=rdata.h prototype.h rr.h packet.h
 LIBDNS_OBJECTS=$(LIBDNS_SOURCES:.c=.o)
 
