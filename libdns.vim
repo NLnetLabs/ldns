@@ -18,7 +18,6 @@ syn keyword  ldnsType           ldns_hdr
 syn keyword  ldnsType           ldns_pkt
 syn keyword  ldnsType           ldns_status
 syn keyword  ldnsType           ldns_rrset
-syn keyword  ldnsType           ldns_class
 syn keyword  ldnsType           ldns_dname
 syn keyword  ldnsConstant       true
 syn keyword  ldnsConstant       false

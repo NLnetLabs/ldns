@@ -87,7 +87,7 @@ struct ldns_struct_rdf
 typedef struct ldns_struct_rdf ldns_rdf;
 
 /**
- * \brief Resource record data for dname's
+ * \brief type to hold dname's
  *
  * The data is a network ordered array of bytes, which size is specified by
  * the (16-bit) size field. It is always of the LDNS_RDF_TYPE_DNAME

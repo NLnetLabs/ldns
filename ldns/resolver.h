@@ -16,6 +16,7 @@
 #include <ldns/error.h>
 #include <ldns/common.h>
 #include <ldns/rr.h>
+#include <ldns/rdata.h>
 #include <ldns/packet.h>
 
 /**
@@ -79,7 +80,6 @@ void ldns_resolver_set_searchlist(ldns_resolver *, ldns_rdf *);
 ldns_pkt * ldns_search();
 ldns_pkt * ldns_query();
 ldns_pkt * ldns_bgsend();
-p
-ldns_pkt * ldns_send(ldns_resolver *, uint8_t*, uint8_t*, uint8_t*);
+ldns_pkt * ldns_send(ldns_resolver *, ldns_dname*, ldns_rr_type *, ldns_rr_class*);
 
 #endif  /* !_LDNS_RESOLVER_H */
