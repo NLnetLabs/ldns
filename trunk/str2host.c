@@ -189,7 +189,7 @@ ldns_str2rdf_dname(ldns_rdf **d, const char *str)
 	
 	/* root label */
 	if (1 == len) {
-		*d = ldns_rdf_new_frm_data(LDNS_RDF_TYPE_DNAME, 1, "."); 
+		*d = ldns_rdf_new_frm_data(LDNS_RDF_TYPE_DNAME, 1, "\0"); 
 		return LDNS_STATUS_OK;
 	}
 
@@ -245,7 +245,7 @@ ldns_str2rdf_dname(ldns_rdf **d, const char *str)
 	}
 
 	/* add root label if last char was not '.' */
-	if (str[strlen(str)-1] != '.') {
+	if (str[strlen(str)-1] != '\0') {
 		len += label_len + 1;
 		*pq = label_len;
 		*q = 0;
