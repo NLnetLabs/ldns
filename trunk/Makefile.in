@@ -12,6 +12,7 @@ CPPFLAGS	= @CPPFLAGS@ @DEFS@ -I. -I$(srcdir)
 CFLAGS 		= @CFLAGS@
 LDFLAGS		= @LDFLAGS@
 LIBS 		= @LIBS@
+LIBOBJS		= @LIBOBJS@
 
 LINT		= splint
 LINTFLAGS	= +quiet +posixlib -weak -warnposix -unrecog -Din_addr_t=uint32_t -Du_int=unsigned -Du_char=uint8_t 
@@ -75,6 +76,18 @@ lint:
 	for i in $(ALL_SOURCES); do \
 		$(LINT) $(LINTFLAGS) -I. -I$(srcdir) $(srcdir)/$$i ; \
 	done
+
+timegm$U.o:	compat/timegm.c
+	$(COMPILE) -c compat/timegm.c -o $@
+
+b64_pton$U.o:	compat/b64_pton.c
+	$(COMPILE) -c compat/b64_pton.c -o $@
+
+b64_ntop$U.o:	compat/b64_ntop.c
+	$(COMPILE) -c compat/b64_ntop.c -o $@
+
+malloc$U.o:	compat/malloc.c
+	$(COMPILE) -c compat/malloc.c -o $@
 
 # Automatic dependencies.
 %.d: $(srcdir)/%.c
