@@ -171,7 +171,7 @@ ldns_resolver_push_nameserver_rr(ldns_resolver *r, ldns_rr *rr)
 		return LDNS_STATUS_ERR;
 	}
 
-	address = ldns_rr_rdf(rr, 0); /* extra the ip number */
+	address = ldns_rr_rdf(rr, 0); /* extract the ip number */
 	return ldns_resolver_push_nameserver(r, address);
 }
 
