@@ -79,6 +79,25 @@ ldns_resolver_nameserver_count(ldns_resolver *r)
 	return r->_nameserver_count;
 }
 
+uint8_t
+ldns_resolver_dnssec(ldns_resolver *r)
+{
+	return r->_dnssec;
+}
+
+uint8_t
+ldns_resolver_igntc(ldns_resolver *r)
+{
+	return r->_igntc;
+}
+
+uint8_t
+ldns_resolver_usevc(ldns_resolver *r)
+{
+	return r->_usevc;
+}
+
+
 /* write */
 void
 ldns_resolver_set_port(ldns_resolver *r, uint16_t p)
@@ -124,6 +143,12 @@ ldns_resolver_set_debug(ldns_resolver *r, uint8_t d)
 	r->_debug = d;
 }
 
+void 
+ldns_resolver_set_configured(ldns_resolver *r, uint8_t c)
+{
+	r->_configured = c;
+}
+
 ldns_status
 ldns_resolver_set_domain(ldns_resolver *r, ldns_rdf *d)
 {
@@ -137,24 +162,6 @@ ldns_resolver_push_searchlist(ldns_resolver *r, ldns_rdf *d)
 {
 	r->_searchlist[++r->_searchlist_count] = d;
 	return LDNS_STATUS_OK;
-}
-
-uint8_t
-ldns_resolver_dnssec(ldns_resolver *r)
-{
-	return r->_dnssec;
-}
-
-uint8_t
-ldns_resolver_igntc(ldns_resolver *r)
-{
-	return r->_igntc;
-}
-
-uint8_t
-ldns_resolver_usevc(ldns_resolver *r)
-{
-	return r->_usevc;
 }
 
 /* more sophisticated functions */
@@ -234,6 +241,9 @@ ldns_resolver_send(ldns_resolver *r, ldns_rdf *name, ldns_rr_type type, ldns_rr_
 	/* prepare a question pkt from the parameters
 	 * and then send this */
 	query_pkt = ldns_pkt_query_new(name, type, class);
+	if (!query_pkt) {
+		printf("Failed to generate pkt\n");
+	}
 
 	/* return NULL on error */
 	answer_pkt = ldns_send(*r, query_pkt);
