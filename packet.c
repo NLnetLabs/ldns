@@ -382,7 +382,6 @@ ldns_pkt_query_new(ldns_rdf *rr_name, ldns_rr_type rr_type, ldns_rr_class rr_cla
 {
 	ldns_pkt *packet;
 	ldns_rr *question_rr;
-	ldns_rdf *name_rdf;
 
 	packet = ldns_pkt_new();
 	if (!packet) {
