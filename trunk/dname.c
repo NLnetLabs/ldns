@@ -109,8 +109,7 @@ ldns_rdf_dname_label_count(ldns_rdf *r)
 ldns_rdf *
 ldns_dname_new_frm_str(const char *str)
 {
-	return 
-		ldns_rdf_new_frm_str(str, LDNS_RDF_TYPE_DNAME);
+	return ldns_rdf_new_frm_str(LDNS_RDF_TYPE_DNAME, str);
 }
 
 /**

@@ -168,8 +168,9 @@ ldns_rr_new_frm_str(const char *str)
 	printf("tot rd [%s]\n", rdata);
 #endif
 	for(rd = strtok(rdata, "\t \0"), r_cnt =0; rd; rd = strtok(NULL, "\t \0"), r_cnt++) {
-		r = ldns_rdf_new_frm_str(rd,
-				ldns_rr_descriptor_field_type(desc, r_cnt));
+		r = ldns_rdf_new_frm_str(
+			ldns_rr_descriptor_field_type(desc, r_cnt),
+			rd);
 #ifdef DEBUG
 		printf("rd str [%s] %d\n", rd, r_cnt);
 #endif

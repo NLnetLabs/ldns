@@ -50,7 +50,7 @@ main(int argc, char **argv)
 	ldns_resolver_set_defnames(res, true); /* use the suffix */
 #endif
 
-        nameserver  = ldns_rdf_new_frm_str(server_ip, LDNS_RDF_TYPE_A);
+        nameserver  = ldns_rdf_new_frm_str(LDNS_RDF_TYPE_A, server_ip);
 	if (!nameserver) {
 		printf("Bad server ip\n");
 		return 1;
