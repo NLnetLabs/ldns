@@ -21,7 +21,8 @@
 #include "util.h"
 
 ssize_t
-ldns_get_keyword_data(FILE *f, const char *keyword, const char *k_del, char *data, const char *d_del)
+ldns_get_keyword_data(FILE *f, const char *keyword, const char *k_del, char *data, 
+		const char *d_del)
 {
 	/* we assume: keyword|sep|data */
 	char *fkeyword;
@@ -46,6 +47,23 @@ ldns_get_keyword_data(FILE *f, const char *keyword, const char *k_del, char *dat
 	}
 }
 
+/* walk along the file until you get a hit */
+ssize_t
+ldns_get_all_keyword_data(FILE *f, const char *keyword, const char *k_del, char *data,
+		const char *d_del)
+{
+	while (ldns_get_keyword_data(f, keyword, k_del, data, d_del) == -1) {
+		/* improve ldns_get_keyword_data */
+	
+		/* do something here and a walk through the file */
+	}
+	/* reset for next call, this function is rather expensive, as
+	 * for multiple keywords, it walks the file multiple time. But must
+	 * files are small
+	 */
+	rewind(f);
+	return 0;
+}
 
 ssize_t
 ldns_get_token(FILE *f, char *token, const char *delim)
