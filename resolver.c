@@ -13,14 +13,7 @@
 #include <config.h>
 #include <stdio.h>
 
-#include <ldns/rdata.h>
-#include <ldns/error.h>
-#include <ldns/resolver.h>
-#include <ldns/rdata.h>
-#include <ldns/net.h>
-#include <ldns/host2str.h>
-#include <ldns/dns.h>
-#include <ldns/dname.h>
+#include <ldns/ldns.h>
 
 #include <strings.h>
 

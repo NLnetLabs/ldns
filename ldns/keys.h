@@ -20,6 +20,22 @@
 
 extern ldns_lookup_table ldns_signing_algorithms[];
 
+/**
+ * algorigthms used in dns
+ */
+enum ldns_enum_algorithm
+{
+        LDNS_RSAMD5             = 1,
+        LDNS_DH                 = 2,
+        LDNS_DSA                = 3,
+        LDNS_ECC                = 4,
+        LDNS_RSASHA1            = 5,
+        LDNS_INDIRECT           = 252,
+        LDNS_PRIVATEDNS         = 253,
+        LDNS_PRIVATEOID         = 254
+};
+typedef enum ldns_enum_algorithm ldns_algorithm;
+
 enum ldns_enum_signing_algorithm
 {
 	LDNS_SIGN_RSAMD5	 = LDNS_RSAMD5,
