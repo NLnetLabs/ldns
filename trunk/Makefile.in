@@ -20,7 +20,7 @@ LINTFLAGS	= +quiet +posixlib -weak -warnposix -unrecog
 #INSTALL_PROGRAM = $(INSTALL)
 
 LIBDNS_SOURCES	=	rdata.c util.c rr.c packet.c wire2host.c \
-			host2str.c buffer.c
+			host2str.c buffer.c str2host.c
 LIBDNS_HEADERS	=	ldns/error.h		\
 			ldns/packet.h		\
 			ldns/prototype.h 	\
@@ -29,8 +29,7 @@ LIBDNS_HEADERS	=	ldns/error.h		\
 			ldns/wire2host.h	\
 			ldns/host2str.h		\
 			util.h			\
-			buffer.h		\
-			buf.h
+			buffer.h	
 LIBDNS_OBJECTS	=	$(LIBDNS_SOURCES:.c=.o)
 
 ALL_SOURCES	=	run-test0.c $(LIBDNS_SOURCES)
