@@ -189,7 +189,7 @@ ldns_status
 ldns_rdf2buffer_b64(ldns_buffer *output, ldns_rdf *rdf)
 {
 	/*ldns_buffer_printf(output, "%s", ldns_rdf_data(rdf));*/
-	size_t size = ldns_rdf_size(rdf) * 4 / 3;
+	size_t size = (((ldns_rdf_size(rdf) + 2) / 3) * 4) + 1;
 	char *b64 = XMALLOC(char, size);
 	if (b64_ntop(ldns_rdf_data(rdf), ldns_rdf_size(rdf), b64, size)) {
 		ldns_buffer_printf(output, "%s", b64);
@@ -432,6 +432,57 @@ ldns_rdf2buffer_wks(ldns_buffer *output, ldns_rdf *rdf)
 }
 
 ldns_status
+ldns_rdf2buffer_nsec(ldns_buffer *output, ldns_rdf *rdf)
+{
+	uint8_t window_block_nr;
+	uint8_t bitmap_length;
+	uint16_t type;
+	uint16_t pos = 0;
+	uint16_t bit_pos;
+	uint8_t *data = ldns_rdf_data(rdf);
+	const ldns_rr_descriptor *descriptor;
+	
+	while(pos < ldns_rdf_size(rdf)) {
+		window_block_nr = data[pos];
+		bitmap_length = data[pos+1];
+		pos += 2;
+		
+
+		for (bit_pos = 0; bit_pos < (bitmap_length) * 8; bit_pos++) {
+			if (get_bit(&data[pos], bit_pos)) {
+				type = 256 * (uint16_t) window_block_nr + bit_pos;
+				descriptor = ldns_rr_descript(type);
+
+				if (descriptor->_name) {
+					ldns_buffer_printf(output, "%s ", descriptor->_name);
+				} else {
+					ldns_buffer_printf(output, "TYPE%d ", type);
+				}
+			}
+		}
+		
+		pos += (uint16_t) bitmap_length;
+	}
+	
+	return ldns_buffer_status(output);
+}
+
+ldns_status
+ldns_rdf2buffer_tsigtime(ldns_buffer *output, ldns_rdf *rdf)
+{
+	/* tsigtime is 48 bits network order unsigned integer */
+	uint64_t result;
+	uint8_t tsigtime[8];
+	tsigtime[0] = 0;
+	tsigtime[1] = 0;
+	memcpy(&tsigtime[2], ldns_rdf_data(rdf), 6);
+	result = (uint64_t) tsigtime;
+	
+	ldns_buffer_printf(output, "%u ", ntohl(result));
+	return ldns_buffer_status(output);
+}
+
+ldns_status
 ldns_rdf2buffer_todo(ldns_buffer *output, ldns_rdf *rdf)
 {
 	(void) ldns_rdf_data(rdf);
@@ -464,7 +515,7 @@ ldns_rdf2buffer(ldns_buffer *buffer, ldns_rdf *rdf)
 		res = ldns_rdf2buffer_int32(buffer, rdf);
 		break;
         case LDNS_RDF_TYPE_TSIGTIME:
-                res = ldns_rdf2buffer_todo(buffer, rdf);
+                res = ldns_rdf2buffer_tsigtime(buffer, rdf);
                 break;
 	case LDNS_RDF_TYPE_A:
 		res = ldns_rdf2buffer_a(buffer, rdf);
@@ -485,7 +536,7 @@ ldns_rdf2buffer(ldns_buffer *buffer, ldns_rdf *rdf)
 		res = ldns_rdf2buffer_hex(buffer, rdf);
 		break;
 	case LDNS_RDF_TYPE_NSEC: 
-		res = ldns_rdf2buffer_todo(buffer, rdf);
+		res = ldns_rdf2buffer_nsec(buffer, rdf);
 		break;
 	case LDNS_RDF_TYPE_TYPE: 
 		res = ldns_rdf2buffer_type(buffer, rdf);
@@ -500,13 +551,10 @@ ldns_rdf2buffer(ldns_buffer *buffer, ldns_rdf *rdf)
 		res = ldns_rdf2buffer_alg(buffer, rdf);
 		break;
 	case LDNS_RDF_TYPE_UNKNOWN:
-		res = ldns_rdf2buffer_todo(buffer, rdf);
+		res = ldns_rdf2buffer_hex(buffer, rdf);
 		break;
 	case LDNS_RDF_TYPE_TIME:
 		res = ldns_rdf2buffer_time(buffer, rdf);
-		break;
-	case LDNS_RDF_TYPE_SERVICE:
-		res = ldns_rdf2buffer_todo(buffer, rdf);
 		break;
 	case LDNS_RDF_TYPE_LOC:
 		res = ldns_rdf2buffer_loc(buffer, rdf);
