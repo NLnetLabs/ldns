@@ -94,19 +94,19 @@ struct ldns_struct_rdf
 typedef struct ldns_struct_rdf ldns_rdf;
 
 /* prototypes */
-uint16_t        ldns_rdf_size(ldns_rdf *);
+uint16_t        ldns_rdf_size(const ldns_rdf *);
 void            ldns_rdf_set_size(ldns_rdf *, uint16_t);
 void            ldns_rdf_set_type(ldns_rdf *, ldns_rdf_type);
 void            ldns_rdf_set_data(ldns_rdf *, void *);
-ldns_rdf_type   ldns_rdf_get_type(ldns_rdf *);
+ldns_rdf_type   ldns_rdf_get_type(const ldns_rdf *);
 ldns_rdf	*ldns_rdf_new(uint16_t, ldns_rdf_type, void *);
 ldns_rdf	*ldns_rdf_new_frm_data(uint16_t, ldns_rdf_type, void *);
 ldns_status     ldns_octet(char *word, size_t *length);
-uint8_t         *ldns_rdf_data(ldns_rdf *);
+uint8_t         *ldns_rdf_data(const ldns_rdf *);
 void            ldns_rdf_free(ldns_rdf *);
 void            ldns_rdf_free_data(ldns_rdf *);
 ldns_rdf 	*ldns_rdf_new_frm_str(const char *, ldns_rdf_type);
 struct sockaddr_storage * ldns_rdf2native_sockaddr_storage(ldns_rdf *);
-ldns_rdf	*ldns_rdf_clone(ldns_rdf *);
+ldns_rdf	*ldns_rdf_clone(const ldns_rdf *);
 
 #endif	/* !_LDNS_RDATA_H */

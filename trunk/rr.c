@@ -155,7 +155,7 @@ ldns_rr_push_rdf(ldns_rr *rr, ldns_rdf *f)
  * \return ldns_rdf *
  */
 ldns_rdf *
-ldns_rr_rdf(ldns_rr *rr, uint16_t nr)
+ldns_rr_rdf(const ldns_rr *rr, uint16_t nr)
 {
 	if (nr < ldns_rr_rd_count(rr)) {
 		return rr->_rdata_fields[nr];
@@ -170,7 +170,7 @@ ldns_rr_rdf(ldns_rr *rr, uint16_t nr)
  * \return ldns_rdf * 
  */
 ldns_rdf *
-ldns_rr_owner(ldns_rr *rr)
+ldns_rr_owner(const ldns_rr *rr)
 {
 	return rr->_owner;
 }
@@ -179,7 +179,7 @@ ldns_rr_owner(ldns_rr *rr)
  * return the owner name of an rr structure
  */
 uint32_t
-ldns_rr_ttl(ldns_rr *rr)
+ldns_rr_ttl(const ldns_rr *rr)
 {
 	return rr->_ttl;
 }
@@ -188,7 +188,7 @@ ldns_rr_ttl(ldns_rr *rr)
  * return the rd_count of an rr structure
  */
 uint16_t
-ldns_rr_rd_count(ldns_rr *rr)
+ldns_rr_rd_count(const ldns_rr *rr)
 {
 	return rr->_rd_count;
 }
@@ -197,7 +197,7 @@ ldns_rr_rd_count(ldns_rr *rr)
  * Returns the type of the rr
  */
 ldns_rr_type
-ldns_rr_get_type(ldns_rr *rr)
+ldns_rr_get_type(const ldns_rr *rr)
 {
         return rr->_rr_type;
 }
@@ -206,7 +206,7 @@ ldns_rr_get_type(ldns_rr *rr)
  * Returns the class of the rr
  */
 ldns_rr_class
-ldns_rr_get_class(ldns_rr *rr)
+ldns_rr_get_class(const ldns_rr *rr)
 {
         return rr->_rr_class;
 }
@@ -555,7 +555,7 @@ ldns_rr_descriptor_field_type(const ldns_rr_descriptor *descriptor,
 }
 
 ldns_rr_type
-ldns_rr_get_type_by_name(char *name)
+ldns_rr_get_type_by_name(const char *name)
 {
 	unsigned int i;
 	const char *desc_name;
@@ -596,7 +596,7 @@ ldns_rr_get_type_by_name(char *name)
 }
 
 ldns_rr_class
-ldns_get_class_by_name(char *name)
+ldns_get_class_by_name(const char *name)
 {
 	ldns_lookup_table *lt;
 	
@@ -694,7 +694,7 @@ ldns_rr_compare(const ldns_rr *rr1, const ldns_rr *rr2)
  * \return size of the rr
  */
 size_t
-ldns_rr_uncompressed_size(ldns_rr *r)
+ldns_rr_uncompressed_size(const ldns_rr *r)
 {
 	size_t rrsize;
 	uint16_t i;

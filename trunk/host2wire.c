@@ -37,7 +37,7 @@ ldns_dname2buffer_wire(ldns_buffer *buffer, ldns_rdf *name)
 }
 
 ldns_status
-ldns_rdf2buffer_wire(ldns_buffer *buffer, ldns_rdf *rdf)
+ldns_rdf2buffer_wire(ldns_buffer *buffer, const ldns_rdf *rdf)
 {
 	if (ldns_buffer_reserve(buffer, ldns_rdf_size(rdf))) {
 		ldns_buffer_write(buffer,
@@ -48,7 +48,7 @@ ldns_rdf2buffer_wire(ldns_buffer *buffer, ldns_rdf *rdf)
 }
 
 ldns_status
-ldns_rr2buffer_wire(ldns_buffer *buffer, ldns_rr *rr, int section)
+ldns_rr2buffer_wire(ldns_buffer *buffer, const ldns_rr *rr, int section)
 {
 	uint16_t i;
 	uint16_t rdl_pos = 0;
@@ -139,8 +139,8 @@ ldns_rrsig2buffer_wire(ldns_buffer *buffer, ldns_rr *rr)
 /**
  * Copy the packet header data to the buffer in wire format
  */
-ldns_status
-ldns_hdr2buffer_wire(ldns_buffer *buffer, ldns_pkt *packet)
+static ldns_status
+ldns_hdr2buffer_wire(ldns_buffer *buffer, const ldns_pkt *packet)
 {
 	uint8_t flags;
 
@@ -172,7 +172,7 @@ ldns_hdr2buffer_wire(ldns_buffer *buffer, ldns_pkt *packet)
  * Copy the packet data to the buffer in wire format
  */
 ldns_status
-ldns_pkt2buffer_wire(ldns_buffer *buffer, ldns_pkt *packet)
+ldns_pkt2buffer_wire(ldns_buffer *buffer, const ldns_pkt *packet)
 {
 	ldns_rr_list *rr_list;
 	uint16_t i;
@@ -222,7 +222,7 @@ ldns_pkt2buffer_wire(ldns_buffer *buffer, ldns_pkt *packet)
  * the function also returns NULL)
  */
 uint8_t *
-ldns_rdf2wire(ldns_rdf *rdf, size_t *result_size)
+ldns_rdf2wire(const ldns_rdf *rdf, size_t *result_size)
 {
 	ldns_buffer *buffer = ldns_buffer_new(MAX_PACKETLEN);
 	uint8_t *result = NULL;
@@ -247,7 +247,7 @@ ldns_rdf2wire(ldns_rdf *rdf, size_t *result_size)
  * are not put into the result
  */
 uint8_t *
-ldns_rr2wire(ldns_rr *rr, int section, size_t *result_size)
+ldns_rr2wire(const ldns_rr *rr, int section, size_t *result_size)
 {
 	ldns_buffer *buffer = ldns_buffer_new(MAX_PACKETLEN);
 	uint8_t *result = NULL;
@@ -269,7 +269,7 @@ ldns_rr2wire(ldns_rr *rr, int section, size_t *result_size)
  * the function also returns NULL)
  */
 uint8_t *
-ldns_pkt2wire(ldns_pkt *packet, size_t *result_size)
+ldns_pkt2wire(const ldns_pkt *packet, size_t *result_size)
 {
 	ldns_buffer *buffer = ldns_buffer_new(MAX_PACKETLEN);
 	uint8_t *result2 = NULL;

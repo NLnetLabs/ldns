@@ -111,30 +111,30 @@ enum ldns_enum_pkt_type {
 typedef enum ldns_enum_pkt_type ldns_pkt_type;
 
 /* prototypes */
-uint16_t ldns_pkt_id(ldns_pkt *);
-bool ldns_pkt_qr(ldns_pkt *);
-bool ldns_pkt_aa(ldns_pkt *);
-bool ldns_pkt_tc(ldns_pkt *);
-bool ldns_pkt_rd(ldns_pkt *);
-bool ldns_pkt_cd(ldns_pkt *);
-bool ldns_pkt_ra(ldns_pkt *);
-bool ldns_pkt_ad(ldns_pkt *);
+uint16_t ldns_pkt_id(const ldns_pkt *);
+bool ldns_pkt_qr(const ldns_pkt *);
+bool ldns_pkt_aa(const ldns_pkt *);
+bool ldns_pkt_tc(const ldns_pkt *);
+bool ldns_pkt_rd(const ldns_pkt *);
+bool ldns_pkt_cd(const ldns_pkt *);
+bool ldns_pkt_ra(const ldns_pkt *);
+bool ldns_pkt_ad(const ldns_pkt *);
 bool ldns_pkt_set_flags(ldns_pkt *, uint16_t);
-uint8_t ldns_pkt_opcode(ldns_pkt *);
-uint8_t ldns_pkt_rcode(ldns_pkt *);
-uint16_t ldns_pkt_qdcount(ldns_pkt *);
-uint16_t ldns_pkt_ancount(ldns_pkt *);
-uint16_t ldns_pkt_nscount(ldns_pkt *);
-uint16_t ldns_pkt_arcount(ldns_pkt *);
-ldns_rdf *ldns_pkt_answerfrom(ldns_pkt *packet);
-char *ldns_pkt_when(ldns_pkt *packet);
-uint32_t ldns_pkt_querytime(ldns_pkt *);
-size_t ldns_pkt_size(ldns_pkt *);
+uint8_t ldns_pkt_opcode(const ldns_pkt *);
+uint8_t ldns_pkt_rcode(const ldns_pkt *);
+uint16_t ldns_pkt_qdcount(const ldns_pkt *);
+uint16_t ldns_pkt_ancount(const ldns_pkt *);
+uint16_t ldns_pkt_nscount(const ldns_pkt *);
+uint16_t ldns_pkt_arcount(const ldns_pkt *);
+ldns_rdf *ldns_pkt_answerfrom(const ldns_pkt *packet);
+char *ldns_pkt_when(const ldns_pkt *packet);
+uint32_t ldns_pkt_querytime(const ldns_pkt *);
+size_t ldns_pkt_size(const ldns_pkt *);
 
-ldns_rr_list *ldns_pkt_question(ldns_pkt *packet);
-ldns_rr_list *ldns_pkt_answer(ldns_pkt *packet);
-ldns_rr_list *ldns_pkt_authority(ldns_pkt *packet);
-ldns_rr_list *ldns_pkt_additional(ldns_pkt *packet);
+ldns_rr_list *ldns_pkt_question(const ldns_pkt *packet);
+ldns_rr_list *ldns_pkt_answer(const ldns_pkt *packet);
+ldns_rr_list *ldns_pkt_authority(const ldns_pkt *packet);
+ldns_rr_list *ldns_pkt_additional(const ldns_pkt *packet);
 
 void ldns_pkt_set_id(ldns_pkt *, uint16_t);
 void ldns_pkt_set_qr(ldns_pkt *, bool);
