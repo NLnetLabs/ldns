@@ -14,6 +14,9 @@ CFLAGS 		= @CFLAGS@ $(OURCFLAGS)
 LDFLAGS		= @LDFLAGS@
 LIBS 		= @LIBS@
 
+LINT		= splint
+LINTFLAGS	= +quiet +posixlib -weak -warnposix -unrecog
+
 #INSTALL = $(srcdir)/install-sh -c
 #INSTALL_PROGRAM = $(INSTALL)
 
@@ -57,6 +60,10 @@ docclean:
 	rm -rf doc
 
 
+lint:
+	for i in $(ALL_SOURCES); do \
+		$(LINT) $(LINTFLAGS) $(CPPFLAGS) $$i ; \
+	done
 
 # Automatic dependencies.
 %.d: %.c
