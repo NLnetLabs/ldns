@@ -183,7 +183,6 @@ main(int argc, char **argv)
 {
 	const char *file;
 	ldns_pkt *pkt;
-	ldns_buffer *buffer;
 	uint8_t *target_buf;
 	size_t len;
 	uint16_t i;
@@ -203,11 +202,8 @@ main(int argc, char **argv)
 	}
 	
 	printf("And back to wire:\n");
-	buffer = ldns_buffer_new(65535);
-	ldns_pkt2buffer_wire(buffer, pkt);
-
-	len = ldns_buffer_position(buffer);
-	target_buf = (uint8_t *) ldns_buffer_export(buffer);
+	/*buffer = ldns_buffer_new(65535);*/
+	target_buf = ldns_pkt2wire(pkt, &len);
 
 	printf("Buffer length: %u\n", len);
 	

@@ -165,4 +165,72 @@ ldns_pkt2buffer_wire(ldns_buffer *buffer, ldns_pkt *packet)
 	return LDNS_STATUS_OK;
 }
 
+/**
+ * Allocates an array of uint8_t, and puts the wireformat of the
+ * given rdf in that array. The result_size value contains the
+ * length of the array, if it succeeds, and 0 otherwise (in which case
+ * the function also returns NULL)
+ */
+uint8_t *
+ldns_rdf2wire(ldns_rdf *rdf, size_t *result_size)
+{
+	ldns_buffer *buffer = ldns_buffer_new(MAX_PACKET_SIZE);
+	uint8_t *result = NULL;
+	*result_size = 0;
+	if (ldns_rdf2buffer_wire(buffer, rdf) == LDNS_STATUS_OK) {
+		*result_size =  ldns_buffer_position(buffer);
+		result = (uint8_t *) ldns_buffer_export(buffer);
+	} else {
+		/* TODO: what about the error? */
+	}
+	ldns_buffer_free(buffer);
+	return result;
+}
+
+/**
+ * Allocates an array of uint8_t, and puts the wireformat of the
+ * given rr in that array. The result_size value contains the
+ * length of the array, if it succeeds, and 0 otherwise (in which case
+ * the function also returns NULL)
+ *
+ * If the section argument is LDNS_SECTION_QUESTION, data like ttl and rdata
+ * are not put into the result
+ */
+uint8_t *
+ldns_rr2wire(ldns_rr *rr, int section, size_t *result_size)
+{
+	ldns_buffer *buffer = ldns_buffer_new(MAX_PACKET_SIZE);
+	uint8_t *result = NULL;
+	*result_size = 0;
+	if (ldns_rr2buffer_wire(buffer, rr, section) == LDNS_STATUS_OK) {
+		*result_size =  ldns_buffer_position(buffer);
+		result = (uint8_t *) ldns_buffer_export(buffer);
+	} else {
+		/* TODO: what about the error? */
+	}
+	ldns_buffer_free(buffer);
+	return result;
+}
+
+/**
+ * Allocates an array of uint8_t, and puts the wireformat of the
+ * given packet in that array. The result_size value contains the
+ * length of the array, if it succeeds, and 0 otherwise (in which case
+ * the function also returns NULL)
+ */
+uint8_t *
+ldns_pkt2wire(ldns_pkt *packet, size_t *result_size)
+{
+	ldns_buffer *buffer = ldns_buffer_new(MAX_PACKET_SIZE);
+	uint8_t *result = NULL;
+	*result_size = 0;
+	if (ldns_pkt2buffer_wire(buffer, packet) == LDNS_STATUS_OK) {
+		*result_size =  ldns_buffer_position(buffer);
+		result = (uint8_t *) ldns_buffer_export(buffer);
+	} else {
+		/* TODO: what about the error? */
+	}
+	ldns_buffer_free(buffer);
+	return result;
+}
 
