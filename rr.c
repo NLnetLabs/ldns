@@ -15,6 +15,7 @@
 #include "rdata.h"
 #include "rr.h"
 #include "prototype.h"
+#include "util.h"
 
 /**
  * create a new rr structure.
@@ -23,8 +24,7 @@ t_rr *
 rr_new(void)
 {
 	t_rr *rr;
-        rr = xmalloc(sizeof(t_rr));
-
+	MALLOC(rr, t_rr);
         if (!rr)
                 return NULL;
 

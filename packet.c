@@ -16,6 +16,7 @@
 #include "rr.h"
 #include "prototype.h"
 #include "packet.h"
+#include "util.h"
 
 /* Access functions 
  * do this as functions to get type checking
@@ -200,11 +201,11 @@ t_packet *
 dns_packet_new()
 {
 	t_packet *packet;
-	packet = xmalloc(sizeof(t_packet));
+	MALLOC(packet, t_packet);
 	if (!packet) 
 		return NULL;
 
-	packet->header = xmalloc(sizeof(t_header));
+	MALLOC(packet_header, t_header);
 	if (!packet->header)
 		return NULL;
 	

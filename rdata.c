@@ -14,6 +14,7 @@
 
 #include "rdata.h"
 #include "rr.h"
+#include "util.h"
 #include "prototype.h"
 
 /* Access functions 
@@ -55,7 +56,7 @@ rd_field_set_type(t_rdata_field *rd, t_rd_type t)
 void
 rd_field_set_data(t_rdata_field *rd, uint8_t *d, uint16_t s)
 {
-	rd->_data = xmalloc(s);
+	XMALLOC(rd->_data, uint8_t, s);
 	memcpy(rd->_data, d, s);
 }
 
@@ -67,8 +68,7 @@ t_rdata_field *
 rd_field_new(uint16_t s, t_rd_type t, uint8_t *d)
 {
 	t_rdata_field *rd;
-	rd = xmalloc(sizeof(t_rdata_field));
-
+	MALLOC(rd, t_rdata_field);
 	if (!rd)
 		return NULL;
 
@@ -90,9 +90,9 @@ t_rdata_field *
 rd_field_new_frm_string(t_rd_type t, char *s)
 {
 	t_rdata_field *new;
-	new = xmalloc(sizeof(t_rdata_field));
+	new = malloc(1 * sizeof t_rdata_field ) ;
 
-	if (NULL == new)
+	if (!new)
 		return NULL;
 
 	rd_field_set_size(new, (uint16_t)strlen(s));
