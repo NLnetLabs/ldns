@@ -52,6 +52,8 @@ struct ldns_struct_resolver
 	uint8_t _usevc;
 	/** \brief Wether to ignore the tc bit */
 	uint8_t _igntc;
+	/** \brief Wether to use ip6 */
+	uint8_t _ip6;
 	
 };
 	
