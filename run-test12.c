@@ -70,14 +70,12 @@ process_pkt(u_char *user, const struct pcap_pkthdr *pcap_hdr,
 		ip_hdr->ip_src.s_addr >> 24 & 0xff,
 		ip_hdr->ip_src.s_addr >> 16 & 0xff,
 		ip_hdr->ip_src.s_addr >> 8 & 0xff,
-		ip_hdr->ip_src.s_addr & 0xff,
-		udp_hdr->uh_sport);
+		ip_hdr->ip_src.s_addr & 0xff, 0);
 	printf(" -> %d.%d.%d.%d:%d",
 		ip_hdr->ip_dst.s_addr >> 24 & 0xff,
 		ip_hdr->ip_dst.s_addr >> 16 & 0xff,
 		ip_hdr->ip_dst.s_addr >> 8 & 0xff,
-		ip_hdr->ip_dst.s_addr & 0xff,
-		udp_hdr->uh_dport);
+		ip_hdr->ip_dst.s_addr & 0xff, 0);
 	printf(" %d", ip_hdr->ip_hl << 2);
 
 	printf("\n");
