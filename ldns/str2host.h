@@ -31,7 +31,7 @@ ldns_status ldns_str2rdf_service(ldns_rdf **, const char *);
 ldns_status ldns_str2rdf_loc(ldns_rdf **, const char *);
 ldns_status ldns_str2rdf_wks(ldns_rdf **, const char *);
 ldns_status ldns_str2rdf_nsap(ldns_rdf **, const char *);
-
+ldns_status ldns_str2rdf_nsap(ldns_rdf **, const char *);
 ldns_status ldns_str2rdf_dname(ldns_rdf **, const char *);
 
-#endif
+#endif /* _LDNS_2HOST_H */

@@ -150,10 +150,10 @@ ldns_str2rdf_dname(ldns_rdf **d, const char *str)
 	size_t len;
 
 	uint8_t *s,*p,*q, *pq, val, label_len;
-	uint8_t buf[MAXDOMAINLEN + 1];
+	uint8_t buf[MAX_DOMAINLEN + 1];
 	
 	len = strlen((char*)str);
-	if (len > MAXDOMAINLEN) {
+	if (len > MAX_DOMAINLEN) {
 		return LDNS_STATUS_DOMAINNAME_OVERFLOW;
 	}
 	if (0 == len) {
@@ -173,7 +173,7 @@ ldns_str2rdf_dname(ldns_rdf **d, const char *str)
 		switch (*s) {
 		case '.':
 			/* todo: check length (overflow und <1 */
-			if (label_len > MAXLABELLEN) {
+			if (label_len > MAX_LABELLEN) {
 				return LDNS_STATUS_LABEL_OVERFLOW;
 			}
 			if (label_len == 0) {
@@ -309,15 +309,43 @@ ldns_str2rdf_b64(ldns_rdf **rd, const char *str)
 }
 
 /**
- * convert .... into wireformat
+ * convert a hex value into wireformat
  * \param[in] rd the rdf where to put the data
  * \param[in] str the string to be converted
  * \return ldns_status
  */
 ldns_status
-ldns_str2rdf_hex(ldns_rdf **ATTR_UNUSED(rd), const char *ATTR_UNUSED(str))
+ldns_str2rdf_hex(ldns_rdf **rd, const char *str)
 {
-	abort();
+        uint8_t *t;
+        int i;
+	size_t len;
+
+	len = strlen(str);
+
+        if (len % 2 != 0) {
+                return LDNS_STATUS_INVALID_HEX;
+        } else if (len > MAX_RDFLEN * 2) {
+		return LDNS_STATUS_LABEL_OVERFLOW;
+        } else {
+		t = XMALLOC(uint8_t, (len / 2));
+    
+                /* Now process octet by octet... */
+                while (*str) {
+                        *t = 0;
+                        for (i = 16; i >= 1; i -= 15) {
+                                if (isxdigit(*str)) {
+                                        *t += hexdigit_to_int(*str) * i;
+                                } else {
+                                        return LDNS_STATUS_ERR;
+                                }
+                                ++str;
+                        }
+                        ++t;
+                }
+		*rd = ldns_rdf_new_frm_data(len / 2, LDNS_RDF_TYPE_HEX, t);
+        }
+        return LDNS_STATUS_OK;
 }
 
 /**

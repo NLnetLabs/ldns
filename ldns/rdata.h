@@ -17,6 +17,7 @@
 #include <ldns/common.h>
 #include <ldns/error.h>
 
+#define MAX_RDFLEN	65535
 
 /**
  * The different types of RDATA fields.

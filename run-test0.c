@@ -57,7 +57,7 @@ main(void)
 	
 	rr = ldns_rr_new();
 
-	rdf_data = (uint8_t *) XMALLOC(char, MAXDOMAINLEN);
+	rdf_data = (uint8_t *) XMALLOC(char, MAX_DOMAINLEN);
 	rdf_data[0] = 3;
 	memcpy(rdf_data+1, "www", 3);
 	rdf_data[4] = 4;

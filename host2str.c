@@ -1008,7 +1008,7 @@ ldns_pkt2str(ldns_pkt *pkt)
 {
 	char *result = NULL;
 	/* XXX MAXTEXTPACKET?? */
-	ldns_buffer *tmp_buffer = ldns_buffer_new(MAX_PACKET_SIZE);
+	ldns_buffer *tmp_buffer = ldns_buffer_new(MAX_PACKETLEN);
 
 	if (ldns_pkt2buffer_str(tmp_buffer, pkt) == LDNS_STATUS_OK) {
 		/* export and return string, destroy rest */

@@ -174,7 +174,7 @@ ldns_pkt2buffer_wire(ldns_buffer *buffer, ldns_pkt *packet)
 uint8_t *
 ldns_rdf2wire(ldns_rdf *rdf, size_t *result_size)
 {
-	ldns_buffer *buffer = ldns_buffer_new(MAX_PACKET_SIZE);
+	ldns_buffer *buffer = ldns_buffer_new(MAX_PACKETLEN);
 	uint8_t *result = NULL;
 	*result_size = 0;
 	if (ldns_rdf2buffer_wire(buffer, rdf) == LDNS_STATUS_OK) {
@@ -199,7 +199,7 @@ ldns_rdf2wire(ldns_rdf *rdf, size_t *result_size)
 uint8_t *
 ldns_rr2wire(ldns_rr *rr, int section, size_t *result_size)
 {
-	ldns_buffer *buffer = ldns_buffer_new(MAX_PACKET_SIZE);
+	ldns_buffer *buffer = ldns_buffer_new(MAX_PACKETLEN);
 	uint8_t *result = NULL;
 	*result_size = 0;
 	if (ldns_rr2buffer_wire(buffer, rr, section) == LDNS_STATUS_OK) {
@@ -221,7 +221,7 @@ ldns_rr2wire(ldns_rr *rr, int section, size_t *result_size)
 uint8_t *
 ldns_pkt2wire(ldns_pkt *packet, size_t *result_size)
 {
-	ldns_buffer *buffer = ldns_buffer_new(MAX_PACKET_SIZE);
+	ldns_buffer *buffer = ldns_buffer_new(MAX_PACKETLEN);
 	uint8_t *result = NULL;
 	*result_size = 0;
 	if (ldns_pkt2buffer_wire(buffer, packet) == LDNS_STATUS_OK) {

@@ -171,7 +171,7 @@ void ldns_pkt_free(ldns_pkt *packet);
 ldns_pkt * ldns_pkt_query_new_frm_str(const char *, ldns_rr_type, ldns_rr_class, uint16_t);
 ldns_pkt * ldns_pkt_query_new(ldns_rdf *, ldns_rr_type, ldns_rr_class, uint16_t);
 
-#define MAX_PACKET_SIZE         65535
+#define MAX_PACKETLEN         65535
 
 /* allow flags to be given to mk_query */
 #define LDNS_QR		1

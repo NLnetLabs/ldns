@@ -45,6 +45,7 @@ syn keyword  ldnsConstant	LDNS_RDF_TYPE_SERVICE
 syn keyword  ldnsConstant	LDNS_RDF_TYPE_LOC
 syn keyword  ldnsConstant	LDNS_RDF_TYPE_WKS
 syn keyword  ldnsConstant	LDNS_RDF_TYPE_NSAP
+syn keyword  ldnsConstant	MAX_RDFLEN
 
 " ldns/dns.h
 syn keyword  ldnsConstant	LDNS_PORT
@@ -67,6 +68,8 @@ syn keyword  ldnsConstant	LDNS_SECTION_QUESTION
 syn keyword  ldnsConstant	LDNS_SECTION_ANSWER
 syn keyword  ldnsConstant	LDNS_SECTION_AUTHORITY
 syn keyword  ldnsConstant	LDNS_SECTION_ADDITIONAL
+syn keyword  ldnsConstant	MAX_PACKETLEN
+
 
 " dns/error.h
 syn keyword ldnsMacro	LDNS_STATUS_OK
@@ -142,8 +145,8 @@ syn keyword  ldnsConstant LDNS_RR_TYPE_AXFR
 syn keyword  ldnsConstant LDNS_RR_TYPE_MAILB      
 syn keyword  ldnsConstant LDNS_RR_TYPE_MAILA      
 syn keyword  ldnsConstant LDNS_RR_TYPE_ANY        
-syn keyword  ldnsConstant MAXLABELLEN     
-syn keyword  ldnsConstant MAXDOMAINLEN
+syn keyword  ldnsConstant MAX_LABELLEN     
+syn keyword  ldnsConstant MAX_DOMAINLEN
 syn keyword  ldnsConstant LDNS_RR_COMPRESS
 syn keyword  ldnsConstant LDNS_RR_NO_COMPRESS
 
