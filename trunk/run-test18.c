@@ -65,6 +65,5 @@ main(int argc, char *argv[])
 
 	printf("[%d]\n", ldns_verify(rrs, signatures, dnskeys));
 	
-
         return 0;
 }
