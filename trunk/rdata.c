@@ -97,6 +97,11 @@ ldns_rdf_new_frm_data(uint16_t s, ldns_rdf_type t, void *buf)
 	if (!rd) {
 		return NULL;
 	}
+	rd->_data = XMALLOC(uint8_t, s);
+	if (!rd->_data) {
+		return NULL;
+	}
+	
 	ldns_rdf_set_size(rd, s);
 	ldns_rdf_set_type(rd, t);
 	memcpy(rd->_data, buf, s);

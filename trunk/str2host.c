@@ -138,45 +138,64 @@ ldns_str2rdf_int8(ldns_rdf **rd, const uint8_t *bytestr)
  *
  * No special care is taken, all dots are translated into
  * label seperators.
+ *
+ * \todo make this more efficient...
+ * we do 3 memcpy's in total...
  */
 ldns_status
 ldns_str2rdf_dname(ldns_rdf **rd, const uint8_t* str)
 {
 	unsigned int label_chars;
 	unsigned int label_chars2;
+	size_t len;
+	size_t octet_len;
+	ldns_status stat;
 
 	uint8_t *s,*p,*q;
+	uint8_t buf_str[MAXDOMAINLEN];
 	uint8_t buf[MAXDOMAINLEN];
+	stat = LDNS_STATUS_OK;
 	
-	q = buf;
-	for (s = p = str; *s; s++) {
+	len = strlen(str);
+	if (len > MAXDOMAINLEN) {
+		return LDNS_STATUS_DOMAINNAME_OVERFLOW;
+	}
+	memcpy(buf_str, str, len);
+	buf_str[len] = '\0'; 
 
+	if ((stat = ldns_octet(buf_str, &octet_len)) != LDNS_STATUS_OK) {
+		return stat;
+	}
+	
+	/* s is on the current dot
+	 * p on the previous one
+	 * q builds the dname
+	 */
+	q = buf;
+	for (s = p = buf_str; *s; s++) {
 		if (*s == '.') {
-			fprintf(stdout, "[%c]\n", *s);
-			
 			label_chars = s - p;
 			label_chars2 = label_chars + 39; /* somehting printable */
-			
-			fprintf(stdout, "labelsize %u\n", s - p);
 			/* put this number in the right spot in buf and
 			 * copy those chars over*/
 			memcpy(q, &label_chars2, 1); 
 			memcpy(q + 1, p, label_chars); 
 			q += (label_chars + 1);
-
-			p = s + 1;
+			p = s + 1; /* move the new position after the dot */
 		}
 	}
 	label_chars = s - p; 
 	label_chars2 = label_chars + 39; /* somehting printable */
 	
-	fprintf(stdout, "labelsize %u\n", s - p);
 	memcpy(q, &label_chars2, 1); 
 	memcpy(q + 1, p, label_chars); 
 	q += (label_chars + 1);
+	*q = '\00'; /* end the string */
 
-	*q = '\00';
-	fprintf(stdout, "newly [%s]\n", buf);
+	/* s - buf_str works because no magic is done 
+	 * in the above for-loop
+	 */
+	*rd = ldns_rdf_new_frm_data((s - buf_str + 1) , LDNS_RDF_TYPE_DNAME, buf); 
 	return LDNS_STATUS_OK;
 }
 
