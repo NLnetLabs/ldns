@@ -717,34 +717,43 @@ ldns_sign_public(ldns_rr_list *rrset, ldns_key_list *keys)
 			ldns_rr_set_ttl(
 					ldns_rr_list_rr(rrset_clone, i), orig_ttl);
 		}
+
+		printf("hier zijn we I\n");
 		/* fill in what we now of the signature */
 		/* set the orig_ttl */
 		ldns_rr_rrsig_set_origttl(current_sig, ldns_native2rdf_int32(LDNS_RDF_TYPE_INT32, orig_ttl));
 		/* the signers name */
 		ldns_rr_rrsig_set_signame(current_sig, 
 				ldns_key_pubkey_owner(current_key));
+		printf("hier zijn we I\n");
 		/* label count - get it from the first rr in the rr_list */
 		ldns_rr_rrsig_set_labels(current_sig, 
 				ldns_native2rdf_int8(LDNS_RDF_TYPE_INT8, ldns_rr_label_count(
 						ldns_rr_list_rr(rrset_clone, 0))));
+		printf("hier zijn we II\n");
 		/* inception, expiration */
 		ldns_rr_rrsig_set_inception(current_sig,
 				ldns_native2rdf_int32(LDNS_RDF_TYPE_INT32, ldns_key_inception(current_key)));
+		printf("hier zijn we III\n");
 		ldns_rr_rrsig_set_expiration(current_sig,
 				ldns_native2rdf_int32(LDNS_RDF_TYPE_INT32, ldns_key_expiration(current_key)));
+		printf("hier zijn we IV\n");
 		/* key-tag */
 		ldns_rr_rrsig_set_keytag(current_sig,
 				ldns_native2rdf_int16(LDNS_RDF_TYPE_INT16, ldns_key_keytag(current_key)));
 
+		printf("hier zijn we V\n");
 		/* algorithm - check the key and substitute that */
 		ldns_rr_rrsig_set_algorithm(current_sig,
 				ldns_native2rdf_int8(LDNS_RDF_TYPE_ALG, ldns_key_algorithm(current_key)));
 		
+		printf("hier zijn we XI\n");
 		/* type-covered */
 		ldns_rr_rrsig_set_typecovered(current_sig,
 				ldns_native2rdf_int16(LDNS_RDF_TYPE_TYPE,
 					ldns_rr_get_type(ldns_rr_list_rr(rrset_clone, 0))));
 
+		printf("hier zijn we CX\n");
 		/* right now, we have: a key, a semi-sig and an rrset. For
 		 * which we can create the sig and base64 encode that and
 		 * add that to the signature */
@@ -754,6 +763,7 @@ ldns_sign_public(ldns_rr_list *rrset, ldns_key_list *keys)
 			/* ERROR */
 			return NULL;
 		}
+		printf("hier zijn we CXI\n");
 		/* add the rrset in sign_buf */
 		if (ldns_rr_list2buffer_wire(sign_buf, rrset_clone) != LDNS_STATUS_OK) {
 			printf("couldn't convert to buffer 2\n");
@@ -761,14 +771,18 @@ ldns_sign_public(ldns_rr_list *rrset, ldns_key_list *keys)
 			return NULL;
 		}
 		
+		printf("blalaat\\\n\n");
 		switch(ldns_key_algorithm(current_key)) {
 			case LDNS_SIGN_DSA:
+				printf("dsa\n");
 				b64rdf = ldns_sign_public_dsa(sign_buf, ldns_key_dsa_key(current_key));
 				break;
 			case LDNS_SIGN_RSASHA1:
+				printf("rsa sha1\n");
 				b64rdf = ldns_sign_public_rsasha1(sign_buf, ldns_key_rsa_key(current_key));
 				break;
 			case LDNS_SIGN_RSAMD5:
+				printf("rsa md5\n");
 				b64rdf = ldns_sign_public_rsamd5(sign_buf, ldns_key_rsa_key(current_key));
 				break;
 			default:
@@ -785,6 +799,7 @@ ldns_sign_public(ldns_rr_list *rrset, ldns_key_list *keys)
 		/* push the signature to the signatures list */
 		ldns_rr_list_push_rr(signatures, current_sig);
 
+		printf("mag ik dit niet free-en?!\n");
 		ldns_buffer_free(sign_buf); /* restart for the next key */
         }
 	return signatures;

@@ -41,7 +41,7 @@ ldns_rr_set_function(ldns_rr_type type, ldns_rr *rr, ldns_rdf *rdf, size_t pos)
         }
         pop = ldns_rr_set_rdf(rr, rdf, pos);
         if (pop) {
-                FREE(pop);
+ 		FREE(pop);
                 return true;
         } else {
                 return false;
