@@ -80,6 +80,24 @@ ldns_resolver_set_recursive(ldns_resolver *r, uint8_t re)
 }
 
 void
+ldns_resolver_set_dnssec(ldns_resolver *r, uint8_t d)
+{
+	r->_dnssec = d;
+}
+
+void
+ldns_resolver_set_igntc(ldns_resolver *r, uint8_t i)
+{
+	r->_igntc = i;
+}
+
+void
+ldns_resolver_set_usevc(ldns_resolver *r, uint8_t vc)
+{
+	r->_usevc = vc;
+}
+
+void
 ldns_resolver_set_debug(ldns_resolver *r, uint8_t d)
 {
 	r->_debug = d;
@@ -102,4 +120,55 @@ ldns_resolver_set_searchlist(ldns_resolver *r, ldns_rdf *s)
 		return;
 	} 
 	r->_searchlist = s;
+}
+
+uint8_t
+ldns_resolver_dnssec(ldns_resolver *r)
+{
+	return r->_dnssec;
+}
+
+uint8_t
+ldns_resolver_igntc(ldns_resolver *r)
+{
+	return r->_igntc;
+}
+
+uint8_t
+ldns_resolver_usevc(ldns_resolver *r)
+{
+	return r->_usevc;
+}
+
+/* more sophisticated functions */
+
+/* search for information in the DNS.
+ * search() applies the search list.
+ * See Net::DNS::Resolver for details
+ */
+ldns_pkt *
+ldns_search()
+{
+	return NULL;
+}
+
+/* only adds the default domain */
+ldns_pkt *
+ldns_query()
+{
+	return NULL;
+}
+
+/* send the query as-is */
+ldns_pkt *
+ldns_send()
+{
+	return NULL;
+}
+
+/* send the query as-is. but use a callback */
+ldns_pkt *
+ldns_bgsend()
+{
+	return NULL;
 }

@@ -46,6 +46,13 @@ struct ldns_struct_resolver
 
 	/** \brief How many retries */
 	uint8_t _retry;
+	/** \brief Wether to do DNSSEC */
+	uint8_t _dnssec;
+	/** \brief Wether to use tcp */
+	uint8_t _usevc;
+	/** \brief Wether to ignore the tc bit */
+	uint8_t _igntc;
+	
 };
 	
 typedef struct ldns_struct_resolver ldns_resolver;
@@ -64,5 +71,10 @@ void ldns_resolver_set_recursive(ldns_resolver *, uint8_t);
 void ldns_resolver_set_debug(ldns_resolver *, uint8_t);
 void ldns_resolver_set_domain(ldns_resolver *, ldns_rdf *);
 void ldns_resolver_set_searchlist(ldns_resolver *, ldns_rdf *);
+
+ldns_pkt * ldns_search();
+ldns_pkt * ldns_query();
+ldns_pkt * ldns_send();
+ldns_pkt * ldns_bgsend();
 
 #endif  /* !_LDNS_RESOLVER_H */
