@@ -17,6 +17,7 @@ main(void)
 	t_rr *rr;
 
 	rr = rr_new();
+
 	rd_f = rd_field_new(20, RD_DNAME_T, (uint8_t*)"hallo.nl");
 	xprintf_rd_field(rd_f);
 	

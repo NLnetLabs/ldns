@@ -29,6 +29,7 @@ rr_new(void)
                 return NULL;
 
 	rr_set_rd_count(rr, 0);
+	rr->rdata_fields = NULL; /* XXX */
         return(rr);
 }
 
