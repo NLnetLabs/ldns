@@ -709,6 +709,9 @@ ldns_sign_public(ldns_rr_list *rrset, ldns_key_list *keys)
 
 		current_key = ldns_key_list_key(keys, key_count);
 		current_sig = ldns_rr_new_frm_type(LDNS_RR_TYPE_RRSIG);
+		printf("printing it\n");
+		ldns_rr_print(stdout, current_sig);
+		printf("\n");
 		/* set the type on the new signature */
 		orig_ttl = ldns_key_ttl(current_key);
 
