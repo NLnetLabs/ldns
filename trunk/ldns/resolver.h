@@ -58,6 +58,10 @@ struct ldns_struct_resolver
 	bool _ip6;
 	/** \brief 1 if the resolver is properly configured */
 	uint8_t _configured;
+	/** \brief if true append the default domain */
+	bool _defnames;
+	/** \brief if true apply the search list */
+	bool _dnsrch;
 };
 typedef struct ldns_struct_resolver ldns_resolver;
 

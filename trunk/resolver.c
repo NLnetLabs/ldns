@@ -52,6 +52,18 @@ ldns_resolver_debug(ldns_resolver *r)
 	return r->_debug;
 }
 
+bool
+ldns_resolver_dnsrch(ldns_resolver *r)
+{
+	return r->_dnsrch;
+}
+
+bool
+ldns_resolver_defnames(ldns_resolver *r)
+{
+	return r->_defnames;
+}
+
 uint8_t 
 ldns_resolver_configured(ldns_resolver *r)
 {
@@ -189,6 +201,18 @@ ldns_resolver_set_nameserver_count(ldns_resolver *r, size_t c)
 }
 
 void
+ldns_resolver_set_dnsrch(ldns_resolver *r, bool d)
+{
+	r->_dnsrch = d;
+}
+
+void
+ldns_resolver_set_defnames(ldns_resolver *r, bool d)
+{
+	r->_defnames = d;
+}
+
+void
 ldns_resolver_incr_nameserver_count(ldns_resolver *r)
 {
 	size_t c;
@@ -204,7 +228,6 @@ ldns_resolver_set_domain(ldns_resolver *r, ldns_rdf *d)
 	return LDNS_STATUS_OK;
 }
 
-/* this is not the way to go for the search list XXX */
 ldns_status
 ldns_resolver_push_searchlist(ldns_resolver *r, ldns_rdf *d)
 {

@@ -222,20 +222,47 @@ ldns_rdf_new_frm_data(uint16_t s, ldns_rdf_type t, void *buf)
 ldns_rdf *
 ldns_rdf_clone(ldns_rdf *r)
 {
-	ldns_rdf *rd;
-	rd = MALLOC(ldns_rdf);
-	if (!rd) {
-		return NULL;
-	}
+	return (ldns_rdf_new_frm_data(
+				ldns_rdf_size(r), 
+				ldns_rdf_get_type(r),
+				ldns_rdf_data(r)));
+}
 
-	rd->_data = XMALLOC(uint8_t, ldns_rdf_size(r));
-	if (!rd->_data) {
-		return NULL;
+/**
+ * count the number of labels inside a LDNS_RDF_DNAME type
+ * rdf
+ * \param[in] *r the rdf
+ * \return the number of labels
+ */
+uint8_t
+ldns_rdf_label_count(ldns_rdf *r)
+{
+	uint8_t src_pos;
+        uint8_t len;
+	uint8_t i;
+	size_t r_size;
+
+	i = 0; src_pos = 0;
+	r_size = ldns_rdf_size(r);
+
+	if (ldns_rdf_get_type(r) != LDNS_RDF_TYPE_DNAME) {
+		return 0;
+	} else {
+        	len = ldns_rdf_data(r)[src_pos]; /* start of the label */
+
+        	/* single root label */
+		if (1 == r_size) {
+			return 1;
+		} else {
+			while ((len > 0) && src_pos < r_size) {
+				src_pos++;
+				src_pos += len;
+				len = ldns_rdf_data(r)[src_pos];
+				i++;
+			}
+        	}
+		return i;
 	}
-	ldns_rdf_set_size(rd, ldns_rdf_size(r));
-	ldns_rdf_set_type(rd, ldns_rdf_get_type(r));
-	memcpy(rd->_data, ldns_rdf_data(r), ldns_rdf_size(r));
-	return rd;
 }
 
 /**
