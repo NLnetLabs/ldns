@@ -85,6 +85,7 @@ ldns_rdf2buffer_str_dname(ldns_buffer *output, ldns_rdf *dname)
 	uint8_t src_pos = 0;
 	uint8_t len;
 	uint8_t *data;
+	uint8_t i;
 	
 	data = (uint8_t*)ldns_rdf_data(dname);
 	len = data[src_pos];
@@ -95,9 +96,31 @@ ldns_rdf2buffer_str_dname(ldns_buffer *output, ldns_rdf *dname)
 	} else {
 		/* XXX repeated calls to ldns_rdf_size */
 		while ((len > 0) && src_pos < ldns_rdf_size(dname)) {
+			
 			src_pos++;
+			
+			/*
 			ldns_buffer_write(output, &data[src_pos], len);
 			src_pos += len;
+			*/
+			
+			for(i = 0; i < len; i++) {
+				/* paranoia check for various 'strange' 
+				   characters in dnames
+				*/
+				if (data[src_pos] == '.' ||
+				    data[src_pos] == '(' ||
+				    data[src_pos] == ')')
+				{
+					ldns_buffer_printf(output, "\\%c", data[src_pos]);
+				} else if (!isascii(data[src_pos])) {
+					ldns_buffer_printf(output, "\\%03u", data[src_pos]);
+				} else {
+					ldns_buffer_printf(output, "%c", data[src_pos]);
+				}
+				src_pos++;
+			}
+			
 			len = data[src_pos];
 			ldns_buffer_printf(output, ".");
 		}

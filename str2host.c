@@ -147,16 +147,10 @@ ldns_str2rdf_int8(ldns_rdf **rd, const char *bytestr)
 ldns_status
 ldns_str2rdf_dname(ldns_rdf **d, const char *str)
 {
-	unsigned int label_chars;
-	unsigned int label_chars2;
 	size_t len;
-	size_t octet_len;
-	ldns_status stat;
 
-	uint8_t *s,*p,*q;
-	uint8_t buf_str[MAXDOMAINLEN + 1];
+	uint8_t *s,*p,*q, *pq, val, label_len;
 	uint8_t buf[MAXDOMAINLEN + 1];
-	stat = LDNS_STATUS_OK;
 	
 	len = strlen((char*)str);
 	if (len > MAXDOMAINLEN) {
@@ -166,56 +160,64 @@ ldns_str2rdf_dname(ldns_rdf **d, const char *str)
 		return LDNS_STATUS_DOMAINNAME_UNDERFLOW;
 	}
 
-	/* if the string does not end with a dot then add the dot */
-	memcpy(buf_str, str, len);
-
-	if (buf_str[len - 1] != '.') {
-		if (len + 1 > MAXDOMAINLEN) {
-			return LDNS_STATUS_DOMAINNAME_OVERFLOW;
-		}
-		buf_str[len] = (uint8_t)'.';
-		buf_str[len + 1] = (uint8_t) LDNS_ROOT_LABEL;
-		len += 1;
-	} else {
-		buf_str[len] = (uint8_t) LDNS_ROOT_LABEL;
-	}
-	
-	/* extend with 1 - the first char will be the
-	 * lenght of the first label */
-	len += 1;
-	
-	if ((stat = ldns_octet(buf_str, &octet_len)) != LDNS_STATUS_OK) {
-		return stat;
-	}
-	
 	/* s is on the current dot
 	 * p on the previous one
 	 * q builds the dname
 	 */
-	q = buf;
-	for (s = p = buf_str; *s; s++) {
-		if (*s == '.') {
-			label_chars = (unsigned int) (s - p);
-			label_chars2 = label_chars + 48; /* somehting printable */
-			/* put this number in the right spot in buf and copy those chars over*/
-			memcpy(q, &label_chars, 1); 
-			/* DEBUG memcpy(q, &label_chars2, 1); */
-			memcpy(q + 1, p, label_chars); 
-			q += (label_chars + 1);
-			p = s + 1; /* move the new position after the dot */
+	len = 0;
+	q = buf+1;
+	pq = buf;
+	label_len = 0;
+	for (s = p = (uint8_t *) str; *s; s++, q++) {
+		*q = 0;
+		switch (*s) {
+		case '.':
+			/* todo: check length (overflow und <1 */
+			if (label_len > MAXLABELLEN) {
+				return LDNS_STATUS_LABEL_OVERFLOW;
+			}
+			if (label_len == 0) {
+				return LDNS_STATUS_EMPTY_LABEL;
+			}
+			len += label_len + 1;
+			*pq = label_len;
+			label_len = 0;
+			pq = q;
+			p = s+1;
+			break;
+		case '\\':
+			/* octet value or literal char */
+			if (isdigit((int) s[1]) &&
+			    isdigit((int) s[2]) &&
+			    isdigit((int) s[3])) {
+				val = (uint8_t) hexdigit_to_int((char) s[1]) * 100 +
+				                hexdigit_to_int((char) s[2]) * 10 +
+				                hexdigit_to_int((char) s[3]);
+				*q = val;
+				s += 3;
+				s++;
+				*q = *s;
+			} else {
+				s++;
+				*q = *s;
+			}
+			label_len++;
+			break;
+		default:
+			*q = *s;
+			label_len++;
 		}
 	}
-	label_chars = (unsigned int) (s - p); 
-	label_chars2 = label_chars + 48; /* something printable */
-	
-	memcpy(q, &label_chars, 1); 
-	/* DEBUG memcpy(q, &label_chars2, 1); */
-	memcpy(q + 1, p, label_chars); 
-	q += (label_chars + 1);
-	*q = (uint8_t)LDNS_ROOT_LABEL; /* end the string */
+
+	/* add root label if last char was not '.' */
+	if (str[strlen(str)-1] != '.') {
+		len += label_len + 1;
+		*pq = label_len;
+		*q = 0;
+	}
+	len++;
 
 	/* s - buf_str works because no magic is done in the above for-loop */
-	/* *d = ldns_rdf_new_frm_data((s - buf_str + 2) , LDNS_RDF_TYPE_DNAME , buf); */
 	*d = ldns_rdf_new_frm_data(len , LDNS_RDF_TYPE_DNAME , buf); 
 	return LDNS_STATUS_OK;
 }

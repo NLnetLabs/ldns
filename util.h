@@ -139,4 +139,10 @@ int get_bit_r(uint8_t bits[], size_t index);
  */
 long power(long a, long b); 
 
+/**
+ * Returns the int value of the given (hex) digit
+ */
+int hexdigit_to_int(char ch);
+
+
 #endif /* !_UTIL_H */
