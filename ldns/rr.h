@@ -159,6 +159,24 @@ struct type_struct_rrset
 };
 typedef struct type_struct_rrset t_rrset;
 
+/* 
+ * \brief struct to hold the whole set of rd_fields
+ *
+ * How does the whole rdata_field list look. This is called
+ * the rdata in dns speak
+ */
+struct ldns_struct_rr_descriptor_type
+{
+        uint16_t    _type;       /* RR type */
+        const char *_name;       /* Textual name.  */
+        uint8_t     _minimum;    /* Minimum number of RDATA FIELDs.  */
+        uint8_t     _maximum;    /* Maximum number of RDATA FIELDs.  */
+        const ldns_rdata_field_type *_wireformat;
+	ldns_rdata_field_type _variable;
+};
+typedef struct ldns_struct_rr_descriptor_type ldns_rr_descriptor_type;
+
+
 /* prototypes */
 t_rr * ldns_rr_new(void);
 void ldns_rr_set_owner(t_rr *, uint8_t *);
@@ -169,5 +187,11 @@ bool ldns_rr_push_rd_field(t_rr *, t_rdata_field *);
 uint8_t *ldns_rr_owner(t_rr *);
 uint8_t ldns_rr_ttl(t_rr *);
 uint16_t ldns_rr_rd_count(t_rr *);
+
+const ldns_rr_descriptor_type *ldns_rr_descriptor(uint16_t type);
+size_t ldns_rr_descriptor_minimum(ldns_rr_descriptor_type *descriptor);
+size_t ldns_rr_descriptor_maximum(ldns_rr_descriptor_type *descriptor);
+ldns_rdata_field_type ldns_rr_descriptor_field_type(
+    ldns_rr_descriptor_type *descriptor, size_t index);
 
 #endif /* _LDNS_RR_H */

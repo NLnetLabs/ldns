@@ -35,8 +35,10 @@
 
 #define MAXRDATALEN 64
 
-enum type_enum_rdata
+enum ldns_enum_rdata_field_type
 {
+	/** none */
+	RD_NONE_T,
 	/** domain name */
 	RD_DNAME_T,
 	/** 8 bits */
@@ -79,7 +81,7 @@ enum type_enum_rdata
 	RD_LOC_T
 	
 };
-typedef enum type_enum_rdata t_rd_type;
+typedef enum ldns_enum_rdata_field_type ldns_rdata_field_type;
 
 enum type_enum_class
 {
@@ -105,36 +107,19 @@ struct type_struct_rdata_field
 	/** \brief The size of the data (in bytes) */
 	uint16_t _size;
 	/** \brief The type of the data */
-	t_rd_type _type;
+	ldns_rdata_field_type _type;
 	/** \brief Pointer to the data (byte buffer) */
 	uint8_t  *_data;
 };
 typedef struct type_struct_rdata_field t_rdata_field;
 
-/* 
- * \brief struct to hold the whole set of rd_fields
- *
- * How does the whole rdata_field list look. This is called
- * the rdata in dns speak
- */
-struct type_struct_rdata_field_descriptor
-{
-        uint16_t    _type;       /* RR type */
-        const char *_name;       /* Textual name.  */
-        uint8_t     _minimum;    /* Minimum number of RDATA FIELDs.  */
-        uint8_t     _maximum;    /* Maximum number of RDATA FIELDs.  */
-        uint8_t     _wireformat[MAXRDATALEN]; /* rdata_wireformat_type */
-};
-typedef struct type_struct_rdata_field_descriptor t_rdata_field_descriptor;
-
-
 /* prototypes */
 uint16_t        _ldns_rd_field_size(t_rdata_field *);
 void            _ldns_rd_field_set_size(t_rdata_field *, uint16_t);
-void            _ldns_rd_field_set_type(t_rdata_field *, t_rd_type);
+void            _ldns_rd_field_set_type(t_rdata_field *, ldns_rdata_field_type);
 void            _ldns_rd_field_set_data(t_rdata_field *, uint8_t *);
-t_rd_type       _ldns_rd_field_type(t_rdata_field *);
-t_rdata_field   *_ldns_rd_field_new(uint16_t, t_rd_type, uint8_t *);
+ldns_rdata_field_type _ldns_rd_field_type(t_rdata_field *);
+t_rdata_field   *_ldns_rd_field_new(uint16_t, ldns_rdata_field_type, uint8_t *);
 uint8_t         *_ldns_rd_field_data(t_rdata_field *);
 void            _ldns_rd_field_destroy(t_rdata_field *);
 
