@@ -129,7 +129,7 @@ uint8_t ldns_resolver_retrans(ldns_resolver *);
 uint8_t ldns_resolver_ip6(ldns_resolver *);
 uint16_t ldns_resolver_edns_udp_size(ldns_resolver *);
 
-ldns_pkt * ldns_resolver_bgsend();
+int ldns_resolver_bgsend();
 ldns_pkt * ldns_resolver_send(ldns_resolver *, ldns_rdf*, ldns_rr_type, ldns_rr_class, uint16_t);
 ldns_pkt * ldns_resolver_query(ldns_resolver *, ldns_rdf*, ldns_rr_type, ldns_rr_class, uint16_t);
 ldns_pkt * ldns_resolver_search(ldns_resolver *, ldns_rdf*, ldns_rr_type, ldns_rr_class, uint16_t);

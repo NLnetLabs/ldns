@@ -683,11 +683,11 @@ ldns_resolver_send(ldns_resolver *r, ldns_rdf *name, ldns_rr_type type, ldns_rr_
 	return answer_pkt;
 }
 
-/* send the query as-is. but use a callback */
-ldns_pkt *
+/* send the query as-is. but return a socket */
+int
 ldns_resolver_bgsend()
 {
-	return NULL;
+	return 0;
 }
 
 /*
