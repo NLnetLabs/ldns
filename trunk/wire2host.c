@@ -145,7 +145,7 @@ ldns_wire2dname(ldns_rdf **dname, const uint8_t *wire, size_t max, size_t *pos)
 	size_t dname_pos = 0;
 	size_t uncompressed_length = 0;
 	size_t compression_pos = 0;
-	uint8_t tmp_dname[MAXDOMAINLEN];
+	uint8_t tmp_dname[MAX_DOMAINLEN];
 	uint8_t *dname_ar;
 	unsigned int pointer_count = 0;
 	
@@ -172,13 +172,13 @@ ldns_wire2dname(ldns_rdf **dname, const uint8_t *wire, size_t max, size_t *pos)
 				return LDNS_STATUS_INVALID_POINTER;
 			} else if (pointer_target > max) {
 				return LDNS_STATUS_INVALID_POINTER;
-			} else if (pointer_count > MAXPOINTERS) {
+			} else if (pointer_count > MAX_POINTERS) {
 				return LDNS_STATUS_INVALID_POINTER;
 			}
 			*pos = pointer_target;
 			label_size = wire[*pos];
 		}
-		if (label_size > MAXLABELLEN) {
+		if (label_size > MAX_LABELLEN) {
 			return LDNS_STATUS_LABEL_OVERFLOW;
 		}
 		if (*pos + label_size > max) {

@@ -69,7 +69,7 @@ ldns_send(ldns_resolver *r, ldns_pkt *query_pkt)
 	ns_array = ldns_resolver_nameservers(r);
 	reply = NULL; ns_len = 0;
 	
-	qb = ldns_buffer_new(MAX_PACKET_SIZE);
+	qb = ldns_buffer_new(MAX_PACKETLEN);
 
 	if (ldns_pkt2buffer_wire(qb, query_pkt) != LDNS_STATUS_OK) {
 		printf("could not convert to wire fmt\n");
@@ -166,13 +166,13 @@ ldns_send_udp(ldns_buffer *qbin, const struct sockaddr_storage *to, socklen_t to
 	}
 	
 	/* wait for an response*/
-	answer = XMALLOC(uint8_t, MAX_PACKET_SIZE);
+	answer = XMALLOC(uint8_t, MAX_PACKETLEN);
 	if (!answer) {
 		printf("respons alloc error\n");
 		return NULL;
 	}
 
-	bytes = recv(sockfd, answer, MAX_PACKET_SIZE, 0);
+	bytes = recv(sockfd, answer, MAX_PACKETLEN, 0);
 
 	close(sockfd);
 
@@ -262,7 +262,7 @@ ldns_send_tcp(ldns_buffer *qbin, const struct sockaddr_storage *to, socklen_t to
 	}
 	
 	/* wait for an response*/
-	answer = XMALLOC(uint8_t, MAX_PACKET_SIZE);
+	answer = XMALLOC(uint8_t, MAX_PACKETLEN);
 	if (!answer) {
 		printf("respons alloc error\n");
 		return NULL;
@@ -272,7 +272,7 @@ ldns_send_tcp(ldns_buffer *qbin, const struct sockaddr_storage *to, socklen_t to
 	   we must be sure that we receive those */
 	total_bytes = 0;
 	while (total_bytes < 2) {
-		bytes = recv(sockfd, answer, MAX_PACKET_SIZE, 0);
+		bytes = recv(sockfd, answer, MAX_PACKETLEN, 0);
 		if (bytes == -1) {
 			if (errno == EAGAIN) {
 				fprintf(stderr, "socket timeout\n");
@@ -290,7 +290,7 @@ ldns_send_tcp(ldns_buffer *qbin, const struct sockaddr_storage *to, socklen_t to
 	/* if we did not receive the whole packet in one tcp packet,
 	   we must recv() on */
 	while (total_bytes < (ssize_t) (answer_size + 2)) {
-		bytes = recv(sockfd, answer+total_bytes, (size_t) (MAX_PACKET_SIZE-total_bytes), 0);
+		bytes = recv(sockfd, answer + total_bytes, (size_t) (MAX_PACKETLEN - total_bytes), 0);
 		if (bytes == -1) {
 			if (errno == EAGAIN) {
 				fprintf(stderr, "socket timeout\n");

@@ -2,7 +2,6 @@ Current TODO list
 
 Errors:
 o names starting with a dot .www or not handled correctly
-o absolute/relative dnames???
 
 
 Implementation:
@@ -20,8 +19,6 @@ o network code
 	  sane default values
 o DNSSEC
 o Make a shared library and test compile some programs
-o Higherlevel functions, like search for this RR with this name in
-  these RRlists. Give me all RR's of this zone with this type. etc.
 
 Documentation:
 --------------
@@ -35,7 +32,8 @@ o Mailing list(s)
 
 To ponder and discuss:
 ----------------------
-o Drop ldns_resolver_set_configured() ?
-o char * <=> uint8_t *
-o Second layer (higher level convenience functions)?
+o char * <=> uint8_t * (partly done? Erik?)
+o Second layer (higher level convenience functions)? (Later)
+  o Higherlevel functions, like search for this RR with this name in
+    these RRlists. Give me all RR's of this zone with this type. etc.
 o Dependency on openSSL?
