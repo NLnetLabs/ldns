@@ -64,7 +64,7 @@ ldns_rr_set_owner(ldns_rr *rr, ldns_rdf *owner)
  * set the owner in the rr structure
  */
 void
-ldns_rr_set_ttl(ldns_rr *rr, uint16_t ttl)
+ldns_rr_set_ttl(ldns_rr *rr, uint32_t ttl)
 {
 	rr->_ttl = ttl;
 }
@@ -148,7 +148,7 @@ ldns_rr_owner(ldns_rr *rr)
 /**
  * return the owner name of an rr structure
  */
-uint8_t
+uint32_t
 ldns_rr_ttl(ldns_rr *rr)
 {
 	return rr->_ttl;
