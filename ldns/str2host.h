@@ -32,6 +32,6 @@ ldns_status ldns_str2rdf_loc(ldns_rdf **, const uint8_t*);
 ldns_status ldns_str2rdf_wks(ldns_rdf **, const uint8_t*);
 ldns_status ldns_str2rdf_nsap(ldns_rdf **, const uint8_t*);
 
-ldns_status ldns_str2rdf_dname(ldns_dname **, const uint8_t*);
+ldns_status ldns_str2rdf_dname(ldns_rdf **, const uint8_t*);
 
 #endif

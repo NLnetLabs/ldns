@@ -161,7 +161,7 @@ typedef enum ldns_enum_rr_type ldns_rr_type;
 struct ldns_struct_rr
 {
 	/** \brief Owner name, uncompressed */
-	ldns_dname	*_owner;	
+	ldns_rdf	*_owner;	
 	/** \brief Time to live  */
 	uint32_t	_ttl;	
 	/** \brief Number of data fields */
@@ -214,14 +214,14 @@ typedef struct ldns_struct_rr_descriptor ldns_rr_descriptor;
  * \param none 
  */
 ldns_rr * ldns_rr_new(void);
-void ldns_rr_set_owner(ldns_rr *, ldns_dname *);
+void ldns_rr_set_owner(ldns_rr *, ldns_rdf *);
 void ldns_rr_set_ttl(ldns_rr *, uint32_t);
 void ldns_rr_set_rd_count(ldns_rr *, uint16_t);
 void ldns_rr_set_type(ldns_rr *, ldns_rr_type);
 void ldns_rr_set_class(ldns_rr *, ldns_rr_class);
 bool ldns_rr_push_rdf(ldns_rr *, ldns_rdf *);
 ldns_rdf *ldns_rr_rdf(ldns_rr *rr, uint16_t nr);
-ldns_dname *ldns_rr_owner(ldns_rr *);
+ldns_rdf *ldns_rr_owner(ldns_rr *);
 uint32_t ldns_rr_ttl(ldns_rr *);
 uint16_t ldns_rr_rd_count(ldns_rr *);
 ldns_rr_type ldns_rr_get_type(ldns_rr *);

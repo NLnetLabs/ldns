@@ -144,7 +144,7 @@ ldns_str2rdf_int8(ldns_rdf **rd, const uint8_t *bytestr)
  * label_chars2 is used for debugging. TODO: remove
  */
 ldns_status
-ldns_str2rdf_dname(ldns_dname **d, const uint8_t* str)
+ldns_str2rdf_dname(ldns_rdf **d, const uint8_t* str)
 {
 	unsigned int label_chars;
 	unsigned int label_chars2;
@@ -194,7 +194,7 @@ ldns_str2rdf_dname(ldns_dname **d, const uint8_t* str)
 	*q = '\00'; /* end the string */
 
 	/* s - buf_str works because no magic is done * in the above for-loop */
-	*d = ldns_dname_new_frm_data((s - buf_str + 1) , buf); 
+	*d = ldns_rdf_new_frm_data((s - buf_str + 1) , LDNS_RDF_TYPE_DNAME , buf); 
 	return LDNS_STATUS_OK;
 }
 
