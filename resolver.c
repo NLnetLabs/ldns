@@ -274,21 +274,7 @@ ldns_pkt *
 ldns_resolver_search(ldns_resolver *r, ldns_rdf *name, ldns_rr_type type, ldns_rr_class class,
                 uint16_t flags)
 {
-	ldns_rdf *newname;
-	
-	if (!ldns_resolver_defnames(r)) {
-		return ldns_resolver_query(r, name, type, class, flags);
-	}
-	if (!ldns_resolver_domain(r)) {
-		/* _defnames is set, but the domain is not....?? */
-		return ldns_resolver_query(r, name, type, class, flags);
-	}
-
-	newname = ldns_dname_concat(name, ldns_resolver_domain(r));
-	if (!newname) {
-		return NULL;
-	}
-	return ldns_resolver_query(r, newname, type, class, flags);
+	return NULL;
 }
 
 /**
@@ -304,8 +290,23 @@ ldns_pkt *
 ldns_resolver_query(ldns_resolver *r, ldns_rdf *name, ldns_rr_type type, ldns_rr_class class,
                 uint16_t flags)
 {
+	ldns_rdf *newname;
 	
-	return NULL;
+	if (!ldns_resolver_defnames(r)) {
+		return ldns_resolver_send(r, name, type, class, flags);
+	}
+	if (!ldns_resolver_domain(r)) {
+		/* _defnames is set, but the domain is not....?? */
+		return ldns_resolver_send(r, name, type, class, flags);
+	}
+
+	newname = ldns_dname_concat(name, ldns_resolver_domain(r));
+	if (!newname) {
+		return NULL;
+	}
+	ldns_rdf_print(stdout, newname);
+	printf("the new name\n");
+	return ldns_resolver_send(r, newname, type, class, flags);
 }
 
 /**
@@ -343,6 +344,7 @@ ldns_resolver_send(ldns_resolver *r, ldns_rdf *name, ldns_rr_type type, ldns_rr_
 		printf("query type is not correct type\n");
 		return NULL;
 	}
+	printf("We are ASKING the question\n\n");
 	
 	/* prepare a question pkt from the parameters
 	 * and then send this */
