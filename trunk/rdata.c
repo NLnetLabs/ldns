@@ -168,6 +168,61 @@ ldns_rdf2native_sockaddr_storage(ldns_rdf *rd)
 }
 
 /**
+ * Returns an rdf that contains the given int8 value
+ *
+ * Because multiple rdf types can contain an int8, the
+ * type must be specified
+ */
+ldns_rdf *
+ldns_native2rdf_int8(ldns_rdf_type type, uint8_t value)
+{
+	return ldns_rdf_new_frm_data(type, 1, &value);
+}
+
+/**
+ * Returns an rdf that contains the given int16 value
+ *
+ * Because multiple rdf types can contain an int16, the
+ * type must be specified
+ */
+ldns_rdf *
+ldns_native2rdf_int16(ldns_rdf_type type, uint16_t value)
+{
+	uint16_t *rdf_data = XMALLOC(uint16_t, 1);
+	write_uint16(rdf_data, value);
+	return ldns_rdf_new(2, type, rdf_data);
+}
+
+/**
+ * Returns an rdf that contains the given int32 value
+ *
+ * Because multiple rdf types can contain an int32, the
+ * type must be specified
+ */
+ldns_rdf *
+ldns_native2rdf_int32(ldns_rdf_type type, uint32_t value)
+{
+	uint32_t *rdf_data = XMALLOC(uint32_t, 1);
+	write_uint32(rdf_data, value);
+	return ldns_rdf_new(4, type, rdf_data);
+}
+
+/**
+ * Returns an int16_data rdf that contains the data in the
+ * given array, preceded by an int16 specifying the length
+ *
+ * The memory is copied, and an LDNS_RDF_TYPE_INT16DATA is returned
+ */
+ldns_rdf *
+ldns_native2rdf_int16_data(uint16_t size, uint8_t *data)
+{
+	uint8_t *rdf_data = XMALLOC(uint8_t, (size_t) size + 2);
+	write_uint16(rdf_data, size);
+	memcpy(rdf_data + 2, data, size);
+	return ldns_rdf_new(size + 2, LDNS_RDF_TYPE_INT16_DATA, rdf_data);
+}
+
+/**
  * Allocate a new ldns_rdf structure 
  * fill it and return it
  */

@@ -151,7 +151,7 @@ int b64_ntop(uint8_t const *src, size_t srclength,
 /*@unused@*/
 static inline size_t b64_ntop_calculate_size(size_t srcsize)
 {
-	return (((srcsize + 2) / 3) * 4);
+	return ((((srcsize + 2) / 3) * 4) + 1);
 }
 #endif /* !B64_PTON */
 #ifndef B64_NTOP
