@@ -8,7 +8,7 @@ bindir 		= @bindir@
 mandir 		= @mandir@
 
 CC 		= @CC@
-CPPFLAGS	= @CPPFLAGS@ @DEFS@ -I$(srcdir)
+CPPFLAGS	= @CPPFLAGS@ @DEFS@ -I.
 CFLAGS 		= @CFLAGS@
 LDFLAGS		= @LDFLAGS@
 LIBS 		= @LIBS@
@@ -65,7 +65,7 @@ docclean:
 
 lint:
 	for i in $(ALL_SOURCES); do \
-		$(LINT) $(LINTFLAGS) $(CPPFLAGS) $$i ; \
+		$(LINT) $(LINTFLAGS) -I. $$i ; \
 	done
 
 # Automatic dependencies.
