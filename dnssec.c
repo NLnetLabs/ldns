@@ -53,15 +53,17 @@ ldns_keytag(ldns_rr *key)
 		if (keysize > 4) {
 			memcpy(&ac, &key[keysize-3], 2);
 		}
+		ldns_buffer_free(keybuf);
 		ac = ntohs(ac);
 	        return (uint16_t) ac;
 	} else {
 		/* copied from 2535bis */
-		/* look at this again */
+		/* look at this again XXX */
 		for (i = 0; (size_t)i < keysize; ++i) {
 			ac += (i & 1) ? *ldns_buffer_at(keybuf, i) : 
 				*ldns_buffer_at(keybuf, i) << 8;
 		}
+		ldns_buffer_free(keybuf);
 		ac += (ac >> 16) & 0xFFFF;
 		return (uint16_t) (ac & 0xFFFF);
 	}
@@ -110,7 +112,7 @@ ldns_verify_rrsig(ldns_rr_list *rrset, ldns_rr *rrsig, ldns_rr_list *keys)
 	}
 
 	/* sort the rrset in canonical order - must this happen
-	 * after setting the orig TTL? or before?? */
+	 * after setting the orig TTL? or before?? does it matter? */
 	ldns_rr_list_sort(rrset);
 
 	/* put the rrset in a wirefmt buf */
@@ -118,7 +120,7 @@ ldns_verify_rrsig(ldns_rr_list *rrset, ldns_rr *rrsig, ldns_rr_list *keys)
 	for(i = 0; i < ldns_rr_list_rr_count(keys); i++) {
 		current_key = ldns_rr_list_rr(keys, i);
 
-		/* put the key in a buffer */
+		/* put the key-data in a buffer */
 
 		switch(sig_algo) {
 			case LDNS_DSA:

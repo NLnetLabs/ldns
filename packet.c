@@ -132,6 +132,15 @@ ldns_pkt_additional(const ldns_pkt *packet)
 	return packet->_additional;
 }
 
+/* return ALL section concatenated */
+ldns_rr_list *
+ldns_pkt_all(const ldns_pkt *packet)
+{
+	ldns_pkt_print(stdout, packet);
+	return NULL;
+	/* TODO Miek */
+}
+
 size_t
 ldns_pkt_size(const ldns_pkt *packet)
 {
@@ -154,6 +163,35 @@ char *
 ldns_pkt_when(const ldns_pkt *packet)
 {
 	return packet->_when;
+}
+
+/** 
+ * check to see if an rr exist in the packet
+ * \param[in] pkt the packet to examine
+ * \param[in] sec in which section to look
+ * \param[in] rr the rr to look for
+ */
+bool
+ldns_pkt_rr(ldns_pkt *pkt, ldns_pkt_section sec, ldns_rr *rr)
+{
+	ldns_rr_list *rrs;
+	uint16_t rr_count;
+	uint16_t i;
+
+	rrs = ldns_pkt_xxsection(pkt, sec);
+	if (!rrs) {
+		return NULL;
+	}
+	rr_count = ldns_rr_list_rr_count(rrs);
+	
+	/* walk the rrs and compare them with rr */	
+	for(i = 0; i < rr_count; i++) {
+		if (ldns_rr_compare(ldns_rr_list_rr(rrs, i), rr) == 0) {
+			/* a match */
+			return true;
+		}
+	}
+	return false;
 }
 
 uint16_t
@@ -368,6 +406,25 @@ ldns_pkt_push_rr(ldns_pkt *packet, ldns_pkt_section section, ldns_rr *rr)
 			break;
 	}
 	return true;
+}
+
+/** 
+ * push an rr on a packet, provided the RR is not there.
+ * \param[in] packet packet to operatore on
+ * \param[in] section where to put it
+ * \param[in] rr rr to push
+ * \return ldns_status status
+ */
+bool
+ldns_pkt_safe_push_rr(ldns_pkt *pkt, ldns_pkt_section sec, ldns_rr *rr)
+{
+
+	/* check to see if its there */
+	if (ldns_pkt_rr(pkt, sec, rr)) {
+		/* already there */
+		return false;
+	}
+	return ldns_pkt_push_rr(pkt, sec, rr);
 }
 
 

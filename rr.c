@@ -387,7 +387,34 @@ ldns_rr_list_push_rr(ldns_rr_list *rr_list, ldns_rr *rr)
 
 	ldns_rr_list_set_rr_count(rr_list, rr_count + 1);
 	return true;
+}
 
+/**
+ * pop the last rr from a rrlist
+ * \param[in] rr_list the rr_list to pop from
+ * \return NULL if nothing to pop. Otherwise the popped RR
+ */
+ldns_rr *
+ldns_rr_list_pop_rr(ldns_rr_list *rr_list)
+{
+	uint16_t rr_count;
+	ldns_rr *pop;
+	
+	rr_count = ldns_rr_list_rr_count(rr_list);
+
+	if (rr_count == 0) {
+		return NULL;
+	}
+
+	pop = ldns_rr_list_rr(rr_list, rr_count);
+	
+	/* shrink the array */
+	rr_list->_rrs = XREALLOC(
+		rr_list->_rrs, ldns_rr *, rr_count - 1);
+
+	ldns_rr_list_set_rr_count(rr_list, rr_count - 1);
+
+	return pop;
 }
 
 /* rrset stuff 
@@ -410,7 +437,10 @@ ldns_is_rrset(ldns_rr_list *rr_list)
 }
 
 /**
- * add an rr to an rrset 
+ * Push an rr to an rrset (which really are rr_list's)
+ * \param[in] *rr_list the rrset to push the rr to
+ * \param[in] *rr the rr to push
+ * \return true or false
  */
 bool
 ldns_rr_set_push_rr(ldns_rr_list *rr_list, ldns_rr *rr)
@@ -447,6 +477,19 @@ ldns_rr_set_push_rr(ldns_rr_list *rr_list, ldns_rr *rr)
 		/* ok, still alive */
 		return ldns_rr_list_push_rr(rr_list, rr);
 	}
+}
+
+/**
+ * pop the last rr from a rrset. This function is there only
+ * for the symmetry.
+ * \param[in] rr_list the rr_list to pop from
+ * \return NULL if nothing to pop. Otherwise the popped RR
+ *
+ */
+ldns_rr *
+ldns_rr_set_pop_rr(ldns_rr_list *rr_list)
+{
+	return ldns_rr_list_pop_rr(rr_list);
 }
 
 /** \cond */

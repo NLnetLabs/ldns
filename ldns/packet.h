@@ -155,6 +155,7 @@ void ldns_pkt_set_querytime(ldns_pkt *, uint32_t);
 void ldns_pkt_set_size(ldns_pkt *, size_t);
 void ldns_pkt_set_when(ldns_pkt *, char *);
 void ldns_pkt_set_xxcount(ldns_pkt *, ldns_pkt_section, uint16_t);
+ldns_rr_list * ldns_pkt_xxsection(ldns_pkt *, ldns_pkt_section);
 
 /**
  * Allocates and initializes a ldns_pkt structure
