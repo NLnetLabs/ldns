@@ -35,6 +35,6 @@ xprintf_rr(t_rr *rr)
 
 	for(i = 0; i < count; i++) {
 		printf("print rd %u\n", i);
-		xprintf_rd_field(rr->rdata_fields[i]);
+		xprintf_rd_field(rr->_rdata_fields[i]);
 	}
 }

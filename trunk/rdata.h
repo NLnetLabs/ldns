@@ -121,11 +121,11 @@ typedef struct type_struct_rdata_field t_rdata_field;
  */
 struct type_struct_rdata_field_descriptor
 {
-        uint16_t    type;       /* RR type */
-        const char *name;       /* Textual name.  */
-        uint8_t     minimum;    /* Minimum number of RDATA FIELDs.  */
-        uint8_t     maximum;    /* Maximum number of RDATA FIELDs.  */
-        uint8_t     wireformat[MAXRDATALEN]; /* rdata_wireformat_type */
+        uint16_t    _type;       /* RR type */
+        const char *_name;       /* Textual name.  */
+        uint8_t     _minimum;    /* Minimum number of RDATA FIELDs.  */
+        uint8_t     _maximum;    /* Maximum number of RDATA FIELDs.  */
+        uint8_t     _wireformat[MAXRDATALEN]; /* rdata_wireformat_type */
 };
 typedef struct type_struct_rdata_field_descriptor t_rdata_field_descriptor;
 
@@ -134,7 +134,7 @@ typedef struct type_struct_rdata_field_descriptor t_rdata_field_descriptor;
 uint16_t        rd_field_size(t_rdata_field *);
 void            rd_field_set_size(t_rdata_field *, uint16_t);
 void            rd_field_set_type(t_rdata_field *, t_rd_type);
-void            rd_field_set_data(t_rdata_field *, uint8_t *, uint16_t);
+void            rd_field_set_data(t_rdata_field *, uint8_t *);
 t_rd_type       rd_field_type(t_rdata_field *);
 t_rdata_field   *rd_field_new(uint16_t, t_rd_type, uint8_t *);
 uint8_t         *rd_field_data(t_rdata_field *);
