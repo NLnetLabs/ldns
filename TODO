@@ -39,3 +39,4 @@ o Drop ldns_resolver_set_configured() ?
 o char * <=> uint8_t *
 o Second layer (higher level convenience functions)?
 o Dependency on openSSL?
+
