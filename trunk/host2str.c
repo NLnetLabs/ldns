@@ -21,6 +21,92 @@
 
 #include "util.h"
 
+/* lookup tables partly stolen from nsd, is there better way?
+   are these used somewhere else? */
+
+/* Taken from RFC 2538, section 2.1.  */
+ldns_lookup_table ldns_certificate_types[] = {
+        { 1, "PKIX" },  /* X.509 as per PKIX */
+        { 2, "SPKI" },  /* SPKI cert */
+        { 3, "PGP" },   /* PGP cert */
+        { 253, "URI" }, /* URI private */
+        { 254, "OID" }, /* OID private */
+        { 0, NULL }
+};
+
+/* Taken from RFC 2535, section 7.  */
+ldns_lookup_table ldns_algorithms[] = {
+        { 1, "RSAMD5" },
+        { 2, "DS" },
+        { 3, "DSA" },
+        { 4, "ECC" },
+        { 5, "RSASHA1" },       /* XXX: Where is this specified? */
+        { 252, "INDIRECT" },
+        { 253, "PRIVATEDNS" },
+        { 254, "PRIVATEOID" },
+        { 0, NULL }
+};
+
+/* rr types (TODO: maybe these should be in rr.c? */
+ldns_lookup_table ldns_rr_classes[] = {
+	{ LDNS_RR_CLASS_IN, "IN" },
+	{ LDNS_RR_CLASS_CHAOS, "CH" },
+	{ LDNS_RR_CLASS_HS, "HS" },
+	{ LDNS_RR_CLASS_ANY, "ANY" }
+};
+
+ldns_lookup_table ldns_rr_types[] = {
+	{ LDNS_RR_TYPE_A, "A" },
+	{ LDNS_RR_TYPE_NS, "NS" },
+	{ LDNS_RR_TYPE_MD, "MD" },
+	{ LDNS_RR_TYPE_MF, "MF" },
+	{ LDNS_RR_TYPE_CNAME, "CNAME" },
+	{ LDNS_RR_TYPE_SOA, "SOA" },
+	{ LDNS_RR_TYPE_MB, "MB" },
+	{ LDNS_RR_TYPE_MG, "MG" },
+	{ LDNS_RR_TYPE_MR, "MR" },
+	{ LDNS_RR_TYPE_NULL, "NULL" },
+	{ LDNS_RR_TYPE_WKS, "WKS" },
+	{ LDNS_RR_TYPE_PTR, "PTR" },
+	{ LDNS_RR_TYPE_HINFO, "HINFO" },
+	{ LDNS_RR_TYPE_MINFO, "MINFO" },
+	{ LDNS_RR_TYPE_MX, "MX" },
+	{ LDNS_RR_TYPE_TXT, "TXT" },
+	{ LDNS_RR_TYPE_RP, "RP" },
+	{ LDNS_RR_TYPE_AFSDB, "AFSDB" },
+	{ LDNS_RR_TYPE_X25, "X25" },
+	{ LDNS_RR_TYPE_ISDN, "ISDN" },
+	{ LDNS_RR_TYPE_RT, "RT" },
+	{ LDNS_RR_TYPE_NSAP, "NSAP" },
+	{ LDNS_RR_TYPE_SIG, "SIG" },
+	{ LDNS_RR_TYPE_KEY, "KEY" },
+	{ LDNS_RR_TYPE_PX, "PX" },
+	{ LDNS_RR_TYPE_AAAA, "AAAA" },
+	{ LDNS_RR_TYPE_LOC, "LOC" },
+	{ LDNS_RR_TYPE_NXT, "NXT" },
+	{ LDNS_RR_TYPE_SRV, "SRV" },
+	{ LDNS_RR_TYPE_NAPTR, "NAPTR" },
+	{ LDNS_RR_TYPE_KX, "KX" },
+	{ LDNS_RR_TYPE_CERT, "CERT" },
+	{ LDNS_RR_TYPE_DNAME, "DNAME" },
+	{ LDNS_RR_TYPE_OPT, "OPT" },
+	{ LDNS_RR_TYPE_APL, "APL" },
+	{ LDNS_RR_TYPE_DS, "DS" },
+	{ LDNS_RR_TYPE_SSHFP, "SSHFP" },
+	{ LDNS_RR_TYPE_RRSIG, "RRSIG" },
+	{ LDNS_RR_TYPE_NSEC, "NSEC" },
+	{ LDNS_RR_TYPE_DNSKEY, "DNSKEY" },
+	{ LDNS_RR_TYPE_TSIG, "TSIG" },
+	{ LDNS_RR_TYPE_IXFR, "IXFR" },
+	{ LDNS_RR_TYPE_AXFR, "AXFR" },
+	{ LDNS_RR_TYPE_MAILB, "MAILB" },
+	{ LDNS_RR_TYPE_MAILA, "MAILA" },
+	{ LDNS_RR_TYPE_ANY, "ANY" },
+	{ LDNS_RR_TYPE_FIRST, "FIRST" },
+	{ LDNS_RR_TYPE_LAST, "LAST" }
+};
+
+
 /* TODO: general rdata2str or dname2str, with error
          checks and return status etc */
 /* this is temp function for debugging wire2rr */
@@ -196,17 +282,37 @@ ldns_rdf2buffer(ldns_buffer *buffer, ldns_rdf *rdf)
 	return LDNS_STATUS_OK;
 }
 
+/* TODO status */
 ldns_status
 ldns_rr2buffer(ldns_buffer *output, ldns_rr *rr)
 {
+	uint16_t i;
 	ldns_status status = LDNS_STATUS_OK;
-	
+	ldns_lookup_table *lt;
+
 	if (ldns_rr_owner(rr)) {
 		status = ldns_rdf2buffer_dname(output, ldns_rr_owner(rr));
 	}
-	
 	if (status != LDNS_STATUS_OK) {
-		printf("error in rr2buf %d\n", status);
+		return status;
+	}
+	
+	lt = lookup_by_id(ldns_rr_classes, ldns_rr_get_class(rr));
+	if (lt) {
+		ldns_buffer_printf(output, "\t%s\t", lt->name);
+	} else {
+		ldns_buffer_printf(output, "\tCLASS%d\t", ldns_rr_get_class(rr));
+	}
+	
+	lt = lookup_by_id(ldns_rr_types, ldns_rr_get_type(rr));
+	if (lt) {
+		ldns_buffer_printf(output, "%s\t", lt->name);
+	} else {
+		ldns_buffer_printf(output, "TYPE%d\t", ldns_rr_get_type(rr));
+	}
+	
+	for (i = 0; i < ldns_rr_rd_count(rr); i++) {
+		status = ldns_rdf2buffer(output, ldns_rr_rdf(rr, i));
 	}
 	
 	return status;
@@ -264,6 +370,7 @@ ldns_pkt2buffer(ldns_buffer *output, ldns_pkt *pkt)
 	ldns_status status = LDNS_STATUS_OK;
 	
 	status = ldns_pktheader2buffer(output, pkt);
+	ldns_buffer_printf(output, "\n");
 	
 	if (status != LDNS_STATUS_OK) {
 		printf("error in pkt2buf %d\n", status);
@@ -275,6 +382,7 @@ ldns_pkt2buffer(ldns_buffer *output, ldns_pkt *pkt)
 		               ldns_rrset_rr(ldns_pkt_question(pkt), i));
 		ldns_buffer_printf(output, "\n");
 	}
+	ldns_buffer_printf(output, "\n");
 	
 	ldns_buffer_printf(output, ";; ANSWER SECTION:\n");
 	for (i = 0; i < ldns_pkt_ancount(pkt); i++) {
@@ -282,6 +390,7 @@ ldns_pkt2buffer(ldns_buffer *output, ldns_pkt *pkt)
 		               ldns_rrset_rr(ldns_pkt_answer(pkt), i));
 		ldns_buffer_printf(output, "\n");
 	}
+	ldns_buffer_printf(output, "\n");
 	
 	ldns_buffer_printf(output, ";; AUTHORITY SECTION:\n");
 	for (i = 0; i < ldns_pkt_nscount(pkt); i++) {
@@ -289,6 +398,7 @@ ldns_pkt2buffer(ldns_buffer *output, ldns_pkt *pkt)
 		               ldns_rrset_rr(ldns_pkt_authority(pkt), i));
 		ldns_buffer_printf(output, "\n");
 	}
+	ldns_buffer_printf(output, "\n");
 	
 	ldns_buffer_printf(output, ";; ADDITIONAL SECTION:\n");
 	for (i = 0; i < ldns_pkt_arcount(pkt); i++) {
@@ -296,6 +406,7 @@ ldns_pkt2buffer(ldns_buffer *output, ldns_pkt *pkt)
 		               ldns_rrset_rr(ldns_pkt_additional(pkt), i));
 		ldns_buffer_printf(output, "\n");
 	}
+	ldns_buffer_printf(output, "\n");
 	
 	return status;
 }
