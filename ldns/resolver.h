@@ -96,6 +96,7 @@ bool ldns_resolver_recursive(ldns_resolver *);
 bool ldns_resolver_debug(ldns_resolver *);
 bool ldns_resolver_usevc(ldns_resolver *);
 bool ldns_resolver_fail(ldns_resolver *);
+bool ldns_resolver_dnssec(ldns_resolver *);
 
 size_t ldns_resolver_nameserver_count(ldns_resolver *);
 
