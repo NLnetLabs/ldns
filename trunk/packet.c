@@ -134,11 +134,19 @@ ldns_pkt_additional(const ldns_pkt *packet)
 
 /* return ALL section concatenated */
 ldns_rr_list *
-ldns_pkt_all(const ldns_pkt *packet)
+ldns_pkt_all(ldns_pkt *packet)
 {
-	ldns_pkt_print(stdout, packet);
-	return NULL;
-	/* TODO Miek */
+	/* mem leaks?? :( */
+	ldns_rr_list *all;
+
+	all = ldns_rr_list_cat(
+			ldns_pkt_xxsection(packet, LDNS_SECTION_QUESTION),
+			ldns_pkt_xxsection(packet, LDNS_SECTION_ANSWER));
+	all = ldns_rr_list_cat(all,
+			ldns_pkt_xxsection(packet, LDNS_SECTION_AUTHORITY));
+	all = ldns_rr_list_cat(all,
+			ldns_pkt_xxsection(packet, LDNS_SECTION_ADDITIONAL));
+	return all;
 }
 
 size_t
