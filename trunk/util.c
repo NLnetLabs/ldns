@@ -165,7 +165,7 @@ readword(char *word, FILE *from, char *del, size_t lim)
 	int c;
 	char *l;
 	char *d;
-	char *delim;
+	const char *delim;
 	int i;
 
 	l = word; i = 0;

@@ -54,8 +54,10 @@ struct ldns_struct_resolver
 	ldns_rdf **_searchlist;
 	size_t _searchlist_count;
 
-	/** \brief How many retries */
+	/** \brief How many retries to try, before giving up */
 	uint8_t _retry;
+	/** \brief Re-trans interval */
+	uint8_t _retrans;
 	/** \brief Wether to do DNSSEC */
 	bool _dnssec;
 	/** \brief Wether to use tcp */
@@ -113,6 +115,9 @@ ldns_status ldns_resolver_push_nameserver(ldns_resolver *, ldns_rdf *);
 ldns_status ldns_resolver_push_nameserver_rr(ldns_resolver *, ldns_rr *);
 ldns_status ldns_resolver_push_nameserver_rr_list(ldns_resolver *, ldns_rr_list *);
 
+uint8_t ldns_resolver_retry(ldns_resolver *);
+uint8_t ldns_resolver_retrans(ldns_resolver *);
+
 ldns_pkt * ldns_resolver_bgsend();
 ldns_pkt * ldns_resolver_send(ldns_resolver *, ldns_rdf*, ldns_rr_type, ldns_rr_class, uint16_t);
 ldns_pkt * ldns_resolver_query(ldns_resolver *, ldns_rdf*, ldns_rr_type, ldns_rr_class, uint16_t);
@@ -125,6 +130,8 @@ void ldns_resolver_set_defnames(ldns_resolver *, bool);
 void ldns_resolver_set_usevc(ldns_resolver *, bool);
 void ldns_resolver_set_dnsrch(ldns_resolver *, bool);
 void ldns_resolver_set_dnssec(ldns_resolver *, bool);
+void ldns_resolver_set_retrans(ldns_resolver *, uint8_t);
+void ldns_resolver_set_retry(ldns_resolver *, uint8_t);
 
 /**
  * Prepares the resolver for an axfr query

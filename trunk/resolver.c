@@ -38,6 +38,18 @@ ldns_resolver_port(ldns_resolver *r)
 	return r->_port;
 }
 
+uint8_t
+ldns_resolver_retry(ldns_resolver *r)
+{
+	return r->_retry;
+}
+
+uint8_t
+ldns_resolver_retrans(ldns_resolver *r)
+{
+	return r->_retrans;
+}
+
 bool
 ldns_resolver_ip6(ldns_resolver *r)
 {
@@ -283,6 +295,18 @@ void
 ldns_resolver_set_dnsrch(ldns_resolver *r, bool d)
 {
 	r->_dnsrch = d;
+}
+
+void
+ldns_resolver_set_retry(ldns_resolver *r, uint8_t retry)
+{
+	r->_retry = retry;
+}
+
+void
+ldns_resolver_set_retrans(ldns_resolver *r, uint8_t retrans)
+{
+	r->_retrans = retrans;
 }
 
 void
