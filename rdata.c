@@ -31,19 +31,19 @@
 
 /* read */
 uint16_t
-ldns_rdf_size(ldns_rdf *rd)
+ldns_rdf_size(const ldns_rdf *rd)
 {
 	return rd->_size;
 }
 
 ldns_rdf_type
-ldns_rdf_get_type(ldns_rdf *rd)
+ldns_rdf_get_type(const ldns_rdf *rd)
 {
 	return rd->_type;
 }
 
 uint8_t *
-ldns_rdf_data(ldns_rdf *rd)
+ldns_rdf_data(const ldns_rdf *rd)
 {
 	return rd->_data;
 }
@@ -220,7 +220,7 @@ ldns_rdf_new_frm_data(uint16_t s, ldns_rdf_type t, void *buf)
  * \return a new rdf structure
  */
 ldns_rdf *
-ldns_rdf_clone(ldns_rdf *r)
+ldns_rdf_clone(const ldns_rdf *r)
 {
 	return (ldns_rdf_new_frm_data(
 				ldns_rdf_size(r), 

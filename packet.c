@@ -25,174 +25,176 @@
 
 /* read */
 uint16_t
-ldns_pkt_id(ldns_pkt *packet)
+ldns_pkt_id(const ldns_pkt *packet)
 {
 	return packet->_header->_id;
 }
 
 bool
-ldns_pkt_qr(ldns_pkt *packet)
+ldns_pkt_qr(const ldns_pkt *packet)
 {
 	return packet->_header->_qr;
 }
 
 bool
-ldns_pkt_aa(ldns_pkt *packet)
+ldns_pkt_aa(const ldns_pkt *packet)
 {
 	return packet->_header->_aa;
 }
 
 bool
-ldns_pkt_tc(ldns_pkt *packet)
+ldns_pkt_tc(const ldns_pkt *packet)
 {
 	return packet->_header->_tc;
 }
 
 bool
-ldns_pkt_rd(ldns_pkt *packet)
+ldns_pkt_rd(const ldns_pkt *packet)
 {
 	return packet->_header->_rd;
 }
 
 bool
-ldns_pkt_cd(ldns_pkt *packet)
+ldns_pkt_cd(const ldns_pkt *packet)
 {
 	return packet->_header->_cd;
 }
 
 bool
-ldns_pkt_ra(ldns_pkt *packet)
+ldns_pkt_ra(const ldns_pkt *packet)
 {
 	return packet->_header->_ra;
 }
 
 bool
-ldns_pkt_ad(ldns_pkt *packet)
+ldns_pkt_ad(const ldns_pkt *packet)
 {
 	return packet->_header->_ad;
 }
 
 uint8_t
-ldns_pkt_opcode(ldns_pkt *packet)
+ldns_pkt_opcode(const ldns_pkt *packet)
 {
 	return packet->_header->_opcode;
 }
 
 uint8_t
-ldns_pkt_rcode(ldns_pkt *packet)
+ldns_pkt_rcode(const ldns_pkt *packet)
 {
 	return packet->_header->_rcode;
 }
 
 uint16_t
-ldns_pkt_qdcount(ldns_pkt *packet)
+ldns_pkt_qdcount(const ldns_pkt *packet)
 {
 	return packet->_header->_qdcount;
 }
 
 uint16_t
-ldns_pkt_ancount(ldns_pkt *packet)
+ldns_pkt_ancount(const ldns_pkt *packet)
 {
 	return packet->_header->_ancount;
 }
 
 uint16_t
-ldns_pkt_nscount(ldns_pkt *packet)
+ldns_pkt_nscount(const ldns_pkt *packet)
 {
 	return packet->_header->_nscount;
 }
 
 uint16_t
-ldns_pkt_arcount(ldns_pkt *packet)
+ldns_pkt_arcount(const ldns_pkt *packet)
 {
 	return packet->_header->_arcount;
 }
 
 ldns_rr_list *
-ldns_pkt_question(ldns_pkt *packet)
+ldns_pkt_question(const ldns_pkt *packet)
 {
 	return packet->_question;
 }
 
 ldns_rr_list *
-ldns_pkt_answer(ldns_pkt *packet)
+ldns_pkt_answer(const ldns_pkt *packet)
 {
 	return packet->_answer;
 }
 
 ldns_rr_list *
-ldns_pkt_authority(ldns_pkt *packet)
+ldns_pkt_authority(const ldns_pkt *packet)
 {
 	return packet->_authority;
 }
 
 ldns_rr_list *
-ldns_pkt_additional(ldns_pkt *packet)
+ldns_pkt_additional(const ldns_pkt *packet)
 {
 	return packet->_additional;
 }
 
 size_t
-ldns_pkt_size(ldns_pkt *packet)
+ldns_pkt_size(const ldns_pkt *packet)
 {
 	return packet->_size;
 }
 
 uint32_t 
-ldns_pkt_querytime(ldns_pkt *packet)
+ldns_pkt_querytime(const ldns_pkt *packet)
 {
 	return packet->_querytime;
 }
 
 ldns_rdf *
-ldns_pkt_answerfrom(ldns_pkt *packet)
+ldns_pkt_answerfrom(const ldns_pkt *packet)
 {
 	return packet->_answerfrom;
 }
 
 char *
-ldns_pkt_when(ldns_pkt *packet)
+ldns_pkt_when(const ldns_pkt *packet)
 {
 	return packet->_when;
 }
 
 uint16_t
-ldns_pkt_xxcount(ldns_pkt *packet, ldns_pkt_section s)
+ldns_pkt_xxcount(const ldns_pkt *packet, ldns_pkt_section s)
 {
 	switch(s) {
-		case LDNS_SECTION_QUESTION:
-			return ldns_pkt_qdcount(packet);
-		case LDNS_SECTION_ANSWER:
-			return ldns_pkt_ancount(packet);
-		case LDNS_SECTION_AUTHORITY:
-			return ldns_pkt_nscount(packet);
-		case LDNS_SECTION_ADDITIONAL:
-			return ldns_pkt_arcount(packet);
-		case LDNS_SECTION_ANY:
-			return ldns_pkt_qdcount(packet) +
-				ldns_pkt_ancount(packet) +
-				ldns_pkt_nscount(packet) +
-				ldns_pkt_arcount(packet);
+	case LDNS_SECTION_QUESTION:
+		return ldns_pkt_qdcount(packet);
+	case LDNS_SECTION_ANSWER:
+		return ldns_pkt_ancount(packet);
+	case LDNS_SECTION_AUTHORITY:
+		return ldns_pkt_nscount(packet);
+	case LDNS_SECTION_ADDITIONAL:
+		return ldns_pkt_arcount(packet);
+	case LDNS_SECTION_ANY:
+		return ldns_pkt_qdcount(packet) +
+			ldns_pkt_ancount(packet) +
+			ldns_pkt_nscount(packet) +
+			ldns_pkt_arcount(packet);
+	default:
+		abort();
 	}
-	return 0;
 }
 
 ldns_rr_list *
 ldns_pkt_xxsection(ldns_pkt *packet, ldns_pkt_section s)
 {
 	switch(s) {
-		case LDNS_SECTION_QUESTION:
-			return ldns_pkt_question(packet);
-		case LDNS_SECTION_ANSWER:
-			return ldns_pkt_answer(packet);
-		case LDNS_SECTION_AUTHORITY:
-			return ldns_pkt_authority(packet);
-		case LDNS_SECTION_ADDITIONAL:
-			return ldns_pkt_additional(packet);
-		case LDNS_SECTION_ANY:
-			return 0;
+	case LDNS_SECTION_QUESTION:
+		return ldns_pkt_question(packet);
+	case LDNS_SECTION_ANSWER:
+		return ldns_pkt_answer(packet);
+	case LDNS_SECTION_AUTHORITY:
+		return ldns_pkt_authority(packet);
+	case LDNS_SECTION_ADDITIONAL:
+		return ldns_pkt_additional(packet);
+	case LDNS_SECTION_ANY:
+		return NULL;
+	default:
+		abort();
 	}
-	return NULL;
 }
 
 /* write */
