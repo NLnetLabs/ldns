@@ -48,9 +48,39 @@ AC_CHECK_HEADERS(sys/param.h sys/mount.h,,,
 
 #AC_SEARCH_LIBS(RSA_new, [crypto])
 
-AC_DEFINE_UNQUOTED(SYSCONFDIR, "$sysconfdir")
+AC_DEFINE([SYSCONFDIR], [$sysconfdir], [System configuration dir])
+
+AH_BOTTOM([
+
+#include <stdio.h>
+#include <string.h>
+#include <unistd.h>
+#include <assert.h>
+
+#if STDC_HEADERS
+#include <stdlib.h>
+#include <stddef.h>
+#endif
+
+#ifdef HAVE_STDINT_H
+#include <stdint.h>
+#endif
+
+#ifdef HAVE_SYS_SOCKET_H
+#include <sys/socket.h>
+#endif
+
+#ifdef HAVE_NETINET_IN_H
+#include <netinet/in.h>
+#endif
+
+#ifdef HAVE_ARPA_INET_H
+#include <arpa/inet.h>
+#endif
+])
+
 
 AC_CONFIG_FILES([Makefile 
                  ])
-AC_CONFIG_HEADER([common.h])
+AC_CONFIG_HEADER([config.h])
 AC_OUTPUT
