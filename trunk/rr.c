@@ -164,11 +164,15 @@ ldns_rr_new_frm_str(const char *str)
 	r_min = ldns_rr_descriptor_minimum(desc);
 
 	/* rdata (rdf's) */
+#ifdef DEBUG
 	printf("tot rd [%s]\n", rdata);
+#endif
 	for(rd = strtok(rdata, "\t \0"), r_cnt =0; rd; rd = strtok(NULL, "\t \0"), r_cnt++) {
 		r = ldns_rdf_new_frm_str(rd,
 				ldns_rr_descriptor_field_type(desc, r_cnt));
+#ifdef DEBUG
 		printf("rd str [%s] %d\n", rd, r_cnt);
+#endif
 		if (!r) {
 			printf("rdf conversion mismatch\n");
 			return NULL;
@@ -877,7 +881,7 @@ ldns_get_rr_type_by_name(const char *name)
 	if (strlen(name) > 4 && strncasecmp(name, "TYPE", 4) == 0) {
 		return atoi(name + 4);
 	}
-	
+
 	/* Normal types */
 	for (i = 0; i < (unsigned int) RDATA_FIELD_DESCRIPTORS_COUNT; i++) {
 		desc = ldns_rr_descript(i);

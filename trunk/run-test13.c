@@ -59,8 +59,14 @@ main(int argc, char **argv)
 	}
 
 	sig = ldns_rr_new_frm_str("www.nlnetlabs.nl.   86400  IN  RRSIG    A RSASHA1 3 86400 1111020602 1108428602 ( 43791 nlnetlabs.nl.  Q/uyU1R/mLWsCONp5yu8F67Rm62yH/ts7PO3tFbZ72XONGlwliztUgHF5Cr0Jei/GsRb2TPpyHZjr5lkeFQU/PnFeUmiKT1tTw24OcYXaiFWbEsZ+ormYGtq+2t5cwvYEbZsMMsMikv+VRmG1y6b8sNObAeIjtRZhrXogQolCm4= )");
+	if (sig) {
+		ldns_rr_print(stdout,sig);
+		printf("\n");
+	}
+
 
 	/* try to verify some things */
+	
 	
 
         return 0;

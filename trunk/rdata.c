@@ -270,8 +270,6 @@ ldns_rdf_new_frm_str(const char *str, ldns_rdf_type type)
 	ldns_rdf *rdf;
 	ldns_status status;
 
-	printf("type %d\n", type);
-	
 	switch (type) {
 	case LDNS_RDF_TYPE_DNAME:
 		status = ldns_str2rdf_dname(&rdf, str);
