@@ -19,6 +19,8 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
+#include <time.h>
+
 #include <limits.h>
 #ifdef HAVE_SYS_PARAM_H
 #include <sys/param.h>
@@ -30,10 +32,8 @@
 ldns_status
 zparser_conv_short(ldns_rdf *rd, const char *shortstr)
 {
-	char *end = NULL;      /* Used to parse longs, ttls, etc.  */
-	
+	char *end = NULL;    
 	uint16_t *r;
-
 	r = MALLOC(uint16_t);
 	
 	*r = htons((uint16_t)strtol(shortstr, &end, 0));
@@ -44,6 +44,30 @@ zparser_conv_short(ldns_rdf *rd, const char *shortstr)
 		rd = ldns_rdf_new(2, LDNS_RDF_TYPE_INT16, (uint8_t*)r);
 		return LDNS_STATUS_OK;
 	}
+}
+
+/**
+ * convert a time value to wireformat 
+ */
+ldns_status
+zparser_conv_time(ldns_rdf *rd, const char *time)
+{
+	/* convert a time YYHM to wireformat */
+	uint16_t *r = NULL;
+	struct tm tm;
+	uint32_t l;
+
+	/* Try to scan the time... */
+	r = (uint16_t*)MALLOC(uint32_t);
+
+	if((char*)strptime(time, "%Y%m%d%H%M%S", &tm) == NULL) {
+		return LDNS_STATUS_ERR;
+	} else {
+		l = htonl(timegm(&tm));
+		memcpy(r, &l, sizeof(uint32_t));
+		rd = ldns_rdf_new(2, LDNS_RDF_TYPE_TIME, (uint8_t*)r);
+	}
+	return LDNS_STATUS_OK;
 }
 
 #if 0
@@ -117,31 +141,6 @@ zparser_conv_hex(ldns_rdf *rd, const char *hex)
 	return r;
 }
 
-/**
- * convert a time value to wireformat 
- */
-uint16_t *
-zparser_conv_time(ldns_rdf *rd, const char *time)
-{
-	/* convert a time YYHM to wireformat */
-	uint16_t *r = NULL;
-	struct tm tm;
-	uint32_t l;
-
-	/* Try to scan the time... */
-	/* [XXX] the cast fixes compile time warning */
-	if((char*)strptime(time, "%Y%m%d%H%M%S", &tm) == NULL) {
-		error_prev_line("Date and time is expected");
-	} else {
-
-		r = (uint16_t *) region_alloc(
-			region, sizeof(uint32_t) + sizeof(uint16_t));
-		l = htonl(timegm(&tm));
-		memcpy(r + 1, &l, sizeof(uint32_t));
-		*r = sizeof(uint32_t);
-	}
-	return r;
-}
 
 uint16_t *
 zparser_conv_protocol(region_type *region, const char *protostr)
