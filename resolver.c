@@ -34,19 +34,19 @@ ldns_resolver_port(ldns_resolver *r)
 	return r->_port;
 }
 
-uint8_t
+bool
 ldns_resolver_ip6(ldns_resolver *r)
 {
 	return r->_ip6;
 }
 
-uint8_t
+bool
 ldns_resolver_recursive(ldns_resolver *r)
 {
 	return r->_recursive;
 }
 
-uint8_t
+bool
 ldns_resolver_debug(ldns_resolver *r)
 {
 	return r->_debug;
@@ -82,19 +82,19 @@ ldns_resolver_nameserver_count(ldns_resolver *r)
 	return r->_nameserver_count;
 }
 
-uint8_t
+bool
 ldns_resolver_dnssec(ldns_resolver *r)
 {
 	return r->_dnssec;
 }
 
-uint8_t
+bool
 ldns_resolver_igntc(ldns_resolver *r)
 {
 	return r->_igntc;
 }
 
-uint8_t
+bool
 ldns_resolver_usevc(ldns_resolver *r)
 {
 	return r->_usevc;
@@ -141,31 +141,31 @@ ldns_resolver_push_nameserver(ldns_resolver *r, ldns_rdf *n)
 }
 
 void
-ldns_resolver_set_recursive(ldns_resolver *r, uint8_t re)
+ldns_resolver_set_recursive(ldns_resolver *r, bool re)
 {
 	r->_recursive = re;
 }
 
 void
-ldns_resolver_set_dnssec(ldns_resolver *r, uint8_t d)
+ldns_resolver_set_dnssec(ldns_resolver *r, bool d)
 {
 	r->_dnssec = d;
 }
 
 void
-ldns_resolver_set_igntc(ldns_resolver *r, uint8_t i)
+ldns_resolver_set_igntc(ldns_resolver *r, bool i)
 {
 	r->_igntc = i;
 }
 
 void
-ldns_resolver_set_usevc(ldns_resolver *r, uint8_t vc)
+ldns_resolver_set_usevc(ldns_resolver *r, bool vc)
 {
 	r->_usevc = vc;
 }
 
 void
-ldns_resolver_set_debug(ldns_resolver *r, uint8_t d)
+ldns_resolver_set_debug(ldns_resolver *r, bool d)
 {
 	r->_debug = d;
 }

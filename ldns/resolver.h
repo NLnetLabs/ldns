@@ -34,10 +34,10 @@ struct ldns_struct_resolver
 	size_t _nameserver_count; /* how many do we have */
 
 	/** \brief Wether or not to be recursive */
-	uint8_t _recursive;
+	bool _recursive;
 
 	/** \brief Print debug information */
-	uint8_t _debug;
+	bool _debug;
 	
 	/** \brief Default domain to add */
 	ldns_rdf *_domain; 
@@ -49,13 +49,13 @@ struct ldns_struct_resolver
 	/** \brief How many retries */
 	uint8_t _retry;
 	/** \brief Wether to do DNSSEC */
-	uint8_t _dnssec;
+	bool _dnssec;
 	/** \brief Wether to use tcp */
-	uint8_t _usevc;
+	bool _usevc;
 	/** \brief Wether to ignore the tc bit */
-	uint8_t _igntc;
+	bool _igntc;
 	/** \brief Wether to use ip6, 0->ip4, 1->ip6 */
-	uint8_t _ip6;
+	bool _ip6;
 	/** \brief 1 if the resolver is properly configured */
 	uint8_t _configured;
 };
@@ -64,9 +64,9 @@ typedef struct ldns_struct_resolver ldns_resolver;
 /* prototypes */
 uint16_t ldns_resolver_port(ldns_resolver *);
 /* ldns_rr_list * ldns_resolver_nameservers(ldns_resolver *) pop>? */
-uint8_t ldns_resolver_recursive(ldns_resolver *);
-uint8_t ldns_resolver_debug(ldns_resolver *);
-uint8_t ldns_resolver_usevc(ldns_resolver *);
+bool ldns_resolver_recursive(ldns_resolver *);
+bool ldns_resolver_debug(ldns_resolver *);
+bool ldns_resolver_usevc(ldns_resolver *);
 
 size_t ldns_resolver_nameserver_count(ldns_resolver *);
 
@@ -75,8 +75,8 @@ ldns_rdf ** ldns_resolver_searchlist(ldns_resolver *);
 ldns_rdf ** ldns_resolver_nameservers(ldns_resolver *);
 
 void ldns_resolver_set_port(ldns_resolver *, uint16_t);
-void ldns_resolver_set_recursive(ldns_resolver *, uint8_t);
-void ldns_resolver_set_debug(ldns_resolver *, uint8_t);
+void ldns_resolver_set_recursive(ldns_resolver *, bool);
+void ldns_resolver_set_debug(ldns_resolver *, bool);
 void ldns_resolver_incr_nameserver_count(ldns_resolver *);
 void ldns_resolver_set_nameserver_count(ldns_resolver *, size_t);
 
