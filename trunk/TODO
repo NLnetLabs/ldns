@@ -11,6 +11,8 @@ o network code
 	- tcp
 	- axfr
 	- tsig?
+	- timeouts part of resolver struct with access functions and
+	  sane default values
 o DNSSEC
 o Make a shared library and test compile some programs
 
