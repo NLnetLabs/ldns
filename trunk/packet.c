@@ -295,12 +295,6 @@ ldns_rr *ldns_pkt_tsig(const ldns_pkt *pkt) {
 	return pkt->_tsig_rr;
 }
 
-ldns_status ldns_pkt_tsig_sign(ldns_pkt *pkt) {
-	pkt = pkt;
-	return LDNS_STATUS_OK;
-}
-
-
 /* write */
 void
 ldns_pkt_set_id(ldns_pkt *packet, uint16_t id)

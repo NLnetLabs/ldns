@@ -323,8 +323,8 @@ printf("\n");
 			   (TODO: check for that)
 			   this would deprecate the general tsig type
 			*/
-			cur_rdf_length = (size_t) read_uint16(&wire[*pos]);
-			*pos += 2;
+			cur_rdf_length = (size_t) read_uint16(&wire[*pos])+2;
+/*			*pos += 2;*/
 			break;
 		case LDNS_RDF_TYPE_APL:
 		case LDNS_RDF_TYPE_B64:

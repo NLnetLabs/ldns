@@ -25,6 +25,7 @@ main(int argc, char **argv)
 
         ldns_resolver *res;
         ldns_rdf *nameserver;
+        ldns_rdf *mac;
 
         char *server_ip = NULL;
         char *name = NULL;
@@ -44,10 +45,11 @@ main(int argc, char **argv)
 
 	ldns_pkt_set_id(pkt, 46789);
 
-	ldns_pkt_tsig_sign_query(pkt, "jelte.", "vBUWJnkgDw4YTobXtbUD6XED5Qg74tnghYX3tzKzfsI=", 300, "hmac-md5.sig-alg.reg.int");
+	ldns_pkt_tsig_sign(pkt, "jelte.", "vBUWJnkgDw4YTobXtbUD6XED5Qg74tnghYX3tzKzfsI=", 300, "hmac-md5.sig-alg.reg.int", NULL);
 
+	mac = ldns_rr_rdf(ldns_pkt_tsig(pkt), 3);
 	/* test our own sign */
-	if (!ldns_pkt_tsig_verify(pkt, "jelte.", "vBUWJnkgDw4YTobXtbUD6XED5Qg74tnghYX3tzKzfsI=")) {
+	if (!ldns_pkt_tsig_verify(pkt, "jelte.", "vBUWJnkgDw4YTobXtbUD6XED5Qg74tnghYX3tzKzfsI=", NULL)) {
 		printf("Can't verify my own sig :(\n");
 		exit(-1);
 	}
@@ -72,6 +74,14 @@ main(int argc, char **argv)
         
         printf("\n\nANSWER:\n");
         ldns_pkt_print(stdout, answer);
+
+        printf("\nVerifying...\n");
+        
+        if (ldns_pkt_tsig_verify(answer, "jelte.", "vBUWJnkgDw4YTobXtbUD6XED5Qg74tnghYX3tzKzfsI=", mac)) {
+        	printf("Success!\n");
+	} else {
+		printf("Failed.\n");
+	}
 /*
         ldns_rdf_free(nameserver);
         ldns_rdf_free(qname);
