@@ -859,7 +859,7 @@ ldns_sign_public_rsasha1(ldns_buffer *to_sign, RSA *key)
 			&siglen, key);
 	sigdata_rdf = ldns_rdf_new_frm_data(LDNS_RDF_TYPE_B64, siglen, 
 			ldns_buffer_begin(b64sig));
-	ldns_buffer_free(b64sig);
+	/* ldns_buffer_free(b64sig); can't free this buffer ?? */
 	return sigdata_rdf;
 }
 
