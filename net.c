@@ -43,39 +43,6 @@ ldns_sendbuf_axfr(ldns_buffer *buf, int *sockfd, struct sockaddr *dest)
 }
 #endif 
 
-/** 
- * Send a packet to the nameserver. If the name is 0 or 1 dot(s)
- * try it as-is. Otherwise apply the search list
- * \param[in] resolver to use 
- * \param[in] query to send
- * \return the pkt received from the nameserver
- */
-ldns_pkt *
-ldns_search(ldns_resolver *r, ldns_pkt *q_pkt)
-{
-	/* see _ldns_query, check the result
-	 * of the query to see if a new query
-	 * is needed.
-	 */
-	return NULL;
-}
-
-/** 
- * Send a packet to the nameserver. If the name have no dots
- * and defnames is true, the default domain is appended.
- * \param[in] resolver to use 
- * \param[in] query to send
- * \return the pkt received from the nameserver
- */
-ldns_pkt *
-ldns_query(ldns_resolver *r, ldns_pkt *q_pkt)
-{
-	/* unpack the query, check the name and re-assemble the
-	 * query
-	 */
-	return NULL;
-}
-
 /**
  * Send to ptk to the nameserver at ipnumber. Return the data
  * as a ldns_pkt

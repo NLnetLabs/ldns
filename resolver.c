@@ -221,18 +221,16 @@ ldns_resolver_incr_nameserver_count(ldns_resolver *r)
 	ldns_resolver_set_nameserver_count(r, ++c);
 }
 
-ldns_status
+void
 ldns_resolver_set_domain(ldns_resolver *r, ldns_rdf *d)
 {
 	r->_domain = d;
-	return LDNS_STATUS_OK;
 }
 
-ldns_status
+void
 ldns_resolver_push_searchlist(ldns_resolver *r, ldns_rdf *d)
 {
 	r->_searchlist[++r->_searchlist_count] = d;
-	return LDNS_STATUS_OK;
 }
 
 /* more sophisticated functions */
@@ -258,23 +256,55 @@ ldns_resolver_new(void)
 	ldns_resolver_set_searchlist_count(r, 0);
 	ldns_resolver_set_nameserver_count(r, 0);
 	ldns_resolver_set_port(r, LDNS_PORT);
+	ldns_resolver_set_domain(r, NULL);
+	ldns_resolver_set_defnames(r, false);
 	return r;
 }
 
-/* search for information in the DNS.
- * search() applies the search list.
- * See Net::DNS::Resolver for details
+/** 
+ * Send the query 
+ * \param[in] *r operate using this resolver
+ * \param[in] *name query for this name
+ * \param[in] *type query for this type (may be 0, defaults to A)
+ * \param[in] *class query for this class (may be 0, default to IN)
+ * \return ldns_pkt* a packet with the reply from the nameserver
+ * if _dnsrch is true add the searchlist
  */
 ldns_pkt *
-ldns_resolver_search()
+ldns_resolver_search(ldns_resolver *r, ldns_rdf *name, ldns_rr_type type, ldns_rr_class class,
+                uint16_t flags)
 {
-	return NULL;
+	ldns_rdf *newname;
+	
+	if (!ldns_resolver_defnames(r)) {
+		return ldns_resolver_query(r, name, type, class, flags);
+	}
+	if (!ldns_resolver_domain(r)) {
+		/* _defnames is set, but the domain is not....?? */
+		return ldns_resolver_query(r, name, type, class, flags);
+	}
+
+	newname = ldns_dname_concat(name, ldns_resolver_domain(r));
+	if (!newname) {
+		return NULL;
+	}
+	return ldns_resolver_query(r, newname, type, class, flags);
 }
 
-/* only adds the default domain */
+/**
+ * Send a qeury to a nameserver
+ * \param[in] *r operate using this resolver
+ * \param[in] *name query for this name
+ * \param[in] *type query for this type (may be 0, defaults to A)
+ * \param[in] *class query for this class (may be 0, default to IN)
+ * \return ldns_pkt* a packet with the reply from the nameserver
+ * if _defnames is true the default domain will be added
+ */
 ldns_pkt *
-ldns_resolver_query()
+ldns_resolver_query(ldns_resolver *r, ldns_rdf *name, ldns_rr_type type, ldns_rr_class class,
+                uint16_t flags)
 {
+	
 	return NULL;
 }
 
