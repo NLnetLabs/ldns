@@ -425,9 +425,11 @@ printf("\n");
 			ldns_rr_free(rr);
 			ldns_pkt_set_arcount(packet, ldns_pkt_arcount(packet) - 1);
 		} else if (ldns_rr_get_type(rr) == LDNS_RR_TYPE_TSIG) {
+/*
 printf("PACKET HAD TSIG: ");
 ldns_rr_print(stdout, rr);
 printf("\n");
+*/
 			ldns_pkt_set_tsig(packet, rr);
 			ldns_pkt_set_arcount(packet, ldns_pkt_arcount(packet) - 1);
 		} else if (!ldns_rr_list_push_rr(ldns_pkt_additional(packet), rr)) {
