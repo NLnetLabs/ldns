@@ -37,7 +37,6 @@ main(void)
 		return 1;
 	}
 
-                
         if (ldns_resolver_set_domain(res, default_dom) != LDNS_STATUS_OK) {
 		printf("error set domain\n");
                 return 1;

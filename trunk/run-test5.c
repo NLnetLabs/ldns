@@ -14,6 +14,8 @@ main()
 	printf("Packet:\n");
 	ldns_pkt_print(stdout, packet);
 
+
+	ldns_pkt_free(packet);
 	printf("test 5\n");
 	packet = ldns_pkt_query_new_frm_str("www.kanariepiet.com",
 	                            LDNS_RR_TYPE_A,

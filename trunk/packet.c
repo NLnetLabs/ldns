@@ -401,8 +401,7 @@ ldns_pkt_query_new_frm_str(const char *name, ldns_rr_type rr_type, ldns_rr_class
 		return NULL;
 	}
 	
-	/* we're making a query, add this flag */
-	if (!ldns_pkt_set_flags(packet, LDNS_QR | flags)) {
+	if (!ldns_pkt_set_flags(packet, flags)) {
 		return NULL;
 	}
 	
