@@ -12,6 +12,8 @@
 
 #include <config.h>
 
+#include <limits.h>
+
 #include <ldns/rr.h>
 
 #include "util.h"
@@ -332,7 +334,8 @@ size_t
 ldns_rr_descriptor_maximum(ldns_rr_descriptor_type *descriptor)
 {
 	if (descriptor->_variable != RD_NONE_T) {
-		return SIZE_MAX;
+		/* XXX: Should really be SIZE_MAX... bad FreeBSD.  */
+		return UINT_MAX;
 	} else {
 		return descriptor->_maximum;
 	}
