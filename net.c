@@ -60,12 +60,14 @@ ldns_send(ldns_resolver *r, ldns_pkt *query_pkt)
 {
 	uint8_t i;
 	
-	struct sockaddr *ns_ip;
-	socklen_t ns_ip_len;
+	struct sockaddr_storage *ns;
+	struct sockaddr_in *ns4;
+	struct sockaddr_in6 *ns6;
+	socklen_t ns_len;
+
 	ldns_rdf **ns_array;
 	ldns_pkt *reply;
 	ldns_buffer *qb;
-	ldns_rdf *tmp;
 
 	ns_array = ldns_resolver_nameservers(r);
 	reply = NULL;
@@ -82,16 +84,26 @@ ldns_send(ldns_resolver *r, ldns_pkt *query_pkt)
 	
 	/* loop through all defined nameservers */
 	for (i = 0; i < ldns_resolver_nameserver_count(r); i++) {
-		ns_ip_len = ldns_rdf_size(ns_array[i]);
 
-		tmp = ns_array[i];
+		ns = ldns_rdf2native_sockaddr_storage(ns_array[i]);
+		ns_len = ldns_rdf_size(ns_array[i]);
 
-		ldns_rdf_print(stdout, tmp);
-		printf("\n");
-		printf("ip address len %d\n", ns_ip_len);
+		/* setup some family specific stuff */
+		switch(ns->ss_family) {
+			case AF_INET:
+				ns4 = (struct sockaddr_in*) ns;
+				ns4->sin_port = htons(ldns_resolver_port(r));
+				break;
+			case AF_INET6:
+				ns6 = (struct sockaddr_in6*) ns;
+				ns6->sin6_port = htons(ldns_resolver_port(r));
+				break;
+		}
+
+		printf("ip address len %d\n", ns_len);
 
 		/* query */
-		reply = ldns_send_udp(qb, ns_ip, ns_ip_len);
+		reply = ldns_send_udp(qb, ns, ns_len);
 		
 		if (reply) {
 			printf("reply found\n");
@@ -105,15 +117,25 @@ ldns_send(ldns_resolver *r, ldns_pkt *query_pkt)
 /**
  */
 ldns_pkt *
-ldns_send_udp(ldns_buffer *qbin, const struct sockaddr *to, socklen_t tolen)
+ldns_send_udp(ldns_buffer *qbin, const struct sockaddr_storage *to, socklen_t tolen)
 {
 	int sockfd;
 	ssize_t bytes;
 	uint8_t *answer;
 	ldns_pkt *answer_pkt;
+	struct sockaddr_in *to4;
+	struct sockaddr_in6 *to6;
 
-	
-	if ((sockfd = socket(to->sa_family, SOCK_DGRAM, IPPROTO_UDP)) == -1) {
+	switch(to->ss_family) {
+		case AF_INET:
+			to4 = (struct sockaddr_in*) to;
+			break;
+		case AF_INET6:
+			to6 = (struct sockaddr_in6*) to;
+			break;
+	}
+
+	if ((sockfd = socket(((struct sockaddr*)to)->sa_family, SOCK_DGRAM, IPPROTO_UDP)) == -1) {
 		printf("could not open socket\n");
 		return NULL;
 	}
