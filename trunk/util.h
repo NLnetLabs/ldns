@@ -16,6 +16,15 @@
 #include <ldns/rr.h>
 
 /**
+ * splint static inline workaround
+ */
+#ifdef S_SPLINT_S
+#define INLINE 
+#else
+#define INLINE static inline
+#endif
+
+/**
  * Memory management macro's
  */
 #define MALLOC(type)		XMALLOC(type, 1)
@@ -36,14 +45,7 @@
  * Copy data allowing for unaligned accesses in network byte order
  * (big endian).
  */
-#ifdef S_SPLINT_S
-
-uint16_t read_uint16(const void *src);
-uint32_t read_uint32(const void *src);
-
-#else /* S_SPLINT_S */
-
-static inline uint16_t
+INLINE uint16_t
 read_uint16(const void *src)
 {
 #ifdef ALLOW_UNALIGNED_ACCESSES
@@ -54,7 +56,7 @@ read_uint16(const void *src)
 #endif
 }
 
-static inline uint32_t
+INLINE uint32_t
 read_uint32(const void *src)
 {
 #ifdef ALLOW_UNALIGNED_ACCESSES
@@ -68,7 +70,35 @@ read_uint32(const void *src)
 #endif
 }
 
-#endif /* !S_SPLINT_S */
+/*
+ * Copy data allowing for unaligned accesses in network byte order
+ * (big endian).
+ */
+INLINE void
+write_uint16(void *dst, uint16_t data)
+{
+#ifdef ALLOW_UNALIGNED_ACCESSES
+	* (uint16_t *) dst = htons(data);
+#else
+	uint8_t *p = (uint8_t *) dst;
+	p[0] = (uint8_t) ((data >> 8) & 0xff);
+	p[1] = (uint8_t) (data & 0xff);
+#endif
+}
+
+INLINE void
+write_uint32(void *dst, uint32_t data)
+{
+#ifdef ALLOW_UNALIGNED_ACCESSES
+	* (uint32_t *) dst = htonl(data);
+#else
+	uint8_t *p = (uint8_t *) dst;
+	p[0] = (uint8_t) ((data >> 24) & 0xff);
+	p[1] = (uint8_t) ((data >> 16) & 0xff);
+	p[2] = (uint8_t) ((data >> 8) & 0xff);
+	p[3] = (uint8_t) (data & 0xff);
+#endif
+}
 
 /* prototypes */
 void    xprintf_rdf(ldns_rdf *);
