@@ -245,3 +245,47 @@ tokenread:
 		return (ssize_t)i;
 	}
 }
+
+/* should text be writeable? Or should we return a new
+ * string??
+ */
+size_t
+zoctet(char *text)
+{
+        /*
+         * s follows the string, p lags behind and rebuilds 
+	 * the new string
+         */
+        char *s;
+        char *p;
+
+        for (s = p = text; *s; ++s, ++p) {
+                assert(p <= s);
+                if (s[0] != '\\') {
+                        /* Ordinary character.  */
+                        *p = *s;
+                } else if (isdigit(s[1]) && isdigit(s[2]) && isdigit(s[3])) {
+                        /* \DDD escape.  */
+                        int val = (hexdigit_to_int(s[1]) * 100 +
+                                   hexdigit_to_int(s[2]) * 10 +
+                                   hexdigit_to_int(s[3]));
+                        if (0 <= val && val <= 255) {
+                                s += 3;
+                                *p = val;
+                        } else {
+                                printf("text escape \\DDD overflow");
+				/* kuch, another printf... */
+                                *p = *++s;
+                        }
+                } else if (s[1] != '\0') {
+                        /* \X where X is any character, keep X.  */
+                        *p = *++s;
+                } else {
+                        /* Trailing backslash, ignore it.  */
+                        /* zc_warning("trailing backslash ignored"); */
+                        --p;
+                }
+        }
+        *p = '\0';
+        return p - text;
+}
