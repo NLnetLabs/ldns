@@ -88,6 +88,10 @@ ldns_send(ldns_resolver *r, ldns_pkt *query_pkt)
 		ns = ldns_rdf2native_sockaddr_storage(ns_array[i]);
 		ns_len = (socklen_t) ldns_rdf_size(ns_array[i]);
 
+		/* additional struct data 
+		 * todo: how to determine this value?
+		 */
+		ns_len += 12;
 		/* setup some family specific stuff */
 #if 0
 		switch(ns->ss_family) {
@@ -148,7 +152,7 @@ ldns_send_udp(ldns_buffer *qbin, const struct sockaddr_storage *to, socklen_t to
 	printf("address %s\n", inet_ntoa(*b));
 
 	bytes =  sendto(sockfd, ldns_buffer_begin(qbin),
-			ldns_buffer_capacity(qbin), 0, (struct sockaddr *)to, tolen);
+			ldns_buffer_position(qbin), 0, (struct sockaddr *)to, tolen);
 
 	if (bytes == -1) {
 		printf("error with sending: %s\n", strerror(errno));
@@ -156,7 +160,7 @@ ldns_send_udp(ldns_buffer *qbin, const struct sockaddr_storage *to, socklen_t to
 		return NULL;
 	}
 
-	if ((size_t) bytes != ldns_buffer_capacity(qbin)) {
+	if ((size_t) bytes != ldns_buffer_position(qbin)) {
 		printf("amount mismatch\n");
 		close(sockfd);
 		return NULL;
