@@ -127,20 +127,20 @@
 struct type_struct_rr
 {
 	/** \brief Owner name, uncompressed */
-	uint8_t		*owner;	
+	uint8_t		*_owner;	
 	/** \brief Time to live  */
-	uint32_t	ttl;	
+	uint32_t	_ttl;	
 	/** \brief Number of data fields */
-	uint16_t	rd_count;
+	uint16_t	_rd_count;
 	/** \brief the type of the RR. A, MX etc. */
-	uint16_t	type;	
+	uint16_t	_type;	
 	/** \brief Class of the resource record.
 	 *
 	 * name chosen to avoid clash with class keyword
 	 */
-	t_class		klass;	
+	t_class		_klass;	
 	/* everything in the rdata is in network order */
-	/** \brief The list of data's */
+	/** \brief The list of rdata's */
 	t_rdata_field	*rdata_fields;
 };
 typedef struct type_struct_rr t_rr;
