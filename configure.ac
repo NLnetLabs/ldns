@@ -67,6 +67,8 @@ fi
 AC_PATH_PROG(doxygen, doxygen, "/usr/bin/doxygen")
 
 # Checks for libraries.
+# Use libtool 
+AC_PROG_LIBTOOL
 
 # Checks for header files.
 AC_HEADER_STDC
