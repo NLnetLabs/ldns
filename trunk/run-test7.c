@@ -7,8 +7,7 @@
  */
 
 #include <config.h>
-#include <ldns/resolver.h>
-#include <ldns/host2str.h>        
+#include <ldns/dns.h>
 
 void
 print_usage(char *file)
@@ -24,6 +23,7 @@ main(int argc, char **argv)
         ldns_resolver *res;
         ldns_rdf *qname;
         ldns_rdf *nameserver;
+	ldns_rdf *default_dom;
         ldns_pkt *pkt;
         char *server_ip = NULL;
         char *name = NULL;
@@ -43,38 +43,31 @@ main(int argc, char **argv)
                 return 1;
 
         /* create a default domain and add it */
-/*
-        default_dom = ldns_rdf_new_frm_str("miek.nl.", LDNS_RDF_TYPE_DNAME);
-	if (!default_dom) {
-		printf("error default dom\n");
-		return 1;
-	}
-*/
+
+        default_dom = ldns_dname_new_frm_str("miek.nl.");
+        ldns_resolver_set_domain(res, default_dom);
+	ldns_resolver_set_defnames(res, true); /* use the suffix */
+
         nameserver  = ldns_rdf_new_frm_str(server_ip, LDNS_RDF_TYPE_A);
 	if (!nameserver) {
 		printf("Bad server ip\n");
 		return 1;
 	}
 
-/*
-        if (ldns_resolver_set_domain(res, default_dom) != LDNS_STATUS_OK) {
-		printf("error set domain\n");
-                return 1;
-	}
-*/
+
+
         if (ldns_resolver_push_nameserver(res, nameserver) != LDNS_STATUS_OK) {
 		printf("error push nameserver\n");
                 return 1;
 	}
-
         /* setup the question */
-        qname = ldns_rdf_new_frm_str(name, LDNS_RDF_TYPE_DNAME);
+        qname = ldns_dname_new_frm_str(name);
 	if (!qname) {
 		printf("error making qname\n");
                 return 1;
 	}
         
-        pkt = ldns_resolver_send(res, qname, ldns_rr_get_type_by_name(type), 0, LDNS_RD);
+        pkt = ldns_resolver_query(res, qname, ldns_rr_get_type_by_name(type), 0, LDNS_RD);
 
 	if (!pkt)  {
 		printf("error pkt sending\n");

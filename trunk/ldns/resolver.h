@@ -95,5 +95,6 @@ ldns_resolver *ldns_resolver_new(void);
 void ldns_resolver_free(ldns_resolver *);
 void ldns_resolver_set_defnames(ldns_resolver *, bool);
 void ldns_resolver_set_usevc(ldns_resolver *, bool);
+void ldns_resolver_set_dnsrch(ldns_resolver *, bool);
 
 #endif  /* !_LDNS_RESOLVER_H */
