@@ -134,23 +134,32 @@ ldns_rdf2native_int32(ldns_rdf *rd)
  * \return struct sockaddr* the address in the format so other
  * functions can use it (sendto)
  */
-struct sockaddr *
-ldns_rdf2native_aaaaa(ldns_rdf *rd)
+struct sockaddr_storage *
+ldns_rdf2native_sockaddr_storage(ldns_rdf *rd)
 {
-	struct sockaddr *data;
+	struct sockaddr_storage *data;
+	struct sockaddr_in  *data_in;
+	struct sockaddr_in6 *data_in6;
+
+	data = MALLOC(struct sockaddr_storage);
 
 	switch(ldns_rdf_get_type(rd)) {
 		case LDNS_RDF_TYPE_A:
-			data = MALLOC(struct sockaddr);
-			data->sa_family = AF_INET;
-			memcpy(data->sa_data, ldns_rdf_data(rd), ldns_rdf_size(rd));
+			data->ss_family = AF_INET;
+			data_in = (struct sockaddr_in*) data;
+			data_in->sin_port = htons(53); /* default */
+			
+			memcpy(&data_in->sin_addr.s_addr, ldns_rdf_data(rd), ldns_rdf_size(rd));
 			return data;
 		case LDNS_RDF_TYPE_AAAA:
-			data = MALLOC(struct sockaddr);
-			data->sa_family = AF_INET6;
-			memcpy(data->sa_data, ldns_rdf_data(rd), ldns_rdf_size(rd));
+			data->ss_family = AF_INET6;
+			data_in6 = (struct sockaddr_in6*) data;
+			data_in6->sin6_port = htons(53); /* default */
+
+			memcpy(&data_in6->sin6_addr.in6_u, ldns_rdf_data(rd), ldns_rdf_size(rd));
 			return data;
 		default:
+			FREE(data);
 			printf("_aaaaa something is wrong, should not reached this\n\n");
 			return NULL;
 	}

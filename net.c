@@ -82,7 +82,6 @@ ldns_send(ldns_resolver *r, ldns_pkt *query_pkt)
 	
 	/* loop through all defined nameservers */
 	for (i = 0; i < ldns_resolver_nameserver_count(r); i++) {
-		ns_ip = ldns_rdf2native_aaaaa(ns_array[i]);
 		ns_ip_len = ldns_rdf_size(ns_array[i]);
 
 		tmp = ns_array[i];
