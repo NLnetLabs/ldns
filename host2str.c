@@ -784,6 +784,9 @@ ldns_rr2buffer_str(ldns_buffer *output, ldns_rr *rr)
 	if (status != LDNS_STATUS_OK) {
 		return status;
 	}
+
+	/* ttl */
+	ldns_buffer_printf(output, "\t%d", ldns_rr_ttl(rr));
 	
  	lt = ldns_lookup_by_id(ldns_rr_classes, ldns_rr_get_class(rr));
 	if (lt) {

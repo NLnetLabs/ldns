@@ -104,7 +104,7 @@ ldns_rdf2native_int16(ldns_rdf *rd)
 	switch(ldns_rdf_get_type(rd)) {
 		case LDNS_RDF_TYPE_INT16:
 			memcpy(&data, ldns_rdf_data(rd), sizeof(data));
-			return data;
+			return ntohs(data);
 		default:
 			return 0;
 	}
@@ -122,11 +122,10 @@ ldns_rdf2native_int32(ldns_rdf *rd)
 	switch(ldns_rdf_get_type(rd)) {
 		case LDNS_RDF_TYPE_INT32:
 			memcpy(&data, ldns_rdf_data(rd), sizeof(data));
-			return data;
+			return ntohl(data);
 		default:
 			return 0;
 	}
-	return data;
 }
 
 /** 

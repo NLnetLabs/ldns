@@ -14,10 +14,12 @@ o check all conversion routines on missing types
 o need LDNS_RDF_TYPE_PROTO??
 o network code
 	- tsig?
+o printing of signatures dates/times
 o DNSSEC
 	- define algorithms?
 	- look again at keytag calc
 o Make a shared library and test compile some programs
+
 
 Documentation:
 --------------

@@ -53,6 +53,7 @@ main(int argc, char **argv)
 	}
 	
 	ldns_rr_set_push_rr(rrset, ldns_rr_new_frm_str("www.nlnetlabs.nl.   86354  IN  A        213.154.224.1"));
+	ldns_rr_set_push_rr(rrset, ldns_rr_new_frm_str("www.nlnetlabs.nl.   86354  IN  A        213.154.224.2"));
 	if (rrset) {
 		ldns_rr_list_print(stdout,rrset);
 		printf("\n");
@@ -70,6 +71,11 @@ main(int argc, char **argv)
 	printf("Key tag %d\n", ldns_keytag(ldns_rr_list_rr(keys_rrset, 0)));
 	
 	
+	if (ldns_verify_rrsig(rrset, sig, keys_rrset)) {
+		printf("it verifies!!!\n");
+	} else {
+		printf("*bummer*\n");
+	}
 
         return 0;
 }
