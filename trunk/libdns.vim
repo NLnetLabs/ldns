@@ -52,6 +52,12 @@ syn keyword  ldnsConstant	LDNS_PORT
 " ldns/packet.h
 syn keyword  ldnsType           ldns_pkt
 syn keyword  ldnsType           ldns_pkt_section
+syn keyword  ldnsConstant	LDNS_QR
+syn keyword  ldnsConstant	LDNS_AA
+syn keyword  ldnsConstant	LDNS_TC
+syn keyword  ldnsConstant	LDNS_CD
+syn keyword  ldnsConstant	LDNS_RA
+syn keyword  ldnsConstant	LDNS_AD
 
 
 " dns/error.h

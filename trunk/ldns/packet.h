@@ -103,6 +103,7 @@ bool ldns_pkt_rd(ldns_pkt *);
 bool ldns_pkt_cd(ldns_pkt *);
 bool ldns_pkt_ra(ldns_pkt *);
 bool ldns_pkt_ad(ldns_pkt *);
+bool ldns_pkt_set_flags(ldns_pkt *, uint16_t);
 uint8_t ldns_pkt_opcode(ldns_pkt *);
 uint8_t ldns_pkt_rcode(ldns_pkt *);
 uint16_t ldns_pkt_qdcount(ldns_pkt *);
@@ -149,9 +150,17 @@ void ldns_pkt_free(ldns_pkt *packet);
 /**
  * Creates a query packet for the given name, type, class
  */
-ldns_pkt * ldns_pkt_query_new_frm_str(char *, ldns_rr_type, ldns_rr_class);
-ldns_pkt * ldns_pkt_query_new(ldns_rdf *, ldns_rr_type, ldns_rr_class);
+ldns_pkt * ldns_pkt_query_new_frm_str(const char *, ldns_rr_type, ldns_rr_class, uint16_t);
+ldns_pkt * ldns_pkt_query_new(ldns_rdf *, ldns_rr_type, ldns_rr_class, uint16_t);
 
 #define MAX_PACKET_SIZE         65535
+
+/* allow flags to be given to mk_query */
+#define LDNS_QR		1
+#define LDNS_AA		2
+#define LDNS_TC		4
+#define LDNS_CD		8
+#define LDNS_RA		16
+#define LDNS_AD		32
 
 #endif  /* !_LDNS_PACKET_H */
