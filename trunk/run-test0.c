@@ -19,12 +19,12 @@ main(void)
 	uint8_t *wire;
 	t_packet *packet;
 	
-	rr = rr_new();
+	rr = ldns_rr_new();
 
-	rd_f = rd_field_new(20, RD_DNAME_T, (uint8_t*)"hallo.nl");
+	rd_f = _ldns_rd_field_new(20, RD_DNAME_T, (uint8_t*)"hallo.nl");
 	xprintf_rd_field(rd_f);
 	
-	rr_push_rd_field(rr, rd_f);
+	ldns_rr_push_rd_field(rr, rd_f);
 
 	xprintf_rr(rr);
 
