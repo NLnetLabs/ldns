@@ -75,7 +75,7 @@ struct ldns_struct_pkt
 typedef struct ldns_struct_pkt ldns_pkt;
 
 /* prototypes */
-uint16_t packet_id(ldns_pkt *);
+uint16_t pkt_id(ldns_pkt *);
 bool pkt_qr(ldns_pkt *);
 bool pkt_aa(ldns_pkt *);
 bool pkt_tc(ldns_pkt *);
@@ -110,14 +110,14 @@ void pkt_set_arcount(ldns_pkt *, uint16_t);
  *
  * @return pointer to the new packet
  */
-ldns_pkt *ldns_packet_new();
+ldns_pkt *ldns_pkt_new();
 
 /**
  * Frees the packet structure and all data that it contains
  *
  * @param packet The packet structure to free
  */
-void ldns_packet_free(ldns_pkt *packet);
+void ldns_pkt_free(ldns_pkt *packet);
 
 /**
  * Converts the data on the uint8_t bytearray (in wire format) to a DNS packet
