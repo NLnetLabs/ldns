@@ -10,15 +10,6 @@ AC_AIX
 AC_PROG_CC
 AC_PROG_MAKE_SET
 
-# check for compiler capabilities
-#AC_MSG_CHECKING(for flexible array members)
-#AC_TRY_COMPILE([struct test { int i; int data[]; }; ], [],
-#		AC_MSG_RESULT(yes),
-#		[AC_MSG_RESULT(no)
-#			AC_MSG_ERROR(Please use gcc >= 3 or another compiler with flexible array members)
-#		]
-#)
-
 # my own checks
 AC_PATH_PROG(doxygen, doxygen, "/usr/bin/doxygen")
 
@@ -55,12 +46,11 @@ AC_CHECK_HEADERS(sys/param.h sys/mount.h,,,
 #AC_FUNC_STAT
 #AC_CHECK_FUNCS([mkdir rmdir strchr strrchr strstr])
 
-AC_SEARCH_LIBS(RSA_new, [crypto])
+#AC_SEARCH_LIBS(RSA_new, [crypto])
 
 AC_DEFINE_UNQUOTED(SYSCONFDIR, "$sysconfdir")
 
-AC_CONFIG_FILES([Makefile
-		 prototype.h
+AC_CONFIG_FILES([Makefile 
                  ])
 AC_CONFIG_HEADER([common.h])
 AC_OUTPUT

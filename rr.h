@@ -14,8 +14,7 @@
 #else
 #define _RR_H
 
-#include <stdint.h>
-#include <string.h>
+#include "common.h"
 #include "rdata.h"
 #include "rr.h"
 

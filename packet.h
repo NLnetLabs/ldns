@@ -13,7 +13,7 @@
 #else
 #define _PACKET_H
 
-#include <stdint.h>
+#include "common.h"
 #include "rdata.h"
 #include "rr.h"
 
