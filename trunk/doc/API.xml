@@ -376,6 +376,9 @@ no RR's could be popped.
 Retrieve all RRs in a packet matching certain criteria. XXX function needs
 to be specified better.
 </t>
+<t hangText="void *ldns_pkt_print(FILE *s, ldns_pkt *p):">
+Print packet p to stream s.
+</t>
 
 </list>
 </t>
@@ -444,7 +447,7 @@ main(void)
 	pkt = ldns_resolver_query(res, qname, LDNS_RR_TYPE_MX, NULL);
 
 	/* print the resulting pkt to stdout */
-	ldns_pkt_print(stdout, res);
+	ldns_pkt_print(stdout, pkt);
 
 	return 0;
 }
