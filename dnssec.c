@@ -115,6 +115,7 @@ ldns_verify_rrsig(ldns_rr_list *rrset, ldns_rr *rrsig, ldns_rr_list *keys)
 	orig_ttl = ldns_rdf2native_int32(
 			ldns_rr_rdf(rrsig, 3));
 
+	/* should work on copies */
 	/* reset the ttl in the rrset with the orig_ttl from the sig */
 	for(i = 0; i < ldns_rr_list_rr_count(rrset); i++) {
 		ldns_rr_set_ttl(
