@@ -276,7 +276,8 @@ ldns_resolver_search(ldns_resolver *r, ldns_rdf *name, ldns_rr_type type,
                 ldns_rr_class class, uint16_t flags)
 {
 	/* dummy use parameters */
-	printf("%p %p %d %d %02x\n", (void *) r, (void *) name, type, class, flags);
+	printf("%p %p %d %d %02x\n", (void *) r, (void *) name, type, class,
+	                             (unsigned int) flags);
 	return NULL;
 }
 
