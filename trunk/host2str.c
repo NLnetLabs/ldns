@@ -685,7 +685,15 @@ ldns_rr2buffer_str(ldns_buffer *output, ldns_rr *rr)
 		ldns_buffer_printf(output, "%s\t", descriptor->_name);
 	} else {
 		/* exceptions for qtype */
-		if (ldns_rr_get_type(rr) == 255) {
+		if (ldns_rr_get_type(rr) == 251) {
+			ldns_buffer_printf(output, "IXFR ");
+		} else if (ldns_rr_get_type(rr) == 252) {
+			ldns_buffer_printf(output, "AXFR ");
+		} else if (ldns_rr_get_type(rr) == 253) {
+			ldns_buffer_printf(output, "MAILB ");
+		} else if (ldns_rr_get_type(rr) == 254) {
+			ldns_buffer_printf(output, "MAILA ");
+		} else if (ldns_rr_get_type(rr) == 255) {
 			ldns_buffer_printf(output, "ANY ");
 		} else {
 			ldns_buffer_printf(output, "TYPE%d\t", ldns_rr_get_type(rr));

@@ -524,3 +524,45 @@ ldns_rr_descriptor_field_type(const ldns_rr_descriptor *descriptor,
 	}
 }
 
+ldns_rr_type
+ldns_rr_get_type_by_name(char *name)
+{
+	unsigned int i;
+	const char *desc_name;
+	const ldns_rr_descriptor *desc;
+	
+	/* TYPEXX representation */
+	if (strlen(name) > 4 && strncasecmp(name, "TYPE", 4) == 0) {
+		name += 4;
+		return atoi(name);
+	}
+	
+	/* Normal types */
+	for (i = 0; i < (unsigned int) RDATA_FIELD_DESCRIPTORS_COUNT; i++) {
+		desc = ldns_rr_descript(i);
+		desc_name = desc->_name;
+		if(desc_name &&
+		   strlen(name) == strlen(desc_name) &&
+		   strncasecmp(name, desc_name, strlen(desc_name)) == 0
+		) {
+			return i;
+		}
+	}
+	
+	/* special cases for query types */
+	/* TODO: generalize? */
+	if (strlen(name) == 4 && strncasecmp(name, "IXFR", 4) == 0) {
+		return 251;
+	} else if (strlen(name) == 4 && strncasecmp(name, "AXFR", 4) == 0) {
+		return 252;
+	} else if (strlen(name) == 5 && strncasecmp(name, "MAILB", 5) == 0) {
+		return 253;
+	} else if (strlen(name) == 5 && strncasecmp(name, "MAILA", 5) == 0) {
+		return 254;
+	} else if (strlen(name) == 3 && strncasecmp(name, "ANY", 3) == 0) {
+		return 255;
+	}
+	
+	fprintf(stderr, "Warning: type not found, assuming A\n");
+	return 0;
+}
