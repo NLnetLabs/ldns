@@ -52,7 +52,8 @@ LIBDNS_OBJECTS	=	$(LIBDNS_SOURCES:.c=.o)
 TEST_SOURCES	=	run-test0.c run-test1.c run-test2.c run-test3.c \
 			run-test4.c run-test5.c run-test6.c run-test7.c \
 			run-test8.c run-test9.c run-test10.c run-test11.c \
-			run-test13.c run-test14.c run-test15.c run-test16.c
+			run-test13.c run-test14.c run-test15.c run-test16.c \
+			run-test17.c
 
 ALL_SOURCES	=	$(TEST_SOURCES) $(LIBDNS_SOURCES) $(PROG_SOURCES)
 
@@ -121,6 +122,8 @@ run-test14:	run-test14.o $(LIBDNS_OBJECTS) $(LIBOBJS)
 run-test15:	run-test15.o $(LIBDNS_OBJECTS) $(LIBOBJS)
 		$(LINK) ${LIBS} -o $@ $+
 run-test16:	run-test16.o $(LIBDNS_OBJECTS) $(LIBOBJS)
+		$(LINK) ${LIBS} -o $@ $+
+run-test17:	run-test17.o $(LIBDNS_OBJECTS) $(LIBOBJS)
 		$(LINK) ${LIBS} -o $@ $+
 
 run-test-trace:	run-test-trace.o $(LIBDNS_OBJECTS) $(LIBOBJS)

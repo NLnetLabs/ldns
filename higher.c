@@ -12,6 +12,8 @@
  */
 
 #include <config.h>
+#include <openssl/ssl.h>
+#include <openssl/sha.h>
 #include <ldns/higher.h>
 #include "util.h"
 

@@ -126,8 +126,9 @@ ldns_rrsig2buffer_wire(ldns_buffer *buffer, ldns_rr *rr)
 /**
  * convert a rr's rdata to wireformat, while excluding
  * the ownername and all the crap before the rdata.
- * This is needed in DNSSEC keytag calculation and maybe
- * elsewhere.
+ * This is needed in DNSSEC keytag calculation, the ds
+ * calcalution from the key and maybe elsewhere.
+ *
  * \param[out] *buffer buffer where to put the result
  * \param[in] *rr rr to operate on
  */
