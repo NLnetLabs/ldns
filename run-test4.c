@@ -27,10 +27,14 @@ main(void)
         default_dom = ldns_rdf_new_frm_str("miek.nl.", LDNS_RDF_TYPE_DNAME);
         nameserver  = ldns_rdf_new_frm_str("127.0.0.1", LDNS_RDF_TYPE_A);
                 
-        if (ldns_resolver_set_domain(res, default_dom) != LDNS_STATUS_OK)
+        if (ldns_resolver_set_domain(res, default_dom) != LDNS_STATUS_OK) {
+		printf("error set domain\n");
                 return 1;
-        if (ldns_resolver_push_nameserver(res, nameserver) != LDNS_STATUS_OK)
+	}
+        if (ldns_resolver_push_nameserver(res, nameserver) != LDNS_STATUS_OK) {
+		printf("error push nameserver\n");
                 return 1;
+	}
         
         /* setup the question */
         qname = ldns_rdf_new_frm_str("www", LDNS_RDF_TYPE_DNAME);
@@ -38,8 +42,10 @@ main(void)
         /* fire it off. "miek.nl." will be added */
         pkt = ldns_resolver_send(res, qname, LDNS_RR_TYPE_MX, 0);
 
-	if (!pkt) 
+	if (!pkt)  {
+		printf("error pkt sending\n");
 		return 1;
+	}
 
         
         /* print the resulting pkt to stdout */
