@@ -437,8 +437,9 @@ ldns_create_tsig_mac(
 	/* prepare the key */
 	key_bytes = XMALLOC(unsigned char, b64_pton_calculate_size(strlen(key_data)));
 	key_size = b64_pton(key_data, key_bytes, strlen(key_data) * 2);
-	
 	if (key_size < 0) {
+		/* TODO: no print but feedback */
+		printf("Bad base64 string\n");
 		return NULL;
 	}
 	/* hmac it */
