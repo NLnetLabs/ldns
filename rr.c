@@ -414,7 +414,6 @@ ldns_rr_list_new()
 	ldns_rr_list *rr_list = MALLOC(ldns_rr_list);
 	rr_list->_rr_count = 0;
 	rr_list->_rrs = NULL;
-	
 	return rr_list;
 }
 
@@ -485,7 +484,7 @@ ldns_rr_list_cat(ldns_rr_list *left, ldns_rr_list *right)
  * push an  rr to a rrlist
  * \param[in] rr_list the rr_list to push to 
  * \param[in] rr the rr to push 
- * \return NULL on error, otherwise true
+ * \return false on error, otherwise true
  */
 bool
 ldns_rr_list_push_rr(ldns_rr_list *rr_list, ldns_rr *rr)

@@ -37,7 +37,7 @@ ldns_lookup_table ldns_signing_algorithms[] = {
 };
 
 struct ldns_struct_key {
-	/*ldns_signing_algorithm algorithm;*/
+	ldns_signing_algorithm algorithm;
 	/* types of keys supported */
 	union {
 		RSA	*rsa;

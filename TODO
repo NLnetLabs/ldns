@@ -17,6 +17,7 @@ o check all conversion routines on missing types
 	- host2str
 o network code
 	- tsig?
+o use size_t where needed
 o DNSSEC
 	- signing
 	- do we call random()?
