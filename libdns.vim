@@ -62,6 +62,7 @@ syn keyword ldnsMacro	LDNS_STATUS_ERR
 syn keyword ldnsMacro	LDNS_STATUS_INVALID_IP4
 syn keyword ldnsMacro	LDNS_STATUS_INVALID_IP6
 syn keyword ldnsMacro	LDNS_STATUS_INVALID_STR
+syn keyword ldnsMacro	LDNS_STATUS_INVALID_B64
 
 " ldns/resolver.h
 syn keyword  ldnsType	  	ldns_resolver

@@ -111,7 +111,9 @@ void            ldns_rdf_set_type(ldns_rdf *, ldns_rdf_type);
 void            ldns_rdf_set_data(ldns_rdf *, void *);
 ldns_rdf_type   ldns_rdf_get_type(ldns_rdf *);
 ldns_rdf	*ldns_rdf_new(uint16_t, ldns_rdf_type, void *);
+ldns_rdf	*ldns_rdf_new_frm_data(uint16_t, ldns_rdf_type, void *);
 uint8_t         *ldns_rdf_data(ldns_rdf *);
 void            ldns_rdf_free(ldns_rdf *);
+void            ldns_rdf_free_data(ldns_rdf *);
 
 #endif	/* !_LDNS_RDATA_H */
