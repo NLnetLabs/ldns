@@ -642,7 +642,6 @@ ldns_resolver_send(ldns_resolver *r, ldns_rdf *name, ldns_rr_type type, ldns_rr_
 	/* prepare a question pkt from the parameters
 	 * and then send this */
 	query_pkt = ldns_pkt_query_new(ldns_rdf_deep_clone(name), type, class, flags);
-ldns_pkt_set_edns_udp_size(query_pkt, 1024);
 	if (!query_pkt) {
 		printf("Failed to generate pkt\n");
 		return NULL;
