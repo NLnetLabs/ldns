@@ -57,7 +57,8 @@ ldns_bget_keyword_data(ldns_buffer *b, const char *keyword, const char *k_del, c
 
 /*
  * Remove \DDD constructs from the input. See RFC 1035, section 5.1.
+ * dest is alloced in this function!
  */
-size_t zoctet(char *text);
+size_t ldns_unquote(char *text, char **dest);
 
 #endif /*  _PARSE_H_ */

@@ -246,20 +246,20 @@ tokenread:
 	}
 }
 
-/* should text be writeable? Or should we return a new
- * string??
- */
 size_t
-zoctet(char *text)
+ldns_unquote(char *text, char **dest)
 {
         /*
          * s follows the string, p lags behind and rebuilds 
-	 * the new string
+	 * the new string.
+	 * Assumes: the new string will be <= old string
          */
-        char *s;
+	char *s;
         char *p;
 
-        for (s = p = text; *s; ++s, ++p) {
+	*dest = strdup(text);
+
+        for (s = p = *dest; *s; ++s, ++p) {
                 assert(p <= s);
                 if (s[0] != '\\') {
                         /* Ordinary character.  */
@@ -273,8 +273,8 @@ zoctet(char *text)
                                 s += 3;
                                 *p = val;
                         } else {
-                                printf("text escape \\DDD overflow");
-				/* kuch, another printf... */
+                                printf("text escape \\DDD overflow\n");
+				/* TODO, another printf... */
                                 *p = *++s;
                         }
                 } else if (s[1] != '\0') {
@@ -286,6 +286,6 @@ zoctet(char *text)
                         --p;
                 }
         }
-        *p = '\0';
-        return p - text;
+        *p  = '\0';
+        return (size_t)((p - *dest));
 }
