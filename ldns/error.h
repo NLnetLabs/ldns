@@ -25,6 +25,7 @@ enum ldns_enum_status
 	LDNS_STATUS_DDD_OVERFLOW 	= 4 * __X,
 	LDNS_STATUS_PACKET_OVERFLOW 	= 5 * __X,
 	LDNS_STATUS_INVALID_POINTER 	= 6 * __X
+	LDNS_STATUS_MEM_ERR	 	= 7 * __X
 	
 
 };
