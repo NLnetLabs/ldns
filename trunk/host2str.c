@@ -1063,7 +1063,7 @@ ldns_rdf_print(FILE *output, ldns_rdf *rdf)
 {
 	char *str = ldns_rdf2str(rdf);
 	if (str) {
-		fprintf(output, str);
+		fprintf(output, "%s", str);
 	} else {
 		fprintf(output, "Unable to convert rdf to string\n");
 	}
@@ -1075,7 +1075,7 @@ ldns_rr_print(FILE *output, ldns_rr *rr)
 {
 	char *str = ldns_rr2str(rr);
 	if (str) {
-		fprintf(output, str);
+		fprintf(output, "%s", str);
 	} else {
 		fprintf(output, "Unable to convert rr to string\n");
 	}
@@ -1087,7 +1087,7 @@ ldns_pkt_print(FILE *output, ldns_pkt *pkt)
 {
 	char *str = ldns_pkt2str(pkt);
 	if (str) {
-		fprintf(output, str);
+		fprintf(output, "%s", str);
 	} else {
 		fprintf(output, "Unable to convert packet to string\n");
 	}
@@ -1099,7 +1099,7 @@ ldns_rr_list_print(FILE *output, ldns_rr_list *lst)
 {
 	char *str = ldns_rr_list2str(lst);
 	if (str) {
-		fprintf(output, str);
+		fprintf(output, "%s", str);
 	} else {
 		fprintf(output, "Unable to convert rr_list to string\n");
 	}
