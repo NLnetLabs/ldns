@@ -27,10 +27,13 @@
 #endif
 
 /**
- * convert a short str into wireformat 
+ * convert a string to a int16 in wireformat
+ * \param[in] rd the rdf where to put the data
+ * \param[in] str the string to be converted
+ * \return ldns_status
  */
 ldns_status
-ldns_conv_int16(ldns_rdf **rd, const char *shortstr)
+ldns_conv_int16(ldns_rdf **rd, const uint8_t *shortstr)
 {
 	char *end = NULL;    
 	uint16_t *r;
@@ -48,10 +51,13 @@ ldns_conv_int16(ldns_rdf **rd, const char *shortstr)
 }
 
 /**
- * convert a time str value to wireformat 
+ * convert a time string to a time value in wireformat
+ * \param[in] rd the rdf where to put the data
+ * \param[in] str the string to be converted
+ * \return ldns_status
  */
 ldns_status
-ldns_conv_time(ldns_rdf **rd, const char *time)
+ldns_conv_time(ldns_rdf **rd, const uint8_t *time)
 {
 	/* convert a time YYHM to wireformat */
 	uint16_t *r = NULL;
@@ -73,10 +79,13 @@ ldns_conv_time(ldns_rdf **rd, const char *time)
 }
 
 /**
- * convert a long (32 bits)
+ * convert a strings into a 4 byte int in wireformat
+ * \param[in] rd the rdf where to put the data
+ * \param[in] str the string to be converted
+ * \return ldns_status
  */
 ldns_status 
-ldns_conv_int32(ldns_rdf **rd, const char *longstr)
+ldns_conv_int32(ldns_rdf **rd, const uint8_t *longstr)
 {
 	char *end;  
 	uint16_t *r = NULL;
@@ -96,10 +105,13 @@ ldns_conv_int32(ldns_rdf **rd, const char *longstr)
 }
 
 /**
- * convert a byte (8 bits)
+ * convert a byte into wireformat
+ * \param[in] rd the rdf where to put the data
+ * \param[in] str the string to be converted
+ * \return ldns_status
  */
 ldns_status
-ldns_conv_int8(ldns_rdf **rd, const char *bytestr)
+ldns_conv_int8(ldns_rdf **rd, const uint8_t *bytestr)
 {
 	char *end;     
 	uint8_t *r = NULL;
@@ -116,6 +128,236 @@ ldns_conv_int8(ldns_rdf **rd, const char *bytestr)
 		return LDNS_STATUS_OK;
         }
 }
+
+/**
+ * convert .... into wireformat
+ * \param[in] rd the rdf where to put the data
+ * \param[in] str the string to be converted
+ * \return ldns_status
+ */
+ldns_status 
+ldns_conv_none(ldns_rdf **rd, const uint8_t* str)
+{
+	return LDNS_STATUS_OK;
+}
+
+/**
+ * convert .... into wireformat
+ * \param[in] rd the rdf where to put the data
+ * \param[in] str the string to be converted
+ * \return ldns_status
+ */
+ldns_status
+ldns_conv_dname(ldns_rdf **rd, const uint8_t* str)
+{
+	return LDNS_STATUS_OK;
+}
+
+/**
+ * convert .... into wireformat
+ * \param[in] rd the rdf where to put the data
+ * \param[in] str the string to be converted
+ * \return ldns_status
+ */
+ldns_status
+ldns_conv_a(ldns_rdf **rd, const uint8_t* str)
+{
+	return LDNS_STATUS_OK;
+}
+
+/**
+ * convert .... into wireformat
+ * \param[in] rd the rdf where to put the data
+ * \param[in] str the string to be converted
+ * \return ldns_status
+ */
+ldns_status
+ldns_conv_aaaa(ldns_rdf **rd, const uint8_t* str)
+{
+	return LDNS_STATUS_OK;
+}
+
+/**
+ * convert .... into wireformat
+ * \param[in] rd the rdf where to put the data
+ * \param[in] str the string to be converted
+ * \return ldns_status
+ */
+ldns_status
+ldns_conv_str(ldns_rdf **rd, const uint8_t* str)
+{
+	return LDNS_STATUS_OK;
+}
+
+/**
+ * convert .... into wireformat
+ * \param[in] rd the rdf where to put the data
+ * \param[in] str the string to be converted
+ * \return ldns_status
+ */
+ldns_status
+ldns_conv_apl(ldns_rdf **rd, const uint8_t* str)
+{
+	return LDNS_STATUS_OK;
+}
+
+/**
+ * convert .... into wireformat
+ * \param[in] rd the rdf where to put the data
+ * \param[in] str the string to be converted
+ * \return ldns_status
+ */
+ldns_status
+ldns_conv_b64(ldns_rdf **rd, const uint8_t* str)
+{
+	return LDNS_STATUS_OK;
+}
+
+/**
+ * convert .... into wireformat
+ * \param[in] rd the rdf where to put the data
+ * \param[in] str the string to be converted
+ * \return ldns_status
+ */
+ldns_status
+ldns_conv_hex(ldns_rdf **rd, const uint8_t* str)
+{
+	return LDNS_STATUS_OK;
+}
+
+/**
+ * convert .... into wireformat
+ * \param[in] rd the rdf where to put the data
+ * \param[in] str the string to be converted
+ * \return ldns_status
+ */
+ldns_status
+ldns_conv_nsec(ldns_rdf **rd, const uint8_t* str)
+{
+	return LDNS_STATUS_OK;
+}
+
+/**
+ * convert .... into wireformat
+ * \param[in] rd the rdf where to put the data
+ * \param[in] str the string to be converted
+ * \return ldns_status
+ */
+ldns_status
+ldns_conv_type(ldns_rdf **rd, const uint8_t* str)
+{
+	return LDNS_STATUS_OK;
+}
+
+/**
+ * convert .... into wireformat
+ * \param[in] rd the rdf where to put the data
+ * \param[in] str the string to be converted
+ * \return ldns_status
+ */
+ldns_status
+ldns_conv_class(ldns_rdf **rd, const uint8_t* str)
+{
+	return LDNS_STATUS_OK;
+}
+
+/**
+ * convert .... into wireformat
+ * \param[in] rd the rdf where to put the data
+ * \param[in] str the string to be converted
+ * \return ldns_status
+ */
+ldns_status
+ldns_conv_cert(ldns_rdf **rd, const uint8_t* str)
+{
+	return LDNS_STATUS_OK;
+}
+
+/**
+ * convert .... into wireformat
+ * \param[in] rd the rdf where to put the data
+ * \param[in] str the string to be converted
+ * \return ldns_status
+ */
+ldns_status
+ldns_conv_alg(ldns_rdf **rd, const uint8_t* str)
+{
+	return LDNS_STATUS_OK;
+}
+
+/**
+ * convert .... into wireformat
+ * \param[in] rd the rdf where to put the data
+ * \param[in] str the string to be converted
+ * \return ldns_status
+ */
+ldns_status
+ldns_conv_unknown(ldns_rdf **rd, const uint8_t* str)
+{
+	return LDNS_STATUS_OK;
+}
+
+/**
+ * convert .... into wireformat
+ * \param[in] rd the rdf where to put the data
+ * \param[in] str the string to be converted
+ * \return ldns_status
+ */
+ldns_status
+ldns_conv_tsigtime(ldns_rdf **rd, const uint8_t* str)
+{
+	return LDNS_STATUS_OK;
+}
+
+/**
+ * convert .... into wireformat
+ * \param[in] rd the rdf where to put the data
+ * \param[in] str the string to be converted
+ * \return ldns_status
+ */
+ldns_status
+ldns_conv_service(ldns_rdf **rd, const uint8_t* str)
+{
+	return LDNS_STATUS_OK;
+}
+
+/**
+ * convert .... into wireformat
+ * \param[in] rd the rdf where to put the data
+ * \param[in] str the string to be converted
+ * \return ldns_status
+ */
+ldns_status
+ldns_conv_loc(ldns_rdf **rd, const uint8_t* str)
+{
+	return LDNS_STATUS_OK;
+}
+
+/**
+ * convert .... into wireformat
+ * \param[in] rd the rdf where to put the data
+ * \param[in] str the string to be converted
+ * \return ldns_status
+ */
+ldns_status
+ldns_conv_wks(ldns_rdf **rd, const uint8_t* str)
+{
+	return LDNS_STATUS_OK;
+}
+
+/**
+ * convert .... into wireformat
+ * \param[in] rd the rdf where to put the data
+ * \param[in] str the string to be converted
+ * \return ldns_status
+ */
+ldns_status
+ldns_conv_nsap(ldns_rdf **rd, const uint8_t* str)
+{
+	return LDNS_STATUS_OK;
+}
+
+
 
 #if 0
 
