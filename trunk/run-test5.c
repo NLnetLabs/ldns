@@ -19,7 +19,7 @@ main()
 	printf("test 5\n");
 	packet = ldns_pkt_query_new_frm_str("www.kanariepiet.com",
 	                            LDNS_RR_TYPE_A,
-	                            LDNS_RR_CLASS_IN, LDNS_AD | LDNS_AA);
+	                            LDNS_RR_CLASS_IN, (uint16_t) (LDNS_AD | LDNS_AA));
 
 	printf("Packet:\n");
 	if (packet) 

@@ -18,7 +18,7 @@ print_usage(char *file)
 	exit(0);
 }
 
-void
+int
 main(int argc, char **argv)
 {       
         ldns_resolver *res;
@@ -40,17 +40,17 @@ main(int argc, char **argv)
         /* init */
         res = ldns_resolver_new(); 
         if (!res)
-                return;
+                return -1;
 
         nameserver  = ldns_rdf_new_frm_str(server_ip, LDNS_RDF_TYPE_A);
 	if (!nameserver) {
 		printf("Bad server ip\n");
-		return;
+		return -1;
 	}
 
         if (ldns_resolver_push_nameserver(res, nameserver) != LDNS_STATUS_OK) {
 		printf("error push nameserver\n");
-		return;
+		return -1;
 	}
 	/* HACK */
 	ldns_resolver_set_configured(res, 1);
@@ -59,13 +59,15 @@ main(int argc, char **argv)
         qname = ldns_rdf_new_frm_str(name, LDNS_RDF_TYPE_DNAME);
 	if (!qname) {
 		printf("error making qname\n");
-		return;
+		return -1;
 	}
         
         pkt = ldns_resolver_send(res, qname, ldns_rr_get_type_by_name(type), 0, LDNS_RD);
 	if (!pkt)  {
 		printf("error pkt sending\n");
-		return;
+		return -1;
 	}
         ldns_pkt_print(stdout, pkt);
+        
+        return 0;
 }

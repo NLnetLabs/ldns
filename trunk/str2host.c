@@ -152,7 +152,6 @@ ldns_str2rdf_dname(ldns_rdf **d, const uint8_t* str)
 	size_t len;
 	size_t octet_len;
 	ldns_status stat;
-	int i = 0;
 
 	uint8_t *s,*p,*q;
 	uint8_t buf_str[MAXDOMAINLEN + 1];

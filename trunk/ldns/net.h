@@ -19,6 +19,10 @@
 
 #include <sys/socket.h>
 
+#define LDNS_DEFAULT_TIMEOUT_SEC 5
+#define LDNS_DEFAULT_TIMEOUT_USEC 0
+
+
 /* prototypes */
 ldns_pkt * ldns_send_udp(ldns_buffer *, const struct sockaddr_storage *, socklen_t);
 ldns_pkt * ldns_send_tcp(ldns_buffer *, const struct sockaddr_storage *, socklen_t);
