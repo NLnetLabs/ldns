@@ -8,7 +8,7 @@ bindir 		= @bindir@
 mandir 		= @mandir@
 
 CC 		= @CC@
-CPPFLAGS	= @CPPFLAGS@ @DEFS@ -I.
+CPPFLAGS	= @CPPFLAGS@ @DEFS@ -I. -I$(srcdir)
 CFLAGS 		= @CFLAGS@
 LDFLAGS		= @LDFLAGS@
 LIBS 		= @LIBS@
@@ -33,7 +33,7 @@ ALL_SOURCES	=	run-test0.c $(LIBDNS_SOURCES)
 COMPILE		= $(CC) $(CPPFLAGS) $(CFLAGS)
 LINK		= $(CC) $(CFLAGS) $(LDFLAGS)
 
-%.o:	%.c
+%.o:	$(srcdir)/%.c
 	$(COMPILE) -c $<
 
 .PHONY:	clean realclean docclean doc lint
@@ -65,11 +65,11 @@ docclean:
 
 lint:
 	for i in $(ALL_SOURCES); do \
-		$(LINT) $(LINTFLAGS) -I. $$i ; \
+		$(LINT) $(LINTFLAGS) -I. -I$(srcdir) $$i ; \
 	done
 
 # Automatic dependencies.
-%.d: %.c
+%.d: $(srcdir)/%.c
 	$(SHELL) -ec '$(CC) -MM $(CPPFLAGS) $< \
 	              | sed '\''s!\(.*\)\.o[ :]*!$(dir $@)\1.o $@ : !g'\'' > $@; \
 	              [ -s $@ ] || rm -f $@'
