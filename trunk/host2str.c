@@ -483,6 +483,82 @@ ldns_rdf2buffer_tsigtime(ldns_buffer *output, ldns_rdf *rdf)
 }
 
 ldns_status
+ldns_rdf2buffer_apl(ldns_buffer *output, ldns_rdf *rdf)
+{
+	uint8_t *data = ldns_rdf_data(rdf);
+	uint16_t address_family = read_uint16(data);
+	uint8_t prefix = data[2];
+	bool negation;
+	uint8_t adf_length;
+	unsigned short i;
+	unsigned int pos = 0;
+	
+/*
+	printf("address family: %u\n", address_family);
+	printf("prefix: %u\n", prefix);
+	printf("negation: %u\n", negation);
+	printf("adf length: %u\n", adf_length);
+*/	
+	/* todo: use #defines for address families? */
+	
+	/* ipv4 */
+	while (pos < ldns_rdf_size(rdf)) {
+		address_family = read_uint16(&data[pos]);
+		prefix = data[pos + 2];
+		negation = data[pos + 3] & 0x80;
+		adf_length = data[pos + 3] & 0x7f;
+		if (address_family == 1) {
+			/* check if prefix < 32? */
+			if (negation) {
+				ldns_buffer_printf(output, "!");
+			}
+			ldns_buffer_printf(output, "%u:", address_family);
+			/* address is variable length 0 - 4 */
+			for (i = 0; i < 4; i++) {
+				if (i > 0) {
+					ldns_buffer_printf(output, ".");
+				}
+				if (i < adf_length) {
+					ldns_buffer_printf(output, "%d", 
+					                   data[pos + i + 4]);
+				} else {
+					ldns_buffer_printf(output, "0");
+				}
+			}
+			ldns_buffer_printf(output, "/%u ", prefix);
+		} else if (address_family == 2) {
+			/* check if prefix < 128? */
+			if (negation) {
+				ldns_buffer_printf(output, "!");
+			}
+			ldns_buffer_printf(output, "%u:", address_family);
+			/* address is variable length 0 - 16 */
+			for (i = 0; i < 16; i++) {
+				if (i % 2 == 0 && i > 0) {
+					ldns_buffer_printf(output, ":");
+				}
+				if (i < adf_length) {
+					ldns_buffer_printf(output, "%02x", 
+					                   data[pos + i + 4]);
+				} else {
+					ldns_buffer_printf(output, "00");
+				}
+			}
+			ldns_buffer_printf(output, "/%u ", prefix);
+		
+		} else {
+			/* unknown address family */
+			ldns_buffer_printf(output, "Unknown address family: %u data: ", address_family);
+			for (i = 1; i < 4 + adf_length; i++) {
+				ldns_buffer_printf(output, "%02x", data[i]);
+			}
+		}
+		pos += 4 + adf_length;
+	}
+	return ldns_buffer_status(output);
+}
+
+ldns_status
 ldns_rdf2buffer_todo(ldns_buffer *output, ldns_rdf *rdf)
 {
 	(void) ldns_rdf_data(rdf);
@@ -527,7 +603,7 @@ ldns_rdf2buffer(ldns_buffer *buffer, ldns_rdf *rdf)
 		res = ldns_rdf2buffer_str(buffer, rdf);
 		break;
 	case LDNS_RDF_TYPE_APL:
-		res = ldns_rdf2buffer_todo(buffer, rdf);
+		res = ldns_rdf2buffer_apl(buffer, rdf);
 		break;
 	case LDNS_RDF_TYPE_B64:
 		res = ldns_rdf2buffer_b64(buffer, rdf);
