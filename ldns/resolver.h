@@ -99,6 +99,7 @@ bool ldns_resolver_debug(ldns_resolver *);
 bool ldns_resolver_usevc(ldns_resolver *);
 bool ldns_resolver_fail(ldns_resolver *);
 bool ldns_resolver_dnssec(ldns_resolver *);
+bool ldns_resolver_igntc(ldns_resolver *r);
 
 size_t ldns_resolver_nameserver_count(ldns_resolver *);
 
@@ -144,6 +145,7 @@ void ldns_resolver_set_retrans(ldns_resolver *, uint8_t);
 void ldns_resolver_set_retry(ldns_resolver *, uint8_t);
 void ldns_resolver_set_ip6(ldns_resolver *, uint8_t);
 void ldns_resolver_set_fail(ldns_resolver *, bool);
+void ldns_resolver_set_igntc(ldns_resolver *, bool);
 void ldns_resolver_set_edns_udp_size(ldns_resolver *, uint16_t);
 
 /**

@@ -1201,3 +1201,35 @@ ldns_rr_list_print(FILE *output, ldns_rr_list *lst)
 	}
 	FREE(str);
 }
+
+void
+ldns_resolver_print(FILE *output, ldns_resolver *r)
+{
+	uint16_t i;
+	ldns_rdf **n;
+	if (!r) {
+		return;
+	}
+	n = ldns_resolver_nameservers(r);
+
+	fprintf(output, "port: %d\n", ldns_resolver_port(r));
+	fprintf(output, "edns0 size: %d\n", ldns_resolver_edns_udp_size(r));
+
+	fprintf(output, "recursive: %d\n", ldns_resolver_recursive(r));
+	fprintf(output, "usevc: %d\n", ldns_resolver_usevc(r));
+	fprintf(output, "igntc: %d\n", ldns_resolver_igntc(r));
+	fprintf(output, "fail: %d\n", ldns_resolver_fail(r));
+	
+	fprintf(output, "default domain:");
+	ldns_rdf_print(output, ldns_resolver_domain(r)); fprintf(output, "\n");
+
+	fprintf(output, "nameservers:\n");
+	for (i = 0; i < ldns_resolver_nameserver_count(r); i++) {
+		fprintf(output, "\t");
+		ldns_rdf_print(output, n[i]);
+		fprintf(output, "\n");
+	}
+	
+
+
+}
