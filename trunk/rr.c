@@ -160,14 +160,15 @@ static const ldns_rdf_type type_md_wireformat[] = { LDNS_RDF_TYPE_DNAME };
 static const ldns_rdf_type type_mf_wireformat[] = { LDNS_RDF_TYPE_DNAME };
 static const ldns_rdf_type type_cname_wireformat[] = { LDNS_RDF_TYPE_DNAME };
 static const ldns_rdf_type type_soa_wireformat[] = {
-	LDNS_RDF_TYPE_DNAME, LDNS_RDF_TYPE_DNAME, LDNS_RDF_TYPE_INT32, LDNS_RDF_TYPE_INT32,
-	LDNS_RDF_TYPE_INT32, LDNS_RDF_TYPE_INT32, LDNS_RDF_TYPE_INT32
+	LDNS_RDF_TYPE_DNAME, LDNS_RDF_TYPE_DNAME, LDNS_RDF_TYPE_INT32, 
+	LDNS_RDF_TYPE_TIME, LDNS_RDF_TYPE_TIME, LDNS_RDF_TYPE_TIME,
+	LDNS_RDF_TYPE_TIME
 };
 static const ldns_rdf_type type_mb_wireformat[] = { LDNS_RDF_TYPE_DNAME };
 static const ldns_rdf_type type_mg_wireformat[] = { LDNS_RDF_TYPE_DNAME };
 static const ldns_rdf_type type_mr_wireformat[] = { LDNS_RDF_TYPE_DNAME };
 static const ldns_rdf_type type_wks_wireformat[] = {
-	LDNS_RDF_TYPE_A, LDNS_RDF_TYPE_SERVICE
+	LDNS_RDF_TYPE_A, LDNS_RDF_TYPE_INT8, LDNS_RDF_TYPE_SERVICE
 };
 static const ldns_rdf_type type_ptr_wireformat[] = { LDNS_RDF_TYPE_DNAME };
 static const ldns_rdf_type type_hinfo_wireformat[] = {
@@ -193,7 +194,7 @@ static const ldns_rdf_type type_rt_wireformat[] = {
 	LDNS_RDF_TYPE_INT8, LDNS_RDF_TYPE_DNAME
 };
 static const ldns_rdf_type type_sig_wireformat[] = {
-	LDNS_RDF_TYPE_INT8, LDNS_RDF_TYPE_INT8, LDNS_RDF_TYPE_INT8, LDNS_RDF_TYPE_INT32,
+	LDNS_RDF_TYPE_INT8, LDNS_RDF_TYPE_INT8, LDNS_RDF_TYPE_INT8, LDNS_RDF_TYPE_TIME,
 	LDNS_RDF_TYPE_INT32, LDNS_RDF_TYPE_INT32, LDNS_RDF_TYPE_INT16,
 	LDNS_RDF_TYPE_DNAME, LDNS_RDF_TYPE_B64
 };
@@ -353,13 +354,13 @@ ldns_rr_descript(uint16_t type)
 }
 
 size_t
-ldns_rr_descriptor_minimum(ldns_rr_descriptor *descriptor)
+ldns_rr_descriptor_minimum(const ldns_rr_descriptor *descriptor)
 {
 	return descriptor->_minimum;
 }
 
 size_t
-ldns_rr_descriptor_maximum(ldns_rr_descriptor *descriptor)
+ldns_rr_descriptor_maximum(const ldns_rr_descriptor *descriptor)
 {
 	if (descriptor->_variable != LDNS_RDF_TYPE_NONE) {
 		/* XXX: Should really be SIZE_MAX... bad FreeBSD.  */
@@ -370,7 +371,7 @@ ldns_rr_descriptor_maximum(ldns_rr_descriptor *descriptor)
 }
 
 ldns_rdf_type
-ldns_rr_descriptor_field_type(ldns_rr_descriptor *descriptor,
+ldns_rr_descriptor_field_type(const ldns_rr_descriptor *descriptor,
                               size_t index)
 {
 	assert(descriptor != NULL);

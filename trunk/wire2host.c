@@ -48,7 +48,7 @@
  */
 
 /* The length of the header */
-#define	QHEADERSZ	12
+#define	HEADER_SIZE	12
 
 /* First octet of flags */
 #define	RD_MASK		0x01U
@@ -234,7 +234,6 @@ ldns_wire2dname(ldns_rdf **dname, const uint8_t *wire, size_t max, size_t *pos)
 	unsigned int pointer_count = 0;
 	
 	if (*pos > max) {
-		/* TODO set error */
 		return LDNS_STATUS_PACKET_OVERFLOW;
 	}
 	
@@ -258,8 +257,8 @@ ldns_wire2dname(ldns_rdf **dname, const uint8_t *wire, size_t max, size_t *pos)
 			} else if (pointer_target > max) {
 				return LDNS_STATUS_INVALID_POINTER;
 			} else if (pointer_count > MAXPOINTERS) {
-			        return LDNS_STATUS_INVALID_POINTER;
-                        }
+				return LDNS_STATUS_INVALID_POINTER;
+			}
 			*pos = pointer_target;
 			label_size = wire[*pos];
 		}
@@ -308,47 +307,157 @@ ldns_wire2dname(ldns_rdf **dname, const uint8_t *wire, size_t max, size_t *pos)
 
 /* maybe make this a goto error so data can be freed or something/ */
 #define STATUS_CHECK_RETURN(st) {if (st != LDNS_STATUS_OK) { return st; }}
+#define STATUS_CHECK_GOTO(st) {if (st != LDNS_STATUS_OK) { goto status_error; }}
 
-/* TODO: ldns_status_type and error checking 
-         defines for constants?
+/* TODO -doc,
+ 	-free on error
+*/
+ldns_status
+ldns_wire2rdf(ldns_rr *rr, const uint8_t *wire,
+              size_t max, size_t *pos)
+{
+	ldns_rdf *cur_rdf;
+	ldns_rdf_type cur_rdf_type;
+	size_t cur_rdf_length;
+	uint8_t *data;
+	uint16_t rd_length;
+	size_t end;
+	uint8_t rdf_index;
+	const ldns_rr_descriptor *descriptor = 
+	        ldns_rr_descript(ldns_rr_get_type(rr));
+	ldns_status status;
+	
+	if (*pos > max) {
+		return LDNS_STATUS_PACKET_OVERFLOW;
+	}
+
+	rd_length = read_uint16(&wire[*pos]);
+	*pos = *pos + 2;
+
+	if (*pos + rd_length > max) {
+		return LDNS_STATUS_PACKET_OVERFLOW;
+	}
+	
+	end = *pos + (size_t) rd_length;
+
+
+	for (rdf_index = 0; 
+	     rdf_index < ldns_rr_descriptor_maximum(descriptor);
+	     rdf_index++) {
+		if (*pos >= end) {
+	     		break;
+		}
+		cur_rdf_length = 0;
+
+		cur_rdf_type = ldns_rr_descriptor_field_type(descriptor,
+		                                             rdf_index);
+		/* handle special cases immediately, set length
+		   for fixed length rdata and do them below */
+		   /* TODO: constants */
+		switch (cur_rdf_type) {
+			case LDNS_RDF_TYPE_DNAME:
+				status = ldns_wire2dname(&cur_rdf, wire, max,
+				                         pos);
+				STATUS_CHECK_RETURN(status);
+				break;
+			case LDNS_RDF_TYPE_CLASS:
+			case LDNS_RDF_TYPE_ALG:
+			case LDNS_RDF_TYPE_INT8:
+				cur_rdf_length = 1;
+				break;
+			case LDNS_RDF_TYPE_TYPE:
+			case LDNS_RDF_TYPE_INT16:
+			case LDNS_RDF_TYPE_CERT:
+				cur_rdf_length = 2;
+				break;
+			case LDNS_RDF_TYPE_TIME:
+			case LDNS_RDF_TYPE_INT32:
+				cur_rdf_length = 4;
+				break;
+			case LDNS_RDF_TYPE_INT48:
+				cur_rdf_length = 6;
+				break;
+			case LDNS_RDF_TYPE_A:
+				cur_rdf_length = 4;
+				break;
+			case LDNS_RDF_TYPE_AAAA:
+				cur_rdf_length = 32;
+				break;
+			case LDNS_RDF_TYPE_STR:
+				/* len is stored in first byte */
+				cur_rdf_length = (size_t) wire[*pos];
+				*pos = *pos + 1;
+				break;
+			case LDNS_RDF_TYPE_APL:
+				/* TODO */
+			case LDNS_RDF_TYPE_B64:
+			case LDNS_RDF_TYPE_HEX:
+			case LDNS_RDF_TYPE_NSEC:
+			case LDNS_RDF_TYPE_UNKNOWN:
+			case LDNS_RDF_TYPE_SERVICE:
+			case LDNS_RDF_TYPE_LOC:
+			case LDNS_RDF_TYPE_NONE:
+				cur_rdf_length = (size_t) rd_length;
+				break;
+		}
+		/* fixed length rdata */
+		if (cur_rdf_length > 0) {
+			data = XMALLOC(uint8_t, rd_length);
+			if (!data) {
+				return LDNS_STATUS_MEM_ERR;
+			}
+			memcpy(data, &wire[*pos], cur_rdf_length);
+			
+			cur_rdf = ldns_rdf_new(cur_rdf_length,
+			                       cur_rdf_type,
+			                       data);
+			*pos = *pos + cur_rdf_length;
+		}	
+
+		ldns_rr_push_rdf(rr, cur_rdf);
+	}
+
+	return LDNS_STATUS_OK;
+}
+
+
+/* TODO:
          enum for sections? 
-         remove owner print debug message
          can *pos be incremented at READ_INT? or maybe use something like
          RR_CLASS(wire)?
 */
 ldns_status
-ldns_wire2rr(ldns_rr *rr, const uint8_t *wire, size_t max, 
+ldns_wire2rr(ldns_rr **rr_p, const uint8_t *wire, size_t max, 
              size_t *pos, int section)
 {
 	ldns_rdf *owner;
-	char *owner_str;
-	uint16_t rd_length;
-	ldns_status status = LDNS_STATUS_OK;
+	ldns_rr *rr = ldns_rr_new();
+	ldns_status status;
 	
 	status = ldns_wire2dname(&owner, wire, max, pos);
-	owner_str = XMALLOC(char, MAXDOMAINLEN);
-	if (!owner_str) {
-		return LDNS_STATUS_MEM_ERR;
-	}
-	        
+	STATUS_CHECK_GOTO(status);
+
 	ldns_rr_set_owner(rr, owner);
 	
-	ldns_rr_set_class(rr, read_uint16(&wire[*pos]));
+	ldns_rr_set_type(rr, read_uint16(&wire[*pos]));
 	*pos = *pos + 2;
 
-	ldns_rr_set_type(rr, read_uint16(&wire[*pos]));
+	ldns_rr_set_class(rr, read_uint16(&wire[*pos]));
 	*pos = *pos + 2;
 
 	if (section > 0) {
 		ldns_rr_set_ttl(rr, read_uint32(&wire[*pos]));	
 		*pos = *pos + 4;
-		rd_length = read_uint16(&wire[*pos]);
-		*pos = *pos + 2;
-		/* TODO: wire2rdata */
-		*pos = *pos + rd_length;
+		status = ldns_wire2rdf(rr, wire, max, pos);
+		STATUS_CHECK_GOTO(status);
 	}
 
-	return status;
+	*rr_p = rr;
+	return LDNS_STATUS_OK;
+	
+	status_error:
+		FREE(rr);
+		return status;
 }
 
 static ldns_status
@@ -357,10 +466,9 @@ ldns_wire2pkt_hdr(ldns_pkt *packet,
 			size_t max,
 			size_t *pos)
 {
-	if (*pos + QHEADERSZ >= max) {
+	if (*pos + HEADER_SIZE > max) {
 		return LDNS_STATUS_PACKET_OVERFLOW;
 	} else {
-
 		pkt_set_id(packet, ID(wire));
 		pkt_set_qr(packet, QR(wire));
 		pkt_set_opcode(packet, OPCODE(wire));
@@ -377,46 +485,48 @@ ldns_wire2pkt_hdr(ldns_pkt *packet,
 		pkt_set_nscount(packet, NSCOUNT(wire));
 		pkt_set_arcount(packet, ARCOUNT(wire));
 
-		*pos += QHEADERSZ;
+		*pos += HEADER_SIZE;
 
 		return LDNS_STATUS_OK;
 	}
 }
 
-/* TODO: error check, return status (of this and of wire2rrs) */
+
 ldns_status
-ldns_wire2pkt(ldns_pkt *packet, const uint8_t *wire, size_t max)
+ldns_wire2pkt(ldns_pkt **packet_p, const uint8_t *wire, size_t max)
 {
 	size_t pos = 0;
 	uint16_t i;
 	ldns_rr *rr;
+	ldns_pkt *packet = ldns_pkt_new();
 	ldns_status status = LDNS_STATUS_OK;
 	
 	status = ldns_wire2pkt_hdr(packet, wire, max, &pos);
-	STATUS_CHECK_RETURN(status);
+	STATUS_CHECK_GOTO(status);
 	
 	/* TODO: section enum :) */
 	for (i = 0; i < pkt_qdcount(packet); i++) {
-		rr = ldns_rr_new();
-		status = ldns_wire2rr(rr, wire, max, &pos, 0);
-		STATUS_CHECK_RETURN(status);
+		status = ldns_wire2rr(&rr, wire, max, &pos, 0);
+		STATUS_CHECK_GOTO(status);
 	}
 	for (i = 0; i < pkt_ancount(packet); i++) {
-		rr = ldns_rr_new();
-		status = ldns_wire2rr(rr, wire, max, &pos, 1);
-		STATUS_CHECK_RETURN(status);
+		status = ldns_wire2rr(&rr, wire, max, &pos, 1);
+		STATUS_CHECK_GOTO(status);
 	}
 	for (i = 0; i < pkt_nscount(packet); i++) {
-		rr = ldns_rr_new();
-		status = ldns_wire2rr(rr, wire, max, &pos, 2);
-		STATUS_CHECK_RETURN(status);
+		status = ldns_wire2rr(&rr, wire, max, &pos, 2);
+		STATUS_CHECK_GOTO(status);
 	}
 	for (i = 0; i < pkt_arcount(packet); i++) {
-		rr = ldns_rr_new();
-		status = ldns_wire2rr(rr, wire, max, &pos, 3);
-		STATUS_CHECK_RETURN(status);
+		status = ldns_wire2rr(&rr, wire, max, &pos, 3);
+		STATUS_CHECK_GOTO(status);
 	}
 
+	*packet_p = packet;
 	return status;
+	
+	status_error:
+		FREE(packet);
+		return status;
 }
 
