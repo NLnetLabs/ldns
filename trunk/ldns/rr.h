@@ -241,25 +241,27 @@ void ldns_rr_set_rd_count(ldns_rr *, uint16_t);
 void ldns_rr_set_type(ldns_rr *, ldns_rr_type);
 void ldns_rr_set_class(ldns_rr *, ldns_rr_class);
 bool ldns_rr_push_rdf(ldns_rr *, ldns_rdf *);
-ldns_rdf *ldns_rr_rdf(ldns_rr *rr, uint16_t nr);
+ldns_rdf *ldns_rr_rdf(ldns_rr *, uint16_t);
 ldns_rdf *ldns_rr_owner(ldns_rr *);
 uint32_t ldns_rr_ttl(ldns_rr *);
 uint16_t ldns_rr_rd_count(ldns_rr *);
 ldns_rr_type ldns_rr_get_type(ldns_rr *);
 ldns_rr_class ldns_rr_get_class(ldns_rr *);
-void ldns_rr_free(ldns_rr *rr);
+void ldns_rr_free(ldns_rr *);
 
-uint16_t ldns_rr_list_rr_count(ldns_rr_list *rr_list);
-void ldns_rr_list_set_rr_count(ldns_rr_list *rr_list, uint16_t count);
-ldns_rr *ldns_rr_list_rr(ldns_rr_list *rr_list, uint16_t nr);
-ldns_rr_list *ldns_rr_list_new();
-void ldns_rr_list_free(ldns_rr_list *rr_list);
-bool ldns_rr_list_push_rr(ldns_rr_list *rr_list, ldns_rr *rr);
+uint16_t ldns_rr_list_rr_count(ldns_rr_list *);
+void ldns_rr_list_set_rr_count(ldns_rr_list *, uint16_t);
+ldns_rr *ldns_rr_list_rr(ldns_rr_list *, uint16_t);
+ldns_rr_list *ldns_rr_list_new(void);
+void ldns_rr_list_free(ldns_rr_list *);
+bool ldns_rr_list_push_rr(ldns_rr_list *, ldns_rr *);
 
-const ldns_rr_descriptor *ldns_rr_descript(uint16_t type);
-size_t ldns_rr_descriptor_minimum(const ldns_rr_descriptor *descriptor);
-size_t ldns_rr_descriptor_maximum(const ldns_rr_descriptor *descriptor);
-ldns_rdf_type ldns_rr_descriptor_field_type(const ldns_rr_descriptor *descriptor, size_t index);
-ldns_rr_type ldns_rr_get_type_by_name(char *name);
+const ldns_rr_descriptor *ldns_rr_descript(uint16_t);
+size_t ldns_rr_descriptor_minimum(const ldns_rr_descriptor *);
+size_t ldns_rr_descriptor_maximum(const ldns_rr_descriptor *);
+ldns_rdf_type ldns_rr_descriptor_field_type(const ldns_rr_descriptor *, size_t);
+ldns_rr_type ldns_rr_get_type_by_name(char *);
+ldns_rr_class ldns_get_class_by_name(char *);
+
 
 #endif /* _LDNS_RR_H */
