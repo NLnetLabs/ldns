@@ -7,6 +7,7 @@
  */
 
 #include <config.h>
+#include <ldns/resolver.h>
 #include <ldns/ldns.h>
         
 int     
@@ -23,6 +24,7 @@ main(void)
         if (!res)
                 return 1;
 
+	ldns_resolver_set_port(res, 55);
         /* create a default domain and add it */
         default_dom = ldns_rdf_new_frm_str("miek.nl.", LDNS_RDF_TYPE_DNAME);
 	if (!default_dom) {
