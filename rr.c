@@ -12,9 +12,8 @@
 
 #include <config.h>
 
-#include "rdata.h"
-#include "rr.h"
-#include "prototype.h"
+#include <ldns/rr.h>
+
 #include "util.h"
 
 /**

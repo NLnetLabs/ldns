@@ -12,8 +12,8 @@
 
 #include <config.h>
 
-#include "rdata.h"
-#include "rr.h"
+#include <ldns/rdata.h>
+#include <ldns/rr.h>
 
 /* put this here tmp. for debugging */
 void

@@ -12,10 +12,9 @@
 
 #include <config.h>
 
-#include "rdata.h"
-#include "rr.h"
+#include <ldns/rdata.h>
+
 #include "util.h"
-#include "prototype.h"
 
 /* Access functions 
  * do this as functions to get type checking

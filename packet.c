@@ -12,10 +12,8 @@
 
 #include <config.h>
 
-#include "rdata.h"
-#include "rr.h"
-#include "prototype.h"
-#include "packet.h"
+#include <ldns/packet.h>
+
 #include "util.h"
 
 /* Access functions 
@@ -274,4 +272,3 @@ dns_wire2packet(uint8_t *wire, t_packet *packet)
 
 	return pos;
 }
-

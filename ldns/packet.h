@@ -9,10 +9,11 @@
  *
  * See the file LICENSE for the license
  */
-#ifdef _PACKET_H
-#else
-#define _PACKET_H
-#include "config.h"
+
+#ifndef _LDNS_PACKET_H
+#define _LDNS_PACKET_H
+
+#include <ldns/rr.h>
 
 /**
  * \brief Header of a dns packet
@@ -119,4 +120,4 @@ t_packet *dns_packet_new();
  */
 size_t dns_wire2packet(uint8_t *data, t_packet *packet);
 
-#endif
+#endif  /* !_LDNS_PACKET_H */
