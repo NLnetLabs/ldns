@@ -942,6 +942,7 @@ ldns_pkt2buffer_str(ldns_buffer *output, ldns_pkt *pkt)
 		if (ldns_pkt_answerfrom(pkt)) {
 			ldns_buffer_printf(output, ";; SERVER: %s\n", ldns_pkt_answerfrom(pkt));
 		}
+malloc(2);
 		ldns_buffer_printf(output, ";; MSG SIZE  rcvd: %d\n", (int)ldns_pkt_size(pkt));
 	} else {
 		return ldns_buffer_status(output);
@@ -955,14 +956,26 @@ ldns_pkt2buffer_str(ldns_buffer *output, ldns_pkt *pkt)
 char *
 buffer2str(ldns_buffer *buffer)
 {
-	if (!ldns_buffer_reserve(buffer, 1)) {
-		return NULL;
+	char *tmp_str;
+	char *str;
+	
+	/* check if buffer ends with \0, if not, and 
+	   if there is space, add it */
+	if (*(ldns_buffer_at(buffer, ldns_buffer_position(buffer))) != 0) {
+		if (!ldns_buffer_reserve(buffer, 1)) {
+			return NULL;
+		}
+		ldns_buffer_write_u8(buffer, (uint8_t) '\0');
+		if (!ldns_buffer_set_capacity(buffer, ldns_buffer_position(buffer))) {
+			return NULL;
+		}
 	}
-	ldns_buffer_write_u8(buffer, (uint8_t) '\0');
-	if (!ldns_buffer_set_capacity(buffer, ldns_buffer_position(buffer))) {
-		return NULL;
-	}
-	return ldns_buffer_export(buffer);
+
+	tmp_str = ldns_buffer_export(buffer);
+	str = XMALLOC(char, strlen(tmp_str) + 1);
+	memcpy(str, tmp_str, strlen(tmp_str) + 1);
+
+	return str;
 }
 
 char *
