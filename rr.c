@@ -33,7 +33,7 @@ ldns_rr_new(void)
 	}
 	
 	ldns_rr_set_rd_count(rr, 0);
-	rr->_rdata_fields = NULL; /* XXX */
+	rr->_rdata_fields = NULL; 
 	ldns_rr_set_ttl(rr, 0);
         return rr;
 }
@@ -64,8 +64,9 @@ ldns_rr_free(ldns_rr *rr)
  * and put the whole rr on 1 line
  * \param[in] rr the rr to normalize
  * \return the normalized rr
+ * \todo Do we want to keep this, then this should be
+ * done better, use octet function for this??
  */
-/* no need to export this */
 static char *
 ldns_rr_str_normalize(const char *rr)
 {
@@ -79,8 +80,8 @@ ldns_rr_str_normalize(const char *rr)
 	/* walk through the rr and fix it. Whitespace is handled in
 	 * ldns_rr_new_frm_str(), so don't worry about that here
 	 * - remove (, ) and \n
-	 * - everything after ; is discard
-	 * - allow for simple escaping, with \??? TODO Miek
+	 * - everything after ; is discarded
+	 * - allow for simple escaping, with \???
 	 */
 	for(p = (char*)rr; *p; p++) {
 		if (*p == '(' || *p == ')' || *p == '\n') {
@@ -133,23 +134,14 @@ ldns_rr_new_frm_str(const char *str)
 
 	new = ldns_rr_new();
 
-	owner = XMALLOC(char, 256);
-	ttl = XMALLOC(char, 20);
-	clas = XMALLOC(char, 8);
+	owner = XMALLOC(char, MAX_DOMAINLEN + 1);
+	ttl = XMALLOC(char, 21);
+	clas = XMALLOC(char, 11);
 	type = XMALLOC(char, 10);
-	rdata = XMALLOC(char, MAX_PACKETLEN);
+	rdata = XMALLOC(char, MAX_PACKETLEN + 1);
 	str_normalized = ldns_rr_str_normalize(str);
 	
-	  /* numbers are bogus XXX Miek */
-	sscanf(str_normalized, "%256s%20s%8s%10s%65535c", owner, ttl, clas, type, rdata);
-
-#if 0
-	printf("owner [%s]\n", owner);
-	printf("ttl [%s]\n", ttl);
-	printf("clas [%s]\n", clas);
-	printf("type [%s]\n", type);
-	printf("rdata [%s]\n", rdata);
-#endif 
+	sscanf(str_normalized, "%255s%20s%10s%9s%65535c", owner, ttl, clas, type, rdata);
 
 	ldns_rr_set_owner(new, ldns_dname_new_frm_str(owner));
 	/* ttl might be more complicated, like 2h, or 3d5h */
@@ -164,18 +156,10 @@ ldns_rr_new_frm_str(const char *str)
 	r_max = ldns_rr_descriptor_maximum(desc);
 	r_min = ldns_rr_descriptor_minimum(desc);
 
-	/* rdata (rdf's) */
-#ifdef DEBUG
-	printf("tot rd [%s]\n", rdata);
-#endif
 	for(rd = strtok(rdata, "\t \0"), r_cnt =0; rd; rd = strtok(NULL, "\t \0"), r_cnt++) {
 		r = ldns_rdf_new_frm_str(
 			ldns_rr_descriptor_field_type(desc, r_cnt),
 			rd);
-#ifdef DEBUG
-		printf("rd str [%s] %d\n", rd, r_cnt);
-		printf("type %d\n",ldns_rr_descriptor_field_type(desc, r_cnt));
-#endif 
 
 		if (!r) {
 			printf("rdf conversion mismatch\n");
@@ -536,13 +520,40 @@ ldns_rr_list_pop_rr(ldns_rr_list *rr_list)
 /**
  * check if an rr_list is a rrset
  * \param[in] rr_list the rr_list to check
- * \todo BIG TODO
  */
 bool
 ldns_is_rrset(ldns_rr_list *rr_list)
 {
-	ldns_rr_list_print(stdout, rr_list);
-	return false;
+	ldns_rr_type t; 
+	ldns_rr_class c;
+	ldns_rdf *o;
+	ldns_rr *tmp;
+	uint16_t i;
+	
+	if (!rr_list) {
+		return false;
+	}
+
+	tmp = ldns_rr_list_rr(rr_list, 0);
+
+	t = ldns_rr_get_type(tmp);
+	c = ldns_rr_get_class(tmp);
+	o = ldns_rr_owner(tmp);
+
+	/* compare these with the rest of the rr_list, start with 1 */
+	for (i = 1; i < ldns_rr_list_rr_count(rr_list); i++) {
+		tmp = ldns_rr_list_rr(rr_list, 1);
+		if (t != ldns_rr_get_type(tmp)) {
+			return false;
+		}
+		if (c != ldns_rr_get_class(tmp)) {
+			return false;
+		}
+		if (ldns_rdf_compare(o, ldns_rr_owner(tmp)) != 0) {
+			return false;
+		}
+	}
+	return true;
 }
 
 /**
@@ -1255,13 +1266,12 @@ ldns_rr_compare(const ldns_rr *rr1, const ldns_rr *rr2)
 		rr2_buf = ldns_buffer_new(rr2_len);
 
 		if (ldns_rr2buffer_wire(rr1_buf, rr1, LDNS_SECTION_ANY) != LDNS_STATUS_OK) {
-			return 0; /* XXX uhm, tja */
+			return 0; 
 		}
 		if (ldns_rr2buffer_wire(rr2_buf, rr2, LDNS_SECTION_ANY) != LDNS_STATUS_OK) {
 			return 0;
 		}
 		/* now compare the buffer's byte for byte */
-		/* < or <= ??? XXX */
 		for(i = 0; i < rr1_len; i++) {
 			if (ldns_buffer_at(rr1_buf, i) < 
 				ldns_buffer_at(rr2_buf, i)) {
