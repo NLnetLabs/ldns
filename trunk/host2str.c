@@ -226,9 +226,6 @@ ldns_rdf2buffer_str_str(ldns_buffer *output, ldns_rdf *rdf)
 ldns_status
 ldns_rdf2buffer_str_b64(ldns_buffer *output, ldns_rdf *rdf)
 {
-	/*ldns_buffer_printf(output, "%s", ldns_rdf_data(rdf));*/
-	/*TODO easyness function for size */
-	/*size_t size = (((ldns_rdf_size(rdf) + 2) / 3) * 4) + 1;*/
 	size_t size = b64_ntop_calculate_size(ldns_rdf_size(rdf));
 	char *b64 = XMALLOC(char, size);
 	if (b64_ntop(ldns_rdf_data(rdf), ldns_rdf_size(rdf), b64, size)) {
@@ -634,8 +631,7 @@ ldns_rdf2buffer_str_todo(ldns_buffer *output, ldns_rdf *rdf)
 ldns_status
 ldns_rdf2buffer_str_int16_data(ldns_buffer *output, ldns_rdf *rdf)
 {
-	/* TODO size function, don't forget to do -2 if we have that */
-	/*size_t size = (((ldns_rdf_size(rdf)) / 3) * 4) + 1;*/
+	/* Subtract the size (2) of the number that specifies the length */
 	size_t size = b64_ntop_calculate_size(ldns_rdf_size(rdf) - 2);
 	char *b64 = XMALLOC(char, size);
 
@@ -825,7 +821,6 @@ ldns_rdf2buffer_str(ldns_buffer *buffer, ldns_rdf *rdf)
 	return LDNS_STATUS_OK;
 }
 
-/* TODO status */
 ldns_status
 ldns_rr2buffer_str(ldns_buffer *output, ldns_rr *rr)
 {
@@ -910,7 +905,6 @@ ldns_rr_list2buffer_str(ldns_buffer *output, ldns_rr_list *list)
 ldns_status
 ldns_pktheader2buffer_str(ldns_buffer *output, ldns_pkt *pkt)
 {
-	/* TODO: strings for known names instead of numbers, flags etc */
 	ldns_lookup_table *opcode = ldns_lookup_by_id(ldns_opcodes,
 			                    (int) ldns_pkt_opcode(pkt));
 	ldns_lookup_table *rcode = ldns_lookup_by_id(ldns_rcodes,
@@ -960,7 +954,6 @@ ldns_pktheader2buffer_str(ldns_buffer *output, ldns_pkt *pkt)
 
 	return ldns_buffer_status(output);
 }
-/* TODO check status returns */
 
 ldns_status
 ldns_pkt2buffer_str(ldns_buffer *output, ldns_pkt *pkt)
