@@ -228,13 +228,14 @@ ldns_str2rdf_dname(ldns_rdf **d, const char *str)
 			if (isdigit((int) s[1]) &&
 			    isdigit((int) s[2]) &&
 			    isdigit((int) s[3])) {
+
+				printf("\\DDD thingy!\n");
+				
 				val = (uint8_t) hexdigit_to_int((char) s[1]) * 100 +
 				                hexdigit_to_int((char) s[2]) * 10 +
 				                hexdigit_to_int((char) s[3]);
 				*q = val;
 				s += 3;
-				s++;
-				*q = *s;
 			} else {
 				s++;
 				*q = *s;
