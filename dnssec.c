@@ -814,6 +814,10 @@ ldns_sign_public(ldns_rr_list *rrset, ldns_key_list *keys)
 	ldns_buffer *sign_buf;
 	uint32_t orig_ttl;
 
+	if (!rrset || !keys) {
+		return NULL;
+	}
+
 	key_count = 0;
 	signatures = ldns_rr_list_new();
 
@@ -821,6 +825,9 @@ ldns_sign_public(ldns_rr_list *rrset, ldns_key_list *keys)
 	 * prepare the rrset. Sign this together
 	 */
 	rrset_clone = ldns_rr_list_deep_clone(rrset);
+	if (!rrset_clone) {
+		return NULL;
+	}
 
 	/* make it canonical */
 	for(i = 0; i < ldns_rr_list_rr_count(rrset_clone); i++) {
