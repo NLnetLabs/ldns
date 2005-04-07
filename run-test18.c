@@ -66,8 +66,11 @@ main()
 	ldns_rr_print(stdout, rr);
 	printf("\n");
 
-	printf("it craps on this one\n");
-	rr = ldns_rr_new_frm_str("a.miek.nl.   A    267.271.122.1t");
+	printf("this must work again\n");
+	rr = ldns_rr_new_frm_str("a.miek.nl.   IN     A    127.0.0.1");
+	ldns_rr_print(stdout, rr);
+	printf("\n");
+	rr = ldns_rr_new_frm_str("a.miek.nl.   1D IN     A    127.0.0.1");
 	ldns_rr_print(stdout, rr);
 	printf("\n");
 
@@ -76,6 +79,8 @@ main()
 	ldns_rr_print(stdout, rr);
 	printf("\n");
 #endif 
+
+	exit(1);
 
 	privkey = ldns_key_new_frm_algorithm(LDNS_SIGN_RSASHA1, 512);
 	privkey_dsa = ldns_key_new_frm_algorithm(LDNS_SIGN_DSA, 512);
