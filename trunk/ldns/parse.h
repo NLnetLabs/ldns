@@ -55,12 +55,4 @@ ssize_t ldns_bget_token(ldns_buffer *b, char *token, const char *delim, size_t l
 ssize_t 
 ldns_bget_keyword_data(ldns_buffer *b, const char *keyword, const char *k_del, char *data, const char *d_del);
 
-#if 0
-/*
- * Remove \DDD constructs from the input. See RFC 1035, section 5.1.
- * dest is alloced in this function!
- */
-size_t ldns_unquote(char *text, char **dest);
-#endif
-
 #endif /*  _PARSE_H_ */

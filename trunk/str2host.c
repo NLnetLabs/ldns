@@ -223,14 +223,11 @@ ldns_str2rdf_dname(ldns_rdf **d, const char *str)
 			p = s+1;
 			break;
 		case '\\':
-			printf("\\ seen!\n");
 			/* octet value or literal char */
 			if (isdigit((int) s[1]) &&
 			    isdigit((int) s[2]) &&
 			    isdigit((int) s[3])) {
-
-				printf("\\DDD thingy!\n");
-				
+				/* cast this so it fits */
 				val = (uint8_t) hexdigit_to_int((char) s[1]) * 100 +
 				                hexdigit_to_int((char) s[2]) * 10 +
 				                hexdigit_to_int((char) s[3]);
@@ -349,7 +346,6 @@ ldns_str2rdf_b64(ldns_rdf **rd, const char *str)
 	                        b64_ntop_calculate_size(strlen(str)));
 	if (-1 == i) {
 		/* todo: remove print */
-		printf("BAD B64: %s\n", str);
 		return LDNS_STATUS_INVALID_B64;
 	} else {
 		*rd = ldns_rdf_new_frm_data(
