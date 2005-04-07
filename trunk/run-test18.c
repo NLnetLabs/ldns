@@ -70,7 +70,12 @@ main()
 	rr = ldns_rr_new_frm_str("a.miek.nl.   A    267.271.122.1t");
 	ldns_rr_print(stdout, rr);
 	printf("\n");
-	exit(0);
+
+#if 0
+	rr = ldns_rr_new_frm_str("a.miek.nl.   1800   IN   A    195.169.222.38");
+	ldns_rr_print(stdout, rr);
+	printf("\n");
+#endif 
 
 	privkey = ldns_key_new_frm_algorithm(LDNS_SIGN_RSASHA1, 512);
 	privkey_dsa = ldns_key_new_frm_algorithm(LDNS_SIGN_DSA, 512);

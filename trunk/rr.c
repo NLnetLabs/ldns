@@ -573,6 +573,10 @@ ldns_rr_deep_clone(ldns_rr *rr)
 {
 	uint16_t i;
 	ldns_rr *new_rr;
+
+	if (!rr) {
+		return NULL;
+	}
 		
 	new_rr = ldns_rr_new();
 	if (!new_rr) {
@@ -595,14 +599,23 @@ ldns_rr_list_deep_clone(ldns_rr_list *rrlist)
 {
 	uint16_t i;
 	ldns_rr_list *new_list;
+	ldns_rr *r;
+
+	if (!rrlist) {
+		return NULL;
+	}
 
 	new_list = ldns_rr_list_new();
 	if (!new_list) {
 		return NULL;
 	}
 	for (i = 0; i < ldns_rr_list_rr_count(rrlist); i++) {
-		ldns_rr_list_push_rr(new_list,
-				ldns_rr_deep_clone(ldns_rr_list_rr(rrlist, i)));
+		r = ldns_rr_list_rr(rrlist, i);
+		if (!r) {
+			/* huh, failure in cloning */
+			return NULL;
+		}
+		ldns_rr_list_push_rr(new_list, r);
 	}
 	return new_list;
 }
