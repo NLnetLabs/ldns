@@ -162,9 +162,4 @@ int hexdigit_to_int(char ch);
  */
 char int_to_hexdigit(int ch);
 
-/**
- * convert TTL string (1d2h, etc.) to a long. 0 on failure? 
- */
-uint32_t strtottl(const char *nptr, const char **endptr);
-
 #endif /* !_UTIL_H */

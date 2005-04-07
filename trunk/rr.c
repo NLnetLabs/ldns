@@ -150,7 +150,7 @@ ldns_rr_new_frm_str(const char *str)
 		FREE(rd_buf);
 		return NULL;
 	}
-	ttl_val = strtottl(ttl, &endptr); /* i'm not using endptr */
+	ttl_val = ldns_str2period(ttl, &endptr); /* i'm not using endptr */
 	if (ttl_val == 0) {
 		/* ah, it's not there or something */
 		ttl_val = LDNS_DEFTTL;
