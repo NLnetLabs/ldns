@@ -100,7 +100,8 @@ ldns_fget_token(FILE *f, char *token, const char *delim, size_t limit)
 		}
 
 		if (p < 0) {
-			/* more ) then ( */
+			/* more ) then ( - close off the string */
+			*t = '\0';
 			return -1;
 		}
 
@@ -119,18 +120,21 @@ ldns_fget_token(FILE *f, char *token, const char *delim, size_t limit)
 		*t++ = c;
 		i++;
 		if (limit > 0 && i > limit) {
+			*t = '\0';
 			return -1;
 		}
 	}
 
 tokenread:
-	if (p != 0 || c == EOF) {
-		/* ( count doesn't match ) count or EOF reached */
-		return 0;
-	} else {
-		*t = '\0';
-		return (ssize_t)i;
+	*t = '\0';
+	if (p != 0) {
+		return -1;
 	}
+	if (c == EOF) {
+		return 0;
+	} 
+	/* skip something here too; ldns_fskipc(f, del) */
+	return (ssize_t)i;
 }
 
 ssize_t
@@ -212,6 +216,7 @@ ldns_bget_token(ldns_buffer *b, char *token, const char *delim, size_t limit)
 
 		if (p < 0) {
 			/* more ) then ( */
+			*t = '\0';
 			return -1;
 		}
 
@@ -230,22 +235,24 @@ ldns_bget_token(ldns_buffer *b, char *token, const char *delim, size_t limit)
 		*t++ = c;
 		i++;
 		if (limit > 0 && i > limit) {
+			*t = '\0';
 			return -1;
 		}
 	}
 
 tokenread:
-	if (p != 0 || c == EOF) {
-		/* ( count doesn't match ) count or EOF reached */
-		return 0;
-	} else {
-		*t = '\0';
-		/* skip delimiters for next token */
-		ldns_bskipcs(b, del);
-		return (ssize_t)i;
+	*t = '\0';
+	if (p != 0) {
+		return -1;
 	}
+	if (c == EOF) {
+		return 0;
+	}
+	ldns_bskipcs(b, del);
+	return (ssize_t)i;
 }
 
+#if 0
 size_t
 ldns_unquote(char *text, char **dest)
 {
@@ -289,3 +296,4 @@ ldns_unquote(char *text, char **dest)
         *p  = '\0';
         return (size_t)((p - *dest));
 }
+#endif

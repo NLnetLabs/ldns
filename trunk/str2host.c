@@ -223,6 +223,7 @@ ldns_str2rdf_dname(ldns_rdf **d, const char *str)
 			p = s+1;
 			break;
 		case '\\':
+			printf("\\ seen!\n");
 			/* octet value or literal char */
 			if (isdigit((int) s[1]) &&
 			    isdigit((int) s[2]) &&
