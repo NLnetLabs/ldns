@@ -12,6 +12,7 @@ o openssl's setup function (esp. random)
 Implementation:
 ---------------
 o deep free
+o parentheses in parsing is nonsense as we do not keep state
 o check all conversion routines on missing types
 	- wire2host
 	- host2wire

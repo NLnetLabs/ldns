@@ -27,6 +27,9 @@ main()
 	ldns_rr_list  *rrs;
 	ldns_rr_list  *signatures;
 	ldns_rr_list  *dnskeys;
+	const char *soa_string1;
+	const char *soa_string2;
+	const char *soa_string3;
 
 	keys = ldns_key_list_new();
 	rrs  = ldns_rr_list_new();
@@ -36,6 +39,42 @@ main()
 	rr = ldns_rr_new_frm_str("a.miek.nl.   1800   IN   A    195.169.222.38");
 	ldns_rr_print(stdout, rr);
 	printf("\n");
+
+	
+	soa_string1 = "miek.nl. 3600 IN SOA elektron.atoom.net. miekg.atoom.net. ( \
+2002120700 ; serial\n\
+21600      ; refresh (6 hours)\n\
+7200       ; retry (2 hours)\n\
+604800     ; expire (1 week)\n\
+3600       ; minimum (1 hour)\n\
+)";
+	soa_string3 = "miek.nl. 3600 IN SOA elektron.atoom.net. miekg.atoom.net. ( \
+2002120700 \n\
+21600      \n\
+7200       \n\
+604800     \n\
+3600       \n\
+)";
+	soa_string2 = "miek.nl. 3600 IN SOA elektron.atoom.net. miekg.atoom.net. \
+2002120700 \n\
+21600 \n\
+7200 \n\
+604800 \n\
+3600"; 
+
+	printf("string as typed:\n%s\n", soa_string1);
+	printf("string as typed:\n%s\n", soa_string2);
+	printf("string as typed:\n%s\n", soa_string3);
+	rr = ldns_rr_new_frm_str(soa_string1);
+	ldns_rr_print(stdout, rr);
+	printf("\n");
+	rr = ldns_rr_new_frm_str(soa_string2);
+	ldns_rr_print(stdout, rr);
+	printf("\n");
+	rr = ldns_rr_new_frm_str(soa_string3);
+	ldns_rr_print(stdout, rr);
+	printf("\n");
+	exit(0);
 
 	rr = ldns_rr_new_frm_str("a.miek.nl. 1800    IN     MX     10    www.atoom.net");
 	ldns_rr_print(stdout, rr);

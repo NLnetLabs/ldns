@@ -139,13 +139,13 @@ ldns_rr_new_frm_str(const char *str)
 	ldns_buffer_new_frm_data(rr_buf, (char*)str, strlen(str));
 	
 	/* split the rr in its parts -1 signal trouble */
-	if (ldns_bget_token(rr_buf, owner, "\t ", MAX_DOMAINLEN) == -1) {
+	if (ldns_bget_token(rr_buf, owner, "\t\n ", MAX_DOMAINLEN) == -1) {
 		FREE(owner); FREE(ttl); FREE(clas); FREE(rdata);FREE(rd);
 		FREE(rd_buf);
 		ldns_buffer_free(rr_buf);
 		return NULL;
 	}
-	if (ldns_bget_token(rr_buf, ttl, "\t ", 21) == -1) {
+	if (ldns_bget_token(rr_buf, ttl, "\t\n ", 21) == -1) {
 		FREE(owner); FREE(ttl); FREE(clas); FREE(rdata);FREE(rd);
 		FREE(rd_buf);
 		return NULL;
@@ -161,7 +161,7 @@ ldns_rr_new_frm_str(const char *str)
 		 */
 		clas_val = ldns_get_rr_class_by_name(ttl);
 	} else {
-		if (ldns_bget_token(rr_buf, clas, "\t ", 11) == -1) {
+		if (ldns_bget_token(rr_buf, clas, "\t\n ", 11) == -1) {
 			FREE(owner); FREE(ttl); FREE(clas); FREE(rdata);FREE(rd);
 			FREE(rd_buf);
 			ldns_buffer_free(rr_buf);
@@ -171,7 +171,7 @@ ldns_rr_new_frm_str(const char *str)
 	}
 	/* the rest should still be waiting for us */
 
-	if (ldns_bget_token(rr_buf, type, "\t ", 10) == -1) {
+	if (ldns_bget_token(rr_buf, type, "\t\n ", 10) == -1) {
 		FREE(owner); FREE(ttl); FREE(clas); FREE(rdata);FREE(rd);
 		FREE(rd_buf);
 		ldns_buffer_free(rr_buf);
@@ -205,7 +205,7 @@ ldns_rr_new_frm_str(const char *str)
 	r_min = ldns_rr_descriptor_minimum(desc);
 
 	/* there is no limit, no no */
-	while(ldns_bget_token(rd_buf, rd, "\t ", MAX_RDFLEN) > 0) {
+	while(ldns_bget_token(rd_buf, rd, "\t\n ", MAX_RDFLEN) > 0) {
 		r = ldns_rdf_new_frm_str(
 			ldns_rr_descriptor_field_type(desc, r_cnt),
 			rd);
