@@ -63,7 +63,7 @@ ldns_str2rdf_int16(ldns_rdf **rd, const char *shortstr)
 ldns_status
 ldns_str2rdf_time(ldns_rdf **rd, const char *time)
 {
-	/* convert a time YYDDMMHHMMSS to wireformat */
+	/* convert a time YYYYDDMMHHMMSS to wireformat */
 	uint16_t *r = NULL;
 	struct tm tm;
 	uint32_t l;
