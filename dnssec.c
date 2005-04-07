@@ -160,9 +160,6 @@ ldns_verify_rrsig(ldns_rr_list *rrset, ldns_rr *rrsig, ldns_rr_list *keys)
 		return false;
 	}
 
-	/* no longer needed */
-	ldns_rr_list_free(rrset_clone);
-
 	for(i = 0; i < ldns_rr_list_rr_count(keys); i++) {
 		current_key = ldns_rr_list_rr(keys, i);
 		key_buf = ldns_buffer_new(MAX_PACKETLEN);
@@ -203,6 +200,8 @@ ldns_verify_rrsig(ldns_rr_list *rrset, ldns_rr *rrsig, ldns_rr_list *keys)
 		}
 	}
 
+	/* no longer needed */
+	ldns_rr_list_free(rrset_clone);
 	ldns_buffer_free(rawsig_buf);
 	ldns_buffer_free(verify_buf);
 	return result;

@@ -82,6 +82,9 @@ ldns_key_new_frm_algorithm(ldns_signing_algorithm alg, uint16_t size)
 			d = DSA_generate_parameters((int)size, NULL, 0, NULL, NULL, NULL, NULL);
 			DSA_generate_key(d);
 			ldns_key_set_dsa_key(k, d);
+	printf("gen key\n");
+	DSA_print_fp(stdout, d, 0);
+	printf("\n");
 			break;
 		case LDNS_SIGN_HMACMD5:
 			/* do your hmac thing here */
@@ -323,13 +326,9 @@ static bool
 ldns_key_dsa2bin(unsigned char *data, DSA *k, uint16_t *size)
 {
 	uint8_t T;
-
 	/* See RFC2536 */
-/*
-	T = (uint8_t) ((DSA_size(k) - 512) / 64);
-*/
-	/* don't know if this is the right size */
-	T = (uint8_t) DSA_size(k) / 8;
+	*size = BN_num_bytes(k->g);
+	T = (*size - 64) / 8;
 	memcpy(data, &T, 1);
 
 	if (T > 8) {
@@ -338,12 +337,12 @@ ldns_key_dsa2bin(unsigned char *data, DSA *k, uint16_t *size)
 		return false;
 	}
 
-	*size = 64 + (T * 8); 
-
+	/**size = 64 + (T * 8); */
+	data[0] = T;
 	BN_bn2bin(k->q, data + 1 ); 		/* 20 octects */
-	BN_bn2bin(k->p, data + 22 ); 		/* offset octects */
-	BN_bn2bin(k->g, data + 23 + *size ); 	/* offset octets */
-	BN_bn2bin(k->pub_key, data + 24 + *size + *size); /* offset octets */
+	BN_bn2bin(k->p, data + 21 ); 		/* offset octects */
+	BN_bn2bin(k->g, data + 21 + *size); 	/* offset octets */
+	BN_bn2bin(k->pub_key, data + 21 + *size + *size); /* offset octets */
 	*size = 24 + (*size * 3);
 	return true;
 }
