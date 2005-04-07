@@ -128,6 +128,10 @@ ldns_rr_new_frm_str(const char *str)
 	rr_buf = MALLOC(ldns_buffer);
 	rd_buf = MALLOC(ldns_buffer);
 	rd = XMALLOC(char, MAX_RDFLEN);
+	if (!owner || !ttl || !clas || !type || !rdata ||
+			!rr_buf || !rd_buf || !rd) {
+		return NULL;
+	}
 	r_cnt = 0;
 	ttl_val = 0;
 	clas_val = 0;
@@ -136,9 +140,14 @@ ldns_rr_new_frm_str(const char *str)
 	
 	/* split the rr in its parts -1 signal trouble */
 	if (ldns_bget_token(rr_buf, owner, "\t ", MAX_DOMAINLEN) == -1) {
+		FREE(owner); FREE(ttl); FREE(clas); FREE(rdata);FREE(rd);
+		FREE(rd_buf);
+		ldns_buffer_free(rr_buf);
 		return NULL;
 	}
 	if (ldns_bget_token(rr_buf, ttl, "\t ", 21) == -1) {
+		FREE(owner); FREE(ttl); FREE(clas); FREE(rdata);FREE(rd);
+		FREE(rd_buf);
 		return NULL;
 	}
 	ttl_val = strtottl(ttl, &endptr); /* i'm not using endptr */
@@ -153,6 +162,9 @@ ldns_rr_new_frm_str(const char *str)
 		clas_val = ldns_get_rr_class_by_name(ttl);
 	} else {
 		if (ldns_bget_token(rr_buf, clas, "\t ", 11) == -1) {
+			FREE(owner); FREE(ttl); FREE(clas); FREE(rdata);FREE(rd);
+			FREE(rd_buf);
+			ldns_buffer_free(rr_buf);
 			return NULL;
 		}
 		clas_val = ldns_get_rr_class_by_name(clas);
@@ -160,9 +172,15 @@ ldns_rr_new_frm_str(const char *str)
 	/* the rest should still be waiting for us */
 
 	if (ldns_bget_token(rr_buf, type, "\t ", 10) == -1) {
+		FREE(owner); FREE(ttl); FREE(clas); FREE(rdata);FREE(rd);
+		FREE(rd_buf);
+		ldns_buffer_free(rr_buf);
 		return NULL;
 	}
 	if (ldns_bget_token(rr_buf, rdata, "\0", MAX_PACKETLEN) == -1) {
+		FREE(owner); FREE(ttl); FREE(clas); FREE(rdata);FREE(rd);
+		FREE(rd_buf);
+		ldns_buffer_free(rr_buf);
 		return NULL;
 	}
 	ldns_buffer_new_frm_data(
