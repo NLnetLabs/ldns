@@ -85,9 +85,15 @@ ldns_rr_free(ldns_rr *rr)
 }
 
 /* 
+ * extra spaces are allowed
+ * allow ttl to be optional
+ * allow ttl to be written as 1d3h
  * So the RR should look like. e.g.
  * miek.nl. 3600 IN MX 10 elektron.atoom.net
- * extra spaces are allowed
+ * or
+ * miek.nl. 1h IN MX 10 elektron.atoom.net
+ * or
+ * miek.nl. IN MX 10 elektron.atoom.net
  */
 ldns_rr *
 ldns_rr_new_frm_str(const char *str)
@@ -97,8 +103,11 @@ ldns_rr_new_frm_str(const char *str)
 	ldns_rr_type rr_type;
 	ldns_buffer *rr_buf;
 	ldns_buffer *rd_buf;
+	uint32_t ttl_val;
+	const char *endptr;
 	char  *owner; 
 	char  *ttl; 
+	ldns_rr_class clas_val;
 	char  *clas;
 	char  *type;
 	char  *rdata;
@@ -120,6 +129,8 @@ ldns_rr_new_frm_str(const char *str)
 	rd_buf = MALLOC(ldns_buffer);
 	rd = XMALLOC(char, MAX_RDFLEN);
 	r_cnt = 0;
+	ttl_val = 0;
+	clas_val = 0;
 
 	ldns_buffer_new_frm_data(rr_buf, (char*)str, strlen(str));
 	
@@ -130,27 +141,44 @@ ldns_rr_new_frm_str(const char *str)
 	if (ldns_bget_token(rr_buf, ttl, "\t ", 21) == -1) {
 		return NULL;
 	}
-	if (ldns_bget_token(rr_buf, clas, "\t ", 11) == -1) {
-		return NULL;
+	ttl_val = strtottl(ttl, &endptr); /* i'm not using endptr */
+	if (ttl_val == 0) {
+		/* ah, it's not there or something */
+		ttl_val = LDNS_DEFTTL;
+		/* we not ASSUMING the TTL is missing and that
+		 * the rest of the RR is still there. That is
+		 * CLASS TYPE RDATA 
+		 * so ttl value we read is actually the class
+		 */
+		clas_val = ldns_get_rr_class_by_name(ttl);
+	} else {
+		if (ldns_bget_token(rr_buf, clas, "\t ", 11) == -1) {
+			return NULL;
+		}
+		clas_val = ldns_get_rr_class_by_name(clas);
 	}
+	/* the rest should still be waiting for us */
+
 	if (ldns_bget_token(rr_buf, type, "\t ", 10) == -1) {
 		return NULL;
 	}
 	if (ldns_bget_token(rr_buf, rdata, "\0", MAX_PACKETLEN) == -1) {
 		return NULL;
 	}
-
 	ldns_buffer_new_frm_data(
 			rd_buf, rdata, strlen(rdata));
 	ldns_rr_set_owner(new, ldns_dname_new_frm_str(owner));
 	FREE(owner);
-	/* ttl might be more complicated, like 2h, or 3d5h */
-	ldns_rr_set_ttl(new, (uint32_t) atoi(ttl));
+
+	ldns_rr_set_ttl(new, ttl_val);
 	FREE(ttl);
-	ldns_rr_set_class(new, ldns_get_rr_class_by_name(clas));
+
+	ldns_rr_set_class(new, clas_val);
 	FREE(clas);
+
 	rr_type = ldns_get_rr_type_by_name(type);
 	FREE(type);
+
 	desc = ldns_rr_descript((uint16_t)rr_type);
 	ldns_rr_set_type(new, rr_type);
 
