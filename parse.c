@@ -214,11 +214,13 @@ ldns_bget_token(ldns_buffer *b, char *token, const char *delim, size_t limit)
 			continue;
 		}
 
+#if 0
 		if (p < 0) {
 			/* more ) then ( */
 			*t = '\0';
 			return -1;
 		}
+#endif
 
 		if (c == '\n' && p != 0) {
 			/* in parentheses */
@@ -243,7 +245,7 @@ ldns_bget_token(ldns_buffer *b, char *token, const char *delim, size_t limit)
 tokenread:
 	*t = '\0';
 	if (p != 0) {
-		return -1;
+		/* return -1; */
 	}
 	if (c == EOF) {
 		return 0;

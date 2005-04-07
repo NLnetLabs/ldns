@@ -172,7 +172,6 @@ ldns_rdf2buffer_str_time(ldns_buffer *output, ldns_rdf *rdf)
 	(void)gmtime_r(&data_time, &tm);
 
 	(void)strftime(date_buf, 15, "%Y%m%d%H%M%S", &tm);
-
 	ldns_buffer_printf(output, "%s", date_buf);
 
 	return ldns_buffer_status(output);
