@@ -105,6 +105,10 @@ ldns_send(ldns_resolver *r, ldns_pkt *query_pkt)
 			reply_bytes = ldns_send_udp(qb, ns, ns_len, ldns_resolver_timeout(r), &reply_size);
 		}
 		
+		if (!reply_bytes) {
+			return NULL;
+		}
+		
 		if (ldns_wire2pkt(&reply, reply_bytes, reply_size) !=
 		    LDNS_STATUS_OK) {
 			printf("malformed answer\n");
@@ -216,7 +220,6 @@ ldns_send_udp(ldns_buffer *qbin, const struct sockaddr_storage *to, socklen_t to
 		if (errno == EAGAIN) {
 			fprintf(stderr, "socket timeout\n");
 		}
-		printf("received too little\n");
 		FREE(answer);
 		return NULL;
 	}
