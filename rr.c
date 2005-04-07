@@ -88,7 +88,6 @@ ldns_rr_free(ldns_rr *rr)
  * So the RR should look like. e.g.
  * miek.nl. 3600 IN MX 10 elektron.atoom.net
  * extra spaces are allowed
- *
  */
 ldns_rr *
 ldns_rr_new_frm_str(const char *str)
@@ -122,7 +121,7 @@ ldns_rr_new_frm_str(const char *str)
 	rd = XMALLOC(char, MAX_RDFLEN);
 	r_cnt = 0;
 
-	ldns_buffer_new_frm_data(rr_buf, str, strlen(str));
+	ldns_buffer_new_frm_data(rr_buf, (char*)str, strlen(str));
 	
 	/* split the rr in its parts -1 signal trouble */
 	if (ldns_bget_token(rr_buf, owner, "\t ", MAX_DOMAINLEN) == -1) {
@@ -165,19 +164,12 @@ ldns_rr_new_frm_str(const char *str)
 			ldns_rr_descriptor_field_type(desc, r_cnt),
 			rd);
 
-		if (!r) {
-			printf("rdf conversion mismatch\n");
+		if (!r || (r_cnt > r_max)) {
 			FREE(rdata);
-			/* return what we've got */
-			return new;
+			return NULL;
 		}
-		ldns_rr_push_rdf(new, r);
 
-		if (r_cnt > r_max) {
-			printf("rdf data overflow");
-			FREE(rdata);
-			return new;
-		}
+		ldns_rr_push_rdf(new, r);
 		r_cnt++;
 	}
 	
@@ -186,12 +178,11 @@ ldns_rr_new_frm_str(const char *str)
 			ldns_rr_descriptor_field_type(desc, r_cnt),
 			rd);
 	if (!r) {
-		printf("rdf conversion mismatch\n");
 		FREE(rdata);
-		return new;
+		return NULL;
+	} else {
+		ldns_rr_push_rdf(new, r);
 	}
-
-	ldns_rr_push_rdf(new, r);
 	FREE(rdata);
 	return new;
 }
