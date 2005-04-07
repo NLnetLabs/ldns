@@ -63,17 +63,28 @@ ldns_str2rdf_int16(ldns_rdf **rd, const char *shortstr)
 ldns_status
 ldns_str2rdf_time(ldns_rdf **rd, const char *time)
 {
-	/* convert a time YYHM to wireformat */
+	/* convert a time YYDDMMHHMMSS to wireformat */
 	uint16_t *r = NULL;
 	struct tm tm;
 	uint32_t l;
+	char *end;
 
 	/* Try to scan the time... */
 	r = (uint16_t*)MALLOC(uint32_t);
 
 	if((char*)strptime(time, "%Y%m%d%H%M%S", &tm) == NULL) {
-		FREE(r);
-		return LDNS_STATUS_ERR;
+		/* handle it as 32 bits */
+		l = htonl((uint32_t)strtol((char*)time, &end, 0));
+		if(*end != 0) {
+			FREE(r);
+			return LDNS_STATUS_ERR;
+		} else {
+			memcpy(r, &l, sizeof(uint32_t));
+			*rd = ldns_rdf_new_frm_data(
+				LDNS_RDF_TYPE_INT32, sizeof(uint32_t), r);
+			FREE(r);
+			return LDNS_STATUS_OK;
+		}
 	} else {
 		l = htonl(timegm(&tm));
 		memcpy(r, &l, sizeof(uint32_t));
