@@ -241,15 +241,19 @@ ldns_bget_token(ldns_buffer *b, char *token, const char *delim, size_t limit)
 			return -1;
 		}
 	}
-
-tokenread:
 	*t = '\0';
+	printf("eof reached [%s]\n", token);
 	if (p != 0) {
 		/* return -1; */
 	}
-	if (c == EOF) {
-		return 0;
-	}
+	return 0;
+
+tokenread:
 	ldns_bskipcs(b, del);
+	*t = '\0';
+	printf("read [%s]\n", token);
+	if (p != 0) {
+		/* return -1; */
+	}
 	return (ssize_t)i;
 }

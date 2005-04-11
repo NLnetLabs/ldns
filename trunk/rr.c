@@ -204,21 +204,30 @@ ldns_rr_new_frm_str(const char *str)
 	r_max = ldns_rr_descriptor_maximum(desc);
 	r_min = ldns_rr_descriptor_minimum(desc);
 
-	/* there is no limit, no no */
-	while(ldns_bget_token(rd_buf, rd, "\t\n ", MAX_RDFLEN) > 0) {
-		r = ldns_rdf_new_frm_str(
-			ldns_rr_descriptor_field_type(desc, r_cnt),
-			rd);
+	/* depending on the rr_type we need to extract
+	 * the rdata differently, e.g. NSEC */
+	switch(rr_type) {
+		case LDNS_RR_TYPE_NSEC:
+		case LDNS_RR_TYPE_LOC:
+			/* blalba do something different */
+			break;
+		default:
+			while(ldns_bget_token(rd_buf, rd, "\t\n ", MAX_RDFLEN) > 0) {
+				r = ldns_rdf_new_frm_str(
+						ldns_rr_descriptor_field_type(desc, r_cnt),
+						rd);
 
-		if (!r || (r_cnt > r_max)) {
-			FREE(rdata);
-			return NULL;
-		}
+				if (!r || (r_cnt > r_max)) {
+					FREE(rdata);
+					return NULL;
+				}
 
-		ldns_rr_push_rdf(new, r);
-		r_cnt++;
+				ldns_rr_push_rdf(new, r);
+				r_cnt++;
+			}
 	}
 	
+#if 0
 	/* the last one - in case of EOF of the rdata */
 	r = ldns_rdf_new_frm_str(
 			ldns_rr_descriptor_field_type(desc, r_cnt),
@@ -230,6 +239,7 @@ ldns_rr_new_frm_str(const char *str)
 		ldns_rr_push_rdf(new, r);
 	}
 	FREE(rdata);
+#endif
 	return new;
 }
 

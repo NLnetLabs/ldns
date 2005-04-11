@@ -40,13 +40,17 @@ main()
 	ldns_rr_print(stdout, rr);
 	printf("\n");
 
+	rr = ldns_rr_new_frm_str("a.miek.nl.   1800   IN   A    195.169.222.38    ");
+	ldns_rr_print(stdout, rr);
+	printf("\n");
+
 	
 	soa_string1 = "miek.nl. 3600 IN SOA elektron.atoom.net. miekg.atoom.net. ( \
-2002120700 ; serial\n\
-21600      ; refresh (6 hours)\n\
-7200       ; retry (2 hours)\n\
-604800     ; expire (1 week)\n\
-3600       ; minimum (1 hour)\n\
+2002120700 \n\
+21600      \n\
+7200       \n\
+604800     \n\
+3600       \n\
 )";
 	soa_string3 = "miek.nl. 3600 IN SOA elektron.atoom.net. miekg.atoom.net. ( \
 2002120700 \n\
