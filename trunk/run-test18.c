@@ -45,18 +45,18 @@ main()
 	printf("\n");
 
 	soa_string1 = "miek.nl. 3600 IN SOA elektron.atoom.net. miekg.atoom.net. ( \
-2002120700 \n\
+2002120700 ; hallo ik ben miek\n\
 21600      \n\
 7200       \n\
 604800     \n\
 3600       \n\
 )";
 	soa_string2 = "miek.nl. 3600 IN SOA elektron.atoom.net. miekg.atoom.net. \
-2002120700 \n\
-21600 \n\
-7200 \n\
-604800 \n\
-3600"; 
+2002120700 ; serial \n\
+21600 ; more shit\n\
+7200 ; ahh retry \n\
+604800 ; meaningless number to annoy me\n\
+3600 ; negative caching"; 
 
 	rr = ldns_rr_new_frm_str(soa_string1);
 	ldns_rr_print(stdout, rr);

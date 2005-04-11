@@ -55,4 +55,10 @@ ssize_t ldns_bget_token(ldns_buffer *b, char *token, const char *delim, size_t l
 ssize_t 
 ldns_bget_keyword_data(ldns_buffer *b, const char *keyword, const char *k_del, char *data, const char *d_del);
 
+/* remove comments from a string. Comment = ';' until \n
+ * replace ; until \n with spaces
+ * return the new string
+ */
+char * ldns_str_remove_comment(char *str);
+
 #endif /*  _PARSE_H_ */

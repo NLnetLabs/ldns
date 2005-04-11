@@ -112,7 +112,8 @@ ldns_rr_new_frm_str(const char *str)
 	char  *type;
 	char  *rdata;
 	char  *rd;
-	int c;
+	char  *no_comment_str;
+	ssize_t c;
 	
 	ldns_rdf *r;
 	uint16_t r_cnt;
@@ -137,18 +138,21 @@ ldns_rr_new_frm_str(const char *str)
 	ttl_val = 0;
 	clas_val = 0;
 
-	ldns_buffer_new_frm_data(rr_buf, (char*)str, strlen(str));
+	no_comment_str = ldns_str_remove_comment((char*)str);
+
+	ldns_buffer_new_frm_data(rr_buf, no_comment_str, strlen(no_comment_str));
 	
 	/* split the rr in its parts -1 signals trouble */
 	if (ldns_bget_token(rr_buf, owner, "\t\n ", MAX_DOMAINLEN) == -1) {
 		FREE(owner); FREE(ttl); FREE(clas); FREE(rdata);FREE(rd);
 		FREE(rd_buf);
-		/* ldns_buffer_free(rr_buf); */
+		ldns_buffer_free(rr_buf); 
 		return NULL;
 	}
 	if (ldns_bget_token(rr_buf, ttl, "\t\n ", 21) == -1) {
 		FREE(owner); FREE(ttl); FREE(clas); FREE(rdata);FREE(rd);
 		FREE(rd_buf);
+		ldns_buffer_free(rr_buf);
 		return NULL;
 	}
 	ttl_val = ldns_str2period(ttl, &endptr); /* i'm not using endptr */
@@ -163,11 +167,9 @@ ldns_rr_new_frm_str(const char *str)
 		clas_val = ldns_get_rr_class_by_name(ttl);
 	} else {
 		if (ldns_bget_token(rr_buf, clas, "\t\n ", 11) == -1) {
-#if 0
 			FREE(owner); FREE(ttl); FREE(clas); FREE(rdata);FREE(rd);
 			FREE(rd_buf);
 			ldns_buffer_free(rr_buf);
-#endif
 			return NULL;
 		}
 		clas_val = ldns_get_rr_class_by_name(clas);
@@ -183,7 +185,7 @@ ldns_rr_new_frm_str(const char *str)
 	if (ldns_bget_token(rr_buf, rdata, "\0", MAX_PACKETLEN) == -1) {
 		FREE(owner); FREE(ttl); FREE(clas); FREE(type);FREE(rd);
 		FREE(rd_buf);
-		/* ldns_buffer_free(rr_buf); */
+		ldns_buffer_free(rr_buf);
 		return NULL;
 	}
 	ldns_buffer_new_frm_data(
@@ -220,31 +222,12 @@ ldns_rr_new_frm_str(const char *str)
 				r = ldns_rdf_new_frm_str(
 						ldns_rr_descriptor_field_type(desc, r_cnt),
 						rd);
-#if 0
-				if (!r || (r_cnt > r_max)) {
-					FREE(rdata);
-					return NULL;
-				}
-#endif
-
 				ldns_rr_push_rdf(new, r);
 				r_cnt++;
 			}
 	}
 	
-#if 0
-	/* the last one - in case of EOF of the rdata */
-	r = ldns_rdf_new_frm_str(
-			ldns_rr_descriptor_field_type(desc, r_cnt),
-			rd);
-	if (!r) {
-		FREE(rdata);
-		return NULL;
-	} else {
-		ldns_rr_push_rdf(new, r);
-	}
 	FREE(rdata);
-#endif
 	return new;
 }
 
