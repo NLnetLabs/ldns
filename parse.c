@@ -260,3 +260,28 @@ tokenread:
 	}
 	return (ssize_t)i;
 }
+
+char *
+ldns_str_remove_comment(char *str)
+{
+	char *s;
+	int comment;
+	char *str2;
+
+	comment = 0;
+	str2 = strdup(str);
+
+	for(s = str2; *s; s++) {
+		if (*s == ';')  {
+			comment = 1;
+		}
+		if (*s == '\n') {
+			*s = ' ';
+			comment = 0;
+		}
+		if (comment == 1) {
+			*s = ' ';
+		}
+	}
+	return str2;
+}
