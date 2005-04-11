@@ -84,7 +84,6 @@ ldns_fget_token(FILE *f, char *token, const char *delim, size_t limit)
 		del = delim;
 	}
 
-
 	p = 0;
 	i = 0;
 	t = token;
@@ -124,16 +123,18 @@ ldns_fget_token(FILE *f, char *token, const char *delim, size_t limit)
 			return -1;
 		}
 	}
-
-tokenread:
 	*t = '\0';
 	if (p != 0) {
 		return -1;
 	}
-	if (c == EOF) {
-		return 0;
-	} 
+	return 0;
+
+tokenread:
 	/* skip something here too; ldns_fskipc(f, del) */
+	*t = '\0';
+	if (p != 0) {
+		return -1;
+	}
 	return (ssize_t)i;
 }
 
@@ -214,13 +215,11 @@ ldns_bget_token(ldns_buffer *b, char *token, const char *delim, size_t limit)
 			continue;
 		}
 
-#if 0
 		if (p < 0) {
 			/* more ) then ( */
 			*t = '\0';
-			return -1;
+			return 0;
 		}
-#endif
 
 		if (c == '\n' && p != 0) {
 			/* in parentheses */
@@ -241,19 +240,23 @@ ldns_bget_token(ldns_buffer *b, char *token, const char *delim, size_t limit)
 			return -1;
 		}
 	}
+
 	*t = '\0';
-	printf("eof reached [%s]\n", token);
-	if (p != 0) {
-		/* return -1; */
+	if (i == 0) {
+		/* nothing read */
+		return -1;
 	}
-	return 0;
+	if (p != 0) {
+		return -1;
+	}
+	return (ssize_t)i;
 
 tokenread:
 	ldns_bskipcs(b, del);
+
 	*t = '\0';
-	printf("read [%s]\n", token);
 	if (p != 0) {
-		/* return -1; */
+		return -1; 
 	}
 	return (ssize_t)i;
 }
