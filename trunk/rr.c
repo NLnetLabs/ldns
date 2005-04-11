@@ -112,6 +112,7 @@ ldns_rr_new_frm_str(const char *str)
 	char  *type;
 	char  *rdata;
 	char  *rd;
+	int c;
 	
 	ldns_rdf *r;
 	uint16_t r_cnt;
@@ -138,11 +139,11 @@ ldns_rr_new_frm_str(const char *str)
 
 	ldns_buffer_new_frm_data(rr_buf, (char*)str, strlen(str));
 	
-	/* split the rr in its parts -1 signal trouble */
+	/* split the rr in its parts -1 signals trouble */
 	if (ldns_bget_token(rr_buf, owner, "\t\n ", MAX_DOMAINLEN) == -1) {
 		FREE(owner); FREE(ttl); FREE(clas); FREE(rdata);FREE(rd);
 		FREE(rd_buf);
-		ldns_buffer_free(rr_buf);
+		/* ldns_buffer_free(rr_buf); */
 		return NULL;
 	}
 	if (ldns_bget_token(rr_buf, ttl, "\t\n ", 21) == -1) {
@@ -162,9 +163,11 @@ ldns_rr_new_frm_str(const char *str)
 		clas_val = ldns_get_rr_class_by_name(ttl);
 	} else {
 		if (ldns_bget_token(rr_buf, clas, "\t\n ", 11) == -1) {
+#if 0
 			FREE(owner); FREE(ttl); FREE(clas); FREE(rdata);FREE(rd);
 			FREE(rd_buf);
 			ldns_buffer_free(rr_buf);
+#endif
 			return NULL;
 		}
 		clas_val = ldns_get_rr_class_by_name(clas);
@@ -178,13 +181,14 @@ ldns_rr_new_frm_str(const char *str)
 		return NULL;
 	}
 	if (ldns_bget_token(rr_buf, rdata, "\0", MAX_PACKETLEN) == -1) {
-		FREE(owner); FREE(ttl); FREE(clas); FREE(rdata);FREE(rd);
+		FREE(owner); FREE(ttl); FREE(clas); FREE(type);FREE(rd);
 		FREE(rd_buf);
-		ldns_buffer_free(rr_buf);
+		/* ldns_buffer_free(rr_buf); */
 		return NULL;
 	}
 	ldns_buffer_new_frm_data(
 			rd_buf, rdata, strlen(rdata));
+
 	ldns_rr_set_owner(new, ldns_dname_new_frm_str(owner));
 	FREE(owner);
 
@@ -212,15 +216,16 @@ ldns_rr_new_frm_str(const char *str)
 			/* blalba do something different */
 			break;
 		default:
-			while(ldns_bget_token(rd_buf, rd, "\t\n ", MAX_RDFLEN) > 0) {
+			while((c = ldns_bget_token(rd_buf, rd, "\t\n ", MAX_RDFLEN)) != -1) {
 				r = ldns_rdf_new_frm_str(
 						ldns_rr_descriptor_field_type(desc, r_cnt),
 						rd);
-
+#if 0
 				if (!r || (r_cnt > r_max)) {
 					FREE(rdata);
 					return NULL;
 				}
+#endif
 
 				ldns_rr_push_rdf(new, r);
 				r_cnt++;

@@ -162,7 +162,6 @@ ldns_buffer_free(ldns_buffer *buffer)
 	if (!buffer) {
 		return;
 	}
-
 /*
 	if (!buffer->_fixed) {
 */
@@ -184,6 +183,7 @@ int
 ldns_bgetc(ldns_buffer *buffer)
 {
 	if (!ldns_buffer_available_at(buffer, buffer->_position, sizeof(uint8_t))) {
+		ldns_buffer_set_position(buffer, ldns_buffer_limit(buffer));
 		/* ldns_buffer_rewind(buffer);*/
 		return EOF;
 	}

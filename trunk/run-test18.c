@@ -44,15 +44,7 @@ main()
 	ldns_rr_print(stdout, rr);
 	printf("\n");
 
-	
 	soa_string1 = "miek.nl. 3600 IN SOA elektron.atoom.net. miekg.atoom.net. ( \
-2002120700 \n\
-21600      \n\
-7200       \n\
-604800     \n\
-3600       \n\
-)";
-	soa_string3 = "miek.nl. 3600 IN SOA elektron.atoom.net. miekg.atoom.net. ( \
 2002120700 \n\
 21600      \n\
 7200       \n\
@@ -66,19 +58,12 @@ main()
 604800 \n\
 3600"; 
 
-	printf("string as typed:\n%s\n", soa_string1);
-	printf("string as typed:\n%s\n", soa_string2);
-	printf("string as typed:\n%s\n", soa_string3);
 	rr = ldns_rr_new_frm_str(soa_string1);
 	ldns_rr_print(stdout, rr);
 	printf("\n");
 	rr = ldns_rr_new_frm_str(soa_string2);
 	ldns_rr_print(stdout, rr);
 	printf("\n");
-	rr = ldns_rr_new_frm_str(soa_string3);
-	ldns_rr_print(stdout, rr);
-	printf("\n");
-	exit(0);
 
 	rr = ldns_rr_new_frm_str("a.miek.nl. 1800    IN     MX     10    www.atoom.net");
 	ldns_rr_print(stdout, rr);
@@ -132,6 +117,7 @@ main()
 	ldns_rr_print(stdout, rr);
 	printf("\n");
 
+	exit(0);
 
 	privkey = ldns_key_new_frm_algorithm(LDNS_SIGN_RSASHA1, 512);
 	if (!privkey) {
