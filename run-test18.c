@@ -117,8 +117,6 @@ main()
 	ldns_rr_print(stdout, rr);
 	printf("\n");
 
-	exit(0);
-
 	privkey = ldns_key_new_frm_algorithm(LDNS_SIGN_RSASHA1, 512);
 	if (!privkey) {
 		printf("Ah, keygen failed");
