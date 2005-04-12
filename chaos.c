@@ -45,6 +45,7 @@ main(int argc, char *argv[])
 	if (!res) {
 		exit(1);
 	}
+	ldns_resolver_print(stdout, res);
 
 	/* use the resolver to send it a query for the a/aaaa of name */
 	addr = ldns_get_rr_list_addr_by_name(res, name, LDNS_RR_CLASS_IN, LDNS_RD);
