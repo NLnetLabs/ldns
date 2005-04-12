@@ -140,6 +140,12 @@ ldns_resolver_tsig_keyname(ldns_resolver *r)
 }
 
 char *
+ldns_resolver_tsig_algorithm(ldns_resolver *r)
+{
+	return r->_tsig_algorithm;
+}
+
+char *
 ldns_resolver_tsig_keydata(ldns_resolver *r)
 {
 	return r->_tsig_keydata;
@@ -404,6 +410,12 @@ ldns_resolver_set_tsig_keyname(ldns_resolver *r, char *tsig_keyname)
 }
 
 void
+ldns_resolver_set_tsig_algorithm(ldns_resolver *r, char *tsig_algorithm)
+{
+	r->_tsig_algorithm = tsig_algorithm;
+}
+
+void
 ldns_resolver_set_tsig_keydata(ldns_resolver *r, char *tsig_keydata)
 {
 	r->_tsig_keydata = tsig_keydata;
@@ -450,6 +462,7 @@ ldns_resolver_new(void)
 	
 	r->_tsig_keyname = NULL;
 	r->_tsig_keydata = NULL;
+	r->_tsig_algorithm = NULL;
 	return r;
 }
 
@@ -735,12 +748,13 @@ ldns_resolver_send(ldns_resolver *r, ldns_rdf *name, ldns_rr_type type, ldns_rr_
 	/* TODO: make last 3 arguments optional too? maybe make complete
 	         rr instead of seperate values in resolver (and packet)
 	*/
+printf("RESALGO: %s\n", ldns_resolver_tsig_algorithm(r));
 	if (ldns_resolver_tsig_keyname(r) && ldns_resolver_tsig_keydata(r)) {
 		status = ldns_pkt_tsig_sign(query_pkt,
 		                            ldns_resolver_tsig_keyname(r),
 		                            ldns_resolver_tsig_keydata(r),
 		                            300,
-		                            "hmac-md5.sig-alg.reg.int",
+		                            ldns_resolver_tsig_algorithm(r),
 		                            NULL);
 		/* TODO: no print and feedback to caller */
 		if (status != LDNS_STATUS_OK) {

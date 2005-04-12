@@ -13,6 +13,8 @@
 #include <config.h>
 #include <ldns/ldns.h>
 
+#include <strings.h>
+
 #include <openssl/ssl.h>
 #include <openssl/err.h>
 #include <openssl/rand.h>
@@ -477,6 +479,20 @@ ldns_tsig_prepare_pkt_wire(uint8_t *wire, size_t wire_len, size_t *result_len)
 	return wire2;
 }
 
+const EVP_MD *
+ldns_get_digest_function(char *name)
+{
+	/* TODO replace with openssl's EVP_get_digestbyname
+	        (need init somewhere for that)
+	*/
+	if (strlen(name) == 10 && strncasecmp(name, "hmac-sha1.", 9) == 0) {
+		return EVP_sha1();
+	} else if (strlen(name) == 25 && strncasecmp(name, "hmac-md5.sig-alg.reg.int.", 25) == 0) {
+		return EVP_md5();
+	} else {
+		return NULL;
+	}
+}
 
 ldns_rdf *
 ldns_create_tsig_mac(
@@ -492,14 +508,17 @@ ldns_create_tsig_mac(
 	ldns_rdf *orig_mac_rdf
 )
 {
-	ldns_buffer *data_buffer;
-	ldns_rdf *mac_rdf;
+	ldns_buffer *data_buffer = NULL;
+	ldns_rdf *mac_rdf = NULL;
 	char *wireformat;
 	int wiresize;
 	unsigned char *mac_bytes;
 	unsigned int md_len = EVP_MAX_MD_SIZE;
 	unsigned char *key_bytes;
 	int key_size;
+	const EVP_MD *digester;
+	char *algorithm_name;
+	
 	/* 
 	 * prepare the digestable information
 	 */
@@ -520,7 +539,9 @@ ldns_create_tsig_mac(
 	
 	wireformat = (char *) data_buffer->_data;
 	wiresize = (int) ldns_buffer_position(data_buffer);
-
+	
+	algorithm_name = ldns_rdf2str(algorithm_rdf);
+	
 	/* prepare the key */
 	key_bytes = XMALLOC(unsigned char, b64_pton_calculate_size(strlen(key_data)));
 	key_size = b64_pton(key_data, key_bytes, strlen(key_data) * 2);
@@ -533,11 +554,20 @@ ldns_create_tsig_mac(
 	/* 2 spare bytes for the length */
 	mac_bytes = XMALLOC(unsigned char, md_len);
 	memset(mac_bytes, 0, md_len);
-	(void) HMAC(EVP_md5(), key_bytes, key_size, (void *)wireformat, wiresize, mac_bytes + 2, &md_len);
 	
-	write_uint16(mac_bytes, md_len);
-	mac_rdf = ldns_rdf_new_frm_data(LDNS_RDF_TYPE_INT16_DATA, md_len + 2, mac_bytes);
+	digester = ldns_get_digest_function(algorithm_name);
 	
+	if (digester) {
+		(void) HMAC(digester, key_bytes, key_size, (void *)wireformat, wiresize, mac_bytes + 2, &md_len);
+	
+		write_uint16(mac_bytes, md_len);
+		mac_rdf = ldns_rdf_new_frm_data(LDNS_RDF_TYPE_INT16_DATA, md_len + 2, mac_bytes);
+	} else {
+		/* TODO: err */
+		fprintf(stderr, "No digester found for %s\n", algorithm_name);
+	}
+	
+	FREE(algorithm_name);
 	FREE(mac_bytes);
 	FREE(key_bytes);
 	ldns_buffer_free(data_buffer);
@@ -631,7 +661,7 @@ ldns_pkt_tsig_sign(ldns_pkt *pkt, const char *key_name, const char *key_data, ui
 	ldns_rdf *key_name_rdf = ldns_rdf_new_frm_str(LDNS_RDF_TYPE_DNAME, key_name);
 	ldns_rdf *fudge_rdf = NULL;
 	ldns_rdf *orig_id_rdf = NULL;
-	ldns_rdf *algorithm_rdf = ldns_rdf_new_frm_str(LDNS_RDF_TYPE_DNAME, algorithm_name);
+	ldns_rdf *algorithm_rdf;
 	ldns_rdf *error_rdf = NULL;
 	ldns_rdf *mac_rdf = NULL;
 	ldns_rdf *other_data_rdf = NULL;
@@ -645,6 +675,10 @@ ldns_pkt_tsig_sign(ldns_pkt *pkt, const char *key_name, const char *key_data, ui
 	uint8_t *time_signed = NULL;
 	ldns_rdf *time_signed_rdf = NULL;
 	
+printf("ALGO: %s\n", algorithm_name);
+algorithm_rdf = ldns_rdf_new_frm_str(LDNS_RDF_TYPE_DNAME, algorithm_name);
+
+
 	/* eww don't have create tsigtime rdf yet :( */
 	/* bleh :p */
 	if (gettimeofday(&tv_time_signed, NULL) == 0) {
