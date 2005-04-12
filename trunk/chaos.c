@@ -1,6 +1,6 @@
 /*
- * soa is a small programs that prints out the soa record
- * for a particulary domain
+ * chaos is a small programs that prints some information
+ * about a nameserver
  */
 
 #include <stdio.h>
