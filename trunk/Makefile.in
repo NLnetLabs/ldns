@@ -52,7 +52,6 @@ LIBDNS_OBJECTS	=	$(LIBDNS_SOURCES:.c=.o)
 
 TEST_SOURCES	=	run-test7.c run-test11.c run-test18.c run-test19.c
 
-#ALL_SOURCES	=	$(TEST_SOURCES) $(LIBDNS_SOURCES) $(PROG_SOURCES)
 ALL_SOURCES	=	$(LIBDNS_SOURCES) $(PROG_SOURCES)
 
 TESTS		=	$(TEST_SOURCES:.c=)
@@ -63,14 +62,14 @@ LINK		= $(CC) $(CFLAGS) $(LDFLAGS)
 LINK_LIB	= $(LIBTOOL) --mode=link $(CC) $(CFLAGS) $(LDFLAGS)
 
 %.o:	$(srcdir)/%.c
-# change this if you want to compile w/o libtool
-#	$(COMPILE) -c $<
 	$(COMP_LIB) -c $<
 
 .PHONY:	clean realclean docclean doc lint test all lib
 
-all:		$(PROG_TARGETS)
+all:		lib
 
+progs:		$(PROG_TARGETS)
+	
 # static and dynamic
 lib:		$(LIBDNS_OBJECTS) b64_pton$U.o b64_ntop$U.o
 		$(LINK_LIB) -o libldns.la $(LIBDNS_OBJECTS) b64_pton$U.o b64_ntop$U.o \
@@ -118,7 +117,6 @@ realclean: clean docclean testclean libclean
 	rm -f config.h
 	rm -f config.h.in
 	rm -f configure
-	rm -f libtool
 
 docclean:
 	rm -rf doc/html/
@@ -127,6 +125,8 @@ docclean:
 
 libclean:
 	rm -rf .libs
+	rm -rf libtool
+
 
 test7: run-test7
 	./run-test7
@@ -149,16 +149,16 @@ tags:	*.c *.h ldns/*.[ch]
 	ctags *.[ch] ldns/*.[ch]
 
 timegm$U.o:	compat/timegm.c
-	$(COMPILE) -c compat/timegm.c -o $@
+	$(COMP_LIB) -c compat/timegm.c -o $@
 
 b64_pton$U.o:	compat/b64_pton.c
-	$(COMPILE) -c compat/b64_pton.c -o $@
+	$(COMP_LIB) -c compat/b64_pton.c -o $@
 
 b64_ntop$U.o:	compat/b64_ntop.c
-	$(COMPILE) -c compat/b64_ntop.c -o $@
+	$(COMP_LIB) -c compat/b64_ntop.c -o $@
 
 malloc$U.o:	compat/malloc.c
-	$(COMPILE) -c compat/malloc.c -o $@
+	$(COMP_LIB) -c compat/malloc.c -o $@
 
 # Automatic dependencies.
 %.d: $(srcdir)/%.c
