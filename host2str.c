@@ -54,7 +54,7 @@ ldns_lookup_table ldns_algorithms[] = {
 /* classes  */
 ldns_lookup_table ldns_rr_classes[] = {
         { LDNS_RR_CLASS_IN, "IN" },
-        { LDNS_RR_CLASS_CHAOS, "CH" },
+        { LDNS_RR_CLASS_CH, "CH" },
         { LDNS_RR_CLASS_HS, "HS" },
         { LDNS_RR_CLASS_ANY, "ANY" },
         { 0, NULL }

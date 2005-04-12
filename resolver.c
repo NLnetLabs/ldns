@@ -720,6 +720,7 @@ ldns_resolver_send(ldns_resolver *r, ldns_rdf *name, ldns_rr_type type, ldns_rr_
 		printf("Failed to generate pkt\n");
 		return NULL;
 	}
+
 	/* transfer the udp_edns_size from the resolver to the packet */
 	if (ldns_resolver_edns_udp_size(r) != 0) {
 		ldns_pkt_set_edns_udp_size(query_pkt,
@@ -762,7 +763,6 @@ dprintf("RESALGO: %s\n", ldns_resolver_tsig_algorithm(r));
 			return NULL;
 		}
 	}
-	
 	/* return NULL on error */
 	for (retries = ldns_resolver_retry(r); retries > 0; retries--) {
 		answer_pkt = ldns_send(r, query_pkt);

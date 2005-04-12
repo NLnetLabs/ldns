@@ -105,7 +105,7 @@ syn keyword  ldnsType           ldns_rr_class
 syn keyword  ldnsType		ldns_rr_compress
 
 syn keyword  ldnsConstant	LDNS_RR_CLASS_IN
-syn keyword  ldnsConstant	LDNS_RR_CLASS_CHAOS
+syn keyword  ldnsConstant	LDNS_RR_CLASS_CH
 syn keyword  ldnsConstant	LDNS_RR_CLASS_HS  
 syn keyword  ldnsConstant	LDNS_RR_CLASS_ANY 
 

@@ -45,7 +45,7 @@ LIBDNS_HEADERS	=	ldns/error.h		\
 			ldns/higher.h		\
 			ldns/parse.h		\
 			util.h
-PROG_SOURCES	=	mx.c
+PROG_SOURCES	=	mx.c chaos.c
 PROG_TARGETS	=	$(PROG_SOURCES:.c=)
 
 LIBDNS_OBJECTS	=	$(LIBDNS_SOURCES:.c=.o)
@@ -82,6 +82,9 @@ snapshot:	clean testclean
 		(rm -rf ../ldns-snap-$(DATE)/)
 
 mx:		mx.o $(LIBDNS_OBJECTS) $(LIBOBJS)
+		$(LINK) ${LIBS} -o $@ $+
+
+chaos:		chaos.o $(LIBDNS_OBJECTS) $(LIBOBJS)
 		$(LINK) ${LIBS} -o $@ $+
 
 # tests
