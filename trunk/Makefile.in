@@ -58,24 +58,24 @@ ALL_SOURCES	=	$(LIBDNS_SOURCES) $(PROG_SOURCES)
 TESTS		=	$(TEST_SOURCES:.c=)
 
 COMPILE		= $(CC) $(CPPFLAGS) $(CFLAGS)
-COMP_LIB	= $(LIBTOOL) $(CC) $(CPPFLAGS) $(CFLAGS)
+COMP_LIB	= $(LIBTOOL) --mode=compile $(CC) $(CPPFLAGS) $(CFLAGS)
 LINK		= $(CC) $(CFLAGS) $(LDFLAGS)
-LINK_LIB	= $(LIBTOOL) $(CC) $(CFLAGS) $(LDFLAGS)
+LINK_LIB	= $(LIBTOOL) --mode=link $(CC) $(CFLAGS) $(LDFLAGS)
 
 %.o:	$(srcdir)/%.c
-	$(COMPILE) -c $<
-#	$(COMP_LIB) -c $<
+# change this if you want to compile w/o libtool
+#	$(COMPILE) -c $<
+	$(COMP_LIB) -c $<
 
-.PHONY:	clean realclean docclean doc lint test all ar
+.PHONY:	clean realclean docclean doc lint test all lib
 
-all:		$(PROG_TARGETS) libldns.a
+all:		$(PROG_TARGETS)
 
-ar:		libldns.a
-
-libldns.a:	$(LIBDNS_OBJECTS) b64_pton$U.o b64_ntop$U.o
-		ar rc libldns.a $(LIBDNS_OBJECTS) b64_pton$U.o b64_ntop$U.o
-		ranlib libldns.a
-
+# static and dynamic
+lib:		$(LIBDNS_OBJECTS) b64_pton$U.o b64_ntop$U.o
+		$(LINK_LIB) -o libldns.la $(LIBDNS_OBJECTS) b64_pton$U.o b64_ntop$U.o \
+		-rpath $(prefix)/lib
+	
 snapshot:	clean testclean
 		(rm -rf ../ldns-snap-$(DATE)/)
 		(cd .. ; cp -r $(basesrcdir)/ ldns-snap-$(DATE)/)
@@ -106,13 +106,12 @@ clean:
 	rm -rf autom4te.cache/
 	rm -f config.status
 	rm -f config.log
-	rm -f libldns.a
 	rm -f tags
 
 testclean:
 	rm -f $(TESTS)
 
-realclean: clean docclean testclean
+realclean: clean docclean testclean libclean
 	rm -f config.status
 	rm -f config.log
 	rm -f Makefile
@@ -125,6 +124,9 @@ docclean:
 	rm -rf doc/html/
 	rm -rf doc/man/
 	rm -rf doc/latex/
+
+libclean:
+	rm -rf .libs
 
 test7: run-test7
 	./run-test7
