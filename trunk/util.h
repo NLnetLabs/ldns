@@ -15,8 +15,8 @@
 
 #include <ldns/rr.h>
 
-#define dprintf(X,Y) printf((X), (Y)) 
-/* #define	dprintf(X, Y) */
+/* #define dprintf(X,Y) printf((X), (Y))  */
+#define	dprintf(X, Y) 
 
 /**
  * splint static inline workaround

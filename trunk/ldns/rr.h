@@ -38,7 +38,7 @@ enum ldns_enum_rr_class
 	/** the Internet */
 	LDNS_RR_CLASS_IN 	= 1,
 	/** Chaos class */
-	LDNS_RR_CLASS_CHAOS	= 3,
+	LDNS_RR_CLASS_CH	= 3,
 	/** Hesiod (Dyer 87) */
 	LDNS_RR_CLASS_HS	= 4,
 	/** Any class */
