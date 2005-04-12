@@ -9,8 +9,8 @@
 
 int
 usage(FILE *fp, char *prog) {
-	fprintf(fp, "%s zone\n", prog);
-	fprintf(fp, "  print out the mx for the domain\n");
+	fprintf(fp, "%s domain\n", prog);
+	fprintf(fp, "  print out the mx for domain\n");
 	return 0;
 }
 
