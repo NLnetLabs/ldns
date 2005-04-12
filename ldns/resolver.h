@@ -94,6 +94,7 @@ struct ldns_struct_resolver
 	*/
 	char *_tsig_keyname;
 	char *_tsig_keydata;
+	char *_tsig_algorithm;
 };
 typedef struct ldns_struct_resolver ldns_resolver;
 
@@ -136,6 +137,7 @@ uint8_t ldns_resolver_ip6(ldns_resolver *);
 uint16_t ldns_resolver_edns_udp_size(ldns_resolver *);
 
 char *ldns_resolver_tsig_keyname(ldns_resolver *r);
+char *ldns_resolver_tsig_algorithm(ldns_resolver *r);
 char *ldns_resolver_tsig_keydata(ldns_resolver *r);
 
 
@@ -160,6 +162,7 @@ void ldns_resolver_set_fail(ldns_resolver *, bool);
 void ldns_resolver_set_igntc(ldns_resolver *, bool);
 void ldns_resolver_set_edns_udp_size(ldns_resolver *, uint16_t);
 void ldns_resolver_set_tsig_keyname(ldns_resolver *r, char *tsig_keyname);
+void ldns_resolver_set_tsig_algorithm(ldns_resolver *r, char *tsig_algorithm);
 void ldns_resolver_set_tsig_keydata(ldns_resolver *r, char *tsig_keydata);
 
 

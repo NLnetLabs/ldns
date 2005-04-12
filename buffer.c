@@ -211,7 +211,7 @@ ldns_bskipc(ldns_buffer *buffer, char c)
  * in the string (or to the end of the buffer)
  */
 void
-ldns_bskipcs(ldns_buffer *buffer, char *s)
+ldns_bskipcs(ldns_buffer *buffer, const char *s)
 {
 	bool found;
 	char c;
@@ -221,7 +221,7 @@ ldns_bskipcs(ldns_buffer *buffer, char *s)
 		c = (char) ldns_buffer_read_u8_at(buffer,
 		                           buffer->_position);
 		found = false;
-		for (d = s; *d; d++) {
+		for (d = (char *) s; *d; d++) {
 			if (*d == c) {
 				found = true;
 			}
