@@ -748,7 +748,6 @@ ldns_resolver_send(ldns_resolver *r, ldns_rdf *name, ldns_rr_type type, ldns_rr_
 	/* TODO: make last 3 arguments optional too? maybe make complete
 	         rr instead of seperate values in resolver (and packet)
 	*/
-dprintf("RESALGO: %s\n", ldns_resolver_tsig_algorithm(r));
 	if (ldns_resolver_tsig_keyname(r) && ldns_resolver_tsig_keydata(r)) {
 		status = ldns_pkt_tsig_sign(query_pkt,
 		                            ldns_resolver_tsig_keyname(r),
