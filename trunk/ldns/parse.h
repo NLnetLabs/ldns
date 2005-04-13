@@ -14,7 +14,7 @@
 #include <ldns/buffer.h>
 
 
-#define LDNS_PARSE_SKIP_SPACE		"\f\n\r\t\v"
+#define LDNS_PARSE_SKIP_SPACE		"\f\n\r\v"
 #define LDNS_PARSE_NORMAL		" \f\n\r\t\v"
 #define MAXLINE_LEN		512
 #define MAXKEYWORD_LEN		32
@@ -61,4 +61,28 @@ ldns_bget_keyword_data(ldns_buffer *b, const char *keyword, const char *k_del, c
  */
 char * ldns_str_remove_comment(char *str);
 
-#endif /*  _PARSE_H_ */
+/*
+ * Get the next character from a buffer. Advance the position
+ * pointer with 1.
+ * When end of buffer is reached return EOF
+ */
+int ldns_bgetc(ldns_buffer *buffer);
+
+/**
+ * Skip all of the characters in the given string in the buffer, moving
+ * the position to the first character that is not in *s
+ */
+void ldns_bskipcs(ldns_buffer *buffer, const char *s);
+
+/**
+ * Skip all of the characters in the given string in the fp, moving
+ * the position to the first character that is not in *s
+ */
+void ldns_fskipcs(FILE *fp, const char *s);
+
+
+
+
+
+
+#endif /*  _PARSE_H */

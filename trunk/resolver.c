@@ -488,13 +488,12 @@ ldns_resolver_new_frm_fp(FILE *fp)
 	keyword[0] = "domain";
 	keyword[1] = "nameserver";
 	word = XMALLOC(char, MAXLINE_LEN);
-	expect = 0;
+	expect = RESOLV_KEYWORD;
 
 	r = ldns_resolver_new();
 	if (!r) {
 		return NULL;
 	}
-
 	gtr = ldns_fget_token(fp, word, LDNS_PARSE_NORMAL, 0);
 	while (gtr > 0) {
 		/* do something */
@@ -512,7 +511,7 @@ ldns_resolver_new_frm_fp(FILE *fp)
 				}
 				/* no keyword recognized */
 				if (expect == 0) {
-					/*	dprintf("[%s] unreg keyword\n", word); */
+						dprintf("[%s] unreg keyword\n", word); 
 				}
 				break;
 			case RESOLV_DEFDOMAIN:

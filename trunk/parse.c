@@ -48,6 +48,7 @@ ldns_fget_keyword_data(FILE *f, const char *keyword, const char *k_del, char *da
 }
 
 /* walk along the file until you get a hit */
+/* number of occurences.... !! */
 ssize_t
 ldns_fget_all_keyword_data(FILE *f, const char *keyword, const char *k_del, char *data,
 		const char *d_del)
@@ -101,7 +102,7 @@ ldns_fget_token(FILE *f, char *token, const char *delim, size_t limit)
 		if (p < 0) {
 			/* more ) then ( - close off the string */
 			*t = '\0';
-			return -1;
+			return 0;
 		}
 
 		if (c == '\n' && p != 0) {
@@ -124,13 +125,17 @@ ldns_fget_token(FILE *f, char *token, const char *delim, size_t limit)
 		}
 	}
 	*t = '\0';
+	if (i == 0) {
+		/* nothing read */
+		return -1;
+	}
 	if (p != 0) {
 		return -1;
 	}
-	return 0;
+	return (ssize_t)i;
 
 tokenread:
-	/* skip something here too; ldns_fskipc(f, del) */
+	ldns_fskipcs(f, del);
 	*t = '\0';
 	if (p != 0) {
 		return -1;
@@ -240,7 +245,6 @@ ldns_bget_token(ldns_buffer *b, char *token, const char *delim, size_t limit)
 			return -1;
 		}
 	}
-
 	*t = '\0';
 	if (i == 0) {
 		/* nothing read */
@@ -284,4 +288,78 @@ ldns_str_remove_comment(char *str)
 		}
 	}
 	return str2;
+}
+
+/* fast forwards the buffer, skipping the given char, setting the
+ * buffer position to the location of the first different char
+ * (or to the end of the buffer)
+ */
+void
+ldns_bskipc(ldns_buffer *buffer, char c)
+{
+        while (c == (char) ldns_buffer_read_u8_at(buffer, ldns_buffer_position(buffer))) {
+                if (ldns_buffer_available_at(buffer, buffer->_position + sizeof(char), sizeof(char))) {
+                        buffer->_position += sizeof(char);
+                } else {
+                        return;
+                }
+        }
+}
+
+/* fast forwards the buffer, skipping all chars in the given string,
+ * setting the buffer position to the first char that is not contained
+ * in the string (or to the end of the buffer)
+ */
+void
+ldns_bskipcs(ldns_buffer *buffer, const char *s)
+{
+        bool found;
+        char c;
+        char *d;
+
+        while(ldns_buffer_available_at(buffer, buffer->_position, sizeof(char))) {
+                c = (char) ldns_buffer_read_u8_at(buffer,
+                                           buffer->_position);
+                found = false;
+                for (d = (char *) s; *d; d++) {
+                        if (*d == c) {
+                                found = true;
+                        }
+                }
+                if (found && buffer->_limit > buffer->_position) {
+                        buffer->_position += sizeof(char);
+                } else {
+                        return;
+                }
+        }
+}
+
+void
+ldns_fskipc(FILE *fp, char c)
+{
+
+
+}
+
+
+void
+ldns_fskipcs(FILE *fp, const char *s)
+{
+        bool found;
+        char c;
+        char *d;
+
+	while ((c = fgetc(fp)) != EOF) {
+                found = false;
+                for (d = (char *) s; *d; d++) {
+                        if (*d == c) {
+                                found = true;
+                        }
+                }
+		if (!found) {
+			/* with getc, we've read too far */
+			ungetc(c, fp);
+			return;
+		}
+	}
 }
