@@ -45,6 +45,8 @@ main(int argc, char *argv[])
 	if (!res) {
 		exit(1);
 	}
+	ldns_resolver_set_retry(res, 1); /* don't want to wait too long */
+	
 	/* use the resolver to send it a query for the a/aaaa of name */
 	addr = ldns_get_rr_list_addr_by_name(res, name, LDNS_RR_CLASS_IN, LDNS_RD);
 	if (!addr) {
@@ -57,6 +59,10 @@ main(int argc, char *argv[])
 
 	/* can be multihomed */
 	for(i = 0; i < ldns_rr_list_rr_count(addr); i++) {
+		if (i > 0) {
+			fprintf(stdout, "\n");
+		}
+			
 		ldns_resolver_push_nameserver_rr(res,
 				ldns_rr_list_rr(addr, i));
 
@@ -66,7 +72,6 @@ main(int argc, char *argv[])
 		p = ldns_resolver_query(res, version, LDNS_RR_TYPE_TXT,
 				LDNS_RR_CLASS_CH, LDNS_RD);
 		if (p) {
-			ldns_pkt_print(stdout, p);
 			info = ldns_pkt_rr_list_by_type(p,
 					LDNS_RR_TYPE_TXT, LDNS_SECTION_ANSWER);
 
@@ -88,10 +93,8 @@ main(int argc, char *argv[])
 					ldns_rr2str(ldns_rr_list_rr(addr, i)));
 		}
 		(void)ldns_resolver_pop_nameserver(res);
-		fprintf(stdout, "\n");
 
 	}
 	exit(0);
-
         return 0;
 }

@@ -1188,6 +1188,8 @@ ldns_resolver_print(FILE *output, ldns_resolver *r)
 	fprintf(output, "usevc: %d\n", ldns_resolver_usevc(r));
 	fprintf(output, "igntc: %d\n", ldns_resolver_igntc(r));
 	fprintf(output, "fail: %d\n", ldns_resolver_fail(r));
+	fprintf(output, "retry: %d\n", ldns_resolver_retry(r));
+	fprintf(output, "timeout: %d\n", (int)ldns_resolver_timeout(r).tv_sec);
 	
 	fprintf(output, "default domain:");
 	ldns_rdf_print(output, ldns_resolver_domain(r)); fprintf(output, "\n");
