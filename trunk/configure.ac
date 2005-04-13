@@ -67,6 +67,48 @@ fi
 AC_PATH_PROG(doxygen, doxygen, "/usr/bin/doxygen")
 
 # Checks for libraries.
+# Check for SSL, original taken from
+# http://www.gnu.org/software/ac-archive/htmldoc/check_ssl.html and
+# modified for NSD and 
+# copied again for use in ldns
+AC_DEFUN([CHECK_SSL], 
+    AC_ARG_WITH(ssl, AC_HELP_STRING([--with-ssl=pathname],
+                                    [enable SSL (will check /usr/local/ssl
+                            /usr/lib/ssl /usr/ssl /usr/pkg /usr/local /usr)]),[
+        ],[
+            withval="yes"
+        ])
+    if test x_$withval != x_no; then
+        AC_MSG_CHECKING(for SSL)
+        if test x_$withval = x_ -o x_$withval = x_yes; then
+            withval="/usr/local/ssl /usr/lib/ssl /usr/ssl /usr/pkg /usr/local /usr"
+        fi
+        for dir in $withval; do
+            ssldir="$dir"
+            if test -f "$dir/include/openssl/ssl.h"; then
+                found_ssl="yes";
+                AC_DEFINE_UNQUOTED([HAVE_SSL], [], [Define if you have the SSL libraries installed.])
+                CPPFLAGS="$CPPFLAGS -I$ssldir/include";
+                break;
+            fi
+        done
+        if test x_$found_ssl != x_yes; then
+            AC_MSG_ERROR(Cannot find the SSL libraries in $withval)
+        else
+            AC_MSG_RESULT(found in $ssldir)
+            HAVE_SSL=yes
+            LDFLAGS="$LDFLAGS -L$ssldir/lib";
+            AC_CHECK_LIB(crypto, HMAC_CTX_init,, [
+                    AC_MSG_ERROR([OpenSSL found in $ssldir, but version 0.9.7 or higher is required])
+                ])
+        fi
+        AC_SUBST(HAVE_SSL)
+    fi
+])dnl
+
+
+
+
 # Use libtool 
 AC_PROG_LIBTOOL
 

@@ -75,7 +75,11 @@ main(int argc, char *argv[])
 			info = ldns_pkt_rr_list_by_type(p,
 					LDNS_RR_TYPE_TXT, LDNS_SECTION_ANSWER);
 
-			ldns_rr_list_print(stdout, info);
+			if (info) {
+				ldns_rr_list_print(stdout, info);
+			} else {
+				printf(" *** version retrieval failed\n");
+			}
 		} else {
 			printf(" *** query failed for %s\n", 
 					ldns_rr2str(ldns_rr_list_rr(addr, i)));
@@ -87,7 +91,11 @@ main(int argc, char *argv[])
 		if (p) {
 			info = ldns_pkt_rr_list_by_type(p,
 					LDNS_RR_TYPE_TXT, LDNS_SECTION_ANSWER);
-			ldns_rr_list_print(stdout, info);
+			if (info) {
+				ldns_rr_list_print(stdout, info);
+			} else {
+				printf(" *** id retrieval failed\n");
+			}
 		} else {
 			printf(" *** query failed for %s\n", 
 					ldns_rr2str(ldns_rr_list_rr(addr, i)));
