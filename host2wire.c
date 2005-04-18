@@ -22,7 +22,6 @@
   every dname part could be added to it
 */
 
-/* TODO dname must still be handled as an rdf? */
 ldns_status
 ldns_dname2buffer_wire(ldns_buffer *buffer, ldns_rdf *name)
 {
@@ -257,58 +256,81 @@ ldns_pkt2buffer_wire(ldns_buffer *buffer, const ldns_pkt *packet)
 	return LDNS_STATUS_OK;
 }
 
-uint8_t *
-ldns_rdf2wire(const ldns_rdf *rdf, size_t *result_size)
+ldns_status
+ldns_rdf2wire(uint8_t **dest, const ldns_rdf *rdf, size_t *result_size)
 {
 	ldns_buffer *buffer = ldns_buffer_new(MAX_PACKETLEN);
 	uint8_t *result = NULL;
+	ldns_status status;
 	*result_size = 0;
-	if (ldns_rdf2buffer_wire(buffer, rdf) == LDNS_STATUS_OK) {
+	*dest = NULL;
+	
+	status = ldns_rdf2buffer_wire(buffer, rdf);
+	if (status == LDNS_STATUS_OK) {
 		*result_size =  ldns_buffer_position(buffer);
 		result = (uint8_t *) ldns_buffer_export(buffer);
 	} else {
-		/* TODO: what about the error? */
-	}
-	ldns_buffer_free(buffer);
-	return result;
-}
-
-uint8_t *
-ldns_rr2wire(const ldns_rr *rr, int section, size_t *result_size)
-{
-	ldns_buffer *buffer = ldns_buffer_new(MAX_PACKETLEN);
-	uint8_t *result = NULL;
-	*result_size = 0;
-	if (ldns_rr2buffer_wire(buffer, rr, section) == LDNS_STATUS_OK) {
-		*result_size =  ldns_buffer_position(buffer);
-		result = (uint8_t *) ldns_buffer_export(buffer);
-	} else {
-		/* TODO: what about the error? */
-	}
-	ldns_buffer_free(buffer);
-	return result;
-}
-
-uint8_t *
-ldns_pkt2wire(const ldns_pkt *packet, size_t *result_size)
-{
-	ldns_buffer *buffer = ldns_buffer_new(MAX_PACKETLEN);
-	uint8_t *result2 = NULL;
-	uint8_t *result = NULL;
-	*result_size = 0;
-	if (ldns_pkt2buffer_wire(buffer, packet) == LDNS_STATUS_OK) {
-		*result_size =  ldns_buffer_position(buffer);
-		result = (uint8_t *) ldns_buffer_export(buffer);
-	} else {
-		/* TODO: what about the error? */
+		return status;
 	}
 	
 	if (result) {
-		result2 = XMALLOC(uint8_t, ldns_buffer_position(buffer));
-		memcpy(result2, result, ldns_buffer_position(buffer));
+		*dest = XMALLOC(uint8_t, ldns_buffer_position(buffer));
+		memcpy(*dest, result, ldns_buffer_position(buffer));
 	}
 	
 	ldns_buffer_free(buffer);
-	return result2;
+	return status;
+}
+
+ldns_status
+ldns_rr2wire(uint8_t **dest, const ldns_rr *rr, int section, size_t *result_size)
+{
+	ldns_buffer *buffer = ldns_buffer_new(MAX_PACKETLEN);
+	uint8_t *result = NULL;
+	ldns_status status;
+	*result_size = 0;
+	*dest = NULL;
+	
+	status = ldns_rr2buffer_wire(buffer, rr, section);
+	if (status == LDNS_STATUS_OK) {
+		*result_size =  ldns_buffer_position(buffer);
+		result = (uint8_t *) ldns_buffer_export(buffer);
+	} else {
+		return status;
+	}
+	
+	if (result) {
+		*dest = XMALLOC(uint8_t, ldns_buffer_position(buffer));
+		memcpy(*dest, result, ldns_buffer_position(buffer));
+	}
+	
+	ldns_buffer_free(buffer);
+	return status;
+}
+
+ldns_status
+ldns_pkt2wire(uint8_t **dest, const ldns_pkt *packet, size_t *result_size)
+{
+	ldns_buffer *buffer = ldns_buffer_new(MAX_PACKETLEN);
+	uint8_t *result = NULL;
+	ldns_status status;
+	*result_size = 0;
+	*dest = NULL;
+	
+	status = ldns_pkt2buffer_wire(buffer, packet);
+	if (status == LDNS_STATUS_OK) {
+		*result_size =  ldns_buffer_position(buffer);
+		result = (uint8_t *) ldns_buffer_export(buffer);
+	} else {
+		return status;
+	}
+	
+	if (result) {
+		*dest = XMALLOC(uint8_t, ldns_buffer_position(buffer));
+		memcpy(*dest, result, ldns_buffer_position(buffer));
+	}
+	
+	ldns_buffer_free(buffer);
+	return status;
 }
 
