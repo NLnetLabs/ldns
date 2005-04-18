@@ -324,7 +324,7 @@ ldns_key_buf2dsa(ldns_buffer *key)
 	offset = 1;
 	
 	if (T > 8) {
-		printf("DSA type > 8 not implemented, unable to verify signature");
+		dprintf("%s\n", "DSA type > 8 not implemented, unable to verify signature");
 		return NULL;
 	}
 	
@@ -347,10 +347,6 @@ ldns_key_buf2dsa(ldns_buffer *key)
 	dsa->g = G;
 	dsa->pub_key = Y;
 
-	printf("my key\n");
-	DSA_print_fp(stdout, dsa, 0);
-	printf("\n");
-	
 	return dsa;
 }
 
@@ -393,12 +389,6 @@ ldns_key_buf2rsa(ldns_buffer *key)
 	rsa->n = modulus;
 	rsa->e = exponent;
 
-/*
-	printf("my key\n");
-	RSA_print_fp(stdout, rsa, 0);
-	printf("\n");
-*/
-	
 	return rsa;
 }
 
@@ -546,8 +536,8 @@ ldns_create_tsig_mac(
 	key_bytes = XMALLOC(unsigned char, b64_pton_calculate_size(strlen(key_data)));
 	key_size = b64_pton(key_data, key_bytes, strlen(key_data) * 2);
 	if (key_size < 0) {
-		/* TODO: no print but feedback */
-		printf("Bad base64 string\n");
+		/* LDNS_STATUS_INVALID_B64 */
+		dprintf("%s\n", "Bad base64 string");
 		return NULL;
 	}
 	/* hmac it */
@@ -564,7 +554,7 @@ ldns_create_tsig_mac(
 		mac_rdf = ldns_rdf_new_frm_data(LDNS_RDF_TYPE_INT16_DATA, md_len + 2, mac_bytes);
 	} else {
 		/* TODO: err */
-		fprintf(stderr, "No digester found for %s\n", algorithm_name);
+		dprintf("No digest found for %s\n", algorithm_name);
 	}
 	
 	FREE(algorithm_name);
@@ -675,9 +665,7 @@ ldns_pkt_tsig_sign(ldns_pkt *pkt, const char *key_name, const char *key_data, ui
 	uint8_t *time_signed = NULL;
 	ldns_rdf *time_signed_rdf = NULL;
 	
-printf("ALGO: %s\n", algorithm_name);
-algorithm_rdf = ldns_rdf_new_frm_str(LDNS_RDF_TYPE_DNAME, algorithm_name);
-
+	algorithm_rdf = ldns_rdf_new_frm_str(LDNS_RDF_TYPE_DNAME, algorithm_name);
 
 	/* eww don't have create tsigtime rdf yet :( */
 	/* bleh :p */
@@ -922,13 +910,13 @@ ldns_sign_public(ldns_rr_list *rrset, ldns_key_list *keys)
 		
 		if (ldns_rrsig2buffer_wire(sign_buf, current_sig) != LDNS_STATUS_OK) {
 			ldns_buffer_free(sign_buf);
-			printf("couldn't convert to buffer 1\n");
+			dprintf("%s\n", "couldn't convert to buffer 1");
 			/* ERROR */
 			return NULL;
 		}
 		/* add the rrset in sign_buf */
 		if (ldns_rr_list2buffer_wire(sign_buf, rrset_clone) != LDNS_STATUS_OK) {
-			printf("couldn't convert to buffer 2\n");
+			dprintf("%s\n", "couldn't convert to buffer 2");
 			ldns_buffer_free(sign_buf);
 			return NULL;
 		}
@@ -949,7 +937,7 @@ ldns_sign_public(ldns_rr_list *rrset, ldns_key_list *keys)
 		}
 		if (!b64rdf) {
 			/* signing went wrong */
-			printf("couldn't sign!\n");
+			dprintf("%s", "couldn't sign!\n");
 			return NULL;
 		}
 		ldns_rr_rrsig_set_sig(current_sig, b64rdf);
