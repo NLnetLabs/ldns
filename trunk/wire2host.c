@@ -137,20 +137,17 @@ ldns_wire2dname(ldns_rdf **dname, const uint8_t *wire, size_t max, size_t *pos)
 #define STATUS_CHECK_RETURN(st) {if (st != LDNS_STATUS_OK) { printf("STR %d\n", __LINE__); return st; }}
 #define STATUS_CHECK_GOTO(st, label) {if (st != LDNS_STATUS_OK) { printf("STG %s:%d: status code %d\n", __FILE__, __LINE__, st);  goto label; }}
 
-/* TODO -doc,
- 	-free on error
-*/
 ldns_status
 ldns_wire2rdf(ldns_rr *rr, const uint8_t *wire,
               size_t max, size_t *pos)
 {
-	ldns_rdf *cur_rdf;
-	ldns_rdf_type cur_rdf_type;
+	size_t end;
 	size_t cur_rdf_length;
+	uint8_t rdf_index;
 	uint8_t *data;
 	uint16_t rd_length;
-	size_t end;
-	uint8_t rdf_index;
+	ldns_rdf *cur_rdf;
+	ldns_rdf_type cur_rdf_type;
 	const ldns_rr_descriptor *descriptor = 
 	        ldns_rr_descript(ldns_rr_get_type(rr));
 	ldns_status status;
@@ -206,13 +203,6 @@ ldns_wire2rdf(ldns_rr *rr, const uint8_t *wire,
 			cur_rdf_length = 4;
 			break;
 		case LDNS_RDF_TYPE_TSIGTIME:
-#if 0
-printf("TSIG DATA ON WIRE: ");
-for (i=0; i<6; i++) {
-	printf("%02x ", wire[*pos+i]);
-}
-printf("\n");
-#endif
 			cur_rdf_length = 6;
 			break;
 		case LDNS_RDF_TYPE_AAAA:
@@ -229,14 +219,7 @@ printf("\n");
 			cur_rdf_length = 4;
 			break;
 		case LDNS_RDF_TYPE_INT16_DATA:
-			/* experimental */
-			/* the size of 'DATA' is determined by the last rdata
-			   (like twice in TSIG), which should be an uint16
-			   (TODO: check for that)
-			   this would deprecate the general tsig type
-			*/
 			cur_rdf_length = (size_t) read_uint16(&wire[*pos])+2;
-/*			*pos += 2;*/
 			break;
 		case LDNS_RDF_TYPE_APL:
 		case LDNS_RDF_TYPE_B64:
@@ -288,19 +271,6 @@ ldns_wire2rr(ldns_rr **rr_p, const uint8_t *wire, size_t max,
 	ldns_rr *rr = ldns_rr_new();
 	ldns_status status;
 	
-/*
-size_t i;
-printf("next rr: from %u upto max %u\n", *pos, max);
-for (i=0; i<(max-*pos); i++) {
-*/
-/*
-	if (i>0&&i%20==0){
-		printf("\t; %u-%u\n", i-20, i-1);
-	}
-	printf("%02x ", wire[*pos + i]);
-}
-printf("\n");
-*/
 	status = ldns_wire2dname(&owner, wire, max, pos);
 	STATUS_CHECK_GOTO(status, status_error);
 
@@ -321,10 +291,7 @@ printf("\n");
 	}
 	
 	*rr_p = rr;
-/*
-ldns_rr_print(stdout, rr);
-printf("\n");
-*/
+
 	return LDNS_STATUS_OK;
 	
 status_error:
@@ -374,16 +341,6 @@ ldns_wire2pkt(ldns_pkt **packet_p, const uint8_t *wire, size_t max)
 	ldns_status status = LDNS_STATUS_OK;
 
 	uint8_t data[4];
-/*
-size_t j;
-for (j=0; j<max; j++) {
-	if (j % 20 == 0 && j > 0) {
-		printf("\t; %u - %u\n", j - 20, j - 1);
-	}
-	printf(" %02x", wire[j]);
-}
-printf("\n");
-*/
 	
 	status = ldns_wire2pkt_hdr(packet, wire, max, &pos);
 	STATUS_CHECK_GOTO(status, status_error);
@@ -425,11 +382,6 @@ printf("\n");
 			ldns_rr_free(rr);
 			ldns_pkt_set_arcount(packet, ldns_pkt_arcount(packet) - 1);
 		} else if (ldns_rr_get_type(rr) == LDNS_RR_TYPE_TSIG) {
-/*
-printf("PACKET HAD TSIG: ");
-ldns_rr_print(stdout, rr);
-printf("\n");
-*/
 			ldns_pkt_set_tsig(packet, rr);
 			ldns_pkt_set_arcount(packet, ldns_pkt_arcount(packet) - 1);
 		} else if (!ldns_rr_list_push_rr(ldns_pkt_additional(packet), rr)) {

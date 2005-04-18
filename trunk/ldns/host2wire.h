@@ -46,15 +46,15 @@ ldns_status ldns_pkt2buffer_wire(ldns_buffer *output, const ldns_pkt *pkt);
 ldns_status ldns_rr_list2buffer_wire(ldns_buffer *, ldns_rr_list *);
 
 /**
- * Allocates an array of uint8_t, and puts the wireformat of the
+ * Allocates an array of uint8_t at dest, and puts the wireformat of the
  * given rdf in that array. The result_size value contains the
  * length of the array, if it succeeds, and 0 otherwise (in which case
  * the function also returns NULL)
  */
-uint8_t *ldns_rdf2wire(const ldns_rdf *, size_t *);
+ldns_status ldns_rdf2wire(uint8_t **dest, const ldns_rdf *rdf, size_t *size);
 
 /**
- * Allocates an array of uint8_t, and puts the wireformat of the
+ * Allocates an array of uint8_t at dest, and puts the wireformat of the
  * given rr in that array. The result_size value contains the
  * length of the array, if it succeeds, and 0 otherwise (in which case
  * the function also returns NULL)
@@ -62,15 +62,15 @@ uint8_t *ldns_rdf2wire(const ldns_rdf *, size_t *);
  * If the section argument is LDNS_SECTION_QUESTION, data like ttl and rdata
  * are not put into the result
  */
-uint8_t *ldns_rr2wire(const ldns_rr *, int, size_t *);
+ldns_status ldns_rr2wire(uint8_t **dest, const ldns_rr *rr, int, size_t *size);
 
 /**
- * Allocates an array of uint8_t, and puts the wireformat of the
+ * Allocates an array of uint8_t at dest, and puts the wireformat of the
  * given packet in that array. The result_size value contains the
  * length of the array, if it succeeds, and 0 otherwise (in which case
  * the function also returns NULL)
  */
-uint8_t *ldns_pkt2wire(const ldns_pkt *, size_t *);
+ldns_status ldns_pkt2wire(uint8_t **dest, const ldns_pkt *, size_t *);
 
 
 

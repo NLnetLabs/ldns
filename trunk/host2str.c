@@ -168,12 +168,11 @@ ldns_rdf2buffer_str_time(ldns_buffer *output, ldns_rdf *rdf)
 	char date_buf[16];
 	
 	memcpy(&data_time, &data, sizeof(uint32_t));
-	/* TODO check for NULL */
-	(void)gmtime_r(&data_time, &tm);
 
-	(void)strftime(date_buf, 15, "%Y%m%d%H%M%S", &tm);
-	ldns_buffer_printf(output, "%s", date_buf);
-
+	if (gmtime_r(&data_time, &tm) &&
+	    strftime(date_buf, 15, "%Y%m%d%H%M%S", &tm)) {
+		ldns_buffer_printf(output, "%s", date_buf);
+	}
 	return ldns_buffer_status(output);
 }
 
@@ -503,7 +502,6 @@ ldns_rdf2buffer_str_nsec(ldns_buffer *output, ldns_rdf *rdf)
 ldns_status
 ldns_rdf2buffer_str_period(ldns_buffer *output, ldns_rdf *rdf)
 {
-	/* TODO */
 	/* period is the number of seconds */
 	uint32_t p = read_uint32(ldns_rdf_data(rdf));
 	ldns_buffer_printf(output, "%u", p);
@@ -513,7 +511,6 @@ ldns_rdf2buffer_str_period(ldns_buffer *output, ldns_rdf *rdf)
 ldns_status
 ldns_rdf2buffer_str_tsigtime(ldns_buffer *output, ldns_rdf *rdf)
 {
-	/* TODO */
 	/* tsigtime is 48 bits network order unsigned integer */
 	uint64_t tsigtime = 0;
 	uint8_t *data = ldns_rdf_data(rdf);
@@ -526,9 +523,8 @@ ldns_rdf2buffer_str_tsigtime(ldns_buffer *output, ldns_rdf *rdf)
 	tsigtime *= 65536;
 	tsigtime += read_uint16(data+2);
 	tsigtime *= 65536;
-	tsigtime += read_uint16(data+4);
-	/* what to do with hihgh numbers on 32 bit machines? */
-	ldns_buffer_printf(output, "%u ", (unsigned int) tsigtime);
+
+	ldns_buffer_printf(output, "%llu ", tsigtime);
 
 	return ldns_buffer_status(output);
 }

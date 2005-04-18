@@ -692,7 +692,7 @@ ldns_pkt_tsig_sign(ldns_pkt *pkt, const char *key_name, const char *key_data, ui
 	
 	other_data_rdf = ldns_native2rdf_int16_data(0, NULL);
 
-	pkt_wire = ldns_pkt2wire(pkt, &pkt_wire_len);
+	(void) ldns_pkt2wire(&pkt_wire, pkt, &pkt_wire_len);
 
 	mac_rdf = ldns_create_tsig_mac(pkt_wire,
 	                               pkt_wire_len,
