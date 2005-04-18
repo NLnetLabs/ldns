@@ -544,12 +544,6 @@ ldns_rdf2buffer_str_apl(ldns_buffer *output, ldns_rdf *rdf)
 	unsigned short i;
 	unsigned int pos = 0;
 	
-/*
-	printf("address family: %u\n", address_family);
-	printf("prefix: %u\n", prefix);
-	printf("negation: %u\n", negation);
-	printf("adf length: %u\n", adf_length);
-*/	
 	/* todo: use #defines for address families? */
 	
 	/* ipv4 */
@@ -702,13 +696,13 @@ ldns_rdf2buffer_str_ipseckey(ldns_buffer *output, ldns_rdf *rdf)
 	return ldns_buffer_status(output);
 }
 
-ldns_status ldns_rdf2buffer_str_tsig(ldns_buffer *output, ldns_rdf *rdf)
+ldns_status 
+ldns_rdf2buffer_str_tsig(ldns_buffer *output, ldns_rdf *rdf)
 {
 	output = output;
 	rdf = rdf;
-	printf("removethisfunctions: ldns_rdf2buffer_str_tsig()\n");
-	abort();
-	return LDNS_STATUS_OK;
+	dprintf("%s", "removethisfunctions: ldns_rdf2buffer_str_tsig()\n");
+	return LDNS_STATUS_ERR;
 }
 
 
@@ -824,7 +818,8 @@ ldns_rr2buffer_str(ldns_buffer *output, ldns_rr *rr)
 			return status;
 		}
 
-		/* ttl should not be printed if it is a question, but we don't know that anymore... (do we?)*/
+		/* ttl should not be printed if it is a question, 
+		 * but we don't know that anymore... (do we?)*/
 		/* TODO: better way */
 		if (ldns_rr_rd_count(rr) > 0) {
 			ldns_buffer_printf(output, "\t%d", ldns_rr_ttl(rr));
@@ -941,7 +936,6 @@ ldns_pkt2buffer_str(ldns_buffer *output, ldns_pkt *pkt)
 	if (ldns_buffer_status_ok(output)) {
 		status = ldns_pktheader2buffer_str(output, pkt);
 		if (status != LDNS_STATUS_OK) {
-			/*printf("error in pkt2buf %d\n", status);*/
 			return status;
 		}
 		
@@ -1200,7 +1194,4 @@ ldns_resolver_print(FILE *output, ldns_resolver *r)
 		ldns_rdf_print(output, n[i]);
 		fprintf(output, "\n");
 	}
-	
-
-
 }

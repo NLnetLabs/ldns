@@ -177,7 +177,6 @@ ldns_resolver_pop_nameserver(ldns_resolver *r)
 	
 	nameservers = ldns_resolver_nameservers(r);
 	if (!nameservers) {
-		printf("grote error, er gaat wat fout\n");
 		return NULL;
 	}
 	
@@ -540,7 +539,7 @@ ldns_resolver_new_frm_fp(FILE *fp)
 				break;
 			default:
 				/* huh?! */
-				printf("BIG FAT WARNING should never reach this\n");
+				dprintf("%s", "BIG FAT WARNING should never reach this\n");
 				expect = RESOLV_KEYWORD;
 				break;
 		}
@@ -616,6 +615,7 @@ ldns_resolver_free(ldns_resolver *res)
 	}
 }
 
+#if 0
 /** 
  * Send the query 
  * \param[in] *r operate using this resolver
@@ -630,11 +630,9 @@ ldns_pkt *
 ldns_resolver_search(ldns_resolver *r, ldns_rdf *name, ldns_rr_type type, 
                 ldns_rr_class class, uint16_t flags)
 {
-	/* dummy use parameters */
-	printf("%p %p %d %d %02x\n", (void *) r, (void *) name, type, class,
-	                             (unsigned int) flags);
 	return NULL;
 }
+#endif
 
 /**
  * Send a qeury to a nameserver
@@ -705,18 +703,18 @@ ldns_resolver_send(ldns_resolver *r, ldns_rdf *name, ldns_rr_type type, ldns_rr_
 		class = LDNS_RR_CLASS_IN;
 	}
 	if (0 == ldns_resolver_nameserver_count(r)) {
-		printf("resolver has no nameservers\n");
+		dprintf("%s", "resolver has no nameservers\n");
 		return NULL;
 	}
 	if (ldns_rdf_get_type(name) != LDNS_RDF_TYPE_DNAME) {
-		printf("query type is not correct type\n");
+		dprintf("%s", "query type is not correct type\n");
 		return NULL;
 	}
 	/* prepare a question pkt from the parameters
 	 * and then send this */
 	query_pkt = ldns_pkt_query_new(ldns_rdf_deep_clone(name), type, class, flags);
 	if (!query_pkt) {
-		printf("Failed to generate pkt\n");
+		dprintf("%s", "Failed to generate pkt\n");
 		return NULL;
 	}
 
@@ -757,7 +755,7 @@ ldns_resolver_send(ldns_resolver *r, ldns_rdf *name, ldns_rr_type type, ldns_rr_
 		                            NULL);
 		/* TODO: no print and feedback to caller */
 		if (status != LDNS_STATUS_OK) {
-			fprintf(stderr, "error creating tsig: %u\n", status);
+			dprintf("error creating tsig: %u\n", status);
 			return NULL;
 		}
 	}
@@ -831,8 +829,8 @@ ldns_axfr_start(ldns_resolver *resolver,
 			ns_len = (socklen_t)sizeof(struct sockaddr_in6);
 			break;
                 default:
-                	printf("unkown inet family\n");
-                	return -1;
+                	dprintf("%s", "unkown inet family\n");
+                	return LDNS_STATUS_UNKNOWN_INET;
 	}
 
 	resolver->_socket = ldns_tcp_connect(ns, ns_len, ldns_resolver_timeout(resolver));
@@ -865,7 +863,6 @@ ldns_axfr_start(ldns_resolver *resolver,
 	 * The AXFR is done once the second SOA record is sent
 	 */
 	resolver->_axfr_soa_count = 0;
-	
 	return LDNS_STATUS_OK;
 }
 
@@ -909,12 +906,12 @@ ldns_axfr_next(ldns_resolver *resolver)
 		return ldns_axfr_next(resolver);
 		
 		if (!resolver->_cur_axfr_pkt)  {
-			fprintf(stderr, "[ldns_axfr_next] error reading packet\n");
+			dprintf("%s", "[ldns_axfr_next] error reading packet\n");
 			return NULL;
 		}
 		
 		if (ldns_pkt_rcode(resolver->_cur_axfr_pkt) != 0) {
-			fprintf(stderr, "Got error code\n");
+			dprintf("%s", "Got error code\n");
 			close(resolver->_socket);
 			resolver->_socket = 0;
 			ldns_pkt_free(resolver->_cur_axfr_pkt);

@@ -33,12 +33,12 @@ ldns_fget_keyword_data(FILE *f, const char *keyword, const char *k_del, char *da
 
 	i = ldns_fget_token(f, fkeyword, k_del, 0);
 
-	printf("[%s]\n", fkeyword);
+	dprintf("[%s]\n", fkeyword);
 
 	/* case??? */
 	if (strncmp(fkeyword, keyword, strlen(keyword)) == 0) {
 		/* whee, the match! */
-		printf("Matching keyword\n\n");
+		dprintf("%s", "Matching keyword\n\n");
 		/* retrieve it's data */
 		i = ldns_fget_token(f, data, d_del, 0);
 		return i;
@@ -156,12 +156,12 @@ ldns_bget_keyword_data(ldns_buffer *b, const char *keyword, const char *k_del, c
 
 	i = ldns_bget_token(b, fkeyword, k_del, 0);
 
-	printf("[%s]\n", fkeyword);
+	dprintf("[%s]\n", fkeyword);
 
 	/* case??? */
 	if (strncmp(fkeyword, keyword, strlen(keyword)) == 0) {
 		/* whee, the match! */
-		printf("Matching keyword\n\n");
+		dprintf("%s", "Matching keyword\n\n");
 		/* retrieve it's data */
 		i = ldns_bget_token(b, data, d_del, 0);
 		return i;

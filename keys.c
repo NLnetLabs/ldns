@@ -73,7 +73,6 @@ ldns_key_new_frm_algorithm(ldns_signing_algorithm alg, uint16_t size)
 		case LDNS_SIGN_RSASHA1:
 			r = RSA_generate_key((int)size, RSA_F4, NULL, NULL);
 			if (RSA_check_key(r) != 1) {
-				printf("keygen failed\n");
 				return NULL;
 			}
 			ldns_key_set_rsa_key(k, r);
@@ -82,9 +81,6 @@ ldns_key_new_frm_algorithm(ldns_signing_algorithm alg, uint16_t size)
 			d = DSA_generate_parameters((int)size, NULL, 0, NULL, NULL, NULL, NULL);
 			DSA_generate_key(d);
 			ldns_key_set_dsa_key(k, d);
-	printf("gen key\n");
-	DSA_print_fp(stdout, d, 0);
-	printf("\n");
 			break;
 		case LDNS_SIGN_HMACMD5:
 			/* do your hmac thing here */
@@ -332,8 +328,7 @@ ldns_key_dsa2bin(unsigned char *data, DSA *k, uint16_t *size)
 	memcpy(data, &T, 1);
 
 	if (T > 8) {
-		/* todo: other feedback than printf */
-		printf("DSA_size = %d, T > 8, not implemented\n", DSA_size(k));
+		dprintf("DSA_size = %d, T > 8, not implemented\n", DSA_size(k));
 		return false;
 	}
 

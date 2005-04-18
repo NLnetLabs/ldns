@@ -162,7 +162,6 @@ ldns_rdf2native_sockaddr_storage(ldns_rdf *rd)
 			return data;
 		default:
 			FREE(data);
-			printf("_aaaaa something is wrong, should not reached this\n\n");
 			return NULL;
 	}
 }
@@ -564,7 +563,6 @@ ldns_octet(char *word, size_t *length)
         switch (*s) {
             case '.':
                 if (s[1] == '.') {
-                    fprintf(stderr,"Empty label");
 		    return LDNS_STATUS_EMPTY_LABEL;
                 }
                 *p = *s;
