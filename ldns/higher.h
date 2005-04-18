@@ -41,3 +41,21 @@ ldns_get_rr_list_addr_by_name(ldns_resolver *r, ldns_rdf *name, ldns_rr_class c,
 ldns_rr_list *
 ldns_get_rr_list_name_by_addr(ldns_resolver *r, ldns_rdf *addr, ldns_rr_class c, uint16_t flags);
 #endif /* _LDNS_HIGHER_H */
+
+/**
+ * wade through fp (a /etc/hosts like file)
+ * and return a rr_list containing all the 
+ * defined hosts in there
+ * \param[in] fp the file pointer to use
+ * \return ldns_rr_list * with the names
+ */
+ldns_rr_list * ldns_get_rr_list_host_frm_fp(FILE *fp);
+
+/**
+ * wade through fp (a /etc/hosts like file)
+ * and return a rr_list containing all the 
+ * defined hosts in there
+ * \param[in] filename the filename to use (NULL for /etc/hosts)
+ * \return ldns_rr_list * with the names
+ */
+ldns_rr_list * ldns_get_rr_list_host_frm_file(char *filename);
