@@ -99,22 +99,34 @@ struct ldns_struct_resolver
 typedef struct ldns_struct_resolver ldns_resolver;
 
 /* prototypes */
+/* read access functions */
 uint16_t ldns_resolver_port(ldns_resolver *);
-/* ldns_rr_list * ldns_resolver_nameservers(ldns_resolver *) pop>? */
+uint8_t ldns_resolver_retry(ldns_resolver *);
+uint8_t ldns_resolver_retrans(ldns_resolver *);
+uint8_t ldns_resolver_ip6(ldns_resolver *);
+uint16_t ldns_resolver_edns_udp_size(ldns_resolver *);
 bool ldns_resolver_recursive(ldns_resolver *);
 bool ldns_resolver_debug(ldns_resolver *);
 bool ldns_resolver_usevc(ldns_resolver *);
 bool ldns_resolver_fail(ldns_resolver *);
 bool ldns_resolver_dnssec(ldns_resolver *);
 bool ldns_resolver_igntc(ldns_resolver *r);
-
 size_t ldns_resolver_nameserver_count(ldns_resolver *);
-
 ldns_rdf * ldns_resolver_domain(ldns_resolver *);
 struct timeval ldns_resolver_timeout(ldns_resolver *);
 ldns_rdf ** ldns_resolver_searchlist(ldns_resolver *);
 ldns_rdf ** ldns_resolver_nameservers(ldns_resolver *);
+char *ldns_resolver_tsig_keyname(ldns_resolver *r);
+char *ldns_resolver_tsig_algorithm(ldns_resolver *r);
+char *ldns_resolver_tsig_keydata(ldns_resolver *r);
+/**
+ * pop the last nameserver from the resolver.
+ * \param[in] r the resolver
+ * \return the popped address or NULL if empty
+ */
+ldns_rdf * ldns_resolver_pop_nameserver(ldns_resolver *);
 
+/* write access function */
 void ldns_resolver_set_port(ldns_resolver *, uint16_t);
 void ldns_resolver_set_recursive(ldns_resolver *, bool);
 void ldns_resolver_set_debug(ldns_resolver *, bool);
@@ -122,35 +134,9 @@ void ldns_resolver_incr_nameserver_count(ldns_resolver *);
 void ldns_resolver_dec_nameserver_count(ldns_resolver *);
 void ldns_resolver_set_nameserver_count(ldns_resolver *, size_t);
 void ldns_resolver_set_nameservers(ldns_resolver *, ldns_rdf **);
-
 void ldns_resolver_set_domain(ldns_resolver *, ldns_rdf *);
 void ldns_resolver_set_timeout(ldns_resolver *r, struct timeval timeout);
 void ldns_resolver_push_searchlist(ldns_resolver *, ldns_rdf *);
-ldns_rdf * ldns_resolver_pop_nameserver(ldns_resolver *);
-ldns_status ldns_resolver_push_nameserver(ldns_resolver *, ldns_rdf *);
-ldns_status ldns_resolver_push_nameserver_rr(ldns_resolver *, ldns_rr *);
-ldns_status ldns_resolver_push_nameserver_rr_list(ldns_resolver *, ldns_rr_list *);
-
-uint8_t ldns_resolver_retry(ldns_resolver *);
-uint8_t ldns_resolver_retrans(ldns_resolver *);
-uint8_t ldns_resolver_ip6(ldns_resolver *);
-uint16_t ldns_resolver_edns_udp_size(ldns_resolver *);
-
-char *ldns_resolver_tsig_keyname(ldns_resolver *r);
-char *ldns_resolver_tsig_algorithm(ldns_resolver *r);
-char *ldns_resolver_tsig_keydata(ldns_resolver *r);
-
-
-
-
-int ldns_resolver_bgsend();
-ldns_pkt * ldns_resolver_send(ldns_resolver *, ldns_rdf*, ldns_rr_type, ldns_rr_class, uint16_t);
-ldns_pkt * ldns_resolver_query(ldns_resolver *, ldns_rdf*, ldns_rr_type, ldns_rr_class, uint16_t);
-ldns_pkt * ldns_resolver_search(ldns_resolver *, ldns_rdf*, ldns_rr_type, ldns_rr_class, uint16_t);
-
-ldns_resolver *ldns_resolver_new(void);
-ldns_resolver *ldns_resolver_new_frm_file(const char *);
-void ldns_resolver_free(ldns_resolver *);
 void ldns_resolver_set_defnames(ldns_resolver *, bool);
 void ldns_resolver_set_usevc(ldns_resolver *, bool);
 void ldns_resolver_set_dnsrch(ldns_resolver *, bool);
@@ -167,10 +153,106 @@ void ldns_resolver_set_tsig_keydata(ldns_resolver *r, char *tsig_keydata);
 
 
 /**
+ * push a new nameserver to the resolver. It must be an IP
+ * address v4 or v6.
+ * \param[in] r the resolver
+ * \param[in] n the ip address
+ * \return ldns_status a status
+ */
+ldns_status ldns_resolver_push_nameserver(ldns_resolver *, ldns_rdf *);
+
+/**
+ * push a new nameserver to the resolver. It must be an 
+ * A or AAAA RR record type
+ * \param[in] r the resolver
+ * \param[in] rr the resource record 
+ * \return ldns_status a status
+ */
+ldns_status ldns_resolver_push_nameserver_rr(ldns_resolver *, ldns_rr *);
+
+/**
+ * push a new nameserver rr_list to the resolver.
+ * \param[in] r the resolver
+ * \param[in] rrlist the rr_list to push
+ * \return ldns_status a status
+ */
+ldns_status ldns_resolver_push_nameserver_rr_list(ldns_resolver *, ldns_rr_list *);
+
+/**
+ * send the query as-is. but return a socket 
+ * \todo TODO
+ */
+int ldns_resolver_bgsend();
+
+/* no comment found */
+ldns_pkt * ldns_resolver_search(ldns_resolver *, ldns_rdf*, ldns_rr_type, ldns_rr_class, uint16_t);
+
+/**
+ * \brief Send the query for *name as-is 
+ * \param[in] *r operate using this resolver
+ * \param[in] *name query for this name
+ * \param[in] *type query for this type (may be 0, defaults to A)
+ * \param[in] *class query for this class (may be 0, default to IN)
+ * \param[in] flags the query flags
+ * \return ldns_pkt* a packet with the reply from the nameserver
+ */
+ldns_pkt * ldns_resolver_send(ldns_resolver *, ldns_rdf*, ldns_rr_type, ldns_rr_class, uint16_t);
+
+/**
+ * Send a qeury to a nameserver
+ * \param[in] *r operate using this resolver
+ * \param[in] *name query for this name
+ * \param[in] *type query for this type (may be 0, defaults to A)
+ * \param[in] *class query for this class (may be 0, default to IN)
+ * \param[in] flags the query flags
+ * \return ldns_pkt* a packet with the reply from the nameserver
+ * if _defnames is true the default domain will be added
+ */
+ldns_pkt * ldns_resolver_query(ldns_resolver *, ldns_rdf*, ldns_rr_type, ldns_rr_class, uint16_t);
+
+
+/** 
+ * \brief create a new resolver structure 
+ * \return ldns_resolver* pointer to new strcture
+ */
+ldns_resolver *ldns_resolver_new(void);
+
+/**
+ * Create a resolver structure from a file like /etc/resolv.conf
+ * \param[in] fp file pointer to create new resolver from
+ *      if NULL use /etc/resolv.conf
+ * \return ldns_resolver structure
+ */
+ldns_resolver * ldns_resolver_new_frm_fp(FILE *fp);
+
+/**
+ * configure a resolver by means of a resolv.conf file 
+ * The file may be NULL in which case there will  be
+ * looked the RESOLV_CONF (defaults to /etc/resolv.conf
+ * \param[in] filename the filename to use
+ * \return ldns_resolver pointer
+ */                             
+/* keyword recognized:                          
+ * nameserver                   
+ * domain                       
+ */                     
+ldns_resolver *ldns_resolver_new_frm_file(const char *);
+
+/**                             
+ * Frees the allocated space for this resolver and all it's data
+ * \param res resolver to free  
+ */     
+void ldns_resolver_free(ldns_resolver *);
+
+/**
  * Prepares the resolver for an axfr query
  * The query is sent and the answers can be read with ldns_axfr_next
  */
 ldns_status ldns_axfr_start(ldns_resolver *resolver, ldns_rdf *domain, ldns_rr_class class);
+
+/**
+ *  get the next stream of RRs in a AXFR 
+ */
 ldns_rr *ldns_axfr_next(ldns_resolver *resolver);
 
 #endif  /* !_LDNS_RESOLVER_H */
