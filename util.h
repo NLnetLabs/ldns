@@ -15,7 +15,7 @@
 
 #include <ldns/rr.h>
 
-#define dprintf(X,Y) printf((X), (Y))
+#define dprintf(X,Y) fprintf(stderr, (X), (Y))
 /* #define	dprintf(X, Y)  */
 
 /**

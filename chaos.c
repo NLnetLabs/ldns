@@ -81,8 +81,7 @@ main(int argc, char *argv[])
 				printf(" *** version retrieval failed\n");
 			}
 		} else {
-			printf(" *** query failed for %s\n", 
-					ldns_rr2str(ldns_rr_list_rr(addr, i)));
+			printf(" *** query failed\n");
 			ldns_pkt_free(p);
 		}
 
@@ -97,8 +96,7 @@ main(int argc, char *argv[])
 				printf(" *** id retrieval failed\n");
 			}
 		} else {
-			printf(" *** query failed for %s\n", 
-					ldns_rr2str(ldns_rr_list_rr(addr, i)));
+			printf(" *** query failed for\n");
 		}
 		(void)ldns_resolver_pop_nameserver(res);
 
