@@ -49,6 +49,7 @@ PROG_SOURCES	=	mx.c chaos.c
 PROG_TARGETS	=	$(PROG_SOURCES:.c=)
 
 LIBDNS_OBJECTS	=	$(LIBDNS_SOURCES:.c=.o)
+LIBDNS_LOBJECTS	=	$(LIBDNS_SOURCES:.c=.lo)
 
 TEST_SOURCES	=	run-test7.c run-test11.c run-test18.c run-test19.c
 
@@ -72,7 +73,7 @@ progs:		$(PROG_TARGETS)
 	
 # static and dynamic
 lib:		$(LIBDNS_OBJECTS) b64_pton$U.o b64_ntop$U.o
-		$(LINK_LIB) -o libldns.la $(LIBDNS_OBJECTS) b64_pton$U.o b64_ntop$U.o \
+		$(LINK_LIB) -o libldns.la $(LIBDNS_LOBJECTS) b64_pton$U.lo b64_ntop$U.lo \
 		-rpath $(prefix)/lib
 	
 snapshot:	clean testclean
