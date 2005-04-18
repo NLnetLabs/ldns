@@ -484,8 +484,9 @@ ldns_get_digest_function(char *name)
 	}
 }
 
-ldns_rdf *
+ldns_status
 ldns_create_tsig_mac(
+	ldns_rdf **tsig_mac,
 	uint8_t *pkt_wire,
 	size_t pkt_wire_size,
 	const char *key_data,
@@ -499,7 +500,6 @@ ldns_create_tsig_mac(
 )
 {
 	ldns_buffer *data_buffer = NULL;
-	ldns_rdf *mac_rdf = NULL;
 	char *wireformat;
 	int wiresize;
 	unsigned char *mac_bytes;
@@ -508,6 +508,7 @@ ldns_create_tsig_mac(
 	int key_size;
 	const EVP_MD *digester;
 	char *algorithm_name;
+	ldns_rdf *result = NULL;
 	
 	/* 
 	 * prepare the digestable information
@@ -538,7 +539,7 @@ ldns_create_tsig_mac(
 	if (key_size < 0) {
 		/* LDNS_STATUS_INVALID_B64 */
 		dprintf("%s\n", "Bad base64 string");
-		return NULL;
+		return LDNS_STATUS_INVALID_B64;
 	}
 	/* hmac it */
 	/* 2 spare bytes for the length */
@@ -551,18 +552,20 @@ ldns_create_tsig_mac(
 		(void) HMAC(digester, key_bytes, key_size, (void *)wireformat, wiresize, mac_bytes + 2, &md_len);
 	
 		write_uint16(mac_bytes, md_len);
-		mac_rdf = ldns_rdf_new_frm_data(LDNS_RDF_TYPE_INT16_DATA, md_len + 2, mac_bytes);
+		result = ldns_rdf_new_frm_data(LDNS_RDF_TYPE_INT16_DATA, md_len + 2, mac_bytes);
 	} else {
-		/* TODO: err */
-		dprintf("No digest found for %s\n", algorithm_name);
+		/*dprintf("No digest found for %s\n", algorithm_name);*/
+		return LDNS_STATUS_CRYPTO_UNKNOWN_ALGO;
 	}
 	
 	FREE(algorithm_name);
 	FREE(mac_bytes);
 	FREE(key_bytes);
 	ldns_buffer_free(data_buffer);
+
+	*tsig_mac = result;
 	
-	return mac_rdf;
+	return LDNS_STATUS_OK;
 }
 
 
@@ -585,6 +588,7 @@ ldns_pkt_tsig_verify(ldns_pkt *pkt,
 	ldns_rdf *my_mac_rdf;
 	ldns_rdf *key_name_rdf = ldns_rdf_new_frm_str(LDNS_RDF_TYPE_DNAME, key_name);
 	uint16_t pkt_id, orig_pkt_id;
+	ldns_status status;
 	
 	uint8_t *prepared_wire = NULL;
 	size_t prepared_wire_size = 0;
@@ -612,18 +616,22 @@ ldns_pkt_tsig_verify(ldns_pkt *pkt,
 
 	prepared_wire = ldns_tsig_prepare_pkt_wire(wire, wirelen, &prepared_wire_size);
 	
-	my_mac_rdf = ldns_create_tsig_mac(prepared_wire,
-	                                  prepared_wire_size,
-	                                  key_data, 
-	                                  key_name_rdf,
-	                                  fudge_rdf,
-	                                  algorithm_rdf,
-	                                  time_signed_rdf,
-	                                  error_rdf,
-	                                  other_data_rdf,
-	                                  orig_mac_rdf
-	                                  );
+	status = ldns_create_tsig_mac(&my_mac_rdf,
+	                              prepared_wire,
+	                              prepared_wire_size,
+	                              key_data, 
+	                              key_name_rdf,
+	                              fudge_rdf,
+	                              algorithm_rdf,
+	                              time_signed_rdf,
+	                              error_rdf,
+	                              other_data_rdf,
+	                              orig_mac_rdf
+	                             );
 	
+	if (status != LDNS_STATUS_OK) {
+		return false;
+	}
 	/* Put back the values */
 	ldns_pkt_set_tsig(pkt, orig_tsig);
 	ldns_pkt_set_id(pkt, pkt_id);
@@ -694,17 +702,18 @@ ldns_pkt_tsig_sign(ldns_pkt *pkt, const char *key_name, const char *key_data, ui
 
 	(void) ldns_pkt2wire(&pkt_wire, pkt, &pkt_wire_len);
 
-	mac_rdf = ldns_create_tsig_mac(pkt_wire,
-	                               pkt_wire_len,
-				       key_data,
-	                               key_name_rdf, 
-	                               fudge_rdf, 
-	                               algorithm_rdf,
-	                               time_signed_rdf,
-	                               error_rdf,
-	                               other_data_rdf,
-	                               query_mac
-	                               );
+	status = ldns_create_tsig_mac(&mac_rdf,
+	                              pkt_wire,
+	                              pkt_wire_len,
+				      key_data,
+	                              key_name_rdf, 
+	                              fudge_rdf, 
+	                              algorithm_rdf,
+	                              time_signed_rdf,
+	                              error_rdf,
+	                              other_data_rdf,
+	                              query_mac
+	                              );
 	
 	if (!mac_rdf) {
 		status = LDNS_STATUS_ERR;
