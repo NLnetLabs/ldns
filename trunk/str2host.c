@@ -336,7 +336,7 @@ ldns_str2rdf_apl(ldns_rdf **rd, const char *str)
 {
 	rd = rd;
 	str = str;
-	return LDNS_STATUS_ERR;
+	return LDNS_STATUS_NOT_IMPL;
 }
 
 /**
