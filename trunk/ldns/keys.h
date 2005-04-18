@@ -84,8 +84,13 @@ struct ldns_struct_key_list
 };
 typedef struct ldns_struct_key_list ldns_key_list;
 
+
+/* creator functions */
 ldns_key_list * ldns_key_list_new();
 ldns_key *ldns_key_new();
+ldns_key * ldns_key_new_frm_algorithm(ldns_signing_algorithm a, uint16_t size);
+
+/* acces write functions */
 void ldns_key_set_algorithm(ldns_key *k, ldns_signing_algorithm l);
 void ldns_key_set_rsa_key(ldns_key *k, RSA *r);
 void ldns_key_set_dsa_key(ldns_key *k, DSA *d);
@@ -96,23 +101,35 @@ void ldns_key_set_expiration(ldns_key *k, uint32_t e);
 void ldns_key_set_pubkey_owner(ldns_key *k, ldns_rdf *r);
 void ldns_key_set_keytag(ldns_key *k, uint16_t tag);
 void ldns_key_set_flags(ldns_key *k, uint16_t flags);
+void ldns_key_list_set_key_count(ldns_key_list *key, size_t count);
+
+/**     
+ * Pushes a key to a keylist
+ * \param[in] key_list the key_list to push to 
+ * \param[in] key the key to push 
+ * \return false on error, otherwise true
+ */      
+bool ldns_key_list_push_key(ldns_key_list *key_list, ldns_key *key);
+
+/* access read functions */
 size_t ldns_key_list_key_count(ldns_key_list *key_list);
 ldns_key * ldns_key_list_key(ldns_key_list *key, size_t nr);
-
-ldns_signing_algorithm ldns_key_algorithm(ldns_key *k);
 RSA * ldns_key_rsa_key(ldns_key *k);
 DSA * ldns_key_dsa_key(ldns_key *k);
+ldns_signing_algorithm ldns_key_algorithm(ldns_key *k);
 unsigned char * ldns_key_hmac_key(ldns_key *k);
 uint32_t ldns_key_origttl(ldns_key *k);
 uint32_t ldns_key_inception(ldns_key *k);
 uint32_t ldns_key_expiration(ldns_key *k);
 uint16_t ldns_key_keytag(ldns_key *k);
-void ldns_key_list_set_key_count(ldns_key_list *key, size_t count);
 ldns_rdf * ldns_key_pubkey_owner(ldns_key *k);
-bool ldns_key_list_push_key(ldns_key_list *key_list, ldns_key *key);
-ldns_key * ldns_key_list_pop_key(ldns_key_list *key_list);
 
-ldns_key * ldns_key_new_frm_algorithm(ldns_signing_algorithm a, uint16_t size);
+/**     
+ * Pops the last rr from a keylist
+ * \param[in] key_list the rr_list to pop from
+ * \return NULL if nothing to pop. Otherwise the popped RR
+ */
+ldns_key * ldns_key_list_pop_key(ldns_key_list *key_list);
 
 ldns_rr * ldns_key2rr(ldns_key *k);
 uint16_t ldns_key_flags(ldns_key *k);

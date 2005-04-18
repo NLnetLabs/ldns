@@ -290,10 +290,6 @@ ldns_str_remove_comment(char *str)
 	return str2;
 }
 
-/* fast forwards the buffer, skipping the given char, setting the
- * buffer position to the location of the first different char
- * (or to the end of the buffer)
- */
 void
 ldns_bskipc(ldns_buffer *buffer, char c)
 {
@@ -306,10 +302,6 @@ ldns_bskipc(ldns_buffer *buffer, char c)
         }
 }
 
-/* fast forwards the buffer, skipping all chars in the given string,
- * setting the buffer position to the first char that is not contained
- * in the string (or to the end of the buffer)
- */
 void
 ldns_bskipcs(ldns_buffer *buffer, const char *s)
 {

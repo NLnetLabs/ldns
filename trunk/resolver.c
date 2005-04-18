@@ -158,11 +158,6 @@ ldns_resolver_set_port(ldns_resolver *r, uint16_t p)
 	r->_port = p;
 }
 
-/**
- * pop the last nameserver from the resolver.
- * \param[in] r the resolver
- * \return the popped address or NULL if empty
- */
 ldns_rdf *
 ldns_resolver_pop_nameserver(ldns_resolver *r)
 {
@@ -191,13 +186,6 @@ ldns_resolver_pop_nameserver(ldns_resolver *r)
 	return pop;
 }
 
-/**
- * push a new nameserver to the resolver. It must be an IP
- * address v4 or v6.
- * \param[in] r the resolver
- * \param[in] n the ip address
- * \return ldns_status a status
- */
 ldns_status
 ldns_resolver_push_nameserver(ldns_resolver *r, ldns_rdf *n)
 {
@@ -224,13 +212,6 @@ ldns_resolver_push_nameserver(ldns_resolver *r, ldns_rdf *n)
 	return LDNS_STATUS_OK;
 }
 
-/**
- * push a new nameserver to the resolver. It must be an 
- * A or AAAA RR record type
- * \param[in] r the resolver
- * \param[in] rr the resource record 
- * \return ldns_status a status
- */
 ldns_status
 ldns_resolver_push_nameserver_rr(ldns_resolver *r, ldns_rr *rr)
 {
@@ -243,12 +224,6 @@ ldns_resolver_push_nameserver_rr(ldns_resolver *r, ldns_rr *rr)
 	return ldns_resolver_push_nameserver(r, address);
 }
 
-/**
- * push a new nameserver rr_list to the resolver.
- * \param[in] r the resolver
- * \param[in] rrlist the rr_list to push
- * \return ldns_status a status
- */
 ldns_status
 ldns_resolver_push_nameserver_rr_list(ldns_resolver *r, ldns_rr_list *rrlist)
 {
@@ -421,11 +396,6 @@ ldns_resolver_set_tsig_keydata(ldns_resolver *r, char *tsig_keydata)
 }
 
 /* more sophisticated functions */
-
-/** 
- * \brief create a new resolver structure 
- * \return ldns_resolver* pointer to new strcture
- */
 ldns_resolver *
 ldns_resolver_new(void)
 {
@@ -550,20 +520,6 @@ ldns_resolver_new_frm_fp(FILE *fp)
 	return r;
 }
 
-
-
-
-/**
- * configure a resolver by means of a resolv.conf file
- * The file may be NULL in which case there will  be
- * looked the RESOLV_CONF (defaults to /etc/resolv.conf
- * \param[in] filename the filename to use
- * \return ldns_resolver pointer
- */
-/* keyword recognized:
- * nameserver
- * domain
- */
 ldns_resolver *
 ldns_resolver_new_frm_file(const char *filename)
 {
@@ -587,12 +543,6 @@ ldns_resolver_new_frm_file(const char *filename)
 	return r;
 }
 
-
-/**
- * Frees the allocated space for this resolver and all it's data
- *
- * \param res resolver to free
- */
 void
 ldns_resolver_free(ldns_resolver *res)
 {
@@ -634,16 +584,6 @@ ldns_resolver_search(ldns_resolver *r, ldns_rdf *name, ldns_rr_type type,
 }
 #endif
 
-/**
- * Send a qeury to a nameserver
- * \param[in] *r operate using this resolver
- * \param[in] *name query for this name
- * \param[in] *type query for this type (may be 0, defaults to A)
- * \param[in] *class query for this class (may be 0, default to IN)
- * \param[in] flags the query flags
- * \return ldns_pkt* a packet with the reply from the nameserver
- * if _defnames is true the default domain will be added
- */
 ldns_pkt *
 ldns_resolver_query(ldns_resolver *r, ldns_rdf *name, ldns_rr_type type, ldns_rr_class class,
                 uint16_t flags)
@@ -668,15 +608,6 @@ ldns_resolver_query(ldns_resolver *r, ldns_rdf *name, ldns_rr_type type, ldns_rr
 	return pkt;
 }
 
-/**
- * \brief Send the query for *name as-is 
- * \param[in] *r operate using this resolver
- * \param[in] *name query for this name
- * \param[in] *type query for this type (may be 0, defaults to A)
- * \param[in] *class query for this class (may be 0, default to IN)
- * \param[in] flags the query flags
- * \return ldns_pkt* a packet with the reply from the nameserver
- */
 ldns_pkt *
 ldns_resolver_send(ldns_resolver *r, ldns_rdf *name, ldns_rr_type type, ldns_rr_class class,
 		uint16_t flags)
@@ -772,16 +703,12 @@ ldns_resolver_send(ldns_resolver *r, ldns_rdf *name, ldns_rr_type type, ldns_rr_
 	return answer_pkt;
 }
 
-/* send the query as-is. but return a socket */
 int
 ldns_resolver_bgsend()
 {
 	return 0;
 }
-
-/*
- * Start an axfr, send the query and keep the connection open
- */
+ 
 ldns_status
 ldns_axfr_start(ldns_resolver *resolver, 
                 ldns_rdf *domain,
@@ -922,11 +849,3 @@ ldns_axfr_next(ldns_resolver *resolver)
 	}
 	
 }
-
-#if 0
-/* print a resolver state to fp */
-void
-ldns_resolver_print(FILE *fp, ldns_resolver *res)
-{
-}
-#endif

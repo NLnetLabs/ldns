@@ -13,6 +13,12 @@
 #ifndef _RR_FUNCTIONS_H
 #define _RR_FUNCTIONS_H
 
+
+/* set rdf's at a specific offset
+ * The RR need to be created with ldns_rr_new_frm_type which
+ * allocated enough space for all rdf's and sets them to NULL
+ */
+
 /* A/AAAA */
 ldns_rdf * ldns_rr_address(ldns_rr *r);
 bool ldns_rr_set_address(ldns_rr *r, ldns_rdf *f);

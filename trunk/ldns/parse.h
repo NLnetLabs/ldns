@@ -80,9 +80,4 @@ void ldns_bskipcs(ldns_buffer *buffer, const char *s);
  */
 void ldns_fskipcs(FILE *fp, const char *s);
 
-
-
-
-
-
 #endif /*  _PARSE_H */

@@ -28,12 +28,6 @@
 #include <sys/param.h>
 #endif
 
-/**
- * convert a string to a int16 in wireformat
- * \param[in] rd the rdf where to put the data
- * \param[in] shortstr the string to be converted
- * \return ldns_status
- */
 ldns_status
 ldns_str2rdf_int16(ldns_rdf **rd, const char *shortstr)
 {
@@ -54,12 +48,6 @@ ldns_str2rdf_int16(ldns_rdf **rd, const char *shortstr)
 	}
 }
 
-/**
- * convert a time string to a time value in wireformat
- * \param[in] rd the rdf where to put the data
- * \param[in] time the string to be converted
- * \return ldns_status
- */
 ldns_status
 ldns_str2rdf_time(ldns_rdf **rd, const char *time)
 {
@@ -95,7 +83,6 @@ ldns_str2rdf_time(ldns_rdf **rd, const char *time)
 	}
 }
 
-/* convert a time period (think TTL's) to wireformat) */
 ldns_status
 ldns_str2rdf_period(ldns_rdf **rd,const char *period)
 {
@@ -115,12 +102,6 @@ ldns_str2rdf_period(ldns_rdf **rd,const char *period)
 	return LDNS_STATUS_OK;
 }
 
-/**
- * convert a strings into a 4 byte int in wireformat
- * \param[in] rd the rdf where to put the data
- * \param[in] longstr the string to be converted
- * \return ldns_status
- */
 ldns_status 
 ldns_str2rdf_int32(ldns_rdf **rd, const char *longstr)
 {
@@ -143,12 +124,6 @@ ldns_str2rdf_int32(ldns_rdf **rd, const char *longstr)
 	}
 }
 
-/**
- * convert a byte into wireformat
- * \param[in] rd the rdf where to put the data
- * \param[in] bytestr the string to be converted
- * \return ldns_status
- */
 ldns_status
 ldns_str2rdf_int8(ldns_rdf **rd, const char *bytestr)
 {
@@ -171,14 +146,8 @@ ldns_str2rdf_int8(ldns_rdf **rd, const char *bytestr)
 }
 
 /**
- * convert a dname string into wireformat
- * \param[in] d the rdf where to put the data
- * \param[in] str the string to be converted
- * \return ldns_status
- *
  * No special care is taken, all dots are translated into
  * label seperators.
- *
  * \todo make this more efficient...
  * we do 3 memcpy's in total...
  * label_chars2 is used for debugging. TODO: remove
@@ -270,12 +239,6 @@ ldns_str2rdf_dname(ldns_rdf **d, const char *str)
 	return LDNS_STATUS_OK;
 }
 
-/**
- * convert str with an A record into wireformat
- * \param[in] rd the rdf where to put the data
- * \param[in] str the string to be converted
- * \return ldns_status
- */
 ldns_status
 ldns_str2rdf_a(ldns_rdf **rd, const char *str)
 {
@@ -289,12 +252,6 @@ ldns_str2rdf_a(ldns_rdf **rd, const char *str)
 	return LDNS_STATUS_OK;
 }
 
-/**
- * convert .... into wireformat
- * \param[in] rd the rdf where to put the data
- * \param[in] str the string to be converted
- * \return ldns_status
- */
 ldns_status
 ldns_str2rdf_aaaa(ldns_rdf **rd, const char *str)
 {
@@ -309,12 +266,6 @@ ldns_str2rdf_aaaa(ldns_rdf **rd, const char *str)
 	return LDNS_STATUS_OK;
 }
 
-/**
- * convert a string into wireformat (think txt record)
- * \param[in] rd the rdf where to put the data
- * \param[in] str the string to be converted (NULL terminated)
- * \return ldns_status
- */
 ldns_status
 ldns_str2rdf_str(ldns_rdf **rd, const char *str)
 {
@@ -325,12 +276,6 @@ ldns_str2rdf_str(ldns_rdf **rd, const char *str)
 	return LDNS_STATUS_OK;
 }
 
-/**
- * convert .... into wireformat
- * \param[in] rd the rdf where to put the data
- * \param[in] str the string to be converted
- * \return ldns_status
- */
 ldns_status
 ldns_str2rdf_apl(ldns_rdf **rd, const char *str)
 {
@@ -339,12 +284,6 @@ ldns_str2rdf_apl(ldns_rdf **rd, const char *str)
 	return LDNS_STATUS_NOT_IMPL;
 }
 
-/**
- * convert .... into wireformat
- * \param[in] rd the rdf where to put the data
- * \param[in] str the string to be converted
- * \return ldns_status
- */
 ldns_status
 ldns_str2rdf_b64(ldns_rdf **rd, const char *str)
 {
@@ -356,7 +295,6 @@ ldns_str2rdf_b64(ldns_rdf **rd, const char *str)
 	i = (uint16_t) b64_pton((const char*)str, buffer, 
 	                        b64_ntop_calculate_size(strlen(str)));
 	if (-1 == i) {
-		/* todo: remove print */
 		return LDNS_STATUS_INVALID_B64;
 	} else {
 		*rd = ldns_rdf_new_frm_data(
@@ -367,12 +305,6 @@ ldns_str2rdf_b64(ldns_rdf **rd, const char *str)
 	return LDNS_STATUS_OK;
 }
 
-/**
- * convert a hex value into wireformat
- * \param[in] rd the rdf where to put the data
- * \param[in] str the string to be converted
- * \return ldns_status
- */
 ldns_status
 ldns_str2rdf_hex(ldns_rdf **rd, const char *str)
 {
@@ -407,12 +339,6 @@ ldns_str2rdf_hex(ldns_rdf **rd, const char *str)
         return LDNS_STATUS_OK;
 }
 
-/**
- * convert .... into wireformat
- * \param[in] rd the rdf where to put the data
- * \param[in] str the string to be converted
- * \return ldns_status
- */
 ldns_status
 ldns_str2rdf_nsec(ldns_rdf **rd, const char *str)
 {
@@ -421,12 +347,6 @@ ldns_str2rdf_nsec(ldns_rdf **rd, const char *str)
 	return LDNS_STATUS_NOT_IMPL;
 }
 
-/**
- * convert a rrtype into wireformat
- * \param[in] rd the rdf where to put the data
- * \param[in] str the string to be converted
- * \return ldns_status
- */
 ldns_status
 ldns_str2rdf_type(ldns_rdf **rd, const char *str)
 {
@@ -438,12 +358,6 @@ ldns_str2rdf_type(ldns_rdf **rd, const char *str)
 	return LDNS_STATUS_OK;
 }
 
-/**
- * convert .... into wireformat
- * \param[in] rd the rdf where to put the data
- * \param[in] str the string to be converted
- * \return ldns_status
- */
 ldns_status
 ldns_str2rdf_class(ldns_rdf **rd, const char *str)
 {
@@ -455,12 +369,6 @@ ldns_str2rdf_class(ldns_rdf **rd, const char *str)
 	return LDNS_STATUS_OK;
 }
 
-/**
- * convert .... into wireformat
- * \param[in] rd the rdf where to put the data
- * \param[in] str the string to be converted
- * \return ldns_status
- */
 ldns_status
 ldns_str2rdf_cert(ldns_rdf **rd, const char *str)
 {
@@ -469,12 +377,6 @@ ldns_str2rdf_cert(ldns_rdf **rd, const char *str)
 	return LDNS_STATUS_NOT_IMPL;
 }
 
-/**
- * convert and algorithm value into wireformat
- * \param[in] rd the rdf where to put the data
- * \param[in] str the string to be converted
- * \return ldns_status
- */
 /* An alg field can either be specified as a 8 bits number
  * or by its symbolic name. Handle both
  */
@@ -501,10 +403,6 @@ ldns_str2rdf_alg(ldns_rdf **rd, const char *str)
 	return st;
 }
 		
-/**
- * convert .... into wireformat
- * \return ldns_status
- */
 ldns_status
 ldns_str2rdf_unknown(ldns_rdf **rd, const char *str)
 {
@@ -513,12 +411,6 @@ ldns_str2rdf_unknown(ldns_rdf **rd, const char *str)
 	return LDNS_STATUS_NOT_IMPL;
 }
 
-/**
- * convert .... into wireformat
- * \param[in] rd the rdf where to put the data
- * \param[in] str the string to be converted
- * \return ldns_status
- */
 ldns_status
 ldns_str2rdf_tsig(ldns_rdf **rd, const char *str)
 {
@@ -527,12 +419,6 @@ ldns_str2rdf_tsig(ldns_rdf **rd, const char *str)
 	return LDNS_STATUS_NOT_IMPL;
 }
 
-/**
- * convert .... into wireformat
- * \param[in] rd the rdf where to put the data
- * \param[in] str the string to be converted
- * \return ldns_status
- */
 ldns_status
 ldns_str2rdf_service(ldns_rdf **rd, const char *str)
 {
@@ -541,12 +427,6 @@ ldns_str2rdf_service(ldns_rdf **rd, const char *str)
 	return LDNS_STATUS_NOT_IMPL;
 }
 
-/**
- * convert .... into wireformat
- * \param[in] rd the rdf where to put the data
- * \param[in] str the string to be converted
- * \return ldns_status
- */
 ldns_status
 ldns_str2rdf_loc(ldns_rdf **rd, const char *str)
 {
@@ -555,10 +435,6 @@ ldns_str2rdf_loc(ldns_rdf **rd, const char *str)
 	return LDNS_STATUS_NOT_IMPL;
 }
 
-/**
- * convert .... into wireformat
- * \return ldns_status
- */
 ldns_status
 ldns_str2rdf_wks(ldns_rdf **rd, const char *str)
 {
@@ -567,12 +443,6 @@ ldns_str2rdf_wks(ldns_rdf **rd, const char *str)
 	return LDNS_STATUS_NOT_IMPL;
 }
 
-/**
- * convert .... into wireformat
- * \param[in] rd the rdf where to put the data
- * \param[in] str the string to be converted
- * \return ldns_status
- */
 ldns_status
 ldns_str2rdf_nsap(ldns_rdf **rd, const char *str)
 {
@@ -580,6 +450,3 @@ ldns_str2rdf_nsap(ldns_rdf **rd, const char *str)
 	str = str;
 	return LDNS_STATUS_NOT_IMPL;
 }
-
-
-

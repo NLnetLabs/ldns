@@ -24,14 +24,6 @@
 
 #include "util.h"
 
-
-/**
- * Sends ptk to the nameserver at the resolver object. Returns the data
- * as a ldns_pkt
- * \param[in] r the resolver to use 
- * \param[in] query_pkt the query to send
- * \return the pkt received from the nameserver
- */
 ldns_pkt *
 ldns_send(ldns_resolver *r, ldns_pkt *query_pkt)
 {
@@ -152,14 +144,6 @@ ldns_send(ldns_resolver *r, ldns_pkt *query_pkt)
 	return reply;
 }
 
-/**
- * Sends a buffer to an ip using udp and return the respons as a ldns_pkt
- * \param[in] qbin the ldns_buffer to be send
- * \param[in] to the ip addr to send to
- * \param[in] tolen length of the ip addr
- * \param[in] timeout the timeout value for the network
- * \return a packet with the answer
- */
 uint8_t *
 ldns_send_udp(ldns_buffer *qbin, const struct sockaddr_storage *to, socklen_t tolen, struct timeval timeout, size_t *answer_size)
 {
@@ -229,9 +213,6 @@ ldns_send_udp(ldns_buffer *qbin, const struct sockaddr_storage *to, socklen_t to
 	return answer;
 }
 
-/**
- * Create a tcp socket to the specified address
- */
 int
 ldns_tcp_connect(const struct sockaddr_storage *to, socklen_t tolen, struct timeval timeout)
 {
@@ -257,7 +238,6 @@ ldns_tcp_connect(const struct sockaddr_storage *to, socklen_t tolen, struct time
 
 	return sockfd;
 }
-
 
 ssize_t
 ldns_tcp_send_query(ldns_buffer *qbin, int sockfd, const struct sockaddr_storage *to, socklen_t tolen)
@@ -335,14 +315,6 @@ ldns_tcp_read_wire(int sockfd, size_t *size)
 	return wire;
 }
 
-/**
- * Send a buffer to an ip using tcp and return the respons as a ldns_pkt
- * \param[in] qbin the ldns_buffer to be send
- * \param[in] to the ip addr to send to
- * \param[in] tolen length of the ip addr
- * \param[in] timeout the timeout value for the network
- * \return a packet with the answer
- */
 /* keep in mind that in DNS tcp messages the first 2 bytes signal the
  * amount data to expect
  */
@@ -368,4 +340,3 @@ ldns_send_tcp(ldns_buffer *qbin, const struct sockaddr_storage *to, socklen_t to
 	
 	return answer;
 }
-
