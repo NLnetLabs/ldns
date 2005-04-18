@@ -353,7 +353,7 @@ ldns_pkt_xxcount(const ldns_pkt *packet, ldns_pkt_section s)
 			ldns_pkt_nscount(packet) +
 			ldns_pkt_arcount(packet);
 	default:
-		abort();
+		return 0;
 	}
 }
 
@@ -374,7 +374,7 @@ ldns_pkt_xxsection(ldns_pkt *packet, ldns_pkt_section s)
 	case LDNS_SECTION_ANY_NOQUESTION:
 		return ldns_pkt_all_noquestion(packet);
 	default:
-		abort();
+		return 0;
 	}
 }
 

@@ -336,7 +336,7 @@ ldns_str2rdf_apl(ldns_rdf **rd, const char *str)
 {
 	rd = rd;
 	str = str;
-	abort();
+	return LDNS_STATUS_ERR;
 }
 
 /**
@@ -418,7 +418,7 @@ ldns_str2rdf_nsec(ldns_rdf **rd, const char *str)
 {
 	rd = rd;
 	str = str;
-	abort();
+	return LDNS_STATUS_NOT_IMPL;
 }
 
 /**
@@ -466,7 +466,7 @@ ldns_str2rdf_cert(ldns_rdf **rd, const char *str)
 {
 	rd = rd;
 	str = str;
-	abort();
+	return LDNS_STATUS_NOT_IMPL;
 }
 
 /**
@@ -510,7 +510,7 @@ ldns_str2rdf_unknown(ldns_rdf **rd, const char *str)
 {
 	rd = rd;
 	str = str;
-	abort();
+	return LDNS_STATUS_NOT_IMPL;
 }
 
 /**
@@ -524,7 +524,7 @@ ldns_str2rdf_tsig(ldns_rdf **rd, const char *str)
 {
 	rd = rd;
 	str = str;
-	abort();
+	return LDNS_STATUS_NOT_IMPL;
 }
 
 /**
@@ -538,7 +538,7 @@ ldns_str2rdf_service(ldns_rdf **rd, const char *str)
 {
 	rd = rd;
 	str = str;
-	abort();
+	return LDNS_STATUS_NOT_IMPL;
 }
 
 /**
@@ -552,7 +552,7 @@ ldns_str2rdf_loc(ldns_rdf **rd, const char *str)
 {
 	rd = rd;
 	str = str;
-	abort();
+	return LDNS_STATUS_NOT_IMPL;
 }
 
 /**
@@ -564,7 +564,7 @@ ldns_str2rdf_wks(ldns_rdf **rd, const char *str)
 {
 	rd = rd;
 	str = str;
-	abort();
+	return LDNS_STATUS_NOT_IMPL;
 }
 
 /**
@@ -578,7 +578,7 @@ ldns_str2rdf_nsap(ldns_rdf **rd, const char *str)
 {
 	rd = rd;
 	str = str;
-	abort();
+	return LDNS_STATUS_NOT_IMPL;
 }
 
 
