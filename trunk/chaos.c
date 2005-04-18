@@ -37,6 +37,8 @@ main(int argc, char *argv[])
 		}
 	}
 
+	(void)ldns_get_rr_list_hosts_frm_file("/etc/hosts");
+	
 	version = ldns_dname_new_frm_str("version.bind");
 	id      = ldns_dname_new_frm_str("hostname.bind");
 

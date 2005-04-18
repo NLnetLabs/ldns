@@ -15,6 +15,9 @@
 #include <openssl/ssl.h>
 #include <openssl/sha.h>
 #include <ldns/higher.h>
+#include <ldns/parse.h>
+#include <ldns/resolver.h>
+
 #include "util.h"
 
 ldns_rr_list *
@@ -82,5 +85,51 @@ ldns_get_rr_list_name_by_addr(ldns_resolver *res, ldns_rdf *addr, ldns_rr_class 
 		names = ldns_pkt_rr_list_by_type(pkt, 
 				LDNS_RR_TYPE_PTR, LDNS_SECTION_ANSWER);
 	}
+	return names;
+}
+
+ldns_rr_list *
+ldns_get_rr_list_hosts_frm_fp(FILE *fp)
+{
+	ssize_t i;
+	char *word;
+
+
+	for(
+			i = ldns_fget_token(fp, word, LDNS_PARSE_NORMAL, 0);
+			i > 0;
+			i = ldns_fget_token(fp, word, LDNS_PARSE_NORMAL, 0)
+	) {
+		/* # is comment */
+		if (word[0] == '#') {
+			printf("comment\n");
+			continue;
+		}
+		
+		fprintf(stderr, "%d [%s]\n",i ,word);
+	}
+
+
+}
+
+
+ldns_rr_list *
+ldns_get_rr_list_hosts_frm_file(char *filename)
+{
+	ldns_rr_list *names;
+	FILE *fp;
+
+	if (!filename) {
+                fp = fopen(RESOLV_HOSTS, "r");
+        
+        } else {
+                fp = fopen(filename, "r");
+        }
+        if (!fp) {
+                return NULL;
+        }
+
+	names = ldns_get_rr_list_hosts_frm_fp(fp);
+	fclose(fp);
 	return names;
 }
