@@ -71,11 +71,6 @@ ldns_rdf_set_data(ldns_rdf *rd, void *d)
 
 /* for types that allow it, return
  * the native/host order type */
-
-/** return the native uint8_t repr. from the rdf
- * \param[in] rd the ldns_rdf to operate on
- * \return uint8_t the value extracted
- */
 uint8_t
 ldns_rdf2native_int8(ldns_rdf *rd)
 {
@@ -92,10 +87,6 @@ ldns_rdf2native_int8(ldns_rdf *rd)
 	}
 }
 
-/** return the native uint16_t repr. from the rdf
- * \param[in] rd the ldns_rdf to operate on
- * \return uint16_t the value extracted
- */
 uint16_t
 ldns_rdf2native_int16(ldns_rdf *rd)
 {
@@ -110,10 +101,6 @@ ldns_rdf2native_int16(ldns_rdf *rd)
 	}
 }
 
-/** return the native uint32_t repr. from the rdf
- * \param[in] rd the ldns_rdf to operate on
- * \return uint32_t the value extracted
- */
 uint32_t
 ldns_rdf2native_int32(ldns_rdf *rd)
 {
@@ -128,12 +115,6 @@ ldns_rdf2native_int32(ldns_rdf *rd)
 	}
 }
 
-/** 
- * return the native sockaddr repr. from the rdf
- * \param[in] rd the ldns_rdf to operate on
- * \return struct sockaddr* the address in the format so other
- * functions can use it (sendto)
- */
 struct sockaddr_storage *
 ldns_rdf2native_sockaddr_storage(ldns_rdf *rd)
 {
@@ -166,24 +147,12 @@ ldns_rdf2native_sockaddr_storage(ldns_rdf *rd)
 	}
 }
 
-/**
- * Returns an rdf that contains the given int8 value
- *
- * Because multiple rdf types can contain an int8, the
- * type must be specified
- */
 ldns_rdf *
 ldns_native2rdf_int8(ldns_rdf_type type, uint8_t value)
 {
 	return ldns_rdf_new_frm_data(type, 1, &value);
 }
 
-/**
- * Returns an rdf that contains the given int16 value
- *
- * Because multiple rdf types can contain an int16, the
- * type must be specified
- */
 ldns_rdf *
 ldns_native2rdf_int16(ldns_rdf_type type, uint16_t value)
 {
@@ -192,12 +161,6 @@ ldns_native2rdf_int16(ldns_rdf_type type, uint16_t value)
 	return ldns_rdf_new(type, 2, rdf_data);
 }
 
-/**
- * Returns an rdf that contains the given int32 value
- *
- * Because multiple rdf types can contain an int32, the
- * type must be specified
- */
 ldns_rdf *
 ldns_native2rdf_int32(ldns_rdf_type type, uint32_t value)
 {
@@ -206,12 +169,6 @@ ldns_native2rdf_int32(ldns_rdf_type type, uint32_t value)
 	return ldns_rdf_new(type, 4, rdf_data);
 }
 
-/**
- * Returns an int16_data rdf that contains the data in the
- * given array, preceded by an int16 specifying the length
- *
- * The memory is copied, and an LDNS_RDF_TYPE_INT16DATA is returned
- */
 ldns_rdf *
 ldns_native2rdf_int16_data(uint16_t size, uint8_t *data)
 {
@@ -221,10 +178,6 @@ ldns_native2rdf_int16_data(uint16_t size, uint8_t *data)
 	return ldns_rdf_new(LDNS_RDF_TYPE_INT16_DATA, size + 2, rdf_data);
 }
 
-/**
- * Allocate a new ldns_rdf structure 
- * fill it and return it
- */
 ldns_rdf *
 ldns_rdf_new(ldns_rdf_type t, uint16_t s, void *d)
 {
@@ -239,15 +192,6 @@ ldns_rdf_new(ldns_rdf_type t, uint16_t s, void *d)
 	return rd;
 }
 
-/**
- * Allocate a new rdf structure and fill it.
- * This function _does_ copy the contents from
- * the buffer, unlinke ldns_rdf_new()
- * \param[in] type type of the rdf
- * \param[in] size size of the buffer
- * \param[in] data pointer to the buffer to be copied
- * \return the new rdf structure or NULL on failure
- */
 ldns_rdf *
 ldns_rdf_new_frm_data(ldns_rdf_type type, uint16_t size, const void *data)
 {
@@ -267,11 +211,6 @@ ldns_rdf_new_frm_data(ldns_rdf_type type, uint16_t size, const void *data)
 	return rdf;
 }
 
-/**
- * clone a rdf structure. The data is copied
- * \param[in] r rdf to be copied
- * \return a new rdf structure
- */
 ldns_rdf *
 ldns_rdf_deep_clone(const ldns_rdf *r)
 {
@@ -281,12 +220,6 @@ ldns_rdf_deep_clone(const ldns_rdf *r)
 				ldns_rdf_data(r)));
 }
 
-/**
- * free a rdf structure _and_ free the
- * data. rdf should be created with _new_frm_data
- * \param[in] rd the rdf structure to be freed
- * \return void
- */
 void
 ldns_rdf_free_data(ldns_rdf *rd)
 {
@@ -296,12 +229,6 @@ ldns_rdf_free_data(ldns_rdf *rd)
 	}
 }
 
-/**
- * Free a rdf structure leave the 
- * data pointer intact
- * \param[in] rd the pointer to be freed
- * \return void
- */
 void 
 ldns_rdf_free(ldns_rdf *rd)
 {
@@ -310,12 +237,6 @@ ldns_rdf_free(ldns_rdf *rd)
 	}
 }
 
-/**
- * Create a new rdf from a string
- * \param[in] type   type to use
- * \param[in] str string to use
- * \return ldns_rdf*
- */
 ldns_rdf *
 ldns_rdf_new_frm_str(ldns_rdf_type type, const char *str)
 {
@@ -406,12 +327,6 @@ ldns_rdf_new_frm_str(ldns_rdf_type type, const char *str)
 	}
 }
 
-/**
- * Create a new rdf from a file containing a string
- * \param[in] type   type to use
- * \param[in] fp the file pointer  to use
- * \return ldns_rdf*
- */
 ldns_rdf *
 ldns_rdf_new_frm_fp(ldns_rdf_type type, FILE *fp)
 {
@@ -434,12 +349,6 @@ ldns_rdf_new_frm_fp(ldns_rdf_type type, FILE *fp)
 	return r;
 }
 
-/**
- * reverse an rdf, only actually usefull for AAAA and A records
- * the returned rdf has the type LDNS_RDF_TYPE_DNAME!
- * \param[in] *rdf rdf to be reversed
- * \return the reversed rdf (a newly created rdf)
- */
 ldns_rdf *
 ldns_rdf_address_reverse(ldns_rdf *rdf)
 {
@@ -545,14 +454,6 @@ ldns_rdf_address_reverse(ldns_rdf *rdf)
 	return rev;
 }
 
-
-/**
- * remove \\DDD, \\[space] and other escapes from the input
- * See RFC 1035, section 5.1
- * \param[in] word what to check
- * \param[in] length the string
- * \return ldns_status mesg
- */
 ldns_status
 ldns_octet(char *word, size_t *length)
 {
@@ -615,14 +516,6 @@ ldns_octet(char *word, size_t *length)
     return LDNS_STATUS_OK;
 }
 
-/**
- * Compare two rdf's
- * \param[in] rd1 the first one
- * \param[in] rd2 the second one
- * \return 0 if equal
- *         -1 if rd1 comes before rd2
- *         +1 if rd2 comes before rd1
- */
 int
 ldns_rdf_compare(const ldns_rdf *rd1, const ldns_rdf *rd2)
 {
@@ -649,12 +542,6 @@ ldns_rdf_compare(const ldns_rdf *rd1, const ldns_rdf *rd2)
 	return 0;
 }
 
-/**
- * convert a ttl value (5d2h) to a long
- * \param[in] nptr the start of the string
- * \param[out] endptr points to the last char in case of error
- * \return the convert duration value
- */
 uint32_t
 ldns_str2period(const char *nptr, const char **endptr)
 {
@@ -729,4 +616,3 @@ ldns_str2period(const char *nptr, const char **endptr)
 	/* disregard signedness */
 	return seconds;
 }
-
