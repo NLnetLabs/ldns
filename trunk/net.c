@@ -63,7 +63,6 @@ ldns_send(ldns_resolver *r, ldns_pkt *query_pkt)
 	}
 
 	if (ldns_pkt2buffer_wire(qb, query_pkt) != LDNS_STATUS_OK) {
-		printf("could not convert to wire fmt\n");
 		return NULL;
 	}
 
@@ -111,7 +110,6 @@ ldns_send(ldns_resolver *r, ldns_pkt *query_pkt)
 		
 		if (ldns_wire2pkt(&reply, reply_bytes, reply_size) !=
 		    LDNS_STATUS_OK) {
-			printf("malformed answer\n");
 			FREE(reply_bytes);
 			return NULL;
 		}
@@ -145,7 +143,7 @@ ldns_send(ldns_resolver *r, ldns_pkt *query_pkt)
 		                          ldns_resolver_tsig_keydata(r),
 		                          tsig_mac)) {
 			/* TODO: no print, feedback */
-			printf(";; WARNING: TSIG VERIFICATION OF ANSWER FAILED!\n");
+			dprintf("%s", ";; WARNING: TSIG VERIFICATION OF ANSWER FAILED!\n");
 		}
 	}
 	
@@ -178,7 +176,7 @@ ldns_send_udp(ldns_buffer *qbin, const struct sockaddr_storage *to, socklen_t to
 */        
 
 	if ((sockfd = socket((int)((struct sockaddr*)to)->sa_family, SOCK_DGRAM, IPPROTO_UDP)) == -1) {
-		printf("could not open socket\n");
+		dprintf("%s", "could not open socket\n");
 		return NULL;
 	}
 
@@ -194,13 +192,13 @@ ldns_send_udp(ldns_buffer *qbin, const struct sockaddr_storage *to, socklen_t to
 
 
 	if (bytes == -1) {
-		printf("error with sending\n");
+		dprintf("%s", "error with sending\n");
 		close(sockfd);
 		return NULL;
 	}
 
 	if ((size_t) bytes != ldns_buffer_position(qbin)) {
-		printf("amount mismatch\n");
+		dprintf("%s", "amount mismatch\n");
 		close(sockfd);
 		return NULL;
 	}
@@ -208,7 +206,7 @@ ldns_send_udp(ldns_buffer *qbin, const struct sockaddr_storage *to, socklen_t to
 	/* wait for an response*/
 	answer = XMALLOC(uint8_t, MAX_PACKETLEN);
 	if (!answer) {
-		printf("respons alloc error\n");
+		dprintf("%s", "respons alloc error\n");
 		return NULL;
 	}
 
@@ -218,7 +216,7 @@ ldns_send_udp(ldns_buffer *qbin, const struct sockaddr_storage *to, socklen_t to
 
 	if (bytes == -1) {
 		if (errno == EAGAIN) {
-			fprintf(stderr, "socket timeout\n");
+			dprintf("%s", "socket timeout\n");
 		}
 		FREE(answer);
 		return NULL;
@@ -278,12 +276,12 @@ ldns_tcp_send_query(ldns_buffer *qbin, int sockfd, const struct sockaddr_storage
         FREE(sendbuf);
 
 	if (bytes == -1) {
-		printf("error with sending\n");
+		dprintf("%s", "error with sending\n");
 		close(sockfd);
 		return 0;
 	}
 	if ((size_t) bytes != ldns_buffer_position(qbin)+2) {
-		printf("amount of sent bytes mismatch\n");
+		dprintf("%s", "amount of sent bytes mismatch\n");
 		close(sockfd);
 		return 0;
 	}
@@ -307,7 +305,7 @@ ldns_tcp_read_wire(int sockfd, size_t *size)
 		bytes = recv(sockfd, wire, 2, 0);
 		if (bytes == -1) {
 			if (errno == EAGAIN) {
-				fprintf(stderr, "socket timeout\n");
+				dprintf("%s", "socket timeout\n");
 			}
 			perror("error receiving tcp packet");
 			return NULL;
@@ -324,7 +322,7 @@ ldns_tcp_read_wire(int sockfd, size_t *size)
 		bytes += recv(sockfd, wire + bytes, (size_t) (wire_size - bytes), 0);
 		if (bytes == -1) {
 			if (errno == EAGAIN) {
-				fprintf(stderr, "socket timeout\n");
+				dprintf("%s", "socket timeout\n");
 			}
 			perror("error receiving tcp packet");
 			FREE(wire);

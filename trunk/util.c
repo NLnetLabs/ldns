@@ -24,9 +24,9 @@ void
 xprintf_rdf(ldns_rdf *rd)
 {
 	/* assume printable string */
-	fprintf(stdout, "size\t:%u\n", (unsigned int)ldns_rdf_size(rd));
-	fprintf(stdout, "type\t:%u\n", (unsigned int)ldns_rdf_get_type(rd));
-	fprintf(stdout, "data\t:[%.*s]\n", (int)ldns_rdf_size(rd), (char*)ldns_rdf_data(rd));
+	fprintf(stderr, "size\t:%u\n", (unsigned int)ldns_rdf_size(rd));
+	fprintf(stderr, "type\t:%u\n", (unsigned int)ldns_rdf_get_type(rd));
+	fprintf(stderr, "data\t:[%.*s]\n", (int)ldns_rdf_size(rd), (char*)ldns_rdf_data(rd));
 }
 
 void
@@ -38,7 +38,7 @@ xprintf_rr(ldns_rr *rr)
 	count = ldns_rr_rd_count(rr);
 
 	for(i = 0; i < count; i++) {
-		printf("print rd %u\n", (unsigned int) i);
+		fprintf(stderr, "print rd %u\n", (unsigned int) i);
 		xprintf_rdf(rr->_rdata_fields[i]);
 	}
 }

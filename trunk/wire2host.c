@@ -206,13 +206,13 @@ ldns_wire2rdf(ldns_rr *rr, const uint8_t *wire,
 			cur_rdf_length = 4;
 			break;
 		case LDNS_RDF_TYPE_TSIGTIME:
-/*
+#if 0
 printf("TSIG DATA ON WIRE: ");
 for (i=0; i<6; i++) {
 	printf("%02x ", wire[*pos+i]);
 }
 printf("\n");
-*/
+#endif
 			cur_rdf_length = 6;
 			break;
 		case LDNS_RDF_TYPE_AAAA:
