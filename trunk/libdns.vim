@@ -81,6 +81,7 @@ syn keyword ldnsMacro	LDNS_STATUS_EMPTY_LABEL
 syn keyword ldnsMacro	LDNS_STATUS_LABEL_OVERFLOW
 syn keyword ldnsMacro	LDNS_STATUS_LABEL_UNDERFLOW
 syn keyword ldnsMacro	LDNS_STATUS_DOMAINNAME_OVERFLOW
+syn keyword ldnsMacro	LDNS_STATUS_DOMAINNAME_UNDERFLOW
 syn keyword ldnsMacro	LDNS_STATUS_DDD_OVERFLOW
 syn keyword ldnsMacro	LDNS_STATUS_PACKET_OVERFLOW
 syn keyword ldnsMacro	LDNS_STATUS_INVALID_POINTER
@@ -92,6 +93,12 @@ syn keyword ldnsMacro	LDNS_STATUS_INVALID_IP4
 syn keyword ldnsMacro	LDNS_STATUS_INVALID_IP6
 syn keyword ldnsMacro	LDNS_STATUS_INVALID_STR
 syn keyword ldnsMacro	LDNS_STATUS_INVALID_B64
+syn keyword ldnsMacro	LDNS_STATUS_UNKNOWN_INET
+syn keyword ldnsMacro	LDNS_STATUS_NOT_IMPL
+syn keyword ldnsMacro	LDNS_STATUS_ADDRESS_ERROR
+syn keyword ldnsMacro	LDNS_STATUS_NETWORK_ERROR
+syn keyword ldnsMacro	LDNS_STATUS_INVALID_HEX
+
 
 " ldns/resolver.h
 syn keyword  ldnsType	  	ldns_resolver
