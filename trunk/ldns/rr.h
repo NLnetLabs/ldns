@@ -455,7 +455,7 @@ ldns_rr_class ldns_get_rr_class_by_name(const char *name);
 /**
  * clone a rr and all its data
  */
-ldns_rr * ldns_rr_deep_clone(ldns_rr *rr);
+ldns_rr * ldns_rr_deep_clone(const ldns_rr *rr);
 
 /**
  * Clone an rr list

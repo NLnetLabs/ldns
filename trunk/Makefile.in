@@ -75,6 +75,7 @@ progs:		$(PROG_TARGETS)
 lib:		$(LIBDNS_OBJECTS) b64_pton$U.o b64_ntop$U.o
 		$(LINK_LIB) -o libldns.la $(LIBDNS_LOBJECTS) b64_pton$U.lo b64_ntop$U.lo \
 		-rpath $(prefix)/lib
+		mv .libs/libldns.so* ./
 	
 snapshot:	clean testclean
 		(rm -rf ../ldns-snap-$(DATE)/)
@@ -103,13 +104,14 @@ doc:
 	doxygen libdns.doxygen
 
 clean:	
-	rm -f *.o *.d
+	rm -f *.o *.d *.lo
 	rm -f $(TESTS)
 	rm -f $(PROG_TARGETS)
 	rm -rf autom4te.cache/
 	rm -f config.status
 	rm -f config.log
 	rm -f tags
+	rm -f *.la
 
 testclean:
 	rm -f $(TESTS)
@@ -121,6 +123,9 @@ realclean: clean docclean testclean libclean
 	rm -f config.h
 	rm -f config.h.in
 	rm -f configure
+	rm -f config.sub
+	rm -f config.guess
+	rm -f ltmain.sh
 
 docclean:
 	rm -rf doc/html/

@@ -115,6 +115,10 @@ ldns_verify_rrsig(ldns_rr_list *rrset, ldns_rr *rrsig, ldns_rr_list *keys)
 	ldns_rr *current_key;
 	ldns_rr_list *rrset_clone;
 
+	if (!rrset) {
+		return false;
+	}
+	
 	/* clone the rrset so that we can fiddle with it */
 	rrset_clone = ldns_rr_list_deep_clone(rrset);
 	
