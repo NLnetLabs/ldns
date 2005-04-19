@@ -1,2 +1,6 @@
 ::0 is printed as ::
 	any ip6 addr with closing 0 is not printed correctly
+
+---
+
+XMALLOC return code checking (bail out?!!?) extra function

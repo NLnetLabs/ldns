@@ -98,7 +98,10 @@ ldns_get_rr_list_hosts_frm_fp(FILE *fp)
 	char *line;
 	char *word;
 	char *addr;
+	char *rr_str;
 	ldns_buffer *linebuf;
+	ldns_rr *rr;
+	ldns_rr_list *list;
 	bool ip6;
 
 	linebuf = ldns_buffer_new(MAXLINE_LEN);
@@ -107,7 +110,10 @@ ldns_get_rr_list_hosts_frm_fp(FILE *fp)
 	line = XMALLOC(char, MAXLINE_LEN + 1);
 	word = XMALLOC(char, MAXLINE_LEN + 1);
 	addr = XMALLOC(char, MAXLINE_LEN + 1);
+	rr_str = XMALLOC(char, MAXLINE_LEN + 1);
 	ip6 = false;
+	list = ldns_rr_list_new();
+	rr = NULL;
 
 	for(i = ldns_fget_token(fp, line, "\n", 0);
 			i > 0;
@@ -142,17 +148,22 @@ ldns_get_rr_list_hosts_frm_fp(FILE *fp)
 			} else {
 				/* la al la la */
 				if (ip6) {
-					printf("%s IN AAAA %s\n", addr, word);
+					snprintf(rr_str, MAXLINE_LEN, "%s IN AAAA %s", word, addr);
 				} else {
-					printf("%s IN A %s\n", addr, word);
+					snprintf(rr_str, MAXLINE_LEN, "%s IN A %s", word, addr);
 				}
+				rr = ldns_rr_new_frm_str(rr_str);
 			}
+		}
+		if (rr) {
+				ldns_rr_list_push_rr(list, rr);
 		}
 	}
 	FREE(line);
 	FREE(word);
 	FREE(addr);
-	return NULL;
+	FREE(rr_str);
+	return list;
 }
 
 

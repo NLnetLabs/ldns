@@ -19,6 +19,7 @@ main()
 {
 	ldns_resolver *r;
 	ldns_rdf *aaaa;
+	ldns_rr_list *hosts;
 
 	r = ldns_resolver_new_frm_file(NULL);
 	if (!r) {
@@ -28,7 +29,11 @@ main()
 	aaaa = ldns_rdf_new_frm_str(LDNS_RDF_TYPE_AAAA, "::0");
 	ldns_rdf_print(stdout, aaaa);
 	printf("\n\n");
-
 	ldns_resolver_print(stdout, r);
+
+	hosts = ldns_get_rr_list_hosts_frm_file(NULL);
+
+	ldns_rr_list_print(stdout, hosts);
+	
 	return 0;
 }

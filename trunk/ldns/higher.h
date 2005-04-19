@@ -49,7 +49,7 @@ ldns_get_rr_list_name_by_addr(ldns_resolver *r, ldns_rdf *addr, ldns_rr_class c,
  * \param[in] fp the file pointer to use
  * \return ldns_rr_list * with the names
  */
-ldns_rr_list * ldns_get_rr_list_host_frm_fp(FILE *fp);
+ldns_rr_list * ldns_get_rr_list_hosts_frm_fp(FILE *fp);
 
 /**
  * wade through fp (a /etc/hosts like file)
@@ -58,4 +58,4 @@ ldns_rr_list * ldns_get_rr_list_host_frm_fp(FILE *fp);
  * \param[in] filename the filename to use (NULL for /etc/hosts)
  * \return ldns_rr_list * with the names
  */
-ldns_rr_list * ldns_get_rr_list_host_frm_file(char *filename);
+ldns_rr_list * ldns_get_rr_list_hosts_frm_file(char *filename);
