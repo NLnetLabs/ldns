@@ -96,9 +96,14 @@ ldns_send(ldns_resolver *r, ldns_pkt *query_pkt)
 			reply_bytes = ldns_send_udp(qb, ns, ns_len, ldns_resolver_timeout(r), &reply_size);
 		}
 		
+		/* obey the fail directive */
 		if (!reply_bytes) {
-			return NULL;
-		}
+			if (ldns_resolver_fail(r)) {
+				return NULL;
+			} else {
+				continue;
+			}
+		} 
 		
 		if (ldns_wire2pkt(&reply, reply_bytes, reply_size) !=
 		    LDNS_STATUS_OK) {
