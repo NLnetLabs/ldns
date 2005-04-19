@@ -135,7 +135,7 @@ ldns_fget_token(FILE *f, char *token, const char *delim, size_t limit)
 	return (ssize_t)i;
 
 tokenread:
-	ldns_fskipcs(f, del);
+	ldns_fskipcs(f, delim);
 	*t = '\0';
 	if (p != 0) {
 		return -1;
@@ -256,7 +256,7 @@ ldns_bget_token(ldns_buffer *b, char *token, const char *delim, size_t limit)
 	return (ssize_t)i;
 
 tokenread:
-	ldns_bskipcs(b, del);
+	ldns_bskipcs(b, delim);
 
 	*t = '\0';
 	if (p != 0) {
@@ -307,13 +307,13 @@ ldns_bskipcs(ldns_buffer *buffer, const char *s)
 {
         bool found;
         char c;
-        char *d;
+        const char *d;
 
         while(ldns_buffer_available_at(buffer, buffer->_position, sizeof(char))) {
                 c = (char) ldns_buffer_read_u8_at(buffer,
                                            buffer->_position);
                 found = false;
-                for (d = (char *) s; *d; d++) {
+                for (d = s; *d; d++) {
                         if (*d == c) {
                                 found = true;
                         }
@@ -339,11 +339,11 @@ ldns_fskipcs(FILE *fp, const char *s)
 {
         bool found;
         char c;
-        char *d;
+        const char *d;
 
 	while ((c = fgetc(fp)) != EOF) {
                 found = false;
-                for (d = (char *) s; *d; d++) {
+                for (d = s; *d; d++) {
                         if (*d == c) {
                                 found = true;
                         }

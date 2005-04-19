@@ -456,7 +456,7 @@ ldns_resolver_new_frm_fp(FILE *fp)
 	/* recognized keywords */
 	keyword[0] = "domain";
 	keyword[1] = "nameserver";
-	word = XMALLOC(char, MAXLINE_LEN);
+	word = XMALLOC(char, MAXLINE_LEN + 1);
 	expect = RESOLV_KEYWORD;
 
 	r = ldns_resolver_new();

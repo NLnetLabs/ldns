@@ -17,6 +17,7 @@
 #include <ldns/higher.h>
 #include <ldns/parse.h>
 #include <ldns/resolver.h>
+#include <ldns/dns.h>
 
 #include "util.h"
 
@@ -88,28 +89,70 @@ ldns_get_rr_list_name_by_addr(ldns_resolver *res, ldns_rdf *addr, ldns_rr_class 
 	return names;
 }
 
+/* read a line, put it in a buffer, parse the buffer */
 ldns_rr_list *
 ldns_get_rr_list_hosts_frm_fp(FILE *fp)
 {
-	ssize_t i;
+	ssize_t i, j;
+	size_t cnt;
+	char *line;
 	char *word;
+	char *addr;
+	ldns_buffer *linebuf;
+	bool ip6;
 
+	linebuf = ldns_buffer_new(MAXLINE_LEN);
 
-	for(
-			i = ldns_fget_token(fp, word, LDNS_PARSE_NORMAL, 0);
+	/* duh duh duh !!!!! */
+	line = XMALLOC(char, MAXLINE_LEN + 1);
+	word = XMALLOC(char, MAXLINE_LEN + 1);
+	addr = XMALLOC(char, MAXLINE_LEN + 1);
+	ip6 = false;
+
+	for(i = ldns_fget_token(fp, line, "\n", 0);
 			i > 0;
-			i = ldns_fget_token(fp, word, LDNS_PARSE_NORMAL, 0)
-	) {
+			i = ldns_fget_token(fp, line, "\n", 0)) 
+	{
 		/* # is comment */
-		if (word[0] == '#') {
-			printf("comment\n");
+		if (line[0] == '#') {
 			continue;
 		}
-		
-		fprintf(stderr, "%d [%s]\n",i ,word);
+		/* put it in a buffer for further processing */
+		ldns_buffer_new_frm_data(linebuf, line, (size_t) i);
+		for(cnt = 0, j = ldns_bget_token(linebuf, word, LDNS_PARSE_NO_NL, 0);
+				j > 0;
+				j = ldns_bget_token(linebuf, word, LDNS_PARSE_NO_NL, 0),
+				cnt++)
+		{
+			if (cnt == 0) {
+				/* the address */
+				if (ldns_rdf_new_frm_str(LDNS_RDF_TYPE_AAAA, word)) {
+					/* ip6 */
+					ip6 = true;
+				} else {
+					if (ldns_rdf_new_frm_str(LDNS_RDF_TYPE_A, word)) {
+						/* ip4 */
+						ip6 = false;
+					} else {
+						/* kaput */
+						break;
+					}
+				}
+				strncpy(addr, word, LDNS_IP6ADDRLEN);
+			} else {
+				/* la al la la */
+				if (ip6) {
+					printf("%s IN AAAA %s\n", addr, word);
+				} else {
+					printf("%s IN A %s\n", addr, word);
+				}
+			}
+		}
 	}
-
-
+	FREE(line);
+	FREE(word);
+	FREE(addr);
+	return NULL;
 }
 
 
