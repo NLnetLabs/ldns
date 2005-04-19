@@ -590,32 +590,53 @@ ldns_resolver_query(ldns_resolver *r, ldns_rdf *name, ldns_rr_type type, ldns_rr
 {
 	ldns_rdf *newname;
 	ldns_pkt *pkt;
+	ldns_status status;
 
 	if (!ldns_resolver_defnames(r)) {
-		return ldns_resolver_send(r, name, type, class, flags);
+		status = ldns_resolver_send(&pkt, r, name, type, class, flags);
+		return pkt;
 	}
 	if (!ldns_resolver_domain(r)) {
 		/* _defnames is set, but the domain is not....?? */
-		return ldns_resolver_send(r, name, type, class, flags);
+		status - ldns_resolver_send(&pkt, r, name, type, class, flags);
+		return pkt;
 	}
 
 	newname = ldns_dname_cat(name, ldns_resolver_domain(r));
 	if (!newname) {
 		return NULL;
 	}
-	pkt = ldns_resolver_send(r, newname, type, class, flags);
+	status = ldns_resolver_send(&pkt, r, newname, type, class, flags);
 	ldns_rdf_free(newname);
 	return pkt;
 }
 
-ldns_pkt *
-ldns_resolver_send(ldns_resolver *r, ldns_rdf *name, ldns_rr_type type, ldns_rr_class class,
+ldns_status
+ldns_resolver_send_pkt(ldns_pkt **answer, ldns_resolver *r, ldns_pkt *query_pkt)
+{
+	uint8_t  retries;
+	ldns_pkt *answer_pkt = NULL;
+
+	/* return NULL on error */
+	for (retries = ldns_resolver_retry(r); retries > 0; retries--) {
+		answer_pkt = ldns_send(r, query_pkt);
+		if (answer_pkt) {
+			break;
+		}
+	}
+	
+	*answer = answer_pkt;
+	return LDNS_STATUS_OK;
+}
+
+/* TODO: other error codes than _ERR */
+ldns_status
+ldns_resolver_send(ldns_pkt **answer, ldns_resolver *r, ldns_rdf *name, ldns_rr_type type, ldns_rr_class class,
 		uint16_t flags)
 {
 	ldns_pkt *query_pkt;
 	ldns_pkt *answer_pkt;
 	uint16_t id;
-	uint8_t  retries;
 	
 	ldns_status status;
 
@@ -635,18 +656,18 @@ ldns_resolver_send(ldns_resolver *r, ldns_rdf *name, ldns_rr_type type, ldns_rr_
 	}
 	if (0 == ldns_resolver_nameserver_count(r)) {
 		dprintf("%s", "resolver has no nameservers\n");
-		return NULL;
+		return LDNS_STATUS_ERR;
 	}
 	if (ldns_rdf_get_type(name) != LDNS_RDF_TYPE_DNAME) {
 		dprintf("%s", "query type is not correct type\n");
-		return NULL;
+		return LDNS_STATUS_ERR;
 	}
 	/* prepare a question pkt from the parameters
 	 * and then send this */
 	query_pkt = ldns_pkt_query_new(ldns_rdf_deep_clone(name), type, class, flags);
 	if (!query_pkt) {
 		dprintf("%s", "Failed to generate pkt\n");
-		return NULL;
+		return LDNS_STATUS_ERR;
 	}
 
 	/* transfer the udp_edns_size from the resolver to the packet */
@@ -687,20 +708,16 @@ ldns_resolver_send(ldns_resolver *r, ldns_rdf *name, ldns_rr_type type, ldns_rr_
 		/* TODO: no print and feedback to caller */
 		if (status != LDNS_STATUS_OK) {
 			dprintf("error creating tsig: %u\n", status);
-			return NULL;
+			return LDNS_STATUS_ERR;
 		}
 	}
-	/* return NULL on error */
-	for (retries = ldns_resolver_retry(r); retries > 0; retries--) {
-		answer_pkt = ldns_send(r, query_pkt);
-		if (answer_pkt) {
-			break;
-		}
-	}
-	
+
+	status = ldns_resolver_send_pkt(&answer_pkt, r, query_pkt);
+
 	ldns_pkt_free(query_pkt);
 	
-	return answer_pkt;
+	*answer = answer_pkt;
+	return LDNS_STATUS_OK;
 }
 
 int

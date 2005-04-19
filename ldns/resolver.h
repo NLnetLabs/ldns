@@ -190,6 +190,7 @@ ldns_pkt * ldns_resolver_search(ldns_resolver *, ldns_rdf*, ldns_rr_type, ldns_r
 
 /**
  * \brief Send the query for *name as-is 
+ * \param[out] **answer, a pointer to a ldns_pkt pointer (initialized by this function)
  * \param[in] *r operate using this resolver
  * \param[in] *name query for this name
  * \param[in] *type query for this type (may be 0, defaults to A)
@@ -197,7 +198,15 @@ ldns_pkt * ldns_resolver_search(ldns_resolver *, ldns_rdf*, ldns_rr_type, ldns_r
  * \param[in] flags the query flags
  * \return ldns_pkt* a packet with the reply from the nameserver
  */
-ldns_pkt * ldns_resolver_send(ldns_resolver *, ldns_rdf*, ldns_rr_type, ldns_rr_class, uint16_t);
+ldns_status ldns_resolver_send(ldns_pkt **answer, ldns_resolver *, ldns_rdf*, ldns_rr_type, ldns_rr_class, uint16_t);
+
+/**
+ * \brief Send the given packet to a nameserver
+ * \param[out] **answer, a pointer to a ldns_pkt pointer (initialized by this function)
+ * \param[in] *r operate using this resolver
+ * \param[in] *query_pkt query
+ */
+ldns_status ldns_resolver_send_pkt(ldns_pkt **answer, ldns_resolver *, ldns_pkt *query_pkt);
 
 /**
  * Send a qeury to a nameserver
