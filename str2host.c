@@ -261,7 +261,7 @@ ldns_str2rdf_aaaa(ldns_rdf **rd, const char *str)
 		return LDNS_STATUS_INVALID_IP6;
 	} else {
 		/* MIEK */
-		printf("str2rdf aaaa str [%s] %d\n", str, sizeof(address));
+		printf("str2rdf aaaa str [%s] %d\n", str, (int)sizeof(address));
 		*rd = ldns_rdf_new_frm_data(
 			LDNS_RDF_TYPE_AAAA, sizeof(address), &address);
 	}
