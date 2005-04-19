@@ -9,7 +9,6 @@ o Different digests for DS
 o NSEC generation??
 o openssl's setup function (esp. random)
 o -lssl in library creation
-o parse on \n segfaults
 
 Implementation:
 ---------------

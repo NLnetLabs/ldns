@@ -68,7 +68,6 @@ ldns_rdf_set_data(ldns_rdf *rd, void *d)
 	rd->_data = d;
 }
 
-
 /* for types that allow it, return
  * the native/host order type */
 uint8_t

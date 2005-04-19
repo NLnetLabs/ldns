@@ -152,7 +152,6 @@ ldns_buffer_printf(ldns_buffer *buffer, const char *format, ...)
 		}
 		buffer->_position += written;
 	}
-
 	return written;
 }
 
