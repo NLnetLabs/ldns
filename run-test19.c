@@ -18,11 +18,16 @@ int
 main()
 {
 	ldns_resolver *r;
+	ldns_rdf *aaaa;
 
 	r = ldns_resolver_new_frm_file(NULL);
 	if (!r) {
 		printf("something wrong?\n");
 	}
+
+	aaaa = ldns_rdf_new_frm_str(LDNS_RDF_TYPE_AAAA, "::0");
+	ldns_rdf_print(stdout, aaaa);
+	printf("\n\n");
 
 	ldns_resolver_print(stdout, r);
 	return 0;
