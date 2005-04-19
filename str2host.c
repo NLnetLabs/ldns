@@ -260,8 +260,6 @@ ldns_str2rdf_aaaa(ldns_rdf **rd, const char *str)
 	if (inet_pton(AF_INET6, (char*)str, address) != 1) {
 		return LDNS_STATUS_INVALID_IP6;
 	} else {
-		/* MIEK */
-		printf("str2rdf aaaa str [%s] %d\n", str, (int)sizeof(address));
 		*rd = ldns_rdf_new_frm_data(
 			LDNS_RDF_TYPE_AAAA, sizeof(address), &address);
 	}
