@@ -190,7 +190,7 @@ ldns_rdf2buffer_str_a(ldns_buffer *output, ldns_rdf *rdf)
 ldns_status
 ldns_rdf2buffer_str_aaaa(ldns_buffer *output, ldns_rdf *rdf)
 {
-	char str[INET6_ADDRSTRLEN + 1];
+	char str[INET6_ADDRSTRLEN];
 
 	if (inet_ntop(AF_INET6, ldns_rdf_data(rdf), str, INET6_ADDRSTRLEN)) {
 		ldns_buffer_printf(output, "%s", str);
