@@ -13,8 +13,6 @@
 #ifndef _UTIL_H
 #define _UTIL_H
 
-#include <ldns/rr.h>
-
 #define dprintf(X,Y) fprintf(stderr, (X), (Y))
 /* #define	dprintf(X, Y)  */
 

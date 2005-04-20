@@ -751,7 +751,7 @@ ldns_axfr_start(ldns_resolver *resolver,
 	                                    
 
 	if (!query) {
-		return LDNS_STATUS_ADDRESS_ERROR;
+		return LDNS_STATUS_ADDRESS_ERR;
 	}
 	/* For AXFR, we have to make the connection ourselves */
 	ns = ldns_rdf2native_sockaddr_storage(resolver->_nameservers[0]);
@@ -779,7 +779,7 @@ ldns_axfr_start(ldns_resolver *resolver,
 	resolver->_socket = ldns_tcp_connect(ns, ns_len, ldns_resolver_timeout(resolver));
 	if (resolver->_socket == 0) {
                	ldns_pkt_free(query);
-		return LDNS_STATUS_NETWORK_ERROR;
+		return LDNS_STATUS_NETWORK_ERR;
 	}
 	
 	/* Convert the query to a buffer
@@ -796,7 +796,7 @@ ldns_axfr_start(ldns_resolver *resolver,
 	if (ldns_tcp_send_query(query_wire, resolver->_socket, ns, ns_len) == 0) {
 		ldns_pkt_free(query);
 		ldns_buffer_free(query_wire);
-		return LDNS_STATUS_NETWORK_ERROR;
+		return LDNS_STATUS_NETWORK_ERR;
 	}
 	
 	ldns_pkt_free(query);
