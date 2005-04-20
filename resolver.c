@@ -631,13 +631,12 @@ ldns_resolver_send_pkt(ldns_pkt **answer, ldns_resolver *r, ldns_pkt *query_pkt)
 
 /* TODO: other error codes than _ERR */
 ldns_status
-ldns_resolver_send(ldns_pkt **answer, ldns_resolver *r, ldns_rdf *name, ldns_rr_type type, ldns_rr_class class,
-		uint16_t flags)
+ldns_resolver_send(ldns_pkt **answer, ldns_resolver *r, ldns_rdf *name, 
+		ldns_rr_type type, ldns_rr_class class, uint16_t flags)
 {
 	ldns_pkt *query_pkt;
 	ldns_pkt *answer_pkt;
 	uint16_t id;
-	
 	ldns_status status;
 
 	assert(r != NULL);

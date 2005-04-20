@@ -42,8 +42,12 @@ ldns_send(ldns_resolver *r, ldns_pkt *query_pkt)
 
 	uint8_t *reply_bytes = NULL;
 	size_t reply_size = 0;
-	
 	ldns_rdf *tsig_mac = NULL;
+
+	if (!query_pkt) {
+		/* nothing to do? */
+		return NULL;
+	}
 	
 	ns_array = ldns_resolver_nameservers(r);
 	reply = NULL; ns_len = 0;
