@@ -17,6 +17,7 @@
 #include <stdarg.h>
 #include <string.h>
 
+#include <ldns/error.h>
 #include <ldns/common.h>
 
 #include "util.h"

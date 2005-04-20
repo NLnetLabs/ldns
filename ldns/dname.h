@@ -15,6 +15,7 @@
 #define _LDNS_DNAME_H
 
 #include <ldns/common.h>
+#include <ldns/rdata.h>
 
 #define DNAME_NORMALIZE        tolower
 

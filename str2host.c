@@ -39,7 +39,7 @@ ldns_str2rdf_int16(ldns_rdf **rd, const char *shortstr)
 	
 	if(*end != 0) {
 		FREE(r);
-		return LDNS_STATUS_INT_EXP;
+		return LDNS_STATUS_INVALID_INT;
 	} else {
 		*rd = ldns_rdf_new_frm_data(
 			LDNS_RDF_TYPE_INT16, sizeof(uint16_t), r);

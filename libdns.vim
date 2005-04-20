@@ -84,20 +84,20 @@ syn keyword ldnsMacro	LDNS_STATUS_DOMAINNAME_OVERFLOW
 syn keyword ldnsMacro	LDNS_STATUS_DOMAINNAME_UNDERFLOW
 syn keyword ldnsMacro	LDNS_STATUS_DDD_OVERFLOW
 syn keyword ldnsMacro	LDNS_STATUS_PACKET_OVERFLOW
-syn keyword ldnsMacro	LDNS_STATUS_INVALID_POINTER
 syn keyword ldnsMacro	LDNS_STATUS_MEM_ERR
 syn keyword ldnsMacro	LDNS_STATUS_INTERNAL_ERR
-syn keyword ldnsMacro	LDNS_STATUS_INT_EXP
 syn keyword ldnsMacro	LDNS_STATUS_ERR
+syn keyword ldnsMacro	LDNS_STATUS_ADDRESS_ERR
+syn keyword ldnsMacro	LDNS_STATUS_NETWORK_ERR
+syn keyword ldnsMacro	LDNS_STATUS_INVALID_POINTER
+syn keyword ldnsMacro	LDNS_STATUS_INVALID_INT
 syn keyword ldnsMacro	LDNS_STATUS_INVALID_IP4
 syn keyword ldnsMacro	LDNS_STATUS_INVALID_IP6
 syn keyword ldnsMacro	LDNS_STATUS_INVALID_STR
 syn keyword ldnsMacro	LDNS_STATUS_INVALID_B64
+syn keyword ldnsMacro	LDNS_STATUS_INVALID_HEX
 syn keyword ldnsMacro	LDNS_STATUS_UNKNOWN_INET
 syn keyword ldnsMacro	LDNS_STATUS_NOT_IMPL
-syn keyword ldnsMacro	LDNS_STATUS_ADDRESS_ERROR
-syn keyword ldnsMacro	LDNS_STATUS_NETWORK_ERROR
-syn keyword ldnsMacro	LDNS_STATUS_INVALID_HEX
 
 
 " ldns/resolver.h

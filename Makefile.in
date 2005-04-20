@@ -26,7 +26,7 @@ LINTFLAGS	= +quiet -weak -warnposix -unrecog -Din_addr_t=uint32_t -Du_int=unsign
 LIBDNS_SOURCES	=	rdata.c util.c rr.c packet.c wire2host.c \
 			host2str.c buffer.c str2host.c resolver.c \
 			net.c host2wire.c dname.c dnssec.c keys.c \
-			higher.c rr_functions.c parse.c
+			higher.c rr_functions.c parse.c error.c
 LIBDNS_HEADERS	=	ldns/error.h		\
 			ldns/packet.h		\
 			ldns/prototype.h 	\
@@ -75,7 +75,8 @@ progs:		$(PROG_TARGETS)
 lib:		$(LIBDNS_OBJECTS) b64_pton$U.o b64_ntop$U.o
 		$(LINK_LIB) -o libldns.la $(LIBDNS_LOBJECTS) b64_pton$U.lo b64_ntop$U.lo \
 		-rpath $(prefix)/lib
-		mv .libs/libldns.so* ./
+# this breaks: configure --disable-shared
+		mv -f .libs/libldns.so* ./
 	
 snapshot:	clean testclean
 		(rm -rf ../ldns-snap-$(DATE)/)
