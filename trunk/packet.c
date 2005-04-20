@@ -657,6 +657,7 @@ ldns_pkt_new()
 	ldns_pkt_set_ad(packet, false);
 
 	ldns_pkt_set_opcode(packet, 0);
+	ldns_pkt_set_rcode(packet, 0);
 	ldns_pkt_set_id(packet, 0);
 	ldns_pkt_set_size(packet, 0);
 	ldns_pkt_set_querytime(packet, 0);
