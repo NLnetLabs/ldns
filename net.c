@@ -24,8 +24,8 @@
 
 #include "util.h"
 
-ldns_pkt *
-ldns_send(ldns_resolver *r, ldns_pkt *query_pkt)
+ldns_status
+ldns_send(ldns_pkt **result, ldns_resolver *r, ldns_pkt *query_pkt)
 {
 	uint8_t i;
 	
@@ -46,7 +46,7 @@ ldns_send(ldns_resolver *r, ldns_pkt *query_pkt)
 
 	if (!query_pkt) {
 		/* nothing to do? */
-		return NULL;
+		return LDNS_STATUS_ERR;
 	}
 	
 	ns_array = ldns_resolver_nameservers(r);
@@ -59,7 +59,7 @@ ldns_send(ldns_resolver *r, ldns_pkt *query_pkt)
 	}
 
 	if (ldns_pkt2buffer_wire(qb, query_pkt) != LDNS_STATUS_OK) {
-		return NULL;
+		return LDNS_STATUS_ERR;
 	}
 
 
@@ -97,13 +97,13 @@ ldns_send(ldns_resolver *r, ldns_pkt *query_pkt)
 			reply_bytes = ldns_send_tcp(qb, ns, ns_len, ldns_resolver_timeout(r), &reply_size);
 		} else {
 			/* udp here, please */
-			reply_bytes = ldns_send_udp(qb, ns, ns_len, ldns_resolver_timeout(r), &reply_size);
+			(void) ldns_send_udp(&reply_bytes, qb, ns, ns_len, ldns_resolver_timeout(r), &reply_size);
 		}
 		
 		/* obey the fail directive */
 		if (!reply_bytes) {
 			if (ldns_resolver_fail(r)) {
-				return NULL;
+				return LDNS_STATUS_ERR;
 			} else {
 				continue;
 			}
@@ -112,7 +112,7 @@ ldns_send(ldns_resolver *r, ldns_pkt *query_pkt)
 		if (ldns_wire2pkt(&reply, reply_bytes, reply_size) !=
 		    LDNS_STATUS_OK) {
 			FREE(reply_bytes);
-			return NULL;
+			return LDNS_STATUS_ERR;
 		}
 		
 		FREE(ns);
@@ -152,11 +152,12 @@ ldns_send(ldns_resolver *r, ldns_pkt *query_pkt)
 	
 	FREE(reply_bytes);
 	ldns_buffer_free(qb);
-	return reply;
+	*result = reply;
+	return LDNS_STATUS_OK;
 }
 
-uint8_t *
-ldns_send_udp(ldns_buffer *qbin, const struct sockaddr_storage *to, socklen_t tolen, struct timeval timeout, size_t *answer_size)
+ldns_status
+ldns_send_udp(uint8_t **result, ldns_buffer *qbin, const struct sockaddr_storage *to, socklen_t tolen, struct timeval timeout, size_t *answer_size)
 {
 	int sockfd;
 	ssize_t bytes;
@@ -172,14 +173,14 @@ ldns_send_udp(ldns_buffer *qbin, const struct sockaddr_storage *to, socklen_t to
 
 	if ((sockfd = socket((int)((struct sockaddr*)to)->sa_family, SOCK_DGRAM, IPPROTO_UDP)) == -1) {
 		dprintf("%s", "could not open socket\n");
-		return NULL;
+		return LDNS_STATUS_ERR;
 	}
 
 	if (setsockopt(sockfd, SOL_SOCKET, SO_RCVTIMEO, &timeout,
 			(socklen_t) sizeof(timeout))) {
 		perror("setsockopt");
 		close(sockfd);
-		return NULL;
+		return LDNS_STATUS_ERR;
 	}
 	
 	bytes = sendto(sockfd, ldns_buffer_begin(qbin),
@@ -189,20 +190,20 @@ ldns_send_udp(ldns_buffer *qbin, const struct sockaddr_storage *to, socklen_t to
 	if (bytes == -1) {
 		dprintf("%s", "error with sending\n");
 		close(sockfd);
-		return NULL;
+		return LDNS_STATUS_ERR;
 	}
 
 	if ((size_t) bytes != ldns_buffer_position(qbin)) {
 		dprintf("%s", "amount mismatch\n");
 		close(sockfd);
-		return NULL;
+		return LDNS_STATUS_ERR;
 	}
 	
 	/* wait for an response*/
 	answer = XMALLOC(uint8_t, MAX_PACKETLEN);
 	if (!answer) {
 		dprintf("%s", "respons alloc error\n");
-		return NULL;
+		return LDNS_STATUS_ERR;
 	}
 
 	bytes = recv(sockfd, answer, MAX_PACKETLEN, 0);
@@ -214,14 +215,15 @@ ldns_send_udp(ldns_buffer *qbin, const struct sockaddr_storage *to, socklen_t to
 			dprintf("%s", "socket timeout\n");
 		}
 		FREE(answer);
-		return NULL;
+		return LDNS_STATUS_ERR;
 	}
 	
 	/* resize accordingly */
 	answer = (uint8_t*)XREALLOC(answer, uint8_t *, (size_t) bytes);
 	*answer_size = (size_t) bytes;
 
-	return answer;
+	*result = answer;
+	return LDNS_STATUS_OK;
 }
 
 int

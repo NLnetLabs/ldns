@@ -617,9 +617,10 @@ ldns_resolver_send_pkt(ldns_pkt **answer, ldns_resolver *r, ldns_pkt *query_pkt)
 	uint8_t  retries;
 	ldns_pkt *answer_pkt = NULL;
 
+	/* TODO check status and decide to return error or try again? */
 	/* return NULL on error */
 	for (retries = ldns_resolver_retry(r); retries > 0; retries--) {
-		answer_pkt = ldns_send(r, query_pkt);
+		(void) ldns_send(&answer_pkt, r, query_pkt);
 		if (answer_pkt) {
 			break;
 		}
