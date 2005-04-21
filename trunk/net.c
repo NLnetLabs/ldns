@@ -135,7 +135,7 @@ ldns_send(ldns_pkt **result, ldns_resolver *r, ldns_pkt *query_pkt)
 		}
 
 		/* wait retrans seconds... */
-		sleep(ldns_resolver_retrans(r));
+		sleep((unsigned int) ldns_resolver_retrans(r));
 	}
 
 	if (tsig_mac && reply_bytes) {
