@@ -417,7 +417,7 @@ ldns_resolver_new(void)
 	ldns_resolver_set_domain(r, NULL);
 	ldns_resolver_set_defnames(r, false);
 	ldns_resolver_set_retry(r, 4);
-	ldns_resolver_set_retrans(r, 5);
+	ldns_resolver_set_retrans(r, 2);
 	ldns_resolver_set_fail(r, false);
 	ldns_resolver_set_edns_udp_size(r, 0);
 
