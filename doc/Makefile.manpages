@@ -1,4 +1,7 @@
 all:	function_manpages
 	echo "./doxyparse.pl -m function_manpages < ../ldns/*.h"
 	echo "This doesn't do anything yet"
+
+clean:
+	rm -rf man/
 	
