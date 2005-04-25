@@ -158,3 +158,6 @@ foreach (keys %manpages) {
 	close(MAN);
 	# link the other names to this filesname
 }
+
+print "\n";
+

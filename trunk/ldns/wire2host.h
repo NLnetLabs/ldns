@@ -99,7 +99,8 @@
 
 /**
  * Converts the data on the uint8_t bytearray (in wire format) to a DNS packet
- * The packet structure must be initialized with ldns_pkt_new().
+ * This function will initialize and allocate memory space for the packet 
+ * structure
  * 
  * @param packet pointer to the structure to hold the packet
  * @param data pointer to the buffer with the data
@@ -110,8 +111,9 @@ ldns_status ldns_wire2pkt(ldns_pkt **packet, const uint8_t *data, size_t len);
 
 /**
  * Converts the data on the uint8_t bytearray (in wire format) to a DNS 
- * rdata field
- * The rdf structure must be initialized with ldns_rdf_new().
+ * dname rdata field
+ * This function will initialize and allocate memory space for the dname
+ * structure
  * The length of the wiredata of this rdf is added to the *pos value.
  *
  * @param dname pointer to the structure to hold the rdata value
@@ -124,10 +126,28 @@ ldns_status ldns_wire2pkt(ldns_pkt **packet, const uint8_t *data, size_t len);
 ldns_status ldns_wire2dname(ldns_rdf **dname, const uint8_t *wire, size_t max, 
                        size_t *pos);
 
+
+/**
+ * Converts the data on the uint8_t bytearray (in wire format) to a DNS 
+ * rdata field, and adds it to the list of rdfs in the given rr
+ * This function will initialize and allocate memory space for the dname
+ * structure
+ * The length of the wiredata of this rdf is added to the *pos value.
+ *
+ * @param rr pointer to the ldns_rr structure to hold the rdata value
+ * @param wire pointer to the buffer with the data
+ * @param max the length of the data buffer (in bytes)
+ * @param pos the position of the rdf in the buffer (ie. the number of bytes 
+ *            from the start of the buffer)
+ * @return LDNS_STATUS_OK if everything succeeds, error otherwise
+ */
+ldns_status ldns_wire2rdf(ldns_rr *rr, const uint8_t *wire, size_t max, size_t *pos);
+
 /**
  * Converts the data on the uint8_t bytearray (in wire format) to a DNS 
  * resource records
- * The rr structure must be initialized with ldns_rr_new().
+ * This function will initialize and allocate memory space for the rr
+ * structure
  * The length of the wiredata of this rr is added to the *pos value.
  * 
  * @param rr pointer to the structure to hold the rdata value
