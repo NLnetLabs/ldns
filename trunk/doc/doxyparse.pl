@@ -53,8 +53,6 @@ FITNESS FOR A PARTICULAR PURPOSE.
 \\fBRFC1035\\fR, \\fBRFC4033\\fR, \\fBRFC4034\\fR, \\fBRFC4035\\fR.
 ";
 
-
-
 getopts("m:",\%options);
 # if -m manpage file is given process that file
 # parse the file which tells us what manpages go together
@@ -78,6 +76,10 @@ if (defined $options{'m'}) {
 
 # 0 - somewhere in the file
 # 1 - in a doxygen par
+
+# create our pwd
+mkdir "man";
+mkdir "man/man$MAN_SECTION";
 
 $state = 0;
 while(<>) {
@@ -128,26 +130,30 @@ foreach (keys %manpages) {
 	$a = $manpages{$_};
 
 	$filename = @$a[0];
+	$filename = "man/man$MAN_SECTION/$filename.$MAN_SECTION";
+	print $filename,"\n";
+	open (MAN, ">$filename") or die "Can not open $filename";
 
-	print $MAN_HEADER;
+	print MAN  $MAN_HEADER;
 
-	print ".SH NAME\n";
-	print join ", ", @$a;
-	print "\n\n";
+	print MAN  ".SH NAME\n";
+	print MAN  join ", ", @$a;
+	print MAN  "\n\n";
 	
-	print ".SH SYNOPSIS\n";
-	print "#include <ldns/ldns.h>\n";
-	print ".PP\n";
+	print MAN  ".SH SYNOPSIS\n";
+	print MAN  "#include <ldns/ldns.h>\n";
+	print MAN  ".PP\n";
 	foreach $function (@$a) {
-		print $return{$function}, " ", $function;
-		print "(", $api{$function},");\n";
-		print ".PP\n";
+		print MAN  $return{$function}, " ", $function;
+		print MAN  "(", $api{$function},");\n";
+		print MAN  ".PP\n";
 	}
-	print "\n.SH DESCRIPTION\n";
+	print MAN  "\n.SH DESCRIPTION\n";
 	foreach $function (@$a) {
-		print "\\fI", $function, "\\fR", ":"; 
-		print $description{$function};
-		print "\n.PP\n";
+		print MAN  "\\fI", $function, "\\fR", ":"; 
+		print MAN  $description{$function};
+		print MAN  "\n.PP\n";
 	}
-	print $MAN_FOOTER;
+	print MAN  $MAN_FOOTER;
+	close(MAN);
 }
