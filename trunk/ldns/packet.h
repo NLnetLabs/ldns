@@ -120,64 +120,66 @@ enum ldns_enum_pkt_type {
 typedef enum ldns_enum_pkt_type ldns_pkt_type;
 
 /* prototypes */
-uint16_t ldns_pkt_id(const ldns_pkt *);
-bool ldns_pkt_qr(const ldns_pkt *);
-bool ldns_pkt_aa(const ldns_pkt *);
-bool ldns_pkt_tc(const ldns_pkt *);
-bool ldns_pkt_rd(const ldns_pkt *);
-bool ldns_pkt_cd(const ldns_pkt *);
-bool ldns_pkt_ra(const ldns_pkt *);
-bool ldns_pkt_ad(const ldns_pkt *);
+/* read */
+uint16_t ldns_pkt_id(const ldns_pkt *p);
+bool ldns_pkt_qr(const ldns_pkt *p);
+bool ldns_pkt_aa(const ldns_pkt *p);
+bool ldns_pkt_tc(const ldns_pkt *p);
+bool ldns_pkt_rd(const ldns_pkt *p);
+bool ldns_pkt_cd(const ldns_pkt *p);
+bool ldns_pkt_ra(const ldns_pkt *p);
+bool ldns_pkt_ad(const ldns_pkt *p);
 
+uint8_t ldns_pkt_opcode(const ldns_pkt *p);
+uint8_t ldns_pkt_rcode(const ldns_pkt *p);
+uint16_t ldns_pkt_qdcount(const ldns_pkt *p);
+uint16_t ldns_pkt_ancount(const ldns_pkt *p);
+uint16_t ldns_pkt_nscount(const ldns_pkt *p);
+uint16_t ldns_pkt_arcount(const ldns_pkt *p);
+ldns_rdf *ldns_pkt_answerfrom(const ldns_pkt *p);
+char *ldns_pkt_when(const ldns_pkt *p);
+uint32_t ldns_pkt_querytime(const ldns_pkt *p);
+size_t ldns_pkt_size(const ldns_pkt *p);
+ldns_rr *ldns_pkt_tsig(const ldns_pkt *p);
+
+ldns_rr_list *ldns_pkt_question(const ldns_pkt *p);
+ldns_rr_list *ldns_pkt_answer(const ldns_pkt *p);
+ldns_rr_list *ldns_pkt_authority(const ldns_pkt *p);
+ldns_rr_list *ldns_pkt_additional(const ldns_pkt *p);
+ldns_rr_list *ldns_pkt_xxsection(ldns_pkt *p, ldns_pkt_section s);
+ldns_rr_list *ldns_pkt_rr_list_by_name(ldns_pkt *p, ldns_rdf *r, ldns_pkt_section s);
+ldns_rr_list *ldns_pkt_rr_list_by_type(ldns_pkt *p, ldns_rr_type t, ldns_pkt_section s);
+ldns_rr_list *ldns_pkt_rr_list_by_name_and_type(ldns_pkt *packet, ldns_rdf *ownername, ldns_rr_type type, ldns_pkt_section sec);
+
+/* write */
 /**
  * Set the flags in a packet
- *
- * \param[in] packet the packet to operate on
+ * \param[in] pkt the packet to operate on
  * \param[in] flags ORed values: LDNS_QR| LDNS_AR for instance
  * \return true on success otherwise false
  */
-bool ldns_pkt_set_flags(ldns_pkt *, uint16_t);
-uint8_t ldns_pkt_opcode(const ldns_pkt *);
-uint8_t ldns_pkt_rcode(const ldns_pkt *);
-uint16_t ldns_pkt_qdcount(const ldns_pkt *);
-uint16_t ldns_pkt_ancount(const ldns_pkt *);
-uint16_t ldns_pkt_nscount(const ldns_pkt *);
-uint16_t ldns_pkt_arcount(const ldns_pkt *);
-ldns_rdf *ldns_pkt_answerfrom(const ldns_pkt *);
-char *ldns_pkt_when(const ldns_pkt *);
-uint32_t ldns_pkt_querytime(const ldns_pkt *);
-size_t ldns_pkt_size(const ldns_pkt *);
-ldns_rr *ldns_pkt_tsig(const ldns_pkt *);
+bool ldns_pkt_set_flags(ldns_pkt *pkt, uint16_t flags);
 
-ldns_rr_list *ldns_pkt_question(const ldns_pkt *);
-ldns_rr_list *ldns_pkt_answer(const ldns_pkt *);
-ldns_rr_list *ldns_pkt_authority(const ldns_pkt *);
-ldns_rr_list *ldns_pkt_additional(const ldns_pkt *);
-ldns_rr_list *ldns_pkt_xxsection(ldns_pkt *, ldns_pkt_section);
-ldns_rr_list *ldns_pkt_rr_list_by_name(ldns_pkt *, ldns_rdf *, ldns_pkt_section);
-ldns_rr_list *ldns_pkt_rr_list_by_type(ldns_pkt *, ldns_rr_type, ldns_pkt_section);
-ldns_rr_list *ldns_pkt_rr_list_by_name_and_type(ldns_pkt *packet, ldns_rdf *ownername, ldns_rr_type type, ldns_pkt_section sec);
-
-void ldns_pkt_set_id(ldns_pkt *, uint16_t);
-void ldns_pkt_set_qr(ldns_pkt *, bool);
-void ldns_pkt_set_aa(ldns_pkt *, bool);
-void ldns_pkt_set_tc(ldns_pkt *, bool);
-void ldns_pkt_set_rd(ldns_pkt *, bool);
-void ldns_pkt_set_cd(ldns_pkt *, bool);
-void ldns_pkt_set_ra(ldns_pkt *, bool);
-void ldns_pkt_set_ad(ldns_pkt *, bool);
-void ldns_pkt_set_opcode(ldns_pkt *, uint8_t);
-void ldns_pkt_set_rcode(ldns_pkt *, uint8_t);
-void ldns_pkt_set_qdcount(ldns_pkt *, uint16_t);
-void ldns_pkt_set_ancount(ldns_pkt *, uint16_t);
-void ldns_pkt_set_nscount(ldns_pkt *, uint16_t);
-void ldns_pkt_set_arcount(ldns_pkt *, uint16_t);
-void ldns_pkt_set_answerfrom(ldns_pkt *, ldns_rdf *);
-void ldns_pkt_set_querytime(ldns_pkt *, uint32_t);
-void ldns_pkt_set_size(ldns_pkt *, size_t);
-void ldns_pkt_set_when(ldns_pkt *, char *);
-void ldns_pkt_set_xxcount(ldns_pkt *, ldns_pkt_section, uint16_t);
-void ldns_pkt_set_tsig(ldns_pkt *, ldns_rr *);
+void ldns_pkt_set_id(ldns_pkt *p, uint16_t id);
+void ldns_pkt_set_qr(ldns_pkt *p, bool b);
+void ldns_pkt_set_aa(ldns_pkt *p, bool b);
+void ldns_pkt_set_tc(ldns_pkt *p, bool b);
+void ldns_pkt_set_rd(ldns_pkt *p, bool b);
+void ldns_pkt_set_cd(ldns_pkt *p, bool b);
+void ldns_pkt_set_ra(ldns_pkt *p, bool b);
+void ldns_pkt_set_ad(ldns_pkt *p, bool b);
+void ldns_pkt_set_opcode(ldns_pkt *p, uint8_t c);
+void ldns_pkt_set_rcode(ldns_pkt *p, uint8_t c);
+void ldns_pkt_set_qdcount(ldns_pkt *p, uint16_t c);
+void ldns_pkt_set_ancount(ldns_pkt *p, uint16_t c);
+void ldns_pkt_set_nscount(ldns_pkt *p, uint16_t c);
+void ldns_pkt_set_arcount(ldns_pkt *p, uint16_t c);
+void ldns_pkt_set_answerfrom(ldns_pkt *p, ldns_rdf *r);
+void ldns_pkt_set_querytime(ldns_pkt *p, uint32_t t);
+void ldns_pkt_set_size(ldns_pkt *p, size_t s);
+void ldns_pkt_set_when(ldns_pkt *p, char *w);
+void ldns_pkt_set_xxcount(ldns_pkt *p, ldns_pkt_section s, uint16_t x);
+void ldns_pkt_set_tsig(ldns_pkt *p, ldns_rr *t);
 
 /**
  * look inside the packet to determine
@@ -185,7 +187,7 @@ void ldns_pkt_set_tsig(ldns_pkt *, ldns_rr *);
  * \param[in] p the packet to examine
  * \return the type of packet
  */
-ldns_pkt_type ldns_pkt_reply_type(ldns_pkt *);
+ldns_pkt_type ldns_pkt_reply_type(ldns_pkt *p);
 
 uint16_t ldns_pkt_edns_udp_size(const ldns_pkt *packet);
 uint8_t ldns_pkt_edns_extended_rcode(const ldns_pkt *packet);
@@ -211,22 +213,26 @@ void ldns_pkt_set_edns_data(ldns_pkt *packet, ldns_rdf *data);
 
 /**
  * Allocates and initializes a ldns_pkt structure
- *
- * @return pointer to the new packet
+ * \return pointer to the new packet
  */
 ldns_pkt *ldns_pkt_new();
 
 /**
  * Frees the packet structure and all data that it contains
- *
- * @param packet The packet structure to free
+ * \param[in] packet The packet structure to free
+ * \return void
  */
 void ldns_pkt_free(ldns_pkt *packet);
 
 /**
  * Creates a query packet for the given name, type, class
+ * \param[in] rr_name the name to query for (as string)
+ * \param[in] rr_type the type to query for
+ * \param[in] rr_class the class to query for
+ * \param[in] flags packet flags
+ * \return ldns_pkt* a pointer to the new pkt
  */
-ldns_pkt * ldns_pkt_query_new_frm_str(const char *, ldns_rr_type, ldns_rr_class, uint16_t);
+ldns_pkt * ldns_pkt_query_new_frm_str(const char *rr_name, ldns_rr_type rr_type, ldns_rr_class rr_class , uint16_t flags);
 
 /**
  * Create a packet with a query in it
@@ -236,7 +242,7 @@ ldns_pkt * ldns_pkt_query_new_frm_str(const char *, ldns_rr_type, ldns_rr_class,
  * \param[in] flags packet flags
  * \return ldns_pkt* a pointer to the new pkt
  */
-ldns_pkt * ldns_pkt_query_new(ldns_rdf *, ldns_rr_type, ldns_rr_class, uint16_t);
+ldns_pkt * ldns_pkt_query_new(ldns_rdf *rr_name, ldns_rr_type rr_type, ldns_rr_class rr_class, uint16_t flags);
 
 #define MAX_PACKETLEN         65535
 
