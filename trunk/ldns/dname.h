@@ -46,6 +46,7 @@ uint8_t         ldns_dname_label_count(ldns_rdf *r);
  * \return ldns_rdf*
  */
 ldns_rdf	*ldns_dname_new_frm_str(const char *str);
+
 ldns_rdf	*ldns_dname_new_frm_data(uint16_t size, const void *data);
 /**
  * Put a dname into canonical fmt - ie. lowercase it
