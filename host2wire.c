@@ -146,7 +146,7 @@ ldns_rr_rdata2buffer_wire(ldns_buffer *buffer, ldns_rr *rr)
 	return ldns_buffer_status(buffer);
 }
 
-/**
+/*
  * Copies the packet header data to the buffer in wire format
  */
 static ldns_status

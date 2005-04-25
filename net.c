@@ -282,10 +282,6 @@ ldns_tcp_send_query(ldns_buffer *qbin, int sockfd, const struct sockaddr_storage
 	return bytes;
 }
 
-/**
- * Creates a new ldns_pkt structure and reads the header data from the given
- * socket
- */
 uint8_t *
 ldns_tcp_read_wire(int sockfd, size_t *size)
 {

@@ -64,6 +64,15 @@ ldns_status ldns_send(ldns_pkt **, ldns_resolver *r, ldns_pkt *query_pkt);
 int ldns_tcp_connect(const struct sockaddr_storage *to, socklen_t tolen, struct timeval timeout);
 
 ssize_t ldns_tcp_send_query(ldns_buffer *qbin, int sockfd, const struct sockaddr_storage *to, socklen_t tolen);
+
+/**
+ * Creates a new ldns_pkt structure and reads the header data from the given
+ * socket. Allocates the data (of size size) itself, so don't forget to free
+ *
+ * \param[in] sockfd the socket to read from
+ * \param[out] size the number of bytes that are read
+ * \return the data read
+ */
 uint8_t *ldns_tcp_read_wire(int sockfd, size_t *size);
 
 #endif  /* !_LDNS_NET_H */

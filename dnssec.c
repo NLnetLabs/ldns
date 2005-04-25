@@ -396,7 +396,7 @@ ldns_key_buf2rsa(ldns_buffer *key)
 	return rsa;
 }
 
-/**
+/*
  *  Makes an exact copy of the wire, but with the tsig rr removed
  */
 uint8_t *

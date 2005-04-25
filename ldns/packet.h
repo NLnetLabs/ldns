@@ -128,6 +128,14 @@ bool ldns_pkt_rd(const ldns_pkt *);
 bool ldns_pkt_cd(const ldns_pkt *);
 bool ldns_pkt_ra(const ldns_pkt *);
 bool ldns_pkt_ad(const ldns_pkt *);
+
+/**
+ * Set the flags in a packet
+ *
+ * \param[in] packet the packet to operate on
+ * \param[in] flags ORed values: LDNS_QR| LDNS_AR for instance
+ * \return true on success otherwise false
+ */
 bool ldns_pkt_set_flags(ldns_pkt *, uint16_t);
 uint8_t ldns_pkt_opcode(const ldns_pkt *);
 uint8_t ldns_pkt_rcode(const ldns_pkt *);
@@ -170,6 +178,13 @@ void ldns_pkt_set_size(ldns_pkt *, size_t);
 void ldns_pkt_set_when(ldns_pkt *, char *);
 void ldns_pkt_set_xxcount(ldns_pkt *, ldns_pkt_section, uint16_t);
 void ldns_pkt_set_tsig(ldns_pkt *, ldns_rr *);
+
+/**
+ * look inside the packet to determine
+ * what kind of packet it is, AUTH, NXDOMAIN, REFERRAL, etc.
+ * \param[in] p the packet to examine
+ * \return the type of packet
+ */
 ldns_pkt_type ldns_pkt_reply_type(ldns_pkt *);
 
 uint16_t ldns_pkt_edns_udp_size(const ldns_pkt *packet);
@@ -177,6 +192,16 @@ uint8_t ldns_pkt_edns_extended_rcode(const ldns_pkt *packet);
 uint8_t ldns_pkt_edns_version(const ldns_pkt *packet);
 uint16_t ldns_pkt_edns_z(const ldns_pkt *packet);
 ldns_rdf *ldns_pkt_edns_data(const ldns_pkt *packet);
+
+/**
+ * Returns true if this packet needs and EDNS rr to be sent
+ * At the moment the only reason is an expected packet
+ * size larger than 512 bytes, but for instance dnssec would
+ * be a good reason too
+ *
+ * \param[in] packet the packet to check
+ * \return true if packet needs edns rr
+ */
 bool ldns_pkt_edns(const ldns_pkt *packet);
 void ldns_pkt_set_edns_udp_size(ldns_pkt *packet, uint16_t s);
 void ldns_pkt_set_edns_extended_rcode(ldns_pkt *packet, uint8_t c);
@@ -202,6 +227,15 @@ void ldns_pkt_free(ldns_pkt *packet);
  * Creates a query packet for the given name, type, class
  */
 ldns_pkt * ldns_pkt_query_new_frm_str(const char *, ldns_rr_type, ldns_rr_class, uint16_t);
+
+/**
+ * Create a packet with a query in it
+ * \param[in] rr_name the name to query for
+ * \param[in] rr_type the type to query for
+ * \param[in] rr_class the class to query for
+ * \param[in] flags packet flags
+ * \return ldns_pkt* a pointer to the new pkt
+ */
 ldns_pkt * ldns_pkt_query_new(ldns_rdf *, ldns_rr_type, ldns_rr_class, uint16_t);
 
 #define MAX_PACKETLEN         65535

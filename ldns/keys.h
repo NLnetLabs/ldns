@@ -88,6 +88,13 @@ typedef struct ldns_struct_key_list ldns_key_list;
 /* creator functions */
 ldns_key_list * ldns_key_list_new();
 ldns_key *ldns_key_new();
+
+/**
+ * Generates a new key based on the algorithm
+ *
+ * \param[in] a The algorithm to use
+ * \param[in] size
+ */
 ldns_key * ldns_key_new_frm_algorithm(ldns_signing_algorithm a, uint16_t size);
 
 /* acces write functions */
@@ -131,6 +138,12 @@ ldns_rdf * ldns_key_pubkey_owner(ldns_key *k);
  */
 ldns_key * ldns_key_list_pop_key(ldns_key_list *key_list);
 
+/** 
+ * convert a ldns_key to a public key rr
+ *
+ * \param[in] k the ldns_key to convert
+ * \return ldns_rr representation of the key
+ */
 ldns_rr * ldns_key2rr(ldns_key *k);
 uint16_t ldns_key_flags(ldns_key *k);
 

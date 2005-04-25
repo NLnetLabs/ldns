@@ -145,7 +145,7 @@ ldns_str2rdf_int8(ldns_rdf **rd, const char *bytestr)
         }
 }
 
-/**
+/*
  * No special care is taken, all dots are translated into
  * label seperators.
  * \todo make this more efficient...
