@@ -54,9 +54,6 @@ ldns_key_new()
 	}
 }
 
-/**
- * generate a new key based on the algorithm
- */
 ldns_key *
 ldns_key_new_frm_algorithm(ldns_signing_algorithm alg, uint16_t size)
 {
@@ -321,7 +318,7 @@ ldns_key_dsa2bin(unsigned char *data, DSA *k, uint16_t *size)
 		return false;
 	}
 
-	/**size = 64 + (T * 8); */
+	/* size = 64 + (T * 8); */
 	data[0] = (unsigned char)T;
 	BN_bn2bin(k->q, data + 1 ); 		/* 20 octects */
 	BN_bn2bin(k->p, data + 21 ); 		/* offset octects */
@@ -331,9 +328,6 @@ ldns_key_dsa2bin(unsigned char *data, DSA *k, uint16_t *size)
 	return true;
 }
 
-/** 
- * convert a ldns_key to a public key rr
- */
 ldns_rr *
 ldns_key2rr(ldns_key *k)
 {

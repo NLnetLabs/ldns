@@ -302,7 +302,7 @@ ldns_pkt_rr_list_by_name_and_type(ldns_pkt *packet, ldns_rdf *ownername, ldns_rr
 	return ret;
 }
 
-/** 
+/**
  * check to see if an rr exist in the packet
  * \param[in] pkt the packet to examine
  * \param[in] sec in which section to look
@@ -611,12 +611,6 @@ ldns_pkt_safe_push_rr(ldns_pkt *pkt, ldns_pkt_section sec, ldns_rr *rr)
 	return ldns_pkt_push_rr(pkt, sec, rr);
 }
 
-/**
- * Returns true if this packet needs and EDNS rr to be sent
- * At the moment the only reason is an expected packet
- * size larger than 512 bytes, but for instance dnssec would
- * be a good reason too
- */
 bool
 ldns_pkt_edns(const ldns_pkt *pkt) {
 	return (ldns_pkt_edns_udp_size(pkt) > 0 ||
@@ -693,12 +687,6 @@ ldns_pkt_free(ldns_pkt *packet)
 	}
 }
 
-/**
- * Set the flags in a packet
- * \param[in] packet the packet to operate on
- * \param[in] flags ORed values: LDNS_QR| LDNS_AR for instance
- * \return true on success otherwise false
- */
 bool
 ldns_pkt_set_flags(ldns_pkt *packet, uint16_t flags)
 {
@@ -777,14 +765,6 @@ ldns_pkt_query_new_frm_str(const char *name, ldns_rr_type rr_type, ldns_rr_class
 	return packet;
 }
 
-/**
- * Create a packet with a query in it
- * \param[in] rr_name the name to query for
- * \param[in] rr_type the type to query for
- * \param[in] rr_class the class to query for
- * \param[in] flags packet flags
- * \return ldns_pkt* a pointer to the new pkt
- */
 ldns_pkt *
 ldns_pkt_query_new(ldns_rdf *rr_name, ldns_rr_type rr_type, ldns_rr_class rr_class,
 		uint16_t flags)
@@ -824,12 +804,6 @@ ldns_pkt_query_new(ldns_rdf *rr_name, ldns_rr_type rr_type, ldns_rr_class rr_cla
 	return packet;
 }
 
-/**
- * look inside the packet to determine
- * what kind of packet it is, AUTH, NXDOMAIN, REFERRAL, etc.
- * \param[in] p the packet to examine
- * \return the type of packet
- */
 ldns_pkt_type
 ldns_pkt_reply_type(ldns_pkt *p)
 {
