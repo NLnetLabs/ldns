@@ -16,7 +16,7 @@
  * \param[in] bytestr the string to be converted
  * \return ldns_status
  */
-ldns_status ldns_str2rdf_int8(ldns_rdf **rd, const char *str);
+ldns_status ldns_str2rdf_int8(ldns_rdf **rd, const char *bytestr);
 
 /**
  * convert a string to a int16 in wireformat
@@ -24,7 +24,7 @@ ldns_status ldns_str2rdf_int8(ldns_rdf **rd, const char *str);
  * \param[in] shortstr the string to be converted
  * \return ldns_status
  */
-ldns_status ldns_str2rdf_int16(ldns_rdf **rd, const char *str);
+ldns_status ldns_str2rdf_int16(ldns_rdf **rd, const char *shortstr);
 
 /**
  * convert a strings into a 4 byte int in wireformat
@@ -32,7 +32,7 @@ ldns_status ldns_str2rdf_int16(ldns_rdf **rd, const char *str);
  * \param[in] longstr the string to be converted
  * \return ldns_status
  */
-ldns_status ldns_str2rdf_int32(ldns_rdf **rd, const char *str);
+ldns_status ldns_str2rdf_int32(ldns_rdf **rd, const char *longstr);
 
 /**
  * convert a time string to a time value in wireformat
@@ -40,11 +40,11 @@ ldns_status ldns_str2rdf_int32(ldns_rdf **rd, const char *str);
  * \param[in] time the string to be converted
  * \return ldns_status
  */
-ldns_status ldns_str2rdf_time(ldns_rdf **rd, const char *str);
+ldns_status ldns_str2rdf_time(ldns_rdf **rd, const char *time);
 
 /* convert a time period (think TTL's) to wireformat) 
- * \param[in] 
- * \param[in]
+ * \param[in] rd the rdf where to put the data
+ * \param[in] str the string to be converted
  * return ldns_status
  */
 ldns_status ldns_str2rdf_period(ldns_rdf **rd, const char *str);

@@ -34,7 +34,7 @@ ldns_get_rr_list_addr_by_name(ldns_resolver *r, ldns_rdf *name, ldns_rr_class c,
  * ask the resolver about the address
  * and return the name
  * \param[in] r the resolver to use
- * \param[in] name the name to look for
+ * \param[in] addr the addr to look for
  * \param[in] c the class to use
  * \param[in] flags give some optional flags to the query
  */
