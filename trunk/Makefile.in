@@ -1,6 +1,7 @@
 # Standard installation pathnames
 # See the file LICENSE for the license
 SHELL 		= @SHELL@
+VERSION         = @PACKAGE_VERSION@
 srcdir 		= @srcdir@
 basesrcdir	= $(shell basename `pwd`)
 prefix  	= @prefix@
