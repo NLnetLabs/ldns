@@ -245,7 +245,7 @@ ldns_rdf 	*ldns_native2rdf_int16_data(uint16_t size, uint8_t *data);
 /**
  * reverse an rdf, only actually usefull for AAAA and A records
  * the returned rdf has the type LDNS_RDF_TYPE_DNAME!
- * \param[in] *rdf rdf to be reversed
+ * \param[in] *rd rdf to be reversed
  * \return the reversed rdf (a newly created rdf)
  */
 ldns_rdf	*ldns_rdf_address_reverse(ldns_rdf *rd);
@@ -299,19 +299,19 @@ ldns_status     ldns_octet(char *word, size_t *length);
 
 /**
  * clone a rdf structure. The data is copied
- * \param[in] r rdf to be copied
+ * \param[in] rd rdf to be copied
  * \return a new rdf structure
  */
-ldns_rdf	*ldns_rdf_deep_clone(const ldns_rdf *);
+ldns_rdf	*ldns_rdf_deep_clone(const ldns_rdf *rd);
 
 /**
- * Compare two rdf's
+ * Compare two rdf's. Order is canonical.
  * \param[in] rd1 the first one
  * \param[in] rd2 the second one
  * \return 0 if equal
- *         -1 if rd1 comes before rd2
- *         +1 if rd2 comes before rd1
+ * \return -1 if rd1 comes before rd2
+ * \return +1 if rd2 comes before rd1
  */
-int		ldns_rdf_compare(const ldns_rdf *, const ldns_rdf *);
+int		ldns_rdf_compare(const ldns_rdf *rd1, const ldns_rdf *rd2);
 
 #endif	/* !_LDNS_RDATA_H */

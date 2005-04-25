@@ -196,7 +196,7 @@ ldns_status ldns_str2rdf_nsap(ldns_rdf **rd, const char *str);
 
 /**
  * convert a dname string into wireformat
- * \param[in] d the rdf where to put the data
+ * \param[in] rd the rdf where to put the data
  * \param[in] str the string to be converted
  * \return ldns_status
  */
