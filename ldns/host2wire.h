@@ -50,6 +50,10 @@ ldns_status ldns_rr_list2buffer_wire(ldns_buffer *, ldns_rr_list *);
  * given rdf in that array. The result_size value contains the
  * length of the array, if it succeeds, and 0 otherwise (in which case
  * the function also returns NULL)
+ *
+ * \param[out] dest pointer to the array of bytes to be created
+ * \param[in] rdf the rdata field to convert
+ * \param[out] size the size of the converted result
  */
 ldns_status ldns_rdf2wire(uint8_t **dest, const ldns_rdf *rdf, size_t *size);
 
@@ -61,6 +65,10 @@ ldns_status ldns_rdf2wire(uint8_t **dest, const ldns_rdf *rdf, size_t *size);
  *
  * If the section argument is LDNS_SECTION_QUESTION, data like ttl and rdata
  * are not put into the result
+ *
+ * \param[out] dest pointer to the array of bytes to be created
+ * \param[in] rr the rr to convert
+ * \param[out] size the size of the converted result
  */
 ldns_status ldns_rr2wire(uint8_t **dest, const ldns_rr *rr, int, size_t *size);
 
