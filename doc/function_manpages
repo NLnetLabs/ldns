@@ -1,0 +1,8 @@
+# first function name will be the real name of the manpage
+# other names are aliases (symlinks)
+
+# functions that must be included, separated by commas
+ldns_pkt_set_flags,ldns_pkt_set_id,ldns_pkt_set_qr,ldns_pkt_set_aa,ldns_pkt_set_tc,ldns_pkt_set_rd,ldns_pkt_set_cd,ldns_pkt_set_ra,ldns_pkt_set_ad
+#
+
+
