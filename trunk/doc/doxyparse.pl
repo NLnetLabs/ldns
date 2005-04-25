@@ -131,7 +131,7 @@ foreach (keys %manpages) {
 
 	$filename = @$a[0];
 	$filename = "man/man$MAN_SECTION/$filename.$MAN_SECTION";
-	print $filename,"\n";
+	print $filename," ";
 	open (MAN, ">$filename") or die "Can not open $filename";
 
 	print MAN  $MAN_HEADER;
@@ -156,4 +156,5 @@ foreach (keys %manpages) {
 	}
 	print MAN  $MAN_FOOTER;
 	close(MAN);
+	# link the other names to this filesname
 }
