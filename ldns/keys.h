@@ -86,7 +86,7 @@ typedef struct ldns_struct_key_list ldns_key_list;
 
 
 /* creator functions */
-ldns_key_list * ldns_key_list_new();
+ldns_key_list *ldns_key_list_new();
 ldns_key *ldns_key_new();
 
 /**
@@ -95,7 +95,7 @@ ldns_key *ldns_key_new();
  * \param[in] a The algorithm to use
  * \param[in] size
  */
-ldns_key * ldns_key_new_frm_algorithm(ldns_signing_algorithm a, uint16_t size);
+ldns_key *ldns_key_new_frm_algorithm(ldns_signing_algorithm a, uint16_t size);
 
 /* acces write functions */
 void ldns_key_set_algorithm(ldns_key *k, ldns_signing_algorithm l);
@@ -120,23 +120,23 @@ bool ldns_key_list_push_key(ldns_key_list *key_list, ldns_key *key);
 
 /* access read functions */
 size_t ldns_key_list_key_count(ldns_key_list *key_list);
-ldns_key * ldns_key_list_key(ldns_key_list *key, size_t nr);
-RSA * ldns_key_rsa_key(ldns_key *k);
-DSA * ldns_key_dsa_key(ldns_key *k);
+ldns_key *ldns_key_list_key(ldns_key_list *key, size_t nr);
+RSA *ldns_key_rsa_key(ldns_key *k);
+DSA *ldns_key_dsa_key(ldns_key *k);
 ldns_signing_algorithm ldns_key_algorithm(ldns_key *k);
-unsigned char * ldns_key_hmac_key(ldns_key *k);
+unsigned char *ldns_key_hmac_key(ldns_key *k);
 uint32_t ldns_key_origttl(ldns_key *k);
 uint32_t ldns_key_inception(ldns_key *k);
 uint32_t ldns_key_expiration(ldns_key *k);
 uint16_t ldns_key_keytag(ldns_key *k);
-ldns_rdf * ldns_key_pubkey_owner(ldns_key *k);
+ldns_rdf *ldns_key_pubkey_owner(ldns_key *k);
 
 /**     
  * Pops the last rr from a keylist
  * \param[in] key_list the rr_list to pop from
  * \return NULL if nothing to pop. Otherwise the popped RR
  */
-ldns_key * ldns_key_list_pop_key(ldns_key_list *key_list);
+ldns_key *ldns_key_list_pop_key(ldns_key_list *key_list);
 
 /** 
  * convert a ldns_key to a public key rr
@@ -144,7 +144,7 @@ ldns_key * ldns_key_list_pop_key(ldns_key_list *key_list);
  * \param[in] k the ldns_key to convert
  * \return ldns_rr representation of the key
  */
-ldns_rr * ldns_key2rr(ldns_key *k);
+ldns_rr *ldns_key2rr(ldns_key *k);
 uint16_t ldns_key_flags(ldns_key *k);
 
 #endif /* _LDNS_KEYS_H */

@@ -63,7 +63,7 @@ ssize_t ldns_bget_keyword_data(ldns_buffer *b, const char *keyword, const char *
  * \param[in] str the string to remove the comments from. String must be * writeable
  * \return the new string
  */
-char * ldns_str_remove_comment(char *str);
+char *ldns_str_remove_comment(char *str);
 
 /**
  * Get the next character from a buffer. Advance the position pointer with 1.
