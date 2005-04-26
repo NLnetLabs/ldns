@@ -102,7 +102,7 @@ while(<>) {
 		s/^[ \t]*\*[ \t]*//;
 		$description = $description . "\n.br\n" . $_;
 	}
-	if (/(.*)[\t ]+(.*?)\((.*)\);/ and $state == 2) {
+	if (/([\w\*]*)[\t ]+(.*?)\((.*)\);/ and $state == 2) {
 		# this should also end the current comment parsing
 		$return = $1;
 		$key = $2;
