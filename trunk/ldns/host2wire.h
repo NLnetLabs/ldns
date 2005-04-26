@@ -43,6 +43,8 @@ ldns_status ldns_rr_rdata2buffer_wire(ldns_buffer *output, ldns_rr *rr);
  * \return ldns_status
  */
 ldns_status ldns_pkt2buffer_wire(ldns_buffer *output, const ldns_pkt *pkt);
+
+
 ldns_status ldns_rr_list2buffer_wire(ldns_buffer *, ldns_rr_list *);
 
 /**
@@ -79,7 +81,5 @@ ldns_status ldns_rr2wire(uint8_t **dest, const ldns_rr *rr, int, size_t *size);
  * the function also returns NULL)
  */
 ldns_status ldns_pkt2wire(uint8_t **dest, const ldns_pkt *, size_t *);
-
-
 
 #endif
