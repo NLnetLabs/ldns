@@ -401,13 +401,13 @@ void ldns_rr_list_set_rr_count(ldns_rr_list *rr_list, uint16_t count);
  * \param[in] nr return this rr
  * \return the rr at position nr
  */
-ldns_rr * ldns_rr_list_rr(ldns_rr_list *rr_list, uint16_t nr);
+ldns_rr* ldns_rr_list_rr(ldns_rr_list *rr_list, uint16_t nr);
 
 /**
  * create a new rr_list strcture
  * \return a new rr_list structure
  */
-ldns_rr_list * ldns_rr_list_new();
+ldns_rr_list* ldns_rr_list_new();
 
 /**
  * free an rr_list structure
@@ -422,7 +422,7 @@ void ldns_rr_list_free(ldns_rr_list *rr_list);
  * \param[in] right the rightside
  * \return a new rr_list with leftside/rightside concatenated
  */
-ldns_rr_list * ldns_rr_list_cat(ldns_rr_list *left, ldns_rr_list *right);
+ldns_rr_list* ldns_rr_list_cat(ldns_rr_list *left, ldns_rr_list *right);
 
 /**
  * push an  rr to a rrlist
@@ -437,7 +437,7 @@ bool ldns_rr_list_push_rr(ldns_rr_list *rr_list, ldns_rr *rr);
  * \param[in] rr_list the rr_list to pop from
  * \return NULL if nothing to pop. Otherwise the popped RR
  */
-ldns_rr * ldns_rr_list_pop_rr(ldns_rr_list *rr_list);
+ldns_rr* ldns_rr_list_pop_rr(ldns_rr_list *rr_list);
 
 /**
  * check if an rr_list is a rrset
@@ -461,7 +461,7 @@ bool ldns_rr_set_push_rr(ldns_rr_list *rr_list, ldns_rr *rr);
  * \return NULL if nothing to pop. Otherwise the popped RR
  *
  */
-ldns_rr * ldns_rr_set_pop_rr(ldns_rr_list *rr_list);
+ldns_rr* ldns_rr_set_pop_rr(ldns_rr_list *rr_list);
 
 
 /**
@@ -483,14 +483,14 @@ ldns_rr_class ldns_get_rr_class_by_name(const char *name);
  * \param[in] rr the rr to clone
  * \return the new rr or NULL on failure
  */
-ldns_rr * ldns_rr_deep_clone(const ldns_rr *rr);
+ldns_rr* ldns_rr_deep_clone(const ldns_rr *rr);
 
 /**
  * Clone an rr list
  * \param[in] rrlist the rrlist to clone
  * \return the cloned rr list
  */
-ldns_rr_list * ldns_rr_list_deep_clone(ldns_rr_list *rrlist);
+ldns_rr_list* ldns_rr_list_deep_clone(ldns_rr_list *rrlist);
 
 /**
  * sort an rr_list. the sorting is done inband

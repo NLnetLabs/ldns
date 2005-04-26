@@ -81,21 +81,21 @@ RSA *ldns_key_buf2rsa(ldns_buffer *key);
  * Verifies the tsig rr for the given packet and key (string?)
  * wire must be given too because tsig does not sign normalized packet
  * packet is still given (and used, but could be constructed from wire)
-   remove that?
- * @return true if tsig is correct, false if not, or if tsig is not set
+ * remove that?
+ * \return true if tsig is correct, false if not, or if tsig is not set
  */
 bool ldns_pkt_tsig_verify(ldns_pkt *pkt, uint8_t *wire, size_t wire_size, const char *key_name, const char *key_data, ldns_rdf *mac);
 
 /**
  * Creates a tsig rr for the given packet and key (string?)
  *
- * @param pkt the packet to sign
- * @param key_name the name of the shared key
- * @param key_data the key in base 64 format
- * @param fudge seconds of error permitted in time signed
- * @param algorithm_name the name of the algorithm used (TODO more than only hmac-md5.sig-alg.reg.int.?)
- * @param query_mac is added to the digest if not NULL (so NULL is for signing queries, not NULL is for signing answers)
- * @return status (OK if success)
+ * \param[in] pkt the packet to sign
+ * \param[in] key_name the name of the shared key
+ * \param[in]key_data the key in base 64 format
+ * \param[in] fudge seconds of error permitted in time signed
+ * \param[in] algorithm_name the name of the algorithm used (TODO more than only hmac-md5.sig-alg.reg.int.?)
+ * \param[in] query_mac is added to the digest if not NULL (so NULL is for signing queries, not NULL is for signing answers)
+ * \return status (OK if success)
  */
 ldns_status ldns_pkt_tsig_sign(ldns_pkt *pkt, const char *key_name, const char *key_data, uint16_t fudge, const char *algorithm_name, ldns_rdf *query_mac);
 
