@@ -100,7 +100,8 @@ while(<>) {
 	if ($state == 1) {
 		# inside doxygen 
 		s/^[ \t]*\*[ \t]*//;
-		$description = $description . "\n" . $_;
+		#$description = $description . "\n" . $_;
+		$description = $description . "\n.br\n" . $_;
 	}
 	if (/([\w\*]*)[\t ]+(.*?)\((.*)\);/ and $state == 2) {
 		# this should also end the current comment parsing
