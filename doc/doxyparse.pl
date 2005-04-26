@@ -31,7 +31,7 @@ my %options;
 my %manpages;
 
 my $MAN_SECTION = "3";
-my $MAN_HEADER = ".TH \"ldns \-  a generic DNS(SEC) library\" \"25 Apr 2005\"\n";
+my $MAN_HEADER = ".TH ldns  \"25 Apr 2005\"\n";
 my $MAN_FOOTER = ".SH AUTHOR
 The ldns team at NLnet Labs. Which consists out of: Jelte Jansen, Erik
 Rozendaal and Miek Gieben.
