@@ -42,7 +42,7 @@ ssize_t ldns_fget_keyword_data(FILE *f, const char *keyword, const char *k_del, 
  * Get a token/char from the stream b.
  * This function deals with ( and ) in the stream,
  * and ignore \n when it finds them.
- * \param[in] *f the file to read from
+ * \param[in] *b the file to read from
  * \param[out] *token the read token is put here
  * \param[in] *delim chars at which the parsing should stop
  * \param[in] *limit how much to read. If 0 use builtin maximum
@@ -60,7 +60,7 @@ ssize_t ldns_bget_keyword_data(ldns_buffer *b, const char *keyword, const char *
  * Remove comments from a string. A comment = ';'.
  * Go on with this until one reaches a newline (\n).
  * The comments are replaces with spaces.
- * \param[in] the string to remove the comments from. String must be * writeable
+ * \param[in] str the string to remove the comments from. String must be * writeable
  * \return the new string
  */
 char * ldns_str_remove_comment(char *str);

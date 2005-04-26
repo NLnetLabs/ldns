@@ -130,7 +130,7 @@ ldns_status ldns_wire2dname(ldns_rdf **dname, const uint8_t *wire, size_t max, s
  * The length of the wiredata of this rdf is added to the *pos value.
  *
  * \param[in] rr pointer to the ldns_rr structure to hold the rdata value
- * \param[in]wire pointer to the buffer with the data
+ * \param[in] wire pointer to the buffer with the data
  * \param[in] max the length of the data buffer (in bytes)
  * \param[in] pos the position of the rdf in the buffer (ie. the number of bytes 
  *            from the start of the buffer)
