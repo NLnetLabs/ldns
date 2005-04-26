@@ -225,7 +225,7 @@ ldns_status ldns_rdf2buffer_str_int16(ldns_buffer *output, ldns_rdf *rdf);
 /**
  * Converts the data in the rdata field to presentation format and
  * returns that as a char *.
- * Remeber to free it
+ * Remember to free it.
  *
  * \param[in] rdf The rdata field to convert
  * \return null terminated char * data, or NULL on error
@@ -235,7 +235,7 @@ char *ldns_rdf2str(ldns_rdf *rdf);
 /**
  * Converts the data in the resource record to presentation format and
  * returns that as a char *.
- * Remeber to free it
+ * Remember to free it.
  *
  * \param[in] rr The rdata field to convert
  * \return null terminated char * data, or NULL on error
@@ -245,7 +245,7 @@ char *ldns_rr2str(ldns_rr *rr);
 /**
  * Converts the data in the DNS packet to presentation format and
  * returns that as a char *.
- * Remeber to free it
+ * Remember to free it.
  *
  * \param[in] pkt The rdata field to convert
  * \return null terminated char * data, or NULL on error
