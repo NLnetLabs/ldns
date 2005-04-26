@@ -104,6 +104,7 @@ run-test19:	run-test19.o $(LIBDNS_OBJECTS) $(LIBOBJS)
 
 doc:	
 	doxygen libdns.doxygen
+	(cd doc; make)
 
 clean:	
 	rm -f *.o *.d *.lo

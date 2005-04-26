@@ -45,7 +45,7 @@ ldns_status ldns_rr_rdata2buffer_wire(ldns_buffer *output, ldns_rr *rr);
 ldns_status ldns_pkt2buffer_wire(ldns_buffer *output, const ldns_pkt *pkt);
 
 
-ldns_status ldns_rr_list2buffer_wire(ldns_buffer *, ldns_rr_list *);
+ldns_status ldns_rr_list2buffer_wire(ldns_buffer *buf, ldns_rr_list *rrlist);
 
 /**
  * Allocates an array of uint8_t at dest, and puts the wireformat of the
@@ -80,6 +80,6 @@ ldns_status ldns_rr2wire(uint8_t **dest, const ldns_rr *rr, int, size_t *size);
  * length of the array, if it succeeds, and 0 otherwise (in which case
  * the function also returns NULL)
  */
-ldns_status ldns_pkt2wire(uint8_t **dest, const ldns_pkt *, size_t *);
+ldns_status ldns_pkt2wire(uint8_t **dest, const ldns_pkt *p, size_t *size);
 
 #endif
