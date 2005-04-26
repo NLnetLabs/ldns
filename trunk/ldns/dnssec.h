@@ -91,7 +91,7 @@ bool ldns_pkt_tsig_verify(ldns_pkt *pkt, uint8_t *wire, size_t wire_size, const 
  *
  * \param[in] pkt the packet to sign
  * \param[in] key_name the name of the shared key
- * \param[in]key_data the key in base 64 format
+ * \param[in] key_data the key in base 64 format
  * \param[in] fudge seconds of error permitted in time signed
  * \param[in] algorithm_name the name of the algorithm used (TODO more than only hmac-md5.sig-alg.reg.int.?)
  * \param[in] query_mac is added to the digest if not NULL (so NULL is for signing queries, not NULL is for signing answers)
