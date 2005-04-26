@@ -132,32 +132,43 @@ foreach (keys %manpages) {
 
 	$filename = @$a[0];
 	$filename = "man/man$MAN_SECTION/$filename.$MAN_SECTION";
-	print $filename," ";
+
+	my $symlink_file = @$a[0] . "." . $MAN_SECTION;
+
+	print $filename,"\n";
 	open (MAN, ">$filename") or die "Can not open $filename";
 
 	print MAN  $MAN_HEADER;
-
 	print MAN  ".SH NAME\n";
 	print MAN  join ", ", @$a;
 	print MAN  "\n\n";
-	
 	print MAN  ".SH SYNOPSIS\n";
 	print MAN  "#include <ldns/ldns.h>\n";
 	print MAN  ".PP\n";
-	foreach $function (@$a) {
-		print MAN  $return{$function}, " ", $function;
-		print MAN  "(", $api{$function},");\n";
+
+	foreach (@$a) {
+		print MAN  $return{$_}, " ", $_;
+		print MAN  "(", $api{$_},");\n";
 		print MAN  ".PP\n";
 	}
 	print MAN  "\n.SH DESCRIPTION\n";
-	foreach $function (@$a) {
+
+	foreach (@$a) {
 		print MAN  ".HP\n";
-		print MAN "\\fI", $function, "\\fR", ":"; 
-		print MAN  $description{$function};
+		print MAN "\\fI", $_, "\\fR", ":"; 
+		print MAN  $description{$_};
 		print MAN  "\n.PP\n";
 	}
-	print MAN  $MAN_FOOTER;
+
+	print MAN $MAN_FOOTER;
+
+	# create symlinks
+	chdir("man/man$MAN_SECTION");
+	foreach (@$a) {
+		my $new_file = $_ . "." . $MAN_SECTION;
+		print "\t", $new_file, " -> ", $symlink_file, "\n";
+		symlink $symlink_file, $new_file;
+	}
+	chdir("../.."); # and back
 	close(MAN);
-	# link the other names to this filesname
 }
-print "\n";

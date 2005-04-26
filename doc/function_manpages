@@ -6,4 +6,19 @@
 ldns_rr2wire, ldns_pkt2wire, ldns_rdf2wire
 # wirefunctions
 ldns_wire2rr, ldns_wire2pkt, ldns_wire2rdf, ldns_wire2dname
-# the rest
+# dname.h
+ldns_dname_cat, ldns_dname_left_chop, ldns_dname_label_count, ldns_dname_new_frm_str,ldns_dname_new_frm_data, ldns_dname2canonical
+# dnssec.h
+ldns_calc_keytag
+# 	verify
+ldns_verify, ldns_verify_rrsig, ldns_verify_rrsig_dsa, ldns_verify_rrsig_rsasha1, ldns_verify_rrsig_rsamd5
+#	key conv
+ldns_key_buf2dsa, ldns_key_buf2rsa, ldns_key_rr2ds
+# TSIG
+ldns_pkt_tsig_verify, ldns_pkt_tsig_sign
+# DNSSEC sign function; not yet!
+# errr.h
+ldns_get_errorstr_by_id
+# higher.h
+ldns_get_rr_list_addr_by_name, ldns_get_rr_list_name_by_addr
+ldns_get_rr_list_hosts_frm_fp, ldns_get_rr_list_hosts_frm_file
