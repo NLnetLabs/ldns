@@ -3,7 +3,7 @@
 
 # functions that must be included, separated by commas
 # conversion functions
-#ldns_rr2wire, ldns_pkt2wire, ldns_rdf2wire
+ldns_rr2wire, ldns_pkt2wire, ldns_rdf2wire
 # wirefunctions
 ldns_wire2rr, ldns_wire2pkt, ldns_wire2rdf, ldns_wire2dname
 # the rest
