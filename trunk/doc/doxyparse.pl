@@ -114,8 +114,9 @@ while(<>) {
 			$key =~ s/^\*//;
 			$return = '*' . $return;
 		}
-		$description =~ s/\\param\[in\][ \t]//g;
-		$description =~ s/\\//g;
+		$description =~ s/\\param\[in\][ \t]*(\w+)[ \t]+/\\fB$1\\fR: /g;
+		$description =~ s/\\param\[out\][ \t]*(\w+)[ \t]+/\\fB$1\\fR: /g;
+		$description =~ s/\\return[ \t]*/Returns /g;
 		
 		$description{$key} = $description;
 		$api{$key} = $api;
@@ -150,7 +151,8 @@ foreach (keys %manpages) {
 	}
 	print MAN  "\n.SH DESCRIPTION\n";
 	foreach $function (@$a) {
-		print MAN  "\\fI", $function, "\\fR", ":"; 
+		print MAN  ".HP\n";
+		print MAN "\\fI", $function, "\\fR", ":"; 
 		print MAN  $description{$function};
 		print MAN  "\n.PP\n";
 	}
