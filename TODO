@@ -9,11 +9,10 @@ o Different digests for DS
 o NSEC generation??
 o openssl's setup function (esp. random)
 o -lssl in library creation
+o Documentation (manpages) "const char bvklala() is not parsed correctly)
 
 Implementation:
 ---------------
-o deep free
-o parentheses in parsing is nonsense as we do not keep state
 o check all conversion routines on missing types
 	- wire2host
 	- host2wire
@@ -23,34 +22,14 @@ o use size_t where needed
 o DNSSEC
 	- signing
 	- do we call random()?
-o Make a shared library and test compile some programs
-o Thread safety, strtok is used...
 o NSEC cannot be converted from str to host fmt
-o ssl autoconf
-o create a bunch of small programs, mx is created, todo: SOA
-o resolver_frm_file (better parser)
-o Remove all the printf's - and tie them into error handling
 o per RR functions (started, see rr_functions.c)
 o conversion from  ldns_key to key rr's
 o init function? random - load_ssl_errors()
 	- SSL_load_error_str()? 
 
-Documentation:
---------------
-o Crypto interface for dnssec
-o Doxygen
-o Manpages - can they be created or not?
-o Introduction
-o Tutorial
-o Webpage
-o Mailing list(s)
-o Move all the documentation to the header files?
-o Check the documentation
-
 To ponder and discuss:
 ----------------------
-o ldns_lookup_by_name works for types, classes
-	should be shielded, only use ldns_get_class_by_name/type
 o private key type?
 	ldns_algorithm used for verfication
 	ldns_sign_algorithm used for signing - including
