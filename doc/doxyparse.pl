@@ -100,12 +100,9 @@ while(<>) {
 	if ($state == 1) {
 		# inside doxygen 
 		s/^[ \t]*\*[ \t]*//;
-		
-#		print $description;
 		$description = $description . "\n.br\n" . $_;
 	}
 	if (/(.*)[\t ]+(.*?)\((.*)\);/ and $state == 2) {
-#		print $state, $_, "Ik kom nooit hier\n";
 		# this should also end the current comment parsing
 		$return = $1;
 		$key = $2;
@@ -117,7 +114,6 @@ while(<>) {
 			$key =~ s/^\*//;
 			$return = '*' . $return;
 		}
-#		print "Found one!!", "[",$key,"]\n";
 		$description =~ s/\\param\[in\][ \t]//g;
 		$description =~ s/\\//g;
 		
@@ -130,7 +126,6 @@ while(<>) {
 }
 
 # create the manpages
-
 foreach (keys %manpages) {
 	$a = $manpages{$_};
 
@@ -150,7 +145,6 @@ foreach (keys %manpages) {
 	print MAN  ".PP\n";
 	foreach $function (@$a) {
 		print MAN  $return{$function}, " ", $function;
-		print $return{$function}, " ", $function;
 		print MAN  "(", $api{$function},");\n";
 		print MAN  ".PP\n";
 	}
@@ -158,13 +152,10 @@ foreach (keys %manpages) {
 	foreach $function (@$a) {
 		print MAN  "\\fI", $function, "\\fR", ":"; 
 		print MAN  $description{$function};
-		print "{", $function, "}",  $description{$function};
 		print MAN  "\n.PP\n";
 	}
 	print MAN  $MAN_FOOTER;
 	close(MAN);
 	# link the other names to this filesname
 }
-
 print "\n";
-
