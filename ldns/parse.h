@@ -35,8 +35,7 @@ ssize_t ldns_fget_token(FILE *f, char *token, const char *delim, size_t limit);
  * search for keyword and delim. Give everything back
  * after the keyword + k_del until we hit d_del
  */
-ssize_t 
-ldns_fget_keyword_data(FILE *f, const char *keyword, const char *k_del, char *data, const char *d_del);
+ssize_t ldns_fget_keyword_data(FILE *f, const char *keyword, const char *k_del, char *data, const char *d_del);
 
 /* 
  * get a token/char from the buffer b
@@ -53,8 +52,7 @@ ssize_t ldns_bget_token(ldns_buffer *b, char *token, const char *delim, size_t l
  * search for keyword and delim. Give everything back
  * after the keyword + k_del until we hit d_del
  */
-ssize_t 
-ldns_bget_keyword_data(ldns_buffer *b, const char *keyword, const char *k_del, char *data, const char *d_del);
+ssize_t ldns_bget_keyword_data(ldns_buffer *b, const char *keyword, const char *k_del, char *data, const char *d_del);
 
 /* remove comments from a string. Comment = ';' until \n
  * replace ; until \n with spaces

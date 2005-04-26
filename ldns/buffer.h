@@ -410,14 +410,18 @@ ldns_buffer_status_ok(ldns_buffer *buffer)
 int ldns_buffer_printf(ldns_buffer *buffer, const char *format, ...)
 	ATTR_FORMAT(printf, 2, 3);
 
-/*
+/**
  * Frees the buffer.
+ * \param[in] *buffer the buffer to be freed
+ * \return void
  */
 void ldns_buffer_free(ldns_buffer *buffer);
 
-/*
+/**
  * Makes the buffer fixed and returns a pointer to the data.  The
  * caller is responsible for free'ing the result.
+ * \param[in] *buffer the buffer to be exported
+ * \return void
  */
 void *ldns_buffer_export(ldns_buffer *buffer);
 

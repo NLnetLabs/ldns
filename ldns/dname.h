@@ -40,6 +40,7 @@ ldns_rdf	*ldns_dname_left_chop(ldns_rdf *d);
  * \return the number of labels
  */     
 uint8_t         ldns_dname_label_count(ldns_rdf *r);
+
 /**
  * Create a new dname rdf from a string
  * \param[in] str string to use
@@ -47,12 +48,18 @@ uint8_t         ldns_dname_label_count(ldns_rdf *r);
  */
 ldns_rdf	*ldns_dname_new_frm_str(const char *str);
 
+/**
+ * Create a new dname rdf from data (the data is copied)
+ * \param[in] size the size of the data
+ * \param[in] *data pointer to the actual data
+ * \return ldns_rdf*
+ */
 ldns_rdf	*ldns_dname_new_frm_data(uint16_t size, const void *data);
 /**
  * Put a dname into canonical fmt - ie. lowercase it
  * \param[in] rdf the dname to lowercase
+ * \return void
  */
 void		ldns_dname2canonical(const ldns_rdf *rdf);
-
 
 #endif	/* !_LDNS_DNAME_H */

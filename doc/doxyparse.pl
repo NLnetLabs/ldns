@@ -64,7 +64,7 @@ if (defined $options{'m'}) {
 			chomp;
 			if (/^#/) { next; }
 			if (/^$/) { next; }
-			my @funcs = split /,/, $_;
+			my @funcs = split /[\t ]*,[\t ]*/, $_;
 			$manpages{$funcs[0]} = \@funcs;
 			#print "[", $funcs[0], "]\n";
 		}
@@ -76,6 +76,7 @@ if (defined $options{'m'}) {
 
 # 0 - somewhere in the file
 # 1 - in a doxygen par
+# 2 - after doxygen, except funcion
 
 # create our pwd
 mkdir "man";
@@ -84,13 +85,15 @@ mkdir "man/man$MAN_SECTION";
 $state = 0;
 while(<>) {
 	chomp;
-	if (/\/\*\*/) {
+	if (/^\/\*\*[\t ]*$/) {
 		# /** Seen
+		#print "Comment seen! [$_]\n";
 		$state = 1;
 		next;
 	}
-	if (/\*\//) {
-		$state = 0;
+	if (/\*\// and $state == 1) {
+		#print "END Comment seen!\n";
+		$state = 2;
 		next;
 	}
 
@@ -98,9 +101,11 @@ while(<>) {
 		# inside doxygen 
 		s/^[ \t]*\*[ \t]*//;
 		
+#		print $description;
 		$description = $description . "\n.br\n" . $_;
 	}
-	if (/(.*)[\t ]+(.*?)\((.*)\);/) {
+	if (/(.*)[\t ]+(.*?)\((.*)\);/ and $state == 2) {
+#		print $state, $_, "Ik kom nooit hier\n";
 		# this should also end the current comment parsing
 		$return = $1;
 		$key = $2;
@@ -112,7 +117,7 @@ while(<>) {
 			$key =~ s/^\*//;
 			$return = '*' . $return;
 		}
-		#print "$key\n";
+#		print "Found one!!", "[",$key,"]\n";
 		$description =~ s/\\param\[in\][ \t]//g;
 		$description =~ s/\\//g;
 		
@@ -145,6 +150,7 @@ foreach (keys %manpages) {
 	print MAN  ".PP\n";
 	foreach $function (@$a) {
 		print MAN  $return{$function}, " ", $function;
+		print $return{$function}, " ", $function;
 		print MAN  "(", $api{$function},");\n";
 		print MAN  ".PP\n";
 	}
@@ -152,6 +158,7 @@ foreach (keys %manpages) {
 	foreach $function (@$a) {
 		print MAN  "\\fI", $function, "\\fR", ":"; 
 		print MAN  $description{$function};
+		print "{", $function, "}",  $description{$function};
 		print MAN  "\n.PP\n";
 	}
 	print MAN  $MAN_FOOTER;

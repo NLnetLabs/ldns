@@ -95,17 +95,15 @@
 #define ARCOUNT_OFF		10
 #define	ARCOUNT(wirebuf)		(read_uint16(wirebuf+ARCOUNT_OFF))
 
-
-
 /**
  * Converts the data on the uint8_t bytearray (in wire format) to a DNS packet
  * This function will initialize and allocate memory space for the packet 
  * structure
  * 
- * @param packet pointer to the structure to hold the packet
- * @param data pointer to the buffer with the data
- * @param len the length of the data buffer (in bytes)
- * @return LDNS_STATUS_OK if everything succeeds, error otherwise
+ * \param[in] packet pointer to the structure to hold the packet
+ * \param[in] data pointer to the buffer with the data
+ * \param[in] len the length of the data buffer (in bytes)
+ * \return LDNS_STATUS_OK if everything succeeds, error otherwise
  */
 ldns_status ldns_wire2pkt(ldns_pkt **packet, const uint8_t *data, size_t len);
 
@@ -116,16 +114,14 @@ ldns_status ldns_wire2pkt(ldns_pkt **packet, const uint8_t *data, size_t len);
  * structure
  * The length of the wiredata of this rdf is added to the *pos value.
  *
- * @param dname pointer to the structure to hold the rdata value
- * @param wire pointer to the buffer with the data
- * @param max the length of the data buffer (in bytes)
- * @param pos the position of the rdf in the buffer (ie. the number of bytes 
+ * \param[in] dname pointer to the structure to hold the rdata value
+ * \param[in] wire pointer to the buffer with the data
+ * \param[in] max the length of the data buffer (in bytes)
+ * \param[in] pos the position of the rdf in the buffer (ie. the number of bytes 
  *            from the start of the buffer)
- * @return LDNS_STATUS_OK if everything succeeds, error otherwise
+ * \return LDNS_STATUS_OK if everything succeeds, error otherwise
  */
-ldns_status ldns_wire2dname(ldns_rdf **dname, const uint8_t *wire, size_t max, 
-                       size_t *pos);
-
+ldns_status ldns_wire2dname(ldns_rdf **dname, const uint8_t *wire, size_t max, size_t *pos);
 
 /**
  * Converts the data on the uint8_t bytearray (in wire format) to a DNS 
@@ -134,12 +130,12 @@ ldns_status ldns_wire2dname(ldns_rdf **dname, const uint8_t *wire, size_t max,
  * structure
  * The length of the wiredata of this rdf is added to the *pos value.
  *
- * @param rr pointer to the ldns_rr structure to hold the rdata value
- * @param wire pointer to the buffer with the data
- * @param max the length of the data buffer (in bytes)
- * @param pos the position of the rdf in the buffer (ie. the number of bytes 
+ * \param[in] rr pointer to the ldns_rr structure to hold the rdata value
+ * \param[in]wire pointer to the buffer with the data
+ * \param[in] max the length of the data buffer (in bytes)
+ * \param[in] pos the position of the rdf in the buffer (ie. the number of bytes 
  *            from the start of the buffer)
- * @return LDNS_STATUS_OK if everything succeeds, error otherwise
+ * \return LDNS_STATUS_OK if everything succeeds, error otherwise
  */
 ldns_status ldns_wire2rdf(ldns_rr *rr, const uint8_t *wire, size_t max, size_t *pos);
 
@@ -150,16 +146,14 @@ ldns_status ldns_wire2rdf(ldns_rr *rr, const uint8_t *wire, size_t max, size_t *
  * structure
  * The length of the wiredata of this rr is added to the *pos value.
  * 
- * @param rr pointer to the structure to hold the rdata value
- * @param wire pointer to the buffer with the data
- * @param max the length of the data buffer (in bytes)
- * @param pos the position of the rr in the buffer (ie. the number of bytes 
+ * \param[in] rr pointer to the structure to hold the rdata value
+ * \param[in] wire pointer to the buffer with the data
+ * \param[in] max the length of the data buffer (in bytes)
+ * \param[in] pos the position of the rr in the buffer (ie. the number of bytes 
  *            from the start of the buffer)
- * @param section the section in the packet the rr is meant for
- * @return LDNS_STATUS_OK if everything succeeds, error otherwise
+ * \param[in] section the section in the packet the rr is meant for
+ * \return LDNS_STATUS_OK if everything succeeds, error otherwise
  */
-ldns_status ldns_wire2rr(ldns_rr **rr, const uint8_t *wire, size_t max,
-                    size_t *pos, ldns_pkt_section section);
+ldns_status ldns_wire2rr(ldns_rr **rr, const uint8_t *wire, size_t max, size_t *pos, ldns_pkt_section section);
 
-#endif
-
+#endif /* _LDNS_WIRE2HOST_H */

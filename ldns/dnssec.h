@@ -101,6 +101,8 @@ ldns_status ldns_pkt_tsig_sign(ldns_pkt *pkt, const char *key_name, const char *
 
 /** 
  * Returns a new DS rr that represents the given key rr
+ * \param[in] *key the key to convert
+ * \return ldns_rr* a new rr pointer to a DS
  */
 ldns_rr *ldns_key_rr2ds(const ldns_rr *key);
 

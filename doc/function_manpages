@@ -2,9 +2,8 @@
 # other names are aliases (symlinks)
 
 # functions that must be included, separated by commas
-ldns_rr2wire, ldns_pkt2wire, ldns_rdf2wire
+# conversion functions
+#ldns_rr2wire, ldns_pkt2wire, ldns_rdf2wire
+# wirefunctions
 ldns_wire2rr, ldns_wire2pkt, ldns_wire2rdf, ldns_wire2dname
-ldns_pkt_set_flags,ldns_pkt_set_id,ldns_pkt_set_qr,ldns_pkt_set_aa,ldns_pkt_set_tc,ldns_pkt_set_rd,ldns_pkt_set_cd,ldns_pkt_set_ra,ldns_pkt_set_ad
-#
-
-
+# the rest
