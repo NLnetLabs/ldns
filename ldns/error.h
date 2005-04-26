@@ -45,7 +45,6 @@ typedef enum ldns_enum_status ldns_status;
 
 extern ldns_lookup_table ldns_error_str[];
 
-
 /**
  * look up a descriptive text by each error
  * \param[in] err ldns_status number
