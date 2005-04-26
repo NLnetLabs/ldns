@@ -52,6 +52,10 @@ FITNESS FOR A PARTICULAR PURPOSE.
 .SH SEE ALSO
 \\fBperldoc Net::DNS\\fR, \\fBRFC1043\\fR,
 \\fBRFC1035\\fR, \\fBRFC4033\\fR, \\fBRFC4034\\fR, \\fBRFC4035\\fR.
+
+.SH REMARKS
+This manpage was automaticly generated from the ldns source code by
+use of Doxygen and some perl.
 ";
 
 getopts("m:",\%options);
