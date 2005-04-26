@@ -23,6 +23,7 @@ my $key;
 my $return;
 my $param;
 my $api;
+my $const;
 
 my %description;
 my %api;
@@ -103,6 +104,14 @@ while(<>) {
 		$description = $description . "\n" . $_;
 		#$description = $description . "\n.br\n" . $_;
 	}
+	if ($state == 2 and /const/) {
+		# the const word exists in the function call
+		$const = "const";
+		s/[\t ]*const[\t ]*//;
+	} else {
+		undef $const;
+	}
+	
 	if (/([\w\*]*)[\t ]+(.*?)\((.*)\);/ and $state == 2) {
 		# this should also end the current comment parsing
 		$return = $1;
@@ -113,7 +122,11 @@ while(<>) {
 		if ($key =~ /^\*/) {
 			#print"Name starts with *\n";
 			$key =~ s/^\*//;
-			$return = '*' . $return;
+			if (defined($const)) {
+				$return =  $const . " " . $return . '*';
+			} else {
+				$return =  $return . '*';
+			}
 		}
 		$description =~ s/\\param\[in\][ \t]*([\*\w]+)[ \t]+/.br\n\\fB$1\\fR: /g;
 		$description =~ s/\\param\[out\][ \t]*([\*\w]+)[ \t]+/.br\n\\fB$1\\fR: /g;
