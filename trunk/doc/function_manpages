@@ -22,3 +22,12 @@ ldns_get_errorstr_by_id
 # higher.h
 ldns_get_rr_list_addr_by_name, ldns_get_rr_list_name_by_addr
 ldns_get_rr_list_hosts_frm_fp, ldns_get_rr_list_hosts_frm_file
+
+# net.h
+ldns_send_udp, ldns_send_tcp, ldns_send
+ldns_tcp_send_query, ldns_tcp_read_wire, ldns_tcp_connect
+
+# parse.h
+ldns_bget_token, ldns_bgetc, ldns_bskipcs
+ldns_fget_token, ldns_fskipcs
+ldns_str_remove_comment
