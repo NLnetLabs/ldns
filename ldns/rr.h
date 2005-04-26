@@ -542,7 +542,7 @@ void ldns_rr_list2canonical(ldns_rr_list *rr_list);
 
 /** 
  * count the number of labels of the ownername
- * \param[in] rr 
+ * \param[in] rr count the labels of this rr
  * \return the number of labels
  */
 uint8_t ldns_rr_label_count(ldns_rr *rr);
