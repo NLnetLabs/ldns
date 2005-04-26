@@ -147,7 +147,9 @@ foreach (keys %manpages) {
 	print MAN  ".PP\n";
 
 	foreach (@$a) {
-		print MAN  $return{$_}, " ", $_;
+		$b = $return{$_};
+		$b =~ s/\s+$//;
+		print MAN  $b, " ", $_;
 		print MAN  "(", $api{$_},");\n";
 		print MAN  ".PP\n";
 	}
