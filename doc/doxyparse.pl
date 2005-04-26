@@ -117,7 +117,7 @@ while(<>) {
 		}
 		$description =~ s/\\param\[in\][ \t]*([\*\w]+)[ \t]+/.br\n\\fB$1\\fR: /g;
 		$description =~ s/\\param\[out\][ \t]*([\*\w]+)[ \t]+/.br\n\\fB$1\\fR: /g;
-		$description =~ s/\\return[ \t]*/Returns /g;
+		$description =~ s/\\return[ \t]*/.br\nReturns /g;
 		
 		$description{$key} = $description;
 		$api{$key} = $api;
