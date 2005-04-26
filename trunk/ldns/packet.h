@@ -232,7 +232,7 @@ void ldns_pkt_free(ldns_pkt *packet);
  * \param[in] flags packet flags
  * \return ldns_pkt* a pointer to the new pkt
  */
-ldns_pkt * ldns_pkt_query_new_frm_str(const char *rr_name, ldns_rr_type rr_type, ldns_rr_class rr_class , uint16_t flags);
+ldns_pkt *ldns_pkt_query_new_frm_str(const char *rr_name, ldns_rr_type rr_type, ldns_rr_class rr_class , uint16_t flags);
 
 /**
  * Create a packet with a query in it
@@ -242,7 +242,7 @@ ldns_pkt * ldns_pkt_query_new_frm_str(const char *rr_name, ldns_rr_type rr_type,
  * \param[in] flags packet flags
  * \return ldns_pkt* a pointer to the new pkt
  */
-ldns_pkt * ldns_pkt_query_new(ldns_rdf *rr_name, ldns_rr_type rr_type, ldns_rr_class rr_class, uint16_t flags);
+ldns_pkt *ldns_pkt_query_new(ldns_rdf *rr_name, ldns_rr_type rr_type, ldns_rr_class rr_class, uint16_t flags);
 
 #define MAX_PACKETLEN         65535
 

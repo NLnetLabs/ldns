@@ -45,7 +45,7 @@ ldns_status ldns_send_udp(uint8_t **result, ldns_buffer *qbin, const struct sock
  * \param[out] answersize size of the packet
  * \return a packet with the answer
  */
-uint8_t * ldns_send_tcp(ldns_buffer *qbin, const struct sockaddr_storage *to, socklen_t tolen, struct timeval timeout, size_t *answersize);
+uint8_t *ldns_send_tcp(ldns_buffer *qbin, const struct sockaddr_storage *to, socklen_t tolen, struct timeval timeout, size_t *answersize);
 
 /**
  * Sends ptk to the nameserver at the resolver object. Returns the data

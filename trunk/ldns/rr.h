@@ -237,13 +237,13 @@ typedef struct ldns_struct_rr_descriptor ldns_rr_descriptor;
  * create a new rr structure.
  * \return ldns_rr *
  */
-ldns_rr * ldns_rr_new(void);
+ldns_rr* ldns_rr_new(void);
 
 /** 
  * create a new rr structure and based on the type
  * alloc enough space to hold all the rdf's
  */
-ldns_rr * ldns_rr_new_frm_type(ldns_rr_type t);
+ldns_rr* ldns_rr_new_frm_type(ldns_rr_type t);
 
 /**
  *  free a RR structure
@@ -259,14 +259,14 @@ void ldns_rr_free(ldns_rr *rr);
  * \param[in] str the string to convert
  * \return the new rr
  */
-ldns_rr * ldns_rr_new_frm_str(const char *str);
+ldns_rr* ldns_rr_new_frm_str(const char *str);
 
 /**
  * Create a new rr from a file containing a string
  * \param[in] fp the file pointer  to use
  * \return ldns_rr*
  */
-ldns_rr * ldns_rr_new_frm_fp(FILE *fp);
+ldns_rr* ldns_rr_new_frm_fp(FILE *fp);
 
 /**
  *  set the owner in the rr structure
@@ -316,7 +316,7 @@ void ldns_rr_set_class(ldns_rr *rr, ldns_rr_class rr_class);
  * \param[in] position the position the set the rdf
  * \return  the old value in the rr, NULL on failyre
  */
-ldns_rdf * ldns_rr_set_rdf(ldns_rr *rr, ldns_rdf *f, uint16_t position);
+ldns_rdf* ldns_rr_set_rdf(ldns_rr *rr, ldns_rdf *f, uint16_t position);
 
 /**
  * set rd_field member, it will be 
@@ -333,7 +333,7 @@ bool ldns_rr_push_rdf(ldns_rr *rr, ldns_rdf *f);
  * \param[in] *rr rr to operate on
  * \return rdf which was popped (null if nothing)
  */
-ldns_rdf * ldns_rr_pop_rdf(ldns_rr *rr);
+ldns_rdf* ldns_rr_pop_rdf(ldns_rr *rr);
 
 /**
  * return the rdata field member counter
@@ -341,14 +341,14 @@ ldns_rdf * ldns_rr_pop_rdf(ldns_rr *rr);
  * \param[in] nr the number of the rdf to return
  * \return ldns_rdf *
  */
-ldns_rdf * ldns_rr_rdf(const ldns_rr *rr, uint16_t nr);
+ldns_rdf* ldns_rr_rdf(const ldns_rr *rr, uint16_t nr);
 
 /**
  * return the owner name of an rr structure
  * \param[in] *rr rr to operate on
  * \return ldns_rdf * 
  */
-ldns_rdf * ldns_rr_owner(const ldns_rr *rr);
+ldns_rdf* ldns_rr_owner(const ldns_rr *rr);
 
 /**
  * return the ttl of an rr structure

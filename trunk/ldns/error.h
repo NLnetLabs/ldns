@@ -51,6 +51,6 @@ extern ldns_lookup_table ldns_error_str[];
  * \param[in] err ldns_status number
  * \return the string for that error
  */
-const char * ldns_get_errorstr_by_id(ldns_status err);
+const char *ldns_get_errorstr_by_id(ldns_status err);
 
 #endif /* _ERROR_H */

@@ -113,10 +113,10 @@ bool ldns_resolver_fail(ldns_resolver *r);
 bool ldns_resolver_dnssec(ldns_resolver *r);
 bool ldns_resolver_igntc(ldns_resolver *r);
 size_t ldns_resolver_nameserver_count(ldns_resolver *r);
-ldns_rdf * ldns_resolver_domain(ldns_resolver *r);
+ldns_rdf *ldns_resolver_domain(ldns_resolver *r);
 struct timeval ldns_resolver_timeout(ldns_resolver *r);
-ldns_rdf ** ldns_resolver_searchlist(ldns_resolver *r);
-ldns_rdf ** ldns_resolver_nameservers(ldns_resolver *r);
+ldns_rdf** ldns_resolver_searchlist(ldns_resolver *r);
+ldns_rdf** ldns_resolver_nameservers(ldns_resolver *r);
 char *ldns_resolver_tsig_keyname(ldns_resolver *r);
 char *ldns_resolver_tsig_algorithm(ldns_resolver *r);
 char *ldns_resolver_tsig_keydata(ldns_resolver *r);
@@ -125,7 +125,7 @@ char *ldns_resolver_tsig_keydata(ldns_resolver *r);
  * \param[in] r the resolver
  * \return the popped address or NULL if empty
  */
-ldns_rdf * ldns_resolver_pop_nameserver(ldns_resolver *r);
+ldns_rdf* ldns_resolver_pop_nameserver(ldns_resolver *r);
 
 /* write access function */
 void ldns_resolver_set_port(ldns_resolver *r, uint16_t);
@@ -186,7 +186,7 @@ ldns_status ldns_resolver_push_nameserver_rr_list(ldns_resolver *r, ldns_rr_list
 int ldns_resolver_bgsend();
 
 /* no comment found */
-ldns_pkt * ldns_resolver_search(ldns_resolver *r, ldns_rdf *rdf, ldns_rr_type t, ldns_rr_class c, uint16_t flags);
+ldns_pkt* ldns_resolver_search(ldns_resolver *r, ldns_rdf *rdf, ldns_rr_type t, ldns_rr_class c, uint16_t flags);
 
 /**
  * \brief Send the query for *name as-is 
@@ -218,14 +218,14 @@ ldns_status ldns_resolver_send_pkt(ldns_pkt **answer, ldns_resolver *r, ldns_pkt
  * \return ldns_pkt* a packet with the reply from the nameserver
  * if _defnames is true the default domain will be added
  */
-ldns_pkt * ldns_resolver_query(ldns_resolver *r, ldns_rdf *name, ldns_rr_type type, ldns_rr_class class, uint16_t flags);
+ldns_pkt* ldns_resolver_query(ldns_resolver *r, ldns_rdf *name, ldns_rr_type type, ldns_rr_class class, uint16_t flags);
 
 
 /** 
  * \brief create a new resolver structure 
  * \return ldns_resolver* pointer to new strcture
  */
-ldns_resolver *ldns_resolver_new(void);
+ldns_resolver* ldns_resolver_new(void);
 
 /**
  * Create a resolver structure from a file like /etc/resolv.conf
@@ -233,7 +233,7 @@ ldns_resolver *ldns_resolver_new(void);
  *      if NULL use /etc/resolv.conf
  * \return ldns_resolver structure
  */
-ldns_resolver * ldns_resolver_new_frm_fp(FILE *fp);
+ldns_resolver* ldns_resolver_new_frm_fp(FILE *fp);
 
 /**
  * configure a resolver by means of a resolv.conf file 
@@ -246,7 +246,7 @@ ldns_resolver * ldns_resolver_new_frm_fp(FILE *fp);
  * nameserver                   
  * domain                       
  */                     
-ldns_resolver *ldns_resolver_new_frm_file(const char *filename);
+ldns_resolver* ldns_resolver_new_frm_file(const char *filename);
 
 /**                             
  * Frees the allocated space for this resolver and all it's data
@@ -270,6 +270,6 @@ ldns_status ldns_axfr_start(ldns_resolver *resolver, ldns_rdf *domain, ldns_rr_c
  * called
  * \return ldns_rr the next RR from the AXFR stream
  */
-ldns_rr *ldns_axfr_next(ldns_resolver *resolver);
+ldns_rr* ldns_axfr_next(ldns_resolver *resolver);
 
 #endif  /* !_LDNS_RESOLVER_H */
