@@ -1,70 +1,270 @@
-<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook V4.1//EN">
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.1.2//EN"
+"http://www.oasis-open.org/docbook/xml/4.1.2/docbookx.dtd">
+<article>
 
-<book>
-  <bookinfo>
-    <title>A tutorial for ldns</title>
-    
-    <author>
-      <firstname>Miek</firstname>
-      <surname>Gieben</surname>
-      <affiliation>
-        <address><email>miekg@nlnetlabs.nl</email></address>
-      </affiliation>
-    </author>
-
-    <copyright>
-      <year>2005</year>
-      <holder>Copyright string here</holder>
-    </copyright>
-
+<!-- Article information. -->
+<articleinfo>
+    <!-- Article title and abstract. -->
+    <title>ldns tutorial</title>
     <abstract>
-      <para>This tutorial will help you make your first ldns application.
+        <para>
+	In this tutorial we will explain how to make a simple application
+	with ldns. Also some insights in the setup/construction of ldns
+	is given.
 	</para>
     </abstract>
-  </bookinfo>
-
-  <preface>
-    <title>Preface</title>
-
-    <para>Your book may have a preface, in which case it should be placed
-      here.</para>
-  </preface>
-      
-  <chapter>
-    <title>Introduction</title>
-
-    <para>This is the first chapter in my book.</para>
-
-    <sect1>
-      <title>My first section</title>
-
-      <para>This is the first section in my book.</para>
-    </sect1>
-  </chapter>
-  <chapter>
-	<title>Getting Started</title>
-		<para>
-
-	</para>
+    <!-- Author name and bio. -->
+    <author>
+        <firstname>Miek</firstname> <surname>Gieben</surname>
+        <authorblurb>
+            <para>miek@nlnetlabs.nl</para>
+        </authorblurb>
+    </author>
+</articleinfo>
+<!-- Body of article. -->
 
 <sect1>
-<title>What are we going to make</title>
+<title>
+Introduction ldns
+</title>
 <para>
+The following paragraphs will introduce some concepts used in ldns. It is
+assumed that the reader is familiar with DNS (knowledge of DNSSEC is not
+a problem).
+</para>
 
+<para>
+Take for instance the following RR:
 <programlisting>
-int
-main(int argc, char **argv)
-{
-	return 0;
-}
+open.nlnetlabs.nl       8600    IN      A       213.154.224.1
 </programlisting>
+This RR consists out of five elements:
+<variablelist>
+       <varlistentry>
+          <term>open.nlnetlabs.nl</term>
+          <listitem>
+             <para>the ownername of the RR</para>
+          </listitem>
+       </varlistentry>
+
+       <varlistentry>
+          <term>8600</term>
+          <listitem>
+             <para>the TTL of the RR</para>
+          </listitem>
+       </varlistentry>
+
+       <varlistentry>
+          <term>IN</term>
+          <listitem>
+             <para>the class of the RR</para>
+          </listitem>
+       </varlistentry>
+
+       <varlistentry>
+          <term>A</term>
+          <listitem>
+             <para>the type of the RR</para>
+          </listitem>
+       </varlistentry>
+
+       <varlistentry>
+          <term>213.154.224.1</term>
+          <listitem>
+             <para>1 rdata field, in this case with the address</para>
+          </listitem>
+       </varlistentry>
+</variablelist>
+</para>
+
+
+<sect2>
+<title>213.154.224.1</title>
+<para>
+To begin with the last element, ldns calls that a RDATA FIELD, or rdf. This
+is the smallest type in ldns. An RR's rdata consists of 1 or several rdf's.
+All these rdf's have a type, in the case of an A record, this type is
+LDNS_RDF_TYPE_A.
+The data in a rdf is stored in network byte order.
+</para>
+</sect2>
+
+<sect2>
+<title>A</title>
+<para>
+This is the type of the whole RR, this type is called LDNS_RR_TYPE_A in
+ldns
 
 </para>
+</sect2>
+
+<sect2>
+<title>IN</title>
+<para>
+The class. Other possible values are CH, and HS. But only the IN class is
+used on the Internet.
+</para>
+</sect2>
+
+<sect2>
+<title>3600</title>
+<para>
+The TTL of a RR, stored in host order.
+</para>
+</sect2>
+
+<sect2>
+<title>open.nlnetlabs.nl</title>
+<para>
+The ownername of the RR, this owner name is stored in wire data, this this
+particaliar name is stored as 04open09nlnetlabs02nl00.
+</para>
+</sect2>
+
+</sect1>
+
+<sect1>
+    <title>Making a small application with ldns</title>
+    <para>
+In this tutorial we will make a small application which takes a domain name
+and looks up the MX records for this domain. We will call this program:
+'mx'.
+    </para>
+
+	<para>
+	The general flow of the program is as follows:
+		<orderedlist>
+		  <listitem> 
+		  <para>make a resolver structure,</para>
+		  </listitem>
+		  <listitem>
+		  <para>use the resolver to generate an mx query,</para>
+		  </listitem>
+		  <listitem>
+		  <para>print the result.</para>
+		  </listitem>
+		</orderedlist>	
+	</para>
+
+<para>
+First we begin with some boiler plating:
+<programlisting>
+      1 /*
+      2  * mx is a small programs that prints out the mx records
+      3  * for a particulary domain
+      4  */
+      5
+      6 #include &lt;stdio.h&gt;
+      7 
+      8 #include &lt;ldns/dns.h&gt;
+      9
+     10 int
+     11 usage(FILE *fp, char *prog) {
+     12         fprintf(fp, "%s zone\n", prog);
+     13         fprintf(fp, "  print out the mx for the domain\n");
+     14         return 0;
+     15 }
+     16
+</programlisting>
+Line 9 is the important one here, this includes all the stuff we need
+from ldns.
+
+<programlisting>
+     17 int
+     18 main(int argc, char *argv[])
+     19 {
+     20         ldns_resolver *res;
+     21         ldns_rdf *domain;
+     22         ldns_pkt *p;
+     23         ldns_rr_list *mx;
+     24
+     25
+     26         if (argc != 2) {
+     27                 usage(stdout, argv[0]);
+     28                 exit(1);
+     29         } else {
+     30                 /* create a rdf from the command line arg */
+     31                 domain = ldns_dname_new_frm_str(argv[1]);
+     32                 if (!domain) {
+     33                         usage(stdout, argv[0]);
+     34                         exit(1);
+     35                 }
+     36                 /* transform it in a string for the error msg (if needed) */
+     38         }
+</programlisting>
+Here we parse the arguments. We create a new rdf structure which contain the domain
+name that we got from the commandline. 
+
+<programlisting>
+     39
+     40         /* create a new resolver from /etc/resolv.conf */
+     41         res = ldns_resolver_new_frm_file(NULL);
+     42         if (!res) {
+     43			exit(1);
+     44         }
+</programlisting>
+At line 41 we create a new resolver structure. When it's argument is NULL it uses
+<filename>/etc/resolv.conf</filename> to setup the resolver structure.
+
+<programlisting>
+     45         
+     46
+     47         /* use the resolver to send it a query for the mx
+     48          * records of the domain given on the command line
+     49          */
+     50         p = ldns_resolver_query(res, domain, LDNS_RR_TYPE_MX, LDNS_RR_CLASS_IN, LDNS_RD);
+</programlisting>
+At line 50 we do the actual query. The ldns_resolver_query command returns ldns_pkt* structure,
+with the reply from the nameserver. As we look at the function call, we see that we do a
+query for a RR type 'MX' in the class 'IN' and we set the RD (recursion desired) flag on the
+qeury.
+
+<programlisting>
+     51         if (!p)  {
+     52
+     53                 exit(1);
+     54         } else {
+     55                 /* retrieve the MX records from the answer section of that
+     56                  * packet
+     57                  */
+     58                 mx = ldns_pkt_rr_list_by_type(p, LDNS_RR_TYPE_MX, LDNS_SECTION_ANSWER);
+</programlisting>
+On line 58 we look inside the packet to see if we got any MX records back for our query. We look
+only inside the answer section of the packet.
+
+<programlisting>
+     59                 if (!mx) {
+     60                         fprintf(stderr,
+     61                                         " *** invalid answer name %s after MX query for %s\n        ",
+     62                                         argv[1],
+     63                                         argv[1]);
+     64                         exit(1);
+     65                 } else {
+     66                         /* sort the list nicely */
+     67                         ldns_rr_list_sort(mx);
+     68                         /* print the rrlist to stdout */
+     69                         ldns_rr_list_print(stdout, mx);
+     70                 }
+</programlisting>
+Here we sort the list and print it to stdout.
+
+<programlisting>
+     71         }
+     72         return 0;
+     73 }
+</programlisting>
+</para>
+
+<para>
+This example shows that with a fairly short C program you can already do
+complex tasks.
+</para>
+
 
 </sect1>
 
 
-  </chapter>
 
 
-</book>
+</article>
