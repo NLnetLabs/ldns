@@ -114,8 +114,8 @@ while(<>) {
 			$key =~ s/^\*//;
 			$return = '*' . $return;
 		}
-		$description =~ s/\\param\[in\][ \t]*(\w+)[ \t]+/\\fB$1\\fR: /g;
-		$description =~ s/\\param\[out\][ \t]*(\w+)[ \t]+/\\fB$1\\fR: /g;
+		$description =~ s/\\param\[in\][ \t]*([\*\w]+)[ \t]+/\\fB$1\\fR: /g;
+		$description =~ s/\\param\[out\][ \t]*([\*\w]+)[ \t]+/\\fB$1\\fR: /g;
 		$description =~ s/\\return[ \t]*/Returns /g;
 		
 		$description{$key} = $description;
@@ -155,7 +155,7 @@ foreach (keys %manpages) {
 
 	foreach (@$a) {
 		print MAN  ".HP\n";
-		print MAN "\\fI", $_, "\\fR", ":"; 
+		print MAN "\\fI", $_, "\\fR", "()"; 
 		print MAN  $description{$_};
 		print MAN  "\n.PP\n";
 	}

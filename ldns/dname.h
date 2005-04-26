@@ -34,8 +34,7 @@ ldns_rdf 	*ldns_dname_cat(ldns_rdf *rd1, ldns_rdf *rd2);
  */
 ldns_rdf	*ldns_dname_left_chop(ldns_rdf *d);
 /**
- * count the number of labels inside a LDNS_RDF_DNAME type
- * rdf
+ * count the number of labels inside a LDNS_RDF_DNAME type rdf.
  * \param[in] *r the rdf
  * \return the number of labels
  */     
