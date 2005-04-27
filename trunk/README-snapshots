@@ -8,6 +8,4 @@ INSTALLATION
 2. cd ldns-snap-<DATE>
 3. ./configure
 4. gmake (it needs gnu make to compile)
-
-After this some test executables are created; run-test[1-8]. These
-are used in development, but can also be used as a basis for development.
+(5. gmake mx chaos [two example programs included]

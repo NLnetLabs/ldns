@@ -79,7 +79,7 @@ lib:		$(LIBDNS_OBJECTS) b64_pton$U.o b64_ntop$U.o
 # this breaks: configure --disable-shared
 		mv -f .libs/libldns.so* ./
 	
-snapshot:	clean testclean
+snapshot:	realclean testclean
 		(rm -rf ../ldns-snap-$(DATE)/)
 		(cd .. ; cp -r $(basesrcdir)/ ldns-snap-$(DATE)/)
 		(cd .. ; tar --verbose  --exclude ".svn" --create --file ldns-snap-$(DATE).tar.gz --gzip ldns-snap-$(DATE)/)
@@ -138,7 +138,6 @@ docclean:
 libclean:
 	rm -rf .libs
 	rm -rf libtool
-
 
 test7: run-test7
 	./run-test7
