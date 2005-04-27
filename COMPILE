@@ -1,0 +1,16 @@
+* Development
+
+ldns development is ongoing. Most of the functionality is there, but some
+DNSSEC pieces are missing.
+
+Feedback is appriciated.
+
+* Compilation
+
+When getting this source as snapshot you need to compile it first.
+For compilation you need gmake.
+
+Extract the source and in the source directory:
+libtoolize && autoreconf && ./configure && gmake
+
+(or just make on Linux)
