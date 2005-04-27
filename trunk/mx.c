@@ -23,7 +23,6 @@ main(int argc, char *argv[])
 	ldns_rdf *domain;
 	ldns_pkt *p;
 	ldns_rr_list *mx;
-	char *domstr;
 	
 	if (argc != 2) {
 		usage(stdout, argv[0]);
@@ -35,14 +34,11 @@ main(int argc, char *argv[])
 			usage(stdout, argv[0]);
 			exit(1);
 		}
-		/* transform it in a string for the error msg (if needed) */
-		domstr = ldns_rdf2str(domain);
 	}
 
 	/* create a new resolver from /etc/resolv.conf */
 	res = ldns_resolver_new_frm_file(NULL);
 	if (!res) {
-		free(domstr); 
 		exit(1);
 	}
 
@@ -51,7 +47,6 @@ main(int argc, char *argv[])
 	 */
 	p = ldns_resolver_query(res, domain, LDNS_RR_TYPE_MX, LDNS_RR_CLASS_IN, LDNS_RD);
         if (!p)  {
-		free(domstr);
 		exit(1);
         } else {
 		/* retrieve the MX records from the answer section of that
@@ -61,8 +56,7 @@ main(int argc, char *argv[])
 		if (!mx) {
 			fprintf(stderr, 
 					" *** invalid answer name %s after MX query for %s\n",
-					domstr, domstr);
-			free(domstr);
+					argv[1], argv[1]);
 			exit(1);
 		} else {
 			/* sort the list nicely */
