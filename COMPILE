@@ -8,7 +8,7 @@ Feedback is appriciated.
 * Compilation
 
 When getting this source as snapshot you need to compile it first.
-For compilation you need gmake.
+For compilation you need gmake and the gnu autotools.
 
 Extract the source and in the source directory:
 libtoolize && autoreconf && ./configure && gmake
