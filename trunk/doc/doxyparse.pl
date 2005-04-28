@@ -30,10 +30,11 @@ my %api;
 my %return;
 my %options;
 my %manpages;
+my %see_also;
 
 my $MAN_SECTION = "3";
 my $MAN_HEADER = ".TH ldns  \"25 Apr 2005\"\n";
-my $MAN_FOOTER = ".SH AUTHOR
+my $MAN_MIDDLE = ".SH AUTHOR
 The ldns team at NLnet Labs. Which consists out of: 
 Jelte Jansen, Erik Rozendaal and Miek Gieben.
 
@@ -48,12 +49,8 @@ Copyright (c) 2004, 2005 NLnet Labs.
 Licensed under the GPL 2. There is NO warranty; not even for
 MERCHANTABILITY or
 FITNESS FOR A PARTICULAR PURPOSE.
-
-.SH SEE ALSO
-\\fBperldoc Net::DNS\\fR, \\fBRFC1043\\fR,
-\\fBRFC1035\\fR, \\fBRFC4033\\fR, \\fBRFC4034\\fR, \\fBRFC4035\\fR.
-
-.SH REMARKS
+";
+my $MAN_FOOTER = ".SH REMARKS
 This manpage was automaticly generated from the ldns source code by
 use of Doxygen and some perl.
 ";
@@ -61,16 +58,23 @@ use of Doxygen and some perl.
 getopts("m:",\%options);
 # if -m manpage file is given process that file
 # parse the file which tells us what manpages go together
+my $functions, $see_also;
 if (defined $options{'m'}) {
 	# process
 	open(MAN, "<$options{'m'}") or die "Cannot open $options{'m'}";
-		# it's line based
+		# it's line based:
+		# func1, func2, .. | see_also1, see_also2, ...
 		while(<MAN>) {
 			chomp;
 			if (/^#/) { next; }
 			if (/^$/) { next; }
-			my @funcs = split /[\t ]*,[\t ]*/, $_;
+			($functions, $see_also) = split /[\t ]*\|[\t ]*/, $_;
+			#print "{$functions}\n";
+			#print "{$see_also}\n";
+			my @funcs = split /[\t ]*,[\t ]*/, $functions;
+			my @also = split /[\t ]*,[\t ]*/, $see_also;
 			$manpages{$funcs[0]} = \@funcs;
+			$see_also{$funcs[0]} = \@also;
 			#print "[", $funcs[0], "]\n";
 		}
 	close(MAN);
@@ -154,34 +158,35 @@ while(<>) {
 
 # create the manpages
 foreach (keys %manpages) {
-	$a = $manpages{$_};
+	$name = $manpages{$_};
+	$also = $see_also{$_};
 
-	$filename = @$a[0];
+	$filename = @$name[0];
 	$filename = "man/man$MAN_SECTION/$filename.$MAN_SECTION";
 
-	my $symlink_file = @$a[0] . "." . $MAN_SECTION;
+	my $symlink_file = @$name[0] . "." . $MAN_SECTION;
 
 	print $filename,"\n";
 	open (MAN, ">$filename") or die "Can not open $filename";
 
 	print MAN  $MAN_HEADER;
 	print MAN  ".SH NAME\n";
-	print MAN  join ", ", @$a;
+	print MAN  join ", ", @$name;
 	print MAN  "\n\n";
 	print MAN  ".SH SYNOPSIS\n";
 	print MAN  "#include <ldns/ldns.h>\n";
 	print MAN  ".PP\n";
 
-	foreach (@$a) {
+	foreach (@$name) {
 		$b = $return{$_};
 		$b =~ s/\s+$//;
 		print MAN  $b, " ", $_;
 		print MAN  "(", $api{$_},");\n";
 		print MAN  ".PP\n";
 	}
-	print MAN  "\n.SH DESCRIPTION\n";
 
-	foreach (@$a) {
+	print MAN  "\n.SH DESCRIPTION\n";
+	foreach (@$name) {
 		print MAN  ".HP\n";
 		print MAN "\\fI", $_, "\\fR", "()"; 
 #		print MAN ".br\n";
@@ -189,11 +194,25 @@ foreach (keys %manpages) {
 		print MAN  "\n.PP\n";
 	}
 
+	print MAN $MAN_MIDDLE;
+
+	if (defined(@$also)) {
+		print MAN "\n.SH SEE ALSO\n\\fI";
+		print MAN join "\\fR, \\fI", @$also;
+		print MAN "\\fR.\nAnd ";
+		print MAN "\\fBperldoc Net::DNS\\fR, \\fBRFC1043\\fR,
+\\fBRFC1035\\fR, \\fBRFC4033\\fR, \\fBRFC4034\\fR  and \\fBRFC4035\\fR.\n";
+	} else {
+		print MAN ".SH SEE ALSO
+\\fBperldoc Net::DNS\\fR, \\fBRFC1043\\fR,
+\\fBRFC1035\\fR, \\fBRFC4033\\fR, \\fBRFC4034\\fR and \\fBRFC4035\\fR.\n";
+	}
+	
 	print MAN $MAN_FOOTER;
 
 	# create symlinks
 	chdir("man/man$MAN_SECTION");
-	foreach (@$a) {
+	foreach (@$name) {
 		my $new_file = $_ . "." . $MAN_SECTION;
 		print "\t", $new_file, " -> ", $symlink_file, "\n";
 		symlink $symlink_file, $new_file;
