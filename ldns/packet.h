@@ -17,7 +17,7 @@
 #include <ldns/common.h>
 #include <ldns/rr.h>
 
-/**
+/*
  * \brief Header of a dns packet
  *
  * Contains the information about the packet itself
@@ -55,7 +55,7 @@ struct ldns_struct_hdr
 };
 typedef struct ldns_struct_hdr ldns_hdr;
 
-/**
+/*
  * \brief DNS packet
  *
  * This structure contains a complete DNS packet (either a query or an answer)
@@ -93,7 +93,7 @@ struct ldns_struct_pkt
 };
 typedef struct ldns_struct_pkt ldns_pkt;
 
-/**
+/*
  * The sections of a packet
  */
 enum ldns_enum_pkt_section {
@@ -106,7 +106,7 @@ enum ldns_enum_pkt_section {
 };
 typedef enum ldns_enum_pkt_section ldns_pkt_section;	
 
-/**
+/*
  * the different types of packets
  */
 enum ldns_enum_pkt_type {
@@ -151,7 +151,6 @@ ldns_rr_list *ldns_pkt_rr_list_by_name(ldns_pkt *p, ldns_rdf *r, ldns_pkt_sectio
 ldns_rr_list *ldns_pkt_rr_list_by_type(ldns_pkt *p, ldns_rr_type t, ldns_pkt_section s);
 ldns_rr_list *ldns_pkt_rr_list_by_name_and_type(ldns_pkt *packet, ldns_rdf *ownername, ldns_rr_type type, ldns_pkt_section sec);
 
-/* write */
 /**
  * Set the flags in a packet
  * \param[in] pkt the packet to operate on
