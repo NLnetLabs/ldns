@@ -100,7 +100,7 @@ high level resemblances to that package.
 <sect1>
 <title>The Different Parts of ldns</title>
 <para>
-<figure>
+<programlisting>
                               - CLIENT -
                      Any program making use of ldns
             _________/\            /\                 /\
@@ -129,29 +129,53 @@ high level resemblances to that package.
                             - DNSSEC module -
                              sign()
                              verify()			 
-</figure>
+</programlisting>
 </para>
 
 <para>
 Currently not there:
-o A zone structure
-o A encoder/decoder object which can be overloaded to 
+<itemizedlist>
+<listitem>
+<para>
+A zone structure
+</para>
+</listitem>
+<listitem>
+<para>
+A encoder/decoder object which can be overloaded to 
   use specific functions. NSD likes to have this
-o Dynamic update function
+  </para>
+  </listitem>
+  <listitem>
+  <para>
+Dynamic update function
+</para>
+</listitem>
+</itemizedlist>
 </para>
 </sect1>
 
+<sect1>
+<title>
+Central Structures
+</title>
 
-3. CENTRAL structures
-
+<para>
+<programlisting>
 nlnetlabs.nl.   600     IN      MX      10    open.nlnetlabs.nl.
  \              \       \       \       \_                  _/
    _owner        _ttl    _klass   _type    \_  rdf[]      _/
   (rdf)     (uint16_t) (rr_class) (rr_type)
                                            10          := rdf[0]
                                     open.nlnetlabs.nl. := rdf[1]
+</programlisting>
+</para>
 
-* rdf structure:
+<sect2>
+<title>
+rdf Structure
+</title>
+<para>
 The LHS is put in a rdf structure, which is a normal rdf but always has the
 type LDNS_RDF_TYPE_DNAME.
 
@@ -162,79 +186,144 @@ The RSH (rdata) is put in an array of rdf's (in this case 2).
 
 The entire resource record is put in a RR structure, which has
 the fields described above (under the RR):
-  _owner	(nlnetlabs.nl.)
-  _ttl		(600)
-  _klass	(LDNS_RR_CLASS_IN: 'IN')
+  _owner        (nlnetlabs.nl.)
+  _ttl          (600)
+  _klass        (LDNS_RR_CLASS_IN: 'IN')
   _type         (LDNS_RR_TYPE_MX: 'MX')
-  _rd_count	(2)
+  _rd_count     (2)
   _rdata_fields[rd_count]
                 rdf[0]  (10)
                 rdf[1]  (open.nlnetlabs.nl.)
+</para>
+</sect2>
 
-* RR list structure:
+<sect2>
+<title>
+RR list Structure
+</title>
+<para>
 An RR list structure is simply structure with a counter
 and an array of RR structures. Different kinds of RR's can
 be grouped together this way.
+</para>
+</sect2>
 
-* RR set structure
+<sect2>
+<title>
+RR set Structure
+</title>
+<para>
 An RR set structure is an RR list structure, but its accessor
-function check if the RR's in there are: 
+function check if the RR's in there are:
  - from the same type
  - have the same TTL
  - have the same ownername
 
 This is the RFC definition of an RRset.
+</para>
+</sect2>
 
-* pkt structure:
-A pkt structure consists out of a header structure where 
-packet specific flags are kept, TC, RD, IP from server which
+<sect2>
+<title>
+pkt Structure
+</title>
+<para>
+A pkt structure consists out of a header structure where
+packet specific flags are kept, TC, RD, IP address from server which
 sent the packet, etc.
 Further more it is divided in 4 sections: question, authority, answer
 and additional.
 
 All four sections have the type RRlist that simply hold a list of RR's
+</para>
+</sect2>
 
+</sect1>
 
-4. WIRE module and CENTRAL structures Interface
+<sect1>
+<title>
+WIRE module and CENTRAL structures Interface
+</title>
+<para>
 As the WIRE module takes care of the compression/decompression
 it needs a buffer which holds all the binary DNS data.
 All functions will operate on such a buffer to extract specific
 information which is then stored in RR structures.
+</para>
+</sect1>
 
-5. RESOLVER module and CENTRAL structures Interface
+<sect1>
+<title>
+RESOLVER module and CENTRAL structures Interface
+</title>
+<para>
 The resolver module always returns a pkt structure. Either with
 the answer or a SERVFAIL pkt.
 
-The exact function-call parameters have not yet been 
+The exact function-call parameters have not yet been
 decided on.
 
 Also the resolver module will need to access some of the
 to_wire and from_wire function to creates ldn_pkt's from
 the data it receives (arrow not drawn).
+</para>
+</sect1>
 
-6. STR module and CENTRAL structures Interface
+<sect1>
+<title>
+STR module and CENTRAL structures Interface
+</title>
+<para>
 Convert to and from strings. This module could be used
 to read in a zone file (list of RRs) and convert the text strings to
 the format used by ldns. Or the other way around.
+</para>
+</sect1>
 
-7. NET Module and RESOLVER module Interface
+<sect1>
+<title>
+NET Module and RESOLVER module Interface
+</title>
+<para>
 The resolver module will get a packet and will mold it so that
-it can be sent off to a nameserver. 
+it can be sent off to a nameserver.
 It might need to interface with the wire module (arrow not drawn).
+</para>
+</sect1>
 
+<sect1>
+<title>
 8. NET Module and OS/libc Interface
-OS/network calls will be used here. The Net module is the only part of 
-the library where the underlying OS matters. 
+</title>
+<para>
+OS/network calls will be used here. The Net module is the only part of
+the library where the underlying OS matters.
+</para>
+</sect1>
 
-9. Client program ldns Interface
+<sect1>
+<title>
+Client Program ldns Interface
+</title>
+<para>
 Any client program will have access to
 - WIRE module
 - CENTRAL structure
 - RESOLVER module
 - STR module (arrow not drawn in the above figure)
+</para>
+</sect1>
 
-10. DNSSEC module
+<sect1>
+<title>
+DNSSEC Module
+</title>
+<para>
 The DNSSEC types are handled in the RR module, but the crypto
 routines are contained in this module. This module will depend
-on OpenSSL for the crypto routines. 
+on OpenSSL for the crypto routines.
+</para>
+</sect1>
+
 </article>
+
