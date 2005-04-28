@@ -510,9 +510,9 @@ void ldns_rr_list_sort(ldns_rr_list *unsorted);
 int ldns_rr_compare(const ldns_rr *rr1, const ldns_rr *rr2);
 
 /**
- * Returns true of the given rr's are equal, where
- * Also returns true if one records is a DS that represents the
- * other DNSKEY record
+ * Returns true of the given rr's are equal.
+ * Also returns true if one record is a DS that represents the
+ * same DNSKEY record as the other record
  * \param[in] rr1 the first rr
  * \param[in] rr2 the second rr
  * \return true if equal otherwise false
