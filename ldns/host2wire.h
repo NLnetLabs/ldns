@@ -12,8 +12,23 @@
 
 #include "util.h"
 
-ldns_status ldns_rdf2buffer_wire(ldns_buffer *, const ldns_rdf *);
-ldns_status ldns_rr2buffer_wire(ldns_buffer *, const ldns_rr *, int);
+/**
+ * Copies the rdata data to the buffer in wire format
+ * \param[out] *output buffer to append the result to
+ * \param[in] *rdf rdata to convert
+ * \return ldns_status
+ */
+ldns_status ldns_rdf2buffer_wire(ldns_buffer *output, const ldns_rdf *rdf);
+
+/**
+ * Copies the rr data to the buffer in wire format
+ * \param[out] *output buffer to append the result to
+ * \param[in] *rr resource record to convert
+ * \param[in] section the section in the packet this rr is supposed to be in
+ *            (to determine whether to add rdata or not)
+ * \return ldns_status
+ */
+ldns_status ldns_rr2buffer_wire(ldns_buffer *output, const ldns_rr *rr, int section);
 
 /**
  * Converts a rrsig to wireformat BUT EXCLUDE the rrsig rdata

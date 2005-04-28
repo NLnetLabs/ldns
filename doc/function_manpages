@@ -8,6 +8,12 @@
 # conversion functions
 ldns_rr2wire, ldns_pkt2wire, ldns_rdf2wire, ldns_rr2str, ldns_pkt2str, ldns_rdf2str | Miek Gieben, Jelte Jansen
 
+# lower level conversions
+ldns_pkt2buffer_str, ldns_rr2buffer_str, ldns_rdf2buffer_str, ldns_pkt2buffer_wire, ldns_rr2buffer_wire, ldns_rdf2buffer_wire,
+
+# and even lower
+ldns_rdf2buffer_str_a, ldns_rdf2buffer_str_aaaa, ldns_rdf2buffer_str_str, ldns_rdf2buffer_str_b64, ldns_rdf2buffer_str_hex, ldns_rdf2buffer_str_type, ldns_rdf2buffer_str_class, ldns_rdf2buffer_str_alg, ldns_rdf2buffer_str_cert, ldns_rdf2buffer_str_loc, ldns_rdf2buffer_str_unknown, ldns_rdf2buffer_str_nsap, ldns_rdf2buffer_str_wks, ldns_rdf2buffer_str_nsec, ldns_rdf2buffer_str_period, ldns_rdf2buffer_str_tsigtime, ldns_rdf2buffer_str_apl, ldns_rdf2buffer_str_todo, ldns_rdf2buffer_str_int16_data, ldns_rdf2buffer_str_ipseckey, ldns_rdf2buffer_str_tsig
+
 # wirefunctions
 ldns_wire2rr, ldns_wire2pkt, ldns_wire2rdf, ldns_wire2dname
 
@@ -60,7 +66,7 @@ ldns_str_remove_comment
 # rdata.h
 ldns_rdf_set_size, ldns_rdf_set_type, ldns_rdf_set_data
 ldns_rdf_size, ldns_rdf_get_type, ldns_rdf_data
-ldns_rdf_new, ldns_rdf_new_frm_data, ldns_rdf_new_frm_str,ldns_rdf_new_frm_fp, ldns_rdf_free, ldns_rdf_free_data
+ldns_rdf_new, ldns_rdf_new_frm_data, ldns_rdf_new_frm_str,ldns_rdf_new_frm_fp, ldns_rdf_free, ldns_rdf_free_data, ldns_rdf_print
 ldns_native2rdf_int8, ldns_native2rdf_int16, ldns_native2rdf_int32
 ldns_native2rdf_int16_data, ldns_rdf2native_int8, ldns_rdf2native_int16, ldns_rdf2native_int32, ldns_rdf2native_sockaddr_storage
 ldns_rdf_address_reverse
@@ -70,8 +76,8 @@ ldns_str2period
 ldns_rdf_deep_clone
 ldns_rdf_compare
 
-# rr.h
-ldns_rr_new, ldns_rr_new_frm_type, ldns_rr_new_frm_str, ldns_rr_new_frm_fp, ldns_rr_free
+# rr.h and other general rr funcs
+ldns_rr_new, ldns_rr_new_frm_type, ldns_rr_new_frm_str, ldns_rr_new_frm_fp, ldns_rr_free, ldns_rr_print
 ldns_rr_set_owner, ldns_rr_set_ttl, ldns_rr_set_type, ldns_rr_set_rd_count, ldns_rr_set_class, ldns_rr_set_rdf
 ldns_rr_push_rdf, ldns_rr_pop_rdf
 ldns_rr_rdf, ldns_rr_owner, ldns_rr_rd_count, ldns_rr_ttl, ldns_rr_get_class
@@ -87,3 +93,7 @@ ldns_rr_compare, ldns_rr_compare_ds
 ldns_rr_uncompressed_size
 ldns_rr2canonical
 ldns_rr_label_count
+
+# packet.h
+ldns_pkt_print
+
