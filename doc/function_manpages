@@ -29,6 +29,17 @@ ldns_verify, ldns_verify_rrsig, ldns_verify_rrsig_dsa, ldns_verify_rrsig_rsasha1
 #	key conv
 ldns_key_buf2dsa, ldns_key_buf2rsa, ldns_key_rr2ds
 
+# dnskey.h
+ldns_key_new, ldns_key_new_frm_algorithm, ldns_key2rr,
+
+#	lists
+ldns_key_list_new, ldns_key_list_push_key,  ldns_key_list_pop_key, ldns_key_list_key_count, ldns_key_list_key
+ldns_key_rsa_key, ldns_key_dsa_key, ldns_key_algorithm, ldns_key_hmac_key
+
+#	gets/sets
+ldns_key_origttl, ldns_key_inception, ldns_key_expiration, ldns_key_keytag, ldns_key_pubkey_owner, ldns_key_flags
+ldns_key_set_algorithm, ldns_key_set_rsa_key, ldns_key_set_dsa_key, ldns_key_set_hmac_key, ldns_key_set_origttl, ldns_key_set_inception, ldns_key_set_expiration, ldns_key_set_pubkey_owner, ldns_key_set_keytag, ldns_key_set_flags, ldns_key_list_set_key_count, 
+
 # TSIG
 ldns_pkt_tsig_verify, ldns_pkt_tsig_sign
 

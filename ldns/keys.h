@@ -85,15 +85,21 @@ struct ldns_struct_key_list
 typedef struct ldns_struct_key_list ldns_key_list;
 
 
-/* creator functions */
+/**
+ * creates a new empty key list
+ */
 ldns_key_list *ldns_key_list_new();
+
+/** 
+ * creates a new empty key structure
+ */
 ldns_key *ldns_key_new();
 
 /**
- * Generates a new key based on the algorithm
+ * creates a new key based on the algorithm
  *
  * \param[in] a The algorithm to use
- * \param[in] size
+ * \param[in] size the number of bytes for the keysize
  */
 ldns_key *ldns_key_new_frm_algorithm(ldns_signing_algorithm a, uint16_t size);
 
@@ -118,11 +124,26 @@ void ldns_key_list_set_key_count(ldns_key_list *key, size_t count);
  */      
 bool ldns_key_list_push_key(ldns_key_list *key_list, ldns_key *key);
 
-/* access read functions */
+/**
+ * returns the number of keys in the key list
+ */
 size_t ldns_key_list_key_count(ldns_key_list *key_list);
+
+/**
+ * returns a pointer to the key in the list at the given position
+ */
 ldns_key *ldns_key_list_key(ldns_key_list *key, size_t nr);
+
+/**
+ * returns the (openssl) RSA struct contained in the key
+ */
 RSA *ldns_key_rsa_key(ldns_key *k);
+
+/**
+ * returns the (openssl) DSA struct contained in the key
+ */
 DSA *ldns_key_dsa_key(ldns_key *k);
+
 ldns_signing_algorithm ldns_key_algorithm(ldns_key *k);
 unsigned char *ldns_key_hmac_key(ldns_key *k);
 uint32_t ldns_key_origttl(ldns_key *k);
@@ -130,21 +151,25 @@ uint32_t ldns_key_inception(ldns_key *k);
 uint32_t ldns_key_expiration(ldns_key *k);
 uint16_t ldns_key_keytag(ldns_key *k);
 ldns_rdf *ldns_key_pubkey_owner(ldns_key *k);
+uint16_t ldns_key_flags(ldns_key *k);
+
+/**
+ * returns the hmac data contained in the key
+ */
 
 /**     
- * Pops the last rr from a keylist
+ * pops the last rr from a keylist
  * \param[in] key_list the rr_list to pop from
  * \return NULL if nothing to pop. Otherwise the popped RR
  */
 ldns_key *ldns_key_list_pop_key(ldns_key_list *key_list);
 
 /** 
- * convert a ldns_key to a public key rr
+ * converts a ldns_key to a public key rr
  *
  * \param[in] k the ldns_key to convert
  * \return ldns_rr representation of the key
  */
 ldns_rr *ldns_key2rr(ldns_key *k);
-uint16_t ldns_key_flags(ldns_key *k);
 
 #endif /* _LDNS_KEYS_H */
