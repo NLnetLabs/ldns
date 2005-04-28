@@ -108,8 +108,11 @@ void ldns_buffer_clear(ldns_buffer *buffer);
  * makes the buffer ready for reading the data that has been written to
  * the buffer.  The buffer's limit is set to the current position and
  * the position is set to 0.
+ *
+ * \param[in] buffer the buffer to flip
+ * \return void
  */
-void lnds_buffer_flip(ldns_buffer *buffer);
+void ldns_buffer_flip(ldns_buffer *buffer);
 
 /**
  * make the buffer ready for re-reading the data.  The buffer's
@@ -490,8 +493,8 @@ ldns_buffer_status_ok(ldns_buffer *buffer)
  * '\0'. Returns the number of characters written (not including the
  * terminating '\0') or -1 on failure.
  */
-int ldns_buffer_printf(ldns_buffer *buffer, const char *format, ...)
-	ATTR_FORMAT(printf, 2, 3);
+int ldns_buffer_printf(ldns_buffer *buffer, const char *format, ...);
+/*	ATTR_FORMAT(printf, 2, 3);*/
 
 /**
  * frees the buffer.
