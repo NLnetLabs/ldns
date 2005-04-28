@@ -52,7 +52,6 @@ ldns_buffer_remaining_at, ldns_buffer_remaining, ldns_buffer_available_at, ldns_
 # read and write
 ldns_buffer_write_at, ldns_buffer_write_at, ldns_buffer_write, ldns_buffer_write_string_at, ldns_buffer_write_string, ldns_buffer_write_u8_at, ldns_buffer_write_u8, ldns_buffer_write_u16_at, ldns_buffer_write_u16, ldns_buffer_read_at, ldns_buffer_read, ldns_buffer_read_u8_at, ldns_buffer_read_u8, ldns_buffer_read_u16_at, ldns_buffer_read_u16, ldns_buffer_read_u32_at, ldns_buffer_read_u32
 
-
 # parse.h
 ldns_bget_token, ldns_bgetc, ldns_bskipcs
 ldns_fget_token, ldns_fskipcs
