@@ -399,6 +399,9 @@ ldns_buffer_read(ldns_buffer *buffer, void *data, size_t count)
 	buffer->_position += count;
 }
 
+/**
+ * returns the byte value at the given position in the buffer
+ */
 INLINE uint8_t
 ldns_buffer_read_u8_at(ldns_buffer *buffer, size_t at)
 {
@@ -406,6 +409,9 @@ ldns_buffer_read_u8_at(ldns_buffer *buffer, size_t at)
 	return buffer->_data[at];
 }
 
+/**
+ * returns the byte value at the current position in the buffer
+ */
 INLINE uint8_t
 ldns_buffer_read_u8(ldns_buffer *buffer)
 {
@@ -414,6 +420,9 @@ ldns_buffer_read_u8(ldns_buffer *buffer)
 	return result;
 }
 
+/**
+ * returns the 2-byte integer value at the given position in the buffer
+ */
 INLINE uint16_t
 ldns_buffer_read_u16_at(ldns_buffer *buffer, size_t at)
 {
@@ -421,6 +430,9 @@ ldns_buffer_read_u16_at(ldns_buffer *buffer, size_t at)
 	return read_uint16(buffer->_data + at);
 }
 
+/**
+ * returns the 2-byte integer value at the current position in the buffer
+ */
 INLINE uint16_t
 ldns_buffer_read_u16(ldns_buffer *buffer)
 {
@@ -429,6 +441,9 @@ ldns_buffer_read_u16(ldns_buffer *buffer)
 	return result;
 }
 
+/**
+ * returns the 4-byte integer value at the given position in the buffer
+ */
 INLINE uint32_t
 ldns_buffer_read_u32_at(ldns_buffer *buffer, size_t at)
 {
@@ -436,6 +451,9 @@ ldns_buffer_read_u32_at(ldns_buffer *buffer, size_t at)
 	return read_uint32(buffer->_data + at);
 }
 
+/**
+ * returns the 4-byte integer value at the current position in the buffer
+ */
 INLINE uint32_t
 ldns_buffer_read_u32(ldns_buffer *buffer)
 {
@@ -444,12 +462,18 @@ ldns_buffer_read_u32(ldns_buffer *buffer)
 	return result;
 }
 
+/**
+ * returns the status of the buffer
+ */
 INLINE ldns_status
 ldns_buffer_status(ldns_buffer *buffer)
 {
 	return buffer->_status;
 }
 
+/**
+ * returns true if the status of the buffer is LDNS_STATUS_OK, false otherwise
+ */
 INLINE bool
 ldns_buffer_status_ok(ldns_buffer *buffer)
 {
@@ -460,8 +484,8 @@ ldns_buffer_status_ok(ldns_buffer *buffer)
 	}
 }
 
-/*
- * Print to the buffer, increasing the capacity if required using
+/**
+ * prints to the buffer, increasing the capacity if required using
  * buffer_reserve(). The buffer's position is set to the terminating
  * '\0'. Returns the number of characters written (not including the
  * terminating '\0') or -1 on failure.
@@ -470,7 +494,7 @@ int ldns_buffer_printf(ldns_buffer *buffer, const char *format, ...)
 	ATTR_FORMAT(printf, 2, 3);
 
 /**
- * Frees the buffer.
+ * frees the buffer.
  * \param[in] *buffer the buffer to be freed
  * \return void
  */
