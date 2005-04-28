@@ -215,6 +215,9 @@ foreach (keys %manpages) {
 	chdir("man/man$MAN_SECTION");
 	foreach (@$name) {
 		my $new_file = $_ . "." . $MAN_SECTION;
+		if ($new_file eq $symlink_file) {
+			next;
+		}
 		print "\t", $new_file, " -> ", $symlink_file, "\n";
 		symlink $symlink_file, $new_file;
 	}
