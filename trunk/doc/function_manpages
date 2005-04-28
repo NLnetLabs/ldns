@@ -15,7 +15,7 @@ ldns_wire2rr, ldns_wire2pkt, ldns_wire2rdf, ldns_wire2dname
 ldns_dname_cat, ldns_dname_left_chop, ldns_dname_label_count, ldns_dname_new_frm_str,ldns_dname_new_frm_data, ldns_dname2canonical
 
 # dnssec.h
-ldns_calc_keytag
+ldns_calc_keytag, ldns_verify, ldns_verify_rrsig, ldns_verify_rrsig_dsa, ldns_verify_rrsig_rsasha1, ldns_verify_rrsig_rsamd5, ldns_key_rr2ds, ldns_key_buf2dsa, ldns_key_buf2rsa
 
 # 	verify
 ldns_verify, ldns_verify_rrsig, ldns_verify_rrsig_dsa, ldns_verify_rrsig_rsasha1, ldns_verify_rrsig_rsamd5
