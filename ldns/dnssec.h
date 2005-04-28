@@ -40,54 +40,87 @@ typedef enum ldns_enum_algorithm ldns_algorithm;
 #endif
 
 /** 
- * Calculates a keytag of a key for use in DNSSEC
+ * calculates a keytag of a key for use in DNSSEC
+ *
  * \param[in] key the key to use for the calc.
  * \return the keytag
  */
 uint16_t ldns_calc_keytag(ldns_rr *key);
 
 /**
- * verify an rrsig rrset
+ * verifies an rrsig rrset
+ *
+ * \param[in] rrset the rrset to verify
+ * \param[in] rrsig a list of signatures to check
+ * \param[in] keys a list of keys to check with
  */
-bool ldns_verify(ldns_rr_list *, ldns_rr_list *, ldns_rr_list *);	
+bool ldns_verify(ldns_rr_list *rrset, ldns_rr_list *rrsig, ldns_rr_list *keys);	
 
 /**
- * Verifies an rrsig 
+ * verifies an rrsig 
+ *
  * \param[in] rrset the rrset to check
  * \param[in] rrsig the signature of the rrset
  * \param[in] keys the keys to try
  */
 bool ldns_verify_rrsig(ldns_rr_list *rrset, ldns_rr *rrsig, ldns_rr_list *keys);
 
-bool ldns_verify_rrsig_dsa(ldns_buffer *, ldns_buffer *, ldns_buffer *);
-bool ldns_verify_rrsig_rsasha1(ldns_buffer *, ldns_buffer *, ldns_buffer *);
-bool ldns_verify_rrsig_rsamd5(ldns_buffer *, ldns_buffer *, ldns_buffer *);
+/**
+ * verifies a buffer with signature data (DSA) for a buffer with rrset data 
+ * with a buffer with key data 
+ *
+ * \param[in] sig the signature data
+ * \param[in] rrset the rrset data, sorted and processed for verification
+ * \param[in] key the key data
+ */
+bool ldns_verify_rrsig_dsa(ldns_buffer *sig, ldns_buffer *rrset, ldns_buffer *key);
+/**
+ * verifies a buffer with signature data (RSASHA1) for a buffer with rrset data 
+ * with a buffer with key data 
+ *
+ * \param[in] sig the signature data
+ * \param[in] rrset the rrset data, sorted and processed for verification
+ * \param[in] key the key data
+ */
+bool ldns_verify_rrsig_rsasha1(ldns_buffer *sig, ldns_buffer *rrset, ldns_buffer *key);
+/**
+ * verifies a buffer with signature data (RSAMD5) for a buffer with rrset data 
+ * with a buffer with key data 
+ *
+ * \param[in] sig the signature data
+ * \param[in] rrset the rrset data, sorted and processed for verification
+ * \param[in] key the key data
+ */
+bool ldns_verify_rrsig_rsamd5(ldns_buffer *sig, ldns_buffer *rrset, ldns_buffer *key);
 
 /**
- * convert a buffer holding key material to a DSA key in openssl 
+ * converts a buffer holding key material to a DSA key in openssl 
+ *
  * \param[in] key the key to convert
  * \return a DSA * structure with the key material
  */
 DSA *ldns_key_buf2dsa(ldns_buffer *key);
 
 /**
- * convert a buffer holding key material to a RSA key in openssl 
+ * converts a buffer holding key material to a RSA key in openssl 
+ *
  * \param[in] key the key to convert
  * \return a RSA * structure with the key material
  */
 RSA *ldns_key_buf2rsa(ldns_buffer *key);
 
 /**
- * Verifies the tsig rr for the given packet and key (string?)
+ * verifies the tsig rr for the given packet and key (string?)
  * wire must be given too because tsig does not sign normalized packet
  * packet is still given (and used, but could be constructed from wire)
  * remove that?
+ *
  * \return true if tsig is correct, false if not, or if tsig is not set
  */
 bool ldns_pkt_tsig_verify(ldns_pkt *pkt, uint8_t *wire, size_t wire_size, const char *key_name, const char *key_data, ldns_rdf *mac);
 
 /**
- * Creates a tsig rr for the given packet and key (string?)
+ * creates a tsig rr for the given packet and key (string?)
  *
  * \param[in] pkt the packet to sign
  * \param[in] key_name the name of the shared key
@@ -100,7 +133,8 @@ bool ldns_pkt_tsig_verify(ldns_pkt *pkt, uint8_t *wire, size_t wire_size, const 
 ldns_status ldns_pkt_tsig_sign(ldns_pkt *pkt, const char *key_name, const char *key_data, uint16_t fudge, const char *algorithm_name, ldns_rdf *query_mac);
 
 /** 
- * Returns a new DS rr that represents the given key rr
+ * returns a new DS rr that represents the given key rr
+ *
  * \param[in] *key the key to convert
  * \return ldns_rr* a new rr pointer to a DS
  */
