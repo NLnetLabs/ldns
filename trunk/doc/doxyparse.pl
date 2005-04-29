@@ -99,6 +99,8 @@ while(<>) {
 		# /** Seen
 		#print "Comment seen! [$_]\n";
 		$state = 1;
+		undef $description;
+		undef $struct_description;
 		next;
 	}
 	if (/\*\// and $state == 1) {
@@ -157,7 +159,10 @@ while(<>) {
 		undef $description;
 		undef $struct_description;
 		$state = 0;
-	} elsif (/^typedef\sstruct\s(\w+)\s(\w+);/ and $state == 2) {
+	} elsif ($state == 2 and (
+			/^typedef\sstruct\s(\w+)\s(\w+);/ or
+			/^typedef\senum\s(\w+)\s(\w+);/)
+	        ) {
 		$struct_description .= "\n.br\n" . $_;
 		$key = $2;
 		$description{$key} = $struct_description;

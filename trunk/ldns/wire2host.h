@@ -96,9 +96,9 @@
 #define	ARCOUNT(wirebuf)		(read_uint16(wirebuf+ARCOUNT_OFF))
 
 /**
- * Converts the data on the uint8_t bytearray (in wire format) to a DNS packet
+ * converts the data on the uint8_t bytearray (in wire format) to a DNS packet.
  * This function will initialize and allocate memory space for the packet 
- * structure
+ * structure.
  * 
  * \param[in] packet pointer to the structure to hold the packet
  * \param[in] data pointer to the buffer with the data
@@ -108,7 +108,7 @@
 ldns_status ldns_wire2pkt(ldns_pkt **packet, const uint8_t *data, size_t len);
 
 /**
- * Converts the data on the uint8_t bytearray (in wire format) to a DNS 
+ * converts the data on the uint8_t bytearray (in wire format) to a DNS 
  * dname rdata field. This function will initialize and allocate memory
  * space for the dname structure. The length of the wiredata of this rdf 
  * is added to the *pos value.
@@ -123,10 +123,10 @@ ldns_status ldns_wire2pkt(ldns_pkt **packet, const uint8_t *data, size_t len);
 ldns_status ldns_wire2dname(ldns_rdf **dname, const uint8_t *wire, size_t max, size_t *pos);
 
 /**
- * Converts the data on the uint8_t bytearray (in wire format) to a DNS 
- * rdata field, and adds it to the list of rdfs in the given rr
+ * converts the data on the uint8_t bytearray (in wire format) to a DNS 
+ * rdata field, and adds it to the list of rdfs in the given rr.
  * This function will initialize and allocate memory space for the dname
- * structure
+ * structure.
  * The length of the wiredata of this rdf is added to the *pos value.
  *
  * \param[in] rr pointer to the ldns_rr structure to hold the rdata value
@@ -139,10 +139,10 @@ ldns_status ldns_wire2dname(ldns_rdf **dname, const uint8_t *wire, size_t max, s
 ldns_status ldns_wire2rdf(ldns_rr *rr, const uint8_t *wire, size_t max, size_t *pos);
 
 /**
- * Converts the data on the uint8_t bytearray (in wire format) to a DNS 
- * resource records
+ * converts the data on the uint8_t bytearray (in wire format) to a DNS 
+ * resource record.
  * This function will initialize and allocate memory space for the rr
- * structure
+ * structure.
  * The length of the wiredata of this rr is added to the *pos value.
  * 
  * \param[in] rr pointer to the structure to hold the rdata value
