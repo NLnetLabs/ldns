@@ -1,4 +1,4 @@
-/*
+r/*
  * packet.h
  *
  * DNS packet definitions
@@ -17,61 +17,61 @@
 #include <ldns/common.h>
 #include <ldns/rr.h>
 
-/*
- * \brief Header of a dns packet
+/**
+ *  Header of a dns packet
  *
  * Contains the information about the packet itself
  */
 struct ldns_struct_hdr
 {
-	/** \brief Id of a packet */
+	/**  Id of a packet */
 	uint16_t _id;
-	/** \brief Query bit (0=query, 1=answer) */
+	/**  Query bit (0=query, 1=answer) */
 	bool _qr;
-	/** \brief Authoritative answer */
+	/**  Authoritative answer */
 	bool _aa;
-	/** \brief Packet truncated */
+	/**  Packet truncated */
 	bool _tc;
-	/** \brief Recursion desired */
+	/**  Recursion desired */
 	bool _rd;
-	/** \brief Checking disabled */
+	/**  Checking disabled */
 	bool _cd;
-	/** \brief Recursion available */
+	/**  Recursion available */
 	bool _ra;
-	/** \brief Authentic data */
+	/**  Authentic data */
 	bool _ad;
-	/** \brief Query type */
+	/**  Query type */
 	uint8_t _opcode;	 /* XXX 8 bits? */
-	/** \brief Response code */
+	/**  Response code */
 	uint8_t _rcode;
-	/** \brief question sec */
+	/**  question sec */
 	uint16_t _qdcount;
-	/** \brief answer sec */
+	/**  answer sec */
 	uint16_t _ancount;
-	/** \brief auth sec */
+	/**  auth sec */
 	uint16_t _nscount;
-	/** \brief add sec */
+	/**  add sec */
 	uint16_t _arcount;
 };
 typedef struct ldns_struct_hdr ldns_hdr;
 
-/*
- * \brief DNS packet
+/**
+ * DNS packet
  *
  * This structure contains a complete DNS packet (either a query or an answer)
  */
 struct ldns_struct_pkt
 {
-	/** \brief header section */
+	/**  header section */
 	ldns_hdr *_header;
 	/* extra items needed in a packet */
-	/** \brief the size in bytes of the pkt */
+	/**  the size in bytes of the pkt */
 	uint16_t _answersize;
 	ldns_rdf *_answerfrom;
 	char *_when;
-	/** \brief query duration */
+	/**  query duration */
 	uint32_t _querytime;
-	/** \brief the packet size */
+	/**  the packet size */
 	size_t _size;
 	/** optional tsig rr */
 	ldns_rr *_tsig_rr;
@@ -81,14 +81,14 @@ struct ldns_struct_pkt
 	uint8_t _edns_version;
 	uint16_t _edns_z;
 	ldns_rdf *_edns_data;
-	/** \brief query data */
-	/** \brief question section */
+	/**  query data */
+	/**  question section */
 	ldns_rr_list	*_question;
-	/** \brief answer section */
+	/**  answer section */
 	ldns_rr_list	*_answer;
-	/** \brief auth section */
+	/**  auth section */
 	ldns_rr_list	*_authority;
-	/** \brief add section */
+	/**  add section */
 	ldns_rr_list	*_additional;
 };
 typedef struct ldns_struct_pkt ldns_pkt;

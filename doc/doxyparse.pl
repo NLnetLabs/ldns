@@ -19,6 +19,7 @@ use Getopt::Std;
 
 my $state;
 my $description;
+my $struct_description;
 my $key;
 my $return;
 my $param;
@@ -129,6 +130,7 @@ while(<>) {
 		$_ =~ s/{/;/;
 	}
 	
+#print "line: $_\n";
 	if (/([\w\* ]*)[\t ]+(.*?)\((.*)\)\s*;/ and $state == 2) {
 		# this should also end the current comment parsing
 		$return = $1;
@@ -153,7 +155,19 @@ while(<>) {
 		$api{$key} = $api;
 		$return{$key} = $return;
 		undef $description;
+		undef $struct_description;
 		$state = 0;
+	} elsif (/^typedef\sstruct\s(\w+)\s(\w+);/ and $state == 2) {
+		$struct_description .= "\n.br\n" . $_;
+		$key = $2;
+		$description{$key} = $struct_description;
+		$api{$key} = "struct";
+		$return{$key} = $1;
+		undef $description;
+		undef $struct_description;
+		$state = 0;
+	} else {
+		$struct_description .= "\n.br\n" . $_;
 	}
 }
 
@@ -181,15 +195,20 @@ foreach (keys %manpages) {
 	foreach (@$name) {
 		$b = $return{$_};
 		$b =~ s/\s+$//;
-		print MAN  $b, " ", $_;
-		print MAN  "(", $api{$_},");\n";
-		print MAN  ".PP\n";
+		if ($api{$_} ne "struct") {
+			print MAN  $b, " ", $_;
+			print MAN  "(", $api{$_},");\n";
+			print MAN  ".PP\n";
+		}
 	}
 
 	print MAN  "\n.SH DESCRIPTION\n";
 	foreach (@$name) {
 		print MAN  ".HP\n";
-		print MAN "\\fI", $_, "\\fR", "()"; 
+		print MAN "\\fI", $_, "\\fR";
+		if ($api{$_} ne "struct") {
+			print MAN "()"; 
+		}
 #		print MAN ".br\n";
 		print MAN  $description{$_};
 		print MAN  "\n.PP\n";
