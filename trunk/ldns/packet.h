@@ -1,4 +1,4 @@
-r/*
+/*
  * packet.h
  *
  * DNS packet definitions
