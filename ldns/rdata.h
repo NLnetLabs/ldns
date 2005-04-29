@@ -82,7 +82,7 @@ enum ldns_enum_rdf_type
 typedef enum ldns_enum_rdf_type ldns_rdf_type;
 
 /**
- * \brief Resource record data
+ * Resource record data
  *
  * The data is a network ordered array of bytes, which size is specified by
  * the (16-bit) size field. To correctly parse it, use the type
@@ -90,11 +90,11 @@ typedef enum ldns_enum_rdf_type ldns_rdf_type;
  */
 struct ldns_struct_rdf
 {
-	/** \brief The size of the data (in bytes) */
+	/** The size of the data (in bytes) */
 	uint16_t _size;
-	/** \brief The type of the data */
+	/** The type of the data */
 	ldns_rdf_type _type;
-	/** \brief Pointer to the data (byte buffer) */
+	/** Pointer to the data (byte buffer) */
 	void  *_data;
 };
 typedef struct ldns_struct_rdf ldns_rdf;

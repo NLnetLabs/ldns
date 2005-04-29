@@ -75,20 +75,20 @@ ldns_fget_token, ldns_fskipcs
 ldns_str_remove_comment
 
 # rdata.h
-ldns_rdf_set_size, ldns_rdf_set_type, ldns_rdf_set_data
-ldns_rdf_size, ldns_rdf_get_type, ldns_rdf_data
-ldns_rdf_new, ldns_rdf_new_frm_data, ldns_rdf_new_frm_str,ldns_rdf_new_frm_fp, ldns_rdf_free, ldns_rdf_free_data, ldns_rdf_print
-ldns_native2rdf_int8, ldns_native2rdf_int16, ldns_native2rdf_int32
-ldns_native2rdf_int16_data, ldns_rdf2native_int8, ldns_rdf2native_int16, ldns_rdf2native_int32, ldns_rdf2native_sockaddr_storage
-ldns_rdf_address_reverse
-ldns_octet
+ldns_rdf, ldns_rdf_type | ldns_rdf_set_size, ldns_rdf_size, ldns_rdf_new, ldns_native2rdf_int8, ldns_rdf_address_reverse, ldns_octet
+ldns_rdf_set_size, ldns_rdf_set_type, ldns_rdf_set_data | ldns_rdf
+ldns_rdf_size, ldns_rdf_get_type, ldns_rdf_data | ldns_rdf
+ldns_rdf_new, ldns_rdf_new_frm_data, ldns_rdf_new_frm_str,ldns_rdf_new_frm_fp, ldns_rdf_free, ldns_rdf_free_data, ldns_rdf_print | ldns_rdf
+ldns_native2rdf_int8, ldns_native2rdf_int16, ldns_native2rdf_int32,ldns_native2rdf_int16_data, ldns_rdf2native_int8, ldns_rdf2native_int16, ldns_rdf2native_int32, ldns_rdf2native_sockaddr_storage | ldns_rdf
+ldns_rdf_address_reverse | ldns_rdf
+ldns_octet | ldns_rdf
 # why is this in rdata.h?
 ldns_str2period
 ldns_rdf_deep_clone
 ldns_rdf_compare
 
 # rr.h and other general rr funcs
-ldns_rr_new, ldns_rr_new_frm_type, ldns_rr_new_frm_str, ldns_rr_new_frm_fp, ldns_rr_free, ldns_rr_print
+ldns_rr, ldns_rr_new, ldns_rr_new_frm_type, ldns_rr_new_frm_str, ldns_rr_new_frm_fp, ldns_rr_free, ldns_rr_print
 ldns_rr_set_owner, ldns_rr_set_ttl, ldns_rr_set_type, ldns_rr_set_rd_count, ldns_rr_set_class, ldns_rr_set_rdf
 ldns_rr_push_rdf, ldns_rr_pop_rdf
 ldns_rr_rdf, ldns_rr_owner, ldns_rr_rd_count, ldns_rr_ttl, ldns_rr_get_class
