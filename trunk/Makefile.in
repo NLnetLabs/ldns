@@ -106,8 +106,6 @@ uninstall-h:
 install-lib:	lib
 		$(INSTALL_PROGRAM) ./.libs/libldns.so.0.0.0 -m 755 $(prefix)/lib
 		$(INSTALL_PROGRAM) ./libldns.la -m 644 $(prefix)/lib
-		ln -s $(prefix)/lib/libldns.so.0.0.0 $(prefix)/lib/libldns.so.0
-		ln -s $(prefix)/lib/libldns.so.0.0.0 $(prefix)/lib/libldns.so
 
 uninstall-lib:	
 		rm -f $(prefix)/lib/ldnsldns.so.0.0.0
