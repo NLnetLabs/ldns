@@ -83,6 +83,8 @@ install:	install-doc install-h install-lib
 
 uninstall:	uninstall-doc uninstall-h uninstall-lib
 
+destclean:	uninstall
+
 install-doc:	doc
 		echo "installing documentation"
 
@@ -91,6 +93,9 @@ uninstall-doc:
 
 install-h:	lib
 		echo "installing header files $(prefix)/include"
+		mkdir $(prefix)/include/ldns/
+# use INSTALL_PROGRAM
+		cp $(LIBDNS_HEADERS) $(prefix)/include/ldns/
 
 uninstall-h:
 		echo "remoing header flies from $(prefix)/include"
