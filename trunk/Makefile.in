@@ -21,7 +21,7 @@ LIBTOOL		= @srcdir@/libtool
 LINT		= splint
 LINTFLAGS	= +quiet -weak -warnposix -unrecog -Din_addr_t=uint32_t -Du_int=unsigned -Du_char=uint8_t 
 
-#INSTALL = $(srcdir)/install-sh -c
+#INSTALL = $(srcdir)/install-sh -c 
 #INSTALL_PROGRAM = $(INSTALL)
 
 LIBDNS_SOURCES	=	rdata.c util.c rr.c packet.c wire2host.c \
@@ -67,6 +67,8 @@ LINK_LIB	= $(LIBTOOL) --mode=link $(CC) $(CFLAGS) $(LDFLAGS)
 	$(COMP_LIB) -c $<
 
 .PHONY:	clean realclean docclean doc lint test all lib
+.PHONY: install uninstall install-doc uninstall-doc 
+.PHONY: install-h uninstall-h install-lib uninstall-lib snapshot
 
 all:		lib
 
@@ -76,9 +78,35 @@ progs:		$(PROG_TARGETS)
 lib:		$(LIBDNS_OBJECTS) b64_pton$U.o b64_ntop$U.o
 		$(LINK_LIB) -o libldns.la $(LIBDNS_LOBJECTS) b64_pton$U.lo b64_ntop$U.lo \
 		-rpath $(prefix)/lib
-# this breaks: configure --disable-shared
-		mv -f .libs/libldns.so* ./
+
+install:	install-doc install-h install-lib
+
+uninstall:	uninstall-doc uninstall-h uninstall-lib
+
+install-doc:	doc
+		echo "installing documentation"
+
+uninstall-doc:
+		echo "removing documentation"
+
+install-h:	lib
+		echo "installing header files $(prefix)/include"
+
+uninstall-h:
+		echo "remoing header flies from $(prefix)/include"
 	
+install-lib:	lib
+		$(INSTALL_PROGRAM) ./libs/ldnsldns.so.0.0.0 -m 755 $(prefix)/lib
+		$(INSTALL_PROGRAM) ./libs/libldns.la -m 644 $(prefix)/lib
+		ln -s $(prefix)/lib/libldns.so.0.0.0 $(prefix)/lib/libldns.so.0
+		ln -s $(prefix)/lib/libldns.so.0.0.0 $(prefix)/lib/libldns.so
+
+uninstall-lib:	
+		rm -f $(prefix)/lib/ldnsldns.so.0.0.0
+		rm -f $(prefix)/lib/ldnsldns.la
+		rm -f $(prefix)/lib/libldns.so.0
+		rm -f $(prefix)/lib/libldns.so
+
 snapshot:	realclean testclean
 		(rm -rf ../ldns-snap-$(DATE)/)
 		(cd .. ; cp -r $(basesrcdir)/ ldns-snap-$(DATE)/)
