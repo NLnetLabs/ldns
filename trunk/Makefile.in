@@ -21,7 +21,7 @@ LIBTOOL		= @srcdir@/libtool
 LINT		= splint
 LINTFLAGS	= +quiet -weak -warnposix -unrecog -Din_addr_t=uint32_t -Du_int=unsigned -Du_char=uint8_t 
 
-INSTALL = $(srcdir)/install-sh -c 
+INSTALL = $(srcdir)/install-sh 
 INSTALL_PROGRAM = $(INSTALL)
 
 LIBDNS_SOURCES	=	rdata.c util.c rr.c packet.c wire2host.c \
@@ -101,8 +101,8 @@ uninstall-h:
 		echo "remoing header flies from $(prefix)/include"
 	
 install-lib:	lib
-		$(INSTALL_PROGRAM) ./libs/ldnsldns.so.0.0.0 -m 755 $(prefix)/lib
-		$(INSTALL_PROGRAM) ./libs/libldns.la -m 644 $(prefix)/lib
+		$(INSTALL_PROGRAM) ./libldns.so.0.0.0 -m 755 $(prefix)/lib
+		$(INSTALL_PROGRAM) ./libldns.la -m 644 $(prefix)/lib
 		ln -s $(prefix)/lib/libldns.so.0.0.0 $(prefix)/lib/libldns.so.0
 		ln -s $(prefix)/lib/libldns.so.0.0.0 $(prefix)/lib/libldns.so
 
