@@ -93,7 +93,7 @@ struct ldns_struct_pkt
 };
 typedef struct ldns_struct_pkt ldns_pkt;
 
-/*
+/**
  * The sections of a packet
  */
 enum ldns_enum_pkt_section {
@@ -101,12 +101,14 @@ enum ldns_enum_pkt_section {
 	LDNS_SECTION_ANSWER = 1,
 	LDNS_SECTION_AUTHORITY = 2,
 	LDNS_SECTION_ADDITIONAL = 3,
-	LDNS_SECTION_ANY = 4,  /* bogus section, if not interested */
-	LDNS_SECTION_ANY_NOQUESTION = 5 /* used to get all non-question rrs from a packet */
+	/** bogus section, if not interested */
+	LDNS_SECTION_ANY = 4,
+	/** used to get all non-question rrs from a packet */
+	LDNS_SECTION_ANY_NOQUESTION = 5
 };
 typedef enum ldns_enum_pkt_section ldns_pkt_section;	
 
-/*
+/**
  * the different types of packets
  */
 enum ldns_enum_pkt_type {
