@@ -74,10 +74,13 @@ all:		lib
 
 progs:		$(PROG_TARGETS)
 	
-# static and dynamic
 lib:		$(LIBDNS_OBJECTS) b64_pton$U.o b64_ntop$U.o
 		$(LINK_LIB) -o libldns.la $(LIBDNS_LOBJECTS) b64_pton$U.lo b64_ntop$U.lo \
 		-rpath $(prefix)/lib
+
+doc:		doc/function_manpages 
+		doxygen libdns.doxygen
+		cat ldns/*.h | doc/doxyparse.pl -m doc/function_manpages
 
 install:	install-doc install-h install-lib
 
@@ -135,10 +138,6 @@ run-test18:	run-test18.o $(LIBDNS_OBJECTS) $(LIBOBJS)
 run-test19:	run-test19.o $(LIBDNS_OBJECTS) $(LIBOBJS)
 		$(LINK) ${LIBS} -lssl -o $@ $+
 
-doc:	
-	doxygen libdns.doxygen
-	(cd doc; make)
-
 clean:	
 	rm -f *.o *.d *.lo
 	rm -f $(TESTS)
@@ -167,6 +166,8 @@ docclean:
 	rm -rf doc/html/
 	rm -rf doc/man/
 	rm -rf doc/latex/
+	rm -f doc/*.txt
+	rm -f doc/*.tex
 
 libclean:
 	rm -rf .libs

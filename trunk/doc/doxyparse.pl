@@ -33,6 +33,7 @@ my %options;
 my %manpages;
 my %see_also;
 
+my $BASE="doc/man";
 my $MAN_SECTION = "3";
 my $MAN_HEADER = ".TH ldns  \"25 Apr 2005\"\n";
 my $MAN_MIDDLE = ".SH AUTHOR
@@ -89,8 +90,9 @@ if (defined $options{'m'}) {
 # 2 - after doxygen, except funcion
 
 # create our pwd
-mkdir "man";
-mkdir "man/man$MAN_SECTION";
+mkdir "doc";
+mkdir "doc/man";
+mkdir "doc/man/man$MAN_SECTION";
 
 $state = 0;
 while(<>) {
@@ -183,7 +185,7 @@ foreach (keys %manpages) {
 	$also = $see_also{$_};
 
 	$filename = @$name[0];
-	$filename = "man/man$MAN_SECTION/$filename.$MAN_SECTION";
+	$filename = "$BASE/man$MAN_SECTION/$filename.$MAN_SECTION";
 
 	my $symlink_file = @$name[0] . "." . $MAN_SECTION;
 
@@ -237,7 +239,7 @@ foreach (keys %manpages) {
 	print MAN $MAN_FOOTER;
 
 	# create symlinks
-	chdir("man/man$MAN_SECTION");
+	chdir("$BASE/man$MAN_SECTION");
 	foreach (@$name) {
 		my $new_file = $_ . "." . $MAN_SECTION;
 		if ($new_file eq $symlink_file) {
@@ -246,6 +248,6 @@ foreach (keys %manpages) {
 		print "\t", $new_file, " -> ", $symlink_file, "\n";
 		symlink $symlink_file, $new_file;
 	}
-	chdir("../.."); # and back
+	chdir("../../.."); # and back, tricky and fragile...
 	close(MAN);
 }
