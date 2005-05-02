@@ -30,7 +30,7 @@ LIBDNS_SOURCES	=	rdata.c util.c rr.c packet.c wire2host.c \
 			higher.c rr_functions.c parse.c error.c
 LIBDNS_HEADERS	=	ldns/error.h		\
 			ldns/packet.h		\
-			ldns/prototype.h 	\
+			ldns/common.h		\
 			ldns/rdata.h 		\
 			ldns/rr.h		\
 			ldns/wire2host.h	\
@@ -45,6 +45,8 @@ LIBDNS_HEADERS	=	ldns/error.h		\
 			ldns/keys.h		\
 			ldns/higher.h		\
 			ldns/parse.h		\
+			ldns/rr_functions.h	\
+			ldns/dns.h		\
 			util.h
 PROG_SOURCES	=	mx.c chaos.c
 PROG_TARGETS	=	$(PROG_SOURCES:.c=)
