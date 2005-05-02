@@ -82,7 +82,8 @@ lib:		$(LIBDNS_OBJECTS) b64_pton$U.o b64_ntop$U.o
 
 doc:		doc/function_manpages 
 		doxygen libdns.doxygen
-		cat ldns/*.h | doc/doxyparse.pl -m doc/function_manpages
+		cat ldns/*.h | doc/doxyparse.pl -m doc/function_manpages 2>&1 | \
+		grep -v ^doxygen | grep -v ^cat  > doc/ldns_manpages
 
 install:	install-doc install-h install-lib
 
@@ -168,6 +169,7 @@ docclean:
 	rm -rf doc/latex/
 	rm -f doc/*.txt
 	rm -f doc/*.tex
+	rm -f doc/ldns_manpages
 
 libclean:
 	rm -rf .libs

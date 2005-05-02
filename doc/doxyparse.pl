@@ -189,7 +189,7 @@ foreach (keys %manpages) {
 
 	my $symlink_file = @$name[0] . "." . $MAN_SECTION;
 
-	print $filename,"\n";
+#	print STDOUT $filename,"\n";
 	open (MAN, ">$filename") or die "Can not open $filename";
 
 	print MAN  $MAN_HEADER;
@@ -241,11 +241,12 @@ foreach (keys %manpages) {
 	# create symlinks
 	chdir("$BASE/man$MAN_SECTION");
 	foreach (@$name) {
+		print STDERR $_,"\n";
 		my $new_file = $_ . "." . $MAN_SECTION;
 		if ($new_file eq $symlink_file) {
 			next;
 		}
-		print "\t", $new_file, " -> ", $symlink_file, "\n";
+		#print STDOUT "\t", $new_file, " -> ", $symlink_file, "\n";
 		symlink $symlink_file, $new_file;
 	}
 	chdir("../../.."); # and back, tricky and fragile...
