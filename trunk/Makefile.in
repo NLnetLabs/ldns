@@ -110,8 +110,6 @@ install-lib:	lib
 uninstall-lib:	
 		rm -f $(prefix)/lib/ldnsldns.so.0.0.0
 		rm -f $(prefix)/lib/ldnsldns.la
-		rm -f $(prefix)/lib/libldns.so.0
-		rm -f $(prefix)/lib/libldns.so
 
 snapshot:	realclean testclean
 		(rm -rf ../ldns-snap-$(DATE)/)
