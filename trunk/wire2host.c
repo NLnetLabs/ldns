@@ -12,13 +12,14 @@
  *
  * See the file LICENSE for the license
  */
-#include <config.h>
 
-#include <limits.h>
 
+#include <ldns/dns.h>
 #include <ldns/wire2host.h>
 
-#include "ldns/util.h"
+#include <strings.h>
+#include <limits.h>
+
 
 
 /*
