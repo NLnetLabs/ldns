@@ -16,7 +16,7 @@
 #include <ldns/str2host.h>
 #include <ldns/host2str.h>
 
-#include "util.h"
+#include "ldns/util.h"
 
 /* Access functions 
  * do this as functions to get type checking

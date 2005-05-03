@@ -10,7 +10,7 @@
 #include <ldns/buffer.h>
 #include <ctype.h>
 
-#include "util.h"
+#include "ldns/util.h"
 
 /**
  * Copies the rdata data to the buffer in wire format

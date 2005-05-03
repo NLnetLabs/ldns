@@ -16,7 +16,7 @@
 
 #include <openssl/ssl.h>
 #include <ldns/dnssec.h>
-#include <util.h>
+#include <ldns/util.h>
 
 extern ldns_lookup_table ldns_signing_algorithms[];
 

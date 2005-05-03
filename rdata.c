@@ -17,7 +17,7 @@
 #include <ldns/str2host.h>
 #include <ldns/dns.h>
 
-#include "util.h"
+#include "ldns/util.h"
 #include <netinet/in.h>
 #include <sys/socket.h>
 #include <netdb.h>

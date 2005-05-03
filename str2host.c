@@ -16,7 +16,7 @@
 #include <ldns/dns.h>
 #include <ldns/rdata.h>
 
-#include "util.h"
+#include "ldns/util.h"
 
 #include <sys/types.h>
 #include <sys/socket.h>

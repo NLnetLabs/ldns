@@ -17,7 +17,7 @@
 
 #include <strings.h>
 
-#include "util.h"
+#include "ldns/util.h"
 
 /* Access function for reading 
  * and setting the different Resolver 
