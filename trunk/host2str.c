@@ -24,7 +24,7 @@
 #include <ldns/wire2host.h>
 #include <ldns/dns.h>
 
-#include <util.h>
+#include <ldns/util.h>
 
 /* lookup tables for standard DNS stuff  */
 

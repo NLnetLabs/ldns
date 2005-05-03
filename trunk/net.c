@@ -22,7 +22,7 @@
 #include <sys/time.h>
 #include <errno.h>
 
-#include "util.h"
+#include "ldns/util.h"
 
 ldns_status
 ldns_send(ldns_pkt **result, ldns_resolver *r, ldns_pkt *query_pkt)

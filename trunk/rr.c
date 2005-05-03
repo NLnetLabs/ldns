@@ -20,7 +20,7 @@
 #include <ldns/dns.h>
 #include <ldns/buffer.h>
 
-#include "util.h"
+#include "ldns/util.h"
 
 ldns_rr *
 ldns_rr_new(void)

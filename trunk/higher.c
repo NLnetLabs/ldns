@@ -19,7 +19,7 @@
 #include <ldns/resolver.h>
 #include <ldns/dns.h>
 
-#include "util.h"
+#include "ldns/util.h"
 
 ldns_rr_list *
 ldns_get_rr_list_addr_by_name(ldns_resolver *res, ldns_rdf *name, ldns_rr_class c, 

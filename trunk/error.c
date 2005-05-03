@@ -13,7 +13,7 @@
 #include <ldns/error.h>
 
 
-#include "util.h"
+#include "ldns/util.h"
 
 
 ldns_lookup_table ldns_error_str[] = {

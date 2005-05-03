@@ -20,7 +20,7 @@
 #include <ldns/error.h>
 #include <ldns/common.h>
 
-#include "util.h"
+#include "ldns/util.h"
 
 /**
  * number of initial bytes in buffer of

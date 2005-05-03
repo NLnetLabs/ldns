@@ -9,7 +9,7 @@
 #include <config.h>
 #include <openssl/ssl.h>
 
-#include <util.h>
+#include <ldns/util.h>
 #include <ldns/dnssec.h>
 #include <ldns/keys.h>
 

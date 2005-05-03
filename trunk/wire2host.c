@@ -18,7 +18,7 @@
 
 #include <ldns/wire2host.h>
 
-#include "util.h"
+#include "ldns/util.h"
 
 
 /*

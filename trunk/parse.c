@@ -18,7 +18,7 @@
 
 #include <ldns/rr.h>
 #include <ldns/dns.h>
-#include "util.h"
+#include "ldns/util.h"
 
 ssize_t
 ldns_fget_keyword_data(FILE *f, const char *keyword, const char *k_del, char *data, 

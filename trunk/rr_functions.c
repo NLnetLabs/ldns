@@ -21,7 +21,7 @@
 #include <ldns/dns.h>
 #include <ldns/rr_functions.h>
 
-#include "util.h"
+#include "ldns/util.h"
 
 /**
  * return a specific rdf

@@ -11,7 +11,7 @@
 #include <ldns/resolver.h>
 #include <ctype.h>
 
-#include "util.h"
+#include "ldns/util.h"
 
 /** 
  * Converts an LDNS_RDF_TYPE_A rdata element to string format and adds it to the output buffer 
