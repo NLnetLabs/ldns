@@ -94,7 +94,7 @@ destclean:	uninstall
 install-doc:	doc
 		echo "installing documentation"
 
-uninstall-doc:
+uninstall-doc:	
 		echo "removing documentation"
 
 install-h:	lib

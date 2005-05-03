@@ -17,6 +17,14 @@ usage(FILE *fp, char *prog) {
 	return 0;
 }
 
+void
+remove_nameservers(ldns_resolver *res)
+{
+	/* remove old nameservers */
+	for(; ldns_resolver_pop_nameserver(res);
+		ldns_resolver_pop_nameserver(res)) { ; }
+}
+
 int
 main(int argc, char *argv[])
 {
@@ -40,6 +48,7 @@ main(int argc, char *argv[])
 		}
 	}
 
+	/* create rdf for what we are going to ask */
 	version = ldns_dname_new_frm_str("version.bind");
 	id      = ldns_dname_new_frm_str("hostname.bind");
 
@@ -56,9 +65,8 @@ main(int argc, char *argv[])
 		fprintf(stderr, " *** could not get an address for %s", argv[1]);
 		exit(1);
 	}
-	/* remove old nameservers */
-	for(; ldns_resolver_pop_nameserver(res);
-		ldns_resolver_pop_nameserver(res)) { ; }
+
+	remove_nameservers(res);
 
 	/* can be multihomed */
 	for(i = 0; i < ldns_rr_list_rr_count(addr); i++) {
