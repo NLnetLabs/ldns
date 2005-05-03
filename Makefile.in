@@ -172,7 +172,7 @@ docclean:
 libclean:
 	rm -rf .libs
 	rm -rf libtool
-	$(LIB_TOOL) --mode clean $(LIBDNS_LOBJECTS)
+	$(LIBTOOL) --mode clean $(LIBDNS_LOBJECTS)
 
 test7: run-test7
 	./run-test7
