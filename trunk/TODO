@@ -27,7 +27,7 @@ o per RR functions (started, see rr_functions.c)
 o conversion from  ldns_key to key rr's
 o init function? random - load_ssl_errors()
 	- SSL_load_error_str()? 
-o implement getaddrinfo() variant for ldns
+o SERVER stuff; open connection and such
 
 To ponder and discuss:
 ----------------------
