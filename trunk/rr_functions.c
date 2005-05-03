@@ -12,16 +12,10 @@
  * first the read variant, then the write
  */
 
-#include <config.h>
+#include <ldns/dns.h>
 
 #include <limits.h>
 #include <strings.h>
-
-#include <ldns/rr.h>
-#include <ldns/dns.h>
-#include <ldns/rr_functions.h>
-
-#include "ldns/util.h"
 
 /**
  * return a specific rdf

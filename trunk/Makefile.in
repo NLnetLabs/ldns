@@ -48,6 +48,7 @@ LIBDNS_HEADERS	=	ldns/error.h		\
 			ldns/rr_functions.h	\
 			ldns/ldns.h		\
 			ldns/dns.h		\
+			ldns/config.h		\
 			ldns/util.h
 PROG_SOURCES	=	mx.c chaos.c
 PROG_TARGETS	=	$(PROG_SOURCES:.c=)
@@ -153,7 +154,7 @@ realclean: clean docclean testclean libclean
 	rm -f config.status
 	rm -f config.log
 	rm -f Makefile
-	rm -f config.h
+	rm -f ldns/config.h
 	rm -f config.h.in
 	rm -f configure
 	rm -f config.sub

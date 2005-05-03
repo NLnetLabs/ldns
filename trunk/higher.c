@@ -11,15 +11,10 @@
  * See the file LICENSE for the license
  */
 
-#include <config.h>
-#include <openssl/ssl.h>
-#include <openssl/sha.h>
-#include <ldns/higher.h>
-#include <ldns/parse.h>
-#include <ldns/resolver.h>
 #include <ldns/dns.h>
 
-#include "ldns/util.h"
+#include <openssl/ssl.h>
+#include <openssl/sha.h>
 
 ldns_rr_list *
 ldns_get_rr_list_addr_by_name(ldns_resolver *res, ldns_rdf *name, ldns_rr_class c, 

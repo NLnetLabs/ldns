@@ -10,13 +10,7 @@
  *
  * See the file LICENSE for the license
  */
-#include <config.h>
-
-#include <ldns/str2host.h>
 #include <ldns/dns.h>
-#include <ldns/rdata.h>
-
-#include "ldns/util.h"
 
 #include <sys/types.h>
 #include <sys/socket.h>

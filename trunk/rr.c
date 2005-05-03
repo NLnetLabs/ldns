@@ -10,17 +10,9 @@
  * (c) NLnet Labs, 2004
  * See the file LICENSE for the license
  */
-
-#include <config.h>
-
-#include <limits.h>
-#include <strings.h>
-
-#include <ldns/rr.h>
 #include <ldns/dns.h>
-#include <ldns/buffer.h>
 
-#include "ldns/util.h"
+#include <strings.h>
 
 ldns_rr *
 ldns_rr_new(void)

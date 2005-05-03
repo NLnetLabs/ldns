@@ -10,14 +10,9 @@
  * See the file LICENSE for the license
  */
 
-#include <config.h>
-#include <stdio.h>
-
-#include <ldns/ldns.h>
+#include <ldns/dns.h>
 
 #include <strings.h>
-
-#include "ldns/util.h"
 
 /* Access function for reading 
  * and setting the different Resolver 

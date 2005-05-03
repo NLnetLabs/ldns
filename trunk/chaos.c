@@ -6,8 +6,6 @@
  * Licensed under the GPL version 2
  */
 
-#include <stdio.h>
-#include <config.h>
 #include <ldns/ldns.h>
 
 int
