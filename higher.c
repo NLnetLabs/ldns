@@ -188,26 +188,41 @@ ldns_get_rr_list_hosts_frm_file(char *filename)
 	return names;
 }
 
-ldns_rr_list *
-ldns_getaddrinfo(ldns_resolver *res, ldns_rdf *node, ldns_rr_class c)
+int
+ldns_getaddrinfo(ldns_resolver *res, ldns_rdf *node, ldns_rr_class c, ldns_rr_list **ret)
 {
 	ldns_rdf_type t;
+	int names_found;
+	ldns_resolver *r;
 
 	t = ldns_rdf_get_type(node);
+	names_found = 0;
+
+	if (res == NULL) {
+		/* prepare a new resolver, using /etc/resolv.conf is a guide  */
+		r = ldns_resolver_new_frm_file(NULL);
+		if (!r) {
+			return 0;
+		} else {
+		 	r = res;
+		}
+	}
 
 	if (t == LDNS_RDF_TYPE_DNAME) {
 		/* we're asked to query for a name */
-		return ldns_get_rr_list_addr_by_name(
-				res, node, c, 0);
+		*ret = ldns_get_rr_list_addr_by_name(
+				r, node, c, 0);
+		names_found = ldns_rr_list_rr_count(*ret);
 	}
 
 	if (t == LDNS_RDF_TYPE_A || t == LDNS_RDF_TYPE_AAAA) {
 		/* an address */
-		return ldns_get_rr_list_name_by_addr(
-				res, node, c, 0);
+		*ret = ldns_get_rr_list_name_by_addr(
+				r, node, c, 0);
+		names_found = ldns_rr_list_rr_count(*ret);
 	}
 	
-	return NULL;
+	return names_found;
 }
 
 ldns_rr_list *
