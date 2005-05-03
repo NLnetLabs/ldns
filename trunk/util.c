@@ -10,7 +10,7 @@
  * See the file LICENSE for the license
  */
 
-#include <config.h>
+#include <ldns/config.h>
 
 #include <ldns/rdata.h>
 #include <ldns/rr.h>
