@@ -62,11 +62,14 @@ ldns_rr_list *ldns_get_rr_list_hosts_frm_file(char *filename);
  * and ldns_get_rr_list_addr_by_name. It's name is from the getaddrinfo() 
  * library call. It tries to mimic that call, but without the lowlevel
  * stuff.
- * \param[in] res The resolver to use 
+ * \param[in] res The resolver. If this value is NULL then a resolver will
+ * be created by ldns_getaddrinfo.
  * \param[in] node the name or ip address to look up
  * \param[in] c the class to look in
+ * \param[out] list put the found RR's in this list
+ * \return the number of RR found.
  */
-ldns_rr_list *ldns_getaddrinfo(ldns_resolver *res, ldns_rdf *node, ldns_rr_class c);
+int ldns_getaddrinfo(ldns_resolver *res, ldns_rdf *node, ldns_rr_class c, ldns_rr_list **list);
 
 /**
  * 
