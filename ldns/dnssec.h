@@ -121,7 +121,6 @@ bool ldns_pkt_tsig_verify(ldns_pkt *pkt, uint8_t *wire, size_t wire_size, const 
 
 /**
  * creates a tsig rr for the given packet and key (string?)
- *
  * \param[in] pkt the packet to sign
  * \param[in] key_name the name of the shared key
  * \param[in] key_data the key in base 64 format
