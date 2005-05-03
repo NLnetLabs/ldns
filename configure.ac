@@ -215,5 +215,5 @@ time_t timegm (struct tm *tm);
 
 AC_CONFIG_FILES([Makefile 
                  ])
-AC_CONFIG_HEADER([config.h])
+AC_CONFIG_HEADER([ldns/config.h])
 AC_OUTPUT

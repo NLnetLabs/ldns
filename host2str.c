@@ -10,7 +10,7 @@
  *
  * See the file LICENSE for the license
  */
-#include <config.h>
+#include <ldns/dns.h>
 
 #include <limits.h>
 
@@ -18,13 +18,6 @@
 #include <arpa/inet.h>
 #include <netdb.h>
 #include <time.h>
-
-#include <ldns/host2str.h>
-#include <ldns/packet.h>
-#include <ldns/wire2host.h>
-#include <ldns/dns.h>
-
-#include <ldns/util.h>
 
 /* lookup tables for standard DNS stuff  */
 

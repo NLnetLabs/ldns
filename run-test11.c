@@ -6,9 +6,7 @@
  * Print the result
  */
 
-#include <config.h>
-#include <ldns/ldns.h>
-#include <ldns/dname.h>
+#include <ldns/dns.h>
 
 void
 print_usage(char *file)

@@ -11,9 +11,7 @@
  * See the file LICENSE for the license
  */
 
-#include <config.h>
-
-#include <ldns/ldns.h>
+#include <ldns/dns.h>
 
 #include <netinet/in.h>
 #include <sys/socket.h>
@@ -21,8 +19,6 @@
 #include <arpa/inet.h>
 #include <sys/time.h>
 #include <errno.h>
-
-#include "ldns/util.h"
 
 ldns_status
 ldns_send(ldns_pkt **result, ldns_resolver *r, ldns_pkt *query_pkt)

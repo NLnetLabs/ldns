@@ -6,7 +6,6 @@
  * Print the result
  */
 
-#include <config.h>
 #include <ldns/dns.h>
 
 void

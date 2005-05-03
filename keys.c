@@ -6,12 +6,10 @@
  * handling
  */
 
-#include <config.h>
+#include <ldns/dns.h>
+
 #include <openssl/ssl.h>
 
-#include <ldns/util.h>
-#include <ldns/dnssec.h>
-#include <ldns/keys.h>
 
 ldns_lookup_table ldns_signing_algorithms[] = {
         { LDNS_SIGN_RSAMD5, "RSAMD5" },
