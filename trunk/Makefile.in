@@ -99,7 +99,7 @@ uninstall-doc:
 
 install-h:	lib
 		echo "installing header files $(prefix)/include"
-		mkdir $(prefix)/include/ldns/
+		mkdir -p $(prefix)/include/ldns/
 # use INSTALL_PROGRAM
 		cp $(LIBDNS_HEADERS) $(prefix)/include/ldns/
 
