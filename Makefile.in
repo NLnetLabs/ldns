@@ -174,6 +174,7 @@ docclean:
 libclean:
 	rm -rf .libs
 	rm -rf libtool
+	$(LIB_TOOL) --mode clean
 
 test7: run-test7
 	./run-test7
