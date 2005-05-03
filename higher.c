@@ -187,3 +187,31 @@ ldns_get_rr_list_hosts_frm_file(char *filename)
 	fclose(fp);
 	return names;
 }
+
+ldns_rr_list *
+ldns_getaddrinfo(ldns_resolver *res, ldns_rdf *node, ldns_rr_class c)
+{
+	ldns_rdf_type t;
+
+	t = ldns_rdf_get_type(node);
+
+	if (t == LDNS_RDF_TYPE_DNAME) {
+		/* we're asked to query for a name */
+		return ldns_get_rr_list_addr_by_name(
+				res, node, c, 0);
+	}
+
+	if (t == LDNS_RDF_TYPE_A || t == LDNS_RDF_TYPE_AAAA) {
+		/* an address */
+		return ldns_get_rr_list_name_by_addr(
+				res, node, c, 0);
+	}
+	
+	return NULL;
+}
+
+ldns_rr_list *
+ldns_getaddrinfo_secure(void)
+{
+	return NULL;
+}

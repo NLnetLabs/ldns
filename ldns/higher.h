@@ -56,4 +56,21 @@ ldns_rr_list *ldns_get_rr_list_hosts_frm_fp(FILE *fp);
  * \return ldns_rr_list * with the names
  */
 ldns_rr_list *ldns_get_rr_list_hosts_frm_file(char *filename);
+
+/**
+ * This function is a wrapper function for ldns_get_rr_list_name_by_addr
+ * and ldns_get_rr_list_addr_by_name. It's name is from the getaddrinfo() 
+ * library call. It tries to mimic that call, but without the lowlevel
+ * stuff.
+ * \param[in] res The resolver to use 
+ * \param[in] node the name or ip address to look up
+ * \param[in] c the class to look in
+ */
+ldns_rr_list *ldns_getaddrinfo(ldns_resolver *res, ldns_rdf *node, ldns_rr_class c);
+
+/**
+ * 
+ */
+ldns_rr_list *ldns_getaddrinfo_secure();
 #endif /* _LDNS_HIGHER_H */
+
