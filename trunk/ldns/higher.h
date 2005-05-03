@@ -69,7 +69,7 @@ ldns_rr_list *ldns_get_rr_list_hosts_frm_file(char *filename);
  * \param[out] list put the found RR's in this list
  * \return the number of RR found.
  */
-int ldns_getaddrinfo(ldns_resolver *res, ldns_rdf *node, ldns_rr_class c, ldns_rr_list **list);
+uint16_t ldns_getaddrinfo(ldns_resolver *res, ldns_rdf *node, ldns_rr_class c, ldns_rr_list **list);
 
 /**
  * 

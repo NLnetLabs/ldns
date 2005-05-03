@@ -188,11 +188,11 @@ ldns_get_rr_list_hosts_frm_file(char *filename)
 	return names;
 }
 
-int
+uint16_t
 ldns_getaddrinfo(ldns_resolver *res, ldns_rdf *node, ldns_rr_class c, ldns_rr_list **ret)
 {
 	ldns_rdf_type t;
-	int names_found;
+	uint16_t names_found;
 	ldns_resolver *r;
 
 	t = ldns_rdf_get_type(node);
