@@ -23,6 +23,7 @@ LINTFLAGS	= +quiet -weak -warnposix -unrecog -Din_addr_t=uint32_t -Du_int=unsign
 
 INSTALL = $(srcdir)/install-sh 
 INSTALL_PROGRAM = $(INSTALL)
+DRY	= -n
 
 LIBDNS_SOURCES	=	rdata.c util.c rr.c packet.c wire2host.c \
 			host2str.c buffer.c str2host.c resolver.c \
@@ -107,16 +108,16 @@ uninstall-h:
 		echo "remoing header flies from $(prefix)/include"
 	
 install-lib:	lib
-		#$(LIBTOOL) --mode install
-		$(INSTALL_PROGRAM) ./.libs/libldns.so.0.0.0 -m 755 $(prefix)/lib
-		$(INSTALL_PROGRAM) ./libldns.la -m 644 $(prefix)/lib
-		$(LIBTOOL) -n mode=--finish $(prefix)/lib
+		$(LIBTOOL) $(DRY) cp --mode=install libldns.la -m  ${prefix}/lib
+#		$(INSTALL_PROGRAM) ./.libs/libldns.so.0.0.0 -m 755 $(prefix)/lib
+#		$(INSTALL_PROGRAM) ./libldns.la -m 644 $(prefix)/lib
+		$(LIBTOOL) $(DRY) --mode=finish $(prefix)/lib
 
 uninstall-lib:	
-		#$(LIBTOOL) --mode uninstall
+		#$(LIBTOOL) --mode=uninstall
 		rm -f $(prefix)/lib/libldns.so.0.0.0
 		rm -f $(prefix)/lib/libldns.la
-		$(LIBTOOL) -n mode=--finish $(prefix)/lib
+		$(LIBTOOL) $(DRY) --mode=finish $(prefix)/lib
 
 snapshot:	realclean testclean
 		(rm -rf ../ldns-snap-$(DATE)/)
