@@ -8,13 +8,8 @@
  * See the file LICENSE for the license
  */
 
-#include <config.h>
-
+#include <ldns/dns.h>
 #include <ldns/error.h>
-
-
-#include "ldns/util.h"
-
 
 ldns_lookup_table ldns_error_str[] = {
 	{ LDNS_STATUS_OK, "all o.k." },

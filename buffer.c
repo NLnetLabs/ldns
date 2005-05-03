@@ -7,7 +7,7 @@
  *
  */
 
-#include <config.h>
+#include <ldns/dns.h>
 
 #include <ldns/buffer.h>
 
