@@ -13,6 +13,7 @@
 #include <ldns/dns.h>
 
 #include <strings.h>
+#include <limits.h>
 
 ldns_rr *
 ldns_rr_new(void)
