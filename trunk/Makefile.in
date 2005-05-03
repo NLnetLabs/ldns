@@ -110,13 +110,13 @@ install-lib:	lib
 		#$(LIBTOOL) --mode install
 		$(INSTALL_PROGRAM) ./.libs/libldns.so.0.0.0 -m 755 $(prefix)/lib
 		$(INSTALL_PROGRAM) ./libldns.la -m 644 $(prefix)/lib
-		ldconfig
+		$(LIBTOOL) -n mode=--finish $(prefix)/lib
 
 uninstall-lib:	
 		#$(LIBTOOL) --mode uninstall
 		rm -f $(prefix)/lib/libldns.so.0.0.0
 		rm -f $(prefix)/lib/libldns.la
-		ldconfig
+		$(LIBTOOL) -n mode=--finish $(prefix)/lib
 
 snapshot:	realclean testclean
 		(rm -rf ../ldns-snap-$(DATE)/)
