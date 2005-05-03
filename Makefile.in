@@ -107,11 +107,13 @@ uninstall-h:
 		echo "remoing header flies from $(prefix)/include"
 	
 install-lib:	lib
+		#$(LIBTOOL) --mode install
 		$(INSTALL_PROGRAM) ./.libs/libldns.so.0.0.0 -m 755 $(prefix)/lib
 		$(INSTALL_PROGRAM) ./libldns.la -m 644 $(prefix)/lib
 		ldconfig
 
 uninstall-lib:	
+		#$(LIBTOOL) --mode uninstall
 		rm -f $(prefix)/lib/libldns.so.0.0.0
 		rm -f $(prefix)/lib/libldns.la
 		ldconfig
@@ -174,7 +176,7 @@ docclean:
 libclean:
 	rm -rf .libs
 	rm -rf libtool
-	$(LIB_TOOL) --mode clean
+	$(LIB_TOOL) --mode clean $(LIBDNS_LOBJECTS)
 
 test7: run-test7
 	./run-test7
