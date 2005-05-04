@@ -59,7 +59,7 @@ ldns_wire2dname(ldns_rdf **dname, const uint8_t *wire, size_t max, size_t *pos)
 	size_t dname_pos = 0;
 	size_t uncompressed_length = 0;
 	size_t compression_pos = 0;
-	uint8_t tmp_dname[MAX_DOMAINLEN];
+	uint8_t tmp_dname[LDNS_MAX_DOMAINLEN];
 	uint8_t *dname_ar;
 	unsigned int pointer_count = 0;
 	
@@ -86,13 +86,13 @@ ldns_wire2dname(ldns_rdf **dname, const uint8_t *wire, size_t max, size_t *pos)
 				return LDNS_STATUS_INVALID_POINTER;
 			} else if (pointer_target > max) {
 				return LDNS_STATUS_INVALID_POINTER;
-			} else if (pointer_count > MAX_POINTERS) {
+			} else if (pointer_count > LDNS_MAX_POINTERS) {
 				return LDNS_STATUS_INVALID_POINTER;
 			}
 			*pos = pointer_target;
 			label_size = wire[*pos];
 		}
-		if (label_size > MAX_LABELLEN) {
+		if (label_size > LDNS_MAX_LABELLEN) {
 			return LDNS_STATUS_LABEL_OVERFLOW;
 		}
 		if (*pos + label_size > max) {
@@ -137,8 +137,8 @@ ldns_wire2dname(ldns_rdf **dname, const uint8_t *wire, size_t max, size_t *pos)
 }
 
 /* maybe make this a goto error so data can be freed or something/ */
-#define STATUS_CHECK_RETURN(st) {if (st != LDNS_STATUS_OK) { printf("STR %d\n", __LINE__); return st; }}
-#define STATUS_CHECK_GOTO(st, label) {if (st != LDNS_STATUS_OK) { printf("STG %s:%d: status code %d\n", __FILE__, __LINE__, st);  goto label; }}
+#define LDNS_STATUS_CHECK_RETURN(st) {if (st != LDNS_STATUS_OK) { printf("STR %d\n", __LINE__); return st; }}
+#define LDNS_STATUS_CHECK_GOTO(st, label) {if (st != LDNS_STATUS_OK) { printf("STG %s:%d: status code %d\n", __FILE__, __LINE__, st);  goto label; }}
 
 ldns_status
 ldns_wire2rdf(ldns_rr *rr, const uint8_t *wire,
@@ -186,7 +186,7 @@ ldns_wire2rdf(ldns_rr *rr, const uint8_t *wire,
 		case LDNS_RDF_TYPE_DNAME:
 			status = ldns_wire2dname(&cur_rdf, wire, max,
 						 pos);
-			STATUS_CHECK_RETURN(status);
+			LDNS_STATUS_CHECK_RETURN(status);
 			break;
 		case LDNS_RDF_TYPE_CLASS:
 		case LDNS_RDF_TYPE_ALG:
@@ -275,7 +275,7 @@ ldns_wire2rr(ldns_rr **rr_p, const uint8_t *wire, size_t max,
 	ldns_status status;
 	
 	status = ldns_wire2dname(&owner, wire, max, pos);
-	STATUS_CHECK_GOTO(status, status_error);
+	LDNS_STATUS_CHECK_GOTO(status, status_error);
 
 	ldns_rr_set_owner(rr, owner);
 	
@@ -290,7 +290,7 @@ ldns_wire2rr(ldns_rr **rr_p, const uint8_t *wire, size_t max,
 		ldns_rr_set_ttl(rr, read_uint32(&wire[*pos]));	
 		*pos = *pos + 4;
 		status = ldns_wire2rdf(rr, wire, max, pos);
-		STATUS_CHECK_GOTO(status, status_error);
+		LDNS_STATUS_CHECK_GOTO(status, status_error);
 	}
 	
 	*rr_p = rr;
@@ -346,7 +346,7 @@ ldns_wire2pkt(ldns_pkt **packet_p, const uint8_t *wire, size_t max)
 	uint8_t data[4];
 	
 	status = ldns_wire2pkt_hdr(packet, wire, max, &pos);
-	STATUS_CHECK_GOTO(status, status_error);
+	LDNS_STATUS_CHECK_GOTO(status, status_error);
 	
 	for (i = 0; i < ldns_pkt_qdcount(packet); i++) {
 		status = ldns_wire2rr(&rr, wire, max, &pos,
@@ -354,7 +354,7 @@ ldns_wire2pkt(ldns_pkt **packet_p, const uint8_t *wire, size_t max)
 		if (!ldns_rr_list_push_rr(ldns_pkt_question(packet), rr)) {
 			return LDNS_STATUS_INTERNAL_ERR;
 		}
-		STATUS_CHECK_GOTO(status, status_error);
+		LDNS_STATUS_CHECK_GOTO(status, status_error);
 	}
 	for (i = 0; i < ldns_pkt_ancount(packet); i++) {
 		status = ldns_wire2rr(&rr, wire, max, &pos,
@@ -362,7 +362,7 @@ ldns_wire2pkt(ldns_pkt **packet_p, const uint8_t *wire, size_t max)
 		if (!ldns_rr_list_push_rr(ldns_pkt_answer(packet), rr)) {
 			return LDNS_STATUS_INTERNAL_ERR;
 		}
-		STATUS_CHECK_GOTO(status, status_error);
+		LDNS_STATUS_CHECK_GOTO(status, status_error);
 	}
 	for (i = 0; i < ldns_pkt_nscount(packet); i++) {
 		status = ldns_wire2rr(&rr, wire, max, &pos,
@@ -370,7 +370,7 @@ ldns_wire2pkt(ldns_pkt **packet_p, const uint8_t *wire, size_t max)
 		if (!ldns_rr_list_push_rr(ldns_pkt_authority(packet), rr)) {
 			return LDNS_STATUS_INTERNAL_ERR;
 		}
-		STATUS_CHECK_GOTO(status, status_error);
+		LDNS_STATUS_CHECK_GOTO(status, status_error);
 	}
 	for (i = 0; i < ldns_pkt_arcount(packet); i++) {
 		status = ldns_wire2rr(&rr, wire, max, &pos,
@@ -390,7 +390,7 @@ ldns_wire2pkt(ldns_pkt **packet_p, const uint8_t *wire, size_t max)
 		} else if (!ldns_rr_list_push_rr(ldns_pkt_additional(packet), rr)) {
 			return LDNS_STATUS_INTERNAL_ERR;
 		}
-		STATUS_CHECK_GOTO(status, status_error);
+		LDNS_STATUS_CHECK_GOTO(status, status_error);
 	}
 
 	*packet_p = packet;

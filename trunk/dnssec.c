@@ -38,7 +38,7 @@ ldns_calc_keytag(ldns_rr *key)
 
 	/* rdata to buf - only put the rdata in a buffer */
 	/* XXX waaayyy too much */
-	keybuf = ldns_buffer_new(MAX_PACKETLEN);
+	keybuf = ldns_buffer_new(LDNS_MAX_PACKETLEN);
 	if (!keybuf) {
 		return 0;
 	}
@@ -122,8 +122,8 @@ ldns_verify_rrsig(ldns_rr_list *rrset, ldns_rr *rrsig, ldns_rr_list *keys)
 	rrset_clone = ldns_rr_list_deep_clone(rrset);
 	
 	/* create the buffers which will certainly hold the raw data */
-	rawsig_buf = ldns_buffer_new(MAX_PACKETLEN);
-	verify_buf  = ldns_buffer_new(MAX_PACKETLEN);
+	rawsig_buf = ldns_buffer_new(LDNS_MAX_PACKETLEN);
+	verify_buf  = ldns_buffer_new(LDNS_MAX_PACKETLEN);
 	
 	sig_algo = ldns_rdf2native_int8(ldns_rr_rdf(rrsig, 1));
 	result = false;
@@ -167,7 +167,7 @@ ldns_verify_rrsig(ldns_rr_list *rrset, ldns_rr *rrsig, ldns_rr_list *keys)
 
 	for(i = 0; i < ldns_rr_list_rr_count(keys); i++) {
 		current_key = ldns_rr_list_rr(keys, i);
-		key_buf = ldns_buffer_new(MAX_PACKETLEN);
+		key_buf = ldns_buffer_new(LDNS_MAX_PACKETLEN);
 		/* put the key-data in a buffer, that's the third rdf, with
 		 * the base64 encoded key data */
 		if (ldns_rdf2buffer_wire(key_buf,
@@ -516,7 +516,7 @@ ldns_create_tsig_mac(
 	/* 
 	 * prepare the digestable information
 	 */
-	data_buffer = ldns_buffer_new(MAX_PACKETLEN);
+	data_buffer = ldns_buffer_new(LDNS_MAX_PACKETLEN);
 	/* if orig_mac is not NULL, add it too */
 	if (orig_mac_rdf) {
 		(void) ldns_rdf2buffer_wire(data_buffer, orig_mac_rdf);
@@ -784,7 +784,7 @@ ldns_key_rr2ds(const ldns_rr *key)
                 return NULL;
         }
 
-        data_buf = ldns_buffer_new(MAX_PACKETLEN);
+        data_buf = ldns_buffer_new(LDNS_MAX_PACKETLEN);
         if (!data_buf) {
                 return NULL;
         }
@@ -871,7 +871,7 @@ ldns_sign_public(ldns_rr_list *rrset, ldns_key_list *keys)
 	
 	for (key_count = 0; key_count < ldns_key_list_key_count(keys); key_count++) {
 
-		sign_buf = ldns_buffer_new(MAX_PACKETLEN);
+		sign_buf = ldns_buffer_new(LDNS_MAX_PACKETLEN);
 		b64rdf = NULL;
 
 		current_key = ldns_key_list_key(keys, key_count);
@@ -970,7 +970,7 @@ ldns_sign_public_dsa(ldns_buffer *to_sign, DSA *key)
 	ldns_rdf *sigdata_rdf;
 	ldns_buffer *b64sig;
 
-	b64sig = ldns_buffer_new(MAX_PACKETLEN);
+	b64sig = ldns_buffer_new(LDNS_MAX_PACKETLEN);
 	if (!b64sig) {
 		return NULL;
 	}
@@ -1001,7 +1001,7 @@ ldns_sign_public_rsasha1(ldns_buffer *to_sign, RSA *key)
 	ldns_buffer *b64sig;
 
 	siglen = 0;
-	b64sig = ldns_buffer_new(MAX_PACKETLEN);
+	b64sig = ldns_buffer_new(LDNS_MAX_PACKETLEN);
 	if (!b64sig) {
 		return NULL;
 	}
@@ -1030,7 +1030,7 @@ ldns_sign_public_rsamd5(ldns_buffer *to_sign, RSA *key)
 	ldns_rdf *sigdata_rdf;
 	ldns_buffer *b64sig;
 
-	b64sig = ldns_buffer_new(MAX_PACKETLEN);
+	b64sig = ldns_buffer_new(LDNS_MAX_PACKETLEN);
 	if (!b64sig) {
 		return NULL;
 	}

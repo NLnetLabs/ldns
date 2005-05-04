@@ -48,7 +48,7 @@ ldns_send(ldns_pkt **result, ldns_resolver *r, ldns_pkt *query_pkt)
 	ns_array = ldns_resolver_nameservers(r);
 	reply = NULL; ns_len = 0;
 	
-	qb = ldns_buffer_new(MAX_PACKETLEN);
+	qb = ldns_buffer_new(LDNS_MAX_PACKETLEN);
 
 	if (ldns_pkt_tsig(query_pkt)) {
 		tsig_mac = ldns_rr_rdf(ldns_pkt_tsig(query_pkt), 3);
@@ -196,13 +196,13 @@ ldns_send_udp(uint8_t **result, ldns_buffer *qbin, const struct sockaddr_storage
 	}
 	
 	/* wait for an response*/
-	answer = LDNS_XMALLOC(uint8_t, MAX_PACKETLEN);
+	answer = LDNS_XMALLOC(uint8_t, LDNS_MAX_PACKETLEN);
 	if (!answer) {
 		dprintf("%s", "respons alloc error\n");
 		return LDNS_STATUS_ERR;
 	}
 
-	bytes = recv(sockfd, answer, MAX_PACKETLEN, 0);
+	bytes = recv(sockfd, answer, LDNS_MAX_PACKETLEN, 0);
 
 	close(sockfd);
 

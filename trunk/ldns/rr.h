@@ -19,15 +19,15 @@
 #include <ldns/error.h>
 
 /** Maximum length of a dname label */
-#define MAX_LABELLEN     63
+#define LDNS_MAX_LABELLEN     63
 /** Maximum length of a complete dname */
-#define MAX_DOMAINLEN    255
+#define LDNS_MAX_DOMAINLEN    255
 /** Maximum number of pointers in 1 dname */
-#define MAX_POINTERS	65535
+#define LDNS_MAX_POINTERS	65535
 /** Maximum number of rr's in a rr_list */
-#define MAX_RR		65535
+#define LDNS_MAX_RR		65535
 /** The bytes TTL, CLASS and length use up in an rr */
-#define RR_OVERHEAD	10
+#define LDNS_RR_OVERHEAD	10
 
 
 /**

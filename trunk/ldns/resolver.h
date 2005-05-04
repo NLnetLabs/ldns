@@ -21,12 +21,12 @@
 #include <sys/time.h>
 
 /** \brief where to find the resolv.conf file */
-#define RESOLV_CONF	"/etc/resolv.conf"
-#define RESOLV_HOSTS	"/etc/hosts"
+#define LDNS_RESOLV_CONF	"/etc/resolv.conf"
+#define LDNS_RESOLV_HOSTS	"/etc/hosts"
 
-#define RESOLV_KEYWORD		0
-#define RESOLV_DEFDOMAIN	1
-#define RESOLV_NAMESERVER	2
+#define LDNS_RESOLV_KEYWORD		0
+#define LDNS_RESOLV_DEFDOMAIN	1
+#define LDNS_RESOLV_NAMESERVER	2
 
 #define LDNS_RESOLV_INETANY		0
 #define LDNS_RESOLV_INET		1

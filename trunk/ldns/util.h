@@ -40,7 +40,7 @@
 #define LDNS_FREE(ptr) \
 	do { free((ptr)); (ptr) = NULL; } while (0)
 
-#define DEP     printf("DEPRECATED FUNCTION!\n");
+#define LDNS_DEP     printf("DEPRECATED FUNCTION!\n");
 
 /*
  * Copy data allowing for unaligned accesses in network byte order

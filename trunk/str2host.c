@@ -152,11 +152,11 @@ ldns_str2rdf_dname(ldns_rdf **d, const char *str)
 	size_t len;
 
 	uint8_t *s,*p,*q, *pq, val, label_len;
-	uint8_t buf[MAX_DOMAINLEN + 1];
+	uint8_t buf[LDNS_MAX_DOMAINLEN + 1];
 	*d = NULL;
 	
 	len = strlen((char*)str);
-	if (len > MAX_DOMAINLEN) {
+	if (len > LDNS_MAX_DOMAINLEN) {
 		return LDNS_STATUS_DOMAINNAME_OVERFLOW;
 	}
 	if (0 == len) {
@@ -184,7 +184,7 @@ ldns_str2rdf_dname(ldns_rdf **d, const char *str)
 		switch (*s) {
 		case '.':
 			/* todo: check length (overflow und <1 */
-			if (label_len > MAX_LABELLEN) {
+			if (label_len > LDNS_MAX_LABELLEN) {
 				return LDNS_STATUS_LABEL_OVERFLOW;
 			}
 			if (label_len == 0) {
@@ -310,7 +310,7 @@ ldns_str2rdf_hex(ldns_rdf **rd, const char *str)
 
         if (len % 2 != 0) {
                 return LDNS_STATUS_INVALID_HEX;
-        } else if (len > MAX_RDFLEN * 2) {
+        } else if (len > LDNS_MAX_RDFLEN * 2) {
 		return LDNS_STATUS_LABEL_OVERFLOW;
         } else {
 		t = LDNS_XMALLOC(uint8_t, (len / 2));

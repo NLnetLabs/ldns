@@ -245,7 +245,7 @@ ldns_pkt *ldns_pkt_query_new_frm_str(const char *rr_name, ldns_rr_type rr_type, 
  */
 ldns_pkt *ldns_pkt_query_new(ldns_rdf *rr_name, ldns_rr_type rr_type, ldns_rr_class rr_class, uint16_t flags);
 
-#define MAX_PACKETLEN         65535
+#define LDNS_MAX_PACKETLEN         65535
 
 /* allow flags to be given to mk_query */
 #define LDNS_QR		1

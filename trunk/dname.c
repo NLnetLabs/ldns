@@ -127,6 +127,6 @@ ldns_dname2canonical(const ldns_rdf *rd)
 
 	rdd = (uint8_t*)ldns_rdf_data(rd);
 	for (i = 0; i < ldns_rdf_size(rd); i++, rdd++) {
-		*rdd = (uint8_t)DNAME_NORMALIZE((int)*rdd);
+		*rdd = (uint8_t)LDNS_DNAME_NORMALIZE((int)*rdd);
 	}
 }

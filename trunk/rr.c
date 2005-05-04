@@ -115,14 +115,14 @@ ldns_rr_new_frm_str(const char *str)
 
 	new = ldns_rr_new();
 
-	owner = LDNS_XMALLOC(char, MAX_DOMAINLEN + 1);
+	owner = LDNS_XMALLOC(char, LDNS_MAX_DOMAINLEN + 1);
 	ttl = LDNS_XMALLOC(char, 21);
 	clas = LDNS_XMALLOC(char, 11);
 	type = LDNS_XMALLOC(char, 10);
-	rdata = LDNS_XMALLOC(char, MAX_PACKETLEN + 1);
+	rdata = LDNS_XMALLOC(char, LDNS_MAX_PACKETLEN + 1);
 	rr_buf = LDNS_MALLOC(ldns_buffer);
 	rd_buf = LDNS_MALLOC(ldns_buffer);
-	rd = LDNS_XMALLOC(char, MAX_RDFLEN);
+	rd = LDNS_XMALLOC(char, LDNS_MAX_RDFLEN);
 	if (!owner || !ttl || !clas || !type || !rdata ||
 			!rr_buf || !rd_buf || !rd) {
 		return NULL;
@@ -136,7 +136,7 @@ ldns_rr_new_frm_str(const char *str)
 	ldns_buffer_new_frm_data(rr_buf, no_comment_str, strlen(no_comment_str));
 	
 	/* split the rr in its parts -1 signals trouble */
-	if (ldns_bget_token(rr_buf, owner, "\t\n ", MAX_DOMAINLEN) == -1) {
+	if (ldns_bget_token(rr_buf, owner, "\t\n ", LDNS_MAX_DOMAINLEN) == -1) {
 		LDNS_FREE(owner); 
 		LDNS_FREE(ttl); 
 		LDNS_FREE(clas); 
@@ -191,7 +191,7 @@ ldns_rr_new_frm_str(const char *str)
 		ldns_buffer_free(rr_buf);
 		return NULL;
 	}
-	if (ldns_bget_token(rr_buf, rdata, "\0", MAX_PACKETLEN) == -1) {
+	if (ldns_bget_token(rr_buf, rdata, "\0", LDNS_MAX_PACKETLEN) == -1) {
 		LDNS_FREE(owner); 
 		LDNS_FREE(ttl); 
 		LDNS_FREE(clas); 
@@ -231,7 +231,7 @@ ldns_rr_new_frm_str(const char *str)
 			/* blalba do something different */
 			break;
 		default:
-			while((c = ldns_bget_token(rd_buf, rd, "\t\n ", MAX_RDFLEN)) != -1) {
+			while((c = ldns_bget_token(rd_buf, rd, "\t\n ", LDNS_MAX_RDFLEN)) != -1) {
 				r = ldns_rdf_new_frm_str(
 						ldns_rr_descriptor_field_type(desc, r_cnt),
 						rd);
@@ -249,13 +249,13 @@ ldns_rr_new_frm_fp(FILE *fp)
 {
         char *line;
 
-        line = LDNS_XMALLOC(char, MAXLINE_LEN + 1);
+        line = LDNS_XMALLOC(char, LDNS_MAX_LINELEN + 1);
         if (!line) {
                 return NULL;
         }
 
         /* read an entire line in from the file */
-        if (ldns_fget_token(fp, line, LDNS_PARSE_SKIP_SPACE, MAXLINE_LEN) == -1) {
+        if (ldns_fget_token(fp, line, LDNS_PARSE_SKIP_SPACE, LDNS_MAX_LINELEN) == -1) {
                 return NULL;
         }
         return ldns_rr_new_frm_str((const char*) line);
@@ -465,7 +465,7 @@ ldns_rr_list_cat(ldns_rr_list *left, ldns_rr_list *right)
 		r_rr_count = ldns_rr_list_rr_count(right);
 	}
 	
-	if (l_rr_count + r_rr_count > MAX_RR ) {
+	if (l_rr_count + r_rr_count > LDNS_MAX_RR ) {
 		/* overflow error */
 		return NULL;
 	}
@@ -782,7 +782,7 @@ ldns_rr_uncompressed_size(const ldns_rr *r)
 	}
 	/* ownername */
 	rrsize += ldns_rdf_size(ldns_rr_owner(r));
-	rrsize += RR_OVERHEAD;
+	rrsize += LDNS_RR_OVERHEAD;
 	return rrsize;
 }
 
@@ -1256,13 +1256,13 @@ static ldns_rr_descriptor rdata_field_descriptors[] = {
  * \def RDATA_FIELD_DESCRIPTORS_COUNT
  * computes the number of rdata fields
  */
-#define RDATA_FIELD_DESCRIPTORS_COUNT \
+#define LDNS_RDATA_FIELD_DESCRIPTORS_COUNT \
 	(sizeof(rdata_field_descriptors)/sizeof(rdata_field_descriptors[0]))
 
 const ldns_rr_descriptor *
 ldns_rr_descript(uint16_t type)
 {
-	if (type < RDATA_FIELD_DESCRIPTORS_COUNT) {
+	if (type < LDNS_RDATA_FIELD_DESCRIPTORS_COUNT) {
 		return &rdata_field_descriptors[type];
 	} else {
 		return &rdata_field_descriptors[0];
@@ -1313,7 +1313,7 @@ ldns_get_rr_type_by_name(const char *name)
 	}
 
 	/* Normal types */
-	for (i = 0; i < (unsigned int) RDATA_FIELD_DESCRIPTORS_COUNT; i++) {
+	for (i = 0; i < (unsigned int) LDNS_RDATA_FIELD_DESCRIPTORS_COUNT; i++) {
 		desc = ldns_rr_descript(i);
 		desc_name = desc->_name;
 		if(desc_name &&

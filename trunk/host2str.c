@@ -1046,7 +1046,7 @@ char *
 ldns_rdf2str(ldns_rdf *rdf)
 {
 	char *result = NULL;
-	ldns_buffer *tmp_buffer = ldns_buffer_new(MIN_BUFLEN);
+	ldns_buffer *tmp_buffer = ldns_buffer_new(LDNS_MIN_BUFLEN);
 
 	if (ldns_rdf2buffer_str(tmp_buffer, rdf) == LDNS_STATUS_OK) {
 		/* export and return string, destroy rest */
@@ -1061,7 +1061,7 @@ char *
 ldns_rr2str(ldns_rr *rr)
 {
 	char *result = NULL;
-	ldns_buffer *tmp_buffer = ldns_buffer_new(MIN_BUFLEN);
+	ldns_buffer *tmp_buffer = ldns_buffer_new(LDNS_MIN_BUFLEN);
 
 	if (ldns_rr2buffer_str(tmp_buffer, rr) == LDNS_STATUS_OK) {
 		/* export and return string, destroy rest */
@@ -1076,7 +1076,7 @@ char *
 ldns_pkt2str(ldns_pkt *pkt)
 {
 	char *result = NULL;
-	ldns_buffer *tmp_buffer = ldns_buffer_new(MIN_BUFLEN);
+	ldns_buffer *tmp_buffer = ldns_buffer_new(LDNS_MIN_BUFLEN);
 
 	if (ldns_pkt2buffer_str(tmp_buffer, pkt) == LDNS_STATUS_OK) {
 		/* export and return string, destroy rest */
@@ -1091,7 +1091,7 @@ char *
 ldns_rr_list2str(ldns_rr_list *list)
 {
 	char *result = NULL;
-	ldns_buffer *tmp_buffer = ldns_buffer_new(MIN_BUFLEN); 
+	ldns_buffer *tmp_buffer = ldns_buffer_new(LDNS_MIN_BUFLEN); 
 
 	if (list) {
 		if (ldns_rr_list2buffer_str(tmp_buffer, list) == LDNS_STATUS_OK) {
