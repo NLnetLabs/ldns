@@ -8,7 +8,7 @@ o Different digests for DS
  - need a digest type?
 o NSEC generation??
 o openssl's setup function (esp. random)
-o -lssl in library creation
+o -lssl in library creation and autoconf
 o Documentation (manpages) "const char bvklala() is not parsed correctly)
 
 Implementation:

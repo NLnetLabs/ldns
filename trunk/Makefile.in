@@ -22,7 +22,6 @@ LINT		= splint
 LINTFLAGS	= +quiet -weak -warnposix -unrecog -Din_addr_t=uint32_t -Du_int=unsigned -Du_char=uint8_t 
 
 INSTALL = $(srcdir)/install-sh 
-INSTALL_PROGRAM = $(INSTALL)
 
 LIBDNS_SOURCES	=	rdata.c util.c rr.c packet.c wire2host.c \
 			host2str.c buffer.c str2host.c resolver.c \
@@ -46,7 +45,6 @@ LIBDNS_HEADERS	=	ldns/error.h		\
 			ldns/higher.h		\
 			ldns/parse.h		\
 			ldns/rr_functions.h	\
-			ldns/ldns.h		\
 			ldns/dns.h		\
 			ldns/config.h		\
 			ldns/util.h
@@ -94,18 +92,24 @@ uninstall:	uninstall-doc uninstall-h uninstall-lib
 destclean:	uninstall
 
 install-doc:	doc
-		echo "installing documentation"
+		${INSTALL} -d $(mandir)/man3
+		mv doc/man/man3/* $(mandir)/man3/
 
-uninstall-doc:	
-		echo "removing documentation"
+uninstall-doc:	doc
+		for i in `cat doc/ldns_manpages`; do \
+			rm -f $(mandir)/man3/$$i.3 ; done
+		rmdir $(mandir)/man3
+		exit 0
 
 install-h:	lib
-		echo "installing header files $(prefix)/include"
 		${INSTALL} -d $(prefix)/include/ldns
-		cp $(LIBDNS_HEADERS) $(prefix)/include/ldns/
+		cp $(LIBDNS_HEADERS) $(prefix)/include/ldns
 
 uninstall-h:
-		echo "remoing header flies from $(prefix)/include"
+		for i in $(LIBDNS_HEADERS); do \
+			rm -f $(prefix)/include/$$i; done
+		rmdir $(prefix)/include/ldns
+		exit 0
 	
 install-lib:	lib
 		$(LIBTOOL) --mode=install cp libldns.la $(prefix)/lib
