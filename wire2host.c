@@ -308,26 +308,26 @@ ldns_wire2pkt_hdr(ldns_pkt *packet,
 			size_t max,
 			size_t *pos)
 {
-	if (*pos + HEADER_SIZE > max) {
+	if (*pos + LDNS_HEADER_SIZE > max) {
 		return LDNS_STATUS_PACKET_OVERFLOW;
 	} else {
-		ldns_pkt_set_id(packet, ID(wire));
-		ldns_pkt_set_qr(packet, QR(wire));
-		ldns_pkt_set_opcode(packet, OPCODE(wire));
-		ldns_pkt_set_aa(packet, AA(wire));
-		ldns_pkt_set_tc(packet, TC(wire));
-		ldns_pkt_set_rd(packet, RD(wire));
-		ldns_pkt_set_ra(packet, RA(wire));
-		ldns_pkt_set_ad(packet, AD(wire));
-		ldns_pkt_set_cd(packet, CD(wire));
-		ldns_pkt_set_rcode(packet, RCODE(wire));	 
+		ldns_pkt_set_id(packet, LDNS_ID_WIRE(wire));
+		ldns_pkt_set_qr(packet, LDNS_QR_WIRE(wire));
+		ldns_pkt_set_opcode(packet, LDNS_OPCODE_WIRE(wire));
+		ldns_pkt_set_aa(packet, LDNS_AA_WIRE(wire));
+		ldns_pkt_set_tc(packet, LDNS_TC_WIRE(wire));
+		ldns_pkt_set_rd(packet, LDNS_RD_WIRE(wire));
+		ldns_pkt_set_ra(packet, LDNS_RA_WIRE(wire));
+		ldns_pkt_set_ad(packet, LDNS_AD_WIRE(wire));
+		ldns_pkt_set_cd(packet, LDNS_CD_WIRE(wire));
+		ldns_pkt_set_rcode(packet, LDNS_RCODE_WIRE(wire));	 
 
-		ldns_pkt_set_qdcount(packet, QDCOUNT(wire));
-		ldns_pkt_set_ancount(packet, ANCOUNT(wire));
-		ldns_pkt_set_nscount(packet, NSCOUNT(wire));
-		ldns_pkt_set_arcount(packet, ARCOUNT(wire));
+		ldns_pkt_set_qdcount(packet, LDNS_QDCOUNT(wire));
+		ldns_pkt_set_ancount(packet, LDNS_ANCOUNT(wire));
+		ldns_pkt_set_nscount(packet, LDNS_NSCOUNT(wire));
+		ldns_pkt_set_arcount(packet, LDNS_ARCOUNT(wire));
 
-		*pos += HEADER_SIZE;
+		*pos += LDNS_HEADER_SIZE;
 
 		return LDNS_STATUS_OK;
 	}
