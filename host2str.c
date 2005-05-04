@@ -219,11 +219,11 @@ ldns_status
 ldns_rdf2buffer_str_b64(ldns_buffer *output, ldns_rdf *rdf)
 {
 	size_t size = b64_ntop_calculate_size(ldns_rdf_size(rdf));
-	char *b64 = XMALLOC(char, size);
+	char *b64 = LDNS_XMALLOC(char, size);
 	if (b64_ntop(ldns_rdf_data(rdf), ldns_rdf_size(rdf), b64, size)) {
 		ldns_buffer_printf(output, "%s", b64);
 	}
-	FREE(b64);
+	LDNS_FREE(b64);
 	return ldns_buffer_status(output);
 }	
 
@@ -605,7 +605,7 @@ ldns_rdf2buffer_str_int16_data(ldns_buffer *output, ldns_rdf *rdf)
 {
 	/* Subtract the size (2) of the number that specifies the length */
 	size_t size = b64_ntop_calculate_size(ldns_rdf_size(rdf) - 2);
-	char *b64 = XMALLOC(char, size);
+	char *b64 = LDNS_XMALLOC(char, size);
 
 	ldns_buffer_printf(output, "%u ", ldns_rdf_size(rdf)-2);
 	
@@ -613,7 +613,7 @@ ldns_rdf2buffer_str_int16_data(ldns_buffer *output, ldns_rdf *rdf)
 	    b64_ntop(ldns_rdf_data(rdf)+2, ldns_rdf_size(rdf)-2, b64, size)) {
 		ldns_buffer_printf(output, "%s", b64);
 	}
-	FREE(b64);
+	LDNS_FREE(b64);
 	return ldns_buffer_status(output);
 }
 
@@ -649,13 +649,13 @@ ldns_rdf2buffer_str_ipseckey(ldns_buffer *output, ldns_rdf *rdf)
 			/* no gateway */
 			break;
 		case 1:
-			gateway_data = XMALLOC(uint8_t, LDNS_IP4ADDRLEN);
+			gateway_data = LDNS_XMALLOC(uint8_t, LDNS_IP4ADDRLEN);
 			memcpy(gateway_data, &data[offset], LDNS_IP4ADDRLEN);
 			gateway = ldns_rdf_new(LDNS_RDF_TYPE_A, 
 					LDNS_IP4ADDRLEN , gateway_data);
 			break;
 		case 2:
-			gateway_data = XMALLOC(uint8_t, LDNS_IP6ADDRLEN);
+			gateway_data = LDNS_XMALLOC(uint8_t, LDNS_IP6ADDRLEN);
 			memcpy(gateway_data, &data[offset], LDNS_IP6ADDRLEN);
 			gateway = ldns_rdf_new(LDNS_RDF_TYPE_AAAA, 
 					LDNS_IP6ADDRLEN, gateway_data);
@@ -669,7 +669,7 @@ ldns_rdf2buffer_str_ipseckey(ldns_buffer *output, ldns_rdf *rdf)
 	}
 
 	public_key_size = ldns_rdf_size(rdf) - offset;
-	public_key_data = XMALLOC(uint8_t, public_key_size);
+	public_key_data = LDNS_XMALLOC(uint8_t, public_key_size);
 	memcpy(public_key_data, &data[offset], public_key_size);
 	public_key = ldns_rdf_new(LDNS_RDF_TYPE_B64, public_key_size, public_key_data);
 	
@@ -1001,7 +1001,7 @@ ldns_pkt2buffer_str(ldns_buffer *output, ldns_pkt *pkt)
 		if (ldns_pkt_answerfrom(pkt)) {
 			tmp = ldns_rdf2str(ldns_pkt_answerfrom(pkt));
 			ldns_buffer_printf(output, ";; SERVER: %s\n", tmp);
-			FREE(tmp);
+			LDNS_FREE(tmp);
 		}
 		if (ldns_pkt_when(pkt)) {
 			/* \n included in when buffer, see ctime(3) */
@@ -1036,7 +1036,7 @@ buffer2str(ldns_buffer *buffer)
 	}
 
 	tmp_str = ldns_buffer_export(buffer);
-	str = XMALLOC(char, strlen(tmp_str) + 1);
+	str = LDNS_XMALLOC(char, strlen(tmp_str) + 1);
 	memcpy(str, tmp_str, strlen(tmp_str) + 1);
 
 	return str;
@@ -1115,7 +1115,7 @@ ldns_rdf_print(FILE *output, ldns_rdf *rdf)
 	} else {
 		fprintf(output, "Unable to convert rdf to string\n");
 	}
-	FREE(str);
+	LDNS_FREE(str);
 }
 
 void
@@ -1127,7 +1127,7 @@ ldns_rr_print(FILE *output, ldns_rr *rr)
 	} else {
 		fprintf(output, "Unable to convert rr to string\n");
 	}
-	FREE(str);
+	LDNS_FREE(str);
 }
 
 void
@@ -1139,7 +1139,7 @@ ldns_pkt_print(FILE *output, ldns_pkt *pkt)
 	} else {
 		fprintf(output, "Unable to convert packet to string\n");
 	}
-	FREE(str);
+	LDNS_FREE(str);
 }
 
 void
@@ -1151,7 +1151,7 @@ ldns_rr_list_print(FILE *output, ldns_rr_list *lst)
 	} else {
 		fprintf(output, "Unable to convert rr_list to string\n");
 	}
-	FREE(str);
+	LDNS_FREE(str);
 }
 
 void

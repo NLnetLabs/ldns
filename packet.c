@@ -633,14 +633,14 @@ ldns_pkt *
 ldns_pkt_new()
 {
 	ldns_pkt *packet;
-	packet = MALLOC(ldns_pkt);
+	packet = LDNS_MALLOC(ldns_pkt);
 	if (!packet) {
 		return NULL;
 	}
 
-	packet->_header = MALLOC(ldns_hdr);
+	packet->_header = LDNS_MALLOC(ldns_hdr);
 	if (!packet->_header) {
-		FREE(packet);
+		LDNS_FREE(packet);
 		return NULL;
 	}
 
@@ -684,13 +684,13 @@ void
 ldns_pkt_free(ldns_pkt *packet)
 {
 	if (packet) {
-		FREE(packet->_header);
+		LDNS_FREE(packet->_header);
 		ldns_rr_list_free(packet->_question);
 		ldns_rr_list_free(packet->_answer);
 		ldns_rr_list_free(packet->_authority);
 		ldns_rr_list_free(packet->_additional);
 		ldns_rr_free(packet->_tsig_rr);
-		FREE(packet);
+		LDNS_FREE(packet);
 	}
 }
 

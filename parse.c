@@ -21,7 +21,7 @@ ldns_fget_keyword_data(FILE *f, const char *keyword, const char *k_del, char *da
 	char *fkeyword;
 	ssize_t i;
 
-	fkeyword = XMALLOC(char, MAXKEYWORD_LEN);
+	fkeyword = LDNS_XMALLOC(char, MAXKEYWORD_LEN);
 	i = 0;
 
 	i = ldns_fget_token(f, fkeyword, k_del, 0);
@@ -144,7 +144,7 @@ ldns_bget_keyword_data(ldns_buffer *b, const char *keyword, const char *k_del, c
 	char *fkeyword;
 	ssize_t i;
 
-	fkeyword = XMALLOC(char, MAXKEYWORD_LEN);
+	fkeyword = LDNS_XMALLOC(char, MAXKEYWORD_LEN);
 	i = 0;
 
 	i = ldns_bget_token(b, fkeyword, k_del, 0);

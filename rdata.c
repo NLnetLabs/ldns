@@ -122,7 +122,7 @@ ldns_rdf2native_sockaddr_storage(ldns_rdf *rd)
 	
 	b = (struct in_addr*)rd->_data;
 	
-	data = MALLOC(struct sockaddr_storage);
+	data = LDNS_MALLOC(struct sockaddr_storage);
 
 	switch(ldns_rdf_get_type(rd)) {
 		case LDNS_RDF_TYPE_A:
@@ -139,7 +139,7 @@ ldns_rdf2native_sockaddr_storage(ldns_rdf *rd)
 			memcpy(&data_in6->sin6_addr, ldns_rdf_data(rd), ldns_rdf_size(rd));
 			return data;
 		default:
-			FREE(data);
+			LDNS_FREE(data);
 			return NULL;
 	}
 }
@@ -153,7 +153,7 @@ ldns_native2rdf_int8(ldns_rdf_type type, uint8_t value)
 ldns_rdf *
 ldns_native2rdf_int16(ldns_rdf_type type, uint16_t value)
 {
-	uint16_t *rdf_data = XMALLOC(uint16_t, 1);
+	uint16_t *rdf_data = LDNS_XMALLOC(uint16_t, 1);
 	write_uint16(rdf_data, value);
 	return ldns_rdf_new(type, 2, rdf_data);
 }
@@ -161,7 +161,7 @@ ldns_native2rdf_int16(ldns_rdf_type type, uint16_t value)
 ldns_rdf *
 ldns_native2rdf_int32(ldns_rdf_type type, uint32_t value)
 {
-	uint32_t *rdf_data = XMALLOC(uint32_t, 1);
+	uint32_t *rdf_data = LDNS_XMALLOC(uint32_t, 1);
 	write_uint32(rdf_data, value);
 	return ldns_rdf_new(type, 4, rdf_data);
 }
@@ -169,7 +169,7 @@ ldns_native2rdf_int32(ldns_rdf_type type, uint32_t value)
 ldns_rdf *
 ldns_native2rdf_int16_data(uint16_t size, uint8_t *data)
 {
-	uint8_t *rdf_data = XMALLOC(uint8_t, (size_t) size + 2);
+	uint8_t *rdf_data = LDNS_XMALLOC(uint8_t, (size_t) size + 2);
 	write_uint16(rdf_data, size);
 	memcpy(rdf_data + 2, data, size);
 	return ldns_rdf_new(LDNS_RDF_TYPE_INT16_DATA, size + 2, rdf_data);
@@ -179,7 +179,7 @@ ldns_rdf *
 ldns_rdf_new(ldns_rdf_type t, uint16_t s, void *d)
 {
 	ldns_rdf *rd;
-	rd = MALLOC(ldns_rdf);
+	rd = LDNS_MALLOC(ldns_rdf);
 	if (!rd) {
 		return NULL;
 	}
@@ -193,11 +193,11 @@ ldns_rdf *
 ldns_rdf_new_frm_data(ldns_rdf_type type, uint16_t size, const void *data)
 {
 	ldns_rdf *rdf;
-	rdf = MALLOC(ldns_rdf);
+	rdf = LDNS_MALLOC(ldns_rdf);
 	if (!rdf) {
 		return NULL;
 	}
-	rdf->_data = XMALLOC(uint8_t, size);
+	rdf->_data = LDNS_XMALLOC(uint8_t, size);
 	if (!rdf->_data) {
 		return NULL;
 	}
@@ -221,8 +221,8 @@ void
 ldns_rdf_free_data(ldns_rdf *rd)
 {
 	if (rd) {
-		FREE(rd->_data);
-		FREE(rd);
+		LDNS_FREE(rd->_data);
+		LDNS_FREE(rd);
 	}
 }
 
@@ -230,7 +230,7 @@ void
 ldns_rdf_free(ldns_rdf *rd)
 {
 	if (rd) {
-		FREE(rd);
+		LDNS_FREE(rd);
 	}
 }
 
@@ -331,18 +331,18 @@ ldns_rdf_new_frm_fp(ldns_rdf_type type, FILE *fp)
 	ldns_rdf *r;
 	ssize_t t;
 
-	line = XMALLOC(char, MAXLINE_LEN + 1);
+	line = LDNS_XMALLOC(char, MAXLINE_LEN + 1);
 	if (!line) {
 		return NULL;
 	}
 
 	/* read an entire line in from the file */
 	if ((t = ldns_fget_token(fp, line, LDNS_PARSE_SKIP_SPACE, 0)) == -1) {
-		FREE(line);
+		LDNS_FREE(line);
 		return NULL;
 	}
 	r =  ldns_rdf_new_frm_str(type, (const char*) line);
-	FREE(line);
+	LDNS_FREE(line);
 	return r;
 }
 
@@ -399,7 +399,7 @@ ldns_rdf_address_reverse(ldns_rdf *rdf)
 			}
 			/* not needed anymore */
 			ldns_rdf_free(rev);
-			FREE(char_dname);
+			LDNS_FREE(char_dname);
 			break;
 		case LDNS_RDF_TYPE_AAAA:
 			/* some foo magic to reverse the nibbles ... */
@@ -415,7 +415,7 @@ ldns_rdf_address_reverse(ldns_rdf *rdf)
 					(octet * 2 + nnibble)] = (uint8_t)int_to_hexdigit((int)nibble);
 			}
 
-			char_dname = XMALLOC(char, (LDNS_IP6ADDRLEN * 4));
+			char_dname = LDNS_XMALLOC(char, (LDNS_IP6ADDRLEN * 4));
 			if (!char_dname) {
 				return NULL;
 			}
@@ -438,7 +438,7 @@ ldns_rdf_address_reverse(ldns_rdf *rdf)
 			if (!ret_dname) {
 				return NULL;
 			}
-			FREE(char_dname);
+			LDNS_FREE(char_dname);
 			break;
 		default:
 			break;

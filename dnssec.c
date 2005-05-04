@@ -464,7 +464,7 @@ ldns_tsig_prepare_pkt_wire(uint8_t *wire, size_t wire_len, size_t *result_len)
 	}
 	
 	*result_len = pos;
-	wire2 = XMALLOC(uint8_t, *result_len);
+	wire2 = LDNS_XMALLOC(uint8_t, *result_len);
 	memcpy(wire2, wire, *result_len);
 	
 	write_uint16(wire2 + ARCOUNT_OFF, ar_count);
@@ -537,7 +537,7 @@ ldns_create_tsig_mac(
 	algorithm_name = ldns_rdf2str(algorithm_rdf);
 	
 	/* prepare the key */
-	key_bytes = XMALLOC(unsigned char, b64_pton_calculate_size(strlen(key_data)));
+	key_bytes = LDNS_XMALLOC(unsigned char, b64_pton_calculate_size(strlen(key_data)));
 	key_size = b64_pton(key_data, key_bytes, strlen(key_data) * 2);
 	if (key_size < 0) {
 		/* LDNS_STATUS_INVALID_B64 */
@@ -546,7 +546,7 @@ ldns_create_tsig_mac(
 	}
 	/* hmac it */
 	/* 2 spare bytes for the length */
-	mac_bytes = XMALLOC(unsigned char, md_len);
+	mac_bytes = LDNS_XMALLOC(unsigned char, md_len);
 	memset(mac_bytes, 0, md_len);
 	
 	digester = ldns_get_digest_function(algorithm_name);
@@ -561,9 +561,9 @@ ldns_create_tsig_mac(
 		return LDNS_STATUS_CRYPTO_UNKNOWN_ALGO;
 	}
 	
-	FREE(algorithm_name);
-	FREE(mac_bytes);
-	FREE(key_bytes);
+	LDNS_FREE(algorithm_name);
+	LDNS_FREE(mac_bytes);
+	LDNS_FREE(key_bytes);
 	ldns_buffer_free(data_buffer);
 
 	*tsig_mac = result;
@@ -681,7 +681,7 @@ ldns_pkt_tsig_sign(ldns_pkt *pkt, const char *key_name, const char *key_data, ui
 	/* eww don't have create tsigtime rdf yet :( */
 	/* bleh :p */
 	if (gettimeofday(&tv_time_signed, NULL) == 0) {
-		time_signed = XMALLOC(uint8_t, 6);
+		time_signed = LDNS_XMALLOC(uint8_t, 6);
 		write_uint64_as_uint48(time_signed, tv_time_signed.tv_sec);
 	} else {
 		status = LDNS_STATUS_INTERNAL_ERR;
@@ -723,7 +723,7 @@ ldns_pkt_tsig_sign(ldns_pkt *pkt, const char *key_name, const char *key_data, ui
 		goto clean;
 	}
 	
-	FREE(pkt_wire);
+	LDNS_FREE(pkt_wire);
 	
 	/* Create the TSIG RR */
 	tsig_rr = ldns_rr_new();
@@ -779,7 +779,7 @@ ldns_key_rr2ds(const ldns_rr *key)
 	ldns_rr_set_ttl(ds, ldns_rr_ttl(key));
 	ldns_rr_set_class(ds, ldns_rr_get_class(key));
 
-        digest = XMALLOC(uint8_t, SHA_DIGEST_LENGTH);
+        digest = LDNS_XMALLOC(uint8_t, SHA_DIGEST_LENGTH);
         if (!digest) {
                 return NULL;
         }
@@ -825,7 +825,7 @@ ldns_key_rr2ds(const ldns_rr *key)
                         digest);
         ldns_rr_push_rdf(ds, tmp);
 
-	FREE(digest);
+	LDNS_FREE(digest);
         return ds;
 }
 

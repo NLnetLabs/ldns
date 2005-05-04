@@ -107,11 +107,11 @@ ldns_send(ldns_pkt **result, ldns_resolver *r, ldns_pkt *query_pkt)
 		
 		if (ldns_wire2pkt(&reply, reply_bytes, reply_size) !=
 		    LDNS_STATUS_OK) {
-			FREE(reply_bytes);
+			LDNS_FREE(reply_bytes);
 			return LDNS_STATUS_ERR;
 		}
 		
-		FREE(ns);
+		LDNS_FREE(ns);
 		gettimeofday(&tv_e, NULL);
 
 		if (reply) {
@@ -146,7 +146,7 @@ ldns_send(ldns_pkt **result, ldns_resolver *r, ldns_pkt *query_pkt)
 		}
 	}
 	
-	FREE(reply_bytes);
+	LDNS_FREE(reply_bytes);
 	ldns_buffer_free(qb);
 	*result = reply;
 	return LDNS_STATUS_OK;
@@ -196,7 +196,7 @@ ldns_send_udp(uint8_t **result, ldns_buffer *qbin, const struct sockaddr_storage
 	}
 	
 	/* wait for an response*/
-	answer = XMALLOC(uint8_t, MAX_PACKETLEN);
+	answer = LDNS_XMALLOC(uint8_t, MAX_PACKETLEN);
 	if (!answer) {
 		dprintf("%s", "respons alloc error\n");
 		return LDNS_STATUS_ERR;
@@ -210,12 +210,12 @@ ldns_send_udp(uint8_t **result, ldns_buffer *qbin, const struct sockaddr_storage
 		if (errno == EAGAIN) {
 			dprintf("%s", "socket timeout\n");
 		}
-		FREE(answer);
+		LDNS_FREE(answer);
 		return LDNS_STATUS_ERR;
 	}
 	
 	/* resize accordingly */
-	answer = (uint8_t*)XREALLOC(answer, uint8_t *, (size_t) bytes);
+	answer = (uint8_t*)LDNS_XREALLOC(answer, uint8_t *, (size_t) bytes);
 	*answer_size = (size_t) bytes;
 
 	*result = answer;
@@ -255,14 +255,14 @@ ldns_tcp_send_query(ldns_buffer *qbin, int sockfd, const struct sockaddr_storage
 	ssize_t bytes;
 
 	/* add length of packet */
-	sendbuf = XMALLOC(uint8_t, ldns_buffer_position(qbin) + 2);
+	sendbuf = LDNS_XMALLOC(uint8_t, ldns_buffer_position(qbin) + 2);
 	write_uint16(sendbuf, ldns_buffer_position(qbin));
 	memcpy(sendbuf+2, ldns_buffer_export(qbin), ldns_buffer_position(qbin));
 
 	bytes = sendto(sockfd, sendbuf,
 			ldns_buffer_position(qbin)+2, 0, (struct sockaddr *)to, tolen);
 
-        FREE(sendbuf);
+        LDNS_FREE(sendbuf);
 
 	if (bytes == -1) {
 		dprintf("%s", "error with sending\n");
@@ -285,7 +285,7 @@ ldns_tcp_read_wire(int sockfd, size_t *size)
 	uint16_t wire_size;
 	ssize_t bytes = 0;
 
-	wire = XMALLOC(uint8_t, 2);
+	wire = LDNS_XMALLOC(uint8_t, 2);
 	while (bytes < 2) {
 		bytes = recv(sockfd, wire, 2, 0);
 		if (bytes == -1) {
@@ -299,8 +299,8 @@ ldns_tcp_read_wire(int sockfd, size_t *size)
 
 	wire_size = read_uint16(wire);
 	
-	FREE(wire);
-	wire = XMALLOC(uint8_t, wire_size);
+	LDNS_FREE(wire);
+	wire = LDNS_XMALLOC(uint8_t, wire_size);
 	bytes = 0;
 
 	while (bytes < (ssize_t) wire_size) {
@@ -310,7 +310,7 @@ ldns_tcp_read_wire(int sockfd, size_t *size)
 				dprintf("%s", "socket timeout\n");
 			}
 			perror("error receiving tcp packet");
-			FREE(wire);
+			LDNS_FREE(wire);
 			return NULL;
 		}
 	}

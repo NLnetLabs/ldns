@@ -273,7 +273,7 @@ ldns_rdf2wire(uint8_t **dest, const ldns_rdf *rdf, size_t *result_size)
 	}
 	
 	if (result) {
-		*dest = XMALLOC(uint8_t, ldns_buffer_position(buffer));
+		*dest = LDNS_XMALLOC(uint8_t, ldns_buffer_position(buffer));
 		memcpy(*dest, result, ldns_buffer_position(buffer));
 	}
 	
@@ -299,7 +299,7 @@ ldns_rr2wire(uint8_t **dest, const ldns_rr *rr, int section, size_t *result_size
 	}
 	
 	if (result) {
-		*dest = XMALLOC(uint8_t, ldns_buffer_position(buffer));
+		*dest = LDNS_XMALLOC(uint8_t, ldns_buffer_position(buffer));
 		memcpy(*dest, result, ldns_buffer_position(buffer));
 	}
 	
@@ -325,7 +325,7 @@ ldns_pkt2wire(uint8_t **dest, const ldns_pkt *packet, size_t *result_size)
 	}
 	
 	if (result) {
-		*dest = XMALLOC(uint8_t, ldns_buffer_position(buffer));
+		*dest = LDNS_XMALLOC(uint8_t, ldns_buffer_position(buffer));
 		memcpy(*dest, result, ldns_buffer_position(buffer));
 	}
 	

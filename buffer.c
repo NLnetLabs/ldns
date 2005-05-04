@@ -15,14 +15,14 @@ ldns_buffer *
 ldns_buffer_new(size_t capacity)
 {
 	ldns_buffer *buffer
-		= MALLOC(ldns_buffer);
+		= LDNS_MALLOC(ldns_buffer);
 	if (!buffer) {
 		return NULL;
 	}
 	
-	buffer->_data = (uint8_t *) XMALLOC(uint8_t, capacity);
+	buffer->_data = (uint8_t *) LDNS_XMALLOC(uint8_t, capacity);
 	if (!buffer->_data) {
-		FREE(buffer);
+		LDNS_FREE(buffer);
 		return NULL;
 	}
 	
@@ -86,7 +86,7 @@ ldns_buffer_set_capacity(ldns_buffer *buffer, size_t capacity)
 	ldns_buffer_invariant(buffer);
 	assert(buffer->_position <= capacity);
 
-	data = (uint8_t *) XREALLOC(buffer->_data, uint8_t, capacity);
+	data = (uint8_t *) LDNS_XREALLOC(buffer->_data, uint8_t, capacity);
 	if (!data) {
 		buffer->_status = LDNS_STATUS_MEM_ERR;
 		return false;
@@ -164,11 +164,11 @@ ldns_buffer_free(ldns_buffer *buffer)
 /*
 	if (!buffer->_fixed) {
 */
-		FREE(buffer->_data);
+		LDNS_FREE(buffer->_data);
 /*
 	}
 */
-	FREE(buffer);
+	LDNS_FREE(buffer);
 }
 
 void *
