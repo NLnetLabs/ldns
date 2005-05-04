@@ -5,9 +5,7 @@
  * Licensed under the GPL version 2
  */
 
-#include <stdio.h>
-#include <config.h>
-#include <ldns/ldns.h>
+#include <ldns/dns.h>
 
 int
 usage(FILE *fp, char *prog) {

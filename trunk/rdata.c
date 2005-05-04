@@ -14,8 +14,8 @@
 #include <ldns/rdata.h>
 #include <ldns/error.h>
 #include <ldns/str2host.h>
+#include <ldns/util.h>
 
-#include "ldns/util.h"
 #include <netinet/in.h>
 #include <sys/socket.h>
 #include <netdb.h>
