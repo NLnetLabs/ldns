@@ -167,7 +167,7 @@ First we begin with some boiler plating:
      15 }
      16
 </programlisting>
-Line 9 is the important one here, this includes all the stuff we need
+Line 8 is the important one here, this includes all the stuff we need
 from ldns.
 
 <programlisting>
@@ -215,10 +215,10 @@ At line 41 we create a new resolver structure. When it's argument is NULL it use
      49          */
      50         p = ldns_resolver_query(res, domain, LDNS_RR_TYPE_MX, LDNS_RR_CLASS_IN, LDNS_RD);
 </programlisting>
-At line 50 we do the actual query. The ldns_resolver_query command returns ldns_pkt* structure,
-with the reply from the nameserver. As we look at the function call, we see that we do a
-query for a RR type 'MX' in the class 'IN' and we set the RD (recursion desired) flag on the
-qeury.
+At line 50 we do the actual query. The ldns_resolver_query() command
+returns a ldns_pkt* structure, with the reply from the nameserver. As we
+look at the function call, we see that we do a query for a RR type 'MX' in
+the class 'IN' and we set the RD (recursion desired) flag on the query.
 
 <programlisting>
      51         if (!p)  {
@@ -258,7 +258,7 @@ Here we sort the list and print it to stdout.
 
 <para>
 This example shows that with a fairly short C program you can already do
-complex tasks.
+complex tasks. 
 </para>
 
 
