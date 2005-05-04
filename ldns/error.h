@@ -13,7 +13,7 @@
 #ifndef _ERROR_H
 #define _ERROR_H
 
-#include "ldns/util.h"
+#include <ldns/util.h>
 
 enum ldns_enum_status 
 {

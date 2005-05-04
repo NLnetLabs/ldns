@@ -39,7 +39,7 @@
  * OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE, EVEN
  * IF IBM IS APPRISED OF THE POSSIBILITY OF SUCH DAMAGES.
  */
-#include <config.h>
+#include <ldns/dns.h>
 
 #include <sys/types.h>
 #include <sys/param.h>

@@ -15,7 +15,7 @@
 
 
 #include <ldns/dns.h>
-#include <ldns/wire2host.h>
+/*#include <ldns/wire2host.h>*/
 
 #include <strings.h>
 #include <limits.h>

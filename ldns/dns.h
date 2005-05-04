@@ -21,7 +21,6 @@
 #include <ldns/higher.h>
 #include <ldns/host2str.h>
 #include <ldns/host2wire.h>
-#include <ldns/ldns.h>
 #include <ldns/net.h>
 #include <ldns/packet.h>
 #include <ldns/rdata.h>
@@ -31,6 +30,7 @@
 #include <ldns/wire2host.h>
 #include <ldns/rr_functions.h>
 #include <ldns/keys.h>
+#include <ldns/parse.h>
 
 #define LDNS_IP4ADDRLEN      (32/8)
 #define LDNS_IP6ADDRLEN      (128/8)

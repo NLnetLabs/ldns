@@ -12,8 +12,7 @@
  * See the file LICENSE for the license
  */
 
-#include <config.h>
-#include <ldns/host2wire.h>
+#include <ldns/dns.h>
 
 /* TODO 
   add a pointer to a 'possiblecompression' structure
