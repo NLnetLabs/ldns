@@ -17,7 +17,7 @@
 #include <ldns/common.h>
 #include <ldns/rdata.h>
 
-#define DNAME_NORMALIZE        tolower
+#define LDNS_DNAME_NORMALIZE        tolower
 
 /**
  * concatenate two dnames together

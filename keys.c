@@ -345,7 +345,7 @@ ldns_key2rr(ldns_key *k)
 		return NULL;
 	}
 
-	bin = LDNS_XMALLOC(unsigned char, MAX_KEYLEN);
+	bin = LDNS_XMALLOC(unsigned char, LDNS_MAX_KEYLEN);
 	if (!bin) {
 		return NULL;
 	}
@@ -357,7 +357,7 @@ ldns_key2rr(ldns_key *k)
 				ldns_key_flags(k)));
 	/* first - proto */
 	ldns_rr_push_rdf(pubkey, 
-			ldns_native2rdf_int8(LDNS_RDF_TYPE_INT8, DNSSEC_KEYPROTO));
+			ldns_native2rdf_int8(LDNS_RDF_TYPE_INT8, LDNS_DNSSEC_KEYPROTO));
 	
 	ldns_rr_set_owner(pubkey, ldns_key_pubkey_owner(k));
 

@@ -451,8 +451,8 @@ ldns_resolver_new_frm_fp(FILE *fp)
 	/* recognized keywords */
 	keyword[0] = "domain";
 	keyword[1] = "nameserver";
-	word = LDNS_XMALLOC(char, MAXLINE_LEN + 1);
-	expect = RESOLV_KEYWORD;
+	word = LDNS_XMALLOC(char, LDNS_MAX_LINELEN + 1);
+	expect = LDNS_RESOLV_KEYWORD;
 
 	r = ldns_resolver_new();
 	if (!r) {
@@ -462,7 +462,7 @@ ldns_resolver_new_frm_fp(FILE *fp)
 	while (gtr > 0) {
 		/* do something */
 		switch(expect) {
-			case RESOLV_KEYWORD:
+			case LDNS_RESOLV_KEYWORD:
 				/* keyword */
 				for(i = 0; i < 2; i++) {
 					if (strcasecmp(keyword[i], word) == 0) {
@@ -478,17 +478,17 @@ ldns_resolver_new_frm_fp(FILE *fp)
 						dprintf("[%s] unreg keyword\n", word); 
 				}
 				break;
-			case RESOLV_DEFDOMAIN:
+			case LDNS_RESOLV_DEFDOMAIN:
 				/* default domain dname */
 				tmp = ldns_rdf_new_frm_str(LDNS_RDF_TYPE_DNAME, word);
 				if (!tmp) {
-					expect = RESOLV_KEYWORD;
+					expect = LDNS_RESOLV_KEYWORD;
 					break;
 				}
 				ldns_resolver_set_domain(r, tmp);
-				expect = RESOLV_KEYWORD;
+				expect = LDNS_RESOLV_KEYWORD;
 				break;
-			case RESOLV_NAMESERVER:
+			case LDNS_RESOLV_NAMESERVER:
 				/* NS aaaa or a record */
 				tmp = ldns_rdf_new_frm_str(LDNS_RDF_TYPE_AAAA, word);
 				if (!tmp) {
@@ -496,16 +496,16 @@ ldns_resolver_new_frm_fp(FILE *fp)
 					tmp = ldns_rdf_new_frm_str(LDNS_RDF_TYPE_A, word);
 				}
 				if (!tmp) {
-					expect = RESOLV_KEYWORD;
+					expect = LDNS_RESOLV_KEYWORD;
 					break;
 				}
 				(void)ldns_resolver_push_nameserver(r, tmp);
-				expect = RESOLV_KEYWORD;
+				expect = LDNS_RESOLV_KEYWORD;
 				break;
 			default:
 				/* huh?! */
 				dprintf("%s", "BIG FAT WARNING should never reach this\n");
-				expect = RESOLV_KEYWORD;
+				expect = LDNS_RESOLV_KEYWORD;
 				break;
 		}
 		gtr = ldns_fget_token(fp, word, LDNS_PARSE_NORMAL, 0);
@@ -522,7 +522,7 @@ ldns_resolver_new_frm_file(const char *filename)
 	FILE *fp;
 
 	if (!filename) {
-		fp = fopen(RESOLV_CONF, "r");
+		fp = fopen(LDNS_RESOLV_CONF, "r");
 
 	} else {
 		fp = fopen(filename, "r");
@@ -781,7 +781,7 @@ ldns_axfr_start(ldns_resolver *resolver,
 	/* Convert the query to a buffer
 	 * Is this necessary?
 	 */
-	query_wire = ldns_buffer_new(MAX_PACKETLEN);
+	query_wire = ldns_buffer_new(LDNS_MAX_PACKETLEN);
 	status = ldns_pkt2buffer_wire(query_wire, query);
 	if (status != LDNS_STATUS_OK) {
                	ldns_pkt_free(query);

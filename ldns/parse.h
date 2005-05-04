@@ -17,8 +17,8 @@
 #define LDNS_PARSE_SKIP_SPACE		"\f\n\r\v"
 #define LDNS_PARSE_NORMAL		" \f\n\r\t\v"
 #define LDNS_PARSE_NO_NL		" \t"
-#define MAXLINE_LEN		512
-#define MAXKEYWORD_LEN		32
+#define LDNS_MAX_LINELEN		512
+#define LDNS_MAX_KEYWORDLEN		32
 
 /** 
  * Get a token/char from the stream F.

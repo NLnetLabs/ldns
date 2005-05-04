@@ -331,7 +331,7 @@ ldns_rdf_new_frm_fp(ldns_rdf_type type, FILE *fp)
 	ldns_rdf *r;
 	ssize_t t;
 
-	line = LDNS_XMALLOC(char, MAXLINE_LEN + 1);
+	line = LDNS_XMALLOC(char, LDNS_MAX_LINELEN + 1);
 	if (!line) {
 		return NULL;
 	}

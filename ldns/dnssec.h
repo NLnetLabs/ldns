@@ -18,8 +18,8 @@
 #include <ldns/packet.h>
 #include <ldns/keys.h>
 
-#define MAX_KEYLEN	2048
-#define DNSSEC_KEYPROTO	3
+#define LDNS_MAX_KEYLEN		2048
+#define LDNS_DNSSEC_KEYPROTO	3
 
 #if 0
 /**

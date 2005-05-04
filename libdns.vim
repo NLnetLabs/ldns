@@ -9,7 +9,7 @@ syn keyword  ldnsMacro LDNS_XMALLOC
 syn keyword  ldnsMacro LDNS_REALLOC
 syn keyword  ldnsMacro LDNS_XREALLOC
 syn keyword  ldnsMacro LDNS_FREE
-syn keyword  ldnsMacro DEP  
+syn keyword  ldnsMacro LDNS_DEP  
 
 " ldns/rdata.h
 syn keyword  ldnsType           ldns_rdf
@@ -46,7 +46,7 @@ syn keyword  ldnsConstant	LDNS_RDF_TYPE_SERVICE
 syn keyword  ldnsConstant	LDNS_RDF_TYPE_LOC
 syn keyword  ldnsConstant	LDNS_RDF_TYPE_WKS
 syn keyword  ldnsConstant	LDNS_RDF_TYPE_NSAP
-syn keyword  ldnsConstant	MAX_RDFLEN
+syn keyword  ldnsConstant	LDNS_MAX_RDFLEN
 
 " ldns/dns.h
 syn keyword  ldnsConstant	LDNS_PORT
@@ -72,7 +72,7 @@ syn keyword  ldnsConstant	LDNS_SECTION_ANSWER
 syn keyword  ldnsConstant	LDNS_SECTION_AUTHORITY
 syn keyword  ldnsConstant	LDNS_SECTION_ADDITIONAL
 syn keyword  ldnsConstant	LDNS_SECTION_ANY
-syn keyword  ldnsConstant	MAX_PACKETLEN
+syn keyword  ldnsConstant	LDNS_MAX_PACKETLEN
 
 
 " dns/error.h
@@ -162,8 +162,8 @@ syn keyword  ldnsConstant LDNS_RR_TYPE_AXFR
 syn keyword  ldnsConstant LDNS_RR_TYPE_MAILB      
 syn keyword  ldnsConstant LDNS_RR_TYPE_MAILA      
 syn keyword  ldnsConstant LDNS_RR_TYPE_ANY        
-syn keyword  ldnsConstant MAX_LABELLEN     
-syn keyword  ldnsConstant MAX_DOMAINLEN
+syn keyword  ldnsConstant LDNS_MAX_LABELLEN     
+syn keyword  ldnsConstant LDNS_MAX_DOMAINLEN
 syn keyword  ldnsConstant LDNS_RR_COMPRESS
 syn keyword  ldnsConstant LDNS_RR_NO_COMPRESS
 
@@ -228,7 +228,7 @@ syn keyword  ldnsMacro 	ARCOUNT
 
 " ldns/buffer.h
 syn keyword  ldnsType		ldns_buffer
-syn keyword  ldnsConstant	MIN_BUFLEN
+syn keyword  ldnsConstant	LDNS_MIN_BUFLEN
 
 " ldns/host2str.h
 syn keyword  ldnsType	ldns_lookup_table
@@ -239,7 +239,7 @@ syn keyword  ldnsType   ldns_key_list
 syn keyword  ldnsType   ldns_signing_algorithm
 
 " ldns/dnssec.h
-syn keyword  ldnsConstant	MAX_KEYLEN
+syn keyword  ldnsConstant	LDNS_MAX_KEYLEN
 
 
 

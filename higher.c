@@ -99,13 +99,13 @@ ldns_get_rr_list_hosts_frm_fp(FILE *fp)
 	ldns_rr_list *list;
 	bool ip6;
 
-	linebuf = ldns_buffer_new(MAXLINE_LEN);
+	linebuf = ldns_buffer_new(LDNS_MAX_LINELEN);
 
 	/* duh duh duh !!!!! */
-	line = LDNS_XMALLOC(char, MAXLINE_LEN + 1);
-	word = LDNS_XMALLOC(char, MAXLINE_LEN + 1);
-	addr = LDNS_XMALLOC(char, MAXLINE_LEN + 1);
-	rr_str = LDNS_XMALLOC(char, MAXLINE_LEN + 1);
+	line = LDNS_XMALLOC(char, LDNS_MAX_LINELEN + 1);
+	word = LDNS_XMALLOC(char, LDNS_MAX_LINELEN + 1);
+	addr = LDNS_XMALLOC(char, LDNS_MAX_LINELEN + 1);
+	rr_str = LDNS_XMALLOC(char, LDNS_MAX_LINELEN + 1);
 	ip6 = false;
 	list = ldns_rr_list_new();
 	rr = NULL;
@@ -143,9 +143,9 @@ ldns_get_rr_list_hosts_frm_fp(FILE *fp)
 			} else {
 				/* la al la la */
 				if (ip6) {
-					snprintf(rr_str, MAXLINE_LEN, "%s IN AAAA %s", word, addr);
+					snprintf(rr_str, LDNS_MAX_LINELEN, "%s IN AAAA %s", word, addr);
 				} else {
-					snprintf(rr_str, MAXLINE_LEN, "%s IN A %s", word, addr);
+					snprintf(rr_str, LDNS_MAX_LINELEN, "%s IN A %s", word, addr);
 				}
 				rr = ldns_rr_new_frm_str(rr_str);
 			}
@@ -169,7 +169,7 @@ ldns_get_rr_list_hosts_frm_file(char *filename)
 	FILE *fp;
 
 	if (!filename) {
-                fp = fopen(RESOLV_HOSTS, "r");
+                fp = fopen(LDNS_RESOLV_HOSTS, "r");
         
         } else {
                 fp = fopen(filename, "r");

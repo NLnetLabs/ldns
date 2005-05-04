@@ -258,7 +258,7 @@ ldns_pkt2buffer_wire(ldns_buffer *buffer, const ldns_pkt *packet)
 ldns_status
 ldns_rdf2wire(uint8_t **dest, const ldns_rdf *rdf, size_t *result_size)
 {
-	ldns_buffer *buffer = ldns_buffer_new(MAX_PACKETLEN);
+	ldns_buffer *buffer = ldns_buffer_new(LDNS_MAX_PACKETLEN);
 	uint8_t *result = NULL;
 	ldns_status status;
 	*result_size = 0;
@@ -284,7 +284,7 @@ ldns_rdf2wire(uint8_t **dest, const ldns_rdf *rdf, size_t *result_size)
 ldns_status
 ldns_rr2wire(uint8_t **dest, const ldns_rr *rr, int section, size_t *result_size)
 {
-	ldns_buffer *buffer = ldns_buffer_new(MAX_PACKETLEN);
+	ldns_buffer *buffer = ldns_buffer_new(LDNS_MAX_PACKETLEN);
 	uint8_t *result = NULL;
 	ldns_status status;
 	*result_size = 0;
@@ -310,7 +310,7 @@ ldns_rr2wire(uint8_t **dest, const ldns_rr *rr, int section, size_t *result_size
 ldns_status
 ldns_pkt2wire(uint8_t **dest, const ldns_pkt *packet, size_t *result_size)
 {
-	ldns_buffer *buffer = ldns_buffer_new(MAX_PACKETLEN);
+	ldns_buffer *buffer = ldns_buffer_new(LDNS_MAX_PACKETLEN);
 	uint8_t *result = NULL;
 	ldns_status status;
 	*result_size = 0;
