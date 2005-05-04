@@ -28,16 +28,16 @@
 /**
  * Memory management macro's
  */
-#define MALLOC(type)		XMALLOC(type, 1)
+#define LDNS_MALLOC(type)		LDNS_XMALLOC(type, 1)
 
-#define XMALLOC(type, count)	((type *) malloc((count) * sizeof(type)))
+#define LDNS_XMALLOC(type, count)	((type *) malloc((count) * sizeof(type)))
 
-#define REALLOC(ptr, type)	XREALLOC((ptr), type, 1)
+#define LDNS_REALLOC(ptr, type)		LDNS_XREALLOC((ptr), type, 1)
 
-#define XREALLOC(ptr, type, count)				\
+#define LDNS_XREALLOC(ptr, type, count)				\
 	((type *) realloc((ptr), (count) * sizeof(type)))
 
-#define FREE(ptr) \
+#define LDNS_FREE(ptr) \
 	do { free((ptr)); (ptr) = NULL; } while (0)
 
 #define DEP     printf("DEPRECATED FUNCTION!\n");

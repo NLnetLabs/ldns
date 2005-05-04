@@ -172,7 +172,7 @@ ldns_resolver_pop_nameserver(ldns_resolver *r)
 	
 	pop = nameservers[ns_count - 1];
 
-	nameservers = XREALLOC(nameservers, ldns_rdf *, 
+	nameservers = LDNS_XREALLOC(nameservers, ldns_rdf *, 
 			(ns_count - 1));
 
 	ldns_resolver_set_nameservers(r, nameservers);
@@ -196,7 +196,7 @@ ldns_resolver_push_nameserver(ldns_resolver *r, ldns_rdf *n)
 	nameservers = ldns_resolver_nameservers(r);
 
 	/* make room for the next one */
-	nameservers = XREALLOC(nameservers, ldns_rdf *, (ns_count + 1));
+	nameservers = LDNS_XREALLOC(nameservers, ldns_rdf *, (ns_count + 1));
 
 	/* set the new value in the resolver */
 	ldns_resolver_set_nameservers(r, nameservers);
@@ -396,7 +396,7 @@ ldns_resolver_new(void)
 {
 	ldns_resolver *r;
 
-	r = MALLOC(ldns_resolver);
+	r = LDNS_MALLOC(ldns_resolver);
 	if (!r) {
 		return NULL;
 	}
@@ -451,7 +451,7 @@ ldns_resolver_new_frm_fp(FILE *fp)
 	/* recognized keywords */
 	keyword[0] = "domain";
 	keyword[1] = "nameserver";
-	word = XMALLOC(char, MAXLINE_LEN + 1);
+	word = LDNS_XMALLOC(char, MAXLINE_LEN + 1);
 	expect = RESOLV_KEYWORD;
 
 	r = ldns_resolver_new();
@@ -511,7 +511,7 @@ ldns_resolver_new_frm_fp(FILE *fp)
 		gtr = ldns_fget_token(fp, word, LDNS_PARSE_NORMAL, 0);
 	}
 	
-	FREE(word);
+	LDNS_FREE(word);
 	return r;
 }
 
@@ -549,14 +549,14 @@ ldns_resolver_free(ldns_resolver *res)
 				ldns_rdf_free_data(res->_searchlist[i]);
 			}
 		}
-		FREE(res->_searchlist);
+		LDNS_FREE(res->_searchlist);
 		if (res->_nameservers) {
 			for (i = 0; i < res->_nameserver_count; i++) {
 				ldns_rdf_free_data(res->_nameservers[i]);
 			}
 		}
-		FREE(res->_nameservers);
-		FREE(res);
+		LDNS_FREE(res->_nameservers);
+		LDNS_FREE(res);
 	}
 }
 

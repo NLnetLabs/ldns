@@ -102,10 +102,10 @@ ldns_get_rr_list_hosts_frm_fp(FILE *fp)
 	linebuf = ldns_buffer_new(MAXLINE_LEN);
 
 	/* duh duh duh !!!!! */
-	line = XMALLOC(char, MAXLINE_LEN + 1);
-	word = XMALLOC(char, MAXLINE_LEN + 1);
-	addr = XMALLOC(char, MAXLINE_LEN + 1);
-	rr_str = XMALLOC(char, MAXLINE_LEN + 1);
+	line = LDNS_XMALLOC(char, MAXLINE_LEN + 1);
+	word = LDNS_XMALLOC(char, MAXLINE_LEN + 1);
+	addr = LDNS_XMALLOC(char, MAXLINE_LEN + 1);
+	rr_str = LDNS_XMALLOC(char, MAXLINE_LEN + 1);
 	ip6 = false;
 	list = ldns_rr_list_new();
 	rr = NULL;
@@ -154,10 +154,10 @@ ldns_get_rr_list_hosts_frm_fp(FILE *fp)
 				ldns_rr_list_push_rr(list, rr);
 		}
 	}
-	FREE(line);
-	FREE(word);
-	FREE(addr);
-	FREE(rr_str);
+	LDNS_FREE(line);
+	LDNS_FREE(word);
+	LDNS_FREE(addr);
+	LDNS_FREE(rr_str);
 	return list;
 }
 

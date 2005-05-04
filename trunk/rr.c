@@ -19,7 +19,7 @@ ldns_rr *
 ldns_rr_new(void)
 {
 	ldns_rr *rr;
-	rr = MALLOC(ldns_rr);
+	rr = LDNS_MALLOC(ldns_rr);
         if (!rr) {
                 return NULL;
 	}
@@ -39,14 +39,14 @@ ldns_rr_new_frm_type(ldns_rr_type t)
 	const ldns_rr_descriptor *desc;
 	uint16_t i;
 
-	rr = MALLOC(ldns_rr);
+	rr = LDNS_MALLOC(ldns_rr);
         if (!rr) {
                 return NULL;
 	}
 	
 	desc = ldns_rr_descript(t);
 
-	rr->_rdata_fields = XMALLOC(ldns_rdf *, 
+	rr->_rdata_fields = LDNS_XMALLOC(ldns_rdf *, 
 			ldns_rr_descriptor_minimum(desc));
 	for (i = 0; i < ldns_rr_descriptor_minimum(desc); i++) {
 		rr->_rdata_fields[i] = NULL;
@@ -72,8 +72,8 @@ ldns_rr_free(ldns_rr *rr)
 		for (i = 0; i < ldns_rr_rd_count(rr); i++) {
 			ldns_rdf_free_data(ldns_rr_rdf(rr, i));
 		}
-		FREE(rr->_rdata_fields);
-		FREE(rr);
+		LDNS_FREE(rr->_rdata_fields);
+		LDNS_FREE(rr);
 	}
 }
 
@@ -115,14 +115,14 @@ ldns_rr_new_frm_str(const char *str)
 
 	new = ldns_rr_new();
 
-	owner = XMALLOC(char, MAX_DOMAINLEN + 1);
-	ttl = XMALLOC(char, 21);
-	clas = XMALLOC(char, 11);
-	type = XMALLOC(char, 10);
-	rdata = XMALLOC(char, MAX_PACKETLEN + 1);
-	rr_buf = MALLOC(ldns_buffer);
-	rd_buf = MALLOC(ldns_buffer);
-	rd = XMALLOC(char, MAX_RDFLEN);
+	owner = LDNS_XMALLOC(char, MAX_DOMAINLEN + 1);
+	ttl = LDNS_XMALLOC(char, 21);
+	clas = LDNS_XMALLOC(char, 11);
+	type = LDNS_XMALLOC(char, 10);
+	rdata = LDNS_XMALLOC(char, MAX_PACKETLEN + 1);
+	rr_buf = LDNS_MALLOC(ldns_buffer);
+	rd_buf = LDNS_MALLOC(ldns_buffer);
+	rd = LDNS_XMALLOC(char, MAX_RDFLEN);
 	if (!owner || !ttl || !clas || !type || !rdata ||
 			!rr_buf || !rd_buf || !rd) {
 		return NULL;
@@ -137,14 +137,22 @@ ldns_rr_new_frm_str(const char *str)
 	
 	/* split the rr in its parts -1 signals trouble */
 	if (ldns_bget_token(rr_buf, owner, "\t\n ", MAX_DOMAINLEN) == -1) {
-		FREE(owner); FREE(ttl); FREE(clas); FREE(rdata);FREE(rd);
-		FREE(rd_buf);
+		LDNS_FREE(owner); 
+		LDNS_FREE(ttl); 
+		LDNS_FREE(clas); 
+		LDNS_FREE(rdata);
+		LDNS_FREE(rd);
+		LDNS_FREE(rd_buf);
 		ldns_buffer_free(rr_buf); 
 		return NULL;
 	}
 	if (ldns_bget_token(rr_buf, ttl, "\t\n ", 21) == -1) {
-		FREE(owner); FREE(ttl); FREE(clas); FREE(rdata);FREE(rd);
-		FREE(rd_buf);
+		LDNS_FREE(owner); 
+		LDNS_FREE(ttl); 
+		LDNS_FREE(clas); 
+		LDNS_FREE(rdata);
+		LDNS_FREE(rd);
+		LDNS_FREE(rd_buf);
 		ldns_buffer_free(rr_buf);
 		return NULL;
 	}
@@ -160,8 +168,12 @@ ldns_rr_new_frm_str(const char *str)
 		clas_val = ldns_get_rr_class_by_name(ttl);
 	} else {
 		if (ldns_bget_token(rr_buf, clas, "\t\n ", 11) == -1) {
-			FREE(owner); FREE(ttl); FREE(clas); FREE(rdata);FREE(rd);
-			FREE(rd_buf);
+			LDNS_FREE(owner); 
+			LDNS_FREE(ttl); 
+			LDNS_FREE(clas); 
+			LDNS_FREE(rdata);
+			LDNS_FREE(rd);
+			LDNS_FREE(rd_buf);
 			ldns_buffer_free(rr_buf);
 			return NULL;
 		}
@@ -170,14 +182,22 @@ ldns_rr_new_frm_str(const char *str)
 	/* the rest should still be waiting for us */
 
 	if (ldns_bget_token(rr_buf, type, "\t\n ", 10) == -1) {
-		FREE(owner); FREE(ttl); FREE(clas); FREE(rdata);FREE(rd);
-		FREE(rd_buf);
+		LDNS_FREE(owner); 
+		LDNS_FREE(ttl); 
+		LDNS_FREE(clas); 
+		LDNS_FREE(rdata);
+		LDNS_FREE(rd);
+		LDNS_FREE(rd_buf);
 		ldns_buffer_free(rr_buf);
 		return NULL;
 	}
 	if (ldns_bget_token(rr_buf, rdata, "\0", MAX_PACKETLEN) == -1) {
-		FREE(owner); FREE(ttl); FREE(clas); FREE(type);FREE(rd);
-		FREE(rd_buf);
+		LDNS_FREE(owner); 
+		LDNS_FREE(ttl); 
+		LDNS_FREE(clas); 
+		LDNS_FREE(type);
+		LDNS_FREE(rd);
+		LDNS_FREE(rd_buf);
 		ldns_buffer_free(rr_buf);
 		return NULL;
 	}
@@ -185,16 +205,16 @@ ldns_rr_new_frm_str(const char *str)
 			rd_buf, rdata, strlen(rdata));
 
 	ldns_rr_set_owner(new, ldns_dname_new_frm_str(owner));
-	FREE(owner);
+	LDNS_FREE(owner);
 
 	ldns_rr_set_ttl(new, ttl_val);
-	FREE(ttl);
+	LDNS_FREE(ttl);
 
 	ldns_rr_set_class(new, clas_val);
-	FREE(clas);
+	LDNS_FREE(clas);
 
 	rr_type = ldns_get_rr_type_by_name(type);
-	FREE(type);
+	LDNS_FREE(type);
 
 	desc = ldns_rr_descript((uint16_t)rr_type);
 	ldns_rr_set_type(new, rr_type);
@@ -220,7 +240,7 @@ ldns_rr_new_frm_str(const char *str)
 			}
 	}
 	
-	FREE(rdata);
+	LDNS_FREE(rdata);
 	return new;
 }
 
@@ -229,7 +249,7 @@ ldns_rr_new_frm_fp(FILE *fp)
 {
         char *line;
 
-        line = XMALLOC(char, MAXLINE_LEN + 1);
+        line = LDNS_XMALLOC(char, MAXLINE_LEN + 1);
         if (!line) {
                 return NULL;
         }
@@ -299,7 +319,7 @@ ldns_rr_push_rdf(ldns_rr *rr, ldns_rdf *f)
 	rd_count = ldns_rr_rd_count(rr);
 	
 	/* grow the array */
-	rdata_fields = XREALLOC(
+	rdata_fields = LDNS_XREALLOC(
 		rr->_rdata_fields, ldns_rdf *, rd_count + 1);
 	if (!rdata_fields) {
 		return false;
@@ -328,7 +348,7 @@ ldns_rr_pop_rdf(ldns_rr *rr)
 	pop = rr->_rdata_fields[rd_count];
 	
 	/* shrink the array */
-	rr->_rdata_fields = XREALLOC(
+	rr->_rdata_fields = LDNS_XREALLOC(
 		rr->_rdata_fields, ldns_rdf *, rd_count - 1);
 
 	ldns_rr_set_rd_count(rr, rd_count - 1);
@@ -406,7 +426,7 @@ ldns_rr_list_rr(ldns_rr_list *rr_list, uint16_t nr)
 ldns_rr_list *
 ldns_rr_list_new()
 {
-	ldns_rr_list *rr_list = MALLOC(ldns_rr_list);
+	ldns_rr_list *rr_list = LDNS_MALLOC(ldns_rr_list);
 	rr_list->_rr_count = 0;
 	rr_list->_rrs = NULL;
 	return rr_list;
@@ -421,8 +441,8 @@ ldns_rr_list_free(ldns_rr_list *rr_list)
 		for (i=0; i < ldns_rr_list_rr_count(rr_list); i++) {
 			ldns_rr_free(ldns_rr_list_rr(rr_list, i));
 		}
-		FREE(rr_list->_rrs);
-		FREE(rr_list);
+		LDNS_FREE(rr_list->_rrs);
+		LDNS_FREE(rr_list);
 	}
 }
 
@@ -478,7 +498,7 @@ ldns_rr_list_push_rr(ldns_rr_list *rr_list, ldns_rr *rr)
 	rr_count = ldns_rr_list_rr_count(rr_list);
 
 	/* grow the array */
-	rrs = XREALLOC(
+	rrs = LDNS_XREALLOC(
 		rr_list->_rrs, ldns_rr *, rr_count + 1);
 
 	if (!rrs) {
@@ -508,7 +528,7 @@ ldns_rr_list_pop_rr(ldns_rr_list *rr_list)
 	pop = ldns_rr_list_rr(rr_list, rr_count);
 	
 	/* shrink the array */
-	rr_list->_rrs = XREALLOC(
+	rr_list->_rrs = LDNS_XREALLOC(
 		rr_list->_rrs, ldns_rr *, rr_count - 1);
 
 	ldns_rr_list_set_rr_count(rr_list, rr_count - 1);

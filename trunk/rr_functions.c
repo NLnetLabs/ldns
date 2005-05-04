@@ -50,7 +50,7 @@ ldns_rr_set_function(ldns_rr_type type, ldns_rr *rr, ldns_rdf *rdf, size_t pos)
         }
         pop = ldns_rr_set_rdf(rr, rdf, pos);
         if (pop) {
- 		FREE(pop);
+ 		LDNS_FREE(pop);
                 return true;
         } else {
                 return true;
@@ -86,7 +86,7 @@ ldns_rr_a_set_address(ldns_rr *r, ldns_rdf *f)
 	}
 	pop = ldns_rr_set_rdf(r, f, 0);
 	if (pop) {
-		FREE(pop);
+		LDNS_FREE(pop);
 		return true;
 	} else {
 		return false;

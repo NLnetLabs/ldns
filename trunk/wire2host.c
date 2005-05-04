@@ -120,7 +120,7 @@ ldns_wire2dname(ldns_rdf **dname, const uint8_t *wire, size_t max, size_t *pos)
 	tmp_dname[dname_pos] = 0;
 	dname_pos++;
 	
-	dname_ar = XMALLOC(uint8_t, dname_pos);
+	dname_ar = LDNS_XMALLOC(uint8_t, dname_pos);
 	if (!dname_ar) {
 		return LDNS_STATUS_MEM_ERR;
 	}
@@ -129,7 +129,7 @@ ldns_wire2dname(ldns_rdf **dname, const uint8_t *wire, size_t max, size_t *pos)
 	*dname = ldns_rdf_new(LDNS_RDF_TYPE_DNAME, 
 			(uint16_t) dname_pos, dname_ar);
 	if (!*dname) {
-		FREE(dname_ar);
+		LDNS_FREE(dname_ar);
 		return LDNS_STATUS_MEM_ERR;
 	}
 	
@@ -244,7 +244,7 @@ ldns_wire2rdf(ldns_rr *rr, const uint8_t *wire,
 		}
 		/* fixed length rdata */
 		if (cur_rdf_length > 0) {
-			data = XMALLOC(uint8_t, rd_length);
+			data = LDNS_XMALLOC(uint8_t, rd_length);
 			if (!data) {
 				return LDNS_STATUS_MEM_ERR;
 			}
@@ -298,7 +298,7 @@ ldns_wire2rr(ldns_rr **rr_p, const uint8_t *wire, size_t max,
 	return LDNS_STATUS_OK;
 	
 status_error:
-	FREE(rr);
+	LDNS_FREE(rr);
 	return status;
 }
 
@@ -397,6 +397,6 @@ ldns_wire2pkt(ldns_pkt **packet_p, const uint8_t *wire, size_t max)
 	return status;
 	
 status_error:
-	FREE(packet);
+	LDNS_FREE(packet);
 	return status;
 }

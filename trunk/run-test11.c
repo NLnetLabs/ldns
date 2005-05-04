@@ -59,7 +59,7 @@ main(int argc, char **argv)
 		rr_str = ldns_rr2str(rr);
 		printf("%s\n", rr_str);
 		ldns_rr_free(rr);
-		FREE(rr_str);
+		LDNS_FREE(rr_str);
 	}
 
 	

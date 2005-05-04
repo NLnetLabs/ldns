@@ -22,7 +22,7 @@ ldns_lookup_table ldns_signing_algorithms[] = {
 ldns_key_list *
 ldns_key_list_new()
 {
-	ldns_key_list *key_list = MALLOC(ldns_key_list);
+	ldns_key_list *key_list = LDNS_MALLOC(ldns_key_list);
 	if (!key_list) {
 		return NULL;
 	} else {
@@ -37,7 +37,7 @@ ldns_key_new()
 {
 	ldns_key *newkey;
 
-	newkey = MALLOC(ldns_key);
+	newkey = LDNS_MALLOC(ldns_key);
 	if (!newkey) {
 		return NULL;
 	} else {
@@ -242,7 +242,7 @@ ldns_key_list_push_key(ldns_key_list *key_list, ldns_key *key)
         key_count = ldns_key_list_key_count(key_list);
         
         /* grow the array */
-        keys = XREALLOC(
+        keys = LDNS_XREALLOC(
                 key_list->_keys, ldns_key *, key_count + 1);
         if (!keys) {
                 return false;
@@ -271,7 +271,7 @@ ldns_key_list_pop_key(ldns_key_list *key_list)
         pop = ldns_key_list_key(key_list, key_count);
         
         /* shrink the array */
-        key_list->_keys = XREALLOC(
+        key_list->_keys = LDNS_XREALLOC(
                 key_list->_keys, ldns_key *, key_count - 1);
 
         ldns_key_list_set_key_count(key_list, key_count - 1);
@@ -345,7 +345,7 @@ ldns_key2rr(ldns_key *k)
 		return NULL;
 	}
 
-	bin = XMALLOC(unsigned char, MAX_KEYLEN);
+	bin = LDNS_XMALLOC(unsigned char, MAX_KEYLEN);
 	if (!bin) {
 		return NULL;
 	}
@@ -390,7 +390,7 @@ ldns_key2rr(ldns_key *k)
 	}
 	/* fourth the key bin material */
 	keybin = ldns_rdf_new_frm_data(LDNS_RDF_TYPE_B64, size+1, bin);
-	FREE(bin);
+	LDNS_FREE(bin);
 	ldns_rr_push_rdf(pubkey, keybin);
 	return pubkey;
 }

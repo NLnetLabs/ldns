@@ -34,7 +34,7 @@ ldns_dname_cat(ldns_rdf *rd1, ldns_rdf *rd2)
 
 	/* we overwrite the nullbyte of rd1 */
 	new_size = ldns_rdf_size(rd1) + ldns_rdf_size(rd2) - 1;
-	buf = XMALLOC(uint8_t, new_size);
+	buf = LDNS_XMALLOC(uint8_t, new_size);
 	if (!buf) {
 		return NULL;
 	}
@@ -46,7 +46,7 @@ ldns_dname_cat(ldns_rdf *rd1, ldns_rdf *rd2)
 	
 	new = ldns_rdf_new_frm_data(LDNS_RDF_TYPE_DNAME, new_size, buf);
 
-	FREE(buf);
+	LDNS_FREE(buf);
 	return new;
 }
 
