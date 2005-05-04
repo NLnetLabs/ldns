@@ -414,10 +414,10 @@ ldns_tsig_prepare_pkt_wire(uint8_t *wire, size_t wire_len, size_t *result_len)
 	ldns_status status;
 
 	/* fake parse the wire */
-	qd_count = QDCOUNT(wire);
-	an_count = ANCOUNT(wire);
-	ns_count = NSCOUNT(wire);
-	ar_count = ARCOUNT(wire);
+	qd_count = LDNS_QDCOUNT(wire);
+	an_count = LDNS_ANCOUNT(wire);
+	ns_count = LDNS_NSCOUNT(wire);
+	ar_count = LDNS_ARCOUNT(wire);
 	
 	if (ar_count > 0) {
 		ar_count--;
@@ -425,7 +425,7 @@ ldns_tsig_prepare_pkt_wire(uint8_t *wire, size_t wire_len, size_t *result_len)
 		return NULL;
 	}
 
-	pos = HEADER_SIZE;
+	pos = LDNS_HEADER_SIZE;
 	
 	for (i = 0; i < qd_count; i++) {
 		status = ldns_wire2rr(&rr, wire, wire_len, &pos,
@@ -467,7 +467,7 @@ ldns_tsig_prepare_pkt_wire(uint8_t *wire, size_t wire_len, size_t *result_len)
 	wire2 = LDNS_XMALLOC(uint8_t, *result_len);
 	memcpy(wire2, wire, *result_len);
 	
-	write_uint16(wire2 + ARCOUNT_OFF, ar_count);
+	write_uint16(wire2 + LDNS_ARCOUNT_OFF, ar_count);
 	
 	return wire2;
 }
