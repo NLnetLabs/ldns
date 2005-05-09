@@ -167,7 +167,7 @@ while(<>) {
 	        ) {
 		$struct_description .= "\n.br\n" . $_;
 		$key = $2;
-		$struct_description =~ s/\/\*\*\s*(.*)\s*\*\//\\fB$1:\\fR/g;
+		$struct_description =~ s/\/\*\*\s*(.*?)\s*\*\//\\fB$1:\\fR/g;
 		$description{$key} = $struct_description;
 		$api{$key} = "struct";
 		$return{$key} = $1;
