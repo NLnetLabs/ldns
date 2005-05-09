@@ -26,9 +26,6 @@ ldns_calc_keytag, ldns_verify, ldns_verify_rrsig, ldns_verify_rrsig_dsa, ldns_ve
 # 	verify
 ldns_verify, ldns_verify_rrsig, ldns_verify_rrsig_dsa, ldns_verify_rrsig_rsasha1, ldns_verify_rrsig_rsamd5
 
-#	key conv
-ldns_key_buf2dsa, ldns_key_buf2rsa, ldns_key_rr2ds
-
 # dnskey.h
 ldns_key_new, ldns_key_new_frm_algorithm, ldns_key2rr,
 
@@ -59,7 +56,7 @@ ldns_tcp_send_query, ldns_tcp_read_wire, ldns_tcp_connect
 # buffer.h
 
 # general
-ldns_buffer_new, ldns_buffer_new_frm_data, ldns_buffer_clear, ldns_buffer_printf, ldns_buffer_free, ldns_buffer_export
+ldns_buffer, ldns_buffer_new, ldns_buffer_new_frm_data, ldns_buffer_clear, ldns_buffer_printf, ldns_buffer_free, ldns_buffer_export
 # position
 ldns_buffer_flip, ldns_buffer_rewind, ldns_buffer_position, ldns_buffer_set_position, ldns_buffer_skip
 # values and pointers
@@ -70,7 +67,7 @@ ldns_buffer_remaining_at, ldns_buffer_remaining, ldns_buffer_available_at, ldns_
 ldns_buffer_write_at, ldns_buffer_write_at, ldns_buffer_write, ldns_buffer_write_string_at, ldns_buffer_write_string, ldns_buffer_write_u8_at, ldns_buffer_write_u8, ldns_buffer_write_u16_at, ldns_buffer_write_u16, ldns_buffer_read_at, ldns_buffer_read, ldns_buffer_read_u8_at, ldns_buffer_read_u8, ldns_buffer_read_u16_at, ldns_buffer_read_u16, ldns_buffer_read_u32_at, ldns_buffer_read_u32
 
 # parse.h
-ldns_bget_token, ldns_bgetc, ldns_bskipcs
+ldns_bget_token, ldns_bgetc, ldns_bskipcs | ldns_buffer
 ldns_fget_token, ldns_fskipcs
 ldns_str_remove_comment
 
@@ -131,4 +128,4 @@ ldns_rr_mx_preference, ldns_rr_mx_exchange
 #
 ldns_rr_rrsig_typecovered, ldns_rr_rrsig_set_typecovered, ldns_rr_rrsig_algorithm, ldns_rr_rrsig_set_algorithm, ldns_rr_rrsig_labels, ldns_rr_rrsig_set_labels, ldns_rr_rrsig_origttl, ldns_rr_rrsig_set_origttl, ldns_rr_rrsig_expiration, ldns_rr_rrsig_set_expiration, ldns_rr_rrsig_inception, ldns_rr_rrsig_set_inception, ldns_rr_rrsig_keytag, ldns_rr_rrsig_set_keytag, ldns_rr_rrsig_signame, ldns_rr_rrsig_set_signame, ldns_rr_rrsig_sig, ldns_rr_rrsig_set_sig
 #
-ldns_rr_dnskey_flags, ldns_rr_dnskey_set_flags, ldns_rr_dnskey_protocol, ldns_rr_dnskey_set_protocol, ldns_rr_dnskey_algorithm, ldns_rr_dnskey_set_algorithm, ldns_rr_dnskey_key, ldns_rr_dnskey_set_key
+ldns_rr_dnskey_flags, ldns_rr_dnskey_set_flags, ldns_rr_dnskey_protocol, ldns_rr_dnskey_set_protocol, ldns_rr_dnskey_algorithm, ldns_rr_dnskey_set_algorithm, ldns_rr_dnskey_key, ldns_rr_dnskey_set_key | ldns_rr

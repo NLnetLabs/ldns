@@ -28,40 +28,31 @@
  */
 #define LDNS_MIN_BUFLEN	256
 
-typedef struct buffer ldns_buffer;
-
+/**
+ * LDNS implementation of buffers to ease operations
+ */
 struct buffer
 {
-	/**
-	 * The current position used for reading/writing.
-	 */ 
+	/** The current position used for reading/writing */ 
 	size_t   _position;
 
-	/**
-	 * The read/write limit.
-	 */
+	/** The read/write limit */
 	size_t   _limit;
 
-	/**
-	 * The amount of data the buffer can contain.
-	 */
+	/** The amount of data the buffer can contain */
 	size_t   _capacity;
 
-	/**
-	 * The data contained in the buffer.
-	 */
+	/** The data contained in the buffer */
 	uint8_t *_data;
 
-	/**
-	 * If the buffer is fixed it cannot be resized.
-	 */
+	/** If the buffer is fixed it cannot be resized */
 	unsigned _fixed : 1;
 
-	/**
-	 * The current state of the buffer
-	 */
+	/** The current state of the buffer */
 	ldns_status _status;
 };
+typedef struct buffer ldns_buffer;
+
 
 #ifdef NDEBUG
 INLINE void

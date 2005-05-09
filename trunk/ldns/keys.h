@@ -21,7 +21,7 @@
 extern ldns_lookup_table ldns_signing_algorithms[];
 
 /**
- * algorigthms used in dns
+ * algorithms used in dns
  */
 enum ldns_enum_algorithm
 {
@@ -36,6 +36,9 @@ enum ldns_enum_algorithm
 };
 typedef enum ldns_enum_algorithm ldns_algorithm;
 
+/**
+ * algorithms used in dns for signing
+ */
 enum ldns_enum_signing_algorithm
 {
 	LDNS_SIGN_RSAMD5	 = LDNS_RSAMD5,
@@ -45,18 +48,18 @@ enum ldns_enum_signing_algorithm
 };
 typedef enum ldns_enum_signing_algorithm ldns_signing_algorithm;
 
-
+/**
+ * general key structure, can contain all types of keys
+ */
 struct ldns_struct_key {
 	ldns_signing_algorithm _alg;
-	/* types of keys supported */
+	/** types of keys supported */
 	union {
 		RSA	*rsa;
 		DSA	*dsa;
 		unsigned char *hmac;
 	} _key;
-	/* depending on the key we can have 
-	 * extra data
-	 */
+	/** depending on the key we can have extra data */
 	union {
 		struct {
 			uint32_t orig_ttl;
@@ -117,7 +120,7 @@ void ldns_key_set_flags(ldns_key *k, uint16_t flags);
 void ldns_key_list_set_key_count(ldns_key_list *key, size_t count);
 
 /**     
- * Pushes a key to a keylist
+ * pushes a key to a keylist
  * \param[in] key_list the key_list to push to 
  * \param[in] key the key to push 
  * \return false on error, otherwise true
@@ -152,10 +155,6 @@ uint32_t ldns_key_expiration(ldns_key *k);
 uint16_t ldns_key_keytag(ldns_key *k);
 ldns_rdf *ldns_key_pubkey_owner(ldns_key *k);
 uint16_t ldns_key_flags(ldns_key *k);
-
-/**
- * returns the hmac data contained in the key
- */
 
 /**     
  * pops the last rr from a keylist
