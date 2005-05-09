@@ -21,53 +21,53 @@
 #define LDNS_MAX_KEYWORDLEN		32
 
 /** 
- * Get a token/char from the stream F.
+ * returns a token/char from the stream F.
  * This function deals with ( and ) in the stream,
- * and ignore \n when it finds them.
+ * and ignores when it finds them.
  * \param[in] *f the file to read from
- * \param[out] *token the read token is put here
+ * \param[out] *token the token is put here
  * \param[in] *delim chars at which the parsing should stop
  * \param[in] *limit how much to read. If 0 use builtin maximum
- * \return 0 on error of EOF of F otherwise return the length of what is * read
+ * \return 0 on error of EOF of F otherwise return the length of what is read
  */
 ssize_t ldns_fget_token(FILE *f, char *token, const char *delim, size_t limit);
 
 /* 
- * search for keyword and delim. Give everything back
+ * searches for keyword and delim. Gives everything back
  * after the keyword + k_del until we hit d_del
  */
 ssize_t ldns_fget_keyword_data(FILE *f, const char *keyword, const char *k_del, char *data, const char *d_del);
 
 /**
- * Get a token/char from the stream b.
- * This function deals with ( and ) in the stream,
- * and ignore \n when it finds them.
- * \param[in] *b the file to read from
- * \param[out] *token the read token is put here
+ * returns a token/char from the buffer b.
+ * This function deals with ( and ) in the buffer,
+ * and ignores when it finds them.
+ * \param[in] *b the buffer to read from
+ * \param[out] *token the token is put here
  * \param[in] *delim chars at which the parsing should stop
  * \param[in] *limit how much to read. If 0 use builtin maximum
- * \return 0 on error of EOF of b otherwise return the length of what is * read
+ * \returns 0 on error of EOF of b otherwise return the length of what is read
  */
 ssize_t ldns_bget_token(ldns_buffer *b, char *token, const char *delim, size_t limit);
 
 /* 
- * search for keyword and delim. Give everything back
+ * searches for keyword and delim. Gives everything back
  * after the keyword + k_del until we hit d_del
  */
 ssize_t ldns_bget_keyword_data(ldns_buffer *b, const char *keyword, const char *k_del, char *data, const char *d_del);
 
 /**
- * Remove comments from a string. A comment = ';'.
- * Go on with this until one reaches a newline (\n).
+ * removes comments from a string. A comment = ';'.
+ * Goes on with this until a newline (\n) is reached.
  * The comments are replaces with spaces.
- * \param[in] str the string to remove the comments from. String must be * writeable
+ * \param[in] str the string to remove the comments from. String must be writeable
  * \return the new string
  */
 char *ldns_str_remove_comment(char *str);
 
 /**
- * Get the next character from a buffer. Advance the position pointer with 1.
- * When end of buffer is reached return EOF. This is the buffer's equiv.
+ * returns the next character from a buffer. Advances the position pointer with 1.
+ * When end of buffer is reached returns EOF. This is the buffer's equivalent
  * for getc().
  * \param[in] *buffer buffer to read from
  * \return EOF on failure otherwise return the character
@@ -75,19 +75,19 @@ char *ldns_str_remove_comment(char *str);
 int ldns_bgetc(ldns_buffer *buffer);
 
 /**
- * Skip all of the characters in the given string in the buffer, moving
- * the position to the first character that is not in *s
+ * skips all of the characters in the given string in the buffer, moving
+ * the position to the first character that is not in *s.
  * \param[in] *buffer buffer to use
- * \param[in] *s character to skip
+ * \param[in] *s characters to skip
  * \return void
  */
 void ldns_bskipcs(ldns_buffer *buffer, const char *s);
 
 /**
- * Skip all of the characters in the given string in the fp, moving
- * the position to the first character that is not in *s
+ * skips all of the characters in the given string in the fp, moving
+ * the position to the first character that is not in *s.
  * \param[in] *fp file to use
- * \param[in] *s character to skip
+ * \param[in] *s characters to skip
  * \return void
  */
 void ldns_fskipcs(FILE *fp, const char *s);
