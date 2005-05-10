@@ -166,7 +166,7 @@ ldns_buffer_set_limit(ldns_buffer *buffer, size_t limit)
 }
 
 /**
- * returns the number of bytes the buffer can hold
+ * returns the number of bytes the buffer can hold.
  */
 INLINE size_t
 ldns_buffer_capacity(ldns_buffer *buffer)
