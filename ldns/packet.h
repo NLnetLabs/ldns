@@ -109,7 +109,7 @@ enum ldns_enum_pkt_section {
 typedef enum ldns_enum_pkt_section ldns_pkt_section;	
 
 /**
- * the different types of packets
+ * The different types of packets
  */
 enum ldns_enum_pkt_type {
 	LDNS_PACKET_QUESTION,
@@ -154,7 +154,7 @@ ldns_rr_list *ldns_pkt_rr_list_by_type(ldns_pkt *p, ldns_rr_type t, ldns_pkt_sec
 ldns_rr_list *ldns_pkt_rr_list_by_name_and_type(ldns_pkt *packet, ldns_rdf *ownername, ldns_rr_type type, ldns_pkt_section sec);
 
 /**
- * Set the flags in a packet
+ * sets the flags in a packet.
  * \param[in] pkt the packet to operate on
  * \param[in] flags ORed values: LDNS_QR| LDNS_AR for instance
  * \return true on success otherwise false
@@ -183,7 +183,7 @@ void ldns_pkt_set_xxcount(ldns_pkt *p, ldns_pkt_section s, uint16_t x);
 void ldns_pkt_set_tsig(ldns_pkt *p, ldns_rr *t);
 
 /**
- * look inside the packet to determine
+ * looks inside the packet to determine
  * what kind of packet it is, AUTH, NXDOMAIN, REFERRAL, etc.
  * \param[in] p the packet to examine
  * \return the type of packet
@@ -197,10 +197,10 @@ uint16_t ldns_pkt_edns_z(const ldns_pkt *packet);
 ldns_rdf *ldns_pkt_edns_data(const ldns_pkt *packet);
 
 /**
- * Returns true if this packet needs and EDNS rr to be sent
+ * returns true if this packet needs and EDNS rr to be sent.
  * At the moment the only reason is an expected packet
  * size larger than 512 bytes, but for instance dnssec would
- * be a good reason too
+ * be a good reason too.
  *
  * \param[in] packet the packet to check
  * \return true if packet needs edns rr
@@ -213,20 +213,20 @@ void ldns_pkt_set_edns_z(ldns_pkt *packet, uint16_t z);
 void ldns_pkt_set_edns_data(ldns_pkt *packet, ldns_rdf *data);
 
 /**
- * Allocates and initializes a ldns_pkt structure
+ * allocates and initializes a ldns_pkt structure.
  * \return pointer to the new packet
  */
 ldns_pkt *ldns_pkt_new();
 
 /**
- * Frees the packet structure and all data that it contains
+ * frees the packet structure and all data that it contains.
  * \param[in] packet The packet structure to free
  * \return void
  */
 void ldns_pkt_free(ldns_pkt *packet);
 
 /**
- * Creates a query packet for the given name, type, class
+ * creates a query packet for the given name, type, class.
  * \param[in] rr_name the name to query for (as string)
  * \param[in] rr_type the type to query for
  * \param[in] rr_class the class to query for
@@ -236,7 +236,7 @@ void ldns_pkt_free(ldns_pkt *packet);
 ldns_pkt *ldns_pkt_query_new_frm_str(const char *rr_name, ldns_rr_type rr_type, ldns_rr_class rr_class , uint16_t flags);
 
 /**
- * Create a packet with a query in it
+ * creates a packet with a query in it for the given name, type and class.
  * \param[in] rr_name the name to query for
  * \param[in] rr_type the type to query for
  * \param[in] rr_class the class to query for
