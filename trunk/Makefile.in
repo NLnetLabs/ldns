@@ -159,6 +159,7 @@ realclean: clean docclean testclean libclean
 	rm -f config.log
 	rm -f Makefile
 	rm -f ldns/config.h
+	rm -f ldns/util.h
 	rm -f config.h.in
 	rm -f configure
 	rm -f config.sub
@@ -174,9 +175,9 @@ docclean:
 	rm -f doc/ldns_manpages
 
 libclean:
+	$(LIBTOOL) --mode clean $(LIBDNS_LOBJECTS)
 	rm -rf .libs
 	rm -rf libtool
-	$(LIBTOOL) --mode clean $(LIBDNS_LOBJECTS)
 
 test7: run-test7
 	./run-test7
