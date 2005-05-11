@@ -34,8 +34,6 @@ main(int argc, char *argv[])
 		}
 	}
 
-	printf("version %s\n", ldns_version());
-
 	/* create a new resolver from /etc/resolv.conf */
 	res = ldns_resolver_new_frm_file(NULL);
 	if (!res) {
