@@ -10,6 +10,7 @@ INSTALLATION
 1. Unpack the tarball
 2. cd ldns-<VERSION>
 3. libtoolize
-4. ./configure
-5. gmake (it needs gnu make to compile)
-(6. gmake mx chaos [two example programs included])
+4. autoreconf
+5. ./configure
+6. gmake (it needs gnu make to compile)
+(7. gmake mx chaos [two example programs included])
