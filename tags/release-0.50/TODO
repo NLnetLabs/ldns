@@ -1,0 +1,37 @@
+Current TODO list
+
+What actually doesn't work:
+---------------------------
+o NSEC conversion frm str to host
+o Signing
+o Different digests for DS
+ - need a digest type?
+o NSEC generation??
+o openssl's setup function (esp. random)
+o -lssl in library creation and autoconf
+o Documentation (manpages) "const char bvklala() is not parsed correctly)
+
+Implementation:
+---------------
+o check all conversion routines on missing types
+	- wire2host
+	- host2wire
+	- str2host
+	- host2str
+o use size_t where needed
+o DNSSEC
+	- signing
+	- do we call random()?
+o NSEC cannot be converted from str to host fmt
+o per RR functions (started, see rr_functions.c)
+o conversion from  ldns_key to key rr's
+o init function? random - load_ssl_errors()
+	- SSL_load_error_str()? 
+o SERVER stuff; open connection and such
+
+To ponder and discuss:
+----------------------
+o private key type?
+	ldns_algorithm used for verfication
+	ldns_sign_algorithm used for signing - including
+				shared secret signing

@@ -1,0 +1,16 @@
+Some general readme information would be nice. Most up to date is 
+website: www.nlnetlabs.nl/ldns/
+
+On that page you can also subscribe to the ldns mailing list.
+
+* Development
+ldns is developed on Linux and FreeBSD.
+
+INSTALLATION
+1. Unpack the tarball
+2. cd ldns-<VERSION>
+3. libtoolize
+4. autoreconf
+5. ./configure
+6. gmake (it needs gnu make to compile)
+(7. gmake mx chaos [two example programs included])
