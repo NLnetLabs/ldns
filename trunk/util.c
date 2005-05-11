@@ -151,3 +151,9 @@ int_to_hexdigit(int i)
 		abort();
 	}
 }
+
+char *
+ldns_version(void)
+{
+	return (char*)LDNS_VERSION;
+}

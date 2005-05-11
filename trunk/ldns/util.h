@@ -16,6 +16,8 @@
 #define dprintf(X,Y) fprintf(stderr, (X), (Y))
 /* #define	dprintf(X, Y)  */
 
+#define LDNS_VERSION "0.50"
+
 /**
  * splint static inline workaround
  */
@@ -162,5 +164,10 @@ int hexdigit_to_int(char ch);
  * Returns the char (hex) representation of the given int
  */
 char int_to_hexdigit(int ch);
+
+/**
+ *
+ */
+char * ldns_version(void);
 
 #endif /* !_UTIL_H */

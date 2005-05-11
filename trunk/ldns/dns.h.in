@@ -38,8 +38,6 @@
 #define LDNS_ROOT_LABEL	'\0'
 #define LDNS_DEFTTL		3600
 
-#define LDNS_VERSION	"0.50"
-
 /* lookup tables for standard DNS stuff  */
 
 /* Taken from RFC 2538, section 2.1.  */
