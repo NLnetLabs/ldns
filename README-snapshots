@@ -1,11 +1,7 @@
 ldns - snapshot releases
 
 These release are a snapshot of the ongoing development of ldns. Each
-snapshot release has a specific date tight to it.
+snapshot release has a specific date added to it.
 
 INSTALLATION
-1. Unpack the tarball
-2. cd ldns-snap-<DATE>
-3. ./configure
-4. gmake (it needs gnu make to compile)
-(5. gmake mx chaos [two example programs included]
+See README
