@@ -1,0 +1,243 @@
+# Standard installation pathnames
+# See the file LICENSE for the license
+SHELL 		= @SHELL@
+VERSION         = @PACKAGE_VERSION@
+srcdir 		= @srcdir@
+basesrcdir	= $(shell basename `pwd`)
+prefix  	= @prefix@
+exec_prefix 	= @exec_prefix@
+bindir 		= @bindir@
+mandir 		= @mandir@
+
+CC 		= @CC@
+CPPFLAGS	= @CPPFLAGS@ @DEFS@ -I. -I$(srcdir)
+CFLAGS 		= @CFLAGS@
+LDFLAGS		= @LDFLAGS@	-lcrypto
+LIBS 		= @LIBS@
+LIBOBJS		= @LIBOBJS@
+DATE		= $(shell date +%Y%m%d)
+LIBTOOL		= @srcdir@/libtool
+
+LINT		= splint
+LINTFLAGS	= +quiet -weak -warnposix -unrecog -Din_addr_t=uint32_t -Du_int=unsigned -Du_char=uint8_t 
+
+INSTALL = $(srcdir)/install-sh 
+
+LIBDNS_SOURCES	=	rdata.c util.c rr.c packet.c wire2host.c \
+			host2str.c buffer.c str2host.c resolver.c \
+			net.c host2wire.c dname.c dnssec.c keys.c \
+			higher.c rr_functions.c parse.c error.c
+LIBDNS_HEADERS	=	ldns/error.h		\
+			ldns/packet.h		\
+			ldns/common.h		\
+			ldns/rdata.h 		\
+			ldns/rr.h		\
+			ldns/wire2host.h	\
+			ldns/host2str.h		\
+			ldns/host2wire.h	\
+			ldns/str2host.h		\
+			ldns/buffer.h		\
+			ldns/resolver.h		\
+			ldns/net.h		\
+			ldns/dname.h		\
+			ldns/dnssec.h		\
+			ldns/keys.h		\
+			ldns/higher.h		\
+			ldns/parse.h		\
+			ldns/rr_functions.h	\
+			ldns/dns.h		\
+			ldns/config.h		\
+			ldns/util.h
+PROG_SOURCES	=	mx.c chaos.c
+PROG_TARGETS	=	$(PROG_SOURCES:.c=)
+
+LIBDNS_OBJECTS	=	$(LIBDNS_SOURCES:.c=.o)
+LIBDNS_LOBJECTS	=	$(LIBDNS_SOURCES:.c=.lo)
+
+TEST_SOURCES	=	tests/run-test7.c tests/run-test11.c tests/run-test18.c tests/run-test19.c
+
+ALL_SOURCES	=	$(LIBDNS_SOURCES) $(PROG_SOURCES)
+
+TESTS		=	$(TEST_SOURCES:.c=)
+
+COMPILE		= $(CC) $(CPPFLAGS) $(CFLAGS)
+COMP_LIB	= $(LIBTOOL) --mode=compile $(CC) $(CPPFLAGS) $(CFLAGS)
+LINK		= $(CC) $(CFLAGS) $(LDFLAGS)
+LINK_LIB	= $(LIBTOOL) --mode=link $(CC) $(CFLAGS) $(LDFLAGS)
+
+%.o:	$(srcdir)/%.c
+	$(COMP_LIB) -c $<
+
+.PHONY:	clean realclean docclean doc lint test all lib
+.PHONY: install uninstall install-doc uninstall-doc 
+.PHONY: install-h uninstall-h install-lib uninstall-lib snapshot release
+
+all:		lib
+
+progs:		$(PROG_TARGETS)
+	
+lib:		$(LIBDNS_OBJECTS) b64_pton$U.o b64_ntop$U.o
+		$(LINK_LIB) -o libldns.la $(LIBDNS_LOBJECTS) b64_pton$U.lo b64_ntop$U.lo \
+		-rpath $(prefix)/lib
+
+doc:		doc/function_manpages 
+		doxygen libdns.doxygen
+		cat ldns/*.h | doc/doxyparse.pl -m doc/function_manpages 2>&1 | \
+		grep -v ^doxygen | grep -v ^cat  > doc/ldns_manpages
+
+install:	install-doc install-h install-lib
+
+uninstall:	uninstall-doc uninstall-h uninstall-lib
+
+destclean:	uninstall
+
+install-doc:	doc
+		${INSTALL} -d $(mandir)/man3
+		mv doc/man/man3/* $(mandir)/man3/
+
+uninstall-doc:	doc
+		for i in `cat doc/ldns_manpages`; do \
+			rm -f $(mandir)/man3/$$i.3 ; done
+		rmdir $(mandir)/man3
+		exit 0
+
+install-h:	lib
+		${INSTALL} -d $(prefix)/include/ldns
+		cp $(LIBDNS_HEADERS) $(prefix)/include/ldns
+
+uninstall-h:
+		for i in $(LIBDNS_HEADERS); do \
+			rm -f $(prefix)/include/$$i; done
+		rmdir $(prefix)/include/ldns
+		exit 0
+	
+install-lib:	lib
+		$(LIBTOOL) --mode=install cp libldns.la $(prefix)/lib
+		$(LIBTOOL) --mode=finish $(prefix)/lib
+
+uninstall-lib:	
+		$(LIBTOOL) --mode=uninstall rm $(prefix)/lib/libldns.la
+
+snapshot:	realclean testclean
+		(rm -rf ../ldns-snap-$(DATE)/)
+		(cd .. ; cp -r $(basesrcdir)/ ldns-snap-$(DATE)/)
+		(cd .. ; tar --verbose  --exclude ".svn" --create --file ldns-snap-$(DATE).tar.gz --gzip ldns-snap-$(DATE)/)
+		(rm -rf ../ldns-snap-$(DATE)/)
+
+release:	realclean testclean
+		(rm -rf ../ldns-$(VERSION)/)
+		(cd .. ; cp -r $(basesrcdir)/ ldns-$(VERSION)/)
+		(cd .. ; tar --verbose  --exclude ".svn" --create --file ldns-$(VERSION).tar.gz --gzip ldns-$(VERSION)/)
+		(rm -rf ../ldns-$(VERSION)/)
+
+mx:		mx.o $(LIBDNS_OBJECTS) $(LIBOBJS)
+		$(LINK) ${LIBS} -o $@ $+
+
+chaos:		chaos.o $(LIBDNS_OBJECTS) $(LIBOBJS)
+		$(LINK) ${LIBS} -o $@ $+
+
+# tests
+tests:		$(TESTS)
+
+tests/run-test7.o:	tests/run-test7.c
+		$(COMPILE) -c $< -o $@
+tests/run-test7:	tests/run-test7.o $(LIBDNS_OBJECTS) $(LIBOBJS)
+		$(LINK) ${LIBS} -o $@ $+
+
+tests/run-test11.o:	tests/run-test11.c
+		$(COMPILE) -c $< -o $@
+tests/run-test11:	tests/run-test11.o $(LIBDNS_OBJECTS) $(LIBOBJS)
+		$(LINK) ${LIBS} -o $@ $+
+
+tests/run-test18.o:	tests/run-test18.c
+		$(COMPILE) -c $< -o $@
+tests/run-test18:	tests/run-test18.o $(LIBDNS_OBJECTS) $(LIBOBJS)
+
+tests/run-test19.o:	tests/run-test19.c
+		$(COMPILE) -c $< -o $@
+		$(LINK) ${LIBS} -lssl -o $@ $+
+tests/run-test19:	tests/run-test19.o $(LIBDNS_OBJECTS) $(LIBOBJS)
+		$(LINK) ${LIBS} -lssl -o $@ $+
+
+clean:	
+	rm -f *.o *.d 
+	rm -f *~
+	rm -f $(TESTS)
+	rm -f tests/*.o
+	rm -f $(PROG_TARGETS)
+	rm -rf autom4te.cache/
+	rm -f config.status
+	rm -f config.log
+	rm -f tags
+
+testclean:
+	rm -f $(TESTS)
+
+realclean: clean docclean testclean libclean
+	rm -f config.status
+	rm -f config.log
+	rm -f Makefile
+	rm -f ldns/config.h
+	rm -f ldns/util.h
+	rm -f config.h.in
+	rm -f configure
+	rm -f config.sub
+	rm -f config.guess
+	rm -f ltmain.sh
+
+docclean:
+	rm -rf doc/html/
+	rm -rf doc/man/
+	rm -rf doc/latex/
+	rm -f doc/*.txt
+	rm -f doc/*.tex
+	rm -f doc/ldns_manpages
+
+libclean:
+	$(LIBTOOL) --mode clean rm -f libldns.la
+	$(LIBTOOL) --mode clean rm -f libldns.a
+	$(LIBTOOL) --mode clean rm -f libldns.so
+	$(LIBTOOL) --mode clean rm -f libldns.so.*
+	rm -rf *.lo
+	rm -rf .libs
+	rm -rf libtool
+
+test7: run-test7
+	./run-test7
+test11: run-test11
+	./run-test11
+test18: run-test18
+	./run-test18
+
+test: test7 test11 test18
+
+## No need for changes here
+
+lint:
+	for i in $(LIBDNS_SOURCES); do \
+		$(LINT) $(LINTFLAGS) -I. -I$(srcdir) $(srcdir)/$$i ; \
+		if [ $$? -ne 0 ] ; then exit 1 ; fi ; \
+	done
+
+tags:	*.c *.h ldns/*.[ch]
+	ctags *.[ch] ldns/*.[ch]
+
+timegm$U.o:	compat/timegm.c
+	$(COMP_LIB) -c compat/timegm.c -o $@
+
+b64_pton$U.o:	compat/b64_pton.c
+	$(COMP_LIB) -c compat/b64_pton.c -o $@
+
+b64_ntop$U.o:	compat/b64_ntop.c
+	$(COMP_LIB) -c compat/b64_ntop.c -o $@
+
+malloc$U.o:	compat/malloc.c
+	$(COMP_LIB) -c compat/malloc.c -o $@
+
+# Automatic dependencies.
+%.d: $(srcdir)/%.c
+	$(SHELL) -ec '$(CC) -MM $(CPPFLAGS) $< \
+	              | sed '\''s!\(.*\)\.o[ :]*!$(dir $@)\1.o $@ : !g'\'' > $@; \
+	              [ -s $@ ] || rm -f $@'
+
+include $(ALL_SOURCES:.c=.d)
