@@ -70,7 +70,7 @@ LINK_LIB	= $(LIBTOOL) --mode=link $(CC) $(CFLAGS) $(LDFLAGS)
 
 .PHONY:	clean realclean docclean doc lint test all lib
 .PHONY: install uninstall install-doc uninstall-doc 
-.PHONY: install-h uninstall-h install-lib uninstall-lib snapshot
+.PHONY: install-h uninstall-h install-lib uninstall-lib snapshot release
 
 all:		lib
 
@@ -124,6 +124,12 @@ snapshot:	realclean testclean
 		(cd .. ; tar --verbose  --exclude ".svn" --create --file ldns-snap-$(DATE).tar.gz --gzip ldns-snap-$(DATE)/)
 		(rm -rf ../ldns-snap-$(DATE)/)
 
+release:	realclean testclean
+		(rm -rf ../ldns-$(VERSION)/)
+		(cd .. ; cp -r $(basesrcdir)/ ldns-$(VERSION)/)
+		(cd .. ; tar --verbose  --exclude ".svn" --create --file ldns-$(VERSION).tar.gz --gzip ldns-$(VERSION)/)
+		(rm -rf ../ldns-$(VERSION)/)
+
 mx:		mx.o $(LIBDNS_OBJECTS) $(LIBOBJS)
 		$(LINK) ${LIBS} -o $@ $+
 
@@ -155,6 +161,7 @@ tests/run-test19:	tests/run-test19.o $(LIBDNS_OBJECTS) $(LIBOBJS)
 
 clean:	
 	rm -f *.o *.d 
+	rm -f *~
 	rm -f $(TESTS)
 	rm -f tests/*.o
 	rm -f $(PROG_TARGETS)
@@ -187,7 +194,11 @@ docclean:
 	rm -f doc/ldns_manpages
 
 libclean:
-	$(LIBTOOL) --mode clean $(LIBDNS_LOBJECTS)
+	$(LIBTOOL) --mode clean rm -f libldns.la
+	$(LIBTOOL) --mode clean rm -f libldns.a
+	$(LIBTOOL) --mode clean rm -f libldns.so
+	$(LIBTOOL) --mode clean rm -f libldns.so.*
+	rm -rf *.lo
 	rm -rf .libs
 	rm -rf libtool
 
