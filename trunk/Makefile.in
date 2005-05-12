@@ -102,8 +102,8 @@ uninstall-doc:	doc
 		exit 0
 
 install-h:	lib
-		${INSTALL} -d $(prefix)/include/ldns
-		cp $(LIBDNS_HEADERS) $(prefix)/include/ldns
+		$(INSTALL) -m 755 -d $(prefix)/include/ldns
+		$(INSTALL) -c /bin/cp -m 644 $(LIBDNS_HEADERS) $(prefix)/include/ldns/
 
 uninstall-h:
 		for i in $(LIBDNS_HEADERS); do \
@@ -240,4 +240,4 @@ malloc$U.o:	compat/malloc.c
 	              | sed '\''s!\(.*\)\.o[ :]*!$(dir $@)\1.o $@ : !g'\'' > $@; \
 	              [ -s $@ ] || rm -f $@'
 
-include $(ALL_SOURCES:.c=.d)
+#include $(ALL_SOURCES:.c=.d)
