@@ -15,16 +15,6 @@
 #include <strings.h>
 #include <limits.h>
 
-#if 0
-#include <config.h>
-
-#include <ldns/packet.h>
-#include <ldns/str2host.h>
-#include <ldns/host2str.h>
-
-#include "ldns/util.h"
-#endif
-
 /* Access functions 
  * do this as functions to get type checking
  */
