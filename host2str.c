@@ -906,12 +906,10 @@ ldns_pktheader2buffer_str(ldns_buffer *output, ldns_pkt *pkt)
 		ldns_buffer_printf(output, "ad ");
 	}
 	ldns_buffer_printf(output, "; ");
-
 	ldns_buffer_printf(output, "QUERY: %u, ", ldns_pkt_qdcount(pkt));
 	ldns_buffer_printf(output, "ANSWER: %u, ", ldns_pkt_ancount(pkt));
 	ldns_buffer_printf(output, "AUTHORITY: %u, ", ldns_pkt_nscount(pkt));
-	ldns_buffer_printf(output, "ADDITIONAL: %u, ", ldns_pkt_arcount(pkt));
-
+	ldns_buffer_printf(output, "ADDITIONAL: %u ", ldns_pkt_arcount(pkt));
 	return ldns_buffer_status(output);
 }
 
