@@ -167,7 +167,6 @@ char int_to_hexdigit(int ch);
 
 /**
  * Show the internal library version
- * \param[in] none
  * \return a string with the version in it
  */
 char * ldns_version(void);
