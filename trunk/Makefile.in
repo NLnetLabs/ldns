@@ -98,17 +98,18 @@ install-doc:	doc
 uninstall-doc:	doc
 		for i in `cat doc/ldns_manpages`; do \
 			rm -f $(mandir)/man3/$$i.3 ; done
-		rmdir $(mandir)/man3
+		[ ! -d $(mandir)/man3 ] || rmdir $(mandir)/man3
 		exit 0
 
 install-h:	lib
 		$(INSTALL) -m 755 -d $(prefix)/include/ldns
-		$(INSTALL) -c /bin/cp -m 644 $(LIBDNS_HEADERS) $(prefix)/include/ldns/
+		for i in $(LIBDNS_HEADERS); do \
+			MVPROG=/bin/cp $(INSTALL) -m 644 $$i $(prefix)/include/ldns/; done
 
 uninstall-h:
 		for i in $(LIBDNS_HEADERS); do \
 			rm -f $(prefix)/include/$$i; done
-		rmdir $(prefix)/include/ldns
+		[ ! -d $(prefix)/include/ldns ] || rmdir $(prefix)/include/ldns
 		exit 0
 	
 install-lib:	lib
