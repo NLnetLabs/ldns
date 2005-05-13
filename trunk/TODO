@@ -10,6 +10,7 @@ o NSEC generation??
 o openssl's setup function (esp. random)
 o -lssl in library creation and autoconf
 o Documentation (manpages) "const char bvklala() is not parsed correctly)
+  const function are correct i think, but const values in struct not
 
 Implementation:
 ---------------
