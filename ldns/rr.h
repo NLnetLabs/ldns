@@ -218,20 +218,27 @@ struct ldns_struct_rr_list
 };
 typedef struct ldns_struct_rr_list ldns_rr_list;
 
-/*TODO where in docs? with rr?
- * struct to hold the whole set of rd_fields
+/**
+ * struct to hold the whole set of rd_fields.
  *
  * How does the whole rdata_field list look. This is called
- * the rdata in dns speak
+ * the rdata in dns speak.
  */
 struct ldns_struct_rr_descriptor
 {
-        uint16_t    _type;       /* RR type */
-        const char *_name;       /* Textual name.  */
-        uint8_t     _minimum;    /* Minimum number of RDATA FIELDs.  */
-        uint8_t     _maximum;    /* Maximum number of RDATA FIELDs.  */
-        const ldns_rdf_type *_wireformat;
+	/** RR type */
+	uint16_t    _type;
+	/** Textual name.  */
+	const char *_name;
+	/** Minimum number of RDATA FIELDs.  */
+	uint8_t     _minimum;
+	/** Maximum number of RDATA FIELDs.  */
+	uint8_t     _maximum;
+	/** wireformat specification for the rr */
+	const ldns_rdf_type *_wireformat;
+	/** Special rdf types */
 	ldns_rdf_type _variable;
+	/** Specifies whether compression can be used */
 	ldns_rr_compress _compress;
 };
 typedef struct ldns_struct_rr_descriptor ldns_rr_descriptor;
@@ -551,9 +558,37 @@ void ldns_rr_list2canonical(ldns_rr_list *rr_list);
 uint8_t ldns_rr_label_count(ldns_rr *rr);
 
 /* todo */
-const ldns_rr_descriptor *ldns_rr_descript(uint16_t);
-size_t ldns_rr_descriptor_minimum(const ldns_rr_descriptor *);
+
+/** returns the resource record descriptor for the given rr type.
+ *
+ * \param[in] type the type value of the rr type
+ *\return the ldns_rr_descriptor for this type
+ */
+const ldns_rr_descriptor *ldns_rr_descript(uint16_t type);
+
+/**
+ * returns the minimum number of rdata fields of the rr type this descriptor describes.
+ *
+ * \param[in]  descriptor for an rr type
+ * \return the minimum number of rdata fields
+ */
+size_t ldns_rr_descriptor_minimum(const ldns_rr_descriptor *descriptor);
+
+/**
+ * returns the maximum number of rdata fields of the rr type this descriptor describes.
+ *
+ * \param[in]  descriptor for an rr type
+ * \return the maximum number of rdata fields
+ */
 size_t ldns_rr_descriptor_maximum(const ldns_rr_descriptor *);
-ldns_rdf_type ldns_rr_descriptor_field_type(const ldns_rr_descriptor *, size_t);
+
+/**
+ * returns the rdf type for the given rdata field number of the rr type for the given descriptor.
+ *
+ * \param[in] descriptor for an rr type
+ * \param[in] field the field number
+ * \return the rdf type for the field
+ */
+ldns_rdf_type ldns_rr_descriptor_field_type(const ldns_rr_descriptor *descriptor, size_t field);
 
 #endif /* _LDNS_RR_H */
