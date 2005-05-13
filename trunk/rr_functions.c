@@ -12,6 +12,8 @@
  * first the read variant, then the write
  */
 
+#include <ldns/config.h>
+
 #include <ldns/dns.h>
 
 #include <limits.h>

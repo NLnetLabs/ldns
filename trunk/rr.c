@@ -10,6 +10,8 @@
  * (c) NLnet Labs, 2004
  * See the file LICENSE for the license
  */
+#include <ldns/config.h>
+
 #include <ldns/dns.h>
 
 #include <strings.h>

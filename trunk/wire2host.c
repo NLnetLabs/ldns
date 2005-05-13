@@ -14,6 +14,8 @@
  */
 
 
+#include <ldns/config.h>
+
 #include <ldns/dns.h>
 /*#include <ldns/wire2host.h>*/
 

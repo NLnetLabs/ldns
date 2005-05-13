@@ -6,6 +6,8 @@
  * handling
  */
 
+#include <ldns/config.h>
+
 #include <ldns/dns.h>
 
 #include <openssl/ssl.h>
