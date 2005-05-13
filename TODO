@@ -23,6 +23,8 @@ o use size_t where needed
 o DNSSEC
 	- signing
 	- do we call random()?
+o verify rrsig should work for single keys or return a list of 
+  keys that verified (now you don't know which keys are verified in a list)
 o NSEC cannot be converted from str to host fmt
 o per RR functions (started, see rr_functions.c)
 o conversion from  ldns_key to key rr's
