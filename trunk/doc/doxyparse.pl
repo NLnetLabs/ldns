@@ -119,10 +119,10 @@ while(<>) {
 	}
 	if ($state == 2 and /const/) {
 		# the const word exists in the function call
-		$const = "const";
-		s/[\t ]*const[\t ]*//;
+		#$const = "const";
+		#s/[\t ]*const[\t ]*//;
 	} else {
-		undef $const;
+		#undef $const;
 	}
 	
 	if (/^INLINE/) {
@@ -134,8 +134,7 @@ while(<>) {
 		$_ =~ s/{/;/;
 	}
 	
-#print "line: $_\n";
-	if (/([\w\* ]*)[\t ]+(.*?)\((.*)\)\s*;/ and $state == 2) {
+	if (/([\w\* ]+)[\t ]+(.*?)\((.*)\)\s*;/ and $state == 2) {
 		# this should also end the current comment parsing
 		$return = $1;
 		$key = $2;

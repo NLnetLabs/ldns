@@ -559,7 +559,8 @@ uint8_t ldns_rr_label_count(ldns_rr *rr);
 
 /* todo */
 
-/** returns the resource record descriptor for the given rr type.
+/**
+ * returns the resource record descriptor for the given rr type.
  *
  * \param[in] type the type value of the rr type
  *\return the ldns_rr_descriptor for this type
