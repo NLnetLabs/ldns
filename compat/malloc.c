@@ -2,7 +2,7 @@
    GNU-compliant. See autoconf documentation. */
 
 #if HAVE_CONFIG_H
-#include <config.h>
+#include <ldns/config.h>
 #endif
 #undef malloc
 

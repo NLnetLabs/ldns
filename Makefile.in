@@ -46,7 +46,6 @@ LIBDNS_HEADERS	=	ldns/error.h		\
 			ldns/parse.h		\
 			ldns/rr_functions.h	\
 			ldns/dns.h		\
-			ldns/config.h		\
 			ldns/util.h
 PROG_SOURCES	=	mx.c chaos.c
 PROG_TARGETS	=	$(PROG_SOURCES:.c=)

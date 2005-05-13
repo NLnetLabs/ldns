@@ -11,7 +11,6 @@
 #ifndef _DNS_H_
 #define _DNS_H_
 
-#include <ldns/config.h>
 #include <ldns/util.h>
 #include <ldns/buffer.h>
 #include <ldns/common.h>

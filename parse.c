@@ -7,6 +7,8 @@
  * (c) NLnet Labs, 2005
  * See the file LICENSE for the license
  */
+#include <ldns/config.h>
+
 #include <ldns/dns.h>
 
 
