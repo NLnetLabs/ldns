@@ -108,6 +108,7 @@ ldns_rr_new_frm_str(const char *str)
 	char  *rdata;
 	char  *rd;
 	char  *no_comment_str;
+	const char *delimiters;
 	ssize_t c;
 	
 	ldns_rdf *r;
@@ -233,12 +234,30 @@ ldns_rr_new_frm_str(const char *str)
 			/* blalba do something different */
 			break;
 		default:
+			/* this breaks on rdfs with spaces in them (like B64)
 			while((c = ldns_bget_token(rd_buf, rd, "\t\n ", LDNS_MAX_RDFLEN)) != -1) {
 				r = ldns_rdf_new_frm_str(
 						ldns_rr_descriptor_field_type(desc, r_cnt),
 						rd);
 				ldns_rr_push_rdf(new, r);
 				r_cnt++;
+			}
+			*/
+			for (r_cnt = 0; r_cnt < ldns_rr_descriptor_maximum(desc); r_cnt++) {
+				/* if type = B64, the field may contain spaces */
+				if (ldns_rr_descriptor_field_type(desc, r_cnt) == LDNS_RDF_TYPE_B64) {
+					delimiters = "\n\t";
+				} else {
+					delimiters = "\n\t ";
+				}
+				/* because number of fields can be variable, we can't
+				   rely on _maximum() only */
+				if ((c = ldns_bget_token(rd_buf, rd, delimiters, LDNS_MAX_RDFLEN)) != -1) {
+					r = ldns_rdf_new_frm_str(
+						ldns_rr_descriptor_field_type(desc, r_cnt),
+						rd);
+					ldns_rr_push_rdf(new, r);
+				}
 			}
 	}
 	
