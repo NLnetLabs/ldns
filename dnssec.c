@@ -169,41 +169,52 @@ ldns_verify_rrsig(ldns_rr_list *rrset, ldns_rr *rrsig, ldns_rr_list *keys)
 
 	for(i = 0; i < ldns_rr_list_rr_count(keys); i++) {
 		current_key = ldns_rr_list_rr(keys, i);
-		key_buf = ldns_buffer_new(LDNS_MAX_PACKETLEN);
-		/* put the key-data in a buffer, that's the third rdf, with
-		 * the base64 encoded key data */
-		if (ldns_rdf2buffer_wire(key_buf,
-				ldns_rr_rdf(current_key, 3)) != LDNS_STATUS_OK) {
-			ldns_buffer_free(rawsig_buf);
-			ldns_buffer_free(verify_buf);
-			return false;
-		}
+		if (ldns_calc_keytag(current_key)
+		    ==
+		    ldns_rdf2native_int16(ldns_rr_rrsig_keytag(rrsig))
+		   ) {
+			key_buf = ldns_buffer_new(LDNS_MAX_PACKETLEN);
+			
+			/* before anything, check if the keytags match */
 
-		/* check for right key */
-		if (sig_algo == ldns_rdf2native_int8(ldns_rr_rdf(current_key, 2))) {
-			switch(sig_algo) {
-				case LDNS_DSA:
-					result = ldns_verify_rrsig_dsa(
-							rawsig_buf, verify_buf, key_buf);
-					break;
-				case LDNS_RSASHA1:
-					result = ldns_verify_rrsig_rsasha1(
-							rawsig_buf, verify_buf, key_buf);
-					break;
-				case LDNS_RSAMD5:
-					result = ldns_verify_rrsig_rsamd5(
-							rawsig_buf, verify_buf, key_buf);
-					break;
-				default:
-					/* do you know this alg?! */
-					break;
+			/* put the key-data in a buffer, that's the third rdf, with
+			 * the base64 encoded key data */
+			if (ldns_rdf2buffer_wire(key_buf,
+					ldns_rr_rdf(current_key, 3)) != LDNS_STATUS_OK) {
+				ldns_buffer_free(rawsig_buf);
+				ldns_buffer_free(verify_buf);
+				/* returning is bad might screw up
+				   good keys later in the list
+				   what to do? */
+				return false;
 			}
-		}
 
-		ldns_buffer_free(key_buf); 
-		if (result) {
-			/* one of the keys has matched */
-			break;
+			/* check for right key */
+			if (sig_algo == ldns_rdf2native_int8(ldns_rr_rdf(current_key, 2))) {
+				switch(sig_algo) {
+					case LDNS_DSA:
+						result = ldns_verify_rrsig_dsa(
+								rawsig_buf, verify_buf, key_buf);
+						break;
+					case LDNS_RSASHA1:
+						result = ldns_verify_rrsig_rsasha1(
+								rawsig_buf, verify_buf, key_buf);
+						break;
+					case LDNS_RSAMD5:
+						result = ldns_verify_rrsig_rsamd5(
+								rawsig_buf, verify_buf, key_buf);
+						break;
+					default:
+						/* do you know this alg?! */
+						break;
+				}
+			}
+
+			ldns_buffer_free(key_buf); 
+			if (result) {
+				/* one of the keys has matched */
+				break;
+			}
 		}
 	}
 
