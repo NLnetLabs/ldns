@@ -52,10 +52,13 @@ main(void)
 	ldns_key_set_pubkey_owner(privkey, owner);
 
 	ldns_key_set_origttl(privkey, 1800);
-	/*	SSL_load_error_strings();*/
+	SSL_load_error_strings();
 
 	ldns_key_list_push_key(keys, privkey);
 
+	rr = ldns_rr_new_frm_str("www.miek.nl IN A 127.0.0.1");
+	ldns_rr_print(stdout, rr);
+	
 	ldns_rr_list_push_rr(rrs, rr);
 	
 	dnskey = ldns_key2rr(privkey);
@@ -70,13 +73,21 @@ main(void)
 	}
 	ldns_rr_list_push_rr(dnskeys, dnskey);
 
+	ldns_rr_list_print(stdout, dnskeys);
+	printf("\n Trying to sign\n");
+
+	
 	signatures = ldns_sign_public(rrs, keys);
 
 	ldns_rr_list_print(stdout, signatures);
 
 	printf("Now we are going to verify\n");
 
-/*	printf("\n[%d]\n", ldns_verify(rrs, signatures, dnskeys));*/
+	if (ldns_verify(rrs, signatures, dnskeys)) {
+		printf("SUCESS\n\n");
+	} else {
+		printf("FAILURE\n\n");
+	}
 	
         return 0;
 }

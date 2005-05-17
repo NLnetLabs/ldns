@@ -68,7 +68,7 @@ ldns_key_new_frm_algorithm(ldns_signing_algorithm alg, uint16_t size)
 	switch(alg) {
 		case LDNS_SIGN_RSAMD5:
 		case LDNS_SIGN_RSASHA1:
-			r = RSA_generate_key((int)size, RSA_F4, NULL, NULL);
+			r = RSA_generate_key((int)size, RSA_3, NULL, NULL);
 			if (RSA_check_key(r) != 1) {
 				return NULL;
 			}
@@ -290,6 +290,7 @@ ldns_key_rsa2bin(unsigned char *data, RSA *k, uint16_t *size)
                 BN_bn2bin(k->e, data + 1);  
                 BN_bn2bin(k->n, data + *(data + 1) + 2);
 		*size = (uint16_t) BN_num_bytes(k->n) + 4;
+		printf("size %d\n", *size);
         } else if (BN_num_bytes(k->e) <= 16) {
                 data[0] = 0;
 		/* this writing is not endian save or is it? */
@@ -336,13 +337,12 @@ ldns_key2rr(ldns_key *k)
 	 * much as it can, but it does not know about key-flags
 	 * for instance
 	 */
-
 	ldns_rr *pubkey;
 	ldns_rdf *keybin;
 	unsigned char *bin;
 	uint16_t size;
-	pubkey = ldns_rr_new();
 
+	pubkey = ldns_rr_new();
 	if (!k) {
 		return NULL;
 	}
@@ -375,6 +375,7 @@ ldns_key2rr(ldns_key *k)
 		case LDNS_SIGN_RSASHA1:
 			ldns_rr_push_rdf(pubkey,
 					ldns_native2rdf_int8(LDNS_RDF_TYPE_ALG, LDNS_RSASHA1));
+			printf("Entering here I\n");
 			if (!ldns_key_rsa2bin(bin, ldns_key_rsa_key(k), &size)) {
 				return NULL;
 			}
@@ -391,7 +392,7 @@ ldns_key2rr(ldns_key *k)
 			break;
 	}
 	/* fourth the key bin material */
-	keybin = ldns_rdf_new_frm_data(LDNS_RDF_TYPE_B64, size+1, bin);
+	keybin = ldns_rdf_new_frm_data(LDNS_RDF_TYPE_B64, size + 1, bin);
 	LDNS_FREE(bin);
 	ldns_rr_push_rdf(pubkey, keybin);
 	return pubkey;
