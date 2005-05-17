@@ -884,6 +884,8 @@ ldns_sign_public(ldns_rr_list *rrset, ldns_key_list *keys)
 	key_count = 0;
 	signatures = ldns_rr_list_new();
 
+	ldns_rr_list_print(stdout, rrset);
+
 	/* prepare a signature and add all the know data
 	 * prepare the rrset. Sign this together.  */
 	rrset_clone = ldns_rr_list_deep_clone(rrset);
@@ -892,6 +894,14 @@ ldns_sign_public(ldns_rr_list *rrset, ldns_key_list *keys)
 	}
 
 	/* make it canonical */
+	
+	printf("Printing rrset\n[");
+	ldns_rr_list_print(stdout, rrset);
+
+	printf("]\n");
+
+	printf("Dus hier komen we niet meer\n");
+	
 	for(i = 0; i < ldns_rr_list_rr_count(rrset_clone); i++) {
 		ldns_rr2canonical(ldns_rr_list_rr(rrset_clone, i));
 	}
