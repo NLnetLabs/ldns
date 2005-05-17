@@ -53,7 +53,7 @@ ldns_calc_keytag(ldns_rr *key)
 		/* rsamd5 must be handled seperately */
 		/* weird stuff copied from drill0.x XXX */
 		if (keysize > 4) {
-			memcpy(&ac, &key[keysize - 3], 2);
+			ldns_buffer_read_at(keybuf, keysize - 3, &ac, 2);
 		}
 		ldns_buffer_free(keybuf);
 		ac = ntohs(ac);
