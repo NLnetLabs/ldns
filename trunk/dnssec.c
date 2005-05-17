@@ -867,7 +867,6 @@ ldns_key_rr2ds(const ldns_rr *key)
 ldns_rr_list *
 ldns_sign_public(ldns_rr_list *rrset, ldns_key_list *keys)
 {
-	/* The keys we have enough data to actually sign */
 	ldns_rr_list *signatures;
 	ldns_rr_list *rrset_clone;
 	ldns_rr *current_sig;
@@ -886,8 +885,7 @@ ldns_sign_public(ldns_rr_list *rrset, ldns_key_list *keys)
 	signatures = ldns_rr_list_new();
 
 	/* prepare a signature and add all the know data
-	 * prepare the rrset. Sign this together
-	 */
+	 * prepare the rrset. Sign this together.  */
 	rrset_clone = ldns_rr_list_deep_clone(rrset);
 	if (!rrset_clone) {
 		return NULL;
@@ -921,7 +919,8 @@ ldns_sign_public(ldns_rr_list *rrset, ldns_key_list *keys)
 		ldns_rr_set_owner(current_sig, 
 				ldns_rr_owner(ldns_rr_list_rr(rrset_clone, 0)));
 
-		/* fill in what we now of the signature */
+		/* fill in what we know of the signature */
+
 		/* set the orig_ttl */
 		(void)ldns_rr_rrsig_set_origttl(current_sig, ldns_native2rdf_int32(LDNS_RDF_TYPE_INT32, orig_ttl));
 		/* the signers name */

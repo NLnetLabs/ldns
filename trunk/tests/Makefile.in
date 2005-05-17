@@ -1,0 +1,60 @@
+# Standard installation pathnames
+# See the file LICENSE for the license
+SHELL = @SHELL@
+VERSION = @PACKAGE_VERSION@
+basesrcdir = $(shell basename `pwd`)
+srcdir = @srcdir@
+prefix  = @prefix@
+exec_prefix = @exec_prefix@
+bindir = @bindir@
+mandir = @mandir@
+
+CC = @CC@
+CFLAGS = @CFLAGS@
+LDFLAGS = @LDFLAGS@
+LIBS = @LIBS@
+
+COMPILE         = $(CC) $(CPPFLAGS) $(CFLAGS)
+LINK            = $(CC) $(CFLAGS) $(LDFLAGS) $(LIBS)
+
+HEADER		= config.h
+TESTS		= run-test0 run-test7 run-test18 run-test19 run-test20
+
+.PHONY:	all clean realclean
+
+all:	$(TESTS)
+
+run-test0:       run-test0.o 
+		$(LINK) -o $@ $+ $(LIBS) 
+
+run-test7:        run-test7.o 
+		$(LINK) -o $@ $+ $(LIBS)
+
+run-test11:       run-test11.o 
+		$(LINK) -o $@ $+ $(LIBS)
+
+run-test18:       run-test18.o 
+		$(LINK) -lssl -o $@ $+ $(LIBS)
+
+run-test19:       run-test19.o 
+		$(LINK) -lssl -o $@ $+ $(LIBS)
+
+run-test20:       run-test20.o 
+		$(LINK) -lssl -o $@ $+ $(LIBS)
+
+
+## implicit rule
+%.o:    %.c $(HEADER)
+	$(COMPILE) -c $<
+
+clean:
+	rm -f *.o
+	rm -f $(TESTS)
+
+realclean:
+	rm -f *.o
+	rm -rf autom4te.cache/
+	rm -f config.log config.status aclocal.m4 config.h.in configure Makefile
+	rm -f config.h
+	rm -f $(TESTS)
+
