@@ -103,7 +103,7 @@ ldns_verify(ldns_rr_list *rrset, ldns_rr_list *rrsig, ldns_rr_list *keys)
  * - cat the sig data (without b64 rdata) to the rrset
  * - verify the rrset+sig, with the b64 data and the b64 key data
  */
-bool
+ldns_rr_list *
 ldns_verify_rrsig(ldns_rr_list *rrset, ldns_rr *rrsig, ldns_rr_list *keys)
 {
 	ldns_buffer *rawsig_buf;
@@ -115,9 +115,15 @@ ldns_verify_rrsig(ldns_rr_list *rrset, ldns_rr *rrsig, ldns_rr_list *keys)
 	bool result;
 	ldns_rr *current_key;
 	ldns_rr_list *rrset_clone;
+	ldns_rr_list *validkeys;
 
 	if (!rrset) {
-		return false;
+		return NULL;
+	}
+
+	validkeys = ldns_rr_list_new();
+	if (!validkeys) {
+		return NULL;
 	}
 	
 	/* clone the rrset so that we can fiddle with it */
@@ -135,7 +141,7 @@ ldns_verify_rrsig(ldns_rr_list *rrset, ldns_rr *rrsig, ldns_rr_list *keys)
 				ldns_rr_rdf(rrsig, 8)) != LDNS_STATUS_OK) {
 		ldns_buffer_free(rawsig_buf);
 		ldns_buffer_free(verify_buf);
-		return false;
+		return NULL;
 	}
 
 	orig_ttl = ldns_rdf2native_int32(
@@ -157,14 +163,14 @@ ldns_verify_rrsig(ldns_rr_list *rrset, ldns_rr *rrsig, ldns_rr_list *keys)
 	if (ldns_rrsig2buffer_wire(verify_buf, rrsig) != LDNS_STATUS_OK) {
 		ldns_buffer_free(rawsig_buf);
 		ldns_buffer_free(verify_buf);
-		return false;
+		return NULL;
 	}
 
 	/* add the rrset in verify_buf */
 	if (ldns_rr_list2buffer_wire(verify_buf, rrset_clone) != LDNS_STATUS_OK) {
 		ldns_buffer_free(rawsig_buf);
 		ldns_buffer_free(verify_buf);
-		return false;
+		return NULL;
 	}
 
 	for(i = 0; i < ldns_rr_list_rr_count(keys); i++) {
@@ -186,7 +192,7 @@ ldns_verify_rrsig(ldns_rr_list *rrset, ldns_rr *rrsig, ldns_rr_list *keys)
 				/* returning is bad might screw up
 				   good keys later in the list
 				   what to do? */
-				return false;
+				return NULL;
 			}
 
 			/* check for right key */
@@ -212,8 +218,15 @@ ldns_verify_rrsig(ldns_rr_list *rrset, ldns_rr *rrsig, ldns_rr_list *keys)
 
 			ldns_buffer_free(key_buf); 
 			if (result) {
-				/* one of the keys has matched */
-				break;
+				/* one of the keys has matched, don't break
+				 * here, instead put the 'winning' key in
+				 * the validkey list and return the list 
+				 * later */
+				if (!ldns_rr_list_push_rr(validkeys, current_key)) {
+					/* couldn't push the key?? */
+					return NULL;
+				}
+				/* break; */ 
 			}
 		}
 	}
@@ -222,7 +235,12 @@ ldns_verify_rrsig(ldns_rr_list *rrset, ldns_rr *rrsig, ldns_rr_list *keys)
 	ldns_rr_list_free(rrset_clone);
 	ldns_buffer_free(rawsig_buf);
 	ldns_buffer_free(verify_buf);
-	return result;
+	if (ldns_rr_list_rr_count(validkeys) == 0) {
+		/* no keys were added */
+		return NULL;
+	} else {
+		return validkeys;
+	}
 }
 
 bool

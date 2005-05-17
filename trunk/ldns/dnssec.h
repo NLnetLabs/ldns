@@ -57,13 +57,15 @@ uint16_t ldns_calc_keytag(ldns_rr *key);
 bool ldns_verify(ldns_rr_list *rrset, ldns_rr_list *rrsig, ldns_rr_list *keys);	
 
 /**
- * verifies an rrsig.
+ * Verifies an rrsig. All keys in the keyset are tried.
  *
  * \param[in] rrset the rrset to check
  * \param[in] rrsig the signature of the rrset
  * \param[in] keys the keys to try
+ * \return a list of keys which validate the rrsig + rrset. Return NULL
+ * when none of the keys validate.
  */
-bool ldns_verify_rrsig(ldns_rr_list *rrset, ldns_rr *rrsig, ldns_rr_list *keys);
+ldns_rr_list * ldns_verify_rrsig(ldns_rr_list *rrset, ldns_rr *rrsig, ldns_rr_list *keys);
 
 /**
  * verifies a buffer with signature data (DSA) for a buffer with rrset data 
