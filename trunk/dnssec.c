@@ -71,15 +71,15 @@ ldns_calc_keytag(ldns_rr *key)
 	}
 }
 
-bool
+ldns_rr_list *
 ldns_verify(ldns_rr_list *rrset, ldns_rr_list *rrsig, ldns_rr_list *keys)
 {
 	uint16_t i;
-	bool result;
+	ldns_rr_list * result;
 
-	result = false;
+	result = NULL;
 	if (!rrset || !rrsig || !keys) {
-		return false;
+		return NULL;
 	}
 	
 	for (i = 0; i < ldns_rr_list_rr_count(rrsig); i++) {
