@@ -581,7 +581,7 @@ size_t ldns_rr_descriptor_minimum(const ldns_rr_descriptor *descriptor);
  * \param[in]  descriptor for an rr type
  * \return the maximum number of rdata fields
  */
-size_t ldns_rr_descriptor_maximum(const ldns_rr_descriptor *);
+size_t ldns_rr_descriptor_maximum(const ldns_rr_descriptor *descriptor);
 
 /**
  * returns the rdf type for the given rdata field number of the rr type for the given descriptor.
