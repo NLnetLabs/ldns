@@ -53,11 +53,7 @@ PROG_TARGETS	=	$(PROG_SOURCES:.c=)
 LIBDNS_OBJECTS	=	$(LIBDNS_SOURCES:.c=.o)
 LIBDNS_LOBJECTS	=	$(LIBDNS_SOURCES:.c=.lo)
 
-TEST_SOURCES	=	tests/run-test7.c tests/run-test11.c tests/run-test18.c tests/run-test19.c
-
 ALL_SOURCES	=	$(LIBDNS_SOURCES) $(PROG_SOURCES)
-
-TESTS		=	$(TEST_SOURCES:.c=)
 
 COMPILE		= $(CC) $(CPPFLAGS) $(CFLAGS)
 COMP_LIB	= $(LIBTOOL) --mode=compile $(CC) $(CPPFLAGS) $(CFLAGS)
@@ -137,41 +133,18 @@ chaos:		chaos.o $(LIBDNS_OBJECTS) $(LIBOBJS)
 		$(LINK) ${LIBS} -o $@ $+
 
 # tests
-tests:		$(TESTS)
-
-tests/run-test7.o:	tests/run-test7.c
-		$(COMPILE) -c $< -o $@
-tests/run-test7:	tests/run-test7.o $(LIBDNS_OBJECTS) $(LIBOBJS)
-		$(LINK) ${LIBS} -o $@ $+
-
-tests/run-test11.o:	tests/run-test11.c
-		$(COMPILE) -c $< -o $@
-tests/run-test11:	tests/run-test11.o $(LIBDNS_OBJECTS) $(LIBOBJS)
-		$(LINK) ${LIBS} -o $@ $+
-
-tests/run-test18.o:	tests/run-test18.c
-		$(COMPILE) -c $< -o $@
-tests/run-test18:	tests/run-test18.o $(LIBDNS_OBJECTS) $(LIBOBJS)
-
-tests/run-test19.o:	tests/run-test19.c
-		$(COMPILE) -c $< -o $@
-		$(LINK) ${LIBS} -lssl -o $@ $+
-tests/run-test19:	tests/run-test19.o $(LIBDNS_OBJECTS) $(LIBOBJS)
-		$(LINK) ${LIBS} -lssl -o $@ $+
+tests:		
+		(cd tests ; make)
 
 clean:	
 	rm -f *.o *.d 
 	rm -f *~
-	rm -f $(TESTS)
 	rm -f tests/*.o
 	rm -f $(PROG_TARGETS)
 	rm -rf autom4te.cache/
 	rm -f config.status
 	rm -f config.log
 	rm -f tags
-
-testclean:
-	rm -f $(TESTS)
 
 realclean: clean docclean testclean libclean
 	rm -f config.status
@@ -201,15 +174,6 @@ libclean:
 	rm -rf *.lo
 	rm -rf .libs
 	rm -rf libtool
-
-test7: run-test7
-	./run-test7
-test11: run-test11
-	./run-test11
-test18: run-test18
-	./run-test18
-
-test: test7 test11 test18
 
 ## No need for changes here
 

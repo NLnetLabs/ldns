@@ -3,7 +3,15 @@
  *
  */
 
-#include <ldns/ldns.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <stddef.h>
+#include <unistd.h>
+#include <stdbool.h>
+
+#include <stdint.h>
+
+#include <ldns/dns.h>
 
 /*
 	0xc2, 0xb4, 0x81, 0x80, 0x00, 0x01, 0x00, 0x01,

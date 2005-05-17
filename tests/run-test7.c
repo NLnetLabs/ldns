@@ -6,6 +6,18 @@
  * Print the result
  */
 
+#include "config.h"
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <stddef.h>
+#include <unistd.h>
+#include <stdbool.h>
+
+#ifdef HAVE_STDINT_H
+#include <stdint.h>
+#endif /* HAVE_STDINT_H */
+
 #include <ldns/dns.h>
 
 void

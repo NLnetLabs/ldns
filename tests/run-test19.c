@@ -3,8 +3,19 @@
  * for a particulary domain
  */
 
-#include <ldns/dns.h>
+#include "config.h"
+
 #include <stdio.h>
+#include <stdlib.h>
+#include <stddef.h>
+#include <unistd.h>
+#include <stdbool.h>
+
+#ifdef HAVE_STDINT_H
+#include <stdint.h>
+#endif /* HAVE_STDINT_H */
+
+#include <ldns/dns.h>
 
 int
 usage(FILE *fp, char *prog) {
