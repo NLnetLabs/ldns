@@ -94,10 +94,10 @@ ldns_key_new_frm_fp(FILE *fp)
 		return NULL;
 	}
 	if (strncmp(d, "1 RSA", strlen(d)) == 0) {
-		alg = LDNS_RSAMD5; /* md5, really?? */
+		alg = LDNS_SIGN_RSAMD5; /* md5, really?? */
 	}
 	if (strncmp(d, "3 DSA", strlen(d)) == 0) {
-		alg = LDNS_DSA; 
+		alg = LDNS_SIGN_DSA; 
 	}
 	LDNS_FREE(d);
 
@@ -106,12 +106,12 @@ ldns_key_new_frm_fp(FILE *fp)
 		default:
 			printf("No algorithm seen, bailing out\n");
 			return NULL;
-		case LDNS_RSAMD5:
-		case LDNS_RSASHA1:
+		case LDNS_SIGN_RSAMD5:
+		case LDNS_SIGN_RSASHA1:
 			printf("RSA seen\n");
 			ldns_key_new_frm_fp_rsa(fp, k);
 			break;
-		case LDNS_DSA:
+		case LDNS_SIGN_DSA:
 			printf("DSA seen\n");
 			ldns_key_new_frm_fp_dsa(fp, k);
 			break;
@@ -141,7 +141,7 @@ ldns_key_new_frm_fp_rsa(FILE *f, ldns_key *k)
 	if (!d) {
 		return false;
 	}
-
+#if 0
 	ldns_fget_keyword_data(f, "Modulus", ": ", d, "\n", LDNS_MAX_LINELEN);
         printf("read from file [%s]\n", d);
         ldns_fget_keyword_data(f, "PublicExponent", ": ", d, "\n", LDNS_MAX_LINELEN);
@@ -158,7 +158,7 @@ ldns_key_new_frm_fp_rsa(FILE *f, ldns_key *k)
         printf("read from file [%s]\n", d);
         ldns_fget_keyword_data(f, "Coefficient", ": ", d, "\n", LDNS_MAX_LINELEN);
         printf("read from file [%s]\n", d);
-
+#endif
 
 	return true;
 }
