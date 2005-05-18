@@ -290,7 +290,6 @@ ldns_key_rsa2bin(unsigned char *data, RSA *k, uint16_t *size)
                 BN_bn2bin(k->e, data + 1);  
                 BN_bn2bin(k->n, data + *(data + 1) + 2);
 		*size = (uint16_t) BN_num_bytes(k->n) + 4;
-		printf("size %d\n", *size);
         } else if (BN_num_bytes(k->e) <= 16) {
                 data[0] = 0;
 		/* this writing is not endian save or is it? */
