@@ -36,7 +36,7 @@ ssize_t ldns_fget_token(FILE *f, char *token, const char *delim, size_t limit);
  * searches for keyword and delim. Gives everything back
  * after the keyword + k_del until we hit d_del
  */
-ssize_t ldns_fget_keyword_data(FILE *f, const char *keyword, const char *k_del, char *data, const char *d_del);
+ssize_t ldns_fget_keyword_data(FILE *f, const char *keyword, const char *k_del, char *data, const char *d_del, size_t data_limit);
 
 /**
  * returns a token/char from the buffer b.

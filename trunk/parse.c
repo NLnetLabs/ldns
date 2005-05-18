@@ -17,7 +17,7 @@
 
 ssize_t
 ldns_fget_keyword_data(FILE *f, const char *keyword, const char *k_del, char *data, 
-		const char *d_del)
+		const char *d_del, size_t data_limit)
 {
 	/* we assume: keyword|sep|data */
 	char *fkeyword;
@@ -26,18 +26,17 @@ ldns_fget_keyword_data(FILE *f, const char *keyword, const char *k_del, char *da
 	fkeyword = LDNS_XMALLOC(char, LDNS_MAX_KEYWORDLEN);
 	i = 0;
 
-	i = ldns_fget_token(f, fkeyword, k_del, 0);
+	i = ldns_fget_token(f, fkeyword, k_del, LDNS_MAX_KEYWORDLEN);
 
-	dprintf("[%s]\n", fkeyword);
-
-	/* case??? */
-	if (strncmp(fkeyword, keyword, strlen(keyword)) == 0) {
-		/* whee, the match! */
-		dprintf("%s", "Matching keyword\n\n");
-		/* retrieve it's data */
-		i = ldns_fget_token(f, data, d_del, 0);
+	/* case??? i instead of strlen? */
+	if (strncmp(fkeyword, keyword, LDNS_MAX_KEYWORDLEN - 1) == 0) {
+		/* whee! */
+		/* printf("%s\n%s\n", "Matching keyword", fkeyword); */
+		i = ldns_fget_token(f, data, d_del, data_limit);
+		LDNS_FREE(fkeyword);
 		return i;
 	} else {
+		LDNS_FREE(fkeyword);
 		return -1;
 	}
 }
@@ -48,15 +47,17 @@ ssize_t
 ldns_fget_all_keyword_data(FILE *f, const char *keyword, const char *k_del, char *data,
 		const char *d_del)
 {
-	while (ldns_fget_keyword_data(f, keyword, k_del, data, d_del) == -1) {
+	while (ldns_fget_keyword_data(f, keyword, k_del, data, d_del, LDNS_MAX_LINELEN) == -1) {
 		/* improve ldns_get_keyword_data */
 	
 		/* do something here and a walk through the file */
 	}
+
 	/* reset for next call, this function is rather expensive, as
-	 * for multiple keywords, it walks the file multiple time. But must
-	 * files are small
+	 * for multiple keywords, it walks the file multiple time. Files
+	 * need to be small.
 	 */
+
 	rewind(f);
 	return 0;
 }

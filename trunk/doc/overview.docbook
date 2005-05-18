@@ -33,6 +33,14 @@ high level resemblances to that package.
 </para>
 </sect1>
 
+
+<sect1>
+<title>Differences With Other DNS Library Implementations</title>
+<para>
+we know of: ADNS
+</para>
+</sect1>
+
 <sect1>
 <title>Global Decisions</title>
 <para>
