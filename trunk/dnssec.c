@@ -83,7 +83,7 @@ ldns_verify(ldns_rr_list *rrset, ldns_rr_list *rrsig, ldns_rr_list *keys)
 	}
 	
 	for (i = 0; i < ldns_rr_list_rr_count(rrsig); i++) {
-		result = ldns_verify_rrsig(rrset, 
+		result = ldns_verify_rrsig_keylist(rrset, 
 				ldns_rr_list_rr(rrsig, i),
 				keys);
 		if (result) {
@@ -104,7 +104,7 @@ ldns_verify(ldns_rr_list *rrset, ldns_rr_list *rrsig, ldns_rr_list *keys)
  * - verify the rrset+sig, with the b64 data and the b64 key data
  */
 ldns_rr_list *
-ldns_verify_rrsig(ldns_rr_list *rrset, ldns_rr *rrsig, ldns_rr_list *keys)
+ldns_verify_rrsig_keylist(ldns_rr_list *rrset, ldns_rr *rrsig, ldns_rr_list *keys)
 {
 	ldns_buffer *rawsig_buf;
 	ldns_buffer *verify_buf;
@@ -241,6 +241,120 @@ ldns_verify_rrsig(ldns_rr_list *rrset, ldns_rr *rrsig, ldns_rr_list *keys)
 	} else {
 		return validkeys;
 	}
+}
+
+bool
+ldns_verify_rrsig(ldns_rr_list *rrset, ldns_rr *rrsig, ldns_rr *key)
+{
+	ldns_buffer *rawsig_buf;
+	ldns_buffer *verify_buf;
+	ldns_buffer *key_buf;
+	uint32_t orig_ttl;
+	uint16_t i;
+	uint8_t sig_algo;
+	bool result;
+	ldns_rr_list *rrset_clone;
+
+	if (!rrset) {
+		return false;
+	}
+
+	/* clone the rrset so that we can fiddle with it */
+	rrset_clone = ldns_rr_list_deep_clone(rrset);
+	
+	/* create the buffers which will certainly hold the raw data */
+	rawsig_buf = ldns_buffer_new(LDNS_MAX_PACKETLEN);
+	verify_buf  = ldns_buffer_new(LDNS_MAX_PACKETLEN);
+	
+	sig_algo = ldns_rdf2native_int8(ldns_rr_rdf(rrsig, 1));
+	result = false;
+
+	/* create a buffer with b64 signature rdata */
+	if (ldns_rdf2buffer_wire(rawsig_buf,
+				ldns_rr_rdf(rrsig, 8)) != LDNS_STATUS_OK) {
+		ldns_buffer_free(rawsig_buf);
+		ldns_buffer_free(verify_buf);
+		return false;
+	}
+
+	orig_ttl = ldns_rdf2native_int32(
+			ldns_rr_rdf(rrsig, 3));
+
+	/* reset the ttl in the rrset with the orig_ttl from the sig */
+	for(i = 0; i < ldns_rr_list_rr_count(rrset_clone); i++) {
+		ldns_rr_set_ttl(
+				ldns_rr_list_rr(rrset_clone, i),
+				orig_ttl);
+		/* convert to lowercase */
+		ldns_rr2canonical(ldns_rr_list_rr(rrset_clone, i));
+	}
+
+	/* sort the rrset in canonical order  */
+	ldns_rr_list_sort(rrset_clone);
+
+	/* put the signature rr (without the b64) to the verify_buf */
+	if (ldns_rrsig2buffer_wire(verify_buf, rrsig) != LDNS_STATUS_OK) {
+		ldns_buffer_free(rawsig_buf);
+		ldns_buffer_free(verify_buf);
+		return false;
+	}
+
+	/* add the rrset in verify_buf */
+	if (ldns_rr_list2buffer_wire(verify_buf, rrset_clone) != LDNS_STATUS_OK) {
+		ldns_buffer_free(rawsig_buf);
+		ldns_buffer_free(verify_buf);
+		return false;
+	}
+
+	if (ldns_calc_keytag(key)
+	    ==
+	    ldns_rdf2native_int16(ldns_rr_rrsig_keytag(rrsig))
+	   ) {
+		key_buf = ldns_buffer_new(LDNS_MAX_PACKETLEN);
+		
+		/* before anything, check if the keytags match */
+
+		/* put the key-data in a buffer, that's the third rdf, with
+		 * the base64 encoded key data */
+		if (ldns_rdf2buffer_wire(key_buf,
+				ldns_rr_rdf(key, 3)) != LDNS_STATUS_OK) {
+			ldns_buffer_free(rawsig_buf);
+			ldns_buffer_free(verify_buf);
+			/* returning is bad might screw up
+			   good keys later in the list
+			   what to do? */
+			return false;
+		}
+
+		/* check for right key */
+		if (sig_algo == ldns_rdf2native_int8(ldns_rr_rdf(key, 2))) {
+			switch(sig_algo) {
+				case LDNS_DSA:
+					result = ldns_verify_rrsig_dsa(
+							rawsig_buf, verify_buf, key_buf);
+					break;
+				case LDNS_RSASHA1:
+					result = ldns_verify_rrsig_rsasha1(
+							rawsig_buf, verify_buf, key_buf);
+					break;
+				case LDNS_RSAMD5:
+					result = ldns_verify_rrsig_rsamd5(
+							rawsig_buf, verify_buf, key_buf);
+					break;
+				default:
+					/* do you know this alg?! */
+					break;
+			}
+		}
+
+		ldns_buffer_free(key_buf); 
+	}
+
+	/* no longer needed */
+	ldns_rr_list_free(rrset_clone);
+	ldns_buffer_free(rawsig_buf);
+	ldns_buffer_free(verify_buf);
+	return result;
 }
 
 bool

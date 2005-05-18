@@ -66,7 +66,8 @@ ldns_rr_list* ldns_verify(ldns_rr_list *rrset, ldns_rr_list *rrsig, ldns_rr_list
  * \return a list of keys which validate the rrsig + rrset. Return NULL
  * when none of the keys validate.
  */
-ldns_rr_list * ldns_verify_rrsig(ldns_rr_list *rrset, ldns_rr *rrsig, ldns_rr_list *keys);
+ldns_rr_list * ldns_verify_rrsig_keylist(ldns_rr_list *rrset, ldns_rr *rrsig, ldns_rr_list *keys);
+bool ldns_verify_rrsig(ldns_rr_list *rrset, ldns_rr *rrsig, ldns_rr *key);
 
 /**
  * verifies a buffer with signature data (DSA) for a buffer with rrset data 
