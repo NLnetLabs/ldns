@@ -55,6 +55,128 @@ ldns_key_new()
 }
 
 ldns_key *
+ldns_key_new_frm_fp(FILE *fp)
+{
+	ldns_key *k;
+	char *d;
+	ldns_signing_algorithm alg;
+
+	k = ldns_key_new();
+	d = LDNS_XMALLOC(char, LDNS_MAX_LINELEN);
+	if (!k || !d) {
+		return NULL;
+	}
+	
+	alg = 0;
+	
+	/* the file is highly structured. Do this in sequence */
+	/* RSA:
+	 * Private-key-format: v1.2
+ 	 * Algorithm: 1 (RSA)
+
+	 */
+	/* get the key format version number */
+	if (ldns_fget_keyword_data(fp, "Private-key-format", ": ", d, "\n",
+				LDNS_MAX_LINELEN) == -1) {
+		/* no version information */
+		return NULL;
+	}
+	if (strncmp(d, "v1.2", strlen(d)) != 0) {
+		printf("Wrong version\n");
+		return NULL;
+	}
+
+	/* get the algorithm type, our file function strip ( ) so there are
+	 * not in the return string! */
+	if (ldns_fget_keyword_data(fp, "Algorithm", ": ", d, "\n", 
+				LDNS_MAX_LINELEN) == -1) {
+		/* no version information */
+		return NULL;
+	}
+	if (strncmp(d, "1 RSA", strlen(d)) == 0) {
+		alg = LDNS_RSAMD5; /* md5, really?? */
+	}
+	if (strncmp(d, "3 DSA", strlen(d)) == 0) {
+		alg = LDNS_DSA; 
+	}
+	LDNS_FREE(d);
+
+	switch(alg) {
+		case 0:
+		default:
+			printf("No algorithm seen, bailing out\n");
+			return NULL;
+		case LDNS_RSAMD5:
+		case LDNS_RSASHA1:
+			printf("RSA seen\n");
+			ldns_key_new_frm_fp_rsa(fp, k);
+			break;
+		case LDNS_DSA:
+			printf("DSA seen\n");
+			ldns_key_new_frm_fp_dsa(fp, k);
+			break;
+	}
+
+	printf("So far so good\n");
+
+	return NULL;
+}
+
+bool
+ldns_key_new_frm_fp_rsa(FILE *f, ldns_key *k)
+{
+	/* we parse
+ 	 * Modulus: 
+ 	 * PublicExponent: 
+ 	 * PrivateExponent: 
+ 	 * Prime1: 
+ 	 * Prime2: 
+ 	 * Exponent1: 
+ 	 * Exponent2: 
+ 	 * Coefficient: 
+	 */
+	char *d;
+
+	d = LDNS_XMALLOC(char, LDNS_MAX_LINELEN);
+	if (!d) {
+		return false;
+	}
+
+	ldns_fget_keyword_data(f, "Modulus", ": ", d, "\n", LDNS_MAX_LINELEN);
+        printf("read from file [%s]\n", d);
+        ldns_fget_keyword_data(f, "PublicExponent", ": ", d, "\n", LDNS_MAX_LINELEN);
+        printf("read from file [%s]\n", d);
+        ldns_fget_keyword_data(f, "PrivateExponent", ": ", d, "\n", LDNS_MAX_LINELEN);
+        printf("read from file [%s]\n", d);
+        ldns_fget_keyword_data(f, "Prime1", ": ", d, "\n", LDNS_MAX_LINELEN);
+        printf("read from file [%s]\n", d);
+        ldns_fget_keyword_data(f, "Prime2", ": ", d, "\n", LDNS_MAX_LINELEN);
+        printf("read from file [%s]\n", d);
+        ldns_fget_keyword_data(f, "Exponent1", ": ", d, "\n", LDNS_MAX_LINELEN);
+        printf("read from file [%s]\n", d);
+        ldns_fget_keyword_data(f, "Exponent2", ": ", d, "\n", LDNS_MAX_LINELEN);
+        printf("read from file [%s]\n", d);
+        ldns_fget_keyword_data(f, "Coefficient", ": ", d, "\n", LDNS_MAX_LINELEN);
+        printf("read from file [%s]\n", d);
+
+
+	return true;
+}
+
+bool
+ldns_key_new_frm_fp_dsa(FILE *f, ldns_key *k)
+{
+	char *d;
+
+	d = LDNS_XMALLOC(char, LDNS_MAX_LABELLEN);
+	if (!d) {
+		return false;
+	}
+
+	return true;
+}
+
+ldns_key *
 ldns_key_new_frm_algorithm(ldns_signing_algorithm alg, uint16_t size)
 {
 	ldns_key *k;

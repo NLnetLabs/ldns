@@ -25,22 +25,22 @@ TESTS		= run-test0 run-test7 run-test18 run-test19 run-test20
 all:	$(TESTS)
 
 run-test0:       run-test0.o 
-		$(LINK) -o $@ $+ $(LIBS) 
+		$(LINK) -o $@ $+ 
 
 run-test7:        run-test7.o 
-		$(LINK) -o $@ $+ $(LIBS)
+		$(LINK) -o $@ $+ 
 
 run-test11:       run-test11.o 
-		$(LINK) -o $@ $+ $(LIBS)
+		$(LINK) -o $@ $+ 
 
 run-test18:       run-test18.o 
-		$(LINK) -lssl -o $@ $+ $(LIBS)
+		$(LINK) -lssl -o $@ $+ 
 
 run-test19:       run-test19.o 
-		$(LINK) -lssl -o $@ $+ $(LIBS)
+		$(LINK) -lssl -o $@ $+ 
 
 run-test20:       run-test20.o 
-		$(LINK) -lssl -o $@ $+ $(LIBS)
+		$(LINK) -lssl -o $@ $+ 
 
 
 ## implicit rule

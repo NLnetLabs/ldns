@@ -103,8 +103,35 @@ ldns_key *ldns_key_new();
  *
  * \param[in] a The algorithm to use
  * \param[in] size the number of bytes for the keysize
+ * \return a new ldns_key structure with the key
  */
 ldns_key *ldns_key_new_frm_algorithm(ldns_signing_algorithm a, uint16_t size);
+
+/**
+ * creates a new priv key based on the 
+ * contents of the file pointed by fp
+ *
+ * \param[in] fp the file pointer to use
+ * \return a new ldns_key structure with the key
+ */
+ldns_key *ldns_key_new_frm_fp(FILE *fp);
+
+/**
+ * frm_fp helper function. This function parsed the
+ * remainder of the (RSA) priv. key file generated from bind9
+ * \param[in] fp the file to parse
+ * \param[in] key the ldns_key structure to fill
+ * \return true on succes, false otherwise
+ */
+bool ldns_key_new_frm_fp_rsa(FILE *fp, ldns_key *key);
+/**
+ * frm_fp helper function. This function parsed the
+ * remainder of the (DSA) priv. key file generated from bind9
+ * \param[in] fp the file to parse
+ * \param[in] key the ldns_key structure to fill
+ * \return true on succes, false otherwise
+ */
+bool ldns_key_new_frm_fp_dsa(FILE *fp, ldns_key *key);
 
 /* acces write functions */
 void ldns_key_set_algorithm(ldns_key *k, ldns_signing_algorithm l);
