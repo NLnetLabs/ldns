@@ -109,11 +109,11 @@ ldns_key_new_frm_fp(FILE *fp)
 		case LDNS_SIGN_RSAMD5:
 		case LDNS_SIGN_RSASHA1:
 			printf("RSA seen\n");
-			ldns_key_new_frm_fp_rsa(fp, k);
+			(void)ldns_key_new_frm_fp_rsa(fp, k);
 			break;
 		case LDNS_SIGN_DSA:
 			printf("DSA seen\n");
-			ldns_key_new_frm_fp_dsa(fp, k);
+			(void)ldns_key_new_frm_fp_dsa(fp, k);
 			break;
 	}
 
@@ -122,7 +122,7 @@ ldns_key_new_frm_fp(FILE *fp)
 	return NULL;
 }
 
-bool
+RSA *
 ldns_key_new_frm_fp_rsa(FILE *f, ldns_key *k)
 {
 	/* we parse
@@ -136,11 +136,16 @@ ldns_key_new_frm_fp_rsa(FILE *f, ldns_key *k)
  	 * Coefficient: 
 	 */
 	char *d;
+	RSA *rsa;
 
 	d = LDNS_XMALLOC(char, LDNS_MAX_LINELEN);
-	if (!d) {
-		return false;
+	rsa = RSA_new();
+	if (!d || !rsa) {
+		return NULL;
 	}
+
+
+	k = k; f = f;
 #if 0
 	ldns_fget_keyword_data(f, "Modulus", ": ", d, "\n", LDNS_MAX_LINELEN);
         printf("read from file [%s]\n", d);
@@ -159,21 +164,25 @@ ldns_key_new_frm_fp_rsa(FILE *f, ldns_key *k)
         ldns_fget_keyword_data(f, "Coefficient", ": ", d, "\n", LDNS_MAX_LINELEN);
         printf("read from file [%s]\n", d);
 #endif
+	/* use pton to b64 conversion and put that in the RSA structure */
 
-	return true;
+	return NULL;
 }
 
-bool
+DSA *
 ldns_key_new_frm_fp_dsa(FILE *f, ldns_key *k)
 {
 	char *d;
+	DSA *dsa;
 
 	d = LDNS_XMALLOC(char, LDNS_MAX_LABELLEN);
-	if (!d) {
-		return false;
+	dsa = DSA_new();
+	if (!d || !dsa) {
+		return NULL;
 	}
+	k = k; f = f;
 
-	return true;
+	return NULL;
 }
 
 ldns_key *

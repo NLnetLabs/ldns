@@ -121,17 +121,17 @@ ldns_key *ldns_key_new_frm_fp(FILE *fp);
  * remainder of the (RSA) priv. key file generated from bind9
  * \param[in] fp the file to parse
  * \param[in] key the ldns_key structure to fill
- * \return true on succes, false otherwise
+ * \return NULL on failure otherwise a RSA structure
  */
-bool ldns_key_new_frm_fp_rsa(FILE *fp, ldns_key *key);
+RSA *ldns_key_new_frm_fp_rsa(FILE *fp, ldns_key *key);
 /**
  * frm_fp helper function. This function parsed the
  * remainder of the (DSA) priv. key file generated from bind9
  * \param[in] fp the file to parse
  * \param[in] key the ldns_key structure to fill
- * \return true on succes, false otherwise
+ * \return NULL on failure otherwise a RSA structure
  */
-bool ldns_key_new_frm_fp_dsa(FILE *fp, ldns_key *key);
+DSA *ldns_key_new_frm_fp_dsa(FILE *fp, ldns_key *key);
 
 /* acces write functions */
 void ldns_key_set_algorithm(ldns_key *k, ldns_signing_algorithm l);
