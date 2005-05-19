@@ -88,8 +88,36 @@ main(void)
 	}
 	privkey = ldns_key_new_frm_fp(f);
 	printf("Kom ik hier nog wel ofzo?\n");
-
 	fclose(f);
+
+	if (!privkey) { 
+		printf("arrg no key could be found!\n");
+		exit(1);
+	}
+
+	dnskey = ldns_key2rr(privkey);
+	if (dnskey) {
+		ldns_rr_print(stdout, dnskey);
+		/*
+		printf("; {%d}\n", 
+				(int) ldns_calc_keytag(dnskey));
+				*/
+		printf("\n");
+		ldns_key_set_keytag(privkey, ldns_calc_keytag(dnskey));
+	} else {
+		exit(1);
+	}
+
+	f = fopen("Kmiek.nl.+001+05920.private", "r");
+	printf("Opening %s\n", "Kmiek.nl.+001+05920.private ");
+	if (!f) {
+		return 0;
+	}
+
+	privkey = ldns_key_new_frm_fp(f);
+	printf("Kom ik hier nog wel ofzo?\n");
+	fclose(f);
+
 	if (!privkey) { 
 		printf("arrg no key could be found!\n");
 		exit(1);
@@ -109,10 +137,7 @@ main(void)
 	}
 
 
-	return 0;
 
-
-	/* this is all kaput... :-( */
 	signatures = ldns_sign_public(rrs, keys);
 
 	ldns_rr_list_print(stdout, signatures);
