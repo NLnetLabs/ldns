@@ -288,7 +288,7 @@ ldns_str2rdf_b64(ldns_rdf **rd, const char *str)
 	
 	buffer = LDNS_XMALLOC(uint8_t, b64_ntop_calculate_size(strlen(str)));
 	
-	i = (uint16_t) b64_pton((const char*)str, buffer, 
+	i = (uint16_t)b64_pton((const char*)str, buffer, 
 	                        b64_ntop_calculate_size(strlen(str)));
 	if (-1 == i) {
 		return LDNS_STATUS_INVALID_B64;

@@ -12,7 +12,6 @@
 
 #include <openssl/ssl.h>
 
-
 ldns_lookup_table ldns_signing_algorithms[] = {
         { LDNS_SIGN_RSAMD5, "RSAMD5" },
         { LDNS_SIGN_RSASHA1, "RSASHA1" },
@@ -99,6 +98,7 @@ ldns_key_new_frm_fp(FILE *fp)
 	if (strncmp(d, "3 DSA", strlen(d)) == 0) {
 		alg = LDNS_SIGN_DSA; 
 	}
+
 	LDNS_FREE(d);
 
 	switch(alg) {
@@ -109,21 +109,25 @@ ldns_key_new_frm_fp(FILE *fp)
 		case LDNS_SIGN_RSAMD5:
 		case LDNS_SIGN_RSASHA1:
 			printf("RSA seen\n");
-			(void)ldns_key_new_frm_fp_rsa(fp, k);
+
+			ldns_key_set_algorithm(k, alg);
+			ldns_key_set_rsa_key(k, ldns_key_new_frm_fp_rsa(fp));
+
 			break;
 		case LDNS_SIGN_DSA:
 			printf("DSA seen\n");
-			(void)ldns_key_new_frm_fp_dsa(fp, k);
+			ldns_key_set_algorithm(k, alg);
+			ldns_key_set_dsa_key(k, ldns_key_new_frm_fp_dsa(fp));
 			break;
 	}
 
 	printf("So far so good\n");
 
-	return NULL;
+	return k;
 }
 
 RSA *
-ldns_key_new_frm_fp_rsa(FILE *f, ldns_key *k)
+ldns_key_new_frm_fp_rsa(FILE *f)
 {
 	/* we parse
  	 * Modulus: 
@@ -134,43 +138,127 @@ ldns_key_new_frm_fp_rsa(FILE *f, ldns_key *k)
  	 * Exponent1: 
  	 * Exponent2: 
  	 * Coefficient: 
+	 *
+	 * man 3 RSA:
+	 *
+	 * struct
+         *     {
+         *     BIGNUM *n;              // public modulus
+         *     BIGNUM *e;              // public exponent
+         *     BIGNUM *d;              // private exponent
+         *     BIGNUM *p;              // secret prime factor
+         *     BIGNUM *q;              // secret prime factor
+         *     BIGNUM *dmp1;           // d mod (p-1)
+         *     BIGNUM *dmq1;           // d mod (q-1)
+         *     BIGNUM *iqmp;           // q^-1 mod p
+         *     // ...
+	 *
 	 */
 	char *d;
 	RSA *rsa;
+	uint8_t *buf;
+	int i;
 
 	d = LDNS_XMALLOC(char, LDNS_MAX_LINELEN);
+	buf = LDNS_XMALLOC(uint8_t, LDNS_MAX_LINELEN);
 	rsa = RSA_new();
-	if (!d || !rsa) {
+	if (!d || !rsa || !buf) {
 		return NULL;
 	}
 
+	/* I could use functions again, but that seems an overkill,
+	 * allthough this also looks tedious 
+	 */
 
-	k = k; f = f;
-#if 0
-	ldns_fget_keyword_data(f, "Modulus", ": ", d, "\n", LDNS_MAX_LINELEN);
-        printf("read from file [%s]\n", d);
-        ldns_fget_keyword_data(f, "PublicExponent", ": ", d, "\n", LDNS_MAX_LINELEN);
-        printf("read from file [%s]\n", d);
-        ldns_fget_keyword_data(f, "PrivateExponent", ": ", d, "\n", LDNS_MAX_LINELEN);
-        printf("read from file [%s]\n", d);
-        ldns_fget_keyword_data(f, "Prime1", ": ", d, "\n", LDNS_MAX_LINELEN);
-        printf("read from file [%s]\n", d);
-        ldns_fget_keyword_data(f, "Prime2", ": ", d, "\n", LDNS_MAX_LINELEN);
-        printf("read from file [%s]\n", d);
-        ldns_fget_keyword_data(f, "Exponent1", ": ", d, "\n", LDNS_MAX_LINELEN);
-        printf("read from file [%s]\n", d);
-        ldns_fget_keyword_data(f, "Exponent2", ": ", d, "\n", LDNS_MAX_LINELEN);
-        printf("read from file [%s]\n", d);
-        ldns_fget_keyword_data(f, "Coefficient", ": ", d, "\n", LDNS_MAX_LINELEN);
-        printf("read from file [%s]\n", d);
-#endif
-	/* use pton to b64 conversion and put that in the RSA structure */
+	/* Modules, rsa->n */
+	if (ldns_fget_keyword_data(f, "Modulus", ": ", d, "\n", LDNS_MAX_LINELEN) == -1) {
+		goto error;
+	}
+	i = b64_pton((const char*)d, buf, b64_ntop_calculate_size(strlen(d)));
+	rsa->n = BN_bin2bn((const char unsigned*)buf, i, NULL);
+	if (!rsa->n) {
+		goto error;
+	}
 
+	/* PublicExponent, rsa->e */
+	if (ldns_fget_keyword_data(f, "PublicExponent", ": ", d, "\n", LDNS_MAX_LINELEN) == -1) {
+		goto error;
+	}
+	i = b64_pton((const char*)d, buf, b64_ntop_calculate_size(strlen(d)));
+	rsa->e = BN_bin2bn((const char unsigned*)buf, i, NULL);
+	if (!rsa->e) {
+		goto error;
+	}
+
+	/* PrivateExponent, rsa->d */
+	if (ldns_fget_keyword_data(f, "PrivateEponent", ": ", d, "\n", LDNS_MAX_LINELEN) == -1) {
+		goto error;
+	}
+	i = b64_pton((const char*)d, buf, b64_ntop_calculate_size(strlen(d)));
+	rsa->d = BN_bin2bn((const char unsigned*)buf, i, NULL);
+	if (!rsa->d) {
+		goto error;
+	}
+
+	/* Prime1, rsa->p */
+	if (ldns_fget_keyword_data(f, "Prime1", ": ", d, "\n", LDNS_MAX_LINELEN) == -1) {
+		goto error;
+	}
+	i = b64_pton((const char*)d, buf, b64_ntop_calculate_size(strlen(d)));
+	rsa->p = BN_bin2bn((const char unsigned*)buf, i, NULL);
+	if (!rsa->p) {
+		goto error;
+	}
+	
+	/* Prime2, rsa->q */
+	if (ldns_fget_keyword_data(f, "Prime2", ": ", d, "\n", LDNS_MAX_LINELEN) == -1) {
+		goto error;
+	}
+	i = b64_pton((const char*)d, buf, b64_ntop_calculate_size(strlen(d)));
+	rsa->q = BN_bin2bn((const char unsigned*)buf, i, NULL);
+	if (!rsa->q) {
+		goto error;
+	}
+
+	/* Exponent1, rsa->dmp1 */
+	if (ldns_fget_keyword_data(f, "Exponent1", ": ", d, "\n", LDNS_MAX_LINELEN) == -1) {
+		goto error;
+	}
+	i = b64_pton((const char*)d, buf, b64_ntop_calculate_size(strlen(d)));
+	rsa->dmp1 = BN_bin2bn((const char unsigned*)buf, i, NULL);
+	if (!rsa->dmp1) {
+		goto error;
+	}
+	
+	/* Exponent2, rsa->dmq1 */
+	if (ldns_fget_keyword_data(f, "Exponent2", ": ", d, "\n", LDNS_MAX_LINELEN) == -1) {
+		goto error;
+	}
+	i = b64_pton((const char*)d, buf, b64_ntop_calculate_size(strlen(d)));
+	rsa->dmq1 = BN_bin2bn((const char unsigned*)buf, i, NULL);
+	if (!rsa->dmq1) {
+		goto error;
+	}
+
+	/* Coefficient, rsa->iqmp */
+	if (ldns_fget_keyword_data(f, "Coefficient", ": ", d, "\n", LDNS_MAX_LINELEN) == -1) {
+		goto error;
+	}
+	i = b64_pton((const char*)d, buf, b64_ntop_calculate_size(strlen(d)));
+	rsa->iqmp = BN_bin2bn((const char unsigned*)buf, i, NULL);
+	if (!rsa->iqmp) {
+		goto error;
+	}
+	return rsa;
+
+error:
+	LDNS_FREE(d);
+	LDNS_FREE(buf);
 	return NULL;
 }
 
 DSA *
-ldns_key_new_frm_fp_dsa(FILE *f, ldns_key *k)
+ldns_key_new_frm_fp_dsa(FILE *f)
 {
 	char *d;
 	DSA *dsa;
@@ -180,7 +268,19 @@ ldns_key_new_frm_fp_dsa(FILE *f, ldns_key *k)
 	if (!d || !dsa) {
 		return NULL;
 	}
-	k = k; f = f;
+	f = f;
+
+#if 0
+From the signer
+
+	                        dsakey->p       = priv_fromfile_helper(f, "Prime(p)");
+                        dsakey->q       = priv_fromfile_helper(f, "Subprime(q)");
+                        dsakey->g       = priv_fromfile_helper(f, "Base(g)");
+                        dsakey->priv_key        = priv_fromfile_helper(f, "Private_value(x)");
+                        dsakey->pub_key         = priv_fromfile_helper(f, "Public_value(y)");
+                        key->keydata.dsap       = dsakey;
+                        key->size       = BN_num_bits(dsakey->pub_key)
+#endif
 
 	return NULL;
 }
