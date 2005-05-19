@@ -138,7 +138,7 @@ main(void)
 	printf("Now we are going to verify\n");
 
 	if (ldns_verify(rrs, signatures, dnskeys)) {
-		printf("SUCESS\n\n");
+		printf("SUCCESS\n\n");
 	} else {
 		printf("FAILURE\n\n");
 	}

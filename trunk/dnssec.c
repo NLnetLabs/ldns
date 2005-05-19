@@ -77,14 +77,15 @@ ldns_verify(ldns_rr_list *rrset, ldns_rr_list *rrsig, ldns_rr_list *keys)
 	uint16_t i;
 	ldns_rr_list * result;
 
-	result = NULL;
 	if (!rrset || !rrsig || !keys) {
 		return NULL;
 	}
 	
-	result = ldns_rr_list_new();
-	
+	result = NULL;
 	for (i = 0; i < ldns_rr_list_rr_count(rrsig); i++) {
+		if (i == 0) {
+			result = ldns_rr_list_new();
+		}
 		result = ldns_rr_list_cat(result,
 			                  ldns_verify_rrsig_keylist(rrset, 
 					  	ldns_rr_list_rr(rrsig, i),
