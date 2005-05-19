@@ -82,15 +82,43 @@ ldns_verify(ldns_rr_list *rrset, ldns_rr_list *rrsig, ldns_rr_list *keys)
 		return NULL;
 	}
 	
+	result = ldns_rr_list_new();
+	
 	for (i = 0; i < ldns_rr_list_rr_count(rrsig); i++) {
-		result = ldns_verify_rrsig_keylist(rrset, 
-				ldns_rr_list_rr(rrsig, i),
-				keys);
-		if (result) {
-			break;
-		}
+		result = ldns_rr_list_cat(result,
+			                  ldns_verify_rrsig_keylist(rrset, 
+					  	ldns_rr_list_rr(rrsig, i),
+					  	keys)
+					 );
 	}
 	return result;
+}
+
+INLINE bool
+ldns_verify_rrsig_buffers(ldns_buffer *rawsig_buf,
+                          ldns_buffer *verify_buf,
+                          ldns_buffer *key_buf,
+                          uint8_t algo
+                         )
+{
+		/* check for right key */
+		switch(algo) {
+			case LDNS_DSA:
+				return ldns_verify_rrsig_dsa(
+						rawsig_buf, verify_buf, key_buf);
+				break;
+			case LDNS_RSASHA1:
+				return ldns_verify_rrsig_rsasha1(
+						rawsig_buf, verify_buf, key_buf);
+				break;
+			case LDNS_RSAMD5:
+				return ldns_verify_rrsig_rsamd5(
+						rawsig_buf, verify_buf, key_buf);
+				break;
+			default:
+				/* do you know this alg?! */
+				return false;
+		}
 }
 
 
@@ -197,23 +225,7 @@ ldns_verify_rrsig_keylist(ldns_rr_list *rrset, ldns_rr *rrsig, ldns_rr_list *key
 
 			/* check for right key */
 			if (sig_algo == ldns_rdf2native_int8(ldns_rr_rdf(current_key, 2))) {
-				switch(sig_algo) {
-					case LDNS_DSA:
-						result = ldns_verify_rrsig_dsa(
-								rawsig_buf, verify_buf, key_buf);
-						break;
-					case LDNS_RSASHA1:
-						result = ldns_verify_rrsig_rsasha1(
-								rawsig_buf, verify_buf, key_buf);
-						break;
-					case LDNS_RSAMD5:
-						result = ldns_verify_rrsig_rsamd5(
-								rawsig_buf, verify_buf, key_buf);
-						break;
-					default:
-						/* do you know this alg?! */
-						break;
-				}
+				result = ldns_verify_rrsig_buffers(rawsig_buf, verify_buf, key_buf, sig_algo);
 			}
 
 			ldns_buffer_free(key_buf); 
@@ -325,28 +337,11 @@ ldns_verify_rrsig(ldns_rr_list *rrset, ldns_rr *rrsig, ldns_rr *key)
 			   what to do? */
 			return false;
 		}
-
-		/* check for right key */
+		
 		if (sig_algo == ldns_rdf2native_int8(ldns_rr_rdf(key, 2))) {
-			switch(sig_algo) {
-				case LDNS_DSA:
-					result = ldns_verify_rrsig_dsa(
-							rawsig_buf, verify_buf, key_buf);
-					break;
-				case LDNS_RSASHA1:
-					result = ldns_verify_rrsig_rsasha1(
-							rawsig_buf, verify_buf, key_buf);
-					break;
-				case LDNS_RSAMD5:
-					result = ldns_verify_rrsig_rsamd5(
-							rawsig_buf, verify_buf, key_buf);
-					break;
-				default:
-					/* do you know this alg?! */
-					break;
-			}
+			result = ldns_verify_rrsig_buffers(rawsig_buf, verify_buf, key_buf, sig_algo);
 		}
-
+		
 		ldns_buffer_free(key_buf); 
 	}
 
