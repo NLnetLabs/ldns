@@ -624,7 +624,6 @@ ldns_key2rr(ldns_key *k)
 		case LDNS_SIGN_RSASHA1:
 			ldns_rr_push_rdf(pubkey,
 					ldns_native2rdf_int8(LDNS_RDF_TYPE_ALG, LDNS_RSASHA1));
-			printf("Entering here I\n");
 			if (!ldns_key_rsa2bin(bin, ldns_key_rsa_key(k), &size)) {
 				return NULL;
 			}
