@@ -87,7 +87,6 @@ main(void)
 		return 0;
 	}
 	privkey = ldns_key_new_frm_fp(f);
-	printf("Kom ik hier nog wel ofzo?\n");
 	fclose(f);
 
 	if (!privkey) { 
@@ -98,10 +97,8 @@ main(void)
 	dnskey = ldns_key2rr(privkey);
 	if (dnskey) {
 		ldns_rr_print(stdout, dnskey);
-		/*
 		printf("; {%d}\n", 
 				(int) ldns_calc_keytag(dnskey));
-				*/
 		printf("\n");
 		ldns_key_set_keytag(privkey, ldns_calc_keytag(dnskey));
 	} else {
@@ -115,7 +112,6 @@ main(void)
 	}
 
 	privkey = ldns_key_new_frm_fp(f);
-	printf("Kom ik hier nog wel ofzo?\n");
 	fclose(f);
 
 	if (!privkey) { 
@@ -126,16 +122,13 @@ main(void)
 	dnskey = ldns_key2rr(privkey);
 	if (dnskey) {
 		ldns_rr_print(stdout, dnskey);
-		/*
 		printf("; {%d}\n", 
 				(int) ldns_calc_keytag(dnskey));
-				*/
 		printf("\n");
 		ldns_key_set_keytag(privkey, ldns_calc_keytag(dnskey));
 	} else {
 		exit(1);
 	}
-
 
 
 	signatures = ldns_sign_public(rrs, keys);
