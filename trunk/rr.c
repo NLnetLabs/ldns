@@ -261,6 +261,11 @@ ldns_rr_new_frm_str(const char *str)
 			}
 	}
 	
+
+	LDNS_FREE(rd);
+	LDNS_FREE(rd_buf);
+	ldns_buffer_free(rr_buf);
+
 	LDNS_FREE(rdata);
 	return new;
 }
@@ -688,7 +693,9 @@ ldns_rr_list_deep_clone(ldns_rr_list *rrlist)
 		return NULL;
 	}
 	for (i = 0; i < ldns_rr_list_rr_count(rrlist); i++) {
-		r = ldns_rr_list_rr(rrlist, i);
+		r = ldns_rr_deep_clone(
+			ldns_rr_list_rr(rrlist, i)
+		    );
 		if (!r) {
 			/* huh, failure in cloning */
 			return NULL;
@@ -741,19 +748,29 @@ ldns_rr_compare(const ldns_rr *rr1, const ldns_rr *rr2)
 		rr2_buf = ldns_buffer_new(rr2_len);
 
 		if (ldns_rr2buffer_wire(rr1_buf, rr1, LDNS_SECTION_ANY) != LDNS_STATUS_OK) {
+			ldns_buffer_free(rr1_buf);
+			ldns_buffer_free(rr2_buf);
 			return 0; 
 		}
 		if (ldns_rr2buffer_wire(rr2_buf, rr2, LDNS_SECTION_ANY) != LDNS_STATUS_OK) {
+			ldns_buffer_free(rr1_buf);
+			ldns_buffer_free(rr2_buf);
 			return 0;
 		}
 		/* now compare the buffer's byte for byte */
 		for(i = 0; i < rr1_len; i++) {
 			if (*ldns_buffer_at(rr1_buf,i) < *ldns_buffer_at(rr2_buf,i)) {
+				ldns_buffer_free(rr1_buf);
+				ldns_buffer_free(rr2_buf);
 				return -1;
 			} else if (*ldns_buffer_at(rr1_buf,i) > *ldns_buffer_at(rr2_buf,i)) {
+				ldns_buffer_free(rr1_buf);
+				ldns_buffer_free(rr2_buf);
 				return +1;
 			}
 		}
+		ldns_buffer_free(rr1_buf);
+		ldns_buffer_free(rr2_buf);
 		return 0;
 	}
 }
