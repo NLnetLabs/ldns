@@ -120,18 +120,16 @@ ldns_key *ldns_key_new_frm_fp(FILE *fp);
  * frm_fp helper function. This function parsed the
  * remainder of the (RSA) priv. key file generated from bind9
  * \param[in] fp the file to parse
- * \param[in] key the ldns_key structure to fill
  * \return NULL on failure otherwise a RSA structure
  */
-RSA *ldns_key_new_frm_fp_rsa(FILE *fp, ldns_key *key);
+RSA *ldns_key_new_frm_fp_rsa(FILE *fp);
 /**
  * frm_fp helper function. This function parsed the
  * remainder of the (DSA) priv. key file generated from bind9
  * \param[in] fp the file to parse
- * \param[in] key the ldns_key structure to fill
  * \return NULL on failure otherwise a RSA structure
  */
-DSA *ldns_key_new_frm_fp_dsa(FILE *fp, ldns_key *key);
+DSA *ldns_key_new_frm_fp_dsa(FILE *fp);
 
 /* acces write functions */
 void ldns_key_set_algorithm(ldns_key *k, ldns_signing_algorithm l);
