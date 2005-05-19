@@ -518,22 +518,31 @@ ldns_key_list_pop_key(ldns_key_list *key_list)
 static bool
 ldns_key_rsa2bin(unsigned char *data, RSA *k, uint16_t *size)
 {
+	int i,j;
+	
 	if (!k) {
 		return false;
 	}
 	
 	 if (BN_num_bytes(k->e) <= 2) {
+		/* normally only this path is executed (small factors are
+		 * more common 
+		 */
                 data[0] = (unsigned char) BN_num_bytes(k->e);
-
-                BN_bn2bin(k->e, data + 1);  
-                BN_bn2bin(k->n, data + *(data + 1) + 2);
-		*size = (uint16_t) BN_num_bytes(k->n) + 4;
+                i = BN_bn2bin(k->e, data + 1);  
+		printf("Written %d\n", i);
+                j = BN_bn2bin(k->n, data + i + 1);
+		printf("Written %d\n", j);
+		/* *size = (uint16_t) BN_num_bytes(k->n) + 4; */
+		*size = (uint16_t) i + j + 1;
+		printf("size %d\n", *size);
         } else if (BN_num_bytes(k->e) <= 16) {
                 data[0] = 0;
-		/* this writing is not endian save or is it? */
-		write_uint16(data + 1, (uint16_t) BN_num_bytes(k->e));
+		/* XXX this writing is not endian save or is it? LOOK AT
+		 * THIS AGAIN  */
+		write_uint16(data + 1, (uint16_t) BN_num_bytes(k->e)); 
 
-                BN_bn2bin(k->e, data + 3);
+                BN_bn2bin(k->e, data + 3); 
                 BN_bn2bin(k->n, data + 4 + BN_num_bytes(k->e));
                 *size = (uint16_t) BN_num_bytes(k->n) + 6;
 	} else {
