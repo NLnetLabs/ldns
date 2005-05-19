@@ -82,35 +82,10 @@ main(void)
 	printf("\n Trying to sign\n");
 
 	f = fopen("Kmiek.nl.+001+63054.private", "r");
+	printf("Opening %s\n", "Kmiek.nl.+001+63054.private");
 	if (!f) {
 		return 0;
 	}
-
-	/*
-	ldns_fget_keyword_data(f, "Private-key-format", ": ", d, "\n");
-	printf("read from file [%s]\n", d);
-	ldns_fget_keyword_data(f, "Algorithm", ": ", d, "\n");
-	printf("read from file [%s]\n", d);
-	
-	ldns_fget_keyword_data(f, "Modulus", ": ", d, "\n");
-	printf("read from file [%s]\n", d);
-	ldns_fget_keyword_data(f, "PublicExponent", ": ", d, "\n");
-	printf("read from file [%s]\n", d);
-	ldns_fget_keyword_data(f, "PrivateExponent", ": ", d, "\n");
-	printf("read from file [%s]\n", d);
-	ldns_fget_keyword_data(f, "Prime1", ": ", d, "\n");
-	printf("read from file [%s]\n", d);
-	ldns_fget_keyword_data(f, "Prime2", ": ", d, "\n");
-	printf("read from file [%s]\n", d);
-	ldns_fget_keyword_data(f, "Exponent1", ": ", d, "\n");
-	printf("read from file [%s]\n", d);
-	ldns_fget_keyword_data(f, "Exponent2", ": ", d, "\n");
-	printf("read from file [%s]\n", d);
-	ldns_fget_keyword_data(f, "Coefficient", ": ", d, "\n");
-	printf("read from file [%s]\n", d);
-	*/
-
-
 	privkey = ldns_key_new_frm_fp(f);
 	printf("Kom ik hier nog wel ofzo?\n");
 
@@ -134,13 +109,10 @@ main(void)
 	}
 
 
-
 	return 0;
 
 
 	/* this is all kaput... :-( */
-
-	
 	signatures = ldns_sign_public(rrs, keys);
 
 	ldns_rr_list_print(stdout, signatures);
