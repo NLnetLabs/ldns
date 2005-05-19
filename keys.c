@@ -524,23 +524,25 @@ ldns_key_rsa2bin(unsigned char *data, RSA *k, uint16_t *size)
 		return false;
 	}
 	
-	 if (BN_num_bytes(k->e) <= 2) {
+	/* should this be 256? or so */
+	if (BN_num_bytes(k->e) <= 2) {
 		/* normally only this path is executed (small factors are
 		 * more common 
 		 */
-                data[0] = (unsigned char) BN_num_bytes(k->e);
-                i = BN_bn2bin(k->e, data + 1);  
-                j = BN_bn2bin(k->n, data + i + 1);
+		data[0] = (unsigned char) BN_num_bytes(k->e);
+		i = BN_bn2bin(k->e, data + 1);  
+		j = BN_bn2bin(k->n, data + i + 1);
 		*size = (uint16_t) i + j;
-        } else if (BN_num_bytes(k->e) <= 16) {
-                data[0] = 0;
+		/* and this 65536?? */
+	} else if (BN_num_bytes(k->e) <= 16) {
+		data[0] = 0;
 		/* XXX this writing is not endian save or is it? LOOK AT
 		 * THIS AGAIN  */
 		write_uint16(data + 1, (uint16_t) BN_num_bytes(k->e)); 
 
-                BN_bn2bin(k->e, data + 3); 
-                BN_bn2bin(k->n, data + 4 + BN_num_bytes(k->e));
-                *size = (uint16_t) BN_num_bytes(k->n) + 6;
+		BN_bn2bin(k->e, data + 3); 
+		BN_bn2bin(k->n, data + 4 + BN_num_bytes(k->e));
+		*size = (uint16_t) BN_num_bytes(k->n) + 6;
 	} else {
 		return false;
 	}

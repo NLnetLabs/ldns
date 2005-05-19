@@ -1004,13 +1004,6 @@ ldns_sign_public(ldns_rr_list *rrset, ldns_key_list *keys)
 
 	/* make it canonical */
 	
-	printf("Printing rrset\n[");
-	ldns_rr_list_print(stdout, rrset);
-
-	printf("]\n");
-
-	printf("Dus hier komen we niet meer\n");
-	
 	for(i = 0; i < ldns_rr_list_rr_count(rrset_clone); i++) {
 		ldns_rr2canonical(ldns_rr_list_rr(rrset_clone, i));
 	}
@@ -1023,7 +1016,6 @@ ldns_sign_public(ldns_rr_list *rrset, ldns_key_list *keys)
 		b64rdf = NULL;
 
 		current_key = ldns_key_list_key(keys, key_count);
-
 		current_sig = ldns_rr_new_frm_type(LDNS_RR_TYPE_RRSIG);
 		
 		/* set the type on the new signature */
