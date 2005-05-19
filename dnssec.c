@@ -347,7 +347,9 @@ ldns_verify_rrsig(ldns_rr_list *rrset, ldns_rr *rrsig, ldns_rr *key)
 	}
 
 	/* no longer needed */
+/*
 	ldns_rr_list_free(rrset_clone);
+*/
 	ldns_buffer_free(rawsig_buf);
 	ldns_buffer_free(verify_buf);
 	return result;

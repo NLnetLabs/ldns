@@ -53,7 +53,7 @@ uint16_t ldns_calc_keytag(ldns_rr *key);
  * \param[in] rrset the rrset to verify
  * \param[in] rrsig a list of signatures to check
  * \param[in] keys a list of keys to check with
- * \return a list of keys which validate the rrsig or NULL if not
+ * \return a list of keys that validate one of the signatures
  */
 ldns_rr_list* ldns_verify(ldns_rr_list *rrset, ldns_rr_list *rrsig, ldns_rr_list *keys);	
 
