@@ -191,7 +191,7 @@ ldns_key_new_frm_fp_rsa(FILE *f)
 	}
 
 	/* PrivateExponent, rsa->d */
-	if (ldns_fget_keyword_data(f, "PrivateEponent", ": ", d, "\n", LDNS_MAX_LINELEN) == -1) {
+	if (ldns_fget_keyword_data(f, "PrivateExponent", ": ", d, "\n", LDNS_MAX_LINELEN) == -1) {
 		goto error;
 	}
 	i = b64_pton((const char*)d, buf, b64_ntop_calculate_size(strlen(d)));
@@ -494,9 +494,12 @@ ldns_key_list_pop_key(ldns_key_list *key_list)
 {                               
         size_t key_count;
         ldns_key *pop;
+
+	if (!key_list) {
+		return NULL;
+	}
         
         key_count = ldns_key_list_key_count(key_list);
-                                
         if (key_count == 0) {
                 return NULL;
         }       
@@ -515,6 +518,10 @@ ldns_key_list_pop_key(ldns_key_list *key_list)
 static bool
 ldns_key_rsa2bin(unsigned char *data, RSA *k, uint16_t *size)
 {
+	if (!k) {
+		return false;
+	}
+	
 	 if (BN_num_bytes(k->e) <= 2) {
                 data[0] = (unsigned char) BN_num_bytes(k->e);
 
@@ -539,6 +546,11 @@ static bool
 ldns_key_dsa2bin(unsigned char *data, DSA *k, uint16_t *size)
 {
 	uint8_t T;
+
+	if (!k) {
+		return false;
+	}
+	
 	/* See RFC2536 */
 	*size = (uint16_t)BN_num_bytes(k->g);
 	T = (*size - 64) / 8;

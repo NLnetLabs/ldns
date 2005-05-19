@@ -115,7 +115,23 @@ main(void)
 	printf("Kom ik hier nog wel ofzo?\n");
 
 	fclose(f);
+	if (!privkey) { 
+		printf("arrg no key could be found!\n");
+		exit(1);
+	}
 
+	dnskey = ldns_key2rr(privkey);
+	if (dnskey) {
+		ldns_rr_print(stdout, dnskey);
+		/*
+		printf("; {%d}\n", 
+				(int) ldns_calc_keytag(dnskey));
+				*/
+		printf("\n");
+		ldns_key_set_keytag(privkey, ldns_calc_keytag(dnskey));
+	} else {
+		exit(1);
+	}
 
 
 
