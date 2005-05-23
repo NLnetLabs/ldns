@@ -683,19 +683,17 @@ ldns_resolver_send(ldns_pkt **answer, ldns_resolver *r, ldns_rdf *name,
 		return LDNS_STATUS_ERR;
 	}
 
+	/* set DO bit if necessary */
+	if (ldns_resolver_dnssec(r)) {
+		ldns_resolver_set_edns_udp_size(r, 4096);
+	}
+
 	/* transfer the udp_edns_size from the resolver to the packet */
 	if (ldns_resolver_edns_udp_size(r) != 0) {
 		ldns_pkt_set_edns_udp_size(query_pkt,
 				ldns_resolver_edns_udp_size(r));
 	}
 
-	/* set DO bit if necessary */
-	/* TODO: macro or inline function for bit */
-	if (ldns_resolver_dnssec(r) != 0) {
-		ldns_pkt_set_edns_z(query_pkt,
-		                    ldns_pkt_edns_z(query_pkt) | 0x8000
-		                   );
-	}
 
 	if (ldns_resolver_debug(r)) {
 		ldns_pkt_print(stdout, query_pkt);
