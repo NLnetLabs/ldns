@@ -839,3 +839,47 @@ ldns_pkt_reply_type(ldns_pkt *p)
 	 */
 	return LDNS_PACKET_ANSWER;
 }
+
+ldns_pkt *
+ldns_pkt_deep_clone(ldns_pkt *pkt)
+{
+	ldns_pkt *new_pkt;
+	
+	if (!pkt) {
+		return NULL;
+	}
+	
+	new_pkt = ldns_pkt_new();
+
+	ldns_pkt_set_id(new_pkt, ldns_pkt_id(pkt));
+	ldns_pkt_set_qr(new_pkt, ldns_pkt_qr(pkt));
+	ldns_pkt_set_aa(new_pkt, ldns_pkt_aa(pkt));
+	ldns_pkt_set_tc(new_pkt, ldns_pkt_tc(pkt));
+	ldns_pkt_set_rd(new_pkt, ldns_pkt_rd(pkt));
+	ldns_pkt_set_cd(new_pkt, ldns_pkt_cd(pkt));
+	ldns_pkt_set_ra(new_pkt, ldns_pkt_ra(pkt));
+	ldns_pkt_set_ad(new_pkt, ldns_pkt_ad(pkt));
+	ldns_pkt_set_opcode(new_pkt, ldns_pkt_opcode(pkt));
+	ldns_pkt_set_rcode(new_pkt, ldns_pkt_rcode(pkt));
+	ldns_pkt_set_qdcount(new_pkt, ldns_pkt_qdcount(pkt));
+	ldns_pkt_set_ancount(new_pkt, ldns_pkt_ancount(pkt));
+	ldns_pkt_set_nscount(new_pkt, ldns_pkt_nscount(pkt));
+	ldns_pkt_set_arcount(new_pkt, ldns_pkt_arcount(pkt));
+	ldns_pkt_set_answerfrom(new_pkt, ldns_pkt_answerfrom(pkt));
+	ldns_pkt_set_querytime(new_pkt, ldns_pkt_querytime(pkt));
+	ldns_pkt_set_size(new_pkt, ldns_pkt_size(pkt));
+	ldns_pkt_set_when(new_pkt, ldns_pkt_when(pkt));
+	ldns_pkt_set_tsig(new_pkt, ldns_pkt_tsig(pkt));
+	
+	/* todo: edns? */
+	
+	new_pkt->_question = ldns_rr_list_deep_clone(ldns_pkt_question(pkt));
+	new_pkt->_answer = ldns_rr_list_deep_clone(ldns_pkt_answer(pkt));
+	new_pkt->_authority = ldns_rr_list_deep_clone(ldns_pkt_authority(pkt));
+	new_pkt->_additional = ldns_rr_list_deep_clone(ldns_pkt_additional(pkt));
+	
+	return new_pkt;
+}
+
+
+
