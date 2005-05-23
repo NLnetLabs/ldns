@@ -1,0 +1,11 @@
+23 May 2005: 0.60: ldns-team
+	* Removed config.h from the header installed files
+	  (you're not supposed to include that in a libary)
+	* Further tweaking
+	  - DNSSEC signing/verification works
+	  - Assorted bug fixes and tweaks (memory management) 
+
+May 2005: 0.50: ldns-team
+	* First usable release
+	* Basic DNS functionality works
+	* DNSSEC validation works
