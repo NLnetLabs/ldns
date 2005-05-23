@@ -152,4 +152,12 @@ ldns_rdf *ldns_sign_public_rsamd5(ldns_buffer *to_sign, RSA *key);
 ldns_rdf *ldns_sign_public_rsasha1(ldns_buffer *to_sign, RSA *key);
 ldns_rdf *ldns_sign_public_dsa(ldns_buffer *to_sign, DSA *key);
 
+/**
+ * Create a NSEC record
+ * \param[in] before the rrlist which should be taken as the starting point
+ * \param[in] after the rrlist which the nsec rr should point to 
+ * \return a ldns_rr with the nsec record in it
+ */
+ldns_rr * ldns_create_nsec(ldns_rr_list *before, ldns_rr_list *after);
+
 #endif /* _DNSSEC_H_ */

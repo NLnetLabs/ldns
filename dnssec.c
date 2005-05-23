@@ -1195,3 +1195,22 @@ ldns_sign_public_rsamd5(ldns_buffer *to_sign, RSA *key)
 	ldns_buffer_free(b64sig);
 	return sigdata_rdf;
 }
+
+ldns_rr *
+ldns_create_nsec(ldns_rr_list *before, ldns_rr_list *after)
+{
+	/* we do not do any check here - garbage in, garbage out */
+	
+	/* the the start and end names - get the type from the
+	 * before rrlist */
+
+	/* we don't have an nsec encoder... :( */
+
+	ldns_rdf *owner;
+	ldns_rdf *nsec_types;
+
+	before = before ; after = after;
+	owner = owner; nsec_types = nsec_types;
+
+	return NULL;
+}
