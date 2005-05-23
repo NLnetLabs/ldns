@@ -79,6 +79,8 @@ struct ldns_struct_resolver
 	struct timeval _timeout;
 	/** \brief only try the first nameserver */
 	bool _fail;
+	/** \brief randomly choose a nameserver */
+	bool _random;
 	/** keep some things for axfr */
 	int _socket;
 	int _axfr_soa_count;
@@ -112,6 +114,7 @@ bool ldns_resolver_usevc(ldns_resolver *r);
 bool ldns_resolver_fail(ldns_resolver *r);
 bool ldns_resolver_dnssec(ldns_resolver *r);
 bool ldns_resolver_igntc(ldns_resolver *r);
+bool ldns_resolver_random(ldns_resolver *r);
 size_t ldns_resolver_nameserver_count(ldns_resolver *r);
 ldns_rdf *ldns_resolver_domain(ldns_resolver *r);
 struct timeval ldns_resolver_timeout(ldns_resolver *r);
@@ -151,7 +154,7 @@ void ldns_resolver_set_edns_udp_size(ldns_resolver *r, uint16_t s);
 void ldns_resolver_set_tsig_keyname(ldns_resolver *r, char *tsig_keyname);
 void ldns_resolver_set_tsig_algorithm(ldns_resolver *r, char *tsig_algorithm);
 void ldns_resolver_set_tsig_keydata(ldns_resolver *r, char *tsig_keydata);
-
+void ldns_resolver_set_random(ldns_resolver *r, bool b);
 
 /**
  * push a new nameserver to the resolver. It must be an IP

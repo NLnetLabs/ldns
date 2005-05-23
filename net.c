@@ -25,7 +25,8 @@
 ldns_status
 ldns_send(ldns_pkt **result, ldns_resolver *r, ldns_pkt *query_pkt)
 {
-	uint8_t i;
+	uint8_t i,j;
+	ldns_rdf *temp;
 	
 	struct sockaddr_storage *ns;
 	struct sockaddr_in *ns4;
@@ -35,20 +36,27 @@ ldns_send(ldns_pkt **result, ldns_resolver *r, ldns_pkt *query_pkt)
         struct timeval tv_e;
 
 	ldns_rdf **ns_array;
+	ldns_rdf **ns_rand_array;
 	ldns_pkt *reply;
 	ldns_buffer *qb;
 
 	uint8_t *reply_bytes = NULL;
 	size_t reply_size = 0;
 	ldns_rdf *tsig_mac = NULL;
+	ns_rand_array = NULL;
 
-	if (!query_pkt) {
+	ns_rand_array = LDNS_XMALLOC(ldns_rdf*, ldns_resolver_nameserver_count(r));
+
+	if (!query_pkt || !*ns_rand_array) {
 		/* nothing to do? */
 		return LDNS_STATUS_ERR;
 	}
 	
 	ns_array = ldns_resolver_nameservers(r);
 	reply = NULL; ns_len = 0;
+	for (i = 0; i < ldns_resolver_nameserver_count(r); i++) {
+		ns_rand_array[i] = ns_array[i];
+	}
 	
 	qb = ldns_buffer_new(LDNS_MAX_PACKETLEN);
 
@@ -60,11 +68,26 @@ ldns_send(ldns_pkt **result, ldns_resolver *r, ldns_pkt *query_pkt)
 		return LDNS_STATUS_ERR;
 	}
 
+	/* random should already be setup - isn't so bad
+	 * if this isn't "good" random. Note that this
+	 * changes the order in the resolver as well!
+	 */
+	if (ldns_resolver_random(r)) {
+		for (i = 0; i < ldns_resolver_nameserver_count(r); i++) {
+			j = random() % ldns_resolver_nameserver_count(r);
+			/* printf("r = %d, switch i = %d, j = %d\n", 
+			 ldns_resolver_nameserver_count(r), i, j);
+			 */
+			temp = ns_rand_array[i];
+			ns_rand_array[i] = ns_rand_array[j];
+			ns_rand_array[j] = temp;
+		}
+	}
 
 	/* loop through all defined nameservers */
 	for (i = 0; i < ldns_resolver_nameserver_count(r); i++) {
 
-		ns = ldns_rdf2native_sockaddr_storage(ns_array[i]);
+		ns = ldns_rdf2native_sockaddr_storage(ns_rand_array[i]);
 
 		if ((ns->ss_family == AF_INET && 
 				ldns_resolver_ip6(r) == LDNS_RESOLV_INET6)
@@ -120,7 +143,7 @@ ldns_send(ldns_pkt **result, ldns_resolver *r, ldns_pkt *query_pkt)
 			ldns_pkt_set_querytime(reply,
 				((tv_e.tv_sec - tv_s.tv_sec) * 1000) +
 				(tv_e.tv_usec - tv_s.tv_usec) / 1000);
-			ldns_pkt_set_answerfrom(reply, ns_array[i]);
+			ldns_pkt_set_answerfrom(reply, ns_rand_array[i]);
 			ldns_pkt_set_when(reply, ctime((time_t*)&tv_s.tv_sec));
 			ldns_pkt_set_size(reply, reply_size);
 			break;
