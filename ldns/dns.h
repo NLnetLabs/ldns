@@ -37,7 +37,9 @@
 #define LDNS_ROOT_LABEL	'\0'
 #define LDNS_DEFTTL		3600
 
-#define LDNS_VERSION	"0.50"
+#ifndef LDNS_VERSION
+#define LDNS_VERSION	"0.60"
+#endif /* LDNS_VERSION */
 
 /* lookup tables for standard DNS stuff  */
 
