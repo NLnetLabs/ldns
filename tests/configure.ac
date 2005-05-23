@@ -26,47 +26,12 @@ AC_CHECK_HEADERS(sys/param.h sys/mount.h,,,
 ])
 
 # ripped from http://autoconf-archive.cryp.to/check_ssl.html
-AC_DEFUN([CHECK_LDNS],
-[AC_MSG_CHECKING(for ldns/dns.h)
-AC_ARG_WITH(ldns,
-[  --with-ldns             location of ldns [[/usr/local/ldns /usr/lib/ldns 
-                          /usr/ldns /usr/pkg /usr/local /usr]]
-],
-[   AC_MSG_RESULT(yes)
-    for dir in $withval /usr/local/ldns /usr/lib/ldns /usr/ldns /usr/pkg /usr/local /usr; do
-        ldnsdir="$dir"
-        if test -f "$dir/include/ldns/dns.h"; then
-            found_ldns="yes";
-            CFLAGS="$CFLAGS -I$ldnsdir/include/ -DHAVE_LDNS";
-            CXXFLAGS="$CXXFLAGS -I$ldnsdir/include/ -DHAVE_LDNS";
-            break;
-        fi
-        if test -f "$dir/ldns/dns.h"; then
-            found_ldns="yes";
-            CFLAGS="$CFLAGS -I$ldnsdir/ -DHAVE_LDNS";
-            CXXFLAGS="$CXXFLAGS -I$ldnsdir/ -DHAVE_LDNS";
-            break
-        fi
-    done
-    if test x_$found_ldns != x_yes; then
-        AC_MSG_ERROR(Cannot find ldns libraries)
-    else
-#        printf "ldns found in $ldnsdir\n";
-        LIBS="$LIBS -lldns";
-        LDFLAGS="$LDFLAGS -L$ldnsdir/lib";
-        LDFLAGS="$LDFLAGS -L$ldnsdir/.libs"; # hack for dev.
-        HAVE_LDNS=yes
-    fi
-    AC_SUBST(HAVE_LDNS)
-],
-[
-    AC_MSG_RESULT(no)
-])
-])dnl
+
 
 # check for ldns
+AC_ARG_WITH(ldns, AC_HELP_STRING([--with-ldns=pathname],[]))
 AC_MSG_CHECKING(for ldns/dns.h)
-for dir in /usr/local/ldns /usr/lib/ldns /usr/ldns /usr/pkg /usr/local /usr; do
+for dir in $withval /usr/local/ldns /usr/lib/ldns /usr/ldns /usr/pkg /usr/local /usr; do
 ldnsdir="$dir"
 if test -f "$dir/include/ldns/dns.h"; then
     found_ldns="yes";
