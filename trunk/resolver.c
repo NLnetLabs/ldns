@@ -148,6 +148,12 @@ ldns_resolver_tsig_keydata(ldns_resolver *r)
 	return r->_tsig_keydata;
 }
 
+bool
+ldns_resolver_random(ldns_resolver *r)
+{
+	return r->_random;
+}
+
 /* write */
 void
 ldns_resolver_set_port(ldns_resolver *r, uint16_t p)
@@ -392,6 +398,12 @@ ldns_resolver_set_tsig_keydata(ldns_resolver *r, char *tsig_keydata)
 	r->_tsig_keydata = tsig_keydata;
 }
 
+void
+ldns_resolver_set_random(ldns_resolver *r, bool b)
+{
+	r->_random = b;
+}
+
 /* more sophisticated functions */
 ldns_resolver *
 ldns_resolver_new(void)
@@ -417,6 +429,10 @@ ldns_resolver_new(void)
 	ldns_resolver_set_retrans(r, 2);
 	ldns_resolver_set_fail(r, false);
 	ldns_resolver_set_edns_udp_size(r, 0);
+	/* randomize the nameserver to be queried
+	 * when there are multiple
+	 */
+	ldns_resolver_set_random(r, true);
 
 	r->_timeout.tv_sec = LDNS_DEFAULT_TIMEOUT_SEC;
 	r->_timeout.tv_usec = LDNS_DEFAULT_TIMEOUT_USEC;
@@ -688,7 +704,6 @@ ldns_resolver_send(ldns_pkt **answer, ldns_resolver *r, ldns_rdf *name,
 	/* TODO: time is a terrible seed */
 	srandom((unsigned) time(NULL) ^ getpid());
 	id = (uint16_t) random();
-
 	ldns_pkt_set_id(query_pkt, id);
 
 	/* if tsig values are set, tsign it */
