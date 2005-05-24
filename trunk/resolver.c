@@ -613,7 +613,12 @@ ldns_resolver_query(ldns_resolver *r, ldns_rdf *name, ldns_rr_type type, ldns_rr
 	}
 	if (!ldns_resolver_domain(r)) {
 		/* _defnames is set, but the domain is not....?? */
-		status = ldns_resolver_send(&pkt, r, name, type, class, flags);
+		status = ldns_resolver_send(&pkt, 
+				r, 
+				name, 
+				type, 
+				class, 
+				flags);
 		return pkt;
 	}
 
