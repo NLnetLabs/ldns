@@ -434,6 +434,8 @@ ldns_resolver_new(void)
 	 */
 	ldns_resolver_set_random(r, true);
 
+	ldns_resolver_set_debug(r, 0);
+	
 	r->_timeout.tv_sec = LDNS_DEFAULT_TIMEOUT_SEC;
 	r->_timeout.tv_usec = LDNS_DEFAULT_TIMEOUT_USEC;
 
@@ -686,6 +688,7 @@ ldns_resolver_send(ldns_pkt **answer, ldns_resolver *r, ldns_rdf *name,
 	/* set DO bit if necessary */
 	if (ldns_resolver_dnssec(r)) {
 		ldns_resolver_set_edns_udp_size(r, 4096);
+		ldns_pkt_set_edns_do(query_pkt, true);
 	}
 
 	/* transfer the udp_edns_size from the resolver to the packet */
