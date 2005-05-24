@@ -1223,9 +1223,17 @@ ldns_pkt_verify(ldns_pkt *p, ldns_rr_type t, ldns_rdf *o,
 {
 	ldns_rr_list *rrset;
 	ldns_rr_list *sigs;
+	ldns_rr_list *sigs_covered;
+	ldns_rdf *rdf_t;
+	ldns_rr_type t_netorder;
 
 	if (!k) {
 		return LDNS_STATUS_CRYPTO_NO_DNSKEY;
+	}
+
+	if (t == LDNS_RR_TYPE_RRSIG) {
+		/* we don't have RRSIG(RRSIG) (yet? ;-) ) */
+		return LDNS_STATUS_ERR;
 	}
 	
 	if (s) {
@@ -1244,11 +1252,25 @@ ldns_pkt_verify(ldns_pkt *p, ldns_rr_type t, ldns_rdf *o,
 	/* *sigh* rrsig are subtyped, so now we need to find the correct
 	 * sigs for the type t
 	 */
-
+	t_netorder = htons(t); /* rdf are in network order! */
+	rdf_t = ldns_rdf_new(LDNS_RDF_TYPE_TYPE, sizeof(ldns_rr_type), &t_netorder);
+	sigs_covered = ldns_rr_list_subtype_by_rdf(sigs, rdf_t, 0);
 	
 	rrset = ldns_pkt_rr_list_by_name_and_type(p, o, t, LDNS_SECTION_ANY_NOQUESTION);
 
+	if (!rrset) {
+		return LDNS_STATUS_ERR;
+	}
+
+	if (!sigs_covered) {
+		return LDNS_STATUS_CRYPTO_NO_RRSIG;
+	}
+
+	printf("sigs\n");
 	ldns_rr_list_print(stdout, sigs);
+	printf("sigs covered\n");
+	ldns_rr_list_print(stdout, sigs_covered);
+	printf("rrset\n");
 	ldns_rr_list_print(stdout, rrset);
 	printf("\n");
 
