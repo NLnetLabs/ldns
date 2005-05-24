@@ -1223,6 +1223,10 @@ ldns_pkt_verify(ldns_pkt *p, ldns_rr_type t, ldns_rdf *o,
 {
 	ldns_rr_list *rrset;
 	ldns_rr_list *sigs;
+
+	if (!k) {
+		return LDNS_STATUS_CRYPTO_NO_DNSKEY;
+	}
 	
 	if (s) {
 		/* if s is not NULL, the sigs are given to use */
@@ -1240,7 +1244,13 @@ ldns_pkt_verify(ldns_pkt *p, ldns_rr_type t, ldns_rdf *o,
 	/* *sigh* rrsig are subtyped, so now we need to find the correct
 	 * sigs for the type t
 	 */
+
+	
 	rrset = ldns_pkt_rr_list_by_name_and_type(p, o, t, LDNS_SECTION_ANY_NOQUESTION);
+
+	ldns_rr_list_print(stdout, sigs);
+	ldns_rr_list_print(stdout, rrset);
+	printf("\n");
 
 	if (ldns_verify(rrset, sigs, k)) {
 		return LDNS_STATUS_CRYPTO_VALIDATED;
