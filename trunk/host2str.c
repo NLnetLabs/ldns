@@ -848,6 +848,15 @@ ldns_rr2buffer_str(ldns_buffer *output, ldns_rr *rr)
 			status = ldns_rdf2buffer_str(output, ldns_rr_rdf(rr, i));
 			ldns_buffer_printf(output, " ");
 		}
+		/* print the id of dnskey's also */
+		if (ldns_rr_get_type(rr) == LDNS_RR_TYPE_DNSKEY &&
+				ldns_rr_rd_count(rr) > 0) {
+			/* last check to prevent question sec. rr from
+			 * getting here */
+			ldns_buffer_printf(output, "; {id = %d}", 
+					ldns_calc_keytag(rr));
+					
+		}
 	}
 	return ldns_buffer_status(output);
 }

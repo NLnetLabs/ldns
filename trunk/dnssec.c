@@ -32,8 +32,13 @@ ldns_calc_keytag(ldns_rr *key)
 	ldns_buffer *keybuf;
 	size_t keysize;
 	
-	ac = 0;
 
+	if (!key) {
+		return 0;
+	}
+
+	ac = 0;
+	
 	if (ldns_rr_get_type(key) != LDNS_RR_TYPE_DNSKEY) {
 		return 0;
 	}
