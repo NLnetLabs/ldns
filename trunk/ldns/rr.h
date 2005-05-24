@@ -592,4 +592,17 @@ size_t ldns_rr_descriptor_maximum(const ldns_rr_descriptor *descriptor);
  */
 ldns_rdf_type ldns_rr_descriptor_field_type(const ldns_rr_descriptor *descriptor, size_t field);
 
+/**
+ * Return the rr_list which matches the rdf at position field. Think
+ * type-covered stuff for RRSIG
+ * 
+ * \param[in] l the rr_list to look in
+ * \param[in] r the rdf to use for the comparison
+ * \param[in] pos at which position can we find the rdf
+ * 
+ * \return a new rr list with only the RRs that match 
+ *
+ */
+ldns_rr_list *ldns_rr_list_subtype_by_rdf(ldns_rr_list *l, ldns_rdf *r, uint16_t pos);
+
 #endif /* _LDNS_RR_H */
