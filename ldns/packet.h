@@ -195,6 +195,8 @@ uint8_t ldns_pkt_edns_extended_rcode(const ldns_pkt *packet);
 uint8_t ldns_pkt_edns_version(const ldns_pkt *packet);
 uint16_t ldns_pkt_edns_z(const ldns_pkt *packet);
 ldns_rdf *ldns_pkt_edns_data(const ldns_pkt *packet);
+bool ldns_pkt_edns_do(const ldns_pkt *packet);
+void ldns_pkt_set_edns_do(ldns_pkt *packet, bool value);
 
 /**
  * returns true if this packet needs and EDNS rr to be sent.

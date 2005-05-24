@@ -208,6 +208,22 @@ ldns_pkt_edns_z(const ldns_pkt *packet)
 	return packet->_edns_z;
 }
 
+bool
+ldns_pkt_edns_do(const ldns_pkt *packet)
+{
+	return (packet->_edns_z & 0x8000);
+}
+
+void
+ldns_pkt_set_edns_do(ldns_pkt *packet, bool value)
+{
+	if (value) {
+		packet->_edns_z = packet->_edns_z | 0x8000;
+	} else {
+		packet->_edns_z = packet->_edns_z | 0x7fff;
+	}
+}
+
 ldns_rdf *
 ldns_pkt_edns_data(const ldns_pkt *packet)
 {
@@ -263,10 +279,17 @@ ldns_pkt_rr_list_by_type(ldns_pkt *packet, ldns_rr_type type, ldns_pkt_section s
 	for(i = 0; i < ldns_rr_list_rr_count(rrs); i++) {
 		if (type == ldns_rr_get_type(ldns_rr_list_rr(rrs, i))) {
 			/* types match */
-			ldns_rr_list_push_rr(new, ldns_rr_list_rr(rrs, i));
+			ldns_rr_list_push_rr(new, 
+			                     ldns_rr_deep_clone(
+			                     	ldns_rr_list_rr(rrs, i))
+					     );
 			ret = new;
 		}
 	}
+	if (!ret) { 
+		ldns_rr_list_free(new);
+	}
+
 	return ret;
 }
 
