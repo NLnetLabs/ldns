@@ -434,6 +434,15 @@ void ldns_rr_list_free(ldns_rr_list *rr_list);
  */
 ldns_rr_list* ldns_rr_list_cat(ldns_rr_list *left, ldns_rr_list *right);
 
+
+/**
+ * concatenates two ldns_rr_lists together, but makes clones of the rr's (instead of pointer copying).
+ * \param[in] left the leftside
+ * \param[in] right the rightside
+ * \return a new rr_list with leftside/rightside concatenated
+ */
+ldns_rr_list* ldns_rr_list_cat_clone(ldns_rr_list *left, ldns_rr_list *right);
+
 /**
  * pushes an rr to an rrlist.
  * \param[in] rr_list the rr_list to push to 
