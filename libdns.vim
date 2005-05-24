@@ -98,7 +98,14 @@ syn keyword ldnsMacro	LDNS_STATUS_INVALID_B64
 syn keyword ldnsMacro	LDNS_STATUS_INVALID_HEX
 syn keyword ldnsMacro	LDNS_STATUS_UNKNOWN_INET
 syn keyword ldnsMacro	LDNS_STATUS_NOT_IMPL
-
+syn keyword ldnsMacro	LDNS_STATUS_CRYPTO_UNKNOWN_ALGO
+syn keyword ldnsMacro	LDNS_STATUS_CRYPTO_VALIDATED
+syn keyword ldnsMacro	LDNS_STATUS_CRYPTO_BOGUS
+syn keyword ldnsMacro	LDNS_STATUS_INVALID_INT
+syn keyword ldnsMacro	LDNS_STATUS_INVALID_TIME
+syn keyword ldnsMacro	LDNS_STATUS_NETWORK_ERR
+syn keyword ldnsMacro	LDNS_STATUS_ADDRESS_ERR
+syn keyword ldnsMacro 	LDNS_STATUS_CRYPTO_NO_RRSIG
 
 " ldns/resolver.h
 syn keyword  ldnsType	  	ldns_resolver

@@ -1214,3 +1214,37 @@ ldns_create_nsec(ldns_rr_list *before, ldns_rr_list *after)
 
 	return NULL;
 }
+
+/* sig may be null - if so look in the packet */
+/* TODO status here??? ldns_verify gives back ldns_rr_list of keys */
+ldns_status
+ldns_pkt_verify(ldns_pkt *p, ldns_rr_type t, ldns_rdf *o, 
+		ldns_rr_list *k, ldns_rr_list *s)
+{
+	ldns_rr_list *rrset;
+	ldns_rr_list *sigs;
+	
+	if (s) {
+		/* if s is not NULL, the sigs are given to use */
+		sigs = s;
+	} else {
+		/* otherwise get them from the packet */
+		sigs = ldns_pkt_rr_list_by_name_and_type(p, o, LDNS_RR_TYPE_RRSIG, 
+				LDNS_SECTION_ANY_NOQUESTION);
+		if (!sigs) {
+			/* no sigs */
+			return LDNS_STATUS_CRYPTO_NO_RRSIG;
+		}
+	}
+
+	/* *sigh* rrsig are subtyped, so now we need to find the correct
+	 * sigs for the type t
+	 */
+	rrset = ldns_pkt_rr_list_by_name_and_type(p, o, t, LDNS_SECTION_ANY_NOQUESTION);
+
+	if (ldns_verify(rrset, sigs, k)) {
+		return LDNS_STATUS_CRYPTO_VALIDATED;
+	} else {
+		return LDNS_STATUS_CRYPTO_BOGUS;
+	}
+}
