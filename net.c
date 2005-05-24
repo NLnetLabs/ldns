@@ -47,7 +47,7 @@ ldns_send(ldns_pkt **result, ldns_resolver *r, ldns_pkt *query_pkt)
 
 	ns_rand_array = LDNS_XMALLOC(ldns_rdf*, ldns_resolver_nameserver_count(r));
 
-	if (!query_pkt || !*ns_rand_array) {
+	if (!query_pkt || !ns_rand_array) {
 		/* nothing to do? */
 		return LDNS_STATUS_ERR;
 	}
