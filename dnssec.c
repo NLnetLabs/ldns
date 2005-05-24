@@ -80,24 +80,33 @@ ldns_rr_list *
 ldns_verify(ldns_rr_list *rrset, ldns_rr_list *rrsig, ldns_rr_list *keys)
 {
 	uint16_t i;
-	ldns_rr_list * result;
+	ldns_rr_list *result;
+	ldns_rr_list *keys_verified;
+	bool valid;
 
 	if (!rrset || !rrsig || !keys) {
 		return NULL;
 	}
+
+	valid = false;
 	
 	result = NULL;
 	for (i = 0; i < ldns_rr_list_rr_count(rrsig); i++) {
-		if (i == 0) {
-			result = ldns_rr_list_new();
+
+		keys_verified = ldns_verify_rrsig_keylist(rrset,
+				ldns_rr_list_rr(rrsig, i),
+				keys);
+
+		if (keys_verified) {
+			valid = true;
+			result = ldns_rr_list_cat(result, keys_verified);
 		}
-		result = ldns_rr_list_cat(result,
-			                  ldns_verify_rrsig_keylist(rrset, 
-					  	ldns_rr_list_rr(rrsig, i),
-					  	keys)
-					 );
 	}
-	return result;
+	if (valid) {
+		return result;
+	} else {
+		return NULL;
+	}
 }
 
 INLINE bool
@@ -1221,8 +1230,7 @@ ldns_create_nsec(ldns_rr_list *before, ldns_rr_list *after)
 }
 
 /* sig may be null - if so look in the packet */
-/* TODO status here??? ldns_verify gives back ldns_rr_list of keys */
-ldns_status
+ldns_rr_list *
 ldns_pkt_verify(ldns_pkt *p, ldns_rr_type t, ldns_rdf *o, 
 		ldns_rr_list *k, ldns_rr_list *s)
 {
@@ -1233,12 +1241,14 @@ ldns_pkt_verify(ldns_pkt *p, ldns_rr_type t, ldns_rdf *o,
 	ldns_rr_type t_netorder;
 
 	if (!k) {
-		return LDNS_STATUS_CRYPTO_NO_DNSKEY;
+		return NULL;
+		/* return LDNS_STATUS_CRYPTO_NO_DNSKEY; */
 	}
 
 	if (t == LDNS_RR_TYPE_RRSIG) {
 		/* we don't have RRSIG(RRSIG) (yet? ;-) ) */
-		return LDNS_STATUS_ERR;
+		/* return LDNS_STATUS_ERR; */
+		return NULL;
 	}
 	
 	if (s) {
@@ -1250,7 +1260,8 @@ ldns_pkt_verify(ldns_pkt *p, ldns_rr_type t, ldns_rdf *o,
 				LDNS_SECTION_ANY_NOQUESTION);
 		if (!sigs) {
 			/* no sigs */
-			return LDNS_STATUS_CRYPTO_NO_RRSIG;
+			return NULL;
+			/* return LDNS_STATUS_CRYPTO_NO_RRSIG; */
 		}
 	}
 
@@ -1264,13 +1275,14 @@ ldns_pkt_verify(ldns_pkt *p, ldns_rr_type t, ldns_rdf *o,
 	rrset = ldns_pkt_rr_list_by_name_and_type(p, o, t, LDNS_SECTION_ANY_NOQUESTION);
 
 	if (!rrset) {
-		return LDNS_STATUS_ERR;
+		return NULL;
 	}
 
 	if (!sigs_covered) {
-		return LDNS_STATUS_CRYPTO_NO_RRSIG;
+		return NULL;
 	}
 
+#if 0
 	printf("sigs\n");
 	ldns_rr_list_print(stdout, sigs);
 	printf("sigs covered\n");
@@ -1278,10 +1290,6 @@ ldns_pkt_verify(ldns_pkt *p, ldns_rr_type t, ldns_rdf *o,
 	printf("rrset\n");
 	ldns_rr_list_print(stdout, rrset);
 	printf("\n");
-
-	if (ldns_verify(rrset, sigs, k)) {
-		return LDNS_STATUS_CRYPTO_VALIDATED;
-	} else {
-		return LDNS_STATUS_CRYPTO_BOGUS;
-	}
+#endif
+	return ldns_verify(rrset, sigs, k);
 }

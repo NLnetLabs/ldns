@@ -163,7 +163,7 @@ ldns_rr * ldns_create_nsec(ldns_rr_list *before, ldns_rr_list *after);
 /**
  *
  */
-ldns_status ldns_pkt_verify(ldns_pkt *p, ldns_rr_type t, ldns_rdf *o, ldns_rr_list *k, ldns_rr_list *s);
+ldns_rr_list *ldns_pkt_verify(ldns_pkt *p, ldns_rr_type t, ldns_rdf *o, ldns_rr_list *k, ldns_rr_list *s);
 
 
 #endif /* _DNSSEC_H_ */

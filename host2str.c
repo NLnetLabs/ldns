@@ -853,7 +853,7 @@ ldns_rr2buffer_str(ldns_buffer *output, ldns_rr *rr)
 				ldns_rr_rd_count(rr) > 0) {
 			/* last check to prevent question sec. rr from
 			 * getting here */
-			ldns_buffer_printf(output, "; {id = %d}", 
+			ldns_buffer_printf(output, " ;{id = %d}", 
 					ldns_calc_keytag(rr));
 					
 		}
