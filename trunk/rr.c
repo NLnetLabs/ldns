@@ -516,6 +516,48 @@ ldns_rr_list_cat(ldns_rr_list *left, ldns_rr_list *right)
 }
 
 ldns_rr_list *
+ldns_rr_list_cat_clone(ldns_rr_list *left, ldns_rr_list *right)
+{
+	uint16_t l_rr_count;
+	uint16_t r_rr_count;
+	uint16_t i;
+	ldns_rr_list *cat;
+
+	l_rr_count = 0;
+	r_rr_count = 0;
+
+	if (left) {
+		l_rr_count = ldns_rr_list_rr_count(left);
+	}
+	if (right) {
+		r_rr_count = ldns_rr_list_rr_count(right);
+	}
+	
+	if (l_rr_count + r_rr_count > LDNS_MAX_RR ) {
+		/* overflow error */
+		return NULL;
+	}
+
+	cat = ldns_rr_list_new();
+
+	if (!cat) {
+		return NULL;
+	}
+
+	/* left */
+	for(i = 0; i < l_rr_count; i++) {
+		ldns_rr_list_push_rr(cat, 
+				ldns_rr_deep_clone(ldns_rr_list_rr(left, i)));
+	}
+	/* right */
+	for(i = 0; i < r_rr_count; i++) {
+		ldns_rr_list_push_rr(cat, 
+				ldns_rr_deep_clone(ldns_rr_list_rr(right, i)));
+	}
+	return cat;
+}
+
+ldns_rr_list *
 ldns_rr_list_subtype_by_rdf(ldns_rr_list *l, ldns_rdf *r, uint16_t pos)
 {
 	uint16_t i;
