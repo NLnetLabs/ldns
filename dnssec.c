@@ -259,7 +259,7 @@ ldns_verify_rrsig_keylist(ldns_rr_list *rrset, ldns_rr *rrsig, ldns_rr_list *key
 	}
 
 	/* no longer needed */
-	ldns_rr_list_free(rrset_clone);
+	ldns_rr_list_deep_free(rrset_clone);
 	ldns_buffer_free(rawsig_buf);
 	ldns_buffer_free(verify_buf);
 	if (ldns_rr_list_rr_count(validkeys) == 0) {
@@ -362,7 +362,7 @@ ldns_verify_rrsig(ldns_rr_list *rrset, ldns_rr *rrsig, ldns_rr *key)
 
 	/* no longer needed */
 /*
-	ldns_rr_list_free(rrset_clone);
+	ldns_rr_list_deep_free(rrset_clone);
 */
 	ldns_buffer_free(rawsig_buf);
 	ldns_buffer_free(verify_buf);

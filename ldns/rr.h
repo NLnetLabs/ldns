@@ -427,6 +427,13 @@ ldns_rr_list* ldns_rr_list_new();
 void ldns_rr_list_free(ldns_rr_list *rr_list);
 
 /**
+ * frees an rr_list structure and all rrs contained therein.
+ * \param[in] rr_list the list to free
+ * \return void
+ */
+void ldns_rr_list_deep_free(ldns_rr_list *rr_list);
+
+/**
  * concatenates two ldns_rr_lists together.
  * \param[in] left the leftside
  * \param[in] right the rightside
