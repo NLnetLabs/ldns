@@ -461,6 +461,15 @@ ldns_rr_list_new()
 void
 ldns_rr_list_free(ldns_rr_list *rr_list)
 {
+	if (rr_list) {
+		LDNS_FREE(rr_list->_rrs);
+		LDNS_FREE(rr_list);
+	}
+}
+
+void
+ldns_rr_list_deep_free(ldns_rr_list *rr_list)
+{
 	uint16_t i;
 	
 	if (rr_list) {

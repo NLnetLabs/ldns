@@ -150,14 +150,16 @@ ldns_pkt_all(ldns_pkt *packet)
 ldns_rr_list *
 ldns_pkt_all_noquestion(ldns_pkt *packet)
 {
-	ldns_rr_list *all;
+	ldns_rr_list *all, *all2;
 
 	all = ldns_rr_list_cat(
 			ldns_pkt_xxsection(packet, LDNS_SECTION_ANSWER),
 			ldns_pkt_xxsection(packet, LDNS_SECTION_AUTHORITY));
-	all = ldns_rr_list_cat(all,
+	all2 = ldns_rr_list_cat(all,
 			ldns_pkt_xxsection(packet, LDNS_SECTION_ADDITIONAL));
-	return all;
+	
+	ldns_rr_list_free(all);
+	return all2;
 }
 
 size_t
@@ -287,7 +289,7 @@ ldns_pkt_rr_list_by_type(ldns_pkt *packet, ldns_rr_type type, ldns_pkt_section s
 		}
 	}
 	if (!ret) { 
-		ldns_rr_list_free(new);
+		ldns_rr_list_deep_free(new);
 	}
 
 	return ret;
@@ -317,7 +319,7 @@ ldns_pkt_rr_list_by_name_and_type(ldns_pkt *packet, ldns_rdf *ownername, ldns_rr
 		                    ) == 0
 		   ) {
 			/* types match */
-			ldns_rr_list_push_rr(new, ldns_rr_list_rr(rrs, i));
+			ldns_rr_list_push_rr(new, ldns_rr_deep_clone(ldns_rr_list_rr(rrs, i)));
 			ret = new;
 		}
 	}
@@ -700,10 +702,10 @@ ldns_pkt_free(ldns_pkt *packet)
 {
 	if (packet) {
 		LDNS_FREE(packet->_header);
-		ldns_rr_list_free(packet->_question);
-		ldns_rr_list_free(packet->_answer);
-		ldns_rr_list_free(packet->_authority);
-		ldns_rr_list_free(packet->_additional);
+		ldns_rr_list_deep_free(packet->_question);
+		ldns_rr_list_deep_free(packet->_answer);
+		ldns_rr_list_deep_free(packet->_authority);
+		ldns_rr_list_deep_free(packet->_additional);
 		ldns_rr_free(packet->_tsig_rr);
 		LDNS_FREE(packet);
 	}
@@ -895,7 +897,10 @@ ldns_pkt_deep_clone(ldns_pkt *pkt)
 	ldns_pkt_set_tsig(new_pkt, ldns_pkt_tsig(pkt));
 	
 	/* todo: edns? */
-	
+	ldns_rr_list_deep_free(new_pkt->_question);
+	ldns_rr_list_deep_free(new_pkt->_answer);
+	ldns_rr_list_deep_free(new_pkt->_authority);
+	ldns_rr_list_deep_free(new_pkt->_additional);
 	new_pkt->_question = ldns_rr_list_deep_clone(ldns_pkt_question(pkt));
 	new_pkt->_answer = ldns_rr_list_deep_clone(ldns_pkt_answer(pkt));
 	new_pkt->_authority = ldns_rr_list_deep_clone(ldns_pkt_authority(pkt));
