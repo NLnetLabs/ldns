@@ -1,0 +1,3 @@
+Configure and compile it:
+./configure --with-ldns=../
+make
