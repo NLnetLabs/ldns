@@ -114,13 +114,13 @@ install-lib:	lib
 uninstall-lib:	
 		$(LIBTOOL) --mode=uninstall rm $(prefix)/lib/libldns.la
 
-snapshot:	realclean testclean
+snapshot:	realclean
 		(rm -rf ../ldns-snap-$(DATE)/)
 		(cd .. ; cp -r $(basesrcdir)/ ldns-snap-$(DATE)/)
 		(cd .. ; tar --verbose  --exclude ".svn" --create --file ldns-snap-$(DATE).tar.gz --gzip ldns-snap-$(DATE)/)
 		(rm -rf ../ldns-snap-$(DATE)/)
 
-release:	realclean testclean
+release:	realclean
 		(rm -rf ../ldns-$(VERSION)/)
 		(cd .. ; cp -r $(basesrcdir)/ ldns-$(VERSION)/)
 		(cd .. ; tar --verbose  --exclude ".svn" --create --file ldns-$(VERSION).tar.gz --gzip ldns-$(VERSION)/)
@@ -146,7 +146,7 @@ clean:
 	rm -f config.log
 	rm -f tags
 
-realclean: clean docclean testclean libclean
+realclean: clean docclean libclean
 	rm -f config.status
 	rm -f config.log
 	rm -f Makefile
