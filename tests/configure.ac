@@ -3,7 +3,7 @@
 
 AC_PREREQ(2.57)
 AC_INIT(libdns-tests, 1.0, ldns@nlnetlabs.nl, ldns-tests-1.0)
-AC_CONFIG_SRCDIR([config.h])
+AC_CONFIG_SRCDIR([../ldns/config.h])
 
 AC_AIX
 # Checks for programs.
