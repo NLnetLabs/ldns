@@ -318,6 +318,14 @@ ldns_key_new_frm_algorithm(ldns_signing_algorithm alg, uint16_t size)
 	return k;
 }
 
+
+void
+ldns_key_print(FILE *output, ldns_key *k)
+{
+ /* TODO miek */
+}
+
+
 void
 ldns_key_set_algorithm(ldns_key *k, ldns_signing_algorithm l) 
 {

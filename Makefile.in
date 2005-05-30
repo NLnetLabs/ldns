@@ -47,7 +47,7 @@ LIBDNS_HEADERS	=	ldns/error.h		\
 			ldns/rr_functions.h	\
 			ldns/dns.h		\
 			ldns/util.h
-PROG_SOURCES	=	mx.c chaos.c
+PROG_SOURCES	=	mx.c chaos.c keygen.c
 PROG_TARGETS	=	$(PROG_SOURCES:.c=)
 
 LIBDNS_OBJECTS	=	$(LIBDNS_SOURCES:.c=.o)
@@ -130,6 +130,9 @@ mx:		mx.o $(LIBDNS_OBJECTS) $(LIBOBJS)
 		$(LINK) ${LIBS} -o $@ $+
 
 chaos:		chaos.o $(LIBDNS_OBJECTS) $(LIBOBJS)
+		$(LINK) ${LIBS} -o $@ $+
+
+keygen:		keygen.o $(LIBDNS_OBJECTS) $(LIBOBJS)
 		$(LINK) ${LIBS} -o $@ $+
 
 # tests

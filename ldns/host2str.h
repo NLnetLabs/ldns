@@ -213,6 +213,16 @@ ldns_status ldns_rr2buffer_str(ldns_buffer *output, ldns_rr *rr);
 ldns_status ldns_pkt2buffer_str(ldns_buffer *output, ldns_pkt *pkt);
 
 /**
+ * Converts the data in the DNS packet to presentation
+ * format (as char *) and appends it to the given buffer
+ *
+ * \param[in] output pointer to the buffer to append the data to
+ * \param[in] k the pointer to the private key to convert
+ * \return status
+ */
+ldns_status ldns_key2buffer_str(ldns_buffer *output, ldns_key *k);
+
+/**
  * Converts the data in the int16 typed rdata field to presentation
  * format (as char *) and appends it to the given buffer
  *
@@ -251,6 +261,16 @@ char *ldns_rr2str(ldns_rr *rr);
  * \return null terminated char * data, or NULL on error
  */
 char *ldns_pkt2str(ldns_pkt *pkt);
+
+/**
+ * Converts a private key to the test presentation fmt and
+ * returns that as a char *.
+ * Remember to free it.
+ *
+ * \param[in] k the key to convert to text
+ * \return null terminated char * data, or NULL on error
+ */
+char *ldns_key2str(ldns_key *k);
 
 /**
  * Returns the data in the buffer as a null terminated char * string

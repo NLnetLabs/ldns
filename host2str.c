@@ -1023,6 +1023,29 @@ ldns_pkt2buffer_str(ldns_buffer *output, ldns_pkt *pkt)
 	return status;
 }
 
+ldns_status
+ldns_key2buffer_str(ldns_buffer *output, ldns_key *k)
+{
+	ldns_status status = LDNS_STATUS_OK;
+	/* copy some stuff from sign */
+	
+	if (ldns_buffer_status_ok(output)) {
+		switch(ldns_key_algorithm(k)) {
+			case LDNS_SIGN_RSASHA1:
+			case LDNS_SIGN_RSAMD5:
+				break;
+			case LDNS_SIGN_DSA:
+				break;
+			case LDNS_SIGN_HMACMD5:
+				break;
+		}
+		/* blaat */
+	} else {
+		return ldns_buffer_status(output);
+	}
+	return status;
+}
+
 /*
  * Zero terminate the buffer and fix it to the size of the string.
  */
@@ -1092,6 +1115,19 @@ ldns_pkt2str(ldns_pkt *pkt)
 		result = buffer2str(tmp_buffer);
 	}
 
+	ldns_buffer_free(tmp_buffer);
+	return result;
+}
+
+char *
+ldns_key2str(ldns_key *k)
+{
+	char *result = NULL;
+	ldns_buffer *tmp_buffer = ldns_buffer_new(LDNS_MIN_BUFLEN);
+	if (ldns_key2buffer_str(tmp_buffer, k) == LDNS_STATUS_OK) {
+		/* export and return string, destroy rest */
+		result = buffer2str(tmp_buffer);
+	}
 	ldns_buffer_free(tmp_buffer);
 	return result;
 }
