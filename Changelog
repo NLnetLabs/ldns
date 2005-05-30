@@ -1,3 +1,7 @@
+DATE: 0.70: ldns-team
+	* Repository is online at: 
+	  http://www.nlnetlabs.nl/ldns/svn/
+
 23 May 2005: 0.60: ldns-team
 	* Removed config.h from the header installed files
 	  (you're not supposed to include that in a libary)
