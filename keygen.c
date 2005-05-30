@@ -1,6 +1,6 @@
 /*
- * mx is a small programs that prints out the mx records
- * for a particulary domain
+ * keygen is a small programs that generate a dnskey and private key
+ * for a particulary domain. It (currently) prints out the public key
  * (c) NLnet Labs, 2005
  * Licensed under the GPL version 2
  */
@@ -34,14 +34,22 @@ main(int argc, char *argv[])
 	ldns_key *key;
 
 	prog = strdup(argv[0]);
-	algorithm = LDNS_SIGN_RSASHA1; /* default to RSA SHA1 */
+	algorithm = 0;
 	
 	while ((c = getopt(argc, argv, "DRb:")) != -1) {
 		switch (c) {
 		case 'D':
+			if (algorithm != 0) {
+				fprintf(stderr, "%s: %s", prog, "Only one -D or -A is allowed\n");
+				exit(1);
+			}
 			algorithm = LDNS_SIGN_DSA;
 			break;
 		case 'R':
+			if (algorithm != 0) {
+				fprintf(stderr, "%s: %s", prog, "Only one -D or -A is allowed\n");
+				exit(1);
+			}
 			algorithm = LDNS_SIGN_RSASHA1;
 			break;
 		case 'b':
@@ -58,6 +66,10 @@ main(int argc, char *argv[])
 	}
 	argc -= optind;
 	argv += optind;
+
+	if (algorithm == 0) {
+		algorithm = LDNS_SIGN_RSASHA1; /* default to RSA SHA1 */
+	}
 
 	if (argc != 1) {
 		usage(stderr, prog);
