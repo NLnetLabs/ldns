@@ -2,14 +2,14 @@ Current TODO list
 
 What actually doesn't work:
 ---------------------------
-o NSEC conversion frm str to host
-o Different digests for DS
+o [dnssec] NSEC conversion frm str to host
+o [dnssec] Different digests for DS
  - need a digest type?
-o NSEC generation??
-o openssl's setup function (esp. random)
-o -lssl in library creation and autoconf
-o Documentation (manpages) "const char bvklala() is not parsed correctly)
-  const function are correct i think, but const values in struct not
+o [dnssec] NSEC generation??
+o [openssl] openssl's setup function (esp. random)
+o [openssl] -lssl in library creation and autoconf
+o [doc]  const function are correct i think, but const values in struct not
+
 
 Implementation:
 ---------------
@@ -34,3 +34,4 @@ o private key type?
 
 	work in progress - works for RSA/DSA. I want to 
 	fold in the tsig stuff as well
+o install mx, keygen, chaos somewhere, along with manpages
