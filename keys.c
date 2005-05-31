@@ -320,7 +320,7 @@ ldns_key_print(FILE *output, ldns_key *k)
 	if (str) {
                 fprintf(output, "%s", str);
         } else {
-                fprintf(output, "Unable to convert rr to string\n");
+                fprintf(output, "Unable to convert private key to string\n");
         }
         LDNS_FREE(str);
 }
@@ -648,7 +648,8 @@ ldns_key2rr(ldns_key *k)
 			break;
 	}
 	/* fourth the key bin material */
-	keybin = ldns_rdf_new_frm_data(LDNS_RDF_TYPE_B64, size, bin);
+	/* MIEK, not sure about this +1. I've re-added it--needs checking */
+	keybin = ldns_rdf_new_frm_data(LDNS_RDF_TYPE_B64, size + 1, bin);
 	LDNS_FREE(bin);
 	ldns_rr_push_rdf(pubkey, keybin);
 	return pubkey;

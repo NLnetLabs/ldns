@@ -15,6 +15,7 @@ usage(FILE *fp, char *prog) {
 	fprintf(fp, "  generate a new key pair for domain\n");
 	fprintf(fp, "  -D\tgenerate a DSA key\n");
 	fprintf(fp, "  -R\tgenerate a RSA key\n");
+	fprintf(fp, "  -k\tset the flags to 257; key signing key\n");
 	fprintf(fp, "  -b <bits>\tspecify the keylength\n");
 	fprintf(fp, "  The public key is printed to stdout\n");
 	fprintf(fp, "  The private key is printed to stderr\n");
@@ -24,12 +25,13 @@ usage(FILE *fp, char *prog) {
 int
 main(int argc, char *argv[])
 {
-
 	int c;
 	char *prog;
 
+	/* default key size */
 	uint16_t def_bits = 1024;
 	uint16_t bits = def_bits;
+	bool ksk;
 
 	ldns_signing_algorithm algorithm;
 	ldns_rdf *domain;
@@ -38,8 +40,9 @@ main(int argc, char *argv[])
 
 	prog = strdup(argv[0]);
 	algorithm = 0;
+	ksk = false; /* don't create a ksk per default */
 	
-	while ((c = getopt(argc, argv, "DRb:")) != -1) {
+	while ((c = getopt(argc, argv, "DRkb:")) != -1) {
 		switch (c) {
 		case 'D':
 			if (algorithm != 0) {
@@ -62,6 +65,9 @@ main(int argc, char *argv[])
 			}
 			bits = def_bits;
 			break;
+		case 'k':
+			ksk = true;
+			break;
 		default:
 			usage(stderr, prog);
 			exit(1);
@@ -79,10 +85,6 @@ main(int argc, char *argv[])
 		exit(1);
 	} 
 
-	/* although we use openssl - we don't setup the random stuff
-	 * correct - give a big fat warning of that */
-
-
 	/* create an rdf from the domain name */
 	domain = ldns_dname_new_frm_str(argv[0]);
 
@@ -92,13 +94,18 @@ main(int argc, char *argv[])
 	/* set the owner name in the key - this is a /seperate/ step */
 	ldns_key_set_pubkey_owner(key, domain);
 
+	/* ksk flag */
+	if (ksk) {
+		ldns_key_set_flags(key, ldns_key_flags(key) + 1);
+	}
+
 	/* create the public from the ldns_key */
 	pubkey = ldns_key2rr(key);
 	
 	/* print it to stdout */
 	ldns_rr_print(stdout, pubkey);
 
+	/* print the priv key to stderr */
 	ldns_key_print(stderr, key);
-
         return 0;
 }
