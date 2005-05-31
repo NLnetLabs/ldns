@@ -1062,7 +1062,7 @@ ldns_key2buffer_str(ldns_buffer *output, ldns_key *k)
 				if (i > LDNS_MAX_KEYLEN) {
 					goto error;
 				}
-				b64_bignum =  ldns_rdf_new_frm_data(LDNS_RDF_TYPE_B64, i + 1, bignum);
+				b64_bignum =  ldns_rdf_new_frm_data(LDNS_RDF_TYPE_B64, i, bignum);
 				if (ldns_rdf2buffer_str(output, b64_bignum) != LDNS_STATUS_OK) {
 					goto error;
 				}
@@ -1073,7 +1073,7 @@ ldns_key2buffer_str(ldns_buffer *output, ldns_key *k)
 				if (i > LDNS_MAX_KEYLEN) {
 					goto error;
 				}
-				b64_bignum =  ldns_rdf_new_frm_data(LDNS_RDF_TYPE_B64, i + 1, bignum);
+				b64_bignum =  ldns_rdf_new_frm_data(LDNS_RDF_TYPE_B64, i, bignum);
 				if (ldns_rdf2buffer_str(output, b64_bignum) != LDNS_STATUS_OK) {
 					goto error;
 				}
@@ -1084,7 +1084,7 @@ ldns_key2buffer_str(ldns_buffer *output, ldns_key *k)
 				if (i > LDNS_MAX_KEYLEN) {
 					goto error;
 				}
-				b64_bignum =  ldns_rdf_new_frm_data(LDNS_RDF_TYPE_B64, i + 1, bignum);
+				b64_bignum =  ldns_rdf_new_frm_data(LDNS_RDF_TYPE_B64, i, bignum);
 				if (ldns_rdf2buffer_str(output, b64_bignum) != LDNS_STATUS_OK) {
 					goto error;
 				}
@@ -1095,7 +1095,7 @@ ldns_key2buffer_str(ldns_buffer *output, ldns_key *k)
 				if (i > LDNS_MAX_KEYLEN) {
 					goto error;
 				}
-				b64_bignum =  ldns_rdf_new_frm_data(LDNS_RDF_TYPE_B64, i + 1, bignum);
+				b64_bignum =  ldns_rdf_new_frm_data(LDNS_RDF_TYPE_B64, i, bignum);
 				if (ldns_rdf2buffer_str(output, b64_bignum) != LDNS_STATUS_OK) {
 					goto error;
 				}
@@ -1106,7 +1106,7 @@ ldns_key2buffer_str(ldns_buffer *output, ldns_key *k)
 				if (i > LDNS_MAX_KEYLEN) {
 					goto error;
 				}
-				b64_bignum =  ldns_rdf_new_frm_data(LDNS_RDF_TYPE_B64, i + 1, bignum);
+				b64_bignum =  ldns_rdf_new_frm_data(LDNS_RDF_TYPE_B64, i, bignum);
 				if (ldns_rdf2buffer_str(output, b64_bignum) != LDNS_STATUS_OK) {
 					goto error;
 				}
@@ -1117,7 +1117,7 @@ ldns_key2buffer_str(ldns_buffer *output, ldns_key *k)
 				if (i > LDNS_MAX_KEYLEN) {
 					goto error;
 				}
-				b64_bignum =  ldns_rdf_new_frm_data(LDNS_RDF_TYPE_B64, i + 1, bignum);
+				b64_bignum =  ldns_rdf_new_frm_data(LDNS_RDF_TYPE_B64, i, bignum);
 				if (ldns_rdf2buffer_str(output, b64_bignum) != LDNS_STATUS_OK) {
 					goto error;
 				}
@@ -1128,7 +1128,7 @@ ldns_key2buffer_str(ldns_buffer *output, ldns_key *k)
 				if (i > LDNS_MAX_KEYLEN) {
 					goto error;
 				}
-				b64_bignum =  ldns_rdf_new_frm_data(LDNS_RDF_TYPE_B64, i + 1, bignum);
+				b64_bignum =  ldns_rdf_new_frm_data(LDNS_RDF_TYPE_B64, i, bignum);
 				if (ldns_rdf2buffer_str(output, b64_bignum) != LDNS_STATUS_OK) {
 					goto error;
 				}
@@ -1139,7 +1139,7 @@ ldns_key2buffer_str(ldns_buffer *output, ldns_key *k)
 				if (i > LDNS_MAX_KEYLEN) {
 					goto error;
 				}
-				b64_bignum =  ldns_rdf_new_frm_data(LDNS_RDF_TYPE_B64, i + 1, bignum);
+				b64_bignum =  ldns_rdf_new_frm_data(LDNS_RDF_TYPE_B64, i, bignum);
 				if (ldns_rdf2buffer_str(output, b64_bignum) != LDNS_STATUS_OK) {
 					goto error;
 				}

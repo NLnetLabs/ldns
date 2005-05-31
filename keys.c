@@ -648,7 +648,7 @@ ldns_key2rr(ldns_key *k)
 			break;
 	}
 	/* fourth the key bin material */
-	keybin = ldns_rdf_new_frm_data(LDNS_RDF_TYPE_B64, size + 1, bin);
+	keybin = ldns_rdf_new_frm_data(LDNS_RDF_TYPE_B64, size, bin);
 	LDNS_FREE(bin);
 	ldns_rr_push_rdf(pubkey, keybin);
 	return pubkey;
