@@ -16,6 +16,9 @@ usage(FILE *fp, char *prog) {
 	fprintf(fp, "  -D\tgenerate a DSA key\n");
 	fprintf(fp, "  -R\tgenerate a RSA key\n");
 	fprintf(fp, "  -b <bits>\tspecify the keylength\n");
+	fprintf(fp, "  The public key is printed to stdout\n");
+	fprintf(fp, "  The private key is printed to stderr\n");
+	fprintf(fp, "\nWARING, WARNING, this program does NOT use a good random source for the key generation.\nUse at your OWN RISK\n\n");
 }
 
 int
@@ -79,7 +82,6 @@ main(int argc, char *argv[])
 	/* although we use openssl - we don't setup the random stuff
 	 * correct - give a big fat warning of that */
 
-	fprintf(stderr, "\nWARING, WARNING, this program does NOT use a good random source for the key generation.\nUse at your OWN RISK\n\n");
 
 	/* create an rdf from the domain name */
 	domain = ldns_dname_new_frm_str(argv[0]);
@@ -96,6 +98,7 @@ main(int argc, char *argv[])
 	/* print it to stdout */
 	ldns_rr_print(stdout, pubkey);
 
-	/* print the private key to stderr - not yet done */
+	ldns_key_print(stderr, key);
+
         return 0;
 }

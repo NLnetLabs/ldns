@@ -108,21 +108,16 @@ ldns_key_new_frm_fp(FILE *fp)
 			return NULL;
 		case LDNS_SIGN_RSAMD5:
 		case LDNS_SIGN_RSASHA1:
-			printf("RSA seen\n");
 
 			ldns_key_set_algorithm(k, alg);
 			ldns_key_set_rsa_key(k, ldns_key_new_frm_fp_rsa(fp));
 
 			break;
 		case LDNS_SIGN_DSA:
-			printf("DSA seen\n");
 			ldns_key_set_algorithm(k, alg);
 			ldns_key_set_dsa_key(k, ldns_key_new_frm_fp_dsa(fp));
 			break;
 	}
-
-	printf("So far so good\n");
-
 	return k;
 }
 
@@ -318,11 +313,16 @@ ldns_key_new_frm_algorithm(ldns_signing_algorithm alg, uint16_t size)
 	return k;
 }
 
-
 void
 ldns_key_print(FILE *output, ldns_key *k)
 {
- /* TODO miek */
+	char *str = ldns_key2str(k);
+	if (str) {
+                fprintf(output, "%s", str);
+        } else {
+                fprintf(output, "Unable to convert rr to string\n");
+        }
+        LDNS_FREE(str);
 }
 
 
