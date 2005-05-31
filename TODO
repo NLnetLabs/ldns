@@ -31,7 +31,6 @@ o private key type?
 	ldns_algorithm used for verfication
 	ldns_sign_algorithm used for signing - including
 				shared secret signing
-
 	work in progress - works for RSA/DSA. I want to 
 	fold in the tsig stuff as well
 o install mx, keygen, chaos somewhere, along with manpages
