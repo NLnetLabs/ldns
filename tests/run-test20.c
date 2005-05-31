@@ -92,7 +92,12 @@ main(void)
 	if (!privkey) { 
 		printf("arrg no key could be found!\n");
 		exit(1);
+	} else {
+		printf("Checking\n\n");
+		ldns_key_print(stdout, privkey);
 	}
+
+	exit(1);
 
 	dnskey = ldns_key2rr(privkey);
 	if (dnskey) {
