@@ -285,6 +285,9 @@ ldns_pkt_rr_list_by_type(ldns_pkt *packet, ldns_rr_type type, ldns_pkt_section s
 			                     ldns_rr_deep_clone(
 			                     	ldns_rr_list_rr(rrs, i))
 					     );
+			if (ret) {
+				ldns_rr_list_deep_free(ret);
+			}
 			ret = new;
 		}
 	}

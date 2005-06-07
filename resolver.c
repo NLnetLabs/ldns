@@ -210,7 +210,7 @@ ldns_resolver_push_nameserver(ldns_resolver *r, ldns_rdf *n)
 	ldns_resolver_set_nameservers(r, nameservers);
 
 	/* slide n in its slot */
-	nameservers[ns_count] = n;
+	nameservers[ns_count] = ldns_rdf_deep_clone(n);
 	ldns_resolver_incr_nameserver_count(r);
 	return LDNS_STATUS_OK;
 }

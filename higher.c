@@ -55,10 +55,10 @@ ldns_get_rr_list_addr_by_name(ldns_resolver *res, ldns_rdf *name, ldns_rr_class 
 		ldns_pkt_free(pkt);
 	}
 
-	result = ldns_rr_list_cat_clone(aaaa, a);
+	result = ldns_rr_list_cat(aaaa, a);
 
-	ldns_rr_list_free(aaaa);
-	ldns_rr_list_free(a);
+	ldns_rr_list_deep_free(aaaa);
+	ldns_rr_list_deep_free(a);
 
 	return result;
 }

@@ -514,12 +514,14 @@ ldns_rr_list_cat(ldns_rr_list *left, ldns_rr_list *right)
 	/* left */
 	for(i = 0; i < l_rr_count; i++) {
 		ldns_rr_list_push_rr(cat, 
-				ldns_rr_list_rr(left, i));
+				ldns_rr_deep_clone(
+					ldns_rr_list_rr(left, i)));
 	}
 	/* right */
 	for(i = 0; i < r_rr_count; i++) {
 		ldns_rr_list_push_rr(cat, 
-				ldns_rr_list_rr(right, i));
+				ldns_rr_deep_clone(
+					ldns_rr_list_rr(right, i)));
 	}
 	return cat;
 }
