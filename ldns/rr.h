@@ -437,10 +437,9 @@ void ldns_rr_list_deep_free(ldns_rr_list *rr_list);
  * concatenates two ldns_rr_lists together.
  * \param[in] left the leftside
  * \param[in] right the rightside
- * \return a new rr_list with leftside/rightside concatenated
+ * \return a left with right concatenated to it
  */
-ldns_rr_list* ldns_rr_list_cat(ldns_rr_list *left, ldns_rr_list *right);
-
+ldns_status ldns_rr_list_cat(ldns_rr_list *left, ldns_rr_list *right);
 
 /**
  * concatenates two ldns_rr_lists together, but makes clones of the rr's (instead of pointer copying).

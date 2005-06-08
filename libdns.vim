@@ -106,6 +106,7 @@ syn keyword ldnsMacro	LDNS_STATUS_INVALID_TIME
 syn keyword ldnsMacro	LDNS_STATUS_NETWORK_ERR
 syn keyword ldnsMacro	LDNS_STATUS_ADDRESS_ERR
 syn keyword ldnsMacro 	LDNS_STATUS_CRYPTO_NO_RRSIG
+syn keyword ldnsMacro 	LDNS_STATUS_NULL
 
 " ldns/resolver.h
 syn keyword  ldnsType	  	ldns_resolver

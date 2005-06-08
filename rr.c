@@ -482,48 +482,38 @@ ldns_rr_list_deep_free(ldns_rr_list *rr_list)
 }
 
 
-ldns_rr_list *
+/* add right to left. So we modify *left! */
+ldns_status
 ldns_rr_list_cat(ldns_rr_list *left, ldns_rr_list *right)
 {
-	uint16_t l_rr_count;
 	uint16_t r_rr_count;
+	uint16_t l_rr_count;
 	uint16_t i;
-	ldns_rr_list *cat;
 
-	l_rr_count = 0;
 	r_rr_count = 0;
 
 	if (left) {
 		l_rr_count = ldns_rr_list_rr_count(left);
+	} else {
+		return LDNS_STATUS_NULL;
 	}
+
 	if (right) {
 		r_rr_count = ldns_rr_list_rr_count(right);
+	} else {
+		return LDNS_STATUS_NULL;
 	}
 	
 	if (l_rr_count + r_rr_count > LDNS_MAX_RR ) {
 		/* overflow error */
-		return NULL;
+		return LDNS_STATUS_ERR;
 	}
 
-	cat = ldns_rr_list_new();
-
-	if (!cat) {
-		return NULL;
-	}
-
-	/* left */
-	for(i = 0; i < l_rr_count; i++) {
-		ldns_rr_list_push_rr(cat, 
-				ldns_rr_deep_clone(
-					ldns_rr_list_rr(left, i)));
-	}
-	/* right */
+	/* push right to left */
 	for(i = 0; i < r_rr_count; i++) {
-		ldns_rr_list_push_rr(cat, 
-				ldns_rr_deep_clone(
-					ldns_rr_list_rr(right, i)));
+		ldns_rr_list_push_rr(left, ldns_rr_list_rr(right, i));
 	}
-	return cat;
+	return LDNS_STATUS_OK;
 }
 
 ldns_rr_list *
@@ -539,9 +529,14 @@ ldns_rr_list_cat_clone(ldns_rr_list *left, ldns_rr_list *right)
 
 	if (left) {
 		l_rr_count = ldns_rr_list_rr_count(left);
+	} else {
+		return NULL;
 	}
+
 	if (right) {
 		r_rr_count = ldns_rr_list_rr_count(right);
+	} else {
+		return NULL;
 	}
 	
 	if (l_rr_count + r_rr_count > LDNS_MAX_RR ) {
