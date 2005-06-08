@@ -622,7 +622,7 @@ ldns_resolver_query(ldns_resolver *r, ldns_rdf *name, ldns_rr_type type, ldns_rr
 		return pkt;
 	}
 
-	newname = ldns_dname_cat(name, ldns_resolver_domain(r));
+	newname = ldns_dname_cat_clone(name, ldns_resolver_domain(r));
 	if (!newname) {
 		return NULL;
 	}

@@ -446,7 +446,7 @@ ldns_rdf_address_reverse(ldns_rdf *rdf)
 			break;
 	}
 	/* add the suffix */
-	rev = ldns_dname_cat(ret_dname, in_addr);
+	rev = ldns_dname_cat_clone(ret_dname, in_addr);
 	
 	ldns_rdf_free(ret_dname);
 	ldns_rdf_free(in_addr);

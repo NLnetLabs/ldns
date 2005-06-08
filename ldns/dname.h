@@ -25,7 +25,7 @@
  * \param[in] rd2 the rightside
  * \return a new rdf with leftside/rightside
  */
-ldns_rdf 	*ldns_dname_cat(ldns_rdf *rd1, ldns_rdf *rd2);
+ldns_rdf 	*ldns_dname_cat_clone(ldns_rdf *rd1, ldns_rdf *rd2);
 /**
  * chop one label off a dname. so 
  * wwww.nlnetlabs.nl, becomes nlnetlabs.nl

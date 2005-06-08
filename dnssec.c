@@ -99,7 +99,7 @@ ldns_verify(ldns_rr_list *rrset, ldns_rr_list *rrsig, ldns_rr_list *keys)
 
 		if (keys_verified) {
 			valid = true;
-			result = ldns_rr_list_cat(result, keys_verified);
+			result = ldns_rr_list_cat_clone(result, keys_verified);
 		}
 	}
 	if (valid) {

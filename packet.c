@@ -137,12 +137,12 @@ ldns_pkt_all(ldns_pkt *packet)
 {
 	ldns_rr_list *all;
 
-	all = ldns_rr_list_cat(
+	all = ldns_rr_list_cat_clone(
 			ldns_pkt_xxsection(packet, LDNS_SECTION_QUESTION),
 			ldns_pkt_xxsection(packet, LDNS_SECTION_ANSWER));
-	all = ldns_rr_list_cat(all,
+	all = ldns_rr_list_cat_clone(all,
 			ldns_pkt_xxsection(packet, LDNS_SECTION_AUTHORITY));
-	all = ldns_rr_list_cat(all,
+	all = ldns_rr_list_cat_clone(all,
 			ldns_pkt_xxsection(packet, LDNS_SECTION_ADDITIONAL));
 	return all;
 }
@@ -152,10 +152,10 @@ ldns_pkt_all_noquestion(ldns_pkt *packet)
 {
 	ldns_rr_list *all, *all2;
 
-	all = ldns_rr_list_cat(
+	all = ldns_rr_list_cat_clone(
 			ldns_pkt_xxsection(packet, LDNS_SECTION_ANSWER),
 			ldns_pkt_xxsection(packet, LDNS_SECTION_AUTHORITY));
-	all2 = ldns_rr_list_cat(all,
+	all2 = ldns_rr_list_cat_clone(all,
 			ldns_pkt_xxsection(packet, LDNS_SECTION_ADDITIONAL));
 	
 	ldns_rr_list_free(all);
