@@ -508,14 +508,14 @@ ldns_rr_class ldns_get_rr_class_by_name(const char *name);
  * \param[in] rr the rr to clone
  * \return the new rr or NULL on failure
  */
-ldns_rr* ldns_rr_deep_clone(const ldns_rr *rr);
+ldns_rr* ldns_rr_clone(const ldns_rr *rr);
 
 /**
  * clones an rrlist.
  * \param[in] rrlist the rrlist to clone
  * \return the cloned rr list
  */
-ldns_rr_list* ldns_rr_list_deep_clone(ldns_rr_list *rrlist);
+ldns_rr_list* ldns_rr_list_clone(ldns_rr_list *rrlist);
 
 /**
  * sorts an rr_list. the sorting is done inband.

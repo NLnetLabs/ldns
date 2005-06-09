@@ -170,7 +170,7 @@ ldns_verify_rrsig_keylist(ldns_rr_list *rrset, ldns_rr *rrsig, ldns_rr_list *key
 	}
 	
 	/* clone the rrset so that we can fiddle with it */
-	rrset_clone = ldns_rr_list_deep_clone(rrset);
+	rrset_clone = ldns_rr_list_clone(rrset);
 	
 	/* create the buffers which will certainly hold the raw data */
 	rawsig_buf = ldns_buffer_new(LDNS_MAX_PACKETLEN);
@@ -287,7 +287,7 @@ ldns_verify_rrsig(ldns_rr_list *rrset, ldns_rr *rrsig, ldns_rr *key)
 	}
 
 	/* clone the rrset so that we can fiddle with it */
-	rrset_clone = ldns_rr_list_deep_clone(rrset);
+	rrset_clone = ldns_rr_list_clone(rrset);
 	
 	/* create the buffers which will certainly hold the raw data */
 	rawsig_buf = ldns_buffer_new(LDNS_MAX_PACKETLEN);
@@ -796,7 +796,7 @@ ldns_pkt_tsig_verify(ldns_pkt *pkt,
 	ldns_pkt_set_tsig(pkt, orig_tsig);
 	ldns_pkt_set_id(pkt, pkt_id);
 	
-	ldns_rdf_free_data(key_name_rdf);
+	ldns_rdf_deep_free(key_name_rdf);
 	
 	/* TODO: ldns_rdf_cmp in rdata.[ch] */
 	if (ldns_rdf_compare(pkt_mac_rdf, my_mac_rdf) == 0) {
@@ -931,7 +931,7 @@ ldns_key_rr2ds(const ldns_rr *key)
                 return NULL;
         }
 	ldns_rr_set_type(ds, LDNS_RR_TYPE_DS);
-	ldns_rr_set_owner(ds, ldns_rdf_deep_clone(
+	ldns_rr_set_owner(ds, ldns_rdf_clone(
 				ldns_rr_owner(key)));
 	ldns_rr_set_ttl(ds, ldns_rr_ttl(key));
 	ldns_rr_set_class(ds, ldns_rr_get_class(key));
@@ -952,7 +952,7 @@ ldns_key_rr2ds(const ldns_rr *key)
         ldns_rr_push_rdf(ds, tmp);
 
         /* copy the algorithm field */
-        ldns_rr_push_rdf(ds, ldns_rdf_deep_clone(
+        ldns_rr_push_rdf(ds, ldns_rdf_clone(
                                 ldns_rr_rdf(key, 2)));
 
         /* digest type, only SHA1 is supported */
@@ -1014,7 +1014,7 @@ ldns_sign_public(ldns_rr_list *rrset, ldns_key_list *keys)
 
 	/* prepare a signature and add all the know data
 	 * prepare the rrset. Sign this together.  */
-	rrset_clone = ldns_rr_list_deep_clone(rrset);
+	rrset_clone = ldns_rr_list_clone(rrset);
 	if (!rrset_clone) {
 		return NULL;
 	}

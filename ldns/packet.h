@@ -253,7 +253,7 @@ ldns_pkt *ldns_pkt_query_new(ldns_rdf *rr_name, ldns_rr_type rr_type, ldns_rr_cl
  * \param[in] pkt the packet to clone
  * \return ldns_pkt* pointer to the new packet
  */
-ldns_pkt *ldns_pkt_deep_clone(ldns_pkt *pkt);
+ldns_pkt *ldns_pkt_clone(ldns_pkt *pkt);
 
 #define LDNS_MAX_PACKETLEN         65535
 

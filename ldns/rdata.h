@@ -201,7 +201,7 @@ void            ldns_rdf_free(ldns_rdf *rd);
  * \param[in] rd the rdf structure to be freed
  * \return void
  */
-void            ldns_rdf_free_data(ldns_rdf *rd);
+void            ldns_rdf_deep_free(ldns_rdf *rd);
 
 /* conversion functions */
 
@@ -303,7 +303,7 @@ ldns_status     ldns_octet(char *word, size_t *length);
  * \param[in] rd rdf to be copied
  * \return a new rdf structure
  */
-ldns_rdf	*ldns_rdf_deep_clone(const ldns_rdf *rd);
+ldns_rdf	*ldns_rdf_clone(const ldns_rdf *rd);
 
 /**
  * compares two rdf's. Order is canonical.

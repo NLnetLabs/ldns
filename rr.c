@@ -69,10 +69,10 @@ ldns_rr_free(ldns_rr *rr)
 	uint16_t i;
 	if (rr) {
 		if (ldns_rr_owner(rr)) {
-			ldns_rdf_free_data(ldns_rr_owner(rr));
+			ldns_rdf_deep_free(ldns_rr_owner(rr));
 		}
 		for (i = 0; i < ldns_rr_rd_count(rr); i++) {
-			ldns_rdf_free_data(ldns_rr_rdf(rr, i));
+			ldns_rdf_deep_free(ldns_rr_rdf(rr, i));
 		}
 		LDNS_FREE(rr->_rdata_fields);
 		LDNS_FREE(rr);
@@ -553,12 +553,12 @@ ldns_rr_list_cat_clone(ldns_rr_list *left, ldns_rr_list *right)
 	/* left */
 	for(i = 0; i < l_rr_count; i++) {
 		ldns_rr_list_push_rr(cat, 
-				ldns_rr_deep_clone(ldns_rr_list_rr(left, i)));
+				ldns_rr_clone(ldns_rr_list_rr(left, i)));
 	}
 	/* right */
 	for(i = 0; i < r_rr_count; i++) {
 		ldns_rr_list_push_rr(cat, 
-				ldns_rr_deep_clone(ldns_rr_list_rr(right, i)));
+				ldns_rr_clone(ldns_rr_list_rr(right, i)));
 	}
 	return cat;
 }
@@ -732,7 +732,7 @@ ldns_rr_set_pop_rr(ldns_rr_list *rr_list)
 }
 
 ldns_rr *
-ldns_rr_deep_clone(const ldns_rr *rr)
+ldns_rr_clone(const ldns_rr *rr)
 {
 	uint16_t i;
 	ldns_rr *new_rr;
@@ -745,20 +745,20 @@ ldns_rr_deep_clone(const ldns_rr *rr)
 	if (!new_rr) {
 		return NULL;
 	}
-	ldns_rr_set_owner(new_rr, ldns_rdf_deep_clone(ldns_rr_owner(rr)));
+	ldns_rr_set_owner(new_rr, ldns_rdf_clone(ldns_rr_owner(rr)));
 	ldns_rr_set_ttl(new_rr, ldns_rr_ttl(rr));
 	ldns_rr_set_type(new_rr, ldns_rr_get_type(rr));
 	ldns_rr_set_class(new_rr, ldns_rr_get_class(rr));
 	
 	for (i = 0; i < ldns_rr_rd_count(rr); i++) {
-		ldns_rr_push_rdf(new_rr, ldns_rdf_deep_clone(ldns_rr_rdf(rr, i)));
+		ldns_rr_push_rdf(new_rr, ldns_rdf_clone(ldns_rr_rdf(rr, i)));
 	}
 
 	return new_rr;
 }
 
 ldns_rr_list *
-ldns_rr_list_deep_clone(ldns_rr_list *rrlist)
+ldns_rr_list_clone(ldns_rr_list *rrlist)
 {
 	uint16_t i;
 	ldns_rr_list *new_list;
@@ -773,7 +773,7 @@ ldns_rr_list_deep_clone(ldns_rr_list *rrlist)
 		return NULL;
 	}
 	for (i = 0; i < ldns_rr_list_rr_count(rrlist); i++) {
-		r = ldns_rr_deep_clone(
+		r = ldns_rr_clone(
 			ldns_rr_list_rr(rrlist, i)
 		    );
 		if (!r) {
@@ -860,8 +860,8 @@ ldns_rr_compare_ds(const ldns_rr *orr1, const ldns_rr *orr2)
 {
 	bool result;
 	ldns_rr *ds_repr;
-	ldns_rr *rr1 = ldns_rr_deep_clone(orr1);
-	ldns_rr *rr2 = ldns_rr_deep_clone(orr2);
+	ldns_rr *rr1 = ldns_rr_clone(orr1);
+	ldns_rr *rr2 = ldns_rr_clone(orr2);
 	
 	/* set ttls to zero */
 	ldns_rr_set_ttl(rr1, 0);

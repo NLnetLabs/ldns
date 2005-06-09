@@ -211,7 +211,7 @@ ldns_rdf_new_frm_data(ldns_rdf_type type, uint16_t size, const void *data)
 }
 
 ldns_rdf *
-ldns_rdf_deep_clone(const ldns_rdf *r)
+ldns_rdf_clone(const ldns_rdf *r)
 {
 	return (ldns_rdf_new_frm_data(
 				ldns_rdf_get_type(r),
@@ -220,7 +220,7 @@ ldns_rdf_deep_clone(const ldns_rdf *r)
 }
 
 void
-ldns_rdf_free_data(ldns_rdf *rd)
+ldns_rdf_deep_free(ldns_rdf *rd)
 {
 	if (rd) {
 		LDNS_FREE(rd->_data);

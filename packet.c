@@ -282,11 +282,11 @@ ldns_pkt_rr_list_by_type(ldns_pkt *packet, ldns_rr_type type, ldns_pkt_section s
 		if (type == ldns_rr_get_type(ldns_rr_list_rr(rrs, i))) {
 			/* types match */
 			ldns_rr_list_push_rr(new, 
-			                     ldns_rr_deep_clone(
+			                     ldns_rr_clone(
 			                     	ldns_rr_list_rr(rrs, i))
 					     );
 			if (ret) {
-				ldns_rr_list_deep_free(ret);
+				ldns_rr_list_free(ret);
 			}
 			ret = new;
 		}
@@ -322,7 +322,7 @@ ldns_pkt_rr_list_by_name_and_type(ldns_pkt *packet, ldns_rdf *ownername, ldns_rr
 		                    ) == 0
 		   ) {
 			/* types match */
-			ldns_rr_list_push_rr(new, ldns_rr_deep_clone(ldns_rr_list_rr(rrs, i)));
+			ldns_rr_list_push_rr(new, ldns_rr_clone(ldns_rr_list_rr(rrs, i)));
 			ret = new;
 		}
 	}
@@ -869,7 +869,7 @@ ldns_pkt_reply_type(ldns_pkt *p)
 }
 
 ldns_pkt *
-ldns_pkt_deep_clone(ldns_pkt *pkt)
+ldns_pkt_clone(ldns_pkt *pkt)
 {
 	ldns_pkt *new_pkt;
 	
@@ -904,10 +904,10 @@ ldns_pkt_deep_clone(ldns_pkt *pkt)
 	ldns_rr_list_deep_free(new_pkt->_answer);
 	ldns_rr_list_deep_free(new_pkt->_authority);
 	ldns_rr_list_deep_free(new_pkt->_additional);
-	new_pkt->_question = ldns_rr_list_deep_clone(ldns_pkt_question(pkt));
-	new_pkt->_answer = ldns_rr_list_deep_clone(ldns_pkt_answer(pkt));
-	new_pkt->_authority = ldns_rr_list_deep_clone(ldns_pkt_authority(pkt));
-	new_pkt->_additional = ldns_rr_list_deep_clone(ldns_pkt_additional(pkt));
+	new_pkt->_question = ldns_rr_list_clone(ldns_pkt_question(pkt));
+	new_pkt->_answer = ldns_rr_list_clone(ldns_pkt_answer(pkt));
+	new_pkt->_authority = ldns_rr_list_clone(ldns_pkt_authority(pkt));
+	new_pkt->_additional = ldns_rr_list_clone(ldns_pkt_additional(pkt));
 	
 	return new_pkt;
 }

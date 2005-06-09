@@ -210,7 +210,7 @@ ldns_resolver_push_nameserver(ldns_resolver *r, ldns_rdf *n)
 	ldns_resolver_set_nameservers(r, nameservers);
 
 	/* slide n in its slot */
-	nameservers[ns_count] = ldns_rdf_deep_clone(n);
+	nameservers[ns_count] = ldns_rdf_clone(n);
 	ldns_resolver_incr_nameserver_count(r);
 	return LDNS_STATUS_OK;
 }
@@ -566,13 +566,13 @@ ldns_resolver_free(ldns_resolver *res)
 	if (res) {
 		if (res->_searchlist) {
 			for (i = 0; i < res->_searchlist_count; i++) {
-				ldns_rdf_free_data(res->_searchlist[i]);
+				ldns_rdf_deep_free(res->_searchlist[i]);
 			}
 		}
 		LDNS_FREE(res->_searchlist);
 		if (res->_nameservers) {
 			for (i = 0; i < res->_nameserver_count; i++) {
-				ldns_rdf_free_data(res->_nameservers[i]);
+				ldns_rdf_deep_free(res->_nameservers[i]);
 			}
 		}
 		LDNS_FREE(res->_nameservers);
@@ -684,7 +684,7 @@ ldns_resolver_send(ldns_pkt **answer, ldns_resolver *r, ldns_rdf *name,
 	}
 	/* prepare a question pkt from the parameters
 	 * and then send this */
-	query_pkt = ldns_pkt_query_new(ldns_rdf_deep_clone(name), type, class, flags);
+	query_pkt = ldns_pkt_query_new(ldns_rdf_clone(name), type, class, flags);
 	if (!query_pkt) {
 		dprintf("%s", "Failed to generate pkt\n");
 		return LDNS_STATUS_ERR;
@@ -763,7 +763,7 @@ ldns_axfr_start(ldns_resolver *resolver,
 	}
 	
         /* Create the query */
-	query = ldns_pkt_query_new(ldns_rdf_deep_clone(domain),
+	query = ldns_pkt_query_new(ldns_rdf_clone(domain),
 	                           LDNS_RR_TYPE_AXFR,
 	                           class,
 	                           0);
@@ -846,7 +846,7 @@ ldns_axfr_next(ldns_resolver *resolver)
 			resolver->_cur_axfr_pkt = NULL;
 			return ldns_axfr_next(resolver);
 		}
-		cur_rr = ldns_rr_deep_clone(ldns_rr_list_rr(ldns_pkt_answer(resolver->_cur_axfr_pkt), resolver->_axfr_i));
+		cur_rr = ldns_rr_clone(ldns_rr_list_rr(ldns_pkt_answer(resolver->_cur_axfr_pkt), resolver->_axfr_i));
 		resolver->_axfr_i++;
 		if (ldns_rr_get_type(cur_rr) == LDNS_RR_TYPE_SOA) {
 			resolver->_axfr_soa_count++;
