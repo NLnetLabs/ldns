@@ -503,7 +503,6 @@ ldns_resolver_new_frm_fp(FILE *fp)
 			case LDNS_RESOLV_DEFDOMAIN:
 				/* default domain dname */
 				tmp = ldns_rdf_new_frm_str(LDNS_RDF_TYPE_DNAME, word);
-				ldns_rdf_print(stdout, tmp);
 				if (!tmp) {
 					expect = LDNS_RESOLV_KEYWORD;
 					break;
