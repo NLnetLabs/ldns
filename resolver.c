@@ -210,7 +210,9 @@ ldns_resolver_push_nameserver(ldns_resolver *r, ldns_rdf *n)
 	ldns_resolver_set_nameservers(r, nameservers);
 
 	/* slide n in its slot. */
-	nameservers[ns_count] = n;
+	/* we clone it here, because then we can free the original
+	 * rr's where it stood */
+	nameservers[ns_count] = ldns_rdf_clone(n);
 	ldns_resolver_incr_nameserver_count(r);
 	return LDNS_STATUS_OK;
 }
@@ -377,7 +379,7 @@ ldns_resolver_set_timeout(ldns_resolver *r, struct timeval timeout)
 void
 ldns_resolver_push_searchlist(ldns_resolver *r, ldns_rdf *d)
 {
-	r->_searchlist[++r->_searchlist_count] = d;
+	r->_searchlist[++r->_searchlist_count] = ldns_rdf_clone(d);
 }
 
 void
@@ -574,16 +576,6 @@ ldns_resolver_deep_free(ldns_resolver *res)
 				ldns_rdf_deep_free(res->_nameservers[i]);
 			}
 		}
-		LDNS_FREE(res->_searchlist);
-		LDNS_FREE(res->_nameservers);
-		LDNS_FREE(res);
-	}
-}
-
-void
-ldns_resolver_free(ldns_resolver *res)
-{
-	if (res) {
 		LDNS_FREE(res->_searchlist);
 		LDNS_FREE(res->_nameservers);
 		LDNS_FREE(res);

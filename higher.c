@@ -228,7 +228,7 @@ ldns_getaddrinfo(ldns_resolver *res, ldns_rdf *node, ldns_rr_class c, ldns_rr_li
 	}
 
 	if (res == NULL) {
-		ldns_resolver_free(r);
+		ldns_resolver_deep_free(r);
 	}
 	
 	return names_found;
