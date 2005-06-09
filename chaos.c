@@ -62,7 +62,7 @@ main(int argc, char *argv[])
 	/* use the resolver to send it a query for the a/aaaa of name */
 	addr = ldns_get_rr_list_addr_by_name(res, name, LDNS_RR_CLASS_IN, LDNS_RD);
 	if (!addr) {
-		fprintf(stderr, " *** could not get an address for %s", argv[1]);
+		fprintf(stderr, " *** could not get an address for %s\n", argv[1]);
 		exit(1);
 	}
 
