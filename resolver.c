@@ -503,6 +503,7 @@ ldns_resolver_new_frm_fp(FILE *fp)
 			case LDNS_RESOLV_DEFDOMAIN:
 				/* default domain dname */
 				tmp = ldns_rdf_new_frm_str(LDNS_RDF_TYPE_DNAME, word);
+				ldns_rdf_print(stdout, tmp);
 				if (!tmp) {
 					expect = LDNS_RESOLV_KEYWORD;
 					break;
@@ -583,7 +584,7 @@ ldns_resolver_deep_free(ldns_resolver *res)
 		LDNS_FREE(res->_searchlist);
 		LDNS_FREE(res->_nameservers);
 		if (ldns_resolver_domain(res)) {
-			LDNS_FREE(res->_domain);
+			ldns_rdf_deep_free(ldns_resolver_domain(res));
 		}
 		if (ldns_resolver_tsig_keyname(res)) {
 			LDNS_FREE(res->_tsig_keyname);
