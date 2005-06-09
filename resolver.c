@@ -432,7 +432,8 @@ ldns_resolver_new(void)
 	ldns_resolver_set_fail(r, false);
 	ldns_resolver_set_edns_udp_size(r, 0);
 	ldns_resolver_set_dnssec(r, false);
-	
+	ldns_resolver_set_ip6(r, false);
+
 	/* randomize the nameserver to be queried
 	 * when there are multiple
 	 */
