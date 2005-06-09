@@ -507,6 +507,8 @@ ldns_resolver_new_frm_fp(FILE *fp)
 					expect = LDNS_RESOLV_KEYWORD;
 					break;
 				}
+
+				/* don't free, because we copy the pointer */
 				ldns_resolver_set_domain(r, tmp);
 				expect = LDNS_RESOLV_KEYWORD;
 				break;
@@ -521,7 +523,9 @@ ldns_resolver_new_frm_fp(FILE *fp)
 					expect = LDNS_RESOLV_KEYWORD;
 					break;
 				}
+				/* XXX */
 				(void)ldns_resolver_push_nameserver(r, tmp);
+				ldns_rdf_deep_free(tmp);
 				expect = LDNS_RESOLV_KEYWORD;
 				break;
 			default:
@@ -578,6 +582,13 @@ ldns_resolver_deep_free(ldns_resolver *res)
 		}
 		LDNS_FREE(res->_searchlist);
 		LDNS_FREE(res->_nameservers);
+		if (ldns_resolver_domain(res)) {
+			LDNS_FREE(res->_domain);
+		}
+		if (ldns_resolver_tsig_keyname(res)) {
+			LDNS_FREE(res->_tsig_keyname);
+		}
+		
 		LDNS_FREE(res);
 	}
 }

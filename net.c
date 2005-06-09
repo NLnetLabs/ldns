@@ -95,6 +95,7 @@ ldns_send(ldns_pkt **result, ldns_resolver *r, ldns_pkt *query_pkt)
 				(ns->ss_family == AF_INET6 &&
 				 ldns_resolver_ip6(r) == LDNS_RESOLV_INET)) {
 			/* mismatch, next please */
+			LDNS_FREE(ns);
 			continue;
 		}
 
@@ -124,6 +125,7 @@ ldns_send(ldns_pkt **result, ldns_resolver *r, ldns_pkt *query_pkt)
 		/* obey the fail directive */
 		if (!reply_bytes) {
 			if (ldns_resolver_fail(r)) {
+				LDNS_FREE(ns);
 				return LDNS_STATUS_ERR;
 			} else {
 				continue;
@@ -133,6 +135,7 @@ ldns_send(ldns_pkt **result, ldns_resolver *r, ldns_pkt *query_pkt)
 		if (ldns_wire2pkt(&reply, reply_bytes, reply_size) !=
 		    LDNS_STATUS_OK) {
 			LDNS_FREE(reply_bytes);
+			LDNS_FREE(ns);
 			return LDNS_STATUS_ERR;
 		}
 		
