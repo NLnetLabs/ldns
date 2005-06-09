@@ -954,7 +954,6 @@ ldns_pkt2buffer_str(ldns_buffer *output, ldns_pkt *pkt)
 
 			ldns_buffer_printf(output, "\n");
 		}
-		ldns_buffer_printf(output, "\n");
 		
 		ldns_buffer_printf(output, ";; ANSWER SECTION:\n");
 		for (i = 0; i < ldns_pkt_ancount(pkt); i++) {
@@ -964,7 +963,6 @@ ldns_pkt2buffer_str(ldns_buffer *output, ldns_pkt *pkt)
 				return status;
 			}
 
-			ldns_buffer_printf(output, "\n");
 		}
 		ldns_buffer_printf(output, "\n");
 		
@@ -976,7 +974,6 @@ ldns_pkt2buffer_str(ldns_buffer *output, ldns_pkt *pkt)
 			if (status != LDNS_STATUS_OK) {
 				return status;
 			}
-			ldns_buffer_printf(output, "\n");
 		}
 		ldns_buffer_printf(output, "\n");
 		
@@ -988,7 +985,6 @@ ldns_pkt2buffer_str(ldns_buffer *output, ldns_pkt *pkt)
 				return status;
 			}
 
-			ldns_buffer_printf(output, "\n");
 		}
 		ldns_buffer_printf(output, "\n");
 		/* add some futher fields */

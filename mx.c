@@ -54,6 +54,7 @@ main(int argc, char *argv[])
         if (!p)  {
 		exit(1);
         } else {
+		ldns_pkt_print(stdout, p);
 		/* retrieve the MX records from the answer section of that
 		 * packet
 		 */
@@ -65,7 +66,7 @@ main(int argc, char *argv[])
 			exit(1);
 		} else {
 			/* sort the list nicely */
-			ldns_rr_list_sort(mx);
+			/* ldns_rr_list_sort(mx); */
 			/* print the rrlist to stdout */
 			ldns_rr_list_print(stdout, mx);
 		}
