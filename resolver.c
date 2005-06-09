@@ -209,8 +209,8 @@ ldns_resolver_push_nameserver(ldns_resolver *r, ldns_rdf *n)
 	/* set the new value in the resolver */
 	ldns_resolver_set_nameservers(r, nameservers);
 
-	/* slide n in its slot */
-	nameservers[ns_count] = ldns_rdf_clone(n);
+	/* slide n in its slot. */
+	nameservers[ns_count] = n;
 	ldns_resolver_incr_nameserver_count(r);
 	return LDNS_STATUS_OK;
 }
@@ -559,7 +559,7 @@ ldns_resolver_new_frm_file(const char *filename)
 }
 
 void
-ldns_resolver_free(ldns_resolver *res)
+ldns_resolver_deep_free(ldns_resolver *res)
 {
 	size_t i;
 	
@@ -569,12 +569,22 @@ ldns_resolver_free(ldns_resolver *res)
 				ldns_rdf_deep_free(res->_searchlist[i]);
 			}
 		}
-		LDNS_FREE(res->_searchlist);
 		if (res->_nameservers) {
 			for (i = 0; i < res->_nameserver_count; i++) {
 				ldns_rdf_deep_free(res->_nameservers[i]);
 			}
 		}
+		LDNS_FREE(res->_searchlist);
+		LDNS_FREE(res->_nameservers);
+		LDNS_FREE(res);
+	}
+}
+
+void
+ldns_resolver_free(ldns_resolver *res)
+{
+	if (res) {
+		LDNS_FREE(res->_searchlist);
 		LDNS_FREE(res->_nameservers);
 		LDNS_FREE(res);
 	}

@@ -490,8 +490,6 @@ ldns_rr_list_cat(ldns_rr_list *left, ldns_rr_list *right)
 	uint16_t l_rr_count;
 	uint16_t i;
 
-	r_rr_count = 0;
-
 	if (left) {
 		l_rr_count = ldns_rr_list_rr_count(left);
 	} else {
@@ -501,7 +499,7 @@ ldns_rr_list_cat(ldns_rr_list *left, ldns_rr_list *right)
 	if (right) {
 		r_rr_count = ldns_rr_list_rr_count(right);
 	} else {
-		return LDNS_STATUS_NULL;
+		r_rr_count = 0;
 	}
 	
 	if (l_rr_count + r_rr_count > LDNS_MAX_RR ) {
@@ -525,7 +523,6 @@ ldns_rr_list_cat_clone(ldns_rr_list *left, ldns_rr_list *right)
 	ldns_rr_list *cat;
 
 	l_rr_count = 0;
-	r_rr_count = 0;
 
 	if (left) {
 		l_rr_count = ldns_rr_list_rr_count(left);
@@ -536,7 +533,7 @@ ldns_rr_list_cat_clone(ldns_rr_list *left, ldns_rr_list *right)
 	if (right) {
 		r_rr_count = ldns_rr_list_rr_count(right);
 	} else {
-		return NULL;
+		r_rr_count = 0;
 	}
 	
 	if (l_rr_count + r_rr_count > LDNS_MAX_RR ) {

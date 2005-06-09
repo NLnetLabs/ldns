@@ -252,10 +252,16 @@ ldns_resolver* ldns_resolver_new_frm_fp(FILE *fp);
 ldns_resolver* ldns_resolver_new_frm_file(const char *filename);
 
 /**                             
- * Frees the allocated space for this resolver and all it's data
+ * Frees the allocated space for this resolver
  * \param res resolver to free  
  */     
 void ldns_resolver_free(ldns_resolver *res);
+
+/**                             
+ * Frees the allocated space for this resolver and all it's data
+ * \param res resolver to free  
+ */     
+void ldns_resolver_deep_free(ldns_resolver *res);
 
 /**
  * Prepares the resolver for an axfr query
