@@ -125,6 +125,9 @@ ldns_rdf2native_sockaddr_storage(ldns_rdf *rd)
 	b = (struct in_addr*)rd->_data;
 	
 	data = LDNS_MALLOC(struct sockaddr_storage);
+	if (!data) {
+		return NULL;
+	}
 
 	switch(ldns_rdf_get_type(rd)) {
 		case LDNS_RDF_TYPE_A:

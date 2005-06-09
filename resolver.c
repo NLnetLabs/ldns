@@ -431,6 +431,8 @@ ldns_resolver_new(void)
 	ldns_resolver_set_retrans(r, 2);
 	ldns_resolver_set_fail(r, false);
 	ldns_resolver_set_edns_udp_size(r, 0);
+	ldns_resolver_set_dnssec(r, false);
+	
 	/* randomize the nameserver to be queried
 	 * when there are multiple
 	 */
@@ -714,7 +716,6 @@ ldns_resolver_send(ldns_pkt **answer, ldns_resolver *r, ldns_rdf *name,
 		ldns_pkt_set_edns_udp_size(query_pkt,
 				ldns_resolver_edns_udp_size(r));
 	}
-
 
 	if (ldns_resolver_debug(r)) {
 		ldns_pkt_print(stdout, query_pkt);

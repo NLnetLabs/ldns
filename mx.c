@@ -24,6 +24,11 @@ main(int argc, char *argv[])
 	ldns_pkt *p;
 	ldns_rr_list *mx;
 	
+	p = NULL;
+	mx = NULL;
+	domain = NULL;
+	res = NULL;
+	
 	if (argc != 2) {
 		usage(stdout, argv[0]);
 		exit(1);
