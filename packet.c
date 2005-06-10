@@ -267,7 +267,6 @@ ldns_pkt_rr_list_by_type(ldns_pkt *packet, ldns_rr_type type, ldns_pkt_section s
 {
 	ldns_rr_list *rrs;
 	ldns_rr_list *new;
-	ldns_rr_list *ret;
 	uint16_t i;
 
 	if(!packet) {
@@ -276,8 +275,7 @@ ldns_pkt_rr_list_by_type(ldns_pkt *packet, ldns_rr_type type, ldns_pkt_section s
 	
 	rrs = ldns_pkt_get_section(packet, sec);
 	new = ldns_rr_list_new();
-	ret = NULL;
-
+	
 	for(i = 0; i < ldns_rr_list_rr_count(rrs); i++) {
 		if (type == ldns_rr_get_type(ldns_rr_list_rr(rrs, i))) {
 			/* types match */
@@ -285,17 +283,14 @@ ldns_pkt_rr_list_by_type(ldns_pkt *packet, ldns_rr_type type, ldns_pkt_section s
 			                     ldns_rr_clone(
 			                     	ldns_rr_list_rr(rrs, i))
 					     );
-			if (ret) {
-				ldns_rr_list_free(ret);
-			}
-			ret = new;
 		}
 	}
-	if (!ret) { 
-		ldns_rr_list_deep_free(new);
+	if (ldns_rr_list_rr_count(new) == 0) {
+		ldns_rr_list_free(new);
+		return NULL;
+	} else {
+		return new;
 	}
-
-	return ret;
 }
 
 /* return only those rrs that share name and type */
