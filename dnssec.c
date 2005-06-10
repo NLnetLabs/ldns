@@ -756,7 +756,7 @@ ldns_pkt_tsig_verify(ldns_pkt *pkt,
 	ldns_rr *orig_tsig = ldns_pkt_tsig(pkt);
 	
 	if (!orig_tsig) {
-		ldns_rdf_free(key_name_rdf);
+		ldns_rdf_deep_free(key_name_rdf);
 		return false;
 	}
 	algorithm_rdf = ldns_rr_rdf(orig_tsig, 0);
@@ -789,7 +789,10 @@ ldns_pkt_tsig_verify(ldns_pkt *pkt,
 	                              orig_mac_rdf
 	                             );
 	
+	LDNS_FREE(prepared_wire);
+	
 	if (status != LDNS_STATUS_OK) {
+		ldns_rdf_deep_free(key_name_rdf);
 		return false;
 	}
 	/* Put back the values */
@@ -800,10 +803,10 @@ ldns_pkt_tsig_verify(ldns_pkt *pkt,
 	
 	/* TODO: ldns_rdf_cmp in rdata.[ch] */
 	if (ldns_rdf_compare(pkt_mac_rdf, my_mac_rdf) == 0) {
-		ldns_rdf_free(my_mac_rdf);
+		ldns_rdf_deep_free(my_mac_rdf);
 		return true;
 	} else {
-		ldns_rdf_free(my_mac_rdf);
+		ldns_rdf_deep_free(my_mac_rdf);
 		return false;
 	}
 }

@@ -203,7 +203,7 @@ int b64_pton(char const *src, uint8_t *target, size_t targsize);
 /*@unused@*/
 static inline size_t b64_pton_calculate_size(size_t srcsize)
 {
-	return ((((srcsize / 4) * 3) - 2) + 1);
+	return ((((srcsize / 4) * 3) - 2) + 2);
 }
 #endif /* !B64_NTOP */
 #ifndef TIMEGM
