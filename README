@@ -14,3 +14,10 @@ INSTALLATION
 5. ./configure
 6. gmake (it needs gnu make to compile)
 (7. gmake progs [make example programs included])
+
+* Developers
+ldns is developed by the ldns team at NLnet Labs. This team currently
+consists out of:
+  o Jelte Jansen
+  o Erik Rozendaal
+  o Miek Gieben
