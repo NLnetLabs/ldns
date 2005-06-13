@@ -12,6 +12,5 @@ For compilation you need gmake and the gnu autotools.
 
 Extract the source and in the source directory:
 libtoolize && autoreconf && ./configure && gmake
-(or use ./setup)
 
 (or just make on Linux)
