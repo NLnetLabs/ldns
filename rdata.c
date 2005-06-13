@@ -403,7 +403,7 @@ ldns_rdf_address_reverse(ldns_rdf *rdf)
 				return NULL;
 			}
 			/* not needed anymore */
-			ldns_rdf_free(rev);
+			ldns_rdf_deep_free(rev);
 			LDNS_FREE(char_dname);
 			break;
 		case LDNS_RDF_TYPE_AAAA:
@@ -451,8 +451,8 @@ ldns_rdf_address_reverse(ldns_rdf *rdf)
 	/* add the suffix */
 	rev = ldns_dname_cat_clone(ret_dname, in_addr);
 	
-	ldns_rdf_free(ret_dname);
-	ldns_rdf_free(in_addr);
+	ldns_rdf_deep_free(ret_dname);
+	ldns_rdf_deep_free(in_addr);
 	return rev;
 }
 
