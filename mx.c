@@ -54,7 +54,6 @@ main(int argc, char *argv[])
         if (!p)  {
 		exit(1);
         } else {
-		ldns_pkt_print(stdout, p);
 		/* retrieve the MX records from the answer section of that
 		 * packet
 		 */

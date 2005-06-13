@@ -872,7 +872,6 @@ ldns_rr_list2buffer_str(ldns_buffer *output, ldns_rr_list *list)
 
 	for(i = 0; i < ldns_rr_list_rr_count(list); i++) {
 		(void) ldns_rr2buffer_str(output, ldns_rr_list_rr(list, i));
-		ldns_buffer_printf(output, "\n");
 	}
 	return ldns_buffer_status(output);
 }
