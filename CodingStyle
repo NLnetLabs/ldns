@@ -1,6 +1,5 @@
 The libdns coding style guide
 
-
 * Use of tabs (real tabs, 8 positions long)
 * Spaces only after comma's, and in between operators.
   And after keywords (if, while, for)

@@ -1,0 +1,13 @@
+This short document is intended to shed some light on
+the philosophy behind ldns.
+
+Closely match the api/interface of Perl's Net::DNS; make it easy to 
+toss around RR sets, DNS packets, Resolvers, etc. etc.
+
+As said in 'CodingStyle':
+* Everything by reference, all data structures an optional _clone() function
+
+This means that unless something is cloned in a program, it is hard to free
+it. The only exception to this in ldns itself is in the resolver structure. 
+There the .domain ans .nameservers are cloned when they are put in the
+structure. This allows a program to free a resolver structure.

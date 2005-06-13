@@ -1,7 +1,7 @@
 #                                               -*- Autoconf -*-
 # Process this file with autoconf to produce a configure script.
 AC_PREREQ(2.57)
-AC_INIT(libdns, 0.60, libdns@nlnetlabs.nl, libdns)
+AC_INIT(libdns, 0.65, libdns@nlnetlabs.nl, libdns)
 AC_CONFIG_SRCDIR([packet.c])
 
 OURCPPFLAGS='-ansi -pedantic -D_POSIX_C_SOURCE=200112 -D_XOPEN_SOURCE=600'
