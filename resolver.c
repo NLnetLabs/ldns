@@ -807,12 +807,14 @@ ldns_axfr_start(ldns_resolver *resolver,
 			break;
                 default:
                 	dprintf("%s", "unkown inet family\n");
+                	LDNS_FREE(ns);
                 	return LDNS_STATUS_UNKNOWN_INET;
 	}
 
 	resolver->_socket = ldns_tcp_connect(ns, ns_len, ldns_resolver_timeout(resolver));
 	if (resolver->_socket == 0) {
                	ldns_pkt_free(query);
+		LDNS_FREE(ns);
 		return LDNS_STATUS_NETWORK_ERR;
 	}
 	
@@ -823,6 +825,7 @@ ldns_axfr_start(ldns_resolver *resolver,
 	status = ldns_pkt2buffer_wire(query_wire, query);
 	if (status != LDNS_STATUS_OK) {
                	ldns_pkt_free(query);
+		LDNS_FREE(ns);
 		return status;
 	}
 
@@ -830,11 +833,13 @@ ldns_axfr_start(ldns_resolver *resolver,
 	if (ldns_tcp_send_query(query_wire, resolver->_socket, ns, ns_len) == 0) {
 		ldns_pkt_free(query);
 		ldns_buffer_free(query_wire);
+		LDNS_FREE(ns);
 		return LDNS_STATUS_NETWORK_ERR;
 	}
 	
 	ldns_pkt_free(query);
 	ldns_buffer_free(query_wire);
+	LDNS_FREE(ns);
 
 	/*
 	 * The AXFR is done once the second SOA record is sent
