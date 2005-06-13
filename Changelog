@@ -1,6 +1,12 @@
-DATE: 0.70: ldns-team
+DATE: 0.65: ldns-team
 	* Repository is online at: 
 	  http://www.nlnetlabs.nl/ldns/svn/
+	* Apply reference copying throuhgout ldns, excect in 2 
+	  places in the ldns_resolver structure (._domain and
+	 ._nameservers)
+	* Usual array of bugfixes
+	* Documentation added
+	* keygen.c added as an example for DNSSEC programming
 
 23 May 2005: 0.60: ldns-team
 	* Removed config.h from the header installed files

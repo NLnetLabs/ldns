@@ -1,0 +1,21 @@
+What is working in what release and when is it released.
+
+0.65: 14 June 2005
+	[func] ?
+	[impl] cleanups, clearer memeory management
+
+0.70: July?
+	[func]
+
+	[impl]
+
+0.80: End of July???
+
+
+0.90: August???
+	[func]
+	[impl] private key type for all signing (tsig/DNSSEC)
+	
+1.0: August??
+	[func] Fully working, documented library
+

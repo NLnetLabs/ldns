@@ -7,9 +7,8 @@ o [dnssec] Different digests for DS
  - need a digest type?
 o [dnssec] NSEC generation??
 o [openssl] openssl's setup function (esp. random)
-o [openssl] -lssl in library creation and autoconf
+o [openssl] -lssl in library creation and autoconf - somewhat fix in 0.60/0.65
 o [doc]  const function are correct i think, but const values in struct not
-
 
 Implementation:
 ---------------
@@ -20,17 +19,18 @@ o check all conversion routines on missing types
 	- host2str
 o use size_t where needed
 o DNSSEC
-	- do we call random()?
+	- do we call random()? Need an optional ldns_setup() which does
+	  this
 o init function? random - load_ssl_errors()
 	- SSL_load_error_str()? 
-o SERVER stuff; open connection and such
+o SERVER stuff; open connection and such - NOT DONE AT ALL - will happen in .90
 
 To ponder and discuss:
 ----------------------
-o private key type?
+o private key type? This works, but not (yet) for tsig stuff
 	ldns_algorithm used for verfication
 	ldns_sign_algorithm used for signing - including
 				shared secret signing
 	work in progress - works for RSA/DSA. I want to 
 	fold in the tsig stuff as well
-o install mx, keygen, chaos somewhere, along with manpages
+o install mx, keygen, chaos somewhere, along with manpages??

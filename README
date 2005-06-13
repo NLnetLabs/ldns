@@ -13,4 +13,4 @@ INSTALLATION
 4. autoreconf
 5. ./configure
 6. gmake (it needs gnu make to compile)
-(7. gmake mx chaos [two example programs included])
+(7. gmake progs [make example programs included])
