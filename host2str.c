@@ -232,17 +232,6 @@ ldns_rdf2buffer_str_b64(ldns_buffer *output, ldns_rdf *rdf)
 ldns_status
 ldns_rdf2buffer_str_hex(ldns_buffer *output, ldns_rdf *rdf)
 {
-/*
-	char hex_chars[] = { '0', '1', '2', '3', '4', '5', '6', '7', '8',
-	                     '9', 'A', 'B', 'C', 'D', 'E', 'F' };
-
-	size_t i;
-ldns_buffer_printf(output, "HEX: ");
-	for (i = 0; i < ldns_rdf_size(rdf); i++) {
-		ldns_buffer_printf(output, "%c", hex_chars[ldns_rdf_data(rdf)[i] & 0xF0]);
-		ldns_buffer_printf(output, "%c", hex_chars[ldns_rdf_data(rdf)[i] & 0x0F]);
-	}
-*/
 	size_t i;
 	for (i = 0; i < ldns_rdf_size(rdf); i++) {
 		ldns_buffer_printf(output, "%02x", ldns_rdf_data(rdf)[i]);
