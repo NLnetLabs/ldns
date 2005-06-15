@@ -113,6 +113,12 @@ ldns_resolver_dnssec(ldns_resolver *r)
 }
 
 bool
+ldns_resolver_dnssec_cd(ldns_resolver *r)
+{
+	return r->_dnssec_cd;
+}
+
+bool
 ldns_resolver_igntc(ldns_resolver *r)
 {
 	return r->_igntc;
@@ -267,6 +273,12 @@ void
 ldns_resolver_set_dnssec(ldns_resolver *r, bool d)
 {
 	r->_dnssec = d;
+}
+
+void
+ldns_resolver_set_dnssec_cd(ldns_resolver *r, bool d)
+{
+	r->_dnssec_cd = d;
 }
 
 void
@@ -432,6 +444,7 @@ ldns_resolver_new(void)
 	ldns_resolver_set_fail(r, false);
 	ldns_resolver_set_edns_udp_size(r, 0);
 	ldns_resolver_set_dnssec(r, false);
+	ldns_resolver_set_dnssec_cd(r, false);
 	ldns_resolver_set_ip6(r, false);
 
 	/* randomize the nameserver to be queried
@@ -710,6 +723,7 @@ ldns_resolver_send(ldns_pkt **answer, ldns_resolver *r, ldns_rdf *name,
 	if (ldns_resolver_dnssec(r)) {
 		ldns_resolver_set_edns_udp_size(r, 4096);
 		ldns_pkt_set_edns_do(query_pkt, true);
+		ldns_pkt_set_cd(query_pkt, ldns_resolver_dnssec_cd(r));
 	}
 
 	/* transfer the udp_edns_size from the resolver to the packet */

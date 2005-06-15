@@ -67,7 +67,6 @@ ldns_send(ldns_pkt **result, ldns_resolver *r, ldns_pkt *query_pkt)
 	if (ldns_pkt2buffer_wire(qb, query_pkt) != LDNS_STATUS_OK) {
 		return LDNS_STATUS_ERR;
 	}
-
 	/* random should already be setup - isn't so bad
 	 * if this isn't "good" random. Note that this
 	 * changes the order in the resolver as well!

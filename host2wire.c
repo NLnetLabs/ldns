@@ -168,6 +168,8 @@ ldns_hdr2buffer_wire(ldns_buffer *buffer, const ldns_pkt *packet)
 		
 		flags = ldns_pkt_ra(packet) << 7
 		        /*| ldns_pkt_z(packet) << 6*/
+		        | ldns_pkt_ad(packet) << 5
+		        | ldns_pkt_cd(packet) << 4
 		        | ldns_pkt_rcode(packet);
 		ldns_buffer_write_u8(buffer, flags);
 		

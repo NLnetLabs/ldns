@@ -65,6 +65,8 @@ struct ldns_struct_resolver
 	uint8_t _retrans;
 	/** \brief Wether to do DNSSEC */
 	bool _dnssec;
+	/** \brief Wether to set the CD bit on DNSSEC requests */
+	bool _dnssec_cd;
 	/** \brief Wether to use tcp */
 	bool _usevc;
 	/** \brief Wether to ignore the tc bit */
@@ -113,6 +115,7 @@ bool ldns_resolver_debug(ldns_resolver *r);
 bool ldns_resolver_usevc(ldns_resolver *r);
 bool ldns_resolver_fail(ldns_resolver *r);
 bool ldns_resolver_dnssec(ldns_resolver *r);
+bool ldns_resolver_dnssec_cd(ldns_resolver *r);
 bool ldns_resolver_igntc(ldns_resolver *r);
 bool ldns_resolver_random(ldns_resolver *r);
 size_t ldns_resolver_nameserver_count(ldns_resolver *r);
@@ -145,6 +148,7 @@ void ldns_resolver_set_defnames(ldns_resolver *r, bool b);
 void ldns_resolver_set_usevc(ldns_resolver *r, bool b);
 void ldns_resolver_set_dnsrch(ldns_resolver *r, bool b);
 void ldns_resolver_set_dnssec(ldns_resolver *r, bool b);
+void ldns_resolver_set_dnssec_cd(ldns_resolver *r, bool b);
 void ldns_resolver_set_retrans(ldns_resolver *r, uint8_t re);
 void ldns_resolver_set_retry(ldns_resolver *r, uint8_t re);
 void ldns_resolver_set_ip6(ldns_resolver *r, uint8_t i);
