@@ -871,7 +871,7 @@ ldns_status
 ldns_pktheader2buffer_str(ldns_buffer *output, ldns_pkt *pkt)
 {
 	ldns_lookup_table *opcode = ldns_lookup_by_id(ldns_opcodes,
-			                    (int) ldns_pkt_opcode(pkt));
+			                    (int) ldns_pkt_get_opcode(pkt));
 	ldns_lookup_table *rcode = ldns_lookup_by_id(ldns_rcodes,
 			                    (int) ldns_pkt_rcode(pkt));
 
@@ -879,7 +879,7 @@ ldns_pktheader2buffer_str(ldns_buffer *output, ldns_pkt *pkt)
 	if (opcode) {
 		ldns_buffer_printf(output, "opcode: %s, ", opcode->name);
 	} else {
-		ldns_buffer_printf(output, "opcode: ?? (%u), ", ldns_pkt_opcode(pkt));
+		ldns_buffer_printf(output, "opcode: ?? (%u), ", ldns_pkt_get_opcode(pkt));
 	}
 	if (rcode) {
 		ldns_buffer_printf(output, "rcode: %s, ", rcode->name);

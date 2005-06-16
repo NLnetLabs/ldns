@@ -18,7 +18,7 @@ COMPILE         = $(CC) $(CPPFLAGS) $(CFLAGS)
 LINK            = $(CC) $(CFLAGS) $(LDFLAGS) $(LIBS)
 
 HEADER		= config.h
-TESTS		= run-test0 run-test7 run-test18 run-test19 run-test20
+TESTS		= run-test0 run-test7 run-test18 run-test19 run-test20 notify
 
 .PHONY:	all clean realclean
 
@@ -41,6 +41,9 @@ run-test19:       run-test19.o
 
 run-test20:       run-test20.o 
 		$(LINK) -lssl -o $@ $+ 
+	
+notify: 	notify.o
+		$(LINK) -o $@ $+
 
 
 ## implicit rule

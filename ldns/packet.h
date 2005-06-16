@@ -17,6 +17,16 @@
 #include <ldns/common.h>
 #include <ldns/rr.h>
 
+/* opcodes for pkt's */
+enum ldns_enum_pkt_opcode {
+	LDNS_PACKET_QUERY = 0,
+	LDNS_PACKET_IQUERY = 1,
+	LDNS_PACKET_STATUS = 2,
+	LDNS_PACKET_NOTIFY = 4,
+	LDNS_PACKET_UPDATE = 5
+};
+typedef enum ldns_enum_pkt_opcode ldns_pkt_opcode;
+
 /**
  *  Header of a dns packet
  *
@@ -41,7 +51,7 @@ struct ldns_struct_hdr
 	/**  Authentic data */
 	bool _ad;
 	/**  Query type */
-	uint8_t _opcode;	 /* XXX 8 bits? */
+	ldns_pkt_opcode _opcode;	 /* XXX 8 bits? */
 	/**  Response code */
 	uint8_t _rcode;
 	/**  question sec */
@@ -132,7 +142,8 @@ bool ldns_pkt_cd(const ldns_pkt *p);
 bool ldns_pkt_ra(const ldns_pkt *p);
 bool ldns_pkt_ad(const ldns_pkt *p);
 
-uint8_t ldns_pkt_opcode(const ldns_pkt *p);
+/* conflict with ldns_pkt_opcode type */
+ldns_pkt_opcode ldns_pkt_get_opcode(const ldns_pkt *p);
 uint8_t ldns_pkt_rcode(const ldns_pkt *p);
 uint16_t ldns_pkt_qdcount(const ldns_pkt *p);
 uint16_t ldns_pkt_ancount(const ldns_pkt *p);
@@ -169,7 +180,7 @@ void ldns_pkt_set_rd(ldns_pkt *p, bool b);
 void ldns_pkt_set_cd(ldns_pkt *p, bool b);
 void ldns_pkt_set_ra(ldns_pkt *p, bool b);
 void ldns_pkt_set_ad(ldns_pkt *p, bool b);
-void ldns_pkt_set_opcode(ldns_pkt *p, uint8_t c);
+void ldns_pkt_set_opcode(ldns_pkt *p, ldns_pkt_opcode c);
 void ldns_pkt_set_rcode(ldns_pkt *p, uint8_t c);
 void ldns_pkt_set_qdcount(ldns_pkt *p, uint16_t c);
 void ldns_pkt_set_ancount(ldns_pkt *p, uint16_t c);

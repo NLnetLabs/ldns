@@ -55,6 +55,7 @@ syn keyword  ldnsConstant	LDNS_PORT
 syn keyword  ldnsType           ldns_pkt
 syn keyword  ldnsType           ldns_pkt_section
 syn keyword  ldnsType		ldns_pkt_type
+syn keyword  ldnsType		ldns_pkt_opcode
 syn keyword  ldnsConstant	LDNS_QR
 syn keyword  ldnsConstant	LDNS_AA
 syn keyword  ldnsConstant	LDNS_TC
@@ -73,6 +74,11 @@ syn keyword  ldnsConstant	LDNS_SECTION_AUTHORITY
 syn keyword  ldnsConstant	LDNS_SECTION_ADDITIONAL
 syn keyword  ldnsConstant	LDNS_SECTION_ANY
 syn keyword  ldnsConstant	LDNS_MAX_PACKETLEN
+syn keyword  ldnsConstant	LDNS_PACKET_QUERY
+syn keyword  ldnsConstant	LDNS_PACKET_IQUERY
+syn keyword  ldnsConstant	LDNS_PACKET_STATUS
+syn keyword  ldnsConstant	LDNS_PACKET_NOTIFY
+syn keyword  ldnsConstant	LDNS_PACKET_UPDATE
 
 
 " dns/error.h

@@ -71,8 +71,8 @@ ldns_pkt_ad(const ldns_pkt *packet)
 	return packet->_header->_ad;
 }
 
-uint8_t
-ldns_pkt_opcode(const ldns_pkt *packet)
+ldns_pkt_opcode
+ldns_pkt_get_opcode(const ldns_pkt *packet)
 {
 	return packet->_header->_opcode;
 }
@@ -454,7 +454,7 @@ ldns_pkt_set_ad(ldns_pkt *packet, bool ad)
 }
 
 void
-ldns_pkt_set_opcode(ldns_pkt *packet, uint8_t opcode)
+ldns_pkt_set_opcode(ldns_pkt *packet, ldns_pkt_opcode opcode)
 {
 	packet->_header->_opcode = opcode;
 }
@@ -672,7 +672,7 @@ ldns_pkt_new()
 	ldns_pkt_set_ra(packet, false);
 	ldns_pkt_set_ad(packet, false);
 
-	ldns_pkt_set_opcode(packet, 0);
+	ldns_pkt_set_opcode(packet, LDNS_PACKET_QUERY);
 	ldns_pkt_set_rcode(packet, 0);
 	ldns_pkt_set_id(packet, 0);
 	ldns_pkt_set_size(packet, 0);
@@ -882,7 +882,7 @@ ldns_pkt_clone(ldns_pkt *pkt)
 	ldns_pkt_set_cd(new_pkt, ldns_pkt_cd(pkt));
 	ldns_pkt_set_ra(new_pkt, ldns_pkt_ra(pkt));
 	ldns_pkt_set_ad(new_pkt, ldns_pkt_ad(pkt));
-	ldns_pkt_set_opcode(new_pkt, ldns_pkt_opcode(pkt));
+	ldns_pkt_set_opcode(new_pkt, ldns_pkt_get_opcode(pkt));
 	ldns_pkt_set_rcode(new_pkt, ldns_pkt_rcode(pkt));
 	ldns_pkt_set_qdcount(new_pkt, ldns_pkt_qdcount(pkt));
 	ldns_pkt_set_ancount(new_pkt, ldns_pkt_ancount(pkt));

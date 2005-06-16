@@ -93,6 +93,6 @@ main(int argc, char **argv)
         ldns_rdf_free(nameserver);
         ldns_rdf_free(qname);
         ldns_pkt_free(pkt);
-        ldns_resolver_free(res);
+        ldns_resolver_deep_free(res);
         return 0;
 }
