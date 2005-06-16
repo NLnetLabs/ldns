@@ -73,7 +73,9 @@ ldns_lookup_table ldns_rcodes[] = {
 ldns_lookup_table ldns_opcodes[] = {
         { 0, "QUERY" },
         { 1, "IQUERY" },
-        { 2, "STATUS" },
+        { 2, "STATUS" }, /* there is no 3 */
+	{ 4, "NOTIFY" },
+	{ 5, "UPDATE" },
         { 0, NULL }
 };
 
