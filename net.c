@@ -176,7 +176,9 @@ ldns_send(ldns_pkt **result, ldns_resolver *r, ldns_pkt *query_pkt)
 	LDNS_FREE(ns_rand_array);
 	LDNS_FREE(reply_bytes);
 	ldns_buffer_free(qb);
-	*result = reply;
+	if (result) {
+		*result = reply;
+	}
 	return LDNS_STATUS_OK;
 }
 

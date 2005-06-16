@@ -675,7 +675,9 @@ ldns_resolver_send_pkt(ldns_pkt **answer, ldns_resolver *r, ldns_pkt *query_pkt)
 		}
 	}
 	
-	*answer = answer_pkt;
+	if (answer) {
+		*answer = answer_pkt;
+	}
 	return LDNS_STATUS_OK;
 }
 
