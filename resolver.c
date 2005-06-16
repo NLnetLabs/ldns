@@ -764,7 +764,10 @@ ldns_resolver_send(ldns_pkt **answer, ldns_resolver *r, ldns_rdf *name,
 
 	ldns_pkt_free(query_pkt);
 	
-	*answer = answer_pkt;
+	/* allows answer to be NULL when not interested in return value */
+	if (answer) {
+		*answer = answer_pkt;
+	}
 	return LDNS_STATUS_OK;
 }
 
