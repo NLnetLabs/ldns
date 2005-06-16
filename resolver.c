@@ -686,7 +686,6 @@ ldns_resolver_send(ldns_pkt **answer, ldns_resolver *r, ldns_rdf *name,
 {
 	ldns_pkt *query_pkt;
 	ldns_pkt *answer_pkt;
-	uint16_t id;
 	ldns_status status;
 
 	assert(r != NULL);
@@ -737,9 +736,11 @@ ldns_resolver_send(ldns_pkt **answer, ldns_resolver *r, ldns_rdf *name,
 	}
 	
 	/* TODO: time is a terrible seed */
-	srandom((unsigned) time(NULL) ^ getpid());
-	id = (uint16_t) random();
-	ldns_pkt_set_id(query_pkt, id);
+	/* only set the id if it is not set yet */
+	if (ldns_pkt_id(query_pkt) == 0) {
+		srandom((unsigned) time(NULL) ^ getpid());
+		ldns_pkt_set_id(query_pkt, (uint16_t) random());
+	}
 
 	/* if tsig values are set, tsign it */
 	/* TODO: make last 3 arguments optional too? maybe make complete
