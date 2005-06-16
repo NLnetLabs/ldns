@@ -75,7 +75,7 @@ main(void)
 	if (status == LDNS_STATUS_OK) {
 		printf("packet id: %d\n", (int) ldns_pkt_id(packet));
 		printf("qr bit: %d\n", (int) ldns_pkt_qr(packet));
-		printf("opcode: %d\n",(int) ldns_pkt_opcode(packet));
+		printf("opcode: %d\n",(int) ldns_pkt_get_opcode(packet));
 		printf("aa bit: %d\n",(int) ldns_pkt_aa(packet));
 		printf("tc bit: %d\n",(int) ldns_pkt_tc(packet));
 		printf("rd bit: %d\n",(int) ldns_pkt_rd(packet));

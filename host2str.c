@@ -71,11 +71,11 @@ ldns_lookup_table ldns_rcodes[] = {
 };
 
 ldns_lookup_table ldns_opcodes[] = {
-        { 0, "QUERY" },
-        { 1, "IQUERY" },
-        { 2, "STATUS" }, /* there is no 3 */
-	{ 4, "NOTIFY" },
-	{ 5, "UPDATE" },
+        { LDNS_PACKET_QUERY, "QUERY" },
+        { LDNS_PACKET_IQUERY, "IQUERY" },
+        { LDNS_PACKET_STATUS, "STATUS" }, 
+	{ LDNS_PACKET_NOTIFY, "NOTIFY" },
+	{ LDNS_PACKET_UPDATE, "UPDATE" },
         { 0, NULL }
 };
 
@@ -941,9 +941,8 @@ ldns_pkt2buffer_str(ldns_buffer *output, ldns_pkt *pkt)
 			if (status != LDNS_STATUS_OK) {
 				return status;
 			}
-
-			ldns_buffer_printf(output, "\n");
 		}
+		ldns_buffer_printf(output, "\n");
 		
 		ldns_buffer_printf(output, ";; ANSWER SECTION:\n");
 		for (i = 0; i < ldns_pkt_ancount(pkt); i++) {

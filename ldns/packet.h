@@ -21,7 +21,7 @@
 enum ldns_enum_pkt_opcode {
 	LDNS_PACKET_QUERY = 0,
 	LDNS_PACKET_IQUERY = 1,
-	LDNS_PACKET_STATUS = 2,
+	LDNS_PACKET_STATUS = 2, /* there is no 3?? DNS is weird */
 	LDNS_PACKET_NOTIFY = 4,
 	LDNS_PACKET_UPDATE = 5
 };
