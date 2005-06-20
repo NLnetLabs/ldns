@@ -53,6 +53,7 @@ ldns_zone_set_rrs(ldns_zone *z, ldns_rr_list *rrlist)
 	z->_rrs = rrlist;
 }
 
+#if 0
 /**
  * ixfr function. Work on a ldns_zone and remove and add
  * the rrs from the rrlist
@@ -66,3 +67,4 @@ ldns_zone_ixfr_del_add(ldns_zone *z, ldns_rr_list *del, ldns_rr_list *add)
 {
 	
 }
+#endif

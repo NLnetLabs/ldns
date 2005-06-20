@@ -1,3 +1,10 @@
+20 Jun 2005: 0.66: ldns-team
+	Rel. Focus: drill-pre2 uses some functions which are
+	not in 0.65
+	* dnssec_cd bit function was added
+	* Zone infrastructure was added
+	* Usual fixes in documentation and code
+
 13 Jun 2005: 0.65: ldns-team
 	* Repository is online at: 
 	  http://www.nlnetlabs.nl/ldns/svn/
