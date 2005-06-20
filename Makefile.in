@@ -187,7 +187,7 @@ lint:
 		if [ $$? -ne 0 ] ; then exit 1 ; fi ; \
 	done
 
-tags:	*.c *.h ldns/*.[ch]
+tags:	*.c ldns/*.[ch]
 	ctags *.[ch] ldns/*.[ch]
 
 timegm$U.o:	compat/timegm.c

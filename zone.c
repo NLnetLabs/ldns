@@ -1,6 +1,6 @@
 /* zone.c
  *
- * access functions for ldns_zone
+ * Functions for ldns_zone structure
  * a Net::DNS like library for C
 *
  * (c) NLnet Labs, 2004
