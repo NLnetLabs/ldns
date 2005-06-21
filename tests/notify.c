@@ -49,6 +49,5 @@ main(int argc, char **argv)
 	ldns_pkt_print(stdout, notify);
 
 	/*ldns_resolver_send_pkt(NULL, res, notify)*/
-
         return EXIT_SUCCESS;
 }

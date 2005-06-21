@@ -15,17 +15,20 @@
 
 #if !defined(__cplusplus) && !defined(__bool_true_false_are_defined)
 
-# if defined(HAVE_STDBOOL_H)
-#  include <stdbool.h>
-# else
+#if defined(HAVE_STDBOOL_H)
+#include <stdbool.h>
+#else
 
+/*@ignore@*/
+/* splint barfs on this construct */
 typedef unsigned char bool;
-#  define bool bool
-#  define false 0
-#  define true  1
-#  define __bool_true_false_are_defined 1
+#define bool bool
+#define false 0
+#define true  1
+#define __bool_true_false_are_defined 1
+/*@end@*/
 
-# endif
+#endif
 
 #endif
 
