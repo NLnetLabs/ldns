@@ -118,7 +118,7 @@ uninstall-lib:
 snapshot:	realclean
 		(rm -rf ../ldns-snap-$(DATE)/)
 		(cd .. ; cp -r $(basesrcdir)/ ldns-snap-$(DATE)/)
-		(cd .. ; tar --verbose  --exclude ".svn" -exclude "*.key" --exclude "*.private" --create --file ldns-snap-$(DATE).tar.gz --gzip ldns-snap-$(DATE)/)
+		(cd .. ; tar --verbose  --exclude ".svn" --exclude "*.key" --exclude "*.private" --create --file ldns-snap-$(DATE).tar.gz --gzip ldns-snap-$(DATE)/)
 		(rm -rf ../ldns-snap-$(DATE)/)
 
 release:	realclean
