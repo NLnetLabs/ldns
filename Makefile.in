@@ -81,7 +81,7 @@ doc:		doc/function_manpages
 		cat ldns/*.h | doc/doxyparse.pl -m doc/function_manpages 2>&1 | \
 		grep -v ^doxygen | grep -v ^cat  > doc/ldns_manpages
 
-install:	install-doc install-h install-lib
+install:	install-h install-lib
 
 uninstall:	uninstall-doc uninstall-h uninstall-lib
 
