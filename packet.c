@@ -585,31 +585,26 @@ void ldns_pkt_set_tsig(ldns_pkt *pkt, ldns_rr *rr)
 bool
 ldns_pkt_push_rr(ldns_pkt *packet, ldns_pkt_section section, ldns_rr *rr)
 {
-	ldns_rr_list *rrs;
-
-	/* get the right rr list for this section */
-	rrs = ldns_pkt_get_section_clone(packet, section);
-	if (!rrs) {
-		return false;
-	}
-	/* push the rr */
-	ldns_rr_list_push_rr(rrs, rr);
-	
 	switch(section) {
 		case LDNS_SECTION_QUESTION:
+			ldns_rr_list_push_rr(ldns_pkt_question(packet), rr);
 			ldns_pkt_set_qdcount(packet, ldns_pkt_qdcount(packet) + 1);
 			break;
 		case LDNS_SECTION_ANSWER:
+			ldns_rr_list_push_rr(ldns_pkt_answer(packet), rr);
 			ldns_pkt_set_ancount(packet, ldns_pkt_ancount(packet) + 1);
 			break;
 		case LDNS_SECTION_AUTHORITY:
+			ldns_rr_list_push_rr(ldns_pkt_authority(packet), rr);
 			ldns_pkt_set_nscount(packet, ldns_pkt_nscount(packet) + 1);
 			break;
 		case LDNS_SECTION_ADDITIONAL:
+			ldns_rr_list_push_rr(ldns_pkt_additional(packet), rr);
 			ldns_pkt_set_arcount(packet, ldns_pkt_arcount(packet) + 1);
 			break;
 		case LDNS_SECTION_ANY:
 		case LDNS_SECTION_ANY_NOQUESTION:
+			/* shouldn't this error? */
 			break;
 	}
 	return true;
