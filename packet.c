@@ -158,7 +158,7 @@ ldns_pkt_all_noquestion(ldns_pkt *packet)
 	all2 = ldns_rr_list_cat_clone(all,
 			ldns_pkt_additional(packet));
 	
-	ldns_rr_list_free(all);
+	ldns_rr_list_deep_free(all);
 	return all2;
 }
 
@@ -320,6 +320,10 @@ ldns_pkt_rr_list_by_name_and_type(ldns_pkt *packet, ldns_rdf *ownername, ldns_rr
 			ldns_rr_list_push_rr(new, ldns_rr_clone(ldns_rr_list_rr(rrs, i)));
 			ret = new;
 		}
+	}
+	ldns_rr_list_deep_free(rrs);
+	if (!ret) {
+		ldns_rr_list_free(new);
 	}
 	return ret;
 }

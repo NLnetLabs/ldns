@@ -110,6 +110,9 @@ ldns_send(ldns_pkt **result, ldns_resolver *r, ldns_pkt *query_pkt)
 				ns6->sin6_port = htons(ldns_resolver_port(r));
 				ns_len = (socklen_t)sizeof(struct sockaddr_in6);
 				break;
+			default:
+				LDNS_FREE(ns);
+				return LDNS_STATUS_ERR;
 		}
 		
 		gettimeofday(&tv_s, NULL);

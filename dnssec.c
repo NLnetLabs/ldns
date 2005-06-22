@@ -321,6 +321,7 @@ ldns_verify_rrsig(ldns_rr_list *rrset, ldns_rr *rrsig, ldns_rr *key)
 
 	/* put the signature rr (without the b64) to the verify_buf */
 	if (ldns_rrsig2buffer_wire(verify_buf, rrsig) != LDNS_STATUS_OK) {
+		ldns_rr_list_deep_free(rrset_clone);
 		ldns_buffer_free(rawsig_buf);
 		ldns_buffer_free(verify_buf);
 		return false;
@@ -328,6 +329,7 @@ ldns_verify_rrsig(ldns_rr_list *rrset, ldns_rr *rrsig, ldns_rr *key)
 
 	/* add the rrset in verify_buf */
 	if (ldns_rr_list2buffer_wire(verify_buf, rrset_clone) != LDNS_STATUS_OK) {
+		ldns_rr_list_deep_free(rrset_clone);
 		ldns_buffer_free(rawsig_buf);
 		ldns_buffer_free(verify_buf);
 		return false;
@@ -345,6 +347,7 @@ ldns_verify_rrsig(ldns_rr_list *rrset, ldns_rr *rrsig, ldns_rr *key)
 		 * the base64 encoded key data */
 		if (ldns_rdf2buffer_wire(key_buf,
 				ldns_rr_rdf(key, 3)) != LDNS_STATUS_OK) {
+			ldns_rr_list_deep_free(rrset_clone);
 			ldns_buffer_free(rawsig_buf);
 			ldns_buffer_free(verify_buf);
 			/* returning is bad might screw up
@@ -361,9 +364,7 @@ ldns_verify_rrsig(ldns_rr_list *rrset, ldns_rr *rrsig, ldns_rr *key)
 	}
 
 	/* no longer needed */
-/*
 	ldns_rr_list_deep_free(rrset_clone);
-*/
 	ldns_buffer_free(rawsig_buf);
 	ldns_buffer_free(verify_buf);
 	return result;
