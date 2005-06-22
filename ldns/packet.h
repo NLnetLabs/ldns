@@ -159,7 +159,16 @@ ldns_rr_list *ldns_pkt_question(const ldns_pkt *p);
 ldns_rr_list *ldns_pkt_answer(const ldns_pkt *p);
 ldns_rr_list *ldns_pkt_authority(const ldns_pkt *p);
 ldns_rr_list *ldns_pkt_additional(const ldns_pkt *p);
-ldns_rr_list *ldns_pkt_get_section(ldns_pkt *p, ldns_pkt_section s);
+
+/**
+ * return all the rr_list's in the packet. Clone the lists, instead
+ * of returning pointers. 
+ * \param[in] p the packet to look in
+ * \param[in] s what section(s) to return
+ * \return ldns_rr_list with the rr's or NULL if none were found
+ */
+ldns_rr_list *ldns_pkt_get_section_clone(ldns_pkt *p, ldns_pkt_section s);
+
 ldns_rr_list *ldns_pkt_rr_list_by_name(ldns_pkt *p, ldns_rdf *r, ldns_pkt_section s);
 ldns_rr_list *ldns_pkt_rr_list_by_type(ldns_pkt *p, ldns_rr_type t, ldns_pkt_section s);
 ldns_rr_list *ldns_pkt_rr_list_by_name_and_type(ldns_pkt *packet, ldns_rdf *ownername, ldns_rr_type type, ldns_pkt_section sec);

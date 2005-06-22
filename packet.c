@@ -138,12 +138,12 @@ ldns_pkt_all(ldns_pkt *packet)
 	ldns_rr_list *all;
 
 	all = ldns_rr_list_cat_clone(
-			ldns_pkt_get_section(packet, LDNS_SECTION_QUESTION),
-			ldns_pkt_get_section(packet, LDNS_SECTION_ANSWER));
+			ldns_pkt_question(packet),
+			ldns_pkt_answer(packet));
 	all = ldns_rr_list_cat_clone(all,
-			ldns_pkt_get_section(packet, LDNS_SECTION_AUTHORITY));
+			ldns_pkt_authority(packet));
 	all = ldns_rr_list_cat_clone(all,
-			ldns_pkt_get_section(packet, LDNS_SECTION_ADDITIONAL));
+			ldns_pkt_additional(packet));
 	return all;
 }
 
@@ -153,10 +153,10 @@ ldns_pkt_all_noquestion(ldns_pkt *packet)
 	ldns_rr_list *all, *all2;
 
 	all = ldns_rr_list_cat_clone(
-			ldns_pkt_get_section(packet, LDNS_SECTION_ANSWER),
-			ldns_pkt_get_section(packet, LDNS_SECTION_AUTHORITY));
+			ldns_pkt_answer(packet),
+			ldns_pkt_authority(packet));
 	all2 = ldns_rr_list_cat_clone(all,
-			ldns_pkt_get_section(packet, LDNS_SECTION_ADDITIONAL));
+			ldns_pkt_additional(packet));
 	
 	ldns_rr_list_free(all);
 	return all2;
@@ -245,7 +245,7 @@ ldns_pkt_rr_list_by_name(ldns_pkt *packet, ldns_rdf *ownername, ldns_pkt_section
 		return NULL;
 	}
 
-	rrs = ldns_pkt_get_section(packet, sec);
+	rrs = ldns_pkt_get_section_clone(packet, sec);
 	new = ldns_rr_list_new();
 	ret = NULL;
 
@@ -273,7 +273,7 @@ ldns_pkt_rr_list_by_type(ldns_pkt *packet, ldns_rr_type type, ldns_pkt_section s
 		return NULL;
 	}
 	
-	rrs = ldns_pkt_get_section(packet, sec);
+	rrs = ldns_pkt_get_section_clone(packet, sec);
 	new = ldns_rr_list_new();
 	
 	for(i = 0; i < ldns_rr_list_rr_count(rrs); i++) {
@@ -306,7 +306,7 @@ ldns_pkt_rr_list_by_name_and_type(ldns_pkt *packet, ldns_rdf *ownername, ldns_rr
 		return NULL;
 	}
 	
-	rrs = ldns_pkt_get_section(packet, sec);
+	rrs = ldns_pkt_get_section_clone(packet, sec);
 	new = ldns_rr_list_new();
 	ret = NULL;
 
@@ -337,7 +337,7 @@ ldns_pkt_rr(ldns_pkt *pkt, ldns_pkt_section sec, ldns_rr *rr)
 	uint16_t rr_count;
 	uint16_t i;
 
-	rrs = ldns_pkt_get_section(pkt, sec);
+	rrs = ldns_pkt_get_section_clone(pkt, sec);
 	if (!rrs) {
 		return NULL;
 	}
@@ -380,23 +380,24 @@ ldns_pkt_section_count(const ldns_pkt *packet, ldns_pkt_section s)
 }
 
 ldns_rr_list *
-ldns_pkt_get_section(ldns_pkt *packet, ldns_pkt_section s)
+ldns_pkt_get_section_clone(ldns_pkt *packet, ldns_pkt_section s)
 {
 	switch(s) {
 	case LDNS_SECTION_QUESTION:
-		return ldns_pkt_question(packet);
+		return ldns_rr_list_clone(ldns_pkt_question(packet));
 	case LDNS_SECTION_ANSWER:
-		return ldns_pkt_answer(packet);
+		return ldns_rr_list_clone(ldns_pkt_answer(packet));
 	case LDNS_SECTION_AUTHORITY:
-		return ldns_pkt_authority(packet);
+		return ldns_rr_list_clone(ldns_pkt_authority(packet));
 	case LDNS_SECTION_ADDITIONAL:
-		return ldns_pkt_additional(packet);
+		return ldns_rr_list_clone(ldns_pkt_additional(packet));
 	case LDNS_SECTION_ANY:
+		/* these are already clones */
 		return ldns_pkt_all(packet);
 	case LDNS_SECTION_ANY_NOQUESTION:
 		return ldns_pkt_all_noquestion(packet);
 	default:
-		return 0;
+		return NULL;
 	}
 }
 
@@ -587,7 +588,7 @@ ldns_pkt_push_rr(ldns_pkt *packet, ldns_pkt_section section, ldns_rr *rr)
 	ldns_rr_list *rrs;
 
 	/* get the right rr list for this section */
-	rrs = ldns_pkt_get_section(packet, section);
+	rrs = ldns_pkt_get_section_clone(packet, section);
 	if (!rrs) {
 		return false;
 	}

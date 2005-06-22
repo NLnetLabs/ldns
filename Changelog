@@ -1,3 +1,9 @@
+	: 0.70: ldns-team
+	* ldns_pkt_get_section now returns copies from the rrlists
+	  in the packet. This can be freed by the user program
+
+
+
 20 Jun 2005: 0.66: ldns-team
 	Rel. Focus: drill-pre2 uses some functions which are
 	not in 0.65
