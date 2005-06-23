@@ -523,6 +523,12 @@ ldns_rdf_compare(const ldns_rdf *rd1, const ldns_rdf *rd2)
 {
 	uint16_t i1, i2, i;
 	uint8_t *d1, *d2;
+
+	/* only when both are NULL we can say anything about them */
+	if (!rd1 && !rd2) {
+		return 0;
+	}
+	
 	i1 = ldns_rdf_size(rd1);
 	i2 = ldns_rdf_size(rd1);
 

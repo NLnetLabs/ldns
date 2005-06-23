@@ -19,10 +19,15 @@ main(int argc, char **argv)
 {
 	ldns_rdf *test;
 	ldns_rdf *test2;
+	ldns_rdf *parent;
+	ldns_rdf *child;
 	ldns_rdf *newlabel;
 
 	test = ldns_dname_new_frm_str("bla.miek.nl");
 	test2 = ldns_dname_new_frm_str("www.bla.miek.nl");
+
+	parent = ldns_dname_new_frm_str("yahoo.com");
+	child = ldns_dname_new_frm_str("miek.nl");
 
 	ldns_rdf_print(stdout, test);
 	printf("\n");
@@ -62,7 +67,17 @@ main(int argc, char **argv)
 	printf("\n");
 	ldns_rdf_deep_free(newlabel);
 
-	(void)ldns_dname_is_subdomain(test2, test);
+	if (ldns_dname_is_subdomain(test2, test)) {
+		printf("Yes, it's a subdomain\n");
+	} else {
+		printf("Go fuck your self\n");
+	}
+
+	if (ldns_dname_is_subdomain(child, parent)) {
+		printf("Yes, it's a subdomain\n");
+	} else {
+		printf("Go fuck your self\n");
+	}
 	
 	return 0;
 }
