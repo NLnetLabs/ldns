@@ -118,7 +118,7 @@ syn keyword ldnsMacro 	LDNS_STATUS_NULL
 syn keyword  ldnsType	  	ldns_resolver
 
 " ldns/zone.h
-syn keyword  ldnsType	  	ldns_rr_zone
+syn keyword  ldnsType	  	ldns_zone
 
 " ldns/rr.h 
 syn keyword  ldnsType	  	ldns_rr_list 

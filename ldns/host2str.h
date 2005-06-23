@@ -18,6 +18,7 @@
 #include <ldns/packet.h>
 #include <ldns/buffer.h>
 #include <ldns/resolver.h>
+#include <ldns/zone.h>
 #include <ctype.h>
 
 #include "ldns/util.h"
@@ -338,8 +339,26 @@ ldns_status ldns_rr_list2buffer_str(ldns_buffer *output, ldns_rr_list *list);
  */
 ldns_status ldns_pktheader2buffer_str(ldns_buffer *output, ldns_pkt *pkt);
 
-void ldns_rr_list_print(FILE *, ldns_rr_list *);
+/**
+ * print a rr_list to output
+ * param[in] output the fd to print to
+ * param[in] list the rr_list to print
+ */
+void ldns_rr_list_print(FILE *output, ldns_rr_list *list);
 
-void ldns_resolver_print(FILE *, ldns_resolver *);
+/**
+ * Print a resolver (in sofar that is possible) state
+ * to output.
+ * \param[in] output the fd to print to
+ * \param[in] r the resolver to print
+ */
+void ldns_resolver_print(FILE *output, ldns_resolver *r);
+
+/**
+ * Print a zone structure * to output.
+ * \param[in] output the fd to print to
+ * \param[in] z the zone to print
+ */
+void ldns_zone_print(FILE *output, ldns_zone *z);
 
 #endif

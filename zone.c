@@ -51,7 +51,6 @@ ldns_zone_push_rr(ldns_zone *z, ldns_rr *rr)
 			ldns_zone_rrs(z), rr);
 }
 
-
 #if 0
 /**
  * ixfr function. Work on a ldns_zone and remove and add

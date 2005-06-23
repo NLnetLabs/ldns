@@ -1329,3 +1329,10 @@ ldns_resolver_print(FILE *output, ldns_resolver *r)
 		fprintf(output, "\n");
 	}
 }
+
+void
+ldns_zone_print(FILE *output, ldns_zone *z)
+{
+	ldns_rr_print(output, ldns_zone_soa(z));
+	ldns_rr_list_print(output, ldns_zone_rrs(z));
+}
