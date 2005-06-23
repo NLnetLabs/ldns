@@ -1,3 +1,13 @@
+/*
+ * wire2host.h - from wire conversion routines
+ *
+ * a Net::DNS like library for C
+ *
+ * (c) NLnet Labs, 2004, 2005
+ *
+ * See the file LICENSE for the license
+ */
+
 #include <ldns/rdata.h>
 
 #ifndef _LDNS_WIRE2HOST_H

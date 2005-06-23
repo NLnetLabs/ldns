@@ -1,11 +1,9 @@
-/**
- * \file rr.h
- *
- *  resource record definitions
+/*
+ * rr.h -  resource record definitions
  *
  * a Net::DNS like library for C
  *
- * (c) NLnet Labs, 2004
+ * (c) NLnet Labs, 2004, 2005
  *
  * See the file LICENSE for the license
  */

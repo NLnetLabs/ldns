@@ -1,3 +1,12 @@
+/**
+ * str2host.h - conversion from str to the host fmt
+ *
+ * a Net::DNS like library for C
+ *
+ * (c) NLnet Labs, 2004, 2005
+ *
+ * See the file LICENSE for the license
+ */
 
 #ifndef _LDNS_2HOST_H
 #define _LDNS_2HOST_H

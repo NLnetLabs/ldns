@@ -1,3 +1,12 @@
+/**
+ * host2str.h -  txt presentation of RRs
+ *
+ * a Net::DNS like library for C
+ *
+ * (c) NLnet Labs, 2004, 2005
+ *
+ * See the file LICENSE for the license
+ */
 
 #ifndef _LDNS_HOST2STR_H
 #define _LDNS_HOST2STR_H

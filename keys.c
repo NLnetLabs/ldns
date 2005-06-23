@@ -4,6 +4,8 @@
  * This module should hide some of the openSSL complexities
  * and give a general interface for private keys and hmac
  * handling
+ *
+ * (c) NLnet Labs, 2004, 2005
  */
 
 #include <ldns/config.h>

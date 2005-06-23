@@ -1,3 +1,12 @@
+/*
+ * host2wire.h - 2wire conversion routines
+ *
+ * a Net::DNS like library for C
+ *
+ * (c) NLnet Labs, 2004, 2005
+ *
+ * See the file LICENSE for the license
+ */
 
 #ifndef _LDNS_HOST2WIRE_H
 #define _LDNS_HOST2WIRE_H
