@@ -37,7 +37,7 @@ ldns_rdf	*ldns_dname_left_chop(ldns_rdf *d);
  * \param[in] *r the rdf
  * \return the number of labels
  */     
-uint8_t         ldns_dname_label_count(ldns_rdf *r);
+uint8_t         ldns_dname_label_count(const ldns_rdf *r);
 
 /**
  * Create a new dname rdf from a string
@@ -53,11 +53,32 @@ ldns_rdf	*ldns_dname_new_frm_str(const char *str);
  * \return ldns_rdf*
  */
 ldns_rdf	*ldns_dname_new_frm_data(uint16_t size, const void *data);
+
 /**
  * Put a dname into canonical fmt - ie. lowercase it
  * \param[in] rdf the dname to lowercase
  * \return void
  */
-void		ldns_dname2canonical(const ldns_rdf *rdf);
+void ldns_dname2canonical(const ldns_rdf *rdf);
+
+/**
+ * test wether the name sub falls under parent (i.e. is a subdomain
+ * of parent.
+ * \param[in] sub the name to test
+ * \param[in] parent the parent's name
+ * \return true if sub falls under parent, otherwise false
+ */
+bool ldns_dname_is_subdomain(const ldns_rdf *sub, const ldns_rdf *parent);
+
+/**
+ * look inside the rdf and if it is an LDNS_RDF_TYPE_DNAME
+ * try and retrieve a specific label. The labels are numbered
+ * starting from 0 (left most).
+ * \param[in] rdf the rdf to look in
+ * \param[in] labelpos return the label with this number
+ * \return a pointer to a newly allocated buffer with the
+ * label which is NULL terminated
+ */
+uint8_t * ldns_dname_label(ldns_rdf *rdf, uint8_t labelpos);
 
 #endif	/* !_LDNS_DNAME_H */

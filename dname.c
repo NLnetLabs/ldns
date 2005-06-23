@@ -3,6 +3,8 @@
  *
  * dname specific rdata implementations
  * A dname is a rdf structure with type LDNS_RDF_TYPE_DNAME
+ * It is not a /real/ type! All function must therefor check
+ * for LDNS_RDF_TYPE_DNAME.
  *
  * a Net::DNS like library for C
  *
@@ -19,7 +21,6 @@
 #include <sys/socket.h>
 #include <netdb.h>
 #include <arpa/inet.h>
-
 
 ldns_rdf *
 ldns_dname_cat_clone(ldns_rdf *rd1, ldns_rdf *rd2)
@@ -111,7 +112,7 @@ ldns_dname_left_chop(ldns_rdf *d)
 }
 
 uint8_t         
-ldns_dname_label_count(ldns_rdf *r)
+ldns_dname_label_count(const ldns_rdf *r)
 {       
         uint8_t src_pos;
         uint8_t len;
@@ -167,4 +168,42 @@ ldns_dname2canonical(const ldns_rdf *rd)
 	for (i = 0; i < ldns_rdf_size(rd); i++, rdd++) {
 		*rdd = (uint8_t)LDNS_DNAME_NORMALIZE((int)*rdd);
 	}
+}
+
+bool
+ldns_dname_is_subdomain(const ldns_rdf *sub, const ldns_rdf *parent)
+{
+	uint8_t sub_lab;
+	uint8_t par_lab;
+	int8_t i;
+
+	if (ldns_rdf_get_type(sub) != LDNS_RDF_TYPE_DNAME ||
+			ldns_rdf_get_type(parent) != LDNS_RDF_TYPE_DNAME) {
+		return false;
+	}
+
+	sub_lab = ldns_dname_label_count(sub);
+	par_lab = ldns_dname_label_count(parent);
+
+	/* if sub sits above parent, it cannot be a child/sub domain */
+	if (sub_lab < par_lab) {
+		return false;
+	}
+	
+	/* check all labels the from the parent labels, from right to left. 
+	 * When they /all/ match we have found a subdomain
+	 */
+	for (i = par_lab; i > 0; i--) {
+			/* */
+	}
+	return false;
+}
+
+uint8_t *
+ldns_dname_label(ldns_rdf *rdf, uint8_t labelpos)
+{
+	rdf = rdf;
+	labelpos = labelpos;
+
+	return NULL;
 }

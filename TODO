@@ -24,6 +24,7 @@ o DNSSEC
 o init function? random - load_ssl_errors()
 	- SSL_load_error_str()? 
 o SERVER stuff; open connection and such - NOT DONE AT ALL - will happen in .90
+o const args for all functions
 
 To ponder and discuss:
 ----------------------

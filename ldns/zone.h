@@ -80,5 +80,13 @@ bool ldns_zone_push_rr_list(ldns_zone *z, ldns_rr_list *list);
  */
 bool ldns_zone_push_rr(ldns_zone *z, ldns_rr *rr);
 
+/**
+ * find out if the rr is glue inside zone z
+ * \param[in] z the zone to look for glue
+ * \param[in] rr the rr to test
+ * \return true if rr is glue, otherwise false
+ */
+bool ldns_zone_rr_is_glue(ldns_zone *z, ldns_rr *rr);
+
 
 #endif /* LDNS_ZONE_H */
