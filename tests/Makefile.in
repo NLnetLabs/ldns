@@ -43,7 +43,7 @@ run-test19:       run-test19.o
 run-test20:       run-test20.o 
 		$(LINK) -lssl -o $@ $+ 
 
-dname-label-test.c:       dname-label-test.c.o 
+dname-label-test:       dname-label-test.o 
 		$(LINK) -o $@ $+ 
 	
 notify: 	notify.o
