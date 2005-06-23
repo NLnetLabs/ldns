@@ -114,8 +114,8 @@ ldns_dname_left_chop(ldns_rdf *d)
 uint8_t         
 ldns_dname_label_count(const ldns_rdf *r)
 {       
-        uint8_t src_pos;
-        uint8_t len;
+        uint16_t src_pos;
+        uint16_t len;
         uint8_t i;
         size_t r_size;
 
@@ -199,11 +199,34 @@ ldns_dname_is_subdomain(const ldns_rdf *sub, const ldns_rdf *parent)
 	return false;
 }
 
-uint8_t *
+ldns_rdf *
 ldns_dname_label(ldns_rdf *rdf, uint8_t labelpos)
 {
-	rdf = rdf;
-	labelpos = labelpos;
+	uint8_t labelcnt;
+	uint16_t src_pos;
+	uint16_t len;
+	ldns_rdf *tmpnew;
+	size_t s;
+	
+	if (ldns_rdf_get_type(rdf) != LDNS_RDF_TYPE_DNAME) {
+		return NULL;
+	}
 
+	labelcnt = 0; src_pos = 0;
+	s = ldns_rdf_size(rdf);
+	
+	len = ldns_rdf_data(rdf)[src_pos]; /* label start */
+	while ((len > 0) && src_pos < s) {
+		if (labelcnt == labelpos) {
+			/* found our label */
+			tmpnew = ldns_rdf_new_frm_data(LDNS_RDF_TYPE_DNAME, len + 1,
+					(ldns_rdf_data(rdf) + src_pos));
+			return tmpnew;
+		}
+		src_pos++;
+		src_pos += len;
+		len = ldns_rdf_data(rdf)[src_pos];
+		labelcnt++;
+	}
 	return NULL;
 }
