@@ -38,7 +38,6 @@ struct ldns_struct_zone
 typedef struct ldns_struct_zone ldns_zone;	
 	
 
-
 /**
  * \param[in] z the zone to read from
  * \return the soa record in the zone
@@ -62,6 +61,24 @@ ldns_rr_list * ldns_zone_rrs(ldns_zone *z);
  * \param[in] rrlist the rrlist to use
  */
 void ldns_zone_set_rrs(ldns_zone *z, ldns_rr_list *rrlist);
+
+/**
+ * push an rrlist to a zone structure. This function use pointer
+ * copying, so the rr_list structure inside z is modified!
+ * \param[in] z the zone to add to
+ * \param[in] list the list to add
+ * \return a true on succes otherwise falsed
+ */
+bool ldns_zone_push_rr_list(ldns_zone *z, ldns_rr_list *list);
+
+/**
+ * push an singkle rr to a zone structure. This function use pointer
+ * copying, so the rr_list structure inside z is modified!
+ * \param[in] z the zone to add to
+ * \param[in] rr the rr to add
+ * \return a true on succes otherwise falsed
+ */
+bool ldns_zone_push_rr(ldns_zone *z, ldns_rr *rr);
 
 
 #endif /* LDNS_ZONE_H */

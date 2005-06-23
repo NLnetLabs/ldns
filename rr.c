@@ -480,7 +480,7 @@ ldns_rr_list_deep_free(ldns_rr_list *rr_list)
 
 
 /* add right to left. So we modify *left! */
-ldns_status
+bool
 ldns_rr_list_cat(ldns_rr_list *left, ldns_rr_list *right)
 {
 	uint16_t r_rr_count;
@@ -490,7 +490,7 @@ ldns_rr_list_cat(ldns_rr_list *left, ldns_rr_list *right)
 	if (left) {
 		l_rr_count = ldns_rr_list_rr_count(left);
 	} else {
-		return LDNS_STATUS_NULL;
+		return false;
 	}
 
 	if (right) {
@@ -501,14 +501,14 @@ ldns_rr_list_cat(ldns_rr_list *left, ldns_rr_list *right)
 	
 	if (l_rr_count + r_rr_count > LDNS_MAX_RR ) {
 		/* overflow error */
-		return LDNS_STATUS_ERR;
+		return false;
 	}
 
 	/* push right to left */
 	for(i = 0; i < r_rr_count; i++) {
 		ldns_rr_list_push_rr(left, ldns_rr_list_rr(right, i));
 	}
-	return LDNS_STATUS_OK;
+	return true;
 }
 
 ldns_rr_list *
