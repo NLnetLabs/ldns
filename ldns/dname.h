@@ -78,6 +78,6 @@ bool ldns_dname_is_subdomain(const ldns_rdf *sub, const ldns_rdf *parent);
  * \param[in] labelpos return the label with this number
  * \return a ldns_rdf* with the label as name or NULL on error
  */
-ldns_rdf * ldns_dname_label(ldns_rdf *rdf, uint8_t labelpos);
+ldns_rdf * ldns_dname_label(const ldns_rdf *rdf, uint8_t labelpos);
 
 #endif	/* !_LDNS_DNAME_H */

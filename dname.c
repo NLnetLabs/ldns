@@ -175,7 +175,9 @@ ldns_dname_is_subdomain(const ldns_rdf *sub, const ldns_rdf *parent)
 {
 	uint8_t sub_lab;
 	uint8_t par_lab;
-	int8_t i;
+	int8_t i, j;
+	ldns_rdf *tmp_sub;
+	ldns_rdf *tmp_par;
 
 	if (ldns_rdf_get_type(sub) != LDNS_RDF_TYPE_DNAME ||
 			ldns_rdf_get_type(parent) != LDNS_RDF_TYPE_DNAME) {
@@ -193,14 +195,26 @@ ldns_dname_is_subdomain(const ldns_rdf *sub, const ldns_rdf *parent)
 	/* check all labels the from the parent labels, from right to left. 
 	 * When they /all/ match we have found a subdomain
 	 */
-	for (i = par_lab; i > 0; i--) {
-			/* */
+	j = sub_lab;
+	for (i = par_lab; i >= 0; i--) {
+		tmp_sub = ldns_dname_label(sub, j);
+		tmp_par = ldns_dname_label(parent, i);
+
+		/* compare these */
+		ldns_rdf_print(stdout, tmp_sub);
+		ldns_rdf_print(stdout, tmp_par);
+		printf("\n");
+
+		ldns_rdf_deep_free(tmp_sub);
+		ldns_rdf_deep_free(tmp_par);
+		j--;
+			
 	}
 	return false;
 }
 
 ldns_rdf *
-ldns_dname_label(ldns_rdf *rdf, uint8_t labelpos)
+ldns_dname_label(const ldns_rdf *rdf, uint8_t labelpos)
 {
 	uint8_t labelcnt;
 	uint16_t src_pos;

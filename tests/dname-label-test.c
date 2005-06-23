@@ -18,9 +18,11 @@ int
 main(int argc, char **argv)
 {
 	ldns_rdf *test;
+	ldns_rdf *test2;
 	ldns_rdf *newlabel;
 
-	test = ldns_dname_new_frm_str("www.bla.miek.nl");
+	test = ldns_dname_new_frm_str("bla.miek.nl");
+	test2 = ldns_dname_new_frm_str("www.bla.miek.nl");
 
 	ldns_rdf_print(stdout, test);
 	printf("\n");
@@ -59,5 +61,8 @@ main(int argc, char **argv)
 	ldns_rdf_print(stdout, newlabel);
 	printf("\n");
 	ldns_rdf_deep_free(newlabel);
+
+	(void)ldns_dname_is_subdomain(test2, test);
+	
 	return 0;
 }
