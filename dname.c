@@ -200,18 +200,12 @@ ldns_dname_is_subdomain(const ldns_rdf *sub, const ldns_rdf *parent)
 		tmp_sub = ldns_dname_label(sub, j);
 		tmp_par = ldns_dname_label(parent, i);
 
-		/* compare these */
-		ldns_rdf_print(stdout, tmp_sub);
-		ldns_rdf_print(stdout, tmp_par);
-		printf("\n");
-
 		if (ldns_rdf_compare(tmp_sub, tmp_par) != 0) {
 			/* they are not equal */
 			ldns_rdf_deep_free(tmp_sub);
 			ldns_rdf_deep_free(tmp_par);
 			return false;
 		}
-
 		ldns_rdf_deep_free(tmp_sub);
 		ldns_rdf_deep_free(tmp_par);
 		j--;
