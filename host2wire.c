@@ -243,8 +243,8 @@ ldns_pkt2buffer_wire(ldns_buffer *buffer, const ldns_pkt *packet)
 		ldns_rr_set_class(edns_rr, ldns_pkt_edns_udp_size(packet));
 		edata[0] = ldns_pkt_edns_extended_rcode(packet);
 		edata[1] = ldns_pkt_edns_version(packet);
-		write_uint16(&edata[2], ldns_pkt_edns_z(packet));
-		ldns_rr_set_ttl(edns_rr, read_uint32(edata));
+		ldns_write_uint16(&edata[2], ldns_pkt_edns_z(packet));
+		ldns_rr_set_ttl(edns_rr, ldns_read_uint32(edata));
 		(void)ldns_rr2buffer_wire(buffer, edns_rr, LDNS_SECTION_ADDITIONAL);
 		ldns_rr_free(edns_rr);
 	}

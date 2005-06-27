@@ -625,7 +625,7 @@ ldns_tsig_prepare_pkt_wire(uint8_t *wire, size_t wire_len, size_t *result_len)
 	wire2 = LDNS_XMALLOC(uint8_t, *result_len);
 	memcpy(wire2, wire, *result_len);
 	
-	write_uint16(wire2 + LDNS_ARCOUNT_OFF, ar_count);
+	ldns_write_uint16(wire2 + LDNS_ARCOUNT_OFF, ar_count);
 	
 	return wire2;
 }
@@ -712,7 +712,7 @@ ldns_create_tsig_mac(
 	if (digester) {
 		(void) HMAC(digester, key_bytes, key_size, (void *)wireformat, wiresize, mac_bytes + 2, &md_len);
 	
-		write_uint16(mac_bytes, md_len);
+		ldns_write_uint16(mac_bytes, md_len);
 		result = ldns_rdf_new_frm_data(LDNS_RDF_TYPE_INT16_DATA, md_len + 2, mac_bytes);
 	} else {
 		/*dprintf("No digest found for %s\n", algorithm_name);*/
@@ -843,7 +843,7 @@ ldns_pkt_tsig_sign(ldns_pkt *pkt, const char *key_name, const char *key_data, ui
 	/* bleh :p */
 	if (gettimeofday(&tv_time_signed, NULL) == 0) {
 		time_signed = LDNS_XMALLOC(uint8_t, 6);
-		write_uint64_as_uint48(time_signed, tv_time_signed.tv_sec);
+		ldns_write_uint64_as_uint48(time_signed, tv_time_signed.tv_sec);
 	} else {
 		status = LDNS_STATUS_INTERNAL_ERR;
 		goto clean;

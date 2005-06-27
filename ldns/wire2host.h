@@ -84,26 +84,26 @@
 #define	LDNS_RA_CLR(wirebuf)	(*(wirebuf+3) &= ~LDNS_RA_MASK)
 
 /* Query ID */
-#define	LDNS_ID_WIRE(wirebuf)			(read_uint16(wirebuf))
+#define	LDNS_ID_WIRE(wirebuf)			(ldns_read_uint16(wirebuf))
 
 /* Counter of the question section */
 #define LDNS_QDCOUNT_OFF		4
 /*
 #define	QDCOUNT(wirebuf)		(ntohs(*(uint16_t *)(wirebuf+QDCOUNT_OFF)))
 */
-#define	LDNS_QDCOUNT(wirebuf)		(read_uint16(wirebuf+LDNS_QDCOUNT_OFF))
+#define	LDNS_QDCOUNT(wirebuf)		(ldns_read_uint16(wirebuf+LDNS_QDCOUNT_OFF))
 
 /* Counter of the answer section */
 #define LDNS_ANCOUNT_OFF		6
-#define	LDNS_ANCOUNT(wirebuf)		(read_uint16(wirebuf+LDNS_ANCOUNT_OFF))
+#define	LDNS_ANCOUNT(wirebuf)		(ldns_read_uint16(wirebuf+LDNS_ANCOUNT_OFF))
 
 /* Counter of the authority section */
 #define LDNS_NSCOUNT_OFF		8
-#define	LDNS_NSCOUNT(wirebuf)		(read_uint16(wirebuf+LDNS_NSCOUNT_OFF))
+#define	LDNS_NSCOUNT(wirebuf)		(ldns_read_uint16(wirebuf+LDNS_NSCOUNT_OFF))
 
 /* Counter of the additional section */
 #define LDNS_ARCOUNT_OFF		10
-#define	LDNS_ARCOUNT(wirebuf)		(read_uint16(wirebuf+LDNS_ARCOUNT_OFF))
+#define	LDNS_ARCOUNT(wirebuf)		(ldns_read_uint16(wirebuf+LDNS_ARCOUNT_OFF))
 
 /**
  * converts the data on the uint8_t bytearray (in wire format) to a DNS packet.
