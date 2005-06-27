@@ -49,7 +49,7 @@
  * (big endian).
  */
 INLINE uint16_t
-read_uint16(const void *src)
+ldns_read_uint16(const void *src)
 {
 #ifdef ALLOW_UNALIGNED_ACCESSES
 	return ntohs(*(uint16_t *) src);
@@ -60,7 +60,7 @@ read_uint16(const void *src)
 }
 
 INLINE uint32_t
-read_uint32(const void *src)
+ldns_read_uint32(const void *src)
 {
 #ifdef ALLOW_UNALIGNED_ACCESSES
 	return ntohl(*(uint32_t *) src);
@@ -78,7 +78,7 @@ read_uint32(const void *src)
  * (big endian).
  */
 INLINE void
-write_uint16(void *dst, uint16_t data)
+ldns_write_uint16(void *dst, uint16_t data)
 {
 #ifdef ALLOW_UNALIGNED_ACCESSES
 	* (uint16_t *) dst = htons(data);
@@ -90,7 +90,7 @@ write_uint16(void *dst, uint16_t data)
 }
 
 INLINE void
-write_uint32(void *dst, uint32_t data)
+ldns_write_uint32(void *dst, uint32_t data)
 {
 #ifdef ALLOW_UNALIGNED_ACCESSES
 	* (uint32_t *) dst = htonl(data);
@@ -105,7 +105,7 @@ write_uint32(void *dst, uint32_t data)
 
 /* warning. */
 INLINE void
-write_uint64_as_uint48(void *dst, uint64_t data)
+ldns_write_uint64_as_uint48(void *dst, uint64_t data)
 {
 	uint8_t *p = (uint8_t *) dst;
 	p[0] = (uint8_t) ((data >> 40) & 0xff);
