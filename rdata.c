@@ -159,7 +159,7 @@ ldns_rdf *
 ldns_native2rdf_int16(ldns_rdf_type type, uint16_t value)
 {
 	uint16_t *rdf_data = LDNS_XMALLOC(uint16_t, 1);
-	write_uint16(rdf_data, value);
+	ldns_write_uint16(rdf_data, value);
 	return ldns_rdf_new(type, 2, rdf_data);
 }
 
@@ -167,7 +167,7 @@ ldns_rdf *
 ldns_native2rdf_int32(ldns_rdf_type type, uint32_t value)
 {
 	uint32_t *rdf_data = LDNS_XMALLOC(uint32_t, 1);
-	write_uint32(rdf_data, value);
+	ldns_write_uint32(rdf_data, value);
 	return ldns_rdf_new(type, 4, rdf_data);
 }
 
@@ -175,7 +175,7 @@ ldns_rdf *
 ldns_native2rdf_int16_data(uint16_t size, uint8_t *data)
 {
 	uint8_t *rdf_data = LDNS_XMALLOC(uint8_t, (size_t) size + 2);
-	write_uint16(rdf_data, size);
+	ldns_write_uint16(rdf_data, size);
 	memcpy(rdf_data + 2, data, size);
 	return ldns_rdf_new(LDNS_RDF_TYPE_INT16_DATA, size + 2, rdf_data);
 }

@@ -82,7 +82,7 @@ ldns_wire2dname(ldns_rdf **dname, const uint8_t *wire, size_t max, size_t *pos)
 			/* remove first two bits */
 			pointer_target_buf[0] = wire[*pos] & 63;
 			pointer_target_buf[1] = wire[*pos + 1];
-			pointer_target = read_uint16(pointer_target_buf);
+			pointer_target = ldns_read_uint16(pointer_target_buf);
 
 			if (pointer_target == 0) {
 				return LDNS_STATUS_INVALID_POINTER;
@@ -161,7 +161,7 @@ ldns_wire2rdf(ldns_rr *rr, const uint8_t *wire,
 		return LDNS_STATUS_PACKET_OVERFLOW;
 	}
 
-	rd_length = read_uint16(&wire[*pos]);
+	rd_length = ldns_read_uint16(&wire[*pos]);
 	*pos = *pos + 2;
 
 	if (*pos + rd_length > max) {
@@ -224,7 +224,7 @@ ldns_wire2rdf(ldns_rr *rr, const uint8_t *wire,
 			cur_rdf_length = 4;
 			break;
 		case LDNS_RDF_TYPE_INT16_DATA:
-			cur_rdf_length = (size_t) read_uint16(&wire[*pos])+2;
+			cur_rdf_length = (size_t) ldns_read_uint16(&wire[*pos])+2;
 			break;
 		case LDNS_RDF_TYPE_APL:
 		case LDNS_RDF_TYPE_B64:
@@ -281,15 +281,15 @@ ldns_wire2rr(ldns_rr **rr_p, const uint8_t *wire, size_t max,
 
 	ldns_rr_set_owner(rr, owner);
 	
-	ldns_rr_set_type(rr, read_uint16(&wire[*pos]));
+	ldns_rr_set_type(rr, ldns_read_uint16(&wire[*pos]));
 	*pos = *pos + 2;
 
-	ldns_rr_set_class(rr, read_uint16(&wire[*pos]));
+	ldns_rr_set_class(rr, ldns_read_uint16(&wire[*pos]));
 	*pos = *pos + 2;
 
 	if (section != LDNS_SECTION_QUESTION &&
 	    ldns_rr_get_type(rr) != LDNS_RR_TYPE_OPT) {
-		ldns_rr_set_ttl(rr, read_uint32(&wire[*pos]));	
+		ldns_rr_set_ttl(rr, ldns_read_uint32(&wire[*pos]));	
 		*pos = *pos + 4;
 		status = ldns_wire2rdf(rr, wire, max, pos);
 		LDNS_STATUS_CHECK_GOTO(status, status_error);
@@ -379,10 +379,10 @@ ldns_wire2pkt(ldns_pkt **packet_p, const uint8_t *wire, size_t max)
 		                      LDNS_SECTION_ADDITIONAL);
 		if (ldns_rr_get_type(rr) == LDNS_RR_TYPE_OPT) {
 			ldns_pkt_set_edns_udp_size(packet, ldns_rr_get_class(rr));
-			write_uint32(data, ldns_rr_ttl(rr));
+			ldns_write_uint32(data, ldns_rr_ttl(rr));
 			ldns_pkt_set_edns_extended_rcode(packet, data[0]);
 			ldns_pkt_set_edns_version(packet, data[1]);
-			ldns_pkt_set_edns_z(packet, read_uint16(&data[2]));
+			ldns_pkt_set_edns_z(packet, ldns_read_uint16(&data[2]));
 			ldns_pkt_set_edns_data(packet, ldns_rr_rdf(rr, 0));
 			ldns_rr_free(rr);
 			ldns_pkt_set_arcount(packet, ldns_pkt_arcount(packet) - 1);

@@ -340,7 +340,7 @@ INLINE void
 ldns_buffer_write_u16_at(ldns_buffer *buffer, size_t at, uint16_t data)
 {
 	assert(ldns_buffer_available_at(buffer, at, sizeof(data)));
-	write_uint16(buffer->_data + at, data);
+	ldns_write_uint16(buffer->_data + at, data);
 }
 
 /**
@@ -360,7 +360,7 @@ INLINE void
 ldns_buffer_write_u32_at(ldns_buffer *buffer, size_t at, uint32_t data)
 {
 	assert(ldns_buffer_available_at(buffer, at, sizeof(data)));
-	write_uint32(buffer->_data + at, data);
+	ldns_write_uint32(buffer->_data + at, data);
 }
 
 /**
@@ -421,7 +421,7 @@ INLINE uint16_t
 ldns_buffer_read_u16_at(ldns_buffer *buffer, size_t at)
 {
 	assert(ldns_buffer_available_at(buffer, at, sizeof(uint16_t)));
-	return read_uint16(buffer->_data + at);
+	return ldns_read_uint16(buffer->_data + at);
 }
 
 /**
@@ -442,7 +442,7 @@ INLINE uint32_t
 ldns_buffer_read_u32_at(ldns_buffer *buffer, size_t at)
 {
 	assert(ldns_buffer_available_at(buffer, at, sizeof(uint32_t)));
-	return read_uint32(buffer->_data + at);
+	return ldns_read_uint32(buffer->_data + at);
 }
 
 /**
