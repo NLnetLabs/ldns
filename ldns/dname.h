@@ -26,6 +26,13 @@
  */
 ldns_rdf 	*ldns_dname_cat_clone(ldns_rdf *rd1, ldns_rdf *rd2);
 /**
+ * concatenates rd2 after rd1 (rd2 is copied, rd1 is modified)
+ * \param[in] rd1 the leftside
+ * \param[in] rd2 the rightside
+ * \return LDNS_STATUS_OK on success
+ */
+ldns_status 	*ldns_dname_cat(ldns_rdf *rd1, ldns_rdf *rd2);
+/**
  * chop one label off a dname. so 
  * wwww.nlnetlabs.nl, becomes nlnetlabs.nl
  * \param[in] d the dname to chop

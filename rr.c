@@ -772,6 +772,7 @@ ldns_rr_list_clone(ldns_rr_list *rrlist)
 		    );
 		if (!r) {
 			/* huh, failure in cloning */
+			ldns_rr_list_free(new_list);
 			return NULL;
 		}
 		ldns_rr_list_push_rr(new_list, r);

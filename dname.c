@@ -58,35 +58,23 @@ ldns_dname_cat_clone(ldns_rdf *rd1, ldns_rdf *rd2)
  * or do we modify rd1 inplace?
  * I guess the latter is better... MG... ?
  */
-ldns_rdf *
+ldns_status
 ldns_dname_cat(ldns_rdf *rd1, ldns_rdf *rd2)
 {
-	ldns_rdf *new;
-	uint16_t new_size;
-	uint8_t *buf;
+	uint16_t size;
 
 	if (ldns_rdf_get_type(rd1) != LDNS_RDF_TYPE_DNAME ||
 			ldns_rdf_get_type(rd2) != LDNS_RDF_TYPE_DNAME)
 	{
-		return NULL;
+		return LDNS_STATUS_ERR;
 	}
 
-	/* we overwrite the nullbyte of rd1 */
-	new_size = ldns_rdf_size(rd1) + ldns_rdf_size(rd2) - 1;
-	buf = LDNS_XMALLOC(uint8_t, new_size);
-	if (!buf) {
-		return NULL;
-	}
+	size = ldns_rdf_size(rd1) + ldns_rdf_size(rd2) - 1;
+	ldns_rdf_set_data(rd1, LDNS_XREALLOC(ldns_rdf_data(rd1), uint8_t, size));
+	memcpy(ldns_rdf_data(rd1) + ldns_rdf_size(rd1) - 1, ldns_rdf_data(rd2), ldns_rdf_size(rd2));
+	ldns_rdf_set_size(rd1, size);
 
-	/* put the two dname's after each other */
-	memcpy(buf, ldns_rdf_data(rd1), ldns_rdf_size(rd1) - 1);
-	memcpy(buf + ldns_rdf_size(rd1) - 1,
-			ldns_rdf_data(rd2), ldns_rdf_size(rd2));
-	
-	new = ldns_rdf_new_frm_data(LDNS_RDF_TYPE_DNAME, new_size, buf);
-
-	LDNS_FREE(buf);
-	return new;
+	return LDNS_STATUS_OK;
 }
 
 ldns_rdf *

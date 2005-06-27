@@ -65,6 +65,7 @@ ldns_send(ldns_pkt **result, ldns_resolver *r, ldns_pkt *query_pkt)
 	}
 
 	if (ldns_pkt2buffer_wire(qb, query_pkt) != LDNS_STATUS_OK) {
+		ldns_buffer_free(qb);
 		return LDNS_STATUS_ERR;
 	}
 	/* random should already be setup - isn't so bad
@@ -112,6 +113,7 @@ ldns_send(ldns_pkt **result, ldns_resolver *r, ldns_pkt *query_pkt)
 				break;
 			default:
 				LDNS_FREE(ns);
+				ldns_buffer_free(qb);
 				return LDNS_STATUS_ERR;
 		}
 		
@@ -128,6 +130,7 @@ ldns_send(ldns_pkt **result, ldns_resolver *r, ldns_pkt *query_pkt)
 		if (!reply_bytes) {
 			if (ldns_resolver_fail(r)) {
 				LDNS_FREE(ns);
+				ldns_buffer_free(qb);
 				return LDNS_STATUS_ERR;
 			} else {
 				continue;
@@ -138,6 +141,7 @@ ldns_send(ldns_pkt **result, ldns_resolver *r, ldns_pkt *query_pkt)
 		    LDNS_STATUS_OK) {
 			LDNS_FREE(reply_bytes);
 			LDNS_FREE(ns);
+			ldns_buffer_free(qb);
 			return LDNS_STATUS_ERR;
 		}
 		

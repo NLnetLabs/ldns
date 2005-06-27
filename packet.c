@@ -285,6 +285,8 @@ ldns_pkt_rr_list_by_type(ldns_pkt *packet, ldns_rr_type type, ldns_pkt_section s
 					     );
 		}
 	}
+	ldns_rr_list_deep_free(rrs);
+
 	if (ldns_rr_list_rr_count(new) == 0) {
 		ldns_rr_list_free(new);
 		return NULL;

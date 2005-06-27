@@ -43,6 +43,7 @@ main(int argc, char *argv[])
 
 	/* create a new resolver from /etc/resolv.conf */
 	res = ldns_resolver_new_frm_file(NULL);
+
 	if (!res) {
 		exit(1);
 	}
@@ -51,6 +52,9 @@ main(int argc, char *argv[])
 	 * records of the domain given on the command line
 	 */
 	p = ldns_resolver_query(res, domain, LDNS_RR_TYPE_MX, LDNS_RR_CLASS_IN, LDNS_RD);
+
+	ldns_rdf_deep_free(domain);
+	
         if (!p)  {
 		exit(1);
         } else {
@@ -62,13 +66,18 @@ main(int argc, char *argv[])
 			fprintf(stderr, 
 					" *** invalid answer name %s after MX query for %s\n",
 					argv[1], argv[1]);
+                        ldns_pkt_free(p);
+                        ldns_resolver_deep_free(res);
 			exit(1);
 		} else {
 			/* sort the list nicely */
 			/* ldns_rr_list_sort(mx); */
 			/* print the rrlist to stdout */
 			ldns_rr_list_print(stdout, mx);
+			ldns_rr_list_deep_free(mx);
 		}
         }
+        ldns_pkt_free(p);
+        ldns_resolver_deep_free(res);
         return 0;
 }
