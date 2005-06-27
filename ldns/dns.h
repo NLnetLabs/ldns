@@ -8,8 +8,8 @@
  * A bunch of defines that are used in the DNS
  */
 
-#ifndef _DNS_H_
-#define _DNS_H_
+#ifndef _LDNS_DNS_H_
+#define _LDNS_DNS_H_
 
 #include <ldns/util.h>
 #include <ldns/buffer.h>
@@ -54,4 +54,4 @@ extern ldns_lookup_table ldns_rr_classes[];
 extern ldns_lookup_table ldns_rcodes[];
 extern ldns_lookup_table ldns_opcodes[];
 
-#endif /* _DNS_H_ */
+#endif /* _LDNS_DNS_H_ */

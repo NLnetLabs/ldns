@@ -7,8 +7,8 @@
  * See the file LICENSE for the license
  */
 
-#ifndef _PARSE_H_
-#define _PARSE_H_
+#ifndef _LDNS_PARSE_H_
+#define _LDNS_PARSE_H_
 
 #include <ldns/common.h>
 #include <ldns/buffer.h>
@@ -92,4 +92,4 @@ void ldns_bskipcs(ldns_buffer *buffer, const char *s);
  */
 void ldns_fskipcs(FILE *fp, const char *s);
 
-#endif /*  _PARSE_H */
+#endif /* _LDNS_PARSE_H */

@@ -8,8 +8,8 @@
  * A bunch of defines that are used in the DNS
  */
 
-#ifndef _DNSSEC_H_
-#define _DNSSEC_H_
+#ifndef _LDNS_DNSSEC_H_
+#define _LDNS_DNSSEC_H_
 
 #include <openssl/ssl.h>
 #include <ldns/common.h>
@@ -166,4 +166,4 @@ ldns_rr * ldns_create_nsec(ldns_rr_list *before, ldns_rr_list *after);
 ldns_rr_list *ldns_pkt_verify(ldns_pkt *p, ldns_rr_type t, ldns_rdf *o, ldns_rr_list *k, ldns_rr_list *s);
 
 
-#endif /* _DNSSEC_H_ */
+#endif /* _LDNS_DNSSEC_H_ */
