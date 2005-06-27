@@ -53,11 +53,6 @@ ldns_dname_cat_clone(ldns_rdf *rd1, ldns_rdf *rd2)
 	return new;
 }
 
-/* pointer copy only */
-/* this is a bitch - do we free rd1 and then copy new to rd1
- * or do we modify rd1 inplace?
- * I guess the latter is better... MG... ?
- */
 ldns_status
 ldns_dname_cat(ldns_rdf *rd1, ldns_rdf *rd2)
 {
