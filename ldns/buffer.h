@@ -31,7 +31,7 @@
 /**
  * LDNS implementation of buffers to ease operations
  */
-struct buffer
+struct ldns_struct_buffer
 {
 	/** The current position used for reading/writing */ 
 	size_t   _position;
@@ -51,7 +51,7 @@ struct buffer
 	/** The current state of the buffer */
 	ldns_status _status;
 };
-typedef struct buffer ldns_buffer;
+typedef struct ldns_struct_buffer ldns_buffer;
 
 
 #ifdef NDEBUG
