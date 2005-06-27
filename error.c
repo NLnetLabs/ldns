@@ -39,6 +39,7 @@ ldns_lookup_table ldns_error_str[] = {
         { LDNS_STATUS_CRYPTO_UNKNOWN_ALGO, "Uknown cryptographic algorithm" },
         { LDNS_STATUS_CRYPTO_NO_RRSIG, "No DNSSEC signature(s)" },
         { LDNS_STATUS_CRYPTO_NO_DNSKEY, "No DNSSEC public key" },
+        { LDNS_STATUS_CRYPTO_NO_TRUSTED_DNSKEY, "No trusted DNSSEC public key" },
         { LDNS_STATUS_CRYPTO_BOGUS, "Bogus DNSSEC signature" },
 	{ 0, NULL }
 };
