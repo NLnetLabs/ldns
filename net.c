@@ -289,7 +289,7 @@ ldns_tcp_send_query(ldns_buffer *qbin, int sockfd, const struct sockaddr_storage
 
 	/* add length of packet */
 	sendbuf = LDNS_XMALLOC(uint8_t, ldns_buffer_position(qbin) + 2);
-	write_uint16(sendbuf, ldns_buffer_position(qbin));
+	ldns_write_uint16(sendbuf, ldns_buffer_position(qbin));
 	memcpy(sendbuf+2, ldns_buffer_export(qbin), ldns_buffer_position(qbin));
 
 	bytes = sendto(sockfd, sendbuf,
@@ -330,7 +330,7 @@ ldns_tcp_read_wire(int sockfd, size_t *size)
 		}
 	}
 
-	wire_size = read_uint16(wire);
+	wire_size = ldns_read_uint16(wire);
 	
 	LDNS_FREE(wire);
 	wire = LDNS_XMALLOC(uint8_t, wire_size);

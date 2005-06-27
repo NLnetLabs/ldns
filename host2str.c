@@ -142,7 +142,7 @@ ldns_rdf2buffer_str_int8(ldns_buffer *output, ldns_rdf *rdf)
 ldns_status
 ldns_rdf2buffer_str_int16(ldns_buffer *output, ldns_rdf *rdf)
 {
-	uint16_t data = read_uint16(ldns_rdf_data(rdf));
+	uint16_t data = ldns_read_uint16(ldns_rdf_data(rdf));
 	ldns_buffer_printf(output, "%lu", (unsigned long) data);
 	return ldns_buffer_status(output);
 }
@@ -150,7 +150,7 @@ ldns_rdf2buffer_str_int16(ldns_buffer *output, ldns_rdf *rdf)
 ldns_status
 ldns_rdf2buffer_str_int32(ldns_buffer *output, ldns_rdf *rdf)
 {
-	uint32_t data = read_uint32(ldns_rdf_data(rdf));
+	uint32_t data = ldns_read_uint32(ldns_rdf_data(rdf));
 	ldns_buffer_printf(output, "%lu", (unsigned long) data);
 	return ldns_buffer_status(output);
 }
@@ -159,7 +159,7 @@ ldns_status
 ldns_rdf2buffer_str_time(ldns_buffer *output, ldns_rdf *rdf)
 {
 	/* create a YYYYMMDDHHMMSS string if possible */
-	uint32_t data = read_uint32(ldns_rdf_data(rdf));
+	uint32_t data = ldns_read_uint32(ldns_rdf_data(rdf));
 	time_t data_time;
 	struct tm tm;
 	char date_buf[16];
@@ -245,7 +245,7 @@ ldns_rdf2buffer_str_hex(ldns_buffer *output, ldns_rdf *rdf)
 ldns_status
 ldns_rdf2buffer_str_type(ldns_buffer *output, ldns_rdf *rdf)
 {
-        uint16_t data = read_uint16(ldns_rdf_data(rdf));
+        uint16_t data = ldns_read_uint16(ldns_rdf_data(rdf));
 	const ldns_rr_descriptor *descriptor;
 
 	descriptor = ldns_rr_descript(data);
@@ -290,7 +290,7 @@ ldns_rdf2buffer_str_alg(ldns_buffer *output, ldns_rdf *rdf)
 ldns_status
 ldns_rdf2buffer_str_cert(ldns_buffer *output, ldns_rdf *rdf)
 {
-        uint16_t data = read_uint16(ldns_rdf_data(rdf));
+        uint16_t data = ldns_read_uint16(ldns_rdf_data(rdf));
 	ldns_lookup_table *lt;
 
  	lt = ldns_lookup_by_id(ldns_certificate_types, (int) data);
@@ -327,9 +327,9 @@ ldns_rdf2buffer_str_loc(ldns_buffer *output, ldns_rdf *rdf)
 		horizontal_precision = ldns_rdf_data(rdf)[2];
 		vertical_precision = ldns_rdf_data(rdf)[3];
 		
-		latitude = read_uint32(&ldns_rdf_data(rdf)[4]);
-		longitude = read_uint32(&ldns_rdf_data(rdf)[8]);
-		altitude = read_uint32(&ldns_rdf_data(rdf)[12]);
+		latitude = ldns_read_uint32(&ldns_rdf_data(rdf)[4]);
+		longitude = ldns_read_uint32(&ldns_rdf_data(rdf)[8]);
+		altitude = ldns_read_uint32(&ldns_rdf_data(rdf)[12]);
 		
 		if (latitude > equator) {
 			northerness = 'N';
@@ -489,7 +489,7 @@ ldns_status
 ldns_rdf2buffer_str_period(ldns_buffer *output, ldns_rdf *rdf)
 {
 	/* period is the number of seconds */
-	uint32_t p = read_uint32(ldns_rdf_data(rdf));
+	uint32_t p = ldns_read_uint32(ldns_rdf_data(rdf));
 	ldns_buffer_printf(output, "%u", p);
 	return ldns_buffer_status(output);
 }
@@ -505,9 +505,9 @@ ldns_rdf2buffer_str_tsigtime(ldns_buffer *output, ldns_rdf *rdf)
 		return LDNS_STATUS_ERR;
 	}
 	
-	tsigtime = read_uint16(data);
+	tsigtime = ldns_read_uint16(data);
 	tsigtime *= 65536;
-	tsigtime += read_uint16(data+2);
+	tsigtime += ldns_read_uint16(data+2);
 	tsigtime *= 65536;
 
 	ldns_buffer_printf(output, "%llu ", tsigtime);
@@ -519,7 +519,7 @@ ldns_status
 ldns_rdf2buffer_str_apl(ldns_buffer *output, ldns_rdf *rdf)
 {
 	uint8_t *data = ldns_rdf_data(rdf);
-	uint16_t address_family = read_uint16(data);
+	uint16_t address_family = ldns_read_uint16(data);
 	uint8_t prefix = data[2];
 	bool negation;
 	uint8_t adf_length;
@@ -530,7 +530,7 @@ ldns_rdf2buffer_str_apl(ldns_buffer *output, ldns_rdf *rdf)
 	
 	/* ipv4 */
 	while (pos < (unsigned int) ldns_rdf_size(rdf)) {
-		address_family = read_uint16(&data[pos]);
+		address_family = ldns_read_uint16(&data[pos]);
 		prefix = data[pos + 2];
 		negation = data[pos + 3] & 0x80;
 		adf_length = data[pos + 3] & 0x7f;

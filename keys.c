@@ -548,7 +548,7 @@ ldns_key_rsa2bin(unsigned char *data, RSA *k, uint16_t *size)
 		data[0] = 0;
 		/* XXX this writing is not endian save or is it? LOOK AT
 		 * THIS AGAIN  */
-		write_uint16(data + 1, (uint16_t) BN_num_bytes(k->e)); 
+		ldns_write_uint16(data + 1, (uint16_t) BN_num_bytes(k->e)); 
 
 		BN_bn2bin(k->e, data + 3); 
 		BN_bn2bin(k->n, data + 4 + BN_num_bytes(k->e));
