@@ -126,6 +126,20 @@ ldns_dname_label_count(const ldns_rdf *r)
 }
 
 ldns_rdf *
+ldns_dname_new(uint16_t s, void *d)
+{
+        ldns_rdf *rd;
+        rd = LDNS_MALLOC(ldns_rdf);
+        if (!rd) {
+                return NULL;
+        }
+        ldns_rdf_set_size(rd, s);
+        ldns_rdf_set_type(rd, LDNS_RDF_TYPE_DNAME);
+        ldns_rdf_set_data(rd, d);
+        return rd;
+}
+
+ldns_rdf *
 ldns_dname_new_frm_str(const char *str)
 {
 	return ldns_rdf_new_frm_str(LDNS_RDF_TYPE_DNAME, str);

@@ -117,8 +117,8 @@ ldns_write_uint64_as_uint48(void *dst, uint64_t data)
 }
 
 /* A general purpose lookup table */
-typedef struct lookup_table ldns_lookup_table;
-struct lookup_table {
+typedef struct ldns_struct_lookup_table ldns_lookup_table;
+struct ldns_struct_lookup_table {
         int id;
         const char *name;
 };

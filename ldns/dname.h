@@ -47,11 +47,19 @@ ldns_rdf	*ldns_dname_left_chop(ldns_rdf *d);
 uint8_t         ldns_dname_label_count(const ldns_rdf *r);
 
 /**
- * Create a new dname rdf from a string
+ * Create a new dname rdf. Copies pointers!
  * \param[in] str string to use
  * \return ldns_rdf*
  */
 ldns_rdf	*ldns_dname_new_frm_str(const char *str);
+
+/**
+ * Create a new dname rdf from a string
+ * \param[in] s the size of the new dname 
+ * \param[in] *data pointer to the actual data
+ * \return ldns_rdf*
+ */
+ldns_rdf	*ldns_dname_new(uint16_t s, void *data);
 
 /**
  * Create a new dname rdf from data (the data is copied)
