@@ -92,19 +92,13 @@ ldns_rdf2buffer_str_dname(ldns_buffer *output, ldns_rdf *dname)
 	data = (uint8_t*)ldns_rdf_data(dname);
 	len = data[src_pos];
 
-	/* single root label */
+	/* special case: root label */
 	if (1 == ldns_rdf_size(dname)) {
 		ldns_buffer_printf(output, ".");
 	} else {
-		/* XXX repeated calls to ldns_rdf_size */
 		while ((len > 0) && src_pos < ldns_rdf_size(dname)) {
 			
 			src_pos++;
-			
-			/*
-			ldns_buffer_write(output, &data[src_pos], len);
-			src_pos += len;
-			*/
 			
 			for(i = 0; i < len; i++) {
 				/* paranoia check for various 'strange' 
@@ -681,10 +675,8 @@ ldns_rdf2buffer_str_ipseckey(ldns_buffer *output, ldns_rdf *rdf)
 ldns_status 
 ldns_rdf2buffer_str_tsig(ldns_buffer *output, ldns_rdf *rdf)
 {
-	output = output;
-	rdf = rdf;
-	dprintf("%s", "removethisfunctions: ldns_rdf2buffer_str_tsig()\n");
-	return LDNS_STATUS_ERR;
+	/* TSIG RRs have no presentation format, make them #size <data> */
+	return ldns_rdf2buffer_str_unknown(output, rdf);
 }
 
 
