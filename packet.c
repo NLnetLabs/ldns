@@ -673,6 +673,7 @@ ldns_pkt_new()
 	ldns_pkt_set_rd(packet, false);
 	ldns_pkt_set_ra(packet, false);
 	ldns_pkt_set_ad(packet, false);
+	ldns_pkt_set_cd(packet, false);
 
 	ldns_pkt_set_opcode(packet, LDNS_PACKET_QUERY);
 	ldns_pkt_set_rcode(packet, 0);

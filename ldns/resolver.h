@@ -285,4 +285,19 @@ ldns_status ldns_axfr_start(ldns_resolver *resolver, ldns_rdf *domain, ldns_rr_c
  */
 ldns_rr* ldns_axfr_next(ldns_resolver *resolver);
 
+/**
+ * returns true if the axfr transfer has completed (i.e. 2 SOA RRs and no errors were encountered 
+ * \param[in] resolver the resolver that is used
+ * \return bool true if axfr transfer was completed without error
+ */
+bool ldns_axfr_complete(ldns_resolver *resolver);
+
+/**
+ * returns a pointer to the last ldns_pkt that was sent by the server in the AXFR transfer
+ * uasable for instance to get the error code on failure
+ * \param[in] resolver the resolver that was used in the axfr transfer
+ * \return ldns_pkt the last packet sent
+ */
+ldns_pkt *ldns_axfr_last_pkt(ldns_resolver *res);
+
 #endif  /* !_LDNS_RESOLVER_H */

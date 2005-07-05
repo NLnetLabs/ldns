@@ -905,7 +905,12 @@ ldns_axfr_next(ldns_resolver *resolver)
 /*		resolver->_cur_axfr_pkt = ldns_tcp_read_packet(resolver->_socket);*/
 
 		resolver->_axfr_i = 0;
-		return ldns_axfr_next(resolver);
+		if (ldns_pkt_rcode(resolver->_cur_axfr_pkt) != 0) {
+			/* error */
+			return NULL;
+		} else {
+			return ldns_axfr_next(resolver);
+		}
 		
 		if (!resolver->_cur_axfr_pkt)  {
 			dprintf("%s", "[ldns_axfr_next] error reading packet\n");
@@ -923,4 +928,15 @@ ldns_axfr_next(ldns_resolver *resolver)
 		
 	}
 	
+}
+
+bool
+ldns_axfr_complete(ldns_resolver *res) {
+	/* complete when soa count is 2? */
+	return res->_axfr_soa_count == 2;
+}
+
+ldns_pkt *
+ldns_axfr_last_pkt(ldns_resolver *res) {
+	return res->_cur_axfr_pkt;
 }
