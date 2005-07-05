@@ -605,6 +605,10 @@ ldns_resolver_deep_free(ldns_resolver *res)
 			LDNS_FREE(res->_tsig_keyname);
 		}
 		
+		if (res->_cur_axfr_pkt) {
+			ldns_pkt_free(res->_cur_axfr_pkt);
+		}
+		
 		LDNS_FREE(res);
 	}
 }
@@ -894,6 +898,7 @@ ldns_axfr_next(ldns_resolver *resolver)
 				close(resolver->_socket);
 				resolver->_socket = 0;
 				ldns_pkt_free(resolver->_cur_axfr_pkt);
+				resolver->_cur_axfr_pkt = NULL;
 			}
 		}
 		return cur_rr;
@@ -902,7 +907,6 @@ ldns_axfr_next(ldns_resolver *resolver)
 		
 		(void) ldns_wire2pkt(&resolver->_cur_axfr_pkt, packet_wire, packet_wire_size);
 		free(packet_wire);
-/*		resolver->_cur_axfr_pkt = ldns_tcp_read_packet(resolver->_socket);*/
 
 		resolver->_axfr_i = 0;
 		if (ldns_pkt_rcode(resolver->_cur_axfr_pkt) != 0) {
@@ -910,20 +914,6 @@ ldns_axfr_next(ldns_resolver *resolver)
 			return NULL;
 		} else {
 			return ldns_axfr_next(resolver);
-		}
-		
-		if (!resolver->_cur_axfr_pkt)  {
-			dprintf("%s", "[ldns_axfr_next] error reading packet\n");
-			return NULL;
-		}
-		
-		if (ldns_pkt_rcode(resolver->_cur_axfr_pkt) != 0) {
-			dprintf("%s", "Got error code\n");
-			close(resolver->_socket);
-			resolver->_socket = 0;
-			ldns_pkt_free(resolver->_cur_axfr_pkt);
-			resolver->_cur_axfr_pkt = NULL;
-			return NULL;
 		}
 		
 	}
