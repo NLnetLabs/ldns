@@ -66,7 +66,7 @@ ldns_lookup_by_id(ldns_lookup_table *table, int id)
 }
 
 int 
-get_bit(uint8_t bits[], size_t index)
+ldns_get_bit(uint8_t bits[], size_t index)
 {
 	/*
 	 * The bits are counted from left to right, so bit #0 is the
@@ -77,7 +77,7 @@ get_bit(uint8_t bits[], size_t index)
 
 
 int 
-get_bit_r(uint8_t bits[], size_t index)
+ldns_get_bit_r(uint8_t bits[], size_t index)
 {
 	/*
 	 * The bits are counted from right to left, so bit #0 is the
@@ -87,7 +87,7 @@ get_bit_r(uint8_t bits[], size_t index)
 }
 
 int
-hexdigit_to_int(char ch)
+ldns_hexdigit_to_int(char ch)
 {
 	switch (ch) {
 	case '0': return 0;
@@ -112,7 +112,7 @@ hexdigit_to_int(char ch)
 }
 
 char 
-int_to_hexdigit(int i)
+ldns_int_to_hexdigit(int i)
 {
 	switch (i) {
 	case 0: return '0';
