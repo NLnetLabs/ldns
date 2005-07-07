@@ -204,9 +204,9 @@ ldns_str2rdf_dname(ldns_rdf **d, const char *str)
 			    isdigit((int) s[2]) &&
 			    isdigit((int) s[3])) {
 				/* cast this so it fits */
-				val = (uint8_t) hexdigit_to_int((char) s[1]) * 100 +
-				                hexdigit_to_int((char) s[2]) * 10 +
-				                hexdigit_to_int((char) s[3]);
+				val = (uint8_t) ldns_hexdigit_to_int((char) s[1]) * 100 +
+				                ldns_hexdigit_to_int((char) s[2]) * 10 +
+				                ldns_hexdigit_to_int((char) s[3]);
 				*q = val;
 				s += 3;
 			} else {
@@ -322,7 +322,7 @@ ldns_str2rdf_hex(ldns_rdf **rd, const char *str)
                         *t = 0;
                         for (i = 16; i >= 1; i -= 15) {
                                 if (isxdigit(*str)) {
-                                        *t += hexdigit_to_int(*str) * i;
+                                        *t += ldns_hexdigit_to_int(*str) * i;
                                 } else {
                                         return LDNS_STATUS_ERR;
                                 }

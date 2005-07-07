@@ -86,22 +86,6 @@ get_bit_r(uint8_t bits[], size_t index)
 	return (int) bits[index / 8] & (1 << (index % 8));
 }
 
-inline long
-power(long a, long b) {
-	long result = 1;
-	while (b > 0) {
-		if (b & 1) {
-			result *= a;
-			if (b == 1) {
-				return result;
-			}
-		}
-		a *= a;
-		b /= 2;
-	}
-	return result;
-}
-
 int
 hexdigit_to_int(char ch)
 {
@@ -152,7 +136,7 @@ int_to_hexdigit(int i)
 	}
 }
 
-char *
+const char *
 ldns_version(void)
 {
 	return (char*)LDNS_VERSION;

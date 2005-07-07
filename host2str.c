@@ -429,7 +429,7 @@ ldns_rdf2buffer_str_wks(ldns_buffer *output, ldns_rdf *rdf)
 	for (current_service = 0; 
 	     current_service < ldns_rdf_size(rdf) * 8;
 	     current_service++) {
-		if (get_bit(&(ldns_rdf_data(rdf)[1]), current_service)) {
+		if (ldns_get_bit(&(ldns_rdf_data(rdf)[1]), current_service)) {
 			service = getservbyport((int) ntohs(current_service),
 			                        proto_name);
 			if (service && service->s_name) {
@@ -461,7 +461,7 @@ ldns_rdf2buffer_str_nsec(ldns_buffer *output, ldns_rdf *rdf)
 		pos += 2;
 		
 		for (bit_pos = 0; bit_pos < (bitmap_length) * 8; bit_pos++) {
-			if (get_bit(&data[pos], bit_pos)) {
+			if (ldns_get_bit(&data[pos], bit_pos)) {
 				type = 256 * (uint16_t) window_block_nr + bit_pos;
 				descriptor = ldns_rr_descript(type);
 

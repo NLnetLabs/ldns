@@ -417,7 +417,7 @@ ldns_rdf_address_reverse(ldns_rdf *rdf)
 				/* extract nibble */
 				nibble = (ldns_rdf_data(rdf)[octet] & ( 0xf << (4 * (1 - nnibble)) ) ) >> ( 4 * (1 - nnibble));
 				buf_6[(LDNS_IP6ADDRLEN * 2 - 1) -
-					(octet * 2 + nnibble)] = (uint8_t)int_to_hexdigit((int)nibble);
+					(octet * 2 + nnibble)] = (uint8_t)ldns_int_to_hexdigit((int)nibble);
 			}
 
 			char_dname = LDNS_XMALLOC(char, (LDNS_IP6ADDRLEN * 4));
