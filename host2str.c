@@ -314,7 +314,7 @@ ldns_rdf2buffer_str_loc(ldns_buffer *output, ldns_rdf *rdf)
 	double s;
 	long value, unit, meters;
 	
-	uint32_t equator = (uint32_t) power(2, 31);
+	uint32_t equator = (uint32_t) ldns_power(2, 31);
 
 	if (version == 0) {
 		size = ldns_rdf_data(rdf)[1];
@@ -362,7 +362,7 @@ ldns_rdf2buffer_str_loc(ldns_buffer *output, ldns_rdf *rdf)
 		
 		value = (short) ((size & 0xf0) >> 4);
 		unit = (short) (size & 0x0f);
-		meters = value * power(10, unit);
+		meters = value * ldns_power(10, unit);
 		ldns_buffer_printf(output, "%ld", meters / 100);
 		if (meters % 100 != 0) {
 			ldns_buffer_printf(output, ".%02ld", meters % 100);
@@ -371,7 +371,7 @@ ldns_rdf2buffer_str_loc(ldns_buffer *output, ldns_rdf *rdf)
 
 		value = (short) ((horizontal_precision & 0xf0) >> 4);
 		unit = (short) (horizontal_precision & 0x0f);
-		meters = value * power(10, unit);
+		meters = value * ldns_power(10, unit);
 		ldns_buffer_printf(output, "%ld", meters / 100);
 		if (meters % 100 != 0) {
 			ldns_buffer_printf(output, ".%02ld", meters % 100);
@@ -380,7 +380,7 @@ ldns_rdf2buffer_str_loc(ldns_buffer *output, ldns_rdf *rdf)
 
 		value = (long) ((vertical_precision & 0xf0) >> 4);
 		unit = (long) (vertical_precision & 0x0f);
-		meters = value * power(10, unit);
+		meters = value * ldns_power(10, unit);
 		ldns_buffer_printf(output, "%ld", meters / 100);
 		if (meters % 100 != 0) {
 			ldns_buffer_printf(output, ".%02ld", meters % 100);

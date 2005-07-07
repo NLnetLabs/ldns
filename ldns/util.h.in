@@ -139,7 +139,7 @@ ldns_lookup_table *ldns_lookup_by_id(ldns_lookup_table table[], int id);
  * The bits are counted from left to right, so bit #0 is the
  * left most bit.
  */
-int get_bit(uint8_t bits[], size_t index);
+int ldns_get_bit(uint8_t bits[], size_t index);
 
 
 /**
@@ -147,28 +147,44 @@ int get_bit(uint8_t bits[], size_t index);
  * The bits are counted from right to left, so bit #0 is the
  * right most bit.
  */
-int get_bit_r(uint8_t bits[], size_t index);
+int ldns_get_bit_r(uint8_t bits[], size_t index);
 
 /**
  * Returns the value of a to the power of b
  * (or 1 of b < 1)
  */
-long power(long a, long b); 
+static inline long
+ldns_power(long a, long b) {
+	long result = 1;
+	while (b > 0) {
+		if (b & 1) {
+			result *= a;
+			if (b == 1) {
+				return result;
+			}
+		}
+		a *= a;
+		b /= 2;
+	}
+	return result;
+}
+
+
 
 /**
  * Returns the int value of the given (hex) digit
  */
-int hexdigit_to_int(char ch);
+int ldns_hexdigit_to_int(char ch);
 
 /**
  * Returns the char (hex) representation of the given int
  */
-char int_to_hexdigit(int ch);
+char ldns_int_to_hexdigit(int ch);
 
 /**
  * Show the internal library version
  * \return a string with the version in it
  */
-char * ldns_version(void);
+const char * ldns_version(void);
 
 #endif /* !_UTIL_H */
