@@ -146,8 +146,6 @@ clean:
 	rm -f tests/*.o
 	rm -f $(PROG_TARGETS)
 	rm -rf autom4te.cache/
-	rm -f config.status
-	rm -f config.log
 	rm -f tags
 
 realclean: clean docclean libclean

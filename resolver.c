@@ -590,14 +590,14 @@ ldns_resolver_deep_free(ldns_resolver *res)
 			for (i = 0; i < res->_searchlist_count; i++) {
 				ldns_rdf_deep_free(res->_searchlist[i]);
 			}
+			LDNS_FREE(res->_searchlist);
 		}
 		if (res->_nameservers) {
 			for (i = 0; i < res->_nameserver_count; i++) {
 				ldns_rdf_deep_free(res->_nameservers[i]);
 			}
+			LDNS_FREE(res->_nameservers);
 		}
-		LDNS_FREE(res->_searchlist);
-		LDNS_FREE(res->_nameservers);
 		if (ldns_resolver_domain(res)) {
 			ldns_rdf_deep_free(ldns_resolver_domain(res));
 		}

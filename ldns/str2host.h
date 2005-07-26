@@ -20,6 +20,16 @@
 #include <ctype.h>
 
 /**
+ * Returns true if the given string represent an IPv4 address
+ */
+bool ldns_is_ipv4_addr(const char *str);
+
+/**
+ * Returns true if the given string represent an IPv6 address
+ */
+bool ldns_is_ipv6_addr(const char *str);
+
+/**
  * convert a byte into wireformat
  * \param[in] rd the rdf where to put the data
  * \param[in] bytestr the string to be converted

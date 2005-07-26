@@ -24,6 +24,60 @@
 #include <sys/param.h>
 #endif
 
+bool
+ldns_is_ipv4_addr(const char *str)
+{
+	int a, i;
+	const char *dot = str;
+
+	if (strlen(str) < 7 || strlen(str) > 16) {
+		return false;
+	}
+
+	for (i = 0; i < 3; i++) {
+		a = atoi(dot);
+		if (a < 0 || a > 255) {
+			return false;
+		}
+		dot = strchr(dot, '.');
+		if (!dot) {
+			return false;
+		}
+	}
+	a = atoi(dot);
+	if (a < 0 || a > 255) {
+		return false;
+	}
+
+	return true;
+}
+
+/* todo: check for more errors (like ffffff:f etc) */
+bool
+ldns_is_ipv6_addr(const char *str)
+{
+	int a;
+	size_t i;
+	const char *dot = str;
+
+	if (strlen(str) < 3 || strlen(str) > 40) {
+		return false;
+	}
+
+	for (i = 0; i < strlen(str); i++) {
+		if (str[i] != ':' &&
+		    ldns_hexdigit_to_int(str[i]) < 0) {
+			return false;
+		}
+	}
+	a = atoi(dot);
+	if (a < 0 || a > 255) {
+		return false;
+	}
+
+	return true;
+}
+
 ldns_status
 ldns_str2rdf_int16(ldns_rdf **rd, const char *shortstr)
 {

@@ -64,7 +64,6 @@ ldns_lookup_by_id(ldns_lookup_table *table, int id)
 	}
 	return NULL;
 }
-
 int 
 ldns_get_bit(uint8_t bits[], size_t index)
 {
@@ -107,7 +106,7 @@ ldns_hexdigit_to_int(char ch)
 	case 'e': case 'E': return 14;
 	case 'f': case 'F': return 15;
 	default:
-		abort();
+		return -1;
 	}
 }
 
