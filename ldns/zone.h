@@ -37,6 +37,10 @@ struct ldns_struct_zone
 };
 typedef struct ldns_struct_zone ldns_zone;	
 	
+/**
+ * create a new ldns_zone structure
+ */
+ldns_zone * ldns_zone_new(void);
 
 /**
  * \param[in] z the zone to read from
@@ -90,6 +94,6 @@ bool ldns_zone_rr_is_glue(ldns_zone *z, ldns_rr *rr);
 
 
 ldns_zone *
-ldns_zone_new_frm_fp(FILE *fp, ldns_rdf **origin, uint16_t *ttl, ldns_rr_class *c);
+ldns_zone_new_frm_fp(FILE *fp, ldns_rdf *origin, uint16_t ttl, ldns_rr_class c);
 
 #endif /* LDNS_ZONE_H */

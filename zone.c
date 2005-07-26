@@ -60,29 +60,78 @@ ldns_zone_rr_is_glue(ldns_zone *z, ldns_rr *rr)
 	return false;
 }
 
-/* we don't want state, so we have to give it as arguments */
+ldns_zone *
+ldns_zone_new(void)
+{
+	ldns_zone *z;
+
+	z = LDNS_MALLOC(ldns_zone);
+	if (!z) {
+		return NULL;
+	}
+
+	z->_rrs = ldns_rr_list_new();
+	ldns_zone_set_soa(z, NULL);
+	return z;
+}
+
 /* we regocnize:
  * $TTL, $ORIGIN
  */
 ldns_zone *
-ldns_zone_new_frm_fp(FILE *fp, ldns_rdf **origin, uint16_t *ttl, ldns_rr_class *c)
+ldns_zone_new_frm_fp(FILE *fp, ldns_rdf *origin, uint16_t ttl, ldns_rr_class c)
 {
-#if 0
 	ldns_zone *newzone;
 	ldns_rr *rr;
-#endif
+	ldns_rdf *my_origin;
+	uint16_t my_ttl;
+	ldns_rr_class my_class;
 
+	uint8_t i;
+
+	newzone = ldns_zone_new();
+	my_origin = origin;
+	my_ttl    = ttl;
+	my_class  = c;
+	
 	/* read until we got a soa, all crap above is discarded 
 	 * except $directives
 	 */
 
-	fp = fp;
-	origin = origin;
-	ttl = ttl;
-	c = c;
+	i = 0;
+	do {
+		rr = ldns_rr_new_frm_fp(fp);
+		i++;
+	} while (!rr && i <= 9);
 
-	/* re-order stuff with rrsets */
-	return NULL;
+	if (i > 9) {
+		/* there is a lot of crap here, bail out before somebody gets
+		 * hurt */
+		return NULL;
+	}
+
+	if (ldns_rr_get_type(rr) != LDNS_RR_TYPE_SOA) {
+		/* first rr MUST be the soa */
+		return NULL;
+	}
+
+	ldns_zone_set_soa(newzone, rr);
+
+	while(!feof(fp)) {
+		rr = ldns_rr_new_frm_fp(fp);
+		if (rr) {
+			if (!ldns_zone_push_rr(newzone, rr)) {
+				printf("error pushing rr\n");
+				return NULL;
+			}
+
+			my_origin = ldns_rr_owner(rr);
+			my_ttl    = ldns_rr_ttl(rr);
+			my_class  = ldns_rr_get_class(rr);
+			
+		}
+	}
+	return newzone;
 }
 
 #if 0

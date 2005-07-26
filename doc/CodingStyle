@@ -7,7 +7,7 @@ The libdns coding style guide
 * prefix (exported) identifiers with 'ldns_'
 * no unneeded parentheses after 'return'
 * always curly brackets in if-statements
-* use defines voor (weird) constants, and masks
+* use defines for (weird) constants, and masks
 * type 'bool', constants 'true'/'false'. Don't compare bools for
   equality.
 
