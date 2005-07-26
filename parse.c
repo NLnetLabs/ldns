@@ -68,6 +68,7 @@ ldns_fget_token(FILE *f, char *token, const char *delim, size_t limit)
 {	
 	int c;
 	int p; /* 0 -> no parenthese seen, >0 nr of ( seen */
+	int com;
 	char *t;
 	size_t i;
 	const char *d;
@@ -83,6 +84,7 @@ ldns_fget_token(FILE *f, char *token, const char *delim, size_t limit)
 
 	p = 0;
 	i = 0;
+	com = 0;
 	t = token;
 	while ((c = getc(f)) != EOF) {
 		if (c == '(') {
@@ -99,6 +101,23 @@ ldns_fget_token(FILE *f, char *token, const char *delim, size_t limit)
 			/* more ) then ( - close off the string */
 			*t = '\0';
 			return 0;
+		}
+
+		/* do something with comments ; */
+		if (c == ';') {
+			com = 1;
+		}
+
+		if (c == '\n' && com != 0) {
+			/* comments */
+			com = 0;
+			*t = ' ';
+			continue;
+		}
+
+		if (com == 1) {
+			*t = ' ';
+			continue;
 		}
 
 		if (c == '\n' && p != 0) {
@@ -189,6 +208,7 @@ ldns_bget_token(ldns_buffer *b, char *token, const char *delim, size_t limit)
 {	
 	int c;
 	int p; /* 0 -> no parenthese seen, >0 nr of ( seen */
+	int com;
 	char *t;
 	size_t i;
 	const char *d;
@@ -204,6 +224,7 @@ ldns_bget_token(ldns_buffer *b, char *token, const char *delim, size_t limit)
 
 	p = 0;
 	i = 0;
+	com = 0;
 	t = token;
 	while ((c = ldns_bgetc(b)) != EOF) {
 		if (c == '(') {
@@ -221,6 +242,24 @@ ldns_bget_token(ldns_buffer *b, char *token, const char *delim, size_t limit)
 			*t = '\0';
 			return 0;
 		}
+
+		/* do something with comments ; */
+		if (c == ';') {
+			com = 1;
+		}
+
+		if (c == '\n' && com != 0) {
+			/* comments */
+			com = 0;
+			*t = ' ';
+			continue;
+		}
+
+		if (com == 1) {
+			*t = ' ';
+			continue;
+		}
+
 
 		if (c == '\n' && p != 0) {
 			/* in parentheses */
@@ -261,6 +300,9 @@ tokenread:
 	return (ssize_t)i;
 }
 
+#if 0
+# not needed anymore
+
 char *
 ldns_str_remove_comment(char *str)
 {
@@ -285,6 +327,7 @@ ldns_str_remove_comment(char *str)
 	}
 	return str2;
 }
+#endif
 
 void
 ldns_bskipc(ldns_buffer *buffer, char c)

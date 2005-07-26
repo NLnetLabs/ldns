@@ -104,7 +104,6 @@ ldns_rr_new_frm_str(const char *str)
 	char  *type;
 	char  *rdata;
 	char  *rd;
-	char  *no_comment_str;
 	const char *delimiters;
 	ssize_t c;
 	
@@ -131,9 +130,7 @@ ldns_rr_new_frm_str(const char *str)
 	ttl_val = 0;
 	clas_val = 0;
 
-	no_comment_str = ldns_str_remove_comment((char*)str);
-
-	ldns_buffer_new_frm_data(rr_buf, no_comment_str, strlen(no_comment_str));
+	ldns_buffer_new_frm_data(rr_buf, (char*)str, strlen(str));
 	
 	/* split the rr in its parts -1 signals trouble */
 	if (ldns_bget_token(rr_buf, owner, "\t\n ", LDNS_MAX_DOMAINLEN) == -1) {

@@ -60,6 +60,7 @@ ldns_zone_rr_is_glue(ldns_zone *z, ldns_rr *rr)
 	return false;
 }
 
+
 #if 0
 /**
  * ixfr function. Work on a ldns_zone and remove and add

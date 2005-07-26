@@ -88,5 +88,4 @@ bool ldns_zone_push_rr(ldns_zone *z, ldns_rr *rr);
  */
 bool ldns_zone_rr_is_glue(ldns_zone *z, ldns_rr *rr);
 
-
 #endif /* LDNS_ZONE_H */
