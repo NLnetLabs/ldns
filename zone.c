@@ -60,6 +60,30 @@ ldns_zone_rr_is_glue(ldns_zone *z, ldns_rr *rr)
 	return false;
 }
 
+/* we don't want state, so we have to give it as arguments */
+/* we regocnize:
+ * $TTL, $ORIGIN
+ */
+ldns_zone *
+ldns_zone_new_frm_fp(FILE *fp, ldns_rdf **origin, uint16_t *ttl, ldns_rr_class *c)
+{
+#if 0
+	ldns_zone *newzone;
+	ldns_rr *rr;
+#endif
+
+	/* read until we got a soa, all crap above is discarded 
+	 * except $directives
+	 */
+
+	fp = fp;
+	origin = origin;
+	ttl = ttl;
+	c = c;
+
+	/* re-order stuff with rrsets */
+	return NULL;
+}
 
 #if 0
 /**

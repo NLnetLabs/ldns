@@ -88,4 +88,8 @@ bool ldns_zone_push_rr(ldns_zone *z, ldns_rr *rr);
  */
 bool ldns_zone_rr_is_glue(ldns_zone *z, ldns_rr *rr);
 
+
+ldns_zone *
+ldns_zone_new_frm_fp(FILE *fp, ldns_rdf **origin, uint16_t *ttl, ldns_rr_class *c);
+
 #endif /* LDNS_ZONE_H */

@@ -8,12 +8,17 @@
  * See the file LICENSE for the license
  */
 #include <ldns/config.h>
-
 #include <ldns/dns.h>
-
 
 #include <limits.h>
 #include <strings.h>
+
+ldns_lookup_table ldns_directive_types[] = {
+        { LDNS_DIR_TTL, "$TTL" },  
+        { LDNS_DIR_ORIGIN, "$ORIGIN" }, 
+        { LDNS_DIR_INCLUDE, "$INCLUDE" },  
+        { 0, NULL }
+};
 
 ssize_t
 ldns_fget_keyword_data(FILE *f, const char *keyword, const char *k_del, char *data, 
@@ -300,35 +305,6 @@ tokenread:
 	return (ssize_t)i;
 }
 
-#if 0
-# not needed anymore
-
-char *
-ldns_str_remove_comment(char *str)
-{
-	char *s;
-	int comment;
-	char *str2;
-
-	comment = 0;
-	str2 = strdup(str);
-
-	for(s = str2; *s; s++) {
-		if (*s == ';')  {
-			comment = 1;
-		}
-		if (*s == '\n') {
-			*s = ' ';
-			comment = 0;
-		}
-		if (comment == 1) {
-			*s = ' ';
-		}
-	}
-	return str2;
-}
-#endif
-
 void
 ldns_bskipc(ldns_buffer *buffer, char c)
 {
@@ -393,4 +369,13 @@ ldns_fskipcs(FILE *fp, const char *s)
 			return;
 		}
 	}
+}
+
+ldns_directive
+ldns_directive_new_frm_str(const char *str, void **arg)
+{
+	str = str;
+	arg = arg;
+	/* directive<SPACE>arguments */
+	return LDNS_DIR_TTL;
 }

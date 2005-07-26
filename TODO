@@ -35,3 +35,4 @@ o private key type? This works, but not (yet) for tsig stuff
 	work in progress - works for RSA/DSA. I want to 
 	fold in the tsig stuff as well
 o install mx, keygen, chaos somewhere, along with manpages??
+o All lookup table stuff in _table types?

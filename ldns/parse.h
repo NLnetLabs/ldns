@@ -13,12 +13,24 @@
 #include <ldns/common.h>
 #include <ldns/buffer.h>
 
-
 #define LDNS_PARSE_SKIP_SPACE		"\f\n\r\v"
 #define LDNS_PARSE_NORMAL		" \f\n\r\t\v"
 #define LDNS_PARSE_NO_NL		" \t"
 #define LDNS_MAX_LINELEN		512
 #define LDNS_MAX_KEYWORDLEN		32
+
+/**
+ * different type of directives in zone files
+ * We now deal with $TTL, $ORIGIN and $INCLUDE.
+ * The latter is not implemented in ldns (yet)
+ */
+enum ldns_enum_directive
+{
+	LDNS_DIR_TTL,
+	LDNS_DIR_ORIGIN,
+	LDNS_DIR_INCLUDE
+};
+typedef enum ldns_enum_directive ldns_directive;
 
 /** 
  * returns a token/char from the stream F.
