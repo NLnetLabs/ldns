@@ -44,7 +44,7 @@ main()
 	dnskeys = ldns_rr_list_new();
 
 	/* well formed */
-	rr = ldns_rr_new_frm_str("a.miek.nl.   1800   IN   A    195.169.222.38");
+	rr = ldns_rr_new_frm_str("a.miek.nl.   1800   IN   A    195.169.222.38\na.miek.nl.   1800   IN   A    195.169.222.38");
 	ldns_rr_print(stdout, rr);
 	printf("\n");
 
