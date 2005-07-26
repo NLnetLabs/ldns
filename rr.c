@@ -198,6 +198,7 @@ ldns_rr_new_frm_str(const char *str)
 		ldns_buffer_free(rr_buf);
 		return NULL;
 	}
+
 	ldns_buffer_new_frm_data(
 			rd_buf, rdata, strlen(rdata));
 

@@ -166,7 +166,7 @@ ldns_str2rdf_dname(ldns_rdf **d, const char *str)
 	} 
 	
 	/* root label */
-	if (1 == len) {
+	if (1 == len && *str == '.') {
 		*d = ldns_rdf_new_frm_data(LDNS_RDF_TYPE_DNAME, 1, "\0"); 
 		return LDNS_STATUS_OK;
 	}

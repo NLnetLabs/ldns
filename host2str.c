@@ -93,6 +93,7 @@ ldns_rdf2buffer_str_dname(ldns_buffer *output, ldns_rdf *dname)
 	len = data[src_pos];
 
 	/* special case: root label */
+	/* XXX also check the actual contents!!!! ??? */
 	if (1 == ldns_rdf_size(dname)) {
 		ldns_buffer_printf(output, ".");
 	} else {
