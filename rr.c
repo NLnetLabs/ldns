@@ -258,7 +258,7 @@ ldns_rr_new_frm_str(const char *str)
 	
 
 	LDNS_FREE(rd);
-	LDNS_FREE(rd_buf);
+	ldns_buffer_free(rd_buf);
 	ldns_buffer_free(rr_buf);
 
 	LDNS_FREE(rdata);
