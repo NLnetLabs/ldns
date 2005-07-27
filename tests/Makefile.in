@@ -25,6 +25,8 @@ TESTS		= run-test0 run-test7 run-test18 run-test19 run-test20 \
 
 all:	$(TESTS)
 
+lua: 	lua-rns
+
 run-test0:       run-test0.o 
 		$(LINK) -o $@ $+ 
 
@@ -52,6 +54,11 @@ dname-label-test:       dname-label-test.o
 notify: 	notify.o
 		$(LINK) -o $@ $+
 
+lua-rns: 	lua-rns.o
+		$(LINK) `lua-config --libs` -o $@ $+
+
+lua-rns.o: 	lua-rns.c
+		$(COMPILE) `lua-config --include` -c $<
 
 ## implicit rule
 %.o:    %.c $(HEADER)
@@ -60,11 +67,10 @@ notify: 	notify.o
 clean:
 	rm -f *.o
 	rm -f $(TESTS)
+	rm -f lua-rns
 
-realclean:
-	rm -f *.o
+realclean: clean
 	rm -rf autom4te.cache/
 	rm -f config.log config.status aclocal.m4 config.h.in configure Makefile
 	rm -f config.h
-	rm -f $(TESTS)
 
