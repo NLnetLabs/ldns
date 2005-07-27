@@ -28,6 +28,8 @@ lua_State* L;
 
 char *VERSION = "lua-rns 0.1";
 
+#define FOO "Foo" 	/* this is something stupid */
+
 void
 usage(FILE *f, char *progname)
 {
@@ -51,13 +53,23 @@ version(FILE *f, char *progname)
  * http://lua-users.org/wiki/UserDataWithPointerExample
  * is the way to go here, as we do our own mem management
  * in ldns
- *
  * Seems pretty straitforward
  */
 
+/* Add the central RR type (ldns_rr*) to Lua */
+static ldns_rr* 
+push_ldns_rr(lua_State *L)
+{
+	ldns_rr *new_rr = (ldns_rr*)lua_newuserdata(L, sizeof(ldns_rr));
+	luaL_getmetatable(L, FOO);
+	lua_setmetatable(L, -1);
+	return new_rr;
+}
+
+
 /* Test function which doesn't call ldns stuff yet */
 static int 
-lua_ldns_average(lua_State *L)
+ldns_average(lua_State *L)
 {
 	int n = lua_gettop(L);
 	double sum = 0;
@@ -94,7 +106,7 @@ register_ldns_functions(void)
 	/* need to encap. all used functions in a
 	 * still lua can understand
 	 */
-        lua_register(L, "lua_ldns_average", lua_ldns_average);
+        lua_register(L, "ldns_average", ldns_average);
 }
 
 int
