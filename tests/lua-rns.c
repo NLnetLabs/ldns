@@ -42,8 +42,17 @@ version(FILE *f, char *progname)
 }
 
 /*
- * Encapsulate our ldns function in a lua form
- * Start of Defintions
+=====================================================
+ Lua bindings for ldns
+=====================================================
+*/
+
+/*
+ * http://lua-users.org/wiki/UserDataWithPointerExample
+ * is the way to go here, as we do our own mem management
+ * in ldns
+ *
+ * Seems pretty straitforward
  */
 
 /* Test function which doesn't call ldns stuff yet */
@@ -71,11 +80,12 @@ lua_ldns_average(lua_State *L)
 	return 2;
 }
 
-
 /*
- * End of Defintions
- * Encapsulate our ldns function in a lua form
- */
+=====================================================
+ Lua bindings for ldns
+=====================================================
+*/
+
 void
 register_ldns_functions(void)
 {
