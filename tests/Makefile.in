@@ -56,7 +56,7 @@ notify: 	notify.o
 
 lua-rns: 	lua-rns.o
 		$(LINK) `lua-config --libs` -o $@ $+
-
+	
 lua-rns.o: 	lua-rns.c
 		$(COMPILE) `lua-config --include` -c $<
 

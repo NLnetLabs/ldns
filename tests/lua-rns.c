@@ -8,6 +8,18 @@
  * (c) R. Gieben, NLnet Labs
  */
 
+/****
+ * BIG TODO error handling and checking from the lua 
+ * side
+ */
+
+/** MISC code found on the Internet */
+
+/*
+ luaL_checktype(lua,1,LUA_TLIGHTUSERDATA);
+ QCanvasLine *line = static_cast<QCanvasLine*>(lua_touserdata(lua,1));
+*/
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <stddef.h>
@@ -48,13 +60,13 @@ version(FILE *f, char *progname)
 =====================================================
  Lua bindings for ldns
 =====================================================
-
-the l_ prefix stands for lua_ldns_, but that was way
-to long to type and the lua_ prefix is already claimed
-by lua.
-
 */
 
+/*
+==========
+ RR 
+==========
+*/
 static int
 l_rr_new_frm_str(lua_State *L)
 {
@@ -62,16 +74,7 @@ l_rr_new_frm_str(lua_State *L)
 	 * stack and return 1 - to signal the new pointer
 	 */
 	char *str = strdup((char*)luaL_checkstring(L, 1));
-
-	printf("string retrieved from stack %s\n", str);
-
 	ldns_rr *new_rr = ldns_rr_new_frm_str(str);
-
-	if (new_rr) {
-		printf("yeah it worked\n");
-	} else {
-		printf("uh oh\n");
-	}
 
 	lua_pushlightuserdata(L, new_rr);
 	return 1;
@@ -81,17 +84,56 @@ static int
 l_rr_print(lua_State *L)
 {
 	/* we always print to stdout */
-/*
- luaL_checktype(lua,1,LUA_TLIGHTUSERDATA);
- QCanvasLine *line = static_cast<QCanvasLine*>(lua_touserdata(lua,1));
-*/
 	ldns_rr *toprint = (ldns_rr*)lua_touserdata(L, 1); /* pop from the stack */
-
 	ldns_rr_print(stdout, toprint);
 	return 0;
 }
 
-/* Test function which doesn't call ldns stuff yet */
+/*
+=========
+ PACKETS
+=========
+*/
+static int
+l_pkt_new(lua_State *L)
+{
+	ldns_pkt *new_pkt = ldns_pkt_new();
+	lua_pushlightuserdata(L, new_pkt);
+	return 1;
+}
+
+
+static int
+l_pkt_push_rr(lua_State *L)
+{
+	ldns_pkt *pkt = (ldns_pkt*)lua_touserdata(L, 1); /* get the packet */
+	ldns_pkt_section s = lua_tonumber(L, 2); /* the section where to put it */
+	ldns_rr *rr = (ldns_rr*)lua_touserdata(L, 3); /* the rr to put */
+
+	/* this function return bool, what to do with it??? */
+	ldns_pkt_push_rr(pkt, s, rr);
+
+	lua_pushlightuserdata(L, pkt);
+	return 1;
+}
+
+static int
+l_pkt_print(lua_State *L)
+{
+	/* we always print to stdout */
+	ldns_pkt *toprint = (ldns_pkt*)lua_touserdata(L, 1); /* pop from the stack */
+	ldns_pkt_print(stdout, toprint);
+	return 0;
+}
+
+/*
+============
+ EXAMPLES
+============
+*/
+
+
+/* Example test function which doesn't call ldns stuff yet */
 static int 
 l_average(lua_State *L)
 {
@@ -105,14 +147,8 @@ l_average(lua_State *L)
 		/* total the arguments */
 		sum += lua_tonumber(L, i);
 	}
-
-	/* push the average */
 	lua_pushnumber(L, sum / n);
-
-	/* push the sum */
 	lua_pushnumber(L, sum);
-
-	/* return the number of results */
 	return 2;
 }
 
@@ -127,8 +163,13 @@ register_ldns_functions(void)
 {
         /* register our functions */
         lua_register(L, "l_average", l_average);
+	/* RRs */
 	lua_register(L, "l_rr_new_frm_str", l_rr_new_frm_str);
 	lua_register(L, "l_rr_print", l_rr_print);
+	/* PKTs */
+	lua_register(L, "l_pkt_new", l_pkt_new);
+	lua_register(L, "l_pkt_push_rr", l_pkt_push_rr);
+	lua_register(L, "l_pkt_print", l_pkt_print);
 }
 
 int
