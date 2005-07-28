@@ -20,3 +20,7 @@ my_pkt = l_pkt_new()
 my_pkt = l_pkt_push_rr(my_pkt, LDNS_SECTION_ANSWER, my_rr)
 
 l_pkt_print(my_pkt)
+
+my_pkt = l_pkt_push_rr(my_pkt, LDNS_SECTION_ANSWER, my_rr2)
+
+l_pkt_print(my_pkt)
