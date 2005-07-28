@@ -7,4 +7,6 @@ print("The sum is ", sum)
 
 -- Now the scary ldns_* stuff
 
-my_rr = l_rr_new_frm_str("miek.nl")
+my_rr = l_rr_new_frm_str("www.miek.nl  IN A 192.168.1.2")
+
+l_rr_print(my_rr)

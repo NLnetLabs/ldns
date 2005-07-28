@@ -61,13 +61,35 @@ l_rr_new_frm_str(lua_State *L)
 	/* pop string from stack, make new rr, push rr to
 	 * stack and return 1 - to signal the new pointer
 	 */
-	char *str = (char*)luaL_checkstring(L, 1);
+	char *str = strdup((char*)luaL_checkstring(L, 1));
+
+	printf("string retrieved from stack %s\n", str);
+
 	ldns_rr *new_rr = ldns_rr_new_frm_str(str);
+
+	if (new_rr) {
+		printf("yeah it worked\n");
+	} else {
+		printf("uh oh\n");
+	}
 
 	lua_pushlightuserdata(L, new_rr);
 	return 1;
 }
 
+static int
+l_rr_print(lua_State *L)
+{
+	/* we always print to stdout */
+/*
+ luaL_checktype(lua,1,LUA_TLIGHTUSERDATA);
+ QCanvasLine *line = static_cast<QCanvasLine*>(lua_touserdata(lua,1));
+*/
+	ldns_rr *toprint = (ldns_rr*)lua_touserdata(L, 1); /* pop from the stack */
+
+	ldns_rr_print(stdout, toprint);
+	return 0;
+}
 
 /* Test function which doesn't call ldns stuff yet */
 static int 
@@ -104,13 +126,9 @@ void
 register_ldns_functions(void)
 {
         /* register our functions */
-
-	/* need to encap. all used functions in a
-	 * still lua can understand
-	 */
         lua_register(L, "l_average", l_average);
-
 	lua_register(L, "l_rr_new_frm_str", l_rr_new_frm_str);
+	lua_register(L, "l_rr_print", l_rr_print);
 }
 
 int
