@@ -19,6 +19,7 @@
 /* lua includes */
 #include "lua50/lua.h"
 #include "lua50/lualib.h"
+#include "lua50/lauxlib.h"
 
 /* ldns include */
 #include <ldns/dns.h>
@@ -47,29 +48,30 @@ version(FILE *f, char *progname)
 =====================================================
  Lua bindings for ldns
 =====================================================
+
+the l_ prefix stands for lua_ldns_, but that was way
+to long to type and the lua_ prefix is already claimed
+by lua.
+
 */
 
-/*
- * http://lua-users.org/wiki/UserDataWithPointerExample
- * is the way to go here, as we do our own mem management
- * in ldns
- * Seems pretty straitforward
- */
-
-/* Add the central RR type (ldns_rr*) to Lua */
-static ldns_rr* 
-push_ldns_rr(lua_State *L)
+static int
+l_rr_new_frm_str(lua_State *L)
 {
-	ldns_rr *new_rr = (ldns_rr*)lua_newuserdata(L, sizeof(ldns_rr));
-	luaL_getmetatable(L, FOO);
-	lua_setmetatable(L, -1);
-	return new_rr;
+	/* pop string from stack, make new rr, push rr to
+	 * stack and return 1 - to signal the new pointer
+	 */
+	char *str = (char*)luaL_checkstring(L, 1);
+	ldns_rr *new_rr = ldns_rr_new_frm_str(str);
+
+	lua_pushlightuserdata(L, new_rr);
+	return 1;
 }
 
 
 /* Test function which doesn't call ldns stuff yet */
 static int 
-ldns_average(lua_State *L)
+l_average(lua_State *L)
 {
 	int n = lua_gettop(L);
 	double sum = 0;
@@ -106,7 +108,9 @@ register_ldns_functions(void)
 	/* need to encap. all used functions in a
 	 * still lua can understand
 	 */
-        lua_register(L, "ldns_average", ldns_average);
+        lua_register(L, "l_average", l_average);
+
+	lua_register(L, "l_rr_new_frm_str", l_rr_new_frm_str);
 }
 
 int
