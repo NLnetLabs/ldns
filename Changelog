@@ -1,7 +1,9 @@
-	: 0.70: ldns-team
+28 Jul 2005: 0.70: ldns-team
 	* [func] ldns_pkt_get_section now returns copies from the rrlists
 	  in the packet. This can be freed by the user program
 	* [code] added ldns_ prefixes to function from util.h
+	* [inst] removed documentation from default make install
+	* Usual fixes in documentation and code
 
 
 
