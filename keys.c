@@ -6,6 +6,8 @@
  * handling
  *
  * (c) NLnet Labs, 2004, 2005
+ * 
+ * See the file LICENSE for the license
  */
 
 #include <ldns/config.h>
