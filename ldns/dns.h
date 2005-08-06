@@ -5,7 +5,10 @@
  *
  * See LICENSE for the license.
  *
- * A bunch of defines that are used in the DNS
+ * This library was created by:
+ * Jelte Jansen, Erik Rozendaal and Miek Gieben
+ *
+ * A bunch of defines that are used in the DNS.
  */
 
 #ifndef _LDNS_DNS_H_
