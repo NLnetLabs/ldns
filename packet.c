@@ -359,6 +359,43 @@ ldns_pkt_rr(ldns_pkt *pkt, ldns_pkt_section sec, ldns_rr *rr)
 	return false;
 }
 
+/* ldns_pkt_rr does somethinf else */
+ldns_rr *
+ldns_pkt_get_rr(ldns_pkt *p, uint16_t n)
+{
+	ldns_rr_list *sec;
+	ldns_rr *r;
+
+	sec = ldns_pkt_all(p);
+	if (!sec) {
+		return NULL;
+	}
+
+	r = ldns_rr_clone(
+			ldns_rr_list_rr(sec, n));
+	ldns_rr_list_deep_free(sec);
+	return r;
+}
+
+/* ldns_pkt_rr does somethinf else */
+bool
+ldns_pkt_set_rr(ldns_pkt *p, uint16_t n, ldns_rr *rr)
+{
+	ldns_rr_list *sec;
+	ldns_rr *r;
+
+	sec = ldns_pkt_all(p);
+	if (!sec) {
+		return false;
+	}
+
+	r = ldns_rr_clone(
+			ldns_rr_list_rr(sec, n));
+	ldns_rr_list_deep_free(sec);
+
+	return true;
+}
+
 uint16_t
 ldns_pkt_section_count(const ldns_pkt *packet, ldns_pkt_section s)
 {

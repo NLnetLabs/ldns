@@ -275,6 +275,11 @@ ldns_pkt *ldns_pkt_query_new(ldns_rdf *rr_name, ldns_rr_type rr_type, ldns_rr_cl
  */
 ldns_pkt *ldns_pkt_clone(ldns_pkt *pkt);
 
+/* lua helper stuff */
+ldns_rr * ldns_pkt_get_rr(ldns_pkt *p, uint16_t n);
+bool ldns_pkt_set_rr(ldns_pkt *p, uint16_t n, ldns_rr *rr);
+
+
 #define LDNS_MAX_PACKETLEN         65535
 
 /* allow flags to be given to mk_query */

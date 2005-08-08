@@ -41,7 +41,6 @@ lua_State* L;
 
 char *VERSION = "lua-rns 0.1";
 
-#define FOO "Foo" 	/* this is something stupid */
 
 void
 usage(FILE *f, char *progname)
@@ -118,6 +117,22 @@ l_pkt_push_rr(lua_State *L)
 }
 
 static int
+l_pkt_get_rr(lua_State *L)
+{
+	ldns_pkt *p = (ldns_pkt*)lua_touserdata(L, 1); /* pop from the stack */
+	unsigned int n = lua_tonumber(L, 2);
+	ldns_rr *r;
+
+	r = ldns_pkt_get_rr(p, (uint16_t) n);
+	if (r) {
+		lua_pushlightuserdata(L, r);
+		return 1;
+	} else {
+		return 0;
+	}
+}
+
+static int
 l_pkt_print(lua_State *L)
 {
 	/* we always print to stdout */
@@ -170,6 +185,7 @@ register_ldns_functions(void)
 	lua_register(L, "l_pkt_new", l_pkt_new);
 	lua_register(L, "l_pkt_push_rr", l_pkt_push_rr);
 	lua_register(L, "l_pkt_print", l_pkt_print);
+	lua_register(L, "l_pkt_get_rr", l_pkt_get_rr);
 }
 
 int
