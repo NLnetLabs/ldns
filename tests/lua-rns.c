@@ -231,6 +231,8 @@ main(int argc, char *argv[])
 	
         L = lua_open();
         lua_baselibopen(L);
+	luaopen_math(L);
+	luaopen_io(L);
 
 	register_ldns_functions();
 
