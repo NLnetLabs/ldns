@@ -403,6 +403,9 @@ uint16_t ldns_rr_list_rr_count(ldns_rr_list *rr_list);
  */
 void ldns_rr_list_set_rr_count(ldns_rr_list *rr_list, uint16_t count);
 
+/* set a specific rr */
+ldns_rr * ldns_rr_list_set_rr(ldns_rr_list *rr_list, ldns_rr *r, uint16_t count);
+
 /**
  * returns a specific rr of an rrlist.
  * \param[in] rr_list the rr_list to read from

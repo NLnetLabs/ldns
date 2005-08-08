@@ -428,6 +428,23 @@ ldns_rr_list_rr_count(ldns_rr_list *rr_list)
 	}
 }
 
+ldns_rr *
+ldns_rr_list_set_rr(ldns_rr_list *rr_list, ldns_rr *r, uint16_t count)
+{
+	ldns_rr *old;
+
+	if (count > ldns_rr_list_rr_count(rr_list)) {
+		return NULL;
+	}
+
+	old = ldns_rr_list_rr(rr_list, count);
+
+	/* overwrite old's pointer */
+	rr_list->_rrs[count] = r;
+	return old;
+}
+
+
 void
 ldns_rr_list_set_rr_count(ldns_rr_list *rr_list, uint16_t count)
 {

@@ -364,36 +364,79 @@ ldns_rr *
 ldns_pkt_get_rr(ldns_pkt *p, uint16_t n)
 {
 	ldns_rr_list *sec;
-	ldns_rr *r;
+	uint16_t count;
 
-	sec = ldns_pkt_all(p);
-	if (!sec) {
-		return NULL;
+	count = ldns_pkt_qdcount(p);
+	if (n < count) {
+		sec = ldns_pkt_question(p);
+		return ldns_rr_list_rr(sec, n - 1);
+	}
+	
+	count = ldns_pkt_qdcount(p) + ldns_pkt_ancount(p);
+	if (n < count) {
+		sec = ldns_pkt_answer(p);
+		return ldns_rr_list_rr(sec, count - n - 1);
 	}
 
-	r = ldns_rr_clone(
-			ldns_rr_list_rr(sec, n));
-	ldns_rr_list_deep_free(sec);
-	return r;
+	count = ldns_pkt_qdcount(p) + ldns_pkt_ancount(p) +
+		ldns_pkt_nscount(p);
+	if (n < count) {
+		sec = ldns_pkt_authority(p);
+		return ldns_rr_list_rr(sec, count - n - 1);
+	}
+
+	count = ldns_pkt_qdcount(p) + ldns_pkt_ancount(p) +
+		ldns_pkt_nscount(p) + ldns_pkt_arcount(p);
+	if (n < count) {
+		sec = ldns_pkt_additional(p);
+		return ldns_rr_list_rr(sec, count - n - 1);
+	}
+	return NULL;
 }
 
-/* ldns_pkt_rr does somethinf else */
-bool
-ldns_pkt_set_rr(ldns_pkt *p, uint16_t n, ldns_rr *rr)
+ldns_rr *
+ldns_pkt_set_rr(ldns_pkt *p, ldns_rr *rr, uint16_t n)
 {
 	ldns_rr_list *sec;
 	ldns_rr *r;
+	uint16_t count;
 
-	sec = ldns_pkt_all(p);
-	if (!sec) {
-		return false;
+	/* i break a layer here -- sue me */
+
+	/* retrieve the correct section */
+	count = ldns_pkt_qdcount(p);
+	if (n < count) {
+		sec = ldns_pkt_question(p);
+		goto success;
 	}
+	count = ldns_pkt_qdcount(p) + ldns_pkt_ancount(p);
+	if (n < count) {
+		sec = ldns_pkt_answer(p);
+		goto success;
+	}
+	count = ldns_pkt_qdcount(p) + ldns_pkt_ancount(p) +
+		ldns_pkt_nscount(p);
+	if (n < count) {
+		sec = ldns_pkt_authority(p);
+		goto success;
+	}
+	count = ldns_pkt_qdcount(p) + ldns_pkt_ancount(p) +
+		ldns_pkt_nscount(p) + ldns_pkt_arcount(p);
+	if (n < count) {
+		sec = ldns_pkt_additional(p);
+		goto success;
+	} 
+	/* still not ?? */
+	return NULL;
+	
+success:
+	r = ldns_rr_list_rr(sec, count - n - 1);
+	ldns_rr_print(stderr, r);
+	ldns_rr_print(stderr, rr);
+	ldns_pkt_print(stderr, p);
+	sec->_rrs[count - n - 1] = rr; /* replace */
 
-	r = ldns_rr_clone(
-			ldns_rr_list_rr(sec, n));
-	ldns_rr_list_deep_free(sec);
-
-	return true;
+	return r;
 }
 
 uint16_t

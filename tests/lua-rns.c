@@ -133,6 +133,24 @@ l_pkt_get_rr(lua_State *L)
 }
 
 static int
+l_pkt_set_rr(lua_State *L)
+{
+	ldns_pkt *p = (ldns_pkt*)lua_touserdata(L, 1);
+	ldns_rr *rr = (ldns_rr*)lua_touserdata(L, 2);
+	unsigned int n = lua_tonumber(L, 3);
+	ldns_rr *r;
+
+	r = ldns_pkt_set_rr(p, rr, (uint16_t) n);
+	if (r) {
+		lua_pushlightuserdata(L, r);
+		return 1;
+	} else {
+		return 0;
+	}
+}
+
+
+static int
 l_pkt_print(lua_State *L)
 {
 	/* we always print to stdout */
@@ -186,6 +204,7 @@ register_ldns_functions(void)
 	lua_register(L, "l_pkt_push_rr", l_pkt_push_rr);
 	lua_register(L, "l_pkt_print", l_pkt_print);
 	lua_register(L, "l_pkt_get_rr", l_pkt_get_rr);
+	lua_register(L, "l_pkt_set_rr", l_pkt_set_rr);
 }
 
 int

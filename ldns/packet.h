@@ -277,7 +277,7 @@ ldns_pkt *ldns_pkt_clone(ldns_pkt *pkt);
 
 /* lua helper stuff */
 ldns_rr * ldns_pkt_get_rr(ldns_pkt *p, uint16_t n);
-bool ldns_pkt_set_rr(ldns_pkt *p, uint16_t n, ldns_rr *rr);
+ldns_rr * ldns_pkt_set_rr(ldns_pkt *p, ldns_rr *rr, uint16_t n);
 
 
 #define LDNS_MAX_PACKETLEN         65535
