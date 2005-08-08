@@ -149,6 +149,14 @@ l_pkt_set_rr(lua_State *L)
 	}
 }
 
+static int
+l_pkt_rr_count(lua_State *L)
+{
+	ldns_pkt *p = (ldns_pkt*)lua_touserdata(L, 1);
+
+	lua_pushnumber(L, ldns_pkt_section_count(p, LDNS_SECTION_ANY));
+	return 1;
+}
 
 static int
 l_pkt_print(lua_State *L)
@@ -205,6 +213,7 @@ register_ldns_functions(void)
 	lua_register(L, "l_pkt_print", l_pkt_print);
 	lua_register(L, "l_pkt_get_rr", l_pkt_get_rr);
 	lua_register(L, "l_pkt_set_rr", l_pkt_set_rr);
+	lua_register(L, "l_pkt_rr_count", l_pkt_rr_count);
 }
 
 int

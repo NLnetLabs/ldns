@@ -431,11 +431,7 @@ ldns_pkt_set_rr(ldns_pkt *p, ldns_rr *rr, uint16_t n)
 	
 success:
 	r = ldns_rr_list_rr(sec, count - n - 1);
-	ldns_rr_print(stderr, r);
-	ldns_rr_print(stderr, rr);
-	ldns_pkt_print(stderr, p);
 	sec->_rrs[count - n - 1] = rr; /* replace */
-
 	return r;
 }
 
