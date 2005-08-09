@@ -316,6 +316,29 @@ ldns_tcp_send_query(ldns_buffer *qbin, int sockfd, const struct sockaddr_storage
 }
 
 uint8_t *
+ldns_udp_read_wire(int sockfd, size_t *size)
+{
+	uint8_t *wire;
+	int16_t wire_size;
+
+	wire = LDNS_XMALLOC(uint8_t, LDNS_MAX_PACKETLEN);
+
+	wire_size = recv(sockfd, wire, LDNS_MAX_PACKETLEN, 0);
+
+	if (wire_size == -1) {
+		if (errno == EAGAIN) {
+			dprintf("%s", "socket timeout\n");
+		}
+		perror("error receiving tcp packet");
+		return NULL;
+	}
+
+	*size = (size_t) wire_size;
+
+	return wire;
+}
+
+uint8_t *
 ldns_tcp_read_wire(int sockfd, size_t *size)
 {
 	uint8_t *wire;
