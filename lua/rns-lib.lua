@@ -30,9 +30,10 @@ function lua_insert_rr(pkt, r, n)
 end
 
 -- add an rr to the end of a pkt --
-function lua_add_rr(pkt, r)
-	print("[info] [RR] add", "end")
-	-- special case of insert ...
+function lua_insert_end_rr(pkt, r)
+	local n = l_pkt_rr_count(pkt) - 1
+	print(n)
+	lua_insert_rr(pkt, r, n)
 end
 
 -- remove an rr from the end of a pkt --

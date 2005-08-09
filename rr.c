@@ -452,6 +452,12 @@ ldns_rr_list_insert_rr(ldns_rr_list *rr_list, ldns_rr *r, uint16_t count)
 
 	c = ldns_rr_list_rr_count(rr_list);
 
+	if (count == 0) {
+		/* nothing fancy to do */
+	       ldns_rr_list_push_rr(rr_list, r);
+		return true;
+	}
+
 	if (count > c || count > 100) {
 		return false;
 	}
