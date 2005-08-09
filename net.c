@@ -349,7 +349,7 @@ uint8_t *
 ldns_udp_read_wire(int sockfd, size_t *size)
 {
 	uint8_t *wire;
-	int16_t wire_size;
+	ssize_t wire_size;
 
 	wire = LDNS_XMALLOC(uint8_t, LDNS_MAX_PACKETLEN);
 
