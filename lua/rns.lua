@@ -5,6 +5,7 @@ rr1 = l_rr_new_frm_str("www.miek.nl  IN A 192.168.1.2")
 rr2 = l_rr_new_frm_str("miek.nl  IN ns gaap")
 rr3 = l_rr_new_frm_str("miek.nl  IN ns gaap2")
 rr4 = l_rr_new_frm_str("www.atoom.net. IN A 192.168.1.2")
+rr5 = l_rr_new_frm_str("www.nlnetlabs.nl IN A 192.168.1.2")
 
 pkt = l_pkt_new()
 pkt = l_pkt_push_rr(pkt, LDNS_SECTION_ANSWER, rr1)
@@ -18,19 +19,23 @@ lua_reverse_pkt(pkt)
 
 l_pkt_print(pkt)
 
+print("INSERT")
+l_pkt_insert_rr(pkt, rr5, 2);
+l_pkt_print(pkt)
+--
+
+
 -- now do it at random
 lua_transpose_rr_random(pkt)
 
 -- print again
 l_pkt_print(pkt)
 
+-- spkt = l_pkt2string(pkt)
 
-print("Hallo en nu dan")
+-- len = string.len(spkt)
 
-spkt = l_pkt2string(pkt)
+-- print(len)
 
-len = string.len(spkt)
-
-print(len)
-
-print(spkt)
+-- print(spkt)
+-- print (string.byte(spkt,160))
