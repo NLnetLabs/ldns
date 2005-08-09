@@ -18,55 +18,25 @@ COMPILE         = $(CC) $(CPPFLAGS) $(CFLAGS)
 LINK            = $(CC) $(CFLAGS) $(LDFLAGS) $(LIBS)
 
 HEADER		= config.h
-TESTS		= run-test0 run-test7 run-test18 run-test19 run-test20 \
-			dname-label-test notify run-test-read-zone
 
 .PHONY:	all clean realclean
 
-all:	$(TESTS)
+all:	lua
 
 lua: 	lua-rns
-
-run-test0:       run-test0.o 
-		$(LINK) -o $@ $+ 
-
-run-test7:        run-test7.o 
-		$(LINK) -o $@ $+ 
-
-run-test11:       run-test11.o 
-		$(LINK) -o $@ $+ 
-
-run-test18:       run-test18.o 
-		$(LINK) -lssl -o $@ $+ 
-
-run-test19:       run-test19.o 
-		$(LINK) -lssl -o $@ $+ 
-
-run-test20:       run-test20.o 
-		$(LINK) -lssl -o $@ $+ 
-	
-run-test-read-zone: 	run-test-read-zone.o
-		$(LINK) -lssl -o $@ $+ 
-
-dname-label-test:       dname-label-test.o 
-		$(LINK) -o $@ $+ 
-	
-notify: 	notify.o
-		$(LINK) -o $@ $+
 
 lua-rns: 	lua-rns.o
 		$(LINK) `lua-config --libs` -o $@ $+
 	
-lua-rns.o: 	lua-rns.c
-		$(COMPILE) `lua-config --include` -c $<
+#lua-rns.o: 	lua-rns.c
+#		$(COMPILE) `lua-config --include` -c $<
 
 ## implicit rule
 %.o:    %.c $(HEADER)
-	$(COMPILE) -c $<
+	$(COMPILE) `lua-config --include` -c $<
 
 clean:
 	rm -f *.o
-	rm -f $(TESTS)
 	rm -f lua-rns
 
 realclean: clean

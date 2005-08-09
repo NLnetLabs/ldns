@@ -1,37 +1,25 @@
--- ldns defines
+-- source the lib file with the function
+dofile("rns-lib.lua")
 
-LDNS_SECTION_QUESTION 		= 0
-LDNS_SECTION_ANSWER 		= 1
-LDNS_SECTION_AUTHORITY 		= 2
-LDNS_SECTION_ADDITIONAL 	= 3
-LDNS_SECTION_ANY 		= 4
-LDNS_SECTION_ANY_NOQUESTION 	= 5
+rr1 = l_rr_new_frm_str("www.miek.nl  IN A 192.168.1.2")
+rr2 = l_rr_new_frm_str("miek.nl  IN ns gaap")
+rr3 = l_rr_new_frm_str("miek.nl  IN ns gaap2")
+rr4 = l_rr_new_frm_str("www.atoom.net. IN A 192.168.1.2")
 
--- Now the scary ldns_* stuff
+pkt = l_pkt_new()
+pkt = l_pkt_push_rr(pkt, LDNS_SECTION_ANSWER, rr1)
+pkt = l_pkt_push_rr(pkt, LDNS_SECTION_ANSWER, rr4)
+pkt = l_pkt_push_rr(pkt, LDNS_SECTION_AUTHORITY, rr2)
+pkt = l_pkt_push_rr(pkt, LDNS_SECTION_AUTHORITY, rr3)
 
-my_rr2 = l_rr_new_frm_str("www.miek.nl")
-my_rr = l_rr_new_frm_str("www.miek.nl  IN A 192.168.1.2")
-my_rr4 = l_rr_new_frm_str("www.atoom.net. IN A 192.168.1.2")
+l_pkt_print(pkt)
 
-l_rr_print(my_rr)
-l_rr_print(my_rr2)
-l_rr_print(my_rr4)
+lua_reverse_pkt(pkt)
 
-my_pkt = l_pkt_new()
+l_pkt_print(pkt)
 
-my_pkt = l_pkt_push_rr(my_pkt, LDNS_SECTION_ANSWER, my_rr)
+-- now do it at random
+lua_swap_rr_random(pkt)
 
-l_pkt_print(my_pkt)
-
-my_pkt = l_pkt_push_rr(my_pkt, LDNS_SECTION_ANSWER, my_rr2)
-
-my_rr3 = l_pkt_get_rr(my_pkt, 0);
-l_rr_print(my_rr3)
-my_rr3 = l_pkt_get_rr(my_pkt, 1);
-l_rr_print(my_rr3)
-
-l_pkt_print(my_pkt)
-my_rr5 = l_pkt_set_rr(my_pkt, my_rr4, 1)
-l_rr_print(my_rr5)
-
-l_pkt_print(my_pkt)
+-- print again
+l_pkt_print(pkt)

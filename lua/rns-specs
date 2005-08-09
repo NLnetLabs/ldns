@@ -1,0 +1,128 @@
+* Classes of Manglement
+
+from higher to lower level:
+	- deliberatly mess up a resolver ability to recurse
+	- move RRsets to different sections
+	- fiddle with the ID
+	- add/delete RRs
+		- remove glue, add wrong glue
+		- add fake signatures
+	- split up RRsets
+	== mess with the final packet ==
+	- distort the compression pointers in the final packet
+	- swap bytes in the final packet
+	- swap bits in the final packet
+
+Based on a simple ldns-based nameserver.
+
+A configuration file is needed to tell it what to do. Some form
+of random stuff is also required.
+
+Ideally what I want is that you "program" you nameserver to mangle
+the packets.
+
+The mangle stage should be seen as a lego system, where you can connect
+different boxes together and push the assembled packet through it.
+
+So RNS should be able to deal with raw packets, so you can put it
+IN FRONT of another nameserver or it can directly deal with a ldns_packet*.       
+
+Best way would be to build RNS is as a filter that can be put between the
+resolver and nameserver. Or, if running on localhost, all answers can be
+sent to a special IP of the resolver you want to test.
+
+** Mangle Blocks
+
+Each mangle function is effectively called from the configuration file.
+From the config file a mangle-engine is built. The packet is then put
+through this engine. After that a binary blob (with a length) comes 
+out. This blob is then sent out to the network.
+
+* Design of RNS
+
+You program the engine in Lua by using ldns building blocks.
+
+I must be able to call C ldns functions from lua and pass data
+from and to the functions.
+
+:Binary filter:
+
+Steps:
+1. suck in a packet
+  b: check ip dst address
+2. mangle it according to the configuration file
+3. rebuilt and put out the new packet. (Or binary blob, or whatever)
+
+* Implementation
+
+A bunch of blob/packet functions-in/out.
+
+So blob_out* lua_mangle_remove_rr(blob_in*, random, extra args??);
+
+See are then chained together by the lua code.
+
+:Packet Mangling:
+
+These are the four basic operations:
+
+Transpose: 	switching 2 elements
+Substitute: 	replace an element with another one 
+		(could be random)
+Add: 		add an element
+Remove: 	remove an element
+
+Each operation can be done on a different level, we distinguish between the
+following levels:
+
+packet-level: 	the header bits, number of rr in a specific section,
+rr-level: 	placement of rrs (which section)
+byte-level: 	handle specific bytes, like the compression pointers (2
+		bytes)
+bit-level: 	handle specific bits
+
+All 4 operation can be applied at all levels, this gives us 16 degrees of
+freedom in the packet mangling. (ghe ghe :-) )
+
+To keep matters interesting some sort of randomness is required in some
+step, otherwise each packet is mangled in the same way. Also this
+randomness together with the Lua script needs to be logged so the the 
+actual mangling can be replayed.
+
+:Packet Mangling: address the different elements:
+We need a way to address our elements:
+
+elements: (network order)
+	bytes: numbered from 0 till the end of the packet
+	bits: within each byte numbered from 0 till 7
+	sections: numbered from the start of the packet (mnemonics?)
+	rr: numbered in each section
+
+Ambivalent on whether we need something like addresses: section_answer?
+ldns_* provides it. Should we use that?????
+
+::Packet Mangling Implementation::
+Example:
+
+Suppose we have a mangling operation that mangles RR (at the rr-level):
+transpose_rr(packet, rr1_postition, rr2_position) 
+
+The 2 rr's are now flipped. We could also use rand0 for the position
+thereby letting the system decide. All these mangling functions should
+this log what they do.
+
+:: Short Term Implementation ::
+
+Try to switch 2 rrs from one section to another. Complex addressing of
+a packet <Section, RR number> probably.... Section can be random, RR number
+can be random.
+
+
+:: Addressing ::
+everything is numbered from 0 to n-1, so n objects
+this is how things go in side the packet too, so it is the easiest
+
+:: Lua Implementation ::
+RR level -> ldns stuff
+Packet level -> ldns stuff
+Byte level -> Lua string
+Bit level -> Lua string, but add C bit ops
