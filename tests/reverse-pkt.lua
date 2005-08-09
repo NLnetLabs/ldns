@@ -6,6 +6,7 @@ LDNS_SECTION_ADDITIONAL 	= 3
 LDNS_SECTION_ANY 		= 4
 LDNS_SECTION_ANY_NOQUESTION 	= 5
 
+-- dofile (filename)
 -- swap 2 rrs in a pkt --
 function lua_swap_rr(pkt, n1, n2)
 	print("[info] [RR] swapping", n1, n2)
