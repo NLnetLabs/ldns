@@ -63,8 +63,27 @@ ldns_status ldns_send(ldns_pkt **pkt, ldns_resolver *r, ldns_pkt *query_pkt);
  */
 int ldns_tcp_connect(const struct sockaddr_storage *to, socklen_t tolen, struct timeval timeout);
 
+/**
+ * send a query via tcp to a server. Don;t want for the answer
+ *
+ * \param[in] qbin the buffer to send
+ * \param[in] sockfd the socket to use
+ * \param[in] to which ip to send it
+ * \param[in] tolen socketlen
+ * \return number of bytes sent
+ */
 ssize_t ldns_tcp_send_query(ldns_buffer *qbin, int sockfd, const struct sockaddr_storage *to, socklen_t tolen);
 
+/**
+ * send a query via udp to a server. Don;t want for the answer
+ *
+ * \param[in] qbin the buffer to send
+ * \param[in] sockfd the socket to use
+ * \param[in] to which ip to send it
+ * \param[in] tolen socketlen
+ * \return number of bytes sent
+ */
+ssize_t ldns_udp_send_query(ldns_buffer *qbin, int sockfd, const struct sockaddr_storage *to, socklen_t tolen);
 /**
  * Gives back a raw packet from the wire and reads the header data from the given
  * socket. Allocates the data (of size size) itself, so don't forget to free

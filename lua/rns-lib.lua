@@ -6,7 +6,12 @@ LDNS_SECTION_ADDITIONAL 	= 3
 LDNS_SECTION_ANY 		= 4
 LDNS_SECTION_ANY_NOQUESTION 	= 5
 
--- dofile (filename)
+-- read a pkt from the wire
+function lua_recv_pkt()
+	
+end
+
+
 -- transpose 2 rrs in a pkt --
 function lua_transpose_rr(pkt, n1, n2)
 	print("[info] [RR] transpose", n1, n2)

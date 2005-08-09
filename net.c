@@ -315,6 +315,36 @@ ldns_tcp_send_query(ldns_buffer *qbin, int sockfd, const struct sockaddr_storage
 	return bytes;
 }
 
+ssize_t
+ldns_udp_send_query(ldns_buffer *qbin, int sockfd, const struct sockaddr_storage *to, socklen_t tolen)
+{
+	uint8_t *sendbuf;
+	ssize_t bytes;
+
+	/* add length of packet */
+	sendbuf = LDNS_XMALLOC(uint8_t, ldns_buffer_position(qbin) + 2);
+	ldns_write_uint16(sendbuf, ldns_buffer_position(qbin));
+	memcpy(sendbuf+2, ldns_buffer_export(qbin), ldns_buffer_position(qbin));
+
+	bytes = sendto(sockfd, sendbuf,
+			ldns_buffer_position(qbin)+2, 0, (struct sockaddr *)to, tolen);
+
+        LDNS_FREE(sendbuf);
+
+	if (bytes == -1) {
+		dprintf("%s", "error with sending\n");
+		close(sockfd);
+		return 0;
+	}
+	if ((size_t) bytes != ldns_buffer_position(qbin)+2) {
+		dprintf("%s", "amount of sent bytes mismatch\n");
+		close(sockfd);
+		return 0;
+	}
+	
+	return bytes;
+}
+
 uint8_t *
 ldns_udp_read_wire(int sockfd, size_t *size)
 {
