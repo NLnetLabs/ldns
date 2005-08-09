@@ -444,6 +444,31 @@ ldns_rr_list_set_rr(ldns_rr_list *rr_list, ldns_rr *r, uint16_t count)
 	return old;
 }
 
+bool
+ldns_rr_list_insert_rr(ldns_rr_list *rr_list, ldns_rr *r, uint16_t count)
+{
+	uint16_t c, i;
+	ldns_rr *pop[101]; /* WRONG AMOUNT */
+
+	c = ldns_rr_list_rr_count(rr_list);
+
+	if (count > c || count > 100) {
+		return false;
+	}
+
+	/* chip off the top */
+	for (i = c - 1; i >= count; i--) {
+		pop[c - 1 - i] = ldns_rr_list_pop_rr(rr_list);
+	}
+
+	/* add the rr and then the popped stuff */
+	ldns_rr_list_push_rr(rr_list, r);
+
+	for (i = count; i < c; i++) {
+		ldns_rr_list_push_rr(rr_list, pop[count - i]);
+	}
+	return true;
+}
 
 void
 ldns_rr_list_set_rr_count(ldns_rr_list *rr_list, uint16_t count)
@@ -640,7 +665,7 @@ ldns_rr_list_pop_rr(ldns_rr_list *rr_list)
 		return NULL;
 	}
 
-	pop = ldns_rr_list_rr(rr_list, rr_count);
+	pop = ldns_rr_list_rr(rr_list, rr_count - 1);
 	
 	/* shrink the array */
 	rr_list->_rrs = LDNS_XREALLOC(

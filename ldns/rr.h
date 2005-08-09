@@ -623,4 +623,7 @@ ldns_rdf_type ldns_rr_descriptor_field_type(const ldns_rr_descriptor *descriptor
  */
 ldns_rr_list *ldns_rr_list_subtype_by_rdf(ldns_rr_list *l, ldns_rdf *r, uint16_t pos);
 
+/* added while doing lua */
+bool ldns_rr_list_insert_rr(ldns_rr_list *rr_list, ldns_rr *r, uint16_t count);
+
 #endif /* _LDNS_RR_H */
