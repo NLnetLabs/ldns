@@ -182,6 +182,47 @@ l_pkt_print(lua_State *L)
 	return 0;
 }
 
+/* header bits */
+
+/* read section counters */
+static int
+l_pkt_qdcount(lua_State *L)
+{
+	ldns_pkt *p = (ldns_pkt*)lua_touserdata(L, 1);
+	lua_pushnumber(L, ldns_pkt_qdcount(p));
+	return 1;
+}
+
+static int
+l_pkt_ancount(lua_State *L)
+{
+	ldns_pkt *p = (ldns_pkt*)lua_touserdata(L, 1);
+	lua_pushnumber(L, ldns_pkt_ancount(p));
+	return 1;
+}
+
+static int
+l_pkt_nscount(lua_State *L)
+{
+	ldns_pkt *p = (ldns_pkt*)lua_touserdata(L, 1);
+	lua_pushnumber(L, ldns_pkt_nscount(p));
+	return 1;
+}
+
+static int
+l_pkt_arcount(lua_State *L)
+{
+	ldns_pkt *p = (ldns_pkt*)lua_touserdata(L, 1);
+	lua_pushnumber(L, ldns_pkt_arcount(p));
+	return 1;
+}
+
+static int
+l_pkt_set_qdcount(lua_State *L)
+{
+	return 0;
+}
+
 /*
 ============
  CONVERSION
@@ -260,6 +301,12 @@ register_ldns_functions(void)
 	lua_register(L, "l_pkt_set_rr", l_pkt_set_rr);
 	lua_register(L, "l_pkt_rr_count", l_pkt_rr_count);
 	lua_register(L, "l_pkt_insert_rr", l_pkt_insert_rr);
+
+	lua_register(L, "l_pkt_qdcount", l_pkt_qdcount);
+	lua_register(L, "l_pkt_ancount", l_pkt_ancount);
+	lua_register(L, "l_pkt_nscount", l_pkt_nscount);
+	lua_register(L, "l_pkt_arcount", l_pkt_arcount);
+	
 	/* CONVERSIONs */
 	lua_register(L, "l_pkt2string", l_pkt2string);
 }

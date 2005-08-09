@@ -19,10 +19,10 @@ lua_reverse_pkt(pkt)
 
 l_pkt_print(pkt)
 
-print("INSERT")
-l_pkt_insert_rr(pkt, rr5, 2);
+lua_insert_rr(pkt, rr5, 0);
 l_pkt_print(pkt)
---
+
+print(l_pkt_ancount(pkt))
 
 
 -- now do it at random

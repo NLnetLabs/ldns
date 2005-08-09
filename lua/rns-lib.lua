@@ -24,6 +24,10 @@ function lua_transpose_rr_random(pkt)
 end
 
 -- substitute, add, remove
+function lua_insert_rr(pkt, r, n)
+	print("[info] [RR] insert after", n)
+	l_pkt_insert_rr(pkt, r, n)
+end
 
 -- add an rr to the end of a pkt --
 function lua_add_rr(pkt, r)
