@@ -348,6 +348,7 @@ ldns_udp_send_query(ldns_buffer *qbin, int sockfd, const struct sockaddr_storage
 uint8_t *
 ldns_udp_read_wire(int sockfd, size_t *size)
 {
+	/* AANPASSEN */
 	uint8_t *wire;
 	ssize_t wire_size;
 
