@@ -7,7 +7,7 @@ LDNS_SECTION_ANY 		= 4
 LDNS_SECTION_ANY_NOQUESTION 	= 5
 
 -- dofile (filename)
--- swap 2 rrs in a pkt --
+-- transpose 2 rrs in a pkt --
 function lua_transpose_rr(pkt, n1, n2)
 	print("[info] [RR] transpose", n1, n2)
 	local rr_n1 = l_pkt_get_rr(pkt, n1)
@@ -20,20 +20,35 @@ function lua_transpose_rr_random(pkt)
 	local total = l_pkt_rr_count(pkt) - 1
 	local rn1 = math.random(0, total)
 	local rn2 = math.random(0, total)
-	lua_swap_rr(pkt, rn1, rn2)
+	lua_transpose_rr(pkt, rn1, rn2)
 end
 
--- substiture, add, remove
+-- substitute, add, remove
+
+-- add an rr to the end of a pkt --
+function lua_add_rr(pkt, r)
+	print("[info] [RR] add", "end")
+	-- special case of insert ...
+end
+
+-- remove an rr from the end of a pkt --
+function lua_remove_rr(pkt, n)
+	print("[info] [RR] remove", "end")
+end
+
+-- convert a ldns_buffer to a string in lua
+function lua_buf_to_string(buf)
+end
 
 ---------------------------------
--- these are more higher level --
+-- higher level                --
 ---------------------------------
 
 -- reverse all the rrs in a pkt --
 function lua_reverse_pkt(pkt)
 	local total = l_pkt_rr_count(pkt) - 1
 	for i=0, (total / 2) do
-		lua_swap_rr(pkt, i, total - i)
+		lua_transpose_rr(pkt, i, total - i)
 	end
 end
 

@@ -45,8 +45,8 @@ char *VERSION = "lua-rns 0.1";
 void
 usage(FILE *f, char *progname)
 {
-	fprintf(f, "Synopsis: %s lua-file\n", progname);
-	fprintf(f, "   Useless bunch of other options\n");
+	fprintf(f, "Synopsis: %s lua-script\n", progname);
+	fprintf(f, "   No options are defined (yet)\n");
 }
 
 void
@@ -169,12 +169,44 @@ l_pkt_print(lua_State *L)
 
 /*
 ============
+ CONVERSION
+============
+*/
+
+static int
+l_pkt2string(lua_State *L)
+{
+	ldns_buffer *b;
+	luaL_Buffer lua_b;
+	ldns_pkt *p = (ldns_pkt *)lua_touserdata(L, 1);
+
+	b = ldns_buffer_new(LDNS_MAX_PACKETLEN);
+	luaL_buffinit(L,&lua_b);
+
+	if (ldns_pkt2buffer_wire(b, p) != LDNS_STATUS_OK) {
+		ldns_buffer_free(b);
+		return 0;
+	}
+	printf("how is this comming along %d\n", ldns_buffer_capacity(b));
+
+	/* this is a memcpy??? */
+	luaL_addlstring(&lua_b,
+			ldns_buffer_begin(b),
+			ldns_buffer_capacity(b)
+		       );
+	/* I hope so */
+	ldns_buffer_free(b); 
+
+	luaL_pushresult(&lua_b);
+	return 1;
+}
+
+/*
+============
  EXAMPLES
 ============
 */
 
-
-/* Example test function which doesn't call ldns stuff yet */
 static int 
 l_average(lua_State *L)
 {
@@ -214,6 +246,8 @@ register_ldns_functions(void)
 	lua_register(L, "l_pkt_get_rr", l_pkt_get_rr);
 	lua_register(L, "l_pkt_set_rr", l_pkt_set_rr);
 	lua_register(L, "l_pkt_rr_count", l_pkt_rr_count);
+	/* CONVERSIONs */
+	lua_register(L, "l_pkt2string", l_pkt2string);
 }
 
 int
@@ -233,6 +267,7 @@ main(int argc, char *argv[])
         lua_baselibopen(L);
 	luaopen_math(L);
 	luaopen_io(L);
+	luaopen_string(L);
 
 	register_ldns_functions();
 

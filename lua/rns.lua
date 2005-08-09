@@ -19,7 +19,18 @@ lua_reverse_pkt(pkt)
 l_pkt_print(pkt)
 
 -- now do it at random
-lua_swap_rr_random(pkt)
+lua_transpose_rr_random(pkt)
 
 -- print again
 l_pkt_print(pkt)
+
+
+print("Hallo en nu dan")
+
+spkt = l_pkt2string(pkt)
+
+len = string.len(spkt)
+
+print(len)
+
+print(spkt)
