@@ -310,7 +310,7 @@ ldns_str2rdf_b64(ldns_rdf **rd, const char *str)
 ldns_status
 ldns_str2rdf_hex(ldns_rdf **rd, const char *str)
 {
-        uint8_t *t;
+        uint8_t *t, *t_orig;
         int i;
 	size_t len;
 
@@ -322,7 +322,7 @@ ldns_str2rdf_hex(ldns_rdf **rd, const char *str)
 		return LDNS_STATUS_LABEL_OVERFLOW;
         } else {
 		t = LDNS_XMALLOC(uint8_t, (len / 2));
-    
+		t_orig = t;
                 /* Now process octet by octet... */
                 while (*str) {
                         *t = 0;
@@ -336,6 +336,7 @@ ldns_str2rdf_hex(ldns_rdf **rd, const char *str)
                         }
                         ++t;
                 }
+                t = t_orig;
 		*rd = ldns_rdf_new_frm_data(LDNS_RDF_TYPE_HEX, len / 2, t);
         }
         return LDNS_STATUS_OK;
