@@ -79,6 +79,7 @@ ldns_rr_free(ldns_rr *rr)
 /* 
  * extra spaces are allowed
  * allow ttl to be optional
+ * class is optional too
  * if ttl is missing, and default_ttl is 0, use DEF_TTL
  * allow ttl to be written as 1d3h
  * So the RR should look like. e.g.
@@ -102,7 +103,7 @@ ldns_rr_new_frm_str(const char *str, uint16_t default_ttl, ldns_rdf *origin)
 	char  *ttl; 
 	ldns_rr_class clas_val;
 	char  *clas;
-	char  *type;
+	char  *type = NULL;
 	char  *rdata;
 	char  *rd;
 	const char *delimiters;
@@ -120,12 +121,11 @@ ldns_rr_new_frm_str(const char *str, uint16_t default_ttl, ldns_rdf *origin)
 	owner = LDNS_XMALLOC(char, LDNS_MAX_DOMAINLEN + 1);
 	ttl = LDNS_XMALLOC(char, 21);
 	clas = LDNS_XMALLOC(char, 11);
-	type = LDNS_XMALLOC(char, 10);
 	rdata = LDNS_XMALLOC(char, LDNS_MAX_PACKETLEN + 1);
 	rr_buf = LDNS_MALLOC(ldns_buffer);
 	rd_buf = LDNS_MALLOC(ldns_buffer);
 	rd = LDNS_XMALLOC(char, LDNS_MAX_RDFLEN);
-	if (!owner || !ttl || !clas || !type || !rdata ||
+	if (!owner || !ttl || !clas || !rdata ||
 			!rr_buf || !rd_buf || !rd) {
 		return NULL;
 	}
@@ -170,6 +170,14 @@ ldns_rr_new_frm_str(const char *str, uint16_t default_ttl, ldns_rdf *origin)
 		 * so ttl value we read is actually the class
 		 */
 		clas_val = ldns_get_rr_class_by_name(ttl);
+		/* class can be left out too, assume IN, current
+		 * token must be type
+		 */
+		if (clas_val == 0) {
+			clas_val = LDNS_RR_CLASS_IN;
+			type = LDNS_XMALLOC(char, strlen(ttl));
+			strncpy(type, ttl, strlen(ttl) + 1);
+		}
 	} else {
 		if (ldns_bget_token(rr_buf, clas, "\t\n ", 11) == -1) {
 			LDNS_FREE(owner); 
@@ -182,19 +190,31 @@ ldns_rr_new_frm_str(const char *str, uint16_t default_ttl, ldns_rdf *origin)
 			return NULL;
 		}
 		clas_val = ldns_get_rr_class_by_name(clas);
+		/* class can be left out too, assume IN, current
+		 * token must be type
+		 */
+		if (clas_val == 0) {
+			clas_val = LDNS_RR_CLASS_IN;
+			type = LDNS_XMALLOC(char, strlen(clas));
+			strncpy(type, clas, strlen(clas) + 1);
+		}
 	}
 	/* the rest should still be waiting for us */
 
-	if (ldns_bget_token(rr_buf, type, "\t\n ", 10) == -1) {
-		LDNS_FREE(owner); 
-		LDNS_FREE(ttl); 
-		LDNS_FREE(clas); 
-		LDNS_FREE(rdata);
-		LDNS_FREE(rd);
-		LDNS_FREE(rd_buf);
-		ldns_buffer_free(rr_buf);
-		return NULL;
+	if (!type) {
+		type = LDNS_XMALLOC(char, 10);
+		if (ldns_bget_token(rr_buf, type, "\t\n ", 10) == -1) {
+			LDNS_FREE(owner); 
+			LDNS_FREE(ttl); 
+			LDNS_FREE(clas); 
+			LDNS_FREE(rdata);
+			LDNS_FREE(rd);
+			LDNS_FREE(rd_buf);
+			ldns_buffer_free(rr_buf);
+			return NULL;
+		}
 	}
+	
 	if (ldns_bget_token(rr_buf, rdata, "\0", LDNS_MAX_PACKETLEN) == -1) {
 		LDNS_FREE(owner); 
 		LDNS_FREE(ttl); 
@@ -217,17 +237,25 @@ ldns_rr_new_frm_str(const char *str, uint16_t default_ttl, ldns_rdf *origin)
 			ldns_rr_set_owner(new, ldns_dname_new_frm_str("."));
 		}
 	} else {
-		ldns_rr_set_owner(new, ldns_dname_new_frm_str(owner));
-		if (!ldns_dname_str_absolute(owner) && origin) {
-			if(ldns_dname_cat(ldns_rr_owner(new), origin) != LDNS_STATUS_OK) {
-				LDNS_FREE(owner); 
-				LDNS_FREE(ttl); 
-				LDNS_FREE(clas); 
-				LDNS_FREE(type);
-				LDNS_FREE(rd);
-				LDNS_FREE(rd_buf);
-				ldns_buffer_free(rr_buf);
-				return NULL;
+		if (strlen(owner) == 0) {
+			if (origin) {
+				ldns_rr_set_owner(new, ldns_rdf_clone(origin));
+			} else {
+				ldns_rr_set_owner(new, ldns_dname_new_frm_str("."));
+			}
+		} else {
+			ldns_rr_set_owner(new, ldns_dname_new_frm_str(owner));
+			if (!ldns_dname_str_absolute(owner) && origin) {
+				if(ldns_dname_cat(ldns_rr_owner(new), origin) != LDNS_STATUS_OK) {
+					LDNS_FREE(owner); 
+					LDNS_FREE(ttl); 
+					LDNS_FREE(clas); 
+					LDNS_FREE(type);
+					LDNS_FREE(rd);
+					LDNS_FREE(rd_buf);
+					ldns_buffer_free(rr_buf);
+					return NULL;
+				}
 			}
 		}
 	}
