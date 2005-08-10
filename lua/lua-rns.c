@@ -433,7 +433,8 @@ register_ldns_functions(void)
 	lua_register(L, "l_pkt_qdcount", l_pkt_qdcount);
 	lua_register(L, "l_pkt_ancount", l_pkt_ancount);
 	lua_register(L, "l_pkt_nscount", l_pkt_nscount);
-	lua_register(L, "l_pkt_arcount", l_pkt_arcount);
+	lua_register(L, "l_pkt_nscount", l_pkt_nscount);
+	lua_register(L, "l_pkt_read_wire_udp", l_pkt_read_wire_udp);
 	
 	/* CONVERSIONs */
 	lua_register(L, "l_pkt2string", l_pkt2string);
