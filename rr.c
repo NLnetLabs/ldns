@@ -116,6 +116,10 @@ ldns_rr_new_frm_str(const char *str, uint16_t default_ttl, ldns_rdf *origin)
 	uint16_t r_min;
 	uint16_t r_max;
 
+	uint16_t hex_data_size;
+	char *hex_data_str;
+	uint16_t cur_hex_data_size;
+
 	new = ldns_rr_new();
 
 	owner = LDNS_XMALLOC(char, LDNS_MAX_DOMAINLEN + 1);
@@ -305,11 +309,35 @@ ldns_rr_new_frm_str(const char *str, uint16_t default_ttl, ldns_rdf *origin)
 				/* because number of fields can be variable, we can't
 				   rely on _maximum() only */
 				if ((c = ldns_bget_token(rd_buf, rd, delimiters, LDNS_MAX_RDFLEN)) != -1) {
-					r = ldns_rdf_new_frm_str(
-						ldns_rr_descriptor_field_type(desc, r_cnt),
-						rd);
-					ldns_rr_push_rdf(new, r);
 
+					/* hmmz, rfc3597 specifies that any type can be represented with
+					 * \# method, which can contain spaces...
+					 * it does specify size though...
+					 */
+					if (strlen(rd) == 2 && strncmp(rd, "\\#", 2) == 0) {
+						c = ldns_bget_token(rd_buf, rd, delimiters, LDNS_MAX_RDFLEN);
+						hex_data_size = atoi(rd);
+						/* copy the hex chars into hex str (which is 2 chars per byte) */
+						hex_data_str = LDNS_XMALLOC(char, 2 * hex_data_size + 1);
+						cur_hex_data_size = 0;
+						while(cur_hex_data_size < 2*hex_data_size) {
+							c = ldns_bget_token(rd_buf, rd, delimiters, LDNS_MAX_RDFLEN);
+							strncpy(hex_data_str + cur_hex_data_size, rd, strlen(rd));
+							cur_hex_data_size += strlen(rd);
+						}
+						hex_data_str[cur_hex_data_size] = '\0';
+						r = ldns_rdf_new_frm_str(LDNS_RDF_TYPE_HEX, hex_data_str);
+						/* correct the rdf type */
+						ldns_rdf_set_type(r, ldns_rr_descriptor_field_type(desc, r_cnt));
+
+						ldns_rr_push_rdf(new, r);
+
+					} else {
+						r = ldns_rdf_new_frm_str(
+							ldns_rr_descriptor_field_type(desc, r_cnt),
+							rd);
+						ldns_rr_push_rdf(new, r);
+					}
 				} else {
 					done = true;
 				}
