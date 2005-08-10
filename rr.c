@@ -316,7 +316,7 @@ ldns_rr_new_frm_str(const char *str, uint16_t default_ttl, ldns_rdf *origin)
 					 */
 					if (strlen(rd) == 2 && strncmp(rd, "\\#", 2) == 0) {
 						c = ldns_bget_token(rd_buf, rd, delimiters, LDNS_MAX_RDFLEN);
-						hex_data_size = atoi(rd);
+						hex_data_size = (uint16_t) atoi(rd);
 						/* copy the hex chars into hex str (which is 2 chars per byte) */
 						hex_data_str = LDNS_XMALLOC(char, 2 * hex_data_size + 1);
 						cur_hex_data_size = 0;
