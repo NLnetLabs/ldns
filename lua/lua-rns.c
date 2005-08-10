@@ -11,14 +11,10 @@
 /****
  * BIG TODO error handling and checking from the lua 
  * side
+ *
+ * Can't use doxygen, because everything goes through
+ * lua_State's stack
  */
-
-/** MISC code found on the Internet */
-
-/*
- luaL_checktype(lua,1,LUA_TLIGHTUSERDATA);
- QCanvasLine *line = static_cast<QCanvasLine*>(lua_touserdata(lua,1));
-*/
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -239,6 +235,58 @@ l_pkt_print(lua_State *L)
 	return 0;
 }
 
+/***
+ * read "something" from the wire and try to return 
+ * a packet of it
+ */
+static int
+l_pkt_read_wire_udp(lua_State *L)
+{
+	ldns_rdf *ip = (ldns_rdf*)lua_touserdata(L, 1); /* get the ip */
+	uint16_t port = (uint16_t)lua_tonumber(L, 2); /* port number */
+	struct timeval timeout;
+	struct sockaddr_storage *to;
+	size_t size;
+	uint8_t *pktbuf;
+	ldns_pkt *pkt;
+	int sockfd;
+
+	/* use default timeout - maybe this gets to be configureable */
+	timeout.tv_sec = LDNS_DEFAULT_TIMEOUT_SEC;
+	timeout.tv_usec = LDNS_DEFAULT_TIMEOUT_USEC;
+
+	/* put it in the correct types */
+	to = ldns_rdf2native_sockaddr_storage(ip, port);
+	if (!to) {
+		return 0;
+	}
+
+	/* get the socket */
+	sockfd = ldns_udp_connect(to, timeout);
+	if (sockfd == 0) {
+		return 0;
+	}
+
+	pktbuf = ldns_udp_read_wire(sockfd, &size);
+	if (!pkt) {
+		close(sockfd);
+		return 0;
+	}
+	close(sockfd);
+
+	/* if we got to this point, we got some data (pkt) with a certain
+	 * size. Let's see if it can be made into a real ldsn pkt
+	 */
+	if (ldns_wire2pkt(&pkt, pktbuf, size) != LDNS_STATUS_OK) {
+		return 0;
+	}
+	
+	/* push our new packet onto the stack */
+	lua_pushlightuserdata(L, pkt);
+	return 1;
+}
+
+
 /* header bits */
 
 /* read section counters */
@@ -312,13 +360,15 @@ l_pkt2string(lua_State *L)
 	return 1;
 }
 
+/* not sure we need this still! XXX */
 static int
 l_rdf2sockaddr_storage(lua_State *L)
 {
 	ldns_rdf *rd = (ldns_rdf*)lua_touserdata(L, 1);
+	uint16_t port = (uint16_t)lua_tonumber(L, 2);
 	struct sockaddr_storage *s;
 	
-	s = ldns_rdf2native_sockaddr_storage(rd);
+	s = ldns_rdf2native_sockaddr_storage(rd, port);
 
 	if (s) {
 		lua_pushlightuserdata(L, s);
