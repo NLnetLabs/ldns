@@ -216,7 +216,7 @@ ldns_rr_new_frm_str(const char *str, uint16_t default_ttl, ldns_rdf *origin)
 		}
 	} else {
 		ldns_rr_set_owner(new, ldns_dname_new_frm_str(owner));
-		if (owner[strlen(owner) - 1] != '.' && origin) {
+		if (!ldns_dname_str_absolute(owner) && origin) {
 			if(ldns_dname_cat(ldns_rr_owner(new), origin) != LDNS_STATUS_OK) {
 				LDNS_FREE(owner); 
 				LDNS_FREE(ttl); 
@@ -277,6 +277,9 @@ ldns_rr_new_frm_str(const char *str, uint16_t default_ttl, ldns_rdf *origin)
 					r = ldns_rdf_new_frm_str(
 						ldns_rr_descriptor_field_type(desc, r_cnt),
 						rd);
+					printf("read part: ");
+					ldns_rdf_print(stdout, r);
+					printf("\n");
 					ldns_rr_push_rdf(new, r);
 				}
 			}
@@ -305,6 +308,7 @@ ldns_rr_new_frm_fp(FILE *fp, uint16_t ttl, ldns_rdf *origin)
         if (ldns_fget_token(fp, line, LDNS_PARSE_SKIP_SPACE, LDNS_MAX_LINELEN) == -1) {
                 return NULL;
         }
+printf("LINE READ: %s\n", line);
         return ldns_rr_new_frm_str((const char*) line, ttl, origin);
 }
 

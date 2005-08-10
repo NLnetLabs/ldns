@@ -210,6 +210,15 @@ ldns_dname_is_subdomain(const ldns_rdf *sub, const ldns_rdf *parent)
 	return true; 
 }
 
+bool
+ldns_dname_str_absolute(const char *dname_str)
+{
+	return (dname_str && 
+	        strlen(dname_str) > 1 && 
+	        dname_str[strlen(dname_str) - 1] == '.'
+	       );
+}
+
 ldns_rdf *
 ldns_dname_label(const ldns_rdf *rdf, uint8_t labelpos)
 {
