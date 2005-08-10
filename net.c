@@ -29,8 +29,6 @@ ldns_send(ldns_pkt **result, ldns_resolver *r, ldns_pkt *query_pkt)
 	ldns_rdf *temp;
 	
 	struct sockaddr_storage *ns;
-	struct sockaddr_in *ns4;
-	struct sockaddr_in6 *ns6;
 	socklen_t ns_len;
 	struct timeval tv_s;
         struct timeval tv_e;
@@ -100,16 +98,11 @@ ldns_send(ldns_pkt **result, ldns_resolver *r, ldns_pkt *query_pkt)
 		}
 
 		/* setup some family specific stuff */
-		/* UHH nothing happens with this... */
 		switch(ns->ss_family) {
 			case AF_INET:
-				ns4 = (struct sockaddr_in*) ns;
-				ns4->sin_port = htons(ldns_resolver_port(r));
 				ns_len = (socklen_t)sizeof(struct sockaddr_in);
 				break;
 			case AF_INET6:
-				ns6 = (struct sockaddr_in6*) ns;
-				ns6->sin6_port = htons(ldns_resolver_port(r));
 				ns_len = (socklen_t)sizeof(struct sockaddr_in6);
 				break;
 			default:
