@@ -217,7 +217,16 @@ ldns_rr_new_frm_str(const char *str, uint16_t default_ttl, ldns_rdf *origin)
 	} else {
 		ldns_rr_set_owner(new, ldns_dname_new_frm_str(owner));
 		if (owner[strlen(owner) - 1] != '.' && origin) {
-			ldns_dname_cat(ldns_rr_owner(new), origin);
+			if(ldns_dname_cat(ldns_rr_owner(new), origin) != LDNS_STATUS_OK) {
+				LDNS_FREE(owner); 
+				LDNS_FREE(ttl); 
+				LDNS_FREE(clas); 
+				LDNS_FREE(type);
+				LDNS_FREE(rd);
+				LDNS_FREE(rd_buf);
+				ldns_buffer_free(rr_buf);
+				return NULL;
+			}
 		}
 	}
 	LDNS_FREE(owner);
