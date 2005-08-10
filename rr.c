@@ -207,7 +207,7 @@ ldns_rr_new_frm_str(const char *str, uint16_t default_ttl, ldns_rdf *origin)
 	ldns_buffer_new_frm_data(
 			rd_buf, rdata, strlen(rdata));
 
-	if (strlen(owner) == 1 && strncmp(owner, "@", 1) == 0) {
+	if (strlen(owner) <= 1 && strncmp(owner, "@", 1) == 0) {
 		if (origin) {
 			ldns_rr_set_owner(new, ldns_rdf_clone(origin));
 		} else {
@@ -216,7 +216,7 @@ ldns_rr_new_frm_str(const char *str, uint16_t default_ttl, ldns_rdf *origin)
 		}
 	} else {
 		ldns_rr_set_owner(new, ldns_dname_new_frm_str(owner));
-		if (origin) {
+		if (owner[strlen(owner) - 1] != '.' && origin) {
 			ldns_dname_cat(ldns_rr_owner(new), origin);
 		}
 	}
