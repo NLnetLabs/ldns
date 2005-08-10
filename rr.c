@@ -79,6 +79,7 @@ ldns_rr_free(ldns_rr *rr)
 /* 
  * extra spaces are allowed
  * allow ttl to be optional
+ * if ttl is missing, and default_ttl is 0, use DEF_TTL
  * allow ttl to be written as 1d3h
  * So the RR should look like. e.g.
  * miek.nl. 3600 IN MX 10 elektron.atoom.net
@@ -88,7 +89,7 @@ ldns_rr_free(ldns_rr *rr)
  * miek.nl. IN MX 10 elektron.atoom.net
  */
 ldns_rr *
-ldns_rr_new_frm_str(const char *str)
+ldns_rr_new_frm_str(const char *str, uint16_t default_ttl, ldns_rdf *origin)
 {
 	ldns_rr *new;
 	const ldns_rr_descriptor *desc;
@@ -156,7 +157,11 @@ ldns_rr_new_frm_str(const char *str)
 	ttl_val = ldns_str2period(ttl, &endptr); /* i'm not using endptr */
 	if (ttl_val == 0) {
 		/* ah, it's not there or something */
-		ttl_val = LDNS_DEFTTL;
+		if (default_ttl == 0) {
+			ttl_val = LDNS_DEFTTL;
+		} else {
+			ttl_val = default_ttl;
+		}
 		/* we not ASSUMING the TTL is missing and that
 		 * the rest of the RR is still there. That is
 		 * CLASS TYPE RDATA 
@@ -202,7 +207,19 @@ ldns_rr_new_frm_str(const char *str)
 	ldns_buffer_new_frm_data(
 			rd_buf, rdata, strlen(rdata));
 
-	ldns_rr_set_owner(new, ldns_dname_new_frm_str(owner));
+	if (strlen(owner) == 1 && strncmp(owner, "@", 1) == 0) {
+		if (origin) {
+			ldns_rr_set_owner(new, ldns_rdf_clone(origin));
+		} else {
+			/* TODO: default to root? */
+			ldns_rr_set_owner(new, ldns_dname_new_frm_str("."));
+		}
+	} else {
+		ldns_rr_set_owner(new, ldns_dname_new_frm_str(owner));
+		if (origin) {
+			ldns_dname_cat(ldns_rr_owner(new), origin);
+		}
+	}
 	LDNS_FREE(owner);
 
 	ldns_rr_set_ttl(new, ttl_val);
@@ -266,7 +283,7 @@ ldns_rr_new_frm_str(const char *str)
 }
 
 ldns_rr *
-ldns_rr_new_frm_fp(FILE *fp)
+ldns_rr_new_frm_fp(FILE *fp, uint16_t ttl, ldns_rdf *origin)
 {
         char *line;
 
@@ -279,7 +296,7 @@ ldns_rr_new_frm_fp(FILE *fp)
         if (ldns_fget_token(fp, line, LDNS_PARSE_SKIP_SPACE, LDNS_MAX_LINELEN) == -1) {
                 return NULL;
         }
-        return ldns_rr_new_frm_str((const char*) line);
+        return ldns_rr_new_frm_str((const char*) line, ttl, origin);
 }
 
 void

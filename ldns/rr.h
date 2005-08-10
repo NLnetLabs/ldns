@@ -267,14 +267,14 @@ void ldns_rr_free(ldns_rr *rr);
  * \param[in] str the string to convert
  * \return the new rr
  */
-ldns_rr* ldns_rr_new_frm_str(const char *str);
+ldns_rr* ldns_rr_new_frm_str(const char *str, uint16_t default_ttl, ldns_rdf *origin);
 
 /**
  * creates a new rr from a file containing a string.
  * \param[in] fp the file pointer to use
  * \return ldns_rr*
  */
-ldns_rr* ldns_rr_new_frm_fp(FILE *fp);
+ldns_rr* ldns_rr_new_frm_fp(FILE *fp, uint16_t default_ttl, ldns_rdf *origin);
 
 /**
  * sets the owner in the rr structure.

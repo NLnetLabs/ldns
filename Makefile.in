@@ -48,7 +48,7 @@ LIBDNS_HEADERS	=	ldns/error.h		\
 			ldns/dns.h		\
 			ldns/zone.h		\
 			ldns/util.h
-PROG_SOURCES	=	mx.c chaos.c keygen.c
+PROG_SOURCES	=	mx.c chaos.c keygen.c signzone.c
 PROG_TARGETS	=	$(PROG_SOURCES:.c=)
 
 LIBDNS_OBJECTS	=	$(LIBDNS_SOURCES:.c=.o)
@@ -128,6 +128,9 @@ release:	realclean
 		(rm -rf ../ldns-$(VERSION)/)
 
 mx:		mx.o $(LIBDNS_OBJECTS) $(LIBOBJS)
+		$(LINK) ${LIBS} -o $@ $+
+
+signzone:	signzone.o $(LIBDNS_OBJECTS) $(LIBOBJS)
 		$(LINK) ${LIBS} -o $@ $+
 
 chaos:		chaos.o $(LIBDNS_OBJECTS) $(LIBOBJS)

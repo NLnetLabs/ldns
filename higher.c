@@ -162,7 +162,7 @@ ldns_get_rr_list_hosts_frm_fp(FILE *fp)
 				} else {
 					snprintf(rr_str, LDNS_MAX_LINELEN, "%s IN A %s", word, addr);
 				}
-				rr = ldns_rr_new_frm_str(rr_str);
+				rr = ldns_rr_new_frm_str(rr_str, 0, NULL);
 			}
 		}
 		if (rr) {

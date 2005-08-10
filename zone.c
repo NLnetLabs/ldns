@@ -100,7 +100,7 @@ ldns_zone_new_frm_fp(FILE *fp, ldns_rdf *origin, uint16_t ttl, ldns_rr_class c)
 
 	i = 0;
 	do {
-		rr = ldns_rr_new_frm_fp(fp);
+		rr = ldns_rr_new_frm_fp(fp, ttl, origin);
 		i++;
 	} while (!rr && i <= 9);
 
@@ -118,7 +118,7 @@ ldns_zone_new_frm_fp(FILE *fp, ldns_rdf *origin, uint16_t ttl, ldns_rr_class c)
 	ldns_zone_set_soa(newzone, rr);
 
 	while(!feof(fp)) {
-		rr = ldns_rr_new_frm_fp(fp);
+		rr = ldns_rr_new_frm_fp(fp, ttl, origin);
 		if (rr) {
 			if (!ldns_zone_push_rr(newzone, rr)) {
 				printf("error pushing rr\n");
