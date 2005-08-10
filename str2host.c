@@ -265,10 +265,16 @@ ldns_str2rdf_aaaa(ldns_rdf **rd, const char *str)
 ldns_status
 ldns_str2rdf_str(ldns_rdf **rd, const char *str)
 {
+	uint8_t *data;
+	
 	if (strlen(str) > 255) {
 		return LDNS_STATUS_INVALID_STR;
 	}
-	*rd = ldns_rdf_new_frm_data(LDNS_RDF_TYPE_STR, strlen(str), str);
+
+	data = LDNS_XMALLOC(uint8_t, strlen(str) + 1);
+	data[0] = strlen(str);
+	memcpy(data + 1, str, strlen(str));
+	*rd = ldns_rdf_new_frm_data(LDNS_RDF_TYPE_STR, strlen(str) + 1, data);
 	return LDNS_STATUS_OK;
 }
 

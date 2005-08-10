@@ -107,6 +107,8 @@ ldns_rr_new_frm_str(const char *str, uint16_t default_ttl, ldns_rdf *origin)
 	char  *rd;
 	const char *delimiters;
 	ssize_t c;
+	/* used for types with unknown number of rdatas */
+	bool done;
 	
 	ldns_rdf *r;
 	uint16_t r_cnt;
@@ -264,7 +266,8 @@ ldns_rr_new_frm_str(const char *str, uint16_t default_ttl, ldns_rdf *origin)
 				r_cnt++;
 			}
 			*/
-			for (r_cnt = 0; r_cnt < ldns_rr_descriptor_maximum(desc); r_cnt++) {
+			done = false;
+			for (r_cnt = 0; !done && r_cnt < ldns_rr_descriptor_maximum(desc); r_cnt++) {
 				/* if type = B64, the field may contain spaces */
 				if (ldns_rr_descriptor_field_type(desc, r_cnt) == LDNS_RDF_TYPE_B64) {
 					delimiters = "\n\t";
@@ -278,6 +281,9 @@ ldns_rr_new_frm_str(const char *str, uint16_t default_ttl, ldns_rdf *origin)
 						ldns_rr_descriptor_field_type(desc, r_cnt),
 						rd);
 					ldns_rr_push_rdf(new, r);
+
+				} else {
+					done = true;
 				}
 			}
 	}
