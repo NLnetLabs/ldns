@@ -100,6 +100,7 @@ ldns_send(ldns_pkt **result, ldns_resolver *r, ldns_pkt *query_pkt)
 		}
 
 		/* setup some family specific stuff */
+		/* UHH nothing happens with this... */
 		switch(ns->ss_family) {
 			case AF_INET:
 				ns4 = (struct sockaddr_in*) ns;
