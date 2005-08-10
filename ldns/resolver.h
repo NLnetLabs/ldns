@@ -295,7 +295,7 @@ bool ldns_axfr_complete(ldns_resolver *resolver);
 /**
  * returns a pointer to the last ldns_pkt that was sent by the server in the AXFR transfer
  * uasable for instance to get the error code on failure
- * \param[in] resolver the resolver that was used in the axfr transfer
+ * \param[in] res the resolver that was used in the axfr transfer
  * \return ldns_pkt the last packet sent
  */
 ldns_pkt *ldns_axfr_last_pkt(ldns_resolver *res);

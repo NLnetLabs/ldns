@@ -265,6 +265,8 @@ void ldns_rr_free(ldns_rr *rr);
  * The string should be a fully filled-in rr, like
  * ownername &lt;space&gt; TTL &lt;space&gt; CLASS &lt;space&gt; TYPE &lt;space&gt; RDATA.
  * \param[in] str the string to convert
+ * \param[in] default_ttl a default ttl for the rr. If 0 DEF_TTL will be used
+ * \param[in] origin when the owner is relative add this
  * \return the new rr
  */
 ldns_rr* ldns_rr_new_frm_str(const char *str, uint16_t default_ttl, ldns_rdf *origin);
@@ -272,6 +274,8 @@ ldns_rr* ldns_rr_new_frm_str(const char *str, uint16_t default_ttl, ldns_rdf *or
 /**
  * creates a new rr from a file containing a string.
  * \param[in] fp the file pointer to use
+ * \param[in] default_ttl a default ttl for the rr. If 0 DEF_TTL will be used
+ * \param[in] origin when the owner is relative add this
  * \return ldns_rr*
  */
 ldns_rr* ldns_rr_new_frm_fp(FILE *fp, uint16_t default_ttl, ldns_rdf *origin);

@@ -1021,7 +1021,6 @@ ldns_pkt_clone(ldns_pkt *pkt)
 	if (!pkt) {
 		return NULL;
 	}
-	
 	new_pkt = ldns_pkt_new();
 
 	ldns_pkt_set_id(new_pkt, ldns_pkt_id(pkt));
@@ -1053,9 +1052,5 @@ ldns_pkt_clone(ldns_pkt *pkt)
 	new_pkt->_answer = ldns_rr_list_clone(ldns_pkt_answer(pkt));
 	new_pkt->_authority = ldns_rr_list_clone(ldns_pkt_authority(pkt));
 	new_pkt->_additional = ldns_rr_list_clone(ldns_pkt_additional(pkt));
-	
 	return new_pkt;
 }
-
-
-

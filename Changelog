@@ -1,5 +1,5 @@
 date    : 0.71: ldns-team
-	* DUAL licensed ldns, it is now BSD and LGPL licensed!!
+	* License change: ldns is now BSD licensed
 
 28 Jul 2005: 0.70: ldns-team
 	* [func] ldns_pkt_get_section now returns copies from the rrlists

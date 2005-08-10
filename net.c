@@ -355,6 +355,7 @@ ldns_udp_send_query(ldns_buffer *qbin, int sockfd, const struct sockaddr_storage
 	return bytes;
 }
 
+/* udp/tcp is usually a suffix... XXX */
 uint8_t *
 ldns_udp_read_wire(int sockfd, size_t *size)
 {
