@@ -41,7 +41,6 @@ lua_State* L;
 
 char *VERSION = "lua-rns 0.1";
 
-
 void
 usage(FILE *f, char *progname)
 {
@@ -61,6 +60,45 @@ version(FILE *f, char *progname)
 =====================================================
 */
 
+
+/*
+==========
+ RDF
+==========
+ */
+l_rdf_new_frm_str(lua_State *L)
+{
+	uint16_t t = lua_tonumber(L, 1);
+	char *str = strdup((char*)luaL_checkstring(L, 2));
+
+	ldns_rdf *new_rdf = ldns_rdf_new_frm_str((ldns_rdf_type)t, str);
+
+	if (new_rdf) {
+		lua_pushlightuserdata(L, new_rdf);
+		return 1;
+	} else {
+		return 0;
+	}
+}
+
+static int
+l_rdf_print(lua_State *L)
+{
+	/* we always print to stdout */
+	ldns_rdf *toprint = (ldns_rdf*)lua_touserdata(L, 1); /* pop from the stack */
+	ldns_rdf_print(stdout, toprint);
+	return 0;
+}
+
+static int
+l_rdf_free(lua_State *L)
+{
+	ldns_rdf *tofree = (ldns_rdf*)lua_touserdata(L, 1); /* pop from the stack */
+	ldns_rdf_free(tofree);
+	return 0;
+}
+
+
 /*
 ==========
  RR 
@@ -75,8 +113,12 @@ l_rr_new_frm_str(lua_State *L)
 	char *str = strdup((char*)luaL_checkstring(L, 1));
 	ldns_rr *new_rr = ldns_rr_new_frm_str(str);
 
-	lua_pushlightuserdata(L, new_rr);
-	return 1;
+	if (new_rr) {
+		lua_pushlightuserdata(L, new_rr);
+		return 1;
+	} else {
+		return 0;
+	}
 }
 
 static int
@@ -85,6 +127,14 @@ l_rr_print(lua_State *L)
 	/* we always print to stdout */
 	ldns_rr *toprint = (ldns_rr*)lua_touserdata(L, 1); /* pop from the stack */
 	ldns_rr_print(stdout, toprint);
+	return 0;
+}
+
+static int
+l_rr_free(lua_State *L)
+{
+	ldns_rr *tofree = (ldns_rr*)lua_touserdata(L, 1); /* pop from the stack */
+	ldns_rr_free(tofree);
 	return 0;
 }
 
@@ -97,8 +147,12 @@ static int
 l_pkt_new(lua_State *L)
 {
 	ldns_pkt *new_pkt = ldns_pkt_new();
-	lua_pushlightuserdata(L, new_pkt);
-	return 1;
+	if (new_pkt) {
+		lua_pushlightuserdata(L, new_pkt);
+		return 1;
+	} else {
+		return 0;
+	}
 }
 
 
@@ -109,11 +163,12 @@ l_pkt_push_rr(lua_State *L)
 	ldns_pkt_section s = lua_tonumber(L, 2); /* the section where to put it */
 	ldns_rr *rr = (ldns_rr*)lua_touserdata(L, 3); /* the rr to put */
 
-	/* this function return bool, what to do with it??? */
-	ldns_pkt_push_rr(pkt, s, rr);
-
-	lua_pushlightuserdata(L, pkt);
-	return 1;
+	if (ldns_pkt_push_rr(pkt, s, rr)) {
+		lua_pushlightuserdata(L, pkt);
+		return 1;
+	} else {
+		return 0;
+	}
 }
 
 static int
@@ -135,10 +190,10 @@ static int
 l_pkt_get_rr(lua_State *L)
 {
 	ldns_pkt *p = (ldns_pkt*)lua_touserdata(L, 1); /* pop from the stack */
-	unsigned int n = lua_tonumber(L, 2);
+	uint16_t n = lua_tonumber(L, 2);
 	ldns_rr *r;
 
-	r = ldns_pkt_get_rr(p, (uint16_t) n);
+	r = ldns_pkt_get_rr(p, n);
 	if (r) {
 		lua_pushlightuserdata(L, r);
 		return 1;
@@ -152,10 +207,10 @@ l_pkt_set_rr(lua_State *L)
 {
 	ldns_pkt *p = (ldns_pkt*)lua_touserdata(L, 1);
 	ldns_rr *rr = (ldns_rr*)lua_touserdata(L, 2);
-	unsigned int n = lua_tonumber(L, 3);
+	uint16_t n = lua_tonumber(L, 3);
 	ldns_rr *r;
 
-	r = ldns_pkt_set_rr(p, rr, (uint16_t) n);
+	r = ldns_pkt_set_rr(p, rr, n);
 	if (r) {
 		lua_pushlightuserdata(L, r);
 		return 1;
@@ -168,7 +223,6 @@ static int
 l_pkt_rr_count(lua_State *L)
 {
 	ldns_pkt *p = (ldns_pkt*)lua_touserdata(L, 1);
-
 	lua_pushnumber(L, ldns_pkt_section_count(p, LDNS_SECTION_ANY));
 	return 1;
 }
@@ -255,6 +309,22 @@ l_pkt2string(lua_State *L)
 	return 1;
 }
 
+static int
+l_rdf2sockaddr_storage(lua_State *L)
+{
+	ldns_rdf *rd = (ldns_rdf*)lua_touserdata(L, 1);
+	struct sockaddr_storage *s;
+	
+	s = ldns_rdf2native_sockaddr_storage(rd);
+
+	if (s) {
+		lua_pushlightuserdata(L, s);
+		return 1;
+	} else {
+		return 0;
+	}
+}
+
 /*
 ============
  EXAMPLES
@@ -290,9 +360,14 @@ register_ldns_functions(void)
 {
         /* register our functions */
         lua_register(L, "l_average", l_average);
+	/* RDFs */
+	lua_register(L, "l_rdf_new_frm_str", l_rdf_new_frm_str);
+	lua_register(L, "l_rdf_print", l_rdf_print);
+	lua_register(L, "l_rdf_free", l_rdf_free);
 	/* RRs */
 	lua_register(L, "l_rr_new_frm_str", l_rr_new_frm_str);
 	lua_register(L, "l_rr_print", l_rr_print);
+	lua_register(L, "l_rr_free", l_rr_free);
 	/* PKTs */
 	lua_register(L, "l_pkt_new", l_pkt_new);
 	lua_register(L, "l_pkt_push_rr", l_pkt_push_rr);
@@ -309,6 +384,7 @@ register_ldns_functions(void)
 	
 	/* CONVERSIONs */
 	lua_register(L, "l_pkt2string", l_pkt2string);
+	lua_register(L, "l_rdf2sockaddr_storage", l_rdf2sockaddr_storage);
 }
 
 int

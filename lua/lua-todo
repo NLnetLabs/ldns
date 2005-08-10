@@ -1,1 +1,3 @@
 free functions from ldns - sometimes they are needed
+
+read packet from socket

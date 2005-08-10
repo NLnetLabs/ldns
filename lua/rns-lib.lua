@@ -1,4 +1,4 @@
--- ldns defines
+-- ldns defines - need a better way to keep these current
 LDNS_SECTION_QUESTION 		= 0
 LDNS_SECTION_ANSWER 		= 1
 LDNS_SECTION_AUTHORITY 		= 2
@@ -6,11 +6,39 @@ LDNS_SECTION_ADDITIONAL 	= 3
 LDNS_SECTION_ANY 		= 4
 LDNS_SECTION_ANY_NOQUESTION 	= 5
 
+-- rdf types
+LDNS_RDF_TYPE_NONE		= 0
+LDNS_RDF_TYPE_DNAME		= 1
+LDNS_RDF_TYPE_INT8		= 1
+LDNS_RDF_TYPE_INT16		= 3
+LDNS_RDF_TYPE_INT32		= 4
+LDNS_RDF_TYPE_A			= 5
+LDNS_RDF_TYPE_AAAA		= 6
+LDNS_RDF_TYPE_STR		= 7
+LDNS_RDF_TYPE_APL		= 8
+LDNS_RDF_TYPE_B64		= 9
+LDNS_RDF_TYPE_HEX		= 10
+LDNS_RDF_TYPE_NSEC		= 11
+LDNS_RDF_TYPE_TYPE		= 12
+LDNS_RDF_TYPE_CLASS		= 13
+LDNS_RDF_TYPE_CERT		= 14
+LDNS_RDF_TYPE_ALG		= 15
+LDNS_RDF_TYPE_UNKNOWN		= 16
+LDNS_RDF_TYPE_TIME		= 17
+LDNS_RDF_TYPE_PERIOD		= 18
+LDNS_RDF_TYPE_TSIGTIME		= 19
+LDNS_RDF_TYPE_TSIG		= 20
+LDNS_RDF_TYPE_INT16_DATA	= 21
+LDNS_RDF_TYPE_SERVICE		= 22
+LDNS_RDF_TYPE_LOC		= 23
+LDNS_RDF_TYPE_WKS		= 24
+LDNS_RDF_TYPE_NSA		= 25
+LDNS_RDF_TYPE_IPSECKEY		= 26
+
 -- read a pkt from the wire
 function lua_recv_pkt()
 	
 end
-
 
 -- transpose 2 rrs in a pkt --
 function lua_transpose_rr(pkt, n1, n2)
@@ -18,7 +46,7 @@ function lua_transpose_rr(pkt, n1, n2)
 	local rr_n1 = l_pkt_get_rr(pkt, n1)
 	local rr_n2 = l_pkt_set_rr(pkt, rr_n1, n2)
 	local rr_tm = l_pkt_set_rr(pkt, rr_n2, n1)
-	-- rm_tm is mem leak atm -- need free functions of ldns
+	l_rr_free(rm_tm)
 end
 
 function lua_transpose_rr_random(pkt)

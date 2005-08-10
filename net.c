@@ -311,7 +311,6 @@ ldns_tcp_send_query(ldns_buffer *qbin, int sockfd, const struct sockaddr_storage
 		close(sockfd);
 		return 0;
 	}
-	
 	return bytes;
 }
 
@@ -341,14 +340,12 @@ ldns_udp_send_query(ldns_buffer *qbin, int sockfd, const struct sockaddr_storage
 		close(sockfd);
 		return 0;
 	}
-	
 	return bytes;
 }
 
 uint8_t *
 ldns_udp_read_wire(int sockfd, size_t *size)
 {
-	/* AANPASSEN */
 	uint8_t *wire;
 	ssize_t wire_size;
 
@@ -365,6 +362,7 @@ ldns_udp_read_wire(int sockfd, size_t *size)
 	}
 
 	*size = (size_t) wire_size;
+	wire = LDNS_XREALLOC(wire, uint8_t, wire_size);
 
 	return wire;
 }
