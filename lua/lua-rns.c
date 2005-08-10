@@ -268,7 +268,7 @@ l_pkt_read_wire_udp(lua_State *L)
 	}
 
 	pktbuf = ldns_udp_read_wire(sockfd, &size);
-	if (!pkt) {
+	if (!pktbuf) {
 		close(sockfd);
 		return 0;
 	}

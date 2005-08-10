@@ -370,7 +370,7 @@ ldns_udp_read_wire(int sockfd, size_t *size)
 		if (errno == EAGAIN) {
 			dprintf("%s", "socket timeout\n");
 		}
-		perror("error receiving tcp packet");
+		perror("error receiving udp packet");
 		return NULL;
 	}
 
