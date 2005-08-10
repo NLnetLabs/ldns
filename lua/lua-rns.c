@@ -268,11 +268,12 @@ l_pkt_read_wire_udp(lua_State *L)
 	}
 
 	pktbuf = ldns_udp_read_wire(sockfd, &size);
+	printf("read %d\n", size);
 	if (!pktbuf) {
 		close(sockfd);
 		return 0;
 	}
-	close(sockfd);
+	close(sockfd); /* return the socket also... I think */
 
 	/* if we got to this point, we got some data (pkt) with a certain
 	 * size. Let's see if it can be made into a real ldsn pkt
