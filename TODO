@@ -12,6 +12,8 @@ o [doc]  const function are correct i think, but const values in struct not
 
 Implementation:
 ---------------
+o str2host on string rdata types needs escapes and surrounding quotes
+  support
 o check all conversion routines on missing types
 	- wire2host
 	- host2wire
