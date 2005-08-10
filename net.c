@@ -361,8 +361,8 @@ ldns_udp_read_wire(int sockfd, size_t *size)
 		return NULL;
 	}
 
-	*size = (size_t) wire_size;
-	wire = LDNS_XREALLOC(wire, uint8_t, wire_size);
+	*size = (size_t)wire_size;
+	wire = LDNS_XREALLOC(wire, uint8_t, (size_t)wire_size);
 
 	return wire;
 }
