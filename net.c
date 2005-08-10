@@ -261,6 +261,24 @@ ldns_send_udp(uint8_t **result, ldns_buffer *qbin, const struct sockaddr_storage
 }
 
 int
+ldns_udp_connect(const struct sockaddr_storage *to, struct timeval timeout)
+{
+	int sockfd;
+	
+	if ((sockfd = socket((int)((struct sockaddr*)to)->sa_family, SOCK_DGRAM, IPPROTO_UDP)) 
+			== -1) {
+                return 0;
+        }
+	if (setsockopt(sockfd, SOL_SOCKET, SO_RCVTIMEO, &timeout,
+				(socklen_t) sizeof(timeout))) {
+		perror("setsockopt");
+		close(sockfd);
+		return 0;
+        }
+	return sockfd;
+}
+
+int
 ldns_tcp_connect(const struct sockaddr_storage *to, socklen_t tolen, struct timeval timeout)
 {
 	int sockfd;
@@ -282,7 +300,6 @@ ldns_tcp_connect(const struct sockaddr_storage *to, socklen_t tolen, struct time
 		perror("could not bind socket");
 		return 0;
 	}
-
 	return sockfd;
 }
 
@@ -435,3 +452,4 @@ ldns_send_tcp(ldns_buffer *qbin, const struct sockaddr_storage *to, socklen_t to
 	
 	return answer;
 }
+

@@ -60,8 +60,20 @@ ldns_status ldns_send(ldns_pkt **pkt, ldns_resolver *r, ldns_pkt *query_pkt);
 
 /**
  * Create a tcp socket to the specified address
+ * \param[in] to ip and family
+ * \param[in] tolen length of to
+ * \param[in] timeout timeout for the socket
+ * \return a socket descriptor
  */
 int ldns_tcp_connect(const struct sockaddr_storage *to, socklen_t tolen, struct timeval timeout);
+
+/**
+ * Create a udp socket to the specified address
+ * \param[in] to ip and family
+ * \param[in] timeout timeout for the socket
+ * \return a socket descriptor
+ */
+int ldns_udp_connect(const struct sockaddr_storage *to, struct timeval timeout);
 
 /**
  * send a query via tcp to a server. Don;t want for the answer
