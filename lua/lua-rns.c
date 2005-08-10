@@ -111,7 +111,10 @@ l_rr_new_frm_str(lua_State *L)
 	 * stack and return 1 - to signal the new pointer
 	 */
 	char *str = strdup((char*)luaL_checkstring(L, 1));
-	ldns_rr *new_rr = ldns_rr_new_frm_str(str);
+	uint16_t ttl = (uint16_t)lua_tonumber(L, 2);
+	ldns_rdf *orig = (ldns_rdf*)lua_touserdata(L, 2);
+	
+	ldns_rr *new_rr = ldns_rr_new_frm_str(str, ttl, orig);
 
 	if (new_rr) {
 		lua_pushlightuserdata(L, new_rr);
