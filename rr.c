@@ -277,9 +277,6 @@ ldns_rr_new_frm_str(const char *str, uint16_t default_ttl, ldns_rdf *origin)
 					r = ldns_rdf_new_frm_str(
 						ldns_rr_descriptor_field_type(desc, r_cnt),
 						rd);
-					printf("read part: ");
-					ldns_rdf_print(stdout, r);
-					printf("\n");
 					ldns_rr_push_rdf(new, r);
 				}
 			}
@@ -308,7 +305,6 @@ ldns_rr_new_frm_fp(FILE *fp, uint16_t ttl, ldns_rdf *origin)
         if (ldns_fget_token(fp, line, LDNS_PARSE_SKIP_SPACE, LDNS_MAX_LINELEN) == -1) {
                 return NULL;
         }
-printf("LINE READ: %s\n", line);
         return ldns_rr_new_frm_str((const char*) line, ttl, origin);
 }
 
