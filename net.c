@@ -235,6 +235,7 @@ ldns_send_udp(uint8_t **result, ldns_buffer *qbin, const struct sockaddr_storage
 	}
 
 	bytes = recv(sockfd, answer, LDNS_MAX_PACKETLEN, 0);
+	/* recvfrom here XXX */
 
 	close(sockfd);
 
@@ -254,6 +255,7 @@ ldns_send_udp(uint8_t **result, ldns_buffer *qbin, const struct sockaddr_storage
 	return LDNS_STATUS_OK;
 }
 
+/* hack hack, this is now a server socket!! XXX need to change or rename */
 int
 ldns_udp_connect(const struct sockaddr_storage *to, struct timeval timeout)
 {
@@ -365,6 +367,7 @@ ldns_udp_read_wire(int sockfd, size_t *size)
 	wire = LDNS_XMALLOC(uint8_t, LDNS_MAX_PACKETLEN);
 
 	wire_size = recv(sockfd, wire, LDNS_MAX_PACKETLEN, 0);
+	/* recvfrom here .. */
 
 	if (wire_size == -1) {
 		if (errno == EAGAIN) {
