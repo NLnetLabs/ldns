@@ -85,7 +85,8 @@ ldns_send(ldns_pkt **result, ldns_resolver *r, ldns_pkt *query_pkt)
 	/* loop through all defined nameservers */
 	for (i = 0; i < ldns_resolver_nameserver_count(r); i++) {
 
-		ns = ldns_rdf2native_sockaddr_storage(ns_rand_array[i]);
+		ns = ldns_rdf2native_sockaddr_storage(ns_rand_array[i],
+				ldns_resolver_port(r));
 
 		if ((ns->ss_family == AF_INET && 
 				ldns_resolver_ip6(r) == LDNS_RESOLV_INET6)
