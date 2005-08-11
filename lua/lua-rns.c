@@ -248,14 +248,15 @@ l_server_socket_udp(lua_State *L)
 	uint16_t port = (uint16_t)lua_tonumber(L, 2); /* port number */
 	struct timeval timeout;
 	struct sockaddr_storage *to;
+	size_t socklen;
 	int sockfd;
 
 	/* use default timeout - maybe this gets to be configureable */
 	timeout.tv_sec = LDNS_DEFAULT_TIMEOUT_SEC;
 	timeout.tv_usec = LDNS_DEFAULT_TIMEOUT_USEC;
 
-	/* put it in the correct types */
-	to = ldns_rdf2native_sockaddr_storage(ip, port);
+	/* socklen isn't really usefull here */
+	to = ldns_rdf2native_sockaddr_storage(ip, port, &socklen);
 	if (!to) {
 		return 0;
 	}
@@ -281,10 +282,26 @@ l_write_wire_udp(lua_State *L)
 {
 	int sockfd = (int)lua_tonumber(L, 1);
 	ldns_buffer *pktbuf = (ldns_buffer*) lua_touserdata(L, 2);
-	struct sockaddr_storage *sock = (struct sockaddr_storge*) lua_touserdata(L, 2);
-	size_t bytes;
-	
+	ldns_rdf *rdf_to = (ldns_rdf*)lua_touserdata(L, 2);
+	uint16_t port = (uint16_t)lua_tonumber(L, 3); /* port number */
 
+	struct sockaddr_storage *to;
+	size_t socklen;
+	ssize_t bytes;
+	
+	/* port number is handled in the socket */
+	to = ldns_rdf2native_sockaddr_storage(rdf_to, port, &socklen);
+	if (!to) {
+		return 0;
+	}
+
+	bytes = ldns_udp_send_query(pktbuf, sockfd, to, (socklen_t)socklen);
+	if (bytes == 0) {
+		return 0;
+	} else {
+		lua_pushnumber(L, bytes);
+		return 1;
+	}
 }
 
 
