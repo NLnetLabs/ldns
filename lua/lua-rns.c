@@ -314,7 +314,8 @@ l_read_wire_udp(lua_State *L)
 	ldns_pkt *pkt;
 	ldns_buffer *pktbuf;
 
-	pktbuf_raw = LDNS_XMALLOC(uint8_t, LDNS_MAX_PACKETLEN);
+	pktbuf = ldns_buffer_new(100); /* this /should/ happen in buf_new_frm_data */
+	
 	if (!pktbuf_raw) {
 		return 0;
 	}
@@ -324,16 +325,9 @@ l_read_wire_udp(lua_State *L)
 		printf("[debug] nothing allright\n");
 		return 0;
 	}
-	/* will be freeed in a minute ... */
-	/*pktbuf_raw = (uint8_t*)LDNS_XREALLOC(pktbuf_raw, uint8_t *, size); */
-	
 	ldns_buffer_new_frm_data(pktbuf, pktbuf_raw, size);
-
-/*	LDNS_FREE(pktbuf_raw);*/
 	
 	/* push our buffer onto the stack */
-	printf("[debug] I've read %d bytes\n", size);
-	printf("[debug] buffer cap %d bytes\n", ldns_buffer_capacity(pktbuf));
 	lua_pushlightuserdata(L, pktbuf);
 	return 1;
 }
@@ -395,10 +389,8 @@ l_buf2pkt(lua_State *L)
 	}
 
 	if (ldns_buffer2pkt_wire(&p, b) != LDNS_STATUS_OK) {
-		printf("[debug] conversion buf2pkt sour\n");
 		return 0;
 	}
-	printf("[debug] conversion buf2pkt ok\n");
 	
 	lua_pushlightuserdata(L, p);
 	return 1;
