@@ -264,7 +264,7 @@ ldns_send_udp(uint8_t **result, ldns_buffer *qbin, const struct sockaddr_storage
 /* hack hack, this is now a server socket!! XXX need to change or rename */
 /* SERVER SERVER XXX */
 int
-ldns_udp_connect(const struct sockaddr_storage *to, struct timeval timeout)
+ldns_udp_server_connect(const struct sockaddr_storage *to, struct timeval timeout)
 {
 	int sockfd;
 	
@@ -283,6 +283,25 @@ ldns_udp_connect(const struct sockaddr_storage *to, struct timeval timeout)
 		perror("bind");
 		close(sockfd);
 	}
+	return sockfd;
+}
+
+int
+ldns_udp_connect(const struct sockaddr_storage *to, struct timeval timeout)
+{
+	int sockfd;
+	
+	if ((sockfd = socket((int)((struct sockaddr*)to)->sa_family, SOCK_DGRAM, IPPROTO_UDP)) 
+			== -1) {
+                return 0;
+        }
+	if (setsockopt(sockfd, SOL_SOCKET, SO_RCVTIMEO, &timeout,
+				(socklen_t) sizeof(timeout))) {
+		perror("setsockopt");
+		close(sockfd);
+		return 0;
+        }
+
 	return sockfd;
 }
 

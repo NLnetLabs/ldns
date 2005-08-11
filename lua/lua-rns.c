@@ -235,20 +235,19 @@ l_pkt_print(lua_State *L)
 	return 0;
 }
 
-/***
- * read "something" from the wire and try to return 
- * a packet of it
+/*
+===========
+ NETWORKIBG
+===========
  */
+
 static int
-l_pkt_read_wire_udp(lua_State *L)
+l_server_socket_udp(lua_State *L)
 {
 	ldns_rdf *ip = (ldns_rdf*)lua_touserdata(L, 1); /* get the ip */
 	uint16_t port = (uint16_t)lua_tonumber(L, 2); /* port number */
 	struct timeval timeout;
 	struct sockaddr_storage *to;
-	size_t size;
-	uint8_t *pktbuf;
-	ldns_pkt *pkt;
 	int sockfd;
 
 	/* use default timeout - maybe this gets to be configureable */
@@ -262,10 +261,42 @@ l_pkt_read_wire_udp(lua_State *L)
 	}
 
 	/* get the socket */
-	sockfd = ldns_udp_connect(to, timeout);
+	sockfd = ldns_udp_server_connect(to, timeout);
 	if (sockfd == 0) {
 		return 0;
 	}
+	lua_pushnumber(L, sockfd);
+}
+
+static int
+l_server_socket_udp_close(lua_State *L)
+{
+	int sockfd = (int)lua_tonumber(L, 1);
+
+	close(sockfd);
+}
+
+static int
+l_write_wire_udp(lua_State *L)
+{
+
+}
+
+
+/***
+ * read "something" from the wire and try to return 
+ * a packet of it
+ * I rather have this as a string that lua/rns can transform
+ * We'll see what pops up in writting the other bits and see how
+ * this will be effected
+ */
+static int
+l_read_wire_udp(lua_State *L)
+{
+	int sockfd = (int)lua_tonumber(L,1);
+	size_t size;
+	uint8_t *pktbuf;
+	ldns_pkt *pkt;
 
 	pktbuf = ldns_udp_read_wire(sockfd, &size);
 	printf("read %d\n", size);
@@ -273,8 +304,6 @@ l_pkt_read_wire_udp(lua_State *L)
 		close(sockfd);
 		return 0;
 	}
-	close(sockfd); /* return the socket also... I think */
-
 	/* if we got to this point, we got some data (pkt) with a certain
 	 * size. Let's see if it can be made into a real ldsn pkt
 	 */
@@ -286,7 +315,6 @@ l_pkt_read_wire_udp(lua_State *L)
 	lua_pushlightuserdata(L, pkt);
 	return 1;
 }
-
 
 /* header bits */
 
@@ -361,24 +389,6 @@ l_pkt2string(lua_State *L)
 	return 1;
 }
 
-/* not sure we need this still! XXX */
-static int
-l_rdf2sockaddr_storage(lua_State *L)
-{
-	ldns_rdf *rd = (ldns_rdf*)lua_touserdata(L, 1);
-	uint16_t port = (uint16_t)lua_tonumber(L, 2);
-	struct sockaddr_storage *s;
-	
-	s = ldns_rdf2native_sockaddr_storage(rd, port);
-
-	if (s) {
-		lua_pushlightuserdata(L, s);
-		return 1;
-	} else {
-		return 0;
-	}
-}
-
 /*
 ============
  EXAMPLES
@@ -435,11 +445,16 @@ register_ldns_functions(void)
 	lua_register(L, "l_pkt_ancount", l_pkt_ancount);
 	lua_register(L, "l_pkt_nscount", l_pkt_nscount);
 	lua_register(L, "l_pkt_nscount", l_pkt_nscount);
-	lua_register(L, "l_pkt_read_wire_udp", l_pkt_read_wire_udp);
 	
 	/* CONVERSIONs */
 	lua_register(L, "l_pkt2string", l_pkt2string);
-	lua_register(L, "l_rdf2sockaddr_storage", l_rdf2sockaddr_storage);
+
+	/* NETWORKING */
+	lua_register(L, "l_write_wire_udp", l_write_wire_udp);
+	lua_register(L, "l_read_wire_udp", l_read_wire_udp);
+	lua_register(L, "l_server_socket_udp", l_server_socket_udp);
+	lua_register(L, "l_server_socket_udp_close", l_server_socket_udp_close);
+	
 }
 
 int
