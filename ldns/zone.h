@@ -98,12 +98,14 @@ ldns_zone_new_frm_fp(FILE *fp, ldns_rdf *origin, uint16_t ttl, ldns_rr_class c);
 
 /**
  * Frees the allocated memory for the zone, and the rr_list structure in it
+ * \param[in] zone the zone to free
  */
 void ldns_zone_free(ldns_zone *zone);
 
 /**
  * Frees the allocated memory for the zone, the soa rr in it, 
  * and the rr_list structure in it, including the rr's in that. etc.
+ * \param[in] zone the zone to free
  */
 void ldns_zone_free(ldns_zone *zone);
 
