@@ -283,8 +283,8 @@ l_write_wire_udp(lua_State *L)
 {
 	int sockfd = (int)lua_tonumber(L, 1);
 	ldns_buffer *pktbuf = (ldns_buffer*) lua_touserdata(L, 2);
-	ldns_rdf *rdf_to = (ldns_rdf*)lua_touserdata(L, 2);
-	uint16_t port = (uint16_t)lua_tonumber(L, 3); /* port number */
+	ldns_rdf *rdf_to = (ldns_rdf*)lua_touserdata(L, 3);
+	uint16_t port = (uint16_t)lua_tonumber(L, 4); /* port number */
 
 	struct sockaddr_storage *to;
 	size_t socklen;
@@ -314,7 +314,7 @@ l_read_wire_udp(lua_State *L)
 	ldns_pkt *pkt;
 	ldns_buffer *pktbuf;
 
-	pktbuf = ldns_buffer_new(100); /* this /should/ happen in buf_new_frm_data */
+	pktbuf = ldns_buffer_new(LDNS_MIN_BUFLEN); /* this /should/ happen in buf_new_frm_data */
 	
 	if (!pktbuf_raw) {
 		return 0;
@@ -406,14 +406,11 @@ l_pkt2buf(lua_State *L)
 	}
 
 	/* resize! XXX */
-	b = ldns_buffer_new(LDNS_MAX_PACKETLEN);
+	b = ldns_buffer_new(LDNS_MIN_BUFLEN);
 
 	if (ldns_pkt2buffer_wire(b, p) != LDNS_STATUS_OK) {
 		return 0;
 	}
-	/* resize to current usage */
-	ldns_buffer_reserve(b, (size_t)
-			ldns_buffer_position(b));
 	lua_pushlightuserdata(L, b);
 	return 1;
 }

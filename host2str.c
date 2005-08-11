@@ -879,7 +879,7 @@ ldns_pktheader2buffer_str(ldns_buffer *output, ldns_pkt *pkt)
 	} else {
 		ldns_buffer_printf(output, "rcode: ?? (%u), ", ldns_pkt_rcode(pkt));
 	}
-	ldns_buffer_printf(output, "id %d\n", ldns_pkt_id(pkt));
+	ldns_buffer_printf(output, "id: %d\n", ldns_pkt_id(pkt));
 	ldns_buffer_printf(output, ";; flags: ");
 
 	if (ldns_pkt_qr(pkt)) {

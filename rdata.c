@@ -128,7 +128,6 @@ ldns_rdf2native_sockaddr_storage(ldns_rdf *rd, uint16_t port, size_t *size)
 	if (!data) {
 		return NULL;
 	}
-
 	if (port == 0) {
 		port =  LDNS_PORT;
 	}

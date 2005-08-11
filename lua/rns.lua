@@ -38,11 +38,13 @@ if wirebuf == nil then
 else
 	-- somebody is listening
 	wirepkt = l_buf2pkt(wirebuf)
-	lua_debug("receveid from the interface")
+	lua_debug("received from the interface")
 	l_pkt_print(wirepkt)
 
 	wirebuf2 = l_pkt2buf(pkt)
-	l_write_wire_udp(socket, wirebuf2, rdf_ip, 5353);
+	bytes = l_write_wire_udp(socket, wirebuf2, rdf_ip, 5353);
+	print("wrote bytes", bytes)
+	l_pkt_print(pkt)
 	
 end
 
