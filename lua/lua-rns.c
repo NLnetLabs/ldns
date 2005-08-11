@@ -305,14 +305,6 @@ l_write_wire_udp(lua_State *L)
 	}
 }
 
-
-/***
- * read "something" from the wire and try to return 
- * a packet of it
- * I rather have this as a string that lua/rns can transform
- * We'll see what pops up in writting the other bits and see how
- * this will be effected
- */
 static int
 l_read_wire_udp(lua_State *L)
 {
@@ -323,13 +315,18 @@ l_read_wire_udp(lua_State *L)
 	ldns_buffer *pktbuf;
 
 	pktbuf_raw = ldns_udp_read_wire(sockfd, &size);
+
 	if (!pktbuf_raw) {
+		printf("[debug] nothing allright\n");
 		return 0;
 	}
 	ldns_buffer_new_frm_data(pktbuf, pktbuf_raw, size);
+
 	LDNS_FREE(pktbuf_raw);
 	
 	/* push our buffer onto the stack */
+	printf("[debug] I've read %d bytes\n", size);
+	printf("[debug] buffer cap %d bytes\n", ldns_buffer_capacity(pktbuf));
 	lua_pushlightuserdata(L, pktbuf);
 	return 1;
 }
@@ -386,9 +383,15 @@ l_buf2pkt(lua_State *L)
 	ldns_buffer *b = (ldns_buffer *)lua_touserdata(L, 1);
 	ldns_pkt *p;
 
-	if (ldns_buffer2pkt_wire(&p, b) != LDNS_STATUS_OK) {
+	if (!b) {
 		return 0;
 	}
+
+	if (ldns_buffer2pkt_wire(&p, b) != LDNS_STATUS_OK) {
+		printf("[debug] conversion buf2pkt sour\n");
+		return 0;
+	}
+	printf("[debug] conversion buf2pkt ok\n");
 	
 	lua_pushlightuserdata(L, p);
 	return 1;
@@ -400,12 +403,19 @@ l_pkt2buf(lua_State *L)
 	ldns_pkt *p = (ldns_pkt *)lua_touserdata(L, 1);
 	ldns_buffer *b;
 
+	if (!p) {
+		return 0;
+	}
+
 	/* resize! XXX */
 	b = ldns_buffer_new(LDNS_MAX_PACKETLEN);
-
 	if (ldns_pkt2buffer_wire(b, p) != LDNS_STATUS_OK) {
 		return 0;
 	}
+	/* resize to current usage */
+	printf("[debug] usage buffer %d\n", ldns_buffer_position(b));
+	ldns_buffer_reserve(b, (size_t)
+			ldns_buffer_position(b));
 	lua_pushlightuserdata(L, b);
 	return 1;
 }

@@ -344,7 +344,6 @@ ldns_buffer2pkt_wire(ldns_pkt **packet, ldns_buffer *buffer)
 
 }
 
-
 ldns_status
 ldns_wire2pkt(ldns_pkt **packet_p, const uint8_t *wire, size_t max)
 {

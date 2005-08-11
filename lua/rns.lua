@@ -45,18 +45,19 @@ l_pkt_print(pkt)
 rdf_ip = l_rdf_new_frm_str(LDNS_RDF_TYPE_A, "127.0.0.1")
 -- connect and bind to a server udp socket
 socket = l_server_socket_udp(rdf_ip, 5353)
+--
 -- read from the socket
 wirebuf = l_read_wire_udp(socket)
-lua_debug("what I read")
-print(wirebuf)
+--lua_debug("what I read")
 -- close the socket
 l_server_socket_close_udp(socket)
 -- convert the packet
 
-if not wirebuf == nil then
-	lua_debug("I shouldn't be here")
-	wirepkt = l_buf2pkt(wirebuf)
-	-- print the packet
-	l_pkt_print(wirepkt)
-end
-lua_debug("Then end")
+
+--if not wirebuf == nil then
+--	lua_debug("I shouldn't be here")
+--	wirepkt = l_buf2pkt(wirebuf)
+--	-- print the packet
+--	l_pkt_print(wirepkt)
+--end
+lua_debug("The end")

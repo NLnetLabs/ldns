@@ -79,8 +79,8 @@ ldns_buffer_invariant(ldns_buffer *buffer)
 ldns_buffer *ldns_buffer_new(size_t capacity);
 
 /**
- * creates a buffer with the specified data.  The data is not copied
- * and no memory allocations are done.  The buffer is fixed and cannot
+ * creates a buffer with the specified data.  The data IS copied
+ * and MEMORY allocations are done.  The buffer is not fixed and can
  * be resized using buffer_reserve().
  *
  * \param[in] buffer pointer to the buffer to put the data in

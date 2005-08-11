@@ -332,6 +332,10 @@ ldns_udp_read_wire(int sockfd, size_t *size)
 	ssize_t wire_size;
 
 	wire = LDNS_XMALLOC(uint8_t, LDNS_MAX_PACKETLEN);
+	if (!wire) {
+		*size = 0;
+		return NULL;
+	}
 
 	wire_size = recv(sockfd, wire, LDNS_MAX_PACKETLEN, 0);
 	/* recvfrom here .. */
@@ -340,13 +344,13 @@ ldns_udp_read_wire(int sockfd, size_t *size)
 		if (errno == EAGAIN) {
 			dprintf("%s", "socket timeout\n");
 		}
+		*size = 0;
 		perror("error receiving udp packet");
 		return NULL;
 	}
 
 	*size = (size_t)wire_size;
 	wire = LDNS_XREALLOC(wire, uint8_t, (size_t)wire_size);
-
 	return wire;
 }
 
@@ -358,6 +362,11 @@ ldns_tcp_read_wire(int sockfd, size_t *size)
 	ssize_t bytes = 0;
 
 	wire = LDNS_XMALLOC(uint8_t, 2);
+	if (!wire) {
+		*size = 0;
+		return NULL;
+	}
+	
 	while (bytes < 2) {
 		bytes = recv(sockfd, wire, 2, 0);
 		if (bytes == -1) {
@@ -365,6 +374,7 @@ ldns_tcp_read_wire(int sockfd, size_t *size)
 				dprintf("%s", "socket timeout\n");
 			}
 			perror("error receiving tcp packet");
+			*size = 0;
 			return NULL;
 		}
 	}
@@ -383,6 +393,7 @@ ldns_tcp_read_wire(int sockfd, size_t *size)
 			}
 			perror("error receiving tcp packet");
 			LDNS_FREE(wire);
+			*size = 0;
 			return NULL;
 		}
 	}
