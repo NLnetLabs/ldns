@@ -115,10 +115,11 @@ ldns_send(ldns_pkt **result, ldns_resolver *r, ldns_pkt *query_pkt)
 		gettimeofday(&tv_s, NULL);
 		/* query */
 		if (1 == ldns_resolver_usevc(r)) {
-			ldns_send_tcp(&reply_bytes, qb, ns, ns_len, ldns_resolver_timeout(r), &reply_size);
+			/* do err handling here ? */
+			(void)ldns_send_tcp(&reply_bytes, qb, ns, ns_len, ldns_resolver_timeout(r), &reply_size);
 		} else {
 			/* udp here, please */
-			(void) ldns_send_udp(&reply_bytes, qb, ns, ns_len, ldns_resolver_timeout(r), &reply_size);
+			(void)ldns_send_udp(&reply_bytes, qb, ns, ns_len, ldns_resolver_timeout(r), &reply_size);
 		}
 		
 		/* obey the fail directive */
@@ -240,7 +241,7 @@ ldns_udp_server_connect(const struct sockaddr_storage *to, struct timeval timeou
 		return 0;
         }
 
-	if (bind(sockfd, (struct sockaddr*)to, sizeof(*to)) == -1) {
+	if (bind(sockfd, (struct sockaddr*)to, (socklen_t)sizeof(*to)) == -1) {
 		perror("bind");
 		close(sockfd);
 	}
@@ -257,7 +258,7 @@ ldns_udp_connect(const struct sockaddr_storage *to, struct timeval timeout)
                 return 0;
         }
 	if (setsockopt(sockfd, SOL_SOCKET, SO_RCVTIMEO, &timeout,
-				(socklen_t) sizeof(timeout))) {
+				(socklen_t)sizeof(timeout))) {
 		perror("setsockopt");
 		close(sockfd);
 		return 0;
