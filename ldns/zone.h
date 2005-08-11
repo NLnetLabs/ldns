@@ -96,4 +96,16 @@ bool ldns_zone_rr_is_glue(ldns_zone *z, ldns_rr *rr);
 ldns_zone *
 ldns_zone_new_frm_fp(FILE *fp, ldns_rdf *origin, uint16_t ttl, ldns_rr_class c);
 
+/**
+ * Frees the allocated memory for the zone, and the rr_list structure in it
+ */
+void ldns_zone_free(ldns_zone *zone);
+
+/**
+ * Frees the allocated memory for the zone, the soa rr in it, 
+ * and the rr_list structure in it, including the rr's in that. etc.
+ */
+void ldns_zone_free(ldns_zone *zone);
+
+
 #endif /* LDNS_ZONE_H */

@@ -139,7 +139,7 @@ ldns_fget_token(FILE *f, char *token, const char *delim, size_t limit)
 
 		*t++ = c;
 		i++;
-		if (limit > 0 && i > limit) {
+		if (limit > 0 && i >= limit) {
 			*t = '\0';
 			return -1;
 		}
@@ -280,7 +280,7 @@ ldns_bget_token(ldns_buffer *b, char *token, const char *delim, size_t limit)
 		
 		*t++ = c;
 		i++;
-		if (limit > 0 && i > limit) {
+		if (limit > 0 && i >= limit - 1) {
 			*t = '\0';
 			return -1;
 		}

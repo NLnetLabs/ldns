@@ -275,6 +275,7 @@ ldns_str2rdf_str(ldns_rdf **rd, const char *str)
 	data[0] = strlen(str);
 	memcpy(data + 1, str, strlen(str));
 	*rd = ldns_rdf_new_frm_data(LDNS_RDF_TYPE_STR, strlen(str) + 1, data);
+	LDNS_FREE(data);
 	return LDNS_STATUS_OK;
 }
 
@@ -338,6 +339,7 @@ ldns_str2rdf_hex(ldns_rdf **rd, const char *str)
                 }
                 t = t_orig;
 		*rd = ldns_rdf_new_frm_data(LDNS_RDF_TYPE_HEX, len / 2, t);
+		LDNS_FREE(t);
         }
         return LDNS_STATUS_OK;
 }

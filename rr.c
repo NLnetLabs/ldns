@@ -179,7 +179,7 @@ ldns_rr_new_frm_str(const char *str, uint16_t default_ttl, ldns_rdf *origin)
 		 */
 		if (clas_val == 0) {
 			clas_val = LDNS_RR_CLASS_IN;
-			type = LDNS_XMALLOC(char, strlen(ttl));
+			type = LDNS_XMALLOC(char, strlen(ttl) + 1);
 			strncpy(type, ttl, strlen(ttl) + 1);
 		}
 	} else {
@@ -199,7 +199,7 @@ ldns_rr_new_frm_str(const char *str, uint16_t default_ttl, ldns_rdf *origin)
 		 */
 		if (clas_val == 0) {
 			clas_val = LDNS_RR_CLASS_IN;
-			type = LDNS_XMALLOC(char, strlen(clas));
+			type = LDNS_XMALLOC(char, strlen(clas) + 1);
 			strncpy(type, clas, strlen(clas) + 1);
 		}
 	}
@@ -329,7 +329,7 @@ ldns_rr_new_frm_str(const char *str, uint16_t default_ttl, ldns_rdf *origin)
 						r = ldns_rdf_new_frm_str(LDNS_RDF_TYPE_HEX, hex_data_str);
 						/* correct the rdf type */
 						ldns_rdf_set_type(r, ldns_rr_descriptor_field_type(desc, r_cnt));
-
+						LDNS_FREE(hex_data_str);
 						ldns_rr_push_rdf(new, r);
 
 					} else {
@@ -357,6 +357,7 @@ ldns_rr *
 ldns_rr_new_frm_fp(FILE *fp, uint16_t ttl, ldns_rdf *origin)
 {
         char *line;
+	ldns_rr *rr;
 
         line = LDNS_XMALLOC(char, LDNS_MAX_LINELEN + 1);
         if (!line) {
@@ -367,7 +368,11 @@ ldns_rr_new_frm_fp(FILE *fp, uint16_t ttl, ldns_rdf *origin)
         if (ldns_fget_token(fp, line, LDNS_PARSE_SKIP_SPACE, LDNS_MAX_LINELEN) == -1) {
                 return NULL;
         }
-        return ldns_rr_new_frm_str((const char*) line, ttl, origin);
+
+	rr = ldns_rr_new_frm_str((const char*) line, ttl, origin);
+
+	LDNS_FREE(line);
+	return rr;
 }
 
 void

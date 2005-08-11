@@ -66,14 +66,13 @@ main(int argc, char *argv[])
 			ldns_rr_print(stdout, orig_soa);
 			ldns_rr_list_print(stdout, orig_rrs);
 		
-			ldns_rr_free(orig_soa);
-			ldns_rr_list_free(orig_rrs);
+			ldns_zone_deep_free(orig_zone);
 		}
 
 		fclose(zonefile);
 	}
 	
-	ldns_rdf_free(origin);
+	ldns_rdf_deep_free(origin);
 	
         return 0;
 }

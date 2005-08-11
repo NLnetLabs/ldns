@@ -83,9 +83,9 @@ ldns_zone_new_frm_fp(FILE *fp, ldns_rdf *origin, uint16_t ttl, ldns_rr_class c)
 {
 	ldns_zone *newzone;
 	ldns_rr *rr;
-	ldns_rdf *my_origin;
-	uint16_t my_ttl;
-	ldns_rr_class my_class;
+	ldns_rdf *my_origin = origin;
+	uint16_t my_ttl = ttl;
+	ldns_rr_class my_class = c;
 
 	uint8_t i;
 
@@ -100,25 +100,27 @@ ldns_zone_new_frm_fp(FILE *fp, ldns_rdf *origin, uint16_t ttl, ldns_rr_class c)
 
 	i = 0;
 	do {
-		rr = ldns_rr_new_frm_fp(fp, ttl, origin);
+		rr = ldns_rr_new_frm_fp(fp, my_ttl, my_origin);
 		i++;
 	} while (!rr && i <= 9);
 
 	if (i > 9) {
 		/* there is a lot of crap here, bail out before somebody gets
 		 * hurt */
+		ldns_rr_free(rr);
 		return NULL;
 	}
 
 	if (ldns_rr_get_type(rr) != LDNS_RR_TYPE_SOA) {
 		/* first rr MUST be the soa */
+		ldns_rr_free(rr);
 		return NULL;
 	}
 
 	ldns_zone_set_soa(newzone, rr);
 
 	while(!feof(fp)) {
-		rr = ldns_rr_new_frm_fp(fp, ttl, origin);
+		rr = ldns_rr_new_frm_fp(fp, my_ttl, my_origin);
 		if (rr) {
 			if (!ldns_zone_push_rr(newzone, rr)) {
 				printf("error pushing rr\n");
@@ -129,6 +131,8 @@ ldns_zone_new_frm_fp(FILE *fp, ldns_rdf *origin, uint16_t ttl, ldns_rr_class c)
 			my_ttl    = ldns_rr_ttl(rr);
 			my_class  = ldns_rr_get_class(rr);
 			
+		} else {
+			fprintf(stderr, "Error in file, unable to read RR\n");
 		}
 	}
 	return newzone;
@@ -149,3 +153,16 @@ ldns_zone_ixfr_del_add(ldns_zone *z, ldns_rr_list *del, ldns_rr_list *add)
 	
 }
 #endif
+
+void
+ldns_zone_free(ldns_zone *zone) {
+	ldns_rr_list_free(zone->_rrs);
+	LDNS_FREE(zone);
+}
+
+void
+ldns_zone_deep_free(ldns_zone *zone) {
+	ldns_rr_free(zone->_soa);
+	ldns_rr_list_deep_free(zone->_rrs);
+	LDNS_FREE(zone);
+}
