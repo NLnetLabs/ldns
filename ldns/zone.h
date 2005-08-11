@@ -107,7 +107,7 @@ void ldns_zone_free(ldns_zone *zone);
  * and the rr_list structure in it, including the rr's in that. etc.
  * \param[in] zone the zone to free
  */
-void ldns_zone_free(ldns_zone *zone);
+void ldns_zone_deep_free(ldns_zone *zone);
 
 
 #endif /* LDNS_ZONE_H */
