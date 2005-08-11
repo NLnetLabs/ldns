@@ -25,9 +25,9 @@
 #include <stdint.h>
 
 /* lua includes */
-#include "lua50/lua.h"
-#include "lua50/lualib.h"
-#include "lua50/lauxlib.h"
+#include <lua50/lua.h>
+#include <lua50/lualib.h>
+#include <lua50/lauxlib.h>
 
 /* ldns include */
 #include <ldns/dns.h>
