@@ -832,7 +832,7 @@ ldns_axfr_start(ldns_resolver *resolver,
 	}
 
 	/* Send the query */
-	if (ldns_tcp_send_query(query_wire, resolver->_socket, ns, ns_len) == 0) {
+	if (ldns_tcp_send_query(query_wire, resolver->_socket, ns, (socklen_t)ns_len) == 0) {
 		ldns_pkt_free(query);
 		ldns_buffer_free(query_wire);
 		LDNS_FREE(ns);
