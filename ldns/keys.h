@@ -204,4 +204,27 @@ ldns_rr *ldns_key2rr(ldns_key *k);
  */
 void ldns_key_print(FILE *output, ldns_key *k);
 
+/**
+ * frees a key structure
+ *
+ * \param[in] key the key object to free
+ */
+void ldns_key_free(ldns_key *key);
+
+/**
+ * frees a key structure and all it's internal data
+ *
+ * \param[in] key the key object to free
+ */
+void ldns_key_deep_free(ldns_key *key);
+
+/**
+ * frees a key list structure
+ *
+ * \param[in] key the key list object to free
+ */
+void ldns_key_list_free(ldns_key_list *key_list);
+
+
+
 #endif /* _LDNS_KEYS_H */

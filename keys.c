@@ -252,6 +252,9 @@ ldns_key_new_frm_fp_rsa(FILE *f)
 	if (!rsa->iqmp) {
 		goto error;
 	}
+	
+	LDNS_FREE(buf);
+	LDNS_FREE(d);
 	return rsa;
 
 error:
@@ -489,7 +492,8 @@ ldns_key_list_push_key(ldns_key_list *key_list, ldns_key *key)
         ldns_key **keys;
 
         key_count = ldns_key_list_key_count(key_list);
-        
+        keys = key_list->_keys;
+
         /* grow the array */
         keys = LDNS_XREALLOC(
                 key_list->_keys, ldns_key *, key_count + 1);
@@ -661,4 +665,30 @@ ldns_key2rr(ldns_key *k)
 	LDNS_FREE(bin);
 	ldns_rr_push_rdf(pubkey, keybin);
 	return pubkey;
+}
+
+void
+ldns_key_free(ldns_key *key)
+{
+	LDNS_FREE(key);
+}
+
+void
+ldns_key_deep_free(ldns_key *key)
+{
+	if (ldns_key_pubkey_owner(key)) {
+		ldns_rdf_free(ldns_key_pubkey_owner(key));
+	}
+	LDNS_FREE(key);
+}
+
+void
+ldns_key_list_free(ldns_key_list *key_list)
+{
+	size_t i;
+	for (i = 0; i < ldns_key_list_key_count(key_list); i++) {
+		ldns_key_deep_free(ldns_key_list_key(key_list, i));
+	}
+	LDNS_FREE(key_list->_keys);
+	LDNS_FREE(key_list);
 }

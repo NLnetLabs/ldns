@@ -111,6 +111,7 @@ main(int argc, char *argv[])
 		fclose(zonefile);
 	}
 	
+	ldns_key_list_free(keys);
 	ldns_rdf_deep_free(origin);
 	
         return 0;
