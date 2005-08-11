@@ -279,6 +279,10 @@ l_server_socket_udp_close(lua_State *L)
 static int
 l_write_wire_udp(lua_State *L)
 {
+	int sockfd = (int)lua_tonumber(L, 1);
+	ldns_buffer *pktbuf = (ldns_buffer*) lua_touserdata(L, 2);
+	size_t bytes;
+	
 
 }
 
@@ -293,26 +297,32 @@ l_write_wire_udp(lua_State *L)
 static int
 l_read_wire_udp(lua_State *L)
 {
-	int sockfd = (int)lua_tonumber(L,1);
+	int sockfd = (int)lua_tonumber(L, 1);
 	size_t size;
-	uint8_t *pktbuf;
+	uint8_t *pktbuf_raw;
 	ldns_pkt *pkt;
+	ldns_buffer *pktbuf;
 
-	pktbuf = ldns_udp_read_wire(sockfd, &size);
+	pktbuf_raw = ldns_udp_read_wire(sockfd, &size);
 	printf("read %d\n", size);
-	if (!pktbuf) {
+	if (!pktbuf_raw) {
 		close(sockfd);
 		return 0;
 	}
+#if 0
 	/* if we got to this point, we got some data (pkt) with a certain
 	 * size. Let's see if it can be made into a real ldsn pkt
 	 */
-	if (ldns_wire2pkt(&pkt, pktbuf, size) != LDNS_STATUS_OK) {
+	if (ldns_wire2pkt(&pkt, pktbuf_raw, size) != LDNS_STATUS_OK) {
 		return 0;
 	}
+#endif
+
+	ldns_buffer_new_frm_data(pktbuf, pktbuf_raw, size);
+	LDNS_FREE(pktbuf_raw);
 	
-	/* push our new packet onto the stack */
-	lua_pushlightuserdata(L, pkt);
+	/* push our buffer onto the stack */
+	lua_pushlightuserdata(L, pktbuf);
 	return 1;
 }
 
