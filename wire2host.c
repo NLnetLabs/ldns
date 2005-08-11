@@ -335,6 +335,15 @@ ldns_wire2pkt_hdr(ldns_pkt *packet,
 	}
 }
 
+ldns_status
+ldns_buffer2pkt_wire(ldns_pkt **packet, ldns_buffer *buffer)
+{
+	/* lazy */
+	return ldns_wire2pkt(packet, ldns_buffer_begin(buffer),
+				ldns_buffer_capacity(buffer));
+
+}
+
 
 ldns_status
 ldns_wire2pkt(ldns_pkt **packet_p, const uint8_t *wire, size_t max)

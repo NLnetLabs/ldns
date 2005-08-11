@@ -42,6 +42,12 @@ l_pkt_print(pkt)
 -- print (string.byte(spkt,160))
 
 rdf_ip = l_rdf_new_frm_str(LDNS_RDF_TYPE_A, "127.0.0.1")
-wirepkt = l_pkt_read_wire_udp(rdf_ip, 5353)
+socket = l_server_socket_udp(rdf_ip, 5353)
+
+wirebuf = l_read_wire_udp(socket)
+
+wirebuf = l_read_wire_udp(rdf_ip, 5353)
+
+l_server_close_udp(socket)
 
 l_pkt_print(wirepkt)

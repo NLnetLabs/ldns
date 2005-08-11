@@ -118,6 +118,17 @@
 ldns_status ldns_wire2pkt(ldns_pkt **packet, const uint8_t *data, size_t len);
 
 /**
+ * converts the data on the uint8_t bytearray (in wire format) to a DNS packet.
+ * This function will initialize and allocate memory space for the packet 
+ * structure.
+ * 
+ * \param[in] packet pointer to the structure to hold the packet
+ * \param[in] buffera the buffer with the data
+ * \return LDNS_STATUS_OK if everything succeeds, error otherwise
+ */
+ldns_status ldns_buffer2pkt_wire(ldns_pkt **packet, ldns_buffer *buffer);
+
+/**
  * converts the data on the uint8_t bytearray (in wire format) to a DNS 
  * dname rdata field. This function will initialize and allocate memory
  * space for the dname structure. The length of the wiredata of this rdf 
