@@ -107,7 +107,9 @@ ldns_zone_new_frm_fp(FILE *fp, ldns_rdf *origin, uint16_t ttl, ldns_rr_class c)
 	if (i > 9) {
 		/* there is a lot of crap here, bail out before somebody gets
 		 * hurt */
-		ldns_rr_free(rr);
+		if (rr) {
+			ldns_rr_free(rr);
+		}
 		return NULL;
 	}
 

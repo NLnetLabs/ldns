@@ -85,7 +85,7 @@ ldns_key_new_frm_fp(FILE *fp)
 		return NULL;
 	}
 	if (strncmp(d, "v1.2", strlen(d)) != 0) {
-		printf("Wrong version\n");
+		printf("Wrong version. This version of ldns only supports 1.2\n");
 		return NULL;
 	}
 
@@ -96,11 +96,15 @@ ldns_key_new_frm_fp(FILE *fp)
 		/* no version information */
 		return NULL;
 	}
-	if (strncmp(d, "1 RSA", strlen(d)) == 0) {
+
+	if (strncmp(d, "1 RSA", 2) == 0) {
 		alg = LDNS_SIGN_RSAMD5; /* md5, really?? */
 	}
-	if (strncmp(d, "3 DSA", strlen(d)) == 0) {
+	if (strncmp(d, "3 DSA", 2) == 0) {
 		alg = LDNS_SIGN_DSA; 
+	}
+	if (strncmp(d, "5 RSASHA1", 2) == 0) {
+		alg = LDNS_SIGN_RSASHA1;
 	}
 
 	LDNS_FREE(d);
@@ -108,7 +112,7 @@ ldns_key_new_frm_fp(FILE *fp)
 	switch(alg) {
 		case 0:
 		default:
-			printf("No algorithm seen, bailing out\n");
+			printf("No or unknown algorithm seen, bailing out\n");
 			return NULL;
 		case LDNS_SIGN_RSAMD5:
 		case LDNS_SIGN_RSASHA1:
