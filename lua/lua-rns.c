@@ -313,6 +313,15 @@ l_read_wire_udp(lua_State *L)
 	uint8_t *pktbuf_raw;
 	ldns_pkt *pkt;
 	ldns_buffer *pktbuf;
+	/* returned frm wire */
+	socklen_t from_size;
+	struct sockaddr_storage *from;
+		
+	from = LDNS_MALLOC(struct sockaddr_storage);
+	if (!from) {
+		return 0;
+	}
+	(void)memset(from, 0, sizeof(struct sockaddr_storage));
 
 	pktbuf = ldns_buffer_new(LDNS_MIN_BUFLEN); /* this /should/ happen in buf_new_frm_data */
 	
@@ -320,15 +329,20 @@ l_read_wire_udp(lua_State *L)
 		return 0;
 	}
 	
-	pktbuf_raw = ldns_udp_read_wire(sockfd, &size);
+	pktbuf_raw = ldns_udp_read_wire(sockfd, &size, from, &from_size);
+
+	printf("read bytes %d\n", from_size);
 	if (!pktbuf_raw) {
 		return 0;
 	}
 	ldns_buffer_new_frm_data(pktbuf, pktbuf_raw, size);
 	
 	/* push our buffer onto the stack */
+	/* stack func lua cal in same order buf, from, size = */
 	lua_pushlightuserdata(L, pktbuf);
-	return 1;
+	lua_pushlightuserdata(L, from);
+	lua_pushnumber(L, from_size);
+	return 3;
 }
 
 /* header bits */

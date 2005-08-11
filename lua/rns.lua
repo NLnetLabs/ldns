@@ -31,7 +31,12 @@ rdf_ip = l_rdf_new_frm_str(LDNS_RDF_TYPE_A, "127.0.0.1")
 socket = l_server_socket_udp(rdf_ip, 5353)
 
 -- read from the socket, this blocks...
-wirebuf = l_read_wire_udp(socket)
+-- in what order
+wirebuf, sockaddr_from, fromlen  = l_read_wire_udp(socket)
+
+print("From len", fromlen)
+print("From len", wirebuf)
+print("From len", sockaddr_from)
 
 if wirebuf == nil then
 	lua_debug("nothing received")

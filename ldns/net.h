@@ -125,6 +125,6 @@ uint8_t *ldns_tcp_read_wire(int sockfd, size_t *size);
  * \param[out] size the number of bytes that are read
  * \return the data read
  */
-uint8_t *ldns_udp_read_wire(int sockfd, size_t *size);
+uint8_t *ldns_udp_read_wire(int sockfd, size_t *size, struct sockaddr_storage *fr, socklen_t *frlen);
 
 #endif  /* !_LDNS_NET_H */

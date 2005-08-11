@@ -194,7 +194,7 @@ ldns_send_udp(uint8_t **result, ldns_buffer *qbin, const struct sockaddr_storage
 		return LDNS_STATUS_ERR;
 	}
 
-	answer = ldns_udp_read_wire(sockfd, answer_size);
+	answer = ldns_udp_read_wire(sockfd, answer_size, NULL, NULL);
 
 	/* resize accordingly */
 	answer = (uint8_t*)LDNS_XREALLOC(answer, uint8_t *, (size_t)*answer_size);
@@ -306,7 +306,8 @@ ldns_tcp_send_query(ldns_buffer *qbin, int sockfd, const struct sockaddr_storage
 
 /* don't wait for an answer */
 ssize_t
-ldns_udp_send_query(ldns_buffer *qbin, int sockfd, const struct sockaddr_storage *to, socklen_t tolen)
+ldns_udp_send_query(ldns_buffer *qbin, int sockfd, const struct sockaddr_storage *to, 
+		socklen_t tolen)
 {
 	ssize_t bytes;
 
@@ -326,7 +327,8 @@ ldns_udp_send_query(ldns_buffer *qbin, int sockfd, const struct sockaddr_storage
 
 /* udp/tcp is usually a suffix... XXX */
 uint8_t *
-ldns_udp_read_wire(int sockfd, size_t *size)
+ldns_udp_read_wire(int sockfd, size_t *size, struct sockaddr_storage *from,
+		socklen_t *fromlen)
 {
 	uint8_t *wire;
 	ssize_t wire_size;
@@ -337,8 +339,10 @@ ldns_udp_read_wire(int sockfd, size_t *size)
 		return NULL;
 	}
 
-	wire_size = recv(sockfd, wire, LDNS_MAX_PACKETLEN, 0);
-	/* recvfrom here .. */
+	wire_size = recvfrom(sockfd, wire, LDNS_MAX_PACKETLEN, 0, 
+			(struct sockaddr*) from, fromlen);
+
+	printf("from len %d\n", *fromlen);
 
 	if (wire_size == -1) {
 		if (errno == EAGAIN) {
@@ -351,6 +355,7 @@ ldns_udp_read_wire(int sockfd, size_t *size)
 
 	*size = (size_t)wire_size;
 	wire = LDNS_XREALLOC(wire, uint8_t, (size_t)wire_size);
+	printf("wire size %d\n", wire_size);
 	return wire;
 }
 
