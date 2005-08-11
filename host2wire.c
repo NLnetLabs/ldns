@@ -111,7 +111,9 @@ ldns_rrsig2buffer_wire(ldns_buffer *buffer, ldns_rr *rr)
 	/* Convert all the rdfs, except the actual signature data
 	 * rdf number 8  - the last, hence: -1 */
 	for (i = 0; i < ldns_rr_rd_count(rr) - 1; i++) {
-		(void) ldns_rdf2buffer_wire(buffer, ldns_rr_rdf(rr, i));
+		if (ldns_rr_rdf(rr, i)) {
+			(void) ldns_rdf2buffer_wire(buffer, ldns_rr_rdf(rr, i));
+		}
 	}
 
 	return ldns_buffer_status(buffer);
