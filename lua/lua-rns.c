@@ -314,15 +314,22 @@ l_read_wire_udp(lua_State *L)
 	ldns_pkt *pkt;
 	ldns_buffer *pktbuf;
 
+	pktbuf_raw = LDNS_XMALLOC(uint8_t, LDNS_MAX_PACKETLEN);
+	if (!pktbuf_raw) {
+		return 0;
+	}
+	
 	pktbuf_raw = ldns_udp_read_wire(sockfd, &size);
-
 	if (!pktbuf_raw) {
 		printf("[debug] nothing allright\n");
 		return 0;
 	}
+	/* will be freeed in a minute ... */
+	/*pktbuf_raw = (uint8_t*)LDNS_XREALLOC(pktbuf_raw, uint8_t *, size); */
+	
 	ldns_buffer_new_frm_data(pktbuf, pktbuf_raw, size);
 
-	LDNS_FREE(pktbuf_raw);
+/*	LDNS_FREE(pktbuf_raw);*/
 	
 	/* push our buffer onto the stack */
 	printf("[debug] I've read %d bytes\n", size);

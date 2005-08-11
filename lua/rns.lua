@@ -54,10 +54,8 @@ l_server_socket_close_udp(socket)
 -- convert the packet
 
 
---if not wirebuf == nil then
---	lua_debug("I shouldn't be here")
---	wirepkt = l_buf2pkt(wirebuf)
---	-- print the packet
---	l_pkt_print(wirepkt)
---end
+	lua_debug("I shouldn't be here")
+	wirepkt = l_buf2pkt(wirebuf)
+	-- print the packet
+	l_pkt_print(wirepkt)
 lua_debug("The end")
