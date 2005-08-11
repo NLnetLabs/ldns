@@ -24,37 +24,27 @@ l_pkt_print(pkt)
 lua_insert_rr(pkt, rr5, 3)
 l_pkt_print(pkt)
 
--- l_pkt_print(pkt)
-
--- now do it at random
--- lua_transpose_rr_random(pkt)
-
--- print again
--- l_pkt_print(pkt)
-
--- spkt = l_pkt2string(pkt)
-
--- len = string.len(spkt)
-
--- print(len)
-
--- print(spkt)
--- print (string.byte(spkt,160))
-
+---- Setup a server to listen to UDP
 -- make rdf with an ip
 rdf_ip = l_rdf_new_frm_str(LDNS_RDF_TYPE_A, "127.0.0.1")
 -- connect and bind to a server udp socket
 socket = l_server_socket_udp(rdf_ip, 5353)
---
--- read from the socket
+
+-- read from the socket, this blocks...
 wirebuf = l_read_wire_udp(socket)
---lua_debug("what I read")
+
+if wirebuf == nil then
+	lua_debug("nothing received")
+else
+	-- somebody is listening
+	wirepkt = l_buf2pkt(wirebuf)
+	lua_debug("receveid from the interface")
+	l_pkt_print(wirepkt)
+
+	wirebuf2 = l_pkt2buf(pkt)
+	l_write_wire_udp(socket, wirebuf2, rdf_ip, 5353);
+	
+end
+
 -- close the socket
 l_server_socket_close_udp(socket)
--- convert the packet
-
---	lua_debug("I shouldn't be here")
-wirepkt = l_buf2pkt(wirebuf)
---	-- print the packet
-l_pkt_print(wirepkt)
---lua_debug("The end")

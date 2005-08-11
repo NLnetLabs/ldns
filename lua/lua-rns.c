@@ -322,7 +322,6 @@ l_read_wire_udp(lua_State *L)
 	
 	pktbuf_raw = ldns_udp_read_wire(sockfd, &size);
 	if (!pktbuf_raw) {
-		printf("[debug] nothing allright\n");
 		return 0;
 	}
 	ldns_buffer_new_frm_data(pktbuf, pktbuf_raw, size);
@@ -408,11 +407,11 @@ l_pkt2buf(lua_State *L)
 
 	/* resize! XXX */
 	b = ldns_buffer_new(LDNS_MAX_PACKETLEN);
+
 	if (ldns_pkt2buffer_wire(b, p) != LDNS_STATUS_OK) {
 		return 0;
 	}
 	/* resize to current usage */
-	printf("[debug] usage buffer %d\n", ldns_buffer_position(b));
 	ldns_buffer_reserve(b, (size_t)
 			ldns_buffer_position(b));
 	lua_pushlightuserdata(L, b);
