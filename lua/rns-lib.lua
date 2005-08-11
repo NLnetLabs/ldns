@@ -35,9 +35,9 @@ LDNS_RDF_TYPE_WKS		= 24
 LDNS_RDF_TYPE_NSA		= 25
 LDNS_RDF_TYPE_IPSECKEY		= 26
 
--- read a pkt from the wire
-function lua_recv_pkt()
-	
+
+function lua_debug(msg)
+	print("[lua]", msg)
 end
 
 -- transpose 2 rrs in a pkt --

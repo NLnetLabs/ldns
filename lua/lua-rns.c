@@ -267,6 +267,7 @@ l_server_socket_udp(lua_State *L)
 		return 0;
 	}
 	lua_pushnumber(L, sockfd);
+	return 1;
 }
 
 static int
@@ -322,9 +323,7 @@ l_read_wire_udp(lua_State *L)
 	ldns_buffer *pktbuf;
 
 	pktbuf_raw = ldns_udp_read_wire(sockfd, &size);
-	printf("read %d\n", size); /* XXX */
 	if (!pktbuf_raw) {
-		close(sockfd);
 		return 0;
 	}
 	ldns_buffer_new_frm_data(pktbuf, pktbuf_raw, size);
@@ -387,11 +386,11 @@ l_buf2pkt(lua_State *L)
 	ldns_buffer *b = (ldns_buffer *)lua_touserdata(L, 1);
 	ldns_pkt *p;
 
-	if (ldns_wire2pkt(&p, b, ldns_buffer_capacity(b)) != LDNS_STATUS_OK) {
+	if (ldns_buffer2pkt_wire(&p, b) != LDNS_STATUS_OK) {
 		return 0;
 	}
-
-	lua_pushlightuserdata(L, b);
+	
+	lua_pushlightuserdata(L, p);
 	return 1;
 }
 
@@ -497,6 +496,8 @@ register_ldns_functions(void)
 	
 	/* CONVERSIONs */
 	lua_register(L, "l_pkt2string", l_pkt2string);
+	lua_register(L, "l_buf2pkt", l_buf2pkt);
+	lua_register(L, "l_pkt2buf", l_pkt2buf);
 
 	/* NETWORKING */
 	lua_register(L, "l_write_wire_udp", l_write_wire_udp);
