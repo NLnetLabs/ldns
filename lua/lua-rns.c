@@ -281,6 +281,7 @@ l_write_wire_udp(lua_State *L)
 {
 	int sockfd = (int)lua_tonumber(L, 1);
 	ldns_buffer *pktbuf = (ldns_buffer*) lua_touserdata(L, 2);
+	struct sockaddr_storage *sock = (struct sockaddr_storge*) lua_touserdata(L, 2);
 	size_t bytes;
 	
 

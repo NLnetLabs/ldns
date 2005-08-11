@@ -792,7 +792,7 @@ ldns_axfr_start(ldns_resolver *resolver,
         ldns_buffer *query_wire;
 
         struct sockaddr_storage *ns;
-        socklen_t ns_len = 0;
+        size_t ns_len = 0;
         ldns_status status;
 
         if (!resolver || ldns_resolver_nameserver_count(resolver) < 1) {
@@ -811,24 +811,9 @@ ldns_axfr_start(ldns_resolver *resolver,
 	}
 	/* For AXFR, we have to make the connection ourselves */
 	ns = ldns_rdf2native_sockaddr_storage(resolver->_nameservers[0], 
-			ldns_resolver_port(resolver));
+			ldns_resolver_port(resolver), &ns_len);
 
-	/* Determine the address size.
-	 */
-	switch(ns->ss_family) {
-		case AF_INET:
-			ns_len = (socklen_t)sizeof(struct sockaddr_in);
-			break;
-		case AF_INET6:
-			ns_len = (socklen_t)sizeof(struct sockaddr_in6);
-			break;
-                default:
-                	dprintf("%s", "unkown inet family\n");
-                	LDNS_FREE(ns);
-                	return LDNS_STATUS_UNKNOWN_INET;
-	}
-
-	resolver->_socket = ldns_tcp_connect(ns, ns_len, ldns_resolver_timeout(resolver));
+	resolver->_socket = ldns_tcp_connect(ns, (socklen_t)ns_len, ldns_resolver_timeout(resolver));
 	if (resolver->_socket == 0) {
                	ldns_pkt_free(query);
 		LDNS_FREE(ns);

@@ -284,10 +284,11 @@ uint32_t	ldns_str2period(const char *nptr, const char **endptr);
  * returns the native sockaddr representation from the rdf.
  * \param[in] rd the ldns_rdf to operate on
  * \param[in] port what port to use. 0 means; use default (53)
+ * \param[out] size what is the size of the sockaddr_storage
  * \return struct sockaddr* the address in the format so other
  * functions can use it (sendto)
  */
-struct sockaddr_storage * ldns_rdf2native_sockaddr_storage(ldns_rdf *rd, uint16_t port);
+struct sockaddr_storage * ldns_rdf2native_sockaddr_storage(ldns_rdf *rd, uint16_t port, size_t *size);
 
 /* misc */
 /**

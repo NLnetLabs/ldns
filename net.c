@@ -29,7 +29,7 @@ ldns_send(ldns_pkt **result, ldns_resolver *r, ldns_pkt *query_pkt)
 	ldns_rdf *temp;
 	
 	struct sockaddr_storage *ns;
-	socklen_t ns_len;
+	size_t ns_len;
 	struct timeval tv_s;
         struct timeval tv_e;
 
@@ -86,7 +86,7 @@ ldns_send(ldns_pkt **result, ldns_resolver *r, ldns_pkt *query_pkt)
 	for (i = 0; i < ldns_resolver_nameserver_count(r); i++) {
 
 		ns = ldns_rdf2native_sockaddr_storage(ns_rand_array[i],
-				ldns_resolver_port(r));
+				ldns_resolver_port(r), &ns_len);
 
 		if ((ns->ss_family == AF_INET && 
 				ldns_resolver_ip6(r) == LDNS_RESOLV_INET6)
@@ -98,28 +98,14 @@ ldns_send(ldns_pkt **result, ldns_resolver *r, ldns_pkt *query_pkt)
 			continue;
 		}
 
-		/* setup some family specific stuff */
-		switch(ns->ss_family) {
-			case AF_INET:
-				ns_len = (socklen_t)sizeof(struct sockaddr_in);
-				break;
-			case AF_INET6:
-				ns_len = (socklen_t)sizeof(struct sockaddr_in6);
-				break;
-			default:
-				LDNS_FREE(ns);
-				ldns_buffer_free(qb);
-				return LDNS_STATUS_ERR;
-		}
-		
 		gettimeofday(&tv_s, NULL);
 		/* query */
 		if (1 == ldns_resolver_usevc(r)) {
 			/* do err handling here ? */
-			(void)ldns_send_tcp(&reply_bytes, qb, ns, ns_len, ldns_resolver_timeout(r), &reply_size);
+			(void)ldns_send_tcp(&reply_bytes, qb, ns, (socklen_t)ns_len, ldns_resolver_timeout(r), &reply_size);
 		} else {
 			/* udp here, please */
-			(void)ldns_send_udp(&reply_bytes, qb, ns, ns_len, ldns_resolver_timeout(r), &reply_size);
+			(void)ldns_send_udp(&reply_bytes, qb, ns, (socklen_t)ns_len, ldns_resolver_timeout(r), &reply_size);
 		}
 		
 		/* obey the fail directive */

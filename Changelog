@@ -1,5 +1,8 @@
 date    : 0.71: ldns-team
 	* License change: ldns is now BSD licensed
+	* Networking code cleanup, added server udp/tcp support
+	* Zonefile parsing was added
+	* Lua binding were created
 
 28 Jul 2005: 0.70: ldns-team
 	* [func] ldns_pkt_get_section now returns copies from the rrlists

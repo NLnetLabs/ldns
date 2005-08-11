@@ -115,7 +115,7 @@ ldns_rdf2native_int32(ldns_rdf *rd)
 }
 
 struct sockaddr_storage *
-ldns_rdf2native_sockaddr_storage(ldns_rdf *rd, uint16_t port)
+ldns_rdf2native_sockaddr_storage(ldns_rdf *rd, uint16_t port, size_t *size)
 {
 	struct sockaddr_storage *data;
 	struct sockaddr_in  *data_in;
@@ -139,13 +139,14 @@ ldns_rdf2native_sockaddr_storage(ldns_rdf *rd, uint16_t port)
 			data_in = (struct sockaddr_in*) data;
 			data_in->sin_port = htons(port); 
 			memcpy(&(data_in->sin_addr), ldns_rdf_data(rd), ldns_rdf_size(rd));
+			*size = sizeof(struct sockaddr_in);
 			return data;
 		case LDNS_RDF_TYPE_AAAA:
 			data->ss_family = AF_INET6;
 			data_in6 = (struct sockaddr_in6*) data;
 			data_in6->sin6_port = htons(port); 
-
 			memcpy(&data_in6->sin6_addr, ldns_rdf_data(rd), ldns_rdf_size(rd));
+			*size = sizeof(struct sockaddr_in6);
 			return data;
 		default:
 			LDNS_FREE(data);
