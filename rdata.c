@@ -1,4 +1,4 @@
-//*
+/*
  * rdata.c
  *
  * rdata implementation
@@ -157,6 +157,10 @@ ldns_rdf2native_sockaddr_storage(ldns_rdf *rd, uint16_t port, size_t *size)
 ldns_rdf *
 ldns_sockaddr_storage2rdf(struct sockaddr_storage *rd, uint16_t *port)
 {
+	rd = rd;
+	port = port;
+	return NULL;
+/*	
 	struct sockaddr_storage *data;
 	struct sockaddr_in  *data_in;
 	struct sockaddr_in6 *data_in6;
@@ -191,6 +195,7 @@ ldns_sockaddr_storage2rdf(struct sockaddr_storage *rd, uint16_t *port)
 			LDNS_FREE(data);
 			return NULL;
 	}
+*/
 }
 
 ldns_rdf *
