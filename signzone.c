@@ -40,7 +40,7 @@ main(int argc, char *argv[])
 	uint16_t ttl = 0;
 	ldns_rr_class class = LDNS_RR_CLASS_IN;	
 
-	ldns_rr_list *rrs;
+	ldns_zone *signed_zone = NULL;
 	
 	if (argc < 3) {
 		usage(stdout, argv[0]);
@@ -50,6 +50,12 @@ main(int argc, char *argv[])
 		zonefile_name = argv[2];
 	}
 
+	if (!origin) {
+		/* default to root origin */
+		/*origin = ldns_rdf_new_frm_str(LDNS_RDF_TYPE_DNAME, ".");*/
+		origin = ldns_dname_new_frm_str(zone_name);
+	}
+	
 	keys = ldns_key_list_new();
 
 	argi = 3;
@@ -60,6 +66,8 @@ main(int argc, char *argv[])
 		} else {
 			key = ldns_key_new_frm_fp(keyfile);
 			if (key) {
+				/* TODO: should this be in frm_fp? */
+				ldns_key_set_pubkey_owner(key, ldns_rdf_clone(origin));
 				ldns_key_list_push_key(keys, key);
 			} else {
 				fprintf(stderr, "Error reading key from %s\n", argv[argi]);
@@ -75,12 +83,6 @@ main(int argc, char *argv[])
 		return 1;
 	}
 
-	if (!origin) {
-		/* default to root origin */
-		/*origin = ldns_rdf_new_frm_str(LDNS_RDF_TYPE_DNAME, ".");*/
-		origin = ldns_dname_new_frm_str(zone_name);
-	}
-	
 	printf("Reading zonefile: %s\n", zonefile_name);
 
 	zonefile = fopen(zonefile_name, "r");
@@ -100,11 +102,17 @@ main(int argc, char *argv[])
 			ldns_rr_print(stdout, orig_soa);
 			printf("\n");
 
-			rrs = ldns_rr_list_new();
-			ldns_rr_list_push_rr(rrs, orig_soa);
-			ldns_rr_list_cat(rrs, orig_rrs);
-
-			ldns_rr_list_free(rrs);
+			printf("Signing...\n");
+			signed_zone = ldns_zone_sign(orig_zone, keys);
+			printf("done!\n\n");
+			
+			if (signed_zone) {
+				printf("SIGNED ZONE:\n");
+				ldns_zone_print(stdout, signed_zone);
+				ldns_zone_deep_free(signed_zone);
+			} else {
+				fprintf(stderr, "Error signing zone.");
+			}
 			ldns_zone_deep_free(orig_zone);
 		}
 

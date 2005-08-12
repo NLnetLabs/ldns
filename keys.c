@@ -65,6 +65,7 @@ ldns_key_new_frm_fp(FILE *fp)
 	ldns_signing_algorithm alg;
 
 	k = ldns_key_new();
+
 	d = LDNS_XMALLOC(char, LDNS_MAX_LINELEN);
 	if (!k || !d) {
 		return NULL;

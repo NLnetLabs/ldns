@@ -16,6 +16,7 @@
 #include <ldns/dns.h>
 #include <ldns/buffer.h>
 #include <ldns/packet.h>
+#include <ldns/zone.h>
 #include <ldns/keys.h>
 
 #define LDNS_MAX_KEYLEN		2048
@@ -165,5 +166,16 @@ ldns_rr * ldns_create_nsec(ldns_rr_list *before, ldns_rr_list *after);
  */
 ldns_rr_list *ldns_pkt_verify(ldns_pkt *p, ldns_rr_type t, ldns_rdf *o, ldns_rr_list *k, ldns_rr_list *s);
 
+/**
+ * signs the given zone with the given new zone
+ * returns a newly allocated signed zone
+ * extra arguments will come later (expiration etc.)
+ *
+ * \param[in] zone the zone to sign
+ * \param[in] key_list the list of keys to sign the zone with
+ * \return the signed zone
+ */
+ldns_zone *ldns_zone_sign(ldns_zone *zone, ldns_key_list *key_list);
+ 
 
 #endif /* _LDNS_DNSSEC_H_ */

@@ -871,6 +871,58 @@ ldns_rr_set_pop_rr(ldns_rr_list *rr_list)
 	return ldns_rr_list_pop_rr(rr_list);
 }
 
+ldns_rr_list *
+ldns_rr_list_pop_rrset(ldns_rr_list *rr_list)
+{
+	ldns_rr_list *rrset;
+	ldns_rr *last_rr = NULL;
+	ldns_rr *next_rr;
+	
+	if (!rr_list) {
+		return NULL;
+	}
+	
+	rrset = ldns_rr_list_new();
+	if (!last_rr) {
+		last_rr = ldns_rr_list_pop_rr(rr_list);
+		if (!last_rr) {
+			ldns_rr_list_free(rrset);
+			return NULL;
+		} else {
+			ldns_rr_list_push_rr(rrset, last_rr);
+		}
+	}
+
+	if (ldns_rr_list_rr_count(rr_list) > 0) {
+		next_rr = ldns_rr_list_rr(rr_list, 0);
+	} else {
+		next_rr = NULL;
+	}
+
+	while (next_rr) {
+		if (
+			ldns_rdf_compare(ldns_rr_owner(next_rr),
+					 ldns_rr_owner(last_rr)) == 0
+			&&
+			ldns_rr_get_type(next_rr) == ldns_rr_get_type(last_rr)
+			&&
+			ldns_rr_get_class(next_rr) == ldns_rr_get_class(last_rr)
+		   ) {
+			ldns_rr_list_push_rr(rrset, ldns_rr_list_pop_rr(rr_list));
+			if (ldns_rr_list_rr_count(rr_list) > 0) {
+				last_rr = next_rr;
+				next_rr = ldns_rr_list_rr(rr_list, 0);
+			} else {
+				next_rr = NULL;
+			}
+		} else {
+			next_rr = NULL;
+		}
+	}
+	
+	return rrset;
+}
+
 ldns_rr *
 ldns_rr_clone(const ldns_rr *rr)
 {

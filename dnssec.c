@@ -1056,6 +1056,7 @@ ldns_sign_public(ldns_rr_list *rrset, ldns_key_list *keys)
 		/* set the orig_ttl */
 		(void)ldns_rr_rrsig_set_origttl(current_sig, ldns_native2rdf_int32(LDNS_RDF_TYPE_INT32, orig_ttl));
 		/* the signers name */
+
 		(void)ldns_rr_rrsig_set_signame(current_sig, 
 				ldns_key_pubkey_owner(current_key));
 		/* label count - get it from the first rr in the rr_list */
@@ -1297,3 +1298,67 @@ ldns_pkt_verify(ldns_pkt *p, ldns_rr_type t, ldns_rdf *o,
 #endif
 	return ldns_verify(rrset, sigs, k);
 }
+
+ldns_zone *
+ldns_zone_sign(ldns_zone *zone, ldns_key_list *key_list)
+{
+	/*
+	 * Algorithm to be created:
+	 * - sort the rrs (name/class/type?)
+	 * - if sorted, every next rr is belongs either to the rrset
+	 * you are working on, or the rrset is complete
+	 * for each rrset, calculate rrsig and nsec
+	 * put the rrset, rrsig and nsec in the new zone
+	 * done!
+	 * ow and don't sign old rrsigs etc.
+	 */
+	 
+	ldns_zone *signed_zone;
+	ldns_rr_list *cur_rrset;
+	ldns_rr_list *cur_rrsigs;
+	ldns_rr_list *orig_zone_rrs;
+	
+	signed_zone = ldns_zone_new();
+	
+	/* there should only be 1 SOA, so the soa record is 1 rrset */
+	cur_rrset = ldns_rr_list_new();
+	ldns_rr_list_push_rr(cur_rrset, ldns_zone_soa(zone));
+	cur_rrsigs = ldns_sign_public(cur_rrset, key_list);
+
+
+	ldns_zone_set_soa(signed_zone, ldns_rr_clone(ldns_zone_soa(zone)));
+	ldns_zone_push_rr_list(signed_zone, cur_rrsigs);
+	
+	orig_zone_rrs = ldns_rr_list_clone(ldns_zone_rrs(zone));
+
+	/*
+	printf("UNSORTED:\n");
+	ldns_rr_list_print(stdout, orig_zone_rrs);
+	*/
+	ldns_rr_list_sort(orig_zone_rrs);
+	
+	/*
+	printf("SORTED:\n");
+	ldns_rr_list_print(stdout, orig_zone_rrs);
+	*/
+	cur_rrset = ldns_rr_list_pop_rrset(orig_zone_rrs);
+	while (cur_rrset) {
+		/*
+		printf("NEXT RRSET:\n");
+		ldns_rr_list_print(stdout, cur_rrset);
+		printf("\n");
+		*/
+		cur_rrsigs = ldns_sign_public(cur_rrset, key_list);
+		ldns_zone_push_rr_list(signed_zone, cur_rrset);
+		ldns_zone_push_rr_list(signed_zone, cur_rrsigs);
+		
+		ldns_rr_list_free(cur_rrset);
+		ldns_rr_list_free(cur_rrsigs);
+
+		cur_rrset = ldns_rr_list_pop_rrset(orig_zone_rrs);
+	}
+	
+	return signed_zone;
+	
+}
+

@@ -495,6 +495,13 @@ bool ldns_rr_set_push_rr(ldns_rr_list *rr_list, ldns_rr *rr);
  */
 ldns_rr* ldns_rr_set_pop_rr(ldns_rr_list *rr_list);
 
+/**
+ * pops the first rrset from the list,
+ * the list must be sorted, so that all rr's from each rrset
+ * are next to each other
+ */
+ldns_rr_list *ldns_rr_list_pop_rrset(ldns_rr_list *rr_list);
+
 
 /**
  * retrieves a rrtype by looking up its name.
