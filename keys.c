@@ -63,6 +63,7 @@ ldns_key_new_frm_fp(FILE *fp)
 	ldns_key *k;
 	char *d;
 	ldns_signing_algorithm alg;
+	ldns_rr *key_rr;
 
 	k = ldns_key_new();
 
@@ -127,6 +128,13 @@ ldns_key_new_frm_fp(FILE *fp)
 			ldns_key_set_dsa_key(k, ldns_key_new_frm_fp_dsa(fp));
 			break;
 	}
+
+	key_rr = ldns_key2rr(k);
+
+	ldns_key_set_keytag(k, ldns_calc_keytag(key_rr));
+	
+	ldns_rr_free(key_rr);
+	
 	return k;
 }
 
@@ -678,7 +686,7 @@ void
 ldns_key_deep_free(ldns_key *key)
 {
 	if (ldns_key_pubkey_owner(key)) {
-		ldns_rdf_free(ldns_key_pubkey_owner(key));
+		ldns_rdf_deep_free(ldns_key_pubkey_owner(key));
 	}
 	LDNS_FREE(key);
 }

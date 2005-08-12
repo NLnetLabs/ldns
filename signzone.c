@@ -8,6 +8,8 @@
 #include <ldns/config.h>
 #include <errno.h>
 
+#include <time.h>
+
 #include <ldns/dns.h>
 
 int
@@ -15,7 +17,7 @@ usage(FILE *fp, char *prog) {
 	fprintf(fp, "%s [OPTIONS] <zone name> <zonefile> <keyfile(s)>\n", prog);
 	fprintf(fp, "  signs the zone with the given private key\n");
 fprintf(fp, "currently only reads zonefile and prints it\n");
-fprintf(fp, "todo: settable ttl, class?");
+fprintf(fp, "todo: settable incept, exp, etc");
 fprintf(fp, "you can specify multiple keyfiles");
 	return 0;
 }
@@ -41,6 +43,8 @@ main(int argc, char *argv[])
 	ldns_rr_class class = LDNS_RR_CLASS_IN;	
 
 	ldns_zone *signed_zone = NULL;
+	
+	time_t now;
 	
 	if (argc < 3) {
 		usage(stdout, argv[0]);
@@ -69,6 +73,17 @@ main(int argc, char *argv[])
 				/* TODO: should this be in frm_fp? */
 				ldns_key_set_pubkey_owner(key, ldns_rdf_clone(origin));
 				ldns_key_list_push_key(keys, key);
+				
+				/* set times in key? they will end up
+				   in the rrsigs
+				*/
+				/* default to inception time now,
+				   exporation now + 2 weeks */
+				time(&now);
+				ldns_key_set_inception(key, now);
+				ldns_key_set_expiration(key, now + 1209600);
+				
+				
 			} else {
 				fprintf(stderr, "Error reading key from %s\n", argv[argi]);
 			}

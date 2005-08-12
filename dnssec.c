@@ -1007,7 +1007,7 @@ ldns_sign_public(ldns_rr_list *rrset, ldns_key_list *keys)
 	ldns_buffer *sign_buf;
 	uint32_t orig_ttl;
 
-	if (!rrset || !keys) {
+	if (!rrset || ldns_rr_list_rr_count(rrset) < 1 || !keys) {
 		return NULL;
 	}
 
@@ -1040,7 +1040,8 @@ ldns_sign_public(ldns_rr_list *rrset, ldns_key_list *keys)
 		current_sig = ldns_rr_new_frm_type(LDNS_RR_TYPE_RRSIG);
 		
 		/* set the type on the new signature */
-		orig_ttl = ldns_key_origttl(current_key);
+		/*orig_ttl = ldns_key_origttl(current_key);*/
+		orig_ttl = ldns_rr_ttl(ldns_rr_list_rr(rrset, 0));
 
 		/* set the ttl from the priv key on the rrset */
 		for (i = 0; i < ldns_rr_list_rr_count(rrset); i++) {
@@ -1049,7 +1050,7 @@ ldns_sign_public(ldns_rr_list *rrset, ldns_key_list *keys)
 		}
 
 		ldns_rr_set_owner(current_sig, 
-				ldns_rr_owner(ldns_rr_list_rr(rrset_clone, 0)));
+				ldns_rdf_clone(ldns_rr_owner(ldns_rr_list_rr(rrset_clone, 0))));
 
 		/* fill in what we know of the signature */
 
@@ -1058,7 +1059,7 @@ ldns_sign_public(ldns_rr_list *rrset, ldns_key_list *keys)
 		/* the signers name */
 
 		(void)ldns_rr_rrsig_set_signame(current_sig, 
-				ldns_key_pubkey_owner(current_key));
+				ldns_rdf_clone(ldns_key_pubkey_owner(current_key)));
 		/* label count - get it from the first rr in the rr_list */
 		(void)ldns_rr_rrsig_set_labels(current_sig, 
 				ldns_native2rdf_int8(LDNS_RDF_TYPE_INT8, ldns_rr_label_count(
@@ -1352,8 +1353,10 @@ ldns_zone_sign(ldns_zone *zone, ldns_key_list *key_list)
 		ldns_zone_push_rr_list(signed_zone, cur_rrset);
 		ldns_zone_push_rr_list(signed_zone, cur_rrsigs);
 		
+/*
 		ldns_rr_list_free(cur_rrset);
 		ldns_rr_list_free(cur_rrsigs);
+*/
 
 		cur_rrset = ldns_rr_list_pop_rrset(orig_zone_rrs);
 	}
