@@ -129,7 +129,7 @@ ldns_zone_new_frm_fp(FILE *fp, ldns_rdf *origin, uint16_t ttl, ldns_rr_class c)
 				return NULL;
 			}
 
-			my_origin = ldns_rr_owner(rr);
+			/*my_origin = ldns_rr_owner(rr);*/
 			my_ttl    = ldns_rr_ttl(rr);
 			my_class  = ldns_rr_get_class(rr);
 			
