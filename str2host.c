@@ -494,6 +494,8 @@ ldns_str2rdf_alg(ldns_rdf **rd, const char *str)
 ldns_status
 ldns_str2rdf_unknown(ldns_rdf **rd, const char *str)
 {
+	/* this should be caught in an earlier time (general str2host for 
+	   rr's */
 	rd = rd;
 	str = str;
 	return LDNS_STATUS_NOT_IMPL;
@@ -502,6 +504,7 @@ ldns_str2rdf_unknown(ldns_rdf **rd, const char *str)
 ldns_status
 ldns_str2rdf_tsig(ldns_rdf **rd, const char *str)
 {
+	/* there is no strign representation for TSIG rrs */
 	rd = rd;
 	str = str;
 	return LDNS_STATUS_NOT_IMPL;
@@ -510,6 +513,7 @@ ldns_str2rdf_tsig(ldns_rdf **rd, const char *str)
 ldns_status
 ldns_str2rdf_service(ldns_rdf **rd, const char *str)
 {
+	/* is this used? is this actually WKS? or SRV? */
 	rd = rd;
 	str = str;
 	return LDNS_STATUS_NOT_IMPL;
@@ -518,9 +522,227 @@ ldns_str2rdf_service(ldns_rdf **rd, const char *str)
 ldns_status
 ldns_str2rdf_loc(ldns_rdf **rd, const char *str)
 {
-	rd = rd;
-	str = str;
-	return LDNS_STATUS_NOT_IMPL;
+	uint32_t size = 0;
+	uint32_t horiz_pre = 0;
+	uint32_t vert_pre = 0;
+	uint32_t latitude = 0;
+	uint32_t longitude = 0;
+	uint32_t altitude = 0;
+
+	uint8_t *data;
+	uint32_t equator = (uint32_t) ldns_power(2, 31);
+
+	uint32_t h = 0;
+	uint32_t m = 0;
+	uint8_t size_b = 1, size_e = 2;
+	uint8_t horiz_pre_b = 1, horiz_pre_e = 6;
+	uint8_t vert_pre_b = 1, vert_pre_e = 3;
+	
+	double s = 0.0;
+	bool northerness;
+	bool easterness;
+
+	char *my_str = (char *) str;
+
+	/* only support version 0 */
+	if (isdigit(*my_str)) {
+		h = strtol(my_str, &my_str, 10);
+	} else {
+		return LDNS_STATUS_INVALID_STR;
+	}
+
+	while (isblank(*my_str)) {
+		my_str++;
+	}
+
+	if (isdigit(*my_str)) {
+		m = strtol(my_str, &my_str, 10);
+	} else if (*my_str == 'N' || *my_str == 'S') {
+		goto northerness;
+	} else {
+		return LDNS_STATUS_INVALID_STR;
+	}
+
+	while (isblank(*my_str)) {
+		my_str++;
+	}
+
+	if (isdigit(*my_str)) {
+		s = strtod(my_str, &my_str);
+	}
+
+	northerness:
+	while (isblank(*my_str)) {
+		my_str++;
+	}
+
+	if (*my_str == 'N') {
+		northerness = true;
+	} else if (*my_str == 'S') {
+		northerness = false;
+	} else {
+		return LDNS_STATUS_INVALID_STR;
+	}
+
+	my_str++;
+
+	/* store number */
+	latitude = 1000 * s;
+	latitude += 1000 * 60 * m;
+	latitude += 1000 * 60 * 60 * h;
+	if (northerness) {
+		latitude = equator + latitude;
+	} else {
+		latitude = equator - latitude;
+	}
+
+	while (isblank(*my_str)) {
+		my_str++;
+	}
+
+	if (isdigit(*my_str)) {
+		h = strtol(my_str, &my_str, 10);
+	} else {
+		return LDNS_STATUS_INVALID_STR;
+	}
+
+	while (isblank(*my_str)) {
+		my_str++;
+	}
+
+	if (isdigit(*my_str)) {
+		m = strtol(my_str, &my_str, 10);
+	} else if (*my_str == 'E' || *my_str == 'W') {
+		goto easterness;
+	} else {
+		return LDNS_STATUS_INVALID_STR;
+	}
+
+	while (isblank(*my_str)) {
+		my_str++;
+	}
+
+	if (isdigit(*my_str)) {
+		s = strtod(my_str, &my_str);
+	}
+
+	easterness:
+	while (isblank(*my_str)) {
+		my_str++;
+	}
+
+	if (*my_str == 'E') {
+		easterness = true;
+	} else if (*my_str == 'W') {
+		easterness = false;
+	} else {
+		return LDNS_STATUS_INVALID_STR;
+	}
+
+	my_str++;
+
+	/* store number */
+	longitude = 1000 * s;
+	longitude += 1000 * 60 * m;
+	longitude += 1000 * 60 * 60 * h;
+
+	if (easterness) {
+		longitude += equator;
+	} else {
+		longitude = equator - longitude;
+	}
+
+	altitude = strtol(my_str, &my_str, 10);
+	altitude *= 100;
+	altitude += 10000000;
+	if (*my_str == 'm' || *my_str == 'M') {
+		*my_str++;
+	}
+
+	if (strlen(my_str) > 0) {
+		while (isblank(*my_str)) {
+			my_str++;
+		}
+		size = strtol(my_str, &my_str, 10);
+		/* convert to centimeters */
+		size = size * 100;
+		/* get values for weird rfc notation */
+		size_e = 0;
+		while (size >= 10) {
+			size_e++;
+			size = size / 10;
+		}
+		size_b = (uint8_t) size;
+		if (size_e > 9) {
+			printf("size too large\n");
+			return LDNS_STATUS_INVALID_STR;
+		}
+		if (*my_str == 'm' || *my_str == 'M') {
+			*my_str++;
+		}
+	}
+
+	if (strlen(my_str) > 0) {
+		while (isblank(*my_str)) {
+			my_str++;
+		}
+		horiz_pre = strtol(my_str, &my_str, 10);
+		/* convert to centimeters */
+		horiz_pre = horiz_pre * 100;
+		/* get values for weird rfc notation */
+		horiz_pre_e = 0;
+		while (horiz_pre >= 10) {
+			horiz_pre_e++;
+			horiz_pre = horiz_pre / 10;
+		}
+		horiz_pre_b = (uint8_t) horiz_pre;
+		if (horiz_pre_e > 9) {
+			printf("horiz_pre too large\n");
+			return LDNS_STATUS_INVALID_STR;
+		}
+		if (*my_str == 'm' || *my_str == 'M') {
+			*my_str++;
+		}
+	}
+
+	if (strlen(my_str) > 0) {
+		while (isblank(*my_str)) {
+			my_str++;
+		}
+		vert_pre = strtol(my_str, &my_str, 10);
+		/* convert to centimeters */
+		vert_pre = vert_pre * 100;
+		/* get values for weird rfc notation */
+		vert_pre_e = 0;
+		while (vert_pre >= 10) {
+			vert_pre_e++;
+			vert_pre = vert_pre / 10;
+		}
+		vert_pre_b = (uint8_t) vert_pre;
+		if (vert_pre_e > 9) {
+			printf("vert_pre too large\n");
+			return LDNS_STATUS_INVALID_STR;
+		}
+		if (*my_str == 'm' || *my_str == 'M') {
+			*my_str++;
+		}
+	}
+
+	data = LDNS_XMALLOC(uint8_t, 16);
+	data[0] = 0;
+	data[1] = 0;
+	data[1] = ((size_b << 4) & 0xf0) | (size_e & 0x0f);
+	data[2] = ((horiz_pre_b << 4) & 0xf0) | (horiz_pre_e & 0x0f);
+	data[3] = ((vert_pre_b << 4) & 0xf0) | (vert_pre_e & 0x0f);
+	ldns_write_uint32(data + 4, latitude);
+	ldns_write_uint32(data + 8, longitude);
+	ldns_write_uint32(data + 12, altitude);
+
+	*rd = ldns_rdf_new_frm_data(
+		LDNS_RDF_TYPE_LOC, 16, data);
+
+	LDNS_FREE(data);
+	return LDNS_STATUS_OK;
 }
 
 ldns_status

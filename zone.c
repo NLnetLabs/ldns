@@ -86,6 +86,7 @@ ldns_zone_new_frm_fp(FILE *fp, ldns_rdf *origin, uint16_t ttl, ldns_rr_class c)
 	ldns_rdf *my_origin = origin;
 	uint16_t my_ttl = ttl;
 	ldns_rr_class my_class = c;
+	ldns_rr *last_rr = NULL;
 
 	uint8_t i;
 
@@ -94,6 +95,7 @@ ldns_zone_new_frm_fp(FILE *fp, ldns_rdf *origin, uint16_t ttl, ldns_rr_class c)
 	my_ttl    = ttl;
 	my_class  = c;
 	
+
 	/* read until we got a soa, all crap above is discarded 
 	 * except $directives
 	 */
@@ -124,6 +126,7 @@ ldns_zone_new_frm_fp(FILE *fp, ldns_rdf *origin, uint16_t ttl, ldns_rr_class c)
 	while(!feof(fp)) {
 		rr = ldns_rr_new_frm_fp(fp, my_ttl, my_origin);
 		if (rr) {
+			last_rr = rr;
 			if (!ldns_zone_push_rr(newzone, rr)) {
 				printf("error pushing rr\n");
 				return NULL;
@@ -134,7 +137,9 @@ ldns_zone_new_frm_fp(FILE *fp, ldns_rdf *origin, uint16_t ttl, ldns_rr_class c)
 			my_class  = ldns_rr_get_class(rr);
 			
 		} else {
-			fprintf(stderr, "Error in file, unable to read RR\n");
+			fprintf(stderr, "Error in file, unable to read RR.\nLast rr that was parsed:\n");
+			ldns_rr_print(stdout, last_rr);
+			printf("\n");
 		}
 	}
 	return newzone;

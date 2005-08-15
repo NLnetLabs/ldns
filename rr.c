@@ -292,7 +292,7 @@ ldns_rr_new_frm_str(const char *str, uint16_t default_ttl, ldns_rdf *origin)
 	 * the rdata differently, e.g. NSEC */
 	switch(rr_type) {
 		case LDNS_RR_TYPE_NSEC:
-		case LDNS_RR_TYPE_LOC:
+		/*case LDNS_RR_TYPE_LOC:*/
 			/* blalba do something different */
 			break;
 		default:
@@ -306,9 +306,12 @@ ldns_rr_new_frm_str(const char *str, uint16_t default_ttl, ldns_rdf *origin)
 			}
 			*/
 			done = false;
+
 			for (r_cnt = 0; !done && r_cnt < ldns_rr_descriptor_maximum(desc); r_cnt++) {
 				/* if type = B64, the field may contain spaces */
-				if (ldns_rr_descriptor_field_type(desc, r_cnt) == LDNS_RDF_TYPE_B64) {
+				if (ldns_rr_descriptor_field_type(desc, r_cnt) == LDNS_RDF_TYPE_B64 ||
+				    ldns_rr_descriptor_field_type(desc, r_cnt) == LDNS_RDF_TYPE_LOC
+				    ) {
 					delimiters = "\n\t";
 				} else {
 					delimiters = "\n\t ";
