@@ -311,12 +311,12 @@ ldns_str2rdf_apl(ldns_rdf **rd, const char *str)
 		negation = false;
 	}
 
-	family = atoi(my_str);
+	family = (uint16_t) atoi(my_str);
 	
 	my_str = strchr(my_str, ':') + 1;
 
 	/* need ip addr and only ip addr for inet_pton */
-	ip_str_len = strchr(my_str, '/') - my_str;
+	ip_str_len = (size_t) (strchr(my_str, '/') - my_str);
 	my_ip_str = LDNS_XMALLOC(char, ip_str_len + 1);
 	strncpy(my_ip_str, my_str, ip_str_len + 1);
 	my_ip_str[ip_str_len] = '\0';
@@ -349,7 +349,7 @@ ldns_str2rdf_apl(ldns_rdf **rd, const char *str)
 	}
 
 	my_str = strchr(my_str, '/') + 1;
-	prefix = atoi(my_str);
+	prefix = (uint8_t) atoi(my_str);
 
 	data = LDNS_XMALLOC(uint8_t, 4 + afdlength);
 	ldns_write_uint16(data, family);
@@ -546,7 +546,7 @@ ldns_str2rdf_loc(ldns_rdf **rd, const char *str)
 
 	/* only support version 0 */
 	if (isdigit(*my_str)) {
-		h = strtol(my_str, &my_str, 10);
+		h = (uint32_t) strtol(my_str, &my_str, 10);
 	} else {
 		return LDNS_STATUS_INVALID_STR;
 	}
@@ -556,7 +556,7 @@ ldns_str2rdf_loc(ldns_rdf **rd, const char *str)
 	}
 
 	if (isdigit(*my_str)) {
-		m = strtol(my_str, &my_str, 10);
+		m = (uint32_t) strtol(my_str, &my_str, 10);
 	} else if (*my_str == 'N' || *my_str == 'S') {
 		goto northerness;
 	} else {
@@ -587,7 +587,7 @@ ldns_str2rdf_loc(ldns_rdf **rd, const char *str)
 	my_str++;
 
 	/* store number */
-	latitude = 1000 * s;
+	latitude = (uint32_t) (1000 * s);
 	latitude += 1000 * 60 * m;
 	latitude += 1000 * 60 * 60 * h;
 	if (northerness) {
@@ -601,7 +601,7 @@ ldns_str2rdf_loc(ldns_rdf **rd, const char *str)
 	}
 
 	if (isdigit(*my_str)) {
-		h = strtol(my_str, &my_str, 10);
+		h = (uint32_t) strtol(my_str, &my_str, 10);
 	} else {
 		return LDNS_STATUS_INVALID_STR;
 	}
@@ -611,7 +611,7 @@ ldns_str2rdf_loc(ldns_rdf **rd, const char *str)
 	}
 
 	if (isdigit(*my_str)) {
-		m = strtol(my_str, &my_str, 10);
+		m = (uint32_t) strtol(my_str, &my_str, 10);
 	} else if (*my_str == 'E' || *my_str == 'W') {
 		goto easterness;
 	} else {
@@ -642,7 +642,7 @@ ldns_str2rdf_loc(ldns_rdf **rd, const char *str)
 	my_str++;
 
 	/* store number */
-	longitude = 1000 * s;
+	longitude = (uint32_t) (1000 * s);
 	longitude += 1000 * 60 * m;
 	longitude += 1000 * 60 * 60 * h;
 
@@ -652,7 +652,7 @@ ldns_str2rdf_loc(ldns_rdf **rd, const char *str)
 		longitude = equator - longitude;
 	}
 
-	altitude = strtol(my_str, &my_str, 10);
+	altitude = (uint32_t) strtol(my_str, &my_str, 10);
 	altitude *= 100;
 	altitude += 10000000;
 	if (*my_str == 'm' || *my_str == 'M') {
@@ -663,7 +663,7 @@ ldns_str2rdf_loc(ldns_rdf **rd, const char *str)
 		while (isblank(*my_str)) {
 			my_str++;
 		}
-		size = strtol(my_str, &my_str, 10);
+		size = (uint32_t) strtol(my_str, &my_str, 10);
 		/* convert to centimeters */
 		size = size * 100;
 		/* get values for weird rfc notation */
@@ -686,7 +686,7 @@ ldns_str2rdf_loc(ldns_rdf **rd, const char *str)
 		while (isblank(*my_str)) {
 			my_str++;
 		}
-		horiz_pre = strtol(my_str, &my_str, 10);
+		horiz_pre = (uint32_t) strtol(my_str, &my_str, 10);
 		/* convert to centimeters */
 		horiz_pre = horiz_pre * 100;
 		/* get values for weird rfc notation */
@@ -709,7 +709,7 @@ ldns_str2rdf_loc(ldns_rdf **rd, const char *str)
 		while (isblank(*my_str)) {
 			my_str++;
 		}
-		vert_pre = strtol(my_str, &my_str, 10);
+		vert_pre = (uint32_t) strtol(my_str, &my_str, 10);
 		/* convert to centimeters */
 		vert_pre = vert_pre * 100;
 		/* get values for weird rfc notation */
