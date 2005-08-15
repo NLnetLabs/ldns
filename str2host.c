@@ -19,6 +19,8 @@
 #include <arpa/inet.h>
 #include <time.h>
 
+#include <errno.h>
+
 #include <limits.h>
 #ifdef HAVE_SYS_PARAM_H
 #include <sys/param.h>
@@ -282,9 +284,90 @@ ldns_str2rdf_str(ldns_rdf **rd, const char *str)
 ldns_status
 ldns_str2rdf_apl(ldns_rdf **rd, const char *str)
 {
-	rd = rd;
-	str = str;
-	return LDNS_STATUS_NOT_IMPL;
+	const char *my_str = str;
+
+	char *my_ip_str;
+	size_t ip_str_len;
+
+	uint16_t family;
+	bool negation;
+	uint8_t afdlength = 0;
+	uint8_t *afdpart;
+	uint8_t prefix;
+
+	uint8_t *data;
+	
+	size_t i = 0;
+
+	/* [!]afi:address/prefix */
+	if (strlen(my_str) < 2) {
+		return LDNS_STATUS_INVALID_STR;
+	}
+
+	if (my_str[0] == '!') {
+		negation = true;
+		my_str += 1;
+	} else {
+		negation = false;
+	}
+
+	family = atoi(my_str);
+	
+	my_str = strchr(my_str, ':') + 1;
+
+	/* need ip addr and only ip addr for inet_pton */
+	ip_str_len = strchr(my_str, '/') - my_str;
+	my_ip_str = LDNS_XMALLOC(char, ip_str_len + 1);
+	strncpy(my_ip_str, my_str, ip_str_len + 1);
+	my_ip_str[ip_str_len] = '\0';
+
+	if (family == 1) {
+		/* ipv4 */
+		afdpart = LDNS_XMALLOC(uint8_t, 4);
+		if (inet_pton(AF_INET, my_ip_str, afdpart) == 0) {
+			return LDNS_STATUS_INVALID_STR;
+		}
+		for (i = 0; i < 4; i++) {
+			if (afdpart[i] != 0) {
+				afdlength = i + 1;
+			}
+		}
+	} else if (family == 2) {
+		/* ipv6 */
+		afdpart = LDNS_XMALLOC(uint8_t, 16);
+		if (inet_pton(AF_INET6, my_ip_str, afdpart) == 0) {
+			return LDNS_STATUS_INVALID_STR;
+		}
+		for (i = 0; i < 16; i++) {
+			if (afdpart[i] != 0) {
+				afdlength = i + 1;
+			}
+		}
+	} else {
+		/* unknown family */
+		return LDNS_STATUS_INVALID_STR;
+	}
+
+	my_str = strchr(my_str, '/') + 1;
+	prefix = atoi(my_str);
+
+	data = LDNS_XMALLOC(uint8_t, 4 + afdlength);
+	ldns_write_uint16(data, family);
+	data[2] = prefix;
+	data[3] = afdlength;
+	if (negation) {
+		/* set bit 1 of byte 3 */
+		data[3] = data[3] | 0x80;
+	}
+	
+	memcpy(data + 4, afdpart, afdlength);
+
+	*rd = ldns_rdf_new_frm_data(LDNS_RDF_TYPE_APL, afdlength + 4, data);
+	LDNS_FREE(afdpart);
+	LDNS_FREE(data);
+	LDNS_FREE(my_ip_str);
+
+	return LDNS_STATUS_OK;
 }
 
 ldns_status
