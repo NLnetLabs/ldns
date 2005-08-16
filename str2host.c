@@ -777,7 +777,7 @@ ldns_str2rdf_wks(ldns_rdf **rd, const char *str)
 		} else {
 			serv = getservbyname(token, proto_str);
 			if (serv) {
-				serv_port = ntohs(serv->s_port);
+				serv_port = (int) ntohs((uint16_t) serv->s_port);
 			} else {
 				serv_port = atoi(token);
 			}
@@ -798,9 +798,9 @@ ldns_str2rdf_wks(ldns_rdf **rd, const char *str)
 	data = LDNS_XMALLOC(uint8_t, bm_len + 1);
 	proto = getprotobyname(proto_str);
 	data[0] = (uint8_t) proto->p_proto;
-	memcpy(data + 1, bitmap, bm_len);
+	memcpy(data + 1, bitmap, (size_t) bm_len);
 	
-	*rd = ldns_rdf_new_frm_data(LDNS_RDF_TYPE_WKS, bm_len + 1, data);
+	*rd = ldns_rdf_new_frm_data(LDNS_RDF_TYPE_WKS, (uint16_t) (bm_len + 1), data);
 
 	LDNS_FREE(token);
 	LDNS_FREE(str_buf);
