@@ -20,6 +20,7 @@
 #include <time.h>
 
 #include <errno.h>
+#include <netdb.h> 
 
 #include <limits.h>
 #ifdef HAVE_SYS_PARAM_H
@@ -748,9 +749,64 @@ ldns_str2rdf_loc(ldns_rdf **rd, const char *str)
 ldns_status
 ldns_str2rdf_wks(ldns_rdf **rd, const char *str)
 {
-	rd = rd;
-	str = str;
-	return LDNS_STATUS_NOT_IMPL;
+	uint8_t *bitmap = NULL;
+	uint8_t *data;
+	int bm_len = 0;
+	
+	struct protoent *proto = NULL;
+	struct servent *serv = NULL;
+	int serv_port;
+	
+	ldns_buffer *str_buf;
+	
+	char *proto_str = NULL;
+	char *token = LDNS_XMALLOC(char, 50);
+	
+	str_buf = LDNS_MALLOC(ldns_buffer);
+	ldns_buffer_new_frm_data(str_buf, (char *)str, strlen(str));
+
+	while(ldns_bget_token(str_buf, token, "\t\n ", strlen(str)) > 0) {
+		if (!proto_str) {
+			proto_str = strdup(token);
+			if (!proto_str) {
+				LDNS_FREE(token);
+				LDNS_FREE(str_buf);
+				return LDNS_STATUS_INVALID_STR;
+			}
+		} else {
+			serv = getservbyname(token, proto_str);
+			if (serv) {
+				serv_port = ntohs(serv->s_port);
+			} else {
+				serv_port = atoi(token);
+			}
+			if (serv_port / 8 > bm_len) {
+				bitmap = LDNS_XREALLOC(bitmap, uint8_t, serv_port / 8);
+				/* set to zero to be sure */
+				for (; bm_len <= serv_port / 8; bm_len++) {
+				/*
+				printf("clearing byte %d\n", bm_len);
+				*/
+					bitmap[bm_len] = 0;
+				}
+			}
+			ldns_set_bit(bitmap + (serv_port / 8), 7 - (serv_port % 8), true);
+		}
+	}
+	
+	data = LDNS_XMALLOC(uint8_t, bm_len + 1);
+	proto = getprotobyname(proto_str);
+	data[0] = (uint8_t) proto->p_proto;
+	memcpy(data + 1, bitmap, bm_len);
+	
+	*rd = ldns_rdf_new_frm_data(LDNS_RDF_TYPE_WKS, bm_len + 1, data);
+
+	LDNS_FREE(token);
+	LDNS_FREE(str_buf);
+	LDNS_FREE(bitmap);
+	free(proto_str);
+
+	return LDNS_STATUS_OK;
 }
 
 ldns_status

@@ -85,6 +85,17 @@ ldns_get_bit_r(uint8_t bits[], size_t index)
 	return (int) bits[index / 8] & (1 << (index % 8));
 }
 
+void
+ldns_set_bit(uint8_t *byte, int bit_nr, bool value) {
+	if (bit_nr >= 0 && bit_nr < 8) {
+		if (value) {
+			*byte = *byte | (0x01 << bit_nr);
+		} else {
+			*byte = *byte & !(0x01 << bit_nr);
+		}
+	}
+}
+
 int
 ldns_hexdigit_to_int(char ch)
 {
