@@ -185,6 +185,15 @@ ldns_rdf 	*ldns_rdf_new_frm_str(ldns_rdf_type type, const char *str);
  */             
 ldns_rdf 	*ldns_rdf_new_frm_fp(ldns_rdf_type type, FILE *fp);
 
+/**     
+ * creates a new rdf from a file containing a string.
+ * \param[in] type   type to use
+ * \param[in] fp the file pointer  to use
+ * \param[in] line_nr pointer to an integer containing the current line number (for debugging purposes)
+ * \return ldns_rdf*
+ */             
+ldns_rdf 	*ldns_rdf_new_frm_fp_l(ldns_rdf_type type, FILE *fp, int *line_nr);
+
 /* destroy functions */
 
 /**

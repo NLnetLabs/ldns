@@ -471,6 +471,12 @@ ldns_resolver_new(void)
 ldns_resolver *
 ldns_resolver_new_frm_fp(FILE *fp)
 {
+	return ldns_resolver_new_frm_fp_l(fp, NULL);
+}
+
+ldns_resolver *
+ldns_resolver_new_frm_fp_l(FILE *fp, int *line_nr)
+{
 	ldns_resolver *r;
 	const char *keyword[2];
 	char *word;
@@ -496,7 +502,7 @@ ldns_resolver_new_frm_fp(FILE *fp)
 	if (!r) {
 		return NULL;
 	}
-	gtr = ldns_fget_token(fp, word, LDNS_PARSE_NORMAL, 0);
+	gtr = ldns_fget_token_l(fp, word, LDNS_PARSE_NORMAL, 0, line_nr);
 	while (gtr > 0) {
 		/* do something */
 		switch(expect) {
@@ -550,7 +556,7 @@ ldns_resolver_new_frm_fp(FILE *fp)
 				expect = LDNS_RESOLV_KEYWORD;
 				break;
 		}
-		gtr = ldns_fget_token(fp, word, LDNS_PARSE_NORMAL, 0);
+		gtr = ldns_fget_token_l(fp, word, LDNS_PARSE_NORMAL, 0, line_nr);
 	}
 	
 	LDNS_FREE(word);

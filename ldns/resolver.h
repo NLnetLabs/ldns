@@ -243,6 +243,15 @@ ldns_resolver* ldns_resolver_new(void);
 ldns_resolver* ldns_resolver_new_frm_fp(FILE *fp);
 
 /**
+ * Create a resolver structure from a file like /etc/resolv.conf
+ * \param[in] fp file pointer to create new resolver from
+ *      if NULL use /etc/resolv.conf
+ * \param[in] line_nr pointer to an integer containing the current line number (for debugging purposes)
+ * \return ldns_resolver structure
+ */
+ldns_resolver* ldns_resolver_new_frm_fp_l(FILE *fp, int *line_nr);
+
+/**
  * configure a resolver by means of a resolv.conf file 
  * The file may be NULL in which case there will  be
  * looked the RESOLV_CONF (defaults to /etc/resolv.conf

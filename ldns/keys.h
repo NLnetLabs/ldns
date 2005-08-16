@@ -117,12 +117,32 @@ ldns_key *ldns_key_new_frm_algorithm(ldns_signing_algorithm a, uint16_t size);
 ldns_key *ldns_key_new_frm_fp(FILE *fp);
 
 /**
+ * creates a new priv key based on the 
+ * contents of the file pointed by fp
+ *
+ * \param[in] fp the file pointer to use
+ * \param[in] line_nr pointer to an integer containing the current line number (for debugging purposes)
+ * \return a new ldns_key structure with the key
+ */
+ldns_key *ldns_key_new_frm_fp_l(FILE *fp, int *line_nr);
+
+/**
  * frm_fp helper function. This function parsed the
  * remainder of the (RSA) priv. key file generated from bind9
  * \param[in] fp the file to parse
  * \return NULL on failure otherwise a RSA structure
  */
 RSA *ldns_key_new_frm_fp_rsa(FILE *fp);
+
+/**
+ * frm_fp helper function. This function parsed the
+ * remainder of the (RSA) priv. key file generated from bind9
+ * \param[in] fp the file to parse
+ * \param[in] line_nr pointer to an integer containing the current line number (for debugging purposes)
+ * \return NULL on failure otherwise a RSA structure
+ */
+RSA *ldns_key_new_frm_fp_rsa_l(FILE *fp, int *line_nr);
+
 /**
  * frm_fp helper function. This function parsed the
  * remainder of the (DSA) priv. key file generated from bind9
@@ -130,6 +150,15 @@ RSA *ldns_key_new_frm_fp_rsa(FILE *fp);
  * \return NULL on failure otherwise a RSA structure
  */
 DSA *ldns_key_new_frm_fp_dsa(FILE *fp);
+
+/**
+ * frm_fp helper function. This function parsed the
+ * remainder of the (DSA) priv. key file generated from bind9
+ * \param[in] fp the file to parse
+ * \param[in] line_nr pointer to an integer containing the current line number (for debugging purposes)
+ * \return NULL on failure otherwise a RSA structure
+ */
+DSA *ldns_key_new_frm_fp_dsa_l(FILE *fp, int *line_nr);
 
 /* acces write functions */
 void ldns_key_set_algorithm(ldns_key *k, ldns_signing_algorithm l);

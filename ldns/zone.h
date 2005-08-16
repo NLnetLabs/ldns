@@ -96,6 +96,9 @@ bool ldns_zone_rr_is_glue(ldns_zone *z, ldns_rr *rr);
 ldns_zone *
 ldns_zone_new_frm_fp(FILE *fp, ldns_rdf *origin, uint16_t ttl, ldns_rr_class c);
 
+ldns_zone *
+ldns_zone_new_frm_fp_l(FILE *fp, ldns_rdf *origin, uint16_t ttl, ldns_rr_class c, int *line_nr);
+
 /**
  * Frees the allocated memory for the zone, and the rr_list structure in it
  * \param[in] zone the zone to free

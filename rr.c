@@ -367,6 +367,12 @@ ldns_rr_new_frm_str(const char *str, uint16_t default_ttl, ldns_rdf *origin)
 ldns_rr *
 ldns_rr_new_frm_fp(FILE *fp, uint16_t ttl, ldns_rdf *origin)
 {
+	return ldns_rr_new_frm_fp_l(fp, ttl, origin, NULL);
+}
+
+ldns_rr *
+ldns_rr_new_frm_fp_l(FILE *fp, uint16_t ttl, ldns_rdf *origin, int *line_nr)
+{
         char *line;
 	ldns_rr *rr;
 
@@ -375,8 +381,12 @@ ldns_rr_new_frm_fp(FILE *fp, uint16_t ttl, ldns_rdf *origin)
                 return NULL;
         }
 
+	if (line_nr) {
+		*line_nr = *line_nr + 1;
+	}
+
         /* read an entire line in from the file */
-        if (ldns_fget_token(fp, line, LDNS_PARSE_SKIP_SPACE, LDNS_MAX_LINELEN) == -1) {
+        if (ldns_fget_token_l(fp, line, LDNS_PARSE_SKIP_SPACE, LDNS_MAX_LINELEN, line_nr) == -1) {
                 return NULL;
         }
 
@@ -898,7 +908,7 @@ ldns_rr_list_pop_rrset(ldns_rr_list *rr_list)
 	}
 
 	if (ldns_rr_list_rr_count(rr_list) > 0) {
-		next_rr = ldns_rr_list_rr(rr_list, 0);
+		next_rr = ldns_rr_list_rr(rr_list, ldns_rr_list_rr_count(rr_list) - 1);
 	} else {
 		next_rr = NULL;
 	}
@@ -915,7 +925,7 @@ ldns_rr_list_pop_rrset(ldns_rr_list *rr_list)
 			ldns_rr_list_push_rr(rrset, ldns_rr_list_pop_rr(rr_list));
 			if (ldns_rr_list_rr_count(rr_list) > 0) {
 				last_rr = next_rr;
-				next_rr = ldns_rr_list_rr(rr_list, 0);
+				next_rr = ldns_rr_list_rr(rr_list, ldns_rr_list_rr_count(rr_list) - 1);
 			} else {
 				next_rr = NULL;
 			}
@@ -923,7 +933,7 @@ ldns_rr_list_pop_rrset(ldns_rr_list *rr_list)
 			next_rr = NULL;
 		}
 	}
-	
+
 	return rrset;
 }
 

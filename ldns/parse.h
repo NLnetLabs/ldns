@@ -44,11 +44,31 @@ typedef enum ldns_enum_directive ldns_directive;
  */
 ssize_t ldns_fget_token(FILE *f, char *token, const char *delim, size_t limit);
 
+/** 
+ * returns a token/char from the stream F.
+ * This function deals with ( and ) in the stream,
+ * and ignores when it finds them.
+ * \param[in] *f the file to read from
+ * \param[out] *token the token is put here
+ * \param[in] *delim chars at which the parsing should stop
+ * \param[in] *limit how much to read. If 0 use builtin maximum
+ * \param[in] line_nr pointer to an integer containing the current line number (for debugging purposes)
+ * \return 0 on error of EOF of F otherwise return the length of what is read
+ */
+ssize_t ldns_fget_token_l(FILE *f, char *token, const char *delim, size_t limit, int *line_nr);
+
 /* 
  * searches for keyword and delim. Gives everything back
  * after the keyword + k_del until we hit d_del
  */
 ssize_t ldns_fget_keyword_data(FILE *f, const char *keyword, const char *k_del, char *data, const char *d_del, size_t data_limit);
+
+/* 
+ * searches for keyword and delim. Gives everything back
+ * after the keyword + k_del until we hit d_del
+ * \param[in] line_nr pointer to an integer containing the current line number (for debugging purposes)
+ */
+ssize_t ldns_fget_keyword_data_l(FILE *f, const char *keyword, const char *k_del, char *data, const char *d_del, size_t data_limit, int *line_nr);
 
 /**
  * returns a token/char from the buffer b.
@@ -103,5 +123,16 @@ void ldns_bskipcs(ldns_buffer *buffer, const char *s);
  * \return void
  */
 void ldns_fskipcs(FILE *fp, const char *s);
+
+
+/**
+ * skips all of the characters in the given string in the fp, moving
+ * the position to the first character that is not in *s.
+ * \param[in] *fp file to use
+ * \param[in] *s characters to skip
+ * \param[in] line_nr pointer to an integer containing the current line number (for debugging purposes)
+ * \return void
+ */
+void ldns_fskipcs_l(FILE *fp, const char *s, int *line_nr);
 
 #endif /* _LDNS_PARSE_H */

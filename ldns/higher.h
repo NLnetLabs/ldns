@@ -52,6 +52,16 @@ ldns_rr_list *ldns_get_rr_list_hosts_frm_fp(FILE *fp);
  * wade through fp (a /etc/hosts like file)
  * and return a rr_list containing all the 
  * defined hosts in there
+ * \param[in] fp the file pointer to use
+ * \param[in] line_nr pointer to an integer containing the current line number (for debugging purposes)
+ * \return ldns_rr_list * with the names
+ */
+ldns_rr_list *ldns_get_rr_list_hosts_frm_fp_l(FILE *fp, int *line_nr);
+
+/**
+ * wade through fp (a /etc/hosts like file)
+ * and return a rr_list containing all the 
+ * defined hosts in there
  * \param[in] filename the filename to use (NULL for /etc/hosts)
  * \return ldns_rr_list * with the names
  */

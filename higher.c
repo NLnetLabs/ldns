@@ -103,6 +103,12 @@ ldns_get_rr_list_name_by_addr(ldns_resolver *res, ldns_rdf *addr, ldns_rr_class 
 ldns_rr_list *
 ldns_get_rr_list_hosts_frm_fp(FILE *fp)
 {
+	return ldns_get_rr_list_hosts_frm_fp_l(fp, NULL);
+}
+
+ldns_rr_list *
+ldns_get_rr_list_hosts_frm_fp_l(FILE *fp, int *line_nr)
+{
 	ssize_t i, j;
 	size_t cnt;
 	char *line;
@@ -125,9 +131,9 @@ ldns_get_rr_list_hosts_frm_fp(FILE *fp)
 	list = ldns_rr_list_new();
 	rr = NULL;
 
-	for(i = ldns_fget_token(fp, line, "\n", 0);
+	for(i = ldns_fget_token_l(fp, line, "\n", 0, line_nr);
 			i > 0;
-			i = ldns_fget_token(fp, line, "\n", 0)) 
+			i = ldns_fget_token_l(fp, line, "\n", 0, line_nr)) 
 	{
 		/* # is comment */
 		if (line[0] == '#') {

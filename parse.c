@@ -24,6 +24,13 @@ ssize_t
 ldns_fget_keyword_data(FILE *f, const char *keyword, const char *k_del, char *data, 
 		const char *d_del, size_t data_limit)
 {
+	return ldns_fget_keyword_data_l(f, keyword, k_del, data, d_del, data_limit, NULL);
+}
+
+ssize_t
+ldns_fget_keyword_data_l(FILE *f, const char *keyword, const char *k_del, char *data, 
+		const char *d_del, size_t data_limit, int *line_nr)
+{
 	/* we assume: keyword|sep|data */
 	char *fkeyword;
 	ssize_t i;
@@ -37,7 +44,7 @@ ldns_fget_keyword_data(FILE *f, const char *keyword, const char *k_del, char *da
 	if (strncmp(fkeyword, keyword, LDNS_MAX_KEYWORDLEN - 1) == 0) {
 		/* whee! */
 		/* printf("%s\n%s\n", "Matching keyword", fkeyword); */
-		i = ldns_fget_token(f, data, d_del, data_limit);
+		i = ldns_fget_token_l(f, data, d_del, data_limit, line_nr);
 		LDNS_FREE(fkeyword);
 		return i;
 	} else {
@@ -70,6 +77,12 @@ ldns_fget_all_keyword_data(FILE *f, const char *keyword, const char *k_del, char
 /* add max_limit here? */
 ssize_t
 ldns_fget_token(FILE *f, char *token, const char *delim, size_t limit)
+{	
+	return ldns_fget_token_l(f, token, delim, limit, NULL);
+}
+
+ssize_t
+ldns_fget_token_l(FILE *f, char *token, const char *delim, size_t limit, int *line_nr)
 {	
 	int c;
 	int p; /* 0 -> no parenthese seen, >0 nr of ( seen */
@@ -117,6 +130,9 @@ ldns_fget_token(FILE *f, char *token, const char *delim, size_t limit)
 			/* comments */
 			com = 0;
 			*t = ' ';
+			if (line_nr) {
+				*line_nr = *line_nr + 1;
+			}
 			continue;
 		}
 
@@ -127,6 +143,9 @@ ldns_fget_token(FILE *f, char *token, const char *delim, size_t limit)
 
 		if (c == '\n' && p != 0 && t > token) {
 			/* in parentheses */
+			if (line_nr) {
+				*line_nr = *line_nr + 1;
+			}
 			continue;
 		}
 
@@ -156,7 +175,7 @@ ldns_fget_token(FILE *f, char *token, const char *delim, size_t limit)
 	return (ssize_t)i;
 
 tokenread:
-	ldns_fskipcs(f, delim);
+	ldns_fskipcs_l(f, delim, line_nr);
 	*t = '\0';
 	if (p != 0) {
 		return -1;
@@ -354,11 +373,20 @@ ldns_fskipc(FILE *fp, char c)
 void
 ldns_fskipcs(FILE *fp, const char *s)
 {
+	ldns_fskipcs_l(fp, s, NULL);
+}
+
+void
+ldns_fskipcs_l(FILE *fp, const char *s, int *line_nr)
+{
         bool found;
         char c;
         const char *d;
 
 	while ((c = fgetc(fp)) != EOF) {
+		if (line_nr && c == '\n') {
+			*line_nr = *line_nr + 1;
+		}
                 found = false;
                 for (d = s; *d; d++) {
                         if (*d == c) {

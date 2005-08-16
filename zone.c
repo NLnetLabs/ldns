@@ -81,6 +81,12 @@ ldns_zone_new(void)
 ldns_zone *
 ldns_zone_new_frm_fp(FILE *fp, ldns_rdf *origin, uint16_t ttl, ldns_rr_class c)
 {
+	return ldns_zone_new_frm_fp_l(fp, origin, ttl, c, NULL);
+}
+
+ldns_zone *
+ldns_zone_new_frm_fp_l(FILE *fp, ldns_rdf *origin, uint16_t ttl, ldns_rr_class c, int *line_nr)
+{
 	ldns_zone *newzone;
 	ldns_rr *rr;
 	ldns_rdf *my_origin = origin;
@@ -95,14 +101,13 @@ ldns_zone_new_frm_fp(FILE *fp, ldns_rdf *origin, uint16_t ttl, ldns_rr_class c)
 	my_ttl    = ttl;
 	my_class  = c;
 	
-
 	/* read until we got a soa, all crap above is discarded 
 	 * except $directives
 	 */
 
 	i = 0;
 	do {
-		rr = ldns_rr_new_frm_fp(fp, my_ttl, my_origin);
+		rr = ldns_rr_new_frm_fp_l(fp, my_ttl, my_origin, line_nr);
 		i++;
 	} while (!rr && i <= 9);
 
@@ -124,7 +129,7 @@ ldns_zone_new_frm_fp(FILE *fp, ldns_rdf *origin, uint16_t ttl, ldns_rr_class c)
 	ldns_zone_set_soa(newzone, rr);
 
 	while(!feof(fp)) {
-		rr = ldns_rr_new_frm_fp(fp, my_ttl, my_origin);
+		rr = ldns_rr_new_frm_fp_l(fp, my_ttl, my_origin, line_nr);
 		if (rr) {
 			last_rr = rr;
 			if (!ldns_zone_push_rr(newzone, rr)) {
@@ -137,7 +142,14 @@ ldns_zone_new_frm_fp(FILE *fp, ldns_rdf *origin, uint16_t ttl, ldns_rr_class c)
 			my_class  = ldns_rr_get_class(rr);
 			
 		} else {
-			fprintf(stderr, "Error in file, unable to read RR.\nLast rr that was parsed:\n");
+			fprintf(stderr, "Error in file, unable to read RR");
+			if (line_nr) {
+				fprintf(stderr, " at line %d.\n", *line_nr);
+			} else {
+				fprintf(stderr, ".");
+			}
+
+			fprintf(stderr, "Last rr that was parsed:\n");
 			ldns_rr_print(stdout, last_rr);
 			printf("\n");
 		}

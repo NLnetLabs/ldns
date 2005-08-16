@@ -60,6 +60,12 @@ ldns_key_new()
 ldns_key *
 ldns_key_new_frm_fp(FILE *fp)
 {
+	return ldns_key_new_frm_fp_l(fp, NULL);
+}
+
+ldns_key *
+ldns_key_new_frm_fp_l(FILE *fp, int *line_nr)
+{
 	ldns_key *k;
 	char *d;
 	ldns_signing_algorithm alg;
@@ -81,8 +87,8 @@ ldns_key_new_frm_fp(FILE *fp)
 
 	 */
 	/* get the key format version number */
-	if (ldns_fget_keyword_data(fp, "Private-key-format", ": ", d, "\n",
-				LDNS_MAX_LINELEN) == -1) {
+	if (ldns_fget_keyword_data_l(fp, "Private-key-format", ": ", d, "\n",
+				LDNS_MAX_LINELEN, line_nr) == -1) {
 		/* no version information */
 		return NULL;
 	}
@@ -93,8 +99,8 @@ ldns_key_new_frm_fp(FILE *fp)
 
 	/* get the algorithm type, our file function strip ( ) so there are
 	 * not in the return string! */
-	if (ldns_fget_keyword_data(fp, "Algorithm", ": ", d, "\n", 
-				LDNS_MAX_LINELEN) == -1) {
+	if (ldns_fget_keyword_data_l(fp, "Algorithm", ": ", d, "\n", 
+				LDNS_MAX_LINELEN, line_nr) == -1) {
 		/* no version information */
 		return NULL;
 	}
@@ -120,12 +126,12 @@ ldns_key_new_frm_fp(FILE *fp)
 		case LDNS_SIGN_RSASHA1:
 
 			ldns_key_set_algorithm(k, alg);
-			ldns_key_set_rsa_key(k, ldns_key_new_frm_fp_rsa(fp));
+			ldns_key_set_rsa_key(k, ldns_key_new_frm_fp_rsa_l(fp, line_nr));
 
 			break;
 		case LDNS_SIGN_DSA:
 			ldns_key_set_algorithm(k, alg);
-			ldns_key_set_dsa_key(k, ldns_key_new_frm_fp_dsa(fp));
+			ldns_key_set_dsa_key(k, ldns_key_new_frm_fp_dsa_l(fp, line_nr));
 			break;
 	}
 
@@ -140,6 +146,12 @@ ldns_key_new_frm_fp(FILE *fp)
 
 RSA *
 ldns_key_new_frm_fp_rsa(FILE *f)
+{
+	return ldns_key_new_frm_fp_rsa_l(f, NULL);
+}
+
+RSA *
+ldns_key_new_frm_fp_rsa_l(FILE *f, int *line_nr)
 {
 	/* we parse
  	 * Modulus: 
@@ -183,7 +195,7 @@ ldns_key_new_frm_fp_rsa(FILE *f)
 	 */
 
 	/* Modules, rsa->n */
-	if (ldns_fget_keyword_data(f, "Modulus", ": ", d, "\n", LDNS_MAX_LINELEN) == -1) {
+	if (ldns_fget_keyword_data_l(f, "Modulus", ": ", d, "\n", LDNS_MAX_LINELEN, line_nr) == -1) {
 		goto error;
 	}
 	i = b64_pton((const char*)d, buf, b64_ntop_calculate_size(strlen(d)));
@@ -193,7 +205,7 @@ ldns_key_new_frm_fp_rsa(FILE *f)
 	}
 
 	/* PublicExponent, rsa->e */
-	if (ldns_fget_keyword_data(f, "PublicExponent", ": ", d, "\n", LDNS_MAX_LINELEN) == -1) {
+	if (ldns_fget_keyword_data_l(f, "PublicExponent", ": ", d, "\n", LDNS_MAX_LINELEN, line_nr) == -1) {
 		goto error;
 	}
 	i = b64_pton((const char*)d, buf, b64_ntop_calculate_size(strlen(d)));
@@ -203,7 +215,7 @@ ldns_key_new_frm_fp_rsa(FILE *f)
 	}
 
 	/* PrivateExponent, rsa->d */
-	if (ldns_fget_keyword_data(f, "PrivateExponent", ": ", d, "\n", LDNS_MAX_LINELEN) == -1) {
+	if (ldns_fget_keyword_data_l(f, "PrivateExponent", ": ", d, "\n", LDNS_MAX_LINELEN, line_nr) == -1) {
 		goto error;
 	}
 	i = b64_pton((const char*)d, buf, b64_ntop_calculate_size(strlen(d)));
@@ -213,7 +225,7 @@ ldns_key_new_frm_fp_rsa(FILE *f)
 	}
 
 	/* Prime1, rsa->p */
-	if (ldns_fget_keyword_data(f, "Prime1", ": ", d, "\n", LDNS_MAX_LINELEN) == -1) {
+	if (ldns_fget_keyword_data_l(f, "Prime1", ": ", d, "\n", LDNS_MAX_LINELEN, line_nr) == -1) {
 		goto error;
 	}
 	i = b64_pton((const char*)d, buf, b64_ntop_calculate_size(strlen(d)));
@@ -223,7 +235,7 @@ ldns_key_new_frm_fp_rsa(FILE *f)
 	}
 	
 	/* Prime2, rsa->q */
-	if (ldns_fget_keyword_data(f, "Prime2", ": ", d, "\n", LDNS_MAX_LINELEN) == -1) {
+	if (ldns_fget_keyword_data_l(f, "Prime2", ": ", d, "\n", LDNS_MAX_LINELEN, line_nr) == -1) {
 		goto error;
 	}
 	i = b64_pton((const char*)d, buf, b64_ntop_calculate_size(strlen(d)));
@@ -233,7 +245,7 @@ ldns_key_new_frm_fp_rsa(FILE *f)
 	}
 
 	/* Exponent1, rsa->dmp1 */
-	if (ldns_fget_keyword_data(f, "Exponent1", ": ", d, "\n", LDNS_MAX_LINELEN) == -1) {
+	if (ldns_fget_keyword_data_l(f, "Exponent1", ": ", d, "\n", LDNS_MAX_LINELEN, line_nr) == -1) {
 		goto error;
 	}
 	i = b64_pton((const char*)d, buf, b64_ntop_calculate_size(strlen(d)));
@@ -243,7 +255,7 @@ ldns_key_new_frm_fp_rsa(FILE *f)
 	}
 	
 	/* Exponent2, rsa->dmq1 */
-	if (ldns_fget_keyword_data(f, "Exponent2", ": ", d, "\n", LDNS_MAX_LINELEN) == -1) {
+	if (ldns_fget_keyword_data_l(f, "Exponent2", ": ", d, "\n", LDNS_MAX_LINELEN, line_nr) == -1) {
 		goto error;
 	}
 	i = b64_pton((const char*)d, buf, b64_ntop_calculate_size(strlen(d)));
@@ -253,7 +265,7 @@ ldns_key_new_frm_fp_rsa(FILE *f)
 	}
 
 	/* Coefficient, rsa->iqmp */
-	if (ldns_fget_keyword_data(f, "Coefficient", ": ", d, "\n", LDNS_MAX_LINELEN) == -1) {
+	if (ldns_fget_keyword_data_l(f, "Coefficient", ": ", d, "\n", LDNS_MAX_LINELEN, line_nr) == -1) {
 		goto error;
 	}
 	i = b64_pton((const char*)d, buf, b64_ntop_calculate_size(strlen(d)));
@@ -275,8 +287,16 @@ error:
 DSA *
 ldns_key_new_frm_fp_dsa(FILE *f)
 {
+	return ldns_key_new_frm_fp_dsa_l(f, NULL);
+}
+
+DSA *
+ldns_key_new_frm_fp_dsa_l(FILE *f, int *line_nr)
+{
 	char *d;
 	DSA *dsa;
+	line_nr = line_nr;
+	/* not impl apparently */
 
 	d = LDNS_XMALLOC(char, LDNS_MAX_LABELLEN);
 	dsa = DSA_new();

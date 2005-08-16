@@ -281,6 +281,16 @@ ldns_rr* ldns_rr_new_frm_str(const char *str, uint16_t default_ttl, ldns_rdf *or
 ldns_rr* ldns_rr_new_frm_fp(FILE *fp, uint16_t default_ttl, ldns_rdf *origin);
 
 /**
+ * creates a new rr from a file containing a string.
+ * \param[in] fp the file pointer to use
+ * \param[in] default_ttl a default ttl for the rr. If 0 DEF_TTL will be used
+ * \param[in] origin when the owner is relative add this
+ * \param[in] line_nr pointer to an integer containing the current line number (for debugging purposes)
+ * \return ldns_rr*
+ */
+ldns_rr* ldns_rr_new_frm_fp_l(FILE *fp, uint16_t default_ttl, ldns_rdf *origin, int *line_nr);
+
+/**
  * sets the owner in the rr structure.
  * \param[in] *rr rr to operate on
  * \param[in] *owner set to this owner

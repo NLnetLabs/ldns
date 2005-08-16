@@ -381,6 +381,12 @@ ldns_rdf_new_frm_str(ldns_rdf_type type, const char *str)
 ldns_rdf *
 ldns_rdf_new_frm_fp(ldns_rdf_type type, FILE *fp)
 {
+	return ldns_rdf_new_frm_fp_l(type, fp, NULL);
+}
+
+ldns_rdf *
+ldns_rdf_new_frm_fp_l(ldns_rdf_type type, FILE *fp, int *line_nr)
+{
 	char *line;
 	ldns_rdf *r;
 	ssize_t t;
@@ -391,7 +397,7 @@ ldns_rdf_new_frm_fp(ldns_rdf_type type, FILE *fp)
 	}
 
 	/* read an entire line in from the file */
-	if ((t = ldns_fget_token(fp, line, LDNS_PARSE_SKIP_SPACE, 0)) == -1) {
+	if ((t = ldns_fget_token_l(fp, line, LDNS_PARSE_SKIP_SPACE, 0, line_nr)) == -1) {
 		LDNS_FREE(line);
 		return NULL;
 	}

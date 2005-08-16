@@ -13,6 +13,8 @@
 #ifndef _UTIL_H
 #define _UTIL_H
 
+#include <stdbool.h>
+
 #define dprintf(X,Y) fprintf(stderr, (X), (Y))
 /* #define	dprintf(X, Y)  */
 
@@ -148,6 +150,18 @@ int ldns_get_bit(uint8_t bits[], size_t index);
  * right most bit.
  */
 int ldns_get_bit_r(uint8_t bits[], size_t index);
+
+/**
+ * sets the specified bit in the specified byte to
+ * 1 if value is true, 0 if false
+ * The bits are counted from right to left, so bit #0 is the
+ * right most bit.
+ *
+ * \param[in] byte the bit to set the bit in
+ * \param[in] bit_nr the bit to set (0 <= n <= 7)
+ * \param[in] value whether to set the bit to 1 or 0
+ */
+void ldns_set_bit(uint8_t *byte, int bit_nr, bool value);
 
 /**
  * Returns the value of a to the power of b
