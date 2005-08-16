@@ -415,7 +415,8 @@ ldns_str2rdf_hex(ldns_rdf **rd, const char *str)
                                 if (isxdigit(*str)) {
                                         *t += ldns_hexdigit_to_int(*str) * i;
                                 } else {
-                                        return LDNS_STATUS_ERR;
+					/* error or be lenient and skip? */
+                                        /*return LDNS_STATUS_ERR;*/
                                 }
                                 ++str;
                         }
@@ -812,7 +813,10 @@ ldns_str2rdf_wks(ldns_rdf **rd, const char *str)
 ldns_status
 ldns_str2rdf_nsap(ldns_rdf **rd, const char *str)
 {
-	rd = rd;
-	str = str;
-	return LDNS_STATUS_NOT_IMPL;
+	/* just a hex string with optional dots? */
+	if (str[0] != '0' || str[1] != 'x') {
+		return LDNS_STATUS_INVALID_STR;
+	} else {
+		return ldns_str2rdf_hex(rd, str+2);
+	}
 }
