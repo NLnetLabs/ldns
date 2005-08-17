@@ -294,7 +294,7 @@ ldns_rr_new_frm_str(const char *str, uint16_t default_ttl, ldns_rdf *origin)
 		/*case LDNS_RR_TYPE_NSEC:*/
 		/*case LDNS_RR_TYPE_LOC:*/
 			/* blalba do something different */
-			break;
+		/*	break;*/
 		default:
 			/* this breaks on rdfs with spaces in them (like B64)
 			while((c = ldns_bget_token(rd_buf, rd, "\t\n ", LDNS_MAX_RDFLEN)) != -1) {
@@ -311,7 +311,8 @@ ldns_rr_new_frm_str(const char *str, uint16_t default_ttl, ldns_rdf *origin)
 				/* if type = B64, the field may contain spaces */
 				if (ldns_rr_descriptor_field_type(desc, r_cnt) == LDNS_RDF_TYPE_B64 ||
 				    ldns_rr_descriptor_field_type(desc, r_cnt) == LDNS_RDF_TYPE_LOC ||
-				    ldns_rr_descriptor_field_type(desc, r_cnt) == LDNS_RDF_TYPE_WKS
+				    ldns_rr_descriptor_field_type(desc, r_cnt) == LDNS_RDF_TYPE_WKS ||
+				    ldns_rr_descriptor_field_type(desc, r_cnt) == LDNS_RDF_TYPE_STR
 				    ) {
 					delimiters = "\n\t";
 				} else {
