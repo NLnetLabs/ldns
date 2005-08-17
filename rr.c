@@ -291,7 +291,7 @@ ldns_rr_new_frm_str(const char *str, uint16_t default_ttl, ldns_rdf *origin)
 	/* depending on the rr_type we need to extract
 	 * the rdata differently, e.g. NSEC */
 	switch(rr_type) {
-		case LDNS_RR_TYPE_NSEC:
+		/*case LDNS_RR_TYPE_NSEC:*/
 		/*case LDNS_RR_TYPE_LOC:*/
 			/* blalba do something different */
 			break;

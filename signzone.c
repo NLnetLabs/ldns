@@ -44,6 +44,7 @@ main(int argc, char *argv[])
 
 	ldns_zone *signed_zone = NULL;
 	
+	int line_nr = 0;
 	time_t now;
 	
 	if (argc < 3) {
@@ -105,7 +106,7 @@ main(int argc, char *argv[])
 	if (!zonefile) {
 		fprintf(stderr, "Error: unable to read %s (%s)\n", zonefile_name, strerror(errno));
 	} else {
-		orig_zone = ldns_zone_new_frm_fp(zonefile, origin, ttl, class);
+		orig_zone = ldns_zone_new_frm_fp_l(zonefile, origin, ttl, class, &line_nr);
 		
 		if (!orig_zone) {
 			fprintf(stderr, "Zone not read\n");

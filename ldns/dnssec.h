@@ -155,11 +155,12 @@ ldns_rdf *ldns_sign_public_dsa(ldns_buffer *to_sign, DSA *key);
 
 /**
  * Create a NSEC record
- * \param[in] before the rrlist which should be taken as the starting point
- * \param[in] after the rrlist which the nsec rr should point to 
+ * \param[in] cur_owner the current owner which should be taken as the starting point
+ * \param[in] next_owner the rrlist which the nsec rr should point to 
+ * \param[in] rrs all rrs from the zone, to find all RR types of cur_owner in
  * \return a ldns_rr with the nsec record in it
  */
-ldns_rr * ldns_create_nsec(ldns_rr_list *before, ldns_rr_list *after);
+ldns_rr * ldns_create_nsec(ldns_rdf *cur_owner, ldns_rdf *next_owner, ldns_rr_list *rrs);
 
 /**
  *

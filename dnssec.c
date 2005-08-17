@@ -1014,7 +1014,7 @@ ldns_sign_public(ldns_rr_list *rrset, ldns_key_list *keys)
 	key_count = 0;
 	signatures = ldns_rr_list_new();
 
-	ldns_rr_list_print(stdout, rrset);
+	/*ldns_rr_list_print(stdout, rrset);*/
 
 	/* prepare a signature and add all the know data
 	 * prepare the rrset. Sign this together.  */
@@ -1216,8 +1216,12 @@ ldns_sign_public_rsamd5(ldns_buffer *to_sign, RSA *key)
 	return sigdata_rdf;
 }
 
+/*
 ldns_rr *
 ldns_create_nsec(ldns_rr_list *before, ldns_rr_list *after)
+*/
+ldns_rr *
+ldns_create_nsec(ldns_rdf *cur_owner, ldns_rdf *next_owner, ldns_rr_list *rrs)
 {
 	/* we do not do any check here - garbage in, garbage out */
 	
@@ -1226,13 +1230,83 @@ ldns_create_nsec(ldns_rr_list *before, ldns_rr_list *after)
 
 	/* we don't have an nsec encoder... :( */
 
-	ldns_rdf *owner;
-	ldns_rdf *nsec_types;
+	/* inefficient, just give it a name, a next name, and a list of rrs */
+	/* we make 1 big uberbitmap first, then windows */
+	/* todo: make something more efficient :) */
+	int i;
+	ldns_rr *i_rr;
 
-	before = before ; after = after;
-	owner = owner; nsec_types = nsec_types;
+	uint8_t *bitmap = LDNS_XMALLOC(uint8_t, 1);
+	int bm_len = 0;
+	uint16_t i_type;
 
-	return NULL;
+	ldns_rr *nsec = NULL;
+
+	uint8_t *data = NULL;
+	uint8_t cur_data[32];
+	uint8_t cur_window = 0;
+	uint8_t cur_window_max = 0;
+	int cur_data_size = 0;
+
+	nsec = ldns_rr_new();
+	ldns_rr_set_type(nsec, LDNS_RR_TYPE_NSEC);
+	ldns_rr_set_owner(nsec, ldns_rdf_clone(cur_owner));
+	/* TODO: TTL */
+	ldns_rr_push_rdf(nsec, ldns_rdf_clone(next_owner));
+
+	bitmap[0] = 0;
+	for (i = 0; i < ldns_rr_list_rr_count(rrs); i++) {
+		i_rr = ldns_rr_list_rr(rrs, i);
+
+		if (ldns_rdf_compare(cur_owner,
+		                     ldns_rr_owner(i_rr)) == 0) {
+			/* add type to bitmap */
+			i_type = ldns_rr_get_type(i_rr);
+			if (i_type / 8 > bm_len) {
+				bitmap = LDNS_XREALLOC(bitmap, uint8_t, i_type / 8);
+				/* set to 0 */
+				for (; bm_len <= i_type / 8; bm_len++) {
+					bitmap[bm_len] = 0;
+				}
+			}
+			ldns_set_bit(bitmap + i_type / 8, 7 - (i_type % 8), true);
+		}
+	}
+
+	memset(cur_data, 0, 32);
+	for (i = 0; i < bm_len; i++) {
+		if (i / 32 > cur_window) {
+			/* check, copy, new */
+			if (cur_window_max > 0) {
+				/* this window has stuff, add it */
+				data = LDNS_XREALLOC(data, uint8_t, cur_data_size + cur_window_max + 2);
+				data[cur_data_size] = cur_window;
+				data[cur_data_size + 1] = cur_window_max;
+				memcpy(data + cur_data_size + 2, cur_data, cur_window_max);
+				cur_data_size += cur_window_max + 2;
+			}
+			cur_window++;
+			cur_window_max = 0;
+			memset(cur_data, 0, 32);
+		} else {
+			cur_data[i%32] = bitmap[i];
+			if (bitmap[i] > 0) {
+				cur_window_max = i;
+			}
+		}
+	}
+	if (cur_window_max > 0) {
+		/* this window has stuff, add it */
+		data = LDNS_XREALLOC(data, uint8_t, cur_data_size + cur_window_max + 2);
+		data[cur_data_size] = cur_window;
+		data[cur_data_size + 1] = cur_window_max;
+		memcpy(data + cur_data_size + 2, cur_data, cur_window_max);
+		cur_data_size += cur_window_max + 2;
+	}
+
+	ldns_rr_push_rdf(nsec, ldns_rdf_new_frm_data(LDNS_RDF_TYPE_NSEC, cur_data_size, data));
+
+	return nsec;
 }
 
 /* sig may be null - if so look in the packet */
@@ -1316,21 +1390,32 @@ ldns_zone_sign(ldns_zone *zone, ldns_key_list *key_list)
 	 
 	ldns_zone *signed_zone;
 	ldns_rr_list *cur_rrset;
+	ldns_rr_list *soa_rrset;
 	ldns_rr_list *cur_rrsigs;
 	ldns_rr_list *orig_zone_rrs;
+	ldns_rr_list *signed_zone_rrs;
+	ldns_rdf *cur_dname = NULL;
+	ldns_rdf *next_dname = NULL;
+	ldns_rr *nsec;
+	int i;
 	
+	ldns_rr_list *next_rrset;
+
 	signed_zone = ldns_zone_new();
 	
 	/* there should only be 1 SOA, so the soa record is 1 rrset */
-	cur_rrset = ldns_rr_list_new();
-	ldns_rr_list_push_rr(cur_rrset, ldns_zone_soa(zone));
-	cur_rrsigs = ldns_sign_public(cur_rrset, key_list);
-
+	soa_rrset = ldns_rr_list_new();
+	ldns_rr_list_push_rr(soa_rrset, ldns_zone_soa(zone));
+	cur_rrsigs = ldns_sign_public(soa_rrset, key_list);
+	cur_dname = ldns_rr_owner(ldns_rr_list_rr(soa_rrset, 0));
 
 	ldns_zone_set_soa(signed_zone, ldns_rr_clone(ldns_zone_soa(zone)));
 	ldns_zone_push_rr_list(signed_zone, cur_rrsigs);
 	
 	orig_zone_rrs = ldns_rr_list_clone(ldns_zone_rrs(zone));
+	signed_zone_rrs = ldns_rr_list_new();
+	next_rrset = ldns_rr_list_pop_rrset(orig_zone_rrs);
+	next_dname = ldns_rr_owner(ldns_rr_list_rr(next_rrset, 0));
 
 	/*
 	printf("UNSORTED:\n");
@@ -1342,23 +1427,30 @@ ldns_zone_sign(ldns_zone *zone, ldns_key_list *key_list)
 	printf("SORTED:\n");
 	ldns_rr_list_print(stdout, orig_zone_rrs);
 	*/
-	cur_rrset = ldns_rr_list_pop_rrset(orig_zone_rrs);
+	/* add nsecs */
+	for (i = 0; i < ldns_rr_list_rr_count(orig_zone_rrs); i++) {
+		cur_dname = ldns_rr_owner(ldns_rr_list_rr(orig_zone_rrs, i));
+		if (i < ldns_rr_list_rr_count(orig_zone_rrs) - 1) {
+			next_dname = ldns_rr_owner(ldns_rr_list_rr(orig_zone_rrs, i+1));
+		} else {
+			next_dname = ldns_rr_owner(ldns_zone_soa(zone));
+		}
+		ldns_rr_list_push_rr(signed_zone_rrs, ldns_rr_list_rr(orig_zone_rrs, i));
+		if (ldns_rdf_compare(cur_dname, next_dname) != 0) {
+			nsec = ldns_create_nsec(cur_dname, 
+			                        next_dname,
+			                        orig_zone_rrs);
+			ldns_rr_list_push_rr(signed_zone_rrs, nsec);
+		}
+	}
+	ldns_rr_list_free(orig_zone_rrs);
+
+	cur_rrset = ldns_rr_list_pop_rrset(signed_zone_rrs);
 	while (cur_rrset) {
-		/*
-		printf("NEXT RRSET:\n");
-		ldns_rr_list_print(stdout, cur_rrset);
-		printf("\n");
-		*/
 		cur_rrsigs = ldns_sign_public(cur_rrset, key_list);
 		ldns_zone_push_rr_list(signed_zone, cur_rrset);
 		ldns_zone_push_rr_list(signed_zone, cur_rrsigs);
-		
-/*
-		ldns_rr_list_free(cur_rrset);
-		ldns_rr_list_free(cur_rrsigs);
-*/
-
-		cur_rrset = ldns_rr_list_pop_rrset(orig_zone_rrs);
+		cur_rrset = ldns_rr_list_pop_rrset(signed_zone_rrs);
 	}
 	
 	return signed_zone;

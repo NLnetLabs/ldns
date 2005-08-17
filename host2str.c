@@ -770,7 +770,7 @@ ldns_rdf2buffer_str(ldns_buffer *buffer, ldns_rdf *rdf)
 			break;
 		}
 	} else {
-		ldns_buffer_printf(buffer, "(null) ");
+		ldns_buffer_printf(buffer, "(null no rdf...) ");
 	}
 	return LDNS_STATUS_OK;
 }
@@ -784,7 +784,7 @@ ldns_rr2buffer_str(ldns_buffer *output, ldns_rr *rr)
 	const ldns_rr_descriptor *descriptor;
 	
 	if (!rr) {
-		ldns_buffer_printf(output, "(null)\n");
+		ldns_buffer_printf(output, "(null no rr)\n");
 	} else {
 		if (ldns_rr_owner(rr)) {
 			status = ldns_rdf2buffer_str_dname(output, ldns_rr_owner(rr)); 
@@ -1235,7 +1235,7 @@ ldns_rr_list2str(ldns_rr_list *list)
 		if (ldns_rr_list2buffer_str(tmp_buffer, list) == LDNS_STATUS_OK) {
 		}
 	} else {
-		ldns_buffer_printf(tmp_buffer, "(null)\n");
+		ldns_buffer_printf(tmp_buffer, "(null no list)\n");
 	}
 
 	/* export and return string, destroy rest */
