@@ -1398,6 +1398,7 @@ ldns_zone_sign(ldns_zone *zone, ldns_key_list *key_list)
 	ldns_rdf *next_dname = NULL;
 	ldns_rr *nsec;
 	uint16_t i;
+	ldns_rr_type cur_rrset_type;
 	
 	ldns_rr_list *next_rrset;
 
@@ -1445,11 +1446,22 @@ ldns_zone_sign(ldns_zone *zone, ldns_key_list *key_list)
 	}
 	ldns_rr_list_free(orig_zone_rrs);
 
+	/* Sign all rrsets in the zone */
 	cur_rrset = ldns_rr_list_pop_rrset(signed_zone_rrs);
 	while (cur_rrset) {
-		cur_rrsigs = ldns_sign_public(cur_rrset, key_list);
-		ldns_zone_push_rr_list(signed_zone, cur_rrset);
-		ldns_zone_push_rr_list(signed_zone, cur_rrsigs);
+		/* don't sign certain types */
+		cur_rrset_type = ldns_rr_get_type(ldns_rr_list_rr(cur_rrset, 0));
+		cur_dname = ldns_rr_owner(ldns_rr_list_rr(cur_rrset, 0));
+
+		if (cur_rrset_type != LDNS_RR_TYPE_RRSIG &&
+		    (ldns_dname_is_subdomain(cur_dname, ldns_rr_owner(ldns_zone_soa(zone))) ||
+		     ldns_rdf_compare(cur_dname, ldns_rr_owner(ldns_zone_soa(zone))) == 0
+		    )
+		   ) {
+			cur_rrsigs = ldns_sign_public(cur_rrset, key_list);
+			ldns_zone_push_rr_list(signed_zone, cur_rrset);
+			ldns_zone_push_rr_list(signed_zone, cur_rrsigs);
+		}
 		cur_rrset = ldns_rr_list_pop_rrset(signed_zone_rrs);
 	}
 	

@@ -99,8 +99,10 @@ main(int argc, char *argv[])
 		return 1;
 	}
 
+	/*
 	printf("Reading zonefile: %s\n", zonefile_name);
-
+	*/
+	
 	zonefile = fopen(zonefile_name, "r");
 	
 	if (!zonefile) {
@@ -111,19 +113,16 @@ main(int argc, char *argv[])
 		if (!orig_zone) {
 			fprintf(stderr, "Zone not read\n");
 		} else {
-			printf("Zone read.\nSOA:\n");
 			orig_soa = ldns_zone_soa(orig_zone);
 			orig_rrs = ldns_zone_rrs(orig_zone);
 
-			ldns_rr_print(stdout, orig_soa);
-			printf("\n");
-
-			printf("Signing...\n");
+			
 			signed_zone = ldns_zone_sign(orig_zone, keys);
-			printf("done!\n\n");
 			
 			if (signed_zone) {
+				/*
 				printf("SIGNED ZONE:\n");
+				*/
 				ldns_zone_print(stdout, signed_zone);
 				ldns_zone_deep_free(signed_zone);
 			} else {
