@@ -1461,6 +1461,9 @@ ldns_zone_sign(ldns_zone *zone, ldns_key_list *key_list)
 			cur_rrsigs = ldns_sign_public(cur_rrset, key_list);
 			ldns_zone_push_rr_list(signed_zone, cur_rrset);
 			ldns_zone_push_rr_list(signed_zone, cur_rrsigs);
+		} else {
+			/* push it unsigned? */
+			ldns_zone_push_rr_list(signed_zone, cur_rrset);
 		}
 		cur_rrset = ldns_rr_list_pop_rrset(signed_zone_rrs);
 	}

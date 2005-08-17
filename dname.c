@@ -215,7 +215,8 @@ ldns_dname_str_absolute(const char *dname_str)
 {
 	return (dname_str && 
 	        strlen(dname_str) > 1 && 
-	        dname_str[strlen(dname_str) - 1] == '.'
+	        dname_str[strlen(dname_str) - 1] == '.' &&
+	        dname_str[strlen(dname_str) - 2] != '\\'
 	       );
 }
 

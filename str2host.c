@@ -203,7 +203,8 @@ ldns_str2rdf_dname(ldns_rdf **d, const char *str)
 			break;
 		case '\\':
 			/* octet value or literal char */
-			if (isdigit((int) s[1]) &&
+			if (strlen((char *)s) > 3 &&
+			    isdigit((int) s[1]) &&
 			    isdigit((int) s[2]) &&
 			    isdigit((int) s[3])) {
 				/* cast this so it fits */
@@ -225,7 +226,7 @@ ldns_str2rdf_dname(ldns_rdf **d, const char *str)
 	}
 
 	/* add root label if last char was not '.' */
-	if (str[strlen(str)-1] != '.') {
+	if (!ldns_dname_str_absolute(str)) {
 		len += label_len + 1;
 		*pq = label_len;
 		*q = 0;
@@ -234,7 +235,7 @@ ldns_str2rdf_dname(ldns_rdf **d, const char *str)
 
 	/* s - buf_str works because no magic is done in the above for-loop */
 	*d = ldns_rdf_new_frm_data(LDNS_RDF_TYPE_DNAME, len, buf); 
-	
+
 	return LDNS_STATUS_OK;
 }
 
