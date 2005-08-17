@@ -1233,11 +1233,11 @@ ldns_create_nsec(ldns_rdf *cur_owner, ldns_rdf *next_owner, ldns_rr_list *rrs)
 	/* inefficient, just give it a name, a next name, and a list of rrs */
 	/* we make 1 big uberbitmap first, then windows */
 	/* todo: make something more efficient :) */
-	int i;
+	uint16_t i;
 	ldns_rr *i_rr;
 
 	uint8_t *bitmap = LDNS_XMALLOC(uint8_t, 1);
-	int bm_len = 0;
+	uint16_t bm_len = 0;
 	uint16_t i_type;
 
 	ldns_rr *nsec = NULL;
@@ -1246,7 +1246,7 @@ ldns_create_nsec(ldns_rdf *cur_owner, ldns_rdf *next_owner, ldns_rr_list *rrs)
 	uint8_t cur_data[32];
 	uint8_t cur_window = 0;
 	uint8_t cur_window_max = 0;
-	int cur_data_size = 0;
+	uint16_t cur_data_size = 0;
 
 	nsec = ldns_rr_new();
 	ldns_rr_set_type(nsec, LDNS_RR_TYPE_NSEC);
@@ -1269,7 +1269,7 @@ ldns_create_nsec(ldns_rdf *cur_owner, ldns_rdf *next_owner, ldns_rr_list *rrs)
 					bitmap[bm_len] = 0;
 				}
 			}
-			ldns_set_bit(bitmap + i_type / 8, 7 - (i_type % 8), true);
+			ldns_set_bit(bitmap + (int) i_type / 8, (int) (7 - (i_type % 8)), true);
 		}
 	}
 
@@ -1397,7 +1397,7 @@ ldns_zone_sign(ldns_zone *zone, ldns_key_list *key_list)
 	ldns_rdf *cur_dname = NULL;
 	ldns_rdf *next_dname = NULL;
 	ldns_rr *nsec;
-	int i;
+	uint16_t i;
 	
 	ldns_rr_list *next_rrset;
 
