@@ -542,11 +542,18 @@ ldns_rr* ldns_rr_clone(const ldns_rr *rr);
 ldns_rr_list* ldns_rr_list_clone(ldns_rr_list *rrlist);
 
 /**
- * sorts an rr_list. the sorting is done inband.
+ * sorts an rr_list (canonical wire format). the sorting is done inband.
  * \param[in] unsorted the rr_list to be sorted
  * \return void
  */
 void ldns_rr_list_sort(ldns_rr_list *unsorted);
+
+/**
+ * sorts an rr_list (owner - class - type). the sorting is done inband.
+ * \param[in] unsorted the rr_list to be sorted
+ * \return void
+ */
+void ldns_rr_list_sort_oct(ldns_rr_list *unsorted);
 
 /**
  * compares two rrs.
@@ -557,6 +564,16 @@ void ldns_rr_list_sort(ldns_rr_list *unsorted);
  *         +1 if rr2 comes before rr1
  */
 int ldns_rr_compare(const ldns_rr *rr1, const ldns_rr *rr2);
+
+/**
+ * compares two rrs. (owner-class-type order)
+ * \param[in] rr1 the first one
+ * \param[in] rr2 the second one
+ * \return 0 if equal
+ *         -1 if rr1 comes before rr2
+ *         +1 if rr2 comes before rr1
+ */
+int ldns_rr_compare_oct(const ldns_rr *rr1, const ldns_rr *rr2);
 
 /**
  * returns true of the given rr's are equal.

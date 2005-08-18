@@ -1237,7 +1237,7 @@ ldns_create_nsec(ldns_rdf *cur_owner, ldns_rdf *next_owner, ldns_rr_list *rrs)
 	ldns_rr *i_rr;
 
 	uint8_t *bitmap = LDNS_XMALLOC(uint8_t, 1);
-	uint16_t bm_len = 0;
+	uint16_t bm_len = 1;
 	uint16_t i_type;
 
 	ldns_rr *nsec = NULL;
@@ -1272,6 +1272,26 @@ ldns_create_nsec(ldns_rdf *cur_owner, ldns_rdf *next_owner, ldns_rr_list *rrs)
 			ldns_set_bit(bitmap + (int) i_type / 8, (int) (7 - (i_type % 8)), true);
 		}
 	}
+	/* add NSEC and RRSIG anyway */
+	i_type = LDNS_RR_TYPE_RRSIG;
+	if (i_type / 8 > bm_len) {
+		bitmap = LDNS_XREALLOC(bitmap, uint8_t, i_type / 8);
+		/* set to 0 */
+		for (; bm_len <= i_type / 8; bm_len++) {
+			bitmap[bm_len] = 0;
+		}
+	}
+	ldns_set_bit(bitmap + (int) i_type / 8, (int) (7 - (i_type % 8)), true);
+	i_type = LDNS_RR_TYPE_NSEC;
+
+	if (i_type / 8 > bm_len) {
+		bitmap = LDNS_XREALLOC(bitmap, uint8_t, i_type / 8);
+		/* set to 0 */
+		for (; bm_len <= i_type / 8; bm_len++) {
+			bitmap[bm_len] = 0;
+		}
+	}
+	ldns_set_bit(bitmap + (int) i_type / 8, (int) (7 - (i_type % 8)), true);
 
 	memset(cur_data, 0, 32);
 	for (i = 0; i < bm_len; i++) {
@@ -1279,11 +1299,11 @@ ldns_create_nsec(ldns_rdf *cur_owner, ldns_rdf *next_owner, ldns_rr_list *rrs)
 			/* check, copy, new */
 			if (cur_window_max > 0) {
 				/* this window has stuff, add it */
-				data = LDNS_XREALLOC(data, uint8_t, cur_data_size + cur_window_max + 2);
+				data = LDNS_XREALLOC(data, uint8_t, cur_data_size + cur_window_max + 3);
 				data[cur_data_size] = cur_window;
-				data[cur_data_size + 1] = cur_window_max;
-				memcpy(data + cur_data_size + 2, cur_data, cur_window_max);
-				cur_data_size += cur_window_max + 2;
+				data[cur_data_size + 1] = cur_window_max + 1;
+				memcpy(data + cur_data_size + 2, cur_data, cur_window_max+1);
+				cur_data_size += cur_window_max + 3;
 			}
 			cur_window++;
 			cur_window_max = 0;
@@ -1291,17 +1311,17 @@ ldns_create_nsec(ldns_rdf *cur_owner, ldns_rdf *next_owner, ldns_rr_list *rrs)
 		} else {
 			cur_data[i%32] = bitmap[i];
 			if (bitmap[i] > 0) {
-				cur_window_max = i;
+				cur_window_max = i%32;
 			}
 		}
 	}
 	if (cur_window_max > 0) {
 		/* this window has stuff, add it */
-		data = LDNS_XREALLOC(data, uint8_t, cur_data_size + cur_window_max + 2);
+		data = LDNS_XREALLOC(data, uint8_t, cur_data_size + cur_window_max + 3);
 		data[cur_data_size] = cur_window;
-		data[cur_data_size + 1] = cur_window_max;
-		memcpy(data + cur_data_size + 2, cur_data, cur_window_max);
-		cur_data_size += cur_window_max + 2;
+		data[cur_data_size + 1] = cur_window_max + 1;
+		memcpy(data + cur_data_size + 2, cur_data, cur_window_max+1);
+		cur_data_size += cur_window_max + 3;
 	}
 
 	ldns_rr_push_rdf(nsec, ldns_rdf_new_frm_data(LDNS_RDF_TYPE_NSEC, cur_data_size, data));
@@ -1422,7 +1442,7 @@ ldns_zone_sign(ldns_zone *zone, ldns_key_list *key_list)
 	printf("UNSORTED:\n");
 	ldns_rr_list_print(stdout, orig_zone_rrs);
 	*/
-	ldns_rr_list_sort(orig_zone_rrs);
+	ldns_rr_list_sort_oct(orig_zone_rrs);
 	
 	/*
 	printf("SORTED:\n");
