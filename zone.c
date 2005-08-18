@@ -128,6 +128,10 @@ ldns_zone_new_frm_fp_l(FILE *fp, ldns_rdf *origin, uint16_t ttl, ldns_rr_class c
 
 	ldns_zone_set_soa(newzone, rr);
 
+	if (!origin) {
+		origin = ldns_rr_owner(rr);
+	}
+
 	while(!feof(fp)) {
 		rr = ldns_rr_new_frm_fp_l(fp, my_ttl, my_origin, line_nr);
 		if (rr) {

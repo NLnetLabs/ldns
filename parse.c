@@ -133,7 +133,8 @@ ldns_fget_token_l(FILE *f, char *token, const char *delim, size_t limit, int *li
 			if (line_nr) {
 				*line_nr = *line_nr + 1;
 			}
-			continue;
+			/* enter marks end of comment */
+			goto tokenread;
 		}
 
 		if (com == 1) {
@@ -141,6 +142,7 @@ ldns_fget_token_l(FILE *f, char *token, const char *delim, size_t limit, int *li
 			continue;
 		}
 
+		
 		if (c == '\n' && p != 0 && t > token) {
 			/* in parentheses */
 			if (line_nr) {

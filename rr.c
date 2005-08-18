@@ -318,10 +318,15 @@ ldns_rr_new_frm_str(const char *str, uint16_t default_ttl, ldns_rdf *origin)
 				} else {
 					delimiters = "\n\t ";
 				}
+				if (ldns_rr_descriptor_field_type(desc, r_cnt) == LDNS_RDF_TYPE_STR) {
+					if (*(ldns_buffer_current(rd_buf)) == '\"') {
+						delimiters = "\"\0";
+						ldns_buffer_skip(rd_buf, 1);
+					}
+				}
 				/* because number of fields can be variable, we can't
 				   rely on _maximum() only */
 				if ((c = ldns_bget_token(rd_buf, rd, delimiters, LDNS_MAX_RDFLEN)) != -1) {
-
 					/* hmmz, rfc3597 specifies that any type can be represented with
 					 * \# method, which can contain spaces...
 					 * it does specify size though...
