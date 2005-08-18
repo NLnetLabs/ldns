@@ -133,8 +133,11 @@ ldns_fget_token_l(FILE *f, char *token, const char *delim, size_t limit, int *li
 			if (line_nr) {
 				*line_nr = *line_nr + 1;
 			}
-			/* enter marks end of comment */
-			goto tokenread;
+			if (p == 0) {
+				goto tokenread;
+			} else {
+				continue;
+			}
 		}
 
 		if (com == 1) {

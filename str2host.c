@@ -798,7 +798,11 @@ ldns_str2rdf_wks(ldns_rdf **rd, const char *str)
 	
 	data = LDNS_XMALLOC(uint8_t, bm_len + 1);
 	proto = getprotobyname(proto_str);
-	data[0] = (uint8_t) proto->p_proto;
+	if (proto) {
+		data[0] = (uint8_t) proto->p_proto;
+	} else {
+		data[0] = (uint8_t) atoi(proto_str);
+	}
 	memcpy(data + 1, bitmap, (size_t) bm_len);
 	
 	*rd = ldns_rdf_new_frm_data(LDNS_RDF_TYPE_WKS, (uint16_t) (bm_len + 1), data);
