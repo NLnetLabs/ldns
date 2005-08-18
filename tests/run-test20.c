@@ -61,7 +61,7 @@ main(void)
 
 	ldns_key_list_push_key(keys, privkey);
 
-	rr = ldns_rr_new_frm_str("www.miek.nl IN A 127.0.0.1");
+	rr = ldns_rr_new_frm_str("www.miek.nl IN A 127.0.0.1", 0, NULL);
 	ldns_rr_print(stdout, rr);
 	
 	ldns_rr_list_push_rr(rrs, rr);
