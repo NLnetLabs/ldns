@@ -36,8 +36,7 @@ else
 
 	-- set the id on the outgoing packet
 	packet.set_id(pkt, id)
-	packet.set_ancount(pkt,
-			packet.ancount(pkt) + 1)
+	lua_ancount_incr(pkt, 100)
 	wirebuf2 = packet.to_buf(pkt)
 
 	rdf_listen, port_listen = rdf.sockaddr_to_rdf(sockaddr_from)

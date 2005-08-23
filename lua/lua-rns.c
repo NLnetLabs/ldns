@@ -64,7 +64,7 @@ version(FILE *f, char *progname)
  */
 l_rdf_new_frm_str(lua_State *L)
 {
-	uint16_t t = lua_tonumber(L, 1);
+	uint16_t t = (uint16_t)lua_tonumber(L, 1);
 	char *str = strdup((char*)luaL_checkstring(L, 2));
 
 	ldns_rdf *new_rdf = ldns_rdf_new_frm_str((ldns_rdf_type)t, str);
@@ -159,7 +159,7 @@ static int
 l_pkt_push_rr(lua_State *L)
 {
 	ldns_pkt *pkt = (ldns_pkt*)lua_touserdata(L, 1); /* get the packet */
-	ldns_pkt_section s = lua_tonumber(L, 2); /* the section where to put it */
+	ldns_pkt_section s = (ldns_pkt_section)lua_tonumber(L, 2); /* the section where to put it */
 	ldns_rr *rr = (ldns_rr*)lua_touserdata(L, 3); /* the rr to put */
 
 	if (ldns_pkt_push_rr(pkt, s, rr)) {
@@ -175,7 +175,7 @@ l_pkt_insert_rr(lua_State *L)
 {
 	ldns_pkt *p = (ldns_pkt*)lua_touserdata(L, 1);
 	ldns_rr *rr = (ldns_rr*)lua_touserdata(L, 2);
-	unsigned int n = lua_tonumber(L, 3);
+	uint16_t n = (uint16_t)lua_tonumber(L, 3);
 
 	if(ldns_pkt_insert_rr(p, rr, n)) {
 		lua_pushlightuserdata(L, p);
@@ -189,7 +189,7 @@ static int
 l_pkt_get_rr(lua_State *L)
 {
 	ldns_pkt *p = (ldns_pkt*)lua_touserdata(L, 1); /* pop from the stack */
-	uint16_t n = lua_tonumber(L, 2);
+	uint16_t n = (uint16_t) lua_tonumber(L, 2);
 	ldns_rr *r;
 
 	r = ldns_pkt_get_rr(p, n);
@@ -206,7 +206,7 @@ l_pkt_set_rr(lua_State *L)
 {
 	ldns_pkt *p = (ldns_pkt*)lua_touserdata(L, 1);
 	ldns_rr *rr = (ldns_rr*)lua_touserdata(L, 2);
-	uint16_t n = lua_tonumber(L, 3);
+	uint16_t n = (uint16_t)lua_tonumber(L, 3);
 	ldns_rr *r;
 
 	r = ldns_pkt_set_rr(p, rr, n);
@@ -266,7 +266,7 @@ l_server_socket_udp(lua_State *L)
 	if (sockfd == 0) {
 		return 0;
 	}
-	lua_pushnumber(L, sockfd);
+	lua_pushnumber(L, (lua_Number)sockfd);
 	return 1;
 }
 
@@ -300,7 +300,7 @@ l_write_wire_udp(lua_State *L)
 	if (bytes == 0) {
 		return 0;
 	} else {
-		lua_pushnumber(L, bytes);
+		lua_pushnumber(L, (lua_Number)bytes);
 		return 1;
 	}
 }
@@ -311,7 +311,6 @@ l_read_wire_udp(lua_State *L)
 	int sockfd = (int)lua_tonumber(L, 1);
 	size_t size;
 	uint8_t *pktbuf_raw;
-	ldns_pkt *pkt;
 	ldns_buffer *pktbuf;
 	/* returned frm wire */
 	socklen_t from_size;
@@ -339,7 +338,7 @@ l_read_wire_udp(lua_State *L)
 	/* stack func lua cal in same order buf, from, size = */
 	lua_pushlightuserdata(L, pktbuf);
 	lua_pushlightuserdata(L, from);
-	lua_pushnumber(L, from_size);
+	lua_pushnumber(L, (lua_Number)from_size);
 	return 3;
 }
 
@@ -350,7 +349,7 @@ static int
 l_pkt_qdcount(lua_State *L)
 {
 	ldns_pkt *p = (ldns_pkt*)lua_touserdata(L, 1);
-	lua_pushnumber(L, ldns_pkt_qdcount(p));
+	lua_pushnumber(L, (lua_Number)ldns_pkt_qdcount(p));
 	return 1;
 }
 
@@ -358,7 +357,7 @@ static int
 l_pkt_ancount(lua_State *L)
 {
 	ldns_pkt *p = (ldns_pkt*)lua_touserdata(L, 1);
-	lua_pushnumber(L, ldns_pkt_ancount(p));
+	lua_pushnumber(L, (lua_Number)ldns_pkt_ancount(p));
 	return 1;
 }
 
@@ -366,7 +365,7 @@ static int
 l_pkt_nscount(lua_State *L)
 {
 	ldns_pkt *p = (ldns_pkt*)lua_touserdata(L, 1);
-	lua_pushnumber(L, ldns_pkt_nscount(p));
+	lua_pushnumber(L, (lua_Number)ldns_pkt_nscount(p));
 	return 1;
 }
 
@@ -374,7 +373,7 @@ static int
 l_pkt_arcount(lua_State *L)
 {
 	ldns_pkt *p = (ldns_pkt*)lua_touserdata(L, 1);
-	lua_pushnumber(L, ldns_pkt_arcount(p));
+	lua_pushnumber(L, (lua_Number)ldns_pkt_arcount(p));
 	return 1;
 }
 
@@ -382,7 +381,7 @@ static int
 l_pkt_set_ancount(lua_State *L)
 {
 	ldns_pkt *p  = (ldns_pkt*)lua_touserdata(L, 1);
-	uint16_t count = (uint16_t) lua_tonumber(L, 2);
+	uint16_t count = (uint16_t)lua_tonumber(L, 2);
 	(void)ldns_pkt_set_ancount(p, count);
 	return 0;
 }
@@ -391,7 +390,7 @@ static int
 l_pkt_id(lua_State *L)
 {
 	ldns_pkt *p = (ldns_pkt*)lua_touserdata(L, 1);
-	lua_pushnumber(L, ldns_pkt_id(p));
+	lua_pushnumber(L, (lua_Number)ldns_pkt_id(p));
 	return 1;
 }
 
@@ -399,7 +398,7 @@ static int
 l_pkt_set_id(lua_State *L) 
 {
 	ldns_pkt *p = (ldns_pkt*)lua_touserdata(L, 1);
-	uint16_t id = lua_tonumber(L, 2);
+	uint16_t id = (uint16_t)lua_tonumber(L, 2);
 	ldns_pkt_set_id(p, id);
 	return 0;
 }
@@ -463,7 +462,7 @@ l_pkt2string(lua_State *L)
 	}
 	/* this is a memcpy??? */
 	luaL_addlstring(&lua_b,
-			ldns_buffer_begin(b),
+			(char*)ldns_buffer_begin(b),
 			ldns_buffer_capacity(b)
 		       );
 	/* I hope so */
@@ -485,7 +484,7 @@ l_sockaddr_storage2rdf(lua_State *L)
 	addr = ldns_sockaddr_storage2rdf(sock, &port);
 	if (addr) {
 		lua_pushlightuserdata(L, addr);
-		lua_pushnumber(L, port);
+		lua_pushnumber(L, (lua_Number)port);
 		return 2;
 	} else {
 		return 0;

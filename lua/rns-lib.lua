@@ -6,6 +6,8 @@ LDNS_SECTION_ADDITIONAL 	= 3
 LDNS_SECTION_ANY 		= 4
 LDNS_SECTION_ANY_NOQUESTION 	= 5
 
+-- BETTER FUNCTION NAMES
+
 -- rdf types
 LDNS_RDF_TYPE_NONE		= 0
 LDNS_RDF_TYPE_DNAME		= 1
@@ -34,7 +36,6 @@ LDNS_RDF_TYPE_LOC		= 23
 LDNS_RDF_TYPE_WKS		= 24
 LDNS_RDF_TYPE_NSA		= 25
 LDNS_RDF_TYPE_IPSECKEY		= 26
-
 
 function lua_debug(...)
 	print("[lua]", unpack(arg))
@@ -74,8 +75,12 @@ function lua_remove_rr(pkt, n)
 	print("[info] [RR] remove", "end")
 end
 
--- convert a ldns_buffer to a string in lua
-function lua_buf_to_string(buf)
+-- increment the ancount
+function lua_ancount_incr(pkt, n)
+	print("[info] [PKT] ancount incr", n)
+	an = packet.ancount(pkt)
+	n = an + n
+	packet.set_ancount(pkt, n)
 end
 
 ---------------------------------
