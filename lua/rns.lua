@@ -15,14 +15,12 @@ pkt = packet.push_rr(pkt, LDNS_SECTION_AUTHORITY, rr2)
 pkt = packet.push_rr(pkt, LDNS_SECTION_AUTHORITY, rr3)
 
 ---- Setup a server to listen to UDP
--- make rdf with an ip
 rdf_ip = rdf.new_frm_str(LDNS_RDF_TYPE_A, "127.0.0.1")
--- connect and bind to a server udp socket
-socket = l_server_socket_udp(rdf_ip, 5353)
+socket = udp.open(rdf_ip, 5353)
 
 -- read from the socket, this blocks...
--- in what order
-wirebuf, sockaddr_from, fromlen  = l_read_wire_udp(socket)
+wirebuf, sockaddr_from, fromlen  = udp_read(socket) -- this works
+--wirebuf, sockaddr_from, fromlen  = udp.read(socket) -- this doesn't
 
 if wirebuf == nil then
 	lua_debug("nothing received")
@@ -41,11 +39,10 @@ else
 
 	rdf_listen, port_listen = rdf.sockaddr_to_rdf(sockaddr_from)
 
-	bytes = l_write_wire_udp(socket, wirebuf2, rdf_listen, port_listen);
+	bytes = udp.write(socket, wirebuf2, rdf_listen, port_listen)  -- this works
 	lua_debug("wrote bytes", bytes)
 	packet.print(pkt)
 	
 end
 
--- close the socket
-l_server_socket_close_udp(socket)
+udp.close(socket)

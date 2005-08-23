@@ -577,19 +577,18 @@ register_ldns_functions(void)
         };
 	luaL_openlib(L, "buffer", l_buf_lib, 0);
 
-
-	/* CONVERSIONs */
-	/* lua_register(L, "l_pkt2string", l_pkt2string); */
-	/* lua_register(L, "l_buf2pkt", l_buf2pkt); */
-	/* lua_register(L, "l_pkt2buf", l_pkt2buf); */
-	/* lua_register(L, "l_sockaddr_storage2rdf", l_sockaddr_storage2rdf); */
-
 	/* NETWORKING */
-	lua_register(L, "l_write_wire_udp", l_write_wire_udp);
-	lua_register(L, "l_read_wire_udp", l_read_wire_udp);
-	lua_register(L, "l_server_socket_udp", l_server_socket_udp);
-	lua_register(L, "l_server_socket_close_udp", l_server_socket_close_udp);
-	
+	static const struct luaL_reg l_udpnet_lib [] = {
+		{"write", 	l_write_wire_udp},
+		/* {"read", 	l_read_wire_udp}, */ /* DOESN'T WORK???? */
+		{"open", 	l_server_socket_udp},
+		{"close", 	l_server_socket_close_udp},
+                {NULL,          NULL}
+	};
+	luaL_openlib(L, "udp", l_udpnet_lib, 0);
+	lua_register(L, "udp_read", l_read_wire_udp); /* THIS DOESNT WORK FROM WITHIN
+							 THE LIBRARY...!!! ???? XXX */
+				/* I DON'T KNOW WHY */
 }
 
 int
