@@ -43,14 +43,14 @@ end
 -- transpose 2 rrs in a pkt --
 function lua_transpose_rr(pkt, n1, n2)
 	print("[info] [RR] transpose", n1, n2)
-	local rr_n1 = l_pkt_get_rr(pkt, n1)
-	local rr_n2 = l_pkt_set_rr(pkt, rr_n1, n2)
-	local rr_tm = l_pkt_set_rr(pkt, rr_n2, n1)
+	local rr_n1 = packet.get_rr(pkt, n1)
+	local rr_n2 = packet.set_rr(pkt, rr_n1, n2)
+	local rr_tm = packet.set_rr(pkt, rr_n2, n1)
 	l_rr_free(rm_tm)
 end
 
 function lua_transpose_rr_random(pkt)
-	local total = l_pkt_rr_count(pkt) - 1
+	local total = packet.rrcount(pkt) - 1
 	local rn1 = math.random(0, total)
 	local rn2 = math.random(0, total)
 	lua_transpose_rr(pkt, rn1, rn2)
@@ -59,12 +59,12 @@ end
 -- substitute, add, remove
 function lua_insert_rr(pkt, r, n)
 	print("[info] [RR] insert after", n)
-	l_pkt_insert_rr(pkt, r, n)
+	packet.insert_rr(pkt, r, n)
 end
 
 -- add an rr to the end of a pkt --
 function lua_insert_end_rr(pkt, r)
-	local n = l_pkt_rr_count(pkt) - 1
+	local n = packet.rr_count(pkt) - 1
 	print(n)
 	lua_insert_rr(pkt, r, n)
 end
@@ -84,7 +84,7 @@ end
 
 -- reverse all the rrs in a pkt --
 function lua_reverse_pkt(pkt)
-	local total = l_pkt_rr_count(pkt) - 1
+	local total = packet.rrcount(pkt) - 1
 	for i=0, (total / 2) do
 		lua_transpose_rr(pkt, i, total - i)
 	end

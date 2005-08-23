@@ -324,8 +324,7 @@ l_read_wire_udp(lua_State *L)
 	(void)memset(from, 0, sizeof(struct sockaddr_storage));
 
 	pktbuf = ldns_buffer_new(LDNS_MIN_BUFLEN); /* this /should/ happen in buf_new_frm_data */
-	
-	if (!pktbuf_raw) {
+	if (!pktbuf) {
 		return 0;
 	}
 	
@@ -526,47 +525,64 @@ register_ldns_functions(void)
         /* register our functions */
         lua_register(L, "l_average", l_average);
 	/* RDFs */
-	lua_register(L, "l_rdf_new_frm_str", l_rdf_new_frm_str);
-	lua_register(L, "l_rdf_print", l_rdf_print);
-	lua_register(L, "l_rdf_free", l_rdf_free);
-	/* RRs */
-	lua_register(L, "l_rr_new_frm_str", l_rr_new_frm_str);
-	lua_register(L, "l_rr_print", l_rr_print);
-	lua_register(L, "l_rr_free", l_rr_free);
-	/* PKTs */
-	lua_register(L, "l_pkt_new", l_pkt_new);
-	lua_register(L, "l_pkt_push_rr", l_pkt_push_rr);
-	lua_register(L, "l_pkt_print", l_pkt_print);
-	lua_register(L, "l_pkt_get_rr", l_pkt_get_rr);
-	lua_register(L, "l_pkt_set_rr", l_pkt_set_rr);
-	lua_register(L, "l_pkt_rr_count", l_pkt_rr_count);
-	lua_register(L, "l_pkt_insert_rr", l_pkt_insert_rr);
-
-	lua_register(L, "l_pkt_qdcount", l_pkt_qdcount);
-	lua_register(L, "l_pkt_ancount", l_pkt_ancount);
-	lua_register(L, "l_pkt_nscount", l_pkt_nscount);
-	lua_register(L, "l_pkt_nscount", l_pkt_nscount);
-	lua_register(L, "l_pkt_id", l_pkt_id);
-
-	static const struct luaL_reg l_pkt_lib [] = {
-		{"new", l_pkt_new},
-		{NULL, NULL}
+	static const struct luaL_reg l_rdf_lib [] = {
+		{"new_frm_str", l_rdf_new_frm_str},
+		{"print", 	l_rdf_print},
+		{"free", 	l_rdf_free},
+		{"sockaddr_to_rdf", l_sockaddr_storage2rdf},
+                {NULL,          NULL}
 	};
-	luaL_openlib(L, "pkt", l_pkt_lib, 0);
+	luaL_openlib(L, "rdf", l_rdf_lib, 0);
 
+	/* RRs */
+	static const struct luaL_reg l_rr_lib [] = {
+		{"new_frm_str", l_rr_new_frm_str},
+		{"print", 	l_rr_print},
+		{"free", 	l_rr_free},
+                {NULL,          NULL}
+	};
+	luaL_openlib(L, "record", l_rr_lib, 0);
+
+	/* PKTs */
+	static const struct luaL_reg l_pkt_lib [] = {
+                {"new",         l_pkt_new},
+                {"push_rr",     l_pkt_push_rr},
+                {"get_rr",      l_pkt_get_rr},
+                {"set_rr",      l_pkt_set_rr},
+                {"insert_rr",   l_pkt_insert_rr},
+                {"print",       l_pkt_print},
+                {"qdcount",     l_pkt_qdcount},
+                {"ancount",     l_pkt_ancount},
+                {"nscount",     l_pkt_nscount},
+                {"arcount",     l_pkt_arcount},
 #if 0
-	lua_register(L, "l_pkt_set_qdcount", l_pkt_set_qdcount);
-	lua_register(L, "l_pkt_set_ancount", l_pkt_set_ancount);
-	lua_register(L, "l_pkt_set_nscount", l_pkt_set_nscount);
-	lua_register(L, "l_pkt_set_nscount", l_pkt_set_nscount);
+                {"set_qdcount", l_pkt_set_qdcount},
+                {"set_ancount", l_pkt_set_ancount},
+                {"set_nscount", l_pkt_set_nscount},
+                {"set_arcount", l_pkt_set_arcount},
 #endif
-	lua_register(L, "l_pkt_set_id", l_pkt_set_id);
-	
+                {"rrcount",     l_pkt_rr_count},
+                {"id",          l_pkt_id},
+                {"set_id",      l_pkt_set_id},
+                {"to_string",   l_pkt2string},
+                {"to_buf",      l_pkt2buf},
+                {NULL,          NULL}
+	};
+	luaL_openlib(L, "packet", l_pkt_lib, 0);
+
+	/* BUFFERs */
+	static const struct luaL_reg l_buf_lib [] = {
+                {"to_pkt",              l_buf2pkt},
+                {NULL,                  NULL}
+        };
+	luaL_openlib(L, "buffer", l_buf_lib, 0);
+
+
 	/* CONVERSIONs */
-	lua_register(L, "l_pkt2string", l_pkt2string);
-	lua_register(L, "l_buf2pkt", l_buf2pkt);
-	lua_register(L, "l_pkt2buf", l_pkt2buf);
-	lua_register(L, "l_sockaddr_storage2rdf", l_sockaddr_storage2rdf);
+	/* lua_register(L, "l_pkt2string", l_pkt2string); */
+	/* lua_register(L, "l_buf2pkt", l_buf2pkt); */
+	/* lua_register(L, "l_pkt2buf", l_pkt2buf); */
+	/* lua_register(L, "l_sockaddr_storage2rdf", l_sockaddr_storage2rdf); */
 
 	/* NETWORKING */
 	lua_register(L, "l_write_wire_udp", l_write_wire_udp);
