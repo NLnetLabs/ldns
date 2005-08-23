@@ -549,10 +549,10 @@ register_ldns_functions(void)
 	lua_register(L, "l_pkt_id", l_pkt_id);
 
 #if 0
-	lua_register(L, "l_pkt_set_qdcount", l_pkt_qdcount);
-	lua_register(L, "l_pkt_set_ancount", l_pkt_ancount);
-	lua_register(L, "l_pkt_set_nscount", l_pkt_nscount);
-	lua_register(L, "l_pkt_set_nscount", l_pkt_nscount);
+	lua_register(L, "l_pkt_set_qdcount", l_pkt_set_qdcount);
+	lua_register(L, "l_pkt_set_ancount", l_pkt_set_ancount);
+	lua_register(L, "l_pkt_set_nscount", l_pkt_set_nscount);
+	lua_register(L, "l_pkt_set_nscount", l_pkt_set_nscount);
 #endif
 	lua_register(L, "l_pkt_set_id", l_pkt_set_id);
 	
