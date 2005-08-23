@@ -429,7 +429,6 @@ l_pkt2buf(lua_State *L)
 	return 1;
 }
 
-
 static int
 l_pkt2string(lua_State *L)
 {
@@ -454,6 +453,25 @@ l_pkt2string(lua_State *L)
 
 	luaL_pushresult(&lua_b);
 	return 1;
+}
+
+static int
+l_sockaddr_storage2rdf(lua_State *L)
+{
+	struct sockaddr_storage *sock;
+	uint16_t port;
+	ldns_rdf *addr;
+
+	sock = lua_touserdata(L, 1);
+	
+	addr = ldns_sockaddr_storage2rdf(sock, &port);
+	if (addr) {
+		lua_pushlightuserdata(L, addr);
+		lua_pushnumber(L, port);
+		return 2;
+	} else {
+		return 0;
+	}
 }
 
 /*
@@ -517,6 +535,7 @@ register_ldns_functions(void)
 	lua_register(L, "l_pkt2string", l_pkt2string);
 	lua_register(L, "l_buf2pkt", l_buf2pkt);
 	lua_register(L, "l_pkt2buf", l_pkt2buf);
+	lua_register(L, "l_sockaddr_storage2rdf", l_sockaddr_storage2rdf);
 
 	/* NETWORKING */
 	lua_register(L, "l_write_wire_udp", l_write_wire_udp);
