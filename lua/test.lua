@@ -10,7 +10,8 @@ l_rr_print(my_rr)
 l_rr_print(my_rr2)
 l_rr_print(my_rr4)
 
-my_pkt = l_pkt_new()
+--my_pkt = l_pkt_new()
+my_pkt = pkt.new();
 
 my_pkt = l_pkt_push_rr(my_pkt, LDNS_SECTION_ANSWER, my_rr)
 
