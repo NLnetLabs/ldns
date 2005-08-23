@@ -342,8 +342,6 @@ ldns_udp_read_wire(int sockfd, size_t *size, struct sockaddr_storage *from,
 	wire_size = recvfrom(sockfd, wire, LDNS_MAX_PACKETLEN, 0, 
 			(struct sockaddr*) from, fromlen);
 
-	printf("from len %d\n", (int) *fromlen);
-
 	if (wire_size == -1) {
 		if (errno == EAGAIN) {
 			dprintf("%s", "socket timeout\n");
@@ -355,7 +353,6 @@ ldns_udp_read_wire(int sockfd, size_t *size, struct sockaddr_storage *from,
 
 	*size = (size_t)wire_size;
 	wire = LDNS_XREALLOC(wire, uint8_t, (size_t)wire_size);
-	printf("wire size %d\n", (int) wire_size);
 	return wire;
 }
 
