@@ -334,7 +334,6 @@ l_read_wire_udp(lua_State *L)
 	if (!pktbuf_raw) {
 		return 0;
 	}
-	printf("read bytes %d\n", from_size);
 	ldns_buffer_new_frm_data(pktbuf, pktbuf_raw, size);
 	
 	/* push our buffer onto the stack */
@@ -383,6 +382,23 @@ l_pkt_arcount(lua_State *L)
 static int
 l_pkt_set_qdcount(lua_State *L)
 {
+	return 0;
+}
+
+static int
+l_pkt_id(lua_State *L)
+{
+	ldns_pkt *p = (ldns_pkt*)lua_touserdata(L, 1);
+	lua_pushnumber(L, ldns_pkt_id(p));
+	return 1;
+}
+
+static int
+l_pkt_set_id(lua_State *L) 
+{
+	ldns_pkt *p = (ldns_pkt*)lua_touserdata(L, 1);
+	uint16_t id = lua_tonumber(L, 2);
+	ldns_pkt_set_id(p, id);
 	return 0;
 }
 
@@ -530,6 +546,15 @@ register_ldns_functions(void)
 	lua_register(L, "l_pkt_ancount", l_pkt_ancount);
 	lua_register(L, "l_pkt_nscount", l_pkt_nscount);
 	lua_register(L, "l_pkt_nscount", l_pkt_nscount);
+	lua_register(L, "l_pkt_id", l_pkt_id);
+
+#if 0
+	lua_register(L, "l_pkt_set_qdcount", l_pkt_qdcount);
+	lua_register(L, "l_pkt_set_ancount", l_pkt_ancount);
+	lua_register(L, "l_pkt_set_nscount", l_pkt_nscount);
+	lua_register(L, "l_pkt_set_nscount", l_pkt_nscount);
+#endif
+	lua_register(L, "l_pkt_set_id", l_pkt_set_id);
 	
 	/* CONVERSIONs */
 	lua_register(L, "l_pkt2string", l_pkt2string);

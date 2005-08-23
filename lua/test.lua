@@ -27,4 +27,6 @@ l_pkt_print(my_pkt)
 my_rr5 = l_pkt_set_rr(my_pkt, my_rr4, 1)
 l_rr_print(my_rr5)
 
+l_pkt_set_id(my_pkt, 1505)
+
 l_pkt_print(my_pkt)

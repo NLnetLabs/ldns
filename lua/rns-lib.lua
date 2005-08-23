@@ -36,8 +36,8 @@ LDNS_RDF_TYPE_NSA		= 25
 LDNS_RDF_TYPE_IPSECKEY		= 26
 
 
-function lua_debug(msg)
-	print("[lua]", msg)
+function lua_debug(...)
+	print("[lua]", unpack(arg))
 end
 
 -- transpose 2 rrs in a pkt --
