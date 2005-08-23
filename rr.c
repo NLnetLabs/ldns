@@ -397,7 +397,15 @@ ldns_rr_new_frm_fp_l(FILE *fp, uint16_t ttl, ldns_rdf *origin, int *line_nr)
         }
 
 	rr = ldns_rr_new_frm_str((const char*) line, ttl, origin);
-
+/*
+printf("line %d: %s\n", *line_nr, line);
+*/
+if (rr && ldns_rr_get_type(rr) == LDNS_RR_TYPE_CERT) {
+	printf("got CERT RR:\n");
+	ldns_rr_print(stdout, rr);
+	printf("from:\n%s\n", line);
+exit(1);
+}
 	LDNS_FREE(line);
 	return rr;
 }
@@ -1290,7 +1298,7 @@ static const ldns_rdf_type type_kx_wireformat[] = {
 	LDNS_RDF_TYPE_INT16, LDNS_RDF_TYPE_DNAME
 };
 static const ldns_rdf_type type_cert_wireformat[] = {
-	 LDNS_RDF_TYPE_CERT, LDNS_RDF_TYPE_INT16, LDNS_RDF_TYPE_ALG, LDNS_RDF_TYPE_B64
+	 LDNS_RDF_TYPE_CERT_ALG, LDNS_RDF_TYPE_INT16, LDNS_RDF_TYPE_ALG, LDNS_RDF_TYPE_B64
 };
 static const ldns_rdf_type type_a6_wireformat[] = { LDNS_RDF_TYPE_DNAME };
 static const ldns_rdf_type type_dname_wireformat[] = { LDNS_RDF_TYPE_DNAME };

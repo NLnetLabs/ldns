@@ -329,8 +329,8 @@ ldns_rdf_new_frm_str(ldns_rdf_type type, const char *str)
 	case LDNS_RDF_TYPE_CLASS:
 		status = ldns_str2rdf_class(&rdf, str);
 		break;
-	case LDNS_RDF_TYPE_CERT:
-		status = ldns_str2rdf_cert(&rdf, str);
+	case LDNS_RDF_TYPE_CERT_ALG:
+		status = ldns_str2rdf_cert_alg(&rdf, str);
 		break;
 	case LDNS_RDF_TYPE_ALG:
 		status = ldns_str2rdf_alg(&rdf, str);

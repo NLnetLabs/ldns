@@ -197,7 +197,7 @@ ldns_wire2rdf(ldns_rr *rr, const uint8_t *wire,
 			break;
 		case LDNS_RDF_TYPE_TYPE:
 		case LDNS_RDF_TYPE_INT16:
-		case LDNS_RDF_TYPE_CERT:
+		case LDNS_RDF_TYPE_CERT_ALG:
 			cur_rdf_length = 2;
 			break;
 		case LDNS_RDF_TYPE_TIME:

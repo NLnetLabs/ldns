@@ -142,6 +142,14 @@ ldns_status ldns_str2rdf_class(ldns_rdf **rd, const char *str);
 ldns_status ldns_str2rdf_cert(ldns_rdf **rd, const char *str);
 
 /**
+ * convert an certificate algorithm value into wireformat
+ * \param[in] rd the rdf where to put the data
+ * \param[in] str the string to be converted
+ * \return ldns_status
+ */
+ldns_status ldns_str2rdf_cert_alg(ldns_rdf **rd, const char *str);
+
+/**
  * convert and algorithm value into wireformat
  * \param[in] rd the rdf where to put the data
  * \param[in] str the string to be converted

@@ -93,7 +93,7 @@ ldns_status ldns_rdf2buffer_str_alg(ldns_buffer *output, ldns_rdf *rdf);
  * \param[in] *output The buffer to add the data to
  * \return LDNS_STATUS_OK on success, and error status on failure
  */
-ldns_status ldns_rdf2buffer_str_cert(ldns_buffer *output, ldns_rdf *rdf);
+ldns_status ldns_rdf2buffer_str_cert_alg(ldns_buffer *output, ldns_rdf *rdf);
 
 /** 
  * Converts an LDNS_RDF_TYPE_LOC rdata element to string format and adds it to the output buffer 

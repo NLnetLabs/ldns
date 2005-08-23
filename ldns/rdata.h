@@ -52,8 +52,8 @@ enum ldns_enum_rdf_type
 	LDNS_RDF_TYPE_TYPE, 
 	/** a class */
 	LDNS_RDF_TYPE_CLASS,
-	/** certificates */
-	LDNS_RDF_TYPE_CERT,
+	/** certificate algorithm */
+	LDNS_RDF_TYPE_CERT_ALG,
 	/** a key algorithm */
 	LDNS_RDF_TYPE_ALG,
 	/** unknown types */
@@ -80,6 +80,21 @@ enum ldns_enum_rdf_type
 	LDNS_RDF_TYPE_IPSECKEY
 };
 typedef enum ldns_enum_rdf_type ldns_rdf_type;
+
+/**
+ * algorithms used in CERT rrs
+ */
+enum ldns_enum_cert_algorithm
+{
+	LDNS_CERT_PKIX		= 1,
+	LDNS_CERT_SPKI		= 2,
+	LDNS_CERT_PGP		= 3,
+	LDNS_CERT_URI		= 253,
+	LDNS_CERT_OID		= 254
+};
+typedef enum ldns_enum_cert_algorithm ldns_cert_algorithm;
+
+
 
 /**
  * Resource record data.

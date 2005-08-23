@@ -23,16 +23,6 @@
 
 /* lookup tables for standard DNS stuff  */
 
-/* Taken from RFC 2538, section 2.1.  */
-ldns_lookup_table ldns_certificate_types[] = {
-        { 0, "PKIX" },  /* X.509 as per PKIX */
-        { 1, "SPKI" },  /* SPKI cert */
-        { 2, "PGP" },   /* PGP cert */
-        { 253, "URI" }, /* URI private */
-        { 254, "OID" }, /* OID private */
-        { 0, NULL }
-};
-
 /* Taken from RFC 2535, section 7.  */
 ldns_lookup_table ldns_algorithms[] = {
         { LDNS_RSAMD5, "RSAMD5" },
@@ -43,6 +33,16 @@ ldns_lookup_table ldns_algorithms[] = {
         { LDNS_INDIRECT, "INDIRECT" },
         { LDNS_PRIVATEDNS, "PRIVATEDNS" },
         { LDNS_PRIVATEOID, "PRIVATEOID" },
+        { 0, NULL }
+};
+
+/* Taken from RFC 2538  */
+ldns_lookup_table ldns_cert_algorithms[] = {
+        { LDNS_CERT_PKIX, "PKIX" },
+	{ LDNS_CERT_SPKI, "SPKI" },
+	{ LDNS_CERT_PGP, "PGP" },
+	{ LDNS_CERT_URI, "URI" },
+	{ LDNS_CERT_OID, "OID" },
         { 0, NULL }
 };
 
@@ -268,27 +268,27 @@ ldns_rdf2buffer_str_class(ldns_buffer *output, ldns_rdf *rdf)
 }	
 
 ldns_status
+ldns_rdf2buffer_str_cert_alg(ldns_buffer *output, ldns_rdf *rdf)
+{
+        uint8_t data = ldns_rdf_data(rdf)[0];
+	ldns_lookup_table *lt;
+
+ 	lt = ldns_lookup_by_id(ldns_cert_algorithms, (int) data);
+	if (lt) {
+		ldns_buffer_printf(output, "%s", lt->name);
+	} else {
+		ldns_buffer_printf(output, "%d", data);
+	}
+	return ldns_buffer_status(output);
+}	
+
+ldns_status
 ldns_rdf2buffer_str_alg(ldns_buffer *output, ldns_rdf *rdf)
 {
         uint8_t data = ldns_rdf_data(rdf)[0];
 	ldns_lookup_table *lt;
 
  	lt = ldns_lookup_by_id(ldns_algorithms, (int) data);
-	if (lt) {
-		ldns_buffer_printf(output, "%s", lt->name);
-	} else {
-		ldns_buffer_printf(output, "ALG%d", data);
-	}
-	return ldns_buffer_status(output);
-}	
-
-ldns_status
-ldns_rdf2buffer_str_cert(ldns_buffer *output, ldns_rdf *rdf)
-{
-        uint16_t data = ldns_read_uint16(ldns_rdf_data(rdf));
-	ldns_lookup_table *lt;
-
- 	lt = ldns_lookup_by_id(ldns_certificate_types, (int) data);
 	if (lt) {
 		ldns_buffer_printf(output, "%s", lt->name);
 	} else {
@@ -735,8 +735,8 @@ ldns_rdf2buffer_str(ldns_buffer *buffer, ldns_rdf *rdf)
 		case LDNS_RDF_TYPE_CLASS:
 			res = ldns_rdf2buffer_str_class(buffer, rdf);
 			break;
-		case LDNS_RDF_TYPE_CERT:
-			res = ldns_rdf2buffer_str_cert(buffer, rdf);
+		case LDNS_RDF_TYPE_CERT_ALG:
+			res = ldns_rdf2buffer_str_cert_alg(buffer, rdf);
 			break;
 		case LDNS_RDF_TYPE_ALG:
 			res = ldns_rdf2buffer_str_alg(buffer, rdf);

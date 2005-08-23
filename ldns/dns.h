@@ -51,6 +51,8 @@
 extern ldns_lookup_table ldns_certificate_types[];
 /* Taken from RFC 2535, section 7.  */
 extern ldns_lookup_table ldns_algorithms[];
+/* Taken from RFC 2538.  */
+extern ldns_lookup_table ldns_cert_algorithms[];
 /* rr types  */
 extern ldns_lookup_table ldns_rr_classes[];
 /* if these are used elsewhere */
