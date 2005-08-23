@@ -299,7 +299,14 @@ uint32_t	ldns_str2period(const char *nptr, const char **endptr);
  */
 struct sockaddr_storage * ldns_rdf2native_sockaddr_storage(ldns_rdf *rd, uint16_t port, size_t *size);
 
-/* misc */
+/** 
+ * returns an rdf with the sockaddr info. works for ip4 and ip6
+ * \param[in] sock the struct sockaddr_storage to convert 
+ * \param[in] port what port was used. When NULL this is not set
+ * \return ldns_rdf* wth the address 
+ */
+ldns_rdf * ldns_sockaddr_storage2rdf(struct sockaddr_storage *sock, uint16_t *port);
+
 /**
  * removes \\DDD, \\[space] and other escapes from the input.
  * See RFC 1035, section 5.1.

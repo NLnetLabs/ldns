@@ -120,9 +120,12 @@ ldns_rdf2native_sockaddr_storage(ldns_rdf *rd, uint16_t port, size_t *size)
 	struct sockaddr_storage *data;
 	struct sockaddr_in  *data_in;
 	struct sockaddr_in6 *data_in6;
+
+/*
+ * DEAD CODE???
 	struct in_addr *b;
-	
 	b = (struct in_addr*)rd->_data;
+*/
 	
 	data = LDNS_MALLOC(struct sockaddr_storage);
 	if (!data) {
@@ -153,49 +156,41 @@ ldns_rdf2native_sockaddr_storage(ldns_rdf *rd, uint16_t port, size_t *size)
 	}
 }
 
-/* the other way around - for lua-ldns, TODO Miek */
+/* the other way around - for lua-ldns */
 ldns_rdf *
-ldns_sockaddr_storage2rdf(struct sockaddr_storage *rd, uint16_t *port)
+ldns_sockaddr_storage2rdf(struct sockaddr_storage *sock, uint16_t *port)
 {
-	rd = rd;
-	port = port;
-	return NULL;
-/*	
-	struct sockaddr_storage *data;
-	struct sockaddr_in  *data_in;
-	struct sockaddr_in6 *data_in6;
-	struct in_addr *b;
-	
-	b = (struct in_addr*)rd->_data;
-	
-	data = LDNS_MALLOC(struct sockaddr_storage);
-	if (!data) {
-		return NULL;
-	}
-	if (port == 0) {
-		port =  LDNS_PORT;
-	}
 
-	switch(ldns_rdf_get_type(rd)) {
-		case LDNS_RDF_TYPE_A:
-			data->ss_family = AF_INET;
-			data_in = (struct sockaddr_in*) data;
-			data_in->sin_port = htons(port); 
-			memcpy(&(data_in->sin_addr), ldns_rdf_data(rd), ldns_rdf_size(rd));
-			*size = sizeof(struct sockaddr_in);
-			return data;
-		case LDNS_RDF_TYPE_AAAA:
-			data->ss_family = AF_INET6;
-			data_in6 = (struct sockaddr_in6*) data;
-			data_in6->sin6_port = htons(port); 
-			memcpy(&data_in6->sin6_addr, ldns_rdf_data(rd), ldns_rdf_size(rd));
-			*size = sizeof(struct sockaddr_in6);
-			return data;
+	ldns_rdf *addr;
+	struct sockaddr_in *data_in;
+	struct sockaddr_in6 *data_in6;
+
+	switch(sock->ss_family) {
+		case AF_INET:
+			data_in = (struct sockaddr_in*)sock;
+			if (port) {
+				*port = ntohs(data_in->sin_port);
+			}
+			addr = ldns_rdf_new_frm_data(LDNS_RDF_TYPE_A, 
+					sizeof(struct sockaddr_in),
+					&data_in->sin_addr);
+			break;
+		case AF_INET6:
+			data_in6 = (struct sockaddr_in6*)sock;
+			if (port) {
+				*port = ntohs(data_in6->sin6_port);
+			}
+			addr = ldns_rdf_new_frm_data(LDNS_RDF_TYPE_AAAA,
+					sizeof(struct sockaddr_in6),
+					&data_in6->sin6_addr);
+			break;
 		default:
-			LDNS_FREE(data);
+			if (port) {
+				*port = 0;
+			}
 			return NULL;
 	}
-*/
+	return addr;
 }
 
 ldns_rdf *
