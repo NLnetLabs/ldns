@@ -379,8 +379,11 @@ l_pkt_arcount(lua_State *L)
 }
 
 static int
-l_pkt_set_qdcount(lua_State *L)
+l_pkt_set_ancount(lua_State *L)
 {
+	ldns_pkt *p  = (ldns_pkt*)lua_touserdata(L, 1);
+	uint16_t count = (uint16_t) lua_tonumber(L, 2);
+	(void)ldns_pkt_set_ancount(p, count);
 	return 0;
 }
 
@@ -555,9 +558,9 @@ register_ldns_functions(void)
                 {"ancount",     l_pkt_ancount},
                 {"nscount",     l_pkt_nscount},
                 {"arcount",     l_pkt_arcount},
+                {"set_ancount", l_pkt_set_ancount},
 #if 0
                 {"set_qdcount", l_pkt_set_qdcount},
-                {"set_ancount", l_pkt_set_ancount},
                 {"set_nscount", l_pkt_set_nscount},
                 {"set_arcount", l_pkt_set_arcount},
 #endif

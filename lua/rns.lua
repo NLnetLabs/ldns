@@ -22,6 +22,7 @@ socket = udp.open(rdf_ip, 5353)
 wirebuf, sockaddr_from, fromlen  = udp_read(socket) -- this works
 --wirebuf, sockaddr_from, fromlen  = udp.read(socket) -- this doesn't
 
+-- wrap this in new functions
 if wirebuf == nil then
 	lua_debug("nothing received")
 else
@@ -35,6 +36,8 @@ else
 
 	-- set the id on the outgoing packet
 	packet.set_id(pkt, id)
+	packet.set_ancount(pkt,
+			packet.ancount(pkt) + 1)
 	wirebuf2 = packet.to_buf(pkt)
 
 	rdf_listen, port_listen = rdf.sockaddr_to_rdf(sockaddr_from)
