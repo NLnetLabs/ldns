@@ -47,7 +47,10 @@ else
 	l_pkt_print(wirepkt)
 
 	wirebuf2 = l_pkt2buf(pkt)
-	bytes = l_write_wire_udp(socket, wirebuf2, rdf_ip, 5353);
+
+	rdf_listen, port_listen = l_sockaddr_storage2rdf(sockaddr_from)
+
+	bytes = l_write_wire_udp(socket, wirebuf2, rdf_listen, port_listen);
 	print("wrote bytes", bytes)
 	l_pkt_print(pkt)
 	

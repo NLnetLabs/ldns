@@ -331,10 +331,10 @@ l_read_wire_udp(lua_State *L)
 	
 	pktbuf_raw = ldns_udp_read_wire(sockfd, &size, from, &from_size);
 
-	printf("read bytes %d\n", from_size);
 	if (!pktbuf_raw) {
 		return 0;
 	}
+	printf("read bytes %d\n", from_size);
 	ldns_buffer_new_frm_data(pktbuf, pktbuf_raw, size);
 	
 	/* push our buffer onto the stack */
