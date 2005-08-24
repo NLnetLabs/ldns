@@ -159,6 +159,7 @@ ldns_verify_rrsig_keylist(ldns_rr_list *rrset, ldns_rr *rrsig, ldns_rr_list *key
 	ldns_rr *current_key;
 	ldns_rr_list *rrset_clone;
 	ldns_rr_list *validkeys;
+	time_t now, inception, expiration;
 
 	if (!rrset) {
 		return NULL;
@@ -179,6 +180,24 @@ ldns_verify_rrsig_keylist(ldns_rr_list *rrset, ldns_rr *rrsig, ldns_rr_list *key
 	sig_algo = ldns_rdf2native_int8(ldns_rr_rdf(rrsig, 1));
 	result = false;
 
+	/* check the signature time stamps */
+	inception = ldns_rdf2native_time_t(ldns_rr_rrsig_inception(rrsig));
+	expiration = ldns_rdf2native_time_t(ldns_rr_rrsig_expiration(rrsig));
+	now = time(NULL);
+
+	if (expiration - inception < 0) {
+                /* bad sig, expiration before inception?? Tsssg */
+		return NULL;
+        }
+        if (now - inception < 0) {
+                /* bad sig, inception date has passed */
+		return NULL;
+        }
+        if (expiration - now < 0) {
+                /* bad sig, expiration date has passed */
+		return NULL;
+        }
+	
 	/* create a buffer with b64 signature rdata */
 	if (ldns_rdf2buffer_wire(rawsig_buf,
 				ldns_rr_rdf(rrsig, 8)) != LDNS_STATUS_OK) {
