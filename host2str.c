@@ -428,7 +428,7 @@ ldns_rdf2buffer_str_wks(ldns_buffer *output, ldns_rdf *rdf)
 	}
 
 	for (current_service = 0; 
-	     current_service < ldns_rdf_size(rdf) * 8;
+	     current_service < ldns_rdf_size(rdf) * 7;
 	     current_service++) {
 		if (ldns_get_bit(&(ldns_rdf_data(rdf)[1]), current_service)) {
 			service = getservbyport((int) ntohs(current_service),

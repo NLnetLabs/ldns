@@ -1237,7 +1237,7 @@ ldns_create_nsec(ldns_rdf *cur_owner, ldns_rdf *next_owner, ldns_rr_list *rrs)
 	ldns_rr *i_rr;
 
 	uint8_t *bitmap = LDNS_XMALLOC(uint8_t, 1);
-	uint16_t bm_len = 1;
+	uint16_t bm_len = 0;
 	uint16_t i_type;
 
 	ldns_rr *nsec = NULL;
@@ -1262,8 +1262,8 @@ ldns_create_nsec(ldns_rdf *cur_owner, ldns_rdf *next_owner, ldns_rr_list *rrs)
 		                     ldns_rr_owner(i_rr)) == 0) {
 			/* add type to bitmap */
 			i_type = ldns_rr_get_type(i_rr);
-			if (i_type / 8 > bm_len) {
-				bitmap = LDNS_XREALLOC(bitmap, uint8_t, i_type / 8);
+			if ((i_type / 8) + 1 > bm_len) {
+				bitmap = LDNS_XREALLOC(bitmap, uint8_t, (i_type / 8) + 1);
 				/* set to 0 */
 				for (; bm_len <= i_type / 8; bm_len++) {
 					bitmap[bm_len] = 0;
@@ -1275,7 +1275,7 @@ ldns_create_nsec(ldns_rdf *cur_owner, ldns_rdf *next_owner, ldns_rr_list *rrs)
 	/* add NSEC and RRSIG anyway */
 	i_type = LDNS_RR_TYPE_RRSIG;
 	if (i_type / 8 > bm_len) {
-		bitmap = LDNS_XREALLOC(bitmap, uint8_t, i_type / 8);
+		bitmap = LDNS_XREALLOC(bitmap, uint8_t, (i_type / 8) + 1);
 		/* set to 0 */
 		for (; bm_len <= i_type / 8; bm_len++) {
 			bitmap[bm_len] = 0;
@@ -1285,7 +1285,7 @@ ldns_create_nsec(ldns_rdf *cur_owner, ldns_rdf *next_owner, ldns_rr_list *rrs)
 	i_type = LDNS_RR_TYPE_NSEC;
 
 	if (i_type / 8 > bm_len) {
-		bitmap = LDNS_XREALLOC(bitmap, uint8_t, i_type / 8);
+		bitmap = LDNS_XREALLOC(bitmap, uint8_t, (i_type / 8) + 1);
 		/* set to 0 */
 		for (; bm_len <= i_type / 8; bm_len++) {
 			bitmap[bm_len] = 0;

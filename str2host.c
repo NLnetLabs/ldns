@@ -804,7 +804,7 @@ ldns_str2rdf_wks(ldns_rdf **rd, const char *str)
 				serv_port = atoi(token);
 			}
 			if (serv_port / 8 > bm_len) {
-				bitmap = LDNS_XREALLOC(bitmap, uint8_t, serv_port / 8);
+				bitmap = LDNS_XREALLOC(bitmap, uint8_t, (serv_port / 8) + 1);
 				/* set to zero to be sure */
 				for (; bm_len <= serv_port / 8; bm_len++) {
 				/*

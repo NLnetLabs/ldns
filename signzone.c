@@ -82,9 +82,9 @@ struct tm tm;
 		/*origin = ldns_rdf_new_frm_str(LDNS_RDF_TYPE_DNAME, ".");*/
 		origin = ldns_rr_owner(orig_soa);
 	}
-
 	
 	keys = ldns_key_list_new();
+
 
 	argi = 2;
 	while (argi < argc) {
@@ -126,14 +126,10 @@ strftime(date_buf, 15, "%Y%m%d%H%M%S", &tm);
 		usage(stderr, argv[0]);
 		return 1;
 	}
-
 			
 	signed_zone = ldns_zone_sign(orig_zone, keys);
 	
 	if (signed_zone) {
-		/*
-		printf("SIGNED ZONE:\n");
-		*/
 		ldns_zone_print(stdout, signed_zone);
 		ldns_zone_deep_free(signed_zone);
 	} else {
@@ -142,7 +138,5 @@ strftime(date_buf, 15, "%Y%m%d%H%M%S", &tm);
 	ldns_zone_deep_free(orig_zone);
 	
 	ldns_key_list_free(keys);
-	ldns_rdf_deep_free(origin);
-	
         return 0;
 }

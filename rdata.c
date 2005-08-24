@@ -284,7 +284,9 @@ void
 ldns_rdf_deep_free(ldns_rdf *rd)
 {
 	if (rd) {
-		LDNS_FREE(rd->_data);
+		if (rd->_data) {
+			LDNS_FREE(rd->_data);
+		}
 		LDNS_FREE(rd);
 	}
 }
