@@ -151,3 +151,54 @@ ldns_version(void)
 {
 	return (char*)LDNS_VERSION;
 }
+
+/* compare according to RFC 1982 (32 bits)
+ * it either return 0 meaning
+ * equal
+ * 0: s1 == s2
+ * -1: s1 < s2
+ * +1: s1 > s2
+ * something else (-2 in this case) meaning undef
+ */
+int
+ldns_serial(uint32_t s1, uint32_t s2)
+{
+	uint32_t power;
+
+	/* calculate  2^(SERIAL_BITS - 1) */
+	power = 1;
+	power = power << 31;
+	power = power * 2 - 1;
+
+	/* equality */
+	if (s1 == s2) {
+		return 0;
+	}
+
+	/* s1 is less than s2 */
+	/* (i1 < i2 and i2 - i1 < 2^(SERIAL_BITS - 1)) */
+	if (s1 < s2 &&
+			((s2 - s1) < power)) {
+		return -1;
+	}
+	/* i1 > i2 and i1 - i2 > 2^(SERIAL_BITS - 1)) */
+	if (s1 > s2 &&
+			((s1 - s2) > power)) {
+		return -1;
+	}
+
+	/* s1 is more than s2 */
+	/* (i1 < i2 and i2 - i1 > 2^(SERIAL_BITS - 1)) */
+	if (s1 < s2 &&
+			((s2 - s1) > power)) {
+		return +1;
+	}
+	/* (i1 > i2 and i1 - i2 < 2^(SERIAL_BITS - 1)) */
+	if (s1 > s2 &&
+			((s1 - s2) < power)) {
+		return +1;
+	}
+
+	/* unknown */
+	return -2;
+}

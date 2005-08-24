@@ -20,13 +20,11 @@ LINK            = $(CC) $(CFLAGS) $(LDFLAGS) $(LIBS)
 HEADER		= config.h
 TESTS		= run-test0 run-test7 run-test18 run-test19 run-test20 \
 			dname-label-test notify run-test-read-zone \
-			rrsig-test
+			rrsig-test serial
 
 .PHONY:	all clean realclean
 
 all:	$(TESTS)
-
-lua: 	lua-rns
 
 run-test0:       run-test0.o 
 		$(LINK) -o $@ $+ 
@@ -58,11 +56,8 @@ dname-label-test:       dname-label-test.o
 notify: 	notify.o
 		$(LINK) -o $@ $+
 
-lua-rns: 	lua-rns.o
-		$(LINK) `lua-config --libs` -o $@ $+
-	
-lua-rns.o: 	lua-rns.c
-		$(COMPILE) `lua-config --include` -c $<
+serial: 	serial.o
+		$(LINK) -o $@ $+
 
 ## implicit rule
 %.o:    %.c $(HEADER)
