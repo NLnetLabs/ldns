@@ -38,4 +38,15 @@ int main(void)
 	printf("expiration: %d\n", t_expir);
 	ldns_rdf_print(stdout, expir);
 	printf("\n");
+
+	if (t_expir - t_incep < 0) {
+		printf("bad sig, expiration before inception?? Tsssg\n");
+	}
+	if (t_now - t_incep < 0) {
+		printf("bad sig, inception date has passed\n");
+	}
+	if (t_expir - t_now < 0) {
+		printf("bad sig, expiration date has passed\n");
+	}
+	printf("Sig dates are all correct\n");
 }
