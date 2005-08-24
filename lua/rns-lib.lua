@@ -42,41 +42,44 @@ function lua_debug(...)
 end
 
 -- transpose 2 rrs in a pkt --
-function lua_transpose_rr(pkt, n1, n2)
+function lua_record_transpose(pkt, n1, n2)
 	print("[info] [RR] transpose", n1, n2)
 	local rr_n1 = packet.get_rr(pkt, n1)
 	local rr_n2 = packet.set_rr(pkt, rr_n1, n2)
 	local rr_tm = packet.set_rr(pkt, rr_n2, n1)
-	l_rr_free(rm_tm)
+	record.free(rm_tm)
 end
 
-function lua_transpose_rr_random(pkt)
+-- _R := random
+function lua_record_transpose_R(pkt)
 	local total = packet.rrcount(pkt) - 1
 	local rn1 = math.random(0, total)
 	local rn2 = math.random(0, total)
-	lua_transpose_rr(pkt, rn1, rn2)
+	lua_transpose_record(pkt, rn1, rn2)
 end
 
 -- substitute, add, remove
-function lua_insert_rr(pkt, r, n)
+function lua_record_insert(pkt, r, n)
 	print("[info] [RR] insert after", n)
-	packet.insert_rr(pkt, r, n)
+	packet.insert_record(pkt, r, n)
 end
 
 -- add an rr to the end of a pkt --
-function lua_insert_end_rr(pkt, r)
-	local n = packet.rr_count(pkt) - 1
+-- _E := end
+function lua_record_insert_E(pkt, r)
+	local n = packet.rrcount(pkt) - 1
 	print(n)
-	lua_insert_rr(pkt, r, n)
+	lua_insert_record(pkt, r, n)
 end
 
 -- remove an rr from the end of a pkt --
-function lua_remove_rr(pkt, n)
+--pop??
+function lua_record_remove_E(pkt, n)
 	print("[info] [RR] remove", "end")
 end
 
 -- increment the ancount
-function lua_ancount_incr(pkt, n)
+function lua_packet_ancount_incr(pkt, n)
 	print("[info] [PKT] ancount incr", n)
 	an = packet.ancount(pkt)
 	n = an + n
@@ -88,12 +91,29 @@ end
 ---------------------------------
 
 -- reverse all the rrs in a pkt --
-function lua_reverse_pkt(pkt)
+function lua_packet_reverse(pkt)
 	local total = packet.rrcount(pkt) - 1
 	for i=0, (total / 2) do
 		lua_transpose_rr(pkt, i, total - i)
 	end
 end
+
+-- write a buffer to a socket
+function lua_udp_write(socket, buffer_wire, sock_from)
+	-- convert the sockaddr_storage to something we
+	-- can work with
+	
+	-- checks
+	if socket == 0 then return -1 end
+	if buffer_wire == nil then return -1 end
+	if sock_from == nil then return -1 end
+	
+	rdf_listen, port_listen = rdf.sockaddr_to_rdf(sock_from)
+
+	bytes = udp.write(socket, buffer_wire, rdf_listen, port_listen) 
+	return bytes
+end
+
 
 -- initialize the pseudo random number generator
 -- frm: http://lua-users.org/wiki/MathLibraryTutorial
@@ -103,5 +123,4 @@ function lua_rand_init()
 	math.random()
 	math.random()
 end
-
 lua_rand_init()

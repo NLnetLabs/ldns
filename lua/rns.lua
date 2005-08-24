@@ -36,14 +36,16 @@ else
 
 	-- set the id on the outgoing packet
 	packet.set_id(pkt, id)
-	lua_ancount_incr(pkt, 100)
+	lua_packet_ancount_incr(pkt, 2)
 	wirebuf2 = packet.to_buf(pkt)
 
-	rdf_listen, port_listen = rdf.sockaddr_to_rdf(sockaddr_from)
-
-	bytes = udp.write(socket, wirebuf2, rdf_listen, port_listen)  -- this works
-	lua_debug("wrote bytes", bytes)
-	packet.print(pkt)
+	bytes = lua_udp_write(socket, wirebuf2, sockaddr_from)
+	if bytes == -1 then
+		lua_debug("write error")
+	else 
+		lua_debug("wrote bytes", bytes)
+		packet.print(pkt)
+	end
 	
 end
 
