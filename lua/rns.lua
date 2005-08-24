@@ -18,6 +18,9 @@ pkt = packet.push_rr(pkt, LDNS_SECTION_AUTHORITY, rr3)
 rdf_ip = rdf.new_frm_str(LDNS_RDF_TYPE_A, "127.0.0.1")
 socket = udp.open(rdf_ip, 5353)
 
+
+while true do
+
 -- read from the socket, this blocks...
 wirebuf, sockaddr_from, fromlen  = udp_read(socket) -- this works
 --wirebuf, sockaddr_from, fromlen  = udp.read(socket) -- this doesn't
@@ -31,6 +34,11 @@ else
 
 	lua_debug("received from the interface")
 
+	-- next we must send it to our recursive nameserver
+	-- and pick up the result
+	-- then we modify the result somewhat and sent it back
+	-- to the client
+
 	id = packet.id(wirepkt);
 	packet.print(wirepkt)
 
@@ -39,6 +47,7 @@ else
 	lua_packet_ancount_incr(pkt, 2)
 	wirebuf2 = packet.to_buf(pkt)
 
+	-- write back to the client
 	bytes = lua_udp_write(socket, wirebuf2, sockaddr_from)
 	if bytes == -1 then
 		lua_debug("write error")
@@ -47,6 +56,8 @@ else
 		packet.print(pkt)
 	end
 	
+end
+
 end
 
 udp.close(socket)
