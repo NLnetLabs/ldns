@@ -114,6 +114,20 @@ ldns_rdf2native_int32(ldns_rdf *rd)
 	}
 }
 
+time_t
+ldns_rdf2native_time_t(ldns_rdf *rd)
+{
+	uint32_t data;
+	
+	switch(ldns_rdf_get_type(rd)) {
+		case LDNS_RDF_TYPE_TIME:
+			memcpy(&data, ldns_rdf_data(rd), sizeof(data));
+			return (time_t)ntohl(data);
+		default:
+			return 0;
+	}
+}
+
 struct sockaddr_storage *
 ldns_rdf2native_sockaddr_storage(ldns_rdf *rd, uint16_t port, size_t *size)
 {

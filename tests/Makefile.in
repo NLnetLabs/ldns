@@ -19,7 +19,8 @@ LINK            = $(CC) $(CFLAGS) $(LDFLAGS) $(LIBS)
 
 HEADER		= config.h
 TESTS		= run-test0 run-test7 run-test18 run-test19 run-test20 \
-			dname-label-test notify run-test-read-zone
+			dname-label-test notify run-test-read-zone \
+			rrsig-test
 
 .PHONY:	all clean realclean
 
@@ -43,6 +44,9 @@ run-test19:       run-test19.o
 		$(LINK) -lssl -o $@ $+ 
 
 run-test20:       run-test20.o 
+		$(LINK) -lssl -o $@ $+ 
+
+rrsig-test:   rrsig-test.o
 		$(LINK) -lssl -o $@ $+ 
 	
 run-test-read-zone: 	run-test-read-zone.o

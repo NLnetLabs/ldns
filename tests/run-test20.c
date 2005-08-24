@@ -97,8 +97,6 @@ main(void)
 		ldns_key_print(stdout, privkey);
 	}
 
-	exit(1);
-
 	dnskey = ldns_key2rr(privkey);
 	if (dnskey) {
 		ldns_rr_print(stdout, dnskey);

@@ -296,6 +296,13 @@ uint16_t	ldns_rdf2native_int16(ldns_rdf *rd);
  */
 uint32_t	ldns_rdf2native_int32(ldns_rdf *rd);
 
+/** 
+ * returns the native time_t representation from the rdf.
+ * \param[in] rd the ldns_rdf to operate on
+ * \return time_t the value extracted (32 bits currently)
+ */
+time_t 		ldns_rdf2native_time_t(ldns_rdf *rd);
+
 /**
  * converts a ttl value (like 5d2h) to a long.
  * \param[in] nptr the start of the string
