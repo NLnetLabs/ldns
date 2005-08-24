@@ -111,7 +111,8 @@ ldns_rr_new_frm_str(const char *str, uint16_t default_ttl, ldns_rdf *origin)
 	ssize_t c;
 	/* used for types with unknown number of rdatas */
 	bool done;
-	
+	bool quoted;
+		
 	ldns_rdf *r;
 	uint16_t r_cnt;
 	uint16_t r_min;
@@ -308,6 +309,7 @@ ldns_rr_new_frm_str(const char *str, uint16_t default_ttl, ldns_rdf *origin)
 			done = false;
 
 			for (r_cnt = 0; !done && r_cnt < ldns_rr_descriptor_maximum(desc); r_cnt++) {
+				quoted = false;
 				/* if type = B64, the field may contain spaces */
 				if (ldns_rr_descriptor_field_type(desc, r_cnt) == LDNS_RDF_TYPE_B64 ||
 				    ldns_rr_descriptor_field_type(desc, r_cnt) == LDNS_RDF_TYPE_LOC ||
@@ -323,6 +325,7 @@ ldns_rr_new_frm_str(const char *str, uint16_t default_ttl, ldns_rdf *origin)
 						delimiters = "\"\0";
 						ldns_buffer_skip(rd_buf, 1);
 					}
+					quoted = true;
 				}
 				/* because number of fields can be variable, we can't
 				   rely on _maximum() only */
@@ -331,7 +334,7 @@ ldns_rr_new_frm_str(const char *str, uint16_t default_ttl, ldns_rdf *origin)
 					 * \# method, which can contain spaces...
 					 * it does specify size though...
 					 */
-					if (strlen(rd) == 2 && strncmp(rd, "\\#", 2) == 0) {
+					if (strlen(rd) == 2 && strncmp(rd, "\\#", 2) == 0 && !quoted) {
 						c = ldns_bget_token(rd_buf, rd, delimiters, LDNS_MAX_RDFLEN);
 						hex_data_size = (uint16_t) atoi(rd);
 						/* copy the hex chars into hex str (which is 2 chars per byte) */
@@ -348,12 +351,18 @@ ldns_rr_new_frm_str(const char *str, uint16_t default_ttl, ldns_rdf *origin)
 						ldns_rdf_set_type(r, ldns_rr_descriptor_field_type(desc, r_cnt));
 						LDNS_FREE(hex_data_str);
 						ldns_rr_push_rdf(new, r);
-
 					} else {
 						r = ldns_rdf_new_frm_str(
 							ldns_rr_descriptor_field_type(desc, r_cnt),
 							rd);
 						ldns_rr_push_rdf(new, r);
+					}
+					if (quoted) {
+						if (ldns_buffer_available(rd_buf, 1)) {
+							ldns_buffer_skip(rd_buf, 1);
+						} else {
+							done = true;
+						}
 					}
 				} else {
 					done = true;

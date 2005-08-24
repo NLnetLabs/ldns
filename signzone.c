@@ -14,10 +14,10 @@
 
 int
 usage(FILE *fp, char *prog) {
-	fprintf(fp, "%s [OPTIONS] <zone name> <zonefile> <keyfile(s)>\n", prog);
+	fprintf(fp, "%s [OPTIONS] <zonefile> <keyfile(s)>\n", prog);
 	fprintf(fp, "  signs the zone with the given private key\n");
 fprintf(fp, "currently only reads zonefile and prints it\n");
-fprintf(fp, "todo: settable incept, exp, etc");
+fprintf(fp, "todo: settable incept, exp, etc, -o origin ");
 fprintf(fp, "you can specify multiple keyfiles");
 	return 0;
 }
@@ -27,7 +27,6 @@ main(int argc, char *argv[])
 {
 	const char *zonefile_name;
 	FILE *zonefile = NULL;
-	const char *zone_name = NULL;
 	int argi;
 
 	ldns_zone *orig_zone = NULL;
@@ -46,24 +45,48 @@ main(int argc, char *argv[])
 	
 	int line_nr = 0;
 	time_t now;
+char date_buf[15];
+struct tm tm;
 	
-	if (argc < 3) {
+	if (argc < 2) {
 		usage(stdout, argv[0]);
 		exit(1);
 	} else {
-		zone_name = argv[1];
-		zonefile_name = argv[2];
+		zonefile_name = argv[1];
+	}
+
+	/* read zonefile first to find origin if not specified */
+	/*
+	printf("Reading zonefile: %s\n", zonefile_name);
+	*/
+	
+	zonefile = fopen(zonefile_name, "r");
+	
+	if (!zonefile) {
+		fprintf(stderr, "Error: unable to read %s (%s)\n", zonefile_name, strerror(errno));
+		exit(1);
+	} else {
+		orig_zone = ldns_zone_new_frm_fp_l(zonefile, origin, ttl, class, &line_nr);
+		
+		if (!orig_zone) {
+			fprintf(stderr, "Zone not read\n");
+		} else {
+			orig_soa = ldns_zone_soa(orig_zone);
+			orig_rrs = ldns_zone_rrs(orig_zone);
+		}
+		fclose(zonefile);
 	}
 
 	if (!origin) {
 		/* default to root origin */
 		/*origin = ldns_rdf_new_frm_str(LDNS_RDF_TYPE_DNAME, ".");*/
-		origin = ldns_dname_new_frm_str(zone_name);
+		origin = ldns_rr_owner(orig_soa);
 	}
+
 	
 	keys = ldns_key_list_new();
 
-	argi = 3;
+	argi = 2;
 	while (argi < argc) {
 		keyfile = fopen(argv[argi], "r");
 		if (!keyfile) {
@@ -81,6 +104,11 @@ main(int argc, char *argv[])
 				/* default to inception time now,
 				   exporation now + 2 weeks */
 				time(&now);
+/*printf("NOW IS: %u\n", now);*/
+gmtime_r(&now, &tm);
+strftime(date_buf, 15, "%Y%m%d%H%M%S", &tm);
+/*printf("date: %s\n", date_buf);*/
+
 				ldns_key_set_inception(key, now);
 				ldns_key_set_expiration(key, now + 1209600);
 				
@@ -99,40 +127,19 @@ main(int argc, char *argv[])
 		return 1;
 	}
 
-	/*
-	printf("Reading zonefile: %s\n", zonefile_name);
-	*/
+			
+	signed_zone = ldns_zone_sign(orig_zone, keys);
 	
-	zonefile = fopen(zonefile_name, "r");
-	
-	if (!zonefile) {
-		fprintf(stderr, "Error: unable to read %s (%s)\n", zonefile_name, strerror(errno));
+	if (signed_zone) {
+		/*
+		printf("SIGNED ZONE:\n");
+		*/
+		ldns_zone_print(stdout, signed_zone);
+		ldns_zone_deep_free(signed_zone);
 	} else {
-		orig_zone = ldns_zone_new_frm_fp_l(zonefile, origin, ttl, class, &line_nr);
-		
-		if (!orig_zone) {
-			fprintf(stderr, "Zone not read\n");
-		} else {
-			orig_soa = ldns_zone_soa(orig_zone);
-			orig_rrs = ldns_zone_rrs(orig_zone);
-
-			
-			signed_zone = ldns_zone_sign(orig_zone, keys);
-			
-			if (signed_zone) {
-				/*
-				printf("SIGNED ZONE:\n");
-				*/
-				ldns_zone_print(stdout, signed_zone);
-				ldns_zone_deep_free(signed_zone);
-			} else {
-				fprintf(stderr, "Error signing zone.");
-			}
-			ldns_zone_deep_free(orig_zone);
-		}
-
-		fclose(zonefile);
+		fprintf(stderr, "Error signing zone.");
 	}
+	ldns_zone_deep_free(orig_zone);
 	
 	ldns_key_list_free(keys);
 	ldns_rdf_deep_free(origin);
