@@ -829,8 +829,9 @@ ldns_str2rdf_wks(ldns_rdf **rd, const char *str)
 	*rd = ldns_rdf_new_frm_data(LDNS_RDF_TYPE_WKS, (uint16_t) (bm_len + 1), data);
 
 	LDNS_FREE(token);
-	LDNS_FREE(str_buf);
+	ldns_buffer_free(str_buf);
 	LDNS_FREE(bitmap);
+	LDNS_FREE(data);
 	free(proto_str);
 
 	return LDNS_STATUS_OK;

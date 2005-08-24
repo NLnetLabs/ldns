@@ -67,7 +67,6 @@ struct tm tm;
 		exit(1);
 	} else {
 		orig_zone = ldns_zone_new_frm_fp_l(zonefile, origin, ttl, class, &line_nr);
-		
 		if (!orig_zone) {
 			fprintf(stderr, "Zone not read\n");
 		} else {
@@ -82,7 +81,7 @@ struct tm tm;
 		/*origin = ldns_rdf_new_frm_str(LDNS_RDF_TYPE_DNAME, ".");*/
 		origin = ldns_rr_owner(orig_soa);
 	}
-	
+
 	keys = ldns_key_list_new();
 
 
@@ -135,8 +134,9 @@ strftime(date_buf, 15, "%Y%m%d%H%M%S", &tm);
 	} else {
 		fprintf(stderr, "Error signing zone.");
 	}
-	ldns_zone_deep_free(orig_zone);
 	
 	ldns_key_list_free(keys);
+
+	ldns_zone_deep_free(orig_zone);
         return 0;
 }

@@ -53,6 +53,9 @@ ldns_key_new()
 		ldns_key_set_inception(newkey, 0);
 		ldns_key_set_expiration(newkey, 0);
 		ldns_key_set_pubkey_owner(newkey, NULL);
+		ldns_key_set_rsa_key(newkey, NULL);
+		ldns_key_set_dsa_key(newkey, NULL);
+		ldns_key_set_hmac_key(newkey, NULL);
 		return newkey;
 	}
 }
@@ -707,6 +710,21 @@ ldns_key_deep_free(ldns_key *key)
 {
 	if (ldns_key_pubkey_owner(key)) {
 		ldns_rdf_deep_free(ldns_key_pubkey_owner(key));
+	}
+	switch(ldns_key_algorithm(key)) {
+	case LDNS_SIGN_RSASHA1:
+	case LDNS_SIGN_RSAMD5:
+		if (ldns_key_rsa_key(key)) {
+			RSA_free(ldns_key_rsa_key(key));
+		}
+		break;
+	case LDNS_SIGN_DSA:
+		if (ldns_key_dsa_key(key)) {
+			DSA_free(ldns_key_dsa_key(key));
+		}
+		break;
+	case LDNS_SIGN_HMACMD5:
+		break;
 	}
 	LDNS_FREE(key);
 }

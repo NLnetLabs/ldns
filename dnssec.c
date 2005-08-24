@@ -1142,6 +1142,7 @@ ldns_sign_public(ldns_rr_list *rrset, ldns_key_list *keys)
 
 		ldns_buffer_free(sign_buf); /* restart for the next key */
         }
+        ldns_rr_list_deep_free(rrset_clone);
 	return signatures;
 }
 
@@ -1345,6 +1346,8 @@ ldns_create_nsec(ldns_rdf *cur_owner, ldns_rdf *next_owner, ldns_rr_list *rrs)
 
 	ldns_rr_push_rdf(nsec, ldns_rdf_new_frm_data(LDNS_RDF_TYPE_NSEC, cur_data_size, data));
 
+	LDNS_FREE(bitmap);
+	LDNS_FREE(data);
 	return nsec;
 }
 
@@ -1439,8 +1442,6 @@ ldns_zone_sign(ldns_zone *zone, ldns_key_list *key_list)
 	uint16_t i;
 	ldns_rr_type cur_rrset_type;
 	
-	ldns_rr_list *next_rrset;
-
 	signed_zone = ldns_zone_new();
 	
 	/* there should only be 1 SOA, so the soa record is 1 rrset */
@@ -1448,14 +1449,14 @@ ldns_zone_sign(ldns_zone *zone, ldns_key_list *key_list)
 	ldns_rr_list_push_rr(soa_rrset, ldns_zone_soa(zone));
 	cur_rrsigs = ldns_sign_public(soa_rrset, key_list);
 	cur_dname = ldns_rr_owner(ldns_rr_list_rr(soa_rrset, 0));
+	ldns_rr_list_free(soa_rrset);
 
 	ldns_zone_set_soa(signed_zone, ldns_rr_clone(ldns_zone_soa(zone)));
 	ldns_zone_push_rr_list(signed_zone, cur_rrsigs);
+	ldns_rr_list_free(cur_rrsigs);
 	
 	orig_zone_rrs = ldns_rr_list_clone(ldns_zone_rrs(zone));
 	signed_zone_rrs = ldns_rr_list_new();
-	next_rrset = ldns_rr_list_pop_rrset(orig_zone_rrs);
-	next_dname = ldns_rr_owner(ldns_rr_list_rr(next_rrset, 0));
 
 	/*
 	printf("UNSORTED:\n");
@@ -1500,13 +1501,15 @@ ldns_zone_sign(ldns_zone *zone, ldns_key_list *key_list)
 			cur_rrsigs = ldns_sign_public(cur_rrset, key_list);
 			ldns_zone_push_rr_list(signed_zone, cur_rrset);
 			ldns_zone_push_rr_list(signed_zone, cur_rrsigs);
+			ldns_rr_list_free(cur_rrsigs);
 		} else {
 			/* push it unsigned? */
 			ldns_zone_push_rr_list(signed_zone, cur_rrset);
 		}
+		ldns_rr_list_free(cur_rrset);
 		cur_rrset = ldns_rr_list_pop_rrset(signed_zone_rrs);
 	}
-	
+	ldns_rr_list_free(signed_zone_rrs);
 	return signed_zone;
 	
 }
