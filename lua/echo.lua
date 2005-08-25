@@ -36,6 +36,8 @@ while true do
 		nameserver_bytes = udp.write(socket_nameserver, wirebuf2, rdf_ip_nameserver, 53)
 		if nameserver_bytes == nil then
 			lua_debug("ns write error")
+		else 
+			lua_debug("wrote %d bytes", nameserver_bytes)
 		end
 
 		nameserver_buf, sockaddr_from_nameserver  = udp.read(socket_nameserver)
@@ -44,26 +46,28 @@ while true do
 		nameserver_pkt = buffer.to_pkt(nameserver_buf)
 		lua_debug("received from the nameserver")
 		packet.print(nameserver_pkt)
-if true then
 
-		-- next we must send it to our recursive nameserver
-		-- and pick up the result
-		-- then we modify the result somewhat and sent it back
-		-- to the client
-		
 		-- write back to the client
-		-- This is fishy
+		-- This is fishy, why the new buf??
 		nsbuf2 = packet.to_buf(nameserver_pkt)
-		bytes = lua_udp_write(socket, nsbuf2, sockaddr_from)
-else
-		bytes = lua_udp_write(socket, wirebuf2, sockaddr_from)
-end
+
+		print("nsbuf2")
+		buffer.info(nsbuf2)
+		print("nameserver_buf")
+		buffer.info(nameserver_buf)
+
+		bytes = lua_udp_write(socket, nsbuf2, sockaddr_from) --this works
+		--bytes = lua_udp_write(socket, nameserver_buf, sockaddr_from) ----this not
+		--but is the above legal?? --
+
 		if bytes == nil  then
 			lua_debug("write error")
-		else 
-			lua_debug("wrote bytes", bytes)
-			packet.print(pkt)
 		end
+
+		buffer.free(nsbuf2)
+		buffer.free(nameserver_buf)
+		buffer.free(wirebuf2)
+		buffer.free(wirebuf)
 		
 	end
 end

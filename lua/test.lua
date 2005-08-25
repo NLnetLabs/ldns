@@ -9,6 +9,7 @@ my_rr4 = record.new_frm_str("www.atoom.net. IN A 192.168.1.2")
 record.print(my_rr)
 record.print(my_rr2)
 record.print(my_rr4)
+print("nothing?")
 
 my_pkt = packet.new();
 

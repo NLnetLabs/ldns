@@ -431,7 +431,6 @@ l_read_wire_udp(lua_State *L)
 	/* stack func lua cal in same order buf, from */
 	lua_pushlightuserdata(L, pktbuf);
 	lua_pushlightuserdata(L, from);
-	/* lua_pushnumber(L, (lua_Number)from_size); */
 	return 2;
 }
 
@@ -517,6 +516,32 @@ l_pkt_set_id(lua_State *L)
 	return 0;
 }
 
+/* BUFFERs */
+static int
+l_buf_free(lua_State *L)
+{
+	ldns_buffer *b = (ldns_buffer *)lua_touserdata(L, 1);
+	if (!b) {
+		return 0;
+	}
+	ldns_buffer_free(b);
+	return 0;
+}
+
+static int
+l_buf_info(lua_State *L)
+{
+	ldns_buffer *b = (ldns_buffer *)lua_touserdata(L, 1);
+	if (!b) {
+		return 0;
+	}
+	printf("capacity %d; position %d; limit %d\n",
+			ldns_buffer_capacity(b),
+			ldns_buffer_position(b),
+			ldns_buffer_limit(b));
+	return 0;
+}
+
 /*
 ============
  CONVERSION
@@ -550,7 +575,6 @@ l_pkt2buf(lua_State *L)
 		return 0;
 	}
 
-	/* resize! XXX */
 	b = ldns_buffer_new(LDNS_MIN_BUFLEN);
 
 	if (ldns_pkt2buffer_wire(b, p) != LDNS_STATUS_OK) {
@@ -696,6 +720,8 @@ register_ldns_functions(void)
 	/* BUFFERs */
 	static const struct luaL_reg l_buf_lib [] = {
                 {"to_pkt",              l_buf2pkt},
+		{"free", 		l_buf_free},
+		{"info", 		l_buf_info},
                 {NULL,                  NULL}
         };
 	luaL_openlib(L, "buffer", l_buf_lib, 0);

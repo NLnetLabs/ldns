@@ -43,7 +43,7 @@ ldns_buffer_new_frm_data(ldns_buffer *buffer, void *data, size_t size)
 {
 	assert(data != NULL);
 
-	buffer->_position = 0;
+	buffer->_position = 0; 
 	buffer->_limit = buffer->_capacity = size;
 	buffer->_data = LDNS_XMALLOC(uint8_t, size);
 	memcpy(buffer->_data, data, size);
