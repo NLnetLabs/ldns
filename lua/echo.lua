@@ -3,7 +3,10 @@ dofile("rns-lib.lua")
 
 -- echo whatever is received
 
-pkt = packet.new()
+-- this function specifies the mutalation to the packet
+function lua_packet_mangle(orig_packet)
+	return(packet.to_buf(orig_packet))
+end
 
 rdf_ip = rdf.new_frm_str(LDNS_RDF_TYPE_A, "127.0.0.1")
 socket = udp.server_open(rdf_ip, 5353)
@@ -36,31 +39,19 @@ while true do
 		nameserver_bytes = udp.write(socket_nameserver, wirebuf2, rdf_ip_nameserver, 53)
 		if nameserver_bytes == nil then
 			lua_debug("ns write error")
-		else 
-			lua_debug("wrote %d bytes", nameserver_bytes)
 		end
 
 		nameserver_buf, sockaddr_from_nameserver  = udp.read(socket_nameserver)
 		udp.close(socket_nameserver)
 
 		nameserver_pkt = buffer.to_pkt(nameserver_buf)
-		lua_debug("received from the nameserver")
 		packet.print(nameserver_pkt)
-
-		-- write back to the client
-		-- This is fishy, why the new buf??
-		nsbuf2 = packet.to_buf(nameserver_pkt)
-
-		print("nsbuf2")
-		buffer.info(nsbuf2)
-		print("nameserver_buf")
-		buffer.info(nameserver_buf)
-
+		
+		-- make a new buf and write that back to the client
+		nsbuf2 = lua_packet_mangle(nameserver_pkt)
 		bytes = lua_udp_write(socket, nsbuf2, sockaddr_from) --this works
-		--bytes = lua_udp_write(socket, nameserver_buf, sockaddr_from) ----this not
-		--but is the above legal?? --
 
-		if bytes == nil  then
+		if bytes == nil then
 			lua_debug("write error")
 		end
 

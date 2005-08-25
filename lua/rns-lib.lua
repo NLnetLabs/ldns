@@ -6,8 +6,6 @@ LDNS_SECTION_ADDITIONAL 	= 3
 LDNS_SECTION_ANY 		= 4
 LDNS_SECTION_ANY_NOQUESTION 	= 5
 
--- BETTER FUNCTION NAMES
-
 -- rdf types
 LDNS_RDF_TYPE_NONE		= 0
 LDNS_RDF_TYPE_DNAME		= 1
@@ -61,7 +59,8 @@ end
 -- substitute, add, remove
 function lua_record_insert(pkt, r, n)
 	print("[info] [RR] insert after", n)
-	packet.insert_record(pkt, r, n)
+	pkt = packet.insert_rr(pkt, r, n)
+	record.print(pkt)
 end
 
 -- add an rr to the end of a pkt --
@@ -69,7 +68,7 @@ end
 function lua_record_insert_E(pkt, r)
 	local n = packet.rrcount(pkt) - 1
 	print(n)
-	lua_insert_record(pkt, r, n)
+	lua_insert_rr(pkt, r, n)
 end
 
 -- remove an rr from the end of a pkt --
