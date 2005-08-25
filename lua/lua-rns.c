@@ -181,7 +181,7 @@ l_pkt_push_rr(lua_State *L)
 	ldns_pkt_section s = (ldns_pkt_section)lua_tonumber(L, 2); /* the section where to put it */
 	ldns_rr *rr = (ldns_rr*)lua_touserdata(L, 3); /* the rr to put */
 
-	if (!pkt || !rr) {
+	if (!pkt) {
 		return 0;
 	}
 
@@ -200,7 +200,7 @@ l_pkt_insert_rr(lua_State *L)
 	ldns_rr *rr = (ldns_rr*)lua_touserdata(L, 2);
 	uint16_t n = (uint16_t)lua_tonumber(L, 3);
 
-	if (!p || !rr) {
+	if (!p) {
 		return 0;
 	}
 
