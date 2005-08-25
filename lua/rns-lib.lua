@@ -59,8 +59,7 @@ end
 -- substitute, add, remove
 function lua_record_insert(pkt, r, n)
 	print("[info] [RR] insert after", n)
-	pkt = packet.insert_rr(pkt, r, n)
-	record.print(pkt)
+	packet.insert_rr(pkt, r, n)
 end
 
 -- add an rr to the end of a pkt --

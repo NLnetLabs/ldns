@@ -205,7 +205,6 @@ l_pkt_insert_rr(lua_State *L)
 	}
 
 	if(ldns_pkt_insert_rr(p, rr, n)) {
-		printf("dit gaat nog goed\n");
 		lua_pushlightuserdata(L, p);
 		return 1;
 	} else {
