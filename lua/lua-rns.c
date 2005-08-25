@@ -67,6 +67,10 @@ l_rdf_new_frm_str(lua_State *L)
 	uint16_t t = (uint16_t)lua_tonumber(L, 1);
 	char *str = strdup((char*)luaL_checkstring(L, 2));
 
+	if (!str) {
+		return 0;
+	}
+
 	ldns_rdf *new_rdf = ldns_rdf_new_frm_str((ldns_rdf_type)t, str);
 
 	if (new_rdf) {
@@ -82,6 +86,9 @@ l_rdf_print(lua_State *L)
 {
 	/* we always print to stdout */
 	ldns_rdf *toprint = (ldns_rdf*)lua_touserdata(L, 1); /* pop from the stack */
+	if (!toprint) {
+		return 0;
+	}
 	ldns_rdf_print(stdout, toprint);
 	return 0;
 }
@@ -90,6 +97,9 @@ static int
 l_rdf_free(lua_State *L)
 {
 	ldns_rdf *tofree = (ldns_rdf*)lua_touserdata(L, 1); /* pop from the stack */
+	if (!tofree) {
+		return 0;
+	}
 	ldns_rdf_free(tofree);
 	return 0;
 }
@@ -109,6 +119,10 @@ l_rr_new_frm_str(lua_State *L)
 	char *str = strdup((char*)luaL_checkstring(L, 1));
 	uint16_t ttl = (uint16_t)lua_tonumber(L, 2);
 	ldns_rdf *orig = (ldns_rdf*)lua_touserdata(L, 2);
+
+	if (!str || !orig) {
+		return 0;
+	}
 	
 	ldns_rr *new_rr = ldns_rr_new_frm_str(str, ttl, orig);
 
@@ -125,6 +139,10 @@ l_rr_print(lua_State *L)
 {
 	/* we always print to stdout */
 	ldns_rr *toprint = (ldns_rr*)lua_touserdata(L, 1); /* pop from the stack */
+	if (!toprint) {
+		return 0;
+	}
+
 	ldns_rr_print(stdout, toprint);
 	return 0;
 }
@@ -133,6 +151,9 @@ static int
 l_rr_free(lua_State *L)
 {
 	ldns_rr *tofree = (ldns_rr*)lua_touserdata(L, 1); /* pop from the stack */
+	if (!tofree) {
+		return 0;
+	}
 	ldns_rr_free(tofree);
 	return 0;
 }
@@ -162,6 +183,10 @@ l_pkt_push_rr(lua_State *L)
 	ldns_pkt_section s = (ldns_pkt_section)lua_tonumber(L, 2); /* the section where to put it */
 	ldns_rr *rr = (ldns_rr*)lua_touserdata(L, 3); /* the rr to put */
 
+	if (!pkt || !rr) {
+		return 0;
+	}
+
 	if (ldns_pkt_push_rr(pkt, s, rr)) {
 		lua_pushlightuserdata(L, pkt);
 		return 1;
@@ -177,6 +202,10 @@ l_pkt_insert_rr(lua_State *L)
 	ldns_rr *rr = (ldns_rr*)lua_touserdata(L, 2);
 	uint16_t n = (uint16_t)lua_tonumber(L, 3);
 
+	if (!p || !rr) {
+		return 0;
+	}
+
 	if(ldns_pkt_insert_rr(p, rr, n)) {
 		lua_pushlightuserdata(L, p);
 		return 1;
@@ -191,6 +220,10 @@ l_pkt_get_rr(lua_State *L)
 	ldns_pkt *p = (ldns_pkt*)lua_touserdata(L, 1); /* pop from the stack */
 	uint16_t n = (uint16_t) lua_tonumber(L, 2);
 	ldns_rr *r;
+
+	if (!p) {
+		return 0;
+	}
 
 	r = ldns_pkt_get_rr(p, n);
 	if (r) {
@@ -208,6 +241,10 @@ l_pkt_set_rr(lua_State *L)
 	ldns_rr *rr = (ldns_rr*)lua_touserdata(L, 2);
 	uint16_t n = (uint16_t)lua_tonumber(L, 3);
 	ldns_rr *r;
+
+	if (!p || !rr) {
+		return 0;
+	}
 
 	r = ldns_pkt_set_rr(p, rr, n);
 	if (r) {
@@ -235,6 +272,9 @@ l_pkt_print(lua_State *L)
 {
 	/* we always print to stdout */
 	ldns_pkt *toprint = (ldns_pkt*)lua_touserdata(L, 1); /* pop from the stack */
+	if (!toprint) {
+		return 0;
+	}
 	ldns_pkt_print(stdout, toprint);
 	return 0;
 }
@@ -254,6 +294,10 @@ l_server_socket_udp(lua_State *L)
 	struct sockaddr_storage *to;
 	size_t socklen;
 	int sockfd;
+
+	if (!ip || port == 0) {
+		return 0;
+	}
 
 	/* use default timeout - maybe this gets to be configureable */
 	timeout.tv_sec = LDNS_DEFAULT_TIMEOUT_SEC;
@@ -312,6 +356,10 @@ l_server_socket_close_udp(lua_State *L)
 {
 	int sockfd = (int)lua_tonumber(L, 1);
 
+	if (sockfd == 0) {
+		return 0;
+	}
+
 	close(sockfd);
 }
 
@@ -355,6 +403,10 @@ l_read_wire_udp(lua_State *L)
 	ldns_buffer *pktbuf;
 	struct sockaddr_storage *from;
 	socklen_t from_len;
+
+	if (sockfd == 0) {
+		return 0;
+	}
 		
 	from = LDNS_MALLOC(struct sockaddr_storage);
 	if (!from) {
@@ -390,6 +442,9 @@ static int
 l_pkt_qdcount(lua_State *L)
 {
 	ldns_pkt *p = (ldns_pkt*)lua_touserdata(L, 1);
+	if (!p) {
+		return 0;
+	}
 	lua_pushnumber(L, (lua_Number)ldns_pkt_qdcount(p));
 	return 1;
 }
@@ -398,6 +453,9 @@ static int
 l_pkt_ancount(lua_State *L)
 {
 	ldns_pkt *p = (ldns_pkt*)lua_touserdata(L, 1);
+	if (!p) {
+		return 0;
+	}
 	lua_pushnumber(L, (lua_Number)ldns_pkt_ancount(p));
 	return 1;
 }
@@ -406,6 +464,9 @@ static int
 l_pkt_nscount(lua_State *L)
 {
 	ldns_pkt *p = (ldns_pkt*)lua_touserdata(L, 1);
+	if (!p) {
+		return 0;
+	}
 	lua_pushnumber(L, (lua_Number)ldns_pkt_nscount(p));
 	return 1;
 }
@@ -414,6 +475,9 @@ static int
 l_pkt_arcount(lua_State *L)
 {
 	ldns_pkt *p = (ldns_pkt*)lua_touserdata(L, 1);
+	if (!p) {
+		return 0;
+	}
 	lua_pushnumber(L, (lua_Number)ldns_pkt_arcount(p));
 	return 1;
 }
@@ -423,6 +487,9 @@ l_pkt_set_ancount(lua_State *L)
 {
 	ldns_pkt *p  = (ldns_pkt*)lua_touserdata(L, 1);
 	uint16_t count = (uint16_t)lua_tonumber(L, 2);
+	if (!p) {
+		return 0;
+	}
 	(void)ldns_pkt_set_ancount(p, count);
 	return 0;
 }
@@ -431,6 +498,9 @@ static int
 l_pkt_id(lua_State *L)
 {
 	ldns_pkt *p = (ldns_pkt*)lua_touserdata(L, 1);
+	if (!p) {
+		return 0;
+	}
 	lua_pushnumber(L, (lua_Number)ldns_pkt_id(p));
 	return 1;
 }
@@ -440,6 +510,9 @@ l_pkt_set_id(lua_State *L)
 {
 	ldns_pkt *p = (ldns_pkt*)lua_touserdata(L, 1);
 	uint16_t id = (uint16_t)lua_tonumber(L, 2);
+	if (!p) {
+		return 0;
+	}
 	ldns_pkt_set_id(p, id);
 	return 0;
 }
@@ -494,6 +567,10 @@ l_pkt2string(lua_State *L)
 	luaL_Buffer lua_b;
 	ldns_pkt *p = (ldns_pkt *)lua_touserdata(L, 1);
 
+	if (!p) {
+		return 0;
+	}
+
 	b = ldns_buffer_new(LDNS_MAX_PACKETLEN);
 	luaL_buffinit(L,&lua_b);
 
@@ -521,6 +598,9 @@ l_sockaddr_storage2rdf(lua_State *L)
 	ldns_rdf *addr;
 
 	sock = lua_touserdata(L, 1);
+	if (!sock) {
+		return 0;
+	}
 	
 	addr = ldns_sockaddr_storage2rdf(sock, &port);
 	if (addr) {
