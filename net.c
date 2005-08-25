@@ -203,14 +203,11 @@ ldns_send_udp(uint8_t **result, ldns_buffer *qbin, const struct sockaddr_storage
 	return LDNS_STATUS_OK;
 }
 
-/* XXX add: ldns_udp_server_connect
+/* 
  * ldns_tcp_server_connect
  *
  * and the normal conetc, for just a socket
  */
-
-/* hack hack, this is now a server socket!! XXX need to change or rename */
-/* SERVER SERVER XXX */
 int
 ldns_udp_server_connect(const struct sockaddr_storage *to, struct timeval timeout)
 {
@@ -230,6 +227,7 @@ ldns_udp_server_connect(const struct sockaddr_storage *to, struct timeval timeou
 	if (bind(sockfd, (struct sockaddr*)to, (socklen_t)sizeof(*to)) == -1) {
 		perror("bind");
 		close(sockfd);
+		return 0;
 	}
 	return sockfd;
 }

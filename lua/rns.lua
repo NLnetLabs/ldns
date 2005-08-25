@@ -17,7 +17,11 @@ pkt = packet.push_rr(pkt, LDNS_SECTION_AUTHORITY, rr3)
 ---- Setup a server to listen to UDP -- bit strange to first
 -- make a rdf out of it and then continue with the sockaddr struct
 rdf_ip = rdf.new_frm_str(LDNS_RDF_TYPE_A, "127.0.0.1")
-socket = udp.open(rdf_ip, 5353)
+socket = udp.server_open(rdf_ip, 5353)
+if socket == nil then
+        os.exit(EXIT_FAILURE)
+end
+
 
 while true do
 	-- read from the socket, this blocks...
@@ -27,7 +31,7 @@ while true do
 	if wirebuf == nil then
 		lua_debug("nothing received")
 	else
-		-- somebody is listening
+		-- somebody is writing
 		wirepkt = buffer.to_pkt(wirebuf)
 
 		lua_debug("received from the interface")

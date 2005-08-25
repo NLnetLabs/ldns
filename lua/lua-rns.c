@@ -271,6 +271,35 @@ l_server_socket_udp(lua_State *L)
 }
 
 static int
+l_client_socket_udp(lua_State *L)
+{
+	ldns_rdf *ip = (ldns_rdf*)lua_touserdata(L, 1); /* get the ip */
+	uint16_t port = (uint16_t)lua_tonumber(L, 2); /* port number */
+	struct timeval timeout;
+	struct sockaddr_storage *to;
+	size_t socklen;
+	int sockfd;
+
+	/* use default timeout - maybe this gets to be configureable */
+	timeout.tv_sec = LDNS_DEFAULT_TIMEOUT_SEC;
+	timeout.tv_usec = LDNS_DEFAULT_TIMEOUT_USEC;
+
+	/* socklen isn't really usefull here */
+	to = ldns_rdf2native_sockaddr_storage(ip, port, &socklen);
+	if (!to) {
+		return 0;
+	}
+
+	/* get the socket */
+	sockfd = ldns_udp_connect(to, timeout);
+	if (sockfd == 0) {
+		return 0;
+	}
+	lua_pushnumber(L, (lua_Number)sockfd);
+	return 1;
+}
+
+static int
 l_server_socket_close_udp(lua_State *L)
 {
 	int sockfd = (int)lua_tonumber(L, 1);
@@ -583,7 +612,8 @@ register_ldns_functions(void)
 	static const struct luaL_reg l_udpnet_lib [] = {
 		{"write", 	l_write_wire_udp},
 		{"read", 	l_read_wire_udp}, 
-		{"open", 	l_server_socket_udp},
+		{"server_open", 	l_server_socket_udp},
+		{"open", 	l_client_socket_udp},
 		{"close", 	l_server_socket_close_udp},
                 {NULL,          NULL}
 	};
