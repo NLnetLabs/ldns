@@ -582,15 +582,12 @@ register_ldns_functions(void)
 	/* NETWORKING */
 	static const struct luaL_reg l_udpnet_lib [] = {
 		{"write", 	l_write_wire_udp},
-		/* {"read", 	l_read_wire_udp}, */ /* DOESN'T WORK???? */
+		{"read", 	l_read_wire_udp}, 
 		{"open", 	l_server_socket_udp},
 		{"close", 	l_server_socket_close_udp},
                 {NULL,          NULL}
 	};
 	luaL_openlib(L, "udp", l_udpnet_lib, 0);
-	lua_register(L, "udp_read", l_read_wire_udp); /* THIS DOESNT WORK FROM WITHIN
-							 THE LIBRARY...!!! ???? XXX */
-				/* I DON'T KNOW WHY */
 }
 
 int
