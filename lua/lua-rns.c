@@ -222,6 +222,10 @@ static int
 l_pkt_rr_count(lua_State *L)
 {
 	ldns_pkt *p = (ldns_pkt*)lua_touserdata(L, 1);
+	if (!p) {
+		return 0;
+	}
+	
 	lua_pushnumber(L, ldns_pkt_section_count(p, LDNS_SECTION_ANY));
 	return 1;
 }
@@ -280,6 +284,10 @@ l_client_socket_udp(lua_State *L)
 	size_t socklen;
 	int sockfd;
 
+	if (!ip || port == 0) {
+		return 0;
+	}
+
 	/* use default timeout - maybe this gets to be configureable */
 	timeout.tv_sec = LDNS_DEFAULT_TIMEOUT_SEC;
 	timeout.tv_usec = LDNS_DEFAULT_TIMEOUT_USEC;
@@ -318,6 +326,10 @@ l_write_wire_udp(lua_State *L)
 	struct sockaddr_storage *to;
 	size_t socklen;
 	ssize_t bytes;
+
+	if (!pktbuf || !rdf_to || port == 0) {
+		return 0;
+	}
 	
 	/* port number is handled in the socket */
 	to = ldns_rdf2native_sockaddr_storage(rdf_to, port, &socklen);
