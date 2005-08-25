@@ -20,7 +20,7 @@ LINK            = $(CC) $(CFLAGS) $(LDFLAGS) $(LIBS)
 HEADER		= config.h
 TESTS		= run-test0 run-test7 run-test18 run-test19 run-test20 \
 			dname-label-test notify run-test-read-zone \
-			rrsig-test serial
+			rrsig-test serial server
 
 .PHONY:	all clean realclean
 
@@ -57,6 +57,9 @@ notify: 	notify.o
 		$(LINK) -o $@ $+
 
 serial: 	serial.o
+		$(LINK) -o $@ $+
+
+server: 	server.o
 		$(LINK) -o $@ $+
 
 ## implicit rule

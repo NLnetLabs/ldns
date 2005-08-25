@@ -1,6 +1,0 @@
-There is a strange networking problem, calling udp_read more than once
-gives an error 
-upd.read (with a dot) doesn't work at all.
-
-I suspect these 2 errors are related. It may be the case this is a bug
-in the core ldns

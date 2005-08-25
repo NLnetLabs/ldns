@@ -22,8 +22,8 @@ socket = udp.open(rdf_ip, 5353)
 while true do
 
 -- read from the socket, this blocks...
-wirebuf, sockaddr_from, fromlen  = udp_read(socket) -- this works
---wirebuf, sockaddr_from, fromlen  = udp.read(socket) -- this doesn't
+wirebuf, sockaddr_from  = udp_read(socket) -- this works
+--wirebuf, sockaddr_from  = udp.read(socket) -- this doesn't
 
 -- wrap this in new functions
 if wirebuf == nil then

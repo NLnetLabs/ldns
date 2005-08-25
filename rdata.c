@@ -135,12 +135,6 @@ ldns_rdf2native_sockaddr_storage(ldns_rdf *rd, uint16_t port, size_t *size)
 	struct sockaddr_in  *data_in;
 	struct sockaddr_in6 *data_in6;
 
-/*
- * DEAD CODE???
-	struct in_addr *b;
-	b = (struct in_addr*)rd->_data;
-*/
-	
 	data = LDNS_MALLOC(struct sockaddr_storage);
 	if (!data) {
 		return NULL;
@@ -174,7 +168,6 @@ ldns_rdf2native_sockaddr_storage(ldns_rdf *rd, uint16_t port, size_t *size)
 ldns_rdf *
 ldns_sockaddr_storage2rdf(struct sockaddr_storage *sock, uint16_t *port)
 {
-
 	ldns_rdf *addr;
 	struct sockaddr_in *data_in;
 	struct sockaddr_in6 *data_in6;
@@ -183,19 +176,19 @@ ldns_sockaddr_storage2rdf(struct sockaddr_storage *sock, uint16_t *port)
 		case AF_INET:
 			data_in = (struct sockaddr_in*)sock;
 			if (port) {
-				*port = ntohs(data_in->sin_port);
+				*port = ntohs((uint16_t)data_in->sin_port);
 			}
 			addr = ldns_rdf_new_frm_data(LDNS_RDF_TYPE_A, 
-					sizeof(struct sockaddr_in),
+					LDNS_IP4ADDRLEN, 
 					&data_in->sin_addr);
 			break;
 		case AF_INET6:
 			data_in6 = (struct sockaddr_in6*)sock;
 			if (port) {
-				*port = ntohs(data_in6->sin6_port);
+				*port = ntohs((uint16_t)data_in6->sin6_port);
 			}
 			addr = ldns_rdf_new_frm_data(LDNS_RDF_TYPE_AAAA,
-					sizeof(struct sockaddr_in6),
+					LDNS_IP6ADDRLEN,
 					&data_in6->sin6_addr);
 			break;
 		default:
