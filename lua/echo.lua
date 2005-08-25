@@ -5,6 +5,8 @@ dofile("rns-lib.lua")
 
 -- this function specifies the mutalation to the packet
 function lua_packet_mangle(orig_packet)
+	local rr1 = record.new_frm_str("www.miek.nl IN A 127.0.0.1")
+	packet.push_rr(orig_packet, LDNS_SECTION_ANSWER, rr1)
 	return(packet.to_buf(orig_packet))
 end
 
