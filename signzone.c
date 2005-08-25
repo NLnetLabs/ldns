@@ -102,11 +102,7 @@ struct tm tm;
 				*/
 				/* default to inception time now,
 				   exporation now + 2 weeks */
-				time(&now);
-/*printf("NOW IS: %u\n", now);*/
-gmtime_r(&now, &tm);
-strftime(date_buf, 15, "%Y%m%d%H%M%S", &tm);
-/*printf("date: %s\n", date_buf);*/
+				now = time(NULL);
 
 				ldns_key_set_inception(key, now);
 				ldns_key_set_expiration(key, now + 1209600);

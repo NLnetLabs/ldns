@@ -1085,9 +1085,9 @@ ldns_sign_public(ldns_rr_list *rrset, ldns_key_list *keys)
 						ldns_rr_list_rr(rrset_clone, 0))));
 		/* inception, expiration */
 		(void)ldns_rr_rrsig_set_inception(current_sig,
-				ldns_native2rdf_int32(LDNS_RDF_TYPE_INT32, ldns_key_inception(current_key)));
+				ldns_native2rdf_int32(LDNS_RDF_TYPE_TIME, ldns_key_inception(current_key)));
 		(void)ldns_rr_rrsig_set_expiration(current_sig,
-				ldns_native2rdf_int32(LDNS_RDF_TYPE_INT32, ldns_key_expiration(current_key)));
+				ldns_native2rdf_int32(LDNS_RDF_TYPE_TIME, ldns_key_expiration(current_key)));
 		/* key-tag */
 		(void)ldns_rr_rrsig_set_keytag(current_sig,
 				ldns_native2rdf_int16(LDNS_RDF_TYPE_INT16, ldns_key_keytag(current_key)));

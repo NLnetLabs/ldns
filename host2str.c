@@ -686,6 +686,7 @@ ldns_rdf2buffer_str(ldns_buffer *buffer, ldns_rdf *rdf)
 {
 	ldns_status res;
 
+	/*ldns_buffer_printf(buffer, "%u:", ldns_rdf_get_type(rdf));*/
 	if (rdf) {
 		switch(ldns_rdf_get_type(rdf)) {
 		case LDNS_RDF_TYPE_NONE:

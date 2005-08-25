@@ -472,9 +472,7 @@ ldns_str2rdf_cert_alg(ldns_rdf **rd, const char *str)
 	lt = ldns_lookup_by_name(ldns_cert_algorithms, str);
 	st = LDNS_STATUS_OK;
 
-printf("YOYOYO\n");
 	if (lt) {
-printf("LT: %s\n", str);
 		/* it was given as a integer */
 		*rd = ldns_rdf_new_frm_data(
 			LDNS_RDF_TYPE_INT8, sizeof(uint8_t), &lt->id);
@@ -482,7 +480,6 @@ printf("LT: %s\n", str);
 			st = LDNS_STATUS_ERR;
 		}
 	} else {
-printf("NO LT: %s\n", str);
 		/* try as-is (a number) */
 		st = ldns_str2rdf_int8(rd, str);
 	}

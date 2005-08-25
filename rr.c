@@ -406,15 +406,7 @@ ldns_rr_new_frm_fp_l(FILE *fp, uint16_t ttl, ldns_rdf *origin, int *line_nr)
         }
 
 	rr = ldns_rr_new_frm_str((const char*) line, ttl, origin);
-/*
-printf("line %d: %s\n", *line_nr, line);
-*/
-if (rr && ldns_rr_get_type(rr) == LDNS_RR_TYPE_CERT) {
-	printf("got CERT RR:\n");
-	ldns_rr_print(stdout, rr);
-	printf("from:\n%s\n", line);
-exit(1);
-}
+
 	LDNS_FREE(line);
 	return rr;
 }
