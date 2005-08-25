@@ -66,13 +66,11 @@ l_rdf_new_frm_str(lua_State *L)
 {
 	uint16_t t = (uint16_t)lua_tonumber(L, 1);
 	char *str = strdup((char*)luaL_checkstring(L, 2));
-
 	if (!str) {
 		return 0;
 	}
-
+	
 	ldns_rdf *new_rdf = ldns_rdf_new_frm_str((ldns_rdf_type)t, str);
-
 	if (new_rdf) {
 		lua_pushlightuserdata(L, new_rdf);
 		return 1;
@@ -120,7 +118,7 @@ l_rr_new_frm_str(lua_State *L)
 	uint16_t ttl = (uint16_t)lua_tonumber(L, 2);
 	ldns_rdf *orig = (ldns_rdf*)lua_touserdata(L, 2);
 
-	if (!str || !orig) {
+	if (!str) {
 		return 0;
 	}
 	
