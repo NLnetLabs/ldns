@@ -48,6 +48,7 @@ ldns_fget_keyword_data_l(FILE *f, const char *keyword, const char *k_del, char *
 		LDNS_FREE(fkeyword);
 		return i;
 	} else {
+		/*printf("no match for %s (read: %s)\n", keyword, fkeyword);*/
 		LDNS_FREE(fkeyword);
 		return -1;
 	}

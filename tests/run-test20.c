@@ -10,6 +10,7 @@
 #include <stddef.h>
 #include <unistd.h>
 #include <stdbool.h>
+#include <errno.h>
 
 #ifdef HAVE_STDINT_H
 #include <stdint.h>
@@ -37,9 +38,12 @@ main(void)
 	ldns_rr_list  *rrs;
 	ldns_rr_list  *signatures;
 	ldns_rr_list  *dnskeys;
+ldns_rr_list *result;
+
 	/* ----- */
 	FILE *f;
 	char *d;
+	char *keyfilename;
 
 	d = LDNS_XMALLOC(char, 1000);
 
@@ -53,7 +57,7 @@ main(void)
 		exit(1);
 	}
 
-	owner = ldns_dname_new_frm_str("miek.nl");
+	owner = ldns_dname_new_frm_str("jelte.nlnetlabs.nl");
 	ldns_key_set_pubkey_owner(privkey, owner);
 
 	ldns_key_set_origttl(privkey, 1800);
@@ -61,7 +65,7 @@ main(void)
 
 	ldns_key_list_push_key(keys, privkey);
 
-	rr = ldns_rr_new_frm_str("www.miek.nl IN A 127.0.0.1", 0, NULL);
+	rr = ldns_rr_new_frm_str("www.jelte.nlnetlabs.nl. IN A 127.0.0.1", 0, NULL);
 	ldns_rr_print(stdout, rr);
 	
 	ldns_rr_list_push_rr(rrs, rr);
@@ -81,66 +85,26 @@ main(void)
 	ldns_rr_list_print(stdout, dnskeys);
 	printf("\n Trying to sign\n");
 
-	f = fopen("Kmiek.nl.+001+63054.private", "r");
-	printf("Opening %s\n", "Kmiek.nl.+001+63054.private");
-	if (!f) {
-		return 0;
-	}
-	privkey = ldns_key_new_frm_fp(f);
-	fclose(f);
-
-	if (!privkey) { 
-		printf("arrg no key could be found!\n");
-		exit(1);
-	} else {
-		printf("Checking\n\n");
-		ldns_key_print(stdout, privkey);
-	}
-
-	dnskey = ldns_key2rr(privkey);
-	if (dnskey) {
-		ldns_rr_print(stdout, dnskey);
-		printf("; {%d}\n", 
-				(int) ldns_calc_keytag(dnskey));
-		printf("\n");
-		ldns_key_set_keytag(privkey, ldns_calc_keytag(dnskey));
-	} else {
-		exit(1);
-	}
-
-	f = fopen("Kmiek.nl.+001+05920.private", "r");
-	printf("Opening %s\n", "Kmiek.nl.+001+05920.private ");
-	if (!f) {
-		return 0;
-	}
-
-	privkey = ldns_key_new_frm_fp(f);
-	fclose(f);
-
-	if (!privkey) { 
-		printf("arrg no key could be found!\n");
-		exit(1);
-	}
-
-	dnskey = ldns_key2rr(privkey);
-	if (dnskey) {
-		ldns_rr_print(stdout, dnskey);
-		printf("; {%d}\n", 
-				(int) ldns_calc_keytag(dnskey));
-		printf("\n");
-		ldns_key_set_keytag(privkey, ldns_calc_keytag(dnskey));
-	} else {
-		exit(1);
-	}
-
-
 	signatures = ldns_sign_public(rrs, keys);
+
+	printf("DATA:\n");
+	ldns_rr_list_print(stdout, rrs);
+
+	printf("SIGS:\n");
 
 	ldns_rr_list_print(stdout, signatures);
 
+	printf("KEYS:\n");
+	ldns_rr_list_print(stdout, dnskeys);
+
 	printf("Now we are going to verify\n");
 
-	if (ldns_verify(rrs, signatures, dnskeys)) {
+	result = ldns_verify(rrs, signatures, dnskeys);
+
+printf("RESULT:\n");
+ldns_rr_list_print(stdout, result);
+
+	if (result != NULL) {
 		printf("SUCCESS\n\n");
 	} else {
 		printf("FAILURE\n\n");

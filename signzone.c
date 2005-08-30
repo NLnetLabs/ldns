@@ -44,9 +44,6 @@ main(int argc, char *argv[])
 	ldns_zone *signed_zone = NULL;
 	
 	int line_nr = 0;
-	time_t now;
-char date_buf[15];
-struct tm tm;
 	
 	if (argc < 2) {
 		usage(stdout, argv[0]);
@@ -100,14 +97,6 @@ struct tm tm;
 				/* set times in key? they will end up
 				   in the rrsigs
 				*/
-				/* default to inception time now,
-				   exporation now + 2 weeks */
-				now = time(NULL);
-
-				ldns_key_set_inception(key, now);
-				ldns_key_set_expiration(key, now + 1209600);
-				
-				
 			} else {
 				fprintf(stderr, "Error reading key from %s\n", argv[argi]);
 			}

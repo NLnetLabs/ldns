@@ -15,6 +15,7 @@
 #include <ldns/dns.h>
 
 #include <strings.h>
+#include <time.h>
 
 #include <openssl/ssl.h>
 #include <openssl/err.h>
@@ -90,7 +91,7 @@ ldns_verify(ldns_rr_list *rrset, ldns_rr_list *rrsig, ldns_rr_list *keys)
 
 	valid = false;
 	
-	result = NULL;
+	result = ldns_rr_list_new();
 	for (i = 0; i < ldns_rr_list_rr_count(rrsig); i++) {
 
 		keys_verified = ldns_verify_rrsig_keylist(rrset,
@@ -162,11 +163,13 @@ ldns_verify_rrsig_keylist(ldns_rr_list *rrset, ldns_rr *rrsig, ldns_rr_list *key
 	time_t now, inception, expiration;
 
 	if (!rrset) {
+		dprintf("%s\n", "no rrset");
 		return NULL;
 	}
 
 	validkeys = ldns_rr_list_new();
 	if (!validkeys) {
+		dprintf("%s\n", "no valid keys");
 		return NULL;
 	}
 	
@@ -187,14 +190,17 @@ ldns_verify_rrsig_keylist(ldns_rr_list *rrset, ldns_rr *rrsig, ldns_rr_list *key
 
 	if (expiration - inception < 0) {
                 /* bad sig, expiration before inception?? Tsssg */
+		dprintf("%s\n", "expiration before inception");
 		return NULL;
         }
         if (now - inception < 0) {
                 /* bad sig, inception date has passed */
+		dprintf("%s\n", "inception in future");
 		return NULL;
         }
         if (expiration - now < 0) {
                 /* bad sig, expiration date has passed */
+		dprintf("%s\n", "expiration in past");
 		return NULL;
         }
 	
@@ -203,6 +209,7 @@ ldns_verify_rrsig_keylist(ldns_rr_list *rrset, ldns_rr *rrsig, ldns_rr_list *key
 				ldns_rr_rdf(rrsig, 8)) != LDNS_STATUS_OK) {
 		ldns_buffer_free(rawsig_buf);
 		ldns_buffer_free(verify_buf);
+		dprintf("%s\n", "unable to create buffer");
 		return NULL;
 	}
 
@@ -225,6 +232,7 @@ ldns_verify_rrsig_keylist(ldns_rr_list *rrset, ldns_rr *rrsig, ldns_rr_list *key
 	if (ldns_rrsig2buffer_wire(verify_buf, rrsig) != LDNS_STATUS_OK) {
 		ldns_buffer_free(rawsig_buf);
 		ldns_buffer_free(verify_buf);
+		dprintf("%s\n", "unable to create verify buffer");
 		return NULL;
 	}
 
@@ -232,6 +240,7 @@ ldns_verify_rrsig_keylist(ldns_rr_list *rrset, ldns_rr *rrsig, ldns_rr_list *key
 	if (ldns_rr_list2buffer_wire(verify_buf, rrset_clone) != LDNS_STATUS_OK) {
 		ldns_buffer_free(rawsig_buf);
 		ldns_buffer_free(verify_buf);
+		dprintf("%s\n", "unable to create clone buffer");
 		return NULL;
 	}
 
@@ -254,14 +263,16 @@ ldns_verify_rrsig_keylist(ldns_rr_list *rrset, ldns_rr *rrsig, ldns_rr_list *key
 				/* returning is bad might screw up
 				   good keys later in the list
 				   what to do? */
+				dprintf("%s\n", "unable to create key buffer");
 				return NULL;
 			}
 
 			/* check for right key */
 			if (sig_algo == ldns_rdf2native_int8(ldns_rr_rdf(current_key, 2))) {
 				result = ldns_verify_rrsig_buffers(rawsig_buf, verify_buf, key_buf, sig_algo);
+			} else {
+				dprintf("%s\n", "key has wrong algo");
 			}
-
 			ldns_buffer_free(key_buf); 
 			if (result) {
 				/* one of the keys has matched, don't break
@@ -270,10 +281,21 @@ ldns_verify_rrsig_keylist(ldns_rr_list *rrset, ldns_rr *rrsig, ldns_rr_list *key
 				 * later */
 				if (!ldns_rr_list_push_rr(validkeys, current_key)) {
 					/* couldn't push the key?? */
+					dprintf("%s\n", "unable to push key");
 					return NULL;
 				}
 				/* break; */ 
+			} else {
+				dprintf("%s\n", "result is false for:");
+				dprintf("%s\n", "data:");
+				ldns_rr_list_print(stdout, rrset);
+				dprintf("%s\n", "sig:");
+				ldns_rr_print(stdout, rrsig);
+				dprintf("%s\n", "keys:");
+				ldns_rr_list_print(stdout, keys);
 			}
+		} else {
+			dprintf("%s\n", "keytags do not match");
 		}
 	}
 
@@ -283,6 +305,7 @@ ldns_verify_rrsig_keylist(ldns_rr_list *rrset, ldns_rr *rrsig, ldns_rr_list *key
 	ldns_buffer_free(verify_buf);
 	if (ldns_rr_list_rr_count(validkeys) == 0) {
 		/* no keys were added */
+		dprintf("%s\n", "no keys");
 		return NULL;
 	} else {
 		return validkeys;
@@ -396,6 +419,8 @@ ldns_verify_rrsig_dsa(ldns_buffer *sig, ldns_buffer *rrset, ldns_buffer *key)
 	DSA_SIG *dsasig;
 	BIGNUM *R;
 	BIGNUM *S;
+	uint8_t t;
+
 	unsigned char *sha1_hash;
 
 	dsakey = ldns_key_buf2dsa(key);
@@ -404,29 +429,23 @@ ldns_verify_rrsig_dsa(ldns_buffer *sig, ldns_buffer *rrset, ldns_buffer *key)
 	}
 
 	/* extract the R and S field from the sig buffer */
-	R = BN_bin2bn((unsigned char*)ldns_buffer_at(sig, 1), SHA_DIGEST_LENGTH, NULL);
-	S = BN_bin2bn((unsigned char*)ldns_buffer_at(sig, 21), SHA_DIGEST_LENGTH, NULL);
-	
+	t = *(ldns_buffer_at(sig, 0));
+	R = BN_new();
+	(void) BN_bin2bn((unsigned char*)ldns_buffer_at(sig, 1), SHA_DIGEST_LENGTH, R);
+	S = BN_new();
+	(void) BN_bin2bn((unsigned char*)ldns_buffer_at(sig, 21), SHA_DIGEST_LENGTH, S);
+
 	dsasig = DSA_SIG_new();
 	if (!dsasig) {
 		return false;
 	}
-	/* 
-	   TODO uncomment and fix
-	t_sig = (uint8_t) sigbuf[0];
-	
-	if (t_sig != T) {
-		warning("Values for T are different in key and signature, verification of DSA sig failed");
-		return RET_FAIL;
-	}
-	*/
+
 	dsasig->r = R;
 	dsasig->s = S;
 	sha1_hash = SHA1((unsigned char*)ldns_buffer_begin(rrset), ldns_buffer_position(rrset), NULL);
 	if (!sha1_hash) {
 		return false;
 	}
-	
 	if (DSA_do_verify(sha1_hash, SHA_DIGEST_LENGTH, dsasig, dsakey) == 1) {
 		return true;
 	} else {
@@ -1025,6 +1044,7 @@ ldns_sign_public(ldns_rr_list *rrset, ldns_key_list *keys)
 	uint16_t i;
 	ldns_buffer *sign_buf;
 	uint32_t orig_ttl;
+	time_t now;
 
 	if (!rrset || ldns_rr_list_rr_count(rrset) < 1 || !keys) {
 		return NULL;
@@ -1084,10 +1104,23 @@ ldns_sign_public(ldns_rr_list *rrset, ldns_key_list *keys)
 				ldns_native2rdf_int8(LDNS_RDF_TYPE_INT8, ldns_rr_label_count(
 						ldns_rr_list_rr(rrset_clone, 0))));
 		/* inception, expiration */
-		(void)ldns_rr_rrsig_set_inception(current_sig,
-				ldns_native2rdf_int32(LDNS_RDF_TYPE_TIME, ldns_key_inception(current_key)));
-		(void)ldns_rr_rrsig_set_expiration(current_sig,
-				ldns_native2rdf_int32(LDNS_RDF_TYPE_TIME, ldns_key_expiration(current_key)));
+		/* TODO: is this a good place for default values? */
+		now = time(NULL);
+		if (ldns_key_inception(current_key) != 0) {
+			(void)ldns_rr_rrsig_set_inception(current_sig,
+					ldns_native2rdf_int32(LDNS_RDF_TYPE_TIME, ldns_key_inception(current_key)));
+		} else {
+			(void)ldns_rr_rrsig_set_inception(current_sig,
+					ldns_native2rdf_int32(LDNS_RDF_TYPE_TIME, now));
+		}
+		if (ldns_key_expiration(current_key) != 0) {
+			(void)ldns_rr_rrsig_set_expiration(current_sig,
+					ldns_native2rdf_int32(LDNS_RDF_TYPE_TIME, ldns_key_expiration(current_key)));
+		} else {
+			(void)ldns_rr_rrsig_set_expiration(current_sig,
+					ldns_native2rdf_int32(LDNS_RDF_TYPE_TIME, now + LDNS_DEFAULT_EXP_TIME));
+		}
+
 		/* key-tag */
 		(void)ldns_rr_rrsig_set_keytag(current_sig,
 				ldns_native2rdf_int16(LDNS_RDF_TYPE_INT16, ldns_key_keytag(current_key)));
@@ -1143,6 +1176,7 @@ ldns_sign_public(ldns_rr_list *rrset, ldns_key_list *keys)
 		ldns_buffer_free(sign_buf); /* restart for the next key */
         }
         ldns_rr_list_deep_free(rrset_clone);
+
 	return signatures;
 }
 
@@ -1150,9 +1184,11 @@ ldns_rdf *
 ldns_sign_public_dsa(ldns_buffer *to_sign, DSA *key)
 {
 	unsigned char *sha1_hash;
-	unsigned int siglen;
 	ldns_rdf *sigdata_rdf;
 	ldns_buffer *b64sig;
+	/* xxxx */
+	DSA_SIG *sig;
+	uint8_t *data;
 
 	b64sig = ldns_buffer_new(LDNS_MAX_PACKETLEN);
 	if (!b64sig) {
@@ -1165,14 +1201,17 @@ ldns_sign_public_dsa(ldns_buffer *to_sign, DSA *key)
 		ldns_buffer_free(b64sig);
 		return NULL;
 	}
-	
-	DSA_sign(NID_sha1, sha1_hash, SHA_DIGEST_LENGTH,
-			(unsigned char*)ldns_buffer_begin(b64sig),
-			&siglen, key);
-	
-	sigdata_rdf = ldns_rdf_new_frm_data(LDNS_RDF_TYPE_B64, siglen, 
-			ldns_buffer_begin(b64sig));
-	ldns_buffer_free(b64sig);
+
+	sig = DSA_do_sign(sha1_hash, SHA_DIGEST_LENGTH, key);
+
+	data = LDNS_XMALLOC(uint8_t, 1 + 2 * SHA_DIGEST_LENGTH);
+
+	data[0] = 1;
+	BN_bn2bin(sig->r, (unsigned char *) (data + 1));
+	BN_bn2bin(sig->s, (unsigned char *) (data + 21));
+
+	sigdata_rdf = ldns_rdf_new_frm_data(LDNS_RDF_TYPE_B64, 41, data);
+
 	return sigdata_rdf;
 }
 
@@ -1404,15 +1443,6 @@ ldns_pkt_verify(ldns_pkt *p, ldns_rr_type t, ldns_rdf *o,
 		return NULL;
 	}
 
-#if 0
-	printf("sigs\n");
-	ldns_rr_list_print(stdout, sigs);
-	printf("sigs covered\n");
-	ldns_rr_list_print(stdout, sigs_covered);
-	printf("rrset\n");
-	ldns_rr_list_print(stdout, rrset);
-	printf("\n");
-#endif
 	return ldns_verify(rrset, sigs, k);
 }
 
@@ -1436,9 +1466,11 @@ ldns_zone_sign(ldns_zone *zone, ldns_key_list *key_list)
 	ldns_rr_list *cur_rrsigs;
 	ldns_rr_list *orig_zone_rrs;
 	ldns_rr_list *signed_zone_rrs;
+	ldns_rr_list *pubkeys;
 	ldns_rdf *cur_dname = NULL;
 	ldns_rdf *next_dname = NULL;
 	ldns_rr *nsec;
+	ldns_rr *ckey;
 	uint16_t i;
 	ldns_rr_type cur_rrset_type;
 	
@@ -1456,18 +1488,17 @@ ldns_zone_sign(ldns_zone *zone, ldns_key_list *key_list)
 	ldns_rr_list_free(cur_rrsigs);
 	
 	orig_zone_rrs = ldns_rr_list_clone(ldns_zone_rrs(zone));
+	/* add the key (TODO: check if it's there already? */
+	pubkeys = ldns_rr_list_new();
+	for (i = 0; i < ldns_key_list_key_count(key_list); i++) {
+		ckey = ldns_key2rr(ldns_key_list_key(key_list, i));
+		ldns_rr_list_push_rr(pubkeys, ckey);
+		ldns_rr_list_push_rr(orig_zone_rrs, ckey);
+	}
 	signed_zone_rrs = ldns_rr_list_new();
 
-	/*
-	printf("UNSORTED:\n");
-	ldns_rr_list_print(stdout, orig_zone_rrs);
-	*/
 	ldns_rr_list_sort_oct(orig_zone_rrs);
 	
-	/*
-	printf("SORTED:\n");
-	ldns_rr_list_print(stdout, orig_zone_rrs);
-	*/
 	/* add nsecs */
 	for (i = 0; i < ldns_rr_list_rr_count(orig_zone_rrs); i++) {
 		cur_dname = ldns_rr_owner(ldns_rr_list_rr(orig_zone_rrs, i));

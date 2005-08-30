@@ -21,6 +21,8 @@
 
 #define LDNS_MAX_KEYLEN		2048
 #define LDNS_DNSSEC_KEYPROTO	3
+/* default time before sigs expire */
+#define LDNS_DEFAULT_EXP_TIME	1209600
 
 #if 0
 /**

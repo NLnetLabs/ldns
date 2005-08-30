@@ -58,11 +58,11 @@ enum ldns_enum_rdf_type
 	LDNS_RDF_TYPE_ALG,
 	/** unknown types */
 	LDNS_RDF_TYPE_UNKNOWN,
-	/** time */
+	/** time (32 bits) */
 	LDNS_RDF_TYPE_TIME,
-	/** tsig time 48 bits */
 	/** period */
 	LDNS_RDF_TYPE_PERIOD,
+	/** tsig time 48 bits */
 	LDNS_RDF_TYPE_TSIGTIME,
 	LDNS_RDF_TYPE_TSIG,
 	/** variable length any type rdata where the length
