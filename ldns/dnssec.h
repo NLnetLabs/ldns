@@ -178,7 +178,7 @@ ldns_rr_list *ldns_pkt_verify(ldns_pkt *p, ldns_rr_type t, ldns_rdf *o, ldns_rr_
  * \param[in] key_list the list of keys to sign the zone with
  * \return the signed zone
  */
-ldns_zone *ldns_zone_sign(ldns_zone *zone, ldns_key_list *key_list);
+ldns_zone *ldns_zone_sign(ldns_zone *zone, ldns_key_list *key_list, ldns_key_list *key_signing_key_list);
  
 
 #endif /* _LDNS_DNSSEC_H_ */

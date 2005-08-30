@@ -1447,7 +1447,7 @@ ldns_pkt_verify(ldns_pkt *p, ldns_rr_type t, ldns_rdf *o,
 }
 
 ldns_zone *
-ldns_zone_sign(ldns_zone *zone, ldns_key_list *key_list)
+ldns_zone_sign(ldns_zone *zone, ldns_key_list *key_list, ldns_key_list *key_signing_key_list)
 {
 	/*
 	 * Algorithm to be created:

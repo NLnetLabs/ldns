@@ -406,7 +406,6 @@ ldns_rr_new_frm_fp_l(FILE *fp, uint16_t ttl, ldns_rdf *origin, int *line_nr)
         }
 
 	rr = ldns_rr_new_frm_str((const char*) line, ttl, origin);
-
 	LDNS_FREE(line);
 	return rr;
 }

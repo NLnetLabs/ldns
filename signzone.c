@@ -12,13 +12,19 @@
 
 #include <ldns/dns.h>
 
+#define DATE_FORMAT "%Y%m%d%H%M%S"
+#define SHORT_DATE_FORMAT "%Y%m%d"
+
 int
-usage(FILE *fp, char *prog) {
+usage(FILE *fp, const char *prog) {
 	fprintf(fp, "%s [OPTIONS] <zonefile> <keyfile(s)>\n", prog);
 	fprintf(fp, "  signs the zone with the given private key\n");
-fprintf(fp, "currently only reads zonefile and prints it\n");
-fprintf(fp, "todo: settable incept, exp, etc, -o origin ");
-fprintf(fp, "you can specify multiple keyfiles");
+	fprintf(fp, "  -e <date>\t\texpiration date\n");
+	fprintf(fp, "  -i <date>\t\tinception date\n");
+	fprintf(fp, "  -k <keyfile>\t\tkey signing key\n");
+	fprintf(fp, "\t\t\tdates can be in YYYYMMDD[HHmmSS] format or timestamps\n");
+	fprintf(fp, "  -o <domain>\t\torigin for the zone\n");
+	fprintf(fp, "keys and keysigning keys (-k option) can be given multiple times\n");
 	return 0;
 }
 
@@ -36,26 +42,94 @@ main(int argc, char *argv[])
 	FILE *keyfile = NULL;
 	ldns_key *key = NULL;
 	ldns_key_list *keys;
+
+
+	/* we need to know the origin before reading ksk's,
+	 * so keep an array of filenames until we know it
+	 */
+	int key_signing_key_nr = 0;
+	char **key_signing_key_filenames = NULL;
+	ldns_key_list *key_signing_keys;
 	
+	struct tm tm;
+	uint32_t inception;
+	uint32_t expiration;
+
 	ldns_rdf *origin = NULL;
+
 	uint16_t ttl = 0;
 	ldns_rr_class class = LDNS_RR_CLASS_IN;	
 
 	ldns_zone *signed_zone = NULL;
 	
 	int line_nr = 0;
+	char c;
 	
+	const char *prog = argv[0];
+	
+	inception = 0;
+	expiration = 0;
+	
+	while ((c = getopt(argc, argv, "e:i:k:o:")) != -1) {
+		switch (c) {
+		case 'e':
+			/* try to parse YYYYMMDD first,
+			 * if that doesn't work, it
+			 * should be a timestamp (seconds since epoch)
+			 */
+			memset(&tm, 0, sizeof(tm));
+
+			if ((char *)strptime(optarg, DATE_FORMAT, &tm) != NULL) {
+				expiration = (uint32_t) timegm(&tm);
+			} else if ((char *)strptime(optarg, SHORT_DATE_FORMAT, &tm) != NULL) {
+				expiration = (uint32_t) timegm(&tm);
+			} else {
+				expiration = atol(optarg);
+			}
+			break;
+		case 'i':
+			memset(&tm, 0, sizeof(tm));
+
+			if ((char *)strptime(optarg, DATE_FORMAT, &tm) != NULL) {
+				inception = (uint32_t) timegm(&tm);
+			} else if ((char *)strptime(optarg, SHORT_DATE_FORMAT, &tm) != NULL) {
+				inception = (uint32_t) timegm(&tm);
+			} else {
+				inception = atol(optarg);
+			}
+			break;
+		case 'k':
+			key_signing_key_filenames = LDNS_XREALLOC(key_signing_key_filenames, char *, key_signing_key_nr + 1);
+			if (!key_signing_key_filenames) {
+				fprintf(stderr, "Out of memory\n");
+			}
+			key_signing_key_filenames[key_signing_key_nr] = optarg;
+			key_signing_key_nr++;
+			break;
+		case 'o':
+			if (ldns_str2rdf_dname(&origin, optarg) != LDNS_STATUS_OK) {
+				fprintf(stderr, "Bad origin, not a correct domain name\n");
+				usage(stderr, prog);
+				exit(1);
+			}
+			
+			break;
+		default:
+			return usage(stderr, prog);
+		}
+	}
+	
+	argc -= optind;
+	argv += optind;
+
 	if (argc < 2) {
-		usage(stdout, argv[0]);
+		usage(stdout, prog);
 		exit(1);
 	} else {
-		zonefile_name = argv[1];
+		zonefile_name = argv[0];
 	}
 
 	/* read zonefile first to find origin if not specified */
-	/*
-	printf("Reading zonefile: %s\n", zonefile_name);
-	*/
 	
 	zonefile = fopen(zonefile_name, "r");
 	
@@ -65,10 +139,19 @@ main(int argc, char *argv[])
 	} else {
 		orig_zone = ldns_zone_new_frm_fp_l(zonefile, origin, ttl, class, &line_nr);
 		if (!orig_zone) {
-			fprintf(stderr, "Zone not read\n");
+			fprintf(stderr, "Zone not read, parse error at %s line %u\n", zonefile_name, line_nr);
+			exit(1);
 		} else {
 			orig_soa = ldns_zone_soa(orig_zone);
+			if (!orig_soa) {
+				fprintf(stderr, "Error reading zonefile: missing SOA record\n");
+				exit(1);
+			}
 			orig_rrs = ldns_zone_rrs(orig_zone);
+			if (!orig_rrs) {
+				fprintf(stderr, "Error reading zonefile: no resource records\n");
+				exit(1);
+			}
 		}
 		fclose(zonefile);
 	}
@@ -81,8 +164,8 @@ main(int argc, char *argv[])
 
 	keys = ldns_key_list_new();
 
-
-	argi = 2;
+	/* read the ZSKs */
+	argi = 1;
 	while (argi < argc) {
 		keyfile = fopen(argv[argi], "r");
 		if (!keyfile) {
@@ -92,11 +175,19 @@ main(int argc, char *argv[])
 			if (key) {
 				/* TODO: should this be in frm_fp? */
 				ldns_key_set_pubkey_owner(key, ldns_rdf_clone(origin));
-				ldns_key_list_push_key(keys, key);
-				
+
 				/* set times in key? they will end up
 				   in the rrsigs
 				*/
+				if (expiration != 0) {
+					ldns_key_set_expiration(key, expiration);
+				}
+				if (inception != 0) {
+					ldns_key_set_inception(key, inception);
+				}
+
+				ldns_key_list_push_key(keys, key);
+				
 			} else {
 				fprintf(stderr, "Error reading key from %s\n", argv[argi]);
 			}
@@ -107,11 +198,42 @@ main(int argc, char *argv[])
 	
 	if (ldns_key_list_key_count(keys) < 1) {
 		fprintf(stderr, "Error: no keys to sign with. Aborting.\n\n");
-		usage(stderr, argv[0]);
+		usage(stderr, prog);
 		return 1;
 	}
 			
-	signed_zone = ldns_zone_sign(orig_zone, keys);
+	/* read the KSKs */
+	key_signing_keys = ldns_key_list_new();
+
+	for (argi = 0; argi < key_signing_key_nr; argi++) {
+		keyfile = fopen(key_signing_key_filenames[argi], "r");
+		if (!keyfile) {
+			fprintf(stderr, "Error: unable to read KSK %s (%s)\n", argv[argi], strerror(errno));
+		} else {
+			key = ldns_key_new_frm_fp(keyfile);
+			if (key) {
+				/* TODO: should this be in frm_fp? */
+				ldns_key_set_pubkey_owner(key, ldns_rdf_clone(origin));
+
+				/* set times in key? they will end up
+				   in the rrsigs
+				*/
+				if (expiration != 0) {
+					ldns_key_set_expiration(key, expiration);
+				}
+				if (inception != 0) {
+					ldns_key_set_inception(key, inception);
+				}
+
+				ldns_key_list_push_key(key_signing_keys, key);
+			} else {
+				fprintf(stderr, "Error reading KSK from %s\n", argv[argi]);
+			}
+			fclose(keyfile);
+		}
+	}
+
+	signed_zone = ldns_zone_sign(orig_zone, keys, key_signing_keys);
 	
 	if (signed_zone) {
 		ldns_zone_print(stdout, signed_zone);
@@ -120,8 +242,11 @@ main(int argc, char *argv[])
 		fprintf(stderr, "Error signing zone.");
 	}
 	
+/*
 	ldns_key_list_free(keys);
-
+*/
 	ldns_zone_deep_free(orig_zone);
+	
+	LDNS_FREE(key_signing_key_filenames);
         return 0;
 }
