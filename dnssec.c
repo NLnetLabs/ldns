@@ -1208,9 +1208,9 @@ ldns_sign_public_dsa(ldns_buffer *to_sign, DSA *key)
 
 	data[0] = 1;
 	BN_bn2bin(sig->r, (unsigned char *) (data + 1));
-	BN_bn2bin(sig->s, (unsigned char *) (data + 21));
+	BN_bn2bin(sig->s, (unsigned char *) (data + 1 + SHA_DIGEST_LENGTH));
 
-	sigdata_rdf = ldns_rdf_new_frm_data(LDNS_RDF_TYPE_B64, 41, data);
+	sigdata_rdf = ldns_rdf_new_frm_data(LDNS_RDF_TYPE_B64,  1 + 2 * SHA_DIGEST_LENGTH, data);
 
 	return sigdata_rdf;
 }
