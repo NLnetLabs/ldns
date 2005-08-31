@@ -830,7 +830,7 @@ ldns_str2rdf_wks(ldns_rdf **rd, const char *str)
 	LDNS_FREE(bitmap);
 	LDNS_FREE(data);
 	free(proto_str);
-
+	
 	return LDNS_STATUS_OK;
 }
 

@@ -237,14 +237,13 @@ main(int argc, char *argv[])
 	
 	if (signed_zone) {
 		ldns_zone_print(stdout, signed_zone);
-		ldns_zone_deep_free(signed_zone);
+		ldns_zone_deep_free(signed_zone); 
 	} else {
 		fprintf(stderr, "Error signing zone.");
 	}
 	
-/*
 	ldns_key_list_free(keys);
-*/
+	ldns_key_list_free(key_signing_keys);
 	ldns_zone_deep_free(orig_zone);
 	
 	LDNS_FREE(key_signing_key_filenames);

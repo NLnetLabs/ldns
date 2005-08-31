@@ -1541,6 +1541,7 @@ ldns_zone_sign(ldns_zone *zone, ldns_key_list *key_list, ldns_key_list *key_sign
 		cur_rrset = ldns_rr_list_pop_rrset(signed_zone_rrs);
 	}
 	ldns_rr_list_free(signed_zone_rrs);
+	ldns_rr_list_free(pubkeys);
 	return signed_zone;
 	
 }

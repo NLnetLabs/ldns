@@ -712,8 +712,10 @@ ldns_key2rr(ldns_key *k)
 	ldns_rr_push_rdf(pubkey, 
 			ldns_native2rdf_int8(LDNS_RDF_TYPE_INT8, LDNS_DNSSEC_KEYPROTO));
 	
-	ldns_rr_set_owner(pubkey, ldns_key_pubkey_owner(k));
-
+	if (ldns_key_pubkey_owner(k)) {
+		ldns_rr_set_owner(pubkey, ldns_rdf_clone(ldns_key_pubkey_owner(k)));
+	}
+	
 	/* third - da algorithm */
 	switch(ldns_key_algorithm(k)) {
 		case LDNS_SIGN_RSAMD5:
