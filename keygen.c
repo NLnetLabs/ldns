@@ -23,7 +23,7 @@ usage(FILE *fp, char *prog) {
 	fprintf(fp, "    K<name>+<alg>+<id>.key\tPublic key in RR format\n");
 	fprintf(fp, "    K<name>+<alg>+<id>.private\tPrivate key in key format\n");
 	fprintf(fp, "    K<name>+<alg>+<id>.ds\tDS in RR format\n");
-	
+	fprintf(fp, "  The base name (K<name>+<alg>+<id> will be printed to stdout\n");
 /*
 	fprintf(fp, "  The public key is printed to stdout\n");
 	fprintf(fp, "  The private key is printed to stderr\n");
@@ -165,5 +165,6 @@ main(int argc, char *argv[])
 		LDNS_FREE(filename);
 	}
 	
+	fprintf(stdout, "K%s+%03u+%05u\n", owner, algorithm, ldns_key_keytag(key));
         exit(EXIT_SUCCESS);
 }
