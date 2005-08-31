@@ -14,12 +14,14 @@
 
 #define DATE_FORMAT "%Y%m%d%H%M%S"
 #define SHORT_DATE_FORMAT "%Y%m%d"
+#define MAX_FILENAME_LEN 250
 
 void
 usage(FILE *fp, const char *prog) {
 	fprintf(fp, "%s [OPTIONS] <zonefile> <keyfile(s)>\n", prog);
 	fprintf(fp, "  signs the zone with the given private key\n");
 	fprintf(fp, "  -e <date>\t\texpiration date\n");
+	fprintf(fp, "  -f <file>\t\toutput zone to file (default <name>.signed)\n");
 	fprintf(fp, "  -i <date>\t\tinception date\n");
 	fprintf(fp, "  -k <keyfile>\t\tkey signing key\n");
 	fprintf(fp, "\t\t\tdates can be in YYYYMMDD[HHmmSS] format or timestamps\n");
@@ -42,7 +44,9 @@ main(int argc, char *argv[])
 	ldns_key *key = NULL;
 	ldns_key_list *keys;
 
-
+	char *outputfile_name = NULL;
+	FILE *outputfile;
+	
 	/* we need to know the origin before reading ksk's,
 	 * so keep an array of filenames until we know it
 	 */
@@ -69,7 +73,7 @@ main(int argc, char *argv[])
 	inception = 0;
 	expiration = 0;
 	
-	while ((c = getopt(argc, argv, "e:i:k:o:")) != -1) {
+	while ((c = getopt(argc, argv, "e:f:i:k:o:")) != -1) {
 		switch (c) {
 		case 'e':
 			/* try to parse YYYYMMDD first,
@@ -85,6 +89,10 @@ main(int argc, char *argv[])
 			} else {
 				expiration = atol(optarg);
 			}
+			break;
+		case 'f':
+			outputfile_name = LDNS_XMALLOC(char, MAX_FILENAME_LEN);
+			strncpy(outputfile_name, optarg, MAX_FILENAME_LEN);
 			break;
 		case 'i':
 			memset(&tm, 0, sizeof(tm));
@@ -237,8 +245,20 @@ main(int argc, char *argv[])
 
 	signed_zone = ldns_zone_sign(orig_zone, keys, key_signing_keys);
 	
+
+	if (!outputfile_name) {
+		outputfile_name = LDNS_XMALLOC(char, MAX_FILENAME_LEN);
+		snprintf(outputfile_name, MAX_FILENAME_LEN, "%s.signed", zonefile_name);
+	}
+	
 	if (signed_zone) {
-		ldns_zone_print(stdout, signed_zone);
+		outputfile = fopen(outputfile_name, "w");
+		if (!outputfile) {
+			fprintf(stderr, "Unable to open %s for writing: %s\n", outputfile_name, strerror(errno));
+		} else {
+			ldns_zone_print(outputfile, signed_zone);
+			fclose(outputfile);
+		}
 		ldns_zone_deep_free(signed_zone); 
 	} else {
 		fprintf(stderr, "Error signing zone.");
@@ -249,6 +269,7 @@ main(int argc, char *argv[])
 	ldns_key_list_free(key_signing_keys);
 	ldns_zone_deep_free(orig_zone);
 	
+	LDNS_FREE(outputfile_name);
 	LDNS_FREE(key_signing_key_filenames);
         exit(EXIT_SUCCESS);
 }

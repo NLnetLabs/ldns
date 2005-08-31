@@ -159,9 +159,9 @@ ldns_rdf2buffer_str_time(ldns_buffer *output, ldns_rdf *rdf)
 	struct tm tm;
 	char date_buf[16];
 	
+	data_time = 0;
 	memcpy(&data_time, &data, sizeof(uint32_t));
 	memset(&tm, 0, sizeof(tm));
-	data_time = 0;
 
 	if (gmtime_r(&data_time, &tm) &&
 	    strftime(date_buf, 15, "%Y%m%d%H%M%S", &tm)) {
@@ -294,7 +294,7 @@ ldns_rdf2buffer_str_alg(ldns_buffer *output, ldns_rdf *rdf)
 	if (lt) {
 		ldns_buffer_printf(output, "%s", lt->name);
 	} else {
-		ldns_buffer_printf(output, "ALG%d", data);
+		ldns_buffer_printf(output, "%d", data);
 	}
 	return ldns_buffer_status(output);
 }	

@@ -1309,7 +1309,7 @@ static const ldns_rdf_type type_apl_wireformat[] = {
 	LDNS_RDF_TYPE_APL
 };
 static const ldns_rdf_type type_ds_wireformat[] = {
-	LDNS_RDF_TYPE_INT16, LDNS_RDF_TYPE_INT8, LDNS_RDF_TYPE_INT8, LDNS_RDF_TYPE_HEX
+	LDNS_RDF_TYPE_INT16, LDNS_RDF_TYPE_ALG, LDNS_RDF_TYPE_INT8, LDNS_RDF_TYPE_HEX
 };
 static const ldns_rdf_type type_sshfp_wireformat[] = {
 	LDNS_RDF_TYPE_INT8, LDNS_RDF_TYPE_INT8, LDNS_RDF_TYPE_HEX
