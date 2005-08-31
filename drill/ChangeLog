@@ -1,3 +1,9 @@
+--------- Drill now is a subdirectory in ldns. To make life easier 
+--------- we are using ldns' version numbering for drill from now on. 
+--------- Sadly this means we GO BACKWARDS in the versions
+--------- This ChangeLog will not be updated anymore - all changes are
+--------- documented in ldns' ChangeLog
+
 1.0-pre3: to be released: drill-team
 	* Secure tracing works
 	* Added section about DNSSEC in the manual page

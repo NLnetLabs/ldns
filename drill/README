@@ -1,11 +1,15 @@
 QUICK INSTALL GUIDE
 
-* First install ldns
-  http://www.nlnetlabs.nl/ldns
+drill is a subdirectory in ldns.
 
-  and follow the instructions
+To compile drill you need:
+autoreconf && ./configure --with-ldns=../ && make
 
-* Now configure drill and compile it:
-  autoreconf && ./configure --with-ldns && make
+when ldns isn't installed on the system, or:
 
-  or --with-ldns=<path>, also see ./configure --help
+autoreconf && ./configure --with-ldns && make
+
+when ldns is installed. Also see ./configure --help
+
+In the first case you must run drill as:
+LD_LIBRARY_PATH=../.libs ./drill <options>

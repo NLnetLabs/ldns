@@ -15,7 +15,7 @@
 #define DATE_FORMAT "%Y%m%d%H%M%S"
 #define SHORT_DATE_FORMAT "%Y%m%d"
 
-int
+void
 usage(FILE *fp, const char *prog) {
 	fprintf(fp, "%s [OPTIONS] <zonefile> <keyfile(s)>\n", prog);
 	fprintf(fp, "  signs the zone with the given private key\n");
@@ -25,7 +25,6 @@ usage(FILE *fp, const char *prog) {
 	fprintf(fp, "\t\t\tdates can be in YYYYMMDD[HHmmSS] format or timestamps\n");
 	fprintf(fp, "  -o <domain>\t\torigin for the zone\n");
 	fprintf(fp, "keys and keysigning keys (-k option) can be given multiple times\n");
-	return 0;
 }
 
 int
@@ -110,12 +109,13 @@ main(int argc, char *argv[])
 			if (ldns_str2rdf_dname(&origin, optarg) != LDNS_STATUS_OK) {
 				fprintf(stderr, "Bad origin, not a correct domain name\n");
 				usage(stderr, prog);
-				exit(1);
+				exit(EXIT_FAILURE);
 			}
 			
 			break;
 		default:
-			return usage(stderr, prog);
+			usage(stderr, prog);
+			exit(EXIT_SUCCESS);
 		}
 	}
 	
@@ -124,7 +124,7 @@ main(int argc, char *argv[])
 
 	if (argc < 2) {
 		usage(stdout, prog);
-		exit(1);
+		exit(EXIT_FAILURE);
 	} else {
 		zonefile_name = argv[0];
 	}
@@ -135,22 +135,22 @@ main(int argc, char *argv[])
 	
 	if (!zonefile) {
 		fprintf(stderr, "Error: unable to read %s (%s)\n", zonefile_name, strerror(errno));
-		exit(1);
+		exit(EXIT_FAILURE);
 	} else {
 		orig_zone = ldns_zone_new_frm_fp_l(zonefile, origin, ttl, class, &line_nr);
 		if (!orig_zone) {
 			fprintf(stderr, "Zone not read, parse error at %s line %u\n", zonefile_name, line_nr);
-			exit(1);
+			exit(EXIT_FAILURE);
 		} else {
 			orig_soa = ldns_zone_soa(orig_zone);
 			if (!orig_soa) {
 				fprintf(stderr, "Error reading zonefile: missing SOA record\n");
-				exit(1);
+				exit(EXIT_FAILURE);
 			}
 			orig_rrs = ldns_zone_rrs(orig_zone);
 			if (!orig_rrs) {
 				fprintf(stderr, "Error reading zonefile: no resource records\n");
-				exit(1);
+				exit(EXIT_FAILURE);
 			}
 		}
 		fclose(zonefile);
@@ -199,7 +199,7 @@ main(int argc, char *argv[])
 	if (ldns_key_list_key_count(keys) < 1) {
 		fprintf(stderr, "Error: no keys to sign with. Aborting.\n\n");
 		usage(stderr, prog);
-		return 1;
+		exit(EXIT_FAILURE);
 	}
 			
 	/* read the KSKs */
@@ -240,6 +240,7 @@ main(int argc, char *argv[])
 		ldns_zone_deep_free(signed_zone); 
 	} else {
 		fprintf(stderr, "Error signing zone.");
+		exit(EXIT_FAILURE);
 	}
 	
 	ldns_key_list_free(keys);
@@ -247,5 +248,5 @@ main(int argc, char *argv[])
 	ldns_zone_deep_free(orig_zone);
 	
 	LDNS_FREE(key_signing_key_filenames);
-        return 0;
+        exit(EXIT_SUCCESS);
 }

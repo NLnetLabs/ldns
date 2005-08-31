@@ -47,14 +47,14 @@ main(int argc, char *argv[])
 		case 'D':
 			if (algorithm != 0) {
 				fprintf(stderr, "%s: %s", prog, "Only one -D or -A is allowed\n");
-				exit(1);
+				exit(EXIT_FAILURE);
 			}
 			algorithm = LDNS_SIGN_DSA;
 			break;
 		case 'R':
 			if (algorithm != 0) {
 				fprintf(stderr, "%s: %s", prog, "Only one -D or -A is allowed\n");
-				exit(1);
+				exit(EXIT_FAILURE);
 			}
 			algorithm = LDNS_SIGN_RSASHA1;
 			break;
@@ -70,7 +70,7 @@ main(int argc, char *argv[])
 			break;
 		default:
 			usage(stderr, prog);
-			exit(1);
+			exit(EXIT_FAILURE);
 		}
 	}
 	argc -= optind;
@@ -82,7 +82,7 @@ main(int argc, char *argv[])
 
 	if (argc != 1) {
 		usage(stderr, prog);
-		exit(1);
+		exit(EXIT_FAILURE);
 	} 
 
 	/* create an rdf from the domain name */
@@ -107,5 +107,5 @@ main(int argc, char *argv[])
 
 	/* print the priv key to stderr */
 	ldns_key_print(stderr, key);
-        return 0;
+        exit(EXIT_SUCCESS);
 }

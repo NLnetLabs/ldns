@@ -38,13 +38,13 @@ main(int argc, char *argv[])
 	
 	if (argc != 2) {
 		usage(stdout, argv[0]);
-		exit(1);
+		exit(EXIT_FAILURE);
 	} else {
 		/* create a rdf from the command line arg */
 		name = ldns_dname_new_frm_str(argv[1]);
 		if (!name) {
 			usage(stdout, argv[0]);
-			exit(1);
+			exit(EXIT_FAILURE);
 		}
 	}
 
@@ -55,7 +55,7 @@ main(int argc, char *argv[])
 	/* create a new resolver from /etc/resolv.conf */
 	res = ldns_resolver_new_frm_file(NULL);
 	if (!res) {
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
 	ldns_resolver_set_retry(res, 1); /* don't want to wait too long */
 	
@@ -63,7 +63,7 @@ main(int argc, char *argv[])
 	addr = ldns_get_rr_list_addr_by_name(res, name, LDNS_RR_CLASS_IN, LDNS_RD);
 	if (!addr) {
 		fprintf(stderr, " *** could not get an address for %s\n", argv[1]);
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
 
 	remove_nameservers(res);
@@ -112,6 +112,5 @@ main(int argc, char *argv[])
 		(void)ldns_resolver_pop_nameserver(res);
 
 	}
-	exit(0);
-        return 0;
+	exit(EXIT_SUCCESS);
 }

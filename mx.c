@@ -31,13 +31,13 @@ main(int argc, char *argv[])
 	
 	if (argc != 2) {
 		usage(stdout, argv[0]);
-		exit(1);
+		exit(EXIT_FAILURE);
 	} else {
 		/* create a rdf from the command line arg */
 		domain = ldns_dname_new_frm_str(argv[1]);
 		if (!domain) {
 			usage(stdout, argv[0]);
-			exit(1);
+			exit(EXIT_FAILURE);
 		}
 	}
 
@@ -45,7 +45,7 @@ main(int argc, char *argv[])
 	res = ldns_resolver_new_frm_file(NULL);
 
 	if (!res) {
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
 
 	/* use the resolver to send it a query for the mx 
@@ -56,7 +56,7 @@ main(int argc, char *argv[])
 	ldns_rdf_deep_free(domain);
 	
         if (!p)  {
-		exit(1);
+		exit(EXIT_FAILURE);
         } else {
 		/* retrieve the MX records from the answer section of that
 		 * packet
@@ -68,7 +68,7 @@ main(int argc, char *argv[])
 					argv[1], argv[1]);
                         ldns_pkt_free(p);
                         ldns_resolver_deep_free(res);
-			exit(1);
+			exit(EXIT_FAILURE);
 		} else {
 			/* sort the list nicely */
 			/* ldns_rr_list_sort(mx); */
