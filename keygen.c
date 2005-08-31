@@ -19,7 +19,7 @@ usage(FILE *fp, char *prog) {
 	fprintf(fp, "  -b <bits>\tspecify the keylength\n");
 	fprintf(fp, "  The public key is printed to stdout\n");
 	fprintf(fp, "  The private key is printed to stderr\n");
-	fprintf(fp, "\nWARING, WARNING, this program does NOT use a good random source for the key generation.\nUse at your OWN RISK\n\n");
+	fprintf(fp, "\nWARNING, WARNING, this program does NOT use a good random source for the key generation.\nUse at your OWN RISK\n\n");
 }
 
 int
