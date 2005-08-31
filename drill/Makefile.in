@@ -1,0 +1,104 @@
+# Standard installation pathnames
+# See the file LICENSE for the license
+SHELL = @SHELL@
+VERSION = @PACKAGE_VERSION@
+basesrcdir = $(shell basename `pwd`)
+srcdir = @srcdir@
+prefix  = @prefix@
+exec_prefix = @exec_prefix@
+bindir = @bindir@
+mandir = @mandir@
+includedir = @INCLUDEDIR@
+
+LDNSDIR = @LDNSDIR@
+CC = @CC@
+CFLAGS = @CFLAGS@
+LDFLAGS = @LDFLAGS@
+LIBS = @LIBS@
+INSTALL = $(srcdir)/install-sh -c
+INSTALL_PROGRAM = $(INSTALL)
+
+COMPILE         = $(CC) -Wall $(CPPFLAGS) $(CFLAGS) 
+LINK            = $(CC) $(CFLAGS) $(LDFLAGS) 
+
+LINT            = splint
+LINTFLAGS       = +quiet -weak -warnposix -unrecog -Din_addr_t=uint32_t -Du_int=unsigned -Du_char=uint8_t
+
+LIBOBJ=drill.o drill_util.o error.o root.o work.o chasetrace.o dnssec.o
+LIBSRC=$(LIBOBJ:.o=.c)
+
+HEADER=drill.h drill_util.h
+
+.PHONY:	all clean allclean docclean doc release tags install
+
+all:	drill 
+
+release:	clean docclean tarclean
+	(rm -rf ../drill-$(VERSION)/)
+	(cd .. ; cp -r $(basesrcdir)/ drill-$(VERSION)/)
+	(cd .. ; tar --verbose --exclude ".svn" --create --gzip --file drill-$(VERSION).tar.bz2 drill-$(VERSION)/)
+	(rm -rf ../drill-$(VERSION)/)
+
+tags:	
+	ctags *.[ch]
+
+drill:	$(LIBOBJ)
+	$(LINK) -o $@ $(LIBOBJ) $(LIBS)
+
+## implicit rule
+%.o:    %.c $(HEADER)
+	$(COMPILE) -c $<
+
+clean:
+	rm -f *.o
+	rm -f drill
+	rm -f *core
+	rm -f config.h.in~
+	rm -f config.log
+	rm -f config.guess
+	rm -f config.status
+
+docclean:
+	rm -rf doxydoc
+
+allclean: clean docclean
+	rm -f tags
+	rm -f config.log
+	rm -f config.status
+	rm -rf autom4te.cache
+	rm -f config.h
+	rm -f config.h.in
+	rm -f drill.h
+	rm -f configure
+	rm -f Makefile	
+	rm -f aclocal.m4
+
+# exclude configure here
+tarclean: 
+	rm -f tags
+	rm -f config.log
+	rm -f config.status
+	rm -rf autom4te.cache
+	rm -f config.h
+	rm -f drill.h
+	rm -f Makefile	
+
+doc:	
+	doxygen drill.doxygen
+
+install: all
+	$(INSTALL) -d $(DESTDIR)$(bindir)
+	$(INSTALL) drill $(DESTDIR)$(bindir)/drill
+	$(INSTALL) -m 644 drill.1 $(DESTDIR)$(mandir)/man1/drill.1
+
+uninstall:
+	@echo
+	rm -f -- $(bindir)/drill
+	rm -f -- $(mandir)/man1/drill.1
+	@echo
+
+lint:
+	@for i in $(LIBSRC) ; do \
+                $(LINT) $(LINTFLAGS) -I$(LDNSDIR) -I$(srcdir) $(srcdir)/$$i ; \
+                if [ $$? -ne 0 ] ; then exit 1 ; fi ; \
+        done

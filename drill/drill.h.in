@@ -1,0 +1,61 @@
+/*
+ * drill.h
+ * the main header file of drill
+ * (c) 2005 NLnet Labs
+ *
+ * See the file LICENSE for the license
+ *
+ */
+#ifndef _DRILL_H_
+#define _DRILL_H_
+#include "config.h"
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <stddef.h>
+#include <unistd.h>
+#include <stdbool.h>
+
+#ifdef HAVE_STDINT_H
+#include <stdint.h>
+#endif /* HAVE_STDINT_H */
+
+#include "drill_util.h"
+
+#define DRILL_VERSION "@PACKAGE_VERSION@"
+
+/* what kind of stuff do we allow */
+#define DRILL_QUERY	0
+#define DRILL_TRACE	1
+#define DRILL_CHASE	2
+#define DRILL_AFROMFILE 3
+#define DRILL_QTOFILE 	4
+#define DRILL_NSEC	5
+#define DRILL_REVERSE	6
+#define DRILL_SECTRACE 	7
+
+extern ldns_rr_list *global_dns_root;
+extern bool qds;
+
+extern int8_t qdebug;
+
+ldns_pkt	*do_trace(ldns_resolver *res, ldns_rdf *name, ldns_rr_type type, 
+		ldns_rr_class c);
+ldns_status 	 do_chase(ldns_resolver *res, ldns_rdf *name, ldns_rr_type type, 
+		ldns_rr_class c, ldns_rr_list *trusted_keys, 
+		ldns_pkt *pkt_o, uint16_t qflags);
+ldns_status 	do_secure_trace(ldns_resolver *res, ldns_rdf *name, ldns_rr_type type, 
+		ldns_rr_class c, ldns_rr_list *trusted_keys);
+/* dnssec.c */
+ldns_rr_list 	*get_rr(ldns_resolver *res, ldns_rdf *zname, ldns_rr_type t, ldns_rr_class c);
+void 		drill_pkt_print(FILE *fd, ldns_resolver *r, ldns_pkt *p);
+void 		drill_pkt_print_footer(FILE *fd, ldns_resolver *r, ldns_pkt *p);
+
+ldns_rr 	*read_key_file(const char *filename);
+ldns_pkt	*read_hex_pkt(char *filename);
+void		init_root(void);
+void		dump_hex(const ldns_pkt *pkt, const char *file);
+void 		warning(const char *fmt, ...);
+void		error(const char *fmt, ...);
+void		mesg(const char *fmt, ...);
+#endif /* _DRILL_H_ */

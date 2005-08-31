@@ -1,0 +1,181 @@
+.\" @(#)drill.1 1.7.0 14-Jul-2004 OF; 
+.TH drill 1 "28 Apr 2005"
+.SH NAME
+drill \- get (debug) information out of DNS(SEC)
+.SH SYNOPSIS
+.B drill
+[
+.IR OPTION
+]
+.IR name
+[
+.IR @server
+]
+[
+.IR type
+]
+[
+.IR class
+]
+
+.SH DESCRIPTION
+\fBdrill\fR is a tool to designed to get all sorts of information out of the
+DNS. It is specificly designed to be used with DNSSEC. 
+.PP
+The name \fBdrill\fR is a pun on \fBdig\fR. With \fBdrill\fR you should be able
+get even more information than with \fBdig\fR.
+.PP
+The arguments to \fBdrill\fR may be placed in any order. If no arguments
+are given class defaults to 'IN' and type to 'A'. The server(s) specified
+in /etc/resolv.conf are used to query against.
+
+.PP
+\fI@server\fR
+Send to query to this server. If not specified use the nameservers from
+\fI/etc/resolv.conf\fR.
+
+.PP
+\fItype\fR
+Ask for this RR type. If type is not given on the command line it defaults
+to 'A'. Except when doing to reverse lookup there is defaults to 'PTR'.
+
+.PP
+\fIname\fR
+Ask for this name.
+
+.PP
+\fIclass\fR
+Use this class when querying.
+
+.SH SAMPLE USAGE
+\fBdrill mx miek.nl\fR
+Show the MX records of the domain miek.nl
+
+.TP
+\fBdrill -S jelte.nlnetlabs.nl\fR
+Chase any signatures a the jelte.nlnetlab.nl domain.
+
+.TP
+\fBdrill -TD www.example.com\fR
+Do a DNSSEC (-D) trace (-T) from the rootservers down to www.example.com.
+
+.TP
+\fBdrill -s dnskey jelte.nlnetlabs.nl\fR
+Show the DNSKEY record(s) for jelte.nlnetlabs.nl. For each found DNSKEY
+record also print the DS record.
+
+.SH OPTIONS
+.TP
+\fB\-D
+Enable DNSSEC in the query. When querying for DNSSEC types (DNSKEY, RRSIG,
+DS and NSEC) this is automaticly enabled.
+
+.TP
+\fB\-S
+Chase the signature(s) of 'name' to a known key or as high up in
+the tree as possible.
+
+.TP
+\fB\-T
+Trace \fIname\fR from the root down. When using this option the @server and
+the type arguments are not used.
+
+.TP
+\fB\-V
+Be more verbose. Enable once for more messages on the screen. Enable twice
+for a hexdump of the packets sent.
+
+.TP
+\fB\-4
+Stay on ip4. Only send queries to ip4 enabled nameservers.
+
+.TP
+\fB\-6
+Stay on ip6. Only send queries to ip6 enabled nameservers.
+
+.TP
+\fB\-a
+Don't try the next nameserver on SERVFAIL. The default is to do this.
+
+.TP
+\fB\-b \fIsize\fR
+
+
+.TP
+\fB\-c
+Use TCP/IP when querying a server.
+
+
+.TP
+\fB\-f \fIfile\fR
+Read the query from a file. The query must be dumped with -w. 
+
+.TP
+\fB\-i \fIfile\fR
+read the answer from the file instead from the network. This aids
+in debugging and can be used to check if a query on disk is valid.
+If the file contains binary data it is assumed to be a query in
+network order.
+
+.TP
+\fB\-k \fIkeyfile\fR
+Use this file to read a (trusted) key from. When this options is
+given \fBdrill\fR tries to validate the current answer with this
+key. No chasing is done.
+
+.TP
+\fB\-p \fIport\fR
+Use this port instead of the DNS default of 53.
+
+.TP
+\fB\-r
+Don't set the RD bit in the query - the default is yes.
+
+.TP
+\fB\-s
+When encountering a DNSKEY print the DS also.
+
+.TP
+\fB\-u
+Use UDP when querying a server. This is the default.
+
+.TP
+\fB\-v
+
+.TP
+\fB\-w \fIfile\fR
+write the answer to a file. The file will contain a hexadecimal dump
+of the query. This can be used in conjunction with -f.
+
+.TP
+\fB\-x
+Do a reverse loopup. The type argument is not used, it is preset to PTR.
+
+.SH DNSSEC
+When calling \fBdrill\fR with \fI-S\fR it chases down signatures (RRSIG) to
+a known key. This uses a bottom-up approach.
+[Jelte please fill in the blanks here] 
+.PP
+With \fI-TD\fR (trace + DNSSEC) \fBdrill\fR will securely trace from the 
+root down. If the optional \fI-k\fR argument is given a genuine chain of
+trust can be established.
+[bla bla, Miek please add more]
+
+.SH AUTHOR
+Jelte Jansen and Miek Gieben. Both of NLnet Labs.
+
+.SH REPORTING BUGS
+Report bugs to <drill@nlnetlabs.nl>.
+
+.SH BUGS
+
+.SH LIMITATIONS
+None - you can do \fIeverything\fR with it, including washing your car.
+
+.SH COPYRIGHT
+Copyright (c) 2004 NLnet Labs.
+Licensed under the GPL 2. There is NO warranty; not even for MERCHANTABILITY or
+FITNESS FOR A PARTICULAR PURPOSE.
+
+.SH SEE ALSO
+\fBdig\fR(1), \fIRFC403{3,4,5}\fR.

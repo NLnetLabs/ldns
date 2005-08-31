@@ -1,0 +1,11 @@
+QUICK INSTALL GUIDE
+
+* First install ldns
+  http://www.nlnetlabs.nl/ldns
+
+  and follow the instructions
+
+* Now configure drill and compile it:
+  autoreconf && ./configure --with-ldns && make
+
+  or --with-ldns=<path>, also see ./configure --help
