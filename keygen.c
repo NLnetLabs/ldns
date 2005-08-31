@@ -9,6 +9,8 @@
 
 #include <ldns/dns.h>
 
+#include <errno.h>
+
 void
 usage(FILE *fp, char *prog) {
 	fprintf(fp, "%s keygen [-D|-R] -b bits domain\n", prog);
@@ -17,8 +19,15 @@ usage(FILE *fp, char *prog) {
 	fprintf(fp, "  -R\tgenerate a RSA key\n");
 	fprintf(fp, "  -k\tset the flags to 257; key signing key\n");
 	fprintf(fp, "  -b <bits>\tspecify the keylength\n");
+	fprintf(fp, "  The following files will be created:\n");
+	fprintf(fp, "    K<name>+<alg>+<id>.key\tPublic key in RR format\n");
+	fprintf(fp, "    K<name>+<alg>+<id>.private\tPrivate key in key format\n");
+	fprintf(fp, "    K<name>+<alg>+<id>.ds\tDS in RR format\n");
+	
+/*
 	fprintf(fp, "  The public key is printed to stdout\n");
 	fprintf(fp, "  The private key is printed to stderr\n");
+*/
 	fprintf(fp, "\nWARNING, WARNING, this program does NOT use a good random source for the key generation.\nUse at your OWN RISK\n\n");
 }
 
@@ -33,10 +42,15 @@ main(int argc, char *argv[])
 	uint16_t bits = def_bits;
 	bool ksk;
 
+	FILE *file;
+	char *filename;
+	char *owner;
+
 	ldns_signing_algorithm algorithm;
 	ldns_rdf *domain;
 	ldns_rr *pubkey;
 	ldns_key *key;
+	ldns_rr *ds;
 
 	prog = strdup(argv[0]);
 	algorithm = 0;
@@ -90,7 +104,7 @@ main(int argc, char *argv[])
 
 	/* generate a new key */
 	key = ldns_key_new_frm_algorithm(algorithm, bits);
-
+	
 	/* set the owner name in the key - this is a /seperate/ step */
 	ldns_key_set_pubkey_owner(key, domain);
 
@@ -101,11 +115,55 @@ main(int argc, char *argv[])
 
 	/* create the public from the ldns_key */
 	pubkey = ldns_key2rr(key);
+	owner = ldns_rdf2str(ldns_rr_owner(pubkey));
 	
-	/* print it to stdout */
-	ldns_rr_print(stdout, pubkey);
+	/* calculate and set the keytag */
+	ldns_key_set_keytag(key, ldns_calc_keytag(pubkey));
 
+	/* build the DS record */
+	ds = ldns_key_rr2ds(pubkey);
+
+	/* print the public key RR to .key */
+	filename = LDNS_XMALLOC(char, strlen(owner) + 17);
+	snprintf(filename, strlen(owner) + 16, "K%s+%03u+%05u.key", owner, algorithm, ldns_key_keytag(key));
+	file = fopen(filename, "w");
+	if (!file) {
+		fprintf(stderr, "Unable to open %s: %s\n", filename, strerror(errno));
+		fprintf(stderr, "Aborting\n");
+		exit(EXIT_FAILURE);
+	} else {
+		ldns_rr_print(file, pubkey);
+		fclose(file);
+		LDNS_FREE(filename);
+	}
+	
 	/* print the priv key to stderr */
-	ldns_key_print(stderr, key);
+	filename = LDNS_XMALLOC(char, strlen(owner) + 21);
+	snprintf(filename, strlen(owner) + 20, "K%s+%03u+%05u.private", owner, algorithm, ldns_key_keytag(key));
+	file = fopen(filename, "w");
+	if (!file) {
+		fprintf(stderr, "Unable to open %s: %s\n", filename, strerror(errno));
+		fprintf(stderr, "Aborting\n");
+		exit(EXIT_FAILURE);
+	} else {
+		ldns_key_print(file, key);
+		fclose(file);
+		LDNS_FREE(filename);
+	}
+	
+	/* print the DS to .ds */
+	filename = LDNS_XMALLOC(char, strlen(owner) + 16);
+	snprintf(filename, strlen(owner) + 15, "K%s+%03u+%05u.ds", owner, algorithm, ldns_key_keytag(key));
+	file = fopen(filename, "w");
+	if (!file) {
+		fprintf(stderr, "Unable to open %s: %s\n", filename, strerror(errno));
+		fprintf(stderr, "Aborting\n");
+		exit(EXIT_FAILURE);
+	} else {
+		ldns_rr_print(file, ds);
+		fclose(file);
+		LDNS_FREE(filename);
+	}
+	
         exit(EXIT_SUCCESS);
 }

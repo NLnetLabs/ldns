@@ -186,6 +186,7 @@ main(int argc, char *argv[])
 					ldns_key_set_inception(key, inception);
 				}
 
+				ldns_key_set_flags(key, ldns_key_flags(key) | LDNS_KEY_ZONE_KEY_FLAG);
 				ldns_key_list_push_key(keys, key);
 				
 			} else {
@@ -225,6 +226,7 @@ main(int argc, char *argv[])
 					ldns_key_set_inception(key, inception);
 				}
 
+				ldns_key_set_flags(key, ldns_key_flags(key) | LDNS_KEY_ZONE_KEY_FLAG | LDNS_KEY_SEP_KEY_FLAG);
 				ldns_key_list_push_key(key_signing_keys, key);
 			} else {
 				fprintf(stderr, "Error reading KSK from %s\n", argv[argi]);

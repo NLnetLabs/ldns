@@ -1524,7 +1524,18 @@ ldns_zone_sign(ldns_zone *zone, ldns_key_list *key_list, ldns_key_list *key_sign
 		cur_rrset_type = ldns_rr_get_type(ldns_rr_list_rr(cur_rrset, 0));
 		cur_dname = ldns_rr_owner(ldns_rr_list_rr(cur_rrset, 0));
 
-		if (cur_rrset_type != LDNS_RR_TYPE_RRSIG &&
+		/* if we have KSKs, use them for DNSKEYS, otherwise
+		   make them selfsigned (?) */
+		if (cur_rrset_type == LDNS_RR_TYPE_DNSKEY) {
+			if (key_signing_key_list) {
+				cur_rrsigs = ldns_sign_public(cur_rrset, key_signing_key_list);
+			} else {
+				cur_rrsigs = ldns_sign_public(cur_rrset, key_list);
+			}
+			ldns_zone_push_rr_list(signed_zone, cur_rrset);
+			ldns_zone_push_rr_list(signed_zone, cur_rrsigs);
+			ldns_rr_list_free(cur_rrsigs);
+		} else if (cur_rrset_type != LDNS_RR_TYPE_RRSIG &&
 		    (ldns_dname_is_subdomain(cur_dname, ldns_rr_owner(ldns_zone_soa(zone))) ||
 		     ldns_rdf_compare(cur_dname, ldns_rr_owner(ldns_zone_soa(zone))) == 0
 		    )

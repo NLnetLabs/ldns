@@ -47,7 +47,7 @@ ldns_key_new()
 		return NULL;
 	} else {
 		/* some defaults - not sure wether to do this */
-		ldns_key_set_flags(newkey, 256);
+		ldns_key_set_flags(newkey, LDNS_KEY_ZONE_KEY_FLAG);
 		ldns_key_set_origttl(newkey, 0);
 		ldns_key_set_keytag(newkey, 0);
 		ldns_key_set_inception(newkey, 0);

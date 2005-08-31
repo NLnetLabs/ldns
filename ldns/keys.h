@@ -20,6 +20,9 @@
 
 extern ldns_lookup_table ldns_signing_algorithms[];
 
+#define LDNS_KEY_ZONE_KEY_FLAG 0x0100
+#define LDNS_KEY_SEP_KEY_FLAG 0x0001
+
 /**
  * algorithms used in dns
  */

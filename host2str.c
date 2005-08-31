@@ -429,6 +429,8 @@ ldns_rdf2buffer_str_wks(ldns_buffer *output, ldns_rdf *rdf)
 		ldns_buffer_printf(output, "%u ", protocol_nr);
 	}
 
+	endprotoent();
+	
 	for (current_service = 0; 
 	     current_service < ldns_rdf_size(rdf) * 7;
 	     current_service++) {
@@ -442,6 +444,7 @@ ldns_rdf2buffer_str_wks(ldns_buffer *output, ldns_rdf *rdf)
 				ldns_buffer_printf(output, "%u ",
 				                   current_service);
 			}
+			endservent();
 		}
 	}
 	return ldns_buffer_status(output);
@@ -1125,6 +1128,62 @@ ldns_key2buffer_str(ldns_buffer *output, ldns_key *k)
 				ldns_buffer_printf(output, "\n"); 
 				break;
 			case LDNS_SIGN_DSA:
+				ldns_buffer_printf(output,"Private-key-format: v1.2\n");
+				ldns_buffer_printf(output,"Algorithm: 3 (DSA)\n");
+
+				/* print to buf, convert to bin, convert to b64,
+				 * print to buf */
+				ldns_buffer_printf(output, "Prime(p): "); 
+				i = (uint16_t)BN_bn2bin(ldns_key_dsa_key(k)->p, bignum);
+				if (i > LDNS_MAX_KEYLEN) {
+					goto error;
+				}
+				b64_bignum =  ldns_rdf_new_frm_data(LDNS_RDF_TYPE_B64, i, bignum);
+				if (ldns_rdf2buffer_str(output, b64_bignum) != LDNS_STATUS_OK) {
+					goto error;
+				}
+				ldns_buffer_printf(output, "\n"); 
+				ldns_buffer_printf(output, "Subprime(q): "); 
+				i = (uint16_t)BN_bn2bin(ldns_key_dsa_key(k)->q, bignum);
+				if (i > LDNS_MAX_KEYLEN) {
+					goto error;
+				}
+				b64_bignum =  ldns_rdf_new_frm_data(LDNS_RDF_TYPE_B64, i, bignum);
+				if (ldns_rdf2buffer_str(output, b64_bignum) != LDNS_STATUS_OK) {
+					goto error;
+				}
+				ldns_buffer_printf(output, "\n"); 
+				ldns_buffer_printf(output, "Base(g): "); 
+				i = (uint16_t)BN_bn2bin(ldns_key_dsa_key(k)->g, bignum);
+				if (i > LDNS_MAX_KEYLEN) {
+					goto error;
+				}
+				b64_bignum =  ldns_rdf_new_frm_data(LDNS_RDF_TYPE_B64, i, bignum);
+				if (ldns_rdf2buffer_str(output, b64_bignum) != LDNS_STATUS_OK) {
+					goto error;
+				}
+				ldns_buffer_printf(output, "\n"); 
+				ldns_buffer_printf(output, "Private_value(x): "); 
+				i = (uint16_t)BN_bn2bin(ldns_key_dsa_key(k)->priv_key, bignum);
+				if (i > LDNS_MAX_KEYLEN) {
+					goto error;
+				}
+				b64_bignum =  ldns_rdf_new_frm_data(LDNS_RDF_TYPE_B64, i, bignum);
+				if (ldns_rdf2buffer_str(output, b64_bignum) != LDNS_STATUS_OK) {
+					goto error;
+				}
+				ldns_buffer_printf(output, "\n"); 
+				ldns_buffer_printf(output, "Public_value(y): "); 
+				i = (uint16_t)BN_bn2bin(ldns_key_dsa_key(k)->pub_key, bignum);
+				if (i > LDNS_MAX_KEYLEN) {
+					goto error;
+				}
+				b64_bignum =  ldns_rdf_new_frm_data(LDNS_RDF_TYPE_B64, i, bignum);
+				if (ldns_rdf2buffer_str(output, b64_bignum) != LDNS_STATUS_OK) {
+					goto error;
+				}
+				ldns_buffer_printf(output, "\n"); 
+				break;
 			case LDNS_SIGN_HMACMD5:
 				/* as always; todo code */
 				goto error;
