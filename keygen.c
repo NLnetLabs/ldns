@@ -13,22 +13,18 @@
 
 void
 usage(FILE *fp, char *prog) {
-	fprintf(fp, "%s keygen [-D|-R] -b bits domain\n", prog);
+	fprintf(fp, "%s keygen [-D|-R] [-b bits] [-r /dev/random]  domain\n", prog);
 	fprintf(fp, "  generate a new key pair for domain\n");
 	fprintf(fp, "  -D\tgenerate a DSA key\n");
 	fprintf(fp, "  -R\tgenerate a RSA key\n");
 	fprintf(fp, "  -k\tset the flags to 257; key signing key\n");
 	fprintf(fp, "  -b <bits>\tspecify the keylength\n");
+	fprintf(fp, "  -r <random>\tspecify a random device (defaults to /dev/random)\n");
 	fprintf(fp, "  The following files will be created:\n");
 	fprintf(fp, "    K<name>+<alg>+<id>.key\tPublic key in RR format\n");
 	fprintf(fp, "    K<name>+<alg>+<id>.private\tPrivate key in key format\n");
 	fprintf(fp, "    K<name>+<alg>+<id>.ds\tDS in RR format\n");
 	fprintf(fp, "  The base name (K<name>+<alg>+<id> will be printed to stdout\n");
-/*
-	fprintf(fp, "  The public key is printed to stdout\n");
-	fprintf(fp, "  The private key is printed to stderr\n");
-*/
-	fprintf(fp, "\nWARNING, WARNING, this program does NOT use a good random source for the key generation.\nUse at your OWN RISK\n\n");
 }
 
 int
@@ -43,6 +39,7 @@ main(int argc, char *argv[])
 	bool ksk;
 
 	FILE *file;
+	FILE *random;
 	char *filename;
 	char *owner;
 
@@ -54,9 +51,10 @@ main(int argc, char *argv[])
 
 	prog = strdup(argv[0]);
 	algorithm = 0;
+	random = NULL;
 	ksk = false; /* don't create a ksk per default */
 	
-	while ((c = getopt(argc, argv, "DRkb:")) != -1) {
+	while ((c = getopt(argc, argv, "DRkb:r:")) != -1) {
 		switch (c) {
 		case 'D':
 			if (algorithm != 0) {
@@ -82,6 +80,12 @@ main(int argc, char *argv[])
 		case 'k':
 			ksk = true;
 			break;
+		case 'r':
+			random = fopen("r", optarg);
+			if (!random) {
+				fprintf(stderr, "Cannot open random file: %s\n", optarg);
+				exit(EXIT_FAILURE);
+			}
 		default:
 			usage(stderr, prog);
 			exit(EXIT_FAILURE);
@@ -99,7 +103,7 @@ main(int argc, char *argv[])
 		exit(EXIT_FAILURE);
 	} 
 
-	ldns_random_init(1000); /* init the random engine */
+	(void)ldns_init_random(random, def_bits * 8 * 2); /* I hope this is enough? */
 
 	/* create an rdf from the domain name */
 	domain = ldns_dname_new_frm_str(argv[0]);
