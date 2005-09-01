@@ -56,9 +56,10 @@ uint16_t ldns_calc_keytag(ldns_rr *key);
  * \param[in] rrset the rrset to verify
  * \param[in] rrsig a list of signatures to check
  * \param[in] keys a list of keys to check with
- * \return a list of keys that validate one of the signatures
+ * \param[out] good_keys, if this is a (initialized) list, the keys from keys that validate one of the signatures are added to it
+ * \return status LDNS_STATUS_OK if there is at least one correct key
  */
-ldns_rr_list* ldns_verify(ldns_rr_list *rrset, ldns_rr_list *rrsig, ldns_rr_list *keys);	
+ldns_status ldns_verify(ldns_rr_list *rrset, ldns_rr_list *rrsig, ldns_rr_list *keys, ldns_rr_list *good_keys);	
 
 /**
  * Verifies an rrsig. All keys in the keyset are tried.
@@ -69,8 +70,8 @@ ldns_rr_list* ldns_verify(ldns_rr_list *rrset, ldns_rr_list *rrsig, ldns_rr_list
  * \return a list of keys which validate the rrsig + rrset. Return NULL
  * when none of the keys validate.
  */
-ldns_rr_list * ldns_verify_rrsig_keylist(ldns_rr_list *rrset, ldns_rr *rrsig, ldns_rr_list *keys);
-bool ldns_verify_rrsig(ldns_rr_list *rrset, ldns_rr *rrsig, ldns_rr *key);
+ldns_status ldns_verify_rrsig_keylist(ldns_rr_list *rrset, ldns_rr *rrsig, ldns_rr_list *keys, ldns_rr_list *good_keys);
+ldns_status ldns_verify_rrsig(ldns_rr_list *rrset, ldns_rr *rrsig, ldns_rr *key);
 
 /**
  * verifies a buffer with signature data (DSA) for a buffer with rrset data 
@@ -80,7 +81,7 @@ bool ldns_verify_rrsig(ldns_rr_list *rrset, ldns_rr *rrsig, ldns_rr *key);
  * \param[in] rrset the rrset data, sorted and processed for verification
  * \param[in] key the key data
  */
-bool ldns_verify_rrsig_dsa(ldns_buffer *sig, ldns_buffer *rrset, ldns_buffer *key);
+ldns_status ldns_verify_rrsig_dsa(ldns_buffer *sig, ldns_buffer *rrset, ldns_buffer *key);
 /**
  * verifies a buffer with signature data (RSASHA1) for a buffer with rrset data 
  * with a buffer with key data.
@@ -89,7 +90,7 @@ bool ldns_verify_rrsig_dsa(ldns_buffer *sig, ldns_buffer *rrset, ldns_buffer *ke
  * \param[in] rrset the rrset data, sorted and processed for verification
  * \param[in] key the key data
  */
-bool ldns_verify_rrsig_rsasha1(ldns_buffer *sig, ldns_buffer *rrset, ldns_buffer *key);
+ldns_status ldns_verify_rrsig_rsasha1(ldns_buffer *sig, ldns_buffer *rrset, ldns_buffer *key);
 /**
  * verifies a buffer with signature data (RSAMD5) for a buffer with rrset data 
  * with a buffer with key data.
@@ -98,7 +99,7 @@ bool ldns_verify_rrsig_rsasha1(ldns_buffer *sig, ldns_buffer *rrset, ldns_buffer
  * \param[in] rrset the rrset data, sorted and processed for verification
  * \param[in] key the key data
  */
-bool ldns_verify_rrsig_rsamd5(ldns_buffer *sig, ldns_buffer *rrset, ldns_buffer *key);
+ldns_status ldns_verify_rrsig_rsamd5(ldns_buffer *sig, ldns_buffer *rrset, ldns_buffer *key);
 
 /**
  * converts a buffer holding key material to a DSA key in openssl.
@@ -167,7 +168,7 @@ ldns_rr * ldns_create_nsec(ldns_rdf *cur_owner, ldns_rdf *next_owner, ldns_rr_li
 /**
  *
  */
-ldns_rr_list *ldns_pkt_verify(ldns_pkt *p, ldns_rr_type t, ldns_rdf *o, ldns_rr_list *k, ldns_rr_list *s);
+ldns_status ldns_pkt_verify(ldns_pkt *p, ldns_rr_type t, ldns_rdf *o, ldns_rr_list *k, ldns_rr_list *s, ldns_rr_list *good_keys);
 
 /**
  * signs the given zone with the given new zone

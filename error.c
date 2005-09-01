@@ -42,6 +42,9 @@ ldns_lookup_table ldns_error_str[] = {
         { LDNS_STATUS_CRYPTO_NO_TRUSTED_DNSKEY, "No signatures found for trusted DNSSEC public key(s)" },
         { LDNS_STATUS_CRYPTO_VALIDATED, "validated?!? TODO" },
         { LDNS_STATUS_CRYPTO_BOGUS, "Bogus DNSSEC signature" },
+        { LDNS_STATUS_CRYPTO_SIG_EXPIRED, "DNSSEC signature has expired" },
+        { LDNS_STATUS_CRYPTO_SIG_NOT_INCEPTED, "DNSSEC signature not incepted yet" },
+        { LDNS_STATUS_CRYPTO_EXPIRATION_BEFORE_INCEPTION, "DNSSEC signature has expiration date earlier than inception date" },
 	{ 0, NULL }
 };
 
