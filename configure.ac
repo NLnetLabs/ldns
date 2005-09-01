@@ -70,8 +70,7 @@ AC_PATH_PROG(doxygen, doxygen, "/usr/bin/doxygen")
 # http://www.gnu.org/software/ac-archive/htmldoc/check_ssl.html and
 # modified for NSD and 
 # copied again for use in ldns
-AC_DEFUN([CHECK_SSL], 
-    AC_ARG_WITH(ssl, AC_HELP_STRING([--with-ssl=pathname],
+AC_ARG_WITH(ssl, AC_HELP_STRING([--with-ssl=pathname],
                                     [enable SSL (will check /usr/local/ssl
                             /usr/lib/ssl /usr/ssl /usr/pkg /usr/local /usr)]),[
         ],[
@@ -97,16 +96,13 @@ AC_DEFUN([CHECK_SSL],
             AC_MSG_RESULT(found in $ssldir)
             HAVE_SSL=yes
             LDFLAGS="$LDFLAGS -L$ssldir/lib";
+#            CPPFLAGS="$CPPFLAGS -DHAVE_SSL -I$ssldir/include";
             AC_CHECK_LIB(crypto, HMAC_CTX_init,, [
                     AC_MSG_ERROR([OpenSSL found in $ssldir, but version 0.9.7 or higher is required])
                 ])
         fi
         AC_SUBST(HAVE_SSL)
     fi
-])dnl
-
-
-
 
 # Use libtool 
 AC_PROG_LIBTOOL
@@ -211,7 +207,6 @@ static inline size_t b64_pton_calculate_size(size_t srcsize)
 time_t timegm (struct tm *tm);
 #endif /* !TIMEGM */
 ])
-
 
 AC_CONFIG_FILES([Makefile ldns/util.h])
 AC_CONFIG_HEADER([ldns/config.h])

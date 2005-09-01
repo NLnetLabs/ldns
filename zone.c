@@ -51,11 +51,12 @@ ldns_zone_push_rr(ldns_zone *z, ldns_rr *rr)
 			ldns_zone_rrs(z), rr);
 }
 
+/* this will be an EXPENSIVE op with our zone structure */
 bool
-ldns_zone_rr_is_glue(ldns_zone *z, ldns_rr *rr)
+ldns_zone_rr_list_is_glue(ldns_zone *z, ldns_rr_list *rrset)
 {
 	z = z;
-	rr = rr;
+	rrset = rrset;
 
 	return false;
 }

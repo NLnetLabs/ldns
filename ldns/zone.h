@@ -87,10 +87,10 @@ bool ldns_zone_push_rr(ldns_zone *z, ldns_rr *rr);
 /**
  * find out if the rr is glue inside zone z
  * \param[in] z the zone to look for glue
- * \param[in] rr the rr to test
+ * \param[in] rrset the rrset to test
  * \return true if rr is glue, otherwise false
  */
-bool ldns_zone_rr_is_glue(ldns_zone *z, ldns_rr *rr);
+bool ldns_zone_rr_list_is_glue(ldns_zone *z, ldns_rr_list *rrset);
 
 
 ldns_zone *
