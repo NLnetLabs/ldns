@@ -603,9 +603,9 @@ main(int argc, char *argv[])
 					}
 
 					/* verify */
-					key_verified = ldns_pkt_verify(pkt, type, qname, key_list, NULL);
+					result = ldns_pkt_verify(pkt, type, qname, key_list, NULL, NULL);
 
-					if (key_verified) {
+					if (result == LDNS_STATUS_OK) {
 						for(key_count = 0; key_count < ldns_rr_list_rr_count(key_verified);
 								key_count++) {
 							if (qdebug != -1) {

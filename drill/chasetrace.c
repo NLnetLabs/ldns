@@ -355,9 +355,9 @@ do_chase(ldns_resolver *res, ldns_rdf *name, ldns_rr_type type, ldns_rr_class c,
 				);
 		
 		if (qdebug != -1) {
-			mesg(";; Signed by: ");
+			printf(";; Signed by: ");
 			ldns_rdf_print(stdout, ldns_rr_rdf(cur_sig, 7));
-			mesg("\n");
+			printf("\n");
 		}
 
 		if (!keys) {
@@ -387,7 +387,8 @@ do_chase(ldns_resolver *res, ldns_rdf *name, ldns_rr_type type, ldns_rr_class c,
 			return LDNS_STATUS_CRYPTO_NO_DNSKEY;
 		} else {
 			for (key_i = 0; key_i < ldns_rr_list_rr_count(keys); key_i++) {
-				if (ldns_verify_rrsig(rrset, cur_sig, ldns_rr_list_rr(keys, key_i))) {
+				result = ldns_verify_rrsig(rrset, cur_sig, ldns_rr_list_rr(keys, key_i));
+				if (result == LDNS_STATUS_OK) {
 					for (tkey_i = 0; tkey_i < ldns_rr_list_rr_count(trusted_keys); tkey_i++) {
 						if (ldns_rr_compare_ds(ldns_rr_list_rr(keys, key_i),
 								   ldns_rr_list_rr(trusted_keys, tkey_i)
@@ -409,7 +410,7 @@ do_chase(ldns_resolver *res, ldns_rdf *name, ldns_rr_type type, ldns_rr_class c,
 					ldns_rr_free(cur_sig);
 					return result;
 				} else {
-					mesg("Bad signature of wrong key\n");
+					return result;
 				}
 			}
 			ldns_rr_list_deep_free(keys);
