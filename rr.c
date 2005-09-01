@@ -698,7 +698,7 @@ ldns_rr_list_cat_clone(ldns_rr_list *left, ldns_rr_list *right)
 	if (left) {
 		l_rr_count = ldns_rr_list_rr_count(left);
 	} else {
-		return NULL;
+		return ldns_rr_list_clone(right);
 	}
 
 	if (right) {

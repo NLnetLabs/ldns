@@ -26,7 +26,7 @@ o DNSSEC
 o init function? random - load_ssl_errors()
 	- SSL_load_error_str()? 
 o SERVER stuff; open connection and such - NOT DONE AT ALL - will happen in .90
-o const args for all functions
+o const args for all functions?
 
 To ponder and discuss:
 ----------------------
@@ -38,3 +38,7 @@ o private key type? This works, but not (yet) for tsig stuff
 	fold in the tsig stuff as well
 o install mx, keygen, chaos somewhere, along with manpages??
 o All lookup table stuff in _table types?
+
+To be removed:
+-------------
+LDNS_STATUS_CHECK_GOTO

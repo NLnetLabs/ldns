@@ -116,6 +116,7 @@ do_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 				ns_addr = ldns_rr_list_cat_clone(ns_addr,
 					ldns_get_rr_list_addr_by_name(local_res, pop, c, 0));
 			}
+
 			if (ns_addr) {
 				if (ldns_resolver_push_nameserver_rr_list(res, ns_addr) != 
 						LDNS_STATUS_OK) {
@@ -123,6 +124,7 @@ do_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 					ldns_pkt_free(p); 
 					return NULL;
 				}
+				ldns_rr_list_free(ns_addr);
 			} else {
 				error("%s", "Could not find the ip addr; abort");
 				ldns_pkt_free(p);

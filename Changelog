@@ -1,6 +1,8 @@
 XX Sep 2005: 0.80: ldns-team
 	* License change: ldns is now BSD licensed
 	* Networking code cleanup, added server udp/tcp support
+	* A zone type is introduced. Currently this is a list
+	  of RRs, so it will not scale.
 	* Zonefile parsing was added
 	* Lua binding were created 
 	* [tools] Drill was added to ldns - see drill/
