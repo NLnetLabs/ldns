@@ -9,6 +9,7 @@ o [dnssec] NSEC generation??
 o [openssl] openssl's setup function (esp. random)
 o [openssl] -lssl in library creation and autoconf - somewhat fix in 0.60/0.65
 o [doc]  const function are correct i think, but const values in struct not
+o Error handling needs to be improved
 
 Implementation:
 ---------------
@@ -42,3 +43,4 @@ o All lookup table stuff in _table types?
 To be removed:
 -------------
 LDNS_STATUS_CHECK_GOTO
+Debugging code 
