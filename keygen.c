@@ -99,6 +99,8 @@ main(int argc, char *argv[])
 		exit(EXIT_FAILURE);
 	} 
 
+	ldns_random_init(1000); /* init the random engine */
+
 	/* create an rdf from the domain name */
 	domain = ldns_dname_new_frm_str(argv[0]);
 

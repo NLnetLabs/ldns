@@ -1579,3 +1579,28 @@ ldns_zone_sign(ldns_zone *zone, ldns_key_list *key_list, ldns_key_list *key_sign
 	
 }
 
+/* Init the random source
+ * apps must call this 
+ */
+ldns_status ldns_init_random(uint16_t num) {
+	FILE *rand;
+	uint8_t *buf;
+
+	buf = LDNS_XMALLOC(uint8_t, num);
+	if (!buf) {
+		return LDNS_STATUS_ERR;;
+	}
+
+	if ((rand = fopen("r", "/dev/random")) == NULL) {
+		LDNS_FREE(buf);
+		return LDNS_STATUS_ERR;
+	}
+	if ((fread(buf, sizeof(uint8_t), (size_t)num, rand) != num)) {
+		LDNS_FREE(buf);
+		fclose(rand);
+		return LDNS_STATUS_ERR;
+	}
+	LDNS_FREE(buf);
+ 	RAND_seed((const void *)buf, (int)num);
+	return LDNS_STATUS_OK;
+}
