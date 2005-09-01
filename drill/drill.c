@@ -164,6 +164,7 @@ main(int argc, char *argv[])
 				/* reserved for backward compatibility */
 				break;
 			case 'T':
+				warning("%s", "Trace enabled, ignoring any <type> arguments");
 				PURPOSE = DRILL_TRACE;
 				break;
 			case 'S':

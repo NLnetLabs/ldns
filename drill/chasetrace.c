@@ -70,11 +70,17 @@ do_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 
 	/* this must be a real query to local_res */
 	status = ldns_resolver_send(&p, local_res, ldns_dname_new_frm_str("."), LDNS_RR_TYPE_NS, c, 0);
+	/* p can still be NULL */
 
+	if (!p) {
+		error("Nothing received\n");
+		return NULL;
+	}
+	
 	if (status == LDNS_STATUS_OK) {
 		drill_pkt_print(stdout, local_res, p);
 	} else {
-		printf("cannot use local resolver\n");
+		error("cannot use local resolver\n");
 		return NULL;
 	}
 
@@ -126,7 +132,7 @@ do_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 				}
 				ldns_rr_list_free(ns_addr);
 			} else {
-				error("%s", "Could not find the ip addr; abort");
+				error("Could not find the ip addr; abort");
 				ldns_pkt_free(p);
 				return NULL;
 			}
@@ -136,7 +142,7 @@ do_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 		if (new_nss_aaaa) {
 			if (ldns_resolver_push_nameserver_rr_list(res, new_nss_aaaa) != 
 					LDNS_STATUS_OK) {
-				error("%s", "adding new nameservers");
+				error("adding new nameservers");
 				ldns_pkt_free(p); 
 				return NULL;
 			}
@@ -249,7 +255,7 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 	if (status == LDNS_STATUS_OK) {
 		drill_pkt_print(stdout, local_res, p);
 	} else {
-		printf("cannot use local resolver\n");
+		error("cannot use local resolver\n");
 		return LDNS_STATUS_ERR;
 	}
 	/* next ask the for keys */
@@ -349,9 +355,9 @@ do_chase(ldns_resolver *res, ldns_rdf *name, ldns_rr_type type, ldns_rr_class c,
 				);
 		
 		if (qdebug != -1) {
-			printf(";; Signed by: ");
+			mesg(";; Signed by: ");
 			ldns_rdf_print(stdout, ldns_rr_rdf(cur_sig, 7));
-			printf("\n");
+			mesg("\n");
 		}
 
 		if (!keys) {
