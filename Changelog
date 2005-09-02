@@ -1,13 +1,15 @@
 XX Sep 2005: 0.80: ldns-team
 	* License change: ldns is now BSD licensed
-	* Networking code cleanup, added server udp/tcp support
+	* ldns now depends on SSL
+	* Networking code cleanup, added (some) server udp/tcp support
 	* A zone type is introduced. Currently this is a list
 	  of RRs, so it will not scale.
-	* Zonefile parsing was added
-	* Some Lua binding were created (not complete, nor does it 
-	  compile on all platforms)
+	* [beta] Zonefile parsing was added
+	* [beta] Some Lua binding were created (not complete, nor does it 
+	         compile on all platforms)
 	* [tools] Drill was added to ldns - see drill/
 	* [tools] signer was added 
+	* [building] better check for ssl
 
 28 Jul 2005: 0.70: ldns-team
 	* [func] ldns_pkt_get_section now returns copies from the rrlists
