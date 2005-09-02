@@ -77,7 +77,6 @@ ldns_calc_keytag(ldns_rr *key)
 	}
 }
 
-/* TJB ldns_rr_list **/
 ldns_status
 ldns_verify(ldns_rr_list *rrset, ldns_rr_list *rrsig, ldns_rr_list *keys, ldns_rr_list *good_keys)
 {
@@ -295,10 +294,6 @@ ldns_verify_rrsig_keylist(ldns_rr_list *rrset, ldns_rr *rrsig, ldns_rr_list *key
 				ldns_rr_list_print(stdout, keys);
 				*/
 			}
-		} else {
-/*
-			dprintf("%s\n", "keytags do not match");
-*/
 		}
 	}
 
@@ -357,6 +352,27 @@ ldns_verify_rrsig(ldns_rr_list *rrset, ldns_rr *rrsig, ldns_rr *key)
 	verify_buf  = ldns_buffer_new(LDNS_MAX_PACKETLEN);
 	
 	sig_algo = ldns_rdf2native_int8(ldns_rr_rdf(rrsig, 1));
+	
+	/* check for known and implemented algo's now (otherwise 
+	 * the function could return a wrong error
+	 */
+	switch(sig_algo) {
+		case LDNS_RSAMD5:
+		case LDNS_RSASHA1:
+		case LDNS_DSA:
+			break;
+		case LDNS_DH:
+		case LDNS_ECC:
+		case LDNS_INDIRECT:
+			ldns_buffer_free(rawsig_buf);
+			ldns_buffer_free(verify_buf);
+			return LDNS_STATUS_CRYPTO_ALGO_NOT_IMPL;
+		default:
+			ldns_buffer_free(rawsig_buf);
+			ldns_buffer_free(verify_buf);
+			return LDNS_STATUS_CRYPTO_UNKNOWN_ALGO;
+	}
+	
 	result = LDNS_STATUS_ERR;
 
 	/* create a buffer with b64 signature rdata */
@@ -425,7 +441,10 @@ ldns_verify_rrsig(ldns_rr_list *rrset, ldns_rr *rrsig, ldns_rr *key)
 		
 		ldns_buffer_free(key_buf); 
 	}
-
+	 else {
+		/* No keys with the corresponding keytag are found */
+		result = LDNS_STATUS_CRYPTO_NO_MATCHING_KEYTAG_DNSKEY;
+	}
 	/* no longer needed */
 	ldns_rr_list_deep_free(rrset_clone);
 	ldns_buffer_free(rawsig_buf);

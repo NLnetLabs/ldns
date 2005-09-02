@@ -283,10 +283,6 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
  * Based on drill 0.9
  * pkt optional?
  * TODO: lots 
- 	keys
-	status codes
-	helper functions (for instance for rrset owner retrieval
-	rest ;)
 	if this is moved to the library, status codes should be added and prints removed
  */
 ldns_status
@@ -303,6 +299,9 @@ do_chase(ldns_resolver *res, ldns_rdf *name, ldns_rr_type type, ldns_rr_class c,
 	uint16_t key_i;
 	uint16_t tkey_i;
 	ldns_pkt *pkt;
+	
+	ldns_lookup_table *lt;
+	const ldns_rr_descriptor *descriptor;
 	
 	pkt = ldns_pkt_clone(pkt_o);
 	
@@ -355,6 +354,38 @@ do_chase(ldns_resolver *res, ldns_rdf *name, ldns_rr_type type, ldns_rr_class c,
 				);
 		
 		if (qdebug != -1) {
+			printf(";; Data set: ");
+			ldns_rdf_print(stdout, name);
+
+			lt = ldns_lookup_by_id(ldns_rr_classes, c);
+			if (lt) {
+				printf("\t%s\t", lt->name);
+			} else {
+				printf("\tCLASS%d\t", c);
+			}
+
+			descriptor = ldns_rr_descript(type);
+
+			if (descriptor->_name) {
+				printf("%s\t", descriptor->_name);
+			} else {
+				/* exceptions for qtype */
+				if (type == 251) {
+					printf("IXFR ");
+				} else if (type == 252) {
+					printf("AXFR ");
+				} else if (type == 253) {
+					printf("MAILB ");
+				} else if (type == 254) {
+					printf("MAILA ");
+				} else if (type == 255) {
+					printf("ANY ");
+				} else {
+					printf("TYPE%d\t", type);
+				}
+			}
+			
+			printf("\n");
 			printf(";; Signed by: ");
 			ldns_rdf_print(stdout, ldns_rr_rdf(cur_sig, 7));
 			printf("\n");
@@ -386,32 +417,40 @@ do_chase(ldns_resolver *res, ldns_rdf *name, ldns_rr_type type, ldns_rr_class c,
 			ldns_rr_free(cur_sig);
 			return LDNS_STATUS_CRYPTO_NO_DNSKEY;
 		} else {
+			result = LDNS_STATUS_ERR;
 			for (key_i = 0; key_i < ldns_rr_list_rr_count(keys); key_i++) {
-				result = ldns_verify_rrsig(rrset, cur_sig, ldns_rr_list_rr(keys, key_i));
-				if (result == LDNS_STATUS_OK) {
-					for (tkey_i = 0; tkey_i < ldns_rr_list_rr_count(trusted_keys); tkey_i++) {
-						if (ldns_rr_compare_ds(ldns_rr_list_rr(keys, key_i),
-								   ldns_rr_list_rr(trusted_keys, tkey_i)
-								  )) {
-							mesg("Key is trusted\n");
-							ldns_rr_list_deep_free(rrset);
-							ldns_rr_list_deep_free(sigs);
-							ldns_rr_list_deep_free(keys);
-							ldns_pkt_free(pkt);
-							ldns_rr_free(cur_sig);
-							return LDNS_STATUS_OK;
+				/* only check matching keys */
+				if (ldns_calc_keytag(ldns_rr_list_rr(keys, key_i))
+				    ==
+				    ldns_rdf2native_int16(ldns_rr_rrsig_keytag(cur_sig))
+				   ) {
+					result = ldns_verify_rrsig(rrset, cur_sig, ldns_rr_list_rr(keys, key_i));
+					if (result == LDNS_STATUS_OK) {
+						for (tkey_i = 0; tkey_i < ldns_rr_list_rr_count(trusted_keys); tkey_i++) {
+							if (ldns_rr_compare_ds(ldns_rr_list_rr(keys, key_i),
+									   ldns_rr_list_rr(trusted_keys, tkey_i)
+									  )) {
+								mesg("Key is trusted\n");
+								ldns_rr_list_deep_free(rrset);
+								ldns_rr_list_deep_free(sigs);
+								ldns_rr_list_deep_free(keys);
+								ldns_pkt_free(pkt);
+								ldns_rr_free(cur_sig);
+								return LDNS_STATUS_OK;
+							}
 						}
+						result = do_chase(res, ldns_rr_rdf(cur_sig, 7), LDNS_RR_TYPE_DS, c, trusted_keys, pkt, qflags);
+						ldns_rr_list_deep_free(rrset);
+						ldns_rr_list_deep_free(sigs);
+						ldns_rr_list_deep_free(keys);
+						ldns_pkt_free(pkt);
+						ldns_rr_free(cur_sig);
+						return result;
 					}
-					result = do_chase(res, ldns_rr_rdf(cur_sig, 7), LDNS_RR_TYPE_DS, c, trusted_keys, pkt, qflags);
-					ldns_rr_list_deep_free(rrset);
-					ldns_rr_list_deep_free(sigs);
-					ldns_rr_list_deep_free(keys);
-					ldns_pkt_free(pkt);
-					ldns_rr_free(cur_sig);
-					return result;
-				} else {
-					return result;
 				}
+			}
+			if (result != LDNS_STATUS_OK) {
+				return result;
 			}
 			ldns_rr_list_deep_free(keys);
 		}
@@ -426,3 +465,4 @@ do_chase(ldns_resolver *res, ldns_rdf *name, ldns_rr_type type, ldns_rr_class c,
 		return LDNS_STATUS_CRYPTO_NO_RRSIG;
 	}
 }
+
