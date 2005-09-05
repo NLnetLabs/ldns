@@ -5,8 +5,6 @@ XX Sep 2005: 0.80: ldns-team
 	* A zone type is introduced. Currently this is a list
 	  of RRs, so it will not scale.
 	* [beta] Zonefile parsing was added
-	* [beta] Some Lua binding were created (not complete, nor does it 
-	         compile on all platforms)
 	* [tools] Drill was added to ldns - see drill/
 	* [tools] signer was added 
 	* [building] better check for ssl
