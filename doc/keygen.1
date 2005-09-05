@@ -9,8 +9,12 @@ keygen \- generate a keypair and print out the public part as a DNSKEY RR
 .IR DOMAIN 
 
 .SH DESCRIPTION
-\fBkeygen\fR is used to generate a private/public keypair. It prints out
-the public key as a DNSKEY RR to stdout.
+\fBkeygen\fR is used to generate a private/public keypair. When run it
+will create 3 files; a .key file with the public DNSKEY, a .private
+file with the private keydata and a .ds with the DS record of the
+DNSKEY record.
+
+It prints out the basename for all these files: (K<name>+<alg>+<id>
 
 .SH OPTIONS
 .TP
@@ -29,6 +33,11 @@ When given generate a key signing key. This just sets the flag field to
 .TP
 \fBb \fIbits\fR 
 Use this many bits for the key length.
+
+.TP
+\fbr \fdevice\fR
+Make keygen use this file for its random data. This will default
+to /dev/random.
 
 .SH AUTHOR
 Written by the ldns team as an example for ldns usage.

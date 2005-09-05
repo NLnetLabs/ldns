@@ -13,7 +13,7 @@
 
 void
 usage(FILE *fp, char *prog) {
-	fprintf(fp, "%s keygen [-D|-R] [-b bits] [-r /dev/random]  domain\n", prog);
+	fprintf(fp, "%s [-D|-R] [-b bits] [-r /dev/random]  domain\n", prog);
 	fprintf(fp, "  generate a new key pair for domain\n");
 	fprintf(fp, "  -D\tgenerate a DSA key\n");
 	fprintf(fp, "  -R\tgenerate a RSA key\n");
@@ -104,6 +104,9 @@ main(int argc, char *argv[])
 	} 
 
 	(void)ldns_init_random(random, def_bits * 8 * 2); /* I hope this is enough? */
+	if (random) {
+		fclose(random);
+	}
 
 	/* create an rdf from the domain name */
 	domain = ldns_dname_new_frm_str(argv[0]);
@@ -135,7 +138,6 @@ main(int argc, char *argv[])
 	file = fopen(filename, "w");
 	if (!file) {
 		fprintf(stderr, "Unable to open %s: %s\n", filename, strerror(errno));
-		fprintf(stderr, "Aborting\n");
 		exit(EXIT_FAILURE);
 	} else {
 		ldns_rr_print(file, pubkey);
@@ -149,7 +151,6 @@ main(int argc, char *argv[])
 	file = fopen(filename, "w");
 	if (!file) {
 		fprintf(stderr, "Unable to open %s: %s\n", filename, strerror(errno));
-		fprintf(stderr, "Aborting\n");
 		exit(EXIT_FAILURE);
 	} else {
 		ldns_key_print(file, key);
@@ -163,7 +164,6 @@ main(int argc, char *argv[])
 	file = fopen(filename, "w");
 	if (!file) {
 		fprintf(stderr, "Unable to open %s: %s\n", filename, strerror(errno));
-		fprintf(stderr, "Aborting\n");
 		exit(EXIT_FAILURE);
 	} else {
 		ldns_rr_print(file, ds);

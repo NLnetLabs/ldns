@@ -1,5 +1,5 @@
 /*
- * mx is a small programs that prints out the mx records
+ * signzone signs a zone file
  * for a particulary domain
  * (c) NLnet Labs, 2005
  * Licensed under the GPL version 2
@@ -68,7 +68,7 @@ main(int argc, char *argv[])
 	int line_nr = 0;
 	char c;
 	
-	const char *prog = argv[0];
+	const char *prog = strdup(argv[0]);
 	
 	inception = 0;
 	expiration = 0;
