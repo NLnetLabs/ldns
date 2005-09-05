@@ -84,9 +84,10 @@ ldns_verify(ldns_rr_list *rrset, ldns_rr_list *rrsig, ldns_rr_list *keys, ldns_r
 	ldns_rr_list *result;
 /*	ldns_rr_list *keys_verified;*/
 	bool valid;
-	ldns_status verify_result;
+	ldns_status verify_result = LDNS_STATUS_ERR;
 
 	if (!rrset || !rrsig || !keys) {
+printf("err 1\n");
 		return LDNS_STATUS_ERR;
 	}
 
@@ -99,24 +100,8 @@ ldns_verify(ldns_rr_list *rrset, ldns_rr_list *rrsig, ldns_rr_list *keys, ldns_r
 				ldns_rr_list_rr(rrsig, i),
 				keys,
 				good_keys);
-
-		if (verify_result == LDNS_STATUS_OK) {
-			valid = true;
-/*
-			result = ldns_rr_list_cat_clone(result, keys_verified);
-*/
-		}
 	}
-	if (valid) {
-/* TJB isn't this done now by _keylist?
-		if (good_keys) {
-			ldns_rr_list_cat(good_keys, result);
-		}
-*/
-		return LDNS_STATUS_OK;
-	} else {
-		return LDNS_STATUS_ERR;
-	}
+	return verify_result;
 }
 
 INLINE ldns_status
@@ -188,7 +173,7 @@ ldns_verify_rrsig_keylist(ldns_rr_list *rrset, ldns_rr *rrsig, ldns_rr_list *key
 	verify_buf  = ldns_buffer_new(LDNS_MAX_PACKETLEN);
 	
 	sig_algo = ldns_rdf2native_int8(ldns_rr_rdf(rrsig, 1));
-	result = false;
+	result = LDNS_STATUS_ERR;
 
 	/* check the signature time stamps */
 	inception = ldns_rdf2native_time_t(ldns_rr_rrsig_inception(rrsig));
@@ -302,8 +287,8 @@ ldns_verify_rrsig_keylist(ldns_rr_list *rrset, ldns_rr *rrsig, ldns_rr_list *key
 	ldns_buffer_free(rawsig_buf);
 	ldns_buffer_free(verify_buf);
 	if (ldns_rr_list_rr_count(validkeys) == 0) {
-		/* no keys were added */
-		return LDNS_STATUS_CRYPTO_NO_TRUSTED_DNSKEY;
+		/* no keys were added, return last error */
+		return result;
 	} else {
 		ldns_rr_list_cat(good_keys, validkeys);
 		return LDNS_STATUS_OK;
@@ -340,6 +325,8 @@ ldns_verify_rrsig(ldns_rr_list *rrset, ldns_rr *rrsig, ldns_rr *key)
                 /* bad sig, inception date has passed */
 		return LDNS_STATUS_CRYPTO_SIG_NOT_INCEPTED;
         }
+printf("EXP: %u\n", expiration);
+printf("NOW: %u\n",now);
         if (expiration - now < 0) {
                 /* bad sig, expiration date has passed */
 		return LDNS_STATUS_CRYPTO_SIG_EXPIRED;
@@ -486,6 +473,7 @@ ldns_verify_rrsig_dsa(ldns_buffer *sig, ldns_buffer *rrset, ldns_buffer *key)
 	if (!sha1_hash) {
 		return LDNS_STATUS_ERR;
 	}
+
 	if (DSA_do_verify(sha1_hash, SHA_DIGEST_LENGTH, dsasig, dsakey) == 1) {
 		return LDNS_STATUS_OK;
 	} else {
