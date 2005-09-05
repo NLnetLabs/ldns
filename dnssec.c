@@ -325,8 +325,7 @@ ldns_verify_rrsig(ldns_rr_list *rrset, ldns_rr *rrsig, ldns_rr *key)
                 /* bad sig, inception date has passed */
 		return LDNS_STATUS_CRYPTO_SIG_NOT_INCEPTED;
         }
-printf("EXP: %u\n", expiration);
-printf("NOW: %u\n",now);
+
         if (expiration - now < 0) {
                 /* bad sig, expiration date has passed */
 		return LDNS_STATUS_CRYPTO_SIG_EXPIRED;
