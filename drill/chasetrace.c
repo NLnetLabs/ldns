@@ -450,6 +450,11 @@ do_chase(ldns_resolver *res, ldns_rdf *name, ldns_rr_type type, ldns_rr_class c,
 				}
 			}
 			if (result != LDNS_STATUS_OK) {
+				ldns_rr_list_deep_free(rrset);
+				ldns_rr_list_deep_free(sigs);
+				ldns_rr_list_deep_free(keys);
+				ldns_pkt_free(pkt);
+				ldns_rr_free(cur_sig);
 				return result;
 			}
 			ldns_rr_list_deep_free(keys);

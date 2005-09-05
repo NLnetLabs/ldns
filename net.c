@@ -188,11 +188,6 @@ ldns_send_udp(uint8_t **result, ldns_buffer *qbin, const struct sockaddr_storage
 	}
 	
 	/* wait for an response*/
-	answer = LDNS_XMALLOC(uint8_t, LDNS_MAX_PACKETLEN);
-	if (!answer) {
-		dprintf("%s", "respons alloc error\n");
-		return LDNS_STATUS_ERR;
-	}
 
 	answer = ldns_udp_read_wire(sockfd, answer_size, NULL, NULL);
 
