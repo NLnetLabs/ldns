@@ -36,7 +36,7 @@ ldns_lookup_table ldns_error_str[] = {
         { LDNS_STATUS_ADDRESS_ERR, "Could not start AXFR, because of address error" },
         { LDNS_STATUS_UNKNOWN_INET, "Uknown address family" },
         { LDNS_STATUS_NOT_IMPL, "This function is not implemented (yet), please notify the developers" },
-        { LDNS_STATUS_CRYPTO_UNKNOWN_ALGO, "Uknown cryptographic algorithm" },
+        { LDNS_STATUS_CRYPTO_UNKNOWN_ALGO, "Unknown cryptographic algorithm" },
         { LDNS_STATUS_CRYPTO_ALGO_NOT_IMPL, "Cryptographic algorithm not implemented" },
         { LDNS_STATUS_CRYPTO_NO_RRSIG, "No DNSSEC signature(s)" },
         { LDNS_STATUS_CRYPTO_NO_DNSKEY, "No DNSSEC public key(s)" },
