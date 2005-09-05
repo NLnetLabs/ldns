@@ -579,7 +579,7 @@ ldns_str2rdf_loc(ldns_rdf **rd, const char *str)
 	if (isdigit(*my_str)) {
 		m = (uint32_t) strtol(my_str, &my_str, 10);
 	} else if (*my_str == 'N' || *my_str == 'S') {
-		goto northerness;
+		goto north;
 	} else {
 		return LDNS_STATUS_INVALID_STR;
 	}
@@ -592,7 +592,7 @@ ldns_str2rdf_loc(ldns_rdf **rd, const char *str)
 		s = strtod(my_str, &my_str);
 	}
 
-	northerness:
+	north:
 	while (isblank(*my_str)) {
 		my_str++;
 	}
