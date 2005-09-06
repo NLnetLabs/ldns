@@ -1239,6 +1239,9 @@ ldns_sign_public_dsa(ldns_buffer *to_sign, DSA *key)
 
 	sigdata_rdf = ldns_rdf_new_frm_data(LDNS_RDF_TYPE_B64,  1 + 2 * SHA_DIGEST_LENGTH, data);
 
+	ldns_buffer_free(b64sig);
+	LDNS_FREE(data);
+
 	return sigdata_rdf;
 }
 
