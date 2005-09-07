@@ -1,4 +1,5 @@
 XX Sep 2005: 0.80: ldns-team
+	* Commited a patch from Håkan Olsson (revision 1088)
 	* License change: ldns is now BSD licensed
 	* ldns now depends on SSL
 	* Networking code cleanup, added (some) server udp/tcp support
