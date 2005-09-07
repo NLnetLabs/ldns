@@ -1035,7 +1035,11 @@ ldns_key2buffer_str(ldns_buffer *output, ldns_key *k)
 				/* copied by looking at dnssec-keygen output */
 				/* header */
 				ldns_buffer_printf(output,"Private-key-format: v1.2\n");
-				ldns_buffer_printf(output,"Algorithm: 1 (RSA)\n");
+				if (ldns_key_algorithm(k) == LDNS_SIGN_RSAMD5) {
+					ldns_buffer_printf(output,"Algorithm: 1 (RSA)\n");
+				} else if (ldns_key_algorithm(k) == LDNS_SIGN_RSAMD5) {
+					ldns_buffer_printf(output,"Algorithm: 5 (RSASHA1)\n");
+				}
 
 				/* print to buf, convert to bin, convert to b64,
 				 * print to buf */
