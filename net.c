@@ -325,6 +325,7 @@ ldns_udp_read_wire(int sockfd, size_t *size, struct sockaddr_storage *from,
 {
 	uint8_t *wire;
 	ssize_t wire_size;
+	socklen_t flen;
 
 	wire = LDNS_XMALLOC(uint8_t, LDNS_MAX_PACKETLEN);
 	if (!wire) {
@@ -333,7 +334,14 @@ ldns_udp_read_wire(int sockfd, size_t *size, struct sockaddr_storage *from,
 	}
 
 	wire_size = recvfrom(sockfd, wire, LDNS_MAX_PACKETLEN, 0, 
-			(struct sockaddr*) from, fromlen);
+			(struct sockaddr*) from, &flen);
+
+	if (from) {
+		if (fromlen) {
+			*fromlen = flen;
+		}
+		printf("from len %d\n", (int)flen);
+	}
 
 	if (wire_size == -1) {
 		if (errno == EAGAIN) {

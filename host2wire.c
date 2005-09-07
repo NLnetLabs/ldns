@@ -162,7 +162,7 @@ ldns_hdr2buffer_wire(ldns_buffer *buffer, const ldns_pkt *packet)
 		ldns_buffer_write_u16(buffer, ldns_pkt_id(packet));
 		
 		flags = ldns_pkt_qr(packet) << 7
-		        | ldns_pkt_get_opcode(packet) << 6
+		        | ldns_pkt_get_opcode(packet) << 3
 		        | ldns_pkt_aa(packet) << 2
 		        | ldns_pkt_tc(packet) << 1
 		        | ldns_pkt_rd(packet);

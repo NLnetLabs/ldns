@@ -24,6 +24,7 @@
 #include <openssl/bio.h>
 #include <openssl/evp.h>
 #include <openssl/hmac.h>
+#include <openssl/md5.h>
 
 uint16_t
 ldns_calc_keytag(ldns_rr *key)
