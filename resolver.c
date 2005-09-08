@@ -741,7 +741,6 @@ ldns_resolver_send(ldns_pkt **answer, ldns_resolver *r, ldns_rdf *name,
 		ldns_pkt_print(stdout, query_pkt);
 	}
 	
-	/* TODO: time is a terrible seed */
 	/* only set the id if it is not set yet */
 	if (ldns_pkt_id(query_pkt) == 0) {
 		srandom((unsigned) time(NULL) ^ getpid());
@@ -760,7 +759,6 @@ ldns_resolver_send(ldns_pkt **answer, ldns_resolver *r, ldns_rdf *name,
 		                            300,
 		                            ldns_resolver_tsig_algorithm(r),
 		                            NULL);
-		/* TODO: no print and feedback to caller */
 		if (status != LDNS_STATUS_OK) {
 			return LDNS_STATUS_CRYPTO_TSIG_ERR;
 		}
