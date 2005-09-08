@@ -183,7 +183,6 @@ ldns_wire2rdf(ldns_rr *rr, const uint8_t *wire,
 		                                             rdf_index);
 		/* handle special cases immediately, set length
 		   for fixed length rdata and do them below */
-		   /* TODO: constants */
 		switch (cur_rdf_type) {
 		case LDNS_RDF_TYPE_DNAME:
 			status = ldns_wire2dname(&cur_rdf, wire, max,
@@ -203,6 +202,7 @@ ldns_wire2rdf(ldns_rr *rr, const uint8_t *wire,
 		case LDNS_RDF_TYPE_TIME:
 		case LDNS_RDF_TYPE_INT32:
 		case LDNS_RDF_TYPE_A:
+		case LDNS_RDF_TYPE_PERIOD:
 			cur_rdf_length = LDNS_RDF_SIZE_DOUBLEWORD;
 			break;
 		case LDNS_RDF_TYPE_TSIGTIME:
@@ -217,9 +217,6 @@ ldns_wire2rdf(ldns_rr *rr, const uint8_t *wire,
 			 * copy len+1 from this position
 			 */
 			cur_rdf_length = ((size_t) wire[*pos]) + 1;
-			break;
-		case LDNS_RDF_TYPE_PERIOD:
-			cur_rdf_length = 4;
 			break;
 		case LDNS_RDF_TYPE_INT16_DATA:
 			cur_rdf_length = (size_t) ldns_read_uint16(&wire[*pos]) + 2;
@@ -265,6 +262,7 @@ ldns_wire2rdf(ldns_rr *rr, const uint8_t *wire,
 /* TODO:
          can *pos be incremented at READ_INT? or maybe use something like
          RR_CLASS(wire)?
+	 uhhm Jelte??
 */
 ldns_status
 ldns_wire2rr(ldns_rr **rr_p, const uint8_t *wire, size_t max, 
