@@ -592,7 +592,7 @@ ldns_str2rdf_loc(ldns_rdf **rd, const char *str)
 		s = strtod(my_str, &my_str);
 	}
 
-	north:
+north:
 	while (isblank(*my_str)) {
 		my_str++;
 	}
@@ -634,7 +634,7 @@ ldns_str2rdf_loc(ldns_rdf **rd, const char *str)
 	if (isdigit(*my_str)) {
 		m = (uint32_t) strtol(my_str, &my_str, 10);
 	} else if (*my_str == 'E' || *my_str == 'W') {
-		goto easterness;
+		goto east;
 	} else {
 		return LDNS_STATUS_INVALID_STR;
 	}
@@ -647,7 +647,7 @@ ldns_str2rdf_loc(ldns_rdf **rd, const char *str)
 		s = strtod(my_str, &my_str);
 	}
 
-	easterness:
+east:
 	while (isblank(*my_str)) {
 		my_str++;
 	}
