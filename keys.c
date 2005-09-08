@@ -643,8 +643,7 @@ ldns_key_rsa2bin(unsigned char *data, RSA *k, uint16_t *size)
 		/* and this 65536?? */
 	} else if (BN_num_bytes(k->e) <= 16) {
 		data[0] = 0;
-		/* XXX this writing is not endian save or is it? LOOK AT
-		 * THIS AGAIN  */
+		/* BN_bn2bin does bigendian, _uint16 also */
 		ldns_write_uint16(data + 1, (uint16_t) BN_num_bytes(k->e)); 
 
 		BN_bn2bin(k->e, data + 3); 
