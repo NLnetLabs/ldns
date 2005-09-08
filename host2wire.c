@@ -16,7 +16,7 @@
 
 #include <ldns/dns.h>
 
-/* TODO 
+/* TODO Jelte
   add a pointer to a 'possiblecompression' structure
   to all the needed functions?
   something like an array of name, pointer values?

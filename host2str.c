@@ -1176,7 +1176,7 @@ ldns_key2buffer_str(ldns_buffer *output, ldns_key *k)
 				ldns_buffer_printf(output, "\n"); 
 				break;
 			case LDNS_SIGN_HMACMD5:
-				/* as always; todo code */
+				/* is the filefmt specified for TSIG.. don't know */
 				goto error;
 		}
 	} else {
