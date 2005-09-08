@@ -14,7 +14,7 @@
 #include <ldns/error.h>
 
 ldns_lookup_table ldns_error_str[] = {
-	{ LDNS_STATUS_OK, "all o.k." },
+	{ LDNS_STATUS_OK, "All OK" },
 	{ LDNS_STATUS_EMPTY_LABEL, "Empty label" },
         { LDNS_STATUS_LABEL_OVERFLOW, "Label length overflow" },
         { LDNS_STATUS_DOMAINNAME_OVERFLOW, "Domainname length overflow" },
@@ -35,7 +35,7 @@ ldns_lookup_table ldns_error_str[] = {
         { LDNS_STATUS_NETWORK_ERR, "Could not send or receive, because of network error" },
         { LDNS_STATUS_ADDRESS_ERR, "Could not start AXFR, because of address error" },
         { LDNS_STATUS_UNKNOWN_INET, "Uknown address family" },
-        { LDNS_STATUS_NOT_IMPL, "This function is not implemented (yet), please notify the developers" },
+        { LDNS_STATUS_NOT_IMPL, "This function is not implemented (yet), please notify the developers - or not..." },
         { LDNS_STATUS_CRYPTO_UNKNOWN_ALGO, "Unknown cryptographic algorithm" },
         { LDNS_STATUS_CRYPTO_ALGO_NOT_IMPL, "Cryptographic algorithm not implemented" },
         { LDNS_STATUS_CRYPTO_NO_RRSIG, "No DNSSEC signature(s)" },
@@ -46,6 +46,7 @@ ldns_lookup_table ldns_error_str[] = {
         { LDNS_STATUS_CRYPTO_BOGUS, "Bogus DNSSEC signature" },
         { LDNS_STATUS_CRYPTO_SIG_EXPIRED, "DNSSEC signature has expired" },
         { LDNS_STATUS_CRYPTO_SIG_NOT_INCEPTED, "DNSSEC signature not incepted yet" },
+	{ LDNS_STATUS_CRYPTO_TSIG_BOGUS, "Bogus TSIG signature" },
         { LDNS_STATUS_CRYPTO_EXPIRATION_BEFORE_INCEPTION, "DNSSEC signature has expiration date earlier than inception date" },
 	{ 0, NULL }
 };

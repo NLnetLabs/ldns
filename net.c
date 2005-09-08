@@ -41,7 +41,9 @@ ldns_send(ldns_pkt **result, ldns_resolver *r, ldns_pkt *query_pkt)
 	uint8_t *reply_bytes = NULL;
 	size_t reply_size = 0;
 	ldns_rdf *tsig_mac = NULL;
-	ns_rand_array = NULL;
+	ldns_status status;
+
+	status = LDNS_STATUS_OK;
 
 	ns_rand_array = LDNS_XMALLOC(ldns_rdf*, ldns_resolver_nameserver_count(r));
 
@@ -56,7 +58,7 @@ ldns_send(ldns_pkt **result, ldns_resolver *r, ldns_pkt *query_pkt)
 		ns_rand_array[i] = ns_array[i];
 	}
 	
-	qb = ldns_buffer_new(LDNS_MAX_PACKETLEN);
+	qb = ldns_buffer_new(LDNS_MIN_BUFLEN);
 
 	if (ldns_pkt_tsig(query_pkt)) {
 		tsig_mac = ldns_rr_rdf(ldns_pkt_tsig(query_pkt), 3);
@@ -157,8 +159,7 @@ ldns_send(ldns_pkt **result, ldns_resolver *r, ldns_pkt *query_pkt)
 		                          ldns_resolver_tsig_keyname(r),
 		                          ldns_resolver_tsig_keydata(r),
 		                          tsig_mac)) {
-			/* TODO: no print, feedback */
-			dprintf("%s", ";; WARNING: TSIG VERIFICATION OF ANSWER FAILED!\n");
+			status = LDNS_STATUS_CRYPTO_TSIG_BOGUS;
 		}
 	}
 	
@@ -168,7 +169,7 @@ ldns_send(ldns_pkt **result, ldns_resolver *r, ldns_pkt *query_pkt)
 	if (result) {
 		*result = reply;
 	}
-	return LDNS_STATUS_OK;
+	return status;
 }
 
 ldns_status

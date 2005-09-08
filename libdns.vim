@@ -117,6 +117,14 @@ syn keyword ldnsMacro	LDNS_STATUS_NETWORK_ERR
 syn keyword ldnsMacro	LDNS_STATUS_ADDRESS_ERR
 syn keyword ldnsMacro 	LDNS_STATUS_CRYPTO_NO_RRSIG
 syn keyword ldnsMacro 	LDNS_STATUS_NULL
+syn keyword ldnsMacro 	LDNS_STATUS_CRYPTO_ALGO_NOT_IMPL
+syn keyword ldnsMacro 	LDNS_STATUS_CRYPTO_NO_DNSKEY
+syn keyword ldnsMacro 	LDNS_STATUS_CRYPTO_NO_TRUSTED_DNSKEY
+syn keyword ldnsMacro 	LDNS_STATUS_CRYPTO_NO_MATCHING_KEYTAG_DNSKEY
+syn keyword ldnsMacro 	LDNS_STATUS_CRYPTO_SIG_EXPIRED
+syn keyword ldnsMacro 	LDNS_STATUS_CRYPTO_SIG_NOT_INCEPTED
+syn keyword ldnsMacro 	LDNS_STATUS_CRYPTO_TSIG_BOGUS
+syn keyword ldnsMacro 	LDNS_STATUS_CRYPTO_EXPIRATION_BEFORE_INCEPTION
 
 " ldns/resolver.h
 syn keyword  ldnsType	  	ldns_resolver
