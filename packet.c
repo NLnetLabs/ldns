@@ -652,15 +652,14 @@ ldns_pkt_set_querytime(ldns_pkt *packet, uint32_t time)
 void
 ldns_pkt_set_answerfrom(ldns_pkt *packet, ldns_rdf *answerfrom)
 {
-	/* TODO if exists free?  packet is not the owner of the
-	 * rdf  -  So no */
+	/* if _answerfrom was set, this is a leak. Callers beware */
 	packet->_answerfrom = answerfrom;
 }
 
 void
 ldns_pkt_set_when(ldns_pkt *packet, char *when)
 {
-	/* TODO if exists free? */
+	/* if _when was set, this is a leak. Callers beware */
 	packet->_when = when;
 }
 
@@ -1043,7 +1042,7 @@ ldns_pkt_clone(ldns_pkt *pkt)
 	ldns_pkt_set_when(new_pkt, ldns_pkt_when(pkt));
 	ldns_pkt_set_tsig(new_pkt, ldns_pkt_tsig(pkt));
 	
-	/* todo: edns? */
+	/* todo: edns? jelte?? */
 	ldns_rr_list_deep_free(new_pkt->_question);
 	ldns_rr_list_deep_free(new_pkt->_answer);
 	ldns_rr_list_deep_free(new_pkt->_authority);
