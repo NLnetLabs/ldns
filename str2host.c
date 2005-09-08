@@ -147,9 +147,7 @@ ldns_str2rdf_int8(ldns_rdf **rd, const char *bytestr)
 /*
  * No special care is taken, all dots are translated into
  * label seperators.
- * \todo make this more efficient...
- * we do 3 memcpy's in total...
- * label_chars2 is used for debugging. TODO: remove
+ * Could be made more efficient....we do 3 memcpy's in total...
  */
 ldns_status
 ldns_str2rdf_dname(ldns_rdf **d, const char *str)
@@ -188,7 +186,6 @@ ldns_str2rdf_dname(ldns_rdf **d, const char *str)
 		*q = 0;
 		switch (*s) {
 		case '.':
-			/* todo: check length (overflow und <1 */
 			if (label_len > LDNS_MAX_LABELLEN) {
 				return LDNS_STATUS_LABEL_OVERFLOW;
 			}
