@@ -34,7 +34,7 @@
  * \param[out] result packet with the answer
  * \return status
  */
-ldns_status ldns_send_udp(uint8_t **result, ldns_buffer *qbin, const struct sockaddr_storage *to, socklen_t tolen, struct timeval timeout, size_t *answersize);
+ldns_status ldns_udp_send(uint8_t **result, ldns_buffer *qbin, const struct sockaddr_storage *to, socklen_t tolen, struct timeval timeout, size_t *answersize);
 
 /**
  * Sends a buffer to an ip using tcp and return the respons as a ldns_pkt
@@ -47,7 +47,7 @@ ldns_status ldns_send_udp(uint8_t **result, ldns_buffer *qbin, const struct sock
  * \param[out] result packet with the answer
  * \return status
  */
-ldns_status ldns_send_tcp(uint8_t **result, ldns_buffer *qbin, const struct sockaddr_storage *to, socklen_t tolen, struct timeval timeout, size_t *answersize);
+ldns_status ldns_tcp_send(uint8_t **result, ldns_buffer *qbin, const struct sockaddr_storage *to, socklen_t tolen, struct timeval timeout, size_t *answersize);
 
 /**
  * Sends ptk to the nameserver at the resolver object. Returns the data

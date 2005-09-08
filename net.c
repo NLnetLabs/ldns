@@ -102,10 +102,10 @@ ldns_send(ldns_pkt **result, ldns_resolver *r, ldns_pkt *query_pkt)
 		/* query */
 		if (1 == ldns_resolver_usevc(r)) {
 			/* do err handling here ? */
-			(void)ldns_send_tcp(&reply_bytes, qb, ns, (socklen_t)ns_len, ldns_resolver_timeout(r), &reply_size);
+			(void)ldns_tcp_send(&reply_bytes, qb, ns, (socklen_t)ns_len, ldns_resolver_timeout(r), &reply_size);
 		} else {
 			/* udp here, please */
-			(void)ldns_send_udp(&reply_bytes, qb, ns, (socklen_t)ns_len, ldns_resolver_timeout(r), &reply_size);
+			(void)ldns_udp_send(&reply_bytes, qb, ns, (socklen_t)ns_len, ldns_resolver_timeout(r), &reply_size);
 		}
 		
 		/* obey the fail directive */
@@ -172,7 +172,7 @@ ldns_send(ldns_pkt **result, ldns_resolver *r, ldns_pkt *query_pkt)
 }
 
 ldns_status
-ldns_send_udp(uint8_t **result, ldns_buffer *qbin, const struct sockaddr_storage *to, socklen_t tolen, struct timeval timeout, size_t *answer_size)
+ldns_udp_send(uint8_t **result, ldns_buffer *qbin, const struct sockaddr_storage *to, socklen_t tolen, struct timeval timeout, size_t *answer_size)
 {
 	int sockfd;
 	uint8_t *answer;
@@ -318,7 +318,6 @@ ldns_udp_send_query(ldns_buffer *qbin, int sockfd, const struct sockaddr_storage
 	return bytes;
 }
 
-/* udp/tcp is usually a suffix... XXX */
 uint8_t *
 ldns_udp_read_wire(int sockfd, size_t *size, struct sockaddr_storage *from,
 		socklen_t *fromlen)
@@ -409,7 +408,7 @@ ldns_tcp_read_wire(int sockfd, size_t *size)
  * amount data to expect
  */
 ldns_status
-ldns_send_tcp(uint8_t **result,  ldns_buffer *qbin, const struct sockaddr_storage *to, socklen_t tolen, struct timeval timeout, size_t *answer_size)
+ldns_tcp_send(uint8_t **result,  ldns_buffer *qbin, const struct sockaddr_storage *to, socklen_t tolen, struct timeval timeout, size_t *answer_size)
 {
 	int sockfd;
 	uint8_t *answer;
