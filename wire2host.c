@@ -193,25 +193,23 @@ ldns_wire2rdf(ldns_rr *rr, const uint8_t *wire,
 		case LDNS_RDF_TYPE_CLASS:
 		case LDNS_RDF_TYPE_ALG:
 		case LDNS_RDF_TYPE_INT8:
-			cur_rdf_length = 1;
+			cur_rdf_length = LDNS_RDF_SIZE_BYTE;
 			break;
 		case LDNS_RDF_TYPE_TYPE:
 		case LDNS_RDF_TYPE_INT16:
 		case LDNS_RDF_TYPE_CERT_ALG:
-			cur_rdf_length = 2;
+			cur_rdf_length = LDNS_RDF_SIZE_WORD;
 			break;
 		case LDNS_RDF_TYPE_TIME:
 		case LDNS_RDF_TYPE_INT32:
-			cur_rdf_length = 4;
-			break;
 		case LDNS_RDF_TYPE_A:
-			cur_rdf_length = 4;
+			cur_rdf_length = LDNS_RDF_SIZE_DOUBLEWORD;
 			break;
 		case LDNS_RDF_TYPE_TSIGTIME:
-			cur_rdf_length = 6;
+			cur_rdf_length = LDNS_RDF_SIZE_6BYTES;
 			break;
 		case LDNS_RDF_TYPE_AAAA:
-			cur_rdf_length = 16;
+			cur_rdf_length = LDNS_RDF_SIZE_16BYTES;
 			break;
 		case LDNS_RDF_TYPE_STR:
 			/* len is stored in first byte 
@@ -224,7 +222,7 @@ ldns_wire2rdf(ldns_rr *rr, const uint8_t *wire,
 			cur_rdf_length = 4;
 			break;
 		case LDNS_RDF_TYPE_INT16_DATA:
-			cur_rdf_length = (size_t) ldns_read_uint16(&wire[*pos])+2;
+			cur_rdf_length = (size_t) ldns_read_uint16(&wire[*pos]) + 2;
 			break;
 		case LDNS_RDF_TYPE_APL:
 		case LDNS_RDF_TYPE_B64:

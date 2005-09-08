@@ -87,7 +87,6 @@ ldns_status ldns_str2rdf_str(ldns_rdf **rd, const char *str);
  * \param[in] rd the rdf where to put the data
  * \param[in] str the string to be converted
  * \return ldns_status
- * \todo TODO
  */
 ldns_status ldns_str2rdf_apl(ldns_rdf **rd, const char *str);
 
@@ -112,7 +111,6 @@ ldns_status ldns_str2rdf_hex(ldns_rdf **rd, const char *str);
  * \param[in] rd the rdf where to put the data
  * \param[in] str the string to be converted
  * \return ldns_status
- * \todo TODO
  */
 ldns_status ldns_str2rdf_nsec(ldns_rdf **rd, const char *str);
 
@@ -137,7 +135,6 @@ ldns_status ldns_str2rdf_class(ldns_rdf **rd, const char *str);
  * \param[in] rd the rdf where to put the data
  * \param[in] str the string to be converted
  * \return ldns_status
- * \todo TODO
  */
 ldns_status ldns_str2rdf_cert(ldns_rdf **rd, const char *str);
 
@@ -162,7 +159,6 @@ ldns_status ldns_str2rdf_alg(ldns_rdf **rd, const char *str);
  * \param[in] rd the rdf where to put the data
  * \param[in] str the string to be converted
  * \return ldns_status
- * \todo TODO
  */
 ldns_status ldns_str2rdf_unknown(ldns_rdf **rd, const char *str);
 
@@ -171,7 +167,6 @@ ldns_status ldns_str2rdf_unknown(ldns_rdf **rd, const char *str);
  * \param[in] rd the rdf where to put the data
  * \param[in] str the string to be converted
  * \return ldns_status
- * \todo TODO
  */
 ldns_status ldns_str2rdf_tsig(ldns_rdf **rd, const char *str);
 
@@ -180,7 +175,6 @@ ldns_status ldns_str2rdf_tsig(ldns_rdf **rd, const char *str);
  * \param[in] rd the rdf where to put the data
  * \param[in] str the string to be converted
  * \return ldns_status
- * \todo TODO
  */
 ldns_status ldns_str2rdf_service(ldns_rdf **rd, const char *str);
 
@@ -189,7 +183,6 @@ ldns_status ldns_str2rdf_service(ldns_rdf **rd, const char *str);
  * \param[in] rd the rdf where to put the data
  * \param[in] str the string to be converted
  * \return ldns_status
- * \todo TODO
  */
 ldns_status ldns_str2rdf_loc(ldns_rdf **rd, const char *str);
 
@@ -198,7 +191,6 @@ ldns_status ldns_str2rdf_loc(ldns_rdf **rd, const char *str);
  * \param[in] rd the rdf where to put the data
  * \param[in] str the string to be converted
  * \return ldns_status
- * \todo TODO
  */
 ldns_status ldns_str2rdf_wks(ldns_rdf **rd, const char *str);
 
@@ -207,7 +199,6 @@ ldns_status ldns_str2rdf_wks(ldns_rdf **rd, const char *str);
  * \param[in] rd the rdf where to put the data
  * \param[in] str the string to be converted
  * \return ldns_status
- * \todo TODO
  */
 ldns_status ldns_str2rdf_nsap(ldns_rdf **rd, const char *str);
 

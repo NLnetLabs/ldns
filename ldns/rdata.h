@@ -19,6 +19,12 @@
 
 #define LDNS_MAX_RDFLEN	65535
 
+#define LDNS_RDF_SIZE_BYTE              1
+#define LDNS_RDF_SIZE_WORD              2
+#define LDNS_RDF_SIZE_DOUBLEWORD        4
+#define LDNS_RDF_SIZE_6BYTES            6
+#define LDNS_RDF_SIZE_16BYTES           16
+
 /**
  * The different types of RDATA fields.
  */

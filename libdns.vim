@@ -51,6 +51,11 @@ syn keyword  ldnsConstant	LDNS_RDF_TYPE_NSAP
 syn keyword  ldnsConstant	LDNS_RDF_TYPE_IPSECKEY
 syn keyword  ldnsConstant	LDNS_RDF_TYPE_TSIG
 syn keyword  ldnsConstant	LDNS_MAX_RDFLEN
+syn keyword  ldnsConstant       LDNS_RDF_SIZE_BYTE             
+syn keyword  ldnsConstant       LDNS_RDF_SIZE_WORD             
+syn keyword  ldnsConstant       LDNS_RDF_SIZE_DOUBLEWORD       
+syn keyword  ldnsConstant       LDNS_RDF_SIZE_6BYTES           
+syn keyword  ldnsConstant       LDNS_RDF_SIZE_16BYTES          
 
 " ldns/dns.h
 syn keyword  ldnsConstant	LDNS_PORT
