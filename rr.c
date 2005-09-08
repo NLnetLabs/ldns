@@ -244,7 +244,7 @@ ldns_rr_new_frm_str(const char *str, uint16_t default_ttl, ldns_rdf *origin)
 		if (origin) {
 			ldns_rr_set_owner(new, ldns_rdf_clone(origin));
 		} else {
-			/* TODO: default to root? */
+			/* default to root */
 			ldns_rr_set_owner(new, ldns_dname_new_frm_str("."));
 		}
 	} else {
@@ -1722,7 +1722,6 @@ ldns_get_rr_type_by_name(const char *name)
 	}
 	
 	/* special cases for query types */
-	/* TODO: generalize? */
 	if (strlen(name) == 4 && strncasecmp(name, "IXFR", 4) == 0) {
 		return 251;
 	} else if (strlen(name) == 4 && strncasecmp(name, "AXFR", 4) == 0) {
