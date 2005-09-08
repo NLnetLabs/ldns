@@ -42,7 +42,7 @@ ldns_lookup_table ldns_error_str[] = {
         { LDNS_STATUS_CRYPTO_NO_DNSKEY, "No DNSSEC public key(s)" },
         { LDNS_STATUS_CRYPTO_NO_TRUSTED_DNSKEY, "No signatures found for trusted DNSSEC public key(s)" },
         { LDNS_STATUS_CRYPTO_NO_MATCHING_KEYTAG_DNSKEY, "No keys with the keytag from the RRSIG found" },
-        { LDNS_STATUS_CRYPTO_VALIDATED, "validated" },
+        { LDNS_STATUS_CRYPTO_VALIDATED, "Valid DNSSEC signature" },
         { LDNS_STATUS_CRYPTO_BOGUS, "Bogus DNSSEC signature" },
         { LDNS_STATUS_CRYPTO_SIG_EXPIRED, "DNSSEC signature has expired" },
         { LDNS_STATUS_CRYPTO_SIG_NOT_INCEPTED, "DNSSEC signature not incepted yet" },
