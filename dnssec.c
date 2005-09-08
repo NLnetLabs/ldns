@@ -1530,7 +1530,6 @@ ldns_zone_sign(ldns_zone *zone, ldns_key_list *key_list)
 	for (i = 0; i < ldns_key_list_key_count(key_list); i++) {
 		ckey = ldns_key2rr(ldns_key_list_key(key_list, i));
 		ldns_rr_list_push_rr(pubkeys, ckey);
-		ldns_rr_list_push_rr(orig_zone_rrs, ckey);
 	}
 	signed_zone_rrs = ldns_rr_list_new();
 

@@ -210,9 +210,8 @@ main(int argc, char *argv[])
 					}
 					/*ldns_key_set_flags(key, ldns_key_flags(key) | LDNS_KEY_ZONE_KEY);*/
 					ldns_key_list_push_key(keys, key);
-		/*
 					ldns_zone_push_rr(orig_zone, ldns_rr_clone(pubkey));
-		*/			ldns_rr_free(pubkey);
+					ldns_rr_free(pubkey);
 				}
 
 				
