@@ -93,7 +93,6 @@ ldns_rdf2buffer_str_dname(ldns_buffer *output, ldns_rdf *dname)
 	len = data[src_pos];
 
 	/* special case: root label */
-	/* XXX also check the actual contents!!!! ??? */
 	if (1 == ldns_rdf_size(dname)) {
 		ldns_buffer_printf(output, ".");
 	} else {
@@ -586,14 +585,6 @@ ldns_rdf2buffer_str_apl(ldns_buffer *output, ldns_rdf *rdf)
 }
 
 ldns_status
-ldns_rdf2buffer_str_todo(ldns_buffer *output, ldns_rdf *rdf)
-{
-	(void) ldns_rdf_data(rdf);
-	ldns_buffer_printf(output, "todo: ");
-	return ldns_rdf2buffer_str_hex(output, rdf);
-}
-
-ldns_status
 ldns_rdf2buffer_str_int16_data(ldns_buffer *output, ldns_rdf *rdf)
 {
 	/* Subtract the size (2) of the number that specifies the length */
@@ -757,6 +748,7 @@ ldns_rdf2buffer_str(ldns_buffer *buffer, ldns_rdf *rdf)
 			res = ldns_rdf2buffer_str_loc(buffer, rdf);
 			break;
 		case LDNS_RDF_TYPE_WKS:
+		case LDNS_RDF_TYPE_SERVICE:
 			res = ldns_rdf2buffer_str_wks(buffer, rdf);
 			break;
 		case LDNS_RDF_TYPE_NSAP:
@@ -770,9 +762,6 @@ ldns_rdf2buffer_str(ldns_buffer *buffer, ldns_rdf *rdf)
 			break;
 		case LDNS_RDF_TYPE_INT16_DATA:
 			res = ldns_rdf2buffer_str_int16_data(buffer, rdf);
-			break;
-		case LDNS_RDF_TYPE_SERVICE:
-			/* XXX todo */
 			break;
 		}
 	} else {

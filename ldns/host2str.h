@@ -160,14 +160,6 @@ ldns_status ldns_rdf2buffer_str_tsigtime(ldns_buffer *output, ldns_rdf *rdf);
 ldns_status ldns_rdf2buffer_str_apl(ldns_buffer *output, ldns_rdf *rdf);
 
 /** 
- * Converts an LDNS_RDF_TYPE_TODO rdata element to string format and adds it to the output buffer 
- * \param[in] *rdf The rdata to convert
- * \param[in] *output The buffer to add the data to
- * \return LDNS_STATUS_OK on success, and error status on failure
- */
-ldns_status ldns_rdf2buffer_str_todo(ldns_buffer *output, ldns_rdf *rdf);
-
-/** 
  * Converts an LDNS_RDF_TYPE_INT16_DATA rdata element to string format and adds it to the output buffer 
  * \param[in] *rdf The rdata to convert
  * \param[in] *output The buffer to add the data to

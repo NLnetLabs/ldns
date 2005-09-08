@@ -26,6 +26,7 @@ syn keyword  ldnsConstant	LDNS_RDF_TYPE_NONE
 syn keyword  ldnsConstant	LDNS_RDF_TYPE_DNAME
 syn keyword  ldnsConstant	LDNS_RDF_TYPE_INT8
 syn keyword  ldnsConstant	LDNS_RDF_TYPE_INT16
+syn keyword  ldnsConstant	LDNS_RDF_TYPE_INT16_DATA
 syn keyword  ldnsConstant	LDNS_RDF_TYPE_INT32
 syn keyword  ldnsConstant	LDNS_RDF_TYPE_A
 syn keyword  ldnsConstant	LDNS_RDF_TYPE_AAAA
@@ -37,6 +38,7 @@ syn keyword  ldnsConstant	LDNS_RDF_TYPE_NSEC
 syn keyword  ldnsConstant	LDNS_RDF_TYPE_TYPE
 syn keyword  ldnsConstant	LDNS_RDF_TYPE_CLASS
 syn keyword  ldnsConstant	LDNS_RDF_TYPE_CERT
+syn keyword  ldnsConstant	LDNS_RDF_TYPE_CERT_ALG
 syn keyword  ldnsConstant	LDNS_RDF_TYPE_ALG
 syn keyword  ldnsConstant 	LDNS_RDF_TYPE_UNKNOWN
 syn keyword  ldnsConstant	LDNS_RDF_TYPE_TIME
@@ -46,6 +48,8 @@ syn keyword  ldnsConstant	LDNS_RDF_TYPE_SERVICE
 syn keyword  ldnsConstant	LDNS_RDF_TYPE_LOC
 syn keyword  ldnsConstant	LDNS_RDF_TYPE_WKS
 syn keyword  ldnsConstant	LDNS_RDF_TYPE_NSAP
+syn keyword  ldnsConstant	LDNS_RDF_TYPE_IPSECKEY
+syn keyword  ldnsConstant	LDNS_RDF_TYPE_TSIG
 syn keyword  ldnsConstant	LDNS_MAX_RDFLEN
 
 " ldns/dns.h

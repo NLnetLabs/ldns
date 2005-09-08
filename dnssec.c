@@ -1214,7 +1214,6 @@ ldns_sign_public_dsa(ldns_buffer *to_sign, DSA *key)
 	unsigned char *sha1_hash;
 	ldns_rdf *sigdata_rdf;
 	ldns_buffer *b64sig;
-	/* xxxx */
 	DSA_SIG *sig;
 	uint8_t *data;
 
