@@ -3,6 +3,9 @@ Current TODO list
 Post 1.0 Stuff:
 ---------------
 o Dname compression
+o A /fast/ impl. for holding a zone
+o refactor ldns_verify_rrsig_keylist and
+  ldns_verify_rrsig
 
 What actually doesn't work:
 ---------------------------
@@ -25,8 +28,6 @@ o check all conversion routines on missing types
 	- str2host
 	- host2str
 o use size_t where needed
-o SERVER stuff; there is support for the lua stuff [experimental]
-o const args for all functions?
 
 To ponder and discuss:
 ----------------------

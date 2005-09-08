@@ -125,7 +125,7 @@ ldns_verify_rrsig_buffers(ldns_buffer *rawsig_buf,
 		}
 }
 
-/* TODO: next 2 functions contain a lot of similar code */
+/* Post 1.0 TODO: next 2 functions contain a lot of similar code */
 /* 
  * to verify:
  * - create the wire fmt of the b64 key rdata
@@ -696,6 +696,8 @@ ldns_get_digest_function(char *name)
 {
 	/* TODO replace with openssl's EVP_get_digestbyname
 	        (need init somewhere for that)
+		jelte
+		Miek: don't know 
 	*/
 	if (strlen(name) == 10 && strncasecmp(name, "hmac-sha1.", 9) == 0) {
 		return EVP_sha1();
@@ -863,7 +865,6 @@ ldns_pkt_tsig_verify(ldns_pkt *pkt,
 	
 	ldns_rdf_deep_free(key_name_rdf);
 	
-	/* TODO: ldns_rdf_cmp in rdata.[ch] */
 	if (ldns_rdf_compare(pkt_mac_rdf, my_mac_rdf) == 0) {
 		ldns_rdf_deep_free(my_mac_rdf);
 		return true;
@@ -916,16 +917,15 @@ ldns_pkt_tsig_sign(ldns_pkt *pkt, const char *key_name, const char *key_data, ui
 	}
 
 	time_signed_rdf = ldns_rdf_new(LDNS_RDF_TYPE_TSIGTIME, 6, time_signed);
-	
 	fudge_rdf = ldns_native2rdf_int16(LDNS_RDF_TYPE_INT16, fudge);
-
 	orig_id_rdf = ldns_native2rdf_int16(LDNS_RDF_TYPE_INT16, ldns_pkt_id(pkt));
-
 	error_rdf = ldns_native2rdf_int16(LDNS_RDF_TYPE_INT16, 0);
-	
 	other_data_rdf = ldns_native2rdf_int16_data(0, NULL);
 
-	(void) ldns_pkt2wire(&pkt_wire, pkt, &pkt_wire_len);
+	if (ldns_pkt2wire(&pkt_wire, pkt, &pkt_wire_len) != LDNS_STATUS_OK) {
+		status = LDNS_STATUS_ERR;
+		goto clean;
+	}
 
 	status = ldns_create_tsig_mac(&mac_rdf,
 	                              pkt_wire,
@@ -966,7 +966,7 @@ ldns_pkt_tsig_sign(ldns_pkt *pkt, const char *key_name, const char *key_data, ui
 
 	return status;
 
-	clean:
+clean:
 	ldns_rdf_free(key_name_rdf);
 	ldns_rdf_free(algorithm_rdf);
 	ldns_rdf_free(time_signed_rdf);
@@ -1132,7 +1132,6 @@ ldns_sign_public(ldns_rr_list *rrset, ldns_key_list *keys)
 					ldns_native2rdf_int8(LDNS_RDF_TYPE_INT8, ldns_rr_label_count(
 							ldns_rr_list_rr(rrset_clone, 0))));
 			/* inception, expiration */
-			/* TODO: is this a good place for default values? */
 			now = time(NULL);
 			if (ldns_key_inception(current_key) != 0) {
 				(void)ldns_rr_rrsig_set_inception(current_sig,
@@ -1340,7 +1339,7 @@ ldns_create_nsec(ldns_rdf *cur_owner, ldns_rdf *next_owner, ldns_rr_list *rrs)
 	nsec = ldns_rr_new();
 	ldns_rr_set_type(nsec, LDNS_RR_TYPE_NSEC);
 	ldns_rr_set_owner(nsec, ldns_rdf_clone(cur_owner));
-	/* TODO: TTL */
+	/* TODO: TTL jelte? */
 	ldns_rr_push_rdf(nsec, ldns_rdf_clone(next_owner));
 
 	bitmap[0] = 0;
