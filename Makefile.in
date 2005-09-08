@@ -48,7 +48,7 @@ LIBDNS_HEADERS	=	ldns/error.h		\
 			ldns/dns.h		\
 			ldns/zone.h		\
 			ldns/util.h
-PROG_SOURCES	=	mx.c chaos.c keygen.c key2ds.c signzone.c version.c
+PROG_SOURCES	=	ldns-mx.c ldns-chaos.c ldns-keygen.c ldns-key2ds.c ldns-signzone.c ldns-version.c
 PROG_TARGETS	=	$(PROG_SOURCES:.c=)
 
 LIBDNS_OBJECTS	=	$(LIBDNS_SOURCES:.c=.o)
@@ -128,22 +128,22 @@ release:	realclean
 		(cd .. ; tar --verbose  --exclude ".svn" --exclude "*.key" --exclude "*.private" --create --exclude "lua" --file ldns-$(VERSION).tar.gz --gzip ldns-$(VERSION)/)
 		(rm -rf ../ldns-$(VERSION)/)
 
-mx:		mx.o $(LIBDNS_OBJECTS) $(LIBOBJS)
+ldns-mx:	ldns-mx.o $(LIBDNS_OBJECTS) $(LIBOBJS)
 		$(LINK) ${LIBS} -o $@ $+
 
-version:	version.o $(LIBDNS_OBJECTS) $(LIBOBJS)
+ldns-version:	ldns-version.o $(LIBDNS_OBJECTS) $(LIBOBJS)
 		$(LINK) ${LIBS} -o $@ $+
 
-signzone:	signzone.o $(LIBDNS_OBJECTS) $(LIBOBJS)
+ldns-signzone:	ldns-signzone.o $(LIBDNS_OBJECTS) $(LIBOBJS)
 		$(LINK) ${LIBS} -o $@ $+
 
-chaos:		chaos.o $(LIBDNS_OBJECTS) $(LIBOBJS)
+ldns-chaos:	ldns-chaos.o $(LIBDNS_OBJECTS) $(LIBOBJS)
 		$(LINK) ${LIBS} -o $@ $+
 
-keygen:		keygen.o $(LIBDNS_OBJECTS) $(LIBOBJS)
+ldns-keygen:	ldns-keygen.o $(LIBDNS_OBJECTS) $(LIBOBJS)
 		$(LINK) ${LIBS} -o $@ $+
 
-key2ds:		key2ds.o $(LIBDNS_OBJECTS) $(LIBOBJS)
+ldns-key2ds:	ldns-key2ds.o $(LIBDNS_OBJECTS) $(LIBOBJS)
 		$(LINK) ${LIBS} -o $@ $+
 
 # tests
