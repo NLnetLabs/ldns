@@ -23,6 +23,11 @@
 
 #include "ldns/util.h"
 
+#define LDNS_APL_IP4            1
+#define LDNS_APL_IP6            2
+#define LDNS_APL_MASK           0x7f
+#define LDNS_APL_NEGATION       0x80
+
 /** 
  * Converts an LDNS_RDF_TYPE_A rdata element to string format and adds it to the output buffer 
  * \param[in] *rdf The rdata to convert

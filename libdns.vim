@@ -261,6 +261,8 @@ syn keyword  ldnsConstant	LDNS_MIN_BUFLEN
 
 " ldns/host2str.h
 syn keyword  ldnsType	ldns_lookup_table
+syn keyword  ldnsConstant LDNS_APL_IP4
+syn keyword  ldnsConstant LDNS_APL_IP6
 
 " ldns/keys.h
 syn keyword  ldnsType   ldns_key

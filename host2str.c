@@ -525,15 +525,12 @@ ldns_rdf2buffer_str_apl(ldns_buffer *output, ldns_rdf *rdf)
 	unsigned short i;
 	unsigned int pos = 0;
 	
-	/* todo: use #defines for address families? */
-	
-	/* ipv4 */
 	while (pos < (unsigned int) ldns_rdf_size(rdf)) {
 		address_family = ldns_read_uint16(&data[pos]);
 		prefix = data[pos + 2];
-		negation = data[pos + 3] & 0x80;
-		adf_length = data[pos + 3] & 0x7f;
-		if (address_family == 1) {
+		negation = data[pos + 3] & LDNS_APL_NEGATION;
+		adf_length = data[pos + 3] & LDNS_APL_MASK;
+		if (address_family == LDNS_APL_IP4) {
 			/* check if prefix < 32? */
 			if (negation) {
 				ldns_buffer_printf(output, "!");
@@ -552,7 +549,7 @@ ldns_rdf2buffer_str_apl(ldns_buffer *output, ldns_rdf *rdf)
 				}
 			}
 			ldns_buffer_printf(output, "/%u ", prefix);
-		} else if (address_family == 2) {
+		} else if (address_family == LDNS_APL_IP6) {
 			/* check if prefix < 128? */
 			if (negation) {
 				ldns_buffer_printf(output, "!");
