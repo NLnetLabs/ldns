@@ -689,7 +689,6 @@ ldns_resolver_send_pkt(ldns_pkt **answer, ldns_resolver *r, ldns_pkt *query_pkt)
 	return stat;
 }
 
-/* TODO: other error codes than _ERR */
 ldns_status
 ldns_resolver_send(ldns_pkt **answer, ldns_resolver *r, ldns_rdf *name, 
 		ldns_rr_type type, ldns_rr_class class, uint16_t flags)
@@ -713,18 +712,15 @@ ldns_resolver_send(ldns_pkt **answer, ldns_resolver *r, ldns_rdf *name,
 		class = LDNS_RR_CLASS_IN;
 	}
 	if (0 == ldns_resolver_nameserver_count(r)) {
-		dprintf("%s", "resolver has no nameservers\n");
-		return LDNS_STATUS_ERR;
+		return LDNS_STATUS_RES_NO_NS;
 	}
 	if (ldns_rdf_get_type(name) != LDNS_RDF_TYPE_DNAME) {
-		dprintf("%s", "query type is not correct type\n");
-		return LDNS_STATUS_ERR;
+		return LDNS_STATUS_RES_QUERY;
 	}
 	/* prepare a question pkt from the parameters
 	 * and then send this */
 	query_pkt = ldns_pkt_query_new(ldns_rdf_clone(name), type, class, flags);
 	if (!query_pkt) {
-		dprintf("%s", "Failed to generate pkt\n");
 		return LDNS_STATUS_ERR;
 	}
 
@@ -755,6 +751,7 @@ ldns_resolver_send(ldns_pkt **answer, ldns_resolver *r, ldns_rdf *name,
 	/* if tsig values are set, tsign it */
 	/* TODO: make last 3 arguments optional too? maybe make complete
 	         rr instead of seperate values in resolver (and packet)
+	  Jelte
 	*/
 	if (ldns_resolver_tsig_keyname(r) && ldns_resolver_tsig_keydata(r)) {
 		status = ldns_pkt_tsig_sign(query_pkt,
@@ -765,13 +762,10 @@ ldns_resolver_send(ldns_pkt **answer, ldns_resolver *r, ldns_rdf *name,
 		                            NULL);
 		/* TODO: no print and feedback to caller */
 		if (status != LDNS_STATUS_OK) {
-			dprintf("error creating tsig: %u\n", status);
-			return LDNS_STATUS_ERR;
+			return LDNS_STATUS_CRYPTO_TSIG_ERR;
 		}
 	}
-
 	status = ldns_resolver_send_pkt(&answer_pkt, r, query_pkt);
-
 	ldns_pkt_free(query_pkt);
 	
 	/* allows answer to be NULL when not interested in return value */

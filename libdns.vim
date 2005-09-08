@@ -130,6 +130,9 @@ syn keyword ldnsMacro 	LDNS_STATUS_CRYPTO_SIG_EXPIRED
 syn keyword ldnsMacro 	LDNS_STATUS_CRYPTO_SIG_NOT_INCEPTED
 syn keyword ldnsMacro 	LDNS_STATUS_CRYPTO_TSIG_BOGUS
 syn keyword ldnsMacro 	LDNS_STATUS_CRYPTO_EXPIRATION_BEFORE_INCEPTION
+syn keyword ldnsMacro   LDNS_STATUS_CRYPTO_TSIG_ERR
+syn keyword ldnsMacro   LDNS_STATUS_RES_NO_NS 
+syn keyword ldnsMacro   LDNS_STATUS_RES_QUERY
 
 " ldns/resolver.h
 syn keyword  ldnsType	  	ldns_resolver

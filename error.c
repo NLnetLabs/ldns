@@ -47,7 +47,10 @@ ldns_lookup_table ldns_error_str[] = {
         { LDNS_STATUS_CRYPTO_SIG_EXPIRED, "DNSSEC signature has expired" },
         { LDNS_STATUS_CRYPTO_SIG_NOT_INCEPTED, "DNSSEC signature not incepted yet" },
 	{ LDNS_STATUS_CRYPTO_TSIG_BOGUS, "Bogus TSIG signature" },
+	{ LDNS_STATUS_CRYPTO_TSIG_ERR, "Could not create TSIG signature" },
         { LDNS_STATUS_CRYPTO_EXPIRATION_BEFORE_INCEPTION, "DNSSEC signature has expiration date earlier than inception date" },
+	{ LDNS_STATUS_RES_NO_NS, "No nameservers defined in the resolver" },
+	{ LDNS_STATUS_RES_QUERY, "No correct query given to resolver" },
 	{ 0, NULL }
 };
 
