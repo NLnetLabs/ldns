@@ -430,9 +430,69 @@ ldns_str2rdf_hex(ldns_rdf **rd, const char *str)
 ldns_status
 ldns_str2rdf_nsec(ldns_rdf **rd, const char *str)
 {
-	rd = rd;
-	str = str;
-	return LDNS_STATUS_NOT_IMPL;
+	const char *delimiters = "\n\t ";
+	char token[LDNS_MAX_RDFLEN];
+	uint8_t *bitmap = LDNS_XMALLOC(uint8_t, 1);
+	uint16_t bm_len = 0;
+	ldns_buffer *str_buf;
+	ssize_t c;
+	uint16_t cur_type;
+	uint8_t cur_data[32];
+	uint8_t cur_window = 0;
+	uint8_t cur_window_max = 0;
+	uint16_t cur_data_size = 0;
+	uint16_t i;
+	uint8_t *data = NULL;
+
+	str_buf = LDNS_MALLOC(ldns_buffer);
+	ldns_buffer_new_frm_data(str_buf, (char *)str, strlen(str));
+
+	bitmap[0] = 0;
+	while ((c = ldns_bget_token(str_buf, token, delimiters, LDNS_MAX_RDFLEN)) != -1) {
+		cur_type = ldns_get_rr_type_by_name(token);
+		if ((cur_type / 8) + 1 > bm_len) {
+			bitmap = LDNS_XREALLOC(bitmap, uint8_t, (cur_type / 8) + 1);
+			/* set to 0 */
+			for (; bm_len <= cur_type / 8; bm_len++) {
+				bitmap[bm_len] = 0;
+			}
+		}
+		ldns_set_bit(bitmap + (int) cur_type / 8, (int) (7 - (cur_type % 8)), true);
+	}
+
+	memset(cur_data, 0, 32);
+	for (i = 0; i < bm_len; i++) {
+		if (i / 32 > cur_window) {
+			/* check, copy, new */
+			if (cur_window_max > 0) {
+				/* this window has stuff, add it */
+				data = LDNS_XREALLOC(data, uint8_t, cur_data_size + cur_window_max + 3);
+				data[cur_data_size] = cur_window;
+				data[cur_data_size + 1] = cur_window_max + 1;
+				memcpy(data + cur_data_size + 2, cur_data, cur_window_max+1);
+				cur_data_size += cur_window_max + 3;
+			}
+			cur_window++;
+			cur_window_max = 0;
+			memset(cur_data, 0, 32);
+		} else {
+			cur_data[i%32] = bitmap[i];
+			if (bitmap[i] > 0) {
+				cur_window_max = i%32;
+			}
+		}
+	}
+	if (cur_window_max > 0) {
+		/* this window has stuff, add it */
+		data = LDNS_XREALLOC(data, uint8_t, cur_data_size + cur_window_max + 3);
+		data[cur_data_size] = cur_window;
+		data[cur_data_size + 1] = cur_window_max + 1;
+		memcpy(data + cur_data_size + 2, cur_data, cur_window_max+1);
+		cur_data_size += cur_window_max + 3;
+	}
+
+	*rd = ldns_rdf_new_frm_data(LDNS_RDF_TYPE_NSEC, cur_data_size, data);
+	return LDNS_STATUS_OK;
 }
 
 ldns_status

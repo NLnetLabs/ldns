@@ -314,6 +314,7 @@ ldns_rr_new_frm_str(const char *str, uint16_t default_ttl, ldns_rdf *origin)
 				if (ldns_rr_descriptor_field_type(desc, r_cnt) == LDNS_RDF_TYPE_B64 ||
 				    ldns_rr_descriptor_field_type(desc, r_cnt) == LDNS_RDF_TYPE_LOC ||
 				    ldns_rr_descriptor_field_type(desc, r_cnt) == LDNS_RDF_TYPE_WKS ||
+				    ldns_rr_descriptor_field_type(desc, r_cnt) == LDNS_RDF_TYPE_NSEC ||
 				    ldns_rr_descriptor_field_type(desc, r_cnt) == LDNS_RDF_TYPE_STR
 				    ) {
 					delimiters = "\n\t";
