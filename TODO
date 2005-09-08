@@ -3,16 +3,14 @@ Current TODO list
 Post 1.0 Stuff:
 ---------------
 o Dname compression
-o A /fast/ impl. for holding a zone
+o A /fast/ impl. for holding a zone (and retrieving data from it)
 o refactor ldns_verify_rrsig_keylist and
   ldns_verify_rrsig
 
 What actually doesn't work:
 ---------------------------
-o [dnssec] NSEC conversion frm str to host. Jelte dit werkt nu?
 o [dnssec] Different digests for DS
  - need a digest type?
-o [dnssec] NSEC generation??
 o [doc]  const function are correct i think, but const values in struct not
 o Error handling needs to be improved
 o manual page for signzone
