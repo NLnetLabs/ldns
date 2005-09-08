@@ -46,8 +46,7 @@ ldns_calc_keytag(ldns_rr *key)
 	}
 
 	/* rdata to buf - only put the rdata in a buffer */
-	/* XXX waaayyy too much */
-	keybuf = ldns_buffer_new(LDNS_MAX_PACKETLEN);
+	keybuf = ldns_buffer_new(LDNS_MIN_BUFLEN); /* grows */
 	if (!keybuf) {
 		return 0;
 	}
