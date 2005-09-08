@@ -54,10 +54,8 @@ ldns_calc_keytag(ldns_rr *key)
 	/* the current pos in the buffer is the keysize */
 	keysize= ldns_buffer_position(keybuf);
 
-	/* look at the algorithm field */
+	/* look at the algorithm field, copied from 2535bis */
 	if (ldns_rdf2native_int8(ldns_rr_rdf(key, 2)) == LDNS_RSAMD5) {
-		/* rsamd5 must be handled seperately */
-		/* weird stuff copied from drill0.x XXX */
 		if (keysize > 4) {
 			ldns_buffer_read_at(keybuf, keysize - 3, &ac, 2);
 		}
@@ -65,8 +63,6 @@ ldns_calc_keytag(ldns_rr *key)
 		ac = ntohs(ac);
 	        return (uint16_t) ac;
 	} else {
-		/* copied from 2535bis */
-		/* look at this again XXX */
 		for (i = 0; (size_t)i < keysize; ++i) {
 			ac += (i & 1) ? *ldns_buffer_at(keybuf, i) : 
 				*ldns_buffer_at(keybuf, i) << 8;
