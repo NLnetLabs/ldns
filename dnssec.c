@@ -82,7 +82,6 @@ ldns_status
 ldns_verify(ldns_rr_list *rrset, ldns_rr_list *rrsig, ldns_rr_list *keys, ldns_rr_list *good_keys)
 {
 	uint16_t i;
-	ldns_rr_list *result;
 /*	ldns_rr_list *keys_verified;*/
 	bool valid;
 	ldns_status verify_result = LDNS_STATUS_ERR;
@@ -94,7 +93,6 @@ printf("err 1\n");
 
 	valid = false;
 	
-	result = ldns_rr_list_new();
 	for (i = 0; i < ldns_rr_list_rr_count(rrsig); i++) {
 
 		verify_result = ldns_verify_rrsig_keylist(rrset,
@@ -289,8 +287,10 @@ ldns_verify_rrsig_keylist(ldns_rr_list *rrset, ldns_rr *rrsig, ldns_rr_list *key
 	ldns_buffer_free(verify_buf);
 	if (ldns_rr_list_rr_count(validkeys) == 0) {
 		/* no keys were added, return last error */
+ldns_rr_list_free(validkeys);
 		return result;
 	} else {
+ldns_rr_list_free(validkeys);
 		ldns_rr_list_cat(good_keys, validkeys);
 		return LDNS_STATUS_OK;
 	}
@@ -1104,103 +1104,108 @@ ldns_sign_public(ldns_rr_list *rrset, ldns_key_list *keys)
 		b64rdf = NULL;
 
 		current_key = ldns_key_list_key(keys, key_count);
-		current_sig = ldns_rr_new_frm_type(LDNS_RR_TYPE_RRSIG);
-		
-		/* set the type on the new signature */
-		/*orig_ttl = ldns_key_origttl(current_key);*/
-		orig_ttl = ldns_rr_ttl(ldns_rr_list_rr(rrset, 0));
+		if (
+			ldns_key_flags(current_key) & LDNS_KEY_ZONE_KEY &&
+			(!(ldns_key_flags(current_key) & LDNS_KEY_SEP_KEY) ||
+			ldns_rr_get_type(ldns_rr_list_rr(rrset, 0)) == LDNS_RR_TYPE_DNSKEY)
+		   ) {
+			current_sig = ldns_rr_new_frm_type(LDNS_RR_TYPE_RRSIG);
+			
+			/* set the type on the new signature */
+			/*orig_ttl = ldns_key_origttl(current_key);*/
+			orig_ttl = ldns_rr_ttl(ldns_rr_list_rr(rrset, 0));
 
-		/* set the ttl from the priv key on the rrset */
-		for (i = 0; i < ldns_rr_list_rr_count(rrset); i++) {
-			ldns_rr_set_ttl(
-					ldns_rr_list_rr(rrset_clone, i), orig_ttl);
+			/* set the ttl from the priv key on the rrset */
+			for (i = 0; i < ldns_rr_list_rr_count(rrset); i++) {
+				ldns_rr_set_ttl(
+						ldns_rr_list_rr(rrset_clone, i), orig_ttl);
+			}
+
+			ldns_rr_set_owner(current_sig, 
+					ldns_rdf_clone(ldns_rr_owner(ldns_rr_list_rr(rrset_clone, 0))));
+
+			/* fill in what we know of the signature */
+
+			/* set the orig_ttl */
+			(void)ldns_rr_rrsig_set_origttl(current_sig, ldns_native2rdf_int32(LDNS_RDF_TYPE_INT32, orig_ttl));
+			/* the signers name */
+
+			(void)ldns_rr_rrsig_set_signame(current_sig, 
+					ldns_rdf_clone(ldns_key_pubkey_owner(current_key)));
+			/* label count - get it from the first rr in the rr_list */
+			(void)ldns_rr_rrsig_set_labels(current_sig, 
+					ldns_native2rdf_int8(LDNS_RDF_TYPE_INT8, ldns_rr_label_count(
+							ldns_rr_list_rr(rrset_clone, 0))));
+			/* inception, expiration */
+			/* TODO: is this a good place for default values? */
+			now = time(NULL);
+			if (ldns_key_inception(current_key) != 0) {
+				(void)ldns_rr_rrsig_set_inception(current_sig,
+						ldns_native2rdf_int32(LDNS_RDF_TYPE_TIME, ldns_key_inception(current_key)));
+			} else {
+				(void)ldns_rr_rrsig_set_inception(current_sig,
+						ldns_native2rdf_int32(LDNS_RDF_TYPE_TIME, now));
+			}
+			if (ldns_key_expiration(current_key) != 0) {
+				(void)ldns_rr_rrsig_set_expiration(current_sig,
+						ldns_native2rdf_int32(LDNS_RDF_TYPE_TIME, ldns_key_expiration(current_key)));
+			} else {
+				(void)ldns_rr_rrsig_set_expiration(current_sig,
+						ldns_native2rdf_int32(LDNS_RDF_TYPE_TIME, now + LDNS_DEFAULT_EXP_TIME));
+			}
+
+			/* key-tag */
+			(void)ldns_rr_rrsig_set_keytag(current_sig,
+					ldns_native2rdf_int16(LDNS_RDF_TYPE_INT16, ldns_key_keytag(current_key)));
+
+			/* algorithm - check the key and substitute that */
+			(void)ldns_rr_rrsig_set_algorithm(current_sig,
+					ldns_native2rdf_int8(LDNS_RDF_TYPE_ALG, ldns_key_algorithm(current_key)));
+			/* type-covered */
+			(void)ldns_rr_rrsig_set_typecovered(current_sig,
+					ldns_native2rdf_int16(LDNS_RDF_TYPE_TYPE,
+						ldns_rr_get_type(ldns_rr_list_rr(rrset_clone, 0))));
+			/* right now, we have: a key, a semi-sig and an rrset. For
+			 * which we can create the sig and base64 encode that and
+			 * add that to the signature */
+			
+			if (ldns_rrsig2buffer_wire(sign_buf, current_sig) != LDNS_STATUS_OK) {
+				ldns_buffer_free(sign_buf);
+				dprintf("%s\n", "couldn't convert to buffer 1");
+				/* ERROR */
+				return NULL;
+			}
+			/* add the rrset in sign_buf */
+			if (ldns_rr_list2buffer_wire(sign_buf, rrset_clone) != LDNS_STATUS_OK) {
+				dprintf("%s\n", "couldn't convert to buffer 2");
+				ldns_buffer_free(sign_buf);
+				return NULL;
+			}
+			
+			switch(ldns_key_algorithm(current_key)) {
+				case LDNS_SIGN_DSA:
+					b64rdf = ldns_sign_public_dsa(sign_buf, ldns_key_dsa_key(current_key));
+					break;
+				case LDNS_SIGN_RSASHA1:
+					b64rdf = ldns_sign_public_rsasha1(sign_buf, ldns_key_rsa_key(current_key));
+					break;
+				case LDNS_SIGN_RSAMD5:
+					b64rdf = ldns_sign_public_rsamd5(sign_buf, ldns_key_rsa_key(current_key));
+					break;
+				default:
+					/* do _you_ know this alg? */
+					break;
+			}
+			if (!b64rdf) {
+				/* signing went wrong */
+				dprintf("%s", "couldn't sign!\n");
+				return NULL;
+			}
+			ldns_rr_rrsig_set_sig(current_sig, b64rdf);
+
+			/* push the signature to the signatures list */
+			ldns_rr_list_push_rr(signatures, current_sig);
 		}
-
-		ldns_rr_set_owner(current_sig, 
-				ldns_rdf_clone(ldns_rr_owner(ldns_rr_list_rr(rrset_clone, 0))));
-
-		/* fill in what we know of the signature */
-
-		/* set the orig_ttl */
-		(void)ldns_rr_rrsig_set_origttl(current_sig, ldns_native2rdf_int32(LDNS_RDF_TYPE_INT32, orig_ttl));
-		/* the signers name */
-
-		(void)ldns_rr_rrsig_set_signame(current_sig, 
-				ldns_rdf_clone(ldns_key_pubkey_owner(current_key)));
-		/* label count - get it from the first rr in the rr_list */
-		(void)ldns_rr_rrsig_set_labels(current_sig, 
-				ldns_native2rdf_int8(LDNS_RDF_TYPE_INT8, ldns_rr_label_count(
-						ldns_rr_list_rr(rrset_clone, 0))));
-		/* inception, expiration */
-		/* TODO: is this a good place for default values? */
-		now = time(NULL);
-		if (ldns_key_inception(current_key) != 0) {
-			(void)ldns_rr_rrsig_set_inception(current_sig,
-					ldns_native2rdf_int32(LDNS_RDF_TYPE_TIME, ldns_key_inception(current_key)));
-		} else {
-			(void)ldns_rr_rrsig_set_inception(current_sig,
-					ldns_native2rdf_int32(LDNS_RDF_TYPE_TIME, now));
-		}
-		if (ldns_key_expiration(current_key) != 0) {
-			(void)ldns_rr_rrsig_set_expiration(current_sig,
-					ldns_native2rdf_int32(LDNS_RDF_TYPE_TIME, ldns_key_expiration(current_key)));
-		} else {
-			(void)ldns_rr_rrsig_set_expiration(current_sig,
-					ldns_native2rdf_int32(LDNS_RDF_TYPE_TIME, now + LDNS_DEFAULT_EXP_TIME));
-		}
-
-		/* key-tag */
-		(void)ldns_rr_rrsig_set_keytag(current_sig,
-				ldns_native2rdf_int16(LDNS_RDF_TYPE_INT16, ldns_key_keytag(current_key)));
-
-		/* algorithm - check the key and substitute that */
-		(void)ldns_rr_rrsig_set_algorithm(current_sig,
-				ldns_native2rdf_int8(LDNS_RDF_TYPE_ALG, ldns_key_algorithm(current_key)));
-		/* type-covered */
-		(void)ldns_rr_rrsig_set_typecovered(current_sig,
-				ldns_native2rdf_int16(LDNS_RDF_TYPE_TYPE,
-					ldns_rr_get_type(ldns_rr_list_rr(rrset_clone, 0))));
-		/* right now, we have: a key, a semi-sig and an rrset. For
-		 * which we can create the sig and base64 encode that and
-		 * add that to the signature */
-		
-		if (ldns_rrsig2buffer_wire(sign_buf, current_sig) != LDNS_STATUS_OK) {
-			ldns_buffer_free(sign_buf);
-			dprintf("%s\n", "couldn't convert to buffer 1");
-			/* ERROR */
-			return NULL;
-		}
-		/* add the rrset in sign_buf */
-		if (ldns_rr_list2buffer_wire(sign_buf, rrset_clone) != LDNS_STATUS_OK) {
-			dprintf("%s\n", "couldn't convert to buffer 2");
-			ldns_buffer_free(sign_buf);
-			return NULL;
-		}
-		
-		switch(ldns_key_algorithm(current_key)) {
-			case LDNS_SIGN_DSA:
-				b64rdf = ldns_sign_public_dsa(sign_buf, ldns_key_dsa_key(current_key));
-				break;
-			case LDNS_SIGN_RSASHA1:
-				b64rdf = ldns_sign_public_rsasha1(sign_buf, ldns_key_rsa_key(current_key));
-				break;
-			case LDNS_SIGN_RSAMD5:
-				b64rdf = ldns_sign_public_rsamd5(sign_buf, ldns_key_rsa_key(current_key));
-				break;
-			default:
-				/* do _you_ know this alg? */
-				break;
-		}
-		if (!b64rdf) {
-			/* signing went wrong */
-			dprintf("%s", "couldn't sign!\n");
-			return NULL;
-		}
-		ldns_rr_rrsig_set_sig(current_sig, b64rdf);
-
-		/* push the signature to the signatures list */
-		ldns_rr_list_push_rr(signatures, current_sig);
-
 		ldns_buffer_free(sign_buf); /* restart for the next key */
         }
         ldns_rr_list_deep_free(rrset_clone);
@@ -1479,7 +1484,7 @@ printf("%s\n", "[ldns_pkt_verify]");
 }
 
 ldns_zone *
-ldns_zone_sign(ldns_zone *zone, ldns_key_list *key_list, ldns_key_list *key_signing_key_list)
+ldns_zone_sign(ldns_zone *zone, ldns_key_list *key_list)
 {
 	/*
 	 * Algorithm to be created:
@@ -1558,21 +1563,13 @@ ldns_zone_sign(ldns_zone *zone, ldns_key_list *key_list, ldns_key_list *key_sign
 
 		/* if we have KSKs, use them for DNSKEYS, otherwise
 		   make them selfsigned (?) */
-		if (cur_rrset_type == LDNS_RR_TYPE_DNSKEY) {
-			if (key_signing_key_list) {
-				cur_rrsigs = ldns_sign_public(cur_rrset, key_signing_key_list);
-			} else {
-				cur_rrsigs = ldns_sign_public(cur_rrset, key_list);
-			}
-			ldns_zone_push_rr_list(signed_zone, cur_rrset);
-			ldns_zone_push_rr_list(signed_zone, cur_rrsigs);
-			ldns_rr_list_free(cur_rrsigs);
-		} else if (cur_rrset_type != LDNS_RR_TYPE_RRSIG &&
+		if (cur_rrset_type != LDNS_RR_TYPE_RRSIG &&
 		    (ldns_dname_is_subdomain(cur_dname, ldns_rr_owner(ldns_zone_soa(zone))) ||
 		     ldns_rdf_compare(cur_dname, ldns_rr_owner(ldns_zone_soa(zone))) == 0
 		    )
 		   ) {
 			cur_rrsigs = ldns_sign_public(cur_rrset, key_list);
+
 			ldns_zone_push_rr_list(signed_zone, cur_rrset);
 			ldns_zone_push_rr_list(signed_zone, cur_rrsigs);
 			ldns_rr_list_free(cur_rrsigs);

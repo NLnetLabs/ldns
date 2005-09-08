@@ -47,7 +47,7 @@ ldns_key_new()
 		return NULL;
 	} else {
 		/* some defaults - not sure wether to do this */
-		ldns_key_set_flags(newkey, LDNS_KEY_ZONE_KEY_FLAG);
+		ldns_key_set_flags(newkey, LDNS_KEY_ZONE_KEY);
 		ldns_key_set_origttl(newkey, 0);
 		ldns_key_set_keytag(newkey, 0);
 		ldns_key_set_inception(newkey, 0);
@@ -395,7 +395,12 @@ ldns_key_new_frm_algorithm(ldns_signing_algorithm alg, uint16_t size)
 			break;
 		case LDNS_SIGN_DSA:
 			d = DSA_generate_parameters((int)size, NULL, 0, NULL, NULL, NULL, NULL);
-			DSA_generate_key(d);
+			if (!d) {
+				return NULL;
+			}
+			if (DSA_generate_key(d) != 1) {
+				return NULL;
+			}
 			ldns_key_set_dsa_key(k, d);
 			break;
 		case LDNS_SIGN_HMACMD5:

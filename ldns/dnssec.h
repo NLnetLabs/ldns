@@ -179,7 +179,7 @@ ldns_status ldns_pkt_verify(ldns_pkt *p, ldns_rr_type t, ldns_rdf *o, ldns_rr_li
  * \param[in] key_list the list of keys to sign the zone with
  * \return the signed zone
  */
-ldns_zone *ldns_zone_sign(ldns_zone *zone, ldns_key_list *key_list, ldns_key_list *key_signing_key_list);
+ldns_zone *ldns_zone_sign(ldns_zone *zone, ldns_key_list *key_list);
  
 ldns_status ldns_init_random(FILE *fd, uint16_t bytes);
 

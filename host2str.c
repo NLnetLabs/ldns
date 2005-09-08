@@ -1037,7 +1037,7 @@ ldns_key2buffer_str(ldns_buffer *output, ldns_key *k)
 				ldns_buffer_printf(output,"Private-key-format: v1.2\n");
 				if (ldns_key_algorithm(k) == LDNS_SIGN_RSAMD5) {
 					ldns_buffer_printf(output,"Algorithm: 1 (RSA)\n");
-				} else if (ldns_key_algorithm(k) == LDNS_SIGN_RSAMD5) {
+				} else if (ldns_key_algorithm(k) == LDNS_SIGN_RSASHA1) {
 					ldns_buffer_printf(output,"Algorithm: 5 (RSASHA1)\n");
 				}
 

@@ -171,6 +171,21 @@ main(int argc, char *argv[])
 		LDNS_FREE(filename);
 	}
 	
+	/* TEMP: create PEM format too */
+	filename = LDNS_XMALLOC(char, strlen(owner) + 17);
+	snprintf(filename, strlen(owner) + 16, "K%s+%03u+%05u.pem", owner, algorithm, ldns_key_keytag(key));
+	file = fopen(filename, "w");
+	if (!file) {
+		fprintf(stderr, "Unable to open %s: %s\n", filename, strerror(errno));
+		exit(EXIT_FAILURE);
+	} else {
+				
+PEM_write_DSAPrivateKey(file, key->_key.dsa, NULL, NULL, 0, NULL, NULL);
+		fclose(file);
+		LDNS_FREE(filename);
+	}
+
+
 	fprintf(stdout, "K%s+%03u+%05u\n", owner, algorithm, ldns_key_keytag(key));
         exit(EXIT_SUCCESS);
 }

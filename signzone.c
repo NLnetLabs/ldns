@@ -23,10 +23,12 @@ usage(FILE *fp, const char *prog) {
 	fprintf(fp, "  -e <date>\t\texpiration date\n");
 	fprintf(fp, "  -f <file>\t\toutput zone to file (default <name>.signed)\n");
 	fprintf(fp, "  -i <date>\t\tinception date\n");
-	fprintf(fp, "  -k <keyfile>\t\tkey signing key\n");
 	fprintf(fp, "\t\t\tdates can be in YYYYMMDD[HHmmSS] format or timestamps\n");
 	fprintf(fp, "  -o <domain>\t\torigin for the zone\n");
-	fprintf(fp, "keys and keysigning keys (-k option) can be given multiple times\n");
+	fprintf(fp, "keys can be given multiple times\n");
+	fprintf(fp, "keys are specified by their base name, there should be a file\n");
+	fprintf(fp, "called <name>.key and <name>.private present. The .key should\n");
+	fprintf(fp, "contain the DNSKEY RR of the public key, and will be added to the zone\n");
 }
 
 int
@@ -40,9 +42,13 @@ main(int argc, char *argv[])
 	ldns_rr_list *orig_rrs = NULL;
 	ldns_rr *orig_soa = NULL;
 
+	const char *keyfile_name_base;
+	char *keyfile_name;
 	FILE *keyfile = NULL;
 	ldns_key *key = NULL;
+	ldns_rr *pubkey = NULL;
 	ldns_key_list *keys;
+
 
 	char *outputfile_name = NULL;
 	FILE *outputfile;
@@ -50,10 +56,11 @@ main(int argc, char *argv[])
 	/* we need to know the origin before reading ksk's,
 	 * so keep an array of filenames until we know it
 	 */
+/*
 	int key_signing_key_nr = 0;
 	char **key_signing_key_filenames = NULL;
 	ldns_key_list *key_signing_keys;
-	
+*/	
 	struct tm tm;
 	uint32_t inception;
 	uint32_t expiration;
@@ -73,7 +80,7 @@ main(int argc, char *argv[])
 	inception = 0;
 	expiration = 0;
 	
-	while ((c = getopt(argc, argv, "e:f:i:k:o:")) != -1) {
+	while ((c = getopt(argc, argv, "e:f:i:o:")) != -1) {
 		switch (c) {
 		case 'e':
 			/* try to parse YYYYMMDD first,
@@ -104,14 +111,6 @@ main(int argc, char *argv[])
 			} else {
 				inception = atol(optarg);
 			}
-			break;
-		case 'k':
-			key_signing_key_filenames = LDNS_XREALLOC(key_signing_key_filenames, char *, key_signing_key_nr + 1);
-			if (!key_signing_key_filenames) {
-				fprintf(stderr, "Out of memory\n");
-			}
-			key_signing_key_filenames[key_signing_key_nr] = optarg;
-			key_signing_key_nr++;
 			break;
 		case 'o':
 			if (ldns_str2rdf_dname(&origin, optarg) != LDNS_STATUS_OK) {
@@ -175,15 +174,17 @@ main(int argc, char *argv[])
 	/* read the ZSKs */
 	argi = 1;
 	while (argi < argc) {
-		keyfile = fopen(argv[argi], "r");
+		keyfile_name_base = argv[argi];
+		keyfile_name = LDNS_XMALLOC(char, strlen(keyfile_name_base) + 9);
+		sprintf(keyfile_name, "%s.private", keyfile_name_base);
+		keyfile = fopen(keyfile_name, "r");
+		line_nr = 0;
 		if (!keyfile) {
-			fprintf(stderr, "Error: unable to read k%s (%s)\n", argv[argi], strerror(errno));
+			fprintf(stderr, "Error: unable to read %s: %s\n", keyfile_name, strerror(errno));
 		} else {
-			key = ldns_key_new_frm_fp(keyfile);
+			key = ldns_key_new_frm_fp_l(keyfile, &line_nr);
+			fclose(keyfile);
 			if (key) {
-				/* TODO: should this be in frm_fp? */
-				ldns_key_set_pubkey_owner(key, ldns_rdf_clone(origin));
-
 				/* set times in key? they will end up
 				   in the rrsigs
 				*/
@@ -194,14 +195,32 @@ main(int argc, char *argv[])
 					ldns_key_set_inception(key, inception);
 				}
 
-				ldns_key_set_flags(key, ldns_key_flags(key) | LDNS_KEY_ZONE_KEY_FLAG);
-				ldns_key_list_push_key(keys, key);
+				LDNS_FREE(keyfile_name);
+				keyfile_name = LDNS_XMALLOC(char, strlen(keyfile_name_base) + 5);
+				sprintf(keyfile_name, "%s.key", keyfile_name_base);
+				keyfile = fopen(keyfile_name, "r");
+				line_nr = 0;
+				if (!keyfile) {
+					fprintf(stderr, "Error: unable to read %s: %s\n", keyfile_name, strerror(errno));
+				} else {
+					pubkey = ldns_rr_new_frm_fp_l(keyfile, LDNS_DEFAULT_TTL, NULL, &line_nr);
+					if (pubkey) {
+						ldns_key_set_pubkey_owner(key, ldns_rdf_clone(ldns_rr_owner(pubkey)));
+						ldns_key_set_flags(key, ldns_rdf2native_int16(ldns_rr_rdf(pubkey, 0)));
+					}
+					/*ldns_key_set_flags(key, ldns_key_flags(key) | LDNS_KEY_ZONE_KEY);*/
+					ldns_key_list_push_key(keys, key);
+		/*
+					ldns_zone_push_rr(orig_zone, ldns_rr_clone(pubkey));
+		*/			ldns_rr_free(pubkey);
+				}
+
 				
 			} else {
-				fprintf(stderr, "Error reading key from %s\n", argv[argi]);
+				fprintf(stderr, "Error reading key from %s at line %d\n", argv[argi], line_nr);
 			}
-			fclose(keyfile);
 		}
+
 		argi++;
 	}
 	
@@ -211,40 +230,7 @@ main(int argc, char *argv[])
 		exit(EXIT_FAILURE);
 	}
 			
-	/* read the KSKs */
-	key_signing_keys = ldns_key_list_new();
-
-	for (argi = 0; argi < key_signing_key_nr; argi++) {
-		keyfile = fopen(key_signing_key_filenames[argi], "r");
-		if (!keyfile) {
-			fprintf(stderr, "Error: unable to read KSK %s (%s)\n", argv[argi], strerror(errno));
-		} else {
-			key = ldns_key_new_frm_fp(keyfile);
-			if (key) {
-				/* TODO: should this be in frm_fp? */
-				ldns_key_set_pubkey_owner(key, ldns_rdf_clone(origin));
-
-				/* set times in key? they will end up
-				   in the rrsigs
-				*/
-				if (expiration != 0) {
-					ldns_key_set_expiration(key, expiration);
-				}
-				if (inception != 0) {
-					ldns_key_set_inception(key, inception);
-				}
-
-				ldns_key_set_flags(key, ldns_key_flags(key) | LDNS_KEY_ZONE_KEY_FLAG | LDNS_KEY_SEP_KEY_FLAG);
-				ldns_key_list_push_key(key_signing_keys, key);
-			} else {
-				fprintf(stderr, "Error reading KSK from %s\n", argv[argi]);
-			}
-			fclose(keyfile);
-		}
-	}
-
-	signed_zone = ldns_zone_sign(orig_zone, keys, key_signing_keys);
-	
+	signed_zone = ldns_zone_sign(orig_zone, keys);
 
 	if (!outputfile_name) {
 		outputfile_name = LDNS_XMALLOC(char, MAX_FILENAME_LEN);
@@ -266,10 +252,8 @@ main(int argc, char *argv[])
 	}
 	
 	ldns_key_list_free(keys);
-	ldns_key_list_free(key_signing_keys);
 	ldns_zone_deep_free(orig_zone);
 	
 	LDNS_FREE(outputfile_name);
-	LDNS_FREE(key_signing_key_filenames);
         exit(EXIT_SUCCESS);
 }

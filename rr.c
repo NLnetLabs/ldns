@@ -28,7 +28,7 @@ ldns_rr_new(void)
 	rr->_rdata_fields = NULL; 
 	ldns_rr_set_ttl(rr, 0);
 	ldns_rr_set_class(rr, LDNS_RR_CLASS_IN);
-	ldns_rr_set_ttl(rr, LDNS_DEFTTL);
+	ldns_rr_set_ttl(rr, LDNS_DEFAULT_TTL);
         return rr;
 }
 
@@ -56,7 +56,7 @@ ldns_rr_new_frm_type(ldns_rr_type t)
 	ldns_rr_set_rd_count(rr, 
 			ldns_rr_descriptor_minimum(desc));
 	ldns_rr_set_class(rr, LDNS_RR_CLASS_IN);
-	ldns_rr_set_ttl(rr, LDNS_DEFTTL);
+	ldns_rr_set_ttl(rr, LDNS_DEFAULT_TTL);
 	ldns_rr_set_type(rr, t);
 	return rr;
 }
@@ -168,7 +168,7 @@ ldns_rr_new_frm_str(const char *str, uint16_t default_ttl, ldns_rdf *origin)
 	if (ttl_val == 0) {
 		/* ah, it's not there or something */
 		if (default_ttl == 0) {
-			ttl_val = LDNS_DEFTTL;
+			ttl_val = LDNS_DEFAULT_TTL;
 		} else {
 			ttl_val = default_ttl;
 		}

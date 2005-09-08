@@ -48,7 +48,7 @@ LIBDNS_HEADERS	=	ldns/error.h		\
 			ldns/dns.h		\
 			ldns/zone.h		\
 			ldns/util.h
-PROG_SOURCES	=	mx.c chaos.c keygen.c signzone.c key2ds.c version.c
+PROG_SOURCES	=	mx.c chaos.c keygen.c signzone.c version.c
 PROG_TARGETS	=	$(PROG_SOURCES:.c=)
 
 LIBDNS_OBJECTS	=	$(LIBDNS_SOURCES:.c=.o)
@@ -68,7 +68,7 @@ LINK_LIB	= $(LIBTOOL) --mode=link $(CC) $(CFLAGS) $(LDFLAGS)
 .PHONY: install uninstall install-doc uninstall-doc 
 .PHONY: install-h uninstall-h install-lib uninstall-lib snapshot release
 
-all:		lib
+all:		lib tools
 
 tools:		$(PROG_TARGETS)
 
