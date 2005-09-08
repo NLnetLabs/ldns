@@ -545,7 +545,6 @@ ldns_resolver_new_frm_fp_l(FILE *fp, int *line_nr)
 					expect = LDNS_RESOLV_KEYWORD;
 					break;
 				}
-				/* XXX */
 				(void)ldns_resolver_push_nameserver(r, tmp);
 				ldns_rdf_deep_free(tmp);
 				expect = LDNS_RESOLV_KEYWORD;

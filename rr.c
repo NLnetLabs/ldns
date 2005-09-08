@@ -1676,7 +1676,7 @@ size_t
 ldns_rr_descriptor_maximum(const ldns_rr_descriptor *descriptor)
 {
 	if (descriptor->_variable != LDNS_RDF_TYPE_NONE) {
-		/* XXX: Should really be SIZE_MAX... bad FreeBSD.  */
+		/* Should really be SIZE_MAX... bad FreeBSD.  */
 		return UINT_MAX;
 	} else {
 		return descriptor->_maximum;

@@ -8,8 +8,9 @@
  */
 
 /*
- * these come strait from perldoc Net::DNS::RR::xxxx
- * first the read variant, then the write
+ * These come strait from perldoc Net::DNS::RR::xxx
+ * first the read variant, then the write. This is
+ * not complete.
  */
 
 #include <ldns/config.h>
@@ -59,8 +60,6 @@ ldns_rr_set_function(ldns_rr_type type, ldns_rr *rr, ldns_rdf *rdf, size_t pos)
         }
 }
 
-/* all function below call the above defined ones */
-
 /* A/AAAA records */
 ldns_rdf *
 ldns_rr_a_address(ldns_rr *r)
@@ -72,11 +71,7 @@ ldns_rr_a_address(ldns_rr *r)
 	}
 	return ldns_rr_rdf(r, 0);
 }
-/* / A-AAAA records */
 
-/* write -
- * if there is a value in the rr - is is _freed_!
- */
 bool
 ldns_rr_a_set_address(ldns_rr *r, ldns_rdf *f)
 {
@@ -94,6 +89,7 @@ ldns_rr_a_set_address(ldns_rr *r, ldns_rdf *f)
 		return false;
 	}
 }
+/* / A-AAAA records */
 
 /* NS record */
 ldns_rdf *
