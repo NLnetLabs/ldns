@@ -106,7 +106,7 @@ uninstall-progs:
 
 install-doc:	doc
 		${INSTALL} -d $(mandir)/man3
-		mv doc/man/man3/* $(mandir)/man3/
+		cp -Rp doc/man/man3/* $(mandir)/man3/
 		${INSTALL} -d $(mandir)/man1
 		for i in $(PROG_TARGETS); do \
 			${INSTALL} -c -m 644 doc/$$i.1 $(mandir)/man1 ; done
