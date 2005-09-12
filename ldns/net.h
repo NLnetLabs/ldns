@@ -122,6 +122,8 @@ uint8_t *ldns_tcp_read_wire(int sockfd, size_t *size);
  * socket. Allocates the data (of size size) itself, so don't forget to free
  *
  * \param[in] sockfd the socket to read from
+ * \param[in] fr the address of the client (if applicable)
+ * \param[in] *frlen the lenght of the client's addr (if applicable)
  * \param[out] size the number of bytes that are read
  * \return the data read
  */

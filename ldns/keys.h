@@ -251,9 +251,8 @@ void ldns_key_free(ldns_key *key);
 void ldns_key_deep_free(ldns_key *key);
 
 /**
- * frees a key list structure
- *
- * \param[in] key the key list object to free
+ * Frees a key list structure
+ * \param[in] key_list the key list object to free
  */
 void ldns_key_list_free(ldns_key_list *key_list);
 

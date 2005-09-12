@@ -123,7 +123,7 @@ ldns_status ldns_wire2pkt(ldns_pkt **packet, const uint8_t *data, size_t len);
  * structure.
  * 
  * \param[in] packet pointer to the structure to hold the packet
- * \param[in] buffera the buffer with the data
+ * \param[in] buffer the buffer with the data
  * \return LDNS_STATUS_OK if everything succeeds, error otherwise
  */
 ldns_status ldns_buffer2pkt_wire(ldns_pkt **packet, ldns_buffer *buffer);

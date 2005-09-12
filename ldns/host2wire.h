@@ -71,7 +71,7 @@ ldns_status ldns_pkt2buffer_wire(ldns_buffer *output, const ldns_pkt *pkt);
 /**
  * Copies the rr_list data to the buffer in wire format
  * \param[out] *output buffer to append the result to
- * \param[in] *rr_list rr_list to to convert
+ * \param[in] *rrlist rr_list to to convert
  * \return ldns_status
  */
 ldns_status ldns_rr_list2buffer_wire(ldns_buffer *output, ldns_rr_list *rrlist);
