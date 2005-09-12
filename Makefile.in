@@ -69,7 +69,7 @@ LINK_LIB	= $(LIBTOOL) --mode=link $(CC) $(CFLAGS) $(LDFLAGS)
 .PHONY: install-h uninstall-h install-lib uninstall-lib snapshot release
 .PHONY: confdrill tools-drill
 
-all:		lib
+all:		lib confdrill tools
 
 tools:		$(PROG_TARGETS) confdrill tools-drill
 

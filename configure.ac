@@ -211,3 +211,5 @@ time_t timegm (struct tm *tm);
 AC_CONFIG_FILES([Makefile ldns/util.h])
 AC_CONFIG_HEADER([ldns/config.h])
 AC_OUTPUT
+
+AC_CONFIG_SUBDIRS([drill])
