@@ -734,7 +734,7 @@ east:
 	altitude *= 100;
 	altitude += 10000000;
 	if (*my_str == 'm' || *my_str == 'M') {
-		*my_str++;
+		my_str++;
 	}
 
 	if (strlen(my_str) > 0) {
@@ -756,7 +756,7 @@ east:
 			return LDNS_STATUS_INVALID_STR;
 		}
 		if (*my_str == 'm' || *my_str == 'M') {
-			*my_str++;
+			my_str++;
 		}
 	}
 
@@ -779,7 +779,7 @@ east:
 			return LDNS_STATUS_INVALID_STR;
 		}
 		if (*my_str == 'm' || *my_str == 'M') {
-			*my_str++;
+			my_str++;
 		}
 	}
 
@@ -802,7 +802,7 @@ east:
 			return LDNS_STATUS_INVALID_STR;
 		}
 		if (*my_str == 'm' || *my_str == 'M') {
-			*my_str++;
+			my_str++;
 		}
 	}
 
