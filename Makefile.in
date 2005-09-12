@@ -67,10 +67,17 @@ LINK_LIB	= $(LIBTOOL) --mode=link $(CC) $(CFLAGS) $(LDFLAGS)
 .PHONY:	clean realclean docclean doc lint test all lib
 .PHONY: install uninstall install-doc uninstall-doc 
 .PHONY: install-h uninstall-h install-lib uninstall-lib snapshot release
+.PHONY: confdrill tools-drill
 
-all:		lib tools
+all:		lib confdrill
 
-tools:		$(PROG_TARGETS)
+tools:		$(PROG_TARGETS) tools-drill
+
+confdrill: 	
+		( cd drill ; ./configure --with-ldns=../)
+
+tools-drill: 	
+		( cd drill ; make -f Makefile all)
 
 lib:		$(LIBDNS_OBJECTS) b64_pton$U.o b64_ntop$U.o
 		$(LINK_LIB) -o libldns.la $(LIBDNS_LOBJECTS) b64_pton$U.lo b64_ntop$U.lo \
@@ -87,7 +94,7 @@ uninstall:	uninstall-doc uninstall-h uninstall-lib uninstall-progs
 
 destclean:	uninstall
 
-install-progs:
+install-progs:  all tools
 		for i in $(PROG_TARGETS); do \
 			${INSTALL} -c $$i $(bindir)/ ; done
 		exit 0
@@ -187,6 +194,7 @@ realclean: clean docclean libclean
 	rm -f config.sub
 	rm -f config.guess
 	rm -f ltmain.sh
+	(cd drill ; make -f Makefile clean)
 
 docclean:
 	rm -rf doc/html/

@@ -5,14 +5,12 @@ Post 1.0 Stuff:
 o Dname compression
 o A /fast/ impl. for holding a zone (and retrieving data from it)
 o refactor ldns_verify_rrsig_keylist and
-  ldns_verify_rrsig
+  ldns_verify_rrsig (fold in TSIG stuff or leave it out?)
+o Different digest for DS (spec currently specifies SHA-1)
 
 What actually doesn't work:
 ---------------------------
-o [dnssec] Different digests for DS
- - need a digest type?
 o [doc]  const function are correct i think, but const values in struct not
-o Error handling needs to be improved
 o manual page for signzone
 
 Implementation:
@@ -29,14 +27,7 @@ o use size_t where needed
 
 To ponder and discuss:
 ----------------------
-o private key type? This works, but not (yet) for tsig stuff
-	ldns_algorithm used for verfication
-	ldns_sign_algorithm used for signing - including
-				shared secret signing
-	work in progress - works for RSA/DSA. I want to 
-	fold in the tsig stuff as well
 o install mx, keygen, chaos somewhere, along with manpages??
-o All lookup table stuff in _table types?
 
 To be removed:
 -------------

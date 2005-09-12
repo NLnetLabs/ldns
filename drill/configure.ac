@@ -2,7 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.57)
-AC_INIT(drill, 0.80, drill@nlnetlabs.nl, drill)
+AC_INIT(drill, 1.00, drill@nlnetlabs.nl, drill)
 AC_CONFIG_SRCDIR([drill_util.h])
 
 AC_AIX
