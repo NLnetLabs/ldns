@@ -69,12 +69,12 @@ LINK_LIB	= $(LIBTOOL) --mode=link $(CC) $(CFLAGS) $(LDFLAGS)
 .PHONY: install-h uninstall-h install-lib uninstall-lib snapshot release
 .PHONY: confdrill tools-drill
 
-all:		lib confdrill
+all:		lib
 
-tools:		$(PROG_TARGETS) tools-drill
+tools:		$(PROG_TARGETS) confdrill tools-drill
 
-confdrill: 	
-		( cd drill ; autoreconf && ./configure --with-ldns=../)
+confdrill: 	./drill/configure
+		( cd drill ; ./configure --with-ldns=../)
 
 tools-drill: 	
 		( cd drill ; make -f Makefile all)
