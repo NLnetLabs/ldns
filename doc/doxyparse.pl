@@ -41,14 +41,15 @@ The ldns team at NLnet Labs. Which consists out of:
 Jelte Jansen, Erik Rozendaal and Miek Gieben.
 
 .SH REPORTING BUGS
-Please report bugs to ldns-team\@nlnetlabs.nl
-
-.SH BUGS
-None sofar. This software just works great.
+Please report bugs to ldns-team\@nlnetlabs.nl or in 
+our Bugzilla at
+http://www.nlnetlabs.nl/bugs/index.html
+.PP
+Be sure to select ldns as the product.
 
 .SH COPYRIGHT
 Copyright (c) 2004, 2005 NLnet Labs.
-Licensed under the GPL 2. There is NO warranty; not even for
+Licensed under the BSD License. There is NO warranty; not even for
 MERCHANTABILITY or
 FITNESS FOR A PARTICULAR PURPOSE.
 ";
