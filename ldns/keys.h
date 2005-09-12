@@ -257,6 +257,4 @@ void ldns_key_deep_free(ldns_key *key);
  */
 void ldns_key_list_free(ldns_key_list *key_list);
 
-
-
 #endif /* _LDNS_KEYS_H */

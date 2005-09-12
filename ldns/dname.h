@@ -24,7 +24,7 @@
  * \param[in] rd2 the rightside
  * \return a new rdf with leftside/rightside
  */
-ldns_rdf 	*ldns_dname_cat_clone(ldns_rdf *rd1, ldns_rdf *rd2);
+ldns_rdf *ldns_dname_cat_clone(ldns_rdf *rd1, ldns_rdf *rd2);
 /**
  * concatenates rd2 after rd1 (rd2 is copied, rd1 is modified)
  * \param[in] rd1 the leftside
@@ -38,20 +38,20 @@ ldns_status 	ldns_dname_cat(ldns_rdf *rd1, ldns_rdf *rd2);
  * \param[in] d the dname to chop
  * \return the remaining dname
  */
-ldns_rdf	*ldns_dname_left_chop(ldns_rdf *d);
+ldns_rdf *ldns_dname_left_chop(ldns_rdf *d);
 /**
  * count the number of labels inside a LDNS_RDF_DNAME type rdf.
  * \param[in] *r the rdf
  * \return the number of labels
  */     
-uint8_t         ldns_dname_label_count(const ldns_rdf *r);
+uint8_t  ldns_dname_label_count(const ldns_rdf *r);
 
 /**
  * Create a new dname rdf. Copies pointers!
  * \param[in] str string to use
  * \return ldns_rdf*
  */
-ldns_rdf	*ldns_dname_new_frm_str(const char *str);
+ldns_rdf *ldns_dname_new_frm_str(const char *str);
 
 /**
  * Create a new dname rdf from a string
@@ -59,7 +59,7 @@ ldns_rdf	*ldns_dname_new_frm_str(const char *str);
  * \param[in] *data pointer to the actual data
  * \return ldns_rdf*
  */
-ldns_rdf	*ldns_dname_new(uint16_t s, void *data);
+ldns_rdf *ldns_dname_new(uint16_t s, void *data);
 
 /**
  * Create a new dname rdf from data (the data is copied)
@@ -67,7 +67,7 @@ ldns_rdf	*ldns_dname_new(uint16_t s, void *data);
  * \param[in] *data pointer to the actual data
  * \return ldns_rdf*
  */
-ldns_rdf	*ldns_dname_new_frm_data(uint16_t size, const void *data);
+ldns_rdf *ldns_dname_new_frm_data(uint16_t size, const void *data);
 
 /**
  * Put a dname into canonical fmt - ie. lowercase it
@@ -87,6 +87,8 @@ bool ldns_dname_is_subdomain(const ldns_rdf *sub, const ldns_rdf *parent);
 
 /**
  * Checks whether the given dname string is absolute (i.e. ends with a '.')
+ * \param[in] *dname_str a string representing the dname
+ * \return true or false
  */
 bool ldns_dname_str_absolute(const char *dname_str);
 
