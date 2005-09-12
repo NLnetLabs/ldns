@@ -81,20 +81,35 @@ doc:		doc/function_manpages
 		cat ldns/*.h | doc/doxyparse.pl -m doc/function_manpages 2>&1 | \
 		grep -v ^doxygen | grep -v ^cat  > doc/ldns_manpages
 
-install:	install-h install-lib
+install:	install-h install-lib install-progs install-doc
 
-uninstall:	uninstall-doc uninstall-h uninstall-lib
+uninstall:	uninstall-doc uninstall-h uninstall-lib uninstall-progs
 
 destclean:	uninstall
+
+install-progs:
+		for i in $(PROG_TARGETS); do \
+			${INSTALL} -c $$i $(bindir)/ ; done
+		exit 0
+
+uninstall-progs:
+		for i in $(PROG_TARGETS); do \
+			rm -f $(bindir)/$$i ; done
+		exit 0
 
 install-doc:	doc
 		${INSTALL} -d $(mandir)/man3
 		mv doc/man/man3/* $(mandir)/man3/
+		${INSTALL} -d $(mandir)/man1
+		for i in $(PROG_TARGETS); do \
+			${INSTALL} -c -m 644 doc/$$i.1 $(mandir)/man1 ; done
+		exit 0
 
 uninstall-doc:	doc
 		for i in `cat doc/ldns_manpages`; do \
 			rm -f $(mandir)/man3/$$i.3 ; done
-		[ ! -d $(mandir)/man3 ] || rmdir $(mandir)/man3
+		for i in $(PROG_TARGETS); do \
+			rm -f $(mandir)/man1/$$i.1 ; done
 		exit 0
 
 install-h:	lib
