@@ -17,8 +17,6 @@ o manual page for signzone
 Implementation:
 ---------------
 o really think one last time about the double pointers
-o str2host on string rdata types needs escapes and surrounding quotes
-  support
 o check all conversion routines on missing types
 	- wire2host
 	- host2wire

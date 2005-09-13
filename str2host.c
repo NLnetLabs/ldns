@@ -290,11 +290,11 @@ ldns_str2rdf_str(ldns_rdf **rd, const char *str)
 				str_i += 3;
 			} else {
 				str_i++;
-				data[i] = str[str_i];
+				data[i] = (uint8_t) str[str_i];
 				i++;
 			}
 		} else {
-			data[i] = str[str_i];
+			data[i] = (uint8_t) str[str_i];
 			i++;
 		}
 	}
