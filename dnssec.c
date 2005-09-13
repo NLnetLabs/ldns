@@ -82,7 +82,6 @@ ldns_verify(ldns_rr_list *rrset, ldns_rr_list *rrsig, ldns_rr_list *keys, ldns_r
 	ldns_status verify_result = LDNS_STATUS_ERR;
 
 	if (!rrset || !rrsig || !keys) {
-printf("err 1\n");
 		return LDNS_STATUS_ERR;
 	}
 
@@ -273,6 +272,8 @@ ldns_verify_rrsig_keylist(ldns_rr_list *rrset, ldns_rr *rrsig, ldns_rr_list *key
 				ldns_rr_list_print(stdout, keys);
 				*/
 			}
+		} else {
+			result = LDNS_STATUS_CRYPTO_NO_MATCHING_KEYTAG_DNSKEY;
 		}
 	}
 
@@ -282,10 +283,10 @@ ldns_verify_rrsig_keylist(ldns_rr_list *rrset, ldns_rr *rrsig, ldns_rr_list *key
 	ldns_buffer_free(verify_buf);
 	if (ldns_rr_list_rr_count(validkeys) == 0) {
 		/* no keys were added, return last error */
-ldns_rr_list_free(validkeys);
+		ldns_rr_list_free(validkeys);
 		return result;
 	} else {
-ldns_rr_list_free(validkeys);
+		ldns_rr_list_free(validkeys);
 		ldns_rr_list_cat(good_keys, validkeys);
 		return LDNS_STATUS_OK;
 	}
@@ -442,6 +443,7 @@ ldns_verify_rrsig_dsa(ldns_buffer *sig, ldns_buffer *rrset, ldns_buffer *key)
 	BIGNUM *R;
 	BIGNUM *S;
 	uint8_t t;
+	int result;
 
 	unsigned char *sha1_hash;
 
@@ -469,9 +471,12 @@ ldns_verify_rrsig_dsa(ldns_buffer *sig, ldns_buffer *rrset, ldns_buffer *key)
 		return LDNS_STATUS_ERR;
 	}
 
-	if (DSA_do_verify(sha1_hash, SHA_DIGEST_LENGTH, dsasig, dsakey) == 1) {
+	result = DSA_do_verify(sha1_hash, SHA_DIGEST_LENGTH, dsasig, dsakey);
+
+	if (result == 1) {
 		return LDNS_STATUS_OK;
 	} else {
+		printf("error in verify: %d\n", result);
 		return LDNS_STATUS_CRYPTO_BOGUS;
 	}
 }
@@ -1213,8 +1218,10 @@ ldns_sign_public_dsa(ldns_buffer *to_sign, DSA *key)
 	unsigned char *sha1_hash;
 	ldns_rdf *sigdata_rdf;
 	ldns_buffer *b64sig;
+
 	DSA_SIG *sig;
 	uint8_t *data;
+	size_t pad;
 
 	b64sig = ldns_buffer_new(LDNS_MAX_PACKETLEN);
 	if (!b64sig) {
@@ -1228,13 +1235,23 @@ ldns_sign_public_dsa(ldns_buffer *to_sign, DSA *key)
 		return NULL;
 	}
 
+
 	sig = DSA_do_sign(sha1_hash, SHA_DIGEST_LENGTH, key);
 
 	data = LDNS_XMALLOC(uint8_t, 1 + 2 * SHA_DIGEST_LENGTH);
 
 	data[0] = 1;
-	BN_bn2bin(sig->r, (unsigned char *) (data + 1));
-	BN_bn2bin(sig->s, (unsigned char *) (data + 1 + SHA_DIGEST_LENGTH));
+	pad = 20 - BN_num_bytes(sig->r);
+	if (pad > 0) {
+		memset(data + 1, 0, pad);
+	}
+	BN_bn2bin(sig->r, (unsigned char *) (data + 1) + pad);
+
+	pad = 20 - BN_num_bytes(sig->s);
+	if (pad > 0) {
+		memset(data + 1 + SHA_DIGEST_LENGTH, 0, pad);
+	}
+	BN_bn2bin(sig->s, (unsigned char *) (data + 1 + SHA_DIGEST_LENGTH + pad));
 
 	sigdata_rdf = ldns_rdf_new_frm_data(LDNS_RDF_TYPE_B64,  1 + 2 * SHA_DIGEST_LENGTH, data);
 
@@ -1430,7 +1447,6 @@ ldns_pkt_verify(ldns_pkt *p, ldns_rr_type t, ldns_rdf *o,
 	ldns_rdf *rdf_t;
 	ldns_rr_type t_netorder;
 
-printf("%s\n", "[ldns_pkt_verify]");
 	if (!k) {
 		return LDNS_STATUS_ERR;
 		/* return LDNS_STATUS_CRYPTO_NO_DNSKEY; */
@@ -1503,6 +1519,7 @@ ldns_zone_sign(ldns_zone *zone, ldns_key_list *key_list)
 	ldns_rr *ckey;
 	uint16_t i;
 	ldns_rr_type cur_rrset_type;
+ldns_status result;
 	
 	signed_zone = ldns_zone_new();
 	
@@ -1562,6 +1579,16 @@ ldns_zone_sign(ldns_zone *zone, ldns_key_list *key_list)
 		   ) {
 			cur_rrsigs = ldns_sign_public(cur_rrset, key_list);
 
+			/* TODO: make optional, replace exit call */
+			result = ldns_verify(cur_rrset, cur_rrsigs, pubkeys, NULL);
+			if (result != LDNS_STATUS_OK) {
+				printf("Cannot verify own sig:\n");
+				printf("%s\n", ldns_get_errorstr_by_id(result));
+				ERR_load_crypto_strings();
+				ERR_print_errors_fp(stdout);
+				exit(result);
+			}
+
 			ldns_zone_push_rr_list(signed_zone, cur_rrset);
 			ldns_zone_push_rr_list(signed_zone, cur_rrsigs);
 			ldns_rr_list_free(cur_rrsigs);
@@ -1591,7 +1618,7 @@ ldns_init_random(FILE *fd, uint16_t bytes) {
 		return LDNS_STATUS_ERR;;
 	}
 	if (!fd) {
-		if ((rand = fopen("r", "/dev/random")) == NULL) {
+		if ((rand = fopen("/dev/urandom", "r")) == NULL) {
 			LDNS_FREE(buf);
 			return LDNS_STATUS_ERR;
 		}
