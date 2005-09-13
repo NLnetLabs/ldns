@@ -1241,13 +1241,13 @@ ldns_sign_public_dsa(ldns_buffer *to_sign, DSA *key)
 	data = LDNS_XMALLOC(uint8_t, 1 + 2 * SHA_DIGEST_LENGTH);
 
 	data[0] = 1;
-	pad = 20 - BN_num_bytes(sig->r);
+	pad = 20 - (size_t) BN_num_bytes(sig->r);
 	if (pad > 0) {
 		memset(data + 1, 0, pad);
 	}
 	BN_bn2bin(sig->r, (unsigned char *) (data + 1) + pad);
 
-	pad = 20 - BN_num_bytes(sig->s);
+	pad = 20 - (size_t) BN_num_bytes(sig->s);
 	if (pad > 0) {
 		memset(data + 1 + SHA_DIGEST_LENGTH, 0, pad);
 	}
