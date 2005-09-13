@@ -31,6 +31,8 @@
 #include <ldns/resolver.h>
 #include <ldns/rr.h>
 #include <ldns/str2host.h>
+#include <ldns/tsig.h>
+#include <ldns/update.h>
 #include <ldns/wire2host.h>
 #include <ldns/rr_functions.h>
 #include <ldns/keys.h>

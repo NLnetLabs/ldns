@@ -182,6 +182,7 @@ ldns_rr_list *ldns_pkt_rr_list_by_name_and_type(ldns_pkt *packet, ldns_rdf *owne
 bool ldns_pkt_set_flags(ldns_pkt *pkt, uint16_t flags);
 
 void ldns_pkt_set_id(ldns_pkt *p, uint16_t id);
+void ldns_pkt_set_random_id(ldns_pkt *p);
 void ldns_pkt_set_qr(ldns_pkt *p, bool b);
 void ldns_pkt_set_aa(ldns_pkt *p, bool b);
 void ldns_pkt_set_tc(ldns_pkt *p, bool b);

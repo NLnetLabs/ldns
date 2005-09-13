@@ -71,10 +71,6 @@ struct ldns_struct_key {
 			uint16_t keytag;
 			uint16_t flags;
 		}  dnssec;
-		struct {
-			uint16_t fudge;
-			char *   name; /* needed? */
-		} tsig;
 	} _extra;
 	ldns_rdf *_pubkey_owner;
 };

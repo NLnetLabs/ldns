@@ -472,8 +472,6 @@ ldns_key_set_expiration(ldns_key *k, uint32_t e)
 	k->_extra.dnssec.expiration = e;
 }
 
-/* todo also for tsig */
-
 void
 ldns_key_set_pubkey_owner(ldns_key *k, ldns_rdf *r)
 {
@@ -556,8 +554,6 @@ ldns_key_keytag(ldns_key *k)
 {
 	return k->_extra.dnssec.keytag;
 }
-
-/* todo also for tsig */
 
 ldns_rdf *
 ldns_key_pubkey_owner(ldns_key *k)

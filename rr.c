@@ -26,7 +26,6 @@ ldns_rr_new(void)
 	ldns_rr_set_owner(rr, NULL);
 	ldns_rr_set_rd_count(rr, 0);
 	rr->_rdata_fields = NULL; 
-	ldns_rr_set_ttl(rr, 0);
 	ldns_rr_set_class(rr, LDNS_RR_CLASS_IN);
 	ldns_rr_set_ttl(rr, LDNS_DEFAULT_TTL);
         return rr;

@@ -266,3 +266,116 @@ ldns_getaddrinfo_secure(void)
 {
 	return NULL;
 }
+
+/*
+ * Send a "simple" update for an A or an AAAA RR.
+ * \param[in] fqdn the update RR owner
+ * \param[in] zone the zone to update, if set to NULL, try to figure it out
+ * \param[in] ipaddr the address to add, if set to NULL, remove any A/AAAA RRs
+ * \param[in] ttl the update RR TTL
+ * \param[in] tsig_cred credentials for TSIG-protected update messages
+ */
+ldns_status
+ldns_update_send_simple_A(const char *fqdn, const char *zone,
+    const char *ipaddr, u_int16_t ttl, ldns_tsig_credentials *tsig_cred)
+{
+	ldns_resolver	*res;
+	ldns_pkt	*u_pkt = NULL, *r_pkt;
+	ldns_rr_list	*up_rrlist;
+	ldns_rr		*up_rr;
+	ldns_rdf	*zone_rdf;
+	char		*rrstr;
+	u_int32_t	rrstrlen, status = LDNS_STATUS_OK;
+
+	if (!fqdn || strlen(fqdn) == 0)
+		return LDNS_STATUS_ERR;
+
+	/* Create resolver */
+	res = ldns_update_resolver_new(fqdn, zone, LDNS_RR_CLASS_IN, tsig_cred,
+	    &zone_rdf);
+	if (!res || !zone_rdf)
+		goto cleanup;
+
+	/* Set up the update section. */
+	up_rrlist = ldns_rr_list_new();
+	if (!up_rrlist)
+		goto cleanup;
+
+	/* Create input for ldns_rr_new_frm_str() */
+	if (ipaddr) {
+		/* We're adding A or AAAA */
+		rrstrlen = strlen(fqdn) + sizeof (" IN AAAA ") +
+		    strlen(ipaddr) + 1;
+		rrstr = (char *)malloc(rrstrlen);
+		if (!rrstr) {
+			ldns_rr_list_deep_free(up_rrlist);
+			goto cleanup;
+		}
+		snprintf(rrstr, rrstrlen, "%s IN %s %s", fqdn,
+		    strchr(ipaddr, ':') ? "AAAA" : "A", ipaddr);
+
+		up_rr = ldns_rr_new_frm_str(rrstr, ttl, NULL);
+		if (!up_rr) {
+			ldns_rr_list_deep_free(up_rrlist);
+			free(rrstr);
+			goto cleanup;
+		}
+		free(rrstr);
+		ldns_rr_list_push_rr(up_rrlist, up_rr);
+	} else {
+		/* We're removing A and/or AAAA from 'fqdn'. [RFC2136 2.5.2] */
+		up_rr = ldns_rr_new();
+		ldns_rr_set_owner(up_rr, ldns_dname_new_frm_str(fqdn));
+		ldns_rr_set_ttl(up_rr, 0);
+		ldns_rr_set_class(up_rr, LDNS_RR_CLASS_ANY);
+
+		ldns_rr_set_type(up_rr, LDNS_RR_TYPE_A);
+		ldns_rr_list_push_rr(up_rrlist, ldns_rr_clone(up_rr));
+
+		ldns_rr_set_type(up_rr, LDNS_RR_TYPE_AAAA);
+		ldns_rr_list_push_rr(up_rrlist, up_rr);
+	}
+	
+	/* Create update packet. */
+	u_pkt = ldns_update_pkt_new(zone_rdf, LDNS_RR_CLASS_IN, NULL,
+	    up_rrlist, NULL);
+	zone_rdf = NULL;
+	if (!u_pkt) {
+		ldns_rr_list_deep_free(up_rrlist);
+		goto cleanup;
+	}
+	ldns_pkt_set_random_id(u_pkt);
+
+	/* Add TSIG */
+	if (tsig_cred)
+		if (ldns_update_pkt_tsig_add(u_pkt, res) != LDNS_STATUS_OK)
+			goto cleanup;
+
+	if (ldns_resolver_send_pkt(&r_pkt, res, u_pkt) != LDNS_STATUS_OK)
+		goto cleanup;
+	ldns_pkt_free(u_pkt);
+	if (!r_pkt)
+		goto cleanup;
+
+	if (ldns_pkt_rcode(r_pkt) != 0) {
+		ldns_lookup_table *t = 
+		    ldns_lookup_by_id(ldns_rcodes,
+			(int)ldns_pkt_rcode(r_pkt));
+		if (t)
+			dprintf(";; UPDATE response was %s\n", t->name);
+		else
+			dprintf(";; UPDATE response was (%d)\n",
+			    ldns_pkt_rcode(r_pkt));
+		status = LDNS_STATUS_ERR;
+	}
+	ldns_pkt_free(r_pkt);
+	ldns_resolver_deep_free(res);
+	return status;
+		
+  cleanup:
+	if (res)
+		ldns_resolver_deep_free(res);
+	if (u_pkt)
+		ldns_pkt_free(u_pkt);
+	return LDNS_STATUS_ERR;
+}

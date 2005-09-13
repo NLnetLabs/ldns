@@ -24,9 +24,9 @@ LINTFLAGS	= +quiet -weak -warnposix -unrecog -Din_addr_t=uint32_t -Du_int=unsign
 INSTALL = $(srcdir)/install-sh 
 
 LIBDNS_SOURCES	=	rdata.c util.c rr.c packet.c wire2host.c \
-			host2str.c buffer.c str2host.c resolver.c \
+			host2str.c buffer.c str2host.c tsig.c resolver.c \
 			net.c host2wire.c dname.c dnssec.c keys.c \
-			higher.c rr_functions.c parse.c error.c zone.c
+			higher.c rr_functions.c parse.c update.c error.c zone.c
 LIBDNS_HEADERS	=	ldns/error.h		\
 			ldns/packet.h		\
 			ldns/common.h		\
@@ -47,8 +47,10 @@ LIBDNS_HEADERS	=	ldns/error.h		\
 			ldns/rr_functions.h	\
 			ldns/dns.h		\
 			ldns/zone.h		\
-			ldns/util.h
-PROG_SOURCES	=	ldns-mx.c ldns-chaos.c ldns-keygen.c ldns-key2ds.c ldns-signzone.c ldns-version.c
+			ldns/util.h 		\
+			ldns/update.h 		\
+			ldns/tsig.h
+PROG_SOURCES	=	ldns-mx.c ldns-chaos.c ldns-keygen.c ldns-key2ds.c ldns-signzone.c ldns-version.c ldns-update.c
 PROG_TARGETS	=	$(PROG_SOURCES:.c=)
 
 LIBDNS_OBJECTS	=	$(LIBDNS_SOURCES:.c=.o)
@@ -69,7 +71,7 @@ LINK_LIB	= $(LIBTOOL) --mode=link $(CC) $(CFLAGS) $(LDFLAGS)
 .PHONY: install-h uninstall-h install-lib uninstall-lib snapshot release
 .PHONY: confdrill tools-drill
 
-all:		lib confdrill tools
+all:		lib confdrill
 
 tools:		$(PROG_TARGETS) confdrill tools-drill
 

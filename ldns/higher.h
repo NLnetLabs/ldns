@@ -18,6 +18,7 @@
 #include <ldns/rdata.h>
 #include <ldns/rr.h>
 #include <ldns/host2str.h>
+#include <ldns/tsig.h>
 
 /**
  * Ask the resolver about name
@@ -85,5 +86,17 @@ uint16_t ldns_getaddrinfo(ldns_resolver *res, ldns_rdf *node, ldns_rr_class c, l
  * 
  */
 ldns_rr_list *ldns_getaddrinfo_secure();
+
+/*
+ * Send a "simple" update for an A or an AAAA RR.
+ * \param[in] fqdn the update RR owner
+ * \param[in] zone the zone to update, if set to NULL, try to figure it out
+ * \param[in] ipaddr the address to add, if set to NULL, remove any A/AAAA RRs
+ * \param[in] ttl the update RR TTL
+ * \param[in] tsig_cred credentials for TSIG-protected update messages
+ */
+ldns_status ldns_update_send_simple_A(const char *fqdn, const char *zone,
+    const char *ipaddr, u_int16_t tll, ldns_tsig_credentials *tsig_cred);
+
 #endif /* _LDNS_HIGHER_H */
 
