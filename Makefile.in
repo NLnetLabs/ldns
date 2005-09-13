@@ -71,14 +71,14 @@ LINK_LIB	= $(LIBTOOL) --mode=link $(CC) $(CFLAGS) $(LDFLAGS)
 .PHONY: install-h uninstall-h install-lib uninstall-lib snapshot release
 .PHONY: confdrill tools-drill
 
-all:		lib confdrill tools
+all:		lib tools
 
 tools:		$(PROG_TARGETS) confdrill tools-drill
 
 confdrill: 	./drill/configure
 		( cd drill ; ./configure --with-ldns=../)
 
-tools-drill: 	
+drill: 		confdrill
 		( cd drill ; make -f Makefile all)
 
 lib:		$(LIBDNS_OBJECTS) b64_pton$U.o b64_ntop$U.o
