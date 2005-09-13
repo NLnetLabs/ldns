@@ -285,7 +285,7 @@ ldns_update_send_simple_A(const char *fqdn, const char *zone,
 	ldns_rr		*up_rr;
 	ldns_rdf	*zone_rdf;
 	char		*rrstr;
-	u_int32_t	rrstrlen, status = LDNS_STATUS_OK;
+	uint32_t	rrstrlen, status = LDNS_STATUS_OK;
 
 	if (!fqdn || strlen(fqdn) == 0)
 		return LDNS_STATUS_ERR;

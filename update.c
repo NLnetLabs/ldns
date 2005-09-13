@@ -46,8 +46,9 @@ ldns_update_pkt_new(ldns_rdf *zone_rdf, ldns_rr_class class,
 		return NULL;
 	}
 
-	if (class == 0)
+	if (class == 0) {
 		class = LDNS_RR_CLASS_IN;
+	}
 
 	/* Create packet, fill in Zone Section. */
 	p = ldns_pkt_query_new(zone_rdf, LDNS_RR_TYPE_SOA, class, LDNS_RD);
@@ -79,7 +80,7 @@ ldns_update_pkt_new(ldns_rdf *zone_rdf, ldns_rr_class class,
 ldns_status
 ldns_update_pkt_tsig_add(ldns_pkt *p, ldns_resolver *r)
 {
-	u_int16_t fudge = 300; /* Recommended fudge. [RFC2845 6.4]  */
+	uint16_t fudge = 300; /* Recommended fudge. [RFC2845 6.4]  */
 
 	if (ldns_resolver_tsig_keyname(r) && ldns_resolver_tsig_keydata(r))
 		return ldns_pkt_tsig_sign(p, ldns_resolver_tsig_keyname(r),
@@ -139,7 +140,7 @@ ldns_update_get_soa_zone_mname(const char *fqdn, ldns_resolver *r,
 	ldns_rdf	*ipaddr, *fqdn_rdf, *tmp;
 	ldns_rdf	**nslist;
 	ldns_pkt	*query, *resp;
-	int		i;
+	size_t		i;
 
 	/* 
 	 * XXX Ok, this cannot be the best way to find this...?
@@ -214,7 +215,7 @@ ldns_update_get_soa_zone_mname(const char *fqdn, ldns_resolver *r,
 	}
 	if (i >= ldns_resolver_nameserver_count(r)) {
 		/* SOA mname was not part of the resolver so add it first. */
-		ldns_resolver_push_nameserver(r, ipaddr);
+		(void) ldns_resolver_push_nameserver(r, ipaddr);
 		nslist = ldns_resolver_nameservers(r);
 		i = ldns_resolver_nameserver_count(r) - 1;
 		tmp = nslist[0];
@@ -279,7 +280,7 @@ ldns_update_resolver_new(const char *fqdn, const char *zone,
 	ldns_pkt	*query = NULL, *resp;
 	ldns_rr_list	*nslist, *iplist;
 	ldns_rdf	*soa_zone, *soa_mname, *ns_name;
-	int		i;
+	size_t		i;
 
 	if (class == 0)
 		class = LDNS_RR_CLASS_IN;
@@ -349,7 +350,7 @@ ldns_update_resolver_new(const char *fqdn, const char *zone,
 			/* Match */
 			iplist = ldns_get_rr_list_addr_by_name(r1, ns_name,
 			    class, 0);
-			ldns_resolver_push_nameserver_rr_list(r2, iplist);
+			(void) ldns_resolver_push_nameserver_rr_list(r2, iplist);
 			break;
 		}
 	}
@@ -363,7 +364,7 @@ ldns_update_resolver_new(const char *fqdn, const char *zone,
 			/* No match, add it now. */
 			iplist = ldns_get_rr_list_addr_by_name(r1, ns_name,
 			    class, 0);
-			ldns_resolver_push_nameserver_rr_list(r2, iplist);
+			(void) ldns_resolver_push_nameserver_rr_list(r2, iplist);
 		}
 	}
 
@@ -414,25 +415,25 @@ ldns_update_get_ad(const ldns_pkt *p)
 }
 
 void
-ldns_update_set_zo(ldns_pkt *p, u_int16_t v)
+ldns_update_set_zo(ldns_pkt *p, uint16_t v)
 {
 	ldns_pkt_set_qdcount(p, v);
 }
 
 void
-ldns_update_set_pr(ldns_pkt *p, u_int16_t v)
+ldns_update_set_pr(ldns_pkt *p, uint16_t v)
 {
 	ldns_pkt_set_ancount(p, v);
 }
 
 void
-ldns_update_set_up(ldns_pkt *p, u_int16_t v)
+ldns_update_set_up(ldns_pkt *p, uint16_t v)
 {
 	ldns_pkt_set_nscount(p, v);
 }
 
 void
-ldns_update_set_ad(ldns_pkt *p, u_int16_t v)
+ldns_update_set_ad(ldns_pkt *p, uint16_t v)
 {
 	ldns_pkt_set_arcount(p, v);
 }

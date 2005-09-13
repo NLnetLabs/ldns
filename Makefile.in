@@ -170,6 +170,9 @@ ldns-keygen:	ldns-keygen.o $(LIBDNS_OBJECTS) $(LIBOBJS)
 ldns-key2ds:	ldns-key2ds.o $(LIBDNS_OBJECTS) $(LIBOBJS)
 		$(LINK) ${LIBS} -o $@ $+
 
+ldns-update:	ldns-update.o $(LIBDNS_OBJECTS) $(LIBOBJS)
+		$(LINK) ${LIBS} -o $@ $+
+
 # tests
 tests:		
 		(cd tests ; make)

@@ -1,7 +1,8 @@
 /* $Id: ldns-update.c,v 1.1 2005/09/13 09:37:05 ho Exp $ */
 
-#include <sys/types.h>
 #include <stdio.h>
+#include <sys/types.h>
+#include <ldns/config.h>
 
 #include <ldns/dns.h>
 

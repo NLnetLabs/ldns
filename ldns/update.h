@@ -22,9 +22,9 @@ uint16_t ldns_update_get_pr(const ldns_pkt *);
 uint16_t ldns_update_get_up(const ldns_pkt *);
 uint16_t ldns_update_get_ad(const ldns_pkt *);
 
-void ldns_update_set_zo(ldns_pkt *, u_int16_t);
-void ldns_update_set_pr(ldns_pkt *, u_int16_t);
-void ldns_update_set_up(ldns_pkt *, u_int16_t);
-void ldns_update_set_ad(ldns_pkt *, u_int16_t);
+void ldns_update_set_zo(ldns_pkt *, uint16_t);
+void ldns_update_set_pr(ldns_pkt *, uint16_t);
+void ldns_update_set_up(ldns_pkt *, uint16_t);
+void ldns_update_set_ad(ldns_pkt *, uint16_t);
 
 #endif  /* !_LDNS_UPDATE_H */
