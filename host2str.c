@@ -910,6 +910,11 @@ ldns_pkt2buffer_str(ldns_buffer *output, ldns_pkt *pkt)
 	uint16_t i;
 	ldns_status status = LDNS_STATUS_OK;
 	char *tmp;
+
+	if (!pkt) {
+		ldns_buffer_printf(output, "null");
+		return LDNS_STATUS_OK;
+	}
 	
 	if (ldns_buffer_status_ok(output)) {
 		status = ldns_pktheader2buffer_str(output, pkt);
@@ -1357,6 +1362,7 @@ ldns_resolver_print(FILE *output, ldns_resolver *r)
 
 	fprintf(output, "port: %d\n", (int)ldns_resolver_port(r));
 	fprintf(output, "edns0 size: %d\n", (int)ldns_resolver_edns_udp_size(r));
+	fprintf(output, "use ip6: %d\n", (int)ldns_resolver_ip6(r));
 
 	fprintf(output, "recursive: %d\n", ldns_resolver_recursive(r));
 	fprintf(output, "usevc: %d\n", ldns_resolver_usevc(r));

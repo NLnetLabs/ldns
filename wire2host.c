@@ -350,7 +350,7 @@ ldns_wire2pkt(ldns_pkt **packet_p, const uint8_t *wire, size_t max)
 	ldns_status status = LDNS_STATUS_OK;
 
 	uint8_t data[4];
-	
+
 	status = ldns_wire2pkt_hdr(packet, wire, max, &pos);
 	LDNS_STATUS_CHECK_GOTO(status, status_error);
 	

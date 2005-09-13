@@ -89,19 +89,21 @@ ldns_send(ldns_pkt **result, ldns_resolver *r, ldns_pkt *query_pkt)
 
 		ns = ldns_rdf2native_sockaddr_storage(ns_rand_array[i],
 				ldns_resolver_port(r), &ns_len);
-
-		if ((ns->ss_family == AF_INET && 
-				ldns_resolver_ip6(r) == LDNS_RESOLV_INET6)
-				||
-				(ns->ss_family == AF_INET6 &&
-				 ldns_resolver_ip6(r) == LDNS_RESOLV_INET)) {
-			/* mismatch, next please */
-			LDNS_FREE(ns);
+		
+		if ((ns->ss_family == AF_INET) && 
+				(ldns_resolver_ip6(r) == LDNS_RESOLV_INET6)) {
+			printf("mismatch 4 - 6!!!\n");
+			continue;
+		}
+		if ((ns->ss_family == AF_INET6) &&
+				 (ldns_resolver_ip6(r) == LDNS_RESOLV_INET)) {
+			printf("mismatch!!! 6 - 4\n");
 			continue;
 		}
 
 		gettimeofday(&tv_s, NULL);
 		/* query */
+
 		if (1 == ldns_resolver_usevc(r)) {
 			/* do err handling here ? */
 			(void)ldns_tcp_send(&reply_bytes, qb, ns, (socklen_t)ns_len, ldns_resolver_timeout(r), &reply_size);
@@ -340,7 +342,7 @@ ldns_udp_read_wire(int sockfd, size_t *size, struct sockaddr_storage *from,
 		if (fromlen) {
 			*fromlen = flen;
 		}
-		printf("from len %d\n", (int)flen);
+		dprintf("from len %d\n", (int)flen);
 	}
 
 	if (wire_size == -1) {

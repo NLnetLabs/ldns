@@ -26,8 +26,9 @@ ldns_get_rr_list_addr_by_name(ldns_resolver *res, ldns_rdf *name, ldns_rr_class 
 	ldns_rr_list *aaaa;
 	ldns_rr_list *a;
 	ldns_rr_list *result;
+	uint8_t ip6;
 
-	a = NULL; aaaa = NULL;
+	a = NULL; aaaa = NULL; result = NULL;
 
 	if (!res) {
 		return NULL;
@@ -36,6 +37,11 @@ ldns_get_rr_list_addr_by_name(ldns_resolver *res, ldns_rdf *name, ldns_rr_class 
 		return NULL;
 	}
 
+	ip6 = ldns_resolver_ip6(res); /* we use INET_ANY here, save
+					 what was there */
+
+	ldns_resolver_set_ip6(res, LDNS_RESOLV_INETANY);
+	
 	/* add the RD flags, because we want an answer */
 	pkt = ldns_resolver_query(res, name, LDNS_RR_TYPE_AAAA, c, flags | LDNS_RD);
 	if (pkt) {
@@ -43,21 +49,32 @@ ldns_get_rr_list_addr_by_name(ldns_resolver *res, ldns_rdf *name, ldns_rr_class 
 		aaaa = ldns_pkt_rr_list_by_type(pkt, 
 				LDNS_RR_TYPE_AAAA, LDNS_SECTION_ANSWER);
 
+		/* ldns_rr_list_print(stdout, aaaa); DEBUG */
 		ldns_pkt_free(pkt);
-	}
+	} 
 
 	pkt = ldns_resolver_query(res, name, LDNS_RR_TYPE_A, c, flags | LDNS_RD);
 	if (pkt) {
 		/* extract the data we need */
 		a = ldns_pkt_rr_list_by_type(pkt, 
 				LDNS_RR_TYPE_A, LDNS_SECTION_ANSWER);
-
 		ldns_pkt_free(pkt);
-	}
+	} 
 
-	if (aaaa) {
+	ldns_resolver_set_ip6(res, ip6);
+
+	if (aaaa && a) {
 		result = ldns_rr_list_cat_clone(aaaa, a);
-	} else {
+		ldns_rr_list_deep_free(aaaa);
+		ldns_rr_list_deep_free(a);
+		return result;
+	}
+	
+	if (aaaa) {
+		result = ldns_rr_list_clone(aaaa);
+	}
+	
+	if (a) {
 		result = ldns_rr_list_clone(a);
 	}
 

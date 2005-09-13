@@ -649,6 +649,7 @@ ldns_resolver_query(ldns_resolver *r, ldns_rdf *name, ldns_rr_type type, ldns_rr
 		status = ldns_resolver_send(&pkt, r, name, type, class, flags);
 		return pkt;
 	}
+
 	if (!ldns_resolver_domain(r)) {
 		/* _defnames is set, but the domain is not....?? */
 		status = ldns_resolver_send(&pkt, 
@@ -661,6 +662,7 @@ ldns_resolver_query(ldns_resolver *r, ldns_rdf *name, ldns_rr_type type, ldns_rr
 	}
 
 	newname = ldns_dname_cat_clone(name, ldns_resolver_domain(r));
+	ldns_rdf_print(stdout, newname);
 	if (!newname) {
 		return NULL;
 	}
@@ -673,12 +675,12 @@ ldns_status
 ldns_resolver_send_pkt(ldns_pkt **answer, ldns_resolver *r, ldns_pkt *query_pkt)
 {
 	uint8_t  retries;
-	ldns_pkt *answer_pkt = NULL;
+	ldns_pkt *answer_pkt; /*  = NULL; */
 	ldns_status stat = LDNS_STATUS_OK;
 
 	for (retries = ldns_resolver_retry(r); retries > 0; retries--) {
 		stat = ldns_send(&answer_pkt, r, query_pkt);
-		if (answer_pkt) {
+		if (stat == LDNS_STATUS_OK) {
 			break;
 		}
 	}
