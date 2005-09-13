@@ -7,6 +7,7 @@ o A /fast/ impl. for holding a zone (and retrieving data from it)
 o refactor ldns_verify_rrsig_keylist and
   ldns_verify_rrsig (fold in TSIG stuff or leave it out?)
 o Different digest for DS (spec currently specifies SHA-1)
+o Make it possible to build with OpenSSL
 
 What actually doesn't work:
 ---------------------------
