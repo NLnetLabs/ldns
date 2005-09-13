@@ -568,13 +568,9 @@ ldns_pkt_set_id(ldns_pkt *packet, uint16_t id)
 void
 ldns_pkt_set_random_id(ldns_pkt *packet)
 {
-#if defined(OpenBSD)
-	ldns_pkt_set_id(packet, (u_int16_t)arc4random());
-#else
 	/* TODO: time is a terrible seed */
 	srandom((unsigned) time(NULL) ^ getpid());
 	ldns_pkt_set_id(packet, (u_int16_t)random());
-#endif
 }
 
 
