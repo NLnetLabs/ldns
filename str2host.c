@@ -267,15 +267,39 @@ ldns_status
 ldns_str2rdf_str(ldns_rdf **rd, const char *str)
 {
 	uint8_t *data;
+	uint8_t val;
+	size_t i, str_i;
 	
 	if (strlen(str) > 255) {
 		return LDNS_STATUS_INVALID_STR;
 	}
 
 	data = LDNS_XMALLOC(uint8_t, strlen(str) + 1);
-	data[0] = strlen(str);
-	memcpy(data + 1, str, strlen(str));
-	*rd = ldns_rdf_new_frm_data(LDNS_RDF_TYPE_STR, strlen(str) + 1, data);
+	i = 1;
+	for (str_i = 0; str_i < strlen(str); str_i++) {
+		if (str[str_i] == '\\') {
+			if(str_i + 3 < strlen(str) && 
+			   isdigit(str[str_i + 1]) &&
+			   isdigit(str[str_i + 2]) &&
+			   isdigit(str[str_i + 3])) {
+				val = (uint8_t) ldns_hexdigit_to_int((char) str[str_i + 1]) * 100 +
+				                ldns_hexdigit_to_int((char) str[str_i + 2]) * 10 +
+				                ldns_hexdigit_to_int((char) str[str_i + 3]);
+				data[i] = val;
+				i++;
+				str_i += 3;
+			} else {
+				str_i++;
+				data[i] = str[str_i];
+				i++;
+			}
+		} else {
+			data[i] = str[str_i];
+			i++;
+		}
+	}
+	data[0] = i - 1;
+	*rd = ldns_rdf_new_frm_data(LDNS_RDF_TYPE_STR, i, data);
 	LDNS_FREE(data);
 	return LDNS_STATUS_OK;
 }

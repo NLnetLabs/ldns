@@ -239,7 +239,7 @@ ldns_bget_all_keyword_data(ldns_buffer *b, const char *keyword, const char *k_de
 ssize_t
 ldns_bget_token(ldns_buffer *b, char *token, const char *delim, size_t limit)
 {	
-	int c;
+	int c, lc;
 	int p; /* 0 -> no parenthese seen, >0 nr of ( seen */
 	int com;
 	char *t;
@@ -259,6 +259,7 @@ ldns_bget_token(ldns_buffer *b, char *token, const char *delim, size_t limit)
 	i = 0;
 	com = 0;
 	t = token;
+	lc = 0;
 	while ((c = ldns_bgetc(b)) != EOF) {
 		if (c == '(') {
 			p++;
@@ -301,7 +302,7 @@ ldns_bget_token(ldns_buffer *b, char *token, const char *delim, size_t limit)
 
 		/* check if we hit the delim */
 		for (d = del; *d; d++) {
-                        if (c == *d) {
+                        if (c == *d && lc != '\\') {
 				goto tokenread;
                         }
 		}
@@ -312,6 +313,11 @@ ldns_bget_token(ldns_buffer *b, char *token, const char *delim, size_t limit)
 			*t = '\0';
 			return -1;
 		}
+
+		if (c == '\\' && lc == '\\') {
+			lc = 0;
+		}
+		lc = c;
 	}
 	*t = '\0';
 	if (i == 0) {
