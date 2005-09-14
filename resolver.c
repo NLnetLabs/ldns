@@ -728,7 +728,9 @@ ldns_resolver_send(ldns_pkt **answer, ldns_resolver *r, ldns_rdf *name,
 
 	/* set DO bit if necessary */
 	if (ldns_resolver_dnssec(r)) {
-		ldns_resolver_set_edns_udp_size(r, 4096);
+		if (ldns_resolver_edns_udp_size(r) == 0) {
+			ldns_resolver_set_edns_udp_size(r, 4096);
+		}
 		ldns_pkt_set_edns_do(query_pkt, true);
 		ldns_pkt_set_cd(query_pkt, ldns_resolver_dnssec_cd(r));
 	}
