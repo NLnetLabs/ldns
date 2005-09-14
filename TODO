@@ -30,3 +30,8 @@ To be removed:
 -------------
 LDNS_STATUS_CHECK_GOTO
 Debugging code 
+
+Drill:
+------
+pseudo OPT headers ala dig
+        print 'do' instead of 3600
