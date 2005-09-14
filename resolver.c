@@ -647,7 +647,11 @@ ldns_resolver_query(ldns_resolver *r, ldns_rdf *name, ldns_rr_type type, ldns_rr
 
 	if (!ldns_resolver_defnames(r)) {
 		status = ldns_resolver_send(&pkt, r, name, type, class, flags);
-		return pkt;
+		if (status == LDNS_STATUS_OK) {
+			return pkt;
+		} else {
+			return NULL;
+		}
 	}
 
 	if (!ldns_resolver_domain(r)) {
@@ -658,7 +662,11 @@ ldns_resolver_query(ldns_resolver *r, ldns_rdf *name, ldns_rr_type type, ldns_rr
 				type, 
 				class, 
 				flags);
-		return pkt;
+		if (status == LDNS_STATUS_OK) {
+			return pkt;
+		} else {
+			return NULL;
+		}
 	}
 
 	newname = ldns_dname_cat_clone(name, ldns_resolver_domain(r));
@@ -774,7 +782,7 @@ ldns_resolver_send(ldns_pkt **answer, ldns_resolver *r, ldns_rdf *name,
 	if (answer) {
 		*answer = answer_pkt;
 	}
-	return LDNS_STATUS_OK;
+	return status;
 }
 
 int
