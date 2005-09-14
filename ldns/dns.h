@@ -62,5 +62,6 @@ extern ldns_lookup_table ldns_rr_classes[];
 /* if these are used elsewhere */
 extern ldns_lookup_table ldns_rcodes[];
 extern ldns_lookup_table ldns_opcodes[];
+extern ldns_lookup_table ldns_edns_flags[];
 
 #endif /* _LDNS_DNS_H_ */

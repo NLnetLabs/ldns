@@ -909,6 +909,7 @@ ldns_pkt2buffer_str(ldns_buffer *output, ldns_pkt *pkt)
 {
 	uint16_t i;
 	ldns_status status = LDNS_STATUS_OK;
+	ldns_lookup_table *lt;
 	char *tmp;
 
 	if (!pkt) {
@@ -970,10 +971,13 @@ ldns_pkt2buffer_str(ldns_buffer *output, ldns_pkt *pkt)
 		/* add some futher fields */
 		ldns_buffer_printf(output, ";; Query time: %d msec\n", ldns_pkt_querytime(pkt));
 		if (ldns_pkt_edns(pkt)) {
+			lt = ldns_lookup_by_id(ldns_edns_flags, 
+					(int)ldns_pkt_edns_z(pkt));
+			
 			ldns_buffer_printf(output,
-			                   ";; EDNS: version %u, flags: %u; udp: %u\n",
+			                   ";; EDNS: version %u, flags: %s; udp: %u\n",
 			                   ldns_pkt_edns_version(pkt),
-			                   ldns_pkt_edns_z(pkt),
+			                   lt->name,
 			                   ldns_pkt_edns_udp_size(pkt)
 			                   );
 			if (ldns_pkt_edns_data(pkt)) {

@@ -21,6 +21,12 @@
  * do this as functions to get type checking
  */
 
+/* TODO defines for 3600 */
+/* convert to and from numerical flag values */
+ldns_lookup_table ldns_edns_flags[] = {
+	{ 3600, "do"},
+	{ 0, NULL}
+};
 
 /* read */
 uint16_t
