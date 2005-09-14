@@ -295,7 +295,7 @@ ldns_tcp_send_query(ldns_buffer *qbin, int sockfd,
 	if (bytes == -1) {
 		if (to) {
 			addr_str = LDNS_XMALLOC(char, tolen + 1);
-			inet_ntop(to->ss_family, (struct sock_addr *)to, addr_str, tolen);
+			(void) inet_ntop((int) to->ss_family, (struct sock_addr *)to, addr_str, tolen);
 			LDNS_FREE(addr_str);
 		}
 		dprintf("error sending to %s\n", addr_str);
@@ -322,7 +322,7 @@ ldns_udp_send_query(ldns_buffer *qbin, int sockfd, const struct sockaddr_storage
 	if (bytes == -1) {
 		if (to) {
 			addr_str = LDNS_XMALLOC(char, tolen + 1);
-			inet_ntop(to->ss_family, (struct sockaddr *)to, addr_str, tolen);
+			(void) inet_ntop((int) to->ss_family, (struct sockaddr *)to, addr_str, tolen);
 			LDNS_FREE(addr_str);
 		}
 		dprintf("error sending to %s\n", addr_str);
