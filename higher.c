@@ -276,7 +276,7 @@ ldns_getaddrinfo_secure(void)
  * \param[in] tsig_cred credentials for TSIG-protected update messages
  */
 ldns_status
-ldns_update_send_simple_A(const char *fqdn, const char *zone,
+ldns_update_send_simple_addr(const char *fqdn, const char *zone,
     const char *ipaddr, u_int16_t ttl, ldns_tsig_credentials *tsig_cred)
 {
 	ldns_resolver	*res;

@@ -26,6 +26,7 @@
 #include <openssl/hmac.h>
 #include <openssl/md5.h>
 
+/* used only on the public key RR */
 uint16_t
 ldns_calc_keytag(ldns_rr *key)
 {
@@ -958,10 +959,6 @@ ldns_sign_public_rsamd5(ldns_buffer *to_sign, RSA *key)
 	return sigdata_rdf;
 }
 
-/*
-ldns_rr *
-ldns_create_nsec(ldns_rr_list *before, ldns_rr_list *after)
-*/
 ldns_rr *
 ldns_create_nsec(ldns_rdf *cur_owner, ldns_rdf *next_owner, ldns_rr_list *rrs)
 {
@@ -1156,7 +1153,7 @@ ldns_zone_sign(ldns_zone *zone, ldns_key_list *key_list)
 	ldns_rr *ckey;
 	uint16_t i;
 	ldns_rr_type cur_rrset_type;
-ldns_status result;
+	ldns_status result;
 	
 	signed_zone = ldns_zone_new();
 	

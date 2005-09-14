@@ -95,7 +95,7 @@ ldns_rr_list *ldns_getaddrinfo_secure();
  * \param[in] ttl the update RR TTL
  * \param[in] tsig_cred credentials for TSIG-protected update messages
  */
-ldns_status ldns_update_send_simple_A(const char *fqdn, const char *zone,
+ldns_status ldns_update_send_simple_addr(const char *fqdn, const char *zone,
     const char *ipaddr, u_int16_t tll, ldns_tsig_credentials *tsig_cred);
 
 #endif /* _LDNS_HIGHER_H */

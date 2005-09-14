@@ -73,12 +73,12 @@ LINK_LIB	= $(LIBTOOL) --mode=link $(CC) $(CFLAGS) $(LDFLAGS)
 
 all:		lib tools
 
-tools:		$(PROG_TARGETS) confdrill tools-drill
+tools:		$(PROG_TARGETS) drill
 
-confdrill: 	./drill/configure
+./drill/config.log: 	./drill/configure
 		( cd drill ; ./configure --with-ldns=../)
 
-drill: 		confdrill
+drill: 		./drill/config.log
 		( cd drill ; make -f Makefile all)
 
 lib:		$(LIBDNS_OBJECTS) b64_pton$U.o b64_ntop$U.o

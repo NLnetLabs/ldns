@@ -152,34 +152,34 @@ ldns_create_tsig_mac(
 	ldns_rdf *orig_mac_rdf
 )
 {
-	ldns_buffer *data_buffer = NULL;
 	char *wireformat;
 	int wiresize;
 	unsigned char *mac_bytes;
-	unsigned int md_len = EVP_MAX_MD_SIZE;
 	unsigned char *key_bytes;
 	int key_size;
 	const EVP_MD *digester;
 	char *algorithm_name;
+	unsigned int md_len = EVP_MAX_MD_SIZE;
 	ldns_rdf *result = NULL;
+	ldns_buffer *data_buffer = NULL;
 	
 	/* 
 	 * prepare the digestable information
 	 */
-	data_buffer = ldns_buffer_new(LDNS_MAX_PACKETLEN);
+	data_buffer = ldns_buffer_new(LDNS_MIN_BUFLEN); /* we scale autom. */
 	/* if orig_mac is not NULL, add it too */
 	if (orig_mac_rdf) {
 		(void) ldns_rdf2buffer_wire(data_buffer, orig_mac_rdf);
  	}
 	ldns_buffer_write(data_buffer, pkt_wire, pkt_wire_size);
-	(void) ldns_rdf2buffer_wire(data_buffer, key_name_rdf);
+	(void)ldns_rdf2buffer_wire(data_buffer, key_name_rdf);
 	ldns_buffer_write_u16(data_buffer, LDNS_RR_CLASS_ANY);
 	ldns_buffer_write_u32(data_buffer, 0);
-	(void) ldns_rdf2buffer_wire(data_buffer, algorithm_rdf);
-	(void) ldns_rdf2buffer_wire(data_buffer, time_signed_rdf);
-	(void) ldns_rdf2buffer_wire(data_buffer, fudge_rdf);
-	(void) ldns_rdf2buffer_wire(data_buffer, error_rdf);
-	(void) ldns_rdf2buffer_wire(data_buffer, other_data_rdf);
+	(void)ldns_rdf2buffer_wire(data_buffer, algorithm_rdf);
+	(void)ldns_rdf2buffer_wire(data_buffer, time_signed_rdf);
+	(void)ldns_rdf2buffer_wire(data_buffer, fudge_rdf);
+	(void)ldns_rdf2buffer_wire(data_buffer, error_rdf);
+	(void)ldns_rdf2buffer_wire(data_buffer, other_data_rdf);
 	
 	wireformat = (char *) data_buffer->_data;
 	wiresize = (int) ldns_buffer_position(data_buffer);
@@ -400,5 +400,3 @@ ldns_pkt_tsig_sign(ldns_pkt *pkt, const char *key_name, const char *key_data, ui
 	ldns_rdf_free(other_data_rdf);
 	return status;
 }
-
-
