@@ -10,6 +10,10 @@ The libdns coding style guide
 * use defines for (weird) constants, and masks
 * type 'bool', constants 'true'/'false'. Don't compare bools for
   equality.
+* always use LDNS_MALLOC/FREE etc, or the new/free/deep_free functions
+* buffer can scale, so don't alloc the max size, but the min size
+* make lint (uses splint) is your friend
+
 
 * Return values:
 	- new/pointer: return pointer or NULL on error
@@ -53,3 +57,10 @@ The libdns coding style guide
     ancount     = answer section count
     nscount     = authority section count
     arcount     = additional section count
+
+ldns-<tools>
+* use exit(EXIT_FAILURE)/ exit(SUCCES)
+* 
+
+
+
