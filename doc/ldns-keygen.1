@@ -1,15 +1,15 @@
-.TH keygen 1 "30 May 2005"
+.TH ldns-keygen 1 "30 May 2005"
 .SH NAME
-keygen \- generate a keypair and print out the public part as a DNSKEY RR
+ldns-keygen \- generate a keypair and print out the public part as a DNSKEY RR
 .SH SYNOPSIS
-.B keygen 
+.B ldns-keygen 
 [
 .IR OPTION
 ]
 .IR DOMAIN 
 
 .SH DESCRIPTION
-\fBkeygen\fR is used to generate a private/public keypair. When run it
+\fBldns-keygen\fR is used to generate a private/public keypair. When run it
 will create 3 files; a .key file with the public DNSKEY, a .private
 file with the private keydata and a .ds with the DS record of the
 DNSKEY record.
@@ -36,7 +36,7 @@ Use this many bits for the key length.
 
 .TP
 \fbr \fdevice\fR
-Make keygen use this file for its random data. This will default
+Make ldns-keygen use this file for its random data. This will default
 to /dev/random.
 
 .SH AUTHOR
