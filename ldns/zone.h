@@ -49,6 +49,12 @@ ldns_zone * ldns_zone_new(void);
 ldns_rr * ldns_zone_soa(ldns_zone *z);
 
 /**
+ * \param[in] z the zone to read from
+ * \return the number of rr's in the zone
+ */
+uint16_t ldns_zone_rr_count(ldns_zone *z);
+
+/**
  * \param[in] z the zone to put the new soa in
  * \param[in] soa the soa to set
  */
@@ -87,10 +93,9 @@ bool ldns_zone_push_rr(ldns_zone *z, ldns_rr *rr);
 /**
  * find out if the rr is glue inside zone z
  * \param[in] z the zone to look for glue
- * \param[in] rrset the rrset to test
- * \return true if rr is glue, otherwise false
+ * \return the rr_list with the glue
  */
-bool ldns_zone_rr_list_is_glue(ldns_zone *z, ldns_rr_list *rrset);
+ldns_rr_list * ldns_zone_rr_list_is_glue(ldns_zone *z);
 
 
 ldns_zone *

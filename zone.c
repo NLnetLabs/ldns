@@ -19,6 +19,12 @@ ldns_zone_soa(ldns_zone *z)
         return z->_soa;
 }
 
+uint16_t
+ldns_zone_rr_count(ldns_zone *z)
+{
+	return ldns_rr_list_rr_count(z->_rrs) + 1; /* SOA record */
+}
+
 void
 ldns_zone_set_soa(ldns_zone *z, ldns_rr *soa)
 {
@@ -52,13 +58,72 @@ ldns_zone_push_rr(ldns_zone *z, ldns_rr *rr)
 }
 
 /* this will be an EXPENSIVE op with our zone structure */
-bool
-ldns_zone_rr_list_is_glue(ldns_zone *z, ldns_rr_list *rrset)
+ldns_rr_list *
+ldns_zone_glue_rr_list(ldns_zone *z)
 {
-	z = z;
-	rrset = rrset;
+	/* when do we find glue? It means we find an IP address
+	 * (AAAA/A) for a nameserver listed in the zone
+	 *
+	 * Alg used here:
+	 * first find all the zonecuts (NS records)
+	 * find all the AAAA or A records (can be done it the 
+	 * above loop).
+	 *
+	 * Check if the aaaa/a list are subdomains under the
+	 * NS domains. If yes -> glue, if no -> not glue
+	 */
 
-	return false;
+	ldns_rr_list *zone_cuts;
+	ldns_rr_list *addr;
+	ldns_rr_list *glue;
+	ldns_rr *r, *ns, *a;
+	ldns_rdf *dname_a, *dname_ns;
+	uint16_t i,j;
+
+	zone_cuts = ldns_rr_list_new();
+	addr = ldns_rr_list_new();
+	glue = ldns_rr_list_new();
+
+	for(i = 0; i < ldns_zone_rr_count(z); i++) {
+		r = ldns_rr_list_rr(ldns_zone_rrs(z), i);
+		ldns_rr_print(stdout, r);
+
+		if (ldns_rr_get_type(r) == LDNS_RR_TYPE_A ||
+				ldns_rr_get_type(r) == LDNS_RR_TYPE_AAAA) {
+			/* possibly glue */
+			ldns_rr_list_push_rr(addr, r);
+			continue;
+		}
+		if (ldns_rr_get_type(r) == LDNS_RR_TYPE_NS) {
+			/* multiple zones will end up here -
+			 * for now; not a problem
+			 */
+			ldns_rr_list_push_rr(zone_cuts, r);
+			continue;
+		}
+	}
+	/* will sorting make it quicker ?? */
+
+	for(i = 0; i < ldns_rr_list_rr_count(zone_cuts); i++) {
+		ns = ldns_rr_list_rr(zone_cuts, i);
+		dname_ns = ldns_rr_ns_nsdname(ns);
+
+		for(j = 0; j < ldns_rr_list_rr_count(addr); j++) {
+			a = ldns_rr_list_rr(addr, j);
+			dname_a = ldns_rr_owner(a);
+
+			if (ldns_dname_is_subdomain(dname_a, dname_ns)) {
+				/* GLUE! */
+				ldns_rr_list_push_rr(glue, a);
+				break;
+			}
+		}
+	}
+	if (ldns_rr_list_rr_count(glue) == 0) {
+		return NULL;
+	} else {
+		return glue;
+	}
 }
 
 ldns_zone *
