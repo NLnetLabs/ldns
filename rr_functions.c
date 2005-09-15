@@ -274,7 +274,7 @@ ldns_rr_dnskey_key_size(ldns_rr *key) {
 
 	length = ldns_rdf_size(keydata);
 	/* calc back to the bit size */
-	length = ((length - 1) * 3 / 4) * 8;
+	length = (length - 2) * 8;
 
 	return length;
 }

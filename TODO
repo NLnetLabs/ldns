@@ -29,9 +29,4 @@ o use size_t where needed
 To be removed:
 -------------
 LDNS_STATUS_CHECK_GOTO
-Debugging code 
-
-Drill:
-------
-pseudo OPT headers ala dig
-        print 'do' instead of 3600
+Debugging code , dprintf, should be error, ldns_status thingy

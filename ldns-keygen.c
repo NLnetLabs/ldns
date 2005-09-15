@@ -13,7 +13,7 @@
 
 void
 usage(FILE *fp, char *prog) {
-	fprintf(fp, "%s [-D|-R] [-b bits] [-r /dev/random]  domain\n", prog);
+	fprintf(fp, "%s [-D|-R] [-b bits] [-r /dev/random] domain\n", prog);
 	fprintf(fp, "  generate a new key pair for domain\n");
 	fprintf(fp, "  -D\tgenerate a DSA key\n");
 	fprintf(fp, "  -R\tgenerate a RSA key\n");
@@ -74,8 +74,8 @@ main(int argc, char *argv[])
 			bits = atoi(optarg);
 			if (bits == 0) {
 				fprintf(stderr, "%s: %s %d", prog, "Can not parse the -b argument, setting it to the default\n", def_bits);
+				bits = def_bits;
 			}
-			bits = def_bits;
 			break;
 		case 'k':
 			ksk = true;
