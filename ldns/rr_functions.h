@@ -231,4 +231,11 @@ ldns_rdf* ldns_rr_dnskey_key(ldns_rr *r);
  */
 bool ldns_rr_dnskey_set_key(ldns_rr *r, ldns_rdf *f);
 
+/**
+ * get the length of the keydata in bits
+ * \param[in] r the rr to use
+ * \return the keysize in bits
+ */
+uint16_t ldns_rr_dnskey_key_size(ldns_rr *key);
+
 #endif /* _LDNS_RR_FUNCTIONS_H */

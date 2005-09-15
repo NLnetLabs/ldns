@@ -264,4 +264,19 @@ ldns_rr_dnskey_set_key(ldns_rr *r, ldns_rdf *f)
 	return ldns_rr_set_function(LDNS_RR_TYPE_DNSKEY, r, f, 3);
 }
 
+uint16_t 
+ldns_rr_dnskey_key_size(ldns_rr *key) {
+	
+	ldns_rdf *keydata;
+	uint16_t length;
+	
+	keydata = ldns_rr_dnskey_key(key);
+
+	length = ldns_rdf_size(keydata);
+	/* calc back to the bit size */
+	length = ((length - 1) * 3 / 4) * 8;
+
+	return length;
+}
+
 /* /DNSKEY record */
