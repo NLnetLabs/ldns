@@ -88,6 +88,9 @@ ldns_verify(ldns_rr_list *rrset, ldns_rr_list *rrsig, ldns_rr_list *keys, ldns_r
 
 	valid = false;
 	
+printf("Verify sig rr:\n");
+ldns_rr_list_print(stdout, rrsig);
+
 	for (i = 0; i < ldns_rr_list_rr_count(rrsig); i++) {
 
 		verify_result = ldns_verify_rrsig_keylist(rrset,
@@ -310,6 +313,9 @@ ldns_verify_rrsig(ldns_rr_list *rrset, ldns_rr *rrsig, ldns_rr *key)
 		return LDNS_STATUS_ERR;
 	}
 
+printf("signature to verify:\n");
+ldns_rr_print(stdout, rrsig);
+
 	/* check the signature time stamps */
 	inception = ldns_rdf2native_time_t(ldns_rr_rrsig_inception(rrsig));
 	expiration = ldns_rdf2native_time_t(ldns_rr_rrsig_expiration(rrsig));
@@ -459,6 +465,12 @@ ldns_verify_rrsig_dsa(ldns_buffer *sig, ldns_buffer *rrset, ldns_buffer *key)
 	(void) BN_bin2bn((unsigned char*)ldns_buffer_at(sig, 1), SHA_DIGEST_LENGTH, R);
 	S = BN_new();
 	(void) BN_bin2bn((unsigned char*)ldns_buffer_at(sig, 21), SHA_DIGEST_LENGTH, S);
+printf("VERIFY:\n");
+printf("R: ");
+BN_print_fp(stdout, R);
+printf("\nS: ");
+BN_print_fp(stdout, S);
+printf("\n");
 
 	dsasig = DSA_SIG_new();
 	if (!dsasig) {
@@ -892,6 +904,15 @@ ldns_sign_public_dsa(ldns_buffer *to_sign, DSA *key)
 	BN_bn2bin(sig->s, (unsigned char *) (data + 1 + SHA_DIGEST_LENGTH + pad));
 
 	sigdata_rdf = ldns_rdf_new_frm_data(LDNS_RDF_TYPE_B64,  1 + 2 * SHA_DIGEST_LENGTH, data);
+
+printf("Signing: \n");
+printf("R: ");
+BN_print_fp(stdout, sig->r);
+printf("\nS: ");
+BN_print_fp(stdout, sig->s);
+printf("\n\rdf: ");
+ldns_rdf_print(stdout, sigdata_rdf);
+printf("\n");
 
 	ldns_buffer_free(b64sig);
 	LDNS_FREE(data);

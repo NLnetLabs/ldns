@@ -50,8 +50,8 @@ LIBDNS_HEADERS	=	ldns/error.h		\
 			ldns/util.h 		\
 			ldns/update.h 		\
 			ldns/tsig.h
-PROG_SOURCES	=	ldns-keygen.c ldns-key2ds.c ldns-signzone.c ldns-version.c \
-			ldns-update.c ldns-chaos.c ldns-mx.c
+PROG_SOURCES	=	ldns-keygen.c ldns-key2ds.c ldns-signzone.c \
+			ldns-version.c
 PROG_TARGETS	=	$(PROG_SOURCES:.c=)
 
 LIBDNS_OBJECTS	=	$(LIBDNS_SOURCES:.c=.o)

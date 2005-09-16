@@ -120,6 +120,7 @@ ldns_send(ldns_pkt **result, ldns_resolver *r, ldns_pkt *query_pkt)
 				ldns_buffer_free(qb);
 				return LDNS_STATUS_ERR;
 			} else {
+				LDNS_FREE(ns);
 				continue;
 			}
 		} 
