@@ -311,6 +311,11 @@ do_chase(ldns_resolver *res, ldns_rdf *name, ldns_rr_type type, ldns_rr_class c,
 		return LDNS_STATUS_EMPTY_LABEL;
 	}
 	
+	if (!trusted_keys || ldns_rr_list_rr_count(trusted_keys) < 1) {
+		mesg("No trusted keys specified\n");
+		return LDNS_STATUS_CRYPTO_NO_TRUSTED_DNSKEY;
+	}
+	
 	if (pkt) {
 		rrset = ldns_pkt_rr_list_by_name_and_type(pkt,
 				name,

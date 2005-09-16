@@ -92,8 +92,10 @@ doc:		doc/function_manpages
 		grep -v ^doxygen | grep -v ^cat  > doc/ldns_manpages
 
 install:	install-h install-lib install-progs install-doc
+		( cd drill ; make install )
 
 uninstall:	uninstall-doc uninstall-h uninstall-lib uninstall-progs
+		( cd drill ; make uninstall )
 
 destclean:	uninstall
 
