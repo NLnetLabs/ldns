@@ -15,6 +15,16 @@ INSTALLATION
 6. gmake (it needs gnu make to compile)
 (7. gmake progs [make example programs included])
 
+* Examples
+There are some examples in the examples/ directory. These can be built with:
+1. autoreconf
+2. ./configure --with-ldns=../
+3. gmake
+
+When running the examples the main library has to be installed (gmake
+install) or your LD_LIBRARY_PATH must contain the ldns-<VERSION>/.libs
+directory.
+
 * Developers
 ldns is developed by the ldns team at NLnet Labs. This team currently
 consists out of:
@@ -25,3 +35,5 @@ consists out of:
 * Credits
 We have received patches from the following people, thanks!
   o Håkan Olsson
+  o Jakob Schlyter
+
