@@ -92,13 +92,13 @@ ldns_send(ldns_pkt **result, ldns_resolver *r, ldns_pkt *query_pkt)
 		
 		if ((ns->ss_family == AF_INET) && 
 				(ldns_resolver_ip6(r) == LDNS_RESOLV_INET6)) {
-			printf("mismatch 4 - 6!!!\n");
+			/*printf("mismatch 4 - 6!!!\n");*/
 			/* FREE OF NS */
 			/* continue; */
 		}
 		if ((ns->ss_family == AF_INET6) &&
 				 (ldns_resolver_ip6(r) == LDNS_RESOLV_INET)) {
-			printf("mismatch!!! 6 - 4\n");
+			/*printf("mismatch!!! 6 - 4\n");*/
 			/* continue; */
 		}
 
@@ -362,7 +362,7 @@ ldns_udp_read_wire(int sockfd, size_t *size, struct sockaddr_storage *from,
 
 	if (wire_size == -1) {
 		if (errno == EAGAIN) {
-			dprintf("%s", "socket timeout\n");
+			/*dprintf("%s", "socket timeout\n");*/
 		}
 		*size = 0;
 		perror("error receiving udp packet");
@@ -391,7 +391,7 @@ ldns_tcp_read_wire(int sockfd, size_t *size)
 		bytes = recv(sockfd, wire, 2, 0);
 		if (bytes == -1) {
 			if (errno == EAGAIN) {
-				dprintf("%s", "socket timeout\n");
+				/*dprintf("%s", "socket timeout\n");*/
 			}
 			perror("error receiving tcp packet");
 			*size = 0;
@@ -409,7 +409,7 @@ ldns_tcp_read_wire(int sockfd, size_t *size)
 		bytes += recv(sockfd, wire + bytes, (size_t) (wire_size - bytes), 0);
 		if (bytes == -1) {
 			if (errno == EAGAIN) {
-				dprintf("%s", "socket timeout\n");
+				/*dprintf("%s", "socket timeout\n");*/
 			}
 			perror("error receiving tcp packet");
 			LDNS_FREE(wire);

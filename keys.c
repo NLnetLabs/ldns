@@ -96,7 +96,7 @@ ldns_key_new_frm_fp_l(FILE *fp, int *line_nr)
 		return NULL;
 	}
 	if (strncmp(d, "v1.2", strlen(d)) != 0) {
-		printf("Wrong version. This version of ldns only supports 1.2\n");
+		dprintf("%s", "Wrong version for key file. This version of ldns only supports 1.2\n");
 		return NULL;
 	}
 
@@ -123,7 +123,7 @@ ldns_key_new_frm_fp_l(FILE *fp, int *line_nr)
 	switch(alg) {
 		case 0:
 		default:
-			printf("No or unknown algorithm seen, bailing out\n");
+			dprintf("%s", "No or unknown algorithm seen, bailing out\n");
 			return NULL;
 		case LDNS_SIGN_RSAMD5:
 		case LDNS_SIGN_RSASHA1:

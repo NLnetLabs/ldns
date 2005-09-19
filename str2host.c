@@ -776,7 +776,7 @@ east:
 		}
 		size_b = (uint8_t) size;
 		if (size_e > 9) {
-			printf("size too large\n");
+			dprintf("%s", "size too large\n");
 			return LDNS_STATUS_INVALID_STR;
 		}
 		if (*my_str == 'm' || *my_str == 'M') {
@@ -822,7 +822,7 @@ east:
 		}
 		vert_pre_b = (uint8_t) vert_pre;
 		if (vert_pre_e > 9) {
-			printf("vert_pre too large\n");
+			dprintf("%s", "vert_pre too large\n");
 			return LDNS_STATUS_INVALID_STR;
 		}
 		if (*my_str == 'm' || *my_str == 'M') {

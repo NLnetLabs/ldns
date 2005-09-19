@@ -82,19 +82,15 @@ ldns_verify(ldns_rr_list *rrset, ldns_rr_list *rrsig, ldns_rr_list *keys, ldns_r
 	bool valid;
 	ldns_status verify_result = LDNS_STATUS_ERR;
 
-printf("yo1\n");
 	if (!rrset || !rrsig || !keys) {
 		return LDNS_STATUS_ERR;
 	}
 
 	valid = false;
 	
-printf("yo2\n");
 	if (ldns_rr_list_rr_count(keys) < 1) {
-printf("yo3\n");
 		verify_result = LDNS_STATUS_CRYPTO_NO_TRUSTED_DNSKEY;
 	} else {
-printf("yo4\n");
 		for (i = 0; i < ldns_rr_list_rr_count(rrsig); i++) {
 
 			verify_result = ldns_verify_rrsig_keylist(rrset,
@@ -485,7 +481,7 @@ ldns_verify_rrsig_dsa(ldns_buffer *sig, ldns_buffer *rrset, ldns_buffer *key)
 	if (result == 1) {
 		return LDNS_STATUS_OK;
 	} else {
-		printf("error in verify: %d\n", result);
+		dprintf("error in verify: %d\n", result);
 		return LDNS_STATUS_CRYPTO_BOGUS;
 	}
 }
@@ -1224,8 +1220,8 @@ ldns_zone_sign(ldns_zone *zone, ldns_key_list *key_list)
 			/* TODO: make optional, replace exit call */
 			result = ldns_verify(cur_rrset, cur_rrsigs, pubkeys, NULL);
 			if (result != LDNS_STATUS_OK) {
-				printf("Cannot verify own sig:\n");
-				printf("%s\n", ldns_get_errorstr_by_id(result));
+				dprintf("%s", "Cannot verify own sig:\n");
+				dprintf("%s\n", ldns_get_errorstr_by_id(result));
 				ERR_load_crypto_strings();
 				ERR_print_errors_fp(stdout);
 				exit(result);

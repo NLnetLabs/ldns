@@ -203,7 +203,7 @@ ldns_zone_new_frm_fp_l(FILE *fp, ldns_rdf *origin, uint16_t ttl, ldns_rr_class c
 		if (rr) {
 			last_rr = rr;
 			if (!ldns_zone_push_rr(newzone, rr)) {
-				printf("error pushing rr\n");
+				dprintf("%s", "error pushing rr\n");
 				return NULL;
 			}
 
@@ -220,8 +220,8 @@ ldns_zone_new_frm_fp_l(FILE *fp, ldns_rdf *origin, uint16_t ttl, ldns_rr_class c
 			}
 
 			fprintf(stderr, "Last rr that was parsed:\n");
-			ldns_rr_print(stdout, last_rr);
-			printf("\n");
+			ldns_rr_print(stderr, last_rr);
+			dprintf("%s", "\n");
 		}
 	}
 	return newzone;
