@@ -38,7 +38,8 @@ main(void)
 	ldns_rr_list  *rrs;
 	ldns_rr_list  *signatures;
 	ldns_rr_list  *dnskeys;
-ldns_rr_list *result;
+	ldns_rr_list  *result_keys;
+	ldns_status result;
 
 	/* ----- */
 	FILE *f;
@@ -99,12 +100,13 @@ ldns_rr_list *result;
 
 	printf("Now we are going to verify\n");
 
-	result = ldns_verify(rrs, signatures, dnskeys);
+	result_keys = ldns_rr_list_new();
+	result = ldns_verify(rrs, signatures, dnskeys, result_keys);
 
-printf("RESULT:\n");
-ldns_rr_list_print(stdout, result);
+	printf("RESULT:\n");
+	ldns_rr_list_print(stdout, result_keys);
 
-	if (result != NULL) {
+	if (result == LDNS_STATUS_OK) {
 		printf("SUCCESS\n\n");
 	} else {
 		printf("FAILURE\n\n");

@@ -160,7 +160,7 @@ main()
 
 	printf("Now we are going to verify\n");
 
-	printf("\n[%d]\n", ldns_verify(rrs, signatures, dnskeys));
+	printf("\n[%d]\n", ldns_verify(rrs, signatures, dnskeys, NULL));
 	
         return 0;
 }
