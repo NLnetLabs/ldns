@@ -63,7 +63,7 @@ fi
 ])dnl
 
 # my own checks
-AC_PATH_PROG(doxygen, doxygen, "/usr/bin/doxygen")
+AC_CHECK_PROG(doxygen, doxygen, [doxygen libdns.doxygen])
 
 # Checks for libraries.
 # Check for SSL, original taken from

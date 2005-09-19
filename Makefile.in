@@ -8,6 +8,7 @@ prefix  	= @prefix@
 exec_prefix 	= @exec_prefix@
 bindir 		= @bindir@
 mandir 		= @mandir@
+doxygen		= @doxygen@
 
 CC 		= @CC@
 CPPFLAGS	= @CPPFLAGS@ @DEFS@ -I. -I$(srcdir)
@@ -87,7 +88,7 @@ lib:		$(LIBDNS_OBJECTS) b64_pton$U.o b64_ntop$U.o
 		-rpath $(prefix)/lib
 
 doc:		doc/function_manpages 
-		doxygen libdns.doxygen
+		$(doxygen)
 		cat ldns/*.h | doc/doxyparse.pl -m doc/function_manpages 2>&1 | \
 		grep -v ^doxygen | grep -v ^cat  > doc/ldns_manpages
 
