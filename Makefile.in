@@ -17,7 +17,7 @@ LDFLAGS		= @LDFLAGS@	-lcrypto
 LIBS 		= @LIBS@
 LIBOBJS		= @LIBOBJS@
 DATE		= $(shell date +%Y%m%d)
-LIBTOOL		= @srcdir@/libtool
+LIBTOOL		= ./libtool
 
 LINT		= splint
 LINTFLAGS	= +quiet -weak -warnposix -unrecog -Din_addr_t=uint32_t -Du_int=unsigned -Du_char=uint8_t 
@@ -81,7 +81,7 @@ tools:		$(PROG_TARGETS) drill
 		( mkdir drill ; cd drill ; ../$(srcdir)/drill/configure --with-ldns=$(srcdir))
 
 drill: 		./drill/config.log
-		( cd drill ; make -f Makefile all)
+		( cd drill ; $(MAKE) -f Makefile all)
 
 lib:		$(LIBDNS_OBJECTS) b64_pton$U.o b64_ntop$U.o
 		$(LINK_LIB) -o libldns.la $(LIBDNS_LOBJECTS) b64_pton$U.lo b64_ntop$U.lo \
@@ -93,10 +93,10 @@ doc:		doc/function_manpages
 		grep -v ^doxygen | grep -v ^cat  > doc/ldns_manpages
 
 install:	install-h install-lib install-progs install-doc
-		( cd drill ; make install )
+		( cd drill ; $(MAKE) install )
 
 uninstall:	uninstall-doc uninstall-h uninstall-lib uninstall-progs
-		( cd drill ; make uninstall )
+		( cd drill ; $(MAKE) uninstall )
 
 destclean:	uninstall
 
@@ -150,7 +150,7 @@ snapshot:	realclean
 		(rm -rf ../ldns-snap-$(DATE)/)
 
 release:	realclean
-		(cd drill ; make allclean; exit 0)
+		(cd drill ; $(MAKE) allclean; exit 0)
 		(rm -rf ../ldns-$(VERSION)/)
 		(cd .. ; cp -r $(basesrcdir)/ ldns-$(VERSION)/)
 		(cd .. ; tar --verbose  --exclude ".svn" --exclude "*.key" --exclude "*.private" --create --exclude "lua" --file ldns-$(VERSION).tar.gz --gzip ldns-$(VERSION)/)
@@ -179,7 +179,7 @@ ldns-update:	ldns-update.o $(LIBDNS_OBJECTS) $(LIBOBJS)
 
 # tests
 tests:		
-		(cd tests ; make)
+		(cd tests ; $(MAKE))
 
 clean:	
 	rm -f *.o *.d 
@@ -203,7 +203,7 @@ realclean: clean docclean libclean
 	rm -f config.sub
 	rm -f config.guess
 	rm -f ltmain.sh
-	(cd drill ; make -f Makefile clean)
+	(cd drill ; $(MAKE) -f Makefile clean)
 
 docclean:
 	rm -rf doc/html/
