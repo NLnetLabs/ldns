@@ -229,7 +229,7 @@ time_t
 mktime_from_utc(const struct tm *tm)
 {
 	int year = 1900 + tm->tm_year;
-	time_t days = 365 * (year - 1970) + leap_days(1970, year);
+	time_t days = 365 * ((time_t) year - 1970) + leap_days(1970, year);
 	time_t hours;
 	time_t minutes;
 	time_t seconds;
