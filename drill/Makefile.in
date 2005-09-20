@@ -46,8 +46,8 @@ drill:	$(LIBOBJ)
 	$(LINK) -o $@ $(LIBOBJ) $(LIBS)
 
 ## implicit rule
-%.o:    %.c $(HEADER)
-	$(COMPILE) -c $<
+%.o:
+	$(COMPILE) -c $(srcdir)/$*.c
 
 clean:
 	rm -f *.o

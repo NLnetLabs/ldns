@@ -77,8 +77,8 @@ all:		lib tools
 
 tools:		$(PROG_TARGETS) drill
 
-./drill/config.log: 	./drill/configure
-		( cd drill ; ./configure --with-ldns=../)
+./drill/config.log:
+		( mkdir drill ; cd drill ; ../$(srcdir)/drill/configure --with-ldns=$(srcdir))
 
 drill: 		./drill/config.log
 		( cd drill ; make -f Makefile all)
@@ -233,17 +233,17 @@ lint:
 tags:	*.c ldns/*.[ch]
 	ctags *.[ch] ldns/*.[ch]
 
-timegm$U.o:	compat/timegm.c
-	$(COMP_LIB) -c compat/timegm.c -o $@
+timegm$U.o:	$(srcdir)/compat/timegm.c
+	$(COMP_LIB) -c $(srcdir)/compat/timegm.c -o $@
 
-b64_pton$U.o:	compat/b64_pton.c
-	$(COMP_LIB) -c compat/b64_pton.c -o $@
+b64_pton$U.o:	$(srcdir)/compat/b64_pton.c
+	$(COMP_LIB) -c $(srcdir)/compat/b64_pton.c -o $@
 
-b64_ntop$U.o:	compat/b64_ntop.c
-	$(COMP_LIB) -c compat/b64_ntop.c -o $@
+b64_ntop$U.o:	$(srcdir)/compat/b64_ntop.c
+	$(COMP_LIB) -c $(srcdir)/compat/b64_ntop.c -o $@
 
-malloc$U.o:	compat/malloc.c
-	$(COMP_LIB) -c compat/malloc.c -o $@
+malloc$U.o:	$(srcdir)/compat/malloc.c
+	$(COMP_LIB) -c $(srcdir)/compat/malloc.c -o $@
 
 # Automatic dependencies.
 %.d: $(srcdir)/%.c
