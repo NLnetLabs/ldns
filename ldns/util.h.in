@@ -210,4 +210,11 @@ const char * ldns_version(void);
  * \return -2 undef
  */
 int ldns_serial(uint32_t s1, uint32_t s2);
+
+/**
+ * Convert TM to seconds since epoch (midnight, January 1st, 1970).
+ * Like timegm(3), which is not always available.
+ */
+time_t mktime_from_utc(const struct tm *tm);
+
 #endif /* !_UTIL_H */

@@ -233,9 +233,6 @@ lint:
 tags:	*.c ldns/*.[ch]
 	ctags *.[ch] ldns/*.[ch]
 
-timegm$U.o:	$(srcdir)/compat/timegm.c
-	$(COMP_LIB) -c $(srcdir)/compat/timegm.c -o $@
-
 b64_pton$U.o:	$(srcdir)/compat/b64_pton.c
 	$(COMP_LIB) -c $(srcdir)/compat/b64_pton.c -o $@
 

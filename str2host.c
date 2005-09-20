@@ -73,7 +73,7 @@ ldns_str2rdf_time(ldns_rdf **rd, const char *time)
 			return LDNS_STATUS_OK;
 		}
 	} else {
-		l = htonl(timegm(&tm));
+		l = htonl(mktime_from_utc(&tm));
 		memcpy(r, &l, sizeof(uint32_t));
 		*rd = ldns_rdf_new_frm_data(
 			LDNS_RDF_TYPE_TIME, sizeof(uint32_t), r);
