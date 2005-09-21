@@ -41,6 +41,7 @@ main(int argc, char **argv)
 
 	if (z) {
 		ldns_zone_print(stdout, z);
+		ldns_zone_deep_free(z);
 	}
 	fclose(fp);
 	

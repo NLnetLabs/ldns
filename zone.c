@@ -155,7 +155,7 @@ ldns_zone_new_frm_fp_l(FILE *fp, ldns_rdf *origin, uint16_t ttl, ldns_rr_class c
 {
 	ldns_zone *newzone;
 	ldns_rr *rr;
-	ldns_rdf *my_origin = origin;
+	ldns_rdf *my_origin = NULL;
 	uint16_t my_ttl = ttl;
 	ldns_rr_class my_class = c;
 	ldns_rr *last_rr = NULL;
@@ -171,9 +171,14 @@ ldns_zone_new_frm_fp_l(FILE *fp, ldns_rdf *origin, uint16_t ttl, ldns_rr_class c
 	 * except $directives
 	 */
 
+	if (origin) {
+		my_origin = ldns_rdf_clone(origin);
+	}
+	
 	i = 0;
 	do {
-		rr = ldns_rr_new_frm_fp_l(fp, my_ttl, my_origin, line_nr);
+		rr = ldns_rr_new_frm_fp_l(fp, &my_ttl, &my_origin, line_nr);
+printf("RR at %p\n", rr);
 		i++;
 	} while (!rr && i <= 9);
 
@@ -183,27 +188,39 @@ ldns_zone_new_frm_fp_l(FILE *fp, ldns_rdf *origin, uint16_t ttl, ldns_rr_class c
 		if (rr) {
 			ldns_rr_free(rr);
 		}
+		if (my_origin) {
+			ldns_rdf_free(my_origin);
+		}
+		ldns_zone_deep_free(newzone);
 		return NULL;
 	}
 
 	if (ldns_rr_get_type(rr) != LDNS_RR_TYPE_SOA) {
 		/* first rr MUST be the soa */
 		ldns_rr_free(rr);
+		if (my_origin) {
+			ldns_rdf_free(my_origin);
+		}
+		ldns_zone_deep_free(newzone);
 		return NULL;
 	}
 
 	ldns_zone_set_soa(newzone, rr);
 
 	if (!my_origin) {
-		my_origin = ldns_rr_owner(rr);
+		my_origin = ldns_rdf_clone(ldns_rr_owner(rr));
 	}
 
 	while(!feof(fp)) {
-		rr = ldns_rr_new_frm_fp_l(fp, my_ttl, my_origin, line_nr);
+		rr = ldns_rr_new_frm_fp_l(fp, &my_ttl, &my_origin, line_nr);
 		if (rr) {
 			last_rr = rr;
 			if (!ldns_zone_push_rr(newzone, rr)) {
 				dprintf("%s", "error pushing rr\n");
+				if (my_origin) {
+					ldns_rdf_free(my_origin);
+				}
+				ldns_zone_deep_free(newzone);
 				return NULL;
 			}
 
@@ -223,6 +240,9 @@ ldns_zone_new_frm_fp_l(FILE *fp, ldns_rdf *origin, uint16_t ttl, ldns_rr_class c
 			ldns_rr_print(stderr, last_rr);
 			dprintf("%s", "\n");
 		}
+	}
+	if (my_origin) {
+		ldns_rdf_deep_free(my_origin);
 	}
 	return newzone;
 }

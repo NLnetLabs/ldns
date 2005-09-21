@@ -229,6 +229,7 @@ ldns_rr_new_frm_str(const char *str, uint16_t default_ttl, ldns_rdf *origin)
 		LDNS_FREE(ttl); 
 		LDNS_FREE(clas); 
 		LDNS_FREE(type);
+		LDNS_FREE(rdata);
 		LDNS_FREE(rd);
 		LDNS_FREE(rd_buf);
 		ldns_buffer_free(rr_buf);
@@ -261,6 +262,7 @@ ldns_rr_new_frm_str(const char *str, uint16_t default_ttl, ldns_rdf *origin)
 					LDNS_FREE(ttl); 
 					LDNS_FREE(clas); 
 					LDNS_FREE(type);
+					LDNS_FREE(rdata);
 					LDNS_FREE(rd);
 					LDNS_FREE(rd_buf);
 					ldns_buffer_free(rr_buf);
@@ -380,16 +382,24 @@ ldns_rr_new_frm_str(const char *str, uint16_t default_ttl, ldns_rdf *origin)
 }
 
 ldns_rr *
-ldns_rr_new_frm_fp(FILE *fp, uint16_t ttl, ldns_rdf *origin)
+ldns_rr_new_frm_fp(FILE *fp, uint16_t *ttl, ldns_rdf **origin)
 {
 	return ldns_rr_new_frm_fp_l(fp, ttl, origin, NULL);
 }
 
 ldns_rr *
-ldns_rr_new_frm_fp_l(FILE *fp, uint16_t ttl, ldns_rdf *origin, int *line_nr)
+ldns_rr_new_frm_fp_l(FILE *fp, uint16_t *default_ttl, ldns_rdf **origin, int *line_nr)
 {
         char *line;
 	ldns_rr *rr;
+	char *keyword;
+	uint16_t ttl;
+
+	if (default_ttl) {
+		ttl = *default_ttl;
+	} else {
+		ttl = 0;
+	}
 
         line = LDNS_XMALLOC(char, LDNS_MAX_LINELEN + 1);
         if (!line) {
@@ -405,7 +415,18 @@ ldns_rr_new_frm_fp_l(FILE *fp, uint16_t ttl, ldns_rdf *origin, int *line_nr)
                 return NULL;
         }
 
-	rr = ldns_rr_new_frm_str((const char*) line, ttl, origin);
+	rr = ldns_rr_new_frm_str((const char*) line, ttl, *origin);
+	if (!rr) {
+		if ((keyword = strstr(line, "$ORIGIN "))) {
+			if (*origin) {
+				ldns_rdf_free(*origin);
+				*origin = NULL;
+			}
+			*origin = ldns_rdf_new_frm_str(LDNS_RDF_TYPE_DNAME, keyword + 8);
+		} else if ((keyword = strstr(line, "$TTL "))) {
+			*default_ttl = atoi(keyword + 5);
+		}
+	}
 	LDNS_FREE(line);
 	return rr;
 }
