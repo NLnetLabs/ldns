@@ -424,7 +424,7 @@ ldns_rr_new_frm_fp_l(FILE *fp, uint16_t *default_ttl, ldns_rdf **origin, int *li
 			}
 			*origin = ldns_rdf_new_frm_str(LDNS_RDF_TYPE_DNAME, keyword + 8);
 		} else if ((keyword = strstr(line, "$TTL "))) {
-			*default_ttl = atoi(keyword + 5);
+			*default_ttl = (uint16_t) atoi(keyword + 5);
 		}
 	}
 	LDNS_FREE(line);
