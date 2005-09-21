@@ -6,6 +6,10 @@ On that page you can also subscribe to the ldns mailing list.
 * Development
 ldns is developed on Linux and FreeBSD.
 
+REQUIREMENTS
+- OpenSSL
+- libtool package
+
 INSTALLATION
 1. Unpack the tarball
 2. cd ldns-<VERSION>

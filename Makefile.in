@@ -17,7 +17,7 @@ LDFLAGS		= @LDFLAGS@	-lcrypto
 LIBS 		= @LIBS@
 LIBOBJS		= @LIBOBJS@
 DATE		= $(shell date +%Y%m%d)
-LIBTOOL		= ./libtool
+LIBTOOL		= libtool --tag=CXX
 
 LINT		= splint
 LINTFLAGS	= +quiet -weak -warnposix -unrecog -Din_addr_t=uint32_t -Du_int=unsigned -Du_char=uint8_t 
@@ -143,13 +143,13 @@ install-lib:	lib
 uninstall-lib:	
 		$(LIBTOOL) --mode=uninstall rm $(prefix)/lib/libldns.la
 
-snapshot:	realclean
+snapshot:	distclean
 		(rm -rf ../ldns-snap-$(DATE)/)
 		(cd .. ; cp -r $(basesrcdir)/ ldns-snap-$(DATE)/)
 		(cd .. ; tar --verbose  --exclude ".svn" --exclude "*.key" --exclude "*.private" --create --exclude "lua" --file ldns-snap-$(DATE).tar.gz --gzip ldns-snap-$(DATE)/)
 		(rm -rf ../ldns-snap-$(DATE)/)
 
-release:	realclean
+release:	distclean
 		(cd drill ; $(MAKE) allclean; exit 0)
 		(rm -rf ../ldns-$(VERSION)/)
 		(cd .. ; cp -r $(basesrcdir)/ ldns-$(VERSION)/)
@@ -192,10 +192,15 @@ clean:
 	rm -f *.ds
 	rm -f *.private
 
+distclean: clean docclean libclean
+	rm -f ltmain.sh
+	(cd drill ; $(MAKE) -f Makefile clean)
+
 realclean: clean docclean libclean
 	rm -f config.status
 	rm -f config.log
 	rm -f Makefile
+	rm -f ldns/config.h.in
 	rm -f ldns/config.h
 	rm -f ldns/util.h
 	rm -f config.h.in
@@ -203,7 +208,7 @@ realclean: clean docclean libclean
 	rm -f config.sub
 	rm -f config.guess
 	rm -f ltmain.sh
-	(cd drill ; $(MAKE) -f Makefile clean)
+	(cd drill ; $(MAKE) -f Makefile realclean)
 
 docclean:
 	rm -rf doc/html/

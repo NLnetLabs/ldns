@@ -29,7 +29,7 @@ LIBSRC=$(LIBOBJ:.o=.c)
 
 HEADER=drill.h drill_util.h
 
-.PHONY:	all clean allclean docclean doc release tags install
+.PHONY:	all clean realclean docclean doc release tags install
 
 all:	drill 
 
@@ -61,7 +61,7 @@ clean:
 docclean:
 	rm -rf doxydoc
 
-allclean: clean docclean
+realclean: clean docclean
 	rm -f tags
 	rm -f config.log
 	rm -f config.status
