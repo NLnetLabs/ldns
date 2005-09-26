@@ -13,6 +13,7 @@ includedir = @INCLUDEDIR@
 LDNSDIR = @LDNSDIR@
 CC = @CC@
 CFLAGS = @CFLAGS@
+CPPFLAGS = @CPPFLAGS@
 LDFLAGS = @LDFLAGS@
 LIBS = @LIBS@
 INSTALL = $(srcdir)/install-sh -c
@@ -89,7 +90,7 @@ doc:
 install: all
 	$(INSTALL) -d $(DESTDIR)$(bindir)
 	$(INSTALL) drill $(DESTDIR)$(bindir)/drill
-	$(INSTALL) -m 644 drill.1 $(DESTDIR)$(mandir)/man1/drill.1
+	$(INSTALL) -m 644 $(srcdir)/drill.1 $(DESTDIR)$(mandir)/man1/drill.1
 
 uninstall:
 	@echo

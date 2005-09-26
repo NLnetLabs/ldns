@@ -63,7 +63,7 @@ fi
 ])dnl
 
 # my own checks
-AC_CHECK_PROG(doxygen, doxygen, [doxygen libdns.doxygen])
+AC_CHECK_PROG(doxygen, doxygen, doxygen)
 
 # Checks for libraries.
 # Check for SSL, original taken from
@@ -105,7 +105,12 @@ AC_ARG_WITH(ssl, AC_HELP_STRING([--with-ssl=pathname],
     fi
 
 # Use libtool 
+# for macosx, see if glibtool exists and use that
+# BSD's need to know the version...
+AC_CHECK_PROG(glibtool, glibtool, [glibtool], )
+AC_CHECK_PROG(libtool, libtool15, [libtool15], libtool)
 AC_PROG_LIBTOOL
+
 
 # Checks for header files.
 AC_HEADER_STDC

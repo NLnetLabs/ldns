@@ -8,7 +8,8 @@ ldns is developed on Linux and FreeBSD.
 
 REQUIREMENTS
 - OpenSSL
-- libtool package
+- (GNU) libtool (that's glibtool, not libtool in OSX)
+- GNU make
 
 INSTALLATION
 1. Unpack the tarball
@@ -22,12 +23,28 @@ INSTALLATION
 * Examples
 There are some examples in the examples/ directory. These can be built with:
 1. autoreconf
-2. ./configure --with-ldns=../
+2. ./configure
 3. gmake
 
-When running the examples the main library has to be installed (gmake
-install) or your LD_LIBRARY_PATH must contain the ldns-<VERSION>/.libs
-directory.
+The library has to be installed in order for this to work. If it is not
+installed in one of the default paths you should add the following arguments to
+the configure command:
+LDFLAGS="-L<path_to_library_dir>" CPPFLAGS="-I<path_to_header_dir>"
+
+If you have only built the library and not installed it anywhere, these
+values should be:
+LDFLAGS="-L<build-dir>/.libs" CPPFLAGS="-I<build-dir> -I<src_dir>"
+
+In that last case, you will also need to have your LD_LIBRARY_PATH set to
+the .libs directory to be able to run the examples.
+
+
+* Drill
+
+Drill is automatically built alongside with the main library. If you want to
+build drill by hand, the configure and running options are the same as those
+for the examples. You can use the make target 'lib' if you only want to
+build the library and not drill (and make install-lib to install it).
 
 * Developers
 ldns is developed by the ldns team at NLnet Labs. This team currently

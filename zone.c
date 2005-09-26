@@ -178,7 +178,6 @@ ldns_zone_new_frm_fp_l(FILE *fp, ldns_rdf *origin, uint16_t ttl, ldns_rr_class c
 	i = 0;
 	do {
 		rr = ldns_rr_new_frm_fp_l(fp, &my_ttl, &my_origin, line_nr);
-printf("RR at %p\n", rr);
 		i++;
 	} while (!rr && i <= 9);
 

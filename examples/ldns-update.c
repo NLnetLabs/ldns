@@ -2,7 +2,9 @@
 
 #include <stdio.h>
 #include <sys/types.h>
-#include <ldns/config.h>
+#include "config.h"
+
+#include <stdint.h>
 
 #include <ldns/dns.h>
 

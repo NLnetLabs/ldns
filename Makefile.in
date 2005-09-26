@@ -9,6 +9,11 @@ exec_prefix 	= @exec_prefix@
 bindir 		= @bindir@
 mandir 		= @mandir@
 doxygen		= @doxygen@
+glibtool	= @glibtool@
+libtool		= @libtool@
+ifdef glibtool
+libtool		= $(glibtool)
+endif
 
 CC 		= @CC@
 CPPFLAGS	= @CPPFLAGS@ @DEFS@ -I. -I$(srcdir)
@@ -17,7 +22,7 @@ LDFLAGS		= @LDFLAGS@	-lcrypto
 LIBS 		= @LIBS@
 LIBOBJS		= @LIBOBJS@
 DATE		= $(shell date +%Y%m%d)
-LIBTOOL		= libtool --tag=CXX
+LIBTOOL		= $(libtool) --tag=CXX
 
 LINT		= splint
 LINTFLAGS	= +quiet -weak -warnposix -unrecog -Din_addr_t=uint32_t -Du_int=unsigned -Du_char=uint8_t 
@@ -28,29 +33,29 @@ LIBDNS_SOURCES	=	rdata.c util.c rr.c packet.c wire2host.c \
 			host2str.c buffer.c str2host.c tsig.c resolver.c \
 			net.c host2wire.c dname.c dnssec.c keys.c \
 			higher.c rr_functions.c parse.c update.c error.c zone.c
-LIBDNS_HEADERS	=	ldns/error.h		\
-			ldns/packet.h		\
-			ldns/common.h		\
-			ldns/rdata.h 		\
-			ldns/rr.h		\
-			ldns/wire2host.h	\
-			ldns/host2str.h		\
-			ldns/host2wire.h	\
-			ldns/str2host.h		\
-			ldns/buffer.h		\
-			ldns/resolver.h		\
-			ldns/net.h		\
-			ldns/dname.h		\
-			ldns/dnssec.h		\
-			ldns/keys.h		\
-			ldns/higher.h		\
-			ldns/parse.h		\
-			ldns/rr_functions.h	\
-			ldns/dns.h		\
-			ldns/zone.h		\
+LIBDNS_HEADERS	=	$(srcdir)/ldns/error.h		\
+			$(srcdir)/ldns/packet.h		\
+			$(srcdir)/ldns/common.h		\
+			$(srcdir)/ldns/rdata.h 		\
+			$(srcdir)/ldns/rr.h		\
+			$(srcdir)/ldns/wire2host.h	\
+			$(srcdir)/ldns/host2str.h		\
+			$(srcdir)/ldns/host2wire.h	\
+			$(srcdir)/ldns/str2host.h		\
+			$(srcdir)/ldns/buffer.h		\
+			$(srcdir)/ldns/resolver.h		\
+			$(srcdir)/ldns/net.h		\
+			$(srcdir)/ldns/dname.h		\
+			$(srcdir)/ldns/dnssec.h		\
+			$(srcdir)/ldns/keys.h		\
+			$(srcdir)/ldns/higher.h		\
+			$(srcdir)/ldns/parse.h		\
+			$(srcdir)/ldns/rr_functions.h	\
+			$(srcdir)/ldns/dns.h		\
+			$(srcdir)/ldns/zone.h		\
 			ldns/util.h 		\
-			ldns/update.h 		\
-			ldns/tsig.h
+			$(srcdir)/ldns/update.h 		\
+			$(srcdir)/ldns/tsig.h
 PROG_SOURCES	=	ldns-keygen.c ldns-key2ds.c ldns-signzone.c \
 			ldns-version.c
 PROG_TARGETS	=	$(PROG_SOURCES:.c=)
@@ -78,7 +83,7 @@ all:		lib tools
 tools:		$(PROG_TARGETS) drill
 
 ./drill/config.log:
-		( mkdir drill ; cd drill ; ../$(srcdir)/drill/configure --with-ldns=$(srcdir))
+		( mkdir drill ; cd drill ; ../$(srcdir)/drill/configure LDFLAGS="-L../.libs" CPPFLAGS="-I.. -I../..")
 
 drill: 		./drill/config.log
 		( cd drill ; $(MAKE) -f Makefile all)
@@ -87,9 +92,12 @@ lib:		$(LIBDNS_OBJECTS) b64_pton$U.o b64_ntop$U.o
 		$(LINK_LIB) -o libldns.la $(LIBDNS_LOBJECTS) b64_pton$U.lo b64_ntop$U.lo \
 		-rpath $(prefix)/lib
 
-doc:		doc/function_manpages 
-		$(doxygen)
-		cat ldns/*.h | doc/doxyparse.pl -m doc/function_manpages 2>&1 | \
+doc:		$(srcdir)/doc/function_manpages 
+		$(INSTALL) -d doc
+ifdef doxygen
+		$(doxygen) $(srcdir)/libdns.doxygen
+endif
+		cat $(srcdir)/ldns/*.h | $(srcdir)/doc/doxyparse.pl -m $(srcdir)/doc/function_manpages 2>&1 | \
 		grep -v ^doxygen | grep -v ^cat  > doc/ldns_manpages
 
 install:	install-h install-lib install-progs install-doc
@@ -115,7 +123,7 @@ install-doc:	doc
 		cp -Rp doc/man/man3/* $(mandir)/man3/
 		${INSTALL} -d $(mandir)/man1
 		for i in $(PROG_TARGETS); do \
-			${INSTALL} -c -m 644 doc/$$i.1 $(mandir)/man1 ; done
+			${INSTALL} -c -m 644 $(srcdir)/doc/$$i.1 $(mandir)/man1 ; done
 		exit 0
 
 uninstall-doc:	doc
