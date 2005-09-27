@@ -18,17 +18,14 @@
 
 void
 usage(FILE *fp, const char *prog) {
-	fprintf(fp, "%s [OPTIONS] <zonefile> <keyfile(s)>\n", prog);
-	fprintf(fp, "  signs the zone with the given private key\n");
-	fprintf(fp, "  -e <date>\t\texpiration date\n");
-	fprintf(fp, "  -f <file>\t\toutput zone to file (default <name>.signed)\n");
-	fprintf(fp, "  -i <date>\t\tinception date\n");
-	fprintf(fp, "\t\t\tdates can be in YYYYMMDD[HHmmSS] format or timestamps\n");
-	fprintf(fp, "  -o <domain>\t\torigin for the zone\n");
-	fprintf(fp, "keys can be given multiple times\n");
-	fprintf(fp, "keys are specified by their base name, there should be a file\n");
-	fprintf(fp, "called <name>.key and <name>.private present. The .key should\n");
-	fprintf(fp, "contain the DNSKEY RR of the public key, and will be added to the zone\n");
+	fprintf(fp, "%s [OPTIONS] zonefile key [key [key]]\n", prog);
+	fprintf(fp, "  signs the zone with the given key(s)\n");
+	fprintf(fp, "  -e <date>\texpiration date\n");
+	fprintf(fp, "  -f <file>\toutput zone to file (default <name>.signed)\n");
+	fprintf(fp, "  -i <date>t\tinception date\n");
+	fprintf(fp, "  -o <domain>\torigin for the zone\n");
+	fprintf(fp, "  keys must be specified by their base name: K<name>+<alg>+<id>\n");
+	fprintf(fp, "  both a .key and .private file must present\n");
 }
 
 int
