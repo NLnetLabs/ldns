@@ -391,6 +391,23 @@ ldns_resolver_set_timeout(ldns_resolver *r, struct timeval timeout)
 void
 ldns_resolver_push_searchlist(ldns_resolver *r, ldns_rdf *d)
 {
+	ldns_rdf **searchlist;
+	uint16_t list_count;
+
+	if (ldns_rdf_get_type(d) != LDNS_RDF_TYPE_DNAME) {
+		return;
+	}
+
+	/* need functions XXX */
+	list_count = r->_searchlist_count;
+	searchlist = ldns_resolver_searchlist(r);
+
+	searchlist = LDNS_XREALLOC(searchlist, ldns_rdf *, (list_count + 1));
+	r->_searchlist = searchlist;
+
+	searchlist[list_count] = ldns_rdf_clone(d);
+	ldns_resolver_set_searchlist_count(r, list_count + 1);
+	
 	r->_searchlist[++r->_searchlist_count] = ldns_rdf_clone(d);
 }
 
@@ -478,9 +495,9 @@ ldns_resolver *
 ldns_resolver_new_frm_fp_l(FILE *fp, int *line_nr)
 {
 	ldns_resolver *r;
-	const char *keyword[2];
+	const char *keyword[LDNS_RESOLV_KEYWORDS];
 	char *word;
-	uint8_t expect;
+	int8_t expect;
 	uint8_t i;
 	ldns_rdf *tmp;
 	ssize_t gtr;
@@ -493,8 +510,9 @@ ldns_resolver_new_frm_fp_l(FILE *fp, int *line_nr)
 	 */
 
 	/* recognized keywords */
-	keyword[0] = "domain";
-	keyword[1] = "nameserver";
+	keyword[LDNS_RESOLV_DEFDOMAIN] = "domain";
+	keyword[LDNS_RESOLV_NAMESERVER] = "nameserver";
+	keyword[LDNS_RESOLV_SEARCH] = "search";
 	word = LDNS_XMALLOC(char, LDNS_MAX_LINELEN + 1);
 	expect = LDNS_RESOLV_KEYWORD;
 
@@ -508,17 +526,17 @@ ldns_resolver_new_frm_fp_l(FILE *fp, int *line_nr)
 		switch(expect) {
 			case LDNS_RESOLV_KEYWORD:
 				/* keyword */
-				for(i = 0; i < 2; i++) {
+				for(i = 0; i < LDNS_RESOLV_KEYWORDS; i++) {
 					if (strcasecmp(keyword[i], word) == 0) {
 						/* chosen the keyword and
 						 * expect values carefully
 						 */
-						expect = i + 1;
+						expect = i;
 						break;
 					}
 				}
 				/* no keyword recognized */
-				if (expect == 0) {
+				if (expect == LDNS_RESOLV_KEYWORD) {
 						dprintf("[%s] unreg keyword\n", word); 
 				}
 				break;
@@ -546,6 +564,18 @@ ldns_resolver_new_frm_fp_l(FILE *fp, int *line_nr)
 					break;
 				}
 				(void)ldns_resolver_push_nameserver(r, tmp);
+				ldns_rdf_deep_free(tmp);
+				expect = LDNS_RESOLV_KEYWORD;
+				break;
+			case LDNS_RESOLV_SEARCH:
+				/* search list domain dname, will only work with 1 name! */
+				tmp = ldns_rdf_new_frm_str(LDNS_RDF_TYPE_DNAME, word);
+				if (!tmp) {
+					expect = LDNS_RESOLV_KEYWORD;
+					break;
+				}
+
+				ldns_resolver_push_searchlist(r, tmp); 
 				ldns_rdf_deep_free(tmp);
 				expect = LDNS_RESOLV_KEYWORD;
 				break;

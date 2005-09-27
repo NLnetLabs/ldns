@@ -609,7 +609,7 @@ main(int argc, char *argv[])
 						for(key_count = 0; key_count < ldns_rr_list_rr_count(key_verified);
 								key_count++) {
 							if (qdebug != -1) {
-								mesg("VALIDATED by id = %d, owner = ",
+								printf("VALIDATED by id = %d, owner = ",
 										(int)ldns_calc_keytag(
 												      ldns_rr_list_rr(key_verified, key_count)));
 								ldns_rdf_print(stdout, ldns_rr_owner(
@@ -621,7 +621,7 @@ main(int argc, char *argv[])
 						for(key_count = 0; key_count < ldns_rr_list_rr_count(key_list);
 								key_count++) {
 							if (qdebug != -1) {
-								mesg("BOGUS by id = %d, owner = ",
+								printf("BOGUS by id = %d, owner = ",
 										(int)ldns_calc_keytag(
 												      ldns_rr_list_rr(key_list, key_count)));
 								ldns_rdf_print(stdout, ldns_rr_owner(
