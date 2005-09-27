@@ -6,14 +6,19 @@ ldns-signzone \- sign a zonefile with DNSSEC data
 [
 .IR OPTION
 ]
-.IR ZONEFILE  KEYNAME(S)
+.IR ZONEFILE 
+.IR
+KEY 
+[KEY 
+[KEY] ...
+]
 
 .SH DESCRIPTION
 
 \fBldns-signzone\fR is used to generate a DNSSEC signed zone. When run it
 will create a new zonefile that contains RRSIG and NSEC resource records, as
-specified in rfc4033, rfc4034 and rfc4035. It will add the DNSKEY that is
-used to the zone.
+specified in RFC 4033, RFC 4034 and RFC 4035. It will add the DNSKEY(s)
+that is/are used to sign the zone.
 
 Keys must be specified by their base name (i.e. without .key and .private)
 and both the public and private key must be present in the specified
@@ -22,15 +27,17 @@ location. Multiple keys can be specified.
 .SH OPTIONS
 .TP
 \fB-e\f  \fIdate\fR
-Set expiration date of the signatures to this date (format: YYYYMMDD[hhmmss])
+Set expiration date of the signatures to this date, the format can be
+YYYYMMDD[hhmmss], or a timestamp.
+
+.TP
+\fB-i\f  \fIdate\fR
+Set inception date of the signatures to this date, the format can be
+YYYYMMDD[hhmmss], or a timestamp.
 
 .TP
 \fB-f\f  \fIfile\fR
 Use this file to store the signed zone in (default <originalfile>.signed)
-
-.TP
-\fB-i\f  \fIdate\fR
-Set inception date of the signatures to this date (format: YYYYMMDD[hhmmss])
 
 .TP
 \fB-o\f  \fIorigin\fR

@@ -22,7 +22,7 @@ usage(FILE *fp, const char *prog) {
 	fprintf(fp, "  signs the zone with the given key(s)\n");
 	fprintf(fp, "  -e <date>\texpiration date\n");
 	fprintf(fp, "  -f <file>\toutput zone to file (default <name>.signed)\n");
-	fprintf(fp, "  -i <date>t\tinception date\n");
+	fprintf(fp, "  -i <date>\tinception date\n");
 	fprintf(fp, "  -o <domain>\torigin for the zone\n");
 	fprintf(fp, "  keys must be specified by their base name: K<name>+<alg>+<id>\n");
 	fprintf(fp, "  both a .key and .private file must present\n");
