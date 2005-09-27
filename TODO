@@ -32,7 +32,5 @@ o check all conversion routines on missing types
 	- str2host
 	- host2str
 o use size_t where needed
-        searchlist in resolver
-        nameserver in resolver
         *everywhere we count and use uint16_t*
 

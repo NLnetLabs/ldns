@@ -112,7 +112,7 @@ typedef enum ldns_enum_cert_algorithm ldns_cert_algorithm;
 struct ldns_struct_rdf
 {
 	/** The size of the data (in bytes) */
-	uint16_t _size;
+	size_t _size;
 	/** The type of the data */
 	ldns_rdf_type _type;
 	/** Pointer to the data (byte buffer) */
@@ -129,7 +129,7 @@ typedef struct ldns_struct_rdf ldns_rdf;
  * \param[in] size the new size
  * \return void
  */
-void            ldns_rdf_set_size(ldns_rdf *rd, uint16_t size);
+void            ldns_rdf_set_size(ldns_rdf *rd, size_t size);
 /**
  * sets the size of the rdf.
  * \param[in] *rd the rdf to operate on
@@ -151,7 +151,7 @@ void            ldns_rdf_set_data(ldns_rdf *rd, void *data);
  * \param[in] *rd the rdf to read from
  * \return uint16_t with the size
  */
-uint16_t        ldns_rdf_size(const ldns_rdf *rd);
+size_t        ldns_rdf_size(const ldns_rdf *rd);
 /**
  * returns the type of the rdf. We need to insert _get_
  * here to prevent conflict the the rdf_type TYPE.
@@ -177,7 +177,7 @@ uint8_t         *ldns_rdf_data(const ldns_rdf *rd);
  * \param[in] data pointer to the buffer to be copied
  * \return the new rdf structure or NULL on failure
  */
-ldns_rdf	*ldns_rdf_new(ldns_rdf_type type, uint16_t size, void *data);
+ldns_rdf	*ldns_rdf_new(ldns_rdf_type type, size_t size, void *data);
 
 /**
  * allocates a new rdf structure and fills it.
@@ -188,7 +188,7 @@ ldns_rdf	*ldns_rdf_new(ldns_rdf_type type, uint16_t size, void *data);
  * \param[in] data pointer to the buffer to be copied
  * \return the new rdf structure or NULL on failure
  */
-ldns_rdf	*ldns_rdf_new_frm_data(ldns_rdf_type type, uint16_t size, const void *data);
+ldns_rdf	*ldns_rdf_new_frm_data(ldns_rdf_type type, size_t size, const void *data);
 
 /**
  * creates a new rdf from a string.
@@ -271,7 +271,7 @@ ldns_rdf 	*ldns_native2rdf_int32(ldns_rdf_type type, uint32_t value);
  * \param[in] *data pointer to the actual data
  * \return ldns_rd* the rdf with the data
  */
-ldns_rdf 	*ldns_native2rdf_int16_data(uint16_t size, uint8_t *data);
+ldns_rdf 	*ldns_native2rdf_int16_data(size_t size, uint8_t *data);
 
 /**
  * reverses an rdf, only actually useful for AAAA and A records.

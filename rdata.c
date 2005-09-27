@@ -30,7 +30,7 @@
  */
 
 /* read */
-uint16_t
+size_t
 ldns_rdf_size(const ldns_rdf *rd)
 {
 	return rd->_size;
@@ -50,7 +50,7 @@ ldns_rdf_data(const ldns_rdf *rd)
 
 /* write */
 void
-ldns_rdf_set_size(ldns_rdf *rd, uint16_t s)
+ldns_rdf_set_size(ldns_rdf *rd, size_t s)
 {
 	rd->_size = s;
 }
@@ -223,16 +223,16 @@ ldns_native2rdf_int32(ldns_rdf_type type, uint32_t value)
 }
 
 ldns_rdf *
-ldns_native2rdf_int16_data(uint16_t size, uint8_t *data)
+ldns_native2rdf_int16_data(size_t size, uint8_t *data)
 {
-	uint8_t *rdf_data = LDNS_XMALLOC(uint8_t, (size_t) size + 2);
+	uint8_t *rdf_data = LDNS_XMALLOC(uint8_t, size + 2);
 	ldns_write_uint16(rdf_data, size);
 	memcpy(rdf_data + 2, data, size);
 	return ldns_rdf_new(LDNS_RDF_TYPE_INT16_DATA, size + 2, rdf_data);
 }
 
 ldns_rdf *
-ldns_rdf_new(ldns_rdf_type t, uint16_t s, void *d)
+ldns_rdf_new(ldns_rdf_type t, size_t s, void *d)
 {
 	ldns_rdf *rd;
 	rd = LDNS_MALLOC(ldns_rdf);
@@ -246,7 +246,7 @@ ldns_rdf_new(ldns_rdf_type t, uint16_t s, void *d)
 }
 
 ldns_rdf *
-ldns_rdf_new_frm_data(ldns_rdf_type type, uint16_t size, const void *data)
+ldns_rdf_new_frm_data(ldns_rdf_type type, size_t size, const void *data)
 {
 	ldns_rdf *rdf;
 	rdf = LDNS_MALLOC(ldns_rdf);
