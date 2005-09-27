@@ -1,13 +1,10 @@
 Current TODO list
 
-
 Pre 1.0 Stuff:
 --------------
-
 To be removed:
 LDNS_STATUS_CHECK_GOTO
 Debugging code , dprintf, should be error, ldns_status thingy
-
 
 Post 1.0 Stuff:
 ---------------
@@ -17,20 +14,3 @@ o refactor ldns_verify_rrsig_keylist and
   ldns_verify_rrsig (fold in TSIG stuff or leave it out?)
 o Different digest for DS (spec currently specifies SHA-1)
 o Make it possible to build without OpenSSL
-
-What actually doesn't work:
----------------------------
-o [doc] const function are correct i think, but const values in struct not
-
-Implementation:
----------------
-o really think one last time about the double pointers
-  (did that, still like it)
-o check all conversion routines on missing types
-	- wire2host
-	- host2wire
-	- str2host
-	- host2str
-o use size_t where needed
-        *everywhere we count and use uint16_t*
-

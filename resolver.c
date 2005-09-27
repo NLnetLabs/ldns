@@ -537,7 +537,7 @@ ldns_resolver_new_frm_fp_l(FILE *fp, int *line_nr)
 				}
 				/* no keyword recognized */
 				if (expect == LDNS_RESOLV_KEYWORD) {
-						dprintf("[%s] unreg keyword\n", word); 
+						/* dprintf("[%s] unreg keyword\n", word); */
 				}
 				break;
 			case LDNS_RESOLV_DEFDOMAIN:
@@ -581,7 +581,7 @@ ldns_resolver_new_frm_fp_l(FILE *fp, int *line_nr)
 				break;
 			default:
 				/* huh?! */
-				dprintf("%s", "BIG FAT WARNING should never reach this\n");
+				/* dprintf("%s", "BIG FAT WARNING should never reach this\n"); */
 				expect = LDNS_RESOLV_KEYWORD;
 				break;
 		}
