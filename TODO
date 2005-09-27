@@ -1,5 +1,14 @@
 Current TODO list
 
+
+Pre 1.0 Stuff:
+--------------
+
+To be removed:
+LDNS_STATUS_CHECK_GOTO
+Debugging code , dprintf, should be error, ldns_status thingy
+
+
 Post 1.0 Stuff:
 ---------------
 o Dname compression
@@ -7,13 +16,11 @@ o A /fast/ impl. for holding a zone (and retrieving data from it)
 o refactor ldns_verify_rrsig_keylist and
   ldns_verify_rrsig (fold in TSIG stuff or leave it out?)
 o Different digest for DS (spec currently specifies SHA-1)
-o Make it possible to build with OpenSSL
+o Make it possible to build without OpenSSL
 
 What actually doesn't work:
 ---------------------------
-o [doc]  const function are correct i think, but const values in struct not
-o manual page for signzone
-o Drill bufsize isn't given to ldns's resolver
+o [doc] const function are correct i think, but const values in struct not
 
 Implementation:
 ---------------
@@ -29,7 +36,3 @@ o use size_t where needed
         nameserver in resolver
         *everywhere we count and use uint16_t*
 
-To be removed:
--------------
-LDNS_STATUS_CHECK_GOTO
-Debugging code , dprintf, should be error, ldns_status thingy
