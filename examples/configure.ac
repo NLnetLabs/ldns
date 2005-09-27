@@ -39,6 +39,36 @@ AC_CHECK_HEADER(ldns/dns.h,,  [
 	]
 )
 
+AH_BOTTOM([
+
+#include <stdio.h>
+#include <string.h>
+#include <unistd.h>
+#include <assert.h>
+
+#if STDC_HEADERS
+#include <stdlib.h>
+#include <stddef.h>
+#endif
+
+#ifdef HAVE_STDINT_H
+#include <stdint.h>
+#endif
+
+#ifdef HAVE_SYS_SOCKET_H
+#include <sys/socket.h>
+#endif
+
+#ifdef HAVE_NETINET_IN_H
+#include <netinet/in.h>
+#endif
+
+#ifdef HAVE_ARPA_INET_H
+#include <arpa/inet.h>
+#endif
+])
+
+
 #AC_CHECK_FUNCS([mkdir rmdir strchr strrchr strstr])
 
 #AC_DEFINE_UNQUOTED(SYSCONFDIR, "$sysconfdir")

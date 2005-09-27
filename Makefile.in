@@ -88,6 +88,14 @@ tools:		$(PROG_TARGETS) drill
 drill: 		./drill/config.log
 		( cd drill ; $(MAKE) -f Makefile all)
 
+./examples/config.log:
+		( mkdir examples ; cd examples ; ../$(srcdir)/examples/configure LDFLAGS="-L../.libs" CPPFLAGS="-I.. -I../..")
+
+examples: 		./examples/config.log
+		( cd examples ; $(MAKE) -f Makefile all)
+
+
+
 lib:		$(LIBDNS_OBJECTS) b64_pton$U.o b64_ntop$U.o
 		$(LINK_LIB) -o libldns.la $(LIBDNS_LOBJECTS) b64_pton$U.lo b64_ntop$U.lo \
 		-rpath $(prefix)/lib
@@ -202,7 +210,7 @@ clean:
 
 distclean: clean docclean libclean
 	rm -f ltmain.sh
-	(cd drill ; $(MAKE) -f Makefile clean)
+	(cd drill ; $(MAKE) -f Makefile distclean)
 
 realclean: clean docclean libclean
 	rm -f config.status
