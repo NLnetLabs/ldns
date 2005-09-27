@@ -162,14 +162,14 @@ uninstall-lib:
 snapshot:	distclean
 		(rm -rf ../ldns-snap-$(DATE)/)
 		(cd .. ; cp -r $(basesrcdir)/ ldns-snap-$(DATE)/)
-		(cd .. ; tar --verbose  --exclude ".svn" --exclude "*.key" --exclude "*.private" --create --exclude "lua" --file ldns-snap-$(DATE).tar.gz --gzip ldns-snap-$(DATE)/)
+		(cd .. ; tar --verbose  --exclude ".svn" --exclude "*.key" --exclude "*.private" --create --exclude "lua" --exclude "tests" --file ldns-snap-$(DATE).tar.gz --gzip ldns-snap-$(DATE)/)
 		(rm -rf ../ldns-snap-$(DATE)/)
 
 release:	distclean
 		(cd drill ; $(MAKE) allclean; exit 0)
 		(rm -rf ../ldns-$(VERSION)/)
 		(cd .. ; cp -r $(basesrcdir)/ ldns-$(VERSION)/)
-		(cd .. ; tar --verbose  --exclude ".svn" --exclude "*.key" --exclude "*.private" --create --exclude "lua" --file ldns-$(VERSION).tar.gz --gzip ldns-$(VERSION)/)
+		(cd .. ; tar --verbose  --exclude ".svn" --exclude "*.key" --exclude "*.private" --create --exclude "lua" --exclude "tests" --file ldns-$(VERSION).tar.gz --gzip ldns-$(VERSION)/)
 		(rm -rf ../ldns-$(VERSION)/)
 
 ldns-mx:	ldns-mx.o $(LIBDNS_OBJECTS) $(LIBOBJS)
