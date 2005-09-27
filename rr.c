@@ -36,7 +36,7 @@ ldns_rr_new_frm_type(ldns_rr_type t)
 {
 	ldns_rr *rr;
 	const ldns_rr_descriptor *desc;
-	uint16_t i;
+	size_t i;
 
 	rr = LDNS_MALLOC(ldns_rr);
         if (!rr) {
@@ -63,7 +63,7 @@ ldns_rr_new_frm_type(ldns_rr_type t)
 void
 ldns_rr_free(ldns_rr *rr)
 {
-	uint16_t i;
+	size_t i;
 	if (rr) {
 		if (ldns_rr_owner(rr)) {
 			ldns_rdf_deep_free(ldns_rr_owner(rr));
@@ -444,7 +444,7 @@ ldns_rr_set_ttl(ldns_rr *rr, uint32_t ttl)
 }
 
 void
-ldns_rr_set_rd_count(ldns_rr *rr, uint16_t count)
+ldns_rr_set_rd_count(ldns_rr *rr, size_t count)
 {
 	rr->_rd_count = count;
 }
@@ -462,9 +462,9 @@ ldns_rr_set_class(ldns_rr *rr, ldns_rr_class rr_class)
 }
 
 ldns_rdf *
-ldns_rr_set_rdf(ldns_rr *rr, ldns_rdf *f, uint16_t position)
+ldns_rr_set_rdf(ldns_rr *rr, ldns_rdf *f, size_t position)
 {
-	uint16_t rd_count;
+	size_t rd_count;
 	ldns_rdf *pop;
 	ldns_rdf **rdata_fields;
 
@@ -483,7 +483,7 @@ ldns_rr_set_rdf(ldns_rr *rr, ldns_rdf *f, uint16_t position)
 bool
 ldns_rr_push_rdf(ldns_rr *rr, ldns_rdf *f)
 {
-	uint16_t rd_count;
+	size_t rd_count;
 	ldns_rdf **rdata_fields;
 	
 	rd_count = ldns_rr_rd_count(rr);
@@ -506,7 +506,7 @@ ldns_rr_push_rdf(ldns_rr *rr, ldns_rdf *f)
 ldns_rdf *
 ldns_rr_pop_rdf(ldns_rr *rr)
 {
-	uint16_t rd_count;
+	size_t rd_count;
 	ldns_rdf *pop;
 	
 	rd_count = ldns_rr_rd_count(rr);
@@ -526,7 +526,7 @@ ldns_rr_pop_rdf(ldns_rr *rr)
 }
 
 ldns_rdf *
-ldns_rr_rdf(const ldns_rr *rr, uint16_t nr)
+ldns_rr_rdf(const ldns_rr *rr, size_t nr)
 {
 	if (nr < ldns_rr_rd_count(rr)) {
 		return rr->_rdata_fields[nr];
@@ -547,7 +547,7 @@ ldns_rr_ttl(const ldns_rr *rr)
 	return rr->_ttl;
 }
 
-uint16_t
+size_t
 ldns_rr_rd_count(const ldns_rr *rr)
 {
 	return rr->_rd_count;
@@ -567,7 +567,7 @@ ldns_rr_get_class(const ldns_rr *rr)
 
 /* rr_lists */
 
-uint16_t
+size_t
 ldns_rr_list_rr_count(ldns_rr_list *rr_list)
 {
 	if (rr_list) {
@@ -578,7 +578,7 @@ ldns_rr_list_rr_count(ldns_rr_list *rr_list)
 }
 
 ldns_rr *
-ldns_rr_list_set_rr(ldns_rr_list *rr_list, ldns_rr *r, uint16_t count)
+ldns_rr_list_set_rr(ldns_rr_list *rr_list, ldns_rr *r, size_t count)
 {
 	ldns_rr *old;
 
@@ -594,7 +594,7 @@ ldns_rr_list_set_rr(ldns_rr_list *rr_list, ldns_rr *r, uint16_t count)
 }
 
 bool
-ldns_rr_list_insert_rr(ldns_rr_list *rr_list, ldns_rr *r, uint16_t count)
+ldns_rr_list_insert_rr(ldns_rr_list *rr_list, ldns_rr *r, size_t count)
 {
 	uint16_t c, i;
 	ldns_rr *pop[101]; /* WRONG AMOUNT */
@@ -626,13 +626,13 @@ ldns_rr_list_insert_rr(ldns_rr_list *rr_list, ldns_rr *r, uint16_t count)
 }
 
 void
-ldns_rr_list_set_rr_count(ldns_rr_list *rr_list, uint16_t count)
+ldns_rr_list_set_rr_count(ldns_rr_list *rr_list, size_t count)
 {
 	rr_list->_rr_count = count;
 }
 
 ldns_rr *
-ldns_rr_list_rr(ldns_rr_list *rr_list, uint16_t nr)
+ldns_rr_list_rr(ldns_rr_list *rr_list, size_t nr)
 {
 	if (nr < ldns_rr_list_rr_count(rr_list)) {
 		return rr_list->_rrs[nr];
@@ -709,8 +709,8 @@ ldns_rr_list_cat(ldns_rr_list *left, ldns_rr_list *right)
 ldns_rr_list *
 ldns_rr_list_cat_clone(ldns_rr_list *left, ldns_rr_list *right)
 {
-	uint16_t l_rr_count;
-	uint16_t r_rr_count;
+	size_t l_rr_count;
+	size_t r_rr_count;
 	uint16_t i;
 	ldns_rr_list *cat;
 
@@ -753,7 +753,7 @@ ldns_rr_list_cat_clone(ldns_rr_list *left, ldns_rr_list *right)
 }
 
 ldns_rr_list *
-ldns_rr_list_subtype_by_rdf(ldns_rr_list *l, ldns_rdf *r, uint16_t pos)
+ldns_rr_list_subtype_by_rdf(ldns_rr_list *l, ldns_rdf *r, size_t pos)
 {
 	uint16_t i;
 	ldns_rr_list *subtyped;
@@ -787,7 +787,7 @@ ldns_rr_list_subtype_by_rdf(ldns_rr_list *l, ldns_rdf *r, uint16_t pos)
 bool
 ldns_rr_list_push_rr(ldns_rr_list *rr_list, ldns_rr *rr)
 {
-	uint16_t rr_count;
+	size_t rr_count;
 	ldns_rr **rrs;
 	
 	rr_count = ldns_rr_list_rr_count(rr_list);
@@ -811,7 +811,7 @@ ldns_rr_list_push_rr(ldns_rr_list *rr_list, ldns_rr *rr)
 ldns_rr *
 ldns_rr_list_pop_rr(ldns_rr_list *rr_list)
 {
-	uint16_t rr_count;
+	size_t rr_count;
 	ldns_rr *pop;
 	
 	rr_count = ldns_rr_list_rr_count(rr_list);
@@ -869,8 +869,8 @@ ldns_is_rrset(ldns_rr_list *rr_list)
 bool
 ldns_rr_set_push_rr(ldns_rr_list *rr_list, ldns_rr *rr)
 {
-	uint16_t rr_count;
-	uint16_t i;
+	size_t rr_count;
+	size_t i;
 	ldns_rr *last;
 
 	assert(rr != NULL);
@@ -975,7 +975,7 @@ ldns_rr_list_pop_rrset(ldns_rr_list *rr_list)
 ldns_rr *
 ldns_rr_clone(const ldns_rr *rr)
 {
-	uint16_t i;
+	size_t i;
 	ldns_rr *new_rr;
 
 	if (!rr) {
@@ -1001,7 +1001,7 @@ ldns_rr_clone(const ldns_rr *rr)
 ldns_rr_list *
 ldns_rr_list_clone(ldns_rr_list *rrlist)
 {
-	uint16_t i;
+	size_t i;
 	ldns_rr_list *new_list;
 	ldns_rr *r;
 
@@ -1191,7 +1191,7 @@ size_t
 ldns_rr_uncompressed_size(const ldns_rr *r)
 {
 	size_t rrsize;
-	uint16_t i;
+	size_t i;
 
 	rrsize = 0;
 	/* add all the rdf sizes */

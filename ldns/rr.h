@@ -192,7 +192,7 @@ struct ldns_struct_rr
 	/**  Time to live  */
 	uint32_t	_ttl;	
 	/**  Number of data fields */
-	uint16_t	_rd_count;
+	size_t	        _rd_count;
 	/**  the type of the RR. A, MX etc. */
 	ldns_rr_type	_rr_type;	
 	/**  Class of the resource record.  */
@@ -211,7 +211,7 @@ typedef struct ldns_struct_rr ldns_rr;
  */
 struct ldns_struct_rr_list
 {
-	uint16_t _rr_count;
+	size_t _rr_count;
 	ldns_rr **_rrs;
 };
 typedef struct ldns_struct_rr_list ldns_rr_list;
@@ -316,7 +316,7 @@ void ldns_rr_set_ttl(ldns_rr *rr, uint32_t ttl);
  * \param[in] count set to this count
  * \return void
  */
-void ldns_rr_set_rd_count(ldns_rr *rr, uint16_t count);
+void ldns_rr_set_rd_count(ldns_rr *rr, size_t count);
 
 /**
  * sets the type in the rr.
@@ -342,7 +342,7 @@ void ldns_rr_set_class(ldns_rr *rr, ldns_rr_class rr_class);
  * \param[in] position the position the set the rdf
  * \return  the old value in the rr, NULL on failyre
  */
-ldns_rdf* ldns_rr_set_rdf(ldns_rr *rr, ldns_rdf *f, uint16_t position);
+ldns_rdf* ldns_rr_set_rdf(ldns_rr *rr, ldns_rdf *f, size_t position);
 
 /**
  * sets rd_field member, it will be 
@@ -367,7 +367,7 @@ ldns_rdf* ldns_rr_pop_rdf(ldns_rr *rr);
  * \param[in] nr the number of the rdf to return
  * \return ldns_rdf *
  */
-ldns_rdf* ldns_rr_rdf(const ldns_rr *rr, uint16_t nr);
+ldns_rdf* ldns_rr_rdf(const ldns_rr *rr, size_t nr);
 
 /**
  * returns the owner name of an rr structure.
@@ -388,7 +388,7 @@ uint32_t ldns_rr_ttl(const ldns_rr *rr);
  * \param[in] *rr the rr to read from
  * \return the rd count of the rr
  */
-uint16_t ldns_rr_rd_count(const ldns_rr *rr);
+size_t ldns_rr_rd_count(const ldns_rr *rr);
 
 /**
  * returns the type of the rr.
@@ -411,7 +411,7 @@ ldns_rr_class ldns_rr_get_class(const ldns_rr *rr);
  * \param[in] rr_list  the rr_list to read from
  * \return the number of rr's
  */
-uint16_t ldns_rr_list_rr_count(ldns_rr_list *rr_list);
+size_t ldns_rr_list_rr_count(ldns_rr_list *rr_list);
 
 /**
  * sets the number of rr's in an rr_list.
@@ -419,10 +419,10 @@ uint16_t ldns_rr_list_rr_count(ldns_rr_list *rr_list);
  * \param[in] count the number of rr in this list
  * \return void
  */
-void ldns_rr_list_set_rr_count(ldns_rr_list *rr_list, uint16_t count);
+void ldns_rr_list_set_rr_count(ldns_rr_list *rr_list, size_t count);
 
 /* set a specific rr */
-ldns_rr * ldns_rr_list_set_rr(ldns_rr_list *rr_list, ldns_rr *r, uint16_t count);
+ldns_rr * ldns_rr_list_set_rr(ldns_rr_list *rr_list, ldns_rr *r, size_t count);
 
 /**
  * returns a specific rr of an rrlist.
@@ -430,7 +430,7 @@ ldns_rr * ldns_rr_list_set_rr(ldns_rr_list *rr_list, ldns_rr *r, uint16_t count)
  * \param[in] nr return this rr
  * \return the rr at position nr
  */
-ldns_rr* ldns_rr_list_rr(ldns_rr_list *rr_list, uint16_t nr);
+ldns_rr* ldns_rr_list_rr(ldns_rr_list *rr_list, size_t nr);
 
 /**
  * creates a new rr_list structure.
@@ -663,9 +663,9 @@ ldns_rdf_type ldns_rr_descriptor_field_type(const ldns_rr_descriptor *descriptor
  * \return a new rr list with only the RRs that match 
  *
  */
-ldns_rr_list *ldns_rr_list_subtype_by_rdf(ldns_rr_list *l, ldns_rdf *r, uint16_t pos);
+ldns_rr_list *ldns_rr_list_subtype_by_rdf(ldns_rr_list *l, ldns_rdf *r, size_t pos);
 
 /* added while doing lua */
-bool ldns_rr_list_insert_rr(ldns_rr_list *rr_list, ldns_rr *r, uint16_t count);
+bool ldns_rr_list_insert_rr(ldns_rr_list *rr_list, ldns_rr *r, size_t count);
 
 #endif /* _LDNS_RR_H */
