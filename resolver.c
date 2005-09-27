@@ -199,7 +199,7 @@ ldns_status
 ldns_resolver_push_nameserver(ldns_resolver *r, ldns_rdf *n)
 {
 	ldns_rdf **nameservers;
-	uint16_t ns_count;
+	size_t ns_count;
 
 	if (ldns_rdf_get_type(n) != LDNS_RDF_TYPE_A &&
 			ldns_rdf_get_type(n) != LDNS_RDF_TYPE_AAAA) {
@@ -392,7 +392,7 @@ void
 ldns_resolver_push_searchlist(ldns_resolver *r, ldns_rdf *d)
 {
 	ldns_rdf **searchlist;
-	uint16_t list_count;
+	size_t list_count;
 
 	if (ldns_rdf_get_type(d) != LDNS_RDF_TYPE_DNAME) {
 		return;
