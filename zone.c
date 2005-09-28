@@ -22,7 +22,7 @@ ldns_zone_soa(ldns_zone *z)
 uint16_t
 ldns_zone_rr_count(ldns_zone *z)
 {
-	return ldns_rr_list_rr_count(z->_rrs) + 1; /* SOA record */
+	return ldns_rr_list_rr_count(z->_rrs);
 }
 
 void
@@ -86,8 +86,6 @@ ldns_zone_glue_rr_list(ldns_zone *z)
 
 	for(i = 0; i < ldns_zone_rr_count(z); i++) {
 		r = ldns_rr_list_rr(ldns_zone_rrs(z), i);
-		ldns_rr_print(stdout, r);
-
 		if (ldns_rr_get_type(r) == LDNS_RR_TYPE_A ||
 				ldns_rr_get_type(r) == LDNS_RR_TYPE_AAAA) {
 			/* possibly glue */
@@ -98,16 +96,21 @@ ldns_zone_glue_rr_list(ldns_zone *z)
 			/* multiple zones will end up here -
 			 * for now; not a problem
 			 */
-			ldns_rr_list_push_rr(zone_cuts, r);
+			/* don't add NS records for the current zone itself */
+			if (ldns_rdf_compare(ldns_rr_owner(r), ldns_rr_owner(ldns_zone_soa(z))) != 0) {
+				ldns_rr_list_push_rr(zone_cuts, r);
+			}
 			continue;
 		}
 	}
-	/* will sorting make it quicker ?? */
 
+	/* will sorting make it quicker ?? */
 	for(i = 0; i < ldns_rr_list_rr_count(zone_cuts); i++) {
 		ns = ldns_rr_list_rr(zone_cuts, i);
+/*
 		dname_ns = ldns_rr_ns_nsdname(ns);
-
+*/
+		dname_ns = ldns_rr_owner(ns);
 		for(j = 0; j < ldns_rr_list_rr_count(addr); j++) {
 			a = ldns_rr_list_rr(addr, j);
 			dname_a = ldns_rr_owner(a);

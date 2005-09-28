@@ -73,8 +73,6 @@ AH_BOTTOM([
 
 #AC_DEFINE_UNQUOTED(SYSCONFDIR, "$sysconfdir")
 
-#AC_CONFIG_FILES([Makefile
-#		 drill.h
-#                 ])
+AC_CONFIG_FILES([Makefile])
 AC_CONFIG_HEADER([config.h])
 AC_OUTPUT

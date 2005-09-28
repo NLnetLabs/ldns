@@ -486,6 +486,15 @@ bool ldns_rr_list_push_rr(ldns_rr_list *rr_list, ldns_rr *rr);
 ldns_rr* ldns_rr_list_pop_rr(ldns_rr_list *rr_list);
 
 /**
+ * returns true if the given rr is one of the rrs in the
+ * list, or if it is equal to one
+ * \param[in] rr_list the rr_list to check
+ * \param[in] rr the rr to check
+ * \return true if rr_list contains rr, false otherwise
+ */
+bool ldns_rr_list_contains_rr(ldns_rr_list *rr_list, ldns_rr *rr); 
+
+/**
  * checks if an rr_list is a rrset.
  * \param[in] rr_list the rr_list to check
  * \return true if it is an rrset otherwise false

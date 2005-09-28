@@ -89,7 +89,7 @@ drill: 		./drill/config.log
 		( cd drill ; $(MAKE) -f Makefile all)
 
 ./examples/config.log:
-		( mkdir examples ; cd examples ; ../$(srcdir)/examples/configure LDFLAGS="-L../.libs" CPPFLAGS="-I.. -I../..")
+		( $(INSTALL) -d examples ; cd examples ; ../$(srcdir)/examples/configure LDFLAGS="-L../.libs" CPPFLAGS="-I.. -I../..")
 
 examples: 		./examples/config.log
 		( cd examples ; $(MAKE) -f Makefile all)

@@ -415,7 +415,12 @@ ldns_rr_new_frm_fp_l(FILE *fp, uint16_t *default_ttl, ldns_rdf **origin, int *li
                 return NULL;
         }
 
-	rr = ldns_rr_new_frm_str((const char*) line, ttl, *origin);
+	if (origin) {
+		rr = ldns_rr_new_frm_str((const char*) line, ttl, *origin);
+	} else {
+		rr = ldns_rr_new_frm_str((const char*) line, ttl, NULL);
+	}
+	
 	if (!rr) {
 		if ((keyword = strstr(line, "$ORIGIN "))) {
 			if (*origin) {
@@ -829,6 +834,25 @@ ldns_rr_list_pop_rr(ldns_rr_list *rr_list)
 	ldns_rr_list_set_rr_count(rr_list, rr_count - 1);
 
 	return pop;
+}
+
+bool
+ldns_rr_list_contains_rr(ldns_rr_list *rr_list, ldns_rr *rr)
+{
+	size_t i;
+	
+	if (!rr_list || !rr || ldns_rr_list_rr_count(rr_list) == 0) {
+		return false;
+	}
+
+	for (i = 0; i < ldns_rr_list_rr_count(rr_list); i++) {
+		if (rr == ldns_rr_list_rr(rr_list, i)) {
+			return true;
+		} else if (ldns_rr_compare(rr, ldns_rr_list_rr(rr_list, i)) == 0) {
+			return true;
+		}
+	}
+	return false;
 }
 
 bool

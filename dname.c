@@ -177,7 +177,9 @@ ldns_dname_is_subdomain(const ldns_rdf *sub, const ldns_rdf *parent)
 	ldns_rdf *tmp_par;
 
 	if (ldns_rdf_get_type(sub) != LDNS_RDF_TYPE_DNAME ||
-			ldns_rdf_get_type(parent) != LDNS_RDF_TYPE_DNAME) {
+			ldns_rdf_get_type(parent) != LDNS_RDF_TYPE_DNAME ||
+			ldns_rdf_compare(sub, parent) == 0
+			) {
 		return false;
 	}
 

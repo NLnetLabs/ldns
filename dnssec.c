@@ -1151,6 +1151,8 @@ ldns_zone_sign(ldns_zone *zone, ldns_key_list *key_list)
 	ldns_rr_list *orig_zone_rrs;
 	ldns_rr_list *signed_zone_rrs;
 	ldns_rr_list *pubkeys;
+	ldns_rr_list *glue_rrs;
+	
 	ldns_rdf *cur_dname = NULL;
 	ldns_rdf *next_dname = NULL;
 	ldns_rr *nsec;
@@ -1173,6 +1175,9 @@ ldns_zone_sign(ldns_zone *zone, ldns_key_list *key_list)
 	ldns_rr_list_free(cur_rrsigs);
 	
 	orig_zone_rrs = ldns_rr_list_clone(ldns_zone_rrs(zone));
+
+	glue_rrs = ldns_zone_glue_rr_list(zone);
+
 	/* add the key (TODO: check if it's there already? */
 	pubkeys = ldns_rr_list_new();
 	for (i = 0; i < ldns_key_list_key_count(key_list); i++) {
@@ -1213,7 +1218,8 @@ ldns_zone_sign(ldns_zone *zone, ldns_key_list *key_list)
 		if (cur_rrset_type != LDNS_RR_TYPE_RRSIG &&
 		    (ldns_dname_is_subdomain(cur_dname, ldns_rr_owner(ldns_zone_soa(zone))) ||
 		     ldns_rdf_compare(cur_dname, ldns_rr_owner(ldns_zone_soa(zone))) == 0
-		    )
+		    ) &&
+		    !(ldns_rr_list_contains_rr(glue_rrs, ldns_rr_list_rr(cur_rrset, 0)))
 		   ) {
 			cur_rrsigs = ldns_sign_public(cur_rrset, key_list);
 

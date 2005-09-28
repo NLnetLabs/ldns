@@ -49,6 +49,7 @@ ldns_zone * ldns_zone_new(void);
 ldns_rr * ldns_zone_soa(ldns_zone *z);
 
 /**
+ * Returns the number of resource records in the zone, NOT counting the SOA record
  * \param[in] z the zone to read from
  * \return the number of rr's in the zone
  */
