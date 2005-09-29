@@ -15,7 +15,7 @@ AC_PROG_MAKE_SET
 #AC_HEADER_STDC
 #AC_HEADER_SYS_WAIT
 # do the very minimum - we can always extend this
-AC_CHECK_HEADERS([getopt.h stdlib.h stdio.h assert.h netinet/in.hctype.h])
+AC_CHECK_HEADERS([getopt.h stdlib.h stdio.h assert.h netinet/in.hctype.h time.h])
 AC_CHECK_HEADERS(sys/param.h sys/mount.h,,,
 [
   [
@@ -65,6 +65,10 @@ AH_BOTTOM([
 
 #ifdef HAVE_ARPA_INET_H
 #include <arpa/inet.h>
+#endif
+
+#ifdef HAVE_TIME_H
+#include <time.h>
 #endif
 ])
 

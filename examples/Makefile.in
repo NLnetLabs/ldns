@@ -53,3 +53,6 @@ realclean: clean
 	rm -f config.log config.status aclocal.m4 config.h.in configure Makefile
 	rm -f config.h
 
+confclean: clean
+	rm -rf config.log config.status config.h Makefile
+

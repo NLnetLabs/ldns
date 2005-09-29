@@ -82,19 +82,56 @@ all:		lib tools
 
 tools:		$(PROG_TARGETS) drill
 
-./drill/config.log:
-		( mkdir drill ; cd drill ; ../$(srcdir)/drill/configure LDFLAGS="-L../.libs" CPPFLAGS="-I.. -I../..")
+./drill/Makefile:
+		( $(INSTALL) -d drill ; cd drill ; ../$(srcdir)/drill/configure LDFLAGS="-L../.libs" CPPFLAGS="-I.. -I../..")
 
-drill: 		./drill/config.log
+drill-config:	./drill/Makefile
+
+drill: 		drill-config
 		( cd drill ; $(MAKE) -f Makefile all)
 
-./examples/config.log:
+drill-realclean:	./drill/Makefile
+		( cd drill ; $(MAKE) -f Makefile realclean)
+
+drill-clean:	./drill/Makefile
+		( cd drill ; $(MAKE) -f Makefile clean)
+
+drill-confclean:	./drill/Makefile
+		( cd drill ; $(MAKE) -f Makefile confclean)
+
+./examples/Makefile:
 		( $(INSTALL) -d examples ; cd examples ; ../$(srcdir)/examples/configure LDFLAGS="-L../.libs" CPPFLAGS="-I.. -I../..")
 
-examples: 		./examples/config.log
+examples-config:	./examples/Makefile
+
+examples: 		examples-config
 		( cd examples ; $(MAKE) -f Makefile all)
 
+examples-realclean:	./drill/Makefile
+		( cd examples ; $(MAKE) -f Makefile realclean)
 
+examples-clean:	./drill/Makefile
+		( cd examples ; $(MAKE) -f Makefile clean)
+
+examples-confclean:	./drill/Makefile
+		( cd examples ; $(MAKE) -f Makefile confclean)
+
+./tests/Makefile:
+		( $(INSTALL) -d tests ; cd tests ; ../$(srcdir)/tests/configure LDFLAGS="-L../.libs" CPPFLAGS="-I.. -I../..")
+
+tests-config:	./tests/Makefile
+
+tests: 		tests-config
+		( cd tests ; $(MAKE) -f Makefile all)
+
+tests-realclean:	./drill/Makefile
+		( cd tests ; $(MAKE) -f Makefile realclean)
+
+tests-clean:	./drill/Makefile
+		( cd tests ; $(MAKE) -f Makefile clean)
+
+tests-confclean:	./drill/Makefile
+		( cd tests ; $(MAKE) -f Makefile confclean)
 
 lib:		$(LIBDNS_OBJECTS) b64_pton$U.o b64_ntop$U.o
 		$(LINK_LIB) -o libldns.la $(LIBDNS_LOBJECTS) b64_pton$U.lo b64_ntop$U.lo \
@@ -193,10 +230,6 @@ ldns-key2ds:	ldns-key2ds.o $(LIBDNS_OBJECTS) $(LIBOBJS)
 ldns-update:	ldns-update.o $(LIBDNS_OBJECTS) $(LIBOBJS)
 		$(LINK) ${LIBS} -o $@ $+
 
-# tests
-tests:		
-		(cd tests ; $(MAKE))
-
 clean:	
 	rm -f *.o *.d 
 	rm -f *~
@@ -268,5 +301,18 @@ malloc$U.o:	$(srcdir)/compat/malloc.c
 	$(SHELL) -ec '$(CC) -MM $(CPPFLAGS) $< \
 	              | sed '\''s!\(.*\)\.o[ :]*!$(dir $@)\1.o $@ : !g'\'' > $@; \
 	              [ -s $@ ] || rm -f $@'
+
+allclean: drill-clean examples-clean tests-clean clean
+
+allrealclean: drill-realclean examples-realclean tests-realclean
+
+allautoconf:
+	( cd drill; autoreconf; cd ..)
+	( cd examples; autoreconf; cd ..)
+	( cd tests; autoreconf; cd ..)
+
+allconf: drill-config examples-config tests-config
+
+allconfclean: drill-confclean examples-confclean tests-confclean	
 
 #include $(ALL_SOURCES:.c=.d)

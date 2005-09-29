@@ -109,3 +109,7 @@ lint:
                 $(LINT) $(LINTFLAGS) -I$(LDNSDIR) -I$(srcdir) $(srcdir)/$$i ; \
                 if [ $$? -ne 0 ] ; then exit 1 ; fi ; \
         done
+
+confclean: clean
+	rm -rf config.log config.status config.h Makefile
+

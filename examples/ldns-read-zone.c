@@ -1,15 +1,10 @@
-/*
+ /*
  * read a zone file from disk
  */
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <stddef.h>
-#include <unistd.h>
-#include <stdbool.h>
-#include <errno.h>
+#include "config.h"
 
-#include <stdint.h>
+#include <errno.h>
 
 #include <ldns/dns.h>
 
