@@ -2,14 +2,7 @@
  * send a notify packet to a server
  */
 
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <stddef.h>
-#include <unistd.h>
-#include <stdbool.h>
-
-#include <stdint.h>
+#include "config.h"
 
 #include <ldns/dns.h>
 
