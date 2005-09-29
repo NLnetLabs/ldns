@@ -1192,9 +1192,9 @@ ldns_zone_sign(ldns_zone *zone, ldns_key_list *key_list)
 	
 	/* add nsecs */
 	for (i = 0; i < ldns_rr_list_rr_count(orig_zone_rrs); i++) {
-		cur_dname = ldns_rr_owner(ldns_rr_list_rr(orig_zone_rrs, i));
 		if (!start_dname) {
-			start_dname = cur_dname;
+			start_dname = ldns_rr_owner(ldns_zone_soa(zone));
+			cur_dname = start_dname;
 		}
 		if (i < ldns_rr_list_rr_count(orig_zone_rrs) - 1) {
 			next_rr = ldns_rr_list_rr(orig_zone_rrs, i + 1);
@@ -1208,20 +1208,13 @@ ldns_zone_sign(ldns_zone *zone, ldns_key_list *key_list)
 			/* skip glue */
 			if (ldns_rr_list_contains_rr(glue_rrs, next_rr)) {
 				cur_dname = next_dname;
-printf("glue nsec pointer: __");
-ldns_rdf_print(stdout, cur_dname);
-printf("__\n");
 			} else {
-printf("Creating NSEC for ");
-ldns_rdf_print(stdout, start_dname);
-printf(" to ");
-ldns_rdf_print(stdout, next_dname);
-printf("\n");
 				nsec = ldns_create_nsec(start_dname, 
 							next_dname,
 							orig_zone_rrs);
 				ldns_rr_list_push_rr(signed_zone_rrs, nsec);
 				start_dname = next_dname;
+				cur_dname = start_dname;
 			}
 		}
 	}
