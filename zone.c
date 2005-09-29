@@ -77,7 +77,7 @@ ldns_zone_glue_rr_list(ldns_zone *z)
 	ldns_rr_list *addr;
 	ldns_rr_list *glue;
 	ldns_rr *r, *ns, *a;
-	ldns_rdf *dname_a, *dname_ns;
+	ldns_rdf *dname_a, *dname_ns, *ns_owner;
 	uint16_t i,j;
 
 	zone_cuts = ldns_rr_list_new();
@@ -107,15 +107,15 @@ ldns_zone_glue_rr_list(ldns_zone *z)
 	/* will sorting make it quicker ?? */
 	for(i = 0; i < ldns_rr_list_rr_count(zone_cuts); i++) {
 		ns = ldns_rr_list_rr(zone_cuts, i);
-/*
+		ns_owner = ldns_rr_owner(ns);
 		dname_ns = ldns_rr_ns_nsdname(ns);
-*/
-		dname_ns = ldns_rr_owner(ns);
 		for(j = 0; j < ldns_rr_list_rr_count(addr); j++) {
 			a = ldns_rr_list_rr(addr, j);
 			dname_a = ldns_rr_owner(a);
-
-			if (ldns_dname_is_subdomain(dname_a, dname_ns)) {
+			
+			if (ldns_dname_is_subdomain(dname_a, ns_owner) &&
+			    ldns_rdf_compare(dname_ns, dname_a) == 0
+			) {
 				/* GLUE! */
 				ldns_rr_list_push_rr(glue, a);
 				break;
