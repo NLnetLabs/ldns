@@ -570,7 +570,7 @@ main(int argc, char *argv[])
 			}
 			
 			if (!pkt)  {
-				error("%s", "no packet received\n");
+				mesg("%s", "no packet received\n");
 				result = EXIT_FAILURE;
 			} else {
 				if (qdebug != -1) {
@@ -625,7 +625,9 @@ main(int argc, char *argv[])
 										(int)ldns_calc_keytag(
 												      ldns_rr_list_rr(key_list, key_count)));
 								ldns_rdf_print(stdout, ldns_rr_owner(
-											ldns_rr_list_rr(key_list, key_count)));
+
+								ldns_rr_list_rr(key_list,
+								key_count)));
 								printf("\n");
 							}
 						}

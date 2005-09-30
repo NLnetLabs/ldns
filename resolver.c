@@ -403,12 +403,12 @@ ldns_resolver_push_searchlist(ldns_resolver *r, ldns_rdf *d)
 	searchlist = ldns_resolver_searchlist(r);
 
 	searchlist = LDNS_XREALLOC(searchlist, ldns_rdf *, (list_count + 1));
-	r->_searchlist = searchlist;
+	if (searchlist) {
+		r->_searchlist = searchlist;
 
-	searchlist[list_count] = ldns_rdf_clone(d);
-	ldns_resolver_set_searchlist_count(r, list_count + 1);
-	
-	r->_searchlist[++r->_searchlist_count] = ldns_rdf_clone(d);
+		searchlist[list_count] = ldns_rdf_clone(d);
+		ldns_resolver_set_searchlist_count(r, list_count + 1);
+	}
 }
 
 void
@@ -672,7 +672,7 @@ ldns_resolver_query(ldns_resolver *r, ldns_rdf *name, ldns_rr_type type, ldns_rr
                 uint16_t flags)
 {
 	ldns_rdf *newname;
-	ldns_pkt *pkt;
+	ldns_pkt *pkt = NULL;
 	ldns_status status;
 
 	if (!ldns_resolver_defnames(r)) {
@@ -680,6 +680,9 @@ ldns_resolver_query(ldns_resolver *r, ldns_rdf *name, ldns_rr_type type, ldns_rr
 		if (status == LDNS_STATUS_OK) {
 			return pkt;
 		} else {
+			if (pkt) {
+				ldns_pkt_free(pkt);
+			}
 			return NULL;
 		}
 	}
@@ -695,6 +698,9 @@ ldns_resolver_query(ldns_resolver *r, ldns_rdf *name, ldns_rr_type type, ldns_rr
 		if (status == LDNS_STATUS_OK) {
 			return pkt;
 		} else {
+			if (pkt) {
+				ldns_pkt_free(pkt);
+			}
 			return NULL;
 		}
 	}
@@ -702,6 +708,9 @@ ldns_resolver_query(ldns_resolver *r, ldns_rdf *name, ldns_rr_type type, ldns_rr
 	newname = ldns_dname_cat_clone(name, ldns_resolver_domain(r));
 	ldns_rdf_print(stdout, newname);
 	if (!newname) {
+		if (pkt) {
+			ldns_pkt_free(pkt);
+		}
 		return NULL;
 	}
 	status = ldns_resolver_send(&pkt, r, newname, type, class, flags);
@@ -720,6 +729,12 @@ ldns_resolver_send_pkt(ldns_pkt **answer, ldns_resolver *r, ldns_pkt *query_pkt)
 		stat = ldns_send(&answer_pkt, r, query_pkt);
 		if (stat == LDNS_STATUS_OK) {
 			break;
+		}
+		 else {
+			if(answer_pkt) {
+				ldns_pkt_free(answer_pkt);
+				answer_pkt = NULL;
+			}
 		}
 	}
 	
