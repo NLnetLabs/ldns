@@ -452,6 +452,8 @@ do_chase(ldns_resolver *res, ldns_rdf *name, ldns_rr_type type, ldns_rr_class c,
 						ldns_rr_free(cur_sig);
 						return result;
 					}
+				} else {
+					result = LDNS_STATUS_CRYPTO_NO_MATCHING_KEYTAG_DNSKEY;
 				}
 			}
 			if (result != LDNS_STATUS_OK) {
