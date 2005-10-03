@@ -1193,31 +1193,32 @@ ldns_zone_sign(ldns_zone *zone, ldns_key_list *key_list)
 	/* add nsecs */
 	for (i = 0; i < ldns_rr_list_rr_count(orig_zone_rrs); i++) {
 		if (!start_dname) {
-			start_dname = ldns_rr_owner(ldns_zone_soa(zone));
+			/*start_dname = ldns_rr_owner(ldns_zone_soa(zone));*/
+			start_dname = ldns_rr_owner(ldns_rr_list_rr(orig_zone_rrs, i));
 			cur_dname = start_dname;
-		}
-		if (i < ldns_rr_list_rr_count(orig_zone_rrs) - 1) {
-			next_rr = ldns_rr_list_rr(orig_zone_rrs, i + 1);
-			next_dname = ldns_rr_owner(next_rr);
 		} else {
-			next_rr = ldns_zone_soa(zone);
+			next_rr = ldns_rr_list_rr(orig_zone_rrs, i);
 			next_dname = ldns_rr_owner(next_rr);
-		}
-		ldns_rr_list_push_rr(signed_zone_rrs, ldns_rr_list_rr(orig_zone_rrs, i));
-		if (ldns_rdf_compare(cur_dname, next_dname) != 0) {
-			/* skip glue */
-			if (ldns_rr_list_contains_rr(glue_rrs, next_rr)) {
-				cur_dname = next_dname;
-			} else {
-				nsec = ldns_create_nsec(start_dname, 
-							next_dname,
-							orig_zone_rrs);
-				ldns_rr_list_push_rr(signed_zone_rrs, nsec);
-				start_dname = next_dname;
-				cur_dname = start_dname;
+			ldns_rr_list_push_rr(signed_zone_rrs, ldns_rr_list_rr(orig_zone_rrs, i));
+			if (ldns_rdf_compare(cur_dname, next_dname) != 0) {
+				/* skip glue */
+				if (ldns_rr_list_contains_rr(glue_rrs, next_rr)) {
+					cur_dname = next_dname;
+				} else {
+					nsec = ldns_create_nsec(cur_dname, 
+								next_dname,
+								orig_zone_rrs);
+					ldns_rr_list_push_rr(signed_zone_rrs, nsec);
+					/*start_dname = next_dname;*/
+					cur_dname = next_dname;
+				}
 			}
 		}
 	}
+	nsec = ldns_create_nsec(cur_dname, 
+				start_dname,
+				orig_zone_rrs);
+	ldns_rr_list_push_rr(signed_zone_rrs, nsec);
 	ldns_rr_list_free(orig_zone_rrs);
 
 	/* Sign all rrsets in the zone */
