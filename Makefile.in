@@ -83,7 +83,7 @@ all:		lib
 tools:		$(PROG_TARGETS)
 
 ./drill/Makefile:
-		( $(INSTALL) -d drill ; cd drill ; ../$(srcdir)/drill/configure LDFLAGS="-L../.libs" CPPFLAGS="-I.. -I../..")
+		( $(INSTALL) -d drill ; cd drill ; ../$(srcdir)/drill/configure --prefix=$(prefix) LDFLAGS="-L../.libs" CPPFLAGS="-I.. -I../..")
 
 drill-config:	./drill/Makefile
 
@@ -99,8 +99,11 @@ drill-clean:	./drill/Makefile
 drill-confclean:	./drill/Makefile
 		( cd drill ; $(MAKE) -f Makefile confclean)
 
+drill-install:
+		( cd drill ; $(MAKE) -f Makefile install)
+
 ./examples/Makefile:
-		( $(INSTALL) -d examples ; cd examples ; ../$(srcdir)/examples/configure LDFLAGS="-L../.libs" CPPFLAGS="-I. -I.. -I../..")
+		( $(INSTALL) -d examples ; cd examples ; ../$(srcdir)/examples/configure --prefix=$(prefix) LDFLAGS="-L../.libs" CPPFLAGS="-I. -I.. -I../..")
 
 examples-config:	./examples/Makefile
 
@@ -117,7 +120,7 @@ examples-confclean:	./drill/Makefile
 		( cd examples ; $(MAKE) -f Makefile confclean)
 
 ./tests/Makefile:
-		( $(INSTALL) -d tests ; cd tests ; ../$(srcdir)/tests/configure LDFLAGS="-L../.libs" CPPFLAGS="-I.. -I../..")
+		( $(INSTALL) -d tests ; cd tests ; ../$(srcdir)/tests/configure --prefix=$(prefix) LDFLAGS="-L../.libs" CPPFLAGS="-I.. -I../..")
 
 tests-config:	./tests/Makefile
 
