@@ -41,8 +41,8 @@ ldns-update: 	ldns-update.o
 		$(LINK) -o $@ $+
 
 ## implicit rule
-%.o:    %.c $(HEADER)
-	$(COMPILE) -c $<
+%.o:
+	$(COMPILE) -c $(srcdir)/$*.c
 
 clean:
 	rm -f *.o

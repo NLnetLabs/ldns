@@ -61,8 +61,10 @@ server: 	server.o
 		$(LINK) -o $@ $+
 
 ## implicit rule
-%.o:    %.c $(HEADER)
-	$(COMPILE) -c $<
+#%.o:    %.c $(HEADER)
+#	$(COMPILE) -c $<
+%.o:
+	$(COMPILE) -c $(srcdir)/$*.c
 
 clean:
 	rm -f *.o
