@@ -100,7 +100,7 @@ drill-confclean:	./drill/Makefile
 		( cd drill ; $(MAKE) -f Makefile confclean)
 
 ./examples/Makefile:
-		( $(INSTALL) -d examples ; cd examples ; ../$(srcdir)/examples/configure LDFLAGS="-L../.libs" CPPFLAGS="-I.. -I../..")
+		( $(INSTALL) -d examples ; cd examples ; ../$(srcdir)/examples/configure LDFLAGS="-L../.libs" CPPFLAGS="-I. -I.. -I../..")
 
 examples-config:	./examples/Makefile
 
