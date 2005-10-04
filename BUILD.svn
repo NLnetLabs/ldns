@@ -1,0 +1,11 @@
+# small list of commands to build all on a linux system
+libtoolize -c
+autoreconf
+./configure
+make
+make doc
+make allautoconf
+make allconf
+make examples
+make drill
+make tests

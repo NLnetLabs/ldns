@@ -14,25 +14,30 @@ REQUIREMENTS
 INSTALLATION
 1. Unpack the tarball
 2. cd ldns-<VERSION>
-3. libtoolize
-4. autoreconf
 5. ./configure
-6. gmake (it needs gnu make to compile)
+6. gmake (it needs gnu make to compile, on systems where GNU make is the
+   default you can just use 'make')
 (7. gmake progs [make example programs included])
 
 * Examples
 There are some examples in the examples/ directory. These can be built with:
+1. make examples 
+(in the build directory of the library)
+
+You can also do it yourself:
+
 1. autoreconf
 2. ./configure
 3. gmake
 
 The library has to be installed in order for this to work. If it is not
-installed in one of the default paths you should add the following arguments to
-the configure command:
-LDFLAGS="-L<path_to_library_dir>" CPPFLAGS="-I<path_to_header_dir>"
+installed in one of the default paths (i.e. if you have specified --prefix
+when configuring the library) you can use --with-ldns=PATH to specify that
+path.
 
-If you have only built the library and not installed it anywhere, these
-values should be:
+If you have only built the library and not installed it you can add the
+directories with the headers and libraries to the search path of configure
+by specifying:
 LDFLAGS="-L<build-dir>/.libs" CPPFLAGS="-I<build-dir> -I<src_dir>"
 
 In that last case, you will also need to have your LD_LIBRARY_PATH set to
@@ -41,10 +46,21 @@ the .libs directory to be able to run the examples.
 
 * Drill
 
-Drill is automatically built alongside with the main library. If you want to
-build drill by hand, the configure and running options are the same as those
-for the examples. You can use the make target 'lib' if you only want to
-build the library and not drill (and make install-lib to install it).
+Building drill is the same as building the examples.
+
+If you want to build drill by hand, the configure and running options are
+the same as those for the examples. You can use the make target 'lib' if you
+only want to build the library and not drill (and make install-lib to
+install it).
+
+
+* Building from repository
+
+If you are building from the repository you will need to have (gnu)
+autotools like libtool and autoreconf installed. A list of all the commands
+needed to build everything can be found in BUILD.svn. Note that the actual
+commands may be a little bit different on your machine.
+
 
 * Developers
 ldns is developed by the ldns team at NLnet Labs. This team currently

@@ -25,8 +25,17 @@ AC_CHECK_HEADERS(sys/param.h sys/mount.h,,,
   ]
 ])
 
-# ripped from http://autoconf-archive.cryp.to/check_ssl.html
 # check for ldns
+AC_ARG_WITH(ldns, 
+	AC_HELP_STRING([--with-ldns=PATH        specify prefix of path of ldns library to use])
+	,
+	[
+		specialldnsdir="$withval"
+		CPPFLAGS="$CPPFLAGS -I$withval/include"
+		LDFLAGS="$LDFLAGS -L$withval/lib"
+	]
+)
+
 AC_CHECK_LIB(ldns, ldns_rr_new,, [
 	AC_MSG_ERROR([Can't find ldns library])
 	]

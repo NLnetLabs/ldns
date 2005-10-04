@@ -78,9 +78,9 @@ LINK_LIB	= $(LIBTOOL) --mode=link $(CC) $(CFLAGS) $(LDFLAGS) -release $(VERSION)
 .PHONY: install-h uninstall-h install-lib uninstall-lib snapshot release
 .PHONY: confdrill tools-drill
 
-all:		lib tools
+all:		lib
 
-tools:		$(PROG_TARGETS) drill
+tools:		$(PROG_TARGETS)
 
 ./drill/Makefile:
 		( $(INSTALL) -d drill ; cd drill ; ../$(srcdir)/drill/configure LDFLAGS="-L../.libs" CPPFLAGS="-I.. -I../..")
@@ -146,10 +146,8 @@ endif
 		grep -v ^doxygen | grep -v ^cat  > doc/ldns_manpages
 
 install:	install-h install-lib install-progs install-doc
-		( cd drill ; $(MAKE) install )
 
 uninstall:	uninstall-doc uninstall-h uninstall-lib uninstall-progs
-		( cd drill ; $(MAKE) uninstall )
 
 destclean:	uninstall
 
@@ -162,6 +160,7 @@ uninstall-progs:
 		for i in $(PROG_TARGETS); do \
 			rm -f $(bindir)/$$i ; done
 		exit 0
+		rmdir --ignore-fail-on-non-empty $(bindir)
 
 install-doc:	doc
 		${INSTALL} -d $(mandir)/man3
@@ -177,6 +176,9 @@ uninstall-doc:	doc
 		for i in $(PROG_TARGETS); do \
 			rm -f $(mandir)/man1/$$i.1 ; done
 		exit 0
+		rmdir --ignore-fail-on-non-empty $(mandir)/man3
+		rmdir --ignore-fail-on-non-empty $(mandir)/man1
+		rmdir --ignore-fail-on-non-empty $(mandir)
 
 install-h:	lib
 		$(INSTALL) -m 755 -d $(prefix)/include/ldns
@@ -186,15 +188,17 @@ install-h:	lib
 uninstall-h:
 		for i in $(LIBDNS_HEADERS); do \
 			rm -f $(prefix)/include/$$i; done
-		[ ! -d $(prefix)/include/ldns ] || rmdir $(prefix)/include/ldns
+		[ ! -d $(prefix)/include/ldns ] || rmdir --ignore-fail-on-non-empty $(prefix)/include/ldns ; rmdir --ignore-fail-on-non-empty $(prefix)/include
 		exit 0
 	
 install-lib:	lib
+		$(INSTALL) -m 755 -d $(prefix)/lib
 		$(LIBTOOL) --mode=install cp libldns.la $(prefix)/lib
 		$(LIBTOOL) --mode=finish $(prefix)/lib
 
 uninstall-lib:	
-		$(LIBTOOL) --mode=uninstall rm $(prefix)/lib/libldns.la
+		$(LIBTOOL) --mode=uninstall rm -f $(prefix)/lib/libldns.la
+		rmdir --ignore-fail-on-non-empty $(prefix)/lib
 
 snapshot:	distclean
 		(rm -rf ../ldns-snap-$(DATE)/)
@@ -313,6 +317,6 @@ allautoconf:
 
 allconf: drill-config examples-config tests-config
 
-allconfclean: drill-confclean examples-confclean tests-confclean	
+allconfclean: drill-confclean examples-confclean tests-confclean
 
 #include $(ALL_SOURCES:.c=.d)
