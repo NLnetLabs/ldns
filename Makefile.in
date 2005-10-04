@@ -56,10 +56,6 @@ LIBDNS_HEADERS	=	$(srcdir)/ldns/error.h		\
 			ldns/util.h 		\
 			$(srcdir)/ldns/update.h 		\
 			$(srcdir)/ldns/tsig.h
-PROG_SOURCES	=	ldns-keygen.c ldns-key2ds.c ldns-signzone.c \
-			ldns-version.c
-PROG_TARGETS	=	$(PROG_SOURCES:.c=)
-
 LIBDNS_OBJECTS	=	$(LIBDNS_SOURCES:.c=.o)
 LIBDNS_LOBJECTS	=	$(LIBDNS_SOURCES:.c=.lo)
 
@@ -118,6 +114,9 @@ examples-clean:	./drill/Makefile
 
 examples-confclean:	./drill/Makefile
 		( cd examples ; $(MAKE) -f Makefile confclean)
+
+examples-install:
+		( cd examples ; $(MAKE) -f Makefile install)
 
 ./tests/Makefile:
 		( $(INSTALL) -d tests ; cd tests ; ../$(srcdir)/tests/configure --prefix=$(prefix) LDFLAGS="-L../.libs" CPPFLAGS="-I.. -I../..")
@@ -215,27 +214,6 @@ release:	distclean
 		(cd .. ; cp -r $(basesrcdir)/ ldns-$(VERSION)/)
 		(cd .. ; tar --verbose  --exclude ".svn" --exclude "*.key" --exclude "*.private" --create --exclude "lua" --exclude "tests" --file ldns-$(VERSION).tar.gz --gzip ldns-$(VERSION)/)
 		(rm -rf ../ldns-$(VERSION)/)
-
-ldns-mx:	ldns-mx.o $(LIBDNS_OBJECTS) $(LIBOBJS)
-		$(LINK) ${LIBS} -o $@ $+
-
-ldns-version:	ldns-version.o $(LIBDNS_OBJECTS) $(LIBOBJS)
-		$(LINK) ${LIBS} -o $@ $+
-
-ldns-signzone:	ldns-signzone.o $(LIBDNS_OBJECTS) $(LIBOBJS)
-		$(LINK) ${LIBS} -o $@ $+
-
-ldns-chaos:	ldns-chaos.o $(LIBDNS_OBJECTS) $(LIBOBJS)
-		$(LINK) ${LIBS} -o $@ $+
-
-ldns-keygen:	ldns-keygen.o $(LIBDNS_OBJECTS) $(LIBOBJS)
-		$(LINK) ${LIBS} -o $@ $+
-
-ldns-key2ds:	ldns-key2ds.o $(LIBDNS_OBJECTS) $(LIBOBJS)
-		$(LINK) ${LIBS} -o $@ $+
-
-ldns-update:	ldns-update.o $(LIBDNS_OBJECTS) $(LIBOBJS)
-		$(LINK) ${LIBS} -o $@ $+
 
 clean:	
 	rm -f *.o *.d 
