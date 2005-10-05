@@ -21,7 +21,7 @@ COMPILE         = $(CC) $(CPPFLAGS) $(CFLAGS)
 LINK            = $(CC) $(CFLAGS) $(LDFLAGS) $(LIBS)
 
 HEADER		= config.h
-TESTS		= ldns-read-zone \
+PROGRAMS	= ldns-read-zone \
 		  ldns-mx \
 		  ldns-chaos \
 		  ldns-update \
@@ -32,7 +32,7 @@ TESTS		= ldns-read-zone \
 
 .PHONY:	all clean realclean
 
-all:	$(TESTS)
+all:	$(PROGRAMS)
 
 ldns-read-zone: 	ldns-read-zone.o
 			$(LINK) -o $@ $+
@@ -64,7 +64,7 @@ ldns-key2ds:	ldns-key2ds.o
 
 clean:
 	rm -f *.o
-	rm -f $(TESTS)
+	rm -f $(PROGRAMS)
 
 realclean: clean
 	rm -rf autom4te.cache/
@@ -74,18 +74,18 @@ realclean: clean
 confclean: clean
 	rm -rf config.log config.status config.h Makefile
 
-install:	$(TESTS)
-		$(INSTALL) -d -m 755 ${prefix}/bin
-		for i in $(TESTS); do \
-			${INSTALL} -c $$i ${prefix}/bin/ ; done
+install:	$(PROGRAMS)
+		$(INSTALL) -d -m 755 $(bindir)
+		for i in $(PROGRAMS); do \
+			${INSTALL} -c $$i $(bindir) ; done
 		exit 0
 
 
 uninstall:
-		for i in $(TESTS); do \
+		for i in $(PROGRAMS); do \
 			rm -f $(bindir)/$$i ; done
 		exit 0
-		rmdir --ignore-fail-on-non-empty -p $(prefix)/bin
+		rmdir --ignore-fail-on-non-empty -p $(bindir)
 
 		
 

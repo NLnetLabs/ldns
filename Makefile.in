@@ -9,6 +9,7 @@ exec_prefix 	= @exec_prefix@
 bindir 		= @bindir@
 mandir 		= @mandir@
 libdir		= @libdir@
+includedir	= @includedir@
 doxygen		= @doxygen@
 glibtool	= @glibtool@
 libtool		= @libtool@
@@ -80,7 +81,7 @@ all:		lib
 tools:		$(PROG_TARGETS)
 
 ./drill/Makefile:
-		( $(INSTALL) -d drill ; cd drill ; ../$(srcdir)/drill/configure --prefix=$(prefix) LDFLAGS="-L../.libs" CPPFLAGS="-I.. -I../..")
+		( $(INSTALL) -d drill ; cd drill ; ../$(srcdir)/drill/configure --prefix=$(prefix) --bindir=$(bindir) --mandir=$(mandir) LDFLAGS="-L../.libs" CPPFLAGS="-I.. -I../..")
 
 drill-config:	./drill/Makefile
 
@@ -100,7 +101,7 @@ drill-install:
 		( cd drill ; $(MAKE) -f Makefile install)
 
 ./examples/Makefile:
-		( $(INSTALL) -d examples ; cd examples ; ../$(srcdir)/examples/configure --prefix=$(prefix) LDFLAGS="-L../.libs" CPPFLAGS="-I. -I.. -I../..")
+		( $(INSTALL) -d examples ; cd examples ; ../$(srcdir)/examples/configure --prefix=$(prefix) --bindir=$(bindir) --mandir=$(mandir) LDFLAGS="-L../.libs" CPPFLAGS="-I. -I.. -I../..")
 
 examples-config:	./examples/Makefile
 
@@ -138,7 +139,7 @@ tests-confclean:	./drill/Makefile
 
 lib:		$(LIBDNS_OBJECTS) b64_pton$U.o b64_ntop$U.o
 		$(LINK_LIB) -o libldns.la $(LIBDNS_LOBJECTS) b64_pton$U.lo b64_ntop$U.lo \
-		-rpath $(prefix)/lib
+		-rpath $(libdir)/lib
 
 doc:		$(srcdir)/doc/function_manpages 
 		$(INSTALL) -d doc
@@ -148,22 +149,11 @@ endif
 		cat $(srcdir)/ldns/*.h | $(srcdir)/doc/doxyparse.pl -m $(srcdir)/doc/function_manpages 2>&1 | \
 		grep -v ^doxygen | grep -v ^cat  > doc/ldns_manpages
 
-install:	install-h install-lib install-progs install-doc
+install:	install-h install-lib install-doc
 
-uninstall:	uninstall-doc uninstall-h uninstall-lib uninstall-progs
+uninstall:	uninstall-doc uninstall-h uninstall-lib
 
 destclean:	uninstall
-
-install-progs:  all tools
-		for i in $(PROG_TARGETS); do \
-			${INSTALL} -c $$i $(bindir)/ ; done
-		exit 0
-
-uninstall-progs:
-		for i in $(PROG_TARGETS); do \
-			rm -f $(bindir)/$$i ; done
-		exit 0
-		rmdir -p --ignore-fail-on-non-empty $(bindir)
 
 install-doc:	doc
 		${INSTALL} -d $(mandir)/man3
@@ -182,14 +172,14 @@ uninstall-doc:	doc
 		rmdir -p --ignore-fail-on-non-empty $(mandir)/man3
 
 install-h:	lib
-		$(INSTALL) -m 755 -d $(prefix)/include/ldns
+		$(INSTALL) -m 755 -d $(includedir)/ldns
 		for i in $(LIBDNS_HEADERS); do \
-			MVPROG=/bin/cp $(INSTALL) -m 644 $$i $(prefix)/include/ldns/; done
+			MVPROG=/bin/cp $(INSTALL) -m 644 $$i $(includedir)/ldns/; done
 
 uninstall-h:
 		for i in $(LIBDNS_HEADERS); do \
-			rm -f $(prefix)/include/$$i; done
-		[ ! -d $(prefix)/include/ldns ] || rmdir -p --ignore-fail-on-non-empty $(prefix)/include/ldns
+			rm -f $(includedir)/$$i; done
+		[ ! -d $(includedir)/ldns ] || rmdir -p --ignore-fail-on-non-empty $(includedir)/ldns
 		exit 0
 	
 install-lib:	lib
