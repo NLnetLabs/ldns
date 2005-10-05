@@ -8,6 +8,7 @@ prefix  	= @prefix@
 exec_prefix 	= @exec_prefix@
 bindir 		= @bindir@
 mandir 		= @mandir@
+libdir		= @libdir@
 doxygen		= @doxygen@
 glibtool	= @glibtool@
 libtool		= @libtool@
@@ -162,7 +163,7 @@ uninstall-progs:
 		for i in $(PROG_TARGETS); do \
 			rm -f $(bindir)/$$i ; done
 		exit 0
-		rmdir --ignore-fail-on-non-empty $(bindir)
+		rmdir -p --ignore-fail-on-non-empty $(bindir)
 
 install-doc:	doc
 		${INSTALL} -d $(mandir)/man3
@@ -178,9 +179,7 @@ uninstall-doc:	doc
 		for i in $(PROG_TARGETS); do \
 			rm -f $(mandir)/man1/$$i.1 ; done
 		exit 0
-		rmdir --ignore-fail-on-non-empty $(mandir)/man3
-		rmdir --ignore-fail-on-non-empty $(mandir)/man1
-		rmdir --ignore-fail-on-non-empty $(mandir)
+		rmdir -p --ignore-fail-on-non-empty $(mandir)/man3
 
 install-h:	lib
 		$(INSTALL) -m 755 -d $(prefix)/include/ldns
@@ -190,17 +189,17 @@ install-h:	lib
 uninstall-h:
 		for i in $(LIBDNS_HEADERS); do \
 			rm -f $(prefix)/include/$$i; done
-		[ ! -d $(prefix)/include/ldns ] || rmdir --ignore-fail-on-non-empty $(prefix)/include/ldns ; rmdir --ignore-fail-on-non-empty $(prefix)/include
+		[ ! -d $(prefix)/include/ldns ] || rmdir -p --ignore-fail-on-non-empty $(prefix)/include/ldns
 		exit 0
 	
 install-lib:	lib
-		$(INSTALL) -m 755 -d $(prefix)/lib
-		$(LIBTOOL) --mode=install cp libldns.la $(prefix)/lib
-		$(LIBTOOL) --mode=finish $(prefix)/lib
+		$(INSTALL) -m 755 -d $(libdir)
+		$(LIBTOOL) --mode=install cp libldns.la $(libdir)
+		$(LIBTOOL) --mode=finish $(libdir)
 
 uninstall-lib:	
-		$(LIBTOOL) --mode=uninstall rm -f $(prefix)/lib/libldns.la
-		rmdir --ignore-fail-on-non-empty $(prefix)/lib
+		$(LIBTOOL) --mode=uninstall rm -f $(libdir)/libldns.la
+		rmdir -p --ignore-fail-on-non-empty $(libdir)
 
 snapshot:	distclean
 		(rm -rf ../ldns-snap-$(DATE)/)
@@ -242,7 +241,6 @@ realclean: clean docclean libclean
 	rm -f config.sub
 	rm -f config.guess
 	rm -f ltmain.sh
-	(cd drill ; $(MAKE) -f Makefile realclean)
 
 docclean:
 	rm -rf doc/html/
