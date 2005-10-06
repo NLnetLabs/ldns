@@ -75,17 +75,17 @@ confclean: clean
 	rm -rf config.log config.status config.h Makefile
 
 install:	$(PROGRAMS)
-		$(INSTALL) -d -m 755 $(bindir)
+		$(INSTALL) -d -m 755 $(DESTDIR)$(bindir)
 		for i in $(PROGRAMS); do \
-			${INSTALL} -c $$i $(bindir) ; done
+			${INSTALL} -c $$i $(DESTDIR)$(bindir) ; done
 		exit 0
 
 
 uninstall:
 		for i in $(PROGRAMS); do \
-			rm -f $(bindir)/$$i ; done
+			rm -f $(DESTDIR)$(bindir)/$$i ; done
 		exit 0
-		rmdir --ignore-fail-on-non-empty -p $(bindir)
+		rmdir --ignore-fail-on-non-empty -p $(DESTDIR)$(bindir)
 
 		
 

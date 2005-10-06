@@ -156,40 +156,40 @@ uninstall:	uninstall-doc uninstall-h uninstall-lib
 destclean:	uninstall
 
 install-doc:	doc
-		${INSTALL} -d $(mandir)/man3
-		cp -Rp doc/man/man3/* $(mandir)/man3/
-		${INSTALL} -d $(mandir)/man1
+		${INSTALL} -d $(DESTDIR)$(mandir)/man3
+		cp -Rp doc/man/man3/* $(DESTDIR)$(mandir)/man3/
+		${INSTALL} -d $(DESTDIR)$(mandir)/man1
 		for i in $(PROG_TARGETS); do \
-			${INSTALL} -c -m 644 $(srcdir)/doc/$$i.1 $(mandir)/man1 ; done
+			${INSTALL} -c -m 644 $(srcdir)/doc/$$i.1 $(DESTDIR)$(mandir)/man1 ; done
 		exit 0
 
 uninstall-doc:	doc
 		for i in `cat doc/ldns_manpages`; do \
-			rm -f $(mandir)/man3/$$i.3 ; done
+			rm -f $(DESTDIR)$(mandir)/man3/$$i.3 ; done
 		for i in $(PROG_TARGETS); do \
-			rm -f $(mandir)/man1/$$i.1 ; done
+			rm -f $(DESTDIR)$(mandir)/man1/$$i.1 ; done
 		exit 0
-		rmdir -p --ignore-fail-on-non-empty $(mandir)/man3
+		rmdir -p --ignore-fail-on-non-empty $(DESTDIR)$(mandir)/man3
 
 install-h:	lib
-		$(INSTALL) -m 755 -d $(includedir)/ldns
+		$(INSTALL) -m 755 -d $(DESTDIR)$(includedir)/ldns
 		for i in $(LIBDNS_HEADERS); do \
-			MVPROG=/bin/cp $(INSTALL) -m 644 $$i $(includedir)/ldns/; done
+			MVPROG=/bin/cp $(INSTALL) -m 644 $$i $(DESTDIR)$(includedir)/ldns/; done
 
 uninstall-h:
 		for i in $(LIBDNS_HEADERS); do \
-			rm -f $(includedir)/$$i; done
-		[ ! -d $(includedir)/ldns ] || rmdir -p --ignore-fail-on-non-empty $(includedir)/ldns
+			rm -f $(DESTDIR)$(includedir)/$$i; done
+		[ ! -d $(DESTDIR)$(includedir)/ldns ] || rmdir -p --ignore-fail-on-non-empty $(DESTDIR)$(includedir)/ldns
 		exit 0
 	
 install-lib:	lib
-		$(INSTALL) -m 755 -d $(libdir)
-		$(LIBTOOL) --mode=install cp libldns.la $(libdir)
-		$(LIBTOOL) --mode=finish $(libdir)
+		$(INSTALL) -m 755 -d $(DESTDIR)$(libdir)
+		$(LIBTOOL) --mode=install cp libldns.la $(DESTDIR)$(libdir)
+		$(LIBTOOL) --mode=finish $(DESTDIR)$(libdir)
 
 uninstall-lib:	
-		$(LIBTOOL) --mode=uninstall rm -f $(libdir)/libldns.la
-		rmdir -p --ignore-fail-on-non-empty $(libdir)
+		$(LIBTOOL) --mode=uninstall rm -f $(DESTDIR)$(libdir)/libldns.la
+		rmdir -p --ignore-fail-on-non-empty $(DESTDIR)$(libdir)
 
 snapshot:	distclean
 		(rm -rf ../ldns-snap-$(DATE)/)

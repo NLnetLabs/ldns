@@ -9,6 +9,8 @@ XX Sep 2005: 0.80: ldns-team
 	* [tools] Drill was added to ldns - see drill/
 	* [tools] experimental signer was added 
 	* [building] better check for ssl
+	* [building] major revision of build system
+	* [building] added rpm .spec in packaging/ (thanks to Paul Wouters)
 
 28 Jul 2005: 0.70: ldns-team
 	* [func] ldns_pkt_get_section now returns copies from the rrlists

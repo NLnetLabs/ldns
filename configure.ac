@@ -18,6 +18,7 @@ AC_PROG_MAKE_SET
 # Checks for typedefs, structures, and compiler characteristics.
 AC_C_CONST
 AC_C_INLINE
+AC_LANG_C
 
 AC_DEFUN([AC_CHECK_FORMAT_ATTRIBUTE],
 [AC_REQUIRE([AC_PROG_CC])
