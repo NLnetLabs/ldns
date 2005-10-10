@@ -1,142 +1,44 @@
-#!/bin/sh
-# This is a shell archive (produced by GNU sharutils 4.2.1).
-# To extract the files from this archive, save it to some FILE, remove
-# everything before the `!/bin/sh' line above, then type `sh FILE'.
+# This is a shell archive.  Save it in a file, remove anything before
+# this line, and then unpack it by entering "sh file".  Note, it may
+# create directories; files and directories will be owned by you and
+# have default permissions.
 #
-# Made on 2005-10-07 21:15 CEST by <miekg@elektron>.
-# Source directory was `/home/miekg/svn/libdns/trunk/test'.
+# This archive contains:
 #
-# Existing files will *not* be overwritten unless `-c' is specified.
+#	01-checkout.dsc
+#	01-checkout.test
 #
-# This shar contains:
-# length mode       name
-# ------ ---------- ------------------------------------------
-#    252 -rw------- 01-checkout.dsc
-#    304 -rw------- 01-checkout.test
-#
-save_IFS="${IFS}"
-IFS="${IFS}:"
-gettext_dir=FAILED
-locale_dir=FAILED
-first_param="$1"
-for dir in $PATH
-do
-  if test "$gettext_dir" = FAILED && test -f $dir/gettext \
-     && ($dir/gettext --version >/dev/null 2>&1)
-  then
-    set `$dir/gettext --version 2>&1`
-    if test "$3" = GNU
-    then
-      gettext_dir=$dir
-    fi
-  fi
-  if test "$locale_dir" = FAILED && test -f $dir/shar \
-     && ($dir/shar --print-text-domain-dir >/dev/null 2>&1)
-  then
-    locale_dir=`$dir/shar --print-text-domain-dir`
-  fi
-done
-IFS="$save_IFS"
-if test "$locale_dir" = FAILED || test "$gettext_dir" = FAILED
-then
-  echo=echo
-else
-  TEXTDOMAINDIR=$locale_dir
-  export TEXTDOMAINDIR
-  TEXTDOMAIN=sharutils
-  export TEXTDOMAIN
-  echo="$gettext_dir/gettext -s"
-fi
-if touch -am -t 200112312359.59 $$.touch >/dev/null 2>&1 && test ! -f 200112312359.59 -a -f $$.touch; then
-  shar_touch='touch -am -t $1$2$3$4$5$6.$7 "$8"'
-elif touch -am 123123592001.59 $$.touch >/dev/null 2>&1 && test ! -f 123123592001.59 -a ! -f 123123592001.5 -a -f $$.touch; then
-  shar_touch='touch -am $3$4$5$6$1$2.$7 "$8"'
-elif touch -am 1231235901 $$.touch >/dev/null 2>&1 && test ! -f 1231235901 -a -f $$.touch; then
-  shar_touch='touch -am $3$4$5$6$2 "$8"'
-else
-  shar_touch=:
-  echo
-  $echo 'WARNING: not restoring timestamps.  Consider getting and'
-  $echo "installing GNU \`touch', distributed in GNU File Utilities..."
-  echo
-fi
-rm -f 200112312359.59 123123592001.59 123123592001.5 1231235901 $$.touch
-#
-if mkdir _sh24199; then
-  $echo 'x -' 'creating lock directory'
-else
-  $echo 'failed to create lock directory'
-  exit 1
-fi
-# ============= 01-checkout.dsc ==============
-if test -f '01-checkout.dsc' && test "$first_param" != -c; then
-  $echo 'x -' SKIPPING '01-checkout.dsc' '(file already exists)'
-else
-  $echo 'x -' extracting '01-checkout.dsc' '(text)'
-  sed 's/^X//' << 'SHAR_EOF' > '01-checkout.dsc' &&
-BaseName: 01-checkout
-Version: 1.0
-Description: check out libdns from svn and compile it
-CreationDate: Fri Oct  7 21:09:03 CEST 2005
-Maintainer: Miek Gieben
-Category: 
-Component:
-Depends: 
-Pre: 
-Post:
-Test: 01-checkout.test
-AuxFiles: 
-Passed:
-Failure:
-SHAR_EOF
-  (set 20 05 10 07 21 09 27 '01-checkout.dsc'; eval "$shar_touch") &&
-  chmod 0600 '01-checkout.dsc' ||
-  $echo 'restore of' '01-checkout.dsc' 'failed'
-  if ( md5sum --help 2>&1 | grep 'sage: md5sum \[' ) >/dev/null 2>&1 \
-  && ( md5sum --version 2>&1 | grep -v 'textutils 1.12' ) >/dev/null; then
-    md5sum -c << SHAR_EOF >/dev/null 2>&1 \
-    || $echo '01-checkout.dsc:' 'MD5 check failed'
-15a00891f55acc8f401e0f819cecda8c  01-checkout.dsc
-SHAR_EOF
-  else
-    shar_count="`LC_ALL= LC_CTYPE= LANG= wc -c < '01-checkout.dsc'`"
-    test 252 -eq "$shar_count" ||
-    $echo '01-checkout.dsc:' 'original size' '252,' 'current size' "$shar_count!"
-  fi
-fi
-# ============= 01-checkout.test ==============
-if test -f '01-checkout.test' && test "$first_param" != -c; then
-  $echo 'x -' SKIPPING '01-checkout.test' '(file already exists)'
-else
-  $echo 'x -' extracting '01-checkout.test' '(text)'
-  sed 's/^X//' << 'SHAR_EOF' > '01-checkout.test' &&
-[ -f /home/miekg/svn/libdns/trunk/test/tpkg.var ] && source /home/miekg/svn/libdns/trunk/test/tpkg.var
+echo x - 01-checkout.dsc
+sed 's/^X//' >01-checkout.dsc << 'END-of-01-checkout.dsc'
+XBaseName: 01-checkout
+XVersion: 1.0
+XDescription: check out libdns from svn and compile it
+XCreationDate: Fri Oct  7 21:09:03 CEST 2005
+XMaintainer: Miek Gieben
+XCategory: 
+XComponent:
+XDepends: 
+XPre: 
+XPost:
+XTest: 01-checkout.test
+XAuxFiles: 
+XPassed:
+XFailure:
+END-of-01-checkout.dsc
+echo x - 01-checkout.test
+sed 's/^X//' >01-checkout.test << 'END-of-01-checkout.test'
+X[ -f ../.tpkg.var ] && source ../.tpkg.var
 X
-TPKG_BUILD=`mktemp -d`
+XTPKG_BUILD=`mktemp -d /tmp/XXXXXX`
 X
-echo "TPKG_BUILD=$TPKG_BUILD" >> $TPKG_VAR
+Xecho "TPKG_BUILD=$TPKG_BUILD" >> $TPKG_VAR
 X
-svn co svn+ssh://open.nlnetlabs.nl/svn/libdns/trunk $TPKG_BUILD
+Xsvn co file:///svn/libdns/trunk $TPKG_BUILD
 X
-cd $TPKG_BUILD
-libtoolize && autoreconf && \
+Xcd $TPKG_BUILD
+Xlibtoolize15 && autoheader259 && autoconf259 && \
 X./configure && \
-make
-SHAR_EOF
-  (set 20 05 10 07 21 12 48 '01-checkout.test'; eval "$shar_touch") &&
-  chmod 0600 '01-checkout.test' ||
-  $echo 'restore of' '01-checkout.test' 'failed'
-  if ( md5sum --help 2>&1 | grep 'sage: md5sum \[' ) >/dev/null 2>&1 \
-  && ( md5sum --version 2>&1 | grep -v 'textutils 1.12' ) >/dev/null; then
-    md5sum -c << SHAR_EOF >/dev/null 2>&1 \
-    || $echo '01-checkout.test:' 'MD5 check failed'
-0fb62fd873c6948604310d61c21f39c3  01-checkout.test
-SHAR_EOF
-  else
-    shar_count="`LC_ALL= LC_CTYPE= LANG= wc -c < '01-checkout.test'`"
-    test 304 -eq "$shar_count" ||
-    $echo '01-checkout.test:' 'original size' '304,' 'current size' "$shar_count!"
-  fi
-fi
-rm -fr _sh24199
-exit 0
+Xgmake
+END-of-01-checkout.test
+exit
+
