@@ -3,15 +3,15 @@
 # To extract the files from this archive, save it to some FILE, remove
 # everything before the `!/bin/sh' line above, then type `sh FILE'.
 #
-# Made on 2005-10-07 21:25 CEST by <miekg@elektron>.
-# Source directory was `/home/miekg/svn/libdns/trunk/test/tmp.lCFrmz'.
+# Made on 2005-10-10 10:51 CEST by <miekg@floep>.
+# Source directory was `/home/miekg/svn/libdns/trunk/test/02-lint.NOPcEM'.
 #
 # Existing files will *not* be overwritten unless `-c' is specified.
 #
 # This shar contains:
 # length mode       name
 # ------ ---------- ------------------------------------------
-#    252 -rw------- 02-lint.dsc
+#    245 -rw------- 02-lint.dsc
 #    130 -rw------- 02-lint.test
 #
 save_IFS="${IFS}"
@@ -62,7 +62,7 @@ else
 fi
 rm -f 200112312359.59 123123592001.59 123123592001.5 1231235901 $$.touch
 #
-if mkdir _sh31473; then
+if mkdir _sh10389; then
   $echo 'x -' 'creating lock directory'
 else
   $echo 'failed to create lock directory'
@@ -81,27 +81,27 @@ CreationDate: Fri Oct  7 21:16:30 CEST 2005
 Maintainer: Miek Gieben
 Category: 
 Component:
-Depends: 
-Pre: 02-lint.pre
-Post: 02-lint.post
+Depends: 01-checkout.tpkg
+Pre: 
+Post: 
 Test: 02-lint.test
 AuxFiles: 
 Passed:
 Failure:
 SHAR_EOF
-  (set 20 05 10 07 21 24 57 '02-lint.dsc'; eval "$shar_touch") &&
+  (set 20 05 10 10 10 48 58 '02-lint.dsc'; eval "$shar_touch") &&
   chmod 0600 '02-lint.dsc' ||
   $echo 'restore of' '02-lint.dsc' 'failed'
   if ( md5sum --help 2>&1 | grep 'sage: md5sum \[' ) >/dev/null 2>&1 \
   && ( md5sum --version 2>&1 | grep -v 'textutils 1.12' ) >/dev/null; then
     md5sum -c << SHAR_EOF >/dev/null 2>&1 \
     || $echo '02-lint.dsc:' 'MD5 check failed'
-addeffc82d9eb22e484b94045dfdce99  02-lint.dsc
+fb57f76bd30fbacf33b4a350abc6e4d1  02-lint.dsc
 SHAR_EOF
   else
     shar_count="`LC_ALL= LC_CTYPE= LANG= wc -c < '02-lint.dsc'`"
-    test 252 -eq "$shar_count" ||
-    $echo '02-lint.dsc:' 'original size' '252,' 'current size' "$shar_count!"
+    test 245 -eq "$shar_count" ||
+    $echo '02-lint.dsc:' 'original size' '245,' 'current size' "$shar_count!"
   fi
 fi
 # ============= 02-lint.test ==============
@@ -130,5 +130,5 @@ SHAR_EOF
     $echo '02-lint.test:' 'original size' '130,' 'current size' "$shar_count!"
   fi
 fi
-rm -fr _sh31473
+rm -fr _sh10389
 exit 0
