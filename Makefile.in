@@ -108,13 +108,13 @@ examples-config:	./examples/Makefile
 examples: 		examples-config
 		( cd examples ; $(MAKE) -f Makefile all)
 
-examples-realclean:	./drill/Makefile
+examples-realclean:	./examples/Makefile
 		( cd examples ; $(MAKE) -f Makefile realclean)
 
 examples-clean:	./drill/Makefile
 		( cd examples ; $(MAKE) -f Makefile clean)
 
-examples-confclean:	./drill/Makefile
+examples-confclean:	./examples/Makefile
 		( cd examples ; $(MAKE) -f Makefile confclean)
 
 examples-install:
@@ -128,13 +128,13 @@ tests-config:	./tests/Makefile
 tests: 		tests-config
 		( cd tests ; $(MAKE) -f Makefile all)
 
-tests-realclean:	./drill/Makefile
+tests-realclean:	./tests/Makefile
 		( cd tests ; $(MAKE) -f Makefile realclean)
 
 tests-clean:	./drill/Makefile
 		( cd tests ; $(MAKE) -f Makefile clean)
 
-tests-confclean:	./drill/Makefile
+tests-confclean:	./tests/Makefile
 		( cd tests ; $(MAKE) -f Makefile confclean)
 
 lib:		$(LIBDNS_OBJECTS) b64_pton$U.o b64_ntop$U.o
@@ -215,9 +215,8 @@ clean:
 	rm -f *.ds
 	rm -f *.private
 
-distclean: clean docclean libclean
+distclean: clean docclean libclean drill-confclean examples-confclean
 	rm -f ltmain.sh
-	(cd drill ; $(MAKE) -f Makefile distclean)
 
 realclean: clean docclean libclean
 	rm -f config.status
