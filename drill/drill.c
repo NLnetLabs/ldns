@@ -63,7 +63,7 @@ version(FILE *stream, const char *progname)
         fprintf(stream, "%s version %s\n", progname, DRILL_VERSION);
         fprintf(stream, "Written by NLnet Labs.\n");
         fprintf(stream, "\nCopyright (c) 2004, 2005 NLnet Labs.\n");
-        fprintf(stream, "Licensed under the GPL 2.\n");
+        fprintf(stream, "Licensed under the revised BSD license.\n");
         fprintf(stream, "There is NO warranty; not even for MERCHANTABILITY or FITNESS\n");
         fprintf(stream, "FOR A PARTICULAR PURPOSE.\n");
 }

@@ -2,7 +2,7 @@
  * signzone signs a zone file
  * for a particulary domain
  * (c) NLnet Labs, 2005
- * Licensed under the GPL version 2
+ * See the file LICENSE for the license
  */
 
 #include <ldns/config.h>

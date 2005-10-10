@@ -2,7 +2,7 @@
  * keygen is a small programs that generate a dnskey and private key
  * for a particulary domain. It (currently) prints out the public key
  * (c) NLnet Labs, 2005
- * Licensed under the GPL version 2
+ * See the file LICENSE for the license
  */
 
 #include "config.h"

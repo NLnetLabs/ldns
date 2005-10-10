@@ -2,7 +2,7 @@ Summary: Lowlevel DNS(SEC) library with API
 Name: ldns
 Version: 1.0.0
 Release: 2
-License: LGPL
+License: BSD (revised)
 Url: http://open.nlnetlabs.nl/%{name}/
 Source: http://open.nlnetlabs.nl/downloads/%{name}-%{version}.tar.gz
 Group: System Environment/Libraries
@@ -29,7 +29,7 @@ rm -rf %{buildroot}
 %setup -q 
 libtoolize
 autoreconf
-./configure
+%configure
 
 #this is really a bad hack, and should be fixed in the 'make install' target
 #./configure --prefix=%{buildroot}%{_prefix} --libdir=%{buildroot}%{_libdir} --includedir=%{buildroot}%{_includedir} --mandir=%{buildroot}%{_mandir} 

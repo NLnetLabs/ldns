@@ -1,5 +1,7 @@
- /*
- * read a zone file from disk
+/*
+ * read a zone file from disk and print it
+ *
+ * See the file LICENSE for the license
  */
 
 #include "config.h"

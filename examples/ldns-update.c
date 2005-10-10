@@ -1,4 +1,10 @@
 /* $Id: ldns-update.c,v 1.1 2005/09/13 09:37:05 ho Exp $ */
+/*
+ * Example of the update functionality
+ *
+ * See the file LICENSE for the license
+ */
+
 
 #include "config.h"
 
