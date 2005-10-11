@@ -88,16 +88,16 @@ drill-config:	./drill/Makefile
 drill: 		drill-config
 		( cd drill ; $(MAKE) -f Makefile all)
 
-drill-realclean:	./drill/Makefile
+drill-realclean:	drill-config
 		( cd drill ; $(MAKE) -f Makefile realclean)
 
-drill-clean:	./drill/Makefile
-		( cd drill ; $(MAKE) -f Makefile clean)
+drill-clean:	
+		( cd drill ; if [ -f Makefile ] ; then $(MAKE) -f Makefile clean ; fi ;)
 
-drill-confclean:	./drill/Makefile
-		( cd drill ; $(MAKE) -f Makefile confclean)
+drill-confclean:
+		( cd drill ; if [ -f Makefile ] ; then $(MAKE) -f Makefile confclean ; fi ;)
 
-drill-install:
+drill-install:	drill
 		( cd drill ; $(MAKE) -f Makefile install)
 
 ./examples/Makefile:
@@ -111,13 +111,13 @@ examples: 		examples-config
 examples-realclean:	./examples/Makefile
 		( cd examples ; $(MAKE) -f Makefile realclean)
 
-examples-clean:	./drill/Makefile
-		( cd examples ; $(MAKE) -f Makefile clean)
+examples-clean:
+		( cd examples ; if [ -f Makefile ] ; then $(MAKE) -f Makefile clean ; fi ;)
 
-examples-confclean:	./examples/Makefile
-		( cd examples ; $(MAKE) -f Makefile confclean)
+examples-confclean:
+		( cd examples ; if [ -f Makefile ] ; then $(MAKE) -f Makefile confclean ; fi ;)
 
-examples-install:
+examples-install:	examples
 		( cd examples ; $(MAKE) -f Makefile install)
 
 ./tests/Makefile:
@@ -128,14 +128,14 @@ tests-config:	./tests/Makefile
 tests: 		tests-config
 		( cd tests ; $(MAKE) -f Makefile all)
 
-tests-realclean:	./tests/Makefile
+tests-realclean:	tests-config
 		( cd tests ; $(MAKE) -f Makefile realclean)
 
-tests-clean:	./drill/Makefile
-		( cd tests ; $(MAKE) -f Makefile clean)
+tests-clean:
+		( cd tests ; if [ -f Makefile ] ; then $(MAKE) -f Makefile clean ; fi ;)
 
-tests-confclean:	./tests/Makefile
-		( cd tests ; $(MAKE) -f Makefile confclean)
+tests-confclean:
+		( cd tests ; if [ -f Makefile ] ; then $(MAKE) -f Makefile confclean ; fi ;)
 
 lib:		$(LIBDNS_OBJECTS) b64_pton$U.o b64_ntop$U.o
 		$(LINK_LIB) -o libldns.la $(LIBDNS_LOBJECTS) b64_pton$U.lo b64_ntop$U.lo \

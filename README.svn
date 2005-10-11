@@ -1,11 +1,11 @@
 # small list of commands to build all on a linux system
+# libtoolize and make allautoconf are needed for most other targets
 libtoolize -c
 autoreconf
 ./configure
 make
-make doc
 make allautoconf
-make allconf
+make doc
 make examples
 make drill
 make tests

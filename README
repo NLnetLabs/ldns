@@ -60,8 +60,9 @@ install it).
 
 If you are building from the repository you will need to have (gnu)
 autotools like libtool and autoreconf installed. A list of all the commands
-needed to build everything can be found in BUILD.svn. Note that the actual
-commands may be a little bit different on your machine.
+needed to build everything can be found in README.svn. Note that the actual
+commands may be a little bit different on your machine. Most important are
+libtoolize and make allautoconf (or do autoreconf manually in the subdirs)
 
 
 * Developers
