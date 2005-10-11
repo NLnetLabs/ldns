@@ -76,16 +76,23 @@ confclean: clean
 
 install:	$(PROGRAMS)
 		$(INSTALL) -d -m 755 $(DESTDIR)$(bindir)
+		$(INSTALL) -d -m 755 $(DESTDIR)$(mandir)
+		$(INSTALL) -d -m 755 $(DESTDIR)$(mandir)/man1
 		for i in $(PROGRAMS); do \
-			${INSTALL} -c $$i $(DESTDIR)$(bindir) ; done
+			${INSTALL} -c $$i $(DESTDIR)$(bindir) ; \
+			$(INSTALL) -c -m 644 $$i.1 $(DESTDIR)$(mandir)/man1/$$i.1 ; \
+			done
 		exit 0
 
 
 uninstall:
 		for i in $(PROGRAMS); do \
-			rm -f $(DESTDIR)$(bindir)/$$i ; done
+			rm -f $(DESTDIR)$(bindir)/$$i ; \
+			rm -f $(DESTDIR)$(mandir)/man1/$$i.1 ; \
+			done
 		exit 0
 		rmdir --ignore-fail-on-non-empty -p $(DESTDIR)$(bindir)
+		rmdir --ignore-fail-on-non-empty -p $(DESTDIR)$(mandir)
 
 		
 

@@ -61,7 +61,7 @@ LIBDNS_HEADERS	=	$(srcdir)/ldns/error.h		\
 LIBDNS_OBJECTS	=	$(LIBDNS_SOURCES:.c=.o)
 LIBDNS_LOBJECTS	=	$(LIBDNS_SOURCES:.c=.lo)
 
-ALL_SOURCES	=	$(LIBDNS_SOURCES) $(PROG_SOURCES)
+ALL_SOURCES	=	$(LIBDNS_SOURCES)
 
 COMPILE		= $(CC) $(CPPFLAGS) $(CFLAGS)
 COMP_LIB	= $(LIBTOOL) --mode=compile $(CC) $(CPPFLAGS) $(CFLAGS)
@@ -77,8 +77,6 @@ LINK_LIB	= $(LIBTOOL) --mode=link $(CC) $(CFLAGS) $(LDFLAGS) -release $(VERSION)
 .PHONY: confdrill tools-drill
 
 all:		lib
-
-tools:		$(PROG_TARGETS)
 
 ./drill/Makefile:
 		( $(INSTALL) -d drill ; cd drill ; ../$(srcdir)/drill/configure --prefix=$(prefix) --bindir=$(bindir) --mandir=$(mandir) LDFLAGS="-L../.libs" CPPFLAGS="-I.. -I../..")
@@ -159,16 +157,10 @@ install-doc:	doc
 		${INSTALL} -d $(DESTDIR)$(mandir)/man3
 		cp -Rp doc/man/man3/* $(DESTDIR)$(mandir)/man3/
 		${INSTALL} -d $(DESTDIR)$(mandir)/man1
-		for i in $(PROG_TARGETS); do \
-			${INSTALL} -c -m 644 $(srcdir)/doc/$$i.1 $(DESTDIR)$(mandir)/man1 ; done
-		exit 0
 
 uninstall-doc:	doc
 		for i in `cat doc/ldns_manpages`; do \
 			rm -f $(DESTDIR)$(mandir)/man3/$$i.3 ; done
-		for i in $(PROG_TARGETS); do \
-			rm -f $(DESTDIR)$(mandir)/man1/$$i.1 ; done
-		exit 0
 		rmdir -p --ignore-fail-on-non-empty $(DESTDIR)$(mandir)/man3
 
 install-h:	lib
@@ -208,7 +200,6 @@ clean:
 	rm -f *.o *.d 
 	rm -f *~
 	rm -f tests/*.o
-	rm -f $(PROG_TARGETS)
 	rm -rf autom4te.cache/
 	rm -f tags
 	rm -f *.key

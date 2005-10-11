@@ -1,15 +1,13 @@
-.TH ldns-mx 1 "27 Apr 2005"
+.TH ldns-read-zone 1 "30 May 2005"
 .SH NAME
-ldns-mx \- print out the mx record(s) for a domain
+ldns-read-zone \- read a zonefile and print it
 .SH SYNOPSIS
-.B ldns-mx
-.IR DOMAIN 
+.B ldns-read-zone 
+.IR ZONEFILE 
 
 .SH DESCRIPTION
-\fBldns-mx\fR is used to print out mx information of a domain.
 
-.SH OPTIONS
-\fBldns-mx\fR has no options.
+\fBldns-read-zone\fR reads a DNS zone file and prints it. The output has 1 RR per line, and no pretty-printing makeup.
 
 .SH AUTHOR
 Written by the ldns team as an example for ldns usage.
