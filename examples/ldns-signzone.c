@@ -87,10 +87,12 @@ main(int argc, char *argv[])
 			 * should be a timestamp (seconds since epoch)
 			 */
 			memset(&tm, 0, sizeof(tm));
+			printf("yoyoyo %d\n", strptime(optarg, DATE_FORMAT,  &tm));
 
-			if ((char *)strptime(optarg, DATE_FORMAT, &tm) != NULL) {
+			if (!strptime(optarg, DATE_FORMAT,  &tm)) {
+			        c = c;
 				expiration = (uint32_t) mktime_from_utc(&tm);
-			} else if ((char *)strptime(optarg, SHORT_DATE_FORMAT, &tm) != NULL) {
+			} else if (!strptime(optarg, SHORT_DATE_FORMAT, &tm)) {
 				expiration = (uint32_t) mktime_from_utc(&tm);
 			} else {
 				expiration = atol(optarg);
@@ -103,9 +105,9 @@ main(int argc, char *argv[])
 		case 'i':
 			memset(&tm, 0, sizeof(tm));
 
-			if ((char *)strptime(optarg, DATE_FORMAT, &tm) != NULL) {
+			if (!strptime(optarg, DATE_FORMAT, &tm)) {
 				inception = (uint32_t) mktime_from_utc(&tm);
-			} else if ((char *)strptime(optarg, SHORT_DATE_FORMAT, &tm) != NULL) {
+			} else if (!strptime(optarg, SHORT_DATE_FORMAT, &tm)) {
 				inception = (uint32_t) mktime_from_utc(&tm);
 			} else {
 				inception = atol(optarg);
