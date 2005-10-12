@@ -1,8 +1,8 @@
 Summary: Lowlevel DNS(SEC) library with API
 Name: ldns
 Version: 1.0.0
-Release: 2
-License: BSD (revised)
+Release: 4
+License: LGPL
 Url: http://open.nlnetlabs.nl/%{name}/
 Source: http://open.nlnetlabs.nl/downloads/%{name}-%{version}.tar.gz
 Group: System Environment/Libraries
@@ -29,26 +29,24 @@ rm -rf %{buildroot}
 %setup -q 
 libtoolize
 autoreconf
+
 %configure
 
-#this is really a bad hack, and should be fixed in the 'make install' target
-#./configure --prefix=%{buildroot}%{_prefix} --libdir=%{buildroot}%{_libdir} --includedir=%{buildroot}%{_includedir} --mandir=%{buildroot}%{_mandir} 
 
 %build
+%{__make} %{?_smp_mflags} allautoconf
 %{__make} %{?_smp_mflags}
 %{__make} %{?_smp_mflags} drill
-#%{__make} %{?_smp_mflags} examples
+%{__make} %{?_smp_mflags} examples
 %{__make} %{?_smp_mflags} doc
 
 %install
 
-#install -d 0755 %{buildroot}%{_includedir}/ldns
-#install -d 0755 %{buildroot}%{_libdir}
-#install -d 0755 %{buildroot}%{_mandir}/man3
+export DESTDIR=%{buildroot}
 %{__make} install
+%{__make} examples-install
 %{__make} install-doc
 %{__make} drill-install
-#%{__make} examples
 #remove doc stubs
 rm -rf doc/.svn
 #remove double set of man pages
@@ -60,6 +58,8 @@ rm -rf %{buildroot}
 %files 
 %defattr(-,root,root)
 %{_libdir}/libldns*so
+%{_bindir}/drill
+%{_bindir}/ldns-*
 %doc README LICENSE ROADMAP TODO 
 %doc %{_mandir}/*/*
 
@@ -85,6 +85,3 @@ rm -rf %{buildroot}
 
 * Sun Sep 25 2005 Paul Wouters <paul@xelerance.com> - 0.70
 - Initial version
-
-
-
