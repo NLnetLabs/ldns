@@ -974,12 +974,21 @@ ldns_pkt2buffer_str(ldns_buffer *output, ldns_pkt *pkt)
 			lt = ldns_lookup_by_id(ldns_edns_flags, 
 					(int)ldns_pkt_edns_z(pkt));
 			
-			ldns_buffer_printf(output,
-			                   ";; EDNS: version %u, flags: %s; udp: %u\n",
-			                   ldns_pkt_edns_version(pkt),
-			                   lt->name,
-			                   ldns_pkt_edns_udp_size(pkt)
-			                   );
+			if (lt) {
+				ldns_buffer_printf(output,
+						   ";; EDNS: version %u; flags: %s; udp: %u\n",
+						   ldns_pkt_edns_version(pkt),
+						   lt->name,
+						   ldns_pkt_edns_udp_size(pkt)
+						   );
+			} else {
+				ldns_buffer_printf(output,
+						   ";; EDNS: version %u; flags: ; udp: %u\n",
+						   ldns_pkt_edns_version(pkt),
+						   ldns_pkt_edns_udp_size(pkt)
+						   );
+			}
+			
 			if (ldns_pkt_edns_data(pkt)) {
 				ldns_buffer_printf(output, ";; Data: ");
 				(void)ldns_rdf2buffer_str(output, ldns_pkt_edns_data(pkt));
