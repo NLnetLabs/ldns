@@ -51,6 +51,11 @@ ldns_lookup_table ldns_error_str[] = {
         { LDNS_STATUS_CRYPTO_EXPIRATION_BEFORE_INCEPTION, "DNSSEC signature has expiration date earlier than inception date" },
 	{ LDNS_STATUS_RES_NO_NS, "No nameservers defined in the resolver" },
 	{ LDNS_STATUS_RES_QUERY, "No correct query given to resolver" },
+	{ LDNS_STATUS_WIRE_INCOMPLETE_HEADER, "header section incomplete" },
+	{ LDNS_STATUS_WIRE_INCOMPLETE_QUESTION, "question section incomplete" },
+	{ LDNS_STATUS_WIRE_INCOMPLETE_ANSWER, "answer section incomplete" },
+	{ LDNS_STATUS_WIRE_INCOMPLETE_AUTHORITY, "authority section incomplete" },
+	{ LDNS_STATUS_WIRE_INCOMPLETE_ADDITIONAL, "additional section incomplete" },
 	{ 0, NULL }
 };
 

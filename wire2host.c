@@ -277,6 +277,11 @@ ldns_wire2rr(ldns_rr **rr_p, const uint8_t *wire, size_t max,
 
 	ldns_rr_set_owner(rr, owner);
 	
+	if (*pos + 4 > max) {
+		status = LDNS_STATUS_PACKET_OVERFLOW;
+		goto status_error;
+	}
+	
 	ldns_rr_set_type(rr, ldns_read_uint16(&wire[*pos]));
 	*pos = *pos + 2;
 
@@ -284,6 +289,10 @@ ldns_wire2rr(ldns_rr **rr_p, const uint8_t *wire, size_t max,
 	*pos = *pos + 2;
 
 	if (section != LDNS_SECTION_QUESTION) {
+		if (*pos + 4 > max) {
+			status = LDNS_STATUS_PACKET_OVERFLOW;
+			goto status_error;
+		}
 		ldns_rr_set_ttl(rr, ldns_read_uint32(&wire[*pos]));	
 		*pos = *pos + 4;
 		status = ldns_wire2rdf(rr, wire, max, pos);
@@ -295,7 +304,7 @@ ldns_wire2rr(ldns_rr **rr_p, const uint8_t *wire, size_t max,
 	return LDNS_STATUS_OK;
 	
 status_error:
-	LDNS_FREE(rr);
+	ldns_rr_free(rr);
 	return status;
 }
 
@@ -306,7 +315,7 @@ ldns_wire2pkt_hdr(ldns_pkt *packet,
 			size_t *pos)
 {
 	if (*pos + LDNS_HEADER_SIZE > max) {
-		return LDNS_STATUS_PACKET_OVERFLOW;
+		return LDNS_STATUS_WIRE_INCOMPLETE_HEADER;
 	} else {
 		ldns_pkt_set_id(packet, LDNS_ID_WIRE(wire));
 		ldns_pkt_set_qr(packet, LDNS_QR_WIRE(wire));
@@ -352,10 +361,13 @@ ldns_wire2pkt(ldns_pkt **packet_p, const uint8_t *wire, size_t max)
 
 	status = ldns_wire2pkt_hdr(packet, wire, max, &pos);
 	LDNS_STATUS_CHECK_GOTO(status, status_error);
-	
+
 	for (i = 0; i < ldns_pkt_qdcount(packet); i++) {
 		status = ldns_wire2rr(&rr, wire, max, &pos,
 		                      LDNS_SECTION_QUESTION);
+		if (status == LDNS_STATUS_PACKET_OVERFLOW) {
+			status = LDNS_STATUS_WIRE_INCOMPLETE_QUESTION;
+		}
 		LDNS_STATUS_CHECK_GOTO(status, status_error);
 		if (!ldns_rr_list_push_rr(ldns_pkt_question(packet), rr)) {
 			ldns_pkt_free(packet);
@@ -365,6 +377,9 @@ ldns_wire2pkt(ldns_pkt **packet_p, const uint8_t *wire, size_t max)
 	for (i = 0; i < ldns_pkt_ancount(packet); i++) {
 		status = ldns_wire2rr(&rr, wire, max, &pos,
 		                      LDNS_SECTION_ANSWER);
+		if (status == LDNS_STATUS_PACKET_OVERFLOW) {
+			status = LDNS_STATUS_WIRE_INCOMPLETE_ANSWER;
+		}
 		LDNS_STATUS_CHECK_GOTO(status, status_error);
 		if (!ldns_rr_list_push_rr(ldns_pkt_answer(packet), rr)) {
 			ldns_pkt_free(packet);
@@ -374,6 +389,9 @@ ldns_wire2pkt(ldns_pkt **packet_p, const uint8_t *wire, size_t max)
 	for (i = 0; i < ldns_pkt_nscount(packet); i++) {
 		status = ldns_wire2rr(&rr, wire, max, &pos,
 		                      LDNS_SECTION_AUTHORITY);
+		if (status == LDNS_STATUS_PACKET_OVERFLOW) {
+			status = LDNS_STATUS_WIRE_INCOMPLETE_AUTHORITY;
+		}
 		LDNS_STATUS_CHECK_GOTO(status, status_error);
 		if (!ldns_rr_list_push_rr(ldns_pkt_authority(packet), rr)) {
 			ldns_pkt_free(packet);
@@ -383,6 +401,9 @@ ldns_wire2pkt(ldns_pkt **packet_p, const uint8_t *wire, size_t max)
 	for (i = 0; i < ldns_pkt_arcount(packet); i++) {
 		status = ldns_wire2rr(&rr, wire, max, &pos,
 		                      LDNS_SECTION_ADDITIONAL);
+		if (status == LDNS_STATUS_PACKET_OVERFLOW) {
+			status = LDNS_STATUS_WIRE_INCOMPLETE_ADDITIONAL;
+		}
 		LDNS_STATUS_CHECK_GOTO(status, status_error);
 		if (ldns_rr_get_type(rr) == LDNS_RR_TYPE_OPT) {
 			ldns_pkt_set_edns_udp_size(packet, ldns_rr_get_class(rr));
@@ -406,6 +427,6 @@ ldns_wire2pkt(ldns_pkt **packet_p, const uint8_t *wire, size_t max)
 	return status;
 	
 status_error:
-	LDNS_FREE(packet);
+	ldns_pkt_free(packet);
 	return status;
 }
