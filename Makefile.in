@@ -156,7 +156,6 @@ destclean:	uninstall
 install-doc:	doc
 		${INSTALL} -d $(DESTDIR)$(mandir)/man3
 		cp -Rp doc/man/man3/* $(DESTDIR)$(mandir)/man3/
-		${INSTALL} -d $(DESTDIR)$(mandir)/man1
 
 uninstall-doc:	doc
 		for i in `cat doc/ldns_manpages`; do \
