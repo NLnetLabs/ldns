@@ -92,12 +92,13 @@ bool ldns_zone_push_rr_list(ldns_zone *z, ldns_rr_list *list);
 bool ldns_zone_push_rr(ldns_zone *z, ldns_rr *rr);
 
 /**
- * find out if the rr is glue inside zone z
+ * Retrieve all resource records from the zone that are glue
+ * records. The resulting list does *not* contain clones from the rrs
+ *
  * \param[in] z the zone to look for glue
  * \return the rr_list with the glue
  */
-ldns_rr_list * ldns_zone_rr_list_is_glue(ldns_zone *z);
-
+ldns_rr_list *ldns_zone_glue_rr_list(ldns_zone *z);
 
 ldns_zone *
 ldns_zone_new_frm_fp(FILE *fp, ldns_rdf *origin, uint16_t ttl, ldns_rr_class c);
