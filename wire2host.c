@@ -65,7 +65,7 @@ ldns_wire2dname(ldns_rdf **dname, const uint8_t *wire, size_t max, size_t *pos)
 	uint8_t *dname_ar;
 	unsigned int pointer_count = 0;
 	
-	if (*pos > max) {
+	if (*pos >= max) {
 		return LDNS_STATUS_PACKET_OVERFLOW;
 	}
 	
@@ -80,6 +80,9 @@ ldns_wire2dname(ldns_rdf **dname, const uint8_t *wire, size_t max, size_t *pos)
 			pointer_count++;
 			
 			/* remove first two bits */
+			if (*pos + 3 > max) {
+				return LDNS_STATUS_PACKET_OVERFLOW;
+			}
 			pointer_target_buf[0] = wire[*pos] & 63;
 			pointer_target_buf[1] = wire[*pos + 1];
 			pointer_target = ldns_read_uint16(pointer_target_buf);
@@ -139,7 +142,7 @@ ldns_wire2dname(ldns_rdf **dname, const uint8_t *wire, size_t max, size_t *pos)
 }
 
 /* maybe make this a goto error so data can be freed or something/ */
-#define LDNS_STATUS_CHECK_RETURN(st) {if (st != LDNS_STATUS_OK) { printf("STR %d\n", __LINE__); return st; }}
+#define LDNS_STATUS_CHECK_RETURN(st) {if (st != LDNS_STATUS_OK) { return st; }}
 #define LDNS_STATUS_CHECK_GOTO(st, label) {if (st != LDNS_STATUS_OK) { /*printf("STG %s:%d: status code %d\n", __FILE__, __LINE__, st);*/  goto label; }}
 
 ldns_status
@@ -157,7 +160,7 @@ ldns_wire2rdf(ldns_rr *rr, const uint8_t *wire,
 	        ldns_rr_descript(ldns_rr_get_type(rr));
 	ldns_status status;
 	
-	if (*pos > max) {
+	if (*pos + 2 > max) {
 		return LDNS_STATUS_PACKET_OVERFLOW;
 	}
 
@@ -294,8 +297,10 @@ ldns_wire2rr(ldns_rr **rr_p, const uint8_t *wire, size_t max,
 			goto status_error;
 		}
 		ldns_rr_set_ttl(rr, ldns_read_uint32(&wire[*pos]));	
+	
 		*pos = *pos + 4;
 		status = ldns_wire2rdf(rr, wire, max, pos);
+	
 		LDNS_STATUS_CHECK_GOTO(status, status_error);
 	}
 	
