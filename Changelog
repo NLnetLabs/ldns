@@ -1,4 +1,4 @@
-XX Sep 2005: 0.80: ldns-team
+18 Oct 2005: 1.0.0: ldns-team
 	* Commited a patch from Håkan Olsson (revision 1088)
 	* License change: ldns is now BSD licensed
 	* ldns now depends on SSL

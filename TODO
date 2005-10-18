@@ -1,12 +1,5 @@
 Current TODO list
 
-++
-Pre 1.0 Stuff:
---------------
-To be removed:
-LDNS_STATUS_CHECK_GOTO
-Debugging code , dprintf, should be error, ldns_status thingy
-
 Post 1.0 Stuff:
 ---------------
 o Dname compression

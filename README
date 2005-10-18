@@ -1,5 +1,10 @@
-Some general readme information would be nice. Most up to date is 
-website: www.nlnetlabs.nl/ldns/
+Contents:
+	REQUIREMENTS
+	INSTALLATION
+		libdns
+		examples
+		drill
+	KNOWN ISSUES
 
 On that page you can also subscribe to the ldns mailing list.
 
@@ -78,4 +83,10 @@ We have received patches from the following people, thanks!
   o Jakob Schlyter
   o Paul Wouters
 
+
+KNOWN ISSUES
+
+It has been brought to our attention that the build script might have some
+problems on MACOSX 10.4 and Solaris. Please contact us if you have more info
+on this.
 
