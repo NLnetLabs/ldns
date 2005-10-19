@@ -427,6 +427,7 @@ ldns_wire2pkt(ldns_pkt **packet_p, const uint8_t *wire, size_t max)
 			return LDNS_STATUS_INTERNAL_ERR;
 		}
 	}
+	ldns_pkt_set_size(packet, max);
 
 	*packet_p = packet;
 	return status;
