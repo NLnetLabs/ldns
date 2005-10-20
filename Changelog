@@ -1,16 +1,19 @@
 18 Oct 2005: 1.0.0: ldns-team
-	* Commited a patch from Håkan Olsson (revision 1088)
+	* Commited a patch from Håkan Olsson
+	* Added UPDATE support (Jakob Schlyter and Håkan Olsson)
 	* License change: ldns is now BSD licensed
 	* ldns now depends on SSL
 	* Networking code cleanup, added (some) server udp/tcp support
 	* A zone type is introduced. Currently this is a list
-	  of RRs, so it will not scale.
+	  of RRs, so it will not scale well.
 	* [beta] Zonefile parsing was added
 	* [tools] Drill was added to ldns - see drill/
-	* [tools] experimental signer was added 
+	* [tools] experimental signer was added
 	* [building] better check for ssl
 	* [building] major revision of build system
 	* [building] added rpm .spec in packaging/ (thanks to Paul Wouters)
+	* [building] A lot of cleanup in the build scripts (thanks to Jakob Schlyter
+	and Paul Wouters)
 
 28 Jul 2005: 0.70: ldns-team
 	* [func] ldns_pkt_get_section now returns copies from the rrlists
