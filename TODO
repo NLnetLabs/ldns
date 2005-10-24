@@ -2,9 +2,13 @@ Current TODO list
 
 Post 1.0 Stuff:
 ---------------
-o Dname compression
-o A /fast/ impl. for holding a zone (and retrieving data from it)
-o refactor ldns_verify_rrsig_keylist and
-  ldns_verify_rrsig (fold in TSIG stuff or leave it out?)
-o Different digest for DS (spec currently specifies SHA-1)
-o Make it possible to build without OpenSSL
+        o Dname compression
+        o A /fast/ impl. for holding a zone (and retrieving data from it)
+        o refactor ldns_verify_rrsig_keylist and
+          ldns_verify_rrsig (fold in TSIG stuff or leave it out?)
+        o Different digest for DS (spec currently specifies SHA-1)
+        o Make it possible to build without OpenSSL
+
+        Minor:
+        ------
+        o Check RedHat 9 Compile problem
