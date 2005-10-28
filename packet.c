@@ -192,6 +192,12 @@ ldns_pkt_when(const ldns_pkt *packet)
 	return packet->_when;
 }
 
+struct timeval
+ldns_pkt_timestamp(const ldns_pkt *packet)
+{
+	return packet->timestamp;
+}
+
 uint16_t
 ldns_pkt_edns_udp_size(const ldns_pkt *packet)
 {
@@ -667,15 +673,19 @@ ldns_pkt_set_querytime(ldns_pkt *packet, uint32_t time)
 void
 ldns_pkt_set_answerfrom(ldns_pkt *packet, ldns_rdf *answerfrom)
 {
-	/* if _answerfrom was set, this is a leak. Callers beware */
 	packet->_answerfrom = answerfrom;
 }
 
 void
 ldns_pkt_set_when(ldns_pkt *packet, char *when)
 {
-	/* if _when was set, this is a leak. Callers beware */
 	packet->_when = when;
+}
+
+void
+ldns_pkt_set_timestamp(ldns_pkt *packet, struct timeval timestamp)
+{
+	packet->timestamp = timestamp;
 }
 
 void

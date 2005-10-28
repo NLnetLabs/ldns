@@ -20,6 +20,7 @@
 #include <arpa/inet.h>
 #include <netdb.h>
 #include <time.h>
+#include <sys/time.h>
 
 /* lookup tables for standard DNS stuff  */
 
@@ -911,6 +912,7 @@ ldns_pkt2buffer_str(ldns_buffer *output, ldns_pkt *pkt)
 	ldns_status status = LDNS_STATUS_OK;
 	ldns_lookup_table *lt;
 	char *tmp;
+	struct timeval time;
 
 	if (!pkt) {
 		ldns_buffer_printf(output, "null");
@@ -1005,10 +1007,16 @@ ldns_pkt2buffer_str(ldns_buffer *output, ldns_pkt *pkt)
 			ldns_buffer_printf(output, ";; SERVER: %s\n", tmp);
 			LDNS_FREE(tmp);
 		}
+#if 0
+/* when will be replyced by timestamp */
 		if (ldns_pkt_when(pkt)) {
 			/* \n included in when buffer, see ctime(3) */
 			ldns_buffer_printf(output, ";; WHEN: %s", ldns_pkt_when(pkt));
 		}
+#endif
+		time = ldns_pkt_timestamp(pkt);
+		ldns_buffer_printf(output, ";; WHEN: %s", ctime((time_t*)&time));
+
 		ldns_buffer_printf(output, ";; MSG SIZE  rcvd: %d\n", (int)ldns_pkt_size(pkt));
 	} else {
 		return ldns_buffer_status(output);

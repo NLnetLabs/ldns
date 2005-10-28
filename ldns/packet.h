@@ -16,6 +16,7 @@
 #include <ldns/error.h>
 #include <ldns/common.h>
 #include <ldns/rr.h>
+#include <sys/time.h>
 
 /* opcodes for pkt's */
 enum ldns_enum_pkt_opcode {
@@ -79,6 +80,7 @@ struct ldns_struct_pkt
 	uint16_t _answersize;
 	ldns_rdf *_answerfrom;
 	char *_when;
+	struct timeval timestamp;
 	/**  query duration */
 	uint32_t _querytime;
 	/**  the packet size */
@@ -151,6 +153,7 @@ uint16_t ldns_pkt_nscount(const ldns_pkt *p);
 uint16_t ldns_pkt_arcount(const ldns_pkt *p);
 ldns_rdf *ldns_pkt_answerfrom(const ldns_pkt *p);
 char *ldns_pkt_when(const ldns_pkt *p);
+struct timeval ldns_pkt_timestamp(const ldns_pkt *p);
 uint32_t ldns_pkt_querytime(const ldns_pkt *p);
 size_t ldns_pkt_size(const ldns_pkt *p);
 ldns_rr *ldns_pkt_tsig(const ldns_pkt *p);
@@ -200,6 +203,7 @@ void ldns_pkt_set_answerfrom(ldns_pkt *p, ldns_rdf *r);
 void ldns_pkt_set_querytime(ldns_pkt *p, uint32_t t);
 void ldns_pkt_set_size(ldns_pkt *p, size_t s);
 void ldns_pkt_set_when(ldns_pkt *p, char *w);
+void ldns_pkt_set_timestamp(ldns_pkt *p, struct timeval timestamp);
 void ldns_pkt_set_section_count(ldns_pkt *p, ldns_pkt_section s, uint16_t x);
 void ldns_pkt_set_tsig(ldns_pkt *p, ldns_rr *t);
 
