@@ -64,10 +64,11 @@ ldns_lookup_table ldns_rcodes[] = {
         { 3, "NAMEERR" },
         { 4, "NOTIMPL" },
         { 5, "REFUSED" },
-        { 6, "?" },
-        { 7, "?" },
-        { 8, "?" },
+        { 6, "YXDOMAIN" },
+        { 7, "YXRRSET" },
+        { 8, "NXRRSET" },
         { 9, "NOTAUTH" },
+        { 10, "NOTZONE" },
         { 0, NULL }
 };
 
