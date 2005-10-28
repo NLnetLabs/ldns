@@ -141,7 +141,7 @@ ldns_send(ldns_pkt **result, ldns_resolver *r, ldns_pkt *query_pkt)
 				((tv_e.tv_sec - tv_s.tv_sec) * 1000) +
 				(tv_e.tv_usec - tv_s.tv_usec) / 1000);
 			ldns_pkt_set_answerfrom(reply, ns_rand_array[i]);
-			ldns_pkt_set_timestamp(reply, tv_s.tv_sec, tv_s.tv_usec);
+			ldns_pkt_set_timestamp(reply, tv_s);
 /*			ldns_pkt_set_when(reply, ctime((time_t*)&tv_s.tv_sec));*/
 			ldns_pkt_set_size(reply, reply_size);
 			break;

@@ -683,10 +683,10 @@ ldns_pkt_set_when(ldns_pkt *packet, char *when)
 }
 
 void
-ldns_pkt_set_timestamp(ldns_pkt *packet, uint32_t sec, uint32_t usec)
+ldns_pkt_set_timestamp(ldns_pkt *packet, struct timeval timeval)
 {
-	packet->timestamp.tv_sec = sec;
-	packet->timestamp.tv_usec = usec;
+	packet->timestamp.tv_sec = timeval.tv_sec;
+	packet->timestamp.tv_usec = timeval.tv_usec;
 }
 
 void
