@@ -203,7 +203,7 @@ void ldns_pkt_set_answerfrom(ldns_pkt *p, ldns_rdf *r);
 void ldns_pkt_set_querytime(ldns_pkt *p, uint32_t t);
 void ldns_pkt_set_size(ldns_pkt *p, size_t s);
 void ldns_pkt_set_when(ldns_pkt *p, char *w);
-void ldns_pkt_set_timestamp(ldns_pkt *p, struct timeval timestamp);
+void ldns_pkt_set_timestamp(ldns_pkt *p, uint32_t sec, uint32_t usec);
 void ldns_pkt_set_section_count(ldns_pkt *p, ldns_pkt_section s, uint16_t x);
 void ldns_pkt_set_tsig(ldns_pkt *p, ldns_rr *t);
 
