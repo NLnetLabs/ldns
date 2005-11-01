@@ -184,12 +184,12 @@ ldns_get_rr_list_hosts_frm_fp_l(FILE *fp, int *line_nr)
 		{
 			if (cnt == 0) {
 				/* the address */
-				if (tmp = ldns_rdf_new_frm_str(LDNS_RDF_TYPE_AAAA, word)) {
+				if ((tmp = ldns_rdf_new_frm_str(LDNS_RDF_TYPE_AAAA, word))) {
 					/* ip6 */
 					ldns_rdf_deep_free(tmp);
 					ip6 = true;
 				} else {
-					if (tmp = ldns_rdf_new_frm_str(LDNS_RDF_TYPE_A, word)) {
+					if ((tmp = ldns_rdf_new_frm_str(LDNS_RDF_TYPE_A, word))) {
 						/* ip4 */
 						ldns_rdf_deep_free(tmp);
 						ip6 = false;
