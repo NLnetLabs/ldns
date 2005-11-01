@@ -63,6 +63,7 @@ do_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 	final_answer = NULL;
 	p = ldns_pkt_new();
 
+
 	/* setup the root nameserver in the new resolver */
 	if (ldns_resolver_push_nameserver_rr_list(res, global_dns_root) != LDNS_STATUS_OK) {
 		return NULL;

@@ -43,7 +43,7 @@ release:	clean docclean tarclean
 tags:	
 	ctags *.[ch]
 
-drill:	$(LIBOBJ)
+drill:	$(LIBOBJ) $(LIBSRC)
 	$(LINK) -o $@ $(LIBOBJ) $(LIBS)
 
 ## implicit rule
