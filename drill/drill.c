@@ -342,7 +342,7 @@ main(int argc, char *argv[])
 		}
 	} else {
 		res = ldns_resolver_new();
-		if (!res) {
+		if (!res || strlen(serv) <= 0) {
 			result = EXIT_FAILURE;
 			goto exit;
 		}
