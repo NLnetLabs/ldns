@@ -225,6 +225,8 @@ ldns_rr_new_frm_str(const char *str, uint16_t default_ttl, ldns_rdf *origin)
 	}
 	
 	if (ldns_bget_token(rr_buf, rdata, "\0", LDNS_MAX_PACKETLEN) == -1) {
+		/* apparently we are done, and it's only a question RR
+		 * so do not free and error here
 		LDNS_FREE(owner); 
 		LDNS_FREE(ttl); 
 		LDNS_FREE(clas); 
@@ -235,6 +237,7 @@ ldns_rr_new_frm_str(const char *str, uint16_t default_ttl, ldns_rdf *origin)
 		ldns_buffer_free(rr_buf);
 		ldns_rr_free(new);
 		return NULL;
+		*/
 	}
 
 	ldns_buffer_new_frm_data(

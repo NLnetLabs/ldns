@@ -231,6 +231,9 @@ ldns_zone_new_frm_fp_l(FILE *fp, ldns_rdf *origin, uint16_t ttl, ldns_rr_class c
 			my_class  = ldns_rr_get_class(rr);
 			
 		} else {
+			/* hmz if $ORIGIN was read there is no RR either */
+			/* we need to add a feedbacking function */
+			/*
 			fprintf(stderr, "Error in file, unable to read RR");
 			if (line_nr) {
 				fprintf(stderr, " at line %d.\n", *line_nr);
@@ -241,6 +244,7 @@ ldns_zone_new_frm_fp_l(FILE *fp, ldns_rdf *origin, uint16_t ttl, ldns_rr_class c
 			fprintf(stderr, "Last rr that was parsed:\n");
 			ldns_rr_print(stderr, last_rr);
 			dprintf("%s", "\n");
+			*/
 		}
 	}
 	if (my_origin) {
