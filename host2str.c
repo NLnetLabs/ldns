@@ -805,7 +805,7 @@ ldns_rr2buffer_str(ldns_buffer *output, ldns_rr *rr)
 		descriptor = ldns_rr_descript(ldns_rr_get_type(rr));
 
 		if (descriptor->_name) {
-			ldns_buffer_printf(output, "%s\t", descriptor->_name);
+			ldns_buffer_printf(output, "%s", descriptor->_name);
 		} else {
 			/* exceptions for qtype */
 			if (ldns_rr_get_type(rr) == 251) {
@@ -823,6 +823,9 @@ ldns_rr2buffer_str(ldns_buffer *output, ldns_rr *rr)
 			}
 		}
 		
+		if (ldns_rr_rd_count(rr) > 0) {
+			ldns_buffer_printf(output, "\t");
+		}
 		for (i = 0; i < ldns_rr_rd_count(rr); i++) {
 			status = ldns_rdf2buffer_str(output, ldns_rr_rdf(rr, i));
 			if (i < ldns_rr_rd_count(rr) - 1) {
