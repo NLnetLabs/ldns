@@ -138,6 +138,9 @@ tests-confclean:
 lib:		$(LIBDNS_OBJECTS) b64_pton$U.o b64_ntop$U.o
 		$(LINK_LIB) -o libldns.la $(LIBDNS_LOBJECTS) b64_pton$U.lo b64_ntop$U.lo \
 		-rpath $(libdir)/lib
+		( rm -rf include ; mkdir include ; cd include ; ln -s ../ldns . )
+		( rm -f lib ; ln -s .libs lib )
+		
 
 doc:		$(srcdir)/doc/function_manpages 
 		$(INSTALL) -d doc
@@ -204,6 +207,8 @@ clean:
 	rm -f *.key
 	rm -f *.ds
 	rm -f *.private
+	rm -rf include/
+	rm -f lib
 
 distclean: clean docclean libclean drill-confclean examples-confclean
 	rm -f ltmain.sh
