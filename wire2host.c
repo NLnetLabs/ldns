@@ -80,7 +80,7 @@ ldns_wire2dname(ldns_rdf **dname, const uint8_t *wire, size_t max, size_t *pos)
 			pointer_count++;
 			
 			/* remove first two bits */
-			if (*pos + 3 > max) {
+			if (*pos + 2 > max) {
 				return LDNS_STATUS_PACKET_OVERFLOW;
 			}
 			pointer_target_buf[0] = wire[*pos] & 63;

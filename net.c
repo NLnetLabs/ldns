@@ -125,12 +125,12 @@ ldns_send(ldns_pkt **result, ldns_resolver *r, ldns_pkt *query_pkt)
 			}
 		} 
 		
-		if (ldns_wire2pkt(&reply, reply_bytes, reply_size) !=
-		    LDNS_STATUS_OK) {
+		status = ldns_wire2pkt(&reply, reply_bytes, reply_size);
+		if (status != LDNS_STATUS_OK) {
 			LDNS_FREE(reply_bytes);
 			LDNS_FREE(ns);
 			ldns_buffer_free(qb);
-			return LDNS_STATUS_ERR;
+			return status;
 		}
 		
 		LDNS_FREE(ns);
