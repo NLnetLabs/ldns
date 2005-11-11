@@ -90,3 +90,6 @@ It has been brought to our attention that the build script might have some
 problems on MACOSX 10.4 and Solaris. Please contact us if you have more info
 on this.
 
+For MACOSX 10.4, it seems that you have to set the MACOSX_DEPLOYMENT_TARGET
+environment variable to 10.4 before running make. Apparently it defaults to
+10.1.
