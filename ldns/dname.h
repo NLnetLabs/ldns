@@ -86,6 +86,15 @@ void ldns_dname2canonical(const ldns_rdf *rdf);
 bool ldns_dname_is_subdomain(const ldns_rdf *sub, const ldns_rdf *parent);
 
 /**
+ * Compares the two dname rdf's according to the algorithm for ordering
+ * in RFC4034 Section 6.
+ * \param[in] dname1 First dname rdf to compare
+ * \param[in] dname1 Second dname rdf to compare
+ * \return -1 if dname1 comes before dname2, 1 if dname1 comes after dname2, and 0 if they are equal.
+ */
+int ldns_dname_compare(const ldns_rdf *dname1, const ldns_rdf *dname2);
+
+/**
  * Checks whether the given dname string is absolute (i.e. ends with a '.')
  * \param[in] *dname_str a string representing the dname
  * \return true or false

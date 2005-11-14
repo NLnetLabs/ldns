@@ -159,7 +159,8 @@ ldns_str2rdf_dname(ldns_rdf **d, const char *str)
 	*d = NULL;
 	
 	len = strlen((char*)str);
-	if (len > LDNS_MAX_DOMAINLEN) {
+	/* octet representation can make strings a lot longer than actual length */
+	if (len > LDNS_MAX_DOMAINLEN * 3) {
 		return LDNS_STATUS_DOMAINNAME_OVERFLOW;
 	}
 	if (0 == len) {

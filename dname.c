@@ -212,6 +212,46 @@ ldns_dname_is_subdomain(const ldns_rdf *sub, const ldns_rdf *parent)
 	return true; 
 }
 
+int
+ldns_dname_compare(const ldns_rdf *dname1, const ldns_rdf *dname2)
+{
+	size_t lc1, lc2;
+	ldns_rdf *label1, *label2;
+	size_t i;
+	/* see RFC4034 for this algorithm */
+	/* this algorithm assumes the names are normalized to case */
+	
+	lc1 = ldns_dname_label_count(dname1) - 1;
+	lc2 = ldns_dname_label_count(dname2) - 1;
+	
+	while (true) {
+		label1 = ldns_dname_label(dname1, lc1);
+		label2 = ldns_dname_label(dname2, lc2);
+		if (ldns_rdf_size(label1) < ldns_rdf_size(label2)) {
+			return -1;
+		} else if (ldns_rdf_size(label1) > ldns_rdf_size(label2)) {
+			return 1;
+		} else {
+			for (i = 0; i < ldns_rdf_size(label1); i++) {
+				if (ldns_rdf_data(label1)[i] < ldns_rdf_data(label2)[i]) {
+					return -1;
+				} else if (ldns_rdf_data(label1)[i] > ldns_rdf_data(label2)[i]) {
+					return 1;
+				}
+			}
+		}
+		if (lc1 == 0 && lc2 > 0) {
+			return -1;
+		} else if (lc1 > 0 && lc2 == 0) {
+			return 1;
+		} else if (lc1 == 0 && lc2 == 0) {
+			return 0;
+		}
+		lc1--;
+		lc2--;
+	}
+}
+
 bool
 ldns_dname_str_absolute(const char *dname_str)
 {

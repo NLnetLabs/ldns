@@ -1107,8 +1107,7 @@ ldns_rr_compare_oct(const ldns_rr *rr1, const ldns_rr *rr2)
 	c1 = ldns_rr_get_class(rr1);
 	c2 = ldns_rr_get_class(rr2);
 	t1 = ldns_rr_get_type(rr1);
-	t2 = ldns_rr_get_type(rr2);
-	
+	t2 = ldns_rr_get_type(rr2);	
 	
 	result = strcmp(n1, n2);
 	if (result == 0) {
@@ -1145,6 +1144,11 @@ ldns_rr_compare(const ldns_rr *rr1, const ldns_rr *rr2)
 	rr1_len = ldns_rr_uncompressed_size(rr1);
 	rr2_len = ldns_rr_uncompressed_size(rr2);
 
+	if (ldns_dname_compare(ldns_rr_owner(rr1), ldns_rr_owner(rr2)) < 0) {
+		return -1;
+	} else if (ldns_dname_compare(ldns_rr_owner(rr1), ldns_rr_owner(rr2)) > 0) {
+		return 1;
+	}
 	if (rr1_len < rr2_len) {
 		return -1;
 	} else if (rr1_len > rr2_len) {
