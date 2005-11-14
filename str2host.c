@@ -206,8 +206,8 @@ ldns_str2rdf_dname(ldns_rdf **d, const char *str)
 			    isdigit((int) s[2]) &&
 			    isdigit((int) s[3])) {
 				/* cast this so it fits */
-				val = (uint8_t) ldns_hexdigit_to_int((char) s[1]) * 100 +
-				                ldns_hexdigit_to_int((char) s[2]) * 10 +
+				val = (uint8_t) ldns_hexdigit_to_int((char) s[1]) * 64 +
+				                ldns_hexdigit_to_int((char) s[2]) * 8 +
 				                ldns_hexdigit_to_int((char) s[3]);
 				*q = val;
 				s += 3;
