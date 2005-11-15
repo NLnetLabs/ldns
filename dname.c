@@ -227,18 +227,22 @@ ldns_dname_compare(const ldns_rdf *dname1, const ldns_rdf *dname2)
 	while (true) {
 		label1 = ldns_dname_label(dname1, lc1);
 		label2 = ldns_dname_label(dname2, lc2);
-		if (ldns_rdf_size(label1) < ldns_rdf_size(label2)) {
-			return -1;
-		} else if (ldns_rdf_size(label1) > ldns_rdf_size(label2)) {
-			return 1;
-		} else {
-			for (i = 0; i < ldns_rdf_size(label1); i++) {
-				if (ldns_rdf_data(label1)[i] < ldns_rdf_data(label2)[i]) {
-					return -1;
-				} else if (ldns_rdf_data(label1)[i] > ldns_rdf_data(label2)[i]) {
-					return 1;
-				}
+		ldns_dname2canonical(label1);
+		ldns_dname2canonical(label2);
+
+		for (i = 1; i < ldns_rdf_size(label1); i++) {
+			if (i >= ldns_rdf_size(label2)) {
+				return 1;
 			}
+
+			if (ldns_rdf_data(label1)[i] < ldns_rdf_data(label2)[i]) {
+				return -1;
+			} else if (ldns_rdf_data(label1)[i] > ldns_rdf_data(label2)[i]) {
+				return 1;
+			}
+		}
+		if (i < ldns_rdf_size(label2) - 1) {
+			return -1;
 		}
 		if (lc1 == 0 && lc2 > 0) {
 			return -1;
