@@ -142,6 +142,7 @@ void ldns_resolver_set_recursive(ldns_resolver *r, bool b);
 void ldns_resolver_set_debug(ldns_resolver *r, bool b);
 void ldns_resolver_incr_nameserver_count(ldns_resolver *r);
 void ldns_resolver_dec_nameserver_count(ldns_resolver *r);
+void ldns_resolver_set_nameserver_rrlist(ldns_resolver *r, ldns_rr_list *ns);
 void ldns_resolver_set_nameserver_count(ldns_resolver *r, size_t c);
 void ldns_resolver_set_nameservers(ldns_resolver *r, ldns_rdf **rd);
 void ldns_resolver_set_domain(ldns_resolver *r, ldns_rdf *rd);

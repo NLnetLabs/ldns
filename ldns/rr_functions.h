@@ -26,7 +26,7 @@
  * \param[in] r the resource record
  * \return a ldns_rdf* with the address or NULL on failure
  */
-ldns_rdf* ldns_rr_address(ldns_rr *r);
+ldns_rdf* ldns_rr_a_address(ldns_rr *r);
 
 /**
  * sets the address of a LDNS_RR_TYPE_A rr
@@ -34,7 +34,7 @@ ldns_rdf* ldns_rr_address(ldns_rr *r);
  * \param[in] f the address to set
  * \return true on success, false otherwise
  */
-bool ldns_rr_set_address(ldns_rr *r, ldns_rdf *f);
+bool ldns_rr_a_set_address(ldns_rr *r, ldns_rdf *f);
 
 /* NS */
 /**
