@@ -153,6 +153,8 @@ ldns_verify_rrsig_keylist(ldns_rr_list *rrset, ldns_rr *rrsig, ldns_rr_list *key
 	ldns_rr_list *rrset_clone;
 	ldns_rr_list *validkeys;
 	time_t now, inception, expiration;
+	uint8_t label_count;
+	ldns_rdf *wildcard_name;
 
 	if (!rrset) {
 		return LDNS_STATUS_ERR;
@@ -202,8 +204,18 @@ ldns_verify_rrsig_keylist(ldns_rr_list *rrset, ldns_rr *rrsig, ldns_rr_list *key
 	orig_ttl = ldns_rdf2native_int32(
 			ldns_rr_rdf(rrsig, 3));
 
+	label_count = ldns_rdf2native_int8(ldns_rr_rdf(rrsig, 2));
+
 	/* reset the ttl in the rrset with the orig_ttl from the sig */
+	/* and update owner name if it was wildcard */
 	for(i = 0; i < ldns_rr_list_rr_count(rrset_clone); i++) {
+		if (label_count < ldns_dname_label_count(
+		                  	ldns_rr_owner(ldns_rr_list_rr(rrset_clone, i)))) {
+			(void) ldns_str2rdf_dname(&wildcard_name, "*");
+			(void) ldns_dname_cat(wildcard_name, ldns_dname_left_chop(ldns_rr_owner(ldns_rr_list_rr(rrset_clone, i))));
+			ldns_rr_set_owner(ldns_rr_list_rr(rrset_clone, i), wildcard_name);
+		                  	
+		}
 		ldns_rr_set_ttl(
 				ldns_rr_list_rr(rrset_clone, i),
 				orig_ttl);
@@ -306,12 +318,14 @@ ldns_verify_rrsig(ldns_rr_list *rrset, ldns_rr *rrsig, ldns_rr *key)
 	uint32_t orig_ttl;
 	uint16_t i;
 	uint8_t sig_algo;
+	uint16_t label_count;
 	ldns_status result;
 	ldns_rr_list *rrset_clone;
 	time_t now, inception, expiration;
+	ldns_rdf *wildcard_name;
 
 	if (!rrset) {
-		return LDNS_STATUS_ERR;
+		return LDNS_STATUS_NO_DATA;
 	}
 
 	/* check the signature time stamps */
@@ -371,11 +385,20 @@ ldns_verify_rrsig(ldns_rr_list *rrset, ldns_rr *rrsig, ldns_rr *key)
 		return LDNS_STATUS_MEM_ERR;
 	}
 
+	/* remove labels if the label count is higher than the label count
+	   from the rrsig */
+	label_count = ldns_rdf2native_int8(ldns_rr_rdf(rrsig, 2));
+
 	orig_ttl = ldns_rdf2native_int32(
 			ldns_rr_rdf(rrsig, 3));
 
 	/* reset the ttl in the rrset with the orig_ttl from the sig */
 	for(i = 0; i < ldns_rr_list_rr_count(rrset_clone); i++) {
+		if (label_count < ldns_dname_label_count(ldns_rr_owner(ldns_rr_list_rr(rrset_clone, i)))) {
+			(void) ldns_str2rdf_dname(&wildcard_name, "*");
+			(void) ldns_dname_cat(wildcard_name, ldns_dname_left_chop(ldns_rr_owner(ldns_rr_list_rr(rrset_clone, i))));
+			ldns_rr_set_owner(ldns_rr_list_rr(rrset_clone, i), wildcard_name);
+		}
 		ldns_rr_set_ttl(
 				ldns_rr_list_rr(rrset_clone, i),
 				orig_ttl);
@@ -715,6 +738,10 @@ ldns_sign_public(ldns_rr_list *rrset, ldns_key_list *keys)
 	ldns_buffer *sign_buf;
 	uint32_t orig_ttl;
 	time_t now;
+	uint8_t label_count;
+	ldns_rdf *first_label;
+	ldns_rdf *wildcard_label;
+	ldns_rdf *new_owner;
 
 	if (!rrset || ldns_rr_list_rr_count(rrset) < 1 || !keys) {
 		return NULL;
@@ -730,6 +757,18 @@ ldns_sign_public(ldns_rr_list *rrset, ldns_key_list *keys)
 	rrset_clone = ldns_rr_list_clone(rrset);
 	if (!rrset_clone) {
 		return NULL;
+	}
+
+	/* check for label count and wildcard */
+	label_count = ldns_dname_label_count(ldns_rr_owner(ldns_rr_list_rr(rrset, 0)));
+	(void) ldns_str2rdf_dname(&wildcard_label, "*");
+	first_label = ldns_dname_label(ldns_rr_owner(ldns_rr_list_rr(rrset, 0)), 0);
+	if (ldns_rdf_compare(first_label, wildcard_label) == 0) {
+		label_count--;
+		for (i = 0; i < ldns_rr_list_rr_count(rrset_clone); i++) {
+			new_owner = ldns_dname_cat_clone(wildcard_label, ldns_dname_left_chop(ldns_rr_owner(ldns_rr_list_rr(rrset_clone, i))));
+			ldns_rr_set_owner(ldns_rr_list_rr(rrset_clone, i), new_owner);
+		}
 	}
 
 	/* make it canonical */
@@ -776,8 +815,7 @@ ldns_sign_public(ldns_rr_list *rrset, ldns_key_list *keys)
 					ldns_rdf_clone(ldns_key_pubkey_owner(current_key)));
 			/* label count - get it from the first rr in the rr_list */
 			(void)ldns_rr_rrsig_set_labels(current_sig, 
-					ldns_native2rdf_int8(LDNS_RDF_TYPE_INT8, ldns_rr_label_count(
-							ldns_rr_list_rr(rrset_clone, 0))));
+					ldns_native2rdf_int8(LDNS_RDF_TYPE_INT8, label_count));
 			/* inception, expiration */
 			now = time(NULL);
 			if (ldns_key_inception(current_key) != 0) {
@@ -817,6 +855,7 @@ ldns_sign_public(ldns_rr_list *rrset, ldns_key_list *keys)
 				return NULL;
 			}
 			/* add the rrset in sign_buf */
+
 			if (ldns_rr_list2buffer_wire(sign_buf, rrset_clone) != LDNS_STATUS_OK) {
 				dprintf("%s\n", "couldn't convert to buffer 2");
 				ldns_buffer_free(sign_buf);

@@ -89,7 +89,7 @@ ldns_dname_left_chop(ldns_rdf *d)
 	label_pos = ldns_rdf_data(d)[0];
 
 	chop = ldns_dname_new_frm_data(
-			ldns_rdf_size(d) - label_pos,
+			ldns_rdf_size(d) - label_pos - 1,
 			ldns_rdf_data(d) + label_pos + 1);
 	return chop;
 }

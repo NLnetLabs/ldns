@@ -56,6 +56,7 @@ ldns_lookup_table ldns_error_str[] = {
 	{ LDNS_STATUS_WIRE_INCOMPLETE_ANSWER, "answer section incomplete" },
 	{ LDNS_STATUS_WIRE_INCOMPLETE_AUTHORITY, "authority section incomplete" },
 	{ LDNS_STATUS_WIRE_INCOMPLETE_ADDITIONAL, "additional section incomplete" },
+	{ LDNS_STATUS_NO_DATA, "No data" },
 	{ 0, NULL }
 };
 
