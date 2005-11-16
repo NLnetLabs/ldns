@@ -28,7 +28,8 @@ PROGRAMS	= ldns-read-zone \
 		  ldns-keygen \
 		  ldns-key2ds \
 		  ldns-signzone \
-		  ldns-version
+		  ldns-version \
+		  ldns-rrsig
 
 .PHONY:	all clean realclean
 
@@ -56,6 +57,9 @@ ldns-keygen:	ldns-keygen.o
 		$(LINK) -o $@ $+
 
 ldns-key2ds:	ldns-key2ds.o
+		$(LINK) -o $@ $+
+
+ldns-rrsig:	ldns-rrsig.o
 		$(LINK) -o $@ $+
 
 ## implicit rule

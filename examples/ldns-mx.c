@@ -70,9 +70,7 @@ main(int argc, char *argv[])
                         ldns_resolver_deep_free(res);
 			exit(EXIT_FAILURE);
 		} else {
-			/* sort the list nicely */
-			/* ldns_rr_list_sort(mx); */
-			/* print the rrlist to stdout */
+			ldns_rr_list_sort(mx); 
 			ldns_rr_list_print(stdout, mx);
 			ldns_rr_list_deep_free(mx);
 		}
