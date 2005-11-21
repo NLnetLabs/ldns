@@ -39,10 +39,12 @@ typedef struct ldns_struct_zone ldns_zone;
 	
 /**
  * create a new ldns_zone structure
+ * \return a pointer to a ldns_zone structure
  */
 ldns_zone * ldns_zone_new(void);
 
 /**
+ * Return the soa record of a zone
  * \param[in] z the zone to read from
  * \return the soa record in the zone
  */
@@ -56,18 +58,21 @@ ldns_rr * ldns_zone_soa(ldns_zone *z);
 uint16_t ldns_zone_rr_count(ldns_zone *z);
 
 /**
+ * Set the zone's soa record
  * \param[in] z the zone to put the new soa in
  * \param[in] soa the soa to set
  */
 void ldns_zone_set_soa(ldns_zone *z, ldns_rr *soa);
 
 /**
+ * Get a list of a zone's content. Its RRset list
  * \param[in] z the zone to read from
  * \return the rrs from this zone
  */
 ldns_rr_list * ldns_zone_rrs(ldns_zone *z);
 
 /**
+ * Set the zone's contents
  * \param[in] z the zone to put the new soa in
  * \param[in] rrlist the rrlist to use
  */
@@ -100,9 +105,28 @@ bool ldns_zone_push_rr(ldns_zone *z, ldns_rr *rr);
  */
 ldns_rr_list *ldns_zone_glue_rr_list(ldns_zone *z);
 
+/**
+ * Create a new zone from a file
+ * \param[in] *fp the filepointer to use
+ * \param[in] *origin the zones' origin
+ * \param[in] ttl default ttl to use
+ * \param[in] c default class to use (IN)
+ *
+ * \return a pointer to a new zone structure
+ */
 ldns_zone *
 ldns_zone_new_frm_fp(FILE *fp, ldns_rdf *origin, uint16_t ttl, ldns_rr_class c);
 
+/**
+ * Create a new zone from a file, keep track of the line numbering
+ * \param[in] *fp the filepointer to use
+ * \param[in] *origin the zones' origin
+ * \param[in] ttl default ttl to use
+ * \param[in] c default class to use (IN)
+ * \param[out] line_nr used for error msg, to get to the line number
+ *
+ * \return a pointer to a new zone structure
+ */
 ldns_zone *
 ldns_zone_new_frm_fp_l(FILE *fp, ldns_rdf *origin, uint16_t ttl, ldns_rr_class c, int *line_nr);
 
@@ -118,6 +142,5 @@ void ldns_zone_free(ldns_zone *zone);
  * \param[in] zone the zone to free
  */
 void ldns_zone_deep_free(ldns_zone *zone);
-
 
 #endif /* LDNS_ZONE_H */
