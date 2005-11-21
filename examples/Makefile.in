@@ -29,7 +29,9 @@ SOURCES 	= ldns-read-zone.c \
 		  ldns-key2ds.c \
 		  ldns-signzone.c \
 		  ldns-version.c \
-		  ldns-rrsig.c
+		  ldns-rrsig.c \
+		  ldns-walk.c
+
 PROGRAMS=$(SOURCES:.c=)
 
 .PHONY:	all clean realclean
@@ -61,6 +63,9 @@ ldns-key2ds:	ldns-key2ds.o
 		$(LINK) -o $@ $+
 
 ldns-rrsig:	ldns-rrsig.o
+		$(LINK) -o $@ $+
+
+ldns-walk:	ldns-walk.o
 		$(LINK) -o $@ $+
 
 ## implicit rule
