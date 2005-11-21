@@ -71,51 +71,49 @@ ldns_rdf_set_data(ldns_rdf *rd, void *d)
 /* for types that allow it, return
  * the native/host order type */
 uint8_t
-ldns_rdf2native_int8(ldns_rdf *rd)
+ldns_rdf2native_int8(const ldns_rdf *rd)
 {
 	uint8_t data;
-	
-	switch(ldns_rdf_get_type(rd)) {
-		case LDNS_RDF_TYPE_CLASS:
-		case LDNS_RDF_TYPE_ALG:
-		case LDNS_RDF_TYPE_INT8:
-			memcpy(&data, ldns_rdf_data(rd), sizeof(data));
-			return data;
-		default:
-			return 0;
+
+	/* only allow 8 bit rdfs */
+	if (ldns_rdf_size(rd) != LDNS_RDF_SIZE_BYTE) {
+		return 0;
 	}
+	
+	memcpy(&data, ldns_rdf_data(rd), sizeof(data));
+	return data;
 }
 
 uint16_t
-ldns_rdf2native_int16(ldns_rdf *rd)
+ldns_rdf2native_int16(const ldns_rdf *rd)
 {
 	uint16_t data;
-	
-	switch(ldns_rdf_get_type(rd)) {
-		case LDNS_RDF_TYPE_INT16:
-			memcpy(&data, ldns_rdf_data(rd), sizeof(data));
-			return ntohs(data);
-		default:
-			return 0;
+
+	/* only allow 16 bit rdfs */
+	if (ldns_rdf_size(rd) != LDNS_RDF_SIZE_WORD) {
+		return 0;
 	}
+	
+	memcpy(&data, ldns_rdf_data(rd), sizeof(data));
+	return ntohs(data);
 }
 
 uint32_t
-ldns_rdf2native_int32(ldns_rdf *rd)
+ldns_rdf2native_int32(const ldns_rdf *rd)
 {
 	uint32_t data;
-	
-	switch(ldns_rdf_get_type(rd)) {
-		case LDNS_RDF_TYPE_INT32:
-			memcpy(&data, ldns_rdf_data(rd), sizeof(data));
-			return ntohl(data);
-		default:
-			return 0;
+
+	/* only allow 32 bit rdfs */
+	if (ldns_rdf_size(rd) != LDNS_RDF_SIZE_DOUBLEWORD) {
+		return 0;
 	}
+	
+	memcpy(&data, ldns_rdf_data(rd), sizeof(data));
+	return ntohl(data);
 }
 
 time_t
-ldns_rdf2native_time_t(ldns_rdf *rd)
+ldns_rdf2native_time_t(const ldns_rdf *rd)
 {
 	uint32_t data;
 	
@@ -129,7 +127,7 @@ ldns_rdf2native_time_t(ldns_rdf *rd)
 }
 
 struct sockaddr_storage *
-ldns_rdf2native_sockaddr_storage(ldns_rdf *rd, uint16_t port, size_t *size)
+ldns_rdf2native_sockaddr_storage(const ldns_rdf *rd, uint16_t port, size_t *size)
 {
 	struct sockaddr_storage *data;
 	struct sockaddr_in  *data_in;
@@ -203,7 +201,7 @@ ldns_sockaddr_storage2rdf(struct sockaddr_storage *sock, uint16_t *port)
 ldns_rdf *
 ldns_native2rdf_int8(ldns_rdf_type type, uint8_t value)
 {
-	return ldns_rdf_new_frm_data(type, 1, &value);
+	return ldns_rdf_new_frm_data(type, LDNS_RDF_SIZE_BYTE, &value);
 }
 
 ldns_rdf *
@@ -211,7 +209,7 @@ ldns_native2rdf_int16(ldns_rdf_type type, uint16_t value)
 {
 	uint16_t *rdf_data = LDNS_XMALLOC(uint16_t, 1);
 	ldns_write_uint16(rdf_data, value);
-	return ldns_rdf_new(type, 2, rdf_data);
+	return ldns_rdf_new(type, LDNS_RDF_SIZE_WORD, rdf_data);
 }
 
 ldns_rdf *
@@ -219,7 +217,7 @@ ldns_native2rdf_int32(ldns_rdf_type type, uint32_t value)
 {
 	uint32_t *rdf_data = LDNS_XMALLOC(uint32_t, 1);
 	ldns_write_uint32(rdf_data, value);
-	return ldns_rdf_new(type, 4, rdf_data);
+	return ldns_rdf_new(type, LDNS_RDF_SIZE_DOUBLEWORD, rdf_data);
 }
 
 ldns_rdf *

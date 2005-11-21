@@ -11,10 +11,10 @@
 
 int
 usage(FILE *fp, char *prog) {
-	fprintf(fp, "%s domain\n", prog);
+	fprintf(fp, "%s domain [type]\n", prog);
 	fprintf(fp, "  print out the inception and expiration dates\n");
 	fprintf(fp, "  in a more human readable form\n");
-	fprintf(fp, "  -t <type>\tquery for RRSIG(<type>)\n");
+	fprintf(fp, "  <type>\tquery for RRSIG(<type>), defaults to SOA\n");
 	return 0;
 }
 
@@ -31,6 +31,7 @@ main(int argc, char *argv[])
 	ldns_rr_list *ns_ip;
 	uint8_t i, j;
 	ldns_rr_type t;
+	char * type_name;
 	time_t incep, expir;
 	char incep_buf[26];
 	char expir_buf[26];
@@ -41,11 +42,10 @@ main(int argc, char *argv[])
 	domain = NULL;
 	res = NULL;
 	localres = NULL;
-	t = LDNS_RR_TYPE_SOA; /* can be overruled on the cmd line, -t switch */
 
 	/* option parsing */
 	
-	if (argc != 2) {
+	if (argc < 2) {
 		usage(stdout, argv[0]);
 		exit(EXIT_FAILURE);
 	} else {
@@ -55,6 +55,20 @@ main(int argc, char *argv[])
 			usage(stdout, argv[0]);
 			exit(EXIT_FAILURE);
 		}
+	}
+
+	if (argc == 3) {
+		/* optional type arg */
+		type_name = strdup(argv[2]);
+		t = ldns_rdf2rr_type(
+			ldns_rdf_new_frm_str(LDNS_RDF_TYPE_TYPE, type_name));
+		if (t == 0) {
+			fprintf(stderr, " *** %s is not a valid RR type\n", type_name);
+			exit(EXIT_FAILURE);
+		}
+	} else {
+		t = LDNS_RR_TYPE_SOA; 
+		type_name = "SOA";
 	}
 
 	/* create a new resolver from /etc/resolv.conf */
@@ -124,24 +138,20 @@ main(int argc, char *argv[])
 		} else {
 			rrsig_type = ldns_rr_list_new();
 
-			/* okay, this needs to be doctered out, the rdf type
-			 * is LDNS_RDF_TYPE_TYPE, but I need to compare it
-			 * with LDNS_RR_TYPEs. How to convert, do we want to 
-			 * convert? XXX */
-			/*
 			for(i = 0; i < ldns_rr_list_rr_count(rrsig); i++) {
-				if (ldns_rr_get_type(
+				if (ldns_rdf2rr_type(
 					ldns_rr_rrsig_typecovered(
 					ldns_rr_list_rr(rrsig, i))) == t) {
 					ldns_rr_list_push_rr(rrsig_type,
 						ldns_rr_list_rr(rrsig, i));
 				}
 			}
-			*/ 
-			/* FOR NOW TAKE ONLY THE FIRST ONE */
-			ldns_rr_list_push_rr(rrsig_type,
-				ldns_rr_list_rr(rrsig, 0));
-
+			if (ldns_rr_list_rr_count(rrsig_type) == 0) {
+				fprintf(stderr, " *** No RRSIG(%S) type found\n",
+					type_name);
+				exit(EXIT_FAILURE);
+			}
+			
 			for(i = 0; i < ldns_rr_list_rr_count(rrsig_type); i++) {
 				incep = ldns_rdf2native_time_t(
 					ldns_rr_rrsig_inception(
@@ -157,11 +167,8 @@ main(int argc, char *argv[])
 				incep_buf[24] = '\0';
 				expir_buf[24] = '\0';
 
-				/* assume SOA XXX*/
-				fprintf(stdout, "%s RRSIG(SOA):  %s - %s\n",
-					argv[1], incep_buf, expir_buf);
-
-
+				fprintf(stdout, "%s RRSIG(%s):  %s - %s\n",
+					argv[1], type_name, incep_buf, expir_buf);
 			}
 
 		}

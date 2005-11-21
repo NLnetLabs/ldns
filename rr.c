@@ -374,8 +374,6 @@ ldns_rr_new_frm_str(const char *str, uint16_t default_ttl, ldns_rdf *origin)
 				}
 			}
 	}
-	
-
 	LDNS_FREE(rd);
 	ldns_buffer_free(rd_buf);
 	ldns_buffer_free(rr_buf);
@@ -1809,3 +1807,20 @@ ldns_get_rr_class_by_name(const char *name)
 	return 0;
 }
 
+
+ldns_rr_type
+ldns_rdf2rr_type(const ldns_rdf *rd)
+{
+        ldns_rr_type r;
+
+        if (!rd) {
+                return 0;
+        }
+
+        if (ldns_rdf_get_type(rd) != LDNS_RDF_TYPE_TYPE) {
+                return 0;
+        }
+
+        r = (ldns_rr_type) ldns_rdf2native_int16(rd);
+        return r;
+}

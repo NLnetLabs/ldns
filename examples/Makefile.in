@@ -21,15 +21,16 @@ COMPILE         = $(CC) $(CPPFLAGS) $(CFLAGS)
 LINK            = $(CC) $(CFLAGS) $(LDFLAGS) $(LIBS)
 
 HEADER		= config.h
-PROGRAMS	= ldns-read-zone \
-		  ldns-mx \
-		  ldns-chaos \
-		  ldns-update \
-		  ldns-keygen \
-		  ldns-key2ds \
-		  ldns-signzone \
-		  ldns-version \
-		  ldns-rrsig
+SOURCES 	= ldns-read-zone.c \
+		  ldns-mx.c \
+		  ldns-chaos.c \
+		  ldns-update.c \
+		  ldns-keygen.c \
+		  ldns-key2ds.c \
+		  ldns-signzone.c \
+		  ldns-version.c \
+		  ldns-rrsig.c
+PROGRAMS=$(SOURCES:.c=)
 
 .PHONY:	all clean realclean
 
@@ -63,8 +64,8 @@ ldns-rrsig:	ldns-rrsig.o
 		$(LINK) -o $@ $+
 
 ## implicit rule
-%.o:
-	$(COMPILE) -c $(srcdir)/$*.c
+%.o: 	$(srcdir)/%.c
+	$(COMPILE) -c $(srcdir)/$<
 
 clean:
 	rm -f *.o

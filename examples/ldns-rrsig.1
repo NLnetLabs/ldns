@@ -4,18 +4,19 @@ ldns-rrsig \- print out the inception and expiration dates in human
 readable form
 .SH SYNOPSIS
 .B ldns-rrsig 
-.IR [
--t
+.IR domain
+[ 
+.IR type 
 ]
-
-.IR DOMAIN 
 
 .SH DESCRIPTION
 \fBldns-rrsig\fR is used to print the expiration and inception date of
-a RRSIG 
-
-.SH OPTIONS
-\fB-t\fR use the RRSIG which covers this type instead of SOA.
+a RRSIG. The first argument is a domain name. \fBldns-rrsig\fR will
+query the authoritative servers for that domain to get a list of RRSIGs.
+It will then print out the inception and experiration dates for the RRSIG
+covering the SOA record.
+.PP
+If the second argument \fBtype\fR is given the RRSIG covering that type will be shown.
 
 .SH AUTHOR
 Written by the ldns team as an example for ldns usage.

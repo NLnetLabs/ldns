@@ -674,6 +674,16 @@ ldns_rdf_type ldns_rr_descriptor_field_type(const ldns_rr_descriptor *descriptor
  */
 ldns_rr_list *ldns_rr_list_subtype_by_rdf(ldns_rr_list *l, ldns_rdf *r, size_t pos);
 
+/**
+ * convert an rdf of type LDNS_RDF_TYPE_TYPE to an actual
+ * LDNS_RR_TYPE. This is usefull in the case when inspecting
+ * the rrtype covered field of an RRSIG.
+ * \param[in] rd the rdf to look at
+ * \return a ldns_rr_type with equivalent LDNS_RR_TYPE
+ *
+ */
+ldns_rr_type    ldns_rdf2rr_type(const ldns_rdf *rd);
+
 /* added while doing lua */
 bool ldns_rr_list_insert_rr(ldns_rr_list *rr_list, ldns_rr *r, size_t count);
 

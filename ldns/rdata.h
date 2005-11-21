@@ -286,28 +286,28 @@ ldns_rdf	*ldns_rdf_address_reverse(ldns_rdf *rd);
  * \param[in] rd the ldns_rdf to operate on
  * \return uint8_t the value extracted
  */
-uint8_t		ldns_rdf2native_int8(ldns_rdf *rd);
+uint8_t		ldns_rdf2native_int8(const ldns_rdf *rd);
 
 /** 
  * returns the native uint16_t representation from the rdf.
  * \param[in] rd the ldns_rdf to operate on
  * \return uint16_t the value extracted
  */
-uint16_t	ldns_rdf2native_int16(ldns_rdf *rd);
+uint16_t	ldns_rdf2native_int16(const ldns_rdf *rd);
 
 /** 
  * returns the native uint32_t representation from the rdf.
  * \param[in] rd the ldns_rdf to operate on
  * \return uint32_t the value extracted
  */
-uint32_t	ldns_rdf2native_int32(ldns_rdf *rd);
+uint32_t	ldns_rdf2native_int32(const ldns_rdf *rd);
 
 /** 
  * returns the native time_t representation from the rdf.
  * \param[in] rd the ldns_rdf to operate on
  * \return time_t the value extracted (32 bits currently)
  */
-time_t 		ldns_rdf2native_time_t(ldns_rdf *rd);
+time_t 		ldns_rdf2native_time_t(const ldns_rdf *rd);
 
 /**
  * converts a ttl value (like 5d2h) to a long.
@@ -325,7 +325,7 @@ uint32_t	ldns_str2period(const char *nptr, const char **endptr);
  * \return struct sockaddr* the address in the format so other
  * functions can use it (sendto)
  */
-struct sockaddr_storage * ldns_rdf2native_sockaddr_storage(ldns_rdf *rd, uint16_t port, size_t *size);
+struct sockaddr_storage * ldns_rdf2native_sockaddr_storage(const ldns_rdf *rd, uint16_t port, size_t *size);
 
 /** 
  * returns an rdf with the sockaddr info. works for ip4 and ip6
