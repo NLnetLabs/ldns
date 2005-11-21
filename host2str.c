@@ -113,7 +113,7 @@ ldns_rdf2buffer_str_dname(ldns_buffer *output, ldns_rdf *dname)
 					ldns_buffer_printf(output, "\\%c", data[src_pos]);
 					/* isprint!? */
 				} else if (!isprint((int) data[src_pos])) {
-					ldns_buffer_printf(output, "\\%03o", data[src_pos]);
+					ldns_buffer_printf(output, "\\%03u", data[src_pos]);
 				} else {
 					ldns_buffer_printf(output, "%c", data[src_pos]);
 				}
