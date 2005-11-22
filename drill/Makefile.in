@@ -25,8 +25,8 @@ LINK            = $(CC) $(CFLAGS) $(LDFLAGS)
 LINT            = splint
 LINTFLAGS       = +quiet -weak -warnposix -unrecog -Din_addr_t=uint32_t -Du_int=unsigned -Du_char=uint8_t
 
-LIBOBJ=drill.o drill_util.o error.o root.o work.o chasetrace.o dnssec.o
-LIBSRC=$(LIBOBJ:.o=.c)
+OBJ=drill.o drill_util.o error.o root.o work.o chasetrace.o dnssec.o
+SRC=$(OBJ:.o=.c)
 
 HEADER=drill.h drill_util.h
 
@@ -43,12 +43,12 @@ release:	clean docclean tarclean
 tags:	
 	ctags *.[ch]
 
-drill:	$(LIBOBJ) $(LIBSRC)
-	$(LINK) -o $@ $(LIBOBJ) $(LIBS)
+drill:	$(OBJ) 
+	$(LINK) -o drill $(OBJ) $(LIBS)
 
 ## implicit rule
-%.o:
-	$(COMPILE) -c $(srcdir)/$*.c
+%.o:	$(srcdir)/%.c
+	$(COMPILE) -c $(srcdir)/$<
 
 clean:
 	rm -f *.o
@@ -107,11 +107,10 @@ uninstall:
 	@echo
 
 lint:
-	@for i in $(LIBSRC) ; do \
+	@for i in $(SRC) ; do \
                 $(LINT) $(LINTFLAGS) -I$(LDNSDIR) -I$(srcdir) $(srcdir)/$$i ; \
                 if [ $$? -ne 0 ] ; then exit 1 ; fi ; \
         done
 
 confclean: clean
 	rm -rf config.log config.status config.h Makefile
-
