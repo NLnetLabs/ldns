@@ -42,8 +42,8 @@ usage(FILE *stream, const char *progname)
 	fprintf(stream, "\t-c\t\tsend the query with tcp (connected)\n");
 	fprintf(stream, "\t-k <file>\tspecify a file that contains a trusted DNSSEC key [**]\n");
 	fprintf(stream, "\t\t\tused to verify any signatures in the current answer\n");
+	fprintf(stream, "\t-o <mnemonic>\t[QR|qr][AA|aa] [TC|tc] [RD|rd] [CD|cd] [RA|ra] [AD|ad]\n");
 	fprintf(stream, "\t-p <port>\tuse <port> as remote port number\n");
-	fprintf(stream, "\t-r\t\tdon't set the RD bit in queries (default is on)\n");
 	fprintf(stream, "\t-s\t\tshow the DS RR for each key in a packet\n");
 	fprintf(stream, "\t-u\t\tsend the query with udp (the default)\n");
 	fprintf(stream, "\t-x\t\tdo a reverse (PTR) lookup\n");
@@ -148,7 +148,7 @@ main(int argc, char *argv[])
 	/* string from orig drill: "i:w:I46Sk:TNp:b:DsvhVcuaq:f:xr" */
 	/* global first, query opt next, option with parm's last
 	 * and sorted */
-	while ((c = getopt(argc, argv, "46DITSVQf:i:w:q:achruvxzy:sp:b:k:")) != -1) {
+	while ((c = getopt(argc, argv, "46DITSVQf:i:w:q:achuvxzy:so:p:b:k:")) != -1) {
 		switch(c) {
 			/* global options */
 			case '4':
@@ -214,6 +214,51 @@ main(int argc, char *argv[])
 				ldns_rr_list_push_rr(key_list, dnssec_key);
 				qdnssec = true; /* enable that too */
 				break;
+			case 'o':
+				/* only looks at the first hit: capital=ON, lowercase=OFF*/
+				if (strstr(optarg, "QR")) {
+					DRILL_ON(qflags, LDNS_QR);
+				}
+				if (strstr(optarg, "qr")) {
+					DRILL_OFF(qflags, LDNS_QR);
+				}
+				if (strstr(optarg, "AA")) {
+					DRILL_ON(qflags, LDNS_AA);
+				}
+				if (strstr(optarg, "aa")) {
+					DRILL_OFF(qflags, LDNS_AA);
+				}
+				if (strstr(optarg, "TC")) {
+					DRILL_ON(qflags, LDNS_TC);
+				}
+				if (strstr(optarg, "tc")) {
+					DRILL_OFF(qflags, LDNS_TC);
+				}
+				if (strstr(optarg, "RD")) {
+					DRILL_ON(qflags, LDNS_RD);
+				}
+				if (strstr(optarg, "rd")) {
+					DRILL_OFF(qflags, LDNS_RD);
+				}
+				if (strstr(optarg, "CD")) {
+					DRILL_ON(qflags, LDNS_CD);
+				}
+				if (strstr(optarg, "cd")) {
+					DRILL_OFF(qflags, LDNS_CD);
+				}
+				if (strstr(optarg, "RA")) {
+					DRILL_ON(qflags, LDNS_RA);
+				}
+				if (strstr(optarg, "ra")) {
+					DRILL_OFF(qflags, LDNS_RA);
+				}
+				if (strstr(optarg, "AD")) {
+					DRILL_ON(qflags, LDNS_AD);
+				}
+				if (strstr(optarg, "ad")) {
+					DRILL_OFF(qflags, LDNS_AD);
+				}
+				break;
 			case 'p':
 				qport = (uint16_t)atoi(optarg);
 				if (qport == 0) {
@@ -224,9 +269,6 @@ main(int argc, char *argv[])
 				break;
 			case 's':
 				qds = true;
-				break;
-			case 'r':
-				qflags = qflags & ~LDNS_RD; 
 				break;
 			case 'u':
 				qusevc = false;

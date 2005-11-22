@@ -128,8 +128,22 @@ key. No chasing is done.
 Use this port instead of the DNS default of 53.
 
 .TP
-\fB\-r
-Don't set the RD bit in the query - the default is yes.
+\fB\-o \fImnemonic\fR
+Use this option to set or unset specific header bits. A bit is
+set by using the bit mnemonic in CAPITAL. A bit is unset when
+the mnemonic is given in lowercase. The following mnemonics are
+understood by \fBdrill\fR:
+
+        QR, qr: set, unset QueRy (default: on)
+        AA, aa: set, unset Authoritative Answer (default: off)
+        TC, tc: set, unset TrunCated (default: off)
+        RD, rd: set, unset Recursion Desired (default: on)
+        CD, cd: set, unset Checking Disabled  (default: off)
+        RA, ra: set, unset Recursion Available  (default: off)
+        AD, ad: set, unset Authenticated Data (default: off)
+
+Thus: \fB-o CD\fR, will enable Checking Disabled, which instructs the 
+cache to not validate the answers it gives out.
 
 .TP
 \fB\-s
