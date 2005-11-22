@@ -15,8 +15,9 @@ AC_PROG_MAKE_SET
 #AC_HEADER_STDC
 #AC_HEADER_SYS_WAIT
 # do the very minimum - we can always extend this
-AC_CHECK_HEADERS([getopt.h stdlib.h stdio.h assert.h netinet/in.hctype.h time.h])
-AC_CHECK_HEADERS(sys/param.h sys/mount.h,,,
+#AC_CHECK_HEADERS([getopt.h stdlib.h stdio.h assert.h netinet/in.hctype.h time.h])
+AC_CHECK_HEADERS([sys/types.h getopt.h stdlib.h stdio.h assert.h netinet/in.hctype.h netinet/udp.h time.h pcap.h net/bpf.h arpa/inet.h sys/time.h sys/socket.h netinet/in.h netinet/ip.h netinet/if_ether.h ])
+AC_CHECK_HEADERS([sys/param.h sys/mount.h],,,
 [
   [
    #if HAVE_SYS_PARAM_H
@@ -43,6 +44,16 @@ AC_CHECK_LIB(ldns, ldns_rr_new,, [
 
 AC_CHECK_HEADER(ldns/dns.h,,  [
 	AC_MSG_ERROR([Can't find ldns headers])
+	]
+)
+
+AC_CHECK_LIB(pcap, pcap_open_offline,, [
+	AC_MSG_ERROR([Can't find pcap library (needed for dpa)])
+	]
+)
+
+AC_CHECK_HEADER(pcap.h,,  [
+	AC_MSG_ERROR([Can't find pcap library headers (needed for dpa)])
 	]
 )
 
@@ -74,8 +85,29 @@ AH_BOTTOM([
 #include <arpa/inet.h>
 #endif
 
+#ifdef HAVE_NETINET_UDP_H
+#include <netinet/udp.h>
+#endif
+
 #ifdef HAVE_TIME_H
 #include <time.h>
+#endif
+
+#ifdef HAVE_PCAP_H
+#include <pcap.h>
+#endif
+
+#ifdef HAVE_NET_BPF_H
+#include <net/bpf.h>
+#endif
+#include <netinet/in_systm.h>  
+
+#ifdef HAVE_NETINET_IP_H
+#include <netinet/ip.h>
+#endif
+
+#ifdef HAVE_NETINET_IF_ETHER_H
+#include <netinet/if_ether.h>
 #endif
 ])
 
