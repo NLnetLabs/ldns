@@ -24,24 +24,6 @@
 /* default time before sigs expire */
 #define LDNS_DEFAULT_EXP_TIME	1209600
 
-#if 0
-/**
- * algorigthms used in dns
- */
-enum ldns_enum_algorithm
-{
-	LDNS_RSAMD5		= 1,
-	LDNS_DH			= 2,
-	LDNS_DSA		= 3,
-	LDNS_ECC		= 4,
-	LDNS_RSASHA1		= 5,
-	LDNS_INDIRECT		= 252,
-	LDNS_PRIVATEDNS		= 253,
-	LDNS_PRIVATEOID		= 254
-};
-typedef enum ldns_enum_algorithm ldns_algorithm;
-#endif
-
 /** 
  * calculates a keytag of a key for use in DNSSEC.
  *
@@ -118,11 +100,6 @@ DSA *ldns_key_buf2dsa(ldns_buffer *key);
  */
 RSA *ldns_key_buf2rsa(ldns_buffer *key);
 
-/* TODO
- * Packet is still given (and used, but could be constructed from wire)
- * remove that?
- */
-
 /** 
  * returns a new DS rr that represents the given key rr.
  *
@@ -163,6 +140,11 @@ ldns_status ldns_pkt_verify(ldns_pkt *p, ldns_rr_type t, ldns_rdf *o, ldns_rr_li
  */
 ldns_zone *ldns_zone_sign(ldns_zone *zone, ldns_key_list *key_list);
  
+/**
+ * Initialize the random function. This calls OpenSSL
+ * \param[in] ????
+ * TODO
+ */
 ldns_status ldns_init_random(FILE *fd, uint16_t bytes);
 
 #endif /* _LDNS_DNSSEC_H_ */

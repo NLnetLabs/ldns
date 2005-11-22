@@ -285,17 +285,15 @@ ldns_rr * ldns_pkt_get_rr(ldns_pkt *p, uint16_t n);
 ldns_rr * ldns_pkt_set_rr(ldns_pkt *p, ldns_rr *rr, uint16_t n);
 bool ldns_pkt_insert_rr(ldns_pkt *p, ldns_rr *rr, uint16_t n);
 	
-
-
 #define LDNS_MAX_PACKETLEN         65535
 
 /* allow flags to be given to mk_query */
-#define LDNS_QR		1
-#define LDNS_AA		2
-#define LDNS_TC		4
-#define LDNS_RD		8
-#define LDNS_CD		16
-#define LDNS_RA		32
-#define LDNS_AD		64
+#define LDNS_QR		1       /* QueRy - query flag */
+#define LDNS_AA		2       /* Authoritative Answer - server flag */
+#define LDNS_TC		4       /* TrunCated - server flag */
+#define LDNS_RD		8       /* Recursion Desired - query flag */
+#define LDNS_CD		16      /* Checking Disabled - query flag */
+#define LDNS_RA		32      /* Recursion Available - server flag */
+#define LDNS_AD		64      /* Authenticated Data - server flag */
 
 #endif  /* !_LDNS_PACKET_H */
