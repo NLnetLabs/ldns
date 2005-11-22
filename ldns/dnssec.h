@@ -142,8 +142,9 @@ ldns_zone *ldns_zone_sign(ldns_zone *zone, ldns_key_list *key_list);
  
 /**
  * Initialize the random function. This calls OpenSSL
- * \param[in] ????
- * TODO
+ * \param[in] fd a file providing entropy data
+ * \param[in] bytes number of bytes for the seed
+ * \return LDNS_STATUS_OK if init succeeds
  */
 ldns_status ldns_init_random(FILE *fd, uint16_t bytes);
 
