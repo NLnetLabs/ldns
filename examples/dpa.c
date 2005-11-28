@@ -163,7 +163,15 @@ struct struct_match_table {
 };
 typedef struct struct_match_table match_table;
 
+/* order of entries has been changed after gprof analysis, and reasoning
+ * about the uses of -u arguments
+ */
 const match_table matches[] = {
+	{ MATCH_QUERY, "query", "String representation of the query RR", TYPE_RR },
+	{ MATCH_SRC_ADDRESS, "srcaddress", "address the packet was sent from", TYPE_ADDRESS },
+	{ MATCH_TIMESTAMP, "timestamp", "time the packet was sent", TYPE_TIMESTAMP },
+	{ MATCH_DST_ADDRESS, "dstaddress", "address the packet was sent to", TYPE_ADDRESS },
+	{ MATCH_EDNS_PACKETSIZE, "edns-packetsize", "packets size specified in edns rr", TYPE_INT },
 	{ MATCH_ID, "id", "id of the packet", TYPE_INT },
 	{ MATCH_OPCODE, "opcode", "opcode of packet (rfc1035)", TYPE_OPCODE },
 	{ MATCH_RCODE, "rcode", "response code of packet", TYPE_RCODE },
@@ -174,16 +182,11 @@ const match_table matches[] = {
 	{ MATCH_CD, "cd", "value of cd bit", TYPE_BOOL },
 	{ MATCH_RD, "rd", "value of rd bit", TYPE_BOOL },
 	{ MATCH_EDNS, "edns", "existence of edns rr", TYPE_BOOL },
-	{ MATCH_EDNS_PACKETSIZE, "edns-packetsize", "packets size specified in edns rr", TYPE_INT },
 	{ MATCH_DO, "do", "value of do bit", TYPE_BOOL },
 	{ MATCH_QUESTION_SIZE, "questionsize", "number of rrs in the question section", TYPE_INT },
 	{ MATCH_ANSWER_SIZE, "answersize", "number of rrs in the answer section", TYPE_INT },
 	{ MATCH_AUTHORITY_SIZE, "authoritysize", "number of rrs in the authority section", TYPE_INT },
 	{ MATCH_ADDITIONAL_SIZE, "additionalsize", "number of rrs in the additional section", TYPE_INT },
-	{ MATCH_SRC_ADDRESS, "srcaddress", "address the packet was sent from", TYPE_ADDRESS },
-	{ MATCH_DST_ADDRESS, "dstaddress", "address the packet was sent to", TYPE_ADDRESS },
-	{ MATCH_TIMESTAMP, "timestamp", "time the packet was sent", TYPE_TIMESTAMP },
-	{ MATCH_QUERY, "query", "String representation of the query RR", TYPE_RR },
 	{ 0, NULL , NULL, TYPE_INT}
 };
 
