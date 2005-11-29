@@ -97,6 +97,16 @@ bool ldns_dname_is_subdomain(const ldns_rdf *sub, const ldns_rdf *parent);
 int ldns_dname_compare(const ldns_rdf *dname1, const ldns_rdf *dname2);
 
 /**
+ * check if middle lays in the interval defined by prev and next
+ * prev <= middle < next. This is usefull for nsec checking
+ * \param[in] prev the previous dname
+ * \param[in] middle the dname to check
+ * \param[in] next the next dname
+ * return 0 on error or unknown, -1 when middle is in the interval, +1 when not
+ */
+int ldns_dname_interval(const ldns_rdf *prev, const ldns_rdf *middle, const ldns_rdf *next);
+
+/**
  * Checks whether the given dname string is absolute (i.e. ends with a '.')
  * \param[in] *dname_str a string representing the dname
  * \return true or false

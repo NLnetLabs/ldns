@@ -224,6 +224,9 @@ ldns_dname_compare(const ldns_rdf *dname1, const ldns_rdf *dname2)
 	size_t i;
 	/* see RFC4034 for this algorithm */
 	/* this algorithm assumes the names are normalized to case */
+
+	assert(ldns_rdf_get_type(dname1) == LDNS_RDF_TYPE_DNAME);
+	assert(ldns_rdf_get_type(dname2) == LDNS_RDF_TYPE_DNAME);
 	
 	lc1 = ldns_dname_label_count(dname1);
 	lc2 = ldns_dname_label_count(dname2);
@@ -270,6 +273,40 @@ ldns_dname_compare(const ldns_rdf *dname1, const ldns_rdf *dname2)
 		lc2--;
 	}
 }
+
+/* nsec test: does prev <= middle < next 
+ * -1 = yes
+ * 0 = error/can't tell
+ * 1 = no
+ */
+int
+ldns_dname_interval(const ldns_rdf *prev, const ldns_rdf *middle, const ldns_rdf *next)
+{
+	int prev_check, next_check;
+
+	assert(ldns_rdf_get_type(prev) == LDNS_RDF_TYPE_DNAME);
+	assert(ldns_rdf_get_type(middle) == LDNS_RDF_TYPE_DNAME);
+	assert(ldns_rdf_get_type(next) == LDNS_RDF_TYPE_DNAME);
+
+	prev_check = ldns_dname_compare(prev, middle);
+	next_check = ldns_dname_compare(middle, next);
+	/* <= next. This cannot be the case for nsec, because then we would
+	 * have gotten the nsec of next...
+	 */
+	if (next_check == 0) {
+		return 0;
+	}
+
+			/* <= */
+	if ((prev_check == -1 || prev_check == 0) &&
+			/* < */
+			next_check == -1) {
+		return -1;
+	} else {
+		return 1; 
+	}
+}
+
 
 bool
 ldns_dname_str_absolute(const char *dname_str)
