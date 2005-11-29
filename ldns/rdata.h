@@ -352,7 +352,8 @@ ldns_status     ldns_octet(char *word, size_t *length);
 ldns_rdf	*ldns_rdf_clone(const ldns_rdf *rd);
 
 /**
- * compares two rdf's. Order is canonical.
+ * compares two rdf's on their wire formats.
+ * (To order dnames according to rfc4034, use ldns_dname_compare)
  * \param[in] rd1 the first one
  * \param[in] rd2 the second one
  * \return 0 if equal
