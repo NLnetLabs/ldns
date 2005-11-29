@@ -120,8 +120,8 @@ cd ldns || error_cleanup "LDNS not exported correctly from SVN"
 info "Building configure script (autoconf)."
 autoconf || error_cleanup "Autoconf failed."
 
-info "Building config.h.in (autoheader)."
-autoheader || error_cleanup "Autoheader failed."
+info "Running  Libtoolize script (libtoolize)."
+libtoolize || error_cleanup "Libtoolize failed."
 
 rm -r autom4te* || error_cleanup "Failed to remove autoconf cache directory."
 
