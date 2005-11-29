@@ -19,7 +19,7 @@ LIBS = @LIBS@
 INSTALL = $(srcdir)/install-sh -c
 INSTALL_PROGRAM = $(INSTALL)
 
-COMPILE         = $(CC) -Wall -Wextra $(CPPFLAGS) $(CFLAGS) -I. -I$(srcdir)
+COMPILE         = $(CC) -Wall $(CPPFLAGS) $(CFLAGS) -I. -I$(srcdir)
 LINK            = $(CC) $(CFLAGS) $(LDFLAGS) 
 
 LINT            = splint
