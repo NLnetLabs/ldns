@@ -1,7 +1,7 @@
 #!/bin/sh
 
 # Build a LDNS distribution tar from the SVN repository.
-# Ripped from NSD
+# Ripped from NSD. Adapted by Miek
 
 # Abort script on unexpected errors.
 set -e
@@ -164,10 +164,10 @@ cleanup
 
 case $OSTYPE in
         linux*)
-                sha=`sha1sum nsd-$version.tar.gz |  awk '{ print $1 }'`
+                sha=`sha1sum ldns-$version.tar.gz |  awk '{ print $1 }'`
                 ;;
         freebsd*)
-                sha=`sha1  nsd-$version.tar.gz |  awk '{ print $5 }'`
+                sha=`sha1  ldns$version.tar.gz |  awk '{ print $5 }'`
                 ;;
 esac
 echo $sha > ldns-$version.tar.gz.sha1
