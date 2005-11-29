@@ -101,6 +101,7 @@ ldns_rdf2buffer_str_dname(ldns_buffer *output, ldns_rdf *dname)
 		while ((len > 0) && src_pos < ldns_rdf_size(dname)) {
 			
 			src_pos++;
+
 			
 			for(i = 0; i < len; i++) {
 				/* paranoia check for various 'strange' 

@@ -19,13 +19,13 @@ LIBS = @LIBS@
 INSTALL = $(srcdir)/install-sh -c
 INSTALL_PROGRAM = $(INSTALL)
 
-COMPILE         = $(CC) -Wall $(CPPFLAGS) $(CFLAGS) -I. -I$(srcdir)
+COMPILE         = $(CC) -Wall -Wextra $(CPPFLAGS) $(CFLAGS) -I. -I$(srcdir)
 LINK            = $(CC) $(CFLAGS) $(LDFLAGS) 
 
 LINT            = splint
 LINTFLAGS       = +quiet -weak -warnposix -unrecog -Din_addr_t=uint32_t -Du_int=unsigned -Du_char=uint8_t
 
-OBJ=drill.o drill_util.o error.o root.o work.o chasetrace.o dnssec.o
+OBJ=drill.o drill_util.o error.o root.o work.o chasetrace.o dnssec.o securetrace.o
 SRC=$(OBJ:.o=.c)
 
 HEADER=drill.h drill_util.h

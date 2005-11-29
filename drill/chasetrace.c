@@ -111,14 +111,26 @@ do_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 		/* remove the old nameserver from the resolver */
 		while((pop = ldns_resolver_pop_nameserver(res))) { /* do it */ }
 
+		/* also check for new_nss emptyness */
+
 		if (!new_nss_aaaa && !new_nss_a) {
 			/* 
 			 * no nameserver found!!! 
 			 * try to resolve the names we do got 
 			 */
+			printf("nameserver %d\n", ldns_rr_list_rr_count(new_nss));
 			for(i = 0; i < ldns_rr_list_rr_count(new_nss); i++) {
 				/* get the name of the nameserver */
 				pop = ldns_rr_rdf(ldns_rr_list_rr(new_nss, i), 0);
+				printf("pop %p\n", pop);
+				if (!pop) {
+					break;
+				}
+
+				ldns_rr_list_print(stdout, new_nss);
+				printf("pop -- ");
+				ldns_rdf_print(stdout, pop);
+				printf("\n");
 				/* retrieve it's addresses */
 				ns_addr = ldns_rr_list_cat_clone(ns_addr,
 					ldns_get_rr_list_addr_by_name(local_res, pop, c, 0));
@@ -133,7 +145,8 @@ do_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 				}
 				ldns_rr_list_free(ns_addr);
 			} else {
-				error("Could not find the ip addr; abort");
+				ldns_rr_list_print(stdout, ns_addr);
+				error("Could not find the nameserver ip addr; abort");
 				ldns_pkt_free(p);
 				return NULL;
 			}

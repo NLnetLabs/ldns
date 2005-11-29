@@ -78,6 +78,10 @@ ldns_dname_left_chop(ldns_rdf *d)
 	uint8_t label_pos;
 	ldns_rdf *chop;
 
+	if (!d) {
+		return NULL;
+	}
+		
 	if (ldns_rdf_get_type(d) != LDNS_RDF_TYPE_DNAME) {
 		return NULL;
 	}

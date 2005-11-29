@@ -196,7 +196,15 @@ ldns_status ldns_resolver_push_nameserver_rr_list(ldns_resolver *r, ldns_rr_list
  */
 int ldns_resolver_bgsend();
 
-/* no comment found */
+/**
+ * Send the query for using the resolver and take the search list into * account
+ * \param[in] *r operate using this resolver
+ * \param[in] *rdf query for this name
+ * \param[in] t query for this type (may be 0, defaults to A)
+ * \param[in] c query for this class (may be 0, default to IN)
+ * \param[in] flags the query flags
+ * \return ldns_pkt* a packet with the reply from the nameserver
+ */
 ldns_pkt* ldns_resolver_search(ldns_resolver *r, ldns_rdf *rdf, ldns_rr_type t, ldns_rr_class c, uint16_t flags);
 
 /**
@@ -220,7 +228,7 @@ ldns_status ldns_resolver_send(ldns_pkt **answer, ldns_resolver *r, ldns_rdf *na
 ldns_status ldns_resolver_send_pkt(ldns_pkt **answer, ldns_resolver *r, ldns_pkt *query_pkt);
 
 /**
- * Send a qeury to a nameserver
+ * Send a query to a nameserver
  * \param[in] *r operate using this resolver
  * \param[in] *name query for this name
  * \param[in] *type query for this type (may be 0, defaults to A)

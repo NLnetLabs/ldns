@@ -19,7 +19,7 @@ endif
 
 CC 		= @CC@
 CPPFLAGS	= @CPPFLAGS@ @DEFS@ -I. -I$(srcdir)
-CFLAGS 		= @CFLAGS@
+CFLAGS 		= @CFLAGS@ -Wextra
 LDFLAGS		= @LDFLAGS@	-lcrypto
 LIBS 		= @LIBS@
 LIBOBJS		= @LIBOBJS@

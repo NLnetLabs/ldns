@@ -32,13 +32,15 @@ ldns_rdf *ldns_dname_cat_clone(ldns_rdf *rd1, ldns_rdf *rd2);
  * \return LDNS_STATUS_OK on success
  */
 ldns_status 	ldns_dname_cat(ldns_rdf *rd1, ldns_rdf *rd2);
+
 /**
- * chop one label off a dname. so 
+ * chop one label off the left side of a dname. so 
  * wwww.nlnetlabs.nl, becomes nlnetlabs.nl
  * \param[in] d the dname to chop
  * \return the remaining dname
  */
 ldns_rdf *ldns_dname_left_chop(ldns_rdf *d);
+
 /**
  * count the number of labels inside a LDNS_RDF_DNAME type rdf.
  * \param[in] *r the rdf
