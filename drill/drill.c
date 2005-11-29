@@ -367,9 +367,10 @@ main(int argc, char *argv[])
 		type = LDNS_RR_TYPE_A;
 	}
 
-	/* if we're asking for DNSSEC record, act as if -D with given */
+	/* if we're asking for DNSSEC records, act as if -D with given */
 	if (type == LDNS_RR_TYPE_DNSKEY ||
-			type == LDNS_RR_TYPE_RRSIG ||
+			type == LDNS_RR_TYPE_RRSIG || 
+			type == LDNS_RR_TYPE_DS || 
 			type == LDNS_RR_TYPE_NSEC) {
 		qdnssec = true;
 	}

@@ -87,6 +87,14 @@ uint16_t ldns_getaddrinfo(ldns_resolver *res, ldns_rdf *node, ldns_rr_class c, l
  */
 ldns_rr_list *ldns_getaddrinfo_secure();
 
+/**
+ * Check if t is enumerated in the nsec type rdata
+ * \param[in] nsec the NSEC Record to look in
+ * \param[in] t the type to check for
+ * \return true when t is found, otherwise return false
+ */
+bool ldns_nsec_type_check(ldns_rr *nsec, ldns_rr_type t);
+
 /*
  * Send a "simple" update for an A or an AAAA RR.
  * \param[in] fqdn the update RR owner

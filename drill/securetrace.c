@@ -62,7 +62,6 @@ do_secure_trace2(ldns_resolver *res, ldns_rdf *name, ldns_rr_type t,
 	for(i = 1; i < 10 && chopped_dname[i - 1]; i++) {
 		chopped_dname[i] = ldns_dname_left_chop(chopped_dname[i - 1]);	
 	}
-	printf("%d i\n", i);
 	chopped_dname[i] = NULL;
 	dname_labels = i - 2; /* set this also before this last NULL */
 

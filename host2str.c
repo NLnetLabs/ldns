@@ -455,6 +455,9 @@ ldns_rdf2buffer_str_wks(ldns_buffer *output, ldns_rdf *rdf)
 ldns_status
 ldns_rdf2buffer_str_nsec(ldns_buffer *output, ldns_rdf *rdf)
 {
+	/* Note: this code is duplicated in higher.c in 
+	 * ldns_nsec_type_check() function
+	 */
 	uint8_t window_block_nr;
 	uint8_t bitmap_length;
 	uint16_t type;
