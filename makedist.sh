@@ -1,7 +1,9 @@
 #!/bin/sh
 
+#
 # Build a LDNS distribution tar from the SVN repository.
 # Ripped from NSD. Adapted by Miek
+#
 
 # Abort script on unexpected errors.
 set -e
