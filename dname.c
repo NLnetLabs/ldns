@@ -221,9 +221,20 @@ ldns_dname_compare(const ldns_rdf *dname1, const ldns_rdf *dname2)
 	/* see RFC4034 for this algorithm */
 	/* this algorithm assumes the names are normalized to case */
 	
-	lc1 = ldns_dname_label_count(dname1) - 1;
-	lc2 = ldns_dname_label_count(dname2) - 1;
+	lc1 = ldns_dname_label_count(dname1);
+	lc2 = ldns_dname_label_count(dname2);
 	
+	if (lc1 == 0 && lc2 == 0) {
+		return 0;
+	}
+	if (lc1 == 0) {
+		return -1;
+	}
+	if (lc2 == 0) {
+		return 1;
+	}
+	lc1--;
+	lc2--;
 	while (true) {
 		label1 = ldns_dname_label(dname1, lc1);
 		label2 = ldns_dname_label(dname2, lc2);

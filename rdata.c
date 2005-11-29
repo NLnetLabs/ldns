@@ -585,6 +585,12 @@ ldns_rdf_compare(const ldns_rdf *rd1, const ldns_rdf *rd2)
 	if (!rd1 && !rd2) {
 		return 0;
 	}
+	if (!rd1) {
+		return -1;
+	}
+	if (!rd2) {
+		return 1;
+	}
 	
 	i1 = ldns_rdf_size(rd1);
 	i2 = ldns_rdf_size(rd1);
