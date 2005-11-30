@@ -16,29 +16,26 @@
  * and possible some signatures too (that would be the day...)
  */
 ldns_rr_list *
-get_rr(ldns_resolver *r, ldns_rdf *name, ldns_rr_type t, ldns_rr_list **sig)
+get_dnssec_rr(ldns_resolver *r, ldns_rdf *name, ldns_rr_type t, ldns_rr_list **sig)
 {
 	ldns_pkt *p;
-	ldns_rr_list *k;
+	ldns_rr_list *rr;
 
 	/* ldns_resolver_set_dnssec(r, true); */
 
-	p = ldns_resolver_query(r, apexname, LDNS_RR_TYPE_DNSKEY, LDNS_RR_CLASS_IN, 0); 
+	p = ldns_resolver_query(r, name, t, LDNS_RR_CLASS_IN, 0); 
 	if (!p) {
 		return NULL;
 	}
 
-	k = ldns_pkt_rr_list_by_name_and_type(p, apexname, LDNS_RR_TYPE_DNSKEY, 
-				LDNS_SECTION_ANSWER);
+	rr = ldns_pkt_rr_list_by_name_and_type(p, name, t, LDNS_SECTION_ANSWER);
 	/* there must be a sig there too... */
-	*opt_sig = ldns_pkt_rr_list_by_name_and_type(p, apexname, LDNS_RR_TYPE_RRSIG, 
+	if (sig) {
+		*sig = ldns_pkt_rr_list_by_name_and_type(p, name, LDNS_RR_TYPE_RRSIG, 
 				LDNS_SECTION_ANSWER);
-
-	return k;
-
-
+	}
+	return rr;
 }
-
 
 /* 
  * retrieve keys for this zone
@@ -46,46 +43,16 @@ get_rr(ldns_resolver *r, ldns_rdf *name, ldns_rr_type t, ldns_rr_list **sig)
 ldns_rr_list *
 get_apex_keys(ldns_resolver *r, ldns_rdf *apexname, ldns_rr_list **opt_sig)
 {
-	ldns_pkt *p;
-	ldns_rr_list *k;
-
-	/* ldns_resolver_set_dnssec(r, true); */
-
-	p = ldns_resolver_query(r, apexname, LDNS_RR_TYPE_DNSKEY, LDNS_RR_CLASS_IN, 0); 
-	if (!p) {
-		return NULL;
-	}
-
-	k = ldns_pkt_rr_list_by_name_and_type(p, apexname, LDNS_RR_TYPE_DNSKEY, 
-				LDNS_SECTION_ANSWER);
-	/* there must be a sig there too... */
-	*opt_sig = ldns_pkt_rr_list_by_name_and_type(p, apexname, LDNS_RR_TYPE_RRSIG, 
-				LDNS_SECTION_ANSWER);
-
-	return k;
+	return get_dnssec_rr(r, apexname, LDNS_RR_TYPE_DNSKEY, opt_sig);
 }
 
 /*
  * check to see if we can find a DS rrset here which we can then follow
  */
 ldns_rr_list *
-get_ds(ldns_resolver r, ldns_rdf *ownername, ldns_rr_list **opt_sig)
+get_ds(ldns_resolver *r, ldns_rdf *ownername, ldns_rr_list **opt_sig)
 {
-	ldns_pkt *p;
-	ldns_rr_list *d;
-
-	p = ldns_resolver_query(r, apexname, LDNS_RR_TYPE_DNSKEY, LDNS_RR_CLASS_IN, 0); 
-	if (!p) {
-		return NULL;
-	}
-
-	k = ldns_pkt_rr_list_by_name_and_type(p, apexname, LDNS_RR_TYPE_DNSKEY, 
-				LDNS_SECTION_ANSWER);
-	/* there must be a sig there too... */
-	*opt_sig = ldns_pkt_rr_list_by_name_and_type(p, apexname, LDNS_RR_TYPE_RRSIG, 
-				LDNS_SECTION_ANSWER);
-
-	return k;
+	return get_dnssec_rr(r, ownername, LDNS_RR_TYPE_DS, opt_sig);
 }
 
 
