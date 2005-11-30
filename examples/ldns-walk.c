@@ -178,7 +178,7 @@ main(int argc, char *argv[])
 			cmdline_res = ldns_resolver_new_frm_file(NULL);
 			
 			if (!cmdline_res) {
-				error("%s", "@server ip could not be converted");
+				fprintf(stderr, "%s", "@server ip could not be converted");
 				result = EXIT_FAILURE;
 				goto exit;
 			}
@@ -191,7 +191,7 @@ main(int argc, char *argv[])
 						0);
 			ldns_rdf_deep_free(cmdline_dname);
 			if (!cmdline_rr_list) {
-				error("%s %s", "could not find any address for the name: ", serv);
+				fprintf(stderr, "%s %s", "could not find any address for the name: ", serv);
 				result = EXIT_FAILURE;
 				goto exit;
 			} else {
@@ -199,14 +199,14 @@ main(int argc, char *argv[])
 						res, 
 						cmdline_rr_list
 					) != LDNS_STATUS_OK) {
-					error("%s", "pushing nameserver");
+					fprintf(stderr, "%s", "pushing nameserver");
 					result = EXIT_FAILURE;
 					goto exit;
 				}
 			}
 		} else {
 			if (ldns_resolver_push_nameserver(res, serv_rdf) != LDNS_STATUS_OK) {
-				error("%s", "pushing nameserver");
+				fprintf(stderr, "%s", "pushing nameserver");
 				result = EXIT_FAILURE;
 				goto exit;
 			} else {
