@@ -1,5 +1,11 @@
 Current TODO list
 
+1.0.1:
+------
+        o Fix what needs to be fixed
+        o Make drill a worthy dig replacement wrt to 
+          DNSSEC debugging
+
 Post 1.0 Stuff:
 ---------------
         o Dname compression

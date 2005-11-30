@@ -1,11 +1,14 @@
-           : 1.0.1: ldns-team
-	* added include/ and lib/ dirs so that you can compile against ldns
+December??? 2005: 1.0.1: ldns-team
+	* Added include/ and lib/ dirs so that you can compile against ldns
 	  without installing ldns on your system
+	* Makefile updates
 
 	Drill:
 	* -r was killed in favor of -o <header bit mnemonic> which 
 	  allows for a header bits setting (and maybe more in the
 	  future)
+	* DS was added to the list of records which, when used automaticly
+	  enable DNSSEC (i.e. Set the do-bit in the query)
 
 18 Oct 2005: 1.0.0: ldns-team
 	* Commited a patch from Håkan Olsson

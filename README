@@ -28,37 +28,26 @@ INSTALLATION
 
 * Examples
 There are some examples in the examples/ directory. These can be built with:
-1. make examples 
-(in the build directory of the library)
-
-You can also do it yourself:
-
-1. autoreconf
-2. ./configure
+1. cd examples/
+2. autoreconf [--with-ldns=../]
 3. gmake
 
 The library has to be installed in order for this to work. If it is not
 installed in one of the default paths (i.e. if you have specified --prefix
 when configuring the library) you can use --with-ldns=PATH to specify that
-path.
-
-If you have only built the library and not installed it you can add the
-directories with the headers and libraries to the search path of configure
-by specifying:
-LDFLAGS="-L<build-dir>/.libs" CPPFLAGS="-I<build-dir> -I<src_dir>"
+path. PATH in that case would be '../'
 
 In that last case, you will also need to have your LD_LIBRARY_PATH set to
-the .libs directory to be able to run the examples.
+the .libs directory to be able to run the examples. I.e.:
 
+LD_LIBRARY_PATH=../lib ./ldns-version
 
 * Drill
 
-Building drill is the same as building the examples.
+Drill can be build by issueing a 'make drill' from the ldns source dir.
 
 If you want to build drill by hand, the configure and running options are
-the same as those for the examples. You can use the make target 'lib' if you
-only want to build the library and not drill (and make install-lib to
-install it).
+the same as those for the examples. 
 
 
 * Building from repository
@@ -74,11 +63,11 @@ libtoolize and make allautoconf (or do autoreconf manually in the subdirs)
 ldns is developed by the ldns team at NLnet Labs. This team currently
 consists out of:
   o Jelte Jansen
-  o Erik Rozendaal
   o Miek Gieben
 
 * Credits
 We have received patches from the following people, thanks!
+  o Erik Rozendaal
   o Håkan Olsson
   o Jakob Schlyter
   o Paul Wouters
@@ -88,8 +77,11 @@ KNOWN ISSUES
 
 It has been brought to our attention that the build script might have some
 problems on MACOSX 10.4 and Solaris. Please contact us if you have more info
-on this.
+on this. 
 
 For MACOSX 10.4, it seems that you have to set the MACOSX_DEPLOYMENT_TARGET
 environment variable to 10.4 before running make. Apparently it defaults to
 10.1.
+
+Also RedHat 9 seems to be having a problem when building ldns - we have
+very little details about this.

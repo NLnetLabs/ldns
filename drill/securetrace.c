@@ -11,6 +11,35 @@
 #include "drill.h"
 #include <ldns/dns.h>
 
+/*
+ * generic function to get some RRset from a nameserver
+ * and possible some signatures too (that would be the day...)
+ */
+ldns_rr_list *
+get_rr(ldns_resolver *r, ldns_rdf *name, ldns_rr_type t, ldns_rr_list **sig)
+{
+	ldns_pkt *p;
+	ldns_rr_list *k;
+
+	/* ldns_resolver_set_dnssec(r, true); */
+
+	p = ldns_resolver_query(r, apexname, LDNS_RR_TYPE_DNSKEY, LDNS_RR_CLASS_IN, 0); 
+	if (!p) {
+		return NULL;
+	}
+
+	k = ldns_pkt_rr_list_by_name_and_type(p, apexname, LDNS_RR_TYPE_DNSKEY, 
+				LDNS_SECTION_ANSWER);
+	/* there must be a sig there too... */
+	*opt_sig = ldns_pkt_rr_list_by_name_and_type(p, apexname, LDNS_RR_TYPE_RRSIG, 
+				LDNS_SECTION_ANSWER);
+
+	return k;
+
+
+}
+
+
 /* 
  * retrieve keys for this zone
  */
@@ -35,6 +64,30 @@ get_apex_keys(ldns_resolver *r, ldns_rdf *apexname, ldns_rr_list **opt_sig)
 
 	return k;
 }
+
+/*
+ * check to see if we can find a DS rrset here which we can then follow
+ */
+ldns_rr_list *
+get_ds(ldns_resolver r, ldns_rdf *ownername, ldns_rr_list **opt_sig)
+{
+	ldns_pkt *p;
+	ldns_rr_list *d;
+
+	p = ldns_resolver_query(r, apexname, LDNS_RR_TYPE_DNSKEY, LDNS_RR_CLASS_IN, 0); 
+	if (!p) {
+		return NULL;
+	}
+
+	k = ldns_pkt_rr_list_by_name_and_type(p, apexname, LDNS_RR_TYPE_DNSKEY, 
+				LDNS_SECTION_ANSWER);
+	/* there must be a sig there too... */
+	*opt_sig = ldns_pkt_rr_list_by_name_and_type(p, apexname, LDNS_RR_TYPE_RRSIG, 
+				LDNS_SECTION_ANSWER);
+
+	return k;
+}
+
 
 /* do a secure trace - local_res has been setup, so try to use that */
 ldns_status
@@ -86,11 +139,21 @@ do_secure_trace2(ldns_resolver *res, ldns_rdf *name, ldns_rr_type t,
 	printf("\nFirst dname with keys and sigs here */\n");
 	ldns_rdf_print(stdout, chopped_dname[i]);
 
+	/* chopped_dname[i] is the zone which is configured at the
+	 * nameserver pointed to by res. This is our starting point
+	 * for the secure trace. Hopefully the trusted keys we got
+	 * match the keys we see here
+	 */
+
 printf("\nkeys\n");
 	ldns_rr_list_print(stdout, dnskey_cache);
 printf("\nsigs\n");
  	if (!rrsig_cache) {
-		/* huh!? the sigs are sent along with the keys... */
+		/* huh!? the sigs must be sent along with the keys... 
+		 * probably are using some lame forwarder... exit as
+		 * we cannot do anything in that case
+		 */
+		error("Are you using an non DNSSEC-aware forwarder?");
 		return LDNS_STATUS_ERR;
 	}
 	ldns_rr_list_print(stdout, rrsig_cache);
