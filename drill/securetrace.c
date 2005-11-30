@@ -20,6 +20,7 @@ get_dnssec_rr(ldns_resolver *r, ldns_rdf *name, ldns_rr_type t, ldns_rr_list **s
 {
 	ldns_pkt *p;
 	ldns_rr_list *rr;
+	ldns_rr_list *sigs;
 
 	/* ldns_resolver_set_dnssec(r, true); */
 
@@ -30,9 +31,11 @@ get_dnssec_rr(ldns_resolver *r, ldns_rdf *name, ldns_rr_type t, ldns_rr_list **s
 
 	rr = ldns_pkt_rr_list_by_name_and_type(p, name, t, LDNS_SECTION_ANSWER);
 	/* there must be a sig there too... */
+	sigs = ldns_pkt_rr_list_by_name_and_type(p, name, LDNS_RR_TYPE_RRSIG, 
+			LDNS_SECTION_ANSWER);
+
 	if (sig) {
-		*sig = ldns_pkt_rr_list_by_name_and_type(p, name, LDNS_RR_TYPE_RRSIG, 
-				LDNS_SECTION_ANSWER);
+		ldns_rr_list_cat(*sig, sigs);
 	}
 	return rr;
 }
@@ -41,7 +44,7 @@ get_dnssec_rr(ldns_resolver *r, ldns_rdf *name, ldns_rr_type t, ldns_rr_list **s
  * retrieve keys for this zone
  */
 ldns_rr_list *
-get_apex_keys(ldns_resolver *r, ldns_rdf *apexname, ldns_rr_list **opt_sig)
+get_keys(ldns_resolver *r, ldns_rdf *apexname, ldns_rr_list **opt_sig)
 {
 	return get_dnssec_rr(r, apexname, LDNS_RR_TYPE_DNSKEY, opt_sig);
 }
@@ -67,9 +70,13 @@ do_secure_trace2(ldns_resolver *res, ldns_rdf *name, ldns_rr_type t,
 	 */
 	ldns_rr_list *dnskey_cache;
 	ldns_rr_list *rrsig_cache;
+	ldns_rr_list *ds_cache;
 
 	ldns_rdf *chopped_dname[11]; /* alloc 10 subparts for a dname */
-	uint8_t i, dname_labels;
+	ldns_rdf *current_name;
+	ldns_rr_list *ds;
+	int8_t i, dname_labels;
+	uint8_t lab_cnt;
 
 	rrsig_cache = ldns_rr_list_new();
 	dnskey_cache = NULL;
@@ -97,7 +104,7 @@ do_secure_trace2(ldns_resolver *res, ldns_rdf *name, ldns_rr_type t,
 	for(i = dname_labels; i != 0; i--) {
 		ldns_rdf_print(stdout, chopped_dname[i]);
 		printf("\n");
-		dnskey_cache =  get_apex_keys(res, chopped_dname[i], &rrsig_cache);
+		dnskey_cache =  get_keys(res, chopped_dname[i], &rrsig_cache);
 		if (dnskey_cache) {
 			/* aahhh, keys... */
 			break;
@@ -105,6 +112,7 @@ do_secure_trace2(ldns_resolver *res, ldns_rdf *name, ldns_rr_type t,
 	}
 	printf("\nFirst dname with keys and sigs here */\n");
 	ldns_rdf_print(stdout, chopped_dname[i]);
+	lab_cnt = i;
 
 	/* chopped_dname[i] is the zone which is configured at the
 	 * nameserver pointed to by res. This is our starting point
@@ -126,8 +134,18 @@ printf("\nsigs\n");
 	ldns_rr_list_print(stdout, rrsig_cache);
 	printf("\n");
 
+	/* Next try to find out if there is a DS for this name */
+	i = lab_cnt;
+	for(i = lab_cnt; i >= 0; i--) {
+		ds = get_ds(res, chopped_dname[i], NULL);
+		if (ds) {
+			ldns_rr_list_print(stdout, ds);
+		}
+		ldns_rdf_print(stdout, chopped_dname[i]);
+		printf("\n");
+	}
 
-
+	
 	return LDNS_STATUS_OK;
 }
 
