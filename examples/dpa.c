@@ -85,6 +85,7 @@ enum enum_type_operators {
 	OP_LESSER,
 	OP_GREATEREQUAL,
 	OP_LESSEREQUAL,
+	OP_CONTAINS,
 	OP_LAST
 };
 typedef enum enum_type_operators type_operator;
@@ -96,6 +97,7 @@ const ldns_lookup_table lt_operators[] = {
 	{ OP_LESSER, "<" },
 	{ OP_GREATEREQUAL, ">=" },
 	{ OP_LESSEREQUAL, "<=" },
+	{ OP_CONTAINS, "~=" },
 	{ 0, NULL }
 };
 
@@ -136,10 +138,10 @@ const type_operators const_type_operators[] = {
 	{ TYPE_BOOL, 2, { OP_EQUAL, OP_NOTEQUAL} },
 	{ TYPE_OPCODE, 2, { OP_EQUAL, OP_NOTEQUAL} },
 	{ TYPE_RCODE, 2, { OP_EQUAL, OP_NOTEQUAL} },
-	{ TYPE_STRING, 2, { OP_EQUAL, OP_NOTEQUAL} },
+	{ TYPE_STRING, 3, { OP_EQUAL, OP_NOTEQUAL, OP_CONTAINS} },
 	{ TYPE_TIMESTAMP, 6, { OP_EQUAL, OP_NOTEQUAL, OP_GREATER, OP_LESSER, OP_GREATEREQUAL, OP_LESSEREQUAL } },
-	{ TYPE_ADDRESS, 2, { OP_EQUAL, OP_NOTEQUAL} },
-	{ TYPE_RR, 2, { OP_EQUAL, OP_NOTEQUAL} },
+	{ TYPE_ADDRESS, 3, { OP_EQUAL, OP_NOTEQUAL, OP_CONTAINS} },
+	{ TYPE_RR, 3, { OP_EQUAL, OP_NOTEQUAL, OP_CONTAINS} },
 	{ 0, 0, { 0 } }
 };
 
@@ -700,11 +702,12 @@ match_str(type_operator operator,
           char *value,
           char *mvalue)
 {
-	bool result = strcmp(value, mvalue) == 0;
-	if (operator == OP_EQUAL) {
-		return result;
+	if (operator == OP_CONTAINS) {
+		return strcasestr(value, mvalue) != 0;
+	} else if (operator == OP_EQUAL) {
+		return strcmp(value, mvalue) == 0;
 	} else {
-		return !result;
+		return strcmp(value, mvalue) != 0;
 	}	
 }
 
@@ -1585,7 +1588,8 @@ parse_match_expression(char *string)
 		if (str[i] == '=' ||
 		    str[i] == '>' ||
 		    str[i] == '<' ||
-		    str[i] == '!'
+		    str[i] == '!' ||
+		    str[i] == '~'
 		   ) {
 		 	leftend = i-1;
 			op = malloc(3);
@@ -1602,7 +1606,8 @@ parse_match_expression(char *string)
 			if (str[i] == '=' ||
 			    str[i] == '>' ||
 			    str[i] == '<' ||
-			    str[i] == '!'
+			    str[i] == '!' ||
+			    str[i] == '~'
 			   ) {
 			   	op[j] = str[i];
 				i++;
@@ -1655,17 +1660,22 @@ parse_match_expression(char *string)
 								break;
 							case TYPE_RR:
 								/* convert first so we have the same strings for the same rrs in match_ later */
+								/*
 								qrr = ldns_rr_new_frm_str(&str[i], LDNS_DEFAULT_TTL, NULL);
 								if (!qrr) {
 									fprintf(stderr, "Bad value for RR: %s\n", &str[i]);
 									exit(EXIT_FAILURE);
 								}
 								val = ldns_rr2str(qrr);
+								*/
 								/* remove \n for readability */
+								/*
 								if (strchr(val, '\n')) {
 									*(strchr(val, '\n')) = '\0';
 								}
 								ldns_rr_free(qrr);
+								*/
+								val = strdup(&str[i]);
 								break;
 							case TYPE_OPCODE:
 								lt = ldns_lookup_by_name(ldns_opcodes, &str[i]);
