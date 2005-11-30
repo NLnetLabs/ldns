@@ -2,6 +2,7 @@ December??? 2005: 1.0.1: ldns-team
 	* Added include/ and lib/ dirs so that you can compile against ldns
 	  without installing ldns on your system
 	* Makefile updates
+	* assert is used throughout the library to catch illegal library calls
 
 	Drill:
 	* -r was killed in favor of -o <header bit mnemonic> which 

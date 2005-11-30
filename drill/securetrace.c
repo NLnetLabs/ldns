@@ -11,6 +11,67 @@
 #include "drill.h"
 #include <ldns/dns.h>
 
+
+/* 
+ * check if the key and the ds are equivalent
+ * ie: is the ds made from the key?
+ */
+bool
+check_ds_key_equiv(ldns_rr *key, ldns_rr *ds)
+{
+	ldns_rr *key_ds;
+
+	key_ds  = ldns_key_rr2ds(key);
+	printf("new ds\n");
+		ldns_rr_print(stdout, key_ds);
+
+	if (ldns_rr_compare(key_ds, ds) == 0) {
+		return true;
+	} else {
+		return false;
+	}
+}
+
+/*
+ * return the DS records that match some of the
+ * keys
+ */
+ldns_rr_list *
+check_ds_key_equiv_rr_list(ldns_rr_list *key, ldns_rr_list *ds)
+{
+	size_t i,j;
+	ldns_rr_list *eq;
+
+	ldns_rr *ds_rr, *key_rr;
+
+	eq = ldns_rr_list_new();
+
+	/* check each DS against all the keys for a match */
+	for(i = 0; i < ldns_rr_list_rr_count(ds); i++) {
+		ds_rr = ldns_rr_list_rr(ds, i);
+		for(j = 0; j < ldns_rr_list_rr_count(key); j++) {
+			key_rr = ldns_rr_list_rr(key, j);
+
+		printf("checking\n");
+		ldns_rr_print(stdout, ds_rr);
+		ldns_rr_print(stdout, key_rr);
+		printf("\n");
+			
+			if (check_ds_key_equiv(key_rr, ds_rr)) {
+				/* we have a winner */
+				ldns_rr_list_push_rr(eq, ds_rr);
+				break;
+			}
+		}
+	}
+	if (ldns_rr_list_rr_count(eq) > 0) {
+		return eq;
+	} else {
+		return NULL;
+	}
+}
+
+
 /*
  * generic function to get some RRset from a nameserver
  * and possible some signatures too (that would be the day...)
@@ -68,15 +129,18 @@ do_secure_trace2(ldns_resolver *res, ldns_rdf *name, ldns_rr_type t,
 	 * or authoritative NS. If we use a cache we should "leave" that
 	 * asap and try to find us a real auth. NS ;) 
 	 */
-	ldns_rr_list *dnskey_cache;
-	ldns_rr_list *rrsig_cache;
-	ldns_rr_list *ds_cache;
+	ldns_rr_list *dnskey_cache = NULL;
+	ldns_rr_list *rrsig_cache = NULL;
+	ldns_rr_list *ds_cache = NULL;
+
+	/* put RRset in here that are validated */
+	ldns_rr_list *validated_cache = NULL;
 
 	ldns_rdf *chopped_dname[11]; /* alloc 10 subparts for a dname */
-	ldns_rdf *current_name;
 	ldns_rr_list *ds;
 	int8_t i, dname_labels;
 	uint8_t lab_cnt;
+	ldns_rr_list *validated_ds;
 
 	rrsig_cache = ldns_rr_list_new();
 	dnskey_cache = NULL;
@@ -134,18 +198,34 @@ printf("\nsigs\n");
 	ldns_rr_list_print(stdout, rrsig_cache);
 	printf("\n");
 
-	/* Next try to find out if there is a DS for this name */
+	/* Next try to find out if there is a DS for this name are
+	 * a name under that
+	 */
 	i = lab_cnt;
 	for(i = lab_cnt; i >= 0; i--) {
 		ds = get_ds(res, chopped_dname[i], NULL);
 		if (ds) {
-			ldns_rr_list_print(stdout, ds);
+			/* re-query to get the rrsigs */
+			ds_cache = get_ds(res, chopped_dname[i], &rrsig_cache);
+			dnskey_cache = get_keys(res, chopped_dname[i], &rrsig_cache);
+			break;
 		}
-		ldns_rdf_print(stdout, chopped_dname[i]);
-		printf("\n");
 	}
 
-	
+	printf("key cache \n");
+	ldns_rr_list_print(stdout, dnskey_cache);
+	printf("ds_cache \n");
+	ldns_rr_list_print(stdout, ds_cache);
+	printf("sig cache \n");
+	ldns_rr_list_print(stdout, rrsig_cache);
+
+	validated_ds = check_ds_key_equiv_rr_list(dnskey_cache, ds_cache); 
+	if (validated_ds) {
+		ldns_rr_list_print(stdout, validated_ds);
+	}
+
+	printf("\n");
+
 	return LDNS_STATUS_OK;
 }
 

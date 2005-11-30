@@ -1148,6 +1148,9 @@ ldns_rr_compare(const ldns_rr *rr1, const ldns_rr *rr2)
 	size_t rr2_len;
 	size_t i;
 
+	assert(rr1 != NULL);
+	assert(rr2 != NULL);
+
 	rr1_len = ldns_rr_uncompressed_size(rr1);
 	rr2_len = ldns_rr_uncompressed_size(rr2);
 
