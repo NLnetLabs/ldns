@@ -51,6 +51,10 @@ Print packets (in representation format) that match the -f filter. If no -f was 
 Count every occurence of every value of the matchname (for instance, count all packetsizes, see EXAMPLES).
 
 .TP
+\fB-ua\fR
+For every matchname in -u, show the average of all values. Behaviour for match types that do not have an integer value is undefined.
+
+.TP
 \fB-um\fR \fInumber\fR
 Only show the results from -u for values that occurred more than <number> times.
 
@@ -90,6 +94,10 @@ For all edns packets, count the number of truncated packets and all their rcodes
 .TP
 dpa -c tc=1,qr=0,qr=1,opcode=QUERY test.tr
 For all packets, count the number of truncated packets, the number of packets with qr=0, the number of packets with qr=1 and the number of queries in test.tr.
+
+.TP
+dpa -u packetsize -ua test.tr
+Show all packet sizes and the average packet size per packet.
 
 .SH AUTHOR
 Written by Jelte Jansen for NLnetLabs.

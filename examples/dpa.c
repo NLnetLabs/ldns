@@ -437,36 +437,98 @@ print_counters(FILE *output, match_counters *counters, bool show_percentages, si
 	}
 	
 	return;	
+}
 
 /*
-	size_t i;
+ * Calculate the total for all match operations with the same id as this one
+ * (if they are 'under' this one in the tree, which should be the case in
+ * the unique counter tree
+ */
+size_t
+calculate_total_value(match_counters *counters, match_operation *cur)
+{
+	size_t result = 0;
+	
+	if (!counters) {
+		return 0;
+	}
+	
+	if (counters->match->match->id == cur->id) {
+		result = atol(counters->match->match->value) * counters->match->count;
+	}
+	
+	if (counters->left) {
+		result += calculate_total_value(counters->left, cur);
+	}
+	if (counters->right) {
+		result += calculate_total_value(counters->right, cur);
+	}
+	
+	return result;
+}
 
-	for(i = 0; i < counters->size; i++) {
-fflush(stderr);
-		print_match_expression(output, counters->counter[i]);
-		fprintf(output, ": %u\n", (unsigned int) counters->counter[i]->count);
-fflush(stdout);
-*/
-/*
-		mt = get_match_by_id(counters.counter[i].match->id);
-		if (mt) {
-			fprintf(output, "%s %s %s: %u\n", mt->name, 
-							get_op_str(counters.counter[i].operator),
-							counters.counter[i].value,
-							(unsigned int) counters.counter[i].count
-							);
-		} else {
-			fprintf(output, "unknown match?!?\n");
+size_t
+calculate_total_count(match_counters *counters, match_operation *cur)
+{
+	size_t result = 0;
+	
+	if (!counters) {
+		return 0;
+	}
+	
+	if (counters->match->match->id == cur->id) {
+		result = counters->match->count;
+	}
+	
+	if (counters->left) {
+		result += calculate_total_count(counters->left, cur);
+	}
+	if (counters->right) {
+		result += calculate_total_count(counters->right, cur);
+	}
+	
+	return result;
+}
+
+void
+print_counter_averages(FILE *output, match_counters *counters, match_operation *cur)
+{
+	size_t total_value;
+	size_t total_count;
+	match_table *mt;
+	
+	if (!counters || !output) {
+		return;
+	}
+	
+	if (!cur) {
+		cur = counters->match->match;
+		mt = get_match_by_id(cur->id);
+		total_value = calculate_total_value(counters, cur);
+		total_count = calculate_total_count(counters, cur);
+		printf("Average for %s: %.02f\n", mt->name, (float) total_value / (float) total_count);
+		if (counters->left) {
+			print_counter_averages(output, counters->left, cur);
+		}
+		if (counters->right) {
+			print_counter_averages(output, counters->right, cur);
+		}
+	} else {
+		if (counters->left) {
+			if (counters->left->match->match->id != cur->id) {
+				print_counter_averages(output, counters->left, NULL);
+			}
+		}
+		if (counters->right) {
+			if (counters->right->match->match->id != cur->id) {
+				print_counter_averages(output, counters->right, NULL);
+			}
 		}
 	}
-*/
+	
+	return;	
 }
-/*
-struct match {
-	match_name name,
-	match_operator operator,
-	match_value
-*/
+
 bool
 match_int(type_operator operator,
           char *value,
@@ -1611,6 +1673,7 @@ usage(FILE *output)
 	fprintf(output, "\t-s <matchname>:\tshow possible match operators and values for <name>\n");
 	fprintf(output, "\t-sf:\t\tPrint packet that match -f. If no -f is given, print\n\t\t\tall dns packets\n");
 	fprintf(output, "\t-u <matchnamelist>:\tCount all occurrences of matchname\n");
+	fprintf(output, "\t-ua:\t\tShow average of every -u matchname\n");
 	fprintf(output, "\t-um <number>:\tOnly show -u results that occured more than number times\n");
 	fprintf(output, "\t-v <level>:\tbe more verbose\n");
 	fprintf(output, "\n");
@@ -1987,6 +2050,7 @@ int main(int argc, char *argv[]) {
 	char *dumpfile = NULL;
 
 	bool show_percentages = false;
+	bool show_averages = false;
 	int unique_minimum = 0;
 
 	count->left = NULL;
@@ -2062,6 +2126,8 @@ int main(int argc, char *argv[]) {
 				status = EXIT_FAILURE;
 				goto exit;
 			}
+		} else if (strcmp("-ua", argv[i]) == 0) {
+			show_averages = true;
 		} else if (strcmp("-um", argv[i]) == 0) {
 			if (i + 1 < argc) {
 				unique_minimum = atoi(argv[i+1]);
@@ -2133,6 +2199,9 @@ int main(int argc, char *argv[]) {
 	}
 	if (uniques->match) {
 		print_counters(stdout, uniques, show_percentages, total_nr_of_dns_packets, unique_minimum);
+		if (show_averages) {
+			print_counter_averages(stdout, uniques, NULL);
+		}
 	}
 
 	if (!ok) {
