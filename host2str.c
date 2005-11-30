@@ -836,14 +836,36 @@ ldns_rr2buffer_str(ldns_buffer *output, ldns_rr *rr)
 				ldns_buffer_printf(output, " ");
 			} 
 		}
-		/* print the id of dnskey's also */
-		if (ldns_rr_get_type(rr) == LDNS_RR_TYPE_DNSKEY &&
-				ldns_rr_rd_count(rr) > 0) {
-			/* last check to prevent question sec. rr from
-			 * getting here */
-			ldns_buffer_printf(output, " ; {id = %d, size = %db}", 
-					ldns_calc_keytag(rr),
-					ldns_rr_dnskey_key_size(rr)); 
+		/* per RR special comments - handy for DNSSEC types */
+		/* check to prevent question sec. rr from
+		 * getting here */
+		if (ldns_rr_rd_count(rr) > 0) {
+			switch (ldns_rr_get_type(rr)) {
+				case LDNS_RR_TYPE_DNSKEY:
+					if (ldns_rdf2native_int16(ldns_rr_rdf(rr, 0)) == 256) {
+						ldns_buffer_printf(output, " ; {id = %d (zsk), size = %db}", 
+								ldns_calc_keytag(rr),
+								ldns_rr_dnskey_key_size(rr)); 
+						break;
+					} 
+					if (ldns_rdf2native_int16(ldns_rr_rdf(rr, 0)) == 257) {
+						ldns_buffer_printf(output, " ; {id = %d (ksk), size = %db}", 
+								ldns_calc_keytag(rr),
+								ldns_rr_dnskey_key_size(rr)); 
+						break;
+					} 
+					ldns_buffer_printf(output, " ; {id = %d, size = %db}", 
+							ldns_calc_keytag(rr),
+							ldns_rr_dnskey_key_size(rr)); 
+					break;
+				case LDNS_RR_TYPE_RRSIG:
+					ldns_buffer_printf(output, " ; {id = %d}", 
+							ldns_rdf2native_int16(ldns_rr_rdf(rr, 6)));
+							break;
+				default:
+					break;
+
+			}
 		}
 		/* last */
 		ldns_buffer_printf(output, "\n");
