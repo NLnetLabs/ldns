@@ -1,0 +1,179 @@
+#!/bin/sh
+# This is a shell archive (produced by GNU sharutils 4.2.1).
+# To extract the files from this archive, save it to some FILE, remove
+# everything before the `!/bin/sh' line above, then type `sh FILE'.
+#
+# Made on 2005-11-30 10:20 CET by <miekg@elektron>.
+# Source directory was `/home/miekg/svn/libdns/trunk/test/07-compile-examples.dir'.
+#
+# Existing files will *not* be overwritten unless `-c' is specified.
+#
+# This shar contains:
+# length mode       name
+# ------ ---------- ------------------------------------------
+#    280 -rw------- 07-compile-examples.dsc
+#    175 -rw------- 07-compile-examples.help
+#    517 -rw------- 07-compile-examples.test
+#
+save_IFS="${IFS}"
+IFS="${IFS}:"
+gettext_dir=FAILED
+locale_dir=FAILED
+first_param="$1"
+for dir in $PATH
+do
+  if test "$gettext_dir" = FAILED && test -f $dir/gettext \
+     && ($dir/gettext --version >/dev/null 2>&1)
+  then
+    set `$dir/gettext --version 2>&1`
+    if test "$3" = GNU
+    then
+      gettext_dir=$dir
+    fi
+  fi
+  if test "$locale_dir" = FAILED && test -f $dir/shar \
+     && ($dir/shar --print-text-domain-dir >/dev/null 2>&1)
+  then
+    locale_dir=`$dir/shar --print-text-domain-dir`
+  fi
+done
+IFS="$save_IFS"
+if test "$locale_dir" = FAILED || test "$gettext_dir" = FAILED
+then
+  echo=echo
+else
+  TEXTDOMAINDIR=$locale_dir
+  export TEXTDOMAINDIR
+  TEXTDOMAIN=sharutils
+  export TEXTDOMAIN
+  echo="$gettext_dir/gettext -s"
+fi
+if touch -am -t 200112312359.59 $$.touch >/dev/null 2>&1 && test ! -f 200112312359.59 -a -f $$.touch; then
+  shar_touch='touch -am -t $1$2$3$4$5$6.$7 "$8"'
+elif touch -am 123123592001.59 $$.touch >/dev/null 2>&1 && test ! -f 123123592001.59 -a ! -f 123123592001.5 -a -f $$.touch; then
+  shar_touch='touch -am $3$4$5$6$1$2.$7 "$8"'
+elif touch -am 1231235901 $$.touch >/dev/null 2>&1 && test ! -f 1231235901 -a -f $$.touch; then
+  shar_touch='touch -am $3$4$5$6$2 "$8"'
+else
+  shar_touch=:
+  echo
+  $echo 'WARNING: not restoring timestamps.  Consider getting and'
+  $echo "installing GNU \`touch', distributed in GNU File Utilities..."
+  echo
+fi
+rm -f 200112312359.59 123123592001.59 123123592001.5 1231235901 $$.touch
+#
+if mkdir _sh31804; then
+  $echo 'x -' 'creating lock directory'
+else
+  $echo 'failed to create lock directory'
+  exit 1
+fi
+# ============= 07-compile-examples.dsc ==============
+if test -f '07-compile-examples.dsc' && test "$first_param" != -c; then
+  $echo 'x -' SKIPPING '07-compile-examples.dsc' '(file already exists)'
+else
+  $echo 'x -' extracting '07-compile-examples.dsc' '(text)'
+  sed 's/^X//' << 'SHAR_EOF' > '07-compile-examples.dsc' &&
+BaseName: 07-compile-examples
+Version: 1.0
+Description: compile ldns' examples
+CreationDate: Wed Nov 30 10:18:52 CET 2005
+Maintainer: Miek Gieben
+Category: 
+Component:
+Depends: 
+Pre: 
+Post:
+Help: 07-compile-examples.help
+Test: 07-compile-examples.test
+AuxFiles: 
+Passed:
+Failure:
+SHAR_EOF
+  (set 20 05 11 30 10 19 19 '07-compile-examples.dsc'; eval "$shar_touch") &&
+  chmod 0600 '07-compile-examples.dsc' ||
+  $echo 'restore of' '07-compile-examples.dsc' 'failed'
+  if ( md5sum --help 2>&1 | grep 'sage: md5sum \[' ) >/dev/null 2>&1 \
+  && ( md5sum --version 2>&1 | grep -v 'textutils 1.12' ) >/dev/null; then
+    md5sum -c << SHAR_EOF >/dev/null 2>&1 \
+    || $echo '07-compile-examples.dsc:' 'MD5 check failed'
+41e356870f355d410929dd4fdb26c45a  07-compile-examples.dsc
+SHAR_EOF
+  else
+    shar_count="`LC_ALL= LC_CTYPE= LANG= wc -c < '07-compile-examples.dsc'`"
+    test 280 -eq "$shar_count" ||
+    $echo '07-compile-examples.dsc:' 'original size' '280,' 'current size' "$shar_count!"
+  fi
+fi
+# ============= 07-compile-examples.help ==============
+if test -f '07-compile-examples.help' && test "$first_param" != -c; then
+  $echo 'x -' SKIPPING '07-compile-examples.help' '(file already exists)'
+else
+  $echo 'x -' extracting '07-compile-examples.help' '(text)'
+  sed 's/^X//' << 'SHAR_EOF' > '07-compile-examples.help' &&
+Synopsis: tpkg  -a ../../ exe 01-compile.tpkg
+-a path: path is where the source lives
+as the test is executed in it own subsdir it will
+need ../../ is you use a relative path
+SHAR_EOF
+  (set 20 05 11 30 10 19 30 '07-compile-examples.help'; eval "$shar_touch") &&
+  chmod 0600 '07-compile-examples.help' ||
+  $echo 'restore of' '07-compile-examples.help' 'failed'
+  if ( md5sum --help 2>&1 | grep 'sage: md5sum \[' ) >/dev/null 2>&1 \
+  && ( md5sum --version 2>&1 | grep -v 'textutils 1.12' ) >/dev/null; then
+    md5sum -c << SHAR_EOF >/dev/null 2>&1 \
+    || $echo '07-compile-examples.help:' 'MD5 check failed'
+5b2c9d6283f060985adc7284c4c1e9e3  07-compile-examples.help
+SHAR_EOF
+  else
+    shar_count="`LC_ALL= LC_CTYPE= LANG= wc -c < '07-compile-examples.help'`"
+    test 175 -eq "$shar_count" ||
+    $echo '07-compile-examples.help:' 'original size' '175,' 'current size' "$shar_count!"
+  fi
+fi
+# ============= 07-compile-examples.test ==============
+if test -f '07-compile-examples.test' && test "$first_param" != -c; then
+  $echo 'x -' SKIPPING '07-compile-examples.test' '(file already exists)'
+else
+  $echo 'x -' extracting '07-compile-examples.test' '(text)'
+  sed 's/^X//' << 'SHAR_EOF' > '07-compile-examples.test' &&
+[ -f ../.tpkg.var.master ] && source ../.tpkg.var.master
+X
+export PATH=$PATH:/usr/sbin:/sbin:/usr/local/bin:/usr/local/sbin:.
+X
+# first arg is the build dir
+TPKG_BUILD=$1
+X
+cd $TPKG_BUILD/examples
+X
+case $OSTYPE in
+X        linux*)
+X                autoreconf && \
+X                ./configure --with-ldns=../ && \
+X                make
+X        ;;
+X        freebsd*)
+X                autoconf259 && autoheader259 && \  # this is autoreconf
+X                ./configure --with-ldns=../ && \
+X                gmake
+X        ;;
+esac
+SHAR_EOF
+  (set 20 05 11 30 10 20 50 '07-compile-examples.test'; eval "$shar_touch") &&
+  chmod 0600 '07-compile-examples.test' ||
+  $echo 'restore of' '07-compile-examples.test' 'failed'
+  if ( md5sum --help 2>&1 | grep 'sage: md5sum \[' ) >/dev/null 2>&1 \
+  && ( md5sum --version 2>&1 | grep -v 'textutils 1.12' ) >/dev/null; then
+    md5sum -c << SHAR_EOF >/dev/null 2>&1 \
+    || $echo '07-compile-examples.test:' 'MD5 check failed'
+0294a5f093ed833a1ed502dfcb5d2f60  07-compile-examples.test
+SHAR_EOF
+  else
+    shar_count="`LC_ALL= LC_CTYPE= LANG= wc -c < '07-compile-examples.test'`"
+    test 517 -eq "$shar_count" ||
+    $echo '07-compile-examples.test:' 'original size' '517,' 'current size' "$shar_count!"
+  fi
+fi
+rm -fr _sh31804
+exit 0
