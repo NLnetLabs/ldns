@@ -44,7 +44,7 @@ show possible match operators and values for name
 
 .TP
 \fB-sf\fR
-Print packets (in representation format) that match the -f filter. If no -f was given, print all correct dns packets.
+Only evaluate packets (in representation format) that match the -f filter. If no -f was given, evaluate all correct dns packets.
 
 .TP
 \fB-u\fR \fImatchnamelist\fR
@@ -52,7 +52,11 @@ Count every occurence of every value of the matchname (for instance, count all p
 
 .TP
 \fB-ua\fR
-For every matchname in -u, show the average of all values. Behaviour for match types that do not have an integer value is undefined.
+For every matchname in -u, show the average value all packets. Behaviour for match types that do not have an integer value is undefined.
+
+.TP
+\fB-uac\fR
+For every matchname in -u, show the average number of times this value was encountered.
 
 .TP
 \fB-um\fR \fInumber\fR
@@ -98,6 +102,10 @@ For all packets, count the number of truncated packets, the number of packets wi
 .TP
 dpa -u packetsize -ua test.tr
 Show all packet sizes and the average packet size per packet.
+
+.TP
+dpa -u srcaddress -uac test.tr
+Show all packet source addresses and the average number of packets sent from this address.
 
 .SH AUTHOR
 Written by Jelte Jansen for NLnetLabs.
