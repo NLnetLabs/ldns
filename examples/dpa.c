@@ -2282,7 +2282,7 @@ int main(int argc, char *argv[]) {
 	pcap_close(pc);
 	
 	if (show_percentages) {
-		fprintf(stdout, "Total number of matching DNS packets: %u\n", (unsigned int) total_nr_of_dns_packets);
+		fprintf(stdout, "Total number of DNS packets evaluated: %u\n", (unsigned int) total_nr_of_dns_packets);
 	}
 	if (count->match) {
 		print_counters(stdout, count, show_percentages, total_nr_of_dns_packets, 0);
@@ -2295,14 +2295,6 @@ int main(int argc, char *argv[]) {
 		if (show_average_count) {
 			print_counter_average_count(stdout, uniques, NULL);
 		}
-	}
-
-	if (!ok) {
-/*
-		usage(stderr);
-		status = EXIT_FAILURE;
-		goto exit;
-*/
 	}
 
 	exit:
