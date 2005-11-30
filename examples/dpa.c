@@ -1943,7 +1943,14 @@ printf("timeval: %u ; %u\n", cur_hdr.ts.tv_sec, cur_hdr.ts.tv_usec);
 							pcap_dump((u_char *)dumper, &cur_hdr, data);
 						}
 						if (show_filter_matches) {
+							printf(";; From: ");
+							ldns_rdf_print(stdout, src_addr);
+							printf("\n");
+							printf(";; To:   ");
+							ldns_rdf_print(stdout, dst_addr);
+							printf("\n");
 							ldns_pkt_print(stdout, pkt);
+							printf("\n\n");
 						}
 					} else {
 						ldns_pkt_free(pkt);
@@ -1953,7 +1960,14 @@ printf("timeval: %u ; %u\n", cur_hdr.ts.tv_sec, cur_hdr.ts.tv_usec);
 					}
 				} else {
 					if (show_filter_matches) {
+						printf(";; From: ");
+						ldns_rdf_print(stdout, src_addr);
+						printf("\n");
+						printf(";; To:   ");
+						ldns_rdf_print(stdout, dst_addr);
+						printf("\n");
 						ldns_pkt_print(stdout, pkt);
+						printf("\n\n");
 					}
 				}
 
