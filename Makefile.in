@@ -98,43 +98,6 @@ drill-confclean:
 drill-install:	drill
 		( cd drill ; $(MAKE) -f Makefile install)
 
-./examples/Makefile:
-		( $(INSTALL) -d examples ; cd examples ; ../$(srcdir)/examples/configure --prefix=$(prefix) --bindir=$(bindir) --mandir=$(mandir) LDFLAGS="-L../.libs" CPPFLAGS="-I. -I.. -I../..")
-
-examples-config:	./examples/Makefile
-
-examples: 		examples-config
-		( cd examples ; $(MAKE) -f Makefile all)
-
-examples-realclean:	./examples/Makefile
-		( cd examples ; $(MAKE) -f Makefile realclean)
-
-examples-clean:
-		( cd examples ; if [ -f Makefile ] ; then $(MAKE) -f Makefile clean ; fi ;)
-
-examples-confclean:
-		( cd examples ; if [ -f Makefile ] ; then $(MAKE) -f Makefile confclean ; fi ;)
-
-examples-install:	examples
-		( cd examples ; $(MAKE) -f Makefile install)
-
-./tests/Makefile:
-		( $(INSTALL) -d tests ; cd tests ; ../$(srcdir)/tests/configure --prefix=$(prefix) LDFLAGS="-L../.libs" CPPFLAGS="-I.. -I../..")
-
-tests-config:	./tests/Makefile
-
-tests: 		tests-config
-		( cd tests ; $(MAKE) -f Makefile all)
-
-tests-realclean:	tests-config
-		( cd tests ; $(MAKE) -f Makefile realclean)
-
-tests-clean:
-		( cd tests ; if [ -f Makefile ] ; then $(MAKE) -f Makefile clean ; fi ;)
-
-tests-confclean:
-		( cd tests ; if [ -f Makefile ] ; then $(MAKE) -f Makefile confclean ; fi ;)
-
 lib:		$(LIBDNS_OBJECTS) b64_pton$U.o b64_ntop$U.o
 		$(LINK_LIB) -o libldns.la $(LIBDNS_LOBJECTS) b64_pton$U.lo b64_ntop$U.lo \
 		-rpath $(libdir)/lib
@@ -270,17 +233,12 @@ malloc$U.o:	$(srcdir)/compat/malloc.c
 	              | sed '\''s!\(.*\)\.o[ :]*!$(dir $@)\1.o $@ : !g'\'' > $@; \
 	              [ -s $@ ] || rm -f $@'
 
-allclean: drill-clean examples-clean tests-clean clean
+allclean: drill-clean clean
 
-allrealclean: drill-realclean examples-realclean tests-realclean
+allrealclean: drill-realclean 
 
-allautoconf:
-	( cd drill; autoreconf; cd ..)
-	( cd examples; autoreconf; cd ..)
-	( cd tests; autoreconf; cd ..)
+allconf: drill-config 
 
-allconf: drill-config examples-config tests-config
-
-allconfclean: drill-confclean examples-confclean tests-confclean
+allconfclean: drill-confclean 
 
 #include $(ALL_SOURCES:.c=.d)
