@@ -1,7 +1,7 @@
 /*
- * chasetrace.c
- * Where all the hard work concerning chasing
- * and tracing is done
+ * securechasetrace.c
+ * Where all the hard work concerning secure tracing is done
+ *
  * (c) 2005 NLnet Labs
  *
  * See the file LICENSE for the license
@@ -33,8 +33,8 @@ check_ds_key_equiv(ldns_rr *key, ldns_rr *ds)
 }
 
 /*
- * return the DS records that match some of the
- * keys
+ * return the keys records that match some of the
+ * DSs
  */
 ldns_rr_list *
 check_ds_key_equiv_rr_list(ldns_rr_list *key, ldns_rr_list *ds)
@@ -59,7 +59,7 @@ check_ds_key_equiv_rr_list(ldns_rr_list *key, ldns_rr_list *ds)
 			
 			if (check_ds_key_equiv(key_rr, ds_rr)) {
 				/* we have a winner */
-				ldns_rr_list_push_rr(eq, ds_rr);
+				ldns_rr_list_push_rr(eq, key_rr);
 				break;
 			}
 		}
@@ -155,11 +155,6 @@ do_secure_trace2(ldns_resolver *res, ldns_rdf *name, ldns_rr_type t,
 	}
 	chopped_dname[i] = NULL;
 	dname_labels = i - 2; /* set this also before this last NULL */
-
-	for(i = 0; chopped_dname[i]; i++) {
-		ldns_rdf_print(stdout, chopped_dname[i]);
-		printf("\n");
-	}
 
 	/* Now we will find out what is the first zone that 
 	 * actually has some key+sig configured at the nameserver

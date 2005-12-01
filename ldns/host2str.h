@@ -358,4 +358,13 @@ void ldns_resolver_print(FILE *output, ldns_resolver *r);
  */
 void ldns_zone_print(FILE *output, ldns_zone *z);
 
+/**
+ * Print the ldns_rdf containing a dname to the buffer
+ * \param[in] output the buffer to print to
+ * \param[in] dname the dname to print
+ * \return ldns_status message if the printing succeeded
+ */
+ldns_status ldns_rdf2buffer_str_dname(ldns_buffer *output, ldns_rdf *dname);
+
+
 #endif
