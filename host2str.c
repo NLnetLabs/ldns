@@ -843,23 +843,23 @@ ldns_rr2buffer_str(ldns_buffer *output, ldns_rr *rr)
 			switch (ldns_rr_get_type(rr)) {
 				case LDNS_RR_TYPE_DNSKEY:
 					if (ldns_rdf2native_int16(ldns_rr_rdf(rr, 0)) == 256) {
-						ldns_buffer_printf(output, " ; {id = %d (zsk), size = %db}", 
+						ldns_buffer_printf(output, " ;{id = %d (zsk), size = %db}", 
 								ldns_calc_keytag(rr),
 								ldns_rr_dnskey_key_size(rr)); 
 						break;
 					} 
 					if (ldns_rdf2native_int16(ldns_rr_rdf(rr, 0)) == 257) {
-						ldns_buffer_printf(output, " ; {id = %d (ksk), size = %db}", 
+						ldns_buffer_printf(output, " ;{id = %d (ksk), size = %db}", 
 								ldns_calc_keytag(rr),
 								ldns_rr_dnskey_key_size(rr)); 
 						break;
 					} 
-					ldns_buffer_printf(output, " ; {id = %d, size = %db}", 
+					ldns_buffer_printf(output, " ;{id = %d, size = %db}", 
 							ldns_calc_keytag(rr),
 							ldns_rr_dnskey_key_size(rr)); 
 					break;
 				case LDNS_RR_TYPE_RRSIG:
-					ldns_buffer_printf(output, " ; {id = %d}", 
+					ldns_buffer_printf(output, " ;{id = %d}", 
 							ldns_rdf2native_int16(ldns_rr_rdf(rr, 6)));
 							break;
 				default:

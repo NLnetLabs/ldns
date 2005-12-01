@@ -133,9 +133,6 @@ do_secure_trace2(ldns_resolver *res, ldns_rdf *name, ldns_rr_type t,
 	ldns_rr_list *rrsig_cache = NULL;
 	ldns_rr_list *ds_cache = NULL;
 
-	/* put RRset in here that are validated */
-	ldns_rr_list *validated_cache = NULL;
-
 	ldns_rdf *chopped_dname[11]; /* alloc 10 subparts for a dname */
 	ldns_rr_list *ds;
 	int8_t i, dname_labels;
@@ -169,9 +166,17 @@ do_secure_trace2(ldns_resolver *res, ldns_rdf *name, ldns_rr_type t,
 			break;
 		}
 	}
-	printf("\nFirst dname with keys and sigs here */\n");
-	ldns_rdf_print(stdout, chopped_dname[i]);
 	lab_cnt = i;
+
+	/* Print whay we have found until now */
+	printf(" ("); 
+		ldns_rdf_print(stdout, chopped_dname[i]);
+	puts(")\n |");
+	resolver_print_nameservers(res);
+	puts("");
+	print_dnskey(dnskey_cache);
+	puts("");
+			
 
 	/* chopped_dname[i] is the zone which is configured at the
 	 * nameserver pointed to by res. This is our starting point
@@ -179,9 +184,6 @@ do_secure_trace2(ldns_resolver *res, ldns_rdf *name, ldns_rr_type t,
 	 * match the keys we see here
 	 */
 
-printf("\nkeys\n");
-	ldns_rr_list_print(stdout, dnskey_cache);
-printf("\nsigs\n");
  	if (!rrsig_cache) {
 		/* huh!? the sigs must be sent along with the keys... 
 		 * probably are using some lame forwarder... exit as
@@ -207,19 +209,13 @@ printf("\nsigs\n");
 		}
 	}
 
-	printf("key cache \n");
-	ldns_rr_list_print(stdout, dnskey_cache);
-	printf("ds_cache \n");
-	ldns_rr_list_print(stdout, ds_cache);
-	printf("sig cache \n");
-	ldns_rr_list_print(stdout, rrsig_cache);
+	print_dnskey(dnskey_cache);
+	print_ds(ds_cache);
 
 	validated_ds = check_ds_key_equiv_rr_list(dnskey_cache, ds_cache); 
 	if (validated_ds) {
-		ldns_rr_list_print(stdout, validated_ds);
+		print_ds(validated_ds);
 	}
-
-	printf("\n");
 
 	return LDNS_STATUS_OK;
 }
