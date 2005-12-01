@@ -42,7 +42,7 @@ usage(FILE *stream, const char *progname)
 	fprintf(stream, "\t-c\t\tsend the query with tcp (connected)\n");
 	fprintf(stream, "\t-k <file>\tspecify a file that contains a trusted DNSSEC key [**]\n");
 	fprintf(stream, "\t\t\tused to verify any signatures in the current answer\n");
-	fprintf(stream, "\t-o <mnemonic>\t[QR|qr][AA|aa] [TC|tc] [RD|rd] [CD|cd] [RA|ra] [AD|ad]\n");
+	fprintf(stream, "\t-o <mnemonic>\t[QR|qr][AA|aa][TC|tc][RD|rd][CD|cd][RA|ra][AD|ad]\n");
 	fprintf(stream, "\t\t\tlowercase: unset bit, uppercase: set bit\n");
 	fprintf(stream, "\t-p <port>\tuse <port> as remote port number\n");
 	fprintf(stream, "\t-s\t\tshow the DS RR for each key in a packet\n");
