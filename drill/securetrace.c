@@ -142,6 +142,9 @@ do_secure_trace2(ldns_resolver *res, ldns_rdf *name, ldns_rr_type t,
 	rrsig_cache = ldns_rr_list_new();
 	dnskey_cache = NULL;
 
+	ldns_resolver_set_dnssec(res, true);
+	ldns_resolver_set_dnssec_cd(res, true);
+
 	/* get a list of chopped dnames: www.nlnetlabs.nl, nlnetlabs.nl, nl, . 
 	 * This is used to discover what is the zone that is actually hosted
 	 * on the resolver we point to in local_res
@@ -171,11 +174,11 @@ do_secure_trace2(ldns_resolver *res, ldns_rdf *name, ldns_rr_type t,
 	/* Print whay we have found until now */
 	printf(" ("); 
 		ldns_rdf_print(stdout, chopped_dname[i]);
-	puts(")\n |");
+	puts(")");
 	resolver_print_nameservers(res);
 	puts("");
 	print_dnskey(dnskey_cache);
-	puts("");
+	puts(" |");
 			
 
 	/* chopped_dname[i] is the zone which is configured at the
@@ -192,8 +195,6 @@ do_secure_trace2(ldns_resolver *res, ldns_rdf *name, ldns_rr_type t,
 		error("Are you using an non DNSSEC-aware forwarder?");
 		return LDNS_STATUS_ERR;
 	}
-	ldns_rr_list_print(stdout, rrsig_cache);
-	printf("\n");
 
 	/* Next try to find out if there is a DS for this name are
 	 * a name under that
@@ -208,9 +209,15 @@ do_secure_trace2(ldns_resolver *res, ldns_rdf *name, ldns_rr_type t,
 			break;
 		}
 	}
-
+	printf(" |\n ("); 
+		ldns_rdf_print(stdout, chopped_dname[i]);
+	puts(")");
+	resolver_print_nameservers(res);
+	puts("");
 	print_dnskey(dnskey_cache);
+	puts("");
 	print_ds(ds_cache);
+	puts("");
 
 	validated_ds = check_ds_key_equiv_rr_list(dnskey_cache, ds_cache); 
 	if (validated_ds) {
