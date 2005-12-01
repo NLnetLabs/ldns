@@ -5,7 +5,7 @@
  * See the file LICENSE for the license
  */
 
-#include <ldns/config.h>
+#include "config.h"
 
 #include <ldns/dns.h>
 
