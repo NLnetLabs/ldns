@@ -1993,7 +1993,7 @@ printf("timeval: %u ; %u\n", cur_hdr.ts.tv_sec, cur_hdr.ts.tv_usec);
 							ldns_rdf_print(stdout, dst_addr);
 							printf("\n");
 							ldns_pkt_print(stdout, pkt);
-							printf("\n\n");
+							printf("------------------------------------------------------------\n\n");
 						}
 					} else {
 						ldns_pkt_free(pkt);
@@ -2010,7 +2010,7 @@ printf("timeval: %u ; %u\n", cur_hdr.ts.tv_sec, cur_hdr.ts.tv_usec);
 						ldns_rdf_print(stdout, dst_addr);
 						printf("\n");
 						ldns_pkt_print(stdout, pkt);
-						printf("\n\n");
+						printf("------------------------------------------------------------\n\n");
 					}
 				}
 
