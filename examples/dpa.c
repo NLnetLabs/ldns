@@ -49,6 +49,9 @@ enum enum_match_ids {
 	MATCH_DST_ADDRESS,
 	MATCH_TIMESTAMP,
 	MATCH_QUERY,
+	MATCH_ANSWER,
+	MATCH_AUTHORITY,
+	MATCH_ADDITIONAL,
 	MATCH_LAST
 };
 typedef enum enum_match_ids match_id;
@@ -189,6 +192,9 @@ const match_table matches[] = {
 	{ MATCH_ANSWER_SIZE, "answersize", "number of rrs in the answer section", TYPE_INT },
 	{ MATCH_AUTHORITY_SIZE, "authoritysize", "number of rrs in the authority section", TYPE_INT },
 	{ MATCH_ADDITIONAL_SIZE, "additionalsize", "number of rrs in the additional section", TYPE_INT },
+	{ MATCH_ANSWER, "answer", "String representation of the answer RRs", TYPE_RR },
+	{ MATCH_AUTHORITY, "authority", "String representation of the authority RRs", TYPE_RR },
+	{ MATCH_ADDITIONAL, "additional", "String representation of the additional RRs", TYPE_RR },
 	{ 0, NULL , NULL, TYPE_INT}
 };
 
@@ -813,6 +819,9 @@ value_matches(match_id id,
 			result = match_int(operator, value, mvalue);
 			break;
 		case MATCH_QUERY:
+		case MATCH_ANSWER:
+		case MATCH_AUTHORITY:
+		case MATCH_ADDITIONAL:
 			result = match_str(operator, value, mvalue);
 			break;
 		case MATCH_SRC_ADDRESS:
@@ -967,6 +976,30 @@ get_string_value(match_id id, ldns_pkt *pkt, ldns_rdf *src_addr, ldns_rdf *dst_a
 				if (strchr(val, '\n')) {
 					*(strchr(val, '\n')) = '\0';
 				}
+			} else {
+				val[0] = '\0';
+			}
+			break;
+		case MATCH_ANSWER:
+			if (ldns_pkt_ancount(pkt) > 0) {
+				free(val);
+				val = ldns_rr_list2str(ldns_pkt_answer(pkt));
+			} else {
+				val[0] = '\0';
+			}
+			break;
+		case MATCH_AUTHORITY:
+			if (ldns_pkt_nscount(pkt) > 0) {
+				free(val);
+				val = ldns_rr_list2str(ldns_pkt_authority(pkt));
+			} else {
+				val[0] = '\0';
+			}
+			break;
+		case MATCH_ADDITIONAL:
+			if (ldns_pkt_arcount(pkt) > 0) {
+				free(val);
+				val = ldns_rr_list2str(ldns_pkt_additional(pkt));
 			} else {
 				val[0] = '\0';
 			}

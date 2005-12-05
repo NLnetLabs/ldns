@@ -280,6 +280,16 @@ char *ldns_pkt2str(ldns_pkt *pkt);
 char *ldns_key2str(ldns_key *k);
 
 /**
+ * Converts a list of resource records to presentation format
+ * and returns that as a char *.
+ * Remember to free it.
+ *
+ * \param[in] rr_list the rr_list to convert to text
+ * \return null terminated char * data, or NULL on error
+ */
+char *ldns_rr_list2str(ldns_rr_list *rr_list);
+
+/**
  * Returns the data in the buffer as a null terminated char * string
  * Buffer data must be char * type
  *
