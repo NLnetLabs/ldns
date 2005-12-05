@@ -162,7 +162,7 @@ release:	distclean
 		(rm -rf ../ldns-$(VERSION)/)
 		cat ReleaseChecklist
 
-clean:	examples-clean drill-clean
+clean:	drill-clean
 	rm -f *.o *.d 
 	rm -f *~
 	rm -f tests/*.o
