@@ -2,7 +2,9 @@ December??? 2005: 1.0.1: ldns-team
 	* Added include/ and lib/ dirs so that you can compile against ldns
 	  without installing ldns on your system
 	* Makefile updates
-	* assert is used throughout the library to catch illegal library calls
+	* Assert is used throughout the library to catch illegal library calls
+	* Solaris 9 testing was carried out. Ldns now compiles on that
+	  platform; some gnuism were identified and fixed.
 
 	Drill:
 	* -r was killed in favor of -o <header bit mnemonic> which 

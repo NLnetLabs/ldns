@@ -127,21 +127,8 @@ AC_CHECK_HEADERS(sys/param.h sys/mount.h,,,
   ]
 ])
 
-# I don't use these
-# Checks for typedefs, structures, and compiler characteristics.
-#AC_TYPE_UID_T
-#AC_TYPE_MODE_T
-#AC_TYPE_OFF_T
-#AC_TYPE_SIZE_T
-#AC_STRUCT_TM
-
-# Checks for library functions.
-#AC_FUNC_CHOWN
-#AC_FUNC_FORK
 AC_FUNC_MALLOC
-#AC_FUNC_MKTIME
-#AC_FUNC_STAT
-#AC_CHECK_FUNCS([mkdir rmdir strchr strrchr strstr])
+AC_CHECK_FUNCS(isblank)
 
 AC_REPLACE_FUNCS(b64_pton)
 AC_REPLACE_FUNCS(b64_ntop)
@@ -155,7 +142,6 @@ AC_CHECK_UNUSED_ATTRIBUTE
 AC_DEFINE([SYSCONFDIR], [sysconfdir], [System configuration dir])
 
 AH_BOTTOM([
-
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>

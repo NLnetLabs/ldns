@@ -2,27 +2,21 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.57)
-AC_INIT(drill, 1.0.1, drill@nlnetlabs.nl, drill)
+AC_INIT(drill, 1.0.1, libdns@nlnetlabs.nl, drill)
 AC_CONFIG_SRCDIR([drill_util.h])
 
 AC_AIX
-# Checks for programs.
 AC_PROG_CC
 AC_PROG_MAKE_SET
 
-# Checks for libraries.
-# Checks for header files.
-#AC_HEADER_STDC
-#AC_HEADER_SYS_WAIT
-# do the very minimum - we can always extend this
-AC_CHECK_HEADERS([getopt.h stdlib.h stdio.h assert.h netinet/in.hctype.h time.h])
-AC_CHECK_HEADERS(sys/param.h sys/mount.h,,,
-[
+AC_CHECK_HEADERS([getopt.h stdlib.h stdio.h assert.h netinet/in.hctype.h time.h],,, [AC_INCLUDES_DEFAULT])
+AC_CHECK_HEADERS(sys/param.h sys/mount.h,,, [AC_INCLUDES_DEFAULT]
+[ 
   [
    #if HAVE_SYS_PARAM_H
    # include <sys/param.h>
    #endif
-  ]
+  ] 
 ])
 
 # check for ldns
@@ -45,15 +39,10 @@ AC_ARG_WITH(ldns, AC_HELP_STRING([--with-ldns=PATHNAME],[]))
 
 AC_CHECK_HEADER(ldns/dns.h,,  [
 	AC_MSG_ERROR([Can't find ldns headers])
-	]
+	], [AC_INCLUDES_DEFAULT]
 )
 
-#AC_CHECK_FUNCS([mkdir rmdir strchr strrchr strstr])
-
-#AC_DEFINE_UNQUOTED(SYSCONFDIR, "$sysconfdir")
-
 AH_BOTTOM([
-
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
