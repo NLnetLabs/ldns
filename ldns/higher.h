@@ -104,7 +104,7 @@ bool ldns_nsec_type_check(ldns_rr *nsec, ldns_rr_type t);
  * \param[in] tsig_cred credentials for TSIG-protected update messages
  */
 ldns_status ldns_update_send_simple_addr(const char *fqdn, const char *zone,
-    const char *ipaddr, u_int16_t tll, ldns_tsig_credentials *tsig_cred);
+    const char *ipaddr, uint16_t tll, ldns_tsig_credentials *tsig_cred);
 
 #endif /* _LDNS_HIGHER_H */
 
