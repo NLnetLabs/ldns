@@ -16,9 +16,18 @@ int verbosity = 1;
 
 
 /* global options */
-pcap_dumper_t *dumper = NULL;
 bool show_filter_matches = false;
 size_t total_nr_of_dns_packets = 0;
+size_t not_ip_packets = 0;
+size_t bad_dns_packets = 0;
+size_t arp_packets = 0;
+size_t udp_packets = 0;
+size_t tcp_packets = 0;
+
+pcap_dumper_t *dumper = NULL;
+pcap_dumper_t *not_ip_dump = NULL;
+pcap_dumper_t *bad_dns_dump = NULL;
+
 
 /* To add a match,
  * - add it to the enum
@@ -1782,6 +1791,8 @@ usage(FILE *output)
 	fprintf(output, "\t-uac:\t\tShow average count of every -u matchname\n");
 	fprintf(output, "\t-um <number>:\tOnly show -u results that occured more than number times\n");
 	fprintf(output, "\t-v <level>:\tbe more verbose\n");
+	fprintf(output, "\t-notip <file>:\tDump pcap packets that were not recognized as\n\t\t\tIP packets to file\n");
+	fprintf(output, "\t-baddns <file>:\tDump mangled dns packets to file\n");
 	fprintf(output, "\n");
 	fprintf(output, "The filename '-' stands for stdin or stdout, so you can use \"-of -\" if you want to pipe the output to another process\n");
 	fprintf(output, "\n");
@@ -1968,6 +1979,10 @@ printf("timeval: %u ; %u\n", cur_hdr.ts.tv_sec, cur_hdr.ts.tv_usec);
 				if (verbosity >= 3) {
 					printf("No dns packet: %s\n", ldns_get_errorstr_by_id(status));
 				}
+				bad_dns_packets++;
+				if (bad_dns_dump) {
+					pcap_dump((u_char *)bad_dns_dump, &cur_hdr, data);
+				}
 			} else {
 				timestamp.tv_sec = cur_hdr.ts.tv_sec;
 				timestamp.tv_usec = cur_hdr.ts.tv_usec;
@@ -2034,9 +2049,14 @@ printf("timeval: %u ; %u\n", cur_hdr.ts.tv_sec, cur_hdr.ts.tv_usec);
 				ntohs(eptr->ether_type),
 				ntohs(eptr->ether_type));
 		}
+		arp_packets++;
 	} else {
 		if (verbosity >= 5) {
 			printf("Ethernet type %x not IP", ntohs(eptr->ether_type));
+		}
+		not_ip_packets++;
+		if (not_ip_dump) {
+			pcap_dump((u_char *)not_ip_dump, &cur_hdr, data);
 		}
 	}
 
@@ -2168,6 +2188,8 @@ int main(int argc, char *argv[]) {
 	size_t unique_id_count = 0; /* number of unique counters */
 	match_counters *uniques = malloc(sizeof(match_counters));
 	char *dumpfile = NULL;
+	char *not_ip_dumpfile = NULL;
+	char *bad_dns_dumpfile = NULL;
 
 	bool show_percentages = false;
 	bool show_averages = false;
@@ -2183,8 +2205,25 @@ int main(int argc, char *argv[]) {
 
 	for (i = 1; i < argc; i++) {
 
-
-		if (strncmp(argv[i], "-c", 3) == 0) {
+		if (strncmp(argv[i], "-baddns", 8) == 0) {
+			if (i + 1 < argc) {
+				bad_dns_dumpfile = argv[i + 1];
+				i++;
+			} else {
+				usage(stderr);
+				status = EXIT_FAILURE;
+				goto exit;
+			}
+		} else if (strncmp(argv[i], "-notip", 7) == 0) {
+			if (i + 1 < argc) {
+				not_ip_dumpfile = argv[i + 1];
+				i++;
+			} else {
+				usage(stderr);
+				status = EXIT_FAILURE;
+				goto exit;
+			}
+		} else if (strncmp(argv[i], "-c", 3) == 0) {
 			if (i + 1 < argc) {
 				if (!parse_match_list(count, argv[i + 1])) {
 					status = EXIT_FAILURE;
@@ -2296,16 +2335,36 @@ int main(int argc, char *argv[]) {
 	        dumper = pcap_dump_open(pc, dumpfile);
 
 		if (!dumper) {
-			printf("Error opening pcap dump file %s: %s\n", dumpfile, errbuf);
-			exit(1);
+			printf("Error opening pcap dump file %s: %s\n", dumpfile, errbuf);			exit(1);
 		}
 	}
 
+	if (not_ip_dumpfile) {
+		not_ip_dump = pcap_dump_open(pc, not_ip_dumpfile);
+		if (!not_ip_dump) {
+			printf("Error opening pcap dump file NOT_IP: %s\n",  errbuf);
+		}
+	}
+	if (bad_dns_dumpfile) {
+		bad_dns_dump = pcap_dump_open(pc, bad_dns_dumpfile);
+		if (!bad_dns_dump) {
+			printf("Error opening pcap dump file NOT_IP: %s\n",  errbuf);
+		}
+	}
+	
 	while ((cur = pcap_next(pc, &cur_hdr))) {
 		if (verbosity >= 5) {
 			printf("\n\n\n[PKT_HDR] caplen: %u \tlen: %u\n", cur_hdr.caplen, cur_hdr.len);
 		}
 		handle_ether_packet(cur, cur_hdr, count, expr, uniques, unique_ids, unique_id_count);
+	}
+
+	if (not_ip_dump) {
+		pcap_dump_close(not_ip_dump);
+	}
+
+	if (bad_dns_dump) {
+		pcap_dump_close(bad_dns_dump);
 	}
 
 	if (dumper) {
@@ -2315,6 +2374,11 @@ int main(int argc, char *argv[]) {
 	pcap_close(pc);
 	
 	if (show_percentages) {
+		fprintf(stdout, "Packets that are not IP: %u\n", not_ip_packets);
+		fprintf(stdout, "bad dns packets: %u\n", bad_dns_packets);
+		fprintf(stdout, "arp packets: %u\n", arp_packets);
+		fprintf(stdout, "udp packets: %u\n", udp_packets);
+		fprintf(stdout, "tcp packets: %u\n", tcp_packets);
 		fprintf(stdout, "Total number of DNS packets evaluated: %u\n", (unsigned int) total_nr_of_dns_packets);
 	}
 	if (count->match) {
