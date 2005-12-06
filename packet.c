@@ -582,7 +582,7 @@ ldns_pkt_set_random_id(ldns_pkt *packet)
 {
 	/* TODO: time is a terrible seed */
 	srandom((unsigned) time(NULL) ^ getpid());
-	ldns_pkt_set_id(packet, (u_int16_t)random());
+	ldns_pkt_set_id(packet, (uint16_t)random());
 }
 
 

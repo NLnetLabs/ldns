@@ -300,7 +300,7 @@ ldns_getaddrinfo_secure(void)
  */
 ldns_status
 ldns_update_send_simple_addr(const char *fqdn, const char *zone,
-    const char *ipaddr, u_int16_t ttl, ldns_tsig_credentials *tsig_cred)
+    const char *ipaddr, uint16_t ttl, ldns_tsig_credentials *tsig_cred)
 {
 	ldns_resolver	*res;
 	ldns_pkt	*u_pkt = NULL, *r_pkt;
