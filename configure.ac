@@ -117,9 +117,9 @@ AC_HEADER_STDC
 #AC_HEADER_SYS_WAIT
 #AC_CHECK_HEADERS([getopt.h fcntl.h stdlib.h string.h strings.h unistd.h])
 # do the very minimum - we can always extend this
-AC_CHECK_HEADERS([getopt.h stdbool.h openssl/ssl.h netinet/in.h time.h])
+AC_CHECK_HEADERS([getopt.h stdbool.h openssl/ssl.h netinet/in.h time.h],,, [AC_INCLUDES_DEFAULT])
 AC_CHECK_HEADERS(sys/param.h sys/mount.h,,,
-[
+[AC_INCLUDES_DEFAULT
   [
    #if HAVE_SYS_PARAM_H
    # include <sys/param.h>
