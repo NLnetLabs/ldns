@@ -101,8 +101,8 @@ uninstall:
 	@echo
 	rm -f -- $(DESTDIR)$(bindir)/drill
 	rm -f -- $(DESTDIR)$(mandir)/man1/drill.1
-	rmdir -p --ignore-fail-on-non-empty $(DESTDIR)$(bindir)
-	rmdir -p --ignore-fail-on-non-empty $(DESTDIR)$(mandir)/man1
+	rmdir -p $(DESTDIR)$(bindir)
+	rmdir -p $(DESTDIR)$(mandir)/man1
 	@echo
 
 lint:

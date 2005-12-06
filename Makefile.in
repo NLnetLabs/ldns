@@ -126,7 +126,7 @@ install-doc:	doc
 uninstall-doc:	doc
 		for i in `cat doc/ldns_manpages`; do \
 			rm -f $(DESTDIR)$(mandir)/man3/$$i.3 ; done
-		rmdir -p --ignore-fail-on-non-empty $(DESTDIR)$(mandir)/man3
+		rmdir -p $(DESTDIR)$(mandir)/man3
 
 install-h:	lib
 		$(INSTALL) -m 755 -d $(DESTDIR)$(includedir)/ldns
@@ -136,7 +136,7 @@ install-h:	lib
 uninstall-h:
 		for i in $(LIBDNS_HEADERS); do \
 			rm -f $(DESTDIR)$(includedir)/$$i; done
-		[ ! -d $(DESTDIR)$(includedir)/ldns ] || rmdir -p --ignore-fail-on-non-empty $(DESTDIR)$(includedir)/ldns
+		[ ! -d $(DESTDIR)$(includedir)/ldns ] || rmdir -p $(DESTDIR)$(includedir)/ldns
 		exit 0
 	
 install-lib:	lib
@@ -146,7 +146,7 @@ install-lib:	lib
 
 uninstall-lib:	
 		$(LIBTOOL) --mode=uninstall rm -f $(DESTDIR)$(libdir)/libldns.la
-		rmdir -p --ignore-fail-on-non-empty $(DESTDIR)$(libdir)
+		rmdir -p $(DESTDIR)$(libdir)
 
 snapshot:	distclean
 		(rm -rf ../ldns-snap-$(DATE)/)

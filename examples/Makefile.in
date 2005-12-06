@@ -106,8 +106,5 @@ uninstall:
 			rm -f $(DESTDIR)$(mandir)/man1/$$i.1 ; \
 			done
 		exit 0
-		rmdir --ignore-fail-on-non-empty -p $(DESTDIR)$(bindir)
-		rmdir --ignore-fail-on-non-empty -p $(DESTDIR)$(mandir)
-
-		
-
+		rmdir -p $(DESTDIR)$(bindir)
+		rmdir -p $(DESTDIR)$(mandir)
