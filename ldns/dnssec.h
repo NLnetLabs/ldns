@@ -30,7 +30,7 @@
  * \param[in] key the key as an RR to use for the calc.
  * \return the keytag
  */
-uint16_t ldns_calc_keytag(ldns_rr *key);
+uint16_t ldns_calc_keytag(const ldns_rr *key);
 
 /**
  * verifies an rrsig rrset.

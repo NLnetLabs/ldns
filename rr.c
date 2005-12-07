@@ -575,7 +575,7 @@ ldns_rr_get_class(const ldns_rr *rr)
 /* rr_lists */
 
 size_t
-ldns_rr_list_rr_count(ldns_rr_list *rr_list)
+ldns_rr_list_rr_count(const ldns_rr_list *rr_list)
 {
 	if (rr_list) {
 		return rr_list->_rr_count;
