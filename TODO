@@ -6,6 +6,10 @@ Current TODO list
         o Make drill a worthy dig replacement wrt to 
           DNSSEC debugging
 
+1.1:
+----
+	o API cleanup: add missing consts in function arguments
+
 Post 1.0 Stuff:
 ---------------
         o Dname compression
