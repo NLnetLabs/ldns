@@ -4,12 +4,16 @@
 
 #include <ldns/dns.h>
 
+#include <netinet/ip6.h>
 #include <errno.h>
 
 int verbosity = 1;
 
 #define ETHER_HEADER_LENGTH 14
 #define UDP_HEADER_LENGTH 8
+#define IP6_HEADER_LENGTH 40
+
+#define ETHERTYPE_IPV6 0x86dd
 
 #define MAX_MATCHES 20
 #define MAX_OPERATORS 7
@@ -1920,6 +1924,7 @@ handle_ether_packet(const u_char *data, struct pcap_pkthdr cur_hdr, match_counte
 {
 	struct ether_header *eptr;
 	struct ip *iptr;
+	struct ip6_hdr *ip6_hdr;
 	int ip_hdr_size;
 	u_int8_t protocol;
 	size_t data_offset = 0;
@@ -2145,7 +2150,124 @@ printf("timeval: %u ; %u\n", cur_hdr.ts.tv_sec, cur_hdr.ts.tv_usec);
 				ldns_rdf_deep_free(dst_addr);
 
 			} /* end if udp */
-/*		} *//* end if fragmented */
+	/* don't have a define for ethertype ipv6 */
+	} else 	if (ntohs (eptr->ether_type) == ETHERTYPE_IPV6) {
+		/*printf("IPv6!\n");*/
+
+
+		/* copied from ipv4, move this to function? */
+
+		data_offset = ETHER_HEADER_LENGTH;
+		ip6_hdr = (struct ip6_hdr *) (data + data_offset);
+
+		newdata = data;
+		
+		/* in_addr portability woes, going manual for now */
+		/* ipv6 */
+		ap = (uint8_t *) &(ip6_hdr->ip6_src);
+		astr = malloc(INET6_ADDRSTRLEN);
+		if (inet_ntop(AF_INET6, ap, astr, INET6_ADDRSTRLEN)) {
+			if (ldns_str2rdf_aaaa(&src_addr, astr) == LDNS_STATUS_OK) {
+				
+			}
+			free(astr);
+		}
+		ap = (uint8_t *) &(ip6_hdr->ip6_dst);
+		astr = malloc(INET6_ADDRSTRLEN);
+		if (inet_ntop(AF_INET6, ap, astr, INET6_ADDRSTRLEN)) {
+			if (ldns_str2rdf_aaaa(&dst_addr, astr) == LDNS_STATUS_OK) {
+				
+			}
+			free(astr);
+		}
+
+		ip_hdr_size = IP6_HEADER_LENGTH;
+		protocol = ip6_hdr->ip6_ctlun.ip6_un1.ip6_un1_nxt;
+		
+		data_offset += ip_hdr_size;
+
+		if (protocol == IPPROTO_UDP) {
+			/*printf("V6 UDP!\n");*/
+			data_offset += UDP_HEADER_LENGTH;
+			
+			dnspkt = (uint8_t *) (newdata + data_offset);
+
+			/*printf("Len: %u\n", len);*/
+
+			status = ldns_wire2pkt(&pkt, dnspkt, len - data_offset);
+
+			if (status != LDNS_STATUS_OK) {
+				if (verbosity >= 3) {
+					printf("No dns packet: %s\n", ldns_get_errorstr_by_id(status));
+				}
+				bad_dns_packets++;
+				if (bad_dns_dump) {
+					pcap_dump((u_char *)bad_dns_dump, &cur_hdr, newdata);
+				}
+			} else {
+				timestamp.tv_sec = cur_hdr.ts.tv_sec;
+				timestamp.tv_usec = cur_hdr.ts.tv_usec;
+				ldns_pkt_set_timestamp(pkt, timestamp);
+			
+				if (verbosity >= 4) {
+					printf("DNS packet\n");
+					ldns_pkt_print(stdout, pkt);
+					printf("\n\n");
+				}
+
+				if (match_expr) {
+					if (match_dns_packet_to_expr(pkt, src_addr, dst_addr, match_expr)) {
+						/* if outputfile write */
+						if (dumper) {
+							pcap_dump((u_char *)dumper, &cur_hdr, data);
+						}
+						if (show_filter_matches) {
+							printf(";; From: ");
+							ldns_rdf_print(stdout, src_addr);
+							printf("\n");
+							printf(";; To:   ");
+							ldns_rdf_print(stdout, dst_addr);
+							printf("\n");
+							ldns_pkt_print(stdout, pkt);
+							printf("------------------------------------------------------------\n\n");
+						}
+					} else {
+						ldns_pkt_free(pkt);
+						ldns_rdf_deep_free(src_addr);
+						ldns_rdf_deep_free(dst_addr);
+						return 0;
+					}
+				} else {
+					if (show_filter_matches) {
+						printf(";; From: ");
+						ldns_rdf_print(stdout, src_addr);
+						printf("\n");
+						printf(";; To:   ");
+						ldns_rdf_print(stdout, dst_addr);
+						printf("\n");
+						ldns_pkt_print(stdout, pkt);
+						printf("------------------------------------------------------------\n\n");
+					}
+				}
+
+				/* General counters here */
+				total_nr_of_dns_packets++;
+
+				match_pkt_counters(pkt, src_addr, dst_addr, count);
+				match_pkt_uniques(pkt, src_addr, dst_addr, uniques, unique_ids, unique_id_count);
+
+				ldns_pkt_free(pkt);
+				pkt = NULL;
+			}
+			ldns_rdf_deep_free(src_addr);
+			ldns_rdf_deep_free(dst_addr);
+
+		} else {
+			printf("ipv6 unknown next header type: %u\n", protocol);
+		}
+
+
+
 	} else  if (ntohs (eptr->ether_type) == ETHERTYPE_ARP) {
 		if (verbosity >= 5) {
 			printf("Ethernet type hex:%x dec:%d is an ARP packet\n",
@@ -2154,8 +2276,9 @@ printf("timeval: %u ; %u\n", cur_hdr.ts.tv_sec, cur_hdr.ts.tv_usec);
 		}
 		arp_packets++;
 	} else {
+		printf("Ethernet type %x not IP\n", ntohs(eptr->ether_type));
 		if (verbosity >= 5) {
-			printf("Ethernet type %x not IP", ntohs(eptr->ether_type));
+			printf("Ethernet type %x not IP\n", ntohs(eptr->ether_type));
 		}
 		not_ip_packets++;
 		if (not_ip_dump) {
