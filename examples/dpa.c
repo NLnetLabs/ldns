@@ -13,7 +13,10 @@ int verbosity = 1;
 #define UDP_HEADER_LENGTH 8
 #define IP6_HEADER_LENGTH 40
 
+/* some systems don't have this? */
+#ifndef ETHERTYPE_IPV6
 #define ETHERTYPE_IPV6 0x86dd
+#endif
 
 #define MAX_MATCHES 20
 #define MAX_OPERATORS 7
