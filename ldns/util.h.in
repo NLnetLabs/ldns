@@ -107,7 +107,7 @@ ldns_write_uint32(void *dst, uint32_t data)
 
 #ifndef HAVE_ISBLANK
 /* gnuism */
-int 
+static int 
 isblank(int c)
 {
  return (c==' ') || (c=='\t');
