@@ -46,7 +46,7 @@ ldns_status ldns_rr2buffer_wire(ldns_buffer *output, const ldns_rr *rr, int sect
  * \param[in] sigrr signature rr to operate on
  * \return ldns_status
  */
-ldns_status ldns_rrsig2buffer_wire(ldns_buffer *output, const ldns_rr *sigrr);
+ldns_status ldns_rrsig2buffer_wire(ldns_buffer *output, ldns_rr *sigrr);
 
 /**
  * Converts an rr's rdata to wireformat, while excluding
@@ -58,7 +58,7 @@ ldns_status ldns_rrsig2buffer_wire(ldns_buffer *output, const ldns_rr *sigrr);
  * \param[in] *rr rr to operate on
  * \return ldns_status
  */
-ldns_status ldns_rr_rdata2buffer_wire(ldns_buffer *output, const ldns_rr *rr);
+ldns_status ldns_rr_rdata2buffer_wire(ldns_buffer *output, ldns_rr *rr);
 
 /**
  * Copies the packet data to the buffer in wire format

@@ -99,7 +99,7 @@ ldns_rr2buffer_wire(ldns_buffer *buffer, const ldns_rr *rr, int section)
 }
 
 ldns_status
-ldns_rrsig2buffer_wire(ldns_buffer *buffer, const ldns_rr *rr)
+ldns_rrsig2buffer_wire(ldns_buffer *buffer, ldns_rr *rr)
 {
 	uint16_t i;
 
@@ -120,7 +120,7 @@ ldns_rrsig2buffer_wire(ldns_buffer *buffer, const ldns_rr *rr)
 }
 
 ldns_status
-ldns_rr_rdata2buffer_wire(ldns_buffer *buffer, const ldns_rr *rr)
+ldns_rr_rdata2buffer_wire(ldns_buffer *buffer, ldns_rr *rr)
 {
 	uint16_t i;
 #if 0

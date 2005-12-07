@@ -178,7 +178,7 @@ void ldns_key_list_set_key_count(ldns_key_list *key, size_t count);
  * \param[in] key the key to push 
  * \return false on error, otherwise true
  */      
-bool ldns_key_list_push_key(ldns_key_list *key_list, const ldns_key *key);
+bool ldns_key_list_push_key(ldns_key_list *key_list, ldns_key *key);
 
 /**
  * returns the number of keys in the key list
@@ -193,21 +193,21 @@ ldns_key *ldns_key_list_key(ldns_key_list *key, size_t nr);
 /**
  * returns the (openssl) RSA struct contained in the key
  */
-RSA *ldns_key_rsa_key(const ldns_key *k);
+RSA *ldns_key_rsa_key(ldns_key *k);
 
 /**
  * returns the (openssl) DSA struct contained in the key
  */
-DSA *ldns_key_dsa_key(const ldns_key *k);
+DSA *ldns_key_dsa_key(ldns_key *k);
 
-ldns_signing_algorithm ldns_key_algorithm(const ldns_key *k);
-unsigned char *ldns_key_hmac_key(const ldns_key *k);
-uint32_t ldns_key_origttl(const ldns_key *k);
-uint32_t ldns_key_inception(const ldns_key *k);
-uint32_t ldns_key_expiration(const ldns_key *k);
-uint16_t ldns_key_keytag(const ldns_key *k);
-ldns_rdf *ldns_key_pubkey_owner(const ldns_key *k);
-uint16_t ldns_key_flags(const ldns_key *k);
+ldns_signing_algorithm ldns_key_algorithm(ldns_key *k);
+unsigned char *ldns_key_hmac_key(ldns_key *k);
+uint32_t ldns_key_origttl(ldns_key *k);
+uint32_t ldns_key_inception(ldns_key *k);
+uint32_t ldns_key_expiration(ldns_key *k);
+uint16_t ldns_key_keytag(ldns_key *k);
+ldns_rdf *ldns_key_pubkey_owner(ldns_key *k);
+uint16_t ldns_key_flags(ldns_key *k);
 
 /**     
  * pops the last rr from a keylist
@@ -222,7 +222,7 @@ ldns_key *ldns_key_list_pop_key(ldns_key_list *key_list);
  * \param[in] k the ldns_key to convert
  * \return ldns_rr representation of the key
  */
-ldns_rr *ldns_key2rr(const ldns_key *k);
+ldns_rr *ldns_key2rr(ldns_key *k);
 
 /**
  * print a private key to the file ouput
@@ -230,7 +230,7 @@ ldns_rr *ldns_key2rr(const ldns_key *k);
  * \param[in] output the FILE descriptor where to print to
  * \param[in] k the ldns_key to print
  */
-void ldns_key_print(FILE *output, const ldns_key *k);
+void ldns_key_print(FILE *output, ldns_key *k);
 
 /**
  * frees a key structure

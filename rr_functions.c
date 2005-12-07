@@ -28,7 +28,7 @@
  * \return the rdf sought
  */
 static ldns_rdf *
-ldns_rr_function(ldns_rr_type type, const ldns_rr *rr, size_t pos)
+ldns_rr_function(ldns_rr_type type, ldns_rr *rr, size_t pos)
 {
         if (!rr || ldns_rr_get_type(rr) != type) {
                 return NULL;
@@ -62,7 +62,7 @@ ldns_rr_set_function(ldns_rr_type type, ldns_rr *rr, ldns_rdf *rdf, size_t pos)
 
 /* A/AAAA records */
 ldns_rdf *
-ldns_rr_a_address(const ldns_rr *r)
+ldns_rr_a_address(ldns_rr *r)
 {
 	/* 2 types to check, cannot use the macro */
 	if (!r || (ldns_rr_get_type(r) != LDNS_RR_TYPE_A &&
@@ -93,7 +93,7 @@ ldns_rr_a_set_address(ldns_rr *r, ldns_rdf *f)
 
 /* NS record */
 ldns_rdf *
-ldns_rr_ns_nsdname(const ldns_rr *r)
+ldns_rr_ns_nsdname(ldns_rr *r)
 {
 	return ldns_rr_function(LDNS_RR_TYPE_NS, r, 0);
 }
@@ -101,13 +101,13 @@ ldns_rr_ns_nsdname(const ldns_rr *r)
 
 /* MX record */
 ldns_rdf *
-ldns_rr_mx_preference(const ldns_rr *r)
+ldns_rr_mx_preference(ldns_rr *r)
 {
 	return ldns_rr_function(LDNS_RR_TYPE_MX, r, 0);
 }
 
 ldns_rdf *
-ldns_rr_mx_exchange(const ldns_rr *r)
+ldns_rr_mx_exchange(ldns_rr *r)
 {
 	return ldns_rr_function(LDNS_RR_TYPE_MX, r, 1);
 }
@@ -115,7 +115,7 @@ ldns_rr_mx_exchange(const ldns_rr *r)
 
 /* RRSIG record */
 ldns_rdf *
-ldns_rr_rrsig_typecovered(const ldns_rr *r)
+ldns_rr_rrsig_typecovered(ldns_rr *r)
 {
 	return ldns_rr_function(LDNS_RR_TYPE_RRSIG, r, 0);
 }
@@ -127,7 +127,7 @@ ldns_rr_rrsig_set_typecovered(ldns_rr *r, ldns_rdf *f)
 }
 
 ldns_rdf *
-ldns_rr_rrsig_algorithm(const ldns_rr *r)
+ldns_rr_rrsig_algorithm(ldns_rr *r)
 {
 	return ldns_rr_function(LDNS_RR_TYPE_RRSIG, r, 1);
 }
@@ -139,7 +139,7 @@ ldns_rr_rrsig_set_algorithm(ldns_rr *r, ldns_rdf *f)
 }
 
 ldns_rdf *
-ldns_rr_rrsig_labels(const ldns_rr *r)
+ldns_rr_rrsig_labels(ldns_rr *r)
 {
 	return ldns_rr_function(LDNS_RR_TYPE_RRSIG, r, 2);
 }
@@ -150,7 +150,7 @@ ldns_rr_rrsig_set_labels(ldns_rr *r, ldns_rdf *f)
 }
 
 ldns_rdf *
-ldns_rr_rrsig_origttl(const ldns_rr *r)
+ldns_rr_rrsig_origttl(ldns_rr *r)
 {
 	return ldns_rr_function(LDNS_RR_TYPE_RRSIG, r, 3);
 }
@@ -161,7 +161,7 @@ ldns_rr_rrsig_set_origttl(ldns_rr *r, ldns_rdf *f)
 }
 
 ldns_rdf *
-ldns_rr_rrsig_expiration(const ldns_rr *r)
+ldns_rr_rrsig_expiration(ldns_rr *r)
 {
 	return ldns_rr_function(LDNS_RR_TYPE_RRSIG, r, 4);
 }
@@ -172,7 +172,7 @@ ldns_rr_rrsig_set_expiration(ldns_rr *r, ldns_rdf *f)
 }
 
 ldns_rdf *
-ldns_rr_rrsig_inception(const ldns_rr *r)
+ldns_rr_rrsig_inception(ldns_rr *r)
 {
 	return ldns_rr_function(LDNS_RR_TYPE_RRSIG, r, 5);
 }
@@ -183,7 +183,7 @@ ldns_rr_rrsig_set_inception(ldns_rr *r, ldns_rdf *f)
 }
 
 ldns_rdf *
-ldns_rr_rrsig_keytag(const ldns_rr *r)
+ldns_rr_rrsig_keytag(ldns_rr *r)
 {
 	return ldns_rr_function(LDNS_RR_TYPE_RRSIG, r, 6);
 }
@@ -194,7 +194,7 @@ ldns_rr_rrsig_set_keytag(ldns_rr *r, ldns_rdf *f)
 	return ldns_rr_set_function(LDNS_RR_TYPE_RRSIG, r, f, 6);
 }
 ldns_rdf *
-ldns_rr_rrsig_signame(const ldns_rr *r)
+ldns_rr_rrsig_signame(ldns_rr *r)
 {
 	return ldns_rr_function(LDNS_RR_TYPE_RRSIG, r, 7);
 }
@@ -205,7 +205,7 @@ ldns_rr_rrsig_set_signame(ldns_rr *r, ldns_rdf *f)
 }
 
 ldns_rdf *
-ldns_rr_rrsig_sig(const ldns_rr *r)
+ldns_rr_rrsig_sig(ldns_rr *r)
 {
 	return ldns_rr_function(LDNS_RR_TYPE_RRSIG, r, 8);
 }
@@ -219,7 +219,7 @@ ldns_rr_rrsig_set_sig(ldns_rr *r, ldns_rdf *f)
 
 /* DNSKEY record */
 ldns_rdf *
-ldns_rr_dnskey_flags(const ldns_rr *r)
+ldns_rr_dnskey_flags(ldns_rr *r)
 {
 	return ldns_rr_function(LDNS_RR_TYPE_DNSKEY, r, 0);
 }
@@ -231,7 +231,7 @@ ldns_rr_dnskey_set_flags(ldns_rr *r, ldns_rdf *f)
 }
 
 ldns_rdf *
-ldns_rr_dnskey_protocol(const ldns_rr *r)
+ldns_rr_dnskey_protocol(ldns_rr *r)
 {
 	return ldns_rr_function(LDNS_RR_TYPE_DNSKEY, r, 1);
 }
@@ -242,7 +242,7 @@ ldns_rr_dnskey_set_protocol(ldns_rr *r, ldns_rdf *f)
 	return ldns_rr_set_function(LDNS_RR_TYPE_DNSKEY, r, f, 1);
 }
 ldns_rdf *
-ldns_rr_dnskey_algorithm(const ldns_rr *r)
+ldns_rr_dnskey_algorithm(ldns_rr *r)
 {
 	return ldns_rr_function(LDNS_RR_TYPE_DNSKEY, r, 2);
 }
@@ -253,7 +253,7 @@ ldns_rr_dnskey_set_algorithm(ldns_rr *r, ldns_rdf *f)
 	return ldns_rr_set_function(LDNS_RR_TYPE_DNSKEY, r, f, 2);
 }
 ldns_rdf *
-ldns_rr_dnskey_key(const ldns_rr *r)
+ldns_rr_dnskey_key(ldns_rr *r)
 {
 	return ldns_rr_function(LDNS_RR_TYPE_DNSKEY, r, 3);
 }
@@ -265,7 +265,7 @@ ldns_rr_dnskey_set_key(ldns_rr *r, ldns_rdf *f)
 }
 
 uint16_t 
-ldns_rr_dnskey_key_size(const ldns_rr *key) {
+ldns_rr_dnskey_key_size(ldns_rr *key) {
 	
 	ldns_rdf *keydata;
 	uint16_t length;
