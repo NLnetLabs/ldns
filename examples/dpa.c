@@ -23,11 +23,21 @@ size_t bad_dns_packets = 0;
 size_t arp_packets = 0;
 size_t udp_packets = 0;
 size_t tcp_packets = 0;
-
+size_t fragmented_packets = 0;
+size_t lost_packet_fragments = 0;
 pcap_dumper_t *dumper = NULL;
 pcap_dumper_t *not_ip_dump = NULL;
 pcap_dumper_t *bad_dns_dump = NULL;
 
+
+struct
+fragment_part {
+	u_short ip_id;
+	uint8_t data[65536];
+	size_t cur_len;
+};
+
+struct fragment_part *fragment_p;
 
 /* To add a match,
  * - add it to the enum
@@ -1918,6 +1928,12 @@ handle_ether_packet(const u_char *data, struct pcap_pkthdr cur_hdr, match_counte
 	char *astr;
 	bpf_u_int32 len = cur_hdr.caplen;
 	struct timeval timestamp;
+	uint16_t ip_flags;
+	u_short ip_len;
+	u_short ip_id;
+	u_short ip_f_offset;
+	const u_char *newdata = NULL;
+
 /*
 printf("timeval: %u ; %u\n", cur_hdr.ts.tv_sec, cur_hdr.ts.tv_usec);
 */
@@ -1940,66 +1956,170 @@ printf("timeval: %u ; %u\n", cur_hdr.ts.tv_sec, cur_hdr.ts.tv_usec);
 
 		data_offset = ETHER_HEADER_LENGTH;
 		iptr = (struct ip *) (data + data_offset);
-
-
-		/* in_addr portability woes, going manual for now */
-		/* ipv4 */
-		ap = (uint8_t *) &(iptr->ip_src);
-		astr = malloc(INET_ADDRSTRLEN);
-		if (inet_ntop(AF_INET, ap, astr, INET_ADDRSTRLEN)) {
-			if (ldns_str2rdf_a(&src_addr, astr) == LDNS_STATUS_OK) {
-				
-			}
-			free(astr);
-		}
-		ap = (uint8_t *) &(iptr->ip_dst);
-		astr = malloc(INET_ADDRSTRLEN);
-		if (inet_ntop(AF_INET, ap, astr, INET_ADDRSTRLEN)) {
-			if (ldns_str2rdf_a(&dst_addr, astr) == LDNS_STATUS_OK) {
-				
-			}
-			free(astr);
-		}
-
-		ip_hdr_size = iptr->ip_hl * 4;
-		protocol = iptr->ip_p;
-		
-		data_offset += ip_hdr_size;
-
-		if (protocol == IPPROTO_UDP) {
-			data_offset += UDP_HEADER_LENGTH;
-			
-			dnspkt = (uint8_t *) (data + data_offset);
-
-			/*printf("packet starts at byte %u\n", data_offset);*/
-
-			status = ldns_wire2pkt(&pkt, dnspkt, len - data_offset);
-
-			if (status != LDNS_STATUS_OK) {
-				if (verbosity >= 3) {
-					printf("No dns packet: %s\n", ldns_get_errorstr_by_id(status));
+		/*
+		printf("IP_OFF: %u (%04x) %04x %04x (%d) (%d)\n", iptr->ip_off, iptr->ip_off, IP_MF, IP_DF, iptr->ip_off & 0x4000, iptr->ip_off & 0x2000);
+		*/
+		ip_flags = ldns_read_uint16(&(iptr->ip_off));
+		ip_id = ldns_read_uint16(&(iptr->ip_id));
+		ip_len = ldns_read_uint16(&(iptr->ip_len));
+		ip_f_offset = (ip_flags & IP_OFFMASK)*8;
+		if (ip_flags & IP_MF && ip_f_offset == 0) {
+			/*printf("First Frag id %u len\n", ip_id, ip_len);*/
+			fragment_p->ip_id = ip_id;
+			memset(fragment_p->data, 0, 65535);
+			memcpy(fragment_p->data, iptr, ip_len);
+			fragment_p->cur_len = ip_len + 20;
+/*
+				for (ip_len = 0; ip_len < fragment_p->cur_len; ip_len++) {
+					if (ip_len > 0 && ip_len % 20 == 0) {
+						printf("\t; %u - %u\n", ip_len - 19, ip_len);
+					}
+					printf("%02x ", fragment_p->data[ip_len]);
 				}
-				bad_dns_packets++;
-				if (bad_dns_dump) {
-					pcap_dump((u_char *)bad_dns_dump, &cur_hdr, data);
+				printf("\t; ??? - %u\n", ip_len);
+*/
+			return 0;
+		} else
+		if (ip_flags & IP_MF && ip_f_offset != 0) {
+			/*printf("Next frag\n");*/
+			if (ip_id == fragment_p->ip_id) {
+				/*printf("add fragment to current id %u len %u offset %u\n", ip_id, ip_len, ip_f_offset);*/
+				memcpy(fragment_p->data + (ip_f_offset) + 20, data+data_offset+20, ip_len - (iptr->ip_hl)*4);
+				/*printf("COPIED %u\n", ip_len);*/
+				fragment_p->cur_len = fragment_p->cur_len + ip_len - 20;
+				/*printf("cur len now %u\n", fragment_p->cur_len);*/
+/*
+				for (ip_len = 0; ip_len < fragment_p->cur_len; ip_len++) {
+					if (ip_len > 0 && ip_len % 20 == 0) {
+						printf("\t; %u - %u\n", ip_len - 19, ip_len);
+					}
+					printf("%02x ", fragment_p->data[ip_len]);
 				}
+				printf("\t; ??? - %u\n", ip_len);
+*/
+				return 0;
 			} else {
-				timestamp.tv_sec = cur_hdr.ts.tv_sec;
-				timestamp.tv_usec = cur_hdr.ts.tv_usec;
-				ldns_pkt_set_timestamp(pkt, timestamp);
-			
-				if (verbosity >= 4) {
-					printf("DNS packet\n");
-					ldns_pkt_print(stdout, pkt);
-					printf("\n\n");
+				/*printf("Lost fragment %u\n", iptr->ip_id);*/
+				lost_packet_fragments++;
+				return 1;
+			}
+		} else
+		if (!(ip_flags & IP_MF) && ip_f_offset != 0) {
+			/*printf("Last frag\n");*/
+			if (ip_id == fragment_p->ip_id) {
+				/*printf("add fragment to current id %u len %u offset %u\n", ip_id, ip_len, ip_f_offset);*/
+				memcpy(fragment_p->data + ip_f_offset + 20, data+data_offset+20, ip_len - 20);
+				fragment_p->cur_len = fragment_p->cur_len + ip_len - 20;
+				iptr = (struct ip *) fragment_p->data;
+				newdata = malloc(fragment_p->cur_len + data_offset);
+				memcpy((char *) newdata, data, data_offset);
+				memcpy((char *) newdata+data_offset, fragment_p->data, fragment_p->cur_len);
+				iptr->ip_len = ldns_read_uint16(&(fragment_p->cur_len));
+				iptr->ip_off = 0;
+				len = fragment_p->cur_len;
+				cur_hdr.caplen = len;
+				fragment_p->ip_id = 0;
+				fragmented_packets++;
+/*
+				for (ip_len = 0; ip_len < fragment_p->cur_len; ip_len++) {
+					if (ip_len > 0 && ip_len % 20 == 0) {
+						printf("\t; %u - %u\n", ip_len - 19, ip_len);
+					}
+					printf("%02x ", fragment_p->data[ip_len]);
 				}
+				printf("\t; ??? - %u\n", ip_len);
+*/
+			} else {
+				printf("Lost fragment %u\n", iptr->ip_id);
+				lost_packet_fragments++;
+				return 1;
+			}
+		} else {
+			newdata = data;
+		}
+/*
+		if (iptr->ip_off & 0x0040) {
+			printf("Don't fragment\n");
+		}
+*/
 
-				if (match_expr) {
-					if (match_dns_packet_to_expr(pkt, src_addr, dst_addr, match_expr)) {
-						/* if outputfile write */
-						if (dumper) {
-							pcap_dump((u_char *)dumper, &cur_hdr, data);
+			/* in_addr portability woes, going manual for now */
+			/* ipv4 */
+			ap = (uint8_t *) &(iptr->ip_src);
+			astr = malloc(INET_ADDRSTRLEN);
+			if (inet_ntop(AF_INET, ap, astr, INET_ADDRSTRLEN)) {
+				if (ldns_str2rdf_a(&src_addr, astr) == LDNS_STATUS_OK) {
+					
+				}
+				free(astr);
+			}
+			ap = (uint8_t *) &(iptr->ip_dst);
+			astr = malloc(INET_ADDRSTRLEN);
+			if (inet_ntop(AF_INET, ap, astr, INET_ADDRSTRLEN)) {
+				if (ldns_str2rdf_a(&dst_addr, astr) == LDNS_STATUS_OK) {
+					
+				}
+				free(astr);
+			}
+
+			ip_hdr_size = iptr->ip_hl * 4;
+			protocol = iptr->ip_p;
+			
+			data_offset += ip_hdr_size;
+
+			if (protocol == IPPROTO_UDP) {
+				data_offset += UDP_HEADER_LENGTH;
+				
+				dnspkt = (uint8_t *) (newdata + data_offset);
+
+				/*printf("packet starts at byte %u\n", data_offset);*/
+
+				/*printf("Len: %u\n", len);*/
+
+				status = ldns_wire2pkt(&pkt, dnspkt, len - data_offset);
+
+				if (status != LDNS_STATUS_OK) {
+					if (verbosity >= 3) {
+						printf("No dns packet: %s\n", ldns_get_errorstr_by_id(status));
+					}
+					bad_dns_packets++;
+					if (bad_dns_dump) {
+						pcap_dump((u_char *)bad_dns_dump, &cur_hdr, newdata);
+					}
+				} else {
+					timestamp.tv_sec = cur_hdr.ts.tv_sec;
+					timestamp.tv_usec = cur_hdr.ts.tv_usec;
+					ldns_pkt_set_timestamp(pkt, timestamp);
+				
+					if (verbosity >= 4) {
+						printf("DNS packet\n");
+						ldns_pkt_print(stdout, pkt);
+						printf("\n\n");
+					}
+
+					if (match_expr) {
+						if (match_dns_packet_to_expr(pkt, src_addr, dst_addr, match_expr)) {
+							/* if outputfile write */
+							if (dumper) {
+								pcap_dump((u_char *)dumper, &cur_hdr, data);
+							}
+							if (show_filter_matches) {
+								printf(";; From: ");
+								ldns_rdf_print(stdout, src_addr);
+								printf("\n");
+								printf(";; To:   ");
+								ldns_rdf_print(stdout, dst_addr);
+								printf("\n");
+								ldns_pkt_print(stdout, pkt);
+								printf("------------------------------------------------------------\n\n");
+							}
+						} else {
+							ldns_pkt_free(pkt);
+							ldns_rdf_deep_free(src_addr);
+							ldns_rdf_deep_free(dst_addr);
+							return 0;
 						}
+					} else {
 						if (show_filter_matches) {
 							printf(";; From: ");
 							ldns_rdf_print(stdout, src_addr);
@@ -2010,39 +2130,22 @@ printf("timeval: %u ; %u\n", cur_hdr.ts.tv_sec, cur_hdr.ts.tv_usec);
 							ldns_pkt_print(stdout, pkt);
 							printf("------------------------------------------------------------\n\n");
 						}
-					} else {
-						ldns_pkt_free(pkt);
-						ldns_rdf_deep_free(src_addr);
-						ldns_rdf_deep_free(dst_addr);
-						return 0;
 					}
-				} else {
-					if (show_filter_matches) {
-						printf(";; From: ");
-						ldns_rdf_print(stdout, src_addr);
-						printf("\n");
-						printf(";; To:   ");
-						ldns_rdf_print(stdout, dst_addr);
-						printf("\n");
-						ldns_pkt_print(stdout, pkt);
-						printf("------------------------------------------------------------\n\n");
-					}
+
+					/* General counters here */
+					total_nr_of_dns_packets++;
+
+					match_pkt_counters(pkt, src_addr, dst_addr, count);
+					match_pkt_uniques(pkt, src_addr, dst_addr, uniques, unique_ids, unique_id_count);
+
+					ldns_pkt_free(pkt);
+					pkt = NULL;
 				}
+				ldns_rdf_deep_free(src_addr);
+				ldns_rdf_deep_free(dst_addr);
 
-				/* General counters here */
-				total_nr_of_dns_packets++;
-
-				match_pkt_counters(pkt, src_addr, dst_addr, count);
-				match_pkt_uniques(pkt, src_addr, dst_addr, uniques, unique_ids, unique_id_count);
-
-				ldns_pkt_free(pkt);
-				pkt = NULL;
-			}
-			ldns_rdf_deep_free(src_addr);
-			ldns_rdf_deep_free(dst_addr);
-
-		}
-		
+			} /* end if udp */
+/*		} *//* end if fragmented */
 	} else  if (ntohs (eptr->ether_type) == ETHERTYPE_ARP) {
 		if (verbosity >= 5) {
 			printf("Ethernet type hex:%x dec:%d is an ARP packet\n",
@@ -2202,6 +2305,9 @@ int main(int argc, char *argv[]) {
 	uniques->left = NULL;
 	uniques->match = NULL;
 	uniques->right = NULL;
+
+	fragment_p = malloc(sizeof(struct fragment_part));
+	fragment_p->ip_id = 0;
 
 	for (i = 1; i < argc; i++) {
 
@@ -2379,6 +2485,8 @@ int main(int argc, char *argv[]) {
 		fprintf(stdout, "arp packets: %u\n", arp_packets);
 		fprintf(stdout, "udp packets: %u\n", udp_packets);
 		fprintf(stdout, "tcp packets: %u\n", tcp_packets);
+		fprintf(stdout, "reassembled fragmented packets: %u\n", fragmented_packets);
+		fprintf(stdout, "packet fragments lost: %u\n", lost_packet_fragments);
 		fprintf(stdout, "Total number of DNS packets evaluated: %u\n", (unsigned int) total_nr_of_dns_packets);
 	}
 	if (count->match) {
