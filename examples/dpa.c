@@ -2076,6 +2076,7 @@ printf("timeval: %u ; %u\n", cur_hdr.ts.tv_sec, cur_hdr.ts.tv_usec);
 			data_offset += ip_hdr_size;
 
 			if (protocol == IPPROTO_UDP) {
+				udp_packets++;
 				data_offset += UDP_HEADER_LENGTH;
 				
 				dnspkt = (uint8_t *) (newdata + data_offset);
@@ -2152,7 +2153,10 @@ printf("timeval: %u ; %u\n", cur_hdr.ts.tv_sec, cur_hdr.ts.tv_usec);
 				ldns_rdf_deep_free(src_addr);
 				ldns_rdf_deep_free(dst_addr);
 
-			} /* end if udp */
+			} else if (protocol == IPPROTO_TCP) {
+				/* tcp packets are skipped */
+				tcp_packets++;
+			}
 	/* don't have a define for ethertype ipv6 */
 	} else 	if (ntohs (eptr->ether_type) == ETHERTYPE_IPV6) {
 		/*printf("IPv6!\n");*/
@@ -2190,6 +2194,7 @@ printf("timeval: %u ; %u\n", cur_hdr.ts.tv_sec, cur_hdr.ts.tv_usec);
 		data_offset += ip_hdr_size;
 
 		if (protocol == IPPROTO_UDP) {
+			udp_packets++;
 			/*printf("V6 UDP!\n");*/
 			data_offset += UDP_HEADER_LENGTH;
 			
@@ -2265,6 +2270,9 @@ printf("timeval: %u ; %u\n", cur_hdr.ts.tv_sec, cur_hdr.ts.tv_usec);
 			ldns_rdf_deep_free(src_addr);
 			ldns_rdf_deep_free(dst_addr);
 
+		} else if (protocol == IPPROTO_TCP) {
+			/* tcp packets are skipped */
+			tcp_packets++;
 		} else {
 			printf("ipv6 unknown next header type: %u\n", protocol);
 		}
@@ -2610,7 +2618,7 @@ int main(int argc, char *argv[]) {
 		fprintf(stdout, "bad dns packets: %u\n", bad_dns_packets);
 		fprintf(stdout, "arp packets: %u\n", arp_packets);
 		fprintf(stdout, "udp packets: %u\n", udp_packets);
-		fprintf(stdout, "tcp packets: %u\n", tcp_packets);
+		fprintf(stdout, "tcp packets (skipped): %u\n", tcp_packets);
 		fprintf(stdout, "reassembled fragmented packets: %u\n", fragmented_packets);
 		fprintf(stdout, "packet fragments lost: %u\n", lost_packet_fragments);
 		fprintf(stdout, "Total number of DNS packets evaluated: %u\n", (unsigned int) total_nr_of_dns_packets);
