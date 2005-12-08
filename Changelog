@@ -2,7 +2,7 @@ December??? 2005: 1.0.1: ldns-team
 	* Added include/ and lib/ dirs so that you can compile against ldns
 	  without installing ldns on your system
 	* Makefile updates
-	* Assert is used throughout the library to catch illegal library calls
+	* Starting usage of assert throughout the library to catch illegal calls
 	* Solaris 9 testing was carried out. Ldns now compiles on that
 	  platform; some gnuism were identified and fixed.
 
@@ -12,6 +12,9 @@ December??? 2005: 1.0.1: ldns-team
 	  future)
 	* DS was added to the list of records which, when used automaticly
 	  enable DNSSEC (i.e. Set the do-bit in the query)
+	
+	Code:
+	* All networking code was moved to net.c
 
 18 Oct 2005: 1.0.0: ldns-team
 	* Commited a patch from Håkan Olsson
