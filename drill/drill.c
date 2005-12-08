@@ -360,9 +360,8 @@ main(int argc, char *argv[])
 		/* it all fails assume it's a name */
 		name = argv[i];
 	}
-	/* check if name is defined, otherwise we have nothing to do */
+	/* act like dig and use for . NS */
 	if (!name) {
-		/* act like dig and use for . NS */
 		name = ".";
 		int_type = 0;
 		type = LDNS_RR_TYPE_NS;

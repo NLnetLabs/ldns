@@ -12,6 +12,8 @@ December??? 2005: 1.0.1: ldns-team
 	  future)
 	* DS was added to the list of records which, when used automaticly
 	  enable DNSSEC (i.e. Set the do-bit in the query)
+	* Implement a crude RTT check, it now distinguishes between
+	  reacheable and unreacheable.
 	
 	Code:
 	* All networking code was moved to net.c

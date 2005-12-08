@@ -25,8 +25,7 @@
 ldns_status
 ldns_send(ldns_pkt **result, ldns_resolver *r, ldns_pkt *query_pkt)
 {
-	uint8_t i,j;
-	ldns_rdf *temp;
+	uint8_t i;
 	
 	struct sockaddr_storage *ns;
 	size_t ns_len;
@@ -34,28 +33,25 @@ ldns_send(ldns_pkt **result, ldns_resolver *r, ldns_pkt *query_pkt)
         struct timeval tv_e;
 
 	ldns_rdf **ns_array;
-	ldns_rdf **ns_rand_array;
+	size_t *rtt;
 	ldns_pkt *reply;
 	ldns_buffer *qb;
 
 	uint8_t *reply_bytes = NULL;
 	size_t reply_size = 0;
 	ldns_rdf *tsig_mac = NULL;
-	ldns_status status;
+	ldns_status status, send_status;
+
+	assert(r != NULL);
 
 	status = LDNS_STATUS_OK;
-
-	ns_rand_array = LDNS_XMALLOC(ldns_rdf*, ldns_resolver_nameserver_count(r));
-
-	if (!query_pkt || !ns_rand_array) {
-		/* nothing to do? */
-		return LDNS_STATUS_ERR;
-	}
-	
+	rtt = ldns_resolver_rtt(r);
 	ns_array = ldns_resolver_nameservers(r);
 	reply = NULL; ns_len = 0;
-	for (i = 0; i < ldns_resolver_nameserver_count(r); i++) {
-		ns_rand_array[i] = ns_array[i];
+
+	if (!query_pkt) {
+		/* nothing to do? */
+		return LDNS_STATUS_ERR;
 	}
 	
 	qb = ldns_buffer_new(LDNS_MIN_BUFLEN);
@@ -68,26 +64,19 @@ ldns_send(ldns_pkt **result, ldns_resolver *r, ldns_pkt *query_pkt)
 		ldns_buffer_free(qb);
 		return LDNS_STATUS_ERR;
 	}
-	/* random should already be setup - isn't so bad
-	 * if this isn't "good" random. Note that this
-	 * changes the order in the resolver as well!
-	 */
+
 	if (ldns_resolver_random(r)) {
-		for (i = 0; i < ldns_resolver_nameserver_count(r); i++) {
-			j = random() % ldns_resolver_nameserver_count(r);
-			/* printf("r = %d, switch i = %d, j = %d\n", 
-			 ldns_resolver_nameserver_count(r), i, j);
-			 */
-			temp = ns_rand_array[i];
-			ns_rand_array[i] = ns_rand_array[j];
-			ns_rand_array[j] = temp;
-		}
+		ldns_resolver_nameservers_randomize(r);
 	}
 
 	/* loop through all defined nameservers */
 	for (i = 0; i < ldns_resolver_nameserver_count(r); i++) {
 
-		ns = ldns_rdf2native_sockaddr_storage(ns_rand_array[i],
+		if (rtt[i] == LDNS_RESOLV_RTT_INF) {
+			/* not reacheable nameserver! */
+			continue;
+		}
+		ns = ldns_rdf2native_sockaddr_storage(ns_array[i],
 				ldns_resolver_port(r), &ns_len);
 		
 		if ((ns->ss_family == AF_INET) && 
@@ -103,18 +92,21 @@ ldns_send(ldns_pkt **result, ldns_resolver *r, ldns_pkt *query_pkt)
 		}
 
 		gettimeofday(&tv_s, NULL);
-		/* query */
 
+		/* reply_bytes implicitly handles our error */
 		if (1 == ldns_resolver_usevc(r)) {
-			/* do err handling here ? */
-			(void)ldns_tcp_send(&reply_bytes, qb, ns, (socklen_t)ns_len, ldns_resolver_timeout(r), &reply_size);
+			send_status = ldns_tcp_send(&reply_bytes, qb, ns, (socklen_t)ns_len, ldns_resolver_timeout(r), &reply_size);
 		} else {
-			/* udp here, please */
-			(void)ldns_udp_send(&reply_bytes, qb, ns, (socklen_t)ns_len, ldns_resolver_timeout(r), &reply_size);
+			send_status = ldns_udp_send(&reply_bytes, qb, ns, (socklen_t)ns_len, ldns_resolver_timeout(r), &reply_size);
+		}
+
+		if (send_status != LDNS_STATUS_OK) {
+			ldns_resolver_nameserver_set_rtt(r, i, LDNS_RESOLV_RTT_INF);
 		}
 		
 		/* obey the fail directive */
 		if (!reply_bytes) {
+			/* the current nameserver seems to have a problem, blacklist it */
 			if (ldns_resolver_fail(r)) {
 				LDNS_FREE(ns);
 				ldns_buffer_free(qb);
@@ -140,7 +132,7 @@ ldns_send(ldns_pkt **result, ldns_resolver *r, ldns_pkt *query_pkt)
 			ldns_pkt_set_querytime(reply,
 				((tv_e.tv_sec - tv_s.tv_sec) * 1000) +
 				(tv_e.tv_usec - tv_s.tv_usec) / 1000);
-			ldns_pkt_set_answerfrom(reply, ns_rand_array[i]);
+			ldns_pkt_set_answerfrom(reply, ns_array[i]);
 			ldns_pkt_set_timestamp(reply, tv_s);
 			ldns_pkt_set_when(reply, ctime((time_t*)&tv_s.tv_sec));
 			ldns_pkt_set_size(reply, reply_size);
@@ -168,7 +160,6 @@ ldns_send(ldns_pkt **result, ldns_resolver *r, ldns_pkt *query_pkt)
 		}
 	}
 	
-	LDNS_FREE(ns_rand_array);
 	LDNS_FREE(reply_bytes);
 	ldns_buffer_free(qb);
 	if (result) {
@@ -194,13 +185,18 @@ ldns_udp_send(uint8_t **result, ldns_buffer *qbin, const struct sockaddr_storage
 	}
 	
 	/* wait for an response*/
-
 	answer = ldns_udp_read_wire(sockfd, answer_size, NULL, NULL);
+
+	if (*answer_size == 0) {
+		/* oops */
+		return LDNS_STATUS_NETWORK_ERR;
+	}
 
 	/* resize accordingly */
 	answer = (uint8_t*)LDNS_XREALLOC(answer, uint8_t *, (size_t)*answer_size);
 
 	*result = answer;
+	close(sockfd);
 	return LDNS_STATUS_OK;
 }
 
@@ -359,9 +355,10 @@ ldns_udp_read_wire(int sockfd, size_t *size, struct sockaddr_storage *from,
 			*fromlen = flen;
 		}
 		dprintf("from len %d\n", (int)flen);
-	}
+	} 
 
-	if (wire_size == -1) {
+	/* recvfrom can also return 0 */
+	if (wire_size == -1 || wire_size == 0) {
 		if (errno == EAGAIN) {
 			/*dprintf("%s", "socket timeout\n");*/
 		}

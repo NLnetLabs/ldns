@@ -35,6 +35,9 @@
 #define LDNS_RESOLV_INET		1
 #define LDNS_RESOLV_INET6		2
 
+#define LDNS_RESOLV_RTT_INF             0       /* infinity */
+#define LDNS_RESOLV_RTT_MIN             1       /* reacheable */
+
 /**
  * \brief Structure of a dns resolver
  *
@@ -48,6 +51,9 @@ struct ldns_struct_resolver
 	/** \brief List of nameservers to query (IP addresses or dname) */
 	ldns_rdf **_nameservers; 
 	size_t _nameserver_count; /* how many do we have */
+
+        /** \brief round trip time; 0 -> infinity. Unit: ms? */
+        size_t *_rtt;
 
 	/** \brief Wether or not to be recursive */
 	bool _recursive;
@@ -126,6 +132,8 @@ ldns_rdf *ldns_resolver_domain(ldns_resolver *r);
 struct timeval ldns_resolver_timeout(ldns_resolver *r);
 ldns_rdf** ldns_resolver_searchlist(ldns_resolver *r);
 ldns_rdf** ldns_resolver_nameservers(ldns_resolver *r);
+size_t * ldns_resolver_rtt(ldns_resolver *r);
+size_t ldns_resolver_nameserver_rtt(ldns_resolver *r, size_t pos);
 char *ldns_resolver_tsig_keyname(ldns_resolver *r);
 char *ldns_resolver_tsig_algorithm(ldns_resolver *r);
 char *ldns_resolver_tsig_keydata(ldns_resolver *r);
@@ -162,6 +170,8 @@ void ldns_resolver_set_edns_udp_size(ldns_resolver *r, uint16_t s);
 void ldns_resolver_set_tsig_keyname(ldns_resolver *r, char *tsig_keyname);
 void ldns_resolver_set_tsig_algorithm(ldns_resolver *r, char *tsig_algorithm);
 void ldns_resolver_set_tsig_keydata(ldns_resolver *r, char *tsig_keydata);
+void ldns_resolver_set_rtt(ldns_resolver *r, size_t *rtt);
+void ldns_resolver_set_nameserver_rtt(ldns_resolver *r, size_t pos, size_t value);
 void ldns_resolver_set_random(ldns_resolver *r, bool b);
 
 /**
@@ -310,5 +320,11 @@ bool ldns_axfr_complete(ldns_resolver *resolver);
  * \return ldns_pkt the last packet sent
  */
 ldns_pkt *ldns_axfr_last_pkt(ldns_resolver *res);
+
+/**
+ * randomize the nameserver list in the resolver
+ * \param[in] r the resolver
+ */
+void ldns_resolver_nameservers_randomize(ldns_resolver *r);
 
 #endif  /* !_LDNS_RESOLVER_H */

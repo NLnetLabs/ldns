@@ -20,7 +20,7 @@
 
 #include <sys/socket.h>
 
-#define LDNS_DEFAULT_TIMEOUT_SEC 5
+#define LDNS_DEFAULT_TIMEOUT_SEC 2
 #define LDNS_DEFAULT_TIMEOUT_USEC 0
 
 

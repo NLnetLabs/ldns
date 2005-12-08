@@ -128,6 +128,30 @@ ldns_resolver_usevc(ldns_resolver *r)
 	return r->_usevc;
 }
 
+size_t *
+ldns_resolver_rtt(ldns_resolver *r)
+{
+	return r->_rtt;
+}
+
+size_t
+ldns_resolver_nameserver_rtt(ldns_resolver *r, size_t pos)
+{
+	size_t *rtt;
+
+	assert(r != NULL);
+	
+	rtt = ldns_resolver_rtt(r);
+	
+	if (pos >= ldns_resolver_nameserver_count(r)) {
+		/* error ?*/
+		return 0;
+	} else {
+		return rtt[pos];
+	}
+
+}
+
 struct timeval
 ldns_resolver_timeout(ldns_resolver *r)
 {
@@ -171,14 +195,14 @@ ldns_resolver_pop_nameserver(ldns_resolver *r)
 	ldns_rdf **nameservers;
 	ldns_rdf *pop;
 	size_t ns_count;
+	size_t *rtt;
+
+	assert(r != NULL);
 
 	ns_count = ldns_resolver_nameserver_count(r);
-	if (ns_count == 0) {
-		return NULL;
-	}
-	
 	nameservers = ldns_resolver_nameservers(r);
-	if (!nameservers) {
+	rtt = ldns_resolver_rtt(r);
+	if (ns_count == 0 || !nameservers) {
 		return NULL;
 	}
 	
@@ -186,8 +210,10 @@ ldns_resolver_pop_nameserver(ldns_resolver *r)
 
 	nameservers = LDNS_XREALLOC(nameservers, ldns_rdf *, 
 			(ns_count - 1));
+	rtt = LDNS_XREALLOC(rtt, size_t, (ns_count - 1));
 
 	ldns_resolver_set_nameservers(r, nameservers);
+	ldns_resolver_set_rtt(r, rtt);
 	/* decr the count */
 	ldns_resolver_dec_nameserver_count(r);
 	return pop;
@@ -198,6 +224,7 @@ ldns_resolver_push_nameserver(ldns_resolver *r, ldns_rdf *n)
 {
 	ldns_rdf **nameservers;
 	size_t ns_count;
+	size_t *rtt;
 
 	if (ldns_rdf_get_type(n) != LDNS_RDF_TYPE_A &&
 			ldns_rdf_get_type(n) != LDNS_RDF_TYPE_AAAA) {
@@ -206,10 +233,13 @@ ldns_resolver_push_nameserver(ldns_resolver *r, ldns_rdf *n)
 
 	ns_count = ldns_resolver_nameserver_count(r);
 	nameservers = ldns_resolver_nameservers(r);
+	rtt = ldns_resolver_rtt(r);
 
 	/* make room for the next one */
 	nameservers = LDNS_XREALLOC(nameservers, ldns_rdf *, (ns_count + 1));
-
+	/* don't forget the rtt */
+	rtt = LDNS_XREALLOC(rtt, size_t, (ns_count + 1));
+	
 	/* set the new value in the resolver */
 	ldns_resolver_set_nameservers(r, nameservers);
 
@@ -217,7 +247,9 @@ ldns_resolver_push_nameserver(ldns_resolver *r, ldns_rdf *n)
 	/* we clone it here, because then we can free the original
 	 * rr's where it stood */
 	nameservers[ns_count] = ldns_rdf_clone(n);
+	rtt[ns_count] = LDNS_RESOLV_RTT_MIN;
 	ldns_resolver_incr_nameserver_count(r);
+	ldns_resolver_set_rtt(r, rtt);
 	return LDNS_STATUS_OK;
 }
 
@@ -352,6 +384,29 @@ ldns_resolver_set_defnames(ldns_resolver *r, bool d)
 }
 
 void
+ldns_resolver_set_rtt(ldns_resolver *r, size_t *rtt)
+{
+	r->_rtt = rtt;
+}
+
+void
+ldns_resolver_nameserver_set_rtt(ldns_resolver *r, size_t pos, size_t value)
+{
+	size_t *rtt;
+
+	assert(r != NULL);
+
+	rtt = ldns_resolver_rtt(r);
+	
+	if (pos >= ldns_resolver_nameserver_count(r)) {
+		/* error ?*/
+	} else {
+		rtt[pos] = value;
+	}
+
+}
+
+void
 ldns_resolver_incr_nameserver_count(ldns_resolver *r)
 {
 	size_t c;
@@ -446,6 +501,7 @@ ldns_resolver_new(void)
 
 	r->_searchlist = NULL;
 	r->_nameservers = NULL;
+	r->_rtt = NULL;
 
 	/* defaults are filled out */
 	ldns_resolver_set_searchlist_count(r, 0);
@@ -670,8 +726,10 @@ ldns_resolver_query(ldns_resolver *r, ldns_rdf *name, ldns_rr_type type, ldns_rr
                 uint16_t flags)
 {
 	ldns_rdf *newname;
-	ldns_pkt *pkt = NULL;
+	ldns_pkt *pkt;
 	ldns_status status;
+
+	pkt = NULL;
 
 	if (!ldns_resolver_defnames(r)) {
 		status = ldns_resolver_send(&pkt, r, name, type, class, flags);
@@ -704,7 +762,6 @@ ldns_resolver_query(ldns_resolver *r, ldns_rdf *name, ldns_rr_type type, ldns_rr
 	}
 
 	newname = ldns_dname_cat_clone(name, ldns_resolver_domain(r));
-	ldns_rdf_print(stdout, newname);
 	if (!newname) {
 		if (pkt) {
 			ldns_pkt_free(pkt);
@@ -720,10 +777,9 @@ ldns_status
 ldns_resolver_send_pkt(ldns_pkt **answer, ldns_resolver *r, ldns_pkt *query_pkt)
 {
 	uint8_t  retries;
-	ldns_pkt *answer_pkt; /*  = NULL; */
+	ldns_pkt *answer_pkt = NULL;
 	ldns_status stat = LDNS_STATUS_OK;
 
-	answer_pkt = NULL;
 	for (retries = ldns_resolver_retry(r); retries > 0; retries--) {
 		stat = ldns_send(&answer_pkt, r, query_pkt);
 		if (stat == LDNS_STATUS_OK) {
@@ -892,4 +948,25 @@ ldns_axfr_complete(ldns_resolver *res) {
 ldns_pkt *
 ldns_axfr_last_pkt(ldns_resolver *res) {
 	return res->_cur_axfr_pkt;
+}
+
+/* random isn't really that good */
+void
+ldns_resolver_nameservers_randomize(ldns_resolver *r)
+{
+	uint8_t i, j;
+	ldns_rdf **ns, *tmp;
+
+	/* should I check for ldns_resolver_random?? */
+	assert(r != NULL);
+
+	ns = ldns_resolver_nameservers(r);
+	
+	for (i = 0; i < ldns_resolver_nameserver_count(r); i++) {
+		j = random() % ldns_resolver_nameserver_count(r);
+		tmp = ns[i];
+		ns[i] = ns[j];
+		ns[j] = tmp;
+	}
+	ldns_resolver_set_nameservers(r, ns);
 }
