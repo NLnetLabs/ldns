@@ -454,6 +454,7 @@ ldns_tcp_send(uint8_t **result,  ldns_buffer *qbin, const struct sockaddr_storag
  * all networking code is contained in one file
  */
 
+/* code from rdata.c */
 struct sockaddr_storage *
 ldns_rdf2native_sockaddr_storage(const ldns_rdf *rd, uint16_t port, size_t *size)
 {
@@ -490,6 +491,7 @@ ldns_rdf2native_sockaddr_storage(const ldns_rdf *rd, uint16_t port, size_t *size
         }
 }
 
+/* code from rdata.c */
 /* the other way around - for lua-ldns */
 ldns_rdf *
 ldns_sockaddr_storage2rdf(struct sockaddr_storage *sock, uint16_t *port)
@@ -524,4 +526,68 @@ ldns_sockaddr_storage2rdf(struct sockaddr_storage *sock, uint16_t *port)
                         return NULL;
         }
         return addr;
+}
+
+/* code from resolver.c */
+ldns_status
+ldns_axfr_start(ldns_resolver *resolver,
+                ldns_rdf *domain,
+                ldns_rr_class class)
+{
+        ldns_pkt *query;
+        ldns_buffer *query_wire;
+
+        struct sockaddr_storage *ns;
+        size_t ns_len = 0;
+        ldns_status status;
+
+        if (!resolver || ldns_resolver_nameserver_count(resolver) < 1) {
+                return LDNS_STATUS_ERR;
+        }
+
+        query = ldns_pkt_query_new(ldns_rdf_clone(domain),
+                                   LDNS_RR_TYPE_AXFR,
+                                   class,
+                                   0);
+
+        if (!query) {
+                return LDNS_STATUS_ADDRESS_ERR;
+        }
+        /* For AXFR, we have to make the connection ourselves */
+        ns = ldns_rdf2native_sockaddr_storage(resolver->_nameservers[0],
+                        ldns_resolver_port(resolver), &ns_len);
+
+        resolver->_socket = ldns_tcp_connect(ns, (socklen_t)ns_len, ldns_resolver_timeout(resolver));
+        if (resolver->_socket == 0) {
+                ldns_pkt_free(query);
+                LDNS_FREE(ns);
+                return LDNS_STATUS_NETWORK_ERR;
+        }
+
+        /* Convert the query to a buffer          * Is this necessary?
+         */
+        query_wire = ldns_buffer_new(LDNS_MAX_PACKETLEN);
+        status = ldns_pkt2buffer_wire(query_wire, query);
+        if (status != LDNS_STATUS_OK) {
+                ldns_pkt_free(query);
+                LDNS_FREE(ns);
+                return status;
+        }
+        /* Send the query */
+        if (ldns_tcp_send_query(query_wire, resolver->_socket, ns, (socklen_t)ns_len) == 0) {
+                ldns_pkt_free(query);
+                ldns_buffer_free(query_wire);
+                LDNS_FREE(ns);
+                return LDNS_STATUS_NETWORK_ERR;
+        }
+
+        ldns_pkt_free(query);
+        ldns_buffer_free(query_wire);
+        LDNS_FREE(ns);
+
+        /*
+         * The AXFR is done once the second SOA record is sent
+         */
+        resolver->_axfr_soa_count = 0;
+        return LDNS_STATUS_OK;
 }

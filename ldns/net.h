@@ -147,4 +147,14 @@ struct sockaddr_storage * ldns_rdf2native_sockaddr_storage(const ldns_rdf *rd, u
  */
 ldns_rdf * ldns_sockaddr_storage2rdf(struct sockaddr_storage *sock, uint16_t *port);
 
+/**
+ * Prepares the resolver for an axfr query
+ * The query is sent and the answers can be read with ldns_axfr_next
+ * \param[in] resolver the resolver to use
+ * \param[in] domain the domain to exfr
+ * \param[in] c the class to use
+ * \return ldns_status the status of the transfer
+ */
+ldns_status ldns_axfr_start(ldns_resolver *resolver, ldns_rdf *domain, ldns_rr_class c);
+
 #endif  /* !_LDNS_NET_H */

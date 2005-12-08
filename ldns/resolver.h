@@ -289,16 +289,6 @@ void ldns_resolver_free(ldns_resolver *res);
 void ldns_resolver_deep_free(ldns_resolver *res);
 
 /**
- * Prepares the resolver for an axfr query
- * The query is sent and the answers can be read with ldns_axfr_next
- * \param[in] resolver the resolver to use
- * \param[in] domain the domain to exfr
- * \param[in] c the class to use
- * \return ldns_status the status of the transfer
- */
-ldns_status ldns_axfr_start(ldns_resolver *resolver, ldns_rdf *domain, ldns_rr_class c);
-
-/**
  *  get the next stream of RRs in a AXFR 
  * \param[in] resolver the resolver to use. First ldns_axfr_start() must be
  * called
