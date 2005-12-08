@@ -18,12 +18,6 @@
 #include <ldns/str2host.h>
 #include <ldns/util.h>
 
-#include <netinet/in.h>
-#include <sys/socket.h>
-#include <netdb.h>
-#include <arpa/inet.h>
-
-
 /*
  * Access functions 
  * do this as functions to get type checking
