@@ -414,6 +414,7 @@ main(int argc, char *argv[])
 						qflags);
 			ldns_rdf_deep_free(cmdline_dname);
 			if (!cmdline_rr_list) {
+				/* This error msg is not always accurate */
 				error("%s %s", "could not find any address for the name: ", serv);
 				result = EXIT_FAILURE;
 				goto exit;

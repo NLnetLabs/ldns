@@ -173,6 +173,7 @@ clean:	drill-clean
 	rm -f *.private
 	rm -rf include/
 	rm -f lib
+	rm -rf .libs
 
 distclean: clean docclean libclean drill-confclean examples-confclean
 	rm -f ltmain.sh
