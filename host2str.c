@@ -1423,7 +1423,7 @@ ldns_resolver_print(FILE *output, ldns_resolver *r)
 	for (i = 0; i < ldns_resolver_nameserver_count(r); i++) {
 		fprintf(output, "\t");
 		ldns_rdf_print(output, n[i]);
-		fprintf(output, " - %d\n", rtt[i]);
+		fprintf(output, " - %d\n", (int)rtt[i]);
 	}
 }
 
