@@ -360,6 +360,14 @@ main(int argc, char *argv[])
 		/* it all fails assume it's a name */
 		name = argv[i];
 	}
+	/* check if name is defined, otherwise we have nothing to do */
+	if (!name) {
+		/* act like dig and use for . NS */
+		name = ".";
+		int_type = 0;
+		type = LDNS_RR_TYPE_NS;
+	}
+	
 	/* defaults if not given */
 	if (int_clas == -1) {
 		clas = LDNS_RR_CLASS_IN;
@@ -367,6 +375,7 @@ main(int argc, char *argv[])
 	if (int_type == -1) {
 		type = LDNS_RR_TYPE_A;
 	}
+
 
 	/* if we're asking for DNSSEC records, act as if -D with given */
 	if (type == LDNS_RR_TYPE_DNSKEY ||
