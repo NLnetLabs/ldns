@@ -31,7 +31,7 @@ SOURCES 	= ldns-read-zone.c \
 		  ldns-version.c \
 		  ldns-rrsig.c \
 		  ldns-walk.c \
-		  dpa.c
+		  ldns-dpa.c
 
 
 PROGRAMS=$(SOURCES:.c=)
@@ -70,7 +70,7 @@ ldns-rrsig:	ldns-rrsig.o
 ldns-walk:	ldns-walk.o
 		$(LINK) -o $@ $+
 
-dpa:		dpa.o
+ldns-dpa:	ldns-dpa.o
 		$(LINK) -o $@ $+
 
 ## implicit rule

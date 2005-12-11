@@ -1,0 +1,22 @@
+/*
+ * ldns-threshold update
+ *
+ * Periodicly look at the defined secure entry point(s) and look
+ * for changes in the keyset. If the changes are valid (i.e. 
+ * threshold signed) update the keyset on the system.
+ *
+ * The keys are kept in the file /etc/resolvkeys.conf
+ *
+ * This program acts as daemon, detaches, writes pid, etc.
+ *
+ * In the future we may need some mechanism to notify the
+ * users - maybe something like D-Bus could do the trick.
+ * For now, just lurk in the back ground
+ * 
+ * (c) NLnet Labs, 2005
+ *
+ * See the file LICENSE for the license
+ */
+
+#include "config.h"
+#include <ldns/dns.h>
