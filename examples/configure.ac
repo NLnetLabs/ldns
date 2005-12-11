@@ -10,7 +10,7 @@ AC_AIX
 AC_PROG_CC
 AC_PROG_MAKE_SET
 
-AC_CHECK_HEADERS([sys/types.h getopt.h stdlib.h stdio.h assert.h netinet/in.hctype.h netinet/udp.h time.h pcap.h net/bpf.h arpa/inet.h sys/time.h sys/socket.h netinet/in.h netinet/ip.h netinet/if_ether.h])
+AC_CHECK_HEADERS([sys/types.h getopt.h stdlib.h stdio.h assert.h netinet/in.hctype.h netinet/udp.h time.h pcap.h net/bpf.h arpa/inet.h sys/time.h sys/socket.h netinet/in.h netinet/ip.h netinet/if_ether.h],,, [AC_INCLUDES_DEFAULT])
 AC_CHECK_HEADERS([sys/param.h sys/mount.h],,,
 [AC_INCLUDES_DEFAULT]
 [
@@ -105,11 +105,6 @@ AH_BOTTOM([
 #include <netinet/if_ether.h>
 #endif
 ])
-
-
-#AC_CHECK_FUNCS([mkdir rmdir strchr strrchr strstr])
-
-#AC_DEFINE_UNQUOTED(SYSCONFDIR, "$sysconfdir")
 
 AC_CONFIG_FILES([Makefile])
 AC_CONFIG_HEADER([config.h])
