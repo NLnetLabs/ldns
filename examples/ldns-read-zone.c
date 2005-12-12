@@ -14,8 +14,7 @@
 int
 main(int argc, char **argv)
 {
-	ldns_rr *rr;
-	char *filename = "";
+	char *filename;
 	FILE *fp;
 	ldns_zone *z;
 	int line_nr = 0;

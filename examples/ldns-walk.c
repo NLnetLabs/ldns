@@ -23,7 +23,6 @@ ldns_rdf *
 create_dname_plus_1(ldns_rdf *dname)
 {
 	uint8_t *wire;
-	size_t len;
 	ldns_rdf *newdname;
 	uint8_t labellen;
 	size_t pos;
@@ -69,7 +68,7 @@ create_plus_1_dname(ldns_rdf *dname)
 	}
 	status = ldns_dname_cat(label, dname);
 	if (status != LDNS_STATUS_OK) {
-		printf("error catting \000 dname: %s\n\n", ldns_get_errorstr_by_id(status));
+		printf("error catting \\000 dname: %s\n\n", ldns_get_errorstr_by_id(status));
 		exit(3);
 	}
 	return label;
@@ -86,15 +85,12 @@ main(int argc, char *argv[])
 	ldns_rr *soa;
 	ldns_rr_list *rrlist;
 	ldns_rr_list *rrlist2;
-	ldns_rr *rr;
 	ldns_rdf *soa_p1;
 	ldns_rdf *next_dname;
 	ldns_rdf *last_dname;
 	ldns_rdf *last_dname_p;
-	ldns_rdf *cur_dname;
-	ldns_rdf *cur_dname_p;
 	ldns_rdf *startpoint = NULL;
-	ldns_rdf *rrtypes;
+	ldns_rdf *rrtypes = NULL;
 
 	char *serv = NULL;
 	ldns_rdf *serv_rdf;
@@ -102,7 +98,7 @@ main(int argc, char *argv[])
 	ldns_rr_list *cmdline_rr_list;
 	ldns_rdf *cmdline_dname;
 
-	int result;
+	int result = 0;
 	size_t i;
 
 	p = NULL;

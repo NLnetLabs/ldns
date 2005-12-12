@@ -147,7 +147,7 @@ main(int argc, char *argv[])
 				}
 			}
 			if (ldns_rr_list_rr_count(rrsig_type) == 0) {
-				fprintf(stderr, " *** No RRSIG(%S) type found\n",
+				fprintf(stderr, " *** No RRSIG(%s) type found\n",
 					type_name);
 				exit(EXIT_FAILURE);
 			}
