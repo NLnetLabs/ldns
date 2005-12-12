@@ -4,7 +4,6 @@
 
 #include <netinet/ip6.h>
 #include <errno.h>
-#include <pcap.h>
 
 int verbosity = 1;
 

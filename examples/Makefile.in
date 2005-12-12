@@ -10,7 +10,7 @@ bindir = @bindir@
 mandir = @mandir@
 
 CC = @CC@
-CFLAGS = @CFLAGS@
+CFLAGS = @CFLAGS@ -Wall
 CPPFLAGS = @CPPFLAGS@
 LDFLAGS = @LDFLAGS@
 LIBS = @LIBS@
