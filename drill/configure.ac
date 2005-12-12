@@ -53,6 +53,18 @@ AC_ARG_WITH(ssl, AC_HELP_STRING([--with-ssl=pathname],
         AC_SUBST(HAVE_SSL)
     fi
 
+AC_CHECK_LIB(ssl, BN_bn2bin,, [
+	AC_MSG_ERROR([Can't find ssl library])
+	]
+)
+
+AC_ARG_WITH(ldns, AC_HELP_STRING([--with-ldns=PATHNAME],[]))
+
+AC_CHECK_HEADER(openssl/ssl.h,,  [
+	AC_MSG_ERROR([Can't find (open)ssl headers])
+	], [AC_INCLUDES_DEFAULT]
+)
+
 
 
 # check for ldns
