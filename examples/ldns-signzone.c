@@ -61,8 +61,6 @@ main(int argc, char *argv[])
 	ldns_key_list *key_signing_keys;
 */	
 	struct tm tm;
-	char buf1[255];
-	char buf2[255];
 	uint32_t inception;
 	uint32_t expiration;
 
@@ -75,15 +73,13 @@ main(int argc, char *argv[])
 	
 	int line_nr = 0;
 	char c;
-
+	
 	const char *prog = strdup(argv[0]);
 	
 	inception = 0;
 	expiration = 0;
 	
 	while ((c = getopt(argc, argv, "e:f:i:o:")) != -1) {
-		strftime(buf1, sizeof(buf1), DATE_FORMAT, &tm);
-		strftime(buf2, sizeof(buf2), SHORT_DATE_FORMAT, &tm);
 		switch (c) {
 		case 'e':
 			/* try to parse YYYYMMDD first,
@@ -91,11 +87,12 @@ main(int argc, char *argv[])
 			 * should be a timestamp (seconds since epoch)
 			 */
 			memset(&tm, 0, sizeof(tm));
+			printf("yoyoyo %d\n", strptime(optarg, DATE_FORMAT,  &tm));
 
-			if (!buf1) {
+			if (!strptime(optarg, DATE_FORMAT,  &tm)) {
 			        c = c;
 				expiration = (uint32_t) mktime_from_utc(&tm);
-			} else if (!buf2) {
+			} else if (!strptime(optarg, SHORT_DATE_FORMAT, &tm)) {
 				expiration = (uint32_t) mktime_from_utc(&tm);
 			} else {
 				expiration = atol(optarg);
@@ -108,9 +105,9 @@ main(int argc, char *argv[])
 		case 'i':
 			memset(&tm, 0, sizeof(tm));
 
-			if (!buf1) {
+			if (!strptime(optarg, DATE_FORMAT, &tm)) {
 				inception = (uint32_t) mktime_from_utc(&tm);
-			} else if (!buf2) {
+			} else if (!strptime(optarg, SHORT_DATE_FORMAT, &tm)) {
 				inception = (uint32_t) mktime_from_utc(&tm);
 			} else {
 				inception = atol(optarg);

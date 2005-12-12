@@ -18,5 +18,24 @@
  * See the file LICENSE for the license
  */
 
+/*
+ * program sequence 
+ *
+ * what some secure entry points for diffs in the key listing
+ * use threshold signing to validate the changes
+ * When I change occurs put the new key set in the file
+ * and mail root or somebody else
+ */
+
+/* synopsis
+ * -i <interval in minutes> -m <email address>
+ */
+
+/* file layout
+ * 
+ */
+
+
+
 #include "config.h"
 #include <ldns/dns.h>
