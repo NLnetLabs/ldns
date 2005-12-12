@@ -334,6 +334,16 @@ ldns_status     ldns_octet(char *word, size_t *length);
 ldns_rdf	*ldns_rdf_clone(const ldns_rdf *rd);
 
 /**
+ * concatenate two rdfs (of the same type!) together. Left
+ * is modified in this operation.
+ * \param[in] left the left part of the new rdf
+ * \param[in] right the right part of the new rdf
+ * \return true when it succeeds otherwise false
+ */
+bool ldns_rdf_cat(ldns_rdf *left, ldns_rdf *right);
+
+
+/**
  * compares two rdf's on their wire formats.
  * (To order dnames according to rfc4034, use ldns_dname_compare)
  * \param[in] rd1 the first one

@@ -106,6 +106,7 @@ ldns_rr_new_frm_str(const char *str, uint16_t default_ttl, ldns_rdf *origin)
 	char  *type = NULL;
 	char  *rdata;
 	char  *rd;
+	size_t rd_strlen;
 	const char *delimiters;
 	ssize_t c;
 	/* used for types with unknown number of rdatas */
@@ -324,9 +325,12 @@ ldns_rr_new_frm_str(const char *str, uint16_t default_ttl, ldns_rdf *origin)
 				if ((c = ldns_bget_token(rd_buf, rd, delimiters, LDNS_MAX_RDFLEN)) != -1) {
 					/* hmmz, rfc3597 specifies that any type can be represented with
 					 * \# method, which can contain spaces...
-					 * it does specify size though...
+					 * it does specify size though... Lots of strlen here btw!!!
 					 */
-					if (strlen(rd) == 2 && strncmp(rd, "\\#", 2) == 0 && !quoted) {
+
+					rd_strlen = strlen(rd);
+
+					if (rd_strlen == 2 && strncmp(rd, "\\#", 2) == 0 && !quoted) {
 						c = ldns_bget_token(rd_buf, rd, delimiters, LDNS_MAX_RDFLEN);
 						hex_data_size = (uint16_t) atoi(rd);
 						/* copy the hex chars into hex str (which is 2 chars per byte) */
@@ -334,8 +338,8 @@ ldns_rr_new_frm_str(const char *str, uint16_t default_ttl, ldns_rdf *origin)
 						cur_hex_data_size = 0;
 						while(cur_hex_data_size < 2*hex_data_size) {
 							c = ldns_bget_token(rd_buf, rd, delimiters, LDNS_MAX_RDFLEN);
-							strncpy(hex_data_str + cur_hex_data_size, rd, strlen(rd));
-							cur_hex_data_size += strlen(rd);
+							strncpy(hex_data_str + cur_hex_data_size, rd, rd_strlen);
+							cur_hex_data_size += rd_strlen;
 						}
 						hex_data_str[cur_hex_data_size] = '\0';
 						r = ldns_rdf_new_frm_str(LDNS_RDF_TYPE_HEX, hex_data_str);
@@ -347,6 +351,17 @@ ldns_rr_new_frm_str(const char *str, uint16_t default_ttl, ldns_rdf *origin)
 						r = ldns_rdf_new_frm_str(
 							ldns_rr_descriptor_field_type(desc, r_cnt),
 							rd);
+
+						/* check if the origin should be concatenated */
+						if (ldns_rr_descriptor_field_type(desc, r_cnt) == LDNS_RDF_TYPE_DNAME &&
+								rd_strlen > 1 &&
+								rd[rd_strlen - 1] != '.' &&
+								origin) {
+							if (!ldns_rdf_cat(r, origin)) {
+								/* don't know if to quit */
+								/* return NULL;*/
+							}
+						}
 						ldns_rr_push_rdf(new, r);
 					}
 					if (quoted) {

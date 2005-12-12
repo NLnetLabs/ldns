@@ -5,11 +5,8 @@
  */
 
 #include "config.h"
-
 #include <errno.h>
-
 #include <ldns/dns.h>
-
 
 int
 main(int argc, char **argv)
@@ -18,11 +15,11 @@ main(int argc, char **argv)
 	FILE *fp;
 	ldns_zone *z;
 	int line_nr = 0;
-	
+
 	if (argc < 2) {
 		printf("Usage: %s <zonefile>\n", argv[0]);
 		printf("\tReads the zonefile and prints it.\n");
-		exit(0);
+		exit(EXIT_FAILURE);
 	}
 	
 	filename = argv[1];
