@@ -54,6 +54,8 @@ AC_CHECK_HEADER(pcap.h,,  [
 	], [AC_INCLUDES_DEFAULT]
 )
 
+AC_CHECK_FUNCS(isblank)
+
 AH_BOTTOM([
 
 #include <stdio.h>
