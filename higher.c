@@ -445,7 +445,7 @@ ldns_print_rr_rdf(FILE *fp, ldns_rr *r, int rdfnum, ...)
 	va_list va_rdf;
 	va_start(va_rdf, rdfnum);
 
-	for(rdf = rdfnum; rdf != -1; rdf = (int16_t)va_arg(va_rdf, int)) {
+	for(rdf = (int16_t)rdfnum; rdf != -1; rdf = (int16_t)va_arg(va_rdf, int)) {
 
 		rd = ldns_rr_rdf(r, rdf);
 		if (!rd) {
