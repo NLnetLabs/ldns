@@ -1534,7 +1534,6 @@ parse_match_expression(char *string)
 	match_operation *mo = NULL;
 	const type_operators *tos;
 	match_expression *result;
-	ldns_rr *qrr;
 	ldns_lookup_table *lt = NULL;
 
 	/* remove whitespace */
@@ -2411,7 +2410,6 @@ int main(int argc, char *argv[]) {
 
 	int i;
 	int status = EXIT_SUCCESS;
-	bool ok = false;
 	match_counters *count = malloc(sizeof(match_counters));
 	const char *inputfile = NULL;
 	char errbuf[PCAP_ERRBUF_SIZE];
