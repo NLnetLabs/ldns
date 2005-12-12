@@ -101,7 +101,7 @@ ldns_send(ldns_pkt **result, ldns_resolver *r, ldns_pkt *query_pkt)
 		}
 
 		if (send_status != LDNS_STATUS_OK) {
-			ldns_resolver_nameserver_set_rtt(r, i, LDNS_RESOLV_RTT_INF);
+			ldns_resolver_set_nameserver_rtt(r, i, LDNS_RESOLV_RTT_INF);
 		}
 		
 		/* obey the fail directive */

@@ -390,7 +390,7 @@ ldns_resolver_set_rtt(ldns_resolver *r, size_t *rtt)
 }
 
 void
-ldns_resolver_nameserver_set_rtt(ldns_resolver *r, size_t pos, size_t value)
+ldns_resolver_set_nameserver_rtt(ldns_resolver *r, size_t pos, size_t value)
 {
 	size_t *rtt;
 

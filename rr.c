@@ -296,20 +296,7 @@ ldns_rr_new_frm_str(const char *str, uint16_t default_ttl, ldns_rdf *origin)
 	/* depending on the rr_type we need to extract
 	 * the rdata differently, e.g. NSEC */
 	switch(rr_type) {
-		/*case LDNS_RR_TYPE_NSEC:*/
-		/*case LDNS_RR_TYPE_LOC:*/
-			/* blalba do something different */
-		/*	break;*/
 		default:
-			/* this breaks on rdfs with spaces in them (like B64)
-			while((c = ldns_bget_token(rd_buf, rd, "\t\n ", LDNS_MAX_RDFLEN)) != -1) {
-				r = ldns_rdf_new_frm_str(
-						ldns_rr_descriptor_field_type(desc, r_cnt),
-						rd);
-				ldns_rr_push_rdf(new, r);
-				r_cnt++;
-			}
-			*/
 			done = false;
 
 			for (r_cnt = 0; !done && r_cnt < ldns_rr_descriptor_maximum(desc); r_cnt++) {
@@ -424,7 +411,9 @@ ldns_rr_new_frm_fp_l(FILE *fp, uint16_t *default_ttl, ldns_rdf **origin, int *li
 		}
 		*origin = ldns_rdf_new_frm_str(LDNS_RDF_TYPE_DNAME, keyword + 8);
 	} else if ((keyword = strstr(line, "$TTL "))) {
-		*default_ttl = (uint16_t) atoi(keyword + 5);
+		if (default_ttl) {
+			*default_ttl = (uint16_t) atoi(keyword + 5);
+		}
 	} else {
 
 		if (origin) {
@@ -476,15 +465,15 @@ ldns_rr_set_rdf(ldns_rr *rr, ldns_rdf *f, size_t position)
 	ldns_rdf **rdata_fields;
 
 	rd_count = ldns_rr_rd_count(rr);
-	if (position > rd_count) {
+	if (position < rd_count) {
+		rdata_fields = rr->_rdata_fields;
+		/* dicard the old one */
+		pop = rr->_rdata_fields[position];
+		rr->_rdata_fields[position] = f;
+		return pop;
+	} else {
 		return NULL;
 	}
-
-	rdata_fields = rr->_rdata_fields;
-	/* dicard the old one */
-	pop = rr->_rdata_fields[position];
-	rr->_rdata_fields[position] = f;
-	return pop;
 }
 
 bool

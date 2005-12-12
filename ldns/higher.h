@@ -106,5 +106,14 @@ bool ldns_nsec_type_check(ldns_rr *nsec, ldns_rr_type t);
 ldns_status ldns_update_send_simple_addr(const char *fqdn, const char *zone,
     const char *ipaddr, uint16_t tll, ldns_tsig_credentials *tsig_cred);
 
-#endif /* _LDNS_HIGHER_H */
+/**
+ * Print a number of rdf's of the RR. The rdfnum-list must 
+ * be ended by -1, otherwise unpredictable things might happen.
+ * rdfs may be printed multiple times
+ * \param[in] fp FILE * to write to
+ * \param[in] r RR to write
+ * \param[in] rdfnum a list of rdf to print.
+ */
+void ldns_print_rr_rdf(FILE *fp, ldns_rr *r, int rdfnum, ...);
 
+#endif /* _LDNS_HIGHER_H */

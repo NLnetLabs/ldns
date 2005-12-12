@@ -17,6 +17,7 @@
 
 #include <openssl/ssl.h>
 #include <openssl/sha.h>
+#include <stdarg.h>
 
 ldns_rr_list *
 ldns_get_rr_list_addr_by_name(ldns_resolver *res, ldns_rdf *name, ldns_rr_class c, 
@@ -434,4 +435,25 @@ ldns_nsec_type_check(ldns_rr *nsec, ldns_rr_type t)
 		pos += (uint16_t) bitmap_length;
 	}
 	return false;
+}
+
+void
+ldns_print_rr_rdf(FILE *fp, ldns_rr *r, int rdfnum, ...)
+{
+	int16_t rdf;
+	ldns_rdf *rd;
+	va_list va_rdf;
+	va_start(va_rdf, rdfnum);
+
+	for(rdf = rdfnum; rdf != -1; rdf = (int16_t)va_arg(va_rdf, int)) {
+
+		rd = ldns_rr_rdf(r, rdf);
+		if (!rd) {
+			continue;
+		} else {
+			ldns_rdf_print(fp, rd);
+			fprintf(fp, " "); /* not sure if we want to do this */
+		}
+	}
+	va_end(va_rdf);
 }

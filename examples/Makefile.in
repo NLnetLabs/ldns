@@ -31,7 +31,8 @@ SOURCES 	= ldns-read-zone.c \
 		  ldns-version.c \
 		  ldns-rrsig.c \
 		  ldns-walk.c \
-		  ldns-dpa.c
+		  ldns-dpa.c \
+		  ldns-threshold-update.c 
 
 
 PROGRAMS=$(SOURCES:.c=)
@@ -71,6 +72,9 @@ ldns-walk:	ldns-walk.o
 		$(LINK) -o $@ $+
 
 ldns-dpa:	ldns-dpa.o
+		$(LINK) -o $@ $+
+
+ldns-threshold-update:	ldns-threshold-update.o
 		$(LINK) -o $@ $+
 
 ## implicit rule

@@ -32,10 +32,35 @@
  */
 
 /* file layout
- * 
+ * secure-entry-point.nl {
+ * key1
+ * key2
+ * key3
+ * }
  */
-
 
 
 #include "config.h"
 #include <ldns/dns.h>
+
+int
+main(int argc, char **argv)
+{
+	FILE *kf;
+	ldns_rr *k;
+
+	kf = fopen("test-key", "r");
+	if (!kf) {
+		exit(EXIT_FAILURE);
+	}
+
+	k = ldns_rr_new_frm_fp(kf, NULL, NULL);
+	if (!k) {
+		exit(EXIT_FAILURE);
+	}
+	ldns_rr_print(stdout, k);
+
+	ldns_print_rr_rdf(stdout, k, 0, 1, 2, 3, 4, 5, -1);  
+
+	exit(EXIT_SUCCESS);
+}
