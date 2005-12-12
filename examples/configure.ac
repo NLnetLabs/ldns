@@ -44,15 +44,10 @@ AC_CHECK_HEADER(ldns/dns.h,,  [
 	], [AC_INCLUDES_DEFAULT]
 )
 
-AC_CHECK_LIB(pcap, pcap_open_offline,, [
-	AC_MSG_ERROR([Can't find pcap library (needed for dpa)])
-	]
-)
-
-AC_CHECK_HEADER(pcap.h,,  [
-	AC_MSG_ERROR([Can't find pcap library headers (needed for dpa)])
-	], [AC_INCLUDES_DEFAULT]
-)
+#AC_CHECK_LIB(pcap, pcap_open_offline,, [
+#	AC_MSG_ERROR([Can't find pcap library (needed for dpa)])
+#	]
+#)
 
 AC_CHECK_FUNCS(isblank)
 

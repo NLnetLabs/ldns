@@ -42,14 +42,15 @@ main(int argc, char **argv)
 	int line_nr;
 	size_t split;
 	size_t i;
-	bool splitting;
+	int splitting;
 	size_t file_counter;
 	char filename[255];
 
 	progname = strdup(argv[0]);
 	split = 0;
-	splitting = false; /* when true we are about to split */
+	splitting = 0; /* when true we are about to split */
 	file_counter = 1;
+	lastname = NULL;
 
 	while ((c = getopt(argc, argv, "n:")) != -1) {
 		switch(c) {
@@ -112,8 +113,27 @@ main(int argc, char **argv)
 		ldns_rr_print(stdout, 
 				ldns_rr_list_rr(zrrs, i));
 
-		lastname = ldns_rr_owner(ldns_rr_list_rr(zrrs, i));
 
+		if (i > 0 && (i % split) == 0) {
+			printf("%d %d\n", i, (i & split));
+			splitting = 1;
+		}
+
+		if (splitting == 1 && 
+				ldns_dname_compare(ldns_rr_owner(ldns_rr_list_rr(zrrs, i)), lastname) == 0) {
+			/* equal names, don't split yet */
+		} else {
+			/* now we are ready to split */
+			splitting = 2;
+		}
+		if (splitting == 2) {
+			/* SPLIT */
+			printf("LDNS INTENT TO SPLIT !!!! \n");
+			lastname = NULL;
+			continue;
+		}
+		
+		lastname = ldns_rr_owner(ldns_rr_list_rr(zrrs, i));
 	}
 /*	fclose(fp); */
 

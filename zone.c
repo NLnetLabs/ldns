@@ -162,7 +162,7 @@ ldns_zone_new_frm_fp_l(FILE *fp, ldns_rdf *origin, uint16_t ttl, ldns_rr_class c
 	uint16_t my_ttl = ttl;
 	ldns_rr_class my_class = c;
 	ldns_rr *last_rr = NULL;
-
+	ldns_rdf *my_prev = NULL;
 	uint8_t i;
 
 	newzone = ldns_zone_new();
@@ -180,7 +180,7 @@ ldns_zone_new_frm_fp_l(FILE *fp, ldns_rdf *origin, uint16_t ttl, ldns_rr_class c
 	
 	i = 0;
 	do {
-		rr = ldns_rr_new_frm_fp_l(fp, &my_ttl, &my_origin, line_nr);
+		rr = ldns_rr_new_frm_fp_l(fp, &my_ttl, &my_origin, &my_prev, line_nr);
 		i++;
 	} while (!rr && i <= 9);
 
@@ -214,7 +214,7 @@ ldns_zone_new_frm_fp_l(FILE *fp, ldns_rdf *origin, uint16_t ttl, ldns_rr_class c
 	}
 
 	while(!feof(fp)) {
-		rr = ldns_rr_new_frm_fp_l(fp, &my_ttl, &my_origin, line_nr);
+		rr = ldns_rr_new_frm_fp_l(fp, &my_ttl, &my_origin, &my_prev, line_nr);
 		if (rr) {
 			last_rr = rr;
 			if (!ldns_zone_push_rr(newzone, rr)) {

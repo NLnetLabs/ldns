@@ -193,32 +193,6 @@ ldns_rdf_clone(const ldns_rdf *r)
 				ldns_rdf_data(r)));
 }
 
-/* we modify left! */
-bool
-ldns_rdf_cat(ldns_rdf *left, ldns_rdf *right)
-{
-	uint8_t *d;
-	size_t new;
-
-	if (ldns_rdf_get_type(left) != ldns_rdf_get_type(right)) {
-		return false;
-	}
-
-	d = ldns_rdf_data(left);
-	new =ldns_rdf_size(left) + ldns_rdf_size(right);
-
-	d = LDNS_XREALLOC(d, uint8_t, new);
-	if (!d) {
-		return false;
-	}
-
-	/* this -1 is ONLY TEST WITH LDNS_RDF_TYPE_DNAME XXX */
-	memcpy(d + ldns_rdf_size(left) - 1, ldns_rdf_data(right), ldns_rdf_size(right));
-	ldns_rdf_set_size(left, new); 
-	ldns_rdf_set_data(left, d);
-	return true;
-}
-
 void
 ldns_rdf_deep_free(ldns_rdf *rd)
 {

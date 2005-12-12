@@ -267,9 +267,11 @@ void ldns_rr_free(ldns_rr *rr);
  * \param[in] str the string to convert
  * \param[in] default_ttl pointer to a default ttl for the rr. If 0 DEF_TTL will be used
  * \param[in] origin when the owner is relative add this
+ * \param prev the previous ownername. the function overwrite this with
+ * the current found ownername.
  * \return the new rr
  */
-ldns_rr* ldns_rr_new_frm_str(const char *str, uint16_t default_ttl, ldns_rdf *origin);
+ldns_rr* ldns_rr_new_frm_str(const char *str, uint16_t default_ttl, ldns_rdf *origin, ldns_rdf **prev);
 
 /**
  * creates a new rr from a file containing a string.
@@ -278,9 +280,11 @@ ldns_rr* ldns_rr_new_frm_str(const char *str, uint16_t default_ttl, ldns_rdf *or
  *            the pointer will be updated if the file contains a $TTL directive
  * \param[in] origin when the owner is relative add this
  * 	      the pointer will be updated if the file contains a $ORIGIN directive
+ * \param[in] prev when the owner is whitespaces use this as the * ownername
+ *            the pointer will be updated after the call
  * \return ldns_rr*
  */
-ldns_rr* ldns_rr_new_frm_fp(FILE *fp, uint16_t *default_ttl, ldns_rdf **origin);
+ldns_rr* ldns_rr_new_frm_fp(FILE *fp, uint16_t *default_ttl, ldns_rdf **origin, ldns_rdf **prev);
 
 /**
  * creates a new rr from a file containing a string.
@@ -290,9 +294,11 @@ ldns_rr* ldns_rr_new_frm_fp(FILE *fp, uint16_t *default_ttl, ldns_rdf **origin);
  * \param[in] origin when the owner is relative add this
  * 	      the pointer will be updated if the file contains a $ORIGIN directive
  * \param[in] line_nr pointer to an integer containing the current line number (for debugging purposes)
+ * \param[in] prev when the owner is whitespaces use this as the * ownername
+ *            the pointer will be updated after the call
  * \return ldns_rr*
  */
-ldns_rr* ldns_rr_new_frm_fp_l(FILE *fp, uint16_t *default_ttl, ldns_rdf **origin, int *line_nr);
+ldns_rr* ldns_rr_new_frm_fp_l(FILE *fp, uint16_t *default_ttl, ldns_rdf **origin, ldns_rdf **prev, int *line_nr);
 
 /**
  * sets the owner in the rr structure.

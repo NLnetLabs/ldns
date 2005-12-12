@@ -90,7 +90,7 @@ ldns_rr_free(ldns_rr *rr)
  * miek.nl. IN MX 10 elektron.atoom.net
  */
 ldns_rr *
-ldns_rr_new_frm_str(const char *str, uint16_t default_ttl, ldns_rdf *origin)
+ldns_rr_new_frm_str(const char *str, uint16_t default_ttl, ldns_rdf *origin, ldns_rdf **prev)
 {
 	ldns_rr *new;
 	const ldns_rr_descriptor *desc;
@@ -153,6 +153,7 @@ ldns_rr_new_frm_str(const char *str, uint16_t default_ttl, ldns_rdf *origin)
 		ldns_rr_free(new);
 		return NULL;
 	}
+	
 	if (ldns_bget_token(rr_buf, ttl, "\t\n ", 21) == -1) {
 		LDNS_FREE(owner); 
 		LDNS_FREE(ttl); 
@@ -253,7 +254,11 @@ ldns_rr_new_frm_str(const char *str, uint16_t default_ttl, ldns_rdf *origin)
 		}
 	} else {
 		if (strlen(owner) == 0) {
-			if (origin) {
+			/* no ownername was given, try prev, if that fails 
+			 * origin, else default to root */
+			if (prev) {
+				ldns_rr_set_owner(new, ldns_rdf_clone(*prev));
+			} else if (origin) {
 				ldns_rr_set_owner(new, ldns_rdf_clone(origin));
 			} else {
 				ldns_rr_set_owner(new, ldns_dname_new_frm_str("."));
@@ -272,7 +277,10 @@ ldns_rr_new_frm_str(const char *str, uint16_t default_ttl, ldns_rdf *origin)
 					ldns_buffer_free(rr_buf);
 					ldns_rr_free(new);
 					return NULL;
-				}
+				} 
+			}
+			if (prev) {
+				*prev = ldns_rr_owner(new);
 			}
 		}
 	}
@@ -355,9 +363,8 @@ ldns_rr_new_frm_str(const char *str, uint16_t default_ttl, ldns_rdf *origin)
 						/* check if the origin should be concatenated */
 						if (ldns_rr_descriptor_field_type(desc, r_cnt) == LDNS_RDF_TYPE_DNAME &&
 								rd_strlen > 1 &&
-								rd[rd_strlen - 1] != '.' &&
-								origin) {
-							if (!ldns_rdf_cat(r, origin)) {
+								!ldns_dname_str_absolute(rd) && origin) {
+							if (!ldns_dname_cat(r, origin)) {
 								/* don't know if to quit */
 								/* return NULL;*/
 							}
@@ -385,13 +392,13 @@ ldns_rr_new_frm_str(const char *str, uint16_t default_ttl, ldns_rdf *origin)
 }
 
 ldns_rr *
-ldns_rr_new_frm_fp(FILE *fp, uint16_t *ttl, ldns_rdf **origin)
+ldns_rr_new_frm_fp(FILE *fp, uint16_t *ttl, ldns_rdf **origin, ldns_rdf **prev)
 {
-	return ldns_rr_new_frm_fp_l(fp, ttl, origin, NULL);
+	return ldns_rr_new_frm_fp_l(fp, ttl, origin, prev, NULL);
 }
 
 ldns_rr *
-ldns_rr_new_frm_fp_l(FILE *fp, uint16_t *default_ttl, ldns_rdf **origin, int *line_nr)
+ldns_rr_new_frm_fp_l(FILE *fp, uint16_t *default_ttl, ldns_rdf **origin, ldns_rdf **prev, int *line_nr)
 {
         char *line;
 	ldns_rr *rr;
@@ -430,11 +437,10 @@ ldns_rr_new_frm_fp_l(FILE *fp, uint16_t *default_ttl, ldns_rdf **origin, int *li
 			*default_ttl = (uint16_t) atoi(keyword + 5);
 		}
 	} else {
-
 		if (origin) {
-			rr = ldns_rr_new_frm_str((const char*) line, ttl, *origin);
+			rr = ldns_rr_new_frm_str((const char*) line, ttl, *origin, prev);
 		} else {
-			rr = ldns_rr_new_frm_str((const char*) line, ttl, NULL);
+			rr = ldns_rr_new_frm_str((const char*) line, ttl, NULL, prev);
 		}
 	
 	}
