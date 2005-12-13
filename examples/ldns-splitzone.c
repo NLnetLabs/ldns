@@ -18,7 +18,7 @@
 #include <errno.h>
 #include <ldns/dns.h>
 
-#define DEFAULT_SPLIT 	500
+#define DEFAULT_SPLIT 	1000
 #define FILE_SIZE 	255
 #define SPLIT_MAX 	999 
 #define NO_SPLIT 	0
@@ -77,7 +77,6 @@ main(int argc, char **argv)
 	ldns_rdf *origin = NULL;
 	ldns_rdf *current_rdf;
 	ldns_rr *current_rr;
-	ldns_rr *lastrr;
 	ldns_rr_list *last_rrset;
 
 	progname = strdup(argv[0]);
@@ -85,7 +84,6 @@ main(int argc, char **argv)
 	splitting = NO_SPLIT; 
 	file_counter = 0;
 	lastname = NULL;
-	lastrr = NULL;
 	last_rrset = ldns_rr_list_new();
 
 	while ((c = getopt(argc, argv, "n:o:")) != -1) {
@@ -158,7 +156,7 @@ main(int argc, char **argv)
 
 		if (compare == 0) {
 			ldns_rr_list_push_rr(last_rrset, current_rr);
-		}
+		} 
 
 		if (i > 0 && (i % split) == 0) {
 			splitting = INTENT_TO_SPLIT;
@@ -171,40 +169,40 @@ main(int argc, char **argv)
 		}
 
 		if (splitting == SPLIT_NOW) {
-
 			fclose(fp);
 
-			ldns_rr_list_push_rr(last_rrset, lastrr);
-			ldns_rr_list_print(stderr, last_rrset);
-
-			/* SPLIT */
 			lastname = NULL;
 			splitting = NO_SPLIT;
 			file_counter++;
 			if (!(fp = open_newfile(argv[0], z, file_counter))) {
 				exit(EXIT_FAILURE);
 			}
+
+			/* insert the RRset in the new file */
+			ldns_rr_list_print(fp, last_rrset);
+
+			/* print the current rr */
 			ldns_rr_print(fp, current_rr); 
 
 			/* remove them */
 			ldns_rr_list_free(last_rrset);
 			last_rrset = ldns_rr_list_new();
-
+			/* add the current RR */
+			ldns_rr_list_push_rr(last_rrset, current_rr);
 			continue;
 		}
 
 		if (splitting == NO_SPLIT || splitting == INTENT_TO_SPLIT) {
 			ldns_rr_print(fp, current_rr); 
 		}
-
 		if (compare != 0) {
-			/* remove them */
+			/* remove them and then add the current one */
 			ldns_rr_list_free(last_rrset);
 			last_rrset = ldns_rr_list_new();
+			ldns_rr_list_push_rr(last_rrset, current_rr);
 		}
-		/* remember the last seen rr */
+
 		lastname = current_rdf;
-		lastrr = current_rr;
 	}
 	fclose(fp); 
 
