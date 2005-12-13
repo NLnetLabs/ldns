@@ -223,7 +223,6 @@ ldns_get_rr_list_hosts_frm_fp_l(FILE *fp, int *line_nr)
 	return list;
 }
 
-
 ldns_rr_list *
 ldns_get_rr_list_hosts_frm_file(char *filename)
 {

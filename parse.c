@@ -393,7 +393,7 @@ void
 ldns_fskipcs_l(FILE *fp, const char *s, int *line_nr)
 {
         bool found;
-        char c;
+        int c;
         const char *d;
 
 	while ((c = fgetc(fp)) != EOF) {

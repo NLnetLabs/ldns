@@ -22,6 +22,17 @@ December??? 2005: 1.0.1: ldns-team
 	Code:
 	* All networking code was moved to net.c
 
+	API:
+	Changed:
+	* ldns_rr_new_frm_str() is extented with an extra variable which
+	  in common use may be NULL. This trickles through to:
+          o ldns_rr_new_frm_fp
+	  o ldns_rr_new_frm_fp_l
+	  Which also get an extra variable
+	New:
+	* ldns_zone_sort/ldns_zone_sort_oct: Sort a zone
+
+
 18 Oct 2005: 1.0.0: ldns-team
 	* Commited a patch from Håkan Olsson
 	* Added UPDATE support (Jakob Schlyter and Håkan Olsson)

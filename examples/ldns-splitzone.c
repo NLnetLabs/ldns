@@ -79,13 +79,11 @@ main(int argc, char **argv)
 		exit(EXIT_SUCCESS);
 	}
 
-	fp = fopen(argv[0], "r");
-	if (!fp) {
+	if (!(fp = fopen(argv[0], "r"))) {
 		fprintf(stderr, "Unable to open %s: %s\n", argv[0], strerror(errno));
 		exit(EXIT_FAILURE);
 	}
-	
-	/* suck in the entire zone ... is this wise... */
+	/* suck in the entire zone ... */
 	z = ldns_zone_new_frm_fp_l(fp, NULL, 0, LDNS_RR_CLASS_IN, &line_nr);
 	fclose(fp);
 
@@ -93,6 +91,7 @@ main(int argc, char **argv)
 		printf("Zone could not be parsed\n");
 		exit(EXIT_FAILURE);
 	}
+	ldns_zone_sort(z);
 
 	/* no RRsets may be truncated */
 	zrrs = ldns_zone_rrs(z);
@@ -113,7 +112,7 @@ main(int argc, char **argv)
 		ldns_rr_print(stdout, 
 				ldns_rr_list_rr(zrrs, i));
 
-
+#if 0
 		if (i > 0 && (i % split) == 0) {
 			printf("%d %d\n", i, (i & split));
 			splitting = 1;
@@ -134,6 +133,7 @@ main(int argc, char **argv)
 		}
 		
 		lastname = ldns_rr_owner(ldns_rr_list_rr(zrrs, i));
+#endif
 	}
 /*	fclose(fp); */
 

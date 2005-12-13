@@ -45,7 +45,6 @@ AC_ARG_WITH(ssl, AC_HELP_STRING([--with-ssl=pathname],
             AC_MSG_RESULT(found in $ssldir)
             HAVE_SSL=yes
             LDFLAGS="$LDFLAGS -L$ssldir/lib";
-#            CPPFLAGS="$CPPFLAGS -DHAVE_SSL -I$ssldir/include";
             AC_CHECK_LIB(crypto, HMAC_CTX_init,, [
                     AC_MSG_ERROR([OpenSSL found in $ssldir, but version 0.9.7 or higher is required])
                 ])
@@ -64,8 +63,6 @@ AC_CHECK_HEADER(openssl/ssl.h,,  [
 	AC_MSG_ERROR([Can't find (open)ssl headers])
 	], [AC_INCLUDES_DEFAULT]
 )
-
-
 
 # check for ldns
 AC_ARG_WITH(ldns, 
@@ -89,6 +86,7 @@ AC_CHECK_HEADER(ldns/dns.h,,  [
 	AC_MSG_ERROR([Can't find ldns headers])
 	], [AC_INCLUDES_DEFAULT]
 )
+AC_CHECK_FUNCS(isblank)
 
 AH_BOTTOM([
 #include <stdio.h>

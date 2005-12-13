@@ -73,7 +73,7 @@ size_t
 packetbuffromfile(char *filename, uint8_t *wire)
 {
 	FILE *fp = NULL;
-	char c;
+	int c;
 	
 	/* stat hack
 	 * 0 = normal

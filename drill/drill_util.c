@@ -17,7 +17,7 @@ read_key_file(const char *filename)
 {
 	FILE *fp;
 	char line[LDNS_MAX_PACKETLEN];
-	char c;
+	int c;
 	size_t i = 0;
 	
 	fp = fopen(filename, "r");
@@ -38,7 +38,7 @@ read_key_file(const char *filename)
 	if (i <= 0) {
 		return NULL;
 	} else {
-		return ldns_rr_new_frm_str(line, 0, NULL);
+		return ldns_rr_new_frm_str(line, 0, NULL, NULL);
 	}
 }
 

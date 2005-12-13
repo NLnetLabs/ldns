@@ -46,7 +46,7 @@ main(int argc, char *argv[])
 		exit(EXIT_FAILURE);
 	}
 
-	k = ldns_rr_new_frm_fp(keyfp, 0, NULL);
+	k = ldns_rr_new_frm_fp(keyfp, 0, NULL, NULL);
 	if (!k) {
 		fprintf(stderr, "Could not read public key from file %s\n", keyname);
 		exit(EXIT_FAILURE);

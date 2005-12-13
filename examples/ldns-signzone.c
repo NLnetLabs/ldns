@@ -55,11 +55,6 @@ main(int argc, char *argv[])
 	/* we need to know the origin before reading ksk's,
 	 * so keep an array of filenames until we know it
 	 */
-/*
-	int key_signing_key_nr = 0;
-	char **key_signing_key_filenames = NULL;
-	ldns_key_list *key_signing_keys;
-*/	
 	struct tm tm;
 	uint32_t inception;
 	uint32_t expiration;
@@ -72,7 +67,7 @@ main(int argc, char *argv[])
 	ldns_zone *signed_zone = NULL;
 	
 	int line_nr = 0;
-	char c;
+	int c;
 	
 	const char *prog = strdup(argv[0]);
 	
@@ -87,7 +82,6 @@ main(int argc, char *argv[])
 			 * should be a timestamp (seconds since epoch)
 			 */
 			memset(&tm, 0, sizeof(tm));
-			printf("yoyoyo %d\n", strptime(optarg, DATE_FORMAT,  &tm));
 
 			if (!strptime(optarg, DATE_FORMAT,  &tm)) {
 			        c = c;
@@ -204,7 +198,7 @@ main(int argc, char *argv[])
 				if (!keyfile) {
 					fprintf(stderr, "Error: unable to read %s: %s\n", keyfile_name, strerror(errno));
 				} else {
-					pubkey = ldns_rr_new_frm_fp_l(keyfile, &default_ttl, NULL, &line_nr);
+					pubkey = ldns_rr_new_frm_fp_l(keyfile, &default_ttl, NULL, NULL, &line_nr);
 					if (pubkey) {
 						ldns_key_set_pubkey_owner(key, ldns_rdf_clone(ldns_rr_owner(pubkey)));
 						ldns_key_set_flags(key, ldns_rdf2native_int16(ldns_rr_rdf(pubkey, 0)));
