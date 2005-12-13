@@ -27,18 +27,21 @@
 size_t
 ldns_rdf_size(const ldns_rdf *rd)
 {
+	assert(rd != NULL);
 	return rd->_size;
 }
 
 ldns_rdf_type
 ldns_rdf_get_type(const ldns_rdf *rd)
 {
+	assert(rd != NULL);
 	return rd->_type;
 }
 
 uint8_t *
 ldns_rdf_data(const ldns_rdf *rd)
 {
+	assert(rd != NULL);
 	return rd->_data;
 }
 
@@ -46,12 +49,14 @@ ldns_rdf_data(const ldns_rdf *rd)
 void
 ldns_rdf_set_size(ldns_rdf *rd, size_t s)
 {
+	assert(rd != NULL);
 	rd->_size = s;
 }
 
 void
 ldns_rdf_set_type(ldns_rdf *rd, ldns_rdf_type t)
 {
+	assert(rd != NULL);
 	rd->_type = t;
 }
 
@@ -59,6 +64,7 @@ void
 ldns_rdf_set_data(ldns_rdf *rd, void *d)
 {
 	/* only copy the pointer */
+	assert(rd != NULL);
 	rd->_data = d;
 }
 
@@ -504,17 +510,13 @@ ldns_rdf_compare(const ldns_rdf *rd1, const ldns_rdf *rd2)
 	uint16_t i1, i2, i;
 	uint8_t *d1, *d2;
 
-	/* only when both are NULL we can say anything about them */
+	/* only when both are not NULL we can say anything about them */
 	if (!rd1 && !rd2) {
 		return 0;
 	}
-	if (!rd1) {
+	if (!rd1 || !rd2) {
 		return -1;
 	}
-	if (!rd2) {
-		return 1;
-	}
-	
 	i1 = ldns_rdf_size(rd1);
 	i2 = ldns_rdf_size(rd1);
 

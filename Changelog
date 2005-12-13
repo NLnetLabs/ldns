@@ -5,6 +5,9 @@ December??? 2005: 1.0.1: ldns-team
 	* Starting usage of assert throughout the library to catch illegal calls
 	* Solaris 9 testing was carried out. Ldns now compiles on that
 	  platform; some gnuism were identified and fixed.
+	* The ldns_zone structure was stress tested. The current setup
+	 (ie. just a list of rrs) can scale to zone file in order of
+	 megabytes. Sorting such zone is still difficult.
 
 	Drill:
 	* -r was killed in favor of -o <header bit mnemonic> which 
@@ -21,6 +24,7 @@ December??? 2005: 1.0.1: ldns-team
 	
 	Code:
 	* All networking code was moved to net.c
+	* rdata.c: added asserts to the rdf set/get functions
 
 	API:
 	Changed:

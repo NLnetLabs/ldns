@@ -225,8 +225,20 @@ ldns_dname_compare(const ldns_rdf *dname1, const ldns_rdf *dname2)
 	/* see RFC4034 for this algorithm */
 	/* this algorithm assumes the names are normalized to case */
 
+        /* only when both are not NULL we can say anything about them */
+        if (!dname1 && !dname2) {
+                return 0;
+        }
+        if (!dname1 || !dname2) {
+                return -1;
+        }
+	/* asserts must happen later as we are looking in the
+	 * dname, which could be NULL. But this case is handled
+	 * above
+	 */
 	assert(ldns_rdf_get_type(dname1) == LDNS_RDF_TYPE_DNAME);
 	assert(ldns_rdf_get_type(dname2) == LDNS_RDF_TYPE_DNAME);
+
 	
 	lc1 = ldns_dname_label_count(dname1);
 	lc2 = ldns_dname_label_count(dname2);

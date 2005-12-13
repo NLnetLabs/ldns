@@ -18,8 +18,12 @@
 #include <errno.h>
 #include <ldns/dns.h>
 
-#define DEFAULT_SPLIT 	1000
+#define DEFAULT_SPLIT 	500
 #define FILE_SIZE 	255
+#define SPLIT_MAX 	999 
+#define NO_SPLIT 	0
+#define INTENT_TO_SPLIT 1
+#define SPLIT_NOW	2
 
 void
 usage(FILE *f, char *progname)
@@ -29,6 +33,30 @@ usage(FILE *f, char *progname)
 		fprintf(f, "\nOPTIONS:\n");
 		fprintf(f, "-n NUMBER\tSplit after this many names\n");
 		fprintf(f, "-o ORIGIN\tUse this as initial origin. For zones starting with @\n");
+}
+
+
+FILE *
+open_newfile(char *basename, ldns_zone *z, size_t counter)
+{
+	char filename[FILE_SIZE];
+	FILE *fp;
+
+	if (counter > SPLIT_MAX)  {
+		printf("maximum splits reached %d\n", counter);
+		return NULL;
+	}
+
+	snprintf(filename, FILE_SIZE, "%s.%03d", basename, counter);
+
+	if (!(fp = fopen(filename, "w"))) {
+		printf("cannot open %s\n", filename);
+		return NULL;
+	} else {
+		printf("Opening %s\n", filename);
+	}
+	ldns_rr_print(fp, ldns_zone_soa(z));
+	return fp;
 }
 
 int
@@ -45,13 +73,14 @@ main(int argc, char **argv)
 	size_t i;
 	int splitting;
 	size_t file_counter;
-	char filename[255];
 	ldns_rdf *origin = NULL;
+	ldns_rdf *current_rdf;
+	ldns_rr *current_rr;
 
 	progname = strdup(argv[0]);
 	split = 0;
-	splitting = 0; /* when true we are about to split */
-	file_counter = 1;
+	splitting = NO_SPLIT; 
+	file_counter = 0;
 	lastname = NULL;
 
 	while ((c = getopt(argc, argv, "n:o:")) != -1) {
@@ -105,52 +134,51 @@ main(int argc, char **argv)
 		printf("Zone could not be parsed\n");
 		exit(EXIT_FAILURE);
 	}
-	ldns_zone_sort(z);
+	/* ldns_zone_sort(z); ASSUME SORTED ZONE */ 
 
 	/* no RRsets may be truncated */
 	zrrs = ldns_zone_rrs(z);
 	
 	/* Setup */
-#if 0
-	snprintf(filename, FILE_SIZE, "%s.%d", argv[0], file_counter);
-	fp = fopen(filename, "w");
-	if (!fp) {
-		printf("whaahah\n");
-		exit(EXIT_FAILURE);
+	if (!(fp = open_newfile(argv[0], z, file_counter))) {
+			exit(EXIT_FAILURE);
 	}
-	ldns_rr_print(fp, ldns_zone_soa(z));
-#endif
 
 	for(i = 0; i < ldns_rr_list_rr_count(zrrs); i++) {
 	
-		ldns_rr_print(stdout, 
-				ldns_rr_list_rr(zrrs, i));
+		current_rr = ldns_rr_list_rr(zrrs, i);
+		current_rdf = ldns_rr_owner(current_rr);
 
-#if 0
 		if (i > 0 && (i % split) == 0) {
-			printf("%d %d\n", i, (i & split));
-			splitting = 1;
+			splitting = INTENT_TO_SPLIT;
 		}
 
-		if (splitting == 1 && 
-				ldns_dname_compare(ldns_rr_owner(ldns_rr_list_rr(zrrs, i)), lastname) == 0) {
-			/* equal names, don't split yet */
-		} else {
-			/* now we are ready to split */
-			splitting = 2;
+		if (splitting == INTENT_TO_SPLIT) { 
+			if (ldns_dname_compare(current_rdf, lastname) != 0) {
+				splitting = SPLIT_NOW;
+			} 
+			/* else: do nothing */
 		}
-		if (splitting == 2) {
+
+		if (splitting == SPLIT_NOW) {
+			fclose(fp);
+
 			/* SPLIT */
-			printf("LDNS INTENT TO SPLIT !!!! \n");
 			lastname = NULL;
-			continue;
+			splitting = NO_SPLIT;
+			file_counter++;
+			if (!(fp = open_newfile(argv[0], z, file_counter))) {
+				exit(EXIT_FAILURE);
+			}
+			ldns_rr_print(fp, current_rr); 
 		}
-		
-		lastname = ldns_rr_owner(ldns_rr_list_rr(zrrs, i));
-#endif
-	}
-/*	fclose(fp); */
 
-	
+		if (splitting == NO_SPLIT || splitting == INTENT_TO_SPLIT) {
+			ldns_rr_print(fp, current_rr);
+		}
+		lastname = current_rdf;
+	}
+	fclose(fp); 
+
         exit(EXIT_SUCCESS);
 }
