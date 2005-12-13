@@ -27,7 +27,7 @@ DATE		= $(shell date +%Y%m%d)
 LIBTOOL		= $(libtool) --tag=CC
 
 LINT		= splint
-LINTFLAGS	= +quiet -weak -warnposix -unrecog -Din_addr_t=uint32_t -Du_int=unsigned -Du_char=uint8_t 
+LINTFLAGS	= +quiet -weak -warnposix -unrecog -Din_addr_t=uint32_t -Du_int=unsigned -Du_char=uint8_t -preproc
 
 INSTALL = $(srcdir)/install-sh 
 
