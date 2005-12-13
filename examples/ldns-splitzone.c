@@ -72,16 +72,21 @@ main(int argc, char **argv)
 	size_t split;
 	size_t i;
 	int splitting;
+	int compare;
 	size_t file_counter;
 	ldns_rdf *origin = NULL;
 	ldns_rdf *current_rdf;
 	ldns_rr *current_rr;
+	ldns_rr *lastrr;
+	ldns_rr_list *last_rrset;
 
 	progname = strdup(argv[0]);
 	split = 0;
 	splitting = NO_SPLIT; 
 	file_counter = 0;
 	lastname = NULL;
+	lastrr = NULL;
+	last_rrset = ldns_rr_list_new();
 
 	while ((c = getopt(argc, argv, "n:o:")) != -1) {
 		switch(c) {
@@ -149,19 +154,28 @@ main(int argc, char **argv)
 		current_rr = ldns_rr_list_rr(zrrs, i);
 		current_rdf = ldns_rr_owner(current_rr);
 
+		compare = ldns_dname_compare(current_rdf, lastname);
+
+		if (compare == 0) {
+			ldns_rr_list_push_rr(last_rrset, current_rr);
+		}
+
 		if (i > 0 && (i % split) == 0) {
 			splitting = INTENT_TO_SPLIT;
 		}
 
 		if (splitting == INTENT_TO_SPLIT) { 
-			if (ldns_dname_compare(current_rdf, lastname) != 0) {
+			if (compare != 0) {
 				splitting = SPLIT_NOW;
 			} 
-			/* else: do nothing */
 		}
 
 		if (splitting == SPLIT_NOW) {
+
 			fclose(fp);
+
+			ldns_rr_list_push_rr(last_rrset, lastrr);
+			ldns_rr_list_print(stderr, last_rrset);
 
 			/* SPLIT */
 			lastname = NULL;
@@ -171,12 +185,26 @@ main(int argc, char **argv)
 				exit(EXIT_FAILURE);
 			}
 			ldns_rr_print(fp, current_rr); 
+
+			/* remove them */
+			ldns_rr_list_free(last_rrset);
+			last_rrset = ldns_rr_list_new();
+
+			continue;
 		}
 
 		if (splitting == NO_SPLIT || splitting == INTENT_TO_SPLIT) {
-			ldns_rr_print(fp, current_rr);
+			ldns_rr_print(fp, current_rr); 
 		}
+
+		if (compare != 0) {
+			/* remove them */
+			ldns_rr_list_free(last_rrset);
+			last_rrset = ldns_rr_list_new();
+		}
+		/* remember the last seen rr */
 		lastname = current_rdf;
+		lastrr = current_rr;
 	}
 	fclose(fp); 
 
