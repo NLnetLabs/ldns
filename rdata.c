@@ -187,6 +187,7 @@ ldns_rdf_new_frm_data(ldns_rdf_type type, size_t size, const void *data)
 ldns_rdf *
 ldns_rdf_clone(const ldns_rdf *r)
 {
+	assert(r != NULL);
 	return (ldns_rdf_new_frm_data(
 				ldns_rdf_get_type(r),
 				ldns_rdf_size(r), 

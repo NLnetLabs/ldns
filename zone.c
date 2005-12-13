@@ -158,11 +158,11 @@ ldns_zone_new_frm_fp_l(FILE *fp, ldns_rdf *origin, uint16_t ttl, ldns_rr_class c
 {
 	ldns_zone *newzone;
 	ldns_rr *rr;
-	ldns_rdf *my_origin = NULL;
 	uint16_t my_ttl = ttl;
 	ldns_rr_class my_class = c;
 	ldns_rr *last_rr = NULL;
-	ldns_rdf *my_prev = NULL;
+	ldns_rdf *my_origin = NULL;
+	ldns_rdf *my_prev;
 	uint8_t i;
 
 	newzone = ldns_zone_new();
@@ -176,6 +176,8 @@ ldns_zone_new_frm_fp_l(FILE *fp, ldns_rdf *origin, uint16_t ttl, ldns_rr_class c
 
 	if (origin) {
 		my_origin = ldns_rdf_clone(origin);
+		/* also set the prev */
+		my_prev   = ldns_rdf_clone(origin);
 	}
 	
 	i = 0;

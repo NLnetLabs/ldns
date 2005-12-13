@@ -54,7 +54,7 @@ main(int argc, char **argv)
 		exit(EXIT_FAILURE);
 	}
 
-	k = ldns_rr_new_frm_fp(kf, NULL, NULL);
+	k = ldns_rr_new_frm_fp(kf, NULL, NULL, NULL);
 	if (!k) {
 		exit(EXIT_FAILURE);
 	}

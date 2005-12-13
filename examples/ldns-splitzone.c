@@ -27,7 +27,8 @@ usage(FILE *f, char *progname)
 		fprintf(f, "Usage: %s [OPTIONS] <zonefile>\n", progname);
 		fprintf(f, "\tSplit a zone file up.\n");
 		fprintf(f, "\nOPTIONS:\n");
-		fprintf(f, "-n = NUMBER\tSplit after this many names\n");
+		fprintf(f, "-n NUMBER\tSplit after this many names\n");
+		fprintf(f, "-o ORIGIN\tUse this as initial origin. For zones starting with @\n");
 }
 
 int
@@ -45,6 +46,7 @@ main(int argc, char **argv)
 	int splitting;
 	size_t file_counter;
 	char filename[255];
+	ldns_rdf *origin = NULL;
 
 	progname = strdup(argv[0]);
 	split = 0;
@@ -52,12 +54,19 @@ main(int argc, char **argv)
 	file_counter = 1;
 	lastname = NULL;
 
-	while ((c = getopt(argc, argv, "n:")) != -1) {
+	while ((c = getopt(argc, argv, "n:o:")) != -1) {
 		switch(c) {
 			case 'n':
 				split = (size_t)atoi(optarg);
 				if (split == 0) {
 					printf("Need a number\n");
+					exit(EXIT_FAILURE);
+				}
+				break;
+			case 'o':
+				origin = ldns_dname_new_frm_str(strdup(optarg));
+				if (!origin) {
+					printf("cannot convert to dname\n");
 					exit(EXIT_FAILURE);
 				}
 				break;
@@ -84,7 +93,12 @@ main(int argc, char **argv)
 		exit(EXIT_FAILURE);
 	}
 	/* suck in the entire zone ... */
-	z = ldns_zone_new_frm_fp_l(fp, NULL, 0, LDNS_RR_CLASS_IN, &line_nr);
+	if (!origin) {
+		printf("Warning no origin is given I'm using . now\n");
+		origin = ldns_dname_new_frm_str(".");
+	}
+	
+	z = ldns_zone_new_frm_fp_l(fp, origin, 0, LDNS_RR_CLASS_IN, &line_nr);
 	fclose(fp);
 
 	if (!z) {
