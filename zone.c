@@ -256,8 +256,8 @@ ldns_zone_new_frm_fp_l(FILE *fp, ldns_rdf *origin, uint16_t ttl, ldns_rr_class c
 void
 ldns_zone_sort_oct(ldns_zone *zone)
 {
-	assert(zone != NULL);
 	ldns_rr_list *zrr;
+	assert(zone != NULL);
 
 	zrr = ldns_zone_rrs(zone);
 	ldns_rr_list_sort_oct(zrr);
@@ -266,8 +266,8 @@ ldns_zone_sort_oct(ldns_zone *zone)
 void
 ldns_zone_sort(ldns_zone *zone)
 {
-	assert(zone != NULL);
 	ldns_rr_list *zrr;
+	assert(zone != NULL);
 
 	zrr = ldns_zone_rrs(zone);
 	ldns_rr_list_sort(zrr);
