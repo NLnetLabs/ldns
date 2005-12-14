@@ -18,6 +18,10 @@
 #include <errno.h>
 #include <ldns/dns.h>
 
+#define FIRST_ZONE 	0
+#define MIDDLE_ZONE 	1
+#define LAST_ZONE 	2
+
 void
 usage(FILE *f, char *progname)
 {
@@ -34,7 +38,6 @@ main(int argc, char **argv)
 	FILE *fp;
 	int c;
 	ldns_rdf *origin;
-	char *progname;
 
 	progname = strdup(argv[0]);
 	

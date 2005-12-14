@@ -31,7 +31,6 @@ SOURCES 	= ldns-read-zone.c \
 		  ldns-version.c \
 		  ldns-rrsig.c \
 		  ldns-walk.c \
-#		  ldns-dpa.c \
 		  ldns-threshold-update.c  \
 		  ldns-zsplit.c \
 		  ldns-zcat.c
