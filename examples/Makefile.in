@@ -33,7 +33,7 @@ SOURCES 	= ldns-read-zone.c \
 		  ldns-walk.c \
 		  ldns-dpa.c \
 		  ldns-threshold-update.c  \
-		  ldns-splitzone.c 
+		  ldns-zsplit.c 
 #		  ldns-catzone.c
 
 
@@ -76,7 +76,7 @@ ldns-walk:	ldns-walk.o
 ldns-dpa:	ldns-dpa.o
 		$(LINK) -o $@ $+
 
-ldns-splitzone:	ldns-splitzone.o
+ldns-zsplit:	ldns-zsplit.o
 		$(LINK) -o $@ $+
 
 ldns-threshold-update:	ldns-threshold-update.o

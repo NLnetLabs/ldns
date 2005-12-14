@@ -1790,7 +1790,7 @@ parse_match_expression(char *string)
 void 
 usage(FILE *output)
 {
-	fprintf(output, "Usage: dpa [OPTIONS] <pcap file>\n");
+	fprintf(output, "Usage: ldns-dpa [OPTIONS] <pcap file>\n");
 	fprintf(output, "Options:\n");
 	fprintf(output, "\t-c <exprlist>:\tCount occurrences of matching expressions\n");
 	fprintf(output, "\t-f <expression>:\tFilter occurrences of matching expressions\n");
