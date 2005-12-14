@@ -28,16 +28,44 @@
 void
 usage(FILE *f, char *progname)
 {
-		fprintf(f, "Usage: %s [OPTIONS] <zonefile>\n", progname);
+		fprintf(f, "Usage: %s [OPTIONS] <zonefile> <keys>\n", progname);
 		fprintf(f, "\tSplit a zone file up.\n");
+		fprintf(f, "\tkeys are inserted in the apex of each generated zone.\n");
 		fprintf(f, "\nOPTIONS:\n");
 		fprintf(f, "-n NUMBER\tSplit after this many names\n");
 		fprintf(f, "-o ORIGIN\tUse this as initial origin. For zones starting with @\n");
 }
 
 
+/* key the keys from the cmd line */
+ldns_rr_list *
+open_keyfiles(char **files, uint16_t filec) 
+{
+	uint16_t i;
+	ldns_rr_list *pubkeys;
+	ldns_rr *k;
+	FILE *kfp;
+
+ 	pubkeys = ldns_rr_list_new();
+	
+	for (i = 0; i < filec; i++) {
+		if (!(kfp = fopen(files[i], "r"))) {
+			printf("Error opening one of the key files\n");
+			return NULL;
+		}
+		if (!(k = ldns_rr_new_frm_fp(kfp, NULL, NULL, NULL))) {
+			printf("Error parsing the on of the files\n");
+			return NULL;
+		}
+		fclose(kfp);
+		ldns_rr_list_push_rr(pubkeys, k);
+	}
+	return pubkeys;
+}
+
+/* open a new zone file with the correct suffix */
 FILE *
-open_newfile(char *basename, ldns_zone *z, size_t counter)
+open_newfile(char *basename, ldns_zone *z, size_t counter, ldns_rr_list *keys)
 {
 	char filename[FILE_SIZE];
 	FILE *fp;
@@ -56,6 +84,10 @@ open_newfile(char *basename, ldns_zone *z, size_t counter)
 		printf("Opening %s\n", filename);
 	}
 	ldns_rr_print(fp, ldns_zone_soa(z));
+	if (keys) {
+		ldns_rr_list_print(fp, keys);
+
+	}
 	return fp;
 }
 
@@ -78,6 +110,7 @@ main(int argc, char **argv)
 	ldns_rdf *current_rdf;
 	ldns_rr *current_rr;
 	ldns_rr_list *last_rrset;
+	ldns_rr_list *pubkeys;
 
 	progname = strdup(argv[0]);
 	split = 0;
@@ -124,6 +157,10 @@ main(int argc, char **argv)
 		fprintf(stderr, "Unable to open %s: %s\n", argv[0], strerror(errno));
 		exit(EXIT_FAILURE);
 	}
+
+	/* get the keys */
+	pubkeys = open_keyfiles(argv + 1, argc - 1);
+	
 	/* suck in the entire zone ... */
 	if (!origin) {
 		printf("Warning no origin is given I'm using . now\n");
@@ -143,7 +180,7 @@ main(int argc, char **argv)
 	zrrs = ldns_zone_rrs(z);
 	
 	/* Setup */
-	if (!(fp = open_newfile(argv[0], z, file_counter))) {
+	if (!(fp = open_newfile(argv[0], z, file_counter, pubkeys))) {
 			exit(EXIT_FAILURE);
 	}
 
@@ -174,11 +211,11 @@ main(int argc, char **argv)
 			lastname = NULL;
 			splitting = NO_SPLIT;
 			file_counter++;
-			if (!(fp = open_newfile(argv[0], z, file_counter))) {
+			if (!(fp = open_newfile(argv[0], z, file_counter, pubkeys))) {
 				exit(EXIT_FAILURE);
 			}
 
-			/* insert the RRset in the new file */
+			/* insert the last RRset in the new file */
 			ldns_rr_list_print(fp, last_rrset);
 
 			/* print the current rr */
