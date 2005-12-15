@@ -5,6 +5,8 @@
 #include <netinet/ip6.h>
 #include <errno.h>
 
+#ifdef HAVE_LIBPCAP
+
 int verbosity = 1;
 
 #define ETHER_HEADER_LENGTH 14
@@ -2647,5 +2649,11 @@ int main(int argc, char *argv[]) {
 	return status;
 }
 
+#else
+int main() {
+	fprintf(stderr, "ldns-dpa was not built because there is no pcap library on this system, or i couldn't find it. Please install pcap and rebuild.\n");
+	return 1;
+}
+#endif
 
 

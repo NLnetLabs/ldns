@@ -45,7 +45,7 @@ AC_CHECK_HEADER(ldns/dns.h,,  [
 )
 
 AC_CHECK_LIB(pcap, pcap_open_offline,, [
-	AC_MSG_ERROR([Can't find pcap library (needed for dpa)])
+	AC_MSG_WARN([Can't find pcap library (needed for ldns-dpa, will not build dpa now.)])
 	]
 )
 
