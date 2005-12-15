@@ -362,7 +362,8 @@ void ldns_rr_list_print(FILE *output, ldns_rr_list *list);
 void ldns_resolver_print(FILE *output, ldns_resolver *r);
 
 /**
- * Print a zone structure * to output.
+ * Print a zone structure * to output. Note the SOA record
+ * is included in this output
  * \param[in] output the fd to print to
  * \param[in] z the zone to print
  */

@@ -32,7 +32,7 @@ usage(FILE *f, char *progname)
 		fprintf(f, "\tSplit a zone file up.\n");
 		fprintf(f, "\tkeys are inserted in the apex of each generated zone.\n");
 		fprintf(f, "\nOPTIONS:\n");
-		fprintf(f, "-n NUMBER\tSplit after this many names\n");
+		fprintf(f, "-NUMBER\tSplit after this many names\n");
 		fprintf(f, "-o ORIGIN\tUse this as initial origin. For zones starting with @\n");
 }
 
@@ -174,7 +174,7 @@ main(int argc, char **argv)
 		printf("Zone could not be parsed\n");
 		exit(EXIT_FAILURE);
 	}
-	/* ldns_zone_sort(z); ASSUME SORTED ZONE */ 
+	ldns_zone_sort(z);
 
 	/* no RRsets may be truncated */
 	zrrs = ldns_zone_rrs(z);

@@ -65,7 +65,9 @@ uint16_t ldns_zone_rr_count(ldns_zone *z);
 void ldns_zone_set_soa(ldns_zone *z, ldns_rr *soa);
 
 /**
- * Get a list of a zone's content. Its RRset list
+ * Get a list of a zone's content. Note that the SOA
+ * isn't included in this list. You need to get the 
+ * with ldns_zone_soa.
  * \param[in] z the zone to read from
  * \return the rrs from this zone
  */

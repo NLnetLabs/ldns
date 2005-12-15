@@ -261,7 +261,7 @@ ldns_zone_sort_oct(ldns_zone *zone)
 	ldns_rr_list *zrr;
 	assert(zone != NULL);
 
-#warning "Sorting seems off, dnssec-signzone differs"
+#warning 'What does sort_oct do?'
 
 	zrr = ldns_zone_rrs(zone);
 	ldns_rr_list_sort_oct(zrr);
@@ -272,8 +272,6 @@ ldns_zone_sort(ldns_zone *zone)
 {
 	ldns_rr_list *zrr;
 	assert(zone != NULL);
-
-#warning "Sorting seems off, dnssec-signzone differs"
 
 	zrr = ldns_zone_rrs(zone);
 	ldns_rr_list_sort(zrr);

@@ -33,6 +33,7 @@ main(int argc, char **argv)
 	z = ldns_zone_new_frm_fp_l(fp, NULL, 0, LDNS_RR_CLASS_IN, &line_nr);
 
 	if (z) {
+		ldns_zone_sort(z);
 		ldns_zone_print(stdout, z);
 		ldns_zone_deep_free(z);
 	}

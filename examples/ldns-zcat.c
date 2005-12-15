@@ -43,7 +43,10 @@ main(int argc, char **argv)
 	ldns_zone *z;
 	ldns_rr_list *zrr;
 	ldns_rr *current_rr;
-	ldns_rr_list *lastname;
+	ldns_rr *soa;
+	ldns_rdf *last_owner;
+	ldns_rr  *last_rr;
+	ldns_rr  *pop_rr;
 
 	progname = strdup(argv[0]);
 	origin = NULL;
@@ -72,15 +75,8 @@ main(int argc, char **argv)
 		exit(EXIT_SUCCESS);
 	}
 	
-	for (i = 0; i < argc; i++) {
-		
-		if (0 == i) {
-			where = FIRST_ZONE;
-		} else if ((argc - 1) == i) {
-			where = LAST_ZONE;
-		} else {
-			where = MIDDLE_ZONE;
-		}
+	for (i = 0; i < (size_t)argc; i++) {
+
 		if (!(fp = fopen(argv[i], "r"))) {
 			printf("Cannot open file\n");
 			exit(EXIT_FAILURE);
@@ -92,39 +88,73 @@ main(int argc, char **argv)
 		}
 
 		zrr = ldns_zone_rrs(z);
+		soa = ldns_zone_soa(z); /* SOA is stored seperately */
 
 		printf("** READING %s\n", argv[i]);
 
+		if (0 == i) {
+			where = FIRST_ZONE;
+
+			/* remove the last equal named RRs */
+			last_rr = ldns_rr_list_pop_rr(zrr);
+			last_owner = ldns_rr_owner(last_rr);
+			/* remove until no match */
+			do {
+				pop_rr = ldns_rr_list_pop_rr(zrr);
+			} while(ldns_rdf_compare(last_owner, ldns_rr_owner(pop_rr)) == 0) ;
+			/* we popped one to many, put it back */
+			ldns_rr_list_push_rr(zrr, pop_rr);
+		} else if ((size_t)(argc - 1) == i) {
+			where = LAST_ZONE;
+		} else {
+			where = MIDDLE_ZONE;
+
+			/* remove the last equal named RRs */
+			last_rr = ldns_rr_list_pop_rr(zrr);
+			last_owner = ldns_rr_owner(last_rr);
+			/* remove until no match */
+			do {
+				pop_rr = ldns_rr_list_pop_rr(zrr);
+			} while(ldns_rdf_compare(last_owner, ldns_rr_owner(pop_rr)) == 0) ;
+			/* we popped one to many, put it back */
+			ldns_rr_list_push_rr(zrr, pop_rr);
+		}
+
+		/* printing the RRs */
 		for (j = 0; j < ldns_rr_list_rr_count(zrr); j++) {
 
 			current_rr = ldns_rr_list_rr(zrr, j);
 		
 			switch(where) {
 				case FIRST_ZONE:
-					/* remove the last RRs with the same name */
+					if (soa) {
+						ldns_rr_print(stdout, soa);
+						soa = NULL;
+					}
 					break;
 				case MIDDLE_ZONE:
-					if (ldns_rr_get_type(current_rr) ==
-							LDNS_RR_TYPE_SOA) {
-						/* skip this */
+					/* rm SOA */
+					/* SOA isn't printed by default */
+
+					/* rm SOA aux records 
+					 * this also takes care of the DNSKEYs + RRSIGS
+					 */
+					if (ldns_rdf_compare(ldns_rr_owner(current_rr),
+							ldns_rr_owner(soa)) == 0) {	
 						continue;
 					}
-					
-					/* remove 
-					 * SOA + SOA sig
-					 * KEY + sig KEYs
-					 * remove the last RRs with the same name */
 					break;
 				case LAST_ZONE:
-					if (ldns_rr_get_type(current_rr) ==
-							LDNS_RR_TYPE_SOA) {
-						/* skip this */
+					/* rm SOA */
+					/* SOA isn't printed by default */
+
+					/* rm SOA aux records 
+					 * this also takes care of the DNSKEYs + RRSIGS
+					 */
+					if (ldns_rdf_compare(ldns_rr_owner(current_rr),
+							ldns_rr_owner(soa)) == 0) {	
 						continue;
 					}
-					/* remove
-					 * SOA + SOA sig
-					 * KEY + sig KEYS
-					 * DONT remove the last record */
 					break;
 			}
 			ldns_rr_print(stdout, current_rr);
