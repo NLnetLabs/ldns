@@ -33,7 +33,8 @@ SOURCES 	= ldns-read-zone.c \
 		  ldns-walk.c \
 		  ldns-threshold-update.c  \
 		  ldns-zsplit.c \
-		  ldns-zcat.c
+		  ldns-zcat.c \
+		  ldns-dpa.c
 
 
 PROGRAMS=$(SOURCES:.c=)

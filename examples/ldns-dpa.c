@@ -23,6 +23,7 @@ int verbosity = 1;
 /* global options */
 bool show_filter_matches = false;
 size_t total_nr_of_dns_packets = 0;
+size_t total_nr_of_filtered_packets = 0;
 size_t not_ip_packets = 0;
 size_t bad_dns_packets = 0;
 size_t arp_packets = 0;
@@ -561,7 +562,7 @@ print_counter_averages(FILE *output, match_counters *counters, match_operation *
 		mt = get_match_by_id(cur->id);
 		total_value = calculate_total_value(counters, cur);
 		total_count = calculate_total_count(counters, cur);
-		printf("Average for %s: (%u / %u) %.02f\n", mt->name, total_value, total_count, (float) total_value / (float) total_count);
+		printf("Average for %s: (%u / %u) %.02f\n", mt->name, (unsigned int) total_value, (unsigned int) total_count, (float) total_value / (float) total_count);
 		if (counters->left) {
 			print_counter_averages(output, counters->left, cur);
 		}
@@ -600,7 +601,7 @@ print_counter_average_count(FILE *output, match_counters *counters, match_operat
 		mt = get_match_by_id(cur->id);
 		total_matches = calculate_total_count_matches(counters, cur);
 		total_count = calculate_total_count(counters, cur);
-		printf("Average count for %s: (%u / %u) %.02f\n", mt->name, total_count, total_matches, (float) total_count / (float) total_matches);
+		printf("Average count for %s: (%u / %u) %.02f\n", mt->name, (unsigned int) total_count, (unsigned int) total_matches, (float) total_count / (float) total_matches);
 		if (counters->left) {
 			print_counter_averages(output, counters->left, cur);
 		}
@@ -2103,6 +2104,8 @@ printf("timeval: %u ; %u\n", cur_hdr.ts.tv_sec, cur_hdr.ts.tv_usec);
 						printf("\n\n");
 					}
 
+					total_nr_of_dns_packets++;
+
 					if (match_expr) {
 						if (match_dns_packet_to_expr(pkt, src_addr, dst_addr, match_expr)) {
 							/* if outputfile write */
@@ -2139,7 +2142,7 @@ printf("timeval: %u ; %u\n", cur_hdr.ts.tv_sec, cur_hdr.ts.tv_usec);
 					}
 
 					/* General counters here */
-					total_nr_of_dns_packets++;
+					total_nr_of_filtered_packets++;
 
 					match_pkt_counters(pkt, src_addr, dst_addr, count);
 					match_pkt_uniques(pkt, src_addr, dst_addr, uniques, unique_ids, unique_id_count);
@@ -2220,6 +2223,8 @@ printf("timeval: %u ; %u\n", cur_hdr.ts.tv_sec, cur_hdr.ts.tv_usec);
 					printf("\n\n");
 				}
 
+				total_nr_of_dns_packets++;
+
 				if (match_expr) {
 					if (match_dns_packet_to_expr(pkt, src_addr, dst_addr, match_expr)) {
 						/* if outputfile write */
@@ -2256,7 +2261,7 @@ printf("timeval: %u ; %u\n", cur_hdr.ts.tv_sec, cur_hdr.ts.tv_usec);
 				}
 
 				/* General counters here */
-				total_nr_of_dns_packets++;
+				total_nr_of_filtered_packets++;
 
 				match_pkt_counters(pkt, src_addr, dst_addr, count);
 				match_pkt_uniques(pkt, src_addr, dst_addr, uniques, unique_ids, unique_id_count);
@@ -2610,20 +2615,21 @@ int main(int argc, char *argv[]) {
 	pcap_close(pc);
 	
 	if (show_percentages) {
-		fprintf(stdout, "Packets that are not IP: %u\n", not_ip_packets);
-		fprintf(stdout, "bad dns packets: %u\n", bad_dns_packets);
-		fprintf(stdout, "arp packets: %u\n", arp_packets);
-		fprintf(stdout, "udp packets: %u\n", udp_packets);
-		fprintf(stdout, "tcp packets (skipped): %u\n", tcp_packets);
-		fprintf(stdout, "reassembled fragmented packets: %u\n", fragmented_packets);
-		fprintf(stdout, "packet fragments lost: %u\n", lost_packet_fragments);
-		fprintf(stdout, "Total number of DNS packets evaluated: %u\n", (unsigned int) total_nr_of_dns_packets);
+		fprintf(stdout, "Packets that are not IP: %u\n", (unsigned int) not_ip_packets);
+		fprintf(stdout, "bad dns packets: %u\n", (unsigned int) bad_dns_packets);
+		fprintf(stdout, "arp packets: %u\n", (unsigned int) arp_packets);
+		fprintf(stdout, "udp packets: %u\n", (unsigned int) udp_packets);
+		fprintf(stdout, "tcp packets (skipped): %u\n", (unsigned int) tcp_packets);
+		fprintf(stdout, "reassembled fragmented packets: %u\n", (unsigned int) fragmented_packets);
+		fprintf(stdout, "packet fragments lost: %u\n", (unsigned int) lost_packet_fragments);
+		fprintf(stdout, "Total number of DNS packets: %u\n", (unsigned int) total_nr_of_dns_packets);
+		fprintf(stdout, "Total number of DNS packets after filter: %u\n", (unsigned int) total_nr_of_filtered_packets);
 	}
 	if (count->match) {
-		print_counters(stdout, count, show_percentages, total_nr_of_dns_packets, 0);
+		print_counters(stdout, count, show_percentages, total_nr_of_filtered_packets, 0);
 	}
 	if (uniques->match) {
-		print_counters(stdout, uniques, show_percentages, total_nr_of_dns_packets, unique_minimum);
+		print_counters(stdout, uniques, show_percentages, total_nr_of_filtered_packets, unique_minimum);
 		if (show_averages) {
 			print_counter_averages(stdout, uniques, NULL);
 		}
