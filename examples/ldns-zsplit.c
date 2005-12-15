@@ -28,12 +28,19 @@
 void
 usage(FILE *f, char *progname)
 {
-		fprintf(f, "Usage: %s [OPTIONS] <zonefile> <keys>\n", progname);
-		fprintf(f, "\tSplit a zone file up.\n");
-		fprintf(f, "\tkeys are inserted in the apex of each generated zone.\n");
+		fprintf(f, "Usage: %s [OPTIONS] <zonefile> [keys]\n", progname);
+		fprintf(f, "  Cut a zone file into pieces, each part is put in a file\n");
+		fprintf(f, "  named: '<zonefile>.NNN'. Where NNN is a integer ranging 000 to 999.\n");
+		fprintf(f, "  If key files are given here are inserted in each part.\n");
+		fprintf(f, "  The original SOA is also included in each part, making them correct DNS\n");
+		fprintf(f, "  (mini) zones.\n");
+		fprintf(f, "  This utility can be used to parallely sign a large zone.\n");
+		fprintf(f, "  To make it work the original zone needs to be canonical ordered.\n");
 		fprintf(f, "\nOPTIONS:\n");
-		fprintf(f, "-NUMBER\tSplit after this many names\n");
-		fprintf(f, "-o ORIGIN\tUse this as initial origin. For zones starting with @\n");
+		fprintf(f, "  -n NUMBER\tsplit after this many RRs\n");
+		fprintf(f, "  -o ORIGIN\tuse this as initial origin, for zones starting with @\n");
+		fprintf(f, "  -z\t\tsort the zone prior to splitting. The current ldns zone\n");
+		fprintf(f, "  \t\timplementation makes this unuseable for large zones.\n");
 }
 
 
@@ -50,11 +57,11 @@ open_keyfiles(char **files, uint16_t filec)
 	
 	for (i = 0; i < filec; i++) {
 		if (!(kfp = fopen(files[i], "r"))) {
-			printf("Error opening one of the key files\n");
+			fprintf(stderr, "Error opening key file %s: %s\n", files[i], strerror(errno));
 			return NULL;
 		}
 		if (!(k = ldns_rr_new_frm_fp(kfp, NULL, NULL, NULL))) {
-			printf("Error parsing the on of the files\n");
+			fprintf(stderr, "Error parsing the key file %s: %s\n", files[i], strerror(errno));
 			return NULL;
 		}
 		fclose(kfp);
@@ -71,17 +78,17 @@ open_newfile(char *basename, ldns_zone *z, size_t counter, ldns_rr_list *keys)
 	FILE *fp;
 
 	if (counter > SPLIT_MAX)  {
-		printf("maximum splits reached %d\n", counter);
+		fprintf(stderr, "Maximum split count reached %d\n", counter);
 		return NULL;
 	}
 
 	snprintf(filename, FILE_SIZE, "%s.%03d", basename, counter);
 
 	if (!(fp = fopen(filename, "w"))) {
-		printf("cannot open %s\n", filename);
+		fprintf(stderr, "Cannot open zone %s: %s\n", filename, strerror(errno));
 		return NULL;
 	} else {
-		printf("Opening %s\n", filename);
+		fprintf(stderr, "%s\n", filename);
 	}
 	ldns_rr_print(fp, ldns_zone_soa(z));
 	if (keys) {
@@ -106,37 +113,43 @@ main(int argc, char **argv)
 	int splitting;
 	int compare;
 	size_t file_counter;
-	ldns_rdf *origin = NULL;
+	ldns_rdf *origin;
 	ldns_rdf *current_rdf;
 	ldns_rr *current_rr;
 	ldns_rr_list *last_rrset;
 	ldns_rr_list *pubkeys;
+	bool sort;
 
 	progname = strdup(argv[0]);
 	split = 0;
 	splitting = NO_SPLIT; 
 	file_counter = 0;
 	lastname = NULL;
+	origin = NULL;
 	last_rrset = ldns_rr_list_new();
+	sort = false;
 
-	while ((c = getopt(argc, argv, "n:o:")) != -1) {
+	while ((c = getopt(argc, argv, "n:o:z")) != -1) {
 		switch(c) {
 			case 'n':
 				split = (size_t)atoi(optarg);
 				if (split == 0) {
-					printf("Need a number\n");
+					fprintf(stderr, "-n want a integer\n");
 					exit(EXIT_FAILURE);
 				}
 				break;
 			case 'o':
 				origin = ldns_dname_new_frm_str(strdup(optarg));
 				if (!origin) {
-					printf("cannot convert to dname\n");
+					fprintf(stderr, "Cannot convert the origin %s to a domainname\n", optarg);
 					exit(EXIT_FAILURE);
 				}
 				break;
+			case 'z':
+				sort = true;
+				break;
 			default:
-				printf("Unrecognized option\n");
+				fprintf(stderr, "Unrecognized option\n");
 				usage(stdout, progname);
 				exit(EXIT_FAILURE);
 		}
@@ -150,7 +163,7 @@ main(int argc, char **argv)
 
 	if (argc < 1) {
 		usage(stdout, progname);
-		exit(EXIT_SUCCESS);
+		exit(EXIT_FAILURE);
 	}
 
 	if (!(fp = fopen(argv[0], "r"))) {
@@ -163,7 +176,6 @@ main(int argc, char **argv)
 	
 	/* suck in the entire zone ... */
 	if (!origin) {
-		printf("Warning no origin is given I'm using . now\n");
 		origin = ldns_dname_new_frm_str(".");
 	}
 	
@@ -171,13 +183,20 @@ main(int argc, char **argv)
 	fclose(fp);
 
 	if (!z) {
-		printf("Zone could not be parsed\n");
+		fprintf(stderr, "Zone file %s could not be parsed correctly\n", argv[0]);
 		exit(EXIT_FAILURE);
 	}
-	ldns_zone_sort(z);
+	/* these kind of things can kill you... */
+	if (sort) {
+		ldns_zone_sort(z);
+	}
 
-	/* no RRsets may be truncated */
 	zrrs = ldns_zone_rrs(z);
+	if (ldns_rr_list_rr_count(zrrs) / split > SPLIT_MAX) {
+		fprintf(stderr, "The zone is too large for the used -n value: %d", split);
+		exit(EXIT_FAILURE);
+	}
+	
 	
 	/* Setup */
 	if (!(fp = open_newfile(argv[0], z, file_counter, pubkeys))) {
@@ -228,7 +247,6 @@ main(int argc, char **argv)
 			ldns_rr_list_push_rr(last_rrset, current_rr);
 			continue;
 		}
-
 		if (splitting == NO_SPLIT || splitting == INTENT_TO_SPLIT) {
 			ldns_rr_print(fp, current_rr); 
 		}
@@ -238,10 +256,8 @@ main(int argc, char **argv)
 			last_rrset = ldns_rr_list_new();
 			ldns_rr_list_push_rr(last_rrset, current_rr);
 		}
-
 		lastname = current_rdf;
 	}
 	fclose(fp); 
-
         exit(EXIT_SUCCESS);
 }

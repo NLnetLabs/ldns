@@ -25,10 +25,12 @@
 void
 usage(FILE *f, char *progname)
 {
-		fprintf(f, "Usage: %s [OPTIONS] <zonefile>\n", progname);
-		fprintf(f, "\tThe generate zone file is printed to stdout\n");
-		fprintf(f, "\tDNSKEYs found in subsequent zones are removed.\n");
-		fprintf(f, "-o ORIGIN\tUse this as initial origin. For zones starting with @\n");
+		fprintf(f, "Usage: %s [OPTIONS] <zonefiles>\n", progname);
+		fprintf(f, "  Concatenate signed zone snippets created with ldns-zsplit\n");
+		fprintf(f, "  back together. The generate zone file is printed to stdout\n");
+		fprintf(f, "  The new zone should be equal to the original zone (before splitting)\n");
+		fprintf(f, "OPTIONS:\n");
+		fprintf(f, "-o ORIGIN\tUse this as initial origin, for zones starting with @\n");
 }
 
 int
@@ -56,12 +58,12 @@ main(int argc, char **argv)
 			case 'o':
 				origin = ldns_dname_new_frm_str(strdup(optarg));
 				if (!origin) {
-					printf("cannot convert to dname\n");
+					fprintf(stderr, "Cannot convert the origin %s to a domainname\n", optarg);
 					exit(EXIT_FAILURE);
 				}
 				break;
 			default:
-				printf("Unrecognized option\n");
+				fprintf(stderr, "Unrecognized option\n");
 				usage(stdout, progname);
 				exit(EXIT_FAILURE);
 		}
@@ -72,25 +74,25 @@ main(int argc, char **argv)
 
 	if (argc < 1) {
 		usage(stdout, progname);
-		exit(EXIT_SUCCESS);
+		exit(EXIT_FAILURE);
 	}
 	
 	for (i = 0; i < (size_t)argc; i++) {
 
 		if (!(fp = fopen(argv[i], "r"))) {
-			printf("Cannot open file\n");
+			fprintf(stderr, "Error opening key file %s: %s\n", argv[i], strerror(errno));
 			exit(EXIT_FAILURE);
 		}
 		
 		if (!(z = ldns_zone_new_frm_fp(fp, origin, 0, 0))) {
-			printf("cannot parse the zone\n");
+			fprintf(stderr, "Zone file %s could not be parsed correctly\n", argv[i]);
 			exit(EXIT_FAILURE);
 		}
 
 		zrr = ldns_zone_rrs(z);
 		soa = ldns_zone_soa(z); /* SOA is stored seperately */
 
-		printf("** READING %s\n", argv[i]);
+		fprintf(stderr, "%s\n", argv[i]);
 
 		if (0 == i) {
 			where = FIRST_ZONE;
