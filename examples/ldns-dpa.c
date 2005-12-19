@@ -526,6 +526,64 @@ calculate_total_count_matches(match_counters *counters, match_operation *cur)
 }
 
 size_t
+get_first_count(match_counters *counters, match_operation *cur)
+{
+	size_t result = 0;
+	
+	if (!counters) {
+		return 0;
+	}
+	
+	if (counters->match->match->id == cur->id) {
+		result = counters->match->count;
+		if (result != 0) {
+			return result;
+		}
+	}
+	if (counters->left) {
+		result = get_first_count(counters->left, cur);
+		if (result != 0) {
+			return result;
+		}
+	}
+	if (counters->right) {
+		result = get_first_count(counters->right, cur);
+	}
+	
+	return result;
+}
+
+size_t
+get_last_count(match_counters *counters, match_operation *cur)
+{
+	size_t result = 0;
+	
+	if (!counters) {
+		return 0;
+	}
+	
+	if (counters->right) {
+		result = get_last_count(counters->right, cur);
+		if (result != 0) {
+			return result;
+		}
+	}
+	if (counters->left) {
+		result = get_last_count(counters->left, cur);
+		if (result != 0) {
+			return result;
+		}
+	}
+
+	if (counters->match->match->id == cur->id) {
+		result = counters->match->count;
+	}
+	
+	return result;
+}
+
+
+size_t
 calculate_total_count(match_counters *counters, match_operation *cur)
 {
 	size_t result = 0;
@@ -588,7 +646,7 @@ print_counter_averages(FILE *output, match_counters *counters, match_operation *
 }
 
 void
-print_counter_average_count(FILE *output, match_counters *counters, match_operation *cur)
+print_counter_average_count(FILE *output, match_counters *counters, match_operation *cur, bool remove_first_last)
 {
 	size_t total_matches;
 	size_t total_count;
@@ -603,6 +661,14 @@ print_counter_average_count(FILE *output, match_counters *counters, match_operat
 		mt = get_match_by_id(cur->id);
 		total_matches = calculate_total_count_matches(counters, cur);
 		total_count = calculate_total_count(counters, cur);
+		/* Remove the first and last for instance for timestamp average counts (half seconds drag down the average) */
+		if (remove_first_last) {
+			total_matches -= 2;
+			total_count -= get_first_count(counters, cur);
+			total_count -= get_last_count(counters, cur);	
+			printf("Removing first count from average: %u\n", get_first_count(counters,cur));
+			printf("Removing last count from average: %u\n", get_last_count(counters,cur));
+		}
 		printf("Average count for %s: (%u / %u) %.02f\n", mt->name, (unsigned int) total_count, (unsigned int) total_matches, (float) total_count / (float) total_matches);
 		if (counters->left) {
 			print_counter_averages(output, counters->left, cur);
@@ -2636,7 +2702,7 @@ int main(int argc, char *argv[]) {
 			print_counter_averages(stdout, uniques, NULL);
 		}
 		if (show_average_count) {
-			print_counter_average_count(stdout, uniques, NULL);
+			print_counter_average_count(stdout, uniques, NULL, true);
 		}
 	}
 
