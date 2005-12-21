@@ -13,7 +13,7 @@ main(int argc, char **argv)
 {
 	char *filename;
 	FILE *fp;
-	ldns_zone *z;
+	ldns_zone *z = NULL;
 	int line_nr = 0;
 	int c;
 	bool sort = false;
@@ -49,7 +49,6 @@ main(int argc, char **argv)
 	}
 	
 	z = ldns_zone_new_frm_fp_l(fp, NULL, 0, LDNS_RR_CLASS_IN, &line_nr);
-
 
 	if (z) {
 		if (sort) {

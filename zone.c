@@ -163,61 +163,40 @@ ldns_zone_new_frm_fp_l(FILE *fp, ldns_rdf *origin, uint16_t ttl, ldns_rr_class c
 	ldns_rr *last_rr = NULL;
 	ldns_rdf *my_origin = NULL;
 	ldns_rdf *my_prev;
-	uint8_t i;
+	bool soa_seen = false; 	/* 2 soa are an error */
 
 	newzone = ldns_zone_new();
 	my_origin = origin;
 	my_ttl    = ttl;
 	my_class  = c;
 	
-	/* read until we got a soa, all crap above is discarded 
-	 * except $directives
-	 */
-
 	if (origin) {
 		my_origin = ldns_rdf_clone(origin);
 		/* also set the prev */
 		my_prev   = ldns_rdf_clone(origin);
 	}
 	
-	i = 0;
-	do {
-		rr = ldns_rr_new_frm_fp_l(fp, &my_ttl, &my_origin, &my_prev, line_nr);
-		i++;
-	} while (!rr && i <= 9);
-
-	if (i > 9) {
-		/* there is a lot of crap here, bail out before somebody gets
-		 * hurt */
-		if (rr) {
-			ldns_rr_free(rr);
-		}
-		if (my_origin) {
-			ldns_rdf_free(my_origin);
-		}
-		ldns_zone_deep_free(newzone);
-		return NULL;
-	}
-
-	if (ldns_rr_get_type(rr) != LDNS_RR_TYPE_SOA) {
-		/* first rr MUST be the soa */
-		ldns_rr_free(rr);
-		if (my_origin) {
-			ldns_rdf_free(my_origin);
-		}
-		ldns_zone_deep_free(newzone);
-		return NULL;
-	}
-
-	ldns_zone_set_soa(newzone, rr);
-
+	/* read it as root */
 	if (!my_origin) {
-		my_origin = ldns_rdf_clone(ldns_rr_owner(rr));
+		my_origin = ldns_dname_new_frm_str(".");
 	}
 
 	while(!feof(fp)) {
 		rr = ldns_rr_new_frm_fp_l(fp, &my_ttl, &my_origin, &my_prev, line_nr);
 		if (rr) {
+			if (ldns_rr_get_type(rr) == LDNS_RR_TYPE_SOA) {
+				if (soa_seen) {
+					/* second SOA 
+					 * LDNS_STATUS_SOA? */
+					ldns_zone_deep_free(newzone);
+					return NULL;
+				}
+				soa_seen = true;
+				ldns_zone_set_soa(newzone, rr);
+				continue;
+			}
+
+			/* a normal RR - as sofar the DNS is normal */
 			last_rr = rr;
 			if (!ldns_zone_push_rr(newzone, rr)) {
 				dprintf("%s", "error pushing rr\n");
