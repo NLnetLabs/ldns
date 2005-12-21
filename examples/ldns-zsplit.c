@@ -31,10 +31,10 @@ usage(FILE *f, char *progname)
 		fprintf(f, "Usage: %s [OPTIONS] <zonefile> [keys]\n", progname);
 		fprintf(f, "  Cut a zone file into pieces, each part is put in a file\n");
 		fprintf(f, "  named: '<zonefile>.NNN'. Where NNN is a integer ranging 000 to 999.\n");
-		fprintf(f, "  If key files are given here are inserted in each part.\n");
+		fprintf(f, "  If key files are given they are inserted in each part.\n");
 		fprintf(f, "  The original SOA is also included in each part, making them correct DNS\n");
 		fprintf(f, "  (mini) zones.\n");
-		fprintf(f, "  This utility can be used to parallely sign a large zone.\n");
+		fprintf(f, "  This utility can be used to parallel sign a large zone.\n");
 		fprintf(f, "  To make it work the original zone needs to be canonical ordered.\n");
 		fprintf(f, "\nOPTIONS:\n");
 		fprintf(f, "  -n NUMBER\tsplit after this many RRs\n");
