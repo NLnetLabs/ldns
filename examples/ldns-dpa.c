@@ -2090,10 +2090,6 @@ printf("timeval: %u ; %u\n", cur_hdr.ts.tv_sec, cur_hdr.ts.tv_usec);
 					printf("Malloc failed, out of mem?\n");
 					exit(4);
 				}
-				fflush(stderr);
-				printf("Copying to %p, from %p, len %u\n", newdata, data, data_offset);
-				fflush(stdout);
-				
 				memcpy((char *) newdata, data, data_offset);
 				memcpy((char *) newdata+data_offset, fragment_p->data, fragment_p->cur_len);
 				iptr->ip_len = ldns_read_uint16(&(fragment_p->cur_len));
