@@ -2086,6 +2086,14 @@ printf("timeval: %u ; %u\n", cur_hdr.ts.tv_sec, cur_hdr.ts.tv_usec);
 				fragment_p->cur_len = fragment_p->cur_len + ip_len - 20;
 				iptr = (struct ip *) fragment_p->data;
 				newdata = malloc(fragment_p->cur_len + data_offset);
+				if (!newdata) {
+					printf("Malloc failed, out of mem?\n");
+					exit(4);
+				}
+				fflush(stderr);
+				printf("Copying to %p, from %p, len %u\n", newdata, data, data_offset);
+				fflush(stdout);
+				
 				memcpy((char *) newdata, data, data_offset);
 				memcpy((char *) newdata+data_offset, fragment_p->data, fragment_p->cur_len);
 				iptr->ip_len = ldns_read_uint16(&(fragment_p->cur_len));
@@ -2511,6 +2519,7 @@ int main(int argc, char *argv[]) {
 
 	fragment_p = malloc(sizeof(struct fragment_part));
 	fragment_p->ip_id = 0;
+	fragment_p->cur_len = 0;
 
 	for (i = 1; i < argc; i++) {
 
