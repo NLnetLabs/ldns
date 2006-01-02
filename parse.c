@@ -294,7 +294,6 @@ ldns_bget_token(ldns_buffer *b, char *token, const char *delim, size_t limit)
 			continue;
 		}
 
-
 		if (c == '\n' && p != 0) {
 			/* in parentheses */
 			continue;
@@ -331,8 +330,8 @@ ldns_bget_token(ldns_buffer *b, char *token, const char *delim, size_t limit)
 
 tokenread:
 	ldns_bskipcs(b, delim);
-
 	*t = '\0';
+	
 	if (p != 0) {
 		return -1; 
 	}

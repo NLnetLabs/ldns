@@ -106,6 +106,7 @@ ldns_rr_new_frm_str(const char *str, uint16_t default_ttl, ldns_rdf *origin, ldn
 	char  *type = NULL;
 	char  *rdata;
 	char  *rd;
+	char  *b64;
 	size_t rd_strlen;
 	const char *delimiters;
 	ssize_t c;
@@ -113,7 +114,7 @@ ldns_rr_new_frm_str(const char *str, uint16_t default_ttl, ldns_rdf *origin, ldn
 	bool done;
 	bool quoted;
 		
-	ldns_rdf *r;
+	ldns_rdf *r = NULL;
 	uint16_t r_cnt;
 	uint16_t r_min;
 	uint16_t r_max;
@@ -131,8 +132,9 @@ ldns_rr_new_frm_str(const char *str, uint16_t default_ttl, ldns_rdf *origin, ldn
 	rr_buf = LDNS_MALLOC(ldns_buffer);
 	rd_buf = LDNS_MALLOC(ldns_buffer);
 	rd = LDNS_XMALLOC(char, LDNS_MAX_RDFLEN);
+	b64 = LDNS_XMALLOC(char, LDNS_MAX_RDFLEN);
 	if (!new || !owner || !ttl || !clas || !rdata ||
-			!rr_buf || !rd_buf || !rd) {
+			!rr_buf || !rd_buf || !rd | !b64) {
 		return NULL;
 	}
 	r_cnt = 0;
@@ -333,18 +335,19 @@ ldns_rr_new_frm_str(const char *str, uint16_t default_ttl, ldns_rdf *origin, ldn
 				if ((c = ldns_bget_token(rd_buf, rd, delimiters, LDNS_MAX_RDFLEN)) != -1) {
 					/* hmmz, rfc3597 specifies that any type can be represented with
 					 * \# method, which can contain spaces...
-					 * it does specify size though... Lots of strlen here btw!!!
+					 * it does specify size though... 
 					 */
-
 					rd_strlen = strlen(rd);
-
+						
+					/* unknown RR data */
 					if (rd_strlen == 2 && strncmp(rd, "\\#", 2) == 0 && !quoted) {
 						c = ldns_bget_token(rd_buf, rd, delimiters, LDNS_MAX_RDFLEN);
+						/* c can be -1 .. XXX TODO jelte */
 						hex_data_size = (uint16_t) atoi(rd);
 						/* copy the hex chars into hex str (which is 2 chars per byte) */
 						hex_data_str = LDNS_XMALLOC(char, 2 * hex_data_size + 1);
 						cur_hex_data_size = 0;
-						while(cur_hex_data_size < 2*hex_data_size) {
+						while(cur_hex_data_size < 2 * hex_data_size) {
 							c = ldns_bget_token(rd_buf, rd, delimiters, LDNS_MAX_RDFLEN);
 							strncpy(hex_data_str + cur_hex_data_size, rd, rd_strlen);
 							cur_hex_data_size += rd_strlen;
@@ -356,20 +359,40 @@ ldns_rr_new_frm_str(const char *str, uint16_t default_ttl, ldns_rdf *origin, ldn
 						LDNS_FREE(hex_data_str);
 						ldns_rr_push_rdf(new, r);
 					} else {
-						r = ldns_rdf_new_frm_str(
-							ldns_rr_descriptor_field_type(desc, r_cnt),
-							rd);
-
-						/* check if the origin should be concatenated */
-						if (ldns_rr_descriptor_field_type(desc, r_cnt) == LDNS_RDF_TYPE_DNAME &&
-								rd_strlen > 1 &&
-								!ldns_dname_str_absolute(rd) && origin) {
-							if (!ldns_dname_cat(r, origin)) {
-								/* don't know if to quit */
-								/* return NULL;*/
+						/* Normal RR */
+						switch(ldns_rr_descriptor_field_type(desc, r_cnt)) {
+						case LDNS_RDF_TYPE_B64:
+							/* can have spaces, and will always be the last 
+							 * record of the rrdata. Read in the rest */
+							if ((c = ldns_bget_token(rd_buf, b64, "\n", LDNS_MAX_RDFLEN)) != -1) {
+								sprintf(rd, "%s%s", rd, b64);
 							}
+							r = ldns_rdf_new_frm_str(
+									ldns_rr_descriptor_field_type(desc, r_cnt),
+									rd);
+							break;
+						case LDNS_RDF_TYPE_DNAME:
+							r = ldns_rdf_new_frm_str(
+									ldns_rr_descriptor_field_type(desc, r_cnt),
+									rd);
+
+							/* check if the origin should be concatenated */
+							if (rd_strlen > 1 && !ldns_dname_str_absolute(rd) && origin) {
+								if (!ldns_dname_cat(r, origin)) {
+									/* don't know if to quit */
+									/* return NULL;*/
+								}
+							}
+							break;
+						default:
+							r = ldns_rdf_new_frm_str(
+									ldns_rr_descriptor_field_type(desc, r_cnt),
+									rd);
+							break;
 						}
 						ldns_rr_push_rdf(new, r);
+
+						
 					}
 					if (quoted) {
 						if (ldns_buffer_available(rd_buf, 1)) {
@@ -384,6 +407,7 @@ ldns_rr_new_frm_str(const char *str, uint16_t default_ttl, ldns_rdf *origin, ldn
 			}
 	}
 	LDNS_FREE(rd);
+	LDNS_FREE(b64);
 	ldns_buffer_free(rd_buf);
 	ldns_buffer_free(rr_buf);
 
