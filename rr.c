@@ -365,7 +365,7 @@ ldns_rr_new_frm_str(const char *str, uint16_t default_ttl, ldns_rdf *origin, ldn
 							/* can have spaces, and will always be the last 
 							 * record of the rrdata. Read in the rest */
 							if ((c = ldns_bget_token(rd_buf, b64, "\n", LDNS_MAX_RDFLEN)) != -1) {
-								sprintf(rd, "%s%s", rd, b64);
+								snprintf(rd, LDNS_MAX_RDFLEN, "%s%s", rd, b64);
 							}
 							r = ldns_rdf_new_frm_str(
 									ldns_rr_descriptor_field_type(desc, r_cnt),
