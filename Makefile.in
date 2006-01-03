@@ -175,7 +175,7 @@ clean:	drill-clean
 	rm -f lib
 	rm -rf .libs
 
-distclean: clean docclean libclean drill-confclean examples-confclean
+distclean: clean docclean libclean drill-confclean 
 	rm -f ltmain.sh
 
 realclean: clean docclean libclean
