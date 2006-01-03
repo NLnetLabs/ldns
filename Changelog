@@ -1,6 +1,8 @@
-xx Jan 2006: 1.0.1: ldns-team
-	* BUG in drill fix
-	* Don't include i386 .o files in the distr. tar file
+03 Jan 2006: 1.0.1: ldns-team
+	* BUG #110 fixed: drill now handles unreachable servers
+	  gracefully
+	* BUG #109 fixed: Don't include i386 .o files in the distr. tar 
+ 	  file
 
 18 Oct 2005: 1.0.0: ldns-team
 	* Commited a patch from Håkan Olsson
