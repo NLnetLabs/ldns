@@ -8,7 +8,7 @@
  *
  * a Net::DNS like library for C
  *
- * (c) NLnet Labs, 2004, 2005
+ * (c) NLnet Labs, 2004-2006
  *
  * See the file LICENSE for the license
  */

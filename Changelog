@@ -1,3 +1,7 @@
+xx Jan 2006: 1.0.1: ldns-team
+	* BUG in drill fix
+	* Don't include i386 .o files in the distr. tar file
+
 18 Oct 2005: 1.0.0: ldns-team
 	* Commited a patch from Håkan Olsson
 	* Added UPDATE support (Jakob Schlyter and Håkan Olsson)

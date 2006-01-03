@@ -4,6 +4,7 @@
  * contains the functions needed for TSIG [RFC2845]
  *
  * See the file LICENSE for the license
+ * (c) NLnetLabs 2004-2006
  */
 
 #include <ldns/config.h>
