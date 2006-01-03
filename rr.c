@@ -395,6 +395,7 @@ ldns_rr_new_frm_fp_l(FILE *fp, uint16_t *default_ttl, ldns_rdf **origin, int *li
 	char *keyword;
 	uint16_t ttl;
 
+	rr = NULL;
 	if (default_ttl) {
 		ttl = *default_ttl;
 	} else {
@@ -415,22 +416,22 @@ ldns_rr_new_frm_fp_l(FILE *fp, uint16_t *default_ttl, ldns_rdf **origin, int *li
                 return NULL;
         }
 
-	if (origin) {
-		rr = ldns_rr_new_frm_str((const char*) line, ttl, *origin);
-	} else {
-		rr = ldns_rr_new_frm_str((const char*) line, ttl, NULL);
-	}
-	
-	if (!rr) {
-		if ((keyword = strstr(line, "$ORIGIN "))) {
-			if (*origin) {
-				ldns_rdf_free(*origin);
-				*origin = NULL;
-			}
-			*origin = ldns_rdf_new_frm_str(LDNS_RDF_TYPE_DNAME, keyword + 8);
-		} else if ((keyword = strstr(line, "$TTL "))) {
-			*default_ttl = (uint16_t) atoi(keyword + 5);
+	if ((keyword = strstr(line, "$ORIGIN "))) {
+		if (*origin) {
+			ldns_rdf_free(*origin);
+			*origin = NULL;
 		}
+		*origin = ldns_rdf_new_frm_str(LDNS_RDF_TYPE_DNAME, keyword + 8);
+	} else if ((keyword = strstr(line, "$TTL "))) {
+		*default_ttl = (uint16_t) atoi(keyword + 5);
+	} else {
+
+		if (origin) {
+			rr = ldns_rr_new_frm_str((const char*) line, ttl, *origin);
+		} else {
+			rr = ldns_rr_new_frm_str((const char*) line, ttl, NULL);
+		}
+	
 	}
 	LDNS_FREE(line);
 	return rr;

@@ -725,6 +725,7 @@ ldns_resolver_send_pkt(ldns_pkt **answer, ldns_resolver *r, ldns_pkt *query_pkt)
 	ldns_pkt *answer_pkt; /*  = NULL; */
 	ldns_status stat = LDNS_STATUS_OK;
 
+	answer_pkt = NULL;
 	for (retries = ldns_resolver_retry(r); retries > 0; retries--) {
 		stat = ldns_send(&answer_pkt, r, query_pkt);
 		if (stat == LDNS_STATUS_OK) {

@@ -25,7 +25,9 @@ ldns_get_rr_list_addr_by_name(ldns_resolver *res, ldns_rdf *name, ldns_rr_class 
 	ldns_pkt *pkt;
 	ldns_rr_list *aaaa;
 	ldns_rr_list *a;
-	ldns_rr_list *result;
+	ldns_rr_list *result = NULL;
+	ldns_rr_list *hostsfilenames;
+	size_t i;
 	uint8_t ip6;
 
 	a = NULL; aaaa = NULL; result = NULL;
@@ -42,6 +44,22 @@ ldns_get_rr_list_addr_by_name(ldns_resolver *res, ldns_rdf *name, ldns_rr_class 
 
 	ldns_resolver_set_ip6(res, LDNS_RESOLV_INETANY);
 	
+	hostsfilenames = ldns_get_rr_list_hosts_frm_file(NULL);
+	for (i = 0; i < ldns_rr_list_rr_count(hostsfilenames); i++) {
+		if (ldns_rdf_compare(name, ldns_rr_owner(ldns_rr_list_rr(hostsfilenames, i))) == 0) {
+			if (!result) {
+				result = ldns_rr_list_new();
+			}
+			ldns_rr_list_push_rr(result, ldns_rr_clone(ldns_rr_list_rr(hostsfilenames, i)));
+		}
+	}
+
+	ldns_rr_list_deep_free(hostsfilenames);
+
+	if (result) {
+		return result;
+	}
+
 	/* add the RD flags, because we want an answer */
 	pkt = ldns_resolver_query(res, name, LDNS_RR_TYPE_AAAA, c, flags | LDNS_RD);
 	if (pkt) {
@@ -135,9 +153,8 @@ ldns_get_rr_list_hosts_frm_fp_l(FILE *fp, int *line_nr)
 	ldns_buffer *linebuf;
 	ldns_rr *rr;
 	ldns_rr_list *list;
+	ldns_rdf *tmp;
 	bool ip6;
-
-	linebuf = ldns_buffer_new(LDNS_MAX_LINELEN);
 
 	/* duh duh duh !!!!! */
 	line = LDNS_XMALLOC(char, LDNS_MAX_LINELEN + 1);
@@ -157,6 +174,8 @@ ldns_get_rr_list_hosts_frm_fp_l(FILE *fp, int *line_nr)
 			continue;
 		}
 		/* put it in a buffer for further processing */
+		linebuf = LDNS_MALLOC(ldns_buffer);
+
 		ldns_buffer_new_frm_data(linebuf, line, (size_t) i);
 		for(cnt = 0, j = ldns_bget_token(linebuf, word, LDNS_PARSE_NO_NL, 0);
 				j > 0;
@@ -165,12 +184,14 @@ ldns_get_rr_list_hosts_frm_fp_l(FILE *fp, int *line_nr)
 		{
 			if (cnt == 0) {
 				/* the address */
-				if (ldns_rdf_new_frm_str(LDNS_RDF_TYPE_AAAA, word)) {
+				if ((tmp = ldns_rdf_new_frm_str(LDNS_RDF_TYPE_AAAA, word))) {
 					/* ip6 */
+					ldns_rdf_deep_free(tmp);
 					ip6 = true;
 				} else {
-					if (ldns_rdf_new_frm_str(LDNS_RDF_TYPE_A, word)) {
+					if ((tmp = ldns_rdf_new_frm_str(LDNS_RDF_TYPE_A, word))) {
 						/* ip4 */
+						ldns_rdf_deep_free(tmp);
 						ip6 = false;
 					} else {
 						/* kaput */
@@ -186,11 +207,13 @@ ldns_get_rr_list_hosts_frm_fp_l(FILE *fp, int *line_nr)
 					snprintf(rr_str, LDNS_MAX_LINELEN, "%s IN A %s", word, addr);
 				}
 				rr = ldns_rr_new_frm_str(rr_str, 0, NULL);
+				if (rr) {
+						ldns_rr_list_push_rr(list, ldns_rr_clone(rr));
+				}
+				ldns_rr_free(rr);
 			}
 		}
-		if (rr) {
-				ldns_rr_list_push_rr(list, rr);
-		}
+		ldns_buffer_free(linebuf);
 	}
 	LDNS_FREE(line);
 	LDNS_FREE(word);
