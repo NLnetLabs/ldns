@@ -1,6 +1,6 @@
 Summary: Lowlevel DNS(SEC) library with API
 Name: ldns
-Version: 1.0.0
+Version: 1.0.1
 Release: 4
 License: LGPL
 Url: http://open.nlnetlabs.nl/%{name}/
