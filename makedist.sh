@@ -120,7 +120,7 @@ svn export "$SVNROOT" ldns || error_cleanup "SVN command failed"
 cd ldns || error_cleanup "LDNS not exported correctly from SVN"
 
 #info "Running  Libtoolize script (libtoolize)."
-#libtoolize || error_cleanup "Libtoolize failed."
+libtoolize -c || error_cleanup "Libtoolize failed."
 
 info "Building configure script (autoconf)."
 autoreconf || error_cleanup "Autoconf failed."
