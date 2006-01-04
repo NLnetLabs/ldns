@@ -332,7 +332,7 @@ ldns_pkt_tsig_sign(ldns_pkt *pkt, const char *key_name, const char *key_data, ui
 	/* bleh :p */
 	if (gettimeofday(&tv_time_signed, NULL) == 0) {
 		time_signed = LDNS_XMALLOC(uint8_t, 6);
-		ldns_write_uint64_as_uint48(time_signed, tv_time_signed.tv_sec);
+		ldns_write_uint64_as_uint48(time_signed,(uint64_t)tv_time_signed.tv_sec);
 	} else {
 		status = LDNS_STATUS_INTERNAL_ERR;
 		goto clean;
