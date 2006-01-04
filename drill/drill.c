@@ -333,6 +333,10 @@ main(int argc, char *argv[])
 
 		/* if ^@ then it's a server */
 		if (argv[i][0] == '@') {
+			if (strlen(argv[i]) == 1) {
+				warning("%s", "No nameserver given");
+				exit(EXIT_FAILURE);
+			}
 			serv = argv[i] + 1;
 			continue;
 		}

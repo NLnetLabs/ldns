@@ -8,6 +8,7 @@ December??? 2005: 1.0.1: ldns-team
 	* The ldns_zone structure was stress tested. The current setup
 	 (ie. just a list of rrs) can scale to zone file in order of
 	 megabytes. Sorting such zone is still difficult.
+	* Reading multiline b64 encoded rdata works.
 
 	Drill:
 	* -r was killed in favor of -o <header bit mnemonic> which 
