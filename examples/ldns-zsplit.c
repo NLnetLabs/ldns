@@ -183,7 +183,8 @@ main(int argc, char **argv)
 	fclose(fp);
 
 	if (!z) {
-		fprintf(stderr, "Zone file %s could not be parsed correctly\n", argv[0]);
+		fprintf(stderr, "Zone file %s could not be parsed correctly at line %d\n", 
+			argv[0], line_nr);
 		exit(EXIT_FAILURE);
 	}
 	/* these kind of things can kill you... */
@@ -241,7 +242,7 @@ main(int argc, char **argv)
 			ldns_rr_print(fp, current_rr); 
 
 			/* remove them */
-			ldns_rr_list_free(last_rrset);
+			ldns_rr_list_free(last_rrset); 
 			last_rrset = ldns_rr_list_new();
 			/* add the current RR */
 			ldns_rr_list_push_rr(last_rrset, current_rr);
@@ -252,7 +253,7 @@ main(int argc, char **argv)
 		}
 		if (compare != 0) {
 			/* remove them and then add the current one */
-			ldns_rr_list_free(last_rrset);
+			ldns_rr_list_free(last_rrset); 
 			last_rrset = ldns_rr_list_new();
 			ldns_rr_list_push_rr(last_rrset, current_rr);
 		}

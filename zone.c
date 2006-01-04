@@ -188,7 +188,7 @@ ldns_zone_new_frm_fp_l(FILE *fp, ldns_rdf *origin, uint16_t ttl, ldns_rr_class c
 				if (soa_seen) {
 					/* second SOA 
 					 * LDNS_STATUS_SOA? */
-					ldns_zone_deep_free(newzone);
+					ldns_zone_free(newzone);
 					return NULL;
 				}
 				soa_seen = true;
@@ -203,7 +203,7 @@ ldns_zone_new_frm_fp_l(FILE *fp, ldns_rdf *origin, uint16_t ttl, ldns_rr_class c
 				if (my_origin) {
 					ldns_rdf_free(my_origin);
 				}
-				ldns_zone_deep_free(newzone);
+				ldns_zone_free(newzone);
 				return NULL;
 			}
 
