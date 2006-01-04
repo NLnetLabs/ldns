@@ -290,7 +290,13 @@ main(int argc, char *argv[])
 
 		/* if ^@ then it's a server */
 		if (argv[i][0] == '@') {
-			serv = argv[i] + 1;
+			if (strlen(argv[i]) > 1) {
+				serv = argv[i] + 1;
+			} else {
+				usage(stdout, progname);
+				result = EXIT_FAILURE;
+				goto exit;
+			}
 			continue;
 		}
 		/* if has a dot, it's a name */
