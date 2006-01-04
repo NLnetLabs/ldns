@@ -219,3 +219,4 @@ AC_CONFIG_HEADER([ldns/config.h])
 AC_OUTPUT
 
 AC_CONFIG_SUBDIRS([drill])
+AC_CONFIG_SUBDIRS([examples])
