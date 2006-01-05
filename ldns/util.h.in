@@ -136,12 +136,18 @@ struct ldns_struct_lookup_table {
   
 /**
  * Looks up the table entry by name, returns NULL if not found.
+ * \param[in] table the lookup table to search in
+ * \param[in] name what to search for
+ * \return the item found
  */
 ldns_lookup_table *ldns_lookup_by_name(ldns_lookup_table table[],
                                        const char *name);
 
 /**
  * Looks up the table entry by id, returns NULL if not found.
+ * \param[in] table the lookup table to search in
+ * \param[in] name what to search for
+ * \return the item found
  */
 ldns_lookup_table *ldns_lookup_by_id(ldns_lookup_table table[], int id);
 
@@ -149,6 +155,9 @@ ldns_lookup_table *ldns_lookup_by_id(ldns_lookup_table table[], int id);
  * Returns the value of the specified bit
  * The bits are counted from left to right, so bit #0 is the
  * left most bit.
+ * \param[in] bits array holding the bits
+ * \param[in] index to the wanted bit
+ * \return 
  */
 int ldns_get_bit(uint8_t bits[], size_t index);
 
@@ -157,6 +166,9 @@ int ldns_get_bit(uint8_t bits[], size_t index);
  * Returns the value of the specified bit
  * The bits are counted from right to left, so bit #0 is the
  * right most bit.
+ * \param[in] bits array holding the bits
+ * \param[in] index to the wanted bit
+ * \return 1 or 0 depending no the bit state
  */
 int ldns_get_bit_r(uint8_t bits[], size_t index);
 
@@ -165,10 +177,10 @@ int ldns_get_bit_r(uint8_t bits[], size_t index);
  * 1 if value is true, 0 if false
  * The bits are counted from right to left, so bit #0 is the
  * right most bit.
- *
  * \param[in] byte the bit to set the bit in
  * \param[in] bit_nr the bit to set (0 <= n <= 7)
  * \param[in] value whether to set the bit to 1 or 0
+ * \return 1 or 0 depending no the bit state
  */
 void ldns_set_bit(uint8_t *byte, int bit_nr, bool value);
 
@@ -195,11 +207,15 @@ ldns_power(long a, long b) {
 
 /**
  * Returns the int value of the given (hex) digit
+ * \param[in] ch the hex char to convert
+ * \return the converted decimal value
  */
 int ldns_hexdigit_to_int(char ch);
 
 /**
  * Returns the char (hex) representation of the given int
+ * \param[in] ch the int to convert
+ * \return the converted hex char
  */
 char ldns_int_to_hexdigit(int ch);
 
@@ -223,6 +239,8 @@ int ldns_serial(uint32_t s1, uint32_t s2);
 /**
  * Convert TM to seconds since epoch (midnight, January 1st, 1970).
  * Like timegm(3), which is not always available.
+ * \param[in] tm a struct tm* with the date
+ * \return the seconds since epoch
  */
 time_t mktime_from_utc(const struct tm *tm);
 
