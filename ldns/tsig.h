@@ -34,8 +34,7 @@ char *ldns_tsig_keydata_clone(ldns_tsig_credentials *);
  *
  * \return true if tsig is correct, false if not, or if tsig is not set
  */
-bool ldns_pkt_tsig_verify(ldns_pkt *pkt, uint8_t *wire, size_t wire_size,
-    const char *key_name, const char *key_data, ldns_rdf *mac);
+bool ldns_pkt_tsig_verify(ldns_pkt *pkt, uint8_t *wire, size_t wire_size, const char *key_name, const char *key_data, ldns_rdf *mac);
 
 /**
  * creates a tsig rr for the given packet and key (string?).
@@ -47,8 +46,6 @@ bool ldns_pkt_tsig_verify(ldns_pkt *pkt, uint8_t *wire, size_t wire_size,
  * \param[in] query_mac is added to the digest if not NULL (so NULL is for signing queries, not NULL is for signing answers)
  * \return status (OK if success)
  */
-ldns_status ldns_pkt_tsig_sign(ldns_pkt *pkt, const char *key_name,
-    const char *key_data, uint16_t fudge, const char *algorithm_name,
-    ldns_rdf *query_mac);
+ldns_status ldns_pkt_tsig_sign(ldns_pkt *pkt, const char *key_name, const char *key_data, uint16_t fudge, const char *algorithm_name, ldns_rdf *query_mac);
 
 #endif /* _LDNS_TSIG_H_ */

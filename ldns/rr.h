@@ -427,7 +427,14 @@ size_t ldns_rr_list_rr_count(ldns_rr_list *rr_list);
  */
 void ldns_rr_list_set_rr_count(ldns_rr_list *rr_list, size_t count);
 
-/* set a specific rr */
+/**
+ * set a rr on a specific index in a ldns_rr_list
+ * \param[in] rr_list the rr_list to use
+ * \param[in] r the rr to set
+ * \param[in] count index into the rr_list
+ * \return the old rr which was stored in the rr_list, or
+ * NULL is the index was too large
+ * set a specific rr */
 ldns_rr * ldns_rr_list_set_rr(ldns_rr_list *rr_list, ldns_rr *r, size_t count);
 
 /**
@@ -447,14 +454,12 @@ ldns_rr_list* ldns_rr_list_new();
 /**
  * frees an rr_list structure.
  * \param[in] rr_list the list to free
- * \return void
  */
 void ldns_rr_list_free(ldns_rr_list *rr_list);
 
 /**
  * frees an rr_list structure and all rrs contained therein.
  * \param[in] rr_list the list to free
- * \return void
  */
 void ldns_rr_list_deep_free(ldns_rr_list *rr_list);
 
@@ -632,8 +637,6 @@ void ldns_rr_list2canonical(ldns_rr_list *rr_list);
  */
 uint8_t ldns_rr_label_count(ldns_rr *rr);
 
-/* todo */
-
 /**
  * returns the resource record descriptor for the given rr type.
  *
@@ -691,6 +694,7 @@ ldns_rr_list *ldns_rr_list_subtype_by_rdf(ldns_rr_list *l, ldns_rdf *r, size_t p
 ldns_rr_type    ldns_rdf2rr_type(const ldns_rdf *rd);
 
 /* added while doing lua */
+/* TODO document or delete it */
 bool ldns_rr_list_insert_rr(ldns_rr_list *rr_list, ldns_rr *r, size_t count);
 
 #endif /* _LDNS_RR_H */
