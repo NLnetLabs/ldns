@@ -57,19 +57,6 @@ ssize_t ldns_fget_token(FILE *f, char *token, const char *delim, size_t limit);
  */
 ssize_t ldns_fget_token_l(FILE *f, char *token, const char *delim, size_t limit, int *line_nr);
 
-/* 
- * searches for keyword and delim. Gives everything back
- * after the keyword + k_del until we hit d_del
- */
-ssize_t ldns_fget_keyword_data(FILE *f, const char *keyword, const char *k_del, char *data, const char *d_del, size_t data_limit);
-
-/* 
- * searches for keyword and delim. Gives everything back
- * after the keyword + k_del until we hit d_del
- * \param[in] line_nr pointer to an integer containing the current line number (for debugging purposes)
- */
-ssize_t ldns_fget_keyword_data_l(FILE *f, const char *keyword, const char *k_del, char *data, const char *d_del, size_t data_limit, int *line_nr);
-
 /**
  * returns a token/char from the buffer b.
  * This function deals with ( and ) in the buffer,
@@ -81,12 +68,6 @@ ssize_t ldns_fget_keyword_data_l(FILE *f, const char *keyword, const char *k_del
  * \returns 0 on error of EOF of b otherwise return the length of what is read
  */
 ssize_t ldns_bget_token(ldns_buffer *b, char *token, const char *delim, size_t limit);
-
-/* 
- * searches for keyword and delim. Gives everything back
- * after the keyword + k_del until we hit d_del
- */
-ssize_t ldns_bget_keyword_data(ldns_buffer *b, const char *keyword, const char *k_del, char *data, const char *d_del);
 
 /**
  * removes comments from a string. A comment = ';'.
