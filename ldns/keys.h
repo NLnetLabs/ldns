@@ -64,6 +64,7 @@ struct ldns_struct_key {
 	} _key;
 	/** depending on the key we can have extra data */
 	union {
+                /** some values which influence how we sign */
 		struct {
 			uint32_t orig_ttl;
 			uint32_t inception;

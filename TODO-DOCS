@@ -1,5 +1,5 @@
 update.h   - all
-resolver.h - get/set 
+resolver.h - only set
 packet.h   - get/set
 keys.h     - get/set
 dnssec.h   - some + get/set

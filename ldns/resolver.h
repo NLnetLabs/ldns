@@ -114,28 +114,152 @@ typedef struct ldns_struct_resolver ldns_resolver;
 
 /* prototypes */
 /* read access functions */
+
+/**
+ * Get the port the resolver should use
+ * \param[in] r the resolver
+ * \return the port number 
+ */
 uint16_t ldns_resolver_port(ldns_resolver *r);
-uint8_t ldns_resolver_retry(ldns_resolver *r);
-uint8_t ldns_resolver_retrans(ldns_resolver *r);
-uint8_t ldns_resolver_ip6(ldns_resolver *r);
-uint16_t ldns_resolver_edns_udp_size(ldns_resolver *r);
+
+/**
+ * Is the resolver set to recurse
+ * \param[in] r the resolver
+ * \return true if so, otherwise false
+ */
 bool ldns_resolver_recursive(ldns_resolver *r);
+
+/**
+ * Get the debug status of the resolver
+ * \param[in] r the resolver
+ * \return true if so, otherwise false
+ */
 bool ldns_resolver_debug(ldns_resolver *r);
+
+/**
+ * Get the number of retries
+ * \param[in] r the resolver
+ * \return the number of retries
+ */
+uint8_t ldns_resolver_retry(ldns_resolver *r);
+
+/**
+ * Get the retransmit interval
+ * \param[in] r the resolver
+ * \return the retransmit interval
+ */
+uint8_t ldns_resolver_retrans(ldns_resolver *r);
+
+/**
+ * Does the resolver use ip6 or ip4
+ * \param[in] r the resolver
+ * \return 0: both, 1: ip4, 2:ip6
+ */
+uint8_t ldns_resolver_ip6(ldns_resolver *r);
+
+/**
+ * Get the resolver's udp size
+ * \param[in] r the resolver
+ * \return the udp mesg size
+ */
+uint16_t ldns_resolver_edns_udp_size(ldns_resolver *r);
+/**
+ * Does the resolver use tcp or udp
+ * \param[in] r the resolver
+ * \return true: tcp, false: udp
+ */
 bool ldns_resolver_usevc(ldns_resolver *r);
+/**
+ * Does the resolver only try the first nameserver
+ * \param[in] r the resolver
+ * \return true: yes, fail, false: no, try the others
+ */
 bool ldns_resolver_fail(ldns_resolver *r);
+/**
+ * Does the resolver do DNSSEC
+ * \param[in] r the resolver
+ * \return true: yes, false: no
+ */
 bool ldns_resolver_dnssec(ldns_resolver *r);
+/**
+ * Does the resolver set the CD bit 
+ * \param[in] r the resolver
+ * \return true: yes, false: no
+ */
 bool ldns_resolver_dnssec_cd(ldns_resolver *r);
+/**
+ * Does the resolver ignore the TC bit (truncated)
+ * \param[in] r the resolver
+ * \return true: yes, false: no
+ */
 bool ldns_resolver_igntc(ldns_resolver *r);
+/**
+ * Does the resolver randomize the nameserver before usage
+ * \param[in] r the resolver
+ * \return true: yes, false: no
+ */
 bool ldns_resolver_random(ldns_resolver *r);
+/**
+ * How many nameserver are configured in the resolver
+ * \param[in] r the resolver
+ * \return number of nameservers
+ */
 size_t ldns_resolver_nameserver_count(ldns_resolver *r);
+/**
+ * What is the default dname to add to relative queries
+ * \param[in] r the resolver
+ * \return the dname which is added
+ */
 ldns_rdf *ldns_resolver_domain(ldns_resolver *r);
+/**
+ * What is the timeout on socket connections
+ * \param[in] r the resolver
+ * \return the timeout as struct timeval
+ */
 struct timeval ldns_resolver_timeout(ldns_resolver *r);
+/**
+ * What is the searchlist as used by the resolver
+ * \param[in] r the resolver
+ * \return a ldns_rdf pointer to a list of the addresses
+ */
 ldns_rdf** ldns_resolver_searchlist(ldns_resolver *r);
+/**
+ * Return the configured nameserver ip address
+ * \param[in] r the resolver
+ * \return a ldns_rdf pointer to a list of the addresses
+ */
 ldns_rdf** ldns_resolver_nameservers(ldns_resolver *r);
+/**
+ * Return the used round trip times for the nameservers
+ * \param[in] r the resolver
+ * \return a size_t* pointer to the list.
+ * yet)
+ */
 size_t * ldns_resolver_rtt(ldns_resolver *r);
+/**
+ * Return the used round trip time for a specific nameserver
+ * \param[in] r the resolver
+ * \param[in] pos the index to the nameserver
+ * \return the rrt, 0: infinite, >0: undefined (as of * yet)
+ */
 size_t ldns_resolver_nameserver_rtt(ldns_resolver *r, size_t pos);
+/**
+ * Return the tsig keyname as used by the nameserver
+ * \param[in] r the resolver
+ * \return the name used.
+ */
 char *ldns_resolver_tsig_keyname(ldns_resolver *r);
+/**
+ * Return the tsig algorithm as used by the nameserver
+ * \param[in] r the resolver
+ * \return the algorithm used.
+ */
 char *ldns_resolver_tsig_algorithm(ldns_resolver *r);
+/**
+ * Return the tsig keydata as used by the nameserver
+ * \param[in] r the resolver
+ * \return the keydata used.
+ */
 char *ldns_resolver_tsig_keydata(ldns_resolver *r);
 /**
  * pop the last nameserver from the resolver.
@@ -145,8 +269,20 @@ char *ldns_resolver_tsig_keydata(ldns_resolver *r);
 ldns_rdf* ldns_resolver_pop_nameserver(ldns_resolver *r);
 
 /* write access function */
-void ldns_resolver_set_port(ldns_resolver *r, uint16_t);
+/**
+ * Set the port the resolver should use
+ * \param[in] r the resolver
+ * \param[in] p the port number
+ */
+void ldns_resolver_set_port(ldns_resolver *r, uint16_t p);
+
+/**
+ * Set the resolver recursion
+ * \param[in] r the resolver
+ * \param[in] b true: set to recurse, false: unset
+ */
 void ldns_resolver_set_recursive(ldns_resolver *r, bool b);
+
 void ldns_resolver_set_debug(ldns_resolver *r, bool b);
 void ldns_resolver_incr_nameserver_count(ldns_resolver *r);
 void ldns_resolver_dec_nameserver_count(ldns_resolver *r);
