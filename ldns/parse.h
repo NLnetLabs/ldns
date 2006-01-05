@@ -69,6 +69,47 @@ ssize_t ldns_fget_token_l(FILE *f, char *token, const char *delim, size_t limit,
  */
 ssize_t ldns_bget_token(ldns_buffer *b, char *token, const char *delim, size_t limit);
 
+/*
+ * searches for keyword and delim in a file. Gives everything back
+ * after the keyword + k_del until we hit d_del
+ * \param[in] f file pointer to read from
+ * \param[in] keyword keyword to look for
+ * \param[in] k_del keyword delimeter 
+ * \param[out] data the data found 
+ * \param[in] d_del the data delimeter
+ * \param[in] data_limit maximum size the the data buffer
+ * \return the number of character read
+ */
+ssize_t ldns_fget_keyword_data(FILE *f, const char *keyword, const char *k_del, char *data, const char *d_del, size_t data_limit);
+
+/*
+ * searches for keyword and delim. Gives everything back
+ * after the keyword + k_del until we hit d_del
+ * \param[in] f file pointer to read from
+ * \param[in] keyword keyword to look for
+ * \param[in] k_del keyword delimeter 
+ * \param[out] data the data found 
+ * \param[in] d_del the data delimeter
+ * \param[in] data_limit maximum size the the data buffer
+ * \param[in] line_nr pointer to an integer containing the current line number (for
+debugging purposes)
+ * \return the number of character read
+ */
+ssize_t ldns_fget_keyword_data_l(FILE *f, const char *keyword, const char *k_del, char *data, const char *d_del, size_t data_limit, int *line_nr);
+
+/*
+ * searches for keyword and delim in a buffer. Gives everything back
+ * after the keyword + k_del until we hit d_del
+ * \param[in] b buffer pointer to read from
+ * \param[in] keyword keyword to look for
+ * \param[in] k_del keyword delimeter 
+ * \param[out] data the data found 
+ * \param[in] d_del the data delimeter
+ * \param[in] data_limit maximum size the the data buffer
+ * \return the number of character read
+ */
+ssize_t ldns_bget_keyword_data(ldns_buffer *b, const char *keyword, const char *k_del, char *data, const char *d_del, size_t data_limit);
+
 /**
  * removes comments from a string. A comment = ';'.
  * Goes on with this until a newline (\n) is reached.

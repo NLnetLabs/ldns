@@ -137,6 +137,41 @@ tokenread:
 }
 
 ssize_t
+ldns_fget_keyword_data(FILE *f, const char *keyword, const char *k_del, char *data,
+               const char *d_del, size_t data_limit)
+{
+       return ldns_fget_keyword_data_l(f, keyword, k_del, data, d_del, data_limit, NULL);
+}
+
+ssize_t
+ldns_fget_keyword_data_l(FILE *f, const char *keyword, const char *k_del, char *data,
+               const char *d_del, size_t data_limit, int *line_nr)
+{
+       /* we assume: keyword|sep|data */
+       char *fkeyword;
+       ssize_t i;
+
+       fkeyword = LDNS_XMALLOC(char, LDNS_MAX_KEYWORDLEN);
+       i = 0;
+
+       i = ldns_fget_token(f, fkeyword, k_del, LDNS_MAX_KEYWORDLEN);
+
+       /* case??? i instead of strlen? */
+       if (strncmp(fkeyword, keyword, LDNS_MAX_KEYWORDLEN - 1) == 0) {
+               /* whee! */
+               /* printf("%s\n%s\n", "Matching keyword", fkeyword); */
+               i = ldns_fget_token_l(f, data, d_del, data_limit, line_nr);
+               LDNS_FREE(fkeyword);
+               return i;
+       } else {
+               /*printf("no match for %s (read: %s)\n", keyword, fkeyword);*/
+               LDNS_FREE(fkeyword);
+               return -1;
+       }
+}
+
+
+ssize_t
 ldns_bget_token(ldns_buffer *b, char *token, const char *delim, size_t limit)
 {	
 	int c, lc;
@@ -313,11 +348,30 @@ ldns_fskipcs_l(FILE *fp, const char *s, int *line_nr)
 	}
 }
 
-ldns_directive
-ldns_directive_new_frm_str(const char *str, void **arg)
+ssize_t
+ldns_bget_keyword_data(ldns_buffer *b, const char *keyword, const char *k_del, char
+*data, const char *d_del, size_t data_limit)
 {
-	str = str;
-	arg = arg;
-	/* directive<SPACE>arguments */
-	return LDNS_DIR_TTL;
+       /* we assume: keyword|sep|data */
+       char *fkeyword;
+       ssize_t i;
+
+       fkeyword = LDNS_XMALLOC(char, LDNS_MAX_KEYWORDLEN);
+       i = 0;
+
+       i = ldns_bget_token(b, fkeyword, k_del, data_limit);
+
+       dprintf("[%s]\n", fkeyword);
+
+       /* case??? */
+       if (strncmp(fkeyword, keyword, strlen(keyword)) == 0) {
+               /* whee, the match! */
+               dprintf("%s", "Matching keyword\n\n");
+               /* retrieve it's data */
+               i = ldns_bget_token(b, data, d_del, 0);
+               return i;
+       } else {
+               return -1;
+       }
 }
+
