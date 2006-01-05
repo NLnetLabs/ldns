@@ -89,11 +89,13 @@ typedef struct ldns_struct_key_list ldns_key_list;
 
 /**
  * creates a new empty key list
+ * \return a new ldns_key_list structure pointer
  */
 ldns_key_list *ldns_key_list_new();
 
 /** 
  * creates a new empty key structure
+ * \return a new ldns_key * structure
  */
 ldns_key *ldns_key_new();
 

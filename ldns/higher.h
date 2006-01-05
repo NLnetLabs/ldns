@@ -83,11 +83,6 @@ ldns_rr_list *ldns_get_rr_list_hosts_frm_file(char *filename);
 uint16_t ldns_getaddrinfo(ldns_resolver *res, ldns_rdf *node, ldns_rr_class c, ldns_rr_list **list);
 
 /**
- * 
- */
-ldns_rr_list *ldns_getaddrinfo_secure();
-
-/**
  * Check if t is enumerated in the nsec type rdata
  * \param[in] nsec the NSEC Record to look in
  * \param[in] t the type to check for

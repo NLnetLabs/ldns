@@ -284,12 +284,6 @@ ldns_getaddrinfo(ldns_resolver *res, ldns_rdf *node, ldns_rr_class c, ldns_rr_li
 	return names_found;
 }
 
-ldns_rr_list *
-ldns_getaddrinfo_secure(void)
-{
-	return NULL;
-}
-
 /*
  * Send a "simple" update for an A or an AAAA RR.
  * \param[in] fqdn the update RR owner
