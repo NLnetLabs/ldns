@@ -1,4 +1,4 @@
-24 Jan 2006: 1.1.0: ldns-team
+25 Jan 2006: 1.1.0: ldns-team
 	* Added include/ and lib/ dirs so that you can compile against ldns
 	  without installing ldns on your system
 	* Makefile updates
