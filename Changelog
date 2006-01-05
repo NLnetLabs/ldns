@@ -1,4 +1,4 @@
-December??? 2005: 1.0.1: ldns-team
+Jan ??? 2006: 1.1.0: ldns-team
 	* Added include/ and lib/ dirs so that you can compile against ldns
 	  without installing ldns on your system
 	* Makefile updates
@@ -20,7 +20,7 @@ December??? 2005: 1.0.1: ldns-team
 	  reacheable and unreacheable.
 	
 	Examples:
-	* ldns-dpa was added to the examples - this is Dns Packet
+	* ldns-dpa was added to the examples - this is the Dns Packet
 	  Analyzer tool.
 	
 	Code:

@@ -2,7 +2,7 @@
  *
  * Functions for RFC 2136 Dynamic Update
  *
- * Copyright (c) 2005, NLnet Labs. All rights reserved.
+ * Copyright (c) 2005-2006, NLnet Labs. All rights reserved.
  *
  * See LICENSE for the license.
  */

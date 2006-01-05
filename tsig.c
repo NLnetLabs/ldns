@@ -3,6 +3,7 @@
  *
  * contains the functions needed for TSIG [RFC2845]
  *
+ * (c) 2005-2006 NLnet Labs
  * See the file LICENSE for the license
  */
 

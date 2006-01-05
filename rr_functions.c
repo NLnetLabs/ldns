@@ -3,7 +3,7 @@
  *
  * function that operate on specific rr types
  *
- * (c) NLnet Labs, 2004, 2005
+ * (c) NLnet Labs, 2004-2006
  * See the file LICENSE for the license
  */
 

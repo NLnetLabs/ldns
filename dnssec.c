@@ -4,7 +4,7 @@
  * contains the cryptographic function needed for DNSSEC
  * The crypto library used is openssl
  *
- * (c) NLnet Labs, 2004, 2005
+ * (c) NLnet Labs, 2004-2006
  * a Net::DNS like library for C
  *
  * See the file LICENSE for the license

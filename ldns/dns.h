@@ -1,7 +1,7 @@
 /*
  * dns.h -- defines for the Domain Name System
  *
- * Copyright (c) 2001-2005, NLnet Labs. All rights reserved.
+ * Copyright (c) 2005-2006, NLnet Labs. All rights reserved.
  *
  * See LICENSE for the license.
  *

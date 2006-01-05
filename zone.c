@@ -3,7 +3,7 @@
  * Functions for ldns_zone structure
  * a Net::DNS like library for C
  *
- * (c) NLnet Labs, 2005
+ * (c) NLnet Labs, 2005-2006
  * See the file LICENSE for the license
  */
 #include <ldns/config.h>

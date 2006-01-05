@@ -5,7 +5,7 @@
  * and give a general interface for private keys and hmac
  * handling
  *
- * (c) NLnet Labs, 2004, 2005
+ * (c) NLnet Labs, 2004-2006
  * 
  * See the file LICENSE for the license
  */
