@@ -7821,7 +7821,7 @@ X# svnserve resets the path, you may need to adjust it, like this:
 XPATH=$PATH:/usr/sbin:/sbin:/usr/local/bin:/usr/local/sbin:.
 X
 XLIB=../../lib/
-XLD_LIBRARY_PATH=$LIB
+Xexport LD_LIBRARY_PATH=$LIB
 X
 X# get the libdns symbols
 X../../examples/ldns-read-zone 08-zonereader.inputzone > 08-zonereader.current
