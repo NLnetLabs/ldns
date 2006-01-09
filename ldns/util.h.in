@@ -146,7 +146,7 @@ ldns_lookup_table *ldns_lookup_by_name(ldns_lookup_table table[],
 /**
  * Looks up the table entry by id, returns NULL if not found.
  * \param[in] table the lookup table to search in
- * \param[in] name what to search for
+ * \param[in] id what to search for
  * \return the item found
  */
 ldns_lookup_table *ldns_lookup_by_id(ldns_lookup_table table[], int id);
