@@ -18,7 +18,7 @@ int main(void)
 
 	printf("tweemacht %u\n", tweemacht);
 
-	sig = ldns_rr_new_frm_str("jelte.nlnetlabs.nl.     18000   IN      RRSIG   NSEC RSASHA1 3 18000 20050913235001 20050814235001 43791 nlnetlabs.nl. epWGR0WkhWQ1h0eXvU89W57xwI0xuUlWtvvUnABQVmUfZ2nGllIy2KLR5cfgpB5UH7beASrAo78AlPddPCnH50OYNjllesDy9HLderQtjQoi47SPPluLC6v3Fwqq64Zv0wf2fPzJqDSnOOrQPVzIuB3IDv5XD4M5t8Vze8QZ8lA=", 0, NULL);
+	sig = ldns_rr_new_frm_str("jelte.nlnetlabs.nl.     18000   IN      RRSIG   NSEC RSASHA1 3 18000 20050913235001 20050814235001 43791 nlnetlabs.nl. epWGR0WkhWQ1h0eXvU89W57xwI0xuUlWtvvUnABQVmUfZ2nGllIy2KLR5cfgpB5UH7beASrAo78AlPddPCnH50OYNjllesDy9HLderQtjQoi47SPPluLC6v3Fwqq64Zv0wf2fPzJqDSnOOrQPVzIuB3IDv5XD4M5t8Vze8QZ8lA=", 0, NULL, NULL);
 
 	ldns_rr_print(stdout, sig);
 

@@ -60,13 +60,13 @@ main(int argc, char **argv)
 	if (ldns_dname_is_subdomain(test2, test)) {
 		printf("Yes, it's a subdomain\n");
 	} else {
-		printf("Go fuck your self\n");
+		printf("error\n");
 	}
 
 	if (ldns_dname_is_subdomain(child, parent)) {
 		printf("Yes, it's a subdomain\n");
 	} else {
-		printf("Go fuck your self\n");
+		printf("error\n");
 	}
 	
 	return 0;

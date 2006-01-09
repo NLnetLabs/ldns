@@ -38,11 +38,11 @@ main()
 	dnskeys = ldns_rr_list_new();
 
 	/* well formed */
-	rr = ldns_rr_new_frm_str("a.miek.nl.   1800   IN   A    195.169.222.38\na.miek.nl.   1800   IN   A    195.169.222.38", 0, NULL);
+	rr = ldns_rr_new_frm_str("a.miek.nl.   1800   IN   A    195.169.222.38\na.miek.nl.   1800   IN   A    195.169.222.38", 0, NULL, NULL);
 	ldns_rr_print(stdout, rr);
 	printf("\n");
 
-	rr = ldns_rr_new_frm_str("a.miek.nl.   1800   IN   A    195.169.222.38    ", 0, NULL);
+	rr = ldns_rr_new_frm_str("a.miek.nl.   1800   IN   A    195.169.222.38    ", 0, NULL, NULL);
 	ldns_rr_print(stdout, rr);
 	printf("\n");
 
@@ -61,62 +61,62 @@ main()
 3600 ; negative caching\n\
 )"; 
 
-	rr = ldns_rr_new_frm_str(soa_string1, 0, NULL);
+	rr = ldns_rr_new_frm_str(soa_string1, 0, NULL, NULL);
 	ldns_rr_print(stdout, rr);
 	printf("\n");
-	rr = ldns_rr_new_frm_str(soa_string2, 0, NULL);
-	ldns_rr_print(stdout, rr);
-	printf("\n");
-
-	rr = ldns_rr_new_frm_str("a.miek.nl. 1800    IN     MX     10    www.atoom.net", 0, NULL);
+	rr = ldns_rr_new_frm_str(soa_string2, 0, NULL, NULL);
 	ldns_rr_print(stdout, rr);
 	printf("\n");
 
-	rr = ldns_rr_new_frm_str("a.miek.nl. 1800    IN     MX     10    w\\065.atoom.net", 0, NULL);
+	rr = ldns_rr_new_frm_str("a.miek.nl. 1800    IN     MX     10    www.atoom.net", 0, NULL, NULL);
 	ldns_rr_print(stdout, rr);
 	printf("\n");
 
-	rr = ldns_rr_new_frm_str("a.miek.nl. 1800    IN     MX     10    w\\65.atoom.net", 0, NULL);
+	rr = ldns_rr_new_frm_str("a.miek.nl. 1800    IN     MX     10    w\\065.atoom.net", 0, NULL, NULL);
 	ldns_rr_print(stdout, rr);
 	printf("\n");
 
-	rr = ldns_rr_new_frm_str("a.miek.nl. 1800    IN     MX     10    www\\.www.atoom.net", 0, NULL);
+	rr = ldns_rr_new_frm_str("a.miek.nl. 1800    IN     MX     10    w\\65.atoom.net", 0, NULL, NULL);
 	ldns_rr_print(stdout, rr);
 	printf("\n");
 
-	rr = ldns_rr_new_frm_str("a.miek.nl. 1800    IN     MX     10    \\.", 0, NULL);
+	rr = ldns_rr_new_frm_str("a.miek.nl. 1800    IN     MX     10    www\\.www.atoom.net", 0, NULL, NULL);
+	ldns_rr_print(stdout, rr);
+	printf("\n");
+
+	rr = ldns_rr_new_frm_str("a.miek.nl. 1800    IN     MX     10    \\.", 0, NULL, NULL);
 	ldns_rr_print(stdout, rr);
 	printf("\n");
 
 	printf("rr sig with inception as epoch number\n");
-	rr = ldns_rr_new_frm_str("nlnetlabs.nl.       86400  IN  RRSIG    DNSKEY RSASHA1 2 86400 1114695776 1112103776 43791 nlnetlabs.nl.  FE//RZ0Z1sMzea0ioOLFpUIcM3wnxLGndtKUXJSM3SQ3BlYok2fUTiI+zegNoB1YdylWsfohZJfjkODrOJO9PSbN7hMHmzFEsDFAbCU75TySBuxv2UQlQVuTznxtRdvLGIRGxRhPmjlc/gtJPMB4XJKUWmtkzlTVKqZU7oNCsLA=", 0, NULL);
+	rr = ldns_rr_new_frm_str("nlnetlabs.nl.       86400  IN  RRSIG    DNSKEY RSASHA1 2 86400 1114695776 1112103776 43791 nlnetlabs.nl.  FE//RZ0Z1sMzea0ioOLFpUIcM3wnxLGndtKUXJSM3SQ3BlYok2fUTiI+zegNoB1YdylWsfohZJfjkODrOJO9PSbN7hMHmzFEsDFAbCU75TySBuxv2UQlQVuTznxtRdvLGIRGxRhPmjlc/gtJPMB4XJKUWmtkzlTVKqZU7oNCsLA=", 0, NULL, NULL);
 	ldns_rr_print(stdout, rr);
 	printf("\n");
 
 	printf("rr sig with inception as date\n");
-	rr = ldns_rr_new_frm_str("nlnetlabs.nl.       86400  IN  RRSIG    DNSKEY RSASHA1 2 86400 20050105121300 1112103776 43791 nlnetlabs.nl.  FE//RZ0Z1sMzea0ioOLFpUIcM3wnxLGndtKUXJSM3SQ3BlYok2fUTiI+zegNoB1YdylWsfohZJfjkODrOJO9PSbN7hMHmzFEsDFAbCU75TySBuxv2UQlQVuTznxtRdvLGIRGxRhPmjlc/gtJPMB4XJKUWmtkzlTVKqZU7oNCsLA=", 0, NULL);
+	rr = ldns_rr_new_frm_str("nlnetlabs.nl.       86400  IN  RRSIG    DNSKEY RSASHA1 2 86400 20050105121300 1112103776 43791 nlnetlabs.nl.  FE//RZ0Z1sMzea0ioOLFpUIcM3wnxLGndtKUXJSM3SQ3BlYok2fUTiI+zegNoB1YdylWsfohZJfjkODrOJO9PSbN7hMHmzFEsDFAbCU75TySBuxv2UQlQVuTznxtRdvLGIRGxRhPmjlc/gtJPMB4XJKUWmtkzlTVKqZU7oNCsLA=", 0, NULL, NULL);
 
 	ldns_rr_print(stdout, rr);
 	printf("\n");
 	
 	/* miss formed */
-	rr = ldns_rr_new_frm_str("a.miek.nl. 1800 IN MX 10", 0, NULL);
+	rr = ldns_rr_new_frm_str("a.miek.nl. 1800 IN MX 10", 0, NULL, NULL);
 	ldns_rr_print(stdout, rr);
 	printf("\n");
 
-	rr = ldns_rr_new_frm_str("a.miek.nl. 1800 IN A 267.271.122.1t", 0, NULL);
+	rr = ldns_rr_new_frm_str("a.miek.nl. 1800 IN A 267.271.122.1t", 0, NULL, NULL);
 	ldns_rr_print(stdout, rr);
 	printf("\n");
 
 	printf("this must work again\n");
-	rr = ldns_rr_new_frm_str("a.miek.nl.   IN     A    127.0.0.1", 0, NULL);
+	rr = ldns_rr_new_frm_str("a.miek.nl.   IN     A    127.0.0.1", 0, NULL, NULL);
 	ldns_rr_print(stdout, rr);
 	printf("\n");
-	rr = ldns_rr_new_frm_str("a.miek.nl.   1D IN     A    127.0.0.1", 0, NULL);
+	rr = ldns_rr_new_frm_str("a.miek.nl.   1D IN     A    127.0.0.1", 0, NULL, NULL);
 	ldns_rr_print(stdout, rr);
 	printf("\n");
 
-	rr = ldns_rr_new_frm_str("a.miek.nl.   1800   IN   A    195.169.222.38", 0, NULL);
+	rr = ldns_rr_new_frm_str("a.miek.nl.   1800   IN   A    195.169.222.38", 0, NULL, NULL);
 	ldns_rr_print(stdout, rr);
 	printf("\n");
 
