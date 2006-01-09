@@ -187,9 +187,9 @@ ldns_zone_new_frm_fp_l(FILE *fp, ldns_rdf *origin, uint16_t ttl, ldns_rr_class c
 			if (ldns_rr_get_type(rr) == LDNS_RR_TYPE_SOA) {
 				if (soa_seen) {
 					/* second SOA 
-					 * LDNS_STATUS_SOA? */
-					ldns_zone_free(newzone);
-					return NULL;
+					 * just skip, maybe we want to say
+					 * something??? */
+					continue;
 				}
 				soa_seen = true;
 				ldns_zone_set_soa(newzone, rr);

@@ -1199,7 +1199,6 @@ ldns_rr_compare(const ldns_rr *rr1, const ldns_rr *rr2)
 		return +1;
 	} else {
 		/* equal length */
-	
 		rr1_buf = ldns_buffer_new(rr1_len);
 		rr2_buf = ldns_buffer_new(rr2_len);
 
