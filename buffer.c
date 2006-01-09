@@ -10,7 +10,6 @@
 #include <ldns/config.h>
 
 #include <ldns/dns.h>
-
 #include <ldns/buffer.h>
 
 ldns_buffer *

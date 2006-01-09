@@ -11,10 +11,6 @@
 #ifndef _LDNS_UPDATE_H
 #define _LDNS_UPDATE_H
 
-/**
- *
- */
-
 ldns_pkt	*ldns_update_pkt_new(ldns_rdf *, ldns_rr_class, ldns_rr_list *, ldns_rr_list *, ldns_rr_list *);
 ldns_status	ldns_update_pkt_tsig_add(ldns_pkt *, ldns_resolver *);
 ldns_resolver	*ldns_update_resolver_new(const char *, const char *, ldns_rr_class, ldns_tsig_credentials *, ldns_rdf **);

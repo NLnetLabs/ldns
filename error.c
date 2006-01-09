@@ -11,7 +11,6 @@
 #include <ldns/config.h>
 
 #include <ldns/dns.h>
-#include <ldns/error.h>
 
 ldns_lookup_table ldns_error_str[] = {
 	{ LDNS_STATUS_OK, "All OK" },

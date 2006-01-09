@@ -8,11 +8,11 @@
  * See the file LICENSE for the license
  */
 
-#include <ldns/rdata.h>
 
 #ifndef _LDNS_WIRE2HOST_H
 #define _LDNS_WIRE2HOST_H
 
+#include <ldns/rdata.h>
 #include <ldns/common.h>
 #include <ldns/error.h>
 #include <ldns/rr.h>

@@ -13,10 +13,6 @@
 #include <ldns/config.h>
 
 #include <ldns/dns.h>
-#include <ldns/rdata.h>
-#include <ldns/error.h>
-#include <ldns/str2host.h>
-#include <ldns/util.h>
 
 /*
  * Access functions 

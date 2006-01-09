@@ -17,7 +17,6 @@
 
 #include <openssl/ssl.h>
 #include <openssl/sha.h>
-#include <stdarg.h>
 
 ldns_rr_list *
 ldns_get_rr_list_addr_by_name(ldns_resolver *res, ldns_rdf *name, ldns_rr_class c, 

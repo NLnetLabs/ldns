@@ -13,11 +13,9 @@
 
 #include <openssl/ssl.h>
 #include <ldns/common.h>
-#include <ldns/dns.h>
-#include <ldns/buffer.h>
 #include <ldns/packet.h>
-#include <ldns/zone.h>
 #include <ldns/keys.h>
+#include <ldns/zone.h>
 
 #define LDNS_MAX_KEYLEN		2048
 #define LDNS_DNSSEC_KEYPROTO	3
