@@ -1,0 +1,1558 @@
+#!/bin/sh
+# This is a shell archive (produced by GNU sharutils 4.2.1).
+# To extract the files from this archive, save it to some FILE, remove
+# everything before the `!/bin/sh' line above, then type `sh FILE'.
+#
+# Made on 2006-01-09 14:58 CET by <miekg@floep>.
+# Source directory was `/home/miekg/svn/libdns/trunk/test/10-older-test.dir'.
+#
+# Existing files will *not* be overwritten unless `-c' is specified.
+#
+# This shar contains:
+# length mode       name
+# ------ ---------- ------------------------------------------
+#   1660 -rw------- 10-older-test.configure.ac
+#   1540 -rw------- 10-older-test.dname-label-test.c
+#    643 -rw------- 10-older-test.dsc
+#     91 -rw------- 10-older-test.help
+#   1931 -rw------- 10-older-test.Makefile
+#   1928 -rw------- 10-older-test.Makefile.in
+#   1020 -rw------- 10-older-test.notify.c
+#    977 -rw------- 10-older-test.pre
+#   1320 -rw------- 10-older-test.rrsig-test.c
+#   3773 -rw------- 10-older-test.run-test0.c
+#   1431 -rw------- 10-older-test.run-test11.c
+#   4668 -rw------- 10-older-test.run-test18.c
+#   1605 -rw------- 10-older-test.run-test19.c
+#   2092 -rw------- 10-older-test.run-test20.c
+#   1886 -rw------- 10-older-test.run-test7.c
+#    282 -rw------- 10-older-test.serial.c
+#    356 -rw------- 10-older-test.server.c
+#    759 -rw------- 10-older-test.test
+#
+save_IFS="${IFS}"
+IFS="${IFS}:"
+gettext_dir=FAILED
+locale_dir=FAILED
+first_param="$1"
+for dir in $PATH
+do
+  if test "$gettext_dir" = FAILED && test -f $dir/gettext \
+     && ($dir/gettext --version >/dev/null 2>&1)
+  then
+    set `$dir/gettext --version 2>&1`
+    if test "$3" = GNU
+    then
+      gettext_dir=$dir
+    fi
+  fi
+  if test "$locale_dir" = FAILED && test -f $dir/shar \
+     && ($dir/shar --print-text-domain-dir >/dev/null 2>&1)
+  then
+    locale_dir=`$dir/shar --print-text-domain-dir`
+  fi
+done
+IFS="$save_IFS"
+if test "$locale_dir" = FAILED || test "$gettext_dir" = FAILED
+then
+  echo=echo
+else
+  TEXTDOMAINDIR=$locale_dir
+  export TEXTDOMAINDIR
+  TEXTDOMAIN=sharutils
+  export TEXTDOMAIN
+  echo="$gettext_dir/gettext -s"
+fi
+if touch -am -t 200112312359.59 $$.touch >/dev/null 2>&1 && test ! -f 200112312359.59 -a -f $$.touch; then
+  shar_touch='touch -am -t $1$2$3$4$5$6.$7 "$8"'
+elif touch -am 123123592001.59 $$.touch >/dev/null 2>&1 && test ! -f 123123592001.59 -a ! -f 123123592001.5 -a -f $$.touch; then
+  shar_touch='touch -am $3$4$5$6$1$2.$7 "$8"'
+elif touch -am 1231235901 $$.touch >/dev/null 2>&1 && test ! -f 1231235901 -a -f $$.touch; then
+  shar_touch='touch -am $3$4$5$6$2 "$8"'
+else
+  shar_touch=:
+  echo
+  $echo 'WARNING: not restoring timestamps.  Consider getting and'
+  $echo "installing GNU \`touch', distributed in GNU File Utilities..."
+  echo
+fi
+rm -f 200112312359.59 123123592001.59 123123592001.5 1231235901 $$.touch
+#
+if mkdir _sh19461; then
+  $echo 'x -' 'creating lock directory'
+else
+  $echo 'failed to create lock directory'
+  exit 1
+fi
+# ============= 10-older-test.configure.ac ==============
+if test -f '10-older-test.configure.ac' && test "$first_param" != -c; then
+  $echo 'x -' SKIPPING '10-older-test.configure.ac' '(file already exists)'
+else
+  $echo 'x -' extracting '10-older-test.configure.ac' '(text)'
+  sed 's/^X//' << 'SHAR_EOF' > '10-older-test.configure.ac' &&
+#                                               -*- Autoconf -*-
+# Process this file with autoconf to produce a configure script.
+X
+AC_PREREQ(2.57)
+AC_INIT(drill, 1.1.0, ldns-team@nlnetlabs.nl, ldns-team)
+AC_CONFIG_SRCDIR([10-older-test.run-test0.c])
+X
+AC_AIX
+# Checks for programs.
+AC_PROG_CC
+AC_PROG_MAKE_SET
+X
+# Checks for libraries.
+# Checks for header files.
+#AC_HEADER_STDC
+#AC_HEADER_SYS_WAIT
+# do the very minimum - we can always extend this
+AC_CHECK_HEADERS([getopt.h stdlib.h stdio.h assert.h netinet/in.hctype.h time.h])
+AC_CHECK_HEADERS(sys/param.h sys/mount.h,,,
+[
+X  [
+X   #if HAVE_SYS_PARAM_H
+X   # include <sys/param.h>
+X   #endif
+X  ]
+])
+X
+# check for ldns
+AC_ARG_WITH(ldns, 
+X	AC_HELP_STRING([--with-ldns=PATH        specify prefix of path of ldns library to use])
+X	,
+X	[
+X		specialldnsdir="$withval"
+X		CPPFLAGS="$CPPFLAGS -I$withval/include"
+X		LDFLAGS="$LDFLAGS -L$withval/lib"
+X	]
+)
+X
+AC_CHECK_LIB(ldns, ldns_rr_new,, [
+X	AC_MSG_ERROR([Can't find ldns library])
+X	]
+)
+X
+AC_CHECK_HEADER(ldns/dns.h,,  [
+X	AC_MSG_ERROR([Can't find ldns headers])
+X	]
+)
+X
+AH_BOTTOM([
+X
+#include <stdio.h>
+#include <string.h>
+#include <unistd.h>
+#include <assert.h>
+X
+#if STDC_HEADERS
+#include <stdlib.h>
+#include <stddef.h>
+#endif
+X
+#ifdef HAVE_STDINT_H
+#include <stdint.h>
+#endif
+X
+#ifdef HAVE_SYS_SOCKET_H
+#include <sys/socket.h>
+#endif
+X
+#ifdef HAVE_NETINET_IN_H
+#include <netinet/in.h>
+#endif
+X
+#ifdef HAVE_ARPA_INET_H
+#include <arpa/inet.h>
+#endif
+X
+#ifdef HAVE_TIME_H
+#include <time.h>
+#endif
+])
+X
+X
+#AC_CHECK_FUNCS([mkdir rmdir strchr strrchr strstr])
+X
+#AC_DEFINE_UNQUOTED(SYSCONFDIR, "$sysconfdir")
+X
+AC_CONFIG_FILES([10-older-test.Makefile])
+AC_CONFIG_HEADER([config.h])
+AC_OUTPUT
+SHAR_EOF
+  (set 20 06 01 09 14 19 49 '10-older-test.configure.ac'; eval "$shar_touch") &&
+  chmod 0600 '10-older-test.configure.ac' ||
+  $echo 'restore of' '10-older-test.configure.ac' 'failed'
+  if ( md5sum --help 2>&1 | grep 'sage: md5sum \[' ) >/dev/null 2>&1 \
+  && ( md5sum --version 2>&1 | grep -v 'textutils 1.12' ) >/dev/null; then
+    md5sum -c << SHAR_EOF >/dev/null 2>&1 \
+    || $echo '10-older-test.configure.ac:' 'MD5 check failed'
+546c7604b8f17d786283c02ad6f70838  10-older-test.configure.ac
+SHAR_EOF
+  else
+    shar_count="`LC_ALL= LC_CTYPE= LANG= wc -c < '10-older-test.configure.ac'`"
+    test 1660 -eq "$shar_count" ||
+    $echo '10-older-test.configure.ac:' 'original size' '1660,' 'current size' "$shar_count!"
+  fi
+fi
+# ============= 10-older-test.dname-label-test.c ==============
+if test -f '10-older-test.dname-label-test.c' && test "$first_param" != -c; then
+  $echo 'x -' SKIPPING '10-older-test.dname-label-test.c' '(file already exists)'
+else
+  $echo 'x -' extracting '10-older-test.dname-label-test.c' '(text)'
+  sed 's/^X//' << 'SHAR_EOF' > '10-older-test.dname-label-test.c' &&
+X
+/* lowlevel test functions */
+#include "config.h"
+X
+#include <ldns/dns.h>
+X
+int
+main(int argc, char **argv)
+{
+X	ldns_rdf *test;
+X	ldns_rdf *test2;
+X	ldns_rdf *parent;
+X	ldns_rdf *child;
+X	ldns_rdf *newlabel;
+X
+X	test = ldns_dname_new_frm_str("bla.miek.nl");
+X	test2 = ldns_dname_new_frm_str("www.bla.miek.nl");
+X
+X	parent = ldns_dname_new_frm_str("yahoo.com");
+X	child = ldns_dname_new_frm_str("miek.nl");
+X
+X	ldns_rdf_print(stdout, test);
+X	printf("\n");
+X
+X	newlabel = ldns_dname_label(test, -1);
+X	ldns_rdf_print(stdout, newlabel);
+X	printf("\n");
+X	ldns_rdf_deep_free(newlabel);
+X
+X	newlabel = ldns_dname_label(test, 0);
+X	ldns_rdf_print(stdout, newlabel);
+X	printf("\n");
+X	ldns_rdf_deep_free(newlabel);
+X
+X	newlabel = ldns_dname_label(test, 1);
+X	ldns_rdf_print(stdout, newlabel);
+X	printf("\n");
+X	ldns_rdf_deep_free(newlabel);
+X
+X	newlabel = ldns_dname_label(test, 2);
+X	ldns_rdf_print(stdout, newlabel);
+X	printf("\n");
+X	ldns_rdf_deep_free(newlabel);
+X
+X	newlabel = ldns_dname_label(test, 3);
+X	ldns_rdf_print(stdout, newlabel);
+X	printf("\n");
+X	ldns_rdf_deep_free(newlabel);
+X
+X	newlabel = ldns_dname_label(test, 4);
+X	ldns_rdf_print(stdout, newlabel);
+X	printf("\n");
+X	ldns_rdf_deep_free(newlabel);
+X
+X	newlabel = ldns_dname_label(test, 5);
+X	ldns_rdf_print(stdout, newlabel);
+X	printf("\n");
+X	ldns_rdf_deep_free(newlabel);
+X
+X	if (ldns_dname_is_subdomain(test2, test)) {
+X		printf("Yes, it's a subdomain\n");
+X	} else {
+X		printf("error\n");
+X	}
+X
+X	if (ldns_dname_is_subdomain(child, parent)) {
+X		printf("Yes, it's a subdomain\n");
+X	} else {
+X		printf("error\n");
+X	}
+X	
+X	return 0;
+}
+SHAR_EOF
+  (set 20 06 01 09 14 41 42 '10-older-test.dname-label-test.c'; eval "$shar_touch") &&
+  chmod 0600 '10-older-test.dname-label-test.c' ||
+  $echo 'restore of' '10-older-test.dname-label-test.c' 'failed'
+  if ( md5sum --help 2>&1 | grep 'sage: md5sum \[' ) >/dev/null 2>&1 \
+  && ( md5sum --version 2>&1 | grep -v 'textutils 1.12' ) >/dev/null; then
+    md5sum -c << SHAR_EOF >/dev/null 2>&1 \
+    || $echo '10-older-test.dname-label-test.c:' 'MD5 check failed'
+29d928e7e689a992e3c37eb442273a30  10-older-test.dname-label-test.c
+SHAR_EOF
+  else
+    shar_count="`LC_ALL= LC_CTYPE= LANG= wc -c < '10-older-test.dname-label-test.c'`"
+    test 1540 -eq "$shar_count" ||
+    $echo '10-older-test.dname-label-test.c:' 'original size' '1540,' 'current size' "$shar_count!"
+  fi
+fi
+# ============= 10-older-test.dsc ==============
+if test -f '10-older-test.dsc' && test "$first_param" != -c; then
+  $echo 'x -' SKIPPING '10-older-test.dsc' '(file already exists)'
+else
+  $echo 'x -' extracting '10-older-test.dsc' '(binary)'
+  sed 's/^X//' << 'SHAR_EOF' | uudecode &&
+begin 600 10-older-test.dsc
+M0F%S94YA;64Z(#$P+6]L9&5R+71E<W0*5F5R<VEO;CH@,2XP"D1E<V-R:7!T
+M:6]N.B!2=6X@=&AE($,@=&5S=',@=V4@86QR96%D>2!H879E"D-R96%T:6]N
+M1&%T93H@36]N($IA;B`@.2`Q,SHU,SHU."!#150@,C`P-@I-86EN=&%I;F5R
+M.B!-:65K($=I96)E;@I#871E9V]R>3H@"D-O;7!O;F5N=#H*0VUD1&5P96YD
+M<SH@"D1E<&5N9',Z(`I(96QP.B`Q,"UO;&1E<BUT97-T+FAE;'`*4')E.B`Q
+M,"UO;&1E<BUT97-T+G!R90I0;W-T.B`*5&5S=#H@,3`M;VQD97(M=&5S="YT
+M97-T"D%U>$9I;&5S.B`Q,"UO;&1E<BUT97-T+DUA:V5F:6QE+FEN(#$P+6]L
+M9&5R+71E<W0N8V]N9FEG=7)E+F%C(#$P+6]L9&5R+71E<W0N9&YA;64M;&%B
+M96PM=&5S="YC(#$P+6]L9&5R+71E<W0N;F]T:69Y+F,@,3`M;VQD97(M=&5S
+M="YR<G-I9RUT97-T+F,@,3`M;VQD97(M=&5S="YR=6XM=&5S=#`N8R`Q,"UO
+M;&1E<BUT97-T+G)U;BUT97-T,3$N8R`Q,"UO;&1E<BUT97-T+G)U;BUT97-T
+M,3@N8R`Q,"UO;&1E<BUT97-T+G)U;BUT97-T,3DN8R`Q,"UO;&1E<BUT97-T
+M+G)U;BUT97-T,C`N8R`Q,"UO;&1E<BUT97-T+G)U;BUT97-T-RYC(#$P+6]L
+M9&5R+71E<W0N<V5R:6%L+F,@,3`M;VQD97(M=&5S="YS97)V97(N8PI087-S
+-960Z"D9A:6QU<F4Z"F%L
+`
+end
+SHAR_EOF
+  (set 20 06 01 09 14 29 56 '10-older-test.dsc'; eval "$shar_touch") &&
+  chmod 0600 '10-older-test.dsc' ||
+  $echo 'restore of' '10-older-test.dsc' 'failed'
+  if ( md5sum --help 2>&1 | grep 'sage: md5sum \[' ) >/dev/null 2>&1 \
+  && ( md5sum --version 2>&1 | grep -v 'textutils 1.12' ) >/dev/null; then
+    md5sum -c << SHAR_EOF >/dev/null 2>&1 \
+    || $echo '10-older-test.dsc:' 'MD5 check failed'
+1615f25b39dd78e3ac774930a0948fbb  10-older-test.dsc
+SHAR_EOF
+  else
+    shar_count="`LC_ALL= LC_CTYPE= LANG= wc -c < '10-older-test.dsc'`"
+    test 643 -eq "$shar_count" ||
+    $echo '10-older-test.dsc:' 'original size' '643,' 'current size' "$shar_count!"
+  fi
+fi
+# ============= 10-older-test.help ==============
+if test -f '10-older-test.help' && test "$first_param" != -c; then
+  $echo 'x -' SKIPPING '10-older-test.help' '(file already exists)'
+else
+  $echo 'x -' extracting '10-older-test.help' '(text)'
+  sed 's/^X//' << 'SHAR_EOF' > '10-older-test.help' &&
+Please describe how to use this test.
+i.e. tpkg -a ARG exe testname:
+X   ARG is used to ...
+SHAR_EOF
+  (set 20 06 01 09 14 08 29 '10-older-test.help'; eval "$shar_touch") &&
+  chmod 0600 '10-older-test.help' ||
+  $echo 'restore of' '10-older-test.help' 'failed'
+  if ( md5sum --help 2>&1 | grep 'sage: md5sum \[' ) >/dev/null 2>&1 \
+  && ( md5sum --version 2>&1 | grep -v 'textutils 1.12' ) >/dev/null; then
+    md5sum -c << SHAR_EOF >/dev/null 2>&1 \
+    || $echo '10-older-test.help:' 'MD5 check failed'
+52cdd5d1008fc703d6822564db4c887a  10-older-test.help
+SHAR_EOF
+  else
+    shar_count="`LC_ALL= LC_CTYPE= LANG= wc -c < '10-older-test.help'`"
+    test 91 -eq "$shar_count" ||
+    $echo '10-older-test.help:' 'original size' '91,' 'current size' "$shar_count!"
+  fi
+fi
+# ============= 10-older-test.Makefile ==============
+if test -f '10-older-test.Makefile' && test "$first_param" != -c; then
+  $echo 'x -' SKIPPING '10-older-test.Makefile' '(file already exists)'
+else
+  $echo 'x -' extracting '10-older-test.Makefile' '(text)'
+  sed 's/^X//' << 'SHAR_EOF' > '10-older-test.Makefile' &&
+# Standard installation pathnames
+# See the file LICENSE for the license
+SHELL = /bin/sh
+VERSION = 1.1.0
+basesrcdir = $(shell basename `pwd`)
+srcdir = .
+prefix  = /usr/local
+exec_prefix = ${prefix}
+bindir = ${exec_prefix}/bin
+mandir = ${prefix}/man
+X
+CC = gcc
+CFLAGS = -g -O2
+CPPFLAGS =  -I../..//include
+LDFLAGS =  -L../..//lib
+LIBS = -lldns 
+X
+COMPILE         = $(CC) $(CPPFLAGS) $(CFLAGS)
+LINK            = $(CC) $(CFLAGS) $(LDFLAGS) $(LIBS)
+X
+HEADER		= config.h
+TESTS		= 10-older-test.run-test0 10-older-test.run-test7\
+X		10-older-test.run-test18 10-older-test.run-test19 10-older-test.run-test20 \
+X		10-older-test.dname-label-test 10-older-test.notify \
+X		10-older-test.rrsig-test 10-older-test.serial 10-older-test.server
+X
+X.PHONY:	all clean realclean
+%.o:
+X	$(COMPILE) -c $(srcdir)/$*.c
+X
+all:	$(TESTS)
+X
+10-older-test.run-test0:       10-older-test.run-test0.o 
+X		$(LINK) -o $@ $+ 
+X
+10-older-test.run-test7:        10-older-test.run-test7.o 
+X		$(LINK) -o $@ $+ 
+X
+10-older-test.run-test11:       10-older-test.run-test11.o 
+X		$(LINK) -o $@ $+ 
+X
+10-older-test.run-test18:       10-older-test.run-test18.o 
+X		$(LINK) -lssl -o $@ $+ 
+X
+10-older-test.run-test19:       10-older-test.run-test19.o 
+X		$(LINK) -lssl -o $@ $+ 
+X
+10-older-test.run-test20:       10-older-test.run-test20.o 
+X		$(LINK) -lssl -o $@ $+ 
+X
+10-older-test.rrsig-test:   10-older-test.rrsig-test.o
+X		$(LINK) -lssl -o $@ $+ 
+X	
+10-older-test.dname-label-test:       10-older-test.dname-label-test.o 
+X		$(LINK) -o $@ $+ 
+X	
+10-older-test.notify: 	10-older-test.notify.o
+X		$(LINK) -o $@ $+
+X
+10-older-test.serial: 	10-older-test.serial.o
+X		$(LINK) -o $@ $+
+X
+10-older-test.server: 	10-older-test.server.o
+X		$(LINK) -o $@ $+
+X
+clean:
+X	rm -f *.o
+X	rm -f $(TESTS)
+X	rm -f lua-rns
+X
+realclean: clean
+X	rm -rf autom4te.cache/
+X	rm -f config.log config.status aclocal.m4 config.h.in configure Makefile
+X	rm -f config.h
+X
+confclean: clean
+X	rm -rf config.log config.status config.h Makefile
+SHAR_EOF
+  (set 20 06 01 09 14 53 22 '10-older-test.Makefile'; eval "$shar_touch") &&
+  chmod 0600 '10-older-test.Makefile' ||
+  $echo 'restore of' '10-older-test.Makefile' 'failed'
+  if ( md5sum --help 2>&1 | grep 'sage: md5sum \[' ) >/dev/null 2>&1 \
+  && ( md5sum --version 2>&1 | grep -v 'textutils 1.12' ) >/dev/null; then
+    md5sum -c << SHAR_EOF >/dev/null 2>&1 \
+    || $echo '10-older-test.Makefile:' 'MD5 check failed'
+39f717546c4a0ab4b776af442f174001  10-older-test.Makefile
+SHAR_EOF
+  else
+    shar_count="`LC_ALL= LC_CTYPE= LANG= wc -c < '10-older-test.Makefile'`"
+    test 1931 -eq "$shar_count" ||
+    $echo '10-older-test.Makefile:' 'original size' '1931,' 'current size' "$shar_count!"
+  fi
+fi
+# ============= 10-older-test.Makefile.in ==============
+if test -f '10-older-test.Makefile.in' && test "$first_param" != -c; then
+  $echo 'x -' SKIPPING '10-older-test.Makefile.in' '(file already exists)'
+else
+  $echo 'x -' extracting '10-older-test.Makefile.in' '(text)'
+  sed 's/^X//' << 'SHAR_EOF' > '10-older-test.Makefile.in' &&
+# Standard installation pathnames
+# See the file LICENSE for the license
+SHELL = @SHELL@
+VERSION = @PACKAGE_VERSION@
+basesrcdir = $(shell basename `pwd`)
+srcdir = @srcdir@
+prefix  = @prefix@
+exec_prefix = @exec_prefix@
+bindir = @bindir@
+mandir = @mandir@
+X
+CC = @CC@
+CFLAGS = @CFLAGS@
+CPPFLAGS = @CPPFLAGS@
+LDFLAGS = @LDFLAGS@
+LIBS = @LIBS@
+X
+COMPILE         = $(CC) $(CPPFLAGS) $(CFLAGS)
+LINK            = $(CC) $(CFLAGS) $(LDFLAGS) $(LIBS)
+X
+HEADER		= config.h
+TESTS		= 10-older-test.run-test0 10-older-test.run-test7\
+X		10-older-test.run-test18 10-older-test.run-test19 10-older-test.run-test20 \
+X		10-older-test.dname-label-test 10-older-test.notify \
+X		10-older-test.rrsig-test 10-older-test.serial 10-older-test.server
+X
+X.PHONY:	all clean realclean
+%.o:
+X	$(COMPILE) -c $(srcdir)/$*.c
+X
+all:	$(TESTS)
+X
+10-older-test.run-test0:       10-older-test.run-test0.o 
+X		$(LINK) -o $@ $+ 
+X
+10-older-test.run-test7:        10-older-test.run-test7.o 
+X		$(LINK) -o $@ $+ 
+X
+10-older-test.run-test11:       10-older-test.run-test11.o 
+X		$(LINK) -o $@ $+ 
+X
+10-older-test.run-test18:       10-older-test.run-test18.o 
+X		$(LINK) -lssl -o $@ $+ 
+X
+10-older-test.run-test19:       10-older-test.run-test19.o 
+X		$(LINK) -lssl -o $@ $+ 
+X
+10-older-test.run-test20:       10-older-test.run-test20.o 
+X		$(LINK) -lssl -o $@ $+ 
+X
+10-older-test.rrsig-test:   10-older-test.rrsig-test.o
+X		$(LINK) -lssl -o $@ $+ 
+X	
+10-older-test.dname-label-test:       10-older-test.dname-label-test.o 
+X		$(LINK) -o $@ $+ 
+X	
+10-older-test.notify: 	10-older-test.notify.o
+X		$(LINK) -o $@ $+
+X
+10-older-test.serial: 	10-older-test.serial.o
+X		$(LINK) -o $@ $+
+X
+10-older-test.server: 	10-older-test.server.o
+X		$(LINK) -o $@ $+
+X
+clean:
+X	rm -f *.o
+X	rm -f $(TESTS)
+X	rm -f lua-rns
+X
+realclean: clean
+X	rm -rf autom4te.cache/
+X	rm -f config.log config.status aclocal.m4 config.h.in configure Makefile
+X	rm -f config.h
+X
+confclean: clean
+X	rm -rf config.log config.status config.h Makefile
+SHAR_EOF
+  (set 20 06 01 09 14 20 47 '10-older-test.Makefile.in'; eval "$shar_touch") &&
+  chmod 0600 '10-older-test.Makefile.in' ||
+  $echo 'restore of' '10-older-test.Makefile.in' 'failed'
+  if ( md5sum --help 2>&1 | grep 'sage: md5sum \[' ) >/dev/null 2>&1 \
+  && ( md5sum --version 2>&1 | grep -v 'textutils 1.12' ) >/dev/null; then
+    md5sum -c << SHAR_EOF >/dev/null 2>&1 \
+    || $echo '10-older-test.Makefile.in:' 'MD5 check failed'
+14fc3ad4f09d9d43265de00b14d8f3cd  10-older-test.Makefile.in
+SHAR_EOF
+  else
+    shar_count="`LC_ALL= LC_CTYPE= LANG= wc -c < '10-older-test.Makefile.in'`"
+    test 1928 -eq "$shar_count" ||
+    $echo '10-older-test.Makefile.in:' 'original size' '1928,' 'current size' "$shar_count!"
+  fi
+fi
+# ============= 10-older-test.notify.c ==============
+if test -f '10-older-test.notify.c' && test "$first_param" != -c; then
+  $echo 'x -' SKIPPING '10-older-test.notify.c' '(file already exists)'
+else
+  $echo 'x -' extracting '10-older-test.notify.c' '(text)'
+  sed 's/^X//' << 'SHAR_EOF' > '10-older-test.notify.c' &&
+/* 
+X * send a notify packet to a server
+X */
+X
+#include "config.h"
+X
+#include <ldns/dns.h>
+X
+int
+main(int argc, char **argv)
+{
+X	ldns_pkt *notify;
+X	ldns_rr *question;
+X	ldns_rdf *helper;
+X	ldns_resolver *res;
+X	
+X	notify = ldns_pkt_new();
+X	question = ldns_rr_new();
+X	res = ldns_resolver_new();
+X
+X	if (!notify || !question || !res) {
+X		/* bail out */
+X		return EXIT_FAILURE;
+X	}
+X	/* get the port and nameserver ip from the config */
+X	ldns_resolver_set_port(res, LDNS_PORT);
+X	/* ldns_resolver_push_nameserver(res, ns); */
+X
+X	/* create the rr */
+X	ldns_rr_set_class(question, LDNS_RR_CLASS_IN);
+X
+X	helper = ldns_dname_new_frm_str("miek.nl");
+X	ldns_rr_set_owner(question, helper);
+X
+X	ldns_rr_set_type(question, LDNS_RR_TYPE_SOA);
+X
+X	ldns_pkt_set_opcode(notify, LDNS_PACKET_NOTIFY);
+X	ldns_pkt_push_rr(notify, LDNS_PACKET_QUESTION, question);
+X	ldns_pkt_set_aa(notify, true);
+X	ldns_pkt_set_id(notify, 42); /* from nsd-notify... */
+X
+X	ldns_pkt_print(stdout, notify);
+X
+X	/*ldns_resolver_send_pkt(NULL, res, notify)*/
+X        return EXIT_SUCCESS;
+}
+SHAR_EOF
+  (set 20 06 01 09 13 55 44 '10-older-test.notify.c'; eval "$shar_touch") &&
+  chmod 0600 '10-older-test.notify.c' ||
+  $echo 'restore of' '10-older-test.notify.c' 'failed'
+  if ( md5sum --help 2>&1 | grep 'sage: md5sum \[' ) >/dev/null 2>&1 \
+  && ( md5sum --version 2>&1 | grep -v 'textutils 1.12' ) >/dev/null; then
+    md5sum -c << SHAR_EOF >/dev/null 2>&1 \
+    || $echo '10-older-test.notify.c:' 'MD5 check failed'
+2d5c4d374d167badc8e0c24d1ad92362  10-older-test.notify.c
+SHAR_EOF
+  else
+    shar_count="`LC_ALL= LC_CTYPE= LANG= wc -c < '10-older-test.notify.c'`"
+    test 1020 -eq "$shar_count" ||
+    $echo '10-older-test.notify.c:' 'original size' '1020,' 'current size' "$shar_count!"
+  fi
+fi
+# ============= 10-older-test.pre ==============
+if test -f '10-older-test.pre' && test "$first_param" != -c; then
+  $echo 'x -' SKIPPING '10-older-test.pre' '(file already exists)'
+else
+  $echo 'x -' extracting '10-older-test.pre' '(text)'
+  sed 's/^X//' << 'SHAR_EOF' > '10-older-test.pre' &&
+# #-- 10-older-test.pre--#
+# source the master var file when it's there
+[ -f ../.tpkg.var.master ] && source ../.tpkg.var.master
+# use .tpkg.var.test for in test variable passing
+[ -f .tpkg.var.test ] && source .tpkg.var.test
+# svnserve resets the path, you may need to adjust it, like this:
+export PATH=$PATH:/usr/sbin:/sbin:/usr/local/bin:/usr/local/sbin:.
+X
+X
+case $OSTYPE in
+X        linux*)
+X                autoconf 10-older-test.configure.ac > configure && \
+X                chmod +x configure && \
+X                autoheader 10-older-test.configure.ac &&\
+X                ./configure --with-ldns=../../ && \
+X                make -f 10-older-test.Makefile
+X        ;;
+X        freebsd*)
+X                autoconf259 10-older-test.configure.ac > configure &&\
+X                chmod +x configure && \
+X                autoheader259 10-older-test.configure.ac && \
+X                ./configure --with-ldns=../../ && \
+X                gmake -f 10-older-test.Makefile
+X        ;;
+esac
+SHAR_EOF
+  (set 20 06 01 09 14 26 59 '10-older-test.pre'; eval "$shar_touch") &&
+  chmod 0600 '10-older-test.pre' ||
+  $echo 'restore of' '10-older-test.pre' 'failed'
+  if ( md5sum --help 2>&1 | grep 'sage: md5sum \[' ) >/dev/null 2>&1 \
+  && ( md5sum --version 2>&1 | grep -v 'textutils 1.12' ) >/dev/null; then
+    md5sum -c << SHAR_EOF >/dev/null 2>&1 \
+    || $echo '10-older-test.pre:' 'MD5 check failed'
+e443d84df64349152352551b8b648269  10-older-test.pre
+SHAR_EOF
+  else
+    shar_count="`LC_ALL= LC_CTYPE= LANG= wc -c < '10-older-test.pre'`"
+    test 977 -eq "$shar_count" ||
+    $echo '10-older-test.pre:' 'original size' '977,' 'current size' "$shar_count!"
+  fi
+fi
+# ============= 10-older-test.rrsig-test.c ==============
+if test -f '10-older-test.rrsig-test.c' && test "$first_param" != -c; then
+  $echo 'x -' SKIPPING '10-older-test.rrsig-test.c' '(file already exists)'
+else
+  $echo 'x -' extracting '10-older-test.rrsig-test.c' '(binary)'
+  sed 's/^X//' << 'SHAR_EOF' | uudecode &&
+begin 600 10-older-test.rrsig-test.c
+M+RH*("HO"@HC:6YC;'5D92`B8V]N9FEG+F@B"@HC:6YC;'5D92`\;&1N<R]D
+M;G,N:#X*"FEN="!M86EN*'9O:60I"GL*"6QD;G-?<G(@*G-I9SL*"6QD;G-?
+M<F1F("II;F-E<"P@*F5X<&ER.PH*"71I;65?="!T7VEN8V5P+"!T7V5X<&ER
+M+"!T7VYO=SL*"75I;G0S,E]T('1W965M86-H="`](#$["@H)='=E96UA8VAT
+M(#T@='=E96UA8VAT(#P\(#,Q.PH)='=E96UA8VAT(#T@='=E96UA8VAT("H@
+M,B`M(#$["@H)<')I;G1F*")T=V5E;6%C:'0@)75<;B(L('1W965M86-H="D[
+M"@H)<VEG(#T@;&1N<U]R<E]N97=?9G)M7W-T<B@B:F5L=&4N;FQN971L86)S
+M+FYL+B`@("`@,3@P,#`@("!)3B`@("`@(%)24TE'("`@3E-%0R!24T%32$$Q
+M(#,@,3@P,#`@,C`P-3`Y,3,R,S4P,#$@,C`P-3`X,30R,S4P,#$@-#,W.3$@
+M;FQN971L86)S+FYL+B!E<%='4C!7:VA743%H,&58=E4X.5<U-WAW23!X=55L
+M5W1V=E5N04)15FU59EHR;D=L;$EY,DM,4C5C9F=P0C552#=B94%3<D%O-SA!
+M;%!D9%!#;D@U,$]93FIL;&5S1'DY2$QD97)1=&I1;VDT-U-04&QU3$,V=C-&
+M=W%Q-C1:=C!W9C)F4'I*<413;D]/<E%05GI)=4(S241V-5A$-$TU=#A6>F4X
+M45HX;$$](BP@,"P@3E5,3"P@3E5,3"D["@H);&1N<U]R<E]P<FEN="AS=&1O
+M=70L('-I9RD["@H)=%]N;W<@/2!T:6UE*$Y53$PI.PH):6YC97`@/2!L9&YS
+M7W)R7W)R<VEG7VEN8V5P=&EO;BAS:6<I.PH)=%]I;F-E<"`](&QD;G-?<F1F
+M,FYA=&EV95]T:6UE7W0H:6YC97`I.PH)97AP:7(@/2!L9&YS7W)R7W)R<VEG
+M7V5X<&ER871I;VXH<VEG*3L*"71?97AP:7(@/2!L9&YS7W)D9C)N871I=F5?
+M=&EM95]T*&5X<&ER*3L*"@EP<FEN=&8H(FEN8V5P=&EO;CH@6VYO=R`E9%T@
+M)61<;B(L('1?;F]W+"!T7VEN8V5P*3L*"6QD;G-?<F1F7W!R:6YT*'-T9&]U
+M="P@:6YC97`I.PH)<')I;G1F*")<;B(I.PH)<')I;G1F*")E>'!I<F%T:6]N
+M.B`E9%QN(BP@=%]E>'!I<BD["@EL9&YS7W)D9E]P<FEN="AS=&1O=70L(&5X
+M<&ER*3L*"7!R:6YT9B@B7&XB*3L*"@EI9B`H=%]E>'!I<B`M('1?:6YC97`@
+M/"`P*2!["@D)<')I;G1F*")B860@<VEG+"!E>'!I<F%T:6]N(&)E9F]R92!I
+M;F-E<'1I;VX_/R!4<W-S9UQN(BD["@E]"@EI9B`H=%]N;W<@+2!T7VEN8V5P
+M(#P@,"D@>PH)"7!R:6YT9B@B8F%D('-I9RP@:6YC97!T:6]N(&1A=&4@:&%S
+M('!A<W-E9%QN(BD["@E]"@EI9B`H=%]E>'!I<B`M('1?;F]W(#P@,"D@>PH)
+M"7!R:6YT9B@B8F%D('-I9RP@97AP:7)A=&EO;B!D871E(&AA<R!P87-S961<
+M;B(I.PH)?0H)<')I;G1F*")3:6<@9&%T97,@87)E(&%L;"!C;W)R96-T7&XB
+/*3L*"65X:70H,"D["GT*
+`
+end
+SHAR_EOF
+  (set 20 06 01 09 14 38 38 '10-older-test.rrsig-test.c'; eval "$shar_touch") &&
+  chmod 0600 '10-older-test.rrsig-test.c' ||
+  $echo 'restore of' '10-older-test.rrsig-test.c' 'failed'
+  if ( md5sum --help 2>&1 | grep 'sage: md5sum \[' ) >/dev/null 2>&1 \
+  && ( md5sum --version 2>&1 | grep -v 'textutils 1.12' ) >/dev/null; then
+    md5sum -c << SHAR_EOF >/dev/null 2>&1 \
+    || $echo '10-older-test.rrsig-test.c:' 'MD5 check failed'
+671a2b4da46de9a1c961b9010f3931f7  10-older-test.rrsig-test.c
+SHAR_EOF
+  else
+    shar_count="`LC_ALL= LC_CTYPE= LANG= wc -c < '10-older-test.rrsig-test.c'`"
+    test 1320 -eq "$shar_count" ||
+    $echo '10-older-test.rrsig-test.c:' 'original size' '1320,' 'current size' "$shar_count!"
+  fi
+fi
+# ============= 10-older-test.run-test0.c ==============
+if test -f '10-older-test.run-test0.c' && test "$first_param" != -c; then
+  $echo 'x -' SKIPPING '10-older-test.run-test0.c' '(file already exists)'
+else
+  $echo 'x -' extracting '10-older-test.run-test0.c' '(text)'
+  sed 's/^X//' << 'SHAR_EOF' > '10-older-test.run-test0.c' &&
+/* 
+X * test main.c
+X *
+X */
+X
+#include "config.h"
+X
+#include <ldns/dns.h>
+X
+/*
+X	0xc2, 0xb4, 0x81, 0x80, 0x00, 0x01, 0x00, 0x01,
+X	0x00, 0x02, 0x00, 0x02, 0x03, 0x77, 0x77, 0x77,
+X	0x0b, 0x6b, 0x61, 0x6e, 0x61, 0x72, 0x69, 0x65,
+X	0x70, 0x69, 0x65, 0x74, 0x03, 0x63, 0x6f, 0x6d,
+X	0x00, 0x00, 0x01, 0x00, 0x01
+};
+*/
+/*
+static const uint8_t wire[] = {
+X	0xd0, 0x0e, 0x81, 0x80, 0x00, 0x01, 0x00, 0x01, 0x00, 0x02, 0x00,
+X	0x02, 0x03, 0x77, 0x77, 0x77, 0x0b, 0x6b, 0x61, 0x6e, 0x61, 0x72,
+X	0x69, 0x65, 0x70, 0x69, 0x65, 0x74, 0x03, 0x63, 0x6f, 0x6d, 0x00,
+X	0x00, 0x01, 0x00, 0x01, 0xc0, 0x0c, 0x00, 0x01, 0x00, 0x01, 0x00,
+X	0x01, 0x45, 0xf2, 0x00, 0x04, 0xd5, 0x85, 0x27, 0xcf, 0xc0, 0x10,
+X	0x00, 0x02, 0x00, 0x01, 0x00, 0x01, 0x45, 0xf2, 0x00, 0x11, 0x03,
+X	0x6e, 0x73, 0x32, 0x08, 0x68, 0x65, 0x78, 0x6f, 0x6e, 0x2d, 0x69,
+X	0x73, 0x02, 0x6e, 0x6c, 0x00, 0xc0, 0x10, 0x00, 0x02, 0x00, 0x01,
+X	0x00, 0x01, 0x45, 0xf2, 0x00, 0x06, 0x03, 0x6e, 0x73, 0x31, 0xc0,
+X	0x45, 0xc0, 0x5e, 0x00, 0x01, 0x00, 0x01, 0x00, 0x00, 0xfb, 0x2e,
+X	0x00, 0x04, 0xd5, 0x85, 0x27, 0xcb, 0xc0, 0x41, 0x00, 0x01, 0x00,
+X	0x01, 0x00, 0x00, 0xfb, 0x2c, 0x00, 0x04, 0xd4, 0xcc, 0xdb, 0x5b
+};
+*/
+static const uint8_t wire[] = {
+0x4c, 0xf2, 0x81, 0x80, 0x00, 0x01, 0x00, 0x01, 0x00, 0x02, 0x00, 0x02, 0x05
+, 0x6a, 0x65, 0x6c, 0x74, 0x65, 0x09, 0x6e,
+0x6c, 0x6e, 0x65, 0x74, 0x6c, 0x61, 0x62, 0x73, 0x02, 0x6e, 0x6c, 0x00, 0x00, 0x0f, 0x00, 0x01, 0xc0, 0x0c, 0x00, 0x0f,
+0x00, 0x01, 0x00, 0x00, 0x02, 0x54, 0x00, 0x08, 0x00, 0x0a, 0x03, 0x73, 0x6f, 0x6c, 0xc0, 0x12, 0xc0, 0x0c, 0x00, 0x02,
+0x00, 0x01, 0x00, 0x00, 0x00, 0x73, 0x00, 0x06, 0x03, 0x6e, 0x73, 0x32, 0xc0, 0x0c, 0xc0, 0x0c, 0x00, 0x02, 0x00, 0x01,
+0x00, 0x00, 0x00, 0x73, 0x00, 0x06, 0x03, 0x6e, 0x73, 0x31, 0xc0, 0x0c, 0xc0, 0x56, 0x00, 0x01, 0x00, 0x01, 0x00, 0x00,
+0x00, 0x73, 0x00, 0x04, 0xc3, 0xa9, 0xd7, 0x9b, 0xc0, 0x44, 0x00, 0x01, 0x00, 0x01, 0x00, 0x00, 0x00, 0x73, 0x00, 0x04,
+0xc3, 0xa9, 0xd7, 0x9b
+};
+X
+int
+main(void)
+{
+X	ldns_rdf *rd_f;
+X	ldns_rr *rr;
+X	ldns_pkt *packet;
+X	ldns_status status;
+X	char *rdfstr;
+X	uint8_t *rdf_data;
+X	
+X	rr = ldns_rr_new();
+X
+X	rdf_data = (uint8_t *) LDNS_XMALLOC(char, LDNS_MAX_DOMAINLEN);
+X	rdf_data[0] = 3;
+X	memcpy(rdf_data+1, "www", 3);
+X	rdf_data[4] = 4;
+X	memcpy(rdf_data+5, "test", 4);
+X	rdf_data[9] = 3;
+X	memcpy(rdf_data+10, "net", 3);
+X	rdf_data[13] = 0;
+X	rd_f = ldns_rdf_new(LDNS_RDF_TYPE_DNAME, 20, rdf_data);
+X	
+X	ldns_rr_push_rdf(rr, rd_f);
+X	status = ldns_wire2pkt(&packet, wire, sizeof(wire));
+X	if (status == LDNS_STATUS_OK) {
+X		printf("packet id: %d\n", (int) ldns_pkt_id(packet));
+X		printf("qr bit: %d\n", (int) ldns_pkt_qr(packet));
+X		printf("opcode: %d\n",(int) ldns_pkt_get_opcode(packet));
+X		printf("aa bit: %d\n",(int) ldns_pkt_aa(packet));
+X		printf("tc bit: %d\n",(int) ldns_pkt_tc(packet));
+X		printf("rd bit: %d\n",(int) ldns_pkt_rd(packet));
+X		printf("cd bit: %d\n",(int) ldns_pkt_cd(packet));
+X		printf("ra bit: %d\n",(int) ldns_pkt_ra(packet));
+X		printf("ad bit: %d\n",(int) ldns_pkt_ad(packet));
+X		printf("rcode: %d\n",(int) ldns_pkt_rcode(packet));
+X		printf("qdcount: %d\n",(int) ldns_pkt_qdcount(packet));
+X		printf("ancount: %d\n",(int) ldns_pkt_ancount(packet));
+X		printf("nscount: %d\n",(int) ldns_pkt_nscount(packet));
+X		printf("arcount: %d\n",(int) ldns_pkt_arcount(packet));
+X		printf("pkt2str:\n");
+X		rdfstr = ldns_pkt2str(packet);
+X		if (rdfstr) {
+X			printf("%s\n", rdfstr);
+X		} else {
+X			printf("error\n");
+X		}
+X		ldns_pkt_free(packet);
+X	} else {
+X		printf("error in wire2packet: %d\n", status);
+X	}
+X
+/*
+X	printf("host2str:\n");
+X	rdfstr = ldns_rdf2str(rr->_rdata_fields[0]);
+X	if (rdfstr) {
+X		printf("%s\n", rdfstr);
+X	} else {
+X		printf("error\n");
+X	}
+X	
+X	printf("rr2str:\n");
+X	rdfstr = ldns_rr2str(rr);
+X	if (rdfstr) {
+X		printf("%s\n", rdfstr);
+X	} else {
+X		printf("error\n");
+X	}
+X	
+X
+*/
+X	
+X	
+X	return 0;
+}
+X
+SHAR_EOF
+  (set 20 06 01 09 13 55 44 '10-older-test.run-test0.c'; eval "$shar_touch") &&
+  chmod 0600 '10-older-test.run-test0.c' ||
+  $echo 'restore of' '10-older-test.run-test0.c' 'failed'
+  if ( md5sum --help 2>&1 | grep 'sage: md5sum \[' ) >/dev/null 2>&1 \
+  && ( md5sum --version 2>&1 | grep -v 'textutils 1.12' ) >/dev/null; then
+    md5sum -c << SHAR_EOF >/dev/null 2>&1 \
+    || $echo '10-older-test.run-test0.c:' 'MD5 check failed'
+40093ef0c8c12f233c74a43fea2d6b2e  10-older-test.run-test0.c
+SHAR_EOF
+  else
+    shar_count="`LC_ALL= LC_CTYPE= LANG= wc -c < '10-older-test.run-test0.c'`"
+    test 3773 -eq "$shar_count" ||
+    $echo '10-older-test.run-test0.c:' 'original size' '3773,' 'current size' "$shar_count!"
+  fi
+fi
+# ============= 10-older-test.run-test11.c ==============
+if test -f '10-older-test.run-test11.c' && test "$first_param" != -c; then
+  $echo 'x -' SKIPPING '10-older-test.run-test11.c' '(file already exists)'
+else
+  $echo 'x -' extracting '10-older-test.run-test11.c' '(text)'
+  sed 's/^X//' << 'SHAR_EOF' > '10-older-test.run-test11.c' &&
+/**
+X * An example ldns program
+X *
+X * Setup a resolver
+X * Query a nameserver
+X * Print the result
+X */
+X
+#include "config.h"
+X
+#include <ldns/dns.h>
+X
+X
+void
+print_usage(char *file)
+{
+X	printf("AXFR example\n");
+X	printf("Usage: %s <domain> <server ip>\n", file);
+X	printf("ipv4 only atm\n");
+X	exit(0);
+}
+X
+int
+main(int argc, char **argv)
+{       
+X        ldns_rdf *nameserver;
+X        ldns_rdf *domain;
+X        
+X        ldns_resolver *resolver;
+X        ldns_rr *rr = NULL;
+X
+X        char *server_ip = NULL;
+X        char *name = NULL;
+X        char *rr_str;
+X        
+X	/* Get the domain and the nameserver from the command line */
+X        if (argc < 3) {
+X        	print_usage(argv[0]);
+X	} else {
+X		name = argv[1];
+X		server_ip = argv[2];
+X	}
+X
+X        nameserver  = ldns_rdf_new_frm_str(LDNS_RDF_TYPE_A, server_ip);
+X	if (!nameserver) {
+X		printf("Bad server ip\n");
+X		return -1;
+X	}
+X	
+X	resolver = ldns_resolver_new();
+X	ldns_resolver_set_usevc(resolver, true);
+X	(void) ldns_resolver_push_nameserver(resolver, nameserver);
+X	
+X	domain = ldns_dname_new_frm_str(name);
+X	if (!domain) {
+X		printf("Bad domain\n");
+X	}
+X	
+X	(void) ldns_axfr_start(resolver, domain, LDNS_RR_CLASS_IN);
+X	
+X	while ((rr = ldns_axfr_next(resolver))) {
+X		rr_str = ldns_rr2str(rr);
+X		printf("%s\n", rr_str);
+X		ldns_rr_free(rr);
+X		LDNS_FREE(rr_str);
+X	}
+X
+X	
+X        ldns_rdf_free(nameserver);
+X        ldns_rdf_free(domain);
+X        ldns_resolver_free(resolver);
+X        
+X        return 0;
+}
+SHAR_EOF
+  (set 20 06 01 09 13 55 44 '10-older-test.run-test11.c'; eval "$shar_touch") &&
+  chmod 0600 '10-older-test.run-test11.c' ||
+  $echo 'restore of' '10-older-test.run-test11.c' 'failed'
+  if ( md5sum --help 2>&1 | grep 'sage: md5sum \[' ) >/dev/null 2>&1 \
+  && ( md5sum --version 2>&1 | grep -v 'textutils 1.12' ) >/dev/null; then
+    md5sum -c << SHAR_EOF >/dev/null 2>&1 \
+    || $echo '10-older-test.run-test11.c:' 'MD5 check failed'
+ff14823cf24daea9954fa597c834435e  10-older-test.run-test11.c
+SHAR_EOF
+  else
+    shar_count="`LC_ALL= LC_CTYPE= LANG= wc -c < '10-older-test.run-test11.c'`"
+    test 1431 -eq "$shar_count" ||
+    $echo '10-older-test.run-test11.c:' 'original size' '1431,' 'current size' "$shar_count!"
+  fi
+fi
+# ============= 10-older-test.run-test18.c ==============
+if test -f '10-older-test.run-test18.c' && test "$first_param" != -c; then
+  $echo 'x -' SKIPPING '10-older-test.run-test18.c' '(file already exists)'
+else
+  $echo 'x -' extracting '10-older-test.run-test18.c' '(binary)'
+  sed 's/^X//' << 'SHAR_EOF' | uudecode &&
+begin 600 10-older-test.run-test18.c
+M+RH*("H@;7@@:7,@82!S;6%L;"!P<F]G<F%M<R!T:&%T('!R:6YT<R!O=70@
+M=&AE(&UX(')E8V]R9',*("H@9F]R(&$@<&%R=&EC=6QA<GD@9&]M86EN"B`J
+M+PH*(VEN8VQU9&4@(F-O;F9I9RYH(@H*(VEN8VQU9&4@/&QD;G,O9&YS+F@^
+M"@H*"FEN=`IU<V%G92A&24Q%("IF<"P@8VAA<B`J<')O9RD@>PH)9G!R:6YT
+M9BAF<"P@(B5S(&ME>6=E;EQN(BP@<')O9RD["@EF<')I;G1F*&9P+"`B("!G
+M96YE<F%T92!A($1.4TM%62!24B!<;B(I.PH)<F5T=7)N(#`["GT*"FEN=`IM
+M86EN*"D*>PH);&1N<U]R<B`J9&YS:V5Y.PH);&1N<U]K97D@*G!R:79K97D[
+M"@EL9&YS7W)R("ID;G-K97E?9'-A.PH);&1N<U]K97D@*G!R:79K97E?9'-A
+M.PH);&1N<U]R9&8@*F]W;F5R.PH);&1N<U]R<B`J<G(["@EL9&YS7VME>5]L
+M:7-T("IK97ES.PH);&1N<U]R<E]L:7-T("`J<G)S.PH);&1N<U]R<E]L:7-T
+M("`J<VEG;F%T=7)E<SL*"6QD;G-?<G)?;&ES="`@*F1N<VME>7,["@EC;VYS
+M="!C:&%R("IS;V%?<W1R:6YG,3L*"6-O;G-T(&-H87(@*G-O85]S=')I;F<R
+M.PH)8V]N<W0@8VAA<B`J<V]A7W-T<FEN9S,["@H):V5Y<R`](&QD;G-?:V5Y
+M7VQI<W1?;F5W*"D["@ER<G,@(#T@;&1N<U]R<E]L:7-T7VYE=R@I.PH)9&YS
+M:V5Y<R`](&QD;G-?<G)?;&ES=%]N97<H*3L*"@DO*B!W96QL(&9O<FUE9"`J
+M+PH)<G(@/2!L9&YS7W)R7VYE=U]F<FU?<W1R*")A+FUI96LN;FPN("`@,3@P
+M,"`@($E.("`@02`@("`Q.34N,38Y+C(R,BXS.%QN82YM:65K+FYL+B`@(#$X
+M,#`@("!)3B`@($$@("`@,3DU+C$V.2XR,C(N,S@B+"`P+"!.54Q,+"!.54Q,
+M*3L*"6QD;G-?<G)?<')I;G0H<W1D;W5T+"!R<BD["@EP<FEN=&8H(EQN(BD[
+M"@H)<G(@/2!L9&YS7W)R7VYE=U]F<FU?<W1R*")A+FUI96LN;FPN("`@,3@P
+M,"`@($E.("`@02`@("`Q.34N,38Y+C(R,BXS."`@("`B+"`P+"!.54Q,+"!.
+M54Q,*3L*"6QD;G-?<G)?<')I;G0H<W1D;W5T+"!R<BD["@EP<FEN=&8H(EQN
+M(BD["@H)<V]A7W-T<FEN9S$@/2`B;6EE:RYN;"X@,S8P,"!)3B!33T$@96QE
+M:W1R;VXN871O;VTN;F5T+B!M:65K9RYA=&]O;2YN970N("@@7`HR,#`R,3(P
+M-S`P(#L@:&%L;&\@:6L@8F5N(&UI96M<;EP*,C$V,#`@("`@("!<;EP*-S(P
+M,"`@("`@("!<;EP*-C`T.#`P("`@("!<;EP*,S8P,"`@("`@("!<;EP**2([
+M"@ES;V%?<W1R:6YG,B`](")M:65K+FYL+B`S-C`P($E.(%-/02!E;&5K=')O
+M;BYA=&]O;2YN970N(&UI96MG+F%T;V]M+FYE="X@*%P*,C`P,C$R,#<P,"`[
+M('-E<FEA;"!<;EP*,C$V,#`@.R!M;W)E('-H:71<;EP*-S(P,"`[(&%H:"!R
+M971R>2!<;EP*-C`T.#`P(#L@;65A;FEN9VQE<W,@;G5M8F5R('1O(&%N;F]Y
+M(&UE7&Y<"C,V,#`@.R!N96=A=&EV92!C86-H:6YG7&Y<"BDB.R`*"@ER<B`]
+M(&QD;G-?<G)?;F5W7V9R;5]S='(H<V]A7W-T<FEN9S$L(#`L($Y53$PL($Y5
+M3$PI.PH);&1N<U]R<E]P<FEN="AS=&1O=70L(')R*3L*"7!R:6YT9B@B7&XB
+M*3L*"7)R(#T@;&1N<U]R<E]N97=?9G)M7W-T<BAS;V%?<W1R:6YG,BP@,"P@
+M3E5,3"P@3E5,3"D["@EL9&YS7W)R7W!R:6YT*'-T9&]U="P@<G(I.PH)<')I
+M;G1F*")<;B(I.PH*"7)R(#T@;&1N<U]R<E]N97=?9G)M7W-T<B@B82YM:65K
+M+FYL+B`Q.#`P("`@($E.("`@("!-6"`@("`@,3`@("`@=W=W+F%T;V]M+FYE
+M="(L(#`L($Y53$PL($Y53$PI.PH);&1N<U]R<E]P<FEN="AS=&1O=70L(')R
+M*3L*"7!R:6YT9B@B7&XB*3L*"@ER<B`](&QD;G-?<G)?;F5W7V9R;5]S='(H
+M(F$N;6EE:RYN;"X@,3@P,"`@("!)3B`@("`@35@@("`@(#$P("`@('=<7#`V
+M-2YA=&]O;2YN970B+"`P+"!.54Q,+"!.54Q,*3L*"6QD;G-?<G)?<')I;G0H
+M<W1D;W5T+"!R<BD["@EP<FEN=&8H(EQN(BD["@H)<G(@/2!L9&YS7W)R7VYE
+M=U]F<FU?<W1R*")A+FUI96LN;FPN(#$X,#`@("`@24X@("`@($U8("`@("`Q
+M,"`@("!W7%PV-2YA=&]O;2YN970B+"`P+"!.54Q,+"!.54Q,*3L*"6QD;G-?
+M<G)?<')I;G0H<W1D;W5T+"!R<BD["@EP<FEN=&8H(EQN(BD["@H)<G(@/2!L
+M9&YS7W)R7VYE=U]F<FU?<W1R*")A+FUI96LN;FPN(#$X,#`@("`@24X@("`@
+M($U8("`@("`Q,"`@("!W=W=<7"YW=W<N871O;VTN;F5T(BP@,"P@3E5,3"P@
+M3E5,3"D["@EL9&YS7W)R7W!R:6YT*'-T9&]U="P@<G(I.PH)<')I;G1F*")<
+M;B(I.PH*"7)R(#T@;&1N<U]R<E]N97=?9G)M7W-T<B@B82YM:65K+FYL+B`Q
+M.#`P("`@($E.("`@("!-6"`@("`@,3`@("`@7%PN(BP@,"P@3E5,3"P@3E5,
+M3"D["@EL9&YS7W)R7W!R:6YT*'-T9&]U="P@<G(I.PH)<')I;G1F*")<;B(I
+M.PH*"7!R:6YT9B@B<G(@<VEG('=I=&@@:6YC97!T:6]N(&%S(&5P;V-H(&YU
+M;6)E<EQN(BD["@ER<B`](&QD;G-?<G)?;F5W7V9R;5]S='(H(FYL;F5T;&%B
+M<RYN;"X@("`@("`@.#8T,#`@($E.("!24E-)1R`@("!$3E-+15D@4E-!4TA!
+M,2`R(#@V-#`P(#$Q,30V.34W-S8@,3$Q,C$P,S<W-B`T,S<Y,2!N;&YE=&QA
+M8G,N;FPN("!&12\O4EHP6C%S37IE83!I;T],1G!526--,W=N>$Q';F1T2U58
+M2E--,U-1,T)L66]K,F955&E)*WIE9TYO0C%99'EL5W-F;VA:2F9J:T]$<D]*
+M3SE04V).-VA-2&UZ1D5S1$9!8D-5-S54>5-"=7AV,E51;%%6=51Z;GAT4F1V
+M3$=)4D=X4FA0;6IL8R]G=$I034(T6$I+55=M=&MZ;%162W%:53=O3D-S3$$]
+M(BP@,"P@3E5,3"P@3E5,3"D["@EL9&YS7W)R7W!R:6YT*'-T9&]U="P@<G(I
+M.PH)<')I;G1F*")<;B(I.PH*"7!R:6YT9B@B<G(@<VEG('=I=&@@:6YC97!T
+M:6]N(&%S(&1A=&5<;B(I.PH)<G(@/2!L9&YS7W)R7VYE=U]F<FU?<W1R*")N
+M;&YE=&QA8G,N;FPN("`@("`@(#@V-#`P("!)3B`@4E)324<@("`@1$Y32T59
+M(%)305-(03$@,B`X-C0P,"`R,#`U,#$P-3$R,3,P,"`Q,3$R,3`S-S<V(#0S
+M-SDQ(&YL;F5T;&%B<RYN;"X@($9%+R]26C!:,7-->F5A,&EO3TQ&<%5)8TTS
+M=VYX3$=N9'1+55A*4TTS4U$S0FQ9;VLR9E54:4DK>F5G3F]",5ED>6Q7<V9O
+M:%I*9FIK3T1R3TI/.5!38DXW:$U(;7I&17-$1D%B0U4W-51Y4T)U>'8R55%L
+M459U5'IN>'129'9,1TE21WA2:%!M:FQC+V=T2E!-0C182DM55VUT:WIL5%9+
+M<5I5-V].0W-,03TB+"`P+"!.54Q,+"!.54Q,*3L*"@EL9&YS7W)R7W!R:6YT
+M*'-T9&]U="P@<G(I.PH)<')I;G1F*")<;B(I.PH)"@DO*B!M:7-S(&9O<FUE
+M9"`J+PH)<G(@/2!L9&YS7W)R7VYE=U]F<FU?<W1R*")A+FUI96LN;FPN(#$X
+M,#`@24X@35@@,3`B+"`P+"!.54Q,+"!.54Q,*3L*"6QD;G-?<G)?<')I;G0H
+M<W1D;W5T+"!R<BD["@EP<FEN=&8H(EQN(BD["@H)<G(@/2!L9&YS7W)R7VYE
+M=U]F<FU?<W1R*")A+FUI96LN;FPN(#$X,#`@24X@02`R-C<N,C<Q+C$R,BXQ
+M="(L(#`L($Y53$PL($Y53$PI.PH);&1N<U]R<E]P<FEN="AS=&1O=70L(')R
+M*3L*"7!R:6YT9B@B7&XB*3L*"@EP<FEN=&8H(G1H:7,@;75S="!W;W)K(&%G
+M86EN7&XB*3L*"7)R(#T@;&1N<U]R<E]N97=?9G)M7W-T<B@B82YM:65K+FYL
+M+B`@($E.("`@("!!("`@(#$R-RXP+C`N,2(L(#`L($Y53$PL($Y53$PI.PH)
+M;&1N<U]R<E]P<FEN="AS=&1O=70L(')R*3L*"7!R:6YT9B@B7&XB*3L*"7)R
+M(#T@;&1N<U]R<E]N97=?9G)M7W-T<B@B82YM:65K+FYL+B`@(#%$($E.("`@
+M("!!("`@(#$R-RXP+C`N,2(L(#`L($Y53$PL($Y53$PI.PH);&1N<U]R<E]P
+M<FEN="AS=&1O=70L(')R*3L*"7!R:6YT9B@B7&XB*3L*"@ER<B`](&QD;G-?
+M<G)?;F5W7V9R;5]S='(H(F$N;6EE:RYN;"X@("`Q.#`P("`@24X@("!!("`@
+M(#$Y-2XQ-CDN,C(R+C,X(BP@,"P@3E5,3"P@3E5,3"D["@EL9&YS7W)R7W!R
+M:6YT*'-T9&]U="P@<G(I.PH)<')I;G1F*")<;B(I.PH*"7!R:79K97D@/2!L
+M9&YS7VME>5]N97=?9G)M7V%L9V]R:71H;2A,1$Y37U-)1TY?4E-!4TA!,2P@
+M-3$R*3L*"6EF("@A<')I=FME>2D@>PH)"7!R:6YT9B@B06@L(&ME>6=E;B!F
+M86EL960B*3L*"0EE>&ET*#$I.PH)?0H*"6]W;F5R(#T@;&1N<U]D;F%M95]N
+M97=?9G)M7W-T<B@B;6EE:RYN;"(I.PH);&1N<U]K97E?<V5T7W!U8FME>5]O
+M=VYE<BAP<FEV:V5Y+"!O=VYE<BD["@H);&1N<U]K97E?<V5T7V]R:6=T=&PH
+M<')I=FME>2P@,3@P,"D["@DO*@E34TQ?;&]A9%]E<G)O<E]S=')I;F=S*"D[
+M*B\*"@EL9&YS7VME>5]L:7-T7W!U<VA?:V5Y*&ME>7,L('!R:79K97DI.PH*
+M"6QD;G-?<G)?;&ES=%]P=7-H7W)R*')R<RP@<G(I.PH)"@ED;G-K97D@/2!L
+M9&YS7VME>3)R<BAP<FEV:V5Y*3L*"6EF("AD;G-K97DI('L*"0EL9&YS7W)R
+M7W!R:6YT*'-T9&]U="P@9&YS:V5Y*3L*"0EP<FEN=&8H(CL@>R5D?5QN(BP@
+M"@D)"0DH:6YT*2!L9&YS7V-A;&-?:V5Y=&%G*&1N<VME>2DI.PH)"7!R:6YT
+M9B@B7&XB*3L*"0EL9&YS7VME>5]S971?:V5Y=&%G*'!R:79K97DL(&QD;G-?
+M8V%L8U]K97ET86<H9&YS:V5Y*2D["@E](&5L<V4@>PH)"65X:70H,2D["@E]
+M"@EL9&YS7W)R7VQI<W1?<'5S:%]R<BAD;G-K97ES+"!D;G-K97DI.PH*"7-I
+M9VYA='5R97,@/2!L9&YS7W-I9VY?<'5B;&EC*')R<RP@:V5Y<RD["@H);&1N
+M<U]R<E]L:7-T7W!R:6YT*'-T9&]U="P@<VEG;F%T=7)E<RD["@H)<')I;G1F
+M*").;W<@=V4@87)E(&=O:6YG('1O('9E<FEF>5QN(BD["@H)<')I;G1F*")<
+M;ELE9%U<;B(L(&QD;G-?=F5R:69Y*')R<RP@<VEG;F%T=7)E<RP@9&YS:V5Y
+A<RP@3E5,3"DI.PH)"B`@("`@("`@<F5T=7)N(#`["GT*
+`
+end
+SHAR_EOF
+  (set 20 06 01 09 13 55 44 '10-older-test.run-test18.c'; eval "$shar_touch") &&
+  chmod 0600 '10-older-test.run-test18.c' ||
+  $echo 'restore of' '10-older-test.run-test18.c' 'failed'
+  if ( md5sum --help 2>&1 | grep 'sage: md5sum \[' ) >/dev/null 2>&1 \
+  && ( md5sum --version 2>&1 | grep -v 'textutils 1.12' ) >/dev/null; then
+    md5sum -c << SHAR_EOF >/dev/null 2>&1 \
+    || $echo '10-older-test.run-test18.c:' 'MD5 check failed'
+32cf510088662a21d2962873a8a825f0  10-older-test.run-test18.c
+SHAR_EOF
+  else
+    shar_count="`LC_ALL= LC_CTYPE= LANG= wc -c < '10-older-test.run-test18.c'`"
+    test 4668 -eq "$shar_count" ||
+    $echo '10-older-test.run-test18.c:' 'original size' '4668,' 'current size' "$shar_count!"
+  fi
+fi
+# ============= 10-older-test.run-test19.c ==============
+if test -f '10-older-test.run-test19.c' && test "$first_param" != -c; then
+  $echo 'x -' SKIPPING '10-older-test.run-test19.c' '(file already exists)'
+else
+  $echo 'x -' extracting '10-older-test.run-test19.c' '(text)'
+  sed 's/^X//' << 'SHAR_EOF' > '10-older-test.run-test19.c' &&
+/*
+X * mx is a small programs that prints out the mx records
+X * for a particulary domain
+X */
+X
+#include "config.h"
+X
+#include <ldns/dns.h>
+X
+int
+usage(FILE *fp, char *prog) {
+X	fprintf(fp, "%s keygen\n", prog);
+X	fprintf(fp, "  generate a DNSKEY RR \n");
+X	return 0;
+}
+X
+int
+main()
+{
+X	ldns_resolver *r;
+X	ldns_rdf *aaaa;
+X	ldns_rr_list *hosts;
+X
+X	r = ldns_resolver_new_frm_file(NULL);
+X	if (!r) {
+X		printf("something wrong?\n");
+X	}
+X
+X	printf("::0\n");
+X	aaaa = ldns_rdf_new_frm_str(LDNS_RDF_TYPE_AAAA, "::0");
+X	ldns_rdf_print(stdout, aaaa);
+X	printf("\n\n");
+X	printf("0::1\n");
+X	aaaa = ldns_rdf_new_frm_str(LDNS_RDF_TYPE_AAAA, "0::1");
+X	ldns_rdf_print(stdout, aaaa);
+X	printf("\n\n");
+X	printf("0::0\n");
+X	aaaa = ldns_rdf_new_frm_str(LDNS_RDF_TYPE_AAAA, "0::0");
+X	ldns_rdf_print(stdout, aaaa);
+X	printf("\n\n");
+X	printf("ff:192.168.1.1\n");
+X	aaaa = ldns_rdf_new_frm_str(LDNS_RDF_TYPE_AAAA, "ff:192.168.1.1");
+X	ldns_rdf_print(stdout, aaaa);
+X	printf("\n\n");
+X	printf("::A0\n");
+X	aaaa = ldns_rdf_new_frm_str(LDNS_RDF_TYPE_AAAA, "::A0");
+X	ldns_rdf_print(stdout, aaaa);
+X	printf("\n\n");
+X	printf("FF:0:0:0:0::1\n");
+X	aaaa = ldns_rdf_new_frm_str(LDNS_RDF_TYPE_AAAA, "FF:0:0:0:0::1");
+X	ldns_rdf_print(stdout, aaaa);
+X	printf("\n\n");
+X	printf("FF:0:0:0:1::0\n");
+X	aaaa = ldns_rdf_new_frm_str(LDNS_RDF_TYPE_AAAA, "FF:0:0:0:1::0");
+X	ldns_rdf_print(stdout, aaaa);
+X	printf("\n\n");
+X	printf("FF:0:0:0:1::0:1\n");
+X	aaaa = ldns_rdf_new_frm_str(LDNS_RDF_TYPE_AAAA, "FF:0:0:0:1::0:1");
+X	ldns_rdf_print(stdout, aaaa);
+X	printf("\n\n");
+X
+X	/*
+X	hosts = ldns_get_rr_list_hosts_frm_file(NULL);
+X	ldns_rr_list_print(stdout, hosts);
+X	*/
+X	
+X	return 0;
+}
+SHAR_EOF
+  (set 20 06 01 09 13 55 44 '10-older-test.run-test19.c'; eval "$shar_touch") &&
+  chmod 0600 '10-older-test.run-test19.c' ||
+  $echo 'restore of' '10-older-test.run-test19.c' 'failed'
+  if ( md5sum --help 2>&1 | grep 'sage: md5sum \[' ) >/dev/null 2>&1 \
+  && ( md5sum --version 2>&1 | grep -v 'textutils 1.12' ) >/dev/null; then
+    md5sum -c << SHAR_EOF >/dev/null 2>&1 \
+    || $echo '10-older-test.run-test19.c:' 'MD5 check failed'
+a7d5c4be33416da455d92ba5881175ec  10-older-test.run-test19.c
+SHAR_EOF
+  else
+    shar_count="`LC_ALL= LC_CTYPE= LANG= wc -c < '10-older-test.run-test19.c'`"
+    test 1605 -eq "$shar_count" ||
+    $echo '10-older-test.run-test19.c:' 'original size' '1605,' 'current size' "$shar_count!"
+  fi
+fi
+# ============= 10-older-test.run-test20.c ==============
+if test -f '10-older-test.run-test20.c' && test "$first_param" != -c; then
+  $echo 'x -' SKIPPING '10-older-test.run-test20.c' '(file already exists)'
+else
+  $echo 'x -' extracting '10-older-test.run-test20.c' '(text)'
+  sed 's/^X//' << 'SHAR_EOF' > '10-older-test.run-test20.c' &&
+/*
+X * mx is a small programs that prints out the mx records
+X * for a particulary domain
+X */
+X
+#include "config.h"
+X
+#include <ldns/dns.h>
+X
+int
+usage(FILE *fp, char *prog) {
+X	fprintf(fp, "%s keygen\n", prog);
+X	fprintf(fp, "  generate a DNSKEY RR \n");
+X	return 0;
+}
+X
+int
+main(void)
+{
+X	ldns_rr *dnskey;
+X	ldns_key *privkey;
+X	ldns_rr *dnskey_dsa;
+X	ldns_key *privkey_dsa;
+X	ldns_rdf *owner;
+X	ldns_rr *rr;
+X	ldns_key_list *keys;
+X	ldns_rr_list  *rrs;
+X	ldns_rr_list  *signatures;
+X	ldns_rr_list  *dnskeys;
+X	ldns_rr_list  *result_keys;
+X	ldns_status result;
+X
+X	/* ----- */
+X	FILE *f;
+X	char *d;
+X	char *keyfilename;
+X
+X	d = LDNS_XMALLOC(char, 1000);
+X
+X	keys = ldns_key_list_new();
+X	rrs  = ldns_rr_list_new();
+X	dnskeys = ldns_rr_list_new();
+X
+X	privkey = ldns_key_new_frm_algorithm(LDNS_SIGN_RSASHA1, 512);
+X	if (!privkey) {
+X		printf("Ah, keygen failed");
+X		exit(1);
+X	}
+X
+X	owner = ldns_dname_new_frm_str("jelte.nlnetlabs.nl");
+X	ldns_key_set_pubkey_owner(privkey, owner);
+X
+X	ldns_key_set_origttl(privkey, 1800);
+X	SSL_load_error_strings();
+X
+X	ldns_key_list_push_key(keys, privkey);
+X
+X	rr = ldns_rr_new_frm_str("www.jelte.nlnetlabs.nl. IN A 127.0.0.1", 0, NULL, NULL);
+X	ldns_rr_print(stdout, rr);
+X	
+X	ldns_rr_list_push_rr(rrs, rr);
+X	
+X	dnskey = ldns_key2rr(privkey);
+X	if (dnskey) {
+X		ldns_rr_print(stdout, dnskey);
+X		printf("; {%d}\n", 
+X				(int) ldns_calc_keytag(dnskey));
+X		printf("\n");
+X		ldns_key_set_keytag(privkey, ldns_calc_keytag(dnskey));
+X	} else {
+X		exit(1);
+X	}
+X	ldns_rr_list_push_rr(dnskeys, dnskey);
+X
+X	ldns_rr_list_print(stdout, dnskeys);
+X	printf("\n Trying to sign\n");
+X
+X	signatures = ldns_sign_public(rrs, keys);
+X
+X	printf("DATA:\n");
+X	ldns_rr_list_print(stdout, rrs);
+X
+X	printf("SIGS:\n");
+X
+X	ldns_rr_list_print(stdout, signatures);
+X
+X	printf("KEYS:\n");
+X	ldns_rr_list_print(stdout, dnskeys);
+X
+X	printf("Now we are going to verify\n");
+X
+X	result_keys = ldns_rr_list_new();
+X	result = ldns_verify(rrs, signatures, dnskeys, result_keys);
+X
+X	printf("RESULT:\n");
+X	ldns_rr_list_print(stdout, result_keys);
+X
+X	if (result == LDNS_STATUS_OK) {
+X		printf("SUCCESS\n\n");
+X	} else {
+X		printf("FAILURE\n\n");
+X	}
+X	
+X        return 0;
+}
+SHAR_EOF
+  (set 20 06 01 09 13 55 44 '10-older-test.run-test20.c'; eval "$shar_touch") &&
+  chmod 0600 '10-older-test.run-test20.c' ||
+  $echo 'restore of' '10-older-test.run-test20.c' 'failed'
+  if ( md5sum --help 2>&1 | grep 'sage: md5sum \[' ) >/dev/null 2>&1 \
+  && ( md5sum --version 2>&1 | grep -v 'textutils 1.12' ) >/dev/null; then
+    md5sum -c << SHAR_EOF >/dev/null 2>&1 \
+    || $echo '10-older-test.run-test20.c:' 'MD5 check failed'
+5c5dd5c4afcd0c0f10b9701f2c6e91ce  10-older-test.run-test20.c
+SHAR_EOF
+  else
+    shar_count="`LC_ALL= LC_CTYPE= LANG= wc -c < '10-older-test.run-test20.c'`"
+    test 2092 -eq "$shar_count" ||
+    $echo '10-older-test.run-test20.c:' 'original size' '2092,' 'current size' "$shar_count!"
+  fi
+fi
+# ============= 10-older-test.run-test7.c ==============
+if test -f '10-older-test.run-test7.c' && test "$first_param" != -c; then
+  $echo 'x -' SKIPPING '10-older-test.run-test7.c' '(file already exists)'
+else
+  $echo 'x -' extracting '10-older-test.run-test7.c' '(text)'
+  sed 's/^X//' << 'SHAR_EOF' > '10-older-test.run-test7.c' &&
+/**
+X * An example ldns program
+X *
+X * Setup a resolver
+X * Query a nameserver
+X * Print the result
+X */
+X
+#include "config.h"
+X
+#include <ldns/dns.h>
+X
+void
+print_usage(char *file)
+{
+X	printf("Usage: %s <type> <name> <server ip>\n", file);
+X	printf("ipv4 only atm\n");
+X	exit(0);
+}
+X
+int     
+main(int argc, char **argv)
+{       
+X        ldns_resolver *res;
+X        ldns_rdf *qname;
+X        ldns_rdf *nameserver;
+X	/*ldns_rdf *default_dom;*/
+X        ldns_pkt *pkt;
+X        char *server_ip = NULL;
+X        char *name = NULL;
+X        char *type = NULL;
+X        
+X        if (argc < 4) {
+X        	print_usage(argv[0]);
+X	} else {
+X		type = argv[1];
+X		name = argv[2];
+X		server_ip = argv[3];
+X	}
+X                
+X        /* init */
+X        res = ldns_resolver_new(); 
+X        if (!res)
+X                return 1;
+X
+X        /* create a default domain and add it */
+X
+#if 0
+X        default_dom = ldns_dname_new_frm_str("miek.nl.");
+X        ldns_resolver_set_domain(res, default_dom);
+X	ldns_resolver_set_defnames(res, true); /* use the suffix */
+#endif
+X
+X        nameserver  = ldns_rdf_new_frm_str(LDNS_RDF_TYPE_A, server_ip);
+X	if (!nameserver) {
+X		printf("Bad server ip\n");
+X		return 1;
+X	}
+X
+X
+X
+X        if (ldns_resolver_push_nameserver(res, nameserver) != LDNS_STATUS_OK) {
+X		printf("error push nameserver\n");
+X                return 1;
+X	}
+X        /* setup the question */
+X        qname = ldns_dname_new_frm_str(name);
+X	if (!qname) {
+X		printf("error making qname\n");
+X                return 1;
+X	}
+X        
+X        pkt = ldns_resolver_query(res, qname, ldns_get_rr_type_by_name(type), 0, LDNS_RD);
+X
+X	if (!pkt)  {
+X		printf("error pkt sending\n");
+X		return 1;
+X	}
+X                
+X        /* print the resulting pkt to stdout */
+X        ldns_pkt_print(stdout, pkt);
+X
+X        ldns_rdf_free(nameserver);
+X        ldns_rdf_free(qname);
+X        ldns_pkt_free(pkt);
+X        ldns_resolver_deep_free(res);
+X        return 0;
+}
+SHAR_EOF
+  (set 20 06 01 09 13 55 44 '10-older-test.run-test7.c'; eval "$shar_touch") &&
+  chmod 0600 '10-older-test.run-test7.c' ||
+  $echo 'restore of' '10-older-test.run-test7.c' 'failed'
+  if ( md5sum --help 2>&1 | grep 'sage: md5sum \[' ) >/dev/null 2>&1 \
+  && ( md5sum --version 2>&1 | grep -v 'textutils 1.12' ) >/dev/null; then
+    md5sum -c << SHAR_EOF >/dev/null 2>&1 \
+    || $echo '10-older-test.run-test7.c:' 'MD5 check failed'
+aee09340b7017ba4fb6917bf9fecc0e5  10-older-test.run-test7.c
+SHAR_EOF
+  else
+    shar_count="`LC_ALL= LC_CTYPE= LANG= wc -c < '10-older-test.run-test7.c'`"
+    test 1886 -eq "$shar_count" ||
+    $echo '10-older-test.run-test7.c:' 'original size' '1886,' 'current size' "$shar_count!"
+  fi
+fi
+# ============= 10-older-test.serial.c ==============
+if test -f '10-older-test.serial.c' && test "$first_param" != -c; then
+  $echo 'x -' SKIPPING '10-older-test.serial.c' '(file already exists)'
+else
+  $echo 'x -' extracting '10-older-test.serial.c' '(text)'
+  sed 's/^X//' << 'SHAR_EOF' > '10-older-test.serial.c' &&
+#include "config.h"
+X
+#include <ldns/dns.h>
+X
+void 
+test_serial(uint32_t a, uint32_t b)
+{
+X	printf("%d : %d\n", a, b);
+X
+X	printf("%d\n",
+X			ldns_serial(a,b));
+}
+X
+int 
+main(void)
+{
+X	/* serial tests */
+X	test_serial(1, 1);
+X	test_serial(1, 2);
+X	test_serial(2, 1);
+X	test_serial(0, 0);
+X
+X	
+}
+X
+SHAR_EOF
+  (set 20 06 01 09 13 55 44 '10-older-test.serial.c'; eval "$shar_touch") &&
+  chmod 0600 '10-older-test.serial.c' ||
+  $echo 'restore of' '10-older-test.serial.c' 'failed'
+  if ( md5sum --help 2>&1 | grep 'sage: md5sum \[' ) >/dev/null 2>&1 \
+  && ( md5sum --version 2>&1 | grep -v 'textutils 1.12' ) >/dev/null; then
+    md5sum -c << SHAR_EOF >/dev/null 2>&1 \
+    || $echo '10-older-test.serial.c:' 'MD5 check failed'
+0ce3e1243e3c7756db57733212d50334  10-older-test.serial.c
+SHAR_EOF
+  else
+    shar_count="`LC_ALL= LC_CTYPE= LANG= wc -c < '10-older-test.serial.c'`"
+    test 282 -eq "$shar_count" ||
+    $echo '10-older-test.serial.c:' 'original size' '282,' 'current size' "$shar_count!"
+  fi
+fi
+# ============= 10-older-test.server.c ==============
+if test -f '10-older-test.server.c' && test "$first_param" != -c; then
+  $echo 'x -' SKIPPING '10-older-test.server.c' '(file already exists)'
+else
+  $echo 'x -' extracting '10-older-test.server.c' '(text)'
+  sed 's/^X//' << 'SHAR_EOF' > '10-older-test.server.c' &&
+/*
+X * Small server implementation 
+X * that prints out everything it receives
+X */
+X
+#include "config.h"
+X
+#include <ldns/dns.h>
+X
+int
+usage(FILE *fp, char *prog) {
+X	fprintf(fp, "%s\n", prog);
+X	fprintf(fp, "  run a small mirroring server\n");
+X	return 0;
+}
+X
+int
+main(void)
+{
+X	/* setup a socket, listen for incomings, print them out */
+X	int sockfd;
+X
+X
+X	exit(1);
+}
+SHAR_EOF
+  (set 20 06 01 09 14 52 11 '10-older-test.server.c'; eval "$shar_touch") &&
+  chmod 0600 '10-older-test.server.c' ||
+  $echo 'restore of' '10-older-test.server.c' 'failed'
+  if ( md5sum --help 2>&1 | grep 'sage: md5sum \[' ) >/dev/null 2>&1 \
+  && ( md5sum --version 2>&1 | grep -v 'textutils 1.12' ) >/dev/null; then
+    md5sum -c << SHAR_EOF >/dev/null 2>&1 \
+    || $echo '10-older-test.server.c:' 'MD5 check failed'
+90d7ff437b99a5053619f17d01a62610  10-older-test.server.c
+SHAR_EOF
+  else
+    shar_count="`LC_ALL= LC_CTYPE= LANG= wc -c < '10-older-test.server.c'`"
+    test 356 -eq "$shar_count" ||
+    $echo '10-older-test.server.c:' 'original size' '356,' 'current size' "$shar_count!"
+  fi
+fi
+# ============= 10-older-test.test ==============
+if test -f '10-older-test.test' && test "$first_param" != -c; then
+  $echo 'x -' SKIPPING '10-older-test.test' '(file already exists)'
+else
+  $echo 'x -' extracting '10-older-test.test' '(text)'
+  sed 's/^X//' << 'SHAR_EOF' > '10-older-test.test' &&
+# #-- 10-older-test.test --#
+# source the master var file when it's there
+[ -f ../.tpkg.var.master ] && source ../.tpkg.var.master
+# use .tpkg.var.test for in test variable passing
+[ -f .tpkg.var.test ] && source .tpkg.var.test
+# svnserve resets the path, you may need to adjust it, like this:
+#PATH=$PATH:/usr/sbin:/sbin:/usr/local/bin:/usr/local/sbin:.
+X
+export LD_LIBRARY_PATH=../../lib
+X
+# run the test
+X./10-older-test.dname-label-test  && \
+X./10-older-test.rrsig-test  && \
+X./10-older-test.run-test19 && \
+X./10-older-test.run-test7 mx miek.nl 127.0.0.1  && \
+X./10-older-test.server&& \
+X./10-older-test.notify            && \
+X./10-older-test.run-test0   && \
+X./10-older-test.run-test18  && \
+#./10-older-test.run-test20  && \
+X./10-older-test.serial 
+Xexit 0
+SHAR_EOF
+  (set 20 06 01 09 14 58 12 '10-older-test.test'; eval "$shar_touch") &&
+  chmod 0600 '10-older-test.test' ||
+  $echo 'restore of' '10-older-test.test' 'failed'
+  if ( md5sum --help 2>&1 | grep 'sage: md5sum \[' ) >/dev/null 2>&1 \
+  && ( md5sum --version 2>&1 | grep -v 'textutils 1.12' ) >/dev/null; then
+    md5sum -c << SHAR_EOF >/dev/null 2>&1 \
+    || $echo '10-older-test.test:' 'MD5 check failed'
+53e75fd8c1412c5aad38258bd3221ca2  10-older-test.test
+SHAR_EOF
+  else
+    shar_count="`LC_ALL= LC_CTYPE= LANG= wc -c < '10-older-test.test'`"
+    test 759 -eq "$shar_count" ||
+    $echo '10-older-test.test:' 'original size' '759,' 'current size' "$shar_count!"
+  fi
+fi
+rm -fr _sh19461
+exit 0

@@ -93,7 +93,7 @@ main(void)
 	result = ldns_verify(rrs, signatures, dnskeys, result_keys);
 
 	printf("RESULT:\n");
-	ldns_rr_list_print(stdout, result_keys);
+/*	ldns_rr_list_print(stdout, result_keys);*/
 
 	if (result == LDNS_STATUS_OK) {
 		printf("SUCCESS\n\n");
