@@ -126,12 +126,22 @@ main(int argc, char *argv[])
 				i++;
 			} else {
                         	if (argv[i][0] == '@') {
-					serv = argv[i] + 1;
+					if (strlen(argv[i]) == 1) {
+						if (i + 1 < argc) {
+							serv = argv[i + 1];
+							i++;
+						} else {
+							printf("Missing argument for -s\n");
+							exit(1);
+						}
+					} else {
+						serv = argv[i] + 1;
+					}
                         	} else {
 					if (i < argc) {
 						if (!domain) {
 							/* create a rdf from the command line arg */
-							domain = ldns_dname_new_frm_str(argv[1]);
+							domain = ldns_dname_new_frm_str(argv[i]);
 							if (!domain) {
 								usage(stdout, argv[0]);
 								exit(1);
@@ -238,9 +248,10 @@ main(int argc, char *argv[])
 			} else {
 				printf(" *** No rrlist...\b");
 			}
+			/* TODO: conversion memory */
 			fprintf(stderr, 
-					" *** invalid answer name %s after SOA query for %s\n",
-					argv[1], argv[1]);
+					" *** invalid answer name after SOA query for %s\n",
+					ldns_rr2str(domain));
 			ldns_pkt_print(stdout, p);
                         ldns_pkt_free(p);
                         ldns_resolver_deep_free(res);
