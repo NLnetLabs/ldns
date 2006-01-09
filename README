@@ -44,7 +44,7 @@ LD_LIBRARY_PATH=../lib ./ldns-version
 
 * Drill
 
-Drill can be build by issueing a 'make drill' from the ldns source dir.
+Drill can be built by issuing a 'make drill' from the ldns source dir.
 
 If you want to build drill by hand, the configure and running options are
 the same as those for the examples. 
