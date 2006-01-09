@@ -6,6 +6,8 @@ Current TODO list
 
 Post 1.0 Stuff:
 ---------------
+        o Make drill a worthy dig replacement wrt to 
+          DNSSEC debugging
         o Dname compression
         o A /fast/ impl. for holding a zone (and retrieving data from it)
         o refactor ldns_verify_rrsig_keylist and
@@ -22,6 +24,4 @@ DONE:
 1.0.1:
 ------
         o Fix what needs to be fixed
-        o Make drill a worthy dig replacement wrt to 
-          DNSSEC debugging
 

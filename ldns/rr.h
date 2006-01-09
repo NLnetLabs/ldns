@@ -13,7 +13,6 @@
 
 #include <ldns/common.h>
 #include <ldns/rdata.h>
-#include <ldns/rr.h>
 #include <ldns/error.h>
 
 /** Maximum length of a dname label */
