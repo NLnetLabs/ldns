@@ -2641,8 +2641,12 @@ int main(int argc, char *argv[]) {
 	pc = pcap_open_offline(inputfile, errbuf);
 	
 	if (!pc) {
-		printf("Error opening pcap file %s: %s\n", inputfile, errbuf);
-		exit(1);
+		if (errno != 0) {
+			printf("Error opening pcap file %s: %s\n", inputfile, errbuf);
+			exit(1);
+		} else {
+			goto showresult;
+		}
 	}
 
 	if (dumpfile) {
@@ -2687,6 +2691,7 @@ int main(int argc, char *argv[]) {
 
 	pcap_close(pc);
 	
+	showresult:
 	if (show_percentages) {
 		fprintf(stdout, "Packets that are not IP: %u\n", (unsigned int) not_ip_packets);
 		fprintf(stdout, "bad dns packets: %u\n", (unsigned int) bad_dns_packets);
