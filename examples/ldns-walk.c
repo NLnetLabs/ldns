@@ -9,12 +9,15 @@
 
 #include <ldns/dns.h>
 
+int verbosity = 0;
+
 int
 usage(FILE *fp, char *prog) {
 	fprintf(fp, "%s [options] domain\n", prog);
 	fprintf(fp, "  print out the owner names for domain and the record types for those names\n");
 	fprintf(fp, "OPTIONS:\n");
 	fprintf(fp, "-s <name>\t\tStart from this name\n");
+	fprintf(fp, "-v <verbosity>\t\tVerbosity level [1-5]\n");
 	fprintf(fp, "@<nameserver>\t\tUse this nameserver\n");
 	return 0;
 }
@@ -91,6 +94,7 @@ main(int argc, char *argv[])
 	ldns_rdf *last_dname_p;
 	ldns_rdf *startpoint = NULL;
 	ldns_rdf *rrtypes = NULL;
+	const char* arg_domain = NULL;
 
 	char *serv = NULL;
 	ldns_rdf *serv_rdf;
@@ -141,7 +145,8 @@ main(int argc, char *argv[])
 					if (i < argc) {
 						if (!domain) {
 							/* create a rdf from the command line arg */
-							domain = ldns_dname_new_frm_str(argv[i]);
+							arg_domain = argv[i];
+							domain = ldns_dname_new_frm_str(arg_domain);
 							if (!domain) {
 								usage(stdout, argv[0]);
 								exit(1);
@@ -251,7 +256,7 @@ main(int argc, char *argv[])
 			/* TODO: conversion memory */
 			fprintf(stderr, 
 					" *** invalid answer name after SOA query for %s\n",
-					ldns_rr2str(domain));
+					arg_domain);
 			ldns_pkt_print(stdout, p);
                         ldns_pkt_free(p);
                         ldns_resolver_deep_free(res);
@@ -282,27 +287,33 @@ main(int argc, char *argv[])
 	}
 
 
+printf("1\n");
 	ldns_rdf_print(stdout, ldns_rr_owner(soa));
 	printf("\t");
 
+printf("2\n");
 	next_dname = NULL;
 	while (!next_dname || ldns_rdf_compare(next_dname, domain) != 0) {
+printf("3\n\n");
 		if (p) {
 			ldns_pkt_free(p);
 			p = NULL;
 		}
 		p = ldns_resolver_query(res, last_dname_p, LDNS_RR_TYPE_ANY, LDNS_RR_CLASS_IN, LDNS_RD);
 
+printf("4\n");
 		if (next_dname) {
 			ldns_rdf_deep_free(next_dname);
 			ldns_rdf_deep_free(rrtypes);
 			next_dname = NULL;
 		}
 
+printf("5\n");
 		if (!p)  {
 		  fprintf(stderr, "Error trying to resolve: ");
 		  ldns_rdf_print(stderr, last_dname_p);
 		  fprintf(stderr, "\n");
+printf("6\n");
 		  while (!p) {
 		    p = ldns_resolver_query(res, last_dname_p, LDNS_RR_TYPE_ANY, LDNS_RR_CLASS_IN, LDNS_RD);
 		    if (!p)  {
@@ -312,6 +323,7 @@ main(int argc, char *argv[])
 		    }
 		  }
 		}
+printf("7\n");
 
 		/* if the current name is an empty non-terminal, bind returns
 		 * SERVFAIL on the plus1-query...
@@ -327,6 +339,7 @@ main(int argc, char *argv[])
 			rrlist = ldns_pkt_rr_list_by_name_and_type(p, last_dname, LDNS_RR_TYPE_NSEC, LDNS_SECTION_ANSWER);
 			rrlist2 = ldns_pkt_rr_list_by_name_and_type(p, last_dname_p, LDNS_RR_TYPE_NSEC, LDNS_SECTION_ANSWER);
 		} else {
+printf("8\n");
 			rrlist = ldns_pkt_rr_list_by_name_and_type(p, last_dname, LDNS_RR_TYPE_NSEC, LDNS_SECTION_AUTHORITY);
 			rrlist2 = ldns_pkt_rr_list_by_name_and_type(p, last_dname_p, LDNS_RR_TYPE_NSEC, LDNS_SECTION_ANSWER);
 		}
@@ -335,8 +348,15 @@ main(int argc, char *argv[])
 	} else if (rrlist2) {
 		rrlist = rrlist2;
 	}
+printf("rrlist: %p\n", rrlist);
 
 	if (!rrlist || ldns_rr_list_rr_count(rrlist) != 1) {
+/*
+		if (!rrlist) {
+			fprintf(stderr, "Zone does not seem to be DNSSEC secured.\n");
+			goto exit;
+		}
+*/
 	} else {
 		next_dname = ldns_rdf_clone(ldns_rr_rdf(ldns_rr_list_rr(rrlist, 0), 0));
 		rrtypes = ldns_rdf_clone(ldns_rr_rdf(ldns_rr_list_rr(rrlist, 0), 1));
@@ -370,6 +390,20 @@ main(int argc, char *argv[])
 		ldns_rdf_print(stdout, next_dname);
 		printf("\t");
 	}
+
+/*
+	printf("one step done\n");
+
+	ldns_rdf_print(stdout, last_dname);
+	printf("\n");
+	ldns_rdf_print(stdout, next_dname);
+	printf("\n");
+	printf("endstatus\n");
+	if (!next_dname) {
+		fprintf(stderr, "Zone does not seem to be DNSSEC secured.\n");
+		goto exit;
+	}
+*/
 }
 
 	ldns_rdf_deep_free(domain);
