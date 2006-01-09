@@ -71,9 +71,9 @@ LINK_LIB	= $(LIBTOOL) --mode=link $(CC) $(CFLAGS) $(LDFLAGS) -release $(VERSION)
 %.o:	$(srcdir)/%.c $(LIBDNS_HEADERS)
 	$(COMP_LIB) -c $<
 
-.PHONY:	clean realclean docclean doc lint test all lib
+.PHONY:	clean realclean docclean doc lint all lib
 .PHONY: install uninstall install-doc uninstall-doc 
-.PHONY: install-h uninstall-h install-lib uninstall-lib snapshot release
+.PHONY: install-h uninstall-h install-lib uninstall-lib 
 .PHONY: confdrill tools-drill
 
 all:		lib
@@ -147,20 +147,6 @@ install-lib:	lib
 uninstall-lib:	
 		$(LIBTOOL) --mode=uninstall rm -f $(DESTDIR)$(libdir)/libldns.la
 		rmdir -p $(DESTDIR)$(libdir)
-
-snapshot:	distclean
-		(rm -rf ../ldns-snap-$(DATE)/)
-		(cd .. ; cp -r $(basesrcdir)/ ldns-snap-$(DATE)/)
-		(cd .. ; tar --verbose --exclude "ReleaseChecklist" --exclude ".svn" --exclude "*.key" --exclude "*.private" --create --exclude "lua" --exclude "tests" --file ldns-snap-$(DATE).tar.gz --gzip ldns-snap-$(DATE)/)
-		(rm -rf ../ldns-snap-$(DATE)/)
-
-release:	distclean
-		(cd drill ; $(MAKE) allclean; exit 0)
-		(rm -rf ../ldns-$(VERSION)/)
-		(cd .. ; cp -r $(basesrcdir)/ ldns-$(VERSION)/)
-		(cd .. ; tar --verbose --exclude "ReleaseChecklist" --exclude ".svn" --exclude "*.key" --exclude "*.private" --create --exclude "lua" --exclude "tests" --file ldns-$(VERSION).tar.gz --gzip ldns-$(VERSION)/)
-		(rm -rf ../ldns-$(VERSION)/)
-		cat ReleaseChecklist
 
 clean:	drill-clean
 	rm -f *.o *.d 
