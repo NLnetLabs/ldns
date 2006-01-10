@@ -4,10 +4,10 @@ the philosophy behind ldns.
 Closely match the api/interface of Perl's Net::DNS; make it easy to 
 toss around RR sets, DNS packets, Resolvers, etc. etc.
 
-As said in 'CodingStyle':
-* Everything by reference, all data structures an optional _clone() function
+* Everything by is called by reference. If data in the structures must
+  be copied an optional _clone() function is provided.
+  This is mirrored in the free() functions, a ldns_*_free() frees the
+  structures' pointer. A ldns_*_deep_free() looks into a structure
+  an frees everything.
 
-This means that unless something is cloned in a program, it is hard to free
-it. The only exception to this in ldns itself is in the resolver structure. 
-There the .domain ans .nameservers are cloned when they are put in the
-structure. This allows a program to free a resolver structure.
+Also see doc/CodingStyle

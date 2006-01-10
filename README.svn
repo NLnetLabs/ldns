@@ -1,10 +1,13 @@
+
+The ldns subversion repository can found at:
+www.nlnetlabs.nl/ldns/svn/
+
 # small list of commands to build all on a linux system
 # libtoolize and make allautoconf are needed for most other targets
 libtoolize -c
 autoreconf
 ./configure
 make
-make allautoconf
 make doc
-make examples
-make drill
+(cd examples && autoreconf && ./configure --with-ldns=../ && make)
+(cd drill && autoreconf && ./configure --with-ldns=../ && make)

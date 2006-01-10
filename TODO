@@ -1,8 +1,18 @@
 Current TODO list
 
-1.1:
+1.1.0:
 ----
+        o bgsend()
+        o server stuff yes/no
+        o documentation
+        o sorting/sorting ord
+        o secure tracing drill
+        o openSSL  - make optional - for portability
+        o IP6 - make optional - for portability
 	o API cleanup: add missing consts in function arguments
+        o vim syntax
+        o walker 
+        o zone.c; make it better/faster
 
 Post 1.0 Stuff:
 ---------------

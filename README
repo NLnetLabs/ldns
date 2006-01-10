@@ -29,35 +29,26 @@ INSTALLATION
 * Examples
 There are some examples in the examples/ directory. These can be built with:
 1. cd examples/
-2. autoreconf [--with-ldns=../]
-3. gmake
-
-The library has to be installed in order for this to work. If it is not
-installed in one of the default paths (i.e. if you have specified --prefix
-when configuring the library) you can use --with-ldns=PATH to specify that
-path. PATH in that case would be '../'
-
-In that last case, you will also need to have your LD_LIBRARY_PATH set to
-the .libs directory to be able to run the examples. I.e.:
-
-LD_LIBRARY_PATH=../lib ./ldns-version
+2  autoreconf
+3. ./configure [--with-ldns=../]
+4. gmake
 
 * Drill
+Drill can be build with:
+1. cd drill/
+2. autoreconf
+3. ./configure [--with-ldns=../]
+4. gmake
 
-Drill can be built by issuing a 'make drill' from the ldns source dir.
-
-If you want to build drill by hand, the configure and running options are
-the same as those for the examples. 
-
+Note, if built with --with-ldns=../ you will need to set the
+LD_LIBRARY_PATH to let library loader find the library.
 
 * Building from repository
 
 If you are building from the repository you will need to have (gnu)
 autotools like libtool and autoreconf installed. A list of all the commands
 needed to build everything can be found in README.svn. Note that the actual
-commands may be a little bit different on your machine. Most important are
-libtoolize and make allautoconf (or do autoreconf manually in the subdirs)
-
+commands may be a little bit different on your machine.
 
 * Developers
 ldns is developed by the ldns team at NLnet Labs. This team currently
