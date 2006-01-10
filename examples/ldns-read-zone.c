@@ -54,7 +54,7 @@ main(int argc, char **argv)
 		if (sort) {
 			ldns_zone_sort(z);
 		}
-		fprintf(stderr, "%d\n", ldns_rr_list_rr_count(ldns_zone_rrs(z)) + 1);
+		fprintf(stderr, "%d\n", (int) ldns_rr_list_rr_count(ldns_zone_rrs(z)) + 1);
 		ldns_zone_print(stdout, z);
 		ldns_zone_deep_free(z);
 	} else {

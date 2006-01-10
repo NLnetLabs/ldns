@@ -20,6 +20,9 @@ INSTALL = $(srcdir)/../install-sh
 COMPILE         = $(CC) $(CPPFLAGS) $(CFLAGS)
 LINK            = $(CC) $(CFLAGS) $(LDFLAGS) $(LIBS)
 
+LINT		= splint
+LINTFLAGS	= +quiet -weak -warnposix -unrecog -Din_addr_t=uint32_t -Du_int=unsigned -Du_char=uint8_t -preproc
+
 HEADER		= config.h
 SOURCES 	= ldns-read-zone.c \
 		  ldns-mx.c \
@@ -88,6 +91,12 @@ ldns-threshold-update:	ldns-threshold-update.o
 ## implicit rule
 %.o: 	$(srcdir)/%.c
 	$(COMPILE) -c $(srcdir)/$<
+
+lint:
+	for i in $(SOURCES); do \
+		$(LINT) $(LINTFLAGS) -I. -I$(srcdir) $(srcdir)/$$i $(CPPFLAGS); \
+		if [ $$? -ne 0 ] ; then exit 1 ; fi ; \
+	done
 
 clean:
 	rm -f *.o
