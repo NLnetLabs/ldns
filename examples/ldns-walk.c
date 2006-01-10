@@ -290,6 +290,16 @@ main(int argc, char *argv[])
 		} else {
 			soa = ldns_rr_clone(ldns_rr_list_rr(rrlist, 0));
 			ldns_rr_list_deep_free(rrlist);
+			rrlist = NULL;
+			/* check if zone contains DNSSEC data */
+			rrlist = ldns_pkt_rr_list_by_type(p, LDNS_RR_TYPE_RRSIG, LDNS_SECTION_ANSWER);
+			if (!rrlist) {
+				printf("No DNSSEC data received; either the zone is not secured or you should query it directly (with @nameserver)\n");
+				ldns_pkt_free(p);
+				ldns_resolver_deep_free(res);
+				exit(5);
+			}
+			ldns_rr_list_deep_free(rrlist);
 		}
         }
 
@@ -430,7 +440,7 @@ main(int argc, char *argv[])
 
 		if (last_dname) {
 			if (ldns_rdf_compare(last_dname, next_dname) == 0) {
-				printf("Next dname is the same as current, this would loop forever. This is a problem that usually occurs when walking through a caching forwarder. Try using the authoritative nameserver to walk.\n");
+				printf("\n\nNext dname is the same as current, this would loop forever. This is a problem that usually occurs when walking through a caching forwarder. Try using the authoritative nameserver to walk (with @nameserver).\n");
 				exit(2);
 			}
 			ldns_rdf_deep_free(last_dname);
