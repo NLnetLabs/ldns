@@ -174,16 +174,12 @@ ldns_udp_send(uint8_t **result, ldns_buffer *qbin, const struct sockaddr_storage
 	int sockfd;
 	uint8_t *answer;
 
-	sockfd = ldns_udp_connect(to, timeout);
+	sockfd = ldns_udp_bgsend(qbin, to, tolen, timeout);
 
 	if (sockfd == 0) {
 		return LDNS_STATUS_ERR;
 	}
 
-	if (ldns_udp_send_query(qbin, sockfd, to, tolen) == 0) {
-		return LDNS_STATUS_ERR;
-	}
-	
 	/* wait for an response*/
 	answer = ldns_udp_read_wire(sockfd, answer_size, NULL, NULL);
 
@@ -446,17 +442,18 @@ ldns_tcp_send(uint8_t **result,  ldns_buffer *qbin, const struct sockaddr_storag
 	int sockfd;
 	uint8_t *answer;
 	
-	sockfd = ldns_tcp_connect(to, tolen, timeout);
+	sockfd = ldns_tcp_bgsend(qbin, to, tolen, timeout);
 	
 	if (sockfd == 0) {
 		return LDNS_STATUS_ERR;
 	}
 	
-	if (ldns_tcp_send_query(qbin, sockfd, to, tolen) == 0) {
-		return LDNS_STATUS_ERR;
-	}
-	
 	answer = ldns_tcp_read_wire(sockfd, answer_size);
+
+	if (*answer_size == 0) {
+		/* oops */
+		return LDNS_STATUS_NETWORK_ERR;
+	}
 
 	/* resize accordingly */
 	answer = (uint8_t*)LDNS_XREALLOC(answer, uint8_t *, (size_t)*answer_size);
