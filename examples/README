@@ -3,5 +3,3 @@ systems and will not be supported as such.
 
 Compilation:
 autoreconf && ./configure --with-ldns=../ && make
-
-compiles the examples.
