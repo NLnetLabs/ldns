@@ -13,6 +13,17 @@
 #ifndef _LDNS_PACKET_H
 #define _LDNS_PACKET_H
 
+#define LDNS_MAX_PACKETLEN         65535
+
+/* allow flags to be given to mk_query */
+#define LDNS_QR		1       /* QueRy - query flag */
+#define LDNS_AA		2       /* Authoritative Answer - server flag */
+#define LDNS_TC		4       /* TrunCated - server flag */
+#define LDNS_RD		8       /* Recursion Desired - query flag */
+#define LDNS_CD		16      /* Checking Disabled - query flag */
+#define LDNS_RA		32      /* Recursion Available - server flag */
+#define LDNS_AD		64      /* Authenticated Data - server flag */
+
 #include <ldns/error.h>
 #include <ldns/common.h>
 #include <ldns/rr.h>
@@ -280,20 +291,39 @@ ldns_pkt *ldns_pkt_query_new(ldns_rdf *rr_name, ldns_rr_type rr_type, ldns_rr_cl
  */
 ldns_pkt *ldns_pkt_clone(ldns_pkt *pkt);
 
+/**
+ * directly set the additional section
+ * \param[in] p packet to operate on
+ * \param[in[ rr rrlist to set
+ */
+void ldns_pkt_set_additional(ldns_pkt *p, ldns_rr_list *rr);
+
+/**
+ * directly set the answer section
+ * \param[in] p packet to operate on
+ * \param[in[ rr rrlist to set
+ */
+void ldns_pkt_set_answer(ldns_pkt *p, ldns_rr_list *rr);
+
+/**
+ * directly set the question section
+ * \param[in] p packet to operate on
+ * \param[in[ rr rrlist to set
+ */
+void ldns_pkt_set_question(ldns_pkt *p, ldns_rr_list *rr);
+
+/**
+ * directly set the auhority section
+ * \param[in] p packet to operate on
+ * \param[in[ rr rrlist to set
+ */
+void ldns_pkt_set_authority(ldns_pkt *p, ldns_rr_list *rr);
+
+
 /* lua helper stuff */
 ldns_rr * ldns_pkt_get_rr(ldns_pkt *p, uint16_t n);
 ldns_rr * ldns_pkt_set_rr(ldns_pkt *p, ldns_rr *rr, uint16_t n);
 bool ldns_pkt_insert_rr(ldns_pkt *p, ldns_rr *rr, uint16_t n);
 	
-#define LDNS_MAX_PACKETLEN         65535
-
-/* allow flags to be given to mk_query */
-#define LDNS_QR		1       /* QueRy - query flag */
-#define LDNS_AA		2       /* Authoritative Answer - server flag */
-#define LDNS_TC		4       /* TrunCated - server flag */
-#define LDNS_RD		8       /* Recursion Desired - query flag */
-#define LDNS_CD		16      /* Checking Disabled - query flag */
-#define LDNS_RA		32      /* Recursion Available - server flag */
-#define LDNS_AD		64      /* Authenticated Data - server flag */
 
 #endif  /* !_LDNS_PACKET_H */

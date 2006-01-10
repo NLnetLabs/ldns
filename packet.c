@@ -611,6 +611,31 @@ ldns_pkt_set_rd(ldns_pkt *packet, bool rd)
 }
 
 void
+ldns_pkt_set_additional(ldns_pkt *p, ldns_rr_list *rr)
+{
+	p->_additional = rr;
+}
+
+void
+ldns_pkt_set_question(ldns_pkt *p, ldns_rr_list *rr)
+{
+	/* XXX check for only one rr ?? */
+	p->_question = rr;
+}
+
+void
+ldns_pkt_set_answer(ldns_pkt *p, ldns_rr_list *rr)
+{
+	p->_answer = rr;
+}
+
+void
+ldns_pkt_set_authority(ldns_pkt *p, ldns_rr_list *rr)
+{
+	p->_authority = rr;
+}
+
+void
 ldns_pkt_set_cd(ldns_pkt *packet, bool cd)
 {
 	packet->_header->_cd = cd;

@@ -16,6 +16,7 @@
 #include <ldns/error.h>
 #include <ldns/common.h>
 #include <ldns/rr.h>
+#include <ldns/tsig.h>
 #include <ldns/rdata.h>
 #include <ldns/packet.h>
 #include <sys/time.h>
@@ -462,5 +463,17 @@ ldns_pkt *ldns_axfr_last_pkt(ldns_resolver *res);
  * \param[in] r the resolver
  */
 void ldns_resolver_nameservers_randomize(ldns_resolver *r);
+
+/**
+ * Create a resolver suitable for use with UPDATE. [RFC2136 4.3]
+ * SOA MNAME is used as the "primary master".
+ * \param[in] fqdn FQDN of a host in a zone
+ * \param[in] zone zone name, if explicitly given, otherwise use SOA
+ * \param[in] clas zone class
+ * \param[in] tsig_cred TSIG credentials
+ * \param[out] zone returns zone/owner rdf from the 'fqdn' SOA MNAME query
+ * \return the new resolver
+ */
+ldns_resolver * ldns_update_resolver_new(const char *fqdn, const char *zone, ldns_rr_class clas, ldns_tsig_credentials *tsig_cred, ldns_rdf **zone_rdf);
 
 #endif  /* !_LDNS_RESOLVER_H */

@@ -11,6 +11,9 @@ syn keyword  ldnsMacro LDNS_XREALLOC
 syn keyword  ldnsMacro LDNS_FREE
 syn keyword  ldnsMacro LDNS_DEP  
 
+" ldns/tsig.h
+syn keyword  ldnsType           ldns_tsig_credentials
+
 " ldns/rdata.h
 syn keyword  ldnsType           ldns_rdf
 syn keyword  ldnsType           ldns_rdf_type

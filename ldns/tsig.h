@@ -9,8 +9,6 @@
 #ifndef _LDNS_TSIG_H_
 #define _LDNS_TSIG_H_
 
-/*#include <ldns/dns.h> */
-
 typedef struct _ldns_tsig_credentials 
 {
     char *algorithm;
