@@ -89,7 +89,7 @@ main(int argc, char *argv[])
 			} else if (!strptime(optarg, SHORT_DATE_FORMAT, &tm)) {
 				expiration = (uint32_t) mktime_from_utc(&tm);
 			} else {
-				expiration = atol(optarg);
+				expiration = (uint32_t) atol(optarg);
 			}
 			break;
 		case 'f':
@@ -104,7 +104,7 @@ main(int argc, char *argv[])
 			} else if (!strptime(optarg, SHORT_DATE_FORMAT, &tm)) {
 				inception = (uint32_t) mktime_from_utc(&tm);
 			} else {
-				inception = atol(optarg);
+				inception = (uint32_t) atol(optarg);
 			}
 			break;
 		case 'o':
@@ -141,7 +141,7 @@ main(int argc, char *argv[])
 	} else {
 		orig_zone = ldns_zone_new_frm_fp_l(zonefile, origin, ttl, class, &line_nr);
 		if (!orig_zone) {
-			fprintf(stderr, "Zone not read, parse error at %s line %u\n", zonefile_name, line_nr);
+			fprintf(stderr, "Zone not read, parse error at %s line %d\n", zonefile_name, line_nr);
 			exit(EXIT_FAILURE);
 		} else {
 			orig_soa = ldns_zone_soa(orig_zone);
@@ -171,7 +171,7 @@ main(int argc, char *argv[])
 	while (argi < argc) {
 		keyfile_name_base = argv[argi];
 		keyfile_name = LDNS_XMALLOC(char, strlen(keyfile_name_base) + 9);
-		sprintf(keyfile_name, "%s.private", keyfile_name_base);
+		snprintf(keyfile_name, strlen(keyfile_name_base) + 9, "%s.private", keyfile_name_base);
 		keyfile = fopen(keyfile_name, "r");
 		line_nr = 0;
 		if (!keyfile) {
@@ -192,7 +192,7 @@ main(int argc, char *argv[])
 
 				LDNS_FREE(keyfile_name);
 				keyfile_name = LDNS_XMALLOC(char, strlen(keyfile_name_base) + 5);
-				sprintf(keyfile_name, "%s.key", keyfile_name_base);
+				snprintf(keyfile_name, strlen(keyfile_name_base) + 5, "%s.key", keyfile_name_base);
 				keyfile = fopen(keyfile_name, "r");
 				line_nr = 0;
 				if (!keyfile) {

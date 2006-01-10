@@ -41,7 +41,7 @@ create_dname_plus_1(ldns_rdf *dname)
 		wire[0] = labellen + 1;
 		memcpy(&wire[1], ldns_rdf_data(dname) + 1, labellen);
 		memcpy(&wire[labellen+1], ldns_rdf_data(dname) + labellen, ldns_rdf_size(dname) - labellen);
-		wire[labellen+1] = '\000';
+		wire[labellen+1] = (uint8_t) '\000';
 		pos = 0;
 		status = ldns_wire2dname(&newdname, wire, ldns_rdf_size(dname) + 1, &pos);
 		free(wire);
@@ -103,7 +103,7 @@ main(int argc, char *argv[])
 	ldns_rdf *cmdline_dname;
 
 	int result = 0;
-	size_t i;
+	int i;
 	char *arg_end_ptr = NULL;
 
 	p = NULL;
@@ -275,7 +275,7 @@ main(int argc, char *argv[])
 		rrlist = ldns_pkt_rr_list_by_type(p, LDNS_RR_TYPE_SOA, LDNS_SECTION_ANSWER);
 		if (!rrlist || ldns_rr_list_rr_count(rrlist) != 1) {
 			if (rrlist) {
-				printf(" *** > 1 SOA: %u\n", ldns_rr_list_rr_count(rrlist));
+				printf(" *** > 1 SOA: %u\n", (unsigned int) ldns_rr_list_rr_count(rrlist));
 			} else {
 				printf(" *** No rrlist...\b");
 			}
@@ -318,7 +318,10 @@ main(int argc, char *argv[])
 		last_dname_p = create_dname_plus_1(last_dname);
 	} else {
 		last_dname = ldns_rdf_clone(domain);
-		ldns_dname_cat(soa_p1, last_dname);
+		if (ldns_dname_cat(soa_p1, last_dname) != LDNS_STATUS_OK) {
+			printf("Error concatenating dnames\n");
+			exit(EXIT_FAILURE);
+		}
 		last_dname_p = ldns_rdf_clone(soa_p1);
 	}
 

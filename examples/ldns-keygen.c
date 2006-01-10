@@ -71,9 +71,9 @@ main(int argc, char *argv[])
 			algorithm = LDNS_SIGN_RSASHA1;
 			break;
 		case 'b':
-			bits = atoi(optarg);
+			bits = (uint16_t) atoi(optarg);
 			if (bits == 0) {
-				fprintf(stderr, "%s: %s %d", prog, "Can not parse the -b argument, setting it to the default\n", def_bits);
+				fprintf(stderr, "%s: %s %d", prog, "Can not parse the -b argument, setting it to the default\n", (int) def_bits);
 				bits = def_bits;
 			}
 			break;
@@ -134,7 +134,7 @@ main(int argc, char *argv[])
 
 	/* print the public key RR to .key */
 	filename = LDNS_XMALLOC(char, strlen(owner) + 17);
-	snprintf(filename, strlen(owner) + 16, "K%s+%03u+%05u.key", owner, algorithm, ldns_key_keytag(key));
+	snprintf(filename, strlen(owner) + 16, "K%s+%03u+%05u.key", owner, algorithm, (unsigned int) ldns_key_keytag(key));
 	file = fopen(filename, "w");
 	if (!file) {
 		fprintf(stderr, "Unable to open %s: %s\n", filename, strerror(errno));
@@ -147,7 +147,7 @@ main(int argc, char *argv[])
 	
 	/* print the priv key to stderr */
 	filename = LDNS_XMALLOC(char, strlen(owner) + 21);
-	snprintf(filename, strlen(owner) + 20, "K%s+%03u+%05u.private", owner, algorithm, ldns_key_keytag(key));
+	snprintf(filename, strlen(owner) + 20, "K%s+%03u+%05u.private", owner, algorithm, (unsigned int) ldns_key_keytag(key));
 	file = fopen(filename, "w");
 	if (!file) {
 		fprintf(stderr, "Unable to open %s: %s\n", filename, strerror(errno));
@@ -160,7 +160,7 @@ main(int argc, char *argv[])
 	
 	/* print the DS to .ds */
 	filename = LDNS_XMALLOC(char, strlen(owner) + 16);
-	snprintf(filename, strlen(owner) + 15, "K%s+%03u+%05u.ds", owner, algorithm, ldns_key_keytag(key));
+	snprintf(filename, strlen(owner) + 15, "K%s+%03u+%05u.ds", owner, algorithm, (unsigned int) ldns_key_keytag(key));
 	file = fopen(filename, "w");
 	if (!file) {
 		fprintf(stderr, "Unable to open %s: %s\n", filename, strerror(errno));
@@ -187,6 +187,6 @@ PEM_write_DSAPrivateKey(file, key->_key.dsa, NULL, NULL, 0, NULL, NULL);
 	}
 #endif
 
-	fprintf(stdout, "K%s+%03u+%05u\n", owner, algorithm, ldns_key_keytag(key));
+	fprintf(stdout, "K%s+%03u+%05u\n", owner, algorithm, (unsigned int) ldns_key_keytag(key));
         exit(EXIT_SUCCESS);
 }

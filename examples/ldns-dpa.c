@@ -137,7 +137,7 @@ const char *get_op_str(type_operator op) {
 	if (lt) {
 		return lt->name;
 	} else {
-		fprintf(stderr, "Unknown operator id: %u", op);
+		fprintf(stderr, "Unknown operator id: %u\n", op);
 		exit(1);
 	}
 }
@@ -150,9 +150,8 @@ get_op_id(char *op_str)
 	if (lt) {
 		return (type_operator) lt->id;
 	} else {
-		fprintf(stderr, "Unknown operator: %s", op_str);
+		fprintf(stderr, "Unknown operator: %s\n", op_str);
 		exit(1);
-		return TYPE_INT;
 	}
 }
 
@@ -164,15 +163,15 @@ struct struct_type_operators {
 typedef struct struct_type_operators type_operators;
 
 const type_operators const_type_operators[] = {
-	{ TYPE_INT, 6, { OP_EQUAL, OP_NOTEQUAL, OP_GREATER, OP_LESSER, OP_GREATEREQUAL, OP_LESSEREQUAL } },
-	{ TYPE_BOOL, 2, { OP_EQUAL, OP_NOTEQUAL} },
-	{ TYPE_OPCODE, 2, { OP_EQUAL, OP_NOTEQUAL} },
-	{ TYPE_RCODE, 2, { OP_EQUAL, OP_NOTEQUAL} },
-	{ TYPE_STRING, 3, { OP_EQUAL, OP_NOTEQUAL, OP_CONTAINS} },
-	{ TYPE_TIMESTAMP, 6, { OP_EQUAL, OP_NOTEQUAL, OP_GREATER, OP_LESSER, OP_GREATEREQUAL, OP_LESSEREQUAL } },
-	{ TYPE_ADDRESS, 3, { OP_EQUAL, OP_NOTEQUAL, OP_CONTAINS} },
-	{ TYPE_RR, 3, { OP_EQUAL, OP_NOTEQUAL, OP_CONTAINS} },
-	{ 0, 0, { 0 } }
+	{ TYPE_INT, 6, { OP_EQUAL, OP_NOTEQUAL, OP_GREATER, OP_LESSER, OP_GREATEREQUAL, OP_LESSEREQUAL, 0, 0, 0, 0 } },
+	{ TYPE_BOOL, 2, { OP_EQUAL, OP_NOTEQUAL, 0, 0, 0, 0, 0, 0, 0, 0} },
+	{ TYPE_OPCODE, 2, { OP_EQUAL, OP_NOTEQUAL, 0, 0, 0, 0, 0, 0, 0, 0} },
+	{ TYPE_RCODE, 2, { OP_EQUAL, OP_NOTEQUAL, 0, 0, 0, 0, 0, 0, 0, 0} },
+	{ TYPE_STRING, 3, { OP_EQUAL, OP_NOTEQUAL, OP_CONTAINS, 0, 0, 0, 0, 0, 0, 0} },
+	{ TYPE_TIMESTAMP, 6, { OP_EQUAL, OP_NOTEQUAL, OP_GREATER, OP_LESSER, OP_GREATEREQUAL, OP_LESSEREQUAL, 0, 0, 0, 0 } },
+	{ TYPE_ADDRESS, 3, { OP_EQUAL, OP_NOTEQUAL, OP_CONTAINS, 0, 0, 0, 0, 0, 0, 0} },
+	{ TYPE_RR, 3, { OP_EQUAL, OP_NOTEQUAL, OP_CONTAINS, 0, 0, 0, 0, 0, 0, 0} },
+	{ 0, 0, { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 } }
 };
 
 const type_operators *
@@ -317,7 +316,7 @@ print_match_operation(FILE *output, match_operation *mc)
 	struct timeval time;
 	int value;
 	size_t pos;
-	char *tmp;
+	char *tmp, *tmp2;
 
 	if (mc) {
 		mt = get_match_by_id(mc->id);
@@ -360,12 +359,17 @@ print_match_operation(FILE *output, match_operation *mc)
 				case TYPE_TIMESTAMP:
 					time.tv_sec = (time_t) atol(mc->value);
 					tmp = ctime((time_t*)&time);
+					tmp2 = malloc(strlen(tmp) + 1);
 					for (pos = 0; pos < strlen(tmp); pos++) {
 						if (tmp[pos] == '\n') {
-							tmp[pos] = '\0';
+							tmp2[pos] = '\0';
+						} else {
+							tmp2[pos] = tmp[pos];
 						}
 					}
-					fprintf(output, "%s", tmp);
+					tmp2[pos] = '\0';
+					fprintf(output, "%s", tmp2);
+					free(tmp2);
 					break;
 				default:
 				fprintf(output, "'%s'", mc->value);
@@ -489,7 +493,7 @@ calculate_total_value(match_counters *counters, match_operation *cur)
 	}
 	
 	if (counters->match->match->id == cur->id) {
-		result = atol(counters->match->match->value) * counters->match->count;
+		result = (size_t) atol(counters->match->match->value) * counters->match->count;
 	}
 	
 	if (counters->left) {
@@ -666,8 +670,8 @@ print_counter_average_count(FILE *output, match_counters *counters, match_operat
 			total_matches -= 2;
 			total_count -= get_first_count(counters, cur);
 			total_count -= get_last_count(counters, cur);	
-			printf("Removing first count from average: %u\n", get_first_count(counters,cur));
-			printf("Removing last count from average: %u\n", get_last_count(counters,cur));
+			printf("Removing first count from average: %u\n", (unsigned int) get_first_count(counters,cur));
+			printf("Removing last count from average: %u\n", (unsigned int) get_last_count(counters,cur));
 		}
 		printf("Average count for %s: (%u / %u) %.02f\n", mt->name, (unsigned int) total_count, (unsigned int) total_matches, (float) total_count / (float) total_matches);
 		if (counters->left) {
@@ -922,7 +926,7 @@ value_matches(match_id id,
 			result = match_str(operator, value, mvalue);
 			break;
 		default:
-			fprintf(stderr, "Error: value_matches() for operator %s not implemented yet.\n", get_op_str(id));
+			fprintf(stderr, "Error: value_matches() for operator %s not implemented yet.\n", get_op_str((type_operator) id));
 			exit(3);
 	}
 	if (verbosity >= 5) {

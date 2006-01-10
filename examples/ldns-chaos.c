@@ -74,8 +74,10 @@ main(int argc, char *argv[])
 			fprintf(stdout, "\n");
 		}
 			
-		ldns_resolver_push_nameserver_rr(res,
-				ldns_rr_list_rr(addr, i));
+		if (ldns_resolver_push_nameserver_rr(res,
+				ldns_rr_list_rr(addr, i)) != LDNS_STATUS_OK) {
+			printf("Error adding nameserver to resolver\n");
+		}
 
 		ldns_rr_print(stdout, ldns_rr_list_rr(addr, i));
 		fprintf(stdout, "\n");

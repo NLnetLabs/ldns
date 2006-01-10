@@ -64,7 +64,7 @@ main(int argc, char *argv[])
 
 	/* print the public key RR to .key */
 	dsname = LDNS_XMALLOC(char, strlen(owner) + 16);
-	snprintf(dsname, strlen(owner) + 15, "K%s+%03u+%05u.ds", owner, alg, ldns_calc_keytag(k));
+	snprintf(dsname, strlen(owner) + 15, "K%s+%03u+%05u.ds", owner, alg, (unsigned int) ldns_calc_keytag(k));
 
 	dsfp = fopen(dsname, "w");
 	if (!dsfp) {
@@ -76,6 +76,6 @@ main(int argc, char *argv[])
 		LDNS_FREE(dsname);
 	}
 	
-	fprintf(stdout, "K%s+%03u+%05u\n", owner, alg, ldns_calc_keytag(k)); 
+	fprintf(stdout, "K%s+%03u+%05u\n", owner, alg, (unsigned int) ldns_calc_keytag(k)); 
         exit(EXIT_SUCCESS);
 }

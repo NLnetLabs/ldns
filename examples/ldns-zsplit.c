@@ -78,11 +78,11 @@ open_newfile(char *basename, ldns_zone *z, size_t counter, ldns_rr_list *keys)
 	FILE *fp;
 
 	if (counter > SPLIT_MAX)  {
-		fprintf(stderr, "Maximum split count reached %d\n", counter);
+		fprintf(stderr, "Maximum split count reached %u\n", (unsigned int) counter);
 		return NULL;
 	}
 
-	snprintf(filename, FILE_SIZE, "%s.%03d", basename, counter);
+	snprintf(filename, FILE_SIZE, "%s.%03u", basename, (unsigned int) counter);
 
 	if (!(fp = fopen(filename, "w"))) {
 		fprintf(stderr, "Cannot open zone %s: %s\n", filename, strerror(errno));
@@ -172,7 +172,7 @@ main(int argc, char **argv)
 	}
 
 	/* get the keys */
-	pubkeys = open_keyfiles(argv + 1, argc - 1);
+	pubkeys = open_keyfiles(argv + 1, (uint16_t) argc - 1);
 	
 	/* suck in the entire zone ... */
 	if (!origin) {
@@ -194,7 +194,7 @@ main(int argc, char **argv)
 
 	zrrs = ldns_zone_rrs(z);
 	if (ldns_rr_list_rr_count(zrrs) / split > SPLIT_MAX) {
-		fprintf(stderr, "The zone is too large for the used -n value: %d", split);
+		fprintf(stderr, "The zone is too large for the used -n value: %u\n", (unsigned int) split);
 		exit(EXIT_FAILURE);
 	}
 	

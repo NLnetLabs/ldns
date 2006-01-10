@@ -103,8 +103,11 @@ main(int argc, char *argv[])
 			LDNS_RR_CLASS_IN, LDNS_RD);
 		/* add these to new resolver */
 		for(j = 0; j < ldns_rr_list_rr_count(ns_ip); j++) {
-			ldns_resolver_push_nameserver(res,
-				ldns_rr_a_address(ldns_rr_list_rr(ns_ip, j)));
+			if (ldns_resolver_push_nameserver(res,
+				ldns_rr_a_address(ldns_rr_list_rr(ns_ip, j))) != LDNS_STATUS_OK) {
+				printf("Error adding nameserver to resolver\n");
+				exit(EXIT_FAILURE);
+			}
 		}
 
 	}
