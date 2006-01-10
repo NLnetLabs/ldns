@@ -146,12 +146,6 @@ void ldns_zone_free(ldns_zone *zone);
 void ldns_zone_deep_free(ldns_zone *zone);
 
 /**
- * Sort the rrs in a zone on OWNER CLASS TYPE
- * \param[in] zone the zone to sort
- */
-void ldns_zone_sort_oct(ldns_zone *zone);
-
-/**
  * Just sort the rrs in a zone.
  * \param[in] zone the zone to sort
  */
