@@ -1104,14 +1104,6 @@ qsort_rr_compare(const void *a, const void *b)
 	return ldns_rr_compare(rr1, rr2);
 }
 
-static int
-qsort_rr_compare_oct(const void *a, const void *b)
-{
-	const ldns_rr *rr1 = * (const ldns_rr **) a;
-	const ldns_rr *rr2 = * (const ldns_rr **) b;
-	return ldns_rr_compare_oct(rr1, rr2);
-}
-
 void
 ldns_rr_list_sort(ldns_rr_list *unsorted)
 {
@@ -1121,56 +1113,6 @@ ldns_rr_list_sort(ldns_rr_list *unsorted)
 		      sizeof(ldns_rr *),
 		      qsort_rr_compare);
 	}
-}
-
-void
-ldns_rr_list_sort_oct(ldns_rr_list *unsorted)
-{
-	if (unsorted) {
-		qsort(unsorted->_rrs,
-		      ldns_rr_list_rr_count(unsorted),
-		      sizeof(ldns_rr *),
-		      qsort_rr_compare_oct);
-	}
-}
-
-/* sort by owner - class - type */
-int
-ldns_rr_compare_oct(const ldns_rr *rr1, const ldns_rr *rr2)
-{
-	char *n1, *n2;
-	ldns_rr_class c1, c2;
-	ldns_rr_type t1, t2;
-	int result;
-	
-	n1 = ldns_rdf2str(ldns_rr_owner(rr1));
-	n2 = ldns_rdf2str(ldns_rr_owner(rr2));
-	c1 = ldns_rr_get_class(rr1);
-	c2 = ldns_rr_get_class(rr2);
-	t1 = ldns_rr_get_type(rr1);
-	t2 = ldns_rr_get_type(rr2);	
-	
-	result = strcmp(n1, n2);
-	if (result == 0) {
-		if (c1 < c2) {
-			result = -1;
-		} else if (c1 > c2) {
-			result = 1;
-		} else {
-			if (t1 < t2) {
-				result = -1;
-			} else if (t1 > t2) {
-				result = 1;
-			} else {
-				result = 0;
-			}
-		}
-	}
-	
-	LDNS_FREE(n1);
-	LDNS_FREE(n2);
-	return result;
-	
 }
 
 int

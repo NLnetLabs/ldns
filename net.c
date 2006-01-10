@@ -215,8 +215,6 @@ ldns_udp_bgsend(ldns_buffer *qbin, const struct sockaddr_storage *to, socklen_t 
 
 /* 
  * ldns_tcp_server_connect
- *
- * and the normal conetc, for just a socket
  */
 int
 ldns_udp_server_connect(const struct sockaddr_storage *to, struct timeval timeout)
