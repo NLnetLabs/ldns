@@ -286,34 +286,27 @@ main(int argc, char *argv[])
 		last_dname_p = ldns_rdf_clone(soa_p1);
 	}
 
-
-printf("1\n");
 	ldns_rdf_print(stdout, ldns_rr_owner(soa));
 	printf("\t");
 
-printf("2\n");
 	next_dname = NULL;
 	while (!next_dname || ldns_rdf_compare(next_dname, domain) != 0) {
-printf("3\n\n");
 		if (p) {
 			ldns_pkt_free(p);
 			p = NULL;
 		}
 		p = ldns_resolver_query(res, last_dname_p, LDNS_RR_TYPE_ANY, LDNS_RR_CLASS_IN, LDNS_RD);
 
-printf("4\n");
 		if (next_dname) {
 			ldns_rdf_deep_free(next_dname);
 			ldns_rdf_deep_free(rrtypes);
 			next_dname = NULL;
 		}
 
-printf("5\n");
 		if (!p)  {
 		  fprintf(stderr, "Error trying to resolve: ");
 		  ldns_rdf_print(stderr, last_dname_p);
 		  fprintf(stderr, "\n");
-printf("6\n");
 		  while (!p) {
 		    p = ldns_resolver_query(res, last_dname_p, LDNS_RR_TYPE_ANY, LDNS_RR_CLASS_IN, LDNS_RD);
 		    if (!p)  {
@@ -323,7 +316,6 @@ printf("6\n");
 		    }
 		  }
 		}
-printf("7\n");
 
 		/* if the current name is an empty non-terminal, bind returns
 		 * SERVFAIL on the plus1-query...
@@ -339,7 +331,6 @@ printf("7\n");
 			rrlist = ldns_pkt_rr_list_by_name_and_type(p, last_dname, LDNS_RR_TYPE_NSEC, LDNS_SECTION_ANSWER);
 			rrlist2 = ldns_pkt_rr_list_by_name_and_type(p, last_dname_p, LDNS_RR_TYPE_NSEC, LDNS_SECTION_ANSWER);
 		} else {
-printf("8\n");
 			rrlist = ldns_pkt_rr_list_by_name_and_type(p, last_dname, LDNS_RR_TYPE_NSEC, LDNS_SECTION_AUTHORITY);
 			rrlist2 = ldns_pkt_rr_list_by_name_and_type(p, last_dname_p, LDNS_RR_TYPE_NSEC, LDNS_SECTION_ANSWER);
 		}
@@ -348,7 +339,6 @@ printf("8\n");
 	} else if (rrlist2) {
 		rrlist = rrlist2;
 	}
-printf("rrlist: %p\n", rrlist);
 
 	if (!rrlist || ldns_rr_list_rr_count(rrlist) != 1) {
 /*
