@@ -37,6 +37,29 @@
 ldns_status ldns_udp_send(uint8_t **result, ldns_buffer *qbin, const struct sockaddr_storage *to, socklen_t tolen, struct timeval timeout, size_t *answersize);
 
 /**
+ * Send an udp query and don't wait for an answer but return
+ * the socket
+ * \param[in] qbin the ldns_buffer to be send
+ * \param[in] to the ip addr to send to
+ * \param[in] tolen length of the ip addr
+ * \param[in] timeout the timeout value for the network
+ * \return the socket used
+ */
+
+int ldns_udp_sendbg(ldns_buffer *qbin, const struct sockaddr_storage *to, socklen_t tolen, struct timeval timeout);
+
+/**
+ * Send an tcp query and don't wait for an answer but return
+ * the socket
+ * \param[in] qbin the ldns_buffer to be send
+ * \param[in] to the ip addr to send to
+ * \param[in] tolen length of the ip addr
+ * \param[in] timeout the timeout value for the network
+ * \return the socket used
+ */
+int ldns_tcp_sendbg(ldns_buffer *qbin, const struct sockaddr_storage *to, socklen_t tolen, struct timeval timeout);
+
+/**
  * Sends a buffer to an ip using tcp and return the respons as a ldns_pkt
  * \param[in] qbin the ldns_buffer to be send
  * \param[in] qbin the ldns_buffer to be send

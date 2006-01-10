@@ -200,6 +200,23 @@ ldns_udp_send(uint8_t **result, ldns_buffer *qbin, const struct sockaddr_storage
 	return LDNS_STATUS_OK;
 }
 
+int
+ldns_udp_bgsend(ldns_buffer *qbin, const struct sockaddr_storage *to, socklen_t tolen, struct timeval timeout)
+{
+	int sockfd;
+
+	sockfd = ldns_udp_connect(to, timeout);
+
+	if (sockfd == 0) {
+		return LDNS_STATUS_ERR;
+	}
+
+	if (ldns_udp_send_query(qbin, sockfd, to, tolen) == 0) {
+		return LDNS_STATUS_ERR;
+	}
+	return sockfd;
+}
+
 /* 
  * ldns_tcp_server_connect
  *
@@ -445,6 +462,24 @@ ldns_tcp_send(uint8_t **result,  ldns_buffer *qbin, const struct sockaddr_storag
 	answer = (uint8_t*)LDNS_XREALLOC(answer, uint8_t *, (size_t)*answer_size);
 	*result = answer;
 	return LDNS_STATUS_OK;
+}
+
+int
+ldns_tcp_bgsend(ldns_buffer *qbin, const struct sockaddr_storage *to, socklen_t tolen, struct timeval timeout)
+{
+	int sockfd;
+	
+	sockfd = ldns_tcp_connect(to, tolen, timeout);
+	
+	if (sockfd == 0) {
+		return LDNS_STATUS_ERR;
+	}
+	
+	if (ldns_tcp_send_query(qbin, sockfd, to, tolen) == 0) {
+		return LDNS_STATUS_ERR;
+	}
+	
+	return sockfd;
 }
 
 /* Move other function that use sockaddr to here, so that 
