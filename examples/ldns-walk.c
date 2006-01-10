@@ -104,6 +104,7 @@ main(int argc, char *argv[])
 
 	int result = 0;
 	size_t i;
+	char *arg_end_ptr = NULL;
 
 	p = NULL;
 	rrlist = NULL;
@@ -111,6 +112,7 @@ main(int argc, char *argv[])
 	soa = NULL;
 	domain = NULL;
 	res = NULL;
+	
 	
 	if (argc < 2) {
 		usage(stdout, argv[0]);
@@ -125,6 +127,18 @@ main(int argc, char *argv[])
 					}
 				} else {
 					printf("Missing argument for -s\n");
+					exit(1);
+				}
+				i++;
+			} else if (strncmp(argv[i], "-v", 3) == 0) {
+				if (i + 1 < argc) {
+					verbosity = strtol(argv[i+1], &arg_end_ptr, 10);
+					if (*arg_end_ptr != '\0') {
+						printf("Bad argument for -v: %s\n", argv[i+1]);
+						exit(1);
+					}
+				} else {
+					printf("Missing argument for -v\n");
 					exit(1);
 				}
 				i++;
@@ -237,8 +251,20 @@ main(int argc, char *argv[])
 	/* use the resolver to send it a query for the soa
 	 * records of the domain given on the command line
 	 */
+	if (verbosity >= 3) {
+		printf("\nQuerying for: ");
+		ldns_rdf_print(stdout, domain);
+		printf("\n");
+	}
 	p = ldns_resolver_query(res, domain, LDNS_RR_TYPE_SOA, LDNS_RR_CLASS_IN, LDNS_RD);
 	soa = NULL;
+	if (verbosity >= 5) {
+		if (p) {
+			ldns_pkt_print(stdout, p);
+		} else {
+			fprintf(stdout, "No Packet Received from ldns_resolver_query()\n");
+		}
+	}
 
         if (!p)  {
 		exit(3);
@@ -295,7 +321,20 @@ main(int argc, char *argv[])
 			ldns_pkt_free(p);
 			p = NULL;
 		}
+		if (verbosity >= 3) {
+			printf("Querying for: ");
+			ldns_rdf_print(stdout, last_dname_p);
+			printf("\n");
+		}
 		p = ldns_resolver_query(res, last_dname_p, LDNS_RR_TYPE_ANY, LDNS_RR_CLASS_IN, LDNS_RD);
+		if (verbosity >= 5) {
+			if (p) {
+				ldns_pkt_print(stdout, p);
+			} else {
+				fprintf(stdout, "No Packet Received from ldns_resolver_query()\n");
+			}
+		}
+
 
 		if (next_dname) {
 			ldns_rdf_deep_free(next_dname);
@@ -308,7 +347,20 @@ main(int argc, char *argv[])
 		  ldns_rdf_print(stderr, last_dname_p);
 		  fprintf(stderr, "\n");
 		  while (!p) {
+		    if (verbosity >= 3) {
+			printf("Querying for: ");
+			ldns_rdf_print(stdout, last_dname_p);
+			printf("\n");
+		    }
 		    p = ldns_resolver_query(res, last_dname_p, LDNS_RR_TYPE_ANY, LDNS_RR_CLASS_IN, LDNS_RD);
+		    if (verbosity >= 5) {
+			if (p) {
+				ldns_pkt_print(stdout, p);
+			} else {
+				fprintf(stdout, "No Packet Received from ldns_resolver_query()\n");
+			}
+		    }
+
 		    if (!p)  {
 		      fprintf(stderr, "Error trying to resolve: ");
 		      ldns_rdf_print(stderr, last_dname_p);
@@ -324,7 +376,20 @@ main(int argc, char *argv[])
 		if (ldns_pkt_rcode(p) == 2) {
 			ldns_pkt_free(p);
 			p = NULL;
+			if (verbosity >= 3) {
+				printf("Querying for: ");
+				ldns_rdf_print(stdout, last_dname);
+				printf("\n");
+			}
 			p = ldns_resolver_query(res, last_dname, LDNS_RR_TYPE_ANY, LDNS_RR_CLASS_IN, LDNS_RD);
+			if (verbosity >= 5) {
+				if (p) {
+					ldns_pkt_print(stdout, p);
+				} else {
+					fprintf(stdout, "No Packet Received from ldns_resolver_query()\n");
+				}
+			}
+
 			if (!p) {
 				exit(51);
 			}
