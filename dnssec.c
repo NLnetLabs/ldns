@@ -17,14 +17,13 @@
 #include <strings.h>
 #include <time.h>
 
+#ifdef HAVE_SSL
+/* this entire file is rather useless when you don't have
+ * crypto...
+ */
 #include <openssl/ssl.h>
-#include <openssl/err.h>
 #include <openssl/rand.h>
-#include <openssl/bn.h>
-#include <openssl/bio.h>
-#include <openssl/evp.h>
-#include <openssl/hmac.h>
-#include <openssl/md5.h>
+#include <openssl/err.h>
 
 /* used only on the public key RR */
 uint16_t
@@ -34,14 +33,12 @@ ldns_calc_keytag(ldns_rr *key)
 	uint32_t ac;
 	ldns_buffer *keybuf;
 	size_t keysize;
-	
 
 	if (!key) {
 		return 0;
 	}
 
 	ac = 0;
-	
 	if (ldns_rr_get_type(key) != LDNS_RR_TYPE_DNSKEY) {
 		return 0;
 	}
@@ -78,7 +75,6 @@ ldns_status
 ldns_verify(ldns_rr_list *rrset, ldns_rr_list *rrsig, ldns_rr_list *keys, ldns_rr_list *good_keys)
 {
 	uint16_t i;
-/*	ldns_rr_list *keys_verified;*/
 	bool valid;
 	ldns_status verify_result = LDNS_STATUS_ERR;
 
@@ -102,7 +98,7 @@ ldns_verify(ldns_rr_list *rrset, ldns_rr_list *rrsig, ldns_rr_list *keys, ldns_r
 	return verify_result;
 }
 
-INLINE ldns_status
+ldns_status
 ldns_verify_rrsig_buffers(ldns_buffer *rawsig_buf,
                           ldns_buffer *verify_buf,
                           ldns_buffer *key_buf,
@@ -1338,3 +1334,4 @@ ldns_init_random(FILE *fd, uint16_t bytes) {
 	LDNS_FREE(buf);
 	return LDNS_STATUS_OK;
 }
+#endif /* HAVE_SSL */

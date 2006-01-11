@@ -11,7 +11,9 @@
 #ifndef _LDNS_DNSSEC_H_
 #define _LDNS_DNSSEC_H_
 
+#ifdef HAVE_SSL
 #include <openssl/ssl.h>
+#endif /* HAVE_SSL */
 #include <ldns/common.h>
 #include <ldns/packet.h>
 #include <ldns/keys.h>
@@ -20,7 +22,7 @@
 #define LDNS_MAX_KEYLEN		2048
 #define LDNS_DNSSEC_KEYPROTO	3
 /* default time before sigs expire */
-#define LDNS_DEFAULT_EXP_TIME	1209600
+#define LDNS_DEFAULT_EXP_TIME	2419200 /* 4 weeks */
 
 /** 
  * calculates a keytag of a key for use in DNSSEC.
@@ -88,7 +90,9 @@ ldns_status ldns_verify_rrsig_rsamd5(ldns_buffer *sig, ldns_buffer *rrset, ldns_
  * \param[in] key the key to convert
  * \return a DSA * structure with the key material
  */
+#ifdef HAVE_SSL
 DSA *ldns_key_buf2dsa(ldns_buffer *key);
+#endif /* HAVE_SSL */
 
 /**
  * converts a buffer holding key material to a RSA key in openssl.
@@ -96,7 +100,9 @@ DSA *ldns_key_buf2dsa(ldns_buffer *key);
  * \param[in] key the key to convert
  * \return a RSA * structure with the key material
  */
+#ifdef HAVE_SSL
 RSA *ldns_key_buf2rsa(ldns_buffer *key);
+#endif /* HAVE_SSL */
 
 /** 
  * returns a new DS rr that represents the given key rr.
@@ -108,10 +114,12 @@ ldns_rr *ldns_key_rr2ds(const ldns_rr *key);
 
 /* sign functions - these are very much a work in progress */
 ldns_rr_list *ldns_sign_public(ldns_rr_list *rrset, ldns_key_list *keys);
+#ifdef HAVE_SSL
 ldns_rdf *ldns_sign_public_dsa(ldns_buffer *to_sign, DSA *key);
 ldns_rdf *ldns_sign_public_rsamd5(ldns_buffer *to_sign, RSA *key);
 ldns_rdf *ldns_sign_public_rsasha1(ldns_buffer *to_sign, RSA *key);
 ldns_rdf *ldns_sign_public_dsa(ldns_buffer *to_sign, DSA *key);
+#endif /* HAVE_SSL */
 
 /**
  * Create a NSEC record

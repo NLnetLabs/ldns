@@ -842,6 +842,7 @@ ldns_rr2buffer_str(ldns_buffer *output, ldns_rr *rr)
 		if (ldns_rr_rd_count(rr) > 0) {
 			switch (ldns_rr_get_type(rr)) {
 				case LDNS_RR_TYPE_DNSKEY:
+#ifdef HAVE_SSL
 					if (ldns_rdf2native_int16(ldns_rr_rdf(rr, 0)) == 256) {
 						ldns_buffer_printf(output, " ;{id = %d (zsk), size = %db}", 
 								ldns_calc_keytag(rr),
@@ -857,6 +858,7 @@ ldns_rr2buffer_str(ldns_buffer *output, ldns_rr *rr)
 					ldns_buffer_printf(output, " ;{id = %d, size = %db}", 
 							ldns_calc_keytag(rr),
 							ldns_rr_dnskey_key_size(rr)); 
+#endif /* HAVE_SSL */
 					break;
 				case LDNS_RR_TYPE_RRSIG:
 					ldns_buffer_printf(output, " ;{id = %d}", 
@@ -1039,14 +1041,16 @@ ldns_pkt2buffer_str(ldns_buffer *output, ldns_pkt *pkt)
 	return status;
 }
 
-#ifdef HAVE_SSL
 ldns_status
 ldns_key2buffer_str(ldns_buffer *output, ldns_key *k)
 {
 	ldns_status status = LDNS_STATUS_OK;
 	unsigned char  *bignum;
+#ifdef HAVE_SSL
+	/* not used when ssl is not defined */
 	ldns_rdf *b64_bignum;
 	uint16_t i;
+#endif /* HAVE_SSL */
 
 	if (!k) {
 		return LDNS_STATUS_ERR;
@@ -1058,6 +1062,7 @@ ldns_key2buffer_str(ldns_buffer *output, ldns_key *k)
 	}
 	
 	if (ldns_buffer_status_ok(output)) {
+#ifdef HAVE_SSL
 		switch(ldns_key_algorithm(k)) {
 			case LDNS_SIGN_RSASHA1:
 			case LDNS_SIGN_RSAMD5:
@@ -1221,6 +1226,7 @@ ldns_key2buffer_str(ldns_buffer *output, ldns_key *k)
 				/* is the filefmt specified for TSIG.. don't know */
 				goto error;
 		}
+#endif /* HAVE_SSL */
 	} else {
 		LDNS_FREE(bignum);
 		return ldns_buffer_status(output);
@@ -1228,18 +1234,14 @@ ldns_key2buffer_str(ldns_buffer *output, ldns_key *k)
 	LDNS_FREE(bignum);
 	return status;
 
+#ifdef HAVE_SSL
+	/* compiles warn the label isn't used */
 error:
 	LDNS_FREE(bignum);
 	return LDNS_STATUS_ERR;
+#endif /* HAVE_SSL */
 	
 }
-#else
-ldns_status
-ldns_key2buffer_str(ldns_buffer *output, ldns_key *k)
-{
-	return LDNS_STATUS_ERR;
-}
-#endif /* HAVE_SSL */
 
 /*
  * Zero terminate the buffer and fix it to the size of the string.

@@ -14,7 +14,9 @@
 
 #include <ldns/dns.h>
 
+#ifdef HAVE_SSL
 #include <openssl/ssl.h>
+#endif /* HAVE_SSL */
 
 ldns_lookup_table ldns_signing_algorithms[] = {
         { LDNS_SIGN_RSAMD5, "RSAMD5" },
@@ -24,6 +26,7 @@ ldns_lookup_table ldns_signing_algorithms[] = {
         { 0, NULL }
 };
 
+#ifdef HAVE_SSL 
 ldns_key_list *
 ldns_key_list_new()
 {
@@ -791,3 +794,4 @@ ldns_key_list_free(ldns_key_list *key_list)
 	LDNS_FREE(key_list->_keys);
 	LDNS_FREE(key_list);
 }
+#endif /* HAVE_SSL */

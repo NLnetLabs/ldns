@@ -9,6 +9,8 @@
 	 (ie. just a list of rrs) can scale to zone file in order of
 	 megabytes. Sorting such zone is still difficult.
 	* Reading multiline b64 encoded rdata works.
+	* OpenSSL was made optional, configure --without-ssl.
+	  Ofcourse all dnssec/tsig related functions are disabled
 
 	Drill:
 	* -r was killed in favor of -o <header bit mnemonic> which 

@@ -149,6 +149,7 @@ ldns_send(ldns_pkt **result, ldns_resolver *r, ldns_pkt *query_pkt)
 		sleep((unsigned int) ldns_resolver_retrans(r));
 	}
 
+#ifdef HAVE_SSL
 	if (tsig_mac && reply_bytes) {
 		if (!ldns_pkt_tsig_verify(reply,
 		                          reply_bytes,
@@ -159,6 +160,7 @@ ldns_send(ldns_pkt **result, ldns_resolver *r, ldns_pkt *query_pkt)
 			status = LDNS_STATUS_CRYPTO_TSIG_BOGUS;
 		}
 	}
+#endif /* HAVE_SSL */
 	
 	LDNS_FREE(reply_bytes);
 	ldns_buffer_free(qb);

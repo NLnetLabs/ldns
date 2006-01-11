@@ -13,8 +13,10 @@
 
 #include <strings.h>
 
+#ifdef HAVE_SSL
 #include <openssl/hmac.h>
 #include <openssl/md5.h>
+#endif /* HAVE_SSL */
 
 char *
 ldns_tsig_algorithm(ldns_tsig_credentials *tc)
@@ -123,6 +125,7 @@ ldns_tsig_prepare_pkt_wire(uint8_t *wire, size_t wire_len, size_t *result_len)
 	return wire2;
 }
 
+#ifdef HAVE_SSL
 const EVP_MD *
 ldns_get_digest_function(char *name)
 {
@@ -137,7 +140,9 @@ ldns_get_digest_function(char *name)
 	else
 		return NULL;
 }
+#endif
 
+#ifdef HAVE_SSL
 ldns_status
 ldns_create_tsig_mac(
 	ldns_rdf **tsig_mac,
@@ -221,9 +226,10 @@ ldns_create_tsig_mac(
 	
 	return LDNS_STATUS_OK;
 }
+#endif /*  HAVE_SSL */
 
 
-/* THIS FUNC WILL REMOVE TSIG ITSELF */
+#ifdef HAVE_SSL
 bool
 ldns_pkt_tsig_verify(ldns_pkt *pkt, 
                      uint8_t *wire,
@@ -303,7 +309,9 @@ ldns_pkt_tsig_verify(ldns_pkt *pkt,
 		return false;
 	}
 }
+#endif /* HAVE_SSL */
 
+#ifdef HAVE_SSL
 /* TODO: memory :p */
 ldns_status
 ldns_pkt_tsig_sign(ldns_pkt *pkt, const char *key_name, const char *key_data, uint16_t fudge, const char *algorithm_name, ldns_rdf *query_mac)
@@ -401,3 +409,4 @@ ldns_pkt_tsig_sign(ldns_pkt *pkt, const char *key_name, const char *key_data, ui
 	ldns_rdf_free(other_data_rdf);
 	return status;
 }
+#endif /* HAVE_SSL */

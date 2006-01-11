@@ -14,7 +14,9 @@
 #ifndef _LDNS_KEYS_H
 #define _LDNS_KEYS_H
 
+#ifdef HAVE_SSL
 #include <openssl/ssl.h>
+#endif /* HAVE_SSL */
 #include <ldns/dnssec.h>
 #include <ldns/util.h>
 
@@ -58,8 +60,10 @@ struct ldns_struct_key {
 	ldns_signing_algorithm _alg;
 	/** types of keys supported */
 	union {
+#ifdef HAVE_SSL
 		RSA	*rsa;
 		DSA	*dsa;
+#endif /* HAVE_SSL */
 		unsigned char *hmac;
 	} _key;
 	/** depending on the key we can have extra data */
@@ -134,7 +138,9 @@ ldns_key *ldns_key_new_frm_fp_l(FILE *fp, int *line_nr);
  * \param[in] fp the file to parse
  * \return NULL on failure otherwise a RSA structure
  */
+#ifdef HAVE_SSL
 RSA *ldns_key_new_frm_fp_rsa(FILE *fp);
+#endif /* HAVE_SSL */
 
 /**
  * frm_fp helper function. This function parsed the
@@ -143,7 +149,9 @@ RSA *ldns_key_new_frm_fp_rsa(FILE *fp);
  * \param[in] line_nr pointer to an integer containing the current line number (for debugging purposes)
  * \return NULL on failure otherwise a RSA structure
  */
+#ifdef HAVE_SSL
 RSA *ldns_key_new_frm_fp_rsa_l(FILE *fp, int *line_nr);
+#endif /* HAVE_SSL */
 
 /**
  * frm_fp helper function. This function parsed the
@@ -151,7 +159,9 @@ RSA *ldns_key_new_frm_fp_rsa_l(FILE *fp, int *line_nr);
  * \param[in] fp the file to parse
  * \return NULL on failure otherwise a RSA structure
  */
+#ifdef HAVE_SSL
 DSA *ldns_key_new_frm_fp_dsa(FILE *fp);
+#endif /* HAVE_SSL */
 
 /**
  * frm_fp helper function. This function parsed the
@@ -160,12 +170,16 @@ DSA *ldns_key_new_frm_fp_dsa(FILE *fp);
  * \param[in] line_nr pointer to an integer containing the current line number (for debugging purposes)
  * \return NULL on failure otherwise a RSA structure
  */
+#ifdef HAVE_SSL
 DSA *ldns_key_new_frm_fp_dsa_l(FILE *fp, int *line_nr);
+#endif /* HAVE_SSL */
 
 /* acces write functions */
 void ldns_key_set_algorithm(ldns_key *k, ldns_signing_algorithm l);
+#ifdef HAVE_SSL
 void ldns_key_set_rsa_key(ldns_key *k, RSA *r);
 void ldns_key_set_dsa_key(ldns_key *k, DSA *d);
+#endif /* HAVE_SSL */
 void ldns_key_set_hmac_key(ldns_key *k, unsigned char *hmac);
 void ldns_key_set_origttl(ldns_key *k, uint32_t t);
 void ldns_key_set_inception(ldns_key *k, uint32_t i);
@@ -196,12 +210,16 @@ ldns_key *ldns_key_list_key(ldns_key_list *key, size_t nr);
 /**
  * returns the (openssl) RSA struct contained in the key
  */
+#ifdef HAVE_SSL
 RSA *ldns_key_rsa_key(ldns_key *k);
+#endif /* HAVE_SSL */
 
 /**
  * returns the (openssl) DSA struct contained in the key
  */
+#ifdef HAVE_SSL
 DSA *ldns_key_dsa_key(ldns_key *k);
+#endif /* HAVE_SSL */
 
 ldns_signing_algorithm ldns_key_algorithm(ldns_key *k);
 unsigned char *ldns_key_hmac_key(ldns_key *k);

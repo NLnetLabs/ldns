@@ -1176,7 +1176,9 @@ bool
 ldns_rr_compare_ds(const ldns_rr *orr1, const ldns_rr *orr2)
 {
 	bool result;
+#ifdef HAVE_SSL
 	ldns_rr *ds_repr;
+#endif /* HAVE_SSL */
 	ldns_rr *rr1 = ldns_rr_clone(orr1);
 	ldns_rr *rr2 = ldns_rr_clone(orr2);
 	
@@ -1184,6 +1186,7 @@ ldns_rr_compare_ds(const ldns_rr *orr1, const ldns_rr *orr2)
 	ldns_rr_set_ttl(rr1, 0);
 	ldns_rr_set_ttl(rr2, 0);
 
+#ifdef HAVE_SSL
 	if (ldns_rr_get_type(rr1) == LDNS_RR_TYPE_DS &&
 	    ldns_rr_get_type(rr2) == LDNS_RR_TYPE_DNSKEY) {
 	    	ds_repr = ldns_key_rr2ds(rr2);
@@ -1197,6 +1200,9 @@ ldns_rr_compare_ds(const ldns_rr *orr1, const ldns_rr *orr2)
 	} else {
 		result = (ldns_rr_compare(rr1, rr2) == 0);
 	}	
+#else
+		result = (ldns_rr_compare(rr1, rr2) == 0);
+#endif /* HAVE_SSL */
 	
 	ldns_rr_free(rr1);
 	ldns_rr_free(rr2);
