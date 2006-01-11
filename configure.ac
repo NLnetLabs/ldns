@@ -128,7 +128,6 @@ AC_CHECK_HEADERS(sys/param.h sys/mount.h,,,
 ])
 
 AC_FUNC_MALLOC
-AC_CHECK_FUNCS(isblank)
 
 AC_REPLACE_FUNCS(b64_pton)
 AC_REPLACE_FUNCS(b64_ntop)
