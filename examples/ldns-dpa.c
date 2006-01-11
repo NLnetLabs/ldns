@@ -40,7 +40,7 @@ pcap_dumper_t *bad_dns_dump = NULL;
 
 struct
 fragment_part {
-	u_short ip_id;
+	uint16_t ip_id;
 	uint8_t data[65536];
 	size_t cur_len;
 };
@@ -1007,52 +1007,52 @@ get_string_value(match_id id, ldns_pkt *pkt, ldns_rdf *src_addr, ldns_rdf *dst_a
 
 	switch(id) {
 		case MATCH_QR:
-			snprintf(val, valsize, "%u", ldns_pkt_qr(pkt));
+			snprintf(val, valsize, "%u", (unsigned int) ldns_pkt_qr(pkt));
 			break;
 		case MATCH_ID:
-			snprintf(val, valsize, "%u", ldns_pkt_id(pkt));
+			snprintf(val, valsize, "%u", (unsigned int) ldns_pkt_id(pkt));
 			break;
 		case MATCH_OPCODE:
-			snprintf(val, valsize, "%u", ldns_pkt_get_opcode(pkt));
+			snprintf(val, valsize, "%u", (unsigned int) ldns_pkt_get_opcode(pkt));
 			break;
 		case MATCH_RCODE:
-			snprintf(val, valsize, "%u", ldns_pkt_rcode(pkt));
+			snprintf(val, valsize, "%u", (unsigned int) ldns_pkt_rcode(pkt));
 			break;
 		case MATCH_PACKETSIZE:
 			snprintf(val, valsize, "%u", (unsigned int) ldns_pkt_size(pkt));
 			break;
 		case MATCH_TC:
-			snprintf(val, valsize, "%u", ldns_pkt_tc(pkt));
+			snprintf(val, valsize, "%u", (unsigned int) ldns_pkt_tc(pkt));
 			break;
 		case MATCH_AD:
-			snprintf(val, valsize, "%u", ldns_pkt_ad(pkt));
+			snprintf(val, valsize, "%u", (unsigned int) ldns_pkt_ad(pkt));
 			break;
 		case MATCH_CD:
-			snprintf(val, valsize, "%u", ldns_pkt_cd(pkt));
+			snprintf(val, valsize, "%u", (unsigned int) ldns_pkt_cd(pkt));
 			break;
 		case MATCH_RD:
-			snprintf(val, valsize, "%u", ldns_pkt_rd(pkt));
+			snprintf(val, valsize, "%u", (unsigned int) ldns_pkt_rd(pkt));
 			break;
 		case MATCH_EDNS:
-			snprintf(val, valsize, "%u", ldns_pkt_edns(pkt));
+			snprintf(val, valsize, "%u", (unsigned int) ldns_pkt_edns(pkt));
 			break;
 		case MATCH_EDNS_PACKETSIZE:
-			snprintf(val, valsize, "%u", ldns_pkt_edns_udp_size(pkt));
+			snprintf(val, valsize, "%u", (unsigned int) ldns_pkt_edns_udp_size(pkt));
 			break;
 		case MATCH_DO:
-			snprintf(val, valsize, "%u", ldns_pkt_edns_do(pkt));
+			snprintf(val, valsize, "%u", (unsigned int) ldns_pkt_edns_do(pkt));
 			break;
 		case MATCH_QUESTION_SIZE:
-			snprintf(val, valsize, "%u", ldns_pkt_qdcount(pkt));
+			snprintf(val, valsize, "%u", (unsigned int) ldns_pkt_qdcount(pkt));
 			break;
 		case MATCH_ANSWER_SIZE:
-			snprintf(val, valsize, "%u", ldns_pkt_ancount(pkt));
+			snprintf(val, valsize, "%u", (unsigned int) ldns_pkt_ancount(pkt));
 			break;
 		case MATCH_AUTHORITY_SIZE:
-			snprintf(val, valsize, "%u", ldns_pkt_nscount(pkt));
+			snprintf(val, valsize, "%u", (unsigned int) ldns_pkt_nscount(pkt));
 			break;
 		case MATCH_ADDITIONAL_SIZE:
-			snprintf(val, valsize, "%u", ldns_pkt_arcount(pkt));
+			snprintf(val, valsize, "%u", (unsigned int) ldns_pkt_arcount(pkt));
 			break;
 		case MATCH_SRC_ADDRESS:
 			free(val);
@@ -1810,7 +1810,7 @@ parse_match_expression(char *string)
 								lt = ldns_lookup_by_name(ldns_opcodes, &str[i]);
 								if (lt) {
 									val = malloc(4);
-									snprintf(val, 3, "%u", lt->id);
+									snprintf(val, 3, "%u", (unsigned int) lt->id);
 								} else {
 									val = malloc(strlen(str) - i + 1);
 									strcpy(val, &str[i]);
@@ -1820,7 +1820,7 @@ parse_match_expression(char *string)
 								lt = ldns_lookup_by_name(ldns_rcodes, &str[i]);
 								if (lt) {
 									val = malloc(4);
-									snprintf(val, 3, "%u", lt->id);
+									snprintf(val, 3, "%u", (unsigned int) lt->id);
 								} else {
 									val = malloc(strlen(str) - i + 1);
 									strcpy(val, &str[i]);
@@ -2007,9 +2007,9 @@ handle_ether_packet(const u_char *data, struct pcap_pkthdr cur_hdr, match_counte
 	bpf_u_int32 len = cur_hdr.caplen;
 	struct timeval timestamp;
 	uint16_t ip_flags;
-	u_short ip_len;
-	u_short ip_id;
-	u_short ip_f_offset;
+	uint16_t ip_len;
+	uint16_t ip_id;
+	uint16_t ip_f_offset;
 	const u_char *newdata = NULL;
 
 /*
@@ -2027,9 +2027,9 @@ printf("timeval: %u ; %u\n", cur_hdr.ts.tv_sec, cur_hdr.ts.tv_usec);
 	if (ntohs (eptr->ether_type) == ETHERTYPE_IP)
 	{
 		if (verbosity >= 5) {
-			printf("Ethernet type hex:%x dec:%d is an IP packet\n",
-				ntohs(eptr->ether_type),
-				ntohs(eptr->ether_type));
+			printf("Ethernet type hex:%x dec:%u is an IP packet\n",
+				(unsigned int) ntohs(eptr->ether_type),
+				(unsigned int) ntohs(eptr->ether_type));
 		}
 
 		data_offset = ETHER_HEADER_LENGTH;
@@ -2096,9 +2096,9 @@ printf("timeval: %u ; %u\n", cur_hdr.ts.tv_sec, cur_hdr.ts.tv_usec);
 				}
 				memcpy((char *) newdata, data, data_offset);
 				memcpy((char *) newdata+data_offset, fragment_p->data, fragment_p->cur_len);
-				iptr->ip_len = ldns_read_uint16(&(fragment_p->cur_len));
+				iptr->ip_len = (u_short) ldns_read_uint16(&(fragment_p->cur_len));
 				iptr->ip_off = 0;
-				len = fragment_p->cur_len;
+				len = (bpf_u_int32) fragment_p->cur_len;
 				cur_hdr.caplen = len;
 				fragment_p->ip_id = 0;
 				fragmented_packets++;
@@ -2144,7 +2144,7 @@ printf("timeval: %u ; %u\n", cur_hdr.ts.tv_sec, cur_hdr.ts.tv_usec);
 				free(astr);
 			}
 
-			ip_hdr_size = iptr->ip_hl * 4;
+			ip_hdr_size = (int) iptr->ip_hl * 4;
 			protocol = iptr->ip_p;
 			
 			data_offset += ip_hdr_size;
@@ -2265,7 +2265,7 @@ printf("timeval: %u ; %u\n", cur_hdr.ts.tv_sec, cur_hdr.ts.tv_usec);
 		}
 
 		ip_hdr_size = IP6_HEADER_LENGTH;
-		protocol = ip6_hdr->ip6_ctlun.ip6_un1.ip6_un1_nxt;
+		protocol = (u_int8_t) ip6_hdr->ip6_ctlun.ip6_un1.ip6_un1_nxt;
 		
 		data_offset += ip_hdr_size;
 
@@ -2359,15 +2359,15 @@ printf("timeval: %u ; %u\n", cur_hdr.ts.tv_sec, cur_hdr.ts.tv_usec);
 
 	} else  if (ntohs (eptr->ether_type) == ETHERTYPE_ARP) {
 		if (verbosity >= 5) {
-			printf("Ethernet type hex:%x dec:%d is an ARP packet\n",
-				ntohs(eptr->ether_type),
-				ntohs(eptr->ether_type));
+			printf("Ethernet type hex:%x dec:%u is an ARP packet\n",
+				(unsigned int) ntohs(eptr->ether_type),
+				(unsigned int) ntohs(eptr->ether_type));
 		}
 		arp_packets++;
 	} else {
-		printf("Ethernet type %x not IP\n", ntohs(eptr->ether_type));
+		printf("Ethernet type %x not IP\n", (unsigned int) ntohs(eptr->ether_type));
 		if (verbosity >= 5) {
-			printf("Ethernet type %x not IP\n", ntohs(eptr->ether_type));
+			printf("Ethernet type %x not IP\n", (unsigned int) ntohs(eptr->ether_type));
 		}
 		not_ip_packets++;
 		if (not_ip_dump) {
