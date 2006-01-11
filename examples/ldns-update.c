@@ -8,6 +8,7 @@
 
 #include "config.h"
 
+#include <strings.h>
 #include <ldns/dns.h>
 
 

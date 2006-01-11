@@ -4,13 +4,15 @@
 	* Makefile updates
 	* Starting usage of assert throughout the library to catch illegal calls
 	* Solaris 9 testing was carried out. Ldns now compiles on that
-	  platform; some gnuism were identified and fixed.
+NOT	  platform; some gnuism were identified and fixed.
 	* The ldns_zone structure was stress tested. The current setup
 	 (ie. just a list of rrs) can scale to zone file in order of
 	 megabytes. Sorting such zone is still difficult.
 	* Reading multiline b64 encoded rdata works.
 	* OpenSSL was made optional, configure --without-ssl.
 	  Ofcourse all dnssec/tsig related functions are disabled
+	* Building of examples and drill now happens with the same
+	  defines as the building of ldns itself.
 
 	Drill:
 	* -r was killed in favor of -o <header bit mnemonic> which 
@@ -38,7 +40,6 @@
 	  Which also get an extra variable
 	* tsig.h: made internal used functions static:
 	  ldns_digest_name and ldns_tsig_mac_new
-
 	New:
 	* ldns_zone_sort: Sort a zone
 	* ldns_bgsend(): background send, returns a socket.
