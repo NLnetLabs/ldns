@@ -262,7 +262,6 @@ struct struct_match_counters {
 match_table *
 get_match_by_name(char *name) {
 	match_table *mt = (match_table *) matches;
-
 	if (name) {
 		while (mt->name != NULL) {
 			if (strcasecmp(name, mt->name) == 0) {
@@ -805,8 +804,26 @@ match_str(type_operator operator,
           char *value,
           char *mvalue)
 {
+	char *valuedup, *mvaluedup;
+	size_t i;
+	bool result;
+	
 	if (operator == OP_CONTAINS) {
+		/* strcasestr is not C89 
 		return strcasestr(value, mvalue) != 0;
+		*/
+		valuedup = strdup(value);
+		mvaluedup = strdup(mvalue);
+		for (i = 0; i < strlen(valuedup); i++) {
+			valuedup[i] = tolower(valuedup[i]);
+		}
+		for (i = 0; i < strlen(mvaluedup); i++) {
+			mvaluedup[i] = tolower(mvaluedup[i]);
+		}
+		result = strstr(valuedup, mvaluedup);
+		free(valuedup);
+		free(mvaluedup);
+		return result;
 	} else if (operator == OP_EQUAL) {
 		return strcmp(value, mvalue) == 0;
 	} else {
