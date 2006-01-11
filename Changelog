@@ -4,7 +4,7 @@
 	* Makefile updates
 	* Starting usage of assert throughout the library to catch illegal calls
 	* Solaris 9 testing was carried out. Ldns now compiles on that
-NOT	  platform; some gnuism were identified and fixed.
+	  platform; some gnuism were identified and fixed.
 	* The ldns_zone structure was stress tested. The current setup
 	 (ie. just a list of rrs) can scale to zone file in order of
 	 megabytes. Sorting such zone is still difficult.
