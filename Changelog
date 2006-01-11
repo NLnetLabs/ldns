@@ -36,6 +36,9 @@
           o ldns_rr_new_frm_fp
 	  o ldns_rr_new_frm_fp_l
 	  Which also get an extra variable
+	* tsig.h: made internal used functions static:
+	  ldns_digest_name and ldns_tsig_mac_new
+
 	New:
 	* ldns_zone_sort: Sort a zone
 	* ldns_bgsend(): background send, returns a socket.

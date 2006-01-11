@@ -126,8 +126,8 @@ ldns_tsig_prepare_pkt_wire(uint8_t *wire, size_t wire_len, size_t *result_len)
 }
 
 #ifdef HAVE_SSL
-const EVP_MD *
-ldns_get_digest_function(char *name)
+static const EVP_MD *
+ldns_digest_function(char *name)
 {
 	/* TODO replace with openssl's EVP_get_digestbyname
 	        (need init somewhere for that)
@@ -143,8 +143,8 @@ ldns_get_digest_function(char *name)
 #endif
 
 #ifdef HAVE_SSL
-ldns_status
-ldns_create_tsig_mac(
+static ldns_status
+ldns_tsig_mac_new(
 	ldns_rdf **tsig_mac,
 	uint8_t *pkt_wire,
 	size_t pkt_wire_size,
@@ -205,7 +205,7 @@ ldns_create_tsig_mac(
 	mac_bytes = LDNS_XMALLOC(unsigned char, md_len);
 	memset(mac_bytes, 0, md_len);
 	
-	digester = ldns_get_digest_function(algorithm_name);
+	digester = ldns_digest_function(algorithm_name);
 	
 	if (digester) {
 		(void) HMAC(digester, key_bytes, key_size, (void *)wireformat, wiresize, mac_bytes + 2, &md_len);
@@ -276,7 +276,7 @@ ldns_pkt_tsig_verify(ldns_pkt *pkt,
 
 	prepared_wire = ldns_tsig_prepare_pkt_wire(wire, wirelen, &prepared_wire_size);
 	
-	status = ldns_create_tsig_mac(&my_mac_rdf,
+	status = ldns_tsig_mac_new(&my_mac_rdf,
 	                              prepared_wire,
 	                              prepared_wire_size,
 	                              key_data, 
@@ -361,7 +361,7 @@ ldns_pkt_tsig_sign(ldns_pkt *pkt, const char *key_name, const char *key_data, ui
 		goto clean;
 	}
 
-	status = ldns_create_tsig_mac(&mac_rdf,
+	status = ldns_create_tsig_mac_new(&mac_rdf,
 	                              pkt_wire,
 	                              pkt_wire_len,
 				      key_data,
