@@ -35,7 +35,8 @@
 	  o ldns_rr_new_frm_fp_l
 	  Which also get an extra variable
 	New:
-	* ldns_zone_sort/ldns_zone_sort_oct: Sort a zone
+	* ldns_zone_sort: Sort a zone
+	* ldns_bgsend(): background send, returns a socket.
 
 
 18 Oct 2005: 1.0.0: ldns-team

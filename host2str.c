@@ -1039,6 +1039,7 @@ ldns_pkt2buffer_str(ldns_buffer *output, ldns_pkt *pkt)
 	return status;
 }
 
+#ifdef HAVE_SSL
 ldns_status
 ldns_key2buffer_str(ldns_buffer *output, ldns_key *k)
 {
@@ -1232,6 +1233,13 @@ error:
 	return LDNS_STATUS_ERR;
 	
 }
+#else
+ldns_status
+ldns_key2buffer_str(ldns_buffer *output, ldns_key *k)
+{
+	return LDNS_STATUS_ERR;
+}
+#endif /* HAVE_SSL */
 
 /*
  * Zero terminate the buffer and fix it to the size of the string.
