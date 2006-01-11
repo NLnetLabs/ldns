@@ -361,7 +361,7 @@ ldns_pkt_tsig_sign(ldns_pkt *pkt, const char *key_name, const char *key_data, ui
 		goto clean;
 	}
 
-	status = ldns_create_tsig_mac_new(&mac_rdf,
+	status = ldns_tsig_mac_new(&mac_rdf,
 	                              pkt_wire,
 	                              pkt_wire_len,
 				      key_data,
