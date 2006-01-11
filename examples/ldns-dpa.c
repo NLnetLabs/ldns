@@ -820,7 +820,7 @@ match_str(type_operator operator,
 		for (i = 0; i < strlen(mvaluedup); i++) {
 			mvaluedup[i] = tolower(mvaluedup[i]);
 		}
-		result = strstr(valuedup, mvaluedup);
+		result = strstr(valuedup, mvaluedup) != 0;
 		free(valuedup);
 		free(mvaluedup);
 		return result;
