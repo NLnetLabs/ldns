@@ -357,7 +357,7 @@ print_match_operation(FILE *output, match_operation *mc)
 					}
 					break;
 				case TYPE_TIMESTAMP:
-					time.tv_sec = (time_t) atol(mc->value);
+					time.tv_sec = (long int) atol(mc->value);
 					tmp = ctime((time_t*)&time);
 					tmp2 = malloc(strlen(tmp) + 1);
 					for (pos = 0; pos < strlen(tmp); pos++) {
@@ -2145,7 +2145,7 @@ printf("timeval: %u ; %u\n", cur_hdr.ts.tv_sec, cur_hdr.ts.tv_usec);
 			}
 
 			ip_hdr_size = (int) iptr->ip_hl * 4;
-			protocol = iptr->ip_p;
+			protocol = (u_int8_t) iptr->ip_p;
 			
 			data_offset += ip_hdr_size;
 
