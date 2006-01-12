@@ -8,8 +8,8 @@
  * See the file LICENSE for the license
  */
 
-#ifndef _LDNS_RR_H
-#define _LDNS_RR_H
+#ifndef LDNS_RR_H
+#define LDNS_RR_H
 
 #include <ldns/common.h>
 #include <ldns/rdata.h>
@@ -679,4 +679,4 @@ ldns_rr_type    ldns_rdf2rr_type(const ldns_rdf *rd);
 /* TODO document or delete it */
 bool ldns_rr_list_insert_rr(ldns_rr_list *rr_list, ldns_rr *r, size_t count);
 
-#endif /* _LDNS_RR_H */
+#endif /* LDNS_RR_H */

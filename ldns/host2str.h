@@ -8,8 +8,8 @@
  * See the file LICENSE for the license
  */
 
-#ifndef _LDNS_HOST2STR_H
-#define _LDNS_HOST2STR_H
+#ifndef LDNS_HOST2STR_H
+#define LDNS_HOST2STR_H
 
 #include <ldns/common.h>
 #include <ldns/error.h>
@@ -378,4 +378,4 @@ void ldns_zone_print(FILE *output, ldns_zone *z);
 ldns_status ldns_rdf2buffer_str_dname(ldns_buffer *output, ldns_rdf *dname);
 
 
-#endif
+#endif /* LDNS_HOST2STR_H */

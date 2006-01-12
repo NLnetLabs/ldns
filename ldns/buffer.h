@@ -10,8 +10,8 @@
  * the java.nio.Buffer interface.
  */
 
-#ifndef _LDNS_BUFFER_H_
-#define _LDNS_BUFFER_H_
+#ifndef LDNS_BUFFER_H
+#define LDNS_BUFFER_H
 
 #include <assert.h>
 #include <stdarg.h>
@@ -502,4 +502,4 @@ void ldns_buffer_free(ldns_buffer *buffer);
  */
 void *ldns_buffer_export(ldns_buffer *buffer);
 
-#endif /* _LDNS_BUFFER_H_ */
+#endif /* LDNS_BUFFER_H */

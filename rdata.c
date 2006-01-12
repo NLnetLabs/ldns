@@ -43,25 +43,25 @@ ldns_rdf_data(const ldns_rdf *rd)
 
 /* write */
 void
-ldns_rdf_set_size(ldns_rdf *rd, size_t s)
+ldns_rdf_set_size(ldns_rdf *rd, size_t size)
 {
 	assert(rd != NULL);
-	rd->_size = s;
+	rd->_size = size;
 }
 
 void
-ldns_rdf_set_type(ldns_rdf *rd, ldns_rdf_type t)
+ldns_rdf_set_type(ldns_rdf *rd, ldns_rdf_type type)
 {
 	assert(rd != NULL);
-	rd->_type = t;
+	rd->_type = type;
 }
 
 void
-ldns_rdf_set_data(ldns_rdf *rd, void *d)
+ldns_rdf_set_data(ldns_rdf *rd, void *data)
 {
 	/* only copy the pointer */
 	assert(rd != NULL);
-	rd->_data = d;
+	rd->_data = data;
 }
 
 /* for types that allow it, return
@@ -154,16 +154,16 @@ ldns_native2rdf_int16_data(size_t size, uint8_t *data)
 }
 
 ldns_rdf *
-ldns_rdf_new(ldns_rdf_type t, size_t s, void *d)
+ldns_rdf_new(ldns_rdf_type type, size_t size, void *data)
 {
 	ldns_rdf *rd;
 	rd = LDNS_MALLOC(ldns_rdf);
 	if (!rd) {
 		return NULL;
 	}
-	ldns_rdf_set_size(rd, s);
-	ldns_rdf_set_type(rd, t);
-	ldns_rdf_set_data(rd, d);
+	ldns_rdf_set_size(rd, size);
+	ldns_rdf_set_type(rd, type);
+	ldns_rdf_set_data(rd, data);
 	return rd;
 }
 
@@ -187,13 +187,13 @@ ldns_rdf_new_frm_data(ldns_rdf_type type, size_t size, const void *data)
 }
 
 ldns_rdf *
-ldns_rdf_clone(const ldns_rdf *r)
+ldns_rdf_clone(const ldns_rdf *rd)
 {
-	assert(r != NULL);
+	assert(rd != NULL);
 	return (ldns_rdf_new_frm_data(
-				ldns_rdf_get_type(r),
-				ldns_rdf_size(r), 
-				ldns_rdf_data(r)));
+				ldns_rdf_get_type(rd),
+				ldns_rdf_size(rd), 
+				ldns_rdf_data(rd)));
 }
 
 void
@@ -218,7 +218,7 @@ ldns_rdf_free(ldns_rdf *rd)
 ldns_rdf *
 ldns_rdf_new_frm_str(ldns_rdf_type type, const char *str)
 {
-	ldns_rdf *rdf;
+	ldns_rdf *rdf=0;
 	ldns_status status;
 
 	switch (type) {
@@ -334,7 +334,7 @@ ldns_rdf_new_frm_fp_l(ldns_rdf_type type, FILE *fp, int *line_nr)
 }
 
 ldns_rdf *
-ldns_rdf_address_reverse(ldns_rdf *rdf)
+ldns_rdf_address_reverse(ldns_rdf *rd)
 {
 	uint8_t buf_4[LDNS_IP4ADDRLEN];
 	uint8_t buf_6[LDNS_IP6ADDRLEN * 2];
@@ -349,21 +349,21 @@ ldns_rdf_address_reverse(ldns_rdf *rdf)
 	char *char_dname;
 	int nbit;
 
-	if (ldns_rdf_get_type(rdf) != LDNS_RDF_TYPE_A &&
-			ldns_rdf_get_type(rdf) != LDNS_RDF_TYPE_AAAA) {
+	if (ldns_rdf_get_type(rd) != LDNS_RDF_TYPE_A &&
+			ldns_rdf_get_type(rd) != LDNS_RDF_TYPE_AAAA) {
 		return NULL;
 	}
 
 	in_addr = NULL;
 	ret_dname = NULL;
 
-	switch(ldns_rdf_get_type(rdf)) {
+	switch(ldns_rdf_get_type(rd)) {
 		case LDNS_RDF_TYPE_A:
 			/* the length of the buffer is 4 */
-			buf_4[3] = ldns_rdf_data(rdf)[0];
-			buf_4[2] = ldns_rdf_data(rdf)[1];
-			buf_4[1] = ldns_rdf_data(rdf)[2];
-			buf_4[0] = ldns_rdf_data(rdf)[3];
+			buf_4[3] = ldns_rdf_data(rd)[0];
+			buf_4[2] = ldns_rdf_data(rd)[1];
+			buf_4[1] = ldns_rdf_data(rd)[2];
+			buf_4[0] = ldns_rdf_data(rd)[3];
 			in_addr = ldns_dname_new_frm_str("in-addr.arpa.");
 			if (!in_addr) {
 				return NULL;
@@ -397,7 +397,7 @@ ldns_rdf_address_reverse(ldns_rdf *rdf)
 				/* calculate nibble */
 				nnibble = ( ((unsigned int) nbit) & 0x04) >> 2;
 				/* extract nibble */
-				nibble = (ldns_rdf_data(rdf)[octet] & ( 0xf << (4 * (1 - nnibble)) ) ) >> ( 4 * (1 - nnibble));
+				nibble = (ldns_rdf_data(rd)[octet] & ( 0xf << (4 * (1 - nnibble)) ) ) >> ( 4 * (1 - nnibble));
 				buf_6[(LDNS_IP6ADDRLEN * 2 - 1) -
 					(octet * 2 + nnibble)] = (uint8_t)ldns_int_to_hexdigit((int)nibble);
 			}

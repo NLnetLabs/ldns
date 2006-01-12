@@ -10,8 +10,8 @@
  * See the file LICENSE for the license
  */
 
-#ifndef _LDNS_COMMON_H
-#define _LDNS_COMMON_H
+#ifndef LDNS_COMMON_H
+#define LDNS_COMMON_H
 
 #if !defined(__cplusplus) && !defined(__bool_true_false_are_defined)
 
@@ -47,4 +47,4 @@ typedef unsigned char bool;
 #define ATTR_UNUSED(x)  x
 #endif /* !HAVE_ATTR_UNUSED */
 
-#endif /* !_LDNS_COMMON_H */
+#endif /* LDNS_COMMON_H */

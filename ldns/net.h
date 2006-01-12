@@ -10,8 +10,8 @@
  * See the file LICENSE for the license
  */
 
-#ifndef _LDNS_NET_H
-#define _LDNS_NET_H
+#ifndef LDNS_NET_H
+#define LDNS_NET_H
 
 #include <ldns/packet.h>
 #include <ldns/buffer.h>
@@ -180,4 +180,4 @@ ldns_rdf * ldns_sockaddr_storage2rdf(struct sockaddr_storage *sock, uint16_t *po
  */
 ldns_status ldns_axfr_start(ldns_resolver *resolver, ldns_rdf *domain, ldns_rr_class c);
 
-#endif  /* !_LDNS_NET_H */
+#endif  /* LDNS_NET_H */

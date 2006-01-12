@@ -13,8 +13,8 @@
  * See the file LICENSE for the license
  */
 
-#ifndef _LDNS_ZONE_H
-#define _LDNS_ZONE_H
+#ifndef LDNS_ZONE_H
+#define LDNS_ZONE_H
 
 #include <ldns/common.h>
 #include <ldns/rdata.h>

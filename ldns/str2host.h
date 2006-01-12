@@ -8,8 +8,8 @@
  * See the file LICENSE for the license
  */
 
-#ifndef _LDNS_2HOST_H
-#define _LDNS_2HOST_H
+#ifndef LDNS_2HOST_H
+#define LDNS_2HOST_H
 
 #include <ldns/common.h>
 #include <ldns/error.h>
@@ -210,4 +210,4 @@ ldns_status ldns_str2rdf_nsap(ldns_rdf **rd, const char *str);
  */
 ldns_status ldns_str2rdf_dname(ldns_rdf **rd, const char *str);
 
-#endif /* _LDNS_2HOST_H */
+#endif /* LDNS_2HOST_H */

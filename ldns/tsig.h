@@ -6,10 +6,10 @@
  * See LICENSE for the license.
  */
 
-#ifndef _LDNS_TSIG_H_
-#define _LDNS_TSIG_H_
+#ifndef LDNS_TSIG_H
+#define LDNS_TSIG_H
 
-typedef struct _ldns_tsig_credentials 
+typedef struct ldns_tsig_credentials_struct
 {
     char *algorithm;
     char *keyname;
@@ -43,4 +43,4 @@ bool ldns_pkt_tsig_verify(ldns_pkt *pkt, uint8_t *wire, size_t wire_size, const 
  */
 ldns_status ldns_pkt_tsig_sign(ldns_pkt *pkt, const char *key_name, const char *key_data, uint16_t fudge, const char *algorithm_name, ldns_rdf *query_mac);
 
-#endif /* _LDNS_TSIG_H_ */
+#endif /* LDNS_TSIG_H */

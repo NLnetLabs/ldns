@@ -8,8 +8,8 @@
  * See LICENSE for the license.
  */
 
-#ifndef _LDNS_UPDATE_H
-#define _LDNS_UPDATE_H
+#ifndef LDNS_UPDATE_H
+#define LDNS_UPDATE_H
 
 #include <ldns/resolver.h>
 
@@ -48,4 +48,4 @@ ldns_status ldns_update_soa_mname(ldns_rdf *zone, ldns_resolver *r, ldns_rr_clas
 ldns_status ldns_update_soa_zone_mname(const char *fqdn, ldns_resolver *r, ldns_rr_class class, ldns_rdf **zone_rdf, ldns_rdf **mname_rdf);
 
 
-#endif  /* !_LDNS_UPDATE_H */
+#endif  /* LDNS_UPDATE_H */

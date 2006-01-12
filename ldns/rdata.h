@@ -11,8 +11,8 @@
  * See the file LICENSE for the license
  */
 
-#ifndef _LDNS_RDATA_H
-#define _LDNS_RDATA_H
+#ifndef LDNS_RDATA_H
+#define LDNS_RDATA_H
 
 #include <ldns/common.h>
 #include <ldns/error.h>
@@ -344,4 +344,4 @@ ldns_rdf	*ldns_rdf_clone(const ldns_rdf *rd);
  */
 int		ldns_rdf_compare(const ldns_rdf *rd1, const ldns_rdf *rd2);
 
-#endif	/* !_LDNS_RDATA_H */
+#endif	/* LDNS_RDATA_H */

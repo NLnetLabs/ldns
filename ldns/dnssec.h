@@ -8,8 +8,8 @@
  * A bunch of defines that are used in the DNS
  */
 
-#ifndef _LDNS_DNSSEC_H_
-#define _LDNS_DNSSEC_H_
+#ifndef LDNS_DNSSEC_H
+#define LDNS_DNSSEC_H
 
 #ifdef HAVE_SSL
 #include <openssl/ssl.h>
@@ -118,7 +118,6 @@ ldns_rr_list *ldns_sign_public(ldns_rr_list *rrset, ldns_key_list *keys);
 ldns_rdf *ldns_sign_public_dsa(ldns_buffer *to_sign, DSA *key);
 ldns_rdf *ldns_sign_public_rsamd5(ldns_buffer *to_sign, RSA *key);
 ldns_rdf *ldns_sign_public_rsasha1(ldns_buffer *to_sign, RSA *key);
-ldns_rdf *ldns_sign_public_dsa(ldns_buffer *to_sign, DSA *key);
 #endif /* HAVE_SSL */
 
 /**
@@ -154,4 +153,4 @@ ldns_zone *ldns_zone_sign(ldns_zone *zone, ldns_key_list *key_list);
  */
 ldns_status ldns_init_random(FILE *fd, uint16_t bytes);
 
-#endif /* _LDNS_DNSSEC_H_ */
+#endif /* LDNS_DNSSEC_H */

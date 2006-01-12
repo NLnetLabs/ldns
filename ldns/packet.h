@@ -10,8 +10,8 @@
  * See the file LICENSE for the license
  */
 
-#ifndef _LDNS_PACKET_H
-#define _LDNS_PACKET_H
+#ifndef LDNS_PACKET_H
+#define LDNS_PACKET_H
 
 #define LDNS_MAX_PACKETLEN         65535
 
@@ -326,4 +326,4 @@ ldns_rr * ldns_pkt_set_rr(ldns_pkt *p, ldns_rr *rr, uint16_t n);
 bool ldns_pkt_insert_rr(ldns_pkt *p, ldns_rr *rr, uint16_t n);
 	
 
-#endif  /* !_LDNS_PACKET_H */
+#endif  /* LDNS_PACKET_H */

@@ -10,8 +10,8 @@
  * 
  * See the file LICENSE for the license
  */
-#ifndef _LDNS_RR_FUNCTIONS_H
-#define _LDNS_RR_FUNCTIONS_H
+#ifndef LDNS_RR_FUNCTIONS_H
+#define LDNS_RR_FUNCTIONS_H
 
 
 /* set rdf's at a specific offset
@@ -238,4 +238,4 @@ bool ldns_rr_dnskey_set_key(ldns_rr *r, ldns_rdf *f);
  */
 uint16_t ldns_rr_dnskey_key_size(ldns_rr *key);
 
-#endif /* _LDNS_RR_FUNCTIONS_H */
+#endif /* LDNS_RR_FUNCTIONS_H */

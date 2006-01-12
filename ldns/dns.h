@@ -11,8 +11,8 @@
  * A bunch of defines that are used in the DNS.
  */
 
-#ifndef _LDNS_DNS_H_
-#define _LDNS_DNS_H_
+#ifndef LDNS_DNS_H
+#define LDNS_DNS_H
 
 #include <stdio.h>
 
@@ -64,4 +64,4 @@ extern ldns_lookup_table ldns_rcodes[];
 extern ldns_lookup_table ldns_opcodes[];
 extern ldns_lookup_table ldns_edns_flags[];
 
-#endif /* _LDNS_DNS_H_ */
+#endif /* LDNS_DNS_H */

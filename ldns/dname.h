@@ -10,8 +10,8 @@
  * See the file LICENSE for the license
  */
 
-#ifndef _LDNS_DNAME_H
-#define _LDNS_DNAME_H
+#ifndef LDNS_DNAME_H
+#define LDNS_DNAME_H
 
 #include <ldns/common.h>
 #include <ldns/rdata.h>
@@ -123,4 +123,4 @@ bool ldns_dname_str_absolute(const char *dname_str);
  */
 ldns_rdf * ldns_dname_label(const ldns_rdf *rdf, uint8_t labelpos);
 
-#endif	/* !_LDNS_DNAME_H */
+#endif	/* LDNS_DNAME_H */

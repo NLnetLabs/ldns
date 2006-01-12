@@ -10,8 +10,8 @@
  * See the file LICENSE for the license
  */
 
-#ifndef _LDNS_RESOLVER_H
-#define _LDNS_RESOLVER_H
+#ifndef LDNS_RESOLVER_H
+#define LDNS_RESOLVER_H
 
 #include <ldns/error.h>
 #include <ldns/common.h>
@@ -476,4 +476,4 @@ void ldns_resolver_nameservers_randomize(ldns_resolver *r);
  */
 ldns_resolver * ldns_update_resolver_new(const char *fqdn, const char *zone, ldns_rr_class clas, ldns_tsig_credentials *tsig_cred, ldns_rdf **zone_rdf);
 
-#endif  /* !_LDNS_RESOLVER_H */
+#endif  /* LDNS_RESOLVER_H */

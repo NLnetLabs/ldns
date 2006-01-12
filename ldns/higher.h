@@ -11,8 +11,8 @@
  * See the file LICENSE for the license
  */
 
-#ifndef _LDNS_HIGHER_H
-#define _LDNS_HIGHER_H
+#ifndef LDNS_HIGHER_H
+#define LDNS_HIGHER_H
 
 #include <ldns/resolver.h>
 #include <ldns/rdata.h>
@@ -111,4 +111,4 @@ ldns_status ldns_update_send_simple_addr(const char *fqdn, const char *zone,
  */
 void ldns_print_rr_rdf(FILE *fp, ldns_rr *r, int rdfnum, ...);
 
-#endif /* _LDNS_HIGHER_H */
+#endif /* LDNS_HIGHER_H */

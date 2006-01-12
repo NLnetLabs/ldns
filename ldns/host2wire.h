@@ -8,8 +8,8 @@
  * See the file LICENSE for the license
  */
 
-#ifndef _LDNS_HOST2WIRE_H
-#define _LDNS_HOST2WIRE_H
+#ifndef LDNS_HOST2WIRE_H
+#define LDNS_HOST2WIRE_H
 
 #include <ldns/common.h>
 #include <ldns/error.h>
@@ -111,4 +111,4 @@ ldns_status ldns_rr2wire(uint8_t **dest, const ldns_rr *rr, int, size_t *size);
  */
 ldns_status ldns_pkt2wire(uint8_t **dest, const ldns_pkt *p, size_t *size);
 
-#endif
+#endif /* LDNS_HOST2WIRE_H */

@@ -10,8 +10,8 @@
  * See the file LICENSE for the license
  */
 
-#ifndef _LDNS_ERROR_H
-#define _LDNS_ERROR_H
+#ifndef LDNS_ERROR_H
+#define LDNS_ERROR_H
 
 #include <ldns/util.h>
 
@@ -73,4 +73,4 @@ extern ldns_lookup_table ldns_error_str[];
  */
 const char *ldns_get_errorstr_by_id(ldns_status err);
 
-#endif /* _LDNS_ERROR_H */
+#endif /* LDNS_ERROR_H */

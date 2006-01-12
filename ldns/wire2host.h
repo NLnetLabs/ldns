@@ -9,8 +9,8 @@
  */
 
 
-#ifndef _LDNS_WIRE2HOST_H
-#define _LDNS_WIRE2HOST_H
+#ifndef LDNS_WIRE2HOST_H
+#define LDNS_WIRE2HOST_H
 
 #include <ldns/rdata.h>
 #include <ldns/common.h>
@@ -176,4 +176,4 @@ ldns_status ldns_wire2rdf(ldns_rr *rr, const uint8_t *wire, size_t max, size_t *
  */
 ldns_status ldns_wire2rr(ldns_rr **rr, const uint8_t *wire, size_t max, size_t *pos, ldns_pkt_section section);
 
-#endif /* _LDNS_WIRE2HOST_H */
+#endif /* LDNS_WIRE2HOST_H */

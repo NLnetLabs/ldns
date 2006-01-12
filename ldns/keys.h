@@ -11,8 +11,8 @@
  * See the file LICENSE for the license
  */
 
-#ifndef _LDNS_KEYS_H
-#define _LDNS_KEYS_H
+#ifndef LDNS_KEYS_H
+#define LDNS_KEYS_H
 
 #ifdef HAVE_SSL
 #include <openssl/ssl.h>
@@ -273,4 +273,4 @@ void ldns_key_deep_free(ldns_key *key);
  */
 void ldns_key_list_free(ldns_key_list *key_list);
 
-#endif /* _LDNS_KEYS_H */
+#endif /* LDNS_KEYS_H */
