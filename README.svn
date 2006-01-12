@@ -1,6 +1,6 @@
 
-The ldns subversion repository can found at:
-www.nlnetlabs.nl/ldns/svn/
+# The ldns subversion repository can found at:
+# www.nlnetlabs.nl/ldns/svn/
 
 # small list of commands to build all on a linux system
 # libtoolize and make allautoconf are needed for most other targets
