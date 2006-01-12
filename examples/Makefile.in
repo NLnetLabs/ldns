@@ -10,8 +10,8 @@ bindir = @bindir@
 mandir = @mandir@
 
 CC = @CC@
-CFLAGS = @CFLAGS@ -Wall
-CPPFLAGS = @CPPFLAGS@ 
+CFLAGS = @CFLAGS@ -Wall -I.
+CPPFLAGS = @CPPFLAGS@
 LDFLAGS = @LDFLAGS@
 LIBS = @LIBS@
 
@@ -90,7 +90,7 @@ ldns-threshold-update:	ldns-threshold-update.o
 
 ## implicit rule
 %.o: 	$(srcdir)/%.c
-	$(COMPILE) -c $(srcdir)/$<
+	$(COMPILE) -c $<
 
 lint:
 	for i in $(SOURCES); do \

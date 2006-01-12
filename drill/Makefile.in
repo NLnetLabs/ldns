@@ -11,7 +11,7 @@ mandir = @mandir@
 includedir = @INCLUDEDIR@
 
 CC = @CC@
-CFLAGS = @CFLAGS@
+CFLAGS = @CFLAGS@ -I.
 CPPFLAGS = @CPPFLAGS@ -D_POSIX_C_SOURCE=200112 -D_XOPEN_SOURCE=600
 LDFLAGS = @LDFLAGS@
 LIBS = @LIBS@
@@ -47,7 +47,7 @@ drill:	$(OBJ)
 
 ## implicit rule
 %.o:	$(srcdir)/%.c
-	$(COMPILE) -c $(srcdir)/$<
+	$(COMPILE) -c $<
 
 clean:
 	rm -f *.o
