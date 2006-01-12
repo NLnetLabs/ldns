@@ -698,6 +698,9 @@ ldns_resolver_deep_free(ldns_resolver *res)
 			ldns_pkt_free(res->_cur_axfr_pkt);
 		}
 		
+		if (res->_rtt) {
+			LDNS_FREE(res->_rtt);
+		}
 		LDNS_FREE(res);
 	}
 }

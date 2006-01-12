@@ -447,6 +447,7 @@ ldns_rr_new_frm_fp_l(FILE *fp, uint16_t *default_ttl, ldns_rdf **origin, ldns_rd
 
         /* read an entire line in from the file */
         if (ldns_fget_token_l(fp, line, LDNS_PARSE_SKIP_SPACE, LDNS_MAX_LINELEN, line_nr) == -1) {
+		LDNS_FREE(line);
                 return NULL;
         }
 
