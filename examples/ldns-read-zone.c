@@ -53,11 +53,9 @@ main(int argc, char **argv)
 	z = ldns_zone_new_frm_fp_l(fp, NULL, 0, LDNS_RR_CLASS_IN, &line_nr);
 
 	if (z) {
-/*
 		if (sort) {
 			ldns_zone_sort(z);
 		}
-*/
 		fprintf(stderr, "%d\n", (int) ldns_rr_list_rr_count(ldns_zone_rrs(z)) + 1);
 		ldns_zone_print(stdout, z);
 		ldns_zone_deep_free(z);
