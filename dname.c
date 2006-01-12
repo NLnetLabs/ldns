@@ -222,6 +222,8 @@ ldns_dname_compare(const ldns_rdf *dname1, const ldns_rdf *dname2)
 	size_t lc1, lc2;
 	ldns_rdf *label1, *label2;
 	size_t i;
+	int result;
+
 	/* see RFC4034 for this algorithm */
 	/* this algorithm assumes the names are normalized to case */
 
@@ -255,35 +257,49 @@ ldns_dname_compare(const ldns_rdf *dname1, const ldns_rdf *dname2)
 	lc1--;
 	lc2--;
 	while (true) {
-		label1 = ldns_dname_label(dname1, lc1);
+		label1 = ldns_dname_label(dname1, lc1); 
 		label2 = ldns_dname_label(dname2, lc2);
 		ldns_dname2canonical(label1);
 		ldns_dname2canonical(label2);
 
 		for (i = 1; i < ldns_rdf_size(label1); i++) {
 			if (i >= ldns_rdf_size(label2)) {
-				return 1;
+				result = 1;
+				goto freeresult;
 			}
 
 			if (ldns_rdf_data(label1)[i] < ldns_rdf_data(label2)[i]) {
-				return -1;
+				result = -1;
+				goto freeresult;
 			} else if (ldns_rdf_data(label1)[i] > ldns_rdf_data(label2)[i]) {
-				return 1;
+				result = 1;
+				goto freeresult;
 			}
 		}
 		if (i < ldns_rdf_size(label2) - 1) {
-			return -1;
+			result = -1;
+			goto freeresult;
 		}
 		if (lc1 == 0 && lc2 > 0) {
-			return -1;
+			result = -1;
+			goto freeresult;
 		} else if (lc1 > 0 && lc2 == 0) {
-			return 1;
+			result = 1;
+			goto freeresult;
 		} else if (lc1 == 0 && lc2 == 0) {
-			return 0;
+			result = 0;
+			goto freeresult;
 		}
 		lc1--;
 		lc2--;
+		ldns_rdf_deep_free(label1);
+		ldns_rdf_deep_free(label2);
 	}
+
+	freeresult:
+	ldns_rdf_deep_free(label1);
+	ldns_rdf_deep_free(label2);
+	return result;
 }
 
 /* nsec test: does prev <= middle < next 
