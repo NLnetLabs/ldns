@@ -218,7 +218,7 @@ ldns_rdf_free(ldns_rdf *rd)
 ldns_rdf *
 ldns_rdf_new_frm_str(ldns_rdf_type type, const char *str)
 {
-ldns_rdf *rdf = 0;
+	ldns_rdf *rdf = 0;
 	ldns_status status;
 
 	switch (type) {
