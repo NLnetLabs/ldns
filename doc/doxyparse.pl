@@ -240,11 +240,11 @@ foreach (keys %manpages) {
 		print MAN "\n.SH SEE ALSO\n\\fI";
 		print MAN join "\\fR, \\fI", @$also;
 		print MAN "\\fR.\nAnd ";
-		print MAN "\\fBperldoc Net::DNS\\fR, \\fBRFC1043\\fR,
+		print MAN "\\fBperldoc Net::DNS\\fR, \\fBRFC1034\\fR,
 \\fBRFC1035\\fR, \\fBRFC4033\\fR, \\fBRFC4034\\fR  and \\fBRFC4035\\fR.\n";
 	} else {
 		print MAN ".SH SEE ALSO
-\\fBperldoc Net::DNS\\fR, \\fBRFC1043\\fR,
+\\fBperldoc Net::DNS\\fR, \\fBRFC1034\\fR,
 \\fBRFC1035\\fR, \\fBRFC4033\\fR, \\fBRFC4034\\fR and \\fBRFC4035\\fR.\n";
 	}
 	
