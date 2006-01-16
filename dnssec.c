@@ -793,11 +793,12 @@ ldns_sign_public(ldns_rr_list *rrset, ldns_key_list *keys)
 			orig_ttl = ldns_rr_ttl(ldns_rr_list_rr(rrset, 0));
 
 			/* set the ttl from the priv key on the rrset */
+			/*
 			for (i = 0; i < ldns_rr_list_rr_count(rrset); i++) {
 				ldns_rr_set_ttl(
 						ldns_rr_list_rr(rrset_clone, i), orig_ttl);
 			}
-
+			*/
 			ldns_rr_set_ttl(current_sig, orig_ttl);
 			ldns_rr_set_owner(current_sig, 
 					ldns_rdf_clone(ldns_rr_owner(ldns_rr_list_rr(rrset_clone, 0))));
