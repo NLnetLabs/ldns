@@ -798,6 +798,7 @@ ldns_sign_public(ldns_rr_list *rrset, ldns_key_list *keys)
 						ldns_rr_list_rr(rrset_clone, i), orig_ttl);
 			}
 
+			ldns_rr_set_ttl(current_sig, orig_ttl);
 			ldns_rr_set_owner(current_sig, 
 					ldns_rdf_clone(ldns_rr_owner(ldns_rr_list_rr(rrset_clone, 0))));
 
@@ -1243,6 +1244,7 @@ ldns_zone_sign(ldns_zone *zone, ldns_key_list *key_list)
 					nsec = ldns_create_nsec(cur_dname, 
 								next_dname,
 								orig_zone_rrs);
+					ldns_rr_set_ttl(nsec, ldns_rdf2native_int32(ldns_rr_rdf(ldns_zone_soa(zone), 6)));
 					ldns_rr_list_push_rr(signed_zone_rrs, nsec);
 					/*start_dname = next_dname;*/
 					cur_dname = next_dname;
@@ -1255,6 +1257,7 @@ ldns_zone_sign(ldns_zone *zone, ldns_key_list *key_list)
 				orig_zone_rrs);
 	ldns_rr_list_push_rr(signed_zone_rrs, nsec);
 	ldns_rr_list_free(orig_zone_rrs);
+	ldns_rr_set_ttl(nsec, ldns_rdf2native_int32(ldns_rr_rdf(ldns_zone_soa(zone), 6)));
 
 	/* Sign all rrsets in the zone */
 	cur_rrset = ldns_rr_list_pop_rrset(signed_zone_rrs);
