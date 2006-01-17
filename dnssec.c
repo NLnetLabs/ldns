@@ -1229,7 +1229,6 @@ ldns_zone_sign(ldns_zone *zone, ldns_key_list *key_list)
 	
 	/* add nsecs */
 	for (i = 0; i < ldns_rr_list_rr_count(orig_zone_rrs); i++) {
-		ldns_rr_list_push_rr(signed_zone_rrs, ldns_rr_list_rr(orig_zone_rrs, i));
 		if (!start_dname) {
 			/*start_dname = ldns_rr_owner(ldns_zone_soa(zone));*/
 			start_dname = ldns_rr_owner(ldns_rr_list_rr(orig_zone_rrs, i));
@@ -1252,6 +1251,7 @@ ldns_zone_sign(ldns_zone *zone, ldns_key_list *key_list)
 				}
 			}
 		}
+		ldns_rr_list_push_rr(signed_zone_rrs, ldns_rr_list_rr(orig_zone_rrs, i));
 	}
 	nsec = ldns_create_nsec(cur_dname, 
 				start_dname,

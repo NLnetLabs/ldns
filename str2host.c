@@ -259,7 +259,7 @@ ldns_str2rdf_aaaa(ldns_rdf **rd, const char *str)
 		return LDNS_STATUS_INVALID_IP6;
 	} else {
 		*rd = ldns_rdf_new_frm_data(
-			LDNS_RDF_TYPE_AAAA, sizeof(address), &address);
+			LDNS_RDF_TYPE_AAAA, sizeof(address) - 1, &address);
 	}
 	return LDNS_STATUS_OK;
 }
