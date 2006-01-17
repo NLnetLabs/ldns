@@ -60,7 +60,8 @@ enum ldns_enum_status
         LDNS_STATUS_WIRE_INCOMPLETE_ANSWER,
         LDNS_STATUS_WIRE_INCOMPLETE_AUTHORITY,
         LDNS_STATUS_WIRE_INCOMPLETE_ADDITIONAL,
-        LDNS_STATUS_NO_DATA
+        LDNS_STATUS_NO_DATA,
+        LDNS_STATUS_CERT_BAD_ALGORITHM
 };
 typedef enum ldns_enum_status ldns_status;
 

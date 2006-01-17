@@ -550,20 +550,25 @@ ldns_str2rdf_cert_alg(ldns_rdf **rd, const char *str)
 {
 	ldns_lookup_table *lt;
 	ldns_status st;
-
+	uint8_t id = 0;
 	lt = ldns_lookup_by_name(ldns_cert_algorithms, str);
 	st = LDNS_STATUS_OK;
 
 	if (lt) {
+		id = lt->id;
 		/* it was given as a integer */
 		*rd = ldns_rdf_new_frm_data(
-			LDNS_RDF_TYPE_INT8, sizeof(uint8_t), &lt->id);
+			LDNS_RDF_TYPE_INT8, sizeof(uint8_t), &id);
 		if (!*rd) {
 			st = LDNS_STATUS_ERR;
 		}
 	} else {
 		/* try as-is (a number) */
 		st = ldns_str2rdf_int8(rd, str);
+	}
+	if (ldns_rdf2native_int8(*rd) == 0) {
+		fprintf(stderr, "Warning: Bad CERT algorithm type: %s ignoring RR\n", str);
+		st = LDNS_STATUS_CERT_BAD_ALGORITHM;
 	}
 	return st;
 }

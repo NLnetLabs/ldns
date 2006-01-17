@@ -390,8 +390,17 @@ ldns_rr_new_frm_str(const char *str, uint16_t default_ttl, ldns_rdf *origin, ldn
 									rd);
 							break;
 						}
-						ldns_rr_push_rdf(new, r);
-
+						if (r) {
+							ldns_rr_push_rdf(new, r);
+						} else {
+							LDNS_FREE(rd);
+							LDNS_FREE(b64);
+							ldns_buffer_free(rd_buf);
+							ldns_buffer_free(rr_buf);
+							LDNS_FREE(rdata);
+							ldns_rr_free(new);
+							return NULL;
+						}
 						
 					}
 					if (quoted) {
