@@ -30,7 +30,9 @@ uint16_t
 ldns_calc_keytag(ldns_rr *key)
 {
 	unsigned int i;
-	uint32_t ac;
+	uint32_t ac32;
+	uint16_t ac16;
+	
 	ldns_buffer *keybuf;
 	size_t keysize;
 
@@ -38,7 +40,7 @@ ldns_calc_keytag(ldns_rr *key)
 		return 0;
 	}
 
-	ac = 0;
+	ac32 = 0;
 	if (ldns_rr_get_type(key) != LDNS_RR_TYPE_DNSKEY) {
 		return 0;
 	}
@@ -55,19 +57,19 @@ ldns_calc_keytag(ldns_rr *key)
 	/* look at the algorithm field, copied from 2535bis */
 	if (ldns_rdf2native_int8(ldns_rr_rdf(key, 2)) == LDNS_RSAMD5) {
 		if (keysize > 4) {
-			ldns_buffer_read_at(keybuf, keysize - 3, &ac, 2);
+			ldns_buffer_read_at(keybuf, keysize - 3, &ac16, 2);
 		}
 		ldns_buffer_free(keybuf);
-		ac = ntohs(ac);
-	        return (uint16_t) ac;
+		ac32 = ntohs(ac16);
+	        return (uint16_t) ac16;
 	} else {
 		for (i = 0; (size_t)i < keysize; ++i) {
-			ac += (i & 1) ? *ldns_buffer_at(keybuf, i) : 
+			ac32 += (i & 1) ? *ldns_buffer_at(keybuf, i) : 
 				*ldns_buffer_at(keybuf, i) << 8;
 		}
 		ldns_buffer_free(keybuf);
-		ac += (ac >> 16) & 0xFFFF;
-		return (uint16_t) (ac & 0xFFFF);
+		ac32 += (ac32 >> 16) & 0xFFFF;
+		return (uint16_t) (ac32 & 0xFFFF);
 	}
 }
 

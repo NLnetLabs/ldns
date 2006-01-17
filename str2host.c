@@ -555,7 +555,7 @@ ldns_str2rdf_cert_alg(ldns_rdf **rd, const char *str)
 	st = LDNS_STATUS_OK;
 
 	if (lt) {
-		id = lt->id;
+		id = (uint8_t) lt->id;
 		/* it was given as a integer */
 		*rd = ldns_rdf_new_frm_data(
 			LDNS_RDF_TYPE_INT8, sizeof(uint8_t), &id);
