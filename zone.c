@@ -196,10 +196,6 @@ ldns_zone_new_frm_fp_l(FILE *fp, ldns_rdf *origin, uint16_t ttl, ldns_rr_class c
 				continue;
 			}
 			
-			if (ldns_rr_get_type(rr) == LDNS_RR_TYPE_CERT) {
-				ldns_rr_print(stdout, rr);
-			}
-
 			/* a normal RR - as sofar the DNS is normal */
 			last_rr = rr;
 			if (!ldns_zone_push_rr(newzone, rr)) {

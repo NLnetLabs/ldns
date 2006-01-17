@@ -83,10 +83,10 @@ main(int argc, char *argv[])
 			 */
 			memset(&tm, 0, sizeof(tm));
 
-			if (!strptime(optarg, DATE_FORMAT,  &tm)) {
+			if (strptime(optarg, DATE_FORMAT,  &tm) != NULL) {
 			        c = c;
 				expiration = (uint32_t) mktime_from_utc(&tm);
-			} else if (!strptime(optarg, SHORT_DATE_FORMAT, &tm)) {
+			} else if (strptime(optarg, SHORT_DATE_FORMAT, &tm) != NULL) {
 				expiration = (uint32_t) mktime_from_utc(&tm);
 			} else {
 				expiration = (uint32_t) atol(optarg);
@@ -99,9 +99,9 @@ main(int argc, char *argv[])
 		case 'i':
 			memset(&tm, 0, sizeof(tm));
 
-			if (!strptime(optarg, DATE_FORMAT, &tm)) {
+			if (strptime(optarg, DATE_FORMAT, &tm) != NULL) {
 				inception = (uint32_t) mktime_from_utc(&tm);
-			} else if (!strptime(optarg, SHORT_DATE_FORMAT, &tm)) {
+			} else if (strptime(optarg, SHORT_DATE_FORMAT, &tm) != NULL) {
 				inception = (uint32_t) mktime_from_utc(&tm);
 			} else {
 				inception = (uint32_t) atol(optarg);

@@ -60,7 +60,7 @@ ldns_calc_keytag(ldns_rr *key)
 			ldns_buffer_read_at(keybuf, keysize - 3, &ac16, 2);
 		}
 		ldns_buffer_free(keybuf);
-		ac32 = ntohs(ac16);
+		ac16 = ntohs(ac16);
 	        return (uint16_t) ac16;
 	} else {
 		for (i = 0; (size_t)i < keysize; ++i) {
