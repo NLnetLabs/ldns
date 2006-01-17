@@ -1200,7 +1200,6 @@ ldns_zone_sign(ldns_zone *zone, ldns_key_list *key_list)
 	ldns_rr *ckey;
 	uint16_t i;
 	ldns_rr_type cur_rrset_type;
-	ldns_status result;
 	
 	signed_zone = ldns_zone_new();
 	
@@ -1280,6 +1279,10 @@ ldns_zone_sign(ldns_zone *zone, ldns_key_list *key_list)
 			cur_rrsigs = ldns_sign_public(cur_rrset, key_list);
 
 			/* TODO: make optional, replace exit call */
+			/* if not optional it should be left out completely
+			   (for it is possible to generate bad signarures, by
+			   specifying a future inception date */
+			/*
 			result = ldns_verify(cur_rrset, cur_rrsigs, pubkeys, NULL);
 			if (result != LDNS_STATUS_OK) {
 				dprintf("%s", "Cannot verify own sig:\n");
@@ -1288,7 +1291,8 @@ ldns_zone_sign(ldns_zone *zone, ldns_key_list *key_list)
 				ERR_print_errors_fp(stdout);
 				exit(result);
 			}
-
+			*/
+			
 			ldns_zone_push_rr_list(signed_zone, cur_rrset);
 			ldns_zone_push_rr_list(signed_zone, cur_rrsigs);
 			ldns_rr_list_free(cur_rrsigs);
