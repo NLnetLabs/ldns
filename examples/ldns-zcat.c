@@ -31,6 +31,7 @@ usage(FILE *f, char *progname)
 		fprintf(f, "  The new zone should be equal to the original zone (before splitting)\n");
 		fprintf(f, "OPTIONS:\n");
 		fprintf(f, "-o ORIGIN\tUse this as initial origin, for zones starting with @\n");
+		fprintf(f, "-v\t\tShow the version number and exit\n");
 }
 
 int
@@ -53,7 +54,7 @@ main(int argc, char **argv)
 	progname = strdup(argv[0]);
 	origin = NULL;
 	
-	while ((c = getopt(argc, argv, "n:o:")) != -1) {
+	while ((c = getopt(argc, argv, "n:o:v")) != -1) {
 		switch(c) {
 			case 'o':
 				origin = ldns_dname_new_frm_str(strdup(optarg));
@@ -61,6 +62,10 @@ main(int argc, char **argv)
 					fprintf(stderr, "Cannot convert the origin %s to a domainname\n", optarg);
 					exit(EXIT_FAILURE);
 				}
+				break;
+			case 'v':
+				printf("zone file concatenator version %s (ldns version %s)\n", LDNS_VERSION, ldns_version());
+				exit(EXIT_SUCCESS);
 				break;
 			default:
 				fprintf(stderr, "Unrecognized option\n");

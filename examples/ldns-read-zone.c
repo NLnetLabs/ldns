@@ -21,11 +21,15 @@ main(int argc, char **argv)
 
 	progname = strdup(argv[0]);
 
-        while ((c = getopt(argc, argv, "z")) != -1) {
+        while ((c = getopt(argc, argv, "zv")) != -1) {
                 switch(c) {
                         case 'z':
                                 sort = true;
                                 break;
+			case 'v':
+				printf("DNSSEC key generator version %s (ldns version %s)\n", LDNS_VERSION, ldns_version());
+				exit(EXIT_SUCCESS);
+				break;
 		}
 	}
 
@@ -33,10 +37,11 @@ main(int argc, char **argv)
 	argv += optind;
 
 	if (argc < 1) {
-		printf("Usage: %s [-z] <zonefile>\n", progname);
+		printf("Usage: %s [-z] [-v] <zonefile>\n", progname);
 		printf("\tReads the zonefile and prints it.\n");
 		printf("\tThe RR count of the zone is printed to stderr.\n");
 		printf("\tIf -z is given the zone is sorted.\n");
+		printf("\t-v shows the version and exits\n");
 		exit(EXIT_FAILURE);
 	}
 	

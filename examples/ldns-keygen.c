@@ -13,13 +13,14 @@
 
 void
 usage(FILE *fp, char *prog) {
-	fprintf(fp, "%s [-D|-R] [-b bits] [-r /dev/random] domain\n", prog);
+	fprintf(fp, "%s [-D|-R] [-b bits] [-r /dev/random] [-v] domain\n", prog);
 	fprintf(fp, "  generate a new key pair for domain\n");
 	fprintf(fp, "  -D\tgenerate a DSA key\n");
 	fprintf(fp, "  -R\tgenerate a RSA key\n");
 	fprintf(fp, "  -k\tset the flags to 257; key signing key\n");
 	fprintf(fp, "  -b <bits>\tspecify the keylength\n");
 	fprintf(fp, "  -r <random>\tspecify a random device (defaults to /dev/random)\n");
+	fprintf(fp, "  -v\t\tshow the version and exit\n");
 	fprintf(fp, "  The following files will be created:\n");
 	fprintf(fp, "    K<name>+<alg>+<id>.key\tPublic key in RR format\n");
 	fprintf(fp, "    K<name>+<alg>+<id>.private\tPrivate key in key format\n");
@@ -54,7 +55,7 @@ main(int argc, char *argv[])
 	random = NULL;
 	ksk = false; /* don't create a ksk per default */
 	
-	while ((c = getopt(argc, argv, "DRkb:r:")) != -1) {
+	while ((c = getopt(argc, argv, "DRkb:r:v")) != -1) {
 		switch (c) {
 		case 'D':
 			if (algorithm != 0) {
@@ -86,6 +87,10 @@ main(int argc, char *argv[])
 				fprintf(stderr, "Cannot open random file: %s\n", optarg);
 				exit(EXIT_FAILURE);
 			}
+		case 'v':
+			printf("DNSSEC key generator version %s (ldns version %s)\n", LDNS_VERSION, ldns_version());
+			exit(EXIT_SUCCESS);
+			break;
 		default:
 			usage(stderr, prog);
 			exit(EXIT_FAILURE);

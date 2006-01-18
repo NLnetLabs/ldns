@@ -1897,6 +1897,7 @@ usage(FILE *output)
 	fprintf(output, "\t-v <level>:\tbe more verbose\n");
 	fprintf(output, "\t-notip <file>:\tDump pcap packets that were not recognized as\n\t\t\tIP packets to file\n");
 	fprintf(output, "\t-baddns <file>:\tDump mangled dns packets to file\n");
+	fprintf(output, "\t-version:\tShow the version and exit\n");
 	fprintf(output, "\n");
 	fprintf(output, "The filename '-' stands for stdin or stdout, so you can use \"-of -\" if you want to pipe the output to another process\n");
 	fprintf(output, "\n");
@@ -2640,6 +2641,9 @@ int main(int argc, char *argv[]) {
 			if (i < argc) {
 				verbosity = atoi(argv[i]);
 			}
+		} else if (strcmp("-version", argv[i]) == 0) {
+			printf("dns packet analyzer, version %s (ldns version %s)\n", LDNS_VERSION, ldns_version());
+			goto exit;
 		} else {
 			if (inputfile) {
 				fprintf(stderr, "You can only specify 1 input file\n");

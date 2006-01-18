@@ -40,6 +40,7 @@ usage(FILE *f, char *progname)
 		fprintf(f, "  -n NUMBER\tsplit after this many RRs\n");
 		fprintf(f, "  -o ORIGIN\tuse this as initial origin, for zones starting with @\n");
 		fprintf(f, "  -z\t\tsort the zone prior to splitting. The current ldns zone\n");
+		fprintf(f, "  -v\t\tshow version number and exit\n");
 		fprintf(f, "  \t\timplementation makes this unuseable for large zones.\n");
 }
 
@@ -129,7 +130,7 @@ main(int argc, char **argv)
 	last_rrset = ldns_rr_list_new();
 	sort = false;
 
-	while ((c = getopt(argc, argv, "n:o:z")) != -1) {
+	while ((c = getopt(argc, argv, "n:o:zv")) != -1) {
 		switch(c) {
 			case 'n':
 				split = (size_t)atoi(optarg);
@@ -144,6 +145,10 @@ main(int argc, char **argv)
 					fprintf(stderr, "Cannot convert the origin %s to a domainname\n", optarg);
 					exit(EXIT_FAILURE);
 				}
+				break;
+			case 'v':
+				printf("zone file splitter version %s (ldns version %s)\n", LDNS_VERSION, ldns_version());
+				exit(EXIT_SUCCESS);
 				break;
 			case 'z':
 				sort = true;

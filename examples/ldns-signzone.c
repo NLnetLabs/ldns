@@ -24,6 +24,7 @@ usage(FILE *fp, const char *prog) {
 	fprintf(fp, "  -f <file>\toutput zone to file (default <name>.signed)\n");
 	fprintf(fp, "  -i <date>\tinception date\n");
 	fprintf(fp, "  -o <domain>\torigin for the zone\n");
+	fprintf(fp, "  -v\t\tprint version and exit\n");
 	fprintf(fp, "  keys must be specified by their base name: K<name>+<alg>+<id>\n");
 	fprintf(fp, "  both a .key and .private file must present\n");
 }
@@ -74,7 +75,7 @@ main(int argc, char *argv[])
 	inception = 0;
 	expiration = 0;
 	
-	while ((c = getopt(argc, argv, "e:f:i:o:")) != -1) {
+	while ((c = getopt(argc, argv, "e:f:i:o:v")) != -1) {
 		switch (c) {
 		case 'e':
 			/* try to parse YYYYMMDD first,
@@ -114,6 +115,10 @@ main(int argc, char *argv[])
 				exit(EXIT_FAILURE);
 			}
 			
+			break;
+		case 'v':
+			printf("zone signer version %s (ldns version %s)\n", LDNS_VERSION, ldns_version());
+			exit(EXIT_SUCCESS);
 			break;
 		default:
 			usage(stderr, prog);
