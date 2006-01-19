@@ -18,6 +18,7 @@ usage(FILE *fp, char *prog) {
 	fprintf(fp, "OPTIONS:\n");
 	fprintf(fp, "-s <name>\t\tStart from this name\n");
 	fprintf(fp, "-v <verbosity>\t\tVerbosity level [1-5]\n");
+	fprintf(fp, "-version\tShow version and exit\n");
 	fprintf(fp, "@<nameserver>\t\tUse this nameserver\n");
 	return 0;
 }
@@ -142,6 +143,9 @@ main(int argc, char *argv[])
 					exit(1);
 				}
 				i++;
+			} else if (strcmp("-version", argv[i]) == 0) {
+				printf("dns zone walker, version %s (ldns version %s)\n", LDNS_VERSION, ldns_version());
+				goto exit;
 			} else {
                         	if (argv[i][0] == '@') {
 					if (strlen(argv[i]) == 1) {
