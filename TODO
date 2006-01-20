@@ -2,17 +2,15 @@ Current TODO list
 
 1.1.0:
 ----
-        o bgsend()
         o server stuff yes/no
         o documentation
-        o sorting/sorting ord
+        o sorting/sorting ord - removed ord - need to check current sort
+          order
         o secure tracing drill
-        o openSSL  - make optional - for portability
-        o IP6 - make optional - for portability
 	o API cleanup: add missing consts in function arguments
         o vim syntax
         o walker 
-        o zone.c; make it better/faster
+        o zone.c; make it better/faster??
 
 Post 1.0 Stuff:
 ---------------
@@ -23,7 +21,6 @@ Post 1.0 Stuff:
         o refactor ldns_verify_rrsig_keylist and
           ldns_verify_rrsig (fold in TSIG stuff or leave it out?)
         o Different digest for DS (spec currently specifies SHA-1)
-        o Make it possible to build without OpenSSL
 
         Minor:
         ------

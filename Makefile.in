@@ -20,7 +20,7 @@ endif
 CC 		= @CC@
 CPPFLAGS	= @CPPFLAGS@ @DEFS@ -I. -I$(srcdir)
 CFLAGS 		= @CFLAGS@ 
-LDFLAGS		= @LDFLAGS@	-lcrypto
+LDFLAGS		= @LDFLAGS@
 LIBS 		= @LIBS@
 LIBOBJS		= @LIBOBJS@
 DATE		= $(shell date +%Y%m%d)
