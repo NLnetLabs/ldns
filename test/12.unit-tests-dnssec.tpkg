@@ -1,0 +1,555 @@
+#!/bin/sh
+# This is a shell archive (produced by GNU sharutils 4.2.1).
+# To extract the files from this archive, save it to some FILE, remove
+# everything before the `!/bin/sh' line above, then type `sh FILE'.
+#
+# Made on 2006-01-20 12:14 CET by <jeltejan@eliza>.
+# Source directory was `/home/jeltejan/repos/libdns/test/12.unit-tests-dnssec.dir'.
+#
+# Existing files will *not* be overwritten unless `-c' is specified.
+#
+# This shar contains:
+# length mode       name
+# ------ ---------- ------------------------------------------
+#   2867 -rw------- 12.unit-tests-dnssec.c
+#   1664 -rw------- 12.unit-tests-dnssec.configure.ac
+#    415 -rw------- 12.unit-tests-dnssec.dsc
+#     99 -rw------- 12.unit-tests-dnssec.help
+#    889 -rw------- 12.unit-tests-dnssec.Makefile
+#    886 -rw------- 12.unit-tests-dnssec.Makefile.in
+#   1019 -rw------- 12.unit-tests-dnssec.pre
+#    428 -rw------- 12.unit-tests-dnssec.test
+#
+save_IFS="${IFS}"
+IFS="${IFS}:"
+gettext_dir=FAILED
+locale_dir=FAILED
+first_param="$1"
+for dir in $PATH
+do
+  if test "$gettext_dir" = FAILED && test -f $dir/gettext \
+     && ($dir/gettext --version >/dev/null 2>&1)
+  then
+    set `$dir/gettext --version 2>&1`
+    if test "$3" = GNU
+    then
+      gettext_dir=$dir
+    fi
+  fi
+  if test "$locale_dir" = FAILED && test -f $dir/shar \
+     && ($dir/shar --print-text-domain-dir >/dev/null 2>&1)
+  then
+    locale_dir=`$dir/shar --print-text-domain-dir`
+  fi
+done
+IFS="$save_IFS"
+if test "$locale_dir" = FAILED || test "$gettext_dir" = FAILED
+then
+  echo=echo
+else
+  TEXTDOMAINDIR=$locale_dir
+  export TEXTDOMAINDIR
+  TEXTDOMAIN=sharutils
+  export TEXTDOMAIN
+  echo="$gettext_dir/gettext -s"
+fi
+if touch -am -t 200112312359.59 $$.touch >/dev/null 2>&1 && test ! -f 200112312359.59 -a -f $$.touch; then
+  shar_touch='touch -am -t $1$2$3$4$5$6.$7 "$8"'
+elif touch -am 123123592001.59 $$.touch >/dev/null 2>&1 && test ! -f 123123592001.59 -a ! -f 123123592001.5 -a -f $$.touch; then
+  shar_touch='touch -am $3$4$5$6$1$2.$7 "$8"'
+elif touch -am 1231235901 $$.touch >/dev/null 2>&1 && test ! -f 1231235901 -a -f $$.touch; then
+  shar_touch='touch -am $3$4$5$6$2 "$8"'
+else
+  shar_touch=:
+  echo
+  $echo 'WARNING: not restoring timestamps.  Consider getting and'
+  $echo "installing GNU \`touch', distributed in GNU File Utilities..."
+  echo
+fi
+rm -f 200112312359.59 123123592001.59 123123592001.5 1231235901 $$.touch
+#
+if mkdir _sh12768; then
+  $echo 'x -' 'creating lock directory'
+else
+  $echo 'failed to create lock directory'
+  exit 1
+fi
+# ============= 12.unit-tests-dnssec.c ==============
+if test -f '12.unit-tests-dnssec.c' && test "$first_param" != -c; then
+  $echo 'x -' SKIPPING '12.unit-tests-dnssec.c' '(file already exists)'
+else
+  $echo 'x -' extracting '12.unit-tests-dnssec.c' '(binary)'
+  sed 's/^X//' << 'SHAR_EOF' | uudecode &&
+begin 600 12.unit-tests-dnssec.c
+M+RH*("HO"@HC:6YC;'5D92`B8V]N9FEG+F@B"@HC:6YC;'5D92`\;&1N<R]D
+M;G,N:#X*"@IC:&5C:U]L9&YS7V-A;&-?:V5Y=&%G7W!A<G0H8V]N<W0@8VAA
+M<B`J:V5Y7W-T<BP@=6EN=#$V7W0@97AP96-T961?:V5Y=&%G*0I["@EU:6YT
+M,39?="!K97ET86<["@EL9&YS7W-T871U<R!R97-U;'0@/2!,1$Y37U-40515
+M4U]/2SL*"0H);&1N<U]R<B`J:V5Y7W)R(#T@3E5,3#L*"0H):V5Y7W)R(#T@
+M;&1N<U]R<E]N97=?9G)M7W-T<BAK97E?<W1R+"`P+"!.54Q,+"!.54Q,*3L*
+M"6EF("@A:V5Y7W)R*2!["@D)<')I;G1F*")+97D@8W)E871I;VX@9F%I;&5D
+M+B(I.PH)"7!R:6YT9B@B2V5Y.B`E<UQN(BP@:V5Y7W-T<BD["@D)<F5S=6QT
+M(#T@3$1.4U]35$%455-?15)2.PH)?2!E;'-E('L*"0EK97ET86<@/2!L9&YS
+M7V-A;&-?:V5Y=&%G*&ME>5]R<BD["@D):68@*&ME>71A9R`]/2!E>'!E8W1E
+M9%]K97ET86<I('L*"0D)<')I;G1F*")+97ET86<@,2!C;W)R96-T+B(I.PH)
+M"7T@96QS92!["@D)"7!R:6YT9B@B0F%D(&ME>71A9RP@<VAO=6QD(&)E("5U
+M("AG;W0@)74I9F]R.EQN(BP@97AP96-T961?:V5Y=&%G+"!K97ET86<I.PH)
+M"0EP<FEN=&8H(B5S7&XB+"!K97E?<W1R*3L*"0D)<F5S=6QT(#T@3$1.4U]3
+M5$%455-?15)2.PH)"7T*"0EL9&YS7W)R7V9R964H:V5Y7W)R*3L*"7T*"0H)
+M<F5T=7)N(')E<W5L=#L*?0H*8VAE8VM?;&1N<U]C86QC7VME>71A9R@I(`I[
+M"@EC;VYS="!C:&%R("IK97E?<W1R.PH)=6EN=#$V7W0@97AP96-T961?:V5Y
+M=&%G.PH*"6QD;G-?<W1A='5S(')E<W5L="`]($Q$3E-?4U1!5%537T]+.PH)
+M"@EK97E?<W1R(#T@(FIE;'1E+FYL;F5T;&%B<RYN;"X@24X@1$Y32T59(#(U
+M-B`S(#4@05%/<F%,9GIA<DA!;$9S:U9'=T%';E@P3%)J;&-/:4\V>357331+
+M>BM1=EHY=E@R.&@T;$]V;F8@9#5T:WAN6FTW15),5$%*;T9Q*S%W+W=L-U98
+M<S))<WHW-4)36C=,46@S3U0R>%AN4S965#5:>%@@:V\O54-/9&]':4M:6C8S
+M:DA:,&I.4U1#67DX*S5R9G9W4D0X<S-G1W5%<G`U2V-(9S-6.%9,54L@4T1.
+M3D51/3TB.PH)97AP96-T961?:V5Y=&%G(#T@-#(X-C`["@EI9B`H8VAE8VM?
+M;&1N<U]C86QC7VME>71A9U]P87)T*&ME>5]S='(L(&5X<&5C=&5D7VME>71A
+M9RD@(3T@3$1.4U]35$%455-?3TLI('L*"0ER97-U;'0@/2!,1$Y37U-40515
+M4U]%4E(["@E]"@D*"6ME>5]S='(@/2`B<W5B+FIE;'1E+FYL;F5T;&%B<RYN
+M;"X@24X@1$Y32T59(#(U-B`S(#,@0TDT0W5J6FIR=S1H:G!!4#AZ37EN=$M%
+M44I"5CDV33!/:%HU2$-E6C5+-#9E1TA%2E5'-E)G;%$@33)/5EE9+W%2<4%,
+M1',O4'1Z:RM(9&(P;U8S4D8P*V95034K4C5G6#%A=F=B:'-%4&AV24EN64(@
+M3U!S3F%85TM-2F%R<$@R8CAX2&M&-%A15#149'%!9CAM85%C2VLO4G5J94M2
+M-E9N6&)A9%I53DL@*U-:<TY74V)A1'5#2&)4,')7<$\Y;E9B9F]156Y.5W!K
+M,6AM3V@T;TEL1F1"=$)44&-K,TY$*V<@9%%R:C5E2F-3>#!Z=W%J2D)*24,K
+M2GA7=#)R1G1)17IT9DAX;6UJ8F5D9$,R5$PT,4\O04902DT@=E5H.#5D;F0S
+M8C%G6E)C-55V03=:,DDR*UI$,39&:DYR;75.:TY%:FYL970W;VE*04,P9F5Z
+M>E@@<UI90VIW2&9%>65A4S)96$=Z>EI#95%P34)Z94)2:#-E<3AP5FXX<C1!
+M85)C3G0Q9VY88E9D:F0@5%%V<#5D94E';V%!2$UL,WEY-&XP46U89U)S8U-)
+M<WEF2SE';C=.<FQ'4FQ#>',Y<F96=V-70T0@3FHR375)0V]M6$=)55E*5RMC
+M:S!2:&LY4W$V33-O;FA3:DE463DO>2]3<'=";F$V4TQP1F1P16T@8DQ92T53
+M-&=3:%1X:G1M:$I3>71(,'!O;W$Y<7A*.&MY2"M)(CL*"65X<&5C=&5D7VME
+M>71A9R`](#$S,#(V.PH):68@*&-H96-K7VQD;G-?8V%L8U]K97ET86=?<&%R
+M="AK97E?<W1R+"!E>'!E8W1E9%]K97ET86<I("$]($Q$3E-?4U1!5%537T]+
+M*2!["@D)<F5S=6QT(#T@3$1.4U]35$%455-?15)2.PH)?0H)"@EK97E?<W1R
+M(#T@(G-U8BYS=6(N:F5L=&4N;FQN971L86)S+FYL+B!)3B!$3E-+15D@,C4V
+M(#,@,2!!45!)43)33F-L37%D2'4X869X5F1B2592+S(P=FQ$<#):8T5+-7A&
+M>$1+5E1U;G5Q.$),05!R-"!&=FYB0E$T06M.66-H96-.8VU1=DMI+VI*-WAW
+M5W%Y<4U!53%L*V0V;5I55$8V<T,P=6<Y5U$O42!Z1SDS;D]"5DQW1V)M1U14
+M6&AR12]P4FA3+V\Q-D%B,C!Z<V)C9$%B-U!#:%%84V=">4I+=E0X5R!8=6U*
+M,T9D3TQH=VUQ44%N1G5-;EI#-S$O2$%C-%=J02LR>D<Q4TY8;F)4;D,X42\T
+M+T9G+WEG:"`R1VI4.4-J,&AH1E(K03)(9BM26'9K2W-$=VAD>%=W2F97*TEH
+M04A5='=.2WED<T5V6DTU55(R22!04WET9GI:+V972T5X-4)L>$Q:6DY+>F]E
+M0G1&2&I(4V5:535,8C5$1FY12G@U;&-S9#5-4#)E."`K<'!J5FQG,R(["@EE
+M>'!E8W1E9%]K97ET86<@/2`R,C$P-#L*"6EF("AC:&5C:U]L9&YS7V-A;&-?
+M:V5Y=&%G7W!A<G0H:V5Y7W-T<BP@97AP96-T961?:V5Y=&%G*2`A/2!,1$Y3
+M7U-405154U]/2RD@>PH)"7)E<W5L="`]($Q$3E-?4U1!5%537T524CL*"7T*
+M"B\J('1E;7!L871E(&9O<B!A9&1I;F<@97AT<F$@:V5Y<PH):V5Y7W-T<B`]
+M("(B.PH)97AP96-T961?:V5Y=&%G(#T@.PH):68@*&-H96-K7VQD;G-?8V%L
+M8U]K97ET86=?<&%R="AK97E?<W1R+"!E>'!E8W1E9%]K97ET86<I("$]($Q$
+M3E-?4U1!5%537T]+*2!["@D)<F5S=6QT(#T@3$1.4U]35$%455-?15)2.PH)
+M?0HJ+PH)"@ER971U<FX@<F5S=6QT.PI]"@II;G0@;6%I;BAV;VED*0I["@EI
+M;G0@<F5S=6QT(#T@15A)5%]354-#15-3.PH)"@EI9B`H8VAE8VM?;&1N<U]C
+M86QC7VME>71A9R@I("$]($Q$3E-?4U1!5%537T]+*2!["@D)<')I;G1F*")L
+M9&YS7V-A;&-?:V5Y=&%G*"D@9F%I;&5D+EQN(BD["@D)<F5S=6QT(#T@15A)
+@5%]&04E,55)%.PH)?0H*"65X:70H<F5S=6QT*3L*?0H)
+`
+end
+SHAR_EOF
+  (set 20 06 01 20 12 13 55 '12.unit-tests-dnssec.c'; eval "$shar_touch") &&
+  chmod 0600 '12.unit-tests-dnssec.c' ||
+  $echo 'restore of' '12.unit-tests-dnssec.c' 'failed'
+  if ( md5sum --help 2>&1 | grep 'sage: md5sum \[' ) >/dev/null 2>&1 \
+  && ( md5sum --version 2>&1 | grep -v 'textutils 1.12' ) >/dev/null; then
+    md5sum -c << SHAR_EOF >/dev/null 2>&1 \
+    || $echo '12.unit-tests-dnssec.c:' 'MD5 check failed'
+39435bac7f53322e6080630c3c173c09  12.unit-tests-dnssec.c
+SHAR_EOF
+  else
+    shar_count="`LC_ALL= LC_CTYPE= LANG= wc -c < '12.unit-tests-dnssec.c'`"
+    test 2867 -eq "$shar_count" ||
+    $echo '12.unit-tests-dnssec.c:' 'original size' '2867,' 'current size' "$shar_count!"
+  fi
+fi
+# ============= 12.unit-tests-dnssec.configure.ac ==============
+if test -f '12.unit-tests-dnssec.configure.ac' && test "$first_param" != -c; then
+  $echo 'x -' SKIPPING '12.unit-tests-dnssec.configure.ac' '(file already exists)'
+else
+  $echo 'x -' extracting '12.unit-tests-dnssec.configure.ac' '(text)'
+  sed 's/^X//' << 'SHAR_EOF' > '12.unit-tests-dnssec.configure.ac' &&
+#                                               -*- Autoconf -*-
+# Process this file with autoconf to produce a configure script.
+X
+AC_PREREQ(2.57)
+AC_INIT(drill, 1.1.0, ldns-team@nlnetlabs.nl, ldns-team)
+AC_CONFIG_SRCDIR([12.unit-tests-dnssec.c])
+X
+AC_AIX
+# Checks for programs.
+AC_PROG_CC
+AC_PROG_MAKE_SET
+X
+# Checks for libraries.
+# Checks for header files.
+#AC_HEADER_STDC
+#AC_HEADER_SYS_WAIT
+# do the very minimum - we can always extend this
+AC_CHECK_HEADERS([getopt.h stdlib.h stdio.h assert.h netinet/in.hctype.h time.h])
+AC_CHECK_HEADERS(sys/param.h sys/mount.h,,,
+[
+X  [
+X   #if HAVE_SYS_PARAM_H
+X   # include <sys/param.h>
+X   #endif
+X  ]
+])
+X
+# check for ldns
+AC_ARG_WITH(ldns, 
+X	AC_HELP_STRING([--with-ldns=PATH        specify prefix of path of ldns library to use])
+X	,
+X	[
+X		specialldnsdir="$withval"
+X		CPPFLAGS="$CPPFLAGS -I$withval/include"
+X		LDFLAGS="$LDFLAGS -L$withval/lib"
+X	]
+)
+X
+AC_CHECK_LIB(ldns, ldns_rr_new,, [
+X	AC_MSG_ERROR([Can't find ldns library])
+X	]
+)
+X
+AC_CHECK_HEADER(ldns/dns.h,,  [
+X	AC_MSG_ERROR([Can't find ldns headers])
+X	]
+)
+X
+AH_BOTTOM([
+X
+#include <stdio.h>
+#include <string.h>
+#include <unistd.h>
+#include <assert.h>
+X
+#if STDC_HEADERS
+#include <stdlib.h>
+#include <stddef.h>
+#endif
+X
+#ifdef HAVE_STDINT_H
+#include <stdint.h>
+#endif
+X
+#ifdef HAVE_SYS_SOCKET_H
+#include <sys/socket.h>
+#endif
+X
+#ifdef HAVE_NETINET_IN_H
+#include <netinet/in.h>
+#endif
+X
+#ifdef HAVE_ARPA_INET_H
+#include <arpa/inet.h>
+#endif
+X
+#ifdef HAVE_TIME_H
+#include <time.h>
+#endif
+])
+X
+X
+#AC_CHECK_FUNCS([mkdir rmdir strchr strrchr strstr])
+X
+#AC_DEFINE_UNQUOTED(SYSCONFDIR, "$sysconfdir")
+X
+AC_CONFIG_FILES([12.unit-tests-dnssec.Makefile])
+AC_CONFIG_HEADER([config.h])
+AC_OUTPUT
+SHAR_EOF
+  (set 20 06 01 20 11 45 07 '12.unit-tests-dnssec.configure.ac'; eval "$shar_touch") &&
+  chmod 0600 '12.unit-tests-dnssec.configure.ac' ||
+  $echo 'restore of' '12.unit-tests-dnssec.configure.ac' 'failed'
+  if ( md5sum --help 2>&1 | grep 'sage: md5sum \[' ) >/dev/null 2>&1 \
+  && ( md5sum --version 2>&1 | grep -v 'textutils 1.12' ) >/dev/null; then
+    md5sum -c << SHAR_EOF >/dev/null 2>&1 \
+    || $echo '12.unit-tests-dnssec.configure.ac:' 'MD5 check failed'
+ad2a323725570dc651c7bdf52dfe3ff2  12.unit-tests-dnssec.configure.ac
+SHAR_EOF
+  else
+    shar_count="`LC_ALL= LC_CTYPE= LANG= wc -c < '12.unit-tests-dnssec.configure.ac'`"
+    test 1664 -eq "$shar_count" ||
+    $echo '12.unit-tests-dnssec.configure.ac:' 'original size' '1664,' 'current size' "$shar_count!"
+  fi
+fi
+# ============= 12.unit-tests-dnssec.dsc ==============
+if test -f '12.unit-tests-dnssec.dsc' && test "$first_param" != -c; then
+  $echo 'x -' SKIPPING '12.unit-tests-dnssec.dsc' '(file already exists)'
+else
+  $echo 'x -' extracting '12.unit-tests-dnssec.dsc' '(text)'
+  sed 's/^X//' << 'SHAR_EOF' > '12.unit-tests-dnssec.dsc' &&
+BaseName: 12.unit-tests-dnssec
+Version: 1.0
+Description: Run unit tests on dnssec.c
+CreationDate: Fri Jan 20 10:51:01 CET 2006
+Maintainer: Jelte Jansen
+Category: 
+Component:
+CmdDepends: 
+Depends: 
+Help: 12.unit-tests-dnssec.help
+Pre: 12.unit-tests-dnssec.pre
+Post: 
+Test: 12.unit-tests-dnssec.test
+AuxFiles: 12.unit-tests-dnssec.Makefile.in 12.unit-tests-dnssec.configure.ac 12.unit-tests-dnssec.c
+Passed:
+Failure:
+SHAR_EOF
+  (set 20 06 01 20 11 35 13 '12.unit-tests-dnssec.dsc'; eval "$shar_touch") &&
+  chmod 0600 '12.unit-tests-dnssec.dsc' ||
+  $echo 'restore of' '12.unit-tests-dnssec.dsc' 'failed'
+  if ( md5sum --help 2>&1 | grep 'sage: md5sum \[' ) >/dev/null 2>&1 \
+  && ( md5sum --version 2>&1 | grep -v 'textutils 1.12' ) >/dev/null; then
+    md5sum -c << SHAR_EOF >/dev/null 2>&1 \
+    || $echo '12.unit-tests-dnssec.dsc:' 'MD5 check failed'
+974276701ad71e8a315631531e94406f  12.unit-tests-dnssec.dsc
+SHAR_EOF
+  else
+    shar_count="`LC_ALL= LC_CTYPE= LANG= wc -c < '12.unit-tests-dnssec.dsc'`"
+    test 415 -eq "$shar_count" ||
+    $echo '12.unit-tests-dnssec.dsc:' 'original size' '415,' 'current size' "$shar_count!"
+  fi
+fi
+# ============= 12.unit-tests-dnssec.help ==============
+if test -f '12.unit-tests-dnssec.help' && test "$first_param" != -c; then
+  $echo 'x -' SKIPPING '12.unit-tests-dnssec.help' '(file already exists)'
+else
+  $echo 'x -' extracting '12.unit-tests-dnssec.help' '(text)'
+  sed 's/^X//' << 'SHAR_EOF' > '12.unit-tests-dnssec.help' &&
+TODO :p
+Please describe how to use this test.
+i.e. tpkg -a ARG exe testname:
+X   ARG is used to ...
+SHAR_EOF
+  (set 20 06 01 20 11 25 20 '12.unit-tests-dnssec.help'; eval "$shar_touch") &&
+  chmod 0600 '12.unit-tests-dnssec.help' ||
+  $echo 'restore of' '12.unit-tests-dnssec.help' 'failed'
+  if ( md5sum --help 2>&1 | grep 'sage: md5sum \[' ) >/dev/null 2>&1 \
+  && ( md5sum --version 2>&1 | grep -v 'textutils 1.12' ) >/dev/null; then
+    md5sum -c << SHAR_EOF >/dev/null 2>&1 \
+    || $echo '12.unit-tests-dnssec.help:' 'MD5 check failed'
+5393eca947bc397262d46982146ea760  12.unit-tests-dnssec.help
+SHAR_EOF
+  else
+    shar_count="`LC_ALL= LC_CTYPE= LANG= wc -c < '12.unit-tests-dnssec.help'`"
+    test 99 -eq "$shar_count" ||
+    $echo '12.unit-tests-dnssec.help:' 'original size' '99,' 'current size' "$shar_count!"
+  fi
+fi
+# ============= 12.unit-tests-dnssec.Makefile ==============
+if test -f '12.unit-tests-dnssec.Makefile' && test "$first_param" != -c; then
+  $echo 'x -' SKIPPING '12.unit-tests-dnssec.Makefile' '(file already exists)'
+else
+  $echo 'x -' extracting '12.unit-tests-dnssec.Makefile' '(text)'
+  sed 's/^X//' << 'SHAR_EOF' > '12.unit-tests-dnssec.Makefile' &&
+# Standard installation pathnames
+# See the file LICENSE for the license
+SHELL = /bin/sh
+VERSION = 1.1.0
+basesrcdir = $(shell basename `pwd`)
+srcdir = .
+prefix  = /usr/local
+exec_prefix = ${prefix}
+bindir = ${exec_prefix}/bin
+mandir = ${prefix}/man
+X
+CC = gcc
+CFLAGS = -g -O2
+CPPFLAGS =  -I../..//include
+LDFLAGS =  -L../..//lib
+LIBS = -lldns 
+X
+COMPILE         = $(CC) $(CPPFLAGS) $(CFLAGS)
+LINK            = $(CC) $(CFLAGS) $(LDFLAGS) $(LIBS)
+X
+HEADER		= config.h
+TESTS		= 12-unit-tests-dnssec
+X
+X.PHONY:	all clean realclean
+%.o:
+X	$(COMPILE) -c $(srcdir)/$*.c
+X
+all:	$(TESTS)
+X
+12-unit-tests-dnssec:	12-unit-tests-dnssec.o
+X		$(LINK) -o $@ $+ 
+X
+clean:
+X	rm -f *.o
+X	rm -f $(TESTS)
+X	rm -f lua-rns
+X
+realclean: clean
+X	rm -rf autom4te.cache/
+X	rm -f config.log config.status aclocal.m4 config.h.in configure Makefile
+X	rm -f config.h
+X
+confclean: clean
+X	rm -rf config.log config.status config.h Makefile
+SHAR_EOF
+  (set 20 06 01 20 11 36 04 '12.unit-tests-dnssec.Makefile'; eval "$shar_touch") &&
+  chmod 0600 '12.unit-tests-dnssec.Makefile' ||
+  $echo 'restore of' '12.unit-tests-dnssec.Makefile' 'failed'
+  if ( md5sum --help 2>&1 | grep 'sage: md5sum \[' ) >/dev/null 2>&1 \
+  && ( md5sum --version 2>&1 | grep -v 'textutils 1.12' ) >/dev/null; then
+    md5sum -c << SHAR_EOF >/dev/null 2>&1 \
+    || $echo '12.unit-tests-dnssec.Makefile:' 'MD5 check failed'
+3114edd7c481b21331efbd1d93e4627f  12.unit-tests-dnssec.Makefile
+SHAR_EOF
+  else
+    shar_count="`LC_ALL= LC_CTYPE= LANG= wc -c < '12.unit-tests-dnssec.Makefile'`"
+    test 889 -eq "$shar_count" ||
+    $echo '12.unit-tests-dnssec.Makefile:' 'original size' '889,' 'current size' "$shar_count!"
+  fi
+fi
+# ============= 12.unit-tests-dnssec.Makefile.in ==============
+if test -f '12.unit-tests-dnssec.Makefile.in' && test "$first_param" != -c; then
+  $echo 'x -' SKIPPING '12.unit-tests-dnssec.Makefile.in' '(file already exists)'
+else
+  $echo 'x -' extracting '12.unit-tests-dnssec.Makefile.in' '(text)'
+  sed 's/^X//' << 'SHAR_EOF' > '12.unit-tests-dnssec.Makefile.in' &&
+# Standard installation pathnames
+# See the file LICENSE for the license
+SHELL = @SHELL@
+VERSION = @PACKAGE_VERSION@
+basesrcdir = $(shell basename `pwd`)
+srcdir = @srcdir@
+prefix  = @prefix@
+exec_prefix = @exec_prefix@
+bindir = @bindir@
+mandir = @mandir@
+X
+CC = @CC@
+CFLAGS = @CFLAGS@
+CPPFLAGS = @CPPFLAGS@
+LDFLAGS = @LDFLAGS@
+LIBS = @LIBS@
+X
+COMPILE         = $(CC) $(CPPFLAGS) $(CFLAGS)
+LINK            = $(CC) $(CFLAGS) $(LDFLAGS) $(LIBS)
+X
+HEADER		= config.h
+TESTS		= 12.unit-tests-dnssec
+X
+X.PHONY:	all clean realclean
+%.o:
+X	$(COMPILE) -c $(srcdir)/$*.c
+X
+all:	$(TESTS)
+X
+12.unit-tests-dnssec:	12.unit-tests-dnssec.o
+X		$(LINK) -o $@ $+ 
+X
+clean:
+X	rm -f *.o
+X	rm -f $(TESTS)
+X	rm -f lua-rns
+X
+realclean: clean
+X	rm -rf autom4te.cache/
+X	rm -f config.log config.status aclocal.m4 config.h.in configure Makefile
+X	rm -f config.h
+X
+confclean: clean
+X	rm -rf config.log config.status config.h Makefile
+SHAR_EOF
+  (set 20 06 01 20 11 42 18 '12.unit-tests-dnssec.Makefile.in'; eval "$shar_touch") &&
+  chmod 0600 '12.unit-tests-dnssec.Makefile.in' ||
+  $echo 'restore of' '12.unit-tests-dnssec.Makefile.in' 'failed'
+  if ( md5sum --help 2>&1 | grep 'sage: md5sum \[' ) >/dev/null 2>&1 \
+  && ( md5sum --version 2>&1 | grep -v 'textutils 1.12' ) >/dev/null; then
+    md5sum -c << SHAR_EOF >/dev/null 2>&1 \
+    || $echo '12.unit-tests-dnssec.Makefile.in:' 'MD5 check failed'
+fba444d5fb79995749071fb8a155f58c  12.unit-tests-dnssec.Makefile.in
+SHAR_EOF
+  else
+    shar_count="`LC_ALL= LC_CTYPE= LANG= wc -c < '12.unit-tests-dnssec.Makefile.in'`"
+    test 886 -eq "$shar_count" ||
+    $echo '12.unit-tests-dnssec.Makefile.in:' 'original size' '886,' 'current size' "$shar_count!"
+  fi
+fi
+# ============= 12.unit-tests-dnssec.pre ==============
+if test -f '12.unit-tests-dnssec.pre' && test "$first_param" != -c; then
+  $echo 'x -' SKIPPING '12.unit-tests-dnssec.pre' '(file already exists)'
+else
+  $echo 'x -' extracting '12.unit-tests-dnssec.pre' '(text)'
+  sed 's/^X//' << 'SHAR_EOF' > '12.unit-tests-dnssec.pre' &&
+# #-- 10-older-test.pre--#
+# source the master var file when it's there
+[ -f ../.tpkg.var.master ] && source ../.tpkg.var.master
+# use .tpkg.var.test for in test variable passing
+[ -f .tpkg.var.test ] && source .tpkg.var.test
+# svnserve resets the path, you may need to adjust it, like this:
+export PATH=$PATH:/usr/sbin:/sbin:/usr/local/bin:/usr/local/sbin:.
+X
+X
+case $OSTYPE in
+X        linux*)
+X                autoconf 12.unit-tests-dnssec.configure.ac > configure && \
+X                chmod +x configure && \
+X                autoheader 12.unit-tests-dnssec.configure.ac &&\
+X                ./configure --with-ldns=../../ && \
+X                make -f 12.unit-tests-dnssec.Makefile
+X        ;;
+X        freebsd*)
+X                autoconf259 12.unit-tests-dnssec.configure.ac > configure &&\
+X                chmod +x configure && \
+X                autoheader259 12.unit-tests-dnssec.configure.ac && \
+X                ./configure --with-ldns=../../ && \
+X                gmake -f 12.unit-tests-dnssec.Makefile
+X        ;;
+esac
+SHAR_EOF
+  (set 20 06 01 20 11 42 04 '12.unit-tests-dnssec.pre'; eval "$shar_touch") &&
+  chmod 0600 '12.unit-tests-dnssec.pre' ||
+  $echo 'restore of' '12.unit-tests-dnssec.pre' 'failed'
+  if ( md5sum --help 2>&1 | grep 'sage: md5sum \[' ) >/dev/null 2>&1 \
+  && ( md5sum --version 2>&1 | grep -v 'textutils 1.12' ) >/dev/null; then
+    md5sum -c << SHAR_EOF >/dev/null 2>&1 \
+    || $echo '12.unit-tests-dnssec.pre:' 'MD5 check failed'
+41e6f16e016df6e105d9fdf6c92934f2  12.unit-tests-dnssec.pre
+SHAR_EOF
+  else
+    shar_count="`LC_ALL= LC_CTYPE= LANG= wc -c < '12.unit-tests-dnssec.pre'`"
+    test 1019 -eq "$shar_count" ||
+    $echo '12.unit-tests-dnssec.pre:' 'original size' '1019,' 'current size' "$shar_count!"
+  fi
+fi
+# ============= 12.unit-tests-dnssec.test ==============
+if test -f '12.unit-tests-dnssec.test' && test "$first_param" != -c; then
+  $echo 'x -' SKIPPING '12.unit-tests-dnssec.test' '(file already exists)'
+else
+  $echo 'x -' extracting '12.unit-tests-dnssec.test' '(text)'
+  sed 's/^X//' << 'SHAR_EOF' > '12.unit-tests-dnssec.test' &&
+# #-- 10-older-test.test --#
+# source the master var file when it's there
+[ -f ../.tpkg.var.master ] && source ../.tpkg.var.master
+# use .tpkg.var.test for in test variable passing
+[ -f .tpkg.var.test ] && source .tpkg.var.test
+# svnserve resets the path, you may need to adjust it, like this:
+#PATH=$PATH:/usr/sbin:/sbin:/usr/local/bin:/usr/local/sbin:.
+X
+export LD_LIBRARY_PATH=../../lib
+X
+# run the test
+X./12.unit-tests-dnssec
+SHAR_EOF
+  (set 20 06 01 20 11 40 20 '12.unit-tests-dnssec.test'; eval "$shar_touch") &&
+  chmod 0600 '12.unit-tests-dnssec.test' ||
+  $echo 'restore of' '12.unit-tests-dnssec.test' 'failed'
+  if ( md5sum --help 2>&1 | grep 'sage: md5sum \[' ) >/dev/null 2>&1 \
+  && ( md5sum --version 2>&1 | grep -v 'textutils 1.12' ) >/dev/null; then
+    md5sum -c << SHAR_EOF >/dev/null 2>&1 \
+    || $echo '12.unit-tests-dnssec.test:' 'MD5 check failed'
+3682251c0eeec73c2e1638220a56f99f  12.unit-tests-dnssec.test
+SHAR_EOF
+  else
+    shar_count="`LC_ALL= LC_CTYPE= LANG= wc -c < '12.unit-tests-dnssec.test'`"
+    test 428 -eq "$shar_count" ||
+    $echo '12.unit-tests-dnssec.test:' 'original size' '428,' 'current size' "$shar_count!"
+  fi
+fi
+rm -fr _sh12768
+exit 0
