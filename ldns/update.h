@@ -15,8 +15,8 @@
 
 /**
  * create an update packet from zone name, class and the rr lists
- * \param[in] zone name of the zone
- * \param[in] class zone class
+ * \param[in] zone_rdf name of the zone
+ * \param[in] clas zone class
  * \param[in] pr_rrlist list of Prerequisite Section RRs
  * \param[in] up_rrlist list of Updates Section RRs
  * \param[in] ad_rrlist list of Additional Data Section RRs (currently unused)

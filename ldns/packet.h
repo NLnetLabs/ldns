@@ -294,28 +294,28 @@ ldns_pkt *ldns_pkt_clone(ldns_pkt *pkt);
 /**
  * directly set the additional section
  * \param[in] p packet to operate on
- * \param[in[ rr rrlist to set
+ * \param[in] rr rrlist to set
  */
 void ldns_pkt_set_additional(ldns_pkt *p, ldns_rr_list *rr);
 
 /**
  * directly set the answer section
  * \param[in] p packet to operate on
- * \param[in[ rr rrlist to set
+ * \param[in] rr rrlist to set
  */
 void ldns_pkt_set_answer(ldns_pkt *p, ldns_rr_list *rr);
 
 /**
  * directly set the question section
  * \param[in] p packet to operate on
- * \param[in[ rr rrlist to set
+ * \param[in] rr rrlist to set
  */
 void ldns_pkt_set_question(ldns_pkt *p, ldns_rr_list *rr);
 
 /**
  * directly set the auhority section
  * \param[in] p packet to operate on
- * \param[in[ rr rrlist to set
+ * \param[in] rr rrlist to set
  */
 void ldns_pkt_set_authority(ldns_pkt *p, ldns_rr_list *rr);
 

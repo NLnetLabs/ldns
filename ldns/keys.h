@@ -132,16 +132,17 @@ ldns_key *ldns_key_new_frm_fp(FILE *fp);
  */
 ldns_key *ldns_key_new_frm_fp_l(FILE *fp, int *line_nr);
 
+#ifdef HAVE_SSL
 /**
  * frm_fp helper function. This function parsed the
  * remainder of the (RSA) priv. key file generated from bind9
  * \param[in] fp the file to parse
  * \return NULL on failure otherwise a RSA structure
  */
-#ifdef HAVE_SSL
 RSA *ldns_key_new_frm_fp_rsa(FILE *fp);
 #endif /* HAVE_SSL */
 
+#ifdef HAVE_SSL
 /**
  * frm_fp helper function. This function parsed the
  * remainder of the (RSA) priv. key file generated from bind9
@@ -149,20 +150,20 @@ RSA *ldns_key_new_frm_fp_rsa(FILE *fp);
  * \param[in] line_nr pointer to an integer containing the current line number (for debugging purposes)
  * \return NULL on failure otherwise a RSA structure
  */
-#ifdef HAVE_SSL
 RSA *ldns_key_new_frm_fp_rsa_l(FILE *fp, int *line_nr);
 #endif /* HAVE_SSL */
 
+#ifdef HAVE_SSL
 /**
  * frm_fp helper function. This function parsed the
  * remainder of the (DSA) priv. key file generated from bind9
  * \param[in] fp the file to parse
  * \return NULL on failure otherwise a RSA structure
  */
-#ifdef HAVE_SSL
 DSA *ldns_key_new_frm_fp_dsa(FILE *fp);
 #endif /* HAVE_SSL */
 
+#ifdef HAVE_SSL
 /**
  * frm_fp helper function. This function parsed the
  * remainder of the (DSA) priv. key file generated from bind9
@@ -170,7 +171,6 @@ DSA *ldns_key_new_frm_fp_dsa(FILE *fp);
  * \param[in] line_nr pointer to an integer containing the current line number (for debugging purposes)
  * \return NULL on failure otherwise a RSA structure
  */
-#ifdef HAVE_SSL
 DSA *ldns_key_new_frm_fp_dsa_l(FILE *fp, int *line_nr);
 #endif /* HAVE_SSL */
 
@@ -207,10 +207,12 @@ size_t ldns_key_list_key_count(ldns_key_list *key_list);
  */
 ldns_key *ldns_key_list_key(ldns_key_list *key, size_t nr);
 
+#ifdef HAVE_SSL
 /**
  * returns the (openssl) RSA struct contained in the key
+ * \param[in] k the key to look in
+ * \return the RSA * structure in the key
  */
-#ifdef HAVE_SSL
 RSA *ldns_key_rsa_key(ldns_key *k);
 #endif /* HAVE_SSL */
 
