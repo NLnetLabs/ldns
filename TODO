@@ -1,16 +1,10 @@
 Current TODO list
 
-1.1.0:
-----
-        o server stuff yes/no
-        o documentation
-        o sorting/sorting ord - removed ord - need to check current sort
-          order
-        o secure tracing drill
-	o API cleanup: add missing consts in function arguments
-        o vim syntax
-        o walker 
-        o zone.c; make it better/faster??
+Roadmap:
+1.0.x: stable releases, with only bugfixes
+1.1.0: feature complete
+1.1.x: optimization
+
 
 Post 1.0 Stuff:
 ---------------
@@ -26,42 +20,21 @@ Post 1.0 Stuff:
         ------
         o Check RedHat 9 Compile problem
 
+
+1.1.0:
+----
+        o server stuff yes/no
+        o documentation
+        o sorting/sorting ord - removed ord - need to check current sort
+          order
+        o secure tracing drill
+	o API cleanup: add missing consts in function arguments
+        o vim syntax
+        o walker 
+        o zone.c; make it better/faster??
+
 DONE:
 1.0.1 released 5 January 2006
 1.0.1:
 ------
         o Fix what needs to be fixed
-
-
-drill:
-sometimes we don't get a correct answer from the omval:
-% LD_LIBRARY_PATH=../.libs ./drill  -T www.ripe.net
-Warning: Trace enabled, ignoring any <type> arguments
-(null)
-;; Received 436 bytes from 213.154.224.17#53(omval.tednet.nl.) in 19 ms
-
-net.    172800  IN      NS      a.gtld-servers.net.
-net.    172800  IN      NS      g.gtld-servers.net.
-net.    172800  IN      NS      h.gtld-servers.net.
-net.    172800  IN      NS      c.gtld-servers.net.
-net.    172800  IN      NS      i.gtld-servers.net.
-net.    172800  IN      NS      b.gtld-servers.net.
-net.    172800  IN      NS      d.gtld-servers.net.
-net.    172800  IN      NS      l.gtld-servers.net.
-net.    172800  IN      NS      f.gtld-servers.net.
-net.    172800  IN      NS      j.gtld-servers.net.
-net.    172800  IN      NS      k.gtld-servers.net.
-net.    172800  IN      NS      e.gtld-servers.net.
-net.    172800  IN      NS      m.gtld-servers.net.
-;; Received 487 bytes from 193.0.14.129#53(k.root-servers.net.) in 14 ms
-
-ripe.net.       172800  IN      NS      ns-ext.isc.org.
-ripe.net.       172800  IN      NS      ns-pri.ripe.net.
-ripe.net.       172800  IN      NS      ns3.nic.fr.
-ripe.net.       172800  IN      NS      sec3.apnic.net.
-ripe.net.       172800  IN      NS      sunic.sunet.se.
-;; Received 216 bytes from 192.35.51.30#53(f.gtld-servers.net.) in 153 ms
-
-www.ripe.net.   600     IN      CNAME   kite-www.ripe.net.
-kite-www.ripe.net.      172800  IN      A       193.0.0.214
-;; Received 69 bytes from 202.12.28.140#53(karashi.apnic.net.) in 252 ms
