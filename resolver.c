@@ -89,7 +89,7 @@ ldns_resolver_domain(ldns_resolver *r)
 ldns_rdf **
 ldns_resolver_searchlist(ldns_resolver *r)
 {
-	return r->_searchlist_count;
+	return r->_searchlist;
 }
 
 ldns_rdf **
