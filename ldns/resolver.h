@@ -284,31 +284,188 @@ void ldns_resolver_set_port(ldns_resolver *r, uint16_t p);
  */
 void ldns_resolver_set_recursive(ldns_resolver *r, bool b);
 
+/**
+ * Set the resolver debugging
+ * \param[in] r the resolver
+ * \param[in] b true: debug on: false debug off
+ */
 void ldns_resolver_set_debug(ldns_resolver *r, bool b);
+
+/**
+ * Incremental the resolver's nameserver count.
+ * \param[in] r the resolver
+ */
 void ldns_resolver_incr_nameserver_count(ldns_resolver *r);
+
+/**
+ * Decrement the resolver's nameserver count.
+ * \param[in] r the resolver
+ */
 void ldns_resolver_dec_nameserver_count(ldns_resolver *r);
+
+/**
+ * Set the resolver's nameserver list directly. Note the
+ * rr's should be A or AAAA 
+ * \param[in] r the resolver
+ * \param[in] ns the rr's to use as nameservers
+ */
 void ldns_resolver_set_nameserver_rrlist(ldns_resolver *r, ldns_rr_list *ns);
+
+/**
+ * Set the resolver's nameserver count directly.
+ * \param[in] r the resolver
+ * \param[in] c the nameserver count
+ */
 void ldns_resolver_set_nameserver_count(ldns_resolver *r, size_t c);
+
+/**
+ * Set the resolver's nameserver count directly by using an rdf list
+ * \param[in] r the resolver
+ * \param[in] rd the resolver addresses
+ */
 void ldns_resolver_set_nameservers(ldns_resolver *r, ldns_rdf **rd);
+
+/**
+ * Set the resolver's default domain. This gets appended when no 
+ * absolute name is given
+ * \param[in] r the resolver
+ * \param[in] rd the name to append
+ */
 void ldns_resolver_set_domain(ldns_resolver *r, ldns_rdf *rd);
+
+/**
+ * Set the resolver's socket time out when talking to remote hosts
+ * \param[in] r the resolver
+ * \param[in] timeout the timeout to use
+ */
 void ldns_resolver_set_timeout(ldns_resolver *r, struct timeval timeout);
+
+/**
+ * Push a new rd to the resolver's searchlist
+ * \param[in] r the resolver
+ * \param[in] rd to push
+ */
 void ldns_resolver_push_searchlist(ldns_resolver *r, ldns_rdf *rd);
+
+/**
+ * Whether the resolver uses the name set with _set_domain
+ * \param[in] r the resolver
+ * \param[in] b true: use the defaults, false: don't use them
+ */
 void ldns_resolver_set_defnames(ldns_resolver *r, bool b);
+
+/**
+ * Whether the resolver uses a virtual circuit (TCP)
+ * \param[in] r the resolver
+ * \param[in] b true: use TCP, false: don't use TCP
+ */
 void ldns_resolver_set_usevc(ldns_resolver *r, bool b);
+
+/**
+ * Whether the resolver uses the searchlist
+ * \param[in] r the resolver
+ * \param[in] b true: use the list, false: don't use the list
+ */
 void ldns_resolver_set_dnsrch(ldns_resolver *r, bool b);
+
+/**
+ * Whether the resolver uses DNSSEC
+ * \param[in] r the resolver
+ * \param[in] b true: use DNSSEC, false: don't use DNSSEC
+ */
 void ldns_resolver_set_dnssec(ldns_resolver *r, bool b);
+
+/**
+ * Whether the resolver uses the checking disable bit
+ * \param[in] r the resolver
+ * \param[in] b true: enable , false: don't use TCP
+ */
 void ldns_resolver_set_dnssec_cd(ldns_resolver *r, bool b);
+/**
+ * Set the resolver retrans timeout (in seconds)
+ * \param[in] r the resolver
+ * \param[in] re the retransmission interval in seconds
+ */
 void ldns_resolver_set_retrans(ldns_resolver *r, uint8_t re);
+
+/**
+ * Set the resolver retry interval (in seconds)
+ * \param[in] r the resolver
+ * \param[in] re the retry interval
+ */
 void ldns_resolver_set_retry(ldns_resolver *r, uint8_t re);
+
+/**
+ * Whether the resolver uses ip6
+ * \param[in] r the resolver
+ * \param[in] i 0: no pref, 1: ip4, 2: ip6
+ */
 void ldns_resolver_set_ip6(ldns_resolver *r, uint8_t i);
+
+/**
+ * Whether or not to fail after one failed query
+ * \param[in] r the resolver
+ * \param[in] b true: yes fail, false: continue with next nameserver
+ */
 void ldns_resolver_set_fail(ldns_resolver *r, bool b);
+
+/**
+ * Whether or not to ignore the TC bit
+ * \param[in] r the resolver
+ * \param[in] b true: yes ignore, false: don't ignore
+ */
 void ldns_resolver_set_igntc(ldns_resolver *r, bool b);
+
+/**
+ * Set maximum udp size
+ * \param[in] r the resolver
+ * \param[in] s the udp max size
+ */
 void ldns_resolver_set_edns_udp_size(ldns_resolver *r, uint16_t s);
+
+/**
+ * Set the tsig key name
+ * \param[in] r the resolver
+ * \param[in] tsig_keyname the tsig key name
+ */
 void ldns_resolver_set_tsig_keyname(ldns_resolver *r, char *tsig_keyname);
+
+/**
+ * Set the tsig algorithm
+ * \param[in] r the resolver
+ * \param[in] tsig_algorithm the tsig algorithm
+ */
 void ldns_resolver_set_tsig_algorithm(ldns_resolver *r, char *tsig_algorithm);
+
+/**
+ * Set the tsig key data
+ * \param[in] r the resolver
+ * \param[in] tsig_keydata the key data
+ */
 void ldns_resolver_set_tsig_keydata(ldns_resolver *r, char *tsig_keydata);
+
+/**
+ * Set round trip time for all nameservers. Note this currently
+ * differentiates between: unreachable and reachable.
+ * \param[in] r the resolver
+ * \param[in] rtt a list with the times
+ */
 void ldns_resolver_set_rtt(ldns_resolver *r, size_t *rtt);
+
+/**
+ * Set round trip time for a specific nameserver. Note this
+ * currently differentiates between: unreachable and reachable.
+ * \param[in] r the resolver
+ * \param[in] pos the nameserver position
+ * \param[in] value the rtt
+ */
 void ldns_resolver_set_nameserver_rtt(ldns_resolver *r, size_t pos, size_t value);
+
+/**
+ * Should the nameserver list be randomized before each use
+ * \param[in] r the resolver
+ * \param[in] b: true: randomize, false: don't
+ */
 void ldns_resolver_set_random(ldns_resolver *r, bool b);
 
 /**
@@ -337,14 +494,21 @@ ldns_status ldns_resolver_push_nameserver_rr(ldns_resolver *r, ldns_rr *rr);
  */
 ldns_status ldns_resolver_push_nameserver_rr_list(ldns_resolver *r, ldns_rr_list *rrlist);
 
-/**
- * send the query as-is. but return a socket 
- * \todo TODO
+/*
+ * Send the query for name as-is but use bg_send and don't wait for 
+ * a respons
+ * \param[out] **answer a pointer to a ldns_pkt pointer (initialized by this function)
+ * \param[in] *r operate using this resolver
+ * \param[in] *name query for this name
+ * \param[in] t query for this type (may be 0, defaults to A)
+ * \param[in] c query for this class (may be 0, default to IN)
+ * \param[in] flags the query flags
+ * \return ldns_pkt* a packet with the reply from the nameserver
  */
 int ldns_resolver_bgsend();
 
 /**
- * Send the query for using the resolver and take the search list into * account
+ * Send the query for using the resolver and take the search list into account
  * \param[in] *r operate using this resolver
  * \param[in] *rdf query for this name
  * \param[in] t query for this type (may be 0, defaults to A)
@@ -355,7 +519,7 @@ int ldns_resolver_bgsend();
 ldns_pkt* ldns_resolver_search(ldns_resolver *r, ldns_rdf *rdf, ldns_rr_type t, ldns_rr_class c, uint16_t flags);
 
 /**
- * \brief Send the query for *name as-is 
+ * Send the query for name as-is 
  * \param[out] **answer a pointer to a ldns_pkt pointer (initialized by this function)
  * \param[in] *r operate using this resolver
  * \param[in] *name query for this name
@@ -367,7 +531,7 @@ ldns_pkt* ldns_resolver_search(ldns_resolver *r, ldns_rdf *rdf, ldns_rr_type t, 
 ldns_status ldns_resolver_send(ldns_pkt **answer, ldns_resolver *r, ldns_rdf *name, ldns_rr_type t, ldns_rr_class c, uint16_t flags);
 
 /**
- * \brief Send the given packet to a nameserver
+ * Send the given packet to a nameserver
  * \param[out] **answer a pointer to a ldns_pkt pointer (initialized by this function)
  * \param[in] *r operate using this resolver
  * \param[in] *query_pkt query

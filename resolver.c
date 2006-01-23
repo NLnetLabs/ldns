@@ -893,6 +893,9 @@ ldns_resolver_send(ldns_pkt **answer, ldns_resolver *r, ldns_rdf *name,
 int
 ldns_resolver_bgsend()
 {
+
+
+
 	return 0;
 }
  
