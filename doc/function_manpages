@@ -2,16 +2,21 @@
 # other names are aliases (symlinks)
 # all functions specified on the same line are included in the
 # same manual page
+# function named after the pipe `|' are put in the see also section
 
 # functions that must be included, separated by commas
 
 ### host2wire.h
 # conversion functions
-ldns_rr2wire, ldns_pkt2wire, ldns_rdf2wire, ldns_rr2str, ldns_pkt2str, ldns_rdf2str
-
+ldns_rr2wire, ldns_pkt2wire, ldns_rdf2wire
 # lower level conversions, some are from host2str.h
 ldns_pkt2buffer_str, ldns_pktheader2buffer_str, ldns_rr2buffer_str, ldns_rr_list2buffer_str, ldns_rdf2buffer_str, ldns_key2buffer_str, ldns_pkt2buffer_wire, ldns_rr2buffer_wire, ldns_rdf2buffer_wire, ldns_rrsig2buffer_wire, ldns_rr_rdata2buffer_wire
 ### /host2wire.h
+
+### host2str.h
+ldns_rr2str, ldns_pkt2str, ldns_rdf2str, ldns_rr_list2str, ldns_key2str
+ldns_rr_print, ldns_rdf_print, ldns_pkt_print, ldns_rr_list_print, ldns_resolver_print, ldns_zone_print
+### /host2str.h
 
 ### host2str.h
 # and even lower
@@ -37,7 +42,7 @@ ldns_rdf, ldns_rdf_type | ldns_rdf_set_size, ldns_rdf_size, ldns_rdf_new, ldns_n
 ldns_rdf_set_size, ldns_rdf_set_type, ldns_rdf_set_data | ldns_rdf
 ldns_rdf_size, ldns_rdf_get_type, ldns_rdf_data | ldns_rdf
 ldns_rdf_new, ldns_rdf_new_frm_data, ldns_rdf_new_frm_str, ldns_rdf_new_frm_fp, ldns_rdf_free, ldns_rdf_deep_free, ldns_rdf_print | ldns_rdf
-ldns_native2rdf_int8, ldns_native2rdf_int16, ldns_native2rdf_int32,ldns_native2rdf_int16_data, ldns_rdf2native_int8, ldns_rdf2native_int16, ldns_rdf2native_int32, ldns_rdf2native_sockaddr_storage | ldns_rdf
+ldns_native2rdf_int8, ldns_native2rdf_int16, ldns_native2rdf_int32,ldns_native2rdf_int16_data, ldns_rdf2native_int8, ldns_rdf2native_int16, ldns_rdf2native_int32, ldns_rdf2native_sockaddr_storage, ldns_rdf2native_time_t | ldns_rdf
 ldns_rdf_address_reverse | ldns_rdf
 ldns_octet | ldns_rdf
 # why is this in rdata.h?
@@ -65,11 +70,11 @@ ldns_verify, ldns_verify_rrsig, ldns_verify_rrsig_keylist | ldns_verify_rrsig_ds
 ldns_key_buf2dsa, ldns_key_buf2rsa | ldns_key_rr2ds
 ldns_key_rr2ds
 # signing
-ldns_sign_public | ldns_sign_public_dsa, ldns_sign_public_rsamd5, ldns_sign_public_rsasha1, ldns_sign_public_dsa
-ldns_sign_public_dsa, ldns_sign_public_rsamd5, ldns_sign_public_rsasha1, ldns_sign_public_dsa
-ldns_zone_sign
+ldns_sign_public | ldns_sign_public_dsa, ldns_sign_public_rsamd5, ldns_sign_public_rsasha1
+ldns_sign_public_dsa, ldns_sign_public_rsamd5, ldns_sign_public_rsasha1
+ldns_zone_sign | ldns_sign_public
 ldns_init_random
-#ldns_pkt_verify
+ldns_pkt_verify | ldns_verify
 ### /dnssec.h
 
 ### dnskey.h

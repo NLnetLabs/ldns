@@ -53,7 +53,13 @@ ldns_status ldns_verify(ldns_rr_list *rrset, ldns_rr_list *rrsig, ldns_rr_list *
  */
 ldns_status ldns_verify_rrsig_keylist(ldns_rr_list *rrset, ldns_rr *rrsig, ldns_rr_list *keys, ldns_rr_list *good_keys);
 
-
+/**
+ * verify an rrsig with 1 key
+ * \param[in] rrset the rrset
+ * \param[in] rrsig the rrsig to verify
+ * \param[in] key the key to use
+ * \return status message wether verification succeeded.
+ */
 ldns_status ldns_verify_rrsig(ldns_rr_list *rrset, ldns_rr *rrsig, ldns_rr *key);
 
 /**
@@ -84,23 +90,23 @@ ldns_status ldns_verify_rrsig_rsasha1(ldns_buffer *sig, ldns_buffer *rrset, ldns
  */
 ldns_status ldns_verify_rrsig_rsamd5(ldns_buffer *sig, ldns_buffer *rrset, ldns_buffer *key);
 
+#ifdef HAVE_SSL
 /**
  * converts a buffer holding key material to a DSA key in openssl.
  *
  * \param[in] key the key to convert
  * \return a DSA * structure with the key material
  */
-#ifdef HAVE_SSL
 DSA *ldns_key_buf2dsa(ldns_buffer *key);
 #endif /* HAVE_SSL */
 
+#ifdef HAVE_SSL
 /**
  * converts a buffer holding key material to a RSA key in openssl.
  *
  * \param[in] key the key to convert
  * \return a RSA * structure with the key material
  */
-#ifdef HAVE_SSL
 RSA *ldns_key_buf2rsa(ldns_buffer *key);
 #endif /* HAVE_SSL */
 
@@ -112,11 +118,37 @@ RSA *ldns_key_buf2rsa(ldns_buffer *key);
  */
 ldns_rr *ldns_key_rr2ds(const ldns_rr *key);
 
-/* sign functions - these are very much a work in progress */
+/* sign functions */
+
+/**
+ * Sign an rrset
+ * \param[in] rrset the rrset
+ * \param[in] keys the keys to use
+ * \return a rr_list with the signatures
+ */
 ldns_rr_list *ldns_sign_public(ldns_rr_list *rrset, ldns_key_list *keys);
+
 #ifdef HAVE_SSL
+/**
+ * Sign a buffer with the DSA key (hash with SHA1)
+ * \param[in] to_sign buffer with the data
+ * \param[in] key the key to use
+ * \return a ldns_rdf with the signed data
+ */
 ldns_rdf *ldns_sign_public_dsa(ldns_buffer *to_sign, DSA *key);
+/**
+ * Sign a buffer with the RSA key (hash with MD5)
+ * \param[in] to_sign buffer with the data
+ * \param[in] key the key to use
+ * \return a ldns_rdf with the signed data
+ */
 ldns_rdf *ldns_sign_public_rsamd5(ldns_buffer *to_sign, RSA *key);
+/**
+ * Sign a buffer with the RSA key (hash with SHA1)
+ * \param[in] to_sign buffer with the data
+ * \param[in] key the key to use
+ * \return a ldns_rdf with the signed data
+ */
 ldns_rdf *ldns_sign_public_rsasha1(ldns_buffer *to_sign, RSA *key);
 #endif /* HAVE_SSL */
 
@@ -130,7 +162,15 @@ ldns_rdf *ldns_sign_public_rsasha1(ldns_buffer *to_sign, RSA *key);
 ldns_rr * ldns_create_nsec(ldns_rdf *cur_owner, ldns_rdf *next_owner, ldns_rr_list *rrs);
 
 /**
- *
+ * verify a packet 
+ * \param[in] p the packet
+ * \param[in] t the rr set type to check
+ * \param[in] o the rr set name to ckeck
+ * \param[in] k list of keys
+ * \param[in] s list of sigs (may be null)
+ * \param[out] good_keys keys which validated the packet
+ * \return status 
+ * 
  */
 ldns_status ldns_pkt_verify(ldns_pkt *p, ldns_rr_type t, ldns_rdf *o, ldns_rr_list *k, ldns_rr_list *s, ldns_rr_list *good_keys);
 

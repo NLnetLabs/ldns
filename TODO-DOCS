@@ -1,6 +1,4 @@
 update.h   - all
-resolver.h - only set
 packet.h   - get/set
 keys.h     - get/set
-dnssec.h   - some + get/set
-buffer.h   - docs are there, but need to be doxygened
+buffer.h   - half way through

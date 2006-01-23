@@ -92,6 +92,7 @@ void ldns_buffer_new_frm_data(ldns_buffer *buffer, void *data, size_t size);
 /**
  * clears the buffer and make it ready for writing.  The buffer's limit
  * is set to the capacity and the position is set to 0.
+ * \param[in] buffer the buffer to clear
  */
 void ldns_buffer_clear(ldns_buffer *buffer);
 
@@ -108,11 +109,14 @@ void ldns_buffer_flip(ldns_buffer *buffer);
 /**
  * make the buffer ready for re-reading the data.  The buffer's
  * position is reset to 0.
+ * \param[in] buffer the buffer to rewind
  */
 void ldns_buffer_rewind(ldns_buffer *buffer);
 
 /**
  * returns the current position in the buffer (as a number of bytes)
+ * \param[in] buffer the buffer
+ * \return the current position
  */
 INLINE size_t
 ldns_buffer_position(ldns_buffer *buffer)
@@ -123,6 +127,8 @@ ldns_buffer_position(ldns_buffer *buffer)
 /**
  * sets the buffer's position to MARK.  The position must be less than
  * or equal to the buffer's limit.
+ * \param[in] buffer the buffer
+ * \param[in] mark the mark to use
  */
 INLINE void
 ldns_buffer_set_position(ldns_buffer *buffer, size_t mark)
@@ -135,6 +141,8 @@ ldns_buffer_set_position(ldns_buffer *buffer, size_t mark)
  * changes the buffer's position by COUNT bytes.  The position must not
  * be moved behind the buffer's limit or before the beginning of the
  * buffer.
+ * \param[in] buffer the buffer
+ * \param[in] count the count to use
  */
 INLINE void
 ldns_buffer_skip(ldns_buffer *buffer, ssize_t count)
@@ -145,6 +153,8 @@ ldns_buffer_skip(ldns_buffer *buffer, ssize_t count)
 
 /**
  * returns the maximum size of the buffer
+ * \param[in] buffer
+ * \return the size
  */
 INLINE size_t
 ldns_buffer_limit(ldns_buffer *buffer)
@@ -155,6 +165,8 @@ ldns_buffer_limit(ldns_buffer *buffer)
 /**
  * changes the buffer's limit.  If the buffer's position is greater
  * than the new limit the position is set to the limit.
+ * \param[in] buffer the buffer
+ * \param[in] limit the new limit
  */
 INLINE void
 ldns_buffer_set_limit(ldns_buffer *buffer, size_t limit)
@@ -167,6 +179,8 @@ ldns_buffer_set_limit(ldns_buffer *buffer, size_t limit)
 
 /**
  * returns the number of bytes the buffer can hold.
+ * \param[in] buffer the buffer
+ * \return the number of bytes
  */
 INLINE size_t
 ldns_buffer_capacity(ldns_buffer *buffer)
@@ -178,6 +192,9 @@ ldns_buffer_capacity(ldns_buffer *buffer)
  * changes the buffer's capacity.  The data is reallocated so any
  * pointers to the data may become invalid.  The buffer's limit is set
  * to the buffer's new capacity.
+ * \param[in] buffer the buffer
+ * \param[in] capacity the capacity to use
+ * \return whether this failed or succeeded
  */
 bool ldns_buffer_set_capacity(ldns_buffer *buffer, size_t capacity);
 
@@ -187,11 +204,17 @@ bool ldns_buffer_set_capacity(ldns_buffer *buffer, size_t capacity);
  *
  * The buffer's limit is always set to the (possibly increased)
  * capacity.
+ * \param[in] buffer the buffer
+ * \param[in] amount amount to use
+ * \return whether this failed or succeeded
  */
 bool ldns_buffer_reserve(ldns_buffer *buffer, size_t amount);
 
 /**
  * returns a pointer to the data at the indicated position.
+ * \param[in] buffer the buffer
+ * \param[in] at position
+ * \return the pointer to the data
  */
 INLINE uint8_t *
 ldns_buffer_at(ldns_buffer *buffer, size_t at)
@@ -203,6 +226,8 @@ ldns_buffer_at(ldns_buffer *buffer, size_t at)
 /**
  * returns a pointer to the beginning of the buffer (the data at
  * position 0).
+ * \param[in] buffer the buffer
+ * \return the pointer
  */
 INLINE uint8_t *
 ldns_buffer_begin(ldns_buffer *buffer)
@@ -213,6 +238,8 @@ ldns_buffer_begin(ldns_buffer *buffer)
 /**
  * returns a pointer to the end of the buffer (the data at the buffer's
  * limit).
+ * \param[in] buffer the buffer
+ * \return the pointer
  */
 INLINE uint8_t *
 ldns_buffer_end(ldns_buffer *buffer)
@@ -222,6 +249,8 @@ ldns_buffer_end(ldns_buffer *buffer)
 
 /**
  * returns a pointer to the data at the buffer's current position.
+ * \param[in] buffer the buffer
+ * \return the pointer
  */
 INLINE uint8_t *
 ldns_buffer_current(ldns_buffer *buffer)
@@ -232,6 +261,9 @@ ldns_buffer_current(ldns_buffer *buffer)
 /**
  * returns the number of bytes remaining between the indicated position and
  * the limit.
+ * \param[in] buffer the buffer
+ * \param[in] at indicated position
+ * \return number of bytes
  */
 INLINE size_t
 ldns_buffer_remaining_at(ldns_buffer *buffer, size_t at)
@@ -244,6 +276,8 @@ ldns_buffer_remaining_at(ldns_buffer *buffer, size_t at)
 /**
  * returns the number of bytes remaining between the buffer's position and
  * limit.
+ * \param[in] buffer the buffer
+ * \return the number of bytes
  */
 INLINE size_t
 ldns_buffer_remaining(ldns_buffer *buffer)
@@ -255,6 +289,10 @@ ldns_buffer_remaining(ldns_buffer *buffer)
  * checks if the buffer has at least COUNT more bytes available.
  * Before reading or writing the caller needs to ensure enough space
  * is available!
+ * \param[in] buffer the buffer
+ * \param[in] at indicated position
+ * \param[in] count how much is available
+ * \return true or false (as int?)
  */
 INLINE int
 ldns_buffer_available_at(ldns_buffer *buffer, size_t at, size_t count)
@@ -264,6 +302,9 @@ ldns_buffer_available_at(ldns_buffer *buffer, size_t at, size_t count)
 
 /**
  * checks if the buffer has count bytes available at the current position
+ * \param[in] buffer the buffer
+ * \param[in] count how much is available
+ * \return true or false (as int?)
  */
 INLINE int
 ldns_buffer_available(ldns_buffer *buffer, size_t count)
@@ -273,7 +314,7 @@ ldns_buffer_available(ldns_buffer *buffer, size_t count)
 
 /**
  * writes the given data to the buffer at the specified position
- *
+ * \param[in] buffer the buffer
  * \param[in] at the position (in number of bytes) to write the data at
  * \param[in] data pointer to the data to write to the buffer
  * \param[in] count the number of bytes of data to write
@@ -287,6 +328,7 @@ ldns_buffer_write_at(ldns_buffer *buffer, size_t at, const void *data, size_t co
 
 /**
  * writes count bytes of data to the current position of the buffer
+ * 
  */
 INLINE void
 ldns_buffer_write(ldns_buffer *buffer, const void *data, size_t count)
