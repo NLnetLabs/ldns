@@ -494,19 +494,6 @@ ldns_status ldns_resolver_push_nameserver_rr(ldns_resolver *r, ldns_rr *rr);
  */
 ldns_status ldns_resolver_push_nameserver_rr_list(ldns_resolver *r, ldns_rr_list *rrlist);
 
-/*
- * Send the query for name as-is but use bg_send and don't wait for 
- * a respons
- * \param[out] **answer a pointer to a ldns_pkt pointer (initialized by this function)
- * \param[in] *r operate using this resolver
- * \param[in] *name query for this name
- * \param[in] t query for this type (may be 0, defaults to A)
- * \param[in] c query for this class (may be 0, default to IN)
- * \param[in] flags the query flags
- * \return ldns_pkt* a packet with the reply from the nameserver
- */
-int ldns_resolver_bgsend();
-
 /**
  * Send the query for using the resolver and take the search list into account
  * \param[in] *r operate using this resolver

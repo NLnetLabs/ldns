@@ -43,6 +43,8 @@
 	New:
 	* ldns_zone_sort: Sort a zone
 	* ldns_bgsend(): background send, returns a socket.
+	Removed:
+	* ldns_resolver_bgsend(): was not used in 1.0.0.
 
 
 18 Oct 2005: 1.0.0: ldns-team

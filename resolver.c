@@ -890,15 +890,6 @@ ldns_resolver_send(ldns_pkt **answer, ldns_resolver *r, ldns_rdf *name,
 	return status;
 }
 
-int
-ldns_resolver_bgsend()
-{
-
-
-
-	return 0;
-}
- 
 ldns_rr *
 ldns_axfr_next(ldns_resolver *resolver)
 {
