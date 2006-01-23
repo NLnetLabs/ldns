@@ -24,8 +24,9 @@
 /** 
  * Zone type
  *
- * basicly a list of RR's with some
+ * A list of RR's with some
  * extra information which comes from the SOA RR
+ * Note: nothing is done to make this efficient (yet).
  */
 struct ldns_struct_zone
 {
@@ -90,7 +91,7 @@ void ldns_zone_set_rrs(ldns_zone *z, ldns_rr_list *rrlist);
 bool ldns_zone_push_rr_list(ldns_zone *z, ldns_rr_list *list);
 
 /**
- * push an singkle rr to a zone structure. This function use pointer
+ * push an single rr to a zone structure. This function use pointer
  * copying, so the rr_list structure inside z is modified!
  * \param[in] z the zone to add to
  * \param[in] rr the rr to add
@@ -100,7 +101,8 @@ bool ldns_zone_push_rr(ldns_zone *z, ldns_rr *rr);
 
 /**
  * Retrieve all resource records from the zone that are glue
- * records. The resulting list does *not* contain clones from the rrs
+ * records. The resulting list does are pointer references
+ * to the zone's data.
  *
  * \param[in] z the zone to look for glue
  * \return the rr_list with the glue
@@ -146,7 +148,7 @@ void ldns_zone_free(ldns_zone *zone);
 void ldns_zone_deep_free(ldns_zone *zone);
 
 /**
- * Just sort the rrs in a zone.
+ * Sort the rrs in a zone, with the current impl. this is slow
  * \param[in] zone the zone to sort
  */
 void ldns_zone_sort(ldns_zone *zone);
