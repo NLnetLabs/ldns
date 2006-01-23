@@ -35,15 +35,58 @@ ldns_pkt *ldns_update_pkt_new(ldns_rdf *zone_rdf, ldns_rr_class clas, ldns_rr_li
 ldns_status ldns_update_pkt_tsig_add(ldns_pkt *p, ldns_resolver *r);
 
 /* access functions */
-uint16_t ldns_update_zocount(const ldns_pkt *);
-uint16_t ldns_update_prcount(const ldns_pkt *);
-uint16_t ldns_update_upcount(const ldns_pkt *);
-uint16_t ldns_update_adcount(const ldns_pkt *);
-void ldns_update_set_zocount(ldns_pkt *, uint16_t);
-void ldns_update_set_prcount(ldns_pkt *, uint16_t);
-void ldns_update_set_upcount(ldns_pkt *, uint16_t);
-void ldns_update_set_adcount(ldns_pkt *, uint16_t);
 
+/**
+ * Get the zo count
+ * \param[in] p the packet
+ * \return the zo count
+ */
+uint16_t ldns_update_zocount(const ldns_pkt *p);
+/**
+ * Get the zo count
+ * \param[in] p the packet
+ * \return the pr count
+ */
+uint16_t ldns_update_prcount(const ldns_pkt *p);
+/**
+ * Get the zo count
+ * \param[in] p the packet
+ * \return the up count
+ */
+uint16_t ldns_update_upcount(const ldns_pkt *p);
+/**
+ * Get the zo count
+ * \param[in] p the packet
+ * \return the ad count
+ */
+uint16_t ldns_update_adcount(const ldns_pkt *p);
+/**
+ * Set the zo count
+ * \param[in] p the packet
+ * \param[in] c the zo count to set
+ */
+void ldns_update_set_zocount(ldns_pkt *p, uint16_t c);
+/**
+ * Set the pr count
+ * \param[in] p the packet
+ * \param[in] c the pr count to set
+ */
+void ldns_update_set_prcount(ldns_pkt *p, uint16_t c);
+/**
+ * Set the up count
+ * \param[in] p the packet
+ * \param[in] c the up count to set
+ */
+void ldns_update_set_upcount(ldns_pkt *p, uint16_t c);
+/**
+ * Set the ad count
+ * \param[in] p the packet
+ * \param[in] c the ad count to set
+ */
+void ldns_update_set_adcount(ldns_pkt *p, uint16_t c);
+
+/* soa functions that need to be configured */
+/** TODO */
 ldns_status ldns_update_soa_mname(ldns_rdf *zone, ldns_resolver *r, ldns_rr_class class, ldns_rdf **mname);
 ldns_status ldns_update_soa_zone_mname(const char *fqdn, ldns_resolver *r, ldns_rr_class class, ldns_rdf **zone_rdf, ldns_rdf **mname_rdf);
 
