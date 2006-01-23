@@ -89,7 +89,7 @@ ldns_resolver_domain(ldns_resolver *r)
 ldns_rdf **
 ldns_resolver_searchlist(ldns_resolver *r)
 {
-	return r->_searchlist;
+	return r->_searchlist_count;
 }
 
 ldns_rdf **
@@ -180,6 +180,12 @@ bool
 ldns_resolver_random(ldns_resolver *r)
 {
 	return r->_random;
+}
+
+size_t
+ldns_resolver_searchlist_count(ldns_resolver *r)
+{
+	return r->_searchlist_count;
 }
 
 /* write */
@@ -451,8 +457,7 @@ ldns_resolver_push_searchlist(ldns_resolver *r, ldns_rdf *d)
 		return;
 	}
 
-	/* need functions XXX */
-	list_count = r->_searchlist_count;
+	list_count = ldns_resolver_searchlist_count(r);
 	searchlist = ldns_resolver_searchlist(r);
 
 	searchlist = LDNS_XREALLOC(searchlist, ldns_rdf *, (list_count + 1));
@@ -676,7 +681,7 @@ ldns_resolver_deep_free(ldns_resolver *res)
 	
 	if (res) {
 		if (res->_searchlist) {
-			for (i = 0; i < res->_searchlist_count; i++) {
+			for (i = 0; i < ldns_resolver_searchlist_count(res); i++) {
 				ldns_rdf_deep_free(res->_searchlist[i]);
 			}
 			LDNS_FREE(res->_searchlist);

@@ -617,8 +617,7 @@ ldns_key_buf2rsa(ldns_buffer *key)
 		/* need some smart comment here XXX*/
 		/* the exponent is too large so it's places
 		 * futher...???? */
-		memcpy(&int16,
-				ldns_buffer_at(key, 1), 2);
+		memcpy(&int16, ldns_buffer_at(key, 1), 2);
 		exp = ntohs(int16);
 		offset = 3;
 	} else {

@@ -619,7 +619,6 @@ ldns_pkt_set_additional(ldns_pkt *p, ldns_rr_list *rr)
 void
 ldns_pkt_set_question(ldns_pkt *p, ldns_rr_list *rr)
 {
-	/* XXX check for only one rr ?? */
 	p->_question = rr;
 }
 

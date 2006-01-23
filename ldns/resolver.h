@@ -269,6 +269,13 @@ char *ldns_resolver_tsig_keydata(ldns_resolver *r);
  */
 ldns_rdf* ldns_resolver_pop_nameserver(ldns_resolver *r);
 
+/**
+ * Return the resolver's searchlist count
+ * \param[in] r the resolver
+ * \return the searchlist count
+ */
+size_t ldns_resolver_searchlist_count(ldns_resolver *r);
+
 /* write access function */
 /**
  * Set the port the resolver should use
