@@ -145,17 +145,64 @@ enum ldns_enum_pkt_type {
 typedef enum ldns_enum_pkt_type ldns_pkt_type;
 
 /* prototypes */
+
 /* read */
+
+/**
+ * Read the packet id
+ * \param[in] p the packet
+ * \return the packet id
+ */
 uint16_t ldns_pkt_id(const ldns_pkt *p);
+/**
+ * Read the packet's qr bit
+ * \param[in] p the packet
+ * \return value of the bit
+ */
 bool ldns_pkt_qr(const ldns_pkt *p);
+/**
+ * Read the packet's aa bit
+ * \param[in] p the packet
+ * \return value of the bit
+ */
 bool ldns_pkt_aa(const ldns_pkt *p);
+/**
+ * Read the packet's tc bit
+ * \param[in] p the packet
+ * \return value of the bit
+ */
 bool ldns_pkt_tc(const ldns_pkt *p);
+/**
+ * Read the packet's rd bit
+ * \param[in] p the packet
+ * \return value of the bit
+ */
 bool ldns_pkt_rd(const ldns_pkt *p);
+/**
+ * Read the packet's cd bit
+ * \param[in] p the packet
+ * \return value of the bit
+ */
 bool ldns_pkt_cd(const ldns_pkt *p);
+/**
+ * Read the packet's ra bit
+ * \param[in] p the packet
+ * \return value of the bit
+ */
 bool ldns_pkt_ra(const ldns_pkt *p);
+/**
+ * Read the packet's ad bit
+ * \param[in] p the packet
+ * \return value of the bit
+ */
 bool ldns_pkt_ad(const ldns_pkt *p);
 
 /* conflict with ldns_pkt_opcode type */
+/**
+ * Read the packet's code
+ * \param[in] p the packet
+ * \return the opcode
+ */
 ldns_pkt_opcode ldns_pkt_get_opcode(const ldns_pkt *p);
 uint8_t ldns_pkt_rcode(const ldns_pkt *p);
 uint16_t ldns_pkt_qdcount(const ldns_pkt *p);
@@ -195,15 +242,60 @@ ldns_rr_list *ldns_pkt_rr_list_by_name_and_type(ldns_pkt *packet, ldns_rdf *owne
  */
 bool ldns_pkt_set_flags(ldns_pkt *pkt, uint16_t flags);
 
+/**
+ * Set the packet's id
+ * \param[in] p the packet
+ * \param[in] id the id to set
+ */
 void ldns_pkt_set_id(ldns_pkt *p, uint16_t id);
+/**
+ * Set the packet's id to a random value
+ * \param[in] p the packet
+ */
 void ldns_pkt_set_random_id(ldns_pkt *p);
+/**
+ * Set the packet's qr bit
+ * \param[in] p the packet
+ * \param[in] b the value to set (boolean)
+ */
 void ldns_pkt_set_qr(ldns_pkt *p, bool b);
+/**
+ * Set the packet's aa bit
+ * \param[in] p the packet
+ * \param[in] b the value to set (boolean)
+ */
 void ldns_pkt_set_aa(ldns_pkt *p, bool b);
+/**
+ * Set the packet's tc bit
+ * \param[in] p the packet
+ * \param[in] b the value to set (boolean)
+ */
 void ldns_pkt_set_tc(ldns_pkt *p, bool b);
+/**
+ * Set the packet's rd bit
+ * \param[in] p the packet
+ * \param[in] b the value to set (boolean)
+ */
 void ldns_pkt_set_rd(ldns_pkt *p, bool b);
+/**
+ * Set the packet's cd bit
+ * \param[in] p the packet
+ * \param[in] b the value to set (boolean)
+ */
 void ldns_pkt_set_cd(ldns_pkt *p, bool b);
+/**
+ * Set the packet's ra bit
+ * \param[in] p the packet
+ * \param[in] b the value to set (boolean)
+ */
 void ldns_pkt_set_ra(ldns_pkt *p, bool b);
+/**
+ * Set the packet's ad bit
+ * \param[in] p the packet
+ * \param[in] b the value to set (boolean)
+ */
 void ldns_pkt_set_ad(ldns_pkt *p, bool b);
+
 void ldns_pkt_set_opcode(ldns_pkt *p, ldns_pkt_opcode c);
 void ldns_pkt_set_rcode(ldns_pkt *p, uint8_t c);
 void ldns_pkt_set_qdcount(ldns_pkt *p, uint16_t c);
@@ -319,8 +411,7 @@ void ldns_pkt_set_question(ldns_pkt *p, ldns_rr_list *rr);
  */
 void ldns_pkt_set_authority(ldns_pkt *p, ldns_rr_list *rr);
 
-
-/* lua helper stuff */
+/* lua helper stuff KEEP THIS?? NO YES */
 ldns_rr * ldns_pkt_get_rr(ldns_pkt *p, uint16_t n);
 ldns_rr * ldns_pkt_set_rr(ldns_pkt *p, ldns_rr *rr, uint16_t n);
 bool ldns_pkt_insert_rr(ldns_pkt *p, ldns_rr *rr, uint16_t n);
