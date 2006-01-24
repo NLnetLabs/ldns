@@ -97,7 +97,7 @@ ldns_key_free, ldns_key_deep_free, ldns_key_list_free
 ### MIEK TOT HIER TOT HIER
 
 #	lists
-ldns_key_list_new, ldns_key_list_push_key,  ldns_key_list_pop_key, ldns_key_list_key_count, ldns_key_list_key
+ldns_key_list_new, ldns_key_list_push_key, ldns_key_list_pop_key, ldns_key_list_key_count, ldns_key_list_key
 ldns_key_rsa_key, ldns_key_dsa_key, ldns_key_algorithm, ldns_key_hmac_key
 
 #	gets/sets
@@ -156,7 +156,7 @@ ldns_rr_descriptor, ldns_rr_descript, ldns_rr_descriptor_minimum, ldns_rr_descri
 # packet.h
 ldns_pkt, ldns_pkt_section, ldns_pkt_type | ldns_pkt_new, ldns_pkt_id, ldns_pkt_set_flags, ldns_pkt_edns
 
-ldns_pkt_new, ldns_pkt_free, ldns_pkt_print, ldns_pkt_query_new,  ldns_pkt_query_new_frm_str, ldns_pkt_reply_type | ldns_pkt
+ldns_pkt_new, ldns_pkt_free, ldns_pkt_print, ldns_pkt_query_new, ldns_pkt_query_new_frm_str, ldns_pkt_reply_type | ldns_pkt
 
 #	gets
 ldns_pkt_id, ldns_pkt_qr, ldns_pkt_aa, ldns_pkt_tc, ldns_pkt_rd, ldns_pkt_cd, ldns_pkt_ra, ldns_pkt_ad, ldns_pkt_opcode, ldns_pkt_rcode, ldns_pkt_qdcount, ldns_pkt_ancount, ldns_pkt_nscount, ldns_pkt_arcount, ldns_pkt_answerfrom, ldns_pkt_when, ldns_pkt_querytime, ldns_pkt_size, ldns_pkt_tsig, ldns_pkt_question, ldns_pkt_answer, ldns_pkt_authority, ldns_pkt_additional, ldns_pkt_get_section, ldns_pkt_rr_list_by_name, ldns_pkt_rr_list_by_type, ldns_pkt_rr_list_by_name_and_type | ldns_pkt 

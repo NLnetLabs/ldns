@@ -1,0 +1,184 @@
+#!/bin/sh
+# This is a shell archive (produced by GNU sharutils 4.2.1).
+# To extract the files from this archive, save it to some FILE, remove
+# everything before the `!/bin/sh' line above, then type `sh FILE'.
+#
+# Made on 2006-01-24 10:55 CET by <miekg@floep>.
+# Source directory was `/home/miekg/svn/libdns/trunk/test/13-manpage-check.dir'.
+#
+# Existing files will *not* be overwritten unless `-c' is specified.
+#
+# This shar contains:
+# length mode       name
+# ------ ---------- ------------------------------------------
+#    286 -rw------- 13-manpage-check.dsc
+#     84 -rw------- 13-manpage-check.help
+#    833 -rw------- 13-manpage-check.test
+#
+save_IFS="${IFS}"
+IFS="${IFS}:"
+gettext_dir=FAILED
+locale_dir=FAILED
+first_param="$1"
+for dir in $PATH
+do
+  if test "$gettext_dir" = FAILED && test -f $dir/gettext \
+     && ($dir/gettext --version >/dev/null 2>&1)
+  then
+    set `$dir/gettext --version 2>&1`
+    if test "$3" = GNU
+    then
+      gettext_dir=$dir
+    fi
+  fi
+  if test "$locale_dir" = FAILED && test -f $dir/shar \
+     && ($dir/shar --print-text-domain-dir >/dev/null 2>&1)
+  then
+    locale_dir=`$dir/shar --print-text-domain-dir`
+  fi
+done
+IFS="$save_IFS"
+if test "$locale_dir" = FAILED || test "$gettext_dir" = FAILED
+then
+  echo=echo
+else
+  TEXTDOMAINDIR=$locale_dir
+  export TEXTDOMAINDIR
+  TEXTDOMAIN=sharutils
+  export TEXTDOMAIN
+  echo="$gettext_dir/gettext -s"
+fi
+if touch -am -t 200112312359.59 $$.touch >/dev/null 2>&1 && test ! -f 200112312359.59 -a -f $$.touch; then
+  shar_touch='touch -am -t $1$2$3$4$5$6.$7 "$8"'
+elif touch -am 123123592001.59 $$.touch >/dev/null 2>&1 && test ! -f 123123592001.59 -a ! -f 123123592001.5 -a -f $$.touch; then
+  shar_touch='touch -am $3$4$5$6$1$2.$7 "$8"'
+elif touch -am 1231235901 $$.touch >/dev/null 2>&1 && test ! -f 1231235901 -a -f $$.touch; then
+  shar_touch='touch -am $3$4$5$6$2 "$8"'
+else
+  shar_touch=:
+  echo
+  $echo 'WARNING: not restoring timestamps.  Consider getting and'
+  $echo "installing GNU \`touch', distributed in GNU File Utilities..."
+  echo
+fi
+rm -f 200112312359.59 123123592001.59 123123592001.5 1231235901 $$.touch
+#
+if mkdir _sh11100; then
+  $echo 'x -' 'creating lock directory'
+else
+  $echo 'failed to create lock directory'
+  exit 1
+fi
+# ============= 13-manpage-check.dsc ==============
+if test -f '13-manpage-check.dsc' && test "$first_param" != -c; then
+  $echo 'x -' SKIPPING '13-manpage-check.dsc' '(file already exists)'
+else
+  $echo 'x -' extracting '13-manpage-check.dsc' '(text)'
+  sed 's/^X//' << 'SHAR_EOF' > '13-manpage-check.dsc' &&
+BaseName: 13-manpage-check
+Version: 1.0
+Description: Check the consistency of the manpages
+CreationDate: Tue Jan 24 10:32:37 CET 2006
+Maintainer: Miek Gieben
+Category: 
+Component:
+Depends: 
+Help: 13-manpage-check.help
+Pre: 
+Post:
+Test: 13-manpage-check.test
+AuxFiles: 
+Passed:
+Failure:
+SHAR_EOF
+  (set 20 06 01 24 10 32 57 '13-manpage-check.dsc'; eval "$shar_touch") &&
+  chmod 0600 '13-manpage-check.dsc' ||
+  $echo 'restore of' '13-manpage-check.dsc' 'failed'
+  if ( md5sum --help 2>&1 | grep 'sage: md5sum \[' ) >/dev/null 2>&1 \
+  && ( md5sum --version 2>&1 | grep -v 'textutils 1.12' ) >/dev/null; then
+    md5sum -c << SHAR_EOF >/dev/null 2>&1 \
+    || $echo '13-manpage-check.dsc:' 'MD5 check failed'
+92789f5c4d03ff1d86e4c6a05fa2bfbd  13-manpage-check.dsc
+SHAR_EOF
+  else
+    shar_count="`LC_ALL= LC_CTYPE= LANG= wc -c < '13-manpage-check.dsc'`"
+    test 286 -eq "$shar_count" ||
+    $echo '13-manpage-check.dsc:' 'original size' '286,' 'current size' "$shar_count!"
+  fi
+fi
+# ============= 13-manpage-check.help ==============
+if test -f '13-manpage-check.help' && test "$first_param" != -c; then
+  $echo 'x -' SKIPPING '13-manpage-check.help' '(file already exists)'
+else
+  $echo 'x -' extracting '13-manpage-check.help' '(text)'
+  sed 's/^X//' << 'SHAR_EOF' > '13-manpage-check.help' &&
+No arguments are used for this test.
+X
+Check if all our functions have a manual page
+SHAR_EOF
+  (set 20 06 01 24 10 33 11 '13-manpage-check.help'; eval "$shar_touch") &&
+  chmod 0600 '13-manpage-check.help' ||
+  $echo 'restore of' '13-manpage-check.help' 'failed'
+  if ( md5sum --help 2>&1 | grep 'sage: md5sum \[' ) >/dev/null 2>&1 \
+  && ( md5sum --version 2>&1 | grep -v 'textutils 1.12' ) >/dev/null; then
+    md5sum -c << SHAR_EOF >/dev/null 2>&1 \
+    || $echo '13-manpage-check.help:' 'MD5 check failed'
+fa2f58592014f428ed716428521254d0  13-manpage-check.help
+SHAR_EOF
+  else
+    shar_count="`LC_ALL= LC_CTYPE= LANG= wc -c < '13-manpage-check.help'`"
+    test 84 -eq "$shar_count" ||
+    $echo '13-manpage-check.help:' 'original size' '84,' 'current size' "$shar_count!"
+  fi
+fi
+# ============= 13-manpage-check.test ==============
+if test -f '13-manpage-check.test' && test "$first_param" != -c; then
+  $echo 'x -' SKIPPING '13-manpage-check.test' '(file already exists)'
+else
+  $echo 'x -' extracting '13-manpage-check.test' '(text)'
+  sed 's/^X//' << 'SHAR_EOF' > '13-manpage-check.test' &&
+# 
+# source the master var file when it's there
+[ -f ../.tpkg.var.master ] && source ../.tpkg.var.master
+# use .tpkg.var.test for in test variable passing
+[ -f .tpkg.var.test ] && source .tpkg.var.test
+# svnserve resets the path, you may need to adjust it, like this:
+PATH=$PATH:/usr/sbin:/sbin:/usr/local/bin:/usr/local/sbin:.
+X
+cd ../../
+# do it twice for failure output in logs
+case $OSTYPE in
+X        linux*|freebsd*)
+X        grep '^ldns_' *.c | grep \( | \
+awk -F: ' { print $2 } ' | awk -F\( ' { print $1 }' > functions
+X        grep -v '^#' ./doc/function_manpages | sed 's/, /\n/g' | \
+sed 's/|.*$//' | sort | uniq  | tail +1 > manpages
+X                A=`diff -u functions manpages | sort|wc -l`
+X                diff -u functions manpages | sort
+X        ;;
+esac
+X
+if [[ $A -gt 5 ]]; then
+X        exit 1
+else
+X        exit 1
+fi
+X
+SHAR_EOF
+  (set 20 06 01 24 10 55 12 '13-manpage-check.test'; eval "$shar_touch") &&
+  chmod 0600 '13-manpage-check.test' ||
+  $echo 'restore of' '13-manpage-check.test' 'failed'
+  if ( md5sum --help 2>&1 | grep 'sage: md5sum \[' ) >/dev/null 2>&1 \
+  && ( md5sum --version 2>&1 | grep -v 'textutils 1.12' ) >/dev/null; then
+    md5sum -c << SHAR_EOF >/dev/null 2>&1 \
+    || $echo '13-manpage-check.test:' 'MD5 check failed'
+c2f5fe65e1d63c33fca88191189d5ca6  13-manpage-check.test
+SHAR_EOF
+  else
+    shar_count="`LC_ALL= LC_CTYPE= LANG= wc -c < '13-manpage-check.test'`"
+    test 833 -eq "$shar_count" ||
+    $echo '13-manpage-check.test:' 'original size' '833,' 'current size' "$shar_count!"
+  fi
+fi
+rm -fr _sh11100
+exit 0
