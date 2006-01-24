@@ -230,8 +230,8 @@ allconfclean: drill-confclean
 tests:
 	for tests in ${srcdir}/test/*.tpkg; \
 	do \
-		echo "tpkg -b test -a `pwd` exe `basename $$tests`"; \
-		tpkg -b test -a `pwd` exe `basename $$tests`; \
+		echo "tpkg -b ${srcdir}/test -a `pwd` exe `basename $$tests`"; \
+		tpkg -b ${srcdir}/test -a `pwd` exe `basename $$tests`; \
 	done
 	tpkg -b test report
 
