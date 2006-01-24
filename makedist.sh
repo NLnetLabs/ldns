@@ -141,7 +141,7 @@ info "LDNS version: $version"
 
 if [ "$SNAPSHOT" = "yes" ]; then
     info "Building LDNS snapshot."
-    version="$version-`date +%Y%m%d`"
+    version="${version}_pre_`date +%Y%m%d`"
     info "Snapshot version number: $version"
 fi
 
