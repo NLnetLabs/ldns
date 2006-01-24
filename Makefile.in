@@ -219,12 +219,23 @@ malloc$U.o:	$(srcdir)/compat/malloc.c
 	              | sed '\''s!\(.*\)\.o[ :]*!$(dir $@)\1.o $@ : !g'\'' > $@; \
 	              [ -s $@ ] || rm -f $@'
 
-allclean: drill-clean clean
+allclean: drill-clean test-clean clean
 
 allrealclean: drill-realclean 
 
 allconf: drill-config 
 
 allconfclean: drill-confclean 
+
+tests:
+	for tests in ${srcdir}/test/*.tpkg; \
+	do \
+		echo "tpkg -b test -a `pwd` exe `basename $$tests`"; \
+		tpkg -b test -a `pwd` exe `basename $$tests`; \
+	done
+	tpkg -b test report
+
+test-clean:
+	tpkg -b test clean
 
 #include $(ALL_SOURCES:.c=.d)
