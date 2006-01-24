@@ -2,7 +2,7 @@
 # other names are aliases (symlinks)
 # all functions specified on the same line are included in the
 # same manual page
-# function named after the pipe `|' are put in the see also section
+# function named after the pipe `|' are put in the "see also" section
 
 # functions that must be included, separated by commas
 
