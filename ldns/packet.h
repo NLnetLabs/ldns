@@ -91,6 +91,7 @@ struct ldns_struct_pkt
 	uint16_t _answersize;
 	ldns_rdf *_answerfrom;
 	char *_when;
+        /** timestamp of when the packet was sent */
 	struct timeval timestamp;
 	/**  query duration */
 	uint32_t _querytime;
@@ -204,21 +205,102 @@ bool ldns_pkt_ad(const ldns_pkt *p);
  * \return the opcode
  */
 ldns_pkt_opcode ldns_pkt_get_opcode(const ldns_pkt *p);
+
+/**
+ * Return the packet's respons code
+ * \param[in] p the packet
+ * \return the respons code
+ */
 uint8_t ldns_pkt_rcode(const ldns_pkt *p);
+/**
+ * Return the packet's qd count 
+ * \param[in] p the packet
+ * \return the qd count
+ */
 uint16_t ldns_pkt_qdcount(const ldns_pkt *p);
+/**
+ * Return the packet's an count
+ * \param[in] p the packet
+ * \return the an count
+ */
 uint16_t ldns_pkt_ancount(const ldns_pkt *p);
+/**
+ * Return the packet's ns count
+ * \param[in] p the packet
+ * \return the ns count
+ */
 uint16_t ldns_pkt_nscount(const ldns_pkt *p);
+/**
+ * Return the packet's ar count
+ * \param[in] p the packet
+ * \return the ar count
+ */
 uint16_t ldns_pkt_arcount(const ldns_pkt *p);
+
+/** 
+ * Return the packet's answerfrom
+ * \param[in] p packet
+ * \return the name of the server
+ */
 ldns_rdf *ldns_pkt_answerfrom(const ldns_pkt *p);
+
+/** 
+ * Return the packet's date of sending
+ * \param[in] p packet
+ * \return the time in ascii
+ */
 char *ldns_pkt_when(const ldns_pkt *p);
+
+/**
+ * Return the packet's timestamp
+ * \param[in] p the packet
+ * \return the timestamp
+ */
 struct timeval ldns_pkt_timestamp(const ldns_pkt *p);
+/**
+ * Return the packet's querytime
+ * \param[in] p the packet
+ * \return the querytime
+ */
 uint32_t ldns_pkt_querytime(const ldns_pkt *p);
+
+/**
+ * Return the packet's size in bytes
+ * \param[in] p the packet
+ * \return the size
+ */
 size_t ldns_pkt_size(const ldns_pkt *p);
+
+/**
+ * Return the packet's tsig pseudo rr's
+ * \param[in] p the packet
+ * \return the tsig rr
+ */
 ldns_rr *ldns_pkt_tsig(const ldns_pkt *p);
 
+/**
+ * Return the packet's question section
+ * \param[in] p the packet
+ * \return the section
+ */
 ldns_rr_list *ldns_pkt_question(const ldns_pkt *p);
+/**
+ * Return the packet's answer section
+ * \param[in] p the packet
+ * \return the section
+ */
 ldns_rr_list *ldns_pkt_answer(const ldns_pkt *p);
+/**
+ * Return the packet's authority section
+ * \param[in] p the packet
+ * \return the section
+ */
 ldns_rr_list *ldns_pkt_authority(const ldns_pkt *p);
+/**
+ * Return the packet's additional section
+ * \param[in] p the packet
+ * \return the section
+ */
 ldns_rr_list *ldns_pkt_additional(const ldns_pkt *p);
 
 /**
@@ -230,8 +312,33 @@ ldns_rr_list *ldns_pkt_additional(const ldns_pkt *p);
  */
 ldns_rr_list *ldns_pkt_get_section_clone(ldns_pkt *p, ldns_pkt_section s);
 
+/**
+ * return all the rr with a specific name from a packet. Optionally
+ * specify from which section in the packet
+ * \param[in] p the packet
+ * \param[in] r the name
+ * \param[in] s the packet's section
+ * \return a list with the rr's or NULL if none were found
+ */
 ldns_rr_list *ldns_pkt_rr_list_by_name(ldns_pkt *p, ldns_rdf *r, ldns_pkt_section s);
+/**
+ * return all the rr with a specific type from a packet. Optionally
+ * specify from which section in the packet
+ * \param[in] p the packet
+ * \param[in] t the type
+ * \param[in] s the packet's section
+ * \return a list with the rr's or NULL if none were found
+ */
 ldns_rr_list *ldns_pkt_rr_list_by_type(ldns_pkt *p, ldns_rr_type t, ldns_pkt_section s);
+/**
+ * return all the rr with a specific type and type from a packet. Optionally
+ * specify from which section in the packet
+ * \param[in] packet the packet
+ * \param[in] ownername the name
+ * \param[in] type the type
+ * \param[in] sec the packet's section
+ * \return a list with the rr's or NULL if none were found
+ */
 ldns_rr_list *ldns_pkt_rr_list_by_name_and_type(ldns_pkt *packet, ldns_rdf *ownername, ldns_rr_type type, ldns_pkt_section sec);
 
 /**
@@ -296,18 +403,84 @@ void ldns_pkt_set_ra(ldns_pkt *p, bool b);
  */
 void ldns_pkt_set_ad(ldns_pkt *p, bool b);
 
+/**
+ * Set the packet's opcode
+ * \param[in] p the packet
+ * \param[in] c the opcode
+ */
 void ldns_pkt_set_opcode(ldns_pkt *p, ldns_pkt_opcode c);
+/**
+ * Set the packet's respons code
+ * \param[in] p the packet
+ * \param[in] c the rcode
+ */
 void ldns_pkt_set_rcode(ldns_pkt *p, uint8_t c);
+/**
+ * Set the packet's qd count
+ * \param[in] p the packet
+ * \param[in] c the count
+ */
 void ldns_pkt_set_qdcount(ldns_pkt *p, uint16_t c);
+/**
+ * Set the packet's an count
+ * \param[in] p the packet
+ * \param[in] c the count
+ */
 void ldns_pkt_set_ancount(ldns_pkt *p, uint16_t c);
+/**
+ * Set the packet's ns count
+ * \param[in] p the packet
+ * \param[in] c the count
+ */
 void ldns_pkt_set_nscount(ldns_pkt *p, uint16_t c);
+/**
+ * Set the packet's arcount
+ * \param[in] p the packet
+ * \param[in] c the count
+ */
 void ldns_pkt_set_arcount(ldns_pkt *p, uint16_t c);
+/**
+ * Set the packet's answering server
+ * \param[in] p the packet
+ * \param[in] r the address
+ */
 void ldns_pkt_set_answerfrom(ldns_pkt *p, ldns_rdf *r);
+/**
+ * Set the packet's query time
+ * \param[in] p the packet
+ * \param[in] t the querytime in msec
+ */
 void ldns_pkt_set_querytime(ldns_pkt *p, uint32_t t);
+/**
+ * Set the packet's size
+ * \param[in] p the packet
+ * \param[in] s the size
+ */
 void ldns_pkt_set_size(ldns_pkt *p, size_t s);
+/**
+ * Set the packet's when string
+ * \param[in] p the packet
+ * \param[in] w the string with the date
+ */
 void ldns_pkt_set_when(ldns_pkt *p, char *w);
+/**
+ * Set the packet's timestamp
+ * \param[in] p the packet
+ * \param[in] timeval the timestamp
+ */
 void ldns_pkt_set_timestamp(ldns_pkt *p, struct timeval);
+/**
+ * Set a packet's section count to x
+ * \param[in] p the packet
+ * \param[in] s the section
+ * \param[in] x the section count
+ */
 void ldns_pkt_set_section_count(ldns_pkt *p, ldns_pkt_section s, uint16_t x);
+/**
+ * Set the packet's tsig rr
+ * \param[in] p the packet
+ * \param[in] t the tsig rr
+ */
 void ldns_pkt_set_tsig(ldns_pkt *p, ldns_rr *t);
 
 /**
@@ -318,12 +491,48 @@ void ldns_pkt_set_tsig(ldns_pkt *p, ldns_rr *t);
  */
 ldns_pkt_type ldns_pkt_reply_type(ldns_pkt *p);
 
+/**
+ * return the packet's edns udp size
+ * \param[in] packet the packet
+ * \return the size
+ */
 uint16_t ldns_pkt_edns_udp_size(const ldns_pkt *packet);
+/**
+ * return the packet's edns extended rcode
+ * \param[in] packet the packet
+ * \return the rcode
+ */
 uint8_t ldns_pkt_edns_extended_rcode(const ldns_pkt *packet);
+/**
+ * return the packet's edns version
+ * \param[in] packet the packet
+ * \return the version
+ */
 uint8_t ldns_pkt_edns_version(const ldns_pkt *packet);
+/**
+ * return the packet's edns z value
+ * \param[in] packet the packet
+ * \return the z value
+ */
 uint16_t ldns_pkt_edns_z(const ldns_pkt *packet);
+/**
+ * return the packet's edns data
+ * \param[in] packet the packet
+ * \return the data
+ */
 ldns_rdf *ldns_pkt_edns_data(const ldns_pkt *packet);
+
+/**
+ * return the packet's edns do bit
+ * \param[in] packet the packet
+ * \return the bit's value
+ */
 bool ldns_pkt_edns_do(const ldns_pkt *packet);
+/**
+ * Set the packet's edns do bit
+ * \param[in] packet the packet
+ * \param[in] value the bit's new value
+ */
 void ldns_pkt_set_edns_do(ldns_pkt *packet, bool value);
 
 /**
@@ -336,10 +545,36 @@ void ldns_pkt_set_edns_do(ldns_pkt *packet, bool value);
  * \return true if packet needs edns rr
  */
 bool ldns_pkt_edns(const ldns_pkt *packet);
+
+/**
+ * Set the packet's edns udp size
+ * \param[in] packet the packet
+ * \param[in] s the size
+ */
 void ldns_pkt_set_edns_udp_size(ldns_pkt *packet, uint16_t s);
+/**
+ * Set the packet's edns extended rcode
+ * \param[in] packet the packet
+ * \param[in] c the code
+ */
 void ldns_pkt_set_edns_extended_rcode(ldns_pkt *packet, uint8_t c);
+/**
+ * Set the packet's edns version
+ * \param[in] packet the packet
+ * \param[in] v the version
+ */
 void ldns_pkt_set_edns_version(ldns_pkt *packet, uint8_t v);
+/**
+ * Set the packet's edns z value
+ * \param[in] packet the packet
+ * \param[in] z the value
+ */
 void ldns_pkt_set_edns_z(ldns_pkt *packet, uint16_t z);
+/**
+ * Set the packet's edns data
+ * \param[in] packet the packet
+ * \param[in] data the data
+ */
 void ldns_pkt_set_edns_data(ldns_pkt *packet, ldns_rdf *data);
 
 /**
@@ -411,10 +646,10 @@ void ldns_pkt_set_question(ldns_pkt *p, ldns_rr_list *rr);
  */
 void ldns_pkt_set_authority(ldns_pkt *p, ldns_rr_list *rr);
 
-/* lua helper stuff KEEP THIS?? NO YES */
+/* lua helper stuff KEEP THIS?? NO/YES */
+/**  TODO or remove */
 ldns_rr * ldns_pkt_get_rr(ldns_pkt *p, uint16_t n);
 ldns_rr * ldns_pkt_set_rr(ldns_pkt *p, ldns_rr *rr, uint16_t n);
 bool ldns_pkt_insert_rr(ldns_pkt *p, ldns_rr *rr, uint16_t n);
-	
 
 #endif  /* LDNS_PACKET_H */

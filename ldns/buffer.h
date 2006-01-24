@@ -328,7 +328,9 @@ ldns_buffer_write_at(ldns_buffer *buffer, size_t at, const void *data, size_t co
 
 /**
  * writes count bytes of data to the current position of the buffer
- * 
+ * \param[in] buffer the buffer
+ * \param[in] data the data to write
+ * \param[in] count the lenght of the data to write
  */
 INLINE void
 ldns_buffer_write(ldns_buffer *buffer, const void *data, size_t count)
@@ -339,6 +341,9 @@ ldns_buffer_write(ldns_buffer *buffer, const void *data, size_t count)
 
 /**
  * copies the given (null-delimited) string to the specified position at the buffer
+ * \param[in] buffer the buffer
+ * \param[in] at the position in the buffer
+ * \param[in] str the string to write
  */
 INLINE void
 ldns_buffer_write_string_at(ldns_buffer *buffer, size_t at, const char *str)
@@ -348,6 +353,8 @@ ldns_buffer_write_string_at(ldns_buffer *buffer, size_t at, const char *str)
 
 /**
  * copies the given (null-delimited) string to the current position at the buffer
+ * \param[in] buffer the buffer
+ * \param[in] str the string to write
  */
 INLINE void
 ldns_buffer_write_string(ldns_buffer *buffer, const char *str)
@@ -357,6 +364,9 @@ ldns_buffer_write_string(ldns_buffer *buffer, const char *str)
 
 /**
  * writes the given byte of data at the given position in the buffer
+ * \param[in] buffer the buffer
+ * \param[in] at the position in the buffer
+ * \param[in] data the 8 bits to write
  */
 INLINE void
 ldns_buffer_write_u8_at(ldns_buffer *buffer, size_t at, uint8_t data)
@@ -367,6 +377,8 @@ ldns_buffer_write_u8_at(ldns_buffer *buffer, size_t at, uint8_t data)
 
 /**
  * writes the given byte of data at the current position in the buffer
+ * \param[in] buffer the buffer
+ * \param[in] data the 8 bits to write
  */
 INLINE void
 ldns_buffer_write_u8(ldns_buffer *buffer, uint8_t data)
@@ -377,6 +389,9 @@ ldns_buffer_write_u8(ldns_buffer *buffer, uint8_t data)
 
 /**
  * writes the given 2 byte integer at the given position in the buffer
+ * \param[in] buffer the buffer
+ * \param[in] at the position in the buffer
+ * \param[in] data the 16 bits to write
  */
 INLINE void
 ldns_buffer_write_u16_at(ldns_buffer *buffer, size_t at, uint16_t data)
@@ -387,6 +402,8 @@ ldns_buffer_write_u16_at(ldns_buffer *buffer, size_t at, uint16_t data)
 
 /**
  * writes the given 2 byte integer at the current position in the buffer
+ * \param[in] buffer the buffer
+ * \param[in] data the 16 bits to write
  */
 INLINE void
 ldns_buffer_write_u16(ldns_buffer *buffer, uint16_t data)
@@ -397,6 +414,9 @@ ldns_buffer_write_u16(ldns_buffer *buffer, uint16_t data)
 
 /**
  * writes the given 4 byte integer at the given position in the buffer
+ * \param[in] buffer the buffer
+ * \param[in] at the position in the buffer
+ * \param[in] data the 32 bits to write
  */
 INLINE void
 ldns_buffer_write_u32_at(ldns_buffer *buffer, size_t at, uint32_t data)
@@ -407,6 +427,8 @@ ldns_buffer_write_u32_at(ldns_buffer *buffer, size_t at, uint32_t data)
 
 /**
  * writes the given 4 byte integer at the current position in the buffer
+ * \param[in] buffer the buffer
+ * \param[in] data the 32 bits to write
  */
 INLINE void
 ldns_buffer_write_u32(ldns_buffer *buffer, uint32_t data)
@@ -417,6 +439,10 @@ ldns_buffer_write_u32(ldns_buffer *buffer, uint32_t data)
 
 /**
  * copies count bytes of data at the given position to the given data-array
+ * \param[in] buffer the buffer
+ * \param[in] at the position in the buffer to start
+ * \param[out] data buffer to copy to
+ * \param[in] count the length of the data to copy
  */
 INLINE void
 ldns_buffer_read_at(ldns_buffer *buffer, size_t at, void *data, size_t count)
@@ -427,6 +453,9 @@ ldns_buffer_read_at(ldns_buffer *buffer, size_t at, void *data, size_t count)
 
 /**
  * copies count bytes of data at the current position to the given data-array
+ * \param[in] buffer the buffer
+ * \param[out] data buffer to copy to
+ * \param[in] count the length of the data to copy
  */
 INLINE void
 ldns_buffer_read(ldns_buffer *buffer, void *data, size_t count)
@@ -437,6 +466,9 @@ ldns_buffer_read(ldns_buffer *buffer, void *data, size_t count)
 
 /**
  * returns the byte value at the given position in the buffer
+ * \param[in] buffer the buffer
+ * \param[in] at the position in the buffer
+ * \return 1 byte integer
  */
 INLINE uint8_t
 ldns_buffer_read_u8_at(ldns_buffer *buffer, size_t at)
@@ -447,6 +479,8 @@ ldns_buffer_read_u8_at(ldns_buffer *buffer, size_t at)
 
 /**
  * returns the byte value at the current position in the buffer
+ * \param[in] buffer the buffer
+ * \return 1 byte integer
  */
 INLINE uint8_t
 ldns_buffer_read_u8(ldns_buffer *buffer)
@@ -458,6 +492,9 @@ ldns_buffer_read_u8(ldns_buffer *buffer)
 
 /**
  * returns the 2-byte integer value at the given position in the buffer
+ * \param[in] buffer the buffer
+ * \param[in] at position in the buffer
+ * \return 2 byte integer
  */
 INLINE uint16_t
 ldns_buffer_read_u16_at(ldns_buffer *buffer, size_t at)
@@ -468,6 +505,8 @@ ldns_buffer_read_u16_at(ldns_buffer *buffer, size_t at)
 
 /**
  * returns the 2-byte integer value at the current position in the buffer
+ * \param[in] buffer the buffer
+ * \return 2 byte integer
  */
 INLINE uint16_t
 ldns_buffer_read_u16(ldns_buffer *buffer)
@@ -479,6 +518,9 @@ ldns_buffer_read_u16(ldns_buffer *buffer)
 
 /**
  * returns the 4-byte integer value at the given position in the buffer
+ * \param[in] buffer the buffer
+ * \param[in] at position in the buffer
+ * \return 4 byte integer
  */
 INLINE uint32_t
 ldns_buffer_read_u32_at(ldns_buffer *buffer, size_t at)
@@ -489,6 +531,8 @@ ldns_buffer_read_u32_at(ldns_buffer *buffer, size_t at)
 
 /**
  * returns the 4-byte integer value at the current position in the buffer
+ * \param[in] buffer the buffer
+ * \return 4 byte integer
  */
 INLINE uint32_t
 ldns_buffer_read_u32(ldns_buffer *buffer)
@@ -500,6 +544,8 @@ ldns_buffer_read_u32(ldns_buffer *buffer)
 
 /**
  * returns the status of the buffer
+ * \param[in] buffer
+ * \return the status
  */
 INLINE ldns_status
 ldns_buffer_status(ldns_buffer *buffer)
@@ -509,6 +555,8 @@ ldns_buffer_status(ldns_buffer *buffer)
 
 /**
  * returns true if the status of the buffer is LDNS_STATUS_OK, false otherwise
+ * \param[in] buffer the buffer
+ * \return true or false
  */
 INLINE bool
 ldns_buffer_status_ok(ldns_buffer *buffer)
