@@ -36,6 +36,8 @@ ldns_send(ldns_pkt **result, ldns_resolver *r, ldns_pkt *query_pkt)
 	size_t *rtt;
 	ldns_pkt *reply;
 	ldns_buffer *qb;
+	bool all_servers_rtt_inf;
+	uint8_t retries;
 
 	uint8_t *reply_bytes = NULL;
 	size_t reply_size = 0;
@@ -48,6 +50,8 @@ ldns_send(ldns_pkt **result, ldns_resolver *r, ldns_pkt *query_pkt)
 	rtt = ldns_resolver_rtt(r);
 	ns_array = ldns_resolver_nameservers(r);
 	reply = NULL; ns_len = 0;
+
+	all_servers_rtt_inf = true;
 
 	if (!query_pkt) {
 		/* nothing to do? */
@@ -76,6 +80,8 @@ ldns_send(ldns_pkt **result, ldns_resolver *r, ldns_pkt *query_pkt)
 			/* not reacheable nameserver! */
 			continue;
 		}
+		all_servers_rtt_inf = false;
+
 		ns = ldns_rdf2native_sockaddr_storage(ns_array[i],
 				ldns_resolver_port(r), &ns_len);
 		
@@ -85,6 +91,7 @@ ldns_send(ldns_pkt **result, ldns_resolver *r, ldns_pkt *query_pkt)
 			/* FREE OF NS */
 			/* continue; */
 		}
+
 		if ((ns->ss_family == AF_INET6) &&
 				 (ldns_resolver_ip6(r) == LDNS_RESOLV_INET)) {
 			/*printf("mismatch!!! 6 - 4\n");*/
@@ -93,15 +100,27 @@ ldns_send(ldns_pkt **result, ldns_resolver *r, ldns_pkt *query_pkt)
 
 		gettimeofday(&tv_s, NULL);
 
+		send_status = LDNS_STATUS_ERR;
 		/* reply_bytes implicitly handles our error */
 		if (1 == ldns_resolver_usevc(r)) {
-			send_status = ldns_tcp_send(&reply_bytes, qb, ns, (socklen_t)ns_len, ldns_resolver_timeout(r), &reply_size);
+			for (retries = ldns_resolver_retry(r); retries > 0; retries--) {
+				send_status = ldns_tcp_send(&reply_bytes, qb, ns, (socklen_t)ns_len, ldns_resolver_timeout(r), &reply_size);
+				if (send_status == LDNS_STATUS_OK) {
+					continue;
+				}
+			}
 		} else {
-			send_status = ldns_udp_send(&reply_bytes, qb, ns, (socklen_t)ns_len, ldns_resolver_timeout(r), &reply_size);
+			for (retries = ldns_resolver_retry(r); retries > 0; retries--) {
+				send_status = ldns_udp_send(&reply_bytes, qb, ns, (socklen_t)ns_len, ldns_resolver_timeout(r), &reply_size);
+				if (send_status == LDNS_STATUS_OK) {
+					continue;
+				}
+			}
 		}
 
 		if (send_status != LDNS_STATUS_OK) {
 			ldns_resolver_set_nameserver_rtt(r, i, LDNS_RESOLV_RTT_INF);
+			status = LDNS_STATUS_ERR;
 		}
 		
 		/* obey the fail directive */
@@ -149,6 +168,9 @@ ldns_send(ldns_pkt **result, ldns_resolver *r, ldns_pkt *query_pkt)
 		sleep((unsigned int) ldns_resolver_retrans(r));
 	}
 
+	if (all_servers_rtt_inf) {
+		return LDNS_STATUS_NO_NAMESERVERS_ERR;
+	}
 #ifdef HAVE_SSL
 	if (tsig_mac && reply_bytes) {
 		if (!ldns_pkt_tsig_verify(reply,
@@ -167,6 +189,7 @@ ldns_send(ldns_pkt **result, ldns_resolver *r, ldns_pkt *query_pkt)
 	if (result) {
 		*result = reply;
 	}
+
 	return status;
 }
 

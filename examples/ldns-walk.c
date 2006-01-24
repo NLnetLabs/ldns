@@ -106,6 +106,7 @@ main(int argc, char *argv[])
 	int result = 0;
 	int i;
 	char *arg_end_ptr = NULL;
+	size_t j;
 
 	p = NULL;
 	rrlist = NULL;
@@ -370,6 +371,12 @@ main(int argc, char *argv[])
 			printf("\n");
 		    }
 		    p = ldns_resolver_query(res, last_dname_p, LDNS_RR_TYPE_ANY, LDNS_RR_CLASS_IN, LDNS_RD);
+		    /* TODO: make a general option for this (something like ignore_rtt)? */
+		    for (j = 0; j < ldns_resolver_nameserver_count(res); j++) {
+			if (ldns_resolver_nameserver_rtt(res, j) != 0) {
+				ldns_resolver_set_nameserver_rtt(res, j, LDNS_RESOLV_RTT_MIN);
+			}
+		    }
 		    if (verbosity >= 5) {
 			if (p) {
 				ldns_pkt_print(stdout, p);
@@ -378,11 +385,6 @@ main(int argc, char *argv[])
 			}
 		    }
 
-		    if (!p)  {
-		      fprintf(stderr, "Error trying to resolve: ");
-		      ldns_rdf_print(stderr, last_dname_p);
-		      fprintf(stderr, "\n");
-		    }
 		  }
 		}
 

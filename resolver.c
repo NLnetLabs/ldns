@@ -784,26 +784,21 @@ ldns_resolver_query(ldns_resolver *r, ldns_rdf *name, ldns_rr_type type, ldns_rr
 ldns_status
 ldns_resolver_send_pkt(ldns_pkt **answer, ldns_resolver *r, ldns_pkt *query_pkt)
 {
-	uint8_t  retries;
 	ldns_pkt *answer_pkt = NULL;
 	ldns_status stat = LDNS_STATUS_OK;
 
-	for (retries = ldns_resolver_retry(r); retries > 0; retries--) {
-		stat = ldns_send(&answer_pkt, r, query_pkt);
-		if (stat == LDNS_STATUS_OK) {
-			break;
-		}
-		 else {
-			if(answer_pkt) {
-				ldns_pkt_free(answer_pkt);
-				answer_pkt = NULL;
-			}
+	stat = ldns_send(&answer_pkt, r, query_pkt);
+	if (stat != LDNS_STATUS_OK) {
+		if(answer_pkt) {
+			ldns_pkt_free(answer_pkt);
+			answer_pkt = NULL;
 		}
 	}
 	
 	if (answer) {
 		*answer = answer_pkt;
 	}
+
 	return stat;
 }
 
