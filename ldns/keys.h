@@ -175,18 +175,73 @@ DSA *ldns_key_new_frm_fp_dsa_l(FILE *fp, int *line_nr);
 #endif /* HAVE_SSL */
 
 /* acces write functions */
+/**
+ * Set the key's algorithm
+ * \param[in] k the key
+ * \param[in] l the algorithm
+ */
 void ldns_key_set_algorithm(ldns_key *k, ldns_signing_algorithm l);
 #ifdef HAVE_SSL
+/**
+ * Set the key's rsa data
+ * \param[in] k the key
+ * \param[in] r the rsa data
+ */
 void ldns_key_set_rsa_key(ldns_key *k, RSA *r);
+/**
+ * Set the key's dsa data
+ * \param[in] k the key
+ * \param[in] d the dsa data
+ */
 void ldns_key_set_dsa_key(ldns_key *k, DSA *d);
 #endif /* HAVE_SSL */
+/**
+ * Set the key's hmac data
+ * \param[in] k the key
+ * \param[in] hmac the hmac data
+ */
 void ldns_key_set_hmac_key(ldns_key *k, unsigned char *hmac);
+/**
+ * Set the key's original ttl
+ * \param[in] k the key
+ * \param[in] t the ttl
+ */
 void ldns_key_set_origttl(ldns_key *k, uint32_t t);
+/**
+ * Set the key's inception date (seconds after epoch)
+ * \param[in] k the key
+ * \param[in] i the inception
+ */
 void ldns_key_set_inception(ldns_key *k, uint32_t i);
+/**
+ * Set the key's expiration date (seconds after epoch)
+ * \param[in] k the key
+ * \param[in] e the expiration
+ */
 void ldns_key_set_expiration(ldns_key *k, uint32_t e);
+/**
+ * Set the key's pubkey owner
+ * \param[in] k the key
+ * \param[in] r the owner
+ */
 void ldns_key_set_pubkey_owner(ldns_key *k, ldns_rdf *r);
+/**
+ * Set the key's key tag
+ * \param[in] k the key
+ * \param[in] tag the keytag
+ */
 void ldns_key_set_keytag(ldns_key *k, uint16_t tag);
+/**
+ * Set the key's flags
+ * \param[in] k the key
+ * \param[in] flags the flags
+ */
 void ldns_key_set_flags(ldns_key *k, uint16_t flags);
+/**
+ * Set the keylist's key count to count
+ * \param[in] key the key
+ * \param[in] count the cuont
+ */
 void ldns_key_list_set_key_count(ldns_key_list *key, size_t count);
 
 /**     
@@ -199,11 +254,16 @@ bool ldns_key_list_push_key(ldns_key_list *key_list, ldns_key *key);
 
 /**
  * returns the number of keys in the key list
+ * \param[in] key_list the key_list
+ * \return the numbers of keys in the list
  */
 size_t ldns_key_list_key_count(ldns_key_list *key_list);
 
 /**
  * returns a pointer to the key in the list at the given position
+ * \param[in] key the key
+ * \param[in] nr the position in the list
+ * \return the key
  */
 ldns_key *ldns_key_list_key(ldns_key_list *key, size_t nr);
 
@@ -223,13 +283,53 @@ RSA *ldns_key_rsa_key(ldns_key *k);
 DSA *ldns_key_dsa_key(ldns_key *k);
 #endif /* HAVE_SSL */
 
+/**
+ * return the signing alg of the key
+ * \param[in] k the key
+ * \return the algorithm
+ */
 ldns_signing_algorithm ldns_key_algorithm(ldns_key *k);
+/**
+ * return the hmac key 
+ * \param[in] k the key
+ * \return the hmac key
+ */
 unsigned char *ldns_key_hmac_key(ldns_key *k);
+/**
+ * return the original ttl of the key
+ * \param[in] k the key
+ * \return the original ttl
+ */
 uint32_t ldns_key_origttl(ldns_key *k);
+/**
+ * return the key's inception date
+ * \param[in] k the key
+ * \return the inception date
+ */
 uint32_t ldns_key_inception(ldns_key *k);
+/**
+ * return the key's expiration date
+ * \param[in] k the key
+ * \return the experiration date
+ */
 uint32_t ldns_key_expiration(ldns_key *k);
+/**
+ * return the keytag
+ * \param[in] k the key
+ * \return the keytag
+ */
 uint16_t ldns_key_keytag(ldns_key *k);
+/**
+ * return the public key's owner
+ * \param[in] k the key
+ * \return the owner
+ */
 ldns_rdf *ldns_key_pubkey_owner(ldns_key *k);
+/**
+ * return the flag of the key
+ * \param[in] k the key
+ * \return the flag
+ */
 uint16_t ldns_key_flags(ldns_key *k);
 
 /**     
