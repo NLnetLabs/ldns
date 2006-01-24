@@ -233,7 +233,7 @@ tests:
 		echo "tpkg -b ${srcdir}/test -a `pwd` exe `basename $$tests`"; \
 		tpkg -b ${srcdir}/test -a `pwd` exe `basename $$tests`; \
 	done
-	tpkg -b test report
+	tpkg -b ${srcdir}/test report
 
 test-clean:
 	tpkg -b test clean
