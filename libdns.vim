@@ -89,6 +89,7 @@ syn keyword  ldnsConstant	LDNS_SECTION_ANSWER
 syn keyword  ldnsConstant	LDNS_SECTION_AUTHORITY
 syn keyword  ldnsConstant	LDNS_SECTION_ADDITIONAL
 syn keyword  ldnsConstant	LDNS_SECTION_ANY
+syn keyword  ldnsConstant	LDNS_SECTION_ANY_NOQUESTION
 syn keyword  ldnsConstant	LDNS_MAX_PACKETLEN
 syn keyword  ldnsConstant	LDNS_PACKET_QUERY
 syn keyword  ldnsConstant	LDNS_PACKET_IQUERY

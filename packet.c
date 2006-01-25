@@ -371,7 +371,7 @@ ldns_pkt_rr(ldns_pkt *pkt, ldns_pkt_section sec, ldns_rr *rr)
 	return false;
 }
 
-/* ldns_pkt_rr does somethinf else */
+/* ldns_pkt_rr does something else */
 ldns_rr *
 ldns_pkt_get_rr(ldns_pkt *p, uint16_t n)
 {
