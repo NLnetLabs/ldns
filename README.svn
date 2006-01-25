@@ -3,11 +3,11 @@
 # www.nlnetlabs.nl/ldns/svn/
 
 # small list of commands to build all on a linux system
-# libtoolize and make allautoconf are needed for most other targets
+# libtoolize is needed for most other targets
 libtoolize -c
 autoreconf
 ./configure
 make
-make doc
+make doc  # needs doxygen for the html pages
 (cd examples && autoreconf && ./configure --with-ldns=../ && make)
 (cd drill && autoreconf && ./configure --with-ldns=../ && make)
