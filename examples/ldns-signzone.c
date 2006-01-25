@@ -84,7 +84,7 @@ main(int argc, char *argv[])
 			 */
 			memset(&tm, 0, sizeof(tm));
 
-			if (strptime(optarg, DATE_FORMAT,  &tm) != NULL) {
+			if (strptime(optarg, DATE_FORMAT, &tm) != NULL) {
 			        c = c;
 				expiration = (uint32_t) mktime_from_utc(&tm);
 			} else if (strptime(optarg, SHORT_DATE_FORMAT, &tm) != NULL) {

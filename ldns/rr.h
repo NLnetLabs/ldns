@@ -347,7 +347,7 @@ void ldns_rr_set_class(ldns_rr *rr, ldns_rr_class rr_class);
  * \param[in] position the position the set the rdf
  * \return  the old value in the rr, NULL on failyre
  */
-ldns_rdf* ldns_rr_set_rdf(ldns_rr *rr, ldns_rdf *f, size_t position);
+ldns_rdf* ldns_rr_set_rdf(ldns_rr *rr, const ldns_rdf *f, size_t position);
 
 /**
  * sets rd_field member, it will be 
@@ -356,7 +356,7 @@ ldns_rdf* ldns_rr_set_rdf(ldns_rr *rr, ldns_rdf *f, size_t position);
  * \param[in] *f the data field member to set
  * \return bool
  */
-bool ldns_rr_push_rdf(ldns_rr *rr, ldns_rdf *f);
+bool ldns_rr_push_rdf(ldns_rr *rr, const ldns_rdf *f);
 
 /**
  * removes a rd_field member, it will be 
@@ -434,7 +434,7 @@ void ldns_rr_list_set_rr_count(ldns_rr_list *rr_list, size_t count);
  * \return the old rr which was stored in the rr_list, or
  * NULL is the index was too large
  * set a specific rr */
-ldns_rr * ldns_rr_list_set_rr(ldns_rr_list *rr_list, ldns_rr *r, size_t count);
+ldns_rr * ldns_rr_list_set_rr(ldns_rr_list *rr_list, const ldns_rr *r, size_t count);
 
 /**
  * returns a specific rr of an rrlist.
@@ -486,7 +486,7 @@ ldns_rr_list* ldns_rr_list_cat_clone(ldns_rr_list *left, ldns_rr_list *right);
  * \param[in] rr the rr to push 
  * \return false on error, otherwise true
  */
-bool ldns_rr_list_push_rr(ldns_rr_list *rr_list, ldns_rr *rr);
+bool ldns_rr_list_push_rr(ldns_rr_list *rr_list, const ldns_rr *rr);
 
 /**
  * pops the last rr from an rrlist.
@@ -677,6 +677,6 @@ ldns_rr_type    ldns_rdf2rr_type(const ldns_rdf *rd);
 
 /* added while doing lua */
 /* TODO document or delete it */
-bool ldns_rr_list_insert_rr(ldns_rr_list *rr_list, ldns_rr *r, size_t count);
+bool ldns_rr_list_insert_rr(ldns_rr_list *rr_list, const ldns_rr *r, size_t count);
 
 #endif /* LDNS_RR_H */

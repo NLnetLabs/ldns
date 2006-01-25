@@ -524,7 +524,7 @@ ldns_rr_set_class(ldns_rr *rr, ldns_rr_class rr_class)
 }
 
 ldns_rdf *
-ldns_rr_set_rdf(ldns_rr *rr, ldns_rdf *f, size_t position)
+ldns_rr_set_rdf(ldns_rr *rr, const ldns_rdf *f, size_t position)
 {
 	size_t rd_count;
 	ldns_rdf *pop;
@@ -535,7 +535,7 @@ ldns_rr_set_rdf(ldns_rr *rr, ldns_rdf *f, size_t position)
 		rdata_fields = rr->_rdata_fields;
 		/* dicard the old one */
 		pop = rr->_rdata_fields[position];
-		rr->_rdata_fields[position] = f;
+		rr->_rdata_fields[position] = (ldns_rdf*)f;
 		return pop;
 	} else {
 		return NULL;
@@ -543,7 +543,7 @@ ldns_rr_set_rdf(ldns_rr *rr, ldns_rdf *f, size_t position)
 }
 
 bool
-ldns_rr_push_rdf(ldns_rr *rr, ldns_rdf *f)
+ldns_rr_push_rdf(ldns_rr *rr, const ldns_rdf *f)
 {
 	size_t rd_count;
 	ldns_rdf **rdata_fields;
@@ -559,7 +559,7 @@ ldns_rr_push_rdf(ldns_rr *rr, ldns_rdf *f)
 	
 	/* add the new member */
 	rr->_rdata_fields = rdata_fields;
-	rr->_rdata_fields[rd_count] = f;
+	rr->_rdata_fields[rd_count] = (ldns_rdf*)f;
 
 	ldns_rr_set_rd_count(rr, rd_count + 1);
 	return true;
@@ -640,7 +640,7 @@ ldns_rr_list_rr_count(ldns_rr_list *rr_list)
 }
 
 ldns_rr *
-ldns_rr_list_set_rr(ldns_rr_list *rr_list, ldns_rr *r, size_t count)
+ldns_rr_list_set_rr(ldns_rr_list *rr_list, const ldns_rr *r, size_t count)
 {
 	ldns_rr *old;
 
@@ -651,12 +651,12 @@ ldns_rr_list_set_rr(ldns_rr_list *rr_list, ldns_rr *r, size_t count)
 	old = ldns_rr_list_rr(rr_list, count);
 
 	/* overwrite old's pointer */
-	rr_list->_rrs[count] = r;
+	rr_list->_rrs[count] = (ldns_rr*)r;
 	return old;
 }
 
 bool
-ldns_rr_list_insert_rr(ldns_rr_list *rr_list, ldns_rr *r, size_t count)
+ldns_rr_list_insert_rr(ldns_rr_list *rr_list, const ldns_rr *r, size_t count)
 {
 	uint16_t c, i;
 	ldns_rr *pop[101]; /* WRONG AMOUNT */
@@ -847,7 +847,7 @@ ldns_rr_list_subtype_by_rdf(ldns_rr_list *l, ldns_rdf *r, size_t pos)
 }
 
 bool
-ldns_rr_list_push_rr(ldns_rr_list *rr_list, ldns_rr *rr)
+ldns_rr_list_push_rr(ldns_rr_list *rr_list, const ldns_rr *rr)
 {
 	size_t rr_count;
 	ldns_rr **rrs;
@@ -864,7 +864,7 @@ ldns_rr_list_push_rr(ldns_rr_list *rr_list, ldns_rr *rr)
 	
 	/* add the new member */
 	rr_list->_rrs = rrs;
-	rr_list->_rrs[rr_count] = rr;
+	rr_list->_rrs[rr_count] = (ldns_rr*)rr;
 
 	ldns_rr_list_set_rr_count(rr_list, rr_count + 1);
 	return true;
