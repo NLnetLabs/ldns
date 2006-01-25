@@ -37,7 +37,8 @@ SOURCES 	= ldns-read-zone.c \
 		  ldns-threshold-update.c  \
 		  ldns-zsplit.c \
 		  ldns-zcat.c \
-		  ldns-dpa.c
+		  ldns-dpa.c \
+		  ldnsd.c
 
 
 PROGRAMS=$(SOURCES:.c=)
@@ -83,6 +84,9 @@ ldns-zsplit:	ldns-zsplit.o
 		$(LINK) -o $@ $+
 
 ldns-zcat:	ldns-zcat.o
+		$(LINK) -o $@ $+
+
+ldnsd:		ldnsd.o
 		$(LINK) -o $@ $+
 
 ldns-threshold-update:	ldns-threshold-update.o
