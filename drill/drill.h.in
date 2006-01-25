@@ -31,7 +31,6 @@ VAR = VAR & ~BIT
 
 extern ldns_rr_list *global_dns_root;
 extern bool qds;
-
 extern int8_t qdebug;
 
 ldns_pkt	*do_trace(ldns_resolver *res, ldns_rdf *name, ldns_rr_type type, 
@@ -55,4 +54,10 @@ void		dump_hex(const ldns_pkt *pkt, const char *file);
 void 		warning(const char *fmt, ...);
 void		error(const char *fmt, ...);
 void		mesg(const char *fmt, ...);
+
+/* screen.c */
+void resolver_print_nameservers(ldns_resolver *r);
+void print_dnskey(ldns_rr_list *key_list);
+void print_ds(ldns_rr_list *ds_list);
+
 #endif /* _DRILL_H_ */
