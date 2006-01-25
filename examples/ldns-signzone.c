@@ -12,8 +12,6 @@
 
 #include <ldns/dns.h>
 
-#define DATE_FORMAT "%Y%m%d%H%M%S"
-#define SHORT_DATE_FORMAT "%Y%m%d"
 #define MAX_FILENAME_LEN 250
 
 void
@@ -27,6 +25,39 @@ usage(FILE *fp, const char *prog) {
 	fprintf(fp, "  -v\t\tprint version and exit\n");
 	fprintf(fp, "  keys must be specified by their base name: K<name>+<alg>+<id>\n");
 	fprintf(fp, "  both a .key and .private file must present\n");
+	fprintf(fp, "  A date can be a timestamp (seconds since the epoch), or of\n  the form <YYYYMMdd[hhmmss]>\n");
+}
+
+void check_tm(struct tm tm)
+{
+	if (tm.tm_year < 70) {
+		fprintf(stderr, "You cannot specify dates before 1970\n");
+		exit(EXIT_FAILURE);
+	}
+	if (tm.tm_mon < 0 || tm.tm_mon > 11) {
+		fprintf(stderr, "The month must be in the range 1 to 12\n");
+		exit(EXIT_FAILURE);
+	}
+	if (tm.tm_mday < 1 || tm.tm_mday > 31) {
+		fprintf(stderr, "The day must be in the range 1 to 31\n");
+		exit(EXIT_FAILURE);
+	}
+	
+	if (tm.tm_hour < 0 || tm.tm_hour > 23) {
+		fprintf(stderr, "The hour must be in the range 0-23\n");
+		exit(EXIT_FAILURE);
+	}
+
+	if (tm.tm_min < 0 || tm.tm_min > 59) {
+		fprintf(stderr, "The minute must be in the range 0-59\n");
+		exit(EXIT_FAILURE);
+	}
+
+	if (tm.tm_sec < 0 || tm.tm_sec > 59) {
+		fprintf(stderr, "The second must be in the range 0-59\n");
+		exit(EXIT_FAILURE);
+	}
+
 }
 
 int
@@ -46,7 +77,6 @@ main(int argc, char *argv[])
 	ldns_key *key = NULL;
 	ldns_rr *pubkey = NULL;
 	ldns_key_list *keys;
-
 
 	uint16_t default_ttl = LDNS_DEFAULT_TTL;
 
@@ -84,10 +114,19 @@ main(int argc, char *argv[])
 			 */
 			memset(&tm, 0, sizeof(tm));
 
-			if (strptime(optarg, DATE_FORMAT, &tm) != NULL) {
-			        c = c;
+			if (strlen(optarg) == 8 &&
+			    sscanf(optarg, "%4d%2d%2d", &tm.tm_year, &tm.tm_mon, &tm.tm_mday)
+			   ) {
+			   	tm.tm_year -= 1900;
+			   	tm.tm_mon--;
+			   	check_tm(tm);
 				expiration = (uint32_t) mktime_from_utc(&tm);
-			} else if (strptime(optarg, SHORT_DATE_FORMAT, &tm) != NULL) {
+			} else if (strlen(optarg) == 14 &&
+			    sscanf(optarg, "%4d%2d%2d%2d%2d%2d", &tm.tm_year, &tm.tm_mon, &tm.tm_mday, &tm.tm_hour, &tm.tm_min, &tm.tm_sec)
+			   ) {
+			   	tm.tm_year -= 1900;
+			   	tm.tm_mon--;
+			   	check_tm(tm);
 				expiration = (uint32_t) mktime_from_utc(&tm);
 			} else {
 				expiration = (uint32_t) atol(optarg);
@@ -100,9 +139,19 @@ main(int argc, char *argv[])
 		case 'i':
 			memset(&tm, 0, sizeof(tm));
 
-			if (strptime(optarg, DATE_FORMAT, &tm) != NULL) {
+			if (strlen(optarg) == 8 &&
+			    sscanf(optarg, "%4d%2d%2d", &tm.tm_year, &tm.tm_mon, &tm.tm_mday)
+			   ) {
+			   	tm.tm_year -= 1900;
+			   	tm.tm_mon--;
+			   	check_tm(tm);
 				inception = (uint32_t) mktime_from_utc(&tm);
-			} else if (strptime(optarg, SHORT_DATE_FORMAT, &tm) != NULL) {
+			} else if (strlen(optarg) == 14 &&
+			    sscanf(optarg, "%4d%2d%2d%2d%2d%2d", &tm.tm_year, &tm.tm_mon, &tm.tm_mday, &tm.tm_hour, &tm.tm_min, &tm.tm_sec)
+			   ) {
+			   	tm.tm_year -= 1900;
+			   	tm.tm_mon--;
+			   	check_tm(tm);
 				inception = (uint32_t) mktime_from_utc(&tm);
 			} else {
 				inception = (uint32_t) atol(optarg);

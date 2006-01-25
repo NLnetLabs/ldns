@@ -59,8 +59,50 @@ ldns_str2rdf_time(ldns_rdf **rd, const char *time)
 	/* Try to scan the time... */
 	r = (uint16_t*)LDNS_MALLOC(uint32_t);
 
-	if((char*)strptime(time, "%Y%m%d%H%M%S", &tm) == NULL) {
-		/* handle it as 32 bits */
+	memset(&tm, 0, sizeof(tm));
+
+	if (strlen(time) == 14 &&
+	    sscanf(time, "%4d%2d%2d%2d%2d%2d", &tm.tm_year, &tm.tm_mon, &tm.tm_mday, &tm.tm_hour, &tm.tm_min, &tm.tm_sec)
+	   ) {
+	   	tm.tm_year -= 1900;
+	   	tm.tm_mon--;
+	   	/* Check values */
+		if (tm.tm_year < 70) {
+			fprintf(stderr, "You cannot specify dates before 1970\n");
+			goto bad_format;
+		}
+		if (tm.tm_mon < 0 || tm.tm_mon > 11) {
+			fprintf(stderr, "The month must be in the range 1 to 12\n");
+			goto bad_format;
+		}
+		if (tm.tm_mday < 1 || tm.tm_mday > 31) {
+			fprintf(stderr, "The day must be in the range 1 to 31\n");
+			goto bad_format;
+		}
+		
+		if (tm.tm_hour < 0 || tm.tm_hour > 23) {
+			fprintf(stderr, "The hour must be in the range 0-23\n");
+			goto bad_format;
+		}
+
+		if (tm.tm_min < 0 || tm.tm_min > 59) {
+			fprintf(stderr, "The minute must be in the range 0-59\n");
+			goto bad_format;
+		}
+
+		if (tm.tm_sec < 0 || tm.tm_sec > 59) {
+			fprintf(stderr, "The second must be in the range 0-59\n");
+			goto bad_format;
+		}
+
+		l = htonl(mktime_from_utc(&tm));
+		memcpy(r, &l, sizeof(uint32_t));
+		*rd = ldns_rdf_new_frm_data(
+			LDNS_RDF_TYPE_TIME, sizeof(uint32_t), r);
+		LDNS_FREE(r);
+		return LDNS_STATUS_OK;
+	} else {
+		/* handle it as 32 bits timestamp */
 		l = htonl((uint32_t)strtol((char*)time, &end, 0));
 		if(*end != 0) {
 			LDNS_FREE(r);
@@ -72,14 +114,11 @@ ldns_str2rdf_time(ldns_rdf **rd, const char *time)
 			LDNS_FREE(r);
 			return LDNS_STATUS_OK;
 		}
-	} else {
-		l = htonl(mktime_from_utc(&tm));
-		memcpy(r, &l, sizeof(uint32_t));
-		*rd = ldns_rdf_new_frm_data(
-			LDNS_RDF_TYPE_TIME, sizeof(uint32_t), r);
-		LDNS_FREE(r);
-		return LDNS_STATUS_OK;
 	}
+	
+	bad_format:
+	LDNS_FREE(r);
+	return LDNS_STATUS_INVALID_TIME;
 }
 
 ldns_status
