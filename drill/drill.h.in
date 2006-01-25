@@ -42,6 +42,8 @@ ldns_status 	do_secure_trace(ldns_resolver *res, ldns_rdf *name, ldns_rr_type ty
 		ldns_rr_class c, ldns_rr_list *trusted_keys);
 ldns_status 	do_secure_trace2(ldns_resolver *res, ldns_rdf *name, ldns_rr_type type, 
 		ldns_rr_class c, ldns_rr_list *trusted_keys);
+ldns_status 	do_secure_trace3(ldns_resolver *res, ldns_rdf *name, ldns_rr_type type, 
+		ldns_rr_class c, ldns_rr_list *trusted_keys);
 /* dnssec.c */
 ldns_rr_list 	*get_rr(ldns_resolver *res, ldns_rdf *zname, ldns_rr_type t, ldns_rr_class c);
 void 		drill_pkt_print(FILE *fd, ldns_resolver *r, ldns_pkt *p);

@@ -11,7 +11,6 @@
 #include "drill.h"
 #include <ldns/dns.h>
 
-
 /* 
  * check if the key and the ds are equivalent
  * ie: is the ds made from the key?
@@ -228,3 +227,49 @@ do_secure_trace2(ldns_resolver *res, ldns_rdf *name, ldns_rr_type t,
 }
 
 
+/* do a secure trace - ripped from drill < 0.9 */
+ldns_status
+do_secure_trace3(ldns_resolver *res, ldns_rdf *name, ldns_rr_type t,
+		                ldns_rr_class c, ldns_rr_list *trusted_keys)
+{
+	ldns_pkt *p1 = NULL;
+	ldns_pkt *p_keys = NULL;
+	ldns_rr_list *key_list = NULL;
+	ldns_rr_list *good_key_list = NULL;
+	ldns_rr_list *sig_list = NULL;
+	unsigned int secure = 1;
+
+	while (ldns_pkt_reply_type(p1 = ldns_resolver_query(res, name, t, c, 0)) == LDNS_PACKET_REFERRAL) {
+		ldns_pkt_print(stdout, p1);
+
+		if (secure == 1) {
+			/* Try to get the keys from the current nameserver */
+			p_keys = ldns_resolver_query(res, name, LDNS_RR_TYPE_DNSKEY, c, 0);
+			if (p_keys) {
+				key_list = ldns_pkt_rr_list_by_type(
+						p_keys, LDNS_RR_TYPE_DNSKEY, LDNS_SECTION_ANSWER);
+				if (key_list) {
+
+					ldns_rr_list_print(stdout, key_list);
+					
+					sig_list = ldns_pkt_rr_list_by_name_and_type(
+							p_keys, 
+							ldns_rr_owner(ldns_rr_list_rr(key_list, 0)),
+							LDNS_RR_TYPE_RRSIG,
+							LDNS_SECTION_ANY_NOQUESTION);
+
+					if (sig_list) {
+						ldns_rr_list_print(stdout, sig_list);
+
+						if (ldns_verify(key_list, sig_list, key_list, 
+									good_key_list)
+								== LDNS_STATUS_OK) {
+							printf("VALIDATED\n");
+						}
+					}	
+				}
+			}
+		}
+	}
+	return LDNS_STATUS_OK;
+}
