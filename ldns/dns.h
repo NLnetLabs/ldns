@@ -45,10 +45,6 @@
 #define LDNS_ROOT_LABEL	'\0'
 #define LDNS_DEFAULT_TTL	3600
 
-#ifndef LDNS_VERSION
-#define LDNS_VERSION	"0.60"
-#endif /* LDNS_VERSION */
-
 /* lookup tables for standard DNS stuff  */
 
 /* Taken from RFC 2538, section 2.1.  */

@@ -62,6 +62,10 @@ syn keyword  ldnsConstant       LDNS_RDF_SIZE_16BYTES
 
 " ldns/dns.h
 syn keyword  ldnsConstant	LDNS_PORT
+syn keyword  ldnsConstant	LDNS_IP4ADDRLEN
+syn keyword  ldnsConstant	LDNS_IP6ADDRLEN
+syn keyword  ldnsConstant	LDNS_ROOT_LABEL
+syn keyword  ldnsConstant	LDNS_DEFAULT_TTL
 
 " ldns/packet.h
 syn keyword  ldnsType           ldns_pkt
@@ -107,6 +111,7 @@ syn keyword ldnsMacro	LDNS_STATUS_INTERNAL_ERR
 syn keyword ldnsMacro	LDNS_STATUS_ERR
 syn keyword ldnsMacro	LDNS_STATUS_ADDRESS_ERR
 syn keyword ldnsMacro	LDNS_STATUS_NETWORK_ERR
+syn keyword ldnsMacro	LDNS_STATUS_NO_NAMESERVERS_ERR
 syn keyword ldnsMacro	LDNS_STATUS_INVALID_POINTER
 syn keyword ldnsMacro	LDNS_STATUS_INVALID_INT
 syn keyword ldnsMacro	LDNS_STATUS_INVALID_IP4
@@ -131,11 +136,20 @@ syn keyword ldnsMacro 	LDNS_STATUS_CRYPTO_NO_TRUSTED_DNSKEY
 syn keyword ldnsMacro 	LDNS_STATUS_CRYPTO_NO_MATCHING_KEYTAG_DNSKEY
 syn keyword ldnsMacro 	LDNS_STATUS_CRYPTO_SIG_EXPIRED
 syn keyword ldnsMacro 	LDNS_STATUS_CRYPTO_SIG_NOT_INCEPTED
+syn keyword ldnsMacro 	LDNS_STATUS_CRYPTO_TSIG_ERR
 syn keyword ldnsMacro 	LDNS_STATUS_CRYPTO_TSIG_BOGUS
 syn keyword ldnsMacro 	LDNS_STATUS_CRYPTO_EXPIRATION_BEFORE_INCEPTION
 syn keyword ldnsMacro   LDNS_STATUS_CRYPTO_TSIG_ERR
 syn keyword ldnsMacro   LDNS_STATUS_RES_NO_NS 
 syn keyword ldnsMacro   LDNS_STATUS_RES_QUERY
+syn keyword ldnsMacro   LDNS_STATUS_WIRE_INCOMPLETE_HEADER
+syn keyword ldnsMacro   LDNS_STATUS_WIRE_INCOMPLETE_QUESTION
+syn keyword ldnsMacro   LDNS_STATUS_WIRE_INCOMPLETE_ANSWER
+syn keyword ldnsMacro   LDNS_STATUS_WIRE_INCOMPLETE_AUTHORITY
+syn keyword ldnsMacro   LDNS_STATUS_WIRE_INCOMPLETE_ADDITIONAL
+syn keyword ldnsMacro   LDNS_STATUS_NO_DATA
+syn keyword ldnsMacro   LDNS_STATUS_CERT_BAD_ALGORITHM
+
 
 " ldns/resolver.h
 syn keyword  ldnsType	  	ldns_resolver
@@ -181,6 +195,7 @@ syn keyword  ldnsConstant LDNS_RR_TYPE_NSAP
 syn keyword  ldnsConstant LDNS_RR_TYPE_SIG        
 syn keyword  ldnsConstant LDNS_RR_TYPE_KEY        
 syn keyword  ldnsConstant LDNS_RR_TYPE_PX         
+syn keyword  ldnsConstant LDNS_RR_TYPE_GPOS
 syn keyword  ldnsConstant LDNS_RR_TYPE_AAAA       
 syn keyword  ldnsConstant LDNS_RR_TYPE_LOC        
 syn keyword  ldnsConstant LDNS_RR_TYPE_NXT        
@@ -196,6 +211,16 @@ syn keyword  ldnsConstant LDNS_RR_TYPE_SSHFP
 syn keyword  ldnsConstant LDNS_RR_TYPE_RRSIG      
 syn keyword  ldnsConstant LDNS_RR_TYPE_NSEC       
 syn keyword  ldnsConstant LDNS_RR_TYPE_DNSKEY     
+syn keyword  ldnsConstant LDNS_RR_TYPE_EID
+syn keyword  ldnsConstant LDNS_RR_TYPE_NIMLOC
+syn keyword  ldnsConstant LDNS_RR_TYPE_ATMA
+syn keyword  ldnsConstant LDNS_RR_TYPE_A6
+syn keyword  ldnsConstant LDNS_RR_TYPE_SINK
+syn keyword  ldnsConstant LDNS_RR_TYPE_IPSECKEY
+syn keyword  ldnsConstant LDNS_RR_TYPE_UINFO
+syn keyword  ldnsConstant LDNS_RR_TYPE_UID
+syn keyword  ldnsConstant LDNS_RR_TYPE_GID
+syn keyword  ldnsConstant LDNS_RR_TYPE_UNSPEC
 syn keyword  ldnsConstant LDNS_RR_TYPE_TSIG       
 syn keyword  ldnsConstant LDNS_RR_TYPE_IXFR       
 syn keyword  ldnsConstant LDNS_RR_TYPE_AXFR       
