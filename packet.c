@@ -776,14 +776,6 @@ void ldns_pkt_set_tsig(ldns_pkt *pkt, ldns_rr *rr)
 	pkt->_tsig_rr = rr;
 }
 
-
-/** 
- * push an rr on a packet
- * \param[in] packet packet to operatore on
- * \param[in] section where to put it
- * \param[in] rr rr to push
- * \return ldns_status status
- */
 bool
 ldns_pkt_push_rr(ldns_pkt *packet, ldns_pkt_section section, ldns_rr *rr)
 {
@@ -812,13 +804,6 @@ ldns_pkt_push_rr(ldns_pkt *packet, ldns_pkt_section section, ldns_rr *rr)
 	return true;
 }
 
-/** 
- * push an rr on a packet, provided the RR is not there.
- * \param[in] pkt packet to operatore on
- * \param[in] sec where to put it
- * \param[in] rr rr to push
- * \return ldns_status status
- */
 bool
 ldns_pkt_safe_push_rr(ldns_pkt *pkt, ldns_pkt_section sec, ldns_rr *rr)
 {
