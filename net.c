@@ -238,33 +238,6 @@ ldns_udp_bgsend(ldns_buffer *qbin, const struct sockaddr_storage *to, socklen_t 
 	return sockfd;
 }
 
-/* 
- * ldns_tcp_server_connect
- */
-int
-ldns_udp_server_connect(const struct sockaddr_storage *to, struct timeval timeout)
-{
-	int sockfd;
-	
-	if ((sockfd = socket((int)((struct sockaddr*)to)->sa_family, SOCK_DGRAM, IPPROTO_UDP)) 
-			== -1) {
-                return 0;
-        }
-	if (setsockopt(sockfd, SOL_SOCKET, SO_RCVTIMEO, &timeout,
-				(socklen_t) sizeof(timeout))) {
-		perror("setsockopt");
-		close(sockfd);
-		return 0;
-        }
-
-	if (bind(sockfd, (struct sockaddr*)to, (socklen_t)sizeof(*to)) == -1) {
-		perror("bind");
-		close(sockfd);
-		return 0;
-	}
-	return sockfd;
-}
-
 int
 ldns_udp_connect(const struct sockaddr_storage *to, struct timeval timeout)
 {
@@ -501,10 +474,6 @@ ldns_tcp_bgsend(ldns_buffer *qbin, const struct sockaddr_storage *to, socklen_t 
 	
 	return sockfd;
 }
-
-/* Move other function that use sockaddr to here, so that 
- * all networking code is contained in one file
- */
 
 /* code from rdata.c */
 struct sockaddr_storage *

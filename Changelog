@@ -45,7 +45,10 @@
 	* ldns_zone_sort: Sort a zone
 	* ldns_bgsend(): background send, returns a socket.
 	Removed:
-	* ldns_resolver_bgsend(): was not used in 1.0.0.
+	* ldns_resolver_bgsend(): was not used in 1.0.0 and is not used
+	  now
+	* ldns_udp_server_connect(): was faulty and isn't really part of
+	  the core ldns idea any how.
 
 
 18 Oct 2005: 1.0.0: ldns-team

@@ -101,16 +101,7 @@ int ldns_tcp_connect(const struct sockaddr_storage *to, socklen_t tolen, struct 
 int ldns_udp_connect(const struct sockaddr_storage *to, struct timeval timeout);
 
 /**
- * Create a udp socket to the specified address and bind it too (making it
- * a server socket)
- * \param[in] to ip and family
- * \param[in] timeout timeout for the socket
- * \return a socket descriptor
- */
-int ldns_udp_server_connect(const struct sockaddr_storage *to, struct timeval timeout);
-
-/**
- * send a query via tcp to a server. Don;t want for the answer
+ * send a query via tcp to a server. Don't want for the answer
  *
  * \param[in] qbin the buffer to send
  * \param[in] sockfd the socket to use
