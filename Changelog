@@ -38,7 +38,7 @@
           o ldns_rr_new_frm_fp
 	  o ldns_rr_new_frm_fp_l
 	  Which also get an extra variable
-	* tsig.h: made internal used functions static:
+	* tsig.h: internal used functions are now static:
 	  ldns_digest_name and ldns_tsig_mac_new
 	New:
 	* ldns_resolver_searchlist_count: return the searchlist counter
