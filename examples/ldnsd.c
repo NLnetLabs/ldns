@@ -34,7 +34,7 @@ static int udp_bind(int sock, int port, const char *my_address)
     struct sockaddr_in addr;
 
     addr.sin_family = AF_INET;
-    addr.sin_port = htons((uint16_t)port);
+    addr.sin_port = (in_port_t)htons((uint16_t)port);
 		addr.sin_addr.s_addr = INADDR_ANY;
 //		if (join_mcast(sock, &addr) == -1) { return -1; }
 /*
