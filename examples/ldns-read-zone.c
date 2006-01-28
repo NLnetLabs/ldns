@@ -27,7 +27,7 @@ main(int argc, char **argv)
                                 sort = true;
                                 break;
 			case 'v':
-				printf("DNSSEC key generator version %s (ldns version %s)\n", LDNS_VERSION, ldns_version());
+				printf("read zone version %s (ldns version %s)\n", LDNS_VERSION, ldns_version());
 				exit(EXIT_SUCCESS);
 				break;
 		}
