@@ -1269,8 +1269,11 @@ ldns_zone_sign(ldns_zone *zone, ldns_key_list *key_list)
 
 		/* if we have KSKs, use them for DNSKEYS, otherwise
 		   make them selfsigned (?) */
+                /* don't sign sigs, delegations, and glue */
 		if (cur_rrset_type != LDNS_RR_TYPE_RRSIG &&
-		    (ldns_dname_is_subdomain(cur_dname, ldns_rr_owner(ldns_zone_soa(zone))) ||
+		    ((ldns_dname_is_subdomain(cur_dname, ldns_rr_owner(ldns_zone_soa(zone)))
+                      && cur_rrset_type != LDNS_RR_TYPE_NS
+                     ) ||
 		     ldns_rdf_compare(cur_dname, ldns_rr_owner(ldns_zone_soa(zone))) == 0
 		    ) &&
 		    !(ldns_rr_list_contains_rr(glue_rrs, ldns_rr_list_rr(cur_rrset, 0)))
@@ -1296,7 +1299,7 @@ ldns_zone_sign(ldns_zone *zone, ldns_key_list *key_list)
 			ldns_zone_push_rr_list(signed_zone, cur_rrsigs);
 			ldns_rr_list_free(cur_rrsigs);
 		} else {
-			/* push it unsigned? */
+			/* push it unsigned (glue, sigs, delegations) */
 			ldns_zone_push_rr_list(signed_zone, cur_rrset);
 		}
 		ldns_rr_list_free(cur_rrset);
