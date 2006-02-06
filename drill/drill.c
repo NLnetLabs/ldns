@@ -61,7 +61,7 @@ usage(FILE *stream, const char *progname)
 static void
 version(FILE *stream, const char *progname)
 {
-        fprintf(stream, "%s version %s\n", progname, DRILL_VERSION);
+        fprintf(stream, "%s version %s (ldns version %s)\n", progname, DRILL_VERSION, ldns_version());
         fprintf(stream, "Written by NLnet Labs.\n");
         fprintf(stream, "\nCopyright (c) 2004, 2005 NLnet Labs.\n");
         fprintf(stream, "Licensed under the revised BSD license.\n");
