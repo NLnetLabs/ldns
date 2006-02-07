@@ -42,6 +42,16 @@ enum ldns_enum_algorithm
 typedef enum ldns_enum_algorithm ldns_algorithm;
 
 /**
+ * hashing algorithms use in the DS record
+ */
+enum ldns_enum_hash
+{
+        LDNS_SHA1               = 1,
+        LDNS_SHA256             = 2
+};
+typedef enum ldns_enum_hash ldns_hash;
+
+/**
  * algorithms used in dns for signing
  */
 enum ldns_enum_signing_algorithm

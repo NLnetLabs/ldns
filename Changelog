@@ -13,6 +13,8 @@ XX Jan 2006: 1.1.0: ldns-team
 	  Ofcourse all dnssec/tsig related functions are disabled
 	* Building of examples and drill now happens with the same
 	  defines as the building of ldns itself.
+	* Preliminary sha-256 support was added. Currently is your
+     	  OpenSSL supports it, it is supported in the DS creation.
 
 	Drill:
 	* -r was killed in favor of -o <header bit mnemonic> which 
