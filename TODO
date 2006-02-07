@@ -30,6 +30,7 @@ Post 1.0 Stuff:
         o vim syntax
         o walker 
         o zone.c; make it better/faster??
+        o SHA256 test in configure.ac
 
 DONE:
 1.0.1 released 5 January 2006
