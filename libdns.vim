@@ -305,6 +305,7 @@ syn keyword  ldnsConstant LDNS_APL_IP6
 syn keyword  ldnsType   ldns_key
 syn keyword  ldnsType   ldns_key_list
 syn keyword  ldnsType   ldns_signing_algorithm
+syn keyword  ldnsType   ldns_hash
 
 " ldns/dnssec.h
 syn keyword  ldnsConstant	LDNS_MAX_KEYLEN

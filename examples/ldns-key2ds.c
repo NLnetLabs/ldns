@@ -13,11 +13,14 @@
 
 void
 usage(FILE *fp, char *prog) {
-	fprintf(fp, "%s keyfile\n", prog);
-	fprintf(fp, "  generate a ds record\n");
+	fprintf(fp, "%s [-1|-2] keyfile\n", prog);
+	fprintf(fp, "  Generate a DS RR from the key\n");
 	fprintf(fp, "  The following file will be created: ");
 	fprintf(fp, "K<name>+<alg>+<id>.ds\n");
 	fprintf(fp, "  The base name (K<name>+<alg>+<id> will be printed to stdout\n");
+	fprintf(fp, "Options:\n");
+	fprintf(fp, "  -1 (default): use SHA1 for the DS hash\n");
+	fprintf(fp, "  -2: use SHA256 for the DS hash\n");
 }
 
 int
@@ -30,14 +33,28 @@ main(int argc, char *argv[])
 	char *owner;
 	ldns_rr *k, *ds;
 	ldns_signing_algorithm alg;
+	ldns_hash h;
 	
 	alg = 0;
 	prog = strdup(argv[0]);
-	if (argc != 2) {
+	h = LDNS_SHA1;
+
+	argv++, argc--;
+	while (argc && argv[0][0] == '-') {
+		if (strcmp(argv[0], "-1") == 0) {
+			h = LDNS_SHA1;
+		} 
+		if (strcmp(argv[0], "-2") == 0) {
+			h = LDNS_SHA256;
+		} 
+		argv++, argc--;
+	}
+
+	if (argc != 1) {
 		usage(stderr, prog);
 		exit(EXIT_FAILURE);
 	}
-	keyname = strdup(argv[1]);
+	keyname = strdup(argv[0]);
 
 	keyfp = fopen(keyname, "r");
 	if (!keyfp) {
@@ -56,7 +73,7 @@ main(int argc, char *argv[])
 	owner = ldns_rdf2str(ldns_rr_owner(k));
 	alg = ldns_rdf2native_int8(ldns_rr_dnskey_algorithm(k));
 
-	ds = ldns_key_rr2ds(k);
+	ds = ldns_key_rr2ds(k, LDNS_SHA1);
 	if (!ds) {
 		fprintf(stderr, "Conversion to a DS RR failed\n");
 		exit(EXIT_FAILURE);

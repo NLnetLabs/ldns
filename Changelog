@@ -42,6 +42,8 @@ XX Jan 2006: 1.1.0: ldns-team
 	  Which also get an extra variable
 	* tsig.h: internal used functions are now static:
 	  ldns_digest_name and ldns_tsig_mac_new
+	* ldns_key_rr2ds has an extra argument to specify the hash to
+	  use.
 	New:
 	* ldns_resolver_searchlist_count: return the searchlist counter
 	* ldns_zone_sort: Sort a zone

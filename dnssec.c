@@ -645,7 +645,7 @@ ldns_key_buf2rsa(ldns_buffer *key)
 }
 
 ldns_rr *
-ldns_key_rr2ds(const ldns_rr *key)
+ldns_key_rr2ds(const ldns_rr *key, ldns_hash h)
 {
         ldns_rdf *tmp;
         ldns_rr *ds;
@@ -668,10 +668,17 @@ ldns_key_rr2ds(const ldns_rr *key)
 	ldns_rr_set_ttl(ds, ldns_rr_ttl(key));
 	ldns_rr_set_class(ds, ldns_rr_get_class(key));
 
-        digest = LDNS_XMALLOC(uint8_t, SHA_DIGEST_LENGTH);
-        if (!digest) {
-                return NULL;
-        }
+	switch(h) {
+		case LDNS_SHA1:
+			digest = LDNS_XMALLOC(uint8_t, SHA_DIGEST_LENGTH);
+			if (!digest) {
+				return NULL;
+			}
+		break;
+		case LDNS_SHA256:
+			return NULL; /* not implemented */
+		break;
+	}
 
         data_buf = ldns_buffer_new(LDNS_MAX_PACKETLEN);
         if (!data_buf) {
@@ -685,10 +692,10 @@ ldns_key_rr2ds(const ldns_rr *key)
 
         /* copy the algorithm field */
         ldns_rr_push_rdf(ds, ldns_rdf_clone(
-                                ldns_rr_rdf(key, 2)));
+                                ldns_rr_rdf(key, 2))); /* second rfd */
 
-        /* digest type, only SHA1 is supported */
-        sha1hash = 1;
+        /* digest hash type */
+        sha1hash = (uint8_t)h;
         tmp = ldns_rdf_new_frm_data(LDNS_RDF_TYPE_INT8, sizeof(uint8_t), &sha1hash);
         ldns_rr_push_rdf(ds, tmp);
 
@@ -704,17 +711,30 @@ ldns_key_rr2ds(const ldns_rr *key)
 			LDNS_STATUS_OK) { 
 		return NULL;
 	}
+	switch(h) {
+		case LDNS_SHA1:
+		(void) SHA1((unsigned char *) ldns_buffer_begin(data_buf),
+			    ldns_buffer_position(data_buf),
+			    (unsigned char*) digest);
 
-        /* sha1 it */
-        (void) SHA1((unsigned char *) ldns_buffer_begin(data_buf),
-                    ldns_buffer_position(data_buf),
-                    (unsigned char*) digest);
+		tmp = ldns_rdf_new_frm_data(LDNS_RDF_TYPE_HEX, SHA_DIGEST_LENGTH,
+				digest);
+		ldns_rr_push_rdf(ds, tmp);
 
-        tmp = ldns_rdf_new_frm_data(LDNS_RDF_TYPE_HEX, SHA_DIGEST_LENGTH,
-                        digest);
-        ldns_rr_push_rdf(ds, tmp);
+		break;
+		case LDNS_SHA256:
+		/* XXX to SHA265 
+		(void) SHA1((unsigned char *) ldns_buffer_begin(data_buf),
+			    ldns_buffer_position(data_buf),
+			    (unsigned char*) digest);
 
-	LDNS_FREE(digest);
+		tmp = ldns_rdf_new_frm_data(LDNS_RDF_TYPE_HEX, SHA_DIGEST_LENGTH,
+				digest);
+		ldns_rr_push_rdf(ds, tmp);
+		*/
+		break;
+	}
+
         return ds;
 }
 

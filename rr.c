@@ -1210,12 +1210,12 @@ ldns_rr_compare_ds(const ldns_rr *orr1, const ldns_rr *orr2)
 #ifdef HAVE_SSL
 	if (ldns_rr_get_type(rr1) == LDNS_RR_TYPE_DS &&
 	    ldns_rr_get_type(rr2) == LDNS_RR_TYPE_DNSKEY) {
-	    	ds_repr = ldns_key_rr2ds(rr2);
+	    	ds_repr = ldns_key_rr2ds(rr2, LDNS_SHA1);
 	    	result = (ldns_rr_compare(rr1, ds_repr) == 0);
 	    	ldns_rr_free(ds_repr);
 	} else if (ldns_rr_get_type(rr1) == LDNS_RR_TYPE_DNSKEY &&
 	    ldns_rr_get_type(rr2) == LDNS_RR_TYPE_DS) {
-	    	ds_repr = ldns_key_rr2ds(rr1);
+	    	ds_repr = ldns_key_rr2ds(rr1, LDNS_SHA1);
 	    	result = (ldns_rr_compare(rr2, ds_repr) == 0);
 	    	ldns_rr_free(ds_repr);
 	} else {

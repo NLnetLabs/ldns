@@ -114,9 +114,10 @@ RSA *ldns_key_buf2rsa(ldns_buffer *key);
  * returns a new DS rr that represents the given key rr.
  *
  * \param[in] *key the key to convert
+ * \param[in] h the hash to use LDNS_SHA1/LDNS_SHA256
  * \return ldns_rr* a new rr pointer to a DS
  */
-ldns_rr *ldns_key_rr2ds(const ldns_rr *key);
+ldns_rr *ldns_key_rr2ds(const ldns_rr *key, ldns_hash h);
 
 /* sign functions */
 

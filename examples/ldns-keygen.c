@@ -135,7 +135,7 @@ main(int argc, char *argv[])
 	ldns_key_set_keytag(key, ldns_calc_keytag(pubkey));
 
 	/* build the DS record */
-	ds = ldns_key_rr2ds(pubkey);
+	ds = ldns_key_rr2ds(pubkey, LDNS_SHA1);
 
 	/* print the public key RR to .key */
 	filename = LDNS_XMALLOC(char, strlen(owner) + 17);
