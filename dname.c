@@ -23,7 +23,7 @@
 #include <arpa/inet.h>
 
 ldns_rdf *
-ldns_dname_cat_clone(ldns_rdf *rd1, ldns_rdf *rd2)
+ldns_dname_cat_clone(const ldns_rdf *rd1, const ldns_rdf *rd2)
 {
 	ldns_rdf *new;
 	uint16_t new_size;

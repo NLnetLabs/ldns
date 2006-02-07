@@ -23,7 +23,7 @@
 #include <errno.h>
 
 ldns_status
-ldns_send(ldns_pkt **result, ldns_resolver *r, ldns_pkt *query_pkt)
+ldns_send(ldns_pkt **result, ldns_resolver *r, const ldns_pkt *query_pkt)
 {
 	uint8_t i;
 	

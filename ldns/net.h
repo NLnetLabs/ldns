@@ -81,7 +81,7 @@ ldns_status ldns_tcp_send(uint8_t **result, ldns_buffer *qbin, const struct sock
  * \param[in] query_pkt the query to send
  * \return status
  */
-ldns_status ldns_send(ldns_pkt **pkt, ldns_resolver *r, ldns_pkt *query_pkt);
+ldns_status ldns_send(ldns_pkt **pkt, ldns_resolver *r, const ldns_pkt *query_pkt);
 
 /**
  * Create a tcp socket to the specified address

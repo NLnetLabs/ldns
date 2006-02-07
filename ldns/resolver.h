@@ -121,147 +121,147 @@ typedef struct ldns_struct_resolver ldns_resolver;
  * \param[in] r the resolver
  * \return the port number 
  */
-uint16_t ldns_resolver_port(ldns_resolver *r);
+uint16_t ldns_resolver_port(const ldns_resolver *r);
 
 /**
  * Is the resolver set to recurse
  * \param[in] r the resolver
  * \return true if so, otherwise false
  */
-bool ldns_resolver_recursive(ldns_resolver *r);
+bool ldns_resolver_recursive(const ldns_resolver *r);
 
 /**
  * Get the debug status of the resolver
  * \param[in] r the resolver
  * \return true if so, otherwise false
  */
-bool ldns_resolver_debug(ldns_resolver *r);
+bool ldns_resolver_debug(const ldns_resolver *r);
 
 /**
  * Get the number of retries
  * \param[in] r the resolver
  * \return the number of retries
  */
-uint8_t ldns_resolver_retry(ldns_resolver *r);
+uint8_t ldns_resolver_retry(const ldns_resolver *r);
 
 /**
  * Get the retransmit interval
  * \param[in] r the resolver
  * \return the retransmit interval
  */
-uint8_t ldns_resolver_retrans(ldns_resolver *r);
+uint8_t ldns_resolver_retrans(const ldns_resolver *r);
 
 /**
  * Does the resolver use ip6 or ip4
  * \param[in] r the resolver
  * \return 0: both, 1: ip4, 2:ip6
  */
-uint8_t ldns_resolver_ip6(ldns_resolver *r);
+uint8_t ldns_resolver_ip6(const ldns_resolver *r);
 
 /**
  * Get the resolver's udp size
  * \param[in] r the resolver
  * \return the udp mesg size
  */
-uint16_t ldns_resolver_edns_udp_size(ldns_resolver *r);
+uint16_t ldns_resolver_edns_udp_size(const ldns_resolver *r);
 /**
  * Does the resolver use tcp or udp
  * \param[in] r the resolver
  * \return true: tcp, false: udp
  */
-bool ldns_resolver_usevc(ldns_resolver *r);
+bool ldns_resolver_usevc(const ldns_resolver *r);
 /**
  * Does the resolver only try the first nameserver
  * \param[in] r the resolver
  * \return true: yes, fail, false: no, try the others
  */
-bool ldns_resolver_fail(ldns_resolver *r);
+bool ldns_resolver_fail(const ldns_resolver *r);
 /**
  * Does the resolver do DNSSEC
  * \param[in] r the resolver
  * \return true: yes, false: no
  */
-bool ldns_resolver_dnssec(ldns_resolver *r);
+bool ldns_resolver_dnssec(const ldns_resolver *r);
 /**
  * Does the resolver set the CD bit 
  * \param[in] r the resolver
  * \return true: yes, false: no
  */
-bool ldns_resolver_dnssec_cd(ldns_resolver *r);
+bool ldns_resolver_dnssec_cd(const ldns_resolver *r);
 /**
  * Does the resolver ignore the TC bit (truncated)
  * \param[in] r the resolver
  * \return true: yes, false: no
  */
-bool ldns_resolver_igntc(ldns_resolver *r);
+bool ldns_resolver_igntc(const ldns_resolver *r);
 /**
  * Does the resolver randomize the nameserver before usage
  * \param[in] r the resolver
  * \return true: yes, false: no
  */
-bool ldns_resolver_random(ldns_resolver *r);
+bool ldns_resolver_random(const ldns_resolver *r);
 /**
  * How many nameserver are configured in the resolver
  * \param[in] r the resolver
  * \return number of nameservers
  */
-size_t ldns_resolver_nameserver_count(ldns_resolver *r);
+size_t ldns_resolver_nameserver_count(const ldns_resolver *r);
 /**
  * What is the default dname to add to relative queries
  * \param[in] r the resolver
  * \return the dname which is added
  */
-ldns_rdf *ldns_resolver_domain(ldns_resolver *r);
+ldns_rdf *ldns_resolver_domain(const ldns_resolver *r);
 /**
  * What is the timeout on socket connections
  * \param[in] r the resolver
  * \return the timeout as struct timeval
  */
-struct timeval ldns_resolver_timeout(ldns_resolver *r);
+struct timeval ldns_resolver_timeout(const ldns_resolver *r);
 /**
  * What is the searchlist as used by the resolver
  * \param[in] r the resolver
  * \return a ldns_rdf pointer to a list of the addresses
  */
-ldns_rdf** ldns_resolver_searchlist(ldns_resolver *r);
+ldns_rdf** ldns_resolver_searchlist(const ldns_resolver *r);
 /**
  * Return the configured nameserver ip address
  * \param[in] r the resolver
  * \return a ldns_rdf pointer to a list of the addresses
  */
-ldns_rdf** ldns_resolver_nameservers(ldns_resolver *r);
+ldns_rdf** ldns_resolver_nameservers(const ldns_resolver *r);
 /**
  * Return the used round trip times for the nameservers
  * \param[in] r the resolver
  * \return a size_t* pointer to the list.
  * yet)
  */
-size_t * ldns_resolver_rtt(ldns_resolver *r);
+size_t * ldns_resolver_rtt(const ldns_resolver *r);
 /**
  * Return the used round trip time for a specific nameserver
  * \param[in] r the resolver
  * \param[in] pos the index to the nameserver
  * \return the rrt, 0: infinite, >0: undefined (as of * yet)
  */
-size_t ldns_resolver_nameserver_rtt(ldns_resolver *r, size_t pos);
+size_t ldns_resolver_nameserver_rtt(const ldns_resolver *r, size_t pos);
 /**
  * Return the tsig keyname as used by the nameserver
  * \param[in] r the resolver
  * \return the name used.
  */
-char *ldns_resolver_tsig_keyname(ldns_resolver *r);
+char *ldns_resolver_tsig_keyname(const ldns_resolver *r);
 /**
  * Return the tsig algorithm as used by the nameserver
  * \param[in] r the resolver
  * \return the algorithm used.
  */
-char *ldns_resolver_tsig_algorithm(ldns_resolver *r);
+char *ldns_resolver_tsig_algorithm(const ldns_resolver *r);
 /**
  * Return the tsig keydata as used by the nameserver
  * \param[in] r the resolver
  * \return the keydata used.
  */
-char *ldns_resolver_tsig_keydata(ldns_resolver *r);
+char *ldns_resolver_tsig_keydata(const ldns_resolver *r);
 /**
  * pop the last nameserver from the resolver.
  * \param[in] r the resolver
@@ -274,7 +274,7 @@ ldns_rdf* ldns_resolver_pop_nameserver(ldns_resolver *r);
  * \param[in] r the resolver
  * \return the searchlist count
  */
-size_t ldns_resolver_searchlist_count(ldns_resolver *r);
+size_t ldns_resolver_searchlist_count(const ldns_resolver *r);
 
 /* write access function */
 /**
@@ -503,6 +503,8 @@ ldns_status ldns_resolver_push_nameserver_rr_list(ldns_resolver *r, ldns_rr_list
 
 /**
  * Send the query for using the resolver and take the search list into account
+ * The search algorithm is as follows:
+ *  If the is absolute, try it as-is, otherwise apply the search list
  * \param[in] *r operate using this resolver
  * \param[in] *rdf query for this name
  * \param[in] t query for this type (may be 0, defaults to A)
@@ -510,7 +512,7 @@ ldns_status ldns_resolver_push_nameserver_rr_list(ldns_resolver *r, ldns_rr_list
  * \param[in] flags the query flags
  * \return ldns_pkt* a packet with the reply from the nameserver
  */
-ldns_pkt* ldns_resolver_search(ldns_resolver *r, ldns_rdf *rdf, ldns_rr_type t, ldns_rr_class c, uint16_t flags);
+ldns_pkt* ldns_resolver_search(const ldns_resolver *r, const ldns_rdf *rdf, ldns_rr_type t, ldns_rr_class c, uint16_t flags);
 
 /**
  * Send the query for name as-is 
@@ -522,7 +524,7 @@ ldns_pkt* ldns_resolver_search(ldns_resolver *r, ldns_rdf *rdf, ldns_rr_type t, 
  * \param[in] flags the query flags
  * \return ldns_pkt* a packet with the reply from the nameserver
  */
-ldns_status ldns_resolver_send(ldns_pkt **answer, ldns_resolver *r, ldns_rdf *name, ldns_rr_type t, ldns_rr_class c, uint16_t flags);
+ldns_status ldns_resolver_send(ldns_pkt **answer, ldns_resolver *r, const ldns_rdf *name, ldns_rr_type t, ldns_rr_class c, uint16_t flags);
 
 /**
  * Send the given packet to a nameserver
@@ -530,7 +532,7 @@ ldns_status ldns_resolver_send(ldns_pkt **answer, ldns_resolver *r, ldns_rdf *na
  * \param[in] *r operate using this resolver
  * \param[in] *query_pkt query
  */
-ldns_status ldns_resolver_send_pkt(ldns_pkt **answer, ldns_resolver *r, ldns_pkt *query_pkt);
+ldns_status ldns_resolver_send_pkt(ldns_pkt **answer, const ldns_resolver *r, const ldns_pkt *query_pkt);
 
 /**
  * Send a query to a nameserver
@@ -542,7 +544,7 @@ ldns_status ldns_resolver_send_pkt(ldns_pkt **answer, ldns_resolver *r, ldns_pkt
  * \return ldns_pkt* a packet with the reply from the nameserver
  * if _defnames is true the default domain will be added
  */
-ldns_pkt* ldns_resolver_query(ldns_resolver *r, ldns_rdf *name, ldns_rr_type type, ldns_rr_class class, uint16_t flags);
+ldns_pkt* ldns_resolver_query(ldns_resolver *r, const ldns_rdf *name, ldns_rr_type type, ldns_rr_class class, uint16_t flags);
 
 
 /** 
@@ -606,7 +608,7 @@ ldns_rr* ldns_axfr_next(ldns_resolver *resolver);
  * \param[in] resolver the resolver that is used
  * \return bool true if axfr transfer was completed without error
  */
-bool ldns_axfr_complete(ldns_resolver *resolver);
+bool ldns_axfr_complete(const ldns_resolver *resolver);
 
 /**
  * returns a pointer to the last ldns_pkt that was sent by the server in the AXFR transfer
@@ -614,7 +616,7 @@ bool ldns_axfr_complete(ldns_resolver *resolver);
  * \param[in] res the resolver that was used in the axfr transfer
  * \return ldns_pkt the last packet sent
  */
-ldns_pkt *ldns_axfr_last_pkt(ldns_resolver *res);
+ldns_pkt *ldns_axfr_last_pkt(const ldns_resolver *res);
 
 /**
  * randomize the nameserver list in the resolver

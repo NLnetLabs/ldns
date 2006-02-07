@@ -32,6 +32,8 @@ XX Jan 2006: 1.1.0: ldns-team
 	Code:
 	* All networking code was moved to net.c
 	* rdata.c: added asserts to the rdf set/get functions
+	* const keyword was added to pointer arguments that 
+	  aren't changed
 
 	API:
 	Changed:

@@ -24,7 +24,7 @@
  * \param[in] rd2 the rightside
  * \return a new rdf with leftside/rightside
  */
-ldns_rdf *ldns_dname_cat_clone(ldns_rdf *rd1, ldns_rdf *rd2);
+ldns_rdf *ldns_dname_cat_clone(const ldns_rdf *rd1, const ldns_rdf *rd2);
 /**
  * concatenates rd2 after rd1 (rd2 is copied, rd1 is modified)
  * \param[in] rd1 the leftside
