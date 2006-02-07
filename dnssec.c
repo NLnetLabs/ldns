@@ -669,6 +669,7 @@ ldns_key_rr2ds(const ldns_rr *key, ldns_hash h)
 	ldns_rr_set_class(ds, ldns_rr_get_class(key));
 
 	switch(h) {
+		default:
 		case LDNS_SHA1:
 			digest = LDNS_XMALLOC(uint8_t, SHA_DIGEST_LENGTH);
 			if (!digest) {

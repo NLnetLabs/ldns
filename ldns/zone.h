@@ -49,14 +49,14 @@ ldns_zone * ldns_zone_new(void);
  * \param[in] z the zone to read from
  * \return the soa record in the zone
  */
-ldns_rr * ldns_zone_soa(ldns_zone *z);
+ldns_rr * ldns_zone_soa(const ldns_zone *z);
 
 /**
  * Returns the number of resource records in the zone, NOT counting the SOA record
  * \param[in] z the zone to read from
  * \return the number of rr's in the zone
  */
-uint16_t ldns_zone_rr_count(ldns_zone *z);
+uint16_t ldns_zone_rr_count(const ldns_zone *z);
 
 /**
  * Set the zone's soa record
@@ -72,7 +72,7 @@ void ldns_zone_set_soa(ldns_zone *z, ldns_rr *soa);
  * \param[in] z the zone to read from
  * \return the rrs from this zone
  */
-ldns_rr_list * ldns_zone_rrs(ldns_zone *z);
+ldns_rr_list * ldns_zone_rrs(const ldns_zone *z);
 
 /**
  * Set the zone's contents
@@ -107,7 +107,7 @@ bool ldns_zone_push_rr(ldns_zone *z, ldns_rr *rr);
  * \param[in] z the zone to look for glue
  * \return the rr_list with the glue
  */
-ldns_rr_list *ldns_zone_glue_rr_list(ldns_zone *z);
+ldns_rr_list *ldns_zone_glue_rr_list(const ldns_zone *z);
 
 /**
  * Create a new zone from a file

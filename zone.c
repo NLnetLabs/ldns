@@ -14,13 +14,13 @@
 #include <limits.h>
 
 ldns_rr *
-ldns_zone_soa(ldns_zone *z)
+ldns_zone_soa(const ldns_zone *z)
 {
         return z->_soa;
 }
 
 uint16_t
-ldns_zone_rr_count(ldns_zone *z)
+ldns_zone_rr_count(const ldns_zone *z)
 {
 	return ldns_rr_list_rr_count(z->_rrs);
 }
@@ -32,7 +32,7 @@ ldns_zone_set_soa(ldns_zone *z, ldns_rr *soa)
 }
 
 ldns_rr_list *
-ldns_zone_rrs(ldns_zone *z)
+ldns_zone_rrs(const ldns_zone *z)
 {
 	return z->_rrs;
 }
@@ -59,7 +59,7 @@ ldns_zone_push_rr(ldns_zone *z, ldns_rr *rr)
 
 /* this will be an EXPENSIVE op with our zone structure */
 ldns_rr_list *
-ldns_zone_glue_rr_list(ldns_zone *z)
+ldns_zone_glue_rr_list(const ldns_zone *z)
 {
 	/* when do we find glue? It means we find an IP address
 	 * (AAAA/A) for a nameserver listed in the zone
