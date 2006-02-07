@@ -20,7 +20,7 @@ check_ds_key_equiv(ldns_rr *key, ldns_rr *ds)
 {
 	ldns_rr *key_ds;
 
-	key_ds  = ldns_key_rr2ds(key);
+	key_ds  = ldns_key_rr2ds(key, LDNS_SHA1);
 	printf("new ds\n");
 		ldns_rr_print(stdout, key_ds);
 
