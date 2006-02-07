@@ -1,19 +1,7 @@
 /* 
- * Lua stub to link lua to ldns
+ * Lua bindings
  *
- * This also exports functions for lua use
- * partely based upon:
- * http://tonyandpaige.com/tutorials/lua3.html
- *
- * (c) R. Gieben, NLnet Labs
- */
-
-/****
- * BIG TODO error handling and checking from the lua 
- * side
- *
- * Can't use doxygen, because everything goes through
- * lua_State's stack
+ * (c) 2006, NLnet Labs
  */
 
 #include <stdio.h>
@@ -34,8 +22,6 @@
 
 /* the Lua interpreter */
 lua_State* L;
-
-char *VERSION = "lua-rns 0.1";
 
 void
 usage(FILE *f, char *progname)
