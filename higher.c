@@ -411,7 +411,7 @@ ldns_nsec_type_check(ldns_rr *nsec, ldns_rr_type t)
 
 	while(pos < ldns_rdf_size(nsec_type_list)) {
 		window_block_nr = data[pos];
-		bitmap_length = data[pos+1];
+		bitmap_length = data[pos + 1];
 		pos += 2;
 
 		for (bit_pos = 0; bit_pos < (bitmap_length) * 8; bit_pos++) {

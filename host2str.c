@@ -468,7 +468,7 @@ ldns_rdf2buffer_str_nsec(ldns_buffer *output, const ldns_rdf *rdf)
 	
 	while(pos < ldns_rdf_size(rdf)) {
 		window_block_nr = data[pos];
-		bitmap_length = data[pos+1];
+		bitmap_length = data[pos + 1];
 		pos += 2;
 		
 		for (bit_pos = 0; bit_pos < (bitmap_length) * 8; bit_pos++) {
