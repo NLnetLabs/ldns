@@ -106,14 +106,16 @@ ldns_send(ldns_pkt **result, ldns_resolver *r, const ldns_pkt *query_pkt)
 			for (retries = ldns_resolver_retry(r); retries > 0; retries--) {
 				send_status = ldns_tcp_send(&reply_bytes, qb, ns, (socklen_t)ns_len, ldns_resolver_timeout(r), &reply_size);
 				if (send_status == LDNS_STATUS_OK) {
-					continue;
+					break;
 				}
 			}
 		} else {
 			for (retries = ldns_resolver_retry(r); retries > 0; retries--) {
+				/* ldns_rdf_print(stdout, ns_array[i]); */
 				send_status = ldns_udp_send(&reply_bytes, qb, ns, (socklen_t)ns_len, ldns_resolver_timeout(r), &reply_size);
+				
 				if (send_status == LDNS_STATUS_OK) {
-					continue;
+					break;
 				}
 			}
 		}
@@ -207,6 +209,7 @@ ldns_udp_send(uint8_t **result, ldns_buffer *qbin, const struct sockaddr_storage
 
 	/* wait for an response*/
 	answer = ldns_udp_read_wire(sockfd, answer_size, NULL, NULL);
+	close(sockfd);
 
 	if (*answer_size == 0) {
 		/* oops */
@@ -217,7 +220,6 @@ ldns_udp_send(uint8_t **result, ldns_buffer *qbin, const struct sockaddr_storage
 	answer = (uint8_t*)LDNS_XREALLOC(answer, uint8_t *, (size_t)*answer_size);
 
 	*result = answer;
-	close(sockfd);
 	return LDNS_STATUS_OK;
 }
 
@@ -229,11 +231,11 @@ ldns_udp_bgsend(ldns_buffer *qbin, const struct sockaddr_storage *to, socklen_t 
 	sockfd = ldns_udp_connect(to, timeout);
 
 	if (sockfd == 0) {
-		return LDNS_STATUS_ERR;
+		return 0;
 	}
 
 	if (ldns_udp_send_query(qbin, sockfd, to, tolen) == 0) {
-		return LDNS_STATUS_ERR;
+		return 0;
 	}
 	return sockfd;
 }
@@ -287,7 +289,6 @@ ldns_tcp_send_query(ldns_buffer *qbin, int sockfd,
 {
 	uint8_t *sendbuf;
 	ssize_t bytes;
-	char *addr_str = NULL;
 
 	/* add length of packet */
 	sendbuf = LDNS_XMALLOC(uint8_t, ldns_buffer_position(qbin) + 2);
@@ -299,17 +300,7 @@ ldns_tcp_send_query(ldns_buffer *qbin, int sockfd,
 
         LDNS_FREE(sendbuf);
 
-	if (bytes == -1) {
-		if (to) {
-			addr_str = LDNS_XMALLOC(char, tolen + 1);
-			(void) inet_ntop((int) to->ss_family, (struct sock_addr *)to, addr_str, tolen);
-			dprintf("error sending to %s\n", addr_str);
-			LDNS_FREE(addr_str);
-		}
-		return 0;
-	}
-	if ((size_t) bytes != ldns_buffer_position(qbin) + 2) {
-		dprintf("%s", "amount of sent bytes mismatch\n");
+	if (bytes == -1 || (size_t) bytes != ldns_buffer_position(qbin) + 2 ) {
 		return 0;
 	}
 	return bytes;
@@ -321,22 +312,15 @@ ldns_udp_send_query(ldns_buffer *qbin, int sockfd, const struct sockaddr_storage
 		socklen_t tolen)
 {
 	ssize_t bytes;
-	char *addr_str = NULL;
 
 	bytes = sendto(sockfd, ldns_buffer_begin(qbin),
 			ldns_buffer_position(qbin), 0, (struct sockaddr *)to, tolen);
 
-	if (bytes == -1) {
-		if (to) {
-			addr_str = LDNS_XMALLOC(char, tolen + 1);
-			(void) inet_ntop((int) to->ss_family, (struct sockaddr *)to, addr_str, tolen);
-			dprintf("error sending to %s\n", addr_str);
-			LDNS_FREE(addr_str);
-		}
+	if (bytes == -1 || (size_t)bytes != ldns_buffer_position(qbin)) {
 		return 0;
 	}
 	if ((size_t) bytes != ldns_buffer_position(qbin)) {
-		dprintf("%s", "amount mismatch\n");
+		/* dprintf("%s", "amount mismatch\n"); */
 		return 0;
 	}
 	return bytes;
@@ -445,6 +429,7 @@ ldns_tcp_send(uint8_t **result,  ldns_buffer *qbin, const struct sockaddr_storag
 	}
 	
 	answer = ldns_tcp_read_wire(sockfd, answer_size);
+	close(sockfd);
 
 	if (*answer_size == 0) {
 		/* oops */
@@ -465,11 +450,11 @@ ldns_tcp_bgsend(ldns_buffer *qbin, const struct sockaddr_storage *to, socklen_t 
 	sockfd = ldns_tcp_connect(to, tolen, timeout);
 	
 	if (sockfd == 0) {
-		return LDNS_STATUS_ERR;
+		return 0;
 	}
 	
 	if (ldns_tcp_send_query(qbin, sockfd, to, tolen) == 0) {
-		return LDNS_STATUS_ERR;
+		return 0;
 	}
 	
 	return sockfd;
