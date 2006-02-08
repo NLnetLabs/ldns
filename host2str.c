@@ -83,7 +83,7 @@ ldns_lookup_table ldns_opcodes[] = {
 
 /* do NOT pass compressed data here :p */
 ldns_status
-ldns_rdf2buffer_str_dname(ldns_buffer *output, ldns_rdf *dname)
+ldns_rdf2buffer_str_dname(ldns_buffer *output, const ldns_rdf *dname)
 {
 	/* can we do with 1 pos var? or without at all? */
 	uint8_t src_pos = 0;
@@ -129,7 +129,7 @@ ldns_rdf2buffer_str_dname(ldns_buffer *output, ldns_rdf *dname)
 }
 
 ldns_status
-ldns_rdf2buffer_str_int8(ldns_buffer *output, ldns_rdf *rdf)
+ldns_rdf2buffer_str_int8(ldns_buffer *output, const ldns_rdf *rdf)
 {
 	uint8_t data = ldns_rdf_data(rdf)[0];
 	ldns_buffer_printf(output, "%lu", (unsigned long) data);
@@ -137,7 +137,7 @@ ldns_rdf2buffer_str_int8(ldns_buffer *output, ldns_rdf *rdf)
 }
 
 ldns_status
-ldns_rdf2buffer_str_int16(ldns_buffer *output, ldns_rdf *rdf)
+ldns_rdf2buffer_str_int16(ldns_buffer *output, const ldns_rdf *rdf)
 {
 	uint16_t data = ldns_read_uint16(ldns_rdf_data(rdf));
 	ldns_buffer_printf(output, "%lu", (unsigned long) data);
@@ -145,7 +145,7 @@ ldns_rdf2buffer_str_int16(ldns_buffer *output, ldns_rdf *rdf)
 }
 
 ldns_status
-ldns_rdf2buffer_str_int32(ldns_buffer *output, ldns_rdf *rdf)
+ldns_rdf2buffer_str_int32(ldns_buffer *output, const ldns_rdf *rdf)
 {
 	uint32_t data = ldns_read_uint32(ldns_rdf_data(rdf));
 	ldns_buffer_printf(output, "%lu", (unsigned long) data);
@@ -153,7 +153,7 @@ ldns_rdf2buffer_str_int32(ldns_buffer *output, ldns_rdf *rdf)
 }
 
 ldns_status
-ldns_rdf2buffer_str_time(ldns_buffer *output, ldns_rdf *rdf)
+ldns_rdf2buffer_str_time(ldns_buffer *output, const ldns_rdf *rdf)
 {
 	/* create a YYYYMMDDHHMMSS string if possible */
 	uint32_t data = ldns_read_uint32(ldns_rdf_data(rdf));
@@ -173,7 +173,7 @@ ldns_rdf2buffer_str_time(ldns_buffer *output, ldns_rdf *rdf)
 }
 
 ldns_status
-ldns_rdf2buffer_str_a(ldns_buffer *output, ldns_rdf *rdf)
+ldns_rdf2buffer_str_a(ldns_buffer *output, const ldns_rdf *rdf)
 {
 	char str[INET_ADDRSTRLEN];
 	
@@ -184,7 +184,7 @@ ldns_rdf2buffer_str_a(ldns_buffer *output, ldns_rdf *rdf)
 }
 
 ldns_status
-ldns_rdf2buffer_str_aaaa(ldns_buffer *output, ldns_rdf *rdf)
+ldns_rdf2buffer_str_aaaa(ldns_buffer *output, const ldns_rdf *rdf)
 {
 	char str[INET6_ADDRSTRLEN];
 
@@ -196,7 +196,7 @@ ldns_rdf2buffer_str_aaaa(ldns_buffer *output, ldns_rdf *rdf)
 }
 
 ldns_status
-ldns_rdf2buffer_str_str(ldns_buffer *output, ldns_rdf *rdf)
+ldns_rdf2buffer_str_str(ldns_buffer *output, const ldns_rdf *rdf)
 {
 	const uint8_t *data = ldns_rdf_data(rdf);
 	uint8_t length = data[0];
@@ -219,7 +219,7 @@ ldns_rdf2buffer_str_str(ldns_buffer *output, ldns_rdf *rdf)
 }
 
 ldns_status
-ldns_rdf2buffer_str_b64(ldns_buffer *output, ldns_rdf *rdf)
+ldns_rdf2buffer_str_b64(ldns_buffer *output, const ldns_rdf *rdf)
 {
 	size_t size = b64_ntop_calculate_size(ldns_rdf_size(rdf));
 	char *b64 = LDNS_XMALLOC(char, size);
@@ -231,7 +231,7 @@ ldns_rdf2buffer_str_b64(ldns_buffer *output, ldns_rdf *rdf)
 }	
 
 ldns_status
-ldns_rdf2buffer_str_hex(ldns_buffer *output, ldns_rdf *rdf)
+ldns_rdf2buffer_str_hex(ldns_buffer *output, const ldns_rdf *rdf)
 {
 	size_t i;
 	for (i = 0; i < ldns_rdf_size(rdf); i++) {
@@ -242,7 +242,7 @@ ldns_rdf2buffer_str_hex(ldns_buffer *output, ldns_rdf *rdf)
 }	
 
 ldns_status
-ldns_rdf2buffer_str_type(ldns_buffer *output, ldns_rdf *rdf)
+ldns_rdf2buffer_str_type(ldns_buffer *output, const ldns_rdf *rdf)
 {
         uint16_t data = ldns_read_uint16(ldns_rdf_data(rdf));
 	const ldns_rr_descriptor *descriptor;
@@ -257,7 +257,7 @@ ldns_rdf2buffer_str_type(ldns_buffer *output, ldns_rdf *rdf)
 }	
 
 ldns_status
-ldns_rdf2buffer_str_class(ldns_buffer *output, ldns_rdf *rdf)
+ldns_rdf2buffer_str_class(ldns_buffer *output, const ldns_rdf *rdf)
 {
         uint8_t data = ldns_rdf_data(rdf)[0];
 	ldns_lookup_table *lt;
@@ -272,7 +272,7 @@ ldns_rdf2buffer_str_class(ldns_buffer *output, ldns_rdf *rdf)
 }	
 
 ldns_status
-ldns_rdf2buffer_str_cert_alg(ldns_buffer *output, ldns_rdf *rdf)
+ldns_rdf2buffer_str_cert_alg(ldns_buffer *output, const ldns_rdf *rdf)
 {
         uint8_t data = ldns_rdf_data(rdf)[0];
 	ldns_lookup_table *lt;
@@ -287,7 +287,7 @@ ldns_rdf2buffer_str_cert_alg(ldns_buffer *output, ldns_rdf *rdf)
 }	
 
 ldns_status
-ldns_rdf2buffer_str_alg(ldns_buffer *output, ldns_rdf *rdf)
+ldns_rdf2buffer_str_alg(ldns_buffer *output, const ldns_rdf *rdf)
 {
         uint8_t data = ldns_rdf_data(rdf)[0];
 	ldns_lookup_table *lt;
@@ -302,7 +302,7 @@ ldns_rdf2buffer_str_alg(ldns_buffer *output, ldns_rdf *rdf)
 }	
 
 ldns_status
-ldns_rdf2buffer_str_loc(ldns_buffer *output, ldns_rdf *rdf)
+ldns_rdf2buffer_str_loc(ldns_buffer *output, const ldns_rdf *rdf)
 {
 	/* we could do checking (ie degrees < 90 etc)? */
 	uint8_t version = ldns_rdf_data(rdf)[0];
@@ -399,21 +399,21 @@ ldns_rdf2buffer_str_loc(ldns_buffer *output, ldns_rdf *rdf)
 }
 
 ldns_status
-ldns_rdf2buffer_str_unknown(ldns_buffer *output, ldns_rdf *rdf)
+ldns_rdf2buffer_str_unknown(ldns_buffer *output, const ldns_rdf *rdf)
 {
 	ldns_buffer_printf(output, "\\# %u ", ldns_rdf_size(rdf));
 	return ldns_rdf2buffer_str_hex(output, rdf);
 }
 
 ldns_status
-ldns_rdf2buffer_str_nsap(ldns_buffer *output, ldns_rdf *rdf)
+ldns_rdf2buffer_str_nsap(ldns_buffer *output, const ldns_rdf *rdf)
 {
 	ldns_buffer_printf(output, "0x");
 	return ldns_rdf2buffer_str_hex(output, rdf);
 }
 
 ldns_status
-ldns_rdf2buffer_str_wks(ldns_buffer *output, ldns_rdf *rdf)
+ldns_rdf2buffer_str_wks(ldns_buffer *output, const ldns_rdf *rdf)
 {
 	/* protocol, followed by bitmap of services */
 	struct protoent *protocol;
@@ -453,7 +453,7 @@ ldns_rdf2buffer_str_wks(ldns_buffer *output, ldns_rdf *rdf)
 }
 
 ldns_status
-ldns_rdf2buffer_str_nsec(ldns_buffer *output, ldns_rdf *rdf)
+ldns_rdf2buffer_str_nsec(ldns_buffer *output, const ldns_rdf *rdf)
 {
 	/* Note: this code is duplicated in higher.c in 
 	 * ldns_nsec_type_check() function
@@ -491,7 +491,7 @@ ldns_rdf2buffer_str_nsec(ldns_buffer *output, ldns_rdf *rdf)
 }
 
 ldns_status
-ldns_rdf2buffer_str_period(ldns_buffer *output, ldns_rdf *rdf)
+ldns_rdf2buffer_str_period(ldns_buffer *output, const ldns_rdf *rdf)
 {
 	/* period is the number of seconds */
 	uint32_t p = ldns_read_uint32(ldns_rdf_data(rdf));
@@ -500,7 +500,7 @@ ldns_rdf2buffer_str_period(ldns_buffer *output, ldns_rdf *rdf)
 }
 
 ldns_status
-ldns_rdf2buffer_str_tsigtime(ldns_buffer *output, ldns_rdf *rdf)
+ldns_rdf2buffer_str_tsigtime(ldns_buffer *output,const  ldns_rdf *rdf)
 {
 	/* tsigtime is 48 bits network order unsigned integer */
 	uint64_t tsigtime = 0;
@@ -521,7 +521,7 @@ ldns_rdf2buffer_str_tsigtime(ldns_buffer *output, ldns_rdf *rdf)
 }
 
 ldns_status
-ldns_rdf2buffer_str_apl(ldns_buffer *output, ldns_rdf *rdf)
+ldns_rdf2buffer_str_apl(ldns_buffer *output, const ldns_rdf *rdf)
 {
 	uint8_t *data = ldns_rdf_data(rdf);
 	uint16_t address_family = ldns_read_uint16(data);
@@ -588,16 +588,16 @@ ldns_rdf2buffer_str_apl(ldns_buffer *output, ldns_rdf *rdf)
 }
 
 ldns_status
-ldns_rdf2buffer_str_int16_data(ldns_buffer *output, ldns_rdf *rdf)
+ldns_rdf2buffer_str_int16_data(ldns_buffer *output, const ldns_rdf *rdf)
 {
 	/* Subtract the size (2) of the number that specifies the length */
 	size_t size = b64_ntop_calculate_size(ldns_rdf_size(rdf) - 2);
 	char *b64 = LDNS_XMALLOC(char, size);
 
-	ldns_buffer_printf(output, "%u ", ldns_rdf_size(rdf)-2);
+	ldns_buffer_printf(output, "%u ", ldns_rdf_size(rdf) - 2);
 	
 	if (ldns_rdf_size(rdf) > 2 &&
-	    b64_ntop(ldns_rdf_data(rdf)+2, ldns_rdf_size(rdf)-2, b64, size)) {
+	    b64_ntop(ldns_rdf_data(rdf) + 2, ldns_rdf_size(rdf) - 2, b64, size)) {
 		ldns_buffer_printf(output, "%s", b64);
 	}
 	LDNS_FREE(b64);
@@ -605,7 +605,7 @@ ldns_rdf2buffer_str_int16_data(ldns_buffer *output, ldns_rdf *rdf)
 }
 
 ldns_status
-ldns_rdf2buffer_str_ipseckey(ldns_buffer *output, ldns_rdf *rdf)
+ldns_rdf2buffer_str_ipseckey(ldns_buffer *output, const ldns_rdf *rdf)
 {
 	/* wire format from 
 	   http://www.ietf.org/internet-drafts/draft-ietf-ipseckey-rr-12.txt
@@ -673,7 +673,7 @@ ldns_rdf2buffer_str_ipseckey(ldns_buffer *output, ldns_rdf *rdf)
 }
 
 ldns_status 
-ldns_rdf2buffer_str_tsig(ldns_buffer *output, ldns_rdf *rdf)
+ldns_rdf2buffer_str_tsig(ldns_buffer *output, const ldns_rdf *rdf)
 {
 	/* TSIG RRs have no presentation format, make them #size <data> */
 	return ldns_rdf2buffer_str_unknown(output, rdf);
@@ -681,7 +681,7 @@ ldns_rdf2buffer_str_tsig(ldns_buffer *output, ldns_rdf *rdf)
 
 
 ldns_status
-ldns_rdf2buffer_str(ldns_buffer *buffer, ldns_rdf *rdf)
+ldns_rdf2buffer_str(ldns_buffer *buffer, const ldns_rdf *rdf)
 {
 	ldns_status res;
 
@@ -774,7 +774,7 @@ ldns_rdf2buffer_str(ldns_buffer *buffer, ldns_rdf *rdf)
 }
 
 ldns_status
-ldns_rr2buffer_str(ldns_buffer *output, ldns_rr *rr)
+ldns_rr2buffer_str(ldns_buffer *output, const ldns_rr *rr)
 {
 	uint16_t i;
 	ldns_status status = LDNS_STATUS_OK;
@@ -876,7 +876,7 @@ ldns_rr2buffer_str(ldns_buffer *output, ldns_rr *rr)
 }
 
 ldns_status
-ldns_rr_list2buffer_str(ldns_buffer *output, ldns_rr_list *list)
+ldns_rr_list2buffer_str(ldns_buffer *output, const ldns_rr_list *list)
 {
 	uint16_t i;
 
@@ -887,7 +887,7 @@ ldns_rr_list2buffer_str(ldns_buffer *output, ldns_rr_list *list)
 }
 
 ldns_status
-ldns_pktheader2buffer_str(ldns_buffer *output, ldns_pkt *pkt)
+ldns_pktheader2buffer_str(ldns_buffer *output, const ldns_pkt *pkt)
 {
 	ldns_lookup_table *opcode = ldns_lookup_by_id(ldns_opcodes,
 			                    (int) ldns_pkt_get_opcode(pkt));
@@ -938,7 +938,7 @@ ldns_pktheader2buffer_str(ldns_buffer *output, ldns_pkt *pkt)
 }
 
 ldns_status
-ldns_pkt2buffer_str(ldns_buffer *output, ldns_pkt *pkt)
+ldns_pkt2buffer_str(ldns_buffer *output, const ldns_pkt *pkt)
 {
 	uint16_t i;
 	ldns_status status = LDNS_STATUS_OK;
@@ -1042,7 +1042,7 @@ ldns_pkt2buffer_str(ldns_buffer *output, ldns_pkt *pkt)
 }
 
 ldns_status
-ldns_key2buffer_str(ldns_buffer *output, ldns_key *k)
+ldns_key2buffer_str(ldns_buffer *output, const ldns_key *k)
 {
 	ldns_status status = LDNS_STATUS_OK;
 	unsigned char  *bignum;
@@ -1272,7 +1272,7 @@ buffer2str(ldns_buffer *buffer)
 }
 
 char *
-ldns_rdf2str(ldns_rdf *rdf)
+ldns_rdf2str(const ldns_rdf *rdf)
 {
 	char *result = NULL;
 	ldns_buffer *tmp_buffer = ldns_buffer_new(LDNS_MIN_BUFLEN);
@@ -1287,7 +1287,7 @@ ldns_rdf2str(ldns_rdf *rdf)
 }
 
 char *
-ldns_rr2str(ldns_rr *rr)
+ldns_rr2str(const ldns_rr *rr)
 {
 	char *result = NULL;
 	ldns_buffer *tmp_buffer = ldns_buffer_new(LDNS_MIN_BUFLEN);
@@ -1302,7 +1302,7 @@ ldns_rr2str(ldns_rr *rr)
 }
 
 char *
-ldns_pkt2str(ldns_pkt *pkt)
+ldns_pkt2str(const ldns_pkt *pkt)
 {
 	char *result = NULL;
 	ldns_buffer *tmp_buffer = ldns_buffer_new(LDNS_MIN_BUFLEN);
@@ -1317,7 +1317,7 @@ ldns_pkt2str(ldns_pkt *pkt)
 }
 
 char *
-ldns_key2str(ldns_key *k)
+ldns_key2str(const ldns_key *k)
 {
 	char *result = NULL;
 	ldns_buffer *tmp_buffer = ldns_buffer_new(LDNS_MIN_BUFLEN);
@@ -1330,7 +1330,7 @@ ldns_key2str(ldns_key *k)
 }
 
 char *
-ldns_rr_list2str(ldns_rr_list *list)
+ldns_rr_list2str(const ldns_rr_list *list)
 {
 	char *result = NULL;
 	ldns_buffer *tmp_buffer = ldns_buffer_new(LDNS_MIN_BUFLEN); 
@@ -1349,7 +1349,7 @@ ldns_rr_list2str(ldns_rr_list *list)
 }
 
 void
-ldns_rdf_print(FILE *output, ldns_rdf *rdf)
+ldns_rdf_print(FILE *output, const ldns_rdf *rdf)
 {
 	char *str = ldns_rdf2str(rdf);
 	if (str) {
@@ -1361,7 +1361,7 @@ ldns_rdf_print(FILE *output, ldns_rdf *rdf)
 }
 
 void
-ldns_rr_print(FILE *output, ldns_rr *rr)
+ldns_rr_print(FILE *output, const ldns_rr *rr)
 {
 	char *str = ldns_rr2str(rr);
 	if (str) {
@@ -1373,7 +1373,7 @@ ldns_rr_print(FILE *output, ldns_rr *rr)
 }
 
 void
-ldns_pkt_print(FILE *output, ldns_pkt *pkt)
+ldns_pkt_print(FILE *output, const ldns_pkt *pkt)
 {
 	char *str = ldns_pkt2str(pkt);
 	if (str) {
@@ -1385,7 +1385,7 @@ ldns_pkt_print(FILE *output, ldns_pkt *pkt)
 }
 
 void
-ldns_rr_list_print(FILE *output, ldns_rr_list *lst)
+ldns_rr_list_print(FILE *output, const ldns_rr_list *lst)
 {
 	char *str = ldns_rr_list2str(lst);
 	if (str) {
@@ -1397,7 +1397,7 @@ ldns_rr_list_print(FILE *output, ldns_rr_list *lst)
 }
 
 void
-ldns_resolver_print(FILE *output, ldns_resolver *r)
+ldns_resolver_print(FILE *output, const ldns_resolver *r)
 {
 	uint16_t i;
 	ldns_rdf **n;
@@ -1431,7 +1431,7 @@ ldns_resolver_print(FILE *output, ldns_resolver *r)
 }
 
 void
-ldns_zone_print(FILE *output, ldns_zone *z)
+ldns_zone_print(FILE *output, const ldns_zone *z)
 {
 	ldns_rr_print(output, ldns_zone_soa(z));
 	ldns_rr_list_print(output, ldns_zone_rrs(z));

@@ -27,7 +27,7 @@
 
 /* used only on the public key RR */
 uint16_t
-ldns_calc_keytag(ldns_rr *key)
+ldns_calc_keytag(const ldns_rr *key)
 {
 	unsigned int i;
 	uint32_t ac32;

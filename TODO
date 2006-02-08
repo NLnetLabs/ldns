@@ -15,10 +15,13 @@ Post 1.0 Stuff:
         o refactor ldns_verify_rrsig_keylist and
           ldns_verify_rrsig (fold in TSIG stuff or leave it out?)
         o Different digest for DS (spec currently specifies SHA-1)
+        o zone.c; make it better/faster??
+        o SHA256 test in configure.ac
 
         Minor:
         ------
         o Check RedHat 9 Compile problem
+        o lua bindings?
 
 
 1.1.0:
@@ -29,8 +32,6 @@ Post 1.0 Stuff:
 	o API cleanup: add missing consts in function arguments
         o vim syntax
         o walker 
-        o zone.c; make it better/faster??
-        o SHA256 test in configure.ac
 
 DONE:
 1.0.1 released 5 January 2006

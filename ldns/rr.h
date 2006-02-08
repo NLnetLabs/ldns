@@ -416,7 +416,7 @@ ldns_rr_class ldns_rr_get_class(const ldns_rr *rr);
  * \param[in] rr_list  the rr_list to read from
  * \return the number of rr's
  */
-size_t ldns_rr_list_rr_count(ldns_rr_list *rr_list);
+size_t ldns_rr_list_rr_count(const ldns_rr_list *rr_list);
 
 /**
  * sets the number of rr's in an rr_list.
@@ -442,7 +442,7 @@ ldns_rr * ldns_rr_list_set_rr(ldns_rr_list *rr_list, const ldns_rr *r, size_t co
  * \param[in] nr return this rr
  * \return the rr at position nr
  */
-ldns_rr* ldns_rr_list_rr(ldns_rr_list *rr_list, size_t nr);
+ldns_rr* ldns_rr_list_rr(const ldns_rr_list *rr_list, size_t nr);
 
 /**
  * creates a new rr_list structure.

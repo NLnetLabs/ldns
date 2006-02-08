@@ -415,7 +415,7 @@ ldns_key_new_frm_algorithm(ldns_signing_algorithm alg, uint16_t size)
 }
 
 void
-ldns_key_print(FILE *output, ldns_key *k)
+ldns_key_print(FILE *output, const ldns_key *k)
 {
 	char *str = ldns_key2str(k);
 	if (str) {
@@ -489,13 +489,13 @@ ldns_key_set_keytag(ldns_key *k, uint16_t tag)
 
 /* read */
 size_t
-ldns_key_list_key_count(ldns_key_list *key_list)
+ldns_key_list_key_count(const ldns_key_list *key_list)
 {
 	        return key_list->_key_count;
 }       
 
 ldns_key *
-ldns_key_list_key(ldns_key_list *key, size_t nr)
+ldns_key_list_key(const ldns_key_list *key, size_t nr)
 {       
 	if (nr < ldns_key_list_key_count(key)) {
 		return key->_keys[nr];
@@ -505,61 +505,61 @@ ldns_key_list_key(ldns_key_list *key, size_t nr)
 }
 
 ldns_signing_algorithm
-ldns_key_algorithm(ldns_key *k) 
+ldns_key_algorithm(const ldns_key *k) 
 {
 	return k->_alg;
 }
 
 RSA *
-ldns_key_rsa_key(ldns_key *k)
+ldns_key_rsa_key(const ldns_key *k)
 {
 	return k->_key.rsa;
 }
 
 DSA *
-ldns_key_dsa_key(ldns_key *k)
+ldns_key_dsa_key(const ldns_key *k)
 {
 	return k->_key.dsa;
 }
 
 unsigned char *
-ldns_key_hmac_key(ldns_key *k)
+ldns_key_hmac_key(const ldns_key *k)
 {
 	return k->_key.hmac;
 }
 
 uint32_t
-ldns_key_origttl(ldns_key *k)
+ldns_key_origttl(const ldns_key *k)
 {
 	return k->_extra.dnssec.orig_ttl;
 }
 
 uint16_t
-ldns_key_flags(ldns_key *k)
+ldns_key_flags(const ldns_key *k)
 {
 	return k->_extra.dnssec.flags;
 }
 
 uint32_t
-ldns_key_inception(ldns_key *k)
+ldns_key_inception(const ldns_key *k)
 {
 	return k->_extra.dnssec.inception;
 }
 
 uint32_t
-ldns_key_expiration(ldns_key *k)
+ldns_key_expiration(const ldns_key *k)
 {
 	return k->_extra.dnssec.expiration;
 }
 
 uint16_t
-ldns_key_keytag(ldns_key *k)
+ldns_key_keytag(const ldns_key *k)
 {
 	return k->_extra.dnssec.keytag;
 }
 
 ldns_rdf *
-ldns_key_pubkey_owner(ldns_key *k)
+ldns_key_pubkey_owner(const ldns_key *k)
 {
 	return k->_pubkey_owner;
 }
@@ -684,7 +684,7 @@ ldns_key_dsa2bin(unsigned char *data, DSA *k, uint16_t *size)
 }
 
 ldns_rr *
-ldns_key2rr(ldns_key *k)
+ldns_key2rr(const ldns_key *k)
 {
 	/* this function will convert a the keydata contained in
 	 * rsa/dsa pointers to a DNSKEY rr. It will fill in as

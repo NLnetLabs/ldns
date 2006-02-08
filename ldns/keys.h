@@ -267,7 +267,7 @@ bool ldns_key_list_push_key(ldns_key_list *key_list, ldns_key *key);
  * \param[in] key_list the key_list
  * \return the numbers of keys in the list
  */
-size_t ldns_key_list_key_count(ldns_key_list *key_list);
+size_t ldns_key_list_key_count(const ldns_key_list *key_list);
 
 /**
  * returns a pointer to the key in the list at the given position
@@ -275,7 +275,7 @@ size_t ldns_key_list_key_count(ldns_key_list *key_list);
  * \param[in] nr the position in the list
  * \return the key
  */
-ldns_key *ldns_key_list_key(ldns_key_list *key, size_t nr);
+ldns_key *ldns_key_list_key(const ldns_key_list *key, size_t nr);
 
 #ifdef HAVE_SSL
 /**
@@ -283,14 +283,14 @@ ldns_key *ldns_key_list_key(ldns_key_list *key, size_t nr);
  * \param[in] k the key to look in
  * \return the RSA * structure in the key
  */
-RSA *ldns_key_rsa_key(ldns_key *k);
+RSA *ldns_key_rsa_key(const ldns_key *k);
 #endif /* HAVE_SSL */
 
 /**
  * returns the (openssl) DSA struct contained in the key
  */
 #ifdef HAVE_SSL
-DSA *ldns_key_dsa_key(ldns_key *k);
+DSA *ldns_key_dsa_key(const ldns_key *k);
 #endif /* HAVE_SSL */
 
 /**
@@ -298,49 +298,49 @@ DSA *ldns_key_dsa_key(ldns_key *k);
  * \param[in] k the key
  * \return the algorithm
  */
-ldns_signing_algorithm ldns_key_algorithm(ldns_key *k);
+ldns_signing_algorithm ldns_key_algorithm(const ldns_key *k);
 /**
  * return the hmac key 
  * \param[in] k the key
  * \return the hmac key
  */
-unsigned char *ldns_key_hmac_key(ldns_key *k);
+unsigned char *ldns_key_hmac_key(const ldns_key *k);
 /**
  * return the original ttl of the key
  * \param[in] k the key
  * \return the original ttl
  */
-uint32_t ldns_key_origttl(ldns_key *k);
+uint32_t ldns_key_origttl(const ldns_key *k);
 /**
  * return the key's inception date
  * \param[in] k the key
  * \return the inception date
  */
-uint32_t ldns_key_inception(ldns_key *k);
+uint32_t ldns_key_inception(const ldns_key *k);
 /**
  * return the key's expiration date
  * \param[in] k the key
  * \return the experiration date
  */
-uint32_t ldns_key_expiration(ldns_key *k);
+uint32_t ldns_key_expiration(const ldns_key *k);
 /**
  * return the keytag
  * \param[in] k the key
  * \return the keytag
  */
-uint16_t ldns_key_keytag(ldns_key *k);
+uint16_t ldns_key_keytag(const ldns_key *k);
 /**
  * return the public key's owner
  * \param[in] k the key
  * \return the owner
  */
-ldns_rdf *ldns_key_pubkey_owner(ldns_key *k);
+ldns_rdf *ldns_key_pubkey_owner(const ldns_key *k);
 /**
  * return the flag of the key
  * \param[in] k the key
  * \return the flag
  */
-uint16_t ldns_key_flags(ldns_key *k);
+uint16_t ldns_key_flags(const ldns_key *k);
 
 /**     
  * pops the last rr from a keylist
@@ -355,7 +355,7 @@ ldns_key *ldns_key_list_pop_key(ldns_key_list *key_list);
  * \param[in] k the ldns_key to convert
  * \return ldns_rr representation of the key
  */
-ldns_rr *ldns_key2rr(ldns_key *k);
+ldns_rr *ldns_key2rr(const ldns_key *k);
 
 /**
  * print a private key to the file ouput
@@ -363,7 +363,7 @@ ldns_rr *ldns_key2rr(ldns_key *k);
  * \param[in] output the FILE descriptor where to print to
  * \param[in] k the ldns_key to print
  */
-void ldns_key_print(FILE *output, ldns_key *k);
+void ldns_key_print(FILE *output, const ldns_key *k);
 
 /**
  * frees a key structure

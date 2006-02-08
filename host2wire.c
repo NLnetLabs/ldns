@@ -24,7 +24,7 @@
 */
 
 ldns_status
-ldns_dname2buffer_wire(ldns_buffer *buffer, ldns_rdf *name)
+ldns_dname2buffer_wire(ldns_buffer *buffer, const ldns_rdf *name)
 {
 	if (ldns_buffer_reserve(buffer, ldns_rdf_size(name))) {
 		ldns_buffer_write(buffer,
@@ -47,7 +47,7 @@ ldns_rdf2buffer_wire(ldns_buffer *buffer, const ldns_rdf *rdf)
 
 /* convert a rr list to wireformat */
 ldns_status
-ldns_rr_list2buffer_wire(ldns_buffer *buffer, ldns_rr_list *rr_list)
+ldns_rr_list2buffer_wire(ldns_buffer *buffer,const ldns_rr_list *rr_list)
 {
 	uint16_t rr_count;
 	uint16_t i;
@@ -99,7 +99,7 @@ ldns_rr2buffer_wire(ldns_buffer *buffer, const ldns_rr *rr, int section)
 }
 
 ldns_status
-ldns_rrsig2buffer_wire(ldns_buffer *buffer, ldns_rr *rr)
+ldns_rrsig2buffer_wire(ldns_buffer *buffer, const ldns_rr *rr)
 {
 	uint16_t i;
 
@@ -120,28 +120,10 @@ ldns_rrsig2buffer_wire(ldns_buffer *buffer, ldns_rr *rr)
 }
 
 ldns_status
-ldns_rr_rdata2buffer_wire(ldns_buffer *buffer, ldns_rr *rr)
+ldns_rr_rdata2buffer_wire(ldns_buffer *buffer, const ldns_rr *rr)
 {
 	uint16_t i;
-#if 0
-	if (ldns_rr_owner(rr)) {
-		(void) ldns_dname2buffer_wire(buffer, ldns_rr_owner(rr));
-	}
-	
-	if (ldns_buffer_reserve(buffer, 4)) {
-		(void) ldns_buffer_write_u16(buffer, ldns_rr_get_type(rr));
-		(void) ldns_buffer_write_u16(buffer, ldns_rr_get_class(rr));
-	}
-
-	if (ldns_buffer_reserve(buffer, 6)) {
-		ldns_buffer_write_u32(buffer, ldns_rr_ttl(rr));
-		/* remember pos for later */
-		rdl_pos = ldns_buffer_position(buffer);
-		ldns_buffer_write_u16(buffer, 0);
-	}	
-#endif
-
-	/* convert all the rdf */
+	/* convert all the rdf's */
 	for (i = 0; i < ldns_rr_rd_count(rr); i++) {
 		(void) ldns_rdf2buffer_wire(buffer, ldns_rr_rdf(rr, i));
 	}
@@ -338,4 +320,3 @@ ldns_pkt2wire(uint8_t **dest, const ldns_pkt *packet, size_t *result_size)
 	ldns_buffer_free(buffer);
 	return status;
 }
-
