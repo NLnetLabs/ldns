@@ -2,7 +2,7 @@
  * securechasetrace.c
  * Where all the hard work concerning secure tracing is done
  *
- * (c) 2005 NLnet Labs
+ * (c) 2005, 2006 NLnet Labs
  *
  * See the file LICENSE for the license
  *
@@ -104,7 +104,7 @@ get_dnssec_rr(ldns_resolver *r, ldns_rdf *name, ldns_rr_type t, ldns_rr_list **s
  * retrieve keys for this zone
  */
 ldns_rr_list *
-get_keys(ldns_resolver *r, ldns_rdf *apexname, ldns_rr_list **opt_sig)
+get_key(ldns_resolver *r, ldns_rdf *apexname, ldns_rr_list **opt_sig)
 {
 	return get_dnssec_rr(r, apexname, LDNS_RR_TYPE_DNSKEY, opt_sig);
 }
@@ -118,164 +118,251 @@ get_ds(ldns_resolver *r, ldns_rdf *ownername, ldns_rr_list **opt_sig)
 	return get_dnssec_rr(r, ownername, LDNS_RR_TYPE_DS, opt_sig);
 }
 
-
-/* do a secure trace - local_res has been setup, so try to use that */
-ldns_status
-do_secure_trace2(ldns_resolver *res, ldns_rdf *name, ldns_rr_type t,
-                ldns_rr_class c, ldns_rr_list *trusted_keys)
+ldns_pkt *
+do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
+		ldns_rr_class c, ldns_rr_list *trusted_keys)
 {
-	/* problem here is that I don't now if *res is a forwarder/cache
-	 * or authoritative NS. If we use a cache we should "leave" that
-	 * asap and try to find us a real auth. NS ;) 
-	 */
-	ldns_rr_list *dnskey_cache = NULL;
-	ldns_rr_list *rrsig_cache = NULL;
-	ldns_rr_list *ds_cache = NULL;
+	ldns_resolver *res;
+	ldns_pkt *p;
+	ldns_rr_list *new_nss_a;
+	ldns_rr_list *new_nss_aaaa;
+	ldns_rr_list *final_answer;
+	ldns_rr_list *new_nss;
+	ldns_rr_list *hostnames;
+	ldns_rr_list *ns_addr;
+	uint16_t loop_count;
+	ldns_rdf *pop; 
+	ldns_rdf *authname;
+	ldns_status status;
+	size_t i;
+	/* dnssec */
+	bool secure;
+	ldns_rr_list *key_list;
+	ldns_rr_list *sig_list;
+	ldns_rr_list *ds_list;
 
-	ldns_rdf *chopped_dname[11]; /* alloc 10 subparts for a dname */
-	ldns_rr_list *ds;
-	int8_t i, dname_labels;
-	uint8_t lab_cnt;
-	ldns_rr_list *validated_ds;
+	secure = true;
+	authname = NULL;
+	loop_count = 0;
+	new_nss_a = NULL;
+	new_nss_aaaa = NULL;
+	new_nss = NULL;
+	ns_addr = NULL;
+	final_answer = NULL;
+	p = ldns_pkt_new();
+	res = ldns_resolver_new();
+	sig_list = ldns_rr_list_new();
 
-	rrsig_cache = ldns_rr_list_new();
-	dnskey_cache = NULL;
-
+	if (!p || !res || !sig_list) {
+		error("Memory allocation failed");
+		return NULL;
+	}
+	
+	/* transfer some properties of local_res to res,
+	 * because they were given on the commandline */
+	ldns_resolver_set_ip6(res, 
+			ldns_resolver_ip6(local_res));
+	ldns_resolver_set_port(res, 
+			ldns_resolver_port(local_res));
+	ldns_resolver_set_debug(res, 
+			ldns_resolver_debug(local_res));
+	ldns_resolver_set_fail(res, 
+			ldns_resolver_fail(local_res));
+	ldns_resolver_set_usevc(res, 
+			ldns_resolver_usevc(local_res));
+	ldns_resolver_set_random(res, 
+			ldns_resolver_random(local_res));
+	ldns_resolver_set_recursive(res, false);
 	ldns_resolver_set_dnssec(res, true);
-	ldns_resolver_set_dnssec_cd(res, true);
 
-	/* get a list of chopped dnames: www.nlnetlabs.nl, nlnetlabs.nl, nl, . 
-	 * This is used to discover what is the zone that is actually hosted
-	 * on the resolver we point to in local_res
-	 */
-	chopped_dname[0] = name;
-	for(i = 1; i < 10 && chopped_dname[i - 1]; i++) {
-		chopped_dname[i] = ldns_dname_left_chop(chopped_dname[i - 1]);	
+	/* setup the root nameserver in the new resolver */
+	if (ldns_resolver_push_nameserver_rr_list(res, global_dns_root) != LDNS_STATUS_OK) {
+		return NULL;
 	}
-	chopped_dname[i] = NULL;
-	dname_labels = i - 2; /* set this also before this last NULL */
 
-	/* Now we will find out what is the first zone that 
-	 * actually has some key+sig configured at the nameserver
-	 * we're looking at. We start at the right side of our dname
-	 */
-	for(i = dname_labels; i != 0; i--) {
-		ldns_rdf_print(stdout, chopped_dname[i]);
-		printf("\n");
-		dnskey_cache =  get_keys(res, chopped_dname[i], &rrsig_cache);
-		if (dnskey_cache) {
-			/* aahhh, keys... */
-			break;
+	/* this must be a real query to local_res */
+	status = ldns_resolver_send(&p, local_res, ldns_dname_new_frm_str("."), LDNS_RR_TYPE_NS, c, 0);
+	if (ldns_pkt_empty(p)) {
+		warning("No root server information received\n");
+	} 
+	
+	if (status == LDNS_STATUS_OK) {
+		if (!ldns_pkt_empty(p)) {
+			drill_pkt_print(stdout, local_res, p);
 		}
-	}
-	lab_cnt = i;
-
-	/* Print whay we have found until now */
-	printf(" ("); 
-		ldns_rdf_print(stdout, chopped_dname[i]);
-	puts(")");
-	resolver_print_nameservers(res);
-	puts("");
-	print_dnskey(dnskey_cache);
-	puts(" |");
-			
-
-	/* chopped_dname[i] is the zone which is configured at the
-	 * nameserver pointed to by res. This is our starting point
-	 * for the secure trace. Hopefully the trusted keys we got
-	 * match the keys we see here
-	 */
-
- 	if (!rrsig_cache) {
-		/* huh!? the sigs must be sent along with the keys... 
-		 * probably are using some lame forwarder... exit as
-		 * we cannot do anything in that case
-		 */
-		error("Are you using an non DNSSEC-aware forwarder?");
-		return LDNS_STATUS_ERR;
+	} else {
+		error("cannot use local resolver\n");
+		return NULL;
 	}
 
-	/* Next try to find out if there is a DS for this name are
-	 * a name under that
-	 */
-	i = lab_cnt;
-	for(i = lab_cnt; i >= 0; i--) {
-		ds = get_ds(res, chopped_dname[i], NULL);
-		if (ds) {
-			/* re-query to get the rrsigs */
-			ds_cache = get_ds(res, chopped_dname[i], &rrsig_cache);
-			dnskey_cache = get_keys(res, chopped_dname[i], &rrsig_cache);
-			break;
+	status = ldns_resolver_send(&p, res, name, t, c, 0);
+
+	while(status == LDNS_STATUS_OK && 
+	      ldns_pkt_reply_type(p) == LDNS_PACKET_REFERRAL) {
+
+		if (!p) {
+			/* some error occurred, bail out */
+			return NULL;
 		}
-	}
-	printf(" |\n ("); 
-		ldns_rdf_print(stdout, chopped_dname[i]);
-	puts(")");
-	resolver_print_nameservers(res);
-	puts("");
-	print_dnskey(dnskey_cache);
-	puts("");
-	print_ds(ds_cache);
-	puts("");
 
-	validated_ds = check_ds_key_equiv_rr_list(dnskey_cache, ds_cache); 
-	if (validated_ds) {
-		print_ds(validated_ds);
-	}
+		new_nss_a = ldns_pkt_rr_list_by_type(p,
+				LDNS_RR_TYPE_A, LDNS_SECTION_ADDITIONAL);
+		new_nss_aaaa = ldns_pkt_rr_list_by_type(p,
+				LDNS_RR_TYPE_AAAA, LDNS_SECTION_ADDITIONAL);
+		new_nss = ldns_pkt_rr_list_by_type(p,
+				LDNS_RR_TYPE_NS, LDNS_SECTION_AUTHORITY);
 
-	return LDNS_STATUS_OK;
-}
+		if (qdebug != -1) {
+			ldns_rr_list_print(stdout, new_nss);
+		}
+		/* checks itself for qdebug */
+		drill_pkt_print_footer(stdout, local_res, p);
+		
+		/* remove the old nameserver from the resolver */
+		while((pop = ldns_resolver_pop_nameserver(res))) { /* do it */ }
 
-
-/* do a secure trace - ripped from drill < 0.9 */
-ldns_status
-do_secure_trace3(ldns_resolver *res, ldns_rdf *name, ldns_rr_type t,
-		                ldns_rr_class c, ldns_rr_list *trusted_keys)
-{
-	ldns_pkt *p1 = NULL;
-	ldns_pkt *p_keys = NULL;
-	ldns_rr_list *key_list = NULL;
-	ldns_rr_list *good_key_list = NULL;
-	ldns_rr_list *sig_list = NULL;
-	unsigned int secure = 1;
-
-	while (ldns_pkt_reply_type(p1 = ldns_resolver_query(res, name, t, c, 0)) == LDNS_PACKET_REFERRAL) {
-		drill_pkt_print(stdout, res, p1);
-
-		if (secure == 1) {
-			/* Try to get the keys from the current nameserver */
-			p_keys = ldns_resolver_query(res, name, LDNS_RR_TYPE_DNSKEY, c, 0);
-			if (p_keys) {
-				key_list = ldns_pkt_rr_list_by_type(
-						p_keys, LDNS_RR_TYPE_DNSKEY, LDNS_SECTION_ANSWER);
-				if (key_list) {
-
-					ldns_rr_list_print(stdout, key_list);
-					
-					sig_list = ldns_pkt_rr_list_by_name_and_type(
-							p_keys, 
-							ldns_rr_owner(ldns_rr_list_rr(key_list, 0)),
-							LDNS_RR_TYPE_RRSIG,
-							LDNS_SECTION_ANY_NOQUESTION);
-
-					if (sig_list) {
-						ldns_rr_list_print(stdout, sig_list);
-
-						if (ldns_verify(key_list, sig_list, key_list, 
-									good_key_list)
-								== LDNS_STATUS_OK) {
-							printf("VALIDATED\n");
-						}
-					}	
+		if (!new_nss_aaaa && !new_nss_a) {
+			/* 
+			 * no nameserver found!!! 
+			 * try to resolve the names we do got 
+			 */
+			for(i = 0; i < ldns_rr_list_rr_count(new_nss); i++) {
+				/* get the name of the nameserver */
+				pop = ldns_rr_rdf(ldns_rr_list_rr(new_nss, i), 0);
+				if (!pop) {
+					break;
 				}
+
+				ldns_rr_list_print(stdout, new_nss);
+				ldns_rdf_print(stdout, pop);
+				/* retrieve it's addresses */
+				ns_addr = ldns_rr_list_cat_clone(ns_addr,
+					ldns_get_rr_list_addr_by_name(local_res, pop, c, 0));
+			}
+
+			if (ns_addr) {
+				if (ldns_resolver_push_nameserver_rr_list(res, ns_addr) != 
+						LDNS_STATUS_OK) {
+					error("Error adding new nameservers");
+					ldns_pkt_free(p); 
+					return NULL;
+				}
+				ldns_rr_list_free(ns_addr);
+			} else {
+				ldns_rr_list_print(stdout, ns_addr);
+				error("Could not find the nameserver ip addr; abort");
+				ldns_pkt_free(p);
+				return NULL;
 			}
 		}
+
+		/* add the new ones */
+		if (new_nss_aaaa) {
+			if (ldns_resolver_push_nameserver_rr_list(res, new_nss_aaaa) != 
+					LDNS_STATUS_OK) {
+				error("adding new nameservers");
+				ldns_pkt_free(p); 
+				return NULL;
+			}
+		}
+		if (new_nss_a) {
+			if (ldns_resolver_push_nameserver_rr_list(res, new_nss_a) != 
+					LDNS_STATUS_OK) {
+				error("adding new nameservers");
+				ldns_pkt_free(p); 
+				return NULL;
+			}
+		}
+		/* DNSSEC */
+		if (new_nss) {
+			authname = ldns_rr_owner(ldns_rr_list_rr(new_nss, 0));
+		} 
+
+		ldns_rdf_print(stdout,
+				ldns_resolver_nameservers(res)[0]);
+		printf("Asking for: ");
+		ldns_rdf_print(stdout, name);
+		printf("\nauthname: ");
+		ldns_rdf_print(stdout, authname);
+		printf("\n");
+		key_list = get_key(res, authname, &sig_list);
+
+		if (key_list) {
+			printf("Got KEYS!\n");
+			ldns_rr_list_print(stdout, sig_list);
+
+		} else {
+			printf("NO KEYS\n");
+		}
+
+		/* /DNSSEC */
+
+
+
+		if (loop_count++ > 20) {
+			/* unlikely that we are doing something usefull */
+			error("Looks like we are looping");
+			ldns_pkt_free(p); 
+			return NULL;
+		}
+		
+		status = ldns_resolver_send(&p, res, name, t, c, 0);
+		new_nss_aaaa = NULL;
+		new_nss_a = NULL;
+		ns_addr = NULL;
 	}
 
-	/* we have our final answer */
-	drill_pkt_print(stdout, res, p1);
+	status = ldns_resolver_send(&p, res, name, t, c, 0);
 
-	
-	
-	return LDNS_STATUS_OK;
+	/* 
+	 * het kan zijn dat we nog labels over hebben, omdat ze
+	 * allemaal gehost worden op de zelfde server, zie
+	 * ok.ok.ok.test.jelte.nlnetlabs.nl
+	 *
+	 * die moeten hier nog afgegaan worden om een chain
+	 * of trust te kunnen opbouwen
+	 */
+
+	if (!p) {
+		return NULL;
+	}
+
+	hostnames = ldns_get_rr_list_name_by_addr(local_res, 
+			ldns_pkt_answerfrom(p), 0, 0);
+
+	new_nss = ldns_pkt_authority(p);
+	final_answer = ldns_pkt_answer(p);
+		/* DNSSEC */
+		if (new_nss) {
+			authname = ldns_rr_owner(ldns_rr_list_rr(new_nss, 0));
+		} 
+
+		printf("Asking for: ");
+		ldns_rdf_print(stdout, name);
+		printf("\nauthname: ");
+		ldns_rdf_print(stdout, authname);
+		printf("\n");
+		key_list = get_key(res, authname, &sig_list);
+
+		if (key_list) {
+			printf("Got KEYS!\n");
+			ldns_rr_list_print(stdout, sig_list);
+			ds_list = get_ds(res, authname, &sig_list);
+			if (ds_list) {
+				ldns_rr_list_print(stdout, ds_list);
+			}
+		} else {
+			printf("NO KEYS\n");
+		}
+
+		/* /DNSSEC */
+
+	if (qdebug != -1) {
+		ldns_rr_list_print(stdout, final_answer);
+		ldns_rr_list_print(stdout, new_nss);
+
+	}
+	drill_pkt_print_footer(stdout, local_res, p);
+	ldns_pkt_free(p); 
+	return NULL;
 }

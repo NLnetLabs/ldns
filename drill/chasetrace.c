@@ -2,7 +2,7 @@
  * chasetrace.c
  * Where all the hard work concerning chasing
  * and tracing is done
- * (c) 2005 NLnet Labs
+ * (c) 2005, 2006 NLnet Labs
  *
  * See the file LICENSE for the license
  *
@@ -37,7 +37,20 @@ do_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 	ldns_status status;
 	size_t i;
 	
+	loop_count = 0;
+	new_nss_a = NULL;
+	new_nss_aaaa = NULL;
+	new_nss = NULL;
+	ns_addr = NULL;
+	final_answer = NULL;
+	p = ldns_pkt_new();
 	res = ldns_resolver_new();
+
+	if (!p || !res) {
+                error("Memory allocation failed");
+                return NULL;
+        }
+
 	/* transfer some properties of local_res to res,
 	 * because they were given on the commandline */
 	ldns_resolver_set_ip6(res, 
@@ -54,15 +67,7 @@ do_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 			ldns_resolver_usevc(local_res));
 	ldns_resolver_set_random(res, 
 			ldns_resolver_random(local_res));
-
-	loop_count = 0;
-	new_nss_a = NULL;
-	new_nss_aaaa = NULL;
-	new_nss = NULL;
-	ns_addr = NULL;
-	final_answer = NULL;
-	p = ldns_pkt_new();
-
+	ldns_resolver_set_recursive(res, false);
 
 	/* setup the root nameserver in the new resolver */
 	if (ldns_resolver_push_nameserver_rr_list(res, global_dns_root) != LDNS_STATUS_OK) {
@@ -205,97 +210,14 @@ do_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 }
 
 
-/* do a secure trace from the root down to the local leaf node 
- * requested.
- *
- * this alg is complicated. We try to do it all in one go, resolving
- * and keeping track of the security information
- *
- * update this some more. Miek; TODO
- */
-ldns_status
-do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t, 
-		ldns_rr_class c, ldns_rr_list *trusted_keys)
-{
-	ldns_resolver *res;
-	ldns_pkt *p;
-
-	ldns_rdf   *cur_zone;
-	uint16_t loop_count;
-	ldns_rr_list *keys;
-	ldns_status status;
-	bool secure;
-
-	/* always as for dnskey records, but when secure is true also
-	 * ask for DS
-	 */
-	
-	secure = true;
-	cur_zone = ldns_dname_new_frm_data(1, ".");
-	res = ldns_resolver_new();
-
-	/* transfer some properties of local_res to res,
-	 * because they were given on the commandline */
-	ldns_resolver_set_ip6(res, 
-			ldns_resolver_ip6(local_res));
-	ldns_resolver_set_port(res, 
-			ldns_resolver_port(local_res));
-	ldns_resolver_set_debug(res, 
-			ldns_resolver_debug(local_res));
-	ldns_resolver_set_dnssec(res, 
-			ldns_resolver_dnssec(local_res));
-	ldns_resolver_set_fail(res, 
-			ldns_resolver_fail(local_res));
-	ldns_resolver_set_usevc(res, 
-			ldns_resolver_usevc(local_res));
-	ldns_resolver_set_random(res, 
-			ldns_resolver_random(local_res));
-
-	loop_count = 0;
-	p = ldns_pkt_new();
-
-	/* setup the root nameserver in the new resolver */
-	if (ldns_resolver_push_nameserver_rr_list(res, global_dns_root) != LDNS_STATUS_OK) {
-		return LDNS_STATUS_ERR;
-	}
-
-	cur_zone = ldns_dname_new_frm_str(".");
-	
-	/* this must be a real query to local_res */
-	status = ldns_resolver_send(&p, local_res, cur_zone, LDNS_RR_TYPE_NS, c, 0);
-
-	if (status == LDNS_STATUS_OK) {
-		drill_pkt_print(stdout, local_res, p);
-	} else {
-		error("cannot use local resolver\n");
-		return LDNS_STATUS_ERR;
-	}
-	/* next ask the for keys */
-	keys = get_rr(res, cur_zone, LDNS_RR_TYPE_DNSKEY, c);
-	if (keys) {
-		ldns_rr_list_print(stdout, keys);
-	} else {
-		secure = false;
-	}
-	if (secure) {
-		/* if true get the DS for the child zone */
-	}
-
-	/* we can now start our decent to the zone we're looking
-	 * and query for ds/dnskey along the way
-	 */
-	
-
-	return LDNS_STATUS_ERR; /* need to finish this function */
-}
-
+/* do a secure trace from the root down to the local leaf node */
 /**
  * Chase the given rr to a known key
  *
  * Based on drill 0.9
  * pkt optional?
  * TODO: lots 
-	if this is moved to the library, status codes should be added and prints removed
+ * if this is moved to the library, status codes should be added and prints removed
  */
 ldns_status
 do_chase(ldns_resolver *res, ldns_rdf *name, ldns_rr_type type, ldns_rr_class c,
