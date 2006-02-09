@@ -240,7 +240,7 @@ do_secure_trace3(ldns_resolver *res, ldns_rdf *name, ldns_rr_type t,
 	unsigned int secure = 1;
 
 	while (ldns_pkt_reply_type(p1 = ldns_resolver_query(res, name, t, c, 0)) == LDNS_PACKET_REFERRAL) {
-		ldns_pkt_print(stdout, p1);
+		drill_pkt_print(stdout, res, p1);
 
 		if (secure == 1) {
 			/* Try to get the keys from the current nameserver */
@@ -271,5 +271,11 @@ do_secure_trace3(ldns_resolver *res, ldns_rdf *name, ldns_rr_type t,
 			}
 		}
 	}
+
+	/* we have our final answer */
+	drill_pkt_print(stdout, res, p1);
+
+	
+	
 	return LDNS_STATUS_OK;
 }

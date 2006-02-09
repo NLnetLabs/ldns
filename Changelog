@@ -50,6 +50,7 @@ XX Jan 2006: 1.1.0: ldns-team
 	* ldns_resolver_searchlist_count: return the searchlist counter
 	* ldns_zone_sort: Sort a zone
 	* ldns_bgsend(): background send, returns a socket.
+	* ldns_pkt_empty(): check is a packet is empty
 	Removed:
 	* ldns_resolver_bgsend(): was not used in 1.0.0 and is not used
 	  now

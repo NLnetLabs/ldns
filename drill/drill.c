@@ -496,7 +496,7 @@ main(int argc, char *argv[])
 			init_root();
 			qname = ldns_dname_new_frm_str(name);
 			/* don't care about return packet */
-			result = do_secure_trace2(res, qname, type, clas, key_list);
+			result = do_secure_trace3(res, qname, type, clas, key_list);
 			break;
 		case DRILL_CHASE:
 			qname = ldns_dname_new_frm_str(name);

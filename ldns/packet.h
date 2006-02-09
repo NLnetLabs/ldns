@@ -341,6 +341,16 @@ ldns_rr_list *ldns_pkt_rr_list_by_type(ldns_pkt *p, ldns_rr_type t, ldns_pkt_sec
  */
 ldns_rr_list *ldns_pkt_rr_list_by_name_and_type(ldns_pkt *packet, ldns_rdf *ownername, ldns_rr_type type, ldns_pkt_section sec);
 
+
+/**
+ * check to see if an rr exist in the packet
+ * \param[in] pkt the packet to examine
+ * \param[in] sec in which section to look
+ * \param[in] rr the rr to look for
+ */
+bool ldns_pkt_rr(ldns_pkt *pkt, ldns_pkt_section sec, ldns_rr *rr);
+
+
 /**
  * sets the flags in a packet.
  * \param[in] pkt the packet to operate on
@@ -664,10 +674,13 @@ bool ldns_pkt_push_rr(ldns_pkt *packet, ldns_pkt_section section, ldns_rr *rr);
  */
 bool ldns_pkt_safe_push_rr(ldns_pkt *pkt, ldns_pkt_section sec, ldns_rr *rr);
 
-/* lua helper stuff KEEP THIS?? NO/YES */
-/**  TODO or remove */
-ldns_rr * ldns_pkt_get_rr(ldns_pkt *p, uint16_t n);
-ldns_rr * ldns_pkt_set_rr(ldns_pkt *p, ldns_rr *rr, uint16_t n);
-bool ldns_pkt_insert_rr(ldns_pkt *p, ldns_rr *rr, uint16_t n);
+/**
+ * check if a packet is empty
+ * \param[in] p packet
+ * \return true: empty, false: empty
+ */
+bool ldns_pkt_empty(ldns_pkt *p);
+
+
 
 #endif  /* LDNS_PACKET_H */

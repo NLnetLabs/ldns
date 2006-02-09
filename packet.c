@@ -342,12 +342,6 @@ ldns_pkt_rr_list_by_name_and_type(ldns_pkt *packet, ldns_rdf *ownername, ldns_rr
 	return ret;
 }
 
-/**
- * check to see if an rr exist in the packet
- * \param[in] pkt the packet to examine
- * \param[in] sec in which section to look
- * \param[in] rr the rr to look for
- */
 bool
 ldns_pkt_rr(ldns_pkt *pkt, ldns_pkt_section sec, ldns_rr *rr)
 {
@@ -369,153 +363,6 @@ ldns_pkt_rr(ldns_pkt *pkt, ldns_pkt_section sec, ldns_rr *rr)
 		}
 	}
 	return false;
-}
-
-/* ldns_pkt_rr does something else */
-ldns_rr *
-ldns_pkt_get_rr(ldns_pkt *p, uint16_t n)
-{
-	ldns_rr_list *sec;
-	uint16_t count;
-
-	count = ldns_pkt_qdcount(p);
-	if (n < count) {
-		sec = ldns_pkt_question(p);
-		return ldns_rr_list_rr(sec, n - 1);
-	}
-	
-	count = ldns_pkt_qdcount(p) + ldns_pkt_ancount(p);
-	if (n < count) {
-		sec = ldns_pkt_answer(p);
-		return ldns_rr_list_rr(sec, count - n - 1);
-	}
-
-	count = ldns_pkt_qdcount(p) + ldns_pkt_ancount(p) +
-		ldns_pkt_nscount(p);
-	if (n < count) {
-		sec = ldns_pkt_authority(p);
-		return ldns_rr_list_rr(sec, count - n - 1);
-	}
-
-	count = ldns_pkt_qdcount(p) + ldns_pkt_ancount(p) +
-		ldns_pkt_nscount(p) + ldns_pkt_arcount(p);
-	if (n < count) {
-		sec = ldns_pkt_additional(p);
-		return ldns_rr_list_rr(sec, count - n - 1);
-	}
-	return NULL;
-}
-
-ldns_rr *
-ldns_pkt_set_rr(ldns_pkt *p, ldns_rr *rr, uint16_t n)
-{
-	ldns_rr_list *sec;
-	ldns_rr *r;
-	uint16_t count;
-
-	/* i break a layer here -- sue me */
-
-	/* retrieve the correct section */
-	count = ldns_pkt_qdcount(p);
-	if (n < count) {
-		sec = ldns_pkt_question(p);
-		goto success;
-	}
-	count = ldns_pkt_qdcount(p) + ldns_pkt_ancount(p);
-	if (n < count) {
-		sec = ldns_pkt_answer(p);
-		goto success;
-	}
-	count = ldns_pkt_qdcount(p) + ldns_pkt_ancount(p) +
-		ldns_pkt_nscount(p);
-	if (n < count) {
-		sec = ldns_pkt_authority(p);
-		goto success;
-	}
-	count = ldns_pkt_qdcount(p) + ldns_pkt_ancount(p) +
-		ldns_pkt_nscount(p) + ldns_pkt_arcount(p);
-	if (n < count) {
-		sec = ldns_pkt_additional(p);
-		goto success;
-	} 
-	/* still not ?? */
-	return NULL;
-	
-success:
-	r = ldns_rr_list_rr(sec, count - n - 1);
-	sec->_rrs[count - n - 1] = rr; /* replace */
-	return r;
-}
-
-/* insert rr  after n */
-bool
-ldns_pkt_insert_rr(ldns_pkt *p, ldns_rr *rr, uint16_t n)
-{
-	ldns_rr_list *sec;
-	ldns_pkt_section where;
-	uint16_t count;
-
-	/* i break a layer here -- sue me */
-
-	/* retrieve the correct section */
-	count = ldns_pkt_qdcount(p);
-	if (n < count) {
-		sec = ldns_pkt_question(p);
-		where = LDNS_SECTION_QUESTION;
-		goto success;
-	}
-	count = ldns_pkt_qdcount(p) + ldns_pkt_ancount(p);
-	if (n < count) {
-		sec = ldns_pkt_answer(p);
-		where = LDNS_SECTION_ANSWER;
-		goto success;
-	}
-	count = ldns_pkt_qdcount(p) + ldns_pkt_ancount(p) +
-		ldns_pkt_nscount(p);
-	if (n < count) {
-		sec = ldns_pkt_authority(p);
-		where = LDNS_SECTION_AUTHORITY;
-		goto success;
-	}
-	count = ldns_pkt_qdcount(p) + ldns_pkt_ancount(p) +
-		ldns_pkt_nscount(p) + ldns_pkt_arcount(p);
-	if (n < count) {
-		sec = ldns_pkt_additional(p);
-		where = LDNS_SECTION_ADDITIONAL;
-		goto success;
-	} 
-	/* still not ?? */
-	return false;
-	
-success:
-	if (ldns_rr_list_insert_rr(sec, rr, count - n - 1)) {
-		/* inc the section counter */
-		switch(where) {
-			case LDNS_SECTION_QUESTION:
-				ldns_pkt_set_qdcount(p,
-						ldns_pkt_qdcount(p) + 1);
-				break;
-			case LDNS_SECTION_ANSWER:
-				ldns_pkt_set_ancount(p,
-						ldns_pkt_ancount(p) + 1);
-				break;
-			case LDNS_SECTION_AUTHORITY:
-				ldns_pkt_set_nscount(p,
-						ldns_pkt_nscount(p) + 1);
-				break;
-			case LDNS_SECTION_ADDITIONAL:
-				ldns_pkt_set_arcount(p,
-						ldns_pkt_arcount(p) + 1);
-				break;
-			default:
-				/* do nothing, this is here to avoid compile warn */
-				break;
-		}
-		return true;
-
-	} else {
-		return false;
-	}
 }
 
 uint16_t
@@ -543,6 +390,16 @@ ldns_pkt_section_count(const ldns_pkt *packet, ldns_pkt_section s)
 		return 0;
 	}
 }
+
+bool
+ldns_pkt_empty(ldns_pkt *p)
+{
+	if (ldns_pkt_section_count(p, LDNS_SECTION_ANY) > 0) {
+		return true;
+	} else
+		return false;
+}
+
 
 ldns_rr_list *
 ldns_pkt_get_section_clone(ldns_pkt *packet, ldns_pkt_section s)

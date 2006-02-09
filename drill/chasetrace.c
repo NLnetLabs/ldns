@@ -73,13 +73,15 @@ do_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 	status = ldns_resolver_send(&p, local_res, ldns_dname_new_frm_str("."), LDNS_RR_TYPE_NS, c, 0);
 	/* p can still be NULL */
 
-	if (!p) {
-		error("Nothing received\n");
-		return NULL;
-	}
+
+	if (ldns_pkt_empty(p)) {
+		warning("No root server information received\n");
+	} 
 	
 	if (status == LDNS_STATUS_OK) {
-		drill_pkt_print(stdout, local_res, p);
+		if (!ldns_pkt_empty(p)) {
+			drill_pkt_print(stdout, local_res, p);
+		}
 	} else {
 		error("cannot use local resolver\n");
 		return NULL;
