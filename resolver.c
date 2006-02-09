@@ -714,16 +714,36 @@ ldns_pkt *
 ldns_resolver_search(const ldns_resolver *r,const  ldns_rdf *name, ldns_rr_type type, 
                 ldns_rr_class class, uint16_t flags)
 {
-	r = r;
-	name = name;
-	type = type;
-	class = class;
-	flags = flags;
+
+	char *str_dname;
+	ldns_rdf *new_name;
+	ldns_rdf **search_list;
+	size_t i;
+	ldns_pkt *p;
+
+	str_dname = ldns_rdf2str(name);
+
+	if (ldns_dname_str_absolute(str_dname)) {
+		/* query as-is */
+		return ldns_resolver_query(r, name, type, class, flags);
+	} else {
+		search_list = ldns_resolver_searchlist(r);
+		for (i = 0; i < ldns_resolver_searchlist_count(r); i++) {
+			new_name = ldns_dname_cat_clone(name,
+					search_list[i]);
+
+			p = ldns_resolver_query(r, new_name, type, class, flags);
+			ldns_rdf_free(new_name);
+			if (p) {
+				return p;
+			}
+		}
+	}
 	return NULL;
 }
 
 ldns_pkt *
-ldns_resolver_query(ldns_resolver *r, const ldns_rdf *name, ldns_rr_type type, ldns_rr_class class,
+ldns_resolver_query(const ldns_resolver *r, const ldns_rdf *name, ldns_rr_type type, ldns_rr_class class,
                 uint16_t flags)
 {
 	ldns_rdf *newname;
@@ -733,7 +753,7 @@ ldns_resolver_query(ldns_resolver *r, const ldns_rdf *name, ldns_rr_type type, l
 	pkt = NULL;
 
 	if (!ldns_resolver_defnames(r)) {
-		status = ldns_resolver_send(&pkt, r, name, type, class, flags);
+		status = ldns_resolver_send(&pkt, (ldns_resolver *)r, name, type, class, flags);
 		if (status == LDNS_STATUS_OK) {
 			return pkt;
 		} else {
@@ -746,12 +766,7 @@ ldns_resolver_query(ldns_resolver *r, const ldns_rdf *name, ldns_rr_type type, l
 
 	if (!ldns_resolver_domain(r)) {
 		/* _defnames is set, but the domain is not....?? */
-		status = ldns_resolver_send(&pkt, 
-				r, 
-				name, 
-				type, 
-				class, 
-				flags);
+		status = ldns_resolver_send(&pkt, (ldns_resolver *)r, name, type, class, flags);
 		if (status == LDNS_STATUS_OK) {
 			return pkt;
 		} else {
@@ -769,7 +784,7 @@ ldns_resolver_query(ldns_resolver *r, const ldns_rdf *name, ldns_rr_type type, l
 		}
 		return NULL;
 	}
-	status = ldns_resolver_send(&pkt, r, newname, type, class, flags);
+	status = ldns_resolver_send(&pkt, (ldns_resolver *)r, newname, type, class, flags);
 	ldns_rdf_free(newname);
 	return pkt;
 }

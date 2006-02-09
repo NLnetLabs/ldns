@@ -15,6 +15,7 @@ XX Jan 2006: 1.1.0: ldns-team
 	  defines as the building of ldns itself.
 	* Preliminary sha-256 support was added. Currently is your
      	  OpenSSL supports it, it is supported in the DS creation.
+	* ldns_resolver_search was implemented
 
 	Drill:
 	* -r was killed in favor of -o <header bit mnemonic> which 

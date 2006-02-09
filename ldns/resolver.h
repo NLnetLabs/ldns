@@ -504,7 +504,7 @@ ldns_status ldns_resolver_push_nameserver_rr_list(ldns_resolver *r, ldns_rr_list
 /**
  * Send the query for using the resolver and take the search list into account
  * The search algorithm is as follows:
- *  If the is absolute, try it as-is, otherwise apply the search list
+ * If the name is absolute, try it as-is, otherwise apply the search list
  * \param[in] *r operate using this resolver
  * \param[in] *rdf query for this name
  * \param[in] t query for this type (may be 0, defaults to A)
@@ -544,7 +544,7 @@ ldns_status ldns_resolver_send_pkt(ldns_pkt **answer, const ldns_resolver *r, co
  * \return ldns_pkt* a packet with the reply from the nameserver
  * if _defnames is true the default domain will be added
  */
-ldns_pkt* ldns_resolver_query(ldns_resolver *r, const ldns_rdf *name, ldns_rr_type type, ldns_rr_class class, uint16_t flags);
+ldns_pkt* ldns_resolver_query(const ldns_resolver *r, const ldns_rdf *name, ldns_rr_type type, ldns_rr_class class, uint16_t flags);
 
 
 /** 
