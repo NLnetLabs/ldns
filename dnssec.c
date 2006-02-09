@@ -24,6 +24,7 @@
 #include <openssl/ssl.h>
 #include <openssl/rand.h>
 #include <openssl/err.h>
+#include <openssl/md5.h>
 
 /* used only on the public key RR */
 uint16_t
