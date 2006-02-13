@@ -135,8 +135,12 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 	uint16_t loop_count;
 	ldns_rdf *pop; 
 	ldns_rdf *authname;
+	ldns_rdf **labels;
 	ldns_status status;
-	size_t i;
+	ssize_t i;
+	uint8_t labels_count_current;
+	uint8_t labels_count_all;
+
 	/* dnssec */
 	bool secure;
 	ldns_rr_list *key_list;
@@ -287,15 +291,15 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 			if (ldns_verify(key_list, sig_list, key_list, NULL) == LDNS_STATUS_OK) {
 				ldns_rr_list_push_rr_list(key_list, validated_key);
 				printf(";; DNSSEC RRs\n");
-				print_dnskey_list_abbr(stdout, key_list); puts(" [Validated]");
-				print_rrsig_list_abbr(stdout, sig_list); puts("");
+				print_dnskey_list_abbr(stdout, key_list); 
+				print_rrsig_list_abbr(stdout, sig_list); 
 
 			} else {
 				printf(";; DNSSEC RRs\n");
-				print_dnskey_list_abbr(stdout, key_list); puts("");
+				print_dnskey_list_abbr(stdout, key_list);
 				/*
 				printf(";; RRSIG RRs\n");
-				print_rrsig_list_abbr(stdout, sig_list); puts("");
+				print_rrsig_list_abbr(stdout, sig_list); 
 				*/
 			}
 
@@ -324,7 +328,8 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 		puts("");
 	}
 
-	status = ldns_resolver_send(&p, res, name, t, c, 0);
+	/* how far did we come */
+	labels_count_current = ldns_dname_label_count(authname);
 
 	/* 
 	 * het kan zijn dat we nog labels over hebben, omdat ze
@@ -335,6 +340,7 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 	 * of trust te kunnen opbouwen
 	 */
 
+	status = ldns_resolver_send(&p, res, name, t, c, 0);
 	if (!p) {
 		return NULL;
 	}
@@ -342,44 +348,66 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 	hostnames = ldns_get_rr_list_name_by_addr(local_res, 
 			ldns_pkt_answerfrom(p), 0, 0);
 
-	new_nss = ldns_pkt_authority(p);
+	new_nss = ldns_pkt_rr_list_by_type(p,
+			LDNS_RR_TYPE_NS, LDNS_SECTION_AUTHORITY);
 	final_answer = ldns_pkt_answer(p);
-		/* DNSSEC */
-		if (new_nss) {
-			authname = ldns_rr_owner(ldns_rr_list_rr(new_nss, 0));
-		} 
+	if (new_nss) {
+		authname = ldns_rr_owner(ldns_rr_list_rr(new_nss, 0));
+	} 
+	labels_count_all = ldns_dname_label_count(authname);
 
-		key_list = get_key(res, authname, &sig_list);
+	/* reverse the query order for the remaining names
+	 * so that we fetch them in the correct DNS order */
+	labels = LDNS_XMALLOC(ldns_rdf*, labels_count_all);
+	if (!labels) {
+		return NULL;
+	}
+	labels[0] = authname;
+	for(i = 1 ; i < labels_count_current; i++) {
+		labels[i] = ldns_dname_left_chop(labels[i - 1]);
+	}
+
+	/* recurse on the name at this server */
+	for(i = labels_count_current - 1; i >= 0; i--) {
+
+		/* DNSSEC */
+		key_list = get_key(res, labels[i], &sig_list);
 		if (key_list) {
 			if (ldns_verify(key_list, sig_list, key_list, NULL) == LDNS_STATUS_OK) {
 				ldns_rr_list_push_rr_list(key_list, validated_key);
 				printf(";; DNSSEC RRs\n");
-				print_dnskey_list_abbr(stdout, key_list); puts(" [Validated]");
-				print_rrsig_list_abbr(stdout, sig_list); puts("");
+				print_dnskey_list_abbr(stdout, key_list); 
+				print_rrsig_list_abbr(stdout, sig_list); 
 
 			} else {
 				printf(";; DNSSEC RRs\n");
-				print_dnskey_list_abbr(stdout, key_list); puts("");
+				print_dnskey_list_abbr(stdout, key_list); 
 				/*
-				printf(";; RRSIG RRs\n");
-				print_rrsig_list_abbr(stdout, sig_list); puts("");
-				*/
+				   printf(";; RRSIG RRs\n");
+				   print_rrsig_list_abbr(stdout, sig_list); puts("");
+				   */
 			}
 
-			ds_list = get_ds(res, authname, &sig_list);
+			ds_list = get_ds(res, labels[i], &sig_list);
 		} else {
 			printf(";; No DNSSEC RRs found, not attemping validation\n");
 		}
 
 		/* /DNSSEC */
+		ldns_rr_list_deep_free(sig_list);
+		sig_list = ldns_rr_list_new();
+		puts("");
+		
+	}
 
-		/*
+	
+#if 0
 	if (qdebug != -1) {
 		ldns_rr_list_print(stdout, final_answer);
 		ldns_rr_list_print(stdout, new_nss);
 
 	}
-	*/
+#endif 
 	ldns_pkt_free(p); 
 	return NULL;
 }

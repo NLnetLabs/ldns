@@ -322,7 +322,7 @@ main(int argc, char *argv[])
 	/* do a secure trace when requested */
 	if (PURPOSE == DRILL_TRACE && qdnssec) {
 		if (ldns_rr_list_rr_count(key_list) == 0) {
-			warning("%s", "No keys were given. Will not be able to verify authenticity!");
+			warning("%s", "No trusted keys were given. Will not be able to verify authenticity!");
 		}
 		PURPOSE = DRILL_SECTRACE;
 	}

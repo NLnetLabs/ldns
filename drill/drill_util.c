@@ -133,6 +133,7 @@ print_rrsig_list_abbr(FILE *fp, ldns_rr_list *sig)
 
 	for(i = 0; i < ldns_rr_list_rr_count(sig); i++) {
 		print_rrsig_abbr(fp, ldns_rr_list_rr(sig, i));
+		fputs("\n", fp);
 	}
 }
 
@@ -188,6 +189,7 @@ print_dnskey_list_abbr(FILE *fp, ldns_rr_list *key)
 
 	for(i = 0; i < ldns_rr_list_rr_count(key); i++) {
 		print_dnskey_abbr(fp, ldns_rr_list_rr(key, i));
+		fputs("\n", fp);
 	}
 }
 
