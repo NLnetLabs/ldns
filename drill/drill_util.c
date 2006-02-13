@@ -123,7 +123,7 @@ print_rrsig_abbr(FILE *fp, ldns_rr *sig) {
 	/* key-id */	
 	ldns_rdf_print(fp, ldns_rr_rdf(sig, 6)); fprintf(fp, " ");
 	/* key owner */
-	ldns_rdf_print(fp, ldns_rr_rdf(sig, 7)); fprintf(fp, "\n");
+	ldns_rdf_print(fp, ldns_rr_rdf(sig, 7));
 }
 
 void

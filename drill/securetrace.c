@@ -224,9 +224,6 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 		if (qdebug != -1) {
 			ldns_rr_list_print(stdout, new_nss);
 		}
-		/* checks itself for qdebug */
-		drill_pkt_print_footer(stdout, local_res, p);
-		
 		/* remove the old nameserver from the resolver */
 		while((pop = ldns_resolver_pop_nameserver(res))) { /* do it */ }
 
@@ -241,9 +238,6 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 				if (!pop) {
 					break;
 				}
-
-				ldns_rr_list_print(stdout, new_nss);
-				ldns_rdf_print(stdout, pop);
 				/* retrieve it's addresses */
 				ns_addr = ldns_rr_list_cat_clone(ns_addr,
 					ldns_get_rr_list_addr_by_name(local_res, pop, c, 0));
@@ -287,34 +281,30 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 			authname = ldns_rr_owner(ldns_rr_list_rr(new_nss, 0));
 		} 
 
-		ldns_rdf_print(stdout,
-				ldns_resolver_nameservers(res)[0]);
-		printf("\nAsking for: ");
-		ldns_rdf_print(stdout, name);
-		printf("\nauthname: ");
-		ldns_rdf_print(stdout, authname);
-		printf("\n");
 		key_list = get_key(res, authname, &sig_list);
 
 		if (key_list) {
-			printf("Got KEYS!\n");
-
-			printf("verify!\n");
 			if (ldns_verify(key_list, sig_list, key_list, NULL) == LDNS_STATUS_OK) {
-				printf("OK!?!!?\n");
 				ldns_rr_list_push_rr_list(key_list, validated_key);
+				printf(";; DNSSEC RRs\n");
+				print_dnskey_list_abbr(stdout, key_list); puts(" [Validated]");
+				print_rrsig_list_abbr(stdout, sig_list); puts("");
+
+			} else {
+				printf(";; DNSSEC RRs\n");
+				print_dnskey_list_abbr(stdout, key_list); puts("");
+				/*
+				printf(";; RRSIG RRs\n");
+				print_rrsig_list_abbr(stdout, sig_list); puts("");
+				*/
 			}
 
 			ds_list = get_ds(res, authname, &sig_list);
-			
-			/* ldns_rr_list_print(stdout, sig_list); */
-
 		} else {
-			printf("NO KEYS\n");
+			printf(";; No DNSSEC RRs found, not attemping validation\n");
 		}
 
 		/* /DNSSEC */
-
 
 
 		if (loop_count++ > 20) {
@@ -323,11 +313,15 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 			ldns_pkt_free(p); 
 			return NULL;
 		}
+
+		ldns_rr_list_deep_free(sig_list);
+		sig_list = ldns_rr_list_new();
 		
 		status = ldns_resolver_send(&p, res, name, t, c, 0);
 		new_nss_aaaa = NULL;
 		new_nss_a = NULL;
 		ns_addr = NULL;
+		puts("");
 	}
 
 	status = ldns_resolver_send(&p, res, name, t, c, 0);
@@ -355,22 +349,26 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 			authname = ldns_rr_owner(ldns_rr_list_rr(new_nss, 0));
 		} 
 
-		printf("Asking for: ");
-		ldns_rdf_print(stdout, name);
-		printf("\nauthname: ");
-		ldns_rdf_print(stdout, authname);
-		printf("\n");
 		key_list = get_key(res, authname, &sig_list);
-
 		if (key_list) {
-			printf("Got KEYS!\n");
-			print_rrsig_list_abbr(stdout, sig_list);
-			ds_list = get_ds(res, authname, &sig_list);
-			if (ds_list) {
-				ldns_rr_list_print(stdout, ds_list);
+			if (ldns_verify(key_list, sig_list, key_list, NULL) == LDNS_STATUS_OK) {
+				ldns_rr_list_push_rr_list(key_list, validated_key);
+				printf(";; DNSSEC RRs\n");
+				print_dnskey_list_abbr(stdout, key_list); puts(" [Validated]");
+				print_rrsig_list_abbr(stdout, sig_list); puts("");
+
+			} else {
+				printf(";; DNSSEC RRs\n");
+				print_dnskey_list_abbr(stdout, key_list); puts("");
+				/*
+				printf(";; RRSIG RRs\n");
+				print_rrsig_list_abbr(stdout, sig_list); puts("");
+				*/
 			}
+
+			ds_list = get_ds(res, authname, &sig_list);
 		} else {
-			printf("NO KEYS\n");
+			printf(";; No DNSSEC RRs found, not attemping validation\n");
 		}
 
 		/* /DNSSEC */
@@ -381,7 +379,6 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 		ldns_rr_list_print(stdout, new_nss);
 
 	}
-	drill_pkt_print_footer(stdout, local_res, p);
 	*/
 	ldns_pkt_free(p); 
 	return NULL;
