@@ -15,7 +15,8 @@
  * check if the key and the ds are equivalent
  * ie: is the ds made from the key?
  */
-static bool
+/*@unused@*/
+static bool 
 check_ds_key_equiv(ldns_rr *key, ldns_rr *ds)
 {
 	ldns_rr *key_ds;

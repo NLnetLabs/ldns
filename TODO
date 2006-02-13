@@ -26,13 +26,10 @@ Post 1.0 Stuff:
 
 1.1.0:
 ----
-        o sorting/sorting ord - removed ord - need to check current sort
-          order
+        o check sort order
         o secure tracing drill
 	o API cleanup: add missing consts in function arguments
-        o vim syntax
         o walker 
-        o ldns_rr_list_pop_rr_list??? I've adedd a push_rr_list.
 
 DONE:
 1.0.1 released 5 January 2006
