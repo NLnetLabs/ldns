@@ -24,6 +24,26 @@ ldns_rdf * ldns_rdf_new_addr_frm_str(char *);
 void print_ds_of_keys(ldns_pkt *p);
 
 /**
+ * print some rdfs of a signature
+ */
+void print_rrsig_abbr(FILE *fp, ldns_rr *sig);
+
+/**
+ * print some rdfs of a signature list
+ */
+void print_rrsig_list_abbr(FILE *fp, ldns_rr_list *sig);
+
+/**
+ * print some rdfs of a dnskey
+ */
+void print_dnskey_abbr(FILE *fp, ldns_rr *sig);
+
+/**
+ * print some rdfs of a dnskey list
+ */
+void print_dnskey_list_abbr(FILE *fp, ldns_rr_list *sig);
+
+/**
  * Alloc some memory, with error checking
  */
 void *xmalloc(size_t s);

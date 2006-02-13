@@ -36,6 +36,7 @@ check_ds_key_equiv(ldns_rr *key, ldns_rr *ds)
  * return the keys records that match some of the
  * DSs
  */
+/*@unused@*/
 static ldns_rr_list *
 check_ds_key_equiv_rr_list(ldns_rr_list *key, ldns_rr_list *ds)
 {
@@ -363,7 +364,7 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 
 		if (key_list) {
 			printf("Got KEYS!\n");
-			ldns_rr_list_print(stdout, sig_list);
+			print_rrsig_list_abbr(stdout, sig_list);
 			ds_list = get_ds(res, authname, &sig_list);
 			if (ds_list) {
 				ldns_rr_list_print(stdout, ds_list);
