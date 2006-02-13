@@ -23,7 +23,7 @@ ldns_lookup_table ldns_error_str[] = {
         { LDNS_STATUS_INVALID_POINTER, "Invalid compression pointer" },
         { LDNS_STATUS_MEM_ERR, "General memory error" },
         { LDNS_STATUS_INTERNAL_ERR, "Internal error, this should not happen" },
-        { LDNS_STATUS_ERR, "General error, this should be more specific" },
+        { LDNS_STATUS_ERR, "General LDNS error" },
 	{ LDNS_STATUS_NO_NAMESERVERS_ERR, "No nameservers in resolver structure" },
         { LDNS_STATUS_INVALID_INT, "Conversion error, integer expected" },
         { LDNS_STATUS_INVALID_IP4, "Conversion error, ip4 addr expected" },
