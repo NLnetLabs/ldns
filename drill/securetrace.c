@@ -236,9 +236,9 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 			 * no nameserver found!!! 
 			 * try to resolve the names we do got 
 			 */
-			for(i = 0; i < ldns_rr_list_rr_count(new_nss); i++) {
+			for(i = 0; i < (ssize_t)ldns_rr_list_rr_count(new_nss); i++) {
 				/* get the name of the nameserver */
-				pop = ldns_rr_rdf(ldns_rr_list_rr(new_nss, i), 0);
+				pop = ldns_rr_rdf(ldns_rr_list_rr(new_nss, (size_t)i), 0);
 				if (!pop) {
 					break;
 				}
@@ -363,12 +363,12 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 		return NULL;
 	}
 	labels[0] = authname;
-	for(i = 1 ; i < labels_count_current; i++) {
+	for(i = 1 ; i < (ssize_t)labels_count_current; i++) {
 		labels[i] = ldns_dname_left_chop(labels[i - 1]);
 	}
 
 	/* recurse on the name at this server */
-	for(i = labels_count_current - 1; i >= 0; i--) {
+	for(i = (ssize_t)labels_count_current - 1; i >= 0; i--) {
 
 		/* DNSSEC */
 		key_list = get_key(res, labels[i], &sig_list);
