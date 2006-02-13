@@ -655,38 +655,6 @@ ldns_rr_list_set_rr(ldns_rr_list *rr_list, const ldns_rr *r, size_t count)
 	return old;
 }
 
-bool
-ldns_rr_list_insert_rr(ldns_rr_list *rr_list, const ldns_rr *r, size_t count)
-{
-	uint16_t c, i;
-	ldns_rr *pop[101]; /* WRONG AMOUNT */
-
-	c = ldns_rr_list_rr_count(rr_list);
-
-	if (count == 0) {
-		/* nothing fancy to do */
-	       ldns_rr_list_push_rr(rr_list, r);
-		return true;
-	}
-
-	if (count > c || count > 100) {
-		return false;
-	}
-
-	/* chip off the top */
-	for (i = c - 1; i >= count; i--) {
-		pop[c - 1 - i] = ldns_rr_list_pop_rr(rr_list);
-	}
-
-	/* add the rr and then the popped stuff */
-	ldns_rr_list_push_rr(rr_list, r);
-
-	for (i = count; i < c; i++) {
-		ldns_rr_list_push_rr(rr_list, pop[count - i]);
-	}
-	return true;
-}
-
 void
 ldns_rr_list_set_rr_count(ldns_rr_list *rr_list, size_t count)
 {
@@ -870,6 +838,20 @@ ldns_rr_list_push_rr(ldns_rr_list *rr_list, const ldns_rr *rr)
 	return true;
 }
 
+bool
+ldns_rr_list_push_rr_list(ldns_rr_list *rr_list, const ldns_rr_list *push_list)
+{
+	size_t i;
+	
+	for(i = 0; i < ldns_rr_list_rr_count(push_list); i++) {
+		if (!ldns_rr_list_push_rr(rr_list,
+				ldns_rr_list_rr(push_list, i))) {
+			return false;
+		}
+	}
+	return true;
+}
+
 ldns_rr *
 ldns_rr_list_pop_rr(ldns_rr_list *rr_list)
 {
@@ -892,6 +874,35 @@ ldns_rr_list_pop_rr(ldns_rr_list *rr_list)
 
 	return pop;
 }
+
+ldns_rr_list *
+ldns_rr_list_pop_rr_list(ldns_rr_list *rr_list, size_t howmany) 
+{
+	/* pop a number of rr's and put them in a rr_list */
+	ldns_rr_list *popped;
+	ldns_rr *p;
+	size_t i = howmany;
+
+	popped = ldns_rr_list_new();
+
+	if (!popped) {
+		return NULL;
+	}
+
+
+	while(i > 0 && 
+			(p = ldns_rr_list_pop_rr(rr_list)) != NULL) {
+		ldns_rr_list_push_rr(popped, p);
+		i--;
+	}
+
+	if (i == howmany) {
+		return NULL;
+	} else {
+		return popped;
+	}
+}
+
 
 bool
 ldns_rr_list_contains_rr(ldns_rr_list *rr_list, ldns_rr *rr)

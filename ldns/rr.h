@@ -489,11 +489,27 @@ ldns_rr_list* ldns_rr_list_cat_clone(ldns_rr_list *left, ldns_rr_list *right);
 bool ldns_rr_list_push_rr(ldns_rr_list *rr_list, const ldns_rr *rr);
 
 /**
+ * pushes an rr_list to an rrlist.
+ * \param[in] rr_list the rr_list to push to 
+ * \param[in] push_list the rr_list to push 
+ * \return false on error, otherwise true
+ */
+bool ldns_rr_list_push_rr_list(ldns_rr_list *rr_list, const ldns_rr_list *push_list);
+
+/**
  * pops the last rr from an rrlist.
  * \param[in] rr_list the rr_list to pop from
  * \return NULL if nothing to pop. Otherwise the popped RR
  */
 ldns_rr* ldns_rr_list_pop_rr(ldns_rr_list *rr_list);
+
+/**
+ * pops an  rr_list of size s from an rrlist.
+ * \param[in] rr_list the rr_list to pop from
+ * \param[in] size the number of rr's to pop 
+ * \return NULL if nothing to pop. Otherwise the popped rr_list
+ */
+ldns_rr_list* ldns_rr_list_pop_rr_list(ldns_rr_list *rr_list, size_t size);
 
 /**
  * returns true if the given rr is one of the rrs in the
@@ -674,9 +690,5 @@ ldns_rr_list *ldns_rr_list_subtype_by_rdf(ldns_rr_list *l, ldns_rdf *r, size_t p
  *
  */
 ldns_rr_type    ldns_rdf2rr_type(const ldns_rdf *rd);
-
-/* added while doing lua */
-/* TODO document or delete it */
-bool ldns_rr_list_insert_rr(ldns_rr_list *rr_list, const ldns_rr *r, size_t count);
 
 #endif /* LDNS_RR_H */

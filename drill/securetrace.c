@@ -15,7 +15,7 @@
  * check if the key and the ds are equivalent
  * ie: is the ds made from the key?
  */
-bool
+static bool
 check_ds_key_equiv(ldns_rr *key, ldns_rr *ds)
 {
 	ldns_rr *key_ds;
@@ -35,7 +35,7 @@ check_ds_key_equiv(ldns_rr *key, ldns_rr *ds)
  * return the keys records that match some of the
  * DSs
  */
-ldns_rr_list *
+static ldns_rr_list *
 check_ds_key_equiv_rr_list(ldns_rr_list *key, ldns_rr_list *ds)
 {
 	size_t i,j;
@@ -75,7 +75,7 @@ check_ds_key_equiv_rr_list(ldns_rr_list *key, ldns_rr_list *ds)
  * generic function to get some RRset from a nameserver
  * and possible some signatures too (that would be the day...)
  */
-ldns_rr_list *
+static ldns_rr_list *
 get_dnssec_rr(ldns_resolver *r, ldns_rdf *name, ldns_rr_type t, ldns_rr_list **sig)
 {
 	ldns_pkt *p;
@@ -103,7 +103,7 @@ get_dnssec_rr(ldns_resolver *r, ldns_rdf *name, ldns_rr_type t, ldns_rr_list **s
 /* 
  * retrieve keys for this zone
  */
-ldns_rr_list *
+static ldns_rr_list *
 get_key(ldns_resolver *r, ldns_rdf *apexname, ldns_rr_list **opt_sig)
 {
 	return get_dnssec_rr(r, apexname, LDNS_RR_TYPE_DNSKEY, opt_sig);
@@ -112,7 +112,7 @@ get_key(ldns_resolver *r, ldns_rdf *apexname, ldns_rr_list **opt_sig)
 /*
  * check to see if we can find a DS rrset here which we can then follow
  */
-ldns_rr_list *
+static ldns_rr_list *
 get_ds(ldns_resolver *r, ldns_rdf *ownername, ldns_rr_list **opt_sig)
 {
 	return get_dnssec_rr(r, ownername, LDNS_RR_TYPE_DS, opt_sig);
@@ -141,6 +141,9 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 	ldns_rr_list *sig_list;
 	ldns_rr_list *ds_list;
 
+	ldns_rr_list *validated_key;  /* keys that are cryptographic 'good' */
+	ldns_rr_list *validated_ds;   /* ds that are cryptographic 'good' */
+
 	secure = true;
 	authname = NULL;
 	loop_count = 0;
@@ -152,6 +155,10 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 	p = ldns_pkt_new();
 	res = ldns_resolver_new();
 	sig_list = ldns_rr_list_new();
+
+	validated_key = ldns_rr_list_new();
+	validated_ds  = ldns_rr_list_new();
+
 
 	if (!p || !res || !sig_list) {
 		error("Memory allocation failed");
@@ -280,7 +287,7 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 
 		ldns_rdf_print(stdout,
 				ldns_resolver_nameservers(res)[0]);
-		printf("Asking for: ");
+		printf("\nAsking for: ");
 		ldns_rdf_print(stdout, name);
 		printf("\nauthname: ");
 		ldns_rdf_print(stdout, authname);
@@ -289,7 +296,16 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 
 		if (key_list) {
 			printf("Got KEYS!\n");
-			ldns_rr_list_print(stdout, sig_list);
+
+			printf("verify!\n");
+			if (ldns_verify(key_list, sig_list, key_list, NULL) == LDNS_STATUS_OK) {
+				printf("OK!?!!?\n");
+				ldns_rr_list_push_rr_list(key_list, validated_key);
+			}
+
+			ds_list = get_ds(res, authname, &sig_list);
+			
+			/* ldns_rr_list_print(stdout, sig_list); */
 
 		} else {
 			printf("NO KEYS\n");
@@ -357,12 +373,14 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 
 		/* /DNSSEC */
 
+		/*
 	if (qdebug != -1) {
 		ldns_rr_list_print(stdout, final_answer);
 		ldns_rr_list_print(stdout, new_nss);
 
 	}
 	drill_pkt_print_footer(stdout, local_res, p);
+	*/
 	ldns_pkt_free(p); 
 	return NULL;
 }
