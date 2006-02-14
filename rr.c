@@ -714,21 +714,18 @@ ldns_rr_list_cat(ldns_rr_list *left, ldns_rr_list *right)
 
 	if (left) {
 		l_rr_count = ldns_rr_list_rr_count(left);
+		printf("left %d\n", l_rr_count);
 	} else {
 		return false;
 	}
 
 	if (right) {
 		r_rr_count = ldns_rr_list_rr_count(right);
+		printf("right %d\n", r_rr_count);
 	} else {
 		r_rr_count = 0;
 	}
 	
-	if (l_rr_count + r_rr_count > LDNS_MAX_RR ) {
-		/* overflow error */
-		return false;
-	}
-
 	/* push right to left */
 	for(i = 0; i < r_rr_count; i++) {
 		ldns_rr_list_push_rr(left, ldns_rr_list_rr(right, i));
@@ -758,11 +755,6 @@ ldns_rr_list_cat_clone(ldns_rr_list *left, ldns_rr_list *right)
 		r_rr_count = 0;
 	}
 	
-	if (l_rr_count + r_rr_count > LDNS_MAX_RR ) {
-		/* overflow error */
-		return NULL;
-	}
-
 	cat = ldns_rr_list_new();
 
 	if (!cat) {
