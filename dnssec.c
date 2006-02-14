@@ -86,16 +86,22 @@ ldns_verify(ldns_rr_list *rrset, ldns_rr_list *rrsig, ldns_rr_list *keys, ldns_r
 	}
 
 	valid = false;
+
+	if (ldns_rr_list_rr_count(rrsig) < 1) {
+		return LDNS_STATUS_CRYPTO_NO_RRSIG;
+	}
 	
 	if (ldns_rr_list_rr_count(keys) < 1) {
 		verify_result = LDNS_STATUS_CRYPTO_NO_TRUSTED_DNSKEY;
 	} else {
 		for (i = 0; i < ldns_rr_list_rr_count(rrsig); i++) {
 
-			verify_result = ldns_verify_rrsig_keylist(rrset,
+			if (ldns_verify_rrsig_keylist(rrset,
 					ldns_rr_list_rr(rrsig, i),
 					keys,
-					good_keys);
+					good_keys) == LDNS_STATUS_OK) {
+				verify_result = LDNS_STATUS_OK;
+			}
 		}
 	}
 	return verify_result;
