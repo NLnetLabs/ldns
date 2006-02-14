@@ -80,9 +80,9 @@ check_ds_key_equiv_rr_list(ldns_rr_list *key, ldns_rr_list *ds)
 static ldns_rr_list *
 get_dnssec_rr(ldns_resolver *r, ldns_rdf *name, ldns_rr_type t, ldns_rr_list **sig)
 {
-	ldns_pkt *p;
-	ldns_rr_list *rr;
-	ldns_rr_list *sigs;
+	ldns_pkt *p = NULL;
+	ldns_rr_list *rr = NULL;
+	ldns_rr_list *sigs = NULL;
 
 	/* ldns_resolver_set_dnssec(r, true); */
 
@@ -90,9 +90,10 @@ get_dnssec_rr(ldns_resolver *r, ldns_rdf *name, ldns_rr_type t, ldns_rr_list **s
 	if (!p) {
 		return NULL;
 	}
+	/* ldns_pkt_print(stdout, p); */
 
 	rr = ldns_pkt_rr_list_by_name_and_type(p, name, t, LDNS_SECTION_ANSWER);
-	/* there must be a sig there too... */
+	/* there SHOULD be a sig there too... */
 	sigs = ldns_pkt_rr_list_by_name_and_type(p, name, LDNS_RR_TYPE_RRSIG, 
 			LDNS_SECTION_ANSWER);
 
@@ -147,8 +148,7 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 	ldns_rr_list *sig_list;
 	ldns_rr_list *ds_list;
 
-	ldns_rr_list *validated_key;  /* keys that are cryptographic 'good' */
-	ldns_rr_list *validated_ds;   /* ds that are cryptographic 'good' */
+	ldns_rr_list *validated;  /* stuff (DNSKEY/DS) that are cryptographic 'good' */
 
 	secure = true;
 	authname = NULL;
@@ -162,11 +162,9 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 	res = ldns_resolver_new();
 	sig_list = ldns_rr_list_new();
 
-	validated_key = ldns_rr_list_new();
-	validated_ds  = ldns_rr_list_new();
+	validated = ldns_rr_list_new();
 
-
-	if (!p || !res || !sig_list) {
+	if (!p || !res || !sig_list || !validated) {
 		error("Memory allocation failed");
 		return NULL;
 	}
@@ -288,24 +286,29 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 		key_list = get_key(res, authname, &sig_list);
 
 		if (key_list) {
-			if (ldns_verify(key_list, sig_list, key_list, NULL) == LDNS_STATUS_OK) {
-				ldns_rr_list_push_rr_list(key_list, validated_key);
-				printf(";; DNSSEC RRs\n");
-				print_dnskey_list_abbr(stdout, key_list); 
-				print_rrsig_list_abbr(stdout, sig_list); 
 
-			} else {
-				printf(";; DNSSEC RRs\n");
-				print_dnskey_list_abbr(stdout, key_list);
-				/*
-				printf(";; RRSIG RRs\n");
-				print_rrsig_list_abbr(stdout, sig_list); 
-				*/
+
+		
+			printf(";; DNSSEC RRs\n");
+			print_dnskey_list_abbr(stdout, key_list, NULL); 
+			print_rrsig_list_abbr(stdout, sig_list, NULL); 
+			print_rrsig_list_abbr(stdout, validated, NULL); 
+#if 0
+			if (sig_list) {
+			if (ldns_verify(key_list, sig_list, key_list, validated) ==
+					LDNS_STATUS_OK) {
+				print_dnskey_list_abbr(stdout, validated, "[Validated]"); 
 			}
+			}
+#endif
 
-			ds_list = get_ds(res, authname, &sig_list);
 		} else {
 			printf(";; No DNSSEC RRs found, not attemping validation\n");
+		}
+
+		ds_list = get_ds(res, authname, &sig_list);
+		if (ds_list) {
+			print_ds_list_abbr(stdout, ds_list, NULL);
 		}
 
 		/* /DNSSEC */
@@ -367,38 +370,30 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 		labels[i] = ldns_dname_left_chop(labels[i - 1]);
 	}
 
+		/* DNSSEC */
 	/* recurse on the name at this server */
 	for(i = (ssize_t)labels_count_current - 1; i >= 0; i--) {
 
-		/* DNSSEC */
 		key_list = get_key(res, labels[i], &sig_list);
+		ds_list = get_ds(res, labels[i], &sig_list);
 		if (key_list) {
-			if (ldns_verify(key_list, sig_list, key_list, NULL) == LDNS_STATUS_OK) {
-				ldns_rr_list_push_rr_list(key_list, validated_key);
-				printf(";; DNSSEC RRs\n");
-				print_dnskey_list_abbr(stdout, key_list); 
-				print_rrsig_list_abbr(stdout, sig_list); 
-
-			} else {
-				printf(";; DNSSEC RRs\n");
-				print_dnskey_list_abbr(stdout, key_list); 
-				/*
-				   printf(";; RRSIG RRs\n");
-				   print_rrsig_list_abbr(stdout, sig_list); puts("");
-				   */
-			}
-
-			ds_list = get_ds(res, labels[i], &sig_list);
+			printf(";; DNSSEC RRs\n");
+			print_dnskey_list_abbr(stdout, key_list, NULL); 
+			print_rrsig_list_abbr(stdout, sig_list, NULL); 
 		} else {
 			printf(";; No DNSSEC RRs found, not attemping validation\n");
 		}
+		if (ds_list) {
+			print_ds_list_abbr(stdout, ds_list, NULL);
 
-		/* /DNSSEC */
+		}
+
 		ldns_rr_list_deep_free(sig_list);
 		sig_list = ldns_rr_list_new();
 		puts("");
 		
 	}
+	/* /DNSSEC */
 
 	
 #if 0

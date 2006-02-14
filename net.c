@@ -347,8 +347,7 @@ ldns_udp_read_wire(int sockfd, size_t *size, struct sockaddr_storage *from,
 		if (fromlen) {
 			*fromlen = flen;
 		}
-		dprintf("from len %d\n", (int)flen);
-	} 
+	}
 
 	/* recvfrom can also return 0 */
 	if (wire_size == -1 || wire_size == 0) {
@@ -497,8 +496,6 @@ ldns_rdf2native_sockaddr_storage(const ldns_rdf *rd, uint16_t port, size_t *size
         }
 }
 
-/* code from rdata.c */
-/* the other way around - for lua-ldns */
 ldns_rdf *
 ldns_sockaddr_storage2rdf(struct sockaddr_storage *sock, uint16_t *port)
 {

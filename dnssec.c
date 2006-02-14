@@ -87,6 +87,10 @@ ldns_verify(ldns_rr_list *rrset, ldns_rr_list *rrsig, ldns_rr_list *keys, ldns_r
 
 	valid = false;
 
+	if (ldns_rr_list_rr_count(rrset) < 1) {
+		return LDNS_STATUS_ERR;
+	}
+
 	if (ldns_rr_list_rr_count(rrsig) < 1) {
 		return LDNS_STATUS_CRYPTO_NO_RRSIG;
 	}

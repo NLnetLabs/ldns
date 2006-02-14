@@ -86,28 +86,59 @@ print_ds_of_keys(ldns_pkt *p)
 	}
 }
 
-/* print some of the elements of a signature */
-void
-print_rrsig_abbr(FILE *fp, ldns_rr *sig) {
+static void
+print_class_type(FILE *fp, ldns_rr *r)
+{
 	ldns_lookup_table *lt;
-	if (!sig) {
+        lt = ldns_lookup_by_id(ldns_rr_classes, ldns_rr_get_class(r));
+        if (lt) {
+               	fprintf(fp, " %s", lt->name);
+        } else {
+        	fprintf(fp, " CLASS%d", ldns_rr_get_class(r));
+        }
+	/* okay not THE way - but the quickest */
+	switch (ldns_rr_get_type(r)) {
+		case LDNS_RR_TYPE_RRSIG:
+			fprintf(fp, " RRSIG ");
+			break;
+		case LDNS_RR_TYPE_DNSKEY:
+			fprintf(fp, " DNSKEY ");
+			break;
+		case LDNS_RR_TYPE_DS:
+			fprintf(fp, " DS ");
+			break;
+		default:
+			break;
+	}
+}
+
+
+void
+print_ds_abbr(FILE *fp, ldns_rr *ds)
+{
+	if (!ds || (ldns_rr_get_type(ds) != LDNS_RR_TYPE_DS)) {
 		return;
 	}
 
-	if (ldns_rr_get_type(sig) != LDNS_RR_TYPE_RRSIG) {
+	ldns_rdf_print(fp, ldns_rr_owner(ds));
+	fprintf(fp, " %d", (int)ldns_rr_ttl(ds));
+	print_class_type(fp, ds);
+	ldns_rdf_print(fp, ldns_rr_rdf(ds, 0)); fprintf(fp, " ");
+	ldns_rdf_print(fp, ldns_rr_rdf(ds, 1)); fprintf(fp, " ");
+	ldns_rdf_print(fp, ldns_rr_rdf(ds, 2)); fprintf(fp, " ");
+	ldns_rdf_print(fp, ldns_rr_rdf(ds, 3)); fprintf(fp, " ");
+}
+
+/* print some of the elements of a signature */
+void
+print_rrsig_abbr(FILE *fp, ldns_rr *sig) {
+	if (!sig || (ldns_rr_get_type(sig) != LDNS_RR_TYPE_RRSIG)) {
 		return;
 	}
 
 	ldns_rdf_print(fp, ldns_rr_owner(sig));
 	fprintf(fp, " %d", (int)ldns_rr_ttl(sig));
-
-        lt = ldns_lookup_by_id(ldns_rr_classes, ldns_rr_get_class(sig));
-        if (lt) {
-               	fprintf(fp, " %s", lt->name);
-        } else {
-        	fprintf(fp, " CLASS%d", ldns_rr_get_class(sig));
-        }
-	fprintf(fp, " RRSIG ");
+	print_class_type(fp, sig);
 
 	/* print a number of rdf's */
 	/* typecovered */
@@ -127,38 +158,15 @@ print_rrsig_abbr(FILE *fp, ldns_rr *sig) {
 }
 
 void
-print_rrsig_list_abbr(FILE *fp, ldns_rr_list *sig)
-{
-	size_t i;
-
-	for(i = 0; i < ldns_rr_list_rr_count(sig); i++) {
-		print_rrsig_abbr(fp, ldns_rr_list_rr(sig, i));
-		fputs("\n", fp);
-	}
-}
-
-void
 print_dnskey_abbr(FILE *fp, ldns_rr *key)
 {
-	ldns_lookup_table *lt;
-        if (!key) {
-                return;
-        }
-
-        if (ldns_rr_get_type(key) != LDNS_RR_TYPE_DNSKEY) {
+        if (!key || (ldns_rr_get_type(key) != LDNS_RR_TYPE_DNSKEY)) {
                 return;
         }
 
         ldns_rdf_print(fp, ldns_rr_owner(key));
         fprintf(fp, " %d", (int)ldns_rr_ttl(key));
-
-        lt = ldns_lookup_by_id(ldns_rr_classes, ldns_rr_get_class(key));
-        if (lt) {
-                fprintf(fp, " %s", lt->name);
-        } else {
-                fprintf(fp, " CLASS%d", ldns_rr_get_class(key));
-        }
-        fprintf(fp, " DNSKEY ");
+	print_class_type(fp, key);
 
         /* print a number of rdf's */
         /* flags */
@@ -182,13 +190,46 @@ print_dnskey_abbr(FILE *fp, ldns_rr *key)
 			(int)ldns_rr_dnskey_key_size(key));
 }
 
+
 void
-print_dnskey_list_abbr(FILE *fp, ldns_rr_list *key)
+print_rrsig_list_abbr(FILE *fp, ldns_rr_list *sig, char *usr)
+{
+	size_t i;
+
+	for(i = 0; i < ldns_rr_list_rr_count(sig); i++) {
+		print_rrsig_abbr(fp, ldns_rr_list_rr(sig, i));
+		if (usr) {
+			fprintf(fp, "%s", usr);
+		}
+		fputs("\n", fp);
+	}
+}
+
+void
+print_dnskey_list_abbr(FILE *fp, ldns_rr_list *key, char *usr)
 {
 	size_t i;
 
 	for(i = 0; i < ldns_rr_list_rr_count(key); i++) {
 		print_dnskey_abbr(fp, ldns_rr_list_rr(key, i));
+		if (usr) {
+			fprintf(fp, "%s", usr);
+		}
+		fputs("\n", fp);
+	}
+}
+
+/* need extra arg to put something after the RR's */
+void
+print_ds_list_abbr(FILE *fp, ldns_rr_list *ds, char *usr)
+{
+	size_t i;
+
+	for(i = 0; i < ldns_rr_list_rr_count(ds); i++) {
+		print_ds_abbr(fp, ldns_rr_list_rr(ds, i));
+		if (usr) {
+			fprintf(fp, "%s", usr);
+		}
 		fputs("\n", fp);
 	}
 }

@@ -27,21 +27,27 @@ void print_ds_of_keys(ldns_pkt *p);
  * print some rdfs of a signature
  */
 void print_rrsig_abbr(FILE *fp, ldns_rr *sig);
-
-/**
- * print some rdfs of a signature list
- */
-void print_rrsig_list_abbr(FILE *fp, ldns_rr_list *sig);
-
 /**
  * print some rdfs of a dnskey
  */
-void print_dnskey_abbr(FILE *fp, ldns_rr *sig);
+void print_dnskey_abbr(FILE *fp, ldns_rr *key);
+/**
+ * print some rdfs of a ds
+ */
+void print_ds_abbr(FILE *fp, ldns_rr *ds);
 
 /**
  * print some rdfs of a dnskey list
  */
-void print_dnskey_list_abbr(FILE *fp, ldns_rr_list *sig);
+void print_dnskey_list_abbr(FILE *fp, ldns_rr_list *sig, char *usr);
+/**
+ * print some rdfs of a signature list
+ */
+void print_rrsig_list_abbr(FILE *fp, ldns_rr_list *sig, char *usr);
+/**
+ * print some rdfs of a ds list
+ */
+void print_ds_list_abbr(FILE *fp, ldns_rr_list *sig, char *usr);
 
 /**
  * Alloc some memory, with error checking
