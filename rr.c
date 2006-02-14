@@ -714,14 +714,12 @@ ldns_rr_list_cat(ldns_rr_list *left, ldns_rr_list *right)
 
 	if (left) {
 		l_rr_count = ldns_rr_list_rr_count(left);
-		printf("left %d\n", l_rr_count);
 	} else {
 		return false;
 	}
 
 	if (right) {
 		r_rr_count = ldns_rr_list_rr_count(right);
-		printf("right %d\n", r_rr_count);
 	} else {
 		r_rr_count = 0;
 	}
