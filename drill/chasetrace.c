@@ -185,7 +185,6 @@ do_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 		new_nss_a = NULL;
 		ns_addr = NULL;
 	}
-	/* mesg("Came out of recursion"); */
 
 	status = ldns_resolver_send(&p, res, name, t, c, 0);
 
@@ -210,14 +209,12 @@ do_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 }
 
 
-/* do a secure trace from the root down to the local leaf node */
 /**
- * Chase the given rr to a known key
+ * Chase the given rr to a known and trusted key
  *
  * Based on drill 0.9
- * pkt optional?
- * TODO: lots 
- * if this is moved to the library, status codes should be added and prints removed
+ * pkt optional? 
+ * TODO: lots  ???
  */
 ldns_status
 do_chase(ldns_resolver *res, ldns_rdf *name, ldns_rr_type type, ldns_rr_class c,
@@ -238,16 +235,14 @@ do_chase(ldns_resolver *res, ldns_rdf *name, ldns_rr_type type, ldns_rr_class c,
 	const ldns_rr_descriptor *descriptor;
 	
 	pkt = ldns_pkt_clone(pkt_o);
-	
 	if (!name) {
-		mesg("no name to chase\n");
+		mesg("No name to chase");
 		ldns_pkt_free(pkt);
 		return LDNS_STATUS_EMPTY_LABEL;
 	}
 	
 	if (!trusted_keys || ldns_rr_list_rr_count(trusted_keys) < 1) {
-		mesg("No trusted keys specified\n");
-		return LDNS_STATUS_CRYPTO_NO_TRUSTED_DNSKEY;
+		warning("No trusted keys specified");
 	}
 	
 	if (pkt) {
@@ -349,7 +344,7 @@ do_chase(ldns_resolver *res, ldns_rdf *name, ldns_rr_type type, ldns_rr_class c,
 					);
 		}
 		if(!keys) {
-			mesg("No key for data found in that zone!\n");
+			mesg("No key for data found in that zone!");
 			ldns_rr_list_deep_free(rrset);
 			ldns_rr_list_deep_free(sigs);
 			ldns_pkt_free(pkt);
@@ -371,7 +366,7 @@ do_chase(ldns_resolver *res, ldns_rdf *name, ldns_rr_type type, ldns_rr_class c,
 							if (ldns_rr_compare_ds(ldns_rr_list_rr(keys, key_i),
 									   ldns_rr_list_rr(trusted_keys, tkey_i)
 									  )) {
-								mesg("Key is trusted\n");
+								mesg("Key is trusted");
 								ldns_rr_list_deep_free(rrset);
 								ldns_rr_list_deep_free(sigs);
 								ldns_rr_list_deep_free(keys);

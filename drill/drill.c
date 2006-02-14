@@ -508,14 +508,14 @@ main(int argc, char *argv[])
 				}
 				
 				if (!ldns_pkt_answer(pkt)) {
-					mesg("%s", "No answer in packet");
+					mesg("No answer in packet");
 				} else {
 					result = do_chase(res, qname, type,
 					                  clas, key_list, 
 					                  pkt, qflags);
 					if (result == LDNS_STATUS_OK) {
 						if (qdebug != -1) {
-							mesg("%s", "Chase successful");
+							mesg("Chase successful");
 						}
 						result = 0;
 					} else {
@@ -608,7 +608,7 @@ main(int argc, char *argv[])
 			}
 			
 			if (!pkt)  {
-				mesg("%s", "no packet received\n");
+				mesg("No packet received");
 				result = EXIT_FAILURE;
 			} else {
 				if (qdebug != -1) {
