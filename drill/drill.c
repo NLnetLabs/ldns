@@ -199,8 +199,6 @@ main(int argc, char *argv[])
 				qbuf = (uint16_t)atoi(optarg);
 				if (qbuf == 0) {
 					error("%s", "<bufsize> could not be converted");
-					result = EXIT_FAILURE;
-					goto exit;
 				}
 				break;
 			case 'c':
@@ -209,8 +207,7 @@ main(int argc, char *argv[])
 			case 'k':
 				dnssec_key = read_key_file(optarg);
 				if (!dnssec_key) {
-					result = EXIT_FAILURE;
-					goto exit;
+					error("Could not parse the key file: %s", optarg);
 				}
 				ldns_rr_list_push_rr(key_list, dnssec_key);
 				qdnssec = true; /* enable that too */
@@ -264,8 +261,6 @@ main(int argc, char *argv[])
 				qport = (uint16_t)atoi(optarg);
 				if (qport == 0) {
 					error("%s", "<port> could not be converted");
-					result = EXIT_FAILURE;
-					goto exit;
 				}
 				break;
 			case 's':
@@ -393,12 +388,14 @@ main(int argc, char *argv[])
 		/* no server given make a resolver from /etc/resolv.conf */
 		res = ldns_resolver_new_frm_file(NULL);
 		if (!res) {
+			warning("Could not create a resolver structure");
 			result = EXIT_FAILURE;
 			goto exit;
 		}
 	} else {
 		res = ldns_resolver_new();
 		if (!res || strlen(serv) <= 0) {
+			warning("Could not create a resolver structure");
 			result = EXIT_FAILURE;
 			goto exit;
 		}
@@ -410,8 +407,6 @@ main(int argc, char *argv[])
 			
 			if (!cmdline_res) {
 				error("%s", "@server ip could not be converted");
-				result = EXIT_FAILURE;
-				goto exit;
 			}
 			ldns_resolver_set_dnssec(cmdline_res, qdnssec);
 			ldns_resolver_set_ip6(cmdline_res, qfamily);
@@ -428,23 +423,17 @@ main(int argc, char *argv[])
 			if (!cmdline_rr_list) {
 				/* This error msg is not always accurate */
 				error("%s %s", "could not find any address for the name: ", serv);
-				result = EXIT_FAILURE;
-				goto exit;
 			} else {
 				if (ldns_resolver_push_nameserver_rr_list(
 						res, 
 						cmdline_rr_list
 					) != LDNS_STATUS_OK) {
 					error("%s", "pushing nameserver");
-					result = EXIT_FAILURE;
-					goto exit;
 				}
 			}
 		} else {
 			if (ldns_resolver_push_nameserver(res, serv_rdf) != LDNS_STATUS_OK) {
 				error("%s", "pushing nameserver");
-				result = EXIT_FAILURE;
-				goto exit;
 			} else {
 				ldns_rdf_deep_free(serv_rdf);
 			}
@@ -507,8 +496,6 @@ main(int argc, char *argv[])
 			ldns_resolver_set_edns_udp_size(res, 4096);
 			if (!qname) {
 				error("%s", "making qname");
-				result = EXIT_FAILURE;
-				goto exit;
 			}
 			pkt = ldns_resolver_query(res, qname, type, clas, qflags);
 			
@@ -555,8 +542,6 @@ main(int argc, char *argv[])
 			qname = ldns_dname_new_frm_str(name);
 			if (!qname) {
 				error("%s", "making qname");
-				result = EXIT_FAILURE;
-				goto exit;
 			}
 
 			qpkt = ldns_pkt_query_new(qname, type, clas, qflags);
@@ -572,8 +557,6 @@ main(int argc, char *argv[])
 			qname = ldns_rdf_new_addr_frm_str(name);
 			if (!qname) {
 				error("%s", "-x implies an ip address");
-				result = EXIT_FAILURE;
-				goto exit;
 			}
 			qname_tmp = qname;
 			qname = ldns_rdf_address_reverse(qname);
@@ -602,8 +585,6 @@ main(int argc, char *argv[])
 				qname = ldns_dname_new_frm_str(name);
 				if (!qname) {
 					error("%s", "error in making qname");
-					result = EXIT_FAILURE;
-					goto exit;
 				}
 
 				if (type == LDNS_RR_TYPE_AXFR) {
