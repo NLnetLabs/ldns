@@ -295,7 +295,7 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 			print_rrsig_list_abbr(stdout, validated, NULL); 
 #if 1
 			if (sig_list) {
-			if (ldns_verify(key_list, sig_list, key_list, NULL) ==
+			if (ldns_verify(key_list, sig_list, key_list, validated) ==
 					LDNS_STATUS_OK) {
 				print_dnskey_list_abbr(stdout, validated, "[Validated]"); 
 			}

@@ -251,10 +251,8 @@ ldns_verify_rrsig_keylist(ldns_rr_list *rrset, ldns_rr *rrsig, ldns_rr_list *key
 
 	for(i = 0; i < ldns_rr_list_rr_count(keys); i++) {
 		current_key = ldns_rr_list_rr(keys, i);
-		if (ldns_calc_keytag(current_key)
-		    ==
-		    ldns_rdf2native_int16(ldns_rr_rrsig_keytag(rrsig))
-		   ) {
+		if (ldns_calc_keytag(current_key) ==
+		    ldns_rdf2native_int16(ldns_rr_rrsig_keytag(rrsig))) {
 			key_buf = ldns_buffer_new(LDNS_MAX_PACKETLEN);
 			
 			/* before anything, check if the keytags match */
@@ -265,8 +263,7 @@ ldns_verify_rrsig_keylist(ldns_rr_list *rrset, ldns_rr *rrsig, ldns_rr_list *key
 					ldns_rr_rdf(current_key, 3)) != LDNS_STATUS_OK) {
 				ldns_buffer_free(rawsig_buf);
 				ldns_buffer_free(verify_buf);
-				/* returning is bad might screw up
-				   good keys later in the list
+				/* returning is bad might screw up good keys later in the list
 				   what to do? */
 				return LDNS_STATUS_MEM_ERR;
 			}
@@ -286,18 +283,7 @@ ldns_verify_rrsig_keylist(ldns_rr_list *rrset, ldns_rr *rrsig, ldns_rr_list *key
 					/* couldn't push the key?? */
 					return LDNS_STATUS_MEM_ERR;
 				}
-				/* break; */ 
-			} else {
-				/*
-				dprintf("%s\n", "result is false for:");
-				dprintf("%s\n", "data:");
-				ldns_rr_list_print(stdout, rrset);
-				dprintf("%s\n", "sig:");
-				ldns_rr_print(stdout, rrsig);
-				dprintf("%s\n", "keys:");
-				ldns_rr_list_print(stdout, keys);
-				*/
-			}
+			} 
 		} else {
 			result = LDNS_STATUS_CRYPTO_NO_MATCHING_KEYTAG_DNSKEY;
 		}
@@ -312,7 +298,6 @@ ldns_verify_rrsig_keylist(ldns_rr_list *rrset, ldns_rr *rrsig, ldns_rr_list *key
 		ldns_rr_list_free(validkeys);
 		return result;
 	} else {
-		ldns_rr_list_free(validkeys);
 		ldns_rr_list_cat(good_keys, validkeys);
 		return LDNS_STATUS_OK;
 	}
