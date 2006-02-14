@@ -87,15 +87,12 @@ ldns_send(ldns_pkt **result, ldns_resolver *r, const ldns_pkt *query_pkt)
 		
 		if ((ns->ss_family == AF_INET) && 
 				(ldns_resolver_ip6(r) == LDNS_RESOLV_INET6)) {
-			/*printf("mismatch 4 - 6!!!\n");*/
-			/* FREE OF NS */
-			/* continue; */
+			continue;
 		}
 
 		if ((ns->ss_family == AF_INET6) &&
 				 (ldns_resolver_ip6(r) == LDNS_RESOLV_INET)) {
-			/*printf("mismatch!!! 6 - 4\n");*/
-			/* continue; */
+			continue;
 		}
 
 		gettimeofday(&tv_s, NULL);

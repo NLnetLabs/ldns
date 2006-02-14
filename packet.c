@@ -394,6 +394,9 @@ ldns_pkt_section_count(const ldns_pkt *packet, ldns_pkt_section s)
 bool
 ldns_pkt_empty(ldns_pkt *p)
 {
+	if (!p) {
+		return true; /* NULL is empty? */
+	}
 	if (ldns_pkt_section_count(p, LDNS_SECTION_ANY) > 0) {
 		return true;
 	} else
