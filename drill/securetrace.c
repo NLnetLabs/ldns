@@ -11,6 +11,8 @@
 #include "drill.h"
 #include <ldns/dns.h>
 
+#define VAL " [VALIDATED]" 
+
 /* 
  * check if the key and the ds are equivalent
  * ie: is the ds made from the key?
@@ -286,17 +288,13 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 		key_list = get_key(res, authname, &sig_list);
 
 		if (key_list) {
-
-
-		
 			printf(";; DNSSEC RRs\n");
 			print_dnskey_list_abbr(stdout, key_list, NULL); 
 			print_rrsig_list_abbr(stdout, sig_list, NULL); 
-			print_rrsig_list_abbr(stdout, validated, NULL); 
 			if (sig_list) {
 				if (ldns_verify(key_list, sig_list, key_list, validated) ==
 						LDNS_STATUS_OK) {
-					print_dnskey_list_abbr(stdout, validated, " [Validated]"); 
+					print_dnskey_list_abbr(stdout, validated, VAL); 
 				}
 			}
 
@@ -376,13 +374,28 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 		ds_list = get_ds(res, labels[i], &sig_list);
 		if (key_list) {
 			printf(";; DNSSEC RRs\n");
+#if 0
 			print_dnskey_list_abbr(stdout, key_list, NULL); 
 			print_rrsig_list_abbr(stdout, sig_list, NULL); 
+#endif 
+			if (sig_list) {
+				if (ldns_verify(key_list, sig_list, key_list, validated) ==
+						LDNS_STATUS_OK) {
+		/*			print_dnskey_list_abbr(stdout, validated, VAL);  */
+				}
+			}
 		} else {
 			printf(";; No DNSSEC RRs found, not attemping validation\n");
 		}
 		if (ds_list) {
 			print_ds_list_abbr(stdout, ds_list, NULL);
+			print_rrsig_list_abbr(stdout, sig_list, NULL);
+			if (sig_list) {
+				if (ldns_verify(ds_list, sig_list, key_list, validated) ==
+						LDNS_STATUS_OK) {
+					print_dnskey_list_abbr(stdout, validated, "DS" VAL); 
+				}
+			}
 
 		}
 

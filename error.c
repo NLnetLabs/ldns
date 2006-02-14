@@ -40,6 +40,7 @@ ldns_lookup_table ldns_error_str[] = {
         { LDNS_STATUS_CRYPTO_ALGO_NOT_IMPL, "Cryptographic algorithm not implemented" },
         { LDNS_STATUS_CRYPTO_NO_RRSIG, "No DNSSEC signature(s)" },
         { LDNS_STATUS_CRYPTO_NO_DNSKEY, "No DNSSEC public key(s)" },
+        { LDNS_STATUS_CRYPTO_TYPE_COVERED_ERR, "The signature does not cover this RRset" },
         { LDNS_STATUS_CRYPTO_NO_TRUSTED_DNSKEY, "No signatures found for trusted DNSSEC public key(s)" },
         { LDNS_STATUS_CRYPTO_NO_MATCHING_KEYTAG_DNSKEY, "No keys with the keytag from the RRSIG found" },
         { LDNS_STATUS_CRYPTO_VALIDATED, "Valid DNSSEC signature" },

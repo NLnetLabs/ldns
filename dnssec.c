@@ -176,6 +176,13 @@ ldns_verify_rrsig_keylist(ldns_rr_list *rrset, ldns_rr *rrsig, ldns_rr_list *key
 	
 	/* clone the rrset so that we can fiddle with it */
 	rrset_clone = ldns_rr_list_clone(rrset);
+
+	/* check if the typecovered is equal to the type checked */
+	if (ldns_rdf2rr_type(ldns_rr_rrsig_typecovered(rrsig)) !=
+			ldns_rr_get_type(
+				ldns_rr_list_rr(rrset_clone, 0))) {
+		return LDNS_STATUS_CRYPTO_TYPE_COVERED_ERR;
+	}
 	
 	/* create the buffers which will certainly hold the raw data */
 	rawsig_buf = ldns_buffer_new(LDNS_MAX_PACKETLEN);
@@ -251,12 +258,11 @@ ldns_verify_rrsig_keylist(ldns_rr_list *rrset, ldns_rr *rrsig, ldns_rr_list *key
 
 	for(i = 0; i < ldns_rr_list_rr_count(keys); i++) {
 		current_key = ldns_rr_list_rr(keys, i);
+		/* before anything, check if the keytags match */
 		if (ldns_calc_keytag(current_key) ==
 		    ldns_rdf2native_int16(ldns_rr_rrsig_keytag(rrsig))) {
 			key_buf = ldns_buffer_new(LDNS_MAX_PACKETLEN);
 			
-			/* before anything, check if the keytags match */
-
 			/* put the key-data in a buffer, that's the third rdf, with
 			 * the base64 encoded key data */
 			if (ldns_rdf2buffer_wire(key_buf,
