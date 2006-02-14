@@ -43,10 +43,6 @@ hexstr2bin(char *hexstr, int len, uint8_t *buf, size_t offset, size_t buf_len)
 			} else if (c >= 'A' && c <= 'Z') {
 				int8 += (c & 0x0f) + 9;   
 			} else {
-				/*
-				warning("Error in reading hex data: \n");
-				warning("%s ('%c' at %d, should read %d bytes)\n", hexstr, c, i, len);
-				*/
 				return 0;
 			}
 			 
@@ -60,8 +56,7 @@ hexstr2bin(char *hexstr, int len, uint8_t *buf, size_t offset, size_t buf_len)
 					sec = 0; 
 					bufpos++;
 				} else {
-					fprintf(stderr, "Buffer too small in hexstr2bin\n");
-					exit(1);
+					error("Buffer too small in hexstr2bin");
 				}
 			}
 		}
@@ -128,7 +123,7 @@ packetbuffromfile(char *filename, uint8_t *wire)
 				hexbufpos++;
 				break;
 			default:
-				fprintf(stderr, "unknown state while reading %s\n", filename);
+				warning("unknown state while reading %s", filename);
 				xfree(hexbuf);
 				return 0;
 				break;
@@ -183,8 +178,8 @@ read_hex_pkt(char *filename)
 	fp = fopen(filename, "r");
 	
 	if (fp == NULL) {
-		fprintf(stderr, "Unable to open %s\n", filename);
 		perror("");
+		warning("Unable to open %s", filename);
 		return NULL;
 	}
 	
@@ -212,14 +207,14 @@ dump_hex(const ldns_pkt *pkt, const char *filename)
 	fp = fopen(filename, "w");
 	
 	if (fp == NULL) {
-		fprintf(stderr, "Unable to open %s for writing", filename);
+		error("Unable to open %s for writing", filename);
 		return;
 	}
 	
 	status = ldns_pkt2wire(&wire, pkt, &size);
 	
 	if (status != LDNS_STATUS_OK) {
-		fprintf(stderr, "Unable to convert packet: error code %u\n", status);
+		error("Unable to convert packet: error code %u", status);
 		return;
 	}
 	

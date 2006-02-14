@@ -80,7 +80,7 @@ do_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 
 
 	if (ldns_pkt_empty(p)) {
-		warning("No root server information received\n");
+		warning("No root server information received");
 	} 
 	
 	if (status == LDNS_STATUS_OK) {
@@ -88,7 +88,7 @@ do_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 			drill_pkt_print(stdout, local_res, p);
 		}
 	} else {
-		error("cannot use local resolver\n");
+		error("cannot use local resolver");
 		return NULL;
 	}
 

@@ -194,7 +194,7 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 	/* this must be a real query to local_res */
 	status = ldns_resolver_send(&p, local_res, ldns_dname_new_frm_str("."), LDNS_RR_TYPE_NS, c, 0);
 	if (ldns_pkt_empty(p)) {
-		warning("No root server information received\n");
+		warning("No root server information received");
 	} 
 	
 	if (status == LDNS_STATUS_OK) {
@@ -202,19 +202,19 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 			drill_pkt_print(stdout, local_res, p);
 		}
 	} else {
-		error("cannot use local resolver\n");
+		error("cannot use local resolver");
 		return NULL;
 	}
 
 	status = ldns_resolver_send(&p, res, name, t, c, 0);
+	if (!p) {
+		warning("No packet received");
+		return NULL;
+	}
 
 	while(status == LDNS_STATUS_OK && 
 	      ldns_pkt_reply_type(p) == LDNS_PACKET_REFERRAL) {
 
-		if (!p) {
-			/* some error occurred, bail out */
-			return NULL;
-		}
 
 		new_nss_a = ldns_pkt_rr_list_by_type(p,
 				LDNS_RR_TYPE_A, LDNS_SECTION_ADDITIONAL);

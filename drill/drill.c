@@ -554,7 +554,7 @@ main(int argc, char *argv[])
 		case DRILL_QTOFILE:
 			qname = ldns_dname_new_frm_str(name);
 			if (!qname) {
-				error("%s", "making qname\n");
+				error("%s", "making qname");
 				result = EXIT_FAILURE;
 				goto exit;
 			}
@@ -582,7 +582,7 @@ main(int argc, char *argv[])
 			/* create a packet and set the RD flag on it */
 			pkt = ldns_resolver_query(res, qname, type, clas, qflags);
 			if (!pkt)  {
-				error("%s", "pkt sending\n");
+				error("%s", "pkt sending");
 				result = EXIT_FAILURE;
 			} else {
 				if (qdebug != -1) {
@@ -601,7 +601,7 @@ main(int argc, char *argv[])
 			} else {
 				qname = ldns_dname_new_frm_str(name);
 				if (!qname) {
-					error("%s", "error in making qname\n");
+					error("%s", "error in making qname");
 					result = EXIT_FAILURE;
 					goto exit;
 				}
