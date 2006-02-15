@@ -13,68 +13,6 @@
 
 #define VAL " [VALIDATED]" 
 
-/* 
- * check if the key and the ds are equivalent
- * ie: is the ds made from the key?
- */
-/*@unused@*/
-static bool 
-check_ds_key_equiv(ldns_rr *key, ldns_rr *ds)
-{
-	ldns_rr *key_ds;
-
-	key_ds  = ldns_key_rr2ds(key, LDNS_SHA1);
-	printf("new ds\n");
-		ldns_rr_print(stdout, key_ds);
-
-	if (ldns_rr_compare(key_ds, ds) == 0) {
-		return true;
-	} else {
-		return false;
-	}
-}
-
-/*
- * return the keys records that match some of the
- * DSs
- */
-/*@unused@*/
-static ldns_rr_list *
-check_ds_key_equiv_rr_list(ldns_rr_list *key, ldns_rr_list *ds)
-{
-	size_t i,j;
-	ldns_rr_list *eq;
-
-	ldns_rr *ds_rr, *key_rr;
-
-	eq = ldns_rr_list_new();
-
-	/* check each DS against all the keys for a match */
-	for(i = 0; i < ldns_rr_list_rr_count(ds); i++) {
-		ds_rr = ldns_rr_list_rr(ds, i);
-		for(j = 0; j < ldns_rr_list_rr_count(key); j++) {
-			key_rr = ldns_rr_list_rr(key, j);
-
-		printf("checking\n");
-		ldns_rr_print(stdout, ds_rr);
-		ldns_rr_print(stdout, key_rr);
-		printf("\n");
-			
-			if (check_ds_key_equiv(key_rr, ds_rr)) {
-				/* we have a winner */
-				ldns_rr_list_push_rr(eq, key_rr);
-				break;
-			}
-		}
-	}
-	if (ldns_rr_list_rr_count(eq) > 0) {
-		return eq;
-	} else {
-		return NULL;
-	}
-}
-
-
 /*
  * generic function to get some RRset from a nameserver
  * and possible some signatures too (that would be the day...)
@@ -86,13 +24,12 @@ get_dnssec_rr(ldns_resolver *r, ldns_rdf *name, ldns_rr_type t, ldns_rr_list **s
 	ldns_rr_list *rr = NULL;
 	ldns_rr_list *sigs = NULL;
 
-	/* ldns_resolver_set_dnssec(r, true); */
-
 	p = ldns_resolver_query(r, name, t, LDNS_RR_CLASS_IN, 0); 
 	if (!p) {
 		return NULL;
+	} else {
+		ldns_pkt_print(stdout, p);
 	}
-	/* ldns_pkt_print(stdout, p); */
 
 	rr = ldns_pkt_rr_list_by_name_and_type(p, name, t, LDNS_SECTION_ANSWER);
 	/* there SHOULD be a sig there too... */
@@ -353,7 +290,7 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 	if (new_nss) {
 		authname = ldns_rr_owner(ldns_rr_list_rr(new_nss, 0));
 	} 
-	labels_count_all = ldns_dname_label_count(authname);
+	labels_count_all = ldns_dname_label_count(name);
 
 	/* reverse the query order for the remaining names
 	 * so that we fetch them in the correct DNS order */
@@ -361,14 +298,19 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 	if (!labels) {
 		return NULL;
 	}
-	labels[0] = authname;
+	labels[0] = name;
 	for(i = 1 ; i < (ssize_t)labels_count_current; i++) {
 		labels[i] = ldns_dname_left_chop(labels[i - 1]);
 	}
 
 		/* DNSSEC */
 	/* recurse on the name at this server */
+	printf("\n** RECURSING BY MY SELF **\n\n");
 	for(i = (ssize_t)labels_count_current - 1; i >= 0; i--) {
+
+		printf("labels: ");
+		ldns_rdf_print(stdout, labels[i]);
+		printf("\n");
 
 		key_list = get_key(res, labels[i], &sig_list);
 		ds_list = get_ds(res, labels[i], &sig_list);
