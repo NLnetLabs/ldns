@@ -28,7 +28,7 @@ get_dnssec_rr(ldns_resolver *r, ldns_rdf *name, ldns_rr_type t, ldns_rr_list **s
 	if (!p) {
 		return NULL;
 	} else {
-		ldns_pkt_print(stdout, p);
+		/* ldns_pkt_print(stdout, p); */
 	}
 
 	rr = ldns_pkt_rr_list_by_name_and_type(p, name, t, LDNS_SECTION_ANSWER);
@@ -85,6 +85,7 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 	bool secure;
 	ldns_rr_list *key_list;
 	ldns_rr_list *sig_list;
+	ldns_rr_list *ds_sig_list;
 	ldns_rr_list *ds_list;
 
 	ldns_rr_list *validated;  /* stuff (DNSKEY/DS) that are cryptographic 'good' */
@@ -100,6 +101,7 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 	p = ldns_pkt_new();
 	res = ldns_resolver_new();
 	sig_list = ldns_rr_list_new();
+	ds_sig_list = ldns_rr_list_new();
 
 	validated = ldns_rr_list_new();
 
@@ -242,6 +244,7 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 		ds_list = get_ds(res, authname, &sig_list);
 		if (ds_list) {
 			print_ds_list_abbr(stdout, ds_list, NULL);
+			print_rrsig_list_abbr(stdout, sig_list, NULL); 
 		}
 
 		/* /DNSSEC */
@@ -313,7 +316,7 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 		printf("\n");
 
 		key_list = get_key(res, labels[i], &sig_list);
-		ds_list = get_ds(res, labels[i], &sig_list);
+		ds_list = get_ds(res, labels[i], &ds_sig_list);
 		if (key_list) {
 			printf(";; DNSSEC RRs\n");
 #if 0
@@ -321,6 +324,7 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 			print_rrsig_list_abbr(stdout, sig_list, NULL); 
 #endif 
 			if (sig_list) {
+			print_rrsig_list_abbr(stdout, sig_list, NULL); 
 				if (ldns_verify(key_list, sig_list, key_list, validated) ==
 						LDNS_STATUS_OK) {
 		/*			print_dnskey_list_abbr(stdout, validated, VAL);  */
@@ -330,12 +334,15 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 			printf(";; No DNSSEC RRs found, not attemping validation\n");
 		}
 		if (ds_list) {
+			printf("DS stuff\n");
 			print_ds_list_abbr(stdout, ds_list, NULL);
-			print_rrsig_list_abbr(stdout, sig_list, NULL);
+			print_rrsig_list_abbr(stdout, ds_sig_list, NULL);
 			if (sig_list) {
 				if (ldns_verify(ds_list, sig_list, key_list, validated) ==
 						LDNS_STATUS_OK) {
-					print_dnskey_list_abbr(stdout, validated, "DS" VAL); 
+					print_ds_list_abbr(stdout, validated, "DS" VAL); 
+				} else {
+					printf("no validated\n");
 				}
 			}
 
