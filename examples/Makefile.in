@@ -47,6 +47,8 @@ PROGRAMS=$(SOURCES:.c=)
 
 all:	$(PROGRAMS)
 
+pcap: 	ldns-pcap-drill
+
 ldns-read-zone: 	ldns-read-zone.o
 			$(LINK) -o $@ $+
 
@@ -78,6 +80,9 @@ ldns-walk:	ldns-walk.o
 		$(LINK) -o $@ $+
 
 ldns-dpa:	ldns-dpa.o
+		$(LINK) -o $@ $+
+
+ldns-pcap-drill: 	ldns-pcap-drill.o
 		$(LINK) -o $@ $+
 
 ldns-zsplit:	ldns-zsplit.o
