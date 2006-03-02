@@ -224,6 +224,9 @@ ldns_wire2rdf(ldns_rr *rr, const uint8_t *wire,
 		case LDNS_RDF_TYPE_INT16_DATA:
 			cur_rdf_length = (size_t) ldns_read_uint16(&wire[*pos]) + 2;
 			break;
+		case LDNS_RDF_TYPE_NSEC3_VARS:
+			/* grm var length appears halfway rdf */
+			cur_rdf_length = (size_t) &wire[*pos + 4] + 5;
 		case LDNS_RDF_TYPE_APL:
 		case LDNS_RDF_TYPE_B64:
 		case LDNS_RDF_TYPE_HEX:

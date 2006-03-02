@@ -491,6 +491,51 @@ ldns_rdf2buffer_str_nsec(ldns_buffer *output, const ldns_rdf *rdf)
 }
 
 ldns_status
+ldns_rdf2buffer_str_nsec3_vars(ldns_buffer *output, const ldns_rdf *rdf)
+{
+	bool opt_in;
+	uint8_t hash_function;
+	uint8_t iterations_wire[4];
+	uint32_t iterations;
+	uint8_t salt_length;
+	uint8_t salt_pos;
+
+	uint8_t *data = ldns_rdf_data(rdf);
+	size_t pos;
+
+	opt_in = data[0] & 0x80;
+	ldns_buffer_printf(output, "%u ", opt_in);
+	
+	/* TODO: mnemonic */
+	hash_function = data[0] & 0x7f;
+	ldns_buffer_printf(output, "%u ", hash_function);
+	
+	iterations_wire[0] = 0;
+	iterations_wire[1] = data[1];
+	iterations_wire[2] = data[2];
+	iterations_wire[3] = data[3];
+	
+	iterations = ldns_read_uint32(iterations_wire);
+	ldns_buffer_printf(output, "%u ", iterations);
+	
+	salt_length = data[4];
+	/* todo: length check needed/possible? */
+	/* from now there are variable length entries so remember pos */
+	pos = 5;
+	if (salt_length == 0) {
+		ldns_buffer_printf(output, "- ");
+	} else {
+		for (salt_pos = 0; salt_pos < salt_length; salt_pos++) {
+			ldns_buffer_printf(output, "%2x", data[5 + salt_pos]);
+			pos++;
+		}
+		ldns_buffer_printf(output, " ");
+	}
+	
+	return ldns_buffer_status(output);
+}
+
+ldns_status
 ldns_rdf2buffer_str_period(ldns_buffer *output, const ldns_rdf *rdf)
 {
 	/* period is the number of seconds */
@@ -728,6 +773,9 @@ ldns_rdf2buffer_str(ldns_buffer *buffer, const ldns_rdf *rdf)
 			break;
 		case LDNS_RDF_TYPE_NSEC: 
 			res = ldns_rdf2buffer_str_nsec(buffer, rdf);
+			break;
+		case LDNS_RDF_TYPE_NSEC3_VARS: 
+			res = ldns_rdf2buffer_str_nsec3_vars(buffer, rdf);
 			break;
 		case LDNS_RDF_TYPE_TYPE: 
 			res = ldns_rdf2buffer_str_type(buffer, rdf);

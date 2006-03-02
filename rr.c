@@ -317,6 +317,7 @@ ldns_rr_new_frm_str(const char *str, uint16_t default_ttl, ldns_rdf *origin, ldn
 				    ldns_rr_descriptor_field_type(desc, r_cnt) == LDNS_RDF_TYPE_LOC ||
 				    ldns_rr_descriptor_field_type(desc, r_cnt) == LDNS_RDF_TYPE_WKS ||
 				    ldns_rr_descriptor_field_type(desc, r_cnt) == LDNS_RDF_TYPE_NSEC ||
+				    ldns_rr_descriptor_field_type(desc, r_cnt) == LDNS_RDF_TYPE_NSEC3_VARS ||
 				    ldns_rr_descriptor_field_type(desc, r_cnt) == LDNS_RDF_TYPE_STR
 				    ) {
 					delimiters = "\n\t";
@@ -1390,6 +1391,10 @@ static const ldns_rdf_type type_rrsig_wireformat[] = {
 static const ldns_rdf_type type_nsec_wireformat[] = {
 	LDNS_RDF_TYPE_DNAME, LDNS_RDF_TYPE_NSEC
 };
+/* nsec3 is some vars, followed by same type of data of nsec */
+static const ldns_rdf_type type_nsec3_wireformat[] = {
+	LDNS_RDF_TYPE_NSEC3_VARS, LDNS_RDF_TYPE_DNAME, LDNS_RDF_TYPE_NSEC
+};
 static const ldns_rdf_type type_dnskey_wireformat[] = {
 	LDNS_RDF_TYPE_INT16, LDNS_RDF_TYPE_INT8, LDNS_RDF_TYPE_ALG, LDNS_RDF_TYPE_B64
 };
@@ -1511,7 +1516,11 @@ static ldns_rr_descriptor rdata_field_descriptors[] = {
 	/* 48 */
 	{LDNS_RR_TYPE_DNSKEY, "DNSKEY", 4, 4, type_dnskey_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS },
 {LDNS_RR_TYPE_ANY, "TYPE49", 1, 1, type_0_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS },
+	/* TODO: no code yet, assume 50 for now */
+	{LDNS_RR_TYPE_NSEC3, "NSEC3", 2, 2, type_nsec3_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS },
+/*
 {LDNS_RR_TYPE_ANY, "TYPE50", 1, 1, type_0_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS },
+*/
 {LDNS_RR_TYPE_ANY, "TYPE51", 1, 1, type_0_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS },
 {LDNS_RR_TYPE_ANY, "TYPE52", 1, 1, type_0_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS },
 {LDNS_RR_TYPE_ANY, "TYPE53", 1, 1, type_0_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS },

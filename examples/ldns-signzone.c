@@ -23,6 +23,7 @@ usage(FILE *fp, const char *prog) {
 	fprintf(fp, "  -i <date>\tinception date\n");
 	fprintf(fp, "  -o <domain>\torigin for the zone\n");
 	fprintf(fp, "  -v\t\tprint version and exit\n");
+	fprintf(fp, "  -n\t\tuse NSEC3 instead of NSEC.\n");
 	fprintf(fp, "  keys must be specified by their base name: K<name>+<alg>+<id>\n");
 	fprintf(fp, "  both a .key and .private file must present\n");
 	fprintf(fp, "  A date can be a timestamp (seconds since the epoch), or of\n  the form <YYYYMMdd[hhmmss]>\n");
@@ -83,6 +84,8 @@ main(int argc, char *argv[])
 	char *outputfile_name = NULL;
 	FILE *outputfile;
 	
+	bool use_nsec3 = false;
+	
 	/* we need to know the origin before reading ksk's,
 	 * so keep an array of filenames until we know it
 	 */
@@ -105,7 +108,7 @@ main(int argc, char *argv[])
 	inception = 0;
 	expiration = 0;
 	
-	while ((c = getopt(argc, argv, "e:f:i:o:v")) != -1) {
+	while ((c = getopt(argc, argv, "e:f:i:o:v:n")) != -1) {
 		switch (c) {
 		case 'e':
 			/* try to parse YYYYMMDD first,
@@ -156,6 +159,9 @@ main(int argc, char *argv[])
 			} else {
 				inception = (uint32_t) atol(optarg);
 			}
+			break;
+		case 'n':
+			use_nsec3 = true;
 			break;
 		case 'o':
 			if (ldns_str2rdf_dname(&origin, optarg) != LDNS_STATUS_OK) {
@@ -278,8 +284,12 @@ main(int argc, char *argv[])
 		exit(EXIT_FAILURE);
 	}
 			
-	signed_zone = ldns_zone_sign(orig_zone, keys);
-
+	if (use_nsec3) {
+		signed_zone = ldns_zone_sign_nsec3(orig_zone, keys);
+	} else {
+		signed_zone = ldns_zone_sign(orig_zone, keys);
+	}
+	
 	if (!outputfile_name) {
 		outputfile_name = LDNS_XMALLOC(char, MAX_FILENAME_LEN);
 		snprintf(outputfile_name, MAX_FILENAME_LEN, "%s.signed", zonefile_name);
