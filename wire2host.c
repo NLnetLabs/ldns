@@ -62,7 +62,6 @@ ldns_wire2dname(ldns_rdf **dname, const uint8_t *wire, size_t max, size_t *pos)
 	size_t uncompressed_length = 0;
 	size_t compression_pos = 0;
 	uint8_t tmp_dname[LDNS_MAX_DOMAINLEN];
-	uint8_t *dname_ar;
 	unsigned int pointer_count = 0;
 	
 	if (*pos >= max) {
@@ -130,19 +129,11 @@ ldns_wire2dname(ldns_rdf **dname, const uint8_t *wire, size_t max, size_t *pos)
 	tmp_dname[dname_pos] = 0;
 	dname_pos++;
 	
-	dname_ar = LDNS_XMALLOC(uint8_t, dname_pos);
-	if (!dname_ar) {
-		return LDNS_STATUS_MEM_ERR;
-	}
-	memcpy(dname_ar, tmp_dname, dname_pos);
-	
-	*dname = ldns_rdf_new(LDNS_RDF_TYPE_DNAME, 
-			(uint16_t) dname_pos, dname_ar);
+	*dname = ldns_rdf_new_frm_data(LDNS_RDF_TYPE_DNAME, 
+			(uint16_t) dname_pos, tmp_dname);
 	if (!*dname) {
-		LDNS_FREE(dname_ar);
 		return LDNS_STATUS_MEM_ERR;
 	}
-	
 	return LDNS_STATUS_OK;
 }
 
