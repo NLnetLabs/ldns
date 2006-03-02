@@ -111,6 +111,11 @@ ldns_wire2dname(ldns_rdf **dname, const uint8_t *wire, size_t max, size_t *pos)
 		uncompressed_length += label_size + 1;
 		dname_pos += label_size;
 		*pos = *pos + label_size;
+
+		if (dname_pos > LDNS_MAX_DOMAINLEN)  {
+			return LDNS_STATUS_DOMAINNAME_OVERFLOW;
+		}
+		
 		if (*pos < max) {
 			label_size = wire[*pos];
 		}
