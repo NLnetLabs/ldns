@@ -368,6 +368,7 @@ ldns_wire2pkt(ldns_pkt **packet_p, const uint8_t *wire, size_t max)
 	LDNS_STATUS_CHECK_GOTO(status, status_error);
 
 	for (i = 0; i < ldns_pkt_qdcount(packet); i++) {
+
 		status = ldns_wire2rr(&rr, wire, max, &pos,
 		                      LDNS_SECTION_QUESTION);
 		if (status == LDNS_STATUS_PACKET_OVERFLOW) {

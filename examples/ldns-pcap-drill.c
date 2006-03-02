@@ -3,17 +3,12 @@
 #include <ldns/dns.h>
 #include <pcap.h>
 
-
-#define ETHER_HDR_SIZE 14
-#define UDP_HDR_SIZE 8
-#define TCP_HDR_SIZE 0
-#define IP6_HDR_SIZE 40
+#define DNS_OFFSET 42
 
 #ifndef ETHERTYPE_IPV6
 #define ETHERTYPE_IPV6 0x86dd
 #endif
 
-#define IP_HL(ip) 	(((ip)->ip_vhl) & 0x0f)
 
 /** 
  * general layout
@@ -29,16 +24,11 @@
 int
 pcap2ldns_pkt_ip(const u_char *packet, struct pcap_pkthdr *h)
 {
-	uint16_t i;
-	ldns_status s = 0;
-	
 	ldns_pkt *dns;
 
-	for(i = 0; i < h->caplen; i++) {
-		if ((s = ldns_wire2pkt(&dns, packet + i, (h->caplen - i))) == LDNS_STATUS_OK) {
-			printf("%d \n", i);
-			ldns_pkt_print(stdout, dns);
-		}
+	if (ldns_wire2pkt(&dns, packet + DNS_OFFSET
+					, (h->caplen - DNS_OFFSET)) == LDNS_STATUS_OK) {
+ 	ldns_pkt_print(stdout, dns); 
 	}
 	return 0;
 }
@@ -82,10 +72,10 @@ main(int argc, char **argv)
 	}
 
 	while ((x = pcap_next(p, &h))) {
-		 pcap2ldns_pkt_ip(x, &h); 
+            	pcap2ldns_pkt_ip(x, &h);  
 		i++;
-	}
 	printf("pkt seen %zd\n", i);
+	}
 	pcap_close(p);
 	return 0;
 }
