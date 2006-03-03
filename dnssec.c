@@ -1140,7 +1140,12 @@ ldns_create_nsec(ldns_rdf *cur_owner, ldns_rdf *next_owner, ldns_rr_list *rrs)
 ldns_rr *
 ldns_create_nsec3(ldns_rdf *cur_owner,
                   ldns_rdf *cur_zone,
-                  ldns_rr_list *rrs)
+                  ldns_rr_list *rrs,
+                  uint8_t algorithm,
+                  bool opt_in,
+                  uint32_t iterations,
+                  uint8_t salt_length,
+                  char *salt)
 {
 	uint16_t i;
 	ldns_rr *i_rr;
@@ -1152,16 +1157,13 @@ ldns_create_nsec3(ldns_rdf *cur_owner,
 	ldns_rr *nsec = NULL;
 	ldns_rdf *hashed_owner = NULL;
 	char *orig_owner_str;
-	unsigned char *hashed_owner_str;
+	char *hashed_owner_str;
+	size_t hashed_owner_str_len = 0;
+	char *hash = NULL;
 	char *hashed_owner_b32;
 
-	bool opt_in = false;
-	uint32_t iterations = 1;
 	uint32_t cur_it;
 	uint8_t iterations_data[4];
-	uint8_t salt_length = 0;
-	char salt[1];
-	salt[0] = 'x';
 	
 	uint8_t *data = NULL;
 	uint8_t cur_data[32];
@@ -1185,7 +1187,7 @@ ldns_create_nsec3(ldns_rdf *cur_owner,
 	}
 	
 	nsec3_vars_data = LDNS_XMALLOC(uint8_t, 5 + salt_length);
-	nsec3_vars_data[0] = 0x01;
+	nsec3_vars_data[0] = algorithm;
 	if (opt_in) {
 		nsec3_vars_data[0] &= 0xff;
 	} else {
@@ -1200,15 +1202,32 @@ ldns_create_nsec3(ldns_rdf *cur_owner,
 	}
 	nsec3_vars_rdf = ldns_rdf_new_frm_data(LDNS_RDF_TYPE_NSEC3_VARS, 5 + salt_length, nsec3_vars_data);
 
-	hashed_owner_str = SHA1((unsigned char *) orig_owner_str, strlen(orig_owner_str), NULL);
-	for (cur_it = iterations - 1; cur_it > 0; cur_it--) {
-		hashed_owner_str = SHA1(hashed_owner_str, strlen((char *) hashed_owner_str), NULL);
+	hashed_owner_str_len = salt_length + strlen(orig_owner_str);
+	hashed_owner_str = LDNS_XMALLOC(char, hashed_owner_str_len);
+	memcpy(hashed_owner_str, orig_owner_str, strlen(orig_owner_str));
+	memcpy(hashed_owner_str + strlen(orig_owner_str), salt, salt_length);
+
+	for (cur_it = iterations; cur_it > 0; cur_it--) {
+		hash = (char *) SHA1((unsigned char *) hashed_owner_str, hashed_owner_str_len, NULL);
+
+		LDNS_FREE(hashed_owner_str);
+		hashed_owner_str_len = salt_length + SHA_DIGEST_LENGTH;
+		hashed_owner_str = LDNS_XMALLOC(char, hashed_owner_str_len);
+		if (!hashed_owner_str) {
+			fprintf(stderr, "Memory error\n");
+			abort();
+		}
+		memcpy(hashed_owner_str, hash, SHA_DIGEST_LENGTH);
+		memcpy(hashed_owner_str + SHA_DIGEST_LENGTH, salt, salt_length);
+		hashed_owner_str_len = SHA_DIGEST_LENGTH;
 	}
-	hashed_owner_b32 = LDNS_XMALLOC(char, b32_ntop_calculate_size(strlen((char *) hashed_owner_str)));
-	i = b32_ntop(hashed_owner_str, strlen((char *) hashed_owner_str), hashed_owner_b32, b32_ntop_calculate_size(strlen((char *)hashed_owner_str)));
-	status = ldns_str2rdf_dname(&hashed_owner, (char *) hashed_owner_b32);
+
+	hashed_owner_str = hash;
+	hashed_owner_b32 = LDNS_XMALLOC(char, b32_ntop_calculate_size(hashed_owner_str_len));
+	i = b32_ntop_extended_hex((uint8_t *) hashed_owner_str, hashed_owner_str_len, hashed_owner_b32, b32_ntop_calculate_size(hashed_owner_str_len));
+	status = ldns_str2rdf_dname(&hashed_owner, hashed_owner_b32);
 	if (status != LDNS_STATUS_OK) {
-		fprintf(stderr, "Error creating rdf from %s\n", hashed_owner_str);
+		fprintf(stderr, "Error creating rdf from %s\n", hashed_owner_b32);
 		exit(1);
 	}
 	status = ldns_dname_cat(hashed_owner, cur_zone);
@@ -1521,7 +1540,7 @@ void ldns_rr_list_sort_nsec3(ldns_rr_list *unsorted) {
 }
 
 ldns_zone *
-ldns_zone_sign_nsec3(ldns_zone *zone, ldns_key_list *key_list)
+ldns_zone_sign_nsec3(ldns_zone *zone, ldns_key_list *key_list, uint8_t algorithm, uint32_t iterations, uint8_t salt_length, char *salt)
 {
 	/*
 	 * Algorithm to be created:
@@ -1598,7 +1617,12 @@ ldns_zone_sign_nsec3(ldns_zone *zone, ldns_key_list *key_list)
 				} else {
 					nsec = ldns_create_nsec3(cur_dname, 
 								ldns_rr_owner(ldns_zone_soa(zone)),
-								orig_zone_rrs);
+								orig_zone_rrs,
+								algorithm,
+								false,
+								iterations,
+								salt_length,
+								salt);
 					ldns_rr_set_ttl(nsec, ldns_rdf2native_int32(ldns_rr_rdf(ldns_zone_soa(zone), 6)));
 					ldns_rr_list_push_rr(nsec3_rrs, nsec);
 					/*start_dname = next_dname;*/
@@ -1610,7 +1634,12 @@ ldns_zone_sign_nsec3(ldns_zone *zone, ldns_key_list *key_list)
 	}
 	nsec = ldns_create_nsec3(cur_dname, 
 				ldns_rr_owner(ldns_zone_soa(zone)),
-				orig_zone_rrs);
+				orig_zone_rrs,
+				algorithm,
+				false,
+				iterations,
+				salt_length,
+				salt);
 	ldns_rr_list_push_rr(nsec3_rrs, nsec);
 	ldns_rr_list_free(orig_zone_rrs);
 	ldns_rr_set_ttl(nsec, ldns_rdf2native_int32(ldns_rr_rdf(ldns_zone_soa(zone), 6)));

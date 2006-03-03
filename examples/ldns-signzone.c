@@ -24,6 +24,11 @@ usage(FILE *fp, const char *prog) {
 	fprintf(fp, "  -o <domain>\torigin for the zone\n");
 	fprintf(fp, "  -v\t\tprint version and exit\n");
 	fprintf(fp, "  -n\t\tuse NSEC3 instead of NSEC.\n");
+	fprintf(fp, "\t\tIf you use NSEC3, you can specify the following extra options:\n");
+	fprintf(fp, "\t\t-a [algorithm] hashing algorithm\n");
+	fprintf(fp, "\t\t-t [number] number of hash iterations\n");
+	fprintf(fp, "\t\t-s [string] salt\n");
+	fprintf(fp, "\n");
 	fprintf(fp, "  keys must be specified by their base name: K<name>+<alg>+<id>\n");
 	fprintf(fp, "  both a .key and .private file must present\n");
 	fprintf(fp, "  A date can be a timestamp (seconds since the epoch), or of\n  the form <YYYYMMdd[hhmmss]>\n");
@@ -86,6 +91,11 @@ main(int argc, char *argv[])
 	
 	bool use_nsec3 = false;
 	
+	uint8_t nsec3_algorithm = 1;
+	uint32_t nsec3_iterations = 1;
+	uint8_t nsec3_salt_length = 0;
+	char *nsec3_salt = NULL;
+	
 	/* we need to know the origin before reading ksk's,
 	 * so keep an array of filenames until we know it
 	 */
@@ -108,8 +118,11 @@ main(int argc, char *argv[])
 	inception = 0;
 	expiration = 0;
 	
-	while ((c = getopt(argc, argv, "e:f:i:o:v:n")) != -1) {
+	while ((c = getopt(argc, argv, "a:e:f:i:no:v:s:t:")) != -1) {
 		switch (c) {
+		case 'a':
+			nsec3_algorithm = (uint8_t) atoi(optarg);
+			break;
 		case 'e':
 			/* try to parse YYYYMMDD first,
 			 * if that doesn't work, it
@@ -174,6 +187,14 @@ main(int argc, char *argv[])
 		case 'v':
 			printf("zone signer version %s (ldns version %s)\n", LDNS_VERSION, ldns_version());
 			exit(EXIT_SUCCESS);
+			break;
+		case 's':
+			nsec3_salt_length = (uint8_t) strlen(optarg);
+			nsec3_salt = LDNS_XMALLOC(char, nsec3_salt_length);
+			memcpy(nsec3_salt, optarg, nsec3_salt_length);
+			break;
+		case 't':
+			nsec3_iterations = (uint32_t) atoi(optarg);
 			break;
 		default:
 			usage(stderr, prog);
@@ -285,7 +306,12 @@ main(int argc, char *argv[])
 	}
 			
 	if (use_nsec3) {
-		signed_zone = ldns_zone_sign_nsec3(orig_zone, keys);
+		signed_zone = ldns_zone_sign_nsec3(orig_zone,
+		                                   keys,
+		                                   nsec3_algorithm,
+		                                   nsec3_iterations,
+		                                   nsec3_salt_length,
+		                                   nsec3_salt);
 	} else {
 		signed_zone = ldns_zone_sign(orig_zone, keys);
 	}

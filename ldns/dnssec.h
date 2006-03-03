@@ -185,7 +185,7 @@ ldns_status ldns_pkt_verify(ldns_pkt *p, ldns_rr_type t, ldns_rdf *o, ldns_rr_li
  * \return the signed zone
  */
 ldns_zone *ldns_zone_sign(ldns_zone *zone, ldns_key_list *key_list);
-ldns_zone *ldns_zone_sign_nsec3(ldns_zone *zone, ldns_key_list *key_list);
+ldns_zone *ldns_zone_sign_nsec3(ldns_zone *zone, ldns_key_list *key_list, uint8_t algorithm, uint32_t iterations, uint8_t salt_length, char *salt);
  
 /**
  * Initialize the random function. This calls OpenSSL

@@ -55,8 +55,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define Assert(Cond) if (!(Cond)) abort()
-
 static const char Base32[] =
 	"ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
 static const char Base32_extended_hex[] =

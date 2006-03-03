@@ -55,7 +55,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define Assert(Cond) if (!(Cond)) abort()
+#include <assert.h>
 
 static const char Base32[] =
 	"ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
@@ -187,14 +187,14 @@ b32_ntop_ar(uint8_t const *src, size_t srclength, char *target, size_t targsize,
 		output[6] = ((input[3] & 0x03) << 3) + ((input[4] & 0xe0) >> 5);
 		output[7] = (input[5] & 0x1f);
 
-		Assert(output[0] < 32);
-		Assert(output[1] < 32);
-		Assert(output[2] < 32);
-		Assert(output[3] < 32);
-		Assert(output[4] < 32);
-		Assert(output[5] < 32);
-		Assert(output[6] < 32);
-		Assert(output[7] < 32);
+		assert(output[0] < 32);
+		assert(output[1] < 32);
+		assert(output[2] < 32);
+		assert(output[3] < 32);
+		assert(output[4] < 32);
+		assert(output[5] < 32);
+		assert(output[6] < 32);
+		assert(output[7] < 32);
 
 		if (datalength + 8 > targsize)
 			return (-1);
@@ -216,20 +216,20 @@ b32_ntop_ar(uint8_t const *src, size_t srclength, char *target, size_t targsize,
 			input[i] = *src++;
 	
 		output[0] = (input[0] & 0xf8) >> 3;
-		output[1] = ((input[0] & 0xf7) << 2) + ((input[1] & 0x40) >> 6);
+		output[1] = ((input[0] & 0x07) << 2) + ((input[1] & 0x40) >> 6);
 		output[2] = (input[1] & 0x3e) >> 1;
 		output[3] = ((input[1] & 0x01) << 4) + ((input[2] & 0xf0) >> 4);
 		output[4] = ((input[2] & 0x0f) << 1) + ((input[3] & 0x80) >> 7);
 		output[5] = (input[3] & 0x7c) >> 2;
 		output[6] = ((input[3] & 0x03) << 3) + ((input[4] & 0xe0) >> 5);
 
-		Assert(output[0] < 32);
-		Assert(output[1] < 32);
-		Assert(output[2] < 32);
-		Assert(output[3] < 32);
-		Assert(output[4] < 32);
-		Assert(output[5] < 32);
-		Assert(output[6] < 32);
+		assert(output[0] < 32);
+		assert(output[1] < 32);
+		assert(output[2] < 32);
+		assert(output[3] < 32);
+		assert(output[4] < 32);
+		assert(output[5] < 32);
+		assert(output[6] < 32);
 
 		if (datalength + 8 > targsize)
 			return (-1);
