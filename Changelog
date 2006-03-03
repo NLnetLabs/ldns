@@ -1,3 +1,7 @@
+   Mar 2006: 1.0.2: ldns-team
+        * Some fixes from trunk are backported to this branch
+
+
 03 Jan 2006: 1.0.1: ldns-team
 	* BUG #110 fixed: drill now handles unreachable servers
 	  gracefully
