@@ -92,14 +92,17 @@ ldns_rdf2buffer_str_dname(ldns_buffer *output, ldns_rdf *dname)
 	data = (uint8_t*)ldns_rdf_data(dname);
 	len = data[src_pos];
 
+	if (ldns_rdf_size(dname) > LDNS_MAX_DOMAINLEN) {
+		/* too large, return */
+		return LDNS_STATUS_DOMAINNAME_OVERFLOW;
+	}
+
 	/* special case: root label */
 	if (1 == ldns_rdf_size(dname)) {
 		ldns_buffer_printf(output, ".");
 	} else {
 		while ((len > 0) && src_pos < ldns_rdf_size(dname)) {
-			
 			src_pos++;
-			
 			for(i = 0; i < len; i++) {
 				/* paranoia check for various 'strange' 
 				   characters in dnames
@@ -774,7 +777,7 @@ ldns_rr2buffer_str(ldns_buffer *output, ldns_rr *rr)
 	ldns_status status = LDNS_STATUS_OK;
 	ldns_lookup_table *lt;
 	const ldns_rr_descriptor *descriptor;
-	
+
 	if (!rr) {
 		ldns_buffer_printf(output, "(null)\n");
 	} else {
@@ -916,16 +919,17 @@ ldns_pkt2buffer_str(ldns_buffer *output, ldns_pkt *pkt)
 		ldns_buffer_printf(output, "null");
 		return LDNS_STATUS_OK;
 	}
-	
+
 	if (ldns_buffer_status_ok(output)) {
 		status = ldns_pktheader2buffer_str(output, pkt);
 		if (status != LDNS_STATUS_OK) {
 			return status;
 		}
-		
+
 		ldns_buffer_printf(output, "\n");
 		
 		ldns_buffer_printf(output, ";; QUESTION SECTION:\n;; ");
+
 
 		for (i = 0; i < ldns_pkt_qdcount(pkt); i++) {
 			status = ldns_rr2buffer_str(output, 

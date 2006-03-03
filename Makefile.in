@@ -138,6 +138,9 @@ tests-confclean:
 lib:		$(LIBDNS_OBJECTS) b64_pton$U.o b64_ntop$U.o
 		$(LINK_LIB) -o libldns.la $(LIBDNS_LOBJECTS) b64_pton$U.lo b64_ntop$U.lo \
 		-rpath $(libdir)/lib
+		if [ ! -d include ] ; then mkdir include ; fi ;
+		if [ ! -d include/ldns ] ; then ln -sf ../ldns ./include/ldns ; fi ;
+		if [ ! -d lib ] ; then ln -s .libs lib ; fi ;
 
 doc:		$(srcdir)/doc/function_manpages 
 		$(INSTALL) -d doc
