@@ -10,16 +10,17 @@
 #endif
 
 
-/** 
- * general layout
- *
- * read in a pcap file (tcpdumped)
- * walk over the packets, dump them when pcap_dump()
- * send packet to nameserver, ldns_send_udp
- * 	which can handle raw buffers
- * wait for an reply
- * also write this with pcap_dump
- */
+void
+usage(FILE *fp, char *progname)
+{
+	fprintf(fp, "%s: [-a IP] [-p PORT} PCAP_FILE\n\n");
+	fprintf(fp, "   -a IP\tuse IP as nameserver\n");
+	fprintf(fp, "   -p PORT\tuse POTR as port\n");
+	fprintf(fp, "  PCAP_FILE\tuse this file as source\n");
+	fprintf(fp, "  If no file is given standard output is read\n\n");
+	fprintf(fp, "  if no address is given 127.0.0.1 port 53 is user\n");
+}
+
 
 u_char *
 pcap2ldns_pkt_ip(const u_char *packet, struct pcap_pkthdr *h)
