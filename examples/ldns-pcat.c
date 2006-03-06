@@ -13,7 +13,7 @@
 void
 usage(FILE *fp, char *progname)
 {
-	fprintf(fp, "%s: [-a IP] [-p PORT} PCAP_FILE\n\n");
+	fprintf(fp, "%s: [-a IP] [-p PORT} PCAP_FILE\n\n", progname);
 	fprintf(fp, "   -a IP\tuse IP as nameserver\n");
 	fprintf(fp, "   -p PORT\tuse POTR as port\n");
 	fprintf(fp, "  PCAP_FILE\tuse this file as source\n");
@@ -62,14 +62,17 @@ int
 main(int argc, char **argv) 
 {
 	char errbuf[PCAP_ERRBUF_SIZE];
+	char *progname;
 	pcap_t *p;
 	struct pcap_pkthdr h;
 	const u_char *x;
 	size_t i = 0;
 	ldns_rdf *ip;
 	ldns_pkt *rpkt;
+	int c;
 
 	uint8_t *result;
+	uint16_t port;
 	ldns_buffer *qpkt;
 	size_t size;
 	socklen_t tolen;
@@ -78,23 +81,62 @@ main(int argc, char **argv)
 	struct sockaddr_storage *data;
 	struct sockaddr_in  *data_in;
 
-	ip = ldns_rdf_new_frm_str(LDNS_RDF_TYPE_A, "127.0.0.1");
-	data = LDNS_MALLOC(struct sockaddr_storage);
-	timeout.tv_sec = 2;
-	timeout.tv_usec = 0;
+	port = 0;
+	ip = NULL;
+	progname = strdup(argv[0]);
 
-	data->ss_family = AF_INET;
-        data_in = (struct sockaddr_in*) data;
-        data_in->sin_port = (in_port_t)htons(53);
-        memcpy(&(data_in->sin_addr), ldns_rdf_data(ip), ldns_rdf_size(ip));
-        tolen = sizeof(struct sockaddr_in);
+	while ((c = getopt(argc, argv, "a:p:")) != -1) {
+		switch(c) {
+		case 'a':
+			ip = ldns_rdf_new_frm_str(LDNS_RDF_TYPE_A, optarg);
+			if (!ip) {
+				fprintf(stderr, "-a requires an IP address\n");
+				exit(EXIT_FAILURE);
+			}
+			break;
+		case 'p':
+			port = atoi(optarg);
+			if (port == 0) {
+				fprintf(stderr, "-p requires a port number\n");
+				exit(EXIT_FAILURE);
+			}
+			break;
+		default:
+			usage(stdout, progname);
+			exit(EXIT_FAILURE);
+		}
+	}
+	argc -= optind;
+	argv += optind;
 
-	if (!(p = pcap_open_offline("./20011009-134418-q50000.pkt", errbuf))) {
+	if (port == 0)
+		port = 53;
+
+	if (!ip) 
+		ip = ldns_rdf_new_frm_str(LDNS_RDF_TYPE_A, "127.0.0.1");
+
+	if (argc < 1) {
+		/* no file given - use standard input */
+		p = pcap_fopen_offline(stdin, errbuf);
+	} else {
+		p = pcap_open_offline(argv[0], errbuf);
+	}
+	if (!p) {
 		fprintf(stderr, "Cannot open pcap lib %s\n", errbuf);
 		exit(EXIT_FAILURE);
 	}
 
 	qpkt = ldns_buffer_new(LDNS_MAX_PACKETLEN);
+	data = LDNS_MALLOC(struct sockaddr_storage);
+	timeout.tv_sec = 2;
+	timeout.tv_usec = 0;
+
+	/* setup the socket */
+	data->ss_family = AF_INET;
+        data_in = (struct sockaddr_in*) data;
+        data_in->sin_port = (in_port_t)htons(port);
+        memcpy(&(data_in->sin_addr), ldns_rdf_data(ip), ldns_rdf_size(ip));
+        tolen = sizeof(struct sockaddr_in);
 
 	while ((x = pcap_next(p, &h))) {
 		ldns_buffer_write(qpkt,
@@ -110,9 +152,8 @@ main(int argc, char **argv)
 		ldns_buffer_clear(qpkt);
 		
 		i++;
-
-		printf("pkt seen %zd\n", i);
 	}
+	fprintf(stderr, "%zd\n", i);
 	pcap_close(p);
 	return 0;
 }
