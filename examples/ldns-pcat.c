@@ -5,11 +5,6 @@
 
 #define DNS_OFFSET 42
 
-#ifndef ETHERTYPE_IPV6
-#define ETHERTYPE_IPV6 0x86dd
-#endif
-
-
 void
 usage(FILE *fp, char *progname)
 {
@@ -62,10 +57,10 @@ int
 main(int argc, char **argv) 
 {
 	char errbuf[PCAP_ERRBUF_SIZE];
-	char *progname;
 	pcap_t *p;
 	struct pcap_pkthdr h;
 	const u_char *x;
+	char *progname;
 	size_t i = 0;
 	ldns_rdf *ip;
 	ldns_pkt *rpkt;
