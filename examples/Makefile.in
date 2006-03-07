@@ -47,7 +47,7 @@ PROGRAMS=$(SOURCES:.c=)
 
 all:	$(PROGRAMS)
 
-pcap: 	ldns-pcat
+pcap: 	ldns-pcat ldns-pcat-diff
 
 ldns-read-zone: 	ldns-read-zone.o
 			$(LINK) -o $@ $+
@@ -83,6 +83,9 @@ ldns-dpa:	ldns-dpa.o
 		$(LINK) -o $@ $+
 
 ldns-pcat: 	ldns-pcat.o
+		$(LINK) -o $@ $+
+
+ldns-pcat-diff: 	ldns-pcat-diff.o
 		$(LINK) -o $@ $+
 
 ldns-zsplit:	ldns-zsplit.o

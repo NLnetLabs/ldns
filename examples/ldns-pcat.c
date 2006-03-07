@@ -4,9 +4,11 @@
 #include <pcap.h>
 
 #ifndef ETHERTYPE_IPV6
-#define ETHERTYPE_IPV6 0x86dd
+#define ETHERTYPE_IPV6 	0x86dd
 #endif
-#define DNS_UDP_OFFSET 42
+#define DNS_UDP_OFFSET 	42
+
+#define DIFF_VERSION 	"1.0"
 
 /* output in the following manner. All numbers are decimal, data is in hex.
  * sequence number of the packet, starting at 0. Newline
@@ -25,12 +27,20 @@
 void
 usage(FILE *fp, char *progname)
 {
-	fprintf(fp, "%s: [-a IP] [-p PORT} PCAP_FILE\n\n", progname);
+	fprintf(fp, "%s: -l LOG [-a IP] [-p PORT] PCAP_FILE\n\n", progname);
 	fprintf(fp, "   -a IP\tuse IP as nameserver\n");
-	fprintf(fp, "   -p PORT\tuse POTR as port\n");
+	fprintf(fp, "   -p PORT\tuse PORT as port, defaults to 53\n");
+	fprintf(fp, "   -l STR\tuse STR as header, defaults to 127.0.0.1\n");
 	fprintf(fp, "  PCAP_FILE\tuse this file as source\n");
-	fprintf(fp, "  If no file is given standard output is read\n\n");
-	fprintf(fp, "  if no address is given 127.0.0.1 port 53 is user\n");
+	fprintf(fp, "  If no file is given standard input is read\n");
+	fprintf(fp, "\nOUTPUT FORMAT v"DIFF_VERSION "\n");
+	fprintf(fp, "   The output is line based and each line is ended with a newline:\n");
+	fprintf(fp, "    ; header information\n");
+	fprintf(fp, "    (decimal) pkt sequence number\n");
+	fprintf(fp, "    (decimal) number of hex characters of query\n");
+	fprintf(fp, "    hex dump of query\n");
+	fprintf(fp, "    (decimal) number of hex characters of reply\n");
+	fprintf(fp, "    hex dump of reply\n");
 }
 
 void
@@ -48,7 +58,7 @@ data2hex(FILE *fp, u_char *p, size_t l)
 u_char *
 pcap2ldns_pkt_ip(const u_char *packet, struct pcap_pkthdr *h)
 {
-	h->caplen-=DNS_UDP_OFFSET;
+	h->caplen -= DNS_UDP_OFFSET;
 	if (h->caplen < 0) {
 		return NULL;
 	} else {
@@ -88,10 +98,12 @@ main(int argc, char **argv)
 	char *progname;
 	size_t i = 0;
 	ldns_rdf *ip;
+	char *ip_str;
 	int c;
 
 	uint8_t *result;
 	uint16_t port;
+	char *log;
 	ldns_buffer *qpkt;
 	u_char *q;
 	size_t size;
@@ -103,16 +115,22 @@ main(int argc, char **argv)
 
 	port = 0;
 	ip = NULL;
+	ip_str = NULL;
 	progname = strdup(argv[0]);
+	log = NULL;
 
-	while ((c = getopt(argc, argv, "a:p:")) != -1) {
+	while ((c = getopt(argc, argv, "a:p:l:")) != -1) {
 		switch(c) {
 		case 'a':
+			ip_str = optarg;
 			ip = ldns_rdf_new_frm_str(LDNS_RDF_TYPE_A, optarg);
 			if (!ip) {
 				fprintf(stderr, "-a requires an IP address\n");
 				exit(EXIT_FAILURE);
 			}
+			break;
+		case 'l':
+			log = optarg;
 			break;
 		case 'p':
 			port = atoi(optarg);
@@ -132,8 +150,16 @@ main(int argc, char **argv)
 	if (port == 0)
 		port = 53;
 
-	if (!ip) 
+	if (!log) {
+		fprintf(stderr, "No log msg given. This is mandatory, use the -l switch\n"); 
+		usage(stdout, progname);
+		exit(EXIT_FAILURE);
+	}
+
+	if (!ip) {
+		ip_str = "127.0.0.1";
 		ip = ldns_rdf_new_frm_str(LDNS_RDF_TYPE_A, "127.0.0.1");
+	}
 
 	if (argc < 1) {
 		/* no file given - use standard input */
@@ -158,6 +184,8 @@ main(int argc, char **argv)
         memcpy(&(data_in->sin_addr), ldns_rdf_data(ip), ldns_rdf_size(ip));
         tolen = sizeof(struct sockaddr_in);
 
+	fprintf(stdout, ";v%s `%s\'  %s:%d\n", DIFF_VERSION, log, ip_str, port);
+	i = 1;  /* start counting at 1 */
 	while ((x = pcap_next(p, &h))) {
 		q = pcap2ldns_pkt_ip(x, &h);
 		ldns_buffer_write(qpkt, q, h.caplen);
