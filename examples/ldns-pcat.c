@@ -3,7 +3,24 @@
 #include <ldns/dns.h>
 #include <pcap.h>
 
-#define DNS_OFFSET 42
+#ifndef ETHERTYPE_IPV6
+#define ETHERTYPE_IPV6 0x86dd
+#endif
+#define DNS_UDP_OFFSET 42
+
+/* output in the following manner. All numbers are decimal, data is in hex.
+ * sequence number of the packet, starting at 0. Newline
+ * query size. Newline
+ * query data in hex. Newline
+ * answer size. Newline
+ * answer data in hex. Newline
+ * Thus:
+ * seq\n
+ * qsize\n
+ * qdata\n
+ * asize\n
+ * adata\n
+ */
 
 void
 usage(FILE *fp, char *progname)
@@ -16,19 +33,27 @@ usage(FILE *fp, char *progname)
 	fprintf(fp, "  if no address is given 127.0.0.1 port 53 is user\n");
 }
 
+void
+data2hex(FILE *fp, u_char *p, size_t l)
+{
+	size_t i;
+	for(i = 0; i < l; i++) {
+		/* do it in network order */
+		fprintf(fp, "%02x", p[i]);
+		fputs(" ", fp);
+	}
+	fputs("\n", fp);
+}
 
 u_char *
 pcap2ldns_pkt_ip(const u_char *packet, struct pcap_pkthdr *h)
 {
-
-	h->caplen=-DNS_OFFSET;
-	return (u_char*)(packet + DNS_OFFSET);
-#if 0
-	if (ldns_wire2pkt(&dns, packet + DNS_OFFSET
-					, (h->caplen - DNS_OFFSET)) == LDNS_STATUS_OK) {
- 	ldns_pkt_print(stdout, dns); 
+	h->caplen-=DNS_UDP_OFFSET;
+	if (h->caplen < 0) {
+		return NULL;
+	} else {
+		return (u_char*)(packet + DNS_UDP_OFFSET);
 	}
-#endif
 }
 
 u_char *
@@ -63,12 +88,12 @@ main(int argc, char **argv)
 	char *progname;
 	size_t i = 0;
 	ldns_rdf *ip;
-	ldns_pkt *rpkt;
 	int c;
 
 	uint8_t *result;
 	uint16_t port;
 	ldns_buffer *qpkt;
+	u_char *q;
 	size_t size;
 	socklen_t tolen;
 
@@ -134,21 +159,25 @@ main(int argc, char **argv)
         tolen = sizeof(struct sockaddr_in);
 
 	while ((x = pcap_next(p, &h))) {
-		ldns_buffer_write(qpkt,
-				pcap2ldns_pkt_ip(x, &h),
-				h.caplen);
+		q = pcap2ldns_pkt_ip(x, &h);
+		ldns_buffer_write(qpkt, q, h.caplen);
 
 		if (ldns_udp_send(&result, qpkt, data, tolen, timeout, &size) ==
 				LDNS_STATUS_OK) {
-			ldns_wire2pkt(&rpkt, result, size);
-			ldns_pkt_print(stdout, rpkt);
+			/* double check if we are dealing with correct replies 
+			 * by converting to a pkt... todo */
+			fprintf(stdout, "%zd\n%zd\n", i, h.caplen);
+			/* query */
+			data2hex(stdout, q, h.caplen); 
+			/* answer */
+			fprintf(stdout, "%zd\n", size);
+			data2hex(stdout, result, size);
+		} else {
+			fprintf(stderr, "Failure to send packet\n");
 		}
-
 		ldns_buffer_clear(qpkt);
-		
 		i++;
 	}
-	fprintf(stderr, "%zd\n", i);
 	pcap_close(p);
 	return 0;
 }
