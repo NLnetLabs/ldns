@@ -23,6 +23,8 @@ usage(FILE *fp)
         fprintf(fp, "\nOUTPUT FORMAT:\n");
         fprintf(fp, "  Each record consists of an index and then three packets.\n");
         fprintf(fp, "  Each packet is seperated by a line of '='s.\n");
+        fprintf(fp, "    ==============\n");
+        fprintf(fp, "    ==============\n");
         fprintf(fp, "    Index: xxx:xxx\n");
         fprintf(fp, "    ==============\n");
         fprintf(fp, "    query packet\n");
@@ -80,6 +82,8 @@ main(int argc, char **argv)
 		line[read - 1] = '\0';
 		switch(i % 4) {
 			case SEQUENCE:
+				printf_bar();
+				printf_bar();
 				printf("Index: %s\n", line);
 				printf_bar();
 				break;
@@ -99,7 +103,6 @@ main(int argc, char **argv)
 				} else {
 					ldns_pkt_print(stdout, p);
 				}
-				printf_bar();
 				break;
 		}
 		i++;

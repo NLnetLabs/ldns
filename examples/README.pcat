@@ -42,3 +42,7 @@ pcat-diff:
 If we to see what actual packets that differ (if they can be parsed) we
 can use pcap-print:
    pcap-print reply.diff
+
+Or it can all be done with pipes, eliminating the need of files.
+./pcat-diff <(./pcat -a 213.154.224.1 20011009-134418-q50000.pkt) \
+<(./pcat 213.154.224.1 -p 5454 20011009-134418-q50000.pkt) | ./pcat-print      
