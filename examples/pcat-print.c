@@ -13,6 +13,27 @@
 #define ANSWER2  0
 
 void
+usage(FILE *fp)
+{
+        fprintf(fp, "pcat-print [-h] FILE\n\n");
+        fprintf(fp, "Read the output if pcat-diff and try to convert the\n");
+        fprintf(fp, "hex dump back in the DNS packets. Then print those packets\n");
+	fprintf(fp, "to standard output or print the error in case the conversion failed \n");
+        fprintf(fp, "There are no options, is FILE is not given, standard input is read\n");
+        fprintf(fp, "\nOUTPUT FORMAT:\n");
+        fprintf(fp, "  Each record consists of an index and then three packets.\n");
+        fprintf(fp, "  Each packet is seperated by a line of '='s.\n");
+        fprintf(fp, "    Index: xxx:xxx\n");
+        fprintf(fp, "    ==============\n");
+        fprintf(fp, "    query packet\n");
+        fprintf(fp, "    ==============\n");
+        fprintf(fp, "    first answer/qeury packet\n");
+        fprintf(fp, "    ==============\n");
+        fprintf(fp, "    second answer/qeury packet\n");
+        fprintf(fp, "    ==============\n");
+}
+
+void
 printf_bar(void)
 {
 	fprintf(stdout, "===================================================================\n");
@@ -24,7 +45,6 @@ main(int argc, char **argv)
 	ssize_t read;
 	char *line;
 	size_t i, j, k, len;
-	size_t seq;
 	u_char pkt_buf[LDNS_MAX_PACKETLEN];
 	ldns_pkt *p;
 	ldns_status s;

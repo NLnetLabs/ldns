@@ -8,36 +8,24 @@
 #endif
 #define DNS_UDP_OFFSET 	42
 
-#define DIFF_VERSION 	"1.0"
-
-/* output in the following manner. All numbers are decimal, data is in hex.
- * sequence number of the packet, starting at 0. Newline
- * query size. Newline
- * query data in hex. Newline
- * answer size. Newline
- * answer data in hex. Newline
- * Thus:
- * seq\n
- * qsize\n
- * qdata\n
- * asize\n
- * adata\n
- */
+/* output: see usage() */
 
 void
-usage(FILE *fp, char *progname)
+usage(FILE *fp)
 {
-	fprintf(fp, "%s: [-a IP] [-p PORT] PCAP_FILE\n\n", progname);
+	fprintf(fp, "pcat [-a IP] [-p PORT] PCAP_FILE\n\n");
 	fprintf(fp, "   -a IP\tuse IP as nameserver, defaults to 127.0.0.1\n");
 	fprintf(fp, "   -p PORT\tuse PORT as port, defaults to 53\n");
+	fprintf(fp, "   -h \t\tthis help\n");
 	fprintf(fp, "  PCAP_FILE\tuse this file as source\n");
 	fprintf(fp, "  If no file is given standard input is read\n");
-	fprintf(fp, "\nOUTPUT FORMAT v"DIFF_VERSION "\n");
-	fprintf(fp, "    xxxxx\\n\t\tsequence number\n");
-	fprintf(fp, "    yyy\\n\t\tnumber of hex chars of query\n");
-	fprintf(fp, "    query hex dump\\n\n");
-	fprintf(fp, "    zzz\\n\t\tnumber of hex chars of answer\n");
-	fprintf(fp, "    answer hex dump\\n\n");
+	fprintf(fp, "\nOUTPUT FORMAT:\n");
+	fprintf(fp, "    Line based output format, each record consists of 5 lines:\n");
+	fprintf(fp, "    1. xxx\t\tdecimal sequence number\n");
+	fprintf(fp, "    2. yyyy\t\t# hex chars in query\n");
+	fprintf(fp, "    3. hex dump\t\tquery in hex, network order\n");
+	fprintf(fp, "    4. zzz\t\t# hex chars in answer\n");
+	fprintf(fp, "    5. hex dump\t\tanswer in hex, network order\n");
 }
 
 void
@@ -90,7 +78,6 @@ main(int argc, char **argv)
 	pcap_t *p;
 	struct pcap_pkthdr h;
 	const u_char *x;
-	char *progname;
 	size_t i = 0;
 	ldns_rdf *ip;
 	char *ip_str;
@@ -110,10 +97,12 @@ main(int argc, char **argv)
 	port = 0;
 	ip = NULL;
 	ip_str = NULL;
-	progname = strdup(argv[0]);
 
-	while ((c = getopt(argc, argv, "a:p:")) != -1) {
+	while ((c = getopt(argc, argv, "ha:p:")) != -1) {
 		switch(c) {
+		case 'h':
+			usage(stdout);
+			exit(EXIT_SUCCESS);
 		case 'a':
 			ip_str = optarg;
 			ip = ldns_rdf_new_frm_str(LDNS_RDF_TYPE_A, optarg);
@@ -130,7 +119,7 @@ main(int argc, char **argv)
 			}
 			break;
 		default:
-			usage(stdout, progname);
+			usage(stdout);
 			exit(EXIT_FAILURE);
 		}
 	}
@@ -177,11 +166,11 @@ main(int argc, char **argv)
 				LDNS_STATUS_OK) {
 			/* double check if we are dealing with correct replies 
 			 * by converting to a pkt... todo */
-			fprintf(stdout, "%zd\n%zd\n", i, (size_t)h.caplen);
+			fprintf(stdout, "%zd\n%zd\n", i, ((size_t)h.caplen * 2));
 			/* query */
 			data2hex(stdout, q, h.caplen); 
 			/* answer */
-			fprintf(stdout, "%zd\n", size);
+			fprintf(stdout, "%zd\n", (size * 2));
 			data2hex(stdout, result, size);
 		} else {
 			/* todo print failure */
