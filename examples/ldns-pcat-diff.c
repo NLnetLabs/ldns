@@ -21,19 +21,16 @@ struct dns_info
 };
 
 void
-compare_hex(char *s1, char *s2)
+usage(FILE *fp)
 {
-	size_t i;
-	for(i = 0; s1[i] != '\0' && s2[i] != '\0'; i++) {
-		if (s1[i] == s2[i]) {
-			fprintf(stdout, "%c", s1[i]);
-		} else {
-			fprintf(stdout, "[-%c-]{+%c+}", s1[i], s2[i]);
-		}
-	}
+	fprintf(fp, "./ldns-pcat-diff FILE1 [FILE2]\n\n");
+	fprintf(fp, "Show diff between 2 pcat traces\n");
+	fprintf(fp, "There are no options, is FILE2 is not given, standard input is read\n");
+	fprintf(fp, "OUTPUT FORMAT:\n");
 }
 
-int 
+
+void
 compare(struct dns_info *d1, struct dns_info *d2)
 {
 	int diff = 0;
@@ -50,17 +47,15 @@ compare(struct dns_info *d1, struct dns_info *d2)
 		}
 
 		if (diff == 1) {
-			fprintf(stdout, "%d:%d\n%s", d1->seq, d2->seq, d1->qdata);
-			compare_hex(d1->adata, d2->adata);
+			fprintf(stdout, "%zd:%zd\n%s\n%s\n%s\n", d1->seq, d2->seq, d1->qdata,
+					d1->adata, d2->adata);
 		}
 	} else {
 		fprintf(stderr, "Query differs!\n");
-		fprintf(stdout, "q: %d:%d\nq: %s", d1->seq, d2->seq, d1->qdata);
-	 	fputs("q: ", stdout);
-		compare_hex(d1->qdata, d2->qdata);
+		fprintf(stdout, "%zd:%zd\n%s\n%s\n%s\n", d1->seq, d2->seq, d1->qdata,
+				d1->qdata, d2->qdata);
 
 	}
-	return 0;
 }
 
 int
@@ -88,6 +83,7 @@ main(int argc, char **argv)
 	/* need two files */
 	switch(argc) {
 		case 1:
+			usage(stdout);
 			/* usage */
 			exit(EXIT_FAILURE);
 		case 2:
@@ -114,6 +110,7 @@ main(int argc, char **argv)
 	/* read the version information */
 	read1 = getline(&line1, &len1, trace1);
 	read2 = getline(&line2, &len2, trace2);
+	/* TODO version checking */
 	if (read1 == -1 || read2 == -1) {
 		fprintf(stderr, "Read error\n");
 		exit(EXIT_FAILURE);
@@ -127,6 +124,11 @@ reread:
 		fclose(trace1); fclose(trace2);
 		exit(EXIT_SUCCESS);
 	}
+	if (read1 > 0) 
+		line1[read1 - 1] = '\0';
+	if (read2 > 0)
+		line2[read2 - 1] = '\0';
+
 	switch(i % 5) {
 		case SEQUENCE:
 			d1.seq = atoi(line1);

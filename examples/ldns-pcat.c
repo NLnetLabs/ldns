@@ -48,9 +48,7 @@ data2hex(FILE *fp, u_char *p, size_t l)
 {
 	size_t i;
 	for(i = 0; i < l; i++) {
-		/* do it in network order */
 		fprintf(fp, "%02x", p[i]);
-		fputs(" ", fp);
 	}
 	fputs("\n", fp);
 }
