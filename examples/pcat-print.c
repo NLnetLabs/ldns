@@ -81,7 +81,6 @@ main(int argc, char **argv)
 		switch(i % 4) {
 			case SEQUENCE:
 				printf_bar();
-				printf_bar();
 				printf("Index: %s\n", line);
 				printf_bar();
 				break;
@@ -102,6 +101,7 @@ main(int argc, char **argv)
 					ldns_pkt_print(stdout, p);
 				}
 				break;
+				printf_bar();
 		}
 		i++;
 		len = 0;
