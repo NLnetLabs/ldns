@@ -48,11 +48,30 @@ main(int argc, char **argv)
 	u_char pkt_buf[LDNS_MAX_PACKETLEN];
 	ldns_pkt *p;
 	ldns_status s;
+	FILE *diff = stdin;
 
 	i = 1;
 	len = 0;
 
-	while((read = getline(&line, &len, stdin)) != -1) {
+	/* -h option */
+	if (argc > 1) {
+		if (argv[1][0] == '-') {
+			if (argv[1][1] == 'h') {
+				usage(stdout);
+				exit(EXIT_SUCCESS);
+			} else {
+				fprintf(stderr, "Uknown option '-%c\'\n", argv[1][1]);
+				exit(EXIT_FAILURE);
+			}
+		} else {
+			if (!(diff = fopen(argv[1], "r"))) {
+                                fprintf(stderr, "Cannot open pcat diff file `%s\'\n", argv[1]);
+                                exit(EXIT_FAILURE);
+                        }
+		}
+	} 
+
+	while((read = getline(&line, &len, diff)) != -1) {
 		/* sequence stuff 
 		 * query
 		 * adata1
