@@ -16,10 +16,10 @@ void
 usage(FILE *fp)
 {
         fprintf(fp, "pcat-print [-h] FILE\n\n");
-        fprintf(fp, "Read the output if pcat-diff and try to convert the\n");
-        fprintf(fp, "hex dump back in the DNS packets. Then print those packets\n");
-	fprintf(fp, "to standard output or print the error in case the conversion failed \n");
-        fprintf(fp, "There are no options, is FILE is not given, standard input is read\n");
+        fprintf(fp, "Read the output of pcat-diff and try to convert the\n");
+        fprintf(fp, "hex dump back in to DNS packets. Then print those packets\n");
+	fprintf(fp, "to standard output or print the error in case the conversion failed.\n");
+        fprintf(fp, "There are no options. If FILE is not given, standard input is read.\n");
         fprintf(fp, "\nOUTPUT FORMAT:\n");
         fprintf(fp, "  Each record consists of an index and then three packets.\n");
         fprintf(fp, "  Each packet is seperated by a line of '='s.\n");

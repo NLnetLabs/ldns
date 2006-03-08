@@ -175,6 +175,11 @@ main(int argc, char **argv)
 		} else {
 			/* todo print failure */
 			fprintf(stderr, "Failure to send packet\n");
+			fprintf(stdout, "%zd\n%zd\n", i, ((size_t)h.caplen * 2));
+			/* query */
+			data2hex(stdout, q, h.caplen); 
+			/* answer, thus empty */
+			fprintf(stdout, "0\n\n");
 		}
 		ldns_buffer_clear(qpkt);
 		i++;
