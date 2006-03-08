@@ -1,5 +1,4 @@
 #define _GNU_SOURCE
-
 #include "config.h"
 
 #include <ldns/dns.h>
@@ -39,7 +38,6 @@ usage(FILE *fp)
         fprintf(fp, "    3. hex dump\t\tquery of FILE 1 in hex, network order\n");
         fprintf(fp, "    4. hex dump\t\tquery of FILE 2 in hex, network order\n");
 }
-
 
 void
 compare(struct dns_info *d1, struct dns_info *d2)

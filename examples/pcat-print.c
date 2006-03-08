@@ -1,6 +1,3 @@
-/* print output of ldns-pcat-diff in DNS packet form
- * is at all possible*/
-
 #define _GNU_SOURCE
 
 #include "config.h"
@@ -74,11 +71,12 @@ main(int argc, char **argv)
 	} 
 
 	while((read = getline(&line, &len, diff)) != -1) {
-		/* sequence stuff 
-		 * query
-		 * adata1
-		 * adata2
-		 */
+		if (read < 1 || read > LDNS_MAX_PACKETLEN) {
+			fprintf(stderr, "Under- or overflow - skipping line %zd\n", i);
+			i++;
+			continue;
+		}
+		
 		line[read - 1] = '\0';
 		switch(i % 4) {
 			case SEQUENCE:
