@@ -100,8 +100,8 @@ main(int argc, char **argv)
 				} else {
 					ldns_pkt_print(stdout, p);
 				}
-				break;
 				printf_bar();
+				break;
 		}
 		i++;
 		len = 0;
