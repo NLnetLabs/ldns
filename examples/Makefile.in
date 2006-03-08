@@ -47,7 +47,7 @@ PROGRAMS=$(SOURCES:.c=)
 
 all:	$(PROGRAMS)
 
-p: 	ldns-pcat ldns-pcat-diff ldns-pcat-print
+p: 	pcat pcat-diff pcat-print
 
 ldns-read-zone: 	ldns-read-zone.o
 			$(LINK) -o $@ $+
@@ -82,13 +82,13 @@ ldns-walk:	ldns-walk.o
 ldns-dpa:	ldns-dpa.o
 		$(LINK) -o $@ $+
 
-ldns-pcat: 	ldns-pcat.o
+pcat: 		pcat.o
 		$(LINK) -o $@ $+
 
-ldns-pcat-diff: 	ldns-pcat-diff.o
+pcat-diff: 	pcat-diff.o
 		$(LINK) -o $@ $+
 
-ldns-pcat-print: 	ldns-pcat-print.o
+pcat-print: 	pcat-print.o
 		$(LINK) -o $@ $+
 
 ldns-zsplit:	ldns-zsplit.o

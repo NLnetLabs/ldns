@@ -107,14 +107,6 @@ main(int argc, char **argv)
 			exit(EXIT_FAILURE);
 	}
 
-	/* read the version information */
-	read1 = getline(&line1, &len1, trace1);
-	read2 = getline(&line2, &len2, trace2);
-	/* TODO version checking */
-	if (read1 == -1 || read2 == -1) {
-		fprintf(stderr, "Read error\n");
-		exit(EXIT_FAILURE);
-	}
 	i = 1;
 
 reread:
