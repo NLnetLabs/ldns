@@ -156,8 +156,11 @@ if [ -f $tarfile ]; then
         && rm -f $tarfile) || error_cleanup "User abort."
 fi
 
-#info "Deleting the test directory"
-#rm -rf ldns-$version/test/
+info "Deleting the test directory"
+rm -rf ldns-$version/test/
+
+info "Deleting the pcat directory"
+rm -rf ldns-$version/pcat/
 
 info "Creating tar ldns-$version.tar.gz"
 tar czf ../ldns-$version.tar.gz ldns-$version || error_cleanup "Failed to create tar file."
