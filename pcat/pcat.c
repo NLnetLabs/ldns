@@ -20,12 +20,12 @@ usage(FILE *fp)
 	fprintf(fp, "  PCAP_FILE\tuse this file as source\n");
 	fprintf(fp, "  If no file is given standard input is read\n");
 	fprintf(fp, "\nOUTPUT FORMAT:\n");
-	fprintf(fp, "    Line based output format, each record consists of 5 lines:\n");
+	fprintf(fp, "    Line based output format, each record consists of 3 lines:\n");
 	fprintf(fp, "    1. xxx\t\tdecimal sequence number\n");
-	fprintf(fp, "    2. yyyy\t\t# hex chars in query\n");
-	fprintf(fp, "    3. hex dump\t\tquery in hex, network order\n");
-	fprintf(fp, "    4. zzz\t\t# hex chars in answer\n");
-	fprintf(fp, "    5. hex dump\t\tanswer in hex, network order\n");
+	fprintf(fp, "    2. hex dump\t\tquery in hex, network order\n");
+	fprintf(fp, "    3. hex dump\t\tanswer in hex, network order\n");
+	fprintf(fp, "    4. empty line\n");
+	fprintf(fp, "  The reason for 4. is that pcat-print now can be used on the output of pcat.\n");
 }
 
 void
@@ -166,21 +166,21 @@ main(int argc, char **argv)
 				LDNS_STATUS_OK) {
 			/* double check if we are dealing with correct replies 
 			 * by converting to a pkt... todo */
-			fprintf(stdout, "%zd\n%zd\n", i, ((size_t)h.caplen * 2));
+			fprintf(stdout, "%zd\n", i);
 			/* query */
 			data2hex(stdout, q, h.caplen); 
 			/* answer */
-			fprintf(stdout, "%zd\n", (size * 2));
 			data2hex(stdout, result, size);
 		} else {
 			/* todo print failure */
 			fprintf(stderr, "Failure to send packet\n");
-			fprintf(stdout, "%zd\n%zd\n", i, ((size_t)h.caplen * 2));
+			fprintf(stdout, "%zd\n", i);
 			/* query */
 			data2hex(stdout, q, h.caplen); 
 			/* answer, thus empty */
-			fprintf(stdout, "0\n\n");
+			fprintf(stdout, "\n");
 		}
+		fputs("\n", stdout);
 		ldns_buffer_clear(qpkt);
 		i++;
 	}

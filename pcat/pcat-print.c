@@ -71,7 +71,7 @@ main(int argc, char **argv)
 	} 
 
 	while((read = getline(&line, &len, diff)) != -1) {
-		if (read < 1 || read > LDNS_MAX_PACKETLEN) {
+		if (read < 2 || read > LDNS_MAX_PACKETLEN) {
 			fprintf(stderr, "Under- or overflow - skipping line %zd\n", i);
 			i++;
 			continue;
