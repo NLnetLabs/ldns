@@ -1,0 +1,59 @@
+'\" t
+.TH PCAT 1 "08 Mar 2006" "pcat utils"
+.SH NAME
+pcat \- re-send a pcap trace to a nameserver
+.SH SYNOPSIS
+.B pcat
+[
+.IR \-a
+IP
+]
+[
+.IR \-p
+PORT
+]
+.IR PCAP_STRACE
+
+.SH DESCRIPTION
+\fpcat\fR reads in a pcap trace file and re-sends the packet's payload 
+to a nameserver. It prints each query and the reply to standard output
+is a hexadecimal format.
+.PP
+If no pcap file is given, standard input is read.
+
+.SH OPTIONS
+.TP
+.B \-a IP
+Use IP as address to send the queries to.
+.TP
+.B \-p PORT
+Use PORT as port number.
+
+.SH OUTPUT FORMAT
+The output of \fBpcat\fR consists "records". Each record has four lines:
+.PP
+    1. xxx         - (decimal) sequence number
+    2. hex dump    - query in hex, network order
+    3. hex dump    - answer in hex, network order
+    4. empy line  
+
+The reason for the fourth line is that \fBpcat-print\fR can now parse
+both \fBpcat\fRs and \fBpcat-diff\fRs output.
+.PP
+This format is dubbed: \fBpcat\fR.
+
+.SH ALSO SEE
+Also see pcat-print(1) and pcat-diff(1).
+
+.SH AUTHOR
+Written by Miek Gieben for NLnet Labs.
+
+.SH REPORTING BUGS
+Report bugs to <miek@nlnetlabs.nl>. 
+
+.SH COPYRIGHT
+Copyright (C) 2005, 2006 NLnet Labs. This is free software. There is NO
+warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR
+PURPOSE.
+.PP
+Licensed under the GPL. 

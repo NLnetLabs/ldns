@@ -26,9 +26,9 @@ usage(FILE *fp)
         fprintf(fp, "    ==============\n");
         fprintf(fp, "    query packet\n");
         fprintf(fp, "    ==============\n");
-        fprintf(fp, "    first answer/qeury packet\n");
+        fprintf(fp, "    first answer/query packet\n");
         fprintf(fp, "    ==============\n");
-        fprintf(fp, "    second answer/qeury packet\n");
+        fprintf(fp, "    second answer/query packet\n");
         fprintf(fp, "    ==============\n");
 }
 
