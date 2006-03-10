@@ -27,13 +27,13 @@ usage(FILE *fp)
 	fprintf(fp, "There are no options, is FILE2 is not given, standard input is read\n");
         fprintf(fp, "\nOUTPUT FORMAT:\n");
         fprintf(fp, "    Line based output format, each record consists of 4 lines:\n");
-        fprintf(fp, "    1. xxx\t\tdecimal sequence number\n");
+        fprintf(fp, "    1. xxx:yyy\t\tdecimal sequence numbers\n");
         fprintf(fp, "    2. hex dump\t\tquery in hex, network order\n");
         fprintf(fp, "    3. hex dump\t\tanswer of FILE 1 in hex, network order\n");
         fprintf(fp, "    4. hex dump\t\tanswer of FILE 2 in hex, network order\n\n");
         fprintf(fp, " If a difference in the query is spotted the sequence nmuber\n");
         fprintf(fp, " is prefixed by a 'q: ' and the query data is printed:\n");
-        fprintf(fp, "    1. q: xxx\t\tdecimal sequence number\n");
+        fprintf(fp, "    1. q: xxx:yyy\tdecimal sequence numbers\n");
         fprintf(fp, "    2. hex dump\t\tquery in hex, network order\n");
         fprintf(fp, "    3. hex dump\t\tquery of FILE 1 in hex, network order\n");
         fprintf(fp, "    4. hex dump\t\tquery of FILE 2 in hex, network order\n");

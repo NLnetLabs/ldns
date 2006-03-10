@@ -7,10 +7,14 @@
 # seperated by comma's
 # -v reverse
 
-%numbers = ();
-$reverse = 0;
+use strict;
 
-foreach $r (@ARGV) {
+my %numbers = ();
+my $reverse = 0;
+my $i;
+my $k;
+
+foreach my $r (@ARGV) {
 
         if ($r eq "-v") {
                 $reverse = 1;
@@ -18,7 +22,7 @@ foreach $r (@ARGV) {
         }
         
         if ($r =~ /-/) {
-                ($s, $e) = split /-/, $r;
+                my ($s, $e) = split /-/, $r;
                 
                 if ($s > $e) {
                         next;
@@ -33,40 +37,25 @@ foreach $r (@ARGV) {
 }
 
 # read in the input, pcat style
+my $line; my $left; my $right;
 $i = 1;
-LINE: while(<STDIN>) {
+my $print = 0;
+while(<STDIN>) {
         if ($i % 4 == 1) {
                 ($left, $right) = split /:/, $_;
-                
-                if ($reverse == 0) {
-                        foreach $k (keys %numbers) {
-                                if ($k == $left) {
-                                        print $_;
-                                        print <STDIN>;
-                                        print <STDIN>;
-                                        print <STDIN>;
-                                        $i++;
-                                        next LINE;
-                                }
+                foreach $k (keys %numbers) {
+                        if ($k == $left) {
+                                $print = 1;
+                                last;
                         }
-                        <STDIN>;
-                        <STDIN>;
-                        <STDIN>;
-                } else {
-                        foreach $k (keys %numbers) {
-                                if ($k == $left) {
-                                        <STDIN>;
-                                        <STDIN>;
-                                        <STDIN>;
-                                        $i++;
-                                        next LINE;
-                                }
-                        }
-                        print $_;
-                        print <STDIN>;
-                        print <STDIN>;
-                        print <STDIN>;
+                        $print = 0;
                 }
+        }        
+        if ($print == 1) {
+                print $_;
+        }
+        if ($i % 4 == 0) {
+                $print = 0;
         }
         $i++;
 }
