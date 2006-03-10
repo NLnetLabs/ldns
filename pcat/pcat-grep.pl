@@ -42,20 +42,34 @@ $i = 1;
 my $print = 0;
 while(<STDIN>) {
         if ($i % 4 == 1) {
+                s/^q: //;  # kill it, if we do query diff
+                
                 ($left, $right) = split /:/, $_;
                 foreach $k (keys %numbers) {
                         if ($k == $left) {
-                                $print = 1;
+                                if ($reverse == 1) {
+                                        $print = 0;
+                                } else {
+                                        $print = 1;
+                                }
                                 last;
                         }
-                        $print = 0;
+                        if ($reverse == 1) {
+                                $print = 1;
+                        } else {
+                                $print = 0;
+                        }
                 }
         }        
         if ($print == 1) {
                 print $_;
         }
         if ($i % 4 == 0) {
-                $print = 0;
+                if ($reverse == 1) {
+                        $print = 1;
+                } else {
+                        $print = 0;
+                }
         }
         $i++;
 }
