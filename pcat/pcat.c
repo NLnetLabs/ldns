@@ -7,6 +7,8 @@
 #include <ldns/dns.h>
 #include <pcap.h>
 
+#define FAILURE 100
+
 
 #ifndef ETHERTYPE_IPV6
 #define ETHERTYPE_IPV6 	0x86dd
@@ -91,6 +93,7 @@ main(int argc, char **argv)
 	ldns_rdf *ip;
 	char *ip_str;
 	int c;
+	size_t failure;
 
 	uint8_t *result;
 	uint16_t port;
@@ -106,6 +109,7 @@ main(int argc, char **argv)
 	port = 0;
 	ip = NULL;
 	ip_str = NULL;
+	failure = 0;
 
 	while ((c = getopt(argc, argv, "ha:p:")) != -1) {
 		switch(c) {
@@ -182,6 +186,7 @@ main(int argc, char **argv)
 			data2hex(stdout, result, size);
 		} else {
 			/* todo print failure */
+			failure++;
 			fprintf(stderr, "Failure to send packet\n");
 			fprintf(stdout, "%zd\n", i);
 			/* query */
@@ -192,6 +197,10 @@ main(int argc, char **argv)
 		fputs("\n", stdout);
 		ldns_buffer_clear(qpkt);
 		i++;
+		if (failure > FAILURE) {
+			fprintf(stderr, "More then 100 failures, bailing out\n");
+			exit(EXIT_FAILURE);
+		}
 	}
 	pcap_close(p);
 	return 0;
