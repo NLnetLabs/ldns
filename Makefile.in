@@ -76,7 +76,11 @@ LINK_LIB	= $(LIBTOOL) --mode=link $(CC) $(CFLAGS) $(LDFLAGS) -release $(VERSION)
 .PHONY: install-h uninstall-h install-lib uninstall-lib 
 .PHONY: confdrill tools-drill
 
-all:		lib
+all:		lib compiletest
+
+compiletest:
+		gcc $(srcdir)/compiletest.c -Iinclude .libs/libldns.a -lldns -o compiletest
+		rm compiletest
 
 ./drill/Makefile:
 		( $(INSTALL) -d drill ; cd drill ; ../$(srcdir)/drill/configure --prefix=$(prefix) --bindir=$(bindir) --mandir=$(mandir) LDFLAGS="-L../.libs" CPPFLAGS="-I.. -I../..")
