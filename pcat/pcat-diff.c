@@ -8,6 +8,7 @@
 #define QDATA    2
 #define ADATA    3
 #define EMPTY    0
+#define LINES    4
 
 #ifndef HAVE_GETDELIM
 ssize_t getdelim(char **lineptr, size_t *n, int delim, FILE *stream);
@@ -43,23 +44,15 @@ usage(FILE *fp)
 void
 compare(struct dns_info *d1, struct dns_info *d2)
 {
-	int diff = 0;
-
-	/* only complain if the question is the same */	
-	if (!strcmp(d1->qdata, d2->qdata)) {
-		/* query is the same */
-		if (strcmp(d1->adata, d2->adata))
-			diff = 1;
-
-		if (diff == 1) {
-			fprintf(stdout, "%zd:%zd\n%s\n%s\n%s\n", d1->seq, d2->seq, d1->qdata,
-					d1->adata, d2->adata);
-		}
-	} else {
+	if (strcmp(d1->qdata, d2->qdata) != 0) {
 		fprintf(stderr, "Query differs!\n");
 		fprintf(stdout, "q: %zd:%zd\n%s\n%s\n%s\n", d1->seq, d2->seq, d1->qdata,
 				d1->qdata, d2->qdata);
-
+	} else {
+		if (strcmp(d1->adata, d2->adata) != 0) {
+			fprintf(stdout, "%zd:%zd\n%s\n%s\n%s\n", d1->seq, d2->seq, d1->qdata,
+					d1->adata, d2->adata);
+		}
 	}
 }
 
@@ -126,7 +119,7 @@ reread:
 	if (read2 > 0)
 		line2[read2 - 1] = '\0';
 
-	switch(i % 5) {
+	switch(i % LINES) {
 		case SEQUENCE:
 			d1.seq = atoi(line1);
 			d2.seq = atoi(line2);

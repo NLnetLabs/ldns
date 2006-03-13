@@ -8,6 +8,7 @@
 #define QUERY    2
 #define ANSWER1  3
 #define ANSWER2  0
+#define LINES    4
 
 #ifndef HAVE_GETDELIM
 ssize_t getdelim(char **lineptr, size_t *n, int delim, FILE *stream);
@@ -83,7 +84,7 @@ main(int argc, char **argv)
 		}
 		
 		line[read - 1] = '\0';
-		switch(i % 4) {
+		switch(i % LINES) {
 			case SEQUENCE:
 				printf_bar();
 				printf("Index: %s\n", line);
