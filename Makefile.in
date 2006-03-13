@@ -90,7 +90,7 @@ drill-realclean:	drill-config
 		( cd drill ; $(MAKE) -f Makefile realclean)
 
 drill-clean:	
-		( cd drill ; if [ -f Makefile ] ; then $(MAKE) -f Makefile clean ; fi ;)
+		( if [ -f drill/Makefile ] ; then cd drill ; $(MAKE) -f Makefile clean ; fi ;)
 
 drill-confclean:
 		( cd drill ; if [ -f Makefile ] ; then $(MAKE) -f Makefile confclean ; fi ;)
