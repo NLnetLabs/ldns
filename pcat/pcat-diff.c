@@ -10,6 +10,10 @@
 #define ASIZE 	 4
 #define ADATA    0
 
+#ifndef HAVE_GETDELIM
+ssize_t getdelim(char **lineptr, size_t *n, int delim, FILE *stream);
+#endif
+
 struct dns_info
 {
 	size_t seq;      /* seq number */

@@ -1,7 +1,12 @@
+#ifdef HAVE_GETDELIM
+#define _GNU_SOURCE
+#endif
+
 #include "config.h"
 
 #include <ldns/dns.h>
 #include <pcap.h>
+
 
 #ifndef ETHERTYPE_IPV6
 #define ETHERTYPE_IPV6 	0x86dd
