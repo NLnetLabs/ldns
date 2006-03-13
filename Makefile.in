@@ -98,12 +98,15 @@ drill-confclean:
 drill-install:	drill
 		( cd drill ; $(MAKE) -f Makefile install)
 
-lib:		$(LIBDNS_OBJECTS) b64_pton$U.o b64_ntop$U.o b32_pton$U.o b32_ntop$U.o
-		$(LINK_LIB) -o libldns.la $(LIBDNS_LOBJECTS) b64_pton$U.lo b64_ntop$U.lo b32_pton$u.lo b32_ntop$U.lo \
+lib:		$(LIBDNS_OBJECTS) b64_pton$U.o b64_ntop$U.o
+		$(LINK_LIB) -o libldns.la $(LIBDNS_LOBJECTS) b64_pton$U.lo b64_ntop$U.lo \
 		-rpath $(libdir)/lib
 		if [ ! -d include ] ; then mkdir include ; fi ;
 		if [ ! -d include/ldns ] ; then ln -sf ../ldns ./include/ldns ; fi ;
 		if [ ! -d lib ] ; then ln -s .libs lib ; fi ;		
+		for i in $(LIBDNS_HEADERS); do \
+			MVPROG=/bin/cp $(INSTALL) -m 644 $$i ./include/ldns/; done
+
 
 doc:		$(srcdir)/doc/function_manpages 
 		$(INSTALL) -d doc
@@ -209,12 +212,6 @@ b64_pton$U.o:	$(srcdir)/compat/b64_pton.c
 
 b64_ntop$U.o:	$(srcdir)/compat/b64_ntop.c
 	$(COMP_LIB) -c $(srcdir)/compat/b64_ntop.c -o $@
-
-b32_pton$U.o:	$(srcdir)/compat/b32_pton.c
-	$(COMP_LIB) -c $(srcdir)/compat/b32_pton.c -o $@
-
-b32_ntop$U.o:	$(srcdir)/compat/b32_ntop.c
-	$(COMP_LIB) -c $(srcdir)/compat/b32_ntop.c -o $@
 
 malloc$U.o:	$(srcdir)/compat/malloc.c
 	$(COMP_LIB) -c $(srcdir)/compat/malloc.c -o $@
