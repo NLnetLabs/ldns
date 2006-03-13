@@ -9,6 +9,10 @@
 #define ANSWER1  3
 #define ANSWER2  0
 
+#ifndef HAVE_GETDELIM
+ssize_t getdelim(char **lineptr, size_t *n, int delim, FILE *stream);
+#endif
+
 void
 usage(FILE *fp)
 {
@@ -70,7 +74,7 @@ main(int argc, char **argv)
 		}
 	} 
 
-	while((read = getline(&line, &len, diff)) != -1) {
+	while((read = getdelim(&line, &len, '\n', diff)) != -1) {
 		if (read < 2 || read > LDNS_MAX_PACKETLEN) {
 			fprintf(stderr, "Under- or overflow - skipping line %zd\n", i);
 			i++;

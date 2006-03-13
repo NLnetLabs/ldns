@@ -119,8 +119,8 @@ main(int argc, char **argv)
 	i = 1;
 
 reread:
-	read1 = getline(&line1, &len1, trace1);
-	read2 = getline(&line2, &len2, trace2);
+	read1 = getdelim(&line1, &len1, '\n', trace1);
+	read2 = getdelim(&line2, &len2, '\n', trace2);
 	if (read1 == -1 || read2 == -1) {
 		fclose(trace1); fclose(trace2);
 		exit(EXIT_SUCCESS);

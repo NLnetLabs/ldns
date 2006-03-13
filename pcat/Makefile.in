@@ -28,17 +28,18 @@ all:	p
 
 p: 	pcat pcat-diff pcat-print
 
-pcat: 		pcat.o
+pcat: 		pcat.o getdelim.o
 		$(LINK) -o $@ $+
 
-pcat-diff: 	pcat-diff.o
+pcat-diff: 	pcat-diff.o getdelim.o
 		$(LINK) -o $@ $+
 
-pcat-print: 	pcat-print.o
+pcat-print: 	pcat-print.o getdelim.o
 		$(LINK) -o $@ $+
 
 clean:
 	rm -f pcat pcat-diff pcat-print
+	rm -f pcat.o pcat-diff.o pcat-print.o
 
 realclean: 	clean
 		rm -f configure config.h config.log config.status

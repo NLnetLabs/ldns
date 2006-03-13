@@ -8,6 +8,10 @@
 #endif
 #define DNS_UDP_OFFSET 	42
 
+#ifndef HAVE_GETDELIM
+ssize_t getdelim(char **lineptr, size_t *n, int delim, FILE *stream);
+#endif
+
 /* output: see usage() */
 
 void
