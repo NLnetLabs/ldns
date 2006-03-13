@@ -5,10 +5,9 @@
 #include <pcap.h>
 
 #define SEQUENCE 1
-#define QSIZE    2
-#define QDATA    3
-#define ASIZE 	 4
-#define ADATA    0
+#define QDATA    2
+#define ADATA    3
+#define EMPTY    0
 
 #ifndef HAVE_GETDELIM
 ssize_t getdelim(char **lineptr, size_t *n, int delim, FILE *stream);
@@ -17,8 +16,6 @@ ssize_t getdelim(char **lineptr, size_t *n, int delim, FILE *stream);
 struct dns_info
 {
 	size_t seq;      /* seq number */
-	size_t qsize;    /* query size */
-	size_t asize;    /* answer size */
 	char *qdata;     /* query data in hex */
 	char *adata;     /* answer data in hex */
 };
@@ -49,15 +46,10 @@ compare(struct dns_info *d1, struct dns_info *d2)
 	int diff = 0;
 
 	/* only complain if the question is the same */	
-	if (d1->qsize == d2->qsize &&
-			!strcmp(d1->qdata, d2->qdata)) {
+	if (!strcmp(d1->qdata, d2->qdata)) {
 		/* query is the same */
-		if (d1->asize != d1->asize) {
+		if (strcmp(d1->adata, d2->adata))
 			diff = 1;
-		} else {
-			if (strcmp(d1->adata, d2->adata))
-				diff = 1;
-		}
 
 		if (diff == 1) {
 			fprintf(stdout, "%zd:%zd\n%s\n%s\n%s\n", d1->seq, d2->seq, d1->qdata,
@@ -139,21 +131,15 @@ reread:
 			d1.seq = atoi(line1);
 			d2.seq = atoi(line2);
 			break;
-		case QSIZE:
-			d1.qsize = atoi(line1);
-			d2.qsize = atoi(line2);
-			break;
 		case QDATA:
 			d1.qdata = strdup(line1);
 			d2.qdata = strdup(line2);
 			break;
-		case ASIZE:
-			d1.asize = atoi(line1);
-			d2.asize = atoi(line2);
-			break;
 		case ADATA:
 			d1.adata = strdup(line1);
 			d2.adata = strdup(line2);
+			break;
+		case EMPTY:
 			/* we now should have  */
 			compare(&d1, &d2);
 			free(d1.adata);

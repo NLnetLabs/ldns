@@ -55,6 +55,7 @@ main(int argc, char **argv)
 
 	i = 1;
 	len = 0;
+	line = NULL;
 
 	/* -h option */
 	if (argc > 1) {
