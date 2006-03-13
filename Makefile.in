@@ -76,6 +76,10 @@ LINK_LIB	= $(LIBTOOL) --mode=link $(CC) $(CFLAGS) $(LDFLAGS) -release $(VERSION)
 .PHONY: install-h uninstall-h install-lib uninstall-lib 
 .PHONY: confdrill tools-drill
 
+compiletest:	all
+		gcc $(srcdir)/compiletest.c -Iinclude .libs/libldns.a -lldns -o compiletest
+		rm compiletest
+
 all:		lib
 
 ./drill/Makefile:
@@ -90,7 +94,7 @@ drill-realclean:	drill-config
 		( cd drill ; $(MAKE) -f Makefile realclean)
 
 drill-clean:	
-		( cd drill ; if [ -f Makefile ] ; then $(MAKE) -f Makefile clean ; fi ;)
+		( if [ -f drill/Makefile ] ; then cd drill ; $(MAKE) -f Makefile clean ; fi ;)
 
 drill-confclean:
 		( cd drill ; if [ -f Makefile ] ; then $(MAKE) -f Makefile confclean ; fi ;)
@@ -98,8 +102,8 @@ drill-confclean:
 drill-install:	drill
 		( cd drill ; $(MAKE) -f Makefile install)
 
-lib:		$(LIBDNS_OBJECTS) b64_pton$U.o b64_ntop$U.o
-		$(LINK_LIB) -o libldns.la $(LIBDNS_LOBJECTS) b64_pton$U.lo b64_ntop$U.lo \
+lib:		$(LIBDNS_OBJECTS) b64_pton$U.o b64_ntop$U.o b32_pton$U.o b32_ntop$U.o
+		$(LINK_LIB) -o libldns.la $(LIBDNS_LOBJECTS) b64_pton$U.lo b64_ntop$U.lo b32_pton$U.lo b32_ntop$U.lo \
 		-rpath $(libdir)/lib
 		if [ ! -d include ] ; then mkdir include ; fi ;
 		if [ ! -d include/ldns ] ; then ln -sf ../ldns ./include/ldns ; fi ;
@@ -212,6 +216,12 @@ b64_pton$U.o:	$(srcdir)/compat/b64_pton.c
 
 b64_ntop$U.o:	$(srcdir)/compat/b64_ntop.c
 	$(COMP_LIB) -c $(srcdir)/compat/b64_ntop.c -o $@
+
+b32_pton$U.o:	$(srcdir)/compat/b32_pton.c
+	$(COMP_LIB) -c $(srcdir)/compat/b32_pton.c -o $@
+
+b32_ntop$U.o:	$(srcdir)/compat/b32_ntop.c
+	$(COMP_LIB) -c $(srcdir)/compat/b32_ntop.c -o $@
 
 malloc$U.o:	$(srcdir)/compat/malloc.c
 	$(COMP_LIB) -c $(srcdir)/compat/malloc.c -o $@
