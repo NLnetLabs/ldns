@@ -1176,6 +1176,10 @@ ldns_create_nsec3(ldns_rdf *cur_owner,
 	
 	ldns_status status;
 	
+        /*
+        printf("HASH FOR: ");
+        ldns_rdf_print(stdout, cur_owner);
+        */
 	/* prepare the owner name according to the draft section bla */
 	orig_owner_str = ldns_rdf2str(cur_owner);
 	
@@ -1202,10 +1206,10 @@ ldns_create_nsec3(ldns_rdf *cur_owner,
 	}
 	nsec3_vars_rdf = ldns_rdf_new_frm_data(LDNS_RDF_TYPE_NSEC3_VARS, 5 + salt_length, nsec3_vars_data);
 
-	hashed_owner_str_len = salt_length + strlen(orig_owner_str);
+	hashed_owner_str_len = salt_length + ldns_rdf_size(cur_owner);
 	hashed_owner_str = LDNS_XMALLOC(char, hashed_owner_str_len);
-	memcpy(hashed_owner_str, orig_owner_str, strlen(orig_owner_str));
-	memcpy(hashed_owner_str + strlen(orig_owner_str), salt, salt_length);
+        memcpy(hashed_owner_str, ldns_rdf_data(cur_owner), ldns_rdf_size(cur_owner));
+	memcpy(hashed_owner_str + ldns_rdf_size(cur_owner), salt, salt_length);
 
 	for (cur_it = iterations; cur_it > 0; cur_it--) {
 		hash = (char *) SHA1((unsigned char *) hashed_owner_str, hashed_owner_str_len, NULL);
@@ -1223,8 +1227,16 @@ ldns_create_nsec3(ldns_rdf *cur_owner,
 	}
 
 	hashed_owner_str = hash;
+	/*
+	printf("\n");
+	for (i=0; i<hashed_owner_str_len; i++) {
+		printf("%d ", hashed_owner_str[i]);
+	}
+	printf("\n");
+	*/
 	hashed_owner_b32 = LDNS_XMALLOC(char, b32_ntop_calculate_size(hashed_owner_str_len));
 	i = b32_ntop_extended_hex((uint8_t *) hashed_owner_str, hashed_owner_str_len, hashed_owner_b32, b32_ntop_calculate_size(hashed_owner_str_len));
+        hashed_owner_b32[b32_ntop_calculate_size(hashed_owner_str_len)] = '\0';
 	status = ldns_str2rdf_dname(&hashed_owner, hashed_owner_b32);
 	if (status != LDNS_STATUS_OK) {
 		fprintf(stderr, "Error creating rdf from %s\n", hashed_owner_b32);
@@ -1623,6 +1635,12 @@ ldns_zone_sign_nsec3(ldns_zone *zone, ldns_key_list *key_list, uint8_t algorithm
 								iterations,
 								salt_length,
 								salt);
+					/*
+					printf("Created NSEC3 for: ");
+					ldns_rdf_print(stdout, cur_dname);
+					printf(":\n");
+					ldns_rr_print(stdout, nsec);
+					*/
 					ldns_rr_set_ttl(nsec, ldns_rdf2native_int32(ldns_rr_rdf(ldns_zone_soa(zone), 6)));
 					ldns_rr_list_push_rr(nsec3_rrs, nsec);
 					/*start_dname = next_dname;*/
@@ -1644,6 +1662,12 @@ ldns_zone_sign_nsec3(ldns_zone *zone, ldns_key_list *key_list, uint8_t algorithm
 	ldns_rr_list_free(orig_zone_rrs);
 	ldns_rr_set_ttl(nsec, ldns_rdf2native_int32(ldns_rr_rdf(ldns_zone_soa(zone), 6)));
 
+	/*
+	printf("Created NSEC3 for: ");
+	ldns_rdf_print(stdout, cur_dname);
+	printf(":\n");
+	ldns_rr_print(stdout, nsec);
+	*/
 	/* sort nsec3s separately, set nexts and append to signed zone */
 	ldns_rr_list_sort_nsec3(nsec3_rrs);
 	for (i = 0; i < ldns_rr_list_rr_count(nsec3_rrs); i++) {
