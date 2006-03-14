@@ -3,7 +3,7 @@
 # To extract the files from this archive, save it to some FILE, remove
 # everything before the `!/bin/sh' line above, then type `sh FILE'.
 #
-# Made on 2006-03-14 15:35 CET by <miekg@floep>.
+# Made on 2006-03-14 15:49 CET by <miekg@floep>.
 # Source directory was `/home/miekg/svn/libdns/trunk/test/codingstyle.dir'.
 #
 # Existing files will *not* be overwritten unless `-c' is specified.
@@ -11,7 +11,7 @@
 # This shar contains:
 # length mode       name
 # ------ ---------- ------------------------------------------
-#    321 -rw------- codingstyle.dsc
+#    270 -rw------- codingstyle.dsc
 #     36 -rw------- codingstyle.help
 #    874 -rw------- codingstyle.test
 #
@@ -63,7 +63,7 @@ else
 fi
 rm -f 200112312359.59 123123592001.59 123123592001.5 1231235901 $$.touch
 #
-if mkdir _sh13690; then
+if mkdir _sh20348; then
   $echo 'x -' 'creating lock directory'
 else
   $echo 'failed to create lock directory'
@@ -77,7 +77,7 @@ else
   sed 's/^X//' << 'SHAR_EOF' > 'codingstyle.dsc' &&
 BaseName: codingstyle
 Version: 1.0
-Description: Check NSD CodingStyle: -l90 -nut -ce -nfca -nlp -ncdb -nsai -br -ts08 -i8
+Description: Check LDNS CodingStyle
 CreationDate: Tue Mar 14 12:58:28 CET 2006
 Maintainer: Miek Gieben
 Category: 
@@ -92,19 +92,19 @@ AuxFiles:
 Passed:
 Failure:
 SHAR_EOF
-  (set 20 06 03 14 12 58 58 'codingstyle.dsc'; eval "$shar_touch") &&
+  (set 20 06 03 14 15 49 44 'codingstyle.dsc'; eval "$shar_touch") &&
   chmod 0600 'codingstyle.dsc' ||
   $echo 'restore of' 'codingstyle.dsc' 'failed'
   if ( md5sum --help 2>&1 | grep 'sage: md5sum \[' ) >/dev/null 2>&1 \
   && ( md5sum --version 2>&1 | grep -v 'textutils 1.12' ) >/dev/null; then
     md5sum -c << SHAR_EOF >/dev/null 2>&1 \
     || $echo 'codingstyle.dsc:' 'MD5 check failed'
-81b3d2cd3741a3687f495d5a49f5a009  codingstyle.dsc
+01c1334431a5faea8cf53a6f97b8989e  codingstyle.dsc
 SHAR_EOF
   else
     shar_count="`LC_ALL= LC_CTYPE= LANG= wc -c < 'codingstyle.dsc'`"
-    test 321 -eq "$shar_count" ||
-    $echo 'codingstyle.dsc:' 'original size' '321,' 'current size' "$shar_count!"
+    test 270 -eq "$shar_count" ||
+    $echo 'codingstyle.dsc:' 'original size' '270,' 'current size' "$shar_count!"
   fi
 fi
 # ============= codingstyle.help ==============
@@ -183,5 +183,5 @@ SHAR_EOF
     $echo 'codingstyle.test:' 'original size' '874,' 'current size' "$shar_count!"
   fi
 fi
-rm -fr _sh13690
+rm -fr _sh20348
 exit 0
