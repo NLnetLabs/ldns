@@ -53,8 +53,7 @@ ldns_zone_push_rr_list(ldns_zone *z, ldns_rr_list *list)
 bool
 ldns_zone_push_rr(ldns_zone *z, ldns_rr *rr)
 {
-	return ldns_rr_list_push_rr(
-			ldns_zone_rrs(z), rr);
+	return ldns_rr_list_push_rr( ldns_zone_rrs(z), rr);
 }
 
 /* this will be an EXPENSIVE op with our zone structure */
@@ -114,8 +113,7 @@ ldns_zone_glue_rr_list(const ldns_zone *z)
 			dname_a = ldns_rr_owner(a);
 			
 			if (ldns_dname_is_subdomain(dname_a, ns_owner) &&
-			    ldns_rdf_compare(dname_ns, dname_a) == 0
-			) {
+			    ldns_rdf_compare(dname_ns, dname_a) == 0) {
 				/* GLUE! */
 				ldns_rr_list_push_rr(glue, a);
 				break;
@@ -154,7 +152,8 @@ ldns_zone_new_frm_fp(FILE *fp, ldns_rdf *origin, uint16_t ttl, ldns_rr_class c)
 }
 
 ldns_zone *
-ldns_zone_new_frm_fp_l(FILE *fp, ldns_rdf *origin, uint16_t ttl, ldns_rr_class c, int *line_nr)
+ldns_zone_new_frm_fp_l(FILE *fp, ldns_rdf *origin, uint16_t ttl, ldns_rr_class c, 
+		int *line_nr)
 {
 	ldns_zone *newzone;
 	ldns_rr *rr;
@@ -261,13 +260,15 @@ ldns_zone_ixfr_del_add(ldns_zone *z, ldns_rr_list *del, ldns_rr_list *add)
 #endif
 
 void
-ldns_zone_free(ldns_zone *zone) {
+ldns_zone_free(ldns_zone *zone) 
+{
 	ldns_rr_list_free(zone->_rrs);
 	LDNS_FREE(zone);
 }
 
 void
-ldns_zone_deep_free(ldns_zone *zone) {
+ldns_zone_deep_free(ldns_zone *zone) 
+{
 	ldns_rr_free(zone->_soa);
 	ldns_rr_list_deep_free(zone->_rrs);
 	LDNS_FREE(zone);
