@@ -16,6 +16,7 @@ ldns_buffer *
 ldns_buffer_new(size_t capacity)
 {
 	ldns_buffer *buffer = LDNS_MALLOC(ldns_buffer);
+
 	if (!buffer) {
 		return NULL;
 	}

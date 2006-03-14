@@ -75,7 +75,8 @@ ldns_calc_keytag(const ldns_rr *key)
 }
 
 ldns_status
-ldns_verify(ldns_rr_list *rrset, ldns_rr_list *rrsig, ldns_rr_list *keys, ldns_rr_list *good_keys)
+ldns_verify(ldns_rr_list *rrset, ldns_rr_list *rrsig, ldns_rr_list *keys, 
+		ldns_rr_list *good_keys)
 {
 	uint16_t i;
 	bool valid;
@@ -102,8 +103,7 @@ ldns_verify(ldns_rr_list *rrset, ldns_rr_list *rrsig, ldns_rr_list *keys, ldns_r
 
 			if (ldns_verify_rrsig_keylist(rrset,
 					ldns_rr_list_rr(rrsig, i),
-					keys,
-					good_keys) == LDNS_STATUS_OK) {
+					keys, good_keys) == LDNS_STATUS_OK) {
 				verify_result = LDNS_STATUS_OK;
 			}
 		}
@@ -112,25 +112,20 @@ ldns_verify(ldns_rr_list *rrset, ldns_rr_list *rrsig, ldns_rr_list *keys, ldns_r
 }
 
 ldns_status
-ldns_verify_rrsig_buffers(ldns_buffer *rawsig_buf,
-                          ldns_buffer *verify_buf,
-                          ldns_buffer *key_buf,
-                          uint8_t algo
+ldns_verify_rrsig_buffers(
+		ldns_buffer *rawsig_buf, ldns_buffer *verify_buf, ldns_buffer *key_buf, uint8_t algo
                          )
 {
 		/* check for right key */
 		switch(algo) {
 			case LDNS_DSA:
-				return ldns_verify_rrsig_dsa(
-						rawsig_buf, verify_buf, key_buf);
+				return ldns_verify_rrsig_dsa(rawsig_buf, verify_buf, key_buf);
 				break;
 			case LDNS_RSASHA1:
-				return ldns_verify_rrsig_rsasha1(
-						rawsig_buf, verify_buf, key_buf);
+				return ldns_verify_rrsig_rsasha1(rawsig_buf, verify_buf, key_buf);
 				break;
 			case LDNS_RSAMD5:
-				return ldns_verify_rrsig_rsamd5(
-						rawsig_buf, verify_buf, key_buf);
+				return ldns_verify_rrsig_rsamd5(rawsig_buf, verify_buf, key_buf);
 				break;
 			default:
 				/* do you know this alg?! */
@@ -149,7 +144,8 @@ ldns_verify_rrsig_buffers(ldns_buffer *rawsig_buf,
  * - verify the rrset+sig, with the b64 data and the b64 key data
  */
 ldns_status
-ldns_verify_rrsig_keylist(ldns_rr_list *rrset, ldns_rr *rrsig, ldns_rr_list *keys, ldns_rr_list *good_keys)
+ldns_verify_rrsig_keylist(ldns_rr_list *rrset, ldns_rr *rrsig, ldns_rr_list *keys, 
+		ldns_rr_list *good_keys)
 {
 	ldns_buffer *rawsig_buf;
 	ldns_buffer *verify_buf;
@@ -726,15 +722,6 @@ ldns_key_rr2ds(const ldns_rr *key, ldns_hash h)
 
 		break;
 		case LDNS_SHA256:
-		/* XXX to SHA265 
-		(void) SHA1((unsigned char *) ldns_buffer_begin(data_buf),
-			    ldns_buffer_position(data_buf),
-			    (unsigned char*) digest);
-
-		tmp = ldns_rdf_new_frm_data(LDNS_RDF_TYPE_HEX, SHA_DIGEST_LENGTH,
-				digest);
-		ldns_rr_push_rdf(ds, tmp);
-		*/
 		break;
 	}
 
@@ -769,8 +756,6 @@ ldns_sign_public(ldns_rr_list *rrset, ldns_key_list *keys)
 
 	key_count = 0;
 	signatures = ldns_rr_list_new();
-
-	/*ldns_rr_list_print(stdout, rrset);*/
 
 	/* prepare a signature and add all the know data
 	 * prepare the rrset. Sign this together.  */
@@ -813,16 +798,8 @@ ldns_sign_public(ldns_rr_list *rrset, ldns_key_list *keys)
 			current_sig = ldns_rr_new_frm_type(LDNS_RR_TYPE_RRSIG);
 			
 			/* set the type on the new signature */
-			/*orig_ttl = ldns_key_origttl(current_key);*/
 			orig_ttl = ldns_rr_ttl(ldns_rr_list_rr(rrset, 0));
 
-			/* set the ttl from the priv key on the rrset */
-			/*
-			for (i = 0; i < ldns_rr_list_rr_count(rrset); i++) {
-				ldns_rr_set_ttl(
-						ldns_rr_list_rr(rrset_clone, i), orig_ttl);
-			}
-			*/
 			ldns_rr_set_ttl(current_sig, orig_ttl);
 			ldns_rr_set_owner(current_sig, 
 					ldns_rdf_clone(ldns_rr_owner(ldns_rr_list_rr(rrset_clone, 0))));
@@ -1307,16 +1284,6 @@ ldns_zone_sign(ldns_zone *zone, ldns_key_list *key_list)
 			/* if not optional it should be left out completely
 			   (for it is possible to generate bad signarures, by
 			   specifying a future inception date */
-			/*
-			result = ldns_verify(cur_rrset, cur_rrsigs, pubkeys, NULL);
-			if (result != LDNS_STATUS_OK) {
-				dprintf("%s", "Cannot verify own sig:\n");
-				dprintf("%s\n", ldns_get_errorstr_by_id(result));
-				ERR_load_crypto_strings();
-				ERR_print_errors_fp(stdout);
-				exit(result);
-			}
-			*/
 			
 			ldns_zone_push_rr_list(signed_zone, cur_rrset);
 			ldns_zone_push_rr_list(signed_zone, cur_rrsigs);
