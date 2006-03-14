@@ -30,7 +30,9 @@ ldns_get_rr_list_addr_by_name(ldns_resolver *res, ldns_rdf *name, ldns_rr_class 
 	size_t i;
 	uint8_t ip6;
 
-	a = NULL; aaaa = NULL; result = NULL;
+	a = NULL; 
+	aaaa = NULL; 
+	result = NULL;
 
 	if (!res) {
 		return NULL;
@@ -46,11 +48,14 @@ ldns_get_rr_list_addr_by_name(ldns_resolver *res, ldns_rdf *name, ldns_rr_class 
 	
 	hostsfilenames = ldns_get_rr_list_hosts_frm_file(NULL);
 	for (i = 0; i < ldns_rr_list_rr_count(hostsfilenames); i++) {
-		if (ldns_rdf_compare(name, ldns_rr_owner(ldns_rr_list_rr(hostsfilenames, i))) == 0) {
+		if (ldns_rdf_compare(name, 
+					ldns_rr_owner(ldns_rr_list_rr(hostsfilenames, 
+							i))) == 0) {
 			if (!result) {
 				result = ldns_rr_list_new();
 			}
-			ldns_rr_list_push_rr(result, ldns_rr_clone(ldns_rr_list_rr(hostsfilenames, i)));
+			ldns_rr_list_push_rr(result, 
+					ldns_rr_clone(ldns_rr_list_rr(hostsfilenames, i)));
 		}
 	}
 
@@ -64,8 +69,8 @@ ldns_get_rr_list_addr_by_name(ldns_resolver *res, ldns_rdf *name, ldns_rr_class 
 	pkt = ldns_resolver_query(res, name, LDNS_RR_TYPE_AAAA, c, flags | LDNS_RD);
 	if (pkt) {
 		/* extract the data we need */
-		aaaa = ldns_pkt_rr_list_by_type(pkt, 
-				LDNS_RR_TYPE_AAAA, LDNS_SECTION_ANSWER);
+		aaaa = ldns_pkt_rr_list_by_type(pkt, LDNS_RR_TYPE_AAAA, 
+			LDNS_SECTION_ANSWER);
 
 		/* ldns_rr_list_print(stdout, aaaa); DEBUG */
 		ldns_pkt_free(pkt);
@@ -74,8 +79,7 @@ ldns_get_rr_list_addr_by_name(ldns_resolver *res, ldns_rdf *name, ldns_rr_class 
 	pkt = ldns_resolver_query(res, name, LDNS_RR_TYPE_A, c, flags | LDNS_RD);
 	if (pkt) {
 		/* extract the data we need */
-		a = ldns_pkt_rr_list_by_type(pkt, 
-				LDNS_RR_TYPE_A, LDNS_SECTION_ANSWER);
+		a = ldns_pkt_rr_list_by_type(pkt, LDNS_RR_TYPE_A, LDNS_SECTION_ANSWER);
 		ldns_pkt_free(pkt);
 	} 
 
@@ -111,7 +115,8 @@ ldns_get_rr_list_name_by_addr(ldns_resolver *res, ldns_rdf *addr, ldns_rr_class 
 	ldns_rdf *name;
 	size_t i;
 
-	i = 0; names = NULL;
+	i = 0; 
+	names = NULL;
 
 	if (!res || !addr) {
 		return NULL;
@@ -166,9 +171,7 @@ ldns_get_rr_list_hosts_frm_fp_l(FILE *fp, int *line_nr)
 	rr = NULL;
 
 	for(i = ldns_fget_token_l(fp, line, "\n", 0, line_nr);
-			i > 0;
-			i = ldns_fget_token_l(fp, line, "\n", 0, line_nr)) 
-	{
+			i > 0; i = ldns_fget_token_l(fp, line, "\n", 0, line_nr)) {
 		/* # is comment */
 		if (line[0] == '#') {
 			continue;
@@ -179,17 +182,17 @@ ldns_get_rr_list_hosts_frm_fp_l(FILE *fp, int *line_nr)
 		ldns_buffer_new_frm_data(linebuf, line, (size_t) i);
 		for(cnt = 0, j = ldns_bget_token(linebuf, word, LDNS_PARSE_NO_NL, 0);
 				j > 0;
-				j = ldns_bget_token(linebuf, word, LDNS_PARSE_NO_NL, 0),
-				cnt++)
-		{
+				j = ldns_bget_token(linebuf, word, LDNS_PARSE_NO_NL, 0), cnt++) {
 			if (cnt == 0) {
 				/* the address */
-				if ((tmp = ldns_rdf_new_frm_str(LDNS_RDF_TYPE_AAAA, word))) {
+				if ((tmp = ldns_rdf_new_frm_str(LDNS_RDF_TYPE_AAAA, 
+								word))) {
 					/* ip6 */
 					ldns_rdf_deep_free(tmp);
 					ip6 = true;
 				} else {
-					if ((tmp = ldns_rdf_new_frm_str(LDNS_RDF_TYPE_A, word))) {
+					if ((tmp = ldns_rdf_new_frm_str(LDNS_RDF_TYPE_A, 
+									word))) {
 						/* ip4 */
 						ldns_rdf_deep_free(tmp);
 						ip6 = false;
@@ -202,9 +205,11 @@ ldns_get_rr_list_hosts_frm_fp_l(FILE *fp, int *line_nr)
 			} else {
 				/* la al la la */
 				if (ip6) {
-					snprintf(rr_str, LDNS_MAX_LINELEN, "%s IN AAAA %s", word, addr);
+					snprintf(rr_str, LDNS_MAX_LINELEN, 
+						"%s IN AAAA %s", word, addr);
 				} else {
-					snprintf(rr_str, LDNS_MAX_LINELEN, "%s IN A %s", word, addr);
+					snprintf(rr_str, LDNS_MAX_LINELEN, 
+						"%s IN A %s", word, addr);
 				}
 				rr = ldns_rr_new_frm_str(rr_str, 0, NULL, NULL);
 				if (rr) {
@@ -244,7 +249,8 @@ ldns_get_rr_list_hosts_frm_file(char *filename)
 }
 
 uint16_t
-ldns_getaddrinfo(ldns_resolver *res, ldns_rdf *node, ldns_rr_class c, ldns_rr_list **ret)
+ldns_getaddrinfo(ldns_resolver *res, ldns_rdf *node, ldns_rr_class c, 
+		ldns_rr_list **ret)
 {
 	ldns_rdf_type t;
 	uint16_t names_found;
@@ -264,15 +270,13 @@ ldns_getaddrinfo(ldns_resolver *res, ldns_rdf *node, ldns_rr_class c, ldns_rr_li
 
 	if (t == LDNS_RDF_TYPE_DNAME) {
 		/* we're asked to query for a name */
-		*ret = ldns_get_rr_list_addr_by_name(
-				r, node, c, 0);
+		*ret = ldns_get_rr_list_addr_by_name(r, node, c, 0);
 		names_found = ldns_rr_list_rr_count(*ret);
 	}
 
 	if (t == LDNS_RDF_TYPE_A || t == LDNS_RDF_TYPE_AAAA) {
 		/* an address */
-		*ret = ldns_get_rr_list_name_by_addr(
-				r, node, c, 0);
+		*ret = ldns_get_rr_list_name_by_addr(r, node, c, 0);
 		names_found = ldns_rr_list_rr_count(*ret);
 	}
 
@@ -320,8 +324,7 @@ ldns_update_send_simple_addr(const char *fqdn, const char *zone,
 	/* Create input for ldns_rr_new_frm_str() */
 	if (ipaddr) {
 		/* We're adding A or AAAA */
-		rrstrlen = strlen(fqdn) + sizeof (" IN AAAA ") +
-		    strlen(ipaddr) + 1;
+		rrstrlen = strlen(fqdn) + sizeof (" IN AAAA ") + strlen(ipaddr) + 1;
 		rrstr = (char *)malloc(rrstrlen);
 		if (!rrstr) {
 			ldns_rr_list_deep_free(up_rrlist);
@@ -353,8 +356,7 @@ ldns_update_send_simple_addr(const char *fqdn, const char *zone,
 	}
 	
 	/* Create update packet. */
-	u_pkt = ldns_update_pkt_new(zone_rdf, LDNS_RR_CLASS_IN, NULL,
-	    up_rrlist, NULL);
+	u_pkt = ldns_update_pkt_new(zone_rdf, LDNS_RR_CLASS_IN, NULL, up_rrlist, NULL);
 	zone_rdf = NULL;
 	if (!u_pkt) {
 		ldns_rr_list_deep_free(up_rrlist);
@@ -374,14 +376,13 @@ ldns_update_send_simple_addr(const char *fqdn, const char *zone,
 		goto cleanup;
 
 	if (ldns_pkt_rcode(r_pkt) != 0) {
-		ldns_lookup_table *t = 
-		    ldns_lookup_by_id(ldns_rcodes,
-			(int)ldns_pkt_rcode(r_pkt));
-		if (t)
+		ldns_lookup_table *t = ldns_lookup_by_id(ldns_rcodes,
+				(int)ldns_pkt_rcode(r_pkt));
+		if (t) {
 			dprintf(";; UPDATE response was %s\n", t->name);
-		else
-			dprintf(";; UPDATE response was (%d)\n",
-			    ldns_pkt_rcode(r_pkt));
+		} else {
+			dprintf(";; UPDATE response was (%d)\n", ldns_pkt_rcode(r_pkt));
+		}
 		status = LDNS_STATUS_ERR;
 	}
 	ldns_pkt_free(r_pkt);
@@ -437,8 +438,8 @@ ldns_print_rr_rdf(FILE *fp, ldns_rr *r, int rdfnum, ...)
 	va_list va_rdf;
 	va_start(va_rdf, rdfnum);
 
-	for(rdf = (int16_t)rdfnum; rdf != -1; rdf = (int16_t)va_arg(va_rdf, int)) {
-
+	for (rdf = (int16_t)rdfnum; rdf != -1; rdf = (int16_t)va_arg(va_rdf, int)) 
+	{
 		rd = ldns_rr_rdf(r, rdf);
 		if (!rd) {
 			continue;

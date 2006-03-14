@@ -26,7 +26,8 @@ xprintf_rdf(ldns_rdf *rd)
 	/* assume printable string */
 	fprintf(stderr, "size\t:%u\n", (unsigned int)ldns_rdf_size(rd));
 	fprintf(stderr, "type\t:%u\n", (unsigned int)ldns_rdf_get_type(rd));
-	fprintf(stderr, "data\t:[%.*s]\n", (int)ldns_rdf_size(rd), (char*)ldns_rdf_data(rd));
+	fprintf(stderr, "data\t:[%.*s]\n", (int)ldns_rdf_size(rd), 
+			(char*)ldns_rdf_data(rd));
 }
 
 void
@@ -64,6 +65,7 @@ ldns_lookup_by_id(ldns_lookup_table *table, int id)
 	}
 	return NULL;
 }
+
 int 
 ldns_get_bit(uint8_t bits[], size_t index)
 {
@@ -73,7 +75,6 @@ ldns_get_bit(uint8_t bits[], size_t index)
 	 */
 	return (int) (bits[index / 8] & (1 << (7 - index % 8)));
 }
-
 
 int 
 ldns_get_bit_r(uint8_t bits[], size_t index)
@@ -86,7 +87,8 @@ ldns_get_bit_r(uint8_t bits[], size_t index)
 }
 
 void
-ldns_set_bit(uint8_t *byte, int bit_nr, bool value) {
+ldns_set_bit(uint8_t *byte, int bit_nr, bool value) 
+{
 	if (bit_nr >= 0 && bit_nr < 8) {
 		if (value) {
 			*byte = *byte | (0x01 << bit_nr);
@@ -152,64 +154,13 @@ ldns_version(void)
 	return (char*)LDNS_VERSION;
 }
 
-/* compare according to RFC 1982 (32 bits)
- * it either return 0 meaning
- * equal
- * 0: s1 == s2
- * -1: s1 < s2
- * +1: s1 > s2
- * something else (-2 in this case) meaning undef
- */
-int
-ldns_serial(uint32_t s1, uint32_t s2)
-{
-	uint32_t power;
-
-	/* calculate  2^(SERIAL_BITS - 1) */
-	power = 1;
-	power = power << 31;
-	power = power * 2 - 1;
-
-	/* equality */
-	if (s1 == s2) {
-		return 0;
-	}
-
-	/* s1 is less than s2 */
-	/* (i1 < i2 and i2 - i1 < 2^(SERIAL_BITS - 1)) */
-	if (s1 < s2 &&
-			((s2 - s1) < power)) {
-		return -1;
-	}
-	/* i1 > i2 and i1 - i2 > 2^(SERIAL_BITS - 1)) */
-	if (s1 > s2 &&
-			((s1 - s2) > power)) {
-		return -1;
-	}
-
-	/* s1 is more than s2 */
-	/* (i1 < i2 and i2 - i1 > 2^(SERIAL_BITS - 1)) */
-	if (s1 < s2 &&
-			((s2 - s1) > power)) {
-		return +1;
-	}
-	/* (i1 > i2 and i1 - i2 < 2^(SERIAL_BITS - 1)) */
-	if (s1 > s2 &&
-			((s1 - s2) < power)) {
-		return +1;
-	}
-
-	/* unknown */
-	return -2;
-}
-
 /* Number of days per month (except for February in leap years). */
 static const int mdays[] = {
 	31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31
 };
 
-static int
-	is_leap_year(int year)
+static int 
+is_leap_year(int year)
 {
 	return year % 4 == 0 && (year % 100 != 0 || year % 400 == 0);
 }

@@ -306,7 +306,8 @@ ldns_dname_compare(const ldns_rdf *dname1, const ldns_rdf *dname2)
  * 1 = no
  */
 int
-ldns_dname_interval(const ldns_rdf *prev, const ldns_rdf *middle, const ldns_rdf *next)
+ldns_dname_interval(const ldns_rdf *prev, const ldns_rdf *middle, 
+		const ldns_rdf *next)
 {
 	int prev_check, next_check;
 

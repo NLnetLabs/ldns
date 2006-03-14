@@ -217,17 +217,6 @@ char ldns_int_to_hexdigit(int ch);
 const char * ldns_version(void);
 
 /**
- * Implements serial arith. RFC 1982
- * \param[in] s1 the first serial
- * \param[in] s2 the second serial
- * \return 0 if s1 == s2
- * \return -1 if s1 < s2
- * \return +1 if s1 > s2
- * \return -2 undef
- */
-int ldns_serial(uint32_t s1, uint32_t s2);
-
-/**
  * Convert TM to seconds since epoch (midnight, January 1st, 1970).
  * Like timegm(3), which is not always available.
  * \param[in] tm a struct tm* with the date

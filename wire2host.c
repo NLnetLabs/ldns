@@ -142,8 +142,7 @@ ldns_wire2dname(ldns_rdf **dname, const uint8_t *wire, size_t max, size_t *pos)
 #define LDNS_STATUS_CHECK_GOTO(st, label) {if (st != LDNS_STATUS_OK) { /*printf("STG %s:%d: status code %d\n", __FILE__, __LINE__, st);*/  goto label; }}
 
 ldns_status
-ldns_wire2rdf(ldns_rr *rr, const uint8_t *wire,
-              size_t max, size_t *pos)
+ldns_wire2rdf(ldns_rr *rr, const uint8_t *wire, size_t max, size_t *pos)
 {
 	size_t end;
 	size_t cur_rdf_length;
@@ -152,8 +151,7 @@ ldns_wire2rdf(ldns_rr *rr, const uint8_t *wire,
 	uint16_t rd_length;
 	ldns_rdf *cur_rdf;
 	ldns_rdf_type cur_rdf_type;
-	const ldns_rr_descriptor *descriptor = 
-	        ldns_rr_descript(ldns_rr_get_type(rr));
+	const ldns_rr_descriptor *descriptor = ldns_rr_descript(ldns_rr_get_type(rr));
 	ldns_status status;
 	
 	if (*pos + 2 > max) {
@@ -171,21 +169,18 @@ ldns_wire2rdf(ldns_rr *rr, const uint8_t *wire,
 
 
 	for (rdf_index = 0; 
-	     rdf_index < ldns_rr_descriptor_maximum(descriptor);
-	     rdf_index++) {
+	     rdf_index < ldns_rr_descriptor_maximum(descriptor); rdf_index++) {
 		if (*pos >= end) {
 	     		break;
 		}
 		cur_rdf_length = 0;
 
-		cur_rdf_type = ldns_rr_descriptor_field_type(descriptor,
-		                                             rdf_index);
+		cur_rdf_type = ldns_rr_descriptor_field_type(descriptor, rdf_index);
 		/* handle special cases immediately, set length
 		   for fixed length rdata and do them below */
 		switch (cur_rdf_type) {
 		case LDNS_RDF_TYPE_DNAME:
-			status = ldns_wire2dname(&cur_rdf, wire, max,
-						 pos);
+			status = ldns_wire2dname(&cur_rdf, wire, max, pos);
 			LDNS_STATUS_CHECK_RETURN(status);
 			break;
 		case LDNS_RDF_TYPE_CLASS:
@@ -246,9 +241,7 @@ ldns_wire2rdf(ldns_rr *rr, const uint8_t *wire,
 			}
 			memcpy(data, &wire[*pos], cur_rdf_length);
 			
-			cur_rdf = ldns_rdf_new(cur_rdf_type,
-					       cur_rdf_length,
-			                       data);
+			cur_rdf = ldns_rdf_new(cur_rdf_type, cur_rdf_length, data);
 			*pos = *pos + cur_rdf_length;
 		}	
 
@@ -310,10 +303,7 @@ status_error:
 }
 
 static ldns_status
-ldns_wire2pkt_hdr(ldns_pkt *packet,
-			const uint8_t *wire,
-			size_t max,
-			size_t *pos)
+ldns_wire2pkt_hdr(ldns_pkt *packet, const uint8_t *wire, size_t max, size_t *pos)
 {
 	if (*pos + LDNS_HEADER_SIZE > max) {
 		return LDNS_STATUS_WIRE_INCOMPLETE_HEADER;
@@ -365,8 +355,7 @@ ldns_wire2pkt(ldns_pkt **packet_p, const uint8_t *wire, size_t max)
 
 	for (i = 0; i < ldns_pkt_qdcount(packet); i++) {
 
-		status = ldns_wire2rr(&rr, wire, max, &pos,
-		                      LDNS_SECTION_QUESTION);
+		status = ldns_wire2rr(&rr, wire, max, &pos, LDNS_SECTION_QUESTION);
 		if (status == LDNS_STATUS_PACKET_OVERFLOW) {
 			status = LDNS_STATUS_WIRE_INCOMPLETE_QUESTION;
 		}
@@ -377,8 +366,7 @@ ldns_wire2pkt(ldns_pkt **packet_p, const uint8_t *wire, size_t max)
 		}
 	}
 	for (i = 0; i < ldns_pkt_ancount(packet); i++) {
-		status = ldns_wire2rr(&rr, wire, max, &pos,
-		                      LDNS_SECTION_ANSWER);
+		status = ldns_wire2rr(&rr, wire, max, &pos, LDNS_SECTION_ANSWER);
 		if (status == LDNS_STATUS_PACKET_OVERFLOW) {
 			status = LDNS_STATUS_WIRE_INCOMPLETE_ANSWER;
 		}
@@ -389,8 +377,7 @@ ldns_wire2pkt(ldns_pkt **packet_p, const uint8_t *wire, size_t max)
 		}
 	}
 	for (i = 0; i < ldns_pkt_nscount(packet); i++) {
-		status = ldns_wire2rr(&rr, wire, max, &pos,
-		                      LDNS_SECTION_AUTHORITY);
+		status = ldns_wire2rr(&rr, wire, max, &pos, LDNS_SECTION_AUTHORITY);
 		if (status == LDNS_STATUS_PACKET_OVERFLOW) {
 			status = LDNS_STATUS_WIRE_INCOMPLETE_AUTHORITY;
 		}
@@ -401,8 +388,7 @@ ldns_wire2pkt(ldns_pkt **packet_p, const uint8_t *wire, size_t max)
 		}
 	}
 	for (i = 0; i < ldns_pkt_arcount(packet); i++) {
-		status = ldns_wire2rr(&rr, wire, max, &pos,
-		                      LDNS_SECTION_ADDITIONAL);
+		status = ldns_wire2rr(&rr, wire, max, &pos, LDNS_SECTION_ADDITIONAL);
 		if (status == LDNS_STATUS_PACKET_OVERFLOW) {
 			status = LDNS_STATUS_WIRE_INCOMPLETE_ADDITIONAL;
 		}

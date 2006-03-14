@@ -81,8 +81,7 @@ ldns_tsig_prepare_pkt_wire(uint8_t *wire, size_t wire_len, size_t *result_len)
 	pos = LDNS_HEADER_SIZE;
 	
 	for (i = 0; i < qd_count; i++) {
-		status = ldns_wire2rr(&rr, wire, wire_len, &pos,
-		                      LDNS_SECTION_QUESTION);
+		status = ldns_wire2rr(&rr, wire, wire_len, &pos, LDNS_SECTION_QUESTION);
 		if (status != LDNS_STATUS_OK) {
 			return NULL;
 		}
@@ -90,8 +89,7 @@ ldns_tsig_prepare_pkt_wire(uint8_t *wire, size_t wire_len, size_t *result_len)
 	}
 	
 	for (i = 0; i < an_count; i++) {
-		status = ldns_wire2rr(&rr, wire, wire_len, &pos,
-		                      LDNS_SECTION_ANSWER);
+		status = ldns_wire2rr(&rr, wire, wire_len, &pos, LDNS_SECTION_ANSWER);
 		if (status != LDNS_STATUS_OK) {
 			return NULL;
 		}
@@ -99,8 +97,7 @@ ldns_tsig_prepare_pkt_wire(uint8_t *wire, size_t wire_len, size_t *result_len)
 	}
 	
 	for (i = 0; i < ns_count; i++) {
-		status = ldns_wire2rr(&rr, wire, wire_len, &pos,
-		                      LDNS_SECTION_AUTHORITY);
+		status = ldns_wire2rr(&rr, wire, wire_len, &pos, LDNS_SECTION_AUTHORITY);
 		if (status != LDNS_STATUS_OK) {
 			return NULL;
 		}
@@ -108,8 +105,7 @@ ldns_tsig_prepare_pkt_wire(uint8_t *wire, size_t wire_len, size_t *result_len)
 	}
 	
 	for (i = 0; i < ar_count; i++) {
-		status = ldns_wire2rr(&rr, wire, wire_len, &pos,
-		                      LDNS_SECTION_ADDITIONAL);
+		status = ldns_wire2rr(&rr, wire, wire_len, &pos, LDNS_SECTION_ADDITIONAL);
 		if (status != LDNS_STATUS_OK) {
 			return NULL;
 		}
@@ -143,20 +139,9 @@ ldns_digest_function(char *name)
 #endif
 
 #ifdef HAVE_SSL
-static ldns_status
-ldns_tsig_mac_new(
-	ldns_rdf **tsig_mac,
-	uint8_t *pkt_wire,
-	size_t pkt_wire_size,
-	const char *key_data,
-	ldns_rdf *key_name_rdf,
-	ldns_rdf *fudge_rdf,
-	ldns_rdf *algorithm_rdf,
-	ldns_rdf *time_signed_rdf,
-	ldns_rdf *error_rdf,
-	ldns_rdf *other_data_rdf,
-	ldns_rdf *orig_mac_rdf
-)
+static ldns_status ldns_tsig_mac_new(ldns_rdf **tsig_mac, uint8_t *pkt_wire, size_t pkt_wire_size,
+	const char *key_data, ldns_rdf *key_name_rdf, ldns_rdf *fudge_rdf, ldns_rdf *algorithm_rdf,
+	ldns_rdf *time_signed_rdf, ldns_rdf *error_rdf, ldns_rdf *other_data_rdf, ldns_rdf *orig_mac_rdf)
 {
 	char *wireformat;
 	int wiresize;
@@ -193,7 +178,8 @@ ldns_tsig_mac_new(
 	algorithm_name = ldns_rdf2str(algorithm_rdf);
 	
 	/* prepare the key */
-	key_bytes = LDNS_XMALLOC(unsigned char, b64_pton_calculate_size(strlen(key_data)));
+	key_bytes = LDNS_XMALLOC(unsigned char, 
+			b64_pton_calculate_size(strlen(key_data)));
 	key_size = b64_pton(key_data, key_bytes, strlen(key_data) * 2);
 	if (key_size < 0) {
 		/* LDNS_STATUS_INVALID_B64 */
@@ -208,10 +194,12 @@ ldns_tsig_mac_new(
 	digester = ldns_digest_function(algorithm_name);
 	
 	if (digester) {
-		(void) HMAC(digester, key_bytes, key_size, (void *)wireformat, wiresize, mac_bytes + 2, &md_len);
+		(void) HMAC(digester, key_bytes, key_size, (void *)wireformat, wiresize, 
+			    mac_bytes + 2, &md_len);
 	
 		ldns_write_uint16(mac_bytes, md_len);
-		result = ldns_rdf_new_frm_data(LDNS_RDF_TYPE_INT16_DATA, md_len + 2, mac_bytes);
+		result = ldns_rdf_new_frm_data(LDNS_RDF_TYPE_INT16_DATA, md_len + 2, 
+				mac_bytes);
 	} else {
 		/*dprintf("No digest found for %s\n", algorithm_name);*/
 		return LDNS_STATUS_CRYPTO_UNKNOWN_ALGO;
@@ -231,13 +219,8 @@ ldns_tsig_mac_new(
 
 #ifdef HAVE_SSL
 bool
-ldns_pkt_tsig_verify(ldns_pkt *pkt, 
-                     uint8_t *wire,
-                     size_t wirelen,
-                     const char *key_name, 
-                     const char *key_data, 
-                     ldns_rdf *orig_mac_rdf)
-{
+ldns_pkt_tsig_verify(ldns_pkt *pkt, uint8_t *wire, size_t wirelen, const char *key_name, 
+		const char *key_data, ldns_rdf *orig_mac_rdf){
 	ldns_rdf *fudge_rdf;
 	ldns_rdf *algorithm_rdf;
 	ldns_rdf *time_signed_rdf;
@@ -314,7 +297,8 @@ ldns_pkt_tsig_verify(ldns_pkt *pkt,
 #ifdef HAVE_SSL
 /* TODO: memory :p */
 ldns_status
-ldns_pkt_tsig_sign(ldns_pkt *pkt, const char *key_name, const char *key_data, uint16_t fudge, const char *algorithm_name, ldns_rdf *query_mac)
+ldns_pkt_tsig_sign(ldns_pkt *pkt, const char *key_name, const char *key_data, uint16_t fudge, 
+		const char *algorithm_name, ldns_rdf *query_mac)
 {
 	ldns_rr *tsig_rr;
 	ldns_rdf *key_name_rdf = ldns_rdf_new_frm_str(LDNS_RDF_TYPE_DNAME, key_name);

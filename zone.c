@@ -96,7 +96,8 @@ ldns_zone_glue_rr_list(const ldns_zone *z)
 			 * for now; not a problem
 			 */
 			/* don't add NS records for the current zone itself */
-			if (ldns_rdf_compare(ldns_rr_owner(r), ldns_rr_owner(ldns_zone_soa(z))) != 0) {
+			if (ldns_rdf_compare(ldns_rr_owner(r), 
+						ldns_rr_owner(ldns_zone_soa(z))) != 0) {
 				ldns_rr_list_push_rr(zone_cuts, r);
 			}
 			continue;

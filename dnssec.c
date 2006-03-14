@@ -112,9 +112,8 @@ ldns_verify(ldns_rr_list *rrset, ldns_rr_list *rrsig, ldns_rr_list *keys,
 }
 
 ldns_status
-ldns_verify_rrsig_buffers(
-		ldns_buffer *rawsig_buf, ldns_buffer *verify_buf, ldns_buffer *key_buf, uint8_t algo
-                         )
+ldns_verify_rrsig_buffers(ldns_buffer *rawsig_buf, ldns_buffer *verify_buf, 
+		ldns_buffer *key_buf, uint8_t algo)
 {
 		/* check for right key */
 		switch(algo) {
@@ -175,8 +174,7 @@ ldns_verify_rrsig_keylist(ldns_rr_list *rrset, ldns_rr *rrsig, ldns_rr_list *key
 
 	/* check if the typecovered is equal to the type checked */
 	if (ldns_rdf2rr_type(ldns_rr_rrsig_typecovered(rrsig)) !=
-			ldns_rr_get_type(
-				ldns_rr_list_rr(rrset_clone, 0))) {
+			ldns_rr_get_type(ldns_rr_list_rr(rrset_clone, 0))) {
 		return LDNS_STATUS_CRYPTO_TYPE_COVERED_ERR;
 	}
 	
@@ -206,31 +204,31 @@ ldns_verify_rrsig_keylist(ldns_rr_list *rrset, ldns_rr *rrsig, ldns_rr_list *key
         }
 	
 	/* create a buffer with b64 signature rdata */
-	if (ldns_rdf2buffer_wire(rawsig_buf,
-				ldns_rr_rdf(rrsig, 8)) != LDNS_STATUS_OK) {
+	if (ldns_rdf2buffer_wire(rawsig_buf, ldns_rr_rdf(rrsig, 8)) != LDNS_STATUS_OK) {
 		ldns_buffer_free(rawsig_buf);
 		ldns_buffer_free(verify_buf);
 		return LDNS_STATUS_MEM_ERR;
 	}
 
-	orig_ttl = ldns_rdf2native_int32(
-			ldns_rr_rdf(rrsig, 3));
+	orig_ttl = ldns_rdf2native_int32( ldns_rr_rdf(rrsig, 3));
 
 	label_count = ldns_rdf2native_int8(ldns_rr_rdf(rrsig, 2));
 
 	/* reset the ttl in the rrset with the orig_ttl from the sig */
 	/* and update owner name if it was wildcard */
 	for(i = 0; i < ldns_rr_list_rr_count(rrset_clone); i++) {
-		if (label_count < ldns_dname_label_count(
-		                  	ldns_rr_owner(ldns_rr_list_rr(rrset_clone, i)))) {
+		if (label_count < 
+			ldns_dname_label_count(
+		               	ldns_rr_owner(ldns_rr_list_rr(rrset_clone, i)))) {
 			(void) ldns_str2rdf_dname(&wildcard_name, "*");
-			(void) ldns_dname_cat(wildcard_name, ldns_dname_left_chop(ldns_rr_owner(ldns_rr_list_rr(rrset_clone, i))));
-			ldns_rr_set_owner(ldns_rr_list_rr(rrset_clone, i), wildcard_name);
+			(void) ldns_dname_cat(wildcard_name, 
+					      ldns_dname_left_chop(ldns_rr_owner(ldns_rr_list_rr
+							      (rrset_clone, i))));
+			ldns_rr_set_owner(ldns_rr_list_rr(rrset_clone, i), 
+					wildcard_name);
 		                  	
 		}
-		ldns_rr_set_ttl(
-				ldns_rr_list_rr(rrset_clone, i),
-				orig_ttl);
+		ldns_rr_set_ttl(ldns_rr_list_rr(rrset_clone, i), orig_ttl);
 		/* convert to lowercase */
 		ldns_rr2canonical(ldns_rr_list_rr(rrset_clone, i));
 	}
@@ -271,9 +269,12 @@ ldns_verify_rrsig_keylist(ldns_rr_list *rrset, ldns_rr *rrsig, ldns_rr_list *key
 			}
 
 			/* check for right key */
-			if (sig_algo == ldns_rdf2native_int8(ldns_rr_rdf(current_key, 2))) {
-				result = ldns_verify_rrsig_buffers(rawsig_buf, verify_buf, key_buf, sig_algo);
+			if (sig_algo == ldns_rdf2native_int8(ldns_rr_rdf(current_key, 
+							2))) {
+				result = ldns_verify_rrsig_buffers(rawsig_buf, 
+						verify_buf, key_buf, sig_algo);
 			} else {
+				/* There is no else here ???? */
 			}
 			ldns_buffer_free(key_buf); 
 			if (result == LDNS_STATUS_OK) {
@@ -690,8 +691,7 @@ ldns_key_rr2ds(const ldns_rr *key, ldns_hash h)
         ldns_rr_push_rdf(ds, tmp);
 
         /* copy the algorithm field */
-        ldns_rr_push_rdf(ds, ldns_rdf_clone(
-                                ldns_rr_rdf(key, 2))); /* second rfd */
+        ldns_rr_push_rdf(ds, ldns_rdf_clone( ldns_rr_rdf(key, 2))); /* second rfd */
 
         /* digest hash type */
         sha1hash = (uint8_t)h;
@@ -700,14 +700,12 @@ ldns_key_rr2ds(const ldns_rr *key, ldns_hash h)
 
         /* digest */
         /* owner name */
-	if (ldns_rdf2buffer_wire(data_buf, ldns_rr_owner(key)) !=
-			LDNS_STATUS_OK) {
+	if (ldns_rdf2buffer_wire(data_buf, ldns_rr_owner(key)) != LDNS_STATUS_OK) {
 		return NULL;
 	}
 
         /* all the rdata's */
-	if (ldns_rr_rdata2buffer_wire(data_buf, (ldns_rr*)key) !=
-			LDNS_STATUS_OK) { 
+	if (ldns_rr_rdata2buffer_wire(data_buf, (ldns_rr*)key) != LDNS_STATUS_OK) { 
 		return NULL;
 	}
 	switch(h) {
@@ -771,13 +769,13 @@ ldns_sign_public(ldns_rr_list *rrset, ldns_key_list *keys)
 	if (ldns_rdf_compare(first_label, wildcard_label) == 0) {
 		label_count--;
 		for (i = 0; i < ldns_rr_list_rr_count(rrset_clone); i++) {
-			new_owner = ldns_dname_cat_clone(wildcard_label, ldns_dname_left_chop(ldns_rr_owner(ldns_rr_list_rr(rrset_clone, i))));
+			new_owner = ldns_dname_cat_clone(wildcard_label, 
+					ldns_dname_left_chop(ldns_rr_owner(ldns_rr_list_rr(rrset_clone, i))));
 			ldns_rr_set_owner(ldns_rr_list_rr(rrset_clone, i), new_owner);
 		}
 	}
 
 	/* make it canonical */
-	
 	for(i = 0; i < ldns_rr_list_rr_count(rrset_clone); i++) {
 		ldns_rr2canonical(ldns_rr_list_rr(rrset_clone, i));
 	}
@@ -807,7 +805,8 @@ ldns_sign_public(ldns_rr_list *rrset, ldns_key_list *keys)
 			/* fill in what we know of the signature */
 
 			/* set the orig_ttl */
-			(void)ldns_rr_rrsig_set_origttl(current_sig, ldns_native2rdf_int32(LDNS_RDF_TYPE_INT32, orig_ttl));
+			(void)ldns_rr_rrsig_set_origttl(current_sig, 
+					ldns_native2rdf_int32(LDNS_RDF_TYPE_INT32, orig_ttl));
 			/* the signers name */
 
 			(void)ldns_rr_rrsig_set_signame(current_sig, 
@@ -819,26 +818,31 @@ ldns_sign_public(ldns_rr_list *rrset, ldns_key_list *keys)
 			now = time(NULL);
 			if (ldns_key_inception(current_key) != 0) {
 				(void)ldns_rr_rrsig_set_inception(current_sig,
-						ldns_native2rdf_int32(LDNS_RDF_TYPE_TIME, ldns_key_inception(current_key)));
+						ldns_native2rdf_int32(LDNS_RDF_TYPE_TIME, 
+							ldns_key_inception(current_key)));
 			} else {
 				(void)ldns_rr_rrsig_set_inception(current_sig,
 						ldns_native2rdf_int32(LDNS_RDF_TYPE_TIME, now));
 			}
 			if (ldns_key_expiration(current_key) != 0) {
 				(void)ldns_rr_rrsig_set_expiration(current_sig,
-						ldns_native2rdf_int32(LDNS_RDF_TYPE_TIME, ldns_key_expiration(current_key)));
+						ldns_native2rdf_int32(LDNS_RDF_TYPE_TIME, 
+							ldns_key_expiration(current_key)));
 			} else {
 				(void)ldns_rr_rrsig_set_expiration(current_sig,
-						ldns_native2rdf_int32(LDNS_RDF_TYPE_TIME, now + LDNS_DEFAULT_EXP_TIME));
+						ldns_native2rdf_int32(LDNS_RDF_TYPE_TIME, 
+							now + LDNS_DEFAULT_EXP_TIME));
 			}
 
 			/* key-tag */
 			(void)ldns_rr_rrsig_set_keytag(current_sig,
-					ldns_native2rdf_int16(LDNS_RDF_TYPE_INT16, ldns_key_keytag(current_key)));
+					ldns_native2rdf_int16(LDNS_RDF_TYPE_INT16, 
+						ldns_key_keytag(current_key)));
 
 			/* algorithm - check the key and substitute that */
 			(void)ldns_rr_rrsig_set_algorithm(current_sig,
-					ldns_native2rdf_int8(LDNS_RDF_TYPE_ALG, ldns_key_algorithm(current_key)));
+					ldns_native2rdf_int8(LDNS_RDF_TYPE_ALG, 
+						ldns_key_algorithm(current_key)));
 			/* type-covered */
 			(void)ldns_rr_rrsig_set_typecovered(current_sig,
 					ldns_native2rdf_int16(LDNS_RDF_TYPE_TYPE,
