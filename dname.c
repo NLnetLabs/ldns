@@ -30,8 +30,7 @@ ldns_dname_cat_clone(const ldns_rdf *rd1, const ldns_rdf *rd2)
 	uint8_t *buf;
 
 	if (ldns_rdf_get_type(rd1) != LDNS_RDF_TYPE_DNAME ||
-			ldns_rdf_get_type(rd2) != LDNS_RDF_TYPE_DNAME)
-	{
+			ldns_rdf_get_type(rd2) != LDNS_RDF_TYPE_DNAME) {
 		return NULL;
 	}
 
@@ -44,8 +43,7 @@ ldns_dname_cat_clone(const ldns_rdf *rd1, const ldns_rdf *rd2)
 
 	/* put the two dname's after each other */
 	memcpy(buf, ldns_rdf_data(rd1), ldns_rdf_size(rd1) - 1);
-	memcpy(buf + ldns_rdf_size(rd1) - 1,
-			ldns_rdf_data(rd2), ldns_rdf_size(rd2));
+	memcpy(buf + ldns_rdf_size(rd1) - 1, ldns_rdf_data(rd2), ldns_rdf_size(rd2));
 	
 	new = ldns_rdf_new_frm_data(LDNS_RDF_TYPE_DNAME, new_size, buf);
 
@@ -133,6 +131,7 @@ ldns_rdf *
 ldns_dname_new(uint16_t s, void *d)
 {
         ldns_rdf *rd;
+
         rd = LDNS_MALLOC(ldns_rdf);
         if (!rd) {
                 return NULL;
@@ -182,8 +181,7 @@ ldns_dname_is_subdomain(const ldns_rdf *sub, const ldns_rdf *parent)
 
 	if (ldns_rdf_get_type(sub) != LDNS_RDF_TYPE_DNAME ||
 			ldns_rdf_get_type(parent) != LDNS_RDF_TYPE_DNAME ||
-			ldns_rdf_compare(sub, parent) == 0
-			) {
+			ldns_rdf_compare(sub, parent) == 0) {
 		return false;
 	}
 
