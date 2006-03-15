@@ -190,10 +190,8 @@ ldns_rdf *
 ldns_rdf_clone(const ldns_rdf *rd)
 {
 	assert(rd != NULL);
-	return (ldns_rdf_new_frm_data(
-				ldns_rdf_get_type(rd),
-				ldns_rdf_size(rd), 
-				ldns_rdf_data(rd)));
+	return (ldns_rdf_new_frm_data( ldns_rdf_get_type(rd),
+		ldns_rdf_size(rd), ldns_rdf_data(rd)));
 }
 
 void
@@ -369,10 +367,8 @@ ldns_rdf_address_reverse(ldns_rdf *rd)
 				return NULL;
 			}
 			/* make a new rdf and convert that back  */
-			rev = ldns_rdf_new_frm_data(
-					LDNS_RDF_TYPE_A,
-					LDNS_IP4ADDRLEN,
-					(void*)&buf_4);
+			rev = ldns_rdf_new_frm_data( LDNS_RDF_TYPE_A,
+				LDNS_IP4ADDRLEN, (void*)&buf_4);
 
 			/* convert rev to a string */
 			char_dname = ldns_rdf2str(rev);
@@ -397,9 +393,13 @@ ldns_rdf_address_reverse(ldns_rdf *rd)
 				/* calculate nibble */
 				nnibble = ( ((unsigned int) nbit) & 0x04) >> 2;
 				/* extract nibble */
-				nibble = (ldns_rdf_data(rd)[octet] & ( 0xf << (4 * (1 - nnibble)) ) ) >> ( 4 * (1 - nnibble));
+				nibble = (ldns_rdf_data(rd)[octet] & ( 0xf << (4 * (1 -
+						 nnibble)) ) ) >> ( 4 * (1 - 
+						nnibble));
+
 				buf_6[(LDNS_IP6ADDRLEN * 2 - 1) -
-					(octet * 2 + nnibble)] = (uint8_t)ldns_int_to_hexdigit((int)nibble);
+					(octet * 2 + nnibble)] = 
+						(uint8_t)ldns_int_to_hexdigit((int)nibble);
 			}
 
 			char_dname = LDNS_XMALLOC(char, (LDNS_IP6ADDRLEN * 4));
@@ -441,7 +441,8 @@ ldns_rdf_address_reverse(ldns_rdf *rd)
 ldns_status
 ldns_octet(char *word, size_t *length)
 {
-    char *s; char *p;
+    char *s; 
+    char *p;
     *length = 0;
 
     for (s = p = word; *s != '\0'; s++,p++) {
@@ -456,8 +457,7 @@ ldns_octet(char *word, size_t *length)
             case '\\':
                 if ('0' <= s[1] && s[1] <= '9' &&
                     '0' <= s[2] && s[2] <= '9' &&
-                    '0' <= s[3] && s[3] <= '9')
-                {
+                    '0' <= s[3] && s[3] <= '9') {
                     /* \DDD seen */
                     int val = ((s[1] - '0') * 100 +
                            (s[2] - '0') * 10 + (s[3] - '0'));

@@ -3,7 +3,7 @@
 # To extract the files from this archive, save it to some FILE, remove
 # everything before the `!/bin/sh' line above, then type `sh FILE'.
 #
-# Made on 2006-03-14 15:49 CET by <miekg@floep>.
+# Made on 2006-03-15 10:30 CET by <miekg@elektron>.
 # Source directory was `/home/miekg/svn/libdns/trunk/test/codingstyle.dir'.
 #
 # Existing files will *not* be overwritten unless `-c' is specified.
@@ -13,7 +13,7 @@
 # ------ ---------- ------------------------------------------
 #    270 -rw------- codingstyle.dsc
 #     36 -rw------- codingstyle.help
-#    874 -rw------- codingstyle.test
+#   1210 -rw------- codingstyle.test
 #
 save_IFS="${IFS}"
 IFS="${IFS}:"
@@ -63,7 +63,7 @@ else
 fi
 rm -f 200112312359.59 123123592001.59 123123592001.5 1231235901 $$.touch
 #
-if mkdir _sh20348; then
+if mkdir _sh09941; then
   $echo 'x -' 'creating lock directory'
 else
   $echo 'failed to create lock directory'
@@ -149,12 +149,24 @@ OPT="-ncs -sai -nut -ce -nfca -nlp -ncdb -br -ts08 -i8"
 X
 st=0
 for i in ../../*.c; do
+X
+X        case $i in
+X        "../../util.c" | "../../host2str.c" | "../../resolver.c")
+X                continue;;
+X        "../../error.c" | "../../rr.c" | "../../str2host.c")
+X                continue;;
+X        "../../keys.c" | "../../linktest.c" | "../../dnssec.c")
+X                continue;;
+X        "../../packet.c" | "../../parse.c")
+X                continue;;
+X        esac
+X
 X        case $OSTYPE in
 X        linux-gnu*)
-X                diff -w -u $i <(cat $i | indent -l$L $OPT) 
+X                diff -w -u $i <(cat $i | indent -l$L $OPT) | grep ^---
 X                ;;
 X        freebsd*) 
-X                diff -w -u $i <(cat $i | gindent -l$L $OPT)
+X                diff -w -u $i <(cat $i | gindent -l$L $OPT)| grep ^---
 X                ;;
 X        esac
 X              
@@ -162,26 +174,25 @@ X        if [[ $? -eq 1 ]]; then
 X                st=1
 X        fi
 done
-if [[ $st -eq 1 ]]; then
-X        echo "There are coding style improvements possible..."
+if [[ $st -eq 0 ]]; then
 X        exit 1
 fi
 Xexit 0
 SHAR_EOF
-  (set 20 06 03 14 15 35 03 'codingstyle.test'; eval "$shar_touch") &&
+  (set 20 06 03 15 10 30 39 'codingstyle.test'; eval "$shar_touch") &&
   chmod 0600 'codingstyle.test' ||
   $echo 'restore of' 'codingstyle.test' 'failed'
   if ( md5sum --help 2>&1 | grep 'sage: md5sum \[' ) >/dev/null 2>&1 \
   && ( md5sum --version 2>&1 | grep -v 'textutils 1.12' ) >/dev/null; then
     md5sum -c << SHAR_EOF >/dev/null 2>&1 \
     || $echo 'codingstyle.test:' 'MD5 check failed'
-8115e5ff989055074876d887e07a30fa  codingstyle.test
+21bdc4c1a4581824207c4a170a40369d  codingstyle.test
 SHAR_EOF
   else
     shar_count="`LC_ALL= LC_CTYPE= LANG= wc -c < 'codingstyle.test'`"
-    test 874 -eq "$shar_count" ||
-    $echo 'codingstyle.test:' 'original size' '874,' 'current size' "$shar_count!"
+    test 1210 -eq "$shar_count" ||
+    $echo 'codingstyle.test:' 'original size' '1210,' 'current size' "$shar_count!"
   fi
 fi
-rm -fr _sh20348
+rm -fr _sh09941
 exit 0

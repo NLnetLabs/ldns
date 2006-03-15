@@ -27,9 +27,7 @@ ldns_status
 ldns_dname2buffer_wire(ldns_buffer *buffer, const ldns_rdf *name)
 {
 	if (ldns_buffer_reserve(buffer, ldns_rdf_size(name))) {
-		ldns_buffer_write(buffer,
-		                  ldns_rdf_data(name),
-		                  ldns_rdf_size(name));
+		ldns_buffer_write(buffer, ldns_rdf_data(name), ldns_rdf_size(name));
 	}
 	return ldns_buffer_status(buffer);
 }
@@ -38,9 +36,7 @@ ldns_status
 ldns_rdf2buffer_wire(ldns_buffer *buffer, const ldns_rdf *rdf)
 {
 	if (ldns_buffer_reserve(buffer, ldns_rdf_size(rdf))) {
-		ldns_buffer_write(buffer,
-		                  ldns_rdf_data(rdf),
-		                  ldns_rdf_size(rdf));
+		ldns_buffer_write(buffer, ldns_rdf_data(rdf), ldns_rdf_size(rdf));
 	}
 	return ldns_buffer_status(buffer);
 }
@@ -54,7 +50,8 @@ ldns_rr_list2buffer_wire(ldns_buffer *buffer,const ldns_rr_list *rr_list)
 
 	rr_count = ldns_rr_list_rr_count(rr_list);
 	for(i = 0; i < rr_count; i++) {
-		(void)ldns_rr2buffer_wire(buffer, ldns_rr_list_rr(rr_list, i), LDNS_SECTION_ANY);
+		(void)ldns_rr2buffer_wire(buffer, ldns_rr_list_rr(rr_list, i), 
+					  LDNS_SECTION_ANY);
 	}
 	return ldns_buffer_status(buffer);
 }
@@ -87,12 +84,9 @@ ldns_rr2buffer_wire(ldns_buffer *buffer, const ldns_rr *rr, int section)
 		}
 		
 		if (rdl_pos != 0) {
-			ldns_buffer_write_u16_at(buffer,
-			                         rdl_pos,
+			ldns_buffer_write_u16_at(buffer, rdl_pos,
 			                         ldns_buffer_position(buffer)
-		        	                   - rdl_pos
-		                	           - 2
-		                	           );
+		        	                   - rdl_pos - 2);
 		}
 	}
 	return ldns_buffer_status(buffer);
@@ -146,15 +140,13 @@ ldns_hdr2buffer_wire(ldns_buffer *buffer, const ldns_pkt *packet)
 		flags = ldns_pkt_qr(packet) << 7
 		        | ldns_pkt_get_opcode(packet) << 3
 		        | ldns_pkt_aa(packet) << 2
-		        | ldns_pkt_tc(packet) << 1
-		        | ldns_pkt_rd(packet);
+		        | ldns_pkt_tc(packet) << 1 | ldns_pkt_rd(packet);
 		ldns_buffer_write_u8(buffer, flags);
 		
 		flags = ldns_pkt_ra(packet) << 7
 		        /*| ldns_pkt_z(packet) << 6*/
 		        | ldns_pkt_ad(packet) << 5
-		        | ldns_pkt_cd(packet) << 4
-		        | ldns_pkt_rcode(packet);
+		        | ldns_pkt_cd(packet) << 4 | ldns_pkt_rcode(packet);
 		ldns_buffer_write_u8(buffer, flags);
 		
 		ldns_buffer_write_u16(buffer, ldns_pkt_qdcount(packet));
@@ -190,39 +182,36 @@ ldns_pkt2buffer_wire(ldns_buffer *buffer, const ldns_pkt *packet)
 	if (rr_list) {
 		for (i = 0; i < ldns_rr_list_rr_count(rr_list); i++) {
 			(void) ldns_rr2buffer_wire(buffer, 
-			             ldns_rr_list_rr(rr_list, i), 
-			             LDNS_SECTION_QUESTION);
+			             ldns_rr_list_rr(rr_list, i), LDNS_SECTION_QUESTION);
 		}
 	}
 	rr_list = ldns_pkt_answer(packet);
 	if (rr_list) {
 		for (i = 0; i < ldns_rr_list_rr_count(rr_list); i++) {
 			(void) ldns_rr2buffer_wire(buffer, 
-			             ldns_rr_list_rr(rr_list, i), 
-			             LDNS_SECTION_ANSWER);
+			             ldns_rr_list_rr(rr_list, i), LDNS_SECTION_ANSWER);
 		}
 	}
 	rr_list = ldns_pkt_authority(packet);
 	if (rr_list) {
 		for (i = 0; i < ldns_rr_list_rr_count(rr_list); i++) {
 			(void) ldns_rr2buffer_wire(buffer, 
-			             ldns_rr_list_rr(rr_list, i), 
-			             LDNS_SECTION_AUTHORITY);
+			             ldns_rr_list_rr(rr_list, i), LDNS_SECTION_AUTHORITY);
 		}
 	}
 	rr_list = ldns_pkt_additional(packet);
 	if (rr_list) {
 		for (i = 0; i < ldns_rr_list_rr_count(rr_list); i++) {
 			(void) ldns_rr2buffer_wire(buffer, 
-			             ldns_rr_list_rr(rr_list, i), 
-			             LDNS_SECTION_ADDITIONAL);
+			             ldns_rr_list_rr(rr_list, i), LDNS_SECTION_ADDITIONAL);
 		}
 	}
 	
 	/* add EDNS to additional if it is needed */
 	if (ldns_pkt_edns(packet)) {
 		edns_rr = ldns_rr_new();
-		ldns_rr_set_owner(edns_rr, ldns_rdf_new_frm_str(LDNS_RDF_TYPE_DNAME, "."));
+		ldns_rr_set_owner(edns_rr,
+				ldns_rdf_new_frm_str(LDNS_RDF_TYPE_DNAME, "."));
 		ldns_rr_set_type(edns_rr, LDNS_RR_TYPE_OPT);
 		ldns_rr_set_class(edns_rr, ldns_pkt_edns_udp_size(packet));
 		edata[0] = ldns_pkt_edns_extended_rcode(packet);
@@ -236,8 +225,7 @@ ldns_pkt2buffer_wire(ldns_buffer *buffer, const ldns_pkt *packet)
 	/* add TSIG to additional if it is there */
 	if (ldns_pkt_tsig(packet)) {
 		(void) ldns_rr2buffer_wire(buffer,
-		                           ldns_pkt_tsig(packet),
-					   LDNS_SECTION_ADDITIONAL);
+		                           ldns_pkt_tsig(packet), LDNS_SECTION_ADDITIONAL);
 	}
 	
 	return LDNS_STATUS_OK;

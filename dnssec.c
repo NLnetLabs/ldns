@@ -1128,7 +1128,7 @@ ldns_create_nsec3(ldns_rdf *cur_owner,
                   uint8_t salt_length,
                   char *salt)
 {
-	uint16_t i;
+	int i;
 	ldns_rr *i_rr;
 
 	uint8_t *bitmap = LDNS_XMALLOC(uint8_t, 1);
@@ -1208,16 +1208,25 @@ ldns_create_nsec3(ldns_rdf *cur_owner,
 	}
 
 	hashed_owner_str = hash;
+	
 	/*
 	printf("\n");
 	for (i=0; i<hashed_owner_str_len; i++) {
-		printf("%d ", hashed_owner_str[i]);
+		printf("%02x ", (uint8_t) hashed_owner_str[i]);
 	}
 	printf("\n");
 	*/
+	
 	hashed_owner_b32 = LDNS_XMALLOC(char, b32_ntop_calculate_size(hashed_owner_str_len));
 	i = b32_ntop_extended_hex((uint8_t *) hashed_owner_str, hashed_owner_str_len, hashed_owner_b32, b32_ntop_calculate_size(hashed_owner_str_len));
-        hashed_owner_b32[b32_ntop_calculate_size(hashed_owner_str_len)] = '\0';
+	if (i < 1) {
+		fprintf(stderr, "Error in base32 extended hex encoding of hashed owner name (name: ");
+		ldns_rdf_print(stderr, cur_owner);
+		fprintf(stderr, ", return code: %d)\n", i);
+		exit(4);
+	}
+	hashed_owner_str_len = i;
+        hashed_owner_b32[hashed_owner_str_len] = '\0';
 	status = ldns_str2rdf_dname(&hashed_owner, hashed_owner_b32);
 	if (status != LDNS_STATUS_OK) {
 		fprintf(stderr, "Error creating rdf from %s\n", hashed_owner_b32);
@@ -1715,7 +1724,8 @@ ldns_zone_sign_nsec3(ldns_zone *zone, ldns_key_list *key_list, uint8_t algorithm
  * apps must call this 
  */
 ldns_status 
-ldns_init_random(FILE *fd, uint16_t bytes) {
+ldns_init_random(FILE *fd, uint16_t bytes) 
+{
 	FILE *rand;
 	uint8_t *buf;
 

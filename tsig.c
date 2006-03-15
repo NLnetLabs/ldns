@@ -105,7 +105,8 @@ ldns_tsig_prepare_pkt_wire(uint8_t *wire, size_t wire_len, size_t *result_len)
 	}
 	
 	for (i = 0; i < ar_count; i++) {
-		status = ldns_wire2rr(&rr, wire, wire_len, &pos, LDNS_SECTION_ADDITIONAL);
+		status = ldns_wire2rr(&rr, wire, wire_len, &pos, 
+				LDNS_SECTION_ADDITIONAL);
 		if (status != LDNS_STATUS_OK) {
 			return NULL;
 		}
@@ -139,9 +140,11 @@ ldns_digest_function(char *name)
 #endif
 
 #ifdef HAVE_SSL
-static ldns_status ldns_tsig_mac_new(ldns_rdf **tsig_mac, uint8_t *pkt_wire, size_t pkt_wire_size,
-	const char *key_data, ldns_rdf *key_name_rdf, ldns_rdf *fudge_rdf, ldns_rdf *algorithm_rdf,
-	ldns_rdf *time_signed_rdf, ldns_rdf *error_rdf, ldns_rdf *other_data_rdf, ldns_rdf *orig_mac_rdf)
+static ldns_status 
+ldns_tsig_mac_new(ldns_rdf **tsig_mac, uint8_t *pkt_wire, size_t pkt_wire_size,
+		const char *key_data, ldns_rdf *key_name_rdf, ldns_rdf *fudge_rdf, 
+		ldns_rdf *algorithm_rdf, ldns_rdf *time_signed_rdf, ldns_rdf *error_rdf, 
+		ldns_rdf *other_data_rdf, ldns_rdf *orig_mac_rdf)
 {
 	char *wireformat;
 	int wiresize;
@@ -219,8 +222,9 @@ static ldns_status ldns_tsig_mac_new(ldns_rdf **tsig_mac, uint8_t *pkt_wire, siz
 
 #ifdef HAVE_SSL
 bool
-ldns_pkt_tsig_verify(ldns_pkt *pkt, uint8_t *wire, size_t wirelen, const char *key_name, 
-		const char *key_data, ldns_rdf *orig_mac_rdf){
+ldns_pkt_tsig_verify(ldns_pkt *pkt, uint8_t *wire, size_t wirelen, 
+		const char *key_name, const char *key_data, ldns_rdf *orig_mac_rdf)
+{
 	ldns_rdf *fudge_rdf;
 	ldns_rdf *algorithm_rdf;
 	ldns_rdf *time_signed_rdf;
@@ -259,18 +263,9 @@ ldns_pkt_tsig_verify(ldns_pkt *pkt, uint8_t *wire, size_t wirelen, const char *k
 
 	prepared_wire = ldns_tsig_prepare_pkt_wire(wire, wirelen, &prepared_wire_size);
 	
-	status = ldns_tsig_mac_new(&my_mac_rdf,
-	                              prepared_wire,
-	                              prepared_wire_size,
-	                              key_data, 
-	                              key_name_rdf,
-	                              fudge_rdf,
-	                              algorithm_rdf,
-	                              time_signed_rdf,
-	                              error_rdf,
-	                              other_data_rdf,
-	                              orig_mac_rdf
-	                             );
+	status = ldns_tsig_mac_new(&my_mac_rdf, prepared_wire, prepared_wire_size,
+			key_data, key_name_rdf, fudge_rdf, algorithm_rdf, 
+			time_signed_rdf, error_rdf, other_data_rdf, orig_mac_rdf);
 	
 	LDNS_FREE(prepared_wire);
 	
@@ -297,8 +292,8 @@ ldns_pkt_tsig_verify(ldns_pkt *pkt, uint8_t *wire, size_t wirelen, const char *k
 #ifdef HAVE_SSL
 /* TODO: memory :p */
 ldns_status
-ldns_pkt_tsig_sign(ldns_pkt *pkt, const char *key_name, const char *key_data, uint16_t fudge, 
-		const char *algorithm_name, ldns_rdf *query_mac)
+ldns_pkt_tsig_sign(ldns_pkt *pkt, const char *key_name, const char *key_data, 
+		uint16_t fudge, const char *algorithm_name, ldns_rdf *query_mac)
 {
 	ldns_rr *tsig_rr;
 	ldns_rdf *key_name_rdf = ldns_rdf_new_frm_str(LDNS_RDF_TYPE_DNAME, key_name);
@@ -324,7 +319,8 @@ ldns_pkt_tsig_sign(ldns_pkt *pkt, const char *key_name, const char *key_data, ui
 	/* bleh :p */
 	if (gettimeofday(&tv_time_signed, NULL) == 0) {
 		time_signed = LDNS_XMALLOC(uint8_t, 6);
-		ldns_write_uint64_as_uint48(time_signed, (uint64_t)tv_time_signed.tv_sec);
+		ldns_write_uint64_as_uint48(time_signed, 
+				(uint64_t)tv_time_signed.tv_sec);
 	} else {
 		status = LDNS_STATUS_INTERNAL_ERR;
 		goto clean;
@@ -345,18 +341,9 @@ ldns_pkt_tsig_sign(ldns_pkt *pkt, const char *key_name, const char *key_data, ui
 		goto clean;
 	}
 
-	status = ldns_tsig_mac_new(&mac_rdf,
-	                              pkt_wire,
-	                              pkt_wire_len,
-				      key_data,
-	                              key_name_rdf, 
-	                              fudge_rdf, 
-	                              algorithm_rdf,
-	                              time_signed_rdf,
-	                              error_rdf,
-	                              other_data_rdf,
-	                              query_mac
-	                              );
+	status = ldns_tsig_mac_new(&mac_rdf, pkt_wire, pkt_wire_len,
+			key_data, key_name_rdf, fudge_rdf, algorithm_rdf,
+			time_signed_rdf, error_rdf, other_data_rdf, query_mac);
 	
 	if (!mac_rdf) {
 		goto clean;

@@ -206,7 +206,7 @@ int b32_ntop_extended_hex(uint8_t const *src, size_t srclength,
 /*@unused@*/
 static inline size_t b32_ntop_calculate_size(size_t srcsize)
 {
-	size_t result = ((((srcsize + 2) / 3) * 4) + 1);
+	size_t result = ((((srcsize + 2) / 5) * 8) + 1);
 	if (result < 9) {
 		return 9;
 	} else {
@@ -223,7 +223,7 @@ int b32_pton_extended_hex(char const *src, uint8_t *target, size_t targsize);
 /*@unused@*/
 static inline size_t b32_pton_calculate_size(size_t srcsize)
 {
-	return ((((srcsize / 4) * 3) - 2) + 2);
+	return ((((srcsize / 5) * 8) - 2) + 2);
 }
 #endif /* !B32_NTOP */
 

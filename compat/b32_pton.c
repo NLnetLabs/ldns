@@ -178,6 +178,7 @@ b32_pton_ar(char const *src, uint8_t *target, size_t targsize, const char B32_ar
 	tarindex = 0;
 	
 	while ((ch = *src++) != '\0') {
+		ch = toupper(ch);
 		if (isspace((unsigned char)ch))        /* Skip whitespace anywhere. */
 			continue;
 

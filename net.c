@@ -49,7 +49,8 @@ ldns_send(ldns_pkt **result, ldns_resolver *r, const ldns_pkt *query_pkt)
 	status = LDNS_STATUS_OK;
 	rtt = ldns_resolver_rtt(r);
 	ns_array = ldns_resolver_nameservers(r);
-	reply = NULL; ns_len = 0;
+	reply = NULL; 
+	ns_len = 0;
 
 	all_servers_rtt_inf = true;
 
@@ -101,7 +102,10 @@ ldns_send(ldns_pkt **result, ldns_resolver *r, const ldns_pkt *query_pkt)
 		/* reply_bytes implicitly handles our error */
 		if (1 == ldns_resolver_usevc(r)) {
 			for (retries = ldns_resolver_retry(r); retries > 0; retries--) {
-				send_status = ldns_tcp_send(&reply_bytes, qb, ns, (socklen_t)ns_len, ldns_resolver_timeout(r), &reply_size);
+				send_status = 
+					ldns_tcp_send(&reply_bytes, qb, ns, 
+					(socklen_t)ns_len, ldns_resolver_timeout(r), 
+					&reply_size);
 				if (send_status == LDNS_STATUS_OK) {
 					break;
 				}
@@ -109,7 +113,10 @@ ldns_send(ldns_pkt **result, ldns_resolver *r, const ldns_pkt *query_pkt)
 		} else {
 			for (retries = ldns_resolver_retry(r); retries > 0; retries--) {
 				/* ldns_rdf_print(stdout, ns_array[i]); */
-				send_status = ldns_udp_send(&reply_bytes, qb, ns, (socklen_t)ns_len, ldns_resolver_timeout(r), &reply_size);
+				send_status = 
+					ldns_udp_send(&reply_bytes, qb, ns, 
+							(socklen_t)ns_len, ldns_resolver_timeout(r), 
+							&reply_size);
 				
 				if (send_status == LDNS_STATUS_OK) {
 					break;
@@ -176,8 +183,7 @@ ldns_send(ldns_pkt **result, ldns_resolver *r, const ldns_pkt *query_pkt)
 		                          reply_bytes,
 					  reply_size,
 		                          ldns_resolver_tsig_keyname(r),
-		                          ldns_resolver_tsig_keydata(r),
-		                          tsig_mac)) {
+		                          ldns_resolver_tsig_keydata(r), tsig_mac)) {
 			status = LDNS_STATUS_CRYPTO_TSIG_BOGUS;
 		}
 	}
@@ -193,7 +199,8 @@ ldns_send(ldns_pkt **result, ldns_resolver *r, const ldns_pkt *query_pkt)
 }
 
 ldns_status
-ldns_udp_send(uint8_t **result, ldns_buffer *qbin, const struct sockaddr_storage *to, socklen_t tolen, struct timeval timeout, size_t *answer_size)
+ldns_udp_send(uint8_t **result, ldns_buffer *qbin, const struct sockaddr_storage *to, 
+		socklen_t tolen, struct timeval timeout, size_t *answer_size)
 {
 	int sockfd;
 	uint8_t *answer;
@@ -221,7 +228,8 @@ ldns_udp_send(uint8_t **result, ldns_buffer *qbin, const struct sockaddr_storage
 }
 
 int
-ldns_udp_bgsend(ldns_buffer *qbin, const struct sockaddr_storage *to, socklen_t tolen, struct timeval timeout)
+ldns_udp_bgsend(ldns_buffer *qbin, const struct sockaddr_storage *to, socklen_t tolen, 
+		struct timeval timeout)
 {
 	int sockfd;
 
@@ -242,7 +250,8 @@ ldns_udp_connect(const struct sockaddr_storage *to, struct timeval timeout)
 {
 	int sockfd;
 	
-	if ((sockfd = socket((int)((struct sockaddr*)to)->sa_family, SOCK_DGRAM, IPPROTO_UDP)) 
+	if ((sockfd = socket((int)((struct sockaddr*)to)->sa_family, SOCK_DGRAM, 
+					IPPROTO_UDP)) 
 			== -1) {
                 return 0;
         }
@@ -256,11 +265,13 @@ ldns_udp_connect(const struct sockaddr_storage *to, struct timeval timeout)
 }
 
 int
-ldns_tcp_connect(const struct sockaddr_storage *to, socklen_t tolen, struct timeval timeout)
+ldns_tcp_connect(const struct sockaddr_storage *to, socklen_t tolen, 
+		struct timeval timeout)
 {
 	int sockfd;
 	
-	if ((sockfd = socket((int)((struct sockaddr*)to)->sa_family, SOCK_STREAM, IPPROTO_TCP)) == -1) {
+	if ((sockfd = socket((int)((struct sockaddr*)to)->sa_family, SOCK_STREAM, 
+					IPPROTO_TCP)) == -1) {
 		perror("could not open socket");
 		return 0;
 	}
@@ -413,7 +424,8 @@ ldns_tcp_read_wire(int sockfd, size_t *size)
  * amount data to expect
  */
 ldns_status
-ldns_tcp_send(uint8_t **result,  ldns_buffer *qbin, const struct sockaddr_storage *to, socklen_t tolen, struct timeval timeout, size_t *answer_size)
+ldns_tcp_send(uint8_t **result,  ldns_buffer *qbin, const struct sockaddr_storage *to, 
+		socklen_t tolen, struct timeval timeout, size_t *answer_size)
 {
 	int sockfd;
 	uint8_t *answer;
@@ -439,7 +451,8 @@ ldns_tcp_send(uint8_t **result,  ldns_buffer *qbin, const struct sockaddr_storag
 }
 
 int
-ldns_tcp_bgsend(ldns_buffer *qbin, const struct sockaddr_storage *to, socklen_t tolen, struct timeval timeout)
+ldns_tcp_bgsend(ldns_buffer *qbin, const struct sockaddr_storage *to, socklen_t tolen, 
+		struct timeval timeout)
 {
 	int sockfd;
 	
@@ -507,8 +520,7 @@ ldns_sockaddr_storage2rdf(struct sockaddr_storage *sock, uint16_t *port)
                                 *port = ntohs((uint16_t)data_in->sin_port);
                         }
                         addr = ldns_rdf_new_frm_data(LDNS_RDF_TYPE_A,
-                                        LDNS_IP4ADDRLEN,
-                                        &data_in->sin_addr);
+                                        LDNS_IP4ADDRLEN, &data_in->sin_addr);
                         break;
                 case AF_INET6:
                         data_in6 = (struct sockaddr_in6*)sock;
@@ -516,8 +528,7 @@ ldns_sockaddr_storage2rdf(struct sockaddr_storage *sock, uint16_t *port)
                                 *port = ntohs((uint16_t)data_in6->sin6_port);
                         }
                         addr = ldns_rdf_new_frm_data(LDNS_RDF_TYPE_AAAA,
-                                        LDNS_IP6ADDRLEN,
-                                        &data_in6->sin6_addr);
+                                        LDNS_IP6ADDRLEN, &data_in6->sin6_addr);
                         break;
                 default:
                         if (port) {
@@ -530,9 +541,7 @@ ldns_sockaddr_storage2rdf(struct sockaddr_storage *sock, uint16_t *port)
 
 /* code from resolver.c */
 ldns_status
-ldns_axfr_start(ldns_resolver *resolver,
-                ldns_rdf *domain,
-                ldns_rr_class class)
+ldns_axfr_start(ldns_resolver *resolver, ldns_rdf *domain, ldns_rr_class class) 
 {
         ldns_pkt *query;
         ldns_buffer *query_wire;
@@ -545,10 +554,7 @@ ldns_axfr_start(ldns_resolver *resolver,
                 return LDNS_STATUS_ERR;
         }
 
-        query = ldns_pkt_query_new(ldns_rdf_clone(domain),
-                                   LDNS_RR_TYPE_AXFR,
-                                   class,
-                                   0);
+        query = ldns_pkt_query_new(ldns_rdf_clone(domain), LDNS_RR_TYPE_AXFR, class, 0);
 
         if (!query) {
                 return LDNS_STATUS_ADDRESS_ERR;
@@ -557,7 +563,8 @@ ldns_axfr_start(ldns_resolver *resolver,
         ns = ldns_rdf2native_sockaddr_storage(resolver->_nameservers[0],
                         ldns_resolver_port(resolver), &ns_len);
 
-        resolver->_socket = ldns_tcp_connect(ns, (socklen_t)ns_len, ldns_resolver_timeout(resolver));
+        resolver->_socket = ldns_tcp_connect(ns, (socklen_t)ns_len, 
+			ldns_resolver_timeout(resolver));
         if (resolver->_socket == 0) {
                 ldns_pkt_free(query);
                 LDNS_FREE(ns);
@@ -574,7 +581,8 @@ ldns_axfr_start(ldns_resolver *resolver,
                 return status;
         }
         /* Send the query */
-        if (ldns_tcp_send_query(query_wire, resolver->_socket, ns, (socklen_t)ns_len) == 0) {
+        if (ldns_tcp_send_query(query_wire, resolver->_socket, ns, 
+				(socklen_t)ns_len) == 0) {
                 ldns_pkt_free(query);
                 ldns_buffer_free(query_wire);
                 LDNS_FREE(ns);

@@ -59,6 +59,8 @@
 
 static const char Base32[] =
 	"ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
+/*       00000000001111111111222222222233
+         01234567890123456789012345678901*/
 static const char Base32_extended_hex[] =
 	"0123456789ABCDEFGHIJKLMNOPQRSTUV";
 static const char Pad32 = '=';
@@ -179,7 +181,7 @@ b32_ntop_ar(uint8_t const *src, size_t srclength, char *target, size_t targsize,
 		srclength -= 5;
 
 		output[0] = (input[0] & 0xf8) >> 3;
-		output[1] = ((input[0] & 0x07) << 2) + ((input[1] & 0x40) >> 6);
+		output[1] = ((input[0] & 0x07) << 2) + ((input[1] & 0xc0) >> 6);
 		output[2] = (input[1] & 0x3e) >> 1;
 		output[3] = ((input[1] & 0x01) << 4) + ((input[2] & 0xf0) >> 4);
 		output[4] = ((input[2] & 0x0f) << 1) + ((input[3] & 0x80) >> 7);
@@ -219,7 +221,7 @@ b32_ntop_ar(uint8_t const *src, size_t srclength, char *target, size_t targsize,
 		output[0] = (input[0] & 0xf8) >> 3;
 		assert(output[0] < 32);
 		if (srclength >= 1) {
-			output[1] = ((input[0] & 0x07) << 2) + ((input[1] & 0x40) >> 6);
+			output[1] = ((input[0] & 0x07) << 2) + ((input[1] & 0xc0) >> 6);
 			assert(output[1] < 32);
 			output[2] = (input[1] & 0x3e) >> 1;
 			assert(output[2] < 32);
