@@ -176,7 +176,7 @@ b32_pton_ar(char const *src, uint8_t *target, size_t targsize, const char B32_ar
 
 	state = 0;
 	tarindex = 0;
-
+	
 	while ((ch = *src++) != '\0') {
 		if (isspace((unsigned char)ch))        /* Skip whitespace anywhere. */
 			continue;
@@ -193,16 +193,18 @@ b32_pton_ar(char const *src, uint8_t *target, size_t targsize, const char B32_ar
 		switch (state) {
 		case 0:
 			if (target) {
-				if ((size_t)tarindex >= targsize)
-					return (-1);
+				if ((size_t)tarindex >= targsize) {
+					return (-2);
+				}
 				target[tarindex] = (pos - B32_ar) << 3;
 			}
 			state = 1;
 			break;
 		case 1:
 			if (target) {
-				if ((size_t)tarindex + 1 >= targsize)
-					return (-1);
+				if ((size_t)tarindex + 1 >= targsize) {
+					return (-3);
+				}
 				target[tarindex]   |=  (pos - B32_ar) >> 2;
 				target[tarindex+1]  = ((pos - B32_ar) & 0x03)
 							<< 6 ;
@@ -212,28 +214,30 @@ b32_pton_ar(char const *src, uint8_t *target, size_t targsize, const char B32_ar
 			break;
 		case 2:
 			if (target) {
-				if ((size_t)tarindex + 1 >= targsize)
-					return (-1);
+				if ((size_t)tarindex + 1 >= targsize) {
+					return (-4);
+				}
 				target[tarindex]   |=  (pos - B32_ar) << 1;
 			}
-			tarindex++;
+			/*tarindex++;*/
 			state = 3;
 			break;
 		case 3:
 			if (target) {
-				if ((size_t)tarindex + 1 >= targsize)
-					return (-1);
+				if ((size_t)tarindex + 1 >= targsize) {
+					return (-5);
+				}
 				target[tarindex]   |=  (pos - B32_ar) >> 4;
-				target[tarindex+1]  = ((pos - B32_ar) & 0x0f)
-							<< 4 ;
+				target[tarindex+1]  = ((pos - B32_ar) & 0x0f) << 4 ;
 			}
 			tarindex++;
-			state = 2;
+			state = 4;
 			break;
 		case 4:
 			if (target) {
-				if ((size_t)tarindex + 1 >= targsize)
-					return (-1);
+				if ((size_t)tarindex + 1 >= targsize) {
+					return (-6);
+				}
 				target[tarindex]   |=  (pos - B32_ar) >> 1;
 				target[tarindex+1]  = ((pos - B32_ar) & 0x01)
 							<< 7 ;
@@ -243,17 +247,18 @@ b32_pton_ar(char const *src, uint8_t *target, size_t targsize, const char B32_ar
 			break;
 		case 5:
 			if (target) {
-				if ((size_t)tarindex + 1 >= targsize)
-					return (-1);
+				if ((size_t)tarindex + 1 >= targsize) {
+					return (-7);
+				}
 				target[tarindex]   |=  (pos - B32_ar) << 2;
 			}
-			tarindex++;
 			state = 6;
 			break;
 		case 6:
 			if (target) {
-				if ((size_t)tarindex + 1 >= targsize)
-					return (-1);
+				if ((size_t)tarindex + 1 >= targsize) {
+					return (-8);
+				}
 				target[tarindex]   |=  (pos - B32_ar) >> 3;
 				target[tarindex+1]  = ((pos - B32_ar) & 0x07)
 							<< 5 ;
@@ -263,8 +268,9 @@ b32_pton_ar(char const *src, uint8_t *target, size_t targsize, const char B32_ar
 			break;
 		case 7:
 			if (target) {
-				if ((size_t)tarindex + 1 >= targsize)
-					return (-1);
+				if ((size_t)tarindex + 1 >= targsize) {
+					return (-9);
+				}
 				target[tarindex]   |=  (pos - B32_ar);
 			}
 			tarindex++;
@@ -285,7 +291,7 @@ b32_pton_ar(char const *src, uint8_t *target, size_t targsize, const char B32_ar
 		switch (state) {
 		case 0:		/* Invalid = in first position */
 		case 1:		/* Invalid = in second position */
-			return (-1);
+			return (-10);
 
 		case 2:		/* Valid, means one byte of info */
 		case 3:
@@ -294,8 +300,9 @@ b32_pton_ar(char const *src, uint8_t *target, size_t targsize, const char B32_ar
 				if (!isspace((unsigned char)ch))
 					break;
 			/* Make sure there is another trailing = sign. */
-			if (ch != Pad32)
-				return (-1);
+			if (ch != Pad32) {
+				return (-11);
+			}
 			ch = *src++;		/* Skip the = */
 			/* Fall through to "single trailing =" case. */
 			/* FALLTHROUGH */
@@ -308,8 +315,9 @@ b32_pton_ar(char const *src, uint8_t *target, size_t targsize, const char B32_ar
 			 * whitespace after it?
 			 */
 			for ((void)NULL; ch != '\0'; ch = *src++)
-				if (!isspace((unsigned char)ch))
-					return (-1);
+				if (!(isspace((unsigned char)ch) || ch == '=')) {
+					return (-12);
+				}
 
 		case 7:		/* Valid, means three bytes of info */
 			/*
@@ -317,8 +325,9 @@ b32_pton_ar(char const *src, uint8_t *target, size_t targsize, const char B32_ar
 			 * whitespace after it?
 			 */
 			for ((void)NULL; ch != '\0'; ch = *src++)
-				if (!isspace((unsigned char)ch))
-					return (-1);
+				if (!isspace((unsigned char)ch)) {
+					return (-13);
+				}
 
 			/*
 			 * Now make sure for cases 2 and 3 that the "extra"
@@ -326,8 +335,9 @@ b32_pton_ar(char const *src, uint8_t *target, size_t targsize, const char B32_ar
 			 * zeros.  If we don't check them, they become a
 			 * subliminal channel.
 			 */
-			if (target && target[tarindex] != 0)
-				return (-1);
+			if (target && target[tarindex] != 0) {
+				return (-14);
+			}
 		}
 	} else {
 		/*
@@ -335,7 +345,7 @@ b32_pton_ar(char const *src, uint8_t *target, size_t targsize, const char B32_ar
 		 * have no partial bytes lying around.
 		 */
 		if (state != 0)
-			return (-1);
+			return (-15);
 	}
 
 	return (tarindex);

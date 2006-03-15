@@ -57,6 +57,9 @@
 
 #define Assert(Cond) if (!(Cond)) abort()
 
+/*       0000000000111111111122222222223333333333444444444455555555556666
+         0123456789012345678901234567890123456789012345678901234567890123
+*/
 static const char Base64[] =
 	"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 static const char Pad64 = '=';
@@ -146,8 +149,9 @@ b64_ntop(uint8_t const *src, size_t srclength, char *target, size_t targsize) {
 		Assert(output[2] < 64);
 		Assert(output[3] < 64);
 
-		if (datalength + 4 > targsize)
+		if (datalength + 4 > targsize) {
 			return (-1);
+		}
 		target[datalength++] = Base64[output[0]];
 		target[datalength++] = Base64[output[1]];
 		target[datalength++] = Base64[output[2]];
@@ -168,18 +172,21 @@ b64_ntop(uint8_t const *src, size_t srclength, char *target, size_t targsize) {
 		Assert(output[1] < 64);
 		Assert(output[2] < 64);
 
-		if (datalength + 4 > targsize)
-			return (-1);
+		if (datalength + 4 > targsize) {
+			return (-2);
+		}
 		target[datalength++] = Base64[output[0]];
 		target[datalength++] = Base64[output[1]];
-		if (srclength == 1)
+		if (srclength == 1) {
 			target[datalength++] = Pad64;
-		else
+		} else {
 			target[datalength++] = Base64[output[2]];
+		}
 		target[datalength++] = Pad64;
 	}
-	if (datalength >= targsize)
-		return (-1);
+	if (datalength >= targsize) {
+		return (-3);
+	}
 	target[datalength] = '\0';	/* Returned value doesn't count \0. */
 	return (int) (datalength);
 }

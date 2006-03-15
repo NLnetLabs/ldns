@@ -206,7 +206,12 @@ int b32_ntop_extended_hex(uint8_t const *src, size_t srclength,
 /*@unused@*/
 static inline size_t b32_ntop_calculate_size(size_t srcsize)
 {
-	return ((((srcsize + 2) / 3) * 4) + 1);
+	size_t result = ((((srcsize + 2) / 3) * 4) + 1);
+	if (result < 9) {
+		return 9;
+	} else {
+		return result;
+	}
 }
 #endif /* !B32_PTON */
 #ifndef B32_NTOP

@@ -185,7 +185,7 @@ b32_ntop_ar(uint8_t const *src, size_t srclength, char *target, size_t targsize,
 		output[4] = ((input[2] & 0x0f) << 1) + ((input[3] & 0x80) >> 7);
 		output[5] = (input[3] & 0x7c) >> 2;
 		output[6] = ((input[3] & 0x03) << 3) + ((input[4] & 0xe0) >> 5);
-		output[7] = (input[5] & 0x1f);
+		output[7] = (input[4] & 0x1f);
 
 		assert(output[0] < 32);
 		assert(output[1] < 32);
@@ -196,8 +196,9 @@ b32_ntop_ar(uint8_t const *src, size_t srclength, char *target, size_t targsize,
 		assert(output[6] < 32);
 		assert(output[7] < 32);
 
-		if (datalength + 8 > targsize)
+		if (datalength + 8 > targsize) {
 			return (-1);
+		}
 		target[datalength++] = B32_ar[output[0]];
 		target[datalength++] = B32_ar[output[1]];
 		target[datalength++] = B32_ar[output[2]];
@@ -216,37 +217,70 @@ b32_ntop_ar(uint8_t const *src, size_t srclength, char *target, size_t targsize,
 			input[i] = *src++;
 	
 		output[0] = (input[0] & 0xf8) >> 3;
-		output[1] = ((input[0] & 0x07) << 2) + ((input[1] & 0x40) >> 6);
-		output[2] = (input[1] & 0x3e) >> 1;
-		output[3] = ((input[1] & 0x01) << 4) + ((input[2] & 0xf0) >> 4);
-		output[4] = ((input[2] & 0x0f) << 1) + ((input[3] & 0x80) >> 7);
-		output[5] = (input[3] & 0x7c) >> 2;
-		output[6] = ((input[3] & 0x03) << 3) + ((input[4] & 0xe0) >> 5);
-
 		assert(output[0] < 32);
-		assert(output[1] < 32);
-		assert(output[2] < 32);
-		assert(output[3] < 32);
-		assert(output[4] < 32);
-		assert(output[5] < 32);
-		assert(output[6] < 32);
+		if (srclength >= 1) {
+			output[1] = ((input[0] & 0x07) << 2) + ((input[1] & 0x40) >> 6);
+			assert(output[1] < 32);
+			output[2] = (input[1] & 0x3e) >> 1;
+			assert(output[2] < 32);
+		}
+		if (srclength >= 2) {
+			output[3] = ((input[1] & 0x01) << 4) + ((input[2] & 0xf0) >> 4);
+			assert(output[3] < 32);
+		}
+		if (srclength >= 3) {
+			output[4] = ((input[2] & 0x0f) << 1) + ((input[3] & 0x80) >> 7);
+			assert(output[4] < 32);
+			output[5] = (input[3] & 0x7c) >> 2;
+			assert(output[5] < 32);
+		}
+		if (srclength >= 4) {
+			output[6] = ((input[3] & 0x03) << 3) + ((input[4] & 0xe0) >> 5);
+			assert(output[6] < 32);
+		}
 
-		if (datalength + 8 > targsize)
-			return (-1);
+
+		if (datalength + 8 > targsize) {
+			return (-2);
+		}
 		target[datalength++] = B32_ar[output[0]];
-		target[datalength++] = B32_ar[output[1]];
-		target[datalength++] = B32_ar[output[2]];
-		target[datalength++] = B32_ar[output[3]];
-		target[datalength++] = B32_ar[output[4]];
-		target[datalength++] = B32_ar[output[5]];
-		if (srclength == 1)
+		if (srclength >= 1) {
+			target[datalength++] = B32_ar[output[1]];
+			if (srclength == 1 && output[2] == 0) {
+				target[datalength++] = Pad32;
+			} else {
+				target[datalength++] = B32_ar[output[2]];
+			}
+		} else {
 			target[datalength++] = Pad32;
-		else
+			target[datalength++] = Pad32;
+		}
+		if (srclength >= 2) {
+			target[datalength++] = B32_ar[output[3]];
+		} else {
+			target[datalength++] = Pad32;
+		}
+		if (srclength >= 3) {
+			target[datalength++] = B32_ar[output[4]];
+			if (srclength == 3 && output[5] == 0) {
+				target[datalength++] = Pad32;
+			} else {
+				target[datalength++] = B32_ar[output[5]];
+			}
+		} else {
+			target[datalength++] = Pad32;
+			target[datalength++] = Pad32;
+		}
+		if (srclength >= 4) {
 			target[datalength++] = B32_ar[output[6]];
+		} else {
+			target[datalength++] = Pad32;
+		}
 		target[datalength++] = Pad32;
 	}
-	if (datalength >= targsize)
-		return (-1);
+	if (datalength >= targsize) {
+		return (-3);
+	}
 	target[datalength] = '\0';	/* Returned value doesn't count \0. */
 	return (int) (datalength);
 }
