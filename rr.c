@@ -45,15 +45,13 @@ ldns_rr_new_frm_type(ldns_rr_type t)
 	
 	desc = ldns_rr_descript(t);
 
-	rr->_rdata_fields = LDNS_XMALLOC(ldns_rdf *, 
-			ldns_rr_descriptor_minimum(desc));
+	rr->_rdata_fields = LDNS_XMALLOC(ldns_rdf *, ldns_rr_descriptor_minimum(desc));
 	for (i = 0; i < ldns_rr_descriptor_minimum(desc); i++) {
 		rr->_rdata_fields[i] = NULL;
 	}
 	
 	/* set the count to minimum */
-	ldns_rr_set_rd_count(rr, 
-			ldns_rr_descriptor_minimum(desc));
+	ldns_rr_set_rd_count(rr, ldns_rr_descriptor_minimum(desc));
 	ldns_rr_set_class(rr, LDNS_RR_CLASS_IN);
 	ldns_rr_set_ttl(rr, LDNS_DEFAULT_TTL);
 	ldns_rr_set_type(rr, t);
@@ -90,7 +88,8 @@ ldns_rr_free(ldns_rr *rr)
  * miek.nl. IN MX 10 elektron.atoom.net
  */
 ldns_rr *
-ldns_rr_new_frm_str(const char *str, uint16_t default_ttl, ldns_rdf *origin, ldns_rdf **prev)
+ldns_rr_new_frm_str(const char *str, uint16_t default_ttl, ldns_rdf *origin, 
+		ldns_rdf **prev)
 {
 	ldns_rr *new;
 	const ldns_rr_descriptor *desc;
@@ -133,8 +132,7 @@ ldns_rr_new_frm_str(const char *str, uint16_t default_ttl, ldns_rdf *origin, ldn
 	rd_buf = LDNS_MALLOC(ldns_buffer);
 	rd = LDNS_XMALLOC(char, LDNS_MAX_RDFLEN);
 	b64 = LDNS_XMALLOC(char, LDNS_MAX_RDFLEN);
-	if (!new || !owner || !ttl || !clas || !rdata ||
-			!rr_buf || !rd_buf || !rd | !b64) {
+	if (!new || !owner || !ttl || !clas || !rdata || !rr_buf || !rd_buf || !rd | !b64) {
 		return NULL;
 	}
 	r_cnt = 0;
@@ -244,8 +242,7 @@ ldns_rr_new_frm_str(const char *str, uint16_t default_ttl, ldns_rdf *origin, ldn
 		*/
 	}
 
-	ldns_buffer_new_frm_data(
-			rd_buf, rdata, strlen(rdata));
+	ldns_buffer_new_frm_data( rd_buf, rdata, strlen(rdata));
 
 	if (strlen(owner) <= 1 && strncmp(owner, "@", 1) == 0) {
 		if (origin) {
@@ -268,7 +265,8 @@ ldns_rr_new_frm_str(const char *str, uint16_t default_ttl, ldns_rdf *origin, ldn
 		} else {
 			ldns_rr_set_owner(new, ldns_dname_new_frm_str(owner));
 			if (!ldns_dname_str_absolute(owner) && origin) {
-				if(ldns_dname_cat(ldns_rr_owner(new), origin) != LDNS_STATUS_OK) {
+				if(ldns_dname_cat(ldns_rr_owner(new), 
+							origin) != LDNS_STATUS_OK) {
 					LDNS_FREE(owner); 
 					LDNS_FREE(ttl); 
 					LDNS_FREE(clas); 
@@ -310,20 +308,26 @@ ldns_rr_new_frm_str(const char *str, uint16_t default_ttl, ldns_rdf *origin, ldn
 		default:
 			done = false;
 
-			for (r_cnt = 0; !done && r_cnt < ldns_rr_descriptor_maximum(desc); r_cnt++) {
+			for (r_cnt = 0; !done && r_cnt < ldns_rr_descriptor_maximum(desc); 
+					r_cnt++) {
 				quoted = false;
 				/* if type = B64, the field may contain spaces */
-				if (ldns_rr_descriptor_field_type(desc, r_cnt) == LDNS_RDF_TYPE_B64 ||
-				    ldns_rr_descriptor_field_type(desc, r_cnt) == LDNS_RDF_TYPE_LOC ||
-				    ldns_rr_descriptor_field_type(desc, r_cnt) == LDNS_RDF_TYPE_WKS ||
-				    ldns_rr_descriptor_field_type(desc, r_cnt) == LDNS_RDF_TYPE_NSEC ||
-				    ldns_rr_descriptor_field_type(desc, r_cnt) == LDNS_RDF_TYPE_STR
-				    ) {
+				if (ldns_rr_descriptor_field_type(desc, 
+							r_cnt) == LDNS_RDF_TYPE_B64 ||
+				    ldns_rr_descriptor_field_type(desc, 
+					    r_cnt) == LDNS_RDF_TYPE_LOC ||
+				    ldns_rr_descriptor_field_type(desc, 
+					    r_cnt) == LDNS_RDF_TYPE_WKS ||
+				    ldns_rr_descriptor_field_type(desc, 
+					    r_cnt) == LDNS_RDF_TYPE_NSEC ||
+				    ldns_rr_descriptor_field_type(desc, 
+					    r_cnt) == LDNS_RDF_TYPE_STR) {
 					delimiters = "\n\t";
 				} else {
 					delimiters = "\n\t ";
 				}
-				if (ldns_rr_descriptor_field_type(desc, r_cnt) == LDNS_RDF_TYPE_STR) {
+				if (ldns_rr_descriptor_field_type(desc, 
+							r_cnt) == LDNS_RDF_TYPE_STR) {
 					if (*(ldns_buffer_current(rd_buf)) == '\"') {
 						delimiters = "\"\0";
 						ldns_buffer_skip(rd_buf, 1);
@@ -332,7 +336,8 @@ ldns_rr_new_frm_str(const char *str, uint16_t default_ttl, ldns_rdf *origin, ldn
 				}
 				/* because number of fields can be variable, we can't
 				   rely on _maximum() only */
-				if ((c = ldns_bget_token(rd_buf, rd, delimiters, LDNS_MAX_RDFLEN)) != -1) {
+				if ((c = ldns_bget_token(rd_buf, rd, delimiters, 
+								LDNS_MAX_RDFLEN)) != -1) {
 					/* hmmz, rfc3597 specifies that any type can be represented with
 					 * \# method, which can contain spaces...
 					 * it does specify size though... 
@@ -1781,8 +1786,7 @@ ldns_get_rr_type_by_name(const char *name)
 		desc_name = desc->_name;
 		if(desc_name &&
 		   strlen(name) == strlen(desc_name) &&
-		   strncasecmp(name, desc_name, strlen(desc_name)) == 0
-		) {
+		   strncasecmp(name, desc_name, strlen(desc_name)) == 0) {
 			return i;
 		}
 	}
