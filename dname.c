@@ -30,8 +30,7 @@ ldns_dname_cat_clone(const ldns_rdf *rd1, const ldns_rdf *rd2)
 	uint8_t *buf;
 
 	if (ldns_rdf_get_type(rd1) != LDNS_RDF_TYPE_DNAME ||
-			ldns_rdf_get_type(rd2) != LDNS_RDF_TYPE_DNAME)
-	{
+			ldns_rdf_get_type(rd2) != LDNS_RDF_TYPE_DNAME) {
 		return NULL;
 	}
 
@@ -44,8 +43,7 @@ ldns_dname_cat_clone(const ldns_rdf *rd1, const ldns_rdf *rd2)
 
 	/* put the two dname's after each other */
 	memcpy(buf, ldns_rdf_data(rd1), ldns_rdf_size(rd1) - 1);
-	memcpy(buf + ldns_rdf_size(rd1) - 1,
-			ldns_rdf_data(rd2), ldns_rdf_size(rd2));
+	memcpy(buf + ldns_rdf_size(rd1) - 1, ldns_rdf_data(rd2), ldns_rdf_size(rd2));
 	
 	new = ldns_rdf_new_frm_data(LDNS_RDF_TYPE_DNAME, new_size, buf);
 
@@ -59,14 +57,14 @@ ldns_dname_cat(ldns_rdf *rd1, ldns_rdf *rd2)
 	uint16_t size;
 
 	if (ldns_rdf_get_type(rd1) != LDNS_RDF_TYPE_DNAME ||
-			ldns_rdf_get_type(rd2) != LDNS_RDF_TYPE_DNAME)
-	{
+			ldns_rdf_get_type(rd2) != LDNS_RDF_TYPE_DNAME) {
 		return LDNS_STATUS_ERR;
 	}
 
 	size = ldns_rdf_size(rd1) + ldns_rdf_size(rd2) - 1;
 	ldns_rdf_set_data(rd1, LDNS_XREALLOC(ldns_rdf_data(rd1), uint8_t, size));
-	memcpy(ldns_rdf_data(rd1) + ldns_rdf_size(rd1) - 1, ldns_rdf_data(rd2), ldns_rdf_size(rd2));
+	memcpy(ldns_rdf_data(rd1) + ldns_rdf_size(rd1) - 1, ldns_rdf_data(rd2), 
+			ldns_rdf_size(rd2));
 	ldns_rdf_set_size(rd1, size);
 
 	return LDNS_STATUS_OK;
@@ -92,8 +90,7 @@ ldns_dname_left_chop(ldns_rdf *d)
 	/* 05blaat02nl00 */
 	label_pos = ldns_rdf_data(d)[0];
 
-	chop = ldns_dname_new_frm_data(
-			ldns_rdf_size(d) - label_pos - 1,
+	chop = ldns_dname_new_frm_data(ldns_rdf_size(d) - label_pos - 1,
 			ldns_rdf_data(d) + label_pos + 1);
 	return chop;
 }
@@ -106,7 +103,8 @@ ldns_dname_label_count(const ldns_rdf *r)
         uint8_t i;
         size_t r_size;
 
-        i = 0; src_pos = 0;
+        i = 0; 
+	src_pos = 0;
         r_size = ldns_rdf_size(r);
 
         if (ldns_rdf_get_type(r) != LDNS_RDF_TYPE_DNAME) {
@@ -133,6 +131,7 @@ ldns_rdf *
 ldns_dname_new(uint16_t s, void *d)
 {
         ldns_rdf *rd;
+
         rd = LDNS_MALLOC(ldns_rdf);
         if (!rd) {
                 return NULL;
@@ -182,8 +181,7 @@ ldns_dname_is_subdomain(const ldns_rdf *sub, const ldns_rdf *parent)
 
 	if (ldns_rdf_get_type(sub) != LDNS_RDF_TYPE_DNAME ||
 			ldns_rdf_get_type(parent) != LDNS_RDF_TYPE_DNAME ||
-			ldns_rdf_compare(sub, parent) == 0
-			) {
+			ldns_rdf_compare(sub, parent) == 0) {
 		return false;
 	}
 
@@ -308,7 +306,8 @@ ldns_dname_compare(const ldns_rdf *dname1, const ldns_rdf *dname2)
  * 1 = no
  */
 int
-ldns_dname_interval(const ldns_rdf *prev, const ldns_rdf *middle, const ldns_rdf *next)
+ldns_dname_interval(const ldns_rdf *prev, const ldns_rdf *middle, 
+		const ldns_rdf *next)
 {
 	int prev_check, next_check;
 
@@ -342,8 +341,7 @@ ldns_dname_str_absolute(const char *dname_str)
 	return (dname_str && 
 	        strlen(dname_str) > 1 && 
 	        dname_str[strlen(dname_str) - 1] == '.' &&
-	        dname_str[strlen(dname_str) - 2] != '\\'
-	       );
+	        dname_str[strlen(dname_str) - 2] != '\\');
 }
 
 ldns_rdf *
@@ -359,7 +357,8 @@ ldns_dname_label(const ldns_rdf *rdf, uint8_t labelpos)
 		return NULL;
 	}
 
-	labelcnt = 0; src_pos = 0;
+	labelcnt = 0; 
+	src_pos = 0;
 	s = ldns_rdf_size(rdf);
 	
 	len = ldns_rdf_data(rdf)[src_pos]; /* label start */

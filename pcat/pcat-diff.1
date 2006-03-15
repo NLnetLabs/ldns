@@ -1,0 +1,44 @@
+'\" t
+.TH PCAT-DIFF 1 "08 Mar 2006" "pcat utils"
+.SH NAME
+pcat-diff \- show the difference between two pcat files.
+.SH SYNOPSIS
+.B pcat-diff
+.IR PCAT_FILE1
+.IR PCAT_FILE2
+
+.SH DESCRIPTION
+\fBpcat-diff\fR reads in two pcat files and show the differences
+between the them.
+Its output is another pcat stream which can then be interpreted by
+pcat-print.
+
+.PP
+If PCAT_FILE2 is not given, standard input is read.
+
+.SH OPTIONS
+There are no options.
+
+.SH OUTPUT FORMAT
+The output of \fBpcat-diff\fR consists "records". Each record has four lines:
+.PP
+    1. xxx         - (decimal) sequence number
+    2. hex dump    - query in hex, network order
+    3. hex dump    - answer of FILE1 in hex, network order
+    4. hex dump    - answer of FILE2 in hex, network order.
+
+.SH ALSO SEE
+Also see pcat(1) and pcat-print(1).
+
+.SH AUTHOR
+Written by Miek Gieben for NLnet Labs.
+
+.SH REPORTING BUGS
+Report bugs to <miek@nlnetlabs.nl>. 
+
+.SH COPYRIGHT
+Copyright (C) 2005, 2006 NLnet Labs. This is free software. There is NO
+warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR
+PURPOSE.
+.PP
+Licensed under the GPL. 

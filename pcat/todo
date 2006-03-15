@@ -1,0 +1,9 @@
+maxpacketlen? We're are dealing with hex so it should prob. be
+twice as large?
+
+ipv6
+
+tcp packets
+
+better pcap payload inspection - currently it only works for udp,
+ethernet

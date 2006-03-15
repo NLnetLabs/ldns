@@ -15,8 +15,8 @@
 ldns_buffer *
 ldns_buffer_new(size_t capacity)
 {
-	ldns_buffer *buffer
-		= LDNS_MALLOC(ldns_buffer);
+	ldns_buffer *buffer = LDNS_MALLOC(ldns_buffer);
+
 	if (!buffer) {
 		return NULL;
 	}
@@ -106,6 +106,7 @@ ldns_buffer_reserve(ldns_buffer *buffer, size_t amount)
 	assert(!buffer->_fixed);
 	if (buffer->_capacity < buffer->_position + amount) {
 		size_t new_capacity = buffer->_capacity * 3 / 2;
+
 		if (new_capacity < buffer->_position + amount) {
 			new_capacity = buffer->_position + amount;
 		}
@@ -144,8 +145,7 @@ ldns_buffer_printf(ldns_buffer *buffer, const char *format, ...)
 			}
 			va_start(args, format);
 			written = vsnprintf((char *) ldns_buffer_current(buffer),
-					    ldns_buffer_remaining(buffer),
-					    format, args);
+			    ldns_buffer_remaining(buffer), format, args);
 			va_end(args);
 			if (written == -1) {
 				buffer->_status = LDNS_STATUS_INTERNAL_ERR;

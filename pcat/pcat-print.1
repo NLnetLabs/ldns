@@ -1,0 +1,39 @@
+'\" t
+.TH PCAT-PRINT 1 "08 Mar 2006" "pcat utils"
+.SH NAME
+pcat-print \- reformat hexadecimal packets back to dig-like syntax
+.SH SYNOPSIS
+.B pcat-printp
+[
+.IR \-h
+]
+.IR PCAT_STREAM
+
+.SH DESCRIPTION
+\fpcat-print\fR reads in a pcat file and reformats the hexadecimal
+packets back into a dig-like syntax. This makes the manual inspection
+of the packets easier.
+
+.PP
+If no pcat file is given, standard input is read.
+
+.SH OPTIONS
+.TP
+.B \-h
+Show a short help message.
+
+.SH ALSO SEE
+Also see pcat(1) and pcat-diff(1).
+
+.SH AUTHOR
+Written by Miek Gieben for NLnet Labs.
+
+.SH REPORTING BUGS
+Report bugs to <miek@nlnetlabs.nl>. 
+
+.SH COPYRIGHT
+Copyright (C) 2005, 2006 NLnet Labs. This is free software. There is NO
+warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR
+PURPOSE.
+.PP
+Licensed under the GPL. 

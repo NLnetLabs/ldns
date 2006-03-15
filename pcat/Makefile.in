@@ -1,0 +1,50 @@
+# Standard installation pathnames
+# See the file LICENSE for the license
+SHELL = @SHELL@
+VERSION = @PACKAGE_VERSION@
+basesrcdir = $(shell basename `pwd`)
+srcdir = @srcdir@
+prefix  = @prefix@
+exec_prefix = @exec_prefix@
+bindir = @bindir@
+mandir = @mandir@
+
+CC = @CC@
+CFLAGS = @CFLAGS@ -Wall -I. 
+CPPFLAGS = @CPPFLAGS@ 
+LDFLAGS = @LDFLAGS@
+LIBS = @LIBS@
+
+INSTALL = $(srcdir)/../install-sh 
+
+COMPILE         = $(CC) $(CPPFLAGS) $(CFLAGS)
+LINK            = $(CC) $(CFLAGS) $(LDFLAGS) $(LIBS)
+
+HEADER		= config.h
+
+.PHONY:	all clean realclean
+
+all:	p
+
+p: 	pcat pcat-diff pcat-print
+
+pcat: 		pcat.o getdelim.o
+		$(LINK) -o $@ $+
+
+pcat-diff: 	pcat-diff.o getdelim.o
+		$(LINK) -o $@ $+
+
+pcat-print: 	pcat-print.o getdelim.o
+		$(LINK) -o $@ $+
+
+clean:
+	rm -f pcat pcat-diff pcat-print
+	rm -f pcat.o pcat-diff.o pcat-print.o
+
+realclean: 	clean
+		rm -f configure config.h config.log config.status
+
+
+## implicit rule
+%.o: 	$(srcdir)/%.c
+	$(COMPILE) -c $<

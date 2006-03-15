@@ -214,8 +214,7 @@ ldns_resolver_pop_nameserver(ldns_resolver *r)
 	
 	pop = nameservers[ns_count - 1];
 
-	nameservers = LDNS_XREALLOC(nameservers, ldns_rdf *, 
-			(ns_count - 1));
+	nameservers = LDNS_XREALLOC(nameservers, ldns_rdf *, (ns_count - 1));
 	rtt = LDNS_XREALLOC(rtt, size_t, (ns_count - 1));
 
 	ldns_resolver_set_nameservers(r, nameservers);
@@ -282,8 +281,7 @@ ldns_resolver_push_nameserver_rr_list(ldns_resolver *r, ldns_rr_list *rrlist)
 	if (rrlist) {
 		for(i = 0; i < ldns_rr_list_rr_count(rrlist); i++) {
 			rr = ldns_rr_list_rr(rrlist, i);
-			if (ldns_resolver_push_nameserver_rr(r, rr) !=
-					LDNS_STATUS_OK) {
+			if (ldns_resolver_push_nameserver_rr(r, rr) != LDNS_STATUS_OK) {
 				stat = LDNS_STATUS_ERR;
 			}
 		}
@@ -729,8 +727,7 @@ ldns_resolver_search(const ldns_resolver *r,const  ldns_rdf *name, ldns_rr_type 
 	} else {
 		search_list = ldns_resolver_searchlist(r);
 		for (i = 0; i < ldns_resolver_searchlist_count(r); i++) {
-			new_name = ldns_dname_cat_clone(name,
-					search_list[i]);
+			new_name = ldns_dname_cat_clone(name, search_list[i]);
 
 			p = ldns_resolver_query(r, new_name, type, class, flags);
 			ldns_rdf_free(new_name);
@@ -743,8 +740,8 @@ ldns_resolver_search(const ldns_resolver *r,const  ldns_rdf *name, ldns_rr_type 
 }
 
 ldns_pkt *
-ldns_resolver_query(const ldns_resolver *r, const ldns_rdf *name, ldns_rr_type type, ldns_rr_class class,
-                uint16_t flags)
+ldns_resolver_query(const ldns_resolver *r, const ldns_rdf *name, ldns_rr_type type, 
+		ldns_rr_class class, uint16_t flags)
 {
 	ldns_rdf *newname;
 	ldns_pkt *pkt;
@@ -753,7 +750,8 @@ ldns_resolver_query(const ldns_resolver *r, const ldns_rdf *name, ldns_rr_type t
 	pkt = NULL;
 
 	if (!ldns_resolver_defnames(r)) {
-		status = ldns_resolver_send(&pkt, (ldns_resolver *)r, name, type, class, flags);
+		status = ldns_resolver_send(&pkt, (ldns_resolver *)r, name, type, class, 
+				flags);
 		if (status == LDNS_STATUS_OK) {
 			return pkt;
 		} else {
@@ -766,7 +764,8 @@ ldns_resolver_query(const ldns_resolver *r, const ldns_rdf *name, ldns_rr_type t
 
 	if (!ldns_resolver_domain(r)) {
 		/* _defnames is set, but the domain is not....?? */
-		status = ldns_resolver_send(&pkt, (ldns_resolver *)r, name, type, class, flags);
+		status = ldns_resolver_send(&pkt, (ldns_resolver *)r, name, type, class, 
+				flags);
 		if (status == LDNS_STATUS_OK) {
 			return pkt;
 		} else {
@@ -784,13 +783,15 @@ ldns_resolver_query(const ldns_resolver *r, const ldns_rdf *name, ldns_rr_type t
 		}
 		return NULL;
 	}
-	status = ldns_resolver_send(&pkt, (ldns_resolver *)r, newname, type, class, flags);
+	status = ldns_resolver_send(&pkt, (ldns_resolver *)r, newname, type, class, 
+			flags);
 	ldns_rdf_free(newname);
 	return pkt;
 }
 
 ldns_status
-ldns_resolver_send_pkt(ldns_pkt **answer,const ldns_resolver *r, const ldns_pkt *query_pkt)
+ldns_resolver_send_pkt(ldns_pkt **answer,const ldns_resolver *r, 
+		const ldns_pkt *query_pkt)
 {
 	ldns_pkt *answer_pkt = NULL;
 	ldns_status stat = LDNS_STATUS_OK;
@@ -856,8 +857,7 @@ ldns_resolver_send(ldns_pkt **answer, ldns_resolver *r,const  ldns_rdf *name,
 
 	/* transfer the udp_edns_size from the resolver to the packet */
 	if (ldns_resolver_edns_udp_size(r) != 0) {
-		ldns_pkt_set_edns_udp_size(query_pkt,
-				ldns_resolver_edns_udp_size(r));
+		ldns_pkt_set_edns_udp_size(query_pkt, ldns_resolver_edns_udp_size(r));
 	}
 
 	if (ldns_resolver_debug(r)) {
@@ -880,9 +880,7 @@ ldns_resolver_send(ldns_pkt **answer, ldns_resolver *r,const  ldns_rdf *name,
 		status = ldns_pkt_tsig_sign(query_pkt,
 		                            ldns_resolver_tsig_keyname(r),
 		                            ldns_resolver_tsig_keydata(r),
-		                            300,
-		                            ldns_resolver_tsig_algorithm(r),
-		                            NULL);
+		                            300, ldns_resolver_tsig_algorithm(r), NULL);
 		if (status != LDNS_STATUS_OK) {
 			return LDNS_STATUS_CRYPTO_TSIG_ERR;
 		}
@@ -916,7 +914,9 @@ ldns_axfr_next(ldns_resolver *resolver)
 			resolver->_cur_axfr_pkt = NULL;
 			return ldns_axfr_next(resolver);
 		}
-		cur_rr = ldns_rr_clone(ldns_rr_list_rr(ldns_pkt_answer(resolver->_cur_axfr_pkt), resolver->_axfr_i));
+		cur_rr = ldns_rr_clone(ldns_rr_list_rr(
+					ldns_pkt_answer(resolver->_cur_axfr_pkt), 
+					resolver->_axfr_i));
 		resolver->_axfr_i++;
 		if (ldns_rr_get_type(cur_rr) == LDNS_RR_TYPE_SOA) {
 			resolver->_axfr_soa_count++;
@@ -931,7 +931,8 @@ ldns_axfr_next(ldns_resolver *resolver)
 	} else {
 		packet_wire = ldns_tcp_read_wire(resolver->_socket, &packet_wire_size);
 		
-		(void) ldns_wire2pkt(&resolver->_cur_axfr_pkt, packet_wire, packet_wire_size);
+		(void) ldns_wire2pkt(&resolver->_cur_axfr_pkt, packet_wire, 
+				     packet_wire_size);
 		free(packet_wire);
 
 		resolver->_axfr_i = 0;
@@ -947,13 +948,15 @@ ldns_axfr_next(ldns_resolver *resolver)
 }
 
 bool
-ldns_axfr_complete(const ldns_resolver *res) {
+ldns_axfr_complete(const ldns_resolver *res) 
+{
 	/* complete when soa count is 2? */
 	return res->_axfr_soa_count == 2;
 }
 
 ldns_pkt *
-ldns_axfr_last_pkt(const ldns_resolver *res) {
+ldns_axfr_last_pkt(const ldns_resolver *res) 
+{
 	return res->_cur_axfr_pkt;
 }
 
@@ -1003,16 +1006,13 @@ ldns_update_resolver_new(const char *fqdn, const char *zone,
 
 	/* TSIG key data available? Copy into the resolver. */
 	if (tsig_cred) {
-		ldns_resolver_set_tsig_algorithm(r2,
-		    ldns_tsig_algorithm(tsig_cred));
-		ldns_resolver_set_tsig_keyname(r2,
-		    ldns_tsig_keyname_clone(tsig_cred));
+		ldns_resolver_set_tsig_algorithm(r2, ldns_tsig_algorithm(tsig_cred));
+		ldns_resolver_set_tsig_keyname(r2, ldns_tsig_keyname_clone(tsig_cred));
 		/*
 		 * XXX Weird that ldns_resolver_deep_free() will free()
 		 * keyname but not hmac key data?
 		 */
-		ldns_resolver_set_tsig_keydata(r2,
-		    ldns_tsig_keydata_clone(tsig_cred));
+		ldns_resolver_set_tsig_keydata(r2, ldns_tsig_keydata_clone(tsig_cred));
 	}
 	
 	/* Now get SOA zone, mname, NS, and construct r2. [RFC2136 4.3] */
@@ -1055,8 +1055,7 @@ ldns_update_resolver_new(const char *fqdn, const char *zone,
 			continue;
 		if (ldns_rdf_compare(soa_mname, ns_name) == 0) {
 			/* Match */
-			iplist = ldns_get_rr_list_addr_by_name(r1, ns_name,
-			    class, 0);
+			iplist = ldns_get_rr_list_addr_by_name(r1, ns_name, class, 0);
 			(void) ldns_resolver_push_nameserver_rr_list(r2, iplist);
 			break;
 		}
@@ -1069,8 +1068,7 @@ ldns_update_resolver_new(const char *fqdn, const char *zone,
 			continue;
 		if (ldns_rdf_compare(soa_mname, ns_name) != 0) {
 			/* No match, add it now. */
-			iplist = ldns_get_rr_list_addr_by_name(r1, ns_name,
-			    class, 0);
+			iplist = ldns_get_rr_list_addr_by_name(r1, ns_name, class, 0);
 			(void) ldns_resolver_push_nameserver_rr_list(r2, iplist);
 		}
 	}

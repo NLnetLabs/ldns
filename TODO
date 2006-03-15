@@ -17,6 +17,7 @@ Post 1.0 Stuff:
         o Different digest for DS (spec currently specifies SHA-1)
         o zone.c; make it better/faster??
         o SHA256 test in configure.ac
+        o clean pkt->when stuff
 
         Minor:
         ------
