@@ -1,0 +1,891 @@
+#!/bin/sh
+# This is a shell archive (produced by GNU sharutils 4.2.1).
+# To extract the files from this archive, save it to some FILE, remove
+# everything before the `!/bin/sh' line above, then type `sh FILE'.
+#
+# Made on 2006-03-15 16:09 CET by <jeltejan@eliza>.
+# Source directory was `/home/jeltejan/repos/nsec3_signer/test/14-unit-tests-base.dir'.
+#
+# Existing files will *not* be overwritten unless `-c' is specified.
+#
+# This shar contains:
+# length mode       name
+# ------ ---------- ------------------------------------------
+#   9618 -rw------- 14-unit-tests-base.c
+#   1660 -rw------- 14-unit-tests-base.configure.ac
+#    416 -rw------- 14-unit-tests-base.dsc
+#     99 -rw------- 14-unit-tests-base.help
+#    880 -rw------- 14-unit-tests-base.Makefile.in
+#   1007 -rw------- 14-unit-tests-base.pre
+#    426 -rw------- 14-unit-tests-base.test
+#
+save_IFS="${IFS}"
+IFS="${IFS}:"
+gettext_dir=FAILED
+locale_dir=FAILED
+first_param="$1"
+for dir in $PATH
+do
+  if test "$gettext_dir" = FAILED && test -f $dir/gettext \
+     && ($dir/gettext --version >/dev/null 2>&1)
+  then
+    set `$dir/gettext --version 2>&1`
+    if test "$3" = GNU
+    then
+      gettext_dir=$dir
+    fi
+  fi
+  if test "$locale_dir" = FAILED && test -f $dir/shar \
+     && ($dir/shar --print-text-domain-dir >/dev/null 2>&1)
+  then
+    locale_dir=`$dir/shar --print-text-domain-dir`
+  fi
+done
+IFS="$save_IFS"
+if test "$locale_dir" = FAILED || test "$gettext_dir" = FAILED
+then
+  echo=echo
+else
+  TEXTDOMAINDIR=$locale_dir
+  export TEXTDOMAINDIR
+  TEXTDOMAIN=sharutils
+  export TEXTDOMAIN
+  echo="$gettext_dir/gettext -s"
+fi
+if touch -am -t 200112312359.59 $$.touch >/dev/null 2>&1 && test ! -f 200112312359.59 -a -f $$.touch; then
+  shar_touch='touch -am -t $1$2$3$4$5$6.$7 "$8"'
+elif touch -am 123123592001.59 $$.touch >/dev/null 2>&1 && test ! -f 123123592001.59 -a ! -f 123123592001.5 -a -f $$.touch; then
+  shar_touch='touch -am $3$4$5$6$1$2.$7 "$8"'
+elif touch -am 1231235901 $$.touch >/dev/null 2>&1 && test ! -f 1231235901 -a -f $$.touch; then
+  shar_touch='touch -am $3$4$5$6$2 "$8"'
+else
+  shar_touch=:
+  echo
+  $echo 'WARNING: not restoring timestamps.  Consider getting and'
+  $echo "installing GNU \`touch', distributed in GNU File Utilities..."
+  echo
+fi
+rm -f 200112312359.59 123123592001.59 123123592001.5 1231235901 $$.touch
+#
+if mkdir _sh19193; then
+  $echo 'x -' 'creating lock directory'
+else
+  $echo 'failed to create lock directory'
+  exit 1
+fi
+# ============= 14-unit-tests-base.c ==============
+if test -f '14-unit-tests-base.c' && test "$first_param" != -c; then
+  $echo 'x -' SKIPPING '14-unit-tests-base.c' '(file already exists)'
+else
+  $echo 'x -' extracting '14-unit-tests-base.c' '(text)'
+  sed 's/^X//' << 'SHAR_EOF' > '14-unit-tests-base.c' &&
+/*
+X */
+X
+#include "ldns/config.h"
+X
+#include <ldns/dns.h>
+X
+void print_data_ar(const uint8_t *data, const size_t len) {
+X	size_t i;
+X	
+X	for (i = 0; i < len; i++) {
+X		printf("%02x ", data[i]);
+X	}
+}
+X
+X
+int
+test_base64_encode(uint8_t *data, size_t data_len, const char *expect_result)
+{
+X	int result;
+X	
+X	char *text;
+X	size_t text_len;
+X
+X	text_len = b64_ntop_calculate_size(data_len);
+X	text = malloc(text_len);
+X	
+X	result = b64_ntop(data, data_len, text, text_len);
+X	
+X	if (result < 1) {
+X		printf("Error encoding base64 test data (result %d):\n", result);
+X		print_data_ar(data, data_len);
+X		printf("\n");
+X		result = 1;
+X	} else {
+X		if (strncmp(expect_result, text, text_len) != 0) {
+X			printf("Bad base64 encoding: got: ");
+X			printf("%s\n", text);
+X			printf("Expected:                 ");
+X			printf("%s\n", expect_result);
+X			printf("Data:\t");
+X			print_data_ar(data, data_len);
+X			printf("\n");
+X			
+X			result = 2;
+X		} else {
+X			result = 0;
+X		}
+X	}
+X	free(text);
+X	return result;
+}
+X
+int
+test_base64_decode(const char *str, const uint8_t *expect_data, size_t expect_data_len)
+{
+X	int result;
+X	
+X	uint8_t *data;
+X	size_t data_len;
+X
+X	size_t i;
+X
+X	data_len = b64_pton_calculate_size(strlen(str));
+X	
+X	data = malloc(data_len);
+X	
+X	result = b64_pton(str, data, data_len);
+X	
+X	data_len = result;
+X	
+X	if (result < 1) {
+X		printf("Error decoding base64 test data: %s\n", str);
+X		result = 1;
+X	} else {
+X		result = 0;
+X		if (data_len != expect_data_len) {
+X			printf("Bad base64 decoding, wrong result length for string %s:\n", str);
+X			printf("Got:      ");
+X			print_data_ar(data, data_len);
+X			printf("\n");
+X			printf("Expected: ");
+X			print_data_ar(expect_data, expect_data_len);
+X			printf("\n");
+X			result = 2;
+X		} else {
+X			for (i = 0; i < data_len; i++) {
+X				if (data[i] != expect_data[i]) {
+X					result = 3;
+X				}
+X			}
+X			if (result != 0) {
+X				printf("Bad base64 decoding string %s:\n", str);
+X				printf("Got:      ");
+X				print_data_ar(data, data_len);
+X				printf("\n");
+X				printf("Expected: ");
+X				print_data_ar(expect_data, expect_data_len);
+X				printf("\n");
+X			}
+X		}
+X	}
+X	
+X	return result;
+}
+X
+int
+test_base32_encode(uint8_t *data, size_t data_len, const char *expect_result)
+{
+X	int result;
+X	
+X	char *text;
+X	size_t text_len;
+X
+X	text_len = b32_ntop_calculate_size(data_len);
+X	text = malloc(text_len);
+X	
+X	result = b32_ntop(data, data_len, text, text_len);
+X	
+X	if (result < 1) {
+X		printf("Error encoding base32 test data (result %d):\n", result);
+X		print_data_ar(data, data_len);
+X		printf("\n");
+X		result = 1;
+X	} else {
+X		if (strncmp(expect_result, text, text_len) != 0) {
+X			printf("Bad base32 encoding: got: ");
+X			printf("%s\n", text);
+X			printf("Expected:                 ");
+X			printf("%s\n", expect_result);
+X			printf("Data:\t");
+X			print_data_ar(data, data_len);
+X			printf("\n");
+X			
+X			result = 2;
+X		} else {
+X			result = 0;
+X		}
+X	}
+X	free(text);
+X	return result;
+}
+X
+int
+test_base32_decode(const char *str, const uint8_t *expect_data, size_t expect_data_len)
+{
+X	int result;
+X	
+X	uint8_t *data;
+X	size_t data_len;
+X
+X	size_t i;
+X
+X	data_len = b32_pton_calculate_size(strlen(str))  +  10;
+X	
+X	data = malloc(data_len);
+X	
+X	result = b32_pton(str, data, data_len);
+X	
+X	data_len = result;
+X	
+X	if (result < 1) {
+X		printf("Error decoding base32 test data: %s\n", str);
+X		result = 1;
+X	} else {
+X		result = 0;
+X		if (data_len != expect_data_len) {
+X			printf("Bad base32 decoding, wrong result length for string %s:\n", str);
+X			printf("Got:      ");
+X			print_data_ar(data, data_len);
+X			printf("\n");
+X			printf("Expected: ");
+X			print_data_ar(expect_data, expect_data_len);
+X			printf("\n");
+X			result = 2;
+X		} else {
+X			for (i = 0; i < data_len; i++) {
+X				if (data[i] != expect_data[i]) {
+X					result = 3;
+X				}
+X			}
+X			if (result != 0) {
+X				printf("Bad base32 decoding string %s:\n", str);
+X				printf("Got:      ");
+X				print_data_ar(data, data_len);
+X				printf("\n");
+X				printf("Expected: ");
+X				print_data_ar(expect_data, expect_data_len);
+X				printf("\n");
+X			}
+X		}
+X	}
+X	
+X	return result;
+}
+X
+int
+test_base32_encode_extended_hex(uint8_t *data, size_t data_len, const char *expect_result)
+{
+X	int result;
+X	
+X	char *text;
+X	size_t text_len;
+X
+X	text_len = b32_ntop_calculate_size(data_len);
+X	text = malloc(text_len);
+X	
+X	result = b32_ntop_extended_hex(data, data_len, text, text_len);
+X	
+X	data_len = result;
+X	
+X	if (result < 1) {
+X		printf("Error encoding base32 extended hex test data (result %d):\n", result);
+X		print_data_ar(data, data_len);
+X		printf("\n");
+X		result = 1;
+X	} else {
+X		if (strncmp(expect_result, text, text_len) != 0) {
+X			printf("Bad base32 encoding: got: ");
+X			printf("%s\n", text);
+X			printf("Expected:                 ");
+X			printf("%s\n", expect_result);
+X			printf("Data:\t");
+X			print_data_ar(data, data_len);
+X			printf("\n");
+X			
+X			result = 2;
+X		} else {
+X			result = 0;
+X		}
+X	}
+X	free(text);
+X	return result;
+}
+X
+int
+test_base32_decode_extended_hex(const char *str, const uint8_t *expect_data, size_t expect_data_len)
+{
+X	int result;
+X	
+X	uint8_t *data;
+X	size_t data_len;
+X
+X	size_t i;
+X
+X	data_len = b32_pton_calculate_size(strlen(str));
+X	
+X	data = malloc(data_len);
+X	
+X	result = b32_pton_extended_hex(str, data, data_len);
+X	
+X	data_len = result;
+X	
+X	if (result < 1) {
+X		printf("Error decoding base32 extended hex test data: %s\n", str);
+X		result = 1;
+X	} else {
+X		result = 0;
+X		if (data_len != expect_data_len) {
+X			printf("Bad base32 decoding, wrong result length for string %s:\n", str);
+X			printf("Got:      ");
+X			print_data_ar(data, data_len);
+X			printf("\n");
+X			printf("Expected: ");
+X			print_data_ar(expect_data, expect_data_len);
+X			printf("\n");
+X			result = 2;
+X		} else {
+X			for (i = 0; i < data_len; i++) {
+X				if (data[i] != expect_data[i]) {
+X					result = 3;
+X				}
+X			}
+X			if (result != 0) {
+X				printf("Bad base32 decoding string %s:\n", str);
+X				printf("Got:      ");
+X				print_data_ar(data, data_len);
+X				printf("\n");
+X				printf("Expected: ");
+X				print_data_ar(expect_data, expect_data_len);
+X				printf("\n");
+X			}
+X		}
+X	}
+X	
+X	return result;
+}
+X
+int
+main(void)
+{
+X	uint8_t *data;
+X	size_t data_len;
+X	char *text;
+X	size_t text_len;
+X
+X	int result = EXIT_SUCCESS;
+X
+X	/* rfc3548 example 1 */
+X	data_len = 6;
+X	data = malloc(data_len);
+X	data[0] = 0x14;
+X	data[1] = 0xfb;
+X	data[2] = 0x9c;
+X	data[3] = 0x03;
+X	data[4] = 0xd9;
+X	data[5] = 0x7e;
+X	if (test_base64_encode(data, data_len, "FPucA9l+") != 0) {
+X		result = EXIT_FAILURE;
+X	}
+X	free(data);
+X
+X	/* rfc3548 example 2 */
+X	data_len = 5;
+X	data = malloc(data_len);
+X	data[0] = 0x14;
+X	data[1] = 0xfb;
+X	data[2] = 0x9c;
+X	data[3] = 0x03;
+X	data[4] = 0xd9;
+X	if (test_base64_encode(data, data_len, "FPucA9k=") != 0) {
+X		result = EXIT_FAILURE;
+X	}
+X	free(data);
+X
+X	/* rfc3548 example 3 */
+X	data_len = 4;
+X	data = malloc(data_len);
+X	data[0] = 0x14;
+X	data[1] = 0xfb;
+X	data[2] = 0x9c;
+X	data[3] = 0x03;
+X	if (test_base64_encode(data, data_len, "FPucAw==") != 0) {
+X		result = EXIT_FAILURE;
+X	}
+X	free(data);
+X
+X	/* rfc3548 example 1 back */
+X	data_len = 6;
+X	data = malloc(data_len);
+X	data[0] = 0x14;
+X	data[1] = 0xfb;
+X	data[2] = 0x9c;
+X	data[3] = 0x03;
+X	data[4] = 0xd9;
+X	data[5] = 0x7e;
+X	if (test_base64_decode("FPucA9l+", data, data_len) != 0) {
+X		result = EXIT_FAILURE;
+X	}
+X	free(data);
+X
+X	/* rfc3548 example 2 back */
+X	data_len = 5;
+X	data = malloc(data_len);
+X	data[0] = 0x14;
+X	data[1] = 0xfb;
+X	data[2] = 0x9c;
+X	data[3] = 0x03;
+X	data[4] = 0xd9;
+X	if (test_base64_decode("FPucA9k=", data, data_len) != 0) {
+X		result = EXIT_FAILURE;
+X	}
+X	free(data);
+X
+X	/* rfc3548 example 3 back */
+X	data_len = 4;
+X	data = malloc(data_len);
+X	data[0] = 0x14;
+X	data[1] = 0xfb;
+X	data[2] = 0x9c;
+X	data[3] = 0x03;
+X	if (test_base64_decode("FPucAw==", data, data_len) != 0) {
+X		result = EXIT_FAILURE;
+X	}
+X	free(data);
+X
+X	/* base32 encode from http://www.garykessler.net/library/base64.html */
+X	data_len = 5;
+X	data = malloc(data_len);
+X	data[0] = 0xc9;
+X	data[1] = 0x6e;
+X	data[2] = 0x96;
+X	data[3] = 0x17;
+X	data[4] = 0xad;
+X	if (test_base32_encode(data, data_len, "ZFXJMF5N") != 0) {
+X		result = EXIT_FAILURE;
+X	}
+X	free(data);
+X
+X	data_len = 3;
+X	data = malloc(data_len);
+X	data[0] = 0x4d;
+X	data[1] = 0x5a;
+X	data[2] = 0x90;
+X	if (test_base32_encode(data, data_len, "JVNJA===") != 0) {
+X		result = EXIT_FAILURE;
+X	}
+X	free(data);
+X
+X	/* base32 decode from http://www.garykessler.net/library/base64.html */
+X	data_len = 5;
+X	data = malloc(data_len);
+X	data[0] = 0xc9;
+X	data[1] = 0x6e;
+X	data[2] = 0x96;
+X	data[3] = 0x17;
+X	data[4] = 0xad;
+X	if (test_base32_decode("ZFXJMF5N", data, data_len) != 0) {
+X		result = EXIT_FAILURE;
+X	}
+X	free(data);
+X
+X	data_len = 3;
+X	data = malloc(data_len);
+X	data[0] = 0x4d;
+X	data[1] = 0x5a;
+X	data[2] = 0x90;
+X	if (test_base32_decode("JVNJA===", data, data_len) != 0) {
+X		result = EXIT_FAILURE;
+X	}
+X	free(data);
+X
+X
+X	/* base32 encode_extended_hex (TODO no source! these need to be checked!)*/
+X	data_len = 5;
+X	data = malloc(data_len);
+X	data[0] = 0xc9;
+X	data[1] = 0x6e;
+X	data[2] = 0x96;
+X	data[3] = 0x17;
+X	data[4] = 0xad;
+X	if (test_base32_encode_extended_hex(data, data_len, "P5N9C5TD") != 0) {
+X		result = EXIT_FAILURE;
+X	}
+X	free(data);
+X
+X	data_len = 3;
+X	data = malloc(data_len);
+X	data[0] = 0x4d;
+X	data[1] = 0x5a;
+X	data[2] = 0x90;
+X	if (test_base32_encode_extended_hex(data, data_len, "9LD90===") != 0) {
+X		result = EXIT_FAILURE;
+X	}
+X	free(data);
+X	/* base32 decode_extended_hex (TODO no source! these need to be checked)*/
+X	data_len = 5;
+X	data = malloc(data_len);
+X	data[0] = 0xc9;
+X	data[1] = 0x6e;
+X	data[2] = 0x96;
+X	data[3] = 0x17;
+X	data[4] = 0xad;
+X	if (test_base32_decode_extended_hex("P5N9C5TD", data, data_len) != 0) {
+X		result = EXIT_FAILURE;
+X	}
+X	free(data);
+X
+X	data_len = 3;
+X	data = malloc(data_len);
+X	data[0] = 0x4d;
+X	data[1] = 0x5a;
+X	data[2] = 0x90;
+X	if (test_base32_decode_extended_hex("9LD90===", data, data_len) != 0) {
+X		result = EXIT_FAILURE;
+X	}
+X	free(data);
+X
+X	exit(result);
+}
+SHAR_EOF
+  (set 20 06 03 15 16 09 50 '14-unit-tests-base.c'; eval "$shar_touch") &&
+  chmod 0600 '14-unit-tests-base.c' ||
+  $echo 'restore of' '14-unit-tests-base.c' 'failed'
+  if ( md5sum --help 2>&1 | grep 'sage: md5sum \[' ) >/dev/null 2>&1 \
+  && ( md5sum --version 2>&1 | grep -v 'textutils 1.12' ) >/dev/null; then
+    md5sum -c << SHAR_EOF >/dev/null 2>&1 \
+    || $echo '14-unit-tests-base.c:' 'MD5 check failed'
+4a374199930a42ecc0afffa685ed10ef  14-unit-tests-base.c
+SHAR_EOF
+  else
+    shar_count="`LC_ALL= LC_CTYPE= LANG= wc -c < '14-unit-tests-base.c'`"
+    test 9618 -eq "$shar_count" ||
+    $echo '14-unit-tests-base.c:' 'original size' '9618,' 'current size' "$shar_count!"
+  fi
+fi
+# ============= 14-unit-tests-base.configure.ac ==============
+if test -f '14-unit-tests-base.configure.ac' && test "$first_param" != -c; then
+  $echo 'x -' SKIPPING '14-unit-tests-base.configure.ac' '(file already exists)'
+else
+  $echo 'x -' extracting '14-unit-tests-base.configure.ac' '(text)'
+  sed 's/^X//' << 'SHAR_EOF' > '14-unit-tests-base.configure.ac' &&
+#                                               -*- Autoconf -*-
+# Process this file with autoconf to produce a configure script.
+X
+AC_PREREQ(2.57)
+AC_INIT(drill, 1.1.0, ldns-team@nlnetlabs.nl, ldns-team)
+AC_CONFIG_SRCDIR([14-unit-tests-base.c])
+X
+AC_AIX
+# Checks for programs.
+AC_PROG_CC
+AC_PROG_MAKE_SET
+X
+# Checks for libraries.
+# Checks for header files.
+#AC_HEADER_STDC
+#AC_HEADER_SYS_WAIT
+# do the very minimum - we can always extend this
+AC_CHECK_HEADERS([getopt.h stdlib.h stdio.h assert.h netinet/in.hctype.h time.h])
+AC_CHECK_HEADERS(sys/param.h sys/mount.h,,,
+[
+X  [
+X   #if HAVE_SYS_PARAM_H
+X   # include <sys/param.h>
+X   #endif
+X  ]
+])
+X
+# check for ldns
+AC_ARG_WITH(ldns, 
+X	AC_HELP_STRING([--with-ldns=PATH        specify prefix of path of ldns library to use])
+X	,
+X	[
+X		specialldnsdir="$withval"
+X		CPPFLAGS="$CPPFLAGS -I$withval/include"
+X		LDFLAGS="$LDFLAGS -L$withval/lib"
+X	]
+)
+X
+AC_CHECK_LIB(ldns, ldns_rr_new,, [
+X	AC_MSG_ERROR([Can't find ldns library])
+X	]
+)
+X
+AC_CHECK_HEADER(ldns/dns.h,,  [
+X	AC_MSG_ERROR([Can't find ldns headers])
+X	]
+)
+X
+AH_BOTTOM([
+X
+#include <stdio.h>
+#include <string.h>
+#include <unistd.h>
+#include <assert.h>
+X
+#if STDC_HEADERS
+#include <stdlib.h>
+#include <stddef.h>
+#endif
+X
+#ifdef HAVE_STDINT_H
+#include <stdint.h>
+#endif
+X
+#ifdef HAVE_SYS_SOCKET_H
+#include <sys/socket.h>
+#endif
+X
+#ifdef HAVE_NETINET_IN_H
+#include <netinet/in.h>
+#endif
+X
+#ifdef HAVE_ARPA_INET_H
+#include <arpa/inet.h>
+#endif
+X
+#ifdef HAVE_TIME_H
+#include <time.h>
+#endif
+])
+X
+X
+#AC_CHECK_FUNCS([mkdir rmdir strchr strrchr strstr])
+X
+#AC_DEFINE_UNQUOTED(SYSCONFDIR, "$sysconfdir")
+X
+AC_CONFIG_FILES([14-unit-tests-base.Makefile])
+AC_CONFIG_HEADER([config.h])
+AC_OUTPUT
+SHAR_EOF
+  (set 20 06 03 15 10 21 44 '14-unit-tests-base.configure.ac'; eval "$shar_touch") &&
+  chmod 0600 '14-unit-tests-base.configure.ac' ||
+  $echo 'restore of' '14-unit-tests-base.configure.ac' 'failed'
+  if ( md5sum --help 2>&1 | grep 'sage: md5sum \[' ) >/dev/null 2>&1 \
+  && ( md5sum --version 2>&1 | grep -v 'textutils 1.12' ) >/dev/null; then
+    md5sum -c << SHAR_EOF >/dev/null 2>&1 \
+    || $echo '14-unit-tests-base.configure.ac:' 'MD5 check failed'
+356ca30541d9570fe744ad05fa3eaf26  14-unit-tests-base.configure.ac
+SHAR_EOF
+  else
+    shar_count="`LC_ALL= LC_CTYPE= LANG= wc -c < '14-unit-tests-base.configure.ac'`"
+    test 1660 -eq "$shar_count" ||
+    $echo '14-unit-tests-base.configure.ac:' 'original size' '1660,' 'current size' "$shar_count!"
+  fi
+fi
+# ============= 14-unit-tests-base.dsc ==============
+if test -f '14-unit-tests-base.dsc' && test "$first_param" != -c; then
+  $echo 'x -' SKIPPING '14-unit-tests-base.dsc' '(file already exists)'
+else
+  $echo 'x -' extracting '14-unit-tests-base.dsc' '(text)'
+  sed 's/^X//' << 'SHAR_EOF' > '14-unit-tests-base.dsc' &&
+BaseName: 14-unit-tests-base
+Version: 1.0
+Description: Run unit tests on base 32 / 64 converters
+CreationDate: Wed Mar 15 10:15:57 CET 2006
+Maintainer: Jelte Jansen
+Category: 
+Component:
+CmdDepends: 
+Depends: 
+Help: 14-unit-tests-base.help
+Pre: 14-unit-tests-base.pre
+Post: 
+Test: 14-unit-tests-base.test
+AuxFiles: 14-unit-tests-base.Makefile.in 14-unit-tests-base.configure.ac 14-unit-tests-base.c
+Passed:
+Failure:
+SHAR_EOF
+  (set 20 06 03 15 10 18 34 '14-unit-tests-base.dsc'; eval "$shar_touch") &&
+  chmod 0600 '14-unit-tests-base.dsc' ||
+  $echo 'restore of' '14-unit-tests-base.dsc' 'failed'
+  if ( md5sum --help 2>&1 | grep 'sage: md5sum \[' ) >/dev/null 2>&1 \
+  && ( md5sum --version 2>&1 | grep -v 'textutils 1.12' ) >/dev/null; then
+    md5sum -c << SHAR_EOF >/dev/null 2>&1 \
+    || $echo '14-unit-tests-base.dsc:' 'MD5 check failed'
+8793fada25e4c5085dcb77be31dd9338  14-unit-tests-base.dsc
+SHAR_EOF
+  else
+    shar_count="`LC_ALL= LC_CTYPE= LANG= wc -c < '14-unit-tests-base.dsc'`"
+    test 416 -eq "$shar_count" ||
+    $echo '14-unit-tests-base.dsc:' 'original size' '416,' 'current size' "$shar_count!"
+  fi
+fi
+# ============= 14-unit-tests-base.help ==============
+if test -f '14-unit-tests-base.help' && test "$first_param" != -c; then
+  $echo 'x -' SKIPPING '14-unit-tests-base.help' '(file already exists)'
+else
+  $echo 'x -' extracting '14-unit-tests-base.help' '(text)'
+  sed 's/^X//' << 'SHAR_EOF' > '14-unit-tests-base.help' &&
+TODO :p
+Please describe how to use this test.
+i.e. tpkg -a ARG exe testname:
+X   ARG is used to ...
+SHAR_EOF
+  (set 20 06 01 20 11 25 20 '14-unit-tests-base.help'; eval "$shar_touch") &&
+  chmod 0600 '14-unit-tests-base.help' ||
+  $echo 'restore of' '14-unit-tests-base.help' 'failed'
+  if ( md5sum --help 2>&1 | grep 'sage: md5sum \[' ) >/dev/null 2>&1 \
+  && ( md5sum --version 2>&1 | grep -v 'textutils 1.12' ) >/dev/null; then
+    md5sum -c << SHAR_EOF >/dev/null 2>&1 \
+    || $echo '14-unit-tests-base.help:' 'MD5 check failed'
+5393eca947bc397262d46982146ea760  14-unit-tests-base.help
+SHAR_EOF
+  else
+    shar_count="`LC_ALL= LC_CTYPE= LANG= wc -c < '14-unit-tests-base.help'`"
+    test 99 -eq "$shar_count" ||
+    $echo '14-unit-tests-base.help:' 'original size' '99,' 'current size' "$shar_count!"
+  fi
+fi
+# ============= 14-unit-tests-base.Makefile.in ==============
+if test -f '14-unit-tests-base.Makefile.in' && test "$first_param" != -c; then
+  $echo 'x -' SKIPPING '14-unit-tests-base.Makefile.in' '(file already exists)'
+else
+  $echo 'x -' extracting '14-unit-tests-base.Makefile.in' '(text)'
+  sed 's/^X//' << 'SHAR_EOF' > '14-unit-tests-base.Makefile.in' &&
+# Standard installation pathnames
+# See the file LICENSE for the license
+SHELL = @SHELL@
+VERSION = @PACKAGE_VERSION@
+basesrcdir = $(shell basename `pwd`)
+srcdir = @srcdir@
+prefix  = @prefix@
+exec_prefix = @exec_prefix@
+bindir = @bindir@
+mandir = @mandir@
+X
+CC = @CC@
+CFLAGS = @CFLAGS@
+CPPFLAGS = @CPPFLAGS@
+LDFLAGS = @LDFLAGS@
+LIBS = @LIBS@
+X
+COMPILE         = $(CC) $(CPPFLAGS) $(CFLAGS)
+LINK            = $(CC) $(CFLAGS) $(LDFLAGS) $(LIBS)
+X
+HEADER		= config.h
+TESTS		= 14-unit-tests-base
+X
+X.PHONY:	all clean realclean
+%.o:
+X	$(COMPILE) -c $(srcdir)/$*.c
+X
+all:	$(TESTS)
+X
+14-unit-tests-base:	14-unit-tests-base.o
+X		$(LINK) -o $@ $+ 
+X
+clean:
+X	rm -f *.o
+X	rm -f $(TESTS)
+X	rm -f lua-rns
+X
+realclean: clean
+X	rm -rf autom4te.cache/
+X	rm -f config.log config.status aclocal.m4 config.h.in configure Makefile
+X	rm -f config.h
+X
+confclean: clean
+X	rm -rf config.log config.status config.h Makefile
+SHAR_EOF
+  (set 20 06 03 15 11 00 29 '14-unit-tests-base.Makefile.in'; eval "$shar_touch") &&
+  chmod 0600 '14-unit-tests-base.Makefile.in' ||
+  $echo 'restore of' '14-unit-tests-base.Makefile.in' 'failed'
+  if ( md5sum --help 2>&1 | grep 'sage: md5sum \[' ) >/dev/null 2>&1 \
+  && ( md5sum --version 2>&1 | grep -v 'textutils 1.12' ) >/dev/null; then
+    md5sum -c << SHAR_EOF >/dev/null 2>&1 \
+    || $echo '14-unit-tests-base.Makefile.in:' 'MD5 check failed'
+c64b2775095a3a462313678533617a63  14-unit-tests-base.Makefile.in
+SHAR_EOF
+  else
+    shar_count="`LC_ALL= LC_CTYPE= LANG= wc -c < '14-unit-tests-base.Makefile.in'`"
+    test 880 -eq "$shar_count" ||
+    $echo '14-unit-tests-base.Makefile.in:' 'original size' '880,' 'current size' "$shar_count!"
+  fi
+fi
+# ============= 14-unit-tests-base.pre ==============
+if test -f '14-unit-tests-base.pre' && test "$first_param" != -c; then
+  $echo 'x -' SKIPPING '14-unit-tests-base.pre' '(file already exists)'
+else
+  $echo 'x -' extracting '14-unit-tests-base.pre' '(text)'
+  sed 's/^X//' << 'SHAR_EOF' > '14-unit-tests-base.pre' &&
+# #-- 10-older-test.pre--#
+# source the master var file when it's there
+[ -f ../.tpkg.var.master ] && source ../.tpkg.var.master
+# use .tpkg.var.test for in test variable passing
+[ -f .tpkg.var.test ] && source .tpkg.var.test
+# svnserve resets the path, you may need to adjust it, like this:
+export PATH=$PATH:/usr/sbin:/sbin:/usr/local/bin:/usr/local/sbin:.
+X
+X
+case $OSTYPE in
+X        linux*)
+X                autoconf 14-unit-tests-base.configure.ac > configure && \
+X                chmod +x configure && \
+X                autoheader 14-unit-tests-base.configure.ac &&\
+X                ./configure --with-ldns=../../ && \
+X                make -f 14-unit-tests-base.Makefile
+X        ;;
+X        freebsd*)
+X                autoconf259 14-unit-tests-base.configure.ac > configure &&\
+X                chmod +x configure && \
+X                autoheader259 14-unit-tests-base.configure.ac && \
+X                ./configure --with-ldns=../../ && \
+X                gmake -f 14-unit-tests-base.Makefile
+X        ;;
+esac
+SHAR_EOF
+  (set 20 06 03 15 10 22 03 '14-unit-tests-base.pre'; eval "$shar_touch") &&
+  chmod 0600 '14-unit-tests-base.pre' ||
+  $echo 'restore of' '14-unit-tests-base.pre' 'failed'
+  if ( md5sum --help 2>&1 | grep 'sage: md5sum \[' ) >/dev/null 2>&1 \
+  && ( md5sum --version 2>&1 | grep -v 'textutils 1.12' ) >/dev/null; then
+    md5sum -c << SHAR_EOF >/dev/null 2>&1 \
+    || $echo '14-unit-tests-base.pre:' 'MD5 check failed'
+a32f4c936e294897523a540d6586bc5d  14-unit-tests-base.pre
+SHAR_EOF
+  else
+    shar_count="`LC_ALL= LC_CTYPE= LANG= wc -c < '14-unit-tests-base.pre'`"
+    test 1007 -eq "$shar_count" ||
+    $echo '14-unit-tests-base.pre:' 'original size' '1007,' 'current size' "$shar_count!"
+  fi
+fi
+# ============= 14-unit-tests-base.test ==============
+if test -f '14-unit-tests-base.test' && test "$first_param" != -c; then
+  $echo 'x -' SKIPPING '14-unit-tests-base.test' '(file already exists)'
+else
+  $echo 'x -' extracting '14-unit-tests-base.test' '(text)'
+  sed 's/^X//' << 'SHAR_EOF' > '14-unit-tests-base.test' &&
+# #-- 10-older-test.test --#
+# source the master var file when it's there
+[ -f ../.tpkg.var.master ] && source ../.tpkg.var.master
+# use .tpkg.var.test for in test variable passing
+[ -f .tpkg.var.test ] && source .tpkg.var.test
+# svnserve resets the path, you may need to adjust it, like this:
+#PATH=$PATH:/usr/sbin:/sbin:/usr/local/bin:/usr/local/sbin:.
+X
+export LD_LIBRARY_PATH=../../lib
+X
+# run the test
+X./14-unit-tests-base
+SHAR_EOF
+  (set 20 06 03 15 10 22 12 '14-unit-tests-base.test'; eval "$shar_touch") &&
+  chmod 0600 '14-unit-tests-base.test' ||
+  $echo 'restore of' '14-unit-tests-base.test' 'failed'
+  if ( md5sum --help 2>&1 | grep 'sage: md5sum \[' ) >/dev/null 2>&1 \
+  && ( md5sum --version 2>&1 | grep -v 'textutils 1.12' ) >/dev/null; then
+    md5sum -c << SHAR_EOF >/dev/null 2>&1 \
+    || $echo '14-unit-tests-base.test:' 'MD5 check failed'
+dc03f7a21eb34df1a4ed517707e59355  14-unit-tests-base.test
+SHAR_EOF
+  else
+    shar_count="`LC_ALL= LC_CTYPE= LANG= wc -c < '14-unit-tests-base.test'`"
+    test 426 -eq "$shar_count" ||
+    $echo '14-unit-tests-base.test:' 'original size' '426,' 'current size' "$shar_count!"
+  fi
+fi
+rm -fr _sh19193
+exit 0
