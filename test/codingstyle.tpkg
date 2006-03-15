@@ -3,7 +3,7 @@
 # To extract the files from this archive, save it to some FILE, remove
 # everything before the `!/bin/sh' line above, then type `sh FILE'.
 #
-# Made on 2006-03-15 10:00 CET by <miekg@elektron>.
+# Made on 2006-03-15 10:12 CET by <miekg@elektron>.
 # Source directory was `/home/miekg/svn/libdns/trunk/test/codingstyle.dir'.
 #
 # Existing files will *not* be overwritten unless `-c' is specified.
@@ -13,7 +13,7 @@
 # ------ ---------- ------------------------------------------
 #    270 -rw------- codingstyle.dsc
 #     36 -rw------- codingstyle.help
-#   1047 -rw------- codingstyle.test
+#   1119 -rw------- codingstyle.test
 #
 save_IFS="${IFS}"
 IFS="${IFS}:"
@@ -63,7 +63,7 @@ else
 fi
 rm -f 200112312359.59 123123592001.59 123123592001.5 1231235901 $$.touch
 #
-if mkdir _sh06321; then
+if mkdir _sh07636; then
   $echo 'x -' 'creating lock directory'
 else
   $echo 'failed to create lock directory'
@@ -155,6 +155,8 @@ X        "../../util.c" | "../../host2str.c")
 X                continue;;
 X        "../../error.c" | "../../rr.c")
 X                continue;;
+X        "../../keys.c" | "../../linktest.c")
+X                continue;;
 X        esac
 X
 X        case $OSTYPE in
@@ -176,20 +178,20 @@ X        exit 1
 fi
 Xexit 0
 SHAR_EOF
-  (set 20 06 03 15 10 00 00 'codingstyle.test'; eval "$shar_touch") &&
+  (set 20 06 03 15 10 12 38 'codingstyle.test'; eval "$shar_touch") &&
   chmod 0600 'codingstyle.test' ||
   $echo 'restore of' 'codingstyle.test' 'failed'
   if ( md5sum --help 2>&1 | grep 'sage: md5sum \[' ) >/dev/null 2>&1 \
   && ( md5sum --version 2>&1 | grep -v 'textutils 1.12' ) >/dev/null; then
     md5sum -c << SHAR_EOF >/dev/null 2>&1 \
     || $echo 'codingstyle.test:' 'MD5 check failed'
-e0be0c5e8fe0bde45d4deb10983aadb7  codingstyle.test
+a7199cb299797001f5e5d0121b2d97a7  codingstyle.test
 SHAR_EOF
   else
     shar_count="`LC_ALL= LC_CTYPE= LANG= wc -c < 'codingstyle.test'`"
-    test 1047 -eq "$shar_count" ||
-    $echo 'codingstyle.test:' 'original size' '1047,' 'current size' "$shar_count!"
+    test 1119 -eq "$shar_count" ||
+    $echo 'codingstyle.test:' 'original size' '1119,' 'current size' "$shar_count!"
   fi
 fi
-rm -fr _sh06321
+rm -fr _sh07636
 exit 0
