@@ -1309,7 +1309,8 @@ ldns_zone_sign(ldns_zone *zone, ldns_key_list *key_list)
  * apps must call this 
  */
 ldns_status 
-ldns_init_random(FILE *fd, uint16_t bytes) {
+ldns_init_random(FILE *fd, uint16_t bytes) 
+{
 	FILE *rand;
 	uint8_t *buf;
 

@@ -140,7 +140,8 @@ ssize_t
 ldns_fget_keyword_data(FILE *f, const char *keyword, const char *k_del, char *data,
                const char *d_del, size_t data_limit)
 {
-       return ldns_fget_keyword_data_l(f, keyword, k_del, data, d_del, data_limit, NULL);
+       return ldns_fget_keyword_data_l(f, keyword, k_del, data, d_del, 
+		       data_limit, NULL);
 }
 
 ssize_t
@@ -277,7 +278,8 @@ void
 ldns_bskipc(ldns_buffer *buffer, char c)
 {
         while (c == (char) ldns_buffer_read_u8_at(buffer, ldns_buffer_position(buffer))) {
-                if (ldns_buffer_available_at(buffer, buffer->_position + sizeof(char), sizeof(char))) {
+                if (ldns_buffer_available_at(buffer, 
+					buffer->_position + sizeof(char), sizeof(char))) {
                         buffer->_position += sizeof(char);
                 } else {
                         return;
@@ -293,8 +295,7 @@ ldns_bskipcs(ldns_buffer *buffer, const char *s)
         const char *d;
 
         while(ldns_buffer_available_at(buffer, buffer->_position, sizeof(char))) {
-                c = (char) ldns_buffer_read_u8_at(buffer,
-                                           buffer->_position);
+                c = (char) ldns_buffer_read_u8_at(buffer, buffer->_position);
                 found = false;
                 for (d = s; *d; d++) {
                         if (*d == c) {
