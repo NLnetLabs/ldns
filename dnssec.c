@@ -1167,7 +1167,7 @@ ldns_create_nsec3(ldns_rdf *cur_owner,
 	/* TODO: for now, no opt-in and only 1 hash iteration. empty salt. */
 	/* TODO: mnemonic list for hash algs SHA-1, default to 1 now (sha1) */
 	if (iterations > 16777216 || iterations < 1) {
-		error("Bad number for NSEC3 hash iterations");
+		perror("Bad number for NSEC3 hash iterations");
 		return NULL;
 	}
 	
