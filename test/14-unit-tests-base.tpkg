@@ -3,7 +3,7 @@
 # To extract the files from this archive, save it to some FILE, remove
 # everything before the `!/bin/sh' line above, then type `sh FILE'.
 #
-# Made on 2006-03-15 16:09 CET by <jeltejan@eliza>.
+# Made on 2006-03-15 18:39 CET by <jeltejan@eliza>.
 # Source directory was `/home/jeltejan/repos/nsec3_signer/test/14-unit-tests-base.dir'.
 #
 # Existing files will *not* be overwritten unless `-c' is specified.
@@ -11,7 +11,7 @@
 # This shar contains:
 # length mode       name
 # ------ ---------- ------------------------------------------
-#   9618 -rw------- 14-unit-tests-base.c
+#  10490 -rw------- 14-unit-tests-base.c
 #   1660 -rw------- 14-unit-tests-base.configure.ac
 #    416 -rw------- 14-unit-tests-base.dsc
 #     99 -rw------- 14-unit-tests-base.help
@@ -67,7 +67,7 @@ else
 fi
 rm -f 200112312359.59 123123592001.59 123123592001.5 1231235901 $$.touch
 #
-if mkdir _sh19193; then
+if mkdir _sh32489; then
   $echo 'x -' 'creating lock directory'
 else
   $echo 'failed to create lock directory'
@@ -288,7 +288,6 @@ X	text = malloc(text_len);
 X	
 X	result = b32_ntop_extended_hex(data, data_len, text, text_len);
 X	
-X	data_len = result;
 X	
 X	if (result < 1) {
 X		printf("Error encoding base32 extended hex test data (result %d):\n", result);
@@ -296,6 +295,7 @@ X		print_data_ar(data, data_len);
 X		printf("\n");
 X		result = 1;
 X	} else {
+X		data_len = result;
 X		if (strncmp(expect_result, text, text_len) != 0) {
 X			printf("Bad base32 encoding: got: ");
 X			printf("%s\n", text);
@@ -547,22 +547,57 @@ X		result = EXIT_FAILURE;
 X	}
 X	free(data);
 X
+X	/* and an encoding that went wrong once */
+X	data_len = 20;
+X	data = malloc(data_len);
+X	data[0] = 0x8a;
+X	data[1] = 0xb3;
+X	data[2] = 0xeb;
+X	data[3] = 0x19;
+X	data[4] = 0xd3;
+X	data[5] = 0x4f;
+X	data[6] = 0xc3;
+X	data[7] = 0xa2;
+X	data[8] = 0x76;
+X	data[9] = 0xf5;
+X	data[10] = 0x9f;
+X	data[11] = 0x3b;
+X	data[12] = 0x7d;
+X	data[13] = 0xe6;
+X	data[14] = 0x6e;
+X	data[15] = 0x2f;
+X	data[16] = 0x10;
+X	data[17] = 0x3b;
+X	data[18] = 0x58;
+X	data[19] = 0x3a;
+X	if (test_base32_encode_extended_hex(data, data_len, "HAPUM6EJ9V1Q4TNLJSTNRPJE5S83MM1Q") != 0) {
+X		result = EXIT_FAILURE;
+X	}
+X	if (test_base32_decode_extended_hex("HAPUM6EJ9V1Q4TNLJSTNRPJE5S83MM1Q", data, data_len) != 0) {
+X		result = EXIT_FAILURE;
+X	}
+X	/* and let's test some case insensitivity */
+X	if (test_base32_decode_extended_hex("hapum6ej9v1q4tnljstnrpje5s83mm1q", data, data_len) != 0) {
+X		result = EXIT_FAILURE;
+X	}
+X	free(data);
+X
 X	exit(result);
 }
 SHAR_EOF
-  (set 20 06 03 15 16 09 50 '14-unit-tests-base.c'; eval "$shar_touch") &&
+  (set 20 06 03 15 18 39 01 '14-unit-tests-base.c'; eval "$shar_touch") &&
   chmod 0600 '14-unit-tests-base.c' ||
   $echo 'restore of' '14-unit-tests-base.c' 'failed'
   if ( md5sum --help 2>&1 | grep 'sage: md5sum \[' ) >/dev/null 2>&1 \
   && ( md5sum --version 2>&1 | grep -v 'textutils 1.12' ) >/dev/null; then
     md5sum -c << SHAR_EOF >/dev/null 2>&1 \
     || $echo '14-unit-tests-base.c:' 'MD5 check failed'
-4a374199930a42ecc0afffa685ed10ef  14-unit-tests-base.c
+c43318313da21a1faa9fed74026fcc36  14-unit-tests-base.c
 SHAR_EOF
   else
     shar_count="`LC_ALL= LC_CTYPE= LANG= wc -c < '14-unit-tests-base.c'`"
-    test 9618 -eq "$shar_count" ||
-    $echo '14-unit-tests-base.c:' 'original size' '9618,' 'current size' "$shar_count!"
+    test 10490 -eq "$shar_count" ||
+    $echo '14-unit-tests-base.c:' 'original size' '10490,' 'current size' "$shar_count!"
   fi
 fi
 # ============= 14-unit-tests-base.configure.ac ==============
@@ -887,5 +922,5 @@ SHAR_EOF
     $echo '14-unit-tests-base.test:' 'original size' '426,' 'current size' "$shar_count!"
   fi
 fi
-rm -fr _sh19193
+rm -fr _sh32489
 exit 0
