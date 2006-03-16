@@ -58,13 +58,12 @@
 #include <assert.h>
 
 static const char Base32[] =
-	"abcdefghijklmnopqrstuvwxyz234567";
-/*	"ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";*/
+/*	"abcdefghijklmnopqrstuvwxyz234567";*/
+	"ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
 /*       00000000001111111111222222222233
          01234567890123456789012345678901*/
-/*	"0123456789ABCDEFGHIJKLMNOPQRSTUV";*/
 static const char Base32_extended_hex[] =
-	"0123456789abcdefghijklmnopqrstuv";
+	"0123456789ABCDEFGHIJKLMNOPQRSTUV";
 static const char Pad32 = '=';
 
 /* (From RFC3548 and draft-josefsson-rfc3548bis-00.txt)
