@@ -58,11 +58,13 @@
 #include <assert.h>
 
 static const char Base32[] =
-	"ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
+	"abcdefghijklmnopqrstuvwxyz234567";
+/*	"ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";*/
 /*       00000000001111111111222222222233
          01234567890123456789012345678901*/
+/*	"0123456789ABCDEFGHIJKLMNOPQRSTUV";*/
 static const char Base32_extended_hex[] =
-	"0123456789ABCDEFGHIJKLMNOPQRSTUV";
+	"0123456789abcdefghijklmnopqrstuv";
 static const char Pad32 = '=';
 
 /* (From RFC3548 and draft-josefsson-rfc3548bis-00.txt)
@@ -242,7 +244,7 @@ b32_ntop_ar(uint8_t const *src, size_t srclength, char *target, size_t targsize,
 		}
 
 
-		if (datalength + 8 > targsize) {
+		if (datalength + 1 > targsize) {
 			return (-2);
 		}
 		target[datalength++] = B32_ar[output[0]];
