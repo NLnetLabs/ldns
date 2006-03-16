@@ -3,7 +3,7 @@
 # To extract the files from this archive, save it to some FILE, remove
 # everything before the `!/bin/sh' line above, then type `sh FILE'.
 #
-# Made on 2006-03-16 14:54 CET by <jeltejan@fable>.
+# Made on 2006-03-16 15:52 CET by <jeltejan@fable>.
 # Source directory was `/home/jeltejan/repos/nsec3_signer/test/14-unit-tests-base.dir'.
 #
 # Existing files will *not* be overwritten unless `-c' is specified.
@@ -11,7 +11,7 @@
 # This shar contains:
 # length mode       name
 # ------ ---------- ------------------------------------------
-#  13970 -rw------- 14-unit-tests-base.c
+#  14956 -rw------- 14-unit-tests-base.c
 #   1660 -rw------- 14-unit-tests-base.configure.ac
 #    416 -rw------- 14-unit-tests-base.dsc
 #     99 -rw------- 14-unit-tests-base.help
@@ -67,7 +67,7 @@ else
 fi
 rm -f 200112312359.59 123123592001.59 123123592001.5 1231235901 $$.touch
 #
-if mkdir _sh25145; then
+if mkdir _sh27075; then
   $echo 'x -' 'creating lock directory'
 else
   $echo 'failed to create lock directory'
@@ -436,10 +436,10 @@ X	data[1] = 0x6e;
 X	data[2] = 0x96;
 X	data[3] = 0x17;
 X	data[4] = 0xad;
-X	if (test_base32_encode(data, data_len, "zfxjmf5n") != 0) {
+X	if (test_base32_encode(data, data_len, "ZFXJMF5N") != 0) {
 X		result = EXIT_FAILURE;
 X	}
-X	if (test_base32_decode("zfxjmf5n", data, data_len) != 0) {
+X	if (test_base32_decode("ZFXJMF5N", data, data_len) != 0) {
 X		result = EXIT_FAILURE;
 X	}
 X	free(data);
@@ -449,10 +449,10 @@ X	data = malloc(data_len);
 X	data[0] = 0x4d;
 X	data[1] = 0x5a;
 X	data[2] = 0x90;
-X	if (test_base32_encode(data, data_len, "jvnja===") != 0) {
+X	if (test_base32_encode(data, data_len, "JVNJA===") != 0) {
 X		result = EXIT_FAILURE;
 X	}
-X	if (test_base32_decode("jvnja===", data, data_len) != 0) {
+X	if (test_base32_decode("JVNJA===", data, data_len) != 0) {
 X		result = EXIT_FAILURE;
 X	}
 X	free(data);
@@ -466,10 +466,10 @@ X	data[1] = 0x6e;
 X	data[2] = 0x96;
 X	data[3] = 0x17;
 X	data[4] = 0xad;
-X	if (test_base32_encode_extended_hex(data, data_len, "p5n9c5td") != 0) {
+X	if (test_base32_encode_extended_hex(data, data_len, "P5N9C5TD") != 0) {
 X		result = EXIT_FAILURE;
 X	}
-X	if (test_base32_decode_extended_hex("p5n9c5td", data, data_len) != 0) {
+X	if (test_base32_decode_extended_hex("P5N9C5TD", data, data_len) != 0) {
 X		result = EXIT_FAILURE;
 X	}
 X	free(data);
@@ -479,10 +479,10 @@ X	data = malloc(data_len);
 X	data[0] = 0x4d;
 X	data[1] = 0x5a;
 X	data[2] = 0x90;
-X	if (test_base32_encode_extended_hex(data, data_len, "9ld90===") != 0) {
+X	if (test_base32_encode_extended_hex(data, data_len, "9LD90===") != 0) {
 X		result = EXIT_FAILURE;
 X	}
-X	if (test_base32_decode_extended_hex("9ld90===", data, data_len) != 0) {
+X	if (test_base32_decode_extended_hex("9LD90===", data, data_len) != 0) {
 X		result = EXIT_FAILURE;
 X	}
 X	free(data);
@@ -513,10 +513,10 @@ X	data[16] = 0x10;
 X	data[17] = 0x3b;
 X	data[18] = 0x58;
 X	data[19] = 0x3a;
-X	if (test_base32_encode_extended_hex(data, data_len, "hapum6ej9v1q4tnljstnrpje5s83mm1q") != 0) {
+X	if (test_base32_encode_extended_hex(data, data_len, "HAPUM6EJ9V1Q4TNLJSTNRPJE5S83MM1Q") != 0) {
 X		result = EXIT_FAILURE;
 X	}
-X	if (test_base32_decode_extended_hex("hapum6ej9v1q4tnljstnrpje5s83mm1q", data, data_len) != 0) {
+X	if (test_base32_decode_extended_hex("HAPUM6EJ9V1Q4TNLJSTNRPJE5S83MM1Q", data, data_len) != 0) {
 X		result = EXIT_FAILURE;
 X	}
 X	/* and let's test some case insensitivity */
@@ -527,6 +527,8 @@ X	free(data);
 X
 X	/* tests from josfessons draft */
 X	/* BASE64("") = "" */
+X	/* BASE32("") = "" */
+X	/* BASE32-HEX("") = "" */
 X	data_len = 0;
 X	if (test_base64_encode(data, data_len, "") != 0) {
 X		result = EXIT_FAILURE;
@@ -534,8 +536,22 @@ X	}
 X	if (test_base64_decode("", data, data_len) != 0) {
 X		result = EXIT_FAILURE;
 X	}
+X	if (test_base32_encode(data, data_len, "") != 0) {
+X		result = EXIT_FAILURE;
+X	}
+X	if (test_base32_decode("", data, data_len) != 0) {
+X		result = EXIT_FAILURE;
+X	}
+X	if (test_base32_encode_extended_hex(data, data_len, "") != 0) {
+X		result = EXIT_FAILURE;
+X	}
+X	if (test_base32_decode_extended_hex("", data, data_len) != 0) {
+X		result = EXIT_FAILURE;
+X	}
 X
 X	/* BASE64("f") = "Zg==" */
+X	/* BASE32("f") = "MY======" */
+X	/* BASE32-HEX("f") = "CO======" */
 X	data_len = 1;
 X	data = malloc(data_len);
 X	data[0] = 'f';
@@ -545,10 +561,24 @@ X	}
 X	if (test_base64_decode("Zg==", data, data_len) != 0) {
 X		result = EXIT_FAILURE;
 X	}
+X	if (test_base32_encode(data, data_len, "MY======") != 0) {
+X		result = EXIT_FAILURE;
+X	}
+X	if (test_base32_decode("MY======", data, data_len) != 0) {
+X		result = EXIT_FAILURE;
+X	}
+X	if (test_base32_encode_extended_hex(data, data_len, "CO======") != 0) {
+X		result = EXIT_FAILURE;
+X	}
+X	if (test_base32_decode_extended_hex("CO======", data, data_len) != 0) {
+X		result = EXIT_FAILURE;
+X	}
 X	free(data);
 X	
 X
 X	/* BASE64("fo") = "Zm8=" */
+X	/* BASE32("fo") = "MZXQ====" */
+X	/* BASE32-HEX("fo") = "CPNG====" */
 X	data_len = 2;
 X	data = malloc(data_len);
 X	data[0] = 'f';
@@ -559,9 +589,23 @@ X	}
 X	if (test_base64_decode("Zm8=", data, data_len) != 0) {
 X		result = EXIT_FAILURE;
 X	}
+X	if (test_base32_encode(data, data_len, "MZXQ====") != 0) {
+X		result = EXIT_FAILURE;
+X	}
+X	if (test_base32_decode("MZXQ====", data, data_len) != 0) {
+X		result = EXIT_FAILURE;
+X	}
+X	if (test_base32_encode_extended_hex(data, data_len, "CPNG====") != 0) {
+X		result = EXIT_FAILURE;
+X	}
+X	if (test_base32_decode_extended_hex("CPNG====", data, data_len) != 0) {
+X		result = EXIT_FAILURE;
+X	}
 X	free(data);
 X
 X	/* BASE64("foo") = "Zm9v" */
+X	/* BASE32("foo") = "MZXW6===" */
+X	/* BASE32-HEX("foo") = "CPNMU===" */
 X	data_len = 3;
 X	data = malloc(data_len);
 X	data[0] = 'f';
@@ -573,9 +617,23 @@ X	}
 X	if (test_base64_decode("Zm9v", data, data_len) != 0) {
 X		result = EXIT_FAILURE;
 X	}
+X	if (test_base32_encode(data, data_len, "MZXW6===") != 0) {
+X		result = EXIT_FAILURE;
+X	}
+X	if (test_base32_decode("MZXW6===", data, data_len) != 0) {
+X		result = EXIT_FAILURE;
+X	}
+X	if (test_base32_encode_extended_hex(data, data_len, "CPNMU===") != 0) {
+X		result = EXIT_FAILURE;
+X	}
+X	if (test_base32_decode_extended_hex("CPNMU===", data, data_len) != 0) {
+X		result = EXIT_FAILURE;
+X	}
 X	free(data);
 X
 X	/* BASE64("foob") = "Zm9vYg==" */
+X	/* BASE32("foob") = "MZXW6YQ=" */
+X	/* BASE32-HEX("foob") = "CPNMUOG=" */
 X	data_len = 4;
 X	data = malloc(data_len);
 X	data[0] = 'f';
@@ -588,9 +646,23 @@ X	}
 X	if (test_base64_decode("Zm9vYg==", data, data_len) != 0) {
 X		result = EXIT_FAILURE;
 X	}
+X	if (test_base32_encode(data, data_len, "MZXW6YQ=") != 0) {
+X		result = EXIT_FAILURE;
+X	}
+X	if (test_base32_decode("MZXW6YQ=", data, data_len) != 0) {
+X		result = EXIT_FAILURE;
+X	}
+X	if (test_base32_encode_extended_hex(data, data_len, "CPNMUOG=") != 0) {
+X		result = EXIT_FAILURE;
+X	}
+X	if (test_base32_decode_extended_hex("CPNMUOG=", data, data_len) != 0) {
+X		result = EXIT_FAILURE;
+X	}
 X	free(data);
 X
 X	/* BASE64("fooba") = "Zm9vYmE=" */
+X	/* BASE32("fooba") = "MZXW6YTB" */
+X	/* BASE32-HEX("fooba") = "CPNMUOJ1" */
 X	data_len = 5;
 X	data = malloc(data_len);
 X	data[0] = 'f';
@@ -604,9 +676,23 @@ X	}
 X	if (test_base64_decode("Zm9vYmE=", data, data_len) != 0) {
 X		result = EXIT_FAILURE;
 X	}
+X	if (test_base32_encode(data, data_len, "MZXW6YTB") != 0) {
+X		result = EXIT_FAILURE;
+X	}
+X	if (test_base32_decode("MZXW6YTB", data, data_len) != 0) {
+X		result = EXIT_FAILURE;
+X	}
+X	if (test_base32_encode_extended_hex(data, data_len, "CPNMUOJ1") != 0) {
+X		result = EXIT_FAILURE;
+X	}
+X	if (test_base32_decode_extended_hex("CPNMUOJ1", data, data_len) != 0) {
+X		result = EXIT_FAILURE;
+X	}
 X	free(data);
 X
 X	/* BASE64("foobar") = "Zm9vYmFy" */
+X	/* BASE32("foobar") = "MZXW6YTBOI======" */
+X	/* BASE32-HEX("foobar") = "CPNMUOJ1E8======"  */
 X	data_len = 6;
 X	data = malloc(data_len);
 X	data[0] = 'f';
@@ -621,101 +707,16 @@ X	}
 X	if (test_base64_decode("Zm9vYmFy", data, data_len) != 0) {
 X		result = EXIT_FAILURE;
 X	}
-X	free(data);
-X
-X	/* BASE32("") = "" */
-X	data_len = 0;
-X	if (test_base32_encode(data, data_len, "") != 0) {
+X	if (test_base32_encode(data, data_len, "MZXW6YTBOI======") != 0) {
 X		result = EXIT_FAILURE;
 X	}
-X	if (test_base32_decode("", data, data_len) != 0) {
+X	if (test_base32_decode("MZXW6YTBOI======", data, data_len) != 0) {
 X		result = EXIT_FAILURE;
 X	}
-X	free(data);
-X
-X	/* BASE32("f") = "my======" */
-X	data_len = 1;
-X	data = malloc(data_len);
-X	data[0] = 'f';
-X	if (test_base32_encode(data, data_len, "my======") != 0) {
+X	if (test_base32_encode_extended_hex(data, data_len, "CPNMUOJ1E8======") != 0) {
 X		result = EXIT_FAILURE;
 X	}
-X	if (test_base32_decode("my======", data, data_len) != 0) {
-X		result = EXIT_FAILURE;
-X	}
-X	free(data);
-X
-X	/* BASE32("fo") = "mzxq====" */
-X	data_len = 2;
-X	data = malloc(data_len);
-X	data[0] = 'f';
-X	data[1] = 'o';
-X	if (test_base32_encode(data, data_len, "mzxq====") != 0) {
-X		result = EXIT_FAILURE;
-X	}
-X	if (test_base32_decode("mzxq====", data, data_len) != 0) {
-X		result = EXIT_FAILURE;
-X	}
-X	free(data);
-X
-X	/* BASE32("foo") = "mzxw6===" */
-X	data_len = 3;
-X	data = malloc(data_len);
-X	data[0] = 'f';
-X	data[1] = 'o';
-X	data[2] = 'o';
-X	if (test_base32_encode(data, data_len, "mzxw6===") != 0) {
-X		result = EXIT_FAILURE;
-X	}
-X	if (test_base32_decode("mzxw6===", data, data_len) != 0) {
-X		result = EXIT_FAILURE;
-X	}
-X	free(data);
-X
-X	/* BASE32("foob") = "mzxw6yq=" */
-X	data_len = 4;
-X	data = malloc(data_len);
-X	data[0] = 'f';
-X	data[1] = 'o';
-X	data[2] = 'o';
-X	data[3] = 'b';
-X	if (test_base32_encode(data, data_len, "mzxw6yq=") != 0) {
-X		result = EXIT_FAILURE;
-X	}
-X	if (test_base32_decode("mzxw6yq=", data, data_len) != 0) {
-X		result = EXIT_FAILURE;
-X	}
-X	free(data);
-X
-X	/* BASE32("fooba") = "mzxw6ytb" */
-X	data_len = 5;
-X	data = malloc(data_len);
-X	data[0] = 'f';
-X	data[1] = 'o';
-X	data[2] = 'o';
-X	data[3] = 'b';
-X	data[4] = 'a';
-X	if (test_base32_encode(data, data_len, "mzxw6ytb") != 0) {
-X		result = EXIT_FAILURE;
-X	}
-X	if (test_base32_decode("mzxw6ytb", data, data_len) != 0) {
-X		result = EXIT_FAILURE;
-X	}
-X	free(data);
-X
-X	/* BASE32("foobar") = "mzxw6ytboi======" */
-X	data_len = 6;
-X	data = malloc(data_len);
-X	data[0] = 'f';
-X	data[1] = 'o';
-X	data[2] = 'o';
-X	data[3] = 'b';
-X	data[4] = 'a';
-X	data[5] = 'r';
-X	if (test_base32_encode(data, data_len, "mzxw6ytboi======") != 0) {
-X		result = EXIT_FAILURE;
-X	}
-X	if (test_base32_decode("mzxw6ytboi======", data, data_len) != 0) {
+X	if (test_base32_decode_extended_hex("CPNMUOJ1E8======", data, data_len) != 0) {
 X		result = EXIT_FAILURE;
 X	}
 X	free(data);
@@ -738,19 +739,19 @@ X
 X	exit(result);
 }
 SHAR_EOF
-  (set 20 06 03 16 14 02 07 '14-unit-tests-base.c'; eval "$shar_touch") &&
+  (set 20 06 03 16 15 52 57 '14-unit-tests-base.c'; eval "$shar_touch") &&
   chmod 0600 '14-unit-tests-base.c' ||
   $echo 'restore of' '14-unit-tests-base.c' 'failed'
   if ( md5sum --help 2>&1 | grep 'sage: md5sum \[' ) >/dev/null 2>&1 \
   && ( md5sum --version 2>&1 | grep -v 'textutils 1.12' ) >/dev/null; then
     md5sum -c << SHAR_EOF >/dev/null 2>&1 \
     || $echo '14-unit-tests-base.c:' 'MD5 check failed'
-a7c72a7f07acc21c79b2a3f5eb8871f5  14-unit-tests-base.c
+df275561f622537a062099dd861d1d53  14-unit-tests-base.c
 SHAR_EOF
   else
     shar_count="`LC_ALL= LC_CTYPE= LANG= wc -c < '14-unit-tests-base.c'`"
-    test 13970 -eq "$shar_count" ||
-    $echo '14-unit-tests-base.c:' 'original size' '13970,' 'current size' "$shar_count!"
+    test 14956 -eq "$shar_count" ||
+    $echo '14-unit-tests-base.c:' 'original size' '14956,' 'current size' "$shar_count!"
   fi
 fi
 # ============= 14-unit-tests-base.configure.ac ==============
@@ -1075,5 +1076,5 @@ SHAR_EOF
     $echo '14-unit-tests-base.test:' 'original size' '426,' 'current size' "$shar_count!"
   fi
 fi
-rm -fr _sh25145
+rm -fr _sh27075
 exit 0
