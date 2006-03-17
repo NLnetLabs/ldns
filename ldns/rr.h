@@ -157,7 +157,9 @@ enum ldns_enum_rr_type
 	LDNS_RR_TYPE_DNSKEY = 48,
 
         /* TODO: No type code yet, assume 50 */
-	LDNS_RR_TYPE_NSEC3 = 50,      
+	/*LDNS_RR_TYPE_NSEC3 = 50,      */
+	/* nsd patch from ben uses 65324 */
+	LDNS_RR_TYPE_NSEC3 = 65324,
 
 	LDNS_RR_TYPE_UINFO = 100,
 	LDNS_RR_TYPE_UID = 101,

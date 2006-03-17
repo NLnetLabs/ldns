@@ -48,6 +48,8 @@ enum ldns_enum_rdf_type
 	LDNS_RDF_TYPE_STR,
 	/** apl data */
 	LDNS_RDF_TYPE_APL,
+	/** b32 string */
+	LDNS_RDF_TYPE_B32_EXT,
 	/** b64 string */
 	LDNS_RDF_TYPE_B64,
 	/** hex string */

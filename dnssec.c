@@ -1555,10 +1555,14 @@ ldns_zone_sign_nsec3(ldns_zone *zone, ldns_key_list *key_list, uint8_t algorithm
 	ldns_rr_list *glue_rrs;
 	ldns_rr_list *nsec3_rrs;
 	
+	ldns_status status;
+	
 	ldns_rdf *start_dname = NULL;
 	ldns_rdf *cur_dname = NULL;
 	ldns_rr *next_rr = NULL;
 	ldns_rdf *next_dname = NULL;
+	char *next_nsec_owner_str = NULL;
+	ldns_rdf *next_nsec_rdf = NULL;
 	ldns_rr *nsec;
 	ldns_rr *ckey;
 	uint16_t i;
@@ -1652,16 +1656,22 @@ ldns_zone_sign_nsec3(ldns_zone *zone, ldns_key_list *key_list, uint8_t algorithm
 	ldns_rr_list_sort_nsec3(nsec3_rrs);
 	for (i = 0; i < ldns_rr_list_rr_count(nsec3_rrs); i++) {
 		if (i == ldns_rr_list_rr_count(nsec3_rrs) - 1) {
-			ldns_rr_set_rdf(ldns_rr_list_rr(nsec3_rrs, i), ldns_rr_owner(ldns_rr_list_rr(nsec3_rrs, 0)), 1);
+			next_nsec_owner_str = ldns_rdf2str(ldns_dname_label(ldns_rr_owner(ldns_rr_list_rr(nsec3_rrs, 0)), 0));
+			if (next_nsec_owner_str[strlen(next_nsec_owner_str) - 1] == '.') {
+				next_nsec_owner_str[strlen(next_nsec_owner_str) - 1] = '\0';
+			}
+			status = ldns_str2rdf_b32_ext(&next_nsec_rdf, next_nsec_owner_str);
+			ldns_rr_set_rdf(ldns_rr_list_rr(nsec3_rrs, i), next_nsec_rdf, 1);
 		} else {
-			ldns_rr_set_rdf(ldns_rr_list_rr(nsec3_rrs, i), ldns_rr_owner(ldns_rr_list_rr(nsec3_rrs, i + 1)), 1);
+			next_nsec_owner_str = ldns_rdf2str(ldns_dname_label(ldns_rr_owner(ldns_rr_list_rr(nsec3_rrs, i + 1)), 0));
+			if (next_nsec_owner_str[strlen(next_nsec_owner_str) - 1] == '.') {
+				next_nsec_owner_str[strlen(next_nsec_owner_str) - 1] = '\0';
+			}
+			status = ldns_str2rdf_b32_ext(&next_nsec_rdf, next_nsec_owner_str);
+			ldns_rr_set_rdf(ldns_rr_list_rr(nsec3_rrs, i), next_nsec_rdf, 1);
 		}
 	}
-	/*
-	printf("NSECS:\n");
-	ldns_rr_list_print(stdout, nsec3_rrs);
-	exit(0);
-	*/
+	
 	ldns_rr_list_cat(signed_zone_rrs, nsec3_rrs);
 	ldns_rr_list_sort(signed_zone_rrs);
 	

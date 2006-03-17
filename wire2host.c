@@ -217,8 +217,15 @@ ldns_wire2rdf(ldns_rr *rr, const uint8_t *wire, size_t max, size_t *pos)
 			break;
 		case LDNS_RDF_TYPE_NSEC3_VARS:
 			/* grm var length appears halfway rdf */
-			cur_rdf_length = (size_t) &wire[*pos + 4] + 5;
+			cur_rdf_length = (size_t) wire[*pos + 4] + 5;
+			printf("NSEC3 wire length: %u\n", cur_rdf_length);
+			break;
+		case LDNS_RDF_TYPE_B32_EXT:
+			/* quick hack for nsec3, length of field should be derived from nsec3 hashing algorithm */
+			cur_rdf_length = 20;
+			break;
 		case LDNS_RDF_TYPE_APL:
+		/* TODO: will this work? */
 		case LDNS_RDF_TYPE_B64:
 		case LDNS_RDF_TYPE_HEX:
 		case LDNS_RDF_TYPE_NSEC:

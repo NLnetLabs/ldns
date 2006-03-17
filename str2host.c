@@ -455,6 +455,27 @@ ldns_str2rdf_b64(ldns_rdf **rd, const char *str)
 }
 
 ldns_status
+ldns_str2rdf_b32_ext(ldns_rdf **rd, const char *str)
+{
+	uint8_t *buffer;
+	int i;
+	
+	buffer = LDNS_XMALLOC(uint8_t, b32_ntop_calculate_size(strlen(str)));
+	
+	i = b32_pton_extended_hex((const char*)str, buffer, 
+                                  b32_ntop_calculate_size(strlen(str)));
+	if (i < 0) {
+		return LDNS_STATUS_INVALID_B32_EXT;
+	} else {
+		*rd = ldns_rdf_new_frm_data(
+			LDNS_RDF_TYPE_B32_EXT, (uint16_t) i, buffer);
+	}
+	LDNS_FREE(buffer);
+
+	return LDNS_STATUS_OK;
+}
+
+ldns_status
 ldns_str2rdf_hex(ldns_rdf **rd, const char *str)
 {
         uint8_t *t, *t_orig;

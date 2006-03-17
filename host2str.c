@@ -232,6 +232,19 @@ ldns_rdf2buffer_str_b64(ldns_buffer *output, const ldns_rdf *rdf)
 }	
 
 ldns_status
+ldns_rdf2buffer_str_b32_ext(ldns_buffer *output, const ldns_rdf *rdf)
+{
+	size_t size = b32_ntop_calculate_size(ldns_rdf_size(rdf));
+	char *b32 = LDNS_XMALLOC(char, size);
+	size = b32_ntop_extended_hex(ldns_rdf_data(rdf), ldns_rdf_size(rdf), b32, size);
+	if (size > 0) {
+		ldns_buffer_printf(output, "%s", b32);
+	}
+	LDNS_FREE(b32);
+	return ldns_buffer_status(output);
+}	
+
+ldns_status
 ldns_rdf2buffer_str_hex(ldns_buffer *output, const ldns_rdf *rdf)
 {
 	size_t i;
@@ -478,7 +491,7 @@ ldns_rdf2buffer_str_nsec(ldns_buffer *output, const ldns_rdf *rdf)
 					ldns_buffer_printf(output, "%s ", 
 							descriptor->_name);
 				} else {
-					ldns_buffer_printf(output, "TYPE%d ", type);
+					ldns_buffer_printf(output, "TYPE%u ", type);
 				}
 			}
 		}
@@ -763,6 +776,9 @@ ldns_rdf2buffer_str(ldns_buffer *buffer, const ldns_rdf *rdf)
 		case LDNS_RDF_TYPE_APL:
 			res = ldns_rdf2buffer_str_apl(buffer, rdf);
 			break;
+		case LDNS_RDF_TYPE_B32_EXT:
+			res = ldns_rdf2buffer_str_b32_ext(buffer, rdf);
+			break;
 		case LDNS_RDF_TYPE_B64:
 			res = ldns_rdf2buffer_str_b64(buffer, rdf);
 			break;
@@ -870,7 +886,7 @@ ldns_rr2buffer_str(ldns_buffer *output, const ldns_rr *rr)
 			} else if (ldns_rr_get_type(rr) == 255) {
 				ldns_buffer_printf(output, "ANY ");
 			} else {
-				ldns_buffer_printf(output, "TYPE%d\t", 
+				ldns_buffer_printf(output, "TYPE%u\t", 
 						ldns_rr_get_type(rr));
 			}
 		}
