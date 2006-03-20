@@ -167,11 +167,19 @@ ldns_wire2rdf(ldns_rr *rr, const uint8_t *wire, size_t max, size_t *pos)
 	
 	end = *pos + (size_t) rd_length;
 
+	if (!descriptor) { 
+		printf("no descriptor voor type %u\n", ldns_rr_get_type(rr));
+		printf("assuming unknown\n");
+		cur_rdf = ldns_rdf_new_frm_data(LDNS_RDF_TYPE_UNKNOWN, rd_length, &wire[*pos]);
+		ldns_rr_push_rdf(rr, cur_rdf);
+		*pos = *pos + cur_rdf_length + 1;
+		return LDNS_STATUS_OK;
+	}
 
 	for (rdf_index = 0; 
 	     rdf_index < ldns_rr_descriptor_maximum(descriptor); rdf_index++) {
 		if (*pos >= end) {
-	     		break;
+			break;
 		}
 		cur_rdf_length = 0;
 
@@ -273,6 +281,10 @@ ldns_wire2rr(ldns_rr **rr_p, const uint8_t *wire, size_t max,
 	ldns_rdf *owner;
 	ldns_rr *rr = ldns_rr_new();
 	ldns_status status;
+/*
+printf("Data to parse:\n");
+xprintf_hex(wire+*pos, max-*pos);
+*/
 	
 	status = ldns_wire2dname(&owner, wire, max, pos);
 	LDNS_STATUS_CHECK_GOTO(status, status_error);
@@ -423,6 +435,9 @@ ldns_wire2pkt(ldns_pkt **packet_p, const uint8_t *wire, size_t max)
 	ldns_pkt_set_size(packet, max);
 
 	*packet_p = packet;
+/*
+printf("returning status %u\n", status);
+*/
 	return status;
 	
 status_error:

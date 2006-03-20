@@ -589,7 +589,6 @@ main(int argc, char *argv[])
 
 				if (type == LDNS_RR_TYPE_AXFR) {
 					(void) ldns_axfr_start(res, qname, clas);
-
 					axfr_rr = ldns_axfr_next(res);
 					while (axfr_rr) {
 						if (qdebug != -1) {

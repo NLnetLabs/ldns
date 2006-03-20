@@ -262,7 +262,7 @@ ldns_rdf2buffer_str_type(ldns_buffer *output, const ldns_rdf *rdf)
 	const ldns_rr_descriptor *descriptor;
 
 	descriptor = ldns_rr_descript(data);
-	if (descriptor->_name) {
+	if (descriptor && descriptor->_name) {
 		ldns_buffer_printf(output, "%s", descriptor->_name);
 	} else {
 		ldns_buffer_printf(output, "TYPE%u", data);
@@ -487,7 +487,7 @@ ldns_rdf2buffer_str_nsec(ldns_buffer *output, const ldns_rdf *rdf)
 				type = 256 * (uint16_t) window_block_nr + bit_pos;
 				descriptor = ldns_rr_descript(type);
 
-				if (descriptor->_name) {
+				if (descriptor && descriptor->_name) {
 					ldns_buffer_printf(output, "%s ", 
 							descriptor->_name);
 				} else {
@@ -871,7 +871,7 @@ ldns_rr2buffer_str(ldns_buffer *output, const ldns_rr *rr)
 
 		descriptor = ldns_rr_descript(ldns_rr_get_type(rr));
 
-		if (descriptor->_name) {
+		if (descriptor && descriptor->_name) {
 			ldns_buffer_printf(output, "%s", descriptor->_name);
 		} else {
 			/* exceptions for qtype */
