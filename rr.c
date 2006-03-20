@@ -1558,7 +1558,11 @@ ldns_rr_descript(uint16_t type)
 size_t
 ldns_rr_descriptor_minimum(const ldns_rr_descriptor *descriptor)
 {
-	return descriptor->_minimum;
+	if (descriptor) {
+		return descriptor->_minimum;
+	} else {
+		return 0;
+	}
 }
 
 size_t
