@@ -296,11 +296,16 @@ ldns_rr_new_frm_str(const char *str, uint16_t default_ttl, ldns_rdf *origin,
 	LDNS_FREE(type);
 
 	desc = ldns_rr_descript((uint16_t)rr_type);
-	ldns_rr_set_type(new, rr_type);
 
-	/* only the rdata remains */
-	r_max = ldns_rr_descriptor_maximum(desc);
-	r_min = ldns_rr_descriptor_minimum(desc);
+	ldns_rr_set_type(new, rr_type);
+	if (desc) {
+		/* only the rdata remains */
+		r_max = ldns_rr_descriptor_maximum(desc);
+		r_min = ldns_rr_descriptor_minimum(desc);
+	} else {
+		r_min = 1;
+		r_max = 1;
+	}
 
 	/* depending on the rr_type we need to extract
 	 * the rdata differently, e.g. NSEC */
@@ -308,25 +313,27 @@ ldns_rr_new_frm_str(const char *str, uint16_t default_ttl, ldns_rdf *origin,
 		default:
 			done = false;
 
-			for (r_cnt = 0; !done && r_cnt < ldns_rr_descriptor_maximum(desc); 
+			for (r_cnt = 0; !done && r_cnt < r_max; 
 					r_cnt++) {
 				quoted = false;
 				/* if type = B64, the field may contain spaces */
-				if (ldns_rr_descriptor_field_type(desc, 
+				if (desc &&
+				    (ldns_rr_descriptor_field_type(desc, 
 							r_cnt) == LDNS_RDF_TYPE_B64 ||
-				    ldns_rr_descriptor_field_type(desc, 
+				     ldns_rr_descriptor_field_type(desc, 
 					    r_cnt) == LDNS_RDF_TYPE_LOC ||
-				    ldns_rr_descriptor_field_type(desc, 
+				     ldns_rr_descriptor_field_type(desc, 
 					    r_cnt) == LDNS_RDF_TYPE_WKS ||
-				    ldns_rr_descriptor_field_type(desc, 
+				     ldns_rr_descriptor_field_type(desc, 
 					    r_cnt) == LDNS_RDF_TYPE_NSEC ||
-				    ldns_rr_descriptor_field_type(desc, 
-					    r_cnt) == LDNS_RDF_TYPE_STR) {
+				     ldns_rr_descriptor_field_type(desc, 
+					    r_cnt) == LDNS_RDF_TYPE_STR)) {
 					delimiters = "\n\t";
 				} else {
 					delimiters = "\n\t ";
 				}
-				if (ldns_rr_descriptor_field_type(desc, 
+				if (desc &&
+				    ldns_rr_descriptor_field_type(desc, 
 							r_cnt) == LDNS_RDF_TYPE_STR) {
 					if (*(ldns_buffer_current(rd_buf)) == '\"') {
 						delimiters = "\"\0";
@@ -371,7 +378,11 @@ ldns_rr_new_frm_str(const char *str, uint16_t default_ttl, ldns_rdf *origin,
 						hex_data_str[cur_hex_data_size] = '\0';
 						r = ldns_rdf_new_frm_str(LDNS_RDF_TYPE_HEX, hex_data_str);
 						/* correct the rdf type */
-						ldns_rdf_set_type(r, ldns_rr_descriptor_field_type(desc, r_cnt));
+						if (desc) {
+							ldns_rdf_set_type(r, ldns_rr_descriptor_field_type(desc, r_cnt));
+						} else {
+							ldns_rdf_set_type(r, LDNS_RDF_TYPE_UNKNOWN);
+						}
 						LDNS_FREE(hex_data_str);
 						ldns_rr_push_rdf(new, r);
 					} else {
