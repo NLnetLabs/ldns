@@ -581,7 +581,10 @@ main(int argc, char *argv[])
 			if (query_file) {
 				qpkt = read_hex_pkt(query_file);
 				if (qpkt) {
-					(void) ldns_resolver_send_pkt(&pkt, res, qpkt);
+					(void)ldns_resolver_send_pkt(&pkt, res, qpkt);
+				} else {
+					/* qpkt was bogus, reset pkt */
+					pkt = NULL;
 				}
 			} else {
 				qname = ldns_dname_new_frm_str(name);
