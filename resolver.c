@@ -812,6 +812,46 @@ ldns_resolver_send_pkt(ldns_pkt **answer,const ldns_resolver *r,
 }
 
 ldns_status
+ldns_resolver_prepare_query_pkt(ldns_pkt **query_pkt, ldns_resolver *r,
+                                const  ldns_rdf *name, ldns_rr_type type, 
+                                ldns_rr_class class, uint16_t flags)
+{
+	/* prepare a question pkt from the parameters
+	 * and then send this */
+	*query_pkt = ldns_pkt_query_new(ldns_rdf_clone(name), type, class, flags);
+	if (!*query_pkt) {
+		return LDNS_STATUS_ERR;
+	}
+
+	/* set DO bit if necessary */
+	if (ldns_resolver_dnssec(r)) {
+		if (ldns_resolver_edns_udp_size(r) == 0) {
+			ldns_resolver_set_edns_udp_size(r, 4096);
+		}
+		ldns_pkt_set_edns_do(*query_pkt, true);
+		ldns_pkt_set_cd(*query_pkt, ldns_resolver_dnssec_cd(r));
+	}
+
+	/* transfer the udp_edns_size from the resolver to the packet */
+	if (ldns_resolver_edns_udp_size(r) != 0) {
+		ldns_pkt_set_edns_udp_size(*query_pkt, ldns_resolver_edns_udp_size(r));
+	}
+
+	if (ldns_resolver_debug(r)) {
+		ldns_pkt_print(stdout, *query_pkt);
+	}
+	
+	/* only set the id if it is not set yet */
+	if (ldns_pkt_id(*query_pkt) == 0) {
+		srandom((unsigned) time(NULL) ^ getpid());
+		ldns_pkt_set_id(*query_pkt, (uint16_t) random());
+	}
+
+	return LDNS_STATUS_OK;
+}
+
+
+ldns_status
 ldns_resolver_send(ldns_pkt **answer, ldns_resolver *r,const  ldns_rdf *name, 
 		ldns_rr_type type, ldns_rr_class class, uint16_t flags)
 {
@@ -839,41 +879,22 @@ ldns_resolver_send(ldns_pkt **answer, ldns_resolver *r,const  ldns_rdf *name,
 	if (ldns_rdf_get_type(name) != LDNS_RDF_TYPE_DNAME) {
 		return LDNS_STATUS_RES_QUERY;
 	}
-	/* prepare a question pkt from the parameters
-	 * and then send this */
-	query_pkt = ldns_pkt_query_new(ldns_rdf_clone(name), type, class, flags);
-	if (!query_pkt) {
-		return LDNS_STATUS_ERR;
-	}
 
-	/* set DO bit if necessary */
-	if (ldns_resolver_dnssec(r)) {
-		if (ldns_resolver_edns_udp_size(r) == 0) {
-			ldns_resolver_set_edns_udp_size(r, 4096);
-		}
-		ldns_pkt_set_edns_do(query_pkt, true);
-		ldns_pkt_set_cd(query_pkt, ldns_resolver_dnssec_cd(r));
-	}
-
-	/* transfer the udp_edns_size from the resolver to the packet */
-	if (ldns_resolver_edns_udp_size(r) != 0) {
-		ldns_pkt_set_edns_udp_size(query_pkt, ldns_resolver_edns_udp_size(r));
-	}
-
-	if (ldns_resolver_debug(r)) {
-		ldns_pkt_print(stdout, query_pkt);
-	}
-	
-	/* only set the id if it is not set yet */
-	if (ldns_pkt_id(query_pkt) == 0) {
-		srandom((unsigned) time(NULL) ^ getpid());
-		ldns_pkt_set_id(query_pkt, (uint16_t) random());
+	status = ldns_resolver_prepare_query_pkt(&query_pkt,
+	                                         r,
+	                                         name,
+	                                         type,
+	                                         class,
+	                                         flags);
+	if (status != LDNS_STATUS_OK) {
+		return status;
 	}
 
 	/* if tsig values are set, tsign it */
 	/* TODO: make last 3 arguments optional too? maybe make complete
 	         rr instead of seperate values in resolver (and packet)
 	  Jelte
+	  should this go in pkt_prepare?
 	*/
 #ifdef HAVE_SSL
 	if (ldns_resolver_tsig_keyname(r) && ldns_resolver_tsig_keydata(r)) {

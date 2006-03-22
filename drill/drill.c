@@ -103,6 +103,7 @@ main(int argc, char *argv[])
 	size_t		tsig_separator;
 	size_t		tsig_separator2;
 	ldns_rr		*axfr_rr;
+	ldns_status	status;
 	
 	/* list of keys used in dnssec operations */
 	ldns_rr_list	*key_list = ldns_rr_list_new(); 
@@ -544,7 +545,8 @@ main(int argc, char *argv[])
 				error("%s", "making qname");
 			}
 
-			qpkt = ldns_pkt_query_new(qname, type, clas, qflags);
+			/*qpkt = ldns_pkt_query_new(qname, type, clas, qflags);*/
+			status = ldns_resolver_prepare_query_pkt(&qpkt, res, qname, type, clas, qflags);
 			
 			dump_hex(qpkt, query_file);
 			
