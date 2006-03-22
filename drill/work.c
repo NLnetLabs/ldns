@@ -172,7 +172,7 @@ read_hex_pkt(char *filename)
 	
 	ldns_pkt *pkt = NULL;
 	
-	ldns_status status;
+	ldns_status status = LDNS_STATUS_ERR;
 	FILE *fp;
 	
 	fp = fopen(filename, "r");
@@ -193,7 +193,11 @@ read_hex_pkt(char *filename)
 	
 	xfree(wire);
 	
-	return pkt;
+	if (status == LDNS_STATUS_OK) {
+		return pkt;
+	} else {
+		return NULL;
+	}
 }
 
 void
