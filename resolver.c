@@ -579,7 +579,14 @@ ldns_resolver_new_frm_fp_l(FILE *fp, int *line_nr)
 	}
 	gtr = ldns_fget_token_l(fp, word, LDNS_PARSE_NORMAL, 0, line_nr);
 	while (gtr > 0) {
-		/* do something */
+		/* check comments */
+		if (word[0] == '#') {
+			/* read the rest of the line, should be 1 word */
+			gtr = ldns_fget_token_l(fp, word, LDNS_PARSE_NORMAL, 0, line_nr);
+			/* prepare the next string for furhter parsing */
+			gtr = ldns_fget_token_l(fp, word, LDNS_PARSE_NORMAL, 0, line_nr);
+			continue;
+		}
 		switch(expect) {
 			case LDNS_RESOLV_KEYWORD:
 				/* keyword */
@@ -594,18 +601,19 @@ ldns_resolver_new_frm_fp_l(FILE *fp, int *line_nr)
 				}
 				/* no keyword recognized */
 				if (expect == LDNS_RESOLV_KEYWORD) {
-						/* dprintf("[%s] unreg keyword\n", word); */
+					LDNS_FREE(word);
+					return NULL;
 				}
 				break;
 			case LDNS_RESOLV_DEFDOMAIN:
 				/* default domain dname */
 				tmp = ldns_rdf_new_frm_str(LDNS_RDF_TYPE_DNAME, word);
 				if (!tmp) {
-					expect = LDNS_RESOLV_KEYWORD;
-					break;
+					LDNS_FREE(word);
+					return NULL;
 				}
 
-				/* don't free, because we copy the pointer */
+				/* DOn't free, because we copy the pointer */
 				ldns_resolver_set_domain(r, tmp);
 				expect = LDNS_RESOLV_KEYWORD;
 				break;
@@ -616,9 +624,10 @@ ldns_resolver_new_frm_fp_l(FILE *fp, int *line_nr)
 					/* try ip4 */
 					tmp = ldns_rdf_new_frm_str(LDNS_RDF_TYPE_A, word);
 				}
+				/* could not parse it, exit */
 				if (!tmp) {
-					expect = LDNS_RESOLV_KEYWORD;
-					break;
+					LDNS_FREE(word);
+					return NULL;
 				}
 				(void)ldns_resolver_push_nameserver(r, tmp);
 				ldns_rdf_deep_free(tmp);
@@ -628,17 +637,12 @@ ldns_resolver_new_frm_fp_l(FILE *fp, int *line_nr)
 				/* search list domain dname, will only work with 1 name! */
 				tmp = ldns_rdf_new_frm_str(LDNS_RDF_TYPE_DNAME, word);
 				if (!tmp) {
-					expect = LDNS_RESOLV_KEYWORD;
-					break;
+					LDNS_FREE(word);
+					return NULL;
 				}
 
 				ldns_resolver_push_searchlist(r, tmp); 
 				ldns_rdf_deep_free(tmp);
-				expect = LDNS_RESOLV_KEYWORD;
-				break;
-			default:
-				/* huh?! */
-				/* dprintf("%s", "BIG FAT WARNING should never reach this\n"); */
 				expect = LDNS_RESOLV_KEYWORD;
 				break;
 		}

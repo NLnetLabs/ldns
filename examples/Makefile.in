@@ -38,6 +38,7 @@ SOURCES 	= ldns-read-zone.c \
 		  ldns-zsplit.c \
 		  ldns-zcat.c \
 		  ldns-dpa.c \
+		  ldns-resolver.c \
 		  ldnsd.c
 
 
@@ -90,6 +91,9 @@ ldnsd:		ldnsd.o
 		$(LINK) -o $@ $+
 
 ldns-threshold-update:	ldns-threshold-update.o
+		$(LINK) -o $@ $+
+
+ldns-resolver:	ldns-resolver.o
 		$(LINK) -o $@ $+
 
 ## implicit rule
