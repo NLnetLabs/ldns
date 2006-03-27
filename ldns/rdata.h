@@ -83,8 +83,6 @@ enum ldns_enum_rdf_type
 	LDNS_RDF_TYPE_NSAP,
 	/** IPSECKEY */
 	LDNS_RDF_TYPE_IPSECKEY,
-        /* OPT PSEUDO RRs have yet another rdf type */
-        LDNS_RDF_TYPE_OPT
 };
 typedef enum ldns_enum_rdf_type ldns_rdf_type;
 
