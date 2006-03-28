@@ -139,6 +139,10 @@ b64_pton(char const *src, uint8_t *target, size_t targsize)
 	state = 0;
 	tarindex = 0;
 
+	if (strlen(src) == 0) {
+		return 0;
+	}
+
 	while ((ch = *src++) != '\0') {
 		if (isspace((unsigned char)ch))        /* Skip whitespace anywhere. */
 			continue;

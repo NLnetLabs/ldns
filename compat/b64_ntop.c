@@ -133,6 +133,15 @@ b64_ntop(uint8_t const *src, size_t srclength, char *target, size_t targsize) {
 	uint8_t input[3];
 	uint8_t output[4];
 	size_t i;
+	
+	if (srclength == 0) {
+		if (targsize > 0) {
+			target[0] = '\0';
+			return 0;
+		} else {
+			return -1;
+		}
+	}
 
 	while (2 < srclength) {
 		input[0] = *src++;

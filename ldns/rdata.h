@@ -1,5 +1,4 @@
 /*
- * 
  * rdata.h
  *
  * rdata definitions
@@ -86,7 +85,7 @@ enum ldns_enum_rdf_type
 	/** NSAP */
 	LDNS_RDF_TYPE_NSAP,
 	/** IPSECKEY */
-	LDNS_RDF_TYPE_IPSECKEY
+	LDNS_RDF_TYPE_IPSECKEY,
 };
 typedef enum ldns_enum_rdf_type ldns_rdf_type;
 
