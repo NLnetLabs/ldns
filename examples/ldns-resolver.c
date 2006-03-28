@@ -24,4 +24,5 @@ main(int argc, char **argv) {
 
 	fclose(rand);
 
+	return EXIT_SUCCESS;
 }
