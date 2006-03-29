@@ -2183,6 +2183,16 @@ printf("timeval: %u ; %u\n", cur_hdr.ts.tv_sec, cur_hdr.ts.tv_usec);
 					if (verbosity >= 3) {
 						printf("No dns packet: %s\n", ldns_get_errorstr_by_id(status));
 					}
+					if (verbosity >= 5) {
+						for (ip_len = 0; ip_len < len - data_offset; ip_len++) {
+							if (ip_len > 0 && ip_len % 20 == 0) {
+								printf("\t; %u - %u\n", ip_len - 19, ip_len);
+							}
+							printf("%02x ", dnspkt[ip_len]);
+						}
+						printf("\t; ??? - %u\n", ip_len);
+						
+					}
 					bad_dns_packets++;
 					if (bad_dns_dump) {
 						pcap_dump((u_char *)bad_dns_dump, &cur_hdr, newdata);
