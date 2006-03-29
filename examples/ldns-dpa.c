@@ -2186,11 +2186,11 @@ printf("timeval: %u ; %u\n", cur_hdr.ts.tv_sec, cur_hdr.ts.tv_usec);
 					if (verbosity >= 5) {
 						for (ip_len = 0; ip_len < len - data_offset; ip_len++) {
 							if (ip_len > 0 && ip_len % 20 == 0) {
-								printf("\t; %u - %u\n", ip_len - 19, ip_len);
+								printf("\t; %u - %u\n", (unsigned int) ip_len - 19, (unsigned int) ip_len);
 							}
-							printf("%02x ", dnspkt[ip_len]);
+							printf("%02x ", (unsigned int) dnspkt[ip_len]);
 						}
-						printf("\t; ??? - %u\n", ip_len);
+						printf("\t; ??? - %u\n", (unsigned int) ip_len);
 						
 					}
 					bad_dns_packets++;
