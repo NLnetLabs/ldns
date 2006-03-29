@@ -161,7 +161,7 @@ ldns_zone_new_frm_fp_l(FILE *fp, ldns_rdf *origin, uint16_t ttl, ldns_rr_class c
 	uint16_t my_ttl = ttl;
 	ldns_rr_class my_class = c;
 	ldns_rr *last_rr = NULL;
-	ldns_rdf *my_origin = NULL;
+	ldns_rdf *my_origin;
 	ldns_rdf *my_prev;
 	bool soa_seen = false; 	/* 2 soa are an error */
 
@@ -174,11 +174,9 @@ ldns_zone_new_frm_fp_l(FILE *fp, ldns_rdf *origin, uint16_t ttl, ldns_rr_class c
 		my_origin = ldns_rdf_clone(origin);
 		/* also set the prev */
 		my_prev   = ldns_rdf_clone(origin);
-	}
-	
-	/* read it as root */
-	if (!my_origin) {
+	} else {
 		my_origin = ldns_dname_new_frm_str(".");
+		my_prev = ldns_dname_new_frm_str(".");
 	}
 
 	while(!feof(fp)) {
@@ -214,7 +212,7 @@ ldns_zone_new_frm_fp_l(FILE *fp, ldns_rdf *origin, uint16_t ttl, ldns_rr_class c
 		} else {
 			/* hmz if $ORIGIN was read there is no RR either */
 			/* we need to add a feedbacking function */
-			/*
+#if 0
 			fprintf(stderr, "Error in file, unable to read RR");
 			if (line_nr) {
 				fprintf(stderr, " at line %d.\n", *line_nr);
@@ -225,7 +223,7 @@ ldns_zone_new_frm_fp_l(FILE *fp, ldns_rdf *origin, uint16_t ttl, ldns_rr_class c
 			fprintf(stderr, "Last rr that was parsed:\n");
 			ldns_rr_print(stderr, last_rr);
 			dprintf("%s", "\n");
-			*/
+#endif 
 		}
 	}
 	if (my_origin) {
