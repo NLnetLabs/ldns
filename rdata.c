@@ -175,6 +175,9 @@ ldns_rdf_new_frm_data(ldns_rdf_type type, size_t size, const void *data)
 	if (!rdf) {
 		return NULL;
 	}
+	if (size > LDNS_MAX_RDFLEN) {
+		return NULL;
+	}
 	rdf->_data = LDNS_XMALLOC(uint8_t, size);
 	if (!rdf->_data) {
 		return NULL;
@@ -216,7 +219,7 @@ ldns_rdf_free(ldns_rdf *rd)
 ldns_rdf *
 ldns_rdf_new_frm_str(ldns_rdf_type type, const char *str)
 {
-	ldns_rdf *rdf = 0;
+	ldns_rdf *rdf = NULL;
 	ldns_status status;
 
 	switch (type) {
