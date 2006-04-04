@@ -394,6 +394,7 @@ ldns_wire2pkt(ldns_pkt **packet_p, const uint8_t *wire, size_t max)
 			status = LDNS_STATUS_WIRE_INCOMPLETE_ADDITIONAL;
 		}
 		LDNS_STATUS_CHECK_GOTO(status, status_error);
+		fprintf(stderr, "TEST\n");
 		if (ldns_rr_get_type(rr) == LDNS_RR_TYPE_OPT) {
 			ldns_pkt_set_edns_udp_size(packet, ldns_rr_get_class(rr));
 			ldns_write_uint32(data, ldns_rr_ttl(rr));

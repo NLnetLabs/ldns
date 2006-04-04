@@ -59,6 +59,12 @@ ldns_lookup_table ldns_error_str[] = {
 	{ LDNS_STATUS_WIRE_INCOMPLETE_ADDITIONAL, "additional section incomplete" },
 	{ LDNS_STATUS_NO_DATA, "No data" },
 	{ LDNS_STATUS_CERT_BAD_ALGORITHM, "Bad algorithm type for CERT record" },
+	{ LDNS_STATUS_SYNTAX_TYPE_ERR, "Syntax error, could not parse the RR's type" },
+	{ LDNS_STATUS_SYNTAX_CLASS_ERR, "Syntax error, could not parse the RR's class" },
+	{ LDNS_STATUS_SYNTAX_TTL_ERR, "Syntax error, could not parse the RR's TTL" },
+	{ LDNS_STATUS_SYNTAX_TTL_ERR, "Syntax error, could not parse the RR's rdata" },
+	{ LDNS_STATUS_SYNTAX_TTL_ERR, "Syntax error, could not parse the RR's dname(s)" },
+	{ LDNS_STATUS_SYNTAX_ERR, "Syntax error, could not parse the RR" },
 	{ 0, NULL }
 };
 

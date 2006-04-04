@@ -252,8 +252,8 @@ main(int argc, char *argv[])
 				if (!keyfile) {
 					fprintf(stderr, "Error: unable to read %s: %s\n", keyfile_name, strerror(errno));
 				} else {
-					pubkey = ldns_rr_new_frm_fp_l(keyfile, &default_ttl, NULL, NULL, &line_nr);
-					if (pubkey) {
+					if (ldns_rr_new_frm_fp_l(&pubkey, keyfile, &default_ttl, NULL, NULL, &line_nr) ==
+							LDNS_STATUS_OK) {
 						ldns_key_set_pubkey_owner(key, ldns_rdf_clone(ldns_rr_owner(pubkey)));
 						ldns_key_set_flags(key, ldns_rdf2native_int16(ldns_rr_rdf(pubkey, 0)));
 					}

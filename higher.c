@@ -211,9 +211,9 @@ ldns_get_rr_list_hosts_frm_fp_l(FILE *fp, int *line_nr)
 					snprintf(rr_str, LDNS_MAX_LINELEN, 
 						"%s IN A %s", word, addr);
 				}
-				rr = ldns_rr_new_frm_str(rr_str, 0, NULL, NULL);
-				if (rr) {
-						ldns_rr_list_push_rr(list, ldns_rr_clone(rr));
+				if (ldns_rr_new_frm_str(&rr, rr_str, 0, NULL, NULL) !=
+						LDNS_STATUS_OK) {
+					ldns_rr_list_push_rr(list, ldns_rr_clone(rr));
 				}
 				ldns_rr_free(rr);
 			}
@@ -333,8 +333,8 @@ ldns_update_send_simple_addr(const char *fqdn, const char *zone,
 		snprintf(rrstr, rrstrlen, "%s IN %s %s", fqdn,
 		    strchr(ipaddr, ':') ? "AAAA" : "A", ipaddr);
 
-		up_rr = ldns_rr_new_frm_str(rrstr, ttl, NULL, NULL);
-		if (!up_rr) {
+		if (ldns_rr_new_frm_str(up_rr, rrstr, ttl, NULL, NULL) != 
+				LDNS_STATUS_OK) {
 			ldns_rr_list_deep_free(up_rrlist);
 			free(rrstr);
 			goto cleanup;

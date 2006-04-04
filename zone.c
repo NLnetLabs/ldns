@@ -180,8 +180,8 @@ ldns_zone_new_frm_fp_l(FILE *fp, ldns_rdf *origin, uint16_t ttl, ldns_rr_class c
 	}
 
 	while(!feof(fp)) {
-		rr = ldns_rr_new_frm_fp_l(fp, &my_ttl, &my_origin, &my_prev, line_nr);
-		if (rr) {
+		if (ldns_rr_new_frm_fp_l(&rr, fp, &my_ttl, &my_origin, &my_prev, line_nr)
+				== LDNS_STATUS_OK) {
 			if (ldns_rr_get_type(rr) == LDNS_RR_TYPE_SOA) {
 				if (soa_seen) {
 					/* second SOA 
