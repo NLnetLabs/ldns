@@ -817,7 +817,7 @@ ldns_resolver_send_pkt(ldns_pkt **answer,const ldns_resolver *r,
 
 ldns_status
 ldns_resolver_prepare_query_pkt(ldns_pkt **query_pkt, ldns_resolver *r,
-                                const  ldns_rdf *name, ldns_rr_type type, 
+                                const ldns_rdf *name, ldns_rr_type type, 
                                 ldns_rr_class class, uint16_t flags)
 {
 	/* prepare a question pkt from the parameters
@@ -856,7 +856,7 @@ ldns_resolver_prepare_query_pkt(ldns_pkt **query_pkt, ldns_resolver *r,
 
 
 ldns_status
-ldns_resolver_send(ldns_pkt **answer, ldns_resolver *r,const  ldns_rdf *name, 
+ldns_resolver_send(ldns_pkt **answer, ldns_resolver *r, const ldns_rdf *name, 
 		ldns_rr_type type, ldns_rr_class class, uint16_t flags)
 {
 	ldns_pkt *query_pkt;

@@ -472,7 +472,6 @@ ldns_rr_new_frm_fp_l(ldns_rr **newrr, FILE *fp, uint16_t *default_ttl, ldns_rdf 
 	ldns_rdf *tmp;
 	ldns_status s;
 
-	rr = NULL;
 	s = LDNS_STATUS_ERR;
 	if (default_ttl) {
 		ttl = *default_ttl;
@@ -521,7 +520,7 @@ ldns_rr_new_frm_fp_l(ldns_rr **newrr, FILE *fp, uint16_t *default_ttl, ldns_rdf 
 	
 	}
 	LDNS_FREE(line);
-	if (newrr && *newrr) {
+	if (newrr && *newrr && s == LDNS_STATUS_OK) {
 		*newrr = rr;
 	}
 	return s;
