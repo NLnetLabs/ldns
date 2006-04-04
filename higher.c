@@ -333,7 +333,7 @@ ldns_update_send_simple_addr(const char *fqdn, const char *zone,
 		snprintf(rrstr, rrstrlen, "%s IN %s %s", fqdn,
 		    strchr(ipaddr, ':') ? "AAAA" : "A", ipaddr);
 
-		if (ldns_rr_new_frm_str(up_rr, rrstr, ttl, NULL, NULL) != 
+		if (ldns_rr_new_frm_str(&up_rr, rrstr, ttl, NULL, NULL) != 
 				LDNS_STATUS_OK) {
 			ldns_rr_list_deep_free(up_rrlist);
 			free(rrstr);
