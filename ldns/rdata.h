@@ -193,26 +193,28 @@ ldns_rdf	*ldns_rdf_new_frm_data(ldns_rdf_type type, size_t size, const void *dat
  * creates a new rdf from a string.
  * \param[in] type   type to use
  * \param[in] str string to use
- * \return ldns_rdf*
+ * \return ldns_rdf* or NULL in case of an error
  */
 ldns_rdf 	*ldns_rdf_new_frm_str(ldns_rdf_type type, const char *str);
 
 /**     
  * creates a new rdf from a file containing a string.
+ * \param[out] r the new rdf
  * \param[in] type   type to use
  * \param[in] fp the file pointer  to use
- * \return ldns_rdf*
+ * \return LDNS_STATUS_OK or the error
  */             
-ldns_rdf 	*ldns_rdf_new_frm_fp(ldns_rdf_type type, FILE *fp);
+ldns_status ldns_rdf_new_frm_fp(ldns_rdf **r, ldns_rdf_type type, FILE *fp);
 
 /**     
  * creates a new rdf from a file containing a string.
+ * \param[out] r the new rdf
  * \param[in] type   type to use
  * \param[in] fp the file pointer  to use
  * \param[in] line_nr pointer to an integer containing the current line number (for debugging purposes)
- * \return ldns_rdf*
+ * \return LDNS_STATUS_OK or the error
  */             
-ldns_rdf 	*ldns_rdf_new_frm_fp_l(ldns_rdf_type type, FILE *fp, int *line_nr);
+ldns_status  ldns_rdf_new_frm_fp_l(ldns_rdf **r, ldns_rdf_type type, FILE *fp, int *line_nr);
 
 /* destroy functions */
 

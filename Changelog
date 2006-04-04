@@ -49,6 +49,8 @@ XX Jan 2006: 1.1.0: ldns-team
           changed to return a status msg.
 	* ldns_key_new_frm_fp is changed to return ldns_status and
 	  the actual key list in the first argument
+	* ldns_rdata_new_frm_fp[_l]() are changed to return a status.
+	  the rdf is return in the first argument
 	* tsig.h: internal used functions are now static:
 	  ldns_digest_name and ldns_tsig_mac_new
 	* ldns_key_rr2ds has an extra argument to specify the hash to

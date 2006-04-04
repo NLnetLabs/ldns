@@ -306,14 +306,14 @@ ldns_rdf_new_frm_str(ldns_rdf_type type, const char *str)
 	}
 }
 
-ldns_rdf *
-ldns_rdf_new_frm_fp(ldns_rdf_type type, FILE *fp)
+ldns_status
+ldns_rdf_new_frm_fp(ldns_rdf **rdf, ldns_rdf_type type, FILE *fp)
 {
-	return ldns_rdf_new_frm_fp_l(type, fp, NULL);
+	return ldns_rdf_new_frm_fp_l(rdf, type, fp, NULL);
 }
 
-ldns_rdf *
-ldns_rdf_new_frm_fp_l(ldns_rdf_type type, FILE *fp, int *line_nr)
+ldns_status
+ldns_rdf_new_frm_fp_l(ldns_rdf **rdf, ldns_rdf_type type, FILE *fp, int *line_nr)
 {
 	char *line;
 	ldns_rdf *r;
@@ -321,17 +321,22 @@ ldns_rdf_new_frm_fp_l(ldns_rdf_type type, FILE *fp, int *line_nr)
 
 	line = LDNS_XMALLOC(char, LDNS_MAX_LINELEN + 1);
 	if (!line) {
-		return NULL;
+		return LDNS_STATUS_MEM_ERR;
 	}
 
 	/* read an entire line in from the file */
 	if ((t = ldns_fget_token_l(fp, line, LDNS_PARSE_SKIP_SPACE, 0, line_nr)) == -1) {
 		LDNS_FREE(line);
-		return NULL;
+		return LDNS_STATUS_SYNTAX_RDATA_ERR;
 	}
 	r =  ldns_rdf_new_frm_str(type, (const char*) line);
 	LDNS_FREE(line);
-	return r;
+	if (rdf && *rdf) {
+		*rdf = r;
+		return LDNS_STATUS_OK;
+	} else {
+		return LDNS_STATUS_NULL;
+	}
 }
 
 ldns_rdf *
