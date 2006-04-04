@@ -255,7 +255,7 @@ ldns_rr_new_frm_str(const char *str, uint16_t default_ttl, ldns_rdf *origin,
 		if (strlen(owner) == 0) {
 			/* no ownername was given, try prev, if that fails 
 			 * origin, else default to root */
-			if (*prev) {
+			if (prev && *prev) {
 				ldns_rr_set_owner(new, ldns_rdf_clone(*prev));
 			} else if (origin) {
 				ldns_rr_set_owner(new, ldns_rdf_clone(origin));
@@ -508,7 +508,7 @@ ldns_rr_new_frm_fp_l(FILE *fp, uint16_t *default_ttl, ldns_rdf **origin, ldns_rd
 			*default_ttl = (uint16_t) atoi(keyword + 5);
 		}
 	} else {
-		if (*origin) {
+		if (origin && *origin) {
 			rr = ldns_rr_new_frm_str((const char*) line, ttl, *origin, prev);
 		} else {
 			rr = ldns_rr_new_frm_str((const char*) line, ttl, NULL, prev);
