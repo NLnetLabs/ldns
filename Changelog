@@ -62,6 +62,7 @@ XX Jan 2006: 1.1.0: ldns-team
 	* ldns_pkt_empty(): check is a packet is empty
 	* ldns_rr_list_pop_rr_list(): pop multiple rr's from another rr_list
 	* ldns_rr_list_push_rr_list(): push multiple rr's to an rr_list
+        * ldns_rr_list_compare(): compare 2 ldns_rr_lists
 	Removed:
 	* ldns_resolver_bgsend(): was not used in 1.0.0 and is not used
 	  now
