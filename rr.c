@@ -1265,6 +1265,33 @@ ldns_rr_compare_ds(const ldns_rr *orr1, const ldns_rr *orr2)
 	return result;
 }
 
+int
+ldns_rr_list_compare(const ldns_rr_list *rrl1, const ldns_rr_list *rrl2)
+{
+	size_t i = 0;
+	int rr_cmp;
+
+	assert(rrl1 != NULL);
+	assert(rrl2 != NULL);
+
+	for (i = 0; i < ldns_rr_list_rr_count(rrl1) && i < ldns_rr_list_rr_count(rrl2); i++) {
+		rr_cmp = ldns_rr_compare(ldns_rr_list_rr(rrl1, i), ldns_rr_list_rr(rrl2, i));
+		if (rr_cmp != 0) {
+			return rr_cmp;
+		}
+	}
+
+	if (i == ldns_rr_list_rr_count(rrl1) &&
+	    i != ldns_rr_list_rr_count(rrl2)) {
+		return 1;
+	} else if (i == ldns_rr_list_rr_count(rrl2) &&
+	           i != ldns_rr_list_rr_count(rrl1)) {
+		return -1;
+	} else {
+		return 0;
+	}
+}
+
 size_t
 ldns_rr_uncompressed_size(const ldns_rr *r)
 {

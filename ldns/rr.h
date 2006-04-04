@@ -609,6 +609,16 @@ int ldns_rr_compare(const ldns_rr *rr1, const ldns_rr *rr2);
  */
 bool ldns_rr_compare_ds(const ldns_rr *rr1, const ldns_rr *rr2);
 
+/**
+ * compares two rr listss.
+ * \param[in] rrl1 the first one
+ * \param[in] rrl2 the second one
+ * \return 0 if equal
+ *         -1 if rrl1 comes before rrl2
+ *         +1 if rrl2 comes before rrl1
+ */
+int ldns_rr_list_compare(const ldns_rr_list *rrl1, const ldns_rr_list *rrl2);
+
 /** 
  * calculates the uncompressed size of an RR.
  * \param[in] r the rr to operate on

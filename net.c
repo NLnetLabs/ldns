@@ -175,6 +175,7 @@ ldns_send(ldns_pkt **result, ldns_resolver *r, const ldns_pkt *query_pkt)
 	}
 
 	if (all_servers_rtt_inf) {
+		LDNS_FREE(reply_bytes);
 		return LDNS_STATUS_NO_NAMESERVERS_ERR;
 	}
 #ifdef HAVE_SSL
