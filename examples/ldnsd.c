@@ -131,9 +131,9 @@ main(int argc, char **argv)
 	}
 	
 	line_nr = 0;
-	zone = ldns_zone_new_frm_fp_l(zone_fp, NULL, 0, LDNS_RR_CLASS_IN, &line_nr);
+	status = ldns_zone_new_frm_fp_l(&zone, zone_fp, NULL, 0, LDNS_RR_CLASS_IN, &line_nr);
 
-	if (!zone) {
+	if (status != LDNS_STATUS_OK) {
 		printf("Zone reader failed, aborting\n");
 		exit(EXIT_FAILURE);
 	} else {

@@ -50,6 +50,7 @@ main(int argc, char **argv)
 	ldns_rdf *last_owner;
 	ldns_rr  *last_rr;
 	ldns_rr  *pop_rr;
+	ldns_status s;
 
 	progname = strdup(argv[0]);
 	origin = NULL;
@@ -89,7 +90,7 @@ main(int argc, char **argv)
 			exit(EXIT_FAILURE);
 		}
 		
-		if (!(z = ldns_zone_new_frm_fp(fp, origin, 0, 0))) {
+		if ((ldns_zone_new_frm_fp(&z, fp, origin, 0, 0)) != LDNS_STATUS_OK) {
 			fprintf(stderr, "Zone file %s could not be parsed correctly\n", argv[i]);
 			exit(EXIT_FAILURE);
 		}

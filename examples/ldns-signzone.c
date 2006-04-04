@@ -67,7 +67,7 @@ main(int argc, char *argv[])
 	FILE *zonefile = NULL;
 	int argi;
 
-	ldns_zone *orig_zone = NULL;
+	ldns_zone *orig_zone;
 	ldns_rr_list *orig_rrs = NULL;
 	ldns_rr *orig_soa = NULL;
 
@@ -75,8 +75,9 @@ main(int argc, char *argv[])
 	char *keyfile_name;
 	FILE *keyfile = NULL;
 	ldns_key *key = NULL;
-	ldns_rr *pubkey = NULL;
+	ldns_rr *pubkey;
 	ldns_key_list *keys;
+	ldns_status s;
 
 	uint16_t default_ttl = LDNS_DEFAULT_TTL;
 
@@ -95,7 +96,7 @@ main(int argc, char *argv[])
 	uint16_t ttl = 0;
 	ldns_rr_class class = LDNS_RR_CLASS_IN;	
 
-	ldns_zone *signed_zone = NULL;
+	ldns_zone *signed_zone;
 	
 	int line_nr = 0;
 	int c;
@@ -193,9 +194,11 @@ main(int argc, char *argv[])
 		fprintf(stderr, "Error: unable to read %s (%s)\n", zonefile_name, strerror(errno));
 		exit(EXIT_FAILURE);
 	} else {
-		orig_zone = ldns_zone_new_frm_fp_l(zonefile, origin, ttl, class, &line_nr);
-		if (!orig_zone) {
-			fprintf(stderr, "Zone not read, parse error at %s line %d\n", zonefile_name, line_nr);
+		s = ldns_zone_new_frm_fp_l(&orig_zone, zonefile, origin, ttl, class, &line_nr);
+		if (s != LDNS_STATUS_OK) {
+			fprintf(stderr, "Zone not read, error: %s at %s line %d\n", 
+					ldns_get_errorstr_by_id(s), 
+					zonefile_name, line_nr);
 			exit(EXIT_FAILURE);
 		} else {
 			orig_soa = ldns_zone_soa(orig_zone);

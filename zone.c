@@ -146,14 +146,14 @@ ldns_zone_new(void)
 /* we regocnize:
  * $TTL, $ORIGIN
  */
-ldns_zone *
-ldns_zone_new_frm_fp(FILE *fp, ldns_rdf *origin, uint16_t ttl, ldns_rr_class c)
+ldns_status
+ldns_zone_new_frm_fp(ldns_zone **z, FILE *fp, ldns_rdf *origin, uint16_t ttl, ldns_rr_class c)
 {
-	return ldns_zone_new_frm_fp_l(fp, origin, ttl, c, NULL);
+	return ldns_zone_new_frm_fp_l(z, fp, origin, ttl, c, NULL);
 }
 
-ldns_zone *
-ldns_zone_new_frm_fp_l(FILE *fp, ldns_rdf *origin, uint16_t ttl, ldns_rr_class c, 
+ldns_status
+ldns_zone_new_frm_fp_l(ldns_zone **z, FILE *fp, ldns_rdf *origin, uint16_t ttl, ldns_rr_class c, 
 		int *line_nr)
 {
 	ldns_zone *newzone;
@@ -164,6 +164,7 @@ ldns_zone_new_frm_fp_l(FILE *fp, ldns_rdf *origin, uint16_t ttl, ldns_rr_class c
 	ldns_rdf *my_origin;
 	ldns_rdf *my_prev;
 	bool soa_seen = false; 	/* 2 soa are an error */
+	ldns_status s;
 
 	newzone = ldns_zone_new();
 	my_origin = origin;
@@ -180,7 +181,7 @@ ldns_zone_new_frm_fp_l(FILE *fp, ldns_rdf *origin, uint16_t ttl, ldns_rr_class c
 	}
 
 	while(!feof(fp)) {
-		if (ldns_rr_new_frm_fp_l(&rr, fp, &my_ttl, &my_origin, &my_prev, line_nr)
+		if ((s = ldns_rr_new_frm_fp_l(&rr, fp, &my_ttl, &my_origin, &my_prev, line_nr))
 				== LDNS_STATUS_OK) {
 			if (ldns_rr_get_type(rr) == LDNS_RR_TYPE_SOA) {
 				if (soa_seen) {
@@ -197,12 +198,11 @@ ldns_zone_new_frm_fp_l(FILE *fp, ldns_rdf *origin, uint16_t ttl, ldns_rr_class c
 			/* a normal RR - as sofar the DNS is normal */
 			last_rr = rr;
 			if (!ldns_zone_push_rr(newzone, rr)) {
-				dprintf("%s", "error pushing rr\n");
 				if (my_origin) {
 					ldns_rdf_free(my_origin);
 				}
 				ldns_zone_free(newzone);
-				return NULL;
+				return LDNS_STATUS_MEM_ERR;
 			}
 
 			/*my_origin = ldns_rr_owner(rr);*/
@@ -210,26 +210,17 @@ ldns_zone_new_frm_fp_l(FILE *fp, ldns_rdf *origin, uint16_t ttl, ldns_rr_class c
 			my_class  = ldns_rr_get_class(rr);
 			
 		} else {
-			/* hmz if $ORIGIN was read there is no RR either */
-			/* we need to add a feedbacking function */
-#if 0
-			fprintf(stderr, "Error in file, unable to read RR");
-			if (line_nr) {
-				fprintf(stderr, " at line %d.\n", *line_nr);
-			} else {
-				fprintf(stderr, ".");
-			}
-
-			fprintf(stderr, "Last rr that was parsed:\n");
-			ldns_rr_print(stderr, last_rr);
-			dprintf("%s", "\n");
-#endif 
+			ldns_zone_free(newzone);
+			return s;
 		}
 	}
 	if (my_origin) {
 		ldns_rdf_deep_free(my_origin);
 	}
-	return newzone;
+	if (z && *z) {
+		*z = newzone;
+	}
+	return LDNS_STATUS_OK;
 }
 
 void

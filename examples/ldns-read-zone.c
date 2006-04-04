@@ -13,11 +13,12 @@ main(int argc, char **argv)
 {
 	char *filename;
 	FILE *fp;
-	ldns_zone *z = NULL;
+	ldns_zone *z;
 	int line_nr = 0;
 	int c;
 	bool sort = false;
 	char *progname;
+	ldns_status s;
 
 	progname = strdup(argv[0]);
 
@@ -56,9 +57,9 @@ main(int argc, char **argv)
 		}
 	}
 	
-	z = ldns_zone_new_frm_fp_l(fp, NULL, 0, LDNS_RR_CLASS_IN, &line_nr);
+	s = ldns_zone_new_frm_fp_l(&z, fp, NULL, 0, LDNS_RR_CLASS_IN, &line_nr);
 
-	if (z) {
+	if (s == LDNS_STATUS_OK) {
 		if (sort) {
 			ldns_zone_sort(z);
 		}
@@ -66,7 +67,9 @@ main(int argc, char **argv)
 		ldns_zone_print(stdout, z);
 		ldns_zone_deep_free(z);
 	} else {
-		fprintf(stderr, "Syntax error at %d\n", line_nr);
+		fprintf(stderr, "%s at %d\n", 
+				ldns_get_errorstr_by_id(s),
+				line_nr);
 	}
 	fclose(fp);
 
