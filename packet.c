@@ -606,8 +606,6 @@ ldns_pkt_set_edns_z(ldns_pkt *packet, uint16_t z)
 void
 ldns_pkt_set_edns_data(ldns_pkt *packet, ldns_rdf *data)
 {
-	fprintf(stderr, "%d\n", ldns_rdf_get_type(data));
-	fprintf(stderr, "\n\n");
 	packet->_edns_data = data;
 }
 

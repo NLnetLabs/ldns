@@ -99,7 +99,7 @@ main(int argc, char *argv[])
 	char		*tsig_name = NULL;
 	char		*tsig_data = NULL;
 	char 		*tsig_algorithm = NULL;
-	ldns_rr		*dnssec_key = NULL;
+	ldns_rr		*dnssec_key;
 	size_t		tsig_separator;
 	size_t		tsig_separator2;
 	ldns_rr		*axfr_rr;
