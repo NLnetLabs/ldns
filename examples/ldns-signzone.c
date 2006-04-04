@@ -234,9 +234,9 @@ main(int argc, char *argv[])
 		if (!keyfile) {
 			fprintf(stderr, "Error: unable to read %s: %s\n", keyfile_name, strerror(errno));
 		} else {
-			key = ldns_key_new_frm_fp_l(keyfile, &line_nr);
+			s = ldns_key_new_frm_fp_l(&key, keyfile, &line_nr);
 			fclose(keyfile);
-			if (key) {
+			if (s == LDNS_STATUS_OK) {
 				/* set times in key? they will end up
 				   in the rrsigs
 				*/

@@ -64,6 +64,8 @@ ldns_lookup_table ldns_error_str[] = {
 	{ LDNS_STATUS_SYNTAX_TTL_ERR, "Syntax error, could not parse the RR's TTL" },
 	{ LDNS_STATUS_SYNTAX_TTL_ERR, "Syntax error, could not parse the RR's rdata" },
 	{ LDNS_STATUS_SYNTAX_TTL_ERR, "Syntax error, could not parse the RR's dname(s)" },
+	{ LDNS_STATUS_SYNTAX_VERSION_ERR, "Syntax error, version mismatch" },
+	{ LDNS_STATUS_SYNTAX_ALG_ERR, "Syntax error, algorithm unknown or non parseable" },
 	{ LDNS_STATUS_SYNTAX_ERR, "Syntax error, could not parse the RR" },
 	{ 0, NULL }
 };

@@ -63,14 +63,14 @@ ldns_key_new()
 	}
 }
 
-ldns_key *
-ldns_key_new_frm_fp(FILE *fp)
+ldns_status 
+ldns_key_new_frm_fp(ldns_key **k, FILE *fp)
 {
-	return ldns_key_new_frm_fp_l(fp, NULL);
+	return ldns_key_new_frm_fp_l(k, fp, NULL);
 }
 
-ldns_key *
-ldns_key_new_frm_fp_l(FILE *fp, int *line_nr)
+ldns_status
+ldns_key_new_frm_fp_l(ldns_key **key, FILE *fp, int *line_nr)
 {
 	ldns_key *k;
 	char *d;
@@ -81,7 +81,7 @@ ldns_key_new_frm_fp_l(FILE *fp, int *line_nr)
 
 	d = LDNS_XMALLOC(char, LDNS_MAX_LINELEN);
 	if (!k || !d) {
-		return NULL;
+		return LDNS_STATUS_MEM_ERR;
 	}
 	
 	alg = 0;
@@ -96,19 +96,18 @@ ldns_key_new_frm_fp_l(FILE *fp, int *line_nr)
 	if (ldns_fget_keyword_data_l(fp, "Private-key-format", ": ", d, "\n",
 				LDNS_MAX_LINELEN, line_nr) == -1) {
 		/* no version information */
-		return NULL;
+		return LDNS_STATUS_SYNTAX_ERR;
 	}
 	if (strncmp(d, "v1.2", strlen(d)) != 0) {
-		dprintf("%s", "Wrong version for key file. This version of ldns only supports 1.2\n");
-		return NULL;
+		return LDNS_STATUS_SYNTAX_VERSION_ERR;
 	}
 
 	/* get the algorithm type, our file function strip ( ) so there are
 	 * not in the return string! */
 	if (ldns_fget_keyword_data_l(fp, "Algorithm", ": ", d, "\n", 
 				LDNS_MAX_LINELEN, line_nr) == -1) {
-		/* no version information */
-		return NULL;
+		/* no alg information */
+		return LDNS_STATUS_SYNTAX_ALG_ERR;
 	}
 
 	if (strncmp(d, "1 RSA", 2) == 0) {
@@ -126,8 +125,7 @@ ldns_key_new_frm_fp_l(FILE *fp, int *line_nr)
 	switch(alg) {
 		case 0:
 		default:
-			dprintf("%s", "No or unknown algorithm seen, bailing out\n");
-			return NULL;
+			return LDNS_STATUS_SYNTAX_ALG_ERR;
 		case LDNS_SIGN_RSAMD5:
 		case LDNS_SIGN_RSASHA1:
 
@@ -144,10 +142,12 @@ ldns_key_new_frm_fp_l(FILE *fp, int *line_nr)
 	key_rr = ldns_key2rr(k);
 
 	ldns_key_set_keytag(k, ldns_calc_keytag(key_rr));
-	
 	ldns_rr_free(key_rr);
-	
-	return k;
+	if (key && *key) {
+		*key = k;
+		return LDNS_STATUS_OK;
+	}
+	return LDNS_STATUS_ERR;
 }
 
 RSA *

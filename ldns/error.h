@@ -69,6 +69,8 @@ enum ldns_enum_status
         LDNS_STATUS_SYNTAX_TTL_ERR,
         LDNS_STATUS_SYNTAX_RDATA_ERR,
         LDNS_STATUS_SYNTAX_DNAME_ERR,
+        LDNS_STATUS_SYNTAX_VERSION_ERR,
+        LDNS_STATUS_SYNTAX_ALG_ERR,
         LDNS_STATUS_SYNTAX_ERR
 };
 typedef enum ldns_enum_status ldns_status;

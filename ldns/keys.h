@@ -127,20 +127,22 @@ ldns_key *ldns_key_new_frm_algorithm(ldns_signing_algorithm a, uint16_t size);
  * creates a new priv key based on the 
  * contents of the file pointed by fp
  *
+ * \param[out] k the new ldns_key structure
  * \param[in] fp the file pointer to use
- * \return a new ldns_key structure with the key
+ * \return an error or LDNS_STATUS_OK
  */
-ldns_key *ldns_key_new_frm_fp(FILE *fp);
+ldns_status ldns_key_new_frm_fp(ldns_key **k, FILE *fp);
 
 /**
  * creates a new priv key based on the 
  * contents of the file pointed by fp
  *
+ * \param[out] k the new ldns_key structure
  * \param[in] fp the file pointer to use
  * \param[in] line_nr pointer to an integer containing the current line number (for debugging purposes)
- * \return a new ldns_key structure with the key
+ * \return an error or LDNS_STATUS_OK
  */
-ldns_key *ldns_key_new_frm_fp_l(FILE *fp, int *line_nr);
+ldns_status ldns_key_new_frm_fp_l(ldns_key **k, FILE *fp, int *line_nr);
 
 #ifdef HAVE_SSL
 /**
