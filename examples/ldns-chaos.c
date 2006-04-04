@@ -34,6 +34,7 @@ main(int argc, char *argv[])
 	ldns_pkt *p;
 	ldns_rr_list *addr;
 	ldns_rr_list *info;
+	ldns_status s;
 	size_t i;
 	
 	if (argc != 2) {
@@ -53,8 +54,8 @@ main(int argc, char *argv[])
 	id      = ldns_dname_new_frm_str("hostname.bind");
 
 	/* create a new resolver from /etc/resolv.conf */
-	res = ldns_resolver_new_frm_file(NULL);
-	if (!res) {
+	s = ldns_resolver_new_frm_file(&res, NULL);
+	if (s != LDNS_STATUS_OK) {
 		exit(EXIT_FAILURE);
 	}
 	ldns_resolver_set_retry(res, 1); /* don't want to wait too long */

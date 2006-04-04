@@ -143,7 +143,7 @@ ldns_key_new_frm_fp_l(ldns_key **key, FILE *fp, int *line_nr)
 
 	ldns_key_set_keytag(k, ldns_calc_keytag(key_rr));
 	ldns_rr_free(key_rr);
-	if (key && *key) {
+	if (key) {
 		*key = k;
 		return LDNS_STATUS_OK;
 	}

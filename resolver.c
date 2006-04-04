@@ -542,14 +542,14 @@ ldns_resolver_new(void)
 	return r;
 }
 
-ldns_resolver *
-ldns_resolver_new_frm_fp(FILE *fp)
+ldns_status
+ldns_resolver_new_frm_fp(ldns_resolver **res, FILE *fp)
 {
-	return ldns_resolver_new_frm_fp_l(fp, NULL);
+	return ldns_resolver_new_frm_fp_l(res, fp, NULL);
 }
 
-ldns_resolver *
-ldns_resolver_new_frm_fp_l(FILE *fp, int *line_nr)
+ldns_status
+ldns_resolver_new_frm_fp_l(ldns_resolver **res, FILE *fp, int *line_nr)
 {
 	ldns_resolver *r;
 	const char *keyword[LDNS_RESOLV_KEYWORDS];
@@ -575,7 +575,7 @@ ldns_resolver_new_frm_fp_l(FILE *fp, int *line_nr)
 
 	r = ldns_resolver_new();
 	if (!r) {
-		return NULL;
+		return LDNS_STATUS_MEM_ERR;
 	}
 	gtr = ldns_fget_token_l(fp, word, LDNS_PARSE_NORMAL, 0, line_nr);
 	while (gtr > 0) {
@@ -602,7 +602,7 @@ ldns_resolver_new_frm_fp_l(FILE *fp, int *line_nr)
 				/* no keyword recognized */
 				if (expect == LDNS_RESOLV_KEYWORD) {
 					LDNS_FREE(word);
-					return NULL;
+					return LDNS_STATUS_SYNTAX_KEYWORD_ERR;
 				}
 				break;
 			case LDNS_RESOLV_DEFDOMAIN:
@@ -610,7 +610,7 @@ ldns_resolver_new_frm_fp_l(FILE *fp, int *line_nr)
 				tmp = ldns_rdf_new_frm_str(LDNS_RDF_TYPE_DNAME, word);
 				if (!tmp) {
 					LDNS_FREE(word);
-					return NULL;
+					return LDNS_STATUS_SYNTAX_DNAME_ERR;
 				}
 
 				/* DOn't free, because we copy the pointer */
@@ -627,7 +627,7 @@ ldns_resolver_new_frm_fp_l(FILE *fp, int *line_nr)
 				/* could not parse it, exit */
 				if (!tmp) {
 					LDNS_FREE(word);
-					return NULL;
+					return LDNS_STATUS_SYNTAX_ERR;
 				}
 				(void)ldns_resolver_push_nameserver(r, tmp);
 				ldns_rdf_deep_free(tmp);
@@ -638,7 +638,7 @@ ldns_resolver_new_frm_fp_l(FILE *fp, int *line_nr)
 				tmp = ldns_rdf_new_frm_str(LDNS_RDF_TYPE_DNAME, word);
 				if (!tmp) {
 					LDNS_FREE(word);
-					return NULL;
+					return LDNS_STATUS_SYNTAX_DNAME_ERR;
 				}
 
 				ldns_resolver_push_searchlist(r, tmp); 
@@ -650,14 +650,20 @@ ldns_resolver_new_frm_fp_l(FILE *fp, int *line_nr)
 	}
 	
 	LDNS_FREE(word);
-	return r;
+	if (res) {
+		*res = r;
+		return LDNS_STATUS_OK;
+	} else {
+		return LDNS_STATUS_NULL;
+	}
 }
 
-ldns_resolver *
-ldns_resolver_new_frm_file(const char *filename)
+ldns_status
+ldns_resolver_new_frm_file(ldns_resolver **res, const char *filename)
 {
 	ldns_resolver *r;
 	FILE *fp;
+	ldns_status s;
 
 	if (!filename) {
 		fp = fopen(LDNS_RESOLV_CONF, "r");
@@ -666,14 +672,21 @@ ldns_resolver_new_frm_file(const char *filename)
 		fp = fopen(filename, "r");
 	}
 	if (!fp) {
-		return NULL;
+		return LDNS_STATUS_FILE_ERR;
 	}
 	/* the file is opened. it's line based - this will be a bit messy */
 
-	r =  ldns_resolver_new_frm_fp(fp);
-
+	s = ldns_resolver_new_frm_fp(&r, fp);
 	fclose(fp);
-	return r;
+	if (s == LDNS_STATUS_OK) {
+		if (res) {
+			*res = r;
+			return LDNS_STATUS_OK;
+		} else  {
+			return LDNS_STATUS_NULL;
+		}
+	}
+	return LDNS_STATUS_ERR;
 }
 
 void
@@ -1016,13 +1029,14 @@ ldns_update_resolver_new(const char *fqdn, const char *zone,
 	ldns_rr_list	*nslist, *iplist;
 	ldns_rdf	*soa_zone, *soa_mname, *ns_name;
 	size_t		i;
+	ldns_status     s;
 
 	if (class == 0)
 		class = LDNS_RR_CLASS_IN;
 
 	/* First, get data from /etc/resolv.conf */
-	r1 = ldns_resolver_new_frm_file(NULL);
-	if (!r1)
+        s = ldns_resolver_new_frm_file(&r1, NULL);
+	if (s != LDNS_STATUS_OK)
 		return NULL;
 
 	r2 = ldns_resolver_new();

@@ -255,6 +255,7 @@ ldns_getaddrinfo(ldns_resolver *res, ldns_rdf *node, ldns_rr_class c,
 	ldns_rdf_type t;
 	uint16_t names_found;
 	ldns_resolver *r;
+	ldns_status s;
 
 	t = ldns_rdf_get_type(node);
 	names_found = 0;
@@ -262,8 +263,8 @@ ldns_getaddrinfo(ldns_resolver *res, ldns_rdf *node, ldns_rr_class c,
 
 	if (res == NULL) {
 		/* prepare a new resolver, using /etc/resolv.conf is a guide  */
-		r = ldns_resolver_new_frm_file(NULL);
-		if (!r) {
+		s = ldns_resolver_new_frm_file(&r, NULL);
+		if (s != LDNS_STATUS_OK) {
 			return 0;
 		} 
 	}

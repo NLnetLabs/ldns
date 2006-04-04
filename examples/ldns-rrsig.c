@@ -35,13 +35,12 @@ main(int argc, char *argv[])
 	time_t incep, expir;
 	char incep_buf[26];
 	char expir_buf[26];
+	ldns_status s;
 	
 	p = NULL;
 	rrsig = NULL;
 	rrsig_type = NULL;
 	domain = NULL;
-	res = NULL;
-	localres = NULL;
 
 	/* option parsing */
 	
@@ -72,11 +71,11 @@ main(int argc, char *argv[])
 	}
 
 	/* create a new resolver from /etc/resolv.conf */
-	localres = ldns_resolver_new_frm_file(NULL);
-
-	if (!localres) {
+	s = ldns_resolver_new_frm_file(&localres, NULL);
+	if (s != LDNS_STATUS_OK) {
 		exit(EXIT_FAILURE);
 	}
+
 	/* first get the nameserver of the domain in question */
 	p = ldns_resolver_query(localres, domain, LDNS_RR_TYPE_NS,
 				LDNS_RR_CLASS_IN, LDNS_RD);

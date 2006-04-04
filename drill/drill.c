@@ -387,8 +387,8 @@ main(int argc, char *argv[])
 	/* set the nameserver to use */
 	if (!serv) {
 		/* no server given make a resolver from /etc/resolv.conf */
-		res = ldns_resolver_new_frm_file(NULL);
-		if (!res) {
+		status = ldns_resolver_new_frm_file(&res, NULL);
+		if (status != LDNS_STATUS_OK) {
 			warning("Could not create a resolver structure");
 			result = EXIT_FAILURE;
 			goto exit;
@@ -404,9 +404,9 @@ main(int argc, char *argv[])
 		serv_rdf = ldns_rdf_new_addr_frm_str(serv);
 		if (!serv_rdf) {
 			/* try to resolv the name if possible */
-			cmdline_res = ldns_resolver_new_frm_file(NULL);
+			status = ldns_resolver_new_frm_file(&cmdline_res, NULL);
 			
-			if (!cmdline_res) {
+			if (status != LDNS_STATUS_OK) {
 				error("%s", "@server ip could not be converted");
 			}
 			ldns_resolver_set_dnssec(cmdline_res, qdnssec);

@@ -331,7 +331,7 @@ ldns_rdf_new_frm_fp_l(ldns_rdf **rdf, ldns_rdf_type type, FILE *fp, int *line_nr
 	}
 	r =  ldns_rdf_new_frm_str(type, (const char*) line);
 	LDNS_FREE(line);
-	if (rdf && *rdf) {
+	if (rdf) {
 		*rdf = r;
 		return LDNS_STATUS_OK;
 	} else {

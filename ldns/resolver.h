@@ -567,33 +567,32 @@ ldns_resolver* ldns_resolver_new(void);
 
 /**
  * Create a resolver structure from a file like /etc/resolv.conf
+ * \param[out] r the new resolver
  * \param[in] fp file pointer to create new resolver from
  *      if NULL use /etc/resolv.conf
- * \return ldns_resolver structure
+ * \return LDNS_STATUS_OK or the error
  */
-ldns_resolver* ldns_resolver_new_frm_fp(FILE *fp);
+ldns_status ldns_resolver_new_frm_fp(ldns_resolver **r, FILE *fp);
 
 /**
  * Create a resolver structure from a file like /etc/resolv.conf
+ * \param[out] r the new resolver
  * \param[in] fp file pointer to create new resolver from
  *      if NULL use /etc/resolv.conf
  * \param[in] line_nr pointer to an integer containing the current line number (for debugging purposes)
- * \return ldns_resolver structure
+ * \return LDNS_STATUS_OK or the error
  */
-ldns_resolver* ldns_resolver_new_frm_fp_l(FILE *fp, int *line_nr);
+ldns_status ldns_resolver_new_frm_fp_l(ldns_resolver **r, FILE *fp, int *line_nr);
 
 /**
  * configure a resolver by means of a resolv.conf file 
  * The file may be NULL in which case there will  be
  * looked the RESOLV_CONF (defaults to /etc/resolv.conf
+ * \param[out] r the new resolver
  * \param[in] filename the filename to use
- * \return ldns_resolver pointer
+ * \return LDNS_STATUS_OK or the error
  */                             
-/* keyword recognized:                          
- * nameserver                   
- * domain                       
- */                     
-ldns_resolver* ldns_resolver_new_frm_file(const char *filename);
+ldns_status ldns_resolver_new_frm_file(ldns_resolver **r, const char *filename);
 
 /**                             
  * Frees the allocated space for this resolver
