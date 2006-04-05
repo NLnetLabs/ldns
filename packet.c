@@ -875,6 +875,7 @@ ldns_pkt_reply_type(ldns_pkt *p)
 {
 	/* check for NXDOMAIN */
 	/* check DNSSEC records... this is a big one */
+	ldns_rr_list *tmp;
 
 	if (!p) {
 		return LDNS_PACKET_UNKNOWN;
@@ -892,13 +893,16 @@ ldns_pkt_reply_type(ldns_pkt *p)
 	}
 
 	if (ldns_pkt_ancount(p) == 0 && ldns_pkt_nscount(p) > 0) {
-		if (ldns_pkt_rr_list_by_type(p, LDNS_RR_TYPE_NS,
-					LDNS_SECTION_AUTHORITY)) {
+		tmp = ldns_pkt_rr_list_by_type(p, LDNS_RR_TYPE_NS,
+		                               LDNS_SECTION_AUTHORITY);
+		if (tmp) {
 			/* there are nameservers here */
+			ldns_rr_list_deep_free(tmp);
 			return LDNS_PACKET_REFERRAL;
 		} else {
 			/* I have no idea */
 		}
+		ldns_rr_list_deep_free(tmp);
 	}
 	
 	/* if we cannot determine the packet type, we say it's an 

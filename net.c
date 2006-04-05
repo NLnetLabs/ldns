@@ -221,9 +221,6 @@ ldns_udp_send(uint8_t **result, ldns_buffer *qbin, const struct sockaddr_storage
 		return LDNS_STATUS_NETWORK_ERR;
 	}
 
-	/* resize accordingly */
-	answer = (uint8_t*)LDNS_XREALLOC(answer, uint8_t *, (size_t)*answer_size);
-
 	*result = answer;
 	return LDNS_STATUS_OK;
 }
@@ -365,11 +362,13 @@ ldns_udp_read_wire(int sockfd, size_t *size, struct sockaddr_storage *from,
 		}
 		*size = 0;
 		perror("error receiving udp packet");
+		LDNS_FREE(wire);
 		return NULL;
 	}
 
 	*size = (size_t)wire_size;
 	wire = LDNS_XREALLOC(wire, uint8_t, (size_t)wire_size);
+
 	return wire;
 }
 
