@@ -450,7 +450,7 @@ ldns_rr_new_frm_str(ldns_rr **newrr, const char *str, uint16_t default_ttl, ldns
 	ldns_buffer_free(rr_buf);
 	LDNS_FREE(rdata);
 
-	if (newrr && *newrr) {
+	if (newrr) {
 		*newrr = new;
 	}
 	return LDNS_STATUS_OK;
@@ -491,6 +491,13 @@ ldns_rr_new_frm_fp_l(ldns_rr **newrr, FILE *fp, uint16_t *default_ttl, ldns_rdf 
         /* read an entire line in from the file */
         if (ldns_fget_token_l(fp, line, LDNS_PARSE_SKIP_SPACE, LDNS_MAX_LINELEN, line_nr) == -1) {
 		LDNS_FREE(line);
+		/* if last line was empty, we are now at feof, which is not
+		 * always a parse error (happens when for instance last line
+		 * was a comment)
+		 */
+		if (feof(fp)) {
+			return LDNS_STATUS_OK;
+		}
                 return LDNS_STATUS_SYNTAX_ERR;
         }
 
