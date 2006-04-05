@@ -38,7 +38,8 @@ SOURCES 	= ldns-read-zone.c \
 		  ldns-zcat.c \
 		  ldns-dpa.c \
 		  ldns-resolver.c \
-		  ldnsd.c
+		  ldnsd.c \
+		  ldns-keyfetcher.c
 
 
 PROGRAMS=$(SOURCES:.c=)
@@ -90,6 +91,9 @@ ldnsd:		ldnsd.o
 		$(LINK) -o $@ $+
 
 ldns-resolver:	ldns-resolver.o
+		$(LINK) -o $@ $+
+
+ldns-keyfetcher:	ldns-keyfetcher.o
 		$(LINK) -o $@ $+
 
 ## implicit rule
