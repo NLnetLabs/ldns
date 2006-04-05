@@ -176,7 +176,7 @@ ldns_send(ldns_pkt **result, ldns_resolver *r, const ldns_pkt *query_pkt)
 
 	if (all_servers_rtt_inf) {
 		LDNS_FREE(reply_bytes);
-		return LDNS_STATUS_NO_NAMESERVERS_ERR;
+		return LDNS_STATUS_RES_NO_NS;
 	}
 #ifdef HAVE_SSL
 	if (tsig_mac && reply_bytes) {
