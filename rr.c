@@ -109,6 +109,8 @@ ldns_rr_new_frm_str(ldns_rr **newrr, const char *str, uint16_t default_ttl, ldns
 	size_t rd_strlen;
 	const char *delimiters;
 	ssize_t c;
+	ldns_rdf *owner_dname;
+	
 	/* used for types with unknown number of rdatas */
 	bool done;
 	bool quoted;
@@ -263,7 +265,8 @@ ldns_rr_new_frm_str(ldns_rr **newrr, const char *str, uint16_t default_ttl, ldns
 				ldns_rr_set_owner(new, ldns_dname_new_frm_str("."));
 			}
 		} else {
-			if (!(ldns_dname_new_frm_str(owner))) {
+			owner_dname = ldns_dname_new_frm_str(owner);
+			if (!owner_dname) {
 					LDNS_FREE(owner); 
 					LDNS_FREE(ttl); 
 					LDNS_FREE(clas); 
@@ -276,7 +279,7 @@ ldns_rr_new_frm_str(ldns_rr **newrr, const char *str, uint16_t default_ttl, ldns
 					return LDNS_STATUS_SYNTAX_ERR;
 			}
 			
-			ldns_rr_set_owner(new, ldns_dname_new_frm_str(owner));
+			ldns_rr_set_owner(new, owner_dname);
 			if (!ldns_dname_str_absolute(owner) && origin) {
 				if(ldns_dname_cat(ldns_rr_owner(new), 
 							origin) != LDNS_STATUS_OK) {
