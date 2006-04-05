@@ -466,6 +466,7 @@ ldns_status
 ldns_rr_new_frm_fp_l(ldns_rr **newrr, FILE *fp, uint16_t *default_ttl, ldns_rdf **origin, ldns_rdf **prev, int *line_nr)
 {
         char *line;
+	const char *endptr;  /* unused */
 	ldns_rr *rr;
 	char *keyword;
 	uint16_t ttl;
@@ -516,7 +517,7 @@ ldns_rr_new_frm_fp_l(ldns_rr **newrr, FILE *fp, uint16_t *default_ttl, ldns_rdf 
 		
 	} else if ((keyword = strstr(line, "$TTL "))) {
 		if (default_ttl) {
-			*default_ttl = (uint16_t) atoi(keyword + 5);
+			*default_ttl = ldns_str2period(keyword + 5, &endptr);
 			return LDNS_STATUS_SYNTAX_TTL;
 		}
 	} else {
