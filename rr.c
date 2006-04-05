@@ -517,6 +517,7 @@ ldns_rr_new_frm_fp_l(ldns_rr **newrr, FILE *fp, uint16_t *default_ttl, ldns_rdf 
 	} else if ((keyword = strstr(line, "$TTL "))) {
 		if (default_ttl) {
 			*default_ttl = (uint16_t) atoi(keyword + 5);
+			return LDNS_STATUS_SYNTAX_TTL;
 		}
 	} else {
 		if (origin && *origin) {

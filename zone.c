@@ -181,8 +181,9 @@ ldns_zone_new_frm_fp_l(ldns_zone **z, FILE *fp, ldns_rdf *origin, uint16_t ttl, 
 	}
 
 	while(!feof(fp)) {
-		if ((s = ldns_rr_new_frm_fp_l(&rr, fp, &my_ttl, &my_origin, &my_prev, line_nr))
-				== LDNS_STATUS_OK) {
+		s = ldns_rr_new_frm_fp_l(&rr, fp, &my_ttl, &my_origin, &my_prev, line_nr);
+		switch (s) {
+		case LDNS_STATUS_OK:
 			if (ldns_rr_get_type(rr) == LDNS_RR_TYPE_SOA) {
 				if (soa_seen) {
 					/* second SOA 
@@ -208,8 +209,10 @@ ldns_zone_new_frm_fp_l(ldns_zone **z, FILE *fp, ldns_rdf *origin, uint16_t ttl, 
 			/*my_origin = ldns_rr_owner(rr);*/
 			my_ttl    = ldns_rr_ttl(rr);
 			my_class  = ldns_rr_get_class(rr);
-			
-		} else {
+		case LDNS_STATUS_SYNTAX_TTL:
+			/* the function set the ttl */
+			break;
+		default:
 			ldns_zone_free(newzone);
 			return s;
 		}
