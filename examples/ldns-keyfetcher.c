@@ -100,12 +100,20 @@ retrieve_dnskeys(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 		return NULL;
 	}
 
+	if (verbosity >= 4) {
+		ldns_pkt_print(stdout, p);
+		printf("\n\n");
+	}
+
 	/* from now on, use TCP */
 	ldns_resolver_set_usevc(res, true);
 
 	while(status == LDNS_STATUS_OK && 
 	      ldns_pkt_reply_type(p) == LDNS_PACKET_REFERRAL) {
 
+		if (verbosity >= 3) {
+			printf("This is a delegation!\n\n");
+		}
 		new_nss_a = ldns_pkt_rr_list_by_type(p,
 				LDNS_RR_TYPE_A, LDNS_SECTION_ADDITIONAL);
 		new_nss_aaaa = ldns_pkt_rr_list_by_type(p,
@@ -166,7 +174,9 @@ retrieve_dnskeys(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 		 * if answer list null and no resolvers left die.
 		 */
 
+		ldns_rr_list_deep_free(answer_list);
 		ldns_rr_list_deep_free(authority_list);
+		answer_list = NULL;
 		authority_list = NULL;
 		for (nss_i = 0; nss_i < ldns_rr_list_rr_count(new_nss_aaaa); nss_i++) {
 			while((pop = ldns_resolver_pop_nameserver(res))) { ldns_rdf_deep_free(pop); }
@@ -181,7 +191,7 @@ retrieve_dnskeys(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 				ldns_rdf_print(stdout, ldns_rr_owner(ldns_rr_list_rr(new_nss_aaaa, nss_i)));
 				fprintf(stdout, " (");
 				ldns_rdf_print(stdout, ldns_rr_rdf(ldns_rr_list_rr(new_nss_aaaa, nss_i), 0));
-				fprintf(stdout, ")\n\n");
+				fprintf(stdout, ")\n");
 			}
 			status = ldns_resolver_push_nameserver(res, ldns_rr_rdf(ldns_rr_list_rr(new_nss_aaaa, nss_i), 0));
 			if (status != LDNS_STATUS_OK) {
@@ -197,6 +207,28 @@ retrieve_dnskeys(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 					printf("\n\n");
 				}
 
+				if (answer_list) {
+					if (verbosity >= 2) {
+						printf("Comparing answer list of answer to previous\n\n");
+					}
+					ldns_rr_list_sort(ldns_pkt_answer(p));
+					if (ldns_rr_list_compare(answer_list, ldns_pkt_answer(p)) != 0) {
+						fprintf(stderr, "ERROR: different answer answer from nameserver\n");
+						fprintf(stderr, "I had (from previous servers):\n");
+						ldns_rr_list_print(stderr, answer_list);
+						fprintf(stderr, "I received (from nameserver at ");
+						ldns_rdf_print(stderr, ldns_resolver_nameservers(res)[0]);
+						fprintf(stderr, "):\n");
+						ldns_rr_list_print(stderr, ldns_pkt_answer(p));
+						exit(EXIT_FAILURE);
+					}
+				} else {
+					answer_list = ldns_rr_list_clone(ldns_pkt_answer(p));
+					ldns_rr_list_sort(answer_list);
+					if (verbosity >= 2) {
+						printf("First answer list for this set, nothing to compare with\n\n");
+					}
+				}
 				if (authority_list) {
 					if (verbosity >= 2) {
 						printf("Comparing authority list of answer to previous\n\n");
@@ -227,7 +259,9 @@ retrieve_dnskeys(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 			}
 		}
 
+		ldns_rr_list_deep_free(answer_list);
 		ldns_rr_list_deep_free(authority_list);
+		answer_list = NULL;
 		authority_list = NULL;
 		for (nss_i = 0; nss_i < ldns_rr_list_rr_count(new_nss_a); nss_i++) {
 
@@ -238,7 +272,7 @@ retrieve_dnskeys(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 				ldns_rdf_print(stdout, ldns_rr_owner(ldns_rr_list_rr(new_nss_a, nss_i)));
 				fprintf(stdout, " (");
 				ldns_rdf_print(stdout, ldns_rr_rdf(ldns_rr_list_rr(new_nss_a, nss_i), 0));
-				fprintf(stdout, ")\n\n");
+				fprintf(stdout, ")\n");
 			}
 			status = ldns_resolver_push_nameserver(res, ldns_rr_rdf(ldns_rr_list_rr(new_nss_a, nss_i), 0));
 			if (status != LDNS_STATUS_OK) {
@@ -254,6 +288,28 @@ retrieve_dnskeys(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 					printf("\n\n");
 				}
 
+				if (answer_list) {
+					if (verbosity >= 2) {
+						printf("Comparing answer list of answer to previous\n\n");
+					}
+					ldns_rr_list_sort(ldns_pkt_answer(p));
+					if (ldns_rr_list_compare(answer_list, ldns_pkt_answer(p)) != 0) {
+						fprintf(stderr, "ERROR: different answer answer from nameserver\n");
+						fprintf(stderr, "I had (from previous servers):\n");
+						ldns_rr_list_print(stderr, answer_list);
+						fprintf(stderr, "I received (from nameserver at ");
+						ldns_rdf_print(stderr, ldns_resolver_nameservers(res)[0]);
+						fprintf(stderr, "):\n");
+						ldns_rr_list_print(stderr, ldns_pkt_answer(p));
+						exit(EXIT_FAILURE);
+					}
+				} else {
+					if (verbosity >= 2) {
+						printf("First answer list for this set, nothing to compare with\n\n");
+					}
+					answer_list = ldns_rr_list_clone(ldns_pkt_answer(p));
+					ldns_rr_list_sort(answer_list);
+				}
 				if (authority_list) {
 					if (verbosity >= 2) {
 						printf("Comparing authority list of answer to previous\n\n");
@@ -294,17 +350,30 @@ retrieve_dnskeys(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 		}
 		
 		ldns_pkt_free(p);
+
+		if (verbosity >= 3) {
+			fprintf(stdout, "This level ok. Continuing to next.\n\n");
+		}
+
 		status = ldns_resolver_send(&p, res, name, t, c, 0);
+		
+		if (status != LDNS_STATUS_OK) {
+			fprintf(stderr, "Error querying root servers: %s\n", ldns_get_errorstr_by_id(status));
+			return NULL;
+		}
+
+		if (verbosity >= 4) {
+			ldns_pkt_print(stdout, p);
+			printf("\n\n");
+		}
+
+
 		ldns_rr_list_deep_free(new_nss_aaaa);
 		ldns_rr_list_deep_free(new_nss_a);
 		ldns_rr_list_deep_free(new_nss);
 		new_nss_aaaa = NULL;
 		new_nss_a = NULL;
 		ns_addr = NULL;
-
-		if (verbosity >= 3) {
-			fprintf(stdout, "This level ok. Continuing to next.\n\n");
-		}
 	}
 
 	ldns_rr_list_deep_free(answer_list);
