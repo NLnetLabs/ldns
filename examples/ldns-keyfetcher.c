@@ -387,6 +387,7 @@ read_root_hints(const char *filename)
 	ldns_status status;
 	ldns_rr_list *addresses = NULL;
 	ldns_rr *rr;
+	size_t i;
 
 	fp = fopen(filename, "r");
 	if (!fp) {
@@ -401,8 +402,8 @@ read_root_hints(const char *filename)
 		return NULL;
 	} else {
 		addresses = ldns_rr_list_new();
-		for (line_nr = 0; line_nr < ldns_rr_list_rr_count(ldns_zone_rrs(z)); line_nr++) { 
-			rr = ldns_rr_list_rr(ldns_zone_rrs(z), line_nr);
+		for (i = 0; i < ldns_rr_list_rr_count(ldns_zone_rrs(z)); i++) { 
+			rr = ldns_rr_list_rr(ldns_zone_rrs(z), i);
 			if (ldns_rr_get_type(rr) == LDNS_RR_TYPE_A || 
 			    ldns_rr_get_type(rr) == LDNS_RR_TYPE_AAAA) {
 				ldns_rr_list_push_rr(addresses, ldns_rr_clone(rr));
