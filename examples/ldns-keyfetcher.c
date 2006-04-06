@@ -65,7 +65,7 @@ retrieve_dnskeys(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 	if (verbosity >= 2) {
 		printf("Finding dnskey data for zone: ");
 		ldns_rdf_print(stdout, name);
-		printf("\n");
+		printf("\n\n");
 	}
 
 	/* transfer some properties of local_res to res,
@@ -177,10 +177,13 @@ retrieve_dnskeys(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 			}
 			
 			if (verbosity >= 1) {
-				printf("Querying nameserver: ");
-				ldns_rr_print(stdout, ldns_rr_list_rr(new_nss_a, nss_i));
+				fprintf(stdout, "Querying nameserver: ");
+				ldns_rdf_print(stdout, ldns_rr_owner(ldns_rr_list_rr(new_nss_aaaa, nss_i)));
+				fprintf(stdout, " (");
+				ldns_rdf_print(stdout, ldns_rr_rdf(ldns_rr_list_rr(new_nss_aaaa, nss_i), 0));
+				fprintf(stdout, ")\n\n");
 			}
-			status = ldns_resolver_push_nameserver(res, ldns_rr_rdf(ldns_rr_list_rr(new_nss_a, nss_i), 0));
+			status = ldns_resolver_push_nameserver(res, ldns_rr_rdf(ldns_rr_list_rr(new_nss_aaaa, nss_i), 0));
 			if (status != LDNS_STATUS_OK) {
 				fprintf(stderr, "Error adding nameserver to resolver: %s\n", ldns_get_errorstr_by_id(status));
 			}
@@ -191,11 +194,12 @@ retrieve_dnskeys(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 			if (status == LDNS_STATUS_OK) {
 				if (verbosity >= 4) {
 					ldns_pkt_print(stdout, p);
+					printf("\n\n");
 				}
 
 				if (authority_list) {
 					if (verbosity >= 2) {
-						printf("Comparing authority list of answer to previous\n");
+						printf("Comparing authority list of answer to previous\n\n");
 					}
 					ldns_rr_list_sort(ldns_pkt_authority(p));
 					if (ldns_rr_list_compare(authority_list, ldns_pkt_authority(p)) != 0) {
@@ -212,11 +216,12 @@ retrieve_dnskeys(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 					authority_list = ldns_rr_list_clone(ldns_pkt_authority(p));
 					ldns_rr_list_sort(authority_list);
 					if (verbosity >= 2) {
-						printf("First authority list for this set, nothing to compare with\n");
+						printf("First authority list for this set, nothing to compare with\n\n");
 					}
 					if (verbosity >= 3) {
 						printf("NS RRset:\n");
 						ldns_rr_list_print(stdout, authority_list);
+						printf("\n");
 					}
 				}
 			}
@@ -229,8 +234,11 @@ retrieve_dnskeys(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 			while((pop = ldns_resolver_pop_nameserver(res))) {ldns_rdf_deep_free(pop); }
 
 			if (verbosity >= 1) {
-				printf("Querying nameserver: ");
-				ldns_rr_print(stdout, ldns_rr_list_rr(new_nss_a, nss_i));
+				fprintf(stdout, "Querying nameserver: ");
+				ldns_rdf_print(stdout, ldns_rr_owner(ldns_rr_list_rr(new_nss_a, nss_i)));
+				fprintf(stdout, " (");
+				ldns_rdf_print(stdout, ldns_rr_rdf(ldns_rr_list_rr(new_nss_a, nss_i), 0));
+				fprintf(stdout, ")\n\n");
 			}
 			status = ldns_resolver_push_nameserver(res, ldns_rr_rdf(ldns_rr_list_rr(new_nss_a, nss_i), 0));
 			if (status != LDNS_STATUS_OK) {
@@ -243,11 +251,12 @@ retrieve_dnskeys(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 			if (status == LDNS_STATUS_OK) {
 				if (verbosity >= 4) {
 					ldns_pkt_print(stdout, p);
+					printf("\n\n");
 				}
 
 				if (authority_list) {
 					if (verbosity >= 2) {
-						printf("Comparing authority list of answer to previous\n");
+						printf("Comparing authority list of answer to previous\n\n");
 					}
 					ldns_rr_list_sort(ldns_pkt_authority(p));
 					if (ldns_rr_list_compare(authority_list, ldns_pkt_authority(p)) != 0) {
@@ -262,13 +271,14 @@ retrieve_dnskeys(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 					}
 				} else {
 					if (verbosity >= 2) {
-						printf("First authority list for this set, nothing to compare with\n");
+						printf("First authority list for this set, nothing to compare with\n\n");
 					}
 					authority_list = ldns_rr_list_clone(ldns_pkt_authority(p));
 					ldns_rr_list_sort(authority_list);
 					if (verbosity >= 3) {
 						printf("NS RRset:\n");
 						ldns_rr_list_print(stdout, authority_list);
+						printf("\n");
 					}
 				}
 			}
@@ -292,6 +302,9 @@ retrieve_dnskeys(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 		new_nss_a = NULL;
 		ns_addr = NULL;
 
+		if (verbosity >= 3) {
+			fprintf(stdout, "This level ok. Continuing to next.\n\n");
+		}
 	}
 
 	ldns_rr_list_deep_free(answer_list);
