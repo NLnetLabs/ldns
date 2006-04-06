@@ -210,6 +210,7 @@ ldns_zone_new_frm_fp_l(ldns_zone **z, FILE *fp, ldns_rdf *origin, uint16_t ttl, 
 			my_ttl    = ldns_rr_ttl(rr);
 			my_class  = ldns_rr_get_class(rr);
 		case LDNS_STATUS_SYNTAX_EMPTY:
+			/* empty line was seen */
 		case LDNS_STATUS_SYNTAX_TTL:
 			/* the function set the ttl */
 			break;
@@ -221,7 +222,7 @@ ldns_zone_new_frm_fp_l(ldns_zone **z, FILE *fp, ldns_rdf *origin, uint16_t ttl, 
 	if (my_origin) {
 		ldns_rdf_deep_free(my_origin);
 	}
-	if (z && *z) {
+	if (z) {
 		*z = newzone;
 	}
 	return LDNS_STATUS_OK;

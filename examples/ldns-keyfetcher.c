@@ -8,15 +8,12 @@
  */
 
 #include "config.h"
-
 #include <ldns/dns.h>
-
 #include <errno.h>
 
 int verbosity = 0;
 
-
-int
+void
 usage(FILE *fp, char *prog) {
 	fprintf(fp, "%s domain\n", prog);
 	fprintf(fp, "  retrieve out the dnskeys for domain\n");
@@ -24,7 +21,6 @@ usage(FILE *fp, char *prog) {
 	fprintf(fp, "-h\t\tShow this help\n");
 	fprintf(fp, "-r <file>\tUse file to read root hints from\n");
 	fprintf(fp, "-v <int>\tVerbosity level (0-5, not verbose-very verbose)\n");
-	return 0;
 }
 
 ldns_rr_list *
@@ -46,7 +42,6 @@ retrieve_dnskeys(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 	size_t nss_i;
 	ldns_rr_list *answer_list = NULL;
 	ldns_rr_list *authority_list = NULL;
-/*	ldns_rr_list *additional_list = NULL;*/
 	
 	size_t last_nameserver_count;
 	ldns_rdf **last_nameservers;
@@ -288,7 +283,6 @@ retrieve_dnskeys(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 
 	}
 
-
 	ldns_rr_list_deep_free(answer_list);
 	answer_list = NULL;
 	/* clone the nameserver list, we are going to handle them one by one */
@@ -317,7 +311,7 @@ retrieve_dnskeys(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 		status = ldns_resolver_send(&p, res, name, t, c, 0);
 
 		if (!p) {
-			printf("no p\n");
+			fprintf(stderr, "no packet received\n");
 			return NULL;
 		}
 
@@ -375,9 +369,8 @@ ldns_rr_list *
 read_root_hints(const char *filename)
 {
 	FILE *fp = NULL;
-	ldns_rr_list *dns_root = NULL;
-	ldns_rr *rr;
 	int line_nr = 0;
+	ldns_zone *z;
 	ldns_status status;
 
 	fp = fopen(filename, "r");
@@ -386,37 +379,14 @@ read_root_hints(const char *filename)
 		return NULL;
 	}
 
-	dns_root = ldns_rr_list_new();
-
-	/* TODO: Check NS records etc. */
-	while (!feof(fp)) {
-		/* like zone_new_frm_fp, but no directives for ttl, origin, etc. */
-		rr = NULL;
-		status = ldns_rr_new_frm_fp_l(&rr, fp, NULL, NULL, NULL, &line_nr);
-
-		if (status == LDNS_STATUS_OK && rr) {
-			if (ldns_rr_get_type(rr) == LDNS_RR_TYPE_A) {
-				ldns_rr_list_push_rr(dns_root, rr);
-			} else {
-				ldns_rr_free(rr);
-			}
-		} else {
-			if (rr) {
-				printf("ERROR BUT RR!\n");
-			}
-			/* extra check for eof, we get syntax error if last line was comment */
-			if (feof(fp)) {
-				ldns_rr_free(rr);
-			} else {
-				fprintf(stderr, "Error reading root hints (line %d): %s\n", line_nr, ldns_get_errorstr_by_id(status));
-				exit(EXIT_FAILURE);
-			}
-		}
-	}
-
+	status = ldns_zone_new_frm_fp_l(&z, fp, NULL, 0, 0, &line_nr);
 	fclose(fp);
-
-	return dns_root;
+	if (status != LDNS_STATUS_OK) {
+		fprintf(stderr, "error\n");
+		return NULL;
+	} else {
+		return ldns_zone_rrs(z);
+	}
 }
 
 
@@ -476,6 +446,10 @@ main(int argc, char *argv[])
 	}
 
 	dns_root = read_root_hints(root_file);
+	if (!dns_root) {
+		fprintf(stderr, "cannot read the root hints file\n");
+		exit(EXIT_FAILURE);
+	}
 
 	/* create a new resolver from /etc/resolv.conf */
 	status = ldns_resolver_new_frm_file(&res, NULL);
