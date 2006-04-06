@@ -376,14 +376,6 @@ main(int argc, char *argv[])
 	}
 
 
-	/* if we're asking for DNSSEC records, act as if -D with given */
-	if (type == LDNS_RR_TYPE_DNSKEY ||
-			type == LDNS_RR_TYPE_RRSIG || 
-			type == LDNS_RR_TYPE_DS || 
-			type == LDNS_RR_TYPE_NSEC) {
-		qdnssec = true;
-	}
-
 	/* set the nameserver to use */
 	if (!serv) {
 		/* no server given make a resolver from /etc/resolv.conf */
