@@ -87,23 +87,24 @@ retrieve_dnskeys(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 	ldns_resolver_set_recursive(res, false);
 
 	/* setup the root nameserver in the new resolver */
-	if (ldns_resolver_push_nameserver_rr_list(res, dns_root) != LDNS_STATUS_OK) {
+	status = ldns_resolver_push_nameserver_rr_list(res, dns_root);
+	if (status != LDNS_STATUS_OK) {
+		fprintf(stderr, "Error setting root nameservers in resolver: %s\n", ldns_get_errorstr_by_id(status));
 		return NULL;
 	}
 
 	ldns_pkt_free(p);
 	status = ldns_resolver_send(&p, res, name, t, c, 0);
+	if (status != LDNS_STATUS_OK) {
+		printf("Error querying root servers: %s\n", ldns_get_errorstr_by_id);
+		return NULL;
+	}
 
 	/* from now on, use TCP */
 	ldns_resolver_set_usevc(res, true);
 
 	while(status == LDNS_STATUS_OK && 
 	      ldns_pkt_reply_type(p) == LDNS_PACKET_REFERRAL) {
-
-		if (!p) {
-			/* some error occurred, bail out */
-			return NULL;
-		}
 
 		new_nss_a = ldns_pkt_rr_list_by_type(p,
 				LDNS_RR_TYPE_A, LDNS_SECTION_ADDITIONAL);
