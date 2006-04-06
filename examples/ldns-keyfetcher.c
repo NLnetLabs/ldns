@@ -34,6 +34,7 @@ retrieve_dnskeys(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 	ldns_rr_list *final_answer;
 	ldns_rr_list *new_nss;
 	ldns_rr_list *ns_addr;
+	ldns_rr_list *ns_addr2;
 	uint16_t loop_count;
 	ldns_rdf *pop; 
 	ldns_status status;
@@ -51,6 +52,7 @@ retrieve_dnskeys(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 	new_nss_aaaa = NULL;
 	new_nss = NULL;
 	ns_addr = NULL;
+	ns_addr2 = NULL;
 	final_answer = NULL;
 	p = ldns_pkt_new();
 	res = ldns_resolver_new();
@@ -92,6 +94,9 @@ retrieve_dnskeys(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 	ldns_pkt_free(p);
 	status = ldns_resolver_send(&p, res, name, t, c, 0);
 
+	/* from now on, use TCP */
+	ldns_resolver_set_usevc(res, true);
+
 	while(status == LDNS_STATUS_OK && 
 	      ldns_pkt_reply_type(p) == LDNS_PACKET_REFERRAL) {
 
@@ -117,6 +122,10 @@ retrieve_dnskeys(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 			 * no nameserver found!!! 
 			 * try to resolve the names we do got 
 			 */
+			if (verbosity >= 3) {
+				printf("Did not get address record for nameserver, doing seperate query.\n");
+			}
+			ns_addr = ldns_rr_list_new();
 			for(i = 0; i < ldns_rr_list_rr_count(new_nss); i++) {
 				/* get the name of the nameserver */
 				pop = ldns_rr_rdf(ldns_rr_list_rr(new_nss, i), 0);
@@ -124,12 +133,13 @@ retrieve_dnskeys(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 					break;
 				}
 
-				ldns_rr_list_print(stdout, new_nss);
-				ldns_rdf_print(stdout, pop);
 				/* retrieve it's addresses */
-				ns_addr = ldns_rr_list_cat_clone(ns_addr,
-					ldns_get_rr_list_addr_by_name(local_res, pop, c, 0));
-				ldns_rdf_deep_free(pop);
+				ns_addr2 = ldns_get_rr_list_addr_by_name(local_res, pop, c, 0);
+				if (!ldns_rr_list_cat(ns_addr, ns_addr2)) {
+					fprintf(stderr, "Internal error adding nameserver address.\n");
+					exit(EXIT_FAILURE);
+				}
+				ldns_rr_list_free(ns_addr2);
 			}
 
 			if (ns_addr) {
@@ -139,7 +149,7 @@ retrieve_dnskeys(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 					ldns_pkt_free(p); 
 					return NULL;
 				}
-				ldns_rr_list_free(ns_addr);
+				ldns_rr_list_deep_free(ns_addr);
 			} else {
 				ldns_rr_list_print(stdout, ns_addr);
 				fprintf(stderr, "Could not find the nameserver ip addr; abort");
@@ -289,6 +299,7 @@ retrieve_dnskeys(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 	last_nameserver_count = 0;
 	last_nameservers = LDNS_XMALLOC(ldns_rdf *, ldns_resolver_nameserver_count(res));
 
+	pop = NULL;
 	while((pop = ldns_resolver_pop_nameserver(res))) { 
 		last_nameservers[last_nameserver_count] = pop;
 		last_nameserver_count++;
@@ -300,7 +311,8 @@ retrieve_dnskeys(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 
 		if (verbosity >= 1) {
 			printf("Querying nameserver: ");
-			ldns_rr_print(stdout, ldns_rr_list_rr(new_nss_a, nss_i));
+			ldns_rdf_print(stdout, last_nameservers[nss_i]);
+			printf("\n");
 		}
 		status = ldns_resolver_push_nameserver(res, last_nameservers[nss_i]);
 		if (status != LDNS_STATUS_OK) {
@@ -398,7 +410,7 @@ main(int argc, char *argv[])
 	ldns_rr_list *l = NULL;
 
 	ldns_rr_list *dns_root = NULL;
-	const char *root_file = "named.root";
+	const char *root_file = "/etc/named.root";
 
 	ldns_status status;
 	
