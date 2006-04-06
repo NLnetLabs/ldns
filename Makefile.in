@@ -19,7 +19,7 @@ endif
 
 CC 		= @CC@
 CPPFLAGS	= @CPPFLAGS@ @DEFS@ -I. -I$(srcdir)
-CFLAGS 		= @CFLAGS@ 
+CFLAGS 		= @CFLAGS@  -I. -I$(srcdir)
 LDFLAGS		= @LDFLAGS@
 LIBS 		= @LIBS@
 LIBOBJS		= @LIBOBJS@
@@ -76,10 +76,10 @@ LINK_LIB	= $(LIBTOOL) --mode=link $(CC) $(CFLAGS) $(LDFLAGS) -release $(VERSION)
 .PHONY: install-h uninstall-h install-lib uninstall-lib 
 .PHONY: confdrill tools-drill
 
-all:		lib
+all:		lib linktest
 
 linktest:
-		gcc $(srcdir)/linktest.c -Iinclude .libs/libldns.a $(LDFLAGS) -o linktest
+		gcc $(srcdir)/linktest.c -Iinclude -I$(srcdir) .libs/libldns.a $(LDFLAGS) -o linktest
 		rm linktest
 
 ./drill/Makefile:
