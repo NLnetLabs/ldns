@@ -68,8 +68,8 @@ COMP_LIB	= $(LIBTOOL) --mode=compile $(CC) $(CPPFLAGS) $(CFLAGS)
 LINK		= $(CC) $(CFLAGS) $(LDFLAGS)
 LINK_LIB	= $(LIBTOOL) --mode=link $(CC) $(CFLAGS) $(LDFLAGS) -release $(VERSION)
 
-%.o:	$(srcdir)/%.c $(LIBDNS_HEADERS)
-	$(COMP_LIB) -c $<
+%.o:    %.c
+	$(COMP_LIB) -c $> $<
 
 .PHONY:	clean realclean docclean doc lint all lib
 .PHONY: install uninstall install-doc uninstall-doc 
@@ -156,7 +156,7 @@ uninstall-lib:
 		rmdir -p $(DESTDIR)$(libdir)
 
 clean:	drill-clean
-	rm -f *.o *.d 
+	rm -f *.o *.d *.lo
 	rm -f *~
 	rm -rf autom4te.cache/
 	rm -f tags
