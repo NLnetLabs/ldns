@@ -96,7 +96,7 @@ retrieve_dnskeys(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 	ldns_pkt_free(p);
 	status = ldns_resolver_send(&p, res, name, t, c, 0);
 	if (status != LDNS_STATUS_OK) {
-		printf("Error querying root servers: %s\n", ldns_get_errorstr_by_id);
+		fprintf(stderr, "Error querying root servers: %s\n", ldns_get_errorstr_by_id(status));
 		return NULL;
 	}
 
@@ -385,6 +385,8 @@ read_root_hints(const char *filename)
 	int line_nr = 0;
 	ldns_zone *z;
 	ldns_status status;
+	ldns_rr_list *addresses = NULL;
+	ldns_rr *rr;
 
 	fp = fopen(filename, "r");
 	if (!fp) {
@@ -395,10 +397,19 @@ read_root_hints(const char *filename)
 	status = ldns_zone_new_frm_fp_l(&z, fp, NULL, 0, 0, &line_nr);
 	fclose(fp);
 	if (status != LDNS_STATUS_OK) {
-		fprintf(stderr, "error\n");
+		fprintf(stderr, "Error reading root hints file: %s\n", ldns_get_errorstr_by_id(status));
 		return NULL;
 	} else {
-		return ldns_zone_rrs(z);
+		addresses = ldns_rr_list_new();
+		for (line_nr = 0; line_nr < ldns_rr_list_rr_count(ldns_zone_rrs(z)); line_nr++) { 
+			rr = ldns_rr_list_rr(ldns_zone_rrs(z), line_nr);
+			if (ldns_rr_get_type(rr) == LDNS_RR_TYPE_A || 
+			    ldns_rr_get_type(rr) == LDNS_RR_TYPE_AAAA) {
+				ldns_rr_list_push_rr(addresses, ldns_rr_clone(rr));
+			}
+		}
+		ldns_zone_free(z);
+		return addresses;
 	}
 }
 
@@ -428,20 +439,26 @@ main(int argc, char *argv[])
 			if (strncmp("-h", argv[i], 3) == 0) {
 				usage(stdout, argv[0]);
 				exit(EXIT_SUCCESS);
-			} else if (strncmp("-r", argv[i], 3) == 0) {
-				if (i+1 >= argc) {
+			} else if (strncmp("-r", argv[i], 2) == 0) {
+				if (strlen(argv[i]) > 2) {
+					root_file = argv[i]+2;
+				} else if (i+1 >= argc) {
 					usage(stdout, argv[0]);
 					exit(EXIT_FAILURE);
+				} else {
+					root_file = argv[i+1];
+					i++;
 				}
-				root_file = argv[i+1];
-				i++;
-			} else if (strncmp("-v", argv[i], 3) == 0) {
-				if (i+1 > argc) {
+			} else if (strncmp("-v", argv[i], 2) == 0) {
+				if (strlen(argv[i]) > 2) {
+					verbosity = atoi(argv[i]+2);
+				} else if (i+1 > argc) {
 					usage(stdout, argv[0]);
 					exit(EXIT_FAILURE);
+				} else {
+					verbosity = atoi(argv[i+1]);
+					i++;
 				}
-				verbosity = atoi(argv[i+1]);
-				i++;
 			} else {
 				/* create a rdf from the command line arg */
 				if (domain) {
@@ -451,6 +468,7 @@ main(int argc, char *argv[])
 
 				domain = ldns_dname_new_frm_str(argv[i]);
 			}
+
 		}
 		if (!domain) {
 			usage(stdout, argv[0]);
