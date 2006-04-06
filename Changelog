@@ -59,6 +59,8 @@ XX Jan 2006: 1.1.0: ldns-team
 	  ldns_digest_name and ldns_tsig_mac_new
 	* ldns_key_rr2ds has an extra argument to specify the hash to
 	  use.
+	* ldns_pkt_rcode() is renamed to ldns_pkt_get_rcode, ldns_pkt_rcode
+	  is now the rcode type, like ldns_pkt_opcode
 	New:
 	* ldns_resolver_searchlist_count: return the searchlist counter
 	* ldns_zone_sort: Sort a zone
