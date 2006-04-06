@@ -83,8 +83,8 @@ ldns_pkt_get_opcode(const ldns_pkt *packet)
 	return packet->_header->_opcode;
 }
 
-uint8_t
-ldns_pkt_rcode(const ldns_pkt *packet)
+ldns_pkt_rcode
+ldns_pkt_get_rcode(const ldns_pkt *packet)
 {
 	return packet->_header->_rcode;
 }
@@ -934,7 +934,7 @@ ldns_pkt_clone(ldns_pkt *pkt)
 	ldns_pkt_set_ra(new_pkt, ldns_pkt_ra(pkt));
 	ldns_pkt_set_ad(new_pkt, ldns_pkt_ad(pkt));
 	ldns_pkt_set_opcode(new_pkt, ldns_pkt_get_opcode(pkt));
-	ldns_pkt_set_rcode(new_pkt, ldns_pkt_rcode(pkt));
+	ldns_pkt_set_rcode(new_pkt, ldns_pkt_get_rcode(pkt));
 	ldns_pkt_set_qdcount(new_pkt, ldns_pkt_qdcount(pkt));
 	ldns_pkt_set_ancount(new_pkt, ldns_pkt_ancount(pkt));
 	ldns_pkt_set_nscount(new_pkt, ldns_pkt_nscount(pkt));

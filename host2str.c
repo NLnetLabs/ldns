@@ -58,17 +58,17 @@ ldns_lookup_table ldns_rr_classes[] = {
 
 /* if these are used elsewhere */
 ldns_lookup_table ldns_rcodes[] = {
-        { 0, "NOERROR" },
-        { 1, "FORMERR" },
-        { 2, "SERVFAIL" },
-        { 3, "NAMEERR" },
-        { 4, "NOTIMPL" },
-        { 5, "REFUSED" },
-        { 6, "YXDOMAIN" },
-        { 7, "YXRRSET" },
-        { 8, "NXRRSET" },
-        { 9, "NOTAUTH" },
-        { 10, "NOTZONE" },
+        { LDNS_RCODE_NOERROR, "NOERROR" },
+        { LDNS_RCODE_FORMERR, "FORMERR" },
+        { LDNS_RCODE_SERVFAIL, "SERVFAIL" },
+        { LDNS_RCODE_NAMEERR, "NAMEERR" },
+        { LDNS_RCODE_NOTIMPL, "NOTIMPL" },
+        { LDNS_RCODE_REFUSED, "REFUSED" },
+        { LDNS_RCODE_YXDOMAIN, "YXDOMAIN" },
+        { LDNS_RCODE_YXRRSET, "YXRRSET" },
+        { LDNS_RCODE_NXRRSET, "NXRRSET" },
+        { LDNS_RCODE_NOTAUTH, "NOTAUTH" },
+        { LDNS_RCODE_NOTZONE, "NOTZONE" },
         { 0, NULL }
 };
 
@@ -894,7 +894,7 @@ ldns_pktheader2buffer_str(ldns_buffer *output, const ldns_pkt *pkt)
 	ldns_lookup_table *opcode = ldns_lookup_by_id(ldns_opcodes,
 			                    (int) ldns_pkt_get_opcode(pkt));
 	ldns_lookup_table *rcode = ldns_lookup_by_id(ldns_rcodes,
-			                    (int) ldns_pkt_rcode(pkt));
+			                    (int) ldns_pkt_get_rcode(pkt));
 
 	ldns_buffer_printf(output, ";; ->>HEADER<<- ");
 	if (opcode) {
@@ -906,7 +906,7 @@ ldns_pktheader2buffer_str(ldns_buffer *output, const ldns_pkt *pkt)
 	if (rcode) {
 		ldns_buffer_printf(output, "rcode: %s, ", rcode->name);
 	} else {
-		ldns_buffer_printf(output, "rcode: ?? (%u), ", ldns_pkt_rcode(pkt));
+		ldns_buffer_printf(output, "rcode: ?? (%u), ", ldns_pkt_get_rcode(pkt));
 	}
 	ldns_buffer_printf(output, "id: %d\n", ldns_pkt_id(pkt));
 	ldns_buffer_printf(output, ";; flags: ");

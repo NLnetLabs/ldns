@@ -376,13 +376,13 @@ ldns_update_send_simple_addr(const char *fqdn, const char *zone,
 	if (!r_pkt)
 		goto cleanup;
 
-	if (ldns_pkt_rcode(r_pkt) != 0) {
+	if (ldns_pkt_get_rcode(r_pkt) != LDNS_RCODE_NOERROR) {
 		ldns_lookup_table *t = ldns_lookup_by_id(ldns_rcodes,
-				(int)ldns_pkt_rcode(r_pkt));
+				(int)ldns_pkt_get_rcode(r_pkt));
 		if (t) {
 			dprintf(";; UPDATE response was %s\n", t->name);
 		} else {
-			dprintf(";; UPDATE response was (%d)\n", ldns_pkt_rcode(r_pkt));
+			dprintf(";; UPDATE response was (%d)\n", ldns_pkt_get_rcode(r_pkt));
 		}
 		status = LDNS_STATUS_ERR;
 	}

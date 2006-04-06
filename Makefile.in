@@ -76,7 +76,7 @@ LINK_LIB	= $(LIBTOOL) --mode=link $(CC) $(CFLAGS) $(LDFLAGS) -release $(VERSION)
 .PHONY: install-h uninstall-h install-lib uninstall-lib 
 .PHONY: confdrill tools-drill
 
-all:		lib linktest
+all:		lib
 
 linktest:
 		gcc $(srcdir)/linktest.c -Iinclude .libs/libldns.a $(LDFLAGS) -o linktest

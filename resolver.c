@@ -974,7 +974,7 @@ ldns_axfr_next(ldns_resolver *resolver)
 		free(packet_wire);
 
 		resolver->_axfr_i = 0;
-		if (ldns_pkt_rcode(resolver->_cur_axfr_pkt) != 0) {
+		if (ldns_pkt_get_rcode(resolver->_cur_axfr_pkt) != 0) {
 			/* error */
 			return NULL;
 		} else {

@@ -1033,7 +1033,7 @@ get_string_value(match_id id, ldns_pkt *pkt, ldns_rdf *src_addr, ldns_rdf *dst_a
 			snprintf(val, valsize, "%u", (unsigned int) ldns_pkt_get_opcode(pkt));
 			break;
 		case MATCH_RCODE:
-			snprintf(val, valsize, "%u", (unsigned int) ldns_pkt_rcode(pkt));
+			snprintf(val, valsize, "%u", (unsigned int) ldns_pkt_get_rcode(pkt));
 			break;
 		case MATCH_PACKETSIZE:
 			snprintf(val, valsize, "%u", (unsigned int) ldns_pkt_size(pkt));

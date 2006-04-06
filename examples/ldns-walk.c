@@ -395,7 +395,7 @@ main(int argc, char *argv[])
 		 * SERVFAIL on the plus1-query...
 		 * so requery with only the last dname
 		 */
-		if (ldns_pkt_rcode(p) == 2) {
+		if (ldns_pkt_get_rcode(p) == LDNS_RCODE_SERVFAIL) {
 			ldns_pkt_free(p);
 			p = NULL;
 			if (verbosity >= 3) {

@@ -39,6 +39,22 @@ enum ldns_enum_pkt_opcode {
 };
 typedef enum ldns_enum_pkt_opcode ldns_pkt_opcode;
 
+/* rcodes for pkts */
+enum ldns_enum_pkt_rcode {
+	LDNS_RCODE_NOERROR = 0,
+	LDNS_RCODE_FORMERR = 1,
+	LDNS_RCODE_SERVFAIL = 2,
+	LDNS_RCODE_NAMEERR = 3,
+	LDNS_RCODE_NOTIMPL = 4,
+	LDNS_RCODE_REFUSED = 5,
+	LDNS_RCODE_YXDOMAIN = 6,
+	LDNS_RCODE_YXRRSET = 7,
+	LDNS_RCODE_NXRRSET = 8,
+	LDNS_RCODE_NOTAUTH = 9,
+	LDNS_RCODE_NOTZONE = 10
+};
+typedef enum ldns_enum_pkt_rcode ldns_pkt_rcode;
+
 /**
  *  Header of a dns packet
  *
@@ -211,7 +227,7 @@ ldns_pkt_opcode ldns_pkt_get_opcode(const ldns_pkt *p);
  * \param[in] p the packet
  * \return the respons code
  */
-uint8_t ldns_pkt_rcode(const ldns_pkt *p);
+ldns_pkt_rcode ldns_pkt_get_rcode(const ldns_pkt *p);
 /**
  * Return the packet's qd count 
  * \param[in] p the packet

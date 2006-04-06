@@ -58,7 +58,6 @@ main(int argc, char **argv)
 	}
 	
 	s = ldns_zone_new_frm_fp_l(&z, fp, NULL, 0, LDNS_RR_CLASS_IN, &line_nr);
-
 	if (s == LDNS_STATUS_OK) {
 		if (sort) {
 			ldns_zone_sort(z);
