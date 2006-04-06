@@ -53,6 +53,8 @@ XX Jan 2006: 1.1.0: ldns-team
 	  the rdf is return in the first argument
         * ldns_resolver_new_frm_fp: same treatment: return status and 
 	  the new resolver in the first argument
+	* ldns_pkt_query_new_frm_str(): same: return status and the
+	  packet in the first arg
 	* tsig.h: internal used functions are now static:
 	  ldns_digest_name and ldns_tsig_mac_new
 	* ldns_key_rr2ds has an extra argument to specify the hash to

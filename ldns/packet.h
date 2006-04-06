@@ -602,13 +602,14 @@ void ldns_pkt_free(ldns_pkt *packet);
 
 /**
  * creates a query packet for the given name, type, class.
+ * \param[out] p the packet to be returned
  * \param[in] rr_name the name to query for (as string)
  * \param[in] rr_type the type to query for
  * \param[in] rr_class the class to query for
  * \param[in] flags packet flags
- * \return ldns_pkt* a pointer to the new pkt
+ * \return LDNS_STATUS_OK or a ldns_status mesg with the error
  */
-ldns_pkt *ldns_pkt_query_new_frm_str(const char *rr_name, ldns_rr_type rr_type, ldns_rr_class rr_class , uint16_t flags);
+ldns_status ldns_pkt_query_new_frm_str(ldns_pkt **p, const char *rr_name, ldns_rr_type rr_type, ldns_rr_class rr_class , uint16_t flags);
 
 /**
  * creates a packet with a query in it for the given name, type and class.

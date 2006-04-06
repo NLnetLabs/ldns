@@ -783,9 +783,9 @@ ldns_pkt_set_flags(ldns_pkt *packet, uint16_t flags)
 	return true;
 }
 
-ldns_pkt *
-ldns_pkt_query_new_frm_str(const char *name, ldns_rr_type rr_type, ldns_rr_class rr_class,
-		uint16_t flags)
+ldns_status
+ldns_pkt_query_new_frm_str(ldns_pkt **p, const char *name, ldns_rr_type rr_type, 
+		ldns_rr_class rr_class, uint16_t flags)
 {
 	ldns_pkt *packet;
 	ldns_rr *question_rr;
@@ -793,16 +793,16 @@ ldns_pkt_query_new_frm_str(const char *name, ldns_rr_type rr_type, ldns_rr_class
 
 	packet = ldns_pkt_new();
 	if (!packet) {
-		return NULL;
+		return LDNS_STATUS_MEM_ERR;
 	}
 	
 	if (!ldns_pkt_set_flags(packet, flags)) {
-		return NULL;
+		return LDNS_STATUS_ERR;
 	}
 	
 	question_rr = ldns_rr_new();
 	if (!question_rr) {
-		return NULL;
+		return LDNS_STATUS_MEM_ERR;
 	}
 
 	if (rr_type == 0) {
@@ -821,14 +821,18 @@ ldns_pkt_query_new_frm_str(const char *name, ldns_rr_type rr_type, ldns_rr_class
 	} else {
 		ldns_rr_free(question_rr);
 		ldns_pkt_free(packet);
-		return NULL;
+		return LDNS_STATUS_ERR;
 	}
 	
 	packet->_tsig_rr = NULL;
 	
 	ldns_pkt_set_answerfrom(packet, NULL);
-	
-	return packet;
+	if (p) {
+		*p = packet;
+		return LDNS_STATUS_OK;
+	} else {
+		return LDNS_STATUS_NULL;
+	}
 }
 
 ldns_pkt *
