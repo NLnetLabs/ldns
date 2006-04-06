@@ -255,7 +255,7 @@ ldns_udp_connect(const struct sockaddr_storage *to, struct timeval timeout)
         }
 	if (setsockopt(sockfd, SOL_SOCKET, SO_RCVTIMEO, &timeout,
 				(socklen_t)sizeof(timeout))) {
-		perror("setsockopt");
+		/*perror("setsockopt");*/
 		close(sockfd);
 		return 0;
         }
@@ -270,20 +270,20 @@ ldns_tcp_connect(const struct sockaddr_storage *to, socklen_t tolen,
 	
 	if ((sockfd = socket((int)((struct sockaddr*)to)->sa_family, SOCK_STREAM, 
 					IPPROTO_TCP)) == -1) {
-		perror("could not open socket");
+		/*perror("could not open socket");*/
 		return 0;
 	}
 
         if (setsockopt(sockfd, SOL_SOCKET, SO_RCVTIMEO, &timeout,
                         (socklen_t) sizeof(timeout))) {
-                perror("setsockopt");
+                /*perror("setsockopt");*/
                 close(sockfd);
                 return 0;
         }
 
 	if (connect(sockfd, (struct sockaddr*)to, tolen) == -1) {
  		close(sockfd);
-		perror("could not bind socket");
+		/*perror("could not bind socket");*/
 		return 0;
 	}
 	return sockfd;
@@ -361,7 +361,7 @@ ldns_udp_read_wire(int sockfd, size_t *size, struct sockaddr_storage *from,
 			/*dprintf("%s", "socket timeout\n");*/
 		}
 		*size = 0;
-		perror("error receiving udp packet");
+		/*perror("error receiving udp packet");*/
 		LDNS_FREE(wire);
 		return NULL;
 	}
@@ -391,7 +391,7 @@ ldns_tcp_read_wire(int sockfd, size_t *size)
 			if (errno == EAGAIN) {
 				/*dprintf("%s", "socket timeout\n");*/
 			}
-			perror("error receiving tcp packet");
+			/*perror("error receiving tcp packet");*/
 			*size = 0;
 			return NULL;
 		}
@@ -409,7 +409,7 @@ ldns_tcp_read_wire(int sockfd, size_t *size)
 			if (errno == EAGAIN) {
 				/*dprintf("%s", "socket timeout\n");*/
 			}
-			perror("error receiving tcp packet");
+			/*perror("error receiving tcp packet");*/
 			LDNS_FREE(wire);
 			*size = 0;
 			return NULL;
