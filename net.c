@@ -393,6 +393,7 @@ ldns_tcp_read_wire(int sockfd, size_t *size)
 			}
 			/*perror("error receiving tcp packet");*/
 			*size = 0;
+			LDNS_FREE(wire);
 			return NULL;
 		}
 	}
