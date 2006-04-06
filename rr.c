@@ -499,9 +499,10 @@ ldns_rr_new_frm_fp_l(ldns_rr **newrr, FILE *fp, uint16_t *default_ttl, ldns_rdf 
 		 * always a parse error (happens when for instance last line
 		 * was a comment)
 		 */
-		if (feof(fp)) {
+		/*if (feof(fp)) {
 			return LDNS_STATUS_OK;
 		}
+		*/
                 return LDNS_STATUS_SYNTAX_ERR;
         }
 

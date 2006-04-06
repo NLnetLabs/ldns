@@ -115,6 +115,9 @@ ldns_fget_token_l(FILE *f, char *token, const char *delim, size_t limit, int *li
 			return -1;
 		}
 	}
+	if (c == EOF) {
+		return -1;
+	}
 
 	*t = '\0';
 	if (i == 0) {
