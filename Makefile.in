@@ -68,8 +68,18 @@ COMP_LIB	= $(LIBTOOL) --mode=compile $(CC) $(CPPFLAGS) $(CFLAGS)
 LINK		= $(CC) $(CFLAGS) $(LDFLAGS)
 LINK_LIB	= $(LIBTOOL) --mode=link $(CC) $(CFLAGS) $(LDFLAGS) -release $(VERSION)
 
-%.o:	$(srcdir)/%.c $(LIBDNS_HEADERS)
-	$(COMP_LIB) -c $<
+#%.o:	$(srcdir)/%.c $(LIBDNS_HEADERS)
+#	$(COMP_LIB) -c $<
+
+.c.o:  
+	$(COMPILE) -c $<
+
+.c.obj:
+	$(COMP_LIB) -c '$<'`
+
+.c.lo: 
+	$(COMP_LIB) -c -o $@ $<
+
 
 .PHONY:	clean realclean docclean doc lint all lib
 .PHONY: install uninstall install-doc uninstall-doc 
