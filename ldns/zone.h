@@ -104,6 +104,9 @@ bool ldns_zone_push_rr(ldns_zone *z, ldns_rr *rr);
  * records. The resulting list does are pointer references
  * to the zone's data.
  *
+ * Due to the current zone implementation (as a list of rr's), this
+ * function is extremely slow.
+ *
  * \param[in] z the zone to look for glue
  * \return the rr_list with the glue
  */
