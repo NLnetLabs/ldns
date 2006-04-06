@@ -68,7 +68,7 @@ COMP_LIB	= $(LIBTOOL) --mode=compile $(CC) $(CPPFLAGS) $(CFLAGS)
 LINK		= $(CC) $(CFLAGS) $(LDFLAGS)
 LINK_LIB	= $(LIBTOOL) --mode=link $(CC) $(CFLAGS) $(LDFLAGS) -release $(VERSION)
 
-%.o:    %.c
+%.o:    $(srcdir)/%.c
 	$(COMP_LIB) -c $> $<
 
 .PHONY:	clean realclean docclean doc lint all lib
