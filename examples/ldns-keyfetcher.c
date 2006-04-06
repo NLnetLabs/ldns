@@ -16,7 +16,7 @@ int verbosity = 0;
 void
 usage(FILE *fp, char *prog) {
 	fprintf(fp, "%s domain\n", prog);
-	fprintf(fp, "  retrieve out the dnskeys for domain\n");
+	fprintf(fp, "  retrieve the dnskeys for a domain\n");
 	fprintf(fp, "Options:\n");
 	fprintf(fp, "-h\t\tShow this help\n");
 	fprintf(fp, "-r <file>\tUse file to read root hints from\n");
@@ -97,6 +97,12 @@ retrieve_dnskeys(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 	status = ldns_resolver_send(&p, res, name, t, c, 0);
 	if (status != LDNS_STATUS_OK) {
 		fprintf(stderr, "Error querying root servers: %s\n", ldns_get_errorstr_by_id(status));
+		return NULL;
+	}
+
+	if (ldns_pkt_get_rcode(p) != LDNS_RCODE_NOERROR) {
+		printf("Error in packet:\n");
+		ldns_pkt_print(stdout, p);
 		return NULL;
 	}
 
@@ -202,6 +208,12 @@ retrieve_dnskeys(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 			status = ldns_resolver_send(&p, res, name, t, c, 0);
 
 			if (status == LDNS_STATUS_OK) {
+				if (ldns_pkt_get_rcode(p) != LDNS_RCODE_NOERROR) {
+					printf("Error in packet:\n");
+					ldns_pkt_print(stdout, p);
+					return NULL;
+				}
+
 				if (verbosity >= 4) {
 					ldns_pkt_print(stdout, p);
 					printf("\n\n");
@@ -283,6 +295,12 @@ retrieve_dnskeys(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 			status = ldns_resolver_send(&p, res, name, t, c, 0);
 
 			if (status == LDNS_STATUS_OK) {
+				if (ldns_pkt_get_rcode(p) != LDNS_RCODE_NOERROR) {
+					printf("Error in packet:\n");
+					ldns_pkt_print(stdout, p);
+					return NULL;
+				}
+
 				if (verbosity >= 4) {
 					ldns_pkt_print(stdout, p);
 					printf("\n\n");
@@ -362,6 +380,12 @@ retrieve_dnskeys(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 			return NULL;
 		}
 
+		if (ldns_pkt_get_rcode(p) != LDNS_RCODE_NOERROR) {
+			printf("Error in packet:\n");
+			ldns_pkt_print(stdout, p);
+			return NULL;
+		}
+
 		if (verbosity >= 4) {
 			ldns_pkt_print(stdout, p);
 			printf("\n\n");
@@ -417,9 +441,15 @@ retrieve_dnskeys(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 			return NULL;
 		}
 
+		if (ldns_pkt_get_rcode(p) != LDNS_RCODE_NOERROR) {
+			printf("Error in packet:\n");
+			ldns_pkt_print(stdout, p);
+			return NULL;
+		}
+
 		if (answer_list) {
 			if (verbosity >= 2) {
-				printf("Comparing answer rr list of answer to previous\n");
+				printf("1Comparing answer rr list of answer to previous\n");
 			}
 			ldns_rr_list_sort(ldns_pkt_answer(p));
 			if (ldns_rr_list_compare(answer_list, ldns_pkt_answer(p)) != 0) {
