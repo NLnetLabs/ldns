@@ -68,6 +68,7 @@ ldns_lookup_table ldns_error_str[] = {
 	{ LDNS_STATUS_SYNTAX_VERSION_ERR, "Syntax error, version mismatch" },
 	{ LDNS_STATUS_SYNTAX_ALG_ERR, "Syntax error, algorithm unknown or non parseable" },
 	{ LDNS_STATUS_SYNTAX_ERR, "Syntax error, could not parse the RR" },
+	{ LDNS_STATUS_SYNTAX_EMPTY, "An empty line was returned" },
 	{ LDNS_STATUS_SYNTAX_TTL, "A $TTL directive was seen in a zone" },
 	{ 0, NULL }
 };

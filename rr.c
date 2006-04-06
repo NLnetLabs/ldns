@@ -475,6 +475,7 @@ ldns_rr_new_frm_fp_l(ldns_rr **newrr, FILE *fp, uint16_t *default_ttl, ldns_rdf 
 	uint16_t ttl;
 	ldns_rdf *tmp;
 	ldns_status s;
+	ssize_t size;
 
 	s = LDNS_STATUS_ERR;
 	if (default_ttl) {
@@ -493,7 +494,7 @@ ldns_rr_new_frm_fp_l(ldns_rr **newrr, FILE *fp, uint16_t *default_ttl, ldns_rdf 
 	}
 
         /* read an entire line in from the file */
-        if (ldns_fget_token_l(fp, line, LDNS_PARSE_SKIP_SPACE, LDNS_MAX_LINELEN, line_nr) == -1) {
+        if ((size = ldns_fget_token_l(fp, line, LDNS_PARSE_SKIP_SPACE, LDNS_MAX_LINELEN, line_nr)) == -1) {
 		LDNS_FREE(line);
 		/* if last line was empty, we are now at feof, which is not
 		 * always a parse error (happens when for instance last line
@@ -506,6 +507,13 @@ ldns_rr_new_frm_fp_l(ldns_rr **newrr, FILE *fp, uint16_t *default_ttl, ldns_rdf 
                 return LDNS_STATUS_SYNTAX_ERR;
         }
 
+	/* we can have the situation, where we've read ok, but still got
+	 * no bytes to play with, in this case size is 0 
+	 */
+	if (size == 0) {
+		return LDNS_STATUS_SYNTAX_EMPTY;
+	}
+	
 	if ((keyword = strstr(line, "$ORIGIN "))) {
 		if (*origin) {
 			ldns_rdf_free(*origin);

@@ -209,6 +209,7 @@ ldns_zone_new_frm_fp_l(ldns_zone **z, FILE *fp, ldns_rdf *origin, uint16_t ttl, 
 			/*my_origin = ldns_rr_owner(rr);*/
 			my_ttl    = ldns_rr_ttl(rr);
 			my_class  = ldns_rr_get_class(rr);
+		case LDNS_STATUS_SYNTAX_EMPTY:
 		case LDNS_STATUS_SYNTAX_TTL:
 			/* the function set the ttl */
 			break;

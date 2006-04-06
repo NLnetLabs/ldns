@@ -102,7 +102,7 @@ ldns_fget_token_l(FILE *f, char *token, const char *delim, size_t limit, int *li
 
 		/* check if we hit the delim */
 		for (d = del; *d; d++) {
-			if (c == *d && i >= 1) {
+			if (c == *d && i > 0) {
 				goto tokenread;
 			}
 		}
@@ -115,11 +115,11 @@ ldns_fget_token_l(FILE *f, char *token, const char *delim, size_t limit, int *li
 			return -1;
 		}
 	}
+	*t = '\0';
 	if (c == EOF) {
-		return -1;
+		return 0;
 	}
 
-	*t = '\0';
 	if (i == 0) {
 		/* nothing read */
 		return -1;
