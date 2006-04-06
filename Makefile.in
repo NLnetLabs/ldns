@@ -108,9 +108,6 @@ lib:		$(LIBDNS_OBJECTS) b64_pton$U.o b64_ntop$U.o
 		if [ ! -d include ] ; then mkdir include ; fi ;
 		if [ ! -d include/ldns ] ; then ln -sf ../ldns ./include/ldns ; fi ;
 		if [ ! -d lib ] ; then ln -s .libs lib ; fi ;		
-		for i in $(LIBDNS_HEADERS); do \
-			MVPROG=/bin/cp $(INSTALL) -m 644 $$i ./include/ldns/; done
-
 
 doc:		$(srcdir)/doc/function_manpages 
 		$(INSTALL) -d doc
@@ -119,6 +116,10 @@ ifdef doxygen
 endif
 		cat $(srcdir)/ldns/*.h | $(srcdir)/doc/doxyparse.pl -m $(srcdir)/doc/function_manpages 2>&1 | \
 		grep -v ^doxygen | grep -v ^cat  > doc/ldns_manpages
+
+install-local:
+		for i in $(LIBDNS_HEADERS); do \
+			MVPROG=/bin/cp $(INSTALL) -m 644 $$i ./include/ldns/; done
 
 install:	install-h install-lib install-doc
 
