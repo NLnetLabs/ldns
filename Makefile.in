@@ -55,7 +55,7 @@ LIBDNS_HEADERS	=	$(srcdir)/ldns/error.h		\
 			$(srcdir)/ldns/rr_functions.h	\
 			$(srcdir)/ldns/dns.h		\
 			$(srcdir)/ldns/zone.h		\
-			ldns/util.h 		\
+			$(srcdir)/ldns/util.h 		\
 			$(srcdir)/ldns/update.h 		\
 			$(srcdir)/ldns/tsig.h
 LIBDNS_OBJECTS	=	$(LIBDNS_SOURCES:.c=.o)
@@ -68,7 +68,7 @@ COMP_LIB	= $(LIBTOOL) --mode=compile $(CC) $(CPPFLAGS) $(CFLAGS)
 LINK		= $(CC) $(CFLAGS) $(LDFLAGS)
 LINK_LIB	= $(LIBTOOL) --mode=link $(CC) $(CFLAGS) $(LDFLAGS) -release $(VERSION)
 
-%.o:    $(srcdir)/%.c $(srcdir)/ldns/%.h
+%.o:    $(srcdir)/%.c $(LIBDNS_HEADERS)
 	$(COMP_LIB) -c $> $<
 
 .PHONY:	clean realclean docclean doc lint all lib
@@ -108,6 +108,11 @@ lib:		$(LIBDNS_OBJECTS) b64_pton$U.o b64_ntop$U.o
 		if [ ! -d include ] ; then mkdir include ; fi ;
 		if [ ! -d include/ldns ] ; then ln -sf ../ldns ./include/ldns ; fi ;
 		if [ ! -d lib ] ; then ln -s .libs lib ; fi ;		
+		for i in $(LIBDNS_HEADERS); do \
+			if [ $(srcdir)/ldns/$$i -nt ./include/ldns/$$i ] ; then \
+				MVPROG=/bin/cp $(INSTALL) -m 644 $$i ./include/ldns/; \
+			fi ; \
+		done
 
 doc:		$(srcdir)/doc/function_manpages 
 		$(INSTALL) -d doc
@@ -116,10 +121,6 @@ ifdef doxygen
 endif
 		cat $(srcdir)/ldns/*.h | $(srcdir)/doc/doxyparse.pl -m $(srcdir)/doc/function_manpages 2>&1 | \
 		grep -v ^doxygen | grep -v ^cat  > doc/ldns_manpages
-
-install-local:
-		for i in $(LIBDNS_HEADERS); do \
-			MVPROG=/bin/cp $(INSTALL) -m 644 $$i ./include/ldns/; done
 
 install:	install-h install-lib install-doc
 
