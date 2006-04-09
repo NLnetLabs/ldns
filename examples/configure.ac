@@ -31,6 +31,7 @@ AC_ARG_WITH(ldns,
 		specialldnsdir="$withval"
 		CPPFLAGS="$CPPFLAGS -I$withval/include"
 		LDFLAGS="$LDFLAGS -L$withval/lib"
+		LDNSDIR="$withval"
 	]
 )
 
@@ -38,6 +39,8 @@ AC_CHECK_LIB(ldns, ldns_rr_new,, [
 	AC_MSG_ERROR([Can't find ldns library])
 	]
 )
+
+AC_SUBST(LDNSDIR)
 
 AC_CHECK_HEADER(ldns/dns.h,,  [
 	AC_MSG_ERROR([Can't find ldns headers])
