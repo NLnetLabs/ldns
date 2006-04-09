@@ -17,8 +17,7 @@ LIBS = @LIBS@
 
 INSTALL = $(srcdir)/../install-sh 
 
-COMPILE         = $(CC) $(CPPFLAGS) $(CFLAGS)
-LINK            = $(CC) $(CFLAGS) $(LDFLAGS) $(LIBS)
+COMPILE         = $(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) $(LIBS)
 
 LINT		= splint
 LINTFLAGS	= +quiet -weak -warnposix -unrecog -Din_addr_t=uint32_t -Du_int=unsigned -Du_char=uint8_t -preproc
@@ -48,57 +47,8 @@ PROGRAMS=$(SOURCES:.c=)
 
 all:	$(PROGRAMS)
 
-ldns-read-zone: 	ldns-read-zone.o
-			$(LINK) -o $@ $+
-
-ldns-mx: 	ldns-mx.o
-		$(LINK) -o $@ $+
-
-ldns-chaos: 	ldns-chaos.o
-		$(LINK) -o $@ $+
-
-ldns-update: 	ldns-update.o
-		$(LINK) -o $@ $+
-
-ldns-version:	ldns-version.o
-		$(LINK) -o $@ $+
-
-ldns-signzone:	ldns-signzone.o
-		$(LINK) -o $@ $+
-
-ldns-keygen:	ldns-keygen.o
-		$(LINK) -o $@ $+
-
-ldns-key2ds:	ldns-key2ds.o
-		$(LINK) -o $@ $+
-
-ldns-rrsig:	ldns-rrsig.o
-		$(LINK) -o $@ $+
-
-ldns-walk:	ldns-walk.o
-		$(LINK) -o $@ $+
-
-ldns-dpa:	ldns-dpa.o
-		$(LINK) -o $@ $+
-
-ldns-zsplit:	ldns-zsplit.o
-		$(LINK) -o $@ $+
-
-ldns-zcat:	ldns-zcat.o
-		$(LINK) -o $@ $+
-
-ldnsd:		ldnsd.o
-		$(LINK) -o $@ $+
-
-ldns-resolver:	ldns-resolver.o
-		$(LINK) -o $@ $+
-
-ldns-keyfetcher:	ldns-keyfetcher.o
-		$(LINK) -o $@ $+
-
-## implicit rule
-%.o: 	$(srcdir)/%.c
-	$(COMPILE) -c $<
+%:	$(srcdir)/%.c
+	$(COMPILE) -o $@ $(srcdir)/$@.c
 
 lint:
 	for i in $(SOURCES); do \
