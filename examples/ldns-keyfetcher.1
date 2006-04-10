@@ -9,9 +9,9 @@ ldns-keyfetcher \- retrieve the DNSSEC DNSKEYs for a zone
 \fBldns-keyfetcher\fR is used to retrieve the DNSKEYs of a zone. 
 
 First it finds all authoritative nameservers of the zone by tracing it from
-\the root down. All authoritative nameservers are then queried (using TCP)
-\for the DNSKEY RRset of the zone apex. If the results are all the same,
-\they are printed.
+the root down. All authoritative nameservers are then queried (using TCP)
+for the DNSKEY RRset of the zone apex. If the results are all the same,
+the key resource record set is printed.
 
 
 .SH OPTIONS
