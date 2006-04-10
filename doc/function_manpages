@@ -1,7 +1,7 @@
 # first function name will be the real name of the manpage
 # other names are aliases (symlinks)
 # all functions specified on the same line are included in the
-# same manual page
+# same manual page. We cannot deal with linebreaks!
 # function named after the pipe `|' are put in the "see also" section
 
 # functions that must be included, separated by commas
@@ -175,3 +175,12 @@ ldns_rr_mx_preference, ldns_rr_mx_exchange
 ldns_rr_rrsig_typecovered, ldns_rr_rrsig_set_typecovered, ldns_rr_rrsig_algorithm, ldns_rr_rrsig_set_algorithm, ldns_rr_rrsig_labels, ldns_rr_rrsig_set_labels, ldns_rr_rrsig_origttl, ldns_rr_rrsig_set_origttl, ldns_rr_rrsig_expiration, ldns_rr_rrsig_set_expiration, ldns_rr_rrsig_inception, ldns_rr_rrsig_set_inception, ldns_rr_rrsig_keytag, ldns_rr_rrsig_set_keytag, ldns_rr_rrsig_signame, ldns_rr_rrsig_set_signame, ldns_rr_rrsig_sig, ldns_rr_rrsig_set_sig
 #
 ldns_rr_dnskey_flags, ldns_rr_dnskey_set_flags, ldns_rr_dnskey_protocol, ldns_rr_dnskey_set_protocol, ldns_rr_dnskey_algorithm, ldns_rr_dnskey_set_algorithm, ldns_rr_dnskey_key, ldns_rr_dnskey_set_key | ldns_rr
+
+### zone.h
+ldns_zone_new, ldns_zone_new_frm_fp, ldns_zone_new_frm_fp_l
+ldns_zone_deep_free
+ldns_zone_sort, ldns_zone_glue_rr_list
+ldns_zone_push_rr, ldns_zone_push_rr_list
+ldns_zone_set_rrs, ldns_zone_set_soa | ldns_zone_rrs, ldns_zone_soa
+ldns_zone_rrs, ldns_zone_soa | ldns_zone_set_rrs
+ldns_zone_rr_count

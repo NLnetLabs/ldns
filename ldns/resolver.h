@@ -516,15 +516,15 @@ ldns_pkt* ldns_resolver_search(const ldns_resolver *r, const ldns_rdf *rdf, ldns
 
 /**
  * Form a query packet from a resolver and name/type/class combo
- * \param[out] **query a pointer to a ldns_pkt pointer (initialized by this function)
+ * \param[out] **q a pointer to a ldns_pkt pointer (initialized by this function)
  * \param[in] *r operate using this resolver
  * \param[in] *name query for this name
  * \param[in] t query for this type (may be 0, defaults to A)
  * \param[in] c query for this class (may be 0, default to IN)
- * \param[in] flags the query flags
+ * \param[in] f the query flags
  * \return ldns_pkt* a packet with the reply from the nameserver
  */
-ldns_status ldns_resolver_prepare_query_pkt(ldns_pkt **query_pkt, ldns_resolver *r, const  ldns_rdf *name, ldns_rr_type type, ldns_rr_class class, uint16_t flags);
+ldns_status ldns_resolver_prepare_query_pkt(ldns_pkt **q, ldns_resolver *r, const  ldns_rdf *name, ldns_rr_type t, ldns_rr_class c, uint16_t f);
 
 /**
  * Send the query for name as-is 
