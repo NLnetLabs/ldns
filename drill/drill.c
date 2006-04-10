@@ -47,7 +47,7 @@ usage(FILE *stream, const char *progname)
 	fprintf(stream, "\t-p <port>\tuse <port> as remote port number\n");
 	fprintf(stream, "\t-s\t\tshow the DS RR for each key in a packet\n");
 	fprintf(stream, "\t-u\t\tsend the query with udp (the default)\n");
-	fprintf(stream, "\t-x\t\tdo a reverse (PTR) lookup\n");
+	fprintf(stream, "\t-x\t\tdo a reverse lookup\n");
         fprintf(stream, "\t-y <name:key[:algo]>\tspecify named base64 tsig key, and optional an\n\t\t\talgorithm (defaults to hmac-md5.sig-alg.reg.int)\n");
 	fprintf(stream, "\t-z\t\tdon't randomize the nameservers before use\n");
 	fprintf(stream, "\n  [*] = enables/implies DNSSEC\n");
@@ -275,8 +275,6 @@ main(int argc, char *argv[])
 				result = EXIT_SUCCESS;
 				goto exit;
 			case 'x':
-				type = LDNS_RR_TYPE_PTR;
-				int_type = 1; /* set this so the type does not change */
 				PURPOSE = DRILL_REVERSE;
 				break;
 			case 'y':
@@ -372,7 +370,11 @@ main(int argc, char *argv[])
 		clas = LDNS_RR_CLASS_IN;
 	}
 	if (int_type == -1) {
-		type = LDNS_RR_TYPE_A;
+		if (PURPOSE != DRILL_REVERSE) {
+			type = LDNS_RR_TYPE_A;
+		} else {
+			type = LDNS_RR_TYPE_PTR;
+		}
 	}
 
 
