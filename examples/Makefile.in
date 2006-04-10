@@ -54,7 +54,11 @@ all-static:	$(PROGRAMS:=-stc)
 	$(COMPILE) -o $@ $(srcdir)/$@.c
 
 %-stc:
-	$(CC) $(CPPFLAGS) $(CFLAGS) -lpcap -lcrypto -o $(@:-stc=) $(srcdir)/$(@:-stc=).c $(LDNSDIR)lib/libldns.a
+	@# can't mix implicit and static rules
+	@if [ $(srcdir)/$(@:-stc=).c -nt $(@:-stc=) ] ; then \
+		echo "$(CC) $(CPPFLAGS) $(CFLAGS) -lpcap -lcrypto -o $(@:-stc=) $(srcdir)/$(@:-stc=).c $(LDNSDIR)lib/libldns.a" ; \
+		$(CC) $(CPPFLAGS) $(CFLAGS) -lpcap -lcrypto -o $(@:-stc=) $(srcdir)/$(@:-stc=).c $(LDNSDIR)lib/libldns.a ; \
+	fi ;
 
 lint:
 	echo off
