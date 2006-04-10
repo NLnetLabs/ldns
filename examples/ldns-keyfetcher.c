@@ -521,7 +521,7 @@ read_root_hints(const char *filename)
 				ldns_rr_list_push_rr(addresses, ldns_rr_clone(rr));
 			}
 		}
-		ldns_zone_free(z);
+		ldns_zone_deep_free(z);
 		return addresses;
 	}
 }

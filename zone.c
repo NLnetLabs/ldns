@@ -182,6 +182,7 @@ ldns_zone_new_frm_fp_l(ldns_zone **z, FILE *fp, ldns_rdf *origin, uint16_t ttl, 
 
 	while(!feof(fp)) {
 		s = ldns_rr_new_frm_fp_l(&rr, fp, &my_ttl, &my_origin, &my_prev, line_nr);
+printf("ALLOCED IN FP_L: %p\n", s);
 		switch (s) {
 		case LDNS_STATUS_OK:
 			if (ldns_rr_get_type(rr) == LDNS_RR_TYPE_SOA) {
@@ -222,9 +223,13 @@ ldns_zone_new_frm_fp_l(ldns_zone **z, FILE *fp, ldns_rdf *origin, uint16_t ttl, 
 	if (my_origin) {
 		ldns_rdf_deep_free(my_origin);
 	}
+	if (my_prev) {
+		ldns_rdf_deep_free(my_prev);
+	}
 	if (z) {
 		*z = newzone;
 	}
+
 	return LDNS_STATUS_OK;
 }
 

@@ -296,7 +296,8 @@ ldns_rr_new_frm_str(ldns_rr **newrr, const char *str, uint16_t default_ttl, ldns
 				} 
 			}
 			if (prev) {
-				*prev = ldns_rr_owner(new);
+				ldns_rdf_deep_free(*prev);
+				*prev = ldns_rdf_clone(ldns_rr_owner(new));
 			}
 		}
 	}
