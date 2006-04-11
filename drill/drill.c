@@ -554,15 +554,19 @@ main(int argc, char *argv[])
 			/*qname = ldns_rdf_new_addr_frm_str(name);*/
 			/* ipv4 or ipv6 addr? */
 			if (strchr(name, ':')) {
-				name2 = malloc(65);
+				name2 = malloc(85);
 				c = 0;
-				for (i=0; i<strlen(name); i++) {
+				for (i=0; i<(int)strlen(name); i++) {
+					if (i >= 65) {
+						fprintf(stderr, "Error: argument too long\n");
+						exit(2);
+					}
 					if (name[i] == ':') {
-						if (i < strlen(name) && name[i + 1] == ':') {
+						if (i < (int) strlen(name) && name[i + 1] == ':') {
 							printf(":: not supported yet\n");
 							exit(1);
 						} else {
-							if (i + 2 == strlen(name) || name[i + 2] == ':') {
+							if (i + 2 == (int) strlen(name) || name[i + 2] == ':') {
 								name2[c] = '0';
 								c++;
 								name2[c] = '.';
@@ -575,7 +579,7 @@ main(int argc, char *argv[])
 								c++;
 								name2[c] = '.';
 								c++;
-							} else if (i + 3 == strlen(name) || name[i + 3] == ':') {
+							} else if (i + 3 == (int) strlen(name) || name[i + 3] == ':') {
 								name2[c] = '0';
 								c++;
 								name2[c] = '.';
@@ -584,7 +588,7 @@ main(int argc, char *argv[])
 								c++;
 								name2[c] = '.';
 								c++;
-							} else if (i + 4 == strlen(name) || name[i + 4] == ':') {
+							} else if (i + 4 == (int) strlen(name) || name[i + 4] == ':') {
 								name2[c] = '0';
 								c++;
 								name2[c] = '.';
