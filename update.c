@@ -30,7 +30,6 @@ ldns_update_pkt_new(ldns_rdf *zone_rdf, ldns_rr_class class,
 	ldns_pkt *p;
 
 	if (!zone_rdf || !up_rrlist) {
-		dprintf("%s", "bad input to ldns_update_pkt_new()\n");
 		return NULL;
 	}
 
@@ -149,7 +148,6 @@ ldns_update_soa_zone_mname(const char *fqdn, ldns_resolver *r,
 
 	ldns_pkt_set_random_id(query);
 	if (ldns_resolver_send_pkt(&resp, r, query) != LDNS_STATUS_OK) {
-		dprintf("%s", "SOA query failed\n");
 		ldns_pkt_free(query);
 		return LDNS_STATUS_ERR;
 	}
@@ -180,7 +178,6 @@ ldns_update_soa_zone_mname(const char *fqdn, ldns_resolver *r,
 
 	ldns_pkt_set_random_id(query);
 	if (ldns_resolver_send_pkt(&resp, r, query) != LDNS_STATUS_OK) {
-		dprintf("%s", "SOA query 2 failed\n");
 		ldns_pkt_free(query);
 		return LDNS_STATUS_ERR;
 	}
@@ -234,7 +231,6 @@ ldns_update_soa_zone_mname(const char *fqdn, ldns_resolver *r,
 
 	ldns_pkt_set_random_id(query);
 	if (ldns_resolver_send_pkt(&resp, r, query) != LDNS_STATUS_OK) {
-		dprintf("%s", "SOA query failed\n");
 		ldns_pkt_free(query);
 		return LDNS_STATUS_ERR;
 	}
