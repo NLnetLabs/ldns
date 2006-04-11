@@ -10,6 +10,8 @@
 #include "drill.h"
 #include <ldns/dns.h>
 
+#define IP6_ARPA_MAX_LEN 65
+
 /* query debug, 2 hex dumps */
 int8_t		qdebug; /* -1, be quiet, 1 show question, 2 show hex */
 
@@ -554,10 +556,10 @@ main(int argc, char *argv[])
 			/*qname = ldns_rdf_new_addr_frm_str(name);*/
 			/* ipv4 or ipv6 addr? */
 			if (strchr(name, ':')) {
-				name2 = malloc(85);
+				name2 = malloc(IP6_ARPA_MAX_LEN + 20);
 				c = 0;
 				for (i=0; i<(int)strlen(name); i++) {
-					if (i >= 65) {
+					if (i >= IP6_ARPA_MAX_LEN) {
 						fprintf(stderr, "Error: argument too long\n");
 						exit(2);
 					}
