@@ -90,18 +90,6 @@ uint16_t ldns_getaddrinfo(ldns_resolver *res, ldns_rdf *node, ldns_rr_class c, l
  */
 bool ldns_nsec_type_check(ldns_rr *nsec, ldns_rr_type t);
 
-/*
- * Send a "simple" update for an A or an AAAA RR.
- * \param[in] fqdn the update RR owner
- * \param[in] zone the zone to update, if set to NULL, try to figure it out
- * \param[in] ipaddr the address to add, if set to NULL, remove any A/AAAA RRs
- * \param[in] p the port to use
- * \param[in] ttl the update RR TTL
- * \param[in] tsig_cred credentials for TSIG-protected update messages
- */
-ldns_status ldns_update_send_simple_addr(const char *fqdn, const char *zone,
-    const char *ipaddr, uint16_t p, uint16_t tll, ldns_tsig_credentials *tsig_cred);
-
 /**
  * Print a number of rdf's of the RR. The rdfnum-list must 
  * be ended by -1, otherwise unpredictable things might happen.

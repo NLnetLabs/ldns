@@ -130,6 +130,109 @@ ldns_update_resolver_new(const char *fqdn, const char *zone,
         return NULL;
 }
 
+
+ldns_status
+ldns_update_send_simple_addr(const char *fqdn, const char *zone,
+    const char *ipaddr, uint16_t p, uint16_t ttl, ldns_tsig_credentials *tsig_cred)
+{
+        ldns_resolver   *res;
+        ldns_pkt        *u_pkt = NULL, *r_pkt;
+        ldns_rr_list    *up_rrlist;
+        ldns_rr         *up_rr;
+        ldns_rdf        *zone_rdf;
+        char            *rrstr;
+        uint32_t        rrstrlen, status = LDNS_STATUS_OK;
+
+        if (!fqdn || strlen(fqdn) == 0)
+                return LDNS_STATUS_ERR;
+
+        /* Create resolver */
+        res = ldns_update_resolver_new(fqdn, zone, 0, p, tsig_cred, &zone_rdf);
+        if (!res || !zone_rdf)
+                goto cleanup;
+
+        /* Set up the update section. */
+        up_rrlist = ldns_rr_list_new();
+        if (!up_rrlist)
+                goto cleanup;
+
+        /* Create input for ldns_rr_new_frm_str() */
+        if (ipaddr) {
+                /* We're adding A or AAAA */
+                rrstrlen = strlen(fqdn) + sizeof (" IN AAAA ") + strlen(ipaddr) + 1;
+                rrstr = (char *)malloc(rrstrlen);
+                if (!rrstr) {
+                        ldns_rr_list_deep_free(up_rrlist);
+                        goto cleanup;
+                }
+                snprintf(rrstr, rrstrlen, "%s IN %s %s", fqdn,
+                    strchr(ipaddr, ':') ? "AAAA" : "A", ipaddr);
+
+                if (ldns_rr_new_frm_str(&up_rr, rrstr, ttl, NULL, NULL) !=
+                                LDNS_STATUS_OK) {
+                        ldns_rr_list_deep_free(up_rrlist);
+                        free(rrstr);
+                        goto cleanup;
+                }
+                free(rrstr);
+                ldns_rr_list_push_rr(up_rrlist, up_rr);
+        } else {
+                /* We're removing A and/or AAAA from 'fqdn'. [RFC2136 2.5.2] */
+                up_rr = ldns_rr_new();
+                ldns_rr_set_owner(up_rr, ldns_dname_new_frm_str(fqdn));
+                ldns_rr_set_ttl(up_rr, 0);
+                ldns_rr_set_class(up_rr, LDNS_RR_CLASS_ANY);
+
+                ldns_rr_set_type(up_rr, LDNS_RR_TYPE_A);
+                ldns_rr_list_push_rr(up_rrlist, ldns_rr_clone(up_rr));
+
+                ldns_rr_set_type(up_rr, LDNS_RR_TYPE_AAAA);
+                ldns_rr_list_push_rr(up_rrlist, up_rr);
+        }
+
+        /* Create update packet. */
+        u_pkt = ldns_update_pkt_new(zone_rdf, LDNS_RR_CLASS_IN, NULL, up_rrlist, NULL);
+        zone_rdf = NULL;
+        if (!u_pkt) {
+                ldns_rr_list_deep_free(up_rrlist);
+                goto cleanup;
+        }
+        ldns_pkt_set_random_id(u_pkt);
+
+        /* Add TSIG */
+        if (tsig_cred)
+                if (ldns_update_pkt_tsig_add(u_pkt, res) != LDNS_STATUS_OK)
+                        goto cleanup;
+
+        if (ldns_resolver_send_pkt(&r_pkt, res, u_pkt) != LDNS_STATUS_OK)
+                goto cleanup;
+        ldns_pkt_free(u_pkt);
+        if (!r_pkt)
+                goto cleanup;
+
+        if (ldns_pkt_get_rcode(r_pkt) != LDNS_RCODE_NOERROR) {
+                ldns_lookup_table *t = ldns_lookup_by_id(ldns_rcodes,
+                                (int)ldns_pkt_get_rcode(r_pkt));
+                if (t) {
+                        dprintf(";; UPDATE response was %s\n", t->name);
+                } else {
+                        dprintf(";; UPDATE response was (%d)\n", ldns_pkt_get_rcode(r_pkt));
+                }
+                status = LDNS_STATUS_ERR;
+        }
+        ldns_pkt_free(r_pkt);
+        ldns_resolver_deep_free(res);
+        return status;
+
+  cleanup:
+        if (res)
+                ldns_resolver_deep_free(res);
+        if (u_pkt)
+                ldns_pkt_free(u_pkt);
+        return LDNS_STATUS_ERR;
+}
+
+
 void
 usage(FILE *fp, char *prog) {
         fprintf(fp, "%s domain [zone] ip tsig_name tsig_alg tsig_hmac\n", prog);
