@@ -304,8 +304,7 @@ ldns_update_send_simple_addr(const char *fqdn, const char *zone,
 		return LDNS_STATUS_ERR;
 
 	/* Create resolver */
-	res = ldns_update_resolver_new(fqdn, zone, 0, p, tsig_cred,
-	    &zone_rdf);
+	res = ldns_update_resolver_new(fqdn, zone, 0, p, tsig_cred, &zone_rdf);
 	if (!res || !zone_rdf)
 		goto cleanup;
 
