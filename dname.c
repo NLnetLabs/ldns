@@ -22,37 +22,6 @@
 #include <netdb.h>
 #include <arpa/inet.h>
 
-void
-prdf(const ldns_rdf *r)
-{
-	size_t i;
-	for (i=0; i<ldns_rdf_size(r); i++) {
-		if (i>0&&i%20==0) {
-			printf("\n");
-		}
-		printf("%02x ", ldns_rdf_data(r)[i]);
-	}
-	printf("\n");
-}
-
-void
-pprdf(const char *txt, const ldns_rdf *r)
-{
-	printf("%s: ", txt);
-	ldns_rdf_print(stdout, r);
-	printf("\n");
-	prdf(r);
-	printf("\n");
-}
-
-void
-sprdf(const char *txt, const ldns_rdf *r)
-{
-	printf("%s: ", txt);
-	ldns_rdf_print(stdout, r);
-	printf("\n");
-}
-
 ldns_rdf *
 ldns_dname_cat_clone(const ldns_rdf *rd1, const ldns_rdf *rd2)
 {
