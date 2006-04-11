@@ -1022,7 +1022,7 @@ ldns_resolver_nameservers_randomize(ldns_resolver *r)
 /* dynamic update stuff */
 ldns_resolver *
 ldns_update_resolver_new(const char *fqdn, const char *zone,
-    ldns_rr_class class, ldns_tsig_credentials *tsig_cred, ldns_rdf **zone_rdf)
+    ldns_rr_class class, uint16_t port, ldns_tsig_credentials *tsig_cred, ldns_rdf **zone_rdf)
 {
 	ldns_resolver	*r1, *r2;
 	ldns_pkt	*query = NULL, *resp;
@@ -1031,17 +1031,26 @@ ldns_update_resolver_new(const char *fqdn, const char *zone,
 	size_t		i;
 	ldns_status     s;
 
-	if (class == 0)
+	if (class == 0) {
 		class = LDNS_RR_CLASS_IN;
+	}
+
+	if (port == 0) {
+		port = LDNS_PORT;
+	}
 
 	/* First, get data from /etc/resolv.conf */
         s = ldns_resolver_new_frm_file(&r1, NULL);
-	if (s != LDNS_STATUS_OK)
+	if (s != LDNS_STATUS_OK) {
 		return NULL;
+	}
 
 	r2 = ldns_resolver_new();
-	if (!r2)
+	if (!r2) {
 		goto bad;
+	}
+	ldns_resolver_set_port(r2, port);
+	ldns_resolver_set_port(r1, port);
 
 	/* TSIG key data available? Copy into the resolver. */
 	if (tsig_cred) {
@@ -1078,6 +1087,7 @@ ldns_update_resolver_new(const char *fqdn, const char *zone,
 	soa_zone = NULL;
 
 	ldns_pkt_set_random_id(query);
+	
 	if (ldns_resolver_send_pkt(&resp, r1, query) != LDNS_STATUS_OK) {
 		dprintf("%s", "NS query failed!\n");
 		goto bad;

@@ -262,7 +262,7 @@ ldns_getaddrinfo(ldns_resolver *res, ldns_rdf *node, ldns_rr_class c,
 	r = res;
 
 	if (res == NULL) {
-		/* prepare a new resolver, using /etc/resolv.conf is a guide  */
+		/* prepare a new resolver, using /etc/resolv.conf as a guide  */
 		s = ldns_resolver_new_frm_file(&r, NULL);
 		if (s != LDNS_STATUS_OK) {
 			return 0;
@@ -288,17 +288,9 @@ ldns_getaddrinfo(ldns_resolver *res, ldns_rdf *node, ldns_rr_class c,
 	return names_found;
 }
 
-/*
- * Send a "simple" update for an A or an AAAA RR.
- * \param[in] fqdn the update RR owner
- * \param[in] zone the zone to update, if set to NULL, try to figure it out
- * \param[in] ipaddr the address to add, if set to NULL, remove any A/AAAA RRs
- * \param[in] ttl the update RR TTL
- * \param[in] tsig_cred credentials for TSIG-protected update messages
- */
 ldns_status
 ldns_update_send_simple_addr(const char *fqdn, const char *zone,
-    const char *ipaddr, uint16_t ttl, ldns_tsig_credentials *tsig_cred)
+    const char *ipaddr, uint16_t p, uint16_t ttl, ldns_tsig_credentials *tsig_cred)
 {
 	ldns_resolver	*res;
 	ldns_pkt	*u_pkt = NULL, *r_pkt;
@@ -312,7 +304,7 @@ ldns_update_send_simple_addr(const char *fqdn, const char *zone,
 		return LDNS_STATUS_ERR;
 
 	/* Create resolver */
-	res = ldns_update_resolver_new(fqdn, zone, LDNS_RR_CLASS_IN, tsig_cred,
+	res = ldns_update_resolver_new(fqdn, zone, 0, p, tsig_cred,
 	    &zone_rdf);
 	if (!res || !zone_rdf)
 		goto cleanup;

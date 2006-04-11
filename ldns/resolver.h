@@ -641,10 +641,11 @@ void ldns_resolver_nameservers_randomize(ldns_resolver *r);
  * \param[in] fqdn FQDN of a host in a zone
  * \param[in] zone zone name, if explicitly given, otherwise use SOA
  * \param[in] clas zone class
+ * \param[in] p use p as port number 
  * \param[in] tsig_cred TSIG credentials
  * \param[out] zone_rdf returns zone/owner rdf from the 'fqdn' SOA MNAME query
  * \return the new resolver
  */
-ldns_resolver * ldns_update_resolver_new(const char *fqdn, const char *zone, ldns_rr_class clas, ldns_tsig_credentials *tsig_cred, ldns_rdf **zone_rdf);
+ldns_resolver * ldns_update_resolver_new(const char *fqdn, const char *zone, ldns_rr_class clas, uint16_t p, ldns_tsig_credentials *tsig_cred, ldns_rdf **zone_rdf);
 
 #endif  /* LDNS_RESOLVER_H */

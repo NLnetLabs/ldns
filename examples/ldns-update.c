@@ -30,6 +30,7 @@ main(int argc, char **argv)
 	ldns_tsig_credentials	tsig_cr, *tsig_cred;
 	int		c = 2;
 	uint16_t	defttl = 300;
+	uint16_t 	port = 53;
 	
 	prog = strdup(argv[0]);
 
@@ -80,6 +81,6 @@ main(int argc, char **argv)
 	printf(";; tsig: \"%s\" \"%s\" \"%s\"\n", tsig_cr.keyname,
 	    tsig_cr.algorithm, tsig_cr.keydata);
 
-	ret = ldns_update_send_simple_addr(fqdn, zone, ipaddr, defttl, tsig_cred);
+	ret = ldns_update_send_simple_addr(fqdn, zone, ipaddr, port, defttl, tsig_cred);
 	exit(ret);
 }
