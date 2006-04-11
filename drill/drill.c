@@ -86,6 +86,7 @@ main(int argc, char *argv[])
         ldns_pkt	*qpkt;
         char 		*serv;
         char 		*name;
+        char 		*name2;
 	char		*progname;
 	char 		*query_file = NULL;
 	char		*answer_file = NULL;
@@ -553,8 +554,72 @@ main(int argc, char *argv[])
 			/*qname = ldns_rdf_new_addr_frm_str(name);*/
 			/* ipv4 or ipv6 addr? */
 			if (strchr(name, ':')) {
+				name2 = malloc(65);
+				c = 0;
+				for (i=0; i<strlen(name); i++) {
+					if (name[i] == ':') {
+						if (i < strlen(name) && name[i + 1] == ':') {
+							printf(":: not supported yet\n");
+							exit(1);
+						} else {
+							if (i + 2 == strlen(name) || name[i + 2] == ':') {
+								name2[c] = '0';
+								c++;
+								name2[c] = '.';
+								c++;
+								name2[c] = '0';
+								c++;
+								name2[c] = '.';
+								c++;
+								name2[c] = '0';
+								c++;
+								name2[c] = '.';
+								c++;
+							} else if (i + 3 == strlen(name) || name[i + 3] == ':') {
+								name2[c] = '0';
+								c++;
+								name2[c] = '.';
+								c++;
+								name2[c] = '0';
+								c++;
+								name2[c] = '.';
+								c++;
+							} else if (i + 4 == strlen(name) || name[i + 4] == ':') {
+								name2[c] = '0';
+								c++;
+								name2[c] = '.';
+								c++;
+							}
+						}
+					} else {
+						name2[c] = name[i];
+						c++;
+						name2[c] = '.';
+						c++;
+					}
+				}
+				name2[c] = '\0';
+				c++;
+/*
+				while (strchr(name2, ':')) {
+					*(strchr(name2, ':')) = '.';
+				}
 				printf("Reverse lookup for IPv6 not implemented yet, please use normal PTR query for the required address\n");
 				exit(1);
+*/
+				qname = ldns_dname_new_frm_str(name2);
+				qname_tmp = ldns_dname_reverse(qname);
+				ldns_rdf_deep_free(qname);
+				qname = qname_tmp;
+				qname_tmp = ldns_dname_new_frm_str("ip6.arpa.");
+				status = ldns_dname_cat(qname, qname_tmp);
+				if (status != LDNS_STATUS_OK) {
+					fprintf(stderr, "error creating reverse address for ipv4: %s\n", ldns_get_errorstr_by_id(status));
+					exit(status);
+				}
+				ldns_rdf_deep_free(qname_tmp);
+
+				free(name2);
 			} else {
 				qname = ldns_dname_new_frm_str(name);
 				qname_tmp = ldns_dname_reverse(qname);
