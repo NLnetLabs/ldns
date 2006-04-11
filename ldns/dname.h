@@ -25,6 +25,7 @@
  * \return a new rdf with leftside/rightside
  */
 ldns_rdf *ldns_dname_cat_clone(const ldns_rdf *rd1, const ldns_rdf *rd2);
+
 /**
  * concatenates rd2 after rd1 (rd2 is copied, rd1 is modified)
  * \param[in] rd1 the leftside
@@ -32,6 +33,14 @@ ldns_rdf *ldns_dname_cat_clone(const ldns_rdf *rd1, const ldns_rdf *rd2);
  * \return LDNS_STATUS_OK on success
  */
 ldns_status 	ldns_dname_cat(ldns_rdf *rd1, ldns_rdf *rd2);
+
+/**
+ * Returns a clone of the given dname with the labels
+ * reversed
+ * \param[in] d the dname to reverse
+ * \return clone of the dname with the labels reversed.
+ */
+ldns_rdf *ldns_dname_reverse(const ldns_rdf *d);
 
 /**
  * chop one label off the left side of a dname. so 

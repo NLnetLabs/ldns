@@ -550,13 +550,27 @@ main(int argc, char *argv[])
 			break;
 		case DRILL_REVERSE:
 			/* name should be an ip addr */
-			qname = ldns_rdf_new_addr_frm_str(name);
+			/*qname = ldns_rdf_new_addr_frm_str(name);*/
+			/* ipv4 or ipv6 addr? */
+			if (strchr(name, ':')) {
+				printf("Reverse lookup for IPv6 not implemented yet, please use normal PTR query for the required address\n");
+				exit(1);
+			} else {
+				qname = ldns_dname_new_frm_str(name);
+				qname_tmp = ldns_dname_reverse(qname);
+				ldns_rdf_deep_free(qname);
+				qname = qname_tmp;
+				qname_tmp = ldns_dname_new_frm_str("in-addr.arpa.");
+				status = ldns_dname_cat(qname, qname_tmp);
+				if (status != LDNS_STATUS_OK) {
+					fprintf(stderr, "error creating reverse address for ipv4: %s\n", ldns_get_errorstr_by_id(status));
+					exit(status);
+				}
+				ldns_rdf_deep_free(qname_tmp);
+			}
 			if (!qname) {
 				error("%s", "-x implies an ip address");
 			}
-			qname_tmp = qname;
-			qname = ldns_rdf_address_reverse(qname);
-			ldns_rdf_deep_free(qname_tmp);
 			
 			/* create a packet and set the RD flag on it */
 			pkt = ldns_resolver_query(res, qname, type, clas, qflags);
