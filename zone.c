@@ -214,6 +214,9 @@ ldns_zone_new_frm_fp_l(ldns_zone **z, FILE *fp, ldns_rdf *origin, uint16_t ttl, 
 		case LDNS_STATUS_SYNTAX_TTL:
 			/* the function set the ttl */
 			break;
+		case LDNS_STATUS_SYNTAX_ORIGIN:
+			/* the function set the origin */
+			break;
 		default:
 			ldns_zone_free(newzone);
 			return s;
