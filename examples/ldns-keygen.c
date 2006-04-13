@@ -82,9 +82,9 @@ main(int argc, char *argv[])
 			ksk = true;
 			break;
 		case 'r':
-			random = fopen("r", optarg);
+			random = fopen(optarg, "r");
 			if (!random) {
-				fprintf(stderr, "Cannot open random file: %s\n", optarg);
+				fprintf(stderr, "Cannot open random file %s: %s\n", optarg, strerror(errno));
 				exit(EXIT_FAILURE);
 			}
 		case 'v':
