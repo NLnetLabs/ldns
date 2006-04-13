@@ -44,8 +44,11 @@ usage(FILE *stream, const char *progname)
 	fprintf(stream, "\t-c\t\tsend the query with tcp (connected)\n");
 	fprintf(stream, "\t-k <file>\tspecify a file that contains a trusted DNSSEC key [**]\n");
 	fprintf(stream, "\t\t\tused to verify any signatures in the current answer\n");
-	fprintf(stream, "\t-o <mnemonic>\t[QR|qr][AA|aa][TC|tc][RD|rd][CD|cd][RA|ra][AD|ad]\n");
+	fprintf(stream, "\t-o <mnemonic>\tset flags to: [QR|qr][AA|aa][TC|tc][RD|rd][CD|cd][RA|ra][AD|ad]\n");
 	fprintf(stream, "\t\t\tlowercase: unset bit, uppercase: set bit\n");
+#if 0
+	fprintf(stream, "\t-O <opcode>\tset the opcode to: [query, iquery, status, notify, update]]\n");
+#endif
 	fprintf(stream, "\t-p <port>\tuse <port> as remote port number\n");
 	fprintf(stream, "\t-s\t\tshow the DS RR for each key in a packet\n");
 	fprintf(stream, "\t-u\t\tsend the query with udp (the default)\n");
@@ -95,6 +98,9 @@ main(int argc, char *argv[])
 	ldns_rdf 	*serv_rdf;
         ldns_rr_type 	type;
         ldns_rr_class	clas;
+#if 0
+	ldns_pkt_opcode opcode = LDNS_PACKET_QUERY;
+#endif
 	int 		i, c;
 	int 		int_type;
 	int		int_clas;
@@ -261,6 +267,30 @@ main(int argc, char *argv[])
 					DRILL_OFF(qflags, LDNS_AD);
 				}
 				break;
+#if 0
+			case 'O':
+				if (strstr(optarg, "query")) {
+					opcode = LDNS_PACKET_QUERY;
+					break;
+				}
+				if (strstr(optarg, "iquery")) {
+					opcode = LDNS_PACKET_IQUERY;
+					break;
+				}
+				if (strstr(optarg, "status")) {
+					opcode = LDNS_PACKET_STATUS;
+					break;
+				}
+				if (strstr(optarg, "notify")) {
+					opcode = LDNS_PACKET_NOTIFY;
+					break;
+				}
+				if (strstr(optarg, "update")) {
+					opcode = LDNS_PACKET_UPDATE;
+					break;
+				}
+				break;
+#endif
 			case 'p':
 				qport = (uint16_t)atoi(optarg);
 				if (qport == 0) {
@@ -379,7 +409,6 @@ main(int argc, char *argv[])
 			type = LDNS_RR_TYPE_PTR;
 		}
 	}
-
 
 	/* set the nameserver to use */
 	if (!serv) {
@@ -552,67 +581,42 @@ main(int argc, char *argv[])
 		case DRILL_NSEC:
 			break;
 		case DRILL_REVERSE:
-			/* name should be an ip addr */
-			/*qname = ldns_rdf_new_addr_frm_str(name);*/
 			/* ipv4 or ipv6 addr? */
 			if (strchr(name, ':')) {
 				name2 = malloc(IP6_ARPA_MAX_LEN + 20);
 				c = 0;
 				for (i=0; i<(int)strlen(name); i++) {
 					if (i >= IP6_ARPA_MAX_LEN) {
-						fprintf(stderr, "Error: argument too long\n");
-						exit(2);
+						error("%s", "reverse argument to long");
 					}
 					if (name[i] == ':') {
 						if (i < (int) strlen(name) && name[i + 1] == ':') {
-							printf(":: not supported yet\n");
-							exit(1);
+							error("%s", ":: not supported (yet)");
 						} else {
 							if (i + 2 == (int) strlen(name) || name[i + 2] == ':') {
-								name2[c] = '0';
-								c++;
-								name2[c] = '.';
-								c++;
-								name2[c] = '0';
-								c++;
-								name2[c] = '.';
-								c++;
-								name2[c] = '0';
-								c++;
-								name2[c] = '.';
-								c++;
+								name2[c++] = '0';
+								name2[c++] = '.';
+								name2[c++] = '0';
+								name2[c++] = '.';
+								name2[c++] = '0';
+								name2[c++] = '.';
 							} else if (i + 3 == (int) strlen(name) || name[i + 3] == ':') {
-								name2[c] = '0';
-								c++;
-								name2[c] = '.';
-								c++;
-								name2[c] = '0';
-								c++;
-								name2[c] = '.';
-								c++;
+								name2[c++] = '0';
+								name2[c++] = '.';
+								name2[c++] = '0';
+								name2[c++] = '.';
 							} else if (i + 4 == (int) strlen(name) || name[i + 4] == ':') {
-								name2[c] = '0';
-								c++;
-								name2[c] = '.';
-								c++;
+								name2[c++] = '0';
+								name2[c++] = '.';
 							}
 						}
 					} else {
-						name2[c] = name[i];
-						c++;
-						name2[c] = '.';
-						c++;
+						name2[c++] = name[i];
+						name2[c++] = '.';
 					}
 				}
-				name2[c] = '\0';
-				c++;
-/*
-				while (strchr(name2, ':')) {
-					*(strchr(name2, ':')) = '.';
-				}
-				printf("Reverse lookup for IPv6 not implemented yet, please use normal PTR query for the required address\n");
-				exit(1);
-*/
+				name2[c++] = '\0';
+
 				qname = ldns_dname_new_frm_str(name2);
 				qname_tmp = ldns_dname_reverse(qname);
 				ldns_rdf_deep_free(qname);
@@ -620,8 +624,7 @@ main(int argc, char *argv[])
 				qname_tmp = ldns_dname_new_frm_str("ip6.arpa.");
 				status = ldns_dname_cat(qname, qname_tmp);
 				if (status != LDNS_STATUS_OK) {
-					fprintf(stderr, "error creating reverse address for ipv4: %s\n", ldns_get_errorstr_by_id(status));
-					exit(status);
+					error("%s", "could not create reverse address for ip6: %s\n", ldns_get_errorstr_by_id(status));
 				}
 				ldns_rdf_deep_free(qname_tmp);
 
@@ -634,8 +637,7 @@ main(int argc, char *argv[])
 				qname_tmp = ldns_dname_new_frm_str("in-addr.arpa.");
 				status = ldns_dname_cat(qname, qname_tmp);
 				if (status != LDNS_STATUS_OK) {
-					fprintf(stderr, "error creating reverse address for ipv4: %s\n", ldns_get_errorstr_by_id(status));
-					exit(status);
+					error("%s", "could not create reverse address for ip4: %s\n", ldns_get_errorstr_by_id(status));
 				}
 				ldns_rdf_deep_free(qname_tmp);
 			}
