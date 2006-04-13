@@ -87,6 +87,7 @@ main(int argc, char *argv[])
 				fprintf(stderr, "Cannot open random file %s: %s\n", optarg, strerror(errno));
 				exit(EXIT_FAILURE);
 			}
+			break;
 		case 'v':
 			printf("DNSSEC key generator version %s (ldns version %s)\n", LDNS_VERSION, ldns_version());
 			exit(EXIT_SUCCESS);
