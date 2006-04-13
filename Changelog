@@ -1,4 +1,4 @@
-XX Jan 2006: 1.1.0: ldns-team
+31 Apr 2006: 1.1.0: ldns-team
 	* Added include/ and lib/ dirs so that you can compile against ldns
 	  without installing ldns on your system
 	* Makefile updates
@@ -7,7 +7,7 @@ XX Jan 2006: 1.1.0: ldns-team
 	  platform; some gnuism were identified and fixed.
 	* The ldns_zone structure was stress tested. The current setup
 	 (ie. just a list of rrs) can scale to zone file in order of
-	 megabytes. Sorting such zone is still difficult.
+  	  megabytes. Sorting such zone is still difficult.
 	* Reading multiline b64 encoded rdata works.
 	* OpenSSL was made optional, configure --without-ssl.
 	  Ofcourse all dnssec/tsig related functions are disabled
@@ -21,14 +21,17 @@ XX Jan 2006: 1.1.0: ldns-team
 	* -r was killed in favor of -o <header bit mnemonic> which 
 	  allows for a header bits setting (and maybe more in the
 	  future)
-	* DS was added to the list of records which, when used automaticly
-	  enable DNSSEC (i.e. Set the do-bit in the query)
+	* DNSSEC is never automaticaly set, even when you query
+	  for DNSKEY/RRSIG or DS.
 	* Implement a crude RTT check, it now distinguishes between
 	  reacheable and unreacheable.
 	
 	Examples:
 	* ldns-dpa was added to the examples - this is the Dns Packet
 	  Analyzer tool.
+	* ldnsd - as very, very simple nameserver impl.
+	* ldns-zsplit - split zones for parrallel signing
+	* ldns-zcat - cat split zones back together
 	
 	Code:
 	* All networking code was moved to net.c
