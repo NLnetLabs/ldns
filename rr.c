@@ -14,6 +14,9 @@
 #include <strings.h>
 #include <limits.h>
 
+#define LDNS_SYNTAX_DATALEN 11
+#define LDNS_TTL_DATALEN    21
+
 ldns_rr *
 ldns_rr_new(void)
 {
@@ -156,7 +159,7 @@ ldns_rr_new_frm_str(ldns_rr **newrr, const char *str, uint16_t default_ttl, ldns
 		return LDNS_STATUS_SYNTAX_ERR;
 	}
 	
-	if (ldns_bget_token(rr_buf, ttl, "\t\n ", 21) == -1) {
+	if (ldns_bget_token(rr_buf, ttl, "\t\n ", LDNS_TTL_DATALEN) == -1) {
 		LDNS_FREE(owner); 
 		LDNS_FREE(ttl); 
 		LDNS_FREE(clas); 
@@ -190,7 +193,7 @@ ldns_rr_new_frm_str(ldns_rr **newrr, const char *str, uint16_t default_ttl, ldns
 			strncpy(type, ttl, strlen(ttl) + 1);
 		}
 	} else {
-		if (ldns_bget_token(rr_buf, clas, "\t\n ", 11) == -1) {
+		if (ldns_bget_token(rr_buf, clas, "\t\n ", LDNS_SYNTAX_DATALEN) == -1) {
 			LDNS_FREE(owner); 
 			LDNS_FREE(ttl); 
 			LDNS_FREE(clas); 
@@ -214,8 +217,8 @@ ldns_rr_new_frm_str(ldns_rr **newrr, const char *str, uint16_t default_ttl, ldns
 	/* the rest should still be waiting for us */
 
 	if (!type) {
-		type = LDNS_XMALLOC(char, 11);
-		if (ldns_bget_token(rr_buf, type, "\t\n ", 11) == -1) {
+		type = LDNS_XMALLOC(char, LDNS_SYNTAX_DATALEN);
+		if (ldns_bget_token(rr_buf, type, "\t\n ", LDNS_SYNTAX_DATALEN) == -1) {
 			LDNS_FREE(owner); 
 			LDNS_FREE(ttl); 
 			LDNS_FREE(clas); 
