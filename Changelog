@@ -75,6 +75,7 @@ XX Jan 2006: 1.1.0: ldns-team
 	* ldns_udp_server_connect(): was faulty and isn't really part of
 	  the core ldns idea any how.
 	* ldns_rr_list_insert_rr(): obsoleted, because not used.
+	* char *_when was removed from the ldns_pkt structure
 
 
 18 Oct 2005: 1.0.0: ldns-team
