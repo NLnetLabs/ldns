@@ -130,6 +130,10 @@ main(int argc, char *argv[])
 
 	/* create the public from the ldns_key */
 	pubkey = ldns_key2rr(key);
+	if (!pubkey) {
+		fprintf(stderr, "Could not extract the public key from the key structure...");
+		exit(EXIT_FAILURE);
+	}
 	owner = ldns_rdf2str(ldns_rr_owner(pubkey));
 	
 	/* calculate and set the keytag */

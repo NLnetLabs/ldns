@@ -669,7 +669,6 @@ ldns_key_dsa2bin(unsigned char *data, DSA *k, uint16_t *size)
 	memcpy(data, &T, 1);
 
 	if (T > 8) {
-		dprintf("DSA_size = %d, T > 8, not implemented\n", DSA_size(k));
 		return false;
 	}
 
