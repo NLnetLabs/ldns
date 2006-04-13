@@ -22,28 +22,28 @@ main(int argc, char *argv[])
 	q = ldns_pkt_new();
 	r = ldns_resolver_new();
 
-	ldns_rr_new_frm_str(&rr, "localhost IN A 127.0.0.1", 0, NULL, NULL);
-	ldns_resolver_push_nameserver_rr(r, rr);
-	ldns_resolver_set_port(r, 5353);
-	ldns_resolver_set_usevc(r, true);
+	(void)ldns_rr_new_frm_str(&rr, "localhost IN A 127.0.0.1", 0, NULL, NULL);
+	(void)ldns_resolver_push_nameserver_rr(r, rr);
+	(void)ldns_resolver_set_port(r, 5353);
+	(void)ldns_resolver_set_usevc(r, true);
 
 	/* setup a packet so that it is an reply */
 	ldns_pkt_set_rcode(q, LDNS_PACKET_QUERY);
-	ldns_rr_new_frm_str(&rr, 
+	(void)ldns_rr_new_frm_str(&rr, 
 			"miek.nl IN IXFR", 0, NULL, NULL);
-	ldns_pkt_push_rr(q, LDNS_SECTION_QUESTION, rr);
+	(void)ldns_pkt_push_rr(q, LDNS_SECTION_QUESTION, rr);
 	/* ldns_pkt_set_random_id(q); */
 
 	/* next add some rrs, with SOA stuff so that we mimic or ixfr reply */
-	ldns_rr_new_frm_str(&soa, 
+	(void)ldns_rr_new_frm_str(&soa, 
 			"miek.nl IN SOA miek@miek.nl elektron.atoom.net 11 1 0 0 0", 0, NULL, NULL);
 
-	ldns_rr_new_frm_str(&rr, "miek.nl IN A 127.0.0.1", 0, NULL, NULL);
+	(void)ldns_rr_new_frm_str(&rr, "miek.nl IN A 127.0.0.1", 0, NULL, NULL);
 
 	/* compose the ixfr pkt */
-	ldns_pkt_push_rr(q, LDNS_SECTION_ANSWER, soa);
-	ldns_pkt_push_rr(q, LDNS_SECTION_ANSWER, rr);
-	ldns_pkt_push_rr(q, LDNS_SECTION_ANSWER, soa);
+	(void)ldns_pkt_push_rr(q, LDNS_SECTION_ANSWER, soa);
+	(void)ldns_pkt_push_rr(q, LDNS_SECTION_ANSWER, rr);
+	(void)ldns_pkt_push_rr(q, LDNS_SECTION_ANSWER, soa);
 	
 	ldns_pkt_print(stdout, q);
 
