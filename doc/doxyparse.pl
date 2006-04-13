@@ -198,15 +198,8 @@ foreach (keys %manpages) {
 	print MAN  "\n\n";
 	print MAN  ".SH SYNOPSIS\n";
 
-	print MAN  "#ifdef HAVE_STDINT_H\n.br\n";
 	print MAN  "#include <stdint.h>\n.br\n";
-	print MAN  "#endif /* HAVE_STDINT_H */\n";
-
-	print MAN  ".PP\n";
-
-	print MAN  "#ifdef HAVE_STDBOOL_H\n.br\n";
 	print MAN  "#include <stdbool.h>\n.br\n";
-	print MAN  "#endif /* HAVE_STDBOOL_H */\n";
 
 	print MAN  ".PP\n";
 	print MAN  "#include <ldns/ldns.h>\n";
