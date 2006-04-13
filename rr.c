@@ -214,8 +214,8 @@ ldns_rr_new_frm_str(ldns_rr **newrr, const char *str, uint16_t default_ttl, ldns
 	/* the rest should still be waiting for us */
 
 	if (!type) {
-		type = LDNS_XMALLOC(char, 10);
-		if (ldns_bget_token(rr_buf, type, "\t\n ", 10) == -1) {
+		type = LDNS_XMALLOC(char, 11);
+		if (ldns_bget_token(rr_buf, type, "\t\n ", 11) == -1) {
 			LDNS_FREE(owner); 
 			LDNS_FREE(ttl); 
 			LDNS_FREE(clas); 
