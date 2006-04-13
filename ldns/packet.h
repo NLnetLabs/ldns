@@ -106,7 +106,6 @@ struct ldns_struct_pkt
 	/**  the size in bytes of the pkt */
 	uint16_t _answersize;
 	ldns_rdf *_answerfrom;
-	char *_when;
         /** timestamp of when the packet was sent */
 	struct timeval timestamp;
 	/**  query duration */
@@ -259,13 +258,6 @@ uint16_t ldns_pkt_arcount(const ldns_pkt *p);
  * \return the name of the server
  */
 ldns_rdf *ldns_pkt_answerfrom(const ldns_pkt *p);
-
-/** 
- * Return the packet's date of sending
- * \param[in] p packet
- * \return the time in ascii
- */
-char *ldns_pkt_when(const ldns_pkt *p);
 
 /**
  * Return the packet's timestamp
@@ -483,12 +475,7 @@ void ldns_pkt_set_querytime(ldns_pkt *p, uint32_t t);
  * \param[in] s the size
  */
 void ldns_pkt_set_size(ldns_pkt *p, size_t s);
-/**
- * Set the packet's when string
- * \param[in] p the packet
- * \param[in] w the string with the date
- */
-void ldns_pkt_set_when(ldns_pkt *p, char *w);
+
 /**
  * Set the packet's timestamp
  * \param[in] p the packet

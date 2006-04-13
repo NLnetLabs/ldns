@@ -186,12 +186,6 @@ ldns_pkt_answerfrom(const ldns_pkt *packet)
 	return packet->_answerfrom;
 }
 
-char *
-ldns_pkt_when(const ldns_pkt *packet)
-{
-	return packet->_when;
-}
-
 struct timeval
 ldns_pkt_timestamp(const ldns_pkt *packet)
 {
@@ -561,12 +555,6 @@ ldns_pkt_set_answerfrom(ldns_pkt *packet, ldns_rdf *answerfrom)
 }
 
 void
-ldns_pkt_set_when(ldns_pkt *packet, char *when)
-{
-	packet->_when = when;
-}
-
-void
 ldns_pkt_set_timestamp(ldns_pkt *packet, struct timeval timeval)
 {
 	packet->timestamp.tv_sec = timeval.tv_sec;
@@ -722,7 +710,6 @@ ldns_pkt_new()
 	ldns_pkt_set_size(packet, 0);
 	ldns_pkt_set_querytime(packet, 0);
 	ldns_pkt_set_answerfrom(packet, NULL);
-	ldns_pkt_set_when(packet, NULL);
 	ldns_pkt_set_section_count(packet, LDNS_SECTION_QUESTION, 0);
 	ldns_pkt_set_section_count(packet, LDNS_SECTION_ANSWER, 0);
 	ldns_pkt_set_section_count(packet, LDNS_SECTION_AUTHORITY, 0);
@@ -942,7 +929,6 @@ ldns_pkt_clone(ldns_pkt *pkt)
 	ldns_pkt_set_answerfrom(new_pkt, ldns_pkt_answerfrom(pkt));
 	ldns_pkt_set_querytime(new_pkt, ldns_pkt_querytime(pkt));
 	ldns_pkt_set_size(new_pkt, ldns_pkt_size(pkt));
-	ldns_pkt_set_when(new_pkt, ldns_pkt_when(pkt));
 	ldns_pkt_set_tsig(new_pkt, ldns_pkt_tsig(pkt));
 	
 	/* todo: edns? jelte?? */
