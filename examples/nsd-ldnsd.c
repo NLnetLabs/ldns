@@ -1,9 +1,10 @@
 /*
- * ldnsd. Light-weight DNS daemon
+ * nsd-ldnsd. Light-weight DNS daemon, which sends IXFRs
  *
  * Tiny dns server to show how a real one could be built.
+ * This version is used for NSD test, send out IXFR's only.
  *
- * (c) NLnet Labs, 2005
+ * (c) NLnet Labs, 2005, 2006
  * See the file LICENSE for the license
  */
 
@@ -17,16 +18,15 @@
 #include <netinet/in.h>
 #include <netinet/udp.h>
 #include <netinet/igmp.h>
-
 #include <errno.h>
 
 #define INBUF_SIZE 4096
 
 void usage(FILE *output)
 {
-	fprintf(output, "Usage: ldnsd <port> <zone> <zonefile>\n");
-	fprintf(output, "Listens on the specified port and answers queries for the given zone\n");
-	fprintf(output, "This is NOT a full-fledged authoritative nameserver!\n");
+	fprintf(output, "Usage: nsd-ldnsd <port> <zone> <soa-serial>\n");
+	fprintf(output, "Listens on the specified port and answer every query with an IXFR\n");
+	fprintf(output, "This is NOT a full-fledged authoritative nameserver! It is NOTHING.\n");
 }
 
 static int udp_bind(int sock, int port, const char *my_address)
@@ -39,39 +39,13 @@ static int udp_bind(int sock, int port, const char *my_address)
     return bind(sock, (struct sockaddr *)&addr, (socklen_t) sizeof(addr));
 }
 
-/* this will probably be moved to a better place in the library itself */
-ldns_rr_list *
-get_rrset(const ldns_zone *zone, const ldns_rdf *owner_name, const ldns_rr_type qtype, const ldns_rr_class qclass)
-{
-	uint16_t i;
-	ldns_rr_list *rrlist = ldns_rr_list_new();
-	ldns_rr *cur_rr;
-	if (!zone || !owner_name) {
-		fprintf(stderr, "Warning: get_rrset called with NULL zone or owner name\n");
-		return rrlist;
-	}
-	
-	for (i = 0; i < ldns_zone_rr_count(zone); i++) {
-		cur_rr = ldns_rr_list_rr(ldns_zone_rrs(zone), i);
-		if (ldns_dname_compare(ldns_rr_owner(cur_rr), owner_name) == 0 &&
-		    ldns_rr_get_class(cur_rr) == qclass &&
-		    ldns_rr_get_type(cur_rr) == qtype
-		   ) {
-			ldns_rr_list_push_rr(rrlist, ldns_rr_clone(cur_rr));
-		}
-	}
-	
-	printf("Found rrset of %u rrs\n", (unsigned int) ldns_rr_list_rr_count(rrlist));
-	
-	return rrlist;
-}
-
 int
 main(int argc, char **argv)
 {
 	/* arguments */
 	int port;
-	const char *zone_file;
+	int soa;
+	ldns_rr *zone_name;
 
 	/* network */
 	int sock;
@@ -90,14 +64,8 @@ main(int argc, char **argv)
 	size_t answer_size;
 	ldns_rr *query_rr;
 	ldns_rr_list *answer_qr;
-	ldns_rr_list *answer_an;
 	ldns_rr_list *answer_ns;
 	ldns_rr_list *answer_ad;
-	
-	/* zone */
-	ldns_zone *zone;
-	int line_nr;
-	FILE *zone_fp;
 	
 	/* use this to listen on specified interfaces later? */
 	my_address = NULL;
@@ -111,33 +79,26 @@ main(int argc, char **argv)
 			usage(stdout);
 			exit(EXIT_FAILURE);
 		}
-		zone_file = argv[3];
+		if (ldns_rr_new_frm_str(&zone_name, argv[2], 0, NULL, NULL) !=
+				LDNS_STATUS_OK) {
+			usage(stdout);
+			exit(EXIT_FAILURE);
+		}
+		soa =  atoi(argv[3]);
+		if (soa < 1) {
+			usage(stdout);
+			exit(EXIT_FAILURE);
+		}
+			
 	}
 	
-	printf("Reading zone file %s\n", zone_file);
-	zone_fp = fopen(zone_file, "r");
-	if (!zone_fp) {
-		fprintf(stderr, "Unable to open %s: %s\n", zone_file, strerror(errno));
-		exit(EXIT_FAILURE);
-	}
-	
-	line_nr = 0;
-	status = ldns_zone_new_frm_fp_l(&zone, zone_fp, NULL, 0, LDNS_RR_CLASS_IN, &line_nr);
-
-	if (status != LDNS_STATUS_OK) {
-		printf("Zone reader failed, aborting\n");
-		exit(EXIT_FAILURE);
-	} else {
-		printf("Read %u resource records in zone file\n", (unsigned int) ldns_zone_rr_count(zone));
-	}
-	fclose(zone_fp);
-
 	printf("Listening on port %d\n", port);
 	sock =  socket(AF_INET, SOCK_DGRAM, 0);
 	if (sock < 0) {
 		fprintf(stderr, "%s: socket(): %s\n", argv[0], strerror(errno));
 		exit(1);
 	}
+
 	memset(&addr_me, 0, sizeof(addr_me));
 
 	/* bind: try all ports in that range */
@@ -157,6 +118,7 @@ main(int argc, char **argv)
 		/*
 		show(inbuf, nb, nn, hp, sp, ip, bp);
 		*/
+		
 		printf("Got query of %u bytes\n", (unsigned int) nb);
 		status = ldns_wire2pkt(&query_pkt, inbuf, nb);
 		if (status != LDNS_STATUS_OK) {
@@ -172,7 +134,6 @@ main(int argc, char **argv)
 		answer_qr = ldns_rr_list_new();
 		ldns_rr_list_push_rr(answer_qr, ldns_rr_clone(query_rr));
 
-		answer_an = get_rrset(zone, ldns_rr_owner(query_rr), ldns_rr_get_type(query_rr), ldns_rr_get_class(query_rr));
 		answer_pkt = ldns_pkt_new();
 		answer_ns = ldns_rr_list_new();
 		answer_ad = ldns_rr_list_new();
@@ -181,11 +142,8 @@ main(int argc, char **argv)
 		ldns_pkt_set_aa(answer_pkt, 1);
 		ldns_pkt_set_id(answer_pkt, ldns_pkt_id(query_pkt));
 
-		ldns_pkt_push_rr_list(answer_pkt, LDNS_SECTION_QUESTION, answer_qr);
-		ldns_pkt_push_rr_list(answer_pkt, LDNS_SECTION_ANSWER, answer_an);
-		ldns_pkt_push_rr_list(answer_pkt, LDNS_SECTION_AUTHORITY, answer_ns);
-		ldns_pkt_push_rr_list(answer_pkt, LDNS_SECTION_ADDITIONAL, answer_ad);
 
+		
 		status = ldns_pkt2wire(&outbuf, answer_pkt, &answer_size);
 		
 		printf("Answer packet size: %u bytes.\n", (unsigned int) answer_size);
@@ -194,6 +152,10 @@ main(int argc, char **argv)
 		} else {
 			nb = (size_t) sendto(sock, outbuf, answer_size, 0, &addr_him, hislen);
 		}
+		
+		
+		
 	}
+
         return 0;
 }

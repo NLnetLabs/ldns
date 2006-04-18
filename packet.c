@@ -665,6 +665,30 @@ ldns_pkt_safe_push_rr(ldns_pkt *pkt, ldns_pkt_section sec, ldns_rr *rr)
 }
 
 bool
+ldns_pkt_push_rr_list(ldns_pkt *p, ldns_pkt_section s, ldns_rr_list *list)
+{
+	size_t i;
+	for(i = 0; i < ldns_rr_list_rr_count(list); i++) {
+		if (!ldns_pkt_push_rr(p, s, ldns_rr_list_rr(list, i))) {
+			return false;
+		}
+	}
+	return true;
+}
+
+bool
+ldns_pkt_safe_push_rr_list(ldns_pkt *p, ldns_pkt_section s, ldns_rr_list *list)
+{
+	size_t i;
+	for(i = 0; i < ldns_rr_list_rr_count(list); i++) {
+		if (!ldns_pkt_safe_push_rr(p, s, ldns_rr_list_rr(list, i))) {
+			return false;
+		}
+	}
+	return true;
+}
+
+bool
 ldns_pkt_edns(const ldns_pkt *pkt) {
 	return (ldns_pkt_edns_udp_size(pkt) > 0 ||
 		ldns_pkt_edns_extended_rcode(pkt) > 0 ||

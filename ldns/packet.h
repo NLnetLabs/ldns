@@ -662,21 +662,39 @@ void ldns_pkt_set_authority(ldns_pkt *p, ldns_rr_list *rr);
 
 /**
  * push an rr on a packet
- * \param[in] packet packet to operatore on
+ * \param[in] packet packet to operate on
  * \param[in] section where to put it
  * \param[in] rr rr to push
- * \return ldns_status status
+ * \return a boolean which is true when the rr was added
  */
 bool ldns_pkt_push_rr(ldns_pkt *packet, ldns_pkt_section section, ldns_rr *rr);
 
 /**
  * push an rr on a packet, provided the RR is not there.
- * \param[in] pkt packet to operatore on
+ * \param[in] pkt packet to operate on
  * \param[in] sec where to put it
  * \param[in] rr rr to push
- * \return ldns_status status
+ * \return a boolean which is true when the rr was added
  */
 bool ldns_pkt_safe_push_rr(ldns_pkt *pkt, ldns_pkt_section sec, ldns_rr *rr);
+
+/**
+ * push a rr_list on a packet
+ * \param[in] packet packet to operate on
+ * \param[in] section where to put it
+ * \param[in] list the rr_list to push
+ * \return a boolean which is true when the rr was added
+ */
+bool ldns_pkt_push_rr_list(ldns_pkt *packet, ldns_pkt_section section, ldns_rr_list *list);
+
+/**
+ * push an rr_list to a packet, provided the RRs are not already there.
+ * \param[in] pkt packet to operate on
+ * \param[in] sec where to put it
+ * \param[in] list the rr_list to push
+ * \return a boolean which is true when the rr was added
+ */
+bool ldns_pkt_safe_push_rr_list(ldns_pkt *pkt, ldns_pkt_section sec, ldns_rr_list *list);
 
 /**
  * check if a packet is empty
@@ -684,7 +702,5 @@ bool ldns_pkt_safe_push_rr(ldns_pkt *pkt, ldns_pkt_section sec, ldns_rr *rr);
  * \return true: empty, false: empty
  */
 bool ldns_pkt_empty(ldns_pkt *p);
-
-
 
 #endif  /* LDNS_PACKET_H */

@@ -39,6 +39,7 @@ SOURCES 	= ldns-read-zone.c \
 		  ldns-dpa.c \
 		  ldns-resolver.c \
 		  ldnsd.c \
+		  nsd-ldnsd.c \
 		  ldns-keyfetcher.c \
 		  ldns-ixfr.c \
 		  ldns-notify.c
