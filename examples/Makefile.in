@@ -14,11 +14,11 @@ CFLAGS = @CFLAGS@ -Wall -I.
 CPPFLAGS = @CPPFLAGS@ 
 LDFLAGS = @LDFLAGS@
 LIBS = @LIBS@
+LDNSDIR = @LDNSDIR@
 
 INSTALL = $(srcdir)/../install-sh 
 
-COMPILE         = $(CC) $(CPPFLAGS) $(CFLAGS)
-LINK            = $(CC) $(CFLAGS) $(LDFLAGS) $(LIBS)
+COMPILE         = $(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) $(LIBS)
 
 LINT		= splint
 LINTFLAGS	= +quiet -weak -warnposix -unrecog -Din_addr_t=uint32_t -Du_int=unsigned -Du_char=uint8_t -preproc
@@ -34,12 +34,15 @@ SOURCES 	= ldns-read-zone.c \
 		  ldns-version.c \
 		  ldns-rrsig.c \
 		  ldns-walk.c \
-		  ldns-threshold-update.c  \
 		  ldns-zsplit.c \
 		  ldns-zcat.c \
 		  ldns-dpa.c \
 		  ldns-resolver.c \
-		  ldnsd.c
+		  ldnsd.c \
+		  nsd-ldnsd.c \
+		  ldns-keyfetcher.c \
+		  ldns-ixfr.c \
+		  ldns-notify.c
 
 
 PROGRAMS=$(SOURCES:.c=)
@@ -48,59 +51,20 @@ PROGRAMS=$(SOURCES:.c=)
 
 all:	$(PROGRAMS)
 
-ldns-read-zone: 	ldns-read-zone.o
-			$(LINK) -o $@ $+
+all-static:	$(PROGRAMS:=-stc)
 
-ldns-mx: 	ldns-mx.o
-		$(LINK) -o $@ $+
+%:	$(srcdir)/%.c
+	$(COMPILE) -o $@ $(srcdir)/$@.c
 
-ldns-chaos: 	ldns-chaos.o
-		$(LINK) -o $@ $+
-
-ldns-update: 	ldns-update.o
-		$(LINK) -o $@ $+
-
-ldns-version:	ldns-version.o
-		$(LINK) -o $@ $+
-
-ldns-signzone:	ldns-signzone.o
-		$(LINK) -o $@ $+
-
-ldns-keygen:	ldns-keygen.o
-		$(LINK) -o $@ $+
-
-ldns-key2ds:	ldns-key2ds.o
-		$(LINK) -o $@ $+
-
-ldns-rrsig:	ldns-rrsig.o
-		$(LINK) -o $@ $+
-
-ldns-walk:	ldns-walk.o
-		$(LINK) -o $@ $+
-
-ldns-dpa:	ldns-dpa.o
-		$(LINK) -o $@ $+
-
-ldns-zsplit:	ldns-zsplit.o
-		$(LINK) -o $@ $+
-
-ldns-zcat:	ldns-zcat.o
-		$(LINK) -o $@ $+
-
-ldnsd:		ldnsd.o
-		$(LINK) -o $@ $+
-
-ldns-threshold-update:	ldns-threshold-update.o
-		$(LINK) -o $@ $+
-
-ldns-resolver:	ldns-resolver.o
-		$(LINK) -o $@ $+
-
-## implicit rule
-%.o: 	$(srcdir)/%.c
-	$(COMPILE) -c $<
+%-stc:
+	@# can't mix implicit and static rules
+	@if [ $(srcdir)/$(@:-stc=).c -nt $(@:-stc=) ] ; then \
+		echo "$(CC) $(CPPFLAGS) $(CFLAGS) -lpcap -lcrypto -o $(@:-stc=) $(srcdir)/$(@:-stc=).c $(LDNSDIR)lib/libldns.a" ; \
+		$(CC) $(CPPFLAGS) $(CFLAGS) -lpcap -lcrypto -o $(@:-stc=) $(srcdir)/$(@:-stc=).c $(LDNSDIR)lib/libldns.a ; \
+	fi ;
 
 lint:
+	echo off
 	for i in $(SOURCES); do \
 		$(LINT) $(LINTFLAGS) -I. -I$(srcdir) $(srcdir)/$$i $(CPPFLAGS); \
 		if [ $$? -ne 0 ] ; then exit 1 ; fi ; \
