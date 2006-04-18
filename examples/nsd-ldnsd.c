@@ -21,6 +21,7 @@
 #include <errno.h>
 
 #define INBUF_SIZE 4096
+#define MAX_LEN    1024
 
 void usage(FILE *output)
 {
@@ -45,7 +46,7 @@ main(int argc, char **argv)
 	/* arguments */
 	int port;
 	int soa;
-	ldns_rr *zone_name;
+	ldns_rdf *zone_name;
 
 	/* network */
 	int sock;
@@ -63,29 +64,34 @@ main(int argc, char **argv)
 	ldns_pkt *answer_pkt;
 	size_t answer_size;
 	ldns_rr *query_rr;
-	ldns_rr_list *answer_qr;
-	ldns_rr_list *answer_ns;
-	ldns_rr_list *answer_ad;
+	ldns_rr *rr;
+	char rr_string[MAX_LEN + 1];
+	ldns_rr *soa_rr;
+	char soa_string[MAX_LEN + 1];
 	
 	/* use this to listen on specified interfaces later? */
 	my_address = NULL;
 		
-	if (argc < 4) {
+	if (argc != 4) {
 		usage(stdout);
 		exit(EXIT_FAILURE);
 	} else {
 		port = atoi(argv[1]);
 		if (port < 1) {
+			fprintf(stderr, "Use a number for the port\n");
 			usage(stdout);
 			exit(EXIT_FAILURE);
 		}
-		if (ldns_rr_new_frm_str(&zone_name, argv[2], 0, NULL, NULL) !=
-				LDNS_STATUS_OK) {
+		
+		zone_name = ldns_dname_new_frm_str(argv[2]);
+		if (!zone_name) {
+			fprintf(stderr, "Illegal domain name: %s\n", argv[2]);
 			usage(stdout);
 			exit(EXIT_FAILURE);
 		}
 		soa =  atoi(argv[3]);
 		if (soa < 1) {
+			fprintf(stderr, "Illegal soa number\n");
 			usage(stdout);
 			exit(EXIT_FAILURE);
 		}
@@ -106,6 +112,26 @@ main(int argc, char **argv)
 		fprintf(stderr, "%s: cannot bind(): %s\n", argv[0], strerror(errno));
 	}
 
+	/* create our ixfr answer */
+	answer_pkt = ldns_pkt_new();
+
+	snprintf(rr_string, MAX_LEN, "%s IN IXFR", argv[2]);
+	(void)ldns_rr_new_frm_str(&rr, rr_string , 0, NULL, NULL);
+	(void)ldns_pkt_push_rr(answer_pkt, LDNS_SECTION_QUESTION, rr);
+
+	 /* next add some rrs, with SOA stuff so that we mimic or ixfr reply */
+	snprintf(soa_string, MAX_LEN, "%s IN SOA miek@miek.nl elektron.atoom.net %d 0 0 0 0",
+			argv[2], soa);
+
+        (void)ldns_rr_new_frm_str(&soa_rr, soa_string, 0, NULL, NULL);
+	snprintf(rr_string, MAX_LEN, "%s IN A 127.0.0.1", argv[2]);
+        (void)ldns_rr_new_frm_str(&rr, rr_string , 0, NULL, NULL);
+
+        /* compose the ixfr pkt */
+        (void)ldns_pkt_push_rr(answer_pkt, LDNS_SECTION_ANSWER, soa_rr);
+        (void)ldns_pkt_push_rr(answer_pkt, LDNS_SECTION_ANSWER, rr);
+        (void)ldns_pkt_push_rr(answer_pkt, LDNS_SECTION_ANSWER, soa_rr);
+
 	/* Done. Now receive */
 	while (1) {
 		nb = (size_t) recvfrom(sock, inbuf, INBUF_SIZE, 0, &addr_him, &hislen);
@@ -123,27 +149,15 @@ main(int argc, char **argv)
 		status = ldns_wire2pkt(&query_pkt, inbuf, nb);
 		if (status != LDNS_STATUS_OK) {
 			printf("Got bad packet: %s\n", ldns_get_errorstr_by_id(status));
-		} else {
-			ldns_pkt_print(stdout, query_pkt);
+			continue;
 		}
 		
 		query_rr = ldns_rr_list_rr(ldns_pkt_question(query_pkt), 0);
 		printf("QUERY RR: \n");
 		ldns_rr_print(stdout, query_rr);
 		
-		answer_qr = ldns_rr_list_new();
-		ldns_rr_list_push_rr(answer_qr, ldns_rr_clone(query_rr));
-
-		answer_pkt = ldns_pkt_new();
-		answer_ns = ldns_rr_list_new();
-		answer_ad = ldns_rr_list_new();
-		
-		ldns_pkt_set_qr(answer_pkt, 1);
-		ldns_pkt_set_aa(answer_pkt, 1);
 		ldns_pkt_set_id(answer_pkt, ldns_pkt_id(query_pkt));
 
-
-		
 		status = ldns_pkt2wire(&outbuf, answer_pkt, &answer_size);
 		
 		printf("Answer packet size: %u bytes.\n", (unsigned int) answer_size);
@@ -152,10 +166,6 @@ main(int argc, char **argv)
 		} else {
 			nb = (size_t) sendto(sock, outbuf, answer_size, 0, &addr_him, hislen);
 		}
-		
-		
-		
 	}
-
         return 0;
 }
