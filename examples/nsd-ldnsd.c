@@ -25,9 +25,10 @@
 
 void usage(FILE *output)
 {
-	fprintf(output, "Usage: nsd-ldnsd <port> <zone> <soa-serial>\n");
+	fprintf(output, "Usage: nsd-ldnsd -# <port> <zone> <soa-serial>\n");
 	fprintf(output, "Listens on the specified port and answer every query with an IXFR\n");
 	fprintf(output, "This is NOT a full-fledged authoritative nameserver! It is NOTHING.\n");
+	fprintf(output, "-# quit after this many queries.\n");
 }
 
 static int udp_bind(int sock, int port, const char *my_address)
@@ -47,6 +48,8 @@ main(int argc, char **argv)
 	int port;
 	int soa;
 	ldns_rdf *zone_name;
+	size_t count;
+	size_t maxcount;
 
 	/* network */
 	int sock;
@@ -71,7 +74,27 @@ main(int argc, char **argv)
 	
 	/* use this to listen on specified interfaces later? */
 	my_address = NULL;
-		
+
+	if(argc == 5) {
+		/* -# num given */
+		if (argv[1][0] == '-') {
+			maxcount = atoi(argv[1] + 1);
+			if (maxcount == 0) {
+				usage(stdout);
+				exit(EXIT_FAILURE);
+			} else {
+				fprintf(stderr, "quiting after %d qs\n", maxcount);
+			}
+		} else {
+			fprintf(stderr, "Use -Number for max count\n");
+			exit(EXIT_FAILURE);
+		}
+		argc--;
+		argv++;
+	} else {
+		maxcount = 0;
+	}
+	
 	if (argc != 4) {
 		usage(stdout);
 		exit(EXIT_FAILURE);
@@ -102,7 +125,7 @@ main(int argc, char **argv)
 	sock =  socket(AF_INET, SOCK_DGRAM, 0);
 	if (sock < 0) {
 		fprintf(stderr, "%s: socket(): %s\n", argv[0], strerror(errno));
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
 
 	memset(&addr_me, 0, sizeof(addr_me));
@@ -120,7 +143,7 @@ main(int argc, char **argv)
 	(void)ldns_pkt_push_rr(answer_pkt, LDNS_SECTION_QUESTION, rr);
 
 	 /* next add some rrs, with SOA stuff so that we mimic or ixfr reply */
-	snprintf(soa_string, MAX_LEN, "%s IN SOA miek@miek.nl elektron.atoom.net %d 0 0 0 0",
+	snprintf(soa_string, MAX_LEN, "%s IN SOA miek.miek.nl elektron.atoom.net %d 1 2 3 4",
 			argv[2], soa);
 
         (void)ldns_rr_new_frm_str(&soa_rr, soa_string, 0, NULL, NULL);
@@ -133,17 +156,14 @@ main(int argc, char **argv)
         (void)ldns_pkt_push_rr(answer_pkt, LDNS_SECTION_ANSWER, soa_rr);
 
 	/* Done. Now receive */
+	count = 0;
 	while (1) {
 		nb = (size_t) recvfrom(sock, inbuf, INBUF_SIZE, 0, &addr_him, &hislen);
 		if (nb < 1) {
 			fprintf(stderr, "%s: recvfrom(): %s\n",
 			argv[0], strerror(errno));
-			exit(1);
+			exit(EXIT_FAILURE);
 		}
-
-		/*
-		show(inbuf, nb, nn, hp, sp, ip, bp);
-		*/
 		
 		printf("Got query of %u bytes\n", (unsigned int) nb);
 		status = ldns_wire2pkt(&query_pkt, inbuf, nb);
@@ -153,7 +173,7 @@ main(int argc, char **argv)
 		}
 		
 		query_rr = ldns_rr_list_rr(ldns_pkt_question(query_pkt), 0);
-		printf("QUERY RR: \n");
+		printf("%d QUERY RR +%d: \n", ++count, ldns_pkt_id(query_pkt));
 		ldns_rr_print(stdout, query_rr);
 		
 		ldns_pkt_set_id(answer_pkt, ldns_pkt_id(query_pkt));
@@ -165,6 +185,11 @@ main(int argc, char **argv)
 			printf("Error creating answer: %s\n", ldns_get_errorstr_by_id(status));
 		} else {
 			nb = (size_t) sendto(sock, outbuf, answer_size, 0, &addr_him, hislen);
+		}
+
+		if (maxcount > 0  && count >= maxcount) {
+			fprintf(stderr, "%d queries seen... goodbye\n", count);
+			exit(EXIT_SUCCESS);
 		}
 	}
         return 0;
