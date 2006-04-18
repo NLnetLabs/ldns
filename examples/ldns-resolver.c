@@ -5,17 +5,18 @@
 int
 main(int argc, char **argv) {
 
-	ldns_resolver *r = NULL;
+	ldns_resolver *r;
 	int line;
 	FILE *rand;
+	ldns_status s;
 
 	if (!(rand = fopen(argv[1], "r"))) {
 		exit(EXIT_FAILURE);
 	}
 
 	printf("Trying to read from /dev/urandom\n");
-	r = ldns_resolver_new_frm_fp_l(rand, &line);
-	if (!r) {
+	s = ldns_resolver_new_frm_fp_l(&r, rand, &line);
+	if (s != LDNS_STATUS_OK) {
 		printf("Failure\n");
 	} else {
 		printf("Succes\n");

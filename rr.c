@@ -14,6 +14,9 @@
 #include <strings.h>
 #include <limits.h>
 
+#define LDNS_SYNTAX_DATALEN 11
+#define LDNS_TTL_DATALEN    21
+
 ldns_rr *
 ldns_rr_new(void)
 {
@@ -87,8 +90,8 @@ ldns_rr_free(ldns_rr *rr)
  * or
  * miek.nl. IN MX 10 elektron.atoom.net
  */
-ldns_rr *
-ldns_rr_new_frm_str(const char *str, uint16_t default_ttl, ldns_rdf *origin, 
+ldns_status
+ldns_rr_new_frm_str(ldns_rr **newrr, const char *str, uint16_t default_ttl, ldns_rdf *origin, 
 		ldns_rdf **prev)
 {
 	ldns_rr *new;
@@ -109,6 +112,8 @@ ldns_rr_new_frm_str(const char *str, uint16_t default_ttl, ldns_rdf *origin,
 	size_t rd_strlen;
 	const char *delimiters;
 	ssize_t c;
+	ldns_rdf *owner_dname;
+	
 	/* used for types with unknown number of rdatas */
 	bool done;
 	bool quoted;
@@ -133,7 +138,7 @@ ldns_rr_new_frm_str(const char *str, uint16_t default_ttl, ldns_rdf *origin,
 	rd = LDNS_XMALLOC(char, LDNS_MAX_RDFLEN);
 	b64 = LDNS_XMALLOC(char, LDNS_MAX_RDFLEN);
 	if (!new || !owner || !ttl || !clas || !rdata || !rr_buf || !rd_buf || !rd | !b64) {
-		return NULL;
+		return LDNS_STATUS_MEM_ERR;
 	}
 	r_cnt = 0;
 	ttl_val = 0;
@@ -151,10 +156,10 @@ ldns_rr_new_frm_str(const char *str, uint16_t default_ttl, ldns_rdf *origin,
 		LDNS_FREE(rd_buf);
 		ldns_buffer_free(rr_buf); 
 		ldns_rr_free(new);
-		return NULL;
+		return LDNS_STATUS_SYNTAX_ERR;
 	}
 	
-	if (ldns_bget_token(rr_buf, ttl, "\t\n ", 21) == -1) {
+	if (ldns_bget_token(rr_buf, ttl, "\t\n ", LDNS_TTL_DATALEN) == -1) {
 		LDNS_FREE(owner); 
 		LDNS_FREE(ttl); 
 		LDNS_FREE(clas); 
@@ -163,7 +168,7 @@ ldns_rr_new_frm_str(const char *str, uint16_t default_ttl, ldns_rdf *origin,
 		LDNS_FREE(rd_buf);
 		ldns_buffer_free(rr_buf);
 		ldns_rr_free(new);
-		return NULL;
+		return LDNS_STATUS_SYNTAX_TTL_ERR;
 	}
 	ttl_val = ldns_str2period(ttl, &endptr); /* i'm not using endptr */
 	if (ttl_val == 0) {
@@ -188,7 +193,7 @@ ldns_rr_new_frm_str(const char *str, uint16_t default_ttl, ldns_rdf *origin,
 			strncpy(type, ttl, strlen(ttl) + 1);
 		}
 	} else {
-		if (ldns_bget_token(rr_buf, clas, "\t\n ", 11) == -1) {
+		if (ldns_bget_token(rr_buf, clas, "\t\n ", LDNS_SYNTAX_DATALEN) == -1) {
 			LDNS_FREE(owner); 
 			LDNS_FREE(ttl); 
 			LDNS_FREE(clas); 
@@ -197,7 +202,7 @@ ldns_rr_new_frm_str(const char *str, uint16_t default_ttl, ldns_rdf *origin,
 			LDNS_FREE(rd_buf);
 			ldns_buffer_free(rr_buf);
 			ldns_rr_free(new);
-			return NULL;
+			return LDNS_STATUS_SYNTAX_CLASS_ERR;
 		}
 		clas_val = ldns_get_rr_class_by_name(clas);
 		/* class can be left out too, assume IN, current
@@ -212,8 +217,8 @@ ldns_rr_new_frm_str(const char *str, uint16_t default_ttl, ldns_rdf *origin,
 	/* the rest should still be waiting for us */
 
 	if (!type) {
-		type = LDNS_XMALLOC(char, 10);
-		if (ldns_bget_token(rr_buf, type, "\t\n ", 10) == -1) {
+		type = LDNS_XMALLOC(char, LDNS_SYNTAX_DATALEN);
+		if (ldns_bget_token(rr_buf, type, "\t\n ", LDNS_SYNTAX_DATALEN) == -1) {
 			LDNS_FREE(owner); 
 			LDNS_FREE(ttl); 
 			LDNS_FREE(clas); 
@@ -222,7 +227,7 @@ ldns_rr_new_frm_str(const char *str, uint16_t default_ttl, ldns_rdf *origin,
 			LDNS_FREE(rd_buf);
 			ldns_buffer_free(rr_buf);
 			ldns_rr_free(new);
-			return NULL;
+			return LDNS_STATUS_SYNTAX_TYPE_ERR;
 		}
 	}
 	
@@ -242,7 +247,7 @@ ldns_rr_new_frm_str(const char *str, uint16_t default_ttl, ldns_rdf *origin,
 		*/
 	}
 
-	ldns_buffer_new_frm_data( rd_buf, rdata, strlen(rdata));
+	ldns_buffer_new_frm_data(rd_buf, rdata, strlen(rdata));
 
 	if (strlen(owner) <= 1 && strncmp(owner, "@", 1) == 0) {
 		if (origin) {
@@ -255,7 +260,7 @@ ldns_rr_new_frm_str(const char *str, uint16_t default_ttl, ldns_rdf *origin,
 		if (strlen(owner) == 0) {
 			/* no ownername was given, try prev, if that fails 
 			 * origin, else default to root */
-			if (prev) {
+			if (prev && *prev) {
 				ldns_rr_set_owner(new, ldns_rdf_clone(*prev));
 			} else if (origin) {
 				ldns_rr_set_owner(new, ldns_rdf_clone(origin));
@@ -263,7 +268,21 @@ ldns_rr_new_frm_str(const char *str, uint16_t default_ttl, ldns_rdf *origin,
 				ldns_rr_set_owner(new, ldns_dname_new_frm_str("."));
 			}
 		} else {
-			ldns_rr_set_owner(new, ldns_dname_new_frm_str(owner));
+			owner_dname = ldns_dname_new_frm_str(owner);
+			if (!owner_dname) {
+					LDNS_FREE(owner); 
+					LDNS_FREE(ttl); 
+					LDNS_FREE(clas); 
+					LDNS_FREE(type);
+					LDNS_FREE(rdata);
+					LDNS_FREE(rd);
+					LDNS_FREE(rd_buf);
+					ldns_buffer_free(rr_buf);
+					ldns_rr_free(new);
+					return LDNS_STATUS_SYNTAX_ERR;
+			}
+			
+			ldns_rr_set_owner(new, owner_dname);
 			if (!ldns_dname_str_absolute(owner) && origin) {
 				if(ldns_dname_cat(ldns_rr_owner(new), 
 							origin) != LDNS_STATUS_OK) {
@@ -276,11 +295,12 @@ ldns_rr_new_frm_str(const char *str, uint16_t default_ttl, ldns_rdf *origin,
 					LDNS_FREE(rd_buf);
 					ldns_buffer_free(rr_buf);
 					ldns_rr_free(new);
-					return NULL;
+					return LDNS_STATUS_SYNTAX_ERR;
 				} 
 			}
 			if (prev) {
-				*prev = ldns_rr_owner(new);
+				ldns_rdf_deep_free(*prev);
+				*prev = ldns_rdf_clone(ldns_rr_owner(new));
 			}
 		}
 	}
@@ -358,7 +378,7 @@ ldns_rr_new_frm_str(const char *str, uint16_t default_ttl, ldns_rdf *origin,
 							/* something goes very wrong here */
 							ldns_buffer_free(rd_buf);
 							LDNS_FREE(rd);
-							return NULL;
+							return LDNS_STATUS_SYNTAX_RDATA_ERR;
 						}
 						hex_data_size = (uint16_t) atoi(rd);
 						/* copy the hex chars into hex str (which is 2 chars per byte) */
@@ -367,7 +387,7 @@ ldns_rr_new_frm_str(const char *str, uint16_t default_ttl, ldns_rdf *origin,
 							/* malloc error */
 							ldns_buffer_free(rd_buf);
 							LDNS_FREE(rd);
-							return NULL;
+							return LDNS_STATUS_SYNTAX_RDATA_ERR;
 						}
 						cur_hex_data_size = 0;
 						while(cur_hex_data_size < 2 * hex_data_size) {
@@ -406,8 +426,8 @@ ldns_rr_new_frm_str(const char *str, uint16_t default_ttl, ldns_rdf *origin,
 							/* check if the origin should be concatenated */
 							if (rd_strlen > 1 && !ldns_dname_str_absolute(rd) && origin) {
 								if (!ldns_dname_cat(r, origin)) {
-									/* don't know if to quit */
-									/* return NULL;*/
+									/* don't change this (yet MIEK */
+									/* return LDNS_STATUS_SYNTAX_ERR; */
 								}
 							}
 							break;
@@ -426,7 +446,7 @@ ldns_rr_new_frm_str(const char *str, uint16_t default_ttl, ldns_rdf *origin,
 							ldns_buffer_free(rr_buf);
 							LDNS_FREE(rdata);
 							ldns_rr_free(new);
-							return NULL;
+							return LDNS_STATUS_SYNTAX_RDATA_ERR;
 						}
 						
 					}
@@ -446,26 +466,33 @@ ldns_rr_new_frm_str(const char *str, uint16_t default_ttl, ldns_rdf *origin,
 	LDNS_FREE(b64);
 	ldns_buffer_free(rd_buf);
 	ldns_buffer_free(rr_buf);
-
 	LDNS_FREE(rdata);
-	return new;
+
+	if (newrr) {
+		*newrr = new;
+	}
+	return LDNS_STATUS_OK;
 }
 
-ldns_rr *
-ldns_rr_new_frm_fp(FILE *fp, uint16_t *ttl, ldns_rdf **origin, ldns_rdf **prev)
+ldns_status
+ldns_rr_new_frm_fp(ldns_rr **newrr, FILE *fp, uint16_t *ttl, ldns_rdf **origin, ldns_rdf **prev)
 {
-	return ldns_rr_new_frm_fp_l(fp, ttl, origin, prev, NULL);
+	return ldns_rr_new_frm_fp_l(newrr, fp, ttl, origin, prev, NULL);
 }
 
-ldns_rr *
-ldns_rr_new_frm_fp_l(FILE *fp, uint16_t *default_ttl, ldns_rdf **origin, ldns_rdf **prev, int *line_nr)
+ldns_status
+ldns_rr_new_frm_fp_l(ldns_rr **newrr, FILE *fp, uint16_t *default_ttl, ldns_rdf **origin, ldns_rdf **prev, int *line_nr)
 {
         char *line;
+	const char *endptr;  /* unused */
 	ldns_rr *rr;
 	char *keyword;
 	uint16_t ttl;
+	ldns_rdf *tmp;
+	ldns_status s;
+	ssize_t size;
 
-	rr = NULL;
+	s = LDNS_STATUS_ERR;
 	if (default_ttl) {
 		ttl = *default_ttl;
 	} else {
@@ -474,7 +501,7 @@ ldns_rr_new_frm_fp_l(FILE *fp, uint16_t *default_ttl, ldns_rdf **origin, ldns_rd
 
         line = LDNS_XMALLOC(char, LDNS_MAX_LINELEN + 1);
         if (!line) {
-                return NULL;
+                return LDNS_STATUS_MEM_ERR;
         }
 
 	if (line_nr) {
@@ -482,31 +509,54 @@ ldns_rr_new_frm_fp_l(FILE *fp, uint16_t *default_ttl, ldns_rdf **origin, ldns_rd
 	}
 
         /* read an entire line in from the file */
-        if (ldns_fget_token_l(fp, line, LDNS_PARSE_SKIP_SPACE, LDNS_MAX_LINELEN, line_nr) == -1) {
+        if ((size = ldns_fget_token_l(fp, line, LDNS_PARSE_SKIP_SPACE, LDNS_MAX_LINELEN, line_nr)) == -1) {
 		LDNS_FREE(line);
-                return NULL;
+		/* if last line was empty, we are now at feof, which is not
+		 * always a parse error (happens when for instance last line
+		 * was a comment)
+		 */
+                return LDNS_STATUS_SYNTAX_ERR;
         }
 
+	/* we can have the situation, where we've read ok, but still got
+	 * no bytes to play with, in this case size is 0 
+	 */
+	if (size == 0) {
+		LDNS_FREE(line);
+		return LDNS_STATUS_SYNTAX_EMPTY;
+	}
+	
 	if ((keyword = strstr(line, "$ORIGIN "))) {
 		if (*origin) {
 			ldns_rdf_free(*origin);
 			*origin = NULL;
 		}
-		*origin = ldns_rdf_new_frm_str(LDNS_RDF_TYPE_DNAME, keyword + 8);
+		tmp = ldns_rdf_new_frm_str(LDNS_RDF_TYPE_DNAME, keyword + 8);
+		if (!tmp) {
+			/* could not parse what next to $ORIGIN */
+			LDNS_FREE(line);
+			return LDNS_STATUS_SYNTAX_DNAME_ERR;
+		}
+		*origin = tmp;
+		s = LDNS_STATUS_SYNTAX_ORIGIN;		
 	} else if ((keyword = strstr(line, "$TTL "))) {
 		if (default_ttl) {
-			*default_ttl = (uint16_t) atoi(keyword + 5);
+			*default_ttl = ldns_str2period(keyword + 5, &endptr);
 		}
+		s = LDNS_STATUS_SYNTAX_TTL;
 	} else {
-		if (origin) {
-			rr = ldns_rr_new_frm_str((const char*) line, ttl, *origin, prev);
+		if (origin && *origin) {
+			s = ldns_rr_new_frm_str(&rr, (const char*) line, ttl, *origin, prev);
 		} else {
-			rr = ldns_rr_new_frm_str((const char*) line, ttl, NULL, prev);
+			s = ldns_rr_new_frm_str(&rr, (const char*) line, ttl, NULL, prev);
 		}
 	
 	}
 	LDNS_FREE(line);
-	return rr;
+	if (newrr && s == LDNS_STATUS_OK) {
+		*newrr = rr;
+	}
+	return s;
 }
 
 void
@@ -1246,6 +1296,33 @@ ldns_rr_compare_ds(const ldns_rr *orr1, const ldns_rr *orr2)
 	ldns_rr_free(rr2);
 
 	return result;
+}
+
+int
+ldns_rr_list_compare(const ldns_rr_list *rrl1, const ldns_rr_list *rrl2)
+{
+	size_t i = 0;
+	int rr_cmp;
+
+	assert(rrl1 != NULL);
+	assert(rrl2 != NULL);
+
+	for (i = 0; i < ldns_rr_list_rr_count(rrl1) && i < ldns_rr_list_rr_count(rrl2); i++) {
+		rr_cmp = ldns_rr_compare(ldns_rr_list_rr(rrl1, i), ldns_rr_list_rr(rrl2, i));
+		if (rr_cmp != 0) {
+			return rr_cmp;
+		}
+	}
+
+	if (i == ldns_rr_list_rr_count(rrl1) &&
+	    i != ldns_rr_list_rr_count(rrl2)) {
+		return 1;
+	} else if (i == ldns_rr_list_rr_count(rrl2) &&
+	           i != ldns_rr_list_rr_count(rrl1)) {
+		return -1;
+	} else {
+		return 0;
+	}
 }
 
 size_t

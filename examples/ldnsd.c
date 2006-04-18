@@ -36,14 +36,6 @@ static int udp_bind(int sock, int port, const char *my_address)
     addr.sin_family = AF_INET;
     addr.sin_port = (in_port_t)htons((uint16_t)port);
 		addr.sin_addr.s_addr = INADDR_ANY;
-//		if (join_mcast(sock, &addr) == -1) { return -1; }
-/*
-   if (join_group(sock, inet_addr(my_address), INADDR_ANY)) {
-      perror("setsockopt"); 
-   } else {
-      fprintf(stderr, "Ok.\n");
-		}
-*/ 
     return bind(sock, (struct sockaddr *)&addr, (socklen_t) sizeof(addr));
 }
 
@@ -79,7 +71,6 @@ main(int argc, char **argv)
 {
 	/* arguments */
 	int port;
-	const char *zone_name;
 	const char *zone_file;
 
 	/* network */
@@ -118,8 +109,8 @@ main(int argc, char **argv)
 		port = atoi(argv[1]);
 		if (port < 1) {
 			usage(stdout);
+			exit(EXIT_FAILURE);
 		}
-		zone_name = argv[2];
 		zone_file = argv[3];
 	}
 	
@@ -131,17 +122,15 @@ main(int argc, char **argv)
 	}
 	
 	line_nr = 0;
-	zone = ldns_zone_new_frm_fp_l(zone_fp, NULL, 0, LDNS_RR_CLASS_IN, &line_nr);
+	status = ldns_zone_new_frm_fp_l(&zone, zone_fp, NULL, 0, LDNS_RR_CLASS_IN, &line_nr);
 
-	if (!zone) {
+	if (status != LDNS_STATUS_OK) {
 		printf("Zone reader failed, aborting\n");
 		exit(EXIT_FAILURE);
 	} else {
 		printf("Read %u resource records in zone file\n", (unsigned int) ldns_zone_rr_count(zone));
 	}
-
 	fclose(zone_fp);
-
 
 	printf("Listening on port %d\n", port);
 	sock =  socket(AF_INET, SOCK_DGRAM, 0);
@@ -149,7 +138,6 @@ main(int argc, char **argv)
 		fprintf(stderr, "%s: socket(): %s\n", argv[0], strerror(errno));
 		exit(1);
 	}
-
 	memset(&addr_me, 0, sizeof(addr_me));
 
 	/* bind: try all ports in that range */
@@ -169,7 +157,6 @@ main(int argc, char **argv)
 		/*
 		show(inbuf, nb, nn, hp, sp, ip, bp);
 		*/
-		
 		printf("Got query of %u bytes\n", (unsigned int) nb);
 		status = ldns_wire2pkt(&query_pkt, inbuf, nb);
 		if (status != LDNS_STATUS_OK) {
@@ -187,26 +174,18 @@ main(int argc, char **argv)
 
 		answer_an = get_rrset(zone, ldns_rr_owner(query_rr), ldns_rr_get_type(query_rr), ldns_rr_get_class(query_rr));
 		answer_pkt = ldns_pkt_new();
-		
 		answer_ns = ldns_rr_list_new();
-		
 		answer_ad = ldns_rr_list_new();
 		
 		ldns_pkt_set_qr(answer_pkt, 1);
 		ldns_pkt_set_aa(answer_pkt, 1);
 		ldns_pkt_set_id(answer_pkt, ldns_pkt_id(query_pkt));
 
-		/* aren't there push_rr(section) functions? */
-		/* and why isn't the count automatically updated? */
-		ldns_pkt_set_question(answer_pkt, answer_qr);
-		ldns_pkt_set_qdcount(answer_pkt, ldns_rr_list_rr_count(answer_qr));
-		ldns_pkt_set_answer(answer_pkt, answer_an);
-		ldns_pkt_set_ancount(answer_pkt, ldns_rr_list_rr_count(answer_an));
-		ldns_pkt_set_authority(answer_pkt, answer_ns);
-		ldns_pkt_set_nscount(answer_pkt, ldns_rr_list_rr_count(answer_ns));
-		ldns_pkt_set_additional(answer_pkt, answer_ad);
-		ldns_pkt_set_arcount(answer_pkt, ldns_rr_list_rr_count(answer_ad));
-		
+		ldns_pkt_push_rr_list(answer_pkt, LDNS_SECTION_QUESTION, answer_qr);
+		ldns_pkt_push_rr_list(answer_pkt, LDNS_SECTION_ANSWER, answer_an);
+		ldns_pkt_push_rr_list(answer_pkt, LDNS_SECTION_AUTHORITY, answer_ns);
+		ldns_pkt_push_rr_list(answer_pkt, LDNS_SECTION_ADDITIONAL, answer_ad);
+
 		status = ldns_pkt2wire(&outbuf, answer_pkt, &answer_size);
 		
 		printf("Answer packet size: %u bytes.\n", (unsigned int) answer_size);
@@ -215,10 +194,6 @@ main(int argc, char **argv)
 		} else {
 			nb = (size_t) sendto(sock, outbuf, answer_size, 0, &addr_him, hislen);
 		}
-		
-		
-		
 	}
-
         return 0;
 }

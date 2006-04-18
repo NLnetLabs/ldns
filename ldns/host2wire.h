@@ -23,7 +23,7 @@
 
 /**
  * Copies the dname data to the buffer in wire format
- * \param[out] *output buffer to append the result to
+ * \param[out] *buffer buffer to append the result to
  * \param[in] *name rdata dname to convert
  * \return ldns_status
  */

@@ -82,11 +82,12 @@ main(int argc, char *argv[])
 			ksk = true;
 			break;
 		case 'r':
-			random = fopen("r", optarg);
+			random = fopen(optarg, "r");
 			if (!random) {
-				fprintf(stderr, "Cannot open random file: %s\n", optarg);
+				fprintf(stderr, "Cannot open random file %s: %s\n", optarg, strerror(errno));
 				exit(EXIT_FAILURE);
 			}
+			break;
 		case 'v':
 			printf("DNSSEC key generator version %s (ldns version %s)\n", LDNS_VERSION, ldns_version());
 			exit(EXIT_SUCCESS);
@@ -129,6 +130,10 @@ main(int argc, char *argv[])
 
 	/* create the public from the ldns_key */
 	pubkey = ldns_key2rr(key);
+	if (!pubkey) {
+		fprintf(stderr, "Could not extract the public key from the key structure...");
+		exit(EXIT_FAILURE);
+	}
 	owner = ldns_rdf2str(ldns_rr_owner(pubkey));
 	
 	/* calculate and set the keytag */

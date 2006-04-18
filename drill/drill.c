@@ -10,6 +10,8 @@
 #include "drill.h"
 #include <ldns/dns.h>
 
+#define IP6_ARPA_MAX_LEN 65
+
 /* query debug, 2 hex dumps */
 int8_t		qdebug; /* -1, be quiet, 1 show question, 2 show hex */
 
@@ -42,12 +44,15 @@ usage(FILE *stream, const char *progname)
 	fprintf(stream, "\t-c\t\tsend the query with tcp (connected)\n");
 	fprintf(stream, "\t-k <file>\tspecify a file that contains a trusted DNSSEC key [**]\n");
 	fprintf(stream, "\t\t\tused to verify any signatures in the current answer\n");
-	fprintf(stream, "\t-o <mnemonic>\t[QR|qr][AA|aa][TC|tc][RD|rd][CD|cd][RA|ra][AD|ad]\n");
+	fprintf(stream, "\t-o <mnemonic>\tset flags to: [QR|qr][AA|aa][TC|tc][RD|rd][CD|cd][RA|ra][AD|ad]\n");
 	fprintf(stream, "\t\t\tlowercase: unset bit, uppercase: set bit\n");
+#if 0
+	fprintf(stream, "\t-O <opcode>\tset the opcode to: [query, iquery, status, notify, update]]\n");
+#endif
 	fprintf(stream, "\t-p <port>\tuse <port> as remote port number\n");
 	fprintf(stream, "\t-s\t\tshow the DS RR for each key in a packet\n");
 	fprintf(stream, "\t-u\t\tsend the query with udp (the default)\n");
-	fprintf(stream, "\t-x\t\tdo a reverse (PTR) lookup\n");
+	fprintf(stream, "\t-x\t\tdo a reverse lookup\n");
         fprintf(stream, "\t-y <name:key[:algo]>\tspecify named base64 tsig key, and optional an\n\t\t\talgorithm (defaults to hmac-md5.sig-alg.reg.int)\n");
 	fprintf(stream, "\t-z\t\tdon't randomize the nameservers before use\n");
 	fprintf(stream, "\n  [*] = enables/implies DNSSEC\n");
@@ -86,12 +91,16 @@ main(int argc, char *argv[])
         ldns_pkt	*qpkt;
         char 		*serv;
         char 		*name;
+        char 		*name2;
 	char		*progname;
 	char 		*query_file = NULL;
 	char		*answer_file = NULL;
 	ldns_rdf 	*serv_rdf;
         ldns_rr_type 	type;
         ldns_rr_class	clas;
+#if 0
+	ldns_pkt_opcode opcode = LDNS_PACKET_QUERY;
+#endif
 	int 		i, c;
 	int 		int_type;
 	int		int_clas;
@@ -99,7 +108,7 @@ main(int argc, char *argv[])
 	char		*tsig_name = NULL;
 	char		*tsig_data = NULL;
 	char 		*tsig_algorithm = NULL;
-	ldns_rr		*dnssec_key = NULL;
+	ldns_rr		*dnssec_key;
 	size_t		tsig_separator;
 	size_t		tsig_separator2;
 	ldns_rr		*axfr_rr;
@@ -258,6 +267,30 @@ main(int argc, char *argv[])
 					DRILL_OFF(qflags, LDNS_AD);
 				}
 				break;
+#if 0
+			case 'O':
+				if (strstr(optarg, "query")) {
+					opcode = LDNS_PACKET_QUERY;
+					break;
+				}
+				if (strstr(optarg, "iquery")) {
+					opcode = LDNS_PACKET_IQUERY;
+					break;
+				}
+				if (strstr(optarg, "status")) {
+					opcode = LDNS_PACKET_STATUS;
+					break;
+				}
+				if (strstr(optarg, "notify")) {
+					opcode = LDNS_PACKET_NOTIFY;
+					break;
+				}
+				if (strstr(optarg, "update")) {
+					opcode = LDNS_PACKET_UPDATE;
+					break;
+				}
+				break;
+#endif
 			case 'p':
 				qport = (uint16_t)atoi(optarg);
 				if (qport == 0) {
@@ -275,8 +308,6 @@ main(int argc, char *argv[])
 				result = EXIT_SUCCESS;
 				goto exit;
 			case 'x':
-				type = LDNS_RR_TYPE_PTR;
-				int_type = 1; /* set this so the type does not change */
 				PURPOSE = DRILL_REVERSE;
 				break;
 			case 'y':
@@ -372,23 +403,18 @@ main(int argc, char *argv[])
 		clas = LDNS_RR_CLASS_IN;
 	}
 	if (int_type == -1) {
-		type = LDNS_RR_TYPE_A;
-	}
-
-
-	/* if we're asking for DNSSEC records, act as if -D with given */
-	if (type == LDNS_RR_TYPE_DNSKEY ||
-			type == LDNS_RR_TYPE_RRSIG || 
-			type == LDNS_RR_TYPE_DS || 
-			type == LDNS_RR_TYPE_NSEC) {
-		qdnssec = true;
+		if (PURPOSE != DRILL_REVERSE) {
+			type = LDNS_RR_TYPE_A;
+		} else {
+			type = LDNS_RR_TYPE_PTR;
+		}
 	}
 
 	/* set the nameserver to use */
 	if (!serv) {
 		/* no server given make a resolver from /etc/resolv.conf */
-		res = ldns_resolver_new_frm_file(NULL);
-		if (!res) {
+		status = ldns_resolver_new_frm_file(&res, NULL);
+		if (status != LDNS_STATUS_OK) {
 			warning("Could not create a resolver structure");
 			result = EXIT_FAILURE;
 			goto exit;
@@ -404,9 +430,9 @@ main(int argc, char *argv[])
 		serv_rdf = ldns_rdf_new_addr_frm_str(serv);
 		if (!serv_rdf) {
 			/* try to resolv the name if possible */
-			cmdline_res = ldns_resolver_new_frm_file(NULL);
+			status = ldns_resolver_new_frm_file(&cmdline_res, NULL);
 			
-			if (!cmdline_res) {
+			if (status != LDNS_STATUS_OK) {
 				error("%s", "@server ip could not be converted");
 			}
 			ldns_resolver_set_dnssec(cmdline_res, qdnssec);
@@ -555,14 +581,69 @@ main(int argc, char *argv[])
 		case DRILL_NSEC:
 			break;
 		case DRILL_REVERSE:
-			/* name should be an ip addr */
-			qname = ldns_rdf_new_addr_frm_str(name);
+			/* ipv4 or ipv6 addr? */
+			if (strchr(name, ':')) {
+				name2 = malloc(IP6_ARPA_MAX_LEN + 20);
+				c = 0;
+				for (i=0; i<(int)strlen(name); i++) {
+					if (i >= IP6_ARPA_MAX_LEN) {
+						error("%s", "reverse argument to long");
+					}
+					if (name[i] == ':') {
+						if (i < (int) strlen(name) && name[i + 1] == ':') {
+							error("%s", ":: not supported (yet)");
+						} else {
+							if (i + 2 == (int) strlen(name) || name[i + 2] == ':') {
+								name2[c++] = '0';
+								name2[c++] = '.';
+								name2[c++] = '0';
+								name2[c++] = '.';
+								name2[c++] = '0';
+								name2[c++] = '.';
+							} else if (i + 3 == (int) strlen(name) || name[i + 3] == ':') {
+								name2[c++] = '0';
+								name2[c++] = '.';
+								name2[c++] = '0';
+								name2[c++] = '.';
+							} else if (i + 4 == (int) strlen(name) || name[i + 4] == ':') {
+								name2[c++] = '0';
+								name2[c++] = '.';
+							}
+						}
+					} else {
+						name2[c++] = name[i];
+						name2[c++] = '.';
+					}
+				}
+				name2[c++] = '\0';
+
+				qname = ldns_dname_new_frm_str(name2);
+				qname_tmp = ldns_dname_reverse(qname);
+				ldns_rdf_deep_free(qname);
+				qname = qname_tmp;
+				qname_tmp = ldns_dname_new_frm_str("ip6.arpa.");
+				status = ldns_dname_cat(qname, qname_tmp);
+				if (status != LDNS_STATUS_OK) {
+					error("%s", "could not create reverse address for ip6: %s\n", ldns_get_errorstr_by_id(status));
+				}
+				ldns_rdf_deep_free(qname_tmp);
+
+				free(name2);
+			} else {
+				qname = ldns_dname_new_frm_str(name);
+				qname_tmp = ldns_dname_reverse(qname);
+				ldns_rdf_deep_free(qname);
+				qname = qname_tmp;
+				qname_tmp = ldns_dname_new_frm_str("in-addr.arpa.");
+				status = ldns_dname_cat(qname, qname_tmp);
+				if (status != LDNS_STATUS_OK) {
+					error("%s", "could not create reverse address for ip4: %s\n", ldns_get_errorstr_by_id(status));
+				}
+				ldns_rdf_deep_free(qname_tmp);
+			}
 			if (!qname) {
 				error("%s", "-x implies an ip address");
 			}
-			qname_tmp = qname;
-			qname = ldns_rdf_address_reverse(qname);
-			ldns_rdf_deep_free(qname_tmp);
 			
 			/* create a packet and set the RD flag on it */
 			pkt = ldns_resolver_query(res, qname, type, clas, qflags);

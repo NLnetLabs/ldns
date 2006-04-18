@@ -516,15 +516,15 @@ ldns_pkt* ldns_resolver_search(const ldns_resolver *r, const ldns_rdf *rdf, ldns
 
 /**
  * Form a query packet from a resolver and name/type/class combo
- * \param[out] **query a pointer to a ldns_pkt pointer (initialized by this function)
+ * \param[out] **q a pointer to a ldns_pkt pointer (initialized by this function)
  * \param[in] *r operate using this resolver
  * \param[in] *name query for this name
  * \param[in] t query for this type (may be 0, defaults to A)
  * \param[in] c query for this class (may be 0, default to IN)
- * \param[in] flags the query flags
+ * \param[in] f the query flags
  * \return ldns_pkt* a packet with the reply from the nameserver
  */
-ldns_status ldns_resolver_prepare_query_pkt(ldns_pkt **query_pkt, ldns_resolver *r, const  ldns_rdf *name, ldns_rr_type type, ldns_rr_class class, uint16_t flags);
+ldns_status ldns_resolver_prepare_query_pkt(ldns_pkt **q, ldns_resolver *r, const  ldns_rdf *name, ldns_rr_type t, ldns_rr_class c, uint16_t f);
 
 /**
  * Send the query for name as-is 
@@ -567,33 +567,32 @@ ldns_resolver* ldns_resolver_new(void);
 
 /**
  * Create a resolver structure from a file like /etc/resolv.conf
+ * \param[out] r the new resolver
  * \param[in] fp file pointer to create new resolver from
  *      if NULL use /etc/resolv.conf
- * \return ldns_resolver structure
+ * \return LDNS_STATUS_OK or the error
  */
-ldns_resolver* ldns_resolver_new_frm_fp(FILE *fp);
+ldns_status ldns_resolver_new_frm_fp(ldns_resolver **r, FILE *fp);
 
 /**
  * Create a resolver structure from a file like /etc/resolv.conf
+ * \param[out] r the new resolver
  * \param[in] fp file pointer to create new resolver from
  *      if NULL use /etc/resolv.conf
  * \param[in] line_nr pointer to an integer containing the current line number (for debugging purposes)
- * \return ldns_resolver structure
+ * \return LDNS_STATUS_OK or the error
  */
-ldns_resolver* ldns_resolver_new_frm_fp_l(FILE *fp, int *line_nr);
+ldns_status ldns_resolver_new_frm_fp_l(ldns_resolver **r, FILE *fp, int *line_nr);
 
 /**
  * configure a resolver by means of a resolv.conf file 
  * The file may be NULL in which case there will  be
  * looked the RESOLV_CONF (defaults to /etc/resolv.conf
+ * \param[out] r the new resolver
  * \param[in] filename the filename to use
- * \return ldns_resolver pointer
+ * \return LDNS_STATUS_OK or the error
  */                             
-/* keyword recognized:                          
- * nameserver                   
- * domain                       
- */                     
-ldns_resolver* ldns_resolver_new_frm_file(const char *filename);
+ldns_status ldns_resolver_new_frm_file(ldns_resolver **r, const char *filename);
 
 /**                             
  * Frees the allocated space for this resolver
@@ -635,17 +634,5 @@ ldns_pkt *ldns_axfr_last_pkt(const ldns_resolver *res);
  * \param[in] r the resolver
  */
 void ldns_resolver_nameservers_randomize(ldns_resolver *r);
-
-/**
- * Create a resolver suitable for use with UPDATE. [RFC2136 4.3]
- * SOA MNAME is used as the "primary master".
- * \param[in] fqdn FQDN of a host in a zone
- * \param[in] zone zone name, if explicitly given, otherwise use SOA
- * \param[in] clas zone class
- * \param[in] tsig_cred TSIG credentials
- * \param[out] zone_rdf returns zone/owner rdf from the 'fqdn' SOA MNAME query
- * \return the new resolver
- */
-ldns_resolver * ldns_update_resolver_new(const char *fqdn, const char *zone, ldns_rr_class clas, ldns_tsig_credentials *tsig_cred, ldns_rdf **zone_rdf);
 
 #endif  /* LDNS_RESOLVER_H */

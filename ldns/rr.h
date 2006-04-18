@@ -266,17 +266,19 @@ void ldns_rr_free(ldns_rr *rr);
  * creates an rr from a string.
  * The string should be a fully filled-in rr, like
  * ownername &lt;space&gt; TTL &lt;space&gt; CLASS &lt;space&gt; TYPE &lt;space&gt; RDATA.
+ * \param[out] n the rr to return
  * \param[in] str the string to convert
  * \param[in] default_ttl pointer to a default ttl for the rr. If 0 DEF_TTL will be used
  * \param[in] origin when the owner is relative add this
  * \param prev the previous ownername. the function overwrite this with
  * the current found ownername.
- * \return the new rr
+ * \return a status msg describing an error or LDNS_STATUS_OK
  */
-ldns_rr* ldns_rr_new_frm_str(const char *str, uint16_t default_ttl, ldns_rdf *origin, ldns_rdf **prev);
+ldns_status ldns_rr_new_frm_str(ldns_rr **n, const char *str, uint16_t default_ttl, ldns_rdf *origin, ldns_rdf **prev);
 
 /**
  * creates a new rr from a file containing a string.
+ * \param[out] rr the new rr
  * \param[in] fp the file pointer to use
  * \param[in] default_ttl pointer to a default ttl for the rr. If NULL DEF_TTL will be used
  *            the pointer will be updated if the file contains a $TTL directive
@@ -284,12 +286,14 @@ ldns_rr* ldns_rr_new_frm_str(const char *str, uint16_t default_ttl, ldns_rdf *or
  * 	      the pointer will be updated if the file contains a $ORIGIN directive
  * \param[in] prev when the owner is whitespaces use this as the * ownername
  *            the pointer will be updated after the call
- * \return ldns_rr*
+ * \return a ldns_status with an error or LDNS_STATUS_OK
  */
-ldns_rr* ldns_rr_new_frm_fp(FILE *fp, uint16_t *default_ttl, ldns_rdf **origin, ldns_rdf **prev);
+ldns_status ldns_rr_new_frm_fp(ldns_rr **rr, FILE *fp, uint16_t *default_ttl, ldns_rdf **origin, ldns_rdf **prev);
 
 /**
  * creates a new rr from a file containing a string.
+ * \param[out] rr the new rr
+ * \param[in] fp the file pointer to use
  * \param[in] fp the file pointer to use
  * \param[in] default_ttl a default ttl for the rr. If 0 DEF_TTL will be used
  *            the pointer will be updated if the file contains a $TTL directive
@@ -298,9 +302,9 @@ ldns_rr* ldns_rr_new_frm_fp(FILE *fp, uint16_t *default_ttl, ldns_rdf **origin, 
  * \param[in] line_nr pointer to an integer containing the current line number (for debugging purposes)
  * \param[in] prev when the owner is whitespaces use this as the * ownername
  *            the pointer will be updated after the call
- * \return ldns_rr*
+ * \return a ldns_status with an error or LDNS_STATUS_OK
  */
-ldns_rr* ldns_rr_new_frm_fp_l(FILE *fp, uint16_t *default_ttl, ldns_rdf **origin, ldns_rdf **prev, int *line_nr);
+ldns_status ldns_rr_new_frm_fp_l(ldns_rr **rr, FILE *fp, uint16_t *default_ttl, ldns_rdf **origin, ldns_rdf **prev, int *line_nr);
 
 /**
  * sets the owner in the rr structure.
@@ -610,6 +614,16 @@ int ldns_rr_compare_nsec3(const ldns_rr *rr1, const ldns_rr *rr2);
  * \return true if equal otherwise false
  */
 bool ldns_rr_compare_ds(const ldns_rr *rr1, const ldns_rr *rr2);
+
+/**
+ * compares two rr listss.
+ * \param[in] rrl1 the first one
+ * \param[in] rrl2 the second one
+ * \return 0 if equal
+ *         -1 if rrl1 comes before rrl2
+ *         +1 if rrl2 comes before rrl1
+ */
+int ldns_rr_list_compare(const ldns_rr_list *rrl1, const ldns_rr_list *rrl2);
 
 /** 
  * calculates the uncompressed size of an RR.

@@ -83,8 +83,8 @@ ldns_pkt_get_opcode(const ldns_pkt *packet)
 	return packet->_header->_opcode;
 }
 
-uint8_t
-ldns_pkt_rcode(const ldns_pkt *packet)
+ldns_pkt_rcode
+ldns_pkt_get_rcode(const ldns_pkt *packet)
 {
 	return packet->_header->_rcode;
 }
@@ -184,12 +184,6 @@ ldns_rdf *
 ldns_pkt_answerfrom(const ldns_pkt *packet)
 {
 	return packet->_answerfrom;
-}
-
-char *
-ldns_pkt_when(const ldns_pkt *packet)
-{
-	return packet->_when;
 }
 
 struct timeval
@@ -561,12 +555,6 @@ ldns_pkt_set_answerfrom(ldns_pkt *packet, ldns_rdf *answerfrom)
 }
 
 void
-ldns_pkt_set_when(ldns_pkt *packet, char *when)
-{
-	packet->_when = when;
-}
-
-void
 ldns_pkt_set_timestamp(ldns_pkt *packet, struct timeval timeval)
 {
 	packet->timestamp.tv_sec = timeval.tv_sec;
@@ -677,6 +665,30 @@ ldns_pkt_safe_push_rr(ldns_pkt *pkt, ldns_pkt_section sec, ldns_rr *rr)
 }
 
 bool
+ldns_pkt_push_rr_list(ldns_pkt *p, ldns_pkt_section s, ldns_rr_list *list)
+{
+	size_t i;
+	for(i = 0; i < ldns_rr_list_rr_count(list); i++) {
+		if (!ldns_pkt_push_rr(p, s, ldns_rr_list_rr(list, i))) {
+			return false;
+		}
+	}
+	return true;
+}
+
+bool
+ldns_pkt_safe_push_rr_list(ldns_pkt *p, ldns_pkt_section s, ldns_rr_list *list)
+{
+	size_t i;
+	for(i = 0; i < ldns_rr_list_rr_count(list); i++) {
+		if (!ldns_pkt_safe_push_rr(p, s, ldns_rr_list_rr(list, i))) {
+			return false;
+		}
+	}
+	return true;
+}
+
+bool
 ldns_pkt_edns(const ldns_pkt *pkt) {
 	return (ldns_pkt_edns_udp_size(pkt) > 0 ||
 		ldns_pkt_edns_extended_rcode(pkt) > 0 ||
@@ -722,7 +734,6 @@ ldns_pkt_new()
 	ldns_pkt_set_size(packet, 0);
 	ldns_pkt_set_querytime(packet, 0);
 	ldns_pkt_set_answerfrom(packet, NULL);
-	ldns_pkt_set_when(packet, NULL);
 	ldns_pkt_set_section_count(packet, LDNS_SECTION_QUESTION, 0);
 	ldns_pkt_set_section_count(packet, LDNS_SECTION_ANSWER, 0);
 	ldns_pkt_set_section_count(packet, LDNS_SECTION_AUTHORITY, 0);
@@ -783,9 +794,9 @@ ldns_pkt_set_flags(ldns_pkt *packet, uint16_t flags)
 	return true;
 }
 
-ldns_pkt *
-ldns_pkt_query_new_frm_str(const char *name, ldns_rr_type rr_type, ldns_rr_class rr_class,
-		uint16_t flags)
+ldns_status
+ldns_pkt_query_new_frm_str(ldns_pkt **p, const char *name, ldns_rr_type rr_type, 
+		ldns_rr_class rr_class, uint16_t flags)
 {
 	ldns_pkt *packet;
 	ldns_rr *question_rr;
@@ -793,16 +804,16 @@ ldns_pkt_query_new_frm_str(const char *name, ldns_rr_type rr_type, ldns_rr_class
 
 	packet = ldns_pkt_new();
 	if (!packet) {
-		return NULL;
+		return LDNS_STATUS_MEM_ERR;
 	}
 	
 	if (!ldns_pkt_set_flags(packet, flags)) {
-		return NULL;
+		return LDNS_STATUS_ERR;
 	}
 	
 	question_rr = ldns_rr_new();
 	if (!question_rr) {
-		return NULL;
+		return LDNS_STATUS_MEM_ERR;
 	}
 
 	if (rr_type == 0) {
@@ -821,14 +832,18 @@ ldns_pkt_query_new_frm_str(const char *name, ldns_rr_type rr_type, ldns_rr_class
 	} else {
 		ldns_rr_free(question_rr);
 		ldns_pkt_free(packet);
-		return NULL;
+		return LDNS_STATUS_ERR;
 	}
 	
 	packet->_tsig_rr = NULL;
 	
 	ldns_pkt_set_answerfrom(packet, NULL);
-	
-	return packet;
+	if (p) {
+		*p = packet;
+		return LDNS_STATUS_OK;
+	} else {
+		return LDNS_STATUS_NULL;
+	}
 }
 
 ldns_pkt *
@@ -875,6 +890,7 @@ ldns_pkt_reply_type(ldns_pkt *p)
 {
 	/* check for NXDOMAIN */
 	/* check DNSSEC records... this is a big one */
+	ldns_rr_list *tmp;
 
 	if (!p) {
 		return LDNS_PACKET_UNKNOWN;
@@ -892,13 +908,16 @@ ldns_pkt_reply_type(ldns_pkt *p)
 	}
 
 	if (ldns_pkt_ancount(p) == 0 && ldns_pkt_nscount(p) > 0) {
-		if (ldns_pkt_rr_list_by_type(p, LDNS_RR_TYPE_NS,
-					LDNS_SECTION_AUTHORITY)) {
+		tmp = ldns_pkt_rr_list_by_type(p, LDNS_RR_TYPE_NS,
+		                               LDNS_SECTION_AUTHORITY);
+		if (tmp) {
 			/* there are nameservers here */
+			ldns_rr_list_deep_free(tmp);
 			return LDNS_PACKET_REFERRAL;
 		} else {
 			/* I have no idea */
 		}
+		ldns_rr_list_deep_free(tmp);
 	}
 	
 	/* if we cannot determine the packet type, we say it's an 
@@ -926,7 +945,7 @@ ldns_pkt_clone(ldns_pkt *pkt)
 	ldns_pkt_set_ra(new_pkt, ldns_pkt_ra(pkt));
 	ldns_pkt_set_ad(new_pkt, ldns_pkt_ad(pkt));
 	ldns_pkt_set_opcode(new_pkt, ldns_pkt_get_opcode(pkt));
-	ldns_pkt_set_rcode(new_pkt, ldns_pkt_rcode(pkt));
+	ldns_pkt_set_rcode(new_pkt, ldns_pkt_get_rcode(pkt));
 	ldns_pkt_set_qdcount(new_pkt, ldns_pkt_qdcount(pkt));
 	ldns_pkt_set_ancount(new_pkt, ldns_pkt_ancount(pkt));
 	ldns_pkt_set_nscount(new_pkt, ldns_pkt_nscount(pkt));
@@ -934,7 +953,6 @@ ldns_pkt_clone(ldns_pkt *pkt)
 	ldns_pkt_set_answerfrom(new_pkt, ldns_pkt_answerfrom(pkt));
 	ldns_pkt_set_querytime(new_pkt, ldns_pkt_querytime(pkt));
 	ldns_pkt_set_size(new_pkt, ldns_pkt_size(pkt));
-	ldns_pkt_set_when(new_pkt, ldns_pkt_when(pkt));
 	ldns_pkt_set_tsig(new_pkt, ldns_pkt_tsig(pkt));
 	
 	/* todo: edns? jelte?? */

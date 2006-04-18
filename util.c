@@ -49,9 +49,9 @@ void xprintf_hex(uint8_t *data, size_t len)
 	size_t i;
 	for (i = 0; i < len; i++) {
 		if (i > 0 && i % 20 == 0) {
-			printf("\t; %u - %u\n", i - 19, i);
+			printf("\t; %u - %u\n", (unsigned int) i - 19, (unsigned int) i);
 		}
-		printf("%02x ", data[i]);
+		printf("%02x ", (unsigned int) data[i]);
 	}
 	printf("\n");
 }

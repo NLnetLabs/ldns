@@ -1033,7 +1033,7 @@ get_string_value(match_id id, ldns_pkt *pkt, ldns_rdf *src_addr, ldns_rdf *dst_a
 			snprintf(val, valsize, "%u", (unsigned int) ldns_pkt_get_opcode(pkt));
 			break;
 		case MATCH_RCODE:
-			snprintf(val, valsize, "%u", (unsigned int) ldns_pkt_rcode(pkt));
+			snprintf(val, valsize, "%u", (unsigned int) ldns_pkt_get_rcode(pkt));
 			break;
 		case MATCH_PACKETSIZE:
 			snprintf(val, valsize, "%u", (unsigned int) ldns_pkt_size(pkt));
@@ -2182,6 +2182,16 @@ printf("timeval: %u ; %u\n", cur_hdr.ts.tv_sec, cur_hdr.ts.tv_usec);
 				if (status != LDNS_STATUS_OK) {
 					if (verbosity >= 3) {
 						printf("No dns packet: %s\n", ldns_get_errorstr_by_id(status));
+					}
+					if (verbosity >= 5) {
+						for (ip_len = 0; ip_len < len - data_offset; ip_len++) {
+							if (ip_len > 0 && ip_len % 20 == 0) {
+								printf("\t; %u - %u\n", (unsigned int) ip_len - 19, (unsigned int) ip_len);
+							}
+							printf("%02x ", (unsigned int) dnspkt[ip_len]);
+						}
+						printf("\t; ??? - %u\n", (unsigned int) ip_len);
+						
 					}
 					bad_dns_packets++;
 					if (bad_dns_dump) {

@@ -113,7 +113,6 @@ main(int argc, char *argv[])
 	rrlist2 = NULL;
 	soa = NULL;
 	domain = NULL;
-	res = NULL;
 	
 	
 	if (argc < 2) {
@@ -190,7 +189,11 @@ main(int argc, char *argv[])
 
 	/* create a new resolver from /etc/resolv.conf */
 	if(!serv) {
-		res = ldns_resolver_new_frm_file(NULL);
+		if (ldns_resolver_new_frm_file(&res, NULL) != LDNS_STATUS_OK) {
+			fprintf(stderr, "%s", "Could not create resolver obj");
+			result = EXIT_FAILURE;
+			goto exit;
+		}
 	} else {
 		res = ldns_resolver_new();
 		if (!res || strlen(serv) <= 0) {
@@ -205,9 +208,9 @@ main(int argc, char *argv[])
 		}
 		if (!serv_rdf) {
 			/* try to resolv the name if possible */
-			cmdline_res = ldns_resolver_new_frm_file(NULL);
+			status = ldns_resolver_new_frm_file(&cmdline_res, NULL);
 			
-			if (!cmdline_res) {
+			if (status != LDNS_STATUS_OK) {
 				fprintf(stderr, "%s", "@server ip could not be converted");
 				result = EXIT_FAILURE;
 				goto exit;
@@ -311,7 +314,7 @@ main(int argc, char *argv[])
 	/* add \001 to soa */
 	status = ldns_str2rdf_dname(&soa_p1, "\001");
 	if (status != LDNS_STATUS_OK) {
-		printf("error. %s\n", ldns_get_errorstr_by_id(status));
+		printf("error: %s\n", ldns_get_errorstr_by_id(status));
 	}
 	if (!soa) {
 		printf("Error getting SOA\n");
@@ -392,7 +395,7 @@ main(int argc, char *argv[])
 		 * SERVFAIL on the plus1-query...
 		 * so requery with only the last dname
 		 */
-		if (ldns_pkt_rcode(p) == 2) {
+		if (ldns_pkt_get_rcode(p) == LDNS_RCODE_SERVFAIL) {
 			ldns_pkt_free(p);
 			p = NULL;
 			if (verbosity >= 3) {
@@ -465,19 +468,6 @@ main(int argc, char *argv[])
 		printf("\t");
 	}
 
-/*
-	printf("one step done\n");
-
-	ldns_rdf_print(stdout, last_dname);
-	printf("\n");
-	ldns_rdf_print(stdout, next_dname);
-	printf("\n");
-	printf("endstatus\n");
-	if (!next_dname) {
-		fprintf(stderr, "Zone does not seem to be DNSSEC secured.\n");
-		goto exit;
-	}
-*/
 }
 
 	ldns_rdf_deep_free(domain);
@@ -490,7 +480,6 @@ main(int argc, char *argv[])
         ldns_pkt_free(p);
 
 	ldns_rr_free(soa);
-	
 
 	printf("\n\n");
         ldns_resolver_deep_free(res);

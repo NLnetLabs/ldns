@@ -1,4 +1,4 @@
-XX Jan 2006: 1.1.0: ldns-team
+31 Apr 2006: 1.1.0: ldns-team
 	* Added include/ and lib/ dirs so that you can compile against ldns
 	  without installing ldns on your system
 	* Makefile updates
@@ -7,7 +7,7 @@ XX Jan 2006: 1.1.0: ldns-team
 	  platform; some gnuism were identified and fixed.
 	* The ldns_zone structure was stress tested. The current setup
 	 (ie. just a list of rrs) can scale to zone file in order of
-	 megabytes. Sorting such zone is still difficult.
+  	  megabytes. Sorting such zone is still difficult.
 	* Reading multiline b64 encoded rdata works.
 	* OpenSSL was made optional, configure --without-ssl.
 	  Ofcourse all dnssec/tsig related functions are disabled
@@ -21,14 +21,17 @@ XX Jan 2006: 1.1.0: ldns-team
 	* -r was killed in favor of -o <header bit mnemonic> which 
 	  allows for a header bits setting (and maybe more in the
 	  future)
-	* DS was added to the list of records which, when used automaticly
-	  enable DNSSEC (i.e. Set the do-bit in the query)
+	* DNSSEC is never automaticaly set, even when you query
+	  for DNSKEY/RRSIG or DS.
 	* Implement a crude RTT check, it now distinguishes between
 	  reacheable and unreacheable.
 	
 	Examples:
 	* ldns-dpa was added to the examples - this is the Dns Packet
 	  Analyzer tool.
+	* ldnsd - as very, very simple nameserver impl.
+	* ldns-zsplit - split zones for parrallel signing
+	* ldns-zcat - cat split zones back together
 	
 	Code:
 	* All networking code was moved to net.c
@@ -43,10 +46,24 @@ XX Jan 2006: 1.1.0: ldns-team
           o ldns_rr_new_frm_fp
 	  o ldns_rr_new_frm_fp_l
 	  Which also get an extra variable
+	  Also the function has been changed to return a status message.
+	  The compiled RR is returned in the first argument.
+	* ldns_zone_new_frm_fp_l()  and ldns_zone_new_frm_fp() are
+          changed to return a status msg.
+	* ldns_key_new_frm_fp is changed to return ldns_status and
+	  the actual key list in the first argument
+	* ldns_rdata_new_frm_fp[_l]() are changed to return a status.
+	  the rdf is return in the first argument
+        * ldns_resolver_new_frm_fp: same treatment: return status and 
+	  the new resolver in the first argument
+	* ldns_pkt_query_new_frm_str(): same: return status and the
+	  packet in the first arg
 	* tsig.h: internal used functions are now static:
 	  ldns_digest_name and ldns_tsig_mac_new
 	* ldns_key_rr2ds has an extra argument to specify the hash to
 	  use.
+	* ldns_pkt_rcode() is renamed to ldns_pkt_get_rcode, ldns_pkt_rcode
+	  is now the rcode type, like ldns_pkt_opcode
 	New:
 	* ldns_resolver_searchlist_count: return the searchlist counter
 	* ldns_zone_sort: Sort a zone
@@ -54,12 +71,15 @@ XX Jan 2006: 1.1.0: ldns-team
 	* ldns_pkt_empty(): check is a packet is empty
 	* ldns_rr_list_pop_rr_list(): pop multiple rr's from another rr_list
 	* ldns_rr_list_push_rr_list(): push multiple rr's to an rr_list
+        * ldns_rr_list_compare(): compare 2 ldns_rr_lists
+	* ldns_pkt_push_rr_list: rr_list equiv for rr
+	* ldns_pkt_safe_push_rr_list: rr_list equiv for rr
 	Removed:
-	* ldns_resolver_bgsend(): was not used in 1.0.0 and is not used
-	  now
+	* ldns_resolver_bgsend(): was not used in 1.0.0 and is not used now
 	* ldns_udp_server_connect(): was faulty and isn't really part of
 	  the core ldns idea any how.
 	* ldns_rr_list_insert_rr(): obsoleted, because not used.
+	* char *_when was removed from the ldns_pkt structure
 
 
 18 Oct 2005: 1.0.0: ldns-team

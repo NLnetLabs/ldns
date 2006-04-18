@@ -37,8 +37,8 @@ my $BASE="doc/man";
 my $MAN_SECTION = "3";
 my $MAN_HEADER = ".TH ldns  \"25 Apr 2005\"\n";
 my $MAN_MIDDLE = ".SH AUTHOR
-The ldns team at NLnet Labs. Which consists out of: 
-Jelte Jansen, Erik Rozendaal and Miek Gieben.
+The ldns team at NLnet Labs. Which consists out of
+Jelte Jansen and Miek Gieben.
 
 .SH REPORTING BUGS
 Please report bugs to ldns-team\@nlnetlabs.nl or in 
@@ -48,7 +48,7 @@ http://www.nlnetlabs.nl/bugs/index.html
 Be sure to select ldns as the product.
 
 .SH COPYRIGHT
-Copyright (c) 2004, 2005 NLnet Labs.
+Copyright (c) 2004 - 2006 NLnet Labs.
 Licensed under the BSD License. There is NO warranty; not even for
 MERCHANTABILITY or
 FITNESS FOR A PARTICULAR PURPOSE.
@@ -198,15 +198,8 @@ foreach (keys %manpages) {
 	print MAN  "\n\n";
 	print MAN  ".SH SYNOPSIS\n";
 
-	print MAN  "#ifdef HAVE_STDINT_H\n.br\n";
 	print MAN  "#include <stdint.h>\n.br\n";
-	print MAN  "#endif /* HAVE_STDINT_H */\n";
-
-	print MAN  ".PP\n";
-
-	print MAN  "#ifdef HAVE_STDBOOL_H\n.br\n";
 	print MAN  "#include <stdbool.h>\n.br\n";
-	print MAN  "#endif /* HAVE_STDBOOL_H */\n";
 
 	print MAN  ".PP\n";
 	print MAN  "#include <ldns/ldns.h>\n";

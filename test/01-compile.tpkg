@@ -1,55 +1,158 @@
-# This is a shell archive.  Save it in a file, remove anything before
-# this line, and then unpack it by entering "sh file".  Note, it may
-# create directories; files and directories will be owned by you and
-# have default permissions.
+#!/bin/sh
+# This is a shell archive (produced by GNU sharutils 4.2.1).
+# To extract the files from this archive, save it to some FILE, remove
+# everything before the `!/bin/sh' line above, then type `sh FILE'.
 #
-# This archive contains:
+# Made on 2006-04-06 14:37 CEST by <miekg@elektron>.
+# Source directory was `/home/miekg/svn/ldns/trunk/test/01-compile.dir'.
 #
-#	01-compile.dsc
-#	01-compile.help
-#	01-compile.test
+# Existing files will *not* be overwritten unless `-c' is specified.
 #
-echo x - 01-compile.dsc
-sed 's/^X//' >01-compile.dsc << 'END-of-01-compile.dsc'
-XBaseName: 01-compile
-XVersion: 1.0
-XDescription: compile ldns
-XCreationDate: Fri Oct  19 13:09:03 CEST 2005
-XMaintainer: Miek Gieben
-XCategory: 
-XComponent:
-XDepends: 
-XPre: 
-XPost:
-XTest: 01-compile.test
-XAuxFiles: 
-XPassed:
-XFailure:
-END-of-01-compile.dsc
-echo x - 01-compile.help
-sed 's/^X//' >01-compile.help << 'END-of-01-compile.help'
-XSynopsis: tpkg  -a ../../ exe 01-compile.tpkg
-X-a path: path is where the source lives
-Xas the test is executed in it own subsdir it will
-Xneed ../../ is you use a relative path
-END-of-01-compile.help
-echo x - 01-compile.test
-sed 's/^X//' >01-compile.test << 'END-of-01-compile.test'
-X[ -f ../.tpkg.var.master ] && source ../.tpkg.var.master
+# This shar contains:
+# length mode       name
+# ------ ---------- ------------------------------------------
+#    223 -rw------- 01-compile.dsc
+#    175 -rw------- 01-compile.help
+#    720 -rw------- 01-compile.test
+#
+save_IFS="${IFS}"
+IFS="${IFS}:"
+gettext_dir=FAILED
+locale_dir=FAILED
+first_param="$1"
+for dir in $PATH
+do
+  if test "$gettext_dir" = FAILED && test -f $dir/gettext \
+     && ($dir/gettext --version >/dev/null 2>&1)
+  then
+    set `$dir/gettext --version 2>&1`
+    if test "$3" = GNU
+    then
+      gettext_dir=$dir
+    fi
+  fi
+  if test "$locale_dir" = FAILED && test -f $dir/shar \
+     && ($dir/shar --print-text-domain-dir >/dev/null 2>&1)
+  then
+    locale_dir=`$dir/shar --print-text-domain-dir`
+  fi
+done
+IFS="$save_IFS"
+if test "$locale_dir" = FAILED || test "$gettext_dir" = FAILED
+then
+  echo=echo
+else
+  TEXTDOMAINDIR=$locale_dir
+  export TEXTDOMAINDIR
+  TEXTDOMAIN=sharutils
+  export TEXTDOMAIN
+  echo="$gettext_dir/gettext -s"
+fi
+if touch -am -t 200112312359.59 $$.touch >/dev/null 2>&1 && test ! -f 200112312359.59 -a -f $$.touch; then
+  shar_touch='touch -am -t $1$2$3$4$5$6.$7 "$8"'
+elif touch -am 123123592001.59 $$.touch >/dev/null 2>&1 && test ! -f 123123592001.59 -a ! -f 123123592001.5 -a -f $$.touch; then
+  shar_touch='touch -am $3$4$5$6$1$2.$7 "$8"'
+elif touch -am 1231235901 $$.touch >/dev/null 2>&1 && test ! -f 1231235901 -a -f $$.touch; then
+  shar_touch='touch -am $3$4$5$6$2 "$8"'
+else
+  shar_touch=:
+  echo
+  $echo 'WARNING: not restoring timestamps.  Consider getting and'
+  $echo "installing GNU \`touch', distributed in GNU File Utilities..."
+  echo
+fi
+rm -f 200112312359.59 123123592001.59 123123592001.5 1231235901 $$.touch
+#
+if mkdir _sh17094; then
+  $echo 'x -' 'creating lock directory'
+else
+  $echo 'failed to create lock directory'
+  exit 1
+fi
+# ============= 01-compile.dsc ==============
+if test -f '01-compile.dsc' && test "$first_param" != -c; then
+  $echo 'x -' SKIPPING '01-compile.dsc' '(file already exists)'
+else
+  $echo 'x -' extracting '01-compile.dsc' '(text)'
+  sed 's/^X//' << 'SHAR_EOF' > '01-compile.dsc' &&
+BaseName: 01-compile
+Version: 1.0
+Description: compile ldns
+CreationDate: Fri Oct  19 13:09:03 CEST 2005
+Maintainer: Miek Gieben
+Category: 
+Component:
+Depends: 
+Pre: 
+Post:
+Test: 01-compile.test
+AuxFiles: 
+Passed:
+Failure:
+SHAR_EOF
+  (set 20 06 04 06 14 37 20 '01-compile.dsc'; eval "$shar_touch") &&
+  chmod 0600 '01-compile.dsc' ||
+  $echo 'restore of' '01-compile.dsc' 'failed'
+  if ( md5sum --help 2>&1 | grep 'sage: md5sum \[' ) >/dev/null 2>&1 \
+  && ( md5sum --version 2>&1 | grep -v 'textutils 1.12' ) >/dev/null; then
+    md5sum -c << SHAR_EOF >/dev/null 2>&1 \
+    || $echo '01-compile.dsc:' 'MD5 check failed'
+9288e480b9abf65a9eeb1b917cf623f4  01-compile.dsc
+SHAR_EOF
+  else
+    shar_count="`LC_ALL= LC_CTYPE= LANG= wc -c < '01-compile.dsc'`"
+    test 223 -eq "$shar_count" ||
+    $echo '01-compile.dsc:' 'original size' '223,' 'current size' "$shar_count!"
+  fi
+fi
+# ============= 01-compile.help ==============
+if test -f '01-compile.help' && test "$first_param" != -c; then
+  $echo 'x -' SKIPPING '01-compile.help' '(file already exists)'
+else
+  $echo 'x -' extracting '01-compile.help' '(text)'
+  sed 's/^X//' << 'SHAR_EOF' > '01-compile.help' &&
+Synopsis: tpkg  -a ../../ exe 01-compile.tpkg
+-a path: path is where the source lives
+as the test is executed in it own subsdir it will
+need ../../ is you use a relative path
+SHAR_EOF
+  (set 20 06 04 06 14 37 20 '01-compile.help'; eval "$shar_touch") &&
+  chmod 0600 '01-compile.help' ||
+  $echo 'restore of' '01-compile.help' 'failed'
+  if ( md5sum --help 2>&1 | grep 'sage: md5sum \[' ) >/dev/null 2>&1 \
+  && ( md5sum --version 2>&1 | grep -v 'textutils 1.12' ) >/dev/null; then
+    md5sum -c << SHAR_EOF >/dev/null 2>&1 \
+    || $echo '01-compile.help:' 'MD5 check failed'
+5b2c9d6283f060985adc7284c4c1e9e3  01-compile.help
+SHAR_EOF
+  else
+    shar_count="`LC_ALL= LC_CTYPE= LANG= wc -c < '01-compile.help'`"
+    test 175 -eq "$shar_count" ||
+    $echo '01-compile.help:' 'original size' '175,' 'current size' "$shar_count!"
+  fi
+fi
+# ============= 01-compile.test ==============
+if test -f '01-compile.test' && test "$first_param" != -c; then
+  $echo 'x -' SKIPPING '01-compile.test' '(file already exists)'
+else
+  $echo 'x -' extracting '01-compile.test' '(text)'
+  sed 's/^X//' << 'SHAR_EOF' > '01-compile.test' &&
+[ -f ../.tpkg.var.master ] && source ../.tpkg.var.master
 X
-Xexport PATH=$PATH:/usr/sbin:/sbin:/usr/local/bin:/usr/local/sbin:.
+export PATH=$PATH:/usr/sbin:/sbin:/usr/local/bin:/usr/local/sbin:.
 X
-X# first arg is the build dir
-XTPKG_BUILD=$1
+# first arg is the build dir
+TPKG_BUILD=$1
 X
-Xcd $TPKG_BUILD
+cd $TPKG_BUILD
 X
-Xcase $OSTYPE in
+case $OSTYPE in
 X        linux*)
 X                libtoolize && autoreconf && \
 X                ./configure && \
 X                make
 X                make allautoconf
+X                make install-local
 X                make drill
 X        ;;
 X        freebsd*)
@@ -58,9 +161,25 @@ X                autoconf259 && autoheader259 && \
 X                ./configure && \
 X                gmake
 X                ( cd drill ;  autoconf259 && autoheader259 )
+X                gmake install-local
 X                gmake drill
 X        ;;
-Xesac
-END-of-01-compile.test
-exit
-
+esac
+SHAR_EOF
+  (set 20 06 04 06 14 37 47 '01-compile.test'; eval "$shar_touch") &&
+  chmod 0600 '01-compile.test' ||
+  $echo 'restore of' '01-compile.test' 'failed'
+  if ( md5sum --help 2>&1 | grep 'sage: md5sum \[' ) >/dev/null 2>&1 \
+  && ( md5sum --version 2>&1 | grep -v 'textutils 1.12' ) >/dev/null; then
+    md5sum -c << SHAR_EOF >/dev/null 2>&1 \
+    || $echo '01-compile.test:' 'MD5 check failed'
+e65f62c22d5350b21d56c1aa01c91e1e  01-compile.test
+SHAR_EOF
+  else
+    shar_count="`LC_ALL= LC_CTYPE= LANG= wc -c < '01-compile.test'`"
+    test 720 -eq "$shar_count" ||
+    $echo '01-compile.test:' 'original size' '720,' 'current size' "$shar_count!"
+  fi
+fi
+rm -fr _sh17094
+exit 0

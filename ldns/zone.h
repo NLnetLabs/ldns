@@ -104,6 +104,9 @@ bool ldns_zone_push_rr(ldns_zone *z, ldns_rr *rr);
  * records. The resulting list does are pointer references
  * to the zone's data.
  *
+ * Due to the current zone implementation (as a list of rr's), this
+ * function is extremely slow.
+ *
  * \param[in] z the zone to look for glue
  * \return the rr_list with the glue
  */
@@ -111,28 +114,28 @@ ldns_rr_list *ldns_zone_glue_rr_list(const ldns_zone *z);
 
 /**
  * Create a new zone from a file
+ * \param[out] z the new zone
  * \param[in] *fp the filepointer to use
  * \param[in] *origin the zones' origin
  * \param[in] ttl default ttl to use
  * \param[in] c default class to use (IN)
  *
- * \return a pointer to a new zone structure
+ * \return ldns_status mesg with an erorr or LDNS_STATUS_OK
  */
-ldns_zone *
-ldns_zone_new_frm_fp(FILE *fp, ldns_rdf *origin, uint16_t ttl, ldns_rr_class c);
+ldns_status ldns_zone_new_frm_fp(ldns_zone **z, FILE *fp, ldns_rdf *origin, uint16_t ttl, ldns_rr_class c);
 
 /**
  * Create a new zone from a file, keep track of the line numbering
+ * \param[out] z the new zone
  * \param[in] *fp the filepointer to use
  * \param[in] *origin the zones' origin
  * \param[in] ttl default ttl to use
  * \param[in] c default class to use (IN)
  * \param[out] line_nr used for error msg, to get to the line number
  *
- * \return a pointer to a new zone structure
+ * \return ldns_status mesg with an erorr or LDNS_STATUS_OK
  */
-ldns_zone *
-ldns_zone_new_frm_fp_l(FILE *fp, ldns_rdf *origin, uint16_t ttl, ldns_rr_class c, int *line_nr);
+ldns_status ldns_zone_new_frm_fp_l(ldns_zone **z, FILE *fp, ldns_rdf *origin, uint16_t ttl, ldns_rr_class c, int *line_nr);
 
 /**
  * Frees the allocated memory for the zone, and the rr_list structure in it

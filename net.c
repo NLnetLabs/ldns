@@ -159,7 +159,6 @@ ldns_send(ldns_pkt **result, ldns_resolver *r, const ldns_pkt *query_pkt)
 				(tv_e.tv_usec - tv_s.tv_usec) / 1000);
 			ldns_pkt_set_answerfrom(reply, ns_array[i]);
 			ldns_pkt_set_timestamp(reply, tv_s);
-			ldns_pkt_set_when(reply, ctime((time_t*)&tv_s.tv_sec));
 			ldns_pkt_set_size(reply, reply_size);
 			break;
 		} else {
@@ -175,7 +174,8 @@ ldns_send(ldns_pkt **result, ldns_resolver *r, const ldns_pkt *query_pkt)
 	}
 
 	if (all_servers_rtt_inf) {
-		return LDNS_STATUS_NO_NAMESERVERS_ERR;
+		LDNS_FREE(reply_bytes);
+		return LDNS_STATUS_RES_NO_NS;
 	}
 #ifdef HAVE_SSL
 	if (tsig_mac && reply_bytes) {
@@ -220,9 +220,6 @@ ldns_udp_send(uint8_t **result, ldns_buffer *qbin, const struct sockaddr_storage
 		return LDNS_STATUS_NETWORK_ERR;
 	}
 
-	/* resize accordingly */
-	answer = (uint8_t*)LDNS_XREALLOC(answer, uint8_t *, (size_t)*answer_size);
-
 	*result = answer;
 	return LDNS_STATUS_OK;
 }
@@ -257,7 +254,7 @@ ldns_udp_connect(const struct sockaddr_storage *to, struct timeval timeout)
         }
 	if (setsockopt(sockfd, SOL_SOCKET, SO_RCVTIMEO, &timeout,
 				(socklen_t)sizeof(timeout))) {
-		perror("setsockopt");
+		/*perror("setsockopt");*/
 		close(sockfd);
 		return 0;
         }
@@ -272,20 +269,20 @@ ldns_tcp_connect(const struct sockaddr_storage *to, socklen_t tolen,
 	
 	if ((sockfd = socket((int)((struct sockaddr*)to)->sa_family, SOCK_STREAM, 
 					IPPROTO_TCP)) == -1) {
-		perror("could not open socket");
+		/*perror("could not open socket");*/
 		return 0;
 	}
 
         if (setsockopt(sockfd, SOL_SOCKET, SO_RCVTIMEO, &timeout,
                         (socklen_t) sizeof(timeout))) {
-                perror("setsockopt");
+                /*perror("setsockopt");*/
                 close(sockfd);
                 return 0;
         }
 
 	if (connect(sockfd, (struct sockaddr*)to, tolen) == -1) {
  		close(sockfd);
-		perror("could not bind socket");
+		/*perror("could not bind socket");*/
 		return 0;
 	}
 	return sockfd;
@@ -363,12 +360,14 @@ ldns_udp_read_wire(int sockfd, size_t *size, struct sockaddr_storage *from,
 			/*dprintf("%s", "socket timeout\n");*/
 		}
 		*size = 0;
-		perror("error receiving udp packet");
+		/*perror("error receiving udp packet");*/
+		LDNS_FREE(wire);
 		return NULL;
 	}
 
 	*size = (size_t)wire_size;
 	wire = LDNS_XREALLOC(wire, uint8_t, (size_t)wire_size);
+
 	return wire;
 }
 
@@ -391,8 +390,9 @@ ldns_tcp_read_wire(int sockfd, size_t *size)
 			if (errno == EAGAIN) {
 				/*dprintf("%s", "socket timeout\n");*/
 			}
-			perror("error receiving tcp packet");
+			/*perror("error receiving tcp packet");*/
 			*size = 0;
+			LDNS_FREE(wire);
 			return NULL;
 		}
 	}
@@ -409,7 +409,7 @@ ldns_tcp_read_wire(int sockfd, size_t *size)
 			if (errno == EAGAIN) {
 				/*dprintf("%s", "socket timeout\n");*/
 			}
-			perror("error receiving tcp packet");
+			/*perror("error receiving tcp packet");*/
 			LDNS_FREE(wire);
 			*size = 0;
 			return NULL;

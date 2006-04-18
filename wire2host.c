@@ -224,7 +224,7 @@ ldns_wire2rdf(ldns_rr *rr, const uint8_t *wire, size_t max, size_t *pos)
 		case LDNS_RDF_TYPE_NSEC3_VARS:
 			/* grm var length appears halfway rdf */
 			cur_rdf_length = (size_t) wire[*pos + 4] + 5;
-			printf("NSEC3 wire length: %u\n", cur_rdf_length);
+			/*printf("NSEC3 wire length: %u\n", (unsigned int) cur_rdf_length);*/
 			break;
 		case LDNS_RDF_TYPE_B32_EXT:
 			/* quick hack for nsec3, length of field should be derived from nsec3 hashing algorithm */
@@ -414,6 +414,7 @@ ldns_wire2pkt(ldns_pkt **packet_p, const uint8_t *wire, size_t max)
 			status = LDNS_STATUS_WIRE_INCOMPLETE_ADDITIONAL;
 		}
 		LDNS_STATUS_CHECK_GOTO(status, status_error);
+
 		if (ldns_rr_get_type(rr) == LDNS_RR_TYPE_OPT) {
 			ldns_pkt_set_edns_udp_size(packet, ldns_rr_get_class(rr));
 			ldns_write_uint32(data, ldns_rr_ttl(rr));

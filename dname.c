@@ -35,15 +35,15 @@ ldns_dname_cat_clone(const ldns_rdf *rd1, const ldns_rdf *rd2)
 	}
 
 	/* we overwrite the nullbyte of rd1 */
-	new_size = ldns_rdf_size(rd1) + ldns_rdf_size(rd2) - 1;
+	new_size = ldns_rdf_size(rd1) + ldns_rdf_size(rd2);
 	buf = LDNS_XMALLOC(uint8_t, new_size);
 	if (!buf) {
 		return NULL;
 	}
 
 	/* put the two dname's after each other */
-	memcpy(buf, ldns_rdf_data(rd1), ldns_rdf_size(rd1) - 1);
-	memcpy(buf + ldns_rdf_size(rd1) - 1, ldns_rdf_data(rd2), ldns_rdf_size(rd2));
+	memcpy(buf, ldns_rdf_data(rd1), ldns_rdf_size(rd1));
+	memcpy(buf + ldns_rdf_size(rd1), ldns_rdf_data(rd2), ldns_rdf_size(rd2));
 	
 	new = ldns_rdf_new_frm_data(LDNS_RDF_TYPE_DNAME, new_size, buf);
 
@@ -54,20 +54,63 @@ ldns_dname_cat_clone(const ldns_rdf *rd1, const ldns_rdf *rd2)
 ldns_status
 ldns_dname_cat(ldns_rdf *rd1, ldns_rdf *rd2)
 {
+	uint16_t left_size;
 	uint16_t size;
 
+/*
+pprdf("CATTING", rd1);
+pprdf("AND", rd2);
+*/
 	if (ldns_rdf_get_type(rd1) != LDNS_RDF_TYPE_DNAME ||
 			ldns_rdf_get_type(rd2) != LDNS_RDF_TYPE_DNAME) {
 		return LDNS_STATUS_ERR;
 	}
 
-	size = ldns_rdf_size(rd1) + ldns_rdf_size(rd2) - 1;
+	/* remove root label if it is present at the end of the left
+	 * rd, by reducing the size with 1
+	 */
+	left_size = ldns_rdf_size(rd1);
+	if (ldns_rdf_data(rd1)[left_size - 1] == 0) {
+/*
+printf("reducing size, left hand has root\n");
+*/
+		left_size--;
+	}
+
+	size = left_size + ldns_rdf_size(rd2);
+
 	ldns_rdf_set_data(rd1, LDNS_XREALLOC(ldns_rdf_data(rd1), uint8_t, size));
-	memcpy(ldns_rdf_data(rd1) + ldns_rdf_size(rd1) - 1, ldns_rdf_data(rd2), 
+	memcpy(ldns_rdf_data(rd1) + left_size, ldns_rdf_data(rd2), 
 			ldns_rdf_size(rd2));
 	ldns_rdf_set_size(rd1, size);
 
 	return LDNS_STATUS_OK;
+}
+
+ldns_rdf *
+ldns_dname_reverse(const ldns_rdf *d)
+{
+	ldns_rdf *new;
+	ldns_rdf *tmp;
+	ldns_rdf *d_tmp;
+	ldns_status status;
+
+	d_tmp = ldns_rdf_clone(d);
+
+	new = ldns_dname_new_frm_str(".");
+
+	while(ldns_dname_label_count(d_tmp) > 0) {
+		tmp = ldns_dname_label(d_tmp, 0);
+		status = ldns_dname_cat(tmp, new);
+		ldns_rdf_deep_free(new);
+		new = tmp;
+		tmp = ldns_dname_left_chop(d_tmp);
+		ldns_rdf_deep_free(d_tmp);
+		d_tmp = tmp;
+	}
+	ldns_rdf_deep_free(d_tmp);
+
+	return new;
 }
 
 ldns_rdf *

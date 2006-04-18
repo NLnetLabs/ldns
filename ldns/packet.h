@@ -39,6 +39,22 @@ enum ldns_enum_pkt_opcode {
 };
 typedef enum ldns_enum_pkt_opcode ldns_pkt_opcode;
 
+/* rcodes for pkts */
+enum ldns_enum_pkt_rcode {
+	LDNS_RCODE_NOERROR = 0,
+	LDNS_RCODE_FORMERR = 1,
+	LDNS_RCODE_SERVFAIL = 2,
+	LDNS_RCODE_NAMEERR = 3,
+	LDNS_RCODE_NOTIMPL = 4,
+	LDNS_RCODE_REFUSED = 5,
+	LDNS_RCODE_YXDOMAIN = 6,
+	LDNS_RCODE_YXRRSET = 7,
+	LDNS_RCODE_NXRRSET = 8,
+	LDNS_RCODE_NOTAUTH = 9,
+	LDNS_RCODE_NOTZONE = 10
+};
+typedef enum ldns_enum_pkt_rcode ldns_pkt_rcode;
+
 /**
  *  Header of a dns packet
  *
@@ -90,7 +106,6 @@ struct ldns_struct_pkt
 	/**  the size in bytes of the pkt */
 	uint16_t _answersize;
 	ldns_rdf *_answerfrom;
-	char *_when;
         /** timestamp of when the packet was sent */
 	struct timeval timestamp;
 	/**  query duration */
@@ -211,7 +226,7 @@ ldns_pkt_opcode ldns_pkt_get_opcode(const ldns_pkt *p);
  * \param[in] p the packet
  * \return the respons code
  */
-uint8_t ldns_pkt_rcode(const ldns_pkt *p);
+ldns_pkt_rcode ldns_pkt_get_rcode(const ldns_pkt *p);
 /**
  * Return the packet's qd count 
  * \param[in] p the packet
@@ -243,13 +258,6 @@ uint16_t ldns_pkt_arcount(const ldns_pkt *p);
  * \return the name of the server
  */
 ldns_rdf *ldns_pkt_answerfrom(const ldns_pkt *p);
-
-/** 
- * Return the packet's date of sending
- * \param[in] p packet
- * \return the time in ascii
- */
-char *ldns_pkt_when(const ldns_pkt *p);
 
 /**
  * Return the packet's timestamp
@@ -467,12 +475,7 @@ void ldns_pkt_set_querytime(ldns_pkt *p, uint32_t t);
  * \param[in] s the size
  */
 void ldns_pkt_set_size(ldns_pkt *p, size_t s);
-/**
- * Set the packet's when string
- * \param[in] p the packet
- * \param[in] w the string with the date
- */
-void ldns_pkt_set_when(ldns_pkt *p, char *w);
+
 /**
  * Set the packet's timestamp
  * \param[in] p the packet
@@ -602,13 +605,14 @@ void ldns_pkt_free(ldns_pkt *packet);
 
 /**
  * creates a query packet for the given name, type, class.
+ * \param[out] p the packet to be returned
  * \param[in] rr_name the name to query for (as string)
  * \param[in] rr_type the type to query for
  * \param[in] rr_class the class to query for
  * \param[in] flags packet flags
- * \return ldns_pkt* a pointer to the new pkt
+ * \return LDNS_STATUS_OK or a ldns_status mesg with the error
  */
-ldns_pkt *ldns_pkt_query_new_frm_str(const char *rr_name, ldns_rr_type rr_type, ldns_rr_class rr_class , uint16_t flags);
+ldns_status ldns_pkt_query_new_frm_str(ldns_pkt **p, const char *rr_name, ldns_rr_type rr_type, ldns_rr_class rr_class , uint16_t flags);
 
 /**
  * creates a packet with a query in it for the given name, type and class.
@@ -658,21 +662,39 @@ void ldns_pkt_set_authority(ldns_pkt *p, ldns_rr_list *rr);
 
 /**
  * push an rr on a packet
- * \param[in] packet packet to operatore on
+ * \param[in] packet packet to operate on
  * \param[in] section where to put it
  * \param[in] rr rr to push
- * \return ldns_status status
+ * \return a boolean which is true when the rr was added
  */
 bool ldns_pkt_push_rr(ldns_pkt *packet, ldns_pkt_section section, ldns_rr *rr);
 
 /**
  * push an rr on a packet, provided the RR is not there.
- * \param[in] pkt packet to operatore on
+ * \param[in] pkt packet to operate on
  * \param[in] sec where to put it
  * \param[in] rr rr to push
- * \return ldns_status status
+ * \return a boolean which is true when the rr was added
  */
 bool ldns_pkt_safe_push_rr(ldns_pkt *pkt, ldns_pkt_section sec, ldns_rr *rr);
+
+/**
+ * push a rr_list on a packet
+ * \param[in] packet packet to operate on
+ * \param[in] section where to put it
+ * \param[in] list the rr_list to push
+ * \return a boolean which is true when the rr was added
+ */
+bool ldns_pkt_push_rr_list(ldns_pkt *packet, ldns_pkt_section section, ldns_rr_list *list);
+
+/**
+ * push an rr_list to a packet, provided the RRs are not already there.
+ * \param[in] pkt packet to operate on
+ * \param[in] sec where to put it
+ * \param[in] list the rr_list to push
+ * \return a boolean which is true when the rr was added
+ */
+bool ldns_pkt_safe_push_rr_list(ldns_pkt *pkt, ldns_pkt_section sec, ldns_rr_list *list);
 
 /**
  * check if a packet is empty
@@ -680,7 +702,5 @@ bool ldns_pkt_safe_push_rr(ldns_pkt *pkt, ldns_pkt_section sec, ldns_rr *rr);
  * \return true: empty, false: empty
  */
 bool ldns_pkt_empty(ldns_pkt *p);
-
-
 
 #endif  /* LDNS_PACKET_H */

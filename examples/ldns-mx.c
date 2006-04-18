@@ -23,6 +23,7 @@ main(int argc, char *argv[])
 	ldns_rdf *domain;
 	ldns_pkt *p;
 	ldns_rr_list *mx;
+	ldns_status s;
 	
 	p = NULL;
 	mx = NULL;
@@ -42,9 +43,9 @@ main(int argc, char *argv[])
 	}
 
 	/* create a new resolver from /etc/resolv.conf */
-	res = ldns_resolver_new_frm_file(NULL);
+	s = ldns_resolver_new_frm_file(&res, NULL);
 
-	if (!res) {
+	if (s != LDNS_STATUS_OK) {
 		exit(EXIT_FAILURE);
 	}
 

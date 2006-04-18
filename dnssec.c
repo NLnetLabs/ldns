@@ -1128,7 +1128,7 @@ ldns_create_nsec3(ldns_rdf *cur_owner,
                   uint8_t salt_length,
                   char *salt)
 {
-	int i;
+	size_t i;
 	ldns_rr *i_rr;
 
 	uint8_t *bitmap = LDNS_XMALLOC(uint8_t, 1);
@@ -1218,11 +1218,11 @@ ldns_create_nsec3(ldns_rdf *cur_owner,
 	*/
 	
 	hashed_owner_b32 = LDNS_XMALLOC(char, b32_ntop_calculate_size(hashed_owner_str_len));
-	i = b32_ntop_extended_hex((uint8_t *) hashed_owner_str, hashed_owner_str_len, hashed_owner_b32, b32_ntop_calculate_size(hashed_owner_str_len));
+	i = (size_t) b32_ntop_extended_hex((uint8_t *) hashed_owner_str, hashed_owner_str_len, hashed_owner_b32, b32_ntop_calculate_size(hashed_owner_str_len));
 	if (i < 1) {
 		fprintf(stderr, "Error in base32 extended hex encoding of hashed owner name (name: ");
 		ldns_rdf_print(stderr, cur_owner);
-		fprintf(stderr, ", return code: %d)\n", i);
+		fprintf(stderr, ", return code: %u)\n", (unsigned int) i);
 		exit(4);
 	}
 	hashed_owner_str_len = i;
@@ -1661,14 +1661,18 @@ ldns_zone_sign_nsec3(ldns_zone *zone, ldns_key_list *key_list, uint8_t algorithm
 				next_nsec_owner_str[strlen(next_nsec_owner_str) - 1] = '\0';
 			}
 			status = ldns_str2rdf_b32_ext(&next_nsec_rdf, next_nsec_owner_str);
-			ldns_rr_set_rdf(ldns_rr_list_rr(nsec3_rrs, i), next_nsec_rdf, 1);
+			if (!ldns_rr_set_rdf(ldns_rr_list_rr(nsec3_rrs, i), next_nsec_rdf, 1)) {
+				/* todo: error */
+			}
 		} else {
 			next_nsec_owner_str = ldns_rdf2str(ldns_dname_label(ldns_rr_owner(ldns_rr_list_rr(nsec3_rrs, i + 1)), 0));
 			if (next_nsec_owner_str[strlen(next_nsec_owner_str) - 1] == '.') {
 				next_nsec_owner_str[strlen(next_nsec_owner_str) - 1] = '\0';
 			}
 			status = ldns_str2rdf_b32_ext(&next_nsec_rdf, next_nsec_owner_str);
-			ldns_rr_set_rdf(ldns_rr_list_rr(nsec3_rrs, i), next_nsec_rdf, 1);
+			if (!ldns_rr_set_rdf(ldns_rr_list_rr(nsec3_rrs, i), next_nsec_rdf, 1)) {
+				/* todo: error */
+			}
 		}
 	}
 	

@@ -19,7 +19,7 @@ endif
 
 CC 		= @CC@
 CPPFLAGS	= @CPPFLAGS@ @DEFS@ -I. -I$(srcdir)
-CFLAGS 		= @CFLAGS@ 
+CFLAGS 		= @CFLAGS@  -I. -I$(srcdir)
 LDFLAGS		= @LDFLAGS@
 LIBS 		= @LIBS@
 LIBOBJS		= @LIBOBJS@
@@ -55,7 +55,6 @@ LIBDNS_HEADERS	=	$(srcdir)/ldns/error.h		\
 			$(srcdir)/ldns/rr_functions.h	\
 			$(srcdir)/ldns/dns.h		\
 			$(srcdir)/ldns/zone.h		\
-			ldns/util.h 		\
 			$(srcdir)/ldns/update.h 		\
 			$(srcdir)/ldns/tsig.h
 LIBDNS_OBJECTS	=	$(LIBDNS_SOURCES:.c=.o)
@@ -68,18 +67,18 @@ COMP_LIB	= $(LIBTOOL) --mode=compile $(CC) $(CPPFLAGS) $(CFLAGS)
 LINK		= $(CC) $(CFLAGS) $(LDFLAGS)
 LINK_LIB	= $(LIBTOOL) --mode=link $(CC) $(CFLAGS) $(LDFLAGS) -release $(VERSION)
 
-%.o:	$(srcdir)/%.c $(LIBDNS_HEADERS)
-	$(COMP_LIB) -c $<
+%.o:    $(srcdir)/%.c $(LIBDNS_HEADERS) ldns/util.h ldns/config.h
+	$(COMP_LIB) -c $> $<
 
 .PHONY:	clean realclean docclean doc lint all lib
 .PHONY: install uninstall install-doc uninstall-doc 
 .PHONY: install-h uninstall-h install-lib uninstall-lib 
 .PHONY: confdrill tools-drill
 
-all:		lib linktest
+all:		copy-headers lib linktest
 
 linktest:
-		gcc $(srcdir)/linktest.c -Iinclude .libs/libldns.a $(LDFLAGS) -o linktest
+		gcc $(srcdir)/linktest.c -Iinclude -I$(srcdir) .libs/libldns.a $(LDFLAGS) -o linktest
 		rm linktest
 
 ./drill/Makefile:
@@ -105,12 +104,16 @@ drill-install:	drill
 lib:		$(LIBDNS_OBJECTS) b64_pton$U.o b64_ntop$U.o b32_pton$U.o b32_ntop$U.o
 		$(LINK_LIB) -o libldns.la $(LIBDNS_LOBJECTS) b64_pton$U.lo b64_ntop$U.lo b32_pton$U.lo b32_ntop$U.lo \
 		-rpath $(libdir)/lib
+		if [ ! -d lib ] ; then ln -s .libs lib ; fi ;		
+
+copy-headers:
 		if [ ! -d include ] ; then mkdir include ; fi ;
 		if [ ! -d include/ldns ] ; then ln -sf ../ldns ./include/ldns ; fi ;
-		if [ ! -d lib ] ; then ln -s .libs lib ; fi ;		
 		for i in $(LIBDNS_HEADERS); do \
-			MVPROG=/bin/cp $(INSTALL) -m 644 $$i ./include/ldns/; done
-
+			if [ $(srcdir)/ldns/$$i -nt ./include/ldns/$$i ] ; then \
+				MVPROG=/bin/cp $(INSTALL) -m 644 $$i ./include/ldns/; \
+			fi ; \
+		done
 
 doc:		$(srcdir)/doc/function_manpages 
 		$(INSTALL) -d doc
@@ -156,7 +159,7 @@ uninstall-lib:
 		rmdir -p $(DESTDIR)$(libdir)
 
 clean:	drill-clean
-	rm -f *.o *.d 
+	rm -f *.o *.d *.lo
 	rm -f *~
 	rm -rf autom4te.cache/
 	rm -f tags
@@ -208,8 +211,8 @@ lint:
 		if [ $$? -ne 0 ] ; then exit 1 ; fi ; \
 	done
 
-tags:	*.c ldns/*.[ch]
-	ctags *.[ch] ldns/*.[ch]
+tags:	$(srcdir)/*.c ldns/*.[ch]
+	ctags  -f $(srcdir)/tags $(srcdir)/*.[ch] ldns/*.[ch]
 
 b64_pton$U.o:	$(srcdir)/compat/b64_pton.c
 	$(COMP_LIB) -c $(srcdir)/compat/b64_pton.c -o $@

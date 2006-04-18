@@ -61,7 +61,7 @@ open_keyfiles(char **files, uint16_t filec)
 			fprintf(stderr, "Error opening key file %s: %s\n", files[i], strerror(errno));
 			return NULL;
 		}
-		if (!(k = ldns_rr_new_frm_fp(kfp, NULL, NULL, NULL))) {
+		if (ldns_rr_new_frm_fp(&k, kfp, NULL, NULL, NULL) != LDNS_STATUS_OK) {
 			fprintf(stderr, "Error parsing the key file %s: %s\n", files[i], strerror(errno));
 			return NULL;
 		}
@@ -120,6 +120,7 @@ main(int argc, char **argv)
 	ldns_rr_list *last_rrset;
 	ldns_rr_list *pubkeys;
 	bool sort;
+	ldns_status s;
 
 	progname = strdup(argv[0]);
 	split = 0;
@@ -184,12 +185,13 @@ main(int argc, char **argv)
 		origin = ldns_dname_new_frm_str(".");
 	}
 	
-	z = ldns_zone_new_frm_fp_l(fp, origin, 0, LDNS_RR_CLASS_IN, &line_nr);
+	s = ldns_zone_new_frm_fp_l(&z, fp, origin, 0, LDNS_RR_CLASS_IN, &line_nr);
 	fclose(fp);
 
-	if (!z) {
-		fprintf(stderr, "Zone file %s could not be parsed correctly at line %d\n", 
-			argv[0], line_nr);
+	if (s != LDNS_STATUS_OK) {
+		fprintf(stderr, "Zone file %s could not be parsed correctly: %s at line %d\n", 
+				ldns_get_errorstr_by_id(s),
+				argv[0], line_nr);
 		exit(EXIT_FAILURE);
 	}
 	/* these kind of things can kill you... */
