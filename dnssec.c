@@ -1119,29 +1119,25 @@ ldns_create_nsec(ldns_rdf *cur_owner, ldns_rdf *next_owner, ldns_rr_list *rrs)
 bool
 ldns_nsec_covers_rrset(const ldns_rr *nsec, ldns_rdf *name, ldns_rr_type type)
 {
-	ldns_rdf *nsec_owner = NULL;
-	ldns_rdf *nsec_next = NULL;
-	
-	nsec_owner = ldns_rr_owner(nsec);
-	nsec_next = ldns_rr_rdf(nsec, 0);
-	
-	uint8_t *data;
 	uint8_t *bitmap;
 	uint16_t i;
 	uint8_t window_block_nr;
-	uint8_t bitmap_length;
+	
+	ldns_rdf *nsec_owner = ldns_rr_owner(nsec);
+	ldns_rdf *nsec_next = ldns_rr_rdf(nsec, 0);
 	
 	if (ldns_dname_compare(nsec_owner, name) <= 0 &&
 	    ldns_dname_compare(name, nsec_next) > 0) {
 	 	
 	 	/* Check the bitmap if our type is there */
 	 	bitmap = ldns_rdf_data(ldns_rr_rdf(nsec, 1));
-		window_block_nr = type / 256;
+		window_block_nr = (uint8_t) (type / 256);
 		i = 0;
 		while (i < ldns_rdf_size(ldns_rr_rdf(nsec, 1))) {
 			if (bitmap[i] == window_block_nr) {
 				/* this is the right window, check the bit */
-				if (ldns_get_bit(&bitmap[i + 1 + (type / 8)], 7 - (type % 8))) {
+				if ((uint8_t) (type / 8) < bitmap[i + 1] &&
+				    ldns_get_bit(&bitmap[i + 1 + (type / 8)], (size_t) (7 - (type % 8)))) {
 					return true;
 				} else {
 					return false;
