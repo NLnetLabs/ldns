@@ -1,0 +1,13 @@
+#!/bin/bash
+
+# get all the functions from ldns
+
+FILES="buffer.h error.h host2str.h keys.h packet.h rdata.h rr_functions.h str2host.h update.h wire2host.h
+common.h dname.h dnssec.h higher.h host2wire.h net.h parse.h resolver.h
+rr.h tsig.h util.h zone.h"
+
+# we need two grep ldns_ ...
+for i in $FILES; do 
+        cpp ../ldns/$i  | egrep '.*? .*?\(.*' | grep ldns_  | \
+        awk '{ print $2 }' | sed 's/^\*//' | sed 's/(.*$//' | grep ldns_
+done
