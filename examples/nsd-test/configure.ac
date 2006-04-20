@@ -3,7 +3,7 @@
 
 AC_PREREQ(2.57)
 AC_INIT(libdns, 1.1.0, libdns@nlnetlabs.nl,libdns)
-AC_CONFIG_SRCDIR([ldns-read-zone.c])
+AC_CONFIG_SRCDIR([nsd-ldnsd.c])
 
 AC_AIX
 # Checks for programs.
