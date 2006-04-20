@@ -1,7 +1,7 @@
 LibDNS - API
 
    LibDNS (or lDNS) is modelled after the Net::DNS perl library. It has
-   been shown that Net::DNS  can be used vefficiently for 
+   been shown that Net::DNS  can be used efficiently for 
    programming DNS aware applications. We want to bring the same level
    of efficiency to C programmers.
 
@@ -18,7 +18,9 @@ Bottom Layer
    system calls (send/recv and friends). 
 
    Furhter more, it is to be expected that lDNS is going to depend on
-   a cryptographic library. This will probably be OpenSSL.
+   a cryptographic library. This is OpenSSL. lDNS can be compiled
+   without crypto support, this implies disabling DNSSEC.
+   
 
 Top Layer
    As said, lDNS is modelled after Net::DNS, therefor its API looks very
@@ -43,13 +45,14 @@ API
     ldns_pkt* ldns_pkt_new(void)
 
     ldns_resolver queries return ldns_pkt structures. A ldns_pkt structure
-    has five sections:
+    has a number of sections:
 
     1  The header section, a ldns_hdr structure.
     2  The question section, a ldns_rr_list structure.
     3  The answer section, a ldns_rr_list structure.
     4  The authority section, a ldns_rr_list structure.
     5  The additional section, a ldns_rr_list structure.
+    (6  optional TSIG info)
 
   1. Header Structure [ldns_hdr]
     ldns_hdr represents the header section of a DNS packet.
