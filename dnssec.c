@@ -1133,7 +1133,6 @@ ldns_nsec_covers_rrset(const ldns_rr *nsec, ldns_rdf *name, ldns_rr_type type)
 	
 	if (ldns_dname_compare(nsec_owner, name) <= 0 &&
 	    ldns_dname_compare(name, nsec_next) > 0) {
-	 	fprintf(stderr, "nsec covers name!\n");
 	 	
 	 	/* Check the bitmap if our type is there */
 	 	bitmap = ldns_rdf_data(ldns_rr_rdf(nsec, 1));
@@ -1154,7 +1153,6 @@ ldns_nsec_covers_rrset(const ldns_rr *nsec, ldns_rdf *name, ldns_rr_type type)
 			}
 		}
 	}
-	
 	return false;
 }
 
