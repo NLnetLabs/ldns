@@ -162,6 +162,9 @@ rm -rf ldns-$version/test/
 info "Deleting the pcat directory"
 rm -rf ldns-$version/pcat/
 
+info "Deleting the nsd-test directory"
+rm -rf ldns-$version/examples/nsd-test/
+
 info "Creating tar ldns-$version.tar.gz"
 tar czf ../ldns-$version.tar.gz ldns-$version || error_cleanup "Failed to create tar file."
 

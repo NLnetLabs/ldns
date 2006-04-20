@@ -61,6 +61,3 @@ The libdns coding style guide
 ldns-<tools>
 * use exit(EXIT_FAILURE)/ exit(SUCCES)
 * 
-
-
-

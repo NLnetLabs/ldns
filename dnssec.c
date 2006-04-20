@@ -1318,6 +1318,42 @@ ldns_create_nsec3(ldns_rdf *cur_owner,
 	return nsec;
 }
 
+bool
+ldns_nsec_covers_rrset(const ldns_rr *nsec, ldns_rdf *name, ldns_rr_type type)
+{
+	uint8_t *bitmap;
+	uint16_t i;
+	uint8_t window_block_nr;
+	
+	ldns_rdf *nsec_owner = ldns_rr_owner(nsec);
+	ldns_rdf *nsec_next = ldns_rr_rdf(nsec, 0);
+	
+	if (ldns_dname_compare(nsec_owner, name) <= 0 &&
+	    ldns_dname_compare(name, nsec_next) > 0) {
+	 	
+	 	/* Check the bitmap if our type is there */
+	 	bitmap = ldns_rdf_data(ldns_rr_rdf(nsec, 1));
+		window_block_nr = (uint8_t) (type / 256);
+		i = 0;
+		while (i < ldns_rdf_size(ldns_rr_rdf(nsec, 1))) {
+			if (bitmap[i] == window_block_nr) {
+				/* this is the right window, check the bit */
+				if ((uint8_t) (type / 8) < bitmap[i + 1] &&
+				    ldns_get_bit(&bitmap[i + 1 + (type / 8)], (size_t) (7 - (type % 8)))) {
+					return true;
+				} else {
+					return false;
+				}
+			} else {
+				/* this is the wrong window, go to the next */
+				i++;
+				i += bitmap[i];
+			}
+		}
+	}
+	return false;
+}
+
 /* sig may be null - if so look in the packet */
 ldns_status
 ldns_pkt_verify(ldns_pkt *p, ldns_rr_type t, ldns_rdf *o, 

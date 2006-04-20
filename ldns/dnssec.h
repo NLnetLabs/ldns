@@ -163,6 +163,15 @@ ldns_rdf *ldns_sign_public_rsasha1(ldns_buffer *to_sign, RSA *key);
 ldns_rr * ldns_create_nsec(ldns_rdf *cur_owner, ldns_rdf *next_owner, ldns_rr_list *rrs);
 
 /**
+ * Checks coverage of NSEC RR
+ * \param[in] nsec The NSEC RR to check
+ * \param[in] name The owner dname to check
+ * \param[in] type The type to check
+ * \return true if the NSEC RR covers the owner name and type
+ */
+bool ldns_nsec_covers_rrset(const ldns_rr *nsec, ldns_rdf *name, ldns_rr_type type);
+
+/**
  * verify a packet 
  * \param[in] p the packet
  * \param[in] t the rr set type to check

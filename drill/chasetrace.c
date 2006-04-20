@@ -227,6 +227,8 @@ do_chase(ldns_resolver *res, ldns_rdf *name, ldns_rr_type type, ldns_rr_class c,
 	ldns_rr *cur_sig;
 	uint16_t sig_i;
 	ldns_rr_list *keys;
+	ldns_rr_list *nsecs;
+	uint16_t nsec_i;
 	uint16_t key_i;
 	uint16_t tkey_i;
 	ldns_pkt *pkt;
@@ -403,12 +405,27 @@ do_chase(ldns_resolver *res, ldns_rdf *name, ldns_rr_type type, ldns_rr_class c,
 		ldns_rr_free(cur_sig);
 	}
 	ldns_rr_list_deep_free(rrset);
-	ldns_pkt_free(pkt);
 	if (ldns_rr_list_rr_count(sigs) > 0) {
 		ldns_rr_list_deep_free(sigs);
+		ldns_pkt_free(pkt);
 		return LDNS_STATUS_CRYPTO_NO_TRUSTED_DNSKEY;
 	} else {
-		return LDNS_STATUS_CRYPTO_NO_RRSIG;
+		/* Try to see if there are NSECS in the packet */
+		nsecs = ldns_pkt_rr_list_by_type(pkt, LDNS_RR_TYPE_NSEC, LDNS_SECTION_ANY);
+		result = LDNS_STATUS_CRYPTO_NO_RRSIG;
+		
+		for (nsec_i = 0; nsec_i < ldns_rr_list_rr_count(nsecs); nsec_i++) {
+			if (ldns_nsec_covers_rrset(ldns_rr_list_rr(nsecs, nsec_i), name, type)) {
+				/* Verifably insecure? chase the covering nsec */
+				result = do_chase(res, ldns_rr_owner(ldns_rr_list_rr(nsecs, nsec_i)), LDNS_RR_TYPE_NSEC, c, trusted_keys, pkt, qflags);
+				if (result == LDNS_STATUS_OK) {
+					ldns_pkt_free(pkt);
+					return result;
+				}
+			}
+		}
+		ldns_pkt_free(pkt);
+		return result;
 	}
 }
 

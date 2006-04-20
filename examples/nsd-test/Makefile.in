@@ -16,33 +16,13 @@ LDFLAGS = @LDFLAGS@
 LIBS = @LIBS@
 LDNSDIR = @LDNSDIR@
 
-INSTALL = $(srcdir)/../install-sh 
-
 COMPILE         = $(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) $(LIBS)
 
 LINT		= splint
 LINTFLAGS	= +quiet -weak -warnposix -unrecog -Din_addr_t=uint32_t -Du_int=unsigned -Du_char=uint8_t -preproc
 
 HEADER		= config.h
-SOURCES 	= ldns-read-zone.c \
-		  ldns-mx.c \
-		  ldns-chaos.c \
-		  ldns-update.c \
-		  ldns-keygen.c \
-		  ldns-key2ds.c \
-		  ldns-signzone.c \
-		  ldns-version.c \
-		  ldns-rrsig.c \
-		  ldns-walk.c \
-		  ldns-zsplit.c \
-		  ldns-zcat.c \
-		  ldns-dpa.c \
-		  ldns-resolver.c \
-		  ldnsd.c \
-		  ldns-keyfetcher.c \
-		  ldns-ixfr.c \
-		  ldns-notify.c
-
+SOURCES 	= nsd-ldnsd.c
 
 PROGRAMS=$(SOURCES:.c=)
 
@@ -79,23 +59,3 @@ realclean: clean
 
 confclean: clean
 	rm -rf config.log config.status config.h Makefile
-
-install:	$(PROGRAMS)
-		$(INSTALL) -d -m 755 $(DESTDIR)$(bindir)
-		$(INSTALL) -d -m 755 $(DESTDIR)$(mandir)
-		$(INSTALL) -d -m 755 $(DESTDIR)$(mandir)/man1
-		for i in $(PROGRAMS); do \
-			${INSTALL} -c $$i $(DESTDIR)$(bindir) ; \
-			$(INSTALL) -c -m 644 $$i.1 $(DESTDIR)$(mandir)/man1/$$i.1 ; \
-			done
-		exit 0
-
-
-uninstall:
-		for i in $(PROGRAMS); do \
-			rm -f $(DESTDIR)$(bindir)/$$i ; \
-			rm -f $(DESTDIR)$(mandir)/man1/$$i.1 ; \
-			done
-		exit 0
-		rmdir -p $(DESTDIR)$(bindir)
-		rmdir -p $(DESTDIR)$(mandir)
