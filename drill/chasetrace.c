@@ -253,6 +253,14 @@ do_chase(ldns_resolver *res, ldns_rdf *name, ldns_rr_type type, ldns_rr_class c,
 				type,
 				LDNS_SECTION_ANSWER
 				);
+		if (!rrset) {
+			/* nothing in answer, try authority */
+			rrset = ldns_pkt_rr_list_by_name_and_type(pkt,
+					name,
+					type,
+					LDNS_SECTION_AUTHORITY
+					);
+		}
 	} else {
 		/* no packet? */
 		return LDNS_STATUS_MEM_ERR;
@@ -424,6 +432,7 @@ do_chase(ldns_resolver *res, ldns_rdf *name, ldns_rr_type type, ldns_rr_class c,
 					result = LDNS_STATUS_CRYPTO_NO_RRSIG;
 				} else {
 					/* ok nsec denies existence, chase the nsec now */
+					printf(";; Existence of data set with this type denied by NSEC\n");
 					result = do_chase(res, ldns_rr_owner(ldns_rr_list_rr(nsecs, nsec_i)), LDNS_RR_TYPE_NSEC, c, trusted_keys, pkt, qflags);
 					if (result == LDNS_STATUS_OK) {
 						ldns_pkt_free(pkt);
@@ -433,6 +442,7 @@ do_chase(ldns_resolver *res, ldns_rdf *name, ldns_rr_type type, ldns_rr_class c,
 				}
 			} else if (ldns_nsec_covers_name(ldns_rr_list_rr(nsecs, nsec_i), name)) {
 				/* Verifably insecure? chase the covering nsec */
+				printf(";; Existence of data set with this name denied by NSEC\n");
 				result = do_chase(res, ldns_rr_owner(ldns_rr_list_rr(nsecs, nsec_i)), LDNS_RR_TYPE_NSEC, c, trusted_keys, pkt, qflags);
 				if (result == LDNS_STATUS_OK) {
 					ldns_pkt_free(pkt);
