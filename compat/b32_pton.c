@@ -55,10 +55,11 @@
 #include <stdlib.h>
 #include <string.h>
 
+/*	"ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";*/
 static const char Base32[] =
-	"ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
-static const char Base32_extended_hex[] =
+	"abcdefghijklmnopqrstuvwxyz234567";
 /*	"0123456789ABCDEFGHIJKLMNOPQRSTUV";*/
+static const char Base32_extended_hex[] =
 	"0123456789abcdefghijklmnopqrstuv";
 static const char Pad32 = '=';
 
@@ -179,7 +180,7 @@ b32_pton_ar(char const *src, uint8_t *target, size_t targsize, const char B32_ar
 	tarindex = 0;
 	
 	while ((ch = *src++) != '\0') {
-		ch = toupper(ch);
+		ch = tolower(ch);
 		if (isspace((unsigned char)ch))        /* Skip whitespace anywhere. */
 			continue;
 
@@ -189,7 +190,7 @@ b32_pton_ar(char const *src, uint8_t *target, size_t targsize, const char B32_ar
 		pos = strchr(B32_ar, ch);
 		if (pos == 0) {
 			/* A non-base32 character. */
-			return (-1);
+			return (-ch);
 		}
 
 		switch (state) {
