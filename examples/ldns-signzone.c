@@ -95,7 +95,7 @@ main(int argc, char *argv[])
 	uint8_t nsec3_algorithm = 1;
 	uint32_t nsec3_iterations = 1;
 	uint8_t nsec3_salt_length = 0;
-	char *nsec3_salt = NULL;
+	uint8_t *nsec3_salt = NULL;
 	
 	/* we need to know the origin before reading ksk's,
 	 * so keep an array of filenames until we know it
@@ -190,9 +190,22 @@ main(int argc, char *argv[])
 			exit(EXIT_SUCCESS);
 			break;
 		case 's':
-			nsec3_salt_length = (uint8_t) strlen(optarg);
-			nsec3_salt = LDNS_XMALLOC(char, nsec3_salt_length);
-			memcpy(nsec3_salt, optarg, nsec3_salt_length);
+		        if (strlen(optarg) % 2 != 0) {
+                                fprintf(stderr, "Salt value is not valid hex data, not a multiple of 2 characters\n");
+                                exit(EXIT_FAILURE);
+		        }
+		        nsec3_salt_length = (uint8_t) strlen(optarg) / 2;
+			nsec3_salt = LDNS_XMALLOC(uint8_t, nsec3_salt_length);
+                        for (c = 0; c < strlen(optarg); c += 2) {
+                                if (isxdigit(optarg[c]) && isxdigit(optarg[c+1])) {
+                                        nsec3_salt[c/2] = ldns_hexdigit_to_int(optarg[c]) * 16 +
+                                                          ldns_hexdigit_to_int(optarg[c+1]);
+                                } else {
+                                        fprintf(stderr, "Salt value is not valid hex data.\n");
+                                        exit(EXIT_FAILURE);
+                                }
+                        }
+
 			break;
 		case 't':
 			nsec3_iterations = (uint32_t) atoi(optarg);

@@ -538,7 +538,7 @@ ldns_rdf2buffer_str_nsec3_vars(ldns_buffer *output, const ldns_rdf *rdf)
 		ldns_buffer_printf(output, "- ");
 	} else {
 		for (salt_pos = 0; salt_pos < salt_length; salt_pos++) {
-			ldns_buffer_printf(output, "%2x", data[5 + salt_pos]);
+			ldns_buffer_printf(output, "%02x", data[5 + salt_pos]);
 			pos++;
 		}
 		ldns_buffer_printf(output, " ");

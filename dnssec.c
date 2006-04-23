@@ -1116,6 +1116,80 @@ ldns_create_nsec(ldns_rdf *cur_owner, ldns_rdf *next_owner, ldns_rr_list *rrs)
 	return nsec;
 }
 
+ldns_rdf *
+ldns_nsec3_hash_name(ldns_rdf *name, uint8_t algorithm, uint32_t iterations, uint8_t salt_length, uint8_t *salt)
+{
+	char *orig_owner_str;
+	size_t hashed_owner_str_len;
+	ldns_rdf *hashed_owner;
+	char *hashed_owner_str;
+	char *hashed_owner_b32;
+	uint32_t cur_it;
+	char *hash = NULL;
+	size_t i;
+	ldns_status status;
+	
+	/* prepare the owner name according to the draft section bla */
+	orig_owner_str = ldns_rdf2str(name);
+	
+	/* TODO: mnemonic list for hash algs SHA-1, default to 1 now (sha1) */
+	if (iterations > 16777216 || iterations < 1) {
+		perror("Bad number for NSEC3 hash iterations");
+		return NULL;
+	}
+	
+	hashed_owner_str_len = salt_length + ldns_rdf_size(name);
+	hashed_owner_str = LDNS_XMALLOC(char, hashed_owner_str_len);
+        memcpy(hashed_owner_str, ldns_rdf_data(name), ldns_rdf_size(name));
+	memcpy(hashed_owner_str + ldns_rdf_size(name), salt, salt_length);
+
+	for (cur_it = iterations + 1; cur_it > 0; cur_it--) {
+		/*xprintf_hex(hashed_owner_str, hashed_owner_str_len);*/
+		hash = (char *) SHA1((unsigned char *) hashed_owner_str, hashed_owner_str_len, NULL);
+
+		LDNS_FREE(hashed_owner_str);
+		hashed_owner_str_len = salt_length + SHA_DIGEST_LENGTH;
+		hashed_owner_str = LDNS_XMALLOC(char, hashed_owner_str_len);
+		if (!hashed_owner_str) {
+			fprintf(stderr, "Memory error\n");
+			abort();
+		}
+		memcpy(hashed_owner_str, hash, SHA_DIGEST_LENGTH);
+		memcpy(hashed_owner_str + SHA_DIGEST_LENGTH, salt, salt_length);
+		hashed_owner_str_len = SHA_DIGEST_LENGTH + salt_length;
+	}
+
+	hashed_owner_str = hash;
+	hashed_owner_str_len = SHA_DIGEST_LENGTH;
+
+/*
+printf("Created hash from: ");
+ldns_rdf_print(stdout, name);
+printf(":\n");
+xprintf_hex(hashed_owner_str, hashed_owner_str_len);
+printf("\n\n");
+exit(0);
+*/
+	hashed_owner_b32 = LDNS_XMALLOC(char, b32_ntop_calculate_size(hashed_owner_str_len));
+	i = (size_t) b32_ntop_extended_hex((uint8_t *) hashed_owner_str, hashed_owner_str_len, hashed_owner_b32, b32_ntop_calculate_size(hashed_owner_str_len));
+	if (i < 1) {
+		fprintf(stderr, "Error in base32 extended hex encoding of hashed owner name (name: ");
+		ldns_rdf_print(stderr, name);
+		fprintf(stderr, ", return code: %u)\n", (unsigned int) i);
+		exit(4);
+	}
+	hashed_owner_str_len = i;
+        hashed_owner_b32[hashed_owner_str_len] = '\0';
+	status = ldns_str2rdf_dname(&hashed_owner, hashed_owner_b32);
+	if (status != LDNS_STATUS_OK) {
+		fprintf(stderr, "Error creating rdf from %s\n", hashed_owner_b32);
+		exit(1);
+	}
+
+printf("RETURNING TYPE: %d\n", ldns_rdf_get_type(hashed_owner));
+	return hashed_owner;
+}
+
 /* this will NOT return the NSEC3  completed, you will have to run the
    finalize function on the rrlist later! */
 ldns_rr *
@@ -1126,7 +1200,7 @@ ldns_create_nsec3(ldns_rdf *cur_owner,
                   bool opt_in,
                   uint32_t iterations,
                   uint8_t salt_length,
-                  char *salt)
+                  uint8_t *salt)
 {
 	size_t i;
 	ldns_rr *i_rr;
@@ -1137,13 +1211,7 @@ ldns_create_nsec3(ldns_rdf *cur_owner,
 
 	ldns_rr *nsec = NULL;
 	ldns_rdf *hashed_owner = NULL;
-	char *orig_owner_str;
-	char *hashed_owner_str;
-	size_t hashed_owner_str_len = 0;
-	char *hash = NULL;
-	char *hashed_owner_b32;
 
-	uint32_t cur_it;
 	uint8_t iterations_data[4];
 	
 	uint8_t *data = NULL;
@@ -1161,16 +1229,14 @@ ldns_create_nsec3(ldns_rdf *cur_owner,
         printf("HASH FOR: ");
         ldns_rdf_print(stdout, cur_owner);
         */
-	/* prepare the owner name according to the draft section bla */
-	orig_owner_str = ldns_rdf2str(cur_owner);
 	
-	/* TODO: for now, no opt-in and only 1 hash iteration. empty salt. */
-	/* TODO: mnemonic list for hash algs SHA-1, default to 1 now (sha1) */
-	if (iterations > 16777216 || iterations < 1) {
-		perror("Bad number for NSEC3 hash iterations");
-		return NULL;
+	/*
+	printf("\n");
+	for (i=0; i<hashed_owner_str_len; i++) {
+		printf("%02x ", (uint8_t) hashed_owner_str[i]);
 	}
-	
+	printf("\n");
+	*/
 	nsec3_vars_data = LDNS_XMALLOC(uint8_t, 5 + salt_length);
 	nsec3_vars_data[0] = algorithm;
 	if (opt_in) {
@@ -1186,54 +1252,10 @@ ldns_create_nsec3(ldns_rdf *cur_owner,
 		memcpy(&nsec3_vars_data[5], salt, salt_length);
 	}
 	nsec3_vars_rdf = ldns_rdf_new_frm_data(LDNS_RDF_TYPE_NSEC3_VARS, 5 + salt_length, nsec3_vars_data);
-
-	hashed_owner_str_len = salt_length + ldns_rdf_size(cur_owner);
-	hashed_owner_str = LDNS_XMALLOC(char, hashed_owner_str_len);
-        memcpy(hashed_owner_str, ldns_rdf_data(cur_owner), ldns_rdf_size(cur_owner));
-	memcpy(hashed_owner_str + ldns_rdf_size(cur_owner), salt, salt_length);
-
-	for (cur_it = iterations; cur_it > 0; cur_it--) {
-		hash = (char *) SHA1((unsigned char *) hashed_owner_str, hashed_owner_str_len, NULL);
-
-		LDNS_FREE(hashed_owner_str);
-		hashed_owner_str_len = salt_length + SHA_DIGEST_LENGTH;
-		hashed_owner_str = LDNS_XMALLOC(char, hashed_owner_str_len);
-		if (!hashed_owner_str) {
-			fprintf(stderr, "Memory error\n");
-			abort();
-		}
-		memcpy(hashed_owner_str, hash, SHA_DIGEST_LENGTH);
-		memcpy(hashed_owner_str + SHA_DIGEST_LENGTH, salt, salt_length);
-		hashed_owner_str_len = SHA_DIGEST_LENGTH;
-	}
-
-	hashed_owner_str = hash;
 	
-	/*
-	printf("\n");
-	for (i=0; i<hashed_owner_str_len; i++) {
-		printf("%02x ", (uint8_t) hashed_owner_str[i]);
-	}
-	printf("\n");
-	*/
-	
-	hashed_owner_b32 = LDNS_XMALLOC(char, b32_ntop_calculate_size(hashed_owner_str_len));
-	i = (size_t) b32_ntop_extended_hex((uint8_t *) hashed_owner_str, hashed_owner_str_len, hashed_owner_b32, b32_ntop_calculate_size(hashed_owner_str_len));
-	if (i < 1) {
-		fprintf(stderr, "Error in base32 extended hex encoding of hashed owner name (name: ");
-		ldns_rdf_print(stderr, cur_owner);
-		fprintf(stderr, ", return code: %u)\n", (unsigned int) i);
-		exit(4);
-	}
-	hashed_owner_str_len = i;
-        hashed_owner_b32[hashed_owner_str_len] = '\0';
-	status = ldns_str2rdf_dname(&hashed_owner, hashed_owner_b32);
-	if (status != LDNS_STATUS_OK) {
-		fprintf(stderr, "Error creating rdf from %s\n", hashed_owner_b32);
-		exit(1);
-	}
+	hashed_owner = ldns_nsec3_hash_name(cur_owner, algorithm, iterations, salt_length, salt);
 	status = ldns_dname_cat(hashed_owner, cur_zone);
-	
+
 	nsec = ldns_rr_new();
 	ldns_rr_set_type(nsec, LDNS_RR_TYPE_NSEC3);
 	ldns_rr_set_owner(nsec, hashed_owner);
@@ -1269,7 +1291,7 @@ ldns_create_nsec3(ldns_rdf *cur_owner,
 		}
 	}
 	ldns_set_bit(bitmap + (int) i_type / 8, (int) (7 - (i_type % 8)), true);
-	i_type = LDNS_RR_TYPE_NSEC;
+	i_type = LDNS_RR_TYPE_NSEC3;
 
 	if (i_type / 8 > bm_len) {
 		bitmap = LDNS_XREALLOC(bitmap, uint8_t, (i_type / 8) + 1);
@@ -1319,39 +1341,152 @@ ldns_create_nsec3(ldns_rdf *cur_owner,
 }
 
 bool
-ldns_nsec_covers_rrset(const ldns_rr *nsec, ldns_rdf *name, ldns_rr_type type)
+ldns_nsec3_covers_name(const ldns_rr *nsec, ldns_rdf *name)
+{
+	uint8_t algorithm;
+	uint32_t iterations;
+	uint8_t iterations_wire[4];
+	
+	uint8_t *data;
+
+	uint8_t salt_length;
+	uint8_t *salt;
+	
+	ldns_status status;
+	
+	bool result;
+	
+	ldns_rdf *hashed_owner;
+	ldns_rdf *nsec_owner = ldns_rr_owner(nsec);
+	ldns_rdf *nsec_next = ldns_rr_rdf(nsec, 1);
+	ldns_rdf *zone_name = ldns_dname_left_chop(nsec_owner);
+	
+	status = ldns_dname_cat(nsec_next, zone_name);
+	if (status != LDNS_STATUS_OK) {
+		return false;
+	}
+	
+	data = ldns_rdf_data(ldns_rr_rdf(nsec, 0));
+	algorithm = data[0];
+	iterations_wire[0] = 0;
+	iterations_wire[1] = data[2];
+	iterations_wire[2] = data[3];
+	iterations_wire[3] = data[4];
+	
+	iterations = ldns_read_uint32(iterations_wire);
+	
+	salt_length = data[5];
+	salt = LDNS_XMALLOC(uint8_t, salt_length);
+	memcpy(salt, &data[6], salt_length);
+	
+	hashed_owner = ldns_nsec3_hash_name(name, algorithm, iterations, salt_length, salt);
+	
+
+	result = (ldns_dname_compare(nsec_owner, name) <= 0 &&
+	    ldns_dname_compare(name, nsec_next) > 0);
+	
+	LDNS_FREE(salt);
+	return result;
+}
+
+ldns_rdf *
+ldns_nsec3_hash_name_frm_nsec3(const ldns_rr *nsec, ldns_rdf *name)
+{
+	uint8_t algorithm;
+	uint32_t iterations;
+	uint8_t iterations_wire[4];
+	
+	uint8_t *data;
+
+	uint8_t salt_length;
+	uint8_t *salt;
+	
+	ldns_rdf *hashed_owner;
+	ldns_rdf *nsec_owner = ldns_rr_owner(nsec);
+	
+	data = ldns_rdf_data(ldns_rr_rdf(nsec, 0));
+	algorithm = data[0];
+	iterations_wire[0] = 0;
+	iterations_wire[1] = data[2];
+	iterations_wire[2] = data[3];
+	iterations_wire[3] = data[4];
+	
+	iterations = ldns_read_uint32(iterations_wire);
+	
+	salt_length = data[5];
+	salt = LDNS_XMALLOC(uint8_t, salt_length);
+	memcpy(salt, &data[6], salt_length);
+	
+	hashed_owner = ldns_nsec3_hash_name(name, algorithm, iterations, salt_length, salt);
+	
+	LDNS_FREE(salt);
+	return hashed_owner;
+}
+
+bool
+ldns_nsec_bitmap_covers_type(const ldns_rdf *nsec_bitmap, ldns_rr_type type)
 {
 	uint8_t *bitmap;
 	uint16_t i;
 	uint8_t window_block_nr;
 	
-	ldns_rdf *nsec_owner = ldns_rr_owner(nsec);
-	ldns_rdf *nsec_next = ldns_rr_rdf(nsec, 0);
-	
-	if (ldns_dname_compare(nsec_owner, name) <= 0 &&
-	    ldns_dname_compare(name, nsec_next) > 0) {
-	 	
-	 	/* Check the bitmap if our type is there */
-	 	bitmap = ldns_rdf_data(ldns_rr_rdf(nsec, 1));
-		window_block_nr = (uint8_t) (type / 256);
-		i = 0;
-		while (i < ldns_rdf_size(ldns_rr_rdf(nsec, 1))) {
-			if (bitmap[i] == window_block_nr) {
-				/* this is the right window, check the bit */
-				if ((uint8_t) (type / 8) < bitmap[i + 1] &&
-				    ldns_get_bit(&bitmap[i + 1 + (type / 8)], (size_t) (7 - (type % 8)))) {
-					return true;
-				} else {
-					return false;
-				}
+	/* Check the bitmap if our type is there */
+	bitmap = ldns_rdf_data(nsec_bitmap);
+	window_block_nr = (uint8_t) (type / 256);
+	i = 0;
+	while (i < ldns_rdf_size(nsec_bitmap)) {
+		if (bitmap[i] == window_block_nr) {
+			/* this is the right window, check the bit */
+			if ((uint8_t) (type / 8) < bitmap[i + 1] &&
+			    ldns_get_bit(&bitmap[i + 1 + (type / 8)], (size_t) (7 - (type % 8)))) {
+				return true;
 			} else {
-				/* this is the wrong window, go to the next */
-				i++;
-				i += bitmap[i];
+				return false;
 			}
+		} else {
+			/* this is the wrong window, go to the next */
+			i++;
+			i += bitmap[i];
 		}
 	}
+
 	return false;
+}
+
+bool
+ldns_nsec_covers_name(const ldns_rr *nsec, ldns_rdf *name)
+{
+	ldns_rdf *nsec_owner = ldns_rr_owner(nsec);
+	ldns_rdf *hash_next;
+	char *yo;
+	ldns_rdf *nsec_next;
+	ldns_status status;
+
+	if (ldns_rr_get_type(nsec) == LDNS_RR_TYPE_NSEC) {
+		nsec_next = ldns_rr_rdf(nsec, 0);
+	} else if (ldns_rr_get_type(nsec) == LDNS_RR_TYPE_NSEC3) {
+		hash_next = ldns_rr_rdf(nsec, 1);
+		yo = ldns_rdf2str(hash_next);
+		nsec_next = ldns_dname_new_frm_str(yo);
+		status = ldns_dname_cat(nsec_next, ldns_dname_left_chop(nsec_owner));
+		if (status != LDNS_STATUS_OK) {
+			printf("error catting: %s\n", ldns_get_errorstr_by_id(status));
+		}
+	} else {
+		return false;
+	}
+	
+/*
+printf("nsec coverage:\n");
+ldns_rdf_print(stdout, nsec_owner);
+printf(" <= \n");
+ldns_rdf_print(stdout, name);
+printf(" <  \n");
+ldns_rdf_print(stdout, nsec_next);
+printf("\n\n");
+*/
+	return (ldns_dname_compare(nsec_owner, name) <= 0 &&
+	    ldns_dname_compare(name, nsec_next) > 0);
 }
 
 /* sig may be null - if so look in the packet */
@@ -1568,7 +1703,7 @@ void ldns_rr_list_sort_nsec3(ldns_rr_list *unsorted) {
 }
 
 ldns_zone *
-ldns_zone_sign_nsec3(ldns_zone *zone, ldns_key_list *key_list, uint8_t algorithm, uint32_t iterations, uint8_t salt_length, char *salt)
+ldns_zone_sign_nsec3(ldns_zone *zone, ldns_key_list *key_list, uint8_t algorithm, uint32_t iterations, uint8_t salt_length, uint8_t *salt)
 {
 	/*
 	 * Algorithm to be created:

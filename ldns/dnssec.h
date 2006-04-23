@@ -163,13 +163,25 @@ ldns_rdf *ldns_sign_public_rsasha1(ldns_buffer *to_sign, RSA *key);
 ldns_rr * ldns_create_nsec(ldns_rdf *cur_owner, ldns_rdf *next_owner, ldns_rr_list *rrs);
 
 /**
- * Checks coverage of NSEC RR
- * \param[in] nsec The NSEC RR to check
- * \param[in] name The owner dname to check
+ * Checks coverage of NSEC RR type bitmap
+ * \param[in] nsec The NSEC bitmap rdata field to check
  * \param[in] type The type to check
- * \return true if the NSEC RR covers the owner name and type
+ * \return true if the NSEC RR covers the type
  */
-bool ldns_nsec_covers_rrset(const ldns_rr *nsec, ldns_rdf *name, ldns_rr_type type);
+bool ldns_nsec_bitmap_covers_type(const ldns_rdf *nsec_bitmap, ldns_rr_type type);
+
+/**
+ * Checks coverage of NSEC(3) RR name span
+ * \param[in] nsec The NSEC RR to check
+ * \param[in] name The owner dname to check, if the nsec record is a NSEC3 record, this should be the hashed name
+ * \param[in] type The type to check
+ * \return true if the NSEC RR covers the owner name
+ */
+bool ldns_nsec_covers_name(const ldns_rr *nsec, ldns_rdf *name);
+
+ldns_rdf *ldns_nsec3_hash_name_frm_nsec3(const ldns_rr *nsec, ldns_rdf *name);
+ldns_rdf *ldns_nsec3_hash_name(ldns_rdf *name, uint8_t algorithm, uint32_t iterations, uint8_t salt_length, uint8_t *salt);
+
 
 /**
  * verify a packet 
@@ -194,7 +206,7 @@ ldns_status ldns_pkt_verify(ldns_pkt *p, ldns_rr_type t, ldns_rdf *o, ldns_rr_li
  * \return the signed zone
  */
 ldns_zone *ldns_zone_sign(ldns_zone *zone, ldns_key_list *key_list);
-ldns_zone *ldns_zone_sign_nsec3(ldns_zone *zone, ldns_key_list *key_list, uint8_t algorithm, uint32_t iterations, uint8_t salt_length, char *salt);
+ldns_zone *ldns_zone_sign_nsec3(ldns_zone *zone, ldns_key_list *key_list, uint8_t algorithm, uint32_t iterations, uint8_t salt_length, uint8_t *salt);
  
 /**
  * Initialize the random function. This calls OpenSSL

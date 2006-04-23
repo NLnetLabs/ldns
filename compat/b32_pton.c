@@ -58,7 +58,8 @@
 static const char Base32[] =
 	"ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
 static const char Base32_extended_hex[] =
-	"0123456789ABCDEFGHIJKLMNOPQRSTUV";
+/*	"0123456789ABCDEFGHIJKLMNOPQRSTUV";*/
+	"0123456789abcdefghijklmnopqrstuv";
 static const char Pad32 = '=';
 
 /* (From RFC1521 and draft-ietf-dnssec-secext-03.txt)
