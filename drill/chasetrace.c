@@ -450,9 +450,11 @@ do_chase(ldns_resolver *res, ldns_rdf *name, ldns_rr_type type, ldns_rr_class c,
 		for (nsec_i = 0; nsec_i < ldns_rr_list_rr_count(nsecs); nsec_i++) {
 			hashed_name = ldns_nsec3_hash_name_frm_nsec3(ldns_rr_list_rr(nsecs, nsec_i), name);
 
-			status = ldns_dname_cat(hashed_name, ldns_dname_left_chop(name));
-			if (status != LDNS_STATUS_OK) {
-				fprintf(stderr, "Error concatenating hashed name: %s\n", ldns_get_errorstr_by_id(status));
+			result = ldns_dname_cat(hashed_name, ldns_dname_left_chop(name));
+			if (result != LDNS_STATUS_OK) {
+				fprintf(stderr, "Error concatenating hashed name: %s\n", ldns_get_errorstr_by_id(result));
+				ldns_pkt_free(pkt);
+				return result;
 			}
 			if (ldns_dname_compare(ldns_rr_owner(ldns_rr_list_rr(nsecs, nsec_i)), hashed_name) == 0) {
 				if (ldns_nsec_bitmap_covers_type(ldns_rr_rdf(ldns_rr_list_rr(nsecs, nsec_i), 1), type)) {
@@ -481,8 +483,6 @@ do_chase(ldns_resolver *res, ldns_rdf *name, ldns_rr_type type, ldns_rr_class c,
 
 		}
 		
-		ldns_pkt_free(pkt);
-		return result;
 		ldns_pkt_free(pkt);
 		return result;
 	}
