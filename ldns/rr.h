@@ -158,9 +158,6 @@ enum ldns_enum_rr_type
 
         /* TODO: No type code yet, assume 50 */
 	/*LDNS_RR_TYPE_NSEC3 = 50,      */
-	/* nsd patch from ben uses 65324 */
-	LDNS_RR_TYPE_NSEC3 = 65324,
-
 	LDNS_RR_TYPE_UINFO = 100,
 	LDNS_RR_TYPE_UID = 101,
 	LDNS_RR_TYPE_GID = 102,
@@ -177,6 +174,9 @@ enum ldns_enum_rr_type
 	LDNS_RR_TYPE_ANY = 255,
 
 	LDNS_RR_TYPE_FIRST = 0,
+	/* nsd patch from ben uses 65324 */
+	LDNS_RR_TYPE_NSEC3 = 65324,
+
 	LDNS_RR_TYPE_LAST  = 65535,
 	LDNS_RR_TYPE_COUNT = LDNS_RR_TYPE_LAST - LDNS_RR_TYPE_FIRST + 1
 };

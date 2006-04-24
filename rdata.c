@@ -250,6 +250,9 @@ ldns_rdf_new_frm_str(ldns_rdf_type type, const char *str)
 	case LDNS_RDF_TYPE_B64:
 		status = ldns_str2rdf_b64(&rdf, str);
 		break;
+	case LDNS_RDF_TYPE_B32_EXT:
+		status = ldns_str2rdf_b32_ext(&rdf, str);
+		break;
 	case LDNS_RDF_TYPE_HEX:
 		status = ldns_str2rdf_hex(&rdf, str);
 		break;
@@ -291,6 +294,9 @@ ldns_rdf_new_frm_str(ldns_rdf_type type, const char *str)
 		break;
 	case LDNS_RDF_TYPE_NSAP:
 		status = ldns_str2rdf_nsap(&rdf, str);
+		break;
+	case LDNS_RDF_TYPE_NSEC3_VARS:
+		status = ldns_str2rdf_nsec3_vars(&rdf, str);
 		break;
 	case LDNS_RDF_TYPE_NONE:
 	default:

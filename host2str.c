@@ -886,7 +886,7 @@ ldns_rr2buffer_str(ldns_buffer *output, const ldns_rr *rr)
 			} else if (ldns_rr_get_type(rr) == 255) {
 				ldns_buffer_printf(output, "ANY ");
 			} else {
-				ldns_buffer_printf(output, "TYPE%u\t", 
+				ldns_buffer_printf(output, "TYPE%d\t", 
 						ldns_rr_get_type(rr));
 			}
 		}

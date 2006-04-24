@@ -122,6 +122,56 @@ ldns_str2rdf_time(ldns_rdf **rd, const char *time)
 }
 
 ldns_status
+ldns_str2rdf_nsec3_vars(ldns_rdf **rd, const char *nsec3_vars)
+{
+	unsigned int algorithm;
+	unsigned int opt_in_int;
+	unsigned int iterations;
+	uint8_t salt_length;
+	char salt_str[257];
+	uint8_t c;
+
+	uint8_t *salt;
+	uint8_t *data;
+	int pos;
+
+	if (strlen(nsec3_vars) > 257) {
+		return LDNS_STATUS_SYNTAX_ERR;
+	}
+
+	pos = sscanf(nsec3_vars, "%u %u %u %s", &opt_in_int, &algorithm, &iterations, salt_str);
+
+	if (algorithm != 1) {
+		return LDNS_STATUS_CRYPTO_UNKNOWN_ALGO;
+	}
+
+	salt_length = (uint8_t) strlen(salt_str);
+	if (salt_length % 2 != 0) {
+		return LDNS_STATUS_INVALID_HEX;
+	}
+	
+	salt = LDNS_XMALLOC(uint8_t, salt_length / 2);
+	for (c = 0; c < salt_length; c += 2) {
+		if (isxdigit(salt_str[c]) && isxdigit(salt_str[c+1])) {
+			salt[c/2] = (uint8_t) ldns_hexdigit_to_int(salt_str[c]) * 16 +
+					  ldns_hexdigit_to_int(salt_str[c+1]);
+		} else {
+			return LDNS_STATUS_INVALID_HEX;
+		}
+	}
+	salt_length = salt_length / 2;
+	
+	data = LDNS_XMALLOC(uint8_t, 5 + salt_length);
+	ldns_write_uint32(data, (uint32_t) iterations);
+	data[0] = (uint8_t) algorithm;
+	data[4] = salt_length;
+	memcpy(&data[5], salt, salt_length);
+	*rd = ldns_rdf_new_frm_data(LDNS_RDF_TYPE_NSEC3_VARS, 5 + salt_length, data);
+	LDNS_FREE(data);
+	return LDNS_STATUS_OK;
+}
+
+ldns_status
 ldns_str2rdf_period(ldns_rdf **rd,const char *period)
 {
         uint32_t p;
