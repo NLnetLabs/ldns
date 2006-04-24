@@ -170,7 +170,7 @@ ldns_wire2rdf(ldns_rr *rr, const uint8_t *wire, size_t max, size_t *pos)
 	if (!descriptor) { 
 		cur_rdf = ldns_rdf_new_frm_data(LDNS_RDF_TYPE_UNKNOWN, rd_length, &wire[*pos]);
 		ldns_rr_push_rdf(rr, cur_rdf);
-		*pos = *pos + cur_rdf_length + 1;
+		*pos = *pos + ldns_rdf_size(cur_rdf) + 1;
 		return LDNS_STATUS_OK;
 	}
 
