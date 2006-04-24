@@ -58,9 +58,9 @@ ldns_rdf *ldns_dname_left_chop(ldns_rdf *d);
 uint8_t  ldns_dname_label_count(const ldns_rdf *r);
 
 /**
- * Create a new dname rdf. Copies pointers!
+ * creates a new dname rdf from a string.
  * \param[in] str string to use
- * \return ldns_rdf*
+ * \return ldns_rdf* or NULL in case of an error
  */
 ldns_rdf *ldns_dname_new_frm_str(const char *str);
 
