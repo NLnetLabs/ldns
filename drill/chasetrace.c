@@ -449,12 +449,12 @@ do_chase(ldns_resolver *res, ldns_rdf *name, ldns_rr_type type, ldns_rr_class c,
 		
 		for (nsec_i = 0; nsec_i < ldns_rr_list_rr_count(nsecs); nsec_i++) {
 			hashed_name = ldns_nsec3_hash_name_frm_nsec3(ldns_rr_list_rr(nsecs, nsec_i), name);
-ldns_dname_cat(hashed_name, ldns_dname_left_chop(name));
-printf("hashed name: ");
-ldns_rdf_print(stdout, hashed_name);
-printf("\n");
+
+			status = ldns_dname_cat(hashed_name, ldns_dname_left_chop(name));
+			if (status != LDNS_STATUS_OK) {
+				fprintf(stderr, "Error concatenating hashed name: %s\n", ldns_get_errorstr_by_id(status));
+			}
 			if (ldns_dname_compare(ldns_rr_owner(ldns_rr_list_rr(nsecs, nsec_i)), hashed_name) == 0) {
-printf("match!\n");
 				if (ldns_nsec_bitmap_covers_type(ldns_rr_rdf(ldns_rr_list_rr(nsecs, nsec_i), 1), type)) {
 					/* Error, according to the nsec this rrset is signed */
 					result = LDNS_STATUS_CRYPTO_NO_RRSIG;

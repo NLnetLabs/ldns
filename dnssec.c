@@ -1402,8 +1402,7 @@ ldns_nsec3_hash_name_frm_nsec3(const ldns_rr *nsec, ldns_rdf *name)
 	uint8_t *salt;
 	
 	ldns_rdf *hashed_owner;
-	ldns_rdf *nsec_owner = ldns_rr_owner(nsec);
-	
+
 	data = ldns_rdf_data(ldns_rr_rdf(nsec, 0));
 	algorithm = data[0];
 	iterations_wire[0] = 0;
