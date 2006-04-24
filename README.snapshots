@@ -3,7 +3,6 @@ ldns - snapshot releases
 Snapshot releases are not official released. They can be released to
 interested parties for development.
 
-Snapshots can be recognized, because the tar file includes a date
-in the name. 
+Snapshots can be recognized from the data in the the tar file.
 
 They should not be used for packaging in distributions.
