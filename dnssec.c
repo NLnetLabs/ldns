@@ -1752,7 +1752,7 @@ ldns_zone_sign_nsec3(ldns_zone *zone, ldns_key_list *key_list, uint8_t algorithm
 			if (ldns_rdf_compare(cur_dname, next_dname) != 0) {
 				/* skip glue */
 				if (ldns_rr_list_contains_rr(glue_rrs, next_rr)) {
-					cur_dname = next_dname;
+/*					cur_dname = next_dname;*/
 				} else {
 					nsec = ldns_create_nsec3(cur_dname, 
 								ldns_rr_owner(ldns_zone_soa(zone)),
