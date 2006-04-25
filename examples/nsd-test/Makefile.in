@@ -22,7 +22,7 @@ LINT		= splint
 LINTFLAGS	= +quiet -weak -warnposix -unrecog -Din_addr_t=uint32_t -Du_int=unsigned -Du_char=uint8_t -preproc
 
 HEADER		= config.h
-SOURCES 	= nsd-ldnsd.c
+SOURCES 	= nsd-ldnsd.c nsec3-covers.c
 
 PROGRAMS=$(SOURCES:.c=)
 
