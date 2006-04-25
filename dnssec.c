@@ -1152,6 +1152,11 @@ ldns_nsec_covers_name(const ldns_rr *nsec, ldns_rdf *name)
 	ldns_rdf *nsec_owner = ldns_rr_owner(nsec);
 	ldns_rdf *nsec_next = ldns_rr_rdf(nsec, 0);
 	
+	/* in the case of the last nsec */
+	if(ldns_dname_compare(nsec_owner, nsec_next) > 0)
+		return (ldns_dname_compare(nsec_owner, name) <= 0 ||
+			ldns_dname_compare(name, nsec_next) < 0);
+
 	return (ldns_dname_compare(nsec_owner, name) <= 0 &&
 	    ldns_dname_compare(name, nsec_next) < 0);
 }
