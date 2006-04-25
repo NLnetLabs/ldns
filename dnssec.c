@@ -1399,7 +1399,7 @@ ldns_nsec3_hash_name_frm_nsec3(const ldns_rr *nsec, ldns_rdf *name)
 	uint8_t *data;
 
 	uint8_t salt_length;
-	uint8_t *salt;
+	uint8_t *salt = 0;
 	
 	ldns_rdf *hashed_owner;
 
@@ -1484,8 +1484,9 @@ printf(" <  \n");
 ldns_rdf_print(stdout, nsec_next);
 printf("\n\n");
 */
+
 	return (ldns_dname_compare(nsec_owner, name) <= 0 &&
-	    ldns_dname_compare(name, nsec_next) > 0);
+	    ldns_dname_compare(name, nsec_next) < 0);
 }
 
 /* sig may be null - if so look in the packet */
