@@ -1300,6 +1300,18 @@ ldns_create_nsec3(ldns_rdf *cur_owner,
 		}
 	}
 	ldns_set_bit(bitmap + (int) i_type / 8, (int) (7 - (i_type % 8)), true);
+	/* and SOA if owner == zone */
+	if (ldns_dname_compare(cur_zone, cur_owner) == 0) {
+		i_type = LDNS_RR_TYPE_SOA;
+		if (i_type / 8 > bm_len) {
+			bitmap = LDNS_XREALLOC(bitmap, uint8_t, (i_type / 8) + 1);
+			/* set to 0 */
+			for (; bm_len <= i_type / 8; bm_len++) {
+				bitmap[bm_len] = 0;
+			}
+		}
+		ldns_set_bit(bitmap + (int) i_type / 8, (int) (7 - (i_type % 8)), true);
+	}
 
 	memset(cur_data, 0, 32);
 	for (i = 0; i < bm_len; i++) {
@@ -1336,6 +1348,12 @@ ldns_create_nsec3(ldns_rdf *cur_owner,
 
 	LDNS_FREE(bitmap);
 	LDNS_FREE(data);
+printf(";; Created NSEC3 for:\n");
+printf(";; ");
+ldns_rdf_print(stdout, cur_owner);
+printf("\n");
+printf(";; ");
+ldns_rr_print(stdout, nsec);
 	return nsec;
 }
 
