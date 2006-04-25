@@ -1129,6 +1129,7 @@ ldns_nsec3_hash_name(ldns_rdf *name, uint8_t algorithm, uint32_t iterations, uin
 	size_t i;
 	ldns_status status;
 	
+printf("HASH parameters: alg %u, iter: %u, salt l: %u\n", algorithm, iterations, salt_length);
 	/* prepare the owner name according to the draft section bla */
 	orig_owner_str = ldns_rdf2str(name);
 	
@@ -1405,15 +1406,15 @@ ldns_nsec3_hash_name_frm_nsec3(const ldns_rr *nsec, ldns_rdf *name)
 	data = ldns_rdf_data(ldns_rr_rdf(nsec, 0));
 	algorithm = data[0];
 	iterations_wire[0] = 0;
-	iterations_wire[1] = data[2];
-	iterations_wire[2] = data[3];
-	iterations_wire[3] = data[4];
+	iterations_wire[1] = data[1];
+	iterations_wire[2] = data[2];
+	iterations_wire[3] = data[3];
 	
 	iterations = ldns_read_uint32(iterations_wire);
 	
-	salt_length = data[5];
+	salt_length = data[4];
 	salt = LDNS_XMALLOC(uint8_t, salt_length);
-	memcpy(salt, &data[6], salt_length);
+	memcpy(salt, &data[5], salt_length);
 	
 	hashed_owner = ldns_nsec3_hash_name(name, algorithm, iterations, salt_length, salt);
 	
