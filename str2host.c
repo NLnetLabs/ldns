@@ -146,7 +146,9 @@ ldns_str2rdf_nsec3_vars(ldns_rdf **rd, const char *nsec3_vars)
 	}
 
 	salt_length = (uint8_t) strlen(salt_str);
-	if (salt_length % 2 != 0) {
+	if (salt_length == 1 && salt_str[0] == '-') {
+		salt_length = 0;
+	} else if (salt_length % 2 != 0) {
 		return LDNS_STATUS_INVALID_HEX;
 	}
 	

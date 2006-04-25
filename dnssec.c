@@ -1186,7 +1186,6 @@ exit(0);
 		exit(1);
 	}
 
-printf("RETURNING TYPE: %d\n", ldns_rdf_get_type(hashed_owner));
 	return hashed_owner;
 }
 
