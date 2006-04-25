@@ -1129,7 +1129,6 @@ ldns_nsec3_hash_name(ldns_rdf *name, uint8_t algorithm, uint32_t iterations, uin
 	size_t i;
 	ldns_status status;
 	
-printf("HASH parameters: alg %u, iter: %u, salt l: %u\n", algorithm, iterations, salt_length);
 	/* prepare the owner name according to the draft section bla */
 	orig_owner_str = ldns_rdf2str(name);
 	
@@ -1338,55 +1337,6 @@ ldns_create_nsec3(ldns_rdf *cur_owner,
 	LDNS_FREE(bitmap);
 	LDNS_FREE(data);
 	return nsec;
-}
-
-bool
-ldns_nsec3_covers_name(const ldns_rr *nsec, ldns_rdf *name)
-{
-	uint8_t algorithm;
-	uint32_t iterations;
-	uint8_t iterations_wire[4];
-	
-	uint8_t *data;
-
-	uint8_t salt_length;
-	uint8_t *salt;
-	
-	ldns_status status;
-	
-	bool result;
-	
-	ldns_rdf *hashed_owner;
-	ldns_rdf *nsec_owner = ldns_rr_owner(nsec);
-	ldns_rdf *nsec_next = ldns_rr_rdf(nsec, 1);
-	ldns_rdf *zone_name = ldns_dname_left_chop(nsec_owner);
-	
-	status = ldns_dname_cat(nsec_next, zone_name);
-	if (status != LDNS_STATUS_OK) {
-		return false;
-	}
-	
-	data = ldns_rdf_data(ldns_rr_rdf(nsec, 0));
-	algorithm = data[0];
-	iterations_wire[0] = 0;
-	iterations_wire[1] = data[2];
-	iterations_wire[2] = data[3];
-	iterations_wire[3] = data[4];
-	
-	iterations = ldns_read_uint32(iterations_wire);
-	
-	salt_length = data[5];
-	salt = LDNS_XMALLOC(uint8_t, salt_length);
-	memcpy(salt, &data[6], salt_length);
-	
-	hashed_owner = ldns_nsec3_hash_name(name, algorithm, iterations, salt_length, salt);
-	
-
-	result = (ldns_dname_compare(nsec_owner, name) <= 0 &&
-	    ldns_dname_compare(name, nsec_next) > 0);
-	
-	LDNS_FREE(salt);
-	return result;
 }
 
 ldns_rdf *

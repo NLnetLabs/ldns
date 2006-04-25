@@ -28,22 +28,31 @@ ldns_dname_cat_clone(const ldns_rdf *rd1, const ldns_rdf *rd2)
 	ldns_rdf *new;
 	uint16_t new_size;
 	uint8_t *buf;
+	uint16_t left_size;
 
 	if (ldns_rdf_get_type(rd1) != LDNS_RDF_TYPE_DNAME ||
 			ldns_rdf_get_type(rd2) != LDNS_RDF_TYPE_DNAME) {
 		return NULL;
 	}
 
+	/* remove root label if it is present at the end of the left
+	 * rd, by reducing the size with 1
+	 */
+	left_size = ldns_rdf_size(rd1);
+	if (left_size > 0 &&ldns_rdf_data(rd1)[left_size - 1] == 0) {
+		left_size--;
+	}
+
 	/* we overwrite the nullbyte of rd1 */
-	new_size = ldns_rdf_size(rd1) + ldns_rdf_size(rd2);
+	new_size = left_size + ldns_rdf_size(rd2);
 	buf = LDNS_XMALLOC(uint8_t, new_size);
 	if (!buf) {
 		return NULL;
 	}
 
 	/* put the two dname's after each other */
-	memcpy(buf, ldns_rdf_data(rd1), ldns_rdf_size(rd1));
-	memcpy(buf + ldns_rdf_size(rd1), ldns_rdf_data(rd2), ldns_rdf_size(rd2));
+	memcpy(buf, ldns_rdf_data(rd1), left_size);
+	memcpy(buf + left_size, ldns_rdf_data(rd2), ldns_rdf_size(rd2));
 	
 	new = ldns_rdf_new_frm_data(LDNS_RDF_TYPE_DNAME, new_size, buf);
 
@@ -57,10 +66,6 @@ ldns_dname_cat(ldns_rdf *rd1, ldns_rdf *rd2)
 	uint16_t left_size;
 	uint16_t size;
 
-/*
-pprdf("CATTING", rd1);
-pprdf("AND", rd2);
-*/
 	if (ldns_rdf_get_type(rd1) != LDNS_RDF_TYPE_DNAME ||
 			ldns_rdf_get_type(rd2) != LDNS_RDF_TYPE_DNAME) {
 printf("wrong type! %d\n", ldns_rdf_get_type(rd1));
@@ -72,10 +77,7 @@ printf("wrong type! %d\n", ldns_rdf_get_type(rd2));
 	 * rd, by reducing the size with 1
 	 */
 	left_size = ldns_rdf_size(rd1);
-	if (ldns_rdf_data(rd1)[left_size - 1] == 0) {
-/*
-printf("reducing size, left hand has root\n");
-*/
+	if (left_size > 0 &&ldns_rdf_data(rd1)[left_size - 1] == 0) {
 		left_size--;
 	}
 
