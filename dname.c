@@ -68,8 +68,6 @@ ldns_dname_cat(ldns_rdf *rd1, ldns_rdf *rd2)
 
 	if (ldns_rdf_get_type(rd1) != LDNS_RDF_TYPE_DNAME ||
 			ldns_rdf_get_type(rd2) != LDNS_RDF_TYPE_DNAME) {
-printf("wrong type! %d\n", ldns_rdf_get_type(rd1));
-printf("wrong type! %d\n", ldns_rdf_get_type(rd2));
 		return LDNS_STATUS_ERR;
 	}
 

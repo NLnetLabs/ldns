@@ -1452,6 +1452,10 @@ printf(" <  \n");
 ldns_rdf_print(stdout, nsec_next);
 printf("\n\n");
 */
+	/* in the case of the last nsec */
+	if(ldns_dname_compare(nsec_owner, nsec_next) > 0)
+		return (ldns_dname_compare(nsec_owner, name) <= 0 ||
+			ldns_dname_compare(name, nsec_next) < 0);
 
 	return (ldns_dname_compare(nsec_owner, name) <= 0 &&
 	    ldns_dname_compare(name, nsec_next) < 0);
