@@ -106,6 +106,14 @@ ldns_status ldns_str2rdf_apl(ldns_rdf **rd, const char *str);
 ldns_status ldns_str2rdf_b64(ldns_rdf **rd, const char *str);
 
 /**
+ * convert the string with the b32 ext hex data into wireformat
+ * \param[in] rd the rdf where to put the data
+ * \param[in] str the string to be converted
+ * \return ldns_status
+ */
+ldns_status ldns_str2rdf_b32_ext(ldns_rdf **rd, const char *str);
+
+/**
  * convert a hex value into wireformat
  * \param[in] rd the rdf where to put the data
  * \param[in] str the string to be converted

@@ -201,7 +201,7 @@ static inline size_t b64_pton_calculate_size(size_t srcsize)
 }
 #endif /* !B64_NTOP */
 
-#ifndef B32_PTON
+#ifndef B32_NTOP
 int b32_ntop(uint8_t const *src, size_t srclength,
 	     char *target, size_t targsize);
 int b32_ntop_extended_hex(uint8_t const *src, size_t srclength,
@@ -223,7 +223,7 @@ static inline size_t b32_ntop_calculate_size(size_t srcsize)
 */
 }
 #endif /* !B32_PTON */
-#ifndef B32_NTOP
+#ifndef B32_PTON
 int b32_pton(char const *src, uint8_t *target, size_t targsize);
 int b32_pton_extended_hex(char const *src, uint8_t *target, size_t targsize);
 /**
