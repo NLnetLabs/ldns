@@ -1348,12 +1348,14 @@ ldns_create_nsec3(ldns_rdf *cur_owner,
 
 	LDNS_FREE(bitmap);
 	LDNS_FREE(data);
+/*
 printf(";; Created NSEC3 for:\n");
 printf(";; ");
 ldns_rdf_print(stdout, cur_owner);
 printf("\n");
 printf(";; ");
 ldns_rr_print(stdout, nsec);
+*/
 	return nsec;
 }
 
@@ -1709,6 +1711,14 @@ ldns_zone_sign_nsec3(ldns_zone *zone, ldns_key_list *key_list, uint8_t algorithm
 	ldns_rr *nsec;
 	ldns_rr *ckey;
 	uint16_t i;
+	uint16_t next_label_count;
+	uint16_t cur_label_count;
+
+	/* for the empty nonterminal finding algorithm */
+	uint16_t j;
+	ldns_rdf *l1, *l2, *post, *post2;
+	bool found_difference;
+	
 	ldns_rr_type cur_rrset_type;
 	
 	signed_zone = ldns_zone_new();
@@ -1750,6 +1760,90 @@ ldns_zone_sign_nsec3(ldns_zone *zone, ldns_key_list *key_list, uint8_t algorithm
 			next_rr = ldns_rr_list_rr(orig_zone_rrs, i);
 			next_dname = ldns_rr_owner(next_rr);
 			if (ldns_rdf_compare(cur_dname, next_dname) != 0) {
+
+				/* every ownername should have an nsec3, and every empty nonterminal */
+				/* the zone is sorted, so nonterminals should be visible? */
+				/* if labels after first differ with previous it's an empty nonterm? */
+
+				/* empty non-terminal detection algorithm 0.001a-pre1
+				 * walk backwards to the first different label. for each label that
+				 * is not the first label, we have found an empty nonterminal
+				 */
+				cur_label_count = ldns_dname_label_count(cur_dname);
+				next_label_count = ldns_dname_label_count(next_dname);
+				post = ldns_dname_new_frm_str(".");
+				found_difference = false;
+				for (j = 1; j < cur_label_count && j < next_label_count && !found_difference; j++) {
+					l1 = ldns_dname_label(cur_dname, cur_label_count - j);
+					l2 = ldns_dname_label(next_dname, next_label_count - j);
+					
+					post2 = ldns_dname_cat_clone(l2, post);
+					ldns_rdf_deep_free(post);
+					post = post2;
+
+					if (ldns_dname_compare(l1, l2) != 0 &&
+					    j < cur_label_count &&
+					    j < next_label_count
+					   ) {
+						printf("Found empty non-terminal: ");
+						ldns_rdf_print(stdout, post);
+						printf("\n");
+						found_difference = true;
+						nsec = ldns_create_nsec3(post, 
+									ldns_rr_owner(ldns_zone_soa(zone)),
+									orig_zone_rrs,
+									algorithm,
+									false,
+									iterations,
+									salt_length,
+									salt);
+						printf("Created NSEC3 for: ");
+						ldns_rdf_print(stdout, post);
+						printf(":\n");
+						ldns_rr_print(stdout, nsec);
+						ldns_rr_set_ttl(nsec, ldns_rdf2native_int32(ldns_rr_rdf(ldns_zone_soa(zone), 6)));
+						ldns_rr_list_push_rr(nsec3_rrs, nsec);
+					}
+					
+					ldns_rdf_deep_free(l1);
+					ldns_rdf_deep_free(l2);
+				}
+				/* and if next label is longer than cur + 1, these must be empty nons too */
+				/* skip current label (total now equal to cur_dname) */
+				if (!found_difference) {
+					l2 = ldns_dname_label(next_dname, next_label_count - j);
+					post2 = ldns_dname_cat_clone(l2, post);
+					ldns_rdf_deep_free(post);
+					post = post2;
+					j++;
+				}
+				while (j < next_label_count) {
+					l2 = ldns_dname_label(next_dname, next_label_count - j);
+					post2 = ldns_dname_cat_clone(l2, post);
+					ldns_rdf_deep_free(post);
+					post = post2;
+					printf("Found empty non-terminal: ");
+					ldns_rdf_print(stdout, post);
+					printf("\n");
+					ldns_rdf_deep_free(l2);
+					j++;	
+					nsec = ldns_create_nsec3(post, 
+								ldns_rr_owner(ldns_zone_soa(zone)),
+								orig_zone_rrs,
+								algorithm,
+								false,
+								iterations,
+								salt_length,
+								salt);
+					printf("Created NSEC3 for: ");
+					ldns_rdf_print(stdout, post);
+					printf(":\n");
+					ldns_rr_print(stdout, nsec);
+					ldns_rr_set_ttl(nsec, ldns_rdf2native_int32(ldns_rr_rdf(ldns_zone_soa(zone), 6)));
+					ldns_rr_list_push_rr(nsec3_rrs, nsec);
+				}
+				ldns_rdf_deep_free(post);
+
 				/* skip glue */
 				if (ldns_rr_list_contains_rr(glue_rrs, next_rr)) {
 /*					cur_dname = next_dname;*/
@@ -1762,12 +1856,10 @@ ldns_zone_sign_nsec3(ldns_zone *zone, ldns_key_list *key_list, uint8_t algorithm
 								iterations,
 								salt_length,
 								salt);
-					/*
 					printf("Created NSEC3 for: ");
 					ldns_rdf_print(stdout, cur_dname);
 					printf(":\n");
 					ldns_rr_print(stdout, nsec);
-					*/
 					ldns_rr_set_ttl(nsec, ldns_rdf2native_int32(ldns_rr_rdf(ldns_zone_soa(zone), 6)));
 					ldns_rr_list_push_rr(nsec3_rrs, nsec);
 					/*start_dname = next_dname;*/
