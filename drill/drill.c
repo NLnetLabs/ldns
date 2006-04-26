@@ -441,15 +441,16 @@ main(int argc, char *argv[])
 			ldns_resolver_set_usevc(cmdline_res, qusevc);
 
 			cmdline_dname = ldns_dname_new_frm_str(serv);
+
 			cmdline_rr_list = ldns_get_rr_list_addr_by_name(
 						cmdline_res, 
 						cmdline_dname,
-						clas,
+						LDNS_RR_CLASS_IN,
 						qflags);
 			ldns_rdf_deep_free(cmdline_dname);
 			if (!cmdline_rr_list) {
 				/* This error msg is not always accurate */
-				error("%s %s", "could not find any address for the name: ", serv);
+				error("%s `%s\'", "could not find any address for the name:", serv);
 			} else {
 				if (ldns_resolver_push_nameserver_rr_list(
 						res, 
@@ -571,11 +572,8 @@ main(int argc, char *argv[])
 				error("%s", "making qname");
 			}
 
-			/*qpkt = ldns_pkt_query_new(qname, type, clas, qflags);*/
 			status = ldns_resolver_prepare_query_pkt(&qpkt, res, qname, type, clas, qflags);
-			
 			dump_hex(qpkt, query_file);
-			
 			ldns_pkt_free(qpkt);
 			break;
 		case DRILL_NSEC:
