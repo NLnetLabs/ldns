@@ -437,6 +437,7 @@ do_chase(ldns_resolver *res, ldns_rdf *name, ldns_rr_type type, ldns_rr_class c,
 					if (result == LDNS_STATUS_OK) {
 						ldns_pkt_free(pkt);
 						printf(";; Verifiably insecure.\n");
+						ldns_rr_list_deep_free(nsecs);
 						return result;
 					}
 				}
@@ -447,6 +448,7 @@ do_chase(ldns_resolver *res, ldns_rdf *name, ldns_rr_type type, ldns_rr_class c,
 				if (result == LDNS_STATUS_OK) {
 					ldns_pkt_free(pkt);
 					printf(";; Verifiably insecure.\n");
+					ldns_rr_list_deep_free(nsecs);
 					return result;
 				}
 			} else {
@@ -454,6 +456,7 @@ do_chase(ldns_resolver *res, ldns_rdf *name, ldns_rr_type type, ldns_rr_class c,
 			}
 		}
 		ldns_pkt_free(pkt);
+		ldns_rr_list_deep_free(nsecs);
 		return result;
 	}
 }

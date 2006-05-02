@@ -141,15 +141,19 @@ ldns_pkt_additional(const ldns_pkt *packet)
 ldns_rr_list *
 ldns_pkt_all(ldns_pkt *packet)
 {
-	ldns_rr_list *all;
+	ldns_rr_list *all, *prev_all;
 
 	all = ldns_rr_list_cat_clone(
 			ldns_pkt_question(packet),
 			ldns_pkt_answer(packet));
+	prev_all = all;
 	all = ldns_rr_list_cat_clone(all,
 			ldns_pkt_authority(packet));
+	ldns_rr_list_deep_free(prev_all);
+	prev_all = all;
 	all = ldns_rr_list_cat_clone(all,
 			ldns_pkt_additional(packet));
+	ldns_rr_list_deep_free(prev_all);
 	return all;
 }
 

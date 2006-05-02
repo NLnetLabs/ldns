@@ -774,6 +774,8 @@ ldns_sign_public(ldns_rr_list *rrset, ldns_key_list *keys)
 			ldns_rr_set_owner(ldns_rr_list_rr(rrset_clone, i), new_owner);
 		}
 	}
+	ldns_rdf_deep_free(wildcard_label);
+	ldns_rdf_deep_free(first_label);
 
 	/* make it canonical */
 	for(i = 0; i < ldns_rr_list_rr_count(rrset_clone); i++) {
@@ -1261,6 +1263,7 @@ ldns_zone_sign(ldns_zone *zone, ldns_key_list *key_list)
 	ldns_zone_set_soa(signed_zone, ldns_rr_clone(ldns_zone_soa(zone)));
 	ldns_zone_push_rr_list(signed_zone, cur_rrsigs);
 	ldns_rr_list_free(cur_rrsigs);
+	cur_rrsigs = NULL;
 	
 	orig_zone_rrs = ldns_rr_list_clone(ldns_zone_rrs(zone));
 
@@ -1344,8 +1347,9 @@ ldns_zone_sign(ldns_zone *zone, ldns_key_list *key_list)
 		ldns_rr_list_free(cur_rrset);
 		cur_rrset = ldns_rr_list_pop_rrset(signed_zone_rrs);
 	}
-	ldns_rr_list_free(signed_zone_rrs);
-	ldns_rr_list_free(pubkeys);
+	ldns_rr_list_deep_free(signed_zone_rrs);
+	ldns_rr_list_deep_free(pubkeys);
+	ldns_rr_list_deep_free(glue_rrs);
 	return signed_zone;
 	
 }

@@ -265,7 +265,7 @@ main(int argc, char *argv[])
 					ldns_zone_push_rr(orig_zone, ldns_rr_clone(pubkey));
 					ldns_rr_free(pubkey);
 				}
-
+				LDNS_FREE(keyfile_name);
 				
 			} else {
 				fprintf(stderr, "Error reading key from %s at line %d\n", argv[argi], line_nr);
