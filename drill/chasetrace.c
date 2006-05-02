@@ -243,7 +243,14 @@ do_chase(ldns_resolver *res, ldns_rdf *name, ldns_rr_type type, ldns_rr_class c,
 		ldns_pkt_free(pkt);
 		return LDNS_STATUS_EMPTY_LABEL;
 	}
-	
+
+/*
+printf("Chasing: ");
+ldns_rdf_print(stdout, name);
+printf(" type %d\n", type);
+printf("in:\n");
+ldns_pkt_print(stdout, pkt);	
+*/
 	if (!trusted_keys || ldns_rr_list_rr_count(trusted_keys) < 1) {
 		warning("No trusted keys specified");
 	}
@@ -417,8 +424,12 @@ do_chase(ldns_resolver *res, ldns_rdf *name, ldns_rr_type type, ldns_rr_class c,
 		ldns_pkt_free(pkt);
 		return LDNS_STATUS_CRYPTO_NO_TRUSTED_DNSKEY;
 	} else {
+/*
+printf("COULD BE NSEC3 IN:\n");
+ldns_pkt_print(stdout, pkt);
+*/
 		/* Try to see if there are NSECS in the packet */
-		nsecs = ldns_pkt_rr_list_by_type(pkt, LDNS_RR_TYPE_NSEC, LDNS_SECTION_ANY);
+		nsecs = ldns_pkt_rr_list_by_type(pkt, LDNS_RR_TYPE_NSEC, LDNS_SECTION_ANY_NOQUESTION);
 		result = LDNS_STATUS_CRYPTO_NO_RRSIG;
 		
 		for (nsec_i = 0; nsec_i < ldns_rr_list_rr_count(nsecs); nsec_i++) {
@@ -429,7 +440,12 @@ do_chase(ldns_resolver *res, ldns_rdf *name, ldns_rr_type type, ldns_rr_class c,
 			 * - name falls outside of nsec coverage
 			 */
 			if (ldns_dname_compare(ldns_rr_owner(ldns_rr_list_rr(nsecs, nsec_i)), name) == 0) {
-				if (ldns_nsec_bitmap_covers_type(ldns_rr_rdf(ldns_rr_list_rr(nsecs, nsec_i), 1), type)) {
+/*
+printf("CHECKING NSEC:\n");
+ldns_rr_print(stdout, ldns_rr_list_rr(nsecs, nsec_i));
+printf("DAWASEM\n");
+*/
+				if (ldns_nsec_bitmap_covers_type(ldns_rr_rdf(ldns_rr_list_rr(nsecs, nsec_i), 2), type)) {
 					/* Error, according to the nsec this rrset is signed */
 					result = LDNS_STATUS_CRYPTO_NO_RRSIG;
 				} else {
@@ -455,7 +471,7 @@ do_chase(ldns_resolver *res, ldns_rdf *name, ldns_rr_type type, ldns_rr_class c,
 				/* nsec has nothing to do with this data */
 			}
 		}
-		nsecs = ldns_pkt_rr_list_by_type(pkt, LDNS_RR_TYPE_NSEC3, LDNS_SECTION_ANY);
+		nsecs = ldns_pkt_rr_list_by_type(pkt, LDNS_RR_TYPE_NSEC3, LDNS_SECTION_ANY_NOQUESTION);
 		
 		for (nsec_i = 0; nsec_i < ldns_rr_list_rr_count(nsecs); nsec_i++) {
 			hashed_name = ldns_nsec3_hash_name_frm_nsec3(ldns_rr_list_rr(nsecs, nsec_i), name);
@@ -467,12 +483,12 @@ do_chase(ldns_resolver *res, ldns_rdf *name, ldns_rr_type type, ldns_rr_class c,
 				return result;
 			}
 			if (ldns_dname_compare(ldns_rr_owner(ldns_rr_list_rr(nsecs, nsec_i)), hashed_name) == 0) {
-				if (ldns_nsec_bitmap_covers_type(ldns_rr_rdf(ldns_rr_list_rr(nsecs, nsec_i), 1), type)) {
+				if (ldns_nsec_bitmap_covers_type(ldns_rr_rdf(ldns_rr_list_rr(nsecs, nsec_i), 2), type)) {
 					/* Error, according to the nsec this rrset is signed */
 					result = LDNS_STATUS_CRYPTO_NO_RRSIG;
 				} else {
 					/* ok nsec denies existence, chase the nsec now */
-					result = do_chase(res, ldns_rr_owner(ldns_rr_list_rr(nsecs, nsec_i)), LDNS_RR_TYPE_NSEC, c, trusted_keys, pkt, qflags);
+					result = do_chase(res, ldns_rr_owner(ldns_rr_list_rr(nsecs, nsec_i)), LDNS_RR_TYPE_NSEC3, c, trusted_keys, pkt, qflags);
 					if (result == LDNS_STATUS_OK) {
 						ldns_pkt_free(pkt);
 						printf(";; Verifiably insecure.\n");
@@ -481,7 +497,7 @@ do_chase(ldns_resolver *res, ldns_rdf *name, ldns_rr_type type, ldns_rr_class c,
 				}
 			} else if (ldns_nsec_covers_name(ldns_rr_list_rr(nsecs, nsec_i), hashed_name)) {
 				/* Verifably insecure? chase the covering nsec */
-				result = do_chase(res, ldns_rr_owner(ldns_rr_list_rr(nsecs, nsec_i)), LDNS_RR_TYPE_NSEC, c, trusted_keys, pkt, qflags);
+				result = do_chase(res, ldns_rr_owner(ldns_rr_list_rr(nsecs, nsec_i)), LDNS_RR_TYPE_NSEC3, c, trusted_keys, pkt, qflags);
 				if (result == LDNS_STATUS_OK) {
 					ldns_pkt_free(pkt);
 					printf(";; Verifiably insecure.\n");
