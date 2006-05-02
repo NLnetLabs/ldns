@@ -511,27 +511,31 @@ ldns_verify_rrsig_rsasha1(ldns_buffer *sig, ldns_buffer *rrset, ldns_buffer *key
 {
 	RSA *rsakey;
 	unsigned char *sha1_hash;
+	ldns_status result;
 
 	rsakey = ldns_key_buf2rsa(key);
 	if (!rsakey) {
-		return LDNS_STATUS_ERR;
-	}
-
-	sha1_hash = SHA1((unsigned char*)ldns_buffer_begin(rrset), ldns_buffer_position(rrset), NULL);
-	if (!sha1_hash) {
-		return LDNS_STATUS_ERR;
-	}
-	
-	if (RSA_verify(NID_sha1, sha1_hash, SHA_DIGEST_LENGTH, 
-				(unsigned char*)ldns_buffer_begin(sig),
-			(unsigned int)ldns_buffer_position(sig), rsakey) == 1) {
-		return LDNS_STATUS_OK;
+		result = LDNS_STATUS_ERR;
 	} else {
-		  ERR_load_crypto_strings();
-		  ERR_print_errors_fp(stdout);
+		sha1_hash = SHA1((unsigned char*)ldns_buffer_begin(rrset), ldns_buffer_position(rrset), NULL);
+		if (!sha1_hash) {
+			return LDNS_STATUS_ERR;
+		}
+		if (RSA_verify(NID_sha1, sha1_hash, SHA_DIGEST_LENGTH, 
+					(unsigned char*)ldns_buffer_begin(sig),
+				(unsigned int)ldns_buffer_position(sig), rsakey) == 1) {
+			result = LDNS_STATUS_OK;
+		} else {
+			  ERR_load_crypto_strings();
+			  ERR_print_errors_fp(stdout);
 
-		return LDNS_STATUS_CRYPTO_BOGUS;
+			result = LDNS_STATUS_CRYPTO_BOGUS;
+		}
 	}
+
+	RSA_free(rsakey);
+
+	return result;
 }
 
 
