@@ -676,22 +676,6 @@ main(int argc, char *argv[])
 				LDNS_FREE(domain_str);
 				LDNS_FREE(outputfile_str);
 			}
-/*
-			domain_str = ldns_rdf2str(domain);
-			outputfile = LDNS_XMALLOC(char, strlen(domain_str) + 8);
-			outputfile[0] = 'K';
-			strncpy(&outputfile[1], domain_str, strlen(domain_str));
-			outputfile[strlen(domain_str) + 1] = '.';
-			outputfile[strlen(domain_str) + 2] = '+';
-			outputfile[strlen(domain_str) + 3] = '.';
-			outputfile[strlen(domain_str) + 4] = '+';
-			strncpy(&outputfile[strlen(domain_str) + 3], ".key", 5);
-			if (verbosity >= 1) {
-				fprintf(stdout, "Writing key to file %s\n", outputfile);
-			}
-			LDNS_FREE(domain_str);
-			LDNS_FREE(outputfile);
-*/
 		} else {
 			ldns_rr_list_print(stdout, l);
 		}
