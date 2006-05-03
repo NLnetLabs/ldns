@@ -12,12 +12,15 @@
 #include <errno.h>
 
 int verbosity = 0;
+uint8_t address_family = 0;
 
 void
 usage(FILE *fp, char *prog) {
 	fprintf(fp, "%s domain\n", prog);
 	fprintf(fp, "  retrieve the dnskeys for a domain\n");
 	fprintf(fp, "Options:\n");
+	fprintf(fp, "-4\t\tUse IPv4 only\n");
+	fprintf(fp, "-6\t\tUse IPv6 only\n");
 	fprintf(fp, "-h\t\tShow this help\n");
 	fprintf(fp, "-r <file>\tUse file to read root hints from\n");
 	fprintf(fp, "-v <int>\tVerbosity level (0-5, not verbose-very verbose)\n");
@@ -120,10 +123,18 @@ retrieve_dnskeys(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 		if (verbosity >= 3) {
 			printf("This is a delegation!\n\n");
 		}
-		new_nss_a = ldns_pkt_rr_list_by_type(p,
-				LDNS_RR_TYPE_A, LDNS_SECTION_ADDITIONAL);
-		new_nss_aaaa = ldns_pkt_rr_list_by_type(p,
-				LDNS_RR_TYPE_AAAA, LDNS_SECTION_ADDITIONAL);
+		if (address_family == 0 || address_family == 1) {
+			new_nss_a = ldns_pkt_rr_list_by_type(p,
+					LDNS_RR_TYPE_A, LDNS_SECTION_ADDITIONAL);
+		} else {
+			new_nss_a = ldns_rr_list_new();
+		}
+		if (address_family == 0 || address_family == 1) {
+			new_nss_aaaa = ldns_pkt_rr_list_by_type(p,
+					LDNS_RR_TYPE_AAAA, LDNS_SECTION_ADDITIONAL);
+		} else {
+			new_nss_aaaa = ldns_rr_list_new();
+		}
 		new_nss = ldns_pkt_rr_list_by_type(p,
 				LDNS_RR_TYPE_NS, LDNS_SECTION_AUTHORITY);
 
@@ -206,8 +217,7 @@ retrieve_dnskeys(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 
 			ldns_pkt_free(p);
 			status = ldns_resolver_send(&p, res, name, t, c, 0);
-
-			if (status == LDNS_STATUS_OK) {
+			if (status == LDNS_STATUS_OK && p) {
 				if (ldns_pkt_get_rcode(p) != LDNS_RCODE_NOERROR) {
 					printf("Error in packet:\n");
 					ldns_pkt_print(stdout, p);
@@ -516,7 +526,11 @@ read_root_hints(const char *filename)
 		addresses = ldns_rr_list_new();
 		for (i = 0; i < ldns_rr_list_rr_count(ldns_zone_rrs(z)); i++) { 
 			rr = ldns_rr_list_rr(ldns_zone_rrs(z), i);
-			if (ldns_rr_get_type(rr) == LDNS_RR_TYPE_A || 
+			if ((address_family == 0 || address_family == 1) &&
+			    ldns_rr_get_type(rr) == LDNS_RR_TYPE_A ) {
+				ldns_rr_list_push_rr(addresses, ldns_rr_clone(rr));
+			}
+			if ((address_family == 0 || address_family == 2) &&
 			    ldns_rr_get_type(rr) == LDNS_RR_TYPE_AAAA) {
 				ldns_rr_list_push_rr(addresses, ldns_rr_clone(rr));
 			}
@@ -549,7 +563,19 @@ main(int argc, char *argv[])
 		exit(EXIT_FAILURE);
 	} else {
 		for (i = 1; i < argc; i++) {
-			if (strncmp("-h", argv[i], 3) == 0) {
+			if (strncmp("-4", argv[i], 3) == 0) {
+				if (address_family != 0) {
+					fprintf(stderr, "Options -4 and -6 cannot be specified at the same time\n");
+					exit(EXIT_FAILURE);
+				}
+				address_family = 1;
+			} else if (strncmp("-6", argv[i], 3) == 0) {
+				if (address_family != 0) {
+					fprintf(stderr, "Options -4 and -6 cannot be specified at the same time\n");
+					exit(EXIT_FAILURE);
+				}
+				address_family = 2;
+			} else if (strncmp("-h", argv[i], 3) == 0) {
 				usage(stdout, argv[0]);
 				exit(EXIT_SUCCESS);
 			} else if (strncmp("-r", argv[i], 2) == 0) {
@@ -597,6 +623,7 @@ main(int argc, char *argv[])
 
 	/* create a new resolver from /etc/resolv.conf */
 	status = ldns_resolver_new_frm_file(&res, NULL);
+	ldns_resolver_set_ip6(res, address_family);
 
 	if (status != LDNS_STATUS_OK) {
 		ldns_rdf_deep_free(domain);
