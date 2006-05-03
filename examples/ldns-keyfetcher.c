@@ -13,6 +13,7 @@
 
 int verbosity = 0;
 uint8_t address_family = 0;
+bool store = false;
 
 void
 usage(FILE *fp, char *prog) {
@@ -23,6 +24,7 @@ usage(FILE *fp, char *prog) {
 	fprintf(fp, "-6\t\tUse IPv6 only\n");
 	fprintf(fp, "-h\t\tShow this help\n");
 	fprintf(fp, "-r <file>\tUse file to read root hints from\n");
+	fprintf(fp, "-s\t\tDon't print the keys but store them in files\n\t\tcalled K<file>.+<alg>.+<keytag>.key\n");
 	fprintf(fp, "-v <int>\tVerbosity level (0-5, not verbose-very verbose)\n");
 }
 
@@ -152,7 +154,7 @@ retrieve_dnskeys(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 				printf("Did not get address record for nameserver, doing seperate query.\n");
 			}
 			ns_addr = ldns_rr_list_new();
-			for(i = 0; i < ldns_rr_list_rr_count(new_nss); i++) {
+			for(i = 0; (size_t) i < ldns_rr_list_rr_count(new_nss); i++) {
 				/* get the name of the nameserver */
 				pop = ldns_rr_rdf(ldns_rr_list_rr(new_nss, i), 0);
 				if (!pop) {
@@ -555,6 +557,12 @@ main(int argc, char *argv[])
 	
 	int i;
 
+	char *domain_str;
+	char *outputfile_str;
+	ldns_buffer *outputfile_buffer;
+	FILE *outputfile;
+	ldns_rr *k;
+
 	domain = NULL;
 	res = NULL;
 
@@ -588,6 +596,8 @@ main(int argc, char *argv[])
 					root_file = argv[i+1];
 					i++;
 				}
+			} else if (strncmp("-s", argv[i], 3) == 0) {
+				store = true;
 			} else if (strncmp("-v", argv[i], 2) == 0) {
 				if (strlen(argv[i]) > 2) {
 					verbosity = atoi(argv[i]+2);
@@ -639,7 +649,52 @@ main(int argc, char *argv[])
 		fprintf(stdout, "; Got the following keys:\n");
 	}
 	if (l) {
-		ldns_rr_list_print(stdout, l);
+		if (store) {
+			/* create filename:
+			 * K<domain>.+<alg>.+<id>.key
+			 */
+			for (i = 0; (size_t) i < ldns_rr_list_rr_count(l); i++) {
+				k = ldns_rr_list_rr(l, (size_t) i);
+				
+				outputfile_buffer = ldns_buffer_new(300);
+				domain_str = ldns_rdf2str(ldns_rr_owner(k));
+				ldns_buffer_printf(outputfile_buffer, "K%s+%03u.+%05u.key", domain_str, ldns_rdf2native_int8(ldns_rr_rdf(k, 2)), ldns_calc_keytag(k), 123);
+				outputfile_str = ldns_buffer_export(outputfile_buffer);
+				
+				if (verbosity >= 1) {
+					fprintf(stdout, "Writing key to file %s\n", outputfile_str);
+				}
+				
+				outputfile = fopen(outputfile_str, "w");
+				if (!outputfile) {
+					fprintf(stderr, "Error writing key to file %s: %s\n", outputfile_str, strerror(errno));
+				} else {
+					ldns_rr_print(outputfile, k);
+					fclose(outputfile);
+				}
+				
+				LDNS_FREE(domain_str);
+				LDNS_FREE(outputfile_str);
+			}
+/*
+			domain_str = ldns_rdf2str(domain);
+			outputfile = LDNS_XMALLOC(char, strlen(domain_str) + 8);
+			outputfile[0] = 'K';
+			strncpy(&outputfile[1], domain_str, strlen(domain_str));
+			outputfile[strlen(domain_str) + 1] = '.';
+			outputfile[strlen(domain_str) + 2] = '+';
+			outputfile[strlen(domain_str) + 3] = '.';
+			outputfile[strlen(domain_str) + 4] = '+';
+			strncpy(&outputfile[strlen(domain_str) + 3], ".key", 5);
+			if (verbosity >= 1) {
+				fprintf(stdout, "Writing key to file %s\n", outputfile);
+			}
+			LDNS_FREE(domain_str);
+			LDNS_FREE(outputfile);
+*/
+		} else {
+			ldns_rr_list_print(stdout, l);
+		}
 	} else {
 		printf("no packet?!?\n");
 	}
