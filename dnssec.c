@@ -1133,7 +1133,7 @@ ldns_nsec3_hash_name(ldns_rdf *name, uint8_t algorithm, uint32_t iterations, uin
 	orig_owner_str = ldns_rdf2str(name);
 	
 	/* TODO: mnemonic list for hash algs SHA-1, default to 1 now (sha1) */
-	if (iterations > 16777216 || iterations < 1) {
+	if (iterations > 16777216 || iterations < 0) {
 		perror("Bad number for NSEC3 hash iterations");
 		return NULL;
 	}
@@ -1281,6 +1281,7 @@ ldns_create_nsec3(ldns_rdf *cur_owner,
 		}
 	}
 	/* add NSEC and RRSIG anyway */
+#if 0
 	i_type = LDNS_RR_TYPE_RRSIG;
 	if (i_type / 8 > bm_len) {
 		bitmap = LDNS_XREALLOC(bitmap, uint8_t, (i_type / 8) + 1);
@@ -1300,6 +1301,7 @@ ldns_create_nsec3(ldns_rdf *cur_owner,
 		}
 	}
 	ldns_set_bit(bitmap + (int) i_type / 8, (int) (7 - (i_type % 8)), true);
+#endif
 	/* and SOA if owner == zone */
 	if (ldns_dname_compare(cur_zone, cur_owner) == 0) {
 		i_type = LDNS_RR_TYPE_SOA;
