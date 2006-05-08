@@ -474,7 +474,7 @@ main(int argc, char *argv[])
 		ldns_resolver_set_debug(res, false);
 	}
 	ldns_resolver_set_dnssec(res, qdnssec);
-	ldns_resolver_set_dnssec_cd(res, qdnssec);
+/*	ldns_resolver_set_dnssec_cd(res, qdnssec);*/
 	ldns_resolver_set_ip6(res, qfamily);
 	ldns_resolver_set_fail(res, qfail);
 	ldns_resolver_set_usevc(res, qusevc);
