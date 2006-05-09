@@ -67,7 +67,7 @@ read_in(ldns_rr_list* list, ldns_rdf** qname, FILE *in)
 			abort_ldns_error("read rr", err);
 		ldns_rr_list_push_rr(list, rr);
 	}
-	printf("nsec3-covers: read %d rrs\n", ldns_rr_list_rr_count(list));
+	printf("nsec3-covers: read %d rrs\n", (int)ldns_rr_list_rr_count(list));
 	if(!qname) {
 		printf("Could not read question name\n");
 		exit(1);

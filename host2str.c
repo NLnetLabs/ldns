@@ -515,7 +515,7 @@ ldns_rdf2buffer_str_nsec3_vars(ldns_buffer *output, const ldns_rdf *rdf)
 	uint8_t *data = ldns_rdf_data(rdf);
 	size_t pos;
 
-	opt_in = data[0] & 0x80;
+	opt_in = data[1] & 0x80;
 	ldns_buffer_printf(output, "%u ", opt_in);
 	
 	/* TODO: mnemonic */
@@ -523,7 +523,7 @@ ldns_rdf2buffer_str_nsec3_vars(ldns_buffer *output, const ldns_rdf *rdf)
 	ldns_buffer_printf(output, "%u ", hash_function);
 	
 	iterations_wire[0] = 0;
-	iterations_wire[1] = data[1];
+	iterations_wire[1] = data[1] & 0x7f;
 	iterations_wire[2] = data[2];
 	iterations_wire[3] = data[3];
 	
