@@ -475,7 +475,12 @@ printf("DAWASEM\n");
 		
 		for (nsec_i = 0; nsec_i < ldns_rr_list_rr_count(nsecs); nsec_i++) {
 			hashed_name = ldns_nsec3_hash_name_frm_nsec3(ldns_rr_list_rr(nsecs, nsec_i), name);
-
+			printf(";; ");
+			ldns_rdf_print(stdout, name);
+			printf(" hashes to ");
+			ldns_rdf_print(stdout, hashed_name);
+			printf("\n");
+			
 			result = ldns_dname_cat(hashed_name, ldns_dname_left_chop(name));
 			if (result != LDNS_STATUS_OK) {
 				fprintf(stderr, "Error concatenating hashed name: %s\n", ldns_get_errorstr_by_id(result));
@@ -487,20 +492,32 @@ printf("DAWASEM\n");
 					/* Error, according to the nsec this rrset is signed */
 					result = LDNS_STATUS_CRYPTO_NO_RRSIG;
 				} else {
+					printf(";; NSEC3 denies existence (bitmap does not cover type) for: ");
+					ldns_rdf_print(stdout, name);
+					printf("\n;; ");
+					ldns_rr_print(stdout, ldns_rr_list_rr(nsecs, nsec_i));
+					printf(";;\n");
+					
 					/* ok nsec denies existence, chase the nsec now */
 					result = do_chase(res, ldns_rr_owner(ldns_rr_list_rr(nsecs, nsec_i)), LDNS_RR_TYPE_NSEC3, c, trusted_keys, pkt, qflags);
 					if (result == LDNS_STATUS_OK) {
 						ldns_pkt_free(pkt);
-						printf(";; Verifiably insecure.\n");
+						printf(";; Verifiably insecure or data existence denied by NSEC3.\n");
 						return result;
 					}
 				}
 			} else if (ldns_nsec_covers_name(ldns_rr_list_rr(nsecs, nsec_i), hashed_name)) {
+				printf(";; NSEC3 denies existence (hashed name falls in nsec3 range) for: ");
+				ldns_rdf_print(stdout, name);
+				printf("\n;; ");
+				ldns_rr_print(stdout, ldns_rr_list_rr(nsecs, nsec_i));
+				printf(";;\n");
+				
 				/* Verifably insecure? chase the covering nsec */
 				result = do_chase(res, ldns_rr_owner(ldns_rr_list_rr(nsecs, nsec_i)), LDNS_RR_TYPE_NSEC3, c, trusted_keys, pkt, qflags);
 				if (result == LDNS_STATUS_OK) {
 					ldns_pkt_free(pkt);
-					printf(";; Verifiably insecure.\n");
+					printf(";; Verifiably insecure or data existence denied by NSEC3.\n");
 					return result;
 				}
 			} else {
