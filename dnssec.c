@@ -1133,7 +1133,7 @@ ldns_nsec3_hash_name(ldns_rdf *name, uint8_t algorithm, uint32_t iterations, uin
 	orig_owner_str = ldns_rdf2str(name);
 	
 	/* TODO: mnemonic list for hash algs SHA-1, default to 1 now (sha1) */
-	if (iterations > 16777216 || iterations < 0) {
+	if (iterations > 16777216) {
 		perror("Bad number for NSEC3 hash iterations");
 		return NULL;
 	}
@@ -1402,7 +1402,9 @@ ldns_nsec_bitmap_covers_type(const ldns_rdf *nsec_bitmap, ldns_rr_type type)
 	uint8_t window_block_nr;
 	
 	/* Check the bitmap if our type is there */
-	assert(ldns_rdf_get_type(nsec_bitmap) == LDNS_RDF_TYPE_NSEC);
+	if (!nsec_bitmap) {
+		return false;
+	}
 	bitmap = ldns_rdf_data(nsec_bitmap);
 	window_block_nr = (uint8_t) (type / 256);
 	i = 0;

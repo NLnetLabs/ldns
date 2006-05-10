@@ -244,13 +244,12 @@ do_chase(ldns_resolver *res, ldns_rdf *name, ldns_rr_type type, ldns_rr_class c,
 		return LDNS_STATUS_EMPTY_LABEL;
 	}
 
-/*
-printf("Chasing: ");
-ldns_rdf_print(stdout, name);
-printf(" type %d\n", type);
-printf("in:\n");
-ldns_pkt_print(stdout, pkt);	
-*/
+	if (qdebug != -1) {
+		printf(";; Chasing: ");
+			ldns_rdf_print(stdout, name);
+			printf(" type %d\n", type);
+	}
+
 	if (!trusted_keys || ldns_rr_list_rr_count(trusted_keys) < 1) {
 		warning("No trusted keys specified");
 	}
