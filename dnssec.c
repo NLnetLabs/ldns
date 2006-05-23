@@ -26,6 +26,8 @@
 #include <openssl/err.h>
 #include <openssl/md5.h>
 
+#define OPTOUT_MASK 0x80;
+
 /* used only on the public key RR */
 uint16_t
 ldns_calc_keytag(const ldns_rr *key)
@@ -1196,7 +1198,7 @@ ldns_create_nsec3(ldns_rdf *cur_owner,
                   ldns_rdf *cur_zone,
                   ldns_rr_list *rrs,
                   uint8_t algorithm,
-                  bool opt_in,
+                  bool opt_out,
                   uint32_t iterations,
                   uint8_t salt_length,
                   uint8_t *salt)
@@ -1238,10 +1240,10 @@ ldns_create_nsec3(ldns_rdf *cur_owner,
 	*/
 	nsec3_vars_data = LDNS_XMALLOC(uint8_t, 5 + salt_length);
 	nsec3_vars_data[0] = algorithm;
-	if (opt_in) {
-		nsec3_vars_data[0] &= 0xff;
+	if (opt_out) {
+		nsec3_vars_data[1] |= OPTOUT_MASK;
 	} else {
-		nsec3_vars_data[0] &= 0x7f;
+		nsec3_vars_data[1] &= !OPTOUT_MASK;
 	}
 	
 	ldns_write_uint32(&iterations_data, iterations);
@@ -1361,35 +1363,131 @@ ldns_rr_print(stdout, nsec);
 	return nsec;
 }
 
+uint8_t
+ldns_nsec3_algorithm(const ldns_rr *nsec3_rr)
+{
+	if (nsec3_rr && ldns_rr_get_type(nsec3_rr) == LDNS_RR_TYPE_NSEC3 &&
+	    ldns_rdf_size(ldns_rr_rdf(nsec3_rr, 0)) > 0
+	   ) {
+		return ldns_rdf_data(ldns_rr_rdf(nsec3_rr, 0))[0];
+	}
+	return 0;
+}
+
+uint32_t
+ldns_nsec3_iterations(const ldns_rr *nsec3_rr)
+{
+	uint8_t *data;
+	uint8_t iterations_wire[4];
+
+	if (nsec3_rr && ldns_rr_get_type(nsec3_rr) == LDNS_RR_TYPE_NSEC3 &&
+	    ldns_rdf_size(ldns_rr_rdf(nsec3_rr, 0)) > 0
+	   ) {
+		data = ldns_rdf_data(ldns_rr_rdf(nsec3_rr, 0));
+		
+		iterations_wire[0] = 0;
+		iterations_wire[1] = data[1] & !OPTOUT_MASK;
+		iterations_wire[2] = data[2];
+		iterations_wire[3] = data[3];
+
+		return ldns_read_uint32(iterations_wire);
+	
+	}
+	return 0;
+	
+}
+
+uint8_t
+ldns_nsec3_salt_length(const ldns_rr *nsec3_rr)
+{
+	if (nsec3_rr && ldns_rr_get_type(nsec3_rr) == LDNS_RR_TYPE_NSEC3 &&
+	    ldns_rdf_size(ldns_rr_rdf(nsec3_rr, 0)) > 4
+	   ) {
+		return ldns_rdf_data(ldns_rr_rdf(nsec3_rr, 0))[4];
+	}
+	return 0;
+}
+
+uint8_t *
+ldns_nsec3_salt(const ldns_rr *nsec3_rr)
+{
+	uint8_t salt_length;
+	uint8_t *salt;
+	
+	if (nsec3_rr && ldns_rr_get_type(nsec3_rr) == LDNS_RR_TYPE_NSEC3 &&
+	    ldns_rdf_size(ldns_rr_rdf(nsec3_rr, 0)) > 4
+	   ) {
+	   	salt_length = ldns_nsec3_salt_length(nsec3_rr);
+	   	
+	   	if (ldns_rdf_size(ldns_rr_rdf(nsec3_rr, 0)) > (size_t) 4 + salt_length) {
+			salt = LDNS_XMALLOC(uint8_t, salt_length);
+	   		memcpy(salt, &ldns_rdf_data(ldns_rr_rdf(nsec3_rr, 0))[5], salt_length);
+	   		return salt;
+	   	}
+	}
+	return NULL;
+}
+
+bool
+ldns_nsec3_optout(const ldns_rr *nsec3_rr)
+{
+	ldns_rdf *rdata;
+	uint8_t val;
+	if (!nsec3_rr || ldns_rr_get_type(nsec3_rr) != LDNS_RR_TYPE_NSEC3) {
+		return false;
+	} else {
+		rdata = ldns_rr_rdf(nsec3_rr, 0);
+		if (ldns_rdf_size(rdata) < 2) {
+			return false;
+		} else {
+			val = ldns_rdf_data(rdata)[1] & OPTOUT_MASK;
+			
+			if (val != 0) {
+				return true;
+			} else {
+				return false;
+			}
+		}
+	}
+}
+
+ldns_rdf *
+ldns_nsec3_bitmap(const ldns_rr *nsec3_rr)
+{
+	if (!nsec3_rr || ldns_rr_get_type(nsec3_rr) != LDNS_RR_TYPE_NSEC3) {
+		return NULL;
+	} else {
+		return ldns_rr_rdf(nsec3_rr, 1);
+	}
+}
+
 ldns_rdf *
 ldns_nsec3_hash_name_frm_nsec3(const ldns_rr *nsec, ldns_rdf *name)
 {
 	uint8_t algorithm;
 	uint32_t iterations;
-	uint8_t iterations_wire[4];
-	
 	uint8_t *data;
-
 	uint8_t salt_length;
 	uint8_t *salt = 0;
+uint8_t salt_i;
 	
 	ldns_rdf *hashed_owner;
 
-	data = ldns_rdf_data(ldns_rr_rdf(nsec, 0));
-	algorithm = data[0];
-	iterations_wire[0] = 0;
-	iterations_wire[1] = data[1];
-	iterations_wire[2] = data[2];
-	iterations_wire[3] = data[3];
-	
-	iterations = ldns_read_uint32(iterations_wire);
-	
-	salt_length = data[4];
-	salt = LDNS_XMALLOC(uint8_t, salt_length);
-	memcpy(salt, &data[5], salt_length);
+printf("NSEC RDF: ");
+ldns_rdf_print(stdout, ldns_rr_rdf(nsec, 0));
+printf("\n\n");
+	algorithm = ldns_nsec3_algorithm(nsec);
+	salt_length = ldns_nsec3_salt_length(nsec);
+	salt = ldns_nsec3_salt(nsec);
+	iterations = ldns_nsec3_iterations(nsec);
 	
 	hashed_owner = ldns_nsec3_hash_name(name, algorithm, iterations, salt_length, salt);
 	
+printf(";; Iterations: %u, Salt: ", iterations);
+for (salt_i = 0; salt_i < salt_length; salt_i++) {
+	printf("%02x", salt[salt_i]);
+}
+printf("\n");
 	LDNS_FREE(salt);
 	return hashed_owner;
 }
