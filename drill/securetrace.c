@@ -128,7 +128,8 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 	ldns_rdf *authname;
 	ldns_rdf **labels;
 	ldns_status status;
-	ssize_t i, j;
+	ssize_t i;
+	size_t j;
 	uint8_t labels_count_current;
 	uint8_t labels_count_all;
 	ldns_pkt_type pt;
@@ -377,7 +378,7 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 		/* fake print the nameserver for this node */
 		for(j = 0; j < ldns_rr_list_rr_count(new_nss); j++) {
 			ldns_rdf_print(stdout, labels[i]);
-			printf("\t%d\tIN\tNS\t", ldns_rr_ttl(ldns_rr_list_rr(new_nss, j)));
+			printf("\t%d\tIN\tNS\t", (int)ldns_rr_ttl(ldns_rr_list_rr(new_nss, j)));
 			ldns_rdf_print(stdout, 
 				ldns_rr_rdf(ldns_rr_list_rr(new_nss, j), 0));
 			printf("\n");
