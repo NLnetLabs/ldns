@@ -18,13 +18,17 @@
  * a ds in *ds. If so, we have a trusted path. If 
  * not something is the matter
  */
-ldns_rr_list *
+static ldns_rr_list *
 ds_key_match(ldns_rr_list *ds, ldns_rr_list *trusted)
 {
 	size_t i, j;
 	bool match;
 	ldns_rr *rr_i, *rr_j;
 	ldns_rr_list *trusted_ds;
+
+	if (!trusted || !ds) {
+		return NULL;
+	}
 
 	match = false;
 	trusted_ds = ldns_rr_list_new();
@@ -35,11 +39,12 @@ ds_key_match(ldns_rr_list *ds, ldns_rr_list *trusted)
 	for (i = 0; i < ldns_rr_list_rr_count(trusted); i++) {
 		rr_i = ldns_rr_list_rr(trusted, i);
 		for (j = 0; j < ldns_rr_list_rr_count(ds); j++) {
-			rr_j = ldns_rr_list_rr(ds, i);
+
+			rr_j = ldns_rr_list_rr(ds, j);
 			if (ldns_rr_compare_ds(rr_i, rr_j)) {
 				match = true;
 				printf("MATCH! :-)\n");
-				ldns_rr_list_push_rr(trusted_ds, rr_j);
+				ldns_rr_list_push_rr(trusted_ds, rr_j); 
 			}
 		}
 	}
@@ -293,6 +298,9 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 		case LDNS_PACKET_ANSWER:
 			print_ds_list_abbr(stdout, ds_list, NULL);
 			print_rrsig_list_abbr(stdout, sig_list, NULL); 
+
+			ds_key_match(ds_list, trusted_keys);
+
 			break;
 		case LDNS_PACKET_NXDOMAIN:
 		case LDNS_PACKET_NODATA:
@@ -404,6 +412,7 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 					printf("not validated\n");
 				}
 			}
+			ds_key_match(ds_list, trusted_keys);
 			break;
 		case LDNS_PACKET_NXDOMAIN:
 		case LDNS_PACKET_NODATA:
@@ -421,15 +430,7 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 		
 	}
 	/* /DNSSEC */
-
 	
-#if 0
-	if (qdebug != -1) {
-		ldns_rr_list_print(stdout, final_answer);
-		ldns_rr_list_print(stdout, new_nss);
-
-	}
-#endif 
 	ldns_pkt_free(p); 
 	return NULL;
 }
