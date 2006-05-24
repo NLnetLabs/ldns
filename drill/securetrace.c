@@ -13,6 +13,45 @@
 
 #define VAL " [VALIDATED]" 
 
+
+/* See if there is a key/ds in trusted that matches
+ * a ds in *ds. If so, we have a trusted path. If 
+ * not something is the matter
+ */
+ldns_rr_list *
+ds_key_match(ldns_rr_list *ds, ldns_rr_list *trusted)
+{
+	size_t i, j;
+	bool match;
+	ldns_rr *rr_i, *rr_j;
+	ldns_rr_list *trusted_ds;
+
+	match = false;
+	trusted_ds = ldns_rr_list_new();
+	if (!trusted_ds) {
+		return NULL;
+	}
+
+	for (i = 0; i < ldns_rr_list_rr_count(trusted); i++) {
+		rr_i = ldns_rr_list_rr(trusted, i);
+		for (j = 0; j < ldns_rr_list_rr_count(ds); j++) {
+			rr_j = ldns_rr_list_rr(ds, i);
+			if (ldns_rr_compare_ds(rr_i, rr_j)) {
+				match = true;
+				printf("MATCH! :-)\n");
+				ldns_rr_list_push_rr(trusted_ds, rr_j);
+			}
+		}
+	}
+
+	if (match) {
+		return trusted_ds;
+	} else {
+		return NULL;
+	}
+}
+
+
 /*
  * generic function to get some RRset from a nameserver
  * and possible some signatures too (that would be the day...)
