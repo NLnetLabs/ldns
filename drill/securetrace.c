@@ -249,7 +249,7 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 		case LDNS_PACKET_NXDOMAIN:
 		case LDNS_PACKET_NODATA:
 		default:
-			printf(";; No DNSSEC RRs found, not attemping validation\n");
+			printf(";; No DNSKEYs found, not attemping validation\n");
 			break;
 		} 
 
@@ -262,7 +262,7 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 		case LDNS_PACKET_NXDOMAIN:
 		case LDNS_PACKET_NODATA:
 		default:
-			printf(";; No DNSSEC RRs found, not attemping validation\n");
+			printf(";; No DSs found, not attemping validation\n");
 			break;
 		} 
 		
@@ -351,7 +351,7 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 			ldns_pkt_free(p); 
 			return NULL;
 		default:
-			printf(";; No DNSSEC RRs found, not attemping validation\n");
+			printf(";; No DNSKEYs found, not attemping validation\n");
 			break;
 		} 
 
@@ -376,7 +376,7 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 			ldns_pkt_free(p); 
 			return NULL;
 		default:
-			printf(";; No DS RRs found, not attemping validation\n");
+			printf(";; No DSs found, not attemping validation\n");
 			break;
 		} 
 

@@ -147,11 +147,12 @@ print_rrsig_abbr(FILE *fp, ldns_rr *sig) {
 
 	/* print a number of rdf's */
 	/* typecovered */
-	ldns_rdf_print(fp, ldns_rr_rdf(sig, 0)); fprintf(fp, " ");
+	fprintf(fp, "(");
+	ldns_rdf_print(fp, ldns_rr_rdf(sig, 0)); fprintf(fp, ") ");
 	/* algo */
 	ldns_rdf_print(fp, ldns_rr_rdf(sig, 1)); fprintf(fp, " ");
 	/* labels */
-	ldns_rdf_print(fp, ldns_rr_rdf(sig, 2)); fprintf(fp, " ");
+	ldns_rdf_print(fp, ldns_rr_rdf(sig, 2)); fprintf(fp, " (\n\t\t\t");
 	/* expir */
 	ldns_rdf_print(fp, ldns_rr_rdf(sig, 4)); fprintf(fp, " ");
 	/* incep */	
@@ -159,7 +160,7 @@ print_rrsig_abbr(FILE *fp, ldns_rr *sig) {
 	/* key-id */	
 	ldns_rdf_print(fp, ldns_rr_rdf(sig, 6)); fprintf(fp, " ");
 	/* key owner */
-	ldns_rdf_print(fp, ldns_rr_rdf(sig, 7));
+	ldns_rdf_print(fp, ldns_rr_rdf(sig, 7)); fprintf(fp, ")");
 }
 
 void

@@ -909,7 +909,7 @@ ldns_pkt_reply_type(ldns_pkt *p)
 		tmp = ldns_pkt_rr_list_by_type(p, LDNS_RR_TYPE_SOA, 
 					LDNS_SECTION_AUTHORITY);
 		if (tmp) {
-			ldns_rr_list_print(stdout, tmp);
+			ldns_rr_list_deep_free(tmp);
 			return LDNS_PACKET_NODATA;
 		} else {
 			/* I have no idea ... */
