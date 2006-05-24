@@ -43,7 +43,6 @@ ds_key_match(ldns_rr_list *ds, ldns_rr_list *trusted)
 			rr_j = ldns_rr_list_rr(ds, j);
 			if (ldns_rr_compare_ds(rr_i, rr_j)) {
 				match = true;
-				printf("MATCH! :-)\n");
 				ldns_rr_list_push_rr(trusted_ds, rr_j); 
 			}
 		}
