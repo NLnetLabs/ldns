@@ -97,8 +97,6 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 	ldns_rr_list *ds_sig_list;
 	ldns_rr_list *ds_list;
 
-	ldns_rr_list *validated;  /* stuff (DNSKEY/DS) that are cryptographic 'good' */
-
 	secure = true;
 	authname = NULL;
 	loop_count = 0;
@@ -113,9 +111,7 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 	sig_list = ldns_rr_list_new();
 	ds_sig_list = ldns_rr_list_new();
 
-	validated = ldns_rr_list_new();
-
-	if (!p || !res || !sig_list || !validated) {
+	if (!p || !res || !sig_list) {
 		error("Memory allocation failed");
 		return NULL;
 	}
@@ -240,9 +236,9 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 			print_dnskey_list_abbr(stdout, key_list, NULL); 
 			print_rrsig_list_abbr(stdout, sig_list, NULL); 
 			if (sig_list) {
-				if (ldns_verify(key_list, sig_list, key_list, validated) ==
+				if (ldns_verify(key_list, sig_list, key_list, trusted_keys) ==
 						LDNS_STATUS_OK) {
-					print_dnskey_list_abbr(stdout, validated, VAL); 
+					print_dnskey_list_abbr(stdout, trusted_keys, VAL); 
 				}
 			}
 			break;
@@ -340,7 +336,7 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 			printf(";; DNSSEC RRs\n");
 			if (sig_list) {
 			print_rrsig_list_abbr(stdout, sig_list, NULL); 
-				if (ldns_verify(key_list, sig_list, key_list, validated) ==
+				if (ldns_verify(key_list, sig_list, key_list, trusted_keys) ==
 						LDNS_STATUS_OK) {
 				}
 			}
@@ -362,11 +358,11 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 			print_ds_list_abbr(stdout, ds_list, NULL);
 			print_rrsig_list_abbr(stdout, ds_sig_list, NULL);
 			if (sig_list) {
-				if (ldns_verify(ds_list, sig_list, key_list, validated) ==
+				if (ldns_verify(ds_list, sig_list, key_list, trusted_keys) ==
 						LDNS_STATUS_OK) {
-					print_ds_list_abbr(stdout, validated, "DS" VAL); 
+					print_ds_list_abbr(stdout, trusted_keys, "DS" VAL); 
 				} else {
-					printf("no validated\n");
+					printf("not validated\n");
 				}
 			}
 			break;
