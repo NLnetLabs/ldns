@@ -5,7 +5,9 @@
  * See the file LICENSE for the license
  */
 
-#include "config.h"
+#include <stdint.h>
+#include <unistd.h>
+#include <stdlib.h>
 
 #include <ldns/dns.h>
 
