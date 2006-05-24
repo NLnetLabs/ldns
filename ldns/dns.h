@@ -11,6 +11,14 @@
  * A bunch of defines that are used in the DNS.
  */
 
+
+/**
+ * \mainpage LDNS Documentation
+ *
+ * \section introduction Introduction
+ *
+ * ldns is a general DNS library
+ */
 #ifndef LDNS_DNS_H
 #define LDNS_DNS_H
 
