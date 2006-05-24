@@ -164,7 +164,7 @@ ldns_rr * ldns_create_nsec(ldns_rdf *cur_owner, ldns_rdf *next_owner, ldns_rr_li
 
 /**
  * Checks coverage of NSEC RR type bitmap
- * \param[in] nsec The NSEC bitmap rdata field to check
+ * \param[in] nsec_bitmap The NSEC bitmap rdata field to check
  * \param[in] type The type to check
  * \return true if the NSEC RR covers the type
  */
@@ -174,7 +174,6 @@ bool ldns_nsec_bitmap_covers_type(const ldns_rdf *nsec_bitmap, ldns_rr_type type
  * Checks coverage of NSEC RR name span
  * \param[in] nsec The NSEC RR to check
  * \param[in] name The owner dname to check
- * \param[in] type The type to check
  * \return true if the NSEC RR covers the owner name
  */
 bool ldns_nsec_covers_name(const ldns_rr *nsec, ldns_rdf *name);
