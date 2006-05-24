@@ -147,8 +147,7 @@ print_rrsig_abbr(FILE *fp, ldns_rr *sig) {
 
 	/* print a number of rdf's */
 	/* typecovered */
-	fprintf(fp, "(");
-	ldns_rdf_print(fp, ldns_rr_rdf(sig, 0)); fprintf(fp, ") ");
+	ldns_rdf_print(fp, ldns_rr_rdf(sig, 0)); fprintf(fp, " ");
 	/* algo */
 	ldns_rdf_print(fp, ldns_rr_rdf(sig, 1)); fprintf(fp, " ");
 	/* labels */
@@ -202,12 +201,13 @@ print_rr_list_abbr(FILE *fp, ldns_rr_list *rrlist, char *usr)
 	size_t i;
 	ldns_rr_type tp;
 
-	if (usr) {
-		fprintf(fp, "%s ", usr);
-	}
-
 	for(i = 0; i < ldns_rr_list_rr_count(rrlist); i++) {
 		tp = ldns_rr_get_type(ldns_rr_list_rr(rrlist, i));
+		if (i == 0 && tp != LDNS_RR_TYPE_RRSIG) {
+			if (usr) {
+				fprintf(fp, "%s ", usr);
+			}
+		}
 		switch(tp) {
 		case LDNS_RR_TYPE_DNSKEY:
 			print_dnskey_abbr(fp, ldns_rr_list_rr(rrlist, i));

@@ -11,7 +11,7 @@
 #include "drill.h"
 #include <ldns/dns.h>
 
-#define VAL "[VALIDATED]" 
+#define VAL "[OK]" 
 
 
 /* See if there is a key/ds in trusted that matches
@@ -128,7 +128,7 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 	ldns_rdf *authname;
 	ldns_rdf **labels;
 	ldns_status status;
-	ssize_t i;
+	ssize_t i, j;
 	uint8_t labels_count_current;
 	uint8_t labels_count_all;
 	ldns_pkt_type pt;
@@ -374,9 +374,14 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 	printf(";; Re-querying at current nameservers\n\n");
 	for(i = (ssize_t)labels_count_current - 1; i >= 0; i--) {
 
-		printf("labels: ");
-		ldns_rdf_print(stdout, labels[i]);
-		printf("\n");
+		/* fake print the nameserver for this node */
+		for(j = 0; j < ldns_rr_list_rr_count(new_nss); j++) {
+			ldns_rdf_print(stdout, labels[i]);
+			printf("\t%d\tIN\tNS\t", ldns_rr_ttl(ldns_rr_list_rr(new_nss, j)));
+			ldns_rdf_print(stdout, 
+				ldns_rr_rdf(ldns_rr_list_rr(new_nss, j), 0));
+			printf("\n");
+		}
 
 		pt = get_key(res, labels[i], &key_list, &sig_list);
 		switch(pt) {
@@ -402,16 +407,13 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 		pt = get_ds(res, labels[i], &ds_list, &ds_sig_list);
 		switch(pt) {
 		case LDNS_PACKET_ANSWER:
-			printf("DS records\n");
 			print_rr_list_abbr(stdout, ds_list, NULL);
 			print_rr_list_abbr(stdout, ds_sig_list, NULL);
 			if (sig_list) {
 				if (ldns_verify(ds_list, sig_list, key_list, trusted_keys) ==
 						LDNS_STATUS_OK) {
 					print_rr_list_abbr(stdout, trusted_keys, "DS" VAL); 
-				} else {
-					printf("not validated\n");
-				}
+				} 
 			}
 			TMP_ds_list = ds_key_match(ds_list, trusted_keys);
 			print_rr_list_abbr(stdout, TMP_ds_list, VAL);
