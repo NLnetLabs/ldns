@@ -11,7 +11,7 @@
 #include "drill.h"
 #include <ldns/dns.h>
 
-#define VAL " [VALIDATED]" 
+#define VAL "[VALIDATED]" 
 
 
 /* See if there is a key/ds in trusted that matches
@@ -277,12 +277,12 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 		switch(pt) {
 		case LDNS_PACKET_ANSWER:
 			printf(";; DNSSEC RRs\n");
-			print_dnskey_list_abbr(stdout, key_list, NULL); 
-			print_rrsig_list_abbr(stdout, sig_list, NULL); 
+			print_rr_list_abbr(stdout, key_list, NULL); 
+			print_rr_list_abbr(stdout, sig_list, NULL); 
 			if (sig_list) {
 				if (ldns_verify(key_list, sig_list, key_list, trusted_keys) ==
 						LDNS_STATUS_OK) {
-					print_dnskey_list_abbr(stdout, trusted_keys, VAL); 
+					print_rr_list_abbr(stdout, trusted_keys, VAL); 
 				}
 			}
 			break;
@@ -296,8 +296,8 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 		pt = get_ds(res, authname, &ds_list, &sig_list);
 		switch(pt) {
 		case LDNS_PACKET_ANSWER:
-			print_ds_list_abbr(stdout, ds_list, NULL);
-			print_rrsig_list_abbr(stdout, sig_list, NULL); 
+			print_rr_list_abbr(stdout, ds_list, NULL);
+			print_rr_list_abbr(stdout, sig_list, NULL); 
 
 			ds_key_match(ds_list, trusted_keys);
 
@@ -382,7 +382,7 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 		case LDNS_PACKET_ANSWER:
 			printf(";; DNSSEC RRs\n");
 			if (sig_list) {
-			print_rrsig_list_abbr(stdout, sig_list, NULL); 
+			print_rr_list_abbr(stdout, sig_list, NULL); 
 				if (ldns_verify(key_list, sig_list, key_list, trusted_keys) ==
 						LDNS_STATUS_OK) {
 				}
@@ -402,12 +402,12 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 		switch(pt) {
 		case LDNS_PACKET_ANSWER:
 			printf("DS records\n");
-			print_ds_list_abbr(stdout, ds_list, NULL);
-			print_rrsig_list_abbr(stdout, ds_sig_list, NULL);
+			print_rr_list_abbr(stdout, ds_list, NULL);
+			print_rr_list_abbr(stdout, ds_sig_list, NULL);
 			if (sig_list) {
 				if (ldns_verify(ds_list, sig_list, key_list, trusted_keys) ==
 						LDNS_STATUS_OK) {
-					print_ds_list_abbr(stdout, trusted_keys, "DS" VAL); 
+					print_rr_list_abbr(stdout, trusted_keys, "DS" VAL); 
 				} else {
 					printf("not validated\n");
 				}
