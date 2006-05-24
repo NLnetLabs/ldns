@@ -153,13 +153,13 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 			drill_pkt_print(stdout, local_res, p);
 		}
 	} else {
-		error("cannot use local resolver");
+		error("Cannot use local resolver");
 		return NULL;
 	}
 
 	status = ldns_resolver_send(&p, res, name, t, c, 0);
 	if (!p) {
-		warning("No packet received");
+		warning("No packet received, aborting");
 		return NULL;
 	}
 
@@ -215,7 +215,7 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 		if (new_nss_aaaa) {
 			if (ldns_resolver_push_nameserver_rr_list(res, new_nss_aaaa) != 
 					LDNS_STATUS_OK) {
-				error("adding new nameservers");
+				error("Adding new nameservers");
 				ldns_pkt_free(p); 
 				return NULL;
 			}
@@ -223,7 +223,7 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 		if (new_nss_a) {
 			if (ldns_resolver_push_nameserver_rr_list(res, new_nss_a) != 
 					LDNS_STATUS_OK) {
-				error("adding new nameservers");
+				error("Adding new nameservers");
 				ldns_pkt_free(p); 
 				return NULL;
 			}
@@ -299,6 +299,7 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 
 	status = ldns_resolver_send(&p, res, name, t, c, 0);
 	if (!p) {
+		error("No packet received, aborting");
 		return NULL;
 	}
 

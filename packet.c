@@ -898,7 +898,7 @@ ldns_pkt_reply_type(ldns_pkt *p)
 		return LDNS_PACKET_UNKNOWN;
 	}
 
-	if (ldns_pkt_get_rcode(p) == LDNS_PACKET_NXDOMAIN) {
+	if (ldns_pkt_get_rcode(p) == LDNS_RCODE_NXDOMAIN) {
 		return LDNS_PACKET_NXDOMAIN;
 	}
 
