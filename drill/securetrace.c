@@ -17,20 +17,25 @@
  * generic function to get some RRset from a nameserver
  * and possible some signatures too (that would be the day...)
  */
-static ldns_rr_list *
-get_dnssec_rr(ldns_resolver *r, ldns_rdf *name, ldns_rr_type t, ldns_rr_list **sig)
+static ldns_pkt_type
+get_dnssec_rr(ldns_resolver *r, ldns_rdf *name, ldns_rr_type t, 
+	ldns_rr_list **rrlist, ldns_rr_list **sig)
 {
+	ldns_pkt_type pt = LDNS_PACKET_UNKNOWN;
 	ldns_pkt *p = NULL;
 	ldns_rr_list *rr = NULL;
 	ldns_rr_list *sigs = NULL;
 
 	p = ldns_resolver_query(r, name, t, LDNS_RR_CLASS_IN, 0); 
 	if (!p) {
-		return NULL;
-	} else {
-		/* ldns_pkt_print(stdout, p); */
+		return LDNS_PACKET_UNKNOWN;
 	}
 
+	pt = ldns_pkt_reply_type(p);
+	if (pt == LDNS_PACKET_NXDOMAIN || pt == LDNS_PACKET_NODATA) {
+		return pt;
+	}
+		
 	rr = ldns_pkt_rr_list_by_name_and_type(p, name, t, LDNS_SECTION_ANSWER);
 	/* there SHOULD be a sig there too... */
 	sigs = ldns_pkt_rr_list_by_name_and_type(p, name, LDNS_RR_TYPE_RRSIG, 
@@ -39,25 +44,28 @@ get_dnssec_rr(ldns_resolver *r, ldns_rdf *name, ldns_rr_type t, ldns_rr_list **s
 	if (sig) {
 		ldns_rr_list_cat(*sig, sigs);
 	}
-	return rr;
+	if (rrlist) {
+		*rrlist = rr;
+	}
+	return LDNS_PACKET_ANSWER;
 }
 
 /* 
  * retrieve keys for this zone
  */
-static ldns_rr_list *
-get_key(ldns_resolver *r, ldns_rdf *apexname, ldns_rr_list **opt_sig)
+static ldns_pkt_type
+get_key(ldns_resolver *r, ldns_rdf *apexname, ldns_rr_list **rrlist, ldns_rr_list **opt_sig)
 {
-	return get_dnssec_rr(r, apexname, LDNS_RR_TYPE_DNSKEY, opt_sig);
+	return get_dnssec_rr(r, apexname, LDNS_RR_TYPE_DNSKEY, rrlist, opt_sig);
 }
 
 /*
  * check to see if we can find a DS rrset here which we can then follow
  */
-static ldns_rr_list *
-get_ds(ldns_resolver *r, ldns_rdf *ownername, ldns_rr_list **opt_sig)
+static ldns_pkt_type
+get_ds(ldns_resolver *r, ldns_rdf *ownername, ldns_rr_list **rrlist, ldns_rr_list **opt_sig)
 {
-	return get_dnssec_rr(r, ownername, LDNS_RR_TYPE_DS, opt_sig);
+	return get_dnssec_rr(r, ownername, LDNS_RR_TYPE_DS, rrlist, opt_sig);
 }
 
 ldns_pkt *
@@ -80,6 +88,7 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 	ssize_t i;
 	uint8_t labels_count_current;
 	uint8_t labels_count_all;
+	ldns_pkt_type pt;
 
 	/* dnssec */
 	bool secure;
@@ -98,6 +107,7 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 	new_nss = NULL;
 	ns_addr = NULL;
 	final_answer = NULL;
+	pt = LDNS_PACKET_UNKNOWN;
 	p = ldns_pkt_new();
 	res = ldns_resolver_new();
 	sig_list = ldns_rr_list_new();
@@ -155,7 +165,6 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 
 	while(status == LDNS_STATUS_OK && 
 	      ldns_pkt_reply_type(p) == LDNS_PACKET_REFERRAL) {
-
 
 		new_nss_a = ldns_pkt_rr_list_by_type(p,
 				LDNS_RR_TYPE_A, LDNS_SECTION_ADDITIONAL);
@@ -224,9 +233,9 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 			authname = ldns_rr_owner(ldns_rr_list_rr(new_nss, 0));
 		} 
 
-		key_list = get_key(res, authname, &sig_list);
-
-		if (key_list) {
+		pt = get_key(res, authname, &key_list, &sig_list);
+		switch(pt) {
+		case LDNS_PACKET_ANSWER:
 			printf(";; DNSSEC RRs\n");
 			print_dnskey_list_abbr(stdout, key_list, NULL); 
 			print_rrsig_list_abbr(stdout, sig_list, NULL); 
@@ -236,19 +245,28 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 					print_dnskey_list_abbr(stdout, validated, VAL); 
 				}
 			}
-
-		} else {
+			break;
+		case LDNS_PACKET_NXDOMAIN:
+		case LDNS_PACKET_NODATA:
+		default:
 			printf(";; No DNSSEC RRs found, not attemping validation\n");
-		}
+			break;
+		} 
 
-		ds_list = get_ds(res, authname, &sig_list);
-		if (ds_list) {
+		pt = get_ds(res, authname, &ds_list, &sig_list);
+		switch(pt) {
+		case LDNS_PACKET_ANSWER:
 			print_ds_list_abbr(stdout, ds_list, NULL);
 			print_rrsig_list_abbr(stdout, sig_list, NULL); 
-		}
-
+			break;
+		case LDNS_PACKET_NXDOMAIN:
+		case LDNS_PACKET_NODATA:
+		default:
+			printf(";; No DNSSEC RRs found, not attemping validation\n");
+			break;
+		} 
+		
 		/* /DNSSEC */
-
 
 		if (loop_count++ > 20) {
 			/* unlikely that we are doing something usefull */
@@ -308,33 +326,38 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 
 		/* DNSSEC */
 	/* recurse on the name at this server */
-	printf("\n** RECURSING BY MY SELF **\n\n");
+	printf(";; Re-querying at current nameservers\n\n");
 	for(i = (ssize_t)labels_count_current - 1; i >= 0; i--) {
 
 		printf("labels: ");
 		ldns_rdf_print(stdout, labels[i]);
 		printf("\n");
 
-		key_list = get_key(res, labels[i], &sig_list);
-		ds_list = get_ds(res, labels[i], &ds_sig_list);
-		if (key_list) {
+		pt = get_key(res, labels[i], &key_list, &sig_list);
+		switch(pt) {
+		case LDNS_PACKET_ANSWER:
 			printf(";; DNSSEC RRs\n");
-#if 0
-			print_dnskey_list_abbr(stdout, key_list, NULL); 
-			print_rrsig_list_abbr(stdout, sig_list, NULL); 
-#endif 
 			if (sig_list) {
 			print_rrsig_list_abbr(stdout, sig_list, NULL); 
 				if (ldns_verify(key_list, sig_list, key_list, validated) ==
 						LDNS_STATUS_OK) {
-		/*			print_dnskey_list_abbr(stdout, validated, VAL);  */
 				}
 			}
-		} else {
+			break;
+		case LDNS_PACKET_NXDOMAIN:
+		case LDNS_PACKET_NODATA:
+			printf(";; No data received, giving up\n");
+			ldns_pkt_free(p); 
+			return NULL;
+		default:
 			printf(";; No DNSSEC RRs found, not attemping validation\n");
-		}
-		if (ds_list) {
-			printf("DS stuff\n");
+			break;
+		} 
+
+		pt = get_ds(res, labels[i], &ds_list, &ds_sig_list);
+		switch(pt) {
+		case LDNS_PACKET_ANSWER:
+			printf("DS records\n");
 			print_ds_list_abbr(stdout, ds_list, NULL);
 			print_rrsig_list_abbr(stdout, ds_sig_list, NULL);
 			if (sig_list) {
@@ -345,8 +368,16 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 					printf("no validated\n");
 				}
 			}
-
-		}
+			break;
+		case LDNS_PACKET_NXDOMAIN:
+		case LDNS_PACKET_NODATA:
+			printf(";; No data received, giving up\n");
+			ldns_pkt_free(p); 
+			return NULL;
+		default:
+			printf(";; No DS RRs found, not attemping validation\n");
+			break;
+		} 
 
 		ldns_rr_list_deep_free(sig_list);
 		sig_list = ldns_rr_list_new();

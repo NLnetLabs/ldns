@@ -892,19 +892,24 @@ ldns_pkt_query_new(ldns_rdf *rr_name, ldns_rr_type rr_type, ldns_rr_class rr_cla
 ldns_pkt_type
 ldns_pkt_reply_type(ldns_pkt *p)
 {
-	/* check for NXDOMAIN */
-	/* check DNSSEC records... this is a big one */
 	ldns_rr_list *tmp;
 
 	if (!p) {
 		return LDNS_PACKET_UNKNOWN;
 	}
 
+	if (ldns_pkt_get_rcode(p) == LDNS_PACKET_NXDOMAIN) {
+		return LDNS_PACKET_NXDOMAIN;
+	}
+
 	if (ldns_pkt_ancount(p) == 0 && ldns_pkt_arcount(p) == 0
 			&& ldns_pkt_nscount(p) == 1) {
-		if (ldns_pkt_rr_list_by_type(p, LDNS_RR_TYPE_SOA, 
-					LDNS_SECTION_AUTHORITY)) {
-			/* there is a SOA */
+
+		/* check for SOA */
+		tmp = ldns_pkt_rr_list_by_type(p, LDNS_RR_TYPE_SOA, 
+					LDNS_SECTION_AUTHORITY);
+		if (tmp) {
+			ldns_rr_list_print(stdout, tmp);
 			return LDNS_PACKET_NODATA;
 		} else {
 			/* I have no idea ... */

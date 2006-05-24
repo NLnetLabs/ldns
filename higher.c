@@ -58,7 +58,6 @@ ldns_get_rr_list_addr_by_name(ldns_resolver *res, ldns_rdf *name, ldns_rr_class 
 					ldns_rr_clone(ldns_rr_list_rr(hostsfilenames, i)));
 		}
 	}
-
 	ldns_rr_list_deep_free(hostsfilenames);
 
 	if (result) {
@@ -71,8 +70,6 @@ ldns_get_rr_list_addr_by_name(ldns_resolver *res, ldns_rdf *name, ldns_rr_class 
 		/* extract the data we need */
 		aaaa = ldns_pkt_rr_list_by_type(pkt, LDNS_RR_TYPE_AAAA, 
 			LDNS_SECTION_ANSWER);
-
-		/* ldns_rr_list_print(stdout, aaaa); DEBUG */
 		ldns_pkt_free(pkt);
 	} 
 
@@ -82,7 +79,6 @@ ldns_get_rr_list_addr_by_name(ldns_resolver *res, ldns_rdf *name, ldns_rr_class 
 		a = ldns_pkt_rr_list_by_type(pkt, LDNS_RR_TYPE_A, LDNS_SECTION_ANSWER);
 		ldns_pkt_free(pkt);
 	} 
-
 	ldns_resolver_set_ip6(res, ip6);
 
 	if (aaaa && a) {
@@ -102,7 +98,6 @@ ldns_get_rr_list_addr_by_name(ldns_resolver *res, ldns_rdf *name, ldns_rr_class 
 
 	ldns_rr_list_deep_free(aaaa);
 	ldns_rr_list_deep_free(a);
-
 	return result;
 }
 
