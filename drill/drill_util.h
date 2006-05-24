@@ -37,17 +37,9 @@ void print_dnskey_abbr(FILE *fp, ldns_rr *key);
 void print_ds_abbr(FILE *fp, ldns_rr *ds);
 
 /**
- * print some rdfs of a dnskey list
+ * print some rdfs of a rr in a rr_list
  */
-void print_dnskey_list_abbr(FILE *fp, ldns_rr_list *sig, char *usr);
-/**
- * print some rdfs of a signature list
- */
-void print_rrsig_list_abbr(FILE *fp, ldns_rr_list *sig, char *usr);
-/**
- * print some rdfs of a ds list
- */
-void print_ds_list_abbr(FILE *fp, ldns_rr_list *sig, char *usr);
+void print_rr_lst_abbr(FILE *fp, ldns_rr_list *sig, char *usr);
 
 /**
  * Alloc some memory, with error checking

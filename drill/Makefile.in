@@ -40,7 +40,7 @@ drill:	$(OBJ)
 	$(LINK) -o drill $(OBJ) $(LIBS)
 
 ## implicit rule
-%.o:	$(srcdir)/%.c
+%.o:	$(srcdir)/%.c $(HEADER)
 	$(COMPILE) -c $<
 
 clean:

@@ -141,6 +141,8 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 	ldns_rr_list *ds_sig_list;
 	ldns_rr_list *ds_list;
 
+	ldns_rr_list *TMP_ds_list;
+
 	secure = true;
 	authname = NULL;
 	loop_count = 0;
@@ -299,7 +301,8 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 			print_rr_list_abbr(stdout, ds_list, NULL);
 			print_rr_list_abbr(stdout, sig_list, NULL); 
 
-			ds_key_match(ds_list, trusted_keys);
+			TMP_ds_list = ds_key_match(ds_list, trusted_keys);
+			print_rr_list_abbr(stdout, TMP_ds_list, VAL);
 
 			break;
 		case LDNS_PACKET_NXDOMAIN:
@@ -312,7 +315,6 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 		/* /DNSSEC */
 
 		if (loop_count++ > 20) {
-			/* unlikely that we are doing something usefull */
 			error("Looks like we are looping");
 			ldns_pkt_free(p); 
 			return NULL;
@@ -412,7 +414,8 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 					printf("not validated\n");
 				}
 			}
-			ds_key_match(ds_list, trusted_keys);
+			TMP_ds_list = ds_key_match(ds_list, trusted_keys);
+			print_rr_list_abbr(stdout, TMP_ds_list, VAL);
 			break;
 		case LDNS_PACKET_NXDOMAIN:
 		case LDNS_PACKET_NODATA:
