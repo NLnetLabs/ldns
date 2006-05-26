@@ -4,9 +4,13 @@
  * See the file LICENSE for the license
  */
 
-#include "config.h"
-#include <errno.h>
+#include <stdint.h>
+#include <unistd.h>
+#include <stdlib.h>
+
 #include <ldns/dns.h>
+
+#include <errno.h>
 
 int
 main(int argc, char **argv)

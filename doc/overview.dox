@@ -7,23 +7,20 @@ functionality.
 
 \section central_structures Central structures
 
-<code>
+A DNS Resource record looks like this:
+
+<pre>
 nlnetlabs.nl.   600     IN      MX      10    open.nlnetlabs.nl.
-
  \              \       \       \       \                     /
-
   owner          ttl     class   type    \        rdf[]      /
-
   (rdf)     (uint16_t) (rr_class) (rr_type)
-
-                                           10          := rdf[0]
-
-                                    open.nlnetlabs.nl. := rdf[1]
-</code>
+                                                10          := rdf[0]
+                                                open.nlnetlabs.nl. := rdf[1]
+</pre>
 
 * rdf structure:
-The LHS is put in a rdf structure, which is a normal rdf but always has the
-type LDNS_RDF_TYPE_DNAME.
+The owner name is put in an rdf structure, which is a normal rdf but always
+has the type LDNS_RDF_TYPE_DNAME.
 
 An rdf structure has 3 members; the size, the type is carrying and a void *
 pointer to the data. The data is always in uncompressed wireformat.
@@ -48,7 +45,7 @@ be grouped together this way.
 
 * RR set structure
 An RR set structure is an RR list structure, but its accessor
-function check if the RR's in there are: 
+function checks if the \c ldns_rr structures in there are: 
  - from the same type
  - have the same TTL
  - have the same ownername

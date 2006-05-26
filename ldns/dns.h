@@ -32,7 +32,7 @@ other examples and tools to show how it can be used.
 ldns depends on OpenSSL for it's cryptographic functions.
 Feature list
 
-  - IP4 and IP6 support,
+  - Transparent IPv4 and IPv6 support (overridable if necessary),
   - TSIG support,
   - DNSSEC support; signing and verification,
   - small size,
@@ -47,6 +47,7 @@ main features.
 
 If you want to see some libdns action, you can read our tutorials:
   - \ref tutorial1_mx
+  - \ref tutorial2_zone
 
 Or you can just use the menu above to browse through the API docs.
 
