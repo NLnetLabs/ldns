@@ -192,14 +192,20 @@ ldns_verify_rrsig_keylist(ldns_rr_list *rrset, ldns_rr *rrsig, ldns_rr_list *key
 
 	if (expiration - inception < 0) {
                 /* bad sig, expiration before inception?? Tsssg */
+		ldns_buffer_free(rawsig_buf);
+		ldns_buffer_free(verify_buf);
 		return LDNS_STATUS_CRYPTO_EXPIRATION_BEFORE_INCEPTION;
         }
         if (now - inception < 0) {
                 /* bad sig, inception date has passed */
+		ldns_buffer_free(rawsig_buf);
+		ldns_buffer_free(verify_buf);
 		return LDNS_STATUS_CRYPTO_SIG_NOT_INCEPTED;
         }
         if (expiration - now < 0) {
                 /* bad sig, expiration date has passed */
+		ldns_buffer_free(rawsig_buf);
+		ldns_buffer_free(verify_buf);
 		return LDNS_STATUS_CRYPTO_SIG_EXPIRED;
         }
 	
@@ -211,7 +217,6 @@ ldns_verify_rrsig_keylist(ldns_rr_list *rrset, ldns_rr *rrsig, ldns_rr_list *key
 	}
 
 	orig_ttl = ldns_rdf2native_int32( ldns_rr_rdf(rrsig, 3));
-
 	label_count = ldns_rdf2native_int8(ldns_rr_rdf(rrsig, 2));
 
 	/* reset the ttl in the rrset with the orig_ttl from the sig */
@@ -276,7 +281,9 @@ ldns_verify_rrsig_keylist(ldns_rr_list *rrset, ldns_rr *rrsig, ldns_rr_list *key
 			} else {
 				/* There is no else here ???? */
 			}
+			
 			ldns_buffer_free(key_buf); 
+
 			if (result == LDNS_STATUS_OK) {
 				/* one of the keys has matched, don't break
 				 * here, instead put the 'winning' key in
@@ -284,6 +291,8 @@ ldns_verify_rrsig_keylist(ldns_rr_list *rrset, ldns_rr *rrsig, ldns_rr_list *key
 				 * later */
 				if (!ldns_rr_list_push_rr(validkeys, current_key)) {
 					/* couldn't push the key?? */
+					ldns_buffer_free(rawsig_buf);
+					ldns_buffer_free(verify_buf);
 					return LDNS_STATUS_MEM_ERR;
 				}
 			} 
@@ -298,7 +307,7 @@ ldns_verify_rrsig_keylist(ldns_rr_list *rrset, ldns_rr *rrsig, ldns_rr_list *key
 	ldns_buffer_free(verify_buf);
 	if (ldns_rr_list_rr_count(validkeys) == 0) {
 		/* no keys were added, return last error */
-		ldns_rr_list_free(validkeys);
+		ldns_rr_list_free(validkeys); 
 		return result;
 	} else {
 		ldns_rr_list_cat(good_keys, validkeys);

@@ -11,7 +11,7 @@
 #include "drill.h"
 #include <ldns/dns.h>
 
-#define VAL "[OK]" 
+#define SELF "[SELF]" 
 
 
 /* See if there is a key/ds in trusted that matches
@@ -90,12 +90,11 @@ get_dnssec_rr(ldns_pkt *p, ldns_rdf *name, ldns_rr_type t,
 		
 	if (name) {
 		rr = ldns_pkt_rr_list_by_name_and_type(p, name, t, LDNS_SECTION_ANSWER);
-		/* there SHOULD be a sig there too... */
 		sigs = ldns_pkt_rr_list_by_name_and_type(p, name, LDNS_RR_TYPE_RRSIG, 
 				LDNS_SECTION_ANSWER);
 	} else {
+		/* A DS-referral - get the DS records if they are there */
 		rr = ldns_pkt_rr_list_by_type(p, t, LDNS_SECTION_AUTHORITY);
-		/* there SHOULD be a sig there too... */
 		sigs = ldns_pkt_rr_list_by_type(p, LDNS_RR_TYPE_RRSIG, 
 				LDNS_SECTION_AUTHORITY);
 	}
@@ -232,8 +231,17 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 		 */
 		ds_p = get_dnssec_pkt(res, name, LDNS_RR_TYPE_DNSKEY);
 		pt = get_ds(ds_p, NULL, &ds_list, &ds_sig_list);
-		TMP_ds_list = ds_key_match(ds_list, trusted_keys);
-		print_rr_list_abbr(stdout, TMP_ds_list, VAL);
+		/* TMP_ds_list = ds_key_match(ds_list, trusted_keys); */
+		if (ds_sig_list) {
+			if (ldns_verify(ds_list, ds_sig_list, key_list, trusted_keys) ==
+					LDNS_STATUS_OK) {
+				/*print_rr_list_abbr(stdout, ds_list, SELF);  */
+			}
+		}
+
+
+
+		print_rr_list_abbr(stdout, TMP_ds_list, SELF);
 		print_rr_list_abbr(stdout, ds_list, NULL);
 
 		puts("");
@@ -305,18 +313,16 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 			authname = ldns_rr_owner(ldns_rr_list_rr(new_nss, 0));
 		} 
 
-		/* this SHOULD give DSs also */
 		p = get_dnssec_pkt(res, authname, LDNS_RR_TYPE_DNSKEY);
 		if (p) {
 			pt = get_key(p, authname, &key_list, &sig_list);
 			if (sig_list) {
 				if (ldns_verify(key_list, sig_list, key_list, trusted_keys) ==
 						LDNS_STATUS_OK) {
-					print_rr_list_abbr(stdout, trusted_keys, VAL); 
+					print_rr_list_abbr(stdout, key_list, SELF); 
 				}
 			}
 		}
-
 		/* /DNSSEC */
 
 		if (loop_count++ > 20) {
@@ -396,12 +402,12 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 			if (sig_list) {
 				if (ldns_verify(key_list, sig_list, key_list, trusted_keys) ==
 						LDNS_STATUS_OK) {
-					print_rr_list_abbr(stdout, trusted_keys, VAL); 
+					print_rr_list_abbr(stdout, key_list, SELF); 
 				}
 			}
 			pt = get_ds(p, labels[i], &ds_list, &ds_sig_list);
 			TMP_ds_list = ds_key_match(ds_list, trusted_keys);
-			print_rr_list_abbr(stdout, TMP_ds_list, VAL);
+			print_rr_list_abbr(stdout, TMP_ds_list, SELF);
 
 		} else {
 			mesg("No DNSKEYs found");
