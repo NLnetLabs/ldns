@@ -55,21 +55,30 @@ ds_key_match(ldns_rr_list *ds, ldns_rr_list *trusted)
 	}
 }
 
+ldns_pkt *
+get_dnssec_pkt(ldns_resolver *r, ldns_rdf *name, ldns_rr_type t) 
+{
+	ldns_pkt *p = NULL;
+	p = ldns_resolver_query(r, name, t, LDNS_RR_CLASS_IN, 0); 
+	if (!p) {
+		return NULL;
+	} else {
+		return p;
+	}
+}
 
 /*
  * generic function to get some RRset from a nameserver
  * and possible some signatures too (that would be the day...)
  */
 static ldns_pkt_type
-get_dnssec_rr(ldns_resolver *r, ldns_rdf *name, ldns_rr_type t, 
+get_dnssec_rr(ldns_pkt *p, ldns_rdf *name, ldns_rr_type t, 
 	ldns_rr_list **rrlist, ldns_rr_list **sig)
 {
 	ldns_pkt_type pt = LDNS_PACKET_UNKNOWN;
-	ldns_pkt *p = NULL;
 	ldns_rr_list *rr = NULL;
 	ldns_rr_list *sigs = NULL;
 
-	p = ldns_resolver_query(r, name, t, LDNS_RR_CLASS_IN, 0); 
 	if (!p) {
 		return LDNS_PACKET_UNKNOWN;
 	}
@@ -79,10 +88,17 @@ get_dnssec_rr(ldns_resolver *r, ldns_rdf *name, ldns_rr_type t,
 		return pt;
 	}
 		
-	rr = ldns_pkt_rr_list_by_name_and_type(p, name, t, LDNS_SECTION_ANSWER);
-	/* there SHOULD be a sig there too... */
-	sigs = ldns_pkt_rr_list_by_name_and_type(p, name, LDNS_RR_TYPE_RRSIG, 
-			LDNS_SECTION_ANSWER);
+	if (name) {
+		rr = ldns_pkt_rr_list_by_name_and_type(p, name, t, LDNS_SECTION_ANSWER);
+		/* there SHOULD be a sig there too... */
+		sigs = ldns_pkt_rr_list_by_name_and_type(p, name, LDNS_RR_TYPE_RRSIG, 
+				LDNS_SECTION_ANSWER);
+	} else {
+		rr = ldns_pkt_rr_list_by_type(p, t, LDNS_SECTION_AUTHORITY);
+		/* there SHOULD be a sig there too... */
+		sigs = ldns_pkt_rr_list_by_type(p, LDNS_RR_TYPE_RRSIG, 
+				LDNS_SECTION_AUTHORITY);
+	}
 
 	if (sig) {
 		ldns_rr_list_cat(*sig, sigs);
@@ -97,18 +113,18 @@ get_dnssec_rr(ldns_resolver *r, ldns_rdf *name, ldns_rr_type t,
  * retrieve keys for this zone
  */
 static ldns_pkt_type
-get_key(ldns_resolver *r, ldns_rdf *apexname, ldns_rr_list **rrlist, ldns_rr_list **opt_sig)
+get_key(ldns_pkt *p, ldns_rdf *apexname, ldns_rr_list **rrlist, ldns_rr_list **opt_sig)
 {
-	return get_dnssec_rr(r, apexname, LDNS_RR_TYPE_DNSKEY, rrlist, opt_sig);
+	return get_dnssec_rr(p, apexname, LDNS_RR_TYPE_DNSKEY, rrlist, opt_sig);
 }
 
 /*
  * check to see if we can find a DS rrset here which we can then follow
  */
 static ldns_pkt_type
-get_ds(ldns_resolver *r, ldns_rdf *ownername, ldns_rr_list **rrlist, ldns_rr_list **opt_sig)
+get_ds(ldns_pkt *p, ldns_rdf *ownername, ldns_rr_list **rrlist, ldns_rr_list **opt_sig)
 {
-	return get_dnssec_rr(r, ownername, LDNS_RR_TYPE_DS, rrlist, opt_sig);
+	return get_dnssec_rr(p, ownername, LDNS_RR_TYPE_DS, rrlist, opt_sig);
 }
 
 ldns_pkt *
@@ -117,6 +133,7 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 {
 	ldns_resolver *res;
 	ldns_pkt *p;
+	ldns_pkt *ds_p;
 	ldns_rr_list *new_nss_a;
 	ldns_rr_list *new_nss_aaaa;
 	ldns_rr_list *final_answer;
@@ -208,6 +225,19 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 	while(status == LDNS_STATUS_OK && 
 	      ldns_pkt_reply_type(p) == LDNS_PACKET_REFERRAL) {
 
+		/* this should give me a DS referral. i.e what DS does
+		 * the server have for this name or closest match 
+		 * Do this here, because we are still at the parent's
+		 * server
+		 */
+		ds_p = get_dnssec_pkt(res, name, LDNS_RR_TYPE_DNSKEY);
+		pt = get_ds(ds_p, NULL, &ds_list, &ds_sig_list);
+		TMP_ds_list = ds_key_match(ds_list, trusted_keys);
+		print_rr_list_abbr(stdout, TMP_ds_list, VAL);
+		print_rr_list_abbr(stdout, ds_list, NULL);
+
+		puts("");
+
 		new_nss_a = ldns_pkt_rr_list_by_type(p,
 				LDNS_RR_TYPE_A, LDNS_SECTION_ADDITIONAL);
 		new_nss_aaaa = ldns_pkt_rr_list_by_type(p,
@@ -275,43 +305,18 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 			authname = ldns_rr_owner(ldns_rr_list_rr(new_nss, 0));
 		} 
 
-		pt = get_key(res, authname, &key_list, &sig_list);
-		switch(pt) {
-		case LDNS_PACKET_ANSWER:
-			mesg("DNSSEC RRs");
-			print_rr_list_abbr(stdout, key_list, NULL); 
-			print_rr_list_abbr(stdout, sig_list, NULL); 
+		/* this SHOULD give DSs also */
+		p = get_dnssec_pkt(res, authname, LDNS_RR_TYPE_DNSKEY);
+		if (p) {
+			pt = get_key(p, authname, &key_list, &sig_list);
 			if (sig_list) {
 				if (ldns_verify(key_list, sig_list, key_list, trusted_keys) ==
 						LDNS_STATUS_OK) {
 					print_rr_list_abbr(stdout, trusted_keys, VAL); 
 				}
 			}
-			break;
-		case LDNS_PACKET_NXDOMAIN:
-		case LDNS_PACKET_NODATA:
-		default:
-			mesg("No DNSKEYs found");
-			break;
-		} 
+		}
 
-		pt = get_ds(res, authname, &ds_list, &sig_list);
-		switch(pt) {
-		case LDNS_PACKET_ANSWER:
-			print_rr_list_abbr(stdout, ds_list, NULL);
-			print_rr_list_abbr(stdout, sig_list, NULL); 
-
-			TMP_ds_list = ds_key_match(ds_list, trusted_keys);
-			print_rr_list_abbr(stdout, TMP_ds_list, VAL);
-
-			break;
-		case LDNS_PACKET_NXDOMAIN:
-		case LDNS_PACKET_NODATA:
-		default:
-			mesg("No DSs found");
-			break;
-		} 
-		
 		/* /DNSSEC */
 
 		if (loop_count++ > 20) {
@@ -327,7 +332,6 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 		new_nss_aaaa = NULL;
 		new_nss_a = NULL;
 		ns_addr = NULL;
-		puts("");
 	}
 
 	/* how far did we come */
@@ -372,6 +376,7 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 
 		/* DNSSEC */
 	/* recurse on the name at this server */
+	puts("");
 	mesg("Re-querying at current nameservers\n");
 	for(i = (ssize_t)labels_count_current - 1; i >= 0; i--) {
 
@@ -384,50 +389,23 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 			printf("\n");
 		}
 
-		pt = get_key(res, labels[i], &key_list, &sig_list);
-		switch(pt) {
-		case LDNS_PACKET_ANSWER:
-			mesg("DNSSEC RRs");
+		/* this SHOULD give DSs also */
+		p = get_dnssec_pkt(res, labels[i], LDNS_RR_TYPE_DNSKEY);
+		if (p) {
+			pt = get_key(p, labels[i], &key_list, &sig_list);
 			if (sig_list) {
-			print_rr_list_abbr(stdout, sig_list, NULL); 
 				if (ldns_verify(key_list, sig_list, key_list, trusted_keys) ==
 						LDNS_STATUS_OK) {
+					print_rr_list_abbr(stdout, trusted_keys, VAL); 
 				}
 			}
-			break;
-		case LDNS_PACKET_NXDOMAIN:
-		case LDNS_PACKET_NODATA:
-			mesg("No data received, giving up");
-			ldns_pkt_free(p); 
-			return NULL;
-		default:
-			mesg("No DNSKEYs found");
-			break;
-		} 
-
-		pt = get_ds(res, labels[i], &ds_list, &ds_sig_list);
-		switch(pt) {
-		case LDNS_PACKET_ANSWER:
-			print_rr_list_abbr(stdout, ds_list, NULL);
-			print_rr_list_abbr(stdout, ds_sig_list, NULL);
-			if (sig_list) {
-				if (ldns_verify(ds_list, sig_list, key_list, trusted_keys) ==
-						LDNS_STATUS_OK) {
-					print_rr_list_abbr(stdout, trusted_keys, "DS" VAL); 
-				} 
-			}
+			pt = get_ds(p, labels[i], &ds_list, &ds_sig_list);
 			TMP_ds_list = ds_key_match(ds_list, trusted_keys);
 			print_rr_list_abbr(stdout, TMP_ds_list, VAL);
-			break;
-		case LDNS_PACKET_NXDOMAIN:
-		case LDNS_PACKET_NODATA:
-			mesg("No data received, giving up");
-			ldns_pkt_free(p); 
-			return NULL;
-		default:
-			mesg("No DSs found");
-			break;
-		} 
+
+		} else {
+			mesg("No DNSKEYs found");
+		}
 
 		ldns_rr_list_deep_free(sig_list);
 		sig_list = ldns_rr_list_new();
