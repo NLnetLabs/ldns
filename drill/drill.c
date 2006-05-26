@@ -505,6 +505,9 @@ main(int argc, char *argv[])
 			/* do a trace from the root down */
 			init_root();
 			qname = ldns_dname_new_frm_str(name);
+			if (!qname) {
+				error("%s", "making qname");
+			}
 			/* don't care about return packet */
 			(void)do_trace(res, qname, type, clas);
 			break;
@@ -512,19 +515,22 @@ main(int argc, char *argv[])
 			/* do a secure trace from the root down */
 			init_root();
 			qname = ldns_dname_new_frm_str(name);
+			if (!qname) {
+				error("%s", "making qname");
+			}
 			/* don't care about return packet */
 			(void)do_secure_trace(res, qname, type, clas, key_list);
 			break;
 		case DRILL_CHASE:
 			qname = ldns_dname_new_frm_str(name);
+			if (!qname) {
+				error("%s", "making qname");
+			}
 			
 			ldns_resolver_set_dnssec(res, true);
 			ldns_resolver_set_dnssec_cd(res, true);
 			/* set dnssec implies udp_size of 4096 */
 			ldns_resolver_set_edns_udp_size(res, 4096);
-			if (!qname) {
-				error("%s", "making qname");
-			}
 			pkt = ldns_resolver_query(res, qname, type, clas, qflags);
 			
 			if (!pkt) {

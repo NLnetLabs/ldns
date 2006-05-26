@@ -157,8 +157,6 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 	ldns_rr_list *ds_sig_list;
 	ldns_rr_list *ds_list;
 
-	ldns_rr_list *TMP_ds_list;
-
 	secure = true;
 	authname = NULL;
 	loop_count = 0;
@@ -231,19 +229,12 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 		 */
 		ds_p = get_dnssec_pkt(res, name, LDNS_RR_TYPE_DNSKEY);
 		pt = get_ds(ds_p, NULL, &ds_list, &ds_sig_list);
-		/* TMP_ds_list = ds_key_match(ds_list, trusted_keys); */
 		if (ds_sig_list) {
 			if (ldns_verify(ds_list, ds_sig_list, key_list, trusted_keys) ==
 					LDNS_STATUS_OK) {
-				/*print_rr_list_abbr(stdout, ds_list, SELF);  */
+				print_rr_list_abbr(stdout, ds_list, SELF);
 			}
 		}
-
-
-
-		print_rr_list_abbr(stdout, TMP_ds_list, SELF);
-		print_rr_list_abbr(stdout, ds_list, NULL);
-
 		puts("");
 
 		new_nss_a = ldns_pkt_rr_list_by_type(p,
@@ -333,13 +324,16 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 
 		ldns_rr_list_deep_free(sig_list);
 		sig_list = ldns_rr_list_new();
+		ldns_rr_list_deep_free(ds_list);
+		ds_list = ldns_rr_list_new();
+		ldns_rr_list_deep_free(ds_sig_list);
+		ds_sig_list = ldns_rr_list_new();
 		
 		status = ldns_resolver_send(&p, res, name, t, c, 0);
 		new_nss_aaaa = NULL;
 		new_nss_a = NULL;
 		ns_addr = NULL;
 	}
-
 	/* how far did we come */
 	labels_count_current = ldns_dname_label_count(authname);
 
@@ -395,7 +389,6 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 			printf("\n");
 		}
 
-		/* this SHOULD give DSs also */
 		p = get_dnssec_pkt(res, labels[i], LDNS_RR_TYPE_DNSKEY);
 		if (p) {
 			pt = get_key(p, labels[i], &key_list, &sig_list);
@@ -405,18 +398,23 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 					print_rr_list_abbr(stdout, key_list, SELF); 
 				}
 			}
-			pt = get_ds(p, labels[i], &ds_list, &ds_sig_list);
-			TMP_ds_list = ds_key_match(ds_list, trusted_keys);
-			print_rr_list_abbr(stdout, TMP_ds_list, SELF);
-
-		} else {
-			mesg("No DNSKEYs found");
 		}
-
-		ldns_rr_list_deep_free(sig_list);
-		sig_list = ldns_rr_list_new();
+		ds_p = get_dnssec_pkt(res, labels[i], LDNS_RR_TYPE_DS);
+		/* do add the name (labels[i], because we're looking in
+		 * the answer section here */
+		pt = get_ds(ds_p, labels[i], &ds_list, &ds_sig_list);
+		/* check this with previous keys */
+		if (ds_sig_list) {
+			if (status = ldns_verify(ds_list, ds_sig_list, trusted_keys, NULL) ==
+					LDNS_STATUS_OK) {
+				print_rr_list_abbr(stdout, ds_list, SELF);
+			}
+		}
 		puts("");
-		
+		ldns_rr_list_deep_free(ds_list);
+		ds_list = ldns_rr_list_new();
+		ldns_rr_list_deep_free(ds_sig_list);
+		ds_sig_list = ldns_rr_list_new();
 	}
 	/* /DNSSEC */
 	

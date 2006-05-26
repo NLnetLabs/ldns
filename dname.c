@@ -148,6 +148,10 @@ ldns_dname_label_count(const ldns_rdf *r)
         uint8_t i;
         size_t r_size;
 
+	if (!r) {
+		return 0;
+	}
+
         i = 0; 
 	src_pos = 0;
         r_size = ldns_rdf_size(r);
