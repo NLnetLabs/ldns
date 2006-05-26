@@ -1,5 +1,5 @@
 /**
-   \page tutorial1_mx Tutorial 1: Qeurying for MX records
+   \page tutorial1_mx Tutorial 1: Querying for MX records
    \dontinclude ldns-mx.c 
    
    The full source code can be found in \link examples/ldns-mx.c \endlink

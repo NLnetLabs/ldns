@@ -13,12 +13,44 @@
 
 
 /**
- * \mainpage LDNS Documentation
- *
- * \section introduction Introduction
- *
- * ldns is a general DNS library
- */
+\mainpage LDNS Documentation
+
+\section introduction Introduction
+
+The goal of ldns is to simplify DNS programming, it supports recent RFCs
+like the DNSSEC documents, and allow developers to easily create software
+conforming to current RFCs, and experimental software for current Internet
+drafts. A secondary benefit of using ldns is speed, because ldns is written
+in C, and although it is not optimized for performance, it should be a lot
+faster than Perl.
+
+The first main tool to use ldns is Drill, from which part of the library was
+derived. From version 1.0.0 on, drill is included in the ldns release
+and will not be developed seperately anymore. The library also includes some
+other examples and tools to show how it can be used.
+
+ldns depends on OpenSSL for it's cryptographic functions.
+Feature list
+
+  - IP4 and IP6 support,
+  - TSIG support,
+  - DNSSEC support; signing and verification,
+  - small size,
+  - online documentation as well as manual pages. 
+
+If you want to send us patches please use the code from subversion (trunk). 
+
+\section gettingstarted Getting Started
+
+See the \ref overview page for a very high level overview of ldns and its
+main features.
+
+If you want to see some libdns action, you can read our tutorials:
+  - \ref tutorial1_mx
+
+Or you can just use the menu above to browse through the API docs.
+
+*/
 #ifndef LDNS_DNS_H
 #define LDNS_DNS_H
 
