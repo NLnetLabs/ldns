@@ -278,7 +278,7 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 		pt = get_key(res, authname, &key_list, &sig_list);
 		switch(pt) {
 		case LDNS_PACKET_ANSWER:
-			printf(";; DNSSEC RRs\n");
+			mesg("DNSSEC RRs");
 			print_rr_list_abbr(stdout, key_list, NULL); 
 			print_rr_list_abbr(stdout, sig_list, NULL); 
 			if (sig_list) {
@@ -291,7 +291,7 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 		case LDNS_PACKET_NXDOMAIN:
 		case LDNS_PACKET_NODATA:
 		default:
-			printf(";; No DNSKEYs found, not attemping validation\n");
+			mesg("No DNSKEYs found");
 			break;
 		} 
 
@@ -308,7 +308,7 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 		case LDNS_PACKET_NXDOMAIN:
 		case LDNS_PACKET_NODATA:
 		default:
-			printf(";; No DSs found, not attemping validation\n");
+			mesg("No DSs found");
 			break;
 		} 
 		
@@ -372,7 +372,7 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 
 		/* DNSSEC */
 	/* recurse on the name at this server */
-	printf(";; Re-querying at current nameservers\n\n");
+	mesg("Re-querying at current nameservers\n");
 	for(i = (ssize_t)labels_count_current - 1; i >= 0; i--) {
 
 		/* fake print the nameserver for this node */
@@ -387,7 +387,7 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 		pt = get_key(res, labels[i], &key_list, &sig_list);
 		switch(pt) {
 		case LDNS_PACKET_ANSWER:
-			printf(";; DNSSEC RRs\n");
+			mesg("DNSSEC RRs");
 			if (sig_list) {
 			print_rr_list_abbr(stdout, sig_list, NULL); 
 				if (ldns_verify(key_list, sig_list, key_list, trusted_keys) ==
@@ -397,11 +397,11 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 			break;
 		case LDNS_PACKET_NXDOMAIN:
 		case LDNS_PACKET_NODATA:
-			printf(";; No data received, giving up\n");
+			mesg("No data received, giving up");
 			ldns_pkt_free(p); 
 			return NULL;
 		default:
-			printf(";; No DNSKEYs found, not attemping validation\n");
+			mesg("No DNSKEYs found");
 			break;
 		} 
 
@@ -421,11 +421,11 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 			break;
 		case LDNS_PACKET_NXDOMAIN:
 		case LDNS_PACKET_NODATA:
-			printf(";; No data received, giving up\n");
+			mesg("No data received, giving up");
 			ldns_pkt_free(p); 
 			return NULL;
 		default:
-			printf(";; No DSs found, not attemping validation\n");
+			mesg("No DSs found");
 			break;
 		} 
 
