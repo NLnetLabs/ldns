@@ -11,9 +11,10 @@
 #include "drill.h"
 #include <ldns/dns.h>
 
-#define SELF "[SELF]" 
+#define SELF "[SELF]"  /* self sig ok */
+#define CHAINA "[CHAINED]" /* chain from parent */
 
-
+#if 0
 /* See if there is a key/ds in trusted that matches
  * a ds in *ds. If so, we have a trusted path. If 
  * not something is the matter
@@ -47,13 +48,13 @@ ds_key_match(ldns_rr_list *ds, ldns_rr_list *trusted)
 			}
 		}
 	}
-
 	if (match) {
 		return trusted_ds;
 	} else {
 		return NULL;
 	}
 }
+#endif
 
 ldns_pkt *
 get_dnssec_pkt(ldns_resolver *r, ldns_rdf *name, ldns_rr_type t) 
@@ -233,6 +234,8 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 			if (ldns_verify(ds_list, ds_sig_list, key_list, trusted_keys) ==
 					LDNS_STATUS_OK) {
 				print_rr_list_abbr(stdout, ds_list, SELF);
+			} else {
+				mesg("No DSs");
 			}
 		}
 		puts("");
@@ -311,8 +314,10 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 				if (ldns_verify(key_list, sig_list, key_list, trusted_keys) ==
 						LDNS_STATUS_OK) {
 					print_rr_list_abbr(stdout, key_list, SELF); 
+				} else {
+					mesg("No DNSKEYs");
 				}
-			}
+			} 
 		}
 		/* /DNSSEC */
 
@@ -396,6 +401,8 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 				if (ldns_verify(key_list, sig_list, key_list, trusted_keys) ==
 						LDNS_STATUS_OK) {
 					print_rr_list_abbr(stdout, key_list, SELF); 
+				} else {
+					mesg("No DNSKEYs");
 				}
 			}
 		}
@@ -405,9 +412,11 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 		pt = get_ds(ds_p, labels[i], &ds_list, &ds_sig_list);
 		/* check this with previous keys */
 		if (ds_sig_list) {
-			if (status = ldns_verify(ds_list, ds_sig_list, trusted_keys, NULL) ==
+			if (ldns_verify(ds_list, ds_sig_list, trusted_keys, NULL) ==
 					LDNS_STATUS_OK) {
 				print_rr_list_abbr(stdout, ds_list, SELF);
+			} else {
+				mesg("No DSs");
 			}
 		}
 		puts("");
