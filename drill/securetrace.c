@@ -451,7 +451,7 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 					print_rr_list_abbr(stdout, chained_keys, CHAIN);
 				}
 			} else {
-				warning("%s",ldns_get_errorstr_by_id(st));
+				/* warning("%s",ldns_get_errorstr_by_id(st)); */
 			}
 		} else {
 			mesg("No DSs");
