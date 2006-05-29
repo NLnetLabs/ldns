@@ -12,12 +12,10 @@
 #include <ldns/dns.h>
 
 #define SELF "[SELF]"  /* self sig ok */
-#define CHAINA "[CHAINED]" /* chain from parent */
+#define CHAIN "[CHAIN]" /* chain from parent */
 
-#if 0
 /* See if there is a key/ds in trusted that matches
- * a ds in *ds. If so, we have a trusted path. If 
- * not something is the matter
+ * a ds in *ds. 
  */
 static ldns_rr_list *
 ds_key_match(ldns_rr_list *ds, ldns_rr_list *trusted)
@@ -25,15 +23,15 @@ ds_key_match(ldns_rr_list *ds, ldns_rr_list *trusted)
 	size_t i, j;
 	bool match;
 	ldns_rr *rr_i, *rr_j;
-	ldns_rr_list *trusted_ds;
+	ldns_rr_list *keys;
 
 	if (!trusted || !ds) {
 		return NULL;
 	}
 
 	match = false;
-	trusted_ds = ldns_rr_list_new();
-	if (!trusted_ds) {
+	keys = ldns_rr_list_new();
+	if (!keys) {
 		return NULL;
 	}
 
@@ -44,17 +42,17 @@ ds_key_match(ldns_rr_list *ds, ldns_rr_list *trusted)
 			rr_j = ldns_rr_list_rr(ds, j);
 			if (ldns_rr_compare_ds(rr_i, rr_j)) {
 				match = true;
-				ldns_rr_list_push_rr(trusted_ds, rr_j); 
+				/* only allow unique RRs to match */
+				ldns_rr_set_push_rr(keys, rr_i); 
 			}
 		}
 	}
 	if (match) {
-		return trusted_ds;
+		return keys;
 	} else {
 		return NULL;
 	}
 }
-#endif
 
 ldns_pkt *
 get_dnssec_pkt(ldns_resolver *r, ldns_rdf *name, ldns_rr_type t) 
@@ -157,6 +155,8 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 	ldns_rr_list *sig_list;
 	ldns_rr_list *ds_sig_list;
 	ldns_rr_list *ds_list;
+	ldns_rr_list *chained_keys;
+	ldns_rr_list *trusted_ds;
 
 	secure = true;
 	authname = NULL;
@@ -165,6 +165,8 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 	new_nss_aaaa = NULL;
 	new_nss = NULL;
 	ns_addr = NULL;
+	trusted_ds = NULL;
+	chained_keys = NULL;
 	final_answer = NULL;
 	pt = LDNS_PACKET_UNKNOWN;
 	p = ldns_pkt_new();
@@ -234,6 +236,15 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 			if (ldns_verify(ds_list, ds_sig_list, key_list, trusted_keys) ==
 					LDNS_STATUS_OK) {
 				print_rr_list_abbr(stdout, ds_list, SELF);
+
+				trusted_ds = ldns_rr_list_cat_clone(trusted_ds, ds_list);
+
+				chained_keys = ds_key_match(ds_list, trusted_keys);
+				if (chained_keys) {
+					puts("");
+					print_rr_list_abbr(stdout, chained_keys, CHAIN);
+				}
+
 			} else {
 				mesg("No DSs");
 			}
@@ -415,6 +426,15 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 			if (ldns_verify(ds_list, ds_sig_list, trusted_keys, NULL) ==
 					LDNS_STATUS_OK) {
 				print_rr_list_abbr(stdout, ds_list, SELF);
+				
+				/* use cat clone to actually copy them */
+				trusted_ds = ldns_rr_list_cat_clone(trusted_ds, ds_list);
+				
+				chained_keys = ds_key_match(ds_list, trusted_keys);
+				if (chained_keys) {
+					puts("");
+					print_rr_list_abbr(stdout, chained_keys, CHAIN);
+				}
 			} else {
 				mesg("No DSs");
 			}
@@ -426,6 +446,17 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 		ds_sig_list = ldns_rr_list_new();
 	}
 	/* /DNSSEC */
+
+#if 0
+	/* security information gathered */
+	printf("A\n");
+	ldns_rr_list_print(stdout, trusted_ds); 
+	printf("B\n");
+	ldns_rr_list_print(stdout, trusted_keys); 
+	printf("C\n");
+	ldns_rr_list_print(stdout, chained_keys); 
+	printf("D\n");
+#endif
 	
 	ldns_pkt_free(p); 
 	return NULL;
