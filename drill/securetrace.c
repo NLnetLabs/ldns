@@ -35,6 +35,10 @@ ds_key_match(ldns_rr_list *ds, ldns_rr_list *trusted)
 		return NULL;
 	}
 
+	if (!ds || !trusted) {
+		return NULL;
+	}
+
 	for (i = 0; i < ldns_rr_list_rr_count(trusted); i++) {
 		rr_i = ldns_rr_list_rr(trusted, i);
 		for (j = 0; j < ldns_rr_list_rr_count(ds); j++) {
@@ -167,6 +171,7 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 	ns_addr = NULL;
 	trusted_ds = NULL;
 	chained_keys = NULL;
+	key_list = NULL;
 	final_answer = NULL;
 	pt = LDNS_PACKET_UNKNOWN;
 	p = ldns_pkt_new();
@@ -322,9 +327,15 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 		if (p) {
 			pt = get_key(p, authname, &key_list, &sig_list);
 			if (sig_list) {
+
+				chained_keys = ds_key_match(key_list, trusted_keys);
+				if (chained_keys) {
+					print_rr_list_abbr(stdout, chained_keys, CHAIN);
+				}
 				if (ldns_verify(key_list, sig_list, key_list, trusted_keys) ==
 						LDNS_STATUS_OK) {
 					print_rr_list_abbr(stdout, key_list, SELF); 
+
 				} else {
 					mesg("No DNSKEYs");
 				}
@@ -412,6 +423,11 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 				if (ldns_verify(key_list, sig_list, key_list, trusted_keys) ==
 						LDNS_STATUS_OK) {
 					print_rr_list_abbr(stdout, key_list, SELF); 
+					
+					chained_keys = ds_key_match(key_list, trusted_keys);
+					if (chained_keys) {
+						print_rr_list_abbr(stdout, chained_keys, CHAIN);
+					}
 				} else {
 					mesg("No DNSKEYs");
 				}
@@ -432,7 +448,6 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 				
 				chained_keys = ds_key_match(ds_list, trusted_keys);
 				if (chained_keys) {
-					puts("");
 					print_rr_list_abbr(stdout, chained_keys, CHAIN);
 				}
 			} else {
@@ -447,7 +462,6 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 	}
 	/* /DNSSEC */
 
-#if 0
 	/* security information gathered */
 	printf("A\n");
 	ldns_rr_list_print(stdout, trusted_ds); 
@@ -456,7 +470,6 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 	printf("C\n");
 	ldns_rr_list_print(stdout, chained_keys); 
 	printf("D\n");
-#endif
 	
 	ldns_pkt_free(p); 
 	return NULL;
