@@ -146,7 +146,7 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 	ldns_rdf *pop; 
 	ldns_rdf *authname;
 	ldns_rdf **labels;
-	ldns_status status;
+	ldns_status status, st;
 	ssize_t i;
 	size_t j;
 	uint8_t labels_count_current;
@@ -439,7 +439,7 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 		pt = get_ds(ds_p, labels[i], &ds_list, &ds_sig_list);
 		/* check this with previous keys */
 		if (ds_sig_list) {
-			if (ldns_verify(ds_list, ds_sig_list, trusted_keys, NULL) ==
+			if ((st = ldns_verify(ds_list, ds_sig_list, trusted_keys, NULL)) ==
 					LDNS_STATUS_OK) {
 				print_rr_list_abbr(stdout, ds_list, SELF);
 				
@@ -451,8 +451,10 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 					print_rr_list_abbr(stdout, chained_keys, CHAIN);
 				}
 			} else {
-				mesg("No DSs");
+				warning("%s",ldns_get_errorstr_by_id(st));
 			}
+		} else {
+			mesg("No DSs");
 		}
 		puts("");
 		ldns_rr_list_deep_free(ds_list);
