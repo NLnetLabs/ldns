@@ -684,7 +684,6 @@ main(int argc, char *argv[])
 					while (axfr_rr) {
 						if (qdebug != -1) {
 							ldns_rr_print(stdout, axfr_rr);
-							printf("\n");
 						}
 						ldns_rr_free(axfr_rr);
 						axfr_rr = ldns_axfr_next(res);
