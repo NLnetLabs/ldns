@@ -1,7 +1,7 @@
 /*
  * drill.c
  * the main file of drill
- * (c) 2005 NLnet Labs
+ * (c) 2005,2006 NLnet Labs
  *
  * See the file LICENSE for the license
  *
@@ -57,7 +57,7 @@ usage(FILE *stream, const char *progname)
 	fprintf(stream, "\t-z\t\tdon't randomize the nameservers before use\n");
 	fprintf(stream, "\n  [*] = enables/implies DNSSEC\n");
 	fprintf(stream, "  [**] = can be given more than once\n");
-	fprintf(stream, "\n  drill@nlnetlabs.nl | www.nlnetlabs.nl/dnssec/drill.html\n");
+	fprintf(stream, "\n  ldns-team@nlnetlabs.nl | http://www.nlnetlabs.nl/ldns/\n");
 }
 
 /**
@@ -68,7 +68,7 @@ version(FILE *stream, const char *progname)
 {
         fprintf(stream, "%s version %s (ldns version %s)\n", progname, DRILL_VERSION, ldns_version());
         fprintf(stream, "Written by NLnet Labs.\n");
-        fprintf(stream, "\nCopyright (c) 2004, 2005 NLnet Labs.\n");
+        fprintf(stream, "\nCopyright (c) 2004-2006 NLnet Labs.\n");
         fprintf(stream, "Licensed under the revised BSD license.\n");
         fprintf(stream, "There is NO warranty; not even for MERCHANTABILITY or FITNESS\n");
         fprintf(stream, "FOR A PARTICULAR PURPOSE.\n");
