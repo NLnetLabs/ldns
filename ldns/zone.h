@@ -120,7 +120,7 @@ ldns_rr_list *ldns_zone_glue_rr_list(const ldns_zone *z);
  * \param[in] ttl default ttl to use
  * \param[in] c default class to use (IN)
  *
- * \return ldns_status mesg with an erorr or LDNS_STATUS_OK
+ * \return ldns_status mesg with an error or LDNS_STATUS_OK
  */
 ldns_status ldns_zone_new_frm_fp(ldns_zone **z, FILE *fp, ldns_rdf *origin, uint16_t ttl, ldns_rr_class c);
 
@@ -133,7 +133,7 @@ ldns_status ldns_zone_new_frm_fp(ldns_zone **z, FILE *fp, ldns_rdf *origin, uint
  * \param[in] c default class to use (IN)
  * \param[out] line_nr used for error msg, to get to the line number
  *
- * \return ldns_status mesg with an erorr or LDNS_STATUS_OK
+ * \return ldns_status mesg with an error or LDNS_STATUS_OK
  */
 ldns_status ldns_zone_new_frm_fp_l(ldns_zone **z, FILE *fp, ldns_rdf *origin, uint16_t ttl, ldns_rr_class c, int *line_nr);
 
