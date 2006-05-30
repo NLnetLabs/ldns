@@ -53,7 +53,7 @@ ldns_status ldns_verify(ldns_rr_list *rrset, ldns_rr_list *rrsig, ldns_rr_list *
  * \param[in] algo Signing algorithm
  * \return status LDNS_STATUS_OK if the data verifies. Error if not.
  */
-ldns_status ldns_verify_rrsig_buffers(ldns_buffer *rawsig_buf, ldns_buffer *verify_buf, ldns_buffer *key_buf, uint8_t algo)
+ldns_status ldns_verify_rrsig_buffers(ldns_buffer *rawsig_buf, ldns_buffer *verify_buf, ldns_buffer *key_buf, uint8_t algo);
 
 /**
  * Verifies an rrsig. All keys in the keyset are tried.
