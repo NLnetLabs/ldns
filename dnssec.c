@@ -573,7 +573,7 @@ ldns_verify_rrsig_rsamd5(ldns_buffer *sig, ldns_buffer *rrset, ldns_buffer *key)
 	return true;
 }
 
-/* some helper functions */
+#ifdef HAVE_SSL
 DSA *
 ldns_key_buf2dsa(ldns_buffer *key)
 {
@@ -614,6 +614,7 @@ ldns_key_buf2dsa(ldns_buffer *key)
 
 	return dsa;
 }
+#endif
 
 RSA *
 ldns_key_buf2rsa(ldns_buffer *key)

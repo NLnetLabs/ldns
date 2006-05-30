@@ -178,7 +178,7 @@ enum ldns_enum_rr_type
 typedef enum ldns_enum_rr_type ldns_rr_type;
 
 /**
- *  Resource Record type
+ * Resource Record
  *
  * This is the basic DNS element that contains actual data
  */
@@ -201,7 +201,7 @@ struct ldns_struct_rr
 typedef struct ldns_struct_rr ldns_rr;
 
 /**
- *  Resource Record Set
+ * List or Set of Resource Records
  *
  * Contains a list of rr's <br>
  * No official RFC-like checks are made 
@@ -214,10 +214,9 @@ struct ldns_struct_rr_list
 typedef struct ldns_struct_rr_list ldns_rr_list;
 
 /**
- * struct to hold the whole set of rd_fields.
+ * Contains all information about resource record types.
  *
- * How does the whole rdata_field list look. This is called
- * the rdata in dns speak.
+ * This structure contains, for all rr types, the rdata fields that are defined.
  */
 struct ldns_struct_rr_descriptor
 {

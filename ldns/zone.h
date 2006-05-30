@@ -22,7 +22,7 @@
 #include <ldns/error.h>
 
 /** 
- * Zone type
+ * DNS Zone
  *
  * A list of RR's with some
  * extra information which comes from the SOA RR

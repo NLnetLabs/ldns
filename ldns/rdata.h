@@ -102,7 +102,7 @@ typedef enum ldns_enum_cert_algorithm ldns_cert_algorithm;
 
 
 /**
- * Resource record data.
+ * Resource record data field.
  *
  * The data is a network ordered array of bytes, which size is specified by
  * the (16-bit) size field. To correctly parse it, use the type

@@ -9,6 +9,9 @@
 #ifndef LDNS_TSIG_H
 #define LDNS_TSIG_H
 
+/**
+ * Contains credentials for TSIG
+*/
 typedef struct ldns_tsig_credentials_struct
 {
     char *algorithm;

@@ -7,6 +7,13 @@ functionality.
 
 \section central_structures Central structures
 
+  - \ref ldns_pkt A DNS Packet, that can contain a qeury, answers, and additional information.
+  - \ref ldns_rr A Resource Record, which holds a bit of information about a specific domain name.
+  - \ref ldns_rdf An RDATA field, every Resource Record contains one or more RDATA fields, depending on the type of RR. These are the 'basic types' of DNS data.
+  - \ref ldns_rr_list A list of resource records
+  - \ref ldns_zone A representation of a DNS Zone.
+
+
 A DNS Resource record looks like this:
 
 <pre>
@@ -18,11 +25,11 @@ nlnetlabs.nl.   600     IN      MX      10    open.nlnetlabs.nl.
                                                 open.nlnetlabs.nl. := rdf[1]
 </pre>
 
-* rdf structure:
-The owner name is put in an rdf structure, which is a normal rdf but always
+* Owner:
+The owner name is put in an \c ldns_rdf structure, which is a normal rdata field but always
 has the type LDNS_RDF_TYPE_DNAME.
 
-An rdf structure has 3 members; the size, the type is carrying and a void *
+An \ref ldns_rdf structure has 3 members; the size, the type is carrying and a void *
 pointer to the data. The data is always in uncompressed wireformat.
 
 The RSH (rdata) is put in an array of rdf's (in this case 2).

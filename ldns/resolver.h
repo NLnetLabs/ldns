@@ -40,9 +40,7 @@
 #define LDNS_RESOLV_RTT_MIN             1       /* reacheable */
 
 /**
- * \brief Structure of a dns resolver
- *
- * 
+ * DNS stub resolver structure
  */
 struct ldns_struct_resolver
 {
