@@ -15,6 +15,7 @@
 #define TRUST "[TRUST]"  /* self sig ok */
 #define CHAIN "[CHAIN]" /* chain from parent */
 
+#if 0
 /* See if there is a key/ds in trusted that matches
  * a ds in *ds. 
  */
@@ -58,6 +59,7 @@ ds_key_match(ldns_rr_list *ds, ldns_rr_list *trusted)
 		return NULL;
 	}
 }
+#endif
 
 ldns_pkt *
 get_dnssec_pkt(ldns_resolver *r, ldns_rdf *name, ldns_rr_type t) 
@@ -190,7 +192,7 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 			ldns_resolver_random(local_res));
 	ldns_resolver_set_recursive(res, false);
 	ldns_resolver_set_dnssec_cd(res, true);
-	ldns_resolver_set_recursive(local_res, true);
+	ldns_resolver_set_recursive(local_res, false);
 
 	/* setup the root nameserver in the new resolver */
 	if (ldns_resolver_push_nameserver_rr_list(res, global_dns_root) != LDNS_STATUS_OK) {
@@ -198,21 +200,21 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 	}
 
 	labels_count = ldns_dname_label_count(name);
-	labels_count++;
-	labels = LDNS_XMALLOC(ldns_rdf*, labels_count);
+	labels = LDNS_XMALLOC(ldns_rdf*, labels_count + 2);
 	if (!labels) {
 		return NULL;
 	}
 	labels[0] = LDNS_ROOT_LABEL;
 	labels[1] = name;
-	for(i = 2 ; i < (ssize_t)labels_count + 1; i++) {
+	for(i = 2 ; i < (ssize_t)labels_count + 2; i++) {
 		labels[i] = ldns_dname_left_chop(labels[i - 1]);
 	}
 
 	/* get the nameserver for the label
 	 * ask: dnskey and ds for the label 
 	 */
-	for(i = (ssize_t)labels_count; i > 0; i--) {
+	for(i = (ssize_t)labels_count + 1; i > 0; i--) {
+
 		/* get the nameserver for this label */
 		status = ldns_resolver_send(&p, local_res, labels[i], LDNS_RR_TYPE_NS, c, 0);
 		/* ldns_pkt_print(stdout, p); */
@@ -228,8 +230,7 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 					LDNS_RR_TYPE_NS, LDNS_SECTION_ANSWER);
 		}
 
-		/* remove the old nameserver from the resolver */
-		while((ldns_resolver_pop_nameserver(res))) { /* do it */ }
+		while((pop = ldns_resolver_pop_nameserver(res))) { /* do it */ }
 
 		if (!new_nss_aaaa && !new_nss_a) {
 			 /* no nameserver found!!! */
@@ -276,6 +277,10 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 			}
 		}
 		
+		if (ldns_resolver_nameserver_count(res) == 0) {
+			error("No nameservers found for this node\n");
+			return NULL;
+		}
 		ldns_rr_list_print(stdout, new_nss);
 
 		p = get_dnssec_pkt(res, labels[i], LDNS_RR_TYPE_DNSKEY);
@@ -283,12 +288,14 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 		if (key_list) {
 			ldns_rr_list_print(stdout, key_list);
 		}
+
 		p = get_dnssec_pkt(res, labels[i], LDNS_RR_TYPE_DS);
 		pt = get_ds(p, labels[i], &ds_list, &ds_sig_list);
 		if (ds_list) {
 			ldns_rr_list_print(stdout, ds_list);
 		}
 		ds_list = NULL;
+
 		/* we might get lucky and get a DS referral wehn
 		 * asking for the key of the query name */
 		p = get_dnssec_pkt(res, name, LDNS_RR_TYPE_DNSKEY);
