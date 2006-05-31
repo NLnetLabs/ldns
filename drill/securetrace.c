@@ -12,6 +12,7 @@
 #include <ldns/dns.h>
 
 #define SELF "[SELF]"  /* self sig ok */
+#define TRUST "[TRUST]"  /* self sig ok */
 #define CHAIN "[CHAIN]" /* chain from parent */
 
 /* See if there is a key/ds in trusted that matches
@@ -96,11 +97,12 @@ get_dnssec_rr(ldns_pkt *p, ldns_rdf *name, ldns_rr_type t,
 		sigs = ldns_pkt_rr_list_by_name_and_type(p, name, LDNS_RR_TYPE_RRSIG, 
 				LDNS_SECTION_ANSWER);
 	} else {
-		/* A DS-referral - get the DS records if they are there */
-		rr = ldns_pkt_rr_list_by_type(p, t, LDNS_SECTION_AUTHORITY);
-		sigs = ldns_pkt_rr_list_by_type(p, LDNS_RR_TYPE_RRSIG, 
-				LDNS_SECTION_AUTHORITY);
+               /* A DS-referral - get the DS records if they are there */
+               rr = ldns_pkt_rr_list_by_type(p, t, LDNS_SECTION_AUTHORITY);
+               sigs = ldns_pkt_rr_list_by_type(p, LDNS_RR_TYPE_RRSIG,
+                               LDNS_SECTION_AUTHORITY);
 	}
+
 
 	if (sig) {
 		ldns_rr_list_cat(*sig, sigs);
@@ -135,51 +137,40 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 {
 	ldns_resolver *res;
 	ldns_pkt *p;
-	ldns_pkt *ds_p;
 	ldns_rr_list *new_nss_a;
 	ldns_rr_list *new_nss_aaaa;
-	ldns_rr_list *final_answer;
 	ldns_rr_list *new_nss;
-	ldns_rr_list *hostnames;
 	ldns_rr_list *ns_addr;
 	uint16_t loop_count;
 	ldns_rdf *pop; 
-	ldns_rdf *authname;
 	ldns_rdf **labels;
-	ldns_status status, st;
+	ldns_status status;
 	ssize_t i;
 	size_t j;
-	uint8_t labels_count_current;
-	uint8_t labels_count_all;
+	uint8_t labels_count;
 	ldns_pkt_type pt;
 
 	/* dnssec */
-	bool secure;
 	ldns_rr_list *key_list;
-	ldns_rr_list *sig_list;
-	ldns_rr_list *ds_sig_list;
+	ldns_rr_list *key_sig_list;
 	ldns_rr_list *ds_list;
-	ldns_rr_list *chained_keys;
-	ldns_rr_list *trusted_ds;
+	ldns_rr_list *ds_sig_list;
 
-	secure = true;
-	authname = NULL;
 	loop_count = 0;
 	new_nss_a = NULL;
 	new_nss_aaaa = NULL;
 	new_nss = NULL;
 	ns_addr = NULL;
-	trusted_ds = NULL;
-	chained_keys = NULL;
 	key_list = NULL;
-	final_answer = NULL;
+	ds_list = NULL;
 	pt = LDNS_PACKET_UNKNOWN;
+
 	p = ldns_pkt_new();
 	res = ldns_resolver_new();
-	sig_list = ldns_rr_list_new();
+	key_sig_list = ldns_rr_list_new();
 	ds_sig_list = ldns_rr_list_new();
 
-	if (!p || !res || !sig_list) {
+	if (!p || !res) {
 		error("Memory allocation failed");
 		return NULL;
 	}
@@ -227,56 +218,43 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 		return NULL;
 	}
 
-	while(status == LDNS_STATUS_OK && 
-	      ldns_pkt_reply_type(p) == LDNS_PACKET_REFERRAL) {
+	labels_count = ldns_dname_label_count(name);
 
-		/* this should give me a DS referral. i.e what DS does
-		 * the server have for this name or closest match 
-		 * Do this here, because we are still at the parent's
-		 * server
-		 */
-		ds_p = get_dnssec_pkt(res, name, LDNS_RR_TYPE_DNSKEY);
-		pt = get_ds(ds_p, NULL, &ds_list, &ds_sig_list);
-		if (ds_sig_list) {
-			if (ldns_verify(ds_list, ds_sig_list, key_list, trusted_keys) ==
-					LDNS_STATUS_OK) {
-				print_rr_list_abbr(stdout, ds_list, SELF);
+	labels = LDNS_XMALLOC(ldns_rdf*, labels_count);
+	if (!labels) {
+		return NULL;
+	}
+	labels[0] = name;
+	for(i = 1 ; i < (ssize_t)labels_count; i++) {
+		labels[i] = ldns_dname_left_chop(labels[i - 1]);
+	}
 
-				trusted_ds = ldns_rr_list_cat_clone(trusted_ds, ds_list);
+	/* get the nameserver for the label
+	 * ask: dnskey and ds for the label 
+	 */
+	for(i = (ssize_t)labels_count - 1; i >= 0; i--) {
 
-				chained_keys = ds_key_match(ds_list, trusted_keys);
-				if (chained_keys) {
-					puts("");
-					print_rr_list_abbr(stdout, chained_keys, CHAIN);
-				}
-
-			} else {
-				mesg("No DSs");
-			}
-		}
-		puts("");
-
+		/* get the nameserver for this label */
+		status = ldns_resolver_send(&p, local_res, labels[i], LDNS_RR_TYPE_NS, c, 0);
 		new_nss_a = ldns_pkt_rr_list_by_type(p,
 				LDNS_RR_TYPE_A, LDNS_SECTION_ADDITIONAL);
 		new_nss_aaaa = ldns_pkt_rr_list_by_type(p,
 				LDNS_RR_TYPE_AAAA, LDNS_SECTION_ADDITIONAL);
 		new_nss = ldns_pkt_rr_list_by_type(p,
 				LDNS_RR_TYPE_NS, LDNS_SECTION_AUTHORITY);
-
-		if (qdebug != -1) {
-			ldns_rr_list_print(stdout, new_nss);
+		if (!new_nss) {
+			/* sometimes they are hidden in the answer section */
+			new_nss = ldns_pkt_rr_list_by_type(p,
+					LDNS_RR_TYPE_NS, LDNS_SECTION_ANSWER);
 		}
+
 		/* remove the old nameserver from the resolver */
 		while((pop = ldns_resolver_pop_nameserver(res))) { /* do it */ }
 
 		if (!new_nss_aaaa && !new_nss_a) {
-			/* 
-			 * no nameserver found!!! 
-			 * try to resolve the names we do got 
-			 */
-			for(i = 0; i < (ssize_t)ldns_rr_list_rr_count(new_nss); i++) {
-				/* get the name of the nameserver */
-				pop = ldns_rr_rdf(ldns_rr_list_rr(new_nss, (size_t)i), 0);
+			 /* no nameserver found!!! */
+			for(j = 0; j < (ssize_t)ldns_rr_list_rr_count(new_nss); j++) {
+				pop = ldns_rr_rdf(ldns_rr_list_rr(new_nss, (size_t)j), 0);
 				if (!pop) {
 					break;
 				}
@@ -294,13 +272,11 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 				}
 				ldns_rr_list_free(ns_addr);
 			} else {
-				ldns_rr_list_print(stdout, ns_addr);
 				error("Could not find the nameserver ip addr; abort");
 				ldns_pkt_free(p);
 				return NULL;
 			}
 		}
-
 		/* add the new ones */
 		if (new_nss_aaaa) {
 			if (ldns_resolver_push_nameserver_rr_list(res, new_nss_aaaa) != 
@@ -318,161 +294,36 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 				return NULL;
 			}
 		}
-		/* DNSSEC */
-		if (new_nss) {
-			authname = ldns_rr_owner(ldns_rr_list_rr(new_nss, 0));
-		} 
-
-		p = get_dnssec_pkt(res, authname, LDNS_RR_TYPE_DNSKEY);
-		if (p) {
-			pt = get_key(p, authname, &key_list, &sig_list);
-			if (sig_list) {
-
-				chained_keys = ds_key_match(key_list, trusted_keys);
-				if (chained_keys) {
-					print_rr_list_abbr(stdout, chained_keys, CHAIN);
-				}
-				if (ldns_verify(key_list, sig_list, key_list, trusted_keys) ==
-						LDNS_STATUS_OK) {
-					print_rr_list_abbr(stdout, key_list, SELF); 
-
-				} else {
-					mesg("No DNSKEYs");
-				}
-			} 
-		}
-		/* /DNSSEC */
-
-		if (loop_count++ > 20) {
-			error("Looks like we are looping");
-			ldns_pkt_free(p); 
-			return NULL;
-		}
-
-		ldns_rr_list_deep_free(sig_list);
-		sig_list = ldns_rr_list_new();
-		ldns_rr_list_deep_free(ds_list);
-		ds_list = ldns_rr_list_new();
-		ldns_rr_list_deep_free(ds_sig_list);
-		ds_sig_list = ldns_rr_list_new();
 		
-		status = ldns_resolver_send(&p, res, name, t, c, 0);
+		ldns_rr_list_print(stdout, new_nss);
+		puts("");
+
+		p = get_dnssec_pkt(res, labels[i], LDNS_RR_TYPE_DNSKEY);
+		pt = get_key(p, labels[i], &key_list, &key_sig_list);
+		if (key_list) {
+			ldns_rr_list_print(stdout, key_list);
+		}
+		p = get_dnssec_pkt(res, labels[i], LDNS_RR_TYPE_DS);
+		pt = get_ds(p, labels[i], &ds_list, &ds_sig_list);
+		if (ds_list) {
+			ldns_rr_list_print(stdout, ds_list);
+		}
+		ds_list = NULL;
+		/* we might get lucky and get a DS referral wehn
+		 * asking for the key of the query name */
+		p = get_dnssec_pkt(res, name, LDNS_RR_TYPE_DNSKEY);
+		pt = get_ds(p, NULL, &ds_list, &ds_sig_list); 
+		if (ds_list) {
+			ldns_rr_list_print(stdout, ds_list);
+		}
+		ds_list = NULL;
+
 		new_nss_aaaa = NULL;
 		new_nss_a = NULL;
 		ns_addr = NULL;
-	}
-	/* how far did we come */
-	labels_count_current = ldns_dname_label_count(authname);
-
-	/* 
-	 * het kan zijn dat we nog labels over hebben, omdat ze
-	 * allemaal gehost worden op de zelfde server, zie
-	 * ok.ok.ok.test.jelte.nlnetlabs.nl
-	 *
-	 * die moeten hier nog afgegaan worden om een chain
-	 * of trust te kunnen opbouwen
-	 */
-
-	status = ldns_resolver_send(&p, res, name, t, c, 0);
-	if (!p) {
-		error("No packet received, aborting");
-		return NULL;
-	}
-
-	hostnames = ldns_get_rr_list_name_by_addr(local_res, 
-			ldns_pkt_answerfrom(p), 0, 0);
-
-	new_nss = ldns_pkt_rr_list_by_type(p,
-			LDNS_RR_TYPE_NS, LDNS_SECTION_AUTHORITY);
-	final_answer = ldns_pkt_answer(p);
-	if (new_nss) {
-		authname = ldns_rr_owner(ldns_rr_list_rr(new_nss, 0));
-	} 
-	labels_count_all = ldns_dname_label_count(name);
-
-	/* reverse the query order for the remaining names
-	 * so that we fetch them in the correct DNS order */
-	labels = LDNS_XMALLOC(ldns_rdf*, labels_count_all);
-	if (!labels) {
-		return NULL;
-	}
-	labels[0] = name;
-	for(i = 1 ; i < (ssize_t)labels_count_current; i++) {
-		labels[i] = ldns_dname_left_chop(labels[i - 1]);
-	}
-
-		/* DNSSEC */
-	/* recurse on the name at this server */
-	puts("");
-	mesg("Re-querying at current nameservers\n");
-	for(i = (ssize_t)labels_count_current - 1; i >= 0; i--) {
-
-		/* fake print the nameserver for this node */
-		for(j = 0; j < ldns_rr_list_rr_count(new_nss); j++) {
-			ldns_rdf_print(stdout, labels[i]);
-			printf("\t%d\tIN\tNS\t", (int)ldns_rr_ttl(ldns_rr_list_rr(new_nss, j)));
-			ldns_rdf_print(stdout, 
-				ldns_rr_rdf(ldns_rr_list_rr(new_nss, j), 0));
-			printf("\n");
-		}
-
-		p = get_dnssec_pkt(res, labels[i], LDNS_RR_TYPE_DNSKEY);
-		if (p) {
-			pt = get_key(p, labels[i], &key_list, &sig_list);
-			if (sig_list) {
-				if (ldns_verify(key_list, sig_list, key_list, trusted_keys) ==
-						LDNS_STATUS_OK) {
-					print_rr_list_abbr(stdout, key_list, SELF); 
-					
-					chained_keys = ds_key_match(key_list, trusted_keys);
-					if (chained_keys) {
-						print_rr_list_abbr(stdout, chained_keys, CHAIN);
-					}
-				} else {
-					mesg("No DNSKEYs");
-				}
-			}
-		}
-		ds_p = get_dnssec_pkt(res, labels[i], LDNS_RR_TYPE_DS);
-		/* do add the name (labels[i], because we're looking in
-		 * the answer section here */
-		pt = get_ds(ds_p, labels[i], &ds_list, &ds_sig_list);
-		/* check this with previous keys */
-		if (ds_sig_list) {
-			if ((st = ldns_verify(ds_list, ds_sig_list, trusted_keys, NULL)) ==
-					LDNS_STATUS_OK) {
-				print_rr_list_abbr(stdout, ds_list, SELF);
-				
-				/* use cat clone to actually copy them */
-				trusted_ds = ldns_rr_list_cat_clone(trusted_ds, ds_list);
-				
-				chained_keys = ds_key_match(ds_list, trusted_keys);
-				if (chained_keys) {
-					print_rr_list_abbr(stdout, chained_keys, CHAIN);
-				}
-			} else {
-				/* warning("%s",ldns_get_errorstr_by_id(st)); */
-			}
-		} else {
-			mesg("No DSs");
-		}
+		key_list = NULL;
+		
 		puts("");
-		ldns_rr_list_deep_free(ds_list);
-		ds_list = ldns_rr_list_new();
-		ldns_rr_list_deep_free(ds_sig_list);
-		ds_sig_list = ldns_rr_list_new();
 	}
-	/* /DNSSEC */
-
-	/* security information gathered */
-	printf("A\n");
-	ldns_rr_list_print(stdout, trusted_ds); 
-	printf("B\n");
-	ldns_rr_list_print(stdout, trusted_keys); 
-	printf("C\n");
-	ldns_rr_list_print(stdout, chained_keys); 
-	printf("D\n");
-	
-	ldns_pkt_free(p); 
 	return NULL;
 }
