@@ -83,7 +83,7 @@ Or you can just use the menu above to browse through the API docs.
 #define LDNS_IP4ADDRLEN      (32/8)
 #define LDNS_IP6ADDRLEN      (128/8)
 #define LDNS_PORT	53
-#define LDNS_ROOT_LABEL	'\0'
+#define LDNS_ROOT_LABEL_STR     "."
 #define LDNS_DEFAULT_TTL	3600
 
 /* lookup tables for standard DNS stuff  */

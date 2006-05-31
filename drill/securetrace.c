@@ -104,8 +104,6 @@ get_dnssec_rr(ldns_pkt *p, ldns_rdf *name, ldns_rr_type t,
                sigs = ldns_pkt_rr_list_by_type(p, LDNS_RR_TYPE_RRSIG,
                                LDNS_SECTION_AUTHORITY);
 	}
-
-
 	if (sig) {
 		ldns_rr_list_cat(*sig, sigs);
 	}
@@ -194,17 +192,12 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 	ldns_resolver_set_dnssec_cd(res, true);
 	ldns_resolver_set_recursive(local_res, false);
 
-	/* setup the root nameserver in the new resolver */
-	if (ldns_resolver_push_nameserver_rr_list(res, global_dns_root) != LDNS_STATUS_OK) {
-		return NULL;
-	}
-
 	labels_count = ldns_dname_label_count(name);
 	labels = LDNS_XMALLOC(ldns_rdf*, labels_count + 2);
 	if (!labels) {
 		return NULL;
 	}
-	labels[0] = LDNS_ROOT_LABEL;
+	labels[0] = ldns_dname_new_frm_str(LDNS_ROOT_LABEL_STR);
 	labels[1] = name;
 	for(i = 2 ; i < (ssize_t)labels_count + 2; i++) {
 		labels[i] = ldns_dname_left_chop(labels[i - 1]);
@@ -230,12 +223,11 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 					LDNS_RR_TYPE_NS, LDNS_SECTION_ANSWER);
 		}
 
-		while((pop = ldns_resolver_pop_nameserver(res))) { /* do it */ }
 
 		if (!new_nss_aaaa && !new_nss_a) {
 			 /* no nameserver found!!! */
-			for(j = 0; j < (ssize_t)ldns_rr_list_rr_count(new_nss); j++) {
-				pop = ldns_rr_rdf(ldns_rr_list_rr(new_nss, (size_t)j), 0);
+			for(j = 0; j < ldns_rr_list_rr_count(new_nss); j++) {
+				pop = ldns_rr_rdf(ldns_rr_list_rr(new_nss, j), 0);
 				if (!pop) {
 					break;
 				}
@@ -310,6 +302,7 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 		new_nss = NULL;
 		ns_addr = NULL;
 		key_list = NULL;
+		while((pop = ldns_resolver_pop_nameserver(res))) { /* do it */ }
 		
 		puts("");
 	}
