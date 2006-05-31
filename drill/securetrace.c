@@ -175,8 +175,7 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 		return NULL;
 	}
 	
-	/* transfer some properties of local_res to res,
-	 * because they were given on the commandline */
+	/* transfer some properties of local_res to res */
 	ldns_resolver_set_ip6(res, 
 			ldns_resolver_ip6(local_res));
 	ldns_resolver_set_port(res, 
@@ -190,52 +189,33 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 	ldns_resolver_set_random(res, 
 			ldns_resolver_random(local_res));
 	ldns_resolver_set_recursive(res, false);
-	ldns_resolver_set_dnssec(res, true);
+	ldns_resolver_set_dnssec_cd(res, true);
+	ldns_resolver_set_recursive(local_res, true);
 
 	/* setup the root nameserver in the new resolver */
 	if (ldns_resolver_push_nameserver_rr_list(res, global_dns_root) != LDNS_STATUS_OK) {
 		return NULL;
 	}
 
-	/* this must be a real query to local_res */
-	status = ldns_resolver_send(&p, local_res, ldns_dname_new_frm_str("."), LDNS_RR_TYPE_NS, c, 0);
-	if (ldns_pkt_empty(p)) {
-		warning("No root server information received");
-	} 
-	
-	if (status == LDNS_STATUS_OK) {
-		if (!ldns_pkt_empty(p)) {
-			drill_pkt_print(stdout, local_res, p);
-		}
-	} else {
-		error("Cannot use local resolver");
-		return NULL;
-	}
-
-	status = ldns_resolver_send(&p, res, name, t, c, 0);
-	if (!p) {
-		warning("No packet received, aborting");
-		return NULL;
-	}
-
 	labels_count = ldns_dname_label_count(name);
-
+	labels_count++;
 	labels = LDNS_XMALLOC(ldns_rdf*, labels_count);
 	if (!labels) {
 		return NULL;
 	}
-	labels[0] = name;
-	for(i = 1 ; i < (ssize_t)labels_count; i++) {
+	labels[0] = LDNS_ROOT_LABEL;
+	labels[1] = name;
+	for(i = 2 ; i < (ssize_t)labels_count + 1; i++) {
 		labels[i] = ldns_dname_left_chop(labels[i - 1]);
 	}
 
 	/* get the nameserver for the label
 	 * ask: dnskey and ds for the label 
 	 */
-	for(i = (ssize_t)labels_count - 1; i >= 0; i--) {
-
+	for(i = (ssize_t)labels_count; i > 0; i--) {
 		/* get the nameserver for this label */
 		status = ldns_resolver_send(&p, local_res, labels[i], LDNS_RR_TYPE_NS, c, 0);
+		/* ldns_pkt_print(stdout, p); */
 		new_nss_a = ldns_pkt_rr_list_by_type(p,
 				LDNS_RR_TYPE_A, LDNS_SECTION_ADDITIONAL);
 		new_nss_aaaa = ldns_pkt_rr_list_by_type(p,
@@ -249,7 +229,7 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 		}
 
 		/* remove the old nameserver from the resolver */
-		while((pop = ldns_resolver_pop_nameserver(res))) { /* do it */ }
+		while((ldns_resolver_pop_nameserver(res))) { /* do it */ }
 
 		if (!new_nss_aaaa && !new_nss_a) {
 			 /* no nameserver found!!! */
@@ -276,27 +256,27 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 				ldns_pkt_free(p);
 				return NULL;
 			}
-		}
-		/* add the new ones */
-		if (new_nss_aaaa) {
-			if (ldns_resolver_push_nameserver_rr_list(res, new_nss_aaaa) != 
-					LDNS_STATUS_OK) {
-				error("Adding new nameservers");
-				ldns_pkt_free(p); 
-				return NULL;
+		} else {
+			/* add the new ones */
+			if (new_nss_aaaa) {
+				if (ldns_resolver_push_nameserver_rr_list(res, new_nss_aaaa) != 
+						LDNS_STATUS_OK) {
+					error("Adding new nameservers");
+					ldns_pkt_free(p); 
+					return NULL;
+				}
 			}
-		}
-		if (new_nss_a) {
-			if (ldns_resolver_push_nameserver_rr_list(res, new_nss_a) != 
-					LDNS_STATUS_OK) {
-				error("Adding new nameservers");
-				ldns_pkt_free(p); 
-				return NULL;
+			if (new_nss_a) {
+				if (ldns_resolver_push_nameserver_rr_list(res, new_nss_a) != 
+						LDNS_STATUS_OK) {
+					error("Adding new nameservers");
+					ldns_pkt_free(p); 
+					return NULL;
+				}
 			}
 		}
 		
 		ldns_rr_list_print(stdout, new_nss);
-		puts("");
 
 		p = get_dnssec_pkt(res, labels[i], LDNS_RR_TYPE_DNSKEY);
 		pt = get_key(p, labels[i], &key_list, &key_sig_list);
@@ -320,6 +300,7 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 
 		new_nss_aaaa = NULL;
 		new_nss_a = NULL;
+		new_nss = NULL;
 		ns_addr = NULL;
 		key_list = NULL;
 		
