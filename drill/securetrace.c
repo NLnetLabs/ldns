@@ -189,10 +189,11 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 			ldns_resolver_usevc(local_res));
 	ldns_resolver_set_random(res, 
 			ldns_resolver_random(local_res));
+	ldns_resolver_set_recursive(local_res, false);
+
 	ldns_resolver_set_recursive(res, false);
 	ldns_resolver_set_dnssec_cd(res, false);
 	ldns_resolver_set_dnssec(res, true);
-	ldns_resolver_set_recursive(local_res, false);
 
 	labels_count = ldns_dname_label_count(name);
 	labels = LDNS_XMALLOC(ldns_rdf*, labels_count + 2);
@@ -209,77 +210,47 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 	 * ask: dnskey and ds for the label 
 	 */
 	for(i = (ssize_t)labels_count + 1; i > 0; i--) {
-
-		/* get the nameserver for this label */
 		status = ldns_resolver_send(&local_p, local_res, labels[i], LDNS_RR_TYPE_NS, c, 0);
-		/* ldns_pkt_print(stdout, p); */
-		new_nss_a = ldns_pkt_rr_list_by_type(local_p,
-				LDNS_RR_TYPE_A, LDNS_SECTION_ADDITIONAL);
-		new_nss_aaaa = ldns_pkt_rr_list_by_type(local_p,
-				LDNS_RR_TYPE_AAAA, LDNS_SECTION_ADDITIONAL);
 		new_nss = ldns_pkt_rr_list_by_type(local_p,
-				LDNS_RR_TYPE_NS, LDNS_SECTION_AUTHORITY);
-		if (!new_nss) {
-			/* sometimes they are hidden in the answer section */
-			new_nss = ldns_pkt_rr_list_by_type(local_p,
 					LDNS_RR_TYPE_NS, LDNS_SECTION_ANSWER);
+ 		if (!new_nss) {
+			/* lame ass servers put them in the auth section */
+			new_nss = ldns_pkt_rr_list_by_type(local_p,
+					LDNS_RR_TYPE_NS, LDNS_SECTION_AUTHORITY);
+		}
+		ldns_rr_list_print(stdout, new_nss);
+
+		for(j = 0; j < ldns_rr_list_rr_count(new_nss); j++) {
+			pop = ldns_rr_rdf(ldns_rr_list_rr(new_nss, j), 0);
+			if (!pop) {
+				break;
+			}
+			/* retrieve it's addresses */
+			ns_addr = ldns_rr_list_cat_clone(ns_addr,
+				ldns_get_rr_list_addr_by_name(local_res, pop, c, 0));
 		}
 
-
-		if (!new_nss_aaaa && !new_nss_a) {
-			 /* no nameserver found!!! */
-			for(j = 0; j < ldns_rr_list_rr_count(new_nss); j++) {
-				pop = ldns_rr_rdf(ldns_rr_list_rr(new_nss, j), 0);
-				if (!pop) {
-					break;
-				}
-				/* retrieve it's addresses */
-				ns_addr = ldns_rr_list_cat_clone(ns_addr,
-					ldns_get_rr_list_addr_by_name(local_res, pop, c, 0));
-			}
-
-			if (ns_addr) {
-				if (ldns_resolver_push_nameserver_rr_list(res, ns_addr) != 
-						LDNS_STATUS_OK) {
-					error("Error adding new nameservers");
-					ldns_pkt_free(p); 
-					return NULL;
-				}
-				ldns_rr_list_free(ns_addr);
-			} else {
-				error("Could not find the nameserver ip addr; abort");
-				ldns_pkt_free(p);
+		if (ns_addr) {
+			if (ldns_resolver_push_nameserver_rr_list(res, ns_addr) != 
+					LDNS_STATUS_OK) {
+				error("Error adding new nameservers");
+				ldns_pkt_free(local_p); 
 				return NULL;
 			}
 		} else {
-			/* add the new ones */
-			if (new_nss_aaaa) {
-				if (ldns_resolver_push_nameserver_rr_list(res, new_nss_aaaa) != 
-						LDNS_STATUS_OK) {
-					error("Adding new nameservers");
-					ldns_pkt_free(p); 
-					return NULL;
-				}
-			}
-			if (new_nss_a) {
-				if (ldns_resolver_push_nameserver_rr_list(res, new_nss_a) != 
-						LDNS_STATUS_OK) {
-					error("Adding new nameservers");
-					ldns_pkt_free(p); 
-					return NULL;
-				}
-			}
+			error("Could not find the nameserver ip addr; abort");
+			ldns_pkt_free(local_p);
+			return NULL;
 		}
 		
 		if (ldns_resolver_nameserver_count(res) == 0) {
-			error("No nameservers found for this node\n");
+			error("No nameservers found for this node");
 			return NULL;
 		}
 		ldns_rdf_print(stdout, labels[i]); puts("");
 
 		p = get_dnssec_pkt(res, labels[i], LDNS_RR_TYPE_DNSKEY);
 		pt = get_key(p, labels[i], &key_list, &key_sig_list);
-/*		ldns_pkt_print(stdout, p);*/
 		if (key_sig_list) {
 			if (key_list) {
 				if ((st = ldns_verify(key_list, key_sig_list, key_list, NULL)) ==
@@ -313,15 +284,13 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 				mesg("No DS");
 			}
 		}
-
 		ds_list = NULL;
 		new_nss_aaaa = NULL;
 		new_nss_a = NULL;
 		new_nss = NULL;
 		ns_addr = NULL;
 		key_list = NULL;
-		while((ldns_resolver_pop_nameserver(res))) { /* remove it */ }
-		
+		while((pop = ldns_resolver_pop_nameserver(res))) { /* remove it */ }
 		puts("");
 	}
 	return NULL;
