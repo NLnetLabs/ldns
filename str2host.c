@@ -68,30 +68,24 @@ ldns_str2rdf_time(ldns_rdf **rd, const char *time)
 	   	tm.tm_mon--;
 	   	/* Check values */
 		if (tm.tm_year < 70) {
-			fprintf(stderr, "You cannot specify dates before 1970\n");
 			goto bad_format;
 		}
 		if (tm.tm_mon < 0 || tm.tm_mon > 11) {
-			fprintf(stderr, "The month must be in the range 1 to 12\n");
 			goto bad_format;
 		}
 		if (tm.tm_mday < 1 || tm.tm_mday > 31) {
-			fprintf(stderr, "The day must be in the range 1 to 31\n");
 			goto bad_format;
 		}
 		
 		if (tm.tm_hour < 0 || tm.tm_hour > 23) {
-			fprintf(stderr, "The hour must be in the range 0-23\n");
 			goto bad_format;
 		}
 
 		if (tm.tm_min < 0 || tm.tm_min > 59) {
-			fprintf(stderr, "The minute must be in the range 0-59\n");
 			goto bad_format;
 		}
 
 		if (tm.tm_sec < 0 || tm.tm_sec > 59) {
-			fprintf(stderr, "The second must be in the range 0-59\n");
 			goto bad_format;
 		}
 
@@ -604,7 +598,6 @@ ldns_str2rdf_cert_alg(ldns_rdf **rd, const char *str)
 		st = ldns_str2rdf_int8(rd, str);
 	}
 	if (ldns_rdf2native_int8(*rd) == 0) {
-		fprintf(stderr, "Warning: Bad CERT algorithm type: %s ignoring RR\n", str);
 		st = LDNS_STATUS_CERT_BAD_ALGORITHM;
 	}
 	return st;
@@ -819,7 +812,6 @@ east:
 		}
 		size_b = (uint8_t) size;
 		if (size_e > 9) {
-			dprintf("%s", "size too large\n");
 			return LDNS_STATUS_INVALID_STR;
 		}
 		if (*my_str == 'm' || *my_str == 'M') {
@@ -842,7 +834,6 @@ east:
 		}
 		horiz_pre_b = (uint8_t) horiz_pre;
 		if (horiz_pre_e > 9) {
-			printf("horiz_pre too large\n");
 			return LDNS_STATUS_INVALID_STR;
 		}
 		if (*my_str == 'm' || *my_str == 'M') {
@@ -865,7 +856,6 @@ east:
 		}
 		vert_pre_b = (uint8_t) vert_pre;
 		if (vert_pre_e > 9) {
-			dprintf("%s", "vert_pre too large\n");
 			return LDNS_STATUS_INVALID_STR;
 		}
 		if (*my_str == 'm' || *my_str == 'M') {
@@ -928,9 +918,6 @@ ldns_str2rdf_wks(ldns_rdf **rd, const char *str)
 				bitmap = LDNS_XREALLOC(bitmap, uint8_t, (serv_port / 8) + 1);
 				/* set to zero to be sure */
 				for (; bm_len <= serv_port / 8; bm_len++) {
-				/*
-				printf("clearing byte %d\n", bm_len);
-				*/
 					bitmap[bm_len] = 0;
 				}
 			}

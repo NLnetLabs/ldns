@@ -325,7 +325,6 @@ ldns_udp_send_query(ldns_buffer *qbin, int sockfd, const struct sockaddr_storage
 		return 0;
 	}
 	if ((size_t) bytes != ldns_buffer_position(qbin)) {
-		/* dprintf("%s", "amount mismatch\n"); */
 		return 0;
 	}
 	return bytes;
@@ -356,11 +355,7 @@ ldns_udp_read_wire(int sockfd, size_t *size, struct sockaddr_storage *from,
 
 	/* recvfrom can also return 0 */
 	if (wire_size == -1 || wire_size == 0) {
-		if (errno == EAGAIN) {
-			/*dprintf("%s", "socket timeout\n");*/
-		}
 		*size = 0;
-		/*perror("error receiving udp packet");*/
 		LDNS_FREE(wire);
 		return NULL;
 	}
@@ -387,10 +382,6 @@ ldns_tcp_read_wire(int sockfd, size_t *size)
 	while (bytes < 2) {
 		bytes = recv(sockfd, wire, 2, 0);
 		if (bytes == -1) {
-			if (errno == EAGAIN) {
-				/*dprintf("%s", "socket timeout\n");*/
-			}
-			/*perror("error receiving tcp packet");*/
 			*size = 0;
 			LDNS_FREE(wire);
 			return NULL;
@@ -406,10 +397,6 @@ ldns_tcp_read_wire(int sockfd, size_t *size)
 	while (bytes < (ssize_t) wire_size) {
 		bytes += recv(sockfd, wire + bytes, (size_t) (wire_size - bytes), 0);
 		if (bytes == -1) {
-			if (errno == EAGAIN) {
-				/*dprintf("%s", "socket timeout\n");*/
-			}
-			/*perror("error receiving tcp packet");*/
 			LDNS_FREE(wire);
 			*size = 0;
 			return NULL;
