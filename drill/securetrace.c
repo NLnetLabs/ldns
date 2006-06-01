@@ -11,9 +11,9 @@
 #include "drill.h"
 #include <ldns/dns.h>
 
-#define OK "[OK]"  /* self sig ok */
-#define TRUST "[TR]" /* chain from parent */
-#define BOGUS "[BO]" /* bogus */
+#define SELF "[S]"  /* self sig ok */
+#define TRUST "[T]" /* chain from parent */
+#define BOGUS "[B]" /* bogus */
 
 #if 0
 /* See if there is a key/ds in trusted that matches
@@ -255,7 +255,7 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 			if (key_list) {
 				if ((st = ldns_verify(key_list, key_sig_list, key_list, NULL)) ==
 						LDNS_STATUS_OK) {
-					print_rr_list_abbr(stdout, key_list, OK);
+					print_rr_list_abbr(stdout, key_list, SELF);
 
 					ldns_rr_list_push_rr_list(trusted_keys, key_list);
 				} else {
@@ -278,7 +278,7 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 			if (ds_list) {
 				if ((st = ldns_verify(ds_list, ds_sig_list, trusted_keys, NULL)) ==
 						LDNS_STATUS_OK) {
-					print_rr_list_abbr(stdout, ds_list, OK);
+					print_rr_list_abbr(stdout, ds_list, SELF);
 				} else {
 					print_rr_list_abbr(stdout, ds_list, BOGUS);
 				}
@@ -298,6 +298,7 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 /*
 	ldns_rr_list_print(stdout, trusted_keys);
 */
+	printf(";;" SELF " self sig OK; " BOGUS " bogus; " TRUST " trusted\n");
 
 	return NULL;
 }
