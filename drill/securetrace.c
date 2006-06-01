@@ -171,7 +171,7 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 	key_sig_list = ldns_rr_list_new();
 	ds_sig_list = ldns_rr_list_new();
 
-	if (!p || !res) {
+	if (!p || !local_p || !res) {
 		error("Memory allocation failed");
 		return NULL;
 	}
@@ -247,7 +247,6 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 			error("No nameservers found for this node");
 			return NULL;
 		}
-		ldns_rdf_print(stdout, labels[i]); puts("");
 
 		p = get_dnssec_pkt(res, labels[i], LDNS_RR_TYPE_DNSKEY);
 		pt = get_key(p, labels[i], &key_list, &key_sig_list);
@@ -295,10 +294,6 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 		while((pop = ldns_resolver_pop_nameserver(res))) { /* remove it */ }
 		puts("");
 	}
-/*
-	ldns_rr_list_print(stdout, trusted_keys);
-*/
 	printf(";;" SELF " self sig OK; " BOGUS " bogus; " TRUST " trusted\n");
-
 	return NULL;
 }
