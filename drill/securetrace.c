@@ -189,7 +189,7 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 			ldns_resolver_usevc(local_res));
 	ldns_resolver_set_random(res, 
 			ldns_resolver_random(local_res));
-	ldns_resolver_set_recursive(local_res, false);
+	ldns_resolver_set_recursive(local_res, true);
 
 	ldns_resolver_set_recursive(res, false);
 	ldns_resolver_set_dnssec_cd(res, false);
@@ -256,6 +256,8 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 				if ((st = ldns_verify(key_list, key_sig_list, key_list, NULL)) ==
 						LDNS_STATUS_OK) {
 					print_rr_list_abbr(stdout, key_list, OK);
+
+					ldns_rr_list_push_rr_list(trusted_keys, key_list);
 				} else {
 					print_rr_list_abbr(stdout, key_list, BOGUS);
 				}
@@ -274,7 +276,7 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 		}
 		if (ds_sig_list) {
 			if (ds_list) {
-				if ((st = ldns_verify(ds_list, ds_sig_list, key_list, NULL)) ==
+				if ((st = ldns_verify(ds_list, ds_sig_list, trusted_keys, NULL)) ==
 						LDNS_STATUS_OK) {
 					print_rr_list_abbr(stdout, ds_list, OK);
 				} else {
@@ -293,5 +295,9 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 		while((pop = ldns_resolver_pop_nameserver(res))) { /* remove it */ }
 		puts("");
 	}
+/*
+	ldns_rr_list_print(stdout, trusted_keys);
+*/
+
 	return NULL;
 }

@@ -510,7 +510,6 @@ ldns_verify_rrsig_dsa(ldns_buffer *sig, ldns_buffer *rrset, ldns_buffer *key)
 	if (result == 1) {
 		return LDNS_STATUS_OK;
 	} else {
-		dprintf("error in verify: %d\n", result);
 		return LDNS_STATUS_CRYPTO_BOGUS;
 	}
 }
@@ -535,9 +534,6 @@ ldns_verify_rrsig_rsasha1(ldns_buffer *sig, ldns_buffer *rrset, ldns_buffer *key
 				(unsigned int)ldns_buffer_position(sig), rsakey) == 1) {
 			result = LDNS_STATUS_OK;
 		} else {
-			  ERR_load_crypto_strings();
-			  ERR_print_errors_fp(stdout);
-
 			result = LDNS_STATUS_CRYPTO_BOGUS;
 		}
 	}
@@ -589,7 +585,6 @@ ldns_key_buf2dsa(ldns_buffer *key)
 	offset = 1;
 	
 	if (T > 8) {
-		dprintf("%s\n", "DSA type > 8 not implemented, unable to verify signature");
 		return NULL;
 	}
 	
@@ -869,14 +864,12 @@ ldns_sign_public(ldns_rr_list *rrset, ldns_key_list *keys)
 			
 			if (ldns_rrsig2buffer_wire(sign_buf, current_sig) != LDNS_STATUS_OK) {
 				ldns_buffer_free(sign_buf);
-				dprintf("%s\n", "couldn't convert to buffer 1");
 				/* ERROR */
 				return NULL;
 			}
 			/* add the rrset in sign_buf */
 
 			if (ldns_rr_list2buffer_wire(sign_buf, rrset_clone) != LDNS_STATUS_OK) {
-				dprintf("%s\n", "couldn't convert to buffer 2");
 				ldns_buffer_free(sign_buf);
 				return NULL;
 			}
@@ -897,7 +890,6 @@ ldns_sign_public(ldns_rr_list *rrset, ldns_key_list *keys)
 			}
 			if (!b64rdf) {
 				/* signing went wrong */
-				dprintf("%s", "couldn't sign!\n");
 				return NULL;
 			}
 			ldns_rr_rrsig_set_sig(current_sig, b64rdf);
