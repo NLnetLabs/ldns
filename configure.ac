@@ -5,12 +5,8 @@ AC_PREREQ(2.57)
 AC_INIT(libdns, 1.1.0, libdns@nlnetlabs.nl, libdns)
 AC_CONFIG_SRCDIR([packet.c])
 
-# remove this line in a release
-#VERSION_ADD=`date`
-VERSION_ADD=`date +"%Y%m%d"`
 PACKAGE_VERSION="$PACKAGE_VERSION $VERSION_ADD"
 
-#OURCPPFLAGS='-ansi -pedantic -D_POSIX_C_SOURCE=200112 -D_XOPEN_SOURCE=600'
 OURCPPFLAGS='-ansi -D_POSIX_C_SOURCE=200112 -D_XOPEN_SOURCE=600'
 CPPFLAGS=${CPPFLAGS:-${OURCPPFLAGS}}
 OURCFLAGS='-g -O2 -Wall -W -Wwrite-strings'
