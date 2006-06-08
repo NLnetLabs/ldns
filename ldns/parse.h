@@ -35,12 +35,12 @@ typedef enum ldns_enum_directive ldns_directive;
 /** 
  * returns a token/char from the stream F.
  * This function deals with ( and ) in the stream,
- * and ignores when it finds them.
+ * and ignores them when encountered
  * \param[in] *f the file to read from
- * \param[out] *token the token is put here
+ * \param[out] *token the read token is put here
  * \param[in] *delim chars at which the parsing should stop
- * \param[in] *limit how much to read. If 0 use builtin maximum
- * \return 0 on error of EOF of F otherwise return the length of what is read
+ * \param[in] *limit how much to read. If 0 the builtin maximum is used
+ * \return 0 on error of EOF of the stream F.  Otherwise return the length of what is read
  */
 ssize_t ldns_fget_token(FILE *f, char *token, const char *delim, size_t limit);
 
@@ -64,8 +64,8 @@ ssize_t ldns_fget_token_l(FILE *f, char *token, const char *delim, size_t limit,
  * \param[in] *b the buffer to read from
  * \param[out] *token the token is put here
  * \param[in] *delim chars at which the parsing should stop
- * \param[in] *limit how much to read. If 0 use builtin maximum
- * \returns 0 on error of EOF of b otherwise return the length of what is read
+ * \param[in] *limit how much to read. If 0 the builtin maximum is used
+ * \returns 0 on error of EOF of b. Otherwise return the length of what is read
  */
 ssize_t ldns_bget_token(ldns_buffer *b, char *token, const char *delim, size_t limit);
 

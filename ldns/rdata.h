@@ -139,7 +139,7 @@ void            ldns_rdf_set_type(ldns_rdf *rd, ldns_rdf_type type);
 /**
  * sets the size of the rdf.
  * \param[in] *rd the rdf to operate on
- * \param[in] data* pointer to the new data
+ * \param[in] *data pointer to the new data
  * \return void
  */
 void            ldns_rdf_set_data(ldns_rdf *rd, void *data);
