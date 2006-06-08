@@ -20,7 +20,7 @@ ldns_rr_print, ldns_rdf_print, ldns_pkt_print, ldns_rr_list_print, ldns_resolver
 
 ### host2str.h
 # and even lower
-ldns_rdf2buffer_str_a, ldns_rdf2buffer_str_aaaa, ldns_rdf2buffer_str_str, ldns_rdf2buffer_str_b64, ldns_rdf2buffer_str_hex, ldns_rdf2buffer_str_type, ldns_rdf2buffer_str_class, ldns_rdf2buffer_str_alg, ldns_rdf2buffer_str_cert, ldns_rdf2buffer_str_loc, ldns_rdf2buffer_str_unknown, ldns_rdf2buffer_str_nsap, ldns_rdf2buffer_str_wks, ldns_rdf2buffer_str_nsec, ldns_rdf2buffer_str_period, ldns_rdf2buffer_str_tsigtime, ldns_rdf2buffer_str_apl, ldns_rdf2buffer_str_int16_data, ldns_rdf2buffer_str_int16, ldns_rdf2buffer_str_ipseckey
+ldns_rdf2buffer_str_a, ldns_rdf2buffer_str_aaaa, ldns_rdf2buffer_str_str, ldns_rdf2buffer_str_b64, ldns_rdf2buffer_str_hex, ldns_rdf2buffer_str_type, ldns_rdf2buffer_str_class, ldns_rdf2buffer_str_alg, ldns_rdf2buffer_str_loc, ldns_rdf2buffer_str_unknown, ldns_rdf2buffer_str_nsap, ldns_rdf2buffer_str_wks, ldns_rdf2buffer_str_nsec, ldns_rdf2buffer_str_period, ldns_rdf2buffer_str_tsigtime, ldns_rdf2buffer_str_apl, ldns_rdf2buffer_str_int16_data, ldns_rdf2buffer_str_int16, ldns_rdf2buffer_str_ipseckey
 ### /host2str.h
 
 ### wire2host.h
@@ -33,7 +33,7 @@ ldns_buffer2pkt_wire
 ldns_dname_left_chop, ldns_dname_label_count
 ldns_dname2canonical
 ldns_dname_cat_clone, ldns_dname_cat
-ldns_dname_new,rldns_dname_new_frm_str, ldns_dname_new_frm_data | ldns_pkt_query_new_frm_str, ldns_rdf_new_frm_str, ldns_rr_new_frm_str
+ldns_dname_new, ldns_dname_new_frm_str, ldns_dname_new_frm_data | ldns_pkt_query_new_frm_str, ldns_rdf_new_frm_str, ldns_rr_new_frm_str
 ldns_dname_is_subdomain, ldns_dname_str_absolute, ldns_dname_label
 ldns_dname_compare, ldns_dname_interval | ldns_dname_is_subdomain
 ### /dname.h
@@ -165,7 +165,7 @@ ldns_pkt_new, ldns_pkt_free, ldns_pkt_print, ldns_pkt_query_new, ldns_pkt_query_
 
 
 #	gets
-ldns_pkt_id, ldns_pkt_qr, ldns_pkt_aa, ldns_pkt_tc, ldns_pkt_rd, ldns_pkt_cd, ldns_pkt_ra, ldns_pkt_ad, ldns_pkt_opcode, ldns_pkt_rcode, ldns_pkt_qdcount, ldns_pkt_ancount, ldns_pkt_nscount, ldns_pkt_arcount, ldns_pkt_answerfrom, ldns_pkt_querytime, ldns_pkt_size, ldns_pkt_tsig, ldns_pkt_question, ldns_pkt_answer, ldns_pkt_authority, ldns_pkt_additional, ldns_pkt_get_section, ldns_pkt_rr_list_by_name, ldns_pkt_rr_list_by_type, ldns_pkt_rr_list_by_name_and_type | ldns_pkt 
+ldns_pkt_id, ldns_pkt_qr, ldns_pkt_aa, ldns_pkt_tc, ldns_pkt_rd, ldns_pkt_cd, ldns_pkt_ra, ldns_pkt_ad, ldns_pkt_get_opcode, ldns_pkt_get_rcode, ldns_pkt_qdcount, ldns_pkt_ancount, ldns_pkt_nscount, ldns_pkt_arcount, ldns_pkt_answerfrom, ldns_pkt_querytime, ldns_pkt_size, ldns_pkt_tsig, ldns_pkt_question, ldns_pkt_answer, ldns_pkt_authority, ldns_pkt_additional, ldns_pkt_get_section_clone, ldns_pkt_rr_list_by_name, ldns_pkt_rr_list_by_type, ldns_pkt_rr_list_by_name_and_type | ldns_pkt 
 #	sets
 ldns_pkt_set_flags, ldns_pkt_set_id, ldns_pkt_set_qr, ldns_pkt_set_aa, ldns_pkt_set_tc, ldns_pkt_set_rd, ldns_pkt_set_cd, ldns_pkt_set_ra, ldns_pkt_set_ad, ldns_pkt_set_opcode, ldns_pkt_set_rcode, ldns_pkt_set_qdcount, ldns_pkt_set_ancount, ldns_pkt_set_nscount, ldns_pkt_set_arcount, ldns_pkt_set_answerfrom, ldns_pkt_set_querytime, ldns_pkt_set_size, ldns_pkt_set_section_count, ldns_pkt_set_tsig | ldns_pkt 
 #	EDNS0
@@ -194,4 +194,3 @@ ldns_update_pkt_new | ldns_update_pkt_tsig_add
 ldns_update_pkt_tsig_add
 ldns_update_zocount, ldns_update_prcount, ldns_update_upcount, ldns_update_adcount
 ldns_update_set_zocount, ldns_update_set_prcount, ldns_update_set_upcount, ldns_update_set_adcount
-ldns_update_soa_mname, ldns_update_soa_zone_mname

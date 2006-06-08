@@ -72,6 +72,7 @@ syn keyword  ldnsType           ldns_pkt
 syn keyword  ldnsType           ldns_pkt_section
 syn keyword  ldnsType		ldns_pkt_type
 syn keyword  ldnsType		ldns_pkt_opcode
+syn keyword  ldnsType		ldns_pkt_rcode
 syn keyword  ldnsConstant	LDNS_QR
 syn keyword  ldnsConstant	LDNS_AA
 syn keyword  ldnsConstant	LDNS_TC

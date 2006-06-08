@@ -212,15 +212,12 @@ bool ldns_pkt_ra(const ldns_pkt *p);
  * \return value of the bit
  */
 bool ldns_pkt_ad(const ldns_pkt *p);
-
-/* conflict with ldns_pkt_opcode type */
 /**
  * Read the packet's code
  * \param[in] p the packet
  * \return the opcode
  */
 ldns_pkt_opcode ldns_pkt_get_opcode(const ldns_pkt *p);
-
 /**
  * Return the packet's respons code
  * \param[in] p the packet
