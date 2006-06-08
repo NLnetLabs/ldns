@@ -112,7 +112,7 @@ ldns_key_set_algorithm, ldns_key_set_rsa_key, ldns_key_set_dsa_key, ldns_key_set
 ldns_get_errorstr_by_id
 
 ### net.h
-ldns_send_udp, ldns_send_tcp, ldns_send
+ldns_send
 ldns_tcp_send_query, ldns_tcp_read_wire, ldns_tcp_connect
 ### /net.h
 
@@ -172,8 +172,6 @@ ldns_pkt_set_flags, ldns_pkt_set_id, ldns_pkt_set_qr, ldns_pkt_set_aa, ldns_pkt_
 ldns_pkt_edns, ldns_pkt_edns_udp_size, ldns_pkt_edns_extended_rcode, ldns_pkt_edns_version, ldns_pkt_edns_z, ldns_pkt_edns_data, ldns_pkt_set_edns_udp_size, ldns_pkt_set_edns_extended_rcode, ldns_pkt_set_edns_version, ldns_pkt_set_edns_z, ldns_pkt_set_edns_data | ldns_pkt
 
 # rr_functions.h
-ldns_rr_address, ldns_rr_set_address
-#
 ldns_rr_ns_nsdname
 #
 ldns_rr_mx_preference, ldns_rr_mx_exchange
