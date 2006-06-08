@@ -210,6 +210,13 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 	 * ask: dnskey and ds for the label 
 	 */
 	for(i = (ssize_t)labels_count + 1; i > 0; i--) {
+		/* this tries to get the nameserver for the node we
+		 * currently have. This fails sometimes, because of 
+		 * caching, or the failure to cache. A better way would
+		 * be to do a trace from the root to the nameserver (a non
+		 * DNSSEC trace). After that you can just query for
+		 * the DNSKEY and DS and perform the validation magic
+		 */
 		status = ldns_resolver_send(&local_p, local_res, labels[i], LDNS_RR_TYPE_NS, c, 0);
 		new_nss = ldns_pkt_rr_list_by_type(local_p,
 					LDNS_RR_TYPE_NS, LDNS_SECTION_ANSWER);
