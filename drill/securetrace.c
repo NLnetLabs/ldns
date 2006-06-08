@@ -224,8 +224,9 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 			/* lame ass servers put them in the auth section */
 			new_nss = ldns_pkt_rr_list_by_type(local_p,
 					LDNS_RR_TYPE_NS, LDNS_SECTION_AUTHORITY);
+		} else {
+			ldns_rr_list_print(stdout, new_nss);
 		}
-		ldns_rr_list_print(stdout, new_nss);
 
 		for(j = 0; j < ldns_rr_list_rr_count(new_nss); j++) {
 			pop = ldns_rr_rdf(ldns_rr_list_rr(new_nss, j), 0);
