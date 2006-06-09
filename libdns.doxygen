@@ -303,7 +303,7 @@ INLINE_INFO            = YES
 # alphabetically by member name. If set to NO the members will appear in 
 # declaration order.
 
-SORT_MEMBER_DOCS       = YES
+SORT_MEMBER_DOCS       = NO
 
 # If the SORT_BRIEF_DOCS tag is set to YES then doxygen will sort the 
 # brief documentation of file, namespace and class members alphabetically 
@@ -556,13 +556,13 @@ VERBATIM_HEADERS       = YES
 # of all compounds will be generated. Enable this if the project 
 # contains a lot of classes, structs, unions or interfaces.
 
-ALPHABETICAL_INDEX     = NO
+ALPHABETICAL_INDEX     = YES
 
 # If the alphabetical index is enabled (see ALPHABETICAL_INDEX) then 
 # the COLS_IN_ALPHA_INDEX tag can be used to specify the number of columns 
 # in which this list will be split (can be a number in the range [1..20])
 
-COLS_IN_ALPHA_INDEX    = 5
+COLS_IN_ALPHA_INDEX    = 3
 
 # In case all classes in a project start with a common prefix, all 
 # classes will be put under the same header in the alphabetical index. 
@@ -1088,7 +1088,7 @@ INCLUDED_BY_GRAPH      = YES
 # So in most cases it will be better to enable call graphs for selected 
 # functions only using the \callgraph command.
 
-CALL_GRAPH             = NO
+CALL_GRAPH             = YES
 
 # If the GRAPHICAL_HIERARCHY and HAVE_DOT tags are set to YES then doxygen 
 # will graphical hierarchy of all classes instead of a textual one.

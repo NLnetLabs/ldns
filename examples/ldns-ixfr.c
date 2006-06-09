@@ -1,6 +1,7 @@
 /*
  * mx is a small programs that prints out the mx records
- * for a particulary domain
+ * for a particular domain
+ *
  * (c) NLnet Labs, 2005
  * See the file LICENSE for the license
  */

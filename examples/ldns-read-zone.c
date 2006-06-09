@@ -1,5 +1,5 @@
 /*
- * read a zone file from disk and print it
+ * read a zone file from disk and prints it, one RR per line
  *
  * See the file LICENSE for the license
  */

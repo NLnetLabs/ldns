@@ -1,11 +1,16 @@
 /*
- * signzone signs a zone file
+ * ldns-signzone signs a zone file
+ * 
  * for a particulary domain
  * (c) NLnet Labs, 2005
  * See the file LICENSE for the license
  */
 
-#include "config.h"
+/*#include "config.h"*/
+#include <stdint.h>
+#include <stdlib.h>
+#include <unistd.h>
+
 #include <errno.h>
 
 #include <time.h>

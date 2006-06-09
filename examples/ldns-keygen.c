@@ -1,6 +1,7 @@
 /*
  * keygen is a small programs that generate a dnskey and private key
- * for a particulary domain. It (currently) prints out the public key
+ * for a particular domain.
+ *
  * (c) NLnet Labs, 2005
  * See the file LICENSE for the license
  */
