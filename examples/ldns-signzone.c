@@ -1,12 +1,10 @@
 /*
  * ldns-signzone signs a zone file
  * 
- * for a particulary domain
  * (c) NLnet Labs, 2005
  * See the file LICENSE for the license
  */
 
-/*#include "config.h"*/
 #include <stdint.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -70,11 +68,15 @@ main(int argc, char *argv[])
 {
 	const char *zonefile_name;
 	FILE *zonefile = NULL;
+	uint16_t default_ttl = LDNS_DEFAULT_TTL;
+	int line_nr = 0;
+	int c;
 	int argi;
 
 	ldns_zone *orig_zone;
 	ldns_rr_list *orig_rrs = NULL;
 	ldns_rr *orig_soa = NULL;
+	ldns_zone *signed_zone;
 
 	const char *keyfile_name_base;
 	char *keyfile_name;
@@ -84,7 +86,6 @@ main(int argc, char *argv[])
 	ldns_key_list *keys;
 	ldns_status s;
 
-	uint16_t default_ttl = LDNS_DEFAULT_TTL;
 
 	char *outputfile_name = NULL;
 	FILE *outputfile;
@@ -95,16 +96,9 @@ main(int argc, char *argv[])
 	struct tm tm;
 	uint32_t inception;
 	uint32_t expiration;
-
 	ldns_rdf *origin = NULL;
-
 	uint16_t ttl = 0;
 	ldns_rr_class class = LDNS_RR_CLASS_IN;	
-
-	ldns_zone *signed_zone;
-	
-	int line_nr = 0;
-	int c;
 	
 	const char *prog = strdup(argv[0]);
 	
@@ -221,8 +215,6 @@ main(int argc, char *argv[])
 	}
 
 	if (!origin) {
-		/* default to root origin */
-		/*origin = ldns_rdf_new_frm_str(LDNS_RDF_TYPE_DNAME, ".");*/
 		origin = ldns_rr_owner(orig_soa);
 	}
 

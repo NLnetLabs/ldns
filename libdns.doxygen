@@ -423,7 +423,7 @@ WARN_LOGFILE           =
 # directories like "/usr/src/myproject". Separate the files or directories 
 # with spaces.
 
-INPUT                  = . ldns/ doc/ examples/ldns-mx.c examples/ldns-read-zone.c
+INPUT                  = . ldns/ doc/ examples/ldns-mx.c examples/ldns-read-zone.c examples/ldns-signzone.c
 
 # If the value of the INPUT tag contains directories, you can use the 
 # FILE_PATTERNS tag to specify one or more wildcard pattern (like *.cpp 

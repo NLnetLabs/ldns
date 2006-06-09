@@ -48,6 +48,7 @@ main features.
 If you want to see some libdns action, you can read our tutorials:
   - \ref tutorial1_mx
   - \ref tutorial2_zone
+  - \ref tutorial3_signzone
 
 Or you can just use the menu above to browse through the API docs.
 
