@@ -30,6 +30,12 @@
 
 /**
  * LDNS implementation of buffers to ease operations
+ *
+ * ldns_buffers can contain arbitrary information, per octet. You can write
+ * to the current end of a buffer, read from the current position, and
+ * access any data within it.
+ *
+ * Example use of buffers is in the source code of \ref host2str.c
  */
 struct ldns_struct_buffer
 {
@@ -48,7 +54,9 @@ struct ldns_struct_buffer
 	/** If the buffer is fixed it cannot be resized */
 	unsigned _fixed : 1;
 
-	/** The current state of the buffer */
+	/** The current state of the buffer. If writing to the buffer fails
+	 * for any reason, this value is changed. This way, you can perform
+	 * multiple writes in sequence and check for success afterwards. */
 	ldns_status _status;
 };
 typedef struct ldns_struct_buffer ldns_buffer;

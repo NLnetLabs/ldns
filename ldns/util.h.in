@@ -31,7 +31,7 @@
 #endif
 
 /**
- * Memory management macro's
+ * Memory management macros
  */
 #define LDNS_MALLOC(type)		LDNS_XMALLOC(type, 1)
 
@@ -119,7 +119,13 @@ ldns_write_uint64_as_uint48(void *dst, uint64_t data)
 	p[5] = (uint8_t) (data & 0xff);
 }
 
-/* A general purpose lookup table */
+/** A general purpose lookup table
+ *  
+ *  Lookup tables are arrays of (id, name) pairs,
+ *  So you can for instance lookup the RCODE 3, which is "NXDOMAIN",
+ *  and vice versa. The lookup tables themselves are defined wherever needed,
+ *  for instance in \ref host2str.h
+ */
 typedef struct ldns_struct_lookup_table ldns_lookup_table;
 struct ldns_struct_lookup_table {
         int id;
