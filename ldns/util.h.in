@@ -124,13 +124,13 @@ ldns_write_uint64_as_uint48(void *dst, uint64_t data)
  *  Lookup tables are arrays of (id, name) pairs,
  *  So you can for instance lookup the RCODE 3, which is "NXDOMAIN",
  *  and vice versa. The lookup tables themselves are defined wherever needed,
- *  for instance in \ref host2str.h
+ *  for instance in \ref host2str.c
  */
-typedef struct ldns_struct_lookup_table ldns_lookup_table;
 struct ldns_struct_lookup_table {
         int id;
         const char *name;
 };
+typedef struct ldns_struct_lookup_table ldns_lookup_table;
   
 /**
  * Looks up the table entry by name, returns NULL if not found.

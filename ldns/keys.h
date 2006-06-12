@@ -42,7 +42,7 @@ enum ldns_enum_algorithm
 typedef enum ldns_enum_algorithm ldns_algorithm;
 
 /**
- * Hashing algorithms use in the DS record
+ * Hashing algorithms used in the DS record
  */
 enum ldns_enum_hash
 {
@@ -76,6 +76,7 @@ typedef enum ldns_enum_signing_algorithm ldns_signing_algorithm;
 struct ldns_struct_key {
 	ldns_signing_algorithm _alg;
 	/** Storage pointers for the types of keys supported */
+	/* TODO remove unions? */
 	union {
 #ifdef HAVE_SSL
 		RSA	*rsa;

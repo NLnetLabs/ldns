@@ -106,15 +106,15 @@ typedef enum ldns_enum_cert_algorithm ldns_cert_algorithm;
  *
  * The data is a network ordered array of bytes, which size is specified by
  * the (16-bit) size field. To correctly parse it, use the type
- * specified in the (16-bit) type field.
+ * specified in the (16-bit) type field with a value from \ref ldns_rdf_type.
  */
 struct ldns_struct_rdf
 {
-	/** The size of the data (in bytes) */
+	/** The size of the data (in octets) */
 	size_t _size;
 	/** The type of the data */
 	ldns_rdf_type _type;
-	/** Pointer to the data (byte buffer) */
+	/** Pointer to the data (raw octets) */
 	void  *_data;
 };
 typedef struct ldns_struct_rdf ldns_rdf;

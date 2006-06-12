@@ -181,6 +181,62 @@ typedef enum ldns_enum_rr_type ldns_rr_type;
  * Resource Record
  *
  * This is the basic DNS element that contains actual data
+ *
+ * From RFC1035:
+ * <pre>
+3.2.1. Format
+
+All RRs have the same top level format shown below:
+
+                                    1  1  1  1  1  1
+      0  1  2  3  4  5  6  7  8  9  0  1  2  3  4  5
+    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+    |                                               |
+    /                                               /
+    /                      NAME                     /
+    |                                               |
+    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+    |                      TYPE                     |
+    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+    |                     CLASS                     |
+    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+    |                      TTL                      |
+    |                                               |
+    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+    |                   RDLENGTH                    |
+    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--|
+    /                     RDATA                     /
+    /                                               /
+    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+
+where:
+
+NAME            an owner name, i.e., the name of the node to which this
+                resource record pertains.
+
+TYPE            two octets containing one of the RR TYPE codes.
+
+CLASS           two octets containing one of the RR CLASS codes.
+
+TTL             a 32 bit signed integer that specifies the time interval
+                that the resource record may be cached before the source
+                of the information should again be consulted.  Zero
+                values are interpreted to mean that the RR can only be
+                used for the transaction in progress, and should not be
+                cached.  For example, SOA records are always distributed
+                with a zero TTL to prohibit caching.  Zero values can
+                also be used for extremely volatile data.
+
+RDLENGTH        an unsigned 16 bit integer that specifies the length in
+                octets of the RDATA field.
+
+RDATA           a variable length string of octets that describes the
+                resource.  The format of this information varies
+                according to the TYPE and CLASS of the resource record.
+ * </pre>
+ *
+ * The actual amount and type of rdata fields depend on the RR type of the
+ * RR, and can be found by using \ref ldns_rr_descriptor functions.
  */
 struct ldns_struct_rr
 {
@@ -195,7 +251,7 @@ struct ldns_struct_rr
 	/**  Class of the resource record.  */
 	ldns_rr_class	_rr_class;
 	/* everything in the rdata is in network order */
-	/**  The list of rdata's */
+	/**  The array of rdata's */
 	ldns_rdf	 **_rdata_fields;
 };
 typedef struct ldns_struct_rr ldns_rr;
@@ -220,19 +276,19 @@ typedef struct ldns_struct_rr_list ldns_rr_list;
  */
 struct ldns_struct_rr_descriptor
 {
-	/** RR type */
-	uint16_t    _type;
-	/** Textual name.  */
+	/** Type of the RR that is described here */
+	ldns_rr_type    _type;
+	/** Textual name of the RR type.  */
 	const char *_name;
-	/** Minimum number of RDATA FIELDs.  */
+	/** Minimum number of rdata fields in the RRs of this type.  */
 	uint8_t     _minimum;
-	/** Maximum number of RDATA FIELDs.  */
+	/** Maximum number of rdata fields in the RRs of this type.  */
 	uint8_t     _maximum;
-	/** wireformat specification for the rr */
+	/** Wireformat specification for the rr, i.e. the types of rdata fields in their respective order. */
 	const ldns_rdf_type *_wireformat;
 	/** Special rdf types */
 	ldns_rdf_type _variable;
-	/** Specifies whether compression can be used */
+	/** Specifies whether compression can be used for dnames in this RR type. */
 	ldns_rr_compress _compress;
 };
 typedef struct ldns_struct_rr_descriptor ldns_rr_descriptor;

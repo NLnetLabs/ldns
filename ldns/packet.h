@@ -214,37 +214,42 @@ typedef struct ldns_struct_hdr ldns_hdr;
  * DNS packet
  *
  * This structure contains a complete DNS packet (either a query or an answer)
+ *
+ * It is the complete representation of what you actually send to a
+ * nameserver, and what it sends back (assuming you are the client here).
  */
 struct ldns_struct_pkt
 {
-	/**  header section */
+	/** Header section */
 	ldns_hdr *_header;
 	/* extra items needed in a packet */
-	/**  the size in bytes of the pkt */
-	uint16_t _answersize;
+	/** The size of the wire format of the packet in octets */
 	ldns_rdf *_answerfrom;
-        /** timestamp of when the packet was sent */
+        /** Timestamp of the time the packet was sent or created */
 	struct timeval timestamp;
-	/**  query duration */
+	/** The duration of the query this packet is an answer to */
 	uint32_t _querytime;
-	/**  the packet size */
+	/** The size of the wire format of the packet in octets */
 	size_t _size;
-	/** optional tsig rr */
+	/** Optional tsig rr */
 	ldns_rr *_tsig_rr;
-	/** EDNS0 values */
+	/** EDNS0 available buffer size, see RFC2671 */
 	uint16_t _edns_udp_size;
+	/** EDNS0 Extended rcode */
 	uint8_t _edns_extended_rcode;
+	/** EDNS Version */
 	uint8_t _edns_version;
+	/** Reserved EDNS data bits */
 	uint16_t _edns_z;
+	/** Arbitrary EDNS rdata */
 	ldns_rdf *_edns_data;
-	/**  query data */
-	/**  question section */
+	/**  Question section */
 	ldns_rr_list	*_question;
-	/**  answer section */
+	/**  Answer section */
 	ldns_rr_list	*_answer;
-	/**  auth section */
+	/**  Authority section */
 	ldns_rr_list	*_authority;
-	/**  add section */
+	/**  Additional section */
 	ldns_rr_list	*_additional;
 };
 typedef struct ldns_struct_pkt ldns_pkt;

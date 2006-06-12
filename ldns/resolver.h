@@ -21,8 +21,9 @@
 #include <ldns/packet.h>
 #include <sys/time.h>
 
-/** \brief where to find the resolv.conf file */
+/** Default location of the resolv.conf file */
 #define LDNS_RESOLV_CONF	"/etc/resolv.conf"
+/** Default location of the hosts file */
 #define LDNS_RESOLV_HOSTS	"/etc/hosts"
 
 #define LDNS_RESOLV_KEYWORD     -1	
@@ -44,69 +45,81 @@
  */
 struct ldns_struct_resolver
 {
-	/** \brief On which port to run */
+	/**  Port to send queries to */
 	uint16_t _port;
 
-	/** \brief List of nameservers to query (IP addresses or dname) */
+	/** Array of nameservers to query (IP addresses or dnames) */
 	ldns_rdf **_nameservers; 
+	/** Number of nameservers in \c _nameservers */
 	size_t _nameserver_count; /* how many do we have */
 
-        /** \brief round trip time; 0 -> infinity. Unit: ms? */
+        /**  Round trip time; 0 -> infinity. Unit: ms? */
         size_t *_rtt;
 
-	/** \brief Wether or not to be recursive */
+	/**  Wether or not to be recursive */
 	bool _recursive;
 
-	/** \brief Print debug information */
+	/**  Print debug information */
 	bool _debug;
 	
-	/** \brief Default domain to add */
+	/**  Default domain to add to non fully qualified domain names */
 	ldns_rdf *_domain; 
 
-	/** \brief Searchlist array */
+	/**  Searchlist array, add the names in this array if a query cannot be found */
 	ldns_rdf **_searchlist;
+
+	/** Number of entries in the searchlist array */
 	size_t _searchlist_count;
 
-	/** \brief How many retries to try, before giving up */
+	/**  Number of times to retry before giving up */
 	uint8_t _retry;
-	/** \brief Re-trans interval */
+	/**  Time to wait before retrying */
 	uint8_t _retrans;
-	/** \brief Wether to do DNSSEC */
+
+	/**  Whether to do DNSSEC */
 	bool _dnssec;
-	/** \brief Wether to set the CD bit on DNSSEC requests */
+	/**  Whether to set the CD bit on DNSSEC requests */
 	bool _dnssec_cd;
-	/** \brief Wether to use tcp */
+	/**  Whether to use tcp or udp (tcp if the value is true)*/
 	bool _usevc;
-	/** \brief Wether to ignore the tc bit */
+	/**  Whether to ignore the tc bit */
 	bool _igntc;
-	/** \brief Wether to use ip6, 0->does not matter, 1 ipv4, 2->ip6 */
+	/**  Whether to use ip6, 0->does not matter, 1 is IPv4, 2 is IPv6 */
 	uint8_t _ip6;
-	/** \brief if true append the default domain */
+	/**  If true append the default domain */
 	bool _defnames;
-	/** \brief if true apply the search list */
+	/**  If true apply the search list */
 	bool _dnsrch;
-	/** timeout for socket connections */
+	/**  Timeout for socket connections */
 	struct timeval _timeout;
-	/** \brief only try the first nameserver */
+	/**  Only try the first nameserver, and return with an error directly if it fails */
 	bool _fail;
-	/** \brief randomly choose a nameserver */
+	/**  Randomly choose a nameserver */
 	bool _random;
-	/** keep some things for axfr */
+	/** Keep some things to make AXFR possible */
 	int _socket;
+	/** Count the number of \ref LDNS_RR_TYPE_SOA RRs we have seen so far
+	 * (the second one signifies the end of the AXFR)
+	 */
 	int _axfr_soa_count;
 	/* when axfring we get complete packets from the server
 	   but we want to give the caller 1 rr at a time, so
 	   keep the current pkt */
+        /** Packet currently handled when doing part of an AXFR */
 	ldns_pkt *_cur_axfr_pkt;
+	/** Counter for within the AXFR packets */
 	uint16_t _axfr_i;
-	/* EDNS0 stuff only bufsize atm */
+	/* EDNS0 available buffer size */
 	uint16_t _edns_udp_size;
 	
 	/* Optional tsig key for signing queries,
 	outgoing messages are signed if and only if both are set
 	*/
+	/** Name of the key to use with TSIG, if \ref _tsig_keyname and \ref _tsig_keydata both contain values, outgoing messages are automatically signed with TSIG. */
 	char *_tsig_keyname;
+	/** Secret key data to use with TSIG, if \ref _tsig_keyname and \ref _tsig_keydata both contain values, outgoing messages are automatically signed with TSIG. */
 	char *_tsig_keydata;
+	/** TSIG signing algorithm */
 	char *_tsig_algorithm;
 };
 typedef struct ldns_struct_resolver ldns_resolver;
@@ -558,7 +571,7 @@ ldns_pkt* ldns_resolver_query(const ldns_resolver *r, const ldns_rdf *name, ldns
 
 
 /** 
- * \brief create a new resolver structure 
+ * Create a new resolver structure 
  * \return ldns_resolver* pointer to new strcture
  */
 ldns_resolver* ldns_resolver_new(void);
