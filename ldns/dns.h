@@ -52,7 +52,9 @@ If you want to see some libdns action, you can read our tutorials:
 
 Or you can just use the menu above to browse through the API docs.
 
+<div style="visibility:hidden;">
 \image html LogoInGradientBar2-y100.png
+</div>
 */
 #ifndef LDNS_DNS_H
 #define LDNS_DNS_H

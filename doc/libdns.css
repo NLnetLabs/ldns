@@ -418,3 +418,8 @@ DIV.nav
    border           : none;
    border-bottom    : 1px solid #84C7B0;
 }
+
+.logo
+{
+    text-align: right;
+}
