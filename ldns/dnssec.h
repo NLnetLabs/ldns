@@ -8,6 +8,17 @@
  * A bunch of defines that are used in the DNS
  */
 
+/**
+ * \file dnssec.h
+ *
+ * This module contains functions for DNSSEC operations (RFC4033 t/m RFC4035).
+ * 
+ * Since those functions heavily rely op cryptographic operations, this module is
+ * dependent on openssl.
+ * 
+ */
+ 
+
 #ifndef LDNS_DNSSEC_H
 #define LDNS_DNSSEC_H
 

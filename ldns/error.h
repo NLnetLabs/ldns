@@ -1,8 +1,11 @@
-/*
- * error.h
+/**
+ * \file error.h
  *
- * error reporting function and definition
+ * Defines error numbers and functions to translate those to a readable string.
  *
+ */
+ 
+/**
  * a Net::DNS like library for C
  *
  * (c) NLnet Labs, 2005-2006

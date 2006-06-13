@@ -11,6 +11,13 @@
  * See the file LICENSE for the license
  */
 
+/**
+ * \file
+ *
+ * Addendum to \ref dnssec.h, this module contains key and algorithm definitions and functions.
+ */
+ 
+
 #ifndef LDNS_KEYS_H
 #define LDNS_KEYS_H
 

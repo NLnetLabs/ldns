@@ -29,7 +29,13 @@
 #define LDNS_MIN_BUFLEN	256
 
 /**
- * LDNS implementation of buffers to ease operations
+ * \file buffer.h
+ *
+ * This file contains the definition of \ref ldns_buffer, and functions to manipulate those.
+ */
+
+/** 
+ * implementation of buffers to ease operations
  *
  * ldns_buffers can contain arbitrary information, per octet. You can write
  * to the current end of a buffer, read from the current position, and

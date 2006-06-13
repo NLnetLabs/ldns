@@ -56,6 +56,13 @@ Or you can just use the menu above to browse through the API docs.
 \image html LogoInGradientBar2-y100.png
 </div>
 */
+
+/**
+ * \file dns.h
+ *
+ * Including this file will include all ldns files, and define some lookup tables.
+ */
+
 #ifndef LDNS_DNS_H
 #define LDNS_DNS_H
 
@@ -92,17 +99,19 @@ Or you can just use the menu above to browse through the API docs.
 
 /* lookup tables for standard DNS stuff  */
 
-/* Taken from RFC 2538, section 2.1.  */
+/** Taken from RFC 2538, section 2.1.  */
 extern ldns_lookup_table ldns_certificate_types[];
-/* Taken from RFC 2535, section 7.  */
+/** Taken from RFC 2535, section 7.  */
 extern ldns_lookup_table ldns_algorithms[];
-/* Taken from RFC 2538.  */
+/** Taken from RFC 2538.  */
 extern ldns_lookup_table ldns_cert_algorithms[];
-/* rr types  */
+/** rr types  */
 extern ldns_lookup_table ldns_rr_classes[];
-/* if these are used elsewhere */
+/** Response codes */
 extern ldns_lookup_table ldns_rcodes[];
+/** Operation codes */
 extern ldns_lookup_table ldns_opcodes[];
+/** EDNS flags */
 extern ldns_lookup_table ldns_edns_flags[];
 
 #endif /* LDNS_DNS_H */

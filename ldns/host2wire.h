@@ -8,6 +8,12 @@
  * See the file LICENSE for the license
  */
 
+/**
+ * \file
+ *
+ * Contains all functions to translate the main structures to wire format
+ */
+
 #ifndef LDNS_HOST2WIRE_H
 #define LDNS_HOST2WIRE_H
 

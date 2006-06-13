@@ -10,6 +10,14 @@
  * See the file LICENSE for the license
  */
 
+/**
+ * \file
+ *
+ * Contains the definition of \ref ldns_pkt and its parts, as well
+ * as functions to manipulate those.
+ */
+
+
 #ifndef LDNS_PACKET_H
 #define LDNS_PACKET_H
 
