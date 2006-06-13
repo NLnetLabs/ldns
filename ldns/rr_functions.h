@@ -13,14 +13,13 @@
 #ifndef LDNS_RR_FUNCTIONS_H
 #define LDNS_RR_FUNCTIONS_H
 
-
-/* set rdf's at a specific offset
- * The RR need to be created with ldns_rr_new_frm_type which
- * allocated enough space for all rdf's and sets them to NULL
+/**
+ * \file
+ *
+ * Defines some extra convenience functions for \ref ldns_rr structures
  */
 
-/* A/AAAA */
-
+/* A / AAAA */
 /**
  * returns the address of a LDNS_RR_TYPE_A rr
  * \param[in] r the resource record

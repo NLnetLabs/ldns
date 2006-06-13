@@ -10,6 +10,14 @@
  * See the file LICENSE for the license
  */
 
+
+/**
+ * \file
+ *
+ * Defines \ref ldns_rdf and functions to manipulate those.
+ */
+
+
 #ifndef LDNS_RDATA_H
 #define LDNS_RDATA_H
 

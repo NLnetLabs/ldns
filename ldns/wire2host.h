@@ -8,7 +8,13 @@
  * See the file LICENSE for the license
  */
 
-
+/**
+ * \file
+ *
+ * Contains functions that translate dns data from the wire format (as sent
+ * by servers and clients) to the internal structures.
+ */
+ 
 #ifndef LDNS_WIRE2HOST_H
 #define LDNS_WIRE2HOST_H
 

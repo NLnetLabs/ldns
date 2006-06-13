@@ -19,6 +19,14 @@
 #define LDNS_MAX_LINELEN		4096
 #define LDNS_MAX_KEYWORDLEN		32
 
+
+/**
+ * \file
+ *
+ * Contains some low-level parsing functions, mostly used in the _frm_str
+ * family of functions.
+ */
+ 
 /**
  * different type of directives in zone files
  * We now deal with $TTL, $ORIGIN and $INCLUDE.

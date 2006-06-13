@@ -8,6 +8,13 @@
  * See LICENSE for the license.
  */
 
+/**
+ * \file
+ *
+ * Defines functions to perform UPDATE queries
+ */
+
+
 #ifndef LDNS_UPDATE_H
 #define LDNS_UPDATE_H
 

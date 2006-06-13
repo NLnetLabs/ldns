@@ -8,6 +8,13 @@
  * See the file LICENSE for the license
  */
 
+/**
+ * \file
+ *
+ * Contains the definition of \ref ldns_rr and functions to manipulate those.
+ */
+
+
 #ifndef LDNS_RR_H
 #define LDNS_RR_H
 

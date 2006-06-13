@@ -10,6 +10,13 @@
  * See the file LICENSE for the license
  */
 
+/**
+ * \file
+ *
+ * Defines the \ref ldns_resolver structure, a stub resolver that can send queries and parse answers.
+ * 
+ */
+
 #ifndef LDNS_RESOLVER_H
 #define LDNS_RESOLVER_H
 

@@ -13,6 +13,13 @@
  * See the file LICENSE for the license
  */
 
+/**
+ * \file
+ *
+ * Defines the \ref ldns_zone structure and functions to manipulate it.
+ */
+ 
+
 #ifndef LDNS_ZONE_H
 #define LDNS_ZONE_H
 

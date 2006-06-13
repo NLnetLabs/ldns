@@ -20,6 +20,13 @@
 #include <ctype.h>
 
 /**
+ * \file
+ *
+ * Defines functions to convert dns data in presentation format or text files
+ * to internal structures.
+ */
+
+/**
  * convert a byte into wireformat
  * \param[in] rd the rdf where to put the data
  * \param[in] bytestr the string to be converted

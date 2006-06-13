@@ -10,6 +10,13 @@
 #define LDNS_TSIG_H
 
 /**
+ * \file
+ *
+ * Defines functions for TSIG usage
+ */
+
+
+/**
  * Contains credentials for TSIG
 */
 typedef struct ldns_tsig_credentials_struct
