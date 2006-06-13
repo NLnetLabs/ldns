@@ -26,7 +26,7 @@
  *
  * A list of RR's with some
  * extra information which comes from the SOA RR
- * Note: nothing is done to make this efficient (yet).
+ * Note: nothing has been done to make this efficient (yet).
  */
 struct ldns_struct_zone
 {

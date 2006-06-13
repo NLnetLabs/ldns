@@ -29,7 +29,7 @@
 
    - The \c ldns_resolver structure keeps a list of nameservers, and can perform queries for us
    - An \c ldns_rdf is a basic data type of dns, the RDATA. See \ref overview for a description about the building blocks of DNS.
-     \c domain will contain the name the user specifies when calling the program
+     In this case, \c domain will be used to store the name the user specifies when calling the program
    - An \c ldns_pkt is a DNS packet, for instance a complete query, or an answer
    - The \c ldns_rr_list structure contains a list of DNS Resource Records (RRs). In this case, we will store the MX records we find in the list.
    - \c ldns_status is the basic type for status messages in ldns. Most functions will return a value of this type.
@@ -61,6 +61,11 @@
    We tell the resolver to query for our domain, type MX, of class IN:
    \skipline ldns_resolver_query
    \until )
+
+   The last argument contains flags to influence the type of query the
+   resolver structure sends. In this case, we want the nameserver to use
+   recursion, so that we'll get the final answer. Therefore, we specify the
+   \ref LDNS_RD (Recursion Desired) flag.
 
    This should return a packet if everything goes well.
 
