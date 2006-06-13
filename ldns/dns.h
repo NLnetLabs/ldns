@@ -43,7 +43,7 @@ If you want to send us patches please use the code from subversion (trunk).
 \section gettingstarted Getting Started
 
 See the \ref overview page for a very high level overview of ldns and its
-main features.
+main features. You can also check out the \ref ldns ldns header file descriptions.
 
 If you want to see some libdns action, you can read our tutorials:
   - \ref tutorial1_mx
