@@ -8,6 +8,17 @@
  * A bunch of defines that are used in the DNS
  */
 
+/**
+ * \file dnssec.h
+ *
+ * This module contains functions for DNSSEC operations (RFC4033 t/m RFC4035).
+ * 
+ * Since those functions heavily rely op cryptographic operations, this module is
+ * dependent on openssl.
+ * 
+ */
+ 
+
 #ifndef LDNS_DNSSEC_H
 #define LDNS_DNSSEC_H
 
@@ -33,7 +44,7 @@
 uint16_t ldns_calc_keytag(const ldns_rr *key);
 
 /**
- * verifies an rrsig rrset.
+ * Verifies a list of signatures for one rrset.
  *
  * \param[in] rrset the rrset to verify
  * \param[in] rrsig a list of signatures to check
@@ -42,6 +53,18 @@ uint16_t ldns_calc_keytag(const ldns_rr *key);
  * \return status LDNS_STATUS_OK if there is at least one correct key
  */
 ldns_status ldns_verify(ldns_rr_list *rrset, ldns_rr_list *rrsig, ldns_rr_list *keys, ldns_rr_list *good_keys);	
+
+/**
+ * Verifies the already processed data in the buffers
+ * This function should probably not be used directly.
+ *
+ * \param[in] rawsig_buf Buffer containing signature data to use
+ * \param[in] verify_buf Buffer containing data to verify
+ * \param[in] key_buf Buffer containing key data to use
+ * \param[in] algo Signing algorithm
+ * \return status LDNS_STATUS_OK if the data verifies. Error if not.
+ */
+ldns_status ldns_verify_rrsig_buffers(ldns_buffer *rawsig_buf, ldns_buffer *verify_buf, ldns_buffer *key_buf, uint8_t algo);
 
 /**
  * Verifies an rrsig. All keys in the keyset are tried.
@@ -164,7 +187,7 @@ ldns_rr * ldns_create_nsec(ldns_rdf *cur_owner, ldns_rdf *next_owner, ldns_rr_li
 
 /**
  * Checks coverage of NSEC RR type bitmap
- * \param[in] nsec The NSEC bitmap rdata field to check
+ * \param[in] nsec_bitmap The NSEC bitmap rdata field to check
  * \param[in] type The type to check
  * \return true if the NSEC RR covers the type
  */
@@ -174,7 +197,6 @@ bool ldns_nsec_bitmap_covers_type(const ldns_rdf *nsec_bitmap, ldns_rr_type type
  * Checks coverage of NSEC(3) RR name span
  * \param[in] nsec The NSEC RR to check
  * \param[in] name The owner dname to check, if the nsec record is a NSEC3 record, this should be the hashed name
- * \param[in] type The type to check
  * \return true if the NSEC RR covers the owner name
  */
 bool ldns_nsec_covers_name(const ldns_rr *nsec, ldns_rdf *name);

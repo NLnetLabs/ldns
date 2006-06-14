@@ -61,7 +61,7 @@ ldns_lookup_table ldns_rcodes[] = {
         { LDNS_RCODE_NOERROR, "NOERROR" },
         { LDNS_RCODE_FORMERR, "FORMERR" },
         { LDNS_RCODE_SERVFAIL, "SERVFAIL" },
-        { LDNS_RCODE_NAMEERR, "NAMEERR" },
+        { LDNS_RCODE_NXDOMAIN, "NXDOMAIN" },
         { LDNS_RCODE_NOTIMPL, "NOTIMPL" },
         { LDNS_RCODE_REFUSED, "REFUSED" },
         { LDNS_RCODE_YXDOMAIN, "YXDOMAIN" },

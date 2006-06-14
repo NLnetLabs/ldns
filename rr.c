@@ -1626,8 +1626,8 @@ static ldns_rr_descriptor rdata_field_descriptors[] = {
 };
 /** \endcond */
 
-/** 
- * \def RDATA_FIELD_DESCRIPTORS_COUNT
+/**
+ * \def LDNS_RDATA_FIELD_DESCRIPTORS_COUNT
  * computes the number of rdata fields
  */
 #define LDNS_RDATA_FIELD_DESCRIPTORS_COUNT \

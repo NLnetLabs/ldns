@@ -65,14 +65,14 @@ o TSIG functionality
 o Dynamic update function
 
 
-3. CENTRAL structures
+3. Central structures
 
-nlnetlabs.nl.   600     IN      MX      10    open.nlnetlabs.nl.
- \              \       \       \       \_                  _/
-   _owner        _ttl    _klass   _type    \_  rdf[]      _/
+nlnetlabs.nl.   600     IN      MX           10    open.nlnetlabs.nl.
+ \              \       \       \            \_                  _/
+   _owner        _ttl    _klass   _type        \_   rdf[]      _/
   (rdf)     (uint16_t) (rr_class) (rr_type)
-                                           10          := rdf[0]
-                                    open.nlnetlabs.nl. := rdf[1]
+                                                 10          := rdf[0]
+                                                 open.nlnetlabs.nl. := rdf[1]
 
 * rdf structure:
 The LHS is put in a rdf structure, which is a normal rdf but always has the

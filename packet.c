@@ -141,15 +141,19 @@ ldns_pkt_additional(const ldns_pkt *packet)
 ldns_rr_list *
 ldns_pkt_all(ldns_pkt *packet)
 {
-	ldns_rr_list *all;
+	ldns_rr_list *all, *prev_all;
 
 	all = ldns_rr_list_cat_clone(
 			ldns_pkt_question(packet),
 			ldns_pkt_answer(packet));
+	prev_all = all;
 	all = ldns_rr_list_cat_clone(all,
 			ldns_pkt_authority(packet));
+	ldns_rr_list_deep_free(prev_all);
+	prev_all = all;
 	all = ldns_rr_list_cat_clone(all,
 			ldns_pkt_additional(packet));
+	ldns_rr_list_deep_free(prev_all);
 	return all;
 }
 
@@ -888,19 +892,24 @@ ldns_pkt_query_new(ldns_rdf *rr_name, ldns_rr_type rr_type, ldns_rr_class rr_cla
 ldns_pkt_type
 ldns_pkt_reply_type(ldns_pkt *p)
 {
-	/* check for NXDOMAIN */
-	/* check DNSSEC records... this is a big one */
 	ldns_rr_list *tmp;
 
 	if (!p) {
 		return LDNS_PACKET_UNKNOWN;
 	}
 
+	if (ldns_pkt_get_rcode(p) == LDNS_RCODE_NXDOMAIN) {
+		return LDNS_PACKET_NXDOMAIN;
+	}
+
 	if (ldns_pkt_ancount(p) == 0 && ldns_pkt_arcount(p) == 0
 			&& ldns_pkt_nscount(p) == 1) {
-		if (ldns_pkt_rr_list_by_type(p, LDNS_RR_TYPE_SOA, 
-					LDNS_SECTION_AUTHORITY)) {
-			/* there is a SOA */
+
+		/* check for SOA */
+		tmp = ldns_pkt_rr_list_by_type(p, LDNS_RR_TYPE_SOA, 
+					LDNS_SECTION_AUTHORITY);
+		if (tmp) {
+			ldns_rr_list_deep_free(tmp);
 			return LDNS_PACKET_NODATA;
 		} else {
 			/* I have no idea ... */

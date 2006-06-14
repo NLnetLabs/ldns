@@ -1,5 +1,5 @@
 .\" @(#)drill.1 1.7.0 14-Jul-2004 OF; 
-.TH drill 1 "28 Apr 2005"
+.TH drill 1 "28 May 2006"
 .SH NAME
 drill \- get (debug) information out of DNS(SEC)
 .SH SYNOPSIS
@@ -37,7 +37,7 @@ Send to query to this server. If not specified use the nameservers from
 .PP
 \fItype\fR
 Ask for this RR type. If type is not given on the command line it defaults
-to 'A'. Except when doing to reverse lookup there is defaults to 'PTR'.
+to 'A'. Except when doing to reverse lookup when it defaults to 'PTR'.
 
 .PP
 \fIname\fR
@@ -53,7 +53,7 @@ Show the MX records of the domain miek.nl
 
 .TP
 \fBdrill -S jelte.nlnetlabs.nl\fR
-Chase any signatures a the jelte.nlnetlab.nl domain.
+Chase any signatures in the jelte.nlnetlab.nl domain.
 
 .TP
 \fBdrill -TD www.example.com\fR
@@ -65,15 +65,11 @@ Show the DNSKEY record(s) for jelte.nlnetlabs.nl. For each found DNSKEY
 record also print the DS record.
 
 .SH OPTIONS
+
 .TP
 \fB\-D
 Enable DNSSEC in the query. When querying for DNSSEC types (DNSKEY, RRSIG,
-DS and NSEC) this is automaticly enabled.
-
-.TP
-\fB\-S
-Chase the signature(s) of 'name' to a known key or as high up in
-the tree as possible.
+DS and NSEC) this is \fInot\fR automaticly enabled.
 
 .TP
 \fB\-T
@@ -81,9 +77,47 @@ Trace \fIname\fR from the root down. When using this option the @server and
 the type arguments are not used.
 
 .TP
+\fB\-S
+Chase the signature(s) of 'name' to a known key or as high up in
+the tree as possible.
+
+.TP
 \fB\-V
 Be more verbose. Enable once for more messages on the screen. Enable twice
 for a hexdump of the packets sent.
+
+.TP
+\fB\-Q
+Quiet mode, this overrules -V. 
+
+.TP
+\fB\-f \fIfile\fR
+Read the query from a file. The query must be dumped with -w. 
+
+.TP
+\fB\-i \fIfile\fR
+read the answer from the file instead from the network. This aids
+in debugging and can be used to check if a query on disk is valid.
+If the file contains binary data it is assumed to be a query in
+network order.
+
+.TP
+\fB\-w \fIfile\fR
+Write an answer packet to file.
+
+.TP
+\fB\-q \fIfile\fR
+Write the query packet to file.
+
+.TP
+\fB\-v
+Show drill's version.
+
+.TP
+\fB\-h
+Show a short help message.
+
+.SS QUERY OPTIONS
 
 .TP
 \fB\-4
@@ -99,38 +133,23 @@ Don't try the next nameserver on SERVFAIL. The default is to do this.
 
 .TP
 \fB\-b \fIsize\fR
-
+Use size as the buffer size in the EDNS0 pseudo RR.
 
 .TP
 \fB\-c
-Use TCP/IP when querying a server.
-
-
-.TP
-\fB\-f \fIfile\fR
-Read the query from a file. The query must be dumped with -w. 
-
-.TP
-\fB\-i \fIfile\fR
-read the answer from the file instead from the network. This aids
-in debugging and can be used to check if a query on disk is valid.
-If the file contains binary data it is assumed to be a query in
-network order.
+Use TCP/IP when querying a server, 'c' stands for connected.
 
 .TP
 \fB\-k \fIkeyfile\fR
 Use this file to read a (trusted) key from. When this options is
 given \fBdrill\fR tries to validate the current answer with this
-key. No chasing is done.
-
-.TP
-\fB\-p \fIport\fR
-Use this port instead of the DNS default of 53.
+key. No chasing is done. When \fBdrill\fR is doing a secure trace, this
+key will be used as trust anchor.
 
 .TP
 \fB\-o \fImnemonic\fR
 Use this option to set or unset specific header bits. A bit is
-set by using the bit mnemonic in CAPITAL. A bit is unset when
+set by using the bit mnemonic in CAPITAL letters. A bit is unset when
 the mnemonic is given in lowercase. The following mnemonics are
 understood by \fBdrill\fR:
 
@@ -146,15 +165,16 @@ Thus: \fB-o CD\fR, will enable Checking Disabled, which instructs the
 cache to not validate the answers it gives out.
 
 .TP
+\fB\-p \fIport\fR
+Use this port instead of the default of 53.
+
+.TP
 \fB\-s
-When encountering a DNSKEY print the DS also.
+When encountering a DNSKEY print the equivalent DS also.
 
 .TP
 \fB\-u
 Use UDP when querying a server. This is the default.
-
-.TP
-\fB\-v
 
 .TP
 \fB\-w \fIfile\fR
@@ -165,29 +185,16 @@ of the query. This can be used in conjunction with -f.
 \fB\-x
 Do a reverse loopup. The type argument is not used, it is preset to PTR.
 
-.SH DNSSEC
-When calling \fBdrill\fR with \fI-S\fR it chases down signatures (RRSIG) to
-a known key. This uses a bottom-up approach.
-[Jelte please fill in the blanks here] 
-.PP
-With \fI-TD\fR (trace + DNSSEC) \fBdrill\fR will securely trace from the 
-root down. If the optional \fI-k\fR argument is given a genuine chain of
-trust can be established.
-[bla bla, Miek please add more]
-
 .SH AUTHOR
 Jelte Jansen and Miek Gieben. Both of NLnet Labs.
 
 .SH REPORTING BUGS
-Report bugs to <drill@nlnetlabs.nl>.
+Report bugs to <ldns-team@nlnetlabs.nl>.
 
 .SH BUGS
 
-.SH LIMITATIONS
-None - you can do \fIeverything\fR with it, including washing your car.
-
 .SH COPYRIGHT
-Copyright (c) 2004 NLnet Labs.
+Copyright (c) 2004-2006 NLnet Labs.
 Licensed under the revised BSD license. There is NO warranty; not even for MERCHANTABILITY or
 FITNESS FOR A PARTICULAR PURPOSE.
 

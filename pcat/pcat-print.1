@@ -11,16 +11,38 @@ pcat-print \- reformat hexadecimal packets back to dig-like syntax
 
 .SH DESCRIPTION
 \fpcat-print\fR reads in a pcat file and reformats the hexadecimal
-packets back into a dig-like syntax. This makes the manual inspection
-of the packets easier.
+packets back into a dig-like syntax. If a packet cannot be transformed
+back into a sane syntax an error is emited.
+
+This makes the manual inspection of the packets easier.
 
 .PP
 If no pcat file is given, standard input is read.
 
 .SH OPTIONS
-.TP
-.B \-h
-Show a short help message.
+There are no options. Like \fBpcat-diff\fR this utility always does
+what you want.
+
+.SH OUTPUT FORMAT
+\fBpcat-print\fR will output records. 
+Each record consists of an index and then three packets.
+Each packet is seperated by a line of '='s. All in all the output looks
+like:
+
+        ==========================
+        ==========================
+        Index: xxx:yyy
+        ==========================
+        query packet
+        ==========================
+        first answer/query packet
+        ==========================
+        second answer/query packet
+        ==========================
+.PP
+For the index: xxx:yyy. xxx is the query ID of the first answer/query and
+yyy is the query ID of the second one. These two IDs should match. The query
+ID of the query packet is also equal to xxx.
 
 .SH ALSO SEE
 Also see pcat(1) and pcat-diff(1).
@@ -37,3 +59,6 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR
 PURPOSE.
 .PP
 Licensed under the GPL. 
+
+
+

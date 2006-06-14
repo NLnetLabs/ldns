@@ -37,7 +37,7 @@ static int udp_bind(int sock, int port, const char *my_address)
 
     addr.sin_family = AF_INET;
     addr.sin_port = (in_port_t)htons((uint16_t)port);
-		addr.sin_addr.s_addr = INADDR_ANY;
+    addr.sin_addr.s_addr = INADDR_ANY;
     return bind(sock, (struct sockaddr *)&addr, (socklen_t) sizeof(addr));
 }
 
@@ -53,10 +53,10 @@ main(int argc, char **argv)
 
 	/* network */
 	int sock;
-	size_t nb;
+	ssize_t nb;
 	struct sockaddr addr_me;
 	struct sockaddr addr_him;
-	socklen_t hislen;
+	socklen_t hislen = sizeof(addr_him);
 	const char *my_address;
 	uint8_t inbuf[INBUF_SIZE];
 	uint8_t *outbuf;
@@ -143,7 +143,7 @@ main(int argc, char **argv)
 	(void)ldns_pkt_push_rr(answer_pkt, LDNS_SECTION_QUESTION, rr);
 
 	 /* next add some rrs, with SOA stuff so that we mimic or ixfr reply */
-	snprintf(soa_string, MAX_LEN, "%s IN SOA miek.miek.nl elektron.atoom.net %d 1 2 3 4",
+	snprintf(soa_string, MAX_LEN, "%s IN SOA miek.miek.nl elektron.atoom.net %d 1 2 3000 4",
 			argv[2], soa);
 
         (void)ldns_rr_new_frm_str(&soa_rr, soa_string, 0, NULL, NULL);
@@ -158,14 +158,14 @@ main(int argc, char **argv)
 	/* Done. Now receive */
 	count = 0;
 	while (1) {
-		nb = (size_t) recvfrom(sock, inbuf, INBUF_SIZE, 0, &addr_him, &hislen);
+		nb = recvfrom(sock, inbuf, INBUF_SIZE, 0, &addr_him, &hislen);
 		if (nb < 1) {
 			fprintf(stderr, "%s: recvfrom(): %s\n",
-			argv[0], strerror(errno));
+				argv[0], strerror(errno));
 			exit(EXIT_FAILURE);
 		}
 		
-		printf("Got query of %u bytes\n", (unsigned int) nb);
+		printf("Got query of %d bytes\n", (int)nb);
 		status = ldns_wire2pkt(&query_pkt, inbuf, nb);
 		if (status != LDNS_STATUS_OK) {
 			printf("Got bad packet: %s\n", ldns_get_errorstr_by_id(status));

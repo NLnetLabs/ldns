@@ -7,3 +7,5 @@ tcp packets
 
 better pcap payload inspection - currently it only works for udp,
 ethernet
+
+a speed setting to send queries faster?

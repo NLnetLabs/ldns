@@ -98,7 +98,6 @@ ldns_update_soa_mname(ldns_rdf *zone, ldns_resolver *r,
 
 	ldns_pkt_set_random_id(query);
 	if (ldns_resolver_send_pkt(&resp, r, query) != LDNS_STATUS_OK) {
-		dprintf("%s", "SOA query failed (MNAME)\n");
 		ldns_pkt_free(query);
 		return LDNS_STATUS_ERR;
 	}

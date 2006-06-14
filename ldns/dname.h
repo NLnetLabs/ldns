@@ -10,6 +10,32 @@
  * See the file LICENSE for the license
  */
 
+/**
+ * \file dname.h
+ *
+ * dname contains function to read and manipulate domain names.
+ *
+ * Example domain names are "www.nlnetlabs.nl." and "." (the root)
+ *
+ * If a domain name ends with a dot ("."), it is called a Fully Qualified
+ * Domain Name (FQDN). In certain places (for instance when reading a zone
+ * file), an origin (which is just another domain name) non-FQDNs will be
+ * placed after the current. For instance, if i have a zone file where the
+ * origin has been set to "nl.", and my file contains the name
+ * "www.nlnetlabs", it will result in "www.nlnetlabs.nl.". Internally, dnames are
+ * always absolute (the dot is added when it is missing and there is no origin).
+ *
+ * An FQDN is also
+ * known as an absolute domain name, therefore the function to check this is
+ * called \ref ldns_dname_str_absolute
+ *
+ * Domain names are stored in \ref ldns_rdf structures, with the type
+ * \ref LDNS_RDF_TYPE_DNAME
+ * 
+ * This module is *NOT* about the RR type called DNAME.
+ */
+
+
 #ifndef LDNS_DNAME_H
 #define LDNS_DNAME_H
 
@@ -19,7 +45,7 @@
 #define LDNS_DNAME_NORMALIZE        tolower
 
 /**
- * concatenate two dnames together
+ * concatenates two dnames together
  * \param[in] rd1 the leftside
  * \param[in] rd2 the rightside
  * \return a new rdf with leftside/rightside

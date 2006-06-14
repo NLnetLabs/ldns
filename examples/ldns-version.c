@@ -1,6 +1,6 @@
 /*
- * version. Show ldns's version 
- * for a particulary domain
+ * ldns-version shows ldns's version 
+ *
  * (c) NLnet Labs, 2005
  * See the file LICENSE for the license
  */

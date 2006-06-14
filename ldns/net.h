@@ -23,6 +23,11 @@
 #define LDNS_DEFAULT_TIMEOUT_SEC 2
 #define LDNS_DEFAULT_TIMEOUT_USEC 0
 
+/**
+ * \file
+ *
+ * Contains functions to send and receive packets over a network.
+ */
 
 /**
  * Sends a buffer to an ip using udp and return the respons as a ldns_pkt

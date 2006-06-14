@@ -142,6 +142,7 @@ install-h:	lib
 		$(INSTALL) -m 755 -d $(DESTDIR)$(includedir)/ldns
 		for i in $(LIBDNS_HEADERS); do \
 			MVPROG=/bin/cp $(INSTALL) -m 644 $$i $(DESTDIR)$(includedir)/ldns/; done
+		MVPROG=/bin/cp $(INSTALL) -m 644 include/ldns/util.h $(DESTDIR)$(includedir)/ldns/
 
 uninstall-h:
 		for i in $(LIBDNS_HEADERS); do \

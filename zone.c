@@ -121,7 +121,12 @@ ldns_zone_glue_rr_list(const ldns_zone *z)
 			}
 		}
 	}
+	
+	ldns_rr_list_free(addr);
+	ldns_rr_list_free(zone_cuts);
+
 	if (ldns_rr_list_rr_count(glue) == 0) {
+		ldns_rr_list_free(glue);
 		return NULL;
 	} else {
 		return glue;

@@ -1,6 +1,7 @@
 /*
  * chaos is a small programs that prints some information
  * about a nameserver
+ *
  * (c) NLnet Labs, 2005
  *
  * See the file LICENSE for the license

@@ -1,5 +1,7 @@
 /*
- * mx is a small programs that prints out the mx records
+ * ldns-rrsig prints out the inception and expiration dates in a more readable 
+ * way than the normal RRSIG presentation format
+ *
  * for a particulary domain
  * (c) NLnet Labs, 2005
  * See the file LICENSE for the license

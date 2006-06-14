@@ -15,29 +15,6 @@ ssize_t getdelim(char **lineptr, size_t *n, int delim, FILE *stream);
 #endif
 
 void
-usage(FILE *fp)
-{
-        fprintf(fp, "pcat-print [-h] FILE\n\n");
-        fprintf(fp, "Read the output of pcat-diff and try to convert the\n");
-        fprintf(fp, "hex dump back in to DNS packets. Then print those packets\n");
-	fprintf(fp, "to standard output or print the error in case the conversion failed.\n");
-        fprintf(fp, "There are no options. If FILE is not given, standard input is read.\n");
-        fprintf(fp, "\nOUTPUT FORMAT:\n");
-        fprintf(fp, "  Each record consists of an index and then three packets.\n");
-        fprintf(fp, "  Each packet is seperated by a line of '='s.\n");
-        fprintf(fp, "    ==============\n");
-        fprintf(fp, "    ==============\n");
-        fprintf(fp, "    Index: xxx:xxx\n");
-        fprintf(fp, "    ==============\n");
-        fprintf(fp, "    query packet\n");
-        fprintf(fp, "    ==============\n");
-        fprintf(fp, "    first answer/query packet\n");
-        fprintf(fp, "    ==============\n");
-        fprintf(fp, "    second answer/query packet\n");
-        fprintf(fp, "    ==============\n");
-}
-
-void
 printf_bar(void)
 {
 	fprintf(stdout, "===================================================================\n");
@@ -58,21 +35,10 @@ main(int argc, char **argv)
 	len = 0;
 	line = NULL;
 
-	/* -h option */
 	if (argc > 1) {
-		if (argv[1][0] == '-') {
-			if (argv[1][1] == 'h') {
-				usage(stdout);
-				exit(EXIT_SUCCESS);
-			} else {
-				fprintf(stderr, "Uknown option '-%c\'\n", argv[1][1]);
-				exit(EXIT_FAILURE);
-			}
-		} else {
-			if (!(diff = fopen(argv[1], "r"))) {
-                                fprintf(stderr, "Cannot open pcat diff file `%s\'\n", argv[1]);
-                                exit(EXIT_FAILURE);
-                        }
+		if (!(diff = fopen(argv[1], "r"))) {
+			fprintf(stderr, "Cannot open pcat diff file `%s\'\n", argv[1]);
+			exit(EXIT_FAILURE);
 		}
 	} 
 

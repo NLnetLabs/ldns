@@ -27,6 +27,9 @@ HEADER		= config.h
 all:	p
 
 p: 	pcat pcat-diff pcat-print
+	strip pcat
+	strip pcat-diff
+	strip pcat-print
 
 pcat: 		pcat.o getdelim.o
 		$(LINK) -o $@ $+

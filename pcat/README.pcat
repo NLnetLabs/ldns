@@ -6,7 +6,7 @@ PCAT -- cat pcap streams
 Pcat consists out of three programs:
         1. pcat
         This program reads a raw pcap stream, extract the payload of
-        each packet and sends the payload to a nameserver of the users'
+        each packet and sends the payload to a nameserver of the user's
         choice.
         Each payload and reply from the server is printed to standard 
         output as ASCII. The binary packet/payload contents is printed
@@ -24,6 +24,11 @@ Pcat consists out of three programs:
         tries to re-generate to original DNS packets. If this succeeds
         the packet is printed to standard output. If it fails an error
         is printed instead.
+
+        4. pcat-grep.pl
+        This is a small perl script that can 'grep' pcat streams. If you
+        know for instance that query number 1023 doesn't match you can 
+        filter that query out by means of pcat-grep.pl
 
 2. Format Used
 The format used is a simple line based ASCII format. Each "record"

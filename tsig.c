@@ -186,7 +186,6 @@ ldns_tsig_mac_new(ldns_rdf **tsig_mac, uint8_t *pkt_wire, size_t pkt_wire_size,
 	key_size = b64_pton(key_data, key_bytes, strlen(key_data) * 2);
 	if (key_size < 0) {
 		/* LDNS_STATUS_INVALID_B64 */
-		dprintf("%s\n", "Bad base64 string");
 		return LDNS_STATUS_INVALID_B64;
 	}
 	/* hmac it */
@@ -204,7 +203,6 @@ ldns_tsig_mac_new(ldns_rdf **tsig_mac, uint8_t *pkt_wire, size_t pkt_wire_size,
 		result = ldns_rdf_new_frm_data(LDNS_RDF_TYPE_INT16_DATA, md_len + 2, 
 				mac_bytes);
 	} else {
-		/*dprintf("No digest found for %s\n", algorithm_name);*/
 		return LDNS_STATUS_CRYPTO_UNKNOWN_ALGO;
 	}
 	

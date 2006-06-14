@@ -14,6 +14,7 @@
 #define _UTIL_H
 
 #include <stdbool.h>
+#include <time.h>
 
 #define dprintf(X,Y) fprintf(stderr, (X), (Y))
 /* #define	dprintf(X, Y)  */
@@ -30,7 +31,7 @@
 #endif
 
 /**
- * Memory management macro's
+ * Memory management macros
  */
 #define LDNS_MALLOC(type)		LDNS_XMALLOC(type, 1)
 
@@ -118,12 +119,18 @@ ldns_write_uint64_as_uint48(void *dst, uint64_t data)
 	p[5] = (uint8_t) (data & 0xff);
 }
 
-/* A general purpose lookup table */
-typedef struct ldns_struct_lookup_table ldns_lookup_table;
+/** A general purpose lookup table
+ *  
+ *  Lookup tables are arrays of (id, name) pairs,
+ *  So you can for instance lookup the RCODE 3, which is "NXDOMAIN",
+ *  and vice versa. The lookup tables themselves are defined wherever needed,
+ *  for instance in \ref host2str.c
+ */
 struct ldns_struct_lookup_table {
         int id;
         const char *name;
 };
+typedef struct ldns_struct_lookup_table ldns_lookup_table;
   
 /**
  * Looks up the table entry by name, returns NULL if not found.

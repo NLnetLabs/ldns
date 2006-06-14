@@ -1,12 +1,16 @@
 /*
- * read a zone file from disk and print it
+ * read a zone file from disk and prints it, one RR per line
  *
  * See the file LICENSE for the license
  */
 
-#include "config.h"
-#include <errno.h>
+#include <stdint.h>
+#include <unistd.h>
+#include <stdlib.h>
+
 #include <ldns/dns.h>
+
+#include <errno.h>
 
 int
 main(int argc, char **argv)
@@ -62,7 +66,6 @@ main(int argc, char **argv)
 		if (sort) {
 			ldns_zone_sort(z);
 		}
-		fprintf(stderr, "%d\n", (int) ldns_rr_list_rr_count(ldns_zone_rrs(z)) + 1);
 		ldns_zone_print(stdout, z);
 		ldns_zone_deep_free(z);
 	} else {

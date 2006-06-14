@@ -11,6 +11,58 @@
  * A bunch of defines that are used in the DNS.
  */
 
+
+/**
+\mainpage LDNS Documentation
+
+\section introduction Introduction
+
+The goal of ldns is to simplify DNS programming, it supports recent RFCs
+like the DNSSEC documents, and allow developers to easily create software
+conforming to current RFCs, and experimental software for current Internet
+drafts. A secondary benefit of using ldns is speed, because ldns is written
+in C, and although it is not optimized for performance, it should be a lot
+faster than Perl.
+
+The first main tool to use ldns is Drill, from which part of the library was
+derived. From version 1.0.0 on, drill is included in the ldns release
+and will not be developed seperately anymore. The library also includes some
+other examples and tools to show how it can be used.
+
+ldns depends on OpenSSL for it's cryptographic functions.
+Feature list
+
+  - Transparent IPv4 and IPv6 support (overridable if necessary),
+  - TSIG support,
+  - DNSSEC support; signing and verification,
+  - small size,
+  - online documentation as well as manual pages. 
+
+If you want to send us patches please use the code from subversion (trunk). 
+
+\section gettingstarted Getting Started
+
+See the \ref overview page for a very high level overview of ldns and its
+main features. You can also check out the \ref ldns ldns header file descriptions.
+
+If you want to see some libdns action, you can read our tutorials:
+  - \ref tutorial1_mx
+  - \ref tutorial2_zone
+  - \ref tutorial3_signzone
+
+Or you can just use the menu above to browse through the API docs.
+
+<div style="visibility:hidden;">
+\image html LogoInGradientBar2-y100.png
+</div>
+*/
+
+/**
+ * \file dns.h
+ *
+ * Including this file will include all ldns files, and define some lookup tables.
+ */
+
 #ifndef LDNS_DNS_H
 #define LDNS_DNS_H
 
@@ -42,22 +94,24 @@
 #define LDNS_IP4ADDRLEN      (32/8)
 #define LDNS_IP6ADDRLEN      (128/8)
 #define LDNS_PORT	53
-#define LDNS_ROOT_LABEL	'\0'
+#define LDNS_ROOT_LABEL_STR     "."
 #define LDNS_DEFAULT_TTL	3600
 
 /* lookup tables for standard DNS stuff  */
 
-/* Taken from RFC 2538, section 2.1.  */
+/** Taken from RFC 2538, section 2.1.  */
 extern ldns_lookup_table ldns_certificate_types[];
-/* Taken from RFC 2535, section 7.  */
+/** Taken from RFC 2535, section 7.  */
 extern ldns_lookup_table ldns_algorithms[];
-/* Taken from RFC 2538.  */
+/** Taken from RFC 2538.  */
 extern ldns_lookup_table ldns_cert_algorithms[];
-/* rr types  */
+/** rr types  */
 extern ldns_lookup_table ldns_rr_classes[];
-/* if these are used elsewhere */
+/** Response codes */
 extern ldns_lookup_table ldns_rcodes[];
+/** Operation codes */
 extern ldns_lookup_table ldns_opcodes[];
+/** EDNS flags */
 extern ldns_lookup_table ldns_edns_flags[];
 
 #endif /* LDNS_DNS_H */

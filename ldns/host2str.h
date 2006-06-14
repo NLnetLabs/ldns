@@ -8,6 +8,13 @@
  * See the file LICENSE for the license
  */
 
+/**
+ * \file
+ *
+ * Contains functions to translate the main structures to their text
+ * representation, as well as functions to print them.
+ */
+
 #ifndef LDNS_HOST2STR_H
 #define LDNS_HOST2STR_H
 

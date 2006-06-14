@@ -1,6 +1,7 @@
 /*
  * key2ds transforms a public key into its DS
- * for a particulary domain. It (currently) prints out the public key
+ * It (currently) prints out the public key
+ *
  * (c) NLnet Labs, 2005
  * See the file LICENSE for the license
  */

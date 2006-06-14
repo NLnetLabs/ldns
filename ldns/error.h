@@ -1,8 +1,11 @@
-/*
- * error.h
+/**
+ * \file error.h
  *
- * error reporting function and definition
+ * Defines error numbers and functions to translate those to a readable string.
  *
+ */
+ 
+/**
  * a Net::DNS like library for C
  *
  * (c) NLnet Labs, 2005-2006
@@ -83,7 +86,8 @@ typedef enum ldns_enum_status ldns_status;
 extern ldns_lookup_table ldns_error_str[];
 
 /**
- * look up a descriptive text by each error
+ * look up a descriptive text by each error. This function
+ * could use a better name
  * \param[in] err ldns_status number
  * \return the string for that error
  */

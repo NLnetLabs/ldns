@@ -194,14 +194,20 @@ ldns_verify_rrsig_keylist(ldns_rr_list *rrset, ldns_rr *rrsig, ldns_rr_list *key
 
 	if (expiration - inception < 0) {
                 /* bad sig, expiration before inception?? Tsssg */
+		ldns_buffer_free(rawsig_buf);
+		ldns_buffer_free(verify_buf);
 		return LDNS_STATUS_CRYPTO_EXPIRATION_BEFORE_INCEPTION;
         }
         if (now - inception < 0) {
                 /* bad sig, inception date has passed */
+		ldns_buffer_free(rawsig_buf);
+		ldns_buffer_free(verify_buf);
 		return LDNS_STATUS_CRYPTO_SIG_NOT_INCEPTED;
         }
         if (expiration - now < 0) {
                 /* bad sig, expiration date has passed */
+		ldns_buffer_free(rawsig_buf);
+		ldns_buffer_free(verify_buf);
 		return LDNS_STATUS_CRYPTO_SIG_EXPIRED;
         }
 	
@@ -213,7 +219,6 @@ ldns_verify_rrsig_keylist(ldns_rr_list *rrset, ldns_rr *rrsig, ldns_rr_list *key
 	}
 
 	orig_ttl = ldns_rdf2native_int32( ldns_rr_rdf(rrsig, 3));
-
 	label_count = ldns_rdf2native_int8(ldns_rr_rdf(rrsig, 2));
 
 	/* reset the ttl in the rrset with the orig_ttl from the sig */
@@ -278,7 +283,9 @@ ldns_verify_rrsig_keylist(ldns_rr_list *rrset, ldns_rr *rrsig, ldns_rr_list *key
 			} else {
 				/* There is no else here ???? */
 			}
+			
 			ldns_buffer_free(key_buf); 
+
 			if (result == LDNS_STATUS_OK) {
 				/* one of the keys has matched, don't break
 				 * here, instead put the 'winning' key in
@@ -286,6 +293,8 @@ ldns_verify_rrsig_keylist(ldns_rr_list *rrset, ldns_rr *rrsig, ldns_rr_list *key
 				 * later */
 				if (!ldns_rr_list_push_rr(validkeys, current_key)) {
 					/* couldn't push the key?? */
+					ldns_buffer_free(rawsig_buf);
+					ldns_buffer_free(verify_buf);
 					return LDNS_STATUS_MEM_ERR;
 				}
 			} 
@@ -300,7 +309,7 @@ ldns_verify_rrsig_keylist(ldns_rr_list *rrset, ldns_rr *rrsig, ldns_rr_list *key
 	ldns_buffer_free(verify_buf);
 	if (ldns_rr_list_rr_count(validkeys) == 0) {
 		/* no keys were added, return last error */
-		ldns_rr_list_free(validkeys);
+		ldns_rr_list_free(validkeys); 
 		return result;
 	} else {
 		ldns_rr_list_cat(good_keys, validkeys);
@@ -503,7 +512,6 @@ ldns_verify_rrsig_dsa(ldns_buffer *sig, ldns_buffer *rrset, ldns_buffer *key)
 	if (result == 1) {
 		return LDNS_STATUS_OK;
 	} else {
-		dprintf("error in verify: %d\n", result);
 		return LDNS_STATUS_CRYPTO_BOGUS;
 	}
 }
@@ -513,27 +521,28 @@ ldns_verify_rrsig_rsasha1(ldns_buffer *sig, ldns_buffer *rrset, ldns_buffer *key
 {
 	RSA *rsakey;
 	unsigned char *sha1_hash;
+	ldns_status result;
 
 	rsakey = ldns_key_buf2rsa(key);
 	if (!rsakey) {
-		return LDNS_STATUS_ERR;
-	}
-
-	sha1_hash = SHA1((unsigned char*)ldns_buffer_begin(rrset), ldns_buffer_position(rrset), NULL);
-	if (!sha1_hash) {
-		return LDNS_STATUS_ERR;
-	}
-	
-	if (RSA_verify(NID_sha1, sha1_hash, SHA_DIGEST_LENGTH, 
-				(unsigned char*)ldns_buffer_begin(sig),
-			(unsigned int)ldns_buffer_position(sig), rsakey) == 1) {
-		return LDNS_STATUS_OK;
+		result = LDNS_STATUS_ERR;
 	} else {
-		  ERR_load_crypto_strings();
-		  ERR_print_errors_fp(stdout);
-
-		return LDNS_STATUS_CRYPTO_BOGUS;
+		sha1_hash = SHA1((unsigned char*)ldns_buffer_begin(rrset), ldns_buffer_position(rrset), NULL);
+		if (!sha1_hash) {
+			return LDNS_STATUS_ERR;
+		}
+		if (RSA_verify(NID_sha1, sha1_hash, SHA_DIGEST_LENGTH, 
+					(unsigned char*)ldns_buffer_begin(sig),
+				(unsigned int)ldns_buffer_position(sig), rsakey) == 1) {
+			result = LDNS_STATUS_OK;
+		} else {
+			result = LDNS_STATUS_CRYPTO_BOGUS;
+		}
 	}
+
+	RSA_free(rsakey);
+
+	return result;
 }
 
 
@@ -562,7 +571,7 @@ ldns_verify_rrsig_rsamd5(ldns_buffer *sig, ldns_buffer *rrset, ldns_buffer *key)
 	return true;
 }
 
-/* some helper functions */
+#ifdef HAVE_SSL
 DSA *
 ldns_key_buf2dsa(ldns_buffer *key)
 {
@@ -578,7 +587,6 @@ ldns_key_buf2dsa(ldns_buffer *key)
 	offset = 1;
 	
 	if (T > 8) {
-		dprintf("%s\n", "DSA type > 8 not implemented, unable to verify signature");
 		return NULL;
 	}
 	
@@ -603,6 +611,7 @@ ldns_key_buf2dsa(ldns_buffer *key)
 
 	return dsa;
 }
+#endif
 
 RSA *
 ldns_key_buf2rsa(ldns_buffer *key)
@@ -776,6 +785,8 @@ ldns_sign_public(ldns_rr_list *rrset, ldns_key_list *keys)
 			ldns_rr_set_owner(ldns_rr_list_rr(rrset_clone, i), new_owner);
 		}
 	}
+	ldns_rdf_deep_free(wildcard_label);
+	ldns_rdf_deep_free(first_label);
 
 	/* make it canonical */
 	for(i = 0; i < ldns_rr_list_rr_count(rrset_clone); i++) {
@@ -855,14 +866,12 @@ ldns_sign_public(ldns_rr_list *rrset, ldns_key_list *keys)
 			
 			if (ldns_rrsig2buffer_wire(sign_buf, current_sig) != LDNS_STATUS_OK) {
 				ldns_buffer_free(sign_buf);
-				dprintf("%s\n", "couldn't convert to buffer 1");
 				/* ERROR */
 				return NULL;
 			}
 			/* add the rrset in sign_buf */
 
 			if (ldns_rr_list2buffer_wire(sign_buf, rrset_clone) != LDNS_STATUS_OK) {
-				dprintf("%s\n", "couldn't convert to buffer 2");
 				ldns_buffer_free(sign_buf);
 				return NULL;
 			}
@@ -883,7 +892,6 @@ ldns_sign_public(ldns_rr_list *rrset, ldns_key_list *keys)
 			}
 			if (!b64rdf) {
 				/* signing went wrong */
-				dprintf("%s", "couldn't sign!\n");
 				return NULL;
 			}
 			ldns_rr_rrsig_set_sig(current_sig, b64rdf);
@@ -1666,6 +1674,7 @@ ldns_zone_sign(ldns_zone *zone, ldns_key_list *key_list)
 	ldns_zone_set_soa(signed_zone, ldns_rr_clone(ldns_zone_soa(zone)));
 	ldns_zone_push_rr_list(signed_zone, cur_rrsigs);
 	ldns_rr_list_free(cur_rrsigs);
+	cur_rrsigs = NULL;
 	
 	orig_zone_rrs = ldns_rr_list_clone(ldns_zone_rrs(zone));
 
@@ -1749,8 +1758,9 @@ ldns_zone_sign(ldns_zone *zone, ldns_key_list *key_list)
 		ldns_rr_list_free(cur_rrset);
 		cur_rrset = ldns_rr_list_pop_rrset(signed_zone_rrs);
 	}
-	ldns_rr_list_free(signed_zone_rrs);
-	ldns_rr_list_free(pubkeys);
+	ldns_rr_list_deep_free(signed_zone_rrs);
+	ldns_rr_list_deep_free(pubkeys);
+	ldns_rr_list_deep_free(glue_rrs);
 	return signed_zone;
 	
 }

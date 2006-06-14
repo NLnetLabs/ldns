@@ -1,9 +1,11 @@
+/**
+ * \file higher.h
+ *
+ * Specifies some higher level functions that could
+ * be useful for certain applications
+ */
+
 /*
- * higher.h
- *
- * Specify some higher level functions that would
- * be usefull to would be developers
- *
  * a Net::DNS like library for C
  *
  * (c) NLnet Labs, 2005-2006

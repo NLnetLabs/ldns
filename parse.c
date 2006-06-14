@@ -365,12 +365,9 @@ ldns_bget_keyword_data(ldns_buffer *b, const char *keyword, const char *k_del, c
 
        i = ldns_bget_token(b, fkeyword, k_del, data_limit);
 
-       dprintf("[%s]\n", fkeyword);
-
        /* case??? */
        if (strncmp(fkeyword, keyword, strlen(keyword)) == 0) {
                /* whee, the match! */
-               dprintf("%s", "Matching keyword\n\n");
                /* retrieve it's data */
                i = ldns_bget_token(b, data, d_del, 0);
                return i;

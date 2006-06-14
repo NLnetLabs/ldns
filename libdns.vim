@@ -72,6 +72,7 @@ syn keyword  ldnsType           ldns_pkt
 syn keyword  ldnsType           ldns_pkt_section
 syn keyword  ldnsType		ldns_pkt_type
 syn keyword  ldnsType		ldns_pkt_opcode
+syn keyword  ldnsType		ldns_pkt_rcode
 syn keyword  ldnsConstant	LDNS_QR
 syn keyword  ldnsConstant	LDNS_AA
 syn keyword  ldnsConstant	LDNS_TC
@@ -97,6 +98,17 @@ syn keyword  ldnsConstant	LDNS_PACKET_STATUS
 syn keyword  ldnsConstant	LDNS_PACKET_NOTIFY
 syn keyword  ldnsConstant	LDNS_PACKET_UPDATE
 
+syn keyword  ldnsConstant       LDNS_RCODE_NOERROR
+syn keyword  ldnsConstant       LDNS_RCODE_FORMERR
+syn keyword  ldnsConstant       LDNS_RCODE_SERVFAIL
+syn keyword  ldnsConstant       LDNS_RCODE_NXDOMAIN
+syn keyword  ldnsConstant       LDNS_RCODE_NOTIMPL
+syn keyword  ldnsConstant       LDNS_RCODE_REFUSED
+syn keyword  ldnsConstant       LDNS_RCODE_YXDOMAIN 
+syn keyword  ldnsConstant       LDNS_RCODE_YXRRSET
+syn keyword  ldnsConstant       LDNS_RCODE_NXRRSET
+syn keyword  ldnsConstant       LDNS_RCODE_NOTAUTH
+syn keyword  ldnsConstant       LDNS_RCODE_NOTZONE
 
 " dns/error.h
 syn keyword ldnsMacro	LDNS_STATUS_OK
@@ -152,7 +164,6 @@ syn keyword ldnsMacro   LDNS_STATUS_WIRE_INCOMPLETE_ADDITIONAL
 syn keyword ldnsMacro   LDNS_STATUS_NO_DATA
 syn keyword ldnsMacro   LDNS_STATUS_CERT_BAD_ALGORITHM
 
-
 " ldns/resolver.h
 syn keyword  ldnsType	  	ldns_resolver
 
@@ -170,6 +181,7 @@ syn keyword  ldnsType		ldns_rr_compress
 syn keyword  ldnsConstant	LDNS_RR_CLASS_IN
 syn keyword  ldnsConstant	LDNS_RR_CLASS_CH
 syn keyword  ldnsConstant	LDNS_RR_CLASS_HS  
+syn keyword  ldnsConstant	LDNS_RR_CLASS_NONE
 syn keyword  ldnsConstant	LDNS_RR_CLASS_ANY 
 
 syn keyword  ldnsConstant LDNS_RR_TYPE_A          
@@ -310,8 +322,6 @@ syn keyword  ldnsType   ldns_hash
 
 " ldns/dnssec.h
 syn keyword  ldnsConstant	LDNS_MAX_KEYLEN
-
-
 
 " Default highlighting
 command -nargs=+ HiLink hi def link <args>

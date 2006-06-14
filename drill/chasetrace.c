@@ -672,6 +672,7 @@ printf("DAWASEM\n");
 					if (result == LDNS_STATUS_OK) {
 						ldns_pkt_free(pkt);
 						printf(";; Verifiably insecure.\n");
+						ldns_rr_list_deep_free(nsecs);
 						return result;
 					}
 				}
@@ -682,6 +683,7 @@ printf("DAWASEM\n");
 				if (result == LDNS_STATUS_OK) {
 					ldns_pkt_free(pkt);
 					printf(";; Verifiably insecure.\n");
+					ldns_rr_list_deep_free(nsecs);
 					return result;
 				}
 			} else {
@@ -804,6 +806,7 @@ ldns_rr_list_print(stdout, nsecs);
 		}
 		
 		ldns_pkt_free(pkt);
+		ldns_rr_list_deep_free(nsecs);
 		return result;
 	}
 }

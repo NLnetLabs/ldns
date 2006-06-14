@@ -5,7 +5,9 @@
  * See the file LICENSE for the license
  */
 
-#include "config.h"
+#include <stdint.h>
+#include <unistd.h>
+#include <stdlib.h>
 
 #include <ldns/dns.h>
 
@@ -52,7 +54,11 @@ main(int argc, char *argv[])
 	/* use the resolver to send it a query for the mx 
 	 * records of the domain given on the command line
 	 */
-	p = ldns_resolver_query(res, domain, LDNS_RR_TYPE_MX, LDNS_RR_CLASS_IN, LDNS_RD);
+	p = ldns_resolver_query(res,
+	                        domain,
+	                        LDNS_RR_TYPE_MX,
+	                        LDNS_RR_CLASS_IN,
+	                        LDNS_RD);
 
 	ldns_rdf_deep_free(domain);
 	
@@ -62,7 +68,9 @@ main(int argc, char *argv[])
 		/* retrieve the MX records from the answer section of that
 		 * packet
 		 */
-		mx = ldns_pkt_rr_list_by_type(p, LDNS_RR_TYPE_MX, LDNS_SECTION_ANSWER);
+		mx = ldns_pkt_rr_list_by_type(p,
+		                              LDNS_RR_TYPE_MX,
+		                              LDNS_SECTION_ANSWER);
 		if (!mx) {
 			fprintf(stderr, 
 					" *** invalid answer name %s after MX query for %s\n",

@@ -1,7 +1,7 @@
 /*
  * drill.c
  * the main file of drill
- * (c) 2005 NLnet Labs
+ * (c) 2005,2006 NLnet Labs
  *
  * See the file LICENSE for the license
  *
@@ -57,7 +57,7 @@ usage(FILE *stream, const char *progname)
 	fprintf(stream, "\t-z\t\tdon't randomize the nameservers before use\n");
 	fprintf(stream, "\n  [*] = enables/implies DNSSEC\n");
 	fprintf(stream, "  [**] = can be given more than once\n");
-	fprintf(stream, "\n  drill@nlnetlabs.nl | www.nlnetlabs.nl/dnssec/drill.html\n");
+	fprintf(stream, "\n  ldns-team@nlnetlabs.nl | http://www.nlnetlabs.nl/ldns/\n");
 }
 
 /**
@@ -68,7 +68,7 @@ version(FILE *stream, const char *progname)
 {
         fprintf(stream, "%s version %s (ldns version %s)\n", progname, DRILL_VERSION, ldns_version());
         fprintf(stream, "Written by NLnet Labs.\n");
-        fprintf(stream, "\nCopyright (c) 2004, 2005 NLnet Labs.\n");
+        fprintf(stream, "\nCopyright (c) 2004-2006 NLnet Labs.\n");
         fprintf(stream, "Licensed under the revised BSD license.\n");
         fprintf(stream, "There is NO warranty; not even for MERCHANTABILITY or FITNESS\n");
         fprintf(stream, "FOR A PARTICULAR PURPOSE.\n");
@@ -441,15 +441,16 @@ main(int argc, char *argv[])
 			ldns_resolver_set_usevc(cmdline_res, qusevc);
 
 			cmdline_dname = ldns_dname_new_frm_str(serv);
+
 			cmdline_rr_list = ldns_get_rr_list_addr_by_name(
 						cmdline_res, 
 						cmdline_dname,
-						clas,
+						LDNS_RR_CLASS_IN,
 						qflags);
 			ldns_rdf_deep_free(cmdline_dname);
 			if (!cmdline_rr_list) {
 				/* This error msg is not always accurate */
-				error("%s %s", "could not find any address for the name: ", serv);
+				error("%s `%s\'", "could not find any address for the name:", serv);
 			} else {
 				if (ldns_resolver_push_nameserver_rr_list(
 						res, 
@@ -504,6 +505,9 @@ main(int argc, char *argv[])
 			/* do a trace from the root down */
 			init_root();
 			qname = ldns_dname_new_frm_str(name);
+			if (!qname) {
+				error("%s", "making qname");
+			}
 			/* don't care about return packet */
 			(void)do_trace(res, qname, type, clas);
 			break;
@@ -511,19 +515,22 @@ main(int argc, char *argv[])
 			/* do a secure trace from the root down */
 			init_root();
 			qname = ldns_dname_new_frm_str(name);
+			if (!qname) {
+				error("%s", "making qname");
+			}
 			/* don't care about return packet */
 			(void)do_secure_trace(res, qname, type, clas, key_list);
 			break;
 		case DRILL_CHASE:
 			qname = ldns_dname_new_frm_str(name);
+			if (!qname) {
+				error("%s", "making qname");
+			}
 			
 			ldns_resolver_set_dnssec(res, true);
 			ldns_resolver_set_dnssec_cd(res, true);
 			/* set dnssec implies udp_size of 4096 */
 			ldns_resolver_set_edns_udp_size(res, 4096);
-			if (!qname) {
-				error("%s", "making qname");
-			}
 			pkt = ldns_resolver_query(res, qname, type, clas, qflags);
 			
 			if (!pkt) {
@@ -571,11 +578,8 @@ main(int argc, char *argv[])
 				error("%s", "making qname");
 			}
 
-			/*qpkt = ldns_pkt_query_new(qname, type, clas, qflags);*/
 			status = ldns_resolver_prepare_query_pkt(&qpkt, res, qname, type, clas, qflags);
-			
 			dump_hex(qpkt, query_file);
-			
 			ldns_pkt_free(qpkt);
 			break;
 		case DRILL_NSEC:
@@ -679,7 +683,6 @@ main(int argc, char *argv[])
 					while (axfr_rr) {
 						if (qdebug != -1) {
 							ldns_rr_print(stdout, axfr_rr);
-							printf("\n");
 						}
 						ldns_rr_free(axfr_rr);
 						axfr_rr = ldns_axfr_next(res);
@@ -771,7 +774,7 @@ main(int argc, char *argv[])
 	ldns_rdf_deep_free(qname);
 	ldns_resolver_deep_free(res);
 	ldns_resolver_deep_free(cmdline_res);
-	ldns_rr_list_deep_free(key_list);
+	/* ldns_rr_list_deep_free(key_list); */
 	ldns_rr_list_deep_free(cmdline_rr_list);
 	xfree(progname);
 /*
