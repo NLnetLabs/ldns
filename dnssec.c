@@ -1220,6 +1220,9 @@ ldns_create_nsec3(ldns_rdf *cur_owner,
 
 	ldns_rr *nsec = NULL;
 	ldns_rdf *hashed_owner = NULL;
+	
+	uint8_t hash_size = 0;
+	ldns_rdf *hash_size_rdf = NULL;
 
 	uint8_t iterations_data[4];
 	
@@ -1264,12 +1267,17 @@ ldns_create_nsec3(ldns_rdf *cur_owner,
 	
 	hashed_owner = ldns_nsec3_hash_name(cur_owner, algorithm, iterations, salt_length, salt);
 	status = ldns_dname_cat(hashed_owner, cur_zone);
+	
+	hash_size = 20;
+printf("HASH SIZE: %u\n", hash_size);
+	hash_size_rdf = ldns_rdf_new_frm_data(LDNS_RDF_TYPE_INT8, sizeof(uint8_t), &hash_size);
 
 	nsec = ldns_rr_new();
 	ldns_rr_set_type(nsec, LDNS_RR_TYPE_NSEC3);
 	ldns_rr_set_owner(nsec, hashed_owner);
 	/* TODO: TTL? */
 	ldns_rr_push_rdf(nsec, nsec3_vars_rdf);
+	ldns_rr_push_rdf(nsec, hash_size_rdf);
 	ldns_rr_push_rdf(nsec, NULL);
 
 	bitmap[0] = 0;
@@ -2009,7 +2017,7 @@ ldns_zone_sign_nsec3(ldns_zone *zone, ldns_key_list *key_list, uint8_t algorithm
 				next_nsec_owner_str[strlen(next_nsec_owner_str) - 1] = '\0';
 			}
 			status = ldns_str2rdf_b32_ext(&next_nsec_rdf, next_nsec_owner_str);
-			if (!ldns_rr_set_rdf(ldns_rr_list_rr(nsec3_rrs, i), next_nsec_rdf, 1)) {
+			if (!ldns_rr_set_rdf(ldns_rr_list_rr(nsec3_rrs, i), next_nsec_rdf, 2)) {
 				/* todo: error */
 			}
 		} else {
@@ -2018,7 +2026,7 @@ ldns_zone_sign_nsec3(ldns_zone *zone, ldns_key_list *key_list, uint8_t algorithm
 				next_nsec_owner_str[strlen(next_nsec_owner_str) - 1] = '\0';
 			}
 			status = ldns_str2rdf_b32_ext(&next_nsec_rdf, next_nsec_owner_str);
-			if (!ldns_rr_set_rdf(ldns_rr_list_rr(nsec3_rrs, i), next_nsec_rdf, 1)) {
+			if (!ldns_rr_set_rdf(ldns_rr_list_rr(nsec3_rrs, i), next_nsec_rdf, 2)) {
 				/* todo: error */
 			}
 		}
