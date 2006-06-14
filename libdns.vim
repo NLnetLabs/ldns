@@ -181,6 +181,7 @@ syn keyword  ldnsType		ldns_rr_compress
 syn keyword  ldnsConstant	LDNS_RR_CLASS_IN
 syn keyword  ldnsConstant	LDNS_RR_CLASS_CH
 syn keyword  ldnsConstant	LDNS_RR_CLASS_HS  
+syn keyword  ldnsConstant	LDNS_RR_CLASS_NONE
 syn keyword  ldnsConstant	LDNS_RR_CLASS_ANY 
 
 syn keyword  ldnsConstant LDNS_RR_TYPE_A          
