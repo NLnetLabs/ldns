@@ -1,5 +1,7 @@
    Mar 2006: 1.0.2: ldns-team
-        * Some fixes from trunk are backported to this branch
+        * Some fixes from trunk were backported to this branch
+	* Close the socket in ldns_udp_send after using it 
+	* Add LDNS_RR_CLASS_NONE to the enum in rr.h
 
 
 03 Jan 2006: 1.0.1: ldns-team

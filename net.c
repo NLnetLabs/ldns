@@ -189,12 +189,14 @@ ldns_udp_send(uint8_t **result, ldns_buffer *qbin, const struct sockaddr_storage
 	}
 
 	if (ldns_udp_send_query(qbin, sockfd, to, tolen) == 0) {
+		close(sockfd);
 		return LDNS_STATUS_ERR;
 	}
 	
 	/* wait for an response*/
 
 	answer = ldns_udp_read_wire(sockfd, answer_size, NULL, NULL);
+	close(sockfd);
 
 	/* resize accordingly */
 	answer = (uint8_t*)LDNS_XREALLOC(answer, uint8_t *, (size_t)*answer_size);
@@ -206,7 +208,7 @@ ldns_udp_send(uint8_t **result, ldns_buffer *qbin, const struct sockaddr_storage
 /* 
  * ldns_tcp_server_connect
  *
- * and the normal conetc, for just a socket
+ * and the normal connect, for just a socket
  */
 int
 ldns_udp_server_connect(const struct sockaddr_storage *to, struct timeval timeout)
