@@ -705,7 +705,7 @@ ldns_rr_list_print(stdout, nsecs);
 			result = ldns_dname_cat(wildcard_name, ldns_dname_left_chop(name));
 
 //ldns_nsec3_closest_encloser(ldns_rdf *qname, ldns_rr_type qtype, ldns_rr_list *nsec3s) {
-			if (ldns_pkt_get_rcode(pkt) == LDNS_RCODE_NAMEERR) {
+			if (ldns_pkt_get_rcode(pkt) == LDNS_RCODE_NXDOMAIN) {
 				/* Section 6.3. */
 				nsec3_ce = ldns_nsec3_closest_encloser(name, type, nsecs);
 				nsec3_wc_ce = ldns_nsec3_closest_encloser(wildcard_name, type, nsecs);				

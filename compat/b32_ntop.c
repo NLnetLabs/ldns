@@ -172,6 +172,7 @@ b32_ntop_ar(uint8_t const *src, size_t srclength, char *target, size_t targsize,
 	size_t datalength = 0;
 	uint8_t input[5];
 	uint8_t output[8];
+        memset(output, 0, 8);
 	size_t i;
 
 	while (4 < srclength) {
