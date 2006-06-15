@@ -514,7 +514,7 @@ ldns_str2rdf_b32_ext(ldns_rdf **rd, const char *str)
 		return LDNS_STATUS_INVALID_B32_EXT;
 	} else {
 		*rd = ldns_rdf_new_frm_data(
-			LDNS_RDF_TYPE_B32_EXT, (uint16_t) i, buffer);
+			LDNS_RDF_TYPE_B32_EXT, (uint16_t) i + 1, buffer);
 	}
 	LDNS_FREE(buffer);
 
