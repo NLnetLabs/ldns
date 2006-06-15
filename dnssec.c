@@ -1269,7 +1269,6 @@ ldns_create_nsec3(ldns_rdf *cur_owner,
 	status = ldns_dname_cat(hashed_owner, cur_zone);
 	
 	hash_size = 20;
-printf("HASH SIZE: %u\n", hash_size);
 	hash_size_rdf = ldns_rdf_new_frm_data(LDNS_RDF_TYPE_INT8, sizeof(uint8_t), &hash_size);
 
 	nsec = ldns_rr_new();
@@ -1485,13 +1484,15 @@ ldns_nsec3_hash_name_frm_nsec3(const ldns_rr *nsec, ldns_rdf *name)
 	uint8_t *data;
 	uint8_t salt_length;
 	uint8_t *salt = 0;
-uint8_t salt_i;
+/*uint8_t salt_i;*/
 	
 	ldns_rdf *hashed_owner;
 
+/*
 printf("NSEC RDF: ");
 ldns_rdf_print(stdout, ldns_rr_rdf(nsec, 0));
 printf("\n\n");
+*/
 	algorithm = ldns_nsec3_algorithm(nsec);
 	salt_length = ldns_nsec3_salt_length(nsec);
 	salt = ldns_nsec3_salt(nsec);
@@ -1499,11 +1500,13 @@ printf("\n\n");
 	
 	hashed_owner = ldns_nsec3_hash_name(name, algorithm, iterations, salt_length, salt);
 	
+/*
 printf(";; Iterations: %u, Salt: ", iterations);
 for (salt_i = 0; salt_i < salt_length; salt_i++) {
 	printf("%02x", salt[salt_i]);
 }
 printf("\n");
+*/
 	LDNS_FREE(salt);
 	return hashed_owner;
 }
