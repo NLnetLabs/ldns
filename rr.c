@@ -1498,7 +1498,7 @@ static const ldns_rdf_type type_nsec_wireformat[] = {
 };
 /* nsec3 is some vars, followed by same type of data of nsec */
 static const ldns_rdf_type type_nsec3_wireformat[] = {
-	LDNS_RDF_TYPE_NSEC3_VARS, LDNS_RDF_TYPE_INT8, LDNS_RDF_TYPE_B32_EXT, LDNS_RDF_TYPE_NSEC
+	LDNS_RDF_TYPE_NSEC3_VARS, LDNS_RDF_TYPE_B32_EXT, LDNS_RDF_TYPE_NSEC
 };
 static const ldns_rdf_type type_dnskey_wireformat[] = {
 	LDNS_RDF_TYPE_INT16, LDNS_RDF_TYPE_INT8, LDNS_RDF_TYPE_ALG, LDNS_RDF_TYPE_B64

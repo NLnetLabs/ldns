@@ -227,8 +227,8 @@ ldns_wire2rdf(ldns_rr *rr, const uint8_t *wire, size_t max, size_t *pos)
 			/*printf("NSEC3 wire length: %u\n", (unsigned int) cur_rdf_length);*/
 			break;
 		case LDNS_RDF_TYPE_B32_EXT:
-			/* quick hack for nsec3, length of field should be derived from nsec3 hashing algorithm */
-			cur_rdf_length = 20;
+			/* length is stored in first byte */
+			cur_rdf_length = (uint8_t) wire[*pos] + 1;
 			break;
 		case LDNS_RDF_TYPE_APL:
 		/* TODO: will this work? */

@@ -234,9 +234,9 @@ ldns_rdf2buffer_str_b64(ldns_buffer *output, const ldns_rdf *rdf)
 ldns_status
 ldns_rdf2buffer_str_b32_ext(ldns_buffer *output, const ldns_rdf *rdf)
 {
-	size_t size = b32_ntop_calculate_size(ldns_rdf_size(rdf));
+	size_t size = b32_ntop_calculate_size(ldns_rdf_size(rdf) - 1);
 	char *b32 = LDNS_XMALLOC(char, size);
-	size = (size_t) b32_ntop_extended_hex(ldns_rdf_data(rdf), ldns_rdf_size(rdf), b32, size);
+	size = (size_t) b32_ntop_extended_hex(ldns_rdf_data(rdf) + 1, ldns_rdf_size(rdf) - 1, b32, size);
 	if (size > 0) {
 		ldns_buffer_printf(output, "%s", b32);
 	}
