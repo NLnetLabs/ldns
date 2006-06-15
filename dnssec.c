@@ -1914,10 +1914,11 @@ ldns_zone_sign_nsec3(ldns_zone *zone, ldns_key_list *key_list, uint8_t algorithm
 									iterations,
 									salt_length,
 									salt);
-						printf("Created NSEC3 for: ");
+						/*printf("Created NSEC3 for: ");
 						ldns_rdf_print(stdout, post);
 						printf(":\n");
 						ldns_rr_print(stdout, nsec);
+						*/
 						ldns_rr_set_ttl(nsec, ldns_rdf2native_int32(ldns_rr_rdf(ldns_zone_soa(zone), 6)));
 						ldns_rr_list_push_rr(nsec3_rrs, nsec);
 					}
@@ -1952,10 +1953,12 @@ ldns_zone_sign_nsec3(ldns_zone *zone, ldns_key_list *key_list, uint8_t algorithm
 								iterations,
 								salt_length,
 								salt);
+/*
 					printf("Created NSEC3 for: ");
 					ldns_rdf_print(stdout, post);
 					printf(":\n");
 					ldns_rr_print(stdout, nsec);
+*/
 					ldns_rr_set_ttl(nsec, ldns_rdf2native_int32(ldns_rr_rdf(ldns_zone_soa(zone), 6)));
 					ldns_rr_list_push_rr(nsec3_rrs, nsec);
 				}
@@ -1973,10 +1976,12 @@ ldns_zone_sign_nsec3(ldns_zone *zone, ldns_key_list *key_list, uint8_t algorithm
 								iterations,
 								salt_length,
 								salt);
+/*
 					printf("Created NSEC3 for: ");
 					ldns_rdf_print(stdout, cur_dname);
 					printf(":\n");
 					ldns_rr_print(stdout, nsec);
+*/
 					ldns_rr_set_ttl(nsec, ldns_rdf2native_int32(ldns_rr_rdf(ldns_zone_soa(zone), 6)));
 					ldns_rr_list_push_rr(nsec3_rrs, nsec);
 					/*start_dname = next_dname;*/
