@@ -323,7 +323,7 @@ ldns_dname_compare(const ldns_rdf *dname1, const ldns_rdf *dname2)
 				goto freeresult;
 			}
 		}
-		if (i < ldns_rdf_size(label2) - 1) {
+		if (i < ldns_rdf_size(label2)) {
 			result = -1;
 			goto freeresult;
 		}
