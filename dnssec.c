@@ -1874,6 +1874,7 @@ ldns_zone_sign_nsec3(ldns_zone *zone, ldns_key_list *key_list, uint8_t algorithm
 			start_dname = ldns_rr_owner(ldns_rr_list_rr(orig_zone_rrs, i));
 			cur_dname = start_dname;
 		} else {
+
 			next_rr = ldns_rr_list_rr(orig_zone_rrs, i);
 			next_dname = ldns_rr_owner(next_rr);
 			if (ldns_rdf_compare(cur_dname, next_dname) != 0) {
@@ -1890,7 +1891,7 @@ ldns_zone_sign_nsec3(ldns_zone *zone, ldns_key_list *key_list, uint8_t algorithm
 				next_label_count = ldns_dname_label_count(next_dname);
 				post = ldns_dname_new_frm_str(".");
 				found_difference = false;
-				for (j = 1; j < cur_label_count && j < next_label_count && !found_difference; j++) {
+				for (j = 1; j <= cur_label_count && j <= next_label_count && !found_difference; j++) {
 					l1 = ldns_dname_label(cur_dname, cur_label_count - j);
 					l2 = ldns_dname_label(next_dname, next_label_count - j);
 					
@@ -1899,7 +1900,7 @@ ldns_zone_sign_nsec3(ldns_zone *zone, ldns_key_list *key_list, uint8_t algorithm
 					post = post2;
 
 					if (ldns_dname_compare(l1, l2) != 0 &&
-					    j < cur_label_count &&
+					    /*j < cur_label_count &&*/
 					    j < next_label_count
 					   ) {
 						printf("Found empty non-terminal: ");
@@ -1922,13 +1923,12 @@ ldns_zone_sign_nsec3(ldns_zone *zone, ldns_key_list *key_list, uint8_t algorithm
 						ldns_rr_set_ttl(nsec, ldns_rdf2native_int32(ldns_rr_rdf(ldns_zone_soa(zone), 6)));
 						ldns_rr_list_push_rr(nsec3_rrs, nsec);
 					}
-					
 					ldns_rdf_deep_free(l1);
 					ldns_rdf_deep_free(l2);
 				}
 				/* and if next label is longer than cur + 1, these must be empty nons too */
 				/* skip current label (total now equal to cur_dname) */
-				if (!found_difference) {
+				if (!found_difference && j < cur_label_count && j < next_label_count) {
 					l2 = ldns_dname_label(next_dname, next_label_count - j);
 					post2 = ldns_dname_cat_clone(l2, post);
 					ldns_rdf_deep_free(post);
