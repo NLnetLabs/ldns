@@ -21,6 +21,8 @@
  * do this as functions to get type checking
  */
 
+#define LDNS_EDNS_MASK_DO_BIT 0x8000
+
 /* TODO defines for 3600 */
 /* convert to and from numerical flag values */
 ldns_lookup_table ldns_edns_flags[] = {
@@ -223,16 +225,16 @@ ldns_pkt_edns_z(const ldns_pkt *packet)
 bool
 ldns_pkt_edns_do(const ldns_pkt *packet)
 {
-	return (packet->_edns_z & 0x8000);
+	return (packet->_edns_z & LDNS_EDNS_MASK_DO_BIT);
 }
 
 void
 ldns_pkt_set_edns_do(ldns_pkt *packet, bool value)
 {
 	if (value) {
-		packet->_edns_z = packet->_edns_z | 0x8000;
+		packet->_edns_z = packet->_edns_z | LDNS_EDNS_MASK_DO_BIT;
 	} else {
-		packet->_edns_z = packet->_edns_z | 0x7fff;
+		packet->_edns_z = packet->_edns_z | !LDNS_EDNS_MASK_DO_BIT;
 	}
 }
 
