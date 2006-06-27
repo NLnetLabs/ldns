@@ -21,10 +21,7 @@ main(int argc, char **argv)
 	int line_nr = 0;
 	int c;
 	bool sort = false;
-	char *progname;
 	ldns_status s;
-
-	progname = strdup(argv[0]);
 
         while ((c = getopt(argc, argv, "hzv")) != -1) {
                 switch(c) {
@@ -36,7 +33,7 @@ main(int argc, char **argv)
 				exit(EXIT_SUCCESS);
 				break;
 			case 'h':
-				printf("Usage: %s [-z] [-v] <zonefile>\n", progname);
+				printf("Usage: %s [-z] [-v] <zonefile>\n", argv[0]);
 				printf("\tReads the zonefile and prints it.\n");
 				printf("\tThe RR count of the zone is printed to stderr.\n");
 				printf("\tIf -z is given the zone is sorted.\n");

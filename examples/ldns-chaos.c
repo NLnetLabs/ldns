@@ -21,9 +21,13 @@ usage(FILE *fp, char *prog) {
 void
 remove_nameservers(ldns_resolver *res)
 {
-	/* remove old nameservers */
-	for(; ldns_resolver_pop_nameserver(res);
-		ldns_resolver_pop_nameserver(res)) { ; }
+	ldns_rdf *ns;
+	
+	ns = ldns_resolver_pop_nameserver(res);
+	while (ns) {
+		ldns_rdf_deep_free(ns);
+		ns = ldns_resolver_pop_nameserver(res);
+	}
 }
 
 int
@@ -57,6 +61,7 @@ main(int argc, char *argv[])
 	/* create a new resolver from /etc/resolv.conf */
 	s = ldns_resolver_new_frm_file(&res, NULL);
 	if (s != LDNS_STATUS_OK) {
+		ldns_rdf_deep_free(name);
 		exit(EXIT_FAILURE);
 	}
 	ldns_resolver_set_retry(res, 1); /* don't want to wait too long */
@@ -65,10 +70,10 @@ main(int argc, char *argv[])
 	addr = ldns_get_rr_list_addr_by_name(res, name, LDNS_RR_CLASS_IN, LDNS_RD);
 	if (!addr) {
 		fprintf(stderr, " *** could not get an address for %s\n", argv[1]);
+		ldns_rdf_deep_free(name);
+		ldns_resolver_deep_free(res);
 		exit(EXIT_FAILURE);
 	}
-
-	remove_nameservers(res);
 
 	/* can be multihomed */
 	for(i = 0; i < ldns_rr_list_rr_count(addr); i++) {
@@ -92,12 +97,13 @@ main(int argc, char *argv[])
 
 			if (info) {
 				ldns_rr_list_print(stdout, info);
+				ldns_rr_list_deep_free(info);
 			} else {
 				printf(" *** version retrieval failed\n");
 			}
+			ldns_pkt_free(p);
 		} else {
 			printf(" *** query failed\n");
-			ldns_pkt_free(p);
 		}
 
 		p = ldns_resolver_query(res, id, LDNS_RR_TYPE_TXT,
@@ -107,14 +113,19 @@ main(int argc, char *argv[])
 					LDNS_RR_TYPE_TXT, LDNS_SECTION_ANSWER);
 			if (info) {
 				ldns_rr_list_print(stdout, info);
+				ldns_rr_list_deep_free(info);
 			} else {
 				printf(" *** id retrieval failed\n");
 			}
+			ldns_pkt_free(p);
 		} else {
 			printf(" *** query failed for\n");
 		}
-		(void)ldns_resolver_pop_nameserver(res);
+		ldns_rdf_deep_free(ldns_resolver_pop_nameserver(res));
 
 	}
+	
+	ldns_rdf_deep_free(name);
+	ldns_resolver_deep_free(res);
 	exit(EXIT_SUCCESS);
 }

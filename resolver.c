@@ -690,6 +690,12 @@ ldns_resolver_new_frm_file(ldns_resolver **res, const char *filename)
 }
 
 void
+ldns_resolver_free(ldns_resolver *res)
+{
+	LDNS_FREE(res);
+}
+
+void
 ldns_resolver_deep_free(ldns_resolver *res)
 {
 	size_t i;
