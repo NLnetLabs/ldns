@@ -205,7 +205,7 @@ ldns_zone_new_frm_fp_l(ldns_zone **z, FILE *fp, ldns_rdf *origin, uint16_t ttl, 
 			last_rr = rr;
 			if (!ldns_zone_push_rr(newzone, rr)) {
 				if (my_origin) {
-					ldns_rdf_free(my_origin);
+					ldns_rdf_deep_free(my_origin);
 				}
 				ldns_zone_free(newzone);
 				return LDNS_STATUS_MEM_ERR;
