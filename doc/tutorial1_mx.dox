@@ -28,7 +28,7 @@
    \until ldns_status
 
    - The \c ldns_resolver structure keeps a list of nameservers, and can perform queries for us
-   - An \c ldns_rdf is a basic data type of dns, the RDATA. See \ref overview for a description about the building blocks of DNS.
+   - An \c ldns_rdf is a basic data type of dns, the RDATA. See \ref design for a description about the building blocks of DNS.
      In this case, \c domain will be used to store the name the user specifies when calling the program
    - An \c ldns_pkt is a DNS packet, for instance a complete query, or an answer
    - The \c ldns_rr_list structure contains a list of DNS Resource Records (RRs). In this case, we will store the MX records we find in the list.
