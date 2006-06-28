@@ -13,6 +13,8 @@ functionality.
   - \ref ldns_rr_list A list of resource records
   - \ref ldns_zone A representation of a DNS Zone.
 
+The actual structure definitions are named \c ldns_struct_<name> which are all typedeffed to \c ldns_<name>
+
 
 A DNS Resource record looks like this:
 
