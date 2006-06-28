@@ -131,7 +131,7 @@ retrieve_dnskeys(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 		} else {
 			new_nss_a = ldns_rr_list_new();
 		}
-		if (address_family == 0 || address_family == 1) {
+		if (address_family == 0 || address_family == 2) {
 			new_nss_aaaa = ldns_pkt_rr_list_by_type(p,
 					LDNS_RR_TYPE_AAAA, LDNS_SECTION_ADDITIONAL);
 		} else {
@@ -633,13 +633,13 @@ main(int argc, char *argv[])
 
 	/* create a new resolver from /etc/resolv.conf */
 	status = ldns_resolver_new_frm_file(&res, NULL);
-	ldns_resolver_set_ip6(res, address_family);
-
 	if (status != LDNS_STATUS_OK) {
 		ldns_rdf_deep_free(domain);
 		fprintf(stderr, "Error creating resolver: %s\n", ldns_get_errorstr_by_id(status));
 		exit(EXIT_FAILURE);
 	}
+
+	ldns_resolver_set_ip6(res, address_family);
 
 	l = retrieve_dnskeys(res, domain, LDNS_RR_TYPE_DNSKEY, LDNS_RR_CLASS_IN, dns_root);
 
