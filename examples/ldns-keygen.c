@@ -109,6 +109,7 @@ main(int argc, char *argv[])
 		usage(stderr, prog);
 		exit(EXIT_FAILURE);
 	} 
+	free(prog);
 
 	(void)ldns_init_random(random, def_bits * 8 * 2); /* I hope this is enough? */
 	if (random) {

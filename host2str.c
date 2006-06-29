@@ -1092,6 +1092,7 @@ ldns_key2buffer_str(ldns_buffer *output, const ldns_key *k)
 				if (ldns_rdf2buffer_str(output, b64_bignum) != LDNS_STATUS_OK) {
 					goto error;
 				}
+				ldns_rdf_deep_free(b64_bignum);
 				ldns_buffer_printf(output, "\n"); 
 				
 				ldns_buffer_printf(output, "PublicExponent: "); 
@@ -1103,6 +1104,7 @@ ldns_key2buffer_str(ldns_buffer *output, const ldns_key *k)
 				if (ldns_rdf2buffer_str(output, b64_bignum) != LDNS_STATUS_OK) {
 					goto error;
 				}
+				ldns_rdf_deep_free(b64_bignum);
 				ldns_buffer_printf(output, "\n"); 
 
 				ldns_buffer_printf(output, "PrivateExponent: "); 
@@ -1114,6 +1116,7 @@ ldns_key2buffer_str(ldns_buffer *output, const ldns_key *k)
 				if (ldns_rdf2buffer_str(output, b64_bignum) != LDNS_STATUS_OK) {
 					goto error;
 				}
+				ldns_rdf_deep_free(b64_bignum);
 				ldns_buffer_printf(output, "\n"); 
 
 				ldns_buffer_printf(output, "Prime1: "); 
@@ -1125,6 +1128,7 @@ ldns_key2buffer_str(ldns_buffer *output, const ldns_key *k)
 				if (ldns_rdf2buffer_str(output, b64_bignum) != LDNS_STATUS_OK) {
 					goto error;
 				}
+				ldns_rdf_deep_free(b64_bignum);
 				ldns_buffer_printf(output, "\n"); 
 
 				ldns_buffer_printf(output, "Prime2: ");
@@ -1136,6 +1140,7 @@ ldns_key2buffer_str(ldns_buffer *output, const ldns_key *k)
 				if (ldns_rdf2buffer_str(output, b64_bignum) != LDNS_STATUS_OK) {
 					goto error;
 				}
+				ldns_rdf_deep_free(b64_bignum);
 				ldns_buffer_printf(output, "\n"); 
 
 				ldns_buffer_printf(output, "Exponent1: ");
@@ -1147,6 +1152,7 @@ ldns_key2buffer_str(ldns_buffer *output, const ldns_key *k)
 				if (ldns_rdf2buffer_str(output, b64_bignum) != LDNS_STATUS_OK) {
 					goto error;
 				}
+				ldns_rdf_deep_free(b64_bignum);
 				ldns_buffer_printf(output, "\n"); 
 
 				ldns_buffer_printf(output, "Exponent2: "); 
@@ -1158,6 +1164,7 @@ ldns_key2buffer_str(ldns_buffer *output, const ldns_key *k)
 				if (ldns_rdf2buffer_str(output, b64_bignum) != LDNS_STATUS_OK) {
 					goto error;
 				}
+				ldns_rdf_deep_free(b64_bignum);
 				ldns_buffer_printf(output, "\n"); 
 
 				ldns_buffer_printf(output, "Coefficient: "); 
@@ -1169,6 +1176,7 @@ ldns_key2buffer_str(ldns_buffer *output, const ldns_key *k)
 				if (ldns_rdf2buffer_str(output, b64_bignum) != LDNS_STATUS_OK) {
 					goto error;
 				}
+				ldns_rdf_deep_free(b64_bignum);
 				ldns_buffer_printf(output, "\n"); 
 				break;
 			case LDNS_SIGN_DSA:
@@ -1186,7 +1194,9 @@ ldns_key2buffer_str(ldns_buffer *output, const ldns_key *k)
 				if (ldns_rdf2buffer_str(output, b64_bignum) != LDNS_STATUS_OK) {
 					goto error;
 				}
+				ldns_rdf_deep_free(b64_bignum);
 				ldns_buffer_printf(output, "\n"); 
+
 				ldns_buffer_printf(output, "Subprime(q): "); 
 				i = (uint16_t)BN_bn2bin(ldns_key_dsa_key(k)->q, bignum);
 				if (i > LDNS_MAX_KEYLEN) {
@@ -1196,7 +1206,9 @@ ldns_key2buffer_str(ldns_buffer *output, const ldns_key *k)
 				if (ldns_rdf2buffer_str(output, b64_bignum) != LDNS_STATUS_OK) {
 					goto error;
 				}
+				ldns_rdf_deep_free(b64_bignum);
 				ldns_buffer_printf(output, "\n"); 
+
 				ldns_buffer_printf(output, "Base(g): "); 
 				i = (uint16_t)BN_bn2bin(ldns_key_dsa_key(k)->g, bignum);
 				if (i > LDNS_MAX_KEYLEN) {
@@ -1206,7 +1218,9 @@ ldns_key2buffer_str(ldns_buffer *output, const ldns_key *k)
 				if (ldns_rdf2buffer_str(output, b64_bignum) != LDNS_STATUS_OK) {
 					goto error;
 				}
+				ldns_rdf_deep_free(b64_bignum);
 				ldns_buffer_printf(output, "\n"); 
+
 				ldns_buffer_printf(output, "Private_value(x): "); 
 				i = (uint16_t)BN_bn2bin(ldns_key_dsa_key(k)->priv_key, bignum);
 				if (i > LDNS_MAX_KEYLEN) {
@@ -1216,7 +1230,9 @@ ldns_key2buffer_str(ldns_buffer *output, const ldns_key *k)
 				if (ldns_rdf2buffer_str(output, b64_bignum) != LDNS_STATUS_OK) {
 					goto error;
 				}
+				ldns_rdf_deep_free(b64_bignum);
 				ldns_buffer_printf(output, "\n"); 
+
 				ldns_buffer_printf(output, "Public_value(y): "); 
 				i = (uint16_t)BN_bn2bin(ldns_key_dsa_key(k)->pub_key, bignum);
 				if (i > LDNS_MAX_KEYLEN) {
@@ -1226,6 +1242,7 @@ ldns_key2buffer_str(ldns_buffer *output, const ldns_key *k)
 				if (ldns_rdf2buffer_str(output, b64_bignum) != LDNS_STATUS_OK) {
 					goto error;
 				}
+				ldns_rdf_deep_free(b64_bignum);
 				ldns_buffer_printf(output, "\n"); 
 				break;
 			case LDNS_SIGN_HMACMD5:

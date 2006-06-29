@@ -691,6 +691,7 @@ ldns_key_rr2ds(const ldns_rr *key, ldns_hash h)
 
         data_buf = ldns_buffer_new(LDNS_MAX_PACKETLEN);
         if (!data_buf) {
+		LDNS_FREE(digest);
                 return NULL;
         }
 
@@ -710,11 +711,15 @@ ldns_key_rr2ds(const ldns_rr *key, ldns_hash h)
         /* digest */
         /* owner name */
 	if (ldns_rdf2buffer_wire(data_buf, ldns_rr_owner(key)) != LDNS_STATUS_OK) {
+		LDNS_FREE(digest);
+		ldns_buffer_free(data_buf);
 		return NULL;
 	}
 
         /* all the rdata's */
 	if (ldns_rr_rdata2buffer_wire(data_buf, (ldns_rr*)key) != LDNS_STATUS_OK) { 
+		LDNS_FREE(digest);
+		ldns_buffer_free(data_buf);
 		return NULL;
 	}
 	switch(h) {
@@ -732,6 +737,8 @@ ldns_key_rr2ds(const ldns_rr *key, ldns_hash h)
 		break;
 	}
 
+	LDNS_FREE(digest);
+	ldns_buffer_free(data_buf);
         return ds;
 }
 

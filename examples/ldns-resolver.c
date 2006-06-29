@@ -29,6 +29,7 @@ main(int argc, char **argv) {
 	} else {
 		printf("Succes\n");
 		ldns_resolver_print(stdout, r);
+		ldns_resolver_deep_free(r);
 	}
 
 	fclose(rand);

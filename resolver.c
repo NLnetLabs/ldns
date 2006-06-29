@@ -602,6 +602,7 @@ ldns_resolver_new_frm_fp_l(ldns_resolver **res, FILE *fp, int *line_nr)
 				/* no keyword recognized */
 				if (expect == LDNS_RESOLV_KEYWORD) {
 					LDNS_FREE(word);
+					ldns_resolver_deep_free(r);
 					return LDNS_STATUS_SYNTAX_KEYWORD_ERR;
 				}
 				break;
@@ -610,6 +611,7 @@ ldns_resolver_new_frm_fp_l(ldns_resolver **res, FILE *fp, int *line_nr)
 				tmp = ldns_rdf_new_frm_str(LDNS_RDF_TYPE_DNAME, word);
 				if (!tmp) {
 					LDNS_FREE(word);
+					ldns_resolver_deep_free(r);
 					return LDNS_STATUS_SYNTAX_DNAME_ERR;
 				}
 
@@ -627,6 +629,7 @@ ldns_resolver_new_frm_fp_l(ldns_resolver **res, FILE *fp, int *line_nr)
 				/* could not parse it, exit */
 				if (!tmp) {
 					LDNS_FREE(word);
+					ldns_resolver_deep_free(r);
 					return LDNS_STATUS_SYNTAX_ERR;
 				}
 				(void)ldns_resolver_push_nameserver(r, tmp);
@@ -638,6 +641,7 @@ ldns_resolver_new_frm_fp_l(ldns_resolver **res, FILE *fp, int *line_nr)
 				tmp = ldns_rdf_new_frm_str(LDNS_RDF_TYPE_DNAME, word);
 				if (!tmp) {
 					LDNS_FREE(word);
+					ldns_resolver_deep_free(r);
 					return LDNS_STATUS_SYNTAX_DNAME_ERR;
 				}
 
