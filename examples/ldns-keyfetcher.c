@@ -12,6 +12,7 @@
 #include <errno.h>
 
 int verbosity = 0;
+/* 0=use both ip4 and ip6 (default). 1=ip4only. 2=ip6only. */
 uint8_t address_family = 0;
 bool store = false;
 
