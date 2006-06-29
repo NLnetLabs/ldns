@@ -75,6 +75,8 @@ main(int argc, char *argv[])
 	ds = ldns_key_rr2ds(k, LDNS_SHA1);
 	if (!ds) {
 		fprintf(stderr, "Conversion to a DS RR failed\n");
+		ldns_rr_free(k);
+		free(owner);
 		exit(EXIT_FAILURE);
 	}
 
@@ -89,10 +91,16 @@ main(int argc, char *argv[])
 	} else {
 		ldns_rr_print(dsfp, ds);
 		fclose(dsfp);
+		ldns_rr_free(k);
+		free(owner);
 		LDNS_FREE(dsname);
 	}
 	
 	ldns_rr_free(ds);
 	fprintf(stdout, "K%s+%03u+%05u\n", owner, alg, (unsigned int) ldns_calc_keytag(k)); 
+
+	ldns_rr_free(k);
+	free(owner);
+	LDNS_FREE(dsname);
         exit(EXIT_SUCCESS);
 }

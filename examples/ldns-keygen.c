@@ -134,6 +134,7 @@ main(int argc, char *argv[])
 	pubkey = ldns_key2rr(key);
 	if (!pubkey) {
 		fprintf(stderr, "Could not extract the public key from the key structure...");
+		ldns_key_deep_free(key);
 		exit(EXIT_FAILURE);
 	}
 	owner = ldns_rdf2str(ldns_rr_owner(pubkey));
@@ -150,6 +151,11 @@ main(int argc, char *argv[])
 	file = fopen(filename, "w");
 	if (!file) {
 		fprintf(stderr, "Unable to open %s: %s\n", filename, strerror(errno));
+		ldns_key_deep_free(key);
+		free(owner);
+		ldns_rr_free(pubkey);
+		ldns_rr_free(ds);
+		LDNS_FREE(filename);
 		exit(EXIT_FAILURE);
 	} else {
 		ldns_rr_print(file, pubkey);
@@ -163,6 +169,11 @@ main(int argc, char *argv[])
 	file = fopen(filename, "w");
 	if (!file) {
 		fprintf(stderr, "Unable to open %s: %s\n", filename, strerror(errno));
+		ldns_key_deep_free(key);
+		free(owner);
+		ldns_rr_free(pubkey);
+		ldns_rr_free(ds);
+		LDNS_FREE(filename);
 		exit(EXIT_FAILURE);
 	} else {
 		ldns_key_print(file, key);
@@ -176,6 +187,11 @@ main(int argc, char *argv[])
 	file = fopen(filename, "w");
 	if (!file) {
 		fprintf(stderr, "Unable to open %s: %s\n", filename, strerror(errno));
+		ldns_key_deep_free(key);
+		free(owner);
+		ldns_rr_free(pubkey);
+		ldns_rr_free(ds);
+		LDNS_FREE(filename);
 		exit(EXIT_FAILURE);
 	} else {
 		ldns_rr_print(file, ds);
@@ -200,5 +216,9 @@ PEM_write_DSAPrivateKey(file, key->_key.dsa, NULL, NULL, 0, NULL, NULL);
 #endif
 
 	fprintf(stdout, "K%s+%03u+%05u\n", owner, algorithm, (unsigned int) ldns_key_keytag(key));
+	ldns_key_deep_free(key);
+	free(owner);
+	ldns_rr_free(pubkey);
+	ldns_rr_free(ds);
         exit(EXIT_SUCCESS);
 }
