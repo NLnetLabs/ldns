@@ -681,10 +681,12 @@ ldns_key_rr2ds(const ldns_rr *key, ldns_hash h)
 		case LDNS_SHA1:
 			digest = LDNS_XMALLOC(uint8_t, SHA_DIGEST_LENGTH);
 			if (!digest) {
+				ldns_rr_free(ds);
 				return NULL;
 			}
 		break;
 		case LDNS_SHA256:
+			ldns_rr_free(ds);
 			return NULL; /* not implemented */
 		break;
 	}
@@ -692,6 +694,7 @@ ldns_key_rr2ds(const ldns_rr *key, ldns_hash h)
         data_buf = ldns_buffer_new(LDNS_MAX_PACKETLEN);
         if (!data_buf) {
 		LDNS_FREE(digest);
+		ldns_rr_free(ds);
                 return NULL;
         }
 
@@ -713,6 +716,7 @@ ldns_key_rr2ds(const ldns_rr *key, ldns_hash h)
 	if (ldns_rdf2buffer_wire(data_buf, ldns_rr_owner(key)) != LDNS_STATUS_OK) {
 		LDNS_FREE(digest);
 		ldns_buffer_free(data_buf);
+		ldns_rr_free(ds);
 		return NULL;
 	}
 
@@ -720,6 +724,7 @@ ldns_key_rr2ds(const ldns_rr *key, ldns_hash h)
 	if (ldns_rr_rdata2buffer_wire(data_buf, (ldns_rr*)key) != LDNS_STATUS_OK) { 
 		LDNS_FREE(digest);
 		ldns_buffer_free(data_buf);
+		ldns_rr_free(ds);
 		return NULL;
 	}
 	switch(h) {

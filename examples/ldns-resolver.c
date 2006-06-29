@@ -18,11 +18,16 @@ main(int argc, char **argv) {
 	FILE *rand;
 	ldns_status s;
 
+	if (argc < 2) {
+		printf("Usage: ldns-resolver <file>\n");
+		exit(EXIT_FAILURE);
+	}
+	
 	if (!(rand = fopen(argv[1], "r"))) {
 		exit(EXIT_FAILURE);
 	}
 
-	printf("Trying to read from /dev/urandom\n");
+	printf("Trying to read from %s\n", argv[1]);
 	s = ldns_resolver_new_frm_fp_l(&r, rand, &line);
 	if (s != LDNS_STATUS_OK) {
 		printf("Failure\n");

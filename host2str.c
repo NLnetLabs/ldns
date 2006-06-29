@@ -1054,7 +1054,7 @@ ldns_key2buffer_str(ldns_buffer *output, const ldns_key *k)
 	unsigned char  *bignum;
 #ifdef HAVE_SSL
 	/* not used when ssl is not defined */
-	ldns_rdf *b64_bignum;
+	ldns_rdf *b64_bignum = NULL;
 	uint16_t i;
 #endif /* HAVE_SSL */
 
@@ -1251,6 +1251,7 @@ ldns_key2buffer_str(ldns_buffer *output, const ldns_key *k)
 		}
 #endif /* HAVE_SSL */
 	} else {
+		LDNS_FREE(b64_bignum);
 		LDNS_FREE(bignum);
 		return ldns_buffer_status(output);
 	}

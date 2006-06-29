@@ -115,6 +115,7 @@ main(int argc, char *argv[])
 				printf("Error adding nameserver to resolver\n");
                 		ldns_pkt_free(p);
                 		ldns_resolver_deep_free(res);
+                                ldns_resolver_deep_free(localres);
                 		ldns_rr_list_deep_free(ns);
 				exit(EXIT_FAILURE);
 			}
@@ -168,8 +169,11 @@ main(int argc, char *argv[])
 				fprintf(stderr, " *** No RRSIG(%s) type found\n",
 					type_name);
                 		ldns_resolver_deep_free(localres);
+                		ldns_resolver_deep_free(res);
                 		ldns_pkt_free(p);
                 		ldns_rr_list_deep_free(ns);
+                		ldns_rr_list_free(rrsig);
+                		ldns_rr_list_deep_free(rrsig_type);
 				exit(EXIT_FAILURE);
 			}
 			
