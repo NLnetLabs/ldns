@@ -1251,7 +1251,9 @@ ldns_key2buffer_str(ldns_buffer *output, const ldns_key *k)
 		}
 #endif /* HAVE_SSL */
 	} else {
+#ifdef HAVE_SSL
 		LDNS_FREE(b64_bignum);
+#endif
 		LDNS_FREE(bignum);
 		return ldns_buffer_status(output);
 	}
