@@ -641,11 +641,15 @@ main(int argc, char *argv[])
 
 	if (status != LDNS_STATUS_OK) {
 		fprintf(stderr, "Warning: Unable to create stub resolver from /etc/resolv.conf:\n");
-		fprintf("%s\n", ldns_get_errorstr_by_id(status));
+		fprintf(stderr, "%s\n", ldns_get_errorstr_by_id(status));
 		fprintf(stderr, "defaulting to nameserver at 127.0.0.1 for separate nameserver name lookups\n");
 		res = ldns_resolver_new();
 		ns = ldns_rdf_new_frm_str(LDNS_RDF_TYPE_A, "127.0.0.1");
-		ldns_resolver_push_nameserver(res, ns);
+		status = ldns_resolver_push_nameserver(res, ns);
+		if (status != LDNS_STATUS_OK) {
+			fprintf(stderr, "Unable to create stub resolver: %s\n", ldns_get_errorstr_by_id(status));
+			exit(EXIT_FAILURE);
+		}
 		ldns_rdf_deep_free(ns);
 	}
 
@@ -690,8 +694,8 @@ main(int argc, char *argv[])
 			ldns_rr_list_print(stdout, l);
 		}
 	} else {
-		printf("no answer packet received, stub resolver config:\n");
-		ldns_resolver_print(stdout, res);
+		fprintf(stderr, "no answer packet received, stub resolver config:\n");
+		ldns_resolver_print(stderr, res);
 	}
 	printf("\n");
 
