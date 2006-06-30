@@ -1427,11 +1427,13 @@ ldns_resolver_print(FILE *output, const ldns_resolver *r)
 {
 	uint16_t i;
 	ldns_rdf **n;
+	ldns_rdf **s;
 	size_t *rtt;
 	if (!r) {
 		return;
 	}
 	n = ldns_resolver_nameservers(r);
+	s = ldns_resolver_searchlist(r);
 	rtt = ldns_resolver_rtt(r);
 
 	fprintf(output, "port: %d\n", (int)ldns_resolver_port(r));
@@ -1445,9 +1447,16 @@ ldns_resolver_print(FILE *output, const ldns_resolver *r)
 	fprintf(output, "retry: %d\n", (int)ldns_resolver_retry(r));
 	fprintf(output, "timeout: %d\n", (int)ldns_resolver_timeout(r).tv_sec);
 	
-	fprintf(output, "default domain:");
+	fprintf(output, "default domain: ");
 	ldns_rdf_print(output, ldns_resolver_domain(r)); 
 	fprintf(output, "\n");
+
+	fprintf(output, "searchlist:\n");
+	for (i = 0; i < ldns_resolver_searchlist_count(r); i++) {
+		fprintf(output, "\t");
+		ldns_rdf_print(output, s[i]);
+		fprintf(output, "\n");
+	}
 
 	fprintf(output, "nameservers:\n");
 	for (i = 0; i < ldns_resolver_nameserver_count(r); i++) {
