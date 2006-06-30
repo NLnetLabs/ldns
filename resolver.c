@@ -714,7 +714,6 @@ ldns_resolver_new_frm_file(ldns_resolver **res, const char *filename)
 	if (!fp) {
 		return LDNS_STATUS_FILE_ERR;
 	}
-	/* the file is opened. it's line based - this will be a bit messy */
 
 	s = ldns_resolver_new_frm_fp(&r, fp);
 	fclose(fp);
@@ -726,7 +725,7 @@ ldns_resolver_new_frm_file(ldns_resolver **res, const char *filename)
 			return LDNS_STATUS_NULL;
 		}
 	}
-	return LDNS_STATUS_ERR;
+	return s;
 }
 
 void
