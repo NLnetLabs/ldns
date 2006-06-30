@@ -618,9 +618,6 @@ main(int argc, char *argv[])
 				}
 
 				domain = ldns_dname_new_frm_str(argv[i]);
-				printf("domain: ");
-				ldns_rdf_print(stdout, domain);
-				printf("\n");
 			}
 
 		}
