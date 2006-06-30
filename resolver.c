@@ -658,7 +658,7 @@ ldns_resolver_new_frm_fp_l(ldns_resolver **res, FILE *fp, int *line_nr)
 				b = LDNS_MALLOC(ldns_buffer);
 				ldns_buffer_new_frm_data(b, word, gtr);
 
-				gtr = ldns_bget_token(b, word, LDNS_PARSE_NORMAL, gtr);
+				gtr = ldns_bget_token(b, word, LDNS_PARSE_NORMAL, (size_t) gtr);
 				while (gtr > 0) {
 					tmp = ldns_rdf_new_frm_str(LDNS_RDF_TYPE_DNAME, word);
 					if (!tmp) {
