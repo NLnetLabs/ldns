@@ -27,7 +27,6 @@ usage(FILE *fp, char *prog) {
 int
 main(int argc, char *argv[])
 {
-	char *prog;
 	FILE *keyfp, *dsfp;
 	char *keyname;
 	char *dsname;
@@ -37,7 +36,6 @@ main(int argc, char *argv[])
 	ldns_hash h;
 	
 	alg = 0;
-	prog = strdup(argv[0]);
 	h = LDNS_SHA1;
 
 	argv++, argc--;
@@ -52,7 +50,7 @@ main(int argc, char *argv[])
 	}
 
 	if (argc != 1) {
-		usage(stderr, prog);
+		usage(stderr, argv[0]);
 		exit(EXIT_FAILURE);
 	}
 	keyname = strdup(argv[0]);
@@ -69,6 +67,7 @@ main(int argc, char *argv[])
 		exit(EXIT_FAILURE);
 	}
 	fclose(keyfp);
+	free(keyname);
 	
 	owner = ldns_rdf2str(ldns_rr_owner(k));
 	alg = ldns_rdf2native_int8(ldns_rr_dnskey_algorithm(k));
@@ -76,6 +75,8 @@ main(int argc, char *argv[])
 	ds = ldns_key_rr2ds(k, LDNS_SHA1);
 	if (!ds) {
 		fprintf(stderr, "Conversion to a DS RR failed\n");
+		ldns_rr_free(k);
+		free(owner);
 		exit(EXIT_FAILURE);
 	}
 
@@ -90,9 +91,16 @@ main(int argc, char *argv[])
 	} else {
 		ldns_rr_print(dsfp, ds);
 		fclose(dsfp);
+		ldns_rr_free(k);
+		free(owner);
 		LDNS_FREE(dsname);
 	}
 	
+	ldns_rr_free(ds);
 	fprintf(stdout, "K%s+%03u+%05u\n", owner, alg, (unsigned int) ldns_calc_keytag(k)); 
+
+	ldns_rr_free(k);
+	free(owner);
+	LDNS_FREE(dsname);
         exit(EXIT_SUCCESS);
 }

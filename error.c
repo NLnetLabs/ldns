@@ -67,10 +67,12 @@ ldns_lookup_table ldns_error_str[] = {
 	{ LDNS_STATUS_SYNTAX_DNAME_ERR, "Syntax error, could not parse the RR's dname(s)" },
 	{ LDNS_STATUS_SYNTAX_VERSION_ERR, "Syntax error, version mismatch" },
 	{ LDNS_STATUS_SYNTAX_ALG_ERR, "Syntax error, algorithm unknown or non parseable" },
+	{ LDNS_STATUS_SYNTAX_KEYWORD_ERR, "Syntax error, unknown keyword in input" },
 	{ LDNS_STATUS_SYNTAX_ERR, "Syntax error, could not parse the RR" },
 	{ LDNS_STATUS_SYNTAX_EMPTY, "Empty line was returned" },
 	{ LDNS_STATUS_SYNTAX_TTL, "$TTL directive was seen in the zone" },
 	{ LDNS_STATUS_SYNTAX_ORIGIN, "$ORIGIN directive was seen in the zone" },
+	{ LDNS_STATUS_SYNTAX_MISSING_VALUE_ERR, "Syntax error, value expected" },
 	{ 0, NULL }
 };
 

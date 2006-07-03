@@ -83,12 +83,15 @@ main(int argc, char *argv[])
 				LDNS_RR_CLASS_IN, LDNS_RD);
 	if (!p) {
 		fprintf(stderr," *** Could not find any nameserver for %s", argv[1]);
+		ldns_resolver_deep_free(localres);
 		exit(EXIT_FAILURE);
 	}
 	ns = ldns_pkt_rr_list_by_type(p, LDNS_RR_TYPE_NS, LDNS_SECTION_ANSWER);
 
 	if (!ns) {
 		fprintf(stderr," *** Could not find any nameserver for %s", argv[1]);
+		ldns_pkt_free(p);
+		ldns_resolver_deep_free(localres);
 		exit(EXIT_FAILURE);
 	}
 
@@ -96,6 +99,9 @@ main(int argc, char *argv[])
 	 * new resolver */
 	res = ldns_resolver_new();
 	if (!res) {
+		ldns_pkt_free(p);
+		ldns_resolver_deep_free(localres);
+		ldns_rr_list_deep_free(ns);
 		exit(EXIT_FAILURE);
 	}
 	for(i = 0; i < ldns_rr_list_rr_count(ns); i++) {
@@ -107,9 +113,14 @@ main(int argc, char *argv[])
 			if (ldns_resolver_push_nameserver(res,
 				ldns_rr_a_address(ldns_rr_list_rr(ns_ip, j))) != LDNS_STATUS_OK) {
 				printf("Error adding nameserver to resolver\n");
+                		ldns_pkt_free(p);
+                		ldns_resolver_deep_free(res);
+                                ldns_resolver_deep_free(localres);
+                		ldns_rr_list_deep_free(ns);
 				exit(EXIT_FAILURE);
 			}
 		}
+       		ldns_rr_list_deep_free(ns_ip);
 
 	}
 
@@ -118,14 +129,17 @@ main(int argc, char *argv[])
 	/* also set CD, we want EVERYTHING! */
 	ldns_resolver_set_dnssec_cd(res, true);
 
-	/* use the resolver to send it a query for the mx 
+	/* use the resolver to send it a query for the soa
 	 * records of the domain given on the command line
 	 */
-	p = ldns_resolver_query(res, domain, LDNS_RR_TYPE_RRSIG, LDNS_RR_CLASS_IN, LDNS_RD);
+	ldns_pkt_free(p);
+	p = ldns_resolver_query(res, domain, LDNS_RR_TYPE_SOA, LDNS_RR_CLASS_IN, LDNS_RD);
 
 	ldns_rdf_deep_free(domain);
 	
         if (!p)  {
+		ldns_resolver_deep_free(localres);
+    		ldns_rr_list_deep_free(ns);
 		exit(EXIT_FAILURE);
         } else {
 		/* retrieve the RRSIG records from the answer section of that
@@ -138,6 +152,7 @@ main(int argc, char *argv[])
 					argv[1], argv[1]);
                         ldns_pkt_free(p);
                         ldns_resolver_deep_free(res);
+        		ldns_rr_list_deep_free(ns);
 			exit(EXIT_FAILURE);
 		} else {
 			rrsig_type = ldns_rr_list_new();
@@ -153,6 +168,12 @@ main(int argc, char *argv[])
 			if (ldns_rr_list_rr_count(rrsig_type) == 0) {
 				fprintf(stderr, " *** No RRSIG(%s) type found\n",
 					type_name);
+                		ldns_resolver_deep_free(localres);
+                		ldns_resolver_deep_free(res);
+                		ldns_pkt_free(p);
+                		ldns_rr_list_deep_free(ns);
+                		ldns_rr_list_free(rrsig);
+                		ldns_rr_list_deep_free(rrsig_type);
 				exit(EXIT_FAILURE);
 			}
 			
@@ -174,10 +195,13 @@ main(int argc, char *argv[])
 				fprintf(stdout, "%s RRSIG(%s):  %s - %s\n",
 					argv[1], type_name, incep_buf, expir_buf);
 			}
-
+                        ldns_rr_list_free(rrsig);
+                        ldns_rr_list_deep_free(rrsig_type);
 		}
         }
         ldns_pkt_free(p);
+        ldns_resolver_deep_free(localres);
         ldns_resolver_deep_free(res);
+        ldns_rr_list_deep_free(ns);
         return 0;
 }

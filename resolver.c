@@ -553,11 +553,12 @@ ldns_resolver_new_frm_fp_l(ldns_resolver **res, FILE *fp, int *line_nr)
 {
 	ldns_resolver *r;
 	const char *keyword[LDNS_RESOLV_KEYWORDS];
-	char *word;
+	char word[LDNS_MAX_LINELEN + 1];
 	int8_t expect;
 	uint8_t i;
 	ldns_rdf *tmp;
 	ssize_t gtr;
+	ldns_buffer *b;
 
 	/* do this better 
 	 * expect = 
@@ -567,49 +568,61 @@ ldns_resolver_new_frm_fp_l(ldns_resolver **res, FILE *fp, int *line_nr)
 	 */
 
 	/* recognized keywords */
-	keyword[LDNS_RESOLV_DEFDOMAIN] = "domain";
 	keyword[LDNS_RESOLV_NAMESERVER] = "nameserver";
+	keyword[LDNS_RESOLV_DEFDOMAIN] = "domain";
 	keyword[LDNS_RESOLV_SEARCH] = "search";
-	word = LDNS_XMALLOC(char, LDNS_MAX_LINELEN + 1);
+	/* these two are read but not used atm TODO */
+	keyword[LDNS_RESOLV_SORTLIST] = "sortlist";
+	keyword[LDNS_RESOLV_OPTIONS] = "options";
+/*	word = LDNS_XMALLOC(char, LDNS_MAX_LINELEN + 1);*/
 	expect = LDNS_RESOLV_KEYWORD;
 
 	r = ldns_resolver_new();
 	if (!r) {
 		return LDNS_STATUS_MEM_ERR;
 	}
-	gtr = ldns_fget_token_l(fp, word, LDNS_PARSE_NORMAL, 0, line_nr);
+
+	gtr = 1;
+	word[0] = 0;
 	while (gtr > 0) {
 		/* check comments */
 		if (word[0] == '#') {
 			/* read the rest of the line, should be 1 word */
 			gtr = ldns_fget_token_l(fp, word, LDNS_PARSE_NORMAL, 0, line_nr);
-			/* prepare the next string for furhter parsing */
+			/* prepare the next string for further parsing */
 			gtr = ldns_fget_token_l(fp, word, LDNS_PARSE_NORMAL, 0, line_nr);
 			continue;
 		}
 		switch(expect) {
 			case LDNS_RESOLV_KEYWORD:
 				/* keyword */
-				for(i = 0; i < LDNS_RESOLV_KEYWORDS; i++) {
-					if (strcasecmp(keyword[i], word) == 0) {
-						/* chosen the keyword and
-						 * expect values carefully
-						 */
-						expect = i;
-						break;
+				gtr = ldns_fget_token_l(fp, word, LDNS_PARSE_NORMAL, 0, line_nr);
+				if (gtr != 0) {
+					for(i = 0; i < LDNS_RESOLV_KEYWORDS; i++) {
+						if (strcasecmp(keyword[i], word) == 0) {
+							/* chosen the keyword and
+							 * expect values carefully
+							 */
+							expect = i;
+							break;
+						}
 					}
-				}
-				/* no keyword recognized */
-				if (expect == LDNS_RESOLV_KEYWORD) {
-					LDNS_FREE(word);
-					return LDNS_STATUS_SYNTAX_KEYWORD_ERR;
+					/* no keyword recognized */
+					if (expect == LDNS_RESOLV_KEYWORD) {
+						ldns_resolver_deep_free(r);
+						return LDNS_STATUS_SYNTAX_KEYWORD_ERR;
+					}
 				}
 				break;
 			case LDNS_RESOLV_DEFDOMAIN:
 				/* default domain dname */
+				gtr = ldns_fget_token_l(fp, word, LDNS_PARSE_NORMAL, 0, line_nr);
+				if (gtr == 0) {
+					return LDNS_STATUS_SYNTAX_MISSING_VALUE_ERR;
+				}
 				tmp = ldns_rdf_new_frm_str(LDNS_RDF_TYPE_DNAME, word);
 				if (!tmp) {
-					LDNS_FREE(word);
+					ldns_resolver_deep_free(r);
 					return LDNS_STATUS_SYNTAX_DNAME_ERR;
 				}
 
@@ -619,6 +632,10 @@ ldns_resolver_new_frm_fp_l(ldns_resolver **res, FILE *fp, int *line_nr)
 				break;
 			case LDNS_RESOLV_NAMESERVER:
 				/* NS aaaa or a record */
+				gtr = ldns_fget_token_l(fp, word, LDNS_PARSE_NORMAL, 0, line_nr);
+				if (gtr == 0) {
+					return LDNS_STATUS_SYNTAX_MISSING_VALUE_ERR;
+				}
 				tmp = ldns_rdf_new_frm_str(LDNS_RDF_TYPE_AAAA, word);
 				if (!tmp) {
 					/* try ip4 */
@@ -626,7 +643,7 @@ ldns_resolver_new_frm_fp_l(ldns_resolver **res, FILE *fp, int *line_nr)
 				}
 				/* could not parse it, exit */
 				if (!tmp) {
-					LDNS_FREE(word);
+					ldns_resolver_deep_free(r);
 					return LDNS_STATUS_SYNTAX_ERR;
 				}
 				(void)ldns_resolver_push_nameserver(r, tmp);
@@ -634,22 +651,41 @@ ldns_resolver_new_frm_fp_l(ldns_resolver **res, FILE *fp, int *line_nr)
 				expect = LDNS_RESOLV_KEYWORD;
 				break;
 			case LDNS_RESOLV_SEARCH:
-				/* search list domain dname, will only work with 1 name! */
-				tmp = ldns_rdf_new_frm_str(LDNS_RDF_TYPE_DNAME, word);
-				if (!tmp) {
-					LDNS_FREE(word);
-					return LDNS_STATUS_SYNTAX_DNAME_ERR;
-				}
+				/* search list domain dname */
+				gtr = ldns_fget_token_l(fp, word, LDNS_PARSE_SKIP_SPACE, 0, line_nr);
+				b = LDNS_MALLOC(ldns_buffer);
+				ldns_buffer_new_frm_data(b, word, (size_t) gtr);
 
-				ldns_resolver_push_searchlist(r, tmp); 
-				ldns_rdf_deep_free(tmp);
+				gtr = ldns_bget_token(b, word, LDNS_PARSE_NORMAL, (size_t) gtr);
+				while (gtr > 0) {
+					tmp = ldns_rdf_new_frm_str(LDNS_RDF_TYPE_DNAME, word);
+					if (!tmp) {
+						ldns_resolver_deep_free(r);
+						return LDNS_STATUS_SYNTAX_DNAME_ERR;
+					}
+
+					ldns_resolver_push_searchlist(r, tmp); 
+
+					ldns_rdf_deep_free(tmp);
+					gtr = ldns_bget_token(b, word, LDNS_PARSE_NORMAL, (size_t) gtr);
+				}
+				ldns_buffer_free(b);
+				gtr = 1;
+				expect = LDNS_RESOLV_KEYWORD;
+				break;
+			case LDNS_RESOLV_SORTLIST:
+				gtr = ldns_fget_token_l(fp, word, LDNS_PARSE_SKIP_SPACE, 0, line_nr);
+				/* sortlist not implemented atm */
+				expect = LDNS_RESOLV_KEYWORD;
+				break;
+			case LDNS_RESOLV_OPTIONS:
+				gtr = ldns_fget_token_l(fp, word, LDNS_PARSE_SKIP_SPACE, 0, line_nr);
+				/* options not implemented atm */
 				expect = LDNS_RESOLV_KEYWORD;
 				break;
 		}
-		gtr = ldns_fget_token_l(fp, word, LDNS_PARSE_NORMAL, 0, line_nr);
 	}
 	
-	LDNS_FREE(word);
 	if (res) {
 		*res = r;
 		return LDNS_STATUS_OK;
@@ -674,7 +710,6 @@ ldns_resolver_new_frm_file(ldns_resolver **res, const char *filename)
 	if (!fp) {
 		return LDNS_STATUS_FILE_ERR;
 	}
-	/* the file is opened. it's line based - this will be a bit messy */
 
 	s = ldns_resolver_new_frm_fp(&r, fp);
 	fclose(fp);
@@ -686,7 +721,13 @@ ldns_resolver_new_frm_file(ldns_resolver **res, const char *filename)
 			return LDNS_STATUS_NULL;
 		}
 	}
-	return LDNS_STATUS_ERR;
+	return s;
+}
+
+void
+ldns_resolver_free(ldns_resolver *res)
+{
+	LDNS_FREE(res);
 }
 
 void

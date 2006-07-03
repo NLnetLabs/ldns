@@ -683,16 +683,20 @@ ldns_key_rr2ds(const ldns_rr *key, ldns_hash h)
 		case LDNS_SHA1:
 			digest = LDNS_XMALLOC(uint8_t, SHA_DIGEST_LENGTH);
 			if (!digest) {
+				ldns_rr_free(ds);
 				return NULL;
 			}
 		break;
 		case LDNS_SHA256:
+			ldns_rr_free(ds);
 			return NULL; /* not implemented */
 		break;
 	}
 
         data_buf = ldns_buffer_new(LDNS_MAX_PACKETLEN);
         if (!data_buf) {
+		LDNS_FREE(digest);
+		ldns_rr_free(ds);
                 return NULL;
         }
 
@@ -712,11 +716,17 @@ ldns_key_rr2ds(const ldns_rr *key, ldns_hash h)
         /* digest */
         /* owner name */
 	if (ldns_rdf2buffer_wire(data_buf, ldns_rr_owner(key)) != LDNS_STATUS_OK) {
+		LDNS_FREE(digest);
+		ldns_buffer_free(data_buf);
+		ldns_rr_free(ds);
 		return NULL;
 	}
 
         /* all the rdata's */
 	if (ldns_rr_rdata2buffer_wire(data_buf, (ldns_rr*)key) != LDNS_STATUS_OK) { 
+		LDNS_FREE(digest);
+		ldns_buffer_free(data_buf);
+		ldns_rr_free(ds);
 		return NULL;
 	}
 	switch(h) {
@@ -734,6 +744,8 @@ ldns_key_rr2ds(const ldns_rr *key, ldns_hash h)
 		break;
 	}
 
+	LDNS_FREE(digest);
+	ldns_buffer_free(data_buf);
         return ds;
 }
 
@@ -1031,7 +1043,7 @@ ldns_create_nsec(ldns_rdf *cur_owner, ldns_rdf *next_owner, ldns_rr_list *rrs)
 	uint16_t i;
 	ldns_rr *i_rr;
 
-	uint8_t *bitmap = LDNS_XMALLOC(uint8_t, 1);
+	uint8_t *bitmap = LDNS_XMALLOC(uint8_t, 2);
 	uint16_t bm_len = 0;
 	uint16_t i_type;
 
@@ -1058,7 +1070,7 @@ ldns_create_nsec(ldns_rdf *cur_owner, ldns_rdf *next_owner, ldns_rr_list *rrs)
 			/* add type to bitmap */
 			i_type = ldns_rr_get_type(i_rr);
 			if ((i_type / 8) + 1 > bm_len) {
-				bitmap = LDNS_XREALLOC(bitmap, uint8_t, (i_type / 8) + 1);
+				bitmap = LDNS_XREALLOC(bitmap, uint8_t, (i_type / 8) + 2);
 				/* set to 0 */
 				for (; bm_len <= i_type / 8; bm_len++) {
 					bitmap[bm_len] = 0;
@@ -1070,7 +1082,7 @@ ldns_create_nsec(ldns_rdf *cur_owner, ldns_rdf *next_owner, ldns_rr_list *rrs)
 	/* add NSEC and RRSIG anyway */
 	i_type = LDNS_RR_TYPE_RRSIG;
 	if (i_type / 8 > bm_len) {
-		bitmap = LDNS_XREALLOC(bitmap, uint8_t, (i_type / 8) + 1);
+		bitmap = LDNS_XREALLOC(bitmap, uint8_t, (i_type / 8) + 2);
 		/* set to 0 */
 		for (; bm_len <= i_type / 8; bm_len++) {
 			bitmap[bm_len] = 0;
@@ -1080,7 +1092,7 @@ ldns_create_nsec(ldns_rdf *cur_owner, ldns_rdf *next_owner, ldns_rr_list *rrs)
 	i_type = LDNS_RR_TYPE_NSEC;
 
 	if (i_type / 8 > bm_len) {
-		bitmap = LDNS_XREALLOC(bitmap, uint8_t, (i_type / 8) + 1);
+		bitmap = LDNS_XREALLOC(bitmap, uint8_t, (i_type / 8) + 2);
 		/* set to 0 */
 		for (; bm_len <= i_type / 8; bm_len++) {
 			bitmap[bm_len] = 0;
@@ -1967,6 +1979,9 @@ ldns_zone_sign_nsec3(ldns_zone *zone, ldns_key_list *key_list, uint8_t algorithm
 				/* skip glue */
 				if (ldns_rr_list_contains_rr(glue_rrs, next_rr)) {
 /*					cur_dname = next_dname;*/
+					printf("Skip glue: ");
+					ldns_rdf_print(stdout, cur_dname);
+					printf("\n");
 				} else {
 					nsec = ldns_create_nsec3(cur_dname, 
 								ldns_rr_owner(ldns_zone_soa(zone)),
@@ -1976,12 +1991,12 @@ ldns_zone_sign_nsec3(ldns_zone *zone, ldns_key_list *key_list, uint8_t algorithm
 								iterations,
 								salt_length,
 								salt);
-/*
+
 					printf("Created NSEC3 for: ");
 					ldns_rdf_print(stdout, cur_dname);
 					printf(":\n");
 					ldns_rr_print(stdout, nsec);
-*/
+
 					ldns_rr_set_ttl(nsec, ldns_rdf2native_int32(ldns_rr_rdf(ldns_zone_soa(zone), 6)));
 					ldns_rr_list_push_rr(nsec3_rrs, nsec);
 					/*start_dname = next_dname;*/

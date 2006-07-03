@@ -103,6 +103,9 @@ ldns_fget_token_l(FILE *f, char *token, const char *delim, size_t limit, int *li
 		/* check if we hit the delim */
 		for (d = del; *d; d++) {
 			if (c == *d && i > 0) {
+				if (c == '\n' && line_nr) {
+					*line_nr = *line_nr + 1;
+				}
 				goto tokenread;
 			}
 		}

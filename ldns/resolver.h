@@ -37,8 +37,10 @@
 #define LDNS_RESOLV_DEFDOMAIN	0
 #define LDNS_RESOLV_NAMESERVER	1
 #define LDNS_RESOLV_SEARCH	2
+#define LDNS_RESOLV_SORTLIST	3
+#define LDNS_RESOLV_OPTIONS	4
 
-#define LDNS_RESOLV_KEYWORDS    3
+#define LDNS_RESOLV_KEYWORDS    5
 
 #define LDNS_RESOLV_INETANY		0
 #define LDNS_RESOLV_INET		1
@@ -613,7 +615,7 @@ ldns_status ldns_resolver_new_frm_fp_l(ldns_resolver **r, FILE *fp, int *line_nr
 ldns_status ldns_resolver_new_frm_file(ldns_resolver **r, const char *filename);
 
 /**                             
- * Frees the allocated space for this resolver
+ * Frees the allocated space for this resolver. Only frees the resolver pionter! You should probably be using _deep_free.
  * \param res resolver to free  
  */     
 void ldns_resolver_free(ldns_resolver *res);

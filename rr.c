@@ -541,7 +541,7 @@ ldns_rr_new_frm_fp_l(ldns_rr **newrr, FILE *fp, uint16_t *default_ttl, ldns_rdf 
 	
 	if ((keyword = strstr(line, "$ORIGIN "))) {
 		if (*origin) {
-			ldns_rdf_free(*origin);
+			ldns_rdf_deep_free(*origin);
 			*origin = NULL;
 		}
 		tmp = ldns_rdf_new_frm_str(LDNS_RDF_TYPE_DNAME, keyword + 8);

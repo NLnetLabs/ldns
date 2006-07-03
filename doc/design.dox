@@ -1,4 +1,4 @@
-/** \page overview Overview
+/** \page design Design
 
 The following image shows the various modules of libdns and their
 functionality.
@@ -12,6 +12,8 @@ functionality.
   - \ref ldns_rdf An RDATA field, every Resource Record contains one or more RDATA fields, depending on the type of RR. These are the 'basic types' of DNS data.
   - \ref ldns_rr_list A list of resource records
   - \ref ldns_zone A representation of a DNS Zone.
+
+The actual structure definitions are named \c ldns_struct_<name> which are all typedeffed to \c ldns_<name>
 
 
 A DNS Resource record looks like this:

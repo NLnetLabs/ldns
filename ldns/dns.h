@@ -26,8 +26,9 @@ faster than Perl.
 
 The first main tool to use ldns is Drill, from which part of the library was
 derived. From version 1.0.0 on, drill is included in the ldns release
-and will not be developed seperately anymore. The library also includes some
-other examples and tools to show how it can be used.
+and will not be distributed seperately anymore. The library also includes some
+other examples and tools to show how it can be used. These can be found in the
+examples/ directory in the tarball.
 
 ldns depends on OpenSSL for it's cryptographic functions.
 Feature list
@@ -40,10 +41,32 @@ Feature list
 
 If you want to send us patches please use the code from subversion (trunk). 
 
+\section using_ldns Using ldns
+
+Almost all interaction between an application and ldns goes through the ldns
+data structures (\ref ldns_rr, \ref ldns_pkt, etc.). These are input or
+output to the functions of ldns. For example, \ref ldns_zone_new_frm_fp
+reads a zone from a \c FILE pointer, and returns an \ref ldns_zone
+structure.
+
+
+Let's use Drill as an example. Drill is a tool much like dig, whose most
+basic function is to send 1 query to a nameserver and print the response.
+
+To be able to do this, drill uses the resolver module of ldns, which acts as
+a stub resolver. The resolver module uses the net module to actually send
+the query that drill requested. It then uses the wire2host module to
+translate the response and place it in ldns' internal structures. These are
+passed back to drill, which then uses the host2str module to print the
+response in presentation format.
+
 \section gettingstarted Getting Started
 
-See the \ref overview page for a very high level overview of ldns and its
-main features. You can also check out the \ref ldns ldns header file descriptions.
+See the \ref design page for a very high level description of the design
+choices made for ldns. 
+
+For an overview of the functions and types ldns provides, you can check out
+the \ref ldns ldns header file descriptions.
 
 If you want to see some libdns action, you can read our tutorials:
   - \ref tutorial1_mx

@@ -31,6 +31,15 @@
    \skipline key
    \until status
 
+   The \ref ldns_key structure holds (private) keys. These can be of any
+   supported algorithm type; you can put an RSA key in it, an DSA key, or an
+   HMAC key. Public keys can simply be put in an \ref ldns_rr structure with
+   type \ref LDNS_RR_TYPE_DNSKEY.
+
+   The \ref ldns_key_list type is much like the \ref ldns_rr_list, only, you
+   guessed it, for \c ldns_key entries.
+
+
    The signed zone will be stored in a new file.
 
    \skipline file
@@ -41,6 +50,8 @@
    \skipline tm
    \until class
 
+   \c origin is a domain name, so it can be stored in an \ref ldns_rdf
+   variable with type \ref LDNS_RDF_TYPE_DNAME.
 
    The next part is option parsing, which is pretty straightforward using \c
    getopt(), so we'll skip this too. U can always look to the source of the
@@ -53,11 +64,20 @@
    \skipline fopen(zone
    \until } else {
 
-   If the file exists and can be read, we'll let ldns mold it into a zone structure:
+   If the file exists and can be read, we'll let ldns mold it into a zone
+   structure:
 
    \skipline zone_new
 
-   Like a lot of ldns functions, this one returns a \c ldns_status indicating success or the type of failure, so let us check that.
+   This creates a new (\c new) zone from (\c frm) a filepointer (\c fp),
+   while remembering the current line (\c l) in the input file (for error
+   messages).
+
+   A pointer to the zone structure to be filled is passed as the first
+   argument, like in most \c new_frm functions.
+
+   Like a lot of ldns functions, this one returns a \c ldns_status
+   indicating success or the type of failure, so let us check that.
 
    \skipline STATUS
    \until } else {

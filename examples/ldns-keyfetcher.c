@@ -12,6 +12,7 @@
 #include <errno.h>
 
 int verbosity = 0;
+/* 0=use both ip4 and ip6 (default). 1=ip4only. 2=ip6only. */
 uint8_t address_family = 0;
 bool store = false;
 
@@ -131,7 +132,7 @@ retrieve_dnskeys(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 		} else {
 			new_nss_a = ldns_rr_list_new();
 		}
-		if (address_family == 0 || address_family == 1) {
+		if (address_family == 0 || address_family == 2) {
 			new_nss_aaaa = ldns_pkt_rr_list_by_type(p,
 					LDNS_RR_TYPE_AAAA, LDNS_SECTION_ADDITIONAL);
 		} else {
@@ -547,6 +548,7 @@ int
 main(int argc, char *argv[])
 {
 	ldns_resolver *res;
+	ldns_rdf *ns;
 	ldns_rdf *domain;
 	ldns_rr_list *l = NULL;
 
@@ -633,13 +635,22 @@ main(int argc, char *argv[])
 
 	/* create a new resolver from /etc/resolv.conf */
 	status = ldns_resolver_new_frm_file(&res, NULL);
-	ldns_resolver_set_ip6(res, address_family);
 
 	if (status != LDNS_STATUS_OK) {
-		ldns_rdf_deep_free(domain);
-		fprintf(stderr, "Error creating resolver: %s\n", ldns_get_errorstr_by_id(status));
-		exit(EXIT_FAILURE);
+		fprintf(stderr, "Warning: Unable to create stub resolver from /etc/resolv.conf:\n");
+		fprintf(stderr, "%s\n", ldns_get_errorstr_by_id(status));
+		fprintf(stderr, "defaulting to nameserver at 127.0.0.1 for separate nameserver name lookups\n");
+		res = ldns_resolver_new();
+		ns = ldns_rdf_new_frm_str(LDNS_RDF_TYPE_A, "127.0.0.1");
+		status = ldns_resolver_push_nameserver(res, ns);
+		if (status != LDNS_STATUS_OK) {
+			fprintf(stderr, "Unable to create stub resolver: %s\n", ldns_get_errorstr_by_id(status));
+			exit(EXIT_FAILURE);
+		}
+		ldns_rdf_deep_free(ns);
 	}
+
+	ldns_resolver_set_ip6(res, address_family);
 
 	l = retrieve_dnskeys(res, domain, LDNS_RR_TYPE_DNSKEY, LDNS_RR_CLASS_IN, dns_root);
 
@@ -680,7 +691,8 @@ main(int argc, char *argv[])
 			ldns_rr_list_print(stdout, l);
 		}
 	} else {
-		printf("no packet?!?\n");
+		fprintf(stderr, "no answer packet received, stub resolver config:\n");
+		ldns_resolver_print(stderr, res);
 	}
 	printf("\n");
 
