@@ -224,6 +224,7 @@ main(int argc, char *argv[])
 						LDNS_RR_CLASS_IN,
 						0);
 			ldns_rdf_deep_free(cmdline_dname);
+                        ldns_resolver_deep_free(cmdline_res);
 			if (!cmdline_rr_list) {
 				fprintf(stderr, "%s %s", "could not find any address for the name: ", serv);
 				result = EXIT_FAILURE;
@@ -235,8 +236,10 @@ main(int argc, char *argv[])
 					) != LDNS_STATUS_OK) {
 					fprintf(stderr, "%s", "pushing nameserver");
 					result = EXIT_FAILURE;
+					ldns_rr_list_deep_free(cmdline_rr_list);
 					goto exit;
 				}
+                                ldns_rr_list_deep_free(cmdline_rr_list);
 			}
 		} else {
 			if (ldns_resolver_push_nameserver(res, serv_rdf) != LDNS_STATUS_OK) {
