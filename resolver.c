@@ -553,7 +553,7 @@ ldns_resolver_new_frm_fp_l(ldns_resolver **res, FILE *fp, int *line_nr)
 {
 	ldns_resolver *r;
 	const char *keyword[LDNS_RESOLV_KEYWORDS];
-	char *word;
+	char word[LDNS_MAX_LINELEN + 1];
 	int8_t expect;
 	uint8_t i;
 	ldns_rdf *tmp;
@@ -574,7 +574,7 @@ ldns_resolver_new_frm_fp_l(ldns_resolver **res, FILE *fp, int *line_nr)
 	/* these two are read but not used atm TODO */
 	keyword[LDNS_RESOLV_SORTLIST] = "sortlist";
 	keyword[LDNS_RESOLV_OPTIONS] = "options";
-	word = LDNS_XMALLOC(char, LDNS_MAX_LINELEN + 1);
+/*	word = LDNS_XMALLOC(char, LDNS_MAX_LINELEN + 1);*/
 	expect = LDNS_RESOLV_KEYWORD;
 
 	r = ldns_resolver_new();
@@ -583,6 +583,7 @@ ldns_resolver_new_frm_fp_l(ldns_resolver **res, FILE *fp, int *line_nr)
 	}
 
 	gtr = 1;
+	word[0] = 0;
 	while (gtr > 0) {
 		/* check comments */
 		if (word[0] == '#') {
@@ -608,7 +609,6 @@ ldns_resolver_new_frm_fp_l(ldns_resolver **res, FILE *fp, int *line_nr)
 					}
 					/* no keyword recognized */
 					if (expect == LDNS_RESOLV_KEYWORD) {
-						LDNS_FREE(word);
 						ldns_resolver_deep_free(r);
 						return LDNS_STATUS_SYNTAX_KEYWORD_ERR;
 					}
@@ -622,7 +622,6 @@ ldns_resolver_new_frm_fp_l(ldns_resolver **res, FILE *fp, int *line_nr)
 				}
 				tmp = ldns_rdf_new_frm_str(LDNS_RDF_TYPE_DNAME, word);
 				if (!tmp) {
-					LDNS_FREE(word);
 					ldns_resolver_deep_free(r);
 					return LDNS_STATUS_SYNTAX_DNAME_ERR;
 				}
@@ -644,7 +643,6 @@ ldns_resolver_new_frm_fp_l(ldns_resolver **res, FILE *fp, int *line_nr)
 				}
 				/* could not parse it, exit */
 				if (!tmp) {
-					LDNS_FREE(word);
 					ldns_resolver_deep_free(r);
 					return LDNS_STATUS_SYNTAX_ERR;
 				}
@@ -662,7 +660,6 @@ ldns_resolver_new_frm_fp_l(ldns_resolver **res, FILE *fp, int *line_nr)
 				while (gtr > 0) {
 					tmp = ldns_rdf_new_frm_str(LDNS_RDF_TYPE_DNAME, word);
 					if (!tmp) {
-						LDNS_FREE(word);
 						ldns_resolver_deep_free(r);
 						return LDNS_STATUS_SYNTAX_DNAME_ERR;
 					}
@@ -689,7 +686,6 @@ ldns_resolver_new_frm_fp_l(ldns_resolver **res, FILE *fp, int *line_nr)
 		}
 	}
 	
-	LDNS_FREE(word);
 	if (res) {
 		*res = r;
 		return LDNS_STATUS_OK;

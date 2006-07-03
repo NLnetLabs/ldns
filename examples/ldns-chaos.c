@@ -40,6 +40,7 @@ main(int argc, char *argv[])
 	ldns_rr_list *addr;
 	ldns_rr_list *info;
 	ldns_status s;
+	ldns_rdf *pop;
 	size_t i;
 	
 	if (argc != 2) {
@@ -75,6 +76,10 @@ main(int argc, char *argv[])
 		exit(EXIT_FAILURE);
 	}
 
+	/* remove current list of nameservers from resolver */
+	while((pop = ldns_resolver_pop_nameserver(res))) { ldns_rdf_deep_free(pop); }
+
+
 	/* can be multihomed */
 	for(i = 0; i < ldns_rr_list_rr_count(addr); i++) {
 		if (i > 0) {
@@ -92,6 +97,7 @@ main(int argc, char *argv[])
 		p = ldns_resolver_query(res, version, LDNS_RR_TYPE_TXT,
 				LDNS_RR_CLASS_CH, LDNS_RD);
 		if (p) {
+ldns_pkt_print(stdout, p);
 			info = ldns_pkt_rr_list_by_type(p,
 					LDNS_RR_TYPE_TXT, LDNS_SECTION_ANSWER);
 
