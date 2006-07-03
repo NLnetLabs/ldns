@@ -574,7 +574,6 @@ ldns_resolver_new_frm_fp_l(ldns_resolver **res, FILE *fp, int *line_nr)
 	/* these two are read but not used atm TODO */
 	keyword[LDNS_RESOLV_SORTLIST] = "sortlist";
 	keyword[LDNS_RESOLV_OPTIONS] = "options";
-/*	word = LDNS_XMALLOC(char, LDNS_MAX_LINELEN + 1);*/
 	expect = LDNS_RESOLV_KEYWORD;
 
 	r = ldns_resolver_new();
