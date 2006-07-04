@@ -91,9 +91,6 @@ main(int argc, char *argv[])
 	} else {
 		ldns_rr_print(dsfp, ds);
 		fclose(dsfp);
-		ldns_rr_free(k);
-		free(owner);
-		LDNS_FREE(dsname);
 	}
 	
 	ldns_rr_free(ds);
