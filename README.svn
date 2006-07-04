@@ -9,5 +9,7 @@ autoreconf
 ./configure
 make
 make doc  # needs doxygen for the html pages
-(cd examples && autoreconf && ./configure --with-ldns=../ && make)
-(cd drill && autoreconf && ./configure --with-ldns=../ && make)
+(cd examples && autoreconf && ./configure && make)
+(cd drill && autoreconf && ./configure && make)
+(cd pcat && autoreconf && ./configure && make)
+(cd examples/nsd-test && autoreconf && ./configure && make)

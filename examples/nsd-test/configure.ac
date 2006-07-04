@@ -35,8 +35,22 @@ AC_ARG_WITH(ldns,
 	]
 )
 
+# check for ldns development source tree
+AC_MSG_CHECKING([for ldns devel source])
+ldns_dev_dir=../..
+if test -f $ldns_dev_dir/ldns/util.h && \
+	grep LDNS_VERSION $ldns_dev_dir/ldns/util.h >/dev/null; then
+	ldns_version=`grep LDNS_VERSION $ldns_dev_dir/ldns/util.h | sed -e 's/^.*"\(.*\)".*$/\1/'`
+	AC_MSG_RESULT([using $ldns_dev_dir with $ldns_version])
+	CPPFLAGS="$CPPFLAGS -I$ldns_dev_dir/include"
+	LDFLAGS="$LDFLAGS -L$ldns_dev_dir/lib"
+	LDNSDIR="$ldns_dev_dir"
+else
+	AC_MSG_RESULT([no])
+fi
+
 AC_CHECK_LIB(ldns, ldns_rr_new,, [
-	AC_MSG_ERROR([Can't find ldns library])
+		AC_MSG_ERROR([Can't find ldns library])
 	]
 )
 
