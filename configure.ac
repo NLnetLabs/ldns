@@ -30,7 +30,6 @@ AC_CHECK_TYPE(uint8_t, unsigned char)
 AC_CHECK_TYPE(uint16_t, unsigned short)
 AC_CHECK_TYPE(uint32_t, unsigned int)
 AC_CHECK_TYPE(uint64_t, unsigned long long)
-AC_CHECK_TYPE(sig_atomic_t, int)
 
 AC_DEFUN([AC_CHECK_FORMAT_ATTRIBUTE],
 [AC_REQUIRE([AC_PROG_CC])
