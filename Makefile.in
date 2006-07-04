@@ -73,7 +73,6 @@ LINK_LIB	= $(LIBTOOL) --mode=link $(CC) $(CFLAGS) $(LDFLAGS) -release $(VERSION)
 .PHONY:	clean realclean docclean doc lint all lib
 .PHONY: install uninstall install-doc uninstall-doc 
 .PHONY: install-h uninstall-h install-lib uninstall-lib 
-.PHONY: drill
 
 all:		copy-headers lib linktest
 
@@ -138,9 +137,6 @@ install-lib:	lib
 uninstall-lib:	
 		$(LIBTOOL) --mode=uninstall rm -f $(DESTDIR)$(libdir)/libldns.la
 		rmdir -p $(DESTDIR)$(libdir)
-
-drill:
-	cd drill; ./configure; make;
 
 clean:
 	rm -f *.o *.d *.lo
