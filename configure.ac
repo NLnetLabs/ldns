@@ -30,9 +30,7 @@ AC_CHECK_TYPE(uint8_t, unsigned char)
 AC_CHECK_TYPE(uint16_t, unsigned short)
 AC_CHECK_TYPE(uint32_t, unsigned int)
 AC_CHECK_TYPE(uint64_t, unsigned long long)
-AC_CHECK_TYPE(socklen_t, int)
 AC_CHECK_TYPE(sig_atomic_t, int)
-AC_CHECK_TYPE(ssize_t, int)
 
 AC_DEFUN([AC_CHECK_FORMAT_ATTRIBUTE],
 [AC_REQUIRE([AC_PROG_CC])
@@ -136,7 +134,7 @@ AC_HEADER_STDC
 #AC_CHECK_HEADERS([getopt.h fcntl.h stdlib.h string.h strings.h unistd.h])
 # do the very minimum - we can always extend this
 AC_CHECK_HEADERS([getopt.h stdbool.h openssl/ssl.h netinet/in.h time.h],,, [AC_INCLUDES_DEFAULT])
-AC_CHECK_HEADERS(sys/param.h sys/mount.h,,,
+AC_CHECK_HEADERS(sys/param.h sys/mount.h sys/socket.h,,,
 [AC_INCLUDES_DEFAULT
   [
    #if HAVE_SYS_PARAM_H
@@ -144,6 +142,13 @@ AC_CHECK_HEADERS(sys/param.h sys/mount.h,,,
    #endif
   ]
 ])
+AC_CHECK_TYPE(socklen_t, , 
+	[AC_DEFINE([socklen_t], [int], [Define to 'int' if not defined])], [
+#if HAVE_SYS_SOCKET_H
+#  include <sys/socket.h>
+#endif
+])
+AC_CHECK_TYPE(ssize_t, int)
 
 AC_FUNC_MALLOC
 
@@ -155,6 +160,13 @@ AC_REPLACE_FUNCS(timegm)
 
 AC_CHECK_FORMAT_ATTRIBUTE
 AC_CHECK_UNUSED_ATTRIBUTE
+
+# check OSX deployment target which is needed
+if echo $build_os | grep darwin > /dev/null; then
+	if test x$MACOSX_DEPLOYMENT_TARGET != x10.4; then
+		AC_MSG_ERROR([Please export MACOSX_DEPLOYMENT_TARGET=10.4 in your environment to compile on Mac OS/X])
+	fi
+fi
 
 AC_DEFINE([SYSCONFDIR], [sysconfdir], [System configuration dir])
 
