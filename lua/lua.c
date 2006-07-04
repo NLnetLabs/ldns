@@ -18,7 +18,7 @@
 #include <lauxlib.h>
 
 /* ldns include */
-#include <ldns/dns.h>
+#include <ldns/ldns.h>
 
 /* the Lua interpreter */
 lua_State* L;

@@ -9,7 +9,7 @@
  */
 
 #include "drill.h"
-#include <ldns/dns.h>
+#include <ldns/ldns.h>
 
 #define SELF "[S]"  /* self sig ok */
 #define TRUST "[T]" /* chain from parent */

@@ -81,7 +81,7 @@ Or you can just use the menu above to browse through the API docs.
 */
 
 /**
- * \file dns.h
+ * \file ldns.h
  *
  * Including this file will include all ldns files, and define some lookup tables.
  */

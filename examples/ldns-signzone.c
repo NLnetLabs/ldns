@@ -13,7 +13,7 @@
 
 #include <time.h>
 
-#include <ldns/dns.h>
+#include <ldns/ldns.h>
 
 #define MAX_FILENAME_LEN 250
 

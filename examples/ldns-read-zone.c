@@ -8,7 +8,7 @@
 #include <unistd.h>
 #include <stdlib.h>
 
-#include <ldns/dns.h>
+#include <ldns/ldns.h>
 
 #include <errno.h>
 

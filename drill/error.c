@@ -11,7 +11,7 @@
  */
 
 #include "drill.h"
-#include <ldns/dns.h>
+#include <ldns/ldns.h>
 
 static void
 warning_va_list(const char *fmt, va_list args)

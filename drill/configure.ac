@@ -96,7 +96,7 @@ AC_CHECK_LIB(ldns, ldns_rr_new,, [
 
 AC_ARG_WITH(ldns, AC_HELP_STRING([--with-ldns=PATHNAME],[]))
 
-AC_CHECK_HEADER(ldns/dns.h,,  [
+AC_CHECK_HEADER(ldns/ldns.h,,  [
 	AC_MSG_ERROR([Can't find ldns headers])
 	], [AC_INCLUDES_DEFAULT]
 )

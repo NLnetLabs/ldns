@@ -13,7 +13,7 @@
 
 #include <ldns/config.h>
 
-#include <ldns/dns.h>
+#include <ldns/ldns.h>
 
 #include <openssl/ssl.h>
 #include <openssl/sha.h>

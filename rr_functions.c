@@ -15,7 +15,7 @@
 
 #include <ldns/config.h>
 
-#include <ldns/dns.h>
+#include <ldns/ldns.h>
 
 #include <limits.h>
 #include <strings.h>

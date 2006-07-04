@@ -12,7 +12,7 @@
 
 #include <ldns/config.h>
 
-#include <ldns/dns.h>
+#include <ldns/ldns.h>
 
 #ifdef HAVE_SSL
 #include <openssl/ssl.h>

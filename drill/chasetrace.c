@@ -9,7 +9,7 @@
  */
 
 #include "drill.h"
-#include <ldns/dns.h>
+#include <ldns/ldns.h>
 
 /**
  * trace down from the root to name

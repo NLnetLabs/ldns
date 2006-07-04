@@ -9,7 +9,7 @@
  */
 
 #include "drill.h"
-#include <ldns/dns.h>
+#include <ldns/ldns.h>
 
 /* a global list of the root-servers */
 ldns_rr_list *global_dns_root;

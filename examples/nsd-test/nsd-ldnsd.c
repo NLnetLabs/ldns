@@ -9,7 +9,7 @@
  */
 
 #include "config.h"
-#include <ldns/dns.h>
+#include <ldns/ldns.h>
 
 #include <sys/types.h>
 #include <sys/socket.h>

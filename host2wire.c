@@ -14,7 +14,7 @@
 
 #include <ldns/config.h>
 
-#include <ldns/dns.h>
+#include <ldns/ldns.h>
 
 /* TODO Jelte
   add a pointer to a 'possiblecompression' structure

@@ -53,7 +53,7 @@ LIBDNS_HEADERS	=	$(srcdir)/ldns/error.h		\
 			$(srcdir)/ldns/higher.h		\
 			$(srcdir)/ldns/parse.h		\
 			$(srcdir)/ldns/rr_functions.h	\
-			$(srcdir)/ldns/dns.h		\
+			$(srcdir)/ldns/ldns.h		\
 			$(srcdir)/ldns/zone.h		\
 			$(srcdir)/ldns/update.h 		\
 			$(srcdir)/ldns/tsig.h

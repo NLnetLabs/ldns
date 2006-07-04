@@ -10,7 +10,7 @@
 
 #include "config.h"
 
-#include <ldns/dns.h>
+#include <ldns/ldns.h>
 
 #include <netinet/ip6.h>
 #include <errno.h>

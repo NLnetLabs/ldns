@@ -8,7 +8,7 @@
 
 #include "config.h"
 
-#include <ldns/dns.h>
+#include <ldns/ldns.h>
 
 int verbosity = 0;
 

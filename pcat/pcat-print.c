@@ -2,7 +2,7 @@
 
 #include "config.h"
 
-#include <ldns/dns.h>
+#include <ldns/ldns.h>
 
 #define SEQUENCE 1
 #define QUERY    2

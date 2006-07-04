@@ -6,7 +6,7 @@
  */
 
 #include "config.h"
-#include <ldns/dns.h>
+#include <ldns/ldns.h>
 
 int
 main(void)

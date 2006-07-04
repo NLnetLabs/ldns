@@ -8,7 +8,7 @@
  */
 
 #include "drill.h"
-#include <ldns/dns.h>
+#include <ldns/ldns.h>
 
 #define IP6_ARPA_MAX_LEN 65
 

@@ -1,7 +1,7 @@
 #define _GNU_SOURCE
 #include "config.h"
 
-#include <ldns/dns.h>
+#include <ldns/ldns.h>
 #include <pcap.h>
 
 #define SEQUENCE 1
