@@ -149,7 +149,7 @@ main(int argc, char **argv)
 
 	if (argc < 1) {
 		/* no file given - use standard input */
-		p = pcap_fopen_offline(stdin, errbuf);
+		p = pcap_open_offline("/dev/stdin", errbuf);
 	} else {
 		p = pcap_open_offline(argv[0], errbuf);
 	}
