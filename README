@@ -35,13 +35,14 @@ There are some examples in the examples/ directory. These can be built with:
 4. gmake
 
 * Drill
-Drill can be build with:
+Drill can be built with:
 1. cd drill/
 2. autoreconf
 3. ./configure [--with-ldns=../]
 4. gmake
 
-Note, if built with --with-ldns=../ you will need to set the
+Note, if built with --with-ldns=../ (i.e. if you did not install ldns to
+your system but only built it) you will need to set the
 LD_LIBRARY_PATH to let library loader find the library.
 
 * Building from repository
