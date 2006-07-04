@@ -73,33 +73,12 @@ LINK_LIB	= $(LIBTOOL) --mode=link $(CC) $(CFLAGS) $(LDFLAGS) -release $(VERSION)
 .PHONY:	clean realclean docclean doc lint all lib
 .PHONY: install uninstall install-doc uninstall-doc 
 .PHONY: install-h uninstall-h install-lib uninstall-lib 
-.PHONY: confdrill tools-drill
 
 all:		copy-headers lib linktest
 
 linktest:
 		gcc $(srcdir)/linktest.c -Iinclude -I$(srcdir) .libs/libldns.a $(LDFLAGS) -o linktest
 		rm linktest
-
-./drill/Makefile:
-		( $(INSTALL) -d drill ; cd drill ; ../$(srcdir)/drill/configure --prefix=$(prefix) --bindir=$(bindir) --mandir=$(mandir) LDFLAGS="-L../.libs" CPPFLAGS="-I.. -I../..")
-
-drill-config:	./drill/Makefile
-
-drill: 		drill-config
-		( cd drill ; $(MAKE) -f Makefile all)
-
-drill-realclean:	drill-config
-		( cd drill ; $(MAKE) -f Makefile realclean)
-
-drill-clean:	
-		( if [ -f drill/Makefile ] ; then cd drill ; $(MAKE) -f Makefile clean ; fi ;)
-
-drill-confclean:
-		( cd drill ; if [ -f Makefile ] ; then $(MAKE) -f Makefile confclean ; fi ;)
-
-drill-install:	drill
-		( cd drill ; $(MAKE) -f Makefile install)
 
 lib:		$(LIBDNS_OBJECTS) b64_pton$U.o b64_ntop$U.o
 		$(LINK_LIB) -o libldns.la $(LIBDNS_LOBJECTS) b64_pton$U.lo b64_ntop$U.lo \
@@ -159,7 +138,7 @@ uninstall-lib:
 		$(LIBTOOL) --mode=uninstall rm -f $(DESTDIR)$(libdir)/libldns.la
 		rmdir -p $(DESTDIR)$(libdir)
 
-clean:	drill-clean
+clean:
 	rm -f *.o *.d *.lo
 	rm -f *~
 	rm -rf autom4te.cache/
@@ -171,7 +150,7 @@ clean:	drill-clean
 	rm -f lib
 	rm -rf .libs
 
-distclean: clean docclean libclean drill-confclean 
+distclean: clean docclean libclean
 	rm -f ltmain.sh
 
 realclean: clean docclean libclean
@@ -230,13 +209,7 @@ malloc$U.o:	$(srcdir)/compat/malloc.c
 	              | sed '\''s!\(.*\)\.o[ :]*!$(dir $@)\1.o $@ : !g'\'' > $@; \
 	              [ -s $@ ] || rm -f $@'
 
-allclean: drill-clean test-clean clean
-
-allrealclean: drill-realclean 
-
-allconf: drill-config 
-
-allconfclean: drill-confclean 
+allclean: test-clean clean
 
 test-clean:
 	tpkg -b test clean

@@ -7,7 +7,7 @@ AC_CONFIG_SRCDIR([packet.c])
 
 PACKAGE_VERSION="$PACKAGE_VERSION $VERSION_ADD"
 
-OURCPPFLAGS='-ansi -D_POSIX_C_SOURCE=200112 -D_XOPEN_SOURCE=600'
+OURCPPFLAGS='-ansi -D_POSIX_C_SOURCE=200112 -D_XOPEN_SOURCE=600 -D__EXTENSIONS__'
 CPPFLAGS=${CPPFLAGS:-${OURCPPFLAGS}}
 OURCFLAGS='-g -O2 -Wall -W -Wwrite-strings'
 CFLAGS=${CFLAGS:-${OURCFLAGS}}
@@ -21,6 +21,18 @@ AC_PROG_MAKE_SET
 AC_C_CONST
 AC_C_INLINE
 AC_LANG_C
+AC_TYPE_SIZE_T
+AC_CHECK_TYPE(int8_t, char)
+AC_CHECK_TYPE(int16_t, short)
+AC_CHECK_TYPE(int32_t, int)
+AC_CHECK_TYPE(int64_t, long long)
+AC_CHECK_TYPE(uint8_t, unsigned char)
+AC_CHECK_TYPE(uint16_t, unsigned short)
+AC_CHECK_TYPE(uint32_t, unsigned int)
+AC_CHECK_TYPE(uint64_t, unsigned long long)
+AC_CHECK_TYPE(socklen_t, int)
+AC_CHECK_TYPE(sig_atomic_t, int)
+AC_CHECK_TYPE(ssize_t, int)
 
 AC_DEFUN([AC_CHECK_FORMAT_ATTRIBUTE],
 [AC_REQUIRE([AC_PROG_CC])
@@ -111,6 +123,10 @@ AC_ARG_WITH(ssl, AC_HELP_STRING([--with-ssl=pathname],
 # BSD's need to know the version...
 AC_CHECK_PROG(glibtool, glibtool, [glibtool], )
 AC_CHECK_PROG(libtool, libtool15, [libtool15], libtool)
+AC_PATH_TOOL(AR, ar, [false])
+if test $AR = false; then
+	AC_MSG_ERROR([Cannot find 'ar', please extend PATH to include it])
+fi
 AC_PROG_LIBTOOL
 
 
