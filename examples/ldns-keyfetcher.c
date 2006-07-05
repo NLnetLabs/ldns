@@ -14,7 +14,7 @@
 int verbosity = 0;
 /* 0=use both ip4 and ip6 (default). 1=ip4only. 2=ip6only. */
 uint8_t address_family = 0;
-bool store = false;
+bool store_in_file = false;
 
 void
 usage(FILE *fp, char *prog) {
@@ -599,7 +599,7 @@ main(int argc, char *argv[])
 					i++;
 				}
 			} else if (strncmp("-s", argv[i], 3) == 0) {
-				store = true;
+				store_in_file = true;
 			} else if (strncmp("-v", argv[i], 2) == 0) {
 				if (strlen(argv[i]) > 2) {
 					verbosity = atoi(argv[i]+2);
@@ -660,7 +660,7 @@ main(int argc, char *argv[])
 		fprintf(stdout, "; Got the following keys:\n");
 	}
 	if (l) {
-		if (store) {
+		if (store_in_file) {
 			/* create filename:
 			 * K<domain>.+<alg>.+<id>.key
 			 */

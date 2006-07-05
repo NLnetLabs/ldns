@@ -36,6 +36,10 @@ AC_CHECK_HEADERS([sys/param.h sys/mount.h],,,
   ]
 ])
 
+# check to see if libraries are needed for these functions.
+AC_CHECK_LIB(socket, socket)
+AC_CHECK_LIB(nsl, inet_pton)
+
 # check for ldns
 AC_ARG_WITH(ldns, 
 	AC_HELP_STRING([--with-ldns=PATH        specify prefix of path of ldns library to use])

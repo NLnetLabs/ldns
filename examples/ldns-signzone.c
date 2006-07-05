@@ -5,7 +5,6 @@
  * See the file LICENSE for the license
  */
 
-#include <stdint.h>
 #include <stdlib.h>
 #include <unistd.h>
 
