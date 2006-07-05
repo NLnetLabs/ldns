@@ -14,6 +14,8 @@
 #include <strings.h>
 #include <limits.h>
 
+#include <errno.h>
+
 #define LDNS_SYNTAX_DATALEN 11
 #define LDNS_TTL_DATALEN    21
 
@@ -100,7 +102,6 @@ ldns_rr_new_frm_str(ldns_rr **newrr, const char *str, uint16_t default_ttl, ldns
 	ldns_buffer *rr_buf;
 	ldns_buffer *rd_buf;
 	uint32_t ttl_val;
-	const char *endptr;
 	char  *owner; 
 	char  *ttl; 
 	ldns_rr_class clas_val;
@@ -170,8 +171,9 @@ ldns_rr_new_frm_str(ldns_rr **newrr, const char *str, uint16_t default_ttl, ldns
 		ldns_rr_free(new);
 		return LDNS_STATUS_SYNTAX_TTL_ERR;
 	}
-	ttl_val = ldns_str2period(ttl, &endptr); /* i'm not using endptr */
-	if (ttl_val == 0) {
+	ttl_val = strtol(ttl, NULL, 10);
+
+	if (strlen(ttl) > 0 && !isdigit(ttl[0])) {
 		/* ah, it's not there or something */
 		if (default_ttl == 0) {
 			ttl_val = LDNS_DEFAULT_TTL;
