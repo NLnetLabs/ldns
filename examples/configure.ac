@@ -10,8 +10,18 @@ AC_AIX
 AC_PROG_CC
 AC_PROG_MAKE_SET
 
-AC_CHECK_HEADERS([sys/types.h getopt.h stdlib.h stdio.h assert.h netinet/in.h ctype.h netinet/udp.h time.h pcap.h arpa/inet.h sys/time.h sys/socket.h],,, [AC_INCLUDES_DEFAULT])
-AC_CHECK_HEADERS([netinet/in.h netinet/ip.h netinet/if_ether.h])
+AC_CHECK_HEADERS([sys/types.h getopt.h stdlib.h stdio.h assert.h netinet/in.h ctype.h time.h pcap.h arpa/inet.h sys/time.h sys/socket.h],,, [AC_INCLUDES_DEFAULT])
+AC_CHECK_HEADERS([net/if.h netinet/ip.h netinet/udp.h netinet/if_ether.h],,, [
+AC_INCLUDES_DEFAULT 
+#ifdef HAVE_NETINET_IN_H
+#include <netinet/in.h>
+#endif
+#ifdef HAVE_SYS_SOCKET_H
+#include <sys/socket.h>
+#endif
+#ifdef HAVE_NET_IF_H
+#include <net/if.h>
+#endif])
 
 AC_CHECK_HEADERS([sys/param.h sys/mount.h],,,
 [AC_INCLUDES_DEFAULT]
@@ -112,6 +122,10 @@ AH_BOTTOM([
 
 #ifdef HAVE_NETINET_IP_H
 #include <netinet/ip.h>
+#endif
+
+#ifdef HAVE_NET_IF_H
+#include <net/if.h>
 #endif
 
 #ifdef HAVE_NETINET_IF_ETHER_H
