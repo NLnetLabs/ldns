@@ -213,12 +213,13 @@ do_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
  * Chase the given rr to a known and trusted key
  *
  * Based on drill 0.9
- * pkt optional? 
- * TODO: lots  ???
+ *
+ * the last argument prev_key_list, if not null, and type == DS, then the ds
+ * rr list we have must all be a ds for the keys in this list
  */
 ldns_status
 do_chase(ldns_resolver *res, ldns_rdf *name, ldns_rr_type type, ldns_rr_class c,
-		ldns_rr_list *trusted_keys, ldns_pkt *pkt_o, uint16_t qflags)
+		ldns_rr_list *trusted_keys, ldns_pkt *pkt_o, uint16_t qflags, ldns_rr_list *prev_key_list)
 {
 	ldns_rr_list *rrset = NULL;
 	ldns_status result;
@@ -232,6 +233,9 @@ do_chase(ldns_resolver *res, ldns_rdf *name, ldns_rr_type type, ldns_rr_class c,
 	uint16_t key_i;
 	uint16_t tkey_i;
 	ldns_pkt *pkt;
+	size_t i,j;
+/*	ldns_rr_list *tmp_list;*/
+	bool key_matches_ds;
 	
 	ldns_lookup_table *lt;
 	const ldns_rr_descriptor *descriptor;
@@ -334,6 +338,22 @@ do_chase(ldns_resolver *res, ldns_rdf *name, ldns_rr_type type, ldns_rr_class c,
 				printf(";; Signed by: ");
 				ldns_rdf_print(stdout, ldns_rr_rdf(cur_sig, 7));
 				printf("\n");
+				if (type == LDNS_RR_TYPE_DS && prev_key_list) {
+					for (j = 0; j < ldns_rr_list_rr_count(rrset); j++) {
+						key_matches_ds = false;
+						for (i = 0; i < ldns_rr_list_rr_count(prev_key_list); i++) {
+							if (ldns_rr_compare_ds(ldns_rr_list_rr(prev_key_list, i),
+									       ldns_rr_list_rr(rrset, j))) {
+								key_matches_ds = true;
+							}
+						}
+						if (!key_matches_ds) {
+							/* For now error */
+							fprintf(stderr, ";; error no DS for key\n");
+							return LDNS_STATUS_ERR;
+						}
+					}
+				}
 			}
 
 			if (!keys) {
@@ -371,7 +391,8 @@ do_chase(ldns_resolver *res, ldns_rdf *name, ldns_rr_type type, ldns_rr_class c,
 					    ldns_rdf2native_int16(ldns_rr_rrsig_keytag(cur_sig))
 					   ) {
 						result = ldns_verify_rrsig(rrset, cur_sig, ldns_rr_list_rr(keys, key_i));
-
+printf("Signed by key(s):\n");
+ldns_rr_list_print(stdout, keys);
 						if (result == LDNS_STATUS_OK) {
 							for (tkey_i = 0; tkey_i < ldns_rr_list_rr_count(trusted_keys); tkey_i++) {
 								if (ldns_rr_compare_ds(ldns_rr_list_rr(keys, key_i),
@@ -386,7 +407,7 @@ do_chase(ldns_resolver *res, ldns_rdf *name, ldns_rr_type type, ldns_rr_class c,
 									return LDNS_STATUS_OK;
 								}
 							}
-							result = do_chase(res, ldns_rr_rdf(cur_sig, 7), LDNS_RR_TYPE_DS, c, trusted_keys, pkt, qflags);
+							result = do_chase(res, ldns_rr_rdf(cur_sig, 7), LDNS_RR_TYPE_DS, c, trusted_keys, pkt, qflags, keys);
 							ldns_rr_list_deep_free(rrset);
 							ldns_rr_list_deep_free(sigs);
 							ldns_rr_list_deep_free(keys);
@@ -433,7 +454,7 @@ do_chase(ldns_resolver *res, ldns_rdf *name, ldns_rr_type type, ldns_rr_class c,
 				} else {
 					/* ok nsec denies existence, chase the nsec now */
 					printf(";; Existence of data set with this type denied by NSEC\n");
-					result = do_chase(res, ldns_rr_owner(ldns_rr_list_rr(nsecs, nsec_i)), LDNS_RR_TYPE_NSEC, c, trusted_keys, pkt, qflags);
+					result = do_chase(res, ldns_rr_owner(ldns_rr_list_rr(nsecs, nsec_i)), LDNS_RR_TYPE_NSEC, c, trusted_keys, pkt, qflags, NULL);
 					if (result == LDNS_STATUS_OK) {
 						ldns_pkt_free(pkt);
 						printf(";; Verifiably insecure.\n");
@@ -444,7 +465,7 @@ do_chase(ldns_resolver *res, ldns_rdf *name, ldns_rr_type type, ldns_rr_class c,
 			} else if (ldns_nsec_covers_name(ldns_rr_list_rr(nsecs, nsec_i), name)) {
 				/* Verifably insecure? chase the covering nsec */
 				printf(";; Existence of data set with this name denied by NSEC\n");
-				result = do_chase(res, ldns_rr_owner(ldns_rr_list_rr(nsecs, nsec_i)), LDNS_RR_TYPE_NSEC, c, trusted_keys, pkt, qflags);
+				result = do_chase(res, ldns_rr_owner(ldns_rr_list_rr(nsecs, nsec_i)), LDNS_RR_TYPE_NSEC, c, trusted_keys, pkt, qflags, NULL);
 				if (result == LDNS_STATUS_OK) {
 					ldns_pkt_free(pkt);
 					printf(";; Verifiably insecure.\n");
