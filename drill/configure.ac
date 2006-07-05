@@ -9,7 +9,7 @@ AC_AIX
 AC_PROG_CC
 AC_PROG_MAKE_SET
 
-AC_CHECK_HEADERS([getopt.h stdlib.h stdio.h assert.h netinet/in.hctype.h time.h],,, [AC_INCLUDES_DEFAULT])
+AC_CHECK_HEADERS([getopt.h stdlib.h stdio.h assert.h netinet/in.h ctype.h time.h],,, [AC_INCLUDES_DEFAULT])
 AC_CHECK_HEADERS(sys/param.h sys/mount.h,,, [AC_INCLUDES_DEFAULT]
 [ 
   [
