@@ -158,6 +158,7 @@ AC_FUNC_MALLOC
 AC_REPLACE_FUNCS(b64_pton)
 AC_REPLACE_FUNCS(b64_ntop)
 AC_REPLACE_FUNCS(timegm)
+AC_REPLACE_FUNCS(isblank)
 
 #AC_SEARCH_LIBS(RSA_new, [crypto])
 
@@ -229,6 +230,9 @@ static inline size_t b64_pton_calculate_size(size_t srcsize)
 #include <time.h>
 time_t timegm (struct tm *tm);
 #endif /* !TIMEGM */
+#ifndef HAVE_ISBLANK
+int isblank(int c);
+#endif /* !HAVE_ISBLANK */
 ])
 
 AC_CONFIG_FILES([Makefile ldns/util.h])

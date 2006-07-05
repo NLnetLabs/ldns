@@ -58,8 +58,8 @@ LIBDNS_HEADERS	=	$(srcdir)/ldns/error.h		\
 			$(srcdir)/ldns/zone.h		\
 			$(srcdir)/ldns/update.h 		\
 			$(srcdir)/ldns/tsig.h
-LIBDNS_OBJECTS	=	$(LIBDNS_SOURCES:.c=.o)
-LIBDNS_LOBJECTS	=	$(LIBDNS_SOURCES:.c=.lo)
+LIBDNS_OBJECTS	=	$(LIBDNS_SOURCES:.c=.o) $(LIBOBJS)
+LIBDNS_LOBJECTS	=	$(LIBDNS_SOURCES:.c=.lo) $(LIBOBJS:.o=.lo)
 
 ALL_SOURCES	=	$(LIBDNS_SOURCES)
 
@@ -81,9 +81,8 @@ linktest:
 		gcc $(srcdir)/linktest.c $(CPPFLAGS) $(CFLAGS) .libs/libldns.a $(LDFLAGS) $(PROG_LIBS) -o linktest
 		rm linktest
 
-lib:		$(LIBDNS_OBJECTS) b64_pton$U.o b64_ntop$U.o
-		$(LINK_LIB) -o libldns.la $(LIBDNS_LOBJECTS) b64_pton$U.lo b64_ntop$U.lo \
-		-rpath $(libdir)/lib
+lib:		$(LIBDNS_OBJECTS)
+		$(LINK_LIB) -o libldns.la $(LIBDNS_LOBJECTS) -rpath $(libdir)/lib
 		if [ ! -d lib ] ; then ln -s .libs lib ; fi ;		
 
 copy-headers:
@@ -203,6 +202,12 @@ b64_ntop$U.o:	$(srcdir)/compat/b64_ntop.c
 
 malloc$U.o:	$(srcdir)/compat/malloc.c
 	$(COMP_LIB) -c $(srcdir)/compat/malloc.c -o $@
+
+timegm$U.o:	$(srcdir)/compat/timegm.c
+	$(COMP_LIB) -c $(srcdir)/compat/timegm.c -o $@
+
+isblank$U.o:	$(srcdir)/compat/isblank.c
+	$(COMP_LIB) -c $(srcdir)/compat/isblank.c -o $@
 
 # Automatic dependencies.
 %.d: $(srcdir)/%.c
