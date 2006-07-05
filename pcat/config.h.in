@@ -6,6 +6,9 @@
 /* Define to 1 if you have the <assert.h> header file. */
 #undef HAVE_ASSERT_H
 
+/* Define to 1 if you have the <ctype.h> header file. */
+#undef HAVE_CTYPE_H
+
 /* Define to 1 if you have the `getdelim' function. */
 #undef HAVE_GETDELIM
 
@@ -33,14 +36,17 @@
 /* Define to 1 if you have the <netinet/in.h> header file. */
 #undef HAVE_NETINET_IN_H
 
-/* Define to 1 if you have the <netinet/in.hctype.h> header file. */
-#undef HAVE_NETINET_IN_HCTYPE_H
+/* Define to 1 if you have the <netinet/in_systm.h> header file. */
+#undef HAVE_NETINET_IN_SYSTM_H
 
 /* Define to 1 if you have the <netinet/ip.h> header file. */
 #undef HAVE_NETINET_IP_H
 
 /* Define to 1 if you have the <netinet/udp.h> header file. */
 #undef HAVE_NETINET_UDP_H
+
+/* Define to 1 if you have the <net/if.h> header file. */
+#undef HAVE_NET_IF_H
 
 /* Define to 1 if you have the <pcap.h> header file. */
 #undef HAVE_PCAP_H
@@ -149,10 +155,16 @@
 #include <pcap.h>
 #endif
 
-#include <netinet/in_systm.h>  
+#ifdef HAVE_NETINET_IN_SYSTM_H
+#include <netinet/in_systm.h>
+#endif
 
 #ifdef HAVE_NETINET_IP_H
 #include <netinet/ip.h>
+#endif
+
+#ifdef HAVE_NET_IF_H
+#include <net/if.h>
 #endif
 
 #ifdef HAVE_NETINET_IF_ETHER_H

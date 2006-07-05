@@ -23,7 +23,7 @@ CFLAGS 		= @CFLAGS@  -I. -I$(srcdir)
 LDFLAGS		= @LDFLAGS@
 LIBS 		= @LIBS@
 LIBOBJS		= @LIBOBJS@
-PROG_LIBS	= @PROG_LIBS@
+RUNTIME_PATH	= @RUNTIME_PATH@
 DATE		= $(shell date +%Y%m%d)
 LIBTOOL		= $(libtool) --tag=CC
 
@@ -78,11 +78,11 @@ LINK_LIB	= $(LIBTOOL) --mode=link $(CC) $(CFLAGS) $(LDFLAGS) -release $(VERSION)
 all:		copy-headers lib linktest
 
 linktest:
-		gcc $(srcdir)/linktest.c $(CPPFLAGS) $(CFLAGS) .libs/libldns.a $(LDFLAGS) $(PROG_LIBS) -o linktest
+		gcc $(srcdir)/linktest.c $(CPPFLAGS) $(CFLAGS) -L.libs -lldns -o linktest
 		rm linktest
 
 lib:		$(LIBDNS_OBJECTS)
-		$(LINK_LIB) -o libldns.la $(LIBDNS_LOBJECTS) -rpath $(libdir)/lib
+		$(LINK_LIB) -o libldns.la $(LIBDNS_LOBJECTS) -rpath $(libdir) $(RUNTIME_PATH)
 		if [ ! -d lib ] ; then ln -s .libs lib ; fi ;		
 
 copy-headers:
