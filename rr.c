@@ -171,7 +171,7 @@ ldns_rr_new_frm_str(ldns_rr **newrr, const char *str, uint16_t default_ttl, ldns
 		ldns_rr_free(new);
 		return LDNS_STATUS_SYNTAX_TTL_ERR;
 	}
-	ttl_val = strtol(ttl, NULL, 10);
+	ttl_val = (uint32_t) strtol(ttl, NULL, 10);
 
 	if (strlen(ttl) > 0 && !isdigit(ttl[0])) {
 		/* ah, it's not there or something */
