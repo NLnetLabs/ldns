@@ -351,7 +351,7 @@ ldns_pkt_rr(ldns_pkt *pkt, ldns_pkt_section sec, ldns_rr *rr)
 
 	rrs = ldns_pkt_get_section_clone(pkt, sec);
 	if (!rrs) {
-		return NULL;
+		return false;
 	}
 	rr_count = ldns_rr_list_rr_count(rrs);
 	
