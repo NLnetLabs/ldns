@@ -78,6 +78,10 @@ fi
 AC_CHECK_PROG(doxygen, doxygen, doxygen)
 
 # Checks for libraries.
+AC_CHECK_LIB(socket, socket, [PROG_LIBS="-lsocket $PROG_LIBS"], [])
+AC_CHECK_LIB(nsl, inet_pton, [PROG_LIBS="-lnsl $PROG_LIBS"], [])
+AC_SUBST(PROG_LIBS)
+
 # Check for SSL, original taken from
 # http://www.gnu.org/software/ac-archive/htmldoc/check_ssl.html and
 # modified for NSD and 
