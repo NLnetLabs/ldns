@@ -391,8 +391,6 @@ do_chase(ldns_resolver *res, ldns_rdf *name, ldns_rr_type type, ldns_rr_class c,
 					    ldns_rdf2native_int16(ldns_rr_rrsig_keytag(cur_sig))
 					   ) {
 						result = ldns_verify_rrsig(rrset, cur_sig, ldns_rr_list_rr(keys, key_i));
-printf("Signed by key(s):\n");
-ldns_rr_list_print(stdout, keys);
 						if (result == LDNS_STATUS_OK) {
 							for (tkey_i = 0; tkey_i < ldns_rr_list_rr_count(trusted_keys); tkey_i++) {
 								if (ldns_rr_compare_ds(ldns_rr_list_rr(keys, key_i),
