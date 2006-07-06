@@ -11,7 +11,6 @@
 #include <ldns/ldns.h>
 
 int verbosity = 0;
-int fam = LDNS_RESOLV_INETANY;
 
 int
 usage(FILE *fp, char *prog) {
@@ -107,6 +106,7 @@ main(int argc, char *argv[])
 	ldns_rr_list *cmdline_rr_list;
 	ldns_rdf *cmdline_dname;
 
+	uint8_t fam = LDNS_RESOLV_INETANY;
 	int result = 0;
 	int i;
 	char *arg_end_ptr = NULL;
