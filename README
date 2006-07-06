@@ -68,13 +68,13 @@ We have received patches from the following people, thanks!
 
 KNOWN ISSUES
 
-It has been brought to our attention that the build script might have some
-problems on MACOSX 10.4 and Solaris. Please contact us if you have more info
-on this. 
-
 For MACOSX 10.4, it seems that you have to set the MACOSX_DEPLOYMENT_TARGET
 environment variable to 10.4 before running make. Apparently it defaults to
 10.1.
+
+This appears to be a known problem in 10.2 to 10.4, see:
+http://developer.apple.com/qa/qa2001/qa1233.html
+for more information.
 
 Also RedHat 9 seems to be having a problem when building ldns - we have
 very little details about this.
