@@ -39,7 +39,7 @@ SOURCES 	= ldns-read-zone.c \
 		  ldns-dpa.c \
 		  ldns-resolver.c \
 		  ldnsd.c \
-		  ldns-keyfetcher.c \
+		  ldns-keyfetcher.c
 
 
 PROGRAMS=$(SOURCES:.c=)
