@@ -5,9 +5,40 @@ AC_PREREQ(2.57)
 AC_INIT(drill, 1.1.0, libdns@nlnetlabs.nl, drill)
 AC_CONFIG_SRCDIR([drill_util.h])
 
+OURCFLAGS='-g'
+CFLAGS=${CFLAGS:-${OURCFLAGS}}
+
 AC_AIX
 AC_PROG_CC
 AC_PROG_MAKE_SET
+
+dnl routine to help check for compiler flags.
+AC_DEFUN([CHECK_COMPILER_FLAG],
+[
+AC_REQUIRE([AC_PROG_CC])
+AC_MSG_CHECKING(whether $CC supports -$1)
+cache=`echo $1 | sed 'y%.=/+-%___p_%'`
+AC_CACHE_VAL(cv_prog_cc_flag_$cache,
+[
+echo 'void f(){}' >conftest.c
+if test -z "`$CC -$1 -c conftest.c 2>&1`"; then
+eval "cv_prog_cc_flag_$cache=yes"
+else
+eval "cv_prog_cc_flag_$cache=no"
+fi
+rm -f conftest*
+])
+if eval "test \"`echo '$cv_prog_cc_flag_'$cache`\" = yes"; then
+AC_MSG_RESULT(yes)
+:
+$2
+else
+AC_MSG_RESULT(no)
+:
+$3
+fi
+])
+CHECK_COMPILER_FLAG(O2, [CFLAGS="$CFLAGS -O2"])
 
 AC_CHECK_HEADERS([getopt.h stdlib.h stdio.h assert.h netinet/in.h ctype.h time.h],,, [AC_INCLUDES_DEFAULT])
 AC_CHECK_HEADERS(sys/param.h sys/mount.h,,, [AC_INCLUDES_DEFAULT]

@@ -9,7 +9,7 @@ PACKAGE_VERSION="$PACKAGE_VERSION $VERSION_ADD"
 
 OURCPPFLAGS='-ansi -D_POSIX_C_SOURCE=200112 -D_XOPEN_SOURCE=600 -D__EXTENSIONS__'
 CPPFLAGS=${CPPFLAGS:-${OURCPPFLAGS}}
-OURCFLAGS='-g -O2 -Wall -W -Wwrite-strings'
+OURCFLAGS='-g -Wall -W -Wwrite-strings'
 CFLAGS=${CFLAGS:-${OURCFLAGS}}
 
 AC_AIX
@@ -17,11 +17,39 @@ AC_AIX
 AC_PROG_CC
 AC_PROG_MAKE_SET
 
+dnl routine to help check for compiler flags.
+AC_DEFUN([CHECK_COMPILER_FLAG],
+[
+AC_REQUIRE([AC_PROG_CC])
+AC_MSG_CHECKING(whether $CC supports -$1)
+cache=`echo $1 | sed 'y%.=/+-%___p_%'`
+AC_CACHE_VAL(cv_prog_cc_flag_$cache,
+[
+echo 'void f(){}' >conftest.c
+if test -z "`$CC -$1 -c conftest.c 2>&1`"; then
+eval "cv_prog_cc_flag_$cache=yes"
+else
+eval "cv_prog_cc_flag_$cache=no"
+fi
+rm -f conftest*
+])
+if eval "test \"`echo '$cv_prog_cc_flag_'$cache`\" = yes"; then
+AC_MSG_RESULT(yes)
+:
+$2
+else
+AC_MSG_RESULT(no)
+:
+$3
+fi
+])
+
 # Checks for typedefs, structures, and compiler characteristics.
 AC_C_CONST
 AC_C_INLINE
 AC_LANG_C
 AC_TYPE_SIZE_T
+CHECK_COMPILER_FLAG(O2, [CFLAGS="$CFLAGS -O2"])
 AC_CHECK_TYPE(int8_t, char)
 AC_CHECK_TYPE(int16_t, short)
 AC_CHECK_TYPE(int32_t, int)
@@ -145,6 +173,7 @@ AC_CHECK_HEADERS(sys/param.h sys/mount.h sys/socket.h,,,
 ])
 AC_CHECK_TYPE(socklen_t, , 
 	[AC_DEFINE([socklen_t], [int], [Define to 'int' if not defined])], [
+AC_INCLUDES_DEFAULT
 #if HAVE_SYS_SOCKET_H
 #  include <sys/socket.h>
 #endif
