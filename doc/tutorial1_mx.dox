@@ -22,7 +22,7 @@
    In this case we have used a configure script to generate a config.h file
    that does all our inclusions for us, so that it can be compiled on
    multiple platforms. If your platform supports the include files \c
-   stdlib.h and \c unistd.h, you can include these instead of using a
+   stdint.h and \c stdlib.h, you can include these instead of using a
    configure script.
 
    The first included files are prerequisites that ldns needs to function.
