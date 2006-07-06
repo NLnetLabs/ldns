@@ -24,8 +24,8 @@ INSTALLATION
 6. gmake (it needs gnu make to compile, on systems where GNU make is the
    default you can just use 'make')
 7. sudo gmake install
-(8. gmake examples [make example programs included])
-(9. gmake drill && sudo gmake drill-install to build and install drill)
+8. Optional. (cd examples; ./configure; gmake), make example programs included.
+9. Optional. (cd drill; ./configure; gmake; gmake install), to build drill.
 
 * Examples
 There are some examples in the examples/ directory. These can be built with:
