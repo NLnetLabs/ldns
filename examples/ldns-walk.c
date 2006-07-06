@@ -11,12 +11,15 @@
 #include <ldns/ldns.h>
 
 int verbosity = 0;
+int fam = LDNS_RESOLV_INETANY;
 
 int
 usage(FILE *fp, char *prog) {
 	fprintf(fp, "%s [options] domain\n", prog);
 	fprintf(fp, "  print out the owner names for domain and the record types for those names\n");
 	fprintf(fp, "OPTIONS:\n");
+	fprintf(fp, "-4\t\tonly use IPv4\n");
+	fprintf(fp, "-6\t\tonly use IPv6\n");
 	fprintf(fp, "-s <name>\t\tStart from this name\n");
 	fprintf(fp, "-v <verbosity>\t\tVerbosity level [1-5]\n");
 	fprintf(fp, "-version\tShow version and exit\n");
@@ -115,13 +118,24 @@ main(int argc, char *argv[])
 	soa = NULL;
 	domain = NULL;
 	
-	
 	if (argc < 2) {
 		usage(stdout, argv[0]);
 		exit(EXIT_FAILURE);
 	} else {
 		for (i = 1; i < argc; i++) {
-			if (strncmp(argv[i], "-s", 3) == 0) {
+			if (strncmp(argv[i], "-4", 3) == 0) {
+                        	if (fam != LDNS_RESOLV_INETANY) {
+                                	fprintf(stderr, "You can only specify one of -4 or -6\n");
+                                	exit(1);
+                        	}
+                        	fam = LDNS_RESOLV_INET;
+			} else if (strncmp(argv[i], "-6", 3) == 0) {
+                        	if (fam != LDNS_RESOLV_INETANY) {
+                                	fprintf(stderr, "You can only specify one of -4 or -6\n");
+                                	exit(1);
+                        	}
+                        	fam = LDNS_RESOLV_INET6;
+			} else if (strncmp(argv[i], "-s", 3) == 0) {
 				if (i + 1 < argc) {
 					if (!ldns_str2rdf_dname(&startpoint, argv[i + 1]) == LDNS_STATUS_OK) {
 						printf("Bad start point name: %s\n", argv[i + 1]);
@@ -255,6 +269,7 @@ main(int argc, char *argv[])
 
 	ldns_resolver_set_dnssec(res, true);
 	ldns_resolver_set_dnssec_cd(res, true);
+	ldns_resolver_set_ip6(res, fam);	
 
 	if (!res) {
 		exit(2);
