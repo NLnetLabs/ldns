@@ -368,7 +368,7 @@ print_match_operation(FILE *output, match_operation *mc)
 					break;
 				case TYPE_TIMESTAMP:
 					time.tv_sec = (long int) atol(mc->value);
-					time_tt = time.tv_sec;
+					time_tt = (time_t)time.tv_sec;
 					tmp = ctime(&time_tt);
 					tmp2 = malloc(strlen(tmp) + 1);
 					for (pos = 0; pos < strlen(tmp); pos++) {

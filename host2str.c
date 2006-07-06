@@ -1037,7 +1037,7 @@ ldns_pkt2buffer_str(ldns_buffer *output, const ldns_pkt *pkt)
 			LDNS_FREE(tmp);
 		}
 		time = ldns_pkt_timestamp(pkt);
-		time_tt = time.tv_sec;
+		time_tt = (time_t)time.tv_sec;
 		ldns_buffer_printf(output, ";; WHEN: %s", 
 				(char*)ctime(&time_tt));
 
