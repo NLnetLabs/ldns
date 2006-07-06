@@ -274,6 +274,7 @@ typedef struct ldns_struct_rr ldns_rr;
 struct ldns_struct_rr_list
 {
 	size_t _rr_count;
+	size_t _rr_capacity;
 	ldns_rr **_rrs;
 };
 typedef struct ldns_struct_rr_list ldns_rr_list;

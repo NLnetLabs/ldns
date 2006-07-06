@@ -18,6 +18,7 @@
 
 #define LDNS_SYNTAX_DATALEN 11
 #define LDNS_TTL_DATALEN    21
+#define LDNS_RRLIST_INIT    8
 
 ldns_rr *
 ldns_rr_new(void)
@@ -715,6 +716,7 @@ ldns_rr_list_set_rr(ldns_rr_list *rr_list, const ldns_rr *r, size_t count)
 void
 ldns_rr_list_set_rr_count(ldns_rr_list *rr_list, size_t count)
 {
+	assert(count <= rr_list->_rr_capacity);
 	rr_list->_rr_count = count;
 }
 
@@ -733,6 +735,7 @@ ldns_rr_list_new()
 {
 	ldns_rr_list *rr_list = LDNS_MALLOC(ldns_rr_list);
 	rr_list->_rr_count = 0;
+	rr_list->_rr_capacity = 0;
 	rr_list->_rrs = NULL;
 	return rr_list;
 }
@@ -865,20 +868,28 @@ bool
 ldns_rr_list_push_rr(ldns_rr_list *rr_list, const ldns_rr *rr)
 {
 	size_t rr_count;
-	ldns_rr **rrs;
+	size_t cap;
 	
 	rr_count = ldns_rr_list_rr_count(rr_list);
+	cap = rr_list->_rr_capacity;
 
 	/* grow the array */
-	rrs = LDNS_XREALLOC(
-		rr_list->_rrs, ldns_rr *, rr_count + 1);
+	if(rr_count+1 > cap) {
+		ldns_rr **rrs;
 
-	if (!rrs) {
-		return false;
+		if(cap == 0)
+			cap = LDNS_RRLIST_INIT;  /* initial list size */
+		else	cap *= 2; 
+		rrs = LDNS_XREALLOC(rr_list->_rrs, ldns_rr *, cap);
+
+		if (!rrs) {
+			return false;
+		}
+		rr_list->_rrs = rrs;
+		rr_list->_rr_capacity = cap;
 	}
 	
 	/* add the new member */
-	rr_list->_rrs = rrs;
 	rr_list->_rrs[rr_count] = (ldns_rr*)rr;
 
 	ldns_rr_list_set_rr_count(rr_list, rr_count + 1);
@@ -903,6 +914,7 @@ ldns_rr *
 ldns_rr_list_pop_rr(ldns_rr_list *rr_list)
 {
 	size_t rr_count;
+	size_t cap;
 	ldns_rr *pop;
 	
 	rr_count = ldns_rr_list_rr_count(rr_list);
@@ -911,11 +923,15 @@ ldns_rr_list_pop_rr(ldns_rr_list *rr_list)
 		return NULL;
 	}
 
+	cap = rr_list->_rr_capacity;
 	pop = ldns_rr_list_rr(rr_list, rr_count - 1);
 	
 	/* shrink the array */
-	rr_list->_rrs = LDNS_XREALLOC(
-		rr_list->_rrs, ldns_rr *, rr_count - 1);
+	if(cap > LDNS_RRLIST_INIT && rr_count-1 <= cap/2) {
+		cap /= 2;
+		rr_list->_rrs = LDNS_XREALLOC(rr_list->_rrs, ldns_rr *, cap);
+		rr_list->_rr_capacity = cap;
+	}
 
 	ldns_rr_list_set_rr_count(rr_list, rr_count - 1);
 
