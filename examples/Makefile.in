@@ -40,8 +40,6 @@ SOURCES 	= ldns-read-zone.c \
 		  ldns-resolver.c \
 		  ldnsd.c \
 		  ldns-keyfetcher.c \
-		  ldns-ixfr.c \
-		  ldns-notify.c
 
 
 PROGRAMS=$(SOURCES:.c=)
