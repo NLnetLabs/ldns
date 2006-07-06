@@ -179,7 +179,7 @@ main(int argc, char **argv)
 				LDNS_STATUS_OK) {
 			/* double check if we are dealing with correct replies 
 			 * by converting to a pkt... todo */
-			fprintf(stdout, "%zd\n", i);
+			fprintf(stdout, "%d\n", (int)i);
 			/* query */
 			data2hex(stdout, q, h.caplen); 
 			/* answer */
@@ -188,7 +188,7 @@ main(int argc, char **argv)
 			/* todo print failure */
 			failure++;
 			fprintf(stderr, "Failure to send packet\n");
-			fprintf(stdout, "%zd\n", i);
+			fprintf(stdout, "%d\n", (int)i);
 			/* query */
 			data2hex(stdout, q, h.caplen); 
 			/* answer, thus empty */

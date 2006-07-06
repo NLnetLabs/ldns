@@ -46,12 +46,12 @@ compare(struct dns_info *d1, struct dns_info *d2)
 {
 	if (strcmp(d1->qdata, d2->qdata) != 0) {
 		fprintf(stderr, "Query differs!\n");
-		fprintf(stdout, "q: %zd:%zd\n%s\n%s\n%s\n", d1->seq, d2->seq, d1->qdata,
-				d1->qdata, d2->qdata);
+		fprintf(stdout, "q: %d:%d\n%s\n%s\n%s\n", (int)d1->seq, (int)d2->seq, 
+			d1->qdata, d1->qdata, d2->qdata);
 	} else {
 		if (strcmp(d1->adata, d2->adata) != 0) {
-			fprintf(stdout, "%zd:%zd\n%s\n%s\n%s\n", d1->seq, d2->seq, d1->qdata,
-					d1->adata, d2->adata);
+			fprintf(stdout, "%d:%d\n%s\n%s\n%s\n", (int)d1->seq, (int)d2->seq, 
+				d1->qdata, d1->adata, d2->adata);
 		}
 	}
 }
