@@ -323,6 +323,7 @@ print_match_operation(FILE *output, match_operation *mc)
 	match_table *mt = NULL;
 	ldns_lookup_table *lt;
 	struct timeval time;
+	time_t time_tt;
 	int value;
 	size_t pos;
 	char *tmp, *tmp2;
@@ -367,7 +368,8 @@ print_match_operation(FILE *output, match_operation *mc)
 					break;
 				case TYPE_TIMESTAMP:
 					time.tv_sec = (long int) atol(mc->value);
-					tmp = ctime((time_t*)&time);
+					time_tt = time.tv_sec;
+					tmp = ctime(&time_tt);
 					tmp2 = malloc(strlen(tmp) + 1);
 					for (pos = 0; pos < strlen(tmp); pos++) {
 						if (tmp[pos] == '\n') {

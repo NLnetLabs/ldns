@@ -947,6 +947,7 @@ ldns_pkt2buffer_str(ldns_buffer *output, const ldns_pkt *pkt)
 	ldns_status status = LDNS_STATUS_OK;
 	char *tmp;
 	struct timeval time;
+	time_t time_tt;
 
 	if (!pkt) {
 		ldns_buffer_printf(output, "null");
@@ -1036,8 +1037,9 @@ ldns_pkt2buffer_str(ldns_buffer *output, const ldns_pkt *pkt)
 			LDNS_FREE(tmp);
 		}
 		time = ldns_pkt_timestamp(pkt);
+		time_tt = time.tv_sec;
 		ldns_buffer_printf(output, ";; WHEN: %s", 
-				(char*)ctime((time_t*)&time));
+				(char*)ctime(&time_tt));
 
 		ldns_buffer_printf(output, ";; MSG SIZE  rcvd: %d\n", 
 				(int)ldns_pkt_size(pkt));
