@@ -119,15 +119,6 @@ ssize_t ldns_fget_keyword_data_l(FILE *f, const char *keyword, const char *k_del
 ssize_t ldns_bget_keyword_data(ldns_buffer *b, const char *keyword, const char *k_del, char *data, const char *d_del, size_t data_limit);
 
 /**
- * removes comments from a string. A comment = ';'.
- * Goes on with this until a newline (\n) is reached.
- * The comments are replaces with spaces.
- * \param[in] str the string to remove the comments from. String must be writeable
- * \return the new string
- */
-char *ldns_str_remove_comment(char *str);
-
-/**
  * returns the next character from a buffer. Advances the position pointer with 1.
  * When end of buffer is reached returns EOF. This is the buffer's equivalent
  * for getc().
