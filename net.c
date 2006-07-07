@@ -126,7 +126,7 @@ ldns_send(ldns_pkt **result, ldns_resolver *r, const ldns_pkt *query_pkt)
 
 		if (send_status != LDNS_STATUS_OK) {
 			ldns_resolver_set_nameserver_rtt(r, i, LDNS_RESOLV_RTT_INF);
-			status = LDNS_STATUS_ERR;
+			status = send_status;
 		}
 		
 		/* obey the fail directive */
@@ -208,7 +208,7 @@ ldns_udp_send(uint8_t **result, ldns_buffer *qbin, const struct sockaddr_storage
 	sockfd = ldns_udp_bgsend(qbin, to, tolen, timeout);
 
 	if (sockfd == 0) {
-		return LDNS_STATUS_ERR;
+		return LDNS_STATUS_SOCKET_ERROR;
 	}
 
 	/* wait for an response*/
@@ -254,9 +254,11 @@ ldns_udp_connect(const struct sockaddr_storage *to, struct timeval timeout)
         }
 	if (setsockopt(sockfd, SOL_SOCKET, SO_RCVTIMEO, &timeout,
 				(socklen_t)sizeof(timeout))) {
-		/*perror("setsockopt");*/
+                /* might fail, in that case, use default for now */
+		/*
 		close(sockfd);
 		return 0;
+		*/
         }
 	return sockfd;
 }

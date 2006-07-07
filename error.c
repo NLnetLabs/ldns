@@ -73,6 +73,7 @@ ldns_lookup_table ldns_error_str[] = {
 	{ LDNS_STATUS_SYNTAX_TTL, "$TTL directive was seen in the zone" },
 	{ LDNS_STATUS_SYNTAX_ORIGIN, "$ORIGIN directive was seen in the zone" },
 	{ LDNS_STATUS_SYNTAX_MISSING_VALUE_ERR, "Syntax error, value expected" },
+	{ LDNS_STATUS_SOCKET_ERROR, "Error creating socket" },
 	{ 0, NULL }
 };
 
