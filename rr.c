@@ -1248,7 +1248,7 @@ ldns_rr_compare(const ldns_rr *rr1, const ldns_rr *rr2)
             if (rr1_len == rr2_len) {
               return 0;
             }
-            return (int) (rr2_len - rr1_len);
+            return ((int) rr2_len - (int) rr1_len);
         }
 
         /* convert RRs into canonical wire format */
