@@ -16,6 +16,7 @@ The libdns coding style guide
 
 
 * Return values:
+	- status code (structure to fill is usually passed as a first argument)
 	- new/pointer: return pointer or NULL on error
 	- 'read' functions: ldns_status wire2thing(uint8_t *p, size_t max,
 	                                           size_t pos, *thing);

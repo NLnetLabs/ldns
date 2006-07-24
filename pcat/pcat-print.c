@@ -2,7 +2,7 @@
 
 #include "config.h"
 
-#include <ldns/dns.h>
+#include <ldns/ldns.h>
 
 #define SEQUENCE 1
 #define QUERY    2
@@ -44,7 +44,7 @@ main(int argc, char **argv)
 
 	while((read = getdelim(&line, &len, '\n', diff)) != -1) {
 		if (read < 2 || read > LDNS_MAX_PACKETLEN) {
-			fprintf(stderr, "Under- or overflow - skipping line %zd\n", i);
+			fprintf(stderr, "Under- or overflow - skipping line %d\n", (int)i);
 			i++;
 			continue;
 		}

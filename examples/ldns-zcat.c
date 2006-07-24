@@ -16,7 +16,7 @@
 
 #include "config.h"
 #include <errno.h>
-#include <ldns/dns.h>
+#include <ldns/ldns.h>
 
 #define FIRST_ZONE 	0
 #define MIDDLE_ZONE 	1

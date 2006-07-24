@@ -9,7 +9,7 @@
  */
 
 #include "drill.h"
-#include <ldns/dns.h>
+#include <ldns/ldns.h>
 
 #include <errno.h>
 

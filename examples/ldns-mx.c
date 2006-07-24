@@ -5,11 +5,9 @@
  * See the file LICENSE for the license
  */
 
-#include <stdint.h>
-#include <unistd.h>
-#include <stdlib.h>
+#include "config.h"
 
-#include <ldns/dns.h>
+#include <ldns/ldns.h>
 
 int
 usage(FILE *fp, char *prog) {

@@ -16,7 +16,7 @@
 
 #include "config.h"
 #include <errno.h>
-#include <ldns/dns.h>
+#include <ldns/ldns.h>
 
 #define DEFAULT_SPLIT 	1000
 #define FILE_SIZE 	255

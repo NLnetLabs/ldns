@@ -4,11 +4,11 @@
  * See the file LICENSE for the license
  */
 
-#include <stdint.h>
+#include "config.h"
 #include <unistd.h>
 #include <stdlib.h>
 
-#include <ldns/dns.h>
+#include <ldns/ldns.h>
 
 #include <errno.h>
 

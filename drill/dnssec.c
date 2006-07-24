@@ -9,7 +9,7 @@
  */
 
 #include "drill.h"
-#include <ldns/dns.h>
+#include <ldns/ldns.h>
 
 /* get rr_type from a server from a server */
 ldns_rr_list *

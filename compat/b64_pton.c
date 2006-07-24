@@ -41,7 +41,7 @@
  */
 #include <ldns/config.h>
 
-#include <ldns/dns.h>
+#include <ldns/ldns.h>
 
 #include <sys/types.h>
 #include <sys/param.h>

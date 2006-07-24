@@ -8,7 +8,7 @@
  */
 
 #include "drill.h"
-#include <ldns/dns.h>
+#include <ldns/ldns.h>
 
 /**
  * Converts a hex string to binary data

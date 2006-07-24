@@ -3,7 +3,7 @@ Current TODO list
 Roadmap:
 1.0.x: stable releases, with only bugfixes
 1.1.0: feature completeness + documentation
-1.1.x: optimization
+1.2.0: optimization
 
 
 Post 1.0 Stuff:
@@ -21,12 +21,13 @@ Post 1.0 Stuff:
         o edns extra rdata
         o printf like function with %-escapes to print ldns stuff
 
-        Minor:
-        ------
-        o Check RedHat 9 Compile problem
-        o lua bindings?
+1.2.0:
+	o More efficient zone and rr list structures
+	o More (unit) tests
+	o Split rr_lists from rr.[ch]
 
-
+DONE:
+1.1.0 released 7 Juli 2006
 1.1.0:
 ----
         o check sort order
@@ -35,7 +36,6 @@ Post 1.0 Stuff:
         o walker 
         o ldns_get_bla_frm_host doesn't parse aliases
 
-DONE:
 1.0.1 released 5 January 2006
 1.0.1:
 ------

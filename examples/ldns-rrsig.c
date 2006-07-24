@@ -9,7 +9,7 @@
 
 #include "config.h"
 
-#include <ldns/dns.h>
+#include <ldns/ldns.h>
 
 int
 usage(FILE *fp, char *prog) {
@@ -133,7 +133,7 @@ main(int argc, char *argv[])
 	 * records of the domain given on the command line
 	 */
 	ldns_pkt_free(p);
-	p = ldns_resolver_query(res, domain, LDNS_RR_TYPE_SOA, LDNS_RR_CLASS_IN, LDNS_RD);
+	p = ldns_resolver_query(res, domain, LDNS_RR_TYPE_RRSIG, LDNS_RR_CLASS_IN, LDNS_RD);
 
 	ldns_rdf_deep_free(domain);
 	

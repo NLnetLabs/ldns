@@ -4,7 +4,7 @@
 
 #include "config.h"
 
-#include <ldns/dns.h>
+#include <ldns/ldns.h>
 #include <pcap.h>
 
 #define FAILURE 100
@@ -149,7 +149,7 @@ main(int argc, char **argv)
 
 	if (argc < 1) {
 		/* no file given - use standard input */
-		p = pcap_fopen_offline(stdin, errbuf);
+		p = pcap_open_offline("/dev/stdin", errbuf);
 	} else {
 		p = pcap_open_offline(argv[0], errbuf);
 	}
@@ -179,7 +179,7 @@ main(int argc, char **argv)
 				LDNS_STATUS_OK) {
 			/* double check if we are dealing with correct replies 
 			 * by converting to a pkt... todo */
-			fprintf(stdout, "%zd\n", i);
+			fprintf(stdout, "%d\n", (int)i);
 			/* query */
 			data2hex(stdout, q, h.caplen); 
 			/* answer */
@@ -188,7 +188,7 @@ main(int argc, char **argv)
 			/* todo print failure */
 			failure++;
 			fprintf(stderr, "Failure to send packet\n");
-			fprintf(stdout, "%zd\n", i);
+			fprintf(stdout, "%d\n", (int)i);
 			/* query */
 			data2hex(stdout, q, h.caplen); 
 			/* answer, thus empty */

@@ -15,7 +15,7 @@
 
 #include <ldns/config.h>
 
-#include <ldns/dns.h>
+#include <ldns/ldns.h>
 
 #include <netinet/in.h>
 #include <sys/socket.h>

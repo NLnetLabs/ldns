@@ -12,7 +12,7 @@
 
 #include <ldns/config.h>
 
-#include <ldns/dns.h>
+#include <ldns/ldns.h>
 #include <strings.h>
 
 /* Access function for reading 
@@ -816,6 +816,7 @@ ldns_resolver_query(const ldns_resolver *r, const ldns_rdf *name, ldns_rr_type t
 			if (pkt) {
 				ldns_pkt_free(pkt);
 			}
+			fprintf(stderr, "error: %s\n", ldns_get_errorstr_by_id(status));
 			return NULL;
 		}
 	}

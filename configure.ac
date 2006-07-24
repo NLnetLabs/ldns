@@ -7,9 +7,9 @@ AC_CONFIG_SRCDIR([packet.c])
 
 PACKAGE_VERSION="$PACKAGE_VERSION $VERSION_ADD"
 
-OURCPPFLAGS='-ansi -D_POSIX_C_SOURCE=200112 -D_XOPEN_SOURCE=600'
+OURCPPFLAGS='-ansi -D_POSIX_C_SOURCE=200112 -D_XOPEN_SOURCE=600 -D__EXTENSIONS__'
 CPPFLAGS=${CPPFLAGS:-${OURCPPFLAGS}}
-OURCFLAGS='-g -O2 -Wall -W -Wwrite-strings'
+OURCFLAGS='-g -Wall -W -Wwrite-strings'
 CFLAGS=${CFLAGS:-${OURCFLAGS}}
 
 AC_AIX
@@ -17,10 +17,47 @@ AC_AIX
 AC_PROG_CC
 AC_PROG_MAKE_SET
 
+dnl routine to help check for compiler flags.
+AC_DEFUN([CHECK_COMPILER_FLAG],
+[
+AC_REQUIRE([AC_PROG_CC])
+AC_MSG_CHECKING(whether $CC supports -$1)
+cache=`echo $1 | sed 'y%.=/+-%___p_%'`
+AC_CACHE_VAL(cv_prog_cc_flag_$cache,
+[
+echo 'void f(){}' >conftest.c
+if test -z "`$CC -$1 -c conftest.c 2>&1`"; then
+eval "cv_prog_cc_flag_$cache=yes"
+else
+eval "cv_prog_cc_flag_$cache=no"
+fi
+rm -f conftest*
+])
+if eval "test \"`echo '$cv_prog_cc_flag_'$cache`\" = yes"; then
+AC_MSG_RESULT(yes)
+:
+$2
+else
+AC_MSG_RESULT(no)
+:
+$3
+fi
+])
+
 # Checks for typedefs, structures, and compiler characteristics.
 AC_C_CONST
 AC_C_INLINE
 AC_LANG_C
+AC_TYPE_SIZE_T
+CHECK_COMPILER_FLAG(O2, [CFLAGS="$CFLAGS -O2"])
+AC_CHECK_TYPE(int8_t, char)
+AC_CHECK_TYPE(int16_t, short)
+AC_CHECK_TYPE(int32_t, int)
+AC_CHECK_TYPE(int64_t, long long)
+AC_CHECK_TYPE(uint8_t, unsigned char)
+AC_CHECK_TYPE(uint16_t, unsigned short)
+AC_CHECK_TYPE(uint32_t, unsigned int)
+AC_CHECK_TYPE(uint64_t, unsigned long long)
 
 AC_DEFUN([AC_CHECK_FORMAT_ATTRIBUTE],
 [AC_REQUIRE([AC_PROG_CC])
@@ -99,11 +136,13 @@ AC_ARG_WITH(ssl, AC_HELP_STRING([--with-ssl=pathname],
             AC_MSG_RESULT(found in $ssldir)
             HAVE_SSL=yes
             LDFLAGS="$LDFLAGS -L$ssldir/lib -lcrypto";
+	    RUNTIME_PATH="$RUNTIME_PATH -R$ssldir/lib"
             AC_CHECK_LIB(crypto, HMAC_CTX_init,, [
                     AC_MSG_ERROR([OpenSSL found in $ssldir, but version 0.9.7 or higher is required])
                 ])
         fi
         AC_SUBST(HAVE_SSL)
+	AC_SUBST(RUNTIME_PATH)
     fi
 
 # Use libtool 
@@ -111,6 +150,10 @@ AC_ARG_WITH(ssl, AC_HELP_STRING([--with-ssl=pathname],
 # BSD's need to know the version...
 AC_CHECK_PROG(glibtool, glibtool, [glibtool], )
 AC_CHECK_PROG(libtool, libtool15, [libtool15], libtool)
+AC_PATH_TOOL(AR, ar, [false])
+if test $AR = false; then
+	AC_MSG_ERROR([Cannot find 'ar', please extend PATH to include it])
+fi
 AC_PROG_LIBTOOL
 
 
@@ -120,7 +163,7 @@ AC_HEADER_STDC
 #AC_CHECK_HEADERS([getopt.h fcntl.h stdlib.h string.h strings.h unistd.h])
 # do the very minimum - we can always extend this
 AC_CHECK_HEADERS([getopt.h stdbool.h openssl/ssl.h netinet/in.h time.h],,, [AC_INCLUDES_DEFAULT])
-AC_CHECK_HEADERS(sys/param.h sys/mount.h,,,
+AC_CHECK_HEADERS(sys/param.h sys/mount.h sys/socket.h,,,
 [AC_INCLUDES_DEFAULT
   [
    #if HAVE_SYS_PARAM_H
@@ -128,6 +171,14 @@ AC_CHECK_HEADERS(sys/param.h sys/mount.h,,,
    #endif
   ]
 ])
+AC_CHECK_TYPE(socklen_t, , 
+	[AC_DEFINE([socklen_t], [int], [Define to 'int' if not defined])], [
+AC_INCLUDES_DEFAULT
+#if HAVE_SYS_SOCKET_H
+#  include <sys/socket.h>
+#endif
+])
+AC_CHECK_TYPE(ssize_t, int)
 
 AC_FUNC_MALLOC
 
@@ -136,11 +187,19 @@ AC_REPLACE_FUNCS(b64_ntop)
 AC_REPLACE_FUNCS(b32_pton)
 AC_REPLACE_FUNCS(b32_ntop)
 AC_REPLACE_FUNCS(timegm)
+AC_REPLACE_FUNCS(isblank)
 
 #AC_SEARCH_LIBS(RSA_new, [crypto])
 
 AC_CHECK_FORMAT_ATTRIBUTE
 AC_CHECK_UNUSED_ATTRIBUTE
+
+# check OSX deployment target which is needed
+if echo $build_os | grep darwin > /dev/null; then
+	if test x$MACOSX_DEPLOYMENT_TARGET != x10.4; then
+		AC_MSG_ERROR([Please export MACOSX_DEPLOYMENT_TARGET=10.4 in your environment to compile on Mac OS/X])
+	fi
+fi
 
 AC_DEFINE([SYSCONFDIR], [sysconfdir], [System configuration dir])
 
@@ -237,6 +296,9 @@ static inline size_t b32_pton_calculate_size(size_t srcsize)
 #include <time.h>
 time_t timegm (struct tm *tm);
 #endif /* !TIMEGM */
+#ifndef HAVE_ISBLANK
+int isblank(int c);
+#endif /* !HAVE_ISBLANK */
 ])
 
 AC_CONFIG_FILES([Makefile ldns/util.h])

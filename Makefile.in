@@ -23,6 +23,7 @@ CFLAGS 		= @CFLAGS@  -I. -I$(srcdir)
 LDFLAGS		= @LDFLAGS@
 LIBS 		= @LIBS@
 LIBOBJS		= @LIBOBJS@
+RUNTIME_PATH	= @RUNTIME_PATH@
 DATE		= $(shell date +%Y%m%d)
 LIBTOOL		= $(libtool) --tag=CC
 
@@ -53,12 +54,12 @@ LIBDNS_HEADERS	=	$(srcdir)/ldns/error.h		\
 			$(srcdir)/ldns/higher.h		\
 			$(srcdir)/ldns/parse.h		\
 			$(srcdir)/ldns/rr_functions.h	\
-			$(srcdir)/ldns/dns.h		\
+			$(srcdir)/ldns/ldns.h		\
 			$(srcdir)/ldns/zone.h		\
 			$(srcdir)/ldns/update.h 		\
 			$(srcdir)/ldns/tsig.h
-LIBDNS_OBJECTS	=	$(LIBDNS_SOURCES:.c=.o)
-LIBDNS_LOBJECTS	=	$(LIBDNS_SOURCES:.c=.lo)
+LIBDNS_OBJECTS	=	$(LIBDNS_SOURCES:.c=.o) $(LIBOBJS)
+LIBDNS_LOBJECTS	=	$(LIBDNS_SOURCES:.c=.lo) $(LIBOBJS:.o=.lo)
 
 ALL_SOURCES	=	$(LIBDNS_SOURCES)
 
@@ -73,37 +74,15 @@ LINK_LIB	= $(LIBTOOL) --mode=link $(CC) $(CFLAGS) $(LDFLAGS) -release $(VERSION)
 .PHONY:	clean realclean docclean doc lint all lib
 .PHONY: install uninstall install-doc uninstall-doc 
 .PHONY: install-h uninstall-h install-lib uninstall-lib 
-.PHONY: confdrill tools-drill
 
 all:		copy-headers lib linktest
 
 linktest:
-		gcc $(srcdir)/linktest.c -Iinclude -I$(srcdir) .libs/libldns.a $(LDFLAGS) -o linktest
+		gcc $(srcdir)/linktest.c $(CPPFLAGS) $(CFLAGS) -L.libs -lldns -o linktest
 		rm linktest
 
-./drill/Makefile:
-		( $(INSTALL) -d drill ; cd drill ; ../$(srcdir)/drill/configure --prefix=$(prefix) --bindir=$(bindir) --mandir=$(mandir) LDFLAGS="-L../.libs" CPPFLAGS="-I.. -I../..")
-
-drill-config:	./drill/Makefile
-
-drill: 		drill-config
-		( cd drill ; $(MAKE) -f Makefile all)
-
-drill-realclean:	drill-config
-		( cd drill ; $(MAKE) -f Makefile realclean)
-
-drill-clean:	
-		( if [ -f drill/Makefile ] ; then cd drill ; $(MAKE) -f Makefile clean ; fi ;)
-
-drill-confclean:
-		( cd drill ; if [ -f Makefile ] ; then $(MAKE) -f Makefile confclean ; fi ;)
-
-drill-install:	drill
-		( cd drill ; $(MAKE) -f Makefile install)
-
-lib:		$(LIBDNS_OBJECTS) b64_pton$U.o b64_ntop$U.o b32_pton$U.o b32_ntop$U.o
-		$(LINK_LIB) -o libldns.la $(LIBDNS_LOBJECTS) b64_pton$U.lo b64_ntop$U.lo b32_pton$U.lo b32_ntop$U.lo \
-		-rpath $(libdir)/lib
+lib:		$(LIBDNS_OBJECTS)
+		$(LINK_LIB) -o libldns.la $(LIBDNS_LOBJECTS) -rpath $(libdir) $(RUNTIME_PATH)
 		if [ ! -d lib ] ; then ln -s .libs lib ; fi ;		
 
 copy-headers:
@@ -159,7 +138,7 @@ uninstall-lib:
 		$(LIBTOOL) --mode=uninstall rm -f $(DESTDIR)$(libdir)/libldns.la
 		rmdir -p $(DESTDIR)$(libdir)
 
-clean:	drill-clean
+clean:
 	rm -f *.o *.d *.lo
 	rm -f *~
 	rm -rf autom4te.cache/
@@ -171,7 +150,7 @@ clean:	drill-clean
 	rm -f lib
 	rm -rf .libs
 
-distclean: clean docclean libclean drill-confclean 
+distclean: clean docclean libclean
 	rm -f ltmain.sh
 
 realclean: clean docclean libclean
@@ -230,19 +209,19 @@ b32_ntop$U.o:	$(srcdir)/compat/b32_ntop.c
 malloc$U.o:	$(srcdir)/compat/malloc.c
 	$(COMP_LIB) -c $(srcdir)/compat/malloc.c -o $@
 
+timegm$U.o:	$(srcdir)/compat/timegm.c
+	$(COMP_LIB) -c $(srcdir)/compat/timegm.c -o $@
+
+isblank$U.o:	$(srcdir)/compat/isblank.c
+	$(COMP_LIB) -c $(srcdir)/compat/isblank.c -o $@
+
 # Automatic dependencies.
 %.d: $(srcdir)/%.c
 	$(SHELL) -ec '$(CC) -MM $(CPPFLAGS) $< \
 	              | sed '\''s!\(.*\)\.o[ :]*!$(dir $@)\1.o $@ : !g'\'' > $@; \
 	              [ -s $@ ] || rm -f $@'
 
-allclean: drill-clean test-clean clean
-
-allrealclean: drill-realclean 
-
-allconf: drill-config 
-
-allconfclean: drill-confclean 
+allclean: test-clean clean
 
 test-clean:
 	tpkg -b test clean

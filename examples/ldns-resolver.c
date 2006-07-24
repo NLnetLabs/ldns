@@ -9,7 +9,7 @@
 #include "config.h"
 #include "errno.h"
 
-#include <ldns/dns.h>
+#include <ldns/ldns.h>
 
 int
 main(int argc, char **argv) {

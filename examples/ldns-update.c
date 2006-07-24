@@ -9,7 +9,7 @@
 #include "config.h"
 
 #include <strings.h>
-#include <ldns/dns.h>
+#include <ldns/ldns.h>
 
 /* dynamic update stuff */
 ldns_resolver *

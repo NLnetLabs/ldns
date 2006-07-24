@@ -22,7 +22,7 @@ LINT		= splint
 LINTFLAGS	= +quiet -weak -warnposix -unrecog -Din_addr_t=uint32_t -Du_int=unsigned -Du_char=uint8_t -preproc
 
 HEADER		= config.h
-SOURCES 	= nsd-ldnsd.c nsec3-covers.c
+SOURCES 	= ldns-testns.c nsd-ldnsd.c nsec3-covers.c
 
 PROGRAMS=$(SOURCES:.c=)
 
@@ -38,8 +38,8 @@ all-static:	$(PROGRAMS:=-stc)
 %-stc:
 	@# can't mix implicit and static rules
 	@if [ $(srcdir)/$(@:-stc=).c -nt $(@:-stc=) ] ; then \
-		echo "$(CC) $(CPPFLAGS) $(CFLAGS) -lpcap -lcrypto -o $(@:-stc=) $(srcdir)/$(@:-stc=).c $(LDNSDIR)lib/libldns.a" ; \
-		$(CC) $(CPPFLAGS) $(CFLAGS) -lpcap -lcrypto -o $(@:-stc=) $(srcdir)/$(@:-stc=).c $(LDNSDIR)lib/libldns.a ; \
+		echo "$(CC) $(CPPFLAGS) $(CFLAGS) -lpcap -lcrypto -o $(@:-stc=) $(srcdir)/$(@:-stc=).c $(LDNSDIR)/lib/libldns.a" ; \
+		$(CC) $(CPPFLAGS) $(CFLAGS) -lpcap -lcrypto -o $(@:-stc=) $(srcdir)/$(@:-stc=).c $(LDNSDIR)/lib/libldns.a ; \
 	fi ;
 
 lint:

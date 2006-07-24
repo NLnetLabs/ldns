@@ -39,9 +39,7 @@ SOURCES 	= ldns-read-zone.c \
 		  ldns-dpa.c \
 		  ldns-resolver.c \
 		  ldnsd.c \
-		  ldns-keyfetcher.c \
-		  ldns-ixfr.c \
-		  ldns-notify.c
+		  ldns-keyfetcher.c
 
 
 PROGRAMS=$(SOURCES:.c=)
@@ -58,8 +56,8 @@ all-static:	$(PROGRAMS:=-stc)
 %-stc:
 	@# can't mix implicit and static rules
 	@if [ $(srcdir)/$(@:-stc=).c -nt $(@:-stc=) ] ; then \
-		echo "$(CC) $(CPPFLAGS) $(CFLAGS) -lpcap -lcrypto -o $(@:-stc=) $(srcdir)/$(@:-stc=).c $(LDNSDIR)lib/libldns.a" ; \
-		$(CC) $(CPPFLAGS) $(CFLAGS) -lpcap -lcrypto -o $(@:-stc=) $(srcdir)/$(@:-stc=).c $(LDNSDIR)lib/libldns.a ; \
+		echo "$(CC) $(CPPFLAGS) $(CFLAGS) -lpcap -lcrypto -o $(@:-stc=) $(srcdir)/$(@:-stc=).c $(LDNSDIR)/lib/libldns.a" ; \
+		$(CC) $(CPPFLAGS) $(CFLAGS) -lpcap -lcrypto -o $(@:-stc=) $(srcdir)/$(@:-stc=).c $(LDNSDIR)/lib/libldns.a ; \
 	fi ;
 
 lint:

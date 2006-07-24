@@ -6,14 +6,16 @@ Contents:
 		drill
 	KNOWN ISSUES
 
-
+Project page:
+http://www.nlnetlabs.nl/ldns/
 On that page you can also subscribe to the ldns mailing list.
 
 * Development 
-ldns is developed on Linux and FreeBSD.
+ldns is mostly developed on Linux and FreeBSD. It is regularly tested to
+compile on other systems like Solaris and Mac OS X.
 
 REQUIREMENTS
-- OpenSSL
+- OpenSSL (Optional, but needed for features like DNSSEC)
 - (GNU) libtool (that's glibtool, not libtool in OSX)
 - GNU make
 
@@ -24,27 +26,32 @@ INSTALLATION
 6. gmake (it needs gnu make to compile, on systems where GNU make is the
    default you can just use 'make')
 7. sudo gmake install
-(8. gmake examples [make example programs included])
-(9. gmake drill && sudo gmake drill-install to build and install drill)
+8. Optional. (cd examples; ./configure; gmake), make example programs included.
+9. Optional. (cd drill; ./configure; gmake; gmake install), to build drill.
+
+You can configure and compile it in a separate build directory.
 
 * Examples
 There are some examples in the examples/ directory. These can be built with:
 1. cd examples/
 2  autoreconf
-3. ./configure [--with-ldns=../]
+3. ./configure [--with-ldns=<path to ldns installation or build>]
 4. gmake
 
 * Drill
-Drill can be build with:
+Drill can be built with:
 1. cd drill/
 2. autoreconf
-3. ./configure [--with-ldns=../]
+3. ./configure [--with-ldns=<path to ldns installation or build>]
 4. gmake
 
-Note, if built with --with-ldns=../ you will need to set the
-LD_LIBRARY_PATH to let library loader find the library.
+Note that you need to set LD_LIBRARY_PATH if you want to run the binaries
+and you have not installed the library to a system directory. You can use
+the make target all-static for the examples to run them if you don't want to
+install the library.
 
-* Building from repository
+
+* Building from subversion repository
 
 If you are building from the repository you will need to have (gnu)
 autotools like libtool and autoreconf installed. A list of all the commands
@@ -53,9 +60,10 @@ commands may be a little bit different on your machine.
 
 * Developers
 ldns is developed by the ldns team at NLnet Labs. This team currently
-consists out of:
+consists of:
   o Jelte Jansen
   o Miek Gieben
+  o Wouter Wijngaards
 
 * Credits
 We have received patches from the following people, thanks!
@@ -67,13 +75,13 @@ We have received patches from the following people, thanks!
 
 KNOWN ISSUES
 
-It has been brought to our attention that the build script might have some
-problems on MACOSX 10.4 and Solaris. Please contact us if you have more info
-on this. 
-
 For MACOSX 10.4, it seems that you have to set the MACOSX_DEPLOYMENT_TARGET
 environment variable to 10.4 before running make. Apparently it defaults to
 10.1.
+
+This appears to be a known problem in 10.2 to 10.4, see:
+http://developer.apple.com/qa/qa2001/qa1233.html
+for more information.
 
 Also RedHat 9 seems to be having a problem when building ldns - we have
 very little details about this.

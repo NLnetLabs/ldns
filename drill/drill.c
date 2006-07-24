@@ -8,7 +8,7 @@
  */
 
 #include "drill.h"
-#include <ldns/dns.h>
+#include <ldns/ldns.h>
 
 #define IP6_ARPA_MAX_LEN 65
 
@@ -176,9 +176,17 @@ main(int argc, char *argv[])
 				break;
 			case 'T':
 				warning("%s", "Trace enabled, ignoring any <type> arguments");
+				if (PURPOSE == DRILL_CHASE) {
+					fprintf(stderr, "-T and -S cannot be used at the same time.\n");
+					exit(EXIT_FAILURE);
+				}
 				PURPOSE = DRILL_TRACE;
 				break;
 			case 'S':
+				if (PURPOSE == DRILL_TRACE) {
+					fprintf(stderr, "-T and -S cannot be used at the same time.\n");
+					exit(EXIT_FAILURE);
+				}
 				PURPOSE = DRILL_CHASE;
 				break;
 			case 'V':
@@ -546,7 +554,7 @@ main(int argc, char *argv[])
 				} else {
 					result = do_chase(res, qname, type,
 					                  clas, key_list, 
-					                  pkt, qflags);
+					                  pkt, qflags, NULL);
 					if (result == LDNS_STATUS_OK) {
 						if (qdebug != -1) {
 							mesg("Chase successful");

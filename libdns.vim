@@ -60,7 +60,7 @@ syn keyword  ldnsConstant       LDNS_RDF_SIZE_DOUBLEWORD
 syn keyword  ldnsConstant       LDNS_RDF_SIZE_6BYTES           
 syn keyword  ldnsConstant       LDNS_RDF_SIZE_16BYTES          
 
-" ldns/dns.h
+" ldns/ldns.h
 syn keyword  ldnsConstant	LDNS_PORT
 syn keyword  ldnsConstant	LDNS_IP4ADDRLEN
 syn keyword  ldnsConstant	LDNS_IP6ADDRLEN

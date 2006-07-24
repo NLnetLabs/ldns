@@ -5,7 +5,7 @@
  * See the file LICENSE for the license
  */
 
-#include <stdint.h>
+#include "config.h"
 #include <stdlib.h>
 #include <unistd.h>
 
@@ -13,7 +13,7 @@
 
 #include <time.h>
 
-#include <ldns/dns.h>
+#include <ldns/ldns.h>
 
 #define MAX_FILENAME_LEN 250
 

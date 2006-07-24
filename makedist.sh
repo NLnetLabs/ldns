@@ -125,6 +125,9 @@ libtoolize -c || error_cleanup "Libtoolize failed."
 info "Building configure script (autoconf)."
 autoreconf || error_cleanup "Autoconf failed."
 
+info "Building configure script for examples (autoconf)."
+cd examples && autoreconf && cd .. || error_cleanup "Autoconf failed."
+
 rm -r autom4te* || error_cleanup "Failed to remove autoconf cache directory."
 
 # custom removes

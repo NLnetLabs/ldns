@@ -9,7 +9,7 @@
  */
 
 #include "config.h"
-#include <ldns/dns.h>
+#include <ldns/ldns.h>
 
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -83,7 +83,7 @@ main(int argc, char **argv)
 				usage(stdout);
 				exit(EXIT_FAILURE);
 			} else {
-				fprintf(stderr, "quiting after %d qs\n", maxcount);
+				fprintf(stderr, "quiting after %d qs\n", (int)maxcount);
 			}
 		} else {
 			fprintf(stderr, "Use -Number for max count\n");
@@ -173,7 +173,7 @@ main(int argc, char **argv)
 		}
 		
 		query_rr = ldns_rr_list_rr(ldns_pkt_question(query_pkt), 0);
-		printf("%d QUERY RR +%d: \n", ++count, ldns_pkt_id(query_pkt));
+		printf("%d QUERY RR +%d: \n", (int)++count, ldns_pkt_id(query_pkt));
 		ldns_rr_print(stdout, query_rr);
 		
 		ldns_pkt_set_id(answer_pkt, ldns_pkt_id(query_pkt));
@@ -188,7 +188,7 @@ main(int argc, char **argv)
 		}
 
 		if (maxcount > 0  && count >= maxcount) {
-			fprintf(stderr, "%d queries seen... goodbye\n", count);
+			fprintf(stderr, "%d queries seen... goodbye\n", (int)count);
 			exit(EXIT_SUCCESS);
 		}
 	}

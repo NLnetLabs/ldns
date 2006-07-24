@@ -30,16 +30,16 @@ AC_CHECK_HEADERS(sys/param.h sys/mount.h,,,
 
 # check for ldns
 AC_ARG_WITH(ldns, AC_HELP_STRING([--with-ldns=pathname],[]))
-AC_MSG_CHECKING(for ldns/dns.h)
+AC_MSG_CHECKING(for ldns/ldns.h)
 for dir in $withval /usr/local/ldns /usr/lib/ldns /usr/ldns /usr/pkg /usr/local /usr; do
 ldnsdir="$dir"
-if test -f "$dir/include/ldns/dns.h"; then
+if test -f "$dir/include/ldns/ldns.h"; then
     found_ldns="yes";
     CFLAGS="$CFLAGS -I$ldnsdir/include/ -DHAVE_LDNS";
     CXXFLAGS="$CXXFLAGS -I$ldnsdir/include/ -DHAVE_LDNS";
     break;
 fi
-if test -f "$dir/ldns/dns.h"; then
+if test -f "$dir/ldns/ldns.h"; then
     found_ldns="yes";
     CFLAGS="$CFLAGS -I$ldnsdir/ -DHAVE_LDNS";
     CXXFLAGS="$CXXFLAGS -I$ldnsdir/ -DHAVE_LDNS";

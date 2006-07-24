@@ -10,7 +10,7 @@
 
 #ifndef _DRILL_UTIL_H_
 #define _DRILL_UTIL_H_
-#include <ldns/dns.h>
+#include <ldns/ldns.h>
 
 /**
  * return a address rdf, either A or AAAA 

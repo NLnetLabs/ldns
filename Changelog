@@ -1,4 +1,5 @@
 31 Apr 2006: 1.1.0: ldns-team
+	* Added tutorials and an introduction to the documentation
 	* Added include/ and lib/ dirs so that you can compile against ldns
 	  without installing ldns on your system
 	* Makefile updates
@@ -16,6 +17,7 @@
 	* Preliminary sha-256 support was added. Currently is your
      	  OpenSSL supports it, it is supported in the DS creation.
 	* ldns_resolver_search was implemented
+	* Fixed a lot of bugs
 
 	Drill:
 	* -r was killed in favor of -o <header bit mnemonic> which 
@@ -25,6 +27,9 @@
 	  for DNSKEY/RRSIG or DS.
 	* Implement a crude RTT check, it now distinguishes between
 	  reacheable and unreacheable.
+        * A form of secure tracing was added
+        * Secure Chasing has been improved
+	* -x does a reverse lookup for the given IP address
 	
 	Examples:
 	* ldns-dpa was added to the examples - this is the Dns Packet
@@ -32,7 +37,14 @@
 	* ldnsd - as very, very simple nameserver impl.
 	* ldns-zsplit - split zones for parrallel signing
 	* ldns-zcat - cat split zones back together
-	
+        * ldns-keyfetcher - Fetches DNSKEY records with a few (non-strong, 
+	  non-DNSSEC) anti-spoofing techniques.
+	* ldns-walk - 'Walks' a DNSSEC signed zone
+	* Added an all-static target to the makefile so you can use examples
+	  without installing the library
+	* When building in the source tree or in a direct subdirectory of
+	  the build dir, configure does not need --with-ldns=../ anymore
+
 	Code:
 	* All networking code was moved to net.c
 	* rdata.c: added asserts to the rdf set/get functions
@@ -41,6 +53,7 @@
 
 	API:
 	Changed:
+	* renamed ldns/dns.h to ldns/ldns.h
 	* ldns_rr_new_frm_str() is extented with an extra variable which
 	  in common use may be NULL. This trickles through to:
           o ldns_rr_new_frm_fp

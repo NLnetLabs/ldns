@@ -1,0 +1,53 @@
+; Test queries for ldns-testns.
+; This is a line based format config file.
+
+$ORIGIN example.com
+$TTL 3600
+
+# Below are the entries, they are tested for a match one by one.
+# enclose each in ENTRY_BEGIN and ENTRY_END.
+ENTRY_BEGIN
+# MATCH makes sure the query and answer match on:
+MATCH opcode qtype qname ; for default queries
+# or you can match on a specific value.
+; MATCH serial=1024 	; for this query also match SOA serial.
+# add RRs to a section, QUESTION ANSWER AUTHORITY ADDITIONAL
+#
+# REPLY lines give header info for the reply:
+# 	(opcode)  QUERY IQUERY STATUS NOTIFY UPDATE
+# 	(rcode)   NOERROR FORMERR SERVFAIL NXDOMAIN NOTIMPL YXDOMAIN 
+#		  YXRRSET NXRRSET NOTAUTH NOTZONE
+# 	(flags)   QR AA TC RD CD RA AD
+REPLY QR  	; this is a query reply.
+# ADJUST: runtime modifications to the reply. usually copy_id.
+ADJUST copy_id
+SECTION QUESTION
+# RRs, (an RR must be on a single line).
+@	IN	A
+SECTION ANSWER
+@	A	192.168.0.123
+@	TXT	"This record is unexpected."
+SECTION ADDITIONAL
+@	A	192.1.2.3
+ENTRY_END
+
+ENTRY_BEGIN
+MATCH opcode qtype qname
+MATCH serial=102
+ADJUST copy_id
+REPLY QR AA
+SECTION QUESTION
+example.net.	IXFR
+SECTION ANSWER
+example.net.	SOA	ns1.example.net. . 0 103 0 0 0
+ENTRY_END
+
+ENTRY_BEGIN
+	; Keep this as the last entry.
+	; matches anything and returns this packet.
+	; so you will get an answer for every query.
+REPLY SERVFAIL
+ADJUST copy_id
+ldns.testns.example. TXT "The ldnstestns server did not find a match for your query"
+ENTRY_END
+

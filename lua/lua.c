@@ -13,12 +13,12 @@
 #include <stdint.h>
 
 /* lua includes */
-#include <lua50/lua.h>
-#include <lua50/lualib.h>
-#include <lua50/lauxlib.h>
+#include <lua.h>
+#include <lualib.h>
+#include <lauxlib.h>
 
 /* ldns include */
-#include <ldns/dns.h>
+#include <ldns/ldns.h>
 
 /* the Lua interpreter */
 lua_State* L;
@@ -33,7 +33,7 @@ usage(FILE *f, char *progname)
 void
 version(FILE *f, char *progname)
 {
-	fprintf(f, "%s version %s\n", progname, VERSION);
+	fprintf(f, "%s version %s\n", progname, LDNS_VERSION);
 }
 
 /*
@@ -48,6 +48,7 @@ version(FILE *f, char *progname)
  RDF
 ==========
  */
+static int
 l_rdf_new_frm_str(lua_State *L)
 {
 	uint16_t t = (uint16_t)lua_tonumber(L, 1);
