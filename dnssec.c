@@ -1272,6 +1272,7 @@ ldns_zone_sign(ldns_zone *zone, ldns_key_list *key_list)
 	signed_zone = ldns_zone_new();
 	
 	/* there should only be 1 SOA, so the soa record is 1 rrset */
+/*
 	soa_rrset = ldns_rr_list_new();
 	ldns_rr_list_push_rr(soa_rrset, ldns_zone_soa(zone));
 	cur_rrsigs = ldns_sign_public(soa_rrset, key_list);
@@ -1281,10 +1282,13 @@ ldns_zone_sign(ldns_zone *zone, ldns_key_list *key_list)
 	ldns_zone_set_soa(signed_zone, ldns_rr_clone(ldns_zone_soa(zone)));
 	ldns_zone_push_rr_list(signed_zone, cur_rrsigs);
 	ldns_rr_list_free(cur_rrsigs);
-	cur_rrsigs = NULL;
+*/	cur_rrsigs = NULL;
+	ldns_zone_set_soa(signed_zone, ldns_rr_clone(ldns_zone_soa(zone)));
 	
 	orig_zone_rrs = ldns_rr_list_clone(ldns_zone_rrs(zone));
 
+	ldns_rr_list_push_rr(orig_zone_rrs, ldns_rr_clone(ldns_zone_soa(zone)));
+	
 	glue_rrs = ldns_zone_glue_rr_list(zone);
 
 	/* add the key (TODO: check if it's there already? */

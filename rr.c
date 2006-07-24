@@ -1217,6 +1217,8 @@ ldns_rr_compare(const ldns_rr *rr1, const ldns_rr *rr2)
 	ldns_buffer *rr2_buf;
 	size_t rr1_len;
 	size_t rr2_len;
+        size_t min_len;
+        size_t offset;
 	size_t i;
 
 	assert(rr1 != NULL);
@@ -1230,14 +1232,27 @@ ldns_rr_compare(const ldns_rr *rr1, const ldns_rr *rr2)
 	} else if (ldns_dname_compare(ldns_rr_owner(rr1), ldns_rr_owner(rr2)) > 0) {
 		return 1;
 	}
-	if (rr1_len < rr2_len) {
-		return -1;
-	} else if (rr1_len > rr2_len) {
-		return +1;
-	} else {
-		/* equal length */
+
+        if (ldns_rr_get_class(rr1) != ldns_rr_get_class(rr2)) {
+            return ldns_rr_get_class(rr2) - ldns_rr_get_class(rr1);
+        }
+
+        if (ldns_rr_get_type(rr1) != ldns_rr_get_type(rr2)) {
+            return ldns_rr_get_type(rr2) - ldns_rr_get_type(rr1);
+        }
+        
+        /* offset is the owername length + ttl + type + class + rdlen == start of wire format rdata */
+        offset = ldns_rdf_size(ldns_rr_owner(rr1)) + 4 + 2 + 2 + 2;
+        /* if either record doesn't have any RDATA... */
+        if (offset > rr1_len || offset > rr2_len) {
+            if (rr1_len == rr2_len) return 0;
+            return (rr2_len - rr1_len);
+        }
+
+        /* convert RRs into canonical wire format */
 		rr1_buf = ldns_buffer_new(rr1_len);
 		rr2_buf = ldns_buffer_new(rr2_len);
+        min_len = (rr1_len < rr2_len) ? rr1_len : rr2_len;
 
 		if (ldns_rr2buffer_wire(rr1_buf, rr1, LDNS_SECTION_ANY) != LDNS_STATUS_OK) {
 			ldns_buffer_free(rr1_buf);
@@ -1249,8 +1264,9 @@ ldns_rr_compare(const ldns_rr *rr1, const ldns_rr *rr2)
 			ldns_buffer_free(rr2_buf);
 			return 0;
 		}
-		/* now compare the buffer's byte for byte */
-		for(i = 0; i < rr1_len; i++) {
+
+        /* Compare RRs RDATA byte for byte. */
+        for(i = offset; i < min_len; i++) {
 			if (*ldns_buffer_at(rr1_buf,i) < *ldns_buffer_at(rr2_buf,i)) {
 				ldns_buffer_free(rr1_buf);
 				ldns_buffer_free(rr2_buf);
@@ -1261,10 +1277,17 @@ ldns_rr_compare(const ldns_rr *rr1, const ldns_rr *rr2)
 				return +1;
 			}
 		}
+        /* If both RDATAs are the same up to min_len, then the shorter one sorts first. */
 		ldns_buffer_free(rr1_buf);
 		ldns_buffer_free(rr2_buf);
-		return 0;
+        
+        if (rr1_len < rr2_len) {
+                return -1;
+        } else if (rr1_len > rr2_len) {
+                return +1;
 	}
+        /* The RDATAs are equal. */
+        return 0;
 }
 
 bool
