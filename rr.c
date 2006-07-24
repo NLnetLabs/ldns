@@ -1245,8 +1245,10 @@ ldns_rr_compare(const ldns_rr *rr1, const ldns_rr *rr2)
         offset = ldns_rdf_size(ldns_rr_owner(rr1)) + 4 + 2 + 2 + 2;
         /* if either record doesn't have any RDATA... */
         if (offset > rr1_len || offset > rr2_len) {
-            if (rr1_len == rr2_len) return 0;
-            return (rr2_len - rr1_len);
+            if (rr1_len == rr2_len) {
+              return 0;
+            }
+            return (int) (rr2_len - rr1_len);
         }
 
         /* convert RRs into canonical wire format */
