@@ -169,6 +169,9 @@ ldns_verify_rrsig_keylist(ldns_rr_list *rrset, ldns_rr *rrsig, ldns_rr_list *key
 		return LDNS_STATUS_MEM_ERR;
 	}
 	
+	/* canonicalize the sig */
+	ldns_dname2canonical(ldns_rr_owner(rrsig));
+	
 	/* clone the rrset so that we can fiddle with it */
 	rrset_clone = ldns_rr_list_clone(rrset);
 
@@ -333,6 +336,9 @@ ldns_verify_rrsig(ldns_rr_list *rrset, ldns_rr *rrsig, ldns_rr *key)
 	if (!rrset) {
 		return LDNS_STATUS_NO_DATA;
 	}
+
+	/* lowercase the rrsig owner name */
+	ldns_dname2canonical(ldns_rr_owner(rrsig));
 
 	/* check the signature time stamps */
 	inception = ldns_rdf2native_time_t(ldns_rr_rrsig_inception(rrsig));
@@ -806,7 +812,6 @@ ldns_sign_public(ldns_rr_list *rrset, ldns_key_list *keys)
 	ldns_rr_list_sort(rrset_clone);
 	
 	for (key_count = 0; key_count < ldns_key_list_key_count(keys); key_count++) {
-
 		sign_buf = ldns_buffer_new(LDNS_MAX_PACKETLEN);
 		b64rdf = NULL;
 

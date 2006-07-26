@@ -1378,6 +1378,8 @@ void
 ldns_rr2canonical(ldns_rr *rr)
 {
 	uint16_t i;
+
+	ldns_dname2canonical(ldns_rr_owner(rr));
 	for (i = 0; i < ldns_rr_rd_count(rr); i++) {
 		ldns_dname2canonical(ldns_rr_rdf(rr, i));
 	}
