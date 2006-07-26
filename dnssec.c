@@ -1143,10 +1143,15 @@ ldns_nsec_bitmap_covers_type(const ldns_rdf *nsec_bitmap, ldns_rr_type type)
 	uint16_t i;
 	uint8_t window_block_nr;
 	
+	if (!nsec_bitmap) {
+		return false;
+	}
+
 	/* Check the bitmap if our type is there */
 	bitmap = ldns_rdf_data(nsec_bitmap);
 	window_block_nr = (uint8_t) (type / 256);
 	i = 0;
+
 	while (i < ldns_rdf_size(nsec_bitmap)) {
 		if (bitmap[i] == window_block_nr) {
 			/* this is the right window, check the bit */
