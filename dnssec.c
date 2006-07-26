@@ -1283,11 +1283,16 @@ ldns_zone_sign(ldns_zone *zone, ldns_key_list *key_list)
 	/* there should only be 1 SOA, so the soa record is 1 rrset */
 	cur_rrsigs = NULL;
 	ldns_zone_set_soa(signed_zone, ldns_rr_clone(ldns_zone_soa(zone)));
+	ldns_rr2canonical(ldns_zone_soa(signed_zone));
 	
 	orig_zone_rrs = ldns_rr_list_clone(ldns_zone_rrs(zone));
 
 	ldns_rr_list_push_rr(orig_zone_rrs, ldns_rr_clone(ldns_zone_soa(zone)));
 	
+	/* canon now, needed for correct nsec creation */
+        for (i = 0; i < ldns_rr_list_rr_count(orig_zone_rrs); i++) {
+		ldns_rr2canonical(ldns_rr_list_rr(orig_zone_rrs, i));
+	}
 	glue_rrs = ldns_zone_glue_rr_list(zone);
 
 	/* add the key (TODO: check if it's there already? */
@@ -1297,7 +1302,7 @@ ldns_zone_sign(ldns_zone *zone, ldns_key_list *key_list)
 		ldns_rr_list_push_rr(pubkeys, ckey);
 	}
 	signed_zone_rrs = ldns_rr_list_new();
-
+	
 	ldns_rr_list_sort(orig_zone_rrs);
 	
 	/* add nsecs */
@@ -1344,10 +1349,10 @@ ldns_zone_sign(ldns_zone *zone, ldns_key_list *key_list)
 		   make them selfsigned (?) */
                 /* don't sign sigs, delegations, and glue */
 		if (cur_rrset_type != LDNS_RR_TYPE_RRSIG &&
-		    ((ldns_dname_is_subdomain(cur_dname, ldns_rr_owner(ldns_zone_soa(zone)))
+		    ((ldns_dname_is_subdomain(cur_dname, ldns_rr_owner(ldns_zone_soa(signed_zone)))
                       && cur_rrset_type != LDNS_RR_TYPE_NS
                      ) ||
-		     ldns_rdf_compare(cur_dname, ldns_rr_owner(ldns_zone_soa(zone))) == 0
+		     ldns_rdf_compare(cur_dname, ldns_rr_owner(ldns_zone_soa(signed_zone))) == 0
 		    ) &&
 		    !(ldns_rr_list_contains_rr(glue_rrs, ldns_rr_list_rr(cur_rrset, 0)))
 		   ) {
