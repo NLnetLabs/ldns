@@ -20,26 +20,34 @@ main(int argc, char **argv)
 	ldns_zone *z;
 	int line_nr = 0;
 	int c;
+	bool canonicalize = false;
 	bool sort = false;
 	ldns_status s;
+	size_t i;
 
-        while ((c = getopt(argc, argv, "hzv")) != -1) {
+        while ((c = getopt(argc, argv, "chvz")) != -1) {
                 switch(c) {
-                        case 'z':
-                                sort = true;
-                                break;
+                	case 'c':
+                		canonicalize = true;
+                		break;
+			case 'h':
+				printf("Usage: %s [-c] [-v] [-z] <zonefile>\n", argv[0]);
+				printf("\tReads the zonefile and prints it.\n");
+				printf("\tThe RR count of the zone is printed to stderr.\n");
+				printf("\tIf -c is given all rrs in zone are canonicalized.\n");
+				printf("\tIf -z is given the zone is sorted (implies -c).\n");
+				printf("\t-v shows the version and exits\n");
+				printf("\nif no file is given standard input is read\n");
+				exit(EXIT_SUCCESS);
+				break;
 			case 'v':
 				printf("read zone version %s (ldns version %s)\n", LDNS_VERSION, ldns_version());
 				exit(EXIT_SUCCESS);
 				break;
-			case 'h':
-				printf("Usage: %s [-z] [-v] <zonefile>\n", argv[0]);
-				printf("\tReads the zonefile and prints it.\n");
-				printf("\tThe RR count of the zone is printed to stderr.\n");
-				printf("\tIf -z is given the zone is sorted.\n");
-				printf("\t-v shows the version and exits\n");
-				printf("\nif now file is given standard input is read\n");
-				exit(EXIT_SUCCESS);
+                        case 'z':
+                		canonicalize = true;
+                                sort = true;
+                                break;
 		}
 	}
 
@@ -60,6 +68,12 @@ main(int argc, char **argv)
 	
 	s = ldns_zone_new_frm_fp_l(&z, fp, NULL, 0, LDNS_RR_CLASS_IN, &line_nr);
 	if (s == LDNS_STATUS_OK) {
+		if (canonicalize) {
+			ldns_rr2canonical(ldns_zone_soa(z));
+			for (i = 0; i < ldns_rr_list_rr_count(ldns_zone_rrs(z)); i++) {
+				ldns_rr2canonical(ldns_rr_list_rr(ldns_zone_rrs(z), i));
+			}
+		}
 		if (sort) {
 			ldns_zone_sort(z);
 		}

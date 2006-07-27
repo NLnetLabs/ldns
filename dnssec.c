@@ -817,8 +817,8 @@ ldns_sign_public(ldns_rr_list *rrset, ldns_key_list *keys)
 
 		current_key = ldns_key_list_key(keys, key_count);
 		if (
-			ldns_key_flags(current_key) & LDNS_KEY_ZONE_KEY &&
-			(!(ldns_key_flags(current_key) & LDNS_KEY_SEP_KEY) ||
+			ldns_key_flags(current_key) & LDNS_KEY_ZONE_KEY ||
+			((ldns_key_flags(current_key) & LDNS_KEY_SEP_KEY) &&
 			ldns_rr_get_type(ldns_rr_list_rr(rrset, 0)) == LDNS_RR_TYPE_DNSKEY)
 		   ) {
 			current_sig = ldns_rr_new_frm_type(LDNS_RR_TYPE_RRSIG);
@@ -1279,7 +1279,7 @@ ldns_zone_sign(ldns_zone *zone, ldns_key_list *key_list)
 	ldns_rr_type cur_rrset_type;
 	
 	signed_zone = ldns_zone_new();
-	
+
 	/* there should only be 1 SOA, so the soa record is 1 rrset */
 	cur_rrsigs = NULL;
 	ldns_zone_set_soa(signed_zone, ldns_rr_clone(ldns_zone_soa(zone)));
@@ -1301,6 +1301,7 @@ ldns_zone_sign(ldns_zone *zone, ldns_key_list *key_list)
 		ckey = ldns_key2rr(ldns_key_list_key(key_list, i));
 		ldns_rr_list_push_rr(pubkeys, ckey);
 	}
+
 	signed_zone_rrs = ldns_rr_list_new();
 	
 	ldns_rr_list_sort(orig_zone_rrs);
