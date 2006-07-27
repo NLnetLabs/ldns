@@ -27,9 +27,14 @@
 	; 'qname' makes the query match the qname from the reply
 	; 'serial=1023' makes the query match if ixfr serial is 1023. 
 	MATCH [opcode] [qtype] [qname] [serial=<value>]
+	MATCH [UDP|TCP]
 	MATCH ...
 	; Then the REPLY header is specified.
 	REPLY opcode, rcode or flags.
+		(opcode)  QUERY IQUERY STATUS NOTIFY UPDATE
+		(rcode)   NOERROR FORMERR SERVFAIL NXDOMAIN NOTIMPL YXDOMAIN
+		 		YXRRSET NXRRSET NOTAUTH NOTZONE
+		(flags)   QR AA TC RD CD RA AD
 	REPLY ...
 	; any additional actions to do.
 	; 'copy_id' copies the ID from the query to the answer.
@@ -50,6 +55,7 @@
 
 #include <sys/types.h>
 #include <sys/socket.h>
+#include <sys/select.h>
 
 #include <arpa/inet.h>
 #include <netinet/in.h>
@@ -60,7 +66,10 @@
 #define INBUF_SIZE 4096 	/* max size for incoming queries */
 #define MAX_LINE   10240	/* max line length */
 #define DEFAULT_PORT 53		/* default if no -p port is specified */
+#define CONN_BACKLOG 5		/* 5 connections queued up for tcp */
 static const char* prog_name = "ldns-testns";
+
+enum transport_type {transport_any = 0, transport_udp, transport_tcp };
 
 /* data structure to keep the canned queries in */
 /* format is the 'matching query' and the 'canned answer' */
@@ -72,6 +81,7 @@ struct entry {
 	bool match_qname;  /* match qname with answer qname */
 	bool match_serial; /* match SOA serial number, from auth section */
 	uint32_t ixfr_soa_serial; /* match query serial with this value. */
+	enum transport_type match_transport; /* match on UDP/TCP */
 
 	/* pre canned reply */
 	ldns_pkt *reply;
@@ -102,7 +112,7 @@ static void error(const char* msg, ...)
 	exit(EXIT_FAILURE);
 }
 
-static int udp_bind(int sock, int port)
+static int bind_port(int sock, int port)
 {
     struct sockaddr_in addr;
 
@@ -145,13 +155,18 @@ static void matchline(const char* line, struct entry* e)
 			e->match_qtype = true;
 		} else if(str_keyword(&parse, "qname")) {
 			e->match_qname = true;
+		} else if(str_keyword(&parse, "UDP")) {
+			e->match_transport = transport_udp;
+		} else if(str_keyword(&parse, "TCP")) {
+			e->match_transport = transport_tcp;
 		} else if(str_keyword(&parse, "serial")) {
 			e->match_serial = true;
 			if(*parse != '=' && *parse != ':')
 				error("expected = or : in MATCH: %s", line);
 			parse++;
 			e->ixfr_soa_serial = (uint32_t)strtol(parse, (char**)&parse, 10);
-			while(isspace(*parse)) parse++;
+			while(isspace(*parse)) 
+				parse++;
 		} else {
 			error("could not parse MATCH: '%s'", parse);
 		}
@@ -240,6 +255,7 @@ static struct entry* new_entry()
 	e->match_qname = false;
 	e->match_serial = false;
 	e->ixfr_soa_serial = 0;
+	e->match_transport = transport_any;
 	e->reply = ldns_pkt_new();
 	e->copy_id = false;
 	e->next = NULL;
@@ -385,12 +401,13 @@ static uint32_t get_serial(ldns_pkt* p)
 	rdf = ldns_rr_rdf(rr, 2);
 	if(!rdf) return 0;
 	val = ldns_rdf2native_int32(rdf);
-	printf("found serial %d in msg\n", val);
+	printf("found serial %d in msg\n", (int)val);
 	return val;
 }
 
 /* finds entry in list, or returns NULL */
-static struct entry* find_match(struct entry* entries, ldns_pkt* query_pkt)
+static struct entry* find_match(struct entry* entries, ldns_pkt* query_pkt,
+	enum transport_type transport)
 {
 	struct entry* p = entries;
 	for(p=entries; p; p=p->next) {
@@ -411,15 +428,19 @@ static struct entry* find_match(struct entry* entries, ldns_pkt* query_pkt)
 		if(p->match_serial && get_serial(p->reply) != p->ixfr_soa_serial) {
 				continue;
 		}
+		if(p->match_transport != transport_any && p->match_transport != transport) {
+			continue;
+		}
 		return p;
 	}
 	return NULL;
 }
 
-static ldns_pkt* get_answer(struct entry* entries, ldns_pkt* query_pkt)
+static ldns_pkt* 
+get_answer(struct entry* entries, ldns_pkt* query_pkt, enum transport_type transport)
 {
 	ldns_pkt* answer_pkt = NULL;
-	struct entry* match = find_match(entries, query_pkt);
+	struct entry* match = find_match(entries, query_pkt, transport);
 	if(!match) 
 		return NULL;
 	/* copy & adjust packet */
@@ -427,6 +448,151 @@ static ldns_pkt* get_answer(struct entry* entries, ldns_pkt* query_pkt)
 	if(match->copy_id)
 		ldns_pkt_set_id(answer_pkt, ldns_pkt_id(query_pkt));
 	return answer_pkt;
+}
+
+/*
+ * Parses data buffer to a query, finds the correct answer and returns
+ * a buffer to data to send, or NULL. (LDNS_FREE the buffer when done).
+ */
+static uint8_t*
+handle_query(uint8_t* inbuf, ssize_t inlen, struct entry* entries, int* count,
+	size_t* answer_size, enum transport_type transport)
+{
+	ldns_status status;
+	ldns_pkt *query_pkt = NULL;
+	ldns_pkt *answer_pkt = NULL;
+	ldns_rr *query_rr = NULL;
+	uint8_t *outbuf = NULL;
+
+	status = ldns_wire2pkt(&query_pkt, inbuf, (size_t)inlen);
+	if (status != LDNS_STATUS_OK) {
+		printf("Got bad packet: %s\n", ldns_get_errorstr_by_id(status));
+		return NULL;
+	}
+	
+	query_rr = ldns_rr_list_rr(ldns_pkt_question(query_pkt), 0);
+	printf("query %d: id %d: %s %d bytes: ", ++(*count), (int)ldns_pkt_id(query_pkt), 
+		(transport==transport_tcp)?"TCP":"UDP", inlen);
+	ldns_rr_print(stdout, query_rr);
+	
+	/* fill up answer packet */
+	answer_pkt = get_answer(entries, query_pkt, transport);
+
+	status = ldns_pkt2wire(&outbuf, answer_pkt, answer_size);
+	printf("Answer packet size: %u bytes.\n", (unsigned int)*answer_size);
+	if (status != LDNS_STATUS_OK) {
+		printf("Error creating answer: %s\n", ldns_get_errorstr_by_id(status));
+		outbuf = NULL;
+	}
+	ldns_pkt_free(query_pkt);
+	ldns_pkt_free(answer_pkt);
+	return outbuf;
+}
+
+static void
+handle_udp(int udp_sock, struct entry* entries, int *count)
+{
+	ssize_t nb;
+	struct sockaddr_storage addr_him;
+	socklen_t hislen;
+	uint8_t inbuf[INBUF_SIZE];
+	uint8_t *outbuf;
+	size_t answer_size = 0;
+
+	hislen = (socklen_t)sizeof(addr_him);
+	/* udp recv */
+	nb = recvfrom(udp_sock, inbuf, INBUF_SIZE, 0, 
+		(struct sockaddr*)&addr_him, &hislen);
+	if (nb < 1) {
+		printf("recvfrom(): %s\n", strerror(errno));
+		return;
+	}
+	outbuf = handle_query(inbuf, nb, entries, count, &answer_size,
+		transport_udp);
+	if(!outbuf)
+		return;
+
+	/* udp send reply */
+	nb = sendto(udp_sock, outbuf, answer_size, 0, 
+		(struct sockaddr*)&addr_him, hislen);
+	if(nb == -1)
+		printf("sendto(): %s\n", strerror(errno));
+	else if((size_t)nb != answer_size)
+		printf("sendto(): only sent %d of %d octets.\n", 
+			(int)nb, (int)answer_size);
+	LDNS_FREE(outbuf);
+}
+
+static void
+read_n_bytes(int sock, uint8_t* buf, size_t sz)
+{
+	size_t count = 0;
+	while(count < sz) {
+		ssize_t nb = read(sock, buf+count, sz-count);
+		if(nb < 0) {
+			printf("read(): %s\n", strerror(errno));
+			return;
+		}
+		count += nb;
+	}
+}
+
+static void
+write_n_bytes(int sock, uint8_t* buf, size_t sz)
+{
+	size_t count = 0;
+	while(count < sz) {
+		ssize_t nb = write(sock, buf+count, sz-count);
+		if(nb < 0) {
+			printf("write(): %s\n", strerror(errno));
+			return;
+		}
+		count += nb;
+	}
+}
+
+static void
+handle_tcp(int tcp_sock, struct entry* entries, int *count)
+{
+	int s;
+	struct sockaddr_storage addr_him;
+	socklen_t hislen;
+	uint8_t inbuf[INBUF_SIZE];
+	uint8_t *outbuf;
+	size_t answer_size = 0;
+	uint16_t tcplen;
+
+	/* accept */
+	hislen = (socklen_t)sizeof(addr_him);
+	if((s = accept(tcp_sock, (struct sockaddr*)&addr_him, &hislen)) < 0) {
+		printf("accept(): %s\n", strerror(errno));
+		return;
+	}
+
+	/* tcp recv */
+	read_n_bytes(s, (uint8_t*)&tcplen, sizeof(tcplen));
+	tcplen = ntohs(tcplen);
+	if(tcplen >= INBUF_SIZE) {
+		printf("query %d bytes too large, buffer %d bytes.\n",
+			tcplen, INBUF_SIZE);
+		close(s);
+		return;
+	}
+	read_n_bytes(s, inbuf, tcplen);
+
+	outbuf = handle_query(inbuf, tcplen, entries, count, &answer_size,
+		transport_tcp);
+	if(!outbuf) {
+		close(s);
+		return;
+	}
+
+	/* tcp send reply */
+	tcplen = htons(answer_size);
+	write_n_bytes(s, (uint8_t*)&tcplen, sizeof(tcplen));
+	write_n_bytes(s, outbuf, answer_size);
+	LDNS_FREE(outbuf);
+	close(s);
 }
 
 int
@@ -439,20 +605,13 @@ main(int argc, char **argv)
 	int count;
 
 	/* network */
-	int sock;
-	ssize_t nb;
-	struct sockaddr_storage addr_him;
-	socklen_t hislen;
-	uint8_t inbuf[INBUF_SIZE];
-	uint8_t *outbuf = NULL;
+	int udp_sock, tcp_sock;
+	fd_set rset, wset, eset;
+	struct timeval timeout;
+	int maxfd;
 
 	/* dns */
 	struct entry* entries;
-	ldns_status status;
-	ldns_pkt *query_pkt = NULL;
-	ldns_pkt *answer_pkt = NULL;
-	size_t answer_size;
-	ldns_rr *query_rr = NULL;
 	
 	/* parse arguments */
 	prog_name = argv[0];
@@ -480,57 +639,50 @@ main(int argc, char **argv)
 	entries = read_datafile(datafile);
 	
 	printf("Listening on port %d\n", port);
-	sock = socket(AF_INET, SOCK_DGRAM, 0);
-	if (sock < 0) {
-		error("socket(): %s\n", strerror(errno));
+	if((udp_sock = socket(AF_INET, SOCK_DGRAM, 0)) < 0) {
+		error("udp socket(): %s\n", strerror(errno));
+	}
+	if((tcp_sock = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
+		error("tcp socket(): %s\n", strerror(errno));
+	}
+	c = 1;
+	if(setsockopt(tcp_sock, SOL_SOCKET, SO_REUSEADDR, &c, sizeof(int)) < 0) {
+		error("setsockopt(SO_REUSEADDR): %s\n", strerror(errno));
 	}
 
-	/* bind ip4, udp */
-	if (udp_bind(sock, port)) {
+	/* bind ip4 */
+	if (bind_port(udp_sock, port)) {
 		error("cannot bind(): %s\n", strerror(errno));
+	}
+	if (bind_port(tcp_sock, port)) {
+		error("cannot bind(): %s\n", strerror(errno));
+	}
+	if (listen(tcp_sock, CONN_BACKLOG) < 0) {
+		error("listen(): %s\n", strerror(errno));
 	}
 
 	/* service */
 	count = 0;
+	timeout.tv_sec = 0;
+	timeout.tv_usec = 0;
 	while (1) {
-		hislen = (socklen_t)sizeof(addr_him);
-		nb = recvfrom(sock, inbuf, INBUF_SIZE, 0, 
-			(struct sockaddr*)&addr_him, &hislen);
-		if (nb < 1) {
-			printf("recvfrom(): %s\n", strerror(errno));
-			continue;
+		FD_ZERO(&rset);
+		FD_ZERO(&wset);
+		FD_ZERO(&eset);
+		FD_SET(udp_sock, &rset);
+		FD_SET(tcp_sock, &rset);
+		maxfd = udp_sock;
+		if(tcp_sock > maxfd)
+			maxfd = tcp_sock;
+		if(select(maxfd+1, &rset, &wset, &eset, NULL) < 0) {
+			error("select(): %s\n", strerror(errno));
 		}
-		
-		printf("Got query of %d bytes\n", (int)nb);
-		status = ldns_wire2pkt(&query_pkt, inbuf, (size_t)nb);
-		if (status != LDNS_STATUS_OK) {
-			printf("Got bad packet: %s\n", ldns_get_errorstr_by_id(status));
-			continue;
+		if(FD_ISSET(udp_sock, &rset)) {
+			handle_udp(udp_sock, entries, &count);
 		}
-		
-		query_rr = ldns_rr_list_rr(ldns_pkt_question(query_pkt), 0);
-		printf("query %d: id %d: ", ++count, (int)ldns_pkt_id(query_pkt));
-		ldns_rr_print(stdout, query_rr);
-		
-		/* fill up answer packet */
-		answer_pkt = get_answer(entries, query_pkt);
-
-		status = ldns_pkt2wire(&outbuf, answer_pkt, &answer_size);
-		printf("Answer packet size: %u bytes.\n", (unsigned int) answer_size);
-		if (status != LDNS_STATUS_OK) {
-			printf("Error creating answer: %s\n", ldns_get_errorstr_by_id(status));
-		} else {
-			nb = sendto(sock, outbuf, answer_size, 0, 
-				(struct sockaddr*)&addr_him, hislen);
-			if(nb == -1)
-				printf("sendto(): %s\n", strerror(errno));
-			else if((size_t)nb != answer_size)
-				printf("sendto(): only sent %d of %d octets.\n", 
-					(int)nb, (int)answer_size);
+		if(FD_ISSET(tcp_sock, &rset)) {
+			handle_tcp(tcp_sock, entries, &count);
 		}
-		ldns_pkt_free(query_pkt); query_pkt = NULL;
-		ldns_pkt_free(answer_pkt); answer_pkt = NULL;
-		LDNS_FREE(outbuf); outbuf = NULL;
 	}
         return 0;
 }
