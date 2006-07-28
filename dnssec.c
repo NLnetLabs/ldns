@@ -816,10 +816,15 @@ ldns_sign_public(ldns_rr_list *rrset, ldns_key_list *keys)
 		b64rdf = NULL;
 
 		current_key = ldns_key_list_key(keys, key_count);
-		if (
-			ldns_key_flags(current_key) & LDNS_KEY_ZONE_KEY ||
-			((ldns_key_flags(current_key) & LDNS_KEY_SEP_KEY) &&
-			ldns_rr_get_type(ldns_rr_list_rr(rrset, 0)) == LDNS_RR_TYPE_DNSKEY)
+		/* sign all RRs with keys that have ZSKbit, !SEPbit.
+		   sign DNSKEY RRs with keys that have ZSKbit&SEPbit */
+		if (ldns_key_flags(current_key)&LDNS_KEY_ZONE_KEY && /* must have ZSK to sign */
+			( !(ldns_key_flags(current_key)&LDNS_KEY_SEP_KEY) /* be ZSK key */
+		        ||
+			(ldns_key_flags(current_key)&LDNS_KEY_SEP_KEY && /* or be KSK */
+									/* and type=DNSKEY */
+			 ldns_rr_get_type(ldns_rr_list_rr(rrset, 0)) == LDNS_RR_TYPE_DNSKEY)
+			)
 		   ) {
 			current_sig = ldns_rr_new_frm_type(LDNS_RR_TYPE_RRSIG);
 			
