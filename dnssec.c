@@ -2011,12 +2011,10 @@ ldns_zone_sign_nsec3(ldns_zone *zone, ldns_key_list *key_list, uint8_t algorithm
 	ldns_rr_list_free(orig_zone_rrs);
 	ldns_rr_set_ttl(nsec, ldns_rdf2native_int32(ldns_rr_rdf(ldns_zone_soa(zone), 6)));
 
-	/*
 	printf("Created NSEC3 for: ");
 	ldns_rdf_print(stdout, cur_dname);
 	printf(":\n");
 	ldns_rr_print(stdout, nsec);
-	*/
 	/* sort nsec3s separately, set nexts and append to signed zone */
 	ldns_rr_list_sort_nsec3(nsec3_rrs);
 	for (i = 0; i < ldns_rr_list_rr_count(nsec3_rrs); i++) {
