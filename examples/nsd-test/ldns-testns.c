@@ -68,6 +68,8 @@
 #define DEFAULT_PORT 53		/* default if no -p port is specified */
 #define CONN_BACKLOG 5		/* 5 connections queued up for tcp */
 static const char* prog_name = "ldns-testns";
+static FILE* logfile = 0;
+static int verbose = 0;
 
 enum transport_type {transport_any = 0, transport_udp, transport_tcp };
 
@@ -95,19 +97,30 @@ struct entry {
 
 static void usage()
 {
-	printf("Usage: %s [-p port] <datafile>\n", prog_name);
+	printf("Usage: %s [options] <datafile>\n", prog_name);
 	printf("  -p	listens on the specified port, default %d.\n", DEFAULT_PORT);
+	printf("  -v	more verbose, prints queries, answers and matching.\n");
 	printf("The program answers queries with canned replies from the datafile.\n");
 	exit(EXIT_FAILURE);
+}
+
+static void log_msg(const char* msg, ...)
+{
+	va_list args;
+	va_start(args, msg);
+	vfprintf(logfile, msg, args);
+	fflush(logfile);
+	va_end(args);
 }
 
 static void error(const char* msg, ...)
 {
 	va_list args;
 	va_start(args, msg);
-	printf("%s error: ", prog_name);
-	vprintf(msg, args);
-	printf("\n");
+	fprintf(logfile, "%s error: ", prog_name);
+	vfprintf(logfile, msg, args);
+	fprintf(logfile, "\n");
+	fflush(stdout);
 	va_end(args);
 	exit(EXIT_FAILURE);
 }
@@ -277,7 +290,7 @@ static void get_origin(const char* name, int lineno, ldns_rdf** origin, char* pa
 		end++;
 	store = *end;
 	*end = 0;
-	printf("parsing '%s'\n", parse);
+	log_msg("parsing '%s'\n", parse);
 	status = ldns_str2rdf_dname(origin, parse);
 	*end = store;
 	if (status != LDNS_STATUS_OK)
@@ -371,7 +384,7 @@ static struct entry* read_datafile(const char* name)
 
 
 	}
-	printf("Read %d entries\n", entry_num);
+	log_msg("Read %d entries\n", entry_num);
 
 	fclose(in);
 	return list;
@@ -401,7 +414,7 @@ static uint32_t get_serial(ldns_pkt* p)
 	rdf = ldns_rr_rdf(rr, 2);
 	if(!rdf) return 0;
 	val = ldns_rdf2native_int32(rdf);
-	printf("found serial %d in msg\n", (int)val);
+	if(verbose) log_msg("found serial %u in msg. ", (int)val);
 	return val;
 }
 
@@ -411,26 +424,33 @@ static struct entry* find_match(struct entry* entries, ldns_pkt* query_pkt,
 {
 	struct entry* p = entries;
 	for(p=entries; p; p=p->next) {
+		if(verbose) log_msg("comparepkt: ");
 		if(p->match_opcode && ldns_pkt_get_opcode(query_pkt) != 
 			ldns_pkt_get_opcode(p->reply)) {
+			if(verbose) log_msg("bad opcode\n");
 			continue;
 		}
 		if(p->match_qtype && get_qtype(query_pkt) != get_qtype(p->reply)) {
+			if(verbose) log_msg("bad qtype\n");
 			continue;
 		}
 		if(p->match_qname) {
 			if(!get_owner(query_pkt) || !get_owner(p->reply) ||
 				ldns_dname_compare(
 				get_owner(query_pkt), get_owner(p->reply)) != 0) {
+				if(verbose) log_msg("bad qname\n");
 				continue;
 			}
 		}
-		if(p->match_serial && get_serial(p->reply) != p->ixfr_soa_serial) {
+		if(p->match_serial && get_serial(query_pkt) != p->ixfr_soa_serial) {
+				if(verbose) log_msg("bad serial\n");
 				continue;
 		}
 		if(p->match_transport != transport_any && p->match_transport != transport) {
+			if(verbose) log_msg("bad transport\n");
 			continue;
 		}
+		if(verbose) log_msg("match!\n");
 		return p;
 	}
 	return NULL;
@@ -466,22 +486,29 @@ handle_query(uint8_t* inbuf, ssize_t inlen, struct entry* entries, int* count,
 
 	status = ldns_wire2pkt(&query_pkt, inbuf, (size_t)inlen);
 	if (status != LDNS_STATUS_OK) {
-		printf("Got bad packet: %s\n", ldns_get_errorstr_by_id(status));
+		log_msg("Got bad packet: %s\n", ldns_get_errorstr_by_id(status));
 		return NULL;
 	}
 	
 	query_rr = ldns_rr_list_rr(ldns_pkt_question(query_pkt), 0);
-	printf("query %d: id %d: %s %d bytes: ", ++(*count), (int)ldns_pkt_id(query_pkt), 
+	log_msg("query %d: id %d: %s %d bytes: ", ++(*count), (int)ldns_pkt_id(query_pkt), 
 		(transport==transport_tcp)?"TCP":"UDP", inlen);
-	ldns_rr_print(stdout, query_rr);
+	ldns_rr_print(logfile, query_rr);
+	if(verbose) ldns_pkt_print(logfile, query_pkt);
 	
 	/* fill up answer packet */
 	answer_pkt = get_answer(entries, query_pkt, transport);
-
-	status = ldns_pkt2wire(&outbuf, answer_pkt, answer_size);
-	printf("Answer packet size: %u bytes.\n", (unsigned int)*answer_size);
-	if (status != LDNS_STATUS_OK) {
-		printf("Error creating answer: %s\n", ldns_get_errorstr_by_id(status));
+	if(answer_pkt) {
+		if(verbose) log_msg("Answer pkt:\n");
+		if(verbose) ldns_pkt_print(logfile, answer_pkt);
+		status = ldns_pkt2wire(&outbuf, answer_pkt, answer_size);
+		log_msg("Answer packet size: %u bytes.\n", (unsigned int)*answer_size);
+		if (status != LDNS_STATUS_OK) {
+			log_msg("Error creating answer: %s\n", ldns_get_errorstr_by_id(status));
+			outbuf = NULL;
+		}
+	} else {
+		log_msg("no answer packet for this query, no reply.\n");
 		outbuf = NULL;
 	}
 	ldns_pkt_free(query_pkt);
@@ -504,7 +531,7 @@ handle_udp(int udp_sock, struct entry* entries, int *count)
 	nb = recvfrom(udp_sock, inbuf, INBUF_SIZE, 0, 
 		(struct sockaddr*)&addr_him, &hislen);
 	if (nb < 1) {
-		printf("recvfrom(): %s\n", strerror(errno));
+		log_msg("recvfrom(): %s\n", strerror(errno));
 		return;
 	}
 	outbuf = handle_query(inbuf, nb, entries, count, &answer_size,
@@ -516,9 +543,9 @@ handle_udp(int udp_sock, struct entry* entries, int *count)
 	nb = sendto(udp_sock, outbuf, answer_size, 0, 
 		(struct sockaddr*)&addr_him, hislen);
 	if(nb == -1)
-		printf("sendto(): %s\n", strerror(errno));
+		log_msg("sendto(): %s\n", strerror(errno));
 	else if((size_t)nb != answer_size)
-		printf("sendto(): only sent %d of %d octets.\n", 
+		log_msg("sendto(): only sent %d of %d octets.\n", 
 			(int)nb, (int)answer_size);
 	LDNS_FREE(outbuf);
 }
@@ -530,7 +557,7 @@ read_n_bytes(int sock, uint8_t* buf, size_t sz)
 	while(count < sz) {
 		ssize_t nb = read(sock, buf+count, sz-count);
 		if(nb < 0) {
-			printf("read(): %s\n", strerror(errno));
+			log_msg("read(): %s\n", strerror(errno));
 			return;
 		}
 		count += nb;
@@ -544,7 +571,7 @@ write_n_bytes(int sock, uint8_t* buf, size_t sz)
 	while(count < sz) {
 		ssize_t nb = write(sock, buf+count, sz-count);
 		if(nb < 0) {
-			printf("write(): %s\n", strerror(errno));
+			log_msg("write(): %s\n", strerror(errno));
 			return;
 		}
 		count += nb;
@@ -565,7 +592,7 @@ handle_tcp(int tcp_sock, struct entry* entries, int *count)
 	/* accept */
 	hislen = (socklen_t)sizeof(addr_him);
 	if((s = accept(tcp_sock, (struct sockaddr*)&addr_him, &hislen)) < 0) {
-		printf("accept(): %s\n", strerror(errno));
+		log_msg("accept(): %s\n", strerror(errno));
 		return;
 	}
 
@@ -573,7 +600,7 @@ handle_tcp(int tcp_sock, struct entry* entries, int *count)
 	read_n_bytes(s, (uint8_t*)&tcplen, sizeof(tcplen));
 	tcplen = ntohs(tcplen);
 	if(tcplen >= INBUF_SIZE) {
-		printf("query %d bytes too large, buffer %d bytes.\n",
+		log_msg("query %d bytes too large, buffer %d bytes.\n",
 			tcplen, INBUF_SIZE);
 		close(s);
 		return;
@@ -614,14 +641,19 @@ main(int argc, char **argv)
 	struct entry* entries;
 	
 	/* parse arguments */
+	logfile = stdout;
 	prog_name = argv[0];
-	while((c = getopt(argc, argv, "p:")) != -1) {
+	log_msg("%s: start\n", prog_name);
+	while((c = getopt(argc, argv, "p:v")) != -1) {
 		switch(c) {
 		case 'p':
 			port = atoi(optarg);
 			if (port < 1) {
 				error("Invalid port %s, use a number.", optarg);
 			}
+			break;
+		case 'v':
+			verbose++;
 			break;
 		default:
 			usage();
@@ -635,10 +667,10 @@ main(int argc, char **argv)
 		usage();
 	
 	datafile = argv[0];
-	printf("Reading datafile %s\n", datafile);
+	log_msg("Reading datafile %s\n", datafile);
 	entries = read_datafile(datafile);
 	
-	printf("Listening on port %d\n", port);
+	log_msg("Listening on port %d\n", port);
 	if((udp_sock = socket(AF_INET, SOCK_DGRAM, 0)) < 0) {
 		error("udp socket(): %s\n", strerror(errno));
 	}
