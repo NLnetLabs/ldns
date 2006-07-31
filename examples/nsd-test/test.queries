@@ -34,6 +34,20 @@ SECTION ADDITIONAL
 ENTRY_END
 
 ENTRY_BEGIN
+MATCH TCP opcode qname
+ADJUST copy_id
+SECTION QUESTION
+axfr.example.com. IN AXFR
+SECTION ANSWER
+axfr.example.com. IN SOA a. b. 10 60 60 60 60 60
+bla.axfr.example.com. IN TXT "bla"
+EXTRA_PACKET
+SECTION ANSWER
+bla.axfr.example.com. IN TXT "bla2"
+axfr.example.com. IN SOA a. b. 10 60 60 60 60 60
+ENTRY_END
+
+ENTRY_BEGIN
 MATCH TCP
 REPLY SERVFAIL
 ADJUST copy_id

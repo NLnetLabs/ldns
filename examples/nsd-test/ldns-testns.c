@@ -525,28 +525,31 @@ handle_query(uint8_t* inbuf, ssize_t inlen, struct entry* entries, int* count,
 	entry = find_match(entries, query_pkt, transport);
 	if(!entry || !entry->reply_list) {
 		log_msg("no answer packet for this query, no reply.\n");
+		ldns_pkt_free(query_pkt);
 		return;
 	}
 	for(p = entry->reply_list; p; p = p->next)
 	{
 		if(verbose) log_msg("Answer pkt:\n");
-		if(verbose) ldns_pkt_print(logfile, answer_pkt);
 		answer_pkt = ldns_pkt_clone(p->reply);
 		adjust_packet(entry, answer_pkt, query_pkt);
+		if(verbose) ldns_pkt_print(logfile, answer_pkt);
 		status = ldns_pkt2wire(&outbuf, answer_pkt, &answer_size);
 		log_msg("Answer packet size: %u bytes.\n", (unsigned int)answer_size);
 		if (status != LDNS_STATUS_OK) {
 			log_msg("Error creating answer: %s\n", ldns_get_errorstr_by_id(status));
-			outbuf = NULL;
+			ldns_pkt_free(query_pkt);
+			return;
 		}
-		ldns_pkt_free(query_pkt);
 		ldns_pkt_free(answer_pkt);
+		answer_pkt = NULL;
 
 		sendfunc(outbuf, answer_size, userdata);
 		LDNS_FREE(outbuf);
-		outbuf = 0;
+		outbuf = NULL;
 		answer_size = 0;
 	}
+	ldns_pkt_free(query_pkt);
 }
 
 struct handle_udp_userdata {
