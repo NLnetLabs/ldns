@@ -7,7 +7,7 @@
 #include <ldns/ldns.h>
 #include <pcap.h>
 
-#define FAILURE 100
+#define FAILURE 10000
 
 
 #ifndef ETHERTYPE_IPV6
@@ -198,7 +198,7 @@ main(int argc, char **argv)
 		ldns_buffer_clear(qpkt);
 		i++;
 		if (failure > FAILURE) {
-			fprintf(stderr, "More then 100 failures, bailing out\n");
+			fprintf(stderr, "More than %u failures, bailing out\n", FAILURE);
 			exit(EXIT_FAILURE);
 		}
 	}

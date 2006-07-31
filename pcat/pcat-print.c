@@ -44,7 +44,7 @@ main(int argc, char **argv)
 
 	while((read = getdelim(&line, &len, '\n', diff)) != -1) {
 		if (read < 2 || read > LDNS_MAX_PACKETLEN) {
-			fprintf(stderr, "Under- or overflow - skipping line %d\n", (int)i);
+			fprintf(stderr, "Under- or overflow (%u) - skipping line %d\n", read, (int)i);
 			i++;
 			continue;
 		}
@@ -67,6 +67,7 @@ main(int argc, char **argv)
 					k++;
 				}
 				s = ldns_wire2pkt(&p, pkt_buf, k);
+				fprintf(stdout, "=* %s\n", line);
 				if (s != LDNS_STATUS_OK) {
 					fprintf(stderr, "%s\n", ldns_get_errorstr_by_id(s));
 				} else {
