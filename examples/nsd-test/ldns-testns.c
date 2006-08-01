@@ -9,6 +9,20 @@
  */
 
 /*
+ * This program is a debugging aid. It can is not efficient, especially
+ * with a long config file, but it can give any reply to any query.
+ * This can help the developer pre-script replies for queries.
+ *
+ * It listens to IP4 UDP and TCP by default.
+ * You can specify a packet RR by RR with header flags to return.
+ *
+ * Missing features:
+ * 		- hexdump support, for 'formerr' packets.
+ *		- cannot mess up the header at present.
+ *		- matching content different from reply content.
+ */
+
+/*
 	The data file format is as follows:
 	
 	; comment.
