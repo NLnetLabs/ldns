@@ -89,6 +89,7 @@ create_plus_1_dname(ldns_rdf *dname)
 	ldns_rdf *label;
 	ldns_status status;
 	
+	ldns_dname2canonical(dname);
 	status = ldns_str2rdf_dname(&label, "\\000");
 	if (status != LDNS_STATUS_OK) {
 		printf("error creating \\000 dname: %s\n\n", ldns_get_errorstr_by_id(status));
