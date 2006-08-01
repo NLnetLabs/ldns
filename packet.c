@@ -232,7 +232,7 @@ void
 ldns_pkt_set_edns_do(ldns_pkt *packet, bool value)
 {
 	if (value) {
-		packet->_edns_z = packet->_edns_z & LDNS_EDNS_MASK_DO_BIT;
+		packet->_edns_z = packet->_edns_z | LDNS_EDNS_MASK_DO_BIT;
 	} else {
 		packet->_edns_z = packet->_edns_z & !LDNS_EDNS_MASK_DO_BIT;
 	}

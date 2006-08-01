@@ -1179,7 +1179,7 @@ ldns_nsec_bitmap_covers_type(const ldns_rdf *nsec_bitmap, ldns_rr_type type)
 }
 
 bool
-ldns_nsec_covers_name(const ldns_rr *nsec, ldns_rdf *name)
+ldns_nsec_covers_name(const ldns_rr *nsec, const ldns_rdf *name)
 {
 	ldns_rdf *nsec_owner = ldns_rr_owner(nsec);
 	ldns_rdf *nsec_next = ldns_rr_rdf(nsec, 0);

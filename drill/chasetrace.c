@@ -240,6 +240,8 @@ do_chase(ldns_resolver *res, ldns_rdf *name, ldns_rr_type type, ldns_rr_class c,
 	ldns_lookup_table *lt;
 	const ldns_rr_descriptor *descriptor;
 	
+	ldns_dname2canonical(name);
+	
 	pkt = ldns_pkt_clone(pkt_o);
 	if (!name) {
 		mesg("No name to chase");
@@ -437,6 +439,8 @@ do_chase(ldns_resolver *res, ldns_rdf *name, ldns_rr_type type, ldns_rr_class c,
 		/* Try to see if there are NSECS in the packet */
 		nsecs = ldns_pkt_rr_list_by_type(pkt, LDNS_RR_TYPE_NSEC, LDNS_SECTION_ANY_NOQUESTION);
 		result = LDNS_STATUS_CRYPTO_NO_RRSIG;
+		
+		ldns_rr_list2canonical(nsecs);
 		
 		for (nsec_i = 0; nsec_i < ldns_rr_list_rr_count(nsecs); nsec_i++) {
 			/* there are four options:

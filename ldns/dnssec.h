@@ -195,11 +195,15 @@ bool ldns_nsec_bitmap_covers_type(const ldns_rdf *nsec_bitmap, ldns_rr_type type
 
 /**
  * Checks coverage of NSEC RR name span
+ * Remember that nsec and name must both be in canonical form (ie use
+ * \ref ldns_rr2canonical and \ref ldns_dname2canonical prior to calling this
+ * function)
+ *
  * \param[in] nsec The NSEC RR to check
  * \param[in] name The owner dname to check
  * \return true if the NSEC RR covers the owner name
  */
-bool ldns_nsec_covers_name(const ldns_rr *nsec, ldns_rdf *name);
+bool ldns_nsec_covers_name(const ldns_rr *nsec, const ldns_rdf *name);
 
 /**
  * verify a packet 
