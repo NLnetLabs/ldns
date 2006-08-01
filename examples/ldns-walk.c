@@ -34,7 +34,9 @@ create_dname_plus_1(ldns_rdf *dname)
 	uint8_t labellen;
 	size_t pos;
 	ldns_status status;
+	size_t i;
 	
+	ldns_dname2canonical(dname);
 	labellen = ldns_rdf_data(dname)[0];
 	if (labellen < 63) {
 		wire = malloc(ldns_rdf_size(dname) + 1);
@@ -50,8 +52,27 @@ create_dname_plus_1(ldns_rdf *dname)
 		status = ldns_wire2dname(&newdname, wire, ldns_rdf_size(dname) + 1, &pos);
 		free(wire);
 	} else {
-		fprintf(stderr, "maxlen not supported yet\n");
-		exit(9);
+		wire = malloc(ldns_rdf_size(dname));
+		if (!wire) {
+			fprintf(stderr, "Malloc error: out of memory?\n");
+			exit(127);
+		}
+		wire[0] = labellen;
+		memcpy(&wire[1], ldns_rdf_data(dname) + 1, labellen);
+		memcpy(&wire[labellen], ldns_rdf_data(dname) + labellen, ldns_rdf_size(dname) - labellen);
+		i = labellen;
+		while (wire[i] == 255) {
+			if (i == 0) {
+				printf("Error, don't know how to add 1 to a label with maximum length and all values on 255\n");
+				exit(9);
+			} else {
+				i--;
+			}
+		}
+		wire[i] = wire[i] + 1;
+		pos = 0;
+		status = ldns_wire2dname(&newdname, wire, ldns_rdf_size(dname) + 1, &pos);
+		free(wire);
 	}
 
 	if (status != LDNS_STATUS_OK) {
