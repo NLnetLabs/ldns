@@ -182,7 +182,7 @@ ldns_zone_new_frm_fp_l(ldns_zone **z, FILE *fp, ldns_rdf *origin, uint16_t ttl, 
 		my_prev   = ldns_rdf_clone(origin);
 	} else {
 		my_origin = ldns_dname_new_frm_str(".");
-		my_prev = ldns_dname_new_frm_str(".");
+		my_prev = NULL;
 	}
 
 	while(!feof(fp)) {

@@ -255,6 +255,8 @@ ldns_rr_new_frm_str(ldns_rr **newrr, const char *str, uint16_t default_ttl, ldns
 	if (strlen(owner) <= 1 && strncmp(owner, "@", 1) == 0) {
 		if (origin) {
 			ldns_rr_set_owner(new, ldns_rdf_clone(origin));
+		} else if (prev && *prev) {
+			ldns_rr_set_owner(new, ldns_rdf_clone(*prev));			
 		} else {
 			/* default to root */
 			ldns_rr_set_owner(new, ldns_dname_new_frm_str("."));
