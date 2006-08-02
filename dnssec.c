@@ -1250,7 +1250,7 @@ ldns_pkt_verify(ldns_pkt *p, ldns_rr_type t, ldns_rdf *o,
 }
 
 ldns_zone *
-ldns_zone_sign(ldns_zone *zone, ldns_key_list *key_list)
+ldns_zone_sign(const ldns_zone *zone, ldns_key_list *key_list)
 {
 	/*
 	 * Algorithm to be created:
@@ -1378,7 +1378,7 @@ ldns_zone_sign(ldns_zone *zone, ldns_key_list *key_list)
 	}
 	ldns_rr_list_deep_free(signed_zone_rrs);
 	ldns_rr_list_deep_free(pubkeys);
-	ldns_rr_list_deep_free(glue_rrs);
+	ldns_rr_list_free(glue_rrs);
 	return signed_zone;
 	
 }
