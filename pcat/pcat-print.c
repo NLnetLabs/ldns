@@ -44,7 +44,7 @@ main(int argc, char **argv)
 
 	while((read = getdelim(&line, &len, '\n', diff)) != -1) {
 		if (read < 2 || read > LDNS_MAX_PACKETLEN) {
-			fprintf(stderr, "Under- or overflow (%u) - skipping line %d\n", (unsigned)read, (int)i);
+			fprintf(stderr, "Under- or overflow (%d) - skipping line %d\n", (int)read, (int)i);
 			i++;
 			continue;
 		}
