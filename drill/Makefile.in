@@ -18,7 +18,7 @@ LIBS = @LIBS@
 INSTALL = $(srcdir)/install-sh -c
 INSTALL_PROGRAM = $(INSTALL)
 LDNSDIR = @LDNSDIR@
-LIBS_STC = -lpcap -lcrypto $(LDNSDIR)/lib/libldns.a
+LIBS_STC = -lcrypto $(LDNSDIR)/lib/libldns.a
 
 COMPILE         = $(CC) -Wall $(CPPFLAGS) $(CFLAGS) -I. -I$(srcdir)
 LINK            = $(CC) $(CFLAGS) $(LDFLAGS) 
