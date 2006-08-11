@@ -31,9 +31,9 @@ all:	p
 all-static:	pcat-stc pcat-diff-stc pcat-print-stc
 
 p: 	pcat pcat-diff pcat-print
-	strip pcat
-	strip pcat-diff
-	strip pcat-print
+#	strip pcat
+#	strip pcat-diff
+#	strip pcat-print
 
 pcat: 		pcat.o getdelim.o
 		$(LINK) -o $@ $+ $(LIBS)

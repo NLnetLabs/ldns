@@ -17,7 +17,12 @@ Pcat consists out of three programs:
         then compare these and prints the differences to standard
         output.
 
-        The output format is simular to that of 'pcat'.
+        The output format is simular to that of 'pcat', and can be
+	viewed with pcat-print.
+
+	Alternatively, pcat-diff can do advanced checking on differences,
+	in which case the output will differ. See "Advanced Differences"
+	for more on this.
 
         3. pcat-print
         This program reads the 'diff' as printed by 'pcat-diff' and
@@ -41,7 +46,7 @@ specified as follows:
 
 Each hex dump is a query in network order, printed as hexadecimal.
 
-2. Usage
+3. Usage
 All pcat utils are created as filters, thus they will read from a file
 or standard input. All output is send to standard output.
 
@@ -64,4 +69,108 @@ can use pcap-print:
 
 Or it can all be done with pipes, eliminating the need of files.
 ./pcat-diff <(./pcat -a 213.154.224.1 20011009-134418-q50000.pkt) \
-<(./pcat 213.154.224.1 -p 5454 20011009-134418-q50000.pkt) | ./pcat-print      
+<(./pcat 213.154.224.1 -p 5454 20011009-134418-q50000.pkt) | ./pcat-print
+
+
+4. Advanced differences
+
+You can let pcat-diff do more intelligent checking on the differences between
+two outputs of pcat. In this mode, pcat-diff takes an argument specifying a
+directory containing files whose name end in .match. These files specify
+'Known' differences. It works like this:
+
+If a difference between two answer packets is found, the packet is first
+normalized; the packet dates is changed to match, and each section is
+sorted. If these changes still don't make the packets equal, the
+match-specifications in the specified directory are consulted.
+
+These specifications contain 3 elements; a 1-line description of the type of
+difference, a specification the question must match, and a specification
+that both answer packets must match.
+
+The first line contains the specification, the following lines the
+specifications, separated by a line starting with an exclamation mark.
+
+A specification looks like the normal output of drill and dig. It is based
+on the text representation format from the DNS RFCs. It can contain the
+following special characters:
+
+    * whitespace: whitespace is skipped and ignored
+    * ?: Following a question mark, all characters up to the next
+         whitespace are optional, so they can either exist or not in the answer
+    * []: Square brackets contain a list of words/values of which exactly
+          one must be present in the packets.
+    * *: A star specifies that the packets may contain everything until it
+         matches the next character in the specification. You can use
+         multiple stars in a row, the number of stars specify the number of
+         next characters that must match before continuing.
+    * &: The ampersand works the same as the *, but in this case the value
+         that matches must be exactly the same in both packets.
+
+There are 2 special cases that can be used instead of a packet description:
+
+    * BADPACKET: if you use this as the complete description of the query
+                 packet, this matches any query that cannot be parsed
+    * NOANSWER: if you use this as the complete description of the answer
+                packet, this matches *both* packets if *one* had no answer
+                (the other packet is ignored, if both packets had no answer,
+                they were equal anyway)
+
+
+Example:
+
+Different additional section
+*
+!
+;; ->>HEADER<<- opcode: &, rcode: &, id: &
+;; flags: & ; QUERY: &, ANSWER: &, AUTHORITY: &, ADDITIONAL: &
+;; QUESTION SECTION:
+;; &&&&&
+
+;; ANSWER SECTION:
+&&&&&
+
+;; AUTHORITY SECTION:
+&&&&&
+
+;; ADDITIONAL SECTION:
+*****
+
+;; Query time: & msec
+&&&&&
+;; WHEN: &
+;; MSG SIZE  rcvd: &
+
+The description of this examples is 'Different additional section'.
+
+The query specification contains only one *, so every query matches this.
+
+The answer specification specifies that the packets must be completely
+equal, except for the additional part. The additional part must, however,
+contain an equal amount of entries (see the & after ADDITIONAL in line 2).
+
+In the question section, 5 &'s are used, so that everything passes until the
+packets contain the text ';; AU'. This could of course be expanded to
+completely match the text ';; AUTHORITY SECTION', by using even more
+ampersands.
+
+
+If pcat-diff in advanced mode encounters a difference which is not known, it
+prints the index number, query, and both answers, and then quits. It is
+expected that the user studies the new and unexpected difference, captures
+it in a match specification, and runs pcat-diff again. To speed up the
+process of finding all differences, you can start from the index number that
+was printed by using the option -s <index>.
+
+If you want to know a bit more about why the packets did not match, you can
+specify verbose mode with -v. It is not advisable to do this on the complete
+input, but rather use -s to start with the offending packet. Verbose mode
+produces a LOT of output.
+
+If the complete files have been read, and no unknown differences have been
+found, statistics are printed about the known differences encountered.
+Because this can take a long time, you can use '-p <nr>' to print
+preliminary results every nr packets.
+
+
+
