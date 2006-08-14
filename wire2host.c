@@ -104,7 +104,9 @@ ldns_wire2dname(ldns_rdf **dname, const uint8_t *wire, size_t max, size_t *pos)
 		}
 		
 		tmp_dname[dname_pos] = label_size;
-		dname_pos++;
+		if (label_size > 0) {
+			dname_pos++;
+		}
 		*pos = *pos + 1;
 		memcpy(&tmp_dname[dname_pos], &wire[*pos], label_size);
 		uncompressed_length += label_size + 1;
