@@ -43,6 +43,7 @@ size_t udp_packets = 0;
 size_t tcp_packets = 0;
 size_t fragmented_packets = 0;
 size_t lost_packet_fragments = 0;
+FILE *hexdumpfile = NULL;
 pcap_dumper_t *dumper = NULL;
 pcap_dumper_t *not_ip_dump = NULL;
 pcap_dumper_t *bad_dns_dump = NULL;
@@ -487,6 +488,39 @@ print_counters(FILE *output, match_counters *counters, bool show_percentages, si
 	}
 	
 	return;	
+}
+
+void
+ldns_pkt2file_hex(FILE *fp, const ldns_pkt *pkt)
+{
+	uint8_t *wire;// = xmalloc((packet->udppacketsize)*21);
+	size_t size, i;
+	ldns_status status;
+	
+	status = ldns_pkt2wire(&wire, pkt, &size);
+	
+	if (status != LDNS_STATUS_OK) {
+		fprintf(stderr, "Unable to convert packet: error code %u", status);
+		return;
+	}
+	
+	fprintf(fp, "; 0");
+	for (i = 1; i < 20; i++) {
+		fprintf(fp, " %2u", (unsigned int) i);
+	}
+	fprintf(fp, "\n");
+	fprintf(fp, ";--");
+	for (i = 1; i < 20; i++) {
+		fprintf(fp, " --");
+	}
+	fprintf(fp, "\n");
+	for (i = 0; i < size; i++) {
+		if (i % 20 == 0 && i > 0) {
+			fprintf(fp, "\t; %4u-%4u\n", (unsigned int) i-19, (unsigned int) i);
+		}
+		fprintf(fp, " %02x", (unsigned int)wire[i]);
+	}
+	fprintf(fp, "\n\n");
 }
 
 /*
@@ -1899,6 +1933,7 @@ usage(FILE *output)
 	fprintf(output, "\t-h:\t\tshow this help\n");
 	fprintf(output, "\t-p:\t\tshow percentage of -u and -c values (of the total of\n\t\t\tmatching on the -f filter. if no filter is given,\n\t\t\tpercentages are on all correct dns packets)\n");
 	fprintf(output, "\t-of <file>:\tWrite pcap packets that match the -f flag to file\n");
+	fprintf(output, "\t-ofh <file>:\tWrite pcap packets that match the -f flag to file\n\t\tin a hexadecimal format readable by drill\n");
 	fprintf(output, "\t-s:\t\tshow possible match names\n");
 	fprintf(output, "\t-s <matchname>:\tshow possible match operators and values for <name>\n");
 	fprintf(output, "\t-sf:\t\tPrint packet that match -f. If no -f is given, print\n\t\t\tall dns packets\n");
@@ -2041,7 +2076,6 @@ handle_ether_packet(const u_char *data, struct pcap_pkthdr cur_hdr, match_counte
 	uint16_t ip_id;
 	uint16_t ip_f_offset;
 	const u_char *newdata = NULL;
-
 /*
 printf("timeval: %u ; %u\n", cur_hdr.ts.tv_sec, cur_hdr.ts.tv_usec);
 */
@@ -2228,6 +2262,10 @@ printf("timeval: %u ; %u\n", cur_hdr.ts.tv_sec, cur_hdr.ts.tv_usec);
 							if (dumper) {
 								pcap_dump((u_char *)dumper, &cur_hdr, data);
 							}
+							if (hexdumpfile) {
+								fprintf(hexdumpfile, ";; %u\n", (unsigned int) total_nr_of_dns_packets);
+								ldns_pkt2file_hex(hexdumpfile, pkt);
+							}
 							if (show_filter_matches) {
 								printf(";; From: ");
 								ldns_rdf_print(stdout, src_addr);
@@ -2245,6 +2283,13 @@ printf("timeval: %u ; %u\n", cur_hdr.ts.tv_sec, cur_hdr.ts.tv_usec);
 							return 0;
 						}
 					} else {
+						if (dumper) {
+							pcap_dump((u_char *)dumper, &cur_hdr, data);
+						}
+						if (hexdumpfile) {
+							fprintf(hexdumpfile, ";; %u\n", (unsigned int) total_nr_of_dns_packets);
+							ldns_pkt2file_hex(hexdumpfile, pkt);
+						}
 						if (show_filter_matches) {
 							printf(";; From: ");
 							ldns_rdf_print(stdout, src_addr);
@@ -2542,6 +2587,7 @@ int main(int argc, char *argv[]) {
 	size_t unique_id_count = 0; /* number of unique counters */
 	match_counters *uniques = malloc(sizeof(match_counters));
 	char *dumpfile = NULL;
+	char *hexdumpfilename = NULL;
 	char *not_ip_dumpfile = NULL;
 	char *bad_dns_dumpfile = NULL;
 
@@ -2616,6 +2662,15 @@ int main(int argc, char *argv[]) {
 		} else if (strncmp(argv[i], "-of", 4) == 0) {
 			if (i + 1 < argc) {
 				dumpfile = argv[i + 1];
+				i++;
+			} else {
+				usage(stderr);
+				status = EXIT_FAILURE;
+				goto exit;
+			}
+		} else if (strncmp(argv[i], "-ofh", 5) == 0) {
+			if (i + 1 < argc) {
+				hexdumpfilename = argv[i + 1];
 				i++;
 			} else {
 				usage(stderr);
@@ -2700,7 +2755,23 @@ int main(int argc, char *argv[]) {
 	        dumper = pcap_dump_open(pc, dumpfile);
 
 		if (!dumper) {
-			printf("Error opening pcap dump file %s: %s\n", dumpfile, errbuf);			exit(1);
+			printf("Error opening pcap dump file %s: %s\n", dumpfile, errbuf);
+			exit(1);
+		}
+	}
+
+	if (hexdumpfilename) {
+		if (strncmp(hexdumpfilename, "-", 2) != 0) {
+			printf("hexdump is file\n");
+		        hexdumpfile = fopen(hexdumpfilename, "w");
+		} else {
+			printf("hexdump is stdout\n");
+			hexdumpfile = stdout;
+		}
+
+		if (!hexdumpfile) {
+			printf("Error opening hex dump file %s: %s\n", hexdumpfilename, strerror(errno));
+			exit(1);
 		}
 	}
 
@@ -2734,6 +2805,10 @@ int main(int argc, char *argv[]) {
 
 	if (dumper) {
 		pcap_dump_close(dumper);
+	}
+	
+	if (hexdumpfile && hexdumpfile != stdout) {
+		fclose(hexdumpfile);
 	}
 
 	pcap_close(pc);
