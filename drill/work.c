@@ -196,6 +196,7 @@ read_hex_pkt(char *filename)
 	if (status == LDNS_STATUS_OK) {
 		return pkt;
 	} else {
+		fprintf(stderr, "Error parsing hex file: %s\n", ldns_get_errorstr_by_id(status));
 		return NULL;
 	}
 }
