@@ -53,6 +53,8 @@
 	; any additional actions to do.
 	; 'copy_id' copies the ID from the query to the answer.
 	ADJUST copy_id
+	; 'sleep=10' sleeps for 10 seconds before giving the answer (TCP is open)
+	ADJUST [sleep=<num>]
 	SECTION QUESTION
 	<RRs, one per line>    ; the RRcount is determined automatically.
 	SECTION ANSWER
@@ -111,6 +113,7 @@ struct entry {
 
 	/* how to adjust the reply packet */
 	bool copy_id; /* copy over the ID from the query into the answer */
+	int sleeptime; /* in seconds */
 
 	/* next in list */
 	struct entry* next;
@@ -289,6 +292,10 @@ static void adjustline(const char* line, struct entry* e)
 			return;
 		if(str_keyword(&parse, "copy_id")) {
 			e->copy_id = true;
+		} else if(str_keyword(&parse, "sleep=")) {
+			e->sleeptime = strtol(parse, (char**)&parse, 10);
+			while(isspace(*parse)) 
+				parse++;
 		} else {
 			error("could not parse ADJUST: '%s'", parse);
 		}
@@ -307,6 +314,7 @@ static struct entry* new_entry()
 	e->match_transport = transport_any;
 	e->reply_list = NULL;
 	e->copy_id = false;
+	e->sleeptime = 0;
 	e->next = NULL;
 	return e;
 }
@@ -503,6 +511,10 @@ adjust_packet(struct entry* match, ldns_pkt* answer_pkt, ldns_pkt* query_pkt)
 	/* copy & adjust packet */
 	if(match->copy_id)
 		ldns_pkt_set_id(answer_pkt, ldns_pkt_id(query_pkt));
+	if(match->sleeptime > 0) {
+		if(verbose) log_msg("sleeping for %d seconds\n", match->sleeptime);
+		sleep(match->sleeptime);
+	}
 }
 
 /*
