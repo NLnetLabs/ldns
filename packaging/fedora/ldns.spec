@@ -7,7 +7,7 @@ Url: http://www.nlnetlabs.nl/%{name}/
 Source: http://www.nlnetlabs.nl/downloads/%{name}-%{version}.tar.gz
 Group: System Environment/Libraries
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
-Requires: openssl, libpcap
+Requires: openssl
 BuildRequires: libtool, autoconf, automake, gcc-c++, openssl-devel, doxygen, perl
 
 %description
@@ -74,14 +74,12 @@ rm -rf %{buildroot}
 
 %pre
 
-%post 
-/sbin/ldconfig
+%post -p /sbin/ldconfig
 
-%postun
-/sbin/ldconfig
+%postun -p /sbin/ldconfig
 
 %changelog
-* Tue Aug 15 2006 Wouter Wijngaards <wouter@nlnetlabs.nl> 1.1.0
+* Tue Aug 15 2006 Wouter Wijngaards <wouter@nlnetlabs.nl> 1.1.0-1
 - reworked for new Makefile. configure calls by build script.
 - names the docs for devel package in more detail.
 
