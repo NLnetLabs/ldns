@@ -49,7 +49,7 @@ struct match_file_struct {
 struct match_file_struct match_files[MAX_MATCH_FILES];
 size_t match_file_count = 0;
 
-bool verbose = false;
+bool verbosity = 0;
 
 int max_number = 0;
 int min_number = 0;
@@ -199,7 +199,6 @@ packetbuffromfile(char *hexbuf, uint8_t *wire)
 	while (hexbufpos < strlen(hexbuf) && hexbufpos < LDNS_MAX_PACKETLEN) {
 		c = hexbuf[hexbufpos];
 		if (state < 2 && !isascii(c)) {
-			/*verbose("non ascii character found in file: (%d) switching to raw mode\n", c);*/
 			state = 2;
 		}
 		switch (state) {
@@ -232,23 +231,6 @@ packetbuffromfile(char *hexbuf, uint8_t *wire)
 		}
 	}
 
-	if (c == EOF) {
-		/*
-		if (have_drill_opt && drill_opt->verbose) {
-			verbose("END OF FILE REACHED\n");
-			if (state < 2) {
-				verbose("read:\n");
-				verbose("%s\n", hexbuf);
-			} else {
-				verbose("Not printing wire because it contains non ascii data\n");
-			}
-		}
-		*/
-	}
-	if (hexbufpos >= LDNS_MAX_PACKETLEN) {
-		/*verbose("packet size reached\n");*/
-	}
-	
 	/* lenient mode: length must be multiple of 2 */
 	if (hexbufpos % 2 != 0) {
 		hexbuf[hexbufpos] = (uint8_t) '0';
@@ -286,7 +268,7 @@ read_hex_pkt(char *hex_data)
 	if (status == LDNS_STATUS_OK) {
 		return pkt;
 	} else {
-		if (verbose) {
+		if (verbosity > 0) {
 			fprintf(stderr, "Parse error: %s\n", ldns_get_errorstr_by_id(status));
 			fprintf(stderr, "%s\n", hex_data);
 		}
@@ -380,6 +362,21 @@ int file_filter(const struct dirent *f)
 }
 
 #define MAX_DESCR_LEN 100
+
+bool
+compare_query()
+{
+	bool result = true;
+	return result;
+}
+
+bool
+compare_packets()
+{
+	bool result = true;
+	return result;
+}
+
 char *
 compare_to_file(ldns_pkt *qp, ldns_pkt *pkt1, ldns_pkt *pkt2)
 {
@@ -403,7 +400,7 @@ compare_to_file(ldns_pkt *qp, ldns_pkt *pkt1, ldns_pkt *pkt2)
 	max_i1 = strlen(pkt_str1);
 	max_i2 = strlen(pkt_str2);
 
-	if (verbose) {
+	if (verbosity > 3) {
 		printf("PACKET 1:\n");
 		ldns_pkt_print(stdout, pkt1);
 		printf("\n\n\nPACKET 2:\n");
@@ -418,7 +415,7 @@ compare_to_file(ldns_pkt *qp, ldns_pkt *pkt1, ldns_pkt *pkt2)
 		query_match = match_files[cur_file_nr].query_match;
 		answer_match = match_files[cur_file_nr].answer_match;
 
-		if (verbose) {
+		if (verbosity > 3) {
 			printf("MATCH TO:\n");
 			printf("descr: %s\n", description);
 			printf("%s\n", answer_match);
@@ -476,7 +473,7 @@ compare_to_file(ldns_pkt *qp, ldns_pkt *pkt1, ldns_pkt *pkt2)
 					if (iq < max_iq) {
 						iq++;
 					} else {
-						if (verbose) {
+						if (verbosity > 1) {
 							printf("End of query packet reached while doing a * check\n");
 						}
 						same = false;
@@ -518,7 +515,7 @@ compare_to_file(ldns_pkt *qp, ldns_pkt *pkt1, ldns_pkt *pkt2)
 				      	if (iq < max_iq) {
 					      	iq++;
 					} else {
-						if (verbose) {
+						if (verbosity > 1) {
 							fprintf(stderr, "End query packet reached while looking for a match word ([])\n");
 						}
 						same = false;
@@ -529,7 +526,7 @@ compare_to_file(ldns_pkt *qp, ldns_pkt *pkt1, ldns_pkt *pkt2)
 				for (k = 0; k < match_word_count; k++) {
 					if (strncmp(&pkt_query[iq], match_words[k], strlen(match_words[k])) == 0) {
 						/* ok */
-						if (verbose) {
+						if (verbosity > 1) {
 							printf("Found in 1, skipping\n");
 						}
 						iq += strlen(match_words[k]);
@@ -538,7 +535,7 @@ compare_to_file(ldns_pkt *qp, ldns_pkt *pkt1, ldns_pkt *pkt2)
 				}
 				found_iq:
 				if (k == match_word_count) {
-					if (verbose) {
+					if (verbosity > 1) {
 						fprintf(stderr, "no match word found in query packet. Rest of packet:\n");
 						fprintf(stderr, "%s\n", &pkt_query[iq]);
 					}
@@ -573,7 +570,7 @@ compare_to_file(ldns_pkt *qp, ldns_pkt *pkt1, ldns_pkt *pkt2)
 				}
 
 			} else {
-				if (verbose) {
+				if (verbosity > 1) {
 					printf("Difference at iq: %u, j: %u, (%c != %c)\n", (unsigned int) iq, (unsigned int) j, pkt_query[iq], query_match[j]);
 				}
 				same = false;
@@ -582,7 +579,7 @@ compare_to_file(ldns_pkt *qp, ldns_pkt *pkt1, ldns_pkt *pkt2)
 		
 		querymatch:
 		
-		if (same && verbose) {
+		if (same && verbosity > 0) {
 			printf("query matches\n");
 		}
 		
@@ -656,7 +653,7 @@ compare_to_file(ldns_pkt *qp, ldns_pkt *pkt1, ldns_pkt *pkt2)
 					if (i1 < max_i1) {
 						i1++;
 					} else {
-						if (verbose) {
+						if (verbosity > 1) {
 							printf("End of pkt1 reached while doing an & check\n");
 						}
 						same = false;
@@ -664,13 +661,13 @@ compare_to_file(ldns_pkt *qp, ldns_pkt *pkt1, ldns_pkt *pkt2)
 					if (i2 < max_i2) {
 						i2++;
 					} else {
-						if (verbose) {
+						if (verbosity > 1) {
 							printf("End of pkt2 reached while doing an & check\n");
 						}
 						same = false;
 					}
 					if (pkt_str1[i1] != pkt_str2[i2]) {
-						if (verbose) {
+						if (verbosity > 1) {
 							printf("Difference between the packets where they should be equal: %c != %c (%u, %u)\n", pkt_str1[i1], pkt_str2[i2], (unsigned int) i1, (unsigned int) i2);
 						}
 						same = false;
@@ -701,7 +698,7 @@ compare_to_file(ldns_pkt *qp, ldns_pkt *pkt1, ldns_pkt *pkt2)
 					if (i1 < max_i1) {
 						i1++;
 					} else {
-						if (verbose) {
+						if (verbosity > 1) {
 							printf("End of pkt1 reached while doing a * check\n");
 						}
 						same = false;
@@ -712,7 +709,7 @@ compare_to_file(ldns_pkt *qp, ldns_pkt *pkt1, ldns_pkt *pkt2)
 					if (i2 < max_i2) {
 						i2++;
 					} else {
-						if (verbose) {
+						if (verbosity > 1) {
 							printf("End of pkt2 reached while doing a * check\n");
 						}
 						same = false;
@@ -754,7 +751,7 @@ compare_to_file(ldns_pkt *qp, ldns_pkt *pkt1, ldns_pkt *pkt2)
 				      	if (i1 < max_i1) {
 					      	i1++;
 					} else {
-						if (verbose) {
+						if (verbosity > 1) {
 							fprintf(stderr, "End of pkt 1 reached while looking for a match word ([])\n");
 						}
 						same = false;
@@ -765,7 +762,7 @@ compare_to_file(ldns_pkt *qp, ldns_pkt *pkt1, ldns_pkt *pkt2)
 				for (k = 0; k < match_word_count; k++) {
 					if (strncmp(&pkt_str1[i1], match_words[k], strlen(match_words[k])) == 0) {
 						/* ok */
-						if (verbose) {
+						if (verbosity > 1) {
 							printf("Found %s in 1, skipping\n", match_words[k]);
 						}
 						i1 += strlen(match_words[k]);
@@ -774,7 +771,7 @@ compare_to_file(ldns_pkt *qp, ldns_pkt *pkt1, ldns_pkt *pkt2)
 				}
 				found1:
 				if (k >= match_word_count) {
-					if (verbose) {
+					if (verbosity > 1) {
 						fprintf(stderr, "no match word found in packet 1. Rest of packet:\n");
 						fprintf(stderr, "%s\n", &pkt_str1[i1]);
 					}
@@ -788,7 +785,7 @@ compare_to_file(ldns_pkt *qp, ldns_pkt *pkt1, ldns_pkt *pkt2)
 				      	if (i2 < max_i2) {
 					      	i2++;
 					} else {
-						if (verbose) {
+						if (verbosity > 1) {
 							fprintf(stderr, "End of pkt 2 reached while looking for a match word ([])\n");
 						}
 						same = false;
@@ -799,7 +796,7 @@ compare_to_file(ldns_pkt *qp, ldns_pkt *pkt1, ldns_pkt *pkt2)
 				for (k = 0; k < match_word_count; k++) {
 					if (strncmp(&pkt_str2[i2], match_words[k], strlen(match_words[k])) == 0) {
 						/* ok */
-						if (verbose) {
+						if (verbosity > 1) {
 							printf("Match word %s found in 2, skipping\n", match_words[k]);
 						}
 						i2 += strlen(match_words[k]);
@@ -808,7 +805,7 @@ compare_to_file(ldns_pkt *qp, ldns_pkt *pkt1, ldns_pkt *pkt2)
 				}
 				found2:
 				if (k >= match_word_count) {
-					if (verbose) {
+					if (verbosity > 1) {
 						fprintf(stdout, "no match word found in packet 2. Rest of packet:\n");
 						fprintf(stdout, "%s\n", &pkt_str2[i2]);
 					}
@@ -856,7 +853,7 @@ compare_to_file(ldns_pkt *qp, ldns_pkt *pkt1, ldns_pkt *pkt2)
 					}
 				}
 			} else {
-				if (verbose) {
+				if (verbosity > 1) {
 					printf("Difference at i1: %u, j: %u, (%c != %c)\n", (unsigned int) i1, (unsigned int) j, pkt_str1[i1], answer_match[j]);
 					printf("rest of packet1:\n");
 					printf("%s\n\n\n", &pkt_str1[i1]);
@@ -872,7 +869,7 @@ compare_to_file(ldns_pkt *qp, ldns_pkt *pkt1, ldns_pkt *pkt2)
 		if (same) {
 			goto match;
 		} else {
-			if (verbose) {
+			if (verbosity > 0) {
 				printf("no match\n");
 			}
 		}
@@ -881,7 +878,7 @@ compare_to_file(ldns_pkt *qp, ldns_pkt *pkt1, ldns_pkt *pkt2)
 	LDNS_FREE(pkt_str1);
 	LDNS_FREE(pkt_str2);
 	
-	if (verbose) {
+	if (verbosity > 0) {
 		printf("<<<<<<< NO MATCH >>>>>>>>\n");
 		printf("Query: %s\n", pkt_query);
 		printf("Packet1:\n%s\n", pkt_str1);
@@ -890,7 +887,7 @@ compare_to_file(ldns_pkt *qp, ldns_pkt *pkt1, ldns_pkt *pkt2)
 	return NULL;
 	
 	match:
-	if (verbose) {
+	if (verbosity > 0) {
 		printf("<<<<<<< MATCH!!! >>>>>>>>\n");
 		printf("Query: %s\n", pkt_query);
 		printf("Packet1:\n%s\n", pkt_str1);
@@ -914,7 +911,7 @@ compare(struct dns_info *d1, struct dns_info *d2)
 	struct timeval now;
 	char *compare_result;
 	gettimeofday(&now, NULL);
-	if (verbose) {
+	if (verbosity > 0) {
 		printf("Id: %u\n", (unsigned int) d1->seq);
 	}
 	
@@ -1053,7 +1050,7 @@ read_match_files(char *directory)
 	for (cur_file_nr = 0; cur_file_nr < nr_of_files; cur_file_nr++) {
 	/* handle all files in dir */
 		cur_file_name = files[cur_file_nr]->d_name;
-		if (verbose) {
+		if (verbosity > 1) {
 			printf("File: %s\n", cur_file_name);
 		}
 		
@@ -1142,7 +1139,7 @@ main(int argc, char **argv)
 	len2 = 0;
 	line2 = NULL;
 
-	while ((c = getopt(argc, argv, "d:hm:op:s:v")) != -1) {
+	while ((c = getopt(argc, argv, "d:hm:op:s:v:")) != -1) {
 		switch (c) {
 			case 'd':
 				advanced_match = true;
@@ -1165,7 +1162,7 @@ main(int argc, char **argv)
 				min_number = atoi(optarg) - 1;
 				break;
 			case 'v':
-				verbose = true;
+				verbosity = atoi(optarg);
 				break;
 		}
 	}
@@ -1196,6 +1193,7 @@ main(int argc, char **argv)
 			}
 			break;
 		default:
+			fprintf(stderr, "Too many arguments\n");
 			exit(EXIT_FAILURE);
 	}
 
