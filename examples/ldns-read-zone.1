@@ -7,7 +7,26 @@ ldns-read-zone \- read a zonefile and print it
 
 .SH DESCRIPTION
 
-\fBldns-read-zone\fR reads a DNS zone file and prints it. The output has 1 RR per line, and no pretty-printing makeup.
+\fBldns-read-zone\fR reads a DNS zone file and prints it. The output has 1
+resource record per line, and no pretty-printing makeup.
+
+.SH OPTIONS
+.TP
+\fB-c\fR
+Canonicalize all resource records in the zone before printing
+
+.TP
+\fB-h\fR
+Show usage and exit
+
+.TP
+\fB-v\fR
+Show the version and exit
+
+.TP
+\fB-z\fR
+Sort the zone before printing (this implies -c)
+
 
 .SH AUTHOR
 Written by the ldns team as an example for ldns usage.

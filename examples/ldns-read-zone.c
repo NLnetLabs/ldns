@@ -34,9 +34,10 @@ main(int argc, char **argv)
 				printf("Usage: %s [-c] [-v] [-z] <zonefile>\n", argv[0]);
 				printf("\tReads the zonefile and prints it.\n");
 				printf("\tThe RR count of the zone is printed to stderr.\n");
-				printf("\tIf -c is given all rrs in zone are canonicalized.\n");
-				printf("\tIf -z is given the zone is sorted (implies -c).\n");
+				printf("\t-c canonicalize all rrs in the zone.\n");
+				printf("\t-h show this text\n");
 				printf("\t-v shows the version and exits\n");
+				printf("\t-z sort the zone (implies -c).\n");
 				printf("\nif no file is given standard input is read\n");
 				exit(EXIT_SUCCESS);
 				break;
