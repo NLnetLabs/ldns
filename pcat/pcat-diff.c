@@ -528,7 +528,7 @@ compare_to_file(ldns_pkt *qp, ldns_pkt *pkt1, ldns_pkt *pkt2)
 				
 				for (k = 0; k < match_word_count; k++) {
 					if (strncmp(&pkt_query[iq], match_words[k], strlen(match_words[k])) == 0) {
-						// ok
+						/* ok */
 						if (verbose) {
 							printf("Found in 1, skipping\n");
 						}
@@ -647,8 +647,10 @@ compare_to_file(ldns_pkt *qp, ldns_pkt *pkt1, ldns_pkt *pkt2)
 						goto match;
 					}
 				}
-				while ((strncmp(&pkt_str1[i1], &answer_match[j], match_count) != 0 ||
-				       strncmp(&pkt_str2[i2], &answer_match[j], match_count) != 0) &&
+				while (((answer_match[j] == '?' && (strncmp(&pkt_str1[i1], &answer_match[j+1], match_count) != 0 &&
+				         strncmp(&pkt_str2[i2], &answer_match[j+1], match_count) != 0)) ||
+				        (strncmp(&pkt_str1[i1], &answer_match[j], match_count) != 0 &&
+				       strncmp(&pkt_str2[i2], &answer_match[j], match_count) != 0)) &&
 				       same
 				      ) {
 					if (i1 < max_i1) {
@@ -664,6 +666,12 @@ compare_to_file(ldns_pkt *qp, ldns_pkt *pkt1, ldns_pkt *pkt2)
 					} else {
 						if (verbose) {
 							printf("End of pkt2 reached while doing an & check\n");
+						}
+						same = false;
+					}
+					if (pkt_str1[i1] != pkt_str2[i2]) {
+						if (verbose) {
+							printf("Difference between the packets where they should be equal: %c != %c (%u, %u)\n", pkt_str1[i1], pkt_str2[i2], (unsigned int) i1, (unsigned int) i2);
 						}
 						same = false;
 					}
@@ -699,7 +707,8 @@ compare_to_file(ldns_pkt *qp, ldns_pkt *pkt1, ldns_pkt *pkt2)
 						same = false;
 					}
 				}
-				while (strncmp(&pkt_str2[i2], &answer_match[j], match_count) != 0) {
+				while ((answer_match[j] == '?' && strncmp(&pkt_str2[i2], &answer_match[j + 1], match_count) != 0)
+				       || strncmp(&pkt_str2[i2], &answer_match[j], match_count) != 0) {
 					if (i2 < max_i2) {
 						i2++;
 					} else {
@@ -757,14 +766,14 @@ compare_to_file(ldns_pkt *qp, ldns_pkt *pkt1, ldns_pkt *pkt2)
 					if (strncmp(&pkt_str1[i1], match_words[k], strlen(match_words[k])) == 0) {
 						// ok
 						if (verbose) {
-							printf("Found in 1, skipping\n");
+							printf("Found %s in 1, skipping\n", match_words[k]);
 						}
 						i1 += strlen(match_words[k]);
 						goto found1;
 					}
 				}
 				found1:
-				if (k == match_word_count) {
+				if (k >= match_word_count) {
 					if (verbose) {
 						fprintf(stderr, "no match word found in packet 1. Rest of packet:\n");
 						fprintf(stderr, "%s\n", &pkt_str1[i1]);
@@ -791,19 +800,17 @@ compare_to_file(ldns_pkt *qp, ldns_pkt *pkt1, ldns_pkt *pkt2)
 					if (strncmp(&pkt_str2[i2], match_words[k], strlen(match_words[k])) == 0) {
 						// ok
 						if (verbose) {
-							printf("Match word found in 2, skipping\n");
+							printf("Match word %s found in 2, skipping\n", match_words[k]);
 						}
 						i2 += strlen(match_words[k]);
 						goto found2;
 					}
 				}
 				found2:
-				if (k == match_word_count) {
+				if (k >= match_word_count) {
 					if (verbose) {
-						if (verbose) {
-							fprintf(stderr, "no match word found in packet 2. Rest of packet:\n");
-						}
-						fprintf(stderr, "%s\n", &pkt_str2[i2]);
+						fprintf(stdout, "no match word found in packet 2. Rest of packet:\n");
+						fprintf(stdout, "%s\n", &pkt_str2[i2]);
 					}
 					same = false;
 				}
@@ -907,6 +914,9 @@ compare(struct dns_info *d1, struct dns_info *d2)
 	struct timeval now;
 	char *compare_result;
 	gettimeofday(&now, NULL);
+	if (verbose) {
+		printf("Id: %u\n", (unsigned int) d1->seq);
+	}
 	
 	if (strcmp(d1->qdata, d2->qdata) != 0) {
 		fprintf(stderr, "Query differs!\n");
@@ -981,7 +991,7 @@ compare(struct dns_info *d1, struct dns_info *d2)
 						printf("\n");
 						ldns_pkt_print(stdout, p2);
 						
-						printf("Quitting.\n");
+						printf("Quitting at packet %u\n", (unsigned int) d1->seq);
 						exit(1);
 					}
 				} else {
