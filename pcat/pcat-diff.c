@@ -49,7 +49,7 @@ struct match_file_struct {
 struct match_file_struct match_files[MAX_MATCH_FILES];
 size_t match_file_count = 0;
 
-bool verbosity = 0;
+int verbosity = 0;
 
 int max_number = 0;
 int min_number = 0;
@@ -415,6 +415,11 @@ compare_to_file(ldns_pkt *qp, ldns_pkt *pkt1, ldns_pkt *pkt2)
 		query_match = match_files[cur_file_nr].query_match;
 		answer_match = match_files[cur_file_nr].answer_match;
 
+printf("A %u\n", verbosity);
+		if (verbosity > 2) {
+			printf("Trying: %s\n", description);\
+		}
+printf("B\n");
 		if (verbosity > 3) {
 			printf("MATCH TO:\n");
 			printf("descr: %s\n", description);
