@@ -493,7 +493,7 @@ print_counters(FILE *output, match_counters *counters, bool show_percentages, si
 void
 ldns_pkt2file_hex(FILE *fp, const ldns_pkt *pkt)
 {
-	uint8_t *wire;// = xmalloc((packet->udppacketsize)*21);
+	uint8_t *wire;
 	size_t size, i;
 	ldns_status status;
 	

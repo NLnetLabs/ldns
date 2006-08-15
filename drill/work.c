@@ -204,7 +204,7 @@ read_hex_pkt(char *filename)
 void
 dump_hex(const ldns_pkt *pkt, const char *filename)
 {
-	uint8_t *wire;// = xmalloc((packet->udppacketsize)*21);
+	uint8_t *wire;
 	size_t size, i;
 	FILE *fp;
 	ldns_status status;

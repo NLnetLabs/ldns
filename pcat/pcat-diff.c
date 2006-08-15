@@ -764,7 +764,7 @@ compare_to_file(ldns_pkt *qp, ldns_pkt *pkt1, ldns_pkt *pkt2)
 				
 				for (k = 0; k < match_word_count; k++) {
 					if (strncmp(&pkt_str1[i1], match_words[k], strlen(match_words[k])) == 0) {
-						// ok
+						/* ok */
 						if (verbose) {
 							printf("Found %s in 1, skipping\n", match_words[k]);
 						}
@@ -798,7 +798,7 @@ compare_to_file(ldns_pkt *qp, ldns_pkt *pkt1, ldns_pkt *pkt2)
 				
 				for (k = 0; k < match_word_count; k++) {
 					if (strncmp(&pkt_str2[i2], match_words[k], strlen(match_words[k])) == 0) {
-						// ok
+						/* ok */
 						if (verbose) {
 							printf("Match word %s found in 2, skipping\n", match_words[k]);
 						}
