@@ -29,7 +29,6 @@ Requires: %{name} = %{version}-%{release}, openssl-devel
 The devel package contains the ldns library and the include files
 
 %prep
-rm -rf %{buildroot}
 %setup -q 
 libtoolize
 autoreconf
