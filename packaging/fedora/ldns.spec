@@ -1,20 +1,24 @@
-Summary: Lowlevel DNS(SEC) library with API
+Summary: Lowlevel DNS(SEC) library with DNS tools
 Name: ldns
 Version: 1.1.0
-Release: 4
+Release: 1
 License: BSD
-Url: http://open.nlnetlabs.nl/%{name}/
-Source: http://open.nlnetlabs.nl/downloads/%{name}-%{version}.tar.gz
+Url: http://www.nlnetlabs.nl/%{name}/
+Source: http://www.nlnetlabs.nl/downloads/%{name}-%{version}.tar.gz
 Group: System Environment/Libraries
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
-Requires: openssl
+Requires: openssl, libpcap
 BuildRequires: libtool, autoconf, automake, gcc-c++, openssl-devel, doxygen, perl
 
 %description
 ldns is a library with the aim to simplify DNS programing in C. All
 lowlevel DNS/DNSSEC operations are supported. We also define a higher
 level API which allows a programmer to (for instance) create or sign
-packets.
+packets. 
+
+The drill tool helps debug DNS by sending packets to servers, like 'dig'.
+Example DNS tools are included that sign zone files, generate keys, 
+send dynamic update packets, find mx info, sort zone files and more.
 
 %package devel
 Summary: Development package that includes the ldns header files
@@ -40,6 +44,7 @@ autoreconf
 %{__make} %{?_smp_mflags} doc
 
 %install
+rm -rf %{buildroot}
 export DESTDIR=%{buildroot}
 %{__make} install
 (cd drill; %{__make} install)
@@ -56,7 +61,6 @@ rm -rf %{buildroot}
 %doc README LICENSE TODO 
 %doc %{_mandir}/man1/drill*
 %doc %{_mandir}/man1/ldns*
-%doc %{_mandir}/man3/ldns*
 
 %files devel
 %defattr(-,root,root,-)
@@ -66,6 +70,7 @@ rm -rf %{buildroot}
 %doc doc/images doc/html doc/*.css
 %doc doc/dns-lib-implementations doc/CodingStyle
 %doc Changelog
+%doc %{_mandir}/man3/ldns*
 
 %pre
 

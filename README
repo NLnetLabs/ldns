@@ -16,6 +16,7 @@ compile on other systems like Solaris and Mac OS X.
 
 REQUIREMENTS
 - OpenSSL (Optional, but needed for features like DNSSEC)
+- libpcap (Optional, but needed for examples/ldns-dpa and pcat)
 - (GNU) libtool (that's glibtool, not libtool in OSX)
 - GNU make
 
