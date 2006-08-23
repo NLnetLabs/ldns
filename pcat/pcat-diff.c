@@ -415,11 +415,9 @@ compare_to_file(ldns_pkt *qp, ldns_pkt *pkt1, ldns_pkt *pkt2)
 		query_match = match_files[cur_file_nr].query_match;
 		answer_match = match_files[cur_file_nr].answer_match;
 
-printf("A %u\n", verbosity);
 		if (verbosity > 2) {
 			printf("Trying: %s\n", description);\
 		}
-printf("B\n");
 		if (verbosity > 3) {
 			printf("MATCH TO:\n");
 			printf("descr: %s\n", description);
@@ -482,6 +480,7 @@ printf("B\n");
 							printf("End of query packet reached while doing a * check\n");
 						}
 						same = false;
+						goto querymatch;
 					}
 				}
 			} else if (query_match[j] == '[') {
@@ -635,6 +634,9 @@ printf("B\n");
 					} else {
 						/* TODO */
 						/* check sameness to end*/
+						if (verbosity >= 5) {
+							printf("End of match reached in &\n");
+						}
 						goto match;
 					}
 				}
@@ -646,17 +648,33 @@ printf("B\n");
 					} else {
 						/* TODO */
 						/* check sameness to end*/
+						if (verbosity >= 5) {
+							printf("End of match reached in & (2)\n");
+						}
 						goto match;
 					}
 				}
-				while (((answer_match[j] == '?' && (strncmp(&pkt_str1[i1], &answer_match[j+1], match_count) != 0 &&
+
+/*
+				while (((answer_match[j] == '?' && !(strncmp(&pkt_str1[i1], &answer_match[j+1], match_count) != 0 ||
 				         strncmp(&pkt_str2[i2], &answer_match[j+1], match_count) != 0)) ||
 				        (strncmp(&pkt_str1[i1], &answer_match[j], match_count) != 0 &&
 				       strncmp(&pkt_str2[i2], &answer_match[j], match_count) != 0)) &&
 				       same
+*/
+				while ((strncmp(&pkt_str1[i1], &answer_match[j], match_count) != 0 &&
+				       strncmp(&pkt_str2[i2], &answer_match[j], match_count) != 0) &&
+				       same
 				      ) {
-					if (i1 < max_i1) {
+
+				        if (i1 < max_i1) {
 						i1++;
+						while ((pkt_str1[i1] == '\n' ||
+						        pkt_str1[i1] == '\t' ||
+						        pkt_str1[i1] == ' '
+						       ) && i1 < max_i1) {
+						       i1++;
+						}
 					} else {
 						if (verbosity > 1) {
 							printf("End of pkt1 reached while doing an & check\n");
@@ -665,6 +683,12 @@ printf("B\n");
 					}
 					if (i2 < max_i2) {
 						i2++;
+						while ((pkt_str2[i2] == '\n' ||
+						        pkt_str2[i2] == '\t' ||
+						        pkt_str2[i2] == ' '
+						       ) && i2 < max_i2) {
+						       i2++;
+						}
 					} else {
 						if (verbosity > 1) {
 							printf("End of pkt2 reached while doing an & check\n");
@@ -673,12 +697,11 @@ printf("B\n");
 					}
 					if (pkt_str1[i1] != pkt_str2[i2]) {
 						if (verbosity > 1) {
-							printf("Difference between the packets where they should be equal: %c != %c (%u, %u)\n", pkt_str1[i1], pkt_str2[i2], (unsigned int) i1, (unsigned int) i2);
+							printf("Difference between the packets where they should be equal: %c != %c (%u, %u, & len: %u)\n", pkt_str1[i1], pkt_str2[i2], (unsigned int) i1, (unsigned int) i2, (unsigned int) match_count);
 						}
 						same = false;
 					}
 				}
-				
 			} else if (answer_match[j] == '*') {
 				j++;
 				match_count = 1;
@@ -687,6 +710,9 @@ printf("B\n");
 					if (j + 1 < max_j) {
 						j++;
 					} else {
+						if (verbosity >= 5) {
+							printf("End of match reached in *\n");
+						}
 						goto match;
 					}
 				}
@@ -696,6 +722,9 @@ printf("B\n");
 					if (j + 1 < max_j) {
 						j++;
 					} else {
+						if (verbosity >= 5) {
+							printf("End of match reached in * (2)\n");
+						}
 						goto match;
 					}
 				}
@@ -707,6 +736,7 @@ printf("B\n");
 							printf("End of pkt1 reached while doing a * check\n");
 						}
 						same = false;
+						goto match;
 					}
 				}
 				while ((answer_match[j] == '?' && strncmp(&pkt_str2[i2], &answer_match[j + 1], match_count) != 0)
@@ -822,11 +852,51 @@ printf("B\n");
 					free(match_words[k]);
 				}
 				match_word_count = 0;
+			} else if (answer_match[j] == '?' &&
+			           answer_match[j+1] == '&'
+			          ) {
+				j++;
+				j++;
+				k = j;
+				while ((answer_match[j] != ' ' &&
+				        answer_match[j] != '\t' &&
+				        answer_match[j] != '\n'
+				       ) && 
+				       j < max_j) {
+					j++;
+				}
+				while((pkt_str1[i1] == ' ' ||
+				      pkt_str1[i1] == '\t' ||
+				      pkt_str1[i1] == '\n') &&
+				      i1 < max_i1) {
+				      	if (i1 < max_i1) {
+					      	i1++;
+					}
+				}
+
+				while((pkt_str2[i2] == ' ' ||
+				      pkt_str2[i2] == '\t' ||
+				      pkt_str2[i2] == '\n') &&
+				      i2 < max_i2) {
+				      	if (i2 < max_i2) {
+					      	i2++;
+					}
+				}
+				if (i1 + j - k < max_i1 && i2 + j - k < max_i2) {
+					if (strncmp(&pkt_str1[i1], &answer_match[k], j - k) == 0 &&
+					    strncmp(&pkt_str2[i2], &answer_match[k], j - k) == 0
+					   ) {
+						i1 += j - k;
+						i2 += j - k;
+					}
+				}
 			} else if (answer_match[j] == '?') {
-				k = j + 1;
-				while (j != ' ' &&
-				       j != '\t' &&
-				       j != '\n' && 
+				j++;
+				k = j;
+				while ((answer_match[j] != ' ' &&
+				        answer_match[j] != '\t' &&
+				        answer_match[j] != '\n'
+				       ) && 
 				       j < max_j) {
 					j++;
 				}
@@ -859,7 +929,7 @@ printf("B\n");
 				}
 			} else {
 				if (verbosity > 1) {
-					printf("Difference at i1: %u, j: %u, (%c != %c)\n", (unsigned int) i1, (unsigned int) j, pkt_str1[i1], answer_match[j]);
+					printf("Difference at i1: %u, j: %u (%c), (%c != %c)\n", (unsigned int) i1, (unsigned int) j, answer_match[j], pkt_str1[i1], answer_match[j]);
 					printf("rest of packet1:\n");
 					printf("%s\n\n\n", &pkt_str1[i1]);
 					printf("rest of packet 2:\n");
@@ -872,10 +942,18 @@ printf("B\n");
 		}
 		
 		if (same) {
+			if (verbosity >= 5) {
+				printf("Big while loop ended, we have match\n");
+			}
 			goto match;
 		} else {
 			if (verbosity > 0) {
 				printf("no match\n");
+			}
+			if (verbosity > 0) {
+				printf("REST OF MATCH: %s\n", &answer_match[j]);
+				printf("REST OF PKT1: %s\n", &pkt_str1[i1]);
+				printf("REST OF PKT2: %s\n", &pkt_str2[i2]);
 			}
 		}
 	}
