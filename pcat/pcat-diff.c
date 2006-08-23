@@ -119,7 +119,7 @@ add_known_difference(const char *diff)
 			store_file_name = malloc(strlen(diff) + 12);
 			strcpy(store_file_name, "known.");
 			strncpy(store_file_name + 6, diff, strlen(diff));
-			strcpy(store_file_name + 5 + strlen(diff), ".pcat");
+			strcpy(store_file_name + 6 + strlen(diff), ".pcat");
 			if (verbosity > 3) {
 				printf("Store packets in: '%s'\n", store_file_name);
 			}
@@ -1104,7 +1104,7 @@ compare(struct dns_info *d1, struct dns_info *d2)
 						file_nr = add_known_difference(compare_result);
 						if (store_known_differences) {
 							fprintf(store_known_files[file_nr], "q: %d:%d\n%s\n%s\n%s\n", (int)d1->seq, (int)d2->seq, 
-								d1->qdata, d1->qdata, d2->qdata);
+								d1->qdata, d1->adata, d2->adata);
 						}
 
 						free(compare_result);
