@@ -22,6 +22,13 @@ ssize_t getdelim(char **lineptr, size_t *n, int delim, FILE *stream);
 
 bool advanced_match = false;
 
+/*
+ * if this value is set, store all queries and answers that cause
+ * known differences in a pcat hex file, named after the description:
+ * <description>.knowndiff
+ */
+bool store_known_differences = false;
+
 /* you can either dump the exact original packets as hex, or the
  * packet after it has been 'normalized'
  */
@@ -57,6 +64,7 @@ size_t line_nr = 0;
 
 size_t differences = 0;
 size_t sames = 0;
+size_t bytesames = 0;
 size_t total_nr_of_packets = 0;
 size_t do_bit = 0;
 size_t version = 0;
@@ -82,15 +90,21 @@ typedef struct known_differences_struct known_differences_count;
 known_differences_count known_differences[INITIAL_DIFFERENCES_SIZE];
 size_t known_differences_size = 0;
 
-void
+FILE *store_known_files[INITIAL_DIFFERENCES_SIZE];
+
+size_t
 add_known_difference(const char *diff)
 {
 	size_t i;
+
+	char *store_file_name;
+	FILE *store_file;
 	
 	for (i = 0; i < known_differences_size; i++) {
 		if (strcmp(known_differences[i].descr, diff) == 0) {
 			known_differences[i].count = known_differences[i].count + 1;
-			return;
+
+			return i;
 		}
 	}
 	
@@ -100,14 +114,32 @@ add_known_difference(const char *diff)
 	} else {
 		known_differences[known_differences_size].descr = strdup(diff);
 		known_differences[known_differences_size].count = 1;
+
+		if (store_known_differences) {
+			store_file_name = malloc(strlen(diff) + 12);
+			strcpy(store_file_name, "known.");
+			strncpy(store_file_name + 6, diff, strlen(diff));
+			strcpy(store_file_name + 5 + strlen(diff), ".pcat");
+			if (verbosity > 3) {
+				printf("Store packets in: '%s'\n", store_file_name);
+			}
+			store_file = fopen(store_file_name, "w");
+			if (!store_file) {
+				fprintf(stderr, "Error opening %s for writing: %s\n", store_file_name, strerror(errno));
+				exit(errno);
+			}
+			store_known_files[known_differences_size] = store_file;
+		}
+
 		known_differences_size++;
+		return known_differences_size - 1;
 	}
 }
 
 void
 print_known_differences()
 {
-	size_t i;
+	size_t i,j;
 	size_t differents = 0;
 	size_t total;
 	double percentage;
@@ -120,11 +152,18 @@ print_known_differences()
 
 	for (i = 0; i < known_differences_size; i++) {
 		percentage = (double) (((double) known_differences[i].count / (double)differents) * 100.0);
-		printf("%s: %u (%02.2f%%) \n", known_differences[i].descr, (unsigned int) known_differences[i].count, percentage);
+		printf("%s:", known_differences[i].descr);
+		if (strlen(known_differences[i].descr) < 48) {
+			for (j = 0; j < 48 - strlen(known_differences[i].descr); j++) {
+				printf(" ");
+			}
+		}
+		printf("%u\t(%02.2f%%)\n", (unsigned int) known_differences[i].count, percentage);
 	}
 
 	printf("Total number of differences: %u (100%%)\n", (unsigned int) differents);
-	printf("Number of packets exactly the same: %u\n", (unsigned int) sames);
+	printf("Number of packets the same after normalization: %u\n", (unsigned int) sames);
+	printf("Number of packets exactly the same on the wire: %u\n", (unsigned int) bytesames);
 	printf("Total number of packets inspected: %u\n", (unsigned int) total);
 }
 
@@ -309,6 +348,7 @@ usage(FILE *fp)
 	fprintf(fp, "Options:\n");
 	fprintf(fp, "-d <dir>\tDirectory containing match files, this options sets\n\t\tthe advanced checking mode, see manpage\n");
 	fprintf(fp, "-h\t\tshow this help\n");
+	fprintf(fp, "-k\t\twhen also using -d, store all known differences in files\n\t\t(named known.<descr>.pcat in current directory)\n\t\tprintable with pcat-print\n");
 	fprintf(fp, "-m <number>\tonly check up to <number> packets\n");
 	fprintf(fp, "-o\t\tshow original packets when printing diffs (by default, \n\t\tpackets are normalized)\n");
 	fprintf(fp, "-p <number>\tshow intermediate results every <number> packets\n");
@@ -399,7 +439,7 @@ compare_to_file(ldns_pkt *qp, ldns_pkt *pkt1, ldns_pkt *pkt2)
 	max_iq = strlen(pkt_query);
 	max_i1 = strlen(pkt_str1);
 	max_i2 = strlen(pkt_str2);
-
+	
 	if (verbosity > 3) {
 		printf("PACKET 1:\n");
 		ldns_pkt_print(stdout, pkt1);
@@ -929,7 +969,7 @@ compare_to_file(ldns_pkt *qp, ldns_pkt *pkt1, ldns_pkt *pkt2)
 				}
 			} else {
 				if (verbosity > 1) {
-					printf("Difference at i1: %u, j: %u (%c), (%c != %c)\n", (unsigned int) i1, (unsigned int) j, answer_match[j], pkt_str1[i1], answer_match[j]);
+					printf("Difference at i1: %u, i2: %u, j: %u (%c), (%c != %c)\n", (unsigned int) i1, (unsigned int) i2, (unsigned int) j, answer_match[j], pkt_str1[i1], pkt_str2[i2]);
 					printf("rest of packet1:\n");
 					printf("%s\n\n\n", &pkt_str1[i1]);
 					printf("rest of packet 2:\n");
@@ -993,6 +1033,8 @@ compare(struct dns_info *d1, struct dns_info *d2)
 	char *pstr1, *pstr2;
 	struct timeval now;
 	char *compare_result;
+	size_t file_nr;
+
 	gettimeofday(&now, NULL);
 	if (verbosity > 0) {
 		printf("Id: %u\n", (unsigned int) d1->seq);
@@ -1059,7 +1101,12 @@ compare(struct dns_info *d1, struct dns_info *d2)
 						if (compare_result[strlen(compare_result)-1] == '\n') {
 							compare_result[strlen(compare_result)-1] = 0;
 						}
-						add_known_difference(compare_result);
+						file_nr = add_known_difference(compare_result);
+						if (store_known_differences) {
+							fprintf(store_known_files[file_nr], "q: %d:%d\n%s\n%s\n%s\n", (int)d1->seq, (int)d2->seq, 
+								d1->qdata, d1->qdata, d2->qdata);
+						}
+
 						free(compare_result);
 						diff = false;
 					} else {
@@ -1103,6 +1150,7 @@ compare(struct dns_info *d1, struct dns_info *d2)
 			}
 		} else {
 			sames++;
+			bytesames++;
 		}
 	}
 }
@@ -1110,6 +1158,7 @@ compare(struct dns_info *d1, struct dns_info *d2)
 bool
 read_match_files(char *directory)
 {
+	char *orig_cwd;
 	char *cur_file_name;
 	FILE *fp;
 	struct dirent **files;
@@ -1123,6 +1172,8 @@ read_match_files(char *directory)
 	char *description;
 
 	nr_of_files = scandir(directory, &files, file_filter, alphasort);
+	orig_cwd = malloc(100);
+	(void) getcwd(orig_cwd, 100);
 	if (chdir(directory) != 0) {
 		fprintf(stderr, "Error opening directory %s: %s\n", directory, strerror(errno));
 	}
@@ -1181,6 +1232,8 @@ read_match_files(char *directory)
 		free(files[cur_file_nr]);
 	}
 	free(files);
+	chdir(orig_cwd);
+	free(orig_cwd);
 	return true;
 }
 
@@ -1222,7 +1275,7 @@ main(int argc, char **argv)
 	len2 = 0;
 	line2 = NULL;
 
-	while ((c = getopt(argc, argv, "d:hm:op:s:v:")) != -1) {
+	while ((c = getopt(argc, argv, "d:hkm:op:s:v:")) != -1) {
 		switch (c) {
 			case 'd':
 				advanced_match = true;
@@ -1231,6 +1284,9 @@ main(int argc, char **argv)
 			case 'h':
 				usage(stdout);
 				exit(EXIT_SUCCESS);
+				break;
+			case 'k':
+				store_known_differences = true;
 				break;
 			case 'm':
 				max_number = atoi(optarg) - 1;
@@ -1343,5 +1399,10 @@ reread:
 	fclose(trace1);
 	fclose(trace2);
 	print_known_differences();
+	if (store_known_differences) {
+		for (i = 0; i < known_differences_size; i++) {
+			fclose(store_known_files[i]);
+		}
+	}
 	return 0;
 }
