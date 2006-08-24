@@ -77,13 +77,14 @@ LINK_LIB	= $(LIBTOOL) --mode=link $(CC) $(CFLAGS) $(LDFLAGS) -release $(VERSION)
 
 all:		copy-headers lib linktest
 
-linktest:
+linktest:	$(srcdir)/linktest.c $(LIBDNS_HEADERS) ldns/util.h ldns/config.h libldns.la
 		gcc $(srcdir)/linktest.c $(CPPFLAGS) $(CFLAGS) -L.libs -lldns -o linktest
-		rm linktest
 
-lib:		$(LIBDNS_OBJECTS)
-		$(LINK_LIB) -o libldns.la $(LIBDNS_LOBJECTS) -rpath $(libdir) $(RUNTIME_PATH)
+lib:		libldns.la
 		if [ ! -d lib ] ; then ln -s .libs lib ; fi ;		
+
+libldns.la:	$(LIBDNS_OBJECTS)
+		$(LINK_LIB) -o libldns.la $(LIBDNS_LOBJECTS) -rpath $(libdir) $(RUNTIME_PATH)
 
 copy-headers:
 		if [ ! -d include ] ; then mkdir include ; fi ;
@@ -149,6 +150,7 @@ clean:
 	rm -rf include/
 	rm -f lib
 	rm -rf .libs
+	rm -f linktest
 
 distclean: clean docclean libclean
 	rm -f ltmain.sh
