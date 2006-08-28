@@ -173,9 +173,13 @@ read_hex_pkt(char *filename)
 	ldns_pkt *pkt = NULL;
 	
 	ldns_status status = LDNS_STATUS_ERR;
-	FILE *fp;
+	FILE *fp = NULL;
 	
-	fp = fopen(filename, "r");
+	if (strncmp(filename, "-", 2) != 0) {
+		fp = fopen(filename, "r");
+	} else {
+		fp = stdin;
+	}
 	
 	if (fp == NULL) {
 		perror("");
@@ -191,6 +195,9 @@ read_hex_pkt(char *filename)
 		status = ldns_wire2pkt(&pkt, wire, wiresize);
 	}
 	
+	if (strncmp(filename, "-", 2) != 0) {
+		fclose(fp);
+	}
 	xfree(wire);
 	
 	if (status == LDNS_STATUS_OK) {
