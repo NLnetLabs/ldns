@@ -1183,6 +1183,7 @@ read_match_files(char *directory)
 	(void) getcwd(orig_cwd, 100);
 	if (chdir(directory) != 0) {
 		fprintf(stderr, "Error opening directory %s: %s\n", directory, strerror(errno));
+		exit(1);
 	}
 	if (nr_of_files < 1) {
 		fprintf(stderr, "Warning: no match files found in %s\n", directory);
