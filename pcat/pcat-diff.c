@@ -1,3 +1,4 @@
+
 #define _GNU_SOURCE
 #include "config.h"
 
@@ -468,7 +469,9 @@ compare_to_file(ldns_pkt *qp, ldns_pkt *pkt1, ldns_pkt *pkt2)
 		
 		/* special case for unparseable queries */
 		if (!qp) {
-			if (strncmp(query_match, "BADPACKET\n", 11) == 0) {
+			if (strncmp(query_match, "BADPACKET\n", 11) == 0 ||
+			    strncmp(query_match, "*\n", 3) == 0
+			   ) {
 				same = true;
 			} else {
 				same = false;
@@ -632,12 +635,16 @@ compare_to_file(ldns_pkt *qp, ldns_pkt *pkt1, ldns_pkt *pkt2)
 		/* special case if one packet is null (ie. one server
 		   answers and one doesnt) */
 		if (!pkt1 || !pkt2) {
-			if (strncmp(answer_match, "NOANSWER\n", 10) == 0) {
+			if (strncmp(answer_match, "NOANSWER\n", 10) == 0 || 
+			    strncmp(answer_match, "*\n", 3) == 0
+			   ) {
 				same = true;
 				goto match;
 			} else {
 				same = false;
-				goto match;
+				if (verbosity > 4) {
+					printf("no answer packet, no NOANSWER or * in spec.\n");
+				}
 			}
 		}
 		
