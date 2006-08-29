@@ -44,8 +44,13 @@ main(int argc, char **argv)
 
 	while((read = getdelim(&line, &len, '\n', diff)) != -1) {
 		if (read < 2 || read > LDNS_MAX_PACKETLEN) {
-			fprintf(stderr, "Under- or overflow (%d) - skipping line %d\n", (int)read, (int)i);
+			if(read == 1) 
+				fprintf(stdout, "NO ANSWER (line %d)\n", (int)i);
+			else
+				fprintf(stdout, "Under- or overflow (%d) - "
+					"skipping line %d\n", (int)read, (int)i);
 			i++;
+			printf_bar();
 			continue;
 		}
 		
@@ -53,7 +58,7 @@ main(int argc, char **argv)
 		switch(i % LINES) {
 			case SEQUENCE:
 				printf_bar();
-				printf("Index: %s\n", line);
+				fprintf(stdout, "Index: %s\n", line);
 				printf_bar();
 				break;
 			case QUERY:
@@ -69,7 +74,7 @@ main(int argc, char **argv)
 				s = ldns_wire2pkt(&p, pkt_buf, k);
 				fprintf(stdout, "=* %s\n", line);
 				if (s != LDNS_STATUS_OK) {
-					fprintf(stderr, "%s\n", ldns_get_errorstr_by_id(s));
+					fprintf(stdout, "%s\n", ldns_get_errorstr_by_id(s));
 				} else {
 					ldns_pkt_print(stdout, p);
 				}
