@@ -5,6 +5,7 @@
 #include "config.h"
 
 #include <ldns/ldns.h>
+#include <errno.h>
 #include <pcap.h>
 
 #define FAILURE 10000
@@ -24,9 +25,10 @@ size_t getdelim(char **lineptr, size_t *n, int delim, FILE *stream);
 void
 usage(FILE *fp)
 {
-	fprintf(fp, "pcat [-a IP] [-p PORT] PCAP_FILE\n\n");
+	fprintf(fp, "pcat [-a IP] [-p PORT] [-r] PCAP_FILE\n\n");
 	fprintf(fp, "   -a IP\tuse IP as nameserver, defaults to 127.0.0.1\n");
 	fprintf(fp, "   -p PORT\tuse PORT as port, defaults to 53\n");
+	fprintf(fp, "   -r \t\tthe file is a pcat output file to resend queries from\n");
 	fprintf(fp, "   -h \t\tthis help\n");
 	fprintf(fp, "  PCAP_FILE\tuse this file as source\n");
 	fprintf(fp, "  If no file is given standard input is read\n");
@@ -47,6 +49,61 @@ data2hex(FILE *fp, u_char *p, size_t l)
 		fprintf(fp, "%02x", (unsigned int) p[i]);
 	}
 	fputs("\n", fp);
+}
+
+/**
+ * Converts a hex string to binary data
+ * len is the length of the string
+ * buf is the buffer to store the result in
+ * offset is the starting position in the result buffer
+ *
+ * This function returns the length of the result
+ */
+static size_t
+hexstr2bin(char *hexstr, int len, uint8_t *buf, size_t offset, size_t buf_len)
+{
+        char c;
+        int i;
+        uint8_t int8 = 0;
+        int sec = 0;
+        size_t bufpos = 0;
+
+        if (len % 2 != 0) {
+                return 0;
+        }
+
+        for (i=0; i<len; i++) {
+                c = hexstr[i];
+
+                /* case insensitive, skip spaces */
+                if (c != ' ') {
+                        if (c >= '0' && c <= '9') {
+                                int8 += c & 0x0f;
+                        } else if (c >= 'a' && c <= 'z') {
+                                int8 += (c & 0x0f) + 9;
+                        } else if (c >= 'A' && c <= 'Z') {
+                                int8 += (c & 0x0f) + 9;
+                        } else {
+                                return 0;
+                        }
+
+                        if (sec == 0) {
+                                int8 = int8 << 4;
+                                sec = 1;
+                        } else {
+                                if (bufpos + offset + 1 <= buf_len) {
+                                        buf[bufpos+offset] = int8;
+                                        int8 = 0;
+                                        sec = 0;
+                                        bufpos++;
+                                } else {
+                                        fprintf(stderr, "Buffer too small in hexstr2bin");
+					exit(1);
+                                }
+                        }
+                }
+        }
+        return bufpos;
 }
 
 u_char *
@@ -94,6 +151,8 @@ main(int argc, char **argv)
 	char *ip_str;
 	int c;
 	size_t failure;
+	FILE *infile;
+	int pcat_input_file = 0;
 
 	uint8_t *result;
 	uint16_t port;
@@ -101,6 +160,7 @@ main(int argc, char **argv)
 	u_char *q;
 	size_t size;
 	socklen_t tolen;
+	size_t query_pkt_len;
 
 	struct timeval timeout;
 	struct sockaddr_storage *data;
@@ -113,7 +173,7 @@ main(int argc, char **argv)
 	ip_str = NULL;
 	failure = 0;
 
-	while ((c = getopt(argc, argv, "ha:p:")) != -1) {
+	while ((c = getopt(argc, argv, "ha:p:r")) != -1) {
 		switch(c) {
 		case 'h':
 			usage(stdout);
@@ -125,6 +185,9 @@ main(int argc, char **argv)
 				fprintf(stderr, "-a requires an IP address\n");
 				exit(EXIT_FAILURE);
 			}
+			break;
+		case 'r':
+			pcat_input_file = 1;
 			break;
 		case 'p':
 			port = atoi(optarg);
@@ -149,15 +212,27 @@ main(int argc, char **argv)
 		ip = ldns_rdf_new_frm_str(LDNS_RDF_TYPE_A, "127.0.0.1");
 	}
 
-	if (argc < 1) {
-		/* no file given - use standard input */
-		p = pcap_open_offline("/dev/stdin", errbuf);
+	if (pcat_input_file) {
+		if (argc < 1) {
+			infile = fopen("/dev/stdin", "r");
+		} else {
+			infile = fopen(argv[0], "r");
+		}
+		if (!infile) {
+			fprintf(stderr, "Cannot open input file: %s\n", strerror(errno));
+			exit(EXIT_FAILURE);
+		}
 	} else {
-		p = pcap_open_offline(argv[0], errbuf);
-	}
-	if (!p) {
-		fprintf(stderr, "Cannot open pcap lib %s\n", errbuf);
-		exit(EXIT_FAILURE);
+		if (argc < 1) {
+			/* no file given - use standard input */
+			p = pcap_open_offline("/dev/stdin", errbuf);
+		} else {
+			p = pcap_open_offline(argv[0], errbuf);
+		}
+		if (!p) {
+			fprintf(stderr, "Cannot open pcap lib %s\n", errbuf);
+			exit(EXIT_FAILURE);
+		}
 	}
 
 	qpkt = ldns_buffer_new(LDNS_MAX_PACKETLEN);
@@ -173,9 +248,30 @@ main(int argc, char **argv)
         tolen = sizeof(struct sockaddr_in);
 
 	i = 1;  /* start counting at 1 */
-	while ((x = pcap_next(p, &h))) {
-		q = pcap2ldns_pkt_ip(x, &h);
-		ldns_buffer_write(qpkt, q, h.caplen);
+	while (1) {
+		if(pcat_input_file) {
+			/* read pcat format and repeat query in it */
+			char buf[65535*2+100];
+			uint8_t decoded[65535+100];
+			if(!fgets(buf, sizeof(buf), infile)) /* number */
+				break;
+			if(!fgets(buf, sizeof(buf), infile)) /* query */
+				break;
+			query_pkt_len = hexstr2bin(buf, strlen(buf)&0xfffffffe, 
+				decoded, 0, sizeof(decoded));
+			ldns_buffer_write(qpkt, decoded, query_pkt_len);
+
+			if(!fgets(buf, sizeof(buf), infile)) /* answer */
+				break;
+			if(!fgets(buf, sizeof(buf), infile)) /* empty line */
+				break;
+		} else {
+			if(!(x = pcap_next(p, &h)))
+				break;
+			q = pcap2ldns_pkt_ip(x, &h);
+			ldns_buffer_write(qpkt, q, h.caplen);
+			query_pkt_len = h.caplen;
+		}
 
 		send_status =ldns_udp_send(&result, qpkt, data, tolen, timeout, &size);
 		if (send_status == LDNS_STATUS_OK) {
@@ -183,7 +279,7 @@ main(int argc, char **argv)
 			 * by converting to a pkt... todo */
 			fprintf(stdout, "%d\n", (int)i);
 			/* query */
-			data2hex(stdout, q, h.caplen); 
+			data2hex(stdout, ldns_buffer_begin(qpkt), query_pkt_len); 
 			/* answer */
 			data2hex(stdout, result, size);
 		} else {
@@ -192,7 +288,7 @@ main(int argc, char **argv)
 			fprintf(stderr, "Failure to send packet (attempt %u, error %s)\n", (unsigned int) failure, ldns_get_errorstr_by_id(send_status));
 			fprintf(stdout, "%d\n", (int)i);
 			/* query */
-			data2hex(stdout, q, h.caplen); 
+			data2hex(stdout, ldns_buffer_begin(qpkt), query_pkt_len); 
 			/* answer, thus empty */
 			fprintf(stdout, "\n");
 		}
@@ -204,6 +300,8 @@ main(int argc, char **argv)
 			exit(EXIT_FAILURE);
 		}
 	}
-	pcap_close(p);
+	if(pcat_input_file)
+		fclose(infile);
+	else 	pcap_close(p);
 	return 0;
 }
