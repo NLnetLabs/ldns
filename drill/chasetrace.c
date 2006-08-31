@@ -447,6 +447,8 @@ do_chase(ldns_resolver *res, ldns_rdf *name, ldns_rr_type type, ldns_rr_class c,
 	ldns_lookup_table *lt;
 	const ldns_rr_descriptor *descriptor;
 	
+	ldns_dname2canonical(name);
+	
 	pkt = ldns_pkt_clone(pkt_o);
 	if (!name) {
 		mesg("No name to chase");
@@ -504,10 +506,12 @@ do_chase(ldns_resolver *res, ldns_rdf *name, ldns_rr_type type, ldns_rr_class c,
 			LDNS_RR_TYPE_RRSIG,
 			LDNS_SECTION_ANY_NOQUESTION
 			);
+	/* these can contain sigs for other rrsets too! */
 	
 	if (rrset) {
 		for (sig_i = 0; sig_i < ldns_rr_list_rr_count(sigs); sig_i++) {
 			cur_sig = ldns_rr_clone(ldns_rr_list_rr(sigs, sig_i));
+			if (ldns_rdf2native_int16(ldns_rr_rrsig_typecovered(cur_sig)) == type) {
 			
 			keys = ldns_pkt_rr_list_by_name_and_type(pkt,
 					ldns_rr_rdf(cur_sig, 7),
@@ -618,7 +622,20 @@ do_chase(ldns_resolver *res, ldns_rdf *name, ldns_rr_type type, ldns_rr_class c,
 									return LDNS_STATUS_OK;
 								}
 							}
-							result = do_chase(res, ldns_rr_rdf(cur_sig, 7), LDNS_RR_TYPE_DS, c, trusted_keys, pkt, qflags, keys);
+							/* apparently the key is not trusted, so it must either be signed itself or have a DS in the parent */
+							if (type == LDNS_RR_TYPE_DNSKEY && ldns_rdf_compare(name, ldns_rr_rdf(cur_sig, 7)) == 0) {
+								/* okay now we are looping in a selfsigned key, find the ds or bail */
+								result = do_chase(res, ldns_rr_rdf(cur_sig, 7), LDNS_RR_TYPE_DS, c, trusted_keys, pkt, qflags, keys);
+							} else {
+								result = do_chase(res, ldns_rr_rdf(cur_sig, 7), LDNS_RR_TYPE_DNSKEY, c, trusted_keys, pkt, qflags, keys);
+								/* in case key was not self-signed at all, try ds anyway */
+								/* TODO: is this needed? clutters the output... */
+								/*
+								if (result != LDNS_STATUS_OK) {
+									result = do_chase(res, ldns_rr_rdf(cur_sig, 7), LDNS_RR_TYPE_DS, c, trusted_keys, pkt, qflags, keys);
+								}
+								*/
+							}
 							ldns_rr_list_deep_free(rrset);
 							ldns_rr_list_deep_free(sigs);
 							ldns_rr_list_deep_free(keys);
@@ -638,6 +655,7 @@ do_chase(ldns_resolver *res, ldns_rdf *name, ldns_rr_type type, ldns_rr_class c,
 				}
 				ldns_rr_list_deep_free(keys);
 			}
+		}
 			ldns_rr_free(cur_sig);
 		}
 		ldns_rr_list_deep_free(rrset);
@@ -655,6 +673,8 @@ ldns_pkt_print(stdout, pkt);
 		/* Try to see if there are NSECS in the packet */
 		nsecs = ldns_pkt_rr_list_by_type(pkt, LDNS_RR_TYPE_NSEC, LDNS_SECTION_ANY_NOQUESTION);
 		result = LDNS_STATUS_CRYPTO_NO_RRSIG;
+		
+		ldns_rr_list2canonical(nsecs);
 		
 		for (nsec_i = 0; nsec_i < ldns_rr_list_rr_count(nsecs); nsec_i++) {
 			/* there are four options:

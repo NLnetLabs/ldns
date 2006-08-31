@@ -256,6 +256,8 @@ ldns_rr_new_frm_str(ldns_rr **newrr, const char *str, uint16_t default_ttl, ldns
 	if (strlen(owner) <= 1 && strncmp(owner, "@", 1) == 0) {
 		if (origin) {
 			ldns_rr_set_owner(new, ldns_rdf_clone(origin));
+		} else if (prev && *prev) {
+			ldns_rr_set_owner(new, ldns_rdf_clone(*prev));			
 		} else {
 			/* default to root */
 			ldns_rr_set_owner(new, ldns_dname_new_frm_str("."));
@@ -1272,7 +1274,7 @@ ldns_rr_compare(const ldns_rr *rr1, const ldns_rr *rr2)
             if (rr1_len == rr2_len) {
               return 0;
             }
-            return (int) (rr2_len - rr1_len);
+            return ((int) rr2_len - (int) rr1_len);
         }
 
         /* convert RRs into canonical wire format */
@@ -1402,6 +1404,8 @@ void
 ldns_rr2canonical(ldns_rr *rr)
 {
 	uint16_t i;
+
+	ldns_dname2canonical(ldns_rr_owner(rr));
 	for (i = 0; i < ldns_rr_rd_count(rr); i++) {
 		ldns_dname2canonical(ldns_rr_rdf(rr, i));
 	}

@@ -171,6 +171,9 @@ ldns_verify_rrsig_keylist(ldns_rr_list *rrset, ldns_rr *rrsig, ldns_rr_list *key
 		return LDNS_STATUS_MEM_ERR;
 	}
 	
+	/* canonicalize the sig */
+	ldns_dname2canonical(ldns_rr_owner(rrsig));
+	
 	/* clone the rrset so that we can fiddle with it */
 	rrset_clone = ldns_rr_list_clone(rrset);
 
@@ -335,6 +338,9 @@ ldns_verify_rrsig(ldns_rr_list *rrset, ldns_rr *rrsig, ldns_rr *key)
 	if (!rrset) {
 		return LDNS_STATUS_NO_DATA;
 	}
+
+	/* lowercase the rrsig owner name */
+	ldns_dname2canonical(ldns_rr_owner(rrsig));
 
 	/* check the signature time stamps */
 	inception = ldns_rdf2native_time_t(ldns_rr_rrsig_inception(rrsig));
@@ -808,15 +814,16 @@ ldns_sign_public(ldns_rr_list *rrset, ldns_key_list *keys)
 	ldns_rr_list_sort(rrset_clone);
 	
 	for (key_count = 0; key_count < ldns_key_list_key_count(keys); key_count++) {
-
 		sign_buf = ldns_buffer_new(LDNS_MAX_PACKETLEN);
 		b64rdf = NULL;
 
 		current_key = ldns_key_list_key(keys, key_count);
+		/* sign all RRs with keys that have ZSKbit, !SEPbit.
+		   sign DNSKEY RRs with keys that have ZSKbit&SEPbit */
 		if (
-			ldns_key_flags(current_key) & LDNS_KEY_ZONE_KEY &&
-			(!(ldns_key_flags(current_key) & LDNS_KEY_SEP_KEY) ||
-			ldns_rr_get_type(ldns_rr_list_rr(rrset, 0)) == LDNS_RR_TYPE_DNSKEY)
+                        ldns_key_flags(current_key) & LDNS_KEY_ZONE_KEY &&
+                        (!(ldns_key_flags(current_key) & LDNS_KEY_SEP_KEY) ||
+                        ldns_rr_get_type(ldns_rr_list_rr(rrset, 0)) == LDNS_RR_TYPE_DNSKEY)
 		   ) {
 			current_sig = ldns_rr_new_frm_type(LDNS_RR_TYPE_RRSIG);
 			
@@ -1523,6 +1530,10 @@ ldns_nsec_bitmap_covers_type(const ldns_rdf *nsec_bitmap, ldns_rr_type type)
 	uint16_t i;
 	uint8_t window_block_nr;
 	
+	if (!nsec_bitmap) {
+		return false;
+	}
+
 	/* Check the bitmap if our type is there */
 	if (!nsec_bitmap) {
 		return false;
@@ -1530,6 +1541,7 @@ ldns_nsec_bitmap_covers_type(const ldns_rdf *nsec_bitmap, ldns_rr_type type)
 	bitmap = ldns_rdf_data(nsec_bitmap);
 	window_block_nr = (uint8_t) (type / 256);
 	i = 0;
+
 	while (i < ldns_rdf_size(nsec_bitmap)) {
 		if (bitmap[i] == window_block_nr) {
 			/* this is the right window, check the bit */
@@ -1550,7 +1562,7 @@ ldns_nsec_bitmap_covers_type(const ldns_rdf *nsec_bitmap, ldns_rr_type type)
 }
 
 bool
-ldns_nsec_covers_name(const ldns_rr *nsec, ldns_rdf *name)
+ldns_nsec_covers_name(const ldns_rr *nsec, const ldns_rdf *name)
 {
 	ldns_rdf *nsec_owner = ldns_rr_owner(nsec);
 	ldns_rdf *hash_next;
@@ -1647,7 +1659,7 @@ ldns_pkt_verify(ldns_pkt *p, ldns_rr_type t, ldns_rdf *o,
 }
 
 ldns_zone *
-ldns_zone_sign(ldns_zone *zone, ldns_key_list *key_list)
+ldns_zone_sign(const ldns_zone *zone, ldns_key_list *key_list)
 {
 	/*
 	 * Algorithm to be created:
@@ -1678,15 +1690,20 @@ ldns_zone_sign(ldns_zone *zone, ldns_key_list *key_list)
 	ldns_rr_type cur_rrset_type;
 	
 	signed_zone = ldns_zone_new();
-	
+
 	/* there should only be 1 SOA, so the soa record is 1 rrset */
 	cur_rrsigs = NULL;
 	ldns_zone_set_soa(signed_zone, ldns_rr_clone(ldns_zone_soa(zone)));
+	ldns_rr2canonical(ldns_zone_soa(signed_zone));
 	
 	orig_zone_rrs = ldns_rr_list_clone(ldns_zone_rrs(zone));
 
 	ldns_rr_list_push_rr(orig_zone_rrs, ldns_rr_clone(ldns_zone_soa(zone)));
 	
+	/* canon now, needed for correct nsec creation */
+        for (i = 0; i < ldns_rr_list_rr_count(orig_zone_rrs); i++) {
+		ldns_rr2canonical(ldns_rr_list_rr(orig_zone_rrs, i));
+	}
 	glue_rrs = ldns_zone_glue_rr_list(zone);
 
 	/* add the key (TODO: check if it's there already? */
@@ -1695,8 +1712,9 @@ ldns_zone_sign(ldns_zone *zone, ldns_key_list *key_list)
 		ckey = ldns_key2rr(ldns_key_list_key(key_list, i));
 		ldns_rr_list_push_rr(pubkeys, ckey);
 	}
-	signed_zone_rrs = ldns_rr_list_new();
 
+	signed_zone_rrs = ldns_rr_list_new();
+	
 	ldns_rr_list_sort(orig_zone_rrs);
 	
 	/* add nsecs */
@@ -1743,10 +1761,10 @@ ldns_zone_sign(ldns_zone *zone, ldns_key_list *key_list)
 		   make them selfsigned (?) */
                 /* don't sign sigs, delegations, and glue */
 		if (cur_rrset_type != LDNS_RR_TYPE_RRSIG &&
-		    ((ldns_dname_is_subdomain(cur_dname, ldns_rr_owner(ldns_zone_soa(zone)))
+		    ((ldns_dname_is_subdomain(cur_dname, ldns_rr_owner(ldns_zone_soa(signed_zone)))
                       && cur_rrset_type != LDNS_RR_TYPE_NS
                      ) ||
-		     ldns_rdf_compare(cur_dname, ldns_rr_owner(ldns_zone_soa(zone))) == 0
+		     ldns_rdf_compare(cur_dname, ldns_rr_owner(ldns_zone_soa(signed_zone))) == 0
 		    ) &&
 		    !(ldns_rr_list_contains_rr(glue_rrs, ldns_rr_list_rr(cur_rrset, 0)))
 		   ) {
@@ -1769,7 +1787,7 @@ ldns_zone_sign(ldns_zone *zone, ldns_key_list *key_list)
 	}
 	ldns_rr_list_deep_free(signed_zone_rrs);
 	ldns_rr_list_deep_free(pubkeys);
-	ldns_rr_list_deep_free(glue_rrs);
+	ldns_rr_list_free(glue_rrs);
 	return signed_zone;
 	
 }

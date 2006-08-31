@@ -630,8 +630,7 @@ ldns_key_rsa2bin(unsigned char *data, RSA *k, uint16_t *size)
 		return false;
 	}
 	
-	/* should this be 256? or so */
-	if (BN_num_bytes(k->e) <= 2) {
+	if (BN_num_bytes(k->e) <= 256) {
 		/* normally only this path is executed (small factors are
 		 * more common 
 		 */
@@ -639,8 +638,7 @@ ldns_key_rsa2bin(unsigned char *data, RSA *k, uint16_t *size)
 		i = BN_bn2bin(k->e, data + 1);  
 		j = BN_bn2bin(k->n, data + i + 1);
 		*size = (uint16_t) i + j;
-		/* and this 65536?? */
-	} else if (BN_num_bytes(k->e) <= 16) {
+	} else if (BN_num_bytes(k->e) <= 65536) {
 		data[0] = 0;
 		/* BN_bn2bin does bigendian, _uint16 also */
 		ldns_write_uint16(data + 1, (uint16_t) BN_num_bytes(k->e)); 

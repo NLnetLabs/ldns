@@ -25,6 +25,7 @@ Post 1.0 Stuff:
 	o More efficient zone and rr list structures
 	o More (unit) tests
 	o Split rr_lists from rr.[ch]
+	o $INCLUDE (bindism).
 
 DONE:
 1.1.0 released 7 Juli 2006

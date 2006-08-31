@@ -195,11 +195,15 @@ bool ldns_nsec_bitmap_covers_type(const ldns_rdf *nsec_bitmap, ldns_rr_type type
 
 /**
  * Checks coverage of NSEC(3) RR name span
+ * Remember that nsec and name must both be in canonical form (ie use
+ * \ref ldns_rr2canonical and \ref ldns_dname2canonical prior to calling this
+ * function)
+ *
  * \param[in] nsec The NSEC RR to check
  * \param[in] name The owner dname to check, if the nsec record is a NSEC3 record, this should be the hashed name
  * \return true if the NSEC RR covers the owner name
  */
-bool ldns_nsec_covers_name(const ldns_rr *nsec, ldns_rdf *name);
+bool ldns_nsec_covers_name(const ldns_rr *nsec, const ldns_rdf *name);
 
 uint8_t ldns_nsec3_algorithm(const ldns_rr *nsec3_rr);
 uint32_t ldns_nsec3_iterations(const ldns_rr *nsec3_rr);
@@ -233,7 +237,7 @@ ldns_status ldns_pkt_verify(ldns_pkt *p, ldns_rr_type t, ldns_rdf *o, ldns_rr_li
  * \param[in] key_list the list of keys to sign the zone with
  * \return the signed zone
  */
-ldns_zone *ldns_zone_sign(ldns_zone *zone, ldns_key_list *key_list);
+ldns_zone *ldns_zone_sign(const ldns_zone *zone, ldns_key_list *key_list);
 ldns_zone *ldns_zone_sign_nsec3(ldns_zone *zone, ldns_key_list *key_list, uint8_t algorithm, uint32_t iterations, uint8_t salt_length, uint8_t *salt);
  
 /**

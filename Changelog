@@ -1,3 +1,10 @@
+* 1.1.X:
+	* ldns-walk now support dnames with maximum label length
+	* capitalization issues in sign/verify/nsec creation are fixed
+	* ldnsd now takes an extra argument containing the address to listen on
+	* signing no longer signs every rrset with KSK's, but only the DNSKEY rrset
+
+
 31 Apr 2006: 1.1.0: ldns-team
 	* Added tutorials and an introduction to the documentation
 	* Added include/ and lib/ dirs so that you can compile against ldns

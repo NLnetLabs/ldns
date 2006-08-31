@@ -128,6 +128,9 @@ autoreconf || error_cleanup "Autoconf failed."
 info "Building configure script for examples (autoconf)."
 cd examples && autoreconf && cd .. || error_cleanup "Autoconf failed."
 
+info "Building configure script for drill (autoconf)."
+cd drill && autoreconf && cd .. || error_cleanup "Autoconf failed."
+
 rm -r autom4te* || error_cleanup "Failed to remove autoconf cache directory."
 
 # custom removes

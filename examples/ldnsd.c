@@ -24,7 +24,7 @@
 
 void usage(FILE *output)
 {
-	fprintf(output, "Usage: ldnsd <port> <zone> <zonefile>\n");
+	fprintf(output, "Usage: ldnsd <address> <port> <zone> <zonefile>\n");
 	fprintf(output, "Listens on the specified port and answers queries for the given zone\n");
 	fprintf(output, "This is NOT a full-fledged authoritative nameserver!\n");
 }
@@ -32,10 +32,19 @@ void usage(FILE *output)
 static int udp_bind(int sock, int port, const char *my_address)
 {
     struct sockaddr_in addr;
+    in_addr_t maddr = INADDR_ANY;
+
+    if (my_address) {
+        if (inet_pton(AF_INET6, my_address, &maddr) < 1) {
+            if (inet_pton(AF_INET, my_address, &maddr) < 1) {
+                return -2;
+            }
+        }
+    }
 
     addr.sin_family = AF_INET;
-    addr.sin_port = (in_port_t)htons((uint16_t)port);
-		addr.sin_addr.s_addr = INADDR_ANY;
+    addr.sin_port = (in_port_t) htons((uint16_t)port);
+    addr.sin_addr.s_addr = maddr;
     return bind(sock, (struct sockaddr *)&addr, (socklen_t) sizeof(addr));
 }
 
@@ -79,7 +88,6 @@ main(int argc, char **argv)
 	struct sockaddr addr_me;
 	struct sockaddr addr_him;
 	socklen_t hislen;
-	const char *my_address;
 	uint8_t inbuf[INBUF_SIZE];
 	uint8_t *outbuf;
 
@@ -100,18 +108,19 @@ main(int argc, char **argv)
 	FILE *zone_fp;
 	
 	/* use this to listen on specified interfaces later? */
-	my_address = NULL;
+	char *my_address = NULL;
 		
-	if (argc < 4) {
+	if (argc < 5) {
 		usage(stdout);
 		exit(EXIT_FAILURE);
 	} else {
-		port = atoi(argv[1]);
+	        my_address = argv[1];
+		port = atoi(argv[2]);
 		if (port < 1) {
 			usage(stdout);
 			exit(EXIT_FAILURE);
 		}
-		zone_file = argv[3];
+		zone_file = argv[4];
 	}
 	
 	printf("Reading zone file %s\n", zone_file);
@@ -143,6 +152,7 @@ main(int argc, char **argv)
 	/* bind: try all ports in that range */
 	if (udp_bind(sock, port, my_address)) {
 		fprintf(stderr, "%s: cannot bind(): %s\n", argv[0], strerror(errno));
+		exit(errno);
 	}
 
 	/* Done. Now receive */

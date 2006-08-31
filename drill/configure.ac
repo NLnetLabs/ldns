@@ -125,6 +125,8 @@ AC_CHECK_LIB(ldns, ldns_rr_new,, [
 	]
 )
 
+AC_SUBST(LDNSDIR)
+
 AC_ARG_WITH(ldns, AC_HELP_STRING([--with-ldns=PATHNAME],[]))
 
 AC_CHECK_HEADER(ldns/ldns.h,,  [

@@ -173,9 +173,13 @@ read_hex_pkt(char *filename)
 	ldns_pkt *pkt = NULL;
 	
 	ldns_status status = LDNS_STATUS_ERR;
-	FILE *fp;
+	FILE *fp = NULL;
 	
-	fp = fopen(filename, "r");
+	if (strncmp(filename, "-", 2) != 0) {
+		fp = fopen(filename, "r");
+	} else {
+		fp = stdin;
+	}
 	
 	if (fp == NULL) {
 		perror("");
@@ -191,11 +195,15 @@ read_hex_pkt(char *filename)
 		status = ldns_wire2pkt(&pkt, wire, wiresize);
 	}
 	
+	if (strncmp(filename, "-", 2) != 0) {
+		fclose(fp);
+	}
 	xfree(wire);
 	
 	if (status == LDNS_STATUS_OK) {
 		return pkt;
 	} else {
+		fprintf(stderr, "Error parsing hex file: %s\n", ldns_get_errorstr_by_id(status));
 		return NULL;
 	}
 }
@@ -203,7 +211,7 @@ read_hex_pkt(char *filename)
 void
 dump_hex(const ldns_pkt *pkt, const char *filename)
 {
-	uint8_t *wire;// = xmalloc((packet->udppacketsize)*21);
+	uint8_t *wire;
 	size_t size, i;
 	FILE *fp;
 	ldns_status status;

@@ -17,6 +17,8 @@ LDFLAGS = @LDFLAGS@
 LIBS = @LIBS@
 INSTALL = $(srcdir)/install-sh -c
 INSTALL_PROGRAM = $(INSTALL)
+LDNSDIR = @LDNSDIR@
+LIBS_STC = -lcrypto $(LDNSDIR)/lib/libldns.a
 
 COMPILE         = $(CC) -Wall $(CPPFLAGS) $(CFLAGS) -I. -I$(srcdir)
 LINK            = $(CC) $(CFLAGS) $(LDFLAGS) 
@@ -29,15 +31,19 @@ SRC=$(OBJ:.o=.c)
 
 HEADER=drill.h $(srcdir)/drill_util.h
 
-.PHONY:	all clean realclean docclean doc release tags install
+.PHONY:	all clean realclean docclean doc release tags install all-static
 
 all:	drill 
+all-static:	drill-stc 
 
 tags:	
 	ctags *.[ch]
 
 drill:	$(OBJ) 
 	$(LINK) -o drill $(OBJ) $(LIBS)
+
+drill-stc:	$(OBJ) 
+	$(LINK) -o drill $(OBJ) $(LIBS_STC)
 
 ## implicit rule
 %.o:	$(srcdir)/%.c $(HEADER)

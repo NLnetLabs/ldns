@@ -7,7 +7,7 @@
 #include <ldns/ldns.h>
 #include <pcap.h>
 
-#define FAILURE 100
+#define FAILURE 10000
 
 
 #ifndef ETHERTYPE_IPV6
@@ -16,7 +16,7 @@
 #define DNS_UDP_OFFSET 	42
 
 #ifndef HAVE_GETDELIM
-ssize_t getdelim(char **lineptr, size_t *n, int delim, FILE *stream);
+size_t getdelim(char **lineptr, size_t *n, int delim, FILE *stream);
 #endif
 
 /* output: see usage() */
@@ -44,7 +44,7 @@ data2hex(FILE *fp, u_char *p, size_t l)
 {
 	size_t i;
 	for(i = 0; i < l; i++) {
-		fprintf(fp, "%02x", p[i]);
+		fprintf(fp, "%02x", (unsigned int) p[i]);
 	}
 	fputs("\n", fp);
 }
@@ -105,6 +105,8 @@ main(int argc, char **argv)
 	struct timeval timeout;
 	struct sockaddr_storage *data;
 	struct sockaddr_in  *data_in;
+	
+	ldns_status send_status;
 
 	port = 0;
 	ip = NULL;
@@ -175,8 +177,8 @@ main(int argc, char **argv)
 		q = pcap2ldns_pkt_ip(x, &h);
 		ldns_buffer_write(qpkt, q, h.caplen);
 
-		if (ldns_udp_send(&result, qpkt, data, tolen, timeout, &size) ==
-				LDNS_STATUS_OK) {
+		send_status =ldns_udp_send(&result, qpkt, data, tolen, timeout, &size);
+		if (send_status == LDNS_STATUS_OK) {
 			/* double check if we are dealing with correct replies 
 			 * by converting to a pkt... todo */
 			fprintf(stdout, "%d\n", (int)i);
@@ -187,7 +189,7 @@ main(int argc, char **argv)
 		} else {
 			/* todo print failure */
 			failure++;
-			fprintf(stderr, "Failure to send packet\n");
+			fprintf(stderr, "Failure to send packet (attempt %u, error %s)\n", (unsigned int) failure, ldns_get_errorstr_by_id(send_status));
 			fprintf(stdout, "%d\n", (int)i);
 			/* query */
 			data2hex(stdout, q, h.caplen); 
@@ -198,7 +200,7 @@ main(int argc, char **argv)
 		ldns_buffer_clear(qpkt);
 		i++;
 		if (failure > FAILURE) {
-			fprintf(stderr, "More then 100 failures, bailing out\n");
+			fprintf(stderr, "More than %u failures, bailing out\n", FAILURE);
 			exit(EXIT_FAILURE);
 		}
 	}

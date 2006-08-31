@@ -113,7 +113,7 @@ main(int argc, char *argv[])
 	uint16_t ttl = 0;
 	ldns_rr_class class = LDNS_RR_CLASS_IN;	
 	
-	const char *prog = strdup(argv[0]);
+	char *prog = strdup(argv[0]);
 	
 	inception = 0;
 	expiration = 0;
@@ -297,7 +297,6 @@ main(int argc, char *argv[])
 						ldns_key_set_pubkey_owner(key, ldns_rdf_clone(ldns_rr_owner(pubkey)));
 						ldns_key_set_flags(key, ldns_rdf2native_int16(ldns_rr_rdf(pubkey, 0)));
 					}
-					/*ldns_key_set_flags(key, ldns_key_flags(key) | LDNS_KEY_ZONE_KEY);*/
 					ldns_key_list_push_key(keys, key);
 					ldns_zone_push_rr(orig_zone, ldns_rr_clone(pubkey));
 					ldns_rr_free(pubkey);
@@ -352,5 +351,7 @@ main(int argc, char *argv[])
 	ldns_zone_deep_free(orig_zone);
 	
 	LDNS_FREE(outputfile_name);
+	
+	free(prog);
         exit(EXIT_SUCCESS);
 }

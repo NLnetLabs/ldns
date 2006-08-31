@@ -1,3 +1,4 @@
+# comment at start.
 ; Test queries for ldns-testns.
 ; This is a line based format config file.
 
@@ -11,7 +12,7 @@ ENTRY_BEGIN
 MATCH opcode qtype qname ; for default queries
 # or you can match on a specific value.
 ; MATCH serial=1024 	; for this query also match SOA serial.
-# add RRs to a section, QUESTION ANSWER AUTHORITY ADDITIONAL
+; MATCH UDP 		; query must be by udp.
 #
 # REPLY lines give header info for the reply:
 # 	(opcode)  QUERY IQUERY STATUS NOTIFY UPDATE
@@ -21,6 +22,7 @@ MATCH opcode qtype qname ; for default queries
 REPLY QR  	; this is a query reply.
 # ADJUST: runtime modifications to the reply. usually copy_id.
 ADJUST copy_id
+# add RRs to a section, QUESTION ANSWER AUTHORITY ADDITIONAL
 SECTION QUESTION
 # RRs, (an RR must be on a single line).
 @	IN	A
@@ -29,6 +31,27 @@ SECTION ANSWER
 @	TXT	"This record is unexpected."
 SECTION ADDITIONAL
 @	A	192.1.2.3
+ENTRY_END
+
+ENTRY_BEGIN
+MATCH TCP opcode qname
+ADJUST copy_id
+SECTION QUESTION
+axfr.example.com. IN AXFR
+SECTION ANSWER
+axfr.example.com. IN SOA a. b. 10 60 60 60 60 60
+bla.axfr.example.com. IN TXT "bla"
+EXTRA_PACKET
+SECTION ANSWER
+bla.axfr.example.com. IN TXT "bla2"
+axfr.example.com. IN SOA a. b. 10 60 60 60 60 60
+ENTRY_END
+
+ENTRY_BEGIN
+MATCH TCP
+REPLY SERVFAIL
+ADJUST copy_id
+ldns.testns.example. TXT "The ldnstestns server handled your TCP request"
 ENTRY_END
 
 ENTRY_BEGIN

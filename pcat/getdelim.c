@@ -5,7 +5,7 @@
 #define GETDELIM_BUFFER 128
 
 /* copied from xine-devel */
-ssize_t
+size_t
 getdelim( char **lineptr, size_t *n, int delimiter, FILE *stream )
 {
         char *p;
