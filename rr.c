@@ -1525,12 +1525,8 @@ static const ldns_rdf_type type_dnskey_wireformat[] = {
 static const ldns_rdf_type type_tsig_wireformat[] = {
 	LDNS_RDF_TYPE_DNAME,
 	LDNS_RDF_TYPE_TSIGTIME,
-	LDNS_RDF_TYPE_INT16,
-/*	LDNS_RDF_TYPE_INT16,*/
 	LDNS_RDF_TYPE_INT16_DATA,
 	LDNS_RDF_TYPE_INT16,
-	LDNS_RDF_TYPE_INT16,
-/*	LDNS_RDF_TYPE_INT16,*/
 	LDNS_RDF_TYPE_INT16_DATA
 }; 
 /** \endcond */
