@@ -634,11 +634,10 @@ compare_to_file(ldns_pkt *qp, ldns_pkt *pkt1, ldns_pkt *pkt2)
 
 		/* special case if one packet is null (ie. one server
 		   answers and one doesnt) */
-		if (!pkt1 || !pkt2) {
+		if (same && (!pkt1 || !pkt2)) {
 			if (strncmp(answer_match, "NOANSWER\n", 10) == 0 || 
 			    strncmp(answer_match, "*\n", 3) == 0
 			   ) {
-				same = true;
 				goto match;
 			} else {
 				same = false;
@@ -1128,6 +1127,7 @@ compare(struct dns_info *d1, struct dns_info *d2)
 						printf("Quitting at packet %u\n", (unsigned int) d1->seq);
 						exit(1);
 					}
+					ldns_pkt_free(pq);
 				} else {
 					sames++;
 				}					
