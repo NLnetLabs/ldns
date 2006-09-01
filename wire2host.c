@@ -169,7 +169,6 @@ ldns_wire2rdf(ldns_rr *rr, const uint8_t *wire, size_t max, size_t *pos)
 	
 	end = *pos + (size_t) rd_length;
 
-
 	for (rdf_index = 0; 
 	     rdf_index < ldns_rr_descriptor_maximum(descriptor); rdf_index++) {
 		if (*pos >= end) {
@@ -237,6 +236,9 @@ ldns_wire2rdf(ldns_rr *rr, const uint8_t *wire, size_t max, size_t *pos)
 		}
 		/* fixed length rdata */
 		if (cur_rdf_length > 0) {
+			if (cur_rdf_length + *pos > end) {
+				return LDNS_STATUS_PACKET_OVERFLOW;
+			}
 			data = LDNS_XMALLOC(uint8_t, rd_length);
 			if (!data) {
 				return LDNS_STATUS_MEM_ERR;
