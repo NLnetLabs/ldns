@@ -137,14 +137,31 @@ add_known_difference(const char *diff)
 	}
 }
 
-void
-print_known_differences()
+int
+compare_known_differences(const void *a, const void *b)
 {
-	size_t i,j;
+	known_differences_count *ac, *bc;
+	
+	if (!a || !b) {
+		return 0;
+	}
+	
+	ac = (known_differences_count *) a;
+	bc = (known_differences_count *) b;
+	
+	return bc->count - ac->count;	
+}
+
+void
+print_known_differences(FILE *output)
+{
+	size_t i;
 	size_t differents = 0;
 	size_t total;
 	double percentage;
 	
+	qsort(known_differences, known_differences_size, sizeof(known_differences_count),
+	      compare_known_differences);
 	for (i = 0; i < known_differences_size; i++) {
 		differents += known_differences[i].count;
 	}
@@ -153,19 +170,14 @@ print_known_differences()
 
 	for (i = 0; i < known_differences_size; i++) {
 		percentage = (double) (((double) known_differences[i].count / (double)differents) * 100.0);
-		printf("%s:", known_differences[i].descr);
-		if (strlen(known_differences[i].descr) < 48) {
-			for (j = 0; j < 48 - strlen(known_differences[i].descr); j++) {
-				printf(" ");
-			}
-		}
-		printf("%u\t(%02.2f%%)\n", (unsigned int) known_differences[i].count, percentage);
+		fprintf(output, "%-48s", known_differences[i].descr);
+		fprintf(output, "%8u\t(%02.2f%%)\n", (unsigned int) known_differences[i].count, percentage);
 	}
 
-	printf("Total number of differences: %u (100%%)\n", (unsigned int) differents);
-	printf("Number of packets the same after normalization: %u\n", (unsigned int) sames);
-	printf("Number of packets exactly the same on the wire: %u\n", (unsigned int) bytesames);
-	printf("Total number of packets inspected: %u\n", (unsigned int) total);
+	fprintf(output, "Total number of differences: %u (100%%)\n", (unsigned int) differents);
+	fprintf(output, "Number of packets the same after normalization: %u\n", (unsigned int) sames);
+	fprintf(output, "Number of packets exactly the same on the wire: %u\n", (unsigned int) bytesames);
+	fprintf(output, "Total number of packets inspected: %u\n", (unsigned int) total);
 }
 
 /**
@@ -1356,7 +1368,7 @@ reread:
 	read2 = getdelim(&line2, &len2, '\n', trace2);
 	if (read1 == -1 || read2 == -1) {
 		fclose(trace1); fclose(trace2);
-		print_known_differences();
+		print_known_differences(stdout);
 		exit(EXIT_SUCCESS);
 	}
 	if (read1 > 0) 
@@ -1380,8 +1392,8 @@ reread:
 			break;
 		case EMPTY:
 			if (show_prelim_results > 0 && total_nr_of_packets % show_prelim_results == 0) {
-				print_known_differences();
-				printf("\n");
+				print_known_differences(stderr);
+				fprintf(stderr, "\n");
 			}
 			total_nr_of_packets++;
 			/* we now should have  */
@@ -1406,7 +1418,7 @@ reread:
 	free(line2);
 	fclose(trace1);
 	fclose(trace2);
-	print_known_differences();
+	print_known_differences(stdout);
 	if (store_known_differences) {
 		for (i = 0; i < known_differences_size; i++) {
 			fclose(store_known_files[i]);
