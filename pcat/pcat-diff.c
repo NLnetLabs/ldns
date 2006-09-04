@@ -1020,6 +1020,7 @@ compare_to_file(ldns_pkt *qp, ldns_pkt *pkt1, ldns_pkt *pkt2)
 	
 	LDNS_FREE(pkt_str1);
 	LDNS_FREE(pkt_str2);
+	LDNS_FREE(pkt_query);
 	
 	if (verbosity > 0) {
 		printf("<<<<<<< NO MATCH >>>>>>>>\n");
@@ -1126,7 +1127,7 @@ compare(struct dns_info *d1, struct dns_info *d2)
 							fprintf(known_differences[file_nr].file, "q: %d:%d\n%s\n%s\n%s\n", (int)d1->seq, (int)d2->seq, 
 								d1->qdata, d1->adata, d2->adata);
 						}
-
+						
 						free(compare_result);
 						diff = false;
 					} else {
@@ -1209,7 +1210,6 @@ read_match_files(char *directory)
 		if (verbosity > 1) {
 			printf("File: %s\n", cur_file_name);
 		}
-		
 		description = LDNS_XMALLOC(char, MAX_DESCR_LEN);
 		query_match = LDNS_XMALLOC(char, LDNS_MAX_PACKETLEN);
 		answer_match = LDNS_XMALLOC(char, LDNS_MAX_PACKETLEN);
@@ -1364,63 +1364,64 @@ main(int argc, char **argv)
 
 	i = 1;
 
-reread:
-	line_nr = i;
-	read1 = getdelim(&line1, &len1, '\n', trace1);
-	read2 = getdelim(&line2, &len2, '\n', trace2);
-	if (read1 == -1 || read2 == -1) {
-		fclose(trace1); fclose(trace2);
-		print_known_differences(stdout);
-		exit(EXIT_SUCCESS);
-	}
-	if (read1 > 0) 
-		line1[read1 - 1] = '\0';
-	if (read2 > 0)
-		line2[read2 - 1] = '\0';
-
-	if (total_nr_of_packets >= min_number) {
-	switch(i % LINES) {
-		case SEQUENCE:
-			d1.seq = atoi(line1);
-			d2.seq = atoi(line2);
+	while (max_number == 0 || total_nr_of_packets < max_number) {
+		line_nr = i;
+		read1 = getdelim(&line1, &len1, '\n', trace1);
+		read2 = getdelim(&line2, &len2, '\n', trace2);
+		if (read1 == -1 || read2 == -1) {
+			print_known_differences(stdout);
 			break;
-		case QDATA:
-			d1.qdata = strdup(line1);
-			d2.qdata = strdup(line2);
-			break;
-		case ADATA:
-			d1.adata = strdup(line1);
-			d2.adata = strdup(line2);
-			break;
-		case EMPTY:
-			if (show_prelim_results > 0 && total_nr_of_packets % show_prelim_results == 0) {
-				print_known_differences(stderr);
-				fprintf(stderr, "\n");
-			}
-			total_nr_of_packets++;
-			/* we now should have  */
-			compare(&d1, &d2);
-			free(d1.adata);
-			free(d2.adata);
-			free(d1.qdata);
-			free(d2.qdata);
-			break;
-	}
-	} else {
-		if (i % LINES == EMPTY) {
-			total_nr_of_packets++;
 		}
-	}
-	if (max_number == 0 || total_nr_of_packets < max_number) {
+		if (read1 > 0) 
+			line1[read1 - 1] = '\0';
+		if (read2 > 0)
+			line2[read2 - 1] = '\0';
+
+		if (total_nr_of_packets >= min_number) {
+		switch(i % LINES) {
+			case SEQUENCE:
+				d1.seq = atoi(line1);
+				d2.seq = atoi(line2);
+				break;
+			case QDATA:
+				d1.qdata = strdup(line1);
+				d2.qdata = strdup(line2);
+				break;
+			case ADATA:
+				d1.adata = strdup(line1);
+				d2.adata = strdup(line2);
+				break;
+			case EMPTY:
+				if (show_prelim_results > 0 && total_nr_of_packets % show_prelim_results == 0) {
+					print_known_differences(stderr);
+					fprintf(stderr, "\n");
+				}
+				total_nr_of_packets++;
+				/* we now should have  */
+				compare(&d1, &d2);
+				free(d1.adata);
+				free(d2.adata);
+				free(d1.qdata);
+				free(d2.qdata);
+				break;
+		}
+		} else {
+			if (i % LINES == EMPTY) {
+				total_nr_of_packets++;
+			}
+		}
 		i++;
-		goto reread;
 	}
+
 	free_match_files();
 	free(line1);
 	free(line2);
 	fclose(trace1);
 	fclose(trace2);
 	print_known_differences(stdout);
+	for (i = 0; i < known_differences_size; i++) {
+		LDNS_FREE(known_differences[i].descr);
+	}
 	if (store_known_differences) {
 		for (i = 0; i < known_differences_size; i++) {
 			fclose(known_differences[i].file);
