@@ -225,7 +225,11 @@ ldns_wire2rdf(ldns_rr *rr, const uint8_t *wire, size_t max, size_t *pos)
 			break;
 		case LDNS_RDF_TYPE_NSEC3_VARS:
 			/* grm var length appears halfway rdf */
-			cur_rdf_length = (size_t) wire[*pos + 4] + 5;
+			if (*pos + 4 < max) {
+				cur_rdf_length = (size_t) wire[*pos + 4] + 5;
+			} else {
+				return LDNS_STATUS_PACKET_OVERFLOW;
+			}
 			/*printf("NSEC3 wire length: %u\n", (unsigned int) cur_rdf_length);*/
 			break;
 		case LDNS_RDF_TYPE_B32_EXT:

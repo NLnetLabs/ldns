@@ -93,7 +93,9 @@ enum ldns_enum_rdf_type
 	/** NSAP */
 	LDNS_RDF_TYPE_NSAP,
 	/** IPSECKEY */
-	LDNS_RDF_TYPE_IPSECKEY
+	LDNS_RDF_TYPE_IPSECKEY,
+	/** nsec3 base32 string (with length byte on wire */
+	LDNS_RDF_TYPE_NSEC3_NEXT_OWNER,
 };
 typedef enum ldns_enum_rdf_type ldns_rdf_type;
 
