@@ -237,7 +237,7 @@ main(int argc, char **argv)
 
 	qpkt = ldns_buffer_new(LDNS_MAX_PACKETLEN);
 	data = LDNS_MALLOC(struct sockaddr_storage);
-	timeout.tv_sec = 2;
+	timeout.tv_sec = 5;
 	timeout.tv_usec = 0;
 
 	/* setup the socket */
@@ -282,10 +282,11 @@ main(int argc, char **argv)
 			data2hex(stdout, ldns_buffer_begin(qpkt), query_pkt_len); 
 			/* answer */
 			data2hex(stdout, result, size);
+			fflush(stdout);
 		} else {
 			/* todo print failure */
 			failure++;
-			fprintf(stderr, "Failure to send packet (attempt %u, error %s)\n", (unsigned int) failure, ldns_get_errorstr_by_id(send_status));
+			fprintf(stderr, "Failure to send packet %u (attempt %u, error %s)\n", i, (unsigned int) failure, ldns_get_errorstr_by_id(send_status));
 			fprintf(stdout, "%d\n", (int)i);
 			/* query */
 			data2hex(stdout, ldns_buffer_begin(qpkt), query_pkt_len); 

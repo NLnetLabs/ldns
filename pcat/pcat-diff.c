@@ -85,13 +85,14 @@ struct known_differences_struct
 {
 	char *descr;
 	size_t count;
+	FILE *file;
 };
 typedef struct known_differences_struct known_differences_count;
 
 known_differences_count known_differences[INITIAL_DIFFERENCES_SIZE];
 size_t known_differences_size = 0;
 
-FILE *store_known_files[INITIAL_DIFFERENCES_SIZE];
+/*FILE *store_known_files[INITIAL_DIFFERENCES_SIZE];*/
 
 size_t
 add_known_difference(const char *diff)
@@ -129,7 +130,7 @@ add_known_difference(const char *diff)
 				fprintf(stderr, "Error opening %s for writing: %s\n", store_file_name, strerror(errno));
 				exit(errno);
 			}
-			store_known_files[known_differences_size] = store_file;
+			known_differences[known_differences_size].file = store_file;
 		}
 
 		known_differences_size++;
@@ -474,7 +475,8 @@ compare_to_file(ldns_pkt *qp, ldns_pkt *pkt1, ldns_pkt *pkt2)
 		if (verbosity > 3) {
 			printf("MATCH TO:\n");
 			printf("descr: %s\n", description);
-			printf("%s\n", answer_match);
+			printf("QUERY:\n%s\n", query_match);
+			printf("ANSWER:\n%s\n", answer_match);
 		}
 
 		/* first, try query match */
@@ -608,9 +610,9 @@ compare_to_file(ldns_pkt *qp, ldns_pkt *pkt1, ldns_pkt *pkt2)
 				match_word_count = 0;
 			} else if (query_match[j] == '?') {
 				k = j + 1;
-				while (j != ' ' &&
-				       j != '\t' &&
-				       j != '\n' && 
+				while (query_match[j] != ' ' &&
+				       query_match[j] != '\t' &&
+				       query_match[j] != '\n' && 
 				       j < max_j) {
 					j++;
 				}
@@ -1121,7 +1123,7 @@ compare(struct dns_info *d1, struct dns_info *d2)
 						}
 						file_nr = add_known_difference(compare_result);
 						if (store_known_differences) {
-							fprintf(store_known_files[file_nr], "q: %d:%d\n%s\n%s\n%s\n", (int)d1->seq, (int)d2->seq, 
+							fprintf(known_differences[file_nr].file, "q: %d:%d\n%s\n%s\n%s\n", (int)d1->seq, (int)d2->seq, 
 								d1->qdata, d1->adata, d2->adata);
 						}
 
@@ -1421,7 +1423,7 @@ reread:
 	print_known_differences(stdout);
 	if (store_known_differences) {
 		for (i = 0; i < known_differences_size; i++) {
-			fclose(store_known_files[i]);
+			fclose(known_differences[i].file);
 		}
 	}
 	return 0;
