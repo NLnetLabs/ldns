@@ -526,7 +526,7 @@ ldns_rdf2buffer_str_nsec3_vars_general(ldns_buffer *output, const ldns_rdf *rdf,
 	}
 	
 	iterations_wire[0] = 0;
-	iterations_wire[1] = data[1] & !LDNS_NSEC3_VARS_OPTIN_MASK;
+	iterations_wire[1] = data[1] & ~LDNS_NSEC3_VARS_OPTIN_MASK;
 	iterations_wire[2] = data[2];
 	iterations_wire[3] = data[3];
 	

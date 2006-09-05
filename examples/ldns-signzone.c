@@ -17,6 +17,8 @@
 
 #define MAX_FILENAME_LEN 250
 
+#define LDNS_NSEC3_MAX_ITERATIONS 8388607
+
 void
 usage(FILE *fp, const char *prog) {
 	fprintf(fp, "%s [OPTIONS] zonefile key [key [key]]\n", prog);
@@ -207,7 +209,11 @@ main(int argc, char *argv[])
 
 			break;
 		case 't':
-			nsec3_iterations = (uint32_t) atoi(optarg);
+			nsec3_iterations = (uint32_t) atol(optarg);
+			if (nsec3_iterations > LDNS_NSEC3_MAX_ITERATIONS) {
+			  fprintf(stderr, "Iterations count can not exceed %u, quitting\n", LDNS_NSEC3_MAX_ITERATIONS);
+			  exit(EXIT_FAILURE);
+			}
 			break;
 		default:
 			usage(stderr, prog);

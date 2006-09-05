@@ -26,7 +26,7 @@
 #include <openssl/err.h>
 #include <openssl/md5.h>
 
-#define OPTOUT_MASK 0x80;
+#define OPTOUT_MASK 0x80
 
 /* used only on the public key RR */
 uint16_t
@@ -1236,9 +1236,9 @@ ldns_create_nsec3_vars_rdf(uint8_t algorithm,
 	memcpy(&nsec3_vars_data[1], &iterations_data[1], 3);
 
 	if (opt_out) {
-		nsec3_vars_data[1] |= OPTOUT_MASK;
+		nsec3_vars_data[1] = nsec3_vars_data[1] | OPTOUT_MASK;
 	} else {
-		nsec3_vars_data[1] &= !OPTOUT_MASK;
+		nsec3_vars_data[1] = nsec3_vars_data[1] & ~OPTOUT_MASK;
 	}
 	
 	nsec3_vars_data[4] = salt_length;
@@ -1426,7 +1426,7 @@ ldns_nsec3_iterations(const ldns_rr *nsec3_rr)
 		data = ldns_rdf_data(ldns_rr_rdf(nsec3_rr, 0));
 		
 		iterations_wire[0] = 0;
-		iterations_wire[1] = data[1] & !OPTOUT_MASK;
+		iterations_wire[1] = data[1] & ~OPTOUT_MASK;
 		iterations_wire[2] = data[2];
 		iterations_wire[3] = data[3];
 
