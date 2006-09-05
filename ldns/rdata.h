@@ -64,6 +64,7 @@ enum ldns_enum_rdf_type
 	/** nsec type codes */
 	LDNS_RDF_TYPE_NSEC, 
 	LDNS_RDF_TYPE_NSEC3_VARS, 
+	LDNS_RDF_TYPE_NSEC3_PARAMS_VARS, 
 	/** a RR type */
 	LDNS_RDF_TYPE_TYPE, 
 	/** a class */

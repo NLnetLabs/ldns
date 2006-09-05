@@ -1547,6 +1547,11 @@ static const ldns_rdf_type type_nsec_wireformat[] = {
 static const ldns_rdf_type type_nsec3_wireformat[] = {
 	LDNS_RDF_TYPE_NSEC3_VARS, LDNS_RDF_TYPE_NSEC3_NEXT_OWNER, LDNS_RDF_TYPE_NSEC
 };
+
+static const ldns_rdf_type type_nsec3params_wireformat[] = {
+	LDNS_RDF_TYPE_NSEC3_PARAMS_VARS
+};
+
 static const ldns_rdf_type type_dnskey_wireformat[] = {
 	LDNS_RDF_TYPE_INT16, LDNS_RDF_TYPE_INT8, LDNS_RDF_TYPE_ALG, LDNS_RDF_TYPE_B64
 };
@@ -1669,7 +1674,8 @@ static ldns_rr_descriptor rdata_field_descriptors[] = {
 	{LDNS_RR_TYPE_DNSKEY, "DNSKEY", 4, 4, type_dnskey_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS },
 	/* TODO: no code yet, assume 50 for now */
 	{LDNS_RR_TYPE_TSIG, "TSIG", 8, 9, type_tsig_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS },
-	{LDNS_RR_TYPE_NSEC3, "NSEC3", 3, 3, type_nsec3_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS }
+	{LDNS_RR_TYPE_NSEC3, "NSEC3", 3, 3, type_nsec3_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS },
+	{LDNS_RR_TYPE_NSEC3PARAMS, "NSEC3PARAMS", 1, 1, type_nsec3params_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS }
 };
 /** \endcond */
 
@@ -1688,7 +1694,6 @@ ldns_rr_descript(uint16_t type)
 {
 	size_t i;
 	
-	/* quick hack for NSEC3 type 65324 TODO: fix descriptor array code :p */
 	if (type < LDNS_RDATA_FIELD_DESCRIPTORS_COMMON) {
 		return &rdata_field_descriptors[type];
 	} else {

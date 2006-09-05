@@ -221,9 +221,11 @@ ldns_wire2rdf(ldns_rr *rr, const uint8_t *wire, size_t max, size_t *pos)
 			cur_rdf_length = ((size_t) wire[*pos]) + 1;
 			break;
 		case LDNS_RDF_TYPE_INT16_DATA:
+		case LDNS_RDF_TYPE_NSEC3_NEXT_OWNER:
 			cur_rdf_length = (size_t) ldns_read_uint16(&wire[*pos]) + 2;
 			break;
 		case LDNS_RDF_TYPE_NSEC3_VARS:
+		case LDNS_RDF_TYPE_NSEC3_PARAMS_VARS:
 			/* grm var length appears halfway rdf */
 			if (*pos + 4 < max) {
 				cur_rdf_length = (size_t) wire[*pos + 4] + 5;

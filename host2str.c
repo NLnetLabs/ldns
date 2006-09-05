@@ -504,7 +504,7 @@ ldns_rdf2buffer_str_nsec(ldns_buffer *output, const ldns_rdf *rdf)
 
 #define LDNS_NSEC3_VARS_OPTIN_MASK 0x80
 ldns_status
-ldns_rdf2buffer_str_nsec3_vars(ldns_buffer *output, const ldns_rdf *rdf)
+ldns_rdf2buffer_str_nsec3_vars_general(ldns_buffer *output, const ldns_rdf *rdf, bool print_opt_out)
 {
 	bool opt_in;
 	uint8_t hash_function;
@@ -520,8 +520,10 @@ ldns_rdf2buffer_str_nsec3_vars(ldns_buffer *output, const ldns_rdf *rdf)
 	hash_function = data[0];
 	ldns_buffer_printf(output, "%u ", hash_function);
 	
-	opt_in = data[1] & LDNS_NSEC3_VARS_OPTIN_MASK;
-	ldns_buffer_printf(output, "%u ", opt_in);
+	if (print_opt_out) {
+		opt_in = data[1] & LDNS_NSEC3_VARS_OPTIN_MASK;
+		ldns_buffer_printf(output, "%u ", opt_in);
+	}
 	
 	iterations_wire[0] = 0;
 	iterations_wire[1] = data[1] & !LDNS_NSEC3_VARS_OPTIN_MASK;
@@ -546,6 +548,18 @@ ldns_rdf2buffer_str_nsec3_vars(ldns_buffer *output, const ldns_rdf *rdf)
 	}
 	
 	return ldns_buffer_status(output);
+}
+
+ldns_status
+ldns_rdf2buffer_str_nsec3_params_vars(ldns_buffer *output, const ldns_rdf *rdf)
+{
+	return ldns_rdf2buffer_str_nsec3_vars_general(output, rdf, false);
+}
+
+ldns_status
+ldns_rdf2buffer_str_nsec3_vars(ldns_buffer *output, const ldns_rdf *rdf)
+{
+	return ldns_rdf2buffer_str_nsec3_vars_general(output, rdf, true);
 }
 
 ldns_status
@@ -789,6 +803,9 @@ ldns_rdf2buffer_str(ldns_buffer *buffer, const ldns_rdf *rdf)
 		case LDNS_RDF_TYPE_NSEC: 
 			res = ldns_rdf2buffer_str_nsec(buffer, rdf);
 			break;
+		case LDNS_RDF_TYPE_NSEC3_PARAMS_VARS: 
+			res = ldns_rdf2buffer_str_nsec3_params_vars(buffer, rdf);
+			break;
 		case LDNS_RDF_TYPE_NSEC3_VARS: 
 			res = ldns_rdf2buffer_str_nsec3_vars(buffer, rdf);
 			break;
@@ -829,6 +846,8 @@ ldns_rdf2buffer_str(ldns_buffer *buffer, const ldns_rdf *rdf)
 		case LDNS_RDF_TYPE_INT16_DATA:
 			res = ldns_rdf2buffer_str_int16_data(buffer, rdf);
 			break;
+		case LDNS_RDF_TYPE_NSEC3_NEXT_OWNER:
+			res = ldns_rdf2buffer_str_b32_ext(buffer, rdf);
 		}
 	} else {
 		ldns_buffer_printf(buffer, "(null) ");

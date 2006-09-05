@@ -1218,6 +1218,33 @@ exit(0);
 	return hashed_owner;
 }
 
+ldns_rdf *
+ldns_create_nsec3_vars_rdf(uint8_t algorithm, 
+                           bool opt_out,
+                           uint32_t iterations,
+                           uint8_t salt_length,
+                           uint8_t *salt)
+{
+	uint8_t *nsec3_vars_data;
+	uint8_t iterations_data[4];
+	
+	nsec3_vars_data = LDNS_XMALLOC(uint8_t, 5 + salt_length);
+	nsec3_vars_data[0] = algorithm;
+	if (opt_out) {
+		nsec3_vars_data[1] |= OPTOUT_MASK;
+	} else {
+		nsec3_vars_data[1] &= !OPTOUT_MASK;
+	}
+	
+	ldns_write_uint32(&iterations_data, iterations);
+	memcpy(&nsec3_vars_data[1], &iterations_data[1], 3);
+	nsec3_vars_data[4] = salt_length;
+	if (salt_length > 0) {
+		memcpy(&nsec3_vars_data[5], salt, salt_length);
+	}
+	return ldns_rdf_new_frm_data(LDNS_RDF_TYPE_NSEC3_VARS, 5 + salt_length, nsec3_vars_data);
+}
+
 /* this will NOT return the NSEC3  completed, you will have to run the
    finalize function on the rrlist later! */
 ldns_rr *
@@ -1239,8 +1266,6 @@ ldns_create_nsec3(ldns_rdf *cur_owner,
 
 	ldns_rr *nsec = NULL;
 	ldns_rdf *hashed_owner = NULL;
-	
-	uint8_t iterations_data[4];
 	
 	uint8_t *data = NULL;
 	uint8_t cur_data[32];
@@ -1265,21 +1290,7 @@ ldns_create_nsec3(ldns_rdf *cur_owner,
 	}
 	printf("\n");
 	*/
-	nsec3_vars_data = LDNS_XMALLOC(uint8_t, 5 + salt_length);
-	nsec3_vars_data[0] = algorithm;
-	if (opt_out) {
-		nsec3_vars_data[1] |= OPTOUT_MASK;
-	} else {
-		nsec3_vars_data[1] &= !OPTOUT_MASK;
-	}
-	
-	ldns_write_uint32(&iterations_data, iterations);
-	memcpy(&nsec3_vars_data[1], &iterations_data[1], 3);
-	nsec3_vars_data[4] = salt_length;
-	if (salt_length > 0) {
-		memcpy(&nsec3_vars_data[5], salt, salt_length);
-	}
-	nsec3_vars_rdf = ldns_rdf_new_frm_data(LDNS_RDF_TYPE_NSEC3_VARS, 5 + salt_length, nsec3_vars_data);
+	nsec3_vars_rdf = ldns_create_nsec3_vars_rdf(algorithm, opt_out, iterations, salt_length, salt);
 	
 	hashed_owner = ldns_nsec3_hash_name(cur_owner, algorithm, iterations, salt_length, salt);
 	status = ldns_dname_cat(hashed_owner, cur_zone);
@@ -1839,6 +1850,8 @@ ldns_zone_sign_nsec3(ldns_zone *zone, ldns_key_list *key_list, uint8_t algorithm
 	ldns_rr_list *pubkeys;
 	ldns_rr_list *glue_rrs;
 	ldns_rr_list *nsec3_rrs;
+	ldns_rr *nsec3params;
+	uint8_t *data;
 	
 	ldns_status status;
 	
@@ -1878,6 +1891,16 @@ ldns_zone_sign_nsec3(ldns_zone *zone, ldns_key_list *key_list, uint8_t algorithm
 
 	glue_rrs = ldns_zone_glue_rr_list(zone);
 
+	/* create and add the nsec3params rr */
+	nsec3params = ldns_rr_new_frm_type(LDNS_RR_TYPE_NSEC3PARAMS);
+	ldns_rr_set_owner(nsec3params, ldns_rdf_clone(cur_dname));
+	ldns_rr_set_rdf(nsec3params, ldns_create_nsec3_vars_rdf(algorithm, false, iterations, salt_length, salt), 0);
+	ldns_rdf_set_type(ldns_rr_rdf(nsec3params, 0), LDNS_RDF_TYPE_NSEC3_PARAMS_VARS);
+	ldns_rr_list_push_rr(orig_zone_rrs, nsec3params);
+/*
+ldns_rr_print(stdout, nsec3params);
+exit(0);
+*/
 	/* add the key (TODO: check if it's there already? */
 	pubkeys = ldns_rr_list_new();
 	for (i = 0; i < ldns_key_list_key_count(key_list); i++) {
