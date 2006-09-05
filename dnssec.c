@@ -1230,14 +1230,17 @@ ldns_create_nsec3_vars_rdf(uint8_t algorithm,
 	
 	nsec3_vars_data = LDNS_XMALLOC(uint8_t, 5 + salt_length);
 	nsec3_vars_data[0] = algorithm;
+
+	ldns_write_uint32(&iterations_data, iterations);
+
+	memcpy(&nsec3_vars_data[1], &iterations_data[1], 3);
+
 	if (opt_out) {
 		nsec3_vars_data[1] |= OPTOUT_MASK;
 	} else {
 		nsec3_vars_data[1] &= !OPTOUT_MASK;
 	}
 	
-	ldns_write_uint32(&iterations_data, iterations);
-	memcpy(&nsec3_vars_data[1], &iterations_data[1], 3);
 	nsec3_vars_data[4] = salt_length;
 	if (salt_length > 0) {
 		memcpy(&nsec3_vars_data[5], salt, salt_length);
@@ -1273,7 +1276,6 @@ ldns_create_nsec3(ldns_rdf *cur_owner,
 	uint8_t cur_window_max = 0;
 	uint16_t cur_data_size = 0;
 
-	uint8_t *nsec3_vars_data;
 	ldns_rdf *nsec3_vars_rdf;
 	
 	ldns_status status;
@@ -1851,7 +1853,6 @@ ldns_zone_sign_nsec3(ldns_zone *zone, ldns_key_list *key_list, uint8_t algorithm
 	ldns_rr_list *glue_rrs;
 	ldns_rr_list *nsec3_rrs;
 	ldns_rr *nsec3params;
-	uint8_t *data;
 	
 	ldns_status status;
 	
@@ -1894,7 +1895,7 @@ ldns_zone_sign_nsec3(ldns_zone *zone, ldns_key_list *key_list, uint8_t algorithm
 	/* create and add the nsec3params rr */
 	nsec3params = ldns_rr_new_frm_type(LDNS_RR_TYPE_NSEC3PARAMS);
 	ldns_rr_set_owner(nsec3params, ldns_rdf_clone(cur_dname));
-	ldns_rr_set_rdf(nsec3params, ldns_create_nsec3_vars_rdf(algorithm, false, iterations, salt_length, salt), 0);
+	(void) ldns_rr_set_rdf(nsec3params, ldns_create_nsec3_vars_rdf(algorithm, false, iterations, salt_length, salt), 0);
 	ldns_rdf_set_type(ldns_rr_rdf(nsec3params, 0), LDNS_RDF_TYPE_NSEC3_PARAMS_VARS);
 	ldns_rr_list_push_rr(orig_zone_rrs, nsec3params);
 /*
