@@ -130,7 +130,6 @@ ldns_rr_new_frm_str(ldns_rr **newrr, const char *str, uint16_t default_ttl, ldns
 	char *hex_data_str;
 	uint16_t cur_hex_data_size;
 
-printf("STR: %s\n", str);
 	new = ldns_rr_new();
 
 	owner = LDNS_XMALLOC(char, LDNS_MAX_DOMAINLEN + 1);
@@ -499,7 +498,6 @@ printf("STR: %s\n", str);
 	ldns_buffer_free(rr_buf);
 	LDNS_FREE(rdata);
 
-ldns_rr_print(stdout, new);
 	if (newrr) {
 		*newrr = new;
 	}
