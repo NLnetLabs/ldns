@@ -502,7 +502,6 @@ ldns_rdf2buffer_str_nsec(ldns_buffer *output, const ldns_rdf *rdf)
 	return ldns_buffer_status(output);
 }
 
-#define LDNS_NSEC3_VARS_OPTIN_MASK 0x80
 ldns_status
 ldns_rdf2buffer_str_nsec3_vars_general(ldns_buffer *output, const ldns_rdf *rdf, bool print_opt_out)
 {
@@ -521,12 +520,12 @@ ldns_rdf2buffer_str_nsec3_vars_general(ldns_buffer *output, const ldns_rdf *rdf,
 	ldns_buffer_printf(output, "%u ", hash_function);
 	
 	if (print_opt_out) {
-		opt_in = data[1] & LDNS_NSEC3_VARS_OPTIN_MASK;
+		opt_in = data[1] & LDNS_NSEC3_VARS_OPTOUT_MASK;
 		ldns_buffer_printf(output, "%u ", opt_in);
 	}
 	
 	iterations_wire[0] = 0;
-	iterations_wire[1] = data[1] & ~LDNS_NSEC3_VARS_OPTIN_MASK;
+	iterations_wire[1] = data[1] & ~LDNS_NSEC3_VARS_OPTOUT_MASK;
 	iterations_wire[2] = data[2];
 	iterations_wire[3] = data[3];
 	

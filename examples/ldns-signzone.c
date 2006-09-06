@@ -17,8 +17,6 @@
 
 #define MAX_FILENAME_LEN 250
 
-#define LDNS_NSEC3_MAX_ITERATIONS 8388607
-
 void
 usage(FILE *fp, const char *prog) {
 	fprintf(fp, "%s [OPTIONS] zonefile key [key [key]]\n", prog);

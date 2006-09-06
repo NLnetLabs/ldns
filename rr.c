@@ -16,7 +16,7 @@
 
 #include <errno.h>
 
-#define LDNS_SYNTAX_DATALEN 11
+#define LDNS_SYNTAX_DATALEN 16
 #define LDNS_TTL_DATALEN    21
 #define LDNS_RRLIST_INIT    8
 
@@ -130,6 +130,7 @@ ldns_rr_new_frm_str(ldns_rr **newrr, const char *str, uint16_t default_ttl, ldns
 	char *hex_data_str;
 	uint16_t cur_hex_data_size;
 
+printf("STR: %s\n", str);
 	new = ldns_rr_new();
 
 	owner = LDNS_XMALLOC(char, LDNS_MAX_DOMAINLEN + 1);
@@ -449,6 +450,18 @@ ldns_rr_new_frm_str(ldns_rr **newrr, const char *str, uint16_t default_ttl, ldns
 									rd);
 							
 							break;
+						case LDNS_RDF_TYPE_NSEC3_PARAMS_VARS:
+							for (i = 0; i < 3; i++ ) {
+								if ((c = ldns_bget_token(rd_buf, b64, " \n", LDNS_MAX_RDFLEN)) != -1) {
+									rd = strncat(rd, " ", LDNS_MAX_RDFLEN);
+									rd = strncat(rd, b64, LDNS_MAX_RDFLEN);
+								}
+							}
+							r = ldns_rdf_new_frm_str(
+									ldns_rr_descriptor_field_type(desc, r_cnt),
+									rd);
+							
+							break;
 						default:
 							r = ldns_rdf_new_frm_str(
 									ldns_rr_descriptor_field_type(desc, r_cnt),
@@ -486,6 +499,7 @@ ldns_rr_new_frm_str(ldns_rr **newrr, const char *str, uint16_t default_ttl, ldns
 	ldns_buffer_free(rr_buf);
 	LDNS_FREE(rdata);
 
+ldns_rr_print(stdout, new);
 	if (newrr) {
 		*newrr = new;
 	}
@@ -1675,7 +1689,7 @@ static ldns_rr_descriptor rdata_field_descriptors[] = {
 	/* TODO: no code yet, assume 50 for now */
 	{LDNS_RR_TYPE_TSIG, "TSIG", 8, 9, type_tsig_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS },
 	{LDNS_RR_TYPE_NSEC3, "NSEC3", 3, 3, type_nsec3_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS },
-	{LDNS_RR_TYPE_NSEC3PARAMS, "NSEC3PARAMS", 1, 1, type_nsec3params_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS }
+	{LDNS_RR_TYPE_NSEC3PARAMS, "NSEC3PARAM", 1, 1, type_nsec3params_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS }
 };
 /** \endcond */
 

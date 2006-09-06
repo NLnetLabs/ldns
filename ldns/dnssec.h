@@ -35,6 +35,9 @@
 /* default time before sigs expire */
 #define LDNS_DEFAULT_EXP_TIME	2419200 /* 4 weeks */
 
+#define LDNS_NSEC3_MAX_ITERATIONS 8388607
+
+
 /** 
  * calculates a keytag of a key for use in DNSSEC.
  *
