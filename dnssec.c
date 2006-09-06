@@ -1191,6 +1191,8 @@ ldns_nsec3_hash_name(ldns_rdf *name, uint8_t algorithm, uint32_t iterations, uin
 		hashed_owner_str_len = SHA_DIGEST_LENGTH + salt_length;
 	}
 
+	LDNS_FREE(orig_owner_str);
+	LDNS_FREE(hashed_owner_str);
 	hashed_owner_str = hash;
 	hashed_owner_str_len = SHA_DIGEST_LENGTH;
 
@@ -1218,6 +1220,7 @@ exit(0);
 		exit(1);
 	}
 
+	LDNS_FREE(hashed_owner_b32);
 	return hashed_owner;
 }
 
@@ -1451,6 +1454,7 @@ ldns_nsec3_salt_length(const ldns_rr *nsec3_rr)
 	return 0;
 }
 
+/* allocs data, free with LDNS_FREE() */
 uint8_t *
 ldns_nsec3_salt(const ldns_rr *nsec3_rr)
 {
@@ -1582,21 +1586,27 @@ ldns_nsec_covers_name(const ldns_rr *nsec, const ldns_rdf *name)
 {
 	ldns_rdf *nsec_owner = ldns_rr_owner(nsec);
 	ldns_rdf *hash_next;
-	char *yo;
+	char *next_hash_str;
 	ldns_rdf *nsec_next;
 	ldns_status status;
-
+	ldns_rdf *chopped_dname;
+	bool result;
+	
 	if (ldns_rr_get_type(nsec) == LDNS_RR_TYPE_NSEC) {
 		nsec_next = ldns_rr_rdf(nsec, 0);
 	} else if (ldns_rr_get_type(nsec) == LDNS_RR_TYPE_NSEC3) {
 		hash_next = ldns_rr_rdf(nsec, 1);
-		yo = ldns_rdf2str(hash_next);
-		nsec_next = ldns_dname_new_frm_str(yo);
-		status = ldns_dname_cat(nsec_next, ldns_dname_left_chop(nsec_owner));
+		next_hash_str = ldns_rdf2str(hash_next);
+		nsec_next = ldns_dname_new_frm_str(next_hash_str);
+		LDNS_FREE(next_hash_str);
+		chopped_dname = ldns_dname_left_chop(nsec_owner);
+		status = ldns_dname_cat(nsec_next, chopped_dname);
+		ldns_rdf_deep_free(chopped_dname);
 		if (status != LDNS_STATUS_OK) {
 			printf("error catting: %s\n", ldns_get_errorstr_by_id(status));
 		}
 	} else {
+		ldns_rdf_deep_free(nsec_next);
 		return false;
 	}
 	
@@ -1610,12 +1620,16 @@ ldns_rdf_print(stdout, nsec_next);
 printf("\n\n");
 */
 	/* in the case of the last nsec */
-	if(ldns_dname_compare(nsec_owner, nsec_next) > 0)
-		return (ldns_dname_compare(nsec_owner, name) <= 0 ||
-			ldns_dname_compare(name, nsec_next) < 0);
-
-	return (ldns_dname_compare(nsec_owner, name) <= 0 &&
-	    ldns_dname_compare(name, nsec_next) < 0);
+	if(ldns_dname_compare(nsec_owner, nsec_next) > 0) {
+		result = (ldns_dname_compare(nsec_owner, name) <= 0 ||
+			  ldns_dname_compare(name, nsec_next) < 0);
+	} else {
+		result = (ldns_dname_compare(nsec_owner, name) <= 0 &&
+		          ldns_dname_compare(name, nsec_next) < 0);
+	}
+	
+	ldns_rdf_deep_free(nsec_next);
+	return result;
 }
 
 /* sig may be null - if so look in the packet */

@@ -782,7 +782,7 @@ main(int argc, char *argv[])
 	ldns_rdf_deep_free(qname);
 	ldns_resolver_deep_free(res);
 	ldns_resolver_deep_free(cmdline_res);
-	/* ldns_rr_list_deep_free(key_list); */
+	ldns_rr_list_deep_free(key_list);
 	ldns_rr_list_deep_free(cmdline_rr_list);
 	xfree(progname);
 /*
