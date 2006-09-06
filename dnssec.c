@@ -118,9 +118,11 @@ ldns_verify_rrsig_buffers(ldns_buffer *rawsig_buf, ldns_buffer *verify_buf,
 		/* check for right key */
 		switch(algo) {
 			case LDNS_DSA:
+			case LDNS_DSA_NSEC3:
 				return ldns_verify_rrsig_dsa(rawsig_buf, verify_buf, key_buf);
 				break;
 			case LDNS_RSASHA1:
+			case LDNS_RSASHA1_NSEC3:
 				return ldns_verify_rrsig_rsasha1(rawsig_buf, verify_buf, key_buf);
 				break;
 			case LDNS_RSAMD5:
@@ -128,6 +130,7 @@ ldns_verify_rrsig_buffers(ldns_buffer *rawsig_buf, ldns_buffer *verify_buf,
 				break;
 			default:
 				/* do you know this alg?! */
+printf("arg\n");
 				return LDNS_STATUS_CRYPTO_UNKNOWN_ALGO;
 		}
 }
@@ -373,7 +376,9 @@ ldns_verify_rrsig(ldns_rr_list *rrset, ldns_rr *rrsig, ldns_rr *key)
 	switch(sig_algo) {
 		case LDNS_RSAMD5:
 		case LDNS_RSASHA1:
+		case LDNS_RSASHA1_NSEC3:
 		case LDNS_DSA:
+		case LDNS_DSA_NSEC3:
 			break;
 		case LDNS_DH:
 		case LDNS_ECC:

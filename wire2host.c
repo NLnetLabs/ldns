@@ -221,7 +221,6 @@ ldns_wire2rdf(ldns_rr *rr, const uint8_t *wire, size_t max, size_t *pos)
 			cur_rdf_length = ((size_t) wire[*pos]) + 1;
 			break;
 		case LDNS_RDF_TYPE_INT16_DATA:
-		case LDNS_RDF_TYPE_NSEC3_NEXT_OWNER:
 			cur_rdf_length = (size_t) ldns_read_uint16(&wire[*pos]) + 2;
 			break;
 		case LDNS_RDF_TYPE_NSEC3_VARS:
@@ -235,6 +234,7 @@ ldns_wire2rdf(ldns_rr *rr, const uint8_t *wire, size_t max, size_t *pos)
 			/*printf("NSEC3 wire length: %u\n", (unsigned int) cur_rdf_length);*/
 			break;
 		case LDNS_RDF_TYPE_B32_EXT:
+		case LDNS_RDF_TYPE_NSEC3_NEXT_OWNER:
 			/* length is stored in first byte */
 			cur_rdf_length = (uint8_t) wire[*pos] + 1;
 			break;
@@ -288,12 +288,9 @@ ldns_wire2rr(ldns_rr **rr_p, const uint8_t *wire, size_t max,
 	ldns_rdf *owner;
 	ldns_rr *rr = ldns_rr_new();
 	ldns_status status;
-/*
-printf("Data to parse:\n");
-xprintf_hex(wire+*pos, max-*pos);
-*/
 	
 	status = ldns_wire2dname(&owner, wire, max, pos);
+
 	LDNS_STATUS_CHECK_GOTO(status, status_error);
 
 	ldns_rr_set_owner(rr, owner);
@@ -317,8 +314,8 @@ xprintf_hex(wire+*pos, max-*pos);
 		ldns_rr_set_ttl(rr, ldns_read_uint32(&wire[*pos]));	
 	
 		*pos = *pos + 4;
+
 		status = ldns_wire2rdf(rr, wire, max, pos);
-	
 		LDNS_STATUS_CHECK_GOTO(status, status_error);
 	}
 	
