@@ -152,8 +152,11 @@ covertests(ldns_rr_list *list, ldns_rdf *qname)
 		check_cover(list, wcardchild);
 		smaller = ldns_dname_left_chop(smaller);
 	}
-	check_cover(list, ldns_dname_new_frm_str("x.bar.example."));
-	check_cover(list, ldns_dname_new_frm_str("bar.example."));
+	/* check covers by weird names */
+	if(0) {
+		check_cover(list, ldns_dname_new_frm_str("x.bar.example."));
+		check_cover(list, ldns_dname_new_frm_str("bar.example."));
+	}
 }
 
 int
