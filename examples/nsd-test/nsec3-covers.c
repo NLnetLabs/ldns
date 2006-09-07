@@ -14,7 +14,8 @@
 
 void usage(FILE *output)
 {
-	fprintf(output, "Usage: nsec3-covers\n");
+	fprintf(output, "Usage: dig +dnssec <query> | nsec3-covers or\n"
+		"drill -D <query> | nsec3-covers\n");
 }
 
 void abort_ldns_error(const char* str, ldns_status err)
@@ -151,6 +152,8 @@ covertests(ldns_rr_list *list, ldns_rdf *qname)
 		check_cover(list, wcardchild);
 		smaller = ldns_dname_left_chop(smaller);
 	}
+	check_cover(list, ldns_dname_new_frm_str("x.bar.example."));
+	check_cover(list, ldns_dname_new_frm_str("bar.example."));
 }
 
 int
