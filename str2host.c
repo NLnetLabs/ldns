@@ -133,7 +133,7 @@ ldns_str2rdf_nsec3_vars(ldns_rdf **rd, const char *nsec3_vars)
 		return LDNS_STATUS_SYNTAX_ERR;
 	}
 
-	pos = sscanf(nsec3_vars, "%u %u %u %s", &opt_in_int, &algorithm, &iterations, salt_str);
+	pos = sscanf(nsec3_vars, "%u %u %u %s", &algorithm, &opt_in_int, &iterations, salt_str);
 
 	if (iterations > LDNS_NSEC3_MAX_ITERATIONS) {
 		return LDNS_STATUS_SYNTAX_ITERATIONS_OVERFLOW;
