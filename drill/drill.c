@@ -587,6 +587,10 @@ main(int argc, char *argv[])
 			}
 
 			status = ldns_resolver_prepare_query_pkt(&qpkt, res, qname, type, clas, qflags);
+			if(status != LDNS_STATUS_OK) {
+				error("%s", "making query: %s", 
+					ldns_get_errorstr_by_id(status));
+			}
 			dump_hex(qpkt, query_file);
 			ldns_pkt_free(qpkt);
 			break;
@@ -686,9 +690,19 @@ main(int argc, char *argv[])
 				}
 
 				if (type == LDNS_RR_TYPE_AXFR) {
-					(void) ldns_axfr_start(res, qname, clas);
+					status = ldns_axfr_start(res, qname, clas);
+					if(status != LDNS_STATUS_OK) {
+						error("starting axfr: %s", 
+							ldns_get_errorstr_by_id(status));
+					}
 
 					axfr_rr = ldns_axfr_next(res);
+					if(!axfr_rr) {
+						printf("AXFR failed.\n");
+						ldns_pkt_print(stdout, 
+							ldns_axfr_last_pkt(res));
+						goto exit;
+					}
 					while (axfr_rr) {
 						if (qdebug != -1) {
 							ldns_rr_print(stdout, axfr_rr);
