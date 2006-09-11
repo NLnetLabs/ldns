@@ -692,13 +692,13 @@ main(int argc, char *argv[])
 				if (type == LDNS_RR_TYPE_AXFR) {
 					status = ldns_axfr_start(res, qname, clas);
 					if(status != LDNS_STATUS_OK) {
-						error("starting axfr: %s", 
+						error("Error starting axfr: %s", 
 							ldns_get_errorstr_by_id(status));
 					}
 
 					axfr_rr = ldns_axfr_next(res);
 					if(!axfr_rr) {
-						printf("AXFR failed.\n");
+						fprintf(stderr, "AXFR failed.\n");
 						ldns_pkt_print(stdout, 
 							ldns_axfr_last_pkt(res));
 						goto exit;
