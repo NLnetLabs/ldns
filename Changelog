@@ -4,6 +4,8 @@
 	* ldnsd now takes an extra argument containing the address to listen on
 	* signing no longer signs every rrset with KSK's, but only the DNSKEY rrset
 
+	Drill:
+	* drill prints error on failed axfr.
 
 31 Apr 2006: 1.1.0: ldns-team
 	* Added tutorials and an introduction to the documentation

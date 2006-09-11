@@ -108,15 +108,14 @@ ldns_wire2dname(ldns_rdf **dname, const uint8_t *wire, size_t max, size_t *pos)
 			dname_pos++;
 		}
 		*pos = *pos + 1;
+		if (dname_pos + label_size > LDNS_MAX_DOMAINLEN) {
+			return LDNS_STATUS_DOMAINNAME_OVERFLOW;
+		}
 		memcpy(&tmp_dname[dname_pos], &wire[*pos], label_size);
 		uncompressed_length += label_size + 1;
 		dname_pos += label_size;
 		*pos = *pos + label_size;
 
-		if (dname_pos > LDNS_MAX_DOMAINLEN)  {
-			return LDNS_STATUS_DOMAINNAME_OVERFLOW;
-		}
-		
 		if (*pos < max) {
 			label_size = wire[*pos];
 		}
@@ -259,6 +258,9 @@ ldns_wire2rdf(ldns_rr *rr, const uint8_t *wire, size_t max, size_t *pos)
 		}
 		/* fixed length rdata */
 		if (cur_rdf_length > 0) {
+			if (cur_rdf_length + *pos > end) {
+				return LDNS_STATUS_PACKET_OVERFLOW;
+			}
 			data = LDNS_XMALLOC(uint8_t, rd_length);
 			if (!data) {
 				return LDNS_STATUS_MEM_ERR;
@@ -285,7 +287,7 @@ ldns_status
 ldns_wire2rr(ldns_rr **rr_p, const uint8_t *wire, size_t max, 
              size_t *pos, ldns_pkt_section section)
 {
-	ldns_rdf *owner;
+	ldns_rdf *owner = NULL;
 	ldns_rr *rr = ldns_rr_new();
 	ldns_status status;
 	

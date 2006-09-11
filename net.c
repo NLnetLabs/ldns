@@ -383,7 +383,7 @@ ldns_tcp_read_wire(int sockfd, size_t *size)
 	
 	while (bytes < 2) {
 		bytes = recv(sockfd, wire, 2, 0);
-		if (bytes == -1) {
+		if (bytes == -1 || bytes == 0) {
 			*size = 0;
 			LDNS_FREE(wire);
 			return NULL;
@@ -398,7 +398,7 @@ ldns_tcp_read_wire(int sockfd, size_t *size)
 
 	while (bytes < (ssize_t) wire_size) {
 		bytes += recv(sockfd, wire + bytes, (size_t) (wire_size - bytes), 0);
-		if (bytes == -1) {
+		if (bytes == -1 || bytes == 0) {
 			LDNS_FREE(wire);
 			*size = 0;
 			return NULL;

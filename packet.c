@@ -751,7 +751,7 @@ ldns_pkt_new()
 	ldns_pkt_set_edns_z(packet, 0);
 	ldns_pkt_set_edns_data(packet, NULL);
 	
-	packet->_tsig_rr = NULL;
+	ldns_pkt_set_tsig(packet, NULL);
 	
 	return packet;
 }

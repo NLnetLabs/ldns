@@ -85,13 +85,14 @@ struct known_differences_struct
 {
 	char *descr;
 	size_t count;
+	FILE *file;
 };
 typedef struct known_differences_struct known_differences_count;
 
 known_differences_count known_differences[INITIAL_DIFFERENCES_SIZE];
 size_t known_differences_size = 0;
 
-FILE *store_known_files[INITIAL_DIFFERENCES_SIZE];
+/*FILE *store_known_files[INITIAL_DIFFERENCES_SIZE];*/
 
 size_t
 add_known_difference(const char *diff)
@@ -129,7 +130,7 @@ add_known_difference(const char *diff)
 				fprintf(stderr, "Error opening %s for writing: %s\n", store_file_name, strerror(errno));
 				exit(errno);
 			}
-			store_known_files[known_differences_size] = store_file;
+			known_differences[known_differences_size].file = store_file;
 		}
 
 		known_differences_size++;
@@ -137,14 +138,31 @@ add_known_difference(const char *diff)
 	}
 }
 
-void
-print_known_differences()
+int
+compare_known_differences(const void *a, const void *b)
 {
-	size_t i,j;
+	known_differences_count *ac, *bc;
+	
+	if (!a || !b) {
+		return 0;
+	}
+	
+	ac = (known_differences_count *) a;
+	bc = (known_differences_count *) b;
+	
+	return bc->count - ac->count;	
+}
+
+void
+print_known_differences(FILE *output)
+{
+	size_t i;
 	size_t differents = 0;
 	size_t total;
 	double percentage;
 	
+	qsort(known_differences, known_differences_size, sizeof(known_differences_count),
+	      compare_known_differences);
 	for (i = 0; i < known_differences_size; i++) {
 		differents += known_differences[i].count;
 	}
@@ -153,19 +171,14 @@ print_known_differences()
 
 	for (i = 0; i < known_differences_size; i++) {
 		percentage = (double) (((double) known_differences[i].count / (double)differents) * 100.0);
-		printf("%s:", known_differences[i].descr);
-		if (strlen(known_differences[i].descr) < 48) {
-			for (j = 0; j < 48 - strlen(known_differences[i].descr); j++) {
-				printf(" ");
-			}
-		}
-		printf("%u\t(%02.2f%%)\n", (unsigned int) known_differences[i].count, percentage);
+		fprintf(output, "%-48s", known_differences[i].descr);
+		fprintf(output, "%8u\t(%02.2f%%)\n", (unsigned int) known_differences[i].count, percentage);
 	}
 
-	printf("Total number of differences: %u (100%%)\n", (unsigned int) differents);
-	printf("Number of packets the same after normalization: %u\n", (unsigned int) sames);
-	printf("Number of packets exactly the same on the wire: %u\n", (unsigned int) bytesames);
-	printf("Total number of packets inspected: %u\n", (unsigned int) total);
+	fprintf(output, "Total number of differences: %u (100%%)\n", (unsigned int) differents);
+	fprintf(output, "Number of packets the same after normalization: %u\n", (unsigned int) sames);
+	fprintf(output, "Number of packets exactly the same on the wire: %u\n", (unsigned int) bytesames);
+	fprintf(output, "Total number of packets inspected: %u\n", (unsigned int) total);
 }
 
 /**
@@ -462,7 +475,8 @@ compare_to_file(ldns_pkt *qp, ldns_pkt *pkt1, ldns_pkt *pkt2)
 		if (verbosity > 3) {
 			printf("MATCH TO:\n");
 			printf("descr: %s\n", description);
-			printf("%s\n", answer_match);
+			printf("QUERY:\n%s\n", query_match);
+			printf("ANSWER:\n%s\n", answer_match);
 		}
 
 		/* first, try query match */
@@ -596,9 +610,9 @@ compare_to_file(ldns_pkt *qp, ldns_pkt *pkt1, ldns_pkt *pkt2)
 				match_word_count = 0;
 			} else if (query_match[j] == '?') {
 				k = j + 1;
-				while (j != ' ' &&
-				       j != '\t' &&
-				       j != '\n' && 
+				while (query_match[j] != ' ' &&
+				       query_match[j] != '\t' &&
+				       query_match[j] != '\n' && 
 				       j < max_j) {
 					j++;
 				}
@@ -634,11 +648,10 @@ compare_to_file(ldns_pkt *qp, ldns_pkt *pkt1, ldns_pkt *pkt2)
 
 		/* special case if one packet is null (ie. one server
 		   answers and one doesnt) */
-		if (!pkt1 || !pkt2) {
+		if (same && (!pkt1 || !pkt2)) {
 			if (strncmp(answer_match, "NOANSWER\n", 10) == 0 || 
 			    strncmp(answer_match, "*\n", 3) == 0
 			   ) {
-				same = true;
 				goto match;
 			} else {
 				same = false;
@@ -1007,6 +1020,7 @@ compare_to_file(ldns_pkt *qp, ldns_pkt *pkt1, ldns_pkt *pkt2)
 	
 	LDNS_FREE(pkt_str1);
 	LDNS_FREE(pkt_str2);
+	LDNS_FREE(pkt_query);
 	
 	if (verbosity > 0) {
 		printf("<<<<<<< NO MATCH >>>>>>>>\n");
@@ -1110,10 +1124,10 @@ compare(struct dns_info *d1, struct dns_info *d2)
 						}
 						file_nr = add_known_difference(compare_result);
 						if (store_known_differences) {
-							fprintf(store_known_files[file_nr], "q: %d:%d\n%s\n%s\n%s\n", (int)d1->seq, (int)d2->seq, 
+							fprintf(known_differences[file_nr].file, "q: %d:%d\n%s\n%s\n%s\n", (int)d1->seq, (int)d2->seq, 
 								d1->qdata, d1->adata, d2->adata);
 						}
-
+						
 						free(compare_result);
 						diff = false;
 					} else {
@@ -1128,6 +1142,7 @@ compare(struct dns_info *d1, struct dns_info *d2)
 						printf("Quitting at packet %u\n", (unsigned int) d1->seq);
 						exit(1);
 					}
+					ldns_pkt_free(pq);
 				} else {
 					sames++;
 				}					
@@ -1195,7 +1210,6 @@ read_match_files(char *directory)
 		if (verbosity > 1) {
 			printf("File: %s\n", cur_file_name);
 		}
-		
 		description = LDNS_XMALLOC(char, MAX_DESCR_LEN);
 		query_match = LDNS_XMALLOC(char, LDNS_MAX_PACKETLEN);
 		answer_match = LDNS_XMALLOC(char, LDNS_MAX_PACKETLEN);
@@ -1350,66 +1364,67 @@ main(int argc, char **argv)
 
 	i = 1;
 
-reread:
-	line_nr = i;
-	read1 = getdelim(&line1, &len1, '\n', trace1);
-	read2 = getdelim(&line2, &len2, '\n', trace2);
-	if (read1 == -1 || read2 == -1) {
-		fclose(trace1); fclose(trace2);
-		print_known_differences();
-		exit(EXIT_SUCCESS);
-	}
-	if (read1 > 0) 
-		line1[read1 - 1] = '\0';
-	if (read2 > 0)
-		line2[read2 - 1] = '\0';
-
-	if (total_nr_of_packets >= min_number) {
-	switch(i % LINES) {
-		case SEQUENCE:
-			d1.seq = atoi(line1);
-			d2.seq = atoi(line2);
+	while (max_number == 0 || total_nr_of_packets < max_number) {
+		line_nr = i;
+		read1 = getdelim(&line1, &len1, '\n', trace1);
+		read2 = getdelim(&line2, &len2, '\n', trace2);
+		if (read1 == -1 || read2 == -1) {
+			print_known_differences(stdout);
 			break;
-		case QDATA:
-			d1.qdata = strdup(line1);
-			d2.qdata = strdup(line2);
-			break;
-		case ADATA:
-			d1.adata = strdup(line1);
-			d2.adata = strdup(line2);
-			break;
-		case EMPTY:
-			if (show_prelim_results > 0 && total_nr_of_packets % show_prelim_results == 0) {
-				print_known_differences();
-				printf("\n");
-			}
-			total_nr_of_packets++;
-			/* we now should have  */
-			compare(&d1, &d2);
-			free(d1.adata);
-			free(d2.adata);
-			free(d1.qdata);
-			free(d2.qdata);
-			break;
-	}
-	} else {
-		if (i % LINES == EMPTY) {
-			total_nr_of_packets++;
 		}
-	}
-	if (max_number == 0 || total_nr_of_packets < max_number) {
+		if (read1 > 0) 
+			line1[read1 - 1] = '\0';
+		if (read2 > 0)
+			line2[read2 - 1] = '\0';
+
+		if (total_nr_of_packets >= min_number) {
+		switch(i % LINES) {
+			case SEQUENCE:
+				d1.seq = atoi(line1);
+				d2.seq = atoi(line2);
+				break;
+			case QDATA:
+				d1.qdata = strdup(line1);
+				d2.qdata = strdup(line2);
+				break;
+			case ADATA:
+				d1.adata = strdup(line1);
+				d2.adata = strdup(line2);
+				break;
+			case EMPTY:
+				if (show_prelim_results > 0 && total_nr_of_packets % show_prelim_results == 0) {
+					print_known_differences(stderr);
+					fprintf(stderr, "\n");
+				}
+				total_nr_of_packets++;
+				/* we now should have  */
+				compare(&d1, &d2);
+				free(d1.adata);
+				free(d2.adata);
+				free(d1.qdata);
+				free(d2.qdata);
+				break;
+		}
+		} else {
+			if (i % LINES == EMPTY) {
+				total_nr_of_packets++;
+			}
+		}
 		i++;
-		goto reread;
 	}
+
 	free_match_files();
 	free(line1);
 	free(line2);
 	fclose(trace1);
 	fclose(trace2);
-	print_known_differences();
+	print_known_differences(stdout);
+	for (i = 0; i < known_differences_size; i++) {
+		LDNS_FREE(known_differences[i].descr);
+	}
 	if (store_known_differences) {
 		for (i = 0; i < known_differences_size; i++) {
-			fclose(store_known_files[i]);
+			fclose(known_differences[i].file);
 		}
 	}
 	return 0;

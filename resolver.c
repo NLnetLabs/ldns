@@ -983,6 +983,7 @@ ldns_axfr_next(ldns_resolver *resolver)
 	uint8_t *packet_wire;
 	size_t packet_wire_size;
 	ldns_lookup_table *rcode;
+	ldns_status status;
 	
 	/* check if start() has been called */
 	if (!resolver || resolver->_socket == 0) {
@@ -1011,14 +1012,21 @@ ldns_axfr_next(ldns_resolver *resolver)
 		return cur_rr;
 	} else {
 		packet_wire = ldns_tcp_read_wire(resolver->_socket, &packet_wire_size);
+		if(!packet_wire) 
+			return NULL;
 		
-		(void) ldns_wire2pkt(&resolver->_cur_axfr_pkt, packet_wire, 
+		status = ldns_wire2pkt(&resolver->_cur_axfr_pkt, packet_wire, 
 				     packet_wire_size);
 		free(packet_wire);
 
 		resolver->_axfr_i = 0;
-		if (ldns_pkt_get_rcode(resolver->_cur_axfr_pkt) != 0) {
-			/* error */
+		if (status != LDNS_STATUS_OK) {
+			/* TODO: make status return type of this function (...api change) */
+			fprintf(stderr, "Error parsing rr during AXFR: %s\n", ldns_get_errorstr_by_id(status));
+			rcode = ldns_lookup_by_id(ldns_rcodes, (int) ldns_pkt_get_rcode(resolver->_cur_axfr_pkt));
+			fprintf(stderr, "Error in AXFR: %s\n", rcode->name);
+			return NULL;
+		} else if (ldns_pkt_get_rcode(resolver->_cur_axfr_pkt) != 0) {
 			rcode = ldns_lookup_by_id(ldns_rcodes, (int) ldns_pkt_get_rcode(resolver->_cur_axfr_pkt));
 			fprintf(stderr, "Error in AXFR: %s\n", rcode->name);
 			return NULL;
