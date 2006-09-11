@@ -172,7 +172,7 @@ ldns_wire2rdf(ldns_rr *rr, const uint8_t *wire, size_t max, size_t *pos)
 	if (!descriptor) { 
 		cur_rdf = ldns_rdf_new_frm_data(LDNS_RDF_TYPE_UNKNOWN, rd_length, &wire[*pos]);
 		ldns_rr_push_rdf(rr, cur_rdf);
-		*pos = *pos + ldns_rdf_size(cur_rdf) + 1;
+		*pos = *pos + ldns_rdf_size(cur_rdf);
 		return LDNS_STATUS_OK;
 	}
 
@@ -392,6 +392,7 @@ ldns_wire2pkt(ldns_pkt **packet_p, const uint8_t *wire, size_t max)
 		}
 	}
 	for (i = 0; i < ldns_pkt_ancount(packet); i++) {
+
 		status = ldns_wire2rr(&rr, wire, max, &pos, LDNS_SECTION_ANSWER);
 		if (status == LDNS_STATUS_PACKET_OVERFLOW) {
 			status = LDNS_STATUS_WIRE_INCOMPLETE_ANSWER;

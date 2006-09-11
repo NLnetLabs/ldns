@@ -116,7 +116,7 @@ ldns_rr_new_frm_str(ldns_rr **newrr, const char *str, uint16_t default_ttl, ldns
 	ssize_t c;
 	ldns_rdf *owner_dname;
 	size_t i;
-	
+
 	/* used for types with unknown number of rdatas */
 	bool done;
 	bool quoted;
