@@ -739,6 +739,7 @@ ldns_pkt_new()
 	ldns_pkt_set_id(packet, 0); 
 	ldns_pkt_set_size(packet, 0);
 	ldns_pkt_set_querytime(packet, 0);
+	memset(&packet->timestamp, 0, sizeof(packet->timestamp));
 	ldns_pkt_set_answerfrom(packet, NULL);
 	ldns_pkt_set_section_count(packet, LDNS_SECTION_QUESTION, 0);
 	ldns_pkt_set_section_count(packet, LDNS_SECTION_ANSWER, 0);

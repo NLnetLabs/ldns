@@ -115,22 +115,23 @@ if test -f $ldns_dev_dir/ldns/util.h && \
 	AC_MSG_RESULT([using $ldns_dev_dir with $ldns_version])
 	CPPFLAGS="$CPPFLAGS -I$ldns_dev_dir/include"
 	LDFLAGS="$LDFLAGS -L$ldns_dev_dir/lib"
+	LIBS="$LIBS -lldns"
+	AC_DEFINE(HAVE_LIBLDNS, 1, [If the ldns library is available.])
 	LDNSDIR="$ldns_dev_dir"
 else
 	AC_MSG_RESULT([no])
+	AC_CHECK_LIB(ldns, ldns_rr_new,, [
+			AC_MSG_ERROR([Can't find ldns library])
+		]
+	)
 fi
-
-AC_CHECK_LIB(ldns, ldns_rr_new,, [
-		AC_MSG_ERROR([Can't find ldns library])
-	]
-)
 
 AC_SUBST(LDNSDIR)
 
 AC_ARG_WITH(ldns, AC_HELP_STRING([--with-ldns=PATHNAME],[]))
 
 AC_CHECK_HEADER(ldns/ldns.h,,  [
-	AC_MSG_ERROR([Can't find ldns headers])
+	AC_MSG_ERROR([Can't find ldns headers (make copy-headers in devel source)])
 	], [AC_INCLUDES_DEFAULT]
 )
 AC_CHECK_FUNCS(isblank)

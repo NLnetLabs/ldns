@@ -50,3 +50,9 @@ init_root(void)
 	(void)ldns_rr_new_frm_str(&r, "m.root-servers.net 3600 IN A 202.12.27.33", 0, NULL, NULL);
 	ldns_rr_list_push_rr(global_dns_root, r);
 }
+
+void
+clear_root(void)
+{
+	ldns_rr_list_deep_free(global_dns_root);
+}

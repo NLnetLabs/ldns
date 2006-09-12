@@ -510,6 +510,7 @@ ldns_str2rdf_apl(ldns_rdf **rd, const char *str)
 		}
 	} else {
 		/* unknown family */
+		LDNS_FREE(my_ip_str);
 		return LDNS_STATUS_INVALID_STR;
 	}
 
@@ -546,6 +547,7 @@ ldns_str2rdf_b64(ldns_rdf **rd, const char *str)
 	i = (uint16_t)b64_pton((const char*)str, buffer, 
 	                        b64_ntop_calculate_size(strlen(str)));
 	if (-1 == i) {
+		LDNS_FREE(buffer);
 		return LDNS_STATUS_INVALID_B64;
 	} else {
 		*rd = ldns_rdf_new_frm_data(
@@ -681,6 +683,11 @@ ldns_str2rdf_nsec(ldns_rdf **rd, const char *str)
 	}
 
 	*rd = ldns_rdf_new_frm_data(LDNS_RDF_TYPE_NSEC, cur_data_size, data);
+	if(data)
+		LDNS_FREE(data);
+	if(bitmap)
+		LDNS_FREE(bitmap);
+	ldns_buffer_free(str_buf);
 	return LDNS_STATUS_OK;
 }
 
