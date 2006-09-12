@@ -84,6 +84,7 @@ get_dnssec_rr(ldns_pkt *p, ldns_rdf *name, ldns_rr_type t,
 	ldns_pkt_type pt = LDNS_PACKET_UNKNOWN;
 	ldns_rr_list *rr = NULL;
 	ldns_rr_list *sigs = NULL;
+	ldns_rr_list *osigs;
 
 	if (!p) {
 		return LDNS_PACKET_UNKNOWN;
@@ -96,6 +97,9 @@ get_dnssec_rr(ldns_pkt *p, ldns_rdf *name, ldns_rr_type t,
 		
 	if (name) {
 		rr = ldns_pkt_rr_list_by_name_and_type(p, name, t, LDNS_SECTION_ANSWER);
+		if (!rr) {
+			rr = ldns_pkt_rr_list_by_name_and_type(p, name, t, LDNS_SECTION_AUTHORITY);
+		}
 		sigs = ldns_pkt_rr_list_by_name_and_type(p, name, LDNS_RR_TYPE_RRSIG, 
 				LDNS_SECTION_ANSWER);
 	} else {
@@ -105,8 +109,11 @@ get_dnssec_rr(ldns_pkt *p, ldns_rdf *name, ldns_rr_type t,
                                LDNS_SECTION_AUTHORITY);
 	}
 	if (sig) {
-		ldns_rr_list_cat(*sig, sigs);
+		osigs = *sig;
+		*sig = ldns_rr_list_cat_clone(*sig, sigs);
+/*		ldns_rr_list_deep_free(osigs);*/
 	}
+	ldns_rr_list_deep_free(sigs);
 	if (rrlist) {
 		*rrlist = rr;
 	}
@@ -116,7 +123,8 @@ get_dnssec_rr(ldns_pkt *p, ldns_rdf *name, ldns_rr_type t,
 /* 
  * retrieve keys for this zone
  */
-static ldns_pkt_type
+/*static */
+ldns_pkt_type
 get_key(ldns_pkt *p, ldns_rdf *apexname, ldns_rr_list **rrlist, ldns_rr_list **opt_sig)
 {
 	return get_dnssec_rr(p, apexname, LDNS_RR_TYPE_DNSKEY, rrlist, opt_sig);
@@ -131,9 +139,33 @@ get_ds(ldns_pkt *p, ldns_rdf *ownername, ldns_rr_list **rrlist, ldns_rr_list **o
 	return get_dnssec_rr(p, ownername, LDNS_RR_TYPE_DS, rrlist, opt_sig);
 }
 
+void
+remove_resolver_nameservers(ldns_resolver *res)
+{
+	ldns_rdf *pop;
+	
+	/* remove the old nameserver from the resolver */
+	while((pop = ldns_resolver_pop_nameserver(res))) {
+		ldns_rdf_deep_free(pop);
+	}
+
+}
+
+void
+show_current_nameservers(FILE *out, ldns_resolver *res)
+{
+	size_t i;
+	fprintf(out, "Current nameservers for resolver object:\n");
+	for (i = 0; i < ldns_resolver_nameserver_count(res); i++) {
+		ldns_rdf_print(out, ldns_resolver_nameservers(res)[i]);
+		fprintf(out, "\n");
+	}
+}
+	
 ldns_pkt *
 do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
-		ldns_rr_class c, ldns_rr_list *trusted_keys)
+                ldns_rr_class c, ldns_rr_list *trusted_keys, ldns_rdf *start_name
+               )
 {
 	ldns_resolver *res;
 	ldns_pkt *p, *local_p;
@@ -143,7 +175,7 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 	ldns_rr_list *ns_addr;
 	uint16_t loop_count;
 	ldns_rdf *pop; 
-	ldns_rdf **labels;
+	ldns_rdf **labels = NULL;
 	ldns_status status, st;
 	ssize_t i;
 	size_t j;
@@ -155,6 +187,11 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 	ldns_rr_list *key_sig_list;
 	ldns_rr_list *ds_list;
 	ldns_rr_list *ds_sig_list;
+	
+	/* glue handling */
+	ldns_rr_list *new_ns_addr;
+	ldns_rr_list *old_ns_addr;
+	ldns_rr *ns_rr;
 
 	loop_count = 0;
 	new_nss_a = NULL;
@@ -165,13 +202,13 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 	ds_list = NULL;
 	pt = LDNS_PACKET_UNKNOWN;
 
-	p = ldns_pkt_new();
-	local_p = ldns_pkt_new();
+	p = NULL;
+	local_p = NULL;
 	res = ldns_resolver_new();
-	key_sig_list = ldns_rr_list_new();
-	ds_sig_list = ldns_rr_list_new();
-
-	if (!p || !local_p || !res) {
+	key_sig_list = NULL;
+	ds_sig_list = NULL;
+	
+	if (!res) {
 		error("Memory allocation failed");
 		return NULL;
 	}
@@ -196,14 +233,32 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 	ldns_resolver_set_dnssec(res, true);
 
 	labels_count = ldns_dname_label_count(name);
+	if (start_name) {
+		if (ldns_dname_is_subdomain(name, start_name)) {
+			labels_count -= ldns_dname_label_count(start_name);
+		} else {
+			fprintf(stderr, "Error; ");
+			ldns_rdf_print(stderr, name);
+			fprintf(stderr, " is not a subdomain of ");
+			ldns_rdf_print(stderr, start_name);
+			fprintf(stderr, "\n");
+			goto done;
+		}
+	}
 	labels = LDNS_XMALLOC(ldns_rdf*, labels_count + 2);
 	if (!labels) {
-		return NULL;
+		goto done;
 	}
 	labels[0] = ldns_dname_new_frm_str(LDNS_ROOT_LABEL_STR);
-	labels[1] = name;
+	labels[1] = ldns_rdf_clone(name);
 	for(i = 2 ; i < (ssize_t)labels_count + 2; i++) {
 		labels[i] = ldns_dname_left_chop(labels[i - 1]);
+	}
+
+/* if no servers is given with @, start by asking local resolver */
+/* first part todo :) */
+	for (i = 0; i < ldns_resolver_nameserver_count(local_res); i++) {
+		ldns_resolver_push_nameserver(res, ldns_resolver_nameservers(local_res)[i]);
 	}
 
 	/* get the nameserver for the label
@@ -217,44 +272,71 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 		 * DNSSEC trace). After that you can just query for
 		 * the DNSKEY and DS and perform the validation magic
 		 */
-		status = ldns_resolver_send(&local_p, local_res, labels[i], LDNS_RR_TYPE_NS, c, 0);
+		status = ldns_resolver_send(&local_p, res, labels[i], LDNS_RR_TYPE_NS, c, 0);
+
 		new_nss = ldns_pkt_rr_list_by_type(local_p,
 					LDNS_RR_TYPE_NS, LDNS_SECTION_ANSWER);
  		if (!new_nss) {
-			/* lame ass servers put them in the auth section */
+			/* if it's a delegation, servers put them in the auth section */
 			new_nss = ldns_pkt_rr_list_by_type(local_p,
 					LDNS_RR_TYPE_NS, LDNS_SECTION_AUTHORITY);
-		} else {
-			ldns_rr_list_print(stdout, new_nss);
 		}
 
 		for(j = 0; j < ldns_rr_list_rr_count(new_nss); j++) {
-			pop = ldns_rr_rdf(ldns_rr_list_rr(new_nss, j), 0);
+			ns_rr = ldns_rr_list_rr(new_nss, j);
+			pop = ldns_rr_rdf(ns_rr, 0);
 			if (!pop) {
+				printf("nopo\n");
 				break;
 			}
 			/* retrieve it's addresses */
-			ns_addr = ldns_rr_list_cat_clone(ns_addr,
-				ldns_get_rr_list_addr_by_name(local_res, pop, c, 0));
-		}
+			/* trust glue? */
+			new_ns_addr = NULL;
+			if (ldns_dname_is_subdomain(pop, labels[i])) {
+				new_ns_addr = ldns_pkt_rr_list_by_name_and_type(local_p, pop, LDNS_RR_TYPE_A, LDNS_SECTION_ADDITIONAL);
+			}
+			if (!new_ns_addr || ldns_rr_list_rr_count(new_ns_addr) == 0) {
+				new_ns_addr = ldns_get_rr_list_addr_by_name(res, pop, c, 0);
+			}
+			if (!new_ns_addr || ldns_rr_list_rr_count(new_ns_addr) == 0) {
+				new_ns_addr = ldns_get_rr_list_addr_by_name(local_res, pop, c, 0);
+			}
 
+			if (new_ns_addr) {
+				old_ns_addr = ns_addr;
+				ns_addr = ldns_rr_list_cat_clone(ns_addr, new_ns_addr);
+				ldns_rr_list_deep_free(old_ns_addr);
+			}
+			ldns_rr_list_deep_free(new_ns_addr);
+		}
+		ldns_rr_list_deep_free(new_nss);
+		
 		if (ns_addr) {
+			remove_resolver_nameservers(res);
+
 			if (ldns_resolver_push_nameserver_rr_list(res, ns_addr) != 
 					LDNS_STATUS_OK) {
 				error("Error adding new nameservers");
 				ldns_pkt_free(local_p); 
-				return NULL;
+				goto done;
 			}
+			ldns_rr_list_deep_free(ns_addr);
 		} else {
-			error("Could not find the nameserver ip addr; abort");
+			fprintf(stderr, "Could not find the nameserver ip addr; aborting\n");
+			fprintf(stderr, "Last packet:\n");
 			ldns_pkt_free(local_p);
-			return NULL;
+			goto done;
 		}
+		ldns_pkt_free(local_p);
 		
 		if (ldns_resolver_nameserver_count(res) == 0) {
 			error("No nameservers found for this node");
-			return NULL;
+			goto done;
 		}
+
+		fprintf(stdout, ";; Domain: ");
+		ldns_rdf_print(stdout, labels[i]);
+		fprintf(stdout, "\n");
 
 		p = get_dnssec_pkt(res, labels[i], LDNS_RR_TYPE_DNSKEY);
 		pt = get_key(p, labels[i], &key_list, &key_sig_list);
@@ -265,19 +347,25 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 					print_rr_list_abbr(stdout, key_list, SELF);
 
 					ldns_rr_list_push_rr_list(trusted_keys, key_list);
+					ldns_rr_list_free(key_list);
+					key_list = NULL;
 				} else {
 					print_rr_list_abbr(stdout, key_list, BOGUS);
+					ldns_rr_list_deep_free(key_list);
+					key_list = NULL;
 				}
 			} else {
 				mesg("No DNSKEY");
 			}
 		}
 
+		ldns_pkt_free(p);
+		ldns_rr_list_deep_free(key_sig_list);
+		key_sig_list = NULL;
 		p = get_dnssec_pkt(res, labels[i], LDNS_RR_TYPE_DS);
 		pt = get_ds(p, labels[i], &ds_list, &ds_sig_list);
 		if (!ds_list) {
-			/* we might get lucky and get a DS referral wehn
-			 * asking for the key of the query name */
+			ldns_pkt_free(p);
 			p = get_dnssec_pkt(res, name, LDNS_RR_TYPE_DNSKEY);
 			pt = get_ds(p, NULL, &ds_list, &ds_sig_list); 
 		}
@@ -289,19 +377,30 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 				} else {
 					print_rr_list_abbr(stdout, ds_list, BOGUS);
 				}
-			} else {
-				mesg("No DS");
 			}
 		}
-		ds_list = NULL;
 		new_nss_aaaa = NULL;
 		new_nss_a = NULL;
 		new_nss = NULL;
 		ns_addr = NULL;
+		ldns_rr_list_deep_free(key_list);
 		key_list = NULL;
-		while((pop = ldns_resolver_pop_nameserver(res))) { /* remove it */ }
+		ldns_rr_list_deep_free(key_sig_list);
+		key_sig_list = NULL;
+		ldns_rr_list_deep_free(ds_list);
+		ds_list = NULL;
+		ldns_rr_list_deep_free(ds_sig_list);
+		ds_sig_list = NULL;
+		ldns_pkt_free(p);
 		puts("");
 	}
 	printf(";;" SELF " self sig OK; " BOGUS " bogus; " TRUST " trusted\n");
+
+	done:
+	ldns_resolver_deep_free(res);
+	for(i = 0 ; i < (ssize_t)labels_count + 2; i++) {
+		ldns_rdf_deep_free(labels[i]);
+	}
+	LDNS_FREE(labels);
 	return NULL;
 }

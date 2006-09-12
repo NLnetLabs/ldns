@@ -53,6 +53,9 @@ usage(FILE *stream, const char *progname)
 	fprintf(stream, "\t-s\t\tshow the DS RR for each key in a packet\n");
 	fprintf(stream, "\t-u\t\tsend the query with udp (the default)\n");
 	fprintf(stream, "\t-x\t\tdo a reverse lookup\n");
+	fprintf(stream, "\twhen doing a secure trace:\n");
+	fprintf(stream, "\t-r <file>\t\tuse file as root servers hint file (NOT IMPLEMENTED YET)\n");
+	fprintf(stream, "\t-d <domain>\t\tuse domain as the start point for the trace\n");
         fprintf(stream, "\t-y <name:key[:algo]>\tspecify named base64 tsig key, and optional an\n\t\t\talgorithm (defaults to hmac-md5.sig-alg.reg.int)\n");
 	fprintf(stream, "\t-z\t\tdon't randomize the nameservers before use\n");
 	fprintf(stream, "\n  [*] = enables/implies DNSSEC\n");
@@ -129,6 +132,8 @@ main(int argc, char *argv[])
 	bool		qds;
 	bool		qusevc;
 	bool 		qrandom;
+	
+	ldns_rdf *trace_start_name = NULL;
 
 	int		result = 0;
 	
@@ -158,8 +163,9 @@ main(int argc, char *argv[])
 
 	/* string from orig drill: "i:w:I46Sk:TNp:b:DsvhVcuaq:f:xr" */
 	/* global first, query opt next, option with parm's last
-	 * and sorted */
-	while ((c = getopt(argc, argv, "46DITSVQf:i:w:q:achuvxzy:so:p:b:k:")) != -1) {
+	 * and sorted */ /*  "46DITSVQf:i:w:q:achuvxzy:so:p:b:k:" */
+	                               
+	while ((c = getopt(argc, argv, "46ab:cd:Df:hi:Ik:o:p:q:Qr:sSTuvVw:xy:z")) != -1) {
 		switch(c) {
 			/* global options */
 			case '4':
@@ -344,10 +350,22 @@ main(int argc, char *argv[])
 			case 'z':
 				qrandom = false;
 				break;
+			case 'd':
+				trace_start_name = ldns_dname_new_frm_str(optarg);
+				if (!trace_start_name) {
+					fprintf(stderr, "Unable to parse argument for -%c\n", c);
+					result = EXIT_FAILURE;
+					goto exit;
+				}
+				break;
 			case 'h':
-			default:
 				usage(stdout, progname);
 				result = EXIT_SUCCESS;
+				goto exit;
+				break;
+			default:
+				fprintf(stderr, "Unknown argument: -%c, use -h to see usage\n", c);
+				result = EXIT_FAILURE;
 				goto exit;
 		}
 	}
@@ -528,7 +546,7 @@ main(int argc, char *argv[])
 				error("%s", "making qname");
 			}
 			/* don't care about return packet */
-			(void)do_secure_trace(res, qname, type, clas, key_list);
+			(void)do_secure_trace(res, qname, type, clas, key_list, trace_start_name);
 			clear_root();
 			break;
 		case DRILL_CHASE:
