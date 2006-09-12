@@ -310,10 +310,11 @@ ldns_verify_rrsig_keylist(ldns_rr_list *rrset, ldns_rr *rrsig, ldns_rr_list *key
 	ldns_buffer_free(verify_buf);
 	if (ldns_rr_list_rr_count(validkeys) == 0) {
 		/* no keys were added, return last error */
-		ldns_rr_list_free(validkeys); 
+		ldns_rr_list_deep_free(validkeys); 
 		return result;
 	} else {
 		ldns_rr_list_cat(good_keys, validkeys);
+		ldns_rr_list_free(validkeys);
 		return LDNS_STATUS_OK;
 	}
 }

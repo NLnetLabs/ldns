@@ -518,6 +518,7 @@ main(int argc, char *argv[])
 			}
 			/* don't care about return packet */
 			(void)do_trace(res, qname, type, clas);
+			clear_root();
 			break;
 		case DRILL_SECTRACE:
 			/* do a secure trace from the root down */
@@ -528,6 +529,7 @@ main(int argc, char *argv[])
 			}
 			/* don't care about return packet */
 			(void)do_secure_trace(res, qname, type, clas, key_list);
+			clear_root();
 			break;
 		case DRILL_CHASE:
 			qname = ldns_dname_new_frm_str(name);

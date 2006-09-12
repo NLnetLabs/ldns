@@ -48,6 +48,7 @@ void 		drill_pkt_print_footer(FILE *fd, ldns_resolver *r, ldns_pkt *p);
 ldns_rr 	*read_key_file(const char *filename);
 ldns_pkt	*read_hex_pkt(char *filename);
 void		init_root(void);
+void		clear_root(void);
 void		dump_hex(const ldns_pkt *pkt, const char *file);
 void 		warning(const char *fmt, ...);
 void		error(const char *fmt, ...);
