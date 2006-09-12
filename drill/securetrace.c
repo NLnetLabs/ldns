@@ -257,8 +257,8 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 
 /* if no servers is given with @, start by asking local resolver */
 /* first part todo :) */
-	for (i = 0; i < ldns_resolver_nameserver_count(local_res); i++) {
-		ldns_resolver_push_nameserver(res, ldns_resolver_nameservers(local_res)[i]);
+	for (i = 0; i < (ssize_t) ldns_resolver_nameserver_count(local_res); i++) {
+		(void) ldns_resolver_push_nameserver(res, ldns_resolver_nameservers(local_res)[i]);
 	}
 
 	/* get the nameserver for the label
