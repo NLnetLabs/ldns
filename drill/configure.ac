@@ -115,6 +115,8 @@ if test -f $ldns_dev_dir/ldns/util.h && \
 	AC_MSG_RESULT([using $ldns_dev_dir with $ldns_version])
 	CPPFLAGS="$CPPFLAGS -I$ldns_dev_dir/include"
 	LDFLAGS="$LDFLAGS -L$ldns_dev_dir/lib"
+	LIBS="$LIBS -lldns"
+	AC_DEFINE(HAVE_LIBLDNS, 1, [If the ldns library is available.])
 	LDNSDIR="$ldns_dev_dir"
 else
 	AC_MSG_RESULT([no])
