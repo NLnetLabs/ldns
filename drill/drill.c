@@ -13,7 +13,7 @@
 #define IP6_ARPA_MAX_LEN 65
 
 /* query debug, 2 hex dumps */
-int8_t		qdebug; /* -1, be quiet, 1 show question, 2 show hex */
+int8_t		verbosity; /* -1, be quiet, 1 show question, 2 show hex */
 
 static void
 usage(FILE *stream, const char *progname)
@@ -27,7 +27,7 @@ usage(FILE *stream, const char *progname)
 	fprintf(stream, "\t-D\t\tenable DNSSEC (DO bit)\n");
 	fprintf(stream, "\t-T\t\ttrace from the root down to <name>\n");
 	fprintf(stream, "\t-S\t\tchase signature(s) from <name> to a know key [*]\n");
-	fprintf(stream, "\t-V\t\tverbose mode (once shows question, twice for hexdumps)\n");
+	fprintf(stream, "\t-V <number>\tverbosity (0-5)\n");
 	fprintf(stream, "\t-Q\t\tquiet mode (overrules -V)\n");
 	fprintf(stream, "\n");
 	fprintf(stream, "\t-f file\t\tread packet from file and send it\n");
@@ -145,7 +145,7 @@ main(int argc, char *argv[])
 	PURPOSE = DRILL_QUERY;
 	qflags = LDNS_RD;
 	qport = LDNS_PORT;
-	qdebug = 0;
+	verbosity = 0;
 	qdnssec = false;
 	qfamily = LDNS_RESOLV_INETANY;
 	qfail = false;
@@ -165,7 +165,7 @@ main(int argc, char *argv[])
 	/* global first, query opt next, option with parm's last
 	 * and sorted */ /*  "46DITSVQf:i:w:q:achuvxzy:so:p:b:k:" */
 	                               
-	while ((c = getopt(argc, argv, "46ab:cd:Df:hi:Ik:o:p:q:Qr:sSTuvVw:xy:z")) != -1) {
+	while ((c = getopt(argc, argv, "46ab:cd:Df:hi:Ik:o:p:q:Qr:sSTuvV:w:xy:z")) != -1) {
 		switch(c) {
 			/* global options */
 			case '4':
@@ -195,12 +195,10 @@ main(int argc, char *argv[])
 				PURPOSE = DRILL_CHASE;
 				break;
 			case 'V':
-				if (qdebug != -1) {
-					qdebug++;
-				}
+				verbosity = atoi(optarg);
 				break;
 			case 'Q':
-				qdebug = -1;
+				verbosity = -1;
 			case 'f':
 				query_file = optarg;
 				break;
@@ -494,7 +492,7 @@ main(int argc, char *argv[])
 	}
 	/* set the resolver options */
 	ldns_resolver_set_port(res, qport);
-	if (qdebug > 0 && qdebug != -1) {
+	if (verbosity >= 5) {
 		ldns_resolver_set_debug(res, true);
 	} else {
 		ldns_resolver_set_debug(res, false);
@@ -564,7 +562,7 @@ main(int argc, char *argv[])
 				error("%s", "error pkt sending");
 				result = EXIT_FAILURE;
 			} else {
-				if (qdebug != -1) {
+				if (verbosity != -1) {
 					ldns_pkt_print(stdout, pkt);
 				}
 				
@@ -575,15 +573,14 @@ main(int argc, char *argv[])
 					                  clas, key_list, 
 					                  pkt, qflags, NULL);
 					if (result == LDNS_STATUS_OK) {
-						if (qdebug != -1) {
+						if (verbosity != -1) {
 							mesg("Chase successful");
 						}
 						result = 0;
 					} else {
-						if (qdebug != -1) {
+						if (verbosity != -1) {
 							mesg("Chase failed: %s", ldns_get_errorstr_by_id(result));
 						}
-						/*result = EXIT_FAILURE;*/
 					}
 				}
 				ldns_pkt_free(pkt);
@@ -592,7 +589,7 @@ main(int argc, char *argv[])
 		case DRILL_AFROMFILE:
 			pkt = read_hex_pkt(answer_file);
 			if (pkt) {
-				if (qdebug != -1) {
+				if (verbosity != -1) {
 					ldns_pkt_print(stdout, pkt);
 				}
 				ldns_pkt_free(pkt);
@@ -686,7 +683,7 @@ main(int argc, char *argv[])
 				error("%s", "pkt sending");
 				result = EXIT_FAILURE;
 			} else {
-				if (qdebug != -1) {
+				if (verbosity != -1) {
 					ldns_pkt_print(stdout, pkt);
 				}
 				ldns_pkt_free(pkt);
@@ -722,7 +719,7 @@ main(int argc, char *argv[])
 						goto exit;
 					}
 					while (axfr_rr) {
-						if (qdebug != -1) {
+						if (verbosity != -1) {
 							ldns_rr_print(stdout, axfr_rr);
 						}
 						ldns_rr_free(axfr_rr);
@@ -740,11 +737,11 @@ main(int argc, char *argv[])
 				mesg("No packet received");
 				result = EXIT_FAILURE;
 			} else {
-				if (qdebug != -1) {
+				if (verbosity != -1) {
 					ldns_pkt_print(stdout, pkt);
 				}
 				if (qds) {
-					if (qdebug != -1) {
+					if (verbosity != -1) {
 						print_ds_of_keys(pkt);
 						printf("\n");
 					}
@@ -764,7 +761,7 @@ main(int argc, char *argv[])
 						break;
 					}
 
-					if (qdebug != -1) {
+					if (verbosity != -1) {
 						printf("; ");
 						ldns_rr_list_print(stdout, rrset_verified);
 					}
@@ -775,7 +772,7 @@ main(int argc, char *argv[])
 					if (result == LDNS_STATUS_OK) {
 						for(key_count = 0; key_count < ldns_rr_list_rr_count(key_verified);
 								key_count++) {
-							if (qdebug != -1) {
+							if (verbosity != -1) {
 								printf("VALIDATED by id = %d, owner = ",
 										(int)ldns_calc_keytag(
 												      ldns_rr_list_rr(key_verified, key_count)));
@@ -787,7 +784,7 @@ main(int argc, char *argv[])
 					} else {
 						for(key_count = 0; key_count < ldns_rr_list_rr_count(key_list);
 								key_count++) {
-							if (qdebug != -1) {
+							if (verbosity != -1) {
 								printf("BOGUS by id = %d, owner = ",
 										(int)ldns_calc_keytag(
 												      ldns_rr_list_rr(key_list, key_count)));

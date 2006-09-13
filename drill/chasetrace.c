@@ -109,10 +109,10 @@ do_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 		new_nss = ldns_pkt_rr_list_by_type(p,
 				LDNS_RR_TYPE_NS, LDNS_SECTION_AUTHORITY);
 
-		if (qdebug != -1) {
+		if (verbosity != -1) {
 			ldns_rr_list_print(stdout, new_nss);
 		}
-		/* checks itself for qdebug */
+		/* checks itself for verbosity */
 		drill_pkt_print_footer(stdout, local_res, p);
 		
 		/* remove the old nameserver from the resolver */
@@ -198,7 +198,7 @@ do_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 	new_nss = ldns_pkt_authority(p);
 	final_answer = ldns_pkt_answer(p);
 
-	if (qdebug != -1) {
+	if (verbosity != -1) {
 		ldns_rr_list_print(stdout, final_answer);
 		ldns_rr_list_print(stdout, new_nss);
 
@@ -208,212 +208,6 @@ do_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 	return NULL;
 }
 
-
-/* NSEC3 draft -05 */
-/*return hash name match*/
-ldns_rr *
-ldns_nsec3_exact_match(ldns_rdf *qname, ldns_rr_type qtype, ldns_rr_list *nsec3s) {
-	uint8_t algorithm;
-	uint32_t iterations;
-	uint8_t salt_length;
-	uint8_t *salt;
-	
-	ldns_rdf *sname, *hashed_sname;
-	
-	size_t nsec_i;
-	ldns_rr *nsec;
-	ldns_rr *result = NULL;
-	
-	ldns_status status;
-	
-	const ldns_rr_descriptor *descriptor;
-	
-	ldns_rdf *zone_name;
-	
-	printf(";; finding exact match for ");
-	descriptor = ldns_rr_descript(qtype);
-	if (descriptor && descriptor->_name) {
-		printf("%s ", descriptor->_name);
-	} else {
-		printf("TYPE%d ", qtype);
-	}
-	ldns_rdf_print(stdout, qname);
-	printf("\n");
-	if (!qname || !nsec3s || ldns_rr_list_rr_count(nsec3s) < 1) {
-		printf("no qname, nsec3s or list empty\n");
-		return NULL;
-	}
-
-	nsec = ldns_rr_list_rr(nsec3s, 0);
-	algorithm = ldns_nsec3_algorithm(nsec);
-	salt_length = ldns_nsec3_salt_length(nsec);
-	salt = ldns_nsec3_salt(nsec);
-	iterations = ldns_nsec3_iterations(nsec);
-
-	sname = ldns_rdf_clone(qname);
-
-	printf(";; owner name hashes to: ");
-	hashed_sname = ldns_nsec3_hash_name(sname, algorithm, iterations, salt_length, salt);
-
-	zone_name = ldns_dname_left_chop(ldns_rr_owner(nsec));
-	status = ldns_dname_cat(hashed_sname, zone_name);
-	ldns_rdf_print(stdout, hashed_sname);
-	printf("\n");
-
-	for (nsec_i = 0; nsec_i < ldns_rr_list_rr_count(nsec3s); nsec_i++) {
-		nsec = ldns_rr_list_rr(nsec3s, nsec_i);
-		
-		/* check values of iterations etc! */
-		
-		/* exact match? */
-		if (ldns_dname_compare(ldns_rr_owner(nsec), hashed_sname) == 0) {
-			result = nsec;
-			goto done;
-		}
-		
-	}
-
-done:
-	ldns_rdf_deep_free(zone_name);
-	ldns_rdf_deep_free(sname);
-	ldns_rdf_deep_free(hashed_sname);
-	LDNS_FREE(salt);
-	
-	if (result) {
-		printf(";; Found.\n");
-	} else {
-		printf(";; Not foud.\n");
-	}
-	return result;
-}
-
-/*return the owner name of the closest encloser for name from the list of rrs */
-/* this is NOT the hash, but the original name! */
-ldns_rdf *
-ldns_nsec3_closest_encloser(ldns_rdf *qname, ldns_rr_type qtype, ldns_rr_list *nsec3s) {
-	/* remember parameters, they must match */
-	uint8_t algorithm;
-	uint32_t iterations;
-	uint8_t salt_length;
-	uint8_t *salt;
-	
-	ldns_rdf *sname, *hashed_sname, *tmp;
-	ldns_rr *ce;
-	bool flag;
-	
-	bool exact_match_found;
-	bool in_range_found;
-	
-	ldns_status status;
-	ldns_rdf *zone_name;
-	
-	size_t nsec_i;
-	ldns_rr *nsec;
-	ldns_rdf *result = NULL;
-	
-	if (!qname || !nsec3s || ldns_rr_list_rr_count(nsec3s) < 1) {
-		return NULL;
-	}
-	printf(";; finding closest encloser for type %d ", qtype);
-	ldns_rdf_print(stdout, qname);
-	printf("\n");
-
-	nsec = ldns_rr_list_rr(nsec3s, 0);
-	algorithm = ldns_nsec3_algorithm(nsec);
-	salt_length = ldns_nsec3_salt_length(nsec);
-	salt = ldns_nsec3_salt(nsec);
-	iterations = ldns_nsec3_iterations(nsec);
-
-	sname = ldns_rdf_clone(qname);
-
-	ce = NULL;
-	flag = false;
-	
-	zone_name = ldns_dname_left_chop(ldns_rr_owner(nsec));
-
-	/* algorithm from nsec3-07 8.3 */
-	while (ldns_dname_label_count(sname) > 0) {
-		exact_match_found = false;
-		in_range_found = false;
-		
-		printf(";; ");
-		ldns_rdf_print(stdout, sname);
-		printf(" hashes to: ");
-		hashed_sname = ldns_nsec3_hash_name(sname, algorithm, iterations, salt_length, salt);
-
-		status = ldns_dname_cat(hashed_sname, zone_name);
-		ldns_rdf_print(stdout, hashed_sname);
-		printf("\n");
-
-		for (nsec_i = 0; nsec_i < ldns_rr_list_rr_count(nsec3s); nsec_i++) {
-			nsec = ldns_rr_list_rr(nsec3s, nsec_i);
-			
-			/* check values of iterations etc! */
-			
-			/* exact match? */
-			if (ldns_dname_compare(ldns_rr_owner(nsec), hashed_sname) == 0) {
-				printf(";; exact match found\n");
-			 	exact_match_found = true;
-			} else if (ldns_nsec_covers_name(nsec, hashed_sname)) {
-				printf(";; in range of an nsec\n");
-				in_range_found = true;				
-			}
-			
-		}
-		if (!exact_match_found && in_range_found) {
-			flag = true;
-		} else if (exact_match_found && flag) {
-			result = ldns_rdf_clone(sname);
-		} else if (exact_match_found && !flag) {
-			// error!
-			printf(";; the closest encloser is the same name (ie. this is an exact match, ie there is no closest encloser)\n");
-			goto done;
-		} else {
-			flag = false;
-		}
-			
-
-/*
-		if (!exact_match_found) {
-			// no proof -> clear flag
-			printf(";; clearing flag\n");
-			flag = false;
-		} else if (in_range_found) {
-			// proof of nonexistence
-			printf(";; setting flag\n");
-			flag = true;
-		} else {
-			if (flag) {
-				result = sname;
-				printf(";; found: an exact match, no in range, and flag set.\n");
-				goto done;
-			} else {
-				// response bogus
-				printf(";; bogus? an exact match, no in range, and flag not set\n");
-				goto done;
-			}
-		}
-*/		
-		tmp = sname;
-		sname = ldns_dname_left_chop(sname);
-		ldns_rdf_deep_free(tmp);
-	ldns_rdf_deep_free(hashed_sname);
-	}
-done:
-	LDNS_FREE(salt);
-	ldns_rdf_deep_free(zone_name);
-	ldns_rdf_deep_free(sname);
-
-	if (!result) {
-		printf(";; no closest encloser found\n");
-	} else {
-		ldns_rdf_print(stdout, result);
-		printf("\n");
-	}
-	
-	/* todo checks from end of 6.2. here or in caller? */
-	return result;
-}
 
 
 /**
@@ -474,7 +268,7 @@ do_chase(ldns_resolver *res, ldns_rdf *name, ldns_rr_type type, ldns_rr_class c,
 		return LDNS_STATUS_EMPTY_LABEL;
 	}
 
-	if (qdebug != -1) {
+	if (verbosity != -1) {
 		printf(";; Chasing: ");
 			ldns_rdf_print(stdout, name);
 			if (descriptor && descriptor->_name) {
@@ -541,7 +335,7 @@ do_chase(ldns_resolver *res, ldns_rdf *name, ldns_rr_type type, ldns_rr_class c,
 					LDNS_SECTION_ANY_NOQUESTION
 					);
 			
-			if (qdebug != -1) {
+			if (verbosity != -1) {
 				printf(";; Data set: ");
 				ldns_rdf_print(stdout, name);
 
@@ -738,13 +532,14 @@ printf("DAWASEM\n");
 				/* nsec has nothing to do with this data */
 			}
 		}
+		ldns_rr_list_deep_free(nsecs);
 		
 		nsecs = ldns_pkt_rr_list_by_type(pkt, LDNS_RR_TYPE_NSEC3, LDNS_SECTION_ANY_NOQUESTION);
 		nsec_i = 0;
 		/* TODO: verify that all nsecs have same iterations and hash values */
 		
 		if (ldns_rr_list_rr_count(nsecs) != 0) {
-			if (qdebug != -1) {
+			if (verbosity != -1) {
 				printf(";; we have nsec3's and no data? prove denial.\n");
 				ldns_rr_list_print(stdout, nsecs);
 			}

@@ -81,7 +81,8 @@ ldns_verify(ldns_rr_list *rrset, ldns_rr_list *rrsig, ldns_rr_list *keys,
 	uint16_t i;
 	bool valid;
 	ldns_status verify_result = LDNS_STATUS_ERR;
-
+	ldns_status last_result = LDNS_STATUS_ERR;
+	
 	if (!rrset || !rrsig || !keys) {
 		return LDNS_STATUS_ERR;
 	}
@@ -100,14 +101,18 @@ ldns_verify(ldns_rr_list *rrset, ldns_rr_list *rrsig, ldns_rr_list *keys,
 		verify_result = LDNS_STATUS_CRYPTO_NO_TRUSTED_DNSKEY;
 	} else {
 		for (i = 0; i < ldns_rr_list_rr_count(rrsig); i++) {
-
-			if (ldns_verify_rrsig_keylist(rrset,
+			last_result = ldns_verify_rrsig_keylist(rrset,
 					ldns_rr_list_rr(rrsig, i),
-					keys, good_keys) == LDNS_STATUS_OK) {
+					keys, good_keys);
+			if (last_result == LDNS_STATUS_OK) {
 				verify_result = LDNS_STATUS_OK;
 			}
 		}
 	}
+	if (verify_result == LDNS_STATUS_ERR) {
+		verify_result = last_result;
+	}
+
 	return verify_result;
 }
 
@@ -181,6 +186,8 @@ ldns_verify_rrsig_keylist(ldns_rr_list *rrset, ldns_rr *rrsig, ldns_rr_list *key
 	/* check if the typecovered is equal to the type checked */
 	if (ldns_rdf2rr_type(ldns_rr_rrsig_typecovered(rrsig)) !=
 			ldns_rr_get_type(ldns_rr_list_rr(rrset_clone, 0))) {
+		ldns_rr_list_deep_free(rrset_clone);
+		ldns_rr_list_deep_free(validkeys);
 		return LDNS_STATUS_CRYPTO_TYPE_COVERED_ERR;
 	}
 	
@@ -200,18 +207,24 @@ ldns_verify_rrsig_keylist(ldns_rr_list *rrset, ldns_rr *rrsig, ldns_rr_list *key
                 /* bad sig, expiration before inception?? Tsssg */
 		ldns_buffer_free(rawsig_buf);
 		ldns_buffer_free(verify_buf);
+		ldns_rr_list_deep_free(rrset_clone);
+		ldns_rr_list_deep_free(validkeys);
 		return LDNS_STATUS_CRYPTO_EXPIRATION_BEFORE_INCEPTION;
         }
         if (now - inception < 0) {
                 /* bad sig, inception date has passed */
 		ldns_buffer_free(rawsig_buf);
 		ldns_buffer_free(verify_buf);
+		ldns_rr_list_deep_free(rrset_clone);
+		ldns_rr_list_deep_free(validkeys);
 		return LDNS_STATUS_CRYPTO_SIG_NOT_INCEPTED;
         }
         if (expiration - now < 0) {
                 /* bad sig, expiration date has passed */
 		ldns_buffer_free(rawsig_buf);
 		ldns_buffer_free(verify_buf);
+		ldns_rr_list_deep_free(rrset_clone);
+		ldns_rr_list_deep_free(validkeys);
 		return LDNS_STATUS_CRYPTO_SIG_EXPIRED;
         }
 	
@@ -219,6 +232,8 @@ ldns_verify_rrsig_keylist(ldns_rr_list *rrset, ldns_rr *rrsig, ldns_rr_list *key
 	if (ldns_rdf2buffer_wire(rawsig_buf, ldns_rr_rdf(rrsig, 8)) != LDNS_STATUS_OK) {
 		ldns_buffer_free(rawsig_buf);
 		ldns_buffer_free(verify_buf);
+		ldns_rr_list_deep_free(rrset_clone);
+		ldns_rr_list_deep_free(validkeys);
 		return LDNS_STATUS_MEM_ERR;
 	}
 
@@ -251,6 +266,8 @@ ldns_verify_rrsig_keylist(ldns_rr_list *rrset, ldns_rr *rrsig, ldns_rr_list *key
 	if (ldns_rrsig2buffer_wire(verify_buf, rrsig) != LDNS_STATUS_OK) {
 		ldns_buffer_free(rawsig_buf);
 		ldns_buffer_free(verify_buf);
+		ldns_rr_list_deep_free(rrset_clone);
+		ldns_rr_list_deep_free(validkeys);
 		return LDNS_STATUS_MEM_ERR;
 	}
 
@@ -258,6 +275,8 @@ ldns_verify_rrsig_keylist(ldns_rr_list *rrset, ldns_rr *rrsig, ldns_rr_list *key
 	if (ldns_rr_list2buffer_wire(verify_buf, rrset_clone) != LDNS_STATUS_OK) {
 		ldns_buffer_free(rawsig_buf);
 		ldns_buffer_free(verify_buf);
+		ldns_rr_list_deep_free(rrset_clone);
+		ldns_rr_list_deep_free(validkeys);
 		return LDNS_STATUS_MEM_ERR;
 	}
 
@@ -276,6 +295,8 @@ ldns_verify_rrsig_keylist(ldns_rr_list *rrset, ldns_rr *rrsig, ldns_rr_list *key
 				ldns_buffer_free(verify_buf);
 				/* returning is bad might screw up good keys later in the list
 				   what to do? */
+				ldns_rr_list_deep_free(rrset_clone);
+				ldns_rr_list_deep_free(validkeys);
 				return LDNS_STATUS_MEM_ERR;
 			}
 
@@ -299,6 +320,8 @@ ldns_verify_rrsig_keylist(ldns_rr_list *rrset, ldns_rr *rrsig, ldns_rr_list *key
 					/* couldn't push the key?? */
 					ldns_buffer_free(rawsig_buf);
 					ldns_buffer_free(verify_buf);
+					ldns_rr_list_deep_free(rrset_clone);
+					ldns_rr_list_deep_free(validkeys);
 					return LDNS_STATUS_MEM_ERR;
 				}
 			} 
@@ -1588,13 +1611,13 @@ ldns_nsec_covers_name(const ldns_rr *nsec, const ldns_rdf *name)
 	ldns_rdf *nsec_owner = ldns_rr_owner(nsec);
 	ldns_rdf *hash_next;
 	char *next_hash_str;
-	ldns_rdf *nsec_next;
+	ldns_rdf *nsec_next = NULL;
 	ldns_status status;
 	ldns_rdf *chopped_dname;
 	bool result;
 	
 	if (ldns_rr_get_type(nsec) == LDNS_RR_TYPE_NSEC) {
-		nsec_next = ldns_rr_rdf(nsec, 0);
+		nsec_next = ldns_rdf_clone(ldns_rr_rdf(nsec, 0));
 	} else if (ldns_rr_get_type(nsec) == LDNS_RR_TYPE_NSEC3) {
 		hash_next = ldns_rr_rdf(nsec, 1);
 		next_hash_str = ldns_rdf2str(hash_next);
