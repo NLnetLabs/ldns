@@ -181,7 +181,6 @@ main(int argc, char *argv[])
 				/* reserved for backward compatibility */
 				break;
 			case 'T':
-				warning("%s", "Trace enabled, ignoring any <type> arguments");
 				if (PURPOSE == DRILL_CHASE) {
 					fprintf(stderr, "-T and -S cannot be used at the same time.\n");
 					exit(EXIT_FAILURE);
@@ -818,6 +817,7 @@ main(int argc, char *argv[])
 	ldns_resolver_deep_free(cmdline_res);
 	ldns_rr_list_deep_free(key_list);
 	ldns_rr_list_deep_free(cmdline_rr_list);
+	ldns_rdf_deep_free(trace_start_name);
 	xfree(progname);
 /*
 	xfree(tsig_name);

@@ -193,6 +193,7 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 	ldns_rr_list *trusted_ds_rrs;
 	bool new_keys_trusted = false;
 	ldns_rr_list *current_correct_keys;
+	ldns_rr_list *dataset;
 	
 	/* glue handling */
 	ldns_rr_list *new_ns_addr;
@@ -345,6 +346,7 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 			goto done;
 		}
 
+
 		fprintf(stdout, ";; Domain: ");
 		ldns_rdf_print(stdout, labels[i]);
 		fprintf(stdout, "\n");
@@ -471,6 +473,25 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 			}
 
 			ldns_pkt_free(p);
+		} else {
+			/* if this is the last label, just verify the data and stop */
+			p = get_dnssec_pkt(res, labels[i], t);
+			pt = get_dnssec_rr(p, labels[i], t, &dataset, &key_sig_list);
+			if ((st = ldns_verify(dataset, key_sig_list, trusted_keys, NULL)) == LDNS_STATUS_OK) {
+				fprintf(stdout, "%s ", TRUST);
+				ldns_rr_list_print(stdout, dataset);
+			} else if ((st = ldns_verify(dataset, key_sig_list, correct_key_list, NULL)) == LDNS_STATUS_OK) {
+				fprintf(stdout, "%s ", SELF);
+				ldns_rr_list_print(stdout, dataset);
+			} else {
+				fprintf(stdout, "%s ", BOGUS);
+				ldns_rr_list_print(stdout, dataset);
+				printf(";; Error: %s\n", ldns_get_errorstr_by_id(st));
+			}
+			ldns_pkt_free(p);
+			ldns_rr_list_deep_free(dataset);
+			ldns_rr_list_deep_free(key_sig_list);
+			goto done;
 		}
 
 		new_nss_aaaa = NULL;
