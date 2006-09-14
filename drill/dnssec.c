@@ -296,9 +296,6 @@ ldns_nsec3_closest_encloser(ldns_rdf *qname, ldns_rr_type qtype, ldns_rr_list *n
 		if (verbosity >= 4) {
 			printf(";; no closest encloser found\n");
 		}
-	} else {
-		ldns_rdf_print(stdout, result);
-		printf("\n");
 	}
 	
 	/* todo checks from end of 6.2. here or in caller? */
@@ -349,6 +346,7 @@ get_dnssec_rr(ldns_pkt *p, ldns_rdf *name, ldns_rr_type t,
 	if (rrlist) {
 		*rrlist = rr;
 	}
+
 	if (pt == LDNS_PACKET_NXDOMAIN || pt == LDNS_PACKET_NODATA) {
 		return pt;
 	} else {
@@ -377,12 +375,13 @@ ldns_verify_denial(ldns_pkt *pkt, ldns_rdf *name, ldns_rr_type type, ldns_rr_lis
 		ldns_pkt_print(stdout, pkt);
 	}
 
-		/* Try to see if there are NSECS in the packet */
-		nsecs = ldns_pkt_rr_list_by_type(pkt, LDNS_RR_TYPE_NSEC, LDNS_SECTION_ANY_NOQUESTION);
-/*
-		result = LDNS_STATUS_CRYPTO_NO_RRSIG;
-*/
+	result = LDNS_STATUS_CRYPTO_NO_RRSIG;
+	/* Try to see if there are NSECS in the packet */
+	nsecs = ldns_pkt_rr_list_by_type(pkt, LDNS_RR_TYPE_NSEC, LDNS_SECTION_ANY_NOQUESTION);
+	if (nsecs) {
+	/*
 		result = LDNS_STATUS_OK;		
+	*/
 		ldns_rr_list2canonical(nsecs);
 		
 		for (nsec_i = 0; nsec_i < ldns_rr_list_rr_count(nsecs); nsec_i++) {
@@ -393,199 +392,203 @@ ldns_verify_denial(ldns_pkt *pkt, ldns_rdf *name, ldns_rr_type type, ldns_rr_lis
 			 * - name falls outside of nsec coverage
 			 */
 			if (ldns_dname_compare(ldns_rr_owner(ldns_rr_list_rr(nsecs, nsec_i)), name) == 0) {
-			/*
-			printf("CHECKING NSEC:\n");
-			ldns_rr_print(stdout, ldns_rr_list_rr(nsecs, nsec_i));
-			printf("DAWASEM\n");
-			*/
-			if (ldns_nsec_bitmap_covers_type(ldns_rr_rdf(ldns_rr_list_rr(nsecs, nsec_i), 2), type)) {
-				/* Error, according to the nsec this rrset is signed */
-				result = LDNS_STATUS_CRYPTO_NO_RRSIG;
-			} else {
-				/* ok nsec denies existence */
+				/*
+				printf("CHECKING NSEC:\n");
+				ldns_rr_print(stdout, ldns_rr_list_rr(nsecs, nsec_i));
+				printf("DAWASEM\n");
+				*/
+				if (ldns_nsec_bitmap_covers_type(ldns_rr_rdf(ldns_rr_list_rr(nsecs, nsec_i), 2), type)) {
+					/* Error, according to the nsec this rrset is signed */
+					result = LDNS_STATUS_CRYPTO_NO_RRSIG;
+				} else {
+					/* ok nsec denies existence */
+					if (verbosity >= 3) {
+						printf(";; Existence of data set with this type denied by NSEC\n");
+					}
+					if (result == LDNS_STATUS_OK) {
+						/*printf(";; Verifiably insecure.\n");*/
+						if (nsec_rrs && nsec_rr_sigs) {
+						}
+						ldns_rr_list_deep_free(nsecs);
+						return result;
+					}
+				}
+			} else if (ldns_nsec_covers_name(ldns_rr_list_rr(nsecs, nsec_i), name)) {
 				if (verbosity >= 3) {
-					printf(";; Existence of data set with this type denied by NSEC\n");
+					printf(";; Existence of data set with this name denied by NSEC\n");
 				}
 				if (result == LDNS_STATUS_OK) {
-					/*printf(";; Verifiably insecure.\n");*/
-					if (nsec_rrs && nsec_rr_sigs) {
-					}
+						if (nsec_rrs && nsec_rr_sigs) {
+							get_dnssec_rr(pkt, ldns_rr_owner(ldns_rr_list_rr(nsecs, nsec_i)), LDNS_RR_TYPE_NSEC, nsec_rrs, nsec_rr_sigs);
+						}
 					ldns_rr_list_deep_free(nsecs);
 					return result;
 				}
+			} else {
+				/* nsec has nothing to do with this data */
 			}
-		} else if (ldns_nsec_covers_name(ldns_rr_list_rr(nsecs, nsec_i), name)) {
-			if (verbosity >= 3) {
-				printf(";; Existence of data set with this name denied by NSEC\n");
-			}
-			if (result == LDNS_STATUS_OK) {
-					if (nsec_rrs && nsec_rr_sigs) {
-						get_dnssec_rr(pkt, ldns_rr_owner(ldns_rr_list_rr(nsecs, nsec_i)), LDNS_RR_TYPE_NSEC, nsec_rrs, nsec_rr_sigs);
-					}
-				ldns_rr_list_deep_free(nsecs);
-				return result;
-			}
-		} else {
-			/* nsec has nothing to do with this data */
 		}
-	}
-	ldns_rr_list_deep_free(nsecs);
-	
-	/* draft nsec3 version -07 */
-	nsecs = ldns_pkt_rr_list_by_type(pkt, LDNS_RR_TYPE_NSEC3, LDNS_SECTION_ANY_NOQUESTION);
-	nsec_i = 0;
-	/* TODO: verify that all nsecs have same iterations and hash values */
-	
-	if (ldns_rr_list_rr_count(nsecs) != 0) {
-		wildcard_name = ldns_dname_new_frm_str("*");
-		chopped_dname = ldns_dname_left_chop(name);
-		result = ldns_dname_cat(wildcard_name, chopped_dname);
-		ldns_rdf_deep_free(chopped_dname);
+		ldns_rr_list_deep_free(nsecs);
+	} else {
+		/* draft nsec3 version -07 */
+		nsecs = ldns_pkt_rr_list_by_type(pkt, LDNS_RR_TYPE_NSEC3, LDNS_SECTION_ANY_NOQUESTION);
 
-		if (ldns_pkt_get_rcode(pkt) == LDNS_RCODE_NXDOMAIN) {
-			/* Section 8.4 */
-			nsec3_ce = ldns_nsec3_closest_encloser(name, type, nsecs);
-			nsec3_wc_ce = ldns_nsec3_closest_encloser(wildcard_name, type, nsecs);				
-			if (nsec3_ce && nsec3_wc_ce) {
-				if (verbosity >= 3) {
-					printf(";; NAMEERR proven by closest encloser and wildcard encloser NSECS\n");
-				}
-			} else {
-				if (!nsec3_ce) {
-					if (verbosity >= 3) {
-						printf(";; NAMEERR oculd not be proven, missing closest encloser\n");
-					}
-				}
-				if (!nsec3_wc_ce) {
-					if (verbosity >= 3) {
-						printf(";; NAMEERR oculd not be proven, missing wildcard encloser\n");
-					}
-				}
-			}
-			ldns_rdf_deep_free(nsec3_ce);
-			ldns_rdf_deep_free(nsec3_wc_ce);
-		} else if (ldns_pkt_get_rcode(pkt) == LDNS_RCODE_NOERROR) {
-			nsec3_ex = ldns_nsec3_exact_match(name, type, nsecs);
-			if (nsec3_ex) {
-				nsec3_ce = NULL;
-			} else {
-				nsec3_ce = ldns_nsec3_closest_encloser(name, type, nsecs);
-			}
-			nsec3_wc_ex = ldns_nsec3_exact_match(name, type, nsecs);
-			if (nsec3_wc_ex) {
-				nsec3_wc_ce = NULL;
-			} else {
-				nsec3_wc_ce = ldns_nsec3_closest_encloser(wildcard_name, type, nsecs);				
-			}
-			nsec3_wc_ex = ldns_nsec3_exact_match(name, type, nsecs);
-			if (!nsec3_wc_ex) {
-				if (type != LDNS_RR_TYPE_DS) {
-					/* Section 8.5 */
-					nsec3_ex = ldns_nsec3_exact_match(name, type, nsecs);
-					if (nsec3_ex && !ldns_nsec_bitmap_covers_type(ldns_nsec3_bitmap(nsec3_ex), type)) {
-						// ok
-						if (verbosity >= 3) {
-							printf(";; NODATA/NOERROR proven for type != DS (draft nsec3-07 section 8.5.)\n");
-						}
-					} else {
-						if (verbosity >= 3) {
-							printf(";; NODATA/NOERROR NOT proven for type != DS (draft nsec3-07 section 8.5.)\n");
-						}
-						result = LDNS_STATUS_ERR;
-					}
-				} else {
-					/* Section 8.6 */
-					nsec3_ex = ldns_nsec3_exact_match(name, type, nsecs);
+		if (nsecs) {
+			nsec_i = 0;
+			/* TODO: verify that all nsecs have same iterations and hash values */
+			
+			if (ldns_rr_list_rr_count(nsecs) != 0) {
+				wildcard_name = ldns_dname_new_frm_str("*");
+				chopped_dname = ldns_dname_left_chop(name);
+				result = ldns_dname_cat(wildcard_name, chopped_dname);
+				ldns_rdf_deep_free(chopped_dname);
+
+				if (ldns_pkt_get_rcode(pkt) == LDNS_RCODE_NXDOMAIN) {
+					/* Section 8.4 */
 					nsec3_ce = ldns_nsec3_closest_encloser(name, type, nsecs);
-					if (!nsec3_ex) {
-						nsec3_ce = ldns_nsec3_closest_encloser(name, type, nsecs);
-						nsec3_ex = ldns_nsec3_exact_match(nsec3_ce, type, nsecs);
-						if (nsec3_ex && ldns_nsec3_optout(nsec3_ex)) {
-							if (verbosity >= 3) {
-								printf(";; DS record in optout range of NSEC3 (draft nsec3-07 section 8.6.)");
-							}
-						} else {
-							if (verbosity >= 3) {
-								printf(";; DS record in range of NSEC3 but OPTOUT not set (draft nsec3-07 section 8.6.)\n");
-							}
-							result = LDNS_STATUS_ERR;
+					nsec3_wc_ce = ldns_nsec3_closest_encloser(wildcard_name, type, nsecs);				
+					if (nsec3_ce && nsec3_wc_ce) {
+						if (verbosity >= 3) {
+							printf(";; NAMEERR proven by closest encloser and wildcard encloser NSEC3S (8.4)\n");
 						}
 					} else {
-						if (nsec3_ex && !ldns_nsec_bitmap_covers_type(ldns_nsec3_bitmap(nsec3_ex), type)) {
-							// ok
+						if (!nsec3_ce) {
 							if (verbosity >= 3) {
-								printf(";; NODATA/NOERROR proven for type == DS (draft nsec3-07 section 8.6.)\n");
+								printf(";; NAMEERR oculd not be proven, missing closest encloser (8.4)\n");
 							}
-						} else {
+						}
+						if (!nsec3_wc_ce) {
 							if (verbosity >= 3) {
-								printf(";; NODATA/NOERROR NOT proven for type == DS (draft nsec3-07 section 8.6.)\n");
+								printf(";; NAMEERR oculd not be proven, missing wildcard encloser (8.4)\n");
 							}
-							result = LDNS_STATUS_ERR;
 						}
 					}
 					ldns_rdf_deep_free(nsec3_ce);
-				}
-			} else {
-				if (!ldns_nsec_bitmap_covers_type(ldns_nsec3_bitmap(nsec3_wc_ex), type)) {
-					/* Section 8.7 */
-					nsec3_ce = ldns_nsec3_closest_encloser(name, type, nsecs);
-					if (nsec3_ce) {
-						wildcard_name = ldns_dname_new_frm_str("*");
-						result = ldns_dname_cat(wildcard_name, nsec3_ce);
-						nsec3_wc_ex = ldns_nsec3_exact_match(wildcard_name, type, nsecs);
-						if (nsec3_wc_ex) {
-							if (verbosity >= 3) {
-								printf(";; Wilcard exists but not for this type (draft nsec3-07 section 8.7.)\n");
-							}
-						} else {
-							if (verbosity >= 3) {
-								printf(";; Error proving wildcard for different type, no proof for wildcard of closest encloser (draft nsec3-07 section 8.7.)\n");
-							}
-						}
-					} else {
-						if (verbosity >= 3) {
-							printf(";; NODATA/NOERROR wildcard for other type, error, no closest encloser (draft nsec3-07 section 8.7.)\n");
-						}
-						result = LDNS_STATUS_ERR;
-					}
-					ldns_rdf_deep_free(nsec3_ce);
-				} else {
-					/* Section 8.8 */
-					/* TODO this is not right */
-					anc_name = ldns_dname_left_chop(wildcard_name);
-					nsec3_wc_ce = ldns_nsec3_closest_encloser(anc_name, type, nsecs);
-					if (nsec3_wc_ce) {
-						/* must be immediate ancestor */
-						if (ldns_dname_compare(anc_name, nsec3_wc_ce) == 0) {
-							if (verbosity >= 3) {
-								printf(";; wildcard proven (draft nsec3-07 section 8.8.)\n");
-							}
-						} else {
-							if (verbosity >= 3) {
-								printf(";; closest encloser is not immediate parent of generating wildcard (8.8)\n");
-							}
-							result = LDNS_STATUS_ERR;
-						}
-					} else {
-						if (verbosity >= 3) {
-							printf(";; Error finding wildcard closest encloser, no proof for wildcard (draft nsec3-07 section 8.8.)\n");
-						}
-						result = LDNS_STATUS_ERR;
-					}
-					ldns_rdf_deep_free(anc_name);
 					ldns_rdf_deep_free(nsec3_wc_ce);
-				}
-				/* 8.9 still missing? */
-			}
+				} else if (ldns_pkt_get_rcode(pkt) == LDNS_RCODE_NOERROR) {
+					nsec3_ex = ldns_nsec3_exact_match(name, type, nsecs);
+					if (nsec3_ex) {
+						nsec3_ce = NULL;
+					} else {
+						nsec3_ce = ldns_nsec3_closest_encloser(name, type, nsecs);
+					}
+					nsec3_wc_ex = ldns_nsec3_exact_match(name, type, nsecs);
+					if (nsec3_wc_ex) {
+						nsec3_wc_ce = NULL;
+					} else {
+						nsec3_wc_ce = ldns_nsec3_closest_encloser(wildcard_name, type, nsecs);				
+					}
+					nsec3_wc_ex = ldns_nsec3_exact_match(name, type, nsecs);
+					if (nsec3_wc_ex) {
+						if (type != LDNS_RR_TYPE_DS) {
+							/* Section 8.5 */
+							nsec3_ex = ldns_nsec3_exact_match(name, type, nsecs);
+							if (nsec3_ex && !ldns_nsec_bitmap_covers_type(ldns_nsec3_bitmap(nsec3_ex), type)) {
+								// ok
+								if (verbosity >= 3) {
+									printf(";; NODATA/NOERROR proven for type != DS (draft nsec3-07 section 8.5.)\n");
+								}
+							} else {
+								if (verbosity >= 3) {
+									printf(";; NODATA/NOERROR NOT proven for type != DS (draft nsec3-07 section 8.5.)\n");
+								}
+								result = LDNS_STATUS_ERR;
+							}
+						} else {
+							/* Section 8.6 */
+							nsec3_ex = ldns_nsec3_exact_match(name, type, nsecs);
+							nsec3_ce = ldns_nsec3_closest_encloser(name, type, nsecs);
+							if (!nsec3_ex) {
+								nsec3_ce = ldns_nsec3_closest_encloser(name, type, nsecs);
+								nsec3_ex = ldns_nsec3_exact_match(nsec3_ce, type, nsecs);
+								if (nsec3_ex && ldns_nsec3_optout(nsec3_ex)) {
+									if (verbosity >= 3) {
+										printf(";; DS record in optout range of NSEC3 (draft nsec3-07 section 8.6.)");
+									}
+								} else {
+									if (verbosity >= 3) {
+										printf(";; DS record in range of NSEC3 but OPTOUT not set (draft nsec3-07 section 8.6.)\n");
+									}
+									result = LDNS_STATUS_ERR;
+								}
+							} else {
+								if (nsec3_ex && !ldns_nsec_bitmap_covers_type(ldns_nsec3_bitmap(nsec3_ex), type)) {
+									// ok
+									if (verbosity >= 3) {
+										printf(";; NODATA/NOERROR proven for type == DS (draft nsec3-07 section 8.6.)\n");
+									}
+								} else {
+									if (verbosity >= 3) {
+										printf(";; NODATA/NOERROR NOT proven for type == DS (draft nsec3-07 section 8.6.)\n");
+									}
+									result = LDNS_STATUS_ERR;
+								}
+							}
+							ldns_rdf_deep_free(nsec3_ce);
+						}
+					} else {
+						if (!ldns_nsec_bitmap_covers_type(ldns_nsec3_bitmap(nsec3_wc_ex), type)) {
+							/* Section 8.7 */
+							nsec3_ce = ldns_nsec3_closest_encloser(name, type, nsecs);
+							if (nsec3_ce) {
+								wildcard_name = ldns_dname_new_frm_str("*");
+								result = ldns_dname_cat(wildcard_name, nsec3_ce);
+								nsec3_wc_ex = ldns_nsec3_exact_match(wildcard_name, type, nsecs);
+								if (nsec3_wc_ex) {
+									if (verbosity >= 3) {
+										printf(";; Wilcard exists but not for this type (draft nsec3-07 section 8.7.)\n");
+									}
+								} else {
+									if (verbosity >= 3) {
+										printf(";; Error proving wildcard for different type, no proof for wildcard of closest encloser (draft nsec3-07 section 8.7.)\n");
+									}
+								}
+							} else {
+								if (verbosity >= 3) {
+									printf(";; NODATA/NOERROR wildcard for other type, error, no closest encloser (draft nsec3-07 section 8.7.)\n");
+								}
+								result = LDNS_STATUS_ERR;
+							}
+							ldns_rdf_deep_free(nsec3_ce);
+						} else {
+							/* Section 8.8 */
+							/* TODO this is not right */
+							anc_name = ldns_dname_left_chop(wildcard_name);
+							nsec3_wc_ce = ldns_nsec3_closest_encloser(anc_name, type, nsecs);
+							if (nsec3_wc_ce) {
+								/* must be immediate ancestor */
+								if (ldns_dname_compare(anc_name, nsec3_wc_ce) == 0) {
+									if (verbosity >= 3) {
+										printf(";; wildcard proven (draft nsec3-07 section 8.8.)\n");
+									}
+								} else {
+									if (verbosity >= 3) {
+										printf(";; closest encloser is not immediate parent of generating wildcard (8.8)\n");
+									}
+									result = LDNS_STATUS_ERR;
+								}
+							} else {
+								if (verbosity >= 3) {
+									printf(";; Error finding wildcard closest encloser, no proof for wildcard (draft nsec3-07 section 8.8.)\n");
+								}
+								result = LDNS_STATUS_ERR;
+							}
+							ldns_rdf_deep_free(anc_name);
+							ldns_rdf_deep_free(nsec3_wc_ce);
+						}
+						/* 8.9 still missing? */
+					}
 
+				}
+				ldns_rdf_deep_free(wildcard_name);
+			}
+			
+			if (nsecs && nsec_rrs && nsec_rr_sigs) {
+				get_dnssec_rr(pkt, ldns_rr_owner(ldns_rr_list_rr(nsecs, 0)), LDNS_RR_TYPE_NSEC3, nsec_rrs, nsec_rr_sigs);
+			}
+			ldns_rr_list_deep_free(nsecs);
 		}
-		ldns_rdf_deep_free(wildcard_name);
 	}
-	
-	if (nsec_rrs && nsec_rr_sigs) {
-		get_dnssec_rr(pkt, ldns_rr_owner(ldns_rr_list_rr(nsecs, 0)), LDNS_RR_TYPE_NSEC3, nsec_rrs, nsec_rr_sigs);
-	}
-	ldns_rr_list_deep_free(nsecs);
 	return result;
 }
 

@@ -14,6 +14,7 @@
 #define SELF "[S]"  /* self sig ok */
 #define TRUST "[T]" /* chain from parent */
 #define BOGUS "[B]" /* bogus */
+#define UNSIGNED "[U]" /* no relevant dnssec data found */
 
 #if 0
 /* See if there is a key/ds in trusted that matches
@@ -69,6 +70,9 @@ get_dnssec_pkt(ldns_resolver *r, ldns_rdf *name, ldns_rr_type t)
 	if (!p) {
 		return NULL;
 	} else {
+		if (verbosity >= 5) {
+			ldns_pkt_print(stdout, p);
+		}
 		return p;
 	}
 }
@@ -247,6 +251,10 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 	for(i = (ssize_t)labels_count + 1; i > 0; i--) {
 		status = ldns_resolver_send(&local_p, res, labels[i], LDNS_RR_TYPE_NS, c, 0);
 
+		if (verbosity >= 5) {
+			ldns_pkt_print(stdout, local_p);
+		}
+
 		new_nss = ldns_pkt_rr_list_by_type(local_p,
 					LDNS_RR_TYPE_NS, LDNS_SECTION_ANSWER);
  		if (!new_nss) {
@@ -255,93 +263,112 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 					LDNS_RR_TYPE_NS, LDNS_SECTION_AUTHORITY);
 		}
 
-		for(j = 0; j < ldns_rr_list_rr_count(new_nss); j++) {
-			ns_rr = ldns_rr_list_rr(new_nss, j);
-			pop = ldns_rr_rdf(ns_rr, 0);
-			if (!pop) {
-				printf("nopo\n");
-				break;
-			}
-			/* retrieve it's addresses */
-			/* trust glue? */
-			new_ns_addr = NULL;
-			if (ldns_dname_is_subdomain(pop, labels[i])) {
-				new_ns_addr = ldns_pkt_rr_list_by_name_and_type(local_p, pop, LDNS_RR_TYPE_A, LDNS_SECTION_ADDITIONAL);
-			}
-			if (!new_ns_addr || ldns_rr_list_rr_count(new_ns_addr) == 0) {
-				new_ns_addr = ldns_get_rr_list_addr_by_name(res, pop, c, 0);
-			}
-			if (!new_ns_addr || ldns_rr_list_rr_count(new_ns_addr) == 0) {
-				new_ns_addr = ldns_get_rr_list_addr_by_name(local_res, pop, c, 0);
-			}
+		/* if this is the final step there might not be nameserver records
+		   of course if the data is in the apex, there are, so cover both
+		   cases */
+		if (new_nss || i > 1) {
+			for(j = 0; j < ldns_rr_list_rr_count(new_nss); j++) {
+				ns_rr = ldns_rr_list_rr(new_nss, j);
+				pop = ldns_rr_rdf(ns_rr, 0);
+				if (!pop) {
+					printf("nopo\n");
+					break;
+				}
+				/* retrieve it's addresses */
+				/* trust glue? */
+				new_ns_addr = NULL;
+				if (ldns_dname_is_subdomain(pop, labels[i])) {
+					new_ns_addr = ldns_pkt_rr_list_by_name_and_type(local_p, pop, LDNS_RR_TYPE_A, LDNS_SECTION_ADDITIONAL);
+				}
+				if (!new_ns_addr || ldns_rr_list_rr_count(new_ns_addr) == 0) {
+					new_ns_addr = ldns_get_rr_list_addr_by_name(res, pop, c, 0);
+				}
+				if (!new_ns_addr || ldns_rr_list_rr_count(new_ns_addr) == 0) {
+					new_ns_addr = ldns_get_rr_list_addr_by_name(local_res, pop, c, 0);
+				}
 
-			if (new_ns_addr) {
-				old_ns_addr = ns_addr;
-				ns_addr = ldns_rr_list_cat_clone(ns_addr, new_ns_addr);
-				ldns_rr_list_deep_free(old_ns_addr);
+				if (new_ns_addr) {
+					old_ns_addr = ns_addr;
+					ns_addr = ldns_rr_list_cat_clone(ns_addr, new_ns_addr);
+					ldns_rr_list_deep_free(old_ns_addr);
+				}
+				ldns_rr_list_deep_free(new_ns_addr);
 			}
-			ldns_rr_list_deep_free(new_ns_addr);
-		}
-		ldns_rr_list_deep_free(new_nss);
-		
-		if (ns_addr) {
-			remove_resolver_nameservers(res);
+			ldns_rr_list_deep_free(new_nss);
+			
+			if (ns_addr) {
+				remove_resolver_nameservers(res);
 
-			if (ldns_resolver_push_nameserver_rr_list(res, ns_addr) != 
-					LDNS_STATUS_OK) {
-				error("Error adding new nameservers");
-				ldns_pkt_free(local_p); 
+				if (ldns_resolver_push_nameserver_rr_list(res, ns_addr) != 
+						LDNS_STATUS_OK) {
+					error("Error adding new nameservers");
+					ldns_pkt_free(local_p); 
+					goto done;
+				}
+				ldns_rr_list_deep_free(ns_addr);
+			} else {
+				status = ldns_verify_denial(local_p, labels[i], LDNS_RR_TYPE_NS, &nsec_rrs, &nsec_rr_sigs);
+
+				/* verify the nsec3 themselves*/
+				if (verbosity >= 4) {
+					printf("NSEC(3) Records to verify:\n");
+					ldns_rr_list_print(stdout, nsec_rrs);
+					printf("With signatures:\n");
+					ldns_rr_list_print(stdout, nsec_rr_sigs);
+					printf("correct keys:\n");
+					ldns_rr_list_print(stdout, correct_key_list);
+				}
+				
+				if ((st = ldns_verify(nsec_rrs, nsec_rr_sigs, trusted_keys, NULL)) == LDNS_STATUS_OK) {
+					fprintf(stdout, "%s ", TRUST);
+					fprintf(stdout, "Existence denied: ");
+					ldns_rdf_print(stdout, labels[i]);
+/*
+					if (descriptor && descriptor->_name) {
+						printf(" %s", descriptor->_name);
+					} else {
+						printf(" TYPE%u", t);
+					}
+*/					fprintf(stdout, " NS\n");
+				} else if ((st = ldns_verify(nsec_rrs, nsec_rr_sigs, correct_key_list, NULL)) == LDNS_STATUS_OK) {
+					fprintf(stdout, "%s ", SELF);
+					fprintf(stdout, "Existence denied: ");
+					ldns_rdf_print(stdout, labels[i]);
+/*
+					if (descriptor && descriptor->_name) {
+						printf(" %s", descriptor->_name);
+					} else {
+						printf(" TYPE%u", t);
+					}
+*/
+					fprintf(stdout, " NS\n");
+				} else {
+					fprintf(stdout, "%s ", BOGUS);
+					printf(";; Error verifying denial of existence for name ");
+					ldns_rdf_print(stdout, labels[i]);
+/*
+					printf(" type ");
+					if (descriptor && descriptor->_name) {
+						printf("%s", descriptor->_name);
+					} else {
+						printf("TYPE%u", t);
+					}
+*/					printf("NS: %s\n", ldns_get_errorstr_by_id(st));
+				}
+				
+				ldns_rr_list_deep_free(nsec_rrs);
+				ldns_rr_list_deep_free(nsec_rr_sigs);
+				ldns_pkt_free(local_p);
 				goto done;
 			}
-			ldns_rr_list_deep_free(ns_addr);
-		} else {
-			status = ldns_verify_denial(local_p, name, LDNS_RR_TYPE_NS, &nsec_rrs, &nsec_rr_sigs);
-
-			/* verify the nsec3 themselves*/
-			if (verbosity >= 4) {
-				printf("NSEC(3) Records to verify:\n");
-				ldns_rr_list_print(stdout, nsec_rrs);
-				printf("With signatures:\n");
-				ldns_rr_list_print(stdout, nsec_rr_sigs);
-				printf("correct keys:\n");
-				ldns_rr_list_print(stdout, correct_key_list);
-			}
 			
-			if ((st = ldns_verify(nsec_rrs, nsec_rr_sigs, trusted_keys, NULL)) == LDNS_STATUS_OK) {
-				fprintf(stdout, "%s ", TRUST);
-				fprintf(stdout, "No such name: ");
-				ldns_rdf_print(stdout, name);
-				fprintf(stdout, "\n");
-			} else if ((st = ldns_verify(nsec_rrs, nsec_rr_sigs, correct_key_list, NULL)) == LDNS_STATUS_OK) {
-				fprintf(stdout, "%s ", SELF);
-				fprintf(stdout, "No such name: ");
-				ldns_rdf_print(stdout, name);
-				fprintf(stdout, "\n");
-			} else {
-				fprintf(stdout, "%s ", BOGUS);
-				printf(";; Error verifying denial of existence for name ");
-				ldns_rdf_print(stdout, name);
-				printf(" type ");
-				if (descriptor && descriptor->_name) {
-					printf("%s", descriptor->_name);
-				} else {
-					printf("TYPE%u", t);
-				}
-				printf(": %s\n", ldns_get_errorstr_by_id(st));
+			if (ldns_resolver_nameserver_count(res) == 0) {
+				error("No nameservers found for this node");
+				goto done;
 			}
-			
-			ldns_rr_list_deep_free(nsec_rrs);
-			ldns_rr_list_deep_free(nsec_rr_sigs);
-			ldns_pkt_free(local_p);
-			goto done;
 		}
+
 		ldns_pkt_free(local_p);
-		
-		if (ldns_resolver_nameserver_count(res) == 0) {
-			error("No nameservers found for this node");
-			goto done;
-		}
-
 
 		fprintf(stdout, ";; Domain: ");
 		ldns_rdf_print(stdout, labels[i]);
@@ -394,8 +421,8 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 						ldns_rr_list_free(key_list);
 						key_list = NULL;
 					} else {
-						if (verbosity >= 3) {
-							printf("SIG OK BUT NOT FROM TRUSTED KEY/DS\n");
+						if (verbosity >= 2) {
+							printf(";; Signature ok but no chain to a trusted key or ds record\n");
 						}
 						print_rr_list_abbr(stdout, key_list, SELF);
 						ldns_rr_list_deep_free(key_list);
@@ -409,7 +436,7 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 				ldns_rr_list_free(current_correct_keys);
 				current_correct_keys = NULL;
 			} else {
-				mesg("No DNSKEY");
+				mesg(";; No DNSKEY record found");
 			}
 		}
 
@@ -428,7 +455,6 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 			}
 			if (ds_sig_list) {
 				if (ds_list) {
-
 					if (verbosity >= 4) {
 						printf("VERIFYING:\n");
 						printf("DS LIST:\n");
@@ -468,6 +494,10 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 
 					ldns_rr_list_free(current_correct_keys);
 					current_correct_keys = NULL;
+				} else {
+					if (verbosity >= 2) {
+						printf(";; No ds record for delegation\n");
+					}
 				}
 			}
 
@@ -477,16 +507,21 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 			p = get_dnssec_pkt(res, labels[i], t);
 			pt = get_dnssec_rr(p, labels[i], t, &dataset, &key_sig_list);
 			if (dataset && ldns_rr_list_rr_count(dataset) > 0) {
-				if ((st = ldns_verify(dataset, key_sig_list, trusted_keys, NULL)) == LDNS_STATUS_OK) {
-					fprintf(stdout, "%s ", TRUST);
-					ldns_rr_list_print(stdout, dataset);
-				} else if ((st = ldns_verify(dataset, key_sig_list, correct_key_list, NULL)) == LDNS_STATUS_OK) {
-					fprintf(stdout, "%s ", SELF);
-					ldns_rr_list_print(stdout, dataset);
+				if (key_sig_list) {
+					if ((st = ldns_verify(dataset, key_sig_list, trusted_keys, NULL)) == LDNS_STATUS_OK) {
+						fprintf(stdout, "%s ", TRUST);
+						ldns_rr_list_print(stdout, dataset);
+					} else if ((st = ldns_verify(dataset, key_sig_list, correct_key_list, NULL)) == LDNS_STATUS_OK) {
+						fprintf(stdout, "%s ", SELF);
+						ldns_rr_list_print(stdout, dataset);
+					} else {
+						fprintf(stdout, "%s ", BOGUS);
+						ldns_rr_list_print(stdout, dataset);
+						printf(";; Error: %s\n", ldns_get_errorstr_by_id(st));
+					}
 				} else {
-					fprintf(stdout, "%s ", BOGUS);
+					fprintf(stdout, "%s ", UNSIGNED);
 					ldns_rr_list_print(stdout, dataset);
-					printf(";; Error: %s\n", ldns_get_errorstr_by_id(st));
 				}
 			} else {
 				status = ldns_verify_denial(p, name, t, &nsec_rrs, &nsec_rr_sigs);
@@ -503,13 +538,23 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 					
 					if ((st = ldns_verify(nsec_rrs, nsec_rr_sigs, trusted_keys, NULL)) == LDNS_STATUS_OK) {
 						fprintf(stdout, "%s ", TRUST);
-						fprintf(stdout, "No such type at: ");
+						fprintf(stdout, "Existence denied: ");
 						ldns_rdf_print(stdout, name);
+						if (descriptor && descriptor->_name) {
+							printf(" %s", descriptor->_name);
+						} else {
+							printf(" TYPE%u", t);
+						}
 						fprintf(stdout, "\n");
 					} else if ((st = ldns_verify(nsec_rrs, nsec_rr_sigs, correct_key_list, NULL)) == LDNS_STATUS_OK) {
 						fprintf(stdout, "%s ", SELF);
-						fprintf(stdout, "No such type at: ");
+						fprintf(stdout, "Existence denied: ");
 						ldns_rdf_print(stdout, name);
+						if (descriptor && descriptor->_name) {
+							printf(" %s", descriptor->_name);
+						} else {
+							printf(" TYPE%u", t);
+						}
 						fprintf(stdout, "\n");
 					} else {
 						fprintf(stdout, "%s ", BOGUS);
@@ -527,7 +572,17 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 					ldns_rr_list_deep_free(nsec_rrs);
 					ldns_rr_list_deep_free(nsec_rr_sigs);
 				} else {
-					printf("[Error] could not verify denial of existence\n");
+					printf("%s ", UNSIGNED);
+					printf("No data found for: ");
+					ldns_rdf_print(stdout, name);
+					printf(" type ");
+					if (descriptor && descriptor->_name) {
+						printf("%s", descriptor->_name);
+					} else {
+						printf("TYPE%u", t);
+					}
+					printf("\n");
+					/*printf("[Error] could not verify denial of existence\n");*/
 				
 				}
 			}
