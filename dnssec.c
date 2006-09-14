@@ -188,6 +188,7 @@ ldns_verify_rrsig_keylist(ldns_rr_list *rrset, ldns_rr *rrsig, ldns_rr_list *key
 			ldns_rr_get_type(ldns_rr_list_rr(rrset_clone, 0))) {
 		ldns_rr_list_deep_free(rrset_clone);
 		ldns_rr_list_deep_free(validkeys);
+
 		return LDNS_STATUS_CRYPTO_TYPE_COVERED_ERR;
 	}
 	
@@ -326,7 +327,9 @@ ldns_verify_rrsig_keylist(ldns_rr_list *rrset, ldns_rr *rrsig, ldns_rr_list *key
 				}
 			} 
 		} else {
-			result = LDNS_STATUS_CRYPTO_NO_MATCHING_KEYTAG_DNSKEY;
+			if (result == LDNS_STATUS_ERR) {
+				result = LDNS_STATUS_CRYPTO_NO_MATCHING_KEYTAG_DNSKEY;
+			}
 		}
 	}
 

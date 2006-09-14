@@ -313,7 +313,7 @@ get_dnssec_rr(ldns_pkt *p, ldns_rdf *name, ldns_rr_type t,
 	ldns_pkt_type pt = LDNS_PACKET_UNKNOWN;
 	ldns_rr_list *rr = NULL;
 	ldns_rr_list *sigs = NULL;
-	ldns_rr_list *osigs;
+	size_t i;
 
 	if (!p) {
 		return LDNS_PACKET_UNKNOWN;
@@ -338,9 +338,14 @@ get_dnssec_rr(ldns_pkt *p, ldns_rdf *name, ldns_rr_type t,
                                LDNS_SECTION_AUTHORITY);
 	}
 	if (sig) {
-		osigs = *sig;
-		*sig = ldns_rr_list_cat_clone(*sig, sigs);
-/*		ldns_rr_list_deep_free(osigs);*/
+		*sig = ldns_rr_list_new();
+		for (i = 0; i < ldns_rr_list_rr_count(sigs); i++) {
+			/* only add the sigs that cover this type */
+			if (ldns_rdf2rr_type(ldns_rr_rrsig_typecovered(ldns_rr_list_rr(sigs, i))) ==
+			    t) {
+			 	ldns_rr_list_push_rr(*sig, ldns_rr_clone(ldns_rr_list_rr(sigs, i)));   
+			}
+		}
 	}
 	ldns_rr_list_deep_free(sigs);
 	if (rrlist) {
@@ -405,25 +410,22 @@ ldns_verify_denial(ldns_pkt *pkt, ldns_rdf *name, ldns_rr_type type, ldns_rr_lis
 					if (verbosity >= 3) {
 						printf(";; Existence of data set with this type denied by NSEC\n");
 					}
-					if (result == LDNS_STATUS_OK) {
 						/*printf(";; Verifiably insecure.\n");*/
 						if (nsec_rrs && nsec_rr_sigs) {
+							get_dnssec_rr(pkt, ldns_rr_owner(ldns_rr_list_rr(nsecs, nsec_i)), LDNS_RR_TYPE_NSEC, nsec_rrs, nsec_rr_sigs);
 						}
 						ldns_rr_list_deep_free(nsecs);
-						return result;
-					}
+						return LDNS_STATUS_OK;
 				}
 			} else if (ldns_nsec_covers_name(ldns_rr_list_rr(nsecs, nsec_i), name)) {
 				if (verbosity >= 3) {
 					printf(";; Existence of data set with this name denied by NSEC\n");
 				}
-				if (result == LDNS_STATUS_OK) {
-						if (nsec_rrs && nsec_rr_sigs) {
-							get_dnssec_rr(pkt, ldns_rr_owner(ldns_rr_list_rr(nsecs, nsec_i)), LDNS_RR_TYPE_NSEC, nsec_rrs, nsec_rr_sigs);
-						}
-					ldns_rr_list_deep_free(nsecs);
-					return result;
+				if (nsec_rrs && nsec_rr_sigs) {
+					get_dnssec_rr(pkt, ldns_rr_owner(ldns_rr_list_rr(nsecs, nsec_i)), LDNS_RR_TYPE_NSEC, nsec_rrs, nsec_rr_sigs);
 				}
+				ldns_rr_list_deep_free(nsecs);
+				return LDNS_STATUS_OK;
 			} else {
 				/* nsec has nothing to do with this data */
 			}

@@ -436,7 +436,9 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 				ldns_rr_list_free(current_correct_keys);
 				current_correct_keys = NULL;
 			} else {
-				mesg(";; No DNSKEY record found");
+				printf(";; No DNSKEY record found for ");
+				ldns_rdf_print(stdout, labels[i]);
+				printf("\n");
 			}
 		}
 
@@ -534,7 +536,10 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 						ldns_rr_list_print(stdout, nsec_rr_sigs);
 						printf("correct keys at %p:\n", correct_key_list);
 						ldns_rr_list_print(stdout, correct_key_list);
-					}
+/*
+						printf("trusted keys at %p:\n", trusted_keys);
+						ldns_rr_list_print(stdout, trusted_keys);
+*/					}
 					
 					if ((st = ldns_verify(nsec_rrs, nsec_rr_sigs, trusted_keys, NULL)) == LDNS_STATUS_OK) {
 						fprintf(stdout, "%s ", TRUST);
@@ -572,6 +577,7 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 					ldns_rr_list_deep_free(nsec_rrs);
 					ldns_rr_list_deep_free(nsec_rr_sigs);
 				} else {
+					printf("sate: %s\n", ldns_get_errorstr_by_id(status));
 					printf("%s ", UNSIGNED);
 					printf("No data found for: ");
 					ldns_rdf_print(stdout, name);
