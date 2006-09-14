@@ -509,7 +509,7 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 			p = get_dnssec_pkt(res, labels[i], t);
 			pt = get_dnssec_rr(p, labels[i], t, &dataset, &key_sig_list);
 			if (dataset && ldns_rr_list_rr_count(dataset) > 0) {
-				if (key_sig_list) {
+				if (key_sig_list && ldns_rr_list_rr_count(key_sig_list) > 0) {
 					if ((st = ldns_verify(dataset, key_sig_list, trusted_keys, NULL)) == LDNS_STATUS_OK) {
 						fprintf(stdout, "%s ", TRUST);
 						ldns_rr_list_print(stdout, dataset);
