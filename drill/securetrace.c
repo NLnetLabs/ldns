@@ -577,7 +577,6 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 					ldns_rr_list_deep_free(nsec_rrs);
 					ldns_rr_list_deep_free(nsec_rr_sigs);
 				} else {
-					printf("sate: %s\n", ldns_get_errorstr_by_id(status));
 					printf("%s ", UNSIGNED);
 					printf("No data found for: ");
 					ldns_rdf_print(stdout, name);
