@@ -13,7 +13,7 @@
 #define IP6_ARPA_MAX_LEN 65
 
 /* query debug, 2 hex dumps */
-int8_t		verbosity; /* -1, be quiet, 1 show question, 2 show hex */
+int		verbosity; /* 0-5 */
 
 static void
 usage(FILE *stream, const char *progname)

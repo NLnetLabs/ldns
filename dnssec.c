@@ -1185,9 +1185,9 @@ ldns_nsec3_hash_name(ldns_rdf *name, uint8_t algorithm, uint32_t iterations, uin
 	ldns_rdf *hashed_owner;
 	char *hashed_owner_str;
 	char *hashed_owner_b32;
+	int hashed_owner_b32_len;
 	uint32_t cur_it;
 	char *hash = NULL;
-	size_t i;
 	ldns_status status;
 	
 	/* prepare the owner name according to the draft section bla */
@@ -1234,15 +1234,16 @@ printf("\n\n");
 exit(0);
 */
 	hashed_owner_b32 = LDNS_XMALLOC(char, b32_ntop_calculate_size(hashed_owner_str_len));
-	i = (size_t) b32_ntop_extended_hex((uint8_t *) hashed_owner_str, hashed_owner_str_len, hashed_owner_b32, b32_ntop_calculate_size(hashed_owner_str_len));
-	if (i < 1) {
+	hashed_owner_b32_len = (size_t) b32_ntop_extended_hex((uint8_t *) hashed_owner_str, hashed_owner_str_len, hashed_owner_b32, b32_ntop_calculate_size(hashed_owner_str_len));
+	if (hashed_owner_b32_len < 1) {
 		fprintf(stderr, "Error in base32 extended hex encoding of hashed owner name (name: ");
 		ldns_rdf_print(stderr, name);
-		fprintf(stderr, ", return code: %u)\n", (unsigned int) i);
+		fprintf(stderr, ", return code: %d)\n", hashed_owner_b32_len);
 		exit(4);
 	}
-	hashed_owner_str_len = i;
-        hashed_owner_b32[hashed_owner_str_len] = '\0';
+	hashed_owner_str_len = hashed_owner_b32_len;
+        hashed_owner_b32[hashed_owner_b32_len] = '\0';
+
 	status = ldns_str2rdf_dname(&hashed_owner, hashed_owner_b32);
 	if (status != LDNS_STATUS_OK) {
 		fprintf(stderr, "Error creating rdf from %s\n", hashed_owner_b32);
@@ -2073,11 +2074,12 @@ exit(0);
 								salt_length,
 								salt);
 
+/*
 					printf("Created NSEC3 for: ");
 					ldns_rdf_print(stdout, cur_dname);
 					printf(":\n");
 					ldns_rr_print(stdout, nsec);
-
+*/
 					ldns_rr_set_ttl(nsec, ldns_rdf2native_int32(ldns_rr_rdf(ldns_zone_soa(zone), 6)));
 					ldns_rr_list_push_rr(nsec3_rrs, nsec);
 					/*start_dname = next_dname;*/
@@ -2099,10 +2101,12 @@ exit(0);
 	ldns_rr_list_free(orig_zone_rrs);
 	ldns_rr_set_ttl(nsec, ldns_rdf2native_int32(ldns_rr_rdf(ldns_zone_soa(zone), 6)));
 
+/*
 	printf("Created NSEC3 for: ");
 	ldns_rdf_print(stdout, cur_dname);
 	printf(":\n");
 	ldns_rr_print(stdout, nsec);
+*/
 	/* sort nsec3s separately, set nexts and append to signed zone */
 	ldns_rr_list_sort_nsec3(nsec3_rrs);
 	for (i = 0; i < ldns_rr_list_rr_count(nsec3_rrs); i++) {
@@ -2158,7 +2162,7 @@ exit(0);
 			/* if not optional it should be left out completely
 			   (for it is possible to generate bad signarures, by
 			   specifying a future inception date */
-			/*
+/*
 			result = ldns_verify(cur_rrset, cur_rrsigs, pubkeys, NULL);
 			if (result != LDNS_STATUS_OK) {
 				dprintf("%s", "Cannot verify own sig:\n");
@@ -2166,8 +2170,10 @@ exit(0);
 				ERR_load_crypto_strings();
 				ERR_print_errors_fp(stdout);
 				exit(result);
+			} else {
+				printf("VERIFIED\n");
 			}
-			*/
+*/
 			
 			ldns_zone_push_rr_list(signed_zone, cur_rrset);
 			ldns_zone_push_rr_list(signed_zone, cur_rrsigs);

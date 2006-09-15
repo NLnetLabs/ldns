@@ -412,7 +412,7 @@ ldns_verify_denial(ldns_pkt *pkt, ldns_rdf *name, ldns_rr_type type, ldns_rr_lis
 					}
 						/*printf(";; Verifiably insecure.\n");*/
 						if (nsec_rrs && nsec_rr_sigs) {
-							get_dnssec_rr(pkt, ldns_rr_owner(ldns_rr_list_rr(nsecs, nsec_i)), LDNS_RR_TYPE_NSEC, nsec_rrs, nsec_rr_sigs);
+							(void) get_dnssec_rr(pkt, ldns_rr_owner(ldns_rr_list_rr(nsecs, nsec_i)), LDNS_RR_TYPE_NSEC, nsec_rrs, nsec_rr_sigs);
 						}
 						ldns_rr_list_deep_free(nsecs);
 						return LDNS_STATUS_OK;
@@ -422,7 +422,7 @@ ldns_verify_denial(ldns_pkt *pkt, ldns_rdf *name, ldns_rr_type type, ldns_rr_lis
 					printf(";; Existence of data set with this name denied by NSEC\n");
 				}
 				if (nsec_rrs && nsec_rr_sigs) {
-					get_dnssec_rr(pkt, ldns_rr_owner(ldns_rr_list_rr(nsecs, nsec_i)), LDNS_RR_TYPE_NSEC, nsec_rrs, nsec_rr_sigs);
+					(void) get_dnssec_rr(pkt, ldns_rr_owner(ldns_rr_list_rr(nsecs, nsec_i)), LDNS_RR_TYPE_NSEC, nsec_rrs, nsec_rr_sigs);
 				}
 				ldns_rr_list_deep_free(nsecs);
 				return LDNS_STATUS_OK;
@@ -436,6 +436,7 @@ ldns_verify_denial(ldns_pkt *pkt, ldns_rdf *name, ldns_rr_type type, ldns_rr_lis
 		nsecs = ldns_pkt_rr_list_by_type(pkt, LDNS_RR_TYPE_NSEC3, LDNS_SECTION_ANY_NOQUESTION);
 
 		if (nsecs) {
+printf("NSEC3s\n");
 			nsec_i = 0;
 			/* TODO: verify that all nsecs have same iterations and hash values */
 			
@@ -586,7 +587,7 @@ ldns_verify_denial(ldns_pkt *pkt, ldns_rdf *name, ldns_rr_type type, ldns_rr_lis
 			}
 			
 			if (nsecs && nsec_rrs && nsec_rr_sigs) {
-				get_dnssec_rr(pkt, ldns_rr_owner(ldns_rr_list_rr(nsecs, 0)), LDNS_RR_TYPE_NSEC3, nsec_rrs, nsec_rr_sigs);
+				(void) get_dnssec_rr(pkt, ldns_rr_owner(ldns_rr_list_rr(nsecs, 0)), LDNS_RR_TYPE_NSEC3, nsec_rrs, nsec_rr_sigs);
 			}
 			ldns_rr_list_deep_free(nsecs);
 		}

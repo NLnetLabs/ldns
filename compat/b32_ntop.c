@@ -283,7 +283,7 @@ b32_ntop_ar(uint8_t const *src, size_t srclength, char *target, size_t targsize,
 		}
 		target[datalength++] = Pad32;
 	}
-	if (datalength >= targsize) {
+	if (datalength > targsize) {
 		return (-3);
 	}
 	target[datalength] = '\0';	/* Returned value doesn't count \0. */

@@ -31,7 +31,7 @@ VAR = VAR & ~BIT
 
 extern ldns_rr_list *global_dns_root;
 extern bool qds;
-extern int8_t verbosity;
+extern int verbosity;
 
 ldns_pkt *	do_trace(ldns_resolver *res, ldns_rdf *name, ldns_rr_type type, 
 		ldns_rr_class c);

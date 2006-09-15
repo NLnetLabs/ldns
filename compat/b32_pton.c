@@ -171,15 +171,17 @@ static const char Pad32 = '=';
  */
 
 int
-b32_pton_ar(char const *src, uint8_t *target, size_t targsize, const char B32_ar[])
+b32_pton_ar(char const *src, size_t hashed_owner_str_len, uint8_t *target, size_t targsize, const char B32_ar[])
 {
 	int tarindex, state, ch;
 	char *pos;
+	int i = 0;
 
 	state = 0;
 	tarindex = 0;
 	
-	while ((ch = *src++) != '\0') {
+	while ((ch = *src++) != '\0' && (i == 0 || i < hashed_owner_str_len)) {
+		i++;
 		ch = tolower(ch);
 		if (isspace((unsigned char)ch))        /* Skip whitespace anywhere. */
 			continue;
@@ -355,14 +357,14 @@ b32_pton_ar(char const *src, uint8_t *target, size_t targsize, const char B32_ar
 }
 
 int
-b32_pton(char const *src, uint8_t *target, size_t targsize)
+b32_pton(char const *src, size_t hashed_owner_str_len, uint8_t *target, size_t targsize)
 {
-	return b32_pton_ar(src, target, targsize, Base32);
+	return b32_pton_ar(src, hashed_owner_str_len, target, targsize, Base32);
 }
 
 int
-b32_pton_extended_hex(char const *src, uint8_t *target, size_t targsize)
+b32_pton_extended_hex(char const *src, size_t hashed_owner_str_len, uint8_t *target, size_t targsize)
 {
-	return b32_pton_ar(src, target, targsize, Base32_extended_hex);
+	return b32_pton_ar(src, hashed_owner_str_len, target, targsize, Base32_extended_hex);
 }
 

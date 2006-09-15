@@ -497,6 +497,52 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 					ldns_rr_list_free(current_correct_keys);
 					current_correct_keys = NULL;
 				} else {
+					/* wait apparently there were no keys either, go back to the ds packet */
+					ldns_pkt_free(p);
+/*
+					ldns_rr_list_deep_free(ds_list);
+					ldns_rr_list_deep_free(ds_sig_list);
+*/					p = get_dnssec_pkt(res, labels[i-1], LDNS_RR_TYPE_DS);
+					pt = get_ds(p, labels[i-1], &ds_list, &ds_sig_list);
+					
+					status = ldns_verify_denial(p, labels[i-1], LDNS_RR_TYPE_DS, &nsec_rrs, &nsec_rr_sigs);
+
+					if (verbosity >= 4) {
+						printf("NSEC(3) Records to verify:\n");
+						ldns_rr_list_print(stdout, nsec_rrs);
+						printf("With signatures:\n");
+						ldns_rr_list_print(stdout, nsec_rr_sigs);
+						printf("correct keys at %p:\n", correct_key_list);
+						ldns_rr_list_print(stdout, correct_key_list);
+					}
+
+					if (status == LDNS_STATUS_OK) {
+						if ((st = ldns_verify(nsec_rrs, nsec_rr_sigs, trusted_keys, NULL)) == LDNS_STATUS_OK) {
+							fprintf(stdout, "%s ", TRUST);
+							fprintf(stdout, "Existence denied: ");
+							ldns_rdf_print(stdout, labels[i-1]);
+							printf(" DS");
+							fprintf(stdout, "\n");
+						} else if ((st = ldns_verify(nsec_rrs, nsec_rr_sigs, correct_key_list, NULL)) == LDNS_STATUS_OK) {
+							fprintf(stdout, "%s ", SELF);
+							fprintf(stdout, "Existence denied: ");
+							ldns_rdf_print(stdout, labels[i-1]);
+							printf(" DS");
+							fprintf(stdout, "\n");
+						} else {
+							fprintf(stdout, "%s ", BOGUS);
+							printf("Error verifying denial of existence for ");
+							ldns_rdf_print(stdout, labels[i-1]);
+							printf(" DS");
+							printf(": %s\n", ldns_get_errorstr_by_id(st));
+						}
+						
+					
+					} else {
+						printf("[B] Unable to verify denial of existence for ");
+						ldns_rdf_print(stdout, labels[i - 1]);
+						printf(" DS: %s\n", ldns_get_errorstr_by_id(status));
+					}
 					if (verbosity >= 2) {
 						printf(";; No ds record for delegation\n");
 					}

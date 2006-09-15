@@ -564,11 +564,11 @@ ldns_str2rdf_b32_ext(ldns_rdf **rd, const char *str)
 	uint8_t *buffer;
 	int i;
 	/* first byte contains length of actual b32 data */
-	size_t len = b32_ntop_calculate_size(strlen(str));
+	uint8_t len = b32_pton_calculate_size(strlen(str));
 	buffer = LDNS_XMALLOC(uint8_t, len + 1);
 	buffer[0] = len;
 	
-	i = b32_pton_extended_hex((const char*)str, buffer + 1, 
+	i = b32_pton_extended_hex((const char*)str, strlen(str), buffer + 1, 
                                   b32_ntop_calculate_size(strlen(str)));
 	if (i < 0) {
 		return LDNS_STATUS_INVALID_B32_EXT;
