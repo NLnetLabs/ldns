@@ -305,7 +305,7 @@ ldns_rdf2buffer_str_alg(ldns_buffer *output, const ldns_rdf *rdf)
 static void
 loc_cm_print(ldns_buffer *output, uint8_t mantissa, uint8_t exponent)
 {
-	int i;
+	uint8_t i;
 	/* is it 0.<two digits> ? */
 	if(exponent < 2) {
 		if(exponent == 1)
