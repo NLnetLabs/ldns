@@ -797,9 +797,8 @@ east:
 		longitude = equator - longitude;
 	}
 
-	altitude = (uint32_t) strtol(my_str, &my_str, 10);
-	altitude *= 100;
-	altitude += 10000000;
+	altitude = (uint32_t)(strtod(my_str, &my_str)*100.0 +
+		10000000.0 + 0.5);
 	if (*my_str == 'm' || *my_str == 'M') {
 		my_str++;
 	}
