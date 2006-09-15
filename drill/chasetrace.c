@@ -229,8 +229,10 @@ do_chase(ldns_resolver *res, ldns_rdf *name, ldns_rr_type type, ldns_rr_class c,
 	ldns_rr *cur_sig;
 	uint16_t sig_i;
 	ldns_rr_list *keys;
-	ldns_rr_list *nsecs;
-	uint16_t nsec_i;
+
+	ldns_rr_list *nsec_rrs = NULL;
+	ldns_rr_list *nsec_rr_sigs = NULL;
+
 	uint16_t key_i;
 	uint16_t tkey_i;
 	ldns_pkt *pkt;
@@ -239,21 +241,6 @@ do_chase(ldns_resolver *res, ldns_rdf *name, ldns_rr_type type, ldns_rr_class c,
 	bool key_matches_ds;
 	
 
-	/* use these variables to check the nsec3s */
-/*	ldns_rr *nsec3_ce;*/
-	ldns_rdf *nsec3_ce = NULL;
-	ldns_rr *nsec3_ex = NULL;
-	ldns_rdf *wildcard_name = NULL;
-	ldns_rdf *anc_name = NULL;
-/*	ldns_rr *nsec3_wc_ce;*/
-	ldns_rdf *nsec3_wc_ce = NULL;
-	ldns_rr *nsec3_wc_ex = NULL;
-	ldns_rdf *chopped_dname = NULL;
-/*
-	uint8_t nsec3_algorithm;
-	uint32_t nsec3_iterations;
-	bool nsec3_optout;
-*/	
 	ldns_lookup_table *lt;
 	const ldns_rr_descriptor *descriptor;
 	
@@ -310,6 +297,11 @@ do_chase(ldns_resolver *res, ldns_rdf *name, ldns_rr_type type, ldns_rr_class c,
 		if (!pkt) {
 			return LDNS_STATUS_NETWORK_ERR;
 		}
+
+		if (verbosity >= 5) {
+			ldns_pkt_print(stdout, pkt);
+		}
+		
 		rrset =	ldns_pkt_rr_list_by_name_and_type(pkt,
 				name,
 				type,
@@ -399,6 +391,10 @@ do_chase(ldns_resolver *res, ldns_rdf *name, ldns_rr_type type, ldns_rr_class c,
 					return LDNS_STATUS_NETWORK_ERR;
 				}
 
+				if (verbosity >= 5) {
+					ldns_pkt_print(stdout, pkt);
+				}
+				
 				keys = ldns_pkt_rr_list_by_name_and_type(pkt,
 						ldns_rr_rdf(cur_sig, 7),
 						LDNS_RR_TYPE_DNSKEY,
@@ -485,6 +481,24 @@ do_chase(ldns_resolver *res, ldns_rdf *name, ldns_rr_type type, ldns_rr_class c,
 printf("COULD BE NSEC3 IN:\n");
 ldns_pkt_print(stdout, pkt);
 */
+		result = ldns_verify_denial(pkt, name, type, &nsec_rrs, &nsec_rr_sigs);
+		if (result == LDNS_STATUS_OK) {
+			if (verbosity >= 2) {
+				printf(";; Existence denied by nsec(3), chasing nsec record\n");
+			}
+			/* verify them, they can't be blindly chased */
+			result = do_chase(res,
+			                  ldns_rr_owner(ldns_rr_list_rr(nsec_rrs, 0)),
+			                  ldns_rr_get_type(ldns_rr_list_rr(nsec_rrs, 0)),
+			                  c, trusted_keys, pkt, qflags, NULL);
+		} else {
+			if (verbosity >= 2) {
+				printf(";; Denial of existence was not covered: %s\n", ldns_get_errorstr_by_id(result));
+			}
+		}
+
+		
+#if 0
 		/* Try to see if there are NSECS in the packet */
 		nsecs = ldns_pkt_rr_list_by_type(pkt, LDNS_RR_TYPE_NSEC, LDNS_SECTION_ANY_NOQUESTION);
 		result = LDNS_STATUS_CRYPTO_NO_RRSIG;
@@ -676,6 +690,7 @@ printf("DAWASEM\n");
 		}
 		
 		printf("): %s\n", ldns_get_errorstr_by_id(result));
+#endif
 		return result;
 	}
 }

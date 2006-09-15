@@ -307,7 +307,7 @@ ldns_verify_rrsig_keylist(ldns_rr_list *rrset, ldns_rr *rrsig, ldns_rr_list *key
 				result = ldns_verify_rrsig_buffers(rawsig_buf, 
 						verify_buf, key_buf, sig_algo);
 			} else {
-				/* There is no else here ???? */
+				result = LDNS_STATUS_CRYPTO_UNKNOWN_ALGO;
 			}
 			
 			ldns_buffer_free(key_buf); 
@@ -498,7 +498,9 @@ ldns_verify_rrsig(ldns_rr_list *rrset, ldns_rr *rrsig, ldns_rr *key)
 	}
 	 else {
 		/* No keys with the corresponding keytag are found */
-		result = LDNS_STATUS_CRYPTO_NO_MATCHING_KEYTAG_DNSKEY;
+		if (result == LDNS_STATUS_ERR) {
+			result = LDNS_STATUS_CRYPTO_NO_MATCHING_KEYTAG_DNSKEY;
+		}
 	}
 	/* no longer needed */
 	ldns_rr_list_deep_free(rrset_clone);
