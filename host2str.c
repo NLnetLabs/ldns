@@ -303,18 +303,18 @@ ldns_rdf2buffer_str_alg(ldns_buffer *output, const ldns_rdf *rdf)
 }	
 
 static void
-loc_cm_print(ldns_buffer *output, long mantissa, long exponent)
+loc_cm_print(ldns_buffer *output, uint8_t mantissa, uint8_t exponent)
 {
-	long i;
+	int i;
 	/* is it 0.<two digits> ? */
 	if(exponent < 2) {
 		if(exponent == 1)
 			mantissa *= 10;
-		ldns_buffer_printf(output, "0.%02ld", mantissa);
+		ldns_buffer_printf(output, "0.%02ld", (long)mantissa);
 		return;
 	}
 	/* always <digit><string of zeros> */
-	ldns_buffer_printf(output, "%d", mantissa);
+	ldns_buffer_printf(output, "%d", (int)mantissa);
 	for(i=0; i<exponent-2; i++)
 		ldns_buffer_printf(output, "0");
 }
@@ -377,8 +377,9 @@ ldns_rdf2buffer_str_loc(ldns_buffer *output, const ldns_rdf *rdf)
 		ldns_buffer_printf(output, "%02u %02u %0.3f %c ", 
 			h, m, s, easterness);
 
-		ldns_buffer_printf(output, "%ld.%02ld", 
-			altitude/100 - 100000, altitude%100);
+		ldns_buffer_printf(output, "%ld", altitude/100 - 100000);
+		if(altitude%100 != 0)
+			ldns_buffer_printf(output, ".%02ld", altitude%100);
 		ldns_buffer_printf(output, "m ");
 		
 		loc_cm_print(output, (size & 0xf0) >> 4, size & 0x0f);	
