@@ -673,10 +673,10 @@ loc_parse_cm(char* my_str, char** endstr, uint8_t* m, uint8_t* e)
 	while (isblank(*my_str)) {
 		my_str++;
 	}
-	meters = strtol(my_str, &my_str, 10);
+	meters = (uint32_t)strtol(my_str, &my_str, 10);
 	if (*my_str == '.') {
 		my_str++;
-		cm = strtol(my_str, &my_str, 10);
+		cm = (uint32_t)strtol(my_str, &my_str, 10);
 	}
 	if (meters >= 1) {
 		*e = 2;
