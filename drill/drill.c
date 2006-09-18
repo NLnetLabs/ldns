@@ -199,6 +199,7 @@ main(int argc, char *argv[])
 				break;
 			case 'Q':
 				verbosity = -1;
+				break;
 			case 'f':
 				query_file = optarg;
 				break;

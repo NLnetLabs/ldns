@@ -23,6 +23,9 @@ read_key_file(const char *filename)
 	ldns_rr *r;
 	ldns_status status;
 	
+	if (verbosity >= 1) {
+		printf("Reading key file from %s\n", filename);
+	}
 	fp = fopen(filename, "r");
 	if (!fp) {
 		fprintf(stderr, "Unable to open %s: %s\n", filename, strerror(errno));
@@ -43,6 +46,10 @@ read_key_file(const char *filename)
 	} else {
 		status = ldns_rr_new_frm_str(&r, line, 0, NULL, NULL);
 		if (status == LDNS_STATUS_OK) {
+			if (verbosity >= 1) {
+				printf("Read trusted key:\n");
+				ldns_rr_print(stdout, r);
+			}
 			return r;
 		} else {
 			fprintf(stderr, "Error creating DNSKEY rr from %s: %s\n", filename, ldns_get_errorstr_by_id(status));

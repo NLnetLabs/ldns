@@ -547,10 +547,15 @@ printf("NSEC3s\n");
 									}
 								}
 							} else {
+								/*
 								if (verbosity >= 3) {
 									printf(";; NODATA/NOERROR wildcard for other type, error, no closest encloser (draft nsec3-07 section 8.7.)\n");
 								}
 								result = LDNS_STATUS_ERR;
+								*/
+								if (verbosity >= 3) {
+									printf(";; Exact nsec3 match denies type\n");
+								}
 							}
 							ldns_rdf_deep_free(nsec3_ce);
 						} else {

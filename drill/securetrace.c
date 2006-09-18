@@ -474,10 +474,24 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 						/* if the ds is signed by a trusted key and a key from correct keys
 						   matches that ds, add that key to the trusted keys */
 						new_keys_trusted = false;
+						if (verbosity >= 2) {
+							printf("Checking if signing key is trusted:\n");
+						}
 						for (j = 0; j < ldns_rr_list_rr_count(current_correct_keys); j++) {
+							if (verbosity >= 2) {
+								printf("New key: ");
+								ldns_rr_print(stdout, ldns_rr_list_rr(current_correct_keys, j));
+							}
 							for (k = 0; k < ldns_rr_list_rr_count(trusted_keys); k++) {
+								if (verbosity >= 2) {
+									printf("\tTrusted key: ");
+									ldns_rr_print(stdout, ldns_rr_list_rr(trusted_keys, k));
+								}
 								if (ldns_rr_compare(ldns_rr_list_rr(current_correct_keys, j),
 								    ldns_rr_list_rr(trusted_keys, k)) == 0) {
+								    	if (verbosity >= 2) {
+								    		printf("Key is now trusted!\n");
+									}
 									for (l = 0; l < ldns_rr_list_rr_count(ds_list); l++) {
 										ldns_rr_list_push_rr(trusted_ds_rrs, ldns_rr_clone(ldns_rr_list_rr(ds_list, l)));
 										new_keys_trusted = true;
