@@ -1534,7 +1534,7 @@ ldns_nsec3_bitmap(const ldns_rr *nsec3_rr)
 	if (!nsec3_rr || ldns_rr_get_type(nsec3_rr) != LDNS_RR_TYPE_NSEC3) {
 		return NULL;
 	} else {
-		return ldns_rr_rdf(nsec3_rr, 1);
+		return ldns_rr_rdf(nsec3_rr, 2);
 	}
 }
 
