@@ -171,6 +171,7 @@ ldns_rdf *
 ldns_rdf_new_frm_data(ldns_rdf_type type, size_t size, const void *data)
 {
 	ldns_rdf *rdf;
+
 	rdf = LDNS_MALLOC(ldns_rdf);
 	if (!rdf) {
 		return NULL;

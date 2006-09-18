@@ -751,14 +751,16 @@ ldns_str2rdf_alg(ldns_rdf **rd, const char *str)
 {
 	ldns_lookup_table *lt;
 	ldns_status st;
+	uint8_t i;
 
 	lt = ldns_lookup_by_name(ldns_algorithms, str);
 	st = LDNS_STATUS_OK;
 
 	if (lt) {
 		/* it was given as a integer */
+		i = lt->id;
 		*rd = ldns_rdf_new_frm_data(
-			LDNS_RDF_TYPE_INT8, sizeof(uint8_t), &lt->id);
+			LDNS_RDF_TYPE_INT8, sizeof(uint8_t), &i);
 		if (!*rd) {
 			st = LDNS_STATUS_ERR;
 		}
