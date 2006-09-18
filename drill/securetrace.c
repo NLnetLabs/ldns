@@ -539,9 +539,14 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 						
 					
 					} else {
-						printf("[B] Unable to verify denial of existence for ");
-						ldns_rdf_print(stdout, labels[i - 1]);
-						printf(" DS: %s\n", ldns_get_errorstr_by_id(status));
+						if (status == LDNS_STATUS_CRYPTO_NO_RRSIG) {
+							printf(";; No DS for ");
+							ldns_rdf_print(stdout, labels[i - 1]);
+						} else {
+							printf("[B] Unable to verify denial of existence for ");
+							ldns_rdf_print(stdout, labels[i - 1]);
+							printf(" DS: %s\n", ldns_get_errorstr_by_id(status));
+						}
 					}
 					if (verbosity >= 2) {
 						printf(";; No ds record for delegation\n");

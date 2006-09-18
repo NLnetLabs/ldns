@@ -10,10 +10,10 @@ cd drill
 make
 
 For Linux:
-export LD_LIBRARY_PATH=<path to base dir>/libs
+export LD_LIBRARY_PATH=<path to base dir>/lib
 
 For OSX:
-export DYLD_LIBRARY_PATH=<path to base dir>/libs
+export DYLD_LIBRARY_PATH=<path to base dir>/lib
 
 
 On OSX 10.4, you might need to set
