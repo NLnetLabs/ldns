@@ -544,7 +544,7 @@ main(int argc, char *argv[])
 				error("%s", "making qname");
 			}
 			/* don't care about return packet */
-			(void)do_secure_trace(res, qname, type, clas, key_list, trace_start_name);
+			result = do_secure_trace(res, qname, type, clas, key_list, trace_start_name);
 			clear_root();
 			break;
 		case DRILL_CHASE:

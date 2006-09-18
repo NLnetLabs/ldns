@@ -436,7 +436,6 @@ ldns_verify_denial(ldns_pkt *pkt, ldns_rdf *name, ldns_rr_type type, ldns_rr_lis
 		nsecs = ldns_pkt_rr_list_by_type(pkt, LDNS_RR_TYPE_NSEC3, LDNS_SECTION_ANY_NOQUESTION);
 
 		if (nsecs) {
-printf("NSEC3s\n");
 			nsec_i = 0;
 			/* TODO: verify that all nsecs have same iterations and hash values */
 			

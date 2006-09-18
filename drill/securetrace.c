@@ -119,7 +119,8 @@ show_current_nameservers(FILE *out, ldns_resolver *res)
 	}
 }
 	
-ldns_pkt *
+/*ldns_pkt **/
+int
 do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
                 ldns_rr_class c, ldns_rr_list *trusted_keys, ldns_rdf *start_name
                )
@@ -160,6 +161,8 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 	ldns_rr_list *old_ns_addr;
 	ldns_rr *ns_rr;
 	
+	int result = 0;
+	
 	/* printing niceness */
 	const ldns_rr_descriptor *descriptor;
 
@@ -182,20 +185,23 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 	
 	if (!res) {
 		error("Memory allocation failed");
-		return NULL;
+		result = -1;
+		return result;
 	}
 	
 	correct_key_list = ldns_rr_list_new();
 	if (!correct_key_list) {
 		error("Memory allocation failed");
-		return NULL;
+		result = -1;
+		return result;
 	}
 
 	trusted_ds_rrs = ldns_rr_list_new();
 
 	if (!trusted_ds_rrs) {
 		error("Memory allocation failed");
-		return NULL;
+		result = -1;
+		return result;
 	}
 
 	/* transfer some properties of local_res to res */
@@ -344,6 +350,7 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 					fprintf(stdout, " NS\n");
 				} else {
 					fprintf(stdout, "%s ", BOGUS);
+					result = 1;
 					printf(";; Error verifying denial of existence for name ");
 					ldns_rdf_print(stdout, labels[i]);
 /*
@@ -430,6 +437,7 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 					}
 				} else {
 					print_rr_list_abbr(stdout, key_list, BOGUS);
+					result = 2;
 					ldns_rr_list_deep_free(key_list);
 					key_list = NULL;
 				}
@@ -505,6 +513,7 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 							print_rr_list_abbr(stdout, ds_list, SELF);
 						}
 					} else {
+						result = 3;
 						print_rr_list_abbr(stdout, ds_list, BOGUS);
 					}
 
@@ -544,6 +553,7 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 							printf(" DS");
 							fprintf(stdout, "\n");
 						} else {
+							result = 4;
 							fprintf(stdout, "%s ", BOGUS);
 							printf("Error verifying denial of existence for ");
 							ldns_rdf_print(stdout, labels[i-1]);
@@ -582,6 +592,7 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 						fprintf(stdout, "%s ", SELF);
 						ldns_rr_list_print(stdout, dataset);
 					} else {
+						result = 5;
 						fprintf(stdout, "%s ", BOGUS);
 						ldns_rr_list_print(stdout, dataset);
 						printf(";; Error: %s\n", ldns_get_errorstr_by_id(st));
@@ -627,6 +638,7 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 						}
 						fprintf(stdout, "\n");
 					} else {
+						result = 6;
 						fprintf(stdout, "%s ", BOGUS);
 						printf("Error verifying denial of existence for ");
 						ldns_rdf_print(stdout, name);
@@ -695,5 +707,5 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 		}
 		LDNS_FREE(labels);
 	}
-	return NULL;
+	return result;
 }

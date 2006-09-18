@@ -38,7 +38,7 @@ ldns_pkt *	do_trace(ldns_resolver *res, ldns_rdf *name, ldns_rr_type type,
 ldns_status 	do_chase(ldns_resolver *res, ldns_rdf *name, ldns_rr_type type, 
 		ldns_rr_class c, ldns_rr_list *trusted_keys, 
 		ldns_pkt *pkt_o, uint16_t qflags, ldns_rr_list *prev_key_list);
-ldns_pkt *	do_secure_trace(ldns_resolver *res, ldns_rdf *name, ldns_rr_type type, 
+int		do_secure_trace(ldns_resolver *res, ldns_rdf *name, ldns_rr_type type, 
 		ldns_rr_class c, ldns_rr_list *trusted_keys, ldns_rdf *start_name);
 
 ldns_rr_list *	get_rr(ldns_resolver *res, ldns_rdf *zname, ldns_rr_type t, ldns_rr_class c);
