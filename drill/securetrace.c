@@ -325,42 +325,50 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 					ldns_rr_list_print(stdout, correct_key_list);
 				}
 				
-				if ((st = ldns_verify(nsec_rrs, nsec_rr_sigs, trusted_keys, NULL)) == LDNS_STATUS_OK) {
-					fprintf(stdout, "%s ", TRUST);
-					fprintf(stdout, "Existence denied: ");
-					ldns_rdf_print(stdout, labels[i]);
-/*
-					if (descriptor && descriptor->_name) {
-						printf(" %s", descriptor->_name);
+				if (status == LDNS_STATUS_OK) {
+					if ((st = ldns_verify(nsec_rrs, nsec_rr_sigs, trusted_keys, NULL)) == LDNS_STATUS_OK) {
+						fprintf(stdout, "%s ", TRUST);
+						fprintf(stdout, "Existence denied: ");
+						ldns_rdf_print(stdout, labels[i]);
+	/*
+						if (descriptor && descriptor->_name) {
+							printf(" %s", descriptor->_name);
+						} else {
+							printf(" TYPE%u", t);
+						}
+	*/					fprintf(stdout, " NS\n");
+					} else if ((st = ldns_verify(nsec_rrs, nsec_rr_sigs, correct_key_list, NULL)) == LDNS_STATUS_OK) {
+						fprintf(stdout, "%s ", SELF);
+						fprintf(stdout, "Existence denied: ");
+						ldns_rdf_print(stdout, labels[i]);
+	/*
+						if (descriptor && descriptor->_name) {
+							printf(" %s", descriptor->_name);
+						} else {
+							printf(" TYPE%u", t);
+						}
+	*/
+						fprintf(stdout, " NS\n");
 					} else {
-						printf(" TYPE%u", t);
+						fprintf(stdout, "%s ", BOGUS);
+						result = 1;
+						printf(";; Error verifying denial of existence for name ");
+						ldns_rdf_print(stdout, labels[i]);
+	/*
+						printf(" type ");
+						if (descriptor && descriptor->_name) {
+							printf("%s", descriptor->_name);
+						} else {
+							printf("TYPE%u", t);
+						}
+	*/					printf("NS: %s\n", ldns_get_errorstr_by_id(st));
 					}
-*/					fprintf(stdout, " NS\n");
-				} else if ((st = ldns_verify(nsec_rrs, nsec_rr_sigs, correct_key_list, NULL)) == LDNS_STATUS_OK) {
-					fprintf(stdout, "%s ", SELF);
-					fprintf(stdout, "Existence denied: ");
-					ldns_rdf_print(stdout, labels[i]);
-/*
-					if (descriptor && descriptor->_name) {
-						printf(" %s", descriptor->_name);
-					} else {
-						printf(" TYPE%u", t);
-					}
-*/
-					fprintf(stdout, " NS\n");
 				} else {
 					fprintf(stdout, "%s ", BOGUS);
 					result = 1;
 					printf(";; Error verifying denial of existence for name ");
 					ldns_rdf_print(stdout, labels[i]);
-/*
-					printf(" type ");
-					if (descriptor && descriptor->_name) {
-						printf("%s", descriptor->_name);
-					} else {
-						printf("TYPE%u", t);
-					}
-*/					printf("NS: %s\n", ldns_get_errorstr_by_id(st));
+					printf("NS: %s\n", ldns_get_errorstr_by_id(status));
 				}
 				
 				ldns_rr_list_deep_free(nsec_rrs);
@@ -654,17 +662,30 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 					ldns_rr_list_deep_free(nsec_rrs);
 					ldns_rr_list_deep_free(nsec_rr_sigs);
 				} else {
-					printf("%s ", UNSIGNED);
-					printf("No data found for: ");
-					ldns_rdf_print(stdout, name);
-					printf(" type ");
-					if (descriptor && descriptor->_name) {
-						printf("%s", descriptor->_name);
+/*
+*/
+					if (status == LDNS_STATUS_CRYPTO_NO_RRSIG) {
+						printf("%s ", UNSIGNED);
+						printf("No data found for: ");
+						ldns_rdf_print(stdout, name);
+						printf(" type ");
+						if (descriptor && descriptor->_name) {
+							printf("%s", descriptor->_name);
+						} else {
+							printf("TYPE%u", t);
+						}
+						printf("\n");
 					} else {
-						printf("TYPE%u", t);
+						printf("[B] Unable to verify denial of existence for ");
+						ldns_rdf_print(stdout, name);
+						printf(" type ");
+						if (descriptor && descriptor->_name) {
+							printf("%s", descriptor->_name);
+						} else {
+							printf("TYPE%u", t);
+						}
+						printf("\n");
 					}
-					printf("\n");
-					/*printf("[Error] could not verify denial of existence\n");*/
 				
 				}
 			}

@@ -456,13 +456,15 @@ ldns_verify_denial(ldns_pkt *pkt, ldns_rdf *name, ldns_rr_type type, ldns_rr_lis
 					} else {
 						if (!nsec3_ce) {
 							if (verbosity >= 3) {
-								printf(";; NAMEERR oculd not be proven, missing closest encloser (8.4)\n");
+								printf(";; NAMEERR could not be proven, missing closest encloser (8.4)\n");
 							}
+							result = LDNS_STATUS_NSEC3_ERR;
 						}
 						if (!nsec3_wc_ce) {
 							if (verbosity >= 3) {
-								printf(";; NAMEERR oculd not be proven, missing wildcard encloser (8.4)\n");
+								printf(";; NAMEERR could not be proven, missing wildcard encloser (8.4)\n");
 							}
+							result = LDNS_STATUS_NSEC3_ERR;
 						}
 					}
 					ldns_rdf_deep_free(nsec3_ce);
@@ -494,7 +496,7 @@ ldns_verify_denial(ldns_pkt *pkt, ldns_rdf *name, ldns_rr_type type, ldns_rr_lis
 								if (verbosity >= 3) {
 									printf(";; NODATA/NOERROR NOT proven for type != DS (draft nsec3-07 section 8.5.)\n");
 								}
-								result = LDNS_STATUS_ERR;
+								result = LDNS_STATUS_NSEC3_ERR;
 							}
 						} else {
 							/* Section 8.6 */
@@ -523,7 +525,7 @@ ldns_verify_denial(ldns_pkt *pkt, ldns_rdf *name, ldns_rr_type type, ldns_rr_lis
 									if (verbosity >= 3) {
 										printf(";; NODATA/NOERROR NOT proven for type == DS (draft nsec3-07 section 8.6.)\n");
 									}
-									result = LDNS_STATUS_ERR;
+									result = LDNS_STATUS_NSEC3_ERR;
 								}
 							}
 							ldns_rdf_deep_free(nsec3_ce);
@@ -544,6 +546,7 @@ ldns_verify_denial(ldns_pkt *pkt, ldns_rdf *name, ldns_rr_type type, ldns_rr_lis
 									if (verbosity >= 3) {
 										printf(";; Error proving wildcard for different type, no proof for wildcard of closest encloser (draft nsec3-07 section 8.7.)\n");
 									}
+									result = LDNS_STATUS_NSEC3_ERR;
 								}
 							} else {
 								/*
@@ -572,13 +575,13 @@ ldns_verify_denial(ldns_pkt *pkt, ldns_rdf *name, ldns_rr_type type, ldns_rr_lis
 									if (verbosity >= 3) {
 										printf(";; closest encloser is not immediate parent of generating wildcard (8.8)\n");
 									}
-									result = LDNS_STATUS_ERR;
+									result = LDNS_STATUS_NSEC3_ERR;
 								}
 							} else {
 								if (verbosity >= 3) {
 									printf(";; Error finding wildcard closest encloser, no proof for wildcard (draft nsec3-07 section 8.8.)\n");
 								}
-								result = LDNS_STATUS_ERR;
+								result = LDNS_STATUS_NSEC3_ERR;
 							}
 							ldns_rdf_deep_free(anc_name);
 							ldns_rdf_deep_free(nsec3_wc_ce);
