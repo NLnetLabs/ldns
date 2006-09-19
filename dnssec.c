@@ -902,7 +902,6 @@ ldns_sign_public(ldns_rr_list *rrset, ldns_key_list *keys)
 			(void)ldns_rr_rrsig_set_keytag(current_sig,
 					ldns_native2rdf_int16(LDNS_RDF_TYPE_INT16, 
 						ldns_key_keytag(current_key)));
-
 			/* algorithm - check the key and substitute that */
 			(void)ldns_rr_rrsig_set_algorithm(current_sig,
 					ldns_native2rdf_int8(LDNS_RDF_TYPE_ALG, 
@@ -2000,9 +1999,11 @@ exit(0);
 					    /*j < cur_label_count &&*/
 					    j < next_label_count
 					   ) {
+					   	/*
 						printf("Found empty non-terminal: ");
 						ldns_rdf_print(stdout, post);
 						printf("\n");
+						*/
 						found_difference = true;
 						nsec = ldns_create_nsec3(post, 
 									ldns_rr_owner(ldns_zone_soa(zone)),
@@ -2037,9 +2038,11 @@ exit(0);
 					post2 = ldns_dname_cat_clone(l2, post);
 					ldns_rdf_deep_free(post);
 					post = post2;
+					/*
 					printf("Found empty non-terminal: ");
 					ldns_rdf_print(stdout, post);
 					printf("\n");
+					*/
 					ldns_rdf_deep_free(l2);
 					j++;	
 					nsec = ldns_create_nsec3(post, 
@@ -2177,7 +2180,6 @@ exit(0);
 				printf("VERIFIED\n");
 			}
 */
-			
 			ldns_zone_push_rr_list(signed_zone, cur_rrset);
 			ldns_zone_push_rr_list(signed_zone, cur_rrsigs);
 			ldns_rr_list_free(cur_rrsigs);

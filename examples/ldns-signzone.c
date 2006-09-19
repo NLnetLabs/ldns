@@ -301,12 +301,14 @@ main(int argc, char *argv[])
 						ldns_key_set_pubkey_owner(key, ldns_rdf_clone(ldns_rr_owner(pubkey)));
 						ldns_key_set_flags(key, ldns_rdf2native_int16(ldns_rr_rdf(pubkey, 0)));
 					}
+        				ldns_key_set_keytag(key, ldns_calc_keytag(pubkey));
 					ldns_key_list_push_key(keys, key);
 					ldns_zone_push_rr(orig_zone, ldns_rr_clone(pubkey));
 					ldns_rr_free(pubkey);
 				}
 				LDNS_FREE(keyfile_name);
 				
+
 			} else {
 				fprintf(stderr, "Error reading key from %s at line %d\n", argv[argi], line_nr);
 			}
