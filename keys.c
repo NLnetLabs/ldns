@@ -116,8 +116,14 @@ ldns_key_new_frm_fp_l(ldns_key **key, FILE *fp, int *line_nr)
 	if (strncmp(d, "3 DSA", 2) == 0) {
 		alg = LDNS_SIGN_DSA; 
 	}
+	if (strncmp(d, "131 DSA", 4) == 0) {
+		alg = LDNS_DSA_NSEC3; 
+	}
 	if (strncmp(d, "5 RSASHA1", 2) == 0) {
 		alg = LDNS_SIGN_RSASHA1;
+	}
+	if (strncmp(d, "133 RSASHA1", 4) == 0) {
+		alg = LDNS_RSASHA1_NSEC3;
 	}
 
 	LDNS_FREE(d);
@@ -128,12 +134,14 @@ ldns_key_new_frm_fp_l(ldns_key **key, FILE *fp, int *line_nr)
 			return LDNS_STATUS_SYNTAX_ALG_ERR;
 		case LDNS_SIGN_RSAMD5:
 		case LDNS_SIGN_RSASHA1:
+		case LDNS_RSASHA1_NSEC3:
 
 			ldns_key_set_algorithm(k, alg);
 			ldns_key_set_rsa_key(k, ldns_key_new_frm_fp_rsa_l(fp, line_nr));
 
 			break;
 		case LDNS_SIGN_DSA:
+		case LDNS_DSA_NSEC3:
 			ldns_key_set_algorithm(k, alg);
 			ldns_key_set_dsa_key(k, ldns_key_new_frm_fp_dsa_l(fp, line_nr));
 			break;

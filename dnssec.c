@@ -929,9 +929,11 @@ ldns_sign_public(ldns_rr_list *rrset, ldns_key_list *keys)
 			
 			switch(ldns_key_algorithm(current_key)) {
 				case LDNS_SIGN_DSA:
+				case LDNS_DSA_NSEC3:
 					b64rdf = ldns_sign_public_dsa(sign_buf, ldns_key_dsa_key(current_key));
 					break;
 				case LDNS_SIGN_RSASHA1:
+				case LDNS_RSASHA1_NSEC3:
 					b64rdf = ldns_sign_public_rsasha1(sign_buf, ldns_key_rsa_key(current_key));
 					break;
 				case LDNS_SIGN_RSAMD5:
@@ -939,6 +941,7 @@ ldns_sign_public(ldns_rr_list *rrset, ldns_key_list *keys)
 					break;
 				default:
 					/* do _you_ know this alg? */
+					printf("unknown alg\n");
 					break;
 			}
 			if (!b64rdf) {
