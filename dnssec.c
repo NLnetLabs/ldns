@@ -1296,7 +1296,8 @@ ldns_create_nsec3(ldns_rdf *cur_owner,
                   bool opt_out,
                   uint32_t iterations,
                   uint8_t salt_length,
-                  uint8_t *salt)
+                  uint8_t *salt,
+                  bool emptynonterminal)
 {
 	size_t i;
 	ldns_rr *i_rr;
@@ -1361,16 +1362,18 @@ ldns_create_nsec3(ldns_rdf *cur_owner,
 		}
 	}
 	/* add NSEC and RRSIG anyway */
-#if 0
-	i_type = LDNS_RR_TYPE_RRSIG;
-	if (i_type / 8 > bm_len) {
-		bitmap = LDNS_XREALLOC(bitmap, uint8_t, (i_type / 8) + 1);
-		/* set to 0 */
-		for (; bm_len <= i_type / 8; bm_len++) {
-			bitmap[bm_len] = 0;
+	if (!emptynonterminal) {
+		i_type = LDNS_RR_TYPE_RRSIG;
+		if (i_type / 8 > bm_len) {
+			bitmap = LDNS_XREALLOC(bitmap, uint8_t, (i_type / 8) + 1);
+			/* set to 0 */
+			for (; bm_len <= i_type / 8; bm_len++) {
+				bitmap[bm_len] = 0;
+			}
 		}
+		ldns_set_bit(bitmap + (int) i_type / 8, (int) (7 - (i_type % 8)), true);
 	}
-	ldns_set_bit(bitmap + (int) i_type / 8, (int) (7 - (i_type % 8)), true);
+#if 0
 	i_type = LDNS_RR_TYPE_NSEC3;
 
 	if (i_type / 8 > bm_len) {
@@ -1999,7 +2002,7 @@ exit(0);
 					    /*j < cur_label_count &&*/
 					    j < next_label_count
 					   ) {
-					   	/*
+					        /*
 						printf("Found empty non-terminal: ");
 						ldns_rdf_print(stdout, post);
 						printf("\n");
@@ -2012,7 +2015,8 @@ exit(0);
 									false,
 									iterations,
 									salt_length,
-									salt);
+									salt,
+									true);
 						/*printf("Created NSEC3 for: ");
 						ldns_rdf_print(stdout, post);
 						printf(":\n");
@@ -2052,7 +2056,8 @@ exit(0);
 								false,
 								iterations,
 								salt_length,
-								salt);
+								salt,
+								true);
 /*
 					printf("Created NSEC3 for: ");
 					ldns_rdf_print(stdout, post);
@@ -2078,7 +2083,8 @@ exit(0);
 								false,
 								iterations,
 								salt_length,
-								salt);
+								salt,
+								false);
 
 /*
 					printf("Created NSEC3 for: ");
@@ -2102,7 +2108,8 @@ exit(0);
 				false,
 				iterations,
 				salt_length,
-				salt);
+				salt,
+				false);
 	ldns_rr_list_push_rr(nsec3_rrs, nsec);
 	ldns_rr_list_free(orig_zone_rrs);
 	ldns_rr_set_ttl(nsec, ldns_rdf2native_int32(ldns_rr_rdf(ldns_zone_soa(zone), 6)));
