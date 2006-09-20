@@ -1235,7 +1235,7 @@ xprintf_hex(hashed_owner_str, hashed_owner_str_len);
 printf("\n\n");
 exit(0);
 */
-	hashed_owner_b32 = LDNS_XMALLOC(char, b32_ntop_calculate_size(hashed_owner_str_len));
+	hashed_owner_b32 = LDNS_XMALLOC(char, b32_ntop_calculate_size(hashed_owner_str_len) + 1);
 	hashed_owner_b32_len = (size_t) b32_ntop_extended_hex((uint8_t *) hashed_owner_str, hashed_owner_str_len, hashed_owner_b32, b32_ntop_calculate_size(hashed_owner_str_len));
 	if (hashed_owner_b32_len < 1) {
 		fprintf(stderr, "Error in base32 extended hex encoding of hashed owner name (name: ");

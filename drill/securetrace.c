@@ -593,6 +593,16 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 			pt = get_dnssec_rr(p, labels[i], t, &dataset, &key_sig_list);
 			if (dataset && ldns_rr_list_rr_count(dataset) > 0) {
 				if (key_sig_list && ldns_rr_list_rr_count(key_sig_list) > 0) {
+
+					/* If this is a wildcard, you must be able to deny exact match */
+					if (ldns_rdf2native_int8(ldns_rr_rrsig_labels(ldns_rr_list_rr(key_sig_list, 0))) < ldns_dname_label_count(labels[i])) {
+						printf(";; Wilcard expansion, exact match must be denied (not implemented yet)\n");
+						/*
+						status = ldns_verify_denial_wildcard(p, name, t, &nsec_rrs, &nsec_rr_sigs);
+						printf("STATUS: %s\n", ldns_get_errorstr_by_id(status));
+						*/
+					}
+
 					if ((st = ldns_verify(dataset, key_sig_list, trusted_keys, NULL)) == LDNS_STATUS_OK) {
 						fprintf(stdout, "%s ", TRUST);
 						ldns_rr_list_print(stdout, dataset);

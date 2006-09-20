@@ -359,6 +359,25 @@ get_dnssec_rr(ldns_pkt *p, ldns_rdf *name, ldns_rr_type t,
 	}
 }
 
+
+#if 0
+/* special case were there was a wildcard expansion match, the exact match must be disproven */
+ldns_status
+ldns_verify_denial_wildcard(ldns_pkt *pkt, ldns_rdf *name, ldns_rr_type type, ldns_rr_list **nsec_rrs, ldns_rr_list **nsec_rr_sigs)
+{
+	ldns_rdf *nsec3_ce = NULL;
+	ldns_rr *nsec3_ex = NULL;
+	ldns_rdf *wildcard_name = NULL;
+	ldns_rdf *anc_name = NULL;
+/*	ldns_rr *nsec3_wc_ce;*/
+	ldns_rdf *nsec3_wc_ce = NULL;
+	ldns_rr *nsec3_wc_ex = NULL;
+	ldns_rdf *chopped_dname = NULL;
+	uint16_t nsec_i;
+
+}
+#endif
+
 ldns_status
 ldns_verify_denial(ldns_pkt *pkt, ldns_rdf *name, ldns_rr_type type, ldns_rr_list **nsec_rrs, ldns_rr_list **nsec_rr_sigs)
 {
