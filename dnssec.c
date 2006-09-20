@@ -1581,6 +1581,34 @@ printf("\n");
 bool
 ldns_nsec_bitmap_covers_type(const ldns_rdf *nsec_bitmap, ldns_rr_type type)
 {
+	uint8_t window_block_nr;
+	uint8_t bitmap_length;
+	uint16_t cur_type;
+	uint16_t pos = 0;
+	uint16_t bit_pos;
+	uint8_t *data = ldns_rdf_data(nsec_bitmap);
+	
+	while(pos < ldns_rdf_size(nsec_bitmap)) {
+		window_block_nr = data[pos];
+		bitmap_length = data[pos + 1];
+		pos += 2;
+		
+		for (bit_pos = 0; bit_pos < (bitmap_length) * 8; bit_pos++) {
+			if (ldns_get_bit(&data[pos], bit_pos)) {
+				cur_type = 256 * (uint16_t) window_block_nr + bit_pos;
+				if (cur_type == type) {
+					return true;
+				}
+			}
+		}
+		
+		pos += (uint16_t) bitmap_length;
+	}
+	
+	return false;
+
+
+#if 0
 	uint8_t *bitmap;
 	uint16_t i;
 	uint8_t window_block_nr;
@@ -1589,21 +1617,32 @@ ldns_nsec_bitmap_covers_type(const ldns_rdf *nsec_bitmap, ldns_rr_type type)
 		return false;
 	}
 
+printf("CHECK FOR %u\n", type);
+printf("BITMAP:");
+ldns_rdf_print(stdout, nsec_bitmap);
+printf("\n");
+for (i=0; i<ldns_rdf_size(nsec_bitmap); i++) {
+	printf("%02x ", ldns_rdf_data(nsec_bitmap)[i]);
+}
+printf("\n");
 	/* Check the bitmap if our type is there */
 	if (!nsec_bitmap) {
 		return false;
 	}
 	bitmap = ldns_rdf_data(nsec_bitmap);
 	window_block_nr = (uint8_t) (type / 256);
-	i = 0;
+	i = 2;
 
 	while (i < ldns_rdf_size(nsec_bitmap)) {
-		if (bitmap[i] == window_block_nr) {
+		if (bitmap[i - 2] == window_block_nr) {
 			/* this is the right window, check the bit */
 			if ((uint8_t) (type / 8) < bitmap[i + 1] &&
 			    ldns_get_bit(&bitmap[i + 1 + (type / 8)], (size_t) (7 - (type % 8)))) {
+printf("byte: %02x\n", bitmap[i + 1 + (type / 8)]);
+printf("TYPE COVERED!\n");
 				return true;
 			} else {
+printf("TYPE NOT COVERED!\n");
 				return false;
 			}
 		} else {
@@ -1613,7 +1652,9 @@ ldns_nsec_bitmap_covers_type(const ldns_rdf *nsec_bitmap, ldns_rr_type type)
 		}
 	}
 
+printf("TYPE NOT COVERED!\n");
 	return false;
+#endif
 }
 
 bool

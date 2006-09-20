@@ -476,14 +476,9 @@ ldns_verify_denial(ldns_pkt *pkt, ldns_rdf *name, ldns_rr_type type, ldns_rr_lis
 					} else {
 						nsec3_ce = ldns_nsec3_closest_encloser(name, type, nsecs);
 					}
-					nsec3_wc_ex = ldns_nsec3_exact_match(name, type, nsecs);
-					if (nsec3_wc_ex) {
-						nsec3_wc_ce = NULL;
-					} else {
-						nsec3_wc_ce = ldns_nsec3_closest_encloser(wildcard_name, type, nsecs);				
-					}
-					nsec3_wc_ex = ldns_nsec3_exact_match(name, type, nsecs);
-					if (nsec3_wc_ex) {
+					nsec3_wc_ex = ldns_nsec3_exact_match(wildcard_name, type, nsecs);
+					nsec3_wc_ce = ldns_nsec3_closest_encloser(wildcard_name, type, nsecs);
+					if (!nsec3_wc_ex) {
 						if (type != LDNS_RR_TYPE_DS) {
 							/* Section 8.5 */
 							nsec3_ex = ldns_nsec3_exact_match(name, type, nsecs);
@@ -531,6 +526,9 @@ ldns_verify_denial(ldns_pkt *pkt, ldns_rdf *name, ldns_rr_type type, ldns_rr_lis
 							ldns_rdf_deep_free(nsec3_ce);
 						}
 					} else {
+						if (verbosity >= 3) {
+							printf(";; No NSEC3 exact match for wildcard\n");
+						}
 						if (!ldns_nsec_bitmap_covers_type(ldns_nsec3_bitmap(nsec3_wc_ex), type)) {
 							/* Section 8.7 */
 							nsec3_ce = ldns_nsec3_closest_encloser(name, type, nsecs);
@@ -555,8 +553,13 @@ ldns_verify_denial(ldns_pkt *pkt, ldns_rdf *name, ldns_rr_type type, ldns_rr_lis
 								}
 								result = LDNS_STATUS_ERR;
 								*/
-								if (verbosity >= 3) {
-									printf(";; Exact nsec3 match denies type\n");
+								if (nsec3_wc_ce) {
+									if (verbosity >= 3) {
+										printf(";; Exact nsec3 match denies type\n");
+									}
+								} else {
+									printf(";; Exact nsec3 match denies type, but no closest encloser, proof failed\n");
+									result = LDNS_STATUS_NSEC3_ERR;
 								}
 							}
 							ldns_rdf_deep_free(nsec3_ce);
