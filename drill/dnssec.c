@@ -360,7 +360,6 @@ get_dnssec_rr(ldns_pkt *p, ldns_rdf *name, ldns_rr_type t,
 }
 
 
-#if 0
 /* special case were there was a wildcard expansion match, the exact match must be disproven */
 ldns_status
 ldns_verify_denial_wildcard(ldns_pkt *pkt, ldns_rdf *name, ldns_rr_type type, ldns_rr_list **nsec_rrs, ldns_rr_list **nsec_rr_sigs)
@@ -368,15 +367,60 @@ ldns_verify_denial_wildcard(ldns_pkt *pkt, ldns_rdf *name, ldns_rr_type type, ld
 	ldns_rdf *nsec3_ce = NULL;
 	ldns_rr *nsec3_ex = NULL;
 	ldns_rdf *wildcard_name = NULL;
-	ldns_rdf *anc_name = NULL;
-/*	ldns_rr *nsec3_wc_ce;*/
 	ldns_rdf *nsec3_wc_ce = NULL;
 	ldns_rr *nsec3_wc_ex = NULL;
 	ldns_rdf *chopped_dname = NULL;
-	uint16_t nsec_i;
+	ldns_rr_list *nsecs;
+	ldns_status result = LDNS_STATUS_ERR;
 
+	nsecs = ldns_pkt_rr_list_by_type(pkt, LDNS_RR_TYPE_NSEC3, LDNS_SECTION_ANY_NOQUESTION);
+	if (nsecs) {
+		wildcard_name = ldns_dname_new_frm_str("*");
+		chopped_dname = ldns_dname_left_chop(name);
+		result = ldns_dname_cat(wildcard_name, chopped_dname);
+		ldns_rdf_deep_free(chopped_dname);
+
+		nsec3_ex = ldns_nsec3_exact_match(name, type, nsecs);
+		nsec3_ce = ldns_nsec3_closest_encloser(name, type, nsecs);
+		nsec3_wc_ce = ldns_nsec3_closest_encloser(wildcard_name, type, nsecs);				
+		nsec3_wc_ex = ldns_nsec3_exact_match(wildcard_name, type, nsecs);
+		
+		if (nsec3_ex) {
+			if (verbosity >= 3) {
+				printf(";; Error, exact match for for name found, but should not exist (draft -07 section 8.8)\n");
+			}
+			result = LDNS_STATUS_NSEC3_ERR;
+		} else if (!nsec3_ce) {
+			if (verbosity >= 3) {
+				printf(";; Error, closest encloser for exact match missing in wildcard response (draft -07 section 8.8)\n");
+			}
+			result = LDNS_STATUS_NSEC3_ERR;
+/*
+		} else if (!nsec3_wc_ex) {
+			printf(";; Error, no wildcard nsec3 match: ");
+			ldns_rdf_print(stdout, wildcard_name);
+			printf(" (draft -07 section 8.8)\n");
+			result = LDNS_STATUS_NSEC3_ERR;
+*/
+/*		} else if (!nsec */
+		} else {
+			if (verbosity >= 3) {
+				printf(";; wilcard expansion proven\n");
+			}
+			result = LDNS_STATUS_OK;
+		}
+	} else {
+		if (verbosity >= 3) {
+			printf(";; Error: no NSEC or NSEC3 records in answer\n");
+		}
+		result = LDNS_STATUS_CRYPTO_NO_RRSIG;
+	}
+	
+	if (nsecs && nsec_rrs && nsec_rr_sigs) {
+		(void) get_dnssec_rr(pkt, ldns_rr_owner(ldns_rr_list_rr(nsecs, 0)), LDNS_RR_TYPE_NSEC3, nsec_rrs, nsec_rr_sigs);
+	}
+	return result;
 }
-#endif
 
 ldns_status
 ldns_verify_denial(ldns_pkt *pkt, ldns_rdf *name, ldns_rr_type type, ldns_rr_list **nsec_rrs, ldns_rr_list **nsec_rr_sigs)

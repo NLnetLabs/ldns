@@ -596,24 +596,70 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 
 					/* If this is a wildcard, you must be able to deny exact match */
 					if (ldns_rdf2native_int8(ldns_rr_rrsig_labels(ldns_rr_list_rr(key_sig_list, 0))) < ldns_dname_label_count(labels[i])) {
-						printf(";; Wilcard expansion, exact match must be denied (not implemented yet)\n");
-						/*
+						if (verbosity >= 3) {
+							printf(";; Wilcard expansion, exact match must be denied\n");
+						}
 						status = ldns_verify_denial_wildcard(p, name, t, &nsec_rrs, &nsec_rr_sigs);
-						printf("STATUS: %s\n", ldns_get_errorstr_by_id(status));
-						*/
-					}
-
-					if ((st = ldns_verify(dataset, key_sig_list, trusted_keys, NULL)) == LDNS_STATUS_OK) {
-						fprintf(stdout, "%s ", TRUST);
-						ldns_rr_list_print(stdout, dataset);
-					} else if ((st = ldns_verify(dataset, key_sig_list, correct_key_list, NULL)) == LDNS_STATUS_OK) {
-						fprintf(stdout, "%s ", SELF);
-						ldns_rr_list_print(stdout, dataset);
+						if (status == LDNS_STATUS_OK) {
+							if ((st = ldns_verify(nsec_rrs, nsec_rr_sigs, trusted_keys, NULL)) == LDNS_STATUS_OK) {
+								fprintf(stdout, "%s ", TRUST);
+								fprintf(stdout, "Wildcard expansion proven for: ");
+								ldns_rdf_print(stdout, name);
+								if (descriptor && descriptor->_name) {
+									printf(" %s", descriptor->_name);
+								} else {
+									printf(" TYPE%u", t);
+								}
+								fprintf(stdout, "\n");
+							} else if ((st = ldns_verify(nsec_rrs, nsec_rr_sigs, correct_key_list, NULL)) == LDNS_STATUS_OK) {
+								fprintf(stdout, "%s ", SELF);
+								fprintf(stdout, "Wildcard expansion proven for: ");
+								ldns_rdf_print(stdout, name);
+								if (descriptor && descriptor->_name) {
+									printf(" %s", descriptor->_name);
+								} else {
+									printf(" TYPE%u", t);
+								}
+								fprintf(stdout, "\n");
+							} else {
+								result = 6;
+								fprintf(stdout, "%s ", BOGUS);
+								printf("Error verifying wildcard expansion for ");
+								ldns_rdf_print(stdout, name);
+								printf(" type ");
+								if (descriptor && descriptor->_name) {
+									printf("%s", descriptor->_name);
+								} else {
+									printf("TYPE%u", t);
+								}
+								printf(": %s\n", ldns_get_errorstr_by_id(st));
+							}
+						} else {
+							result = 6;
+							fprintf(stdout, "%s ", BOGUS);
+							printf("Error verifying wildcard expansion for ");
+							ldns_rdf_print(stdout, name);
+							printf(" type ");
+							if (descriptor && descriptor->_name) {
+								printf("%s", descriptor->_name);
+							} else {
+								printf("TYPE%u", t);
+							}
+							printf(": %s\n", ldns_get_errorstr_by_id(status));
+						}
 					} else {
-						result = 5;
-						fprintf(stdout, "%s ", BOGUS);
-						ldns_rr_list_print(stdout, dataset);
-						printf(";; Error: %s\n", ldns_get_errorstr_by_id(st));
+						if ((st = ldns_verify(dataset, key_sig_list, trusted_keys, NULL)) == LDNS_STATUS_OK) {
+							fprintf(stdout, "%s ", TRUST);
+							ldns_rr_list_print(stdout, dataset);
+						} else if ((st = ldns_verify(dataset, key_sig_list, correct_key_list, NULL)) == LDNS_STATUS_OK) {
+							fprintf(stdout, "%s ", SELF);
+							ldns_rr_list_print(stdout, dataset);
+						} else {
+							result = 5;
+							fprintf(stdout, "%s ", BOGUS);
+							ldns_rr_list_print(stdout, dataset);
+							printf(";; Error: %s\n", ldns_get_errorstr_by_id(st));
+						}
 					}
 				} else {
 					fprintf(stdout, "%s ", UNSIGNED);
