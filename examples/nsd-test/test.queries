@@ -42,6 +42,7 @@ SECTION ANSWER
 axfr.example.com. IN SOA a. b. 10 60 60 60 60 60
 bla.axfr.example.com. IN TXT "bla"
 EXTRA_PACKET
+ADJUST packet_sleep=4
 SECTION ANSWER
 bla.axfr.example.com. IN TXT "bla2"
 axfr.example.com. IN SOA a. b. 10 60 60 60 60 60
