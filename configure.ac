@@ -7,7 +7,7 @@ AC_CONFIG_SRCDIR([packet.c])
 
 PACKAGE_VERSION="$PACKAGE_VERSION $VERSION_ADD"
 
-OURCPPFLAGS='-ansi -D_POSIX_C_SOURCE=200112 -D_XOPEN_SOURCE=600 -D__EXTENSIONS__'
+OURCPPFLAGS='-D_POSIX_C_SOURCE=200112 -D_XOPEN_SOURCE=600 -D__EXTENSIONS__'
 CPPFLAGS=${CPPFLAGS:-${OURCPPFLAGS}}
 OURCFLAGS='-g -Wall -W -Wwrite-strings'
 CFLAGS=${CFLAGS:-${OURCFLAGS}}
@@ -50,6 +50,7 @@ AC_C_INLINE
 AC_LANG_C
 AC_TYPE_SIZE_T
 CHECK_COMPILER_FLAG(O2, [CFLAGS="$CFLAGS -O2"])
+CHECK_COMPILER_FLAG(std=c99, [CFLAGS="$CFLAGS -std=c99"], [CFLAGS="$CFLAGS -ansi"])
 AC_CHECK_TYPE(int8_t, char)
 AC_CHECK_TYPE(int16_t, short)
 AC_CHECK_TYPE(int32_t, int)
@@ -112,14 +113,14 @@ AC_CHECK_PROG(doxygen, doxygen, doxygen)
 # copied again for use in ldns
 AC_ARG_WITH(ssl, AC_HELP_STRING([--with-ssl=pathname],
                                     [enable SSL (will check /usr/local/ssl
-                            /usr/lib/ssl /usr/ssl /usr/pkg /usr/local /usr)]),[
+                            /usr/lib/ssl /usr/ssl /usr/pkg /usr/local /usr/sfw /usr)]),[
         ],[
             withval="yes"
         ])
     if test x_$withval != x_no; then
         AC_MSG_CHECKING(for SSL)
         if test x_$withval = x_ -o x_$withval = x_yes; then
-            withval="/usr/local/ssl /usr/lib/ssl /usr/ssl /usr/pkg /usr/local /usr"
+            withval="/usr/local/ssl /usr/lib/ssl /usr/ssl /usr/pkg /usr/local /usr/sfw /usr"
         fi
         for dir in $withval; do
             ssldir="$dir"
