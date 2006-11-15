@@ -60,7 +60,7 @@ void
 mesg(const char *fmt, ...)
 {
 	va_list args;
-	if (qdebug == -1) {
+	if (verbosity == -1) {
 		return;
 	}
 	fprintf(stdout, ";; ");
@@ -74,7 +74,7 @@ void
 verbose(const char *fmt, ...)
 {
 	va_list args;
-	if (qdebug < 1) {
+	if (verbosity < 1) {
 		return;
 	}
 
@@ -88,7 +88,7 @@ void
 vverbose(const char *fmt, ...)
 {
 	va_list args;
-	if (qdebug < 2) {
+	if (verbosity < 2) {
 		return;
 	}
 

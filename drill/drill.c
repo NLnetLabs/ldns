@@ -13,7 +13,7 @@
 #define IP6_ARPA_MAX_LEN 65
 
 /* query debug, 2 hex dumps */
-int8_t		qdebug; /* -1, be quiet, 1 show question, 2 show hex */
+int		verbosity;
 
 static void
 usage(FILE *stream, const char *progname)
@@ -53,6 +53,9 @@ usage(FILE *stream, const char *progname)
 	fprintf(stream, "\t-s\t\tshow the DS RR for each key in a packet\n");
 	fprintf(stream, "\t-u\t\tsend the query with udp (the default)\n");
 	fprintf(stream, "\t-x\t\tdo a reverse lookup\n");
+	fprintf(stream, "\twhen doing a secure trace:\n");
+	fprintf(stream, "\t-r <file>\t\tuse file as root servers hint file (NOT IMPLEMENTED YET)\n");
+	fprintf(stream, "\t-d <domain>\t\tuse domain as the start point for the trace\n");
         fprintf(stream, "\t-y <name:key[:algo]>\tspecify named base64 tsig key, and optional an\n\t\t\talgorithm (defaults to hmac-md5.sig-alg.reg.int)\n");
 	fprintf(stream, "\t-z\t\tdon't randomize the nameservers before use\n");
 	fprintf(stream, "\n  [*] = enables/implies DNSSEC\n");
@@ -129,6 +132,8 @@ main(int argc, char *argv[])
 	bool		qds;
 	bool		qusevc;
 	bool 		qrandom;
+	
+	ldns_rdf *trace_start_name = NULL;
 
 	int		result = 0;
 	
@@ -140,7 +145,7 @@ main(int argc, char *argv[])
 	PURPOSE = DRILL_QUERY;
 	qflags = LDNS_RD;
 	qport = LDNS_PORT;
-	qdebug = 0;
+	verbosity = 0;
 	qdnssec = false;
 	qfamily = LDNS_RESOLV_INETANY;
 	qfail = false;
@@ -158,8 +163,9 @@ main(int argc, char *argv[])
 
 	/* string from orig drill: "i:w:I46Sk:TNp:b:DsvhVcuaq:f:xr" */
 	/* global first, query opt next, option with parm's last
-	 * and sorted */
-	while ((c = getopt(argc, argv, "46DITSVQf:i:w:q:achuvxzy:so:p:b:k:")) != -1) {
+	 * and sorted */ /*  "46DITSVQf:i:w:q:achuvxzy:so:p:b:k:" */
+	                               
+	while ((c = getopt(argc, argv, "46ab:cd:Df:hi:Ik:o:p:q:Qr:sSTuvV:w:xy:z")) != -1) {
 		switch(c) {
 			/* global options */
 			case '4':
@@ -175,7 +181,6 @@ main(int argc, char *argv[])
 				/* reserved for backward compatibility */
 				break;
 			case 'T':
-				warning("%s", "Trace enabled, ignoring any <type> arguments");
 				if (PURPOSE == DRILL_CHASE) {
 					fprintf(stderr, "-T and -S cannot be used at the same time.\n");
 					exit(EXIT_FAILURE);
@@ -190,12 +195,11 @@ main(int argc, char *argv[])
 				PURPOSE = DRILL_CHASE;
 				break;
 			case 'V':
-				if (qdebug != -1) {
-					qdebug++;
-				}
+				verbosity = atoi(optarg);
 				break;
 			case 'Q':
-				qdebug = -1;
+				verbosity = -1;
+				break;
 			case 'f':
 				query_file = optarg;
 				break;
@@ -344,10 +348,22 @@ main(int argc, char *argv[])
 			case 'z':
 				qrandom = false;
 				break;
+			case 'd':
+				trace_start_name = ldns_dname_new_frm_str(optarg);
+				if (!trace_start_name) {
+					fprintf(stderr, "Unable to parse argument for -%c\n", c);
+					result = EXIT_FAILURE;
+					goto exit;
+				}
+				break;
 			case 'h':
-			default:
 				usage(stdout, progname);
 				result = EXIT_SUCCESS;
+				goto exit;
+				break;
+			default:
+				fprintf(stderr, "Unknown argument: -%c, use -h to see usage\n", c);
+				result = EXIT_FAILURE;
 				goto exit;
 		}
 	}
@@ -477,13 +493,13 @@ main(int argc, char *argv[])
 	}
 	/* set the resolver options */
 	ldns_resolver_set_port(res, qport);
-	if (qdebug > 0 && qdebug != -1) {
+	if (verbosity >= 5) {
 		ldns_resolver_set_debug(res, true);
 	} else {
 		ldns_resolver_set_debug(res, false);
 	}
 	ldns_resolver_set_dnssec(res, qdnssec);
-	ldns_resolver_set_dnssec_cd(res, qdnssec);
+/*	ldns_resolver_set_dnssec_cd(res, qdnssec);*/
 	ldns_resolver_set_ip6(res, qfamily);
 	ldns_resolver_set_fail(res, qfail);
 	ldns_resolver_set_usevc(res, qusevc);
@@ -528,7 +544,7 @@ main(int argc, char *argv[])
 				error("%s", "making qname");
 			}
 			/* don't care about return packet */
-			(void)do_secure_trace(res, qname, type, clas, key_list);
+			result = do_secure_trace(res, qname, type, clas, key_list, trace_start_name);
 			clear_root();
 			break;
 		case DRILL_CHASE:
@@ -547,7 +563,7 @@ main(int argc, char *argv[])
 				error("%s", "error pkt sending");
 				result = EXIT_FAILURE;
 			} else {
-				if (qdebug != -1) {
+				if (verbosity != -1) {
 					ldns_pkt_print(stdout, pkt);
 				}
 				
@@ -558,15 +574,14 @@ main(int argc, char *argv[])
 					                  clas, key_list, 
 					                  pkt, qflags, NULL);
 					if (result == LDNS_STATUS_OK) {
-						if (qdebug != -1) {
+						if (verbosity != -1) {
 							mesg("Chase successful");
 						}
 						result = 0;
 					} else {
-						if (qdebug != -1) {
+						if (verbosity != -1) {
 							mesg("Chase failed: %s", ldns_get_errorstr_by_id(result));
 						}
-						/*result = EXIT_FAILURE;*/
 					}
 				}
 				ldns_pkt_free(pkt);
@@ -575,7 +590,7 @@ main(int argc, char *argv[])
 		case DRILL_AFROMFILE:
 			pkt = read_hex_pkt(answer_file);
 			if (pkt) {
-				if (qdebug != -1) {
+				if (verbosity != -1) {
 					ldns_pkt_print(stdout, pkt);
 				}
 				ldns_pkt_free(pkt);
@@ -669,7 +684,7 @@ main(int argc, char *argv[])
 				error("%s", "pkt sending");
 				result = EXIT_FAILURE;
 			} else {
-				if (qdebug != -1) {
+				if (verbosity != -1) {
 					ldns_pkt_print(stdout, pkt);
 				}
 				ldns_pkt_free(pkt);
@@ -697,7 +712,6 @@ main(int argc, char *argv[])
 						error("Error starting axfr: %s", 
 							ldns_get_errorstr_by_id(status));
 					}
-
 					axfr_rr = ldns_axfr_next(res);
 					if(!axfr_rr) {
 						fprintf(stderr, "AXFR failed.\n");
@@ -706,7 +720,7 @@ main(int argc, char *argv[])
 						goto exit;
 					}
 					while (axfr_rr) {
-						if (qdebug != -1) {
+						if (verbosity != -1) {
 							ldns_rr_print(stdout, axfr_rr);
 						}
 						ldns_rr_free(axfr_rr);
@@ -724,11 +738,11 @@ main(int argc, char *argv[])
 				mesg("No packet received");
 				result = EXIT_FAILURE;
 			} else {
-				if (qdebug != -1) {
+				if (verbosity != -1) {
 					ldns_pkt_print(stdout, pkt);
 				}
 				if (qds) {
-					if (qdebug != -1) {
+					if (verbosity != -1) {
 						print_ds_of_keys(pkt);
 						printf("\n");
 					}
@@ -748,7 +762,7 @@ main(int argc, char *argv[])
 						break;
 					}
 
-					if (qdebug != -1) {
+					if (verbosity != -1) {
 						printf("; ");
 						ldns_rr_list_print(stdout, rrset_verified);
 					}
@@ -759,7 +773,7 @@ main(int argc, char *argv[])
 					if (result == LDNS_STATUS_OK) {
 						for(key_count = 0; key_count < ldns_rr_list_rr_count(key_verified);
 								key_count++) {
-							if (qdebug != -1) {
+							if (verbosity != -1) {
 								printf("VALIDATED by id = %d, owner = ",
 										(int)ldns_calc_keytag(
 												      ldns_rr_list_rr(key_verified, key_count)));
@@ -771,7 +785,7 @@ main(int argc, char *argv[])
 					} else {
 						for(key_count = 0; key_count < ldns_rr_list_rr_count(key_list);
 								key_count++) {
-							if (qdebug != -1) {
+							if (verbosity != -1) {
 								printf("BOGUS by id = %d, owner = ",
 										(int)ldns_calc_keytag(
 												      ldns_rr_list_rr(key_list, key_count)));
@@ -799,8 +813,9 @@ main(int argc, char *argv[])
 	ldns_rdf_deep_free(qname);
 	ldns_resolver_deep_free(res);
 	ldns_resolver_deep_free(cmdline_res);
-	/* ldns_rr_list_deep_free(key_list); */
+	ldns_rr_list_deep_free(key_list);
 	ldns_rr_list_deep_free(cmdline_rr_list);
+	ldns_rdf_deep_free(trace_start_name);
 	xfree(progname);
 /*
 	xfree(tsig_name);

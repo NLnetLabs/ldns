@@ -155,8 +155,9 @@ b64_ntop(uint8_t const *src, size_t srclength, char *target, size_t targsize) {
 		Assert(output[2] < 64);
 		Assert(output[3] < 64);
 
-		if (datalength + 4 > targsize)
+		if (datalength + 4 > targsize) {
 			return (-1);
+		}
 		target[datalength++] = Base64[output[0]];
 		target[datalength++] = Base64[output[1]];
 		target[datalength++] = Base64[output[2]];
@@ -177,18 +178,21 @@ b64_ntop(uint8_t const *src, size_t srclength, char *target, size_t targsize) {
 		Assert(output[1] < 64);
 		Assert(output[2] < 64);
 
-		if (datalength + 4 > targsize)
-			return (-1);
+		if (datalength + 4 > targsize) {
+			return (-2);
+		}
 		target[datalength++] = Base64[output[0]];
 		target[datalength++] = Base64[output[1]];
-		if (srclength == 1)
+		if (srclength == 1) {
 			target[datalength++] = Pad64;
-		else
+		} else {
 			target[datalength++] = Base64[output[2]];
+		}
 		target[datalength++] = Pad64;
 	}
-	if (datalength >= targsize)
-		return (-1);
+	if (datalength >= targsize) {
+		return (-3);
+	}
 	target[datalength] = '\0';	/* Returned value doesn't count \0. */
 	return (int) (datalength);
 }

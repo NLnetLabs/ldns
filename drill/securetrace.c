@@ -14,6 +14,7 @@
 #define SELF "[S]"  /* self sig ok */
 #define TRUST "[T]" /* chain from parent */
 #define BOGUS "[B]" /* bogus */
+#define UNSIGNED "[U]" /* no relevant dnssec data found */
 
 #if 0
 /* See if there is a key/ds in trusted that matches
@@ -69,48 +70,11 @@ get_dnssec_pkt(ldns_resolver *r, ldns_rdf *name, ldns_rr_type t)
 	if (!p) {
 		return NULL;
 	} else {
+		if (verbosity >= 5) {
+			ldns_pkt_print(stdout, p);
+		}
 		return p;
 	}
-}
-
-/*
- * generic function to get some RRset from a nameserver
- * and possible some signatures too (that would be the day...)
- */
-static ldns_pkt_type
-get_dnssec_rr(ldns_pkt *p, ldns_rdf *name, ldns_rr_type t, 
-	ldns_rr_list **rrlist, ldns_rr_list **sig)
-{
-	ldns_pkt_type pt = LDNS_PACKET_UNKNOWN;
-	ldns_rr_list *rr = NULL;
-	ldns_rr_list *sigs = NULL;
-
-	if (!p) {
-		return LDNS_PACKET_UNKNOWN;
-	}
-
-	pt = ldns_pkt_reply_type(p);
-	if (pt == LDNS_PACKET_NXDOMAIN || pt == LDNS_PACKET_NODATA) {
-		return pt;
-	}
-		
-	if (name) {
-		rr = ldns_pkt_rr_list_by_name_and_type(p, name, t, LDNS_SECTION_ANSWER);
-		sigs = ldns_pkt_rr_list_by_name_and_type(p, name, LDNS_RR_TYPE_RRSIG, 
-				LDNS_SECTION_ANSWER);
-	} else {
-               /* A DS-referral - get the DS records if they are there */
-               rr = ldns_pkt_rr_list_by_type(p, t, LDNS_SECTION_AUTHORITY);
-               sigs = ldns_pkt_rr_list_by_type(p, LDNS_RR_TYPE_RRSIG,
-                               LDNS_SECTION_AUTHORITY);
-	}
-	if (sig) {
-		ldns_rr_list_cat(*sig, sigs);
-	}
-	if (rrlist) {
-		*rrlist = rr;
-	}
-	return LDNS_PACKET_ANSWER;
 }
 
 /* 
@@ -131,9 +95,34 @@ get_ds(ldns_pkt *p, ldns_rdf *ownername, ldns_rr_list **rrlist, ldns_rr_list **o
 	return get_dnssec_rr(p, ownername, LDNS_RR_TYPE_DS, rrlist, opt_sig);
 }
 
-ldns_pkt *
+void
+remove_resolver_nameservers(ldns_resolver *res)
+{
+	ldns_rdf *pop;
+	
+	/* remove the old nameserver from the resolver */
+	while((pop = ldns_resolver_pop_nameserver(res))) {
+		ldns_rdf_deep_free(pop);
+	}
+
+}
+
+void
+show_current_nameservers(FILE *out, ldns_resolver *res)
+{
+	size_t i;
+	fprintf(out, "Current nameservers for resolver object:\n");
+	for (i = 0; i < ldns_resolver_nameserver_count(res); i++) {
+		ldns_rdf_print(out, ldns_resolver_nameservers(res)[i]);
+		fprintf(out, "\n");
+	}
+}
+	
+/*ldns_pkt **/
+int
 do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
-		ldns_rr_class c, ldns_rr_list *trusted_keys)
+                ldns_rr_class c, ldns_rr_list *trusted_keys, ldns_rdf *start_name
+               )
 {
 	ldns_resolver *res;
 	ldns_pkt *p, *local_p;
@@ -143,10 +132,12 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 	ldns_rr_list *ns_addr;
 	uint16_t loop_count;
 	ldns_rdf *pop; 
-	ldns_rdf **labels;
+	ldns_rdf **labels = NULL;
 	ldns_status status, st;
 	ssize_t i;
 	size_t j;
+	size_t k;
+	size_t l;
 	uint8_t labels_count;
 	ldns_pkt_type pt;
 
@@ -155,6 +146,26 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 	ldns_rr_list *key_sig_list;
 	ldns_rr_list *ds_list;
 	ldns_rr_list *ds_sig_list;
+	ldns_rr_list *correct_key_list;
+	ldns_rr_list *trusted_ds_rrs;
+	bool new_keys_trusted = false;
+	ldns_rr_list *current_correct_keys;
+	ldns_rr_list *dataset;
+
+	ldns_rr_list *nsec_rrs = NULL;
+	ldns_rr_list *nsec_rr_sigs = NULL;
+	
+	/* glue handling */
+	ldns_rr_list *new_ns_addr;
+	ldns_rr_list *old_ns_addr;
+	ldns_rr *ns_rr;
+	
+	int result = 0;
+	
+	/* printing niceness */
+	const ldns_rr_descriptor *descriptor;
+
+	descriptor = ldns_rr_descript(t);
 
 	loop_count = 0;
 	new_nss_a = NULL;
@@ -165,17 +176,33 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 	ds_list = NULL;
 	pt = LDNS_PACKET_UNKNOWN;
 
-	p = ldns_pkt_new();
-	local_p = ldns_pkt_new();
+	p = NULL;
+	local_p = NULL;
 	res = ldns_resolver_new();
-	key_sig_list = ldns_rr_list_new();
-	ds_sig_list = ldns_rr_list_new();
-
-	if (!p || !local_p || !res) {
+	key_sig_list = NULL;
+	ds_sig_list = NULL;
+	
+	if (!res) {
 		error("Memory allocation failed");
-		return NULL;
+		result = -1;
+		return result;
 	}
 	
+	correct_key_list = ldns_rr_list_new();
+	if (!correct_key_list) {
+		error("Memory allocation failed");
+		result = -1;
+		return result;
+	}
+
+	trusted_ds_rrs = ldns_rr_list_new();
+
+	if (!trusted_ds_rrs) {
+		error("Memory allocation failed");
+		result = -1;
+		return result;
+	}
+
 	/* transfer some properties of local_res to res */
 	ldns_resolver_set_ip6(res, 
 			ldns_resolver_ip6(local_res));
@@ -196,98 +223,392 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 	ldns_resolver_set_dnssec(res, true);
 
 	labels_count = ldns_dname_label_count(name);
+	if (start_name) {
+		if (ldns_dname_is_subdomain(name, start_name)) {
+			labels_count -= ldns_dname_label_count(start_name);
+		} else {
+			fprintf(stderr, "Error; ");
+			ldns_rdf_print(stderr, name);
+			fprintf(stderr, " is not a subdomain of ");
+			ldns_rdf_print(stderr, start_name);
+			fprintf(stderr, "\n");
+			goto done;
+		}
+	}
 	labels = LDNS_XMALLOC(ldns_rdf*, labels_count + 2);
 	if (!labels) {
-		return NULL;
+		goto done;
 	}
 	labels[0] = ldns_dname_new_frm_str(LDNS_ROOT_LABEL_STR);
-	labels[1] = name;
+	labels[1] = ldns_rdf_clone(name);
 	for(i = 2 ; i < (ssize_t)labels_count + 2; i++) {
 		labels[i] = ldns_dname_left_chop(labels[i - 1]);
+	}
+	/* if no servers is given with @, start by asking local resolver */
+	/* first part todo :) */
+	for (i = 0; i < (ssize_t) ldns_resolver_nameserver_count(local_res); i++) {
+		(void) ldns_resolver_push_nameserver(res, ldns_resolver_nameservers(local_res)[i]);
 	}
 
 	/* get the nameserver for the label
 	 * ask: dnskey and ds for the label 
 	 */
 	for(i = (ssize_t)labels_count + 1; i > 0; i--) {
-		/* this tries to get the nameserver for the node we
-		 * currently have. This fails sometimes, because of 
-		 * caching, or the failure to cache. A better way would
-		 * be to do a trace from the root to the nameserver (a non
-		 * DNSSEC trace). After that you can just query for
-		 * the DNSKEY and DS and perform the validation magic
-		 */
-		status = ldns_resolver_send(&local_p, local_res, labels[i], LDNS_RR_TYPE_NS, c, 0);
+		status = ldns_resolver_send(&local_p, res, labels[i], LDNS_RR_TYPE_NS, c, 0);
+
+		if (verbosity >= 5) {
+			ldns_pkt_print(stdout, local_p);
+		}
+
 		new_nss = ldns_pkt_rr_list_by_type(local_p,
 					LDNS_RR_TYPE_NS, LDNS_SECTION_ANSWER);
  		if (!new_nss) {
-			/* lame ass servers put them in the auth section */
+			/* if it's a delegation, servers put them in the auth section */
 			new_nss = ldns_pkt_rr_list_by_type(local_p,
 					LDNS_RR_TYPE_NS, LDNS_SECTION_AUTHORITY);
-		} else {
-			ldns_rr_list_print(stdout, new_nss);
 		}
 
-		for(j = 0; j < ldns_rr_list_rr_count(new_nss); j++) {
-			pop = ldns_rr_rdf(ldns_rr_list_rr(new_nss, j), 0);
-			if (!pop) {
-				break;
+		/* if this is the final step there might not be nameserver records
+		   of course if the data is in the apex, there are, so cover both
+		   cases */
+		if (new_nss || i > 1) {
+			for(j = 0; j < ldns_rr_list_rr_count(new_nss); j++) {
+				ns_rr = ldns_rr_list_rr(new_nss, j);
+				pop = ldns_rr_rdf(ns_rr, 0);
+				if (!pop) {
+					printf("nopo\n");
+					break;
+				}
+				/* retrieve it's addresses */
+				/* trust glue? */
+				new_ns_addr = NULL;
+				if (ldns_dname_is_subdomain(pop, labels[i])) {
+					new_ns_addr = ldns_pkt_rr_list_by_name_and_type(local_p, pop, LDNS_RR_TYPE_A, LDNS_SECTION_ADDITIONAL);
+				}
+				if (!new_ns_addr || ldns_rr_list_rr_count(new_ns_addr) == 0) {
+					new_ns_addr = ldns_get_rr_list_addr_by_name(res, pop, c, 0);
+				}
+				if (!new_ns_addr || ldns_rr_list_rr_count(new_ns_addr) == 0) {
+					new_ns_addr = ldns_get_rr_list_addr_by_name(local_res, pop, c, 0);
+				}
+
+				if (new_ns_addr) {
+					old_ns_addr = ns_addr;
+					ns_addr = ldns_rr_list_cat_clone(ns_addr, new_ns_addr);
+					ldns_rr_list_deep_free(old_ns_addr);
+				}
+				ldns_rr_list_deep_free(new_ns_addr);
 			}
-			/* retrieve it's addresses */
-			ns_addr = ldns_rr_list_cat_clone(ns_addr,
-				ldns_get_rr_list_addr_by_name(local_res, pop, c, 0));
-		}
+			ldns_rr_list_deep_free(new_nss);
+			
+			if (ns_addr) {
+				remove_resolver_nameservers(res);
 
-		if (ns_addr) {
-			if (ldns_resolver_push_nameserver_rr_list(res, ns_addr) != 
-					LDNS_STATUS_OK) {
-				error("Error adding new nameservers");
-				ldns_pkt_free(local_p); 
-				return NULL;
+				if (ldns_resolver_push_nameserver_rr_list(res, ns_addr) != 
+						LDNS_STATUS_OK) {
+					error("Error adding new nameservers");
+					ldns_pkt_free(local_p); 
+					goto done;
+				}
+				ldns_rr_list_deep_free(ns_addr);
+			} else {
+				status = ldns_verify_denial(local_p, labels[i], LDNS_RR_TYPE_NS, &nsec_rrs, &nsec_rr_sigs);
+
+				/* verify the nsec3 themselves*/
+				if (verbosity >= 4) {
+					printf("NSEC(3) Records to verify:\n");
+					ldns_rr_list_print(stdout, nsec_rrs);
+					printf("With signatures:\n");
+					ldns_rr_list_print(stdout, nsec_rr_sigs);
+					printf("correct keys:\n");
+					ldns_rr_list_print(stdout, correct_key_list);
+				}
+				
+				if (status == LDNS_STATUS_OK) {
+					if ((st = ldns_verify(nsec_rrs, nsec_rr_sigs, trusted_keys, NULL)) == LDNS_STATUS_OK) {
+						fprintf(stdout, "%s ", TRUST);
+						fprintf(stdout, "Existence denied: ");
+						ldns_rdf_print(stdout, labels[i]);
+	/*
+						if (descriptor && descriptor->_name) {
+							printf(" %s", descriptor->_name);
+						} else {
+							printf(" TYPE%u", t);
+						}
+	*/					fprintf(stdout, " NS\n");
+					} else if ((st = ldns_verify(nsec_rrs, nsec_rr_sigs, correct_key_list, NULL)) == LDNS_STATUS_OK) {
+						fprintf(stdout, "%s ", SELF);
+						fprintf(stdout, "Existence denied: ");
+						ldns_rdf_print(stdout, labels[i]);
+	/*
+						if (descriptor && descriptor->_name) {
+							printf(" %s", descriptor->_name);
+						} else {
+							printf(" TYPE%u", t);
+						}
+	*/
+						fprintf(stdout, " NS\n");
+					} else {
+						fprintf(stdout, "%s ", BOGUS);
+						result = 1;
+						printf(";; Error verifying denial of existence for name ");
+						ldns_rdf_print(stdout, labels[i]);
+	/*
+						printf(" type ");
+						if (descriptor && descriptor->_name) {
+							printf("%s", descriptor->_name);
+						} else {
+							printf("TYPE%u", t);
+						}
+	*/					printf("NS: %s\n", ldns_get_errorstr_by_id(st));
+					}
+				} else {
+					fprintf(stdout, "%s ", BOGUS);
+					result = 1;
+					printf(";; Error verifying denial of existence for name ");
+					ldns_rdf_print(stdout, labels[i]);
+					printf("NS: %s\n", ldns_get_errorstr_by_id(status));
+				}
+				
+				ldns_rr_list_deep_free(nsec_rrs);
+				ldns_rr_list_deep_free(nsec_rr_sigs);
+				ldns_pkt_free(local_p);
+				goto done;
 			}
-		} else {
-			error("Could not find the nameserver ip addr; abort");
-			ldns_pkt_free(local_p);
-			return NULL;
+			
+			if (ldns_resolver_nameserver_count(res) == 0) {
+				error("No nameservers found for this node");
+				goto done;
+			}
 		}
-		
-		if (ldns_resolver_nameserver_count(res) == 0) {
-			error("No nameservers found for this node");
-			return NULL;
-		}
+		ldns_pkt_free(local_p);
 
+		fprintf(stdout, ";; Domain: ");
+		ldns_rdf_print(stdout, labels[i]);
+		fprintf(stdout, "\n");
+
+		/* retrieve keys for current domain, and verify them
+		   if they match an already trusted DS, or if one of the
+		   keys used to sign these is trusted, add the keys to 
+		   the trusted list */
 		p = get_dnssec_pkt(res, labels[i], LDNS_RR_TYPE_DNSKEY);
 		pt = get_key(p, labels[i], &key_list, &key_sig_list);
 		if (key_sig_list) {
 			if (key_list) {
-				if ((st = ldns_verify(key_list, key_sig_list, key_list, NULL)) ==
+				current_correct_keys = ldns_rr_list_new();
+				if ((st = ldns_verify(key_list, key_sig_list, key_list, current_correct_keys)) ==
 						LDNS_STATUS_OK) {
-					print_rr_list_abbr(stdout, key_list, SELF);
+					/* add all signed keys (don't just add current_correct, you'd miss
+					 * the zsk's then */
+					for (j = 0; j < ldns_rr_list_rr_count(key_list); j++) {
+						ldns_rr_list_push_rr(correct_key_list, ldns_rr_clone(ldns_rr_list_rr(key_list, j)));
+					}
+					
+					/* check whether these keys were signed
+					 * by a trusted keys. if so, these 
+					 * keys are also trusted */
+					new_keys_trusted = false;
+					for (k = 0; k < ldns_rr_list_rr_count(current_correct_keys); k++) {
+						for (j = 0; j < ldns_rr_list_rr_count(trusted_ds_rrs); j++) {
+							if (ldns_rr_compare_ds(ldns_rr_list_rr(current_correct_keys, k),
+								    ldns_rr_list_rr(trusted_ds_rrs, j))) {
+								new_keys_trusted = true;
+							}
+						}
+					}
 
-					ldns_rr_list_push_rr_list(trusted_keys, key_list);
+					/* also all keys are trusted if one of the current correct keys is trusted */
+					for (k = 0; k < ldns_rr_list_rr_count(current_correct_keys); k++) {
+						for (j = 0; j < ldns_rr_list_rr_count(trusted_keys); j++) {
+							if (ldns_rr_compare(ldns_rr_list_rr(current_correct_keys, k),
+								            ldns_rr_list_rr(trusted_keys, j)) == 0) {
+								            new_keys_trusted = true;
+							}
+						}
+					}
+
+
+					if (new_keys_trusted) {
+						ldns_rr_list_push_rr_list(trusted_keys, key_list);
+						print_rr_list_abbr(stdout, key_list, TRUST);
+						ldns_rr_list_free(key_list);
+						key_list = NULL;
+					} else {
+						if (verbosity >= 2) {
+							printf(";; Signature ok but no chain to a trusted key or ds record\n");
+						}
+						print_rr_list_abbr(stdout, key_list, SELF);
+						ldns_rr_list_deep_free(key_list);
+						key_list = NULL;
+					}
 				} else {
 					print_rr_list_abbr(stdout, key_list, BOGUS);
+					result = 2;
+					ldns_rr_list_deep_free(key_list);
+					key_list = NULL;
 				}
+				ldns_rr_list_free(current_correct_keys);
+				current_correct_keys = NULL;
 			} else {
-				mesg("No DNSKEY");
+				printf(";; No DNSKEY record found for ");
+				ldns_rdf_print(stdout, labels[i]);
+				printf("\n");
 			}
 		}
 
-		p = get_dnssec_pkt(res, labels[i], LDNS_RR_TYPE_DS);
-		pt = get_ds(p, labels[i], &ds_list, &ds_sig_list);
-		if (!ds_list) {
-			/* we might get lucky and get a DS referral wehn
-			 * asking for the key of the query name */
-			p = get_dnssec_pkt(res, name, LDNS_RR_TYPE_DNSKEY);
-			pt = get_ds(p, NULL, &ds_list, &ds_sig_list); 
-		}
-		if (ds_sig_list) {
-			if (ds_list) {
-				if ((st = ldns_verify(ds_list, ds_sig_list, trusted_keys, NULL)) ==
-						LDNS_STATUS_OK) {
-					print_rr_list_abbr(stdout, ds_list, SELF);
+		ldns_pkt_free(p);
+		ldns_rr_list_deep_free(key_sig_list);
+		key_sig_list = NULL;
+
+		/* check the DS records for the next child domain */
+		if (i > 1) {
+			p = get_dnssec_pkt(res, labels[i-1], LDNS_RR_TYPE_DS);
+			pt = get_ds(p, labels[i-1], &ds_list, &ds_sig_list);
+			if (!ds_list) {
+				ldns_pkt_free(p);
+				if (ds_sig_list) {
+					ldns_rr_list_deep_free(ds_sig_list);
+				}
+				p = get_dnssec_pkt(res, name, LDNS_RR_TYPE_DNSKEY);
+				pt = get_ds(p, NULL, &ds_list, &ds_sig_list); 
+			}
+			if (ds_sig_list) {
+				if (ds_list) {
+					if (verbosity >= 4) {
+						printf("VERIFYING:\n");
+						printf("DS LIST:\n");
+						ldns_rr_list_print(stdout, ds_list);
+						printf("SIGS:\n");
+						ldns_rr_list_print(stdout, ds_sig_list);
+						printf("KEYS:\n");
+						ldns_rr_list_print(stdout, correct_key_list);
+					}
+
+					current_correct_keys = ldns_rr_list_new();
+
+					if ((st = ldns_verify(ds_list, ds_sig_list, correct_key_list, current_correct_keys)) ==
+							LDNS_STATUS_OK) {
+						/* if the ds is signed by a trusted key and a key from correct keys
+						   matches that ds, add that key to the trusted keys */
+						new_keys_trusted = false;
+						if (verbosity >= 2) {
+							printf("Checking if signing key is trusted:\n");
+						}
+						for (j = 0; j < ldns_rr_list_rr_count(current_correct_keys); j++) {
+							if (verbosity >= 2) {
+								printf("New key: ");
+								ldns_rr_print(stdout, ldns_rr_list_rr(current_correct_keys, j));
+							}
+							for (k = 0; k < ldns_rr_list_rr_count(trusted_keys); k++) {
+								if (verbosity >= 2) {
+									printf("\tTrusted key: ");
+									ldns_rr_print(stdout, ldns_rr_list_rr(trusted_keys, k));
+								}
+								if (ldns_rr_compare(ldns_rr_list_rr(current_correct_keys, j),
+								    ldns_rr_list_rr(trusted_keys, k)) == 0) {
+								    	if (verbosity >= 2) {
+								    		printf("Key is now trusted!\n");
+									}
+									for (l = 0; l < ldns_rr_list_rr_count(ds_list); l++) {
+										ldns_rr_list_push_rr(trusted_ds_rrs, ldns_rr_clone(ldns_rr_list_rr(ds_list, l)));
+										new_keys_trusted = true;
+									}
+								}
+							}
+						}
+						if (new_keys_trusted) {
+							print_rr_list_abbr(stdout, ds_list, TRUST);
+						} else {
+							print_rr_list_abbr(stdout, ds_list, SELF);
+						}
+					} else {
+						result = 3;
+						print_rr_list_abbr(stdout, ds_list, BOGUS);
+					}
+
+					ldns_rr_list_free(current_correct_keys);
+					current_correct_keys = NULL;
 				} else {
-					print_rr_list_abbr(stdout, ds_list, BOGUS);
+					/* wait apparently there were no keys either, go back to the ds packet */
+					ldns_pkt_free(p);
+					ldns_rr_list_deep_free(ds_sig_list);
+					p = get_dnssec_pkt(res, labels[i-1], LDNS_RR_TYPE_DS);
+					pt = get_ds(p, labels[i-1], &ds_list, &ds_sig_list);
+					
+					status = ldns_verify_denial(p, labels[i-1], LDNS_RR_TYPE_DS, &nsec_rrs, &nsec_rr_sigs);
+
+					if (verbosity >= 4) {
+						printf("NSEC(3) Records to verify:\n");
+						ldns_rr_list_print(stdout, nsec_rrs);
+						printf("With signatures:\n");
+						ldns_rr_list_print(stdout, nsec_rr_sigs);
+						printf("correct keys at %p:\n", correct_key_list);
+						ldns_rr_list_print(stdout, correct_key_list);
+					}
+
+					if (status == LDNS_STATUS_OK) {
+						if ((st = ldns_verify(nsec_rrs, nsec_rr_sigs, trusted_keys, NULL)) == LDNS_STATUS_OK) {
+							fprintf(stdout, "%s ", TRUST);
+							fprintf(stdout, "Existence denied: ");
+							ldns_rdf_print(stdout, labels[i-1]);
+							printf(" DS");
+							fprintf(stdout, "\n");
+						} else if ((st = ldns_verify(nsec_rrs, nsec_rr_sigs, correct_key_list, NULL)) == LDNS_STATUS_OK) {
+							fprintf(stdout, "%s ", SELF);
+							fprintf(stdout, "Existence denied: ");
+							ldns_rdf_print(stdout, labels[i-1]);
+							printf(" DS");
+							fprintf(stdout, "\n");
+						} else {
+							result = 4;
+							fprintf(stdout, "%s ", BOGUS);
+							printf("Error verifying denial of existence for ");
+							ldns_rdf_print(stdout, labels[i-1]);
+							printf(" DS");
+							printf(": %s\n", ldns_get_errorstr_by_id(st));
+						}
+						
+					
+					} else {
+						if (status == LDNS_STATUS_CRYPTO_NO_RRSIG) {
+							printf(";; No DS for ");
+							ldns_rdf_print(stdout, labels[i - 1]);
+						} else {
+							printf("[B] Unable to verify denial of existence for ");
+							ldns_rdf_print(stdout, labels[i - 1]);
+							printf(" DS: %s\n", ldns_get_errorstr_by_id(status));
+						}
+					}
+					if (verbosity >= 2) {
+						printf(";; No ds record for delegation\n");
+					}
+				}
+			}
+
+			ldns_pkt_free(p);
+		} else {
+			/* if this is the last label, just verify the data and stop */
+			p = get_dnssec_pkt(res, labels[i], t);
+			pt = get_dnssec_rr(p, labels[i], t, &dataset, &key_sig_list);
+			if (dataset && ldns_rr_list_rr_count(dataset) > 0) {
+				if (key_sig_list && ldns_rr_list_rr_count(key_sig_list) > 0) {
+
+					/* If this is a wildcard, you must be able to deny exact match */
+					if ((st = ldns_verify(dataset, key_sig_list, trusted_keys, NULL)) == LDNS_STATUS_OK) {
+						fprintf(stdout, "%s ", TRUST);
+						ldns_rr_list_print(stdout, dataset);
+					} else if ((st = ldns_verify(dataset, key_sig_list, correct_key_list, NULL)) == LDNS_STATUS_OK) {
+						fprintf(stdout, "%s ", SELF);
+						ldns_rr_list_print(stdout, dataset);
+					} else {
+						result = 5;
+						fprintf(stdout, "%s ", BOGUS);
+						ldns_rr_list_print(stdout, dataset);
+						printf(";; Error: %s\n", ldns_get_errorstr_by_id(st));
+					}
+				} else {
+					fprintf(stdout, "%s ", UNSIGNED);
+					ldns_rr_list_print(stdout, dataset);
 				}
 			} else {
 				mesg("No DS");
@@ -298,10 +619,33 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 		new_nss_a = NULL;
 		new_nss = NULL;
 		ns_addr = NULL;
+		ldns_rr_list_deep_free(key_list);
 		key_list = NULL;
-		while((pop = ldns_resolver_pop_nameserver(res))) { /* remove it */ }
+		ldns_rr_list_deep_free(key_sig_list);
+		key_sig_list = NULL;
+		ldns_rr_list_deep_free(ds_list);
+		ds_list = NULL;
+		ldns_rr_list_deep_free(ds_sig_list);
+		ds_sig_list = NULL;
 		puts("");
 	}
 	printf(";;" SELF " self sig OK; " BOGUS " bogus; " TRUST " trusted\n");
-	return NULL;
+	/* verbose mode?
+	printf("Trusted keys:\n");
+	ldns_rr_list_print(stdout, trusted_keys);
+	printf("trusted dss:\n");
+	ldns_rr_list_print(stdout, trusted_ds_rrs);
+	*/
+
+	done:
+	ldns_rr_list_deep_free(trusted_ds_rrs);
+	ldns_rr_list_deep_free(correct_key_list);
+	ldns_resolver_deep_free(res);
+	if (labels) {
+		for(i = 0 ; i < (ssize_t)labels_count + 2; i++) {
+			ldns_rdf_deep_free(labels[i]);
+		}
+		LDNS_FREE(labels);
+	}
+	return result;
 }

@@ -109,10 +109,10 @@ do_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 		new_nss = ldns_pkt_rr_list_by_type(p,
 				LDNS_RR_TYPE_NS, LDNS_SECTION_AUTHORITY);
 
-		if (qdebug != -1) {
+		if (verbosity != -1) {
 			ldns_rr_list_print(stdout, new_nss);
 		}
-		/* checks itself for qdebug */
+		/* checks itself for verbosity */
 		drill_pkt_print_footer(stdout, local_res, p);
 		
 		/* remove the old nameserver from the resolver */
@@ -198,7 +198,7 @@ do_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 	new_nss = ldns_pkt_authority(p);
 	final_answer = ldns_pkt_answer(p);
 
-	if (qdebug != -1) {
+	if (verbosity != -1) {
 		ldns_rr_list_print(stdout, final_answer);
 		ldns_rr_list_print(stdout, new_nss);
 
@@ -228,8 +228,9 @@ do_chase(ldns_resolver *res, ldns_rdf *name, ldns_rr_type type, ldns_rr_class c,
 	ldns_rr *cur_sig;
 	uint16_t sig_i;
 	ldns_rr_list *keys;
-	ldns_rr_list *nsecs;
-	uint16_t nsec_i;
+	ldns_rr_list *nsec_rrs = NULL;
+	ldns_rr_list *nsec_rr_sigs = NULL;
+
 	uint16_t key_i;
 	uint16_t tkey_i;
 	ldns_pkt *pkt;
@@ -240,6 +241,8 @@ do_chase(ldns_resolver *res, ldns_rdf *name, ldns_rr_type type, ldns_rr_class c,
 	ldns_lookup_table *lt;
 	const ldns_rr_descriptor *descriptor;
 	
+	descriptor = ldns_rr_descript(type);
+
 	ldns_dname2canonical(name);
 	
 	pkt = ldns_pkt_clone(pkt_o);
@@ -248,7 +251,16 @@ do_chase(ldns_resolver *res, ldns_rdf *name, ldns_rr_type type, ldns_rr_class c,
 		ldns_pkt_free(pkt);
 		return LDNS_STATUS_EMPTY_LABEL;
 	}
-	
+	if (verbosity != -1) {
+		printf(";; Chasing: ");
+			ldns_rdf_print(stdout, name);
+			if (descriptor && descriptor->_name) {
+				printf(" %s\n", descriptor->_name);
+			} else {
+				printf(" type %d\n", type);
+			}
+	}
+
 	if (!trusted_keys || ldns_rr_list_rr_count(trusted_keys) < 1) {
 		warning("No trusted keys specified");
 	}
@@ -281,6 +293,10 @@ do_chase(ldns_resolver *res, ldns_rdf *name, ldns_rr_type type, ldns_rr_class c,
 		if (!pkt) {
 			return LDNS_STATUS_NETWORK_ERR;
 		}
+		if (verbosity >= 5) {
+			ldns_pkt_print(stdout, pkt);
+		}
+		
 		rrset =	ldns_pkt_rr_list_by_name_and_type(pkt,
 				name,
 				type,
@@ -306,7 +322,7 @@ do_chase(ldns_resolver *res, ldns_rdf *name, ldns_rr_type type, ldns_rr_class c,
 					LDNS_SECTION_ANY_NOQUESTION
 					);
 			
-			if (qdebug != -1) {
+			if (verbosity != -1) {
 				printf(";; Data set: ");
 				ldns_rdf_print(stdout, name);
 
@@ -317,9 +333,7 @@ do_chase(ldns_resolver *res, ldns_rdf *name, ldns_rr_type type, ldns_rr_class c,
 					printf("\tCLASS%d\t", c);
 				}
 
-				descriptor = ldns_rr_descript(type);
-
-				if (descriptor->_name) {
+				if (descriptor && descriptor->_name) {
 					printf("%s\t", descriptor->_name);
 				} else {
 					/* exceptions for qtype */
@@ -372,6 +386,10 @@ do_chase(ldns_resolver *res, ldns_rdf *name, ldns_rr_type type, ldns_rr_class c,
 					return LDNS_STATUS_NETWORK_ERR;
 				}
 
+				if (verbosity >= 5) {
+					ldns_pkt_print(stdout, pkt);
+				}
+				
 				keys = ldns_pkt_rr_list_by_name_and_type(pkt,
 						ldns_rr_rdf(cur_sig, 7),
 						LDNS_RR_TYPE_DNSKEY,
@@ -452,6 +470,25 @@ do_chase(ldns_resolver *res, ldns_rdf *name, ldns_rr_type type, ldns_rr_class c,
 		ldns_pkt_free(pkt);
 		return LDNS_STATUS_CRYPTO_NO_TRUSTED_DNSKEY;
 	} else {
+		ldns_rr_list_deep_free(sigs);
+		result = ldns_verify_denial(pkt, name, type, &nsec_rrs, &nsec_rr_sigs);
+		if (result == LDNS_STATUS_OK) {
+			if (verbosity >= 2) {
+				printf(";; Existence denied by nsec(3), chasing nsec record\n");
+			}
+			/* verify them, they can't be blindly chased */
+			result = do_chase(res,
+			                  ldns_rr_owner(ldns_rr_list_rr(nsec_rrs, 0)),
+			                  ldns_rr_get_type(ldns_rr_list_rr(nsec_rrs, 0)),
+			                  c, trusted_keys, pkt, qflags, NULL);
+		} else {
+			if (verbosity >= 2) {
+				printf(";; Denial of existence was not covered: %s\n", ldns_get_errorstr_by_id(result));
+			}
+		}
+
+		
+#if 0
 		/* Try to see if there are NSECS in the packet */
 		nsecs = ldns_pkt_rr_list_by_type(pkt, LDNS_RR_TYPE_NSEC, LDNS_SECTION_ANY_NOQUESTION);
 		result = LDNS_STATUS_CRYPTO_NO_RRSIG;
@@ -496,6 +533,7 @@ do_chase(ldns_resolver *res, ldns_rdf *name, ldns_rr_type type, ldns_rr_class c,
 		}
 		ldns_pkt_free(pkt);
 		ldns_rr_list_deep_free(nsecs);
+#endif
 		return result;
 	}
 }

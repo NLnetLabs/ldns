@@ -31,19 +31,28 @@ VAR = VAR & ~BIT
 
 extern ldns_rr_list *global_dns_root;
 extern bool qds;
-extern int8_t qdebug;
+extern int verbosity;
 
-ldns_pkt	*do_trace(ldns_resolver *res, ldns_rdf *name, ldns_rr_type type, 
+ldns_pkt *	do_trace(ldns_resolver *res, ldns_rdf *name, ldns_rr_type type, 
 		ldns_rr_class c);
-ldns_status 	 do_chase(ldns_resolver *res, ldns_rdf *name, ldns_rr_type type, 
+ldns_status 	do_chase(ldns_resolver *res, ldns_rdf *name, ldns_rr_type type, 
 		ldns_rr_class c, ldns_rr_list *trusted_keys, 
 		ldns_pkt *pkt_o, uint16_t qflags, ldns_rr_list *prev_key_list);
-ldns_pkt        *do_secure_trace(ldns_resolver *res, ldns_rdf *name, ldns_rr_type type, 
-		ldns_rr_class c, ldns_rr_list *trusted_keys);
-/* dnssec.c */
-ldns_rr_list 	*get_rr(ldns_resolver *res, ldns_rdf *zname, ldns_rr_type t, ldns_rr_class c);
+int		do_secure_trace(ldns_resolver *res, ldns_rdf *name, ldns_rr_type type, 
+		ldns_rr_class c, ldns_rr_list *trusted_keys, ldns_rdf *start_name);
+
+ldns_rr_list *	get_rr(ldns_resolver *res, ldns_rdf *zname, ldns_rr_type t, ldns_rr_class c);
 void 		drill_pkt_print(FILE *fd, ldns_resolver *r, ldns_pkt *p);
 void 		drill_pkt_print_footer(FILE *fd, ldns_resolver *r, ldns_pkt *p);
+ldns_pkt_type get_dnssec_rr(ldns_pkt *p, ldns_rdf *name, ldns_rr_type t, ldns_rr_list **rrlist, ldns_rr_list **sig);
+
+/* verifies denial of existence of *name in *pkt (must contain NSEC or NSEC3 records
+ * if *nsec_rrs and *nsec_rr_sigs are given, pointers to the relevant nsecs and their signatures are
+ * placed there
+ */
+ldns_status	ldns_verify_denial(ldns_pkt *pkt, ldns_rdf *name, ldns_rr_type type, ldns_rr_list **nsec_rrs, ldns_rr_list **nsec_rr_sigs);
+ldns_status	ldns_verify_denial_wildcard(ldns_pkt *pkt, ldns_rdf *name, ldns_rr_type type, ldns_rr_list **nsec_rrs, ldns_rr_list **nsec_rr_sigs);
+
 
 ldns_rr 	*read_key_file(const char *filename);
 ldns_pkt	*read_hex_pkt(char *filename);
