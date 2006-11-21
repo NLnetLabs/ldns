@@ -39,8 +39,7 @@ AC_MSG_RESULT(no)
 $3
 fi
 ])
-#CHECK_COMPILER_FLAG(O2, [CFLAGS="$CFLAGS -O2"])
-CHECK_COMPILER_FLAG(O2, [CFLAGS="$CFLAGS "])
+CHECK_COMPILER_FLAG(O2, [CFLAGS="$CFLAGS -O2"])
 
 AC_CHECK_HEADERS([sys/types.h getopt.h stdlib.h stdio.h assert.h netinet/in.h ctype.h time.h pcap.h arpa/inet.h sys/time.h sys/socket.h],,, [AC_INCLUDES_DEFAULT])
 AC_CHECK_HEADERS([netinet/in_systm.h net/if.h netinet/ip.h netinet/udp.h netinet/if_ether.h],,, [
