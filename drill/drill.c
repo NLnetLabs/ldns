@@ -98,6 +98,7 @@ main(int argc, char *argv[])
 	char		*progname;
 	char 		*query_file = NULL;
 	char		*answer_file = NULL;
+	ldns_buffer	*query_buffer = NULL;
 	ldns_rdf 	*serv_rdf;
         ldns_rr_type 	type;
         ldns_rr_class	clas;
@@ -693,11 +694,24 @@ main(int argc, char *argv[])
 		case DRILL_QUERY:
 		default:
 			if (query_file) {
+				/* this old way, the query packet needed
+				   to be parseable, but we want to be able
+				   to send mangled packets, so we need
+				   to do it directly */
+				#if 0
 				qpkt = read_hex_pkt(query_file);
 				if (qpkt) {
 					(void)ldns_resolver_send_pkt(&pkt, res, qpkt);
 				} else {
 					/* qpkt was bogus, reset pkt */
+					pkt = NULL;
+				}
+				#endif
+				query_buffer = read_hex_buffer(query_file);
+				if (query_buffer) {
+					(void)ldns_send_buffer(&pkt, res, query_buffer, NULL);
+				} else {
+					printf("NO BUFFER\n");
 					pkt = NULL;
 				}
 			} else {

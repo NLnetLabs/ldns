@@ -89,6 +89,18 @@ ldns_status ldns_tcp_send(uint8_t **result, ldns_buffer *qbin, const struct sock
 ldns_status ldns_send(ldns_pkt **pkt, ldns_resolver *r, const ldns_pkt *query_pkt);
 
 /**
+ * Sends and ldns_buffer (presumably containing a packet to the nameserver at the resolver object. Returns the data
+ * as a ldns_pkt
+ * 
+ * \param[out] pkt packet received from the nameserver
+ * \param[in] r the resolver to use 
+ * \param[in] query_pkt the query to send
+ * \param[in] tsig_mac the tsig MAC to authenticate the response with (NULL to do no TSIG authentication)
+ * \return status
+ */
+ldns_status ldns_send_buffer(ldns_pkt **pkt, ldns_resolver *r, const ldns_buffer *qb, ldns_rdf *tsig_mac);
+
+/**
  * Create a tcp socket to the specified address
  * \param[in] to ip and family
  * \param[in] tolen length of to

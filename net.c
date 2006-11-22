@@ -23,7 +23,33 @@
 #include <errno.h>
 
 ldns_status
-ldns_send(ldns_pkt **result, ldns_resolver *r, const ldns_pkt *query_pkt)
+ldns_send(ldns_pkt **result_packet, ldns_resolver *r, const ldns_pkt *query_pkt)
+{
+	ldns_buffer *qb;
+	ldns_status result;
+	ldns_rdf *tsig_mac = NULL;
+
+	qb = ldns_buffer_new(LDNS_MIN_BUFLEN);
+
+	if (ldns_pkt_tsig(query_pkt)) {
+		tsig_mac = ldns_rr_rdf(ldns_pkt_tsig(query_pkt), 3);
+	}
+
+
+	if (!query_pkt ||
+	    ldns_pkt2buffer_wire(qb, query_pkt) != LDNS_STATUS_OK) {
+		result = LDNS_STATUS_ERR;
+	} else {
+        	result = ldns_send_buffer(result_packet, r, qb, tsig_mac);
+	}
+
+	ldns_buffer_free(qb);
+	
+	return result;
+}
+
+ldns_status
+ldns_send_buffer(ldns_pkt **result, ldns_resolver *r, const ldns_buffer *qb, ldns_rdf *tsig_mac)
 {
 	uint8_t i;
 	
@@ -35,13 +61,11 @@ ldns_send(ldns_pkt **result, ldns_resolver *r, const ldns_pkt *query_pkt)
 	ldns_rdf **ns_array;
 	size_t *rtt;
 	ldns_pkt *reply;
-	ldns_buffer *qb;
 	bool all_servers_rtt_inf;
 	uint8_t retries;
 
 	uint8_t *reply_bytes = NULL;
 	size_t reply_size = 0;
-	ldns_rdf *tsig_mac = NULL;
 	ldns_status status, send_status;
 
 	assert(r != NULL);
@@ -53,22 +77,6 @@ ldns_send(ldns_pkt **result, ldns_resolver *r, const ldns_pkt *query_pkt)
 	ns_len = 0;
 
 	all_servers_rtt_inf = true;
-
-	if (!query_pkt) {
-		/* nothing to do? */
-		return LDNS_STATUS_ERR;
-	}
-	
-	qb = ldns_buffer_new(LDNS_MIN_BUFLEN);
-
-	if (ldns_pkt_tsig(query_pkt)) {
-		tsig_mac = ldns_rr_rdf(ldns_pkt_tsig(query_pkt), 3);
-	}
-
-	if (ldns_pkt2buffer_wire(qb, query_pkt) != LDNS_STATUS_OK) {
-		ldns_buffer_free(qb);
-		return LDNS_STATUS_ERR;
-	}
 
 	if (ldns_resolver_random(r)) {
 		ldns_resolver_nameservers_randomize(r);
@@ -134,7 +142,6 @@ ldns_send(ldns_pkt **result, ldns_resolver *r, const ldns_pkt *query_pkt)
 			/* the current nameserver seems to have a problem, blacklist it */
 			if (ldns_resolver_fail(r)) {
 				LDNS_FREE(ns);
-				ldns_buffer_free(qb);
 				return LDNS_STATUS_ERR;
 			} else {
 				LDNS_FREE(ns);
@@ -146,7 +153,6 @@ ldns_send(ldns_pkt **result, ldns_resolver *r, const ldns_pkt *query_pkt)
 		if (status != LDNS_STATUS_OK) {
 			LDNS_FREE(reply_bytes);
 			LDNS_FREE(ns);
-			ldns_buffer_free(qb);
 			return status;
 		}
 		
@@ -190,7 +196,6 @@ ldns_send(ldns_pkt **result, ldns_resolver *r, const ldns_pkt *query_pkt)
 #endif /* HAVE_SSL */
 	
 	LDNS_FREE(reply_bytes);
-	ldns_buffer_free(qb);
 	if (result) {
 		*result = reply;
 	}
