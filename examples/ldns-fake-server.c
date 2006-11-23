@@ -207,7 +207,7 @@ read_answer_file(uint8_t **pkt_list, size_t *pkt_sizes, const char *filename)
 size_t
 create_answer(uint8_t **result_wire,
               uint8_t *inbuf,
-              int nb,
+              ssize_t nb,
               uint8_t *answer_wire,
               size_t answer_size,
               bool copy_query_section,
@@ -286,18 +286,17 @@ int run_fake_server(int port,
 {
 	struct sockaddr_in *sock_server, *sock_client;
 	int s;
-	socklen_t socklen = sizeof(struct sockaddr_in);
+	socklen_t socklen = (socklen_t) sizeof(struct sockaddr_in);
 
 	int current_answer = 0;
 
 	uint8_t inbuf[LDNS_MAX_PACKETLEN];
-	int nb;
+	ssize_t nb;
 	
 	uint8_t *answer_wire;
 	size_t answer_size;
 	
-	int result;
-
+	int result = 0;
 	
 	sock_server = (struct sockaddr_in *) malloc( socklen );
 
@@ -313,7 +312,7 @@ int run_fake_server(int port,
 	}
 
 	sock_server->sin_family = AF_INET;
-	sock_server->sin_port = htons(port);
+	sock_server->sin_port = (in_port_t) htons((uint16_t) port);
 	sock_server->sin_addr.s_addr = htonl(INADDR_ANY);
 	
 	if ( bind(s, (struct sockaddr *) sock_server, socklen ) == -1) {
@@ -339,9 +338,9 @@ int run_fake_server(int port,
 		}
 
 		if (verbosity >= 1) {
-			printf("Received packet from %s:%d\n", 
+			printf("Received packet from %s:%u\n", 
 			    inet_ntoa(sock_client->sin_addr),
-			    ntohs(sock_client->sin_port));
+			    (unsigned int) ntohs(sock_client->sin_port));
 		}
 
 		if (ignore_query) {
@@ -355,7 +354,7 @@ int run_fake_server(int port,
 				fprintf(stderr, "Error sending data: %s\n", strerror(errno));
 			}
 			if (verbosity >= 2) {
-				printf("sent %d bytes of answer\n", nb);
+				printf("sent %u bytes of answer\n", (unsigned int) nb);
 			}
 		} else {
 			answer_size = create_answer(&answer_wire,
@@ -381,7 +380,7 @@ int run_fake_server(int port,
 		}
 		
 		if (verbosity >= 2) {
-			printf("sent %d bytes of answer\n", nb);
+			printf("sent %u bytes of answer\n", (unsigned int) nb);
 		}
 		current_answer++;
 		if (current_answer >= answer_count) {
