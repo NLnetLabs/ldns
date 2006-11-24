@@ -1415,13 +1415,10 @@ ldns_pkt_print(FILE *output, const ldns_pkt *pkt)
 void
 ldns_rr_list_print(FILE *output, const ldns_rr_list *lst)
 {
-	char *str = ldns_rr_list2str(lst);
-	if (str) {
-		fprintf(output, "%s", str);
-	} else {
-		fprintf(output, "Unable to convert rr_list to string\n");
+	size_t i;
+	for (i = 0; i < ldns_rr_list_rr_count(lst); i++) {
+		ldns_rr_print(output, ldns_rr_list_rr(lst, i));
 	}
-	LDNS_FREE(str);
 }
 
 void

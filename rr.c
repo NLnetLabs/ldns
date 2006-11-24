@@ -754,7 +754,7 @@ ldns_rr_list_free(ldns_rr_list *rr_list)
 void
 ldns_rr_list_deep_free(ldns_rr_list *rr_list)
 {
-	uint16_t i;
+	size_t i;
 	
 	if (rr_list) {
 		for (i=0; i < ldns_rr_list_rr_count(rr_list); i++) {
@@ -770,9 +770,9 @@ ldns_rr_list_deep_free(ldns_rr_list *rr_list)
 bool
 ldns_rr_list_cat(ldns_rr_list *left, ldns_rr_list *right)
 {
-	uint16_t r_rr_count;
-	uint16_t l_rr_count;
-	uint16_t i;
+	size_t r_rr_count;
+	size_t l_rr_count;
+	size_t i;
 
 	if (left) {
 		l_rr_count = ldns_rr_list_rr_count(left);
@@ -798,7 +798,7 @@ ldns_rr_list_cat_clone(ldns_rr_list *left, ldns_rr_list *right)
 {
 	size_t l_rr_count;
 	size_t r_rr_count;
-	uint16_t i;
+	size_t i;
 	ldns_rr_list *cat;
 
 	l_rr_count = 0;
@@ -837,7 +837,7 @@ ldns_rr_list_cat_clone(ldns_rr_list *left, ldns_rr_list *right)
 ldns_rr_list *
 ldns_rr_list_subtype_by_rdf(ldns_rr_list *l, ldns_rdf *r, size_t pos)
 {
-	uint16_t i;
+	size_t i;
 	ldns_rr_list *subtyped;
 	ldns_rdf *list_rdf;
 
@@ -883,7 +883,6 @@ ldns_rr_list_push_rr(ldns_rr_list *rr_list, const ldns_rr *rr)
 			cap = LDNS_RRLIST_INIT;  /* initial list size */
 		else	cap *= 2; 
 		rrs = LDNS_XREALLOC(rr_list->_rrs, ldns_rr *, cap);
-
 		if (!rrs) {
 			return false;
 		}
@@ -995,7 +994,7 @@ ldns_is_rrset(ldns_rr_list *rr_list)
 	ldns_rr_class c;
 	ldns_rdf *o;
 	ldns_rr *tmp;
-	uint16_t i;
+	size_t i;
 	
 	if (!rr_list) {
 		return false;
@@ -1252,32 +1251,25 @@ ldns_rr_list_sort(ldns_rr_list *unsorted)
 	if (unsorted) {
 		item_count = ldns_rr_list_rr_count(unsorted);
 		
-		if (item_count < 10) {
-			qsort(unsorted->_rrs,
-			      ldns_rr_list_rr_count(unsorted),
-			      sizeof(ldns_rr *),
-			      qsort_rr_compare);
-		} else {
-			sortables = LDNS_XMALLOC(struct ldns_schwartzian_compare_struct *,
-						 item_count);
-			for (i = 0; i < item_count; i++) {
-				sortables[i] = LDNS_XMALLOC(struct ldns_schwartzian_compare_struct, 1);
-				sortables[i]->original_object = ldns_rr_list_rr(unsorted, i);
-				sortables[i]->transformed_object = NULL;
-			}
-			qsort(sortables,
-			      item_count,
-			      sizeof(struct ldns_schwartzian_compare_struct *),
-			      qsort_schwartz_rr_compare);
-			for (i = 0; i < item_count; i++) {
-				unsorted->_rrs[i] = sortables[i]->original_object;
-				if (sortables[i]->transformed_object) {
-					ldns_buffer_free(sortables[i]->transformed_object);
-				}
-				LDNS_FREE(sortables[i]);
-			}
-			LDNS_FREE(sortables);
+		sortables = LDNS_XMALLOC(struct ldns_schwartzian_compare_struct *,
+					 item_count);
+		for (i = 0; i < item_count; i++) {
+			sortables[i] = LDNS_XMALLOC(struct ldns_schwartzian_compare_struct, 1);
+			sortables[i]->original_object = ldns_rr_list_rr(unsorted, i);
+			sortables[i]->transformed_object = NULL;
 		}
+		qsort(sortables,
+		      item_count,
+		      sizeof(struct ldns_schwartzian_compare_struct *),
+		      qsort_schwartz_rr_compare);
+		for (i = 0; i < item_count; i++) {
+			unsorted->_rrs[i] = sortables[i]->original_object;
+			if (sortables[i]->transformed_object) {
+				ldns_buffer_free(sortables[i]->transformed_object);
+			}
+			LDNS_FREE(sortables[i]);
+		}
+		LDNS_FREE(sortables);
 	}
 }
 
@@ -1483,7 +1475,7 @@ ldns_rr2canonical(ldns_rr *rr)
 void
 ldns_rr_list2canonical(ldns_rr_list *rr_list)
 {
-	uint16_t i;
+	size_t i;
 	for (i = 0; i < ldns_rr_list_rr_count(rr_list); i++) {
 		ldns_rr2canonical(ldns_rr_list_rr(rr_list, i));
 	}

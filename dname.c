@@ -266,10 +266,10 @@ ldns_dname_is_subdomain(const ldns_rdf *sub, const ldns_rdf *parent)
 int
 ldns_dname_compare(const ldns_rdf *dname1, const ldns_rdf *dname2)
 {
-	size_t lc1, lc2;
-	ldns_rdf *label1, *label2;
+	size_t lc1, lc2, lc1f, lc2f;
 	size_t i;
-	int result;
+	int result = 0;
+	uint8_t *lp1, *lp2;
 
 	/* see RFC4034 for this algorithm */
 	/* this algorithm assumes the names are normalized to case */
@@ -303,49 +303,62 @@ ldns_dname_compare(const ldns_rdf *dname1, const ldns_rdf *dname2)
 	}
 	lc1--;
 	lc2--;
+	/* we start at the last label */
 	while (true) {
-		label1 = ldns_dname_label(dname1, lc1); 
-		label2 = ldns_dname_label(dname2, lc2);
-		ldns_dname2canonical(label1);
-		ldns_dname2canonical(label2);
-
-		for (i = 1; i < ldns_rdf_size(label1); i++) {
-			if (i >= ldns_rdf_size(label2)) {
+		/* find the label first */
+		lc1f = lc1;
+		lp1 = ldns_rdf_data(dname1);
+		while (lc1f > 0) {
+			lp1 += *lp1 + 1;
+			lc1f--;
+		}
+		
+		/* and find the other one */
+		lc2f = lc2;
+		lp2 = ldns_rdf_data(dname2);
+		while (lc2f > 0) {
+			lp2 += *lp2 + 1;
+			lc2f--;
+		}
+		
+		/* now check the label character for character. */
+		for (i = 1; i < *lp1; i++) {
+			if (i > *lp2) {
+				/* apparently label 1 is larger */
 				result = 1;
-				goto freeresult;
+				goto done;
 			}
-
-			if (ldns_rdf_data(label1)[i] < ldns_rdf_data(label2)[i]) {
-				result = -1;
-				goto freeresult;
-			} else if (ldns_rdf_data(label1)[i] > ldns_rdf_data(label2)[i]) {
-				result = 1;
-				goto freeresult;
+			if (LDNS_DNAME_NORMALIZE(*(lp1 + i)) <
+			    LDNS_DNAME_NORMALIZE(*(lp2 + i))) {
+			    result = -1;
+			    goto done;
+			} else if (LDNS_DNAME_NORMALIZE(*(lp1 + i)) >
+			    LDNS_DNAME_NORMALIZE(*(lp2 + i))) {
+			    result = 1;
+			    goto done;
 			}
 		}
-		if (i < ldns_rdf_size(label2)) {
+		if (i < *lp2) {
+			/* apparently label 2 is larger */
 			result = -1;
-			goto freeresult;
+			goto done;
 		}
 		if (lc1 == 0 && lc2 > 0) {
 			result = -1;
-			goto freeresult;
+			goto done;
 		} else if (lc1 > 0 && lc2 == 0) {
 			result = 1;
-			goto freeresult;
+			goto done;
 		} else if (lc1 == 0 && lc2 == 0) {
 			result = 0;
-			goto freeresult;
+			goto done;
 		}
 		lc1--;
 		lc2--;
-		ldns_rdf_deep_free(label1);
-		ldns_rdf_deep_free(label2);
 	}
-
-	freeresult:
-	ldns_rdf_deep_free(label1);
-	ldns_rdf_deep_free(label2);
+		
+	
+	done:
 	return result;
 }
 

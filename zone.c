@@ -227,6 +227,7 @@ ldns_zone_new_frm_fp_l(ldns_zone **z, FILE *fp, ldns_rdf *origin, uint16_t ttl, 
 			return s;
 		}
 	}
+
 	if (my_origin) {
 		ldns_rdf_deep_free(my_origin);
 	}
