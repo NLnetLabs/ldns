@@ -328,12 +328,12 @@ ldns_dname_compare(const ldns_rdf *dname1, const ldns_rdf *dname2)
 				result = 1;
 				goto done;
 			}
-			if (LDNS_DNAME_NORMALIZE(*(lp1 + i)) <
-			    LDNS_DNAME_NORMALIZE(*(lp2 + i))) {
+			if (LDNS_DNAME_NORMALIZE((int) *(lp1 + i)) <
+			    LDNS_DNAME_NORMALIZE((int) *(lp2 + i))) {
 			    result = -1;
 			    goto done;
-			} else if (LDNS_DNAME_NORMALIZE(*(lp1 + i)) >
-			    LDNS_DNAME_NORMALIZE(*(lp2 + i))) {
+			} else if (LDNS_DNAME_NORMALIZE((int) *(lp1 + i)) >
+			    LDNS_DNAME_NORMALIZE((int) *(lp2 + i))) {
 			    result = 1;
 			    goto done;
 			}
