@@ -5,9 +5,12 @@
 	* signing no longer signs every rrset with KSK's, but only the DNSKEY rrset
 	* ported to Solaris 10
         * LOC RR type has been fixed
+	* added ldns_send_buffer() function
 
 	Drill:
 	* drill prints error on failed axfr.
+	* drill now accepts mangled packets with -f
+
 
 31 Apr 2006: 1.1.0: ldns-team
 	* Added tutorials and an introduction to the documentation

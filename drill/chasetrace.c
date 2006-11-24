@@ -531,9 +531,9 @@ do_chase(ldns_resolver *res, ldns_rdf *name, ldns_rr_type type, ldns_rr_class c,
 				/* nsec has nothing to do with this data */
 			}
 		}
-		ldns_pkt_free(pkt);
 		ldns_rr_list_deep_free(nsecs);
 #endif
+		ldns_pkt_free(pkt);
 		return result;
 	}
 }

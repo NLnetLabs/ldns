@@ -584,7 +584,7 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 					}
 				}
 			}
-
+			ldns_rr_list_deep_free(ds_list);
 			ldns_pkt_free(p);
 		} else {
 			/* if this is the last label, just verify the data and stop */
@@ -610,9 +610,11 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 					fprintf(stdout, "%s ", UNSIGNED);
 					ldns_rr_list_print(stdout, dataset);
 				}
+				ldns_rr_list_deep_free(dataset);
 			} else {
 				mesg("No DS");
 			}
+			ldns_pkt_free(p);
 		}
 		ds_list = NULL;
 		new_nss_aaaa = NULL;
