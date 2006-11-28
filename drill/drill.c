@@ -54,7 +54,7 @@ usage(FILE *stream, const char *progname)
 	fprintf(stream, "\t-u\t\tsend the query with udp (the default)\n");
 	fprintf(stream, "\t-x\t\tdo a reverse lookup\n");
 	fprintf(stream, "\twhen doing a secure trace:\n");
-	fprintf(stream, "\t-r <file>\t\tuse file as root servers hint file (NOT IMPLEMENTED YET)\n");
+	fprintf(stream, "\t-r <file>\t\tuse file as root servers hint file\n");
 	fprintf(stream, "\t-d <domain>\t\tuse domain as the start point for the trace\n");
         fprintf(stream, "\t-y <name:key[:algo]>\tspecify named base64 tsig key, and optional an\n\t\t\talgorithm (defaults to hmac-md5.sig-alg.reg.int)\n");
 	fprintf(stream, "\t-z\t\tdon't randomize the nameservers before use\n");
@@ -214,6 +214,18 @@ main(int argc, char *argv[])
 			case 'q':
 				query_file = optarg;
 				PURPOSE = DRILL_QTOFILE;
+				break;
+			case 'r':
+				if (global_dns_root) {
+					fprintf(stderr, "There was already a series of root servers set\n");
+					exit(EXIT_FAILURE);
+				}
+				global_dns_root = read_root_hints(optarg);
+				if (!global_dns_root) {
+					fprintf(stderr, "Unable to read root hints file %s, aborting\n", optarg);
+					exit(EXIT_FAILURE);
+				}
+				break;
 			/* query options */
 			case 'a':
 				qfail = true;
@@ -358,6 +370,7 @@ main(int argc, char *argv[])
 				}
 				break;
 			case 'h':
+				version(stdout, progname);
 				usage(stdout, progname);
 				result = EXIT_SUCCESS;
 				goto exit;
@@ -528,7 +541,10 @@ main(int argc, char *argv[])
 	switch(PURPOSE) {
 		case DRILL_TRACE:
 			/* do a trace from the root down */
-			init_root();
+			if (!global_dns_root) {
+
+				init_root();
+			}
 			qname = ldns_dname_new_frm_str(name);
 			if (!qname) {
 				error("%s", "making qname");
@@ -539,7 +555,9 @@ main(int argc, char *argv[])
 			break;
 		case DRILL_SECTRACE:
 			/* do a secure trace from the root down */
-			init_root();
+			if (!global_dns_root) {
+				init_root();
+			}
 			qname = ldns_dname_new_frm_str(name);
 			if (!qname) {
 				error("%s", "making qname");

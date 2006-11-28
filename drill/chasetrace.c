@@ -70,12 +70,15 @@ do_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 	ldns_resolver_set_recursive(res, false);
 
 	/* setup the root nameserver in the new resolver */
-	if (ldns_resolver_push_nameserver_rr_list(res, global_dns_root) != LDNS_STATUS_OK) {
+	status = ldns_resolver_push_nameserver_rr_list(res, global_dns_root);
+	if (status != LDNS_STATUS_OK) {
+		fprintf(stderr, "Error adding root servers to resolver: %s\n", ldns_get_errorstr_by_id(status));
+		ldns_rr_list_print(stdout, global_dns_root);
 		return NULL;
 	}
 
 	/* this must be a real query to local_res */
-	status = ldns_resolver_send(&p, local_res, ldns_dname_new_frm_str("."), LDNS_RR_TYPE_NS, c, 0);
+	status = ldns_resolver_send(&p, res, ldns_dname_new_frm_str("."), LDNS_RR_TYPE_NS, c, 0);
 	/* p can still be NULL */
 
 

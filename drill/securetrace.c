@@ -222,6 +222,13 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 	ldns_resolver_set_dnssec_cd(res, false);
 	ldns_resolver_set_dnssec(res, true);
 
+	/* setup the root nameserver in the new resolver */
+	status = ldns_resolver_push_nameserver_rr_list(res, global_dns_root);
+	if (status != LDNS_STATUS_OK) {
+		printf("ERRRRR: %s\n", ldns_get_errorstr_by_id(status));
+		ldns_rr_list_print(stdout, global_dns_root);
+		return NULL;
+	}
 	labels_count = ldns_dname_label_count(name);
 	if (start_name) {
 		if (ldns_dname_is_subdomain(name, start_name)) {

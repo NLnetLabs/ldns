@@ -58,6 +58,7 @@ ldns_rr 	*read_key_file(const char *filename);
 ldns_pkt	*read_hex_pkt(char *filename);
 ldns_buffer	*read_hex_buffer(char *filename);
 void		init_root(void);
+ldns_rr_list	*read_root_hints(const char *filename);
 void		clear_root(void);
 void		dump_hex(const ldns_pkt *pkt, const char *file);
 void 		warning(const char *fmt, ...);
