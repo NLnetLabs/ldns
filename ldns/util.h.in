@@ -129,7 +129,7 @@ ldns_write_uint64_as_uint48(void *dst, uint64_t data)
 struct ldns_schwartzian_compare_struct {
 	void *original_object;
 	void *transformed_object;
-} ldns_schwartzian_compare_struct;
+};
 
 /** A general purpose lookup table
  *  
