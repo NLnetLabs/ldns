@@ -35,6 +35,7 @@ void usage(FILE *output)
 	fprintf(output, "-h\tshow this help\n");
 	fprintf(output, "-i\tigore query completely, just send the next answer on any udp packet\n");
 	fprintf(output, "-l\tloop over answers in answer file\n");
+	fprintf(output, "-r\tuse a random port number, all output will be repressed, and only\n\ttheused port will be printed to stdout.\n");
 	fprintf(output, "-v <int>\tset verbosity (0-4, default 1)\n");
 }
 
@@ -312,13 +313,32 @@ int run_fake_server(int port,
 	}
 
 	sock_server->sin_family = AF_INET;
-	sock_server->sin_port = (in_port_t) htons((uint16_t) port);
 	sock_server->sin_addr.s_addr = htonl(INADDR_ANY);
+
+	if (port > 0) {
+		sock_server->sin_port = (in_port_t) htons((uint16_t) port);
 	
-	if ( bind(s, (struct sockaddr *) sock_server, socklen ) == -1) {
-		perror("bind()");
-		free(sock_server);
-		return -1;
+		if ( bind(s, (struct sockaddr *) sock_server, socklen ) == -1) {
+			perror("bind()");
+			free(sock_server);
+			return -1;
+		}
+	} else {
+		while (1) {
+			port = (random() % 64510) + 1025;
+			sock_server->sin_port = (in_port_t) htons((uint16_t) port);
+			if ( bind(s, (struct sockaddr *) sock_server, socklen ) == -1) {
+				if (errno != EADDRINUSE) {
+					perror("bind()");
+					free(sock_server);
+					return -1;
+				}
+			} else {
+				printf("%d\n", port);
+				fflush(stdout);
+				break;
+			}
+		}
 	}
 
 	sock_client = (struct sockaddr_in *) malloc( socklen );
@@ -411,7 +431,7 @@ int main(int argc, char **argv)
 
 	/* command line settings */
 	char *answer_file;
-	int port;
+	int port = -1;
 	int verbosity = 1;
 
 	/* internal vars */
@@ -423,7 +443,7 @@ int main(int argc, char **argv)
 
 	int result;
 	
-	while ((c = getopt(argc, argv, "chilv:")) != -1) {
+	while ((c = getopt(argc, argv, "chilp:rv:")) != -1) {
 		switch (c) {
 			case 'c':
 				if (ignore_query) {
@@ -446,23 +466,44 @@ int main(int argc, char **argv)
 			case 'l':
 				loop = true;
 				break;
+			case 'p':
+				if (port > -1) {
+					usage(stderr);
+					exit(EXIT_FAILURE);
+				}
+				port = atoi(optarg);
+				if (port < 1 || port > 65535) {
+					fprintf(stderr, "Bad port number\n");
+					exit(EXIT_FAILURE);
+				}
+				break;
+			case 'r':
+				if (port > -1) {
+					usage(stderr);
+					exit(EXIT_FAILURE);
+				}
+				port = 0;
+				verbosity = 0;
+				break;
 			case 'v':
 				verbosity = atoi(optarg);
+				break;
 		}
 	}
 	argc -= optind;
 	argv += optind;
 	
-	if (argc < 3) {
+	if (argc < 1) {
+		fprintf(stderr, "Too few arguments\n\n");
 		usage(stdout);
 		exit(EXIT_FAILURE);
 	} else {
-		port = atoi(argv[1]);
-		if (port < 1) {
-			usage(stdout);
-			exit(EXIT_FAILURE);
-		}
-		answer_file = argv[2];
+		answer_file = argv[0];
+	}
+	
+	if (port < 0) {
+		fprintf(stderr, "No port given\n");
+		exit(EXIT_FAILURE);
 	}
 
 	answer_count = read_answer_file(pkt_list, pkt_sizes, answer_file);
