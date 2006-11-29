@@ -433,7 +433,13 @@ do_chase(ldns_resolver *res, ldns_rdf *name, ldns_rr_type type, ldns_rr_class c,
 							/* apparently the key is not trusted, so it must either be signed itself or have a DS in the parent */
 							if (type == LDNS_RR_TYPE_DNSKEY && ldns_rdf_compare(name, ldns_rr_rdf(cur_sig, 7)) == 0) {
 								/* okay now we are looping in a selfsigned key, find the ds or bail */
-								result = do_chase(res, ldns_rr_rdf(cur_sig, 7), LDNS_RR_TYPE_DS, c, trusted_keys, pkt, qflags, keys);
+								/* there can never be a DS for the root label unless it has been given,
+								 * so we can't chase that */
+								if (ldns_rdf_size(ldns_rr_rdf(cur_sig, 7)) > 1) {
+									result = do_chase(res, ldns_rr_rdf(cur_sig, 7), LDNS_RR_TYPE_DS, c, trusted_keys, pkt, qflags, keys);
+								} else {
+									result = LDNS_STATUS_CRYPTO_NO_TRUSTED_DNSKEY;
+								}
 							} else {
 								result = do_chase(res, ldns_rr_rdf(cur_sig, 7), LDNS_RR_TYPE_DNSKEY, c, trusted_keys, pkt, qflags, keys);
 								/* in case key was not self-signed at all, try ds anyway */

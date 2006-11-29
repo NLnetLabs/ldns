@@ -41,7 +41,7 @@ usage(FILE *stream, const char *progname)
 	fprintf(stream, "\t-6\t\tstay on ip6\n");
 	fprintf(stream, "\t-a\t\tonly query the first nameserver (default is to try all)\n");
 	fprintf(stream, "\t-b <bufsize>\tuse <bufsize> as the buffer size (defaults to 512 b)\n");
-	fprintf(stream, "\t-c\t\tsend the query with tcp (connected)\n");
+	fprintf(stream, "\t-c <file>\t\tuse file for rescursive nameserver configuration (/etc/resolv.conf)\n");
 	fprintf(stream, "\t-k <file>\tspecify a file that contains a trusted DNSSEC key [**]\n");
 	fprintf(stream, "\t\t\tused to verify any signatures in the current answer\n");
 	fprintf(stream, "\t-o <mnemonic>\tset flags to: [QR|qr][AA|aa][TC|tc][RD|rd][CD|cd][RA|ra][AD|ad]\n");
@@ -55,6 +55,7 @@ usage(FILE *stream, const char *progname)
 	fprintf(stream, "\t-x\t\tdo a reverse lookup\n");
 	fprintf(stream, "\twhen doing a secure trace:\n");
 	fprintf(stream, "\t-r <file>\t\tuse file as root servers hint file\n");
+	fprintf(stream, "\t-t\t\tsend the query with tcp (connected)\n");
 	fprintf(stream, "\t-d <domain>\t\tuse domain as the start point for the trace\n");
         fprintf(stream, "\t-y <name:key[:algo]>\tspecify named base64 tsig key, and optional an\n\t\t\talgorithm (defaults to hmac-md5.sig-alg.reg.int)\n");
 	fprintf(stream, "\t-z\t\tdon't randomize the nameservers before use\n");
@@ -134,6 +135,8 @@ main(int argc, char *argv[])
 	bool		qusevc;
 	bool 		qrandom;
 	
+	char		*resolv_conf_file = NULL;
+	
 	ldns_rdf *trace_start_name = NULL;
 
 	int		result = 0;
@@ -166,7 +169,7 @@ main(int argc, char *argv[])
 	/* global first, query opt next, option with parm's last
 	 * and sorted */ /*  "46DITSVQf:i:w:q:achuvxzy:so:p:b:k:" */
 	                               
-	while ((c = getopt(argc, argv, "46ab:cd:Df:hi:Ik:o:p:q:Qr:sSTuvV:w:xy:z")) != -1) {
+	while ((c = getopt(argc, argv, "46ab:c:d:Df:hi:Ik:o:p:q:Qr:sStTuvV:w:xy:z")) != -1) {
 		switch(c) {
 			/* global options */
 			case '4':
@@ -237,6 +240,9 @@ main(int argc, char *argv[])
 				}
 				break;
 			case 'c':
+				resolv_conf_file = optarg;
+				break;
+			case 't':
 				qusevc = true;
 				break;
 			case 'k':
@@ -451,7 +457,7 @@ main(int argc, char *argv[])
 	/* set the nameserver to use */
 	if (!serv) {
 		/* no server given make a resolver from /etc/resolv.conf */
-		status = ldns_resolver_new_frm_file(&res, NULL);
+		status = ldns_resolver_new_frm_file(&res, resolv_conf_file);
 		if (status != LDNS_STATUS_OK) {
 			warning("Could not create a resolver structure");
 			result = EXIT_FAILURE;
@@ -468,7 +474,7 @@ main(int argc, char *argv[])
 		serv_rdf = ldns_rdf_new_addr_frm_str(serv);
 		if (!serv_rdf) {
 			/* try to resolv the name if possible */
-			status = ldns_resolver_new_frm_file(&cmdline_res, NULL);
+			status = ldns_resolver_new_frm_file(&cmdline_res, resolv_conf_file);
 			
 			if (status != LDNS_STATUS_OK) {
 				error("%s", "@server ip could not be converted");

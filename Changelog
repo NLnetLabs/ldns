@@ -10,6 +10,10 @@
 	Drill:
 	* drill prints error on failed axfr.
 	* drill now accepts mangled packets with -f
+	* old -c option (use tcp) changed to -t
+	* -c option to specify alternative resolv.conf file added
+	* chaser now stops at root when no trusted keys are found
+	  instead of looping forever trying to find the DS for .
 
 
 31 Apr 2006: 1.1.0: ldns-team
