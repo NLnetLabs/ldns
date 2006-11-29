@@ -120,7 +120,7 @@ ldns_fget_token_l(FILE *f, char *token, const char *delim, size_t limit, int *li
 	}
 	*t = '\0';
 	if (c == EOF) {
-		return 0;
+		return (ssize_t)i;
 	}
 
 	if (i == 0) {
