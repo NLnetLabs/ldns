@@ -602,7 +602,7 @@ ldns_str2rdf_cert_alg(ldns_rdf **rd, const char *str)
 	} else {
 		/* try as-is (a number) */
 		st = ldns_str2rdf_int16(rd, str);
-		if (st = LDNS_STATUS_OK &&
+		if (st == LDNS_STATUS_OK &&
 		    ldns_rdf2native_int16(*rd) == 0) {
 			st = LDNS_STATUS_CERT_BAD_ALGORITHM;
 		}
