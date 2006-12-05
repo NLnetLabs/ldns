@@ -498,10 +498,6 @@ ldns_rr_new_frm_fp_l(ldns_rr **newrr, FILE *fp, uint16_t *default_ttl, ldns_rdf 
                 return LDNS_STATUS_MEM_ERR;
         }
 
-	if (line_nr) {
-		*line_nr = *line_nr + 1;
-	}
-
         /* read an entire line in from the file */
         if ((size = ldns_fget_token_l(fp, line, LDNS_PARSE_SKIP_SPACE, LDNS_MAX_LINELEN, line_nr)) == -1) {
 		LDNS_FREE(line);

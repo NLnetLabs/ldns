@@ -588,25 +588,26 @@ ldns_str2rdf_cert_alg(ldns_rdf **rd, const char *str)
 {
 	ldns_lookup_table *lt;
 	ldns_status st;
-	uint8_t id = 0;
+	uint8_t idd[2];
 	lt = ldns_lookup_by_name(ldns_cert_algorithms, str);
 	st = LDNS_STATUS_OK;
 
 	if (lt) {
-		id = (uint8_t) lt->id;
-		/* it was given as a integer */
+		ldns_write_uint16(idd, (uint16_t) lt->id);
 		*rd = ldns_rdf_new_frm_data(
-			LDNS_RDF_TYPE_INT8, sizeof(uint8_t), &id);
+			LDNS_RDF_TYPE_INT16, sizeof(uint16_t), idd);
 		if (!*rd) {
 			st = LDNS_STATUS_ERR;
 		}
 	} else {
 		/* try as-is (a number) */
-		st = ldns_str2rdf_int8(rd, str);
+		st = ldns_str2rdf_int16(rd, str);
+		if (st = LDNS_STATUS_OK &&
+		    ldns_rdf2native_int16(*rd) == 0) {
+			st = LDNS_STATUS_CERT_BAD_ALGORITHM;
+		}
 	}
-	if (ldns_rdf2native_int8(*rd) == 0) {
-		st = LDNS_STATUS_CERT_BAD_ALGORITHM;
-	}
+
 	return st;
 }
 		
