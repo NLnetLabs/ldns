@@ -34,7 +34,8 @@ main(int argc, char *argv[])
 	ldns_rr *k, *ds;
 	ldns_signing_algorithm alg;
 	ldns_hash h;
-	
+	char *program = argv[0];
+		
 	alg = 0;
 	h = LDNS_SHA1;
 
@@ -50,7 +51,7 @@ main(int argc, char *argv[])
 	}
 
 	if (argc != 1) {
-		usage(stderr, argv[0]);
+		usage(stderr, program);
 		exit(EXIT_FAILURE);
 	}
 	keyname = strdup(argv[0]);

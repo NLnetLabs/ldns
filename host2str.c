@@ -165,6 +165,7 @@ ldns_rdf2buffer_str_time(ldns_buffer *output, const ldns_rdf *rdf)
 	
 	data_time = 0;
 	memcpy(&data_time, &data, sizeof(uint32_t));
+
 	memset(&tm, 0, sizeof(tm));
 
 	if (gmtime_r(&data_time, &tm) && strftime(date_buf, 15, "%Y%m%d%H%M%S", &tm)) {

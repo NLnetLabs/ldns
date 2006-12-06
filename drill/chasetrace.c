@@ -234,6 +234,10 @@ do_chase(ldns_resolver *res, ldns_rdf *name, ldns_rr_type type, ldns_rr_class c,
 	ldns_rr_list *nsec_rrs = NULL;
 	ldns_rr_list *nsec_rr_sigs = NULL;
 
+	uint16_t ksk_i;
+	uint16_t ksk_sig_i;
+	ldns_rr *ksk_sig = NULL;
+
 	uint16_t key_i;
 	uint16_t tkey_i;
 	ldns_pkt *pkt;
@@ -410,7 +414,6 @@ do_chase(ldns_resolver *res, ldns_rdf *name, ldns_rr_type type, ldns_rr_class c,
 				result = LDNS_STATUS_ERR;
 				for (key_i = 0; key_i < ldns_rr_list_rr_count(keys); key_i++) {
 					/* only check matching keys */
-
 					if (ldns_calc_keytag(ldns_rr_list_rr(keys, key_i))
 					    ==
 					    ldns_rdf2native_int16(ldns_rr_rrsig_keytag(cur_sig))
@@ -432,6 +435,38 @@ do_chase(ldns_resolver *res, ldns_rdf *name, ldns_rr_type type, ldns_rr_class c,
 							}
 							/* apparently the key is not trusted, so it must either be signed itself or have a DS in the parent */
 							if (type == LDNS_RR_TYPE_DNSKEY && ldns_rdf_compare(name, ldns_rr_rdf(cur_sig, 7)) == 0) {
+								/* check the other signatures, there might be a trusted KSK here */
+								for (ksk_sig_i = 0; ksk_sig_i < ldns_rr_list_rr_count(sigs); ksk_sig_i++) {
+									ksk_sig = ldns_rr_list_rr(sigs, ksk_sig_i);
+									if (ldns_rdf2native_int16(ldns_rr_rrsig_keytag(ksk_sig)) !=
+									    ldns_calc_keytag(ldns_rr_list_rr(keys, key_i))) {
+										for (ksk_i = 0; ksk_i < ldns_rr_list_rr_count(keys); ksk_i++) {
+											if (ldns_rdf2native_int16(ldns_rr_rrsig_keytag(ksk_sig)) ==
+											    ldns_calc_keytag(ldns_rr_list_rr(keys, ksk_i))) {
+												result = ldns_verify_rrsig(rrset, cur_sig, ldns_rr_list_rr(keys, key_i));
+												if (result == LDNS_STATUS_OK) {
+													for (tkey_i = 0; tkey_i < ldns_rr_list_rr_count(trusted_keys); tkey_i++) {
+														if (ldns_rr_compare_ds(ldns_rr_list_rr(keys, ksk_i),
+																   ldns_rr_list_rr(trusted_keys, tkey_i)
+																  )) {
+															if (verbosity > 1) {
+																mesg("Key is signed by trusted KSK");
+															}
+															ldns_rr_list_deep_free(rrset);
+															ldns_rr_list_deep_free(sigs);
+															ldns_rr_list_deep_free(keys);
+															ldns_pkt_free(pkt);
+															ldns_rr_free(cur_sig);
+															return LDNS_STATUS_OK;
+														}
+													}
+												}
+											}
+										}
+										
+									}
+								}
+
 								/* okay now we are looping in a selfsigned key, find the ds or bail */
 								/* there can never be a DS for the root label unless it has been given,
 								 * so we can't chase that */
@@ -457,6 +492,13 @@ do_chase(ldns_resolver *res, ldns_rdf *name, ldns_rr_type type, ldns_rr_class c,
 							ldns_rr_free(cur_sig);
 							return result;
 						}
+					/*
+					} else {
+						printf("Keytag mismatch: %u <> %u\n",
+							ldns_calc_keytag(ldns_rr_list_rr(keys, key_i)),
+							ldns_rdf2native_int16(ldns_rr_rrsig_keytag(cur_sig))
+					   );
+					*/	
 					}
 				}
 				if (result != LDNS_STATUS_OK) {

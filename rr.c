@@ -1312,7 +1312,7 @@ ldns_rr_compare_no_rdata(const ldns_rr *rr1, const ldns_rr *rr2)
 int ldns_rr_compare_wire(ldns_buffer *rr1_buf, ldns_buffer *rr2_buf)
 {
         size_t rr1_len, rr2_len, min_len, i, offset;
-        
+
         rr1_len = ldns_buffer_capacity(rr1_buf);
         rr2_len = ldns_buffer_capacity(rr2_buf);
 
@@ -1320,18 +1320,19 @@ int ldns_rr_compare_wire(ldns_buffer *rr1_buf, ldns_buffer *rr2_buf)
          * and especially past TTL */
         offset = 0;
         while (offset < rr1_len && *ldns_buffer_at(rr1_buf, offset) != 0) {
-          offset += *ldns_buffer_at(rr1_buf, offset);
+          offset += *ldns_buffer_at(rr1_buf, offset) + 1;
         }
         offset += 9;
 	min_len = (rr1_len < rr2_len) ? rr1_len : rr2_len;
         /* Compare RRs RDATA byte for byte. */
         for(i = offset; i < min_len; i++) {
-			if (*ldns_buffer_at(rr1_buf,i) < *ldns_buffer_at(rr2_buf,i)) {
-				return -1;
-			} else if (*ldns_buffer_at(rr1_buf,i) > *ldns_buffer_at(rr2_buf,i)) {
-				return +1;
-			}
-		}
+                if (*ldns_buffer_at(rr1_buf,i) < *ldns_buffer_at(rr2_buf,i)) {
+                        return -1;
+                } else if (*ldns_buffer_at(rr1_buf,i) > *ldns_buffer_at(rr2_buf,i)) {
+                        return +1;
+                }
+        }
+
         /* If both RDATAs are the same up to min_len, then the shorter one sorts first. */
         if (rr1_len < rr2_len) {
                 return -1;
@@ -1372,7 +1373,7 @@ ldns_rr_compare(const ldns_rr *rr1, const ldns_rr *rr2)
 		}
 
 		result = ldns_rr_compare_wire(rr1_buf, rr2_buf);
-		
+
 		ldns_buffer_free(rr1_buf);
 		ldns_buffer_free(rr2_buf);
 	}
@@ -1404,6 +1405,7 @@ ldns_rr_compare_ds(const ldns_rr *orr1, const ldns_rr *orr2)
 	    ldns_rr_get_type(rr2) == LDNS_RR_TYPE_DS) {
 	    	ds_repr = ldns_key_rr2ds(rr1, LDNS_SHA1);
 	    	result = (ldns_rr_compare(rr2, ds_repr) == 0);
+
 	    	ldns_rr_free(ds_repr);
 	} else {
 		result = (ldns_rr_compare(rr1, rr2) == 0);

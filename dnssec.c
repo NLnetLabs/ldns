@@ -70,6 +70,7 @@ ldns_calc_keytag(const ldns_rr *key)
 		}
 		ldns_buffer_free(keybuf);
 		ac32 += (ac32 >> 16) & 0xFFFF;
+/*printf("RETURNING %u\n", (uint16_t) (ac32 & 0xFFFF));*/
 		return (uint16_t) (ac32 & 0xFFFF);
 	}
 }
@@ -866,6 +867,7 @@ ldns_sign_public(ldns_rr_list *rrset, ldns_key_list *keys)
 			}
 
 			/* key-tag */
+/*printf("SETTING KEYTAG TO: %u\n", ldns_key_keytag(current_key));*/
 			(void)ldns_rr_rrsig_set_keytag(current_sig,
 					ldns_native2rdf_int16(LDNS_RDF_TYPE_INT16, 
 						ldns_key_keytag(current_key)));
