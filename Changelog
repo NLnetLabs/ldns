@@ -44,7 +44,7 @@
 	* DNSSEC is never automaticaly set, even when you query
 	  for DNSKEY/RRSIG or DS.
 	* Implement a crude RTT check, it now distinguishes between
-	  reacheable and unreacheable.
+	  reachable and unreachable.
         * A form of secure tracing was added
         * Secure Chasing has been improved
 	* -x does a reverse lookup for the given IP address

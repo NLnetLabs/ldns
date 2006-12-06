@@ -86,7 +86,7 @@ ldns_send_buffer(ldns_pkt **result, ldns_resolver *r, const ldns_buffer *qb, ldn
 	for (i = 0; i < ldns_resolver_nameserver_count(r); i++) {
 
 		if (rtt[i] == LDNS_RESOLV_RTT_INF) {
-			/* not reacheable nameserver! */
+			/* not reachable nameserver! */
 			continue;
 		}
 		all_servers_rtt_inf = false;

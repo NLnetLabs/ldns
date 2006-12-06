@@ -1464,10 +1464,10 @@ ldns_resolver_print(FILE *output, const ldns_resolver *r)
 
 		switch ((int)rtt[i]) {
 			case LDNS_RESOLV_RTT_MIN:
-			fprintf(output, " - reacheable\n");
+			fprintf(output, " - reachable\n");
 			break;
 			case LDNS_RESOLV_RTT_INF:
-			fprintf(output, " - unreacheable\n");
+			fprintf(output, " - unreachable\n");
 			break;
 		}
 	}
