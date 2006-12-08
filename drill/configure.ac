@@ -5,6 +5,8 @@ AC_PREREQ(2.57)
 AC_INIT(drill, 1.1.0, libdns@nlnetlabs.nl, drill)
 AC_CONFIG_SRCDIR([drill_util.h])
 
+OURCPPFLAGS='-D_POSIX_C_SOURCE=200112 -D_XOPEN_SOURCE=600 -D__EXTENSIONS__'
+CPPFLAGS=${CPPFLAGS:-${OURCPPFLAGS}}
 OURCFLAGS='-g'
 CFLAGS=${CFLAGS:-${OURCFLAGS}}
 
@@ -39,6 +41,7 @@ $3
 fi
 ])
 CHECK_COMPILER_FLAG(O2, [CFLAGS="$CFLAGS -O2"])
+CHECK_COMPILER_FLAG(std=c99, [CFLAGS="$CFLAGS -std=c99"], [CFLAGS="$CFLAGS -ansi"])
 
 AC_CHECK_HEADERS([getopt.h stdlib.h stdio.h assert.h netinet/in.h ctype.h time.h],,, [AC_INCLUDES_DEFAULT])
 AC_CHECK_HEADERS(sys/param.h sys/mount.h,,, [AC_INCLUDES_DEFAULT]
@@ -52,14 +55,14 @@ AC_CHECK_HEADERS(sys/param.h sys/mount.h,,, [AC_INCLUDES_DEFAULT]
 
 AC_ARG_WITH(ssl, AC_HELP_STRING([--with-ssl=pathname],
                                     [enable SSL (will check /usr/local/ssl
-                            /usr/lib/ssl /usr/ssl /usr/pkg /usr/local /usr)]),[
+                            /usr/lib/ssl /usr/ssl /usr/pkg /usr/local /usr/sfw /usr)]),[
         ],[
             withval="yes"
         ])
     if test x_$withval != x_no; then
         AC_MSG_CHECKING(for SSL)
         if test x_$withval = x_ -o x_$withval = x_yes; then
-            withval="/usr/local/ssl /usr/lib/ssl /usr/ssl /usr/pkg /usr/local /usr"
+            withval="/usr/local/ssl /usr/lib/ssl /usr/ssl /usr/pkg /usr/local /usr/sfw /usr"
         fi
         for dir in $withval; do
             ssldir="$dir"

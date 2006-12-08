@@ -98,7 +98,7 @@ ldns_status ldns_send(ldns_pkt **pkt, ldns_resolver *r, const ldns_pkt *query_pk
  * \param[in] tsig_mac the tsig MAC to authenticate the response with (NULL to do no TSIG authentication)
  * \return status
  */
-ldns_status ldns_send_buffer(ldns_pkt **pkt, ldns_resolver *r, const ldns_buffer *qb, ldns_rdf *tsig_mac);
+ldns_status ldns_send_buffer(ldns_pkt **pkt, ldns_resolver *r, ldns_buffer *qb, ldns_rdf *tsig_mac);
 
 /**
  * Create a tcp socket to the specified address

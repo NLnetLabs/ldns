@@ -49,7 +49,7 @@ ldns_send(ldns_pkt **result_packet, ldns_resolver *r, const ldns_pkt *query_pkt)
 }
 
 ldns_status
-ldns_send_buffer(ldns_pkt **result, ldns_resolver *r, const ldns_buffer *qb, ldns_rdf *tsig_mac)
+ldns_send_buffer(ldns_pkt **result, ldns_resolver *r, ldns_buffer *qb, ldns_rdf *tsig_mac)
 {
 	uint8_t i;
 	
