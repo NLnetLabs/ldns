@@ -578,8 +578,13 @@ handle_query(uint8_t* inbuf, ssize_t inlen, struct entry* entries, int* count,
 		ldns_pkt_free(answer_pkt);
 		answer_pkt = NULL;
 
-		if(p->packet_sleep)
+		if(p->packet_sleep) {
+			if(verbose) log_msg("sleeping for next packet"
+				" %d secs\n", p->packet_sleep);
 			sleep(p->packet_sleep);
+			if(verbose) log_msg("wakeup for next packet "
+				"(slept %d secs)\n", p->packet_sleep);
+		}
 		sendfunc(outbuf, answer_size, userdata);
 		LDNS_FREE(outbuf);
 		outbuf = NULL;
