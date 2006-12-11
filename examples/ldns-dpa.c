@@ -6,8 +6,6 @@
  *
  * See the file LICENSE for the license
  */
-#define __USE_BSD 1
-
 #include "config.h"
 
 #include <ldns/ldns.h>
