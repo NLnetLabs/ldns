@@ -22,6 +22,13 @@
 #include <time.h>
 #include <sys/time.h>
 
+#ifndef INET_ADDRSTRLEN
+#define INET_ADDRSTRLEN 16
+#endif
+#ifndef INET6_ADDRSTRLEN
+#define INET6_ADDRSTRLEN 46
+#endif
+
 /* lookup tables for standard DNS stuff  */
 
 /* Taken from RFC 2535, section 7.  */

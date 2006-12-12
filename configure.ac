@@ -180,6 +180,20 @@ AC_INCLUDES_DEFAULT
 #endif
 ])
 AC_CHECK_TYPE(ssize_t, int)
+AC_CHECK_TYPE(in_addr_t, [], [AC_DEFINE([in_addr_t], [uint32_t], [in_addr_t])], [
+#if HAVE_SYS_TYPES_H
+# include <sys/types.h>
+#endif
+#if HAVE_NETINET_IN_H
+# include <netinet/in.h>
+#endif])
+AC_CHECK_TYPE(in_port_t, [], [AC_DEFINE([in_port_t], [uint16_t], [in_port_t])], [
+#if HAVE_SYS_TYPES_H
+# include <sys/types.h>
+#endif
+#if HAVE_NETINET_IN_H
+# include <netinet/in.h>
+#endif])
 
 AC_FUNC_MALLOC
 
@@ -187,6 +201,17 @@ AC_REPLACE_FUNCS(b64_pton)
 AC_REPLACE_FUNCS(b64_ntop)
 AC_REPLACE_FUNCS(timegm)
 AC_REPLACE_FUNCS(isblank)
+AC_REPLACE_FUNCS(getaddrinfo)
+AC_REPLACE_FUNCS(inet_aton)
+AC_REPLACE_FUNCS(inet_pton)
+AC_REPLACE_FUNCS(inet_ntop)
+AC_REPLACE_FUNCS(snprintf)
+AC_REPLACE_FUNCS(strlcpy)
+AC_REPLACE_FUNCS(memmove)
+
+if test $ac_cv_func_getaddrinfo = no; then
+AC_LIBOBJ([fake-rfc2553])
+fi
 
 #AC_SEARCH_LIBS(RSA_new, [crypto])
 
@@ -261,6 +286,29 @@ time_t timegm (struct tm *tm);
 #ifndef HAVE_ISBLANK
 int isblank(int c);
 #endif /* !HAVE_ISBLANK */
+#ifndef HAVE_SNPRINTF
+#include <stdarg.h>
+int snprintf (char *str, size_t count, const char *fmt, ...);
+int vsnprintf (char *str, size_t count, const char *fmt, va_list arg);
+#endif /* HAVE_SNPRINTF */
+#ifndef HAVE_INET_PTON
+int inet_pton(int af, const char* src, void* dst);
+#endif /* HAVE_INET_PTON */
+#ifndef HAVE_INET_NTOP
+const char *inet_ntop(int af, const void *src, char *dst, size_t size);
+#endif
+#ifndef HAVE_INET_ATON
+int inet_aton(const char *cp, struct in_addr *addr);
+#endif
+#ifndef HAVE_MEMMOVE
+void *memmove(void *dest, const void *src, size_t n);
+#endif
+#ifndef HAVE_STRLCPY
+size_t strlcpy(char *dst, const char *src, size_t siz);
+#endif
+#ifndef HAVE_GETADDRINFO
+#include "compat/fake-rfc2553.h"
+#endif
 ])
 
 AC_CONFIG_FILES([Makefile ldns/util.h])
