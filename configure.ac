@@ -46,11 +46,11 @@ fi
 
 # Checks for typedefs, structures, and compiler characteristics.
 AC_C_CONST
-AC_C_INLINE
 AC_LANG_C
 AC_TYPE_SIZE_T
 CHECK_COMPILER_FLAG(O2, [CFLAGS="$CFLAGS -O2"])
 CHECK_COMPILER_FLAG(std=c99, [CFLAGS="$CFLAGS -std=c99"], [CFLAGS="$CFLAGS -ansi"])
+AC_C_INLINE
 AC_CHECK_TYPE(int8_t, char)
 AC_CHECK_TYPE(int16_t, short)
 AC_CHECK_TYPE(int32_t, int)

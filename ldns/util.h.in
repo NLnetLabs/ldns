@@ -199,7 +199,7 @@ void ldns_set_bit(uint8_t *byte, int bit_nr, bool value);
  * (or 1 of b < 1)
  */
 /*@unused@*/
-static inline long
+INLINE long
 ldns_power(long a, long b) {
 	long result = 1;
 	while (b > 0) {

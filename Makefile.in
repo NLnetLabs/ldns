@@ -88,7 +88,7 @@ libldns.la:	$(LIBDNS_OBJECTS)
 
 copy-headers:
 		if [ ! -d include ] ; then mkdir include ; fi ;
-		if [ ! -d include/ldns ] ; then ln -sf ../ldns ./include/ldns ; fi ;
+		if [ ! -d include/ldns ] ; then ln -s ../ldns ./include/ldns ; fi ;
 		for i in $(LIBDNS_HEADERS); do \
 			if [ $(srcdir)/ldns/$$i -nt ./include/ldns/$$i ] ; then \
 				MVPROG=/bin/cp $(INSTALL) -m 644 $$i ./include/ldns/; \
