@@ -102,7 +102,7 @@ struct reply_packet {
 	struct reply_packet* next;
 	ldns_pkt* reply;
 	ldns_buffer* reply_from_hex;
-	int packet_sleep; /* seconds to sleep before giving packet */
+	unsigned int packet_sleep; /* seconds to sleep before giving packet */
 };
 
 /* data structure to keep the canned queries in */
@@ -122,7 +122,7 @@ struct entry {
 
 	/* how to adjust the reply packet */
 	bool copy_id; /* copy over the ID from the query into the answer */
-	int sleeptime; /* in seconds */
+	unsigned int sleeptime; /* in seconds */
 
 	/* next in list */
 	struct entry* next;
@@ -305,11 +305,11 @@ static void adjustline(const char* line, struct entry* e,
 		if(str_keyword(&parse, "copy_id")) {
 			e->copy_id = true;
 		} else if(str_keyword(&parse, "sleep=")) {
-			e->sleeptime = strtol(parse, (char**)&parse, 10);
+			e->sleeptime = (unsigned int) strtol(parse, (char**)&parse, 10);
 			while(isspace(*parse)) 
 				parse++;
 		} else if(str_keyword(&parse, "packet_sleep=")) {
-			pkt->packet_sleep = strtol(parse, (char**)&parse, 10);
+			pkt->packet_sleep = (unsigned int) strtol(parse, (char**)&parse, 10);
 			while(isspace(*parse)) 
 				parse++;
 		} else {
@@ -411,7 +411,7 @@ data_buffer2wire(ldns_buffer *data_buffer)
 	
 	hexbuf = LDNS_XMALLOC(uint8_t, LDNS_MAX_PACKETLEN);
 	for (data_buf_pos = 0; data_buf_pos < ldns_buffer_position(data_buffer); data_buf_pos++) {
-		c = data_wire[data_buf_pos];
+		c = (int) data_wire[data_buf_pos];
 		
 		if (state < 2 && !isascii(c)) {
 			/*verbose("non ascii character found in file: (%d) switching to raw mode\n", c);*/
@@ -462,7 +462,6 @@ data_buffer2wire(ldns_buffer *data_buffer)
 		wirelen = hexstr2bin((char *) hexbuf, hexbufpos, wire, 0, LDNS_MAX_PACKETLEN);
 		wire_buffer = ldns_buffer_new(wirelen);
 		ldns_buffer_new_frm_data(wire_buffer, wire, wirelen);
-		printf("LEN: %u\n", wirelen);
 	} else {
 		error("Incomplete hex data, not at byte boundary\n");
 	}
@@ -890,7 +889,7 @@ handle_tcp(int tcp_sock, struct entry* entries, int *count)
 	}
 	read_n_bytes(s, inbuf, tcplen);
 
-	handle_query(inbuf, tcplen, entries, count, transport_tcp, send_tcp, &userdata);
+	handle_query(inbuf, (ssize_t) tcplen, entries, count, transport_tcp, send_tcp, &userdata);
 	close(s);
 
 }
@@ -951,7 +950,7 @@ main(int argc, char **argv)
 		error("tcp socket(): %s\n", strerror(errno));
 	}
 	c = 1;
-	if(setsockopt(tcp_sock, SOL_SOCKET, SO_REUSEADDR, &c, sizeof(int)) < 0) {
+	if(setsockopt(tcp_sock, SOL_SOCKET, SO_REUSEADDR, &c, (socklen_t) sizeof(int)) < 0) {
 		error("setsockopt(SO_REUSEADDR): %s\n", strerror(errno));
 	}
 
