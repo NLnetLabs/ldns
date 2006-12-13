@@ -55,7 +55,7 @@ AC_CHECK_TYPE(uint16_t, unsigned short)
 AC_CHECK_TYPE(uint32_t, unsigned int)
 AC_CHECK_TYPE(uint64_t, unsigned long long)
 
-AC_CHECK_HEADERS([sys/types.h getopt.h stdlib.h stdio.h assert.h netinet/in.h ctype.h time.h pcap.h arpa/inet.h sys/time.h sys/socket.h],,, [AC_INCLUDES_DEFAULT])
+AC_CHECK_HEADERS([sys/types.h getopt.h stdlib.h stdio.h assert.h netinet/in.h ctype.h time.h pcap.h arpa/inet.h sys/time.h sys/socket.h sys/select.h],,, [AC_INCLUDES_DEFAULT])
 AC_CHECK_HEADERS([netinet/in_systm.h net/if.h netinet/ip.h netinet/udp.h netinet/if_ether.h netinet/ip6.h],,, [
 AC_INCLUDES_DEFAULT 
 #ifdef HAVE_NETINET_IN_SYSTM_H

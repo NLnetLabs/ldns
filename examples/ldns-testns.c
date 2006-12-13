@@ -120,13 +120,30 @@ ENTRY_END
 #include "config.h"
 #include <ldns/ldns.h>
 
+#ifdef HAVE_SYS_TYPES_H
 #include <sys/types.h>
+#endif
+#ifdef HAVE_SYS_SOCKET_H
 #include <sys/socket.h>
+#endif
+#ifdef HAVE_TIME_H
+#include <time.h>
+#endif
+#ifdef HAVE_SYS_TIME_H
+#include <sys/time.h>
+#endif
+#ifdef HAVE_SYS_SELECT_H
 #include <sys/select.h>
-
+#endif
+#ifdef HAVE_ARPA_INET_H
 #include <arpa/inet.h>
+#endif
+#ifdef HAVE_NETINET_IN_H
 #include <netinet/in.h>
+#endif
+#ifdef HAVE_NETINET_UDP_H
 #include <netinet/udp.h>
+#endif
 #include <netinet/igmp.h>
 #include <errno.h>
 
