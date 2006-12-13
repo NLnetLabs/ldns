@@ -232,6 +232,9 @@ snprintf$U.o:	$(srcdir)/compat/snprintf.c
 fake-rfc2553$U.o:	$(srcdir)/compat/fake-rfc2553.c
 	$(COMP_LIB) -c $(srcdir)/compat/fake-rfc2553.c -o $@
 
+gmtime_r$U.o:   $(srcdir)/compat/gmtime_r.c
+	$(COMP_LIB) -c $(srcdir)/compat/gmtime_r.c -o $@
+
 # Automatic dependencies.
 %.d: $(srcdir)/%.c
 	$(SHELL) -ec '$(CC) -MM $(CPPFLAGS) $< \
