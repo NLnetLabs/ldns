@@ -35,7 +35,11 @@ static int udp_bind(int sock, int port, const char *my_address)
     in_addr_t maddr = INADDR_ANY;
 
     if (my_address) {
+#ifdef AF_INET6
         if (inet_pton(AF_INET6, my_address, &maddr) < 1) {
+#else
+	if (0) {
+#endif
             if (inet_pton(AF_INET, my_address, &maddr) < 1) {
                 return -2;
             }

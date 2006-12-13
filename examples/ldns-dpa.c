@@ -10,10 +10,12 @@
 
 #include <ldns/ldns.h>
 
-#include <netinet/ip6.h>
-#include <errno.h>
-
 #ifdef HAVE_LIBPCAP
+
+#ifdef HAVE_NETINET_IP6_H
+#include <netinet/ip6.h>
+#endif
+#include <errno.h>
 
 int verbosity = 1;
 

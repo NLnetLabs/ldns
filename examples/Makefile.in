@@ -52,18 +52,22 @@ PROGRAMS=$(SOURCES:.c=)
 .PHONY:	all clean realclean all-static
 .SECONDARY: $(SOURCES:.c=.o)
 
-all:	$(PROGRAMS)
+all:	$(addsuffix -exe,$(PROGRAMS))
 
 all-static: $(addsuffix -stc,$(PROGRAMS))
 
 %.o:    $(srcdir)/%.c
 	$(COMPILE) -c $<
 
-%:  $(srcdir)/%.o
-	$(LINK) -o $@ $^
+%-exe:  $(srcdir)/%.o
+	@if test $< -nt $(@:-exe=); then \
+	$(LINK) -o $(@:-exe=) $^ ; \
+	fi
 
 %-stc:	$(srcdir)/%.o
-	$(LINK_STATIC) -o $@ $^
+	@if test $< -nt $@; then \
+	$(LINK_STATIC) -o $@ $^ ; \
+	fi
 
 lint:
 	for i in $(SOURCES); do \

@@ -6,9 +6,11 @@
 #include <time.h>
 #endif
 
-struct tm *gmtime_r(const time_t *timep, struct tm *result)
+char *ctime_r(const time_t *timep, char *buf)
 {
 	/* no thread safety. */
-	*result = *gmtime(timep);
+	char* result = ctime(timep);
+	if(buf && result)
+		strcpy(buf, result);
 	return result;
 }
