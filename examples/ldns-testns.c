@@ -64,13 +64,13 @@
 	SECTION ADDITIONAL
 	<RRs, one per line>
 	EXTRA_PACKET		; follow with SECTION, REPLY for more packets.
-	HEX_ANSWER		; follow with hex data
+	HEX_ANSWER_BEGIN	; follow with hex data
 				; this replaces any answer packet constructed
 				; with the SECTION keywords (only SECTION QUERY
 				; is used to match queries). If the data cannot
 				; be parsed, ADJUST rules for the answer packet
 				; are ignored
-	END_HEX_ANSWER
+	HEX_ANSWER_END
 	ENTRY_END
 */
 
@@ -96,7 +96,7 @@ REPLY NOERROR
 ADJUST copy_id
 SECTION QUESTION
 www2.nlnetlabs.nl.	IN	A
-HEX_ANSWER
+HEX_ANSWER_BEGIN
 ; 0  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17 18 19
 ;-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
  00 bf 81 80 00 01 00 01 00 02 00 02 03 77 77 77 0b 6b 61 6e	;	   1-  20
@@ -111,7 +111,7 @@ HEX_ANSWER
  01 00 00 46 53 00 04 52 5e ed 02 03 6e 73 32 08 68 65 78 6f	;	 181- 200
  6e 2d 69 73 02 6e 6c 00 00 01 00 01 00 00 46 53 00 04 d4 cc	;	 201- 220
  db 5b
-END_HEX_ANSWER
+HEX_ANSWER_END
 ENTRY_END
 
 
@@ -501,7 +501,7 @@ data_buffer2wire(ldns_buffer *data_buffer)
 				hexbufpos++;
 				break;
 			default:
-				fprintf(stderr, "unknown state while reading");
+				error("unknown state while reading");
 				LDNS_FREE(hexbuf);
 				return 0;
 				break;
@@ -630,12 +630,12 @@ static struct entry* read_datafile(const char* name)
 			else if(str_keyword(&parse, "ADDITIONAL"))
 				add_section = LDNS_SECTION_ADDITIONAL;
 			else error("%s line %d: bad section %s", name, lineno, parse);
-		} else if(str_keyword(&parse, "HEX_ANSWER")) {
+		} else if(str_keyword(&parse, "HEX_ANSWER_BEGIN")) {
 			hex_data_buffer = ldns_buffer_new(LDNS_MAX_PACKETLEN);
 			reading_hex = true;
-		} else if(str_keyword(&parse, "END_HEX_ANSWER")) {
+		} else if(str_keyword(&parse, "HEX_ANSWER_END")) {
 			if (!reading_hex) {
-				error("%s line %d: HEX_ANSWER_END read but no HEX_ANSWER keyword seen", name, lineno);
+				error("%s line %d: HEX_ANSWER_END read but no HEX_ANSWER_BEGIN keyword seen", name, lineno);
 			}
 			reading_hex = false;
 			cur_reply->reply_from_hex = data_buffer2wire(hex_data_buffer);
@@ -661,7 +661,7 @@ static struct entry* read_datafile(const char* name)
 
 	fclose(in);
 	if (reading_hex) {
-		error("%s: End of file reached while still reading hex, missing END_HEX_ANSWER\n", name);
+		error("%s: End of file reached while still reading hex, missing HEX_ANSWER_END\n", name);
 	}
 	return list;
 }
@@ -716,7 +716,6 @@ static struct entry* find_match(struct entry* entries, ldns_pkt* query_pkt,
 			if(!get_owner(query_pkt) || !get_owner(reply) ||
 				ldns_dname_compare(
 				get_owner(query_pkt), get_owner(reply)) != 0) {
-				printf("result: %d\n", ldns_dname_compare(get_owner(query_pkt), get_owner(reply)));
 				if(verbose) log_msg("bad qname\n");
 				continue;
 			}
@@ -1006,7 +1005,6 @@ main(int argc, char **argv)
 	log_msg("Reading datafile %s\n", datafile);
 	entries = read_datafile(datafile);
 	
-	log_msg("Listening on port %d\n", port);
 	if((udp_sock = socket(AF_INET, SOCK_DGRAM, 0)) < 0) {
 		error("udp socket(): %s\n", strerror(errno));
 	}
