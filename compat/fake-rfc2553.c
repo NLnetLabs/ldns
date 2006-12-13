@@ -37,6 +37,7 @@
  */
 
 #include <ldns/config.h>
+#include <ldns/common.h>
 #include <unistd.h>
 #include <string.h>
 #include <stdio.h>

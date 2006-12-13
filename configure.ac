@@ -150,10 +150,15 @@ AC_ARG_WITH(ssl, AC_HELP_STRING([--with-ssl=pathname],
 # for macosx, see if glibtool exists and use that
 # BSD's need to know the version...
 AC_CHECK_PROG(glibtool, glibtool, [glibtool], )
-AC_CHECK_PROG(libtool, libtool15, [libtool15], libtool)
+AC_CHECK_PROGS(libtool, [libtool15 libtool], [./libtool])
 AC_PATH_TOOL(AR, ar, [false])
 if test $AR = false; then
 	AC_MSG_ERROR([Cannot find 'ar', please extend PATH to include it])
+fi
+# avoid libtool max commandline length test on systems that fork slowly.
+AC_CANONICAL_HOST
+if echo "$host_os" | grep "sunos4" >/dev/null; then
+	lt_cv_sys_max_cmd_len=32750;
 fi
 AC_PROG_LIBTOOL
 
@@ -163,7 +168,7 @@ AC_HEADER_STDC
 #AC_HEADER_SYS_WAIT
 #AC_CHECK_HEADERS([getopt.h fcntl.h stdlib.h string.h strings.h unistd.h])
 # do the very minimum - we can always extend this
-AC_CHECK_HEADERS([getopt.h stdbool.h openssl/ssl.h netinet/in.h time.h],,, [AC_INCLUDES_DEFAULT])
+AC_CHECK_HEADERS([getopt.h stdarg.h stdbool.h openssl/ssl.h netinet/in.h time.h],,, [AC_INCLUDES_DEFAULT])
 AC_CHECK_HEADERS(sys/param.h sys/mount.h sys/socket.h,,,
 [AC_INCLUDES_DEFAULT
   [
@@ -201,7 +206,6 @@ AC_REPLACE_FUNCS(b64_pton)
 AC_REPLACE_FUNCS(b64_ntop)
 AC_REPLACE_FUNCS(timegm)
 AC_REPLACE_FUNCS(isblank)
-AC_REPLACE_FUNCS(getaddrinfo)
 AC_REPLACE_FUNCS(inet_aton)
 AC_REPLACE_FUNCS(inet_pton)
 AC_REPLACE_FUNCS(inet_ntop)
@@ -209,6 +213,7 @@ AC_REPLACE_FUNCS(snprintf)
 AC_REPLACE_FUNCS(strlcpy)
 AC_REPLACE_FUNCS(memmove)
 
+AC_CHECK_FUNCS([getaddrinfo])
 if test $ac_cv_func_getaddrinfo = no; then
 AC_LIBOBJ([fake-rfc2553])
 fi

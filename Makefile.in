@@ -243,4 +243,4 @@ allclean: test-clean clean
 test-clean:
 	tpkg -b test clean
 
-#include $(ALL_SOURCES:.c=.d)
+#-include $(ALL_SOURCES:.c=.d)
