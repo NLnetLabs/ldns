@@ -74,6 +74,49 @@
 	ENTRY_END
 */
 
+/* Example data file:
+$ORIGIN nlnetlabs.nl
+$TTL 3600
+
+ENTRY_BEGIN
+MATCH qname
+REPLY NOERROR
+ADJUST copy_id
+SECTION QUESTION
+www.nlnetlabs.nl.	IN	A
+SECTION ANSWER
+www.nlnetlabs.nl.	IN	A	195.169.215.155
+SECTION AUTHORITY
+nlnetlabs.nl.		IN	NS	www.nlnetlabs.nl.
+ENTRY_END
+
+ENTRY_BEGIN
+MATCH qname
+REPLY NOERROR
+ADJUST copy_id
+SECTION QUESTION
+www2.nlnetlabs.nl.	IN	A
+HEX_ANSWER
+; 0  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17 18 19
+;-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+ 00 bf 81 80 00 01 00 01 00 02 00 02 03 77 77 77 0b 6b 61 6e	;	   1-  20
+ 61 72 69 65 70 69 65 74 03 63 6f 6d 00 00 01 00 01 03 77 77	;	  21-  40
+ 77 0b 6b 61 6e 61 72 69 65 70 69 65 74 03 63 6f 6d 00 00 01	;	  41-  60
+ 00 01 00 01 50 8b 00 04 52 5e ed 32 0b 6b 61 6e 61 72 69 65	;	  61-  80
+ 70 69 65 74 03 63 6f 6d 00 00 02 00 01 00 01 50 8b 00 11 03	;	  81- 100
+ 6e 73 31 08 68 65 78 6f 6e 2d 69 73 02 6e 6c 00 0b 6b 61 6e	;	 101- 120
+ 61 72 69 65 70 69 65 74 03 63 6f 6d 00 00 02 00 01 00 01 50	;	 121- 140
+ 8b 00 11 03 6e 73 32 08 68 65 78 6f 6e 2d 69 73 02 6e 6c 00	;	 141- 160
+ 03 6e 73 31 08 68 65 78 6f 6e 2d 69 73 02 6e 6c 00 00 01 00	;	 161- 180
+ 01 00 00 46 53 00 04 52 5e ed 02 03 6e 73 32 08 68 65 78 6f	;	 181- 200
+ 6e 2d 69 73 02 6e 6c 00 00 01 00 01 00 00 46 53 00 04 d4 cc	;	 201- 220
+ db 5b
+END_HEX_ANSWER
+ENTRY_END
+
+
+*/
+
 #include "config.h"
 #include <ldns/ldns.h>
 
@@ -908,6 +951,7 @@ main(int argc, char **argv)
 	fd_set rset, wset, eset;
 	struct timeval timeout;
 	int maxfd;
+	bool random_port_success;
 
 	/* dns */
 	struct entry* entries;
@@ -916,8 +960,11 @@ main(int argc, char **argv)
 	logfile = stdout;
 	prog_name = argv[0];
 	log_msg("%s: start\n", prog_name);
-	while((c = getopt(argc, argv, "p:v")) != -1) {
+	while((c = getopt(argc, argv, "p:rv")) != -1) {
 		switch(c) {
+		case 'r':
+                	port = 0;
+                	break;
 		case 'p':
 			port = atoi(optarg);
 			if (port < 1) {
@@ -955,15 +1002,49 @@ main(int argc, char **argv)
 	}
 
 	/* bind ip4 */
-	if (bind_port(udp_sock, port)) {
-		error("cannot bind(): %s\n", strerror(errno));
+	if (port > 0) {
+		if (bind_port(udp_sock, port)) {
+			error("cannot bind(): %s\n", strerror(errno));
+		}
+		if (bind_port(tcp_sock, port)) {
+			error("cannot bind(): %s\n", strerror(errno));
+		}
+		if (listen(tcp_sock, CONN_BACKLOG) < 0) {
+			error("listen(): %s\n", strerror(errno));
+		}
+	} else {
+		random_port_success = false;
+		while (!random_port_success) {
+			port = (random() % 64510) + 1025;
+			log_msg("trying to bind to port %d\n", port);
+			random_port_success = true;
+			if (bind_port(udp_sock, port)) {
+				if (errno != EADDRINUSE) {
+					perror("bind()");
+					return -1;
+				} else {
+					random_port_success = false;
+				}
+			}
+			if (random_port_success) {
+				if (bind_port(tcp_sock, port)) {
+					if (errno != EADDRINUSE) {
+						perror("bind()");
+						return -1;
+					} else {
+						random_port_success = false;
+					}
+				}
+			}
+			if (random_port_success) {
+				if (listen(tcp_sock, CONN_BACKLOG) < 0) {
+					error("listen(): %s\n", strerror(errno));
+				}
+			}
+		
+		}
 	}
-	if (bind_port(tcp_sock, port)) {
-		error("cannot bind(): %s\n", strerror(errno));
-	}
-	if (listen(tcp_sock, CONN_BACKLOG) < 0) {
-		error("listen(): %s\n", strerror(errno));
-	}
+	log_msg("Listening on port %d\n", port);
 
 	/* service */
 	count = 0;
