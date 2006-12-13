@@ -14,6 +14,7 @@ AC_AIX
 # Checks for programs.
 AC_PROG_CC
 AC_PROG_MAKE_SET
+AC_CHECK_PROGS(libtool, [glibtool libtool15 libtool], [../libtool])
 
 dnl routine to help check for compiler flags.
 AC_DEFUN([CHECK_COMPILER_FLAG],
@@ -41,8 +42,18 @@ AC_MSG_RESULT(no)
 $3
 fi
 ])
+AC_TYPE_SIZE_T
 CHECK_COMPILER_FLAG(O2, [CFLAGS="$CFLAGS -O2"])
 CHECK_COMPILER_FLAG(std=c99, [CFLAGS="$CFLAGS -std=c99"], [CFLAGS="$CFLAGS -ansi"])
+AC_C_INLINE
+AC_CHECK_TYPE(int8_t, char)
+AC_CHECK_TYPE(int16_t, short)
+AC_CHECK_TYPE(int32_t, int)
+AC_CHECK_TYPE(int64_t, long long)
+AC_CHECK_TYPE(uint8_t, unsigned char)
+AC_CHECK_TYPE(uint16_t, unsigned short)
+AC_CHECK_TYPE(uint32_t, unsigned int)
+AC_CHECK_TYPE(uint64_t, unsigned long long)
 
 AC_CHECK_HEADERS([sys/types.h getopt.h stdlib.h stdio.h assert.h netinet/in.h ctype.h time.h pcap.h arpa/inet.h sys/time.h sys/socket.h],,, [AC_INCLUDES_DEFAULT])
 AC_CHECK_HEADERS([netinet/in_systm.h net/if.h netinet/ip.h netinet/udp.h netinet/if_ether.h],,, [
@@ -68,6 +79,20 @@ AC_CHECK_HEADERS([sys/param.h sys/mount.h],,,
    # include <sys/param.h>
    #endif
   ]
+])
+
+AC_CHECK_TYPE(socklen_t, ,
+        [AC_DEFINE([socklen_t], [int], [Define to 'int' if not defined])], [
+AC_INCLUDES_DEFAULT
+#if HAVE_SYS_SOCKET_H
+#  include <sys/socket.h>
+#endif
+])
+AC_CHECK_TYPE(ssize_t, int)
+AC_CHECK_TYPE([struct sockaddr_storage], , [AC_DEFINE([sockaddr_storage], [sockaddr_in], [Define to 'sockaddr_in' if not defined])], [
+#if HAVE_SYS_SOCKET_H
+#  include <sys/socket.h>
+#endif
 ])
 
 # check to see if libraries are needed for these functions.
@@ -174,6 +199,16 @@ AH_BOTTOM([
 
 #ifdef HAVE_NETINET_IF_ETHER_H
 #include <netinet/if_ether.h>
+#endif
+
+extern char *optarg;
+extern int optind, opterr;
+
+#ifndef EXIT_FAILURE
+#define EXIT_FAILURE  1
+#endif
+#ifndef EXIT_SUCCESS
+#define EXIT_SUCCESS  0
 #endif
 ])
 

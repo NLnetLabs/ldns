@@ -8,6 +8,7 @@ prefix  = @prefix@
 exec_prefix = @exec_prefix@
 bindir = @bindir@
 mandir = @mandir@
+libtool = @libtool@
 
 CC = @CC@
 CFLAGS = @CFLAGS@ -Wall -I.
@@ -16,9 +17,11 @@ LDFLAGS = @LDFLAGS@
 LIBS = @LIBS@
 LDNSDIR = @LDNSDIR@
 
-INSTALL = $(srcdir)/../install-sh 
+INSTALL = $(libtool) --mode=install $(srcdir)/../install-sh 
 
-COMPILE         = $(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) $(LIBS)
+COMPILE         = $(CC) $(CPPFLAGS) $(CFLAGS)
+LINK		= $(libtool) --mode=link $(CC) $(LDFLAGS) $(LIBS)
+LINK_STATIC	= $(libtool) --mode=link $(CC) -static $(LDFLAGS) $(LIBS)
 
 LINT		= splint
 LINTFLAGS	= +quiet -weak -warnposix -unrecog -Din_addr_t=uint32_t -Du_int=unsigned -Du_char=uint8_t -preproc
@@ -46,21 +49,21 @@ SOURCES 	= ldns-read-zone.c \
 
 PROGRAMS=$(SOURCES:.c=)
 
-.PHONY:	all clean realclean
+.PHONY:	all clean realclean all-static
+.SECONDARY: $(SOURCES:.c=.o)
 
 all:	$(PROGRAMS)
 
-all-static:	$(PROGRAMS:=-stc)
+all-static: $(addsuffix -stc,$(PROGRAMS))
 
-%:	$(srcdir)/%.c
-	$(COMPILE) -o $@ $(srcdir)/$@.c
+%.o:    $(srcdir)/%.c
+	$(COMPILE) -c $<
 
-%-stc:
-	@# can't mix implicit and static rules
-	@if [ $(srcdir)/$(@:-stc=).c -nt $(@:-stc=) ] ; then \
-		echo "$(CC) $(CPPFLAGS) $(CFLAGS) -lpcap -lcrypto -o $(@:-stc=) $(srcdir)/$(@:-stc=).c $(LDNSDIR)/lib/libldns.a" ; \
-		$(CC) $(CPPFLAGS) $(CFLAGS) -lpcap -lcrypto -o $(@:-stc=) $(srcdir)/$(@:-stc=).c $(LDNSDIR)/lib/libldns.a ; \
-	fi ;
+%:  $(srcdir)/%.o
+	$(LINK) -o $@ $^
+
+%-stc:	$(srcdir)/%.o
+	$(LINK_STATIC) -o $@ $^
 
 lint:
 	for i in $(SOURCES); do \
@@ -69,8 +72,9 @@ lint:
 	done
 
 clean:
-	rm -f *.o
-	rm -f $(PROGRAMS)
+	rm -f *.o *.lo
+	rm -f $(PROGRAMS) 
+	rm -f $(addsuffix -stc,$(PROGRAMS))
 
 realclean: clean
 	rm -rf autom4te.cache/
