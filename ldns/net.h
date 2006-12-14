@@ -94,7 +94,7 @@ ldns_status ldns_send(ldns_pkt **pkt, ldns_resolver *r, const ldns_pkt *query_pk
  * 
  * \param[out] pkt packet received from the nameserver
  * \param[in] r the resolver to use 
- * \param[in] query_pkt the query to send
+ * \param[in] qb the buffer to send
  * \param[in] tsig_mac the tsig MAC to authenticate the response with (NULL to do no TSIG authentication)
  * \return status
  */
