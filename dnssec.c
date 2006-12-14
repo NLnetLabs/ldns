@@ -887,12 +887,14 @@ ldns_sign_public(ldns_rr_list *rrset, ldns_key_list *keys)
 			if (ldns_rrsig2buffer_wire(sign_buf, current_sig) != LDNS_STATUS_OK) {
 				ldns_buffer_free(sign_buf);
 				/* ERROR */
+				ldns_rr_list_deep_free(rrset_clone);
 				return NULL;
 			}
 			/* add the rrset in sign_buf */
 
 			if (ldns_rr_list2buffer_wire(sign_buf, rrset_clone) != LDNS_STATUS_OK) {
 				ldns_buffer_free(sign_buf);
+				ldns_rr_list_deep_free(rrset_clone);
 				return NULL;
 			}
 			
@@ -912,6 +914,7 @@ ldns_sign_public(ldns_rr_list *rrset, ldns_key_list *keys)
 			}
 			if (!b64rdf) {
 				/* signing went wrong */
+				ldns_rr_list_deep_free(rrset_clone);
 				return NULL;
 			}
 			ldns_rr_rrsig_set_sig(current_sig, b64rdf);

@@ -84,5 +84,3 @@ This appears to be a known problem in 10.2 to 10.4, see:
 http://developer.apple.com/qa/qa2001/qa1233.html
 for more information.
 
-Also RedHat 9 seems to be having a problem when building ldns - we have
-very little details about this.
