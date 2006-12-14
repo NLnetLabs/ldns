@@ -95,9 +95,13 @@ REPLY opcode, rcode or flags.
         (flags)   QR AA TC RD CD RA AD
 .br
 REPLY ...
-; any additional actions to do.         ; 'copy_id' copies the ID from the query to the answer.
 .br
-ADJUST copy_id         ; 'sleep=10' sleeps for 10 seconds before giving the answer (TCP is open)
+; any additional actions to do.         
+.br
+.br
+ADJUST copy_id  ; 'copy_id' copies the ID from the query to the answer.
+.br
+; 'sleep=10' sleeps for 10 seconds before giving the answer (TCP is open)
 .br
 ADJUST [sleep=<num>]    ; sleep before giving any reply
 .br
