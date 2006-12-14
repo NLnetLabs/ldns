@@ -5,7 +5,7 @@ AC_PREREQ(2.57)
 AC_INIT(drill, 1.1.0, libdns@nlnetlabs.nl, drill)
 AC_CONFIG_SRCDIR([drill_util.h])
 
-OURCPPFLAGS='-D_POSIX_C_SOURCE=200112 -D_XOPEN_SOURCE=600 -D__EXTENSIONS__ -D__BSD_VISIBLE'
+OURCPPFLAGS=''
 CPPFLAGS=${CPPFLAGS:-${OURCPPFLAGS}}
 OURCFLAGS='-g'
 CFLAGS=${CFLAGS:-${OURCFLAGS}}
@@ -41,7 +41,6 @@ $3
 fi
 ])
 CHECK_COMPILER_FLAG(O2, [CFLAGS="$CFLAGS -O2"])
-CHECK_COMPILER_FLAG(std=c99, [CFLAGS="$CFLAGS -std=c99"], [CFLAGS="$CFLAGS -ansi"])
 
 AC_CHECK_HEADERS([getopt.h stdlib.h stdio.h assert.h netinet/in.h ctype.h time.h],,, [AC_INCLUDES_DEFAULT])
 AC_CHECK_HEADERS(sys/param.h sys/mount.h,,, [AC_INCLUDES_DEFAULT]
