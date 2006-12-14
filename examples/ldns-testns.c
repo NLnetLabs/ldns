@@ -191,6 +191,7 @@ struct entry {
 static void usage()
 {
 	printf("Usage: %s [options] <datafile>\n", prog_name);
+	printf("  -r	listens on random port. Port number is printed.\n");
 	printf("  -p	listens on the specified port, default %d.\n", DEFAULT_PORT);
 	printf("  -v	more verbose, prints queries, answers and matching.\n");
 	printf("The program answers queries with canned replies from the datafile.\n");
