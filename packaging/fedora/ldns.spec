@@ -1,6 +1,6 @@
 Summary: Lowlevel DNS(SEC) library with DNS tools
 Name: ldns
-Version: 1.1.0
+Version: 1.1.1
 Release: 1
 License: BSD
 Url: http://www.nlnetlabs.nl/%{name}/
@@ -78,6 +78,9 @@ rm -rf %{buildroot}
 %postun -p /sbin/ldconfig
 
 %changelog
+* Thu Dec 14 2006 Wouter Wijngaards <wouter@nlnetlabs.nl> 1.1.1-1
+- New version number.
+
 * Tue Aug 15 2006 Wouter Wijngaards <wouter@nlnetlabs.nl> 1.1.0-1
 - reworked for new Makefile. configure calls by build script.
 - names the docs for devel package in more detail.

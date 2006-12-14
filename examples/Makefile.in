@@ -17,7 +17,7 @@ LDFLAGS = @LDFLAGS@
 LIBS = @LIBS@
 LDNSDIR = @LDNSDIR@
 
-INSTALL = $(libtool) --mode=install $(srcdir)/../install-sh 
+INSTALL = $(srcdir)/../install-sh 
 
 COMPILE         = $(CC) $(CPPFLAGS) $(CFLAGS)
 LINK		= $(libtool) --mode=link $(CC) $(LDFLAGS) $(LIBS)
@@ -52,20 +52,22 @@ PROGRAMS=$(SOURCES:.c=)
 .PHONY:	all clean realclean all-static
 .SECONDARY: $(SOURCES:.c=.o)
 
-all:	$(addsuffix -exe,$(PROGRAMS))
+all:	$(addsuffix .prg,$(PROGRAMS))
 
-all-static: $(addsuffix -stc,$(PROGRAMS))
+all-static: $(addsuffix .stc,$(PROGRAMS))
 
 %.o:    $(srcdir)/%.c
-	$(COMPILE) -c $<
+	$(COMPILE) -o $@ -c $<
 
-%-exe:  $(srcdir)/%.o
-	@if test $< -nt $(@:-exe=); then \
-	$(LINK) -o $(@:-exe=) $^ ; \
+%.prg:  %.o
+	@if test ! -f $(@:.prg=) -o $< -nt $(@:.prg=); then \
+	echo $(LINK) -o $(@:.prg=) $^ ; \
+	$(LINK) -o $(@:.prg=) $^ ; \
 	fi
 
-%-stc:	$(srcdir)/%.o
-	@if test $< -nt $@; then \
+%.stc:	%.o
+	@if test ! -f $@ -o $< -nt $@; then \
+	echo $(LINK_STATIC) -o $@ $^ ; \
 	$(LINK_STATIC) -o $@ $^ ; \
 	fi
 
@@ -76,9 +78,10 @@ lint:
 	done
 
 clean:
-	rm -f *.o *.lo
+	rm -f *.o *.lo 
+	rm -rf .libs
 	rm -f $(PROGRAMS) 
-	rm -f $(addsuffix -stc,$(PROGRAMS))
+	rm -f $(addsuffix .stc,$(PROGRAMS))
 
 realclean: clean
 	rm -rf autom4te.cache/
@@ -93,7 +96,7 @@ install:	$(PROGRAMS)
 		$(INSTALL) -d -m 755 $(DESTDIR)$(mandir)
 		$(INSTALL) -d -m 755 $(DESTDIR)$(mandir)/man1
 		for i in $(PROGRAMS); do \
-			${INSTALL} -c $$i $(DESTDIR)$(bindir) ; \
+			$(libtool) --mode=install ${INSTALL} -c $$i $(DESTDIR)$(bindir) ; \
 			$(INSTALL) -c -m 644 $$i.1 $(DESTDIR)$(mandir)/man1/$$i.1 ; \
 			done
 		exit 0
