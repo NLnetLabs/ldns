@@ -44,11 +44,53 @@ $3
 fi
 ])
 
+
+dnl routine to help check for compiler flags.
+AC_DEFUN([CHECK_COMPILER_FLAG_NEEDED],
+[
+AC_REQUIRE([AC_PROG_CC])
+AC_MSG_CHECKING(whether we need -$1 as a flag for $CC)
+cache=`echo $1 | sed 'y%.=/+-%___p_%'`
+AC_CACHE_VAL(cv_prog_cc_flag_$cache,
+[
+echo '$2' > conftest.c
+echo 'void f(){}' >>conftest.c
+if test -z "`$CC -c conftest.c 2>&1`"; then
+echo 'yes! compile no flag succeeds'
+eval "cv_prog_cc_flag_$cache=no"
+else
+[
+if test -z "`$CC -$1 -c conftest.c 2>&1`"; then
+echo 'yes! test with flag success'
+eval "cv_prog_cc_flag_$cache=yes"
+else
+echo 'no! test with flag fails too!'
+echo test -z "`$CC -$1 -c conftest.c 2>&1`"
+eval "cv_prog_cc_flag_$cache=no"
+fi
+]
+fi
+rm -f conftest*
+])
+if eval "test \"`echo '$cv_prog_cc_flag_'$cache`\" = yes"; then
+AC_MSG_RESULT(yes)
+:
+$3
+else
+AC_MSG_RESULT(no)
+:
+$4
+fi
+])
+
+
+
 # Checks for typedefs, structures, and compiler characteristics.
 AC_C_CONST
 AC_LANG_C
 AC_TYPE_SIZE_T
 CHECK_COMPILER_FLAG(O2, [CFLAGS="$CFLAGS -O2"])
+CHECK_COMPILER_FLAG_NEEDED(std=c99, [#include <stdbool.h>], [CFLAGS="$CFLAGS -std=c99"])
 AC_C_INLINE
 AC_CHECK_TYPE(int8_t, char)
 AC_CHECK_TYPE(int16_t, short)
