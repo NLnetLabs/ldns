@@ -200,6 +200,10 @@ AC_CHECK_TYPE(in_port_t, [], [AC_DEFINE([in_port_t], [uint16_t], [in_port_t])], 
 # include <netinet/in.h>
 #endif])
 
+# check to see if libraries are needed for these functions.
+AC_CHECK_LIB(socket, socket)
+AC_CHECK_LIB(nsl, inet_pton)
+
 AC_FUNC_MALLOC
 
 AC_REPLACE_FUNCS(b64_pton)
