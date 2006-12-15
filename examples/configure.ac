@@ -43,37 +43,41 @@ $3
 fi
 ])
 
-dnl routine to help check for compiler flags.
+dnl routine to help check for needed compiler flags.
+# if the given code compiles without the flag, execute argument 4
+# if the given code only compiles with the flag, execute argument 3
+# otherwise fail
 AC_DEFUN([CHECK_COMPILER_FLAG_NEEDED],
 [
 AC_REQUIRE([AC_PROG_CC])
 AC_MSG_CHECKING(whether we need -$1 as a flag for $CC)
 cache=`echo $1 | sed 'y%.=/+-%___p_%'`
-AC_CACHE_VAL(cv_prog_cc_flag_$cache,
+AC_CACHE_VAL(cv_prog_cc_flag_needed_$cache,
 [
 echo '$2' > conftest.c
 echo 'void f(){}' >>conftest.c
-if test -z "`$CC -c conftest.c 2>&1`"; then
-eval "cv_prog_cc_flag_$cache=no"
+if test -z "`$CC $CFLAGS -Werror -Wall -c conftest.c 2>&1`"; then
+eval "cv_prog_cc_flag_needed_$cache=no"
 else
 [
-if test -z "`$CC -$1 -c conftest.c 2>&1`"; then
-eval "cv_prog_cc_flag_$cache=yes"
+if test -z "`$CC $CFLAGS $1 -Werror -Wall -c conftest.c 2>&1`"; then
+eval "cv_prog_cc_flag_needed_$cache=yes"
 else
 echo 'Test with flag fails too!'
-echo test -z "`$CC -$1 -c conftest.c 2>&1`"
-eval "cv_prog_cc_flag_$cache=no"
+cat conftest.c
+echo "$CC $CFLAGS $1 -Werror -Wall -c conftest.c 2>&1"
+echo `$CC $CFLAGS $1 -Werror -Wall -c conftest.c`
 fi
 ]
 fi
 rm -f conftest*
 ])
-if eval "test \"`echo '$cv_prog_cc_flag_'$cache`\" = yes"; then
-AC_MSG_RESULT(no)
+if eval "test \"`echo '$cv_prog_cc_flag_needed_'$cache`\" = yes"; then
+AC_MSG_RESULT(yes)
 :
 $3
 else
-AC_MSG_RESULT(yes)
+AC_MSG_RESULT(no)
 :
 $4
 fi
@@ -83,7 +87,21 @@ fi
 
 AC_TYPE_SIZE_T
 CHECK_COMPILER_FLAG(O2, [CFLAGS="$CFLAGS -O2"])
-CHECK_COMPILER_FLAG_NEEDED(std=c99, [#include <stdbool.h>], [CFLAGS="$CFLAGS -std=c99"])
+CHECK_COMPILER_FLAG_NEEDED(-std=c99, [#include <stdbool.h>], [CFLAGS="$CFLAGS -std=c99"])
+CHECK_COMPILER_FLAG_NEEDED(-D__EXTENSIONS__, 
+[
+#include <stdlib.h>
+#include <ctype.h>
+
+int test() {  
+        int a;
+        char **opts = NULL;
+        srandom(32);
+        a = getopt(2, opts, "a");
+        a = isascii(32);
+        return a;
+}
+], [CFLAGS="$CFLAGS -D__EXTENSIONS__"])
 AC_C_INLINE
 AC_CHECK_TYPE(int8_t, char)
 AC_CHECK_TYPE(int16_t, short)
