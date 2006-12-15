@@ -102,6 +102,21 @@ int test() {
         return a;
 }
 ], [CFLAGS="$CFLAGS -D__EXTENSIONS__"])
+CHECK_COMPILER_FLAG_NEEDED(-D_POSIX_C_SOURCE=200112, 
+[
+#include <time.h>
+
+int test() {
+	int a = 0;
+	char *t;
+	time_t time = 0;
+	char *buf = NULL;
+	t = ctime_r(&time, buf);
+        return a;
+}
+], [CFLAGS="$CFLAGS -D_POSIX_C_SOURCE=200112"])
+
+
 AC_C_INLINE
 AC_CHECK_TYPE(int8_t, char)
 AC_CHECK_TYPE(int16_t, short)

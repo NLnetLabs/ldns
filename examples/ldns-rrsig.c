@@ -186,8 +186,8 @@ main(int argc, char *argv[])
 					ldns_rr_list_rr(rrsig_type, i)));
 
 				/* convert to human readable */
-				ctime_r(&incep, incep_buf, 24);
-				ctime_r(&expir, expir_buf, 24);
+				ctime_r(&incep, incep_buf);
+				ctime_r(&expir, expir_buf);
 				/* kill the newline */
 				incep_buf[24] = '\0';
 				expir_buf[24] = '\0';
