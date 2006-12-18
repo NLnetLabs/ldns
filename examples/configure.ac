@@ -67,6 +67,7 @@ echo 'Test with flag fails too!'
 cat conftest.c
 echo "$CC $CFLAGS $1 -Werror -Wall -c conftest.c 2>&1"
 echo `$CC $CFLAGS $1 -Werror -Wall -c conftest.c`
+exit 1
 fi
 ]
 fi
@@ -83,8 +84,6 @@ $4
 fi
 ])
 
-
-
 AC_TYPE_SIZE_T
 CHECK_COMPILER_FLAG(O2, [CFLAGS="$CFLAGS -O2"])
 CHECK_COMPILER_FLAG_NEEDED(-std=c99, [#include <stdbool.h>], [CFLAGS="$CFLAGS -std=c99"])
@@ -96,6 +95,8 @@ CHECK_COMPILER_FLAG_NEEDED(-D__EXTENSIONS__,
 int test() {  
         int a;
         char **opts = NULL;
+        struct timeval tv;
+        tv.tv_usec = 10;
         srandom(32);
         a = getopt(2, opts, "a");
         a = isascii(32);
@@ -219,10 +220,10 @@ fi
 
 AC_SUBST(LDNSDIR)
 
-AC_CHECK_HEADER(ldns/ldns.h,,  [
-	AC_MSG_ERROR([Can't find ldns headers (make copy-headers in devel source.)])
-	], [AC_INCLUDES_DEFAULT]
-)
+#AC_CHECK_HEADER(ldns/ldns.h,,  [
+#	AC_MSG_ERROR([Can't find ldns headers (make copy-headers in devel source.)])
+#	], [AC_INCLUDES_DEFAULT]
+#)
 
 AC_CHECK_LIB(pcap, pcap_open_offline,, [
 	AC_MSG_WARN([Can't find pcap library (needed for ldns-dpa, will not build dpa now.)])
