@@ -87,22 +87,6 @@ fi
 AC_TYPE_SIZE_T
 CHECK_COMPILER_FLAG(O2, [CFLAGS="$CFLAGS -O2"])
 CHECK_COMPILER_FLAG_NEEDED(-std=c99, [#include <stdbool.h>], [CFLAGS="$CFLAGS -std=c99"])
-CHECK_COMPILER_FLAG_NEEDED(-D__EXTENSIONS__, 
-[
-#include <stdlib.h>
-#include <ctype.h>
-
-int test() {  
-        int a;
-        char **opts = NULL;
-        struct timeval tv;
-        tv.tv_usec = 10;
-        srandom(32);
-        a = getopt(2, opts, "a");
-        a = isascii(32);
-        return a;
-}
-], [CFLAGS="$CFLAGS -D__EXTENSIONS__"])
 CHECK_COMPILER_FLAG_NEEDED(-D_POSIX_C_SOURCE=200112, 
 [
 #include <time.h>
@@ -116,6 +100,24 @@ int test() {
         return a;
 }
 ], [CFLAGS="$CFLAGS -D_POSIX_C_SOURCE=200112"])
+CHECK_COMPILER_FLAG_NEEDED(-D__EXTENSIONS__, 
+[
+#include <stdlib.h>
+#include <ctype.h>
+#include <sys/time.h>
+#include <unistd.h>
+
+int test() {  
+        int a;
+        char **opts = NULL;
+        struct timeval tv;
+        tv.tv_usec = 10;
+        srandom(32);
+        a = getopt(2, opts, "a");
+        a = isascii(32);
+        return a;
+}
+], [CFLAGS="$CFLAGS -D__EXTENSIONS__"])
 
 
 AC_C_INLINE
