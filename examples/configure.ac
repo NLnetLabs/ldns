@@ -156,34 +156,6 @@ AC_CHECK_HEADERS([sys/param.h sys/mount.h],,,
   ]
 ])
 
-AC_CHECK_TYPE(socklen_t, ,
-        [AC_DEFINE([socklen_t], [int], [Define to 'int' if not defined])], [
-AC_INCLUDES_DEFAULT
-#if HAVE_SYS_SOCKET_H
-#  include <sys/socket.h>
-#endif
-])
-AC_CHECK_TYPE(ssize_t, int)
-AC_CHECK_TYPE(in_addr_t, [], [AC_DEFINE([in_addr_t], [uint32_t], [in_addr_t])], [
-#if HAVE_SYS_TYPES_H
-# include <sys/types.h>
-#endif
-#if HAVE_NETINET_IN_H
-# include <netinet/in.h>
-#endif])
-AC_CHECK_TYPE(in_port_t, [], [AC_DEFINE([in_port_t], [uint16_t], [in_port_t])], [
-#if HAVE_SYS_TYPES_H
-# include <sys/types.h>
-#endif
-#if HAVE_NETINET_IN_H
-# include <netinet/in.h>
-#endif])
-AC_CHECK_TYPE([struct sockaddr_storage], , [AC_DEFINE([sockaddr_storage], [sockaddr_in], [Define to 'sockaddr_in' if not defined])], [
-#if HAVE_SYS_SOCKET_H
-#  include <sys/socket.h>
-#endif
-])
-
 # check to see if libraries are needed for these functions.
 AC_CHECK_LIB(socket, socket)
 AC_CHECK_LIB(nsl, inet_pton)
