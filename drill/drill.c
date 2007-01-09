@@ -725,7 +725,11 @@ main(int argc, char *argv[])
 				#if 0
 				qpkt = read_hex_pkt(query_file);
 				if (qpkt) {
-					(void)ldns_resolver_send_pkt(&pkt, res, qpkt);
+					status = ldns_resolver_send_pkt(&pkt, res, qpkt);
+					if (status != LDNS_STATUS_OK) {
+						printf("Error: %s\n", ldns_get_errorstr_by_id(status));
+						exit(1);
+					}
 				} else {
 					/* qpkt was bogus, reset pkt */
 					pkt = NULL;
@@ -733,7 +737,11 @@ main(int argc, char *argv[])
 				#endif
 				query_buffer = read_hex_buffer(query_file);
 				if (query_buffer) {
-					(void)ldns_send_buffer(&pkt, res, query_buffer, NULL);
+					status = ldns_send_buffer(&pkt, res, query_buffer, NULL);
+					if (status != LDNS_STATUS_OK) {
+						printf("Error: %s\n", ldns_get_errorstr_by_id(status));
+						exit(1);
+					}
 				} else {
 					printf("NO BUFFER\n");
 					pkt = NULL;
