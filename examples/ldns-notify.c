@@ -23,6 +23,7 @@
 #include "ldns/ldns.h"
 
 static int verbose = 1;
+static int max_num_retry = 15; /* times to try */
 
 static void
 usage(void)
@@ -36,6 +37,8 @@ usage(void)
 	fprintf(stderr, "\t-p port\t\tport to use to send to\n");
 	fprintf(stderr, "\t-v\t\tPrint version information\n");
 	fprintf(stderr, "\t-d\t\tPrint verbose debug information\n");
+	fprintf(stderr, "\t-r num\t\tmax number of retries (%d)\n", 
+		max_num_retry);
 	fprintf(stderr, "\t-h\t\tPrint this help information\n\n");
 	fprintf(stderr, "Report bugs to <ldns-team@nlnetlabs.nl>\n");
 	exit(1);
@@ -58,7 +61,7 @@ notify_host(int s, struct addrinfo* res, uint8_t* wire, size_t wiresize,
 	const char* addrstr)
 {
 	int timeout_retry = 5; /* seconds */
-	int num_retry = 15; /* times to try */
+	int num_retry = max_num_retry;
 	fd_set rfds;
 	struct timeval tv;
 	int retval = 0;
@@ -132,8 +135,14 @@ notify_host(int s, struct addrinfo* res, uint8_t* wire, size_t wiresize,
 	}
 
 	if(verbose) {
+		int i;
 		printf("# reply from %s:\n", addrstr);
 		ldns_pkt_print(stdout, pkt);
+		
+		printf("hexdump of reply: ");
+		for(i=0; i<received; i++)
+			printf("%02x", replybuf[i]);
+		printf("\n");
 	}
 	ldns_pkt_free(pkt);
 }
@@ -161,13 +170,16 @@ main(int argc, char **argv)
 
 	srandom(time(NULL) ^ getpid());
 	
-        while ((c = getopt(argc, argv, "vhdp:s:y:z:")) != -1) {
+        while ((c = getopt(argc, argv, "vhdp:r:s:y:z:")) != -1) {
                 switch (c) {
                 case 'd':
 			verbose = 1;
 			break;
                 case 'p':
 			port = optarg;
+			break;
+                case 'r':
+			max_num_retry = atoi(optarg);
 			break;
                 case 's':
 			include_soa = 1;
