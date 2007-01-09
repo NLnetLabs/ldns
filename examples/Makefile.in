@@ -43,6 +43,7 @@ SOURCES 	= ldns-read-zone.c \
 		  ldns-resolver.c \
 		  ldnsd.c \
 		  ldns-keyfetcher.c \
+		  ldns-notify.c \
 		  ldns-testns.c
 
 
