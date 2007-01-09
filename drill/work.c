@@ -278,5 +278,6 @@ dump_hex(const ldns_pkt *pkt, const char *filename)
 		}
 		fprintf(fp, " %02x", (unsigned int)wire[i]);
 	}
+	fprintf(fp, "\n");
 	fclose(fp);
 }
