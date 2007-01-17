@@ -565,6 +565,18 @@ ldns_axfr_start(ldns_resolver *resolver, ldns_rdf *domain, ldns_rr_class class)
                 return LDNS_STATUS_NETWORK_ERR;
         }
 
+#ifdef HAVE_SSL
+	if (ldns_resolver_tsig_keyname(resolver) && ldns_resolver_tsig_keydata(resolver)) {
+		status = ldns_pkt_tsig_sign(query,
+		                            ldns_resolver_tsig_keyname(resolver),
+		                            ldns_resolver_tsig_keydata(resolver),
+		                            300, ldns_resolver_tsig_algorithm(resolver), NULL);
+		if (status != LDNS_STATUS_OK) {
+			return LDNS_STATUS_CRYPTO_TSIG_ERR;
+		}
+	}
+#endif /* HAVE_SSL */
+
         /* Convert the query to a buffer          * Is this necessary?
          */
         query_wire = ldns_buffer_new(LDNS_MAX_PACKETLEN);
