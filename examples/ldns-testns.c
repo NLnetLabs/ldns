@@ -764,6 +764,7 @@ handle_query(uint8_t* inbuf, ssize_t inlen, struct entry* entries, int* count,
 	uint8_t *outbuf = NULL;
 	size_t answer_size = 0;
 	struct entry* entry = NULL;
+	ldns_rdf *stop_command = ldns_dname_new_frm_str("server.stop.");
 
 	status = ldns_wire2pkt(&query_pkt, inbuf, (size_t)inlen);
 	if (status != LDNS_STATUS_OK) {
@@ -776,6 +777,14 @@ handle_query(uint8_t* inbuf, ssize_t inlen, struct entry* entries, int* count,
 		(transport==transport_tcp)?"TCP":"UDP", inlen);
 	ldns_rr_print(logfile, query_rr);
 	if(verbose) ldns_pkt_print(logfile, query_pkt);
+	
+printf("Query:\n");
+ldns_rr_print(stdout, query_rr);
+	if (ldns_rr_get_type(query_rr) == LDNS_RR_TYPE_TXT &&
+	    ldns_rr_get_class(query_rr) == LDNS_RR_CLASS_CH &&
+	    ldns_dname_compare(ldns_rr_owner(query_rr), stop_command) == 0) {
+	        exit(0);
+        }
 	
 	/* fill up answer packet */
 	entry = find_match(entries, query_pkt, transport);
