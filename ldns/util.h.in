@@ -119,6 +119,18 @@ ldns_write_uint64_as_uint48(void *dst, uint64_t data)
 	p[5] = (uint8_t) (data & 0xff);
 }
 
+
+/**
+ * Structure to do a Schwartzian-like transformation, for instance when
+ * sorting. If you need a transformation on the objects that are sorted,
+ * you can sue this to store the transformed values, so you do not
+ * need to do the transformation again for each comparison
+ */
+struct ldns_schwartzian_compare_struct {
+	void *original_object;
+	void *transformed_object;
+};
+
 /** A general purpose lookup table
  *  
  *  Lookup tables are arrays of (id, name) pairs,
@@ -187,7 +199,7 @@ void ldns_set_bit(uint8_t *byte, int bit_nr, bool value);
  * (or 1 of b < 1)
  */
 /*@unused@*/
-static inline long
+INLINE long
 ldns_power(long a, long b) {
 	long result = 1;
 	while (b > 0) {

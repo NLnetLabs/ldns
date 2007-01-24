@@ -35,7 +35,7 @@
 /* default time before sigs expire */
 #define LDNS_DEFAULT_EXP_TIME	2419200 /* 4 weeks */
 
-#define LDNS_NSEC3_MAX_ITERATIONS 8388607
+#define LDNS_NSEC3_MAX_ITERATIONS 65535
 
 
 /** 

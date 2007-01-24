@@ -143,7 +143,7 @@ int
 main(int argc, char **argv) 
 {
 	char errbuf[PCAP_ERRBUF_SIZE];
-	pcap_t *p;
+	pcap_t *p = NULL;
 	struct pcap_pkthdr h;
 	const u_char *x;
 	size_t i = 0;
@@ -151,7 +151,7 @@ main(int argc, char **argv)
 	char *ip_str;
 	int c;
 	size_t failure;
-	FILE *infile;
+	FILE *infile = NULL;
 	int pcat_input_file = 0;
 
 	uint8_t *result;

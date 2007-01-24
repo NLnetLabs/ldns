@@ -721,25 +721,26 @@ ldns_str2rdf_cert_alg(ldns_rdf **rd, const char *str)
 {
 	ldns_lookup_table *lt;
 	ldns_status st;
-	uint8_t id = 0;
+	uint8_t idd[2];
 	lt = ldns_lookup_by_name(ldns_cert_algorithms, str);
 	st = LDNS_STATUS_OK;
 
 	if (lt) {
-		id = (uint8_t) lt->id;
-		/* it was given as a integer */
+		ldns_write_uint16(idd, (uint16_t) lt->id);
 		*rd = ldns_rdf_new_frm_data(
-			LDNS_RDF_TYPE_INT8, sizeof(uint8_t), &id);
+			LDNS_RDF_TYPE_INT16, sizeof(uint16_t), idd);
 		if (!*rd) {
 			st = LDNS_STATUS_ERR;
 		}
 	} else {
 		/* try as-is (a number) */
-		st = ldns_str2rdf_int8(rd, str);
+		st = ldns_str2rdf_int16(rd, str);
+		if (st == LDNS_STATUS_OK &&
+		    ldns_rdf2native_int16(*rd) == 0) {
+			st = LDNS_STATUS_CERT_BAD_ALGORITHM;
+		}
 	}
-	if (ldns_rdf2native_int8(*rd) == 0) {
-		st = LDNS_STATUS_CERT_BAD_ALGORITHM;
-	}
+
 	return st;
 }
 		
@@ -799,12 +800,45 @@ ldns_str2rdf_service(ldns_rdf **rd, const char *str)
 	return LDNS_STATUS_NOT_IMPL;
 }
 
+static int
+loc_parse_cm(char* my_str, char** endstr, uint8_t* m, uint8_t* e)
+{
+	/* read <digits>[.<digits>][mM] */
+	/* into mantissa exponent format for LOC type */
+	uint32_t meters = 0, cm = 0, val;
+	while (isblank(*my_str)) {
+		my_str++;
+	}
+	meters = (uint32_t)strtol(my_str, &my_str, 10);
+	if (*my_str == '.') {
+		my_str++;
+		cm = (uint32_t)strtol(my_str, &my_str, 10);
+	}
+	if (meters >= 1) {
+		*e = 2;
+		val = meters;
+	} else	{
+		*e = 0;
+		val = cm;
+	}
+	while(val >= 10) {
+		(*e)++;
+		val /= 10;
+	}
+	*m = (uint8_t)val;
+	
+	if (*e > 9)
+		return 0;
+	if (*my_str == 'm' || *my_str == 'M') {
+		my_str++;
+	}
+	*endstr = my_str;
+	return 1;
+}
+
 ldns_status
 ldns_str2rdf_loc(ldns_rdf **rd, const char *str)
 {
-	uint32_t size = 0;
-	uint32_t horiz_pre = 0;
-	uint32_t vert_pre = 0;
 	uint32_t latitude = 0;
 	uint32_t longitude = 0;
 	uint32_t altitude = 0;
@@ -932,77 +966,25 @@ east:
 		longitude = equator - longitude;
 	}
 
-	altitude = (uint32_t) strtol(my_str, &my_str, 10);
-	altitude *= 100;
-	altitude += 10000000;
+	altitude = (uint32_t)(strtod(my_str, &my_str)*100.0 +
+		10000000.0 + 0.5);
 	if (*my_str == 'm' || *my_str == 'M') {
 		my_str++;
 	}
 
 	if (strlen(my_str) > 0) {
-		while (isblank(*my_str)) {
-			my_str++;
-		}
-		size = (uint32_t) strtol(my_str, &my_str, 10);
-		/* convert to centimeters */
-		size = size * 100;
-		/* get values for weird rfc notation */
-		size_e = 0;
-		while (size >= 10) {
-			size_e++;
-			size = size / 10;
-		}
-		size_b = (uint8_t) size;
-		if (size_e > 9) {
+		if(!loc_parse_cm(my_str, &my_str, &size_b, &size_e))
 			return LDNS_STATUS_INVALID_STR;
-		}
-		if (*my_str == 'm' || *my_str == 'M') {
-			my_str++;
-		}
 	}
 
 	if (strlen(my_str) > 0) {
-		while (isblank(*my_str)) {
-			my_str++;
-		}
-		horiz_pre = (uint32_t) strtol(my_str, &my_str, 10);
-		/* convert to centimeters */
-		horiz_pre = horiz_pre * 100;
-		/* get values for weird rfc notation */
-		horiz_pre_e = 0;
-		while (horiz_pre >= 10) {
-			horiz_pre_e++;
-			horiz_pre = horiz_pre / 10;
-		}
-		horiz_pre_b = (uint8_t) horiz_pre;
-		if (horiz_pre_e > 9) {
+		if(!loc_parse_cm(my_str, &my_str, &horiz_pre_b, &horiz_pre_e))
 			return LDNS_STATUS_INVALID_STR;
-		}
-		if (*my_str == 'm' || *my_str == 'M') {
-			my_str++;
-		}
 	}
 
 	if (strlen(my_str) > 0) {
-		while (isblank(*my_str)) {
-			my_str++;
-		}
-		vert_pre = (uint32_t) strtol(my_str, &my_str, 10);
-		/* convert to centimeters */
-		vert_pre = vert_pre * 100;
-		/* get values for weird rfc notation */
-		vert_pre_e = 0;
-		while (vert_pre >= 10) {
-			vert_pre_e++;
-			vert_pre = vert_pre / 10;
-		}
-		vert_pre_b = (uint8_t) vert_pre;
-		if (vert_pre_e > 9) {
+		if(!loc_parse_cm(my_str, &my_str, &vert_pre_b, &vert_pre_e))
 			return LDNS_STATUS_INVALID_STR;
-		}
-		if (*my_str == 'm' || *my_str == 'M') {
-			my_str++;
-		}
 	}
 
 	data = LDNS_XMALLOC(uint8_t, 16);

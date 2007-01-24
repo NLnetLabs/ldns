@@ -8,6 +8,7 @@ prefix  = @prefix@
 exec_prefix = @exec_prefix@
 bindir = @bindir@
 mandir = @mandir@
+libtool = @libtool@
 
 CC = @CC@
 CFLAGS = @CFLAGS@ -Wall -I.
@@ -18,7 +19,9 @@ LDNSDIR = @LDNSDIR@
 
 INSTALL = $(srcdir)/../install-sh 
 
-COMPILE         = $(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) $(LIBS)
+COMPILE         = $(CC) $(CPPFLAGS) $(CFLAGS)
+LINK		= $(libtool) --mode=link $(CC) $(LDFLAGS) $(LIBS)
+LINK_STATIC	= $(libtool) --mode=link $(CC) -static $(LDFLAGS) $(LIBS)
 
 LINT		= splint
 LINTFLAGS	= +quiet -weak -warnposix -unrecog -Din_addr_t=uint32_t -Du_int=unsigned -Du_char=uint8_t -preproc
@@ -39,26 +42,34 @@ SOURCES 	= ldns-read-zone.c \
 		  ldns-dpa.c \
 		  ldns-resolver.c \
 		  ldnsd.c \
-		  ldns-keyfetcher.c
+		  ldns-keyfetcher.c \
+		  ldns-notify.c \
+		  ldns-testns.c
 
 
 PROGRAMS=$(SOURCES:.c=)
 
-.PHONY:	all clean realclean
+.PHONY:	all clean realclean all-static
+.SECONDARY: $(SOURCES:.c=.o)
 
-all:	$(PROGRAMS)
+all:	$(addsuffix .prg,$(PROGRAMS))
 
-all-static:	$(PROGRAMS:=-stc)
+all-static: $(addsuffix .stc,$(PROGRAMS))
 
-%:	$(srcdir)/%.c
-	$(COMPILE) -o $@ $(srcdir)/$@.c
+%.o:    $(srcdir)/%.c
+	$(COMPILE) -o $@ -c $<
 
-%-stc:
-	@# can't mix implicit and static rules
-	@if [ $(srcdir)/$(@:-stc=).c -nt $(@:-stc=) ] ; then \
-		echo "$(CC) $(CPPFLAGS) $(CFLAGS) -lpcap -lcrypto -o $(@:-stc=) $(srcdir)/$(@:-stc=).c $(LDNSDIR)/lib/libldns.a" ; \
-		$(CC) $(CPPFLAGS) $(CFLAGS) -lpcap -lcrypto -o $(@:-stc=) $(srcdir)/$(@:-stc=).c $(LDNSDIR)/lib/libldns.a ; \
-	fi ;
+%.prg:  %.o
+	@if test ! -f $(@:.prg=) -o $< -nt $(@:.prg=); then \
+	echo $(LINK) -o $(@:.prg=) $^ ; \
+	$(LINK) -o $(@:.prg=) $^ ; \
+	fi
+
+%.stc:	%.o
+	@if test ! -f $@ -o $< -nt $@; then \
+	echo $(LINK_STATIC) -o $@ $^ ; \
+	$(LINK_STATIC) -o $@ $^ ; \
+	fi
 
 lint:
 	for i in $(SOURCES); do \
@@ -67,8 +78,10 @@ lint:
 	done
 
 clean:
-	rm -f *.o
-	rm -f $(PROGRAMS)
+	rm -f *.o *.lo 
+	rm -rf .libs
+	rm -f $(PROGRAMS) 
+	rm -f $(addsuffix .stc,$(PROGRAMS))
 
 realclean: clean
 	rm -rf autom4te.cache/
@@ -83,7 +96,7 @@ install:	$(PROGRAMS)
 		$(INSTALL) -d -m 755 $(DESTDIR)$(mandir)
 		$(INSTALL) -d -m 755 $(DESTDIR)$(mandir)/man1
 		for i in $(PROGRAMS); do \
-			${INSTALL} -c $$i $(DESTDIR)$(bindir) ; \
+			$(libtool) --mode=install ${INSTALL} -c $$i $(DESTDIR)$(bindir) ; \
 			$(INSTALL) -c -m 644 $$i.1 $(DESTDIR)$(mandir)/man1/$$i.1 ; \
 			done
 		exit 0

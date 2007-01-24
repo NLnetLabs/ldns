@@ -534,10 +534,6 @@ ldns_rr_new_frm_fp_l(ldns_rr **newrr, FILE *fp, uint16_t *default_ttl, ldns_rdf 
                 return LDNS_STATUS_MEM_ERR;
         }
 
-	if (line_nr) {
-		*line_nr = *line_nr + 1;
-	}
-
         /* read an entire line in from the file */
         if ((size = ldns_fget_token_l(fp, line, LDNS_PARSE_SKIP_SPACE, LDNS_MAX_LINELEN, line_nr)) == -1) {
 		LDNS_FREE(line);
@@ -790,7 +786,7 @@ ldns_rr_list_free(ldns_rr_list *rr_list)
 void
 ldns_rr_list_deep_free(ldns_rr_list *rr_list)
 {
-	uint16_t i;
+	size_t i;
 	
 	if (rr_list) {
 		for (i=0; i < ldns_rr_list_rr_count(rr_list); i++) {
@@ -806,9 +802,9 @@ ldns_rr_list_deep_free(ldns_rr_list *rr_list)
 bool
 ldns_rr_list_cat(ldns_rr_list *left, ldns_rr_list *right)
 {
-	uint16_t r_rr_count;
-	uint16_t l_rr_count;
-	uint16_t i;
+	size_t r_rr_count;
+	size_t l_rr_count;
+	size_t i;
 
 	if (left) {
 		l_rr_count = ldns_rr_list_rr_count(left);
@@ -834,7 +830,7 @@ ldns_rr_list_cat_clone(ldns_rr_list *left, ldns_rr_list *right)
 {
 	size_t l_rr_count;
 	size_t r_rr_count;
-	uint16_t i;
+	size_t i;
 	ldns_rr_list *cat;
 
 	l_rr_count = 0;
@@ -873,7 +869,7 @@ ldns_rr_list_cat_clone(ldns_rr_list *left, ldns_rr_list *right)
 ldns_rr_list *
 ldns_rr_list_subtype_by_rdf(ldns_rr_list *l, ldns_rdf *r, size_t pos)
 {
-	uint16_t i;
+	size_t i;
 	ldns_rr_list *subtyped;
 	ldns_rdf *list_rdf;
 
@@ -919,7 +915,6 @@ ldns_rr_list_push_rr(ldns_rr_list *rr_list, const ldns_rr *rr)
 			cap = LDNS_RRLIST_INIT;  /* initial list size */
 		else	cap *= 2; 
 		rrs = LDNS_XREALLOC(rr_list->_rrs, ldns_rr *, cap);
-
 		if (!rrs) {
 			return false;
 		}
@@ -1031,7 +1026,7 @@ ldns_is_rrset(ldns_rr_list *rr_list)
 	ldns_rr_class c;
 	ldns_rdf *o;
 	ldns_rr *tmp;
-	uint16_t i;
+	size_t i;
 	
 	if (!rr_list) {
 		return false;
@@ -1220,11 +1215,13 @@ ldns_rr_list_clone(ldns_rr_list *rrlist)
 	return new_list;
 }
 
-static int
+
+int
 qsort_rr_compare(const void *a, const void *b)
 {
 	const ldns_rr *rr1 = * (const ldns_rr **) a;
 	const ldns_rr *rr2 = * (const ldns_rr **) b;
+
 	if (rr1 == NULL && rr2 == NULL) {
 		return 0;
 	}
@@ -1237,27 +1234,83 @@ qsort_rr_compare(const void *a, const void *b)
 	return ldns_rr_compare(rr1, rr2);
 }
 
+
+int
+qsort_schwartz_rr_compare(const void *a, const void *b)
+{
+	int result = 0;
+	ldns_rr *rr1, *rr2;
+	ldns_buffer *rr1_buf, *rr2_buf;
+	struct ldns_schwartzian_compare_struct *sa = *(struct ldns_schwartzian_compare_struct **) a;
+	struct ldns_schwartzian_compare_struct *sb = *(struct ldns_schwartzian_compare_struct **) b;
+
+	rr1 = (ldns_rr *) sa->original_object;
+	rr2 = (ldns_rr *) sb->original_object;
+	
+	result = ldns_rr_compare_no_rdata(rr1, rr2);
+	
+	if (result == 0) {
+		if (!sa->transformed_object) {
+			sa->transformed_object = ldns_buffer_new(ldns_rr_uncompressed_size(sa->original_object));
+			if (ldns_rr2buffer_wire(sa->transformed_object, sa->original_object, LDNS_SECTION_ANY) != LDNS_STATUS_OK) {
+				fprintf(stderr, "ERR!\n");
+				return 0;
+			}
+		}
+		if (!sb->transformed_object) {
+			sb->transformed_object = ldns_buffer_new(ldns_rr_uncompressed_size(sb->original_object));
+			if (ldns_rr2buffer_wire(sb->transformed_object, sb->original_object, LDNS_SECTION_ANY) != LDNS_STATUS_OK) {
+				fprintf(stderr, "ERR!\n");
+				return 0;
+			}
+		}
+		rr1_buf = (ldns_buffer *) sa->transformed_object;
+		rr2_buf = (ldns_buffer *) sb->transformed_object;
+		
+		result = ldns_rr_compare_wire(rr1_buf, rr2_buf);
+	}
+	
+	return result;
+}
+
 void
 ldns_rr_list_sort(ldns_rr_list *unsorted)
 {
+	struct ldns_schwartzian_compare_struct **sortables;
+	size_t item_count;
+	size_t i;
+	
 	if (unsorted) {
-		qsort(unsorted->_rrs,
-		      ldns_rr_list_rr_count(unsorted),
-		      sizeof(ldns_rr *),
-		      qsort_rr_compare);
+		item_count = ldns_rr_list_rr_count(unsorted);
+		
+		sortables = LDNS_XMALLOC(struct ldns_schwartzian_compare_struct *,
+					 item_count);
+		for (i = 0; i < item_count; i++) {
+			sortables[i] = LDNS_XMALLOC(struct ldns_schwartzian_compare_struct, 1);
+			sortables[i]->original_object = ldns_rr_list_rr(unsorted, i);
+			sortables[i]->transformed_object = NULL;
+		}
+		qsort(sortables,
+		      item_count,
+		      sizeof(struct ldns_schwartzian_compare_struct *),
+		      qsort_schwartz_rr_compare);
+		for (i = 0; i < item_count; i++) {
+			unsorted->_rrs[i] = sortables[i]->original_object;
+			if (sortables[i]->transformed_object) {
+				ldns_buffer_free(sortables[i]->transformed_object);
+			}
+			LDNS_FREE(sortables[i]);
+		}
+		LDNS_FREE(sortables);
 	}
 }
 
 int
-ldns_rr_compare(const ldns_rr *rr1, const ldns_rr *rr2)
+ldns_rr_compare_no_rdata(const ldns_rr *rr1, const ldns_rr *rr2)
 {
-	ldns_buffer *rr1_buf;
-	ldns_buffer *rr2_buf;
 	size_t rr1_len;
 	size_t rr2_len;
-        size_t min_len;
         size_t offset;
-	size_t i;
 
 	assert(rr1 != NULL);
 	assert(rr2 != NULL);
@@ -1289,10 +1342,60 @@ ldns_rr_compare(const ldns_rr *rr1, const ldns_rr *rr2)
             return ((int) rr2_len - (int) rr1_len);
         }
 
-        /* convert RRs into canonical wire format */
+	return 0;
+}
+
+int ldns_rr_compare_wire(ldns_buffer *rr1_buf, ldns_buffer *rr2_buf)
+{
+        size_t rr1_len, rr2_len, min_len, i, offset;
+
+        rr1_len = ldns_buffer_capacity(rr1_buf);
+        rr2_len = ldns_buffer_capacity(rr2_buf);
+
+        /* jump past dname (checked in earlier part)
+         * and especially past TTL */
+        offset = 0;
+        while (offset < rr1_len && *ldns_buffer_at(rr1_buf, offset) != 0) {
+          offset += *ldns_buffer_at(rr1_buf, offset) + 1;
+        }
+        offset += 9;
+	min_len = (rr1_len < rr2_len) ? rr1_len : rr2_len;
+        /* Compare RRs RDATA byte for byte. */
+        for(i = offset; i < min_len; i++) {
+                if (*ldns_buffer_at(rr1_buf,i) < *ldns_buffer_at(rr2_buf,i)) {
+                        return -1;
+                } else if (*ldns_buffer_at(rr1_buf,i) > *ldns_buffer_at(rr2_buf,i)) {
+                        return +1;
+                }
+        }
+
+        /* If both RDATAs are the same up to min_len, then the shorter one sorts first. */
+        if (rr1_len < rr2_len) {
+                return -1;
+        } else if (rr1_len > rr2_len) {
+                return +1;
+	}
+        /* The RDATAs are equal. */
+        return 0;
+
+}
+
+int
+ldns_rr_compare(const ldns_rr *rr1, const ldns_rr *rr2)
+{
+	int result;
+	size_t rr1_len, rr2_len;
+	
+	ldns_buffer *rr1_buf;
+	ldns_buffer *rr2_buf;
+
+	result = ldns_rr_compare_no_rdata(rr1, rr2);
+	if (result == 0) {
+		rr1_len = ldns_rr_uncompressed_size(rr1);
+		rr2_len = ldns_rr_uncompressed_size(rr2);
+
 		rr1_buf = ldns_buffer_new(rr1_len);
 		rr2_buf = ldns_buffer_new(rr2_len);
-        min_len = (rr1_len < rr2_len) ? rr1_len : rr2_len;
 
 		if (ldns_rr2buffer_wire(rr1_buf, rr1, LDNS_SECTION_ANY) != LDNS_STATUS_OK) {
 			ldns_buffer_free(rr1_buf);
@@ -1305,29 +1408,13 @@ ldns_rr_compare(const ldns_rr *rr1, const ldns_rr *rr2)
 			return 0;
 		}
 
-        /* Compare RRs RDATA byte for byte. */
-        for(i = offset; i < min_len; i++) {
-			if (*ldns_buffer_at(rr1_buf,i) < *ldns_buffer_at(rr2_buf,i)) {
-				ldns_buffer_free(rr1_buf);
-				ldns_buffer_free(rr2_buf);
-				return -1;
-			} else if (*ldns_buffer_at(rr1_buf,i) > *ldns_buffer_at(rr2_buf,i)) {
-				ldns_buffer_free(rr1_buf);
-				ldns_buffer_free(rr2_buf);
-				return +1;
-			}
-		}
-        /* If both RDATAs are the same up to min_len, then the shorter one sorts first. */
+		result = ldns_rr_compare_wire(rr1_buf, rr2_buf);
+
 		ldns_buffer_free(rr1_buf);
 		ldns_buffer_free(rr2_buf);
-        
-        if (rr1_len < rr2_len) {
-                return -1;
-        } else if (rr1_len > rr2_len) {
-                return +1;
 	}
-        /* The RDATAs are equal. */
-        return 0;
+
+	return result;
 }
 
 bool
@@ -1354,6 +1441,7 @@ ldns_rr_compare_ds(const ldns_rr *orr1, const ldns_rr *orr2)
 	    ldns_rr_get_type(rr2) == LDNS_RR_TYPE_DS) {
 	    	ds_repr = ldns_key_rr2ds(rr1, LDNS_SHA1);
 	    	result = (ldns_rr_compare(rr2, ds_repr) == 0);
+
 	    	ldns_rr_free(ds_repr);
 	} else {
 		result = (ldns_rr_compare(rr1, rr2) == 0);
@@ -1426,7 +1514,7 @@ ldns_rr2canonical(ldns_rr *rr)
 void
 ldns_rr_list2canonical(ldns_rr_list *rr_list)
 {
-	uint16_t i;
+	size_t i;
 	for (i = 0; i < ldns_rr_list_rr_count(rr_list); i++) {
 		ldns_rr2canonical(ldns_rr_list_rr(rr_list, i));
 	}

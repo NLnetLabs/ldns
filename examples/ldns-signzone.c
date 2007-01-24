@@ -300,6 +300,7 @@ main(int argc, char *argv[])
 							LDNS_STATUS_OK) {
 						ldns_key_set_pubkey_owner(key, ldns_rdf_clone(ldns_rr_owner(pubkey)));
 						ldns_key_set_flags(key, ldns_rdf2native_int16(ldns_rr_rdf(pubkey, 0)));
+						ldns_key_set_keytag(key, ldns_calc_keytag(pubkey));
 					}
         				ldns_key_set_keytag(key, ldns_calc_keytag(pubkey));
 					ldns_key_list_push_key(keys, key);

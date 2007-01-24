@@ -5,6 +5,8 @@ AC_PREREQ(2.57)
 AC_INIT(libdns, 1.1.0, libdns@nlnetlabs.nl,libdns)
 AC_CONFIG_SRCDIR([ldns-read-zone.c])
 
+OURCPPFLAGS=''
+CPPFLAGS=${CPPFLAGS:-${OURCPPFLAGS}}
 OURCFLAGS='-g'
 CFLAGS=${CFLAGS:-${OURCFLAGS}}
 
@@ -12,6 +14,7 @@ AC_AIX
 # Checks for programs.
 AC_PROG_CC
 AC_PROG_MAKE_SET
+AC_CHECK_PROGS(libtool, [glibtool libtool15 libtool], [../libtool])
 
 dnl routine to help check for compiler flags.
 AC_DEFUN([CHECK_COMPILER_FLAG],
@@ -39,10 +42,96 @@ AC_MSG_RESULT(no)
 $3
 fi
 ])
-CHECK_COMPILER_FLAG(O2, [CFLAGS="$CFLAGS -O2"])
 
-AC_CHECK_HEADERS([sys/types.h getopt.h stdlib.h stdio.h assert.h netinet/in.h ctype.h time.h pcap.h arpa/inet.h sys/time.h sys/socket.h],,, [AC_INCLUDES_DEFAULT])
-AC_CHECK_HEADERS([netinet/in_systm.h net/if.h netinet/ip.h netinet/udp.h netinet/if_ether.h],,, [
+dnl routine to help check for needed compiler flags.
+# if the given code compiles without the flag, execute argument 4
+# if the given code only compiles with the flag, execute argument 3
+# otherwise fail
+AC_DEFUN([CHECK_COMPILER_FLAG_NEEDED],
+[
+AC_REQUIRE([AC_PROG_CC])
+AC_MSG_CHECKING(whether we need -$1 as a flag for $CC)
+cache=`echo $1 | sed 'y%.=/+-%___p_%'`
+AC_CACHE_VAL(cv_prog_cc_flag_needed_$cache,
+[
+echo '$2' > conftest.c
+echo 'void f(){}' >>conftest.c
+if test -z "`$CC $CFLAGS -Werror -Wall -c conftest.c 2>&1`"; then
+eval "cv_prog_cc_flag_needed_$cache=no"
+else
+[
+if test -z "`$CC $CFLAGS $1 -Werror -Wall -c conftest.c 2>&1`"; then
+eval "cv_prog_cc_flag_needed_$cache=yes"
+else
+echo 'Test with flag fails too!'
+cat conftest.c
+echo "$CC $CFLAGS $1 -Werror -Wall -c conftest.c 2>&1"
+echo `$CC $CFLAGS $1 -Werror -Wall -c conftest.c`
+exit 1
+fi
+]
+fi
+rm -f conftest*
+])
+if eval "test \"`echo '$cv_prog_cc_flag_needed_'$cache`\" = yes"; then
+AC_MSG_RESULT(yes)
+:
+$3
+else
+AC_MSG_RESULT(no)
+:
+$4
+fi
+])
+
+AC_TYPE_SIZE_T
+CHECK_COMPILER_FLAG(O2, [CFLAGS="$CFLAGS -O2"])
+CHECK_COMPILER_FLAG_NEEDED(-std=c99, [#include <stdbool.h>], [CFLAGS="$CFLAGS -std=c99"])
+CHECK_COMPILER_FLAG_NEEDED(-D_POSIX_C_SOURCE=200112, 
+[
+#include <time.h>
+
+int test() {
+	int a = 0;
+	char *t;
+	time_t time = 0;
+	char *buf = NULL;
+	t = ctime_r(&time, buf);
+        return a;
+}
+], [CFLAGS="$CFLAGS -D_POSIX_C_SOURCE=200112"])
+CHECK_COMPILER_FLAG_NEEDED(-D__EXTENSIONS__, 
+[
+#include <stdlib.h>
+#include <ctype.h>
+#include <sys/time.h>
+#include <unistd.h>
+
+int test() {  
+        int a;
+        char **opts = NULL;
+        struct timeval tv;
+        tv.tv_usec = 10;
+        srandom(32);
+        a = getopt(2, opts, "a");
+        a = isascii(32);
+        return a;
+}
+], [CFLAGS="$CFLAGS -D__EXTENSIONS__"])
+
+
+AC_C_INLINE
+AC_CHECK_TYPE(int8_t, char)
+AC_CHECK_TYPE(int16_t, short)
+AC_CHECK_TYPE(int32_t, int)
+AC_CHECK_TYPE(int64_t, long long)
+AC_CHECK_TYPE(uint8_t, unsigned char)
+AC_CHECK_TYPE(uint16_t, unsigned short)
+AC_CHECK_TYPE(uint32_t, unsigned int)
+AC_CHECK_TYPE(uint64_t, unsigned long long)
+
+AC_CHECK_HEADERS([sys/types.h getopt.h stdlib.h stdio.h assert.h netinet/in.h ctype.h time.h pcap.h arpa/inet.h sys/time.h sys/socket.h sys/select.h],,, [AC_INCLUDES_DEFAULT])
+AC_CHECK_HEADERS([netinet/in_systm.h net/if.h netinet/ip.h netinet/udp.h netinet/if_ether.h netinet/ip6.h],,, [
 AC_INCLUDES_DEFAULT 
 #ifdef HAVE_NETINET_IN_SYSTM_H
 #include <netinet/in_systm.h>
@@ -78,7 +167,7 @@ AC_ARG_WITH(ldns,
 	[
 		specialldnsdir="$withval"
 		CPPFLAGS="$CPPFLAGS -I$withval/include"
-		LDFLAGS="$LDFLAGS -L$withval/lib"
+		LDFLAGS="$LDFLAGS -L$withval -L$withval/lib"
 		LDNSDIR="$withval"
 	]
 )
@@ -91,7 +180,7 @@ if test -f $ldns_dev_dir/ldns/util.h && \
 	ldns_version=`grep LDNS_VERSION $ldns_dev_dir/ldns/util.h | sed -e 's/^.*"\(.*\)".*$/\1/'`
 	AC_MSG_RESULT([using $ldns_dev_dir with $ldns_version])
 	CPPFLAGS="$CPPFLAGS -I$ldns_dev_dir/include"
-	LDFLAGS="$LDFLAGS -L$ldns_dev_dir/lib"
+	LDFLAGS="$LDFLAGS -L$ldns_dev_dir -L$ldns_dev_dir/lib"
 	LIBS="$LIBS -lldns"
 	AC_DEFINE(HAVE_LIBLDNS, 1, [If the ldns library is available.])
 	LDNSDIR="$ldns_dev_dir"
@@ -105,10 +194,10 @@ fi
 
 AC_SUBST(LDNSDIR)
 
-AC_CHECK_HEADER(ldns/ldns.h,,  [
-	AC_MSG_ERROR([Can't find ldns headers (make copy-headers in devel source.)])
-	], [AC_INCLUDES_DEFAULT]
-)
+#AC_CHECK_HEADER(ldns/ldns.h,,  [
+#	AC_MSG_ERROR([Can't find ldns headers (make copy-headers in devel source.)])
+#	], [AC_INCLUDES_DEFAULT]
+#)
 
 AC_CHECK_LIB(pcap, pcap_open_offline,, [
 	AC_MSG_WARN([Can't find pcap library (needed for ldns-dpa, will not build dpa now.)])
@@ -171,6 +260,16 @@ AH_BOTTOM([
 
 #ifdef HAVE_NETINET_IF_ETHER_H
 #include <netinet/if_ether.h>
+#endif
+
+extern char *optarg;
+extern int optind, opterr;
+
+#ifndef EXIT_FAILURE
+#define EXIT_FAILURE  1
+#endif
+#ifndef EXIT_SUCCESS
+#define EXIT_SUCCESS  0
 #endif
 ])
 

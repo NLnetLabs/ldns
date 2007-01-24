@@ -223,6 +223,13 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 	ldns_resolver_set_dnssec_cd(res, false);
 	ldns_resolver_set_dnssec(res, true);
 
+	/* setup the root nameserver in the new resolver */
+	status = ldns_resolver_push_nameserver_rr_list(res, global_dns_root);
+	if (status != LDNS_STATUS_OK) {
+		printf("ERRRRR: %s\n", ldns_get_errorstr_by_id(status));
+		ldns_rr_list_print(stdout, global_dns_root);
+		return status;
+	}
 	labels_count = ldns_dname_label_count(name);
 	if (start_name) {
 		if (ldns_dname_is_subdomain(name, start_name)) {
@@ -382,7 +389,6 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 				goto done;
 			}
 		}
-
 		ldns_pkt_free(local_p);
 
 		fprintf(stdout, ";; Domain: ");
@@ -586,7 +592,7 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 					}
 				}
 			}
-
+			ldns_rr_list_deep_free(ds_list);
 			ldns_pkt_free(p);
 		} else {
 			/* if this is the last label, just verify the data and stop */
@@ -596,76 +602,23 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 				if (key_sig_list && ldns_rr_list_rr_count(key_sig_list) > 0) {
 
 					/* If this is a wildcard, you must be able to deny exact match */
-					if (ldns_rdf2native_int8(ldns_rr_rrsig_labels(ldns_rr_list_rr(key_sig_list, 0))) < ldns_dname_label_count(labels[i])) {
-						if (verbosity >= 3) {
-							printf(";; Wilcard expansion, exact match must be denied\n");
-						}
-						status = ldns_verify_denial_wildcard(p, name, t, &nsec_rrs, &nsec_rr_sigs);
-						if (status == LDNS_STATUS_OK) {
-							if ((st = ldns_verify(nsec_rrs, nsec_rr_sigs, trusted_keys, NULL)) == LDNS_STATUS_OK) {
-								fprintf(stdout, "%s ", TRUST);
-								fprintf(stdout, "Wildcard expansion proven for: ");
-								ldns_rdf_print(stdout, name);
-								if (descriptor && descriptor->_name) {
-									printf(" %s", descriptor->_name);
-								} else {
-									printf(" TYPE%u", t);
-								}
-								fprintf(stdout, "\n");
-							} else if ((st = ldns_verify(nsec_rrs, nsec_rr_sigs, correct_key_list, NULL)) == LDNS_STATUS_OK) {
-								fprintf(stdout, "%s ", SELF);
-								fprintf(stdout, "Wildcard expansion proven for: ");
-								ldns_rdf_print(stdout, name);
-								if (descriptor && descriptor->_name) {
-									printf(" %s", descriptor->_name);
-								} else {
-									printf(" TYPE%u", t);
-								}
-								fprintf(stdout, "\n");
-							} else {
-								result = 6;
-								fprintf(stdout, "%s ", BOGUS);
-								printf("Error verifying wildcard expansion for ");
-								ldns_rdf_print(stdout, name);
-								printf(" type ");
-								if (descriptor && descriptor->_name) {
-									printf("%s", descriptor->_name);
-								} else {
-									printf("TYPE%u", t);
-								}
-								printf(": %s\n", ldns_get_errorstr_by_id(st));
-							}
-						} else {
-							result = 6;
-							fprintf(stdout, "%s ", BOGUS);
-							printf("Error verifying wildcard expansion for ");
-							ldns_rdf_print(stdout, name);
-							printf(" type ");
-							if (descriptor && descriptor->_name) {
-								printf("%s", descriptor->_name);
-							} else {
-								printf("TYPE%u", t);
-							}
-							printf(": %s\n", ldns_get_errorstr_by_id(status));
-						}
+					if ((st = ldns_verify(dataset, key_sig_list, trusted_keys, NULL)) == LDNS_STATUS_OK) {
+						fprintf(stdout, "%s ", TRUST);
+						ldns_rr_list_print(stdout, dataset);
+					} else if ((st = ldns_verify(dataset, key_sig_list, correct_key_list, NULL)) == LDNS_STATUS_OK) {
+						fprintf(stdout, "%s ", SELF);
+						ldns_rr_list_print(stdout, dataset);
 					} else {
-						if ((st = ldns_verify(dataset, key_sig_list, trusted_keys, NULL)) == LDNS_STATUS_OK) {
-							fprintf(stdout, "%s ", TRUST);
-							ldns_rr_list_print(stdout, dataset);
-						} else if ((st = ldns_verify(dataset, key_sig_list, correct_key_list, NULL)) == LDNS_STATUS_OK) {
-							fprintf(stdout, "%s ", SELF);
-							ldns_rr_list_print(stdout, dataset);
-						} else {
-							result = 5;
-							fprintf(stdout, "%s ", BOGUS);
-							ldns_rr_list_print(stdout, dataset);
-							printf(";; Error: %s\n", ldns_get_errorstr_by_id(st));
-						}
+						result = 5;
+						fprintf(stdout, "%s ", BOGUS);
+						ldns_rr_list_print(stdout, dataset);
+						printf(";; Error: %s\n", ldns_get_errorstr_by_id(st));
 					}
 				} else {
 					fprintf(stdout, "%s ", UNSIGNED);
 					ldns_rr_list_print(stdout, dataset);
 				}
+				ldns_rr_list_deep_free(dataset);
 			} else {
 				status = ldns_verify_denial(p, name, t, &nsec_rrs, &nsec_rr_sigs);
 				if (status == LDNS_STATUS_OK) {
@@ -747,9 +700,6 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 				}
 			}
 			ldns_pkt_free(p);
-			ldns_rr_list_deep_free(dataset);
-			ldns_rr_list_deep_free(key_sig_list);
-			goto done;
 		}
 
 		new_nss_aaaa = NULL;

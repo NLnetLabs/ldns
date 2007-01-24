@@ -160,7 +160,7 @@ ldns_tsig_mac_new(ldns_rdf **tsig_mac, uint8_t *pkt_wire, size_t pkt_wire_size,
 	/* 
 	 * prepare the digestable information
 	 */
-	data_buffer = ldns_buffer_new(LDNS_MIN_BUFLEN); /* we scale autom. */
+	data_buffer = ldns_buffer_new(LDNS_MAX_PACKETLEN);
 	/* if orig_mac is not NULL, add it too */
 	if (orig_mac_rdf) {
 		(void) ldns_rdf2buffer_wire(data_buffer, orig_mac_rdf);
@@ -331,7 +331,7 @@ ldns_pkt_tsig_sign(ldns_pkt *pkt, const char *key_name, const char *key_data,
 	orig_id_rdf = ldns_native2rdf_int16(LDNS_RDF_TYPE_INT16, ldns_pkt_id(pkt));
 
 	error_rdf = ldns_native2rdf_int16(LDNS_RDF_TYPE_INT16, 0);
-	
+
 	other_data_rdf = ldns_native2rdf_int16_data(0, NULL);
 
 	if (ldns_pkt2wire(&pkt_wire, pkt, &pkt_wire_len) != LDNS_STATUS_OK) {

@@ -78,7 +78,9 @@ main(int argc, char **argv)
 		if (sort) {
 			ldns_zone_sort(z);
 		}
+
 		ldns_zone_print(stdout, z);
+
 		ldns_zone_deep_free(z);
 	} else {
 		fprintf(stderr, "%s at %d\n", 

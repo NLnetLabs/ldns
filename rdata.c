@@ -311,7 +311,7 @@ ldns_rdf_new_frm_str(ldns_rdf_type type, const char *str)
 		status = LDNS_STATUS_ERR;
 		break;
 	}
-	if (LDNS_STATUS_OK != status) {
+	if (LDNS_STATUS_OK != status || !rdf) {
 		return NULL;
 	} else {
 		ldns_rdf_set_type(rdf, type);

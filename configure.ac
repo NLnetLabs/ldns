@@ -2,12 +2,12 @@
 # Process this file with autoconf to produce a configure script.
 AC_PREREQ(2.57)
 
-AC_INIT(libdns, 1.1.0, libdns@nlnetlabs.nl, libdns)
+AC_INIT(libdns, 1.1.1, libdns@nlnetlabs.nl, libdns)
 AC_CONFIG_SRCDIR([packet.c])
 
 PACKAGE_VERSION="$PACKAGE_VERSION $VERSION_ADD NSEC3 BETA 4"
 
-OURCPPFLAGS='-ansi -D_POSIX_C_SOURCE=200112 -D_XOPEN_SOURCE=600 -D__EXTENSIONS__'
+OURCPPFLAGS=''
 CPPFLAGS=${CPPFLAGS:-${OURCPPFLAGS}}
 OURCFLAGS='-g -Wall -W -Wwrite-strings'
 CFLAGS=${CFLAGS:-${OURCFLAGS}}
@@ -44,12 +44,87 @@ $3
 fi
 ])
 
+dnl routine to help check for needed compiler flags.
+# if the given code compiles without the flag, execute argument 4
+# if the given code only compiles with the flag, execute argument 3
+# otherwise fail
+AC_DEFUN([CHECK_COMPILER_FLAG_NEEDED],
+[
+AC_REQUIRE([AC_PROG_CC])
+AC_MSG_CHECKING(whether we need -$1 as a flag for $CC)
+cache=`echo $1 | sed 'y%.=/+-%___p_%'`
+AC_CACHE_VAL(cv_prog_cc_flag_needed_$cache,
+[
+echo '$2' > conftest.c
+echo 'void f(){}' >>conftest.c
+if test -z "`$CC $CFLAGS -Werror -Wall -c conftest.c 2>&1`"; then
+eval "cv_prog_cc_flag_needed_$cache=no"
+else
+[
+if test -z "`$CC $CFLAGS $1 -Werror -Wall -c conftest.c 2>&1`"; then
+eval "cv_prog_cc_flag_needed_$cache=yes"
+else
+echo 'Test with flag fails too!'
+cat conftest.c
+echo "$CC $CFLAGS $1 -Werror -Wall -c conftest.c 2>&1"
+echo `$CC $CFLAGS $1 -Werror -Wall -c conftest.c`
+exit 1
+fi
+]
+fi
+rm -f conftest*
+])
+if eval "test \"`echo '$cv_prog_cc_flag_needed_'$cache`\" = yes"; then
+AC_MSG_RESULT(yes)
+:
+$3
+else
+AC_MSG_RESULT(no)
+:
+$4
+fi
+])
+
+
 # Checks for typedefs, structures, and compiler characteristics.
 AC_C_CONST
-AC_C_INLINE
 AC_LANG_C
 AC_TYPE_SIZE_T
 CHECK_COMPILER_FLAG(O2, [CFLAGS="$CFLAGS -O2"])
+CHECK_COMPILER_FLAG_NEEDED(-std=c99, [#include <stdbool.h>], [CFLAGS="$CFLAGS -std=c99"])
+CHECK_COMPILER_FLAG_NEEDED(-D_POSIX_C_SOURCE=200112, 
+[
+#include <time.h>
+
+int test() {
+	int a = 0;
+	char *t;
+	time_t time = 0;
+	char *buf = NULL;
+	t = ctime_r(&time, buf);
+        return a;
+}
+], [CFLAGS="$CFLAGS -D_POSIX_C_SOURCE=200112"])
+CHECK_COMPILER_FLAG_NEEDED(-D__EXTENSIONS__, 
+[
+#include <stdlib.h>
+#include <ctype.h>
+#include <sys/time.h>
+#include <unistd.h>
+
+int test() {  
+        int a;
+        char **opts = NULL;
+        struct timeval tv;
+        tv.tv_usec = 10;
+        srandom(32);
+        a = getopt(2, opts, "a");
+        a = isascii(32);
+        return a;
+}
+], [CFLAGS="$CFLAGS -D__EXTENSIONS__"])
+
+AC_C_INLINE
 AC_CHECK_TYPE(int8_t, char)
 AC_CHECK_TYPE(int16_t, short)
 AC_CHECK_TYPE(int32_t, int)
@@ -112,14 +187,14 @@ AC_CHECK_PROG(doxygen, doxygen, doxygen)
 # copied again for use in ldns
 AC_ARG_WITH(ssl, AC_HELP_STRING([--with-ssl=pathname],
                                     [enable SSL (will check /usr/local/ssl
-                            /usr/lib/ssl /usr/ssl /usr/pkg /usr/local /usr)]),[
+                            /usr/lib/ssl /usr/ssl /usr/pkg /usr/local /usr/sfw /usr)]),[
         ],[
             withval="yes"
         ])
     if test x_$withval != x_no; then
         AC_MSG_CHECKING(for SSL)
         if test x_$withval = x_ -o x_$withval = x_yes; then
-            withval="/usr/local/ssl /usr/lib/ssl /usr/ssl /usr/pkg /usr/local /usr"
+            withval="/usr/local/ssl /usr/lib/ssl /usr/ssl /usr/pkg /usr/local /usr/sfw /usr"
         fi
         for dir in $withval; do
             ssldir="$dir"
@@ -149,10 +224,15 @@ AC_ARG_WITH(ssl, AC_HELP_STRING([--with-ssl=pathname],
 # for macosx, see if glibtool exists and use that
 # BSD's need to know the version...
 AC_CHECK_PROG(glibtool, glibtool, [glibtool], )
-AC_CHECK_PROG(libtool, libtool15, [libtool15], libtool)
+AC_CHECK_PROGS(libtool, [libtool15 libtool], [./libtool])
 AC_PATH_TOOL(AR, ar, [false])
 if test $AR = false; then
 	AC_MSG_ERROR([Cannot find 'ar', please extend PATH to include it])
+fi
+# avoid libtool max commandline length test on systems that fork slowly.
+AC_CANONICAL_HOST
+if echo "$host_os" | grep "sunos4" >/dev/null; then
+	lt_cv_sys_max_cmd_len=32750;
 fi
 AC_PROG_LIBTOOL
 
@@ -162,7 +242,7 @@ AC_HEADER_STDC
 #AC_HEADER_SYS_WAIT
 #AC_CHECK_HEADERS([getopt.h fcntl.h stdlib.h string.h strings.h unistd.h])
 # do the very minimum - we can always extend this
-AC_CHECK_HEADERS([getopt.h stdbool.h openssl/ssl.h netinet/in.h time.h],,, [AC_INCLUDES_DEFAULT])
+AC_CHECK_HEADERS([getopt.h stdarg.h stdbool.h openssl/ssl.h netinet/in.h time.h],,, [AC_INCLUDES_DEFAULT])
 AC_CHECK_HEADERS(sys/param.h sys/mount.h sys/socket.h,,,
 [AC_INCLUDES_DEFAULT
   [
@@ -179,6 +259,24 @@ AC_INCLUDES_DEFAULT
 #endif
 ])
 AC_CHECK_TYPE(ssize_t, int)
+AC_CHECK_TYPE(in_addr_t, [], [AC_DEFINE([in_addr_t], [uint32_t], [in_addr_t])], [
+#if HAVE_SYS_TYPES_H
+# include <sys/types.h>
+#endif
+#if HAVE_NETINET_IN_H
+# include <netinet/in.h>
+#endif])
+AC_CHECK_TYPE(in_port_t, [], [AC_DEFINE([in_port_t], [uint16_t], [in_port_t])], [
+#if HAVE_SYS_TYPES_H
+# include <sys/types.h>
+#endif
+#if HAVE_NETINET_IN_H
+# include <netinet/in.h>
+#endif])
+
+# check to see if libraries are needed for these functions.
+AC_CHECK_LIB(socket, socket)
+AC_CHECK_LIB(nsl, inet_pton)
 
 AC_FUNC_MALLOC
 
@@ -187,7 +285,20 @@ AC_REPLACE_FUNCS(b64_ntop)
 AC_REPLACE_FUNCS(b32_pton)
 AC_REPLACE_FUNCS(b32_ntop)
 AC_REPLACE_FUNCS(timegm)
+AC_REPLACE_FUNCS(gmtime_r)
+AC_REPLACE_FUNCS(ctime_r)
 AC_REPLACE_FUNCS(isblank)
+AC_REPLACE_FUNCS(inet_aton)
+AC_REPLACE_FUNCS(inet_pton)
+AC_REPLACE_FUNCS(inet_ntop)
+AC_REPLACE_FUNCS(snprintf)
+AC_REPLACE_FUNCS(strlcpy)
+AC_REPLACE_FUNCS(memmove)
+
+AC_CHECK_FUNCS([getaddrinfo])
+if test $ac_cv_func_getaddrinfo = no; then
+AC_LIBOBJ([fake-rfc2553])
+fi
 
 #AC_SEARCH_LIBS(RSA_new, [crypto])
 
@@ -293,6 +404,29 @@ time_t timegm (struct tm *tm);
 #ifndef HAVE_ISBLANK
 int isblank(int c);
 #endif /* !HAVE_ISBLANK */
+#ifndef HAVE_SNPRINTF
+#include <stdarg.h>
+int snprintf (char *str, size_t count, const char *fmt, ...);
+int vsnprintf (char *str, size_t count, const char *fmt, va_list arg);
+#endif /* HAVE_SNPRINTF */
+#ifndef HAVE_INET_PTON
+int inet_pton(int af, const char* src, void* dst);
+#endif /* HAVE_INET_PTON */
+#ifndef HAVE_INET_NTOP
+const char *inet_ntop(int af, const void *src, char *dst, size_t size);
+#endif
+#ifndef HAVE_INET_ATON
+int inet_aton(const char *cp, struct in_addr *addr);
+#endif
+#ifndef HAVE_MEMMOVE
+void *memmove(void *dest, const void *src, size_t n);
+#endif
+#ifndef HAVE_STRLCPY
+size_t strlcpy(char *dst, const char *src, size_t siz);
+#endif
+#ifndef HAVE_GETADDRINFO
+#include "compat/fake-rfc2553.h"
+#endif
 ])
 
 AC_CONFIG_FILES([Makefile ldns/util.h])

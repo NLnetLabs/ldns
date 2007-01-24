@@ -5,6 +5,8 @@ AC_PREREQ(2.57)
 AC_INIT(pcat, 1.1.0, miek@miek.nl,pcat)
 AC_CONFIG_SRCDIR([pcat.c])
 
+OURCPPFLAGS=''
+CPPFLAGS=${CPPFLAGS:-${OURCPPFLAGS}}
 OURCFLAGS='-g'
 CFLAGS=${CFLAGS:-${OURCFLAGS}}
 
@@ -39,8 +41,82 @@ AC_MSG_RESULT(no)
 $3
 fi
 ])
-#CHECK_COMPILER_FLAG(O2, [CFLAGS="$CFLAGS -O2"])
-CHECK_COMPILER_FLAG(O2, [CFLAGS="$CFLAGS "])
+
+dnl routine to help check for needed compiler flags.
+# if the given code compiles without the flag, execute argument 4
+# if the given code only compiles with the flag, execute argument 3
+# otherwise fail
+AC_DEFUN([CHECK_COMPILER_FLAG_NEEDED],
+[
+AC_REQUIRE([AC_PROG_CC])
+AC_MSG_CHECKING(whether we need -$1 as a flag for $CC)
+cache=`echo $1 | sed 'y%.=/+-%___p_%'`
+AC_CACHE_VAL(cv_prog_cc_flag_needed_$cache,
+[
+echo '$2' > conftest.c
+echo 'void f(){}' >>conftest.c
+if test -z "`$CC $CFLAGS -Werror -Wall -c conftest.c 2>&1`"; then
+eval "cv_prog_cc_flag_needed_$cache=no"
+else
+[
+if test -z "`$CC $CFLAGS $1 -Werror -Wall -c conftest.c 2>&1`"; then
+eval "cv_prog_cc_flag_needed_$cache=yes"
+else
+echo 'Test with flag fails too!'
+cat conftest.c
+echo "$CC $CFLAGS $1 -Werror -Wall -c conftest.c 2>&1"
+echo `$CC $CFLAGS $1 -Werror -Wall -c conftest.c`
+exit 1
+fi
+]
+fi
+rm -f conftest*
+])
+if eval "test \"`echo '$cv_prog_cc_flag_needed_'$cache`\" = yes"; then
+AC_MSG_RESULT(yes)
+:
+$3
+else
+AC_MSG_RESULT(no)
+:
+$4
+fi
+])
+
+CHECK_COMPILER_FLAG(O2, [CFLAGS="$CFLAGS -O2"])
+CHECK_COMPILER_FLAG_NEEDED(-std=c99, [#include <stdbool.h>], [CFLAGS="$CFLAGS -std=c99"])
+CHECK_COMPILER_FLAG_NEEDED(-D_POSIX_C_SOURCE=200112, 
+[
+#include <time.h>
+
+int test() {
+	int a = 0;
+	char *t;
+	time_t time = 0;
+	char *buf = NULL;
+	t = ctime_r(&time, buf);
+        return a;
+}
+], [CFLAGS="$CFLAGS -D_POSIX_C_SOURCE=200112"])
+CHECK_COMPILER_FLAG_NEEDED(-D__EXTENSIONS__, 
+[
+#include <stdlib.h>
+#include <ctype.h>
+#include <sys/time.h>
+#include <unistd.h>
+
+int test() {  
+        int a;
+        char **opts = NULL;
+        struct timeval tv;
+        tv.tv_usec = 10;
+        srandom(32);
+        a = getopt(2, opts, "a");
+        a = isascii(32);
+        return a;
+}
+], [CFLAGS="$CFLAGS -D__EXTENSIONS__"])
+
 
 AC_CHECK_HEADERS([sys/types.h getopt.h stdlib.h stdio.h assert.h netinet/in.h ctype.h time.h pcap.h arpa/inet.h sys/time.h sys/socket.h],,, [AC_INCLUDES_DEFAULT])
 AC_CHECK_HEADERS([netinet/in_systm.h net/if.h netinet/ip.h netinet/udp.h netinet/if_ether.h],,, [

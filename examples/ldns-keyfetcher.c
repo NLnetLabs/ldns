@@ -669,7 +669,7 @@ main(int argc, char *argv[])
 				
 				outputfile_buffer = ldns_buffer_new(300);
 				domain_str = ldns_rdf2str(ldns_rr_owner(k));
-				ldns_buffer_printf(outputfile_buffer, "K%s+%03u.+%05u.key", domain_str, ldns_rdf2native_int8(ldns_rr_rdf(k, 2)), ldns_calc_keytag(k), 123);
+				ldns_buffer_printf(outputfile_buffer, "K%s+%03u+%05u.key", domain_str, ldns_rdf2native_int8(ldns_rr_rdf(k, 2)), ldns_calc_keytag(k));
 				outputfile_str = ldns_buffer_export(outputfile_buffer);
 				
 				if (verbosity >= 1) {
@@ -686,6 +686,7 @@ main(int argc, char *argv[])
 				
 				LDNS_FREE(domain_str);
 				LDNS_FREE(outputfile_str);
+				LDNS_FREE(outputfile_buffer);
 			}
 		} else {
 			ldns_rr_list_print(stdout, l);

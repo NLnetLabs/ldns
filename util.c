@@ -16,7 +16,7 @@
 #include <ldns/rr.h>
 #include <ldns/util.h>
 #include <strings.h>
-
+#include <stdlib.h>
 #include <stdio.h>
 
 /* put this here tmp. for debugging */

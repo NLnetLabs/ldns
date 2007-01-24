@@ -78,7 +78,7 @@ LINK_LIB	= $(LIBTOOL) --mode=link $(CC) $(CFLAGS) $(LDFLAGS) -release $(VERSION)
 all:		copy-headers lib linktest
 
 linktest:	$(srcdir)/linktest.c $(LIBDNS_HEADERS) ldns/util.h ldns/config.h libldns.la
-		gcc $(srcdir)/linktest.c $(CPPFLAGS) $(CFLAGS) -L.libs -lldns -o linktest
+		$(LIBTOOL) --mode=link $(CC) $(srcdir)/linktest.c $(CPPFLAGS) $(CFLAGS) -lldns -o linktest
 
 lib:		libldns.la
 		if [ ! -d lib ] ; then ln -s .libs lib ; fi ;		
@@ -88,7 +88,7 @@ libldns.la:	$(LIBDNS_OBJECTS)
 
 copy-headers:
 		if [ ! -d include ] ; then mkdir include ; fi ;
-		if [ ! -d include/ldns ] ; then ln -sf ../ldns ./include/ldns ; fi ;
+		if [ ! -d include/ldns ] ; then ln -s ../ldns ./include/ldns ; fi ;
 		for i in $(LIBDNS_HEADERS); do \
 			if [ $(srcdir)/ldns/$$i -nt ./include/ldns/$$i ] ; then \
 				MVPROG=/bin/cp $(INSTALL) -m 644 $$i ./include/ldns/; \
@@ -217,6 +217,33 @@ timegm$U.o:	$(srcdir)/compat/timegm.c
 isblank$U.o:	$(srcdir)/compat/isblank.c
 	$(COMP_LIB) -c $(srcdir)/compat/isblank.c -o $@
 
+strlcpy$U.o:	$(srcdir)/compat/strlcpy.c
+	$(COMP_LIB) -c $(srcdir)/compat/strlcpy.c -o $@
+
+memmove$U.o:	$(srcdir)/compat/memmove.c
+	$(COMP_LIB) -c $(srcdir)/compat/memmove.c -o $@
+
+inet_pton$U.o:	$(srcdir)/compat/inet_pton.c
+	$(COMP_LIB) -c $(srcdir)/compat/inet_pton.c -o $@
+
+inet_aton$U.o:	$(srcdir)/compat/inet_aton.c
+	$(COMP_LIB) -c $(srcdir)/compat/inet_aton.c -o $@
+
+inet_ntop$U.o:	$(srcdir)/compat/inet_ntop.c
+	$(COMP_LIB) -c $(srcdir)/compat/inet_ntop.c -o $@
+
+snprintf$U.o:	$(srcdir)/compat/snprintf.c
+	$(COMP_LIB) -c $(srcdir)/compat/snprintf.c -o $@
+
+fake-rfc2553$U.o:	$(srcdir)/compat/fake-rfc2553.c
+	$(COMP_LIB) -c $(srcdir)/compat/fake-rfc2553.c -o $@
+
+gmtime_r$U.o:   $(srcdir)/compat/gmtime_r.c
+	$(COMP_LIB) -c $(srcdir)/compat/gmtime_r.c -o $@
+
+ctime_r$U.o:   $(srcdir)/compat/ctime_r.c
+	$(COMP_LIB) -c $(srcdir)/compat/ctime_r.c -o $@
+
 # Automatic dependencies.
 %.d: $(srcdir)/%.c
 	$(SHELL) -ec '$(CC) -MM $(CPPFLAGS) $< \
@@ -228,4 +255,4 @@ allclean: test-clean clean
 test-clean:
 	tpkg -b test clean
 
-#include $(ALL_SOURCES:.c=.d)
+#-include $(ALL_SOURCES:.c=.d)

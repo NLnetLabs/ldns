@@ -20,6 +20,7 @@
 
 #include <ldns/common.h>
 #include <ldns/rdata.h>
+#include <ldns/buffer.h>
 #include <ldns/error.h>
 
 /** Maximum length of a dname label */
@@ -670,6 +671,26 @@ void ldns_rr_list_sort(ldns_rr_list *unsorted);
  */
 int ldns_rr_compare(const ldns_rr *rr1, const ldns_rr *rr2);
 int ldns_rr_compare_nsec3(const ldns_rr *rr1, const ldns_rr *rr2);
+
+/**
+ * compares two rrs, up to the rdata.
+ * \param[in] rr1 the first one
+ * \param[in] rr2 the second one
+ * \return 0 if equal
+ *         -1 if rr1 comes before rr2
+ *         +1 if rr2 comes before rr1
+ */
+int ldns_rr_compare_no_rdata(const ldns_rr *rr1, const ldns_rr *rr2);
+
+/**
+ * compares the wireformat of two rrs, contained in the given buffers.
+ * \param[in] rr1_buf the first one
+ * \param[in] rr2_buf the second one
+ * \return 0 if equal
+ *         -1 if rr1_buf comes before rr2_buf
+ *         +1 if rr2_buf comes before rr1_buf
+ */
+int ldns_rr_compare_wire(ldns_buffer *rr1_buf, ldns_buffer *rr2_buf);
 
 /**
  * returns true of the given rr's are equal.

@@ -54,7 +54,8 @@
 	; 'copy_id' copies the ID from the query to the answer.
 	ADJUST copy_id
 	; 'sleep=10' sleeps for 10 seconds before giving the answer (TCP is open)
-	ADJUST [sleep=<num>]
+	ADJUST [sleep=<num>]    ; sleep before giving any reply
+	ADJUST [packet_sleep=<num>]  ; sleep before this packet in sequence
 	SECTION QUESTION
 	<RRs, one per line>    ; the RRcount is determined automatically.
 	SECTION ANSWER
@@ -94,6 +95,7 @@ enum transport_type {transport_any = 0, transport_udp, transport_tcp };
 struct reply_packet {
 	struct reply_packet* next;
 	ldns_pkt* reply;
+	int packet_sleep; /* seconds to sleep before giving packet */
 };
 
 /* data structure to keep the canned queries in */
@@ -187,6 +189,7 @@ entry_add_reply(struct entry* entry)
 		sizeof(struct reply_packet));
 	struct reply_packet ** p = &entry->reply_list;
 	pkt->next = NULL;
+	pkt->packet_sleep = 0;
 	pkt->reply = ldns_pkt_new();
 	/* link at end */
 	while(*p)
@@ -284,7 +287,8 @@ static void replyline(const char* line, ldns_pkt *reply)
 	}
 }
 
-static void adjustline(const char* line, struct entry* e)
+static void adjustline(const char* line, struct entry* e, 
+	struct reply_packet* pkt)
 {
 	const char* parse = line;
 	while(*parse) {
@@ -294,6 +298,10 @@ static void adjustline(const char* line, struct entry* e)
 			e->copy_id = true;
 		} else if(str_keyword(&parse, "sleep=")) {
 			e->sleeptime = strtol(parse, (char**)&parse, 10);
+			while(isspace(*parse)) 
+				parse++;
+		} else if(str_keyword(&parse, "packet_sleep=")) {
+			pkt->packet_sleep = strtol(parse, (char**)&parse, 10);
 			while(isspace(*parse)) 
 				parse++;
 		} else {
@@ -403,7 +411,7 @@ static struct entry* read_datafile(const char* name)
 		} else if(str_keyword(&parse, "REPLY")) {
 			replyline(parse, cur_reply->reply);
 		} else if(str_keyword(&parse, "ADJUST")) {
-			adjustline(parse, current);
+			adjustline(parse, current, cur_reply);
 		} else if(str_keyword(&parse, "EXTRA_PACKET")) {
 			cur_reply = entry_add_reply(current);
 		} else if(str_keyword(&parse, "SECTION")) {
@@ -570,6 +578,13 @@ handle_query(uint8_t* inbuf, ssize_t inlen, struct entry* entries, int* count,
 		ldns_pkt_free(answer_pkt);
 		answer_pkt = NULL;
 
+		if(p->packet_sleep) {
+			if(verbose) log_msg("sleeping for next packet"
+				" %d secs\n", p->packet_sleep);
+			sleep(p->packet_sleep);
+			if(verbose) log_msg("wakeup for next packet "
+				"(slept %d secs)\n", p->packet_sleep);
+		}
 		sendfunc(outbuf, answer_size, userdata);
 		LDNS_FREE(outbuf);
 		outbuf = NULL;
