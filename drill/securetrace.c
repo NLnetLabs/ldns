@@ -468,6 +468,9 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 			pt = get_ds(p, labels[i-1], &ds_list, &ds_sig_list);
 			if (!ds_list) {
 				ldns_pkt_free(p);
+				if (ds_sig_list) {
+					ldns_rr_list_deep_free(ds_sig_list);
+				}
 				p = get_dnssec_pkt(res, name, LDNS_RR_TYPE_DNSKEY);
 				pt = get_ds(p, NULL, &ds_list, &ds_sig_list); 
 			}
@@ -530,10 +533,8 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 				} else {
 					/* wait apparently there were no keys either, go back to the ds packet */
 					ldns_pkt_free(p);
-/*
-					ldns_rr_list_deep_free(ds_list);
 					ldns_rr_list_deep_free(ds_sig_list);
-*/					p = get_dnssec_pkt(res, labels[i-1], LDNS_RR_TYPE_DS);
+					p = get_dnssec_pkt(res, labels[i-1], LDNS_RR_TYPE_DS);
 					pt = get_ds(p, labels[i-1], &ds_list, &ds_sig_list);
 					
 					status = ldns_verify_denial(p, labels[i-1], LDNS_RR_TYPE_DS, &nsec_rrs, &nsec_rr_sigs);
