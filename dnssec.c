@@ -136,7 +136,6 @@ ldns_verify_rrsig_buffers(ldns_buffer *rawsig_buf, ldns_buffer *verify_buf,
 				break;
 			default:
 				/* do you know this alg?! */
-printf("arg\n");
 				return LDNS_STATUS_CRYPTO_UNKNOWN_ALGO;
 		}
 }
@@ -1185,7 +1184,7 @@ ldns_create_nsec(ldns_rdf *cur_owner, ldns_rdf *next_owner, ldns_rr_list *rrs)
 }
 
 ldns_rdf *
-ldns_nsec3_hash_name(ldns_rdf *name, uint8_t algorithm, uint32_t iterations, uint8_t salt_length, uint8_t *salt)
+ldns_nsec3_hash_name(ldns_rdf *name, uint8_t algorithm, uint16_t iterations, uint8_t salt_length, uint8_t *salt)
 {
 	char *orig_owner_str;
 	size_t hashed_owner_str_len;
@@ -1201,10 +1200,7 @@ ldns_nsec3_hash_name(ldns_rdf *name, uint8_t algorithm, uint32_t iterations, uin
 	orig_owner_str = ldns_rdf2str(name);
 	
 	/* TODO: mnemonic list for hash algs SHA-1, default to 1 now (sha1) */
-	if (iterations > 16777216) {
-		perror("Bad number for NSEC3 hash iterations");
-		return NULL;
-	}
+	algorithm = algorithm;
 	
 	hashed_owner_str_len = salt_length + ldns_rdf_size(name);
 	hashed_owner_str = LDNS_XMALLOC(char, hashed_owner_str_len);
@@ -1232,14 +1228,6 @@ ldns_nsec3_hash_name(ldns_rdf *name, uint8_t algorithm, uint32_t iterations, uin
 	hashed_owner_str = hash;
 	hashed_owner_str_len = SHA_DIGEST_LENGTH;
 
-/*
-printf("Created hash from: ");
-ldns_rdf_print(stdout, name);
-printf(":\n");
-xprintf_hex(hashed_owner_str, hashed_owner_str_len);
-printf("\n\n");
-exit(0);
-*/
 	hashed_owner_b32 = LDNS_XMALLOC(char, b32_ntop_calculate_size(hashed_owner_str_len) + 1);
 	hashed_owner_b32_len = (size_t) b32_ntop_extended_hex((uint8_t *) hashed_owner_str, hashed_owner_str_len, hashed_owner_b32, b32_ntop_calculate_size(hashed_owner_str_len));
 	if (hashed_owner_b32_len < 1) {
@@ -1261,34 +1249,33 @@ exit(0);
 	return hashed_owner;
 }
 
-ldns_rdf *
-ldns_create_nsec3_vars_rdf(uint8_t algorithm, 
+void
+ldns_nsec3_add_param_rdfs(ldns_rr *rr,
+                           uint8_t algorithm, 
                            bool opt_out,
-                           uint32_t iterations,
+                           uint16_t iterations,
                            uint8_t salt_length,
                            uint8_t *salt)
 {
-	uint8_t *nsec3_vars_data;
-	uint8_t iterations_data[4];
+	uint8_t flags = 0;
+	ldns_rdf *salt_rdf = NULL;
+	uint8_t *salt_data = NULL;
 	
-	nsec3_vars_data = LDNS_XMALLOC(uint8_t, 5 + salt_length);
-	nsec3_vars_data[0] = algorithm;
-
-	ldns_write_uint32(&iterations_data, iterations);
-
-	memcpy(&nsec3_vars_data[1], &iterations_data[1], 3);
-
 	if (opt_out) {
-		nsec3_vars_data[1] = nsec3_vars_data[1] | LDNS_NSEC3_VARS_OPTOUT_MASK;
-	} else {
-		nsec3_vars_data[1] = nsec3_vars_data[1] & ~LDNS_NSEC3_VARS_OPTOUT_MASK;
+		flags = flags | LDNS_NSEC3_VARS_OPTOUT_MASK;
 	}
+
+	ldns_rr_set_rdf(rr, ldns_rdf_new_frm_data(LDNS_RDF_TYPE_INT8, 1, (void*)&algorithm), 0);
+	ldns_rr_set_rdf(rr, ldns_rdf_new_frm_data(LDNS_RDF_TYPE_INT8, 1, (void*)&flags), 1);
+	ldns_rr_set_rdf(rr, ldns_native2rdf_int16(LDNS_RDF_TYPE_INT16, iterations), 2);
 	
-	nsec3_vars_data[4] = salt_length;
-	if (salt_length > 0) {
-		memcpy(&nsec3_vars_data[5], salt, salt_length);
-	}
-	return ldns_rdf_new_frm_data(LDNS_RDF_TYPE_NSEC3_VARS, 5 + salt_length, nsec3_vars_data);
+	salt_data = LDNS_XMALLOC(uint8_t, salt_length + 1);
+	salt_data[0] = salt_length;
+	memcpy(salt_data + 1, salt, salt_length);
+	salt_rdf = ldns_rdf_new_frm_data(LDNS_RDF_TYPE_NSEC3_SALT, salt_length + 1, salt_data);
+	ldns_rr_set_rdf(rr,  salt_rdf, 3);
+
+	ldns_rr_set_rdf(rr, salt_rdf, 3);
 }
 
 /* this will NOT return the NSEC3  completed, you will have to run the
@@ -1299,7 +1286,7 @@ ldns_create_nsec3(ldns_rdf *cur_owner,
                   ldns_rr_list *rrs,
                   uint8_t algorithm,
                   bool opt_out,
-                  uint32_t iterations,
+                  uint16_t iterations,
                   uint8_t salt_length,
                   uint8_t *salt,
                   bool emptynonterminal)
@@ -1320,8 +1307,6 @@ ldns_create_nsec3(ldns_rdf *cur_owner,
 	uint8_t cur_window_max = 0;
 	uint16_t cur_data_size = 0;
 
-	ldns_rdf *nsec3_vars_rdf;
-	
 	ldns_status status;
 	
         /*
@@ -1336,17 +1321,15 @@ ldns_create_nsec3(ldns_rdf *cur_owner,
 	}
 	printf("\n");
 	*/
-	nsec3_vars_rdf = ldns_create_nsec3_vars_rdf(algorithm, opt_out, iterations, salt_length, salt);
-	
 	hashed_owner = ldns_nsec3_hash_name(cur_owner, algorithm, iterations, salt_length, salt);
 	status = ldns_dname_cat(hashed_owner, cur_zone);
 	
-	nsec = ldns_rr_new();
+	nsec = ldns_rr_new_frm_type(LDNS_RR_TYPE_NSEC3);
 	ldns_rr_set_type(nsec, LDNS_RR_TYPE_NSEC3);
 	ldns_rr_set_owner(nsec, hashed_owner);
 	/* TODO: TTL? */
-	ldns_rr_push_rdf(nsec, nsec3_vars_rdf);
-	ldns_rr_push_rdf(nsec, NULL);
+	ldns_nsec3_add_param_rdfs(nsec, algorithm, opt_out, iterations, salt_length, salt);
+	ldns_rr_set_rdf(nsec, NULL, 4);
 
 	bitmap[0] = 0;
 	for (i = 0; i < ldns_rr_list_rr_count(rrs); i++) {
@@ -1434,12 +1417,12 @@ ldns_create_nsec3(ldns_rdf *cur_owner,
 		cur_data_size += cur_window_max + 3;
 	}
 
-	ldns_rr_push_rdf(nsec, ldns_rdf_new_frm_data(LDNS_RDF_TYPE_NSEC, cur_data_size, data));
+	ldns_rr_set_rdf(nsec, ldns_rdf_new_frm_data(LDNS_RDF_TYPE_NSEC, cur_data_size, data), 5);
 
 	LDNS_FREE(bitmap);
 	LDNS_FREE(data);
-/*
-printf(";; Created NSEC3 for:\n");
+
+/*printf(";; Created NSEC3 for:\n");
 printf(";; ");
 ldns_rdf_print(stdout, cur_owner);
 printf("\n");
@@ -1455,29 +1438,40 @@ ldns_nsec3_algorithm(const ldns_rr *nsec3_rr)
 	if (nsec3_rr && ldns_rr_get_type(nsec3_rr) == LDNS_RR_TYPE_NSEC3 &&
 	    ldns_rdf_size(ldns_rr_rdf(nsec3_rr, 0)) > 0
 	   ) {
-		return ldns_rdf_data(ldns_rr_rdf(nsec3_rr, 0))[0];
+		/*return ldns_rdf_data(ldns_rr_rdf(nsec3_rr, 0))[0];*/
+		return ldns_rdf2native_int8(ldns_rr_rdf(nsec3_rr, 0));
 	}
 	return 0;
 }
 
-uint32_t
+uint8_t
+ldns_nsec3_flags(const ldns_rr *nsec3_rr)
+{
+	if (nsec3_rr && ldns_rr_get_type(nsec3_rr) == LDNS_RR_TYPE_NSEC3 &&
+	    ldns_rdf_size(ldns_rr_rdf(nsec3_rr, 1)) > 0
+	   ) {
+		/*return ldns_rdf_data(ldns_rr_rdf(nsec3_rr, 0))[0];*/
+		return ldns_rdf2native_int8(ldns_rr_rdf(nsec3_rr, 0));
+	}
+	return 0;
+}
+
+bool
+ldns_nsec3_optout(const ldns_rr *nsec3_rr)
+{
+	return (ldns_nsec3_flags(nsec3_rr) & LDNS_NSEC3_VARS_OPTOUT_MASK);
+}
+
+
+uint16_t
 ldns_nsec3_iterations(const ldns_rr *nsec3_rr)
 {
 	uint8_t *data;
-	uint8_t iterations_wire[4];
 
 	if (nsec3_rr && ldns_rr_get_type(nsec3_rr) == LDNS_RR_TYPE_NSEC3 &&
-	    ldns_rdf_size(ldns_rr_rdf(nsec3_rr, 0)) > 0
+	    ldns_rdf_size(ldns_rr_rdf(nsec3_rr, 2)) > 0
 	   ) {
-		data = ldns_rdf_data(ldns_rr_rdf(nsec3_rr, 0));
-		
-		iterations_wire[0] = 0;
-		iterations_wire[1] = data[1] & ~LDNS_NSEC3_VARS_OPTOUT_MASK;
-		iterations_wire[2] = data[2];
-		iterations_wire[3] = data[3];
-
-		return ldns_read_uint32(iterations_wire);
-	
+		return ldns_rdf2native_int16(ldns_rr_rdf(nsec3_rr, 2));
 	}
 	return 0;
 	
@@ -1487,9 +1481,10 @@ uint8_t
 ldns_nsec3_salt_length(const ldns_rr *nsec3_rr)
 {
 	if (nsec3_rr && ldns_rr_get_type(nsec3_rr) == LDNS_RR_TYPE_NSEC3 &&
-	    ldns_rdf_size(ldns_rr_rdf(nsec3_rr, 0)) > 4
+	    ldns_rdf_size(ldns_rr_rdf(nsec3_rr, 3)) > 0
 	   ) {
-		return ldns_rdf_data(ldns_rr_rdf(nsec3_rr, 0))[4];
+		/*return ldns_rdf_data(ldns_rr_rdf(nsec3_rr, 0))[0];*/
+		return ldns_rdf2native_int8(ldns_rr_rdf(nsec3_rr, 3));
 	}
 	return 0;
 }
@@ -1515,36 +1510,13 @@ ldns_nsec3_salt(const ldns_rr *nsec3_rr)
 	return NULL;
 }
 
-bool
-ldns_nsec3_optout(const ldns_rr *nsec3_rr)
-{
-	ldns_rdf *rdata;
-	uint8_t val;
-	if (!nsec3_rr || ldns_rr_get_type(nsec3_rr) != LDNS_RR_TYPE_NSEC3) {
-		return false;
-	} else {
-		rdata = ldns_rr_rdf(nsec3_rr, 0);
-		if (ldns_rdf_size(rdata) < 2) {
-			return false;
-		} else {
-			val = ldns_rdf_data(rdata)[1] & LDNS_NSEC3_VARS_OPTOUT_MASK;
-			
-			if (val != 0) {
-				return true;
-			} else {
-				return false;
-			}
-		}
-	}
-}
-
 ldns_rdf *
 ldns_nsec3_bitmap(const ldns_rr *nsec3_rr)
 {
 	if (!nsec3_rr || ldns_rr_get_type(nsec3_rr) != LDNS_RR_TYPE_NSEC3) {
 		return NULL;
 	} else {
-		return ldns_rr_rdf(nsec3_rr, 2);
+		return ldns_rr_rdf(nsec3_rr, 5);
 	}
 }
 
@@ -1552,7 +1524,7 @@ ldns_rdf *
 ldns_nsec3_hash_name_frm_nsec3(const ldns_rr *nsec, ldns_rdf *name)
 {
 	uint8_t algorithm;
-	uint32_t iterations;
+	uint16_t iterations;
 /*	uint8_t *data;*/
 	uint8_t salt_length;
 	uint8_t *salt = 0;
@@ -1928,7 +1900,7 @@ void ldns_rr_list_sort_nsec3(ldns_rr_list *unsorted) {
 }
 
 ldns_zone *
-ldns_zone_sign_nsec3(ldns_zone *zone, ldns_key_list *key_list, uint8_t algorithm, uint32_t iterations, uint8_t salt_length, uint8_t *salt)
+ldns_zone_sign_nsec3(ldns_zone *zone, ldns_key_list *key_list, uint8_t algorithm, uint16_t iterations, uint8_t salt_length, uint8_t *salt)
 {
 	/*
 	 * Algorithm to be created:
@@ -1993,8 +1965,8 @@ ldns_zone_sign_nsec3(ldns_zone *zone, ldns_key_list *key_list, uint8_t algorithm
 	/* create and add the nsec3params rr */
 	nsec3params = ldns_rr_new_frm_type(LDNS_RR_TYPE_NSEC3PARAMS);
 	ldns_rr_set_owner(nsec3params, ldns_rdf_clone(cur_dname));
-	(void) ldns_rr_set_rdf(nsec3params, ldns_create_nsec3_vars_rdf(algorithm, false, iterations, salt_length, salt), 0);
-	ldns_rdf_set_type(ldns_rr_rdf(nsec3params, 0), LDNS_RDF_TYPE_NSEC3_PARAMS_VARS);
+	ldns_nsec3_add_param_rdfs(nsec3params, algorithm, false, iterations, salt_length, salt);
+/*	ldns_rdf_set_type(ldns_rr_rdf(nsec3params, 0), LDNS_RDF_TYPE_NSEC3_PARAMS_VARS);*/
 	ldns_rr_list_push_rr(orig_zone_rrs, nsec3params);
 /*
 ldns_rr_print(stdout, nsec3params);
@@ -2063,11 +2035,12 @@ exit(0);
 									salt_length,
 									salt,
 									true);
-						/*printf("Created NSEC3 for: ");
+						
+						printf("Created NSEC3 for: ");
 						ldns_rdf_print(stdout, post);
 						printf(":\n");
 						ldns_rr_print(stdout, nsec);
-						*/
+						
 						ldns_rr_set_ttl(nsec, ldns_rdf2native_int32(ldns_rr_rdf(ldns_zone_soa(zone), 6)));
 						ldns_rr_list_push_rr(nsec3_rrs, nsec);
 					}
@@ -2156,7 +2129,7 @@ exit(0);
 				salt_length,
 				salt,
 				false);
-	ldns_rr_list_push_rr(nsec3_rrs, nsec);
+	ldns_rr_list_set_rr(nsec3_rrs, nsec, 4);
 	ldns_rr_list_free(orig_zone_rrs);
 	ldns_rr_set_ttl(nsec, ldns_rdf2native_int32(ldns_rr_rdf(ldns_zone_soa(zone), 6)));
 
@@ -2175,7 +2148,7 @@ exit(0);
 				next_nsec_owner_str[strlen(next_nsec_owner_str) - 1] = '\0';
 			}
 			status = ldns_str2rdf_b32_ext(&next_nsec_rdf, next_nsec_owner_str);
-			if (!ldns_rr_set_rdf(ldns_rr_list_rr(nsec3_rrs, i), next_nsec_rdf, 1)) {
+			if (!ldns_rr_set_rdf(ldns_rr_list_rr(nsec3_rrs, i), next_nsec_rdf, 4)) {
 				/* todo: error */
 			}
 		} else {
@@ -2184,13 +2157,17 @@ exit(0);
 				next_nsec_owner_str[strlen(next_nsec_owner_str) - 1] = '\0';
 			}
 			status = ldns_str2rdf_b32_ext(&next_nsec_rdf, next_nsec_owner_str);
-			if (!ldns_rr_set_rdf(ldns_rr_list_rr(nsec3_rrs, i), next_nsec_rdf, 1)) {
+			if (!ldns_rr_set_rdf(ldns_rr_list_rr(nsec3_rrs, i), next_nsec_rdf, 4)) {
 				/* todo: error */
 			}
 		}
 	}
 	
 	ldns_rr_list_cat(signed_zone_rrs, nsec3_rrs);
+/*
+printf("going to sort:\n");
+ldns_rr_list_print(stdout, signed_zone_rrs);
+*/
 	ldns_rr_list_sort(signed_zone_rrs);
 	
 	/* Sign all rrsets in the zone */

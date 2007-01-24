@@ -209,13 +209,15 @@ bool ldns_nsec_bitmap_covers_type(const ldns_rdf *nsec_bitmap, ldns_rr_type type
 bool ldns_nsec_covers_name(const ldns_rr *nsec, const ldns_rdf *name);
 
 uint8_t ldns_nsec3_algorithm(const ldns_rr *nsec3_rr);
-uint32_t ldns_nsec3_iterations(const ldns_rr *nsec3_rr);
+uint16_t ldns_nsec3_iterations(const ldns_rr *nsec3_rr);
 uint8_t ldns_nsec3_salt_length(const ldns_rr *nsec3_rr);
 uint8_t *ldns_nsec3_salt(const ldns_rr *nsec3_rr);
 bool ldns_nsec3_optout(const ldns_rr *nsec3_rr);
+void ldns_nsec3_add_param_rdfs(ldns_rr *rr, uint8_t algorithm, bool opt_out, uint16_t iterations, uint8_t salt_length, uint8_t *salt);
+
 ldns_rdf *ldns_nsec3_bitmap(const ldns_rr *nsec3_rr);
 ldns_rdf *ldns_nsec3_hash_name_frm_nsec3(const ldns_rr *nsec, ldns_rdf *name);
-ldns_rdf *ldns_nsec3_hash_name(ldns_rdf *name, uint8_t algorithm, uint32_t iterations, uint8_t salt_length, uint8_t *salt);
+ldns_rdf *ldns_nsec3_hash_name(ldns_rdf *name, uint8_t algorithm, uint16_t iterations, uint8_t salt_length, uint8_t *salt);
 
 
 /**
@@ -241,7 +243,7 @@ ldns_status ldns_pkt_verify(ldns_pkt *p, ldns_rr_type t, ldns_rdf *o, ldns_rr_li
  * \return the signed zone
  */
 ldns_zone *ldns_zone_sign(const ldns_zone *zone, ldns_key_list *key_list);
-ldns_zone *ldns_zone_sign_nsec3(ldns_zone *zone, ldns_key_list *key_list, uint8_t algorithm, uint32_t iterations, uint8_t salt_length, uint8_t *salt);
+ldns_zone *ldns_zone_sign_nsec3(ldns_zone *zone, ldns_key_list *key_list, uint8_t algorithm, uint16_t iterations, uint8_t salt_length, uint8_t *salt);
  
 /**
  * Initialize the random function. This calls OpenSSL

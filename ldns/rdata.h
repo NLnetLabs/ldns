@@ -97,6 +97,8 @@ enum ldns_enum_rdf_type
 	LDNS_RDF_TYPE_NSAP,
 	/** IPSECKEY */
 	LDNS_RDF_TYPE_IPSECKEY,
+	/** nsec3 hash salt */
+	LDNS_RDF_TYPE_NSEC3_SALT,
 	/** nsec3 base32 string (with length byte on wire */
 	LDNS_RDF_TYPE_NSEC3_NEXT_OWNER,
 };

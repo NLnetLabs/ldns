@@ -99,7 +99,7 @@ main(int argc, char *argv[])
 	bool use_nsec3 = false;
 	
 	uint8_t nsec3_algorithm = 1;
-	uint32_t nsec3_iterations = 1;
+	uint16_t nsec3_iterations = 1;
 	uint8_t nsec3_salt_length = 0;
 	uint8_t *nsec3_salt = NULL;
 	
@@ -207,7 +207,7 @@ main(int argc, char *argv[])
 
 			break;
 		case 't':
-			nsec3_iterations = (uint32_t) atol(optarg);
+			nsec3_iterations = (uint16_t) atol(optarg);
 			if (nsec3_iterations > LDNS_NSEC3_MAX_ITERATIONS) {
 			  fprintf(stderr, "Iterations count can not exceed %u, quitting\n", LDNS_NSEC3_MAX_ITERATIONS);
 			  exit(EXIT_FAILURE);

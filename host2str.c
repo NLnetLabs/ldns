@@ -520,62 +520,29 @@ ldns_rdf2buffer_str_nsec(ldns_buffer *output, const ldns_rdf *rdf)
 }
 
 ldns_status
-ldns_rdf2buffer_str_nsec3_vars_general(ldns_buffer *output, const ldns_rdf *rdf, bool print_opt_out)
+ldns_rdf2buffer_str_nsec3_salt(ldns_buffer *output, const ldns_rdf *rdf)
 {
-	bool opt_in;
-	uint8_t hash_function;
-	uint8_t iterations_wire[4];
-	uint32_t iterations;
 	uint8_t salt_length;
 	uint8_t salt_pos;
 
 	uint8_t *data = ldns_rdf_data(rdf);
 	size_t pos;
 
-	/* TODO: mnemonic */
-	hash_function = data[0];
-	ldns_buffer_printf(output, "%u ", hash_function);
-	
-	if (print_opt_out) {
-		opt_in = data[1] & LDNS_NSEC3_VARS_OPTOUT_MASK;
-		ldns_buffer_printf(output, "%u ", opt_in);
-	}
-	
-	iterations_wire[0] = 0;
-	iterations_wire[1] = data[1] & ~LDNS_NSEC3_VARS_OPTOUT_MASK;
-	iterations_wire[2] = data[2];
-	iterations_wire[3] = data[3];
-	
-	iterations = ldns_read_uint32(iterations_wire);
-	ldns_buffer_printf(output, "%u ", iterations);
-	
-	salt_length = data[4];
+	salt_length = data[0];
 	/* todo: length check needed/possible? */
 	/* from now there are variable length entries so remember pos */
-	pos = 5;
+	pos = 1;
 	if (salt_length == 0) {
 		ldns_buffer_printf(output, "- ");
 	} else {
 		for (salt_pos = 0; salt_pos < salt_length; salt_pos++) {
-			ldns_buffer_printf(output, "%02x", data[5 + salt_pos]);
+			ldns_buffer_printf(output, "%02x", data[1 + salt_pos]);
 			pos++;
 		}
 		ldns_buffer_printf(output, " ");
 	}
 	
 	return ldns_buffer_status(output);
-}
-
-ldns_status
-ldns_rdf2buffer_str_nsec3_params_vars(ldns_buffer *output, const ldns_rdf *rdf)
-{
-	return ldns_rdf2buffer_str_nsec3_vars_general(output, rdf, false);
-}
-
-ldns_status
-ldns_rdf2buffer_str_nsec3_vars(ldns_buffer *output, const ldns_rdf *rdf)
-{
-	return ldns_rdf2buffer_str_nsec3_vars_general(output, rdf, true);
 }
 
 ldns_status
@@ -819,11 +786,8 @@ ldns_rdf2buffer_str(ldns_buffer *buffer, const ldns_rdf *rdf)
 		case LDNS_RDF_TYPE_NSEC: 
 			res = ldns_rdf2buffer_str_nsec(buffer, rdf);
 			break;
-		case LDNS_RDF_TYPE_NSEC3_PARAMS_VARS: 
-			res = ldns_rdf2buffer_str_nsec3_params_vars(buffer, rdf);
-			break;
-		case LDNS_RDF_TYPE_NSEC3_VARS: 
-			res = ldns_rdf2buffer_str_nsec3_vars(buffer, rdf);
+		case LDNS_RDF_TYPE_NSEC3_SALT:
+			res = ldns_rdf2buffer_str_nsec3_salt(buffer, rdf);
 			break;
 		case LDNS_RDF_TYPE_TYPE: 
 			res = ldns_rdf2buffer_str_type(buffer, rdf);
