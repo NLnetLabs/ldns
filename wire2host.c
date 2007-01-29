@@ -213,6 +213,7 @@ ldns_wire2rdf(ldns_rr *rr, const uint8_t *wire, size_t max, size_t *pos)
 			cur_rdf_length = LDNS_RDF_SIZE_16BYTES;
 			break;
 		case LDNS_RDF_TYPE_STR:
+		case LDNS_RDF_TYPE_NSEC3_SALT:
 			/* len is stored in first byte 
 			 * it should be in the rdf too, so just
 			 * copy len+1 from this position
