@@ -11,6 +11,8 @@
 #define LDNS_TESTPKTS_H
 
 /*
+ * \file
+ * 
  * This is a debugging aid. It is not efficient, especially
  * with a long config file, but it can give any reply to any query.
  * This can help the developer pre-script replies for queries.
@@ -20,9 +22,8 @@
  * Missing features:
  *		- matching content different from reply content.
  *		- find way to adjust mangled packets?
- */
+ *
 
-/*
 	The data file format is as follows:
 	
 	; comment.
@@ -73,9 +74,9 @@
 				; are ignored
 	HEX_ANSWER_END
 	ENTRY_END
-*/
 
-/* Example data file:
+
+ 	Example data file:
 $ORIGIN nlnetlabs.nl
 $TTL 3600
 
@@ -116,9 +117,8 @@ HEX_ANSWER_END
 ENTRY_END
 
 
-*/
 
-/* note that this file will link with your
+   note that this file will link with your
    void verbose(int level, char* format, ...); output function.
 */
 
@@ -127,34 +127,46 @@ ENTRY_END
 
 enum transport_type {transport_any = 0, transport_udp, transport_tcp };
 
-/* struct to keep a linked list of reply packets for a query */
+/** struct to keep a linked list of reply packets for a query */
 struct reply_packet {
+	/** next in list of reply packets, for TCP multiple pkts on wire */
 	struct reply_packet* next;
+	/** the reply pkt */
 	ldns_pkt* reply;
+	/** or reply pkt in hex if not parsable */
 	ldns_buffer* reply_from_hex;
-	unsigned int packet_sleep; /* seconds to sleep before giving packet */
+	/** seconds to sleep before giving packet */
+	unsigned int packet_sleep; 
 };
 
-/* data structure to keep the canned queries in */
-/* format is the 'matching query' and the 'canned answer' */
+/** data structure to keep the canned queries in.
+   format is the 'matching query' and the 'canned answer' */
 struct entry {
 	/* match */
 	/* How to match an incoming query with this canned reply */
-	bool match_opcode; /* match query opcode with answer opcode */
-	bool match_qtype;  /* match qtype with answer qtype */
-	bool match_qname;  /* match qname with answer qname */
-	bool match_serial; /* match SOA serial number, from auth section */
-	uint32_t ixfr_soa_serial; /* match query serial with this value. */
-	enum transport_type match_transport; /* match on UDP/TCP */
+	/** match query opcode with answer opcode */
+	bool match_opcode; 
+	/** match qtype with answer qtype */
+	bool match_qtype;  
+	/** match qname with answer qname */
+	bool match_qname;  
+	/** match SOA serial number, from auth section */
+	bool match_serial; 
+	/** match query serial with this value. */
+	uint32_t ixfr_soa_serial; 
+	/** match on UDP/TCP */
+	enum transport_type match_transport; 
 
-	/* pre canned reply */
+	/** pre canned reply */
 	struct reply_packet *reply_list;
 
-	/* how to adjust the reply packet */
-	bool copy_id; /* copy over the ID from the query into the answer */
-	unsigned int sleeptime; /* in seconds */
+	/** how to adjust the reply packet */
+	/** copy over the ID from the query into the answer */
+	bool copy_id; 
+	/** in seconds */
+	unsigned int sleeptime; 
 
-	/* next in list */
+	/** next in list */
 	struct entry* next;
 };
 
