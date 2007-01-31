@@ -590,6 +590,8 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 					if (verbosity >= 2) {
 						printf(";; No ds record for delegation\n");
 					}
+					ldns_rr_list_deep_free(nsec_rrs);
+					ldns_rr_list_deep_free(nsec_rr_sigs);
 				}
 			}
 			ldns_rr_list_deep_free(ds_list);
@@ -710,7 +712,6 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 		key_list = NULL;
 		ldns_rr_list_deep_free(key_sig_list);
 		key_sig_list = NULL;
-		ldns_rr_list_deep_free(ds_list);
 		ds_list = NULL;
 		ldns_rr_list_deep_free(ds_sig_list);
 		ds_sig_list = NULL;

@@ -115,7 +115,6 @@ ldns_rr_new_frm_str(ldns_rr **newrr, const char *str, uint16_t default_ttl, ldns
 	const char *delimiters;
 	ssize_t c;
 	ldns_rdf *owner_dname;
-	size_t i;
 
 	/* used for types with unknown number of rdatas */
 	bool done;
@@ -436,30 +435,6 @@ ldns_rr_new_frm_str(ldns_rr **newrr, const char *str, uint16_t default_ttl, ldns
 									/* return LDNS_STATUS_SYNTAX_ERR; */
 								}
 							}
-							break;
-						case LDNS_RDF_TYPE_NSEC3_VARS:
-							for (i = 0; i < 3; i++ ) {
-								if ((c = ldns_bget_token(rd_buf, b64, " \n", LDNS_MAX_RDFLEN)) != -1) {
-									rd = strncat(rd, " ", LDNS_MAX_RDFLEN);
-									rd = strncat(rd, b64, LDNS_MAX_RDFLEN);
-								}
-							}
-							r = ldns_rdf_new_frm_str(
-									ldns_rr_descriptor_field_type(desc, r_cnt),
-									rd);
-							
-							break;
-						case LDNS_RDF_TYPE_NSEC3_PARAMS_VARS:
-							for (i = 0; i < 3; i++ ) {
-								if ((c = ldns_bget_token(rd_buf, b64, " \n", LDNS_MAX_RDFLEN)) != -1) {
-									rd = strncat(rd, " ", LDNS_MAX_RDFLEN);
-									rd = strncat(rd, b64, LDNS_MAX_RDFLEN);
-								}
-							}
-							r = ldns_rdf_new_frm_str(
-									ldns_rr_descriptor_field_type(desc, r_cnt),
-									rd);
-							
 							break;
 						default:
 							r = ldns_rdf_new_frm_str(

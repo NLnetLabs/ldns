@@ -540,8 +540,9 @@ do_chase(ldns_resolver *res, ldns_rdf *name, ldns_rr_type type, ldns_rr_class c,
 				printf(";; Denial of existence was not covered: %s\n", ldns_get_errorstr_by_id(result));
 			}
 		}
+		ldns_rr_list_deep_free(nsec_rrs);
+		ldns_rr_list_deep_free(nsec_rr_sigs);
 
-		
 #if 0
 		/* Try to see if there are NSECS in the packet */
 		nsecs = ldns_pkt_rr_list_by_type(pkt, LDNS_RR_TYPE_NSEC, LDNS_SECTION_ANY_NOQUESTION);
@@ -721,7 +722,6 @@ printf("DAWASEM\n");
 		}
 		
 		ldns_rr_list_deep_free(nsecs);
-		ldns_pkt_free(pkt);
 		printf("Result for ");
 		ldns_rdf_print(stdout, name);
 
@@ -735,6 +735,7 @@ printf("DAWASEM\n");
 		
 		printf("): %s\n", ldns_get_errorstr_by_id(result));
 #endif
+		ldns_pkt_free(pkt);
 		return result;
 	}
 }

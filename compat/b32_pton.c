@@ -180,7 +180,7 @@ b32_pton_ar(char const *src, size_t hashed_owner_str_len, uint8_t *target, size_
 	state = 0;
 	tarindex = 0;
 	
-	while ((ch = *src++) != '\0' && (i == 0 || i < hashed_owner_str_len)) {
+	while ((ch = *src++) != '\0' && (i == 0 || i < (int) hashed_owner_str_len)) {
 		i++;
 		ch = tolower(ch);
 		if (isspace((unsigned char)ch))        /* Skip whitespace anywhere. */

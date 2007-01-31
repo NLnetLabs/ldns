@@ -133,7 +133,7 @@ ldns_nsec3_exact_match(ldns_rdf *qname, ldns_rr_type qtype, ldns_rr_list *nsec3s
 	nsec = ldns_rr_list_rr(nsec3s, 0);
 	algorithm = ldns_nsec3_algorithm(nsec);
 	salt_length = ldns_nsec3_salt_length(nsec);
-	salt = ldns_nsec3_salt(nsec);
+	salt = ldns_nsec3_salt_data(nsec);
 	iterations = ldns_nsec3_iterations(nsec);
 
 	sname = ldns_rdf_clone(qname);
@@ -190,7 +190,7 @@ ldns_nsec3_closest_encloser(ldns_rdf *qname, ldns_rr_type qtype, ldns_rr_list *n
 	uint32_t iterations;
 	uint8_t salt_length;
 	uint8_t *salt;
-	
+
 	ldns_rdf *sname, *hashed_sname, *tmp;
 	ldns_rr *ce;
 	bool flag;
@@ -218,7 +218,7 @@ ldns_nsec3_closest_encloser(ldns_rdf *qname, ldns_rr_type qtype, ldns_rr_list *n
 	nsec = ldns_rr_list_rr(nsec3s, 0);
 	algorithm = ldns_nsec3_algorithm(nsec);
 	salt_length = ldns_nsec3_salt_length(nsec);
-	salt = ldns_nsec3_salt(nsec);
+	salt = ldns_nsec3_salt_data(nsec);
 	iterations = ldns_nsec3_iterations(nsec);
 
 	sname = ldns_rdf_clone(qname);

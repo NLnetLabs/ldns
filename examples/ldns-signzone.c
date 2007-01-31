@@ -99,6 +99,8 @@ main(int argc, char *argv[])
 	bool use_nsec3 = false;
 	
 	uint8_t nsec3_algorithm = 1;
+	uint8_t nsec3_flags = 0;
+	size_t nsec3_iterations_cmd = 1;
 	uint16_t nsec3_iterations = 1;
 	uint8_t nsec3_salt_length = 0;
 	uint8_t *nsec3_salt = NULL;
@@ -207,11 +209,12 @@ main(int argc, char *argv[])
 
 			break;
 		case 't':
-			nsec3_iterations = (uint16_t) atol(optarg);
-			if (nsec3_iterations > LDNS_NSEC3_MAX_ITERATIONS) {
+			nsec3_iterations_cmd = atol(optarg);
+			if (nsec3_iterations_cmd > LDNS_NSEC3_MAX_ITERATIONS) {
 			  fprintf(stderr, "Iterations count can not exceed %u, quitting\n", LDNS_NSEC3_MAX_ITERATIONS);
 			  exit(EXIT_FAILURE);
 			}
+			nsec3_iterations = (uint16_t) nsec3_iterations_cmd;
 			break;
 		default:
 			usage(stderr, prog);
@@ -328,6 +331,7 @@ main(int argc, char *argv[])
 		signed_zone = ldns_zone_sign_nsec3(orig_zone,
 		                                   keys,
 		                                   nsec3_algorithm,
+		                                   nsec3_flags,
 		                                   nsec3_iterations,
 		                                   nsec3_salt_length,
 		                                   nsec3_salt);

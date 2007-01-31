@@ -1138,6 +1138,7 @@ ldns_key2buffer_str(ldns_buffer *output, const ldns_key *k)
 #ifdef HAVE_SSL
 		switch(ldns_key_algorithm(k)) {
 			case LDNS_SIGN_RSASHA1:
+			case LDNS_SIGN_RSASHA1_NSEC3:
 			case LDNS_SIGN_RSAMD5:
 				/* copied by looking at dnssec-keygen output */
 				/* header */
@@ -1247,6 +1248,7 @@ ldns_key2buffer_str(ldns_buffer *output, const ldns_key *k)
 				ldns_buffer_printf(output, "\n"); 
 				break;
 			case LDNS_SIGN_DSA:
+			case LDNS_SIGN_DSA_NSEC3:
 				ldns_buffer_printf(output,"Private-key-format: v1.2\n");
 				ldns_buffer_printf(output,"Algorithm: 3 (DSA)\n");
 
