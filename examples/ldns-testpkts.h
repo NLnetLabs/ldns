@@ -10,7 +10,7 @@
 #ifndef LDNS_TESTPKTS_H
 #define LDNS_TESTPKTS_H
 
-/*
+/**
  * \file
  * 
  * This is a debugging aid. It is not efficient, especially
@@ -23,7 +23,9 @@
  *		- matching content different from reply content.
  *		- find way to adjust mangled packets?
  *
+ */
 
+ /*
 	The data file format is as follows:
 	
 	; comment.
@@ -125,6 +127,7 @@ ENTRY_END
 #include "config.h"
 #include <ldns/ldns.h>
 
+/** Type of transport, since some entries match based on UDP or TCP of query */
 enum transport_type {transport_any = 0, transport_udp, transport_tcp };
 
 /** struct to keep a linked list of reply packets for a query */
@@ -192,6 +195,14 @@ void adjust_packet(struct entry* match, ldns_pkt* answer_pkt,
  * Parses data buffer to a query, finds the correct answer 
  * and calls the given function for every packet to send.
  * if verbose_out filename is given, packets are dumped there.
+ * @param inbuf: the packet that came in
+ * @param inlen: length of packet.
+ * @param entries: entries read in from datafile.
+ * @param count: is increased to count number of queries answered.
+ * @param transport: set to UDP or TCP to match some types of entries.
+ * @param sendfunc: called to send answer (buffer, size, userarg).
+ * @param userdata: userarg to give to sendfunc.
+ * @param verbose_out: if not NULL, verbose messages are printed there.
  */
 void handle_query(uint8_t* inbuf, ssize_t inlen, struct entry* entries, 
 	int* count, enum transport_type transport, 

@@ -7,7 +7,8 @@
  * See the file LICENSE for the license
  */
 
-/*
+/**
+ * \file
  * This is a debugging aid. It is not efficient, especially
  * with a long config file, but it can give any reply to any query.
  * This can help the developer pre-script replies for queries.
@@ -19,111 +20,20 @@
  *		- find way to adjust mangled packets?
  */
 
-/*
-	The data file format is as follows:
-	
-	; comment.
-	; a number of entries, these are processed first to last.
-	; a line based format.
-
-	$ORIGIN origin
-	$TTL default_ttl
-
-	ENTRY_BEGIN
-	; first give MATCH lines, that say what queries are matched
-	; by this entry.
-	; 'opcode' makes the query match the opcode from the reply
-	; if you leave it out, any opcode matches this entry.
-	; 'qtype' makes the query match the qtype from the reply
-	; 'qname' makes the query match the qname from the reply
-	; 'serial=1023' makes the query match if ixfr serial is 1023. 
-	MATCH [opcode] [qtype] [qname] [serial=<value>]
-	MATCH [UDP|TCP]
-	MATCH ...
-	; Then the REPLY header is specified.
-	REPLY opcode, rcode or flags.
-		(opcode)  QUERY IQUERY STATUS NOTIFY UPDATE
-		(rcode)   NOERROR FORMERR SERVFAIL NXDOMAIN NOTIMPL YXDOMAIN
-		 		YXRRSET NXRRSET NOTAUTH NOTZONE
-		(flags)   QR AA TC RD CD RA AD
-	REPLY ...
-	; any additional actions to do.
-	; 'copy_id' copies the ID from the query to the answer.
-	ADJUST copy_id
-	; 'sleep=10' sleeps for 10 seconds before giving the answer (TCP is open)
-	ADJUST [sleep=<num>]    ; sleep before giving any reply
-	ADJUST [packet_sleep=<num>]  ; sleep before this packet in sequence
-	SECTION QUESTION
-	<RRs, one per line>    ; the RRcount is determined automatically.
-	SECTION ANSWER
-	<RRs, one per line>
-	SECTION AUTHORITY
-	<RRs, one per line>
-	SECTION ADDITIONAL
-	<RRs, one per line>
-	EXTRA_PACKET		; follow with SECTION, REPLY for more packets.
-	HEX_ANSWER_BEGIN	; follow with hex data
-				; this replaces any answer packet constructed
-				; with the SECTION keywords (only SECTION QUERY
-				; is used to match queries). If the data cannot
-				; be parsed, ADJUST rules for the answer packet
-				; are ignored
-	HEX_ANSWER_END
-	ENTRY_END
-*/
-
-/* Example data file:
-$ORIGIN nlnetlabs.nl
-$TTL 3600
-
-ENTRY_BEGIN
-MATCH qname
-REPLY NOERROR
-ADJUST copy_id
-SECTION QUESTION
-www.nlnetlabs.nl.	IN	A
-SECTION ANSWER
-www.nlnetlabs.nl.	IN	A	195.169.215.155
-SECTION AUTHORITY
-nlnetlabs.nl.		IN	NS	www.nlnetlabs.nl.
-ENTRY_END
-
-ENTRY_BEGIN
-MATCH qname
-REPLY NOERROR
-ADJUST copy_id
-SECTION QUESTION
-www2.nlnetlabs.nl.	IN	A
-HEX_ANSWER_BEGIN
-; 0  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17 18 19
-;-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
- 00 bf 81 80 00 01 00 01 00 02 00 02 03 77 77 77 0b 6b 61 6e	;	   1-  20
- 61 72 69 65 70 69 65 74 03 63 6f 6d 00 00 01 00 01 03 77 77	;	  21-  40
- 77 0b 6b 61 6e 61 72 69 65 70 69 65 74 03 63 6f 6d 00 00 01	;	  41-  60
- 00 01 00 01 50 8b 00 04 52 5e ed 32 0b 6b 61 6e 61 72 69 65	;	  61-  80
- 70 69 65 74 03 63 6f 6d 00 00 02 00 01 00 01 50 8b 00 11 03	;	  81- 100
- 6e 73 31 08 68 65 78 6f 6e 2d 69 73 02 6e 6c 00 0b 6b 61 6e	;	 101- 120
- 61 72 69 65 70 69 65 74 03 63 6f 6d 00 00 02 00 01 00 01 50	;	 121- 140
- 8b 00 11 03 6e 73 32 08 68 65 78 6f 6e 2d 69 73 02 6e 6c 00	;	 141- 160
- 03 6e 73 31 08 68 65 78 6f 6e 2d 69 73 02 6e 6c 00 00 01 00	;	 161- 180
- 01 00 00 46 53 00 04 52 5e ed 02 03 6e 73 32 08 68 65 78 6f	;	 181- 200
- 6e 2d 69 73 02 6e 6c 00 00 01 00 01 00 00 46 53 00 04 d4 cc	;	 201- 220
- db 5b
-HEX_ANSWER_END
-ENTRY_END
-
-
-*/
-
 #include "config.h"
 #include <ldns/ldns.h>
 #include <errno.h>
 #include "ldns-testpkts.h"
 
-#define MAX_LINE   10240	/* max line length */
+/** max line length */
+#define MAX_LINE   10240	
+/** string to show in warnings and errors */
 static const char* prog_name = "ldns-testpkts";
 
+/** logging routine, provided by caller. */
 void verbose(int lvl, const char* msg, ...);
+
+/** print error and exit */
 static void error(const char* msg, ...)
 {
 	va_list args;
@@ -136,6 +46,7 @@ static void error(const char* msg, ...)
 	exit(EXIT_FAILURE);
 }
 
+/** return if string is empty or comment */
 static bool isendline(char c)
 {
 	if(c == ';' || c == '#' 
@@ -144,7 +55,11 @@ static bool isendline(char c)
 	return false;
 }
 
-/* true if the string starts with the keyword given. Moves the str ahead. */
+/** true if the string starts with the keyword given. Moves the str ahead. 
+ * @param str: before keyword, afterwards after keyword and spaces.
+ * @param keyword: the keyword to match
+ * @return: true if keyword present. False otherwise, and str unchanged.
+*/
 static bool str_keyword(const char** str, const char* keyword)
 {
 	size_t len = strlen(keyword);
@@ -157,6 +72,7 @@ static bool str_keyword(const char** str, const char* keyword)
 	return true;
 }
 
+/** Add reply packet to entry */
 static struct reply_packet*
 entry_add_reply(struct entry* entry) 
 {
@@ -174,6 +90,7 @@ entry_add_reply(struct entry* entry)
 	return pkt;
 }
 
+/** parse MATCH line */
 static void matchline(const char* line, struct entry* e)
 {
 	const char* parse = line;
@@ -204,6 +121,7 @@ static void matchline(const char* line, struct entry* e)
 	}
 }
 
+/** parse REPLY line */
 static void replyline(const char* line, ldns_pkt *reply)
 {
 	const char* parse = line;
@@ -263,6 +181,7 @@ static void replyline(const char* line, ldns_pkt *reply)
 	}
 }
 
+/** parse ADJUST line */
 static void adjustline(const char* line, struct entry* e, 
 	struct reply_packet* pkt)
 {
@@ -286,6 +205,7 @@ static void adjustline(const char* line, struct entry* e,
 	}
 }
 
+/** create new entry */
 static struct entry* new_entry()
 {
 	struct entry* e = LDNS_MALLOC(struct entry);
@@ -305,9 +225,11 @@ static struct entry* new_entry()
 
 /**
  * Converts a hex string to binary data
- * len is the length of the string
- * buf is the buffer to store the result in
- * offset is the starting position in the result buffer
+ * @param hexstr: string of hex.
+ * @param len: is the length of the string
+ * @param buf: is the buffer to store the result in
+ * @param offset: is the starting position in the result buffer
+ * @param buf_len: is the length of buf.
  *
  * This function returns the length of the result
  */
@@ -357,7 +279,7 @@ hexstr2bin(char *hexstr, int len, uint8_t *buf, size_t offset, size_t buf_len)
         return bufpos;
 }
 
-
+/** convert hex buffer to binary buffer */
 static ldns_buffer *
 data_buffer2wire(ldns_buffer *data_buffer)
 {
@@ -438,7 +360,7 @@ data_buffer2wire(ldns_buffer *data_buffer)
 	return wire_buffer;
 }	
 
-
+/** parse ORIGIN */
 static void 
 get_origin(const char* name, int lineno, ldns_rdf** origin, char* parse)
 {
@@ -463,7 +385,7 @@ get_origin(const char* name, int lineno, ldns_rdf** origin, char* parse)
 		ldns_get_errorstr_by_id(status), parse);
 }
 
-/* reads the canned reply file and returns a list of structs */
+/** reads the canned reply file and returns a list of structs */
 struct entry* 
 read_datafile(const char* name)
 {
@@ -576,6 +498,7 @@ read_datafile(const char* name)
 	return list;
 }
 
+/** get qtype from rr */
 static ldns_rr_type get_qtype(ldns_pkt* p)
 {
 	if(!ldns_rr_list_rr(ldns_pkt_question(p), 0))
@@ -583,6 +506,7 @@ static ldns_rr_type get_qtype(ldns_pkt* p)
 	return ldns_rr_get_type(ldns_rr_list_rr(ldns_pkt_question(p), 0));
 }
 
+/** returns owner from rr */
 static ldns_rdf* get_owner(ldns_pkt* p)
 {
 	if(!ldns_rr_list_rr(ldns_pkt_question(p), 0))
@@ -590,9 +514,9 @@ static ldns_rdf* get_owner(ldns_pkt* p)
 	return ldns_rr_owner(ldns_rr_list_rr(ldns_pkt_question(p), 0));
 }
 
+/** get authority section SOA serial value */
 static uint32_t get_serial(ldns_pkt* p)
 {
-	/* get authority section SOA serial value */
 	ldns_rr *rr = ldns_rr_list_rr(ldns_pkt_authority(p), 0);
 	ldns_rdf *rdf;
 	uint32_t val;
@@ -604,7 +528,7 @@ static uint32_t get_serial(ldns_pkt* p)
 	return val;
 }
 
-/* finds entry in list, or returns NULL */
+/** finds entry in list, or returns NULL */
 struct entry* 
 find_match(struct entry* entries, ldns_pkt* query_pkt,
 	enum transport_type transport)
