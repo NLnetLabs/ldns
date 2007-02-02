@@ -306,7 +306,7 @@ AC_CHECK_UNUSED_ATTRIBUTE
 # check OSX deployment target which is needed
 if echo $build_os | grep darwin > /dev/null; then
 	if test x$MACOSX_DEPLOYMENT_TARGET != x10.4; then
-		AC_MSG_ERROR([Please export MACOSX_DEPLOYMENT_TARGET=10.4 in your environment to compile on Mac OS/X])
+		AC_MSG_WARN([Please export MACOSX_DEPLOYMENT_TARGET=10.4 in your environment to compile on Mac OS/X])
 	fi
 fi
 
