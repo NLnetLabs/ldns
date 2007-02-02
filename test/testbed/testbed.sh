@@ -77,7 +77,7 @@ function dotest()
 	echossh $1 "cd $2; if test -f "'"`which gmake`"'"; then gmake doc; else $MAKE_CMD doc; fi"
 	if test $RUN_TEST = yes; then
 	echossh $1 "cd $2/testdata; $TPKG clean"
-	echossh $1 "cd $2; bash testcode/do-tests.sh"
+	echossh $1 "cd $2; bash test/test_all.sh $TPKG"
 	echossh $1 "cd $2/testdata; $TPKG -q report" | tee -a $REPORT_FILE
 	fi
 	echo "$1 end on "`date` | tee -a $REPORT_FILE
