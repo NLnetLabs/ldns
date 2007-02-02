@@ -4,5 +4,6 @@
 #
 #linux.example.com	Linux Fedora Core i386	src/unbound/trunk
 #solaris.example.com	Solaris 10 sparc64	nsd_trunk	LDNS=/var/local/ldns
-open.nlnetlabs.nl	FreeBSD 6.2	/home/jeltejan/repos/ldns_test	ACLOCAL=aclocal19 autoconf-2.59	gmake	libtoolize adsf
+#open.nlnetlabs.nl	FreeBSD 6.2	/home/jeltejan/repos/ldns_test	ACLOCAL=aclocal19 autoconf-2.59	gmake	libtoolize	/home/jeltejan/repos/tpkg/tpkg
+ferret.nlnetlabs.nl	OS X 10.4	/Users/jeltejan/repos/ldns_test	autoreconf	MACOSX_DEPLOYMENT_TARGET=10.4 make	glibtoolize	/Users/jeltejan/repos/tpkg/tpkg
 #open.nlnetlabs.nl	FreeBSD 6.2	/home/jeltejan/repos/ldns_test	
