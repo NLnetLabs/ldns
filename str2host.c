@@ -625,8 +625,7 @@ ldns_str2rdf_alg(ldns_rdf **rd, const char *str)
 
 	if (lt) {
 		/* it was given as a integer */
-		*rd = ldns_rdf_new_frm_data(
-			LDNS_RDF_TYPE_INT8, sizeof(uint8_t), &lt->id);
+		*rd = ldns_native2rdf_int8(LDNS_RDF_TYPE_INT8, lt->id);
 		if (!*rd) {
 			st = LDNS_STATUS_ERR;
 		}
