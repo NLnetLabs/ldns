@@ -1,8 +1,0 @@
-on Thu Jan 18 11:22:25 CET 2007 by jeltejan.
-*** open.nlnetlabs.nl FreeBSD 6.2 ***
-open.nlnetlabs.nl begin on Thu Jan 18 11:22:25 CET 2007
-> ssh open.nlnetlabs.nl	cd /home/jeltejan/repos/ldns_test/testdata; /home/jeltejan/repos/tpkg/tpkg -q report
-
-passed: 0 (0 %)	failed: 0 (0 %)	unknown: 0 (0 %)
-
-open.nlnetlabs.nl end on Thu Jan 18 11:22:55 CET 2007
