@@ -16,7 +16,7 @@ timegm (struct tm *tm) {
 	char *tz;
 	
 	tz = getenv("TZ");
-	putenv("TZ=");
+	putenv((char*)"TZ=");
 	tzset();
 	ret = mktime(tm);
 	if (tz) {
@@ -25,7 +25,7 @@ timegm (struct tm *tm) {
 		putenv(tz);
 	}
 	else
-		putenv("TZ");
+		putenv((char*)"TZ=");
 	tzset();
 	return ret;
 }
