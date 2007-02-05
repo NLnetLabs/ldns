@@ -124,7 +124,6 @@ ENTRY_END
    void verbose(int level, char* format, ...); output function.
 */
 
-#include "config.h"
 #include <ldns/ldns.h>
 
 /** Type of transport, since some entries match based on UDP or TCP of query */

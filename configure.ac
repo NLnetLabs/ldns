@@ -51,7 +51,7 @@ dnl routine to help check for needed compiler flags.
 AC_DEFUN([CHECK_COMPILER_FLAG_NEEDED],
 [
 AC_REQUIRE([AC_PROG_CC])
-AC_MSG_CHECKING(whether we need -$1 as a flag for $CC)
+AC_MSG_CHECKING(whether we need $1 as a flag for $CC)
 cache=`echo $1 | sed 'y%.=/+-%___p_%'`
 AC_CACHE_VAL(cv_prog_cc_flag_needed_$cache,
 [
