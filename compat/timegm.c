@@ -25,7 +25,7 @@ timegm (struct tm *tm) {
 		putenv(tz);
 	}
 	else
-		putenv((char*)"TZ=");
+		putenv((char*)"TZ");
 	tzset();
 	return ret;
 }
