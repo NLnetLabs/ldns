@@ -91,7 +91,28 @@ AC_C_CONST
 AC_LANG_C
 AC_TYPE_SIZE_T
 CHECK_COMPILER_FLAG(O2, [CFLAGS="$CFLAGS -O2"])
-CHECK_COMPILER_FLAG_NEEDED(-std=c99, [#include <stdbool.h>], [CFLAGS="$CFLAGS -std=c99"])
+CHECK_COMPILER_FLAG_NEEDED(-std=c99,
+[
+#include <stdbool.h>
+#include <ctype.h>
+int test() {
+	int a = 0;
+	a = isblank(12);
+	return a;
+}
+], [CFLAGS="$CFLAGS -std=c99"])
+
+CHECK_COMPILER_FLAG_NEEDED(-D_BSD_SOURCE, 
+[
+#include <ctype.h>
+
+int test() {
+	int a;
+	a = isascii(32);
+	return a;
+}
+], [CFLAGS="$CFLAGS -D_BSD_SOURCE"])
+
 CHECK_COMPILER_FLAG_NEEDED(-D_POSIX_C_SOURCE=200112, 
 [
 #include <time.h>
@@ -104,13 +125,15 @@ int test() {
 	t = ctime_r(&time, buf);
         return a;
 }
-], [CFLAGS="$CFLAGS -D_POSIX_C_SOURCE=200112"])
+], [CFLAGS="$CFLAGS -D_BSD_SOURCE"])
+
 CHECK_COMPILER_FLAG_NEEDED(-D__EXTENSIONS__, 
 [
 #include <stdlib.h>
 #include <ctype.h>
 #include <sys/time.h>
 #include <unistd.h>
+#include <getopt.h>
 
 int test() {  
         int a;
