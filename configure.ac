@@ -125,7 +125,7 @@ int test() {
 	t = ctime_r(&time, buf);
         return a;
 }
-], [CFLAGS="$CFLAGS -D_BSD_SOURCE"])
+], [CFLAGS="$CFLAGS -D_POSIX_C_SOURCE=200112"])
 
 CHECK_COMPILER_FLAG_NEEDED(-D__EXTENSIONS__, 
 [
