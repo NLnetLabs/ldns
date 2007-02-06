@@ -247,6 +247,7 @@ ldns_wire2rdf(ldns_rr *rr, const uint8_t *wire, size_t max, size_t *pos)
 			cur_rdf_length = end - *pos;
 			break;
 		}
+
 		/* fixed length rdata */
 		if (cur_rdf_length > 0) {
 			if (cur_rdf_length + *pos > end) {
@@ -313,7 +314,6 @@ ldns_wire2rr(ldns_rr **rr_p, const uint8_t *wire, size_t max,
 	}
 	
 	*rr_p = rr;
-
 	return LDNS_STATUS_OK;
 	
 status_error:

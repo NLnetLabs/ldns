@@ -32,7 +32,7 @@
 #define LDNS_RDF_SIZE_6BYTES            6
 #define LDNS_RDF_SIZE_16BYTES           16
 
-#define LDNS_NSEC3_VARS_OPTOUT_MASK 0x80
+#define LDNS_NSEC3_VARS_OPTOUT_MASK 0x01
 
 /**
  * The different types of RDATA fields.
