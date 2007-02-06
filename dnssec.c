@@ -160,6 +160,9 @@ ldns_verify_rrsig_keylist(ldns_rr_list *rrset, ldns_rr *rrsig, ldns_rr_list *key
 	time_t now, inception, expiration;
 	uint8_t label_count;
 	ldns_rdf *wildcard_name;
+	ldns_rdf *wildcard_chopped;
+	ldns_rdf *wildcard_chopped_tmp;
+
 
 	if (!rrset) {
 		return LDNS_STATUS_ERR;
@@ -230,9 +233,15 @@ ldns_verify_rrsig_keylist(ldns_rr_list *rrset, ldns_rr *rrsig, ldns_rr_list *key
 			ldns_dname_label_count(
 		               	ldns_rr_owner(ldns_rr_list_rr(rrset_clone, i)))) {
 			(void) ldns_str2rdf_dname(&wildcard_name, "*");
-			(void) ldns_dname_cat(wildcard_name, 
-					      ldns_dname_left_chop(ldns_rr_owner(ldns_rr_list_rr
-							      (rrset_clone, i))));
+			wildcard_chopped = ldns_rdf_clone(ldns_rr_owner(ldns_rr_list_rr(rrset_clone, i)));
+			while (label_count < ldns_dname_label_count(wildcard_chopped)) {
+				wildcard_chopped_tmp = ldns_dname_left_chop(wildcard_chopped);
+				ldns_rdf_deep_free(wildcard_chopped);
+				wildcard_chopped = wildcard_chopped_tmp;
+			}
+			(void) ldns_dname_cat(wildcard_name, wildcard_chopped);
+			ldns_rdf_deep_free(wildcard_chopped);
+			ldns_rdf_deep_free(ldns_rr_owner(ldns_rr_list_rr(rrset_clone, i)));
 			ldns_rr_set_owner(ldns_rr_list_rr(rrset_clone, i), 
 					wildcard_name);
 		                  	
@@ -334,6 +343,9 @@ ldns_verify_rrsig(ldns_rr_list *rrset, ldns_rr *rrsig, ldns_rr *key)
 	ldns_rr_list *rrset_clone;
 	time_t now, inception, expiration;
 	ldns_rdf *wildcard_name;
+	ldns_rdf *wildcard_chopped;
+	ldns_rdf *wildcard_chopped_tmp;
+
 
 	if (!rrset) {
 		return LDNS_STATUS_NO_DATA;
@@ -408,10 +420,22 @@ ldns_verify_rrsig(ldns_rr_list *rrset, ldns_rr *rrsig, ldns_rr *key)
 
 	/* reset the ttl in the rrset with the orig_ttl from the sig */
 	for(i = 0; i < ldns_rr_list_rr_count(rrset_clone); i++) {
-		if (label_count < ldns_dname_label_count(ldns_rr_owner(ldns_rr_list_rr(rrset_clone, i)))) {
+		if (label_count < 
+			ldns_dname_label_count(
+		               	ldns_rr_owner(ldns_rr_list_rr(rrset_clone, i)))) {
 			(void) ldns_str2rdf_dname(&wildcard_name, "*");
-			(void) ldns_dname_cat(wildcard_name, ldns_dname_left_chop(ldns_rr_owner(ldns_rr_list_rr(rrset_clone, i))));
-			ldns_rr_set_owner(ldns_rr_list_rr(rrset_clone, i), wildcard_name);
+			wildcard_chopped = ldns_rdf_clone(ldns_rr_owner(ldns_rr_list_rr(rrset_clone, i)));
+			while (label_count < ldns_dname_label_count(wildcard_chopped)) {
+				wildcard_chopped_tmp = ldns_dname_left_chop(wildcard_chopped);
+				ldns_rdf_deep_free(wildcard_chopped);
+				wildcard_chopped = wildcard_chopped_tmp;
+			}
+			(void) ldns_dname_cat(wildcard_name, wildcard_chopped);
+			ldns_rdf_deep_free(wildcard_chopped);
+			ldns_rdf_deep_free(ldns_rr_owner(ldns_rr_list_rr(rrset_clone, i)));
+			ldns_rr_set_owner(ldns_rr_list_rr(rrset_clone, i), 
+					wildcard_name);
+		                  	
 		}
 		ldns_rr_set_ttl(
 				ldns_rr_list_rr(rrset_clone, i),
