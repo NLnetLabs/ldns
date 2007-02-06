@@ -27,7 +27,7 @@ LINT		= splint
 LINTFLAGS	= +quiet -weak -warnposix -unrecog -Din_addr_t=uint32_t -Du_int=unsigned -Du_char=uint8_t -preproc
 
 HEADER		= config.h
-SOURCES 	= ldns-read-zone.c \
+MAIN_SOURCES = ldns-read-zone.c \
 		  ldns-mx.c \
 		  ldns-chaos.c \
 		  ldns-update.c \
@@ -45,12 +45,12 @@ SOURCES 	= ldns-read-zone.c \
 		  ldns-keyfetcher.c \
 		  ldns-notify.c \
 		  ldns-testns.c
+OTHER_SOURCES = ldns-testpkts.c
 
-
-PROGRAMS=$(SOURCES:.c=)
+PROGRAMS=$(MAIN_SOURCES:.c=)
 
 .PHONY:	all clean realclean all-static
-.SECONDARY: $(SOURCES:.c=.o)
+.SECONDARY: $(MAIN_SOURCES:.c=.o) $(OTHER_SOURCES:.c=.o)
 
 all:	$(addsuffix .prg,$(PROGRAMS))
 
@@ -58,6 +58,10 @@ all-static: $(addsuffix .stc,$(PROGRAMS))
 
 %.o:    $(srcdir)/%.c
 	$(COMPILE) -o $@ -c $<
+
+# ldns-testns uses more sources.
+ldns-testns.prg: ldns-testpkts.o
+ldns-testns.stc: ldns-testpkts.o
 
 %.prg:  %.o
 	@if test ! -f $(@:.prg=) -o $< -nt $(@:.prg=); then \
@@ -72,7 +76,7 @@ all-static: $(addsuffix .stc,$(PROGRAMS))
 	fi
 
 lint:
-	for i in $(SOURCES); do \
+	for i in $(MAIN_SOURCES) $(OTHER_SOURCES); do \
 		$(LINT) $(LINTFLAGS) -I. -I$(srcdir) $(srcdir)/$$i $(CPPFLAGS); \
 		if [ $$? -ne 0 ] ; then exit 1 ; fi ; \
 	done

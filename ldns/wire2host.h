@@ -90,7 +90,8 @@
 #define	LDNS_RA_CLR(wirebuf)	(*(wirebuf+3) &= ~LDNS_RA_MASK)
 
 /* Query ID */
-#define	LDNS_ID_WIRE(wirebuf)			(ldns_read_uint16(wirebuf))
+#define	LDNS_ID_WIRE(wirebuf)		(ldns_read_uint16(wirebuf))
+#define	LDNS_ID_SET(wirebuf, id)	(ldns_write_uint16(wirebuf, id))
 
 /* Counter of the question section */
 #define LDNS_QDCOUNT_OFF		4

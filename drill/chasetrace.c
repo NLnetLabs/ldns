@@ -527,7 +527,7 @@ do_chase(ldns_resolver *res, ldns_rdf *name, ldns_rr_type type, ldns_rr_class c,
 		ldns_rr_list_deep_free(sigs);
 		result = ldns_verify_denial(pkt, name, type, &nsec_rrs, &nsec_rr_sigs);
 		if (result == LDNS_STATUS_OK) {
-			if (verbosity >= 2) {
+			if (verbosity >= 0) {
 				printf(";; Existence denied by nsec(3), chasing nsec record\n");
 			}
 			/* verify them, they can't be blindly chased */
@@ -536,7 +536,7 @@ do_chase(ldns_resolver *res, ldns_rdf *name, ldns_rr_type type, ldns_rr_class c,
 			                  ldns_rr_get_type(ldns_rr_list_rr(nsec_rrs, 0)),
 			                  c, trusted_keys, pkt, qflags, NULL);
 		} else {
-			if (verbosity >= 2) {
+			if (verbosity >= 0) {
 				printf(";; Denial of existence was not covered: %s\n", ldns_get_errorstr_by_id(result));
 			}
 		}

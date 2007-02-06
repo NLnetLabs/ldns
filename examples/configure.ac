@@ -271,6 +271,11 @@ extern int optind, opterr;
 #ifndef EXIT_SUCCESS
 #define EXIT_SUCCESS  0
 #endif
+
+#ifdef S_SPLINT_S
+#define FD_ZERO(a) /* a */
+#define FD_SET(a,b) /* a, b */
+#endif
 ])
 
 AC_CONFIG_FILES([Makefile])

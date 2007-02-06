@@ -685,9 +685,7 @@ ldns_str2rdf_alg(ldns_rdf **rd, const char *str)
 
 	if (lt) {
 		/* it was given as a integer */
-		i = lt->id;
-		*rd = ldns_rdf_new_frm_data(
-			LDNS_RDF_TYPE_INT8, sizeof(uint8_t), &i);
+		*rd = ldns_native2rdf_int8(LDNS_RDF_TYPE_INT8, lt->id);
 		if (!*rd) {
 			st = LDNS_STATUS_ERR;
 		}
@@ -810,7 +808,6 @@ ldns_str2rdf_loc(ldns_rdf **rd, const char *str)
 	if (isdigit(*my_str)) {
 		s = strtod(my_str, &my_str);
 	}
-
 north:
 	while (isblank(*my_str)) {
 		my_str++;
@@ -827,7 +824,10 @@ north:
 	my_str++;
 
 	/* store number */
-	latitude = (uint32_t) (1000 * s);
+	s = 1000.0 * s;
+	/* add a little to make floor in conversion a round */
+	s += 0.0005;
+	latitude = (uint32_t) s;
 	latitude += 1000 * 60 * m;
 	latitude += 1000 * 60 * 60 * h;
 	if (northerness) {
@@ -835,7 +835,6 @@ north:
 	} else {
 		latitude = equator - latitude;
 	}
-
 	while (isblank(*my_str)) {
 		my_str++;
 	}
@@ -882,7 +881,10 @@ east:
 	my_str++;
 
 	/* store number */
-	longitude = (uint32_t) (1000 * s);
+	s *= 1000.0;
+	/* add a little to make floor in conversion a round */
+	s += 0.0005;
+	longitude = (uint32_t) s;
 	longitude += 1000 * 60 * m;
 	longitude += 1000 * 60 * 60 * h;
 

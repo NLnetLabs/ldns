@@ -322,7 +322,7 @@ ldns_dname_compare(const ldns_rdf *dname1, const ldns_rdf *dname2)
 		}
 		
 		/* now check the label character for character. */
-		for (i = 1; i < (size_t) (*lp1 + 1); i++) {
+		for (i = 1; i < (size_t)(*lp1 + 1); i++) {
 			if (i > *lp2) {
 				/* apparently label 1 is larger */
 				result = 1;

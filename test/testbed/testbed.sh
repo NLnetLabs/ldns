@@ -8,7 +8,6 @@
 
 REPOSITORY=svn+ssh://open.nlnetlabs.nl/svn/libdns/trunk
 DIR=ldns_ttt
-TPKG=/home/jeltejan/repos/tpkg/tpkg
 
 # global settings
 CONFIGURE_FLAGS=""
@@ -76,9 +75,9 @@ function dotest()
 	echossh $1 "cd $2; if test -f "'"`which gmake`"'"; then gmake; else $MAKE_CMD; fi"
 	echossh $1 "cd $2; if test -f "'"`which gmake`"'"; then gmake doc; else $MAKE_CMD doc; fi"
 	if test $RUN_TEST = yes; then
-	echossh $1 "cd $2/testdata; $TPKG clean"
-	echossh $1 "cd $2; bash testcode/do-tests.sh"
-	echossh $1 "cd $2/testdata; $TPKG -q report" | tee -a $REPORT_FILE
+	echossh $1 "cd $2/test; $TPKG clean"
+	echossh $1 "cd $2/test; bash test_all.sh $TPKG"
+	echossh $1 "cd $2/test; $TPKG -q report" | tee -a $REPORT_FILE
 	fi
 	echo "$1 end on "`date` | tee -a $REPORT_FILE
 }
@@ -90,7 +89,7 @@ echo "on "`date`" by $USER." > $LOG_FILE
 declare -a hostname desc dir reconf make libtoolize vars
 IFS='	'
 i=0
-while read a b c d e f g; do
+while read a b c d e f g h; do
 	if echo $a | grep "^#" >/dev/null; then
 		continue # skip it
 	fi
@@ -102,6 +101,7 @@ while read a b c d e f g; do
 	make[$i]=$e
 	libtoolize[$i]=$f
 	vars[$i]=$g
+	tpkg[$i]=$h
 
 	i=$(($i+1))
 done <$HOST_FILE
@@ -119,14 +119,16 @@ for((i=0; i<${#hostname[*]}; i=$i+1)); do
 	 echo "make=[${make[$i]}]"
 	 echo "libtoolize=[${libtoolize[$i]}]"
 	 echo "vars=[${vars[$i]}]"
+	 echo "tpkg=[${tpkg[$i]}]"
  
-	AC_CMD="${libtoolize[$i]}; ${autoreconf[$i]}"
+	AC_CMD="${libtoolize[$i]}; ${reconf[$i]}"
 	MAKE_CMD="${make[$i]}"
 	SVN=yes
 	IP6=yes
 	FIXCONFIGURE=no
 	RUN_TEST=yes
 	LDNS=
+	TPKG="${tpkg[$i]}"
 echo "AC: $AC_CMD"
 	eval ${vars[$i]}
 	echo "*** ${hostname[$i]} ${desc[$i]} ***" | tee -a $LOG_FILE | tee -a $REPORT_FILE
