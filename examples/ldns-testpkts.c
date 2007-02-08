@@ -385,34 +385,23 @@ get_origin(const char* name, int lineno, ldns_rdf** origin, char* parse)
 		ldns_get_errorstr_by_id(status), parse);
 }
 
-/** reads the canned reply file and returns a list of structs */
-struct entry* 
-read_datafile(const char* name)
+/* Reads one entry from file. Returns entry or NULL on error. */
+struct entry*
+read_entry(FILE* in, const char* name, int *lineno, uint16_t* default_ttl, 
+	ldns_rdf** origin, ldns_rdf** prev_rr)
 {
-	struct entry* list = NULL;
-	struct entry* last = NULL;
 	struct entry* current = NULL;
-	FILE *in;
-	int lineno = 0;
 	char line[MAX_LINE];
 	const char* parse;
 	ldns_pkt_section add_section = LDNS_SECTION_QUESTION;
-	uint16_t default_ttl = 0;
-	ldns_rdf* origin = NULL;
-	ldns_rdf* prev_rr = NULL;
-	int entry_num = 0;
 	struct reply_packet *cur_reply = NULL;
 	bool reading_hex = false;
 	ldns_buffer* hex_data_buffer = NULL;
 
-	if((in=fopen(name, "r")) == NULL) {
-		error("could not open file %s: %s", name, strerror(errno));
-	}
-
 	while(fgets(line, (int)sizeof(line), in) != NULL) {
 		line[MAX_LINE-1] = 0;
 		parse = line;
-		lineno ++;
+		(*lineno) ++;
 		
 		while(isspace(*parse))
 			parse++;
@@ -422,27 +411,23 @@ read_datafile(const char* name)
 		if(str_keyword(&parse, "ENTRY_BEGIN")) {
 			if(current) {
 				error("%s line %d: previous entry does not ENTRY_END", 
-					name, lineno);
+					name, *lineno);
 			}
 			current = new_entry();
 			cur_reply = entry_add_reply(current);
-			if(last)
-				last->next = current;
-			else	list = current;
-			last = current;
 			continue;
 		} else if(str_keyword(&parse, "$ORIGIN")) {
-			get_origin(name, lineno, &origin, (char*)parse);
+			get_origin(name, *lineno, origin, (char*)parse);
 			continue;
 		} else if(str_keyword(&parse, "$TTL")) {
-			default_ttl = (uint16_t)atoi(parse);
+			*default_ttl = (uint16_t)atoi(parse);
 			continue;
 		}
 
 		/* working inside an entry */
 		if(!current) {
 			error("%s line %d: expected ENTRY_BEGIN but got %s", 
-				name, lineno, line);
+				name, *lineno, line);
 		}
 		if(str_keyword(&parse, "MATCH")) {
 			matchline(parse, current);
@@ -461,40 +446,75 @@ read_datafile(const char* name)
 				add_section = LDNS_SECTION_AUTHORITY;
 			else if(str_keyword(&parse, "ADDITIONAL"))
 				add_section = LDNS_SECTION_ADDITIONAL;
-			else error("%s line %d: bad section %s", name, lineno, parse);
+			else error("%s line %d: bad section %s", name, *lineno, parse);
 		} else if(str_keyword(&parse, "HEX_ANSWER_BEGIN")) {
 			hex_data_buffer = ldns_buffer_new(LDNS_MAX_PACKETLEN);
 			reading_hex = true;
 		} else if(str_keyword(&parse, "HEX_ANSWER_END")) {
 			if (!reading_hex) {
-				error("%s line %d: HEX_ANSWER_END read but no HEX_ANSWER_BEGIN keyword seen", name, lineno);
+				error("%s line %d: HEX_ANSWER_END read but no HEX_ANSWER_BEGIN keyword seen", name, *lineno);
 			}
 			reading_hex = false;
 			cur_reply->reply_from_hex = data_buffer2wire(hex_data_buffer);
 			ldns_buffer_free(hex_data_buffer);
 		} else if(str_keyword(&parse, "ENTRY_END")) {
-			current = 0;
-			entry_num ++;
+			return current;
 		} else if(reading_hex) {
 			ldns_buffer_printf(hex_data_buffer, line);
 		} else {
 			/* it must be a RR, parse and add to packet. */
 			ldns_rr* n = NULL;
 			ldns_status status;
-			status = ldns_rr_new_frm_str(&n, parse, default_ttl, origin, &prev_rr);
+			status = ldns_rr_new_frm_str(&n, parse, *default_ttl, 
+				*origin, prev_rr);
 			if (status != LDNS_STATUS_OK)
-				error("%s line %d:\n\t%s: %s", name, lineno,
+				error("%s line %d:\n\t%s: %s", name, *lineno,
 					ldns_get_errorstr_by_id(status), parse);
 			ldns_pkt_push_rr(cur_reply->reply, add_section, n);
 		}
 
 	}
+	if (reading_hex) {
+		error("%s: End of file reached while still reading hex, "
+			"missing HEX_ANSWER_END\n", name);
+	}
+	if(current) {
+		error("%s: End of file reached while reading entry. "
+			"missing ENTRY_END\n", name);
+	}
+	return 0;
+}
+
+/** reads the canned reply file and returns a list of structs */
+struct entry* 
+read_datafile(const char* name)
+{
+	struct entry* list = NULL;
+	struct entry* last = NULL;
+	struct entry* current = NULL;
+	FILE *in;
+	int lineno = 0;
+	uint16_t default_ttl = 0;
+	ldns_rdf* origin = NULL;
+	ldns_rdf* prev_rr = NULL;
+	int entry_num = 0;
+
+	if((in=fopen(name, "r")) == NULL) {
+		error("could not open file %s: %s", name, strerror(errno));
+	}
+
+	while((current = read_entry(in, name, &lineno, &default_ttl, 
+		&origin, &prev_rr)))
+	{
+		if(last)
+			last->next = current;
+		else	list = current;
+		last = current;
+		entry_num ++;
+	}
 	verbose(1, "%s: Read %d entries\n", prog_name, entry_num);
 
 	fclose(in);
-	if (reading_hex) {
-		error("%s: End of file reached while still reading hex, missing HEX_ANSWER_END\n", name);
-	}
 	return list;
 }
 
