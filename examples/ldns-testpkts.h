@@ -179,6 +179,11 @@ struct entry {
 struct entry* read_datafile(const char* name);
 
 /**
+ * Delete linked list of entries.
+ */
+void delete_entry(struct entry* list);
+
+/**
  * Read one entry from the data file.
  * @param in: file to read from. Filepos must be at the start of a new line.
  * @param name: name of the file for prettier errors.

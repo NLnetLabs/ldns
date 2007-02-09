@@ -704,3 +704,27 @@ handle_query(uint8_t* inbuf, ssize_t inlen, struct entry* entries, int* count,
 	ldns_pkt_free(query_pkt);
 	ldns_rdf_free(stop_command);
 }
+
+/** delete the list of reply packets */
+void delete_replylist(struct reply_packet* replist)
+{
+	struct reply_packet *p=replist, *np;
+	while(p) {
+		np = p->next;
+		ldns_pkt_free(p->reply);
+		ldns_buffer_free(p->reply_from_hex);
+		free(p);
+		p=np;
+	}
+}
+
+void delete_entry(struct entry* list)
+{
+	struct entry *p=list, *np;
+	while(p) {
+		np = p->next;
+		delete_replylist(p->reply_list);
+		free(p);
+		p = np;
+	}
+}
