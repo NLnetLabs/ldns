@@ -330,9 +330,10 @@ void ldns_rr_free(ldns_rr *rr);
  * \param[out] n the rr to return
  * \param[in] str the string to convert
  * \param[in] default_ttl pointer to a default ttl for the rr. If 0 DEF_TTL will be used
- * \param[in] origin when the owner is relative add this
+ * \param[in] origin when the owner is relative add this. 
+ *	The caller must ldns_rdf_deep_free it.
  * \param prev the previous ownername. the function overwrite this with
- * the current found ownername.
+ * the current found ownername. The caller must ldns_rdf_deep_free it.
  * \return a status msg describing an error or LDNS_STATUS_OK
  */
 ldns_status ldns_rr_new_frm_str(ldns_rr **n, const char *str, uint16_t default_ttl, ldns_rdf *origin, ldns_rdf **prev);
@@ -345,8 +346,10 @@ ldns_status ldns_rr_new_frm_str(ldns_rr **n, const char *str, uint16_t default_t
  *            the pointer will be updated if the file contains a $TTL directive
  * \param[in] origin when the owner is relative add this
  * 	      the pointer will be updated if the file contains a $ORIGIN directive
+ *	      The caller must ldns_rdf_deep_free it.
  * \param[in] prev when the owner is whitespaces use this as the * ownername
  *            the pointer will be updated after the call
+ *	      The caller must ldns_rdf_deep_free it.
  * \return a ldns_status with an error or LDNS_STATUS_OK
  */
 ldns_status ldns_rr_new_frm_fp(ldns_rr **rr, FILE *fp, uint16_t *default_ttl, ldns_rdf **origin, ldns_rdf **prev);
@@ -358,8 +361,10 @@ ldns_status ldns_rr_new_frm_fp(ldns_rr **rr, FILE *fp, uint16_t *default_ttl, ld
  * \param[in] fp the file pointer to use
  * \param[in] default_ttl a default ttl for the rr. If 0 DEF_TTL will be used
  *            the pointer will be updated if the file contains a $TTL directive
+ *	      The caller must ldns_rdf_deep_free it.
  * \param[in] origin when the owner is relative add this
  * 	      the pointer will be updated if the file contains a $ORIGIN directive
+ *	      The caller must ldns_rdf_deep_free it.
  * \param[in] line_nr pointer to an integer containing the current line number (for debugging purposes)
  * \param[in] prev when the owner is whitespaces use this as the * ownername
  *            the pointer will be updated after the call
