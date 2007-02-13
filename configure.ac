@@ -104,6 +104,7 @@ CHECK_COMPILER_FLAG_NEEDED(-std=c99 -D__EXTENSIONS__ -D_BSD_SOURCE -D_POSIX_C_SO
 #include <stdlib.h>
 #include <ctype.h>
 #include <sys/time.h>
+#include <time.h>
 #include <unistd.h>
 
 int test() {  
