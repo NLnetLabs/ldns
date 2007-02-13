@@ -103,6 +103,8 @@ static void matchline(const char* line, struct entry* e)
 			e->match_qtype = true;
 		} else if(str_keyword(&parse, "qname")) {
 			e->match_qname = true;
+		} else if(str_keyword(&parse, "all")) {
+			e->match_all = true;
 		} else if(str_keyword(&parse, "UDP")) {
 			e->match_transport = transport_udp;
 		} else if(str_keyword(&parse, "TCP")) {
@@ -213,6 +215,7 @@ static struct entry* new_entry()
 	e->match_opcode = false;
 	e->match_qtype = false;
 	e->match_qname = false;
+	e->match_all = false;
 	e->match_serial = false;
 	e->ixfr_soa_serial = 0;
 	e->match_transport = transport_any;
@@ -549,6 +552,67 @@ static uint32_t get_serial(ldns_pkt* p)
 	return val;
 }
 
+/** match two rr lists */
+static int
+match_list(ldns_rr_list* q, ldns_rr_list *p)
+{
+	size_t i;
+	if(ldns_rr_list_rr_count(q) != ldns_rr_list_rr_count(p))
+		return 0;
+	for(i=0; i<ldns_rr_list_rr_count(q); i++)
+	{
+		if(ldns_rr_compare(ldns_rr_list_rr(q, i), 
+			ldns_rr_list_rr(p, i)) != 0) {
+			verbose(3, "rr %d different", i);
+			return 0;
+		}
+	}
+	return 1;
+}
+
+/** match all of the packet */
+static int
+match_all(ldns_pkt* q, ldns_pkt* p)
+{
+	if(ldns_pkt_get_opcode(q) != ldns_pkt_get_opcode(p)) 
+	{ verbose(3, "allmatch: opcode different"); return 0;}
+	if(ldns_pkt_get_rcode(q) != ldns_pkt_get_rcode(p))
+	{ verbose(3, "allmatch: rcode different"); return 0;}
+	if(ldns_pkt_id(q) != ldns_pkt_id(p))
+	{ verbose(3, "allmatch: id different"); return 0;}
+	if(ldns_pkt_qr(q) != ldns_pkt_qr(p))
+	{ verbose(3, "allmatch: qr different"); return 0;}
+	if(ldns_pkt_aa(q) != ldns_pkt_aa(p))
+	{ verbose(3, "allmatch: aa different"); return 0;}
+	if(ldns_pkt_tc(q) != ldns_pkt_tc(p))
+	{ verbose(3, "allmatch: tc different"); return 0;}
+	if(ldns_pkt_rd(q) != ldns_pkt_rd(p))
+	{ verbose(3, "allmatch: rd different"); return 0;}
+	if(ldns_pkt_cd(q) != ldns_pkt_cd(p))
+	{ verbose(3, "allmatch: cd different"); return 0;}
+	if(ldns_pkt_ra(q) != ldns_pkt_ra(p))
+	{ verbose(3, "allmatch: ra different"); return 0;}
+	if(ldns_pkt_ad(q) != ldns_pkt_ad(p))
+	{ verbose(3, "allmatch: ad different"); return 0;}
+	if(ldns_pkt_qdcount(q) != ldns_pkt_qdcount(p))
+	{ verbose(3, "allmatch: qdcount different"); return 0;}
+	if(ldns_pkt_ancount(q) != ldns_pkt_ancount(p))
+	{ verbose(3, "allmatch: ancount different"); return 0;}
+	if(ldns_pkt_nscount(q) != ldns_pkt_nscount(p))
+	{ verbose(3, "allmatch: nscount different"); return 0;}
+	if(ldns_pkt_arcount(q) != ldns_pkt_arcount(p))
+	{ verbose(3, "allmatch: arcount different"); return 0;}
+	if(!match_list(ldns_pkt_question(q), ldns_pkt_question(p)))
+	{ verbose(3, "allmatch: qd section different"); return 0;}
+	if(!match_list(ldns_pkt_answer(q), ldns_pkt_answer(p)))
+	{ verbose(3, "allmatch: an section different"); return 0;}
+	if(!match_list(ldns_pkt_authority(q), ldns_pkt_authority(p)))
+	{ verbose(3, "allmatch: ar section different"); return 0;}
+	if(!match_list(ldns_pkt_additional(q), ldns_pkt_additional(p))) 
+	{ verbose(3, "allmatch: ns section different"); return 0;}
+	return 1;
+}
+
 /** finds entry in list, or returns NULL */
 struct entry* 
 find_match(struct entry* entries, ldns_pkt* query_pkt,
@@ -582,6 +646,10 @@ find_match(struct entry* entries, ldns_pkt* query_pkt,
 		}
 		if(p->match_transport != transport_any && p->match_transport != transport) {
 			verbose(3, "bad transport\n");
+			continue;
+		}
+		if(p->match_all && !match_all(query_pkt, reply)) {
+			verbose(3, "bad allmatch\n");
 			continue;
 		}
 		verbose(3, "match!\n");

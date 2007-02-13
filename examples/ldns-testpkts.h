@@ -43,7 +43,8 @@
 	; 'qtype' makes the query match the qtype from the reply
 	; 'qname' makes the query match the qname from the reply
 	; 'serial=1023' makes the query match if ixfr serial is 1023. 
-	MATCH [opcode] [qtype] [qname] [serial=<value>]
+	; 'all' has to match header byte for byte and all rrs in packet.
+	MATCH [opcode] [qtype] [qname] [serial=<value>] [all]
 	MATCH [UDP|TCP]
 	MATCH ...
 	; Then the REPLY header is specified.
@@ -154,6 +155,8 @@ struct entry {
 	bool match_qname;  
 	/** match SOA serial number, from auth section */
 	bool match_serial; 
+	/** match all of the packet */
+	bool match_all;
 	/** match query serial with this value. */
 	uint32_t ixfr_soa_serial; 
 	/** match on UDP/TCP */
