@@ -10,12 +10,7 @@
 
 #include <config.h>
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <stddef.h>
-#include <unistd.h>
 #include <stdbool.h>
-#include <stdint.h>
 #include <netdb.h>
 #include <errno.h>
 
