@@ -414,6 +414,7 @@ read_entry(FILE* in, const char* name, int *lineno, uint16_t* default_ttl,
 					name, *lineno);
 			}
 			current = new_entry();
+			current->lineno = *lineno;
 			cur_reply = entry_add_reply(current);
 			continue;
 		} else if(str_keyword(&parse, "$ORIGIN")) {

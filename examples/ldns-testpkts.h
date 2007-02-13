@@ -168,6 +168,9 @@ struct entry {
 	/** in seconds */
 	unsigned int sleeptime; 
 
+	/** some number that names this entry, line number in file or so */
+	int lineno;
+
 	/** next in list */
 	struct entry* next;
 };
