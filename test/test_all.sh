@@ -10,5 +10,5 @@ do
 	echo "$TPKG -a ../.. exe `basename $tests`"
 	$TPKG -a ../.. exe `basename $tests` 
 done 
-tpkg report
+$TPKG report
 
