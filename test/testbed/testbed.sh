@@ -22,7 +22,7 @@ fi
 
 function echossh() # like ssh but echos.
 {
-	echo "> ssh $*"
+	echo "ssh $*"
 	ssh $*
 }
 
@@ -35,14 +35,19 @@ function dotest()
 	echo "$1 begin on "`date` | tee -a $REPORT_FILE
 
 	if test $SVN; then
-		echossh $1 "cd $2; svn up"
+		echossh $1 "cd $2; $SVN up"
 #		echossh $1 "cd $2; if test ! -f configure -o configure.ac -nt configure; then $AC_CMD; fi"
 	else
-		echo "NO SVN?"
-		echo "NO SVN?"
-		echo "NO SVN?"
+		# tar and copy this dir
+		echo on
+		cd ..
+		tar -cf ldns_test.tar .
+		scp ldns_test.tar $1:$2
+		echossh $1 "cd $2; tar xf ldns_test.tar"
+		rm -f ldns_test.tar
+		#echo "NO SVN?"
+		#echo "NO SVN?"
 		
-		exit
 #		# svn and autoconf locally
 #		echo "fake svn via svnexport, tar, autoconf, bison, flex."
 #		svn export $REPOSITORY $DIR
