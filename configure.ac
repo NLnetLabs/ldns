@@ -73,7 +73,7 @@ eval "cv_prog_cc_flag_needed_$cache=fail"
 fi
 ]
 fi
-rm -f conftest*
+rm -f conftest
 ])
 if eval "test \"`echo '$cv_prog_cc_flag_needed_'$cache`\" = yes"; then
 AC_MSG_RESULT(yes)
@@ -92,34 +92,42 @@ fi
 fi
 ])
 
-
 # Checks for typedefs, structures, and compiler characteristics.
 AC_C_CONST
 AC_LANG_C
-AC_TYPE_SIZE_T
+CHECK_COMPILER_FLAG(g, [CFLAGS="$CFLAGS -g"])
 CHECK_COMPILER_FLAG(O2, [CFLAGS="$CFLAGS -O2"])
+
+AC_CHECK_HEADERS([getopt.h time.h],,, [AC_INCLUDES_DEFAULT])
 
 CHECK_COMPILER_FLAG_NEEDED(-std=c99 -D__EXTENSIONS__ -D_BSD_SOURCE -D_POSIX_C_SOURCE=200112 -D_XOPEN_SOURCE=600,
 [
+#include "confdefs.h"
 #include <stdlib.h>
 #include <ctype.h>
 #include <sys/time.h>
+#ifdef HAVE_TIME_H
 #include <time.h>
+#endif
 #include <unistd.h>
+#ifdef HAVE_GETOPT_H
+#include <getopt.h>
+#endif
 
-int test() {  
-        int a;
-        char **opts = NULL;
-        struct timeval tv;
+int test() {
+	int a;
+	char **opts = NULL;
+	struct timeval tv;
 	char *t;
 	time_t time = 0;
 	char *buf = NULL;
+	const char* str = NULL;
 	t = ctime_r(&time, buf);
-        tv.tv_usec = 10;
-        srandom(32);
-        a = getopt(2, opts, "a");
-        a = isascii(32);
-        return a;
+	tv.tv_usec = 10;
+	srandom(32);
+	a = getopt(2, opts, "a");
+	a = isascii(32);
+	return a;
 }
 ], [CFLAGS="$CFLAGS -std=c99 -D__EXTENSIONS__ -D_BSD_SOURCE -D_POSIX_C_SOURCE=200112 -D_XOPEN_SOURCE=600"])
 
@@ -178,6 +186,20 @@ int test() {
         return a;
 }
 ], [CFLAGS="$CFLAGS -D__EXTENSIONS__"])
+
+AC_CHECK_DECLS([isascii, getopt, srandom, ctime_r],, [echo "Cannot set compile environment; pass defines in CFLAGS=-D... ./configure"; exit 1], [
+#include <stdlib.h>
+#include <sys/time.h>
+#ifdef HAVE_TIME_H
+#include <time.h>
+#endif
+#include <unistd.h>
+#ifdef HAVE_GETOPT_H
+#include <getopt.h>
+#endif
+#include <stdbool.h>
+#include <ctype.h>
+])
 
 
 
