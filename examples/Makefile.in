@@ -60,7 +60,7 @@ all-static: $(addsuffix .stc,$(PROGRAMS))
 	$(COMPILE) -o $@ -c $<
 
 # ldns-testns uses more sources.
-ldns-testns.o: ldns-testns.c ldns-testpkts.c ldns-testpkts.h
+ldns-testns.o: $(srcdir)/ldns-testns.c $(srcdir)/ldns-testpkts.c $(srcdir)/ldns-testpkts.h
 ldns-testns.prg: ldns-testpkts.o
 ldns-testns.stc: ldns-testpkts.o
 
