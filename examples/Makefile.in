@@ -20,8 +20,8 @@ LDNSDIR = @LDNSDIR@
 INSTALL = $(srcdir)/../install-sh 
 
 COMPILE         = $(CC) $(CPPFLAGS) $(CFLAGS)
-LINK		= $(libtool) --mode=link $(CC) $(LDFLAGS) $(LIBS)
-LINK_STATIC	= $(libtool) --mode=link $(CC) -static $(LDFLAGS) $(LIBS)
+LINK		= $(libtool) --tag=CC --mode=link $(CC) $(LDFLAGS) $(LIBS)
+LINK_STATIC	= $(libtool) --tag=CC --mode=link $(CC) -static $(LDFLAGS) $(LIBS)
 
 LINT		= splint
 LINTFLAGS	= +quiet -weak -warnposix -unrecog -Din_addr_t=uint32_t -Du_int=unsigned -Du_char=uint8_t -preproc
@@ -101,7 +101,7 @@ install:	$(PROGRAMS)
 		$(INSTALL) -d -m 755 $(DESTDIR)$(mandir)
 		$(INSTALL) -d -m 755 $(DESTDIR)$(mandir)/man1
 		for i in $(PROGRAMS); do \
-			$(libtool) --mode=install ${INSTALL} -c $$i $(DESTDIR)$(bindir) ; \
+			$(libtool) --tag=CC --mode=install ${INSTALL} -c $$i $(DESTDIR)$(bindir) ; \
 			$(INSTALL) -c -m 644 $$i.1 $(DESTDIR)$(mandir)/man1/$$i.1 ; \
 			done
 		exit 0
