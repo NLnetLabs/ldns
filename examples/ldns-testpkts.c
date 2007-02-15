@@ -570,6 +570,16 @@ match_list(ldns_rr_list* q, ldns_rr_list *p)
 	return 1;
 }
 
+/** compare two booleans */
+static int
+cmp_bool(int x, int y)
+{
+	if(!x && !y) return 0;
+	if(x && y) return 0;
+	if(!x) return -1;
+	return 1;
+}
+
 /** match all of the packet */
 static int
 match_all(ldns_pkt* q, ldns_pkt* p)
@@ -580,19 +590,19 @@ match_all(ldns_pkt* q, ldns_pkt* p)
 	{ verbose(3, "allmatch: rcode different"); return 0;}
 	if(ldns_pkt_id(q) != ldns_pkt_id(p))
 	{ verbose(3, "allmatch: id different"); return 0;}
-	if(ldns_pkt_qr(q) != ldns_pkt_qr(p))
+	if(cmp_bool(ldns_pkt_qr(q), ldns_pkt_qr(p)) != 0)
 	{ verbose(3, "allmatch: qr different"); return 0;}
-	if(ldns_pkt_aa(q) != ldns_pkt_aa(p))
+	if(cmp_bool(ldns_pkt_aa(q), ldns_pkt_aa(p)) != 0)
 	{ verbose(3, "allmatch: aa different"); return 0;}
-	if(ldns_pkt_tc(q) != ldns_pkt_tc(p))
+	if(cmp_bool(ldns_pkt_tc(q), ldns_pkt_tc(p)) != 0)
 	{ verbose(3, "allmatch: tc different"); return 0;}
-	if(ldns_pkt_rd(q) != ldns_pkt_rd(p))
+	if(cmp_bool(ldns_pkt_rd(q), ldns_pkt_rd(p)) != 0)
 	{ verbose(3, "allmatch: rd different"); return 0;}
-	if(ldns_pkt_cd(q) != ldns_pkt_cd(p))
+	if(cmp_bool(ldns_pkt_cd(q), ldns_pkt_cd(p)) != 0)
 	{ verbose(3, "allmatch: cd different"); return 0;}
-	if(ldns_pkt_ra(q) != ldns_pkt_ra(p))
+	if(cmp_bool(ldns_pkt_ra(q), ldns_pkt_ra(p)) != 0)
 	{ verbose(3, "allmatch: ra different"); return 0;}
-	if(ldns_pkt_ad(q) != ldns_pkt_ad(p))
+	if(cmp_bool(ldns_pkt_ad(q), ldns_pkt_ad(p)) != 0)
 	{ verbose(3, "allmatch: ad different"); return 0;}
 	if(ldns_pkt_qdcount(q) != ldns_pkt_qdcount(p))
 	{ verbose(3, "allmatch: qdcount different"); return 0;}
