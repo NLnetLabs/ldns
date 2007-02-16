@@ -7,8 +7,16 @@ fi
 
 for tests in *.tpkg
 do
-	echo "$TPKG -a ../.. exe `basename $tests`"
-	$TPKG -a ../.. exe `basename $tests` 
+	COMMAND="$TPKG -a ../.. exe `basename $tests`"
+	echo $COMMAND
+	$COMMAND
+	if [ $? = 1 ]; then
+		if [ $tests = "01-compile.tpkg" ]; then
+			echo "Important base test failed, stopping."
+			$TPKG report
+			exit 1
+		fi
+	fi
 done 
 $TPKG report
 

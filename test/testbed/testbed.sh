@@ -11,7 +11,8 @@ DIR=ldns_ttt
 
 # global settings
 CONFIGURE_FLAGS=""
-REPORT_FILE=testdata/testbed.report
+PWD=`pwd`
+REPORT_FILE="$PWD/testdata/testbed.report"
 LOG_FILE=testdata/testbed.log
 HOST_FILE=testdata/host_file.$USER
 
@@ -32,11 +33,10 @@ function dotest()
 # host is name of ssh host
 # dir is directory of nsd trunk on host
 {
-	echo "$1 begin on "`date` | tee -a $REPORT_FILE
+	echo "$1 begin on "`date` | /usr/bin/tee -a $REPORT_FILE
 
 	if test $SVN; then
 		echossh $1 "cd $2; $SVN up"
-#		echossh $1 "cd $2; if test ! -f configure -o configure.ac -nt configure; then $AC_CMD; fi"
 	else
 		# tar and copy this dir
 		echo on
@@ -45,51 +45,13 @@ function dotest()
 		scp ldns_test.tar $1:$2
 		echossh $1 "cd $2; tar xf ldns_test.tar"
 		rm -f ldns_test.tar
-		#echo "NO SVN?"
-		#echo "NO SVN?"
-		
-#		# svn and autoconf locally
-#		echo "fake svn via svnexport, tar, autoconf, bison, flex."
-#		svn export $REPOSITORY $DIR
-#		(cd $DIR; $AC_CMD; rm -r autom4te* .c-mode-rc.el .cvsignore)
-#		if test "need_fixup_flexbison" = "yes"; then
-#			(cd unbound_ttt; \
-#			echo "#include <config.h>" > zlexer.c ; \
-#			flex -i -t zlexer.lex >> zlexer.c ; \
-#			bison -y -d -o zparser.c zparser.y ; \
-#			echo "#include \"configyyrename.h\"" > configlexer.c ; \
-#			flex -i -t configlexer.lex >> configlexer.c ; \
-#			bison -y -d -o configparser.c configparser.y )
-#		fi
-#		if test $FIXCONFIGURE = yes; then
-#			echo fixing up configure length test.
-#			(cd unbound_ttt; mv configure oldconf; sed -e 's?while (test "X"?lt_cv_sys_max_cmd_len=65500; echo skip || while (test "X"?' <oldconf >configure; chmod +x ./configure)
-#		fi
-#		du $DIR
-#		rsync -vrcpz --rsync-path=/home/wouter/bin/rsync $DIR $1:$DIR
-#		# tar czf unbound_ttt.tgz unbound_ttt
-#		rm -rf $DIR
-#		# ls -al unbound_ttt.tgz
-#		# scp unbound_ttt.tgz $1:unbound_ttt.tar.gz
-#		# rm unbound_ttt.tgz
-#		# echossh $1 "gtar xzf unbound_ttt.tar.gz && rm unbound_ttt.tar.gz"
-#	fi
-#	DISABLE=""
-#	if test $IP6 = no; then
-#		DISABLE="--disable-ipv6"
-#	fi
-#	if test x$LDNS != x; then
-#		DISABLE="--with-ldns=$LDNS $DISABLE"
 	fi
-	#echossh $1 "cd $2; if test ! -f config.h -o configure -nt config.h; then ./configure $CONFIGURE_FLAGS $DISABLE; fi"
-	#echossh $1 "cd $2; if test -f "'"`which gmake`"'"; then gmake; else $MAKE_CMD; fi"
-	#echossh $1 "cd $2; if test -f "'"`which gmake`"'"; then gmake doc; else $MAKE_CMD doc; fi"
 	if test $RUN_TEST = yes; then
 	echossh $1 "cd $2/test; $TPKG clean"
 	echossh $1 "cd $2/test; bash test_all.sh $TPKG"
-	echossh $1 "cd $2/test; $TPKG -q report" | tee -a $REPORT_FILE
+	echossh $1 "cd $2/test; $TPKG -q report" | /usr/bin/tee -a $REPORT_FILE
 	fi
-	echo "$1 end on "`date` | tee -a $REPORT_FILE
+	echo "$1 end on "`date` | /usr/bin/tee -a $REPORT_FILE
 }
 
 echo "on "`date`" by $USER." > $REPORT_FILE
@@ -129,8 +91,8 @@ for((i=0; i<${#hostname[*]}; i=$i+1)); do
 	TPKG="${tpkg[$i]}"
 	SVN="${svn[$i]}"
 	#eval ${vars[$i]}
-	echo "*** ${hostname[$i]} ${desc[$i]} ***" | tee -a $LOG_FILE | tee -a $REPORT_FILE
-	dotest ${hostname[$i]} ${dir[$i]} 2>&1 | tee -a $LOG_FILE
+	echo "*** ${hostname[$i]} ${desc[$i]} ***" | /usr/bin/tee -a $LOG_FILE | /usr/bin/tee -a $REPORT_FILE
+	dotest ${hostname[$i]} ${dir[$i]} 2>&1 | /usr/bin/tee -a $LOG_FILE
 done
 
 echo "done"
