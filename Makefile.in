@@ -88,14 +88,12 @@ lib:		libldns.la
 libldns.la:	$(LIBDNS_OBJECTS)
 		$(LINK_LIB) -o libldns.la $(LIBDNS_LOBJECTS) -rpath $(libdir) $(RUNTIME_PATH)
 
-copy-headers:
-		if [ ! -d include ] ; then mkdir include ; fi ;
-		if [ ! -d include/ldns ] ; then ln -s ../ldns ./include/ldns ; fi ;
-		for i in $(LIBDNS_HEADERS); do \
-			if [ $(srcdir)/ldns/$$i -nt ./include/ldns/$$i ] ; then \
-				MVPROG=/bin/cp $(INSTALL) -m 644 $$i ./include/ldns/; \
-			fi ; \
-		done
+$(addprefix include/ldns/, $(notdir $(LIBDNS_HEADERS))): include/ldns/%.h: $(srcdir)/ldns/%.h
+		@if [ ! -d include ] ; then mkdir include ; fi ;
+		@if [ ! -d include/ldns ] ; then ln -s ../ldns ./include/ldns ; fi ;
+		MVPROG=/bin/cp $(INSTALL) -m 644 $< ./include/ldns/
+
+copy-headers:	$(addprefix include/ldns/, $(notdir $(LIBDNS_HEADERS)))
 
 doc:		$(srcdir)/doc/function_manpages 
 		$(INSTALL) -d doc
