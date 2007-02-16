@@ -191,22 +191,6 @@ int test() {
 }
 ], [CFLAGS="$CFLAGS -D__EXTENSIONS__"])
 
-AC_CHECK_DECLS([isascii, getopt, srandom, ctime_r],, [echo "Cannot set compile environment; pass defines in CFLAGS=-D... ./configure"; exit 1], [
-#include <stdlib.h>
-#include <sys/time.h>
-#ifdef HAVE_TIME_H
-#include <time.h>
-#endif
-#include <unistd.h>
-#ifdef HAVE_GETOPT_H
-#include <getopt.h>
-#endif
-#include <stdbool.h>
-#include <ctype.h>
-])
-
-
-
 AC_C_INLINE
 AC_CHECK_TYPE(int8_t, char)
 AC_CHECK_TYPE(int16_t, short)
