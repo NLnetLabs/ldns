@@ -64,10 +64,10 @@ if test -z "`$CC $CFLAGS $1 -Werror -Wall -c conftest.c 2>&1`"; then
 eval "cv_prog_cc_flag_needed_$cache=yes"
 else
 echo 'Test with flag fails too!'
-cat conftest.c
-echo "$CC $CFLAGS $1 -Werror -Wall -c conftest.c 2>&1"
-echo `$CC $CFLAGS $1 -Werror -Wall -c conftest.c`
-exit 1
+#cat conftest.c
+#echo "$CC $CFLAGS $1 -Werror -Wall -c conftest.c 2>&1"
+#echo `$CC $CFLAGS $1 -Werror -Wall -c conftest.c`
+#exit 1
 fi
 ]
 fi
@@ -129,6 +129,7 @@ AC_CHECK_TYPE(uint8_t, unsigned char)
 AC_CHECK_TYPE(uint16_t, unsigned short)
 AC_CHECK_TYPE(uint32_t, unsigned int)
 AC_CHECK_TYPE(uint64_t, unsigned long long)
+AC_CHECK_TYPE(ssize_t, int)
 
 AC_CHECK_HEADERS([sys/types.h getopt.h stdlib.h stdio.h assert.h netinet/in.h ctype.h time.h pcap.h arpa/inet.h sys/time.h sys/socket.h sys/select.h],,, [AC_INCLUDES_DEFAULT])
 AC_CHECK_HEADERS([netinet/in_systm.h net/if.h netinet/ip.h netinet/udp.h netinet/if_ether.h netinet/ip6.h],,, [
@@ -146,6 +147,14 @@ AC_INCLUDES_DEFAULT
 #include <net/if.h>
 #endif])
 
+AC_CHECK_TYPE(socklen_t, , 
+	[AC_DEFINE([socklen_t], [int], [Define to 'int' if not defined])], [
+AC_INCLUDES_DEFAULT
+#if HAVE_SYS_SOCKET_H
+#  include <sys/socket.h>
+#endif
+])
+
 AC_CHECK_HEADERS([sys/param.h sys/mount.h],,,
 [AC_INCLUDES_DEFAULT]
 [
@@ -155,6 +164,20 @@ AC_CHECK_HEADERS([sys/param.h sys/mount.h],,,
    #endif
   ]
 ])
+AC_CHECK_TYPE(in_addr_t, [], [AC_DEFINE([in_addr_t], [uint32_t], [in_addr_t])], [
+#if HAVE_SYS_TYPES_H
+# include <sys/types.h>
+#endif
+#if HAVE_NETINET_IN_H
+# include <netinet/in.h>
+#endif])
+AC_CHECK_TYPE(in_port_t, [], [AC_DEFINE([in_port_t], [uint16_t], [in_port_t])], [
+#if HAVE_SYS_TYPES_H
+# include <sys/types.h>
+#endif
+#if HAVE_NETINET_IN_H
+# include <netinet/in.h>
+#endif])
 
 # check to see if libraries are needed for these functions.
 AC_CHECK_LIB(socket, socket)

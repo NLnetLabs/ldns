@@ -117,6 +117,7 @@ ENTRY_END
 
 */
 
+struct sockaddr_storage;
 #include "config.h"
 #include <ldns/ldns.h>
 #include "ldns-testpkts.h"
@@ -208,7 +209,7 @@ static int bind_port(int sock, int port)
 
 struct handle_udp_userdata {
 	int udp_sock;
-	struct sockaddr_storage addr_him;
+	struct sockaddr_in addr_him;
 	socklen_t hislen;
 };
 static void
@@ -292,7 +293,7 @@ static void
 handle_tcp(int tcp_sock, struct entry* entries, int *count)
 {
 	int s;
-	struct sockaddr_storage addr_him;
+	struct sockaddr_in addr_him;
 	socklen_t hislen;
 	uint8_t inbuf[INBUF_SIZE];
 	uint16_t tcplen;
