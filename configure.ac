@@ -346,6 +346,7 @@ AC_CHECK_LIB(socket, socket)
 AC_CHECK_LIB(nsl, inet_pton)
 
 AC_FUNC_MALLOC
+AC_FUNC_REALLOC
 
 AC_REPLACE_FUNCS(b64_pton)
 AC_REPLACE_FUNCS(b64_ntop)
