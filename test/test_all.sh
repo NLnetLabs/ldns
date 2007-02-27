@@ -1,5 +1,5 @@
 TPKG=$1
-if [ -z "$ARG" ]
+if [ -z "$TPKG" ]
 then
   TPKG=$HOME/repos/tpkg/tpkg
 fi
