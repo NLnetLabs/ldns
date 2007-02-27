@@ -161,6 +161,7 @@ static void usage()
 	printf("Usage: %s [options] <datafile>\n", prog_name);
 	printf("  -r	listens on random port. Port number is printed.\n");
 	printf("  -p	listens on the specified port, default %d.\n", DEFAULT_PORT);
+	printf("  -f	forks given number extra instances, default none.\n");
 	printf("  -v	more verbose, prints queries, answers and matching.\n");
 	printf("The program answers queries with canned replies from the datafile.\n");
 	exit(EXIT_FAILURE);
@@ -324,6 +325,23 @@ handle_tcp(int tcp_sock, struct entry* entries, int *count)
 
 }
 
+static void
+forkit(int number)
+{
+	int i;
+	for(i=0; i<number; i++)
+	{
+		pid_t pid = fork();
+		if(pid == -1) {
+			log_msg("error forking: %s\n", strerror(errno));
+			return;
+		}
+		if(pid == 0)
+			return; /* child starts serving */
+		log_msg("forked pid: %d\n", (int)pid);
+	}
+}
+
 int
 main(int argc, char **argv)
 {
@@ -332,6 +350,7 @@ main(int argc, char **argv)
 	int port = DEFAULT_PORT;
 	const char* datafile;
 	int count;
+	int forknum = 0;
 
 	/* network */
 	int udp_sock, tcp_sock;
@@ -347,10 +366,15 @@ main(int argc, char **argv)
 	logfile = stdout;
 	prog_name = argv[0];
 	log_msg("%s: start\n", prog_name);
-	while((c = getopt(argc, argv, "p:rv")) != -1) {
+	while((c = getopt(argc, argv, "f:p:rv")) != -1) {
 		switch(c) {
 		case 'r':
                 	port = 0;
+                	break;
+		case 'f':
+                	forknum = atoi(optarg);
+			if(forknum < 1)
+				error("invalid forkno %s, give number", optarg);
                 	break;
 		case 'p':
 			port = atoi(optarg);
@@ -431,6 +455,10 @@ main(int argc, char **argv)
 		}
 	}
 	log_msg("Listening on port %d\n", port);
+
+	/* forky! */
+	if(forknum > 0)
+		forkit(forknum);
 
 	/* service */
 	count = 0;

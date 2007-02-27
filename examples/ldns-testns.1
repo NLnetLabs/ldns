@@ -8,6 +8,7 @@ ldns-testns
 .Nm ldns-testns
 .Op Fl r
 .Op Fl p Ar port 
+.Op Fl f Ar num 
 .Op Fl v
 datafile
 
@@ -34,6 +35,11 @@ Listens to a random port. The port number is printed to stdout.
 
 .It Fl p Ar port
 Listens to the specified port.
+
+.It Fl f Ar num
+Forks this number of additional instances that serve the same ports and
+same datafile. They do not exit; printed is 'forked pid: <num>' and you
+have to kill them yourself.
 
 .It Fl v
 Outputs more debug information. It is possible to give this option multiple 
