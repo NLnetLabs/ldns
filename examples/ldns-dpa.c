@@ -565,70 +565,197 @@ calculate_total_count_matches(match_counters *counters, match_operation *cur)
 	}
 	
 	if (counters->left) {
+		/* In some cases, you don't want the number of actual
+		   counted matches, for instance when calculating the
+		   average number of queries per second. In this case
+		   you want the number of seconds */
+		if (cur->id == MATCH_TIMESTAMP) {
+			result += abs((size_t) atol(counters->match->match->value) - (size_t) atol(counters->left->match->match->value)) - 1;
+		}
 		result += calculate_total_count_matches(counters->left, cur);
 	}
 	if (counters->right) {
+		if (cur->id == MATCH_TIMESTAMP) {
+			result += abs((size_t) atol(counters->right->match->match->value) - (size_t) atol(counters->match->match->value)) - 1;
+		}
 		result += calculate_total_count_matches(counters->right, cur);
 	}
 	
 	return result;
 }
 
+/**
+ * Returns true if there is a previous match operation with the given type
+ * in the counters structure
+ */
+bool
+has_previous_match(match_counters *counters, match_operation *cur)
+{
+	if (!counters) {
+		return false;
+	}
+	
+	if (counters->left) {
+		if (counters->left->match->match->id == cur->id) {
+			return true;
+		} else if (has_previous_match(counters->left, cur)) {
+			return true;
+		} else if (counters->left->right) {
+			if (counters->left->right->match->match->id == cur->id) {
+				return true;
+			} else if (has_previous_match(counters->left->right, cur)) {
+				return true;
+			}
+		}
+	}
+	return false;
+}
+
+/**
+ * Returns true if there is a later match operation with the given type
+ * in the counters structure
+ */
+bool
+has_next_match(match_counters *counters, match_operation *cur)
+{
+	if (!counters) {
+		return false;
+	}
+	
+	if (counters->right) {
+		if (counters->right->match->match->id == cur->id) {
+			return true;
+		} else if (has_next_match(counters->right, cur)) {
+			return true;
+		} else if (counters->right->left) {
+			if (counters->right->left->match->match->id == cur->id) {
+				return true;
+			} else if (has_next_match(counters->right->left, cur)) {
+				return true;
+			}
+		}
+	}
+	return false;
+}
+
+/**
+ * Returns the first match with the same type at *cur in
+ * the counter list, or NULL if it is not found
+ */
+match_expression *
+get_first_match_expression(match_counters *counters, match_operation *cur)
+{
+	if (!counters) {
+		return NULL;
+	}
+	
+	if (has_previous_match(counters, cur)) {
+		return get_first_match_expression(counters->left, cur);
+	} else if (counters->match->match->id == cur->id) {
+		return counters->match;
+	} else if (counters->right) {
+		return get_first_match_expression(counters->right, cur);
+	} else {
+		return NULL;
+	}
+}
+
+/**
+ * Returns the second match expression with the same type at *cur in
+ * the counter list, or NULL if it is not found
+ */
+match_expression *
+get_second_match_expression(match_counters *counters, match_operation *cur)
+{
+	if (!counters) {
+		return NULL;
+	}
+	
+	if (has_previous_match(counters, cur)) {
+		if (has_previous_match(counters->left, cur)) {
+			return get_second_match_expression(counters->left, cur);
+		} else {
+			return counters->left->match;
+		}
+/*
+	} else if (counters->match->match->id == cur->id) {
+		return counters->match->match->value;
+*/	} else if (counters->right) {
+		return get_first_match_expression(counters->right, cur);
+	} else {
+		return NULL;
+	}
+}
+
+/**
+ * Returns the last match expression with the same type at *cur in
+ * the counter list, or NULL if it is not found
+ */
+match_expression *
+get_last_match_expression(match_counters *counters, match_operation *cur)
+{
+	if (!counters) {
+		return NULL;
+	}
+	
+	if (has_next_match(counters, cur)) {
+		return get_last_match_expression(counters->right, cur);
+	} else if (counters->match->match->id == cur->id) {
+		return counters->match;
+	} else if (counters->left) {
+		return get_last_match_expression(counters->left, cur);
+	} else {
+		return NULL;
+	}
+}
+
+/**
+ * Returns the last but one match expression with the same type at *cur in
+ * the counter list, or NULL if it is not found
+ */
+match_expression *
+get_last_but_one_match_expression(match_counters *counters, match_operation *cur)
+{
+	if (!counters) {
+		return NULL;
+	}
+	
+	if (has_next_match(counters, cur)) {
+		if (has_next_match(counters->right, cur)) {
+			return get_last_but_one_match_expression(counters->right, cur);
+		} else {
+			return counters->match;
+		}
+/*
+	} else if (counters->match->match->id == cur->id) {
+		return counters->match->match->value;
+*/	} else if (counters->left) {
+		return get_last_match_expression(counters->right, cur);
+	} else {
+		return NULL;
+	}
+}
+
 size_t
 get_first_count(match_counters *counters, match_operation *cur)
 {
-	size_t result = 0;
-	
-	if (!counters) {
+	match_expression *o = get_first_match_expression(counters, cur);
+	if (o) {
+		return o->count;
+	} else {
 		return 0;
 	}
-	
-	if (counters->match->match->id == cur->id) {
-		result = counters->match->count;
-		if (result != 0) {
-			return result;
-		}
-	}
-	if (counters->left) {
-		result = get_first_count(counters->left, cur);
-		if (result != 0) {
-			return result;
-		}
-	}
-	if (counters->right) {
-		result = get_first_count(counters->right, cur);
-	}
-	
-	return result;
 }
 
 size_t
 get_last_count(match_counters *counters, match_operation *cur)
 {
-	size_t result = 0;
-	
-	if (!counters) {
+	match_expression *o = get_last_match_expression(counters, cur);
+	if (o) {
+		return o->count;
+	} else {
 		return 0;
 	}
-	
-	if (counters->right) {
-		result = get_last_count(counters->right, cur);
-		if (result != 0) {
-			return result;
-		}
-	}
-	if (counters->left) {
-		result = get_last_count(counters->left, cur);
-		if (result != 0) {
-			return result;
-		}
-	}
-
-	if (counters->match->match->id == cur->id) {
-		result = counters->match->count;
-	}
-	
-	return result;
 }
 
 
@@ -712,11 +839,23 @@ print_counter_average_count(FILE *output, match_counters *counters, match_operat
 		total_count = calculate_total_count(counters, cur);
 		/* Remove the first and last for instance for timestamp average counts (half seconds drag down the average) */
 		if (remove_first_last) {
-			total_matches -= 2;
 			total_count -= get_first_count(counters, cur);
 			total_count -= get_last_count(counters, cur);	
 			printf("Removing first count from average: %u\n", (unsigned int) get_first_count(counters,cur));
 			printf("Removing last count from average: %u\n", (unsigned int) get_last_count(counters,cur));
+			/* in the case where we count the differences between match values too
+			 * (like with timestamps) we need to subtract from the match count too
+			 */
+			if (cur->id == MATCH_TIMESTAMP) {
+				if (get_first_match_expression(counters, cur) && get_second_match_expression(counters, cur)) {
+					total_matches -= atol(get_second_match_expression(counters, cur)->match->value) - atol(get_first_match_expression(counters, cur)->match->value);
+				}
+				if (get_last_match_expression(counters, cur) && get_last_but_one_match_expression(counters, cur)) {
+					total_matches -= atol(get_last_match_expression(counters, cur)->match->value) - atol(get_last_but_one_match_expression(counters, cur)->match->value);
+				}
+			} else {
+				total_matches -= 2;
+			}
 		}
 		printf("Average count for %s: (%u / %u) %.02f\n", mt->name, (unsigned int) total_count, (unsigned int) total_matches, (float) total_count / (float) total_matches);
 		if (counters->left) {
