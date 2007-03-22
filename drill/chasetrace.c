@@ -285,9 +285,13 @@ do_chase(ldns_resolver *res, ldns_rdf *name, ldns_rr_type type, ldns_rr_class c,
 					type,
 					LDNS_SECTION_AUTHORITY
 					);
-		}
+		};
 	} else {
 		/* no packet? */
+		if (verbosity >= 0) {
+			fprintf(stderr, ldns_get_errorstr_by_id(LDNS_STATUS_MEM_ERR));
+			fprintf(stderr, "\n");
+		}
 		return LDNS_STATUS_MEM_ERR;
 	}
 	
@@ -298,6 +302,10 @@ do_chase(ldns_resolver *res, ldns_rdf *name, ldns_rr_type type, ldns_rr_class c,
 		pkt = ldns_resolver_query(res, name, type, c, qflags);
 		
 		if (!pkt) {
+			if (verbosity >= 0) {
+				fprintf(stderr, ldns_get_errorstr_by_id(LDNS_STATUS_NETWORK_ERR));
+				fprintf(stderr, "\n");
+			}
 			return LDNS_STATUS_NETWORK_ERR;
 		}
 		if (verbosity >= 5) {
@@ -375,6 +383,7 @@ do_chase(ldns_resolver *res, ldns_rdf *name, ldns_rr_type type, ldns_rr_class c,
 						if (!key_matches_ds) {
 							/* For now error */
 							fprintf(stderr, ";; error no DS for key\n");
+							fprintf(stderr, "\n");
 							return LDNS_STATUS_ERR;
 						}
 					}
@@ -390,6 +399,10 @@ do_chase(ldns_resolver *res, ldns_rdf *name, ldns_rr_type type, ldns_rr_class c,
 				if (!pkt) {
 					ldns_rr_list_deep_free(rrset);
 					ldns_rr_list_deep_free(sigs);
+					if (verbosity >= 0) {
+						fprintf(stderr, ldns_get_errorstr_by_id(LDNS_STATUS_NETWORK_ERR));
+						fprintf(stderr, "\n");
+					}
 					return LDNS_STATUS_NETWORK_ERR;
 				}
 
@@ -409,6 +422,11 @@ do_chase(ldns_resolver *res, ldns_rdf *name, ldns_rr_type type, ldns_rr_class c,
 				ldns_rr_list_deep_free(sigs);
 				ldns_pkt_free(pkt);
 				ldns_rr_free(cur_sig);
+				if (verbosity >= 0) {
+					fprintf(stdout, ";; ");
+					fprintf(stdout, ldns_get_errorstr_by_id(LDNS_STATUS_CRYPTO_NO_DNSKEY));
+					fprintf(stdout, "\n");
+				}
 				return LDNS_STATUS_CRYPTO_NO_DNSKEY;
 			} else {
 				result = LDNS_STATUS_ERR;
@@ -489,6 +507,16 @@ do_chase(ldns_resolver *res, ldns_rdf *name, ldns_rr_type type, ldns_rr_class c,
 							ldns_rr_list_deep_free(sigs);
 							ldns_rr_list_deep_free(keys);
 							ldns_pkt_free(pkt);
+
+							if (result != LDNS_STATUS_OK) {
+								if (verbosity >= 0) {
+									fprintf(stdout, ";; ");
+									fprintf(stdout, ldns_get_errorstr_by_id(result));
+									fprintf(stdout, "\n");
+									fprintf(stdout, ";; For signature:\n;; ");
+									ldns_rr_print(stdout, cur_sig);
+								}
+							}
 							ldns_rr_free(cur_sig);
 							return result;
 						}
@@ -506,6 +534,13 @@ do_chase(ldns_resolver *res, ldns_rdf *name, ldns_rr_type type, ldns_rr_class c,
 					ldns_rr_list_deep_free(sigs);
 					ldns_rr_list_deep_free(keys);
 					ldns_pkt_free(pkt);
+
+					if (verbosity >= 0) {
+						fprintf(stdout, ";; ");
+						fprintf(stdout, ldns_get_errorstr_by_id(result));
+						fprintf(stdout, " in signature RR:\n;; ");
+						ldns_rr_print(stdout, cur_sig);
+					}
 					ldns_rr_free(cur_sig);
 					return result;
 				}
@@ -519,13 +554,29 @@ do_chase(ldns_resolver *res, ldns_rdf *name, ldns_rr_type type, ldns_rr_class c,
 	if (rrset && ldns_rr_list_rr_count(sigs) > 0) {
 		ldns_rr_list_deep_free(sigs);
 		ldns_pkt_free(pkt);
+
+		if (verbosity >= 0) {
+			fprintf(stdout, ";; ");
+			fprintf(stdout, ldns_get_errorstr_by_id(LDNS_STATUS_CRYPTO_NO_TRUSTED_DNSKEY));
+			fprintf(stdout, "\n");
+		}
 		return LDNS_STATUS_CRYPTO_NO_TRUSTED_DNSKEY;
 	} else {
 		ldns_rr_list_deep_free(sigs);
 		result = ldns_verify_denial(pkt, name, type, &nsec_rrs, &nsec_rr_sigs);
 		if (result == LDNS_STATUS_OK) {
 			if (verbosity >= 0) {
-				printf(";; Existence denied by nsec(3), chasing nsec record\n");
+				printf(";; Existence of ");
+				ldns_rdf_print(stdout, name);
+
+				if (descriptor->_name) {
+					fprintf(stdout, "%s", descriptor->_name);
+				} else {
+					fprintf(stdout, "TYPE%d\t", 
+							type);
+				}
+				printf("\n;; was DENIED by nsec(3), chasing nsec record\n");
+				
 			}
 			/* verify them, they can't be blindly chased */
 			result = do_chase(res,
@@ -538,54 +589,16 @@ do_chase(ldns_resolver *res, ldns_rdf *name, ldns_rr_type type, ldns_rr_class c,
 			}
 		}
 
-		
-#if 0
-		/* Try to see if there are NSECS in the packet */
-		nsecs = ldns_pkt_rr_list_by_type(pkt, LDNS_RR_TYPE_NSEC, LDNS_SECTION_ANY_NOQUESTION);
-		result = LDNS_STATUS_CRYPTO_NO_RRSIG;
-		
-		ldns_rr_list2canonical(nsecs);
-		
-		for (nsec_i = 0; nsec_i < ldns_rr_list_rr_count(nsecs); nsec_i++) {
-			/* there are four options:
-			 * - name equals ownername and is covered by the type bitmap
-			 * - name equals ownername but is not covered by the type bitmap
-			 * - name falls within nsec coverage but is not equal to the owner name
-			 * - name falls outside of nsec coverage
-			 */
-			if (ldns_dname_compare(ldns_rr_owner(ldns_rr_list_rr(nsecs, nsec_i)), name) == 0) {
-				if (ldns_nsec_bitmap_covers_type(ldns_rr_rdf(ldns_rr_list_rr(nsecs, nsec_i), 1), type)) {
-					/* Error, according to the nsec this rrset is signed */
-					result = LDNS_STATUS_CRYPTO_NO_RRSIG;
-				} else {
-					/* ok nsec denies existence, chase the nsec now */
-					printf(";; Existence of data set with this type denied by NSEC\n");
-					result = do_chase(res, ldns_rr_owner(ldns_rr_list_rr(nsecs, nsec_i)), LDNS_RR_TYPE_NSEC, c, trusted_keys, pkt, qflags, NULL);
-					if (result == LDNS_STATUS_OK) {
-						ldns_pkt_free(pkt);
-						printf(";; Verifiably insecure.\n");
-						ldns_rr_list_deep_free(nsecs);
-						return result;
-					}
-				}
-			} else if (ldns_nsec_covers_name(ldns_rr_list_rr(nsecs, nsec_i), name)) {
-				/* Verifably insecure? chase the covering nsec */
-				printf(";; Existence of data set with this name denied by NSEC\n");
-				result = do_chase(res, ldns_rr_owner(ldns_rr_list_rr(nsecs, nsec_i)), LDNS_RR_TYPE_NSEC, c, trusted_keys, pkt, qflags, NULL);
-				if (result == LDNS_STATUS_OK) {
-					ldns_pkt_free(pkt);
-					printf(";; Verifiably insecure.\n");
-					ldns_rr_list_deep_free(nsecs);
-					return result;
-				}
-			} else {
-				/* nsec has nothing to do with this data */
+		ldns_pkt_free(pkt);
+/*
+		if (result != LDNS_STATUS_OK) {
+			if (verbosity >= 0) {
+				fprintf(stdout, ";; ");
+				fprintf(stdout, ldns_get_errorstr_by_id(result));
+				fprintf(stdout, "\n");
 			}
 		}
-		ldns_rr_list_deep_free(nsecs);
-#endif
-		ldns_pkt_free(pkt);
-		return result;
+*/		return result;
 	}
 }
 

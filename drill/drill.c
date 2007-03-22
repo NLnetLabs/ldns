@@ -605,7 +605,7 @@ main(int argc, char *argv[])
 						result = 0;
 					} else {
 						if (verbosity != -1) {
-							mesg("Chase failed: %s", ldns_get_errorstr_by_id(result));
+							mesg("Chase failed.");
 						}
 					}
 				}
