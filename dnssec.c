@@ -831,11 +831,9 @@ ldns_sign_public(ldns_rr_list *rrset, ldns_key_list *keys)
 	ldns_rdf_deep_free(first_label);
 
 	/* make it canonical */
-	/*
 	for(i = 0; i < ldns_rr_list_rr_count(rrset_clone); i++) {
 		ldns_rr2canonical(ldns_rr_list_rr(rrset_clone, i));
 	}
-	*/
 	/* sort */
 	ldns_rr_list_sort(rrset_clone);
 	
