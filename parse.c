@@ -52,12 +52,18 @@ ldns_fget_token_l(FILE *f, char *token, const char *delim, size_t limit, int *li
 	t = token;
 	while ((c = getc(f)) != EOF) {
 		if (c == '(') {
-			p++;
+			/* this only counts for non-comments */
+			if (com == 0) {
+				p++;
+			}
 			continue;
 		}
 
 		if (c == ')') {
-			p--;
+			/* this only counts for non-comments */
+			if (com == 0) {
+				p--;
+			}
 			continue;
 		}
 
