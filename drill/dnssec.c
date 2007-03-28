@@ -164,11 +164,6 @@ ldns_verify_denial(ldns_pkt *pkt, ldns_rdf *name, ldns_rr_type type, ldns_rr_lis
 	/* Try to see if there are NSECS in the packet */
 	nsecs = ldns_pkt_rr_list_by_type(pkt, LDNS_RR_TYPE_NSEC, LDNS_SECTION_ANY_NOQUESTION);
 	if (nsecs) {
-	/*
-		result = LDNS_STATUS_OK;		
-	*/
-		ldns_rr_list2canonical(nsecs);
-		
 		for (nsec_i = 0; nsec_i < ldns_rr_list_rr_count(nsecs); nsec_i++) {
 			/* there are four options:
 			 * - name equals ownername and is covered by the type bitmap

@@ -831,9 +831,11 @@ ldns_sign_public(ldns_rr_list *rrset, ldns_key_list *keys)
 	ldns_rdf_deep_free(first_label);
 
 	/* make it canonical */
+	/*
 	for(i = 0; i < ldns_rr_list_rr_count(rrset_clone); i++) {
 		ldns_rr2canonical(ldns_rr_list_rr(rrset_clone, i));
 	}
+	*/
 	/* sort */
 	ldns_rr_list_sort(rrset_clone);
 	
@@ -1315,16 +1317,18 @@ ldns_zone_sign(const ldns_zone *zone, ldns_key_list *key_list)
 	/* there should only be 1 SOA, so the soa record is 1 rrset */
 	cur_rrsigs = NULL;
 	ldns_zone_set_soa(signed_zone, ldns_rr_clone(ldns_zone_soa(zone)));
-	ldns_rr2canonical(ldns_zone_soa(signed_zone));
+	/*ldns_rr2canonical(ldns_zone_soa(signed_zone));*/
 	
 	orig_zone_rrs = ldns_rr_list_clone(ldns_zone_rrs(zone));
 
 	ldns_rr_list_push_rr(orig_zone_rrs, ldns_rr_clone(ldns_zone_soa(zone)));
 	
 	/* canon now, needed for correct nsec creation */
+        /*
         for (i = 0; i < ldns_rr_list_rr_count(orig_zone_rrs); i++) {
 		ldns_rr2canonical(ldns_rr_list_rr(orig_zone_rrs, i));
 	}
+	*/
 	glue_rrs = ldns_zone_glue_rr_list(zone);
 
 	/* add the key (TODO: check if it's there already? */

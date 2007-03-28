@@ -1207,6 +1207,11 @@ qsort_schwartz_rr_compare(const void *a, const void *b)
 	ldns_buffer *rr1_buf, *rr2_buf;
 	struct ldns_schwartzian_compare_struct *sa = *(struct ldns_schwartzian_compare_struct **) a;
 	struct ldns_schwartzian_compare_struct *sb = *(struct ldns_schwartzian_compare_struct **) b;
+	/* if we are doing 2wire, we need to do lowercasing on the dname (and maybe on the rdata)
+	 * this must be done for comparison only, so we need to have a temp var for both buffers,
+	 * which is only used when the transformed object value isn't there yet
+	 */
+	ldns_rr *canonical_a, *canonical_b;
 
 	rr1 = (ldns_rr *) sa->original_object;
 	rr2 = (ldns_rr *) sb->original_object;
@@ -1215,18 +1220,26 @@ qsort_schwartz_rr_compare(const void *a, const void *b)
 	
 	if (result == 0) {
 		if (!sa->transformed_object) {
-			sa->transformed_object = ldns_buffer_new(ldns_rr_uncompressed_size(sa->original_object));
-			if (ldns_rr2buffer_wire(sa->transformed_object, sa->original_object, LDNS_SECTION_ANY) != LDNS_STATUS_OK) {
+			canonical_a = ldns_rr_clone(sa->original_object);
+			ldns_rr2canonical(canonical_a);
+			sa->transformed_object = ldns_buffer_new(ldns_rr_uncompressed_size(canonical_a));
+			if (ldns_rr2buffer_wire(sa->transformed_object, canonical_a, LDNS_SECTION_ANY) != LDNS_STATUS_OK) {
 				fprintf(stderr, "ERR!\n");
+				ldns_rr_free(canonical_a);
 				return 0;
 			}
+			ldns_rr_free(canonical_a);
 		}
 		if (!sb->transformed_object) {
-			sb->transformed_object = ldns_buffer_new(ldns_rr_uncompressed_size(sb->original_object));
-			if (ldns_rr2buffer_wire(sb->transformed_object, sb->original_object, LDNS_SECTION_ANY) != LDNS_STATUS_OK) {
+			canonical_b = ldns_rr_clone(sb->original_object);
+			ldns_rr2canonical(canonical_b);
+			sb->transformed_object = ldns_buffer_new(ldns_rr_uncompressed_size(canonical_b));
+			if (ldns_rr2buffer_wire(sb->transformed_object, canonical_b, LDNS_SECTION_ANY) != LDNS_STATUS_OK) {
 				fprintf(stderr, "ERR!\n");
+				ldns_rr_free(canonical_b);
 				return 0;
 			}
+			ldns_rr_free(canonical_b);
 		}
 		rr1_buf = (ldns_buffer *) sa->transformed_object;
 		rr2_buf = (ldns_buffer *) sb->transformed_object;
@@ -1468,10 +1481,48 @@ void
 ldns_rr2canonical(ldns_rr *rr)
 {
 	uint16_t i;
+	
+	if (!rr) {
+	  return;
+        }
 
-	ldns_dname2canonical(ldns_rr_owner(rr));
-	for (i = 0; i < ldns_rr_rd_count(rr); i++) {
-		ldns_dname2canonical(ldns_rr_rdf(rr, i));
+        ldns_dname2canonical(ldns_rr_owner(rr));
+
+	/*
+	 * lowercase the rdata dnames if the rr type is one
+	 * of the list in chapter 7 of RFC3597
+	 */
+	switch(ldns_rr_get_type(rr)) {
+        	case LDNS_RR_TYPE_NS:
+        	case LDNS_RR_TYPE_MD:
+        	case LDNS_RR_TYPE_MF:
+        	case LDNS_RR_TYPE_CNAME:
+        	case LDNS_RR_TYPE_SOA:
+        	case LDNS_RR_TYPE_MB:
+        	case LDNS_RR_TYPE_MG:
+        	case LDNS_RR_TYPE_MR:
+        	case LDNS_RR_TYPE_PTR:
+        	case LDNS_RR_TYPE_HINFO:
+        	case LDNS_RR_TYPE_MINFO:
+        	case LDNS_RR_TYPE_MX:
+        	case LDNS_RR_TYPE_RP:
+        	case LDNS_RR_TYPE_AFSDB:
+        	case LDNS_RR_TYPE_RT:
+        	case LDNS_RR_TYPE_SIG:
+        	case LDNS_RR_TYPE_PX:
+        	case LDNS_RR_TYPE_NXT:
+        	case LDNS_RR_TYPE_NAPTR:
+        	case LDNS_RR_TYPE_KX:
+        	case LDNS_RR_TYPE_SRV:
+        	case LDNS_RR_TYPE_DNAME:
+        	case LDNS_RR_TYPE_A6:
+			for (i = 0; i < ldns_rr_rd_count(rr); i++) {
+				ldns_dname2canonical(ldns_rr_rdf(rr, i));
+			}
+			return;
+		default:
+			/* do nothing */
+			return;
 	}
 }
 

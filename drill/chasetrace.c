@@ -575,7 +575,7 @@ do_chase(ldns_resolver *res, ldns_rdf *name, ldns_rr_type type, ldns_rr_class c,
 					fprintf(stdout, "TYPE%d\t", 
 							type);
 				}
-				printf("\n;; was DENIED by nsec(3), chasing nsec record\n");
+				printf("\n;; was DENIED by nsec, chasing nsec record\n");
 				
 			}
 			/* verify them, they can't be blindly chased */
