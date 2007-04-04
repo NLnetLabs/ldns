@@ -1,19 +1,38 @@
 * 1.1.X:
+	* canonicalization of rdata in DNSSEC functions now adheres to the
+          rr type list in rfc3597, not rfc4035, which will be updated
+	  (see http://www.ops.ietf.org/lists/namedroppers/namedroppers.2007/msg00183.html)
 	* ldns-walk now support dnames with maximum label length
-	* capitalization issues in sign/verify/nsec creation are fixed
 	* ldnsd now takes an extra argument containing the address to listen on
 	* signing no longer signs every rrset with KSK's, but only the DNSKEY rrset
 	* ported to Solaris 10
-        * LOC RR type has been fixed
 	* added ldns_send_buffer() function
+	* added ldns-testpkts fake packet server
+	* added ldns-notify to send NOTIFY packets
+	* ldns-dpa can now accurately calculate the number of matches per
+	  second
+	* libtool is now used for compilation too (still gcc, but not directly)
+	* Bugfixes:
+		- TSIG signing buffer size
+		- resolv.conf reading (comments)
+		- dname comparison off by one error
+		- typo in keyfetchers output file name fixed (a . too much)
+		- fixed zone file parser when comments contain ( or )
+		- fixed LOC RR type
+		- fixed CERT RR type
 
 	Drill:
 	* drill prints error on failed axfr.
 	* drill now accepts mangled packets with -f
 	* old -c option (use tcp) changed to -t
 	* -c option to specify alternative resolv.conf file added
+	* feedback of signature chase improved
 	* chaser now stops at root when no trusted keys are found
 	  instead of looping forever trying to find the DS for .
+	* Fixed bugs:
+		- wildcard on multiple labels signature verification
+		- error in -f packet writing for malformed packets
+		- made KSK check more resilient
 
 
 31 Apr 2006: 1.1.0: ldns-team
