@@ -570,13 +570,13 @@ calculate_total_count_matches(match_counters *counters, match_operation *cur)
 		   average number of queries per second. In this case
 		   you want the number of seconds */
 		if (cur->id == MATCH_TIMESTAMP) {
-			result += abs((size_t) atol(counters->match->match->value) - (size_t) atol(counters->left->match->match->value)) - 1;
+			result += (size_t) abs((int) (atol(counters->match->match->value) - atol(counters->left->match->match->value))) - 1;
 		}
 		result += calculate_total_count_matches(counters->left, cur);
 	}
 	if (counters->right) {
 		if (cur->id == MATCH_TIMESTAMP) {
-			result += abs((size_t) atol(counters->right->match->match->value) - (size_t) atol(counters->match->match->value)) - 1;
+			result += (size_t) abs((int) (atol(counters->right->match->match->value) - atol(counters->match->match->value))) - 1;
 		}
 		result += calculate_total_count_matches(counters->right, cur);
 	}
