@@ -11,29 +11,30 @@ http://www.nlnetlabs.nl/ldns/
 On that page you can also subscribe to the ldns mailing list.
 
 * Development 
-ldns is mostly developed on Linux and FreeBSD. It is regularly tested to
+ldns is mainly developed on Linux and FreeBSD. It is regularly tested to
 compile on other systems like Solaris and Mac OS X.
 
 REQUIREMENTS
 - OpenSSL (Optional, but needed for features like DNSSEC)
-- libpcap (Optional, but needed for examples/ldns-dpa and pcat)
-- (GNU) libtool (that's glibtool, not libtool in OSX)
+- libpcap (Optional, but needed for examples/ldns-dpa)
+- (GNU) libtool (in OSX, that's glibtool, not libtool)
 - GNU make
 
 INSTALLATION
 1. Unpack the tarball
 2. cd ldns-<VERSION>
-5. ./configure
-6. gmake (it needs gnu make to compile, on systems where GNU make is the
+3. ./configure
+4. gmake (it needs gnu make to compile, on systems where GNU make is the
    default you can just use 'make')
-7. sudo gmake install
-8. Optional. (cd examples; ./configure; gmake), make example programs included.
-9. Optional. (cd drill; ./configure; gmake; gmake install), to build drill.
+5. sudo gmake install
+6. Optional. (cd examples; ./configure; gmake), make example programs included.
+7. Optional. (cd drill; ./configure; gmake; gmake install), to build drill.
 
 You can configure and compile it in a separate build directory.
 
 * Examples
-There are some examples in the examples/ directory. These can be built with:
+There are some examples and dns related tools in the examples/ directory.
+These can be built with:
 1. cd examples/
 2  autoreconf
 3. ./configure [--with-ldns=<path to ldns installation or build>]
