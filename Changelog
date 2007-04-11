@@ -1,4 +1,4 @@
-* 1.1.X:
+11 Apr 2007 1.2,0:
 	* canonicalization of rdata in DNSSEC functions now adheres to the
           rr type list in rfc3597, not rfc4035, which will be updated
 	  (see http://www.ops.ietf.org/lists/namedroppers/namedroppers.2007/msg00183.html)
@@ -35,7 +35,7 @@
 		- made KSK check more resilient
 
 
-31 Apr 2006: 1.1.0: ldns-team
+7 Jul 2006: 1.1.0: ldns-team
 	* Added tutorials and an introduction to the documentation
 	* Added include/ and lib/ dirs so that you can compile against ldns
 	  without installing ldns on your system
