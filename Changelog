@@ -1,4 +1,4 @@
-7 Apr 2007 1.2.0:
+11 Apr 2007 1.2,0:
 	* canonicalization of rdata in DNSSEC functions now adheres to the
           rr type list in rfc3597, not rfc4035, which will be updated
 	  (see http://www.ops.ietf.org/lists/namedroppers/namedroppers.2007/msg00183.html)
