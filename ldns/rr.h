@@ -301,6 +301,8 @@ struct ldns_struct_rr_descriptor
 	ldns_rdf_type _variable;
 	/** Specifies whether compression can be used for dnames in this RR type. */
 	ldns_rr_compress _compress;
+	/** The number of DNAMEs in the _wireformat string, for parsing. */
+	uint8_t _dname_count;
 };
 typedef struct ldns_struct_rr_descriptor ldns_rr_descriptor;
 
