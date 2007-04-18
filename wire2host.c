@@ -339,7 +339,7 @@ ldns_buffer2pkt_wire(ldns_pkt **packet, ldns_buffer *buffer)
 {
 	/* lazy */
 	return ldns_wire2pkt(packet, ldns_buffer_begin(buffer),
-				ldns_buffer_capacity(buffer));
+				ldns_buffer_limit(buffer));
 
 }
 
