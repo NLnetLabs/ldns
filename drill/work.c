@@ -189,10 +189,11 @@ read_hex_buffer(char *filename)
 	
 	wiresize = packetbuffromfile(filename, wire);
 	
-	result_buffer = ldns_buffer_new(wiresize);
+	result_buffer = LDNS_MALLOC(ldns_buffer);
 	ldns_buffer_new_frm_data(result_buffer, wire, wiresize);
 	ldns_buffer_set_position(result_buffer, ldns_buffer_capacity(result_buffer));
 	
+	xfree(wire);
 	return result_buffer;
 }
 

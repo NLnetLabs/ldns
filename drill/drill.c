@@ -738,6 +738,7 @@ main(int argc, char *argv[])
 				query_buffer = read_hex_buffer(query_file);
 				if (query_buffer) {
 					status = ldns_send_buffer(&pkt, res, query_buffer, NULL);
+					ldns_buffer_free(query_buffer);
 					if (status != LDNS_STATUS_OK) {
 						printf("Error: %s\n", ldns_get_errorstr_by_id(status));
 						exit(1);
