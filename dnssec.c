@@ -22,6 +22,7 @@
  * crypto...
  */
 #include <openssl/ssl.h>
+#include <openssl/evp.h>
 #include <openssl/rand.h>
 #include <openssl/err.h>
 #include <openssl/md5.h>
@@ -924,13 +925,13 @@ ldns_sign_public(ldns_rr_list *rrset, ldns_key_list *keys)
 			
 			switch(ldns_key_algorithm(current_key)) {
 				case LDNS_SIGN_DSA:
-					b64rdf = ldns_sign_public_dsa(sign_buf, ldns_key_dsa_key(current_key));
+					b64rdf = ldns_sign_public_evp(sign_buf, ldns_key_evp_key(current_key), EVP_sha1());
 					break;
 				case LDNS_SIGN_RSASHA1:
-					b64rdf = ldns_sign_public_rsasha1(sign_buf, ldns_key_rsa_key(current_key));
+					b64rdf = ldns_sign_public_evp(sign_buf, ldns_key_evp_key(current_key), EVP_sha1());
 					break;
 				case LDNS_SIGN_RSAMD5:
-					b64rdf = ldns_sign_public_rsamd5(sign_buf, ldns_key_rsa_key(current_key));
+					b64rdf = ldns_sign_public_evp(sign_buf, ldns_key_evp_key(current_key), EVP_md5());
 					break;
 				default:
 					/* do _you_ know this alg? */
@@ -1001,6 +1002,47 @@ ldns_sign_public_dsa(ldns_buffer *to_sign, DSA *key)
 
 	return sigdata_rdf;
 }
+
+ldns_rdf *
+ldns_sign_public_evp(ldns_buffer *to_sign, EVP_PKEY *key, EVP_MD *digest_type)
+{
+        unsigned int siglen;
+        ldns_rdf *sigdata_rdf;
+        ldns_buffer *b64sig;
+       EVP_MD_CTX ctx;
+       const EVP_MD *md_type;
+
+        siglen = 0;
+        b64sig = ldns_buffer_new(LDNS_MAX_PACKETLEN);
+        if (!b64sig) {
+                return NULL;
+        }
+
+        /* initializes a signing context */
+        md_type = digest_type;
+        if(!md_type) {
+            printf("Unknown message digest");
+            exit(1);
+        }
+        EVP_MD_CTX_init(&ctx);
+        EVP_SignInit(&ctx, md_type);
+
+        /* Update the context with the message */
+/*
+        EVP_SignUpdate(&ctx, (unsigned char*)ldns_buffer_begin(to_sign), ldns_
+*/
+        /* Do the signing */
+        EVP_SignUpdate(&ctx, (unsigned char*)ldns_buffer_begin(to_sign), ldns_buffer_position(to_sign));
+
+        /* Do the signing */
+        EVP_SignFinal(&ctx, (unsigned char*)ldns_buffer_begin(b64sig), &siglen, key);
+
+        sigdata_rdf = ldns_rdf_new_frm_data(LDNS_RDF_TYPE_B64, siglen,
+                        ldns_buffer_begin(b64sig));
+        ldns_buffer_free(b64sig); /* can't free this buffer ?? */
+        return sigdata_rdf;
+}
+
 
 ldns_rdf *
 ldns_sign_public_rsasha1(ldns_buffer *to_sign, RSA *key)

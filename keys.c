@@ -440,6 +440,12 @@ ldns_key_set_flags(ldns_key *k, uint16_t f)
 }
 
 void
+ldns_key_set_evp_key(ldns_key *k, EVP_PKEY *e)
+{
+	k->_key.key = e;
+}
+
+void
 ldns_key_set_rsa_key(ldns_key *k, RSA *r)
 {
 	EVP_PKEY *key = EVP_PKEY_new();
@@ -512,6 +518,12 @@ ldns_signing_algorithm
 ldns_key_algorithm(const ldns_key *k) 
 {
 	return k->_alg;
+}
+
+EVP_PKEY *
+ldns_key_evp_key(const ldns_key *k)
+{
+	return k->_key.key;
 }
 
 RSA *

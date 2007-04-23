@@ -160,6 +160,7 @@ ldns_rr_list *ldns_sign_public(ldns_rr_list *rrset, ldns_key_list *keys);
  * \return a ldns_rdf with the signed data
  */
 ldns_rdf *ldns_sign_public_dsa(ldns_buffer *to_sign, DSA *key);
+ldns_rdf *ldns_sign_public_evp(ldns_buffer *to_sign, EVP_PKEY *key, EVP_MD *digest_type);
 /**
  * Sign a buffer with the RSA key (hash with MD5)
  * \param[in] to_sign buffer with the data
