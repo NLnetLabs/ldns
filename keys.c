@@ -393,6 +393,7 @@ ldns_key_new_frm_algorithm(ldns_signing_algorithm alg, uint16_t size)
 			if (RSA_check_key(r) != 1) {
 				return NULL;
 			}
+			
 			ldns_key_set_rsa_key(k, r);
 			break;
 		case LDNS_SIGN_DSA:
@@ -441,13 +442,17 @@ ldns_key_set_flags(ldns_key *k, uint16_t f)
 void
 ldns_key_set_rsa_key(ldns_key *k, RSA *r)
 {
-	k->_key.rsa = r;
+	EVP_PKEY *key = EVP_PKEY_new();
+	EVP_PKEY_set1_RSA(key, r);
+	k->_key.key = key;
 }
 
 void
 ldns_key_set_dsa_key(ldns_key *k, DSA *d)
 {
-	k->_key.dsa  = d;
+	EVP_PKEY *key = EVP_PKEY_new();
+	EVP_PKEY_set1_DSA(key, d);
+	k->_key.key  = key;
 }
 
 void
@@ -512,13 +517,13 @@ ldns_key_algorithm(const ldns_key *k)
 RSA *
 ldns_key_rsa_key(const ldns_key *k)
 {
-	return k->_key.rsa;
+	return EVP_PKEY_get1_RSA(k->_key.key);
 }
 
 DSA *
 ldns_key_dsa_key(const ldns_key *k)
 {
-	return k->_key.dsa;
+	return EVP_PKEY_get1_DSA(k->_key.key);
 }
 
 unsigned char *
