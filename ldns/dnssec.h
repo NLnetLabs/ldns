@@ -24,6 +24,7 @@
 
 #ifdef HAVE_SSL
 #include <openssl/ssl.h>
+#include <openssl/evp.h>
 #endif /* HAVE_SSL */
 #include <ldns/common.h>
 #include <ldns/packet.h>
@@ -84,6 +85,19 @@ ldns_status ldns_verify_rrsig_keylist(ldns_rr_list *rrset, ldns_rr *rrsig, ldns_
  * \return status message wether verification succeeded.
  */
 ldns_status ldns_verify_rrsig(ldns_rr_list *rrset, ldns_rr *rrsig, ldns_rr *key);
+
+/**
+ * verifies a buffer with signature data for a buffer with rrset data 
+ * with an EVP_PKEY
+ *
+ * \param[in] sig the signature data
+ * \param[in] rrset the rrset data, sorted and processed for verification
+ * \param[in] key the EVP key structure
+ * \param[in] digest_type The digest type of the signature
+ */
+#ifdef HAVE_SSL
+ldns_status ldns_verify_rrsig_evp(ldns_buffer *sig, ldns_buffer *rrset, EVP_PKEY *key, const EVP_MD *digest_type);
+#endif
 
 /**
  * verifies a buffer with signature data (DSA) for a buffer with rrset data 
@@ -160,7 +174,7 @@ ldns_rr_list *ldns_sign_public(ldns_rr_list *rrset, ldns_key_list *keys);
  * \return a ldns_rdf with the signed data
  */
 ldns_rdf *ldns_sign_public_dsa(ldns_buffer *to_sign, DSA *key);
-ldns_rdf *ldns_sign_public_evp(ldns_buffer *to_sign, EVP_PKEY *key, EVP_MD *digest_type);
+ldns_rdf *ldns_sign_public_evp(ldns_buffer *to_sign, EVP_PKEY *key, const EVP_MD *digest_type);
 /**
  * Sign a buffer with the RSA key (hash with MD5)
  * \param[in] to_sign buffer with the data
