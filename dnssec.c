@@ -991,15 +991,13 @@ ldns_sign_public_evp(ldns_buffer *to_sign, EVP_PKEY *key, const EVP_MD *digest_t
 	EVP_MD_CTX_init(&ctx);
 	EVP_SignInit(&ctx, md_type);
 
-	/* Update the context with the message */
 	EVP_SignUpdate(&ctx, (unsigned char*)ldns_buffer_begin(to_sign), ldns_buffer_position(to_sign));
 
-	/* Do the signing */
 	EVP_SignFinal(&ctx, (unsigned char*)ldns_buffer_begin(b64sig), &siglen, key);
 
 	sigdata_rdf = ldns_rdf_new_frm_data(LDNS_RDF_TYPE_B64, siglen,
 			ldns_buffer_begin(b64sig));
-	ldns_buffer_free(b64sig); /* can't free this buffer ?? */
+	ldns_buffer_free(b64sig);
 	return sigdata_rdf;
 }
 
@@ -1453,4 +1451,11 @@ ldns_init_random(FILE *fd, uint16_t bytes)
 	LDNS_FREE(buf);
 	return LDNS_STATUS_OK;
 }
+
+/* taken from the ENGINE man page */
+/*
+int ldns_load_engine_fn(const char *engine_id, const char **pre_cmds, int pre_num, const char **post_cmds, int post_num)
+{
+	ENGINE *e
+*/
 #endif /* HAVE_SSL */

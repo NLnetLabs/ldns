@@ -170,6 +170,13 @@ ldns_status ldns_key_new_frm_fp_l(ldns_key **k, FILE *fp, int *line_nr);
 
 #ifdef HAVE_SSL
 /**
+ * Read the key with the given id from the given engine and store it
+ * in the given ldns_key structure. The algorithm type is set
+ */
+ldns_status ldns_key_new_frm_engine(ldns_key **key, ENGINE *e, char *key_id, ldns_algorithm);
+
+
+/**
  * frm_fp helper function. This function parsed the
  * remainder of the (RSA) priv. key file generated from bind9
  * \param[in] fp the file to parse

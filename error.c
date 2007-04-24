@@ -51,6 +51,7 @@ ldns_lookup_table ldns_error_str[] = {
 	{ LDNS_STATUS_CRYPTO_TSIG_BOGUS, "Bogus TSIG signature" },
 	{ LDNS_STATUS_CRYPTO_TSIG_ERR, "Could not create TSIG signature" },
         { LDNS_STATUS_CRYPTO_EXPIRATION_BEFORE_INCEPTION, "DNSSEC signature has expiration date earlier than inception date" },
+	{ LDNS_STATUS_ENGINE_KEY_NOT_LOADED, "Unable to load private key from engine" },
 	{ LDNS_STATUS_RES_NO_NS, "No nameservers defined in the resolver" },
 	{ LDNS_STATUS_RES_QUERY, "No correct query given to resolver" },
 	{ LDNS_STATUS_WIRE_INCOMPLETE_HEADER, "header section incomplete" },

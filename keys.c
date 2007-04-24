@@ -16,6 +16,7 @@
 
 #ifdef HAVE_SSL
 #include <openssl/ssl.h>
+#include <openssl/engine.h>
 #endif /* HAVE_SSL */
 
 ldns_lookup_table ldns_signing_algorithms[] = {
@@ -68,6 +69,24 @@ ldns_key_new_frm_fp(ldns_key **k, FILE *fp)
 {
 	return ldns_key_new_frm_fp_l(k, fp, NULL);
 }
+
+#ifdef HAVE_SSL
+ldns_status
+ldns_key_new_frm_engine(ldns_key **key, ENGINE *e, char *key_id, ldns_algorithm alg)
+{
+	ldns_key *k;
+	
+	k = ldns_key_new();
+	k->_key.key = ENGINE_load_private_key(e, key_id, UI_OpenSSL(), NULL);
+	ldns_key_set_algorithm(k, alg);
+	if (!k->_key.key) {
+		return LDNS_STATUS_ENGINE_KEY_NOT_LOADED;
+	} else {
+		*key = k;
+		return LDNS_STATUS_OK;
+	}
+}
+#endif
 
 ldns_status
 ldns_key_new_frm_fp_l(ldns_key **key, FILE *fp, int *line_nr)
