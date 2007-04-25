@@ -101,6 +101,7 @@ main(int argc, char *argv[])
 	ldns_key *key = NULL;
 	ldns_rr *pubkey;
 	ldns_key_list *keys;
+	size_t key_i;
 	ldns_status s;
 
 
@@ -226,7 +227,7 @@ main(int argc, char *argv[])
 			eng_key_l = index(optarg, ',');
 			if (eng_key_l && strlen(eng_key_l) > 1) {
 				if (eng_key_l > optarg) {
-					eng_key_id_len = eng_key_l - optarg;
+					eng_key_id_len = (size_t) (eng_key_l - optarg);
 					eng_key_id = malloc(eng_key_id_len + 1);
 					memcpy(eng_key_id, optarg, eng_key_id_len);
 					eng_key_id[eng_key_id_len] = '\0';
@@ -380,8 +381,8 @@ main(int argc, char *argv[])
 	}
 	
 	/* walk through the keys, and add pubkeys to the orig zone */
-	for (c = 0; c < ldns_key_list_key_count(keys); c++) {
-		key = ldns_key_list_key(keys, c);
+	for (key_i = 0; key_i < ldns_key_list_key_count(keys); key_i++) {
+		key = ldns_key_list_key(keys, key_i);
 		if (!ldns_key_pubkey_owner(key)) {
 			ldns_key_set_pubkey_owner(key, ldns_rdf_clone(origin));
 			pubkey = ldns_key2rr(key);
