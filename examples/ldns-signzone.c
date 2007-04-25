@@ -221,6 +221,9 @@ main(int argc, char *argv[])
 					printf("The engine couldn't initialize\n");
 					exit(EXIT_FAILURE);
 				}
+				ENGINE_set_default_RSA(engine);
+				ENGINE_set_default_DSA(engine);
+				ENGINE_set_default(engine, 0);
 			}
 			break;
 		case 'k':
