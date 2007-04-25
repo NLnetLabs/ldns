@@ -1061,10 +1061,14 @@ ldns_key2buffer_str(ldns_buffer *output, const ldns_key *k)
 {
 	ldns_status status = LDNS_STATUS_OK;
 	unsigned char  *bignum;
+	
 #ifdef HAVE_SSL
 	/* not used when ssl is not defined */
 	ldns_rdf *b64_bignum = NULL;
 	uint16_t i;
+	
+	RSA *rsa;
+	DSA *dsa;
 #endif /* HAVE_SSL */
 
 	if (!k) {
@@ -1083,6 +1087,8 @@ ldns_key2buffer_str(ldns_buffer *output, const ldns_key *k)
 			case LDNS_SIGN_RSAMD5:
 				/* copied by looking at dnssec-keygen output */
 				/* header */
+				rsa = ldns_key_rsa_key(k);
+				
 				ldns_buffer_printf(output,"Private-key-format: v1.2\n");
 				if (ldns_key_algorithm(k) == LDNS_SIGN_RSAMD5) {
 					ldns_buffer_printf(output,"Algorithm: 1 (RSA)\n");
@@ -1093,7 +1099,7 @@ ldns_key2buffer_str(ldns_buffer *output, const ldns_key *k)
 				/* print to buf, convert to bin, convert to b64,
 				 * print to buf */
 				ldns_buffer_printf(output, "Modulus: "); 
-				i = (uint16_t)BN_bn2bin(ldns_key_rsa_key(k)->n, bignum);
+				i = (uint16_t)BN_bn2bin(rsa->n, bignum);
 				if (i > LDNS_MAX_KEYLEN) {
 					goto error;
 				}
@@ -1103,9 +1109,8 @@ ldns_key2buffer_str(ldns_buffer *output, const ldns_key *k)
 				}
 				ldns_rdf_deep_free(b64_bignum);
 				ldns_buffer_printf(output, "\n"); 
-				
 				ldns_buffer_printf(output, "PublicExponent: "); 
-				i = (uint16_t)BN_bn2bin(ldns_key_rsa_key(k)->e, bignum);
+				i = (uint16_t)BN_bn2bin(rsa->e, bignum);
 				if (i > LDNS_MAX_KEYLEN) {
 					goto error;
 				}
@@ -1117,142 +1122,190 @@ ldns_key2buffer_str(ldns_buffer *output, const ldns_key *k)
 				ldns_buffer_printf(output, "\n"); 
 
 				ldns_buffer_printf(output, "PrivateExponent: "); 
-				i = (uint16_t)BN_bn2bin(ldns_key_rsa_key(k)->d, bignum);
-				if (i > LDNS_MAX_KEYLEN) {
-					goto error;
+				if (rsa->d) {
+					i = (uint16_t)BN_bn2bin(rsa->d, bignum);
+					if (i > LDNS_MAX_KEYLEN) {
+						goto error;
+					}
+					b64_bignum =  ldns_rdf_new_frm_data(LDNS_RDF_TYPE_B64, i, bignum);
+					if (ldns_rdf2buffer_str(output, b64_bignum) != LDNS_STATUS_OK) {
+						goto error;
+					}
+					ldns_rdf_deep_free(b64_bignum);
+					ldns_buffer_printf(output, "\n"); 
+				} else {
+					ldns_buffer_printf(output, "(Not available)\n");
 				}
-				b64_bignum =  ldns_rdf_new_frm_data(LDNS_RDF_TYPE_B64, i, bignum);
-				if (ldns_rdf2buffer_str(output, b64_bignum) != LDNS_STATUS_OK) {
-					goto error;
-				}
-				ldns_rdf_deep_free(b64_bignum);
-				ldns_buffer_printf(output, "\n"); 
-
+				
 				ldns_buffer_printf(output, "Prime1: "); 
-				i = (uint16_t)BN_bn2bin(ldns_key_rsa_key(k)->p, bignum);
-				if (i > LDNS_MAX_KEYLEN) {
-					goto error;
+				if (rsa->p) {
+					i = (uint16_t)BN_bn2bin(rsa->p, bignum);
+					if (i > LDNS_MAX_KEYLEN) {
+						goto error;
+					}
+					b64_bignum =  ldns_rdf_new_frm_data(LDNS_RDF_TYPE_B64, i, bignum);
+					if (ldns_rdf2buffer_str(output, b64_bignum) != LDNS_STATUS_OK) {
+						goto error;
+					}
+					ldns_rdf_deep_free(b64_bignum);
+					ldns_buffer_printf(output, "\n"); 
+				} else {
+					ldns_buffer_printf(output, "(Not available)\n");
 				}
-				b64_bignum =  ldns_rdf_new_frm_data(LDNS_RDF_TYPE_B64, i, bignum);
-				if (ldns_rdf2buffer_str(output, b64_bignum) != LDNS_STATUS_OK) {
-					goto error;
-				}
-				ldns_rdf_deep_free(b64_bignum);
-				ldns_buffer_printf(output, "\n"); 
 
 				ldns_buffer_printf(output, "Prime2: ");
-				i = (uint16_t)BN_bn2bin(ldns_key_rsa_key(k)->q, bignum);
-				if (i > LDNS_MAX_KEYLEN) {
-					goto error;
+				if (rsa->q) {
+					i = (uint16_t)BN_bn2bin(rsa->q, bignum);
+					if (i > LDNS_MAX_KEYLEN) {
+						goto error;
+					}
+					b64_bignum =  ldns_rdf_new_frm_data(LDNS_RDF_TYPE_B64, i, bignum);
+					if (ldns_rdf2buffer_str(output, b64_bignum) != LDNS_STATUS_OK) {
+						goto error;
+					}
+					ldns_rdf_deep_free(b64_bignum);
+					ldns_buffer_printf(output, "\n"); 
+				} else {
+					ldns_buffer_printf(output, "(Not available)\n");
 				}
-				b64_bignum =  ldns_rdf_new_frm_data(LDNS_RDF_TYPE_B64, i, bignum);
-				if (ldns_rdf2buffer_str(output, b64_bignum) != LDNS_STATUS_OK) {
-					goto error;
-				}
-				ldns_rdf_deep_free(b64_bignum);
-				ldns_buffer_printf(output, "\n"); 
 
 				ldns_buffer_printf(output, "Exponent1: ");
-				i = (uint16_t)BN_bn2bin(ldns_key_rsa_key(k)->dmp1, bignum);
-				if (i > LDNS_MAX_KEYLEN) {
-					goto error;
+				if (rsa->dmp1) {
+					i = (uint16_t)BN_bn2bin(rsa->dmp1, bignum);
+					if (i > LDNS_MAX_KEYLEN) {
+						goto error;
+					}
+					b64_bignum =  ldns_rdf_new_frm_data(LDNS_RDF_TYPE_B64, i, bignum);
+					if (ldns_rdf2buffer_str(output, b64_bignum) != LDNS_STATUS_OK) {
+						goto error;
+					}
+					ldns_rdf_deep_free(b64_bignum);
+					ldns_buffer_printf(output, "\n"); 
+				} else {
+					ldns_buffer_printf(output, "(Not available)\n");
 				}
-				b64_bignum =  ldns_rdf_new_frm_data(LDNS_RDF_TYPE_B64, i, bignum);
-				if (ldns_rdf2buffer_str(output, b64_bignum) != LDNS_STATUS_OK) {
-					goto error;
-				}
-				ldns_rdf_deep_free(b64_bignum);
-				ldns_buffer_printf(output, "\n"); 
 
 				ldns_buffer_printf(output, "Exponent2: "); 
-				i = (uint16_t)BN_bn2bin(ldns_key_rsa_key(k)->dmq1, bignum);
-				if (i > LDNS_MAX_KEYLEN) {
-					goto error;
+				if (rsa->dmq1) {
+					i = (uint16_t)BN_bn2bin(rsa->dmq1, bignum);
+					if (i > LDNS_MAX_KEYLEN) {
+						goto error;
+					}
+					b64_bignum =  ldns_rdf_new_frm_data(LDNS_RDF_TYPE_B64, i, bignum);
+					if (ldns_rdf2buffer_str(output, b64_bignum) != LDNS_STATUS_OK) {
+						goto error;
+					}
+					ldns_rdf_deep_free(b64_bignum);
+					ldns_buffer_printf(output, "\n"); 
+				} else {
+					ldns_buffer_printf(output, "(Not available)\n");
 				}
-				b64_bignum =  ldns_rdf_new_frm_data(LDNS_RDF_TYPE_B64, i, bignum);
-				if (ldns_rdf2buffer_str(output, b64_bignum) != LDNS_STATUS_OK) {
-					goto error;
-				}
-				ldns_rdf_deep_free(b64_bignum);
-				ldns_buffer_printf(output, "\n"); 
 
 				ldns_buffer_printf(output, "Coefficient: "); 
-				i = (uint16_t)BN_bn2bin(ldns_key_rsa_key(k)->iqmp, bignum);
-				if (i > LDNS_MAX_KEYLEN) {
-					goto error;
+				if (rsa->iqmp) {
+					i = (uint16_t)BN_bn2bin(rsa->iqmp, bignum);
+					if (i > LDNS_MAX_KEYLEN) {
+						goto error;
+					}
+					b64_bignum =  ldns_rdf_new_frm_data(LDNS_RDF_TYPE_B64, i, bignum);
+					if (ldns_rdf2buffer_str(output, b64_bignum) != LDNS_STATUS_OK) {
+						goto error;
+					}
+					ldns_rdf_deep_free(b64_bignum);
+					ldns_buffer_printf(output, "\n"); 
+				} else {
+					ldns_buffer_printf(output, "(Not available)\n");
 				}
-				b64_bignum =  ldns_rdf_new_frm_data(LDNS_RDF_TYPE_B64, i, bignum);
-				if (ldns_rdf2buffer_str(output, b64_bignum) != LDNS_STATUS_OK) {
-					goto error;
-				}
-				ldns_rdf_deep_free(b64_bignum);
-				ldns_buffer_printf(output, "\n"); 
+				
+				RSA_free(rsa);
 				break;
 			case LDNS_SIGN_DSA:
+				dsa = ldns_key_dsa_key(k);
+			
 				ldns_buffer_printf(output,"Private-key-format: v1.2\n");
 				ldns_buffer_printf(output,"Algorithm: 3 (DSA)\n");
 
 				/* print to buf, convert to bin, convert to b64,
 				 * print to buf */
 				ldns_buffer_printf(output, "Prime(p): "); 
-				i = (uint16_t)BN_bn2bin(ldns_key_dsa_key(k)->p, bignum);
-				if (i > LDNS_MAX_KEYLEN) {
-					goto error;
+				if (dsa->p) {
+					i = (uint16_t)BN_bn2bin(dsa->p, bignum);
+					if (i > LDNS_MAX_KEYLEN) {
+						goto error;
+					}
+					b64_bignum =  ldns_rdf_new_frm_data(LDNS_RDF_TYPE_B64, i, bignum);
+					if (ldns_rdf2buffer_str(output, b64_bignum) != LDNS_STATUS_OK) {
+						goto error;
+					}
+					ldns_rdf_deep_free(b64_bignum);
+					ldns_buffer_printf(output, "\n"); 
+				} else {
+					printf("(Not available)\n");
 				}
-				b64_bignum =  ldns_rdf_new_frm_data(LDNS_RDF_TYPE_B64, i, bignum);
-				if (ldns_rdf2buffer_str(output, b64_bignum) != LDNS_STATUS_OK) {
-					goto error;
-				}
-				ldns_rdf_deep_free(b64_bignum);
-				ldns_buffer_printf(output, "\n"); 
 
 				ldns_buffer_printf(output, "Subprime(q): "); 
-				i = (uint16_t)BN_bn2bin(ldns_key_dsa_key(k)->q, bignum);
-				if (i > LDNS_MAX_KEYLEN) {
-					goto error;
+				if (dsa->q) {
+					i = (uint16_t)BN_bn2bin(dsa->q, bignum);
+					if (i > LDNS_MAX_KEYLEN) {
+						goto error;
+					}
+					b64_bignum =  ldns_rdf_new_frm_data(LDNS_RDF_TYPE_B64, i, bignum);
+					if (ldns_rdf2buffer_str(output, b64_bignum) != LDNS_STATUS_OK) {
+						goto error;
+					}
+					ldns_rdf_deep_free(b64_bignum);
+					ldns_buffer_printf(output, "\n"); 
+				} else {
+					printf("(Not available)\n");
 				}
-				b64_bignum =  ldns_rdf_new_frm_data(LDNS_RDF_TYPE_B64, i, bignum);
-				if (ldns_rdf2buffer_str(output, b64_bignum) != LDNS_STATUS_OK) {
-					goto error;
-				}
-				ldns_rdf_deep_free(b64_bignum);
-				ldns_buffer_printf(output, "\n"); 
 
 				ldns_buffer_printf(output, "Base(g): "); 
-				i = (uint16_t)BN_bn2bin(ldns_key_dsa_key(k)->g, bignum);
-				if (i > LDNS_MAX_KEYLEN) {
-					goto error;
+				if (dsa->g) {
+					i = (uint16_t)BN_bn2bin(dsa->g, bignum);
+					if (i > LDNS_MAX_KEYLEN) {
+						goto error;
+					}
+					b64_bignum =  ldns_rdf_new_frm_data(LDNS_RDF_TYPE_B64, i, bignum);
+					if (ldns_rdf2buffer_str(output, b64_bignum) != LDNS_STATUS_OK) {
+						goto error;
+					}
+					ldns_rdf_deep_free(b64_bignum);
+					ldns_buffer_printf(output, "\n"); 
+				} else {
+					printf("(Not available)\n");
 				}
-				b64_bignum =  ldns_rdf_new_frm_data(LDNS_RDF_TYPE_B64, i, bignum);
-				if (ldns_rdf2buffer_str(output, b64_bignum) != LDNS_STATUS_OK) {
-					goto error;
-				}
-				ldns_rdf_deep_free(b64_bignum);
-				ldns_buffer_printf(output, "\n"); 
 
 				ldns_buffer_printf(output, "Private_value(x): "); 
-				i = (uint16_t)BN_bn2bin(ldns_key_dsa_key(k)->priv_key, bignum);
-				if (i > LDNS_MAX_KEYLEN) {
-					goto error;
+				if (dsa->priv_key) {
+					i = (uint16_t)BN_bn2bin(dsa->priv_key, bignum);
+					if (i > LDNS_MAX_KEYLEN) {
+						goto error;
+					}
+					b64_bignum =  ldns_rdf_new_frm_data(LDNS_RDF_TYPE_B64, i, bignum);
+					if (ldns_rdf2buffer_str(output, b64_bignum) != LDNS_STATUS_OK) {
+						goto error;
+					}
+					ldns_rdf_deep_free(b64_bignum);
+					ldns_buffer_printf(output, "\n"); 
+				} else {
+					printf("(Not available)\n");
 				}
-				b64_bignum =  ldns_rdf_new_frm_data(LDNS_RDF_TYPE_B64, i, bignum);
-				if (ldns_rdf2buffer_str(output, b64_bignum) != LDNS_STATUS_OK) {
-					goto error;
-				}
-				ldns_rdf_deep_free(b64_bignum);
-				ldns_buffer_printf(output, "\n"); 
 
 				ldns_buffer_printf(output, "Public_value(y): "); 
-				i = (uint16_t)BN_bn2bin(ldns_key_dsa_key(k)->pub_key, bignum);
-				if (i > LDNS_MAX_KEYLEN) {
-					goto error;
+				if (dsa->pub_key) {
+					i = (uint16_t)BN_bn2bin(dsa->pub_key, bignum);
+					if (i > LDNS_MAX_KEYLEN) {
+						goto error;
+					}
+					b64_bignum =  ldns_rdf_new_frm_data(LDNS_RDF_TYPE_B64, i, bignum);
+					if (ldns_rdf2buffer_str(output, b64_bignum) != LDNS_STATUS_OK) {
+						goto error;
+					}
+					ldns_rdf_deep_free(b64_bignum);
+					ldns_buffer_printf(output, "\n"); 
+				} else {
+					printf("(Not available)\n");
 				}
-				b64_bignum =  ldns_rdf_new_frm_data(LDNS_RDF_TYPE_B64, i, bignum);
-				if (ldns_rdf2buffer_str(output, b64_bignum) != LDNS_STATUS_OK) {
-					goto error;
-				}
-				ldns_rdf_deep_free(b64_bignum);
-				ldns_buffer_printf(output, "\n"); 
 				break;
 			case LDNS_SIGN_HMACMD5:
 				/* is the filefmt specified for TSIG.. don't know */
