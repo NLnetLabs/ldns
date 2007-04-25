@@ -386,7 +386,11 @@ main(int argc, char *argv[])
 		if (!ldns_key_pubkey_owner(key)) {
 			ldns_key_set_pubkey_owner(key, ldns_rdf_clone(origin));
 			pubkey = ldns_key2rr(key);
+			ldns_key_set_flags(key, ldns_rdf2native_int16(ldns_rr_rdf(pubkey, 0)));
+			ldns_key_set_keytag(key, ldns_calc_keytag(pubkey));
 			ldns_zone_push_rr(orig_zone, pubkey);
+			printf("Derived DNSKEY RR:\n");
+			ldns_rr_print(stdout, pubkey);
 		}
 	}
 			
