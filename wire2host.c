@@ -71,7 +71,7 @@ ldns_wire2dname(ldns_rdf **dname, const uint8_t *wire, size_t max, size_t *pos)
 	label_size = wire[*pos];
 	while (label_size > 0) {
 		/* compression */
-		if (label_size >= 192) {
+		while (label_size >= 192) {
 			if (compression_pos == 0) {
 				compression_pos = *pos + 2;
 			}
