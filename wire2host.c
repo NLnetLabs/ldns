@@ -96,6 +96,8 @@ ldns_wire2dname(ldns_rdf **dname, const uint8_t *wire, size_t max, size_t *pos)
 			*pos = pointer_target;
 			label_size = wire[*pos];
 		}
+		if(label_size == 0)
+			break; /* break from pointer to 0 byte */
 		if (label_size > LDNS_MAX_LABELLEN) {
 			return LDNS_STATUS_LABEL_OVERFLOW;
 		}
