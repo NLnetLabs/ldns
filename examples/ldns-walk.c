@@ -38,6 +38,11 @@ create_dname_plus_1(ldns_rdf *dname)
 	
 	ldns_dname2canonical(dname);
 	labellen = ldns_rdf_data(dname)[0];
+	if (verbosity >= 3) {
+                printf("Create +e for ");
+                ldns_rdf_print(stdout, dname);
+                printf("\n");
+	}
 	if (labellen < 63) {
 		wire = malloc(ldns_rdf_size(dname) + 1);
 		if (!wire) {
@@ -47,7 +52,7 @@ create_dname_plus_1(ldns_rdf *dname)
 		wire[0] = labellen + 1;
 		memcpy(&wire[1], ldns_rdf_data(dname) + 1, labellen);
 		memcpy(&wire[labellen+1], ldns_rdf_data(dname) + labellen, ldns_rdf_size(dname) - labellen);
-		wire[labellen+1] = (uint8_t) '\000';
+		wire[labellen+1] = (uint8_t) '0';
 		pos = 0;
 		status = ldns_wire2dname(&newdname, wire, ldns_rdf_size(dname) + 1, &pos);
 		free(wire);
@@ -88,6 +93,12 @@ create_plus_1_dname(ldns_rdf *dname)
 {
 	ldns_rdf *label;
 	ldns_status status;
+	
+	if (verbosity >= 3) {
+	  printf("Creating n+e for: ");
+	  ldns_rdf_print(stdout, dname);
+	  printf("\n");
+        }
 	
 	ldns_dname2canonical(dname);
 	status = ldns_str2rdf_dname(&label, "\\000");
@@ -456,11 +467,11 @@ main(int argc, char *argv[])
 			if (!p) {
 				exit(51);
 			}
-			rrlist = ldns_pkt_rr_list_by_name_and_type(p, last_dname, LDNS_RR_TYPE_NSEC, LDNS_SECTION_ANSWER);
-			rrlist2 = ldns_pkt_rr_list_by_name_and_type(p, last_dname_p, LDNS_RR_TYPE_NSEC, LDNS_SECTION_ANSWER);
+			rrlist = ldns_pkt_rr_list_by_type(p, LDNS_RR_TYPE_NSEC, LDNS_SECTION_AUTHORITY);
+			rrlist2 = ldns_pkt_rr_list_by_type(p, LDNS_RR_TYPE_NSEC, LDNS_SECTION_ANSWER);
 		} else {
-			rrlist = ldns_pkt_rr_list_by_name_and_type(p, last_dname, LDNS_RR_TYPE_NSEC, LDNS_SECTION_AUTHORITY);
-			rrlist2 = ldns_pkt_rr_list_by_name_and_type(p, last_dname_p, LDNS_RR_TYPE_NSEC, LDNS_SECTION_ANSWER);
+			rrlist = ldns_pkt_rr_list_by_type(p, LDNS_RR_TYPE_NSEC, LDNS_SECTION_AUTHORITY);
+			rrlist2 = ldns_pkt_rr_list_by_type(p, LDNS_RR_TYPE_NSEC, LDNS_SECTION_ANSWER);
 		}
 	if (rrlist && rrlist2) {
 		ldns_rr_list_cat(rrlist, rrlist2);
@@ -468,19 +479,46 @@ main(int argc, char *argv[])
 		rrlist = rrlist2;
 	}
 
-	if (!rrlist || ldns_rr_list_rr_count(rrlist) != 1) {
+	if (!rrlist || ldns_rr_list_rr_count(rrlist) < 1) {
 /*
 		if (!rrlist) {
 			fprintf(stderr, "Zone does not seem to be DNSSEC secured.\n");
 			goto exit;
 		}
 */
+                printf("no rrlist\n");
 	} else {
-		next_dname = ldns_rdf_clone(ldns_rr_rdf(ldns_rr_list_rr(rrlist, 0), 0));
-		rrtypes = ldns_rdf_clone(ldns_rr_rdf(ldns_rr_list_rr(rrlist, 0), 1));
+		/* find correct nsec */
+		next_dname = NULL;
+		for (j = 0; j < ldns_rr_list_rr_count(rrlist); j++) {
+		  if (ldns_nsec_covers_name(ldns_rr_list_rr(rrlist, j), last_dname)) {
+		    if (verbosity >= 4) {
+		      ldns_rdf_print(stdout, last_dname);
+		      printf(" covered by NSEC: ");
+		      ldns_rr_print(stdout, ldns_rr_list_rr(rrlist, j));
+                    }
+                    next_dname = ldns_rdf_clone(ldns_rr_rdf(ldns_rr_list_rr(rrlist, j), 0));
+                    rrtypes = ldns_rdf_clone(ldns_rr_rdf(ldns_rr_list_rr(rrlist, j), 1));
+		  } else {
+                      if (verbosity >= 4) {
+                        printf("\n");
+                        ldns_rdf_print(stdout, last_dname);
+                        printf(" NOT covered by NSEC: ");
+                        ldns_rr_print(stdout, ldns_rr_list_rr(rrlist, j));
+                        printf("\n");
+                        printf("\n");
+                        printf("\n");
+                      }
+                  }
+		}
+		if (!next_dname) {
+		  printf("Error no nsec for ");
+		  ldns_rdf_print(stdout, last_dname);
+		  printf("\n");
+		  exit(1);
+		}
 		ldns_rr_list_deep_free(rrlist);
 	}
-
 	if (!next_dname) {
 		/* apparently the zone also has prepended data (i.e. a.example and www.a.example, 
  		 * The www comes after the a but befpre a\\000, so we need to make another name (\\000.a)
@@ -490,7 +528,6 @@ main(int argc, char *argv[])
 		}
 		last_dname_p = create_plus_1_dname(last_dname);
 	} else {
-
 		if (last_dname) {
 			if (ldns_rdf_compare(last_dname, next_dname) == 0) {
 				printf("\n\nNext dname is the same as current, this would loop forever. This is a problem that usually occurs when walking through a caching forwarder. Try using the authoritative nameserver to walk (with @nameserver).\n");
