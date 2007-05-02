@@ -491,9 +491,9 @@ main(int argc, char *argv[])
 		/* find correct nsec */
 		next_dname = NULL;
 		for (j = 0; j < ldns_rr_list_rr_count(rrlist); j++) {
-		  if (ldns_nsec_covers_name(ldns_rr_list_rr(rrlist, j), last_dname)) {
+		  if (ldns_nsec_covers_name(ldns_rr_list_rr(rrlist, j), last_dname_p)) {
 		    if (verbosity >= 4) {
-		      ldns_rdf_print(stdout, last_dname);
+		      ldns_rdf_print(stdout, last_dname_p);
 		      printf(" covered by NSEC: ");
 		      ldns_rr_print(stdout, ldns_rr_list_rr(rrlist, j));
                     }
@@ -502,11 +502,9 @@ main(int argc, char *argv[])
 		  } else {
                       if (verbosity >= 4) {
                         printf("\n");
-                        ldns_rdf_print(stdout, last_dname);
+                        ldns_rdf_print(stdout, last_dname_p);
                         printf(" NOT covered by NSEC: ");
                         ldns_rr_print(stdout, ldns_rr_list_rr(rrlist, j));
-                        printf("\n");
-                        printf("\n");
                         printf("\n");
                       }
                   }
