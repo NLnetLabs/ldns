@@ -364,7 +364,7 @@ main(int argc, char *argv[])
         }
 
 	/* add \001 to soa */
-	status = ldns_str2rdf_dname(&soa_p1, "\001");
+	status = ldns_str2rdf_dname(&soa_p1, "0");
 	if (status != LDNS_STATUS_OK) {
 		printf("error: %s\n", ldns_get_errorstr_by_id(status));
 	}
@@ -394,7 +394,7 @@ main(int argc, char *argv[])
 			ldns_pkt_free(p);
 			p = NULL;
 		}
-		if (verbosity >= 3) {
+		if (verbosity >= 4) {
 			printf("Querying for: ");
 			ldns_rdf_print(stdout, last_dname_p);
 			printf("\n");
@@ -492,9 +492,10 @@ main(int argc, char *argv[])
 		next_dname = NULL;
 		for (j = 0; j < ldns_rr_list_rr_count(rrlist); j++) {
 		  if (ldns_nsec_covers_name(ldns_rr_list_rr(rrlist, j), last_dname_p)) {
-		    if (verbosity >= 4) {
+		    if (verbosity >= 3) {
+		      printf("The domain name: ");
 		      ldns_rdf_print(stdout, last_dname_p);
-		      printf(" covered by NSEC: ");
+		      printf("\nis covered by NSEC: ");
 		      ldns_rr_print(stdout, ldns_rr_list_rr(rrlist, j));
                     }
                     next_dname = ldns_rdf_clone(ldns_rr_rdf(ldns_rr_list_rr(rrlist, j), 0));
@@ -503,7 +504,7 @@ main(int argc, char *argv[])
                       if (verbosity >= 4) {
                         printf("\n");
                         ldns_rdf_print(stdout, last_dname_p);
-                        printf(" NOT covered by NSEC: ");
+                        printf("\nNOT covered by NSEC: ");
                         ldns_rr_print(stdout, ldns_rr_list_rr(rrlist, j));
                         printf("\n");
                       }
@@ -527,6 +528,7 @@ main(int argc, char *argv[])
 		last_dname_p = create_plus_1_dname(last_dname);
 	} else {
 		if (last_dname) {
+			ldns_rdf_print(stdout, last_dname);
 			if (ldns_rdf_compare(last_dname, next_dname) == 0) {
 				printf("\n\nNext dname is the same as current, this would loop forever. This is a problem that usually occurs when walking through a caching forwarder. Try using the authoritative nameserver to walk (with @nameserver).\n");
 				exit(2);
@@ -540,8 +542,6 @@ main(int argc, char *argv[])
 		last_dname_p = create_dname_plus_1(last_dname);
 		ldns_rdf_print(stdout, rrtypes);
 		printf("\n");
-		ldns_rdf_print(stdout, next_dname);
-		printf("\t");
 	}
 
 }
