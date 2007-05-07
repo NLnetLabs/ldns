@@ -1023,6 +1023,10 @@ ldns_pkt2buffer_str(ldns_buffer *output, const ldns_pkt *pkt)
 			if (ldns_pkt_edns_do(pkt)) {
 				ldns_buffer_printf(output, " do");
 			}
+			if (ldns_pkt_edns_extended_rcode(pkt)) {
+				ldns_buffer_printf(output, " ; ext-rcode: %d",
+					ldns_pkt_edns_extended_rcode(pkt));
+			}
 			ldns_buffer_printf(output, " ; udp: %u\n",
 					   ldns_pkt_edns_udp_size(pkt));
 			
