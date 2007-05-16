@@ -14,6 +14,7 @@
 
 #include <ldns/ldns.h>
 #include <strings.h>
+#include <errno.h>
 
 /* Access function for reading 
  * and setting the different Resolver 
@@ -114,6 +115,33 @@ bool
 ldns_resolver_dnssec_cd(const ldns_resolver *r)
 {
 	return r->_dnssec_cd;
+}
+
+ldns_rr_list *
+ldns_resolver_dnssec_anchors(const ldns_resolver *r)
+{
+    return r->_dnssec_anchors;
+}
+
+bool
+ldns_resolver_trusted_key(const ldns_resolver *r, ldns_rr_list * keys, ldns_rr_list * trusted_keys)
+{
+  unsigned int i; bool result = false;
+  ldns_rr_list * trust_anchors = ldns_resolver_dnssec_anchors(r);
+  ldns_rr * cur_rr;
+
+  if (!r || !trust_anchors || !keys) { return false; }
+
+  for (i=0; i< ldns_rr_list_rr_count(keys); i++) {
+
+    cur_rr = ldns_rr_list_rr(keys, i);
+    if (ldns_rr_list_contains_rr(trust_anchors, cur_rr)) {      
+      if (trusted_keys) { ldns_rr_list_push_rr(trusted_keys, cur_rr); }
+      result = true;
+    }
+  }
+
+  return result;
 }
 
 bool
@@ -313,6 +341,29 @@ void
 ldns_resolver_set_dnssec_cd(ldns_resolver *r, bool d)
 {
 	r->_dnssec_cd = d;
+}
+
+void
+ldns_resolver_set_dnssec_anchors(ldns_resolver *r, ldns_rr_list * l)
+{
+  r->_dnssec_anchors = l;
+}
+
+ldns_status
+ldns_resolver_push_dnssec_anchor(ldns_resolver *r, ldns_rr *rr)
+{
+  ldns_rr_list * trust_anchors;
+
+  if ((!rr) || (ldns_rr_get_type(rr) != LDNS_RR_TYPE_DNSKEY)) {
+    return LDNS_STATUS_ERR;
+  }
+
+  if (!(trust_anchors = ldns_resolver_dnssec_anchors(r))) { /* Initialize */
+    trust_anchors = ldns_rr_list_new();
+    ldns_resolver_set_dnssec_anchors(r, trust_anchors);
+  }
+
+  return (ldns_rr_list_push_rr(trust_anchors, ldns_rr_clone(rr))) ? LDNS_STATUS_OK : LDNS_STATUS_ERR;
 }
 
 void
@@ -519,6 +570,7 @@ ldns_resolver_new(void)
 	ldns_resolver_set_edns_udp_size(r, 0);
 	ldns_resolver_set_dnssec(r, false);
 	ldns_resolver_set_dnssec_cd(r, false);
+	ldns_resolver_set_dnssec_anchors(r, NULL);
 	ldns_resolver_set_ip6(r, LDNS_RESOLV_INETANY);
 
 	/* randomize the nameserver to be queried
@@ -557,6 +609,7 @@ ldns_resolver_new_frm_fp_l(ldns_resolver **res, FILE *fp, int *line_nr)
 	int8_t expect;
 	uint8_t i;
 	ldns_rdf *tmp;
+	ldns_rr *tmp_rr;
 	ssize_t gtr;
 	ldns_buffer *b;
 
@@ -574,6 +627,7 @@ ldns_resolver_new_frm_fp_l(ldns_resolver **res, FILE *fp, int *line_nr)
 	/* these two are read but not used atm TODO */
 	keyword[LDNS_RESOLV_SORTLIST] = "sortlist";
 	keyword[LDNS_RESOLV_OPTIONS] = "options";
+	keyword[LDNS_RESOLV_ANCHOR] = "anchor";
 	expect = LDNS_RESOLV_KEYWORD;
 
 	r = ldns_resolver_new();
@@ -687,6 +741,18 @@ ldns_resolver_new_frm_fp_l(ldns_resolver **res, FILE *fp, int *line_nr)
 				/* options not implemented atm */
 				expect = LDNS_RESOLV_KEYWORD;
 				break;
+			case LDNS_RESOLV_ANCHOR:
+				/* a file containing a DNSSEC trust anchor */
+				gtr = ldns_fget_token_l(fp, word, LDNS_PARSE_NORMAL, 0, line_nr);
+				if (gtr == 0) {
+					return LDNS_STATUS_SYNTAX_MISSING_VALUE_ERR;
+				}
+
+				tmp_rr = ldns_read_anchor_file(word);
+				ldns_resolver_push_dnssec_anchor(r, tmp_rr);
+				ldns_rr_free(tmp_rr);
+				expect = LDNS_RESOLV_KEYWORD;
+				break;
 		}
 	}
 	
@@ -765,6 +831,9 @@ ldns_resolver_deep_free(ldns_resolver *res)
 		
 		if (res->_rtt) {
 			LDNS_FREE(res->_rtt);
+		}
+		if (res->_dnssec_anchors) {
+			ldns_rr_list_deep_free(res->_dnssec_anchors);
 		}
 		LDNS_FREE(res);
 	}
@@ -1072,4 +1141,42 @@ ldns_resolver_nameservers_randomize(ldns_resolver *r)
 		ns[j] = tmp;
 	}
 	ldns_resolver_set_nameservers(r, ns);
+}
+
+ldns_rr *
+ldns_read_anchor_file(const char *filename)
+{
+  FILE *fp;
+  char line[LDNS_MAX_PACKETLEN];
+  int c;
+  size_t i = 0;
+  ldns_rr *r;
+  ldns_status status;
+
+  fp = fopen(filename, "r");
+  if (!fp) {
+    fprintf(stderr, "Unable to open %s: %s\n", filename, strerror(errno));
+    return NULL;
+  }
+	
+  while ((c = fgetc(fp)) && i < LDNS_MAX_PACKETLEN && c != EOF) {
+    line[i] = c;
+    i++;
+  }
+  line[i] = '\0';
+	
+  fclose(fp);
+	
+  if (i <= 0) {
+    fprintf(stderr, "nothing read from %s", filename);
+    return NULL;
+  } else {
+    status = ldns_rr_new_frm_str(&r, line, 0, NULL, NULL);
+    if (status == LDNS_STATUS_OK && (ldns_rr_get_type(r) == LDNS_RR_TYPE_DNSKEY || ldns_rr_get_type(r) == LDNS_RR_TYPE_DS)) {
+      return r;
+    } else {
+      fprintf(stderr, "Error creating DNSKEY or DS rr from %s: %s\n", filename, ldns_get_errorstr_by_id(status));
+      return NULL;
+    }
+  }
 }

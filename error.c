@@ -43,6 +43,8 @@ ldns_lookup_table ldns_error_str[] = {
         { LDNS_STATUS_CRYPTO_NO_DNSKEY, "No DNSSEC public key(s)" },
         { LDNS_STATUS_CRYPTO_TYPE_COVERED_ERR, "The signature does not cover this RRset" },
         { LDNS_STATUS_CRYPTO_NO_TRUSTED_DNSKEY, "No signatures found for trusted DNSSEC public key(s)" },
+        { LDNS_STATUS_CRYPTO_NO_DS, "No DS record(s)" },
+        { LDNS_STATUS_CRYPTO_NO_TRUSTED_DS, "Could not validate DS record(s)" },
         { LDNS_STATUS_CRYPTO_NO_MATCHING_KEYTAG_DNSKEY, "No keys with the keytag from the RRSIG found" },
         { LDNS_STATUS_CRYPTO_VALIDATED, "Valid DNSSEC signature" },
         { LDNS_STATUS_CRYPTO_BOGUS, "Bogus DNSSEC signature" },

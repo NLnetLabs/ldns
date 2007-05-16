@@ -116,7 +116,7 @@ ldns_dname_reverse(const ldns_rdf *d)
 }
 
 ldns_rdf *
-ldns_dname_left_chop(ldns_rdf *d)
+ldns_dname_left_chop(const ldns_rdf *d)
 {
 	uint8_t label_pos;
 	ldns_rdf *chop;

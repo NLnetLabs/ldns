@@ -29,6 +29,7 @@
 #include <ldns/packet.h>
 #include <ldns/keys.h>
 #include <ldns/zone.h>
+#include <ldns/resolver.h>
 
 #define LDNS_MAX_KEYLEN		2048
 #define LDNS_DNSSEC_KEYPROTO	3
@@ -52,7 +53,7 @@ uint16_t ldns_calc_keytag(const ldns_rr *key);
  * \param[out] good_keys  if this is a (initialized) list, the keys from keys that validate one of the signatures are added to it
  * \return status LDNS_STATUS_OK if there is at least one correct key
  */
-ldns_status ldns_verify(ldns_rr_list *rrset, ldns_rr_list *rrsig, ldns_rr_list *keys, ldns_rr_list *good_keys);	
+ldns_status ldns_verify(ldns_rr_list *rrset, ldns_rr_list *rrsig, const ldns_rr_list *keys, ldns_rr_list *good_keys);	
 
 /**
  * Verifies the already processed data in the buffers
@@ -74,7 +75,7 @@ ldns_status ldns_verify_rrsig_buffers(ldns_buffer *rawsig_buf, ldns_buffer *veri
  * \param[out] good_keys  if this is a (initialized) list, the keys from keys that validate one of the signatures are added to it
  * \return a list of keys which validate the rrsig + rrset. Return NULL when none of the keys validate.
  */
-ldns_status ldns_verify_rrsig_keylist(ldns_rr_list *rrset, ldns_rr *rrsig, ldns_rr_list *keys, ldns_rr_list *good_keys);
+ldns_status ldns_verify_rrsig_keylist(ldns_rr_list *rrset, ldns_rr *rrsig, const ldns_rr_list *keys, ldns_rr_list *good_keys);
 
 /**
  * verify an rrsig with 1 key
@@ -236,5 +237,53 @@ ldns_zone *ldns_zone_sign(const ldns_zone *zone, ldns_key_list *key_list);
  * \return LDNS_STATUS_OK if init succeeds
  */
 ldns_status ldns_init_random(FILE *fd, uint16_t bytes);
+
+/**
+ * Tries to build an authentication chain from the given keys down to the queried domain.
+ *
+ * If we find a valid trust path, return the valid keys for the domain.
+ * 
+ * \param[in] res the current resolver
+ * \param[in] domain the domain we want valid keys for
+ * \param[in] keys the current set of trusted keys
+ * \return the set of trusted keys for the domain, or NULL if no trust path could be built.
+ */
+ldns_rr_list *
+ldns_fetch_valid_domain_keys(const ldns_resolver * res, const ldns_rdf * domain, const ldns_rr_list * keys);
+
+/**
+ * Validates the DNSKEY RRset for the given domain using the provided trusted keys.
+ *
+ * \param[in] res the current resolver
+ * \param[in] domain the domain we want valid keys for
+ * \param[in] keys the current set of trusted keys
+ * \return the set of trusted keys for the domain, or NULL if the RRSET could not be validated
+ */
+ldns_rr_list *
+ldns_validate_domain_dnskey (const ldns_resolver * res, const ldns_rdf * domain, const ldns_rr_list * keys);
+
+/**
+ * Validates the DS RRset for the given domain using the provided trusted keys.
+ *
+ * \param[in] res the current resolver
+ * \param[in] domain the domain we want valid keys for
+ * \param[in] keys the current set of trusted keys
+ * \return the set of trusted keys for the domain, or NULL if the RRSET could not be validated
+ */
+ldns_rr_list *
+ldns_validate_domain_ds (const ldns_resolver * res, const ldns_rdf * domain, const ldns_rr_list * keys);
+
+/**
+ * Verifies a list of signatures for one RRset using a valid trust path.
+ *
+ * \param[in] res the current resolver
+ * \param[in] rrset the rrset to verify
+ * \param[in] rrsigs a list of signatures to check
+ * \param[out] validating_keys  if this is a (initialized) list, the keys from keys that validate one of the signatures are added to it
+ * \return status LDNS_STATUS_OK if there is at least one correct key
+ */
+ldns_status
+ldns_verify_trusted(ldns_resolver * res, ldns_rr_list * rrset, ldns_rr_list * rrsigs, ldns_rr_list * validating_keys);
+
 
 #endif /* LDNS_DNSSEC_H */

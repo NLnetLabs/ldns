@@ -74,7 +74,7 @@ ldns_rdf *ldns_dname_reverse(const ldns_rdf *d);
  * \param[in] d the dname to chop
  * \return the remaining dname
  */
-ldns_rdf *ldns_dname_left_chop(ldns_rdf *d);
+ldns_rdf *ldns_dname_left_chop(const ldns_rdf *d);
 
 /**
  * count the number of labels inside a LDNS_RDF_DNAME type rdf.

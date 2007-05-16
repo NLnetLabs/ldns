@@ -593,7 +593,7 @@ ldns_rr_list* ldns_rr_list_pop_rr_list(ldns_rr_list *rr_list, size_t size);
  * \param[in] rr the rr to check
  * \return true if rr_list contains rr, false otherwise
  */
-bool ldns_rr_list_contains_rr(ldns_rr_list *rr_list, ldns_rr *rr); 
+bool ldns_rr_list_contains_rr(const ldns_rr_list *rr_list, ldns_rr *rr); 
 
 /**
  * checks if an rr_list is a rrset.

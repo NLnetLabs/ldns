@@ -965,7 +965,7 @@ ldns_rr_list_pop_rr_list(ldns_rr_list *rr_list, size_t howmany)
 
 
 bool
-ldns_rr_list_contains_rr(ldns_rr_list *rr_list, ldns_rr *rr)
+ldns_rr_list_contains_rr(const ldns_rr_list *rr_list, ldns_rr *rr)
 {
 	size_t i;
 	

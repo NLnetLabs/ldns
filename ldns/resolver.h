@@ -39,15 +39,15 @@
 #define LDNS_RESOLV_SEARCH	2
 #define LDNS_RESOLV_SORTLIST	3
 #define LDNS_RESOLV_OPTIONS	4
-
-#define LDNS_RESOLV_KEYWORDS    5
+#define LDNS_RESOLV_ANCHOR	5
+#define LDNS_RESOLV_KEYWORDS    6
 
 #define LDNS_RESOLV_INETANY		0
 #define LDNS_RESOLV_INET		1
 #define LDNS_RESOLV_INET6		2
 
 #define LDNS_RESOLV_RTT_INF             0       /* infinity */
-#define LDNS_RESOLV_RTT_MIN             1       /* reacheable */
+#define LDNS_RESOLV_RTT_MIN             1       /* reachable */
 
 /**
  * DNS stub resolver structure
@@ -62,8 +62,8 @@ struct ldns_struct_resolver
 	/** Number of nameservers in \c _nameservers */
 	size_t _nameserver_count; /* how many do we have */
 
-        /**  Round trip time; 0 -> infinity. Unit: ms? */
-        size_t *_rtt;
+	/**  Round trip time; 0 -> infinity. Unit: ms? */
+	size_t *_rtt;
 
 	/**  Wether or not to be recursive */
 	bool _recursive;
@@ -89,6 +89,8 @@ struct ldns_struct_resolver
 	bool _dnssec;
 	/**  Whether to set the CD bit on DNSSEC requests */
 	bool _dnssec_cd;
+	/** Optional trust anchors for complete DNSSEC validation */
+	ldns_rr_list * _dnssec_anchors;
 	/**  Whether to use tcp or udp (tcp if the value is true)*/
 	bool _usevc;
 	/**  Whether to ignore the tc bit */
@@ -208,6 +210,12 @@ bool ldns_resolver_dnssec(const ldns_resolver *r);
  * \return true: yes, false: no
  */
 bool ldns_resolver_dnssec_cd(const ldns_resolver *r);
+/**
+ * Get the resolver's DNSSEC anchors
+ * \param[in] r the resolver
+ * \return an rr_list containg trusted DNSSEC anchors
+ */
+ldns_rr_list * ldns_resolver_dnssec_anchors(const ldns_resolver *r);
 /**
  * Does the resolver ignore the TC bit (truncated)
  * \param[in] r the resolver
@@ -408,6 +416,21 @@ void ldns_resolver_set_dnssec(ldns_resolver *r, bool b);
  * \param[in] b true: enable , false: don't use TCP
  */
 void ldns_resolver_set_dnssec_cd(ldns_resolver *r, bool b);
+/**
+ * Set the resolver's DNSSEC anchor list directly. RRs should be of type DS or DNSKEY.
+ * \param[in] r the resolver
+ * \param[in] l the list of RRs to use as trust anchors
+ */
+void ldns_resolver_set_dnssec_anchors(ldns_resolver *r, ldns_rr_list * l);
+
+/**
+ * Push a new trust anchor to the resolver. It must be a DS or DNSKEY rr
+ * \param[in] r the resolver.
+ * \param[in] rr the RR to add as a trust anchor.
+ * \return a status
+ */
+ldns_status ldns_resolver_push_dnssec_anchor(ldns_resolver *r, ldns_rr *rr);
+
 /**
  * Set the resolver retrans timeout (in seconds)
  * \param[in] r the resolver
@@ -654,5 +677,21 @@ ldns_pkt *ldns_axfr_last_pkt(const ldns_resolver *res);
  * \param[in] r the resolver
  */
 void ldns_resolver_nameservers_randomize(ldns_resolver *r);
+
+/** 
+ * Returns true if at least one of the provided keys is a trust anchor
+ * \param[in] r the current resolver
+ * \param[in] keys the keyset to check
+ * \param[out] trusted_keys the subset of trusted keys in the 'keys' rrset
+ * \return true if at least one of the provided keys is a configured trust anchor
+ */
+bool ldns_resolver_trusted_key(const ldns_resolver *r, ldns_rr_list * keys, ldns_rr_list * trusted_keys);
+
+/**
+ * Instantiates a DNSKEY or DS RR from file.
+ * \param[in] filename the file to read the record from
+ * \return the corresponding RR, or NULL if the parsing failed
+ */
+ldns_rr * ldns_read_anchor_file(const char *filename);
 
 #endif  /* LDNS_RESOLVER_H */

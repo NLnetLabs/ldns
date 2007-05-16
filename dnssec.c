@@ -76,7 +76,7 @@ ldns_calc_keytag(const ldns_rr *key)
 }
 
 ldns_status
-ldns_verify(ldns_rr_list *rrset, ldns_rr_list *rrsig, ldns_rr_list *keys, 
+ldns_verify(ldns_rr_list *rrset, ldns_rr_list *rrsig, const ldns_rr_list *keys, 
 		ldns_rr_list *good_keys)
 {
 	uint16_t i;
@@ -112,6 +112,197 @@ ldns_verify(ldns_rr_list *rrset, ldns_rr_list *rrsig, ldns_rr_list *keys,
 	return verify_result;
 }
 
+ldns_rr_list *
+ldns_fetch_valid_domain_keys(const ldns_resolver * res, const ldns_rdf * domain, const ldns_rr_list * keys)
+{
+  ldns_status status;
+  ldns_rr_list * trusted_keys = NULL;
+  ldns_rr_list * ds_keys = NULL;
+
+  if (res && domain && keys) {
+
+    if ((trusted_keys = ldns_validate_domain_dnskey(res, domain, keys))) {
+      status = LDNS_STATUS_OK;
+    } else {
+      
+      /* No trusted keys in this domain, we'll have to find some in the parent domain */
+      status = LDNS_STATUS_CRYPTO_NO_TRUSTED_DNSKEY;
+      
+      if (ldns_rdf_size(domain) > 1) { /* Fail if we are at the root */
+        ldns_rr_list * parent_keys;
+        ldns_rdf * parent_domain = ldns_dname_left_chop(domain);
+	
+        if ((parent_keys = ldns_fetch_valid_domain_keys(res, parent_domain, keys))) {
+	  
+          /* Check DS records */
+          if ((ds_keys = ldns_validate_domain_ds(res, domain, parent_keys))) {
+            trusted_keys = ldns_fetch_valid_domain_keys(res, domain, ds_keys);
+            ldns_rr_list_deep_free(ds_keys);
+          } else {
+            /* No valid DS at the parent -- fail */
+            status = LDNS_STATUS_CRYPTO_NO_TRUSTED_DS ;
+          }
+          ldns_rr_list_deep_free(parent_keys);
+        }
+        ldns_rdf_free(parent_domain);
+      }
+    }
+  }
+
+  return trusted_keys;
+}
+
+ldns_rr_list *
+ldns_validate_domain_dnskey (const ldns_resolver * res, const ldns_rdf * domain, const ldns_rr_list * keys)
+{
+  ldns_status status;
+  ldns_pkt * keypkt;
+  ldns_rr * cur_key;
+  uint16_t key_i; uint16_t key_j; uint16_t key_k;
+  uint16_t sig_i; ldns_rr * cur_sig;
+
+  ldns_rr_list * domain_keys = NULL;
+  ldns_rr_list * domain_sigs = NULL;
+  ldns_rr_list * trusted_keys = NULL;
+
+  /* Fetch keys for the domain */
+  if ((keypkt = ldns_resolver_query(res, domain, LDNS_RR_TYPE_DNSKEY, LDNS_RR_CLASS_IN, LDNS_RD))) {
+
+    domain_keys = ldns_pkt_rr_list_by_type(keypkt, LDNS_RR_TYPE_DNSKEY, LDNS_SECTION_ANSWER);
+    domain_sigs = ldns_pkt_rr_list_by_type(keypkt, LDNS_RR_TYPE_RRSIG, LDNS_SECTION_ANSWER);
+
+    /* Try to validate the record using our keys */
+    for (key_i=0; key_i< ldns_rr_list_rr_count(domain_keys); key_i++) {
+      
+      cur_key = ldns_rr_list_rr(domain_keys, key_i);
+      for (key_j=0; key_j<ldns_rr_list_rr_count(keys); key_j++) {
+        if (ldns_rr_compare_ds(ldns_rr_list_rr(keys, key_j), cur_key)) {
+          
+          /* Current key is trusted -- validate */
+          trusted_keys = ldns_rr_list_new();
+          
+          for (sig_i=0; sig_i<ldns_rr_list_rr_count(domain_sigs); sig_i++) {
+            cur_sig = ldns_rr_list_rr(domain_sigs, sig_i);
+            /* Avoid non-matching sigs */
+            if (ldns_rdf2native_int16(ldns_rr_rrsig_keytag(cur_sig)) == ldns_calc_keytag(cur_key)) {
+              if ((status=ldns_verify_rrsig(domain_keys, cur_sig, cur_key)) == LDNS_STATUS_OK) {
+                
+                /* Push the whole rrset -- we can't do much more */
+                for (key_k=0; key_k<ldns_rr_list_rr_count(domain_keys); key_k++) {
+                  ldns_rr_list_push_rr(trusted_keys, ldns_rr_clone(ldns_rr_list_rr(domain_keys, key_k)));
+                }
+                
+                ldns_rr_list_deep_free(domain_keys);
+                ldns_rr_list_deep_free(domain_sigs);
+                ldns_pkt_free(keypkt);
+                return trusted_keys;
+              } /* else {
+                fprintf(stderr, "# Signature verification failed: %s\n", ldns_get_errorstr_by_id(status));
+              }
+            } else {
+              fprintf(stderr, "# Non-matching keytag for sig %u. Skipping.\n", sig_i);
+                */
+            }
+          }
+	  
+          /* Only push our trusted key */
+          ldns_rr_list_push_rr(trusted_keys, ldns_rr_clone(cur_key));
+        }
+      }
+    }
+
+    ldns_rr_list_deep_free(domain_keys);
+    ldns_rr_list_deep_free(domain_sigs);
+    ldns_pkt_free(keypkt);
+
+  } else {
+    status = LDNS_STATUS_CRYPTO_NO_DNSKEY;
+  }
+    
+  return trusted_keys;
+}
+
+ldns_rr_list *
+ldns_validate_domain_ds (const ldns_resolver * res, const ldns_rdf * domain, const ldns_rr_list * keys)
+{
+  ldns_status status;
+  ldns_pkt * dspkt;
+  uint16_t key_i;
+  ldns_rr_list * rrset = NULL;
+  ldns_rr_list * sigs = NULL;
+  ldns_rr_list * trusted_keys = NULL;
+
+  /* Fetch DS for the domain */
+  if ((dspkt = ldns_resolver_query(res, domain, LDNS_RR_TYPE_DS, LDNS_RR_CLASS_IN, LDNS_RD))) {
+
+    rrset = ldns_pkt_rr_list_by_type(dspkt, LDNS_RR_TYPE_DS, LDNS_SECTION_ANSWER);
+    sigs = ldns_pkt_rr_list_by_type(dspkt, LDNS_RR_TYPE_RRSIG, LDNS_SECTION_ANSWER);
+
+    /* Validate sigs */
+    if ((status = ldns_verify(rrset, sigs, keys, NULL)) == LDNS_STATUS_OK) {
+      trusted_keys = ldns_rr_list_new();
+      for (key_i=0; key_i<ldns_rr_list_rr_count(rrset); key_i++) {
+	ldns_rr_list_push_rr(trusted_keys, ldns_rr_clone(ldns_rr_list_rr(rrset, key_i)));
+      }
+    }
+
+    ldns_rr_list_deep_free(rrset);
+    ldns_rr_list_deep_free(sigs);
+    ldns_pkt_free(dspkt);
+
+  } else {
+    status = LDNS_STATUS_CRYPTO_NO_DS;
+  }
+
+  return trusted_keys;
+}
+
+ldns_status
+ldns_verify_trusted(ldns_resolver * res, ldns_rr_list * rrset, ldns_rr_list * rrsigs, ldns_rr_list * validating_keys)
+{
+  /* */
+  uint16_t sig_i; uint16_t key_i;
+  ldns_rr * cur_sig; ldns_rr * cur_key;
+  ldns_rr_list * trusted_keys = NULL;
+  ldns_status result = LDNS_STATUS_ERR;
+
+  if (!res || !rrset || !rrsigs) {
+    return LDNS_STATUS_ERR;
+  }
+
+  if (ldns_rr_list_rr_count(rrset) < 1) {
+    return LDNS_STATUS_ERR;
+  }
+
+  if (ldns_rr_list_rr_count(rrsigs) < 1) {
+    return LDNS_STATUS_CRYPTO_NO_RRSIG;
+  }
+  
+  /* Look at each sig */
+  for (sig_i=0; sig_i < ldns_rr_list_rr_count(rrsigs); sig_i++) {
+
+    cur_sig = ldns_rr_list_rr(rrsigs, sig_i);
+    /* Get a valid signer key and validate the sig */
+    if ((trusted_keys = ldns_fetch_valid_domain_keys(res, ldns_rr_rrsig_signame(cur_sig), ldns_resolver_dnssec_anchors(res)))) {
+
+      for (key_i=0; key_i<ldns_rr_list_rr_count(trusted_keys); key_i++) {
+        cur_key = ldns_rr_list_rr(trusted_keys, key_i);
+
+        if ((result = ldns_verify_rrsig(rrset, cur_sig, cur_key)) == LDNS_STATUS_OK) {
+          
+          if (validating_keys) { ldns_rr_list_push_rr(validating_keys, ldns_rr_clone(cur_key)); }
+          ldns_rr_list_deep_free(trusted_keys);
+          return LDNS_STATUS_OK;
+        }
+      }
+    }
+  }
+
+  ldns_rr_list_deep_free(trusted_keys);
+  return result;
+}
+
+
 ldns_status
 ldns_verify_rrsig_buffers(ldns_buffer *rawsig_buf, ldns_buffer *verify_buf, 
 		ldns_buffer *key_buf, uint8_t algo)
@@ -144,7 +335,7 @@ ldns_verify_rrsig_buffers(ldns_buffer *rawsig_buf, ldns_buffer *verify_buf,
  * - verify the rrset+sig, with the b64 data and the b64 key data
  */
 ldns_status
-ldns_verify_rrsig_keylist(ldns_rr_list *rrset, ldns_rr *rrsig, ldns_rr_list *keys, 
+ldns_verify_rrsig_keylist(ldns_rr_list *rrset, ldns_rr *rrsig, const ldns_rr_list *keys, 
 		ldns_rr_list *good_keys)
 {
 	ldns_buffer *rawsig_buf;
