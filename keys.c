@@ -790,4 +790,43 @@ ldns_key_list_free(ldns_key_list *key_list)
 	LDNS_FREE(key_list->_keys);
 	LDNS_FREE(key_list);
 }
+
+ldns_rr *
+ldns_read_anchor_file(const char *filename)
+{
+  FILE *fp;
+  char line[LDNS_MAX_PACKETLEN];
+  int c;
+  size_t i = 0;
+  ldns_rr *r;
+  ldns_status status;
+
+  fp = fopen(filename, "r");
+  if (!fp) {
+    fprintf(stderr, "Unable to open %s: %s\n", filename, strerror(errno));
+    return NULL;
+  }
+	
+  while ((c = fgetc(fp)) && i < LDNS_MAX_PACKETLEN && c != EOF) {
+    line[i] = c;
+    i++;
+  }
+  line[i] = '\0';
+	
+  fclose(fp);
+	
+  if (i <= 0) {
+    fprintf(stderr, "nothing read from %s", filename);
+    return NULL;
+  } else {
+    status = ldns_rr_new_frm_str(&r, line, 0, NULL, NULL);
+    if (status == LDNS_STATUS_OK && (ldns_rr_get_type(r) == LDNS_RR_TYPE_DNSKEY || ldns_rr_get_type(r) == LDNS_RR_TYPE_DS)) {
+      return r;
+    } else {
+      fprintf(stderr, "Error creating DNSKEY or DS rr from %s: %s\n", filename, ldns_get_errorstr_by_id(status));
+      return NULL;
+    }
+  }
+}
+
 #endif /* HAVE_SSL */

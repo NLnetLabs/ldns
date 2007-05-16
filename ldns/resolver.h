@@ -687,11 +687,4 @@ void ldns_resolver_nameservers_randomize(ldns_resolver *r);
  */
 bool ldns_resolver_trusted_key(const ldns_resolver *r, ldns_rr_list * keys, ldns_rr_list * trusted_keys);
 
-/**
- * Instantiates a DNSKEY or DS RR from file.
- * \param[in] filename the file to read the record from
- * \return the corresponding RR, or NULL if the parsing failed
- */
-ldns_rr * ldns_read_anchor_file(const char *filename);
-
 #endif  /* LDNS_RESOLVER_H */

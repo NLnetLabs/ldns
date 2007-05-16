@@ -26,6 +26,7 @@
 #endif /* HAVE_SSL */
 #include <ldns/dnssec.h>
 #include <ldns/util.h>
+#include <errno.h>
 
 extern ldns_lookup_table ldns_signing_algorithms[];
 
@@ -412,4 +413,10 @@ void ldns_key_deep_free(ldns_key *key);
  */
 void ldns_key_list_free(ldns_key_list *key_list);
 
+/**
+ * Instantiates a DNSKEY or DS RR from file.
+ * \param[in] filename the file to read the record from
+ * \return the corresponding RR, or NULL if the parsing failed
+ */
+ldns_rr * ldns_read_anchor_file(const char *filename);
 #endif /* LDNS_KEYS_H */
