@@ -245,7 +245,7 @@ if test -f $ldns_dev_dir/ldns/util.h && \
 	ldns_version=`grep LDNS_VERSION $ldns_dev_dir/ldns/util.h | sed -e 's/^.*"\(.*\)".*$/\1/'`
 	AC_MSG_RESULT([using $ldns_dev_dir with $ldns_version])
 	CPPFLAGS="$CPPFLAGS -I$ldns_dev_dir/include"
-	LDFLAGS="$LDFLAGS -ldl -L$ldns_dev_dir -L$ldns_dev_dir/lib"
+	LDFLAGS="$LDFLAGS -L$ldns_dev_dir -L$ldns_dev_dir/lib"
 	LIBS="$LIBS -lldns"
 	AC_DEFINE(HAVE_LIBLDNS, 1, [If the ldns library is available.])
 	LDNSDIR="$ldns_dev_dir"
