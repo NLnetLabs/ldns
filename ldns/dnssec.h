@@ -249,7 +249,7 @@ ldns_status ldns_init_random(FILE *fd, uint16_t bytes);
  * \return the set of trusted keys for the domain, or NULL if no trust path could be built.
  */
 ldns_rr_list *
-ldns_fetch_valid_domain_keys(const ldns_resolver * res, const ldns_rdf * domain, const ldns_rr_list * keys);
+ldns_fetch_valid_domain_keys(const ldns_resolver * res, const ldns_rdf * domain, const ldns_rr_list * keys, ldns_status *status);
 
 /**
  * Validates the DNSKEY RRset for the given domain using the provided trusted keys.

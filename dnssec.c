@@ -113,42 +113,46 @@ ldns_verify(ldns_rr_list *rrset, ldns_rr_list *rrsig, const ldns_rr_list *keys,
 }
 
 ldns_rr_list *
-ldns_fetch_valid_domain_keys(const ldns_resolver * res, const ldns_rdf * domain, const ldns_rr_list * keys)
+ldns_fetch_valid_domain_keys(const ldns_resolver * res, const ldns_rdf * domain, const ldns_rr_list * keys, ldns_status *status)
 {
-  ldns_status status;
   ldns_rr_list * trusted_keys = NULL;
   ldns_rr_list * ds_keys = NULL;
 
   if (res && domain && keys) {
 
     if ((trusted_keys = ldns_validate_domain_dnskey(res, domain, keys))) {
-      status = LDNS_STATUS_OK;
+      *status = LDNS_STATUS_OK;
     } else {
       
       /* No trusted keys in this domain, we'll have to find some in the parent domain */
-      status = LDNS_STATUS_CRYPTO_NO_TRUSTED_DNSKEY;
+      *status = LDNS_STATUS_CRYPTO_NO_TRUSTED_DNSKEY;
       
       if (ldns_rdf_size(domain) > 1) { /* Fail if we are at the root */
         ldns_rr_list * parent_keys;
         ldns_rdf * parent_domain = ldns_dname_left_chop(domain);
 	
-        if ((parent_keys = ldns_fetch_valid_domain_keys(res, parent_domain, keys))) {
+        if ((parent_keys = ldns_fetch_valid_domain_keys(res, parent_domain, keys, status))) {
 	  
+printf("1\n");
           /* Check DS records */
           if ((ds_keys = ldns_validate_domain_ds(res, domain, parent_keys))) {
-            trusted_keys = ldns_fetch_valid_domain_keys(res, domain, ds_keys);
+printf("2\n");
+            trusted_keys = ldns_fetch_valid_domain_keys(res, domain, ds_keys, status);
+printf("[fetch_valid_domain_keys] trusted keys:\n");
+ldns_rr_list_print(stdout, trusted_keys);
             ldns_rr_list_deep_free(ds_keys);
           } else {
             /* No valid DS at the parent -- fail */
-            status = LDNS_STATUS_CRYPTO_NO_TRUSTED_DS ;
+            *status = LDNS_STATUS_CRYPTO_NO_TRUSTED_DS ;
           }
           ldns_rr_list_deep_free(parent_keys);
         }
         ldns_rdf_free(parent_domain);
       }
+else { printf("[fetch_valid_domain_keys] at root, nothing found\n"); }
     }
   }
-
+else { printf("[fetch_valid_domain_keys] no res, domin or keys\n"); }
   return trusted_keys;
 }
 
@@ -265,6 +269,7 @@ ldns_verify_trusted(ldns_resolver * res, ldns_rr_list * rrset, ldns_rr_list * rr
   ldns_rr * cur_sig; ldns_rr * cur_key;
   ldns_rr_list * trusted_keys = NULL;
   ldns_status result = LDNS_STATUS_ERR;
+printf("[verify_trusted] set default result to %s\n", ldns_get_errorstr_by_id(result));
 
   if (!res || !rrset || !rrsigs) {
     return LDNS_STATUS_ERR;
@@ -283,22 +288,37 @@ ldns_verify_trusted(ldns_resolver * res, ldns_rr_list * rrset, ldns_rr_list * rr
 
     cur_sig = ldns_rr_list_rr(rrsigs, sig_i);
     /* Get a valid signer key and validate the sig */
-    if ((trusted_keys = ldns_fetch_valid_domain_keys(res, ldns_rr_rrsig_signame(cur_sig), ldns_resolver_dnssec_anchors(res)))) {
+    if ((trusted_keys = ldns_fetch_valid_domain_keys(res, ldns_rr_rrsig_signame(cur_sig), ldns_resolver_dnssec_anchors(res), &result))) {
 
-      for (key_i=0; key_i<ldns_rr_list_rr_count(trusted_keys); key_i++) {
+      for (key_i = 0; key_i < ldns_rr_list_rr_count(trusted_keys); key_i++) {
         cur_key = ldns_rr_list_rr(trusted_keys, key_i);
+printf("[verify_trusted] trying:\n[verify_trusted] ");
 
         if ((result = ldns_verify_rrsig(rrset, cur_sig, cur_key)) == LDNS_STATUS_OK) {
-          
-          if (validating_keys) { ldns_rr_list_push_rr(validating_keys, ldns_rr_clone(cur_key)); }
+          if (validating_keys) {
+            ldns_rr_list_push_rr(validating_keys, ldns_rr_clone(cur_key));
+          }
           ldns_rr_list_deep_free(trusted_keys);
+          printf("[verify_trusted] returning OK\n");
           return LDNS_STATUS_OK;
         }
+        else {
+        	printf("RESULT: %s\nFOR:\n", ldns_get_errorstr_by_id(result));
+        	ldns_rr_list_print(stdout, rrset);
+        	ldns_rr_print(stdout, cur_sig);
+        	ldns_rr_print(stdout, cur_key);
+        	
+        }
+printf("[verify_trusted] set result to %s\n", ldns_get_errorstr_by_id(result));
       }
+    }
+    else {
+    printf("[verify_trusted] no valid domain keys\n");
     }
   }
 
   ldns_rr_list_deep_free(trusted_keys);
+  printf("[verify_trusted] returning: %s\n", ldns_get_errorstr_by_id(result));
   return result;
 }
 
@@ -689,6 +709,7 @@ ldns_verify_rrsig(ldns_rr_list *rrset, ldns_rr *rrsig, ldns_rr *key)
 	ldns_rr_list_deep_free(rrset_clone);
 	ldns_buffer_free(rawsig_buf);
 	ldns_buffer_free(verify_buf);
+	printf("RETURNING RESULT: %s\n", ldns_get_errorstr_by_id(result));
 	return result;
 }
 

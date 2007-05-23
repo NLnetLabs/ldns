@@ -595,6 +595,7 @@ main(int argc, char *argv[])
 				if (!ldns_pkt_answer(pkt)) {
 					mesg("No answer in packet");
 				} else {
+					ldns_resolver_set_dnssec_anchors(res, ldns_rr_list_clone(key_list));
 					result = do_chase(res, qname, type,
 					                  clas, key_list, 
 					                  pkt, qflags, NULL);

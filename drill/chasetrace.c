@@ -327,278 +327,32 @@ do_chase(ldns_resolver *res, ldns_rdf *name, ldns_rr_type type, ldns_rr_class c,
 	/* these can contain sigs for other rrsets too! */
 	
 	if (rrset) {
+		printf("GOT RRSET:\n");
+		ldns_rr_list_print(stdout, rrset);
+		printf("\n");
+		printf("GOT SIGS:\n");
+		ldns_rr_list_print(stdout, sigs);
+		printf("\n");
+		
+	
 		for (sig_i = 0; sig_i < ldns_rr_list_rr_count(sigs); sig_i++) {
 			cur_sig = ldns_rr_clone(ldns_rr_list_rr(sigs, sig_i));
 			if (ldns_rdf2native_int16(ldns_rr_rrsig_typecovered(cur_sig)) == type) {
 			
-			keys = ldns_pkt_rr_list_by_name_and_type(pkt,
-					ldns_rr_rdf(cur_sig, 7),
-					LDNS_RR_TYPE_DNSKEY,
-					LDNS_SECTION_ANY_NOQUESTION
-					);
-			
-			if (verbosity != -1) {
-				printf(";; Data set: ");
-				ldns_rdf_print(stdout, name);
-
-				lt = ldns_lookup_by_id(ldns_rr_classes, c);
-				if (lt) {
-					printf("\t%s\t", lt->name);
-				} else {
-					printf("\tCLASS%d\t", c);
-				}
-
-				if (descriptor && descriptor->_name) {
-					printf("%s\t", descriptor->_name);
-				} else {
-					/* exceptions for qtype */
-					if (type == 251) {
-						printf("IXFR ");
-					} else if (type == 252) {
-						printf("AXFR ");
-					} else if (type == 253) {
-						printf("MAILB ");
-					} else if (type == 254) {
-						printf("MAILA ");
-					} else if (type == 255) {
-						printf("ANY ");
-					} else {
-						printf("TYPE%d\t", type);
-					}
-				}
-				
-				printf("\n");
-				printf(";; Signed by: ");
-				ldns_rdf_print(stdout, ldns_rr_rdf(cur_sig, 7));
-				printf("\n");
-				if (type == LDNS_RR_TYPE_DS && prev_key_list) {
-					for (j = 0; j < ldns_rr_list_rr_count(rrset); j++) {
-						key_matches_ds = false;
-						for (i = 0; i < ldns_rr_list_rr_count(prev_key_list); i++) {
-							if (ldns_rr_compare_ds(ldns_rr_list_rr(prev_key_list, i),
-									       ldns_rr_list_rr(rrset, j))) {
-								key_matches_ds = true;
-							}
-						}
-						if (!key_matches_ds) {
-							/* For now error */
-							fprintf(stderr, ";; error no DS for key\n");
-							fprintf(stderr, "\n");
-							return LDNS_STATUS_ERR;
-						}
-					}
-				}
-			}
-
-			if (!keys) {
-				ldns_pkt_free(pkt);
-				pkt = NULL;
-				pkt = ldns_resolver_query(res,
-						ldns_rr_rdf(cur_sig, 7),
-						LDNS_RR_TYPE_DNSKEY, c, qflags);
-				if (!pkt) {
-					ldns_rr_list_deep_free(rrset);
-					ldns_rr_list_deep_free(sigs);
-					if (verbosity >= 0) {
-						fprintf(stderr, ldns_get_errorstr_by_id(LDNS_STATUS_NETWORK_ERR));
-						fprintf(stderr, "\n");
-					}
-					return LDNS_STATUS_NETWORK_ERR;
-				}
-
-				if (verbosity >= 5) {
-					ldns_pkt_print(stdout, pkt);
-				}
-				
 				keys = ldns_pkt_rr_list_by_name_and_type(pkt,
 						ldns_rr_rdf(cur_sig, 7),
 						LDNS_RR_TYPE_DNSKEY,
 						LDNS_SECTION_ANY_NOQUESTION
 						);
+			
+				result = ldns_verify_trusted(res, rrset, sigs, keys);
 			}
-			if(!keys) {
-				mesg("No key for data found in that zone!");
-				ldns_rr_list_deep_free(rrset);
-				ldns_rr_list_deep_free(sigs);
-				ldns_pkt_free(pkt);
-				ldns_rr_free(cur_sig);
-				if (verbosity >= 0) {
-					fprintf(stdout, ";; ");
-					fprintf(stdout, ldns_get_errorstr_by_id(LDNS_STATUS_CRYPTO_NO_DNSKEY));
-					fprintf(stdout, "\n");
-				}
-				return LDNS_STATUS_CRYPTO_NO_DNSKEY;
-			} else {
-				result = LDNS_STATUS_ERR;
-				for (key_i = 0; key_i < ldns_rr_list_rr_count(keys); key_i++) {
-					/* only check matching keys */
-					if (ldns_calc_keytag(ldns_rr_list_rr(keys, key_i))
-					    ==
-					    ldns_rdf2native_int16(ldns_rr_rrsig_keytag(cur_sig))
-					   ) {
-						result = ldns_verify_rrsig(rrset, cur_sig, ldns_rr_list_rr(keys, key_i));
-						if (result == LDNS_STATUS_OK) {
-							for (tkey_i = 0; tkey_i < ldns_rr_list_rr_count(trusted_keys); tkey_i++) {
-								if (ldns_rr_compare_ds(ldns_rr_list_rr(keys, key_i),
-										   ldns_rr_list_rr(trusted_keys, tkey_i)
-										  )) {
-									mesg("Key is trusted");
-									ldns_rr_list_deep_free(rrset);
-									ldns_rr_list_deep_free(sigs);
-									ldns_rr_list_deep_free(keys);
-									ldns_pkt_free(pkt);
-									ldns_rr_free(cur_sig);
-									return LDNS_STATUS_OK;
-								}
-							}
-							/* apparently the key is not trusted, so it must either be signed itself or have a DS in the parent */
-							if (type == LDNS_RR_TYPE_DNSKEY && ldns_rdf_compare(name, ldns_rr_rdf(cur_sig, 7)) == 0) {
-								/* check the other signatures, there might be a trusted KSK here */
-								for (ksk_sig_i = 0; ksk_sig_i < ldns_rr_list_rr_count(sigs); ksk_sig_i++) {
-									ksk_sig = ldns_rr_list_rr(sigs, ksk_sig_i);
-									if (ldns_rdf2native_int16(ldns_rr_rrsig_keytag(ksk_sig)) !=
-									    ldns_calc_keytag(ldns_rr_list_rr(keys, key_i))) {
-										for (ksk_i = 0; ksk_i < ldns_rr_list_rr_count(keys); ksk_i++) {
-											if (ldns_rdf2native_int16(ldns_rr_rrsig_keytag(ksk_sig)) ==
-											    ldns_calc_keytag(ldns_rr_list_rr(keys, ksk_i))) {
-												result = ldns_verify_rrsig(rrset, cur_sig, ldns_rr_list_rr(keys, key_i));
-												if (result == LDNS_STATUS_OK) {
-													for (tkey_i = 0; tkey_i < ldns_rr_list_rr_count(trusted_keys); tkey_i++) {
-														if (ldns_rr_compare_ds(ldns_rr_list_rr(keys, ksk_i),
-																   ldns_rr_list_rr(trusted_keys, tkey_i)
-																  )) {
-															if (verbosity > 1) {
-																mesg("Key is signed by trusted KSK");
-															}
-															ldns_rr_list_deep_free(rrset);
-															ldns_rr_list_deep_free(sigs);
-															ldns_rr_list_deep_free(keys);
-															ldns_pkt_free(pkt);
-															ldns_rr_free(cur_sig);
-															return LDNS_STATUS_OK;
-														}
-													}
-												}
-											}
-										}
-										
-									}
-								}
-
-								/* okay now we are looping in a selfsigned key, find the ds or bail */
-								/* there can never be a DS for the root label unless it has been given,
-								 * so we can't chase that */
-								if (ldns_rdf_size(ldns_rr_rdf(cur_sig, 7)) > 1) {
-									result = do_chase(res, ldns_rr_rdf(cur_sig, 7), LDNS_RR_TYPE_DS, c, trusted_keys, pkt, qflags, keys);
-								} else {
-									result = LDNS_STATUS_CRYPTO_NO_TRUSTED_DNSKEY;
-								}
-							} else {
-								result = do_chase(res, ldns_rr_rdf(cur_sig, 7), LDNS_RR_TYPE_DNSKEY, c, trusted_keys, pkt, qflags, keys);
-								/* in case key was not self-signed at all, try ds anyway */
-								/* TODO: is this needed? clutters the output... */
-								/*
-								if (result != LDNS_STATUS_OK) {
-									result = do_chase(res, ldns_rr_rdf(cur_sig, 7), LDNS_RR_TYPE_DS, c, trusted_keys, pkt, qflags, keys);
-								}
-								*/
-							}
-							ldns_rr_list_deep_free(rrset);
-							ldns_rr_list_deep_free(sigs);
-							ldns_rr_list_deep_free(keys);
-							ldns_pkt_free(pkt);
-
-							if (result != LDNS_STATUS_OK) {
-								if (verbosity >= 0) {
-									fprintf(stdout, ";; ");
-									fprintf(stdout, ldns_get_errorstr_by_id(result));
-									fprintf(stdout, "\n");
-									fprintf(stdout, ";; For signature:\n;; ");
-									ldns_rr_print(stdout, cur_sig);
-								}
-							}
-							ldns_rr_free(cur_sig);
-							return result;
-						}
-					/*
-					} else {
-						printf("Keytag mismatch: %u <> %u\n",
-							ldns_calc_keytag(ldns_rr_list_rr(keys, key_i)),
-							ldns_rdf2native_int16(ldns_rr_rrsig_keytag(cur_sig))
-					   );
-					*/	
-					}
-				}
-				if (result != LDNS_STATUS_OK) {
-					ldns_rr_list_deep_free(rrset);
-					ldns_rr_list_deep_free(sigs);
-					ldns_rr_list_deep_free(keys);
-					ldns_pkt_free(pkt);
-
-					if (verbosity >= 0) {
-						fprintf(stdout, ";; ");
-						fprintf(stdout, ldns_get_errorstr_by_id(result));
-						fprintf(stdout, " in signature RR:\n;; ");
-						ldns_rr_print(stdout, cur_sig);
-					}
-					ldns_rr_free(cur_sig);
-					return result;
-				}
-				ldns_rr_list_deep_free(keys);
-			}
-		}
 			ldns_rr_free(cur_sig);
 		}
 		ldns_rr_list_deep_free(rrset);
-	}
-	if (rrset && ldns_rr_list_rr_count(sigs) > 0) {
-		ldns_rr_list_deep_free(sigs);
-		ldns_pkt_free(pkt);
 
-		if (verbosity >= 0) {
-			fprintf(stdout, ";; ");
-			fprintf(stdout, ldns_get_errorstr_by_id(LDNS_STATUS_CRYPTO_NO_TRUSTED_DNSKEY));
-			fprintf(stdout, "\n");
-		}
-		return LDNS_STATUS_CRYPTO_NO_TRUSTED_DNSKEY;
-	} else {
-		ldns_rr_list_deep_free(sigs);
-		result = ldns_verify_denial(pkt, name, type, &nsec_rrs, &nsec_rr_sigs);
-		if (result == LDNS_STATUS_OK) {
-			if (verbosity >= 0) {
-				printf(";; Existence of ");
-				ldns_rdf_print(stdout, name);
-
-				if (descriptor->_name) {
-					fprintf(stdout, "%s", descriptor->_name);
-				} else {
-					fprintf(stdout, "TYPE%d\t", 
-							type);
-				}
-				printf("\n;; was DENIED by nsec, chasing nsec record\n");
-				
-			}
-			/* verify them, they can't be blindly chased */
-			result = do_chase(res,
-			                  ldns_rr_owner(ldns_rr_list_rr(nsec_rrs, 0)),
-			                  ldns_rr_get_type(ldns_rr_list_rr(nsec_rrs, 0)),
-			                  c, trusted_keys, pkt, qflags, NULL);
-		} else {
-			if (verbosity >= 0) {
-				printf(";; Denial of existence was not covered: %s\n", ldns_get_errorstr_by_id(result));
-			}
-		}
-
-		ldns_pkt_free(pkt);
-/*
-		if (result != LDNS_STATUS_OK) {
-			if (verbosity >= 0) {
-				fprintf(stdout, ";; ");
-				fprintf(stdout, ldns_get_errorstr_by_id(result));
-				fprintf(stdout, "\n");
-			}
-		}
-*/		return result;
+		printf("[chase] returning: %s\n", ldns_get_errorstr_by_id(result));
+		return result;
 	}
 }
 
