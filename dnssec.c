@@ -261,6 +261,7 @@ ldns_validate_domain_ds (const ldns_resolver * res, const ldns_rdf * domain, con
   return trusted_keys;
 }
 
+#ifdef HAVE_SSL
 ldns_status
 ldns_verify_trusted(ldns_resolver * res, ldns_rr_list * rrset, ldns_rr_list * rrsigs, ldns_rr_list * validating_keys)
 {
@@ -321,6 +322,7 @@ printf("[verify_trusted] set result to %s\n", ldns_get_errorstr_by_id(result));
   printf("[verify_trusted] returning: %s\n", ldns_get_errorstr_by_id(result));
   return result;
 }
+#endif
 
 
 ldns_status

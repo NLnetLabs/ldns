@@ -747,7 +747,9 @@ ldns_resolver_new_frm_fp_l(ldns_resolver **res, FILE *fp, int *line_nr)
 					return LDNS_STATUS_SYNTAX_MISSING_VALUE_ERR;
 				}
 
+#ifdef HAVE_SSL
 				tmp_rr = ldns_read_anchor_file(word);
+#endif
 				ldns_resolver_push_dnssec_anchor(r, tmp_rr);
 				ldns_rr_free(tmp_rr);
 				expect = LDNS_RESOLV_KEYWORD;
