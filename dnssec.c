@@ -988,6 +988,7 @@ ldns_sign_public_evp(ldns_buffer *to_sign, EVP_PKEY *key, const EVP_MD *digest_t
 		printf("Unknown message digest");
 		exit(1);
 	}
+
 	EVP_MD_CTX_init(&ctx);
 	EVP_SignInit(&ctx, md_type);
 
@@ -998,6 +999,7 @@ ldns_sign_public_evp(ldns_buffer *to_sign, EVP_PKEY *key, const EVP_MD *digest_t
 	sigdata_rdf = ldns_rdf_new_frm_data(LDNS_RDF_TYPE_B64, siglen,
 			ldns_buffer_begin(b64sig));
 	ldns_buffer_free(b64sig);
+	EVP_MD_CTX_cleanup(&ctx);
 	return sigdata_rdf;
 }
 

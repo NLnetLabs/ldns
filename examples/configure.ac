@@ -43,6 +43,48 @@ $3
 fi
 ])
 
+# Checks for libraries.
+# Check for SSL, original taken from
+# http://www.gnu.org/software/ac-archive/htmldoc/check_ssl.html and
+# modified for NSD and 
+# copied again for use in ldns
+AC_ARG_WITH(ssl, AC_HELP_STRING([--with-ssl=pathname],
+                                    [enable SSL (will check /usr/local/ssl
+                            /usr/lib/ssl /usr/ssl /usr/pkg /usr/local /usr/sfw /usr)]),[
+        ],[
+            withval="yes"
+        ])
+    if test x_$withval != x_no; then
+        AC_MSG_CHECKING(for SSL)
+        if test x_$withval = x_ -o x_$withval = x_yes; then
+            withval="/usr/local/ssl /usr/lib/ssl /usr/ssl /usr/pkg /usr/local /usr/sfw /usr"
+        fi
+        for dir in $withval; do
+            ssldir="$dir"
+            if test -f "$dir/include/openssl/ssl.h"; then
+                found_ssl="yes";
+                AC_DEFINE_UNQUOTED([HAVE_SSL], [], [Define if you have the SSL libraries installed.])
+                CPPFLAGS="$CPPFLAGS -I$ssldir/include";
+                break;
+            fi
+        done
+        if test x_$found_ssl != x_yes; then
+            AC_MSG_ERROR(Cannot find the SSL libraries in $withval)
+        else
+            AC_MSG_RESULT(found in $ssldir)
+            HAVE_SSL=yes
+            LDFLAGS="$LDFLAGS -L$ssldir/lib -lcrypto";
+	    RUNTIME_PATH="$RUNTIME_PATH -R$ssldir/lib"
+            AC_CHECK_LIB(crypto, HMAC_CTX_init,, [
+                    AC_MSG_ERROR([OpenSSL found in $ssldir, but version 0.9.7 or higher is required])
+                ])
+        fi
+        AC_SUBST(HAVE_SSL)
+	AC_SUBST(RUNTIME_PATH)
+    fi
+
+
+
 dnl routine to help check for needed compiler flags.
 # if the given code compiles without the flag, execute argument 4
 # if the given code only compiles with the flag, execute argument 3
@@ -203,7 +245,7 @@ if test -f $ldns_dev_dir/ldns/util.h && \
 	ldns_version=`grep LDNS_VERSION $ldns_dev_dir/ldns/util.h | sed -e 's/^.*"\(.*\)".*$/\1/'`
 	AC_MSG_RESULT([using $ldns_dev_dir with $ldns_version])
 	CPPFLAGS="$CPPFLAGS -I$ldns_dev_dir/include"
-	LDFLAGS="$LDFLAGS -L$ldns_dev_dir -L$ldns_dev_dir/lib"
+	LDFLAGS="$LDFLAGS -ldl -L$ldns_dev_dir -L$ldns_dev_dir/lib"
 	LIBS="$LIBS -lldns"
 	AC_DEFINE(HAVE_LIBLDNS, 1, [If the ldns library is available.])
 	LDNSDIR="$ldns_dev_dir"

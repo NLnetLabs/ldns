@@ -131,8 +131,8 @@ main(int argc, char *argv[])
 	
 	keys = ldns_key_list_new();
 
-	OPENSSL_config(NULL);
-	
+/*	OPENSSL_config(NULL);*/
+
 	while ((c = getopt(argc, argv, "e:f:i:o:vE:ak:K:")) != -1) {
 		switch (c) {
 		case 'e':
@@ -352,6 +352,7 @@ main(int argc, char *argv[])
 				LDNS_FREE(keyfile_name);
 				keyfile_name = LDNS_XMALLOC(char, strlen(keyfile_name_base) + 5);
 				snprintf(keyfile_name, strlen(keyfile_name_base) + 5, "%s.key", keyfile_name_base);
+				fprintf(stderr, "trying to read %s\n", keyfile_name);
 				keyfile = fopen(keyfile_name, "r");
 				line_nr = 0;
 				if (!keyfile) {
@@ -366,9 +367,9 @@ main(int argc, char *argv[])
 					ldns_key_list_push_key(keys, key);
 					ldns_zone_push_rr(orig_zone, ldns_rr_clone(pubkey));
 					ldns_rr_free(pubkey);
+					fclose(keyfile);
 				}
 				LDNS_FREE(keyfile_name);
-				
 			} else {
 				fprintf(stderr, "Error reading key from %s at line %d\n", argv[argi], line_nr);
 			}
@@ -403,7 +404,7 @@ main(int argc, char *argv[])
 		outputfile_name = LDNS_XMALLOC(char, MAX_FILENAME_LEN);
 		snprintf(outputfile_name, MAX_FILENAME_LEN, "%s.signed", zonefile_name);
 	}
-	
+
 	if (signed_zone) {
 		outputfile = fopen(outputfile_name, "w");
 		if (!outputfile) {
@@ -423,6 +424,10 @@ main(int argc, char *argv[])
 	
 	LDNS_FREE(outputfile_name);
 	
+ERR_free_strings(); EVP_cleanup();
+	CRYPTO_cleanup_all_ex_data();
+	ENGINE_cleanup();
+
 	free(prog);
 	exit(EXIT_SUCCESS);
 }
