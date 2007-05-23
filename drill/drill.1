@@ -136,8 +136,8 @@ Don't try the next nameserver on SERVFAIL. The default is to do this.
 Use size as the buffer size in the EDNS0 pseudo RR.
 
 .TP
-\fB\-c
-Use TCP/IP when querying a server, 'c' stands for connected.
+\fB\-t
+Use TCP/IP when querying a server
 
 .TP
 \fB\-k \fIkeyfile\fR
@@ -184,6 +184,11 @@ of the query. This can be used in conjunction with -f.
 .TP
 \fB\-x
 Do a reverse loopup. The type argument is not used, it is preset to PTR.
+
+.TP
+\fB\-y \fI<name:key[:algo]>\fR
+specify named base64 tsig key, and optional an algorithm (defaults to hmac-md5.sig-alg.reg.int)
+
 
 .SH AUTHOR
 Jelte Jansen and Miek Gieben. Both of NLnet Labs.
