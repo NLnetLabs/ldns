@@ -246,6 +246,7 @@ ldns_status ldns_init_random(FILE *fd, uint16_t bytes);
  * \param[in] res the current resolver
  * \param[in] domain the domain we want valid keys for
  * \param[in] keys the current set of trusted keys
+ * \param[out] status pointer to the status variable where the result code will be stored
  * \return the set of trusted keys for the domain, or NULL if no trust path could be built.
  */
 ldns_rr_list *

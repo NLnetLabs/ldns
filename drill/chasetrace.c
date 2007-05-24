@@ -231,23 +231,12 @@ do_chase(ldns_resolver *res, ldns_rdf *name, ldns_rr_type type, ldns_rr_class c,
 	ldns_rr *cur_sig;
 	uint16_t sig_i;
 	ldns_rr_list *keys;
-	ldns_rr_list *nsec_rrs = NULL;
-	ldns_rr_list *nsec_rr_sigs = NULL;
 
-	uint16_t ksk_i;
-	uint16_t ksk_sig_i;
-	ldns_rr *ksk_sig = NULL;
-
-	uint16_t key_i;
-	uint16_t tkey_i;
 	ldns_pkt *pkt;
-	size_t i,j;
-/*	ldns_rr_list *tmp_list;*/
-	bool key_matches_ds;
 	
 	ldns_lookup_table *lt;
 	const ldns_rr_descriptor *descriptor;
-	
+	UNUSED(lt);
 	descriptor = ldns_rr_descript(type);
 
 	ldns_dname2canonical(name);
