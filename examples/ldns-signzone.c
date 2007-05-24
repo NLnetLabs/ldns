@@ -424,9 +424,7 @@ main(int argc, char *argv[])
 	
 	LDNS_FREE(outputfile_name);
 	
-ERR_free_strings(); EVP_cleanup();
 	CRYPTO_cleanup_all_ex_data();
-	ENGINE_cleanup();
 
 	free(prog);
 	exit(EXIT_SUCCESS);
