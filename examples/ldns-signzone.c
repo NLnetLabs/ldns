@@ -14,6 +14,11 @@
 #include <time.h>
 
 #include <ldns/ldns.h>
+#include <ldns/keys.h>
+
+#include <openssl/conf.h>
+#include <openssl/engine.h>
+
 
 #define MAX_FILENAME_LEN 250
 
@@ -26,9 +31,20 @@ usage(FILE *fp, const char *prog) {
 	fprintf(fp, "  -i <date>\tinception date\n");
 	fprintf(fp, "  -o <domain>\torigin for the zone\n");
 	fprintf(fp, "  -v\t\tprint version and exit\n");
+	fprintf(fp, "  -E <name>\tuse <name> as the crypto engine for signing\n");
+	fprintf(fp, "           \tThis can have a lot of extra options, see -E help for more info\n");
+	fprintf(fp, "  -k <id>,<int>\tuse key id with algorithm int from engine\n");
+	fprintf(fp, "  -K <id>,<int>\tuse key id with algorithm int from engine as KSK\n");
+	fprintf(fp, "\t\tif no key is given (but an external one is used through the engine support, it might be necessary to provide the right algorithm number.\n");
 	fprintf(fp, "  keys must be specified by their base name: K<name>+<alg>+<id>\n");
 	fprintf(fp, "  both a .key and .private file must present\n");
 	fprintf(fp, "  A date can be a timestamp (seconds since the epoch), or of\n  the form <YYYYMMdd[hhmmss]>\n");
+}
+
+void
+usage_openssl(FILE *fp, const char *prog) {
+	fprintf(fp, "Special commands for openssl engines:\n");
+	fprintf(fp, "-c <file>\tOpenSSL config file\n");
 }
 
 void check_tm(struct tm tm)
@@ -72,6 +88,7 @@ main(int argc, char *argv[])
 	int line_nr = 0;
 	int c;
 	int argi;
+	ENGINE *engine = NULL;
 
 	ldns_zone *orig_zone;
 	ldns_rr_list *orig_rrs = NULL;
@@ -84,11 +101,18 @@ main(int argc, char *argv[])
 	ldns_key *key = NULL;
 	ldns_rr *pubkey;
 	ldns_key_list *keys;
+	size_t key_i;
 	ldns_status s;
 
 
 	char *outputfile_name = NULL;
 	FILE *outputfile;
+	
+	/* tmp vars for engine keys */
+	char *eng_key_l;
+	size_t eng_key_id_len;
+	char *eng_key_id;
+	int eng_key_algo;
 	
 	/* we need to know the origin before reading ksk's,
 	 * so keep an array of filenames until we know it
@@ -105,7 +129,11 @@ main(int argc, char *argv[])
 	inception = 0;
 	expiration = 0;
 	
-	while ((c = getopt(argc, argv, "e:f:i:o:v")) != -1) {
+	keys = ldns_key_list_new();
+
+/*	OPENSSL_config(NULL);*/
+
+	while ((c = getopt(argc, argv, "e:f:i:o:vE:ak:K:")) != -1) {
 		switch (c) {
 		case 'e':
 			/* try to parse YYYYMMDD first,
@@ -169,6 +197,84 @@ main(int argc, char *argv[])
 			printf("zone signer version %s (ldns version %s)\n", LDNS_VERSION, ldns_version());
 			exit(EXIT_SUCCESS);
 			break;
+		case 'E':
+			if (strncmp("help", optarg, 5) == 0) {
+				printf("help\n");
+				exit(EXIT_SUCCESS);
+			}
+			ENGINE_load_openssl();
+			ENGINE_load_builtin_engines();
+			ENGINE_load_dynamic();
+			ENGINE_load_cryptodev();
+			engine = ENGINE_by_id(optarg);
+			if (!engine) {
+				printf("No such engine: %s\n", optarg);
+				engine = ENGINE_get_first();
+				printf("Available engines:\n");
+				while (engine) {
+					printf("%s\n", ENGINE_get_id(engine));
+					engine = ENGINE_get_next(engine);
+				}
+				exit(EXIT_FAILURE);
+			} else {
+				if (!ENGINE_init(engine)) {
+					printf("The engine couldn't initialize\n");
+					exit(EXIT_FAILURE);
+				}
+				ENGINE_set_default_RSA(engine);
+				ENGINE_set_default_DSA(engine);
+				ENGINE_set_default(engine, 0);
+			}
+			break;
+		case 'k':
+			eng_key_l = index(optarg, ',');
+			if (eng_key_l && strlen(eng_key_l) > 1) {
+				if (eng_key_l > optarg) {
+					eng_key_id_len = (size_t) (eng_key_l - optarg);
+					eng_key_id = malloc(eng_key_id_len + 1);
+					memcpy(eng_key_id, optarg, eng_key_id_len);
+					eng_key_id[eng_key_id_len] = '\0';
+				} else {
+					/* no id given, use default from engine */
+					eng_key_id = NULL;
+				}
+				
+				eng_key_algo = atoi(eng_key_l + 1);
+
+				printf("Engine key id: %s, algo %d\n", eng_key_id, eng_key_algo);
+				
+				if (expiration != 0) {
+					ldns_key_set_expiration(key, expiration);
+				}
+				if (inception != 0) {
+					ldns_key_set_inception(key, inception);
+				}
+
+				s = ldns_key_new_frm_engine(&key, engine, eng_key_id, eng_key_algo);
+				if (s == LDNS_STATUS_OK) {
+					ldns_key_list_push_key(keys, key);
+					/*printf("Added key at %p:\n", key);*/
+					/*ldns_key_print(stdout, key);*/
+				} else {
+					printf("Error reading key '%s' from engine: %s\n", eng_key_id, ldns_get_errorstr_by_id(s));
+					printf("The available key id's are:\n");
+					printf("TODO\n");
+					exit(EXIT_FAILURE);
+				}
+				
+				if (eng_key_id) {
+					free(eng_key_id);
+				}
+			} else {
+				printf("Error: bad engine key specification (should be: -k <id>,<algorithm>)).\n");
+				exit(EXIT_FAILURE);
+			}
+			
+			break;
+		case 'K':
+			printf("Not implemented yet\n");
+			exit(EXIT_FAILURE);
+			break;
 		default:
 			usage(stderr, prog);
 			exit(EXIT_SUCCESS);
@@ -178,7 +284,8 @@ main(int argc, char *argv[])
 	argc -= optind;
 	argv += optind;
 
-	if (argc < 2) {
+	if (argc < 1) {
+		printf("Error: not enough arguments\n");
 		usage(stdout, prog);
 		exit(EXIT_FAILURE);
 	} else {
@@ -218,8 +325,6 @@ main(int argc, char *argv[])
 		origin = ldns_rr_owner(orig_soa);
 	}
 
-	keys = ldns_key_list_new();
-
 	/* read the ZSKs */
 	argi = 1;
 	while (argi < argc) {
@@ -247,6 +352,7 @@ main(int argc, char *argv[])
 				LDNS_FREE(keyfile_name);
 				keyfile_name = LDNS_XMALLOC(char, strlen(keyfile_name_base) + 5);
 				snprintf(keyfile_name, strlen(keyfile_name_base) + 5, "%s.key", keyfile_name_base);
+				fprintf(stderr, "trying to read %s\n", keyfile_name);
 				keyfile = fopen(keyfile_name, "r");
 				line_nr = 0;
 				if (!keyfile) {
@@ -261,9 +367,9 @@ main(int argc, char *argv[])
 					ldns_key_list_push_key(keys, key);
 					ldns_zone_push_rr(orig_zone, ldns_rr_clone(pubkey));
 					ldns_rr_free(pubkey);
+					fclose(keyfile);
 				}
 				LDNS_FREE(keyfile_name);
-				
 			} else {
 				fprintf(stderr, "Error reading key from %s at line %d\n", argv[argi], line_nr);
 			}
@@ -277,6 +383,20 @@ main(int argc, char *argv[])
 		usage(stderr, prog);
 		exit(EXIT_FAILURE);
 	}
+	
+	/* walk through the keys, and add pubkeys to the orig zone */
+	for (key_i = 0; key_i < ldns_key_list_key_count(keys); key_i++) {
+		key = ldns_key_list_key(keys, key_i);
+		if (!ldns_key_pubkey_owner(key)) {
+			ldns_key_set_pubkey_owner(key, ldns_rdf_clone(origin));
+			pubkey = ldns_key2rr(key);
+			ldns_key_set_flags(key, ldns_rdf2native_int16(ldns_rr_rdf(pubkey, 0)));
+			ldns_key_set_keytag(key, ldns_calc_keytag(pubkey));
+			ldns_zone_push_rr(orig_zone, pubkey);
+			printf("Derived DNSKEY RR:\n");
+			ldns_rr_print(stdout, pubkey);
+		}
+	}
 			
 	signed_zone = ldns_zone_sign(orig_zone, keys);
 
@@ -284,7 +404,7 @@ main(int argc, char *argv[])
 		outputfile_name = LDNS_XMALLOC(char, MAX_FILENAME_LEN);
 		snprintf(outputfile_name, MAX_FILENAME_LEN, "%s.signed", zonefile_name);
 	}
-	
+
 	if (signed_zone) {
 		outputfile = fopen(outputfile_name, "w");
 		if (!outputfile) {
@@ -304,6 +424,8 @@ main(int argc, char *argv[])
 	
 	LDNS_FREE(outputfile_name);
 	
+	CRYPTO_cleanup_all_ex_data();
+
 	free(prog);
-        exit(EXIT_SUCCESS);
+	exit(EXIT_SUCCESS);
 }

@@ -87,8 +87,7 @@ struct ldns_struct_key {
 	/* TODO remove unions? */
 	union {
 #ifdef HAVE_SSL
-		RSA	*rsa;
-		DSA	*dsa;
+                EVP_PKEY *key;
 #endif /* HAVE_SSL */
 		unsigned char *hmac;
 	} _key;
@@ -172,6 +171,13 @@ ldns_status ldns_key_new_frm_fp_l(ldns_key **k, FILE *fp, int *line_nr);
 
 #ifdef HAVE_SSL
 /**
+ * Read the key with the given id from the given engine and store it
+ * in the given ldns_key structure. The algorithm type is set
+ */
+ldns_status ldns_key_new_frm_engine(ldns_key **key, ENGINE *e, char *key_id, ldns_algorithm);
+
+
+/**
  * frm_fp helper function. This function parsed the
  * remainder of the (RSA) priv. key file generated from bind9
  * \param[in] fp the file to parse
@@ -220,6 +226,12 @@ DSA *ldns_key_new_frm_fp_dsa_l(FILE *fp, int *line_nr);
  */
 void ldns_key_set_algorithm(ldns_key *k, ldns_signing_algorithm l);
 #ifdef HAVE_SSL
+/**
+ * Set the key's evp key
+ * \param[in] k the key
+ * \param[in] e the evp key
+ */
+void ldns_key_set_evp_key(ldns_key *k, EVP_PKEY *e);
 /**
  * Set the key's rsa data
  * \param[in] k the key
@@ -312,6 +324,12 @@ ldns_key *ldns_key_list_key(const ldns_key_list *key, size_t nr);
  * \return the RSA * structure in the key
  */
 RSA *ldns_key_rsa_key(const ldns_key *k);
+/**
+ * returns the (openssl) EVP struct contained in the key
+ * \param[in] k the key to look in
+ * \return the RSA * structure in the key
+ */
+EVP_PKEY *ldns_key_evp_key(const ldns_key *k);
 #endif /* HAVE_SSL */
 
 /**
