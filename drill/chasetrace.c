@@ -234,6 +234,9 @@ do_chase(ldns_resolver *res, ldns_rdf *name, ldns_rr_type type, ldns_rr_class c,
 
 	ldns_pkt *pkt;
 	
+	const ldns_rr_descriptor *descriptor;
+	descriptor = ldns_rr_descript(type);
+
 	ldns_dname2canonical(name);
 	
 	pkt = ldns_pkt_clone(pkt_o);
