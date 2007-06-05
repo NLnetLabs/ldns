@@ -68,7 +68,7 @@ ALL_SOURCES	=	$(LIBDNS_SOURCES)
 COMPILE		= $(CC) $(CPPFLAGS) $(CFLAGS)
 COMP_LIB	= $(LIBTOOL) --mode=compile $(CC) $(CPPFLAGS) $(CFLAGS)
 LINK		= $(CC) $(CFLAGS) $(LDFLAGS)
-LINK_LIB	= $(LIBTOOL) --mode=link $(CC) $(CFLAGS) $(LDFLAGS) -release $(VERSION)
+LINK_LIB	= $(LIBTOOL) --mode=link $(CC) $(CFLAGS) $(LDFLAGS) -release $(VERSION) -no-undefined
 
 %.o:    $(srcdir)/%.c $(LIBDNS_HEADERS) ldns/util.h ldns/config.h
 	$(COMP_LIB) -c $> $<
