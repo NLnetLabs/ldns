@@ -665,9 +665,13 @@ ldns_resolver_new_frm_fp_l(ldns_resolver **res, FILE *fp, int *line_nr)
 						continue;
 					}
 					/* no keyword recognized */
+					
 					if (expect == LDNS_RESOLV_KEYWORD) {
+						/* skip line */
+						/*
 						ldns_resolver_deep_free(r);
 						return LDNS_STATUS_SYNTAX_KEYWORD_ERR;
+						*/
 					}
 				}
 				break;
