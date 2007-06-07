@@ -27,6 +27,7 @@ usage(FILE *fp, char *prog) {
 	fprintf(fp, "-r <file>\tUse file to read root hints from\n");
 	fprintf(fp, "-s\t\tDon't print the keys but store them in files\n\t\tcalled K<file>.+<alg>.+<keytag>.key\n");
 	fprintf(fp, "-v <int>\tVerbosity level (0-5, not verbose-very verbose)\n");
+	fprintf(fp, "-i\tInsecurer mode; don't do checks, just query for the keys\n");
 }
 
 ldns_rr_list *
@@ -564,6 +565,9 @@ main(int argc, char *argv[])
 	ldns_buffer *outputfile_buffer;
 	FILE *outputfile;
 	ldns_rr *k;
+	
+	bool insecure = false;
+	ldns_pkt *pkt;
 
 	domain = NULL;
 	res = NULL;
@@ -610,6 +614,8 @@ main(int argc, char *argv[])
 					verbosity = atoi(argv[i+1]);
 					i++;
 				}
+			} else if (strncmp("-i", argv[i], 2) == 0) {
+				insecure = true;
 			} else {
 				/* create a rdf from the command line arg */
 				if (domain) {
@@ -652,8 +658,13 @@ main(int argc, char *argv[])
 
 	ldns_resolver_set_ip6(res, address_family);
 
-	l = retrieve_dnskeys(res, domain, LDNS_RR_TYPE_DNSKEY, LDNS_RR_CLASS_IN, dns_root);
-
+	if (insecure) {
+		pkt = ldns_resolver_query(res, domain, LDNS_RR_TYPE_DNSKEY, LDNS_RR_CLASS_IN, LDNS_RD);
+		l = ldns_pkt_rr_list_by_type(pkt, LDNS_RR_TYPE_DNSKEY, LDNS_SECTION_ANY_NOQUESTION);
+	} else {
+		l = retrieve_dnskeys(res, domain, LDNS_RR_TYPE_DNSKEY, LDNS_RR_CLASS_IN, dns_root);
+	}
+	
 	/* separator for result data and verbosity data */
 	if (verbosity > 0) {
 		fprintf(stdout, "; ---------------------------\n");
