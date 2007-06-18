@@ -788,8 +788,8 @@ ldns_key2rr(const ldns_key *k)
 		case LDNS_SIGN_DSA:
 			ldns_rr_push_rdf(pubkey,
 					ldns_native2rdf_int8(LDNS_RDF_TYPE_ALG, LDNS_DSA));
-			dsa = ldns_key_dsa_key(k);
-			if (!dsa) {
+			rsa =  ldns_key_dsa_key(k);
+			if (!rsa) {
 				return NULL;
 			} else {
 				if (!ldns_key_dsa2bin(bin, dsa, &size)) {

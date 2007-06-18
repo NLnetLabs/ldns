@@ -87,7 +87,9 @@ struct ldns_struct_key {
 	/* TODO remove unions? */
 	union {
 #ifdef HAVE_SSL
+#ifndef S_SPLINT_S
                 EVP_PKEY *key;
+#endif
 #endif /* HAVE_SSL */
 		unsigned char *hmac;
 	} _key;

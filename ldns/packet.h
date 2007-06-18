@@ -464,7 +464,7 @@ ldns_rr_list *ldns_pkt_rr_list_by_name(ldns_pkt *p, ldns_rdf *r, ldns_pkt_sectio
  * \param[in] s the packet's section
  * \return a list with the rr's or NULL if none were found
  */
-ldns_rr_list *ldns_pkt_rr_list_by_type(ldns_pkt *p, ldns_rr_type t, ldns_pkt_section s);
+ldns_rr_list *ldns_pkt_rr_list_by_type(const ldns_pkt *p, ldns_rr_type t, ldns_pkt_section s);
 /**
  * return all the rr with a specific type and type from a packet. Optionally
  * specify from which section in the packet
@@ -474,7 +474,7 @@ ldns_rr_list *ldns_pkt_rr_list_by_type(ldns_pkt *p, ldns_rr_type t, ldns_pkt_sec
  * \param[in] sec the packet's section
  * \return a list with the rr's or NULL if none were found
  */
-ldns_rr_list *ldns_pkt_rr_list_by_name_and_type(ldns_pkt *packet, ldns_rdf *ownername, ldns_rr_type type, ldns_pkt_section sec);
+ldns_rr_list *ldns_pkt_rr_list_by_name_and_type(const ldns_pkt *packet, const ldns_rdf *ownername, ldns_rr_type type, ldns_pkt_section sec);
 
 
 /**

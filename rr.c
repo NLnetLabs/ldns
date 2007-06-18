@@ -851,7 +851,7 @@ ldns_rr_list_subtype_by_rdf(ldns_rr_list *l, ldns_rdf *r, size_t pos)
 		if (ldns_rdf_compare(list_rdf, r) == 0) {
 			/* a match */
 			ldns_rr_list_push_rr(subtyped, 
-					ldns_rr_list_rr(l, i));
+					ldns_rr_clone(ldns_rr_list_rr(l, i)));
 		}
 	}
 
@@ -1151,7 +1151,7 @@ ldns_rr_clone(const ldns_rr *rr)
 }
 
 ldns_rr_list *
-ldns_rr_list_clone(ldns_rr_list *rrlist)
+ldns_rr_list_clone(const ldns_rr_list *rrlist)
 {
 	size_t i;
 	ldns_rr_list *new_list;

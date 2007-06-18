@@ -13,10 +13,7 @@
 #ifndef LDNS_NET_H
 #define LDNS_NET_H
 
-#include <ldns/packet.h>
-#include <ldns/buffer.h>
-#include <ldns/resolver.h>
-#include <ldns/keys.h>
+#include <ldns/ldns.h>
 
 #include <sys/socket.h>
 

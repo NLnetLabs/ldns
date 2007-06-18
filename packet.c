@@ -275,7 +275,7 @@ ldns_pkt_rr_list_by_name(ldns_pkt *packet, ldns_rdf *ownername, ldns_pkt_section
 
 /* return only those rr that share a type */
 ldns_rr_list *
-ldns_pkt_rr_list_by_type(ldns_pkt *packet, ldns_rr_type type, ldns_pkt_section sec)
+ldns_pkt_rr_list_by_type(const ldns_pkt *packet, ldns_rr_type type, ldns_pkt_section sec)
 {
 	ldns_rr_list *rrs;
 	ldns_rr_list *new;
@@ -309,7 +309,7 @@ ldns_pkt_rr_list_by_type(ldns_pkt *packet, ldns_rr_type type, ldns_pkt_section s
 
 /* return only those rrs that share name and type */
 ldns_rr_list *
-ldns_pkt_rr_list_by_name_and_type(ldns_pkt *packet, ldns_rdf *ownername, ldns_rr_type type, ldns_pkt_section sec)
+ldns_pkt_rr_list_by_name_and_type(const ldns_pkt *packet, const ldns_rdf *ownername, ldns_rr_type type, ldns_pkt_section sec)
 {
 	ldns_rr_list *rrs;
 	ldns_rr_list *new;

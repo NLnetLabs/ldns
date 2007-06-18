@@ -37,6 +37,156 @@
 /* default time before sigs expire */
 #define LDNS_DEFAULT_EXP_TIME	2419200 /* 4 weeks */
 
+typedef struct ldns_dnssec_data_chain_struct ldns_dnssec_data_chain;
+/**
+ * Chain structure that contains all DNSSEC data needed to
+ * verify an rrset
+ */
+struct ldns_dnssec_data_chain_struct {
+  ldns_rr_list *rrset;
+  ldns_rr_list *signatures;
+  ldns_rr_type parent_type;
+  ldns_dnssec_data_chain *parent;
+};
+
+/**
+ * Creates a new dnssec_chain structure
+ * \return ldns_dnssec_data_chain *
+ */
+ldns_dnssec_data_chain *ldns_dnssec_data_chain_new();
+
+/**
+ * Frees a dnssec_data_chain structure
+ *
+ * \param[in] *chain The chain to free
+ */
+void ldns_dnssec_data_chain_free(ldns_dnssec_data_chain *chain);
+
+/**
+ * Frees a dnssec_data_chain structure, and all data contained therein
+ *
+ * \param[in] *chain The dnssec_data_chain to free
+ */
+void ldns_dnssec_data_chain_deep_free(ldns_dnssec_data_chain *chain);
+
+/**
+ * Prints the dnssec_data_chain to the given file stream
+ * 
+ * \param[in] *out The file stream to print to
+ * \param[in] *chain The dnssec_data_chain to print
+ */
+void ldns_dnssec_data_chain_print(FILE *out, const ldns_dnssec_data_chain *chain);
+
+
+#define LDNS_DNSSEC_TRUST_TREE_MAX_PARENTS 10
+
+/**
+ * Tree structure that contains the relation of DNSSEC data, and their cryptographic
+ * status.
+ *
+ * This tree is derived from a data_chain, and can be used to look whether there is a
+ * connection between an RRSET and a trusted key. The tree only contains pointers to
+ * the data_chain, and therefore one should *never* free() the data_chain when there is
+ * still a trust tree derived from that chain.
+ *
+ * Example tree:
+ *     key   key    key
+ *       \    |    /
+ *        \   |   /
+ *         \  |  /
+ *            ds
+ *            |
+ *           key
+ *            |
+ *           key
+ *            |
+ *            rr
+ *
+ * For each signature there is a parent; if the parent pointer is null, it
+ * couldn't be found and there was no denial; otherwise is a tree which
+ * contains either a DNSKEY, a DS, or a NSEC rr;
+ */
+typedef struct ldns_dnssec_trust_tree_struct ldns_dnssec_trust_tree;
+struct ldns_dnssec_trust_tree_struct {
+  ldns_rr *rr;
+  ldns_dnssec_trust_tree *parents[LDNS_DNSSEC_TRUST_TREE_MAX_PARENTS];
+  ldns_status parent_status[LDNS_DNSSEC_TRUST_TREE_MAX_PARENTS];
+  /** for debugging, add signatures too (you might want those if they 
+     contain errors) */
+  ldns_rr *parent_signature[LDNS_DNSSEC_TRUST_TREE_MAX_PARENTS];
+  size_t parent_count;
+};
+
+/**
+ * Creates a new (empty) dnssec_trust_tree structure
+ *
+ * \return ldns_dnssec_trust_tree *
+ */
+ldns_dnssec_trust_tree *ldns_dnssec_trust_tree_new();
+/**
+ * Frees the dnssec_trust_tree recursively
+ * There is no deep free; all data in the trust tree consists of pointers
+ * to a data_chain
+ *
+ * \param[in] tree The tree to free
+ */
+void ldns_dnssec_trust_tree_free(ldns_dnssec_trust_tree *tree);
+
+/**
+ * Prints the dnssec_trust_tree structure to the given file stream
+ * Each line is prepended by 2*tabs spaces
+ * If a link status is not LDNS_STATUS_OK; the status and relevant signatures are printed too
+ *
+ * \param[in] *out The file stream to print to
+ * \param[in] tree The trust tree to print
+ * \param[in] tabs Prepend each line with tabs*2 spaces
+ */
+void ldns_dnssec_trust_tree_print(FILE *out, ldns_dnssec_trust_tree *tree, size_t tabs);
+
+/**
+ * Generates a dnssec_trust_ttree for the given rr from the given data_chain
+ * Don't free the data_chain before you are done with this tree
+ *
+ * \param[in] *data_chain The chain to derive the trust tree from
+ * \param[in] *rr The RR this tree will be about
+ * \return ldns_dnssec_trust_tree *
+ */
+ldns_dnssec_trust_tree *ldns_dnssec_derive_trust_tree(ldns_dnssec_data_chain *data_chain, ldns_rr *rr);
+
+/**
+ * Adds a trust tree as a parent for the given trust tree
+ *
+ * \param[in] tree The tree to add the parent to
+ * \param[in] parent_tree The parent tree to add
+ * \param[in] parent_signature The RRSIG relevant to this parent/child connection
+ * \param[in] parent_status The DNSSEC status for this parent, child and RRSIG
+ * \return LDNS_STATUS_OK if the addition succeeds, error otherwise
+ */
+ldns_status
+ldns_dnssec_trust_tree_add_parent(ldns_dnssec_trust_tree *tree,
+                                  const ldns_dnssec_trust_tree *parent,
+                                  const ldns_rr *parent_signature,
+                                  const ldns_status parent_status);
+
+/**
+ * Returns OK if there is a trusted path in the tree to one of the DNSKEY or DS RRs in the
+ * given list
+ *
+ * \param *tree The trust tree so search
+ * \param *keys A ldns_rr_list of DNSKEY and DS rrs to look for
+ * \return LDNS_STATUS_OK if there is a trusted path to one of the keys, or the *first* error encountered
+ *         if there were no paths
+ */
+ldns_status ldns_dnssec_trust_tree_contains_keys(ldns_dnssec_trust_tree *tree, ldns_rr_list *keys);
+
+
+/**
+ * the data set will be cloned
+ * the pkt is optional, can contain the original packet (and hence the sigs and maybe the key)
+ */
+ldns_dnssec_data_chain *ldns_dnssec_build_data_chain(ldns_resolver *res, const uint16_t qflags, const ldns_rr_list *data_set, const ldns_pkt *pkt);
+
+
 /** 
  * calculates a keytag of a key for use in DNSSEC.
  *

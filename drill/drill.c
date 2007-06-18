@@ -870,5 +870,13 @@ main(int argc, char *argv[])
 */
 	xfree(tsig_data);
 	xfree(tsig_algorithm);
+
+#ifdef HAVE_SSL
+	ERR_remove_state();
+	CRYPTO_cleanup_all_ex_data();
+	ERR_free_strings();
+	EVP_cleanup();
+#endif
+
 	return result;
 }

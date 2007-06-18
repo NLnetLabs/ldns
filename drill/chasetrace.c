@@ -227,17 +227,24 @@ do_chase(ldns_resolver *res, ldns_rdf *name, ldns_rr_type type, ldns_rr_class c,
 	ldns_rr_list *rrset = NULL;
 	ldns_status result;
 	
+/*
 	ldns_rr_list *sigs;
 	ldns_rr *cur_sig;
 	uint16_t sig_i;
 	ldns_rr_list *keys;
-
+*/
 	ldns_pkt *pkt;
+	ldns_status tree_result;
+	
+	ldns_dnssec_data_chain *chain;
+	ldns_dnssec_trust_tree *tree;
 	
 	const ldns_rr_descriptor *descriptor;
 	descriptor = ldns_rr_descript(type);
 
 	ldns_dname2canonical(name);
+	
+	bool cname_followed = false;
 	
 	pkt = ldns_pkt_clone(pkt_o);
 	if (!name) {
@@ -272,7 +279,25 @@ do_chase(ldns_resolver *res, ldns_rdf *name, ldns_rr_type type, ldns_rr_class c,
 					type,
 					LDNS_SECTION_AUTHORITY
 					);
-		};
+		}
+		/* answer might be a cname, chase that first, then chase
+		   cname target? (TODO) */
+		if (!rrset) {
+			cname_followed = true;
+			rrset = ldns_pkt_rr_list_by_name_and_type(pkt,
+					name,
+					LDNS_RR_TYPE_CNAME,
+					LDNS_SECTION_ANSWER
+					);
+			if (!rrset) {
+				/* nothing in answer, try authority */
+				rrset = ldns_pkt_rr_list_by_name_and_type(pkt,
+						name,
+						LDNS_RR_TYPE_CNAME,
+						LDNS_SECTION_AUTHORITY
+						);
+			}
+		}
 	} else {
 		/* no packet? */
 		if (verbosity >= 0) {
@@ -305,7 +330,33 @@ do_chase(ldns_resolver *res, ldns_rdf *name, ldns_rr_type type, ldns_rr_class c,
 				LDNS_SECTION_ANSWER
 				);
 	}
+	
+	chain = ldns_dnssec_build_data_chain(res, qflags, rrset, pkt);
 
+	/*ldns_dnssec_data_chain_print(stdout, chain);*/
+
+	result = LDNS_STATUS_OK;
+	
+	tree = ldns_dnssec_derive_trust_tree(chain, NULL);
+
+	printf("\n\nDNSSEC Trust tree:\n");
+	ldns_dnssec_trust_tree_print(stdout, tree, 0);
+
+	tree_result = ldns_dnssec_trust_tree_contains_keys(tree, trusted_keys);
+	
+	if (tree_result != LDNS_STATUS_OK) {
+		printf("No trusted keys found in tree: first error was: %s\n", ldns_get_errorstr_by_id(tree_result));
+	}
+	result = tree_result;
+
+	ldns_dnssec_trust_tree_free(tree);
+	ldns_dnssec_data_chain_deep_free(chain);
+
+	ldns_rr_list_deep_free(rrset);
+	ldns_pkt_free(pkt);
+
+	return result;
+#if 0
 	sigs = ldns_pkt_rr_list_by_name_and_type(pkt,
 			name,
 			LDNS_RR_TYPE_RRSIG,
@@ -341,5 +392,6 @@ do_chase(ldns_resolver *res, ldns_rdf *name, ldns_rr_type type, ldns_rr_class c,
 		printf("[chase] returning: %s\n", ldns_get_errorstr_by_id(result));
 		return result;
 	}
+#endif
 }
 

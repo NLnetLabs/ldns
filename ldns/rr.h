@@ -653,7 +653,7 @@ ldns_rr* ldns_rr_clone(const ldns_rr *rr);
  * \param[in] rrlist the rrlist to clone
  * \return the cloned rr list
  */
-ldns_rr_list* ldns_rr_list_clone(ldns_rr_list *rrlist);
+ldns_rr_list* ldns_rr_list_clone(const ldns_rr_list *rrlist);
 
 /**
  * sorts an rr_list (canonical wire format). the sorting is done inband.

@@ -665,7 +665,6 @@ ldns_resolver_new_frm_fp_l(ldns_resolver **res, FILE *fp, int *line_nr)
 						continue;
 					}
 					/* no keyword recognized */
-					
 					if (expect == LDNS_RESOLV_KEYWORD) {
 						/* skip line */
 						/*
