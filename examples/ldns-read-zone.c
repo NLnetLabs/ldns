@@ -83,9 +83,6 @@ main(int argc, char **argv)
 			    ldns_rr_get_type(cur_rr) == LDNS_RR_TYPE_NSEC
 			   ) {
 			   	
-			   	printf("remove:\n");
-			   	ldns_rr_print(stdout, cur_rr);
-				
 				ldns_rr_free(cur_rr);
 			} else {
 				ldns_rr_list_push_rr(stripped_list, cur_rr);
