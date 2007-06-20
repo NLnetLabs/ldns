@@ -141,7 +141,7 @@ void ldns_dnssec_trust_tree_free(ldns_dnssec_trust_tree *tree);
  * \param[in] tree The trust tree to print
  * \param[in] tabs Prepend each line with tabs*2 spaces
  */
-void ldns_dnssec_trust_tree_print(FILE *out, ldns_dnssec_trust_tree *tree, size_t tabs);
+void ldns_dnssec_trust_tree_print(FILE *out, ldns_dnssec_trust_tree *tree, size_t tabs, bool extended);
 
 /**
  * Generates a dnssec_trust_ttree for the given rr from the given data_chain

@@ -340,14 +340,17 @@ do_chase(ldns_resolver *res, ldns_rdf *name, ldns_rr_type type, ldns_rr_class c,
 	tree = ldns_dnssec_derive_trust_tree(chain, NULL);
 
 	printf("\n\nDNSSEC Trust tree:\n");
-	ldns_dnssec_trust_tree_print(stdout, tree, 0);
+	ldns_dnssec_trust_tree_print(stdout, tree, 0, true);
 
 	tree_result = ldns_dnssec_trust_tree_contains_keys(tree, trusted_keys);
 	
-	if (tree_result != LDNS_STATUS_OK) {
+	if (tree_result == LDNS_STATUS_DNSSEC_EXISTENCE_DENIED) {
+		printf("Existence denied or verifiably insecure\n");
+		result = LDNS_STATUS_OK;
+	} else if (tree_result != LDNS_STATUS_OK) {
 		printf("No trusted keys found in tree: first error was: %s\n", ldns_get_errorstr_by_id(tree_result));
+		result = tree_result;
 	}
-	result = tree_result;
 
 	ldns_dnssec_trust_tree_free(tree);
 	ldns_dnssec_data_chain_deep_free(chain);

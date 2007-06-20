@@ -83,7 +83,8 @@ enum ldns_enum_status
         LDNS_STATUS_SYNTAX_EMPTY,
         LDNS_STATUS_SYNTAX_MISSING_VALUE_ERR,
         LDNS_STATUS_SOCKET_ERROR,
-        LDNS_STATUS_SYNTAX_ERR
+        LDNS_STATUS_SYNTAX_ERR,
+        LDNS_STATUS_DNSSEC_EXISTENCE_DENIED
 };
 typedef enum ldns_enum_status ldns_status;
 

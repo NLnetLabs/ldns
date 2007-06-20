@@ -265,13 +265,29 @@ print_tabs(FILE *out, size_t nr)
 }
 
 void
-ldns_dnssec_trust_tree_print(FILE *out, ldns_dnssec_trust_tree *tree, size_t tabs)
+ldns_dnssec_trust_tree_print(FILE *out, ldns_dnssec_trust_tree *tree, size_t tabs, bool extended)
 {
 	size_t i;
 	const ldns_rr_descriptor *descriptor;
 	
 	if (tree) {
 		if (tree->rr) {
+			if (extended && tabs > 0) {
+				print_tabs(out, tabs - 1);
+				if (ldns_rr_get_type(tree->rr) == LDNS_RR_TYPE_DNSKEY) {
+					fprintf(out, "which is signed by:\n");
+				} else if (ldns_rr_get_type(tree->rr) == LDNS_RR_TYPE_DS) {
+					fprintf(out, "which matches:\n");
+				} else if (ldns_rr_get_type(tree->rr) == LDNS_RR_TYPE_NSEC) {
+					fprintf(out, "whose existence is denied by:\n");
+				}
+			} else {
+				if (ldns_rr_get_type(tree->rr) == LDNS_RR_TYPE_NSEC) {
+					fprintf(out, "Existence is denied by:\n");
+				}
+			}
+
+
 			print_tabs(out, tabs);
 			ldns_rdf_print(out, ldns_rr_owner(tree->rr));
 			descriptor = ldns_rr_descript(ldns_rr_get_type(tree->rr));
@@ -287,7 +303,7 @@ ldns_dnssec_trust_tree_print(FILE *out, ldns_dnssec_trust_tree *tree, size_t tab
 			}
 			
 			
-			fprintf(out, ") (parents: %u)\n", tree->parent_count);
+			fprintf(out, ")\n", tree->parent_count);
 			for (i = 0; i < tree->parent_count; i++) {
 				/* only print errors */
 				if (tree->parent_status[i] != LDNS_STATUS_OK) {
@@ -298,7 +314,7 @@ ldns_dnssec_trust_tree_print(FILE *out, ldns_dnssec_trust_tree *tree, size_t tab
 					print_tabs(out, tabs + 1);
 					fprintf(out, "from:\n");
 				}
-				ldns_dnssec_trust_tree_print(out, tree->parents[i], tabs+1);
+				ldns_dnssec_trust_tree_print(out, tree->parents[i], tabs+1, extended);
 			}
 		} else {
 			print_tabs(out, tabs);
@@ -507,7 +523,13 @@ ldns_dnssec_trust_tree_contains_keys(ldns_dnssec_trust_tree *tree, ldns_rr_list 
 				if (tree->parent_status[i] != LDNS_STATUS_OK) {
 					result = tree->parent_status[i];
 				} else {
-					result = parent_result;
+					if (ldns_rr_get_type(tree->rr) == LDNS_RR_TYPE_NSEC &&
+					    parent_result == LDNS_STATUS_OK
+					   ) {
+						result = LDNS_STATUS_DNSSEC_EXISTENCE_DENIED;
+					} else {
+						result = parent_result;
+					}
 				}
 			}
 		}
