@@ -405,7 +405,7 @@ ldns_pkt_empty(ldns_pkt *p)
 
 
 ldns_rr_list *
-ldns_pkt_get_section_clone(ldns_pkt *packet, ldns_pkt_section s)
+ldns_pkt_get_section_clone(const ldns_pkt *packet, ldns_pkt_section s)
 {
 	switch(s) {
 	case LDNS_SECTION_QUESTION:

@@ -445,7 +445,7 @@ ldns_rr_list *ldns_pkt_additional(const ldns_pkt *p);
  * \param[in] s what section(s) to return
  * \return ldns_rr_list with the rr's or NULL if none were found
  */
-ldns_rr_list *ldns_pkt_get_section_clone(ldns_pkt *p, ldns_pkt_section s);
+ldns_rr_list *ldns_pkt_get_section_clone(const ldns_pkt *p, ldns_pkt_section s);
 
 /**
  * return all the rr with a specific name from a packet. Optionally
