@@ -29,6 +29,7 @@ usage(FILE *fp, const char *prog) {
 	fprintf(fp, "  -e <date>\texpiration date\n");
 	fprintf(fp, "  -f <file>\toutput zone to file (default <name>.signed)\n");
 	fprintf(fp, "  -i <date>\tinception date\n");
+	fprintf(fp, "  -l\t\tLeave old DNSSEC RRSIGS and NSEC records intact\n");
 	fprintf(fp, "  -o <domain>\torigin for the zone\n");
 	fprintf(fp, "  -v\t\tprint version and exit\n");
 	fprintf(fp, "  -E <name>\tuse <name> as the crypto engine for signing\n");
@@ -37,7 +38,8 @@ usage(FILE *fp, const char *prog) {
 	fprintf(fp, "  -K <id>,<int>\tuse key id with algorithm int from engine as KSK\n");
 	fprintf(fp, "\t\tif no key is given (but an external one is used through the engine support, it might be necessary to provide the right algorithm number.\n");
 	fprintf(fp, "  keys must be specified by their base name: K<name>+<alg>+<id>\n");
-	fprintf(fp, "  both a .key and .private file must present\n");
+	fprintf(fp, "  if the public part of the key is not present in the zone, \n");
+	fprintf(fp, "  both a .key and .private file must be present\n");
 	fprintf(fp, "  A date can be a timestamp (seconds since the epoch), or of\n  the form <YYYYMMdd[hhmmss]>\n");
 }
 
@@ -79,6 +81,29 @@ void check_tm(struct tm tm)
 
 }
 
+void
+strip_dnssec_records(ldns_zone *zone)
+{
+	ldns_rr_list *new_list;
+	ldns_rr *cur_rr;
+	
+	new_list = ldns_rr_list_new();
+	
+	new_list = ldns_rr_list_new();
+	while ((cur_rr = ldns_rr_list_pop_rr(ldns_zone_rrs(zone)))) {
+		if (ldns_rr_get_type(cur_rr) == LDNS_RR_TYPE_RRSIG ||
+		    ldns_rr_get_type(cur_rr) == LDNS_RR_TYPE_NSEC
+		   ) {
+			
+			ldns_rr_free(cur_rr);
+		} else {
+			ldns_rr_list_push_rr(new_list, cur_rr);
+		}
+	}
+	ldns_rr_list_free(ldns_zone_rrs(zone));
+	ldns_zone_set_rrs(zone, new_list);
+}
+
 int
 main(int argc, char *argv[])
 {
@@ -104,6 +129,7 @@ main(int argc, char *argv[])
 	size_t key_i;
 	ldns_status s;
 
+	bool leave_old_dnssec_data = false;
 
 	char *outputfile_name = NULL;
 	FILE *outputfile;
@@ -133,7 +159,7 @@ main(int argc, char *argv[])
 
 /*	OPENSSL_config(NULL);*/
 
-	while ((c = getopt(argc, argv, "e:f:i:o:vE:ak:K:")) != -1) {
+	while ((c = getopt(argc, argv, "e:f:i:lo:vE:ak:K:")) != -1) {
 		switch (c) {
 		case 'e':
 			/* try to parse YYYYMMDD first,
@@ -184,6 +210,9 @@ main(int argc, char *argv[])
 			} else {
 				inception = (uint32_t) atol(optarg);
 			}
+			break;
+		case 'l':
+			leave_old_dnssec_data = true;
 			break;
 		case 'o':
 			if (ldns_str2rdf_dname(&origin, optarg) != LDNS_STATUS_OK) {
@@ -324,7 +353,7 @@ main(int argc, char *argv[])
 	if (!origin) {
 		origin = ldns_rr_owner(orig_soa);
 	}
-
+	
 	/* read the ZSKs */
 	argi = 1;
 	while (argi < argc) {
@@ -383,7 +412,12 @@ main(int argc, char *argv[])
 		usage(stderr, prog);
 		exit(EXIT_FAILURE);
 	}
-	
+
+	/* remove old RRSIGS and NSECS */
+	if (!leave_old_dnssec_data) {
+		strip_dnssec_records(orig_zone);
+	}
+
 	/* walk through the keys, and add pubkeys to the orig zone */
 	for (key_i = 0; key_i < ldns_key_list_key_count(keys); key_i++) {
 		key = ldns_key_list_key(keys, key_i);
