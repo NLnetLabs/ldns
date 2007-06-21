@@ -186,3 +186,14 @@ ldns_bgetc(ldns_buffer *buffer)
 	}
 	return (int)ldns_buffer_read_u8(buffer);
 }
+
+void 
+ldns_buffer_copy(ldns_buffer* result, ldns_buffer* from)
+{
+	size_t tocopy = ldns_buffer_limit(from);
+	if(tocopy > ldns_buffer_capacity(result))
+		tocopy = ldns_buffer_capacity(result);
+	ldns_buffer_clear(result);
+	ldns_buffer_write(result, ldns_buffer_begin(from), tocopy);
+	ldns_buffer_flip(result);
+}
