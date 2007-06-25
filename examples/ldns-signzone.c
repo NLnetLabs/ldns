@@ -21,6 +21,7 @@
 
 
 #define MAX_FILENAME_LEN 250
+int verbosity = 0;
 
 void
 usage(FILE *fp, const char *prog) {
@@ -124,7 +125,7 @@ main(int argc, char *argv[])
 	char *keyfile_name;
 	FILE *keyfile = NULL;
 	ldns_key *key = NULL;
-	ldns_rr *pubkey;
+	ldns_rr *pubkey, *pubkey_gen;
 	ldns_key_list *keys;
 	size_t key_i;
 	ldns_status s;
@@ -379,26 +380,92 @@ main(int argc, char *argv[])
 				}
 
 				LDNS_FREE(keyfile_name);
+				
+				/* find the public key in the zone, or in a
+				 * seperate file
+				 * we 'generate' one anyway, then match that to any present in the zone,
+				 *  if it matches, we drop our own. If not, we try to see if there
+				 * is a .key file present. If not, we use our own generated one, with
+				 * some default values */
+				
+				pubkey_gen = ldns_key2rr(key);
+				if (verbosity >= 2) {
+					printf(stderr, "Looking for key with keytag %u or %u\n", ldns_calc_keytag(pubkey_gen), ldns_calc_keytag(pubkey_gen) + 1);
+				}
+				for (key_i = 0; key_i < ldns_rr_list_rr_count(orig_rrs); key_i++) {
+					pubkey = ldns_rr_list_rr(orig_rrs, key_i);
+					if (ldns_rr_get_type(pubkey) == LDNS_RR_TYPE_DNSKEY &&
+					    (ldns_calc_keytag(pubkey) == ldns_calc_keytag(pubkey_gen) ||
+					     /* KSK has gen-keytag + 1 */
+					     ldns_calc_keytag(pubkey) == ldns_calc_keytag(pubkey_gen) + 1) 
+					    ) {
+						/* found it, drop our own */
+						if (verbosity >= 2) {
+							fprintf(stderr, "Found it in the zone!\n");
+						}
+						goto found;
+					}
+				}
+				/* it was not in the zone, try to read a .key file */
 				keyfile_name = LDNS_XMALLOC(char, strlen(keyfile_name_base) + 5);
 				snprintf(keyfile_name, strlen(keyfile_name_base) + 5, "%s.key", keyfile_name_base);
-				fprintf(stderr, "trying to read %s\n", keyfile_name);
+				if (verbosity >= 2) {
+					fprintf(stderr, "Trying to read %s\n", keyfile_name);
+				}
 				keyfile = fopen(keyfile_name, "r");
 				line_nr = 0;
-				if (!keyfile) {
-					fprintf(stderr, "Error: unable to read %s: %s\n", keyfile_name, strerror(errno));
-				} else {
+				if (keyfile) {
 					if (ldns_rr_new_frm_fp_l(&pubkey, keyfile, &default_ttl, NULL, NULL, &line_nr) ==
 							LDNS_STATUS_OK) {
 						ldns_key_set_pubkey_owner(key, ldns_rdf_clone(ldns_rr_owner(pubkey)));
 						ldns_key_set_flags(key, ldns_rdf2native_int16(ldns_rr_rdf(pubkey, 0)));
 						ldns_key_set_keytag(key, ldns_calc_keytag(pubkey));
 					}
-					ldns_key_list_push_key(keys, key);
 					ldns_zone_push_rr(orig_zone, ldns_rr_clone(pubkey));
 					ldns_rr_free(pubkey);
 					fclose(keyfile);
+					goto found;
 				}
 				LDNS_FREE(keyfile_name);
+				
+				/* okay, so reading .key didn't work either, just use our generated one */
+				if (verbosity >= 2) {
+					fprintf(stderr, "Not in zone, no .key file, generating DNSKEY from .private\n");
+				}
+				ldns_zone_push_rr(orig_zone, pubkey_gen);
+				
+				
+				found:
+				ldns_rr_free(pubkey_gen);
+				ldns_key_list_push_key(keys, key);
+				exit(0);
+#if 0
+ else {
+					/* apparently the public key is not in the zone
+					   so we try to read the .key file
+					 */
+					keyfile_name = LDNS_XMALLOC(char, strlen(keyfile_name_base) + 5);
+					snprintf(keyfile_name, strlen(keyfile_name_base) + 5, "%s.key", keyfile_name_base);
+					fprintf(stderr, "trying to read %s\n", keyfile_name);
+					keyfile = fopen(keyfile_name, "r");
+					line_nr = 0;
+					if (!keyfile) {
+						fprintf(stderr, "Error: unable to read %s: %s\n", keyfile_name, strerror(errno));
+					} else {
+						if (ldns_rr_new_frm_fp_l(&pubkey, keyfile, &default_ttl, NULL, NULL, &line_nr) ==
+								LDNS_STATUS_OK) {
+							ldns_key_set_pubkey_owner(key, ldns_rdf_clone(ldns_rr_owner(pubkey)));
+							ldns_key_set_flags(key, ldns_rdf2native_int16(ldns_rr_rdf(pubkey, 0)));
+							ldns_key_set_keytag(key, ldns_calc_keytag(pubkey));
+						}
+						ldns_key_list_push_key(keys, key);
+						ldns_zone_push_rr(orig_zone, ldns_rr_clone(pubkey));
+						ldns_rr_free(pubkey);
+						fclose(keyfile);
+					}
+					LDNS_FREE(keyfile_name);
+				}
+#endif
 			} else {
 				fprintf(stderr, "Error reading key from %s at line %d\n", argv[argi], line_nr);
 			}
