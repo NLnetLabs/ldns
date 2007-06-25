@@ -390,7 +390,7 @@ main(int argc, char *argv[])
 				
 				pubkey_gen = ldns_key2rr(key);
 				if (verbosity >= 2) {
-					printf(stderr, "Looking for key with keytag %u or %u\n", ldns_calc_keytag(pubkey_gen), ldns_calc_keytag(pubkey_gen) + 1);
+					fprintf(stderr, "Looking for key with keytag %u or %u\n", (unsigned int) ldns_calc_keytag(pubkey_gen), (unsigned int)  ldns_calc_keytag(pubkey_gen) + 1);
 				}
 				for (key_i = 0; key_i < ldns_rr_list_rr_count(orig_rrs); key_i++) {
 					pubkey = ldns_rr_list_rr(orig_rrs, key_i);

@@ -140,6 +140,7 @@ void ldns_dnssec_trust_tree_free(ldns_dnssec_trust_tree *tree);
  * \param[in] *out The file stream to print to
  * \param[in] tree The trust tree to print
  * \param[in] tabs Prepend each line with tabs*2 spaces
+ * \param[in] extended If true, add little explanation lines to the output
  */
 void ldns_dnssec_trust_tree_print(FILE *out, ldns_dnssec_trust_tree *tree, size_t tabs, bool extended);
 
@@ -156,9 +157,9 @@ ldns_dnssec_trust_tree *ldns_dnssec_derive_trust_tree(ldns_dnssec_data_chain *da
 /**
  * Adds a trust tree as a parent for the given trust tree
  *
- * \param[in] tree The tree to add the parent to
- * \param[in] parent_tree The parent tree to add
- * \param[in] parent_signature The RRSIG relevant to this parent/child connection
+ * \param[in] *tree The tree to add the parent to
+ * \param[in] *parent The parent tree to add
+ * \param[in] *parent_signature The RRSIG relevant to this parent/child connection
  * \param[in] parent_status The DNSSEC status for this parent, child and RRSIG
  * \return LDNS_STATUS_OK if the addition succeeds, error otherwise
  */

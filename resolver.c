@@ -125,13 +125,15 @@ ldns_resolver_dnssec_anchors(const ldns_resolver *r)
 bool
 ldns_resolver_trusted_key(const ldns_resolver *r, ldns_rr_list * keys, ldns_rr_list * trusted_keys)
 {
-  unsigned int i; bool result = false;
+  size_t i;
+  bool result = false;
+  
   ldns_rr_list * trust_anchors = ldns_resolver_dnssec_anchors(r);
   ldns_rr * cur_rr;
 
   if (!r || !trust_anchors || !keys) { return false; }
 
-  for (i=0; i< ldns_rr_list_rr_count(keys); i++) {
+  for (i = 0; i < ldns_rr_list_rr_count(keys); i++) {
 
     cur_rr = ldns_rr_list_rr(keys, i);
     if (ldns_rr_list_contains_rr(trust_anchors, cur_rr)) {      
@@ -753,7 +755,7 @@ ldns_resolver_new_frm_fp_l(ldns_resolver **res, FILE *fp, int *line_nr)
 #ifdef HAVE_SSL
 				tmp_rr = ldns_read_anchor_file(word);
 #endif
-				ldns_resolver_push_dnssec_anchor(r, tmp_rr);
+				(void) ldns_resolver_push_dnssec_anchor(r, tmp_rr);
 				ldns_rr_free(tmp_rr);
 				expect = LDNS_RESOLV_KEYWORD;
 				break;

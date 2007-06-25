@@ -227,6 +227,7 @@ do_chase(ldns_resolver *res, ldns_rdf *name, ldns_rr_type type, ldns_rr_class c,
 	ldns_rr_list *rrset = NULL;
 	ldns_status result;
 	
+	bool cname_followed = false;
 /*
 	ldns_rr_list *sigs;
 	ldns_rr *cur_sig;
@@ -244,7 +245,6 @@ do_chase(ldns_resolver *res, ldns_rdf *name, ldns_rr_type type, ldns_rr_class c,
 
 	ldns_dname2canonical(name);
 	
-	bool cname_followed = false;
 	
 	pkt = ldns_pkt_clone(pkt_o);
 	if (!name) {

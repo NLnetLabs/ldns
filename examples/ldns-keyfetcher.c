@@ -238,11 +238,12 @@ retrieve_dnskeys(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 						printf("Comparing answer list of answer to previous\n\n");
 					}
 					ldns_rr_list_sort(ldns_pkt_answer(p));
+					ldns_rr_list_sort(answer_list);
 					if (ldns_rr_list_compare(answer_list, ldns_pkt_answer(p)) != 0) {
 						fprintf(stderr, "ERROR: different answer answer from nameserver\n");
-						fprintf(stderr, "I had (from previous servers):\n");
+						fprintf(stderr, "\nI had (from previous servers):\n");
 						ldns_rr_list_print(stderr, answer_list);
-						fprintf(stderr, "I received (from nameserver at ");
+						fprintf(stderr, "\nI received (from nameserver at ");
 						ldns_rdf_print(stderr, ldns_resolver_nameservers(res)[0]);
 						fprintf(stderr, "):\n");
 						ldns_rr_list_print(stderr, ldns_pkt_answer(p));
@@ -260,11 +261,12 @@ retrieve_dnskeys(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 						printf("Comparing authority list of answer to previous\n\n");
 					}
 					ldns_rr_list_sort(ldns_pkt_authority(p));
+					ldns_rr_list_sort(authority_list);
 					if (ldns_rr_list_compare(authority_list, ldns_pkt_authority(p)) != 0) {
 						fprintf(stderr, "ERROR: different authority answer from nameserver\n");
-						fprintf(stderr, "I had (from previous servers):\n");
+						fprintf(stderr, "\nI had (from previous servers):\n");
 						ldns_rr_list_print(stderr, authority_list);
-						fprintf(stderr, "I received (from nameserver at ");
+						fprintf(stderr, "\nI received (from nameserver at ");
 						ldns_rdf_print(stderr, ldns_resolver_nameservers(res)[0]);
 						fprintf(stderr, "):\n");
 						ldns_rr_list_print(stderr, ldns_pkt_authority(p));
@@ -325,11 +327,12 @@ retrieve_dnskeys(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 						printf("Comparing answer list of answer to previous\n\n");
 					}
 					ldns_rr_list_sort(ldns_pkt_answer(p));
+					ldns_rr_list_sort(answer_list);
 					if (ldns_rr_list_compare(answer_list, ldns_pkt_answer(p)) != 0) {
 						fprintf(stderr, "ERROR: different answer answer from nameserver\n");
-						fprintf(stderr, "I had (from previous servers):\n");
+						fprintf(stderr, "\nI had (from previous servers):\n");
 						ldns_rr_list_print(stderr, answer_list);
-						fprintf(stderr, "I received (from nameserver at ");
+						fprintf(stderr, "\nI received (from nameserver at ");
 						ldns_rdf_print(stderr, ldns_resolver_nameservers(res)[0]);
 						fprintf(stderr, "):\n");
 						ldns_rr_list_print(stderr, ldns_pkt_answer(p));
@@ -347,11 +350,12 @@ retrieve_dnskeys(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 						printf("Comparing authority list of answer to previous\n\n");
 					}
 					ldns_rr_list_sort(ldns_pkt_authority(p));
+					ldns_rr_list_sort(authority_list);
 					if (ldns_rr_list_compare(authority_list, ldns_pkt_authority(p)) != 0) {
 						fprintf(stderr, "ERROR: different authority answer from nameserver\n");
-						fprintf(stderr, "I had (from previous servers):\n");
+						fprintf(stderr, "\nI had (from previous servers):\n");
 						ldns_rr_list_print(stderr, authority_list);
-						fprintf(stderr, "I received (from nameserver at ");
+						fprintf(stderr, "\nI received (from nameserver at ");
 						ldns_rdf_print(stderr, ldns_resolver_nameservers(res)[0]);
 						fprintf(stderr, "):\n");
 						ldns_rr_list_print(stderr, ldns_pkt_authority(p));
@@ -466,11 +470,12 @@ retrieve_dnskeys(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 				printf("1Comparing answer rr list of answer to previous\n");
 			}
 			ldns_rr_list_sort(ldns_pkt_answer(p));
+			ldns_rr_list_sort(answer_list);
 			if (ldns_rr_list_compare(answer_list, ldns_pkt_answer(p)) != 0) {
 				printf("ERROR: different answer section in response from nameserver\n");
-				fprintf(stderr, "I had:\n");
+				fprintf(stderr, "\nI had:\n");
 				ldns_rr_list_print(stderr, answer_list);
-				fprintf(stderr, "I received (from nameserver at ");
+				fprintf(stderr, "\nI received (from nameserver at ");
 				ldns_rdf_print(stderr, ldns_resolver_nameservers(res)[0]);
 				fprintf(stderr, "):\n");
 				ldns_rr_list_print(stderr, ldns_pkt_answer(p));
