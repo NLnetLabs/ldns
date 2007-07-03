@@ -5,7 +5,7 @@ drill \- get (debug) information out of DNS(SEC)
 .SH SYNOPSIS
 .B drill
 [
-.IR OPTION
+.IR OPTIONS
 ]
 .IR name
 [
@@ -25,9 +25,12 @@ DNS. It is specificly designed to be used with DNSSEC.
 The name \fBdrill\fR is a pun on \fBdig\fR. With \fBdrill\fR you should be able
 get even more information than with \fBdig\fR.
 .PP
-The arguments to \fBdrill\fR may be placed in any order. If no arguments
-are given class defaults to 'IN' and type to 'A'. The server(s) specified
-in /etc/resolv.conf are used to query against.
+If no arguments are given class defaults to 'IN' and type to 'A'. The
+server(s) specified in /etc/resolv.conf are used to query against.
+
+.PP
+\fIname\fR
+Ask for this name.
 
 .PP
 \fI@server\fR
@@ -38,10 +41,6 @@ Send to query to this server. If not specified use the nameservers from
 \fItype\fR
 Ask for this RR type. If type is not given on the command line it defaults
 to 'A'. Except when doing to reverse lookup when it defaults to 'PTR'.
-
-.PP
-\fIname\fR
-Ask for this name.
 
 .PP
 \fIclass\fR
@@ -199,7 +198,7 @@ Report bugs to <ldns-team@nlnetlabs.nl>.
 .SH BUGS
 
 .SH COPYRIGHT
-Copyright (c) 2004-2006 NLnet Labs.
+Copyright (c) 2004-2007 NLnet Labs.
 Licensed under the revised BSD license. There is NO warranty; not even for MERCHANTABILITY or
 FITNESS FOR A PARTICULAR PURPOSE.
 
