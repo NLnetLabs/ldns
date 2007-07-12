@@ -24,10 +24,10 @@ usage(FILE *fp, char *prog) {
 	fprintf(fp, "-4\t\tUse IPv4 only\n");
 	fprintf(fp, "-6\t\tUse IPv6 only\n");
 	fprintf(fp, "-h\t\tShow this help\n");
+	fprintf(fp, "-i\t\tInsecurer mode; don't do checks, just query for the keys\n");
 	fprintf(fp, "-r <file>\tUse file to read root hints from\n");
 	fprintf(fp, "-s\t\tDon't print the keys but store them in files\n\t\tcalled K<file>.+<alg>.+<keytag>.key\n");
 	fprintf(fp, "-v <int>\tVerbosity level (0-5, not verbose-very verbose)\n");
-	fprintf(fp, "-i\tInsecurer mode; don't do checks, just query for the keys\n");
 }
 
 ldns_rr_list *
@@ -597,6 +597,8 @@ main(int argc, char *argv[])
 			} else if (strncmp("-h", argv[i], 3) == 0) {
 				usage(stdout, argv[0]);
 				exit(EXIT_SUCCESS);
+			} else if (strncmp("-i", argv[i], 2) == 0) {
+				insecure = true;
 			} else if (strncmp("-r", argv[i], 2) == 0) {
 				if (strlen(argv[i]) > 2) {
 					root_file = argv[i]+2;
@@ -619,8 +621,6 @@ main(int argc, char *argv[])
 					verbosity = atoi(argv[i+1]);
 					i++;
 				}
-			} else if (strncmp("-i", argv[i], 2) == 0) {
-				insecure = true;
 			} else {
 				/* create a rdf from the command line arg */
 				if (domain) {

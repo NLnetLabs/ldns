@@ -1,6 +1,6 @@
 .TH ldns-keygen 1 "30 May 2005"
 .SH NAME
-ldns-keygen \- generate a keypair and print out the public part as a DNSKEY RR
+ldns-keygen \- generate a DNSSEC key pair
 .SH SYNOPSIS
 .B ldns-keygen 
 [
@@ -9,35 +9,39 @@ ldns-keygen \- generate a keypair and print out the public part as a DNSKEY RR
 .IR DOMAIN 
 
 .SH DESCRIPTION
-\fBldns-keygen\fR is used to generate a private/public keypair. When run it
+\fBldns-keygen\fR is used to generate a private/public keypair. When run, it
 will create 3 files; a .key file with the public DNSKEY, a .private
 file with the private keydata and a .ds with the DS record of the
 DNSKEY record.
 
-It prints out the basename for all these files: (K<name>+<alg>+<id>
+It prints out the basename for these files: K<name>+<alg>+<id>
 
 .SH OPTIONS
 .TP
-\fBR\fR
+\fB-R\fR
 Generate a RSA key. 
 
 .TP
-\fBD\fR
+\fB-D\fR
 Generate a DSA key.
 
 .TP
-\fBk\fR 
+\fB-k\fR 
 When given generate a key signing key. This just sets the flag field to
 257 instead of 256.
 
 .TP
-\fBb \fIbits\fR 
+\fB-b \fIbits\fR 
 Use this many bits for the key length.
 
 .TP
-\fbr \fdevice\fR
+\fb-r \fIdevice\fR
 Make ldns-keygen use this file for its random data. This will default
 to /dev/random.
+
+.TP
+\fb-v\fR
+Show the version and exit
 
 .SH AUTHOR
 Written by the ldns team as an example for ldns usage.

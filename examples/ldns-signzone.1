@@ -4,7 +4,7 @@ ldns-signzone \- sign a zonefile with DNSSEC data
 .SH SYNOPSIS
 .B ldns-signzone 
 [
-.IR OPTION
+.IR OPTIONS
 ]
 .IR ZONEFILE 
 .IR
@@ -31,17 +31,39 @@ Set expiration date of the signatures to this date, the format can be
 YYYYMMDD[hhmmss], or a timestamp.
 
 .TP
+\fB-f\f  \fIfile\fR
+Use this file to store the signed zone in (default <originalfile>.signed)
+
+.TP
 \fB-i\f  \fIdate\fR
 Set inception date of the signatures to this date, the format can be
 YYYYMMDD[hhmmss], or a timestamp.
 
 .TP
-\fB-f\f  \fIfile\fR
-Use this file to store the signed zone in (default <originalfile>.signed)
+\fB-l\fR
+Leave old DNSSEC RRSIGS and NSEC records intact (by default, they are removed from the zone)
 
 .TP
 \fB-o\f  \fIorigin\fR
 Use this as the origin of the zone, if it cannot be read from the zonefile
+
+.TP
+\fB-v\fR
+Print the version and exit
+
+.TP
+\fB-E\f  \fIname\fR
+Use the EVP cryptographic engine with the given name for signing. This can have some extra options; see ENGINE OPTIONS for more information.
+
+
+.TP
+\fB-k\f  \fIid,int\fR
+Use the key with the given id as the signing key for algorithm int as a Zone signing key.
+
+.TP
+\fB-K\f  \fIid,int\fR
+Use the key with the given id as the signing key for algorithm int as a Key signing key.
+
 
 .SH AUTHOR
 Written by the ldns team as an example for ldns usage.

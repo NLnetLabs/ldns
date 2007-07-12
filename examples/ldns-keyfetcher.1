@@ -3,6 +3,9 @@
 ldns-keyfetcher \- retrieve the DNSSEC DNSKEYs for a zone
 .SH SYNOPSIS
 .B ldns-keyfetcher
+[ 
+.IR OPTIONS
+] 
 .IR DOMAIN 
 
 .SH DESCRIPTION
@@ -15,6 +18,19 @@ the key resource record set is printed.
 
 
 .SH OPTIONS
+\fB-4\f	\fI\fR
+Only use IPv4
+
+\fB-6\f	\fI\fR
+Only use IPv6
+
+\fB-h\f	\fI\fR
+Show a help text and exit
+
+\fB-i\fR
+Insecurer mode; there will only be one query for the DNSKEYS. There will not
+be crosschecking of all authoritative nameservers.
+
 \fB-v\f  \fIverbosity\fR
 
 Set the verbosity level. The following levels are available:
@@ -30,6 +46,11 @@ Set the verbosity level. The following levels are available:
 Use file as the root hints file, should contain A records in presentation
 format. The default is /etc/named.root. You can get this file from
 http://www.internic.net/zones/named.root.
+
+\fB-s\f	\fI\fR
+Don't print the keys to stdout, but store them in files.
+
+The filenames will be of the format K<file>.+<alg>.+<keytag>.key
 
 .SH AUTHOR
 Written by Jelte Jansen for NLnet Labs.
