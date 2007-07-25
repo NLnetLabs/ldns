@@ -191,6 +191,7 @@ void
 ldns_buffer_copy(ldns_buffer* result, ldns_buffer* from)
 {
 	size_t tocopy = ldns_buffer_limit(from);
+
 	if(tocopy > ldns_buffer_capacity(result))
 		tocopy = ldns_buffer_capacity(result);
 	ldns_buffer_clear(result);
