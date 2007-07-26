@@ -338,7 +338,7 @@ void ldns_rr_free(ldns_rr *rr);
  * the current found ownername. The caller must ldns_rdf_deep_free it.
  * \return a status msg describing an error or LDNS_STATUS_OK
  */
-ldns_status ldns_rr_new_frm_str(ldns_rr **n, const char *str, uint16_t default_ttl, ldns_rdf *origin, ldns_rdf **prev);
+ldns_status ldns_rr_new_frm_str(ldns_rr **n, const char *str, uint32_t default_ttl, ldns_rdf *origin, ldns_rdf **prev);
 
 /**
  * creates a new rr from a file containing a string.
@@ -354,7 +354,7 @@ ldns_status ldns_rr_new_frm_str(ldns_rr **n, const char *str, uint16_t default_t
  *	      The caller must ldns_rdf_deep_free it.
  * \return a ldns_status with an error or LDNS_STATUS_OK
  */
-ldns_status ldns_rr_new_frm_fp(ldns_rr **rr, FILE *fp, uint16_t *default_ttl, ldns_rdf **origin, ldns_rdf **prev);
+ldns_status ldns_rr_new_frm_fp(ldns_rr **rr, FILE *fp, uint32_t *default_ttl, ldns_rdf **origin, ldns_rdf **prev);
 
 /**
  * creates a new rr from a file containing a string.
@@ -372,7 +372,7 @@ ldns_status ldns_rr_new_frm_fp(ldns_rr **rr, FILE *fp, uint16_t *default_ttl, ld
  *            the pointer will be updated after the call
  * \return a ldns_status with an error or LDNS_STATUS_OK
  */
-ldns_status ldns_rr_new_frm_fp_l(ldns_rr **rr, FILE *fp, uint16_t *default_ttl, ldns_rdf **origin, ldns_rdf **prev, int *line_nr);
+ldns_status ldns_rr_new_frm_fp_l(ldns_rr **rr, FILE *fp, uint32_t *default_ttl, ldns_rdf **origin, ldns_rdf **prev, int *line_nr);
 
 /**
  * sets the owner in the rr structure.

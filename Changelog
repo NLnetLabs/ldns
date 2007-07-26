@@ -1,4 +1,10 @@
 1.x
+	* API changes:
+	  - various arguments have the keyword const now
+          - ldns_rr_new_frm_str, ldns_rr_new_frm_fp_l and
+	    ldns_zone_new_frm_fp_l now take a uint32_t for the default_ttl
+            value instead of a uint16_t
+
 	* Added contribution from Simon Vallet to perform simple trust
           anchor validation from within the library
 

@@ -152,13 +152,13 @@ ldns_zone_new(void)
  * $TTL, $ORIGIN
  */
 ldns_status
-ldns_zone_new_frm_fp(ldns_zone **z, FILE *fp, ldns_rdf *origin, uint16_t ttl, ldns_rr_class c)
+ldns_zone_new_frm_fp(ldns_zone **z, FILE *fp, ldns_rdf *origin, uint32_t ttl, ldns_rr_class c)
 {
 	return ldns_zone_new_frm_fp_l(z, fp, origin, ttl, c, NULL);
 }
 
 ldns_status
-ldns_zone_new_frm_fp_l(ldns_zone **z, FILE *fp, ldns_rdf *origin, uint16_t ttl, ldns_rr_class c, 
+ldns_zone_new_frm_fp_l(ldns_zone **z, FILE *fp, ldns_rdf *origin, uint32_t ttl, ldns_rr_class c, 
 		int *line_nr)
 {
 	ldns_zone *newzone;

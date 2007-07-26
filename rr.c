@@ -94,7 +94,7 @@ ldns_rr_free(ldns_rr *rr)
  * miek.nl. IN MX 10 elektron.atoom.net
  */
 ldns_status
-ldns_rr_new_frm_str(ldns_rr **newrr, const char *str, uint16_t default_ttl, ldns_rdf *origin, 
+ldns_rr_new_frm_str(ldns_rr **newrr, const char *str, uint32_t default_ttl, ldns_rdf *origin, 
 		ldns_rdf **prev)
 {
 	ldns_rr *new;
@@ -473,19 +473,19 @@ ldns_rr_new_frm_str(ldns_rr **newrr, const char *str, uint16_t default_ttl, ldns
 }
 
 ldns_status
-ldns_rr_new_frm_fp(ldns_rr **newrr, FILE *fp, uint16_t *ttl, ldns_rdf **origin, ldns_rdf **prev)
+ldns_rr_new_frm_fp(ldns_rr **newrr, FILE *fp, uint32_t *ttl, ldns_rdf **origin, ldns_rdf **prev)
 {
 	return ldns_rr_new_frm_fp_l(newrr, fp, ttl, origin, prev, NULL);
 }
 
 ldns_status
-ldns_rr_new_frm_fp_l(ldns_rr **newrr, FILE *fp, uint16_t *default_ttl, ldns_rdf **origin, ldns_rdf **prev, int *line_nr)
+ldns_rr_new_frm_fp_l(ldns_rr **newrr, FILE *fp, uint32_t *default_ttl, ldns_rdf **origin, ldns_rdf **prev, int *line_nr)
 {
         char *line;
 	const char *endptr;  /* unused */
 	ldns_rr *rr;
 	char *keyword;
-	uint16_t ttl;
+	uint32_t ttl;
 	ldns_rdf *tmp;
 	ldns_status s;
 	ssize_t size;
