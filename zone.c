@@ -163,7 +163,7 @@ ldns_zone_new_frm_fp_l(ldns_zone **z, FILE *fp, ldns_rdf *origin, uint32_t ttl, 
 {
 	ldns_zone *newzone;
 	ldns_rr *rr;
-	uint16_t my_ttl = ttl;
+	uint32_t my_ttl = ttl;
 	ldns_rr_class my_class = c;
 	ldns_rr *last_rr = NULL;
 	ldns_rdf *my_origin;
