@@ -303,7 +303,7 @@ ldns_dnssec_trust_tree_print(FILE *out, ldns_dnssec_trust_tree *tree, size_t tab
 			}
 			
 			
-			fprintf(out, ")\n", tree->parent_count);
+			fprintf(out, ")\n");
 			for (i = 0; i < tree->parent_count; i++) {
 				/* only print errors */
 				if (tree->parent_status[i] != LDNS_STATUS_OK) {
@@ -398,8 +398,6 @@ ldns_dnssec_derive_trust_tree_ds_rrset(ldns_dnssec_trust_tree *new_tree,
 	ldns_rr_list *cur_rrset = data_chain->rrset;
 	ldns_dnssec_trust_tree *cur_parent_tree;
 	ldns_rr *cur_parent_rr;
-	int cur_keytag;
-	ldns_status cur_status;
 
 	/* try the parent to see whether there are DSs there */
 	if (ldns_rr_get_type(cur_rr) == LDNS_RR_TYPE_DNSKEY &&
@@ -429,17 +427,14 @@ ldns_dnssec_derive_trust_tree_ds_rrset(ldns_dnssec_trust_tree *new_tree,
 ldns_dnssec_trust_tree *
 ldns_dnssec_derive_trust_tree(ldns_dnssec_data_chain *data_chain, ldns_rr *rr)
 {
-	ldns_rr_list *cur_rrset, *tmp_rrset;
+	ldns_rr_list *cur_rrset;
 	ldns_rr_list *cur_sigs;
 	ldns_rr *cur_rr = NULL;
-	ldns_rr *cur_parent_rr;
 	ldns_rr *cur_sig_rr;
 	uint16_t cur_keytag;
-	size_t h, i, j;
+	size_t i;
 	
-	ldns_dnssec_trust_tree *cur_parent_tree;
 	ldns_dnssec_trust_tree *new_tree = ldns_dnssec_trust_tree_new();
-	ldns_status cur_status;
 	
 	if (data_chain && data_chain->rrset) {
 		cur_rrset = data_chain->rrset;
@@ -474,7 +469,7 @@ ldns_dnssec_derive_trust_tree(ldns_dnssec_data_chain *data_chain, ldns_rr *rr)
 					if (ldns_dname_compare(ldns_rr_owner(cur_sig_rr), 
 							       ldns_rr_owner(cur_rr)))
 					{
-						printf("break\n");
+						/*printf("break\n");*/
 						break;
 					}
 					
@@ -584,7 +579,6 @@ ldns_calc_keytag(const ldns_rr *key)
 		}
 		ldns_buffer_free(keybuf);
 		ac32 += (ac32 >> 16) & 0xFFFF;
-/*printf("RETURNING %u\n", (uint16_t) (ac32 & 0xFFFF));*/
 		return (uint16_t) (ac32 & 0xFFFF);
 	}
 }
@@ -647,13 +641,9 @@ ldns_fetch_valid_domain_keys(const ldns_resolver * res, const ldns_rdf * domain,
 	
         if ((parent_keys = ldns_fetch_valid_domain_keys(res, parent_domain, keys, status))) {
 	  
-printf("1\n");
           /* Check DS records */
           if ((ds_keys = ldns_validate_domain_ds(res, domain, parent_keys))) {
-printf("2\n");
             trusted_keys = ldns_fetch_valid_domain_keys(res, domain, ds_keys, status);
-printf("[fetch_valid_domain_keys] trusted keys:\n");
-ldns_rr_list_print(stdout, trusted_keys);
             ldns_rr_list_deep_free(ds_keys);
           } else {
             /* No valid DS at the parent -- fail */
@@ -663,10 +653,8 @@ ldns_rr_list_print(stdout, trusted_keys);
         }
         ldns_rdf_free(parent_domain);
       }
-else { printf("[fetch_valid_domain_keys] at root, nothing found\n"); }
     }
   }
-else { printf("[fetch_valid_domain_keys] no res, domin or keys\n"); }
   return trusted_keys;
 }
 

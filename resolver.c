@@ -610,7 +610,9 @@ ldns_resolver_new_frm_fp_l(ldns_resolver **res, FILE *fp, int *line_nr)
 	int8_t expect;
 	uint8_t i;
 	ldns_rdf *tmp;
+#ifdef HAVE_SSL
 	ldns_rr *tmp_rr;
+#endif
 	ssize_t gtr;
 	ldns_buffer *b;
 
@@ -754,9 +756,9 @@ ldns_resolver_new_frm_fp_l(ldns_resolver **res, FILE *fp, int *line_nr)
 
 #ifdef HAVE_SSL
 				tmp_rr = ldns_read_anchor_file(word);
-#endif
 				(void) ldns_resolver_push_dnssec_anchor(r, tmp_rr);
 				ldns_rr_free(tmp_rr);
+#endif
 				expect = LDNS_RESOLV_KEYWORD;
 				break;
 		}

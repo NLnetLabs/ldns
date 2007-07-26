@@ -193,6 +193,8 @@ ldns_send_buffer(ldns_pkt **result, ldns_resolver *r, ldns_buffer *qb, ldns_rdf 
 			status = LDNS_STATUS_CRYPTO_TSIG_BOGUS;
 		}
 	}
+#else
+	tsig_mac = tsig_mac;
 #endif /* HAVE_SSL */
 	
 	LDNS_FREE(reply_bytes);

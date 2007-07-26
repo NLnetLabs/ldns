@@ -141,7 +141,7 @@ ldns_pkt_additional(const ldns_pkt *packet)
 
 /* return ALL section concatenated */
 ldns_rr_list *
-ldns_pkt_all(ldns_pkt *packet)
+ldns_pkt_all(const ldns_pkt *packet)
 {
 	ldns_rr_list *all, *prev_all;
 
@@ -160,7 +160,7 @@ ldns_pkt_all(ldns_pkt *packet)
 }
 
 ldns_rr_list *
-ldns_pkt_all_noquestion(ldns_pkt *packet)
+ldns_pkt_all_noquestion(const ldns_pkt *packet)
 {
 	ldns_rr_list *all, *all2;
 
