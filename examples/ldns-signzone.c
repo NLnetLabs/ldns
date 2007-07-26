@@ -110,7 +110,7 @@ main(int argc, char *argv[])
 {
 	const char *zonefile_name;
 	FILE *zonefile = NULL;
-	uint16_t default_ttl = LDNS_DEFAULT_TTL;
+	uint32_t default_ttl = LDNS_DEFAULT_TTL;
 	int line_nr = 0;
 	int c;
 	int argi;
@@ -148,7 +148,7 @@ main(int argc, char *argv[])
 	uint32_t inception;
 	uint32_t expiration;
 	ldns_rdf *origin = NULL;
-	uint16_t ttl = 0;
+	uint32_t ttl = 0;
 	ldns_rr_class class = LDNS_RR_CLASS_IN;	
 	
 	char *prog = strdup(argv[0]);

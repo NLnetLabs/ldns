@@ -133,7 +133,7 @@ ldns_update_resolver_new(const char *fqdn, const char *zone,
 
 ldns_status
 ldns_update_send_simple_addr(const char *fqdn, const char *zone,
-    const char *ipaddr, uint16_t p, uint16_t ttl, ldns_tsig_credentials *tsig_cred)
+    const char *ipaddr, uint16_t p, uint32_t ttl, ldns_tsig_credentials *tsig_cred)
 {
         ldns_resolver   *res;
         ldns_pkt        *u_pkt = NULL, *r_pkt;
@@ -250,8 +250,8 @@ main(int argc, char **argv)
 	ldns_status	ret;
 	ldns_tsig_credentials	tsig_cr, *tsig_cred;
 	int		c = 2;
-	uint16_t	defttl = 300;
-	uint16_t 	port = 5353;
+	uint32_t	defttl = 300;
+	uint32_t 	port = 5353;
 	
 	prog = strdup(argv[0]);
 
