@@ -10,6 +10,10 @@
 #include "drill.h"
 #include <ldns/ldns.h>
 
+#ifdef HAVE_SSL
+#include <openssl/err.h>
+#endif
+
 #define IP6_ARPA_MAX_LEN 65
 
 /* query debug, 2 hex dumps */
@@ -872,7 +876,7 @@ main(int argc, char *argv[])
 	xfree(tsig_algorithm);
 
 #ifdef HAVE_SSL
-	ERR_remove_state();
+	ERR_remove_state(0);
 	CRYPTO_cleanup_all_ex_data();
 	ERR_free_strings();
 	EVP_cleanup();
