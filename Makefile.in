@@ -205,7 +205,7 @@ b64_ntop$U.o:	$(srcdir)/compat/b64_ntop.c
 malloc$U.o:	$(srcdir)/compat/malloc.c
 	$(COMP_LIB) -c $(srcdir)/compat/malloc.c -o $@
 
-realloc$U.o:	$(srcdir)/compat/malloc.c
+realloc$U.o:	$(srcdir)/compat/realloc.c
 	$(COMP_LIB) -c $(srcdir)/compat/realloc.c -o $@
 
 timegm$U.o:	$(srcdir)/compat/timegm.c
