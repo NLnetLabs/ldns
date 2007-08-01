@@ -834,10 +834,11 @@ ldns_verify_rrsig_buffers(ldns_buffer *rawsig_buf, ldns_buffer *verify_buf,
 		/* check for right key */
 		switch(algo) {
 			case LDNS_DSA:
+			case LDNS_DSA_NSEC3:
 				return ldns_verify_rrsig_dsa(rawsig_buf, verify_buf, key_buf);
 				break;
 			case LDNS_RSASHA1:
-				/*return ldns_verify_rrsig_rsasha1(rawsig_buf, verify_buf, key_buf);*/
+			case LDNS_RSASHA1_NSEC3:
 				return ldns_verify_rrsig_rsasha1(rawsig_buf, verify_buf, key_buf);
 				break;
 			case LDNS_RSAMD5:
@@ -898,6 +899,8 @@ ldns_verify_rrsig_keylist(ldns_rr_list *rrset, ldns_rr *rrsig, const ldns_rr_lis
 	/* check if the typecovered is equal to the type checked */
 	if (ldns_rdf2rr_type(ldns_rr_rrsig_typecovered(rrsig)) !=
 			ldns_rr_get_type(ldns_rr_list_rr(rrset_clone, 0))) {
+		ldns_rr_list_deep_free(rrset_clone);
+		ldns_rr_list_deep_free(validkeys);
 		return LDNS_STATUS_CRYPTO_TYPE_COVERED_ERR;
 	}
 	
@@ -917,18 +920,30 @@ ldns_verify_rrsig_keylist(ldns_rr_list *rrset, ldns_rr *rrsig, const ldns_rr_lis
 		/* bad sig, expiration before inception?? Tsssg */
 		ldns_buffer_free(rawsig_buf);
 		ldns_buffer_free(verify_buf);
+		ldns_buffer_free(rawsig_buf);
+		ldns_buffer_free(verify_buf);
+		ldns_rr_list_deep_free(rrset_clone);
+		ldns_rr_list_deep_free(validkeys);
 		return LDNS_STATUS_CRYPTO_EXPIRATION_BEFORE_INCEPTION;
 	}
 	if (now - inception < 0) {
 		/* bad sig, inception date has passed */
 		ldns_buffer_free(rawsig_buf);
 		ldns_buffer_free(verify_buf);
+		ldns_buffer_free(rawsig_buf);
+		ldns_buffer_free(verify_buf);
+		ldns_rr_list_deep_free(rrset_clone);
+		ldns_rr_list_deep_free(validkeys);
 		return LDNS_STATUS_CRYPTO_SIG_NOT_INCEPTED;
 	}
 	if (expiration - now < 0) {
 		/* bad sig, expiration date has passed */
 		ldns_buffer_free(rawsig_buf);
 		ldns_buffer_free(verify_buf);
+		ldns_buffer_free(rawsig_buf);
+		ldns_buffer_free(verify_buf);
+		ldns_rr_list_deep_free(rrset_clone);
+		ldns_rr_list_deep_free(validkeys);
 		return LDNS_STATUS_CRYPTO_SIG_EXPIRED;
 	}
 	
@@ -936,6 +951,8 @@ ldns_verify_rrsig_keylist(ldns_rr_list *rrset, ldns_rr *rrsig, const ldns_rr_lis
 	if (ldns_rdf2buffer_wire(rawsig_buf, ldns_rr_rdf(rrsig, 8)) != LDNS_STATUS_OK) {
 		ldns_buffer_free(rawsig_buf);
 		ldns_buffer_free(verify_buf);
+		ldns_rr_list_deep_free(rrset_clone);
+		ldns_rr_list_deep_free(validkeys);
 		return LDNS_STATUS_MEM_ERR;
 	}
 
@@ -947,7 +964,7 @@ ldns_verify_rrsig_keylist(ldns_rr_list *rrset, ldns_rr *rrsig, const ldns_rr_lis
 	for(i = 0; i < ldns_rr_list_rr_count(rrset_clone); i++) {
 		if (label_count < 
 			ldns_dname_label_count(
-				   	ldns_rr_owner(ldns_rr_list_rr(rrset_clone, i)))) {
+					ldns_rr_owner(ldns_rr_list_rr(rrset_clone, i)))) {
 			(void) ldns_str2rdf_dname(&wildcard_name, "*");
 			wildcard_chopped = ldns_rdf_clone(ldns_rr_owner(ldns_rr_list_rr(rrset_clone, i)));
 			while (label_count < ldns_dname_label_count(wildcard_chopped)) {
@@ -974,6 +991,8 @@ ldns_verify_rrsig_keylist(ldns_rr_list *rrset, ldns_rr *rrsig, const ldns_rr_lis
 	if (ldns_rrsig2buffer_wire(verify_buf, rrsig) != LDNS_STATUS_OK) {
 		ldns_buffer_free(rawsig_buf);
 		ldns_buffer_free(verify_buf);
+		ldns_rr_list_deep_free(rrset_clone);
+		ldns_rr_list_deep_free(validkeys);
 		return LDNS_STATUS_MEM_ERR;
 	}
 
@@ -981,6 +1000,8 @@ ldns_verify_rrsig_keylist(ldns_rr_list *rrset, ldns_rr *rrsig, const ldns_rr_lis
 	if (ldns_rr_list2buffer_wire(verify_buf, rrset_clone) != LDNS_STATUS_OK) {
 		ldns_buffer_free(rawsig_buf);
 		ldns_buffer_free(verify_buf);
+		ldns_rr_list_deep_free(rrset_clone);
+		ldns_rr_list_deep_free(validkeys);
 		return LDNS_STATUS_MEM_ERR;
 	}
 
@@ -999,6 +1020,8 @@ ldns_verify_rrsig_keylist(ldns_rr_list *rrset, ldns_rr *rrsig, const ldns_rr_lis
 				ldns_buffer_free(verify_buf);
 				/* returning is bad might screw up good keys later in the list
 				   what to do? */
+				ldns_rr_list_deep_free(rrset_clone);
+				ldns_rr_list_deep_free(validkeys);
 				return LDNS_STATUS_MEM_ERR;
 			}
 
@@ -1008,7 +1031,7 @@ ldns_verify_rrsig_keylist(ldns_rr_list *rrset, ldns_rr *rrsig, const ldns_rr_lis
 				result = ldns_verify_rrsig_buffers(rawsig_buf, 
 						verify_buf, key_buf, sig_algo);
 			} else {
-				/* There is no else here ???? */
+				result = LDNS_STATUS_CRYPTO_UNKNOWN_ALGO;
 			}
 			
 			ldns_buffer_free(key_buf); 
@@ -1022,11 +1045,15 @@ ldns_verify_rrsig_keylist(ldns_rr_list *rrset, ldns_rr *rrsig, const ldns_rr_lis
 					/* couldn't push the key?? */
 					ldns_buffer_free(rawsig_buf);
 					ldns_buffer_free(verify_buf);
+					ldns_rr_list_deep_free(rrset_clone);
+					ldns_rr_list_deep_free(validkeys);
 					return LDNS_STATUS_MEM_ERR;
 				}
 			} 
 		} else {
-			result = LDNS_STATUS_CRYPTO_NO_MATCHING_KEYTAG_DNSKEY;
+			if (result == LDNS_STATUS_ERR) {
+				result = LDNS_STATUS_CRYPTO_NO_MATCHING_KEYTAG_DNSKEY;
+			}
 		}
 	}
 
@@ -1103,7 +1130,9 @@ ldns_verify_rrsig(ldns_rr_list *rrset, ldns_rr *rrsig, ldns_rr *key)
 	switch(sig_algo) {
 		case LDNS_RSAMD5:
 		case LDNS_RSASHA1:
+		case LDNS_RSASHA1_NSEC3:
 		case LDNS_DSA:
+		case LDNS_DSA_NSEC3:
 			break;
 		case LDNS_DH:
 		case LDNS_ECC:
@@ -1208,7 +1237,9 @@ ldns_verify_rrsig(ldns_rr_list *rrset, ldns_rr *rrsig, ldns_rr *key)
 	}
 	 else {
 		/* No keys with the corresponding keytag are found */
-		result = LDNS_STATUS_CRYPTO_NO_MATCHING_KEYTAG_DNSKEY;
+		if (result == LDNS_STATUS_ERR) {
+			result = LDNS_STATUS_CRYPTO_NO_MATCHING_KEYTAG_DNSKEY;
+		}
 	}
 	/* no longer needed */
 	ldns_rr_list_deep_free(rrset_clone);
@@ -1614,16 +1645,21 @@ ldns_sign_public(ldns_rr_list *rrset, ldns_key_list *keys)
 			
 			switch(ldns_key_algorithm(current_key)) {
 				case LDNS_SIGN_DSA:
+				case LDNS_DSA_NSEC3:
 					b64rdf = ldns_sign_public_evp(sign_buf, ldns_key_evp_key(current_key), EVP_sha1());
+/*					b64rdf = ldns_sign_public_dsa(sign_buf, ldns_key_dsa_key(current_key));*/
 					break;
 				case LDNS_SIGN_RSASHA1:
+				case LDNS_RSASHA1_NSEC3:
 					b64rdf = ldns_sign_public_evp(sign_buf, ldns_key_evp_key(current_key), EVP_sha1());
+/*					b64rdf = ldns_sign_public_rsasha1(sign_buf, ldns_key_rsa_key(current_key));*/
 					break;
 				case LDNS_SIGN_RSAMD5:
 					b64rdf = ldns_sign_public_evp(sign_buf, ldns_key_evp_key(current_key), EVP_md5());
 					break;
 				default:
 					/* do _you_ know this alg? */
+					printf("unknown alg\n");
 					break;
 			}
 			if (!b64rdf) {
@@ -1900,38 +1936,399 @@ ldns_create_nsec(ldns_rdf *cur_owner, ldns_rdf *next_owner, ldns_rr_list *rrs)
 	return nsec;
 }
 
+ldns_rdf *
+ldns_nsec3_hash_name(ldns_rdf *name, uint8_t algorithm, uint16_t iterations, uint8_t salt_length, uint8_t *salt)
+{
+	char *orig_owner_str;
+	size_t hashed_owner_str_len;
+	ldns_rdf *hashed_owner;
+	char *hashed_owner_str;
+	char *hashed_owner_b32;
+	int hashed_owner_b32_len;
+	uint32_t cur_it;
+	char *hash = NULL;
+	ldns_status status;
+	
+	/* prepare the owner name according to the draft section bla */
+	orig_owner_str = ldns_rdf2str(name);
+	
+	/* TODO: mnemonic list for hash algs SHA-1, default to 1 now (sha1) */
+	algorithm = algorithm;
+	
+	hashed_owner_str_len = salt_length + ldns_rdf_size(name);
+	hashed_owner_str = LDNS_XMALLOC(char, hashed_owner_str_len);
+        memcpy(hashed_owner_str, ldns_rdf_data(name), ldns_rdf_size(name));
+	memcpy(hashed_owner_str + ldns_rdf_size(name), salt, salt_length);
+
+	for (cur_it = iterations + 1; cur_it > 0; cur_it--) {
+		/*xprintf_hex(hashed_owner_str, hashed_owner_str_len);*/
+		hash = (char *) SHA1((unsigned char *) hashed_owner_str, hashed_owner_str_len, NULL);
+
+		LDNS_FREE(hashed_owner_str);
+		hashed_owner_str_len = salt_length + SHA_DIGEST_LENGTH;
+		hashed_owner_str = LDNS_XMALLOC(char, hashed_owner_str_len);
+		if (!hashed_owner_str) {
+			fprintf(stderr, "Memory error\n");
+			abort();
+		}
+		memcpy(hashed_owner_str, hash, SHA_DIGEST_LENGTH);
+		memcpy(hashed_owner_str + SHA_DIGEST_LENGTH, salt, salt_length);
+		hashed_owner_str_len = SHA_DIGEST_LENGTH + salt_length;
+	}
+
+	LDNS_FREE(orig_owner_str);
+	LDNS_FREE(hashed_owner_str);
+	hashed_owner_str = hash;
+	hashed_owner_str_len = SHA_DIGEST_LENGTH;
+
+	hashed_owner_b32 = LDNS_XMALLOC(char, b32_ntop_calculate_size(hashed_owner_str_len) + 1);
+	hashed_owner_b32_len = (size_t) b32_ntop_extended_hex((uint8_t *) hashed_owner_str, hashed_owner_str_len, hashed_owner_b32, b32_ntop_calculate_size(hashed_owner_str_len));
+	if (hashed_owner_b32_len < 1) {
+		fprintf(stderr, "Error in base32 extended hex encoding of hashed owner name (name: ");
+		ldns_rdf_print(stderr, name);
+		fprintf(stderr, ", return code: %d)\n", hashed_owner_b32_len);
+		exit(4);
+	}
+	hashed_owner_str_len = hashed_owner_b32_len;
+        hashed_owner_b32[hashed_owner_b32_len] = '\0';
+
+	status = ldns_str2rdf_dname(&hashed_owner, hashed_owner_b32);
+	if (status != LDNS_STATUS_OK) {
+		fprintf(stderr, "Error creating rdf from %s\n", hashed_owner_b32);
+		exit(1);
+	}
+
+	LDNS_FREE(hashed_owner_b32);
+	return hashed_owner;
+}
+
+void
+ldns_nsec3_add_param_rdfs(ldns_rr *rr,
+                           uint8_t algorithm, 
+                           uint8_t flags,
+                           uint16_t iterations,
+                           uint8_t salt_length,
+                           uint8_t *salt)
+{
+	ldns_rdf *salt_rdf = NULL;
+	uint8_t *salt_data = NULL;
+	
+	ldns_rr_set_rdf(rr, ldns_rdf_new_frm_data(LDNS_RDF_TYPE_INT8, 1, (void*)&algorithm), 0);
+	ldns_rr_set_rdf(rr, ldns_rdf_new_frm_data(LDNS_RDF_TYPE_INT8, 1, (void*)&flags), 1);
+	ldns_rr_set_rdf(rr, ldns_native2rdf_int16(LDNS_RDF_TYPE_INT16, iterations), 2);
+	
+	salt_data = LDNS_XMALLOC(uint8_t, salt_length + 1);
+	salt_data[0] = salt_length;
+	memcpy(salt_data + 1, salt, salt_length);
+	salt_rdf = ldns_rdf_new_frm_data(LDNS_RDF_TYPE_NSEC3_SALT, salt_length + 1, salt_data);
+	ldns_rr_set_rdf(rr,  salt_rdf, 3);
+
+	ldns_rr_set_rdf(rr, salt_rdf, 3);
+}
+
+/* this will NOT return the NSEC3  completed, you will have to run the
+   finalize function on the rrlist later! */
+ldns_rr *
+ldns_create_nsec3(ldns_rdf *cur_owner,
+                  ldns_rdf *cur_zone,
+                  ldns_rr_list *rrs,
+                  uint8_t algorithm,
+                  uint8_t flags,
+                  uint16_t iterations,
+                  uint8_t salt_length,
+                  uint8_t *salt,
+                  bool emptynonterminal)
+{
+	size_t i;
+	ldns_rr *i_rr;
+
+	uint8_t *bitmap = LDNS_XMALLOC(uint8_t, 1);
+	uint16_t bm_len = 0;
+	uint16_t i_type;
+
+	ldns_rr *nsec = NULL;
+	ldns_rdf *hashed_owner = NULL;
+	
+	uint8_t *data = NULL;
+	uint8_t cur_data[32];
+	uint8_t cur_window = 0;
+	uint8_t cur_window_max = 0;
+	uint16_t cur_data_size = 0;
+
+	ldns_status status;
+	
+        /*
+        printf("HASH FOR: ");
+        ldns_rdf_print(stdout, cur_owner);
+        */
+	
+	/*
+	printf("\n");
+	for (i=0; i<hashed_owner_str_len; i++) {
+		printf("%02x ", (uint8_t) hashed_owner_str[i]);
+	}
+	printf("\n");
+	*/
+	hashed_owner = ldns_nsec3_hash_name(cur_owner, algorithm, iterations, salt_length, salt);
+	status = ldns_dname_cat(hashed_owner, cur_zone);
+	
+	nsec = ldns_rr_new_frm_type(LDNS_RR_TYPE_NSEC3);
+	ldns_rr_set_type(nsec, LDNS_RR_TYPE_NSEC3);
+	ldns_rr_set_owner(nsec, hashed_owner);
+	/* TODO: TTL? */
+	
+	ldns_nsec3_add_param_rdfs(nsec, algorithm, flags, iterations, salt_length, salt);
+	ldns_rr_set_rdf(nsec, NULL, 4);
+
+	bitmap[0] = 0;
+	for (i = 0; i < ldns_rr_list_rr_count(rrs); i++) {
+		i_rr = ldns_rr_list_rr(rrs, i);
+
+		if (ldns_rdf_compare(cur_owner,
+		                     ldns_rr_owner(i_rr)) == 0) {
+			/* add type to bitmap */
+			i_type = ldns_rr_get_type(i_rr);
+			if ((i_type / 8) + 1 > bm_len) {
+				bitmap = LDNS_XREALLOC(bitmap, uint8_t, (i_type / 8) + 1);
+				/* set to 0 */
+				for (; bm_len <= i_type / 8; bm_len++) {
+					bitmap[bm_len] = 0;
+				}
+			}
+			ldns_set_bit(bitmap + (int) i_type / 8, (int) (7 - (i_type % 8)), true);
+		}
+	}
+	/* add NSEC and RRSIG anyway */
+	if (!emptynonterminal) {
+		i_type = LDNS_RR_TYPE_RRSIG;
+		if (i_type / 8 > bm_len) {
+			bitmap = LDNS_XREALLOC(bitmap, uint8_t, (i_type / 8) + 1);
+			/* set to 0 */
+			for (; bm_len <= i_type / 8; bm_len++) {
+				bitmap[bm_len] = 0;
+			}
+		}
+		ldns_set_bit(bitmap + (int) i_type / 8, (int) (7 - (i_type % 8)), true);
+	}
+
+	/* and SOA if owner == zone */
+	if (ldns_dname_compare(cur_zone, cur_owner) == 0) {
+		i_type = LDNS_RR_TYPE_SOA;
+		if (i_type / 8 > bm_len) {
+			bitmap = LDNS_XREALLOC(bitmap, uint8_t, (i_type / 8) + 1);
+			/* set to 0 */
+			for (; bm_len <= i_type / 8; bm_len++) {
+				bitmap[bm_len] = 0;
+			}
+		}
+		ldns_set_bit(bitmap + (int) i_type / 8, (int) (7 - (i_type % 8)), true);
+	}
+
+	memset(cur_data, 0, 32);
+	for (i = 0; i < bm_len; i++) {
+		if (i / 32 > cur_window) {
+			/* check, copy, new */
+			if (cur_window_max > 0) {
+				/* this window has stuff, add it */
+				data = LDNS_XREALLOC(data, uint8_t, cur_data_size + cur_window_max + 3);
+				data[cur_data_size] = cur_window;
+				data[cur_data_size + 1] = cur_window_max + 1;
+				memcpy(data + cur_data_size + 2, cur_data, cur_window_max+1);
+				cur_data_size += cur_window_max + 3;
+			}
+			cur_window++;
+			cur_window_max = 0;
+			memset(cur_data, 0, 32);
+		} else {
+			cur_data[i%32] = bitmap[i];
+			if (bitmap[i] > 0) {
+				cur_window_max = i%32;
+			}
+		}
+	}
+	if (cur_window_max > 0) {
+		/* this window has stuff, add it */
+		data = LDNS_XREALLOC(data, uint8_t, cur_data_size + cur_window_max + 3);
+		data[cur_data_size] = cur_window;
+		data[cur_data_size + 1] = cur_window_max + 1;
+		memcpy(data + cur_data_size + 2, cur_data, cur_window_max+1);
+		cur_data_size += cur_window_max + 3;
+	}
+
+	ldns_rr_set_rdf(nsec, ldns_rdf_new_frm_data(LDNS_RDF_TYPE_NSEC, cur_data_size, data), 5);
+
+	LDNS_FREE(bitmap);
+	LDNS_FREE(data);
+
+/*printf(";; Created NSEC3 for:\n");
+printf(";; ");
+ldns_rdf_print(stdout, cur_owner);
+printf("\n");
+printf(";; ");
+ldns_rr_print(stdout, nsec);
+*/
+	return nsec;
+}
+
+uint8_t
+ldns_nsec3_algorithm(const ldns_rr *nsec3_rr)
+{
+	if (nsec3_rr && ldns_rr_get_type(nsec3_rr) == LDNS_RR_TYPE_NSEC3 &&
+	    ldns_rdf_size(ldns_rr_rdf(nsec3_rr, 0)) > 0
+	   ) {
+		/*return ldns_rdf_data(ldns_rr_rdf(nsec3_rr, 0))[0];*/
+		return ldns_rdf2native_int8(ldns_rr_rdf(nsec3_rr, 0));
+	}
+	return 0;
+}
+
+uint8_t
+ldns_nsec3_flags(const ldns_rr *nsec3_rr)
+{
+	if (nsec3_rr && ldns_rr_get_type(nsec3_rr) == LDNS_RR_TYPE_NSEC3 &&
+	    ldns_rdf_size(ldns_rr_rdf(nsec3_rr, 1)) > 0
+	   ) {
+		/*return ldns_rdf_data(ldns_rr_rdf(nsec3_rr, 0))[0];*/
+		return ldns_rdf2native_int8(ldns_rr_rdf(nsec3_rr, 0));
+	}
+	return 0;
+}
+
+bool
+ldns_nsec3_optout(const ldns_rr *nsec3_rr)
+{
+	return (ldns_nsec3_flags(nsec3_rr) & LDNS_NSEC3_VARS_OPTOUT_MASK);
+}
+
+uint16_t
+ldns_nsec3_iterations(const ldns_rr *nsec3_rr)
+{
+	if (nsec3_rr && ldns_rr_get_type(nsec3_rr) == LDNS_RR_TYPE_NSEC3 &&
+	    ldns_rdf_size(ldns_rr_rdf(nsec3_rr, 2)) > 0
+	   ) {
+		return ldns_rdf2native_int16(ldns_rr_rdf(nsec3_rr, 2));
+	}
+	return 0;
+	
+}
+
+ldns_rdf
+*ldns_nsec3_salt(const ldns_rr *nsec3_rr)
+{
+	if (nsec3_rr && ldns_rr_get_type(nsec3_rr) == LDNS_RR_TYPE_NSEC3) {
+		return ldns_rr_rdf(nsec3_rr, 3);
+	}
+	return NULL;
+}
+
+uint8_t
+ldns_nsec3_salt_length(const ldns_rr *nsec3_rr)
+{
+	ldns_rdf *salt_rdf = ldns_nsec3_salt(nsec3_rr);
+	if (salt_rdf && ldns_rdf_size(salt_rdf) > 0) {
+		return (uint8_t) ldns_rdf_data(salt_rdf)[0];
+	}
+	return 0;
+}
+
+/* allocs data, free with LDNS_FREE() */
+uint8_t *
+ldns_nsec3_salt_data(const ldns_rr *nsec3_rr)
+{
+	uint8_t salt_length;
+	uint8_t *salt;
+
+	ldns_rdf *salt_rdf = ldns_nsec3_salt(nsec3_rr);
+	if (salt_rdf && ldns_rdf_size(salt_rdf) > 0) {
+	    	salt_length = ldns_rdf_data(salt_rdf)[0];
+		salt = LDNS_XMALLOC(uint8_t, salt_length);
+		memcpy(salt, &ldns_rdf_data(salt_rdf)[1], salt_length);
+		return salt;
+	}
+	return NULL;
+}
+
+ldns_rdf *
+ldns_nsec3_next_owner(const ldns_rr *nsec3_rr)
+{
+	if (!nsec3_rr || ldns_rr_get_type(nsec3_rr) != LDNS_RR_TYPE_NSEC3) {
+		return NULL;
+	} else {
+		return ldns_rr_rdf(nsec3_rr, 4);
+	}
+}
+
+ldns_rdf *
+ldns_nsec3_bitmap(const ldns_rr *nsec3_rr)
+{
+	if (!nsec3_rr || ldns_rr_get_type(nsec3_rr) != LDNS_RR_TYPE_NSEC3) {
+		return NULL;
+	} else {
+		return ldns_rr_rdf(nsec3_rr, 5);
+	}
+}
+
+ldns_rdf *
+ldns_nsec3_hash_name_frm_nsec3(const ldns_rr *nsec, ldns_rdf *name)
+{
+	uint8_t algorithm;
+	uint16_t iterations;
+/*	uint8_t *data;*/
+	uint8_t salt_length;
+	uint8_t *salt = 0;
+/*uint8_t salt_i;*/
+	
+	ldns_rdf *hashed_owner;
+
+/*
+printf("NSEC RDF: ");
+ldns_rdf_print(stdout, ldns_rr_rdf(nsec, 0));
+printf("\n\n");
+*/
+	algorithm = ldns_nsec3_algorithm(nsec);
+	salt_length = ldns_nsec3_salt_length(nsec);
+	salt = ldns_nsec3_salt_data(nsec);
+	iterations = ldns_nsec3_iterations(nsec);
+	
+	hashed_owner = ldns_nsec3_hash_name(name, algorithm, iterations, salt_length, salt);
+	
+/*
+printf(";; Iterations: %u, Salt: ", iterations);
+for (salt_i = 0; salt_i < salt_length; salt_i++) {
+	printf("%02x", salt[salt_i]);
+}
+printf("\n");
+*/
+	LDNS_FREE(salt);
+	return hashed_owner;
+}
+
 bool
 ldns_nsec_bitmap_covers_type(const ldns_rdf *nsec_bitmap, ldns_rr_type type)
 {
-	uint8_t *bitmap;
-	uint16_t i;
 	uint8_t window_block_nr;
+	uint8_t bitmap_length;
+	uint16_t cur_type;
+	uint16_t pos = 0;
+	uint16_t bit_pos;
+	uint8_t *data = ldns_rdf_data(nsec_bitmap);
 	
-	if (!nsec_bitmap) {
-		return false;
-	}
-
-	/* Check the bitmap if our type is there */
-	bitmap = ldns_rdf_data(nsec_bitmap);
-	window_block_nr = (uint8_t) (type / 256);
-	i = 0;
-
-	while (i < ldns_rdf_size(nsec_bitmap)) {
-		if (bitmap[i] == window_block_nr) {
-			/* this is the right window, check the bit */
-			if ((uint8_t) (type / 8) < bitmap[i + 1] &&
-				ldns_get_bit(&bitmap[i + 1 + (type / 8)], (size_t) (7 - (type % 8)))) {
-				return true;
-			} else {
-				return false;
+	while(pos < ldns_rdf_size(nsec_bitmap)) {
+		window_block_nr = data[pos];
+		bitmap_length = data[pos + 1];
+		pos += 2;
+		
+		for (bit_pos = 0; bit_pos < (bitmap_length) * 8; bit_pos++) {
+			if (ldns_get_bit(&data[pos], bit_pos)) {
+				cur_type = 256 * (uint16_t) window_block_nr + bit_pos;
+				if (cur_type == type) {
+					return true;
+				}
 			}
-		} else {
-			/* this is the wrong window, go to the next */
-			i++;
-			i += bitmap[i];
 		}
+		
+		pos += (uint16_t) bitmap_length;
 	}
-
 	return false;
 }
 
@@ -1939,15 +2336,51 @@ bool
 ldns_nsec_covers_name(const ldns_rr *nsec, const ldns_rdf *name)
 {
 	ldns_rdf *nsec_owner = ldns_rr_owner(nsec);
-	ldns_rdf *nsec_next = ldns_rr_rdf(nsec, 0);
+	ldns_rdf *hash_next;
+	char *next_hash_str;
+	ldns_rdf *nsec_next = NULL;
+	ldns_status status;
+	ldns_rdf *chopped_dname;
+	bool result;
 	
+	if (ldns_rr_get_type(nsec) == LDNS_RR_TYPE_NSEC) {
+		nsec_next = ldns_rdf_clone(ldns_rr_rdf(nsec, 0));
+	} else if (ldns_rr_get_type(nsec) == LDNS_RR_TYPE_NSEC3) {
+		hash_next = ldns_nsec3_next_owner(nsec);
+		next_hash_str = ldns_rdf2str(hash_next);
+		nsec_next = ldns_dname_new_frm_str(next_hash_str);
+		LDNS_FREE(next_hash_str);
+		chopped_dname = ldns_dname_left_chop(nsec_owner);
+		status = ldns_dname_cat(nsec_next, chopped_dname);
+		ldns_rdf_deep_free(chopped_dname);
+		if (status != LDNS_STATUS_OK) {
+			printf("error catting: %s\n", ldns_get_errorstr_by_id(status));
+		}
+	} else {
+		ldns_rdf_deep_free(nsec_next);
+		return false;
+	}
+	
+/*
+printf("nsec coverage:\n");
+ldns_rdf_print(stdout, nsec_owner);
+printf(" <= \n");
+ldns_rdf_print(stdout, name);
+printf(" <  \n");
+ldns_rdf_print(stdout, nsec_next);
+printf("\n\n");
+*/
 	/* in the case of the last nsec */
-	if(ldns_dname_compare(nsec_owner, nsec_next) > 0)
-		return (ldns_dname_compare(nsec_owner, name) <= 0 ||
-			ldns_dname_compare(name, nsec_next) < 0);
-
-	return (ldns_dname_compare(nsec_owner, name) <= 0 &&
-		ldns_dname_compare(name, nsec_next) < 0);
+	if(ldns_dname_compare(nsec_owner, nsec_next) > 0) {
+		result = (ldns_dname_compare(nsec_owner, name) <= 0 ||
+			  ldns_dname_compare(name, nsec_next) < 0);
+	} else {
+		result = (ldns_dname_compare(nsec_owner, name) <= 0 &&
+		          ldns_dname_compare(name, nsec_next) < 0);
+	}
+	
+	ldns_rdf_deep_free(nsec_next);
+	return result;
 }
 
 /* sig may be null - if so look in the packet */
@@ -2019,7 +2452,7 @@ ldns_zone_sign(const ldns_zone *zone, ldns_key_list *key_list)
 	 * done!
 	 * ow and don't sign old rrsigs etc.
 	 */
-	 
+	
 	ldns_zone *signed_zone;
 	ldns_rr_list *cur_rrset;
 	ldns_rr_list *cur_rrsigs;
@@ -2042,18 +2475,16 @@ ldns_zone_sign(const ldns_zone *zone, ldns_key_list *key_list)
 	/* there should only be 1 SOA, so the soa record is 1 rrset */
 	cur_rrsigs = NULL;
 	ldns_zone_set_soa(signed_zone, ldns_rr_clone(ldns_zone_soa(zone)));
-	/*ldns_rr2canonical(ldns_zone_soa(signed_zone));*/
+	ldns_rr2canonical(ldns_zone_soa(signed_zone));
 	
 	orig_zone_rrs = ldns_rr_list_clone(ldns_zone_rrs(zone));
 
 	ldns_rr_list_push_rr(orig_zone_rrs, ldns_rr_clone(ldns_zone_soa(zone)));
 	
 	/* canon now, needed for correct nsec creation */
-	/*
-	for (i = 0; i < ldns_rr_list_rr_count(orig_zone_rrs); i++) {
+        for (i = 0; i < ldns_rr_list_rr_count(orig_zone_rrs); i++) {
 		ldns_rr2canonical(ldns_rr_list_rr(orig_zone_rrs, i));
 	}
-	*/
 	glue_rrs = ldns_zone_glue_rr_list(zone);
 
 	/* add the key (TODO: check if it's there already? */
@@ -2109,6 +2540,345 @@ ldns_zone_sign(const ldns_zone *zone, ldns_key_list *key_list)
 
 		/* if we have KSKs, use them for DNSKEYS, otherwise
 		   make them selfsigned (?) */
+                /* don't sign sigs, delegations, and glue */
+		if (cur_rrset_type != LDNS_RR_TYPE_RRSIG &&
+		    ((ldns_dname_is_subdomain(cur_dname, ldns_rr_owner(ldns_zone_soa(signed_zone)))
+                      && cur_rrset_type != LDNS_RR_TYPE_NS
+                     ) ||
+		     ldns_rdf_compare(cur_dname, ldns_rr_owner(ldns_zone_soa(signed_zone))) == 0
+		    ) &&
+		    !(ldns_rr_list_contains_rr(glue_rrs, ldns_rr_list_rr(cur_rrset, 0)))
+		   ) {
+			cur_rrsigs = ldns_sign_public(cur_rrset, key_list);
+
+			/* TODO: make optional, replace exit call */
+			/* if not optional it should be left out completely
+			   (for it is possible to generate bad signarures, by
+			   specifying a future inception date */
+			
+			ldns_zone_push_rr_list(signed_zone, cur_rrset);
+			ldns_zone_push_rr_list(signed_zone, cur_rrsigs);
+			ldns_rr_list_free(cur_rrsigs);
+		} else {
+			/* push it unsigned (glue, sigs, delegations) */
+			ldns_zone_push_rr_list(signed_zone, cur_rrset);
+		}
+		ldns_rr_list_free(cur_rrset);
+		cur_rrset = ldns_rr_list_pop_rrset(signed_zone_rrs);
+	}
+	ldns_rr_list_deep_free(signed_zone_rrs);
+	ldns_rr_list_deep_free(pubkeys);
+	ldns_rr_list_free(glue_rrs);
+	return signed_zone;
+	
+}
+
+static int
+qsort_rr_compare_nsec3(const void *a, const void *b)
+{
+	const ldns_rr *rr1 = * (const ldns_rr **) a;
+	const ldns_rr *rr2 = * (const ldns_rr **) b;
+	if (rr1 == NULL && rr2 == NULL) {
+		return 0;
+	}
+	if (rr1 == NULL) {
+		return -1;
+	} 
+	if (rr2 == NULL) {
+		return 1;
+	}
+	return ldns_rdf_compare(ldns_rr_owner(rr1), ldns_rr_owner(rr2));
+}
+
+void ldns_rr_list_sort_nsec3(ldns_rr_list *unsorted) {
+	qsort(unsorted->_rrs,
+	      ldns_rr_list_rr_count(unsorted),
+	      sizeof(ldns_rr *),
+	      qsort_rr_compare_nsec3);
+}
+
+ldns_zone *
+ldns_zone_sign_nsec3(ldns_zone *zone, ldns_key_list *key_list, uint8_t algorithm, uint8_t flags, uint16_t iterations, uint8_t salt_length, uint8_t *salt)
+{
+	/*
+	 * Algorithm to be created:
+	 * - sort the rrs (name/class/type?)
+	 * - if sorted, every next rr is belongs either to the rrset
+	 * you are working on, or the rrset is complete
+	 * for each rrset, calculate rrsig and nsec
+	 * put the rrset, rrsig and nsec in the new zone
+	 * done!
+	 * ow and don't sign old rrsigs etc.
+	 */
+	
+	ldns_zone *signed_zone;
+	ldns_rr_list *cur_rrset;
+	ldns_rr_list *soa_rrset;
+	ldns_rr_list *cur_rrsigs;
+	ldns_rr_list *orig_zone_rrs;
+	ldns_rr_list *signed_zone_rrs;
+	ldns_rr_list *pubkeys;
+	ldns_rr_list *glue_rrs;
+	ldns_rr_list *nsec3_rrs;
+	ldns_rr *nsec3params;
+	
+	ldns_status status;
+	
+	ldns_rdf *start_dname = NULL;
+	ldns_rdf *cur_dname = NULL;
+	ldns_rr *next_rr = NULL;
+	ldns_rdf *next_dname = NULL;
+	char *next_nsec_owner_str = NULL;
+	ldns_rdf *next_nsec_rdf = NULL;
+	ldns_rr *nsec;
+	ldns_rr *ckey;
+	uint16_t i;
+	uint16_t next_label_count;
+	uint16_t cur_label_count;
+
+	/* for the empty nonterminal finding algorithm */
+	uint16_t j;
+	ldns_rdf *l1, *l2, *post, *post2;
+	bool found_difference;
+	
+	ldns_rr_type cur_rrset_type;
+	
+	signed_zone = ldns_zone_new();
+
+	/* there should only be 1 SOA, so the soa record is 1 rrset */
+	cur_rrsigs = NULL;
+	ldns_zone_set_soa(signed_zone, ldns_rr_clone(ldns_zone_soa(zone)));
+	/*ldns_rr2canonical(ldns_zone_soa(signed_zone));*/
+	
+	orig_zone_rrs = ldns_rr_list_clone(ldns_zone_rrs(zone));
+
+	ldns_rr_list_push_rr(orig_zone_rrs, ldns_rr_clone(ldns_zone_soa(zone)));
+	
+	/* canon now, needed for correct nsec creation */
+	/*
+	for (i = 0; i < ldns_rr_list_rr_count(orig_zone_rrs); i++) {
+		ldns_rr2canonical(ldns_rr_list_rr(orig_zone_rrs, i));
+	}
+	*/
+	glue_rrs = ldns_zone_glue_rr_list(zone);
+
+	/* create and add the nsec3params rr */
+	nsec3params = ldns_rr_new_frm_type(LDNS_RR_TYPE_NSEC3PARAMS);
+	ldns_rr_set_owner(nsec3params, ldns_rdf_clone(ldns_rr_owner(ldns_zone_soa(signed_zone))));
+	ldns_nsec3_add_param_rdfs(nsec3params, algorithm, flags, iterations, salt_length, salt);
+/*	ldns_rdf_set_type(ldns_rr_rdf(nsec3params, 0), LDNS_RDF_TYPE_NSEC3_PARAMS_VARS);*/
+	ldns_rr_list_push_rr(orig_zone_rrs, nsec3params);
+/*
+ldns_rr_print(stdout, nsec3params);
+exit(0);
+*/
+	/* add the key (TODO: check if it's there already? */
+	pubkeys = ldns_rr_list_new();
+	for (i = 0; i < ldns_key_list_key_count(key_list); i++) {
+		ckey = ldns_key2rr(ldns_key_list_key(key_list, i));
+		ldns_rr_list_push_rr(pubkeys, ckey);
+	}
+
+	signed_zone_rrs = ldns_rr_list_new();
+	
+	ldns_rr_list_sort(orig_zone_rrs);
+	
+	nsec3_rrs = ldns_rr_list_new();
+	
+	/* add nsecs */
+	for (i = 0; i < ldns_rr_list_rr_count(orig_zone_rrs); i++) {
+		if (!start_dname) {
+			/*start_dname = ldns_rr_owner(ldns_zone_soa(zone));*/
+			start_dname = ldns_rr_owner(ldns_rr_list_rr(orig_zone_rrs, i));
+			cur_dname = start_dname;
+		} else {
+
+			next_rr = ldns_rr_list_rr(orig_zone_rrs, i);
+			next_dname = ldns_rr_owner(next_rr);
+			if (ldns_rdf_compare(cur_dname, next_dname) != 0) {
+
+				/* every ownername should have an nsec3, and every empty nonterminal */
+				/* the zone is sorted, so nonterminals should be visible? */
+				/* if labels after first differ with previous it's an empty nonterm? */
+
+				/* empty non-terminal detection algorithm 0.001a-pre1
+				 * walk backwards to the first different label. for each label that
+				 * is not the first label, we have found an empty nonterminal
+				 */
+				cur_label_count = ldns_dname_label_count(cur_dname);
+				next_label_count = ldns_dname_label_count(next_dname);
+				post = ldns_dname_new_frm_str(".");
+				found_difference = false;
+				for (j = 1; j <= cur_label_count && j <= next_label_count && !found_difference; j++) {
+					l1 = ldns_dname_label(cur_dname, cur_label_count - j);
+					l2 = ldns_dname_label(next_dname, next_label_count - j);
+					
+					post2 = ldns_dname_cat_clone(l2, post);
+					ldns_rdf_deep_free(post);
+					post = post2;
+
+					if (ldns_dname_compare(l1, l2) != 0 &&
+					    /*j < cur_label_count &&*/
+					    j < next_label_count
+					   ) {
+					        /*
+						printf("Found empty non-terminal: ");
+						ldns_rdf_print(stdout, post);
+						printf("\n");
+						*/
+						found_difference = true;
+						nsec = ldns_create_nsec3(post, 
+									ldns_rr_owner(ldns_zone_soa(zone)),
+									orig_zone_rrs,
+									algorithm,
+									false,
+									iterations,
+									salt_length,
+									salt,
+									true);
+						
+						printf("Created NSEC3 for: ");
+						ldns_rdf_print(stdout, post);
+						printf(":\n");
+						ldns_rr_print(stdout, nsec);
+						
+						ldns_rr_set_ttl(nsec, ldns_rdf2native_int32(ldns_rr_rdf(ldns_zone_soa(zone), 6)));
+						ldns_rr_list_push_rr(nsec3_rrs, nsec);
+					}
+					ldns_rdf_deep_free(l1);
+					ldns_rdf_deep_free(l2);
+				}
+				/* and if next label is longer than cur + 1, these must be empty nons too */
+				/* skip current label (total now equal to cur_dname) */
+				if (!found_difference && j < cur_label_count && j < next_label_count) {
+					l2 = ldns_dname_label(next_dname, next_label_count - j);
+					post2 = ldns_dname_cat_clone(l2, post);
+					ldns_rdf_deep_free(post);
+					post = post2;
+					j++;
+				}
+				while (j < next_label_count) {
+					l2 = ldns_dname_label(next_dname, next_label_count - j);
+					post2 = ldns_dname_cat_clone(l2, post);
+					ldns_rdf_deep_free(post);
+					post = post2;
+					/*
+					printf("Found empty non-terminal: ");
+					ldns_rdf_print(stdout, post);
+					printf("\n");
+					*/
+					ldns_rdf_deep_free(l2);
+					j++;	
+					nsec = ldns_create_nsec3(post, 
+								ldns_rr_owner(ldns_zone_soa(zone)),
+								orig_zone_rrs,
+								algorithm,
+								false,
+								iterations,
+								salt_length,
+								salt,
+								true);
+/*
+					printf("Created NSEC3 for: ");
+					ldns_rdf_print(stdout, post);
+					printf(":\n");
+					ldns_rr_print(stdout, nsec);
+*/
+					ldns_rr_set_ttl(nsec, ldns_rdf2native_int32(ldns_rr_rdf(ldns_zone_soa(zone), 6)));
+					ldns_rr_list_push_rr(nsec3_rrs, nsec);
+				}
+				ldns_rdf_deep_free(post);
+
+				/* skip glue */
+				if (ldns_rr_list_contains_rr(glue_rrs, next_rr)) {
+/*					cur_dname = next_dname;*/
+					printf("Skip glue: ");
+					ldns_rdf_print(stdout, cur_dname);
+					printf("\n");
+				} else {
+					nsec = ldns_create_nsec3(cur_dname, 
+								ldns_rr_owner(ldns_zone_soa(zone)),
+								orig_zone_rrs,
+								algorithm,
+								false,
+								iterations,
+								salt_length,
+								salt,
+								false);
+
+/*
+					printf("Created NSEC3 for: ");
+					ldns_rdf_print(stdout, cur_dname);
+					printf(":\n");
+					ldns_rr_print(stdout, nsec);
+*/
+					ldns_rr_set_ttl(nsec, ldns_rdf2native_int32(ldns_rr_rdf(ldns_zone_soa(zone), 6)));
+					ldns_rr_list_push_rr(nsec3_rrs, nsec);
+					/*start_dname = next_dname;*/
+					cur_dname = next_dname;
+				}
+			}
+		}
+		ldns_rr_list_push_rr(signed_zone_rrs, ldns_rr_list_rr(orig_zone_rrs, i));
+	}
+	nsec = ldns_create_nsec3(cur_dname, 
+				ldns_rr_owner(ldns_zone_soa(zone)),
+				orig_zone_rrs,
+				algorithm,
+				false,
+				iterations,
+				salt_length,
+				salt,
+				false);
+	ldns_rr_list_set_rr(nsec3_rrs, nsec, 4);
+	ldns_rr_list_free(orig_zone_rrs);
+	ldns_rr_set_ttl(nsec, ldns_rdf2native_int32(ldns_rr_rdf(ldns_zone_soa(zone), 6)));
+	ldns_rr_list_push_rr(nsec3_rrs, nsec);
+
+	printf("Created NSEC3 for: ");
+	ldns_rdf_print(stdout, cur_dname);
+	printf(":\n");
+	ldns_rr_print(stdout, nsec);
+	/* sort nsec3s separately, set nexts and append to signed zone */
+	ldns_rr_list_sort_nsec3(nsec3_rrs);
+	for (i = 0; i < ldns_rr_list_rr_count(nsec3_rrs); i++) {
+		if (i == ldns_rr_list_rr_count(nsec3_rrs) - 1) {
+			next_nsec_owner_str = ldns_rdf2str(ldns_dname_label(ldns_rr_owner(ldns_rr_list_rr(nsec3_rrs, 0)), 0));
+			if (next_nsec_owner_str[strlen(next_nsec_owner_str) - 1] == '.') {
+				next_nsec_owner_str[strlen(next_nsec_owner_str) - 1] = '\0';
+			}
+			status = ldns_str2rdf_b32_ext(&next_nsec_rdf, next_nsec_owner_str);
+			if (!ldns_rr_set_rdf(ldns_rr_list_rr(nsec3_rrs, i), next_nsec_rdf, 4)) {
+				/* todo: error */
+			}
+		} else {
+			next_nsec_owner_str = ldns_rdf2str(ldns_dname_label(ldns_rr_owner(ldns_rr_list_rr(nsec3_rrs, i + 1)), 0));
+			if (next_nsec_owner_str[strlen(next_nsec_owner_str) - 1] == '.') {
+				next_nsec_owner_str[strlen(next_nsec_owner_str) - 1] = '\0';
+			}
+			status = ldns_str2rdf_b32_ext(&next_nsec_rdf, next_nsec_owner_str);
+			if (!ldns_rr_set_rdf(ldns_rr_list_rr(nsec3_rrs, i), next_nsec_rdf, 4)) {
+				/* todo: error */
+			}
+		}
+	}
+	
+	ldns_rr_list_cat(signed_zone_rrs, nsec3_rrs);
+/*
+printf("going to sort:\n");
+ldns_rr_list_print(stdout, signed_zone_rrs);
+*/
+	ldns_rr_list_sort(signed_zone_rrs);
+	
+	/* Sign all rrsets in the zone */
+	cur_rrset = ldns_rr_list_pop_rrset(signed_zone_rrs);
+	while (cur_rrset) {
+		/* don't sign certain types */
+		cur_rrset_type = ldns_rr_get_type(ldns_rr_list_rr(cur_rrset, 0));
+		cur_dname = ldns_rr_owner(ldns_rr_list_rr(cur_rrset, 0));
+
+		/* if we have KSKs, use them for DNSKEYS, otherwise
+		   make them selfsigned (?) */
 		/* don't sign sigs, delegations, and glue */
 		if (cur_rrset_type != LDNS_RR_TYPE_RRSIG &&
 			((ldns_dname_is_subdomain(cur_dname, ldns_rr_owner(ldns_zone_soa(signed_zone)))
@@ -2118,13 +2888,28 @@ ldns_zone_sign(const ldns_zone *zone, ldns_key_list *key_list)
 			) &&
 			!(ldns_rr_list_contains_rr(glue_rrs, ldns_rr_list_rr(cur_rrset, 0)))
 		   ) {
+		   	/*
+		   	printf("About to sign RRSET:\n");
+		   	ldns_rr_list_print(stdout, cur_rrset);
+			*/
 			cur_rrsigs = ldns_sign_public(cur_rrset, key_list);
 
 			/* TODO: make optional, replace exit call */
 			/* if not optional it should be left out completely
 			   (for it is possible to generate bad signarures, by
 			   specifying a future inception date */
-			
+/*
+			result = ldns_verify(cur_rrset, cur_rrsigs, pubkeys, NULL);
+			if (result != LDNS_STATUS_OK) {
+				dprintf("%s", "Cannot verify own sig:\n");
+				dprintf("%s\n", ldns_get_errorstr_by_id(result));
+				ERR_load_crypto_strings();
+				ERR_print_errors_fp(stdout);
+				exit(result);
+			} else {
+				printf("VERIFIED\n");
+			}
+*/
 			ldns_zone_push_rr_list(signed_zone, cur_rrset);
 			ldns_zone_push_rr_list(signed_zone, cur_rrsigs);
 			ldns_rr_list_free(cur_rrsigs);

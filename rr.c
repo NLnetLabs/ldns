@@ -16,7 +16,7 @@
 
 #include <errno.h>
 
-#define LDNS_SYNTAX_DATALEN 11
+#define LDNS_SYNTAX_DATALEN 16
 #define LDNS_TTL_DATALEN    21
 #define LDNS_RRLIST_INIT    8
 
@@ -322,18 +322,22 @@ ldns_rr_new_frm_str(ldns_rr **newrr, const char *str, uint32_t default_ttl, ldns
 
 	desc = ldns_rr_descript((uint16_t)rr_type);
 	ldns_rr_set_type(new, rr_type);
-
-	/* only the rdata remains */
-	r_max = ldns_rr_descriptor_maximum(desc);
-	r_min = ldns_rr_descriptor_minimum(desc);
+	if (desc) {
+		/* only the rdata remains */
+		r_max = ldns_rr_descriptor_maximum(desc);
+		r_min = ldns_rr_descriptor_minimum(desc);
+	} else {
+		r_min = 1;
+		r_max = 1;
+	}
 
 	/* depending on the rr_type we need to extract
-	 * the rdata differently, e.g. NSEC */
+	 * the rdata differently, e.g. NSEC/NSEC3 */
 	switch(rr_type) {
 		default:
 			done = false;
 
-			for (r_cnt = 0; !done && r_cnt < ldns_rr_descriptor_maximum(desc); 
+			for (r_cnt = 0; !done && r_cnt < r_max; 
 					r_cnt++) {
 				quoted = false;
 				/* if type = B64, the field may contain spaces */
@@ -400,7 +404,11 @@ ldns_rr_new_frm_str(ldns_rr **newrr, const char *str, uint32_t default_ttl, ldns
 						hex_data_str[cur_hex_data_size] = '\0';
 						r = ldns_rdf_new_frm_str(LDNS_RDF_TYPE_HEX, hex_data_str);
 						/* correct the rdf type */
-						ldns_rdf_set_type(r, ldns_rr_descriptor_field_type(desc, r_cnt));
+						if (desc) {
+							ldns_rdf_set_type(r, ldns_rr_descriptor_field_type(desc, r_cnt));
+						} else {
+							ldns_rdf_set_type(r, LDNS_RDF_TYPE_UNKNOWN);
+						}
 						LDNS_FREE(hex_data_str);
 						ldns_rr_push_rdf(new, r);
 					} else {
@@ -1202,7 +1210,6 @@ qsort_rr_compare(const void *a, const void *b)
 	return ldns_rr_compare(rr1, rr2);
 }
 
-
 int
 qsort_schwartz_rr_compare(const void *a, const void *b)
 {
@@ -1662,8 +1669,25 @@ static const ldns_rdf_type type_rrsig_wireformat[] = {
 static const ldns_rdf_type type_nsec_wireformat[] = {
 	LDNS_RDF_TYPE_DNAME, LDNS_RDF_TYPE_NSEC
 };
+/* nsec3 is some vars, followed by same type of data of nsec */
+static const ldns_rdf_type type_nsec3_wireformat[] = {
+/*	LDNS_RDF_TYPE_NSEC3_VARS, LDNS_RDF_TYPE_NSEC3_NEXT_OWNER, LDNS_RDF_TYPE_NSEC*/
+	LDNS_RDF_TYPE_INT8, LDNS_RDF_TYPE_INT8, LDNS_RDF_TYPE_INT16, LDNS_RDF_TYPE_NSEC3_SALT, LDNS_RDF_TYPE_NSEC3_NEXT_OWNER, LDNS_RDF_TYPE_NSEC
+};
+
+static const ldns_rdf_type type_nsec3params_wireformat[] = {
+/*	LDNS_RDF_TYPE_NSEC3_PARAMS_VARS*/
+	LDNS_RDF_TYPE_INT8,
+	LDNS_RDF_TYPE_INT8,
+	LDNS_RDF_TYPE_INT16,
+	LDNS_RDF_TYPE_NSEC3_SALT
+};
+
 static const ldns_rdf_type type_dnskey_wireformat[] = {
-	LDNS_RDF_TYPE_INT16, LDNS_RDF_TYPE_INT8, LDNS_RDF_TYPE_ALG, LDNS_RDF_TYPE_B64
+	LDNS_RDF_TYPE_INT16,
+	LDNS_RDF_TYPE_INT8,
+	LDNS_RDF_TYPE_ALG,
+	LDNS_RDF_TYPE_B64
 };
 static const ldns_rdf_type type_tsig_wireformat[] = {
 	LDNS_RDF_TYPE_DNAME,
@@ -1981,7 +2005,11 @@ static ldns_rr_descriptor rdata_field_descriptors[] = {
 {LDNS_RR_TYPE_ANY, "TYPE247", 1, 1, type_0_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 0 },
 {LDNS_RR_TYPE_ANY, "TYPE248", 1, 1, type_0_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 0 },
 {LDNS_RR_TYPE_ANY, "TYPE249", 1, 1, type_0_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 0 },
-{LDNS_RR_TYPE_TSIG, "TSIG", 8, 9, type_tsig_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 1 }
+{LDNS_RR_TYPE_DNSKEY, "DNSKEY", 4, 4, type_dnskey_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 0 },
+/* TODO: no code yet, assume 50 for now */
+{LDNS_RR_TYPE_TSIG, "TSIG", 8, 9, type_tsig_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 0 },
+{LDNS_RR_TYPE_NSEC3, "NSEC3", 6, 6, type_nsec3_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 0 },
+{LDNS_RR_TYPE_NSEC3PARAMS, "NSEC3PARAM", 4, 4, type_nsec3params_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 0 }
 };
 /** \endcond */
 
@@ -1992,30 +2020,50 @@ static ldns_rr_descriptor rdata_field_descriptors[] = {
 #define LDNS_RDATA_FIELD_DESCRIPTORS_COUNT \
 	(sizeof(rdata_field_descriptors)/sizeof(rdata_field_descriptors[0]))
 
+/* The first 48 fields are 'common' and can be referenced instantly */
+#define LDNS_RDATA_FIELD_DESCRIPTORS_COMMON 48
+
 const ldns_rr_descriptor *
 ldns_rr_descript(uint16_t type)
 {
-	if (type < LDNS_RDATA_FIELD_DESCRIPTORS_COUNT) {
+	size_t i;
+	
+	if (type < LDNS_RDATA_FIELD_DESCRIPTORS_COMMON) {
 		return &rdata_field_descriptors[type];
 	} else {
-		return &rdata_field_descriptors[0];
+		for (i = LDNS_RDATA_FIELD_DESCRIPTORS_COMMON;
+		     i < LDNS_RDATA_FIELD_DESCRIPTORS_COUNT;
+		     i++) {
+		        if (rdata_field_descriptors[i]._type == type) {
+		     		return &rdata_field_descriptors[i];
+			}
+		}
+		return NULL;
 	}
 }
 
 size_t
 ldns_rr_descriptor_minimum(const ldns_rr_descriptor *descriptor)
 {
-	return descriptor->_minimum;
+	if (descriptor) {
+		return descriptor->_minimum;
+	} else {
+		return 0;
+	}
 }
 
 size_t
 ldns_rr_descriptor_maximum(const ldns_rr_descriptor *descriptor)
 {
-	if (descriptor->_variable != LDNS_RDF_TYPE_NONE) {
-		/* Should really be SIZE_MAX... bad FreeBSD.  */
-		return UINT_MAX;
+	if (descriptor) {
+		if (descriptor->_variable != LDNS_RDF_TYPE_NONE) {
+			/* Should really be SIZE_MAX... bad FreeBSD.  */
+			return UINT_MAX;
+		} else {
+			return descriptor->_maximum;
+		}
 	} else {
-		return descriptor->_maximum;
+		return 0;
 	}
 }
 
@@ -2047,7 +2095,7 @@ ldns_get_rr_type_by_name(const char *name)
 
 	/* Normal types */
 	for (i = 0; i < (unsigned int) LDNS_RDATA_FIELD_DESCRIPTORS_COUNT; i++) {
-		desc = ldns_rr_descript(i);
+		desc = &rdata_field_descriptors[i];
 		desc_name = desc->_name;
 		if(desc_name &&
 		   strlen(name) == strlen(desc_name) &&

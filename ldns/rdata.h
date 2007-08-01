@@ -32,6 +32,8 @@
 #define LDNS_RDF_SIZE_6BYTES            6
 #define LDNS_RDF_SIZE_16BYTES           16
 
+#define LDNS_NSEC3_VARS_OPTOUT_MASK 0x01
+
 /**
  * The different types of RDATA fields.
  */
@@ -55,6 +57,8 @@ enum ldns_enum_rdf_type
 	LDNS_RDF_TYPE_STR,
 	/** apl data */
 	LDNS_RDF_TYPE_APL,
+	/** b32 string */
+	LDNS_RDF_TYPE_B32_EXT,
 	/** b64 string */
 	LDNS_RDF_TYPE_B64,
 	/** hex string */
@@ -90,7 +94,11 @@ enum ldns_enum_rdf_type
 	/** NSAP */
 	LDNS_RDF_TYPE_NSAP,
 	/** IPSECKEY */
-	LDNS_RDF_TYPE_IPSECKEY
+	LDNS_RDF_TYPE_IPSECKEY,
+	/** nsec3 hash salt */
+	LDNS_RDF_TYPE_NSEC3_SALT,
+	/** nsec3 base32 string (with length byte on wire */
+	LDNS_RDF_TYPE_NSEC3_NEXT_OWNER,
 };
 typedef enum ldns_enum_rdf_type ldns_rdf_type;
 

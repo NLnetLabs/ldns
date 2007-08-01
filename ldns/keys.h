@@ -43,6 +43,8 @@ enum ldns_enum_algorithm
         LDNS_DSA                = 3,
         LDNS_ECC                = 4,
         LDNS_RSASHA1            = 5,
+        LDNS_DSA_NSEC3		= 131,
+        LDNS_RSASHA1_NSEC3	= 133,
         LDNS_INDIRECT           = 252,
         LDNS_PRIVATEDNS         = 253,
         LDNS_PRIVATEOID         = 254
@@ -67,6 +69,8 @@ enum ldns_enum_signing_algorithm
 	LDNS_SIGN_RSAMD5	 = LDNS_RSAMD5,
 	LDNS_SIGN_RSASHA1	 = LDNS_RSASHA1,
 	LDNS_SIGN_DSA		 = LDNS_DSA,
+	LDNS_SIGN_RSASHA1_NSEC3  = LDNS_RSASHA1_NSEC3,
+	LDNS_SIGN_DSA_NSEC3	 = LDNS_DSA_NSEC3,	
 	LDNS_SIGN_HMACMD5	 = 150	/* not official! */
 };
 typedef enum ldns_enum_signing_algorithm ldns_signing_algorithm;

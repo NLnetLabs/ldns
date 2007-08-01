@@ -171,6 +171,7 @@ ldns_rdf *
 ldns_rdf_new_frm_data(ldns_rdf_type type, size_t size, const void *data)
 {
 	ldns_rdf *rdf;
+
 	rdf = LDNS_MALLOC(ldns_rdf);
 	if (!rdf) {
 		return NULL;
@@ -250,6 +251,9 @@ ldns_rdf_new_frm_str(ldns_rdf_type type, const char *str)
 	case LDNS_RDF_TYPE_B64:
 		status = ldns_str2rdf_b64(&rdf, str);
 		break;
+	case LDNS_RDF_TYPE_B32_EXT:
+		status = ldns_str2rdf_b32_ext(&rdf, str);
+		break;
 	case LDNS_RDF_TYPE_HEX:
 		status = ldns_str2rdf_hex(&rdf, str);
 		break;
@@ -292,9 +296,16 @@ ldns_rdf_new_frm_str(ldns_rdf_type type, const char *str)
 	case LDNS_RDF_TYPE_NSAP:
 		status = ldns_str2rdf_nsap(&rdf, str);
 		break;
+	case LDNS_RDF_TYPE_NSEC3_SALT:
+		status = ldns_str2rdf_nsec3_salt(&rdf, str);
+		break;
+	case LDNS_RDF_TYPE_NSEC3_NEXT_OWNER:
+		status = ldns_str2rdf_b32_ext(&rdf, str);
+		break;
 	case LDNS_RDF_TYPE_NONE:
 	default:
 		/* default default ??? */
+		printf("unknown\n");
 		status = LDNS_STATUS_ERR;
 		break;
 	}

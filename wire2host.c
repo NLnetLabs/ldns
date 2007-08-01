@@ -173,7 +173,7 @@ ldns_wire2rdf(ldns_rr *rr, const uint8_t *wire, size_t max, size_t *pos)
 	for (rdf_index = 0; 
 	     rdf_index < ldns_rr_descriptor_maximum(descriptor); rdf_index++) {
 		if (*pos >= end) {
-	     		break;
+			break;
 		}
 		cur_rdf_length = 0;
 
@@ -208,6 +208,7 @@ ldns_wire2rdf(ldns_rr *rr, const uint8_t *wire, size_t max, size_t *pos)
 			cur_rdf_length = LDNS_RDF_SIZE_16BYTES;
 			break;
 		case LDNS_RDF_TYPE_STR:
+		case LDNS_RDF_TYPE_NSEC3_SALT:
 			/* len is stored in first byte 
 			 * it should be in the rdf too, so just
 			 * copy len+1 from this position
@@ -216,6 +217,11 @@ ldns_wire2rdf(ldns_rr *rr, const uint8_t *wire, size_t max, size_t *pos)
 			break;
 		case LDNS_RDF_TYPE_INT16_DATA:
 			cur_rdf_length = (size_t) ldns_read_uint16(&wire[*pos]) + 2;
+			break;
+		case LDNS_RDF_TYPE_B32_EXT:
+		case LDNS_RDF_TYPE_NSEC3_NEXT_OWNER:
+			/* length is stored in first byte */
+			cur_rdf_length = (uint8_t) wire[*pos] + 1;
 			break;
 		case LDNS_RDF_TYPE_APL:
 		case LDNS_RDF_TYPE_B64:
@@ -235,6 +241,7 @@ ldns_wire2rdf(ldns_rr *rr, const uint8_t *wire, size_t max, size_t *pos)
 			cur_rdf_length = end - *pos;
 			break;
 		}
+
 		/* fixed length rdata */
 		if (cur_rdf_length > 0) {
 			if (cur_rdf_length + *pos > end) {
@@ -300,7 +307,6 @@ ldns_wire2rr(ldns_rr **rr_p, const uint8_t *wire, size_t max,
 	}
 	
 	*rr_p = rr;
-
 	return LDNS_STATUS_OK;
 	
 status_error:

@@ -38,6 +38,12 @@ usage(FILE *fp, const char *prog) {
 	fprintf(fp, "  -k <id>,<int>\tuse key id with algorithm int from engine\n");
 	fprintf(fp, "  -K <id>,<int>\tuse key id with algorithm int from engine as KSK\n");
 	fprintf(fp, "\t\tif no key is given (but an external one is used through the engine support, it might be necessary to provide the right algorithm number.\n");
+	fprintf(fp, "  -n\t\tuse NSEC3 instead of NSEC.\n");
+	fprintf(fp, "\t\tIf you use NSEC3, you can specify the following extra options:\n");
+	fprintf(fp, "\t\t-a [algorithm] hashing algorithm\n");
+	fprintf(fp, "\t\t-t [number] number of hash iterations\n");
+	fprintf(fp, "\t\t-s [string] salt\n");
+	fprintf(fp, "\n");
 	fprintf(fp, "  keys must be specified by their base name: K<name>+<alg>+<id>\n");
 	fprintf(fp, "  if the public part of the key is not present in the zone, \n");
 	fprintf(fp, "  both a .key and .private file must be present\n");
@@ -141,6 +147,15 @@ main(int argc, char *argv[])
 	char *eng_key_id;
 	int eng_key_algo;
 	
+	bool use_nsec3 = false;
+	
+	uint8_t nsec3_algorithm = 1;
+	uint8_t nsec3_flags = 0;
+	size_t nsec3_iterations_cmd = 1;
+	uint16_t nsec3_iterations = 1;
+	uint8_t nsec3_salt_length = 0;
+	uint8_t *nsec3_salt = NULL;
+	
 	/* we need to know the origin before reading ksk's,
 	 * so keep an array of filenames until we know it
 	 */
@@ -160,8 +175,11 @@ main(int argc, char *argv[])
 
 /*	OPENSSL_config(NULL);*/
 
-	while ((c = getopt(argc, argv, "e:f:i:lo:vE:ak:K:")) != -1) {
+	while ((c = getopt(argc, argv, "a:e:f:i:k:lno:s:t:v:E:K:")) != -1) {
 		switch (c) {
+		case 'a':
+			nsec3_algorithm = (uint8_t) atoi(optarg);
+			break;
 		case 'e':
 			/* try to parse YYYYMMDD first,
 			 * if that doesn't work, it
@@ -214,6 +232,9 @@ main(int argc, char *argv[])
 			break;
 		case 'l':
 			leave_old_dnssec_data = true;
+			break;
+		case 'n':
+			use_nsec3 = true;
 			break;
 		case 'o':
 			if (ldns_str2rdf_dname(&origin, optarg) != LDNS_STATUS_OK) {
@@ -304,6 +325,32 @@ main(int argc, char *argv[])
 		case 'K':
 			printf("Not implemented yet\n");
 			exit(EXIT_FAILURE);
+			break;
+		case 's':
+		        if (strlen(optarg) % 2 != 0) {
+                                fprintf(stderr, "Salt value is not valid hex data, not a multiple of 2 characters\n");
+                                exit(EXIT_FAILURE);
+		        }
+		        nsec3_salt_length = (uint8_t) strlen(optarg) / 2;
+			nsec3_salt = LDNS_XMALLOC(uint8_t, nsec3_salt_length);
+                        for (c = 0; c < (int) strlen(optarg); c += 2) {
+                                if (isxdigit(optarg[c]) && isxdigit(optarg[c+1])) {
+                                        nsec3_salt[c/2] = (uint8_t) ldns_hexdigit_to_int(optarg[c]) * 16 +
+                                                          ldns_hexdigit_to_int(optarg[c+1]);
+                                } else {
+                                        fprintf(stderr, "Salt value is not valid hex data.\n");
+                                        exit(EXIT_FAILURE);
+                                }
+                        }
+
+			break;
+		case 't':
+			nsec3_iterations_cmd = (size_t) atol(optarg);
+			if (nsec3_iterations_cmd > LDNS_NSEC3_MAX_ITERATIONS) {
+			  fprintf(stderr, "Iterations count can not exceed %u, quitting\n", LDNS_NSEC3_MAX_ITERATIONS);
+			  exit(EXIT_FAILURE);
+			}
+			nsec3_iterations = (uint16_t) nsec3_iterations_cmd;
 			break;
 		default:
 			usage(stderr, prog);
@@ -438,7 +485,6 @@ main(int argc, char *argv[])
 				found:
 				ldns_rr_free(pubkey_gen);
 				ldns_key_list_push_key(keys, key);
-				exit(0);
 #if 0
  else {
 					/* apparently the public key is not in the zone
@@ -499,8 +545,18 @@ main(int argc, char *argv[])
 		}
 	}
 			
-	signed_zone = ldns_zone_sign(orig_zone, keys);
-
+	if (use_nsec3) {
+		signed_zone = ldns_zone_sign_nsec3(orig_zone,
+		                                   keys,
+		                                   nsec3_algorithm,
+		                                   nsec3_flags,
+		                                   nsec3_iterations,
+		                                   nsec3_salt_length,
+		                                   nsec3_salt);
+	} else {
+		signed_zone = ldns_zone_sign(orig_zone, keys);
+	}
+	
 	if (!outputfile_name) {
 		outputfile_name = LDNS_XMALLOC(char, MAX_FILENAME_LEN);
 		snprintf(outputfile_name, MAX_FILENAME_LEN, "%s.signed", zonefile_name);
@@ -514,7 +570,9 @@ main(int argc, char *argv[])
 			ldns_zone_print(outputfile, signed_zone);
 			fclose(outputfile);
 		}
+/*
 		ldns_zone_deep_free(signed_zone); 
+*/
 	} else {
 		fprintf(stderr, "Error signing zone.");
 		exit(EXIT_FAILURE);

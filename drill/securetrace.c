@@ -619,11 +619,88 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 				}
 				ldns_rr_list_deep_free(dataset);
 			} else {
-				mesg("No DS");
+				status = ldns_verify_denial(p, name, t, &nsec_rrs, &nsec_rr_sigs);
+				if (status == LDNS_STATUS_OK) {
+					/* verify the nsec3 themselves*/
+					if (verbosity >= 5) {
+						printf("NSEC(3) Records to verify:\n");
+						ldns_rr_list_print(stdout, nsec_rrs);
+						printf("With signatures:\n");
+						ldns_rr_list_print(stdout, nsec_rr_sigs);
+						printf("correct keys at %p:\n", correct_key_list);
+						ldns_rr_list_print(stdout, correct_key_list);
+/*
+						printf("trusted keys at %p:\n", trusted_keys);
+						ldns_rr_list_print(stdout, trusted_keys);
+*/					}
+					
+					if ((st = ldns_verify(nsec_rrs, nsec_rr_sigs, trusted_keys, NULL)) == LDNS_STATUS_OK) {
+						fprintf(stdout, "%s ", TRUST);
+						fprintf(stdout, "Existence denied: ");
+						ldns_rdf_print(stdout, name);
+						if (descriptor && descriptor->_name) {
+							printf(" %s", descriptor->_name);
+						} else {
+							printf(" TYPE%u", t);
+						}
+						fprintf(stdout, "\n");
+					} else if ((st = ldns_verify(nsec_rrs, nsec_rr_sigs, correct_key_list, NULL)) == LDNS_STATUS_OK) {
+						fprintf(stdout, "%s ", SELF);
+						fprintf(stdout, "Existence denied: ");
+						ldns_rdf_print(stdout, name);
+						if (descriptor && descriptor->_name) {
+							printf(" %s", descriptor->_name);
+						} else {
+							printf(" TYPE%u", t);
+						}
+						fprintf(stdout, "\n");
+					} else {
+						result = 6;
+						fprintf(stdout, "%s ", BOGUS);
+						printf("Error verifying denial of existence for ");
+						ldns_rdf_print(stdout, name);
+						printf(" type ");
+						if (descriptor && descriptor->_name) {
+							printf("%s", descriptor->_name);
+						} else {
+							printf("TYPE%u", t);
+						}
+						printf(": %s\n", ldns_get_errorstr_by_id(st));
+					}
+					
+					ldns_rr_list_deep_free(nsec_rrs);
+					ldns_rr_list_deep_free(nsec_rr_sigs);
+				} else {
+/*
+*/
+					if (status == LDNS_STATUS_CRYPTO_NO_RRSIG) {
+						printf("%s ", UNSIGNED);
+						printf("No data found for: ");
+						ldns_rdf_print(stdout, name);
+						printf(" type ");
+						if (descriptor && descriptor->_name) {
+							printf("%s", descriptor->_name);
+						} else {
+							printf("TYPE%u", t);
+						}
+						printf("\n");
+					} else {
+						printf("[B] Unable to verify denial of existence for ");
+						ldns_rdf_print(stdout, name);
+						printf(" type ");
+						if (descriptor && descriptor->_name) {
+							printf("%s", descriptor->_name);
+						} else {
+							printf("TYPE%u", t);
+						}
+						printf("\n");
+					}
+				
+				}
 			}
 			ldns_pkt_free(p);
 		}
-		ds_list = NULL;
+
 		new_nss_aaaa = NULL;
 		new_nss_a = NULL;
 		new_nss = NULL;
@@ -632,11 +709,9 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 		key_list = NULL;
 		ldns_rr_list_deep_free(key_sig_list);
 		key_sig_list = NULL;
-		ldns_rr_list_deep_free(ds_list);
 		ds_list = NULL;
 		ldns_rr_list_deep_free(ds_sig_list);
 		ds_sig_list = NULL;
-		puts("");
 	}
 	printf(";;" SELF " self sig OK; " BOGUS " bogus; " TRUST " trusted\n");
 	/* verbose mode?

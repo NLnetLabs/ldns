@@ -1,0 +1,42 @@
+
+NSEC3 Workshop Notes
+
+To build this library and drill, perform the following actions:
+
+./configure 
+make
+cd drill
+./configure
+make
+
+For Linux:
+export LD_LIBRARY_PATH=<path to base dir>/lib
+
+For OSX:
+export DYLD_LIBRARY_PATH=<path to base dir>/lib
+
+
+On OSX 10.4, you might need to set
+MACOSX_DEPLOYMENT_TARGET=10.4 in your environment
+
+
+Examples of drill usage:
+
+drill -TD n3.n3s.ws.nsec3.org. -k ~/nsec3/Kws.nsec3.org.+005.+27311.key 
+
+Performs a secure (-D) trace (-T) with a trusted key (-k).
+
+Another useful argument is -d <name>, in which case the tracer will start at that zone instead of the root.
+
+For example
+drill -TD ok.ok.ok.nsec3.jelte.nlnetlabs.nl -d jelte.nlnetlabs.nl
+
+-V (number) changes the verbosity, values range from 0 to 5.
+
+For each zone, some data is printed, with it's status, either [T] [S] or [B]:
+[T] Trusted, the data is verified and has a chain to a trusted key
+[S] Signed, the data verifies with it's signature but does NOT have a chain to a trusted key
+[B] Bogus, the data did not verify.
+
+Try to raise the verbosity to see a more detailed description.
+

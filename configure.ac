@@ -350,6 +350,8 @@ AC_FUNC_REALLOC
 
 AC_REPLACE_FUNCS(b64_pton)
 AC_REPLACE_FUNCS(b64_ntop)
+AC_REPLACE_FUNCS(b32_pton)
+AC_REPLACE_FUNCS(b32_ntop)
 AC_REPLACE_FUNCS(timegm)
 AC_REPLACE_FUNCS(gmtime_r)
 AC_REPLACE_FUNCS(ctime_r)
@@ -432,6 +434,37 @@ static inline size_t b64_pton_calculate_size(size_t srcsize)
 	return ((((srcsize / 4) * 3) - 2) + 2);
 }
 #endif /* !B64_NTOP */
+
+#ifndef B32_NTOP
+int b32_ntop(uint8_t const *src, size_t srclength,
+	     char *target, size_t targsize);
+int b32_ntop_extended_hex(uint8_t const *src, size_t srclength,
+	     char *target, size_t targsize);
+/**
+ * calculates the size needed to store the result of b32_ntop
+ */
+/*@unused@*/
+static inline size_t b32_ntop_calculate_size(size_t srcsize)
+{
+	size_t result = ((((srcsize / 5) * 8) - 2) + 2);
+	return result;
+}
+#endif /* !B32_PTON */
+#ifndef B32_PTON
+int b32_pton(char const *src, size_t hashed_owner_str_len, uint8_t *target, size_t targsize);
+int b32_pton_extended_hex(char const *src, size_t hashed_owner_str_len, uint8_t *target, size_t targsize);
+/**
+ * calculates the size needed to store the result of b32_pton
+ */
+/*@unused@*/
+static inline size_t b32_pton_calculate_size(size_t srcsize)
+{
+	size_t result = ((((srcsize) / 8) * 5));
+	return result;
+}
+#endif /* !B32_NTOP */
+
+
 #ifndef TIMEGM
 #include <time.h>
 time_t timegm (struct tm *tm);

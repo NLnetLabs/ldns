@@ -58,6 +58,20 @@ ldns_status ldns_str2rdf_int32(ldns_rdf **rd, const char *longstr);
  */
 ldns_status ldns_str2rdf_time(ldns_rdf **rd, const char *time);
 
+/* convert string with NSEC3 vars to wireformat) 
+ * \param[in] rd the rdf where to put the data
+ * \param[in] str the string to be converted
+ * return ldns_status
+ */
+ldns_status ldns_str2rdf_nsec3_vars(ldns_rdf **rd, const char *nsec3_vars);
+
+/* convert string with NSEC3 salt to wireformat) 
+ * \param[in] rd the rdf where to put the data
+ * \param[in] str the string to be converted
+ * return ldns_status
+ */
+ldns_status ldns_str2rdf_nsec3_salt(ldns_rdf **rd, const char *nsec3_salt);
+
 /* convert a time period (think TTL's) to wireformat) 
  * \param[in] rd the rdf where to put the data
  * \param[in] str the string to be converted
@@ -104,6 +118,14 @@ ldns_status ldns_str2rdf_apl(ldns_rdf **rd, const char *str);
  * \return ldns_status
  */
 ldns_status ldns_str2rdf_b64(ldns_rdf **rd, const char *str);
+
+/**
+ * convert the string with the b32 ext hex data into wireformat
+ * \param[in] rd the rdf where to put the data
+ * \param[in] str the string to be converted
+ * \return ldns_status
+ */
+ldns_status ldns_str2rdf_b32_ext(ldns_rdf **rd, const char *str);
 
 /**
  * convert a hex value into wireformat

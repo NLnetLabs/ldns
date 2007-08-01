@@ -115,6 +115,42 @@ ldns_str2rdf_time(ldns_rdf **rd, const char *time)
 }
 
 ldns_status
+ldns_str2rdf_nsec3_salt(ldns_rdf **rd, const char *salt_str)
+{
+	uint8_t salt_length;
+	uint8_t c;
+
+	uint8_t *salt;
+	uint8_t *data;
+
+	salt_length = (uint8_t) strlen(salt_str);
+	if (salt_length == 1 && salt_str[0] == '-') {
+		salt_length = 0;
+	} else if (salt_length % 2 != 0) {
+		return LDNS_STATUS_INVALID_HEX;
+	}
+	
+	salt = LDNS_XMALLOC(uint8_t, salt_length / 2);
+	for (c = 0; c < salt_length; c += 2) {
+		if (isxdigit(salt_str[c]) && isxdigit(salt_str[c+1])) {
+			salt[c/2] = (uint8_t) ldns_hexdigit_to_int(salt_str[c]) * 16 +
+					  ldns_hexdigit_to_int(salt_str[c+1]);
+		} else {
+			return LDNS_STATUS_INVALID_HEX;
+		}
+	}
+	salt_length = salt_length / 2;
+	
+	data = LDNS_XMALLOC(uint8_t, 1 + salt_length);
+	data[0] = salt_length;
+	memcpy(&data[1], salt, salt_length);
+	*rd = ldns_rdf_new_frm_data(LDNS_RDF_TYPE_NSEC3_SALT, 5 + salt_length, data);
+	LDNS_FREE(data);
+	return LDNS_STATUS_OK;
+
+}
+
+ldns_status
 ldns_str2rdf_period(ldns_rdf **rd,const char *period)
 {
         uint32_t p;
@@ -441,6 +477,29 @@ ldns_str2rdf_b64(ldns_rdf **rd, const char *str)
 	} else {
 		*rd = ldns_rdf_new_frm_data(
 			LDNS_RDF_TYPE_B64, (uint16_t) i, buffer);
+	}
+	LDNS_FREE(buffer);
+
+	return LDNS_STATUS_OK;
+}
+
+ldns_status
+ldns_str2rdf_b32_ext(ldns_rdf **rd, const char *str)
+{
+	uint8_t *buffer;
+	int i;
+	/* first byte contains length of actual b32 data */
+	uint8_t len = b32_pton_calculate_size(strlen(str));
+	buffer = LDNS_XMALLOC(uint8_t, len + 1);
+	buffer[0] = len;
+	
+	i = b32_pton_extended_hex((const char*)str, strlen(str), buffer + 1, 
+                                  b32_ntop_calculate_size(strlen(str)));
+	if (i < 0) {
+		return LDNS_STATUS_INVALID_B32_EXT;
+	} else {
+		*rd = ldns_rdf_new_frm_data(
+			LDNS_RDF_TYPE_B32_EXT, (uint16_t) i + 1, buffer);
 	}
 	LDNS_FREE(buffer);
 

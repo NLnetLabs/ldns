@@ -236,7 +236,6 @@ do_chase(ldns_resolver *res, ldns_rdf *name, ldns_rr_type type, ldns_rr_class c,
 */
 	ldns_pkt *pkt;
 	ldns_status tree_result;
-	
 	ldns_dnssec_data_chain *chain;
 	ldns_dnssec_trust_tree *tree;
 	
@@ -244,7 +243,6 @@ do_chase(ldns_resolver *res, ldns_rdf *name, ldns_rr_type type, ldns_rr_class c,
 	descriptor = ldns_rr_descript(type);
 
 	ldns_dname2canonical(name);
-	
 	
 	pkt = ldns_pkt_clone(pkt_o);
 	if (!name) {

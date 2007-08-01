@@ -31,7 +31,7 @@ usage(FILE *stream, const char *progname)
 	fprintf(stream, "\t-D\t\tenable DNSSEC (DO bit)\n");
 	fprintf(stream, "\t-T\t\ttrace from the root down to <name>\n");
 	fprintf(stream, "\t-S\t\tchase signature(s) from <name> to a know key [*]\n");
-	fprintf(stream, "\t-V\t\tverbose mode (once shows question, twice for hexdumps)\n");
+	fprintf(stream, "\t-V <number>\tverbosity (0-5)\n");
 	fprintf(stream, "\t-Q\t\tquiet mode (overrules -V)\n");
 	fprintf(stream, "\n");
 	fprintf(stream, "\t-f file\t\tread packet from file and send it\n");

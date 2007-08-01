@@ -188,6 +188,8 @@ ldns_status ldns_dnssec_trust_tree_contains_keys(ldns_dnssec_trust_tree *tree, l
 ldns_dnssec_data_chain *ldns_dnssec_build_data_chain(ldns_resolver *res, const uint16_t qflags, const ldns_rr_list *data_set, const ldns_pkt *pkt);
 
 
+#define LDNS_NSEC3_MAX_ITERATIONS 65535
+
 /** 
  * calculates a keytag of a key for use in DNSSEC.
  *
@@ -361,16 +363,105 @@ ldns_rr * ldns_create_nsec(ldns_rdf *cur_owner, ldns_rdf *next_owner, ldns_rr_li
 bool ldns_nsec_bitmap_covers_type(const ldns_rdf *nsec_bitmap, ldns_rr_type type);
 
 /**
- * Checks coverage of NSEC RR name span
+ * Checks coverage of NSEC(3) RR name span
  * Remember that nsec and name must both be in canonical form (ie use
  * \ref ldns_rr2canonical and \ref ldns_dname2canonical prior to calling this
  * function)
  *
  * \param[in] nsec The NSEC RR to check
- * \param[in] name The owner dname to check
+ * \param[in] name The owner dname to check, if the nsec record is a NSEC3 record, this should be the hashed name
  * \return true if the NSEC RR covers the owner name
  */
 bool ldns_nsec_covers_name(const ldns_rr *nsec, const ldns_rdf *name);
+
+/**
+ * Returns the hash algorithm used in the given NSEC3 RR
+ * \param[in] *nsec3_rr The RR to read from
+ * \return The algorithm identifier, or 0 on error
+ */
+uint8_t ldns_nsec3_algorithm(const ldns_rr *nsec3_rr);
+
+/**
+ * Returns the number of hash iterations used in the given NSEC3 RR
+ * \param[in] *nsec3_rr The RR to read from
+ * \return The number of iterations
+ */
+uint16_t ldns_nsec3_iterations(const ldns_rr *nsec3_rr);
+
+/**
+ * Returns the salt used in the given NSEC3 RR
+ * \param[in] *nsec3_rr The RR to read from
+ * \return The salt rdf, or NULL on error
+ */
+ldns_rdf *ldns_nsec3_salt(const ldns_rr *nsec3_rr);
+
+/**
+ * Returns the length of the salt used in the given NSEC3 RR
+ * \param[in] *nsec3_rr The RR to read from
+ * \return The length of the salt in bytes
+ */
+uint8_t ldns_nsec3_salt_length(const ldns_rr *nsec3_rr);
+
+/**
+ * Returns the salt bytes used in the given NSEC3 RR
+ * \param[in] *nsec3_rr The RR to read from
+ * \return The salt in bytes, this is alloced, so you need to free it
+ */
+uint8_t *ldns_nsec3_salt_data(const ldns_rr *nsec3_rr);
+
+/**
+ * Returns true if the opt-out flag has been set in the given NSEC3 RR
+ * \param[in] *nsec3_rr The RR to read from
+ * \return true if the RR has type NSEC3 and the opt-out bit has been set, false otherwise
+ */
+bool ldns_nsec3_optout(const ldns_rr *nsec3_rr);
+
+/**
+ * Returns the first label of the next ownername in the NSEC3 chain (ie. without the domain)
+ * \param[in] nsec3_rr The RR to read from
+ * \return The first label of the next owner name in the NSEC3 chain, or NULL on error 
+ */
+ldns_rdf *ldns_nsec3_next_owner(const ldns_rr *nsec3_rr);
+
+/**
+ * Sets all the NSEC3 options. The rr to set them in must be initialized with _new() and
+ * type LDNS_RR_TYPE_NSEC3
+ * \param[in] *rr The RR to set the values in
+ * \param[in] algorithm The NSEC3 hash algorithm 
+ * \param[in] flags The flags field 
+ * \param[in] iterations The number of hash iterations
+ * \param[in] salt_length The length of the salt in bytes 
+ * \param[in] The salt bytes
+ */
+void ldns_nsec3_add_param_rdfs(ldns_rr *rr, uint8_t algorithm, uint8_t flags, uint16_t iterations, uint8_t salt_length, uint8_t *salt);
+
+
+/**
+ * Returns the bitmap specifying the covered types of the given NSEC3 RR
+ * \param[in] *nsec3_rr The RR to read from
+ * \return The covered type bitmap rdf
+ */
+ldns_rdf *ldns_nsec3_bitmap(const ldns_rr *nsec3_rr);
+
+/**
+ * Calculates the hashed name using the parameters of the given NSEC3 RR
+ * \param[in] *nsec The RR to use the parameters from
+ * \param[in] *name The owner name to calculate the hash for 
+ * \return The hashed owner name rdf, without the domain name
+ */
+ldns_rdf *ldns_nsec3_hash_name_frm_nsec3(const ldns_rr *nsec, ldns_rdf *name);
+
+/**
+ * Calculates the hashed name using the given parameters
+ * \param[in] *name The owner name to calculate the hash for 
+ * \param[in] algorithm The hash algorithm to use
+ * \param[in] iterations The number of hash iterations to use
+ * \param[in] salt_length The length of the salt in bytes
+ * \param[in] salt The salt to use
+ * \return The hashed owner name rdf, without the domain name
+ */
+ldns_rdf *ldns_nsec3_hash_name(ldns_rdf *name, uint8_t algorithm, uint16_t iterations, uint8_t salt_length, uint8_t *salt);
+
 
 /**
  * verify a packet 
@@ -395,7 +486,8 @@ ldns_status ldns_pkt_verify(ldns_pkt *p, ldns_rr_type t, ldns_rdf *o, ldns_rr_li
  * \return the signed zone
  */
 ldns_zone *ldns_zone_sign(const ldns_zone *zone, ldns_key_list *key_list);
-
+ldns_zone *ldns_zone_sign_nsec3(ldns_zone *zone, ldns_key_list *key_list, uint8_t algorithm, uint8_t flags, uint16_t iterations, uint8_t salt_length, uint8_t *salt);
+ 
 /**
  * Initialize the random function. This calls OpenSSL
  * \param[in] fd a file providing entropy data

@@ -240,6 +240,19 @@ ldns_rdf2buffer_str_b64(ldns_buffer *output, const ldns_rdf *rdf)
 }	
 
 ldns_status
+ldns_rdf2buffer_str_b32_ext(ldns_buffer *output, const ldns_rdf *rdf)
+{
+	size_t size = b32_ntop_calculate_size(ldns_rdf_size(rdf) - 1);
+	char *b32 = LDNS_XMALLOC(char, size + 1);
+	size = (size_t) b32_ntop_extended_hex(ldns_rdf_data(rdf) + 1, ldns_rdf_size(rdf) - 1, b32, size);
+	if (size > 0) {
+		ldns_buffer_printf(output, "%s", b32);
+	}
+	LDNS_FREE(b32);
+	return ldns_buffer_status(output);
+}	
+
+ldns_status
 ldns_rdf2buffer_str_hex(ldns_buffer *output, const ldns_rdf *rdf)
 {
 	size_t i;
@@ -257,7 +270,7 @@ ldns_rdf2buffer_str_type(ldns_buffer *output, const ldns_rdf *rdf)
 	const ldns_rr_descriptor *descriptor;
 
 	descriptor = ldns_rr_descript(data);
-	if (descriptor->_name) {
+	if (descriptor && descriptor->_name) {
 		ldns_buffer_printf(output, "%s", descriptor->_name);
 	} else {
 		ldns_buffer_printf(output, "TYPE%u", data);
@@ -297,15 +310,21 @@ ldns_rdf2buffer_str_cert_alg(ldns_buffer *output, const ldns_rdf *rdf)
 ldns_status
 ldns_rdf2buffer_str_alg(ldns_buffer *output, const ldns_rdf *rdf)
 {
+	/* don't use algorithm mnemonics in the presentation format
+	   this kind of got sneaked into the rfc's */
         uint8_t data = ldns_rdf_data(rdf)[0];
+/*
 	ldns_lookup_table *lt;
 
  	lt = ldns_lookup_by_id(ldns_algorithms, (int) data);
 	if (lt) {
 		ldns_buffer_printf(output, "%s", lt->name);
 	} else {
+*/
 		ldns_buffer_printf(output, "%d", data);
+/*
 	}
+*/
 	return ldns_buffer_status(output);
 }	
 
@@ -481,16 +500,42 @@ ldns_rdf2buffer_str_nsec(ldns_buffer *output, const ldns_rdf *rdf)
 				type = 256 * (uint16_t) window_block_nr + bit_pos;
 				descriptor = ldns_rr_descript(type);
 
-				if (descriptor->_name) {
+				if (descriptor && descriptor->_name) {
 					ldns_buffer_printf(output, "%s ", 
 							descriptor->_name);
 				} else {
-					ldns_buffer_printf(output, "TYPE%d ", type);
+					ldns_buffer_printf(output, "TYPE%u ", type);
 				}
 			}
 		}
 		
 		pos += (uint16_t) bitmap_length;
+	}
+	
+	return ldns_buffer_status(output);
+}
+
+ldns_status
+ldns_rdf2buffer_str_nsec3_salt(ldns_buffer *output, const ldns_rdf *rdf)
+{
+	uint8_t salt_length;
+	uint8_t salt_pos;
+
+	uint8_t *data = ldns_rdf_data(rdf);
+	size_t pos;
+
+	salt_length = data[0];
+	/* todo: length check needed/possible? */
+	/* from now there are variable length entries so remember pos */
+	pos = 1;
+	if (salt_length == 0) {
+		ldns_buffer_printf(output, "- ");
+	} else {
+		for (salt_pos = 0; salt_pos < salt_length; salt_pos++) {
+			ldns_buffer_printf(output, "%02x", data[1 + salt_pos]);
+			pos++;
+		}
+		ldns_buffer_printf(output, " ");
 	}
 	
 	return ldns_buffer_status(output);
@@ -725,6 +770,9 @@ ldns_rdf2buffer_str(ldns_buffer *buffer, const ldns_rdf *rdf)
 		case LDNS_RDF_TYPE_APL:
 			res = ldns_rdf2buffer_str_apl(buffer, rdf);
 			break;
+		case LDNS_RDF_TYPE_B32_EXT:
+			res = ldns_rdf2buffer_str_b32_ext(buffer, rdf);
+			break;
 		case LDNS_RDF_TYPE_B64:
 			res = ldns_rdf2buffer_str_b64(buffer, rdf);
 			break;
@@ -733,6 +781,9 @@ ldns_rdf2buffer_str(ldns_buffer *buffer, const ldns_rdf *rdf)
 			break;
 		case LDNS_RDF_TYPE_NSEC: 
 			res = ldns_rdf2buffer_str_nsec(buffer, rdf);
+			break;
+		case LDNS_RDF_TYPE_NSEC3_SALT:
+			res = ldns_rdf2buffer_str_nsec3_salt(buffer, rdf);
 			break;
 		case LDNS_RDF_TYPE_TYPE: 
 			res = ldns_rdf2buffer_str_type(buffer, rdf);
@@ -770,6 +821,9 @@ ldns_rdf2buffer_str(ldns_buffer *buffer, const ldns_rdf *rdf)
 			break;
 		case LDNS_RDF_TYPE_INT16_DATA:
 			res = ldns_rdf2buffer_str_int16_data(buffer, rdf);
+			break;
+		case LDNS_RDF_TYPE_NSEC3_NEXT_OWNER:
+			res = ldns_rdf2buffer_str_b32_ext(buffer, rdf);
 			break;
 		}
 	} else {
@@ -814,7 +868,7 @@ ldns_rr2buffer_str(ldns_buffer *output, const ldns_rr *rr)
 
 		descriptor = ldns_rr_descript(ldns_rr_get_type(rr));
 
-		if (descriptor->_name) {
+		if (descriptor && descriptor->_name) {
 			ldns_buffer_printf(output, "%s", descriptor->_name);
 		} else {
 			/* exceptions for qtype */
@@ -1088,6 +1142,7 @@ ldns_key2buffer_str(ldns_buffer *output, const ldns_key *k)
 #ifdef HAVE_SSL
 		switch(ldns_key_algorithm(k)) {
 			case LDNS_SIGN_RSASHA1:
+			case LDNS_SIGN_RSASHA1_NSEC3:
 			case LDNS_SIGN_RSAMD5:
 				/* copied by looking at dnssec-keygen output */
 				/* header */
@@ -1224,6 +1279,7 @@ ldns_key2buffer_str(ldns_buffer *output, const ldns_key *k)
 				RSA_free(rsa);
 				break;
 			case LDNS_SIGN_DSA:
+			case LDNS_SIGN_DSA_NSEC3:
 				dsa = ldns_key_dsa_key(k);
 			
 				ldns_buffer_printf(output,"Private-key-format: v1.2\n");

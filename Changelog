@@ -1,3 +1,4 @@
+<<<<<<< .working
 1.x
 	* API changes:
 	  - various arguments have the keyword const now
@@ -46,7 +47,25 @@
 		- made KSK check more resilient
 
 
-7 Jul 2006: 1.1.0: ldns-team
+* 1.1.X:
+	* ldns-walk now support dnames with maximum label length
+	* capitalization issues in sign/verify/nsec creation are fixed
+	* ldnsd now takes an extra argument containing the address to listen on
+	* signing no longer signs every rrset with KSK's, but only the DNSKEY rrset
+	* ported to Solaris 10
+        * LOC RR type has been fixed
+	* added ldns_send_buffer() function
+
+	Drill:
+	* drill prints error on failed axfr.
+	* drill now accepts mangled packets with -f
+	* old -c option (use tcp) changed to -t
+	* -c option to specify alternative resolv.conf file added
+	* chaser now stops at root when no trusted keys are found
+	  instead of looping forever trying to find the DS for .
+
+
+31 Apr 2006: 1.1.0: ldns-team
 	* Added tutorials and an introduction to the documentation
 	* Added include/ and lib/ dirs so that you can compile against ldns
 	  without installing ldns on your system
