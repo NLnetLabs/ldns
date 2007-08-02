@@ -2026,8 +2026,6 @@ static ldns_rr_descriptor rdata_field_descriptors[] = {
 const ldns_rr_descriptor *
 ldns_rr_descript(uint16_t type)
 {
-	size_t i;
-	
 	if (type < LDNS_RDATA_FIELD_DESCRIPTORS_COMMON) {
 		return &rdata_field_descriptors[type];
 	} else {
