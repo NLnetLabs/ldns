@@ -550,6 +550,10 @@ ldns_calc_keytag(const ldns_rr *key)
 		return 0;
 	}
 
+/*
+printf("calc keytag for key at %p:\n", key);
+ldns_rr_print(stdout, key);
+*/
 	ac32 = 0;
 	if (ldns_rr_get_type(key) != LDNS_RR_TYPE_DNSKEY) {
 		return 0;

@@ -2005,7 +2005,6 @@ static ldns_rr_descriptor rdata_field_descriptors[] = {
 {LDNS_RR_TYPE_ANY, "TYPE247", 1, 1, type_0_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 0 },
 {LDNS_RR_TYPE_ANY, "TYPE248", 1, 1, type_0_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 0 },
 {LDNS_RR_TYPE_ANY, "TYPE249", 1, 1, type_0_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 0 },
-{LDNS_RR_TYPE_DNSKEY, "DNSKEY", 4, 4, type_dnskey_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 0 },
 /* TODO: no code yet, assume 50 for now */
 {LDNS_RR_TYPE_TSIG, "TSIG", 8, 9, type_tsig_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 0 },
 {LDNS_RR_TYPE_NSEC3, "NSEC3", 6, 6, type_nsec3_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 0 },
@@ -2026,7 +2025,7 @@ static ldns_rr_descriptor rdata_field_descriptors[] = {
 const ldns_rr_descriptor *
 ldns_rr_descript(uint16_t type)
 {
-	if (type < LDNS_RDATA_FIELD_DESCRIPTORS_COMMON) {
+	if (type <= LDNS_RDATA_FIELD_DESCRIPTORS_COMMON) {
 		return &rdata_field_descriptors[type];
 	} else {
                 return &rdata_field_descriptors[0];
