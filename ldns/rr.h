@@ -366,7 +366,6 @@ ldns_status ldns_rr_new_frm_fp(ldns_rr **rr, FILE *fp, uint32_t *default_ttl, ld
  * creates a new rr from a file containing a string.
  * \param[out] rr the new rr
  * \param[in] fp the file pointer to use
- * \param[in] fp the file pointer to use
  * \param[in] default_ttl a default ttl for the rr. If 0 DEF_TTL will be used
  *            the pointer will be updated if the file contains a $TTL directive
  *	      The caller must ldns_rdf_deep_free it.
