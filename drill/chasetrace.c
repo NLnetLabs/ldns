@@ -331,7 +331,10 @@ do_chase(ldns_resolver *res, ldns_rdf *name, ldns_rr_type type, ldns_rr_class c,
 	
 	chain = ldns_dnssec_build_data_chain(res, qflags, rrset, pkt);
 
-	/*ldns_dnssec_data_chain_print(stdout, chain);*/
+	/*
+	printf("\n\nDNSSEC Data Chain:\n");
+	ldns_dnssec_data_chain_print(stdout, chain);
+	*/
 
 	result = LDNS_STATUS_OK;
 	
