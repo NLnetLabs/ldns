@@ -9,6 +9,7 @@
 #include "config.h"
 
 #include <ldns/ldns.h>
+#include <openssl/ssl.h>
 
 #include <errno.h>
 
@@ -35,6 +36,8 @@ main(int argc, char *argv[])
 	ldns_signing_algorithm alg;
 	ldns_hash h;
 	char *program = argv[0];
+	ldns_rdf *origin = NULL;
+	ldns_status result;
 		
 	alg = 0;
 	h = LDNS_SHA1;
@@ -45,6 +48,9 @@ main(int argc, char *argv[])
 			h = LDNS_SHA1;
 		} 
 		if (strcmp(argv[0], "-2") == 0) {
+		        #ifndef SHA256_DIGEST_LENGTH
+		          fprintf(stderr, "Error: Crypto library does not support SHA256 digests!");
+		        #endif
 			h = LDNS_SHA256;
 		} 
 		argv++, argc--;
@@ -63,8 +69,12 @@ main(int argc, char *argv[])
 		exit(EXIT_FAILURE);
 	}
 
-	if (ldns_rr_new_frm_fp(&k, keyfp, 0, NULL, NULL) != LDNS_STATUS_OK) {
-		fprintf(stderr, "Could not read public key from file %s\n", keyname);
+	result = ldns_rr_new_frm_fp(&k, keyfp, 0, &origin, NULL);
+	while (result == LDNS_STATUS_SYNTAX_ORIGIN) {
+		result = ldns_rr_new_frm_fp(&k, keyfp, 0, &origin, NULL);
+	}
+	if (result != LDNS_STATUS_OK) {
+		fprintf(stderr, "Could not read public key from file %s: %s\n", keyname, ldns_get_errorstr_by_id(result));
 		exit(EXIT_FAILURE);
 	}
 	fclose(keyfp);
@@ -73,7 +83,7 @@ main(int argc, char *argv[])
 	owner = ldns_rdf2str(ldns_rr_owner(k));
 	alg = ldns_rdf2native_int8(ldns_rr_dnskey_algorithm(k));
 
-	ds = ldns_key_rr2ds(k, LDNS_SHA1);
+	ds = ldns_key_rr2ds(k, h);
 	if (!ds) {
 		fprintf(stderr, "Conversion to a DS RR failed\n");
 		ldns_rr_free(k);

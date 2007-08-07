@@ -110,6 +110,7 @@ main(int argc, char **argv)
 		fprintf(stderr, "%s at %d\n", 
 				ldns_get_errorstr_by_id(s),
 				line_nr);
+                exit(EXIT_FAILURE);
 	}
 	fclose(fp);
 

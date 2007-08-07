@@ -29,6 +29,7 @@ ldns_get_rr_list_addr_by_name(ldns_resolver *res, ldns_rdf *name, ldns_rr_class 
 	ldns_rr_list *hostsfilenames;
 	size_t i;
 	uint8_t ip6;
+	ldns_rr_list *hostsfile;
 
 	a = NULL; 
 	aaaa = NULL; 
@@ -155,8 +156,8 @@ ldns_get_rr_list_hosts_frm_fp_l(FILE *fp, int *line_nr)
 	ldns_rr_list *list;
 	ldns_rdf *tmp;
 	bool ip6;
+	ldns_status parse_result;
 
-	/* duh duh duh !!!!! */
 	line = LDNS_XMALLOC(char, LDNS_MAX_LINELEN + 1);
 	word = LDNS_XMALLOC(char, LDNS_MAX_LINELEN + 1);
 	addr = LDNS_XMALLOC(char, LDNS_MAX_LINELEN + 1);
@@ -206,8 +207,8 @@ ldns_get_rr_list_hosts_frm_fp_l(FILE *fp, int *line_nr)
 					snprintf(rr_str, LDNS_MAX_LINELEN, 
 						"%s IN A %s", word, addr);
 				}
-				if (ldns_rr_new_frm_str(&rr, rr_str, 0, NULL, NULL) !=
-						LDNS_STATUS_OK) {
+				parse_result = ldns_rr_new_frm_str(&rr, rr_str, 0, NULL, NULL);
+				if (parse_result == LDNS_STATUS_OK) {
 					ldns_rr_list_push_rr(list, ldns_rr_clone(rr));
 				}
 				ldns_rr_free(rr);
