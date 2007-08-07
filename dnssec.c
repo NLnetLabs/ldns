@@ -951,10 +951,8 @@ ldns_verify_rrsig_keylist(ldns_rr_list *rrset, ldns_rr *rrsig, const ldns_rr_lis
 
 	if (expiration - inception < 0) {
 		/* bad sig, expiration before inception?? Tsssg */
-		ldns_buffer_free(rawsig_buf);
 		ldns_buffer_free(verify_buf);
 		ldns_buffer_free(rawsig_buf);
-		ldns_buffer_free(verify_buf);
 		ldns_rr_list_deep_free(rrset_clone);
 		ldns_rr_list_deep_free(validkeys);
 		return LDNS_STATUS_CRYPTO_EXPIRATION_BEFORE_INCEPTION;
@@ -963,16 +961,12 @@ ldns_verify_rrsig_keylist(ldns_rr_list *rrset, ldns_rr *rrsig, const ldns_rr_lis
 		/* bad sig, inception date has passed */
 		ldns_buffer_free(rawsig_buf);
 		ldns_buffer_free(verify_buf);
-		ldns_buffer_free(rawsig_buf);
-		ldns_buffer_free(verify_buf);
 		ldns_rr_list_deep_free(rrset_clone);
 		ldns_rr_list_deep_free(validkeys);
 		return LDNS_STATUS_CRYPTO_SIG_NOT_INCEPTED;
 	}
 	if (expiration - now < 0) {
 		/* bad sig, expiration date has passed */
-		ldns_buffer_free(rawsig_buf);
-		ldns_buffer_free(verify_buf);
 		ldns_buffer_free(rawsig_buf);
 		ldns_buffer_free(verify_buf);
 		ldns_rr_list_deep_free(rrset_clone);
