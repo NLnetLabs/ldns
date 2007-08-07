@@ -36,6 +36,8 @@ main(int argc, char *argv[])
 	ldns_signing_algorithm alg;
 	ldns_hash h;
 	char *program = argv[0];
+	ldns_rdf *origin = NULL;
+	ldns_status result;
 		
 	alg = 0;
 	h = LDNS_SHA1;
@@ -67,8 +69,12 @@ main(int argc, char *argv[])
 		exit(EXIT_FAILURE);
 	}
 
-	if (ldns_rr_new_frm_fp(&k, keyfp, 0, NULL, NULL) != LDNS_STATUS_OK) {
-		fprintf(stderr, "Could not read public key from file %s\n", keyname);
+	result = ldns_rr_new_frm_fp(&k, keyfp, 0, &origin, NULL);
+	while (result == LDNS_STATUS_SYNTAX_ORIGIN) {
+		result = ldns_rr_new_frm_fp(&k, keyfp, 0, &origin, NULL);
+	}
+	if (result != LDNS_STATUS_OK) {
+		fprintf(stderr, "Could not read public key from file %s: %s\n", keyname, ldns_get_errorstr_by_id(result));
 		exit(EXIT_FAILURE);
 	}
 	fclose(keyfp);
