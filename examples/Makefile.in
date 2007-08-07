@@ -24,7 +24,7 @@ LINK		= $(libtool) --tag=CC --mode=link $(CC) $(LDFLAGS) $(LIBS)
 LINK_STATIC	= $(libtool) --tag=CC --mode=link $(CC) -static $(LDFLAGS) $(LIBS)
 
 LINT		= splint
-LINTFLAGS	= +quiet -weak -warnposix -unrecog -Din_addr_t=uint32_t -Du_int=unsigned -Du_char=uint8_t -preproc
+LINTFLAGS	= +quiet -weak -warnposix -unrecog -Din_addr_t=uint32_t -Du_int=unsigned -Du_char=uint8_t -preproc -D__u16=uint16_t -D__u32=uint32_t
 
 HEADER		= config.h
 MAIN_SOURCES = ldns-read-zone.c \
