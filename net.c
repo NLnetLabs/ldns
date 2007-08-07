@@ -91,6 +91,11 @@ ldns_send_buffer(ldns_pkt **result, ldns_resolver *r, ldns_buffer *qb, ldns_rdf 
 		}
 		all_servers_rtt_inf = false;
 
+		/* maybe verbosity setting?
+		printf("Sending to ");
+		ldns_rdf_print(stdout, ns_array[i]);
+		printf("\n");
+		*/
 		ns = ldns_rdf2native_sockaddr_storage(ns_array[i],
 				ldns_resolver_port(r), &ns_len);
 		
