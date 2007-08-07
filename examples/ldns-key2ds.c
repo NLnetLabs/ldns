@@ -73,7 +73,7 @@ main(int argc, char *argv[])
 	owner = ldns_rdf2str(ldns_rr_owner(k));
 	alg = ldns_rdf2native_int8(ldns_rr_dnskey_algorithm(k));
 
-	ds = ldns_key_rr2ds(k, LDNS_SHA1);
+	ds = ldns_key_rr2ds(k, h);
 	if (!ds) {
 		fprintf(stderr, "Conversion to a DS RR failed\n");
 		ldns_rr_free(k);
