@@ -9,6 +9,7 @@
 #include "config.h"
 
 #include <ldns/ldns.h>
+#include <openssl/ssl.h>
 
 #include <errno.h>
 
@@ -45,6 +46,9 @@ main(int argc, char *argv[])
 			h = LDNS_SHA1;
 		} 
 		if (strcmp(argv[0], "-2") == 0) {
+		        #ifndef SHA256_DIGEST_LENGTH
+		          fprintf(stderr, "Error: Crypto library does not support SHA256 digests!");
+		        #endif
 			h = LDNS_SHA256;
 		} 
 		argv++, argc--;

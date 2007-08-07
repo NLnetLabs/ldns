@@ -718,11 +718,15 @@ ldns_key_rr2ds(const ldns_rr *key, ldns_hash h)
 			}
 		break;
 		case LDNS_SHA256:
+			#ifdef SHA256_DIGEST_LENGTH
 			digest = LDNS_XMALLOC(uint8_t, SHA256_DIGEST_LENGTH);
 			if (!digest) {
 				ldns_rr_free(ds);
 				return NULL;
 			}
+			#else
+			return NULL;
+			#endif
 		break;
 	}
 
@@ -774,12 +778,14 @@ ldns_key_rr2ds(const ldns_rr *key, ldns_hash h)
 
 		break;
 		case LDNS_SHA256:
+#ifdef SHA256_DIGEST_LENGTH
 		(void) SHA256((unsigned char *) ldns_buffer_begin(data_buf),
 			    ldns_buffer_position(data_buf),
 			    (unsigned char*) digest);
 		tmp = ldns_rdf_new_frm_data(LDNS_RDF_TYPE_HEX, SHA256_DIGEST_LENGTH,
 				digest);
 		ldns_rr_push_rdf(ds, tmp);
+#endif
 		break;
 	}
 
