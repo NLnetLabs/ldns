@@ -958,7 +958,7 @@ ldns_verify_rrsig_keylist(ldns_rr_list *rrset, ldns_rr *rrsig, const ldns_rr_lis
 		return LDNS_STATUS_CRYPTO_EXPIRATION_BEFORE_INCEPTION;
 	}
 	if (now - inception < 0) {
-		/* bad sig, inception date has passed */
+		/* bad sig, inception date has not yet come to pass */
 		ldns_buffer_free(rawsig_buf);
 		ldns_buffer_free(verify_buf);
 		ldns_rr_list_deep_free(rrset_clone);
@@ -1303,7 +1303,8 @@ ldns_verify_rrsig_evp(ldns_buffer *sig, ldns_buffer *rrset, EVP_PKEY *key, const
 	} else if (res == 0) {
 		return LDNS_STATUS_CRYPTO_BOGUS;
 	}
-	return LDNS_STATUS_OK;
+	/* TODO how to communicate internal SSL error? */
+	return LDNS_STATUS_ERR;
 }
 
 ldns_status
@@ -1405,7 +1406,7 @@ ldns_key_buf2rsa(ldns_buffer *key)
 		/* need some smart comment here XXX*/
 		/* the exponent is too large so it's places
 		 * futher...???? */
-		memcpy(&int16, ldns_buffer_at(key, 1), 2);
+		memmove(&int16, ldns_buffer_at(key, 1), 2);
 		exp = ntohs(int16);
 		offset = 3;
 	} else {
@@ -1421,7 +1422,7 @@ ldns_key_buf2rsa(ldns_buffer *key)
 
 	/* Modulus */
 	modulus = BN_new();
-	/* capicity of the buffer must match the key length! */
+	/* length of the buffer must match the key length! */
 	(void) BN_bin2bn((unsigned char*)ldns_buffer_at(key, offset), 
 			 (int)(ldns_buffer_position(key) - offset), modulus);
 
