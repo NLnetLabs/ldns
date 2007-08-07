@@ -862,25 +862,25 @@ printf("[verify_trusted] set result to %s\n", ldns_get_errorstr_by_id(result));
 
 ldns_status
 ldns_verify_rrsig_buffers(ldns_buffer *rawsig_buf, ldns_buffer *verify_buf, 
-		ldns_buffer *key_buf, uint8_t algo)
+	ldns_buffer *key_buf, uint8_t algo)
 {
-		/* check for right key */
-		switch(algo) {
-			case LDNS_DSA:
-			case LDNS_DSA_NSEC3:
-				return ldns_verify_rrsig_dsa(rawsig_buf, verify_buf, key_buf);
-				break;
-			case LDNS_RSASHA1:
-			case LDNS_RSASHA1_NSEC3:
-				return ldns_verify_rrsig_rsasha1(rawsig_buf, verify_buf, key_buf);
-				break;
-			case LDNS_RSAMD5:
-				return ldns_verify_rrsig_rsamd5(rawsig_buf, verify_buf, key_buf);
-				break;
-			default:
-				/* do you know this alg?! */
-				return LDNS_STATUS_CRYPTO_UNKNOWN_ALGO;
-		}
+	/* check for right key */
+	switch(algo) {
+		case LDNS_DSA:
+		case LDNS_DSA_NSEC3:
+			return ldns_verify_rrsig_dsa(rawsig_buf, verify_buf, key_buf);
+			break;
+		case LDNS_RSASHA1:
+		case LDNS_RSASHA1_NSEC3:
+			return ldns_verify_rrsig_rsasha1(rawsig_buf, verify_buf, key_buf);
+			break;
+		case LDNS_RSAMD5:
+			return ldns_verify_rrsig_rsamd5(rawsig_buf, verify_buf, key_buf);
+			break;
+		default:
+			/* do you know this alg?! */
+			return LDNS_STATUS_CRYPTO_UNKNOWN_ALGO;
+	}
 }
 
 /* Post 1.0 TODO: next 2 functions contain a lot of similar code */
