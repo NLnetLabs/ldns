@@ -2019,9 +2019,6 @@ static ldns_rr_descriptor rdata_field_descriptors[] = {
 #define LDNS_RDATA_FIELD_DESCRIPTORS_COUNT \
 	(sizeof(rdata_field_descriptors)/sizeof(rdata_field_descriptors[0]))
 
-/* The first 48 fields are 'common' and can be referenced instantly */
-#define LDNS_RDATA_FIELD_DESCRIPTORS_COMMON 48
-
 const ldns_rr_descriptor *
 ldns_rr_descript(uint16_t type)
 {

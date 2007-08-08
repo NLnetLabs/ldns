@@ -32,6 +32,10 @@
 /** The bytes TTL, CLASS and length use up in an rr */
 #define LDNS_RR_OVERHEAD	10
 
+/* The first 48 fields are 'common' and can be referenced instantly */
+#define LDNS_RDATA_FIELD_DESCRIPTORS_COMMON 48
+
+
 
 /**
  *  The different RR classes.

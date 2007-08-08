@@ -352,7 +352,7 @@ ldns_rdf2buffer_str_loc(ldns_buffer *output, const ldns_rdf *rdf)
 	uint8_t vertical_precision;
 	uint32_t longitude;
 	uint32_t latitude;
-	uint32_t altitude;
+	long altitude;
 	char northerness;
 	char easterness;
 	uint32_t h;
