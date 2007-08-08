@@ -568,10 +568,7 @@ ldns_dnssec_trust_tree_contains_keys(ldns_dnssec_trust_tree *tree, ldns_rr_list 
 uint16_t
 ldns_calc_keytag(const ldns_rr *key)
 {
-	unsigned int i;
-	uint32_t ac32;
 	uint16_t ac16;
-	
 	ldns_buffer *keybuf;
 	size_t keysize;
 
@@ -583,7 +580,6 @@ ldns_calc_keytag(const ldns_rr *key)
 printf("calc keytag for key at %p:\n", key);
 ldns_rr_print(stdout, key);
 */
-	ac32 = 0;
 	if (ldns_rr_get_type(key) != LDNS_RR_TYPE_DNSKEY) {
 		return 0;
 	}
@@ -597,20 +593,32 @@ ldns_rr_print(stdout, key);
 	/* the current pos in the buffer is the keysize */
 	keysize= ldns_buffer_position(keybuf);
 
+	ac16 = ldns_calc_keytag_raw(ldns_buffer_begin(keybuf), keysize);
+	ldns_buffer_free(keybuf);
+	return ac16;
+}
+
+uint16_t ldns_calc_keytag_raw(uint8_t* key, size_t keysize)
+{
+	unsigned int i;
+	uint32_t ac32;
+	uint16_t ac16;
+
+	if(keysize < 4)
+		return 0;
 	/* look at the algorithm field, copied from 2535bis */
-	if (ldns_rdf2native_int8(ldns_rr_rdf(key, 2)) == LDNS_RSAMD5) {
+	if (key[3] == LDNS_RSAMD5) {
+		ac16 = 0;
 		if (keysize > 4) {
-			ldns_buffer_read_at(keybuf, keysize - 3, &ac16, 2);
+			memmove(&ac16, key + keysize - 3, 2);
 		}
-		ldns_buffer_free(keybuf);
 		ac16 = ntohs(ac16);
 		return (uint16_t) ac16;
 	} else {
+		ac32 = 0;
 		for (i = 0; (size_t)i < keysize; ++i) {
-			ac32 += (i & 1) ? *ldns_buffer_at(keybuf, i) : 
-				*ldns_buffer_at(keybuf, i) << 8;
+			ac32 += (i & 1) ? key[i] : key[i] << 8;
 		}
-		ldns_buffer_free(keybuf);
 		ac32 += (ac32 >> 16) & 0xFFFF;
 		return (uint16_t) (ac32 & 0xFFFF);
 	}
@@ -864,18 +872,29 @@ ldns_status
 ldns_verify_rrsig_buffers(ldns_buffer *rawsig_buf, ldns_buffer *verify_buf, 
 	ldns_buffer *key_buf, uint8_t algo)
 {
+	return ldns_verify_rrsig_buffers_raw((unsigned char*)ldns_buffer_begin(
+		rawsig_buf), ldns_buffer_position(rawsig_buf), verify_buf,
+		(unsigned char*)ldns_buffer_begin(key_buf), 
+		ldns_buffer_position(key_buf), algo);
+}
+
+ldns_status
+ldns_verify_rrsig_buffers_raw(unsigned char* sig, size_t siglen,
+	ldns_buffer *verify_buf, unsigned char* key, size_t keylen, 
+	uint8_t algo)
+{
 	/* check for right key */
 	switch(algo) {
 		case LDNS_DSA:
 		case LDNS_DSA_NSEC3:
-			return ldns_verify_rrsig_dsa(rawsig_buf, verify_buf, key_buf);
+			return ldns_verify_rrsig_dsa_raw(sig, siglen, verify_buf, key, keylen);
 			break;
 		case LDNS_RSASHA1:
 		case LDNS_RSASHA1_NSEC3:
-			return ldns_verify_rrsig_rsasha1(rawsig_buf, verify_buf, key_buf);
+			return ldns_verify_rrsig_rsasha1_raw(sig, siglen, verify_buf, key, keylen);
 			break;
 		case LDNS_RSAMD5:
-			return ldns_verify_rrsig_rsamd5(rawsig_buf, verify_buf, key_buf);
+			return ldns_verify_rrsig_rsamd5_raw(sig, siglen, verify_buf, key, keylen);
 			break;
 		default:
 			/* do you know this alg?! */
@@ -1287,6 +1306,14 @@ ldns_verify_rrsig(ldns_rr_list *rrset, ldns_rr *rrsig, ldns_rr *key)
 ldns_status
 ldns_verify_rrsig_evp(ldns_buffer *sig, ldns_buffer *rrset, EVP_PKEY *key, const EVP_MD *digest_type)
 {
+	return ldns_verify_rrsig_evp_raw((unsigned char*)ldns_buffer_begin(
+		sig), ldns_buffer_position(sig), rrset, key, digest_type);
+}
+
+ldns_status
+ldns_verify_rrsig_evp_raw(unsigned char *sig, size_t siglen, 
+	ldns_buffer *rrset, EVP_PKEY *key, const EVP_MD *digest_type)
+{
 	EVP_MD_CTX ctx;
 	int res;
 
@@ -1294,7 +1321,7 @@ ldns_verify_rrsig_evp(ldns_buffer *sig, ldns_buffer *rrset, EVP_PKEY *key, const
 	
 	EVP_VerifyInit(&ctx, digest_type);
 	EVP_VerifyUpdate(&ctx, ldns_buffer_begin(rrset), ldns_buffer_position(rrset));
-	res = EVP_VerifyFinal(&ctx, (unsigned char *) ldns_buffer_begin(sig), ldns_buffer_position(sig), key);
+	res = EVP_VerifyFinal(&ctx, sig, siglen, key);
 	
 	EVP_MD_CTX_cleanup(&ctx);
 	
@@ -1310,26 +1337,52 @@ ldns_verify_rrsig_evp(ldns_buffer *sig, ldns_buffer *rrset, EVP_PKEY *key, const
 ldns_status
 ldns_verify_rrsig_dsa(ldns_buffer *sig, ldns_buffer *rrset, ldns_buffer *key)
 {
-	EVP_PKEY *evp_key;
-	ldns_status result;
-
-	evp_key = EVP_PKEY_new();
-	EVP_PKEY_assign_DSA(evp_key, ldns_key_buf2dsa(key));
-	result = ldns_verify_rrsig_evp(sig, rrset, evp_key, EVP_sha1());
-	EVP_PKEY_free(evp_key);
-	return result;
-
+	return ldns_verify_rrsig_dsa_raw((unsigned char*)ldns_buffer_begin(
+		sig), ldns_buffer_position(sig), rrset, (unsigned char*)
+		ldns_buffer_begin(key), ldns_buffer_position(key));
 }
 
 ldns_status
 ldns_verify_rrsig_rsasha1(ldns_buffer *sig, ldns_buffer *rrset, ldns_buffer *key)
 {
+	return ldns_verify_rrsig_rsasha1_raw((unsigned char*)ldns_buffer_begin(
+		sig), ldns_buffer_position(sig), rrset, (unsigned char*)
+		ldns_buffer_begin(key), ldns_buffer_position(key));
+}
+
+ldns_status
+ldns_verify_rrsig_rsamd5(ldns_buffer *sig, ldns_buffer *rrset, ldns_buffer *key)
+{
+	return ldns_verify_rrsig_rsamd5_raw((unsigned char*)ldns_buffer_begin(
+		sig), ldns_buffer_position(sig), rrset, (unsigned char*)
+		ldns_buffer_begin(key), ldns_buffer_position(key));
+}
+
+ldns_status
+ldns_verify_rrsig_dsa_raw(unsigned char* sig, size_t siglen,
+        ldns_buffer* rrset, unsigned char* key, size_t keylen)
+{
 	EVP_PKEY *evp_key;
 	ldns_status result;
 
 	evp_key = EVP_PKEY_new();
-	EVP_PKEY_assign_RSA(evp_key, ldns_key_buf2rsa(key));
-	result = ldns_verify_rrsig_evp(sig, rrset, evp_key, EVP_sha1());
+	EVP_PKEY_assign_DSA(evp_key, ldns_key_buf2dsa_raw(key, keylen));
+	result = ldns_verify_rrsig_evp_raw(sig, siglen, rrset, evp_key, EVP_sha1());
+	EVP_PKEY_free(evp_key);
+	return result;
+
+}
+
+ldns_status
+ldns_verify_rrsig_rsasha1_raw(unsigned char* sig, size_t siglen,
+        ldns_buffer* rrset, unsigned char* key, size_t keylen)
+{
+	EVP_PKEY *evp_key;
+	ldns_status result;
+
+	evp_key = EVP_PKEY_new();
+	EVP_PKEY_assign_RSA(evp_key, ldns_key_buf2rsa_raw(key, keylen));
+	result = ldns_verify_rrsig_evp_raw(sig, siglen, rrset, evp_key, EVP_sha1());
 	EVP_PKEY_free(evp_key);
 
 	return result;
@@ -1337,14 +1390,15 @@ ldns_verify_rrsig_rsasha1(ldns_buffer *sig, ldns_buffer *rrset, ldns_buffer *key
 
 
 ldns_status
-ldns_verify_rrsig_rsamd5(ldns_buffer *sig, ldns_buffer *rrset, ldns_buffer *key)
+ldns_verify_rrsig_rsamd5_raw(unsigned char* sig, size_t siglen,
+        ldns_buffer* rrset, unsigned char* key, size_t keylen)
 {
 	EVP_PKEY *evp_key;
 	ldns_status result;
 
 	evp_key = EVP_PKEY_new();
-	EVP_PKEY_assign_RSA(evp_key, ldns_key_buf2rsa(key));
-	result = ldns_verify_rrsig_evp(sig, rrset, evp_key, EVP_md5());
+	EVP_PKEY_assign_RSA(evp_key, ldns_key_buf2rsa_raw(key, keylen));
+	result = ldns_verify_rrsig_evp_raw(sig, siglen, rrset, evp_key, EVP_md5());
 	EVP_PKEY_free(evp_key);
 
 	return result;
@@ -1354,6 +1408,13 @@ ldns_verify_rrsig_rsamd5(ldns_buffer *sig, ldns_buffer *rrset, ldns_buffer *key)
 DSA *
 ldns_key_buf2dsa(ldns_buffer *key)
 {
+	return ldns_key_buf2dsa_raw((unsigned char*)ldns_buffer_begin(key),
+		ldns_buffer_position(key));
+}
+
+DSA *
+ldns_key_buf2dsa_raw(unsigned char* key, size_t len)
+{
 	uint8_t T;
 	uint16_t length;
 	uint16_t offset;
@@ -1361,24 +1422,28 @@ ldns_key_buf2dsa(ldns_buffer *key)
 	BIGNUM *Q; BIGNUM *P;
 	BIGNUM *G; BIGNUM *Y;
 
-	T = *ldns_buffer_at(key, 0);
+	if(len == 0)
+		return NULL;
+	T = (uint8_t)key[0];
 	length = (64 + T * 8);
 	offset = 1;
 	
 	if (T > 8) {
 		return NULL;
 	}
+	if(len < (size_t)1 + SHA_DIGEST_LENGTH + 3*length)
+		return NULL;
 	
-	Q = BN_bin2bn((unsigned char*)ldns_buffer_at(key, offset), SHA_DIGEST_LENGTH, NULL);
+	Q = BN_bin2bn(key+offset, SHA_DIGEST_LENGTH, NULL);
 	offset += SHA_DIGEST_LENGTH;
 	
-	P = BN_bin2bn((unsigned char*)ldns_buffer_at(key, offset), (int)length, NULL);
+	P = BN_bin2bn(key+offset, (int)length, NULL);
 	offset += length;
 	
-	G = BN_bin2bn((unsigned char*)ldns_buffer_at(key, offset), (int)length, NULL);
+	G = BN_bin2bn(key+offset, (int)length, NULL);
 	offset += length;
 	
-	Y = BN_bin2bn((unsigned char*)ldns_buffer_at(key, offset), (int)length, NULL);
+	Y = BN_bin2bn(key+offset, (int)length, NULL);
 	offset += length;
 	
 	/* create the key and set its properties */
@@ -1395,6 +1460,13 @@ ldns_key_buf2dsa(ldns_buffer *key)
 RSA *
 ldns_key_buf2rsa(ldns_buffer *key)
 {
+	return ldns_key_buf2rsa_raw((unsigned char*)ldns_buffer_begin(key),
+		ldns_buffer_position(key));
+}
+
+RSA *
+ldns_key_buf2rsa_raw(unsigned char* key, size_t len)
+{
 	uint16_t offset;
 	uint16_t exp;
 	uint16_t int16;
@@ -1402,29 +1474,35 @@ ldns_key_buf2rsa(ldns_buffer *key)
 	BIGNUM *modulus;
 	BIGNUM *exponent;
 
-	if ((*ldns_buffer_at(key, 0)) == 0) {
+	if (len == 0)
+		return NULL;
+	if (key[0] == 0) {
+		if(len < 3)
+			return NULL;
 		/* need some smart comment here XXX*/
 		/* the exponent is too large so it's places
 		 * futher...???? */
-		memmove(&int16, ldns_buffer_at(key, 1), 2);
+		memmove(&int16, key+1, 2);
 		exp = ntohs(int16);
 		offset = 3;
 	} else {
-		exp = *ldns_buffer_at(key, 0);
+		exp = key[0];
 		offset = 1;
 	}
+
+	/* key length at least one */
+	if(len < (size_t)offset + exp + 1)
+		return NULL;
 	
 	/* Exponent */
 	exponent = BN_new();
-	(void) BN_bin2bn(
-			 (unsigned char*)ldns_buffer_at(key, offset), (int)exp, exponent);
+	(void) BN_bin2bn(key+offset, (int)exp, exponent);
 	offset += exp;
 
 	/* Modulus */
 	modulus = BN_new();
 	/* length of the buffer must match the key length! */
-	(void) BN_bin2bn((unsigned char*)ldns_buffer_at(key, offset), 
-			 (int)(ldns_buffer_position(key) - offset), modulus);
+	(void) BN_bin2bn(key+offset, (int)(len - offset), modulus);
 
 	rsa = RSA_new();
 	rsa->n = modulus;

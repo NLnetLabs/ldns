@@ -199,6 +199,14 @@ ldns_dnssec_data_chain *ldns_dnssec_build_data_chain(ldns_resolver *res, const u
 uint16_t ldns_calc_keytag(const ldns_rr *key);
 
 /**
+ * Calculates keytag of DNSSEC key, operates on wireformat rdata.
+ * \param[in] key the key as uncompressed wireformat rdata.
+ * \param[in] keysize length of key data.
+ * \return the keytag
+ */
+uint16_t ldns_calc_keytag_raw(uint8_t* key, size_t keysize);
+
+/**
  * Verifies a list of signatures for one rrset.
  *
  * \param[in] rrset the rrset to verify
@@ -220,6 +228,20 @@ ldns_status ldns_verify(ldns_rr_list *rrset, ldns_rr_list *rrsig, const ldns_rr_
  * \return status LDNS_STATUS_OK if the data verifies. Error if not.
  */
 ldns_status ldns_verify_rrsig_buffers(ldns_buffer *rawsig_buf, ldns_buffer *verify_buf, ldns_buffer *key_buf, uint8_t algo);
+
+/**
+ * Like ldns_verify_rrsig_buffers, but uses raw data.
+ * \param[in] sig signature data to use
+ * \param[in] siglen length of signature data to use
+ * \param[in] verify_buf Buffer containing data to verify
+ * \param[in] key key data to use
+ * \param[in] keylen length of key data to use
+ * \param[in] algo Signing algorithm
+ * \return status LDNS_STATUS_OK if the data verifies. Error if not.
+ */
+ldns_status ldns_verify_rrsig_buffers_raw(unsigned char* sig, size_t siglen, 
+	ldns_buffer *verify_buf, unsigned char* key, size_t keylen, 
+	uint8_t algo);
 
 /**
  * Verifies an rrsig. All keys in the keyset are tried.
@@ -254,6 +276,19 @@ ldns_status ldns_verify_rrsig_evp(ldns_buffer *sig, ldns_buffer *rrset, EVP_PKEY
 #endif
 
 /**
+ * Like ldns_verify_rrsig_evp, but uses raw signature data.
+ * \param[in] sig the signature data, wireformat uncompressed
+ * \param[in] siglen length of the signature data
+ * \param[in] rrset the rrset data, sorted and processed for verification
+ * \param[in] key the EVP key structure
+ * \param[in] digest_type The digest type of the signature
+ */
+#ifdef HAVE_SSL
+ldns_status ldns_verify_rrsig_evp_raw(unsigned char *sig, size_t siglen,
+	ldns_buffer *rrset, EVP_PKEY *key, const EVP_MD *digest_type);
+#endif
+
+/**
  * verifies a buffer with signature data (DSA) for a buffer with rrset data 
  * with a buffer with key data.
  *
@@ -280,6 +315,36 @@ ldns_status ldns_verify_rrsig_rsasha1(ldns_buffer *sig, ldns_buffer *rrset, ldns
  * \param[in] key the key data
  */
 ldns_status ldns_verify_rrsig_rsamd5(ldns_buffer *sig, ldns_buffer *rrset, ldns_buffer *key);
+/**
+ * Like ldns_verify_rrsig_dsa, but uses raw signature and key data.
+ * \param[in] sig raw uncompressed wireformat signature data
+ * \param[in] siglen length of signature data
+ * \param[in] rrset ldns buffer with prepared rrset data.
+ * \param[in] key raw uncompressed wireformat key data
+ * \param[in] keylen length of key data
+ */
+ldns_status ldns_verify_rrsig_dsa_raw(unsigned char* sig, size_t siglen,
+	ldns_buffer* rrset, unsigned char* key, size_t keylen);
+/**
+ * Like ldns_verify_rrsig_rsasha1, but uses raw signature and key data.
+ * \param[in] sig raw uncompressed wireformat signature data
+ * \param[in] siglen length of signature data
+ * \param[in] rrset ldns buffer with prepared rrset data.
+ * \param[in] key raw uncompressed wireformat key data
+ * \param[in] keylen length of key data
+ */
+ldns_status ldns_verify_rrsig_rsasha1_raw(unsigned char* sig, size_t siglen,
+	ldns_buffer* rrset, unsigned char* key, size_t keylen);
+/**
+ * Like ldns_verify_rrsig_rsamd5, but uses raw signature and key data.
+ * \param[in] sig raw uncompressed wireformat signature data
+ * \param[in] siglen length of signature data
+ * \param[in] rrset ldns buffer with prepared rrset data.
+ * \param[in] key raw uncompressed wireformat key data
+ * \param[in] keylen length of key data
+ */
+ldns_status ldns_verify_rrsig_rsamd5_raw(unsigned char* sig, size_t siglen,
+	ldns_buffer* rrset, unsigned char* key, size_t keylen);
 
 #ifdef HAVE_SSL
 /**
@@ -289,6 +354,13 @@ ldns_status ldns_verify_rrsig_rsamd5(ldns_buffer *sig, ldns_buffer *rrset, ldns_
  * \return a DSA * structure with the key material
  */
 DSA *ldns_key_buf2dsa(ldns_buffer *key);
+/**
+ * Like ldns_key_buf2dsa, but uses raw buffer.
+ * \param[in] key the uncompressed wireformat of the key.
+ * \param[in] len length of key data
+ * \return a DSA * structure with the key material
+ */
+DSA *ldns_key_buf2dsa_raw(unsigned char* key, size_t len);
 #endif /* HAVE_SSL */
 
 #ifdef HAVE_SSL
@@ -299,6 +371,13 @@ DSA *ldns_key_buf2dsa(ldns_buffer *key);
  * \return a RSA * structure with the key material
  */
 RSA *ldns_key_buf2rsa(ldns_buffer *key);
+/**
+ * Like ldns_key_buf2rsa, but uses raw buffer.
+ * \param[in] key the uncompressed wireformat of the key.
+ * \param[in] len length of key data
+ * \return a RSA * structure with the key material
+ */
+RSA *ldns_key_buf2rsa_raw(unsigned char* key, size_t len);
 #endif /* HAVE_SSL */
 
 /** 
