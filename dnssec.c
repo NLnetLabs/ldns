@@ -1579,12 +1579,16 @@ ldns_key_rr2ds(const ldns_rr *key, ldns_hash h)
 
 	/* digest */
 	/* owner name */
-	if (ldns_rdf2buffer_wire(data_buf, ldns_rr_owner(key)) != LDNS_STATUS_OK) {
+        tmp = ldns_rdf_clone(ldns_rr_owner(key));
+        ldns_dname2canonical(tmp);
+	if (ldns_rdf2buffer_wire(data_buf, tmp) != LDNS_STATUS_OK) {
 		LDNS_FREE(digest);
 		ldns_buffer_free(data_buf);
 		ldns_rr_free(ds);
+		ldns_rdf_deep_free(tmp);
 		return NULL;
 	}
+	ldns_rdf_deep_free(tmp);
 
 	/* all the rdata's */
 	if (ldns_rr_rdata2buffer_wire(data_buf, (ldns_rr*)key) != LDNS_STATUS_OK) { 
