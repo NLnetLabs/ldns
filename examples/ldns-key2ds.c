@@ -15,13 +15,14 @@
 
 void
 usage(FILE *fp, char *prog) {
-	fprintf(fp, "%s [-1|-2] keyfile\n", prog);
+	fprintf(fp, "%s [-n] [-1|-2] keyfile\n", prog);
 	fprintf(fp, "  Generate a DS RR from the key\n");
 	fprintf(fp, "  The following file will be created: ");
 	fprintf(fp, "K<name>+<alg>+<id>.ds\n");
 	fprintf(fp, "  The base name (K<name>+<alg>+<id> will be printed to stdout\n");
 	fprintf(fp, "Options:\n");
-	fprintf(fp, "  -1 (default): use SHA1 for the DS hash\n");
+	fprintf(fp, "  -n: do not write to file but to stdout\n");
+	fprintf(fp, "  -1: (default): use SHA1 for the DS hash\n");
 	fprintf(fp, "  -2: use SHA256 for the DS hash\n");
 }
 
@@ -36,6 +37,7 @@ main(int argc, char *argv[])
 	ldns_signing_algorithm alg;
 	ldns_hash h;
 	char *program = argv[0];
+	int nofile = 0;
 	ldns_rdf *origin = NULL;
 	ldns_status result;
 		
@@ -52,7 +54,10 @@ main(int argc, char *argv[])
 		          fprintf(stderr, "Error: Crypto library does not support SHA256 digests!");
 		        #endif
 			h = LDNS_SHA256;
-		} 
+		}
+		if (strcmp(argv[0], "-n") == 0) { 
+			nofile=1;
+		}
 		argv++, argc--;
 	}
 
@@ -95,18 +100,21 @@ main(int argc, char *argv[])
 	dsname = LDNS_XMALLOC(char, strlen(owner) + 16);
 	snprintf(dsname, strlen(owner) + 15, "K%s+%03u+%05u.ds", owner, alg, (unsigned int) ldns_calc_keytag(k));
 
-	dsfp = fopen(dsname, "w");
-	if (!dsfp) {
-		fprintf(stderr, "Unable to open %s: %s\n", dsname, strerror(errno));
-		exit(EXIT_FAILURE);
-	} else {
-		ldns_rr_print(dsfp, ds);
-		fclose(dsfp);
+	if (nofile)
+		ldns_rr_print(stdout,ds);
+	else {
+		dsfp = fopen(dsname, "w");
+		if (!dsfp) {
+			fprintf(stderr, "Unable to open %s: %s\n", dsname, strerror(errno));
+			exit(EXIT_FAILURE);
+		} else {
+			ldns_rr_print(dsfp, ds);
+			fclose(dsfp);
+			fprintf(stdout, "K%s+%03u+%05u\n", owner, alg, (unsigned int) ldns_calc_keytag(k)); 
+		}
 	}
 	
 	ldns_rr_free(ds);
-	fprintf(stdout, "K%s+%03u+%05u\n", owner, alg, (unsigned int) ldns_calc_keytag(k)); 
-
 	ldns_rr_free(k);
 	free(owner);
 	LDNS_FREE(dsname);
