@@ -1150,13 +1150,17 @@ ldns_rr_clone(const ldns_rr *rr)
 	if (!new_rr) {
 		return NULL;
 	}
-	ldns_rr_set_owner(new_rr, ldns_rdf_clone(ldns_rr_owner(rr)));
+	if (ldns_rr_owner(rr)) {
+		ldns_rr_set_owner(new_rr, ldns_rdf_clone(ldns_rr_owner(rr)));
+  	}
 	ldns_rr_set_ttl(new_rr, ldns_rr_ttl(rr));
 	ldns_rr_set_type(new_rr, ldns_rr_get_type(rr));
 	ldns_rr_set_class(new_rr, ldns_rr_get_class(rr));
 	
 	for (i = 0; i < ldns_rr_rd_count(rr); i++) {
-		ldns_rr_push_rdf(new_rr, ldns_rdf_clone(ldns_rr_rdf(rr, i)));
+        	if (ldns_rr_rdf(rr,i)) {
+        		ldns_rr_push_rdf(new_rr, ldns_rdf_clone(ldns_rr_rdf(rr, i)));
+                }
 	}
 
 	return new_rr;
