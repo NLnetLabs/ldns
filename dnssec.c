@@ -1119,6 +1119,44 @@ ldns_verify_rrsig_keylist(ldns_rr_list *rrset, ldns_rr *rrsig, const ldns_rr_lis
 }
 
 ldns_status
+ldns_convert_dsa_rrsig_rdata(
+                             ldns_buffer *target_buffer,
+                             ldns_rdf *sig_rdf
+                             )
+{
+	/* the EVP api wants the DER encoding of the signature... */
+	uint8_t t;
+	BIGNUM *R, *S;
+	DSA_SIG *dsasig;
+	unsigned char *raw_sig = NULL;
+	int raw_sig_len;
+	
+	/* extract the R and S field from the sig buffer */
+	t = ldns_rdf_data(sig_rdf)[0];
+	R = BN_new();
+	(void) BN_bin2bn(ldns_rdf_data(sig_rdf) + 1, SHA_DIGEST_LENGTH, R);
+	S = BN_new();
+	(void) BN_bin2bn(ldns_rdf_data(sig_rdf) + 21, SHA_DIGEST_LENGTH, S);
+
+	dsasig = DSA_SIG_new();
+	if (!dsasig) {
+		return LDNS_STATUS_MEM_ERR;
+	}
+
+	dsasig->r = R;
+	dsasig->s = S;
+	
+	raw_sig_len = i2d_DSA_SIG(dsasig, &raw_sig);
+	
+	/* todo reserve() */
+	if (ldns_buffer_reserve(target_buffer, raw_sig_len)) {
+		ldns_buffer_write(target_buffer, raw_sig, raw_sig_len);
+	}
+	return ldns_buffer_status(target_buffer);
+}
+
+
+ldns_status
 ldns_verify_rrsig(ldns_rr_list *rrset, ldns_rr *rrsig, ldns_rr *key)
 {
 	ldns_buffer *rawsig_buf;
@@ -1173,12 +1211,30 @@ ldns_verify_rrsig(ldns_rr_list *rrset, ldns_rr *rrsig, ldns_rr *key)
 	/* check for known and implemented algo's now (otherwise 
 	 * the function could return a wrong error
 	 */
+	/* create a buffer with signature rdata */
+	/* for some algorithms we need other data than for others... */
+	/* (the DSA API wants DER encoding for instance) */
+
 	switch(sig_algo) {
 		case LDNS_RSAMD5:
 		case LDNS_RSASHA1:
 		case LDNS_RSASHA1_NSEC3:
+			if (ldns_rdf2buffer_wire(rawsig_buf,
+						ldns_rr_rdf(rrsig, 8)) != LDNS_STATUS_OK) {
+				ldns_buffer_free(rawsig_buf);
+				ldns_buffer_free(verify_buf);
+				return LDNS_STATUS_MEM_ERR;
+			}
+			break;
 		case LDNS_DSA:
 		case LDNS_DSA_NSEC3:
+			if (ldns_convert_dsa_rrsig_rdata(rawsig_buf,
+						ldns_rr_rdf(rrsig, 8)) != LDNS_STATUS_OK) {
+				ldns_buffer_free(rawsig_buf);
+				ldns_buffer_free(verify_buf);
+				return LDNS_STATUS_MEM_ERR;
+			}
+			break;
 			break;
 		case LDNS_DH:
 		case LDNS_ECC:
@@ -1193,14 +1249,6 @@ ldns_verify_rrsig(ldns_rr_list *rrset, ldns_rr *rrsig, ldns_rr *key)
 	}
 	
 	result = LDNS_STATUS_ERR;
-
-	/* create a buffer with b64 signature rdata */
-	if (ldns_rdf2buffer_wire(rawsig_buf,
-				ldns_rr_rdf(rrsig, 8)) != LDNS_STATUS_OK) {
-		ldns_buffer_free(rawsig_buf);
-		ldns_buffer_free(verify_buf);
-		return LDNS_STATUS_MEM_ERR;
-	}
 
 	/* remove labels if the label count is higher than the label count
 	   from the rrsig */
@@ -1330,8 +1378,8 @@ ldns_verify_rrsig_evp_raw(unsigned char *sig, size_t siglen,
 	} else if (res == 0) {
 		return LDNS_STATUS_CRYPTO_BOGUS;
 	}
-	/* TODO how to communicate internal SSL error? */
-	return LDNS_STATUS_ERR;
+	/* TODO how to communicate internal SSL error? let caller use ssl's get_error() */
+	return LDNS_STATUS_SSL_ERR;
 }
 
 ldns_status
@@ -1367,7 +1415,7 @@ ldns_verify_rrsig_dsa_raw(unsigned char* sig, size_t siglen,
 
 	evp_key = EVP_PKEY_new();
 	EVP_PKEY_assign_DSA(evp_key, ldns_key_buf2dsa_raw(key, keylen));
-	result = ldns_verify_rrsig_evp_raw(sig, siglen, rrset, evp_key, EVP_sha1());
+	result = ldns_verify_rrsig_evp_raw(sig, siglen, rrset, evp_key, EVP_dss1());
 	EVP_PKEY_free(evp_key);
 	return result;
 
@@ -1771,7 +1819,7 @@ ldns_sign_public(ldns_rr_list *rrset, ldns_key_list *keys)
 			switch(ldns_key_algorithm(current_key)) {
 				case LDNS_SIGN_DSA:
 				case LDNS_DSA_NSEC3:
-					b64rdf = ldns_sign_public_evp(sign_buf, ldns_key_evp_key(current_key), EVP_sha1());
+					b64rdf = ldns_sign_public_evp(sign_buf, ldns_key_evp_key(current_key), EVP_dss1());
 /*					b64rdf = ldns_sign_public_dsa(sign_buf, ldns_key_dsa_key(current_key));*/
 					break;
 				case LDNS_SIGN_RSASHA1:
