@@ -123,6 +123,8 @@ ldns_dnssec_build_data_chain(ldns_resolver *res, uint16_t qflags, const ldns_rr_
 				/* nothing, stop */
 				return new_chain;
 			}
+		} else {
+			return new_chain;
 		}
 	}
 
