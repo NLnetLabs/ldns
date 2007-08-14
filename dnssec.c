@@ -371,15 +371,19 @@ ldns_dnssec_derive_trust_tree_normal_rrset(ldns_dnssec_trust_tree *new_tree,
 				cur_parent_tree = ldns_dnssec_derive_trust_tree(data_chain->parent, cur_parent_rr);
 
 				/* TODO: check wildcard nsec too */
-				if (ldns_rr_get_type(ldns_rr_list_rr(cur_rrset, 0)) == LDNS_RR_TYPE_NSEC) {
-					/* might contain different names! sort and split */
-					ldns_rr_list_sort(cur_rrset);
-					tmp_rrset = ldns_rr_list_pop_rrset(cur_rrset);
-					cur_rrset = tmp_rrset;
+				if (cur_rrset && ldns_rr_list_rr_count(cur_rrset) > 0) {
+					if (ldns_rr_get_type(ldns_rr_list_rr(cur_rrset, 0)) == LDNS_RR_TYPE_NSEC) {
+						/* might contain different names! sort and split */
+						ldns_rr_list_sort(cur_rrset);
+						tmp_rrset = ldns_rr_list_pop_rrset(cur_rrset);
+						cur_rrset = tmp_rrset;
+
+					}
+					cur_status = ldns_verify_rrsig(cur_rrset, cur_sig_rr, cur_parent_rr);
+					ldns_dnssec_trust_tree_add_parent(new_tree, cur_parent_tree, cur_sig_rr, cur_status);
 				}
 
-				cur_status = ldns_verify_rrsig(cur_rrset, cur_sig_rr, cur_parent_rr);
-				ldns_dnssec_trust_tree_add_parent(new_tree, cur_parent_tree, cur_sig_rr, cur_status);
+
 			}
 		}
 	}
@@ -1100,6 +1104,7 @@ ldns_verify_rrsig_keylist(ldns_rr_list *rrset, ldns_rr *rrsig, const ldns_rr_lis
 			} 
 		} else {
 			if (result == LDNS_STATUS_ERR) {
+printf("1");
 				result = LDNS_STATUS_CRYPTO_NO_MATCHING_KEYTAG_DNSKEY;
 			}
 		}
@@ -1334,6 +1339,7 @@ ldns_verify_rrsig(ldns_rr_list *rrset, ldns_rr *rrsig, ldns_rr *key)
 	 else {
 		/* No keys with the corresponding keytag are found */
 		if (result == LDNS_STATUS_ERR) {
+printf("2\n");
 			result = LDNS_STATUS_CRYPTO_NO_MATCHING_KEYTAG_DNSKEY;
 		}
 	}
