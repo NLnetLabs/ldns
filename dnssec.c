@@ -280,22 +280,53 @@ ldns_dnssec_trust_tree_add_parent(ldns_dnssec_trust_tree *tree,
 }
 
 static void
-print_tabs(FILE *out, size_t nr)
+print_tabs(FILE *out, size_t nr, uint8_t *map, size_t treedepth)
 {
 	size_t i;
 	for (i = 0; i < nr; i++) {
-		fprintf(out, "  ");
+		if (i == nr - 1) {
+			fprintf(out, "|---");
+		} else if (map && i < treedepth && map[i] == 1) {
+			fprintf(out, "|   ");
+		} else {
+			fprintf(out, "    ");
+		}
 	}
 }
 
+size_t
+ldns_dnssec_trust_tree_depth(ldns_dnssec_trust_tree *tree)
+{
+	size_t result = 0;
+	size_t parent = 0;
+	size_t i;
+	
+	for (i = 0; i < tree->parent_count; i++) {
+		parent = ldns_dnssec_trust_tree_depth(tree->parents[i]);
+		if (parent > result) {
+			result = parent;
+		}
+	}
+	return 1 + result;
+}
+
 void
-ldns_dnssec_trust_tree_print(FILE *out, ldns_dnssec_trust_tree *tree, size_t tabs, bool extended)
+ldns_dnssec_trust_tree_print_sm(FILE *out, ldns_dnssec_trust_tree *tree, size_t tabs, bool extended, uint8_t *sibmap, size_t treedepth)
 {
 	size_t i;
 	const ldns_rr_descriptor *descriptor;
+	bool mapset = false;
+	
+	if (!sibmap) {
+		treedepth = ldns_dnssec_trust_tree_depth(tree);
+		sibmap = malloc(treedepth);
+		memset(sibmap, 0, treedepth);
+		mapset = true;
+	}
 	
 	if (tree) {
 		if (tree->rr) {
+/*
 			if (extended && tabs > 0) {
 				print_tabs(out, tabs - 1);
 				if (ldns_rr_get_type(tree->rr) == LDNS_RR_TYPE_DNSKEY) {
@@ -306,13 +337,15 @@ ldns_dnssec_trust_tree_print(FILE *out, ldns_dnssec_trust_tree *tree, size_t tab
 					fprintf(out, "whose existence is denied by:\n");
 				}
 			} else {
+*/
 				if (ldns_rr_get_type(tree->rr) == LDNS_RR_TYPE_NSEC) {
 					fprintf(out, "Existence is denied by:\n");
 				}
+/*
 			}
+*/
 
-
-			print_tabs(out, tabs);
+			print_tabs(out, tabs, sibmap, treedepth);
 			ldns_rdf_print(out, ldns_rr_owner(tree->rr));
 			descriptor = ldns_rr_descript(ldns_rr_get_type(tree->rr));
 
@@ -329,24 +362,39 @@ ldns_dnssec_trust_tree_print(FILE *out, ldns_dnssec_trust_tree *tree, size_t tab
 			
 			fprintf(out, ")\n");
 			for (i = 0; i < tree->parent_count; i++) {
+if (tree->parent_count > 1 && i < tree->parent_count - 1) {
+sibmap[tabs] = 1;
+} else {
+sibmap[tabs] = 0;
+}
 				/* only print errors */
 				if (tree->parent_status[i] != LDNS_STATUS_OK) {
-					print_tabs(out, tabs + 1);
+					print_tabs(out, tabs + 1, sibmap, treedepth);
 					fprintf(out, "%s:\n", ldns_get_errorstr_by_id(tree->parent_status[i]));
-					print_tabs(out, tabs + 1);
+					print_tabs(out, tabs + 1, sibmap, treedepth);
 					ldns_rr_print(out, tree->parent_signature[i]);
-					print_tabs(out, tabs + 1);
+					print_tabs(out, tabs + 1, sibmap, treedepth);
 					fprintf(out, "from:\n");
 				}
-				ldns_dnssec_trust_tree_print(out, tree->parents[i], tabs+1, extended);
+				ldns_dnssec_trust_tree_print_sm(out, tree->parents[i], tabs+1, extended, sibmap, treedepth);
 			}
 		} else {
-			print_tabs(out, tabs);
+			print_tabs(out, tabs, sibmap, treedepth);
 			fprintf(out, "<no data>\n");
 		}
 	} else {
 		fprintf(out, "<null pointer>\n");
 	}
+	
+	if (mapset) {
+		free(sibmap);
+	}
+}
+
+void
+ldns_dnssec_trust_tree_print(FILE *out, ldns_dnssec_trust_tree *tree, size_t tabs, bool extended)
+{
+	ldns_dnssec_trust_tree_print_sm(out, tree, tabs, extended, NULL, 0);
 }
 
 void

@@ -109,6 +109,7 @@ void ldns_dnssec_data_chain_print(FILE *out, const ldns_dnssec_data_chain *chain
 typedef struct ldns_dnssec_trust_tree_struct ldns_dnssec_trust_tree;
 struct ldns_dnssec_trust_tree_struct {
   ldns_rr *rr;
+  /* the complete rrset this rr was in */
   ldns_dnssec_trust_tree *parents[LDNS_DNSSEC_TRUST_TREE_MAX_PARENTS];
   ldns_status parent_status[LDNS_DNSSEC_TRUST_TREE_MAX_PARENTS];
   /** for debugging, add signatures too (you might want those if they 
@@ -131,6 +132,9 @@ ldns_dnssec_trust_tree *ldns_dnssec_trust_tree_new();
  * \param[in] tree The tree to free
  */
 void ldns_dnssec_trust_tree_free(ldns_dnssec_trust_tree *tree);
+
+
+size_t ldns_dnssec_trust_tree_depth(ldns_dnssec_trust_tree *tree);
 
 /**
  * Prints the dnssec_trust_tree structure to the given file stream

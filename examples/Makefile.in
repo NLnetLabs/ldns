@@ -44,7 +44,8 @@ MAIN_SOURCES = ldns-read-zone.c \
 		  ldnsd.c \
 		  ldns-keyfetcher.c \
 		  ldns-notify.c \
-		  ldns-testns.c
+		  ldns-testns.c \
+		  ldns-sigcheck.c
 OTHER_SOURCES = ldns-testpkts.c
 
 PROGRAMS=$(MAIN_SOURCES:.c=)

@@ -399,7 +399,7 @@ static void fmtstr (char *buffer, size_t *currlen, size_t maxlen,
   
   if (value == 0)
   {
-    value = "<NULL>";
+    value = (char *) "<NULL>";
   }
 
   for (strln = 0; value[strln]; ++strln); /* strlen */
@@ -539,7 +539,7 @@ static long double pow10 (int exp)
   return result;
 }
 
-static long round (long double value)
+static double round (double value)
 {
   long intpart;
 
