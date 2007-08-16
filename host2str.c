@@ -1450,7 +1450,7 @@ char *
 ldns_pkt2str(const ldns_pkt *pkt)
 {
 	char *result = NULL;
-	ldns_buffer *tmp_buffer = ldns_buffer_new(LDNS_MIN_BUFLEN);
+	ldns_buffer *tmp_buffer = ldns_buffer_new(LDNS_MAX_PACKETLEN);
 
 	if (ldns_pkt2buffer_str(tmp_buffer, pkt) == LDNS_STATUS_OK) {
 		/* export and return string, destroy rest */
