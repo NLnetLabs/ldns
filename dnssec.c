@@ -357,6 +357,9 @@ ldns_dnssec_trust_tree_print_sm(FILE *out, ldns_dnssec_trust_tree *tree, size_t 
 			}
 			if (ldns_rr_get_type(tree->rr) == LDNS_RR_TYPE_DNSKEY) {
 				fprintf(out, " keytag: %u", ldns_calc_keytag(tree->rr));
+			} else if (ldns_rr_get_type(tree->rr) == LDNS_RR_TYPE_DS) {
+				fprintf(out, " keytag: ");
+				ldns_rdf_print(out, ldns_rr_rdf(tree->rr, 0));
 			}
 			
 			
@@ -371,10 +374,14 @@ sibmap[tabs] = 0;
 				if (tree->parent_status[i] != LDNS_STATUS_OK) {
 					print_tabs(out, tabs + 1, sibmap, treedepth);
 					fprintf(out, "%s:\n", ldns_get_errorstr_by_id(tree->parent_status[i]));
+					/*
 					print_tabs(out, tabs + 1, sibmap, treedepth);
+					*/
 					ldns_rr_print(out, tree->parent_signature[i]);
+					/*
 					print_tabs(out, tabs + 1, sibmap, treedepth);
 					fprintf(out, "from:\n");
+					*/
 				}
 				ldns_dnssec_trust_tree_print_sm(out, tree->parents[i], tabs+1, extended, sibmap, treedepth);
 			}
