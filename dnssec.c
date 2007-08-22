@@ -2396,7 +2396,8 @@ ldns_create_nsec3(ldns_rdf *cur_owner,
 	LDNS_FREE(bitmap);
 	LDNS_FREE(data);
 
-/*printf(";; Created NSEC3 for:\n");
+/*
+printf(";; Created NSEC3 for:\n");
 printf(";; ");
 ldns_rdf_print(stdout, cur_owner);
 printf("\n");
