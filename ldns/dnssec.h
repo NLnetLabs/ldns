@@ -110,6 +110,7 @@ typedef struct ldns_dnssec_trust_tree_struct ldns_dnssec_trust_tree;
 struct ldns_dnssec_trust_tree_struct {
   ldns_rr *rr;
   /* the complete rrset this rr was in */
+  ldns_rr_list *rrset;
   ldns_dnssec_trust_tree *parents[LDNS_DNSSEC_TRUST_TREE_MAX_PARENTS];
   ldns_status parent_status[LDNS_DNSSEC_TRUST_TREE_MAX_PARENTS];
   /** for debugging, add signatures too (you might want those if they 
@@ -189,7 +190,7 @@ ldns_status ldns_dnssec_trust_tree_contains_keys(ldns_dnssec_trust_tree *tree, l
  * the data set will be cloned
  * the pkt is optional, can contain the original packet (and hence the sigs and maybe the key)
  */
-ldns_dnssec_data_chain *ldns_dnssec_build_data_chain(ldns_resolver *res, const uint16_t qflags, const ldns_rr_list *data_set, const ldns_pkt *pkt);
+ldns_dnssec_data_chain *ldns_dnssec_build_data_chain(ldns_resolver *res, const uint16_t qflags, const ldns_rr_list *data_set, const ldns_pkt *pkt, ldns_rr *orig_rr);
 
 
 #define LDNS_NSEC3_MAX_ITERATIONS 65535

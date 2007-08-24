@@ -226,6 +226,7 @@ do_chase(ldns_resolver *res, ldns_rdf *name, ldns_rr_type type, ldns_rr_class c,
 {
 	ldns_rr_list *rrset = NULL;
 	ldns_status result;
+	ldns_rr *orig_rr = NULL;
 	
 	bool cname_followed = false;
 /*
@@ -329,13 +330,24 @@ do_chase(ldns_resolver *res, ldns_rdf *name, ldns_rr_type type, ldns_rr_class c,
 				);
 	}
 	
-	chain = ldns_dnssec_build_data_chain(res, qflags, rrset, pkt);
+	orig_rr = ldns_rr_new();
+
+/* if the answer had no answer section, we need to construct our own rr (for instance if
+ * the rr qe asked for doesn't exist. This rr will be destroyed when the chain is freed */
+ 	if (ldns_pkt_ancount(pkt) < 1) {
+		ldns_rr_set_type(orig_rr, type);
+		ldns_rr_set_owner(orig_rr, ldns_rdf_clone(name));
+	
+		chain = ldns_dnssec_build_data_chain(res, qflags, rrset, pkt, orig_rr);
+	} else {
+		chain = ldns_dnssec_build_data_chain(res, qflags, rrset, pkt, NULL);	
+	}
 
 	/*
 	printf("\n\nDNSSEC Data Chain:\n");
 	ldns_dnssec_data_chain_print(stdout, chain);
 	*/
-
+	
 	result = LDNS_STATUS_OK;
 	
 	tree = ldns_dnssec_derive_trust_tree(chain, NULL);
@@ -360,7 +372,7 @@ do_chase(ldns_resolver *res, ldns_rdf *name, ldns_rr_type type, ldns_rr_class c,
 	
 	ldns_dnssec_trust_tree_free(tree);
 	ldns_dnssec_data_chain_deep_free(chain);
-
+	
 	ldns_rr_list_deep_free(rrset);
 	ldns_pkt_free(pkt);
 
