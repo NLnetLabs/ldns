@@ -177,7 +177,7 @@ ldns_verify_denial(ldns_pkt *pkt, ldns_rdf *name, ldns_rr_type type, ldns_rr_lis
 				ldns_rr_print(stdout, ldns_rr_list_rr(nsecs, nsec_i));
 				printf("DAWASEM\n");
 				*/
-				if (ldns_nsec_bitmap_covers_type(ldns_rr_rdf(ldns_rr_list_rr(nsecs, nsec_i), 2), type)) {
+				if (ldns_nsec_bitmap_covers_type(ldns_rr_rdf(ldns_rr_list_rr(nsecs, nsec_i), 1), type)) {
 					/* Error, according to the nsec this rrset is signed */
 					result = LDNS_STATUS_CRYPTO_NO_RRSIG;
 				} else {
