@@ -129,6 +129,8 @@ ldns_dnssec_build_data_chain(ldns_resolver *res, uint16_t qflags, const ldns_rr_
 	ldns_rr_list *signatures = NULL, *signatures2 = NULL;
 	ldns_rr_list *keys;
 	ldns_rr_list *dss;
+	
+	ldns_rr_list *my_rrset;
 
 	ldns_pkt *my_pkt;
 
@@ -151,13 +153,13 @@ ldns_dnssec_build_data_chain(ldns_resolver *res, uint16_t qflags, const ldns_rr_
 		/* hmm, no data, do we have denial? only works if pkt was given,
 		   otherwise caller has to do the check himself */
 		if (pkt) {
-			rrset = ldns_pkt_rr_list_by_type(pkt, LDNS_RR_TYPE_NSEC, LDNS_SECTION_ANY_NOQUESTION);
-			if (rrset) {
-				if (ldns_rr_list_rr_count(rrset) > 0) {
+			my_rrset = ldns_pkt_rr_list_by_type(pkt, LDNS_RR_TYPE_NSEC, LDNS_SECTION_ANY_NOQUESTION);
+			if (my_rrset) {
+				if (ldns_rr_list_rr_count(my_rrset) > 0) {
 					type = LDNS_RR_TYPE_NSEC;
 					other_rrset = true;
 				} else {
-					ldns_rr_list_free(rrset);
+					ldns_rr_list_deep_free(my_rrset);
 				}
 			} else {
 				/* nothing, stop */
@@ -166,15 +168,17 @@ ldns_dnssec_build_data_chain(ldns_resolver *res, uint16_t qflags, const ldns_rr_
 		} else {
 			return new_chain;
 		}
+	} else {
+		my_rrset = (ldns_rr_list *) rrset;
 	}
-
-	new_chain->rrset = ldns_rr_list_clone(rrset);
-	name = ldns_rr_owner(ldns_rr_list_rr(rrset, 0));
-	type = ldns_rr_get_type(ldns_rr_list_rr(rrset, 0));
-	c = ldns_rr_get_class(ldns_rr_list_rr(rrset, 0));
+	
+	new_chain->rrset = ldns_rr_list_clone(my_rrset);
+	name = ldns_rr_owner(ldns_rr_list_rr(my_rrset, 0));
+	type = ldns_rr_get_type(ldns_rr_list_rr(my_rrset, 0));
+	c = ldns_rr_get_class(ldns_rr_list_rr(my_rrset, 0));
 	
 	if (other_rrset) {
-		ldns_rr_list_deep_free(rrset);
+		ldns_rr_list_deep_free(my_rrset);
 	}
 	
 	/* normally there will only be 1 signature 'set'
@@ -469,7 +473,6 @@ ldns_dnssec_trust_tree_print(FILE *out, ldns_dnssec_trust_tree *tree, size_t tab
 void
 ldns_dnssec_derive_trust_tree_normal_rrset(ldns_dnssec_trust_tree *new_tree,
                                            ldns_dnssec_data_chain *data_chain,
-                                           ldns_rr *cur_rr,
                                            ldns_rr *cur_sig_rr)
 {
 	size_t i, j;
@@ -609,8 +612,7 @@ breakme()
 
 void
 ldns_dnssec_derive_trust_tree_no_sig(ldns_dnssec_trust_tree *new_tree,
-                                     ldns_dnssec_data_chain *data_chain,
-                                     ldns_rr *rr)
+                                     ldns_dnssec_data_chain *data_chain)
 {
 	size_t i;
 	ldns_rr_list *cur_rrset;
@@ -693,7 +695,7 @@ ldns_dnssec_derive_trust_tree(ldns_dnssec_data_chain *data_chain, ldns_rr *rr)
 						}
 						/* option 1 */
 						if (data_chain->parent) {
-							ldns_dnssec_derive_trust_tree_normal_rrset(new_tree, data_chain, cur_rr, cur_sig_rr);
+							ldns_dnssec_derive_trust_tree_normal_rrset(new_tree, data_chain, cur_sig_rr);
 						}
 
 						/* option 2 */
@@ -705,7 +707,7 @@ ldns_dnssec_derive_trust_tree(ldns_dnssec_data_chain *data_chain, ldns_rr *rr)
 					/* no signatures? maybe it's nsec data */
 					
 					/* just add every rr from parent as new parent */
-					ldns_dnssec_derive_trust_tree_no_sig(new_tree, data_chain, cur_rr);
+					ldns_dnssec_derive_trust_tree_no_sig(new_tree, data_chain);
 				}
 			}
 	}
@@ -1444,6 +1446,7 @@ ldns_verify_rrsig(ldns_rr_list *rrset, ldns_rr *rrsig, ldns_rr *key)
 		default:
 			ldns_buffer_free(rawsig_buf);
 			ldns_buffer_free(verify_buf);
+			ldns_rr_list_deep_free(rrset_clone);
 			return LDNS_STATUS_CRYPTO_UNKNOWN_ALGO;
 	}
 	
@@ -1531,7 +1534,6 @@ ldns_verify_rrsig(ldns_rr_list *rrset, ldns_rr *rrsig, ldns_rr *key)
 	 else {
 		/* No keys with the corresponding keytag are found */
 		if (result == LDNS_STATUS_ERR) {
-printf("2\n");
 			result = LDNS_STATUS_CRYPTO_NO_MATCHING_KEYTAG_DNSKEY;
 		}
 	}
