@@ -2109,6 +2109,7 @@ ldns_sign_public_evp(ldns_buffer *to_sign, EVP_PKEY *key, const EVP_MD *digest_t
 	ldns_buffer *b64sig;
 	EVP_MD_CTX ctx;
 	const EVP_MD *md_type;
+	int r;
 
 	siglen = 0;
 	b64sig = ldns_buffer_new(LDNS_MAX_PACKETLEN);
@@ -2124,11 +2125,18 @@ ldns_sign_public_evp(ldns_buffer *to_sign, EVP_PKEY *key, const EVP_MD *digest_t
 	}
 
 	EVP_MD_CTX_init(&ctx);
-	EVP_SignInit(&ctx, md_type);
-
-	EVP_SignUpdate(&ctx, (unsigned char*)ldns_buffer_begin(to_sign), ldns_buffer_position(to_sign));
-
-	EVP_SignFinal(&ctx, (unsigned char*)ldns_buffer_begin(b64sig), &siglen, key);
+	r = EVP_SignInit(&ctx, md_type);
+	if(r == 1)
+		r = EVP_SignUpdate(&ctx, (unsigned char*)
+			ldns_buffer_begin(to_sign), 
+			ldns_buffer_position(to_sign));
+	if(r == 1)
+		r = EVP_SignFinal(&ctx, (unsigned char*)
+			ldns_buffer_begin(b64sig), &siglen, key);
+	if(r != 1) {
+		ldns_buffer_free(b64sig);
+		return NULL;
+	}
 
 	sigdata_rdf = ldns_rdf_new_frm_data(LDNS_RDF_TYPE_B64, siglen,
 			ldns_buffer_begin(b64sig));
