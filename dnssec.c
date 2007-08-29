@@ -1297,7 +1297,6 @@ ldns_verify_rrsig_keylist(ldns_rr_list *rrset, ldns_rr *rrsig, const ldns_rr_lis
 			} 
 		} else {
 			if (result == LDNS_STATUS_ERR) {
-printf("1");
 				result = LDNS_STATUS_CRYPTO_NO_MATCHING_KEYTAG_DNSKEY;
 			}
 		}

@@ -155,6 +155,9 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 	ldns_rr_list *nsec_rrs = NULL;
 	ldns_rr_list *nsec_rr_sigs = NULL;
 	
+	/* empty non-terminal check */
+	bool ent;
+
 	/* glue handling */
 	ldns_rr_list *new_ns_addr;
 	ldns_rr_list *old_ns_addr;
@@ -377,9 +380,21 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 					printf("NS: %s\n", ldns_get_errorstr_by_id(status));
 				}
 				
-				ldns_rr_list_deep_free(nsec_rrs);
-				ldns_rr_list_deep_free(nsec_rr_sigs);
-				ldns_pkt_free(local_p);
+				/* there might be an empty non-terminal, in which case we need to continue */
+				ent = false;
+				for (j = 0; j < ldns_rr_list_rr_count(nsec_rrs); j++) {
+					if (ldns_dname_is_subdomain(ldns_rr_rdf(ldns_rr_list_rr(nsec_rrs, j), 0), labels[i])) {
+						ent = true;
+					}
+				}
+				if (!ent) {
+					ldns_rr_list_deep_free(nsec_rrs);
+					ldns_rr_list_deep_free(nsec_rr_sigs);
+					ldns_pkt_free(local_p);
+					goto done;
+				} else {
+					printf(";; There is an empty non-terminal here, continue\n");
+				}
 				goto done;
 			}
 			
