@@ -67,7 +67,7 @@ ldns_update_pkt_new(ldns_rdf *zone_rdf, ldns_rr_class class,
 }
 
 ldns_status
-ldns_update_pkt_tsig_add(ldns_pkt *p, ldns_resolver *r)
+ldns_update_pkt_tsig_add(ldns_pkt ATTR_UNUSED(*p), ldns_resolver ATTR_UNUSED(*r))
 {
 #ifdef HAVE_SSL
 	uint16_t fudge = 300; /* Recommended fudge. [RFC2845 6.4]  */

@@ -49,7 +49,7 @@ ldns_send(ldns_pkt **result_packet, ldns_resolver *r, const ldns_pkt *query_pkt)
 }
 
 ldns_status
-ldns_send_buffer(ldns_pkt **result, ldns_resolver *r, ldns_buffer *qb, ldns_rdf *tsig_mac)
+ldns_send_buffer(ldns_pkt **result, ldns_resolver *r, ldns_buffer *qb, ldns_rdf ATTR_UNUSED(*tsig_mac))
 {
 	uint8_t i;
 	
@@ -67,7 +67,7 @@ ldns_send_buffer(ldns_pkt **result, ldns_resolver *r, ldns_buffer *qb, ldns_rdf 
 	uint8_t *reply_bytes = NULL;
 	size_t reply_size = 0;
 	ldns_status status, send_status;
-
+	
 	assert(r != NULL);
 
 	status = LDNS_STATUS_OK;
@@ -199,7 +199,6 @@ ldns_send_buffer(ldns_pkt **result, ldns_resolver *r, ldns_buffer *qb, ldns_rdf 
 		}
 	}
 #endif /* HAVE_SSL */
-	
 	LDNS_FREE(reply_bytes);
 	if (result) {
 		*result = reply;

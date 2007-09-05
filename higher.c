@@ -29,7 +29,6 @@ ldns_get_rr_list_addr_by_name(ldns_resolver *res, ldns_rdf *name, ldns_rr_class 
 	ldns_rr_list *hostsfilenames;
 	size_t i;
 	uint8_t ip6;
-	ldns_rr_list *hostsfile;
 
 	a = NULL; 
 	aaaa = NULL; 
