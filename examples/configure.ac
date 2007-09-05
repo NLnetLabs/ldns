@@ -2,7 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.57)
-AC_INIT(libdns, 1.2.0, libdns@nlnetlabs.nl,libdns)
+AC_INIT(libdns, 1.2.1, libdns@nlnetlabs.nl,libdns)
 AC_CONFIG_SRCDIR([ldns-read-zone.c])
 
 OURCPPFLAGS=''
