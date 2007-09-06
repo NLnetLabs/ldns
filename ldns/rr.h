@@ -32,8 +32,8 @@
 /** The bytes TTL, CLASS and length use up in an rr */
 #define LDNS_RR_OVERHEAD	10
 
-/* The first 48 fields are 'common' and can be referenced instantly */
-#define LDNS_RDATA_FIELD_DESCRIPTORS_COMMON 50
+/* The first fields are 'common' and can be referenced instantly */
+#define LDNS_RDATA_FIELD_DESCRIPTORS_COMMON 51
 
 
 
@@ -169,12 +169,12 @@ enum ldns_enum_rr_type
 	LDNS_RR_TYPE_RRSIG = 46,
 	LDNS_RR_TYPE_NSEC = 47,      
 	LDNS_RR_TYPE_DNSKEY = 48,
+	LDNS_RR_TYPE_DHCID = 49,
 
-        /* TODO: No type code yet, assume 49 */
-/*
-	LDNS_RR_TYPE_NSEC3 = 49,
-	LDNS_RR_TYPE_NSEC3PARAMS = 50,
-*/
+        /* TODO: Temporary assume type code 50, 51 (from draft-11) */
+	LDNS_RR_TYPE_NSEC3 = 50,
+	LDNS_RR_TYPE_NSEC3PARAMS = 51,
+
 	LDNS_RR_TYPE_UINFO = 100,
 	LDNS_RR_TYPE_UID = 101,
 	LDNS_RR_TYPE_GID = 102,
@@ -190,8 +190,9 @@ enum ldns_enum_rr_type
 	/**  any type (wildcard) */
 	LDNS_RR_TYPE_ANY = 255,
 
+	/* type codes from nsec3 experimental phase
 	LDNS_RR_TYPE_NSEC3 = 65324,
-	LDNS_RR_TYPE_NSEC3PARAMS = 65325,
+	LDNS_RR_TYPE_NSEC3PARAMS = 65325, */
 	LDNS_RR_TYPE_FIRST = 0,
 	LDNS_RR_TYPE_LAST  = 65535,
 	LDNS_RR_TYPE_COUNT = LDNS_RR_TYPE_LAST - LDNS_RR_TYPE_FIRST + 1
