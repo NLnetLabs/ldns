@@ -45,12 +45,14 @@
 #include "compat/fake-rfc2553.h"
 
 #ifndef HAVE_GETNAMEINFO
-int getnameinfo(const struct sockaddr *sa, size_t ATTR_UNUSED(salen), char *host, 
+int getnameinfo(const struct sockaddr *sa, size_t salen, char *host, 
                 size_t hostlen, char *serv, size_t servlen, int flags)
 {
 	struct sockaddr_in *sin = (struct sockaddr_in *)sa;
 	struct hostent *hp;
 	char tmpserv[16];
+	
+	(void)salen;
 
 	if (serv != NULL) {
 		snprintf(tmpserv, sizeof(tmpserv), "%d", ntohs(sin->sin_port));

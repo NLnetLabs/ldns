@@ -41,12 +41,4 @@ typedef unsigned char bool;
 #define ATTR_FORMAT(archetype, string_index, first_to_check) /* empty */
 #endif /* !HAVE_ATTR_FORMAT */
 
-#if defined(__cplusplus)
-#define ATTR_UNUSED(x)
-#elif defined(HAVE_ATTR_UNUSED)
-#define ATTR_UNUSED(x)  x __attribute__((unused))
-#else /* !HAVE_ATTR_UNUSED */
-#define ATTR_UNUSED(x)  x
-#endif /* !HAVE_ATTR_UNUSED */
-
 #endif /* LDNS_COMMON_H */

@@ -67,7 +67,7 @@ ldns_update_pkt_new(ldns_rdf *zone_rdf, ldns_rr_class class,
 }
 
 ldns_status
-ldns_update_pkt_tsig_add(ldns_pkt ATTR_UNUSED(*p), ldns_resolver ATTR_UNUSED(*r))
+ldns_update_pkt_tsig_add(ldns_pkt *p, ldns_resolver *r)
 {
 #ifdef HAVE_SSL
 	uint16_t fudge = 300; /* Recommended fudge. [RFC2845 6.4]  */
@@ -75,6 +75,9 @@ ldns_update_pkt_tsig_add(ldns_pkt ATTR_UNUSED(*p), ldns_resolver ATTR_UNUSED(*r)
 		return ldns_pkt_tsig_sign(p, ldns_resolver_tsig_keyname(r),
 		    ldns_resolver_tsig_keydata(r), fudge,
 		    ldns_resolver_tsig_algorithm(r), NULL);
+#else
+	(void)p;
+	(void)r;
 #endif /* HAVE_SSL */
 	/* No TSIG to do. */
 	return LDNS_STATUS_OK;

@@ -70,8 +70,9 @@ typedef struct ldns_struct_buffer ldns_buffer;
 
 #ifdef NDEBUG
 INLINE void
-ldns_buffer_invariant(ldns_buffer *ATTR_UNUSED(buffer))
+ldns_buffer_invariant(ldns_buffer *buffer)
 {
+	(void)buffer;
 }
 #else
 INLINE void

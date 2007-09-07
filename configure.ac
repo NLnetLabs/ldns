@@ -223,27 +223,6 @@ if test $ac_cv_c_format_attribute = yes; then
 fi
 ])dnl
 
-AC_DEFUN([AC_CHECK_UNUSED_ATTRIBUTE],
-[AC_REQUIRE([AC_PROG_CC])
-AC_MSG_CHECKING(whether the C compiler (${CC-cc}) accepts the "unused" attribute)
-AC_CACHE_VAL(ac_cv_c_unused_attribute,
-[ac_cv_c_unused_attribute=no
-AC_TRY_COMPILE(
-[#include <stdio.h>
-void f (char *u __attribute__((unused)));
-], [
-   f ("x");
-],
-[ac_cv_c_unused_attribute="yes"],
-[ac_cv_c_unused_attribute="no"])
-])
-
-AC_MSG_RESULT($ac_cv_c_unused_attribute)
-if test $ac_cv_c_unused_attribute = yes; then
-  AC_DEFINE(HAVE_ATTR_UNUSED, 1, [Whether the C compiler accepts the "unused" attribute])
-fi
-])dnl
-
 # my own checks
 AC_CHECK_PROG(doxygen, doxygen, doxygen)
 
@@ -369,7 +348,6 @@ fi
 #AC_SEARCH_LIBS(RSA_new, [crypto])
 
 AC_CHECK_FORMAT_ATTRIBUTE
-AC_CHECK_UNUSED_ATTRIBUTE
 
 # check OSX deployment target which is needed
 if echo $build_os | grep darwin > /dev/null; then
