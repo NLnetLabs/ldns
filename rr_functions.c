@@ -268,18 +268,60 @@ ldns_rr_dnskey_set_key(ldns_rr *r, ldns_rdf *f)
 	return ldns_rr_set_function(LDNS_RR_TYPE_DNSKEY, r, f, 3);
 }
 
-uint16_t 
+size_t
+ldns_rr_dnskey_key_size_raw(const unsigned char* keydata,
+                            const size_t len,
+                            const ldns_algorithm alg)
+{
+	/* for DSA keys */
+	uint8_t t;
+	
+	/* for RSA keys */
+	uint16_t exp;
+	uint16_t int16;
+	
+	switch (alg) {
+		case LDNS_SIGN_DSA:
+			if (len > 0) {
+				t = keydata[0];
+				return (64 + t*8)*8;
+			} else {
+				return 0;
+			}
+			break;
+		case LDNS_SIGN_RSAMD5:
+		case LDNS_SIGN_RSASHA1:
+			if (len > 0) {
+				if (keydata[0] == 0) {
+					/* big exponent */
+					if (len > 3) {
+						memmove(&int16, keydata + 1, 2);
+						exp = ntohs(int16);
+						return (len - exp - 3)*8;
+					} else {
+						return 0;
+					}
+				} else {
+					exp = keydata[0];
+					return (len-exp-1)*8;
+				}
+			} else {
+				return 0;
+			}
+			break;
+		default:
+			return 0;
+	}
+}
+
+size_t 
 ldns_rr_dnskey_key_size(const ldns_rr *key) 
 {
-	
-	ldns_rdf *keydata;
-	uint16_t length;
-	
-	keydata = ldns_rr_dnskey_key(key);
-
-	length = ldns_rdf_size(keydata);
-	/* calc back to the bit size */
-	length = (length - 2) * 8;
-
-	return length;
+	if (!key) {
+		return 0;
+	}
+	return ldns_rr_dnskey_key_size_raw(ldns_rdf_data(ldns_rr_dnskey_key(key)),
+	                                   ldns_rdf_size(ldns_rr_dnskey_key(key)),
+	                                   ldns_rdf2native_int8(ldns_rr_dnskey_algorithm(key))
+	                                  );
 }

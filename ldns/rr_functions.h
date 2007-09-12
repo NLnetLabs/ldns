@@ -232,9 +232,20 @@ bool ldns_rr_dnskey_set_key(ldns_rr *r, ldns_rdf *f);
 
 /**
  * get the length of the keydata in bits
+ * \param[in] keydata the raw key data
+ * \param[in] len the length of the keydata
+ * \param[in] alg the cryptographic algorithm this is a key for
+ * \return the keysize in bits, or 0 on error
+ */
+size_t ldns_rr_dnskey_key_size_raw(const unsigned char *keydata,
+                                   const size_t len,
+                                   const ldns_algorithm alg);
+
+/**
+ * get the length of the keydata in bits
  * \param[in] key the key rr to use
  * \return the keysize in bits
  */
-uint16_t ldns_rr_dnskey_key_size(const ldns_rr *key);
+size_t ldns_rr_dnskey_key_size(const ldns_rr *key);
 
 #endif /* LDNS_RR_FUNCTIONS_H */
