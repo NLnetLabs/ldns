@@ -282,6 +282,7 @@ ldns_rr_dnskey_key_size_raw(const unsigned char* keydata,
 	
 	switch (alg) {
 		case LDNS_SIGN_DSA:
+		case LDNS_SIGN_DSA_NSEC3:
 			if (len > 0) {
 				t = keydata[0];
 				return (64 + t*8)*8;
@@ -291,6 +292,7 @@ ldns_rr_dnskey_key_size_raw(const unsigned char* keydata,
 			break;
 		case LDNS_SIGN_RSAMD5:
 		case LDNS_SIGN_RSASHA1:
+		case LDNS_SIGN_RSASHA1_NSEC3:
 			if (len > 0) {
 				if (keydata[0] == 0) {
 					/* big exponent */

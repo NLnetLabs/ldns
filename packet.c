@@ -698,7 +698,8 @@ bool
 ldns_pkt_edns(const ldns_pkt *pkt) {
 	return (ldns_pkt_edns_udp_size(pkt) > 0 ||
 		ldns_pkt_edns_extended_rcode(pkt) > 0 ||
-		ldns_pkt_edns_data(pkt)
+		ldns_pkt_edns_data(pkt) ||
+		ldns_pkt_edns_do(pkt)
 	       );
 }
 

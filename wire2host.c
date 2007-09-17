@@ -221,7 +221,7 @@ ldns_wire2rdf(ldns_rr *rr, const uint8_t *wire, size_t max, size_t *pos)
 		case LDNS_RDF_TYPE_B32_EXT:
 		case LDNS_RDF_TYPE_NSEC3_NEXT_OWNER:
 			/* length is stored in first byte */
-			cur_rdf_length = (uint8_t) wire[*pos] + 1;
+			cur_rdf_length = ((size_t) wire[*pos]) + 1;
 			break;
 		case LDNS_RDF_TYPE_APL:
 		case LDNS_RDF_TYPE_B64:

@@ -144,10 +144,10 @@ ldns_str2rdf_nsec3_salt(ldns_rdf **rd, const char *salt_str)
 	data = LDNS_XMALLOC(uint8_t, 1 + salt_length);
 	data[0] = salt_length;
 	memcpy(&data[1], salt, salt_length);
-	*rd = ldns_rdf_new_frm_data(LDNS_RDF_TYPE_NSEC3_SALT, 5 + salt_length, data);
+	*rd = ldns_rdf_new_frm_data(LDNS_RDF_TYPE_NSEC3_SALT, 1 + salt_length, data);
 	LDNS_FREE(data);
-	return LDNS_STATUS_OK;
 
+	return LDNS_STATUS_OK;
 }
 
 ldns_status
