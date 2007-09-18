@@ -1146,9 +1146,7 @@ ldns_rr_clone(const ldns_rr *rr)
 	ldns_rr_set_class(new_rr, ldns_rr_get_class(rr));
 	
 	for (i = 0; i < ldns_rr_rd_count(rr); i++) {
-        	if (ldns_rr_rdf(rr,i)) {
-        		ldns_rr_push_rdf(new_rr, ldns_rdf_clone(ldns_rr_rdf(rr, i)));
-                }
+		ldns_rr_push_rdf(new_rr, ldns_rdf_clone(ldns_rr_rdf(rr, i)));
 	}
 
 	return new_rr;

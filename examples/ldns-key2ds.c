@@ -51,7 +51,7 @@ main(int argc, char *argv[])
 		} 
 		if (strcmp(argv[0], "-2") == 0) {
 		        #ifndef SHA256_DIGEST_LENGTH
-		          fprintf(stderr, "Error: Crypto library does not support SHA256 digests!");
+		          fprintf(stderr, "Error: Crypto library does not support SHA256 digests!\n");
 		        #endif
 			h = LDNS_SHA256;
 		}
@@ -75,7 +75,7 @@ main(int argc, char *argv[])
 	}
 
 	result = ldns_rr_new_frm_fp(&k, keyfp, 0, &origin, NULL);
-	while (result == LDNS_STATUS_SYNTAX_ORIGIN) {
+	while (result == LDNS_STATUS_SYNTAX_ORIGIN || result == LDNS_STATUS_SYNTAX_TTL) {
 		result = ldns_rr_new_frm_fp(&k, keyfp, 0, &origin, NULL);
 	}
 	if (result != LDNS_STATUS_OK) {
