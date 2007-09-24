@@ -136,6 +136,7 @@ ldns_str2rdf_nsec3_salt(ldns_rdf **rd, const char *salt_str)
 			salt[c/2] = (uint8_t) ldns_hexdigit_to_int(salt_str[c]) * 16 +
 					  ldns_hexdigit_to_int(salt_str[c+1]);
 		} else {
+			LDNS_FREE(salt);
 			return LDNS_STATUS_INVALID_HEX;
 		}
 	}
@@ -146,6 +147,7 @@ ldns_str2rdf_nsec3_salt(ldns_rdf **rd, const char *salt_str)
 	memcpy(&data[1], salt, salt_length);
 	*rd = ldns_rdf_new_frm_data(LDNS_RDF_TYPE_NSEC3_SALT, 1 + salt_length, data);
 	LDNS_FREE(data);
+	LDNS_FREE(salt);
 
 	return LDNS_STATUS_OK;
 }
