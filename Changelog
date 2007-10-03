@@ -1,4 +1,14 @@
-11 Apr 2007 1.2,0:
+03 Oct 2007 1.2.1:
+	* Fixed an offset error in rr comparison
+	* Fixed ldns-read-zone exit code
+	* Added check for availability of SHA256 hashing algorithm
+	* Fixed ldns-key2ds -2 argument
+	* Fixed $ORIGIN bug in .key files
+	* Output algorithms as an integer instead of their mnemonic
+	* Fixed a memory leak in dnssec code when SHA256 is not available
+	* Updated fedora .spec file
+
+11 Apr 2007 1.2.0:
 	* canonicalization of rdata in DNSSEC functions now adheres to the
           rr type list in rfc3597, not rfc4035, which will be updated
 	  (see http://www.ops.ietf.org/lists/namedroppers/namedroppers.2007/msg00183.html)
