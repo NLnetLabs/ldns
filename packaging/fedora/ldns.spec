@@ -1,24 +1,19 @@
-Summary: Lowlevel DNS(SEC) library with DNS tools
+Summary: Lowlevel DNS(SEC) library with API
 Name: ldns
-Version: 1.2.0
-Release: 1
+Version: 1.2.1
+Release: 1%{?dist}
 License: BSD
 Url: http://www.nlnetlabs.nl/%{name}/
 Source: http://www.nlnetlabs.nl/downloads/%{name}-%{version}.tar.gz
 Group: System Environment/Libraries
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
-Requires: openssl
 BuildRequires: libtool, autoconf, automake, gcc-c++, openssl-devel, doxygen, perl
 
 %description
 ldns is a library with the aim to simplify DNS programing in C. All
 lowlevel DNS/DNSSEC operations are supported. We also define a higher
 level API which allows a programmer to (for instance) create or sign
-packets. 
-
-The drill tool helps debug DNS by sending packets to servers, like 'dig'.
-Example DNS tools are included that sign zone files, generate keys, 
-send dynamic update packets, find mx info, sort zone files and more.
+packets.
 
 %package devel
 Summary: Development package that includes the ldns header files
@@ -30,24 +25,39 @@ The devel package contains the ldns library and the include files
 
 %prep
 %setup -q 
-libtoolize
-autoreconf
-(cd drill; autoreconf)
-(cd examples; autoreconf)
+
+# To built svn snapshots
+#rm config.guess config.sub ltmain.sh
+
+%configure --disable-rpath
+# mkdir won't work in paralel build
+sed -i 's/then mkdir include/then mkdir -p include/' Makefile
 
 %build
-%configure
-%{__make} %{?_smp_mflags}
-(cd drill; %configure; %{__make} %{?_smp_mflags})
-(cd examples; %configure; %{__make} %{?_smp_mflags})
-%{__make} %{?_smp_mflags} doc
+make %{?_smp_mflags}
+(cd drill ; %configure --disable-rpath --with-ldns=../ldns/)
+(cd examples ; %configure --disable-rpath --with-ldns=../ldns/)
+( cd drill ; make %{?_smp_mflags} )
+( cd examples ; make %{?_smp_mflags} )
+make %{?_smp_mflags} doc
 
 %install
 rm -rf %{buildroot}
-export DESTDIR=%{buildroot}
-%{__make} install
-(cd drill; %{__make} install)
-(cd examples; %{__make} install)
+
+make DESTDIR=%{buildroot} install
+make DESTDIR=%{buildroot} install-doc
+
+# don't package building script in doc
+rm doc/doxyparse.pl
+#remove doc stubs
+rm -rf doc/.svn
+#remove double set of man pages
+rm -rf doc/man
+
+# remove .la files
+rm -rf %{buildroot}%{_libdir}/*.la
+(cd drill ; make DESTDIR=%{buildroot} install)
+(cd examples; make DESTDIR=%{buildroot} install)
 
 %clean
 rm -rf %{buildroot}
@@ -56,37 +66,62 @@ rm -rf %{buildroot}
 %defattr(-,root,root)
 %{_libdir}/libldns*so
 %{_bindir}/drill
-%{_bindir}/ldns*
-%doc README LICENSE TODO 
-%doc %{_mandir}/man1/drill*
-%doc %{_mandir}/man1/ldns*
+%{_bindir}/ldns-*
+%{_bindir}/ldnsd
+%doc README LICENSE 
+%{_mandir}/*/*
 
 %files devel
 %defattr(-,root,root,-)
-%{_libdir}/libldns.la
 %{_libdir}/libldns.a
 %dir %{_includedir}/ldns/*
-%doc doc/images doc/html doc/*.css
-%doc doc/dns-lib-implementations doc/CodingStyle
-%doc Changelog
-%doc %{_mandir}/man3/ldns*
-
-%pre
+%doc doc Changelog README
 
 %post -p /sbin/ldconfig
 
 %postun -p /sbin/ldconfig
 
 %changelog
-* Tue Apr 10 2007 Jelte Jansen <jelte@NLnetLabs.nl) 1.2.0
-- New minor version.
+* Tue Sep 18 2007 Jelte Jansen <jelte@NLnetLabs.nl> 1.2.1-1
+- Updated spec file for release
 
-* Thu Dec 14 2006 Wouter Wijngaards <wouter@nlnetlabs.nl> 1.1.1-1
-- New version number.
+* Wed Aug  8 2007 Paul Wouters <paul@xelerance.com> 1.2.0-10
+- Patch for ldns-key2ds to write to stdout
+- Again remove extra set of man pages from doc
 
-* Tue Aug 15 2006 Wouter Wijngaards <wouter@nlnetlabs.nl> 1.1.0-1
-- reworked for new Makefile. configure calls by build script.
-- names the docs for devel package in more detail.
+* Wed Aug  8 2007 Paul Wouters <paul@xelerance.com> 1.2.0-10
+- Added sha256 DS record patch to ldns-key2ds
+- Minor tweaks for proper doc/man page installation.
+- Workaround for parallel builds
+
+* Mon Aug  6 2007 Paul Wouters <paul@xelerance.com> 1.2.0-2
+- Own the /usr/include/ldns directory (bug #233858)
+- Removed obsoleted patch
+- Remove files form previous libtool run accidentally packages by upstream
+
+* Mon Sep 11 2006 Paul Wouters <paul@xelerance.com> 1.0.1-4
+- Commented out 1.1.0 make targets, put make 1.0.1 targets.
+
+* Mon Sep 11 2006 Paul Wouters <paul@xelerance.com> 1.0.1-3
+- Fixed changelog typo in date
+- Rebuild requested for PT_GNU_HASH support from gcc
+- Did not upgrade to 1.1.0 due to compile issues on x86_64
+
+* Fri Jan  6 2006 Paul Wouters <paul@xelerance.com> 1.0.1-1
+- Upgraded to 1.0.1. Removed temporary clean hack from spec file.
+
+* Sun Dec 18 2005 Paul Wouters <paul@xelerance.com> 1.0.0-8
+- Cannot use make clean because there are no Makefiles. Use hardcoded rm.
+
+* Sun Dec 18 2005 Paul Wouters <paul@xelerance.com> 1.0.0-7
+- Patched 'make clean' target to get rid of object files shipped with 1.0.0
+
+* Sun Dec 13 2005 Paul Wouters <paul@xelerance.com> 1.0.0-6
+- added a make clean for 2.3.3 since .o files were left behind upstream,
+  causing failure on ppc platform
+
+* Sun Dec 11 2005 Tom "spot" Callaway <tcallawa@redhat.com> 1.0.0-5
+- minor cleanups
 
 * Wed Oct  5 2005 Paul Wouters <paul@xelerance.com> 0.70_1205
 - reworked for svn version
