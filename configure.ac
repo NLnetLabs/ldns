@@ -247,6 +247,16 @@ fi
 # my own checks
 AC_CHECK_PROG(doxygen, doxygen, doxygen)
 
+# add option to disable the evil rpath
+dnl Check whether to use rpath or not
+AC_ARG_ENABLE(rpath,
+        [  --disable-rpath                disable hardcoded rpath (default=enabled)],
+	enable_rpath=$enableval, enable_rpath=yes)
+
+if test "x$enable_rpath" = xyes; then
+    RPATH_VAL="-Wl,-rpath=\${libdir}"
+fi
+
 # Checks for libraries.
 # Check for SSL, original taken from
 # http://www.gnu.org/software/ac-archive/htmldoc/check_ssl.html and
@@ -278,7 +288,9 @@ AC_ARG_WITH(ssl, AC_HELP_STRING([--with-ssl=pathname],
             AC_MSG_RESULT(found in $ssldir)
             HAVE_SSL=yes
             LDFLAGS="$LDFLAGS -L$ssldir/lib -lcrypto";
-	    RUNTIME_PATH="$RUNTIME_PATH -R$ssldir/lib"
+            if test "x$enable_rpath" = xyes; then
+	        RUNTIME_PATH="$RUNTIME_PATH -R$ssldir/lib"
+            fi
             AC_CHECK_LIB(crypto, HMAC_CTX_init,, [
                     AC_MSG_ERROR([OpenSSL found in $ssldir, but version 0.9.7 or higher is required])
                 ])
