@@ -968,7 +968,16 @@ ldns_pkt_clone(ldns_pkt *pkt)
 	ldns_pkt_set_size(new_pkt, ldns_pkt_size(pkt));
 	ldns_pkt_set_tsig(new_pkt, ldns_pkt_tsig(pkt));
 	
-	/* todo: edns? jelte?? */
+	ldns_pkt_set_edns_udp_size(new_pkt, ldns_pkt_edns_udp_size(pkt));
+	ldns_pkt_set_edns_extended_rcode(new_pkt, 
+		ldns_pkt_edns_extended_rcode(pkt));
+	ldns_pkt_set_edns_version(new_pkt, ldns_pkt_edns_version(pkt));
+	ldns_pkt_set_edns_z(new_pkt, ldns_pkt_edns_z(pkt));
+	if(ldns_pkt_edns_data(pkt))
+		ldns_pkt_set_edns_data(new_pkt, 
+			ldns_rdf_clone(ldns_pkt_edns_data(pkt)));
+	ldns_pkt_set_edns_do(new_pkt, ldns_pkt_edns_do(pkt));
+
 	ldns_rr_list_deep_free(new_pkt->_question);
 	ldns_rr_list_deep_free(new_pkt->_answer);
 	ldns_rr_list_deep_free(new_pkt->_authority);
