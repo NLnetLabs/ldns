@@ -68,7 +68,7 @@ static bool str_keyword(const char** str, const char* keyword)
 	if(strncmp(*str, keyword, len) != 0)
 		return false;
 	*str += len;
-	while(isspace(**str))
+	while(isspace((int)**str))
 		(*str)++;
 	return true;
 }
@@ -120,7 +120,7 @@ static void matchline(const char* line, struct entry* e)
 				error("expected = or : in MATCH: %s", line);
 			parse++;
 			e->ixfr_soa_serial = (uint32_t)strtol(parse, (char**)&parse, 10);
-			while(isspace(*parse)) 
+			while(isspace((int)*parse)) 
 				parse++;
 		} else {
 			error("could not parse MATCH: '%s'", parse);
@@ -185,6 +185,7 @@ static void replyline(const char* line, ldns_pkt *reply)
 		} else if(str_keyword(&parse, "AD")) {
 			ldns_pkt_set_ad(reply, true);
 		} else if(str_keyword(&parse, "DO")) {
+			ldns_pkt_set_edns_udp_size(reply, 4096);
 			ldns_pkt_set_edns_do(reply, true);
 		} else {
 			error("could not parse REPLY: '%s'", parse);
@@ -206,11 +207,11 @@ static void adjustline(const char* line, struct entry* e,
 			e->copy_query = true;
 		} else if(str_keyword(&parse, "sleep=")) {
 			e->sleeptime = (unsigned int) strtol(parse, (char**)&parse, 10);
-			while(isspace(*parse)) 
+			while(isspace((int)*parse)) 
 				parse++;
 		} else if(str_keyword(&parse, "packet_sleep=")) {
 			pkt->packet_sleep = (unsigned int) strtol(parse, (char**)&parse, 10);
-			while(isspace(*parse)) 
+			while(isspace((int)*parse)) 
 				parse++;
 		} else {
 			error("could not parse ADJUST: '%s'", parse);
@@ -390,7 +391,7 @@ get_origin(const char* name, int lineno, ldns_rdf** origin, char* parse)
 	*origin = NULL;
 
 	end=parse;
-	while(!isspace(*end) && !isendline(*end))
+	while(!isspace((int)*end) && !isendline(*end))
 		end++;
 	store = *end;
 	*end = 0;
@@ -420,7 +421,7 @@ read_entry(FILE* in, const char* name, int *lineno, uint32_t* default_ttl,
 		parse = line;
 		(*lineno) ++;
 		
-		while(isspace(*parse))
+		while(isspace((int)*parse))
 			parse++;
 		/* test for keywords */
 		if(isendline(*parse))
