@@ -160,6 +160,7 @@ static void usage()
 	printf("  -p	listens on the specified port, default %d.\n", DEFAULT_PORT);
 	printf("  -f	forks given number extra instances, default none.\n");
 	printf("  -v	more verbose, prints queries, answers and matching.\n");
+	printf("  -6	listen on IP6 any address, instead of IP4 any address.\n");
 	printf("The program answers queries with canned replies from the datafile.\n");
 	exit(EXIT_FAILURE);
 }
@@ -195,9 +196,19 @@ void verbose(int lvl, const char* msg, ...)
 	va_end(args);
 }
 
-static int bind_port(int sock, int port)
+static int bind_port(int sock, int port, int fam)
 {
     struct sockaddr_in addr;
+#ifdef AF_INET6
+    if(fam == AF_INET6) {
+    	struct sockaddr_in6 addr6;
+	memset(&addr6, 0, sizeof(addr6));
+	addr6.sin6_family = AF_INET6;
+    	addr6.sin6_port = (in_port_t)htons((uint16_t)port);
+	addr6.sin6_addr = in6addr_any;
+    	return bind(sock, (struct sockaddr *)&addr6, (socklen_t) sizeof(addr6));
+    }
+#endif
 
     addr.sin_family = AF_INET;
     addr.sin_port = (in_port_t)htons((uint16_t)port);
@@ -207,7 +218,7 @@ static int bind_port(int sock, int port)
 
 struct handle_udp_userdata {
 	int udp_sock;
-	struct sockaddr_in addr_him;
+	struct sockaddr_storage addr_him;
 	socklen_t hislen;
 };
 static void
@@ -291,7 +302,7 @@ static void
 handle_tcp(int tcp_sock, struct entry* entries, int *count)
 {
 	int s;
-	struct sockaddr_in addr_him;
+	struct sockaddr_storage addr_him;
 	socklen_t hislen;
 	uint8_t inbuf[INBUF_SIZE];
 	uint16_t tcplen;
@@ -350,6 +361,7 @@ main(int argc, char **argv)
 	int forknum = 0;
 
 	/* network */
+	int fam = AF_INET;
 	int udp_sock, tcp_sock;
 	fd_set rset, wset, eset;
 	struct timeval timeout;
@@ -363,8 +375,16 @@ main(int argc, char **argv)
 	logfile = stdout;
 	prog_name = argv[0];
 	log_msg("%s: start\n", prog_name);
-	while((c = getopt(argc, argv, "f:p:rv")) != -1) {
+	while((c = getopt(argc, argv, "6f:p:rv")) != -1) {
 		switch(c) {
+		case '6':
+#ifdef AF_INET6
+			fam = AF_INET6;
+#else
+			log_msg("cannot -6: no IP6 available\n");
+			exit(1);
+#endif
+			break;
 		case 'r':
                 	port = 0;
                 	break;
@@ -397,10 +417,10 @@ main(int argc, char **argv)
 	log_msg("Reading datafile %s\n", datafile);
 	entries = read_datafile(datafile);
 	
-	if((udp_sock = socket(AF_INET, SOCK_DGRAM, 0)) < 0) {
+	if((udp_sock = socket(fam, SOCK_DGRAM, 0)) < 0) {
 		error("udp socket(): %s\n", strerror(errno));
 	}
-	if((tcp_sock = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
+	if((tcp_sock = socket(fam, SOCK_STREAM, 0)) < 0) {
 		error("tcp socket(): %s\n", strerror(errno));
 	}
 	c = 1;
@@ -410,10 +430,10 @@ main(int argc, char **argv)
 
 	/* bind ip4 */
 	if (port > 0) {
-		if (bind_port(udp_sock, port)) {
+		if (bind_port(udp_sock, port, fam)) {
 			error("cannot bind(): %s\n", strerror(errno));
 		}
-		if (bind_port(tcp_sock, port)) {
+		if (bind_port(tcp_sock, port, fam)) {
 			error("cannot bind(): %s\n", strerror(errno));
 		}
 		if (listen(tcp_sock, CONN_BACKLOG) < 0) {
@@ -425,7 +445,7 @@ main(int argc, char **argv)
 			port = (random() % 64510) + 1025;
 			log_msg("trying to bind to port %d\n", port);
 			random_port_success = true;
-			if (bind_port(udp_sock, port)) {
+			if (bind_port(udp_sock, port, fam)) {
 				if (errno != EADDRINUSE) {
 					perror("bind()");
 					return -1;
@@ -434,7 +454,7 @@ main(int argc, char **argv)
 				}
 			}
 			if (random_port_success) {
-				if (bind_port(tcp_sock, port)) {
+				if (bind_port(tcp_sock, port, fam)) {
 					if (errno != EADDRINUSE) {
 						perror("bind()");
 						return -1;

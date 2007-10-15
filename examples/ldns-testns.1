@@ -10,6 +10,7 @@ ldns-testns
 .Op Fl p Ar port 
 .Op Fl f Ar num 
 .Op Fl v
+.Op Fl 6
 datafile
 
 .Sh DESCRIPTION
@@ -44,6 +45,9 @@ have to kill them yourself.
 .It Fl v
 Outputs more debug information. It is possible to give this option multiple 
 times to increase verbosity level.
+
+.It Fl 6
+Bind to IP6 address instead of IP4. Use together with -p. 
 
 .It datafile
 The data file is read on start up. It contains queries and the packets 
