@@ -358,7 +358,7 @@ ldns_rr_new_frm_str(ldns_rr **newrr, const char *str, uint32_t default_ttl, ldns
 
 				if (ldns_rr_descriptor_field_type(desc, 
 							r_cnt) == LDNS_RDF_TYPE_STR &&
-                                    ldns_buffer_capacity(rd_buf) > 0
+                                    ldns_buffer_remaining(rd_buf) > 0
 							) {
 					if (*(ldns_buffer_current(rd_buf)) == '\"') {
 						delimiters = "\"\0";
