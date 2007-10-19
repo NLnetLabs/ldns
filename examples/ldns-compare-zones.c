@@ -28,7 +28,7 @@ int main(int argc, char **argv)
     size_t i, j;
     ldns_rr_list *rrl1, *rrl2;
     int rr_cmp, rr_chg;
-    ldns_rr *rr1, *rr2, *rrx = NULL;
+    ldns_rr *rr1 = NULL, *rr2 = NULL, *rrx = NULL;
     int line_nr1 = 0, line_nr2 = 0;
     size_t rrc1, rrc2;
     size_t num_ins = 0, num_del = 0, num_chg = 0;
@@ -115,17 +115,28 @@ int main(int argc, char **argv)
     rrl2 = ldns_zone_rrs(z2);
     rrc2 = ldns_rr_list_rr_count(rrl2);
 
-    for (i = 0, j = 0; i < rrc1 && j < rrc2;) {
-        rr1 = ldns_rr_list_rr(rrl1, i);
-        rr2 = ldns_rr_list_rr(rrl2, j);
-        rr_cmp = ldns_rr_compare(rr1, rr2);
+    for (i = 0, j = 0; i < rrc1 || j < rrc2;) {
+        rr_cmp = 0;
+        if (i < rrc1 && j < rrc2) {
+	  rr1 = ldns_rr_list_rr(rrl1, i);
+	  rr2 = ldns_rr_list_rr(rrl2, j);
+	  rr_cmp = ldns_rr_compare(rr1, rr2);
 
-        if (rr_cmp == 0) {
+	  if (rr_cmp == 0) {
             i++; j++;
             continue;
-        }
+	  }
+	  rr_chg = ldns_dname_compare(ldns_rr_owner(rr1), ldns_rr_owner(rr2));
+        } else if (i >= rrc1) {
+            rr1 = NULL;
+            rr2 = ldns_rr_list_rr(rrl2, j);
+            rr_chg = rr_cmp = 1;
+        } else if (j >= rrc2) {
+            rr1 = ldns_rr_list_rr(rrl1, i);
+            rr2 = NULL;
+            rr_chg = rr_cmp = -1;
+	}
 
-        rr_chg = ldns_dname_compare(ldns_rr_owner(rr1), ldns_rr_owner(rr2));
         if (rr_cmp < 0) {
             i++;
             if ((rrx != NULL) && (ldns_dname_compare(ldns_rr_owner(rr1), ldns_rr_owner(rrx)) != 0)) {
