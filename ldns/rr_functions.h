@@ -89,7 +89,7 @@ bool ldns_rr_rrsig_set_algorithm(ldns_rr *r, ldns_rdf *f);
  * \param[in] r the resource record
  * \return a ldns_rdf* with the number of labels or NULL on failure
  */
-ldns_rdf* ldns_rr_rrsig_labels(const ldns_rr *r);
+ldns_rdf *ldns_rr_rrsig_labels(const ldns_rr *r);
 /**
  * sets the number of labels of a LDNS_RR_TYPE_RRSIG rr
  * \param[in] r the rr to use

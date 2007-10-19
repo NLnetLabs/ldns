@@ -50,6 +50,32 @@ struct ldns_dnssec_data_chain_struct {
 };
 
 /**
+ * Returns the first RRSIG rr that corresponds to the rrset with the given name and type
+ * TODO: may be more, use all sigs...
+ */
+ldns_rr *ldns_dnssec_get_rrsig_for_name_and_type(const ldns_rdf *name, const ldns_rr_type type, const ldns_rr_list *rrs);
+
+/**
+ * Returns the DNSKEY that corresponds to the given RRSIG rr from the list, if
+ * any
+ *
+ * \param[in] rrsig The rrsig to find the DNSKEY for
+ * \param[in] rrs The rr list to find the key in
+ * \return The DNSKEY that corresponds to the given RRSIG, or NULL if it was
+ *         not found.
+ */
+ldns_rr *ldns_dnssec_get_dnskey_for_rrsig(const ldns_rr *rrsig, const ldns_rr_list *rrs);
+
+/**
+ * Returns the rdata field that contains the bitmap of the covered types of
+ * the given NSEC record
+ *
+ * \param[in] nsec The nsec to get the covered type bitmap of
+ * \return An ldns_rdf containing the bitmap, or NULL on error
+ */
+ldns_rdf *ldns_nsec_get_bitmap(ldns_rr *nsec);
+
+/**
  * Creates a new dnssec_chain structure
  * \return ldns_dnssec_data_chain *
  */
@@ -136,6 +162,7 @@ void ldns_dnssec_trust_tree_free(ldns_dnssec_trust_tree *tree);
 
 
 size_t ldns_dnssec_trust_tree_depth(ldns_dnssec_trust_tree *tree);
+
 
 /**
  * Prints the dnssec_trust_tree structure to the given file stream

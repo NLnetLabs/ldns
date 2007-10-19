@@ -41,6 +41,14 @@ ldns_send(ldns_pkt **result_packet, ldns_resolver *r, const ldns_pkt *query_pkt)
 		result = LDNS_STATUS_ERR;
 	} else {
         	result = ldns_send_buffer(result_packet, r, qb, tsig_mac);
+/*
+printf(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n");
+ldns_pkt_print(stdout, query_pkt);
+printf(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n\n");
+printf("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<\n");
+ldns_pkt_print(stdout, *result_packet);
+printf("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<\n\n");
+*/
 	}
 
 	ldns_buffer_free(qb);

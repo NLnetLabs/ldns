@@ -27,6 +27,145 @@
 #include <openssl/err.h>
 #include <openssl/md5.h>
 
+ldns_rr *
+ldns_dnssec_get_rrsig_for_name_and_type(const ldns_rdf *name,
+                                        const ldns_rr_type type,
+                                        const ldns_rr_list *rrs)
+{
+	size_t i;
+	ldns_rr *candidate;
+	
+	if (!name || !rrs) {
+		return NULL;
+	}
+	
+	for (i = 0; i < ldns_rr_list_rr_count(rrs); i++) {
+		candidate = ldns_rr_list_rr(rrs, i);
+		if (ldns_rr_get_type(candidate) == LDNS_RR_TYPE_RRSIG) {
+			if (ldns_dname_compare(ldns_rr_owner(candidate),
+			                       name) == 0 &&
+			    ldns_rdf2native_int8(ldns_rr_rrsig_typecovered(candidate)) ==
+			    type
+			   ) {
+				return candidate;
+			}
+		}
+	}
+	
+	return NULL;
+}
+
+ldns_rr *
+ldns_dnssec_get_dnskey_for_rrsig(const ldns_rr *rrsig, const ldns_rr_list *rrs)
+{
+	size_t i;
+	ldns_rr *candidate;
+	
+	if (!rrsig || !rrs) {
+		return NULL;
+	}
+	
+	for (i = 0; i < ldns_rr_list_rr_count(rrs); i++) {
+		candidate = ldns_rr_list_rr(rrs, i);
+		if (ldns_rr_get_type(candidate) == LDNS_RR_TYPE_DNSKEY) {
+			if (ldns_dname_compare(ldns_rr_owner(candidate),
+			                       ldns_rr_rrsig_signame(rrsig)) == 0 &&
+			    ldns_rdf2native_int16(ldns_rr_rrsig_keytag(rrsig)) ==
+			    ldns_calc_keytag(candidate)
+			) {
+				return candidate;
+			}
+		}
+	}
+	
+	return NULL;
+}
+
+ldns_rdf *
+ldns_nsec_get_bitmap(ldns_rr *nsec) {
+	if (ldns_rr_get_type(nsec) == LDNS_RR_TYPE_NSEC) {
+		return ldns_rr_rdf(nsec, 1);
+	} else if (ldns_rr_get_type(nsec) == LDNS_RR_TYPE_NSEC3) {
+		return ldns_rr_rdf(nsec, 5);
+	} else {
+		return NULL;
+	}
+}
+
+ldns_status
+ldns_dnssec_verify_denial(ldns_rr *rr,
+                          ldns_rr_list *nsecs,
+                          ldns_rr_list *rrsigs)
+{
+	ldns_rdf *rr_name;
+	ldns_rdf *wildcard_name;
+	ldns_rdf *chopped_dname;
+	ldns_rr *cur_nsec;
+	size_t i;
+	ldns_status result;
+	/* needed for wildcard check on exact match */
+	ldns_rr *rrsig;
+
+	wildcard_name = ldns_dname_new_frm_str("*");
+	rr_name = ldns_rr_owner(rr);
+	chopped_dname = ldns_dname_left_chop(rr_name);
+	result = ldns_dname_cat(wildcard_name, chopped_dname);
+	if (result != LDNS_STATUS_OK) {
+		return result;
+	}
+	
+	ldns_rdf_deep_free(chopped_dname);
+	
+	bool name_covered = false;
+	bool type_covered = false;
+	bool wildcard_covered = false;
+	bool wildcard_type_covered = false;
+	
+	for  (i = 0; i < ldns_rr_list_rr_count(nsecs); i++) {
+		cur_nsec = ldns_rr_list_rr(nsecs, i);
+		if (ldns_dname_compare(rr_name, ldns_rr_owner(cur_nsec)) == 0) {
+			/* see section 5.4 of RFC4035, if the label count of the NSEC's
+			   RRSIG is equal, then it is proven that wildcard expansion could
+			   not have been used to match the request */
+			rrsig = ldns_dnssec_get_rrsig_for_name_and_type(ldns_rr_owner(cur_nsec), ldns_rr_get_type(cur_nsec), rrsigs);
+			if (rrsig && ldns_rdf2native_int8(ldns_rr_rrsig_labels(rrsig)) == ldns_dname_label_count(rr_name)) {
+				wildcard_covered = true;
+			}
+			
+			if (ldns_nsec_bitmap_covers_type(ldns_nsec_get_bitmap(cur_nsec), ldns_rr_get_type(rr))) {
+				type_covered = true;
+			}
+		}
+		
+		if (ldns_nsec_covers_name(cur_nsec, rr_name)) {
+			name_covered = true;
+		}
+		
+		if (ldns_dname_compare(wildcard_name, ldns_rr_owner(cur_nsec)) == 0) {
+			if (ldns_nsec_bitmap_covers_type(ldns_nsec_get_bitmap(cur_nsec), ldns_rr_get_type(rr))) {
+				wildcard_type_covered = true;
+			}
+		}
+		
+		if (ldns_nsec_covers_name(cur_nsec, wildcard_name)) {
+			wildcard_covered = true;
+		}
+		
+	}
+	
+	ldns_rdf_deep_free(wildcard_name);
+	
+	if (type_covered || !name_covered) {
+		return LDNS_STATUS_DNSSEC_NSEC_RR_NOT_COVERED;
+	}
+	
+	if (wildcard_type_covered || !wildcard_covered) {
+		return LDNS_STATUS_DNSSEC_NSEC_WILDCARD_NOT_COVERED;
+	}
+
+	return LDNS_STATUS_OK;
+}
+
 
 ldns_dnssec_data_chain *
 ldns_dnssec_data_chain_new()
@@ -394,9 +533,12 @@ ldns_dnssec_trust_tree_print_sm(FILE *out, ldns_dnssec_trust_tree *tree, size_t 
 				}
 			} else {
 */
+/*
 				if (ldns_rr_get_type(tree->rr) == LDNS_RR_TYPE_NSEC) {
+					print_tabs(out, tabs, sibmap, treedepth);
 					fprintf(out, "Existence is denied by:\n");
 				}
+*/
 /*
 			}
 */
@@ -433,6 +575,15 @@ sibmap[tabs] = 1;
 sibmap[tabs] = 0;
 }
 				/* only print errors */
+				if (ldns_rr_get_type(tree->parents[i]->rr) == LDNS_RR_TYPE_NSEC) {
+					if (tree->parent_status[i] == LDNS_STATUS_OK) {
+						print_tabs(out, tabs + 1, sibmap, treedepth);
+						fprintf(out, "Existence is denied by:\n");
+					} else {
+						print_tabs(out, tabs + 1, sibmap, treedepth);
+						fprintf(out, "Error in denial of existence: %s\n", ldns_get_errorstr_by_id(tree->parent_status[i]));
+					}
+				} else
 				if (tree->parent_status[i] != LDNS_STATUS_OK) {
 					print_tabs(out, tabs + 1, sibmap, treedepth);
 					fprintf(out, "%s:\n", ldns_get_errorstr_by_id(tree->parent_status[i]));
@@ -618,13 +769,18 @@ ldns_dnssec_derive_trust_tree_no_sig(ldns_dnssec_trust_tree *new_tree,
 	ldns_rr_list *cur_rrset;
 	ldns_rr *cur_parent_rr;
 	ldns_dnssec_trust_tree *cur_parent_tree;
+	ldns_status result;
 	
 	if (data_chain->parent && data_chain->parent->rrset) {
 		cur_rrset = data_chain->parent->rrset;
+		/* nsec? check all */
+		result = ldns_dnssec_verify_denial(new_tree->rr, cur_rrset, data_chain->parent->signatures);
 		for (i = 0; i < ldns_rr_list_rr_count(cur_rrset); i++) {
 			cur_parent_rr = ldns_rr_list_rr(cur_rrset, i);
 			cur_parent_tree = ldns_dnssec_derive_trust_tree(data_chain->parent, cur_parent_rr);
-			ldns_dnssec_trust_tree_add_parent(new_tree, cur_parent_tree, NULL, LDNS_STATUS_OK);
+			printf("Adding without checking: ");
+			ldns_rr_print(stdout, cur_parent_rr);
+			ldns_dnssec_trust_tree_add_parent(new_tree, cur_parent_tree, NULL, result);
 		}
 	}
 }
