@@ -98,7 +98,7 @@ enum ldns_enum_rdf_type
 	/** nsec3 hash salt */
 	LDNS_RDF_TYPE_NSEC3_SALT,
 	/** nsec3 base32 string (with length byte on wire */
-	LDNS_RDF_TYPE_NSEC3_NEXT_OWNER,
+	LDNS_RDF_TYPE_NSEC3_NEXT_OWNER
 };
 typedef enum ldns_enum_rdf_type ldns_rdf_type;
 
