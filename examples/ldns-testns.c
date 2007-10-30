@@ -372,6 +372,7 @@ main(int argc, char **argv)
 	struct entry* entries;
 	
 	/* parse arguments */
+	srandom(time(NULL) ^ getpid());
 	logfile = stdout;
 	prog_name = argv[0];
 	log_msg("%s: start\n", prog_name);
