@@ -17,15 +17,17 @@ usage(FILE *fp, char *prog) {
 	fprintf(fp, "%s [-D|-R] [-b bits] [-r /dev/random] [-v] domain\n", prog);
 	fprintf(fp, "  generate a new key pair for domain\n");
 	fprintf(fp, "  -D\tgenerate a DSA key\n");
-	fprintf(fp, "  -R\tgenerate a RSA key\n");
+	fprintf(fp, "  -R\tgenerate an RSA key\n");
+	fprintf(fp, "  -H\tgenerate an HMAC-MD5 key (for TSIG)\n");
 	fprintf(fp, "  -k\tset the flags to 257; key signing key\n");
 	fprintf(fp, "  -b <bits>\tspecify the keylength\n");
 	fprintf(fp, "  -r <random>\tspecify a random device (defaults to /dev/random)\n");
+	fprintf(fp, "\t\tto seed the random generator with\n");
 	fprintf(fp, "  -v\t\tshow the version and exit\n");
 	fprintf(fp, "  The following files will be created:\n");
 	fprintf(fp, "    K<name>+<alg>+<id>.key\tPublic key in RR format\n");
 	fprintf(fp, "    K<name>+<alg>+<id>.private\tPrivate key in key format\n");
-	fprintf(fp, "    K<name>+<alg>+<id>.ds\tDS in RR format\n");
+	fprintf(fp, "    K<name>+<alg>+<id>.ds\tDS in RR format (only for DNSSEC keys)\n");
 	fprintf(fp, "  The base name (K<name>+<alg>+<id> will be printed to stdout\n");
 }
 
@@ -56,21 +58,27 @@ main(int argc, char *argv[])
 	random = NULL;
 	ksk = false; /* don't create a ksk per default */
 	
-	while ((c = getopt(argc, argv, "DRkb:r:v")) != -1) {
+	while ((c = getopt(argc, argv, "DRHkb:r:v")) != -1) {
 		switch (c) {
 		case 'D':
 			if (algorithm != 0) {
-				fprintf(stderr, "%s: %s", prog, "Only one -D or -A is allowed\n");
+				fprintf(stderr, "%s: %s", prog, "Only one of -D, -A or -H is allowed\n");
 				exit(EXIT_FAILURE);
 			}
 			algorithm = LDNS_SIGN_DSA;
 			break;
 		case 'R':
 			if (algorithm != 0) {
-				fprintf(stderr, "%s: %s", prog, "Only one -D or -A is allowed\n");
+				fprintf(stderr, "%s: %s", prog, "Only one of -D, -A or -H is allowed\n");
 				exit(EXIT_FAILURE);
 			}
 			algorithm = LDNS_SIGN_RSASHA1;
+			break;
+                case 'H':
+			if (algorithm != 0) {
+				fprintf(stderr, "%s: %s", prog, "Only one of -D, -A or -H is allowed\n");
+			}
+			algorithm = LDNS_SIGN_HMACMD5;
 			break;
 		case 'b':
 			bits = (uint16_t) atoi(optarg);
@@ -110,11 +118,17 @@ main(int argc, char *argv[])
 		exit(EXIT_FAILURE);
 	} 
 	free(prog);
-
-	(void)ldns_init_random(random, def_bits * 8 * 2); /* I hope this is enough? */
-	if (random) {
-		fclose(random);
+	
+	if (!random) {
+		random = fopen("/dev/random", "r");
+		if (!random) {
+			fprintf(stderr, "Cannot open random file %s: %s\n", optarg, strerror(errno));
+			exit(EXIT_FAILURE);
+		}
 	}
+
+	(void)ldns_init_random(random);
+	fclose(random);
 
 	/* create an rdf from the domain name */
 	domain = ldns_dname_new_frm_str(argv[0]);
@@ -182,23 +196,24 @@ main(int argc, char *argv[])
 	}
 	
 	/* print the DS to .ds */
-	filename = LDNS_XMALLOC(char, strlen(owner) + 16);
-	snprintf(filename, strlen(owner) + 15, "K%s+%03u+%05u.ds", owner, algorithm, (unsigned int) ldns_key_keytag(key));
-	file = fopen(filename, "w");
-	if (!file) {
-		fprintf(stderr, "Unable to open %s: %s\n", filename, strerror(errno));
-		ldns_key_deep_free(key);
-		free(owner);
-		ldns_rr_free(pubkey);
-		ldns_rr_free(ds);
-		LDNS_FREE(filename);
-		exit(EXIT_FAILURE);
-	} else {
-		ldns_rr_print(file, ds);
-		fclose(file);
-		LDNS_FREE(filename);
-	}
-	
+	if (algorithm != LDNS_SIGN_HMACMD5) {
+		filename = LDNS_XMALLOC(char, strlen(owner) + 16);
+		snprintf(filename, strlen(owner) + 15, "K%s+%03u+%05u.ds", owner, algorithm, (unsigned int) ldns_key_keytag(key));
+		file = fopen(filename, "w");
+		if (!file) {
+			fprintf(stderr, "Unable to open %s: %s\n", filename, strerror(errno));
+			ldns_key_deep_free(key);
+			free(owner);
+			ldns_rr_free(pubkey);
+			ldns_rr_free(ds);
+			LDNS_FREE(filename);
+			exit(EXIT_FAILURE);
+		} else {
+			ldns_rr_print(file, ds);
+			fclose(file);
+			LDNS_FREE(filename);
+		}
+	}	
 #if 0
 	/* TEMP: create PEM format too */
 	filename = LDNS_XMALLOC(char, strlen(owner) + 17);
