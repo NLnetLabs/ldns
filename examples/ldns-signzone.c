@@ -303,9 +303,21 @@ main(int argc, char *argv[])
 
 				s = ldns_key_new_frm_engine(&key, engine, eng_key_id, eng_key_algo);
 				if (s == LDNS_STATUS_OK) {
-					ldns_key_list_push_key(keys, key);
-					/*printf("Added key at %p:\n", key);*/
-					/*ldns_key_print(stdout, key);*/
+					/* must be dnssec key */
+					switch (ldns_key_algorithm(key)) {
+						case LDNS_SIGN_RSAMD5:
+						case LDNS_SIGN_RSASHA1:
+						case LDNS_SIGN_RSASHA1_NSEC3:
+						case LDNS_SIGN_DSA:
+						case LDNS_SIGN_DSA_NSEC3:
+							ldns_key_list_push_key(keys, key);
+							/*printf("Added key at %p:\n", key);*/
+							/*ldns_key_print(stdout, key);*/
+							break;
+						default:
+							fprintf(stderr, "Warning, key not suitable for signing, ignoring key with algorith %u\n", ldns_key_algorithm(key));
+							break;
+					}
 				} else {
 					printf("Error reading key '%s' from engine: %s\n", eng_key_id, ldns_get_errorstr_by_id(s));
 					printf("The available key id's are:\n");
@@ -473,7 +485,6 @@ main(int argc, char *argv[])
 					fclose(keyfile);
 					goto found;
 				}
-				LDNS_FREE(keyfile_name);
 				
 				/* okay, so reading .key didn't work either, just use our generated one */
 				if (verbosity >= 2) {
@@ -484,7 +495,21 @@ main(int argc, char *argv[])
 				
 				found:
 				ldns_rr_free(pubkey_gen);
-				ldns_key_list_push_key(keys, key);
+				switch (ldns_key_algorithm(key)) {
+					case LDNS_SIGN_RSAMD5:
+					case LDNS_SIGN_RSASHA1:
+					case LDNS_SIGN_RSASHA1_NSEC3:
+					case LDNS_SIGN_DSA:
+					case LDNS_SIGN_DSA_NSEC3:
+						ldns_key_list_push_key(keys, key);
+						/*printf("Added key at %p:\n", key);*/
+						/*ldns_key_print(stdout, key);*/
+						break;
+					default:
+						fprintf(stderr, "Warning, key not suitable for signing, ignoring key from %s with algorith %u\n", keyfile_name, eng_key_algo);
+						break;
+				}
+				LDNS_FREE(keyfile_name);
 #if 0
  else {
 					/* apparently the public key is not in the zone
