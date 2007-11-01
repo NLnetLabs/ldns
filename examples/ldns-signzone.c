@@ -506,7 +506,7 @@ main(int argc, char *argv[])
 						/*ldns_key_print(stdout, key);*/
 						break;
 					default:
-						fprintf(stderr, "Warning, key not suitable for signing, ignoring key from %s with algorith %u\n", keyfile_name, eng_key_algo);
+						fprintf(stderr, "Warning, key not suitable for signing, ignoring key from %s with algorith %u\n", keyfile_name, ldns_key_algorithm(key));
 						break;
 				}
 				LDNS_FREE(keyfile_name);
