@@ -126,9 +126,9 @@ struct ldns_struct_resolver
 	/* Optional tsig key for signing queries,
 	outgoing messages are signed if and only if both are set
 	*/
-	/** Name of the key to use with TSIG, if \ref _tsig_keyname and \ref _tsig_keydata both contain values, outgoing messages are automatically signed with TSIG. */
+	/** Name of the key to use with TSIG, if _tsig_keyname and _tsig_keydata both contain values, outgoing messages are automatically signed with TSIG. */
 	char *_tsig_keyname;
-	/** Secret key data to use with TSIG, if \ref _tsig_keyname and \ref _tsig_keydata both contain values, outgoing messages are automatically signed with TSIG. */
+	/** Secret key data to use with TSIG, if _tsig_keyname and _tsig_keydata both contain values, outgoing messages are automatically signed with TSIG. */
 	char *_tsig_keydata;
 	/** TSIG signing algorithm */
 	char *_tsig_algorithm;

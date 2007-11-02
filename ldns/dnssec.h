@@ -542,7 +542,7 @@ ldns_rdf *ldns_nsec3_next_owner(const ldns_rr *nsec3_rr);
  * \param[in] flags The flags field 
  * \param[in] iterations The number of hash iterations
  * \param[in] salt_length The length of the salt in bytes 
- * \param[in] The salt bytes
+ * \param[in] salt The salt bytes
  */
 void ldns_nsec3_add_param_rdfs(ldns_rr *rr, uint8_t algorithm, uint8_t flags, uint16_t iterations, uint8_t salt_length, uint8_t *salt);
 
@@ -604,7 +604,6 @@ ldns_zone *ldns_zone_sign_nsec3(ldns_zone *zone, ldns_key_list *key_list, uint8_
  * If the file descriptor is specified, the random generator is seeded with
  * data from that file. If not, /dev/urandom is used.
  * \param[in] fd a file providing entropy data for the seed
- * \param[in] bytes number of bytes for the seed
  * \return LDNS_STATUS_OK if init succeeds
  */
 ldns_status ldns_init_random(FILE *fd);

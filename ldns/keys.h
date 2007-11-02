@@ -245,7 +245,7 @@ unsigned char *ldns_key_new_frm_fp_hmac(FILE *fp, size_t *hmac_size);
  * remainder of the (HMAC-MD5) key file
  * This function allocated a buffer that needs to be freed
  * \param[in] fp the file to parse
- * \param[in] line_nr pointer to an integer containing the current line number (for debugging purposes)
+ * \param[in] line_nr pointer to an integer containing the current line number (for error reporting purposes)
  * \param[out] hmac_size the number of bits in the resulting buffer
  * \return NULL on failure otherwise a newly allocated char buffer
  */
@@ -282,13 +282,13 @@ void ldns_key_set_dsa_key(ldns_key *k, DSA *d);
 /**
  * Set the key's hmac data
  * \param[in] k the key
- * \param[in] hmac_size in nr of bytes
+ * \param[in] hmac the raw key data
  */
 void ldns_key_set_hmac_key(ldns_key *k, unsigned char *hmac);
 /**
  * Set the key's hmac size
  * \param[in] k the key
- * \param[in] hmac the hmac data
+ * \param[in] hmac_size the size of the hmac data
  */
 void ldns_key_set_hmac_size(ldns_key *k, size_t hmac_size);
 /**
