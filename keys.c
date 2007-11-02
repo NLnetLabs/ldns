@@ -17,6 +17,7 @@
 #ifdef HAVE_SSL
 #include <openssl/ssl.h>
 #include <openssl/engine.h>
+#include <openssl/rand.h>
 #endif /* HAVE_SSL */
 
 ldns_lookup_table ldns_signing_algorithms[] = {
@@ -458,8 +459,10 @@ ldns_key_new_frm_algorithm(ldns_signing_algorithm alg, uint16_t size)
 	ldns_key *k;
 	DSA *d;
 	RSA *r;
+#ifndef HAVE_SSL
 	int i;
 	uint16_t offset;
+#endif
 	unsigned char *hmac;
 
 	k = ldns_key_new();
@@ -494,17 +497,23 @@ ldns_key_new_frm_algorithm(ldns_signing_algorithm alg, uint16_t size)
 			ldns_key_set_hmac_size(k, size);
 			 
 			hmac = LDNS_XMALLOC(unsigned char, size);
-			offset = 0;
+#ifdef HAVE_SSL
+			if (RAND_bytes(hmac, size) != 1) {
+				LDNS_FREE(hmac);
+				ldns_key_free(k);
+				return NULL;
+			}
+#else
 			while (offset + sizeof(i) < size) {
-			  i = rand();
+			  i = random();
 			  memcpy(&hmac[offset], &i, sizeof(i));
 			  offset += sizeof(i);
 			}
 			if (offset < size) {
-			  i = rand();
+			  i = random();
 			  memcpy(&hmac[offset], &i, size - offset);
 			}
-
+#endif /* HAVE_SSL */
 			ldns_key_set_hmac_key(k, hmac);
 			
 			ldns_key_set_flags(k, 0);

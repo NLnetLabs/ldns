@@ -163,6 +163,8 @@ main(int argc, char *argv[])
 	qrandom = true;
 	key_verified = NULL;
 
+	ldns_init_random(NULL, 0);
+
 	if (argc == 0) {
 		usage(stdout, progname);
 		result = EXIT_FAILURE;
