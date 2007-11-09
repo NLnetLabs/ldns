@@ -417,11 +417,17 @@ ldns_rr_new_frm_str(ldns_rr **newrr, const char *str, uint16_t default_ttl, ldns
 									ldns_rr_descriptor_field_type(desc, r_cnt),
 									rd);
 
-							/* check if the origin should be concatenated */
-							if (rd_strlen > 1 && !ldns_dname_str_absolute(rd) && origin) {
+							/* check if the origin should be used or concatenated */
+							if (rd_strlen == 1 && ldns_rdf_data(r)[1] == '@') {
+								ldns_rdf_deep_free(r);
+								if (origin) {
+									r = ldns_rdf_clone(origin);
+								} else {
+									r = ldns_rdf_new_frm_str(LDNS_RDF_TYPE_DNAME, ".");
+								}
+							} else if (rd_strlen > 1 && !ldns_dname_str_absolute(rd) && origin) {
 								if (!ldns_dname_cat(r, origin)) {
-									/* don't change this (yet MIEK */
-									/* return LDNS_STATUS_SYNTAX_ERR; */
+									return LDNS_STATUS_ERR;
 								}
 							}
 							break;
