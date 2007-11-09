@@ -423,7 +423,12 @@ ldns_rr_new_frm_str(ldns_rr **newrr, const char *str, uint16_t default_ttl, ldns
 								if (origin) {
 									r = ldns_rdf_clone(origin);
 								} else {
-									r = ldns_rdf_new_frm_str(LDNS_RDF_TYPE_DNAME, ".");
+								     /* if this is the SOA, use its own owner name */
+									if (rr_type == LDNS_RR_TYPE_SOA) {
+										r = ldns_rdf_clone(ldns_rr_owner(new));
+									} else {
+										r = ldns_rdf_new_frm_str(LDNS_RDF_TYPE_DNAME, ".");
+									}
 								}
 							} else if (rd_strlen > 1 && !ldns_dname_str_absolute(rd) && origin) {
 								if (!ldns_dname_cat(r, origin)) {
