@@ -89,7 +89,7 @@ libldns.la:	$(LIBDNS_OBJECTS)
 		$(LINK_LIB) -o libldns.la $(LIBDNS_LOBJECTS) -rpath $(libdir) $(RUNTIME_PATH)
 
 $(addprefix include/ldns/, $(notdir $(LIBDNS_HEADERS))): include/ldns/%.h: $(srcdir)/ldns/%.h
-		@if [ ! -d include ] ; then mkdir include ; fi ;
+		@if [ ! -d include ] ; then mkdir -p include ; fi ;
 		@if [ ! -d include/ldns ] ; then ln -s ../ldns ./include/ldns ; fi ;
 		MVPROG=/bin/cp $(INSTALL) -m 644 $< ./include/ldns/
 
