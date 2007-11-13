@@ -1,3 +1,6 @@
+1.2.2:
+	* Added a new example tool (written by Ondrej Sury): ldns-compare-zones
+
 03 Oct 2007 1.2.1:
 	* Fixed an offset error in rr comparison
 	* Fixed ldns-read-zone exit code

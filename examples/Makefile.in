@@ -44,6 +44,7 @@ MAIN_SOURCES = ldns-read-zone.c \
 		  ldnsd.c \
 		  ldns-keyfetcher.c \
 		  ldns-notify.c \
+		  ldns-compare-zones.c \
 		  ldns-testns.c
 OTHER_SOURCES = ldns-testpkts.c
 
