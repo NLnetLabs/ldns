@@ -42,7 +42,9 @@ ldns_calc_keytag(const ldns_rr *key)
 	}
 
 	ac32 = 0;
-	if (ldns_rr_get_type(key) != LDNS_RR_TYPE_DNSKEY) {
+	if (ldns_rr_get_type(key) != LDNS_RR_TYPE_DNSKEY &&
+	    ldns_rr_get_type(key) != LDNS_RR_TYPE_KEY
+	    ) {
 		return 0;
 	}
 
@@ -1439,36 +1441,33 @@ ldns_zone_sign(const ldns_zone *zone, ldns_key_list *key_list)
  * apps must call this 
  */
 ldns_status 
-ldns_init_random(FILE *fd, uint16_t bytes) 
+ldns_init_random(FILE *fd) 
 {
-	FILE *rand;
-	uint8_t *buf;
-
-	buf = LDNS_XMALLOC(uint8_t, bytes);
-	if (!buf) {
-		return LDNS_STATUS_ERR;;
-	}
+	/* if fp is given, seed srand with data from file
+	   otherwise use /dev/urandom */
+	FILE *rand_f;
+	unsigned int seed;
+	size_t read;
+	
 	if (!fd) {
-		if ((rand = fopen("/dev/urandom", "r")) == NULL) {
-			LDNS_FREE(buf);
+		if ((rand_f = fopen("/dev/urandom", "r")) == NULL) {
 			return LDNS_STATUS_ERR;
 		}
 	} else {
-		rand = fd;
+		rand_f = fd;
+	}
+	   
+	read = fread(&seed, sizeof(seed), 1, rand_f);
+	if (read == 0) {
+		return LDNS_STATUS_ERR;
+	} else {
+		srand(seed);
+	}
+	
+	if (!fd) {
+		fclose(rand_f);
 	}
 
-	if ((fread(buf, sizeof(uint8_t), (size_t)bytes, rand) != bytes)) {
-		LDNS_FREE(buf);
-		if (!fd) {
-			fclose(rand);
-		}
-		return LDNS_STATUS_ERR;
-	}
-	if (!fd) {
-		fclose(rand);
-	}
- 	RAND_seed((const void *)buf, (int)bytes);
-	LDNS_FREE(buf);
 	return LDNS_STATUS_OK;
 }
 #endif /* HAVE_SSL */

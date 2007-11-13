@@ -1260,7 +1260,17 @@ ldns_key2buffer_str(ldns_buffer *output, const ldns_key *k)
 				break;
 			case LDNS_SIGN_HMACMD5:
 				/* is the filefmt specified for TSIG.. don't know */
-				goto error;
+		                ldns_buffer_printf(output, "Private-key-format: v1.2\n");
+		                ldns_buffer_printf(output, "Algorithm: 157 (HMAC_MD5)\n");
+		                ldns_buffer_printf(output, "Key: ");
+		                i = ldns_key_hmac_size(k);
+				b64_bignum =  ldns_rdf_new_frm_data(LDNS_RDF_TYPE_B64, i, ldns_key_hmac_key(k));
+				if (ldns_rdf2buffer_str(output, b64_bignum) != LDNS_STATUS_OK) {
+					goto error;
+				}
+				ldns_rdf_deep_free(b64_bignum);
+				ldns_buffer_printf(output, "\n"); 
+				break;
 		}
 #endif /* HAVE_SSL */
 	} else {

@@ -66,7 +66,7 @@ enum ldns_enum_signing_algorithm
 	LDNS_SIGN_RSAMD5	 = LDNS_RSAMD5,
 	LDNS_SIGN_RSASHA1	 = LDNS_RSASHA1,
 	LDNS_SIGN_DSA		 = LDNS_DSA,
-	LDNS_SIGN_HMACMD5	 = 150	/* not official! */
+	LDNS_SIGN_HMACMD5	 = 157	/* not official! */
 };
 typedef enum ldns_enum_signing_algorithm ldns_signing_algorithm;
 
@@ -84,12 +84,15 @@ struct ldns_struct_key {
 	ldns_signing_algorithm _alg;
 	/** Storage pointers for the types of keys supported */
 	/* TODO remove unions? */
-	union {
+	struct {
 #ifdef HAVE_SSL
 		RSA	*rsa;
 		DSA	*dsa;
 #endif /* HAVE_SSL */
-		unsigned char *hmac;
+		struct {
+			unsigned char *key;
+			size_t size;
+		} hmac;
 	} _key;
 	/** Depending on the key we can have extra data */
 	union {
@@ -171,7 +174,7 @@ ldns_status ldns_key_new_frm_fp_l(ldns_key **k, FILE *fp, int *line_nr);
 
 #ifdef HAVE_SSL
 /**
- * frm_fp helper function. This function parsed the
+ * frm_fp helper function. This function parses the
  * remainder of the (RSA) priv. key file generated from bind9
  * \param[in] fp the file to parse
  * \return NULL on failure otherwise a RSA structure
@@ -181,7 +184,7 @@ RSA *ldns_key_new_frm_fp_rsa(FILE *fp);
 
 #ifdef HAVE_SSL
 /**
- * frm_fp helper function. This function parsed the
+ * frm_fp helper function. This function parses the
  * remainder of the (RSA) priv. key file generated from bind9
  * \param[in] fp the file to parse
  * \param[in] line_nr pointer to an integer containing the current line number (for debugging purposes)
@@ -192,7 +195,7 @@ RSA *ldns_key_new_frm_fp_rsa_l(FILE *fp, int *line_nr);
 
 #ifdef HAVE_SSL
 /**
- * frm_fp helper function. This function parsed the
+ * frm_fp helper function. This function parses the
  * remainder of the (DSA) priv. key file generated from bind9
  * \param[in] fp the file to parse
  * \return NULL on failure otherwise a RSA structure
@@ -202,13 +205,38 @@ DSA *ldns_key_new_frm_fp_dsa(FILE *fp);
 
 #ifdef HAVE_SSL
 /**
- * frm_fp helper function. This function parsed the
+ * frm_fp helper function. This function parses the
  * remainder of the (DSA) priv. key file generated from bind9
  * \param[in] fp the file to parse
  * \param[in] line_nr pointer to an integer containing the current line number (for debugging purposes)
  * \return NULL on failure otherwise a RSA structure
  */
 DSA *ldns_key_new_frm_fp_dsa_l(FILE *fp, int *line_nr);
+#endif /* HAVE_SSL */
+
+#ifdef HAVE_SSL
+/**
+ * frm_fp helper function. This function parses the
+ * remainder of the (HMAC-MD5) key file
+ * This function allocated a buffer that needs to be freed
+ * \param[in] fp the file to parse
+ * \param[out] hmac_size the number of bits in the resulting buffer
+ * \return NULL on failure otherwise a newly allocated char buffer
+ */
+unsigned char *ldns_key_new_frm_fp_hmac(FILE *fp, size_t *hmac_size);
+#endif
+
+#ifdef HAVE_SSL
+/**
+ * frm_fp helper function. This function parses the
+ * remainder of the (HMAC-MD5) key file
+ * This function allocated a buffer that needs to be freed
+ * \param[in] fp the file to parse
+ * \param[in] line_nr pointer to an integer containing the current line number (for debugging purposes)
+ * \param[out] hmac_size the number of bits in the resulting buffer
+ * \return NULL on failure otherwise a newly allocated char buffer
+ */
+unsigned char *ldns_key_new_frm_fp_hmac_l(FILE *fp, int *line_nr, size_t *hmac_size);
 #endif /* HAVE_SSL */
 
 /* acces write functions */
@@ -238,6 +266,13 @@ void ldns_key_set_dsa_key(ldns_key *k, DSA *d);
  * \param[in] hmac the hmac data
  */
 void ldns_key_set_hmac_key(ldns_key *k, unsigned char *hmac);
+/*
+ * Set the key's hmac size
+ * \param[in] k the key
+ * \param[in] hmac the hmac data
+ */
+void ldns_key_set_hmac_size(ldns_key *k, size_t hmac_size);
+
 /**
  * Set the key's original ttl
  * \param[in] k the key
@@ -327,11 +362,17 @@ DSA *ldns_key_dsa_key(const ldns_key *k);
  */
 ldns_signing_algorithm ldns_key_algorithm(const ldns_key *k);
 /**
- * return the hmac key 
+ * return the hmac key data
  * \param[in] k the key
- * \return the hmac key
+ * \return the hmac key data
  */
 unsigned char *ldns_key_hmac_key(const ldns_key *k);
+/**
+ * return the hmac key size
+ * \param[in] k the key
+ * \return the hmac key size
+ */
+size_t ldns_key_hmac_size(const ldns_key *k);
 /**
  * return the original ttl of the key
  * \param[in] k the key

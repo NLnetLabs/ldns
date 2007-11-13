@@ -19,11 +19,15 @@ It prints out the basename for all these files: (K<name>+<alg>+<id>
 .SH OPTIONS
 .TP
 \fBR\fR
-Generate a RSA key. 
+Generate an RSA key. 
 
 .TP
 \fBD\fR
 Generate a DSA key.
+
+.TP
+\fBH\fR
+Generate an HMAC-MD5 key.
 
 .TP
 \fBk\fR 
@@ -36,8 +40,7 @@ Use this many bits for the key length.
 
 .TP
 \fbr \fdevice\fR
-Make ldns-keygen use this file for its random data. This will default
-to /dev/random.
+Make ldns-keygen use this file to seed the random generator with. This will default to /dev/random.
 
 .SH AUTHOR
 Written by the ldns team as an example for ldns usage.

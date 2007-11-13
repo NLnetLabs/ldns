@@ -76,6 +76,8 @@ ldns_key_new_frm_fp_l(ldns_key **key, FILE *fp, int *line_nr)
 	char *d;
 	ldns_signing_algorithm alg;
 	ldns_rr *key_rr;
+	unsigned char *hmac;
+	size_t hmac_size;
 
 	k = ldns_key_new();
 
@@ -111,7 +113,7 @@ ldns_key_new_frm_fp_l(ldns_key **key, FILE *fp, int *line_nr)
 	}
 
 	if (strncmp(d, "1 RSA", 2) == 0) {
-		alg = LDNS_SIGN_RSAMD5; /* md5, really?? */
+		alg = LDNS_SIGN_RSAMD5;
 	}
 	if (strncmp(d, "3 DSA", 2) == 0) {
 		alg = LDNS_SIGN_DSA; 
@@ -119,13 +121,13 @@ ldns_key_new_frm_fp_l(ldns_key **key, FILE *fp, int *line_nr)
 	if (strncmp(d, "5 RSASHA1", 2) == 0) {
 		alg = LDNS_SIGN_RSASHA1;
 	}
+	if (strncmp(d, "157 HMAC-MD5", 4) == 0) {
+		alg = LDNS_SIGN_HMACMD5;
+	}
 
 	LDNS_FREE(d);
 
 	switch(alg) {
-		case 0:
-		default:
-			return LDNS_STATUS_SYNTAX_ALG_ERR;
 		case LDNS_SIGN_RSAMD5:
 		case LDNS_SIGN_RSASHA1:
 
@@ -136,6 +138,16 @@ ldns_key_new_frm_fp_l(ldns_key **key, FILE *fp, int *line_nr)
 		case LDNS_SIGN_DSA:
 			ldns_key_set_algorithm(k, alg);
 			ldns_key_set_dsa_key(k, ldns_key_new_frm_fp_dsa_l(fp, line_nr));
+			break;
+		case LDNS_SIGN_HMACMD5:
+			ldns_key_set_algorithm(k, alg);
+			hmac = ldns_key_new_frm_fp_hmac_l(fp, line_nr, &hmac_size);
+			ldns_key_set_hmac_size(k, hmac_size);
+			ldns_key_set_hmac_key(k, hmac);
+			break;
+		case 0:
+		default:
+			return LDNS_STATUS_SYNTAX_ALG_ERR;
 			break;
 	}
 
@@ -375,12 +387,49 @@ error:
 	return NULL;
 }
 
+unsigned char *
+ldns_key_new_frm_fp_hmac(FILE *f, size_t *hmac_size)
+{
+	return ldns_key_new_frm_fp_hmac_l(f, NULL, hmac_size);
+}
+
+unsigned char *
+ldns_key_new_frm_fp_hmac_l(FILE *f, int *line_nr, size_t *hmac_size)
+{
+	int i;
+	char *d;
+	unsigned char *buf;
+
+	line_nr = line_nr;
+
+	d = LDNS_XMALLOC(char, LDNS_MAX_LINELEN);
+	buf = LDNS_XMALLOC(unsigned char, LDNS_MAX_LINELEN);
+	
+	if (ldns_fget_keyword_data_l(f, "Key", ": ", d, "\n", LDNS_MAX_LINELEN, line_nr) == -1) {
+		goto error;
+	}
+	i = b64_pton((const char*)d, buf, b64_ntop_calculate_size(strlen(d)));
+
+	*hmac_size = i;
+	return buf;
+	
+	error:
+	LDNS_FREE(d);
+	LDNS_FREE(buf);
+	*hmac_size = 0;
+	return NULL;
+}
+
+
 ldns_key *
 ldns_key_new_frm_algorithm(ldns_signing_algorithm alg, uint16_t size)
 {
 	ldns_key *k;
 	DSA *d;
 	RSA *r;
+	int i;
+	uint16_t offset;
+	unsigned char *hmac;
 
 	k = ldns_key_new();
 	if (!k) {
@@ -406,7 +455,26 @@ ldns_key_new_frm_algorithm(ldns_signing_algorithm alg, uint16_t size)
 			ldns_key_set_dsa_key(k, d);
 			break;
 		case LDNS_SIGN_HMACMD5:
-			/* do your hmac thing here */
+			k->_key.rsa = NULL;
+			k->_key.dsa = NULL;
+			size = size / 8;
+			ldns_key_set_hmac_size(k, size);
+			 
+			hmac = LDNS_XMALLOC(unsigned char, size);
+			offset = 0;
+			while (offset + sizeof(i) < size) {
+			  i = rand();
+			  memcpy(&hmac[offset], &i, sizeof(i));
+			  offset += sizeof(i);
+			}
+			if (offset < size) {
+			  i = rand();
+			  memcpy(&hmac[offset], &i, size - offset);
+			}
+
+			ldns_key_set_hmac_key(k, hmac);
+			
+			ldns_key_set_flags(k, 0);
 			break;
 	}
 	ldns_key_set_algorithm(k, alg);
@@ -453,7 +521,13 @@ ldns_key_set_dsa_key(ldns_key *k, DSA *d)
 void
 ldns_key_set_hmac_key(ldns_key *k, unsigned char *hmac)
 {
-	k->_key.hmac = hmac;
+	k->_key.hmac.key = hmac;
+}
+
+void
+ldns_key_set_hmac_size(ldns_key *k, size_t hmac_size)
+{
+	k->_key.hmac.size = hmac_size;
 }
 
 void
@@ -524,7 +598,13 @@ ldns_key_dsa_key(const ldns_key *k)
 unsigned char *
 ldns_key_hmac_key(const ldns_key *k)
 {
-	return k->_key.hmac;
+	return k->_key.hmac.key;
+}
+
+size_t
+ldns_key_hmac_size(const ldns_key *k)
+{
+	return k->_key.hmac.size;
 }
 
 uint32_t
@@ -702,7 +782,14 @@ ldns_key2rr(const ldns_key *k)
 		return NULL;
 	}
 
-	ldns_rr_set_type(pubkey, LDNS_RR_TYPE_DNSKEY);
+	switch (ldns_key_algorithm(k)) {
+	case LDNS_SIGN_HMACMD5:
+		ldns_rr_set_type(pubkey, LDNS_RR_TYPE_KEY);
+        	break;
+	default:
+		ldns_rr_set_type(pubkey, LDNS_RR_TYPE_DNSKEY);
+		break;
+        }
 	/* zero-th rdf - flags */
 	ldns_rr_push_rdf(pubkey,
 			ldns_native2rdf_int16(LDNS_RDF_TYPE_INT16, 
@@ -740,11 +827,17 @@ ldns_key2rr(const ldns_key *k)
 			break;
 		case LDNS_SIGN_HMACMD5:
 			/* tja */
+			ldns_rr_push_rdf(pubkey,
+                                         ldns_native2rdf_int8(LDNS_RDF_TYPE_ALG, LDNS_SIGN_HMACMD5));
+                        size = ldns_key_hmac_size(k);
+                        bin = LDNS_XREALLOC(bin, unsigned char, size);
+                        memcpy(bin, ldns_key_hmac_key(k), size);
 			break;
 	}
 	/* fourth the key bin material */
 	/* MIEK, not sure about this +1. I've re-added it--needs checking */
-	keybin = ldns_rdf_new_frm_data(LDNS_RDF_TYPE_B64, size + 1, bin);
+	/* TODO: and i've removed it again, it's certainly wrong for HMAC */
+	keybin = ldns_rdf_new_frm_data(LDNS_RDF_TYPE_B64, size, bin);
 	LDNS_FREE(bin);
 	ldns_rr_push_rdf(pubkey, keybin);
 	return pubkey;
@@ -777,6 +870,9 @@ ldns_key_deep_free(ldns_key *key)
 	case LDNS_SIGN_HMACMD5:
 		break;
 	}
+	if (ldns_key_hmac_key(key)) {
+		free(ldns_key_hmac_key(key));
+	}	
 	LDNS_FREE(key);
 }
 
