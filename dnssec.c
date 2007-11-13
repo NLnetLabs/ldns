@@ -105,6 +105,10 @@ ldns_dnssec_verify_denial(ldns_rr *rr,
 	ldns_status result;
 	/* needed for wildcard check on exact match */
 	ldns_rr *rrsig;
+	bool name_covered = false;
+	bool type_covered = false;
+	bool wildcard_covered = false;
+	bool wildcard_type_covered = false;
 
 	wildcard_name = ldns_dname_new_frm_str("*");
 	rr_name = ldns_rr_owner(rr);
@@ -115,11 +119,6 @@ ldns_dnssec_verify_denial(ldns_rr *rr,
 	}
 	
 	ldns_rdf_deep_free(chopped_dname);
-	
-	bool name_covered = false;
-	bool type_covered = false;
-	bool wildcard_covered = false;
-	bool wildcard_type_covered = false;
 	
 	for  (i = 0; i < ldns_rr_list_rr_count(nsecs); i++) {
 		cur_nsec = ldns_rr_list_rr(nsecs, i);
