@@ -21,7 +21,7 @@ AC_DEFUN([CHECK_COMPILER_FLAG],
 [
 AC_REQUIRE([AC_PROG_CC])
 AC_MSG_CHECKING(whether $CC supports -$1)
-cache=`echo $1 | sed 'y%.=/+-%___p_%'`
+cache=`echo $1 | sed 'y% .=/+-%____p_%'`
 AC_CACHE_VAL(cv_prog_cc_flag_$cache,
 [
 echo 'void f(){}' >conftest.c
@@ -93,7 +93,7 @@ AC_DEFUN([CHECK_COMPILER_FLAG_NEEDED],
 [
 AC_REQUIRE([AC_PROG_CC])
 AC_MSG_CHECKING(whether we need -$1 as a flag for $CC)
-cache=`echo $1 | sed 'y%.=/+-%___p_%'`
+cache=`echo $1 | sed 'y% .=/+-%____p_%'`
 AC_CACHE_VAL(cv_prog_cc_flag_needed_$cache,
 [
 echo '$2' > conftest.c
