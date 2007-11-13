@@ -178,7 +178,7 @@ int main(int argc, char **argv)
         }
     }
 
-    printf("\t%c%zu\t%c%zu\t%c%zu\n", OP_INS, num_ins, OP_DEL, num_del, OP_CHG, num_chg);
+    printf("\t%c%u\t%c%u\t%c%u\n", OP_INS, (unsigned int) num_ins, OP_DEL, (unsigned int) num_del, OP_CHG, (unsigned int) num_chg);
 
     /* Free resources */
     ldns_zone_deep_free(z2);
