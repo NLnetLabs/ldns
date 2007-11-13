@@ -1,5 +1,10 @@
 1.2.2:
 	* Added a new example tool (written by Ondrej Sury): ldns-compare-zones
+	* Fixed manpages (thanks to Ondrej)
+	* Fixed Makefile for -j <x>
+	* Fixed a $ORIGIN error when reading zones
+	* Fixed another off-by-one error
+	
 
 03 Oct 2007 1.2.1:
 	* Fixed an offset error in rr comparison
