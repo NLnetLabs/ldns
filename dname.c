@@ -338,7 +338,7 @@ ldns_dname_compare(const ldns_rdf *dname1, const ldns_rdf *dname2)
 			    goto done;
 			}
 		}
-		if (i-1 < *lp2) {
+		if (*lp1 < *lp2) {
 			/* apparently label 2 is larger */
 			result = -1;
 			goto done;

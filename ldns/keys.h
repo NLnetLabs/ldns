@@ -218,7 +218,7 @@ DSA *ldns_key_new_frm_fp_dsa_l(FILE *fp, int *line_nr);
 /**
  * frm_fp helper function. This function parses the
  * remainder of the (HMAC-MD5) key file
- * This function allocated a buffer that needs to be freed
+ * This function allocates a buffer that needs to be freed
  * \param[in] fp the file to parse
  * \param[out] hmac_size the number of bits in the resulting buffer
  * \return NULL on failure otherwise a newly allocated char buffer
@@ -230,7 +230,7 @@ unsigned char *ldns_key_new_frm_fp_hmac(FILE *fp, size_t *hmac_size);
 /**
  * frm_fp helper function. This function parses the
  * remainder of the (HMAC-MD5) key file
- * This function allocated a buffer that needs to be freed
+ * This function allocates a buffer that needs to be freed
  * \param[in] fp the file to parse
  * \param[in] line_nr pointer to an integer containing the current line number (for debugging purposes)
  * \param[out] hmac_size the number of bits in the resulting buffer

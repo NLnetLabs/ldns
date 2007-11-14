@@ -78,7 +78,8 @@ int main(int argc, char **argv)
     s = ldns_zone_new_frm_fp_l(&z1, fp1, NULL, 0, LDNS_RR_CLASS_IN, &line_nr1);
     if (s != LDNS_STATUS_OK) {
         fclose(fp1);
-        fprintf(stderr, "%s at %d\n", 
+        fprintf(stderr, "%s: %s at %d\n", 
+			 fn1,
                 ldns_get_errorstr_by_id(s),
                 line_nr1);
         exit(EXIT_FAILURE);
@@ -99,7 +100,8 @@ int main(int argc, char **argv)
     if (s != LDNS_STATUS_OK) {
         ldns_zone_deep_free(z1);
         fclose(fp2);
-        fprintf(stderr, "%s at %d\n", 
+        fprintf(stderr, "%s: %s at %d\n", 
+			 fn2,
                 ldns_get_errorstr_by_id(s),
                 line_nr2);
         exit(EXIT_FAILURE);
