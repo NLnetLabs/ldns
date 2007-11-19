@@ -1,4 +1,5 @@
 1.2.2:
+	* Added support for HMAC-MD5 keys in generator
 	* Added a new example tool (written by Ondrej Sury): ldns-compare-zones
 	* Fixed manpages (thanks to Ondrej)
 	* Fixed Makefile for -j <x>
