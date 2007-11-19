@@ -25,7 +25,8 @@
 void 
 usage(int argc, char **argv)
 {
-	printf("Usage: %s [-v] [-i] [-d] [-c] <zonefile1> <zonefile2>\n", argv[0]);
+	printf("Usage: %s [-v] [-i] [-d] [-c] <zonefile1> <zonefile2>\n",
+		  argv[0]);
 	printf("       -i - print inserted\n");
 	printf("       -d - print deleted\n");
 	printf("       -c - print changed\n");
@@ -56,7 +57,10 @@ main(int argc, char **argv)
 			exit(EXIT_SUCCESS);
 			break;
 		case 'v':
-			printf("%s version %s (ldns version %s)\n", argv[0], LDNS_VERSION, ldns_version());
+			printf("%s version %s (ldns version %s)\n",
+				  argv[0],
+				  LDNS_VERSION,
+				  ldns_version());
 			exit(EXIT_SUCCESS);
 			break;
 		case 'd':
@@ -87,7 +91,8 @@ main(int argc, char **argv)
 		exit(EXIT_FAILURE);
 	}
 	/* Read first zone */
-	s = ldns_zone_new_frm_fp_l(&z1, fp1, NULL, 0, LDNS_RR_CLASS_IN, &line_nr1);
+	s = ldns_zone_new_frm_fp_l(&z1, fp1, NULL, 0, 
+						  LDNS_RR_CLASS_IN, &line_nr1);
 	if (s != LDNS_STATUS_OK) {
 		fclose(fp1);
 		fprintf(stderr, "%s: %s at %d\n",
@@ -108,7 +113,8 @@ main(int argc, char **argv)
 		exit(EXIT_FAILURE);
 	}
 	/* Read second zone */
-	s = ldns_zone_new_frm_fp_l(&z2, fp2, NULL, 0, LDNS_RR_CLASS_IN, &line_nr2);
+	s = ldns_zone_new_frm_fp_l(&z2, fp2, NULL, 0,
+						  LDNS_RR_CLASS_IN, &line_nr2);
 	if (s != LDNS_STATUS_OK) {
 		ldns_zone_deep_free(z1);
 		fclose(fp2);
@@ -148,7 +154,8 @@ main(int argc, char **argv)
 				j++;
 				continue;
 			}
-			rr_chg = ldns_dname_compare(ldns_rr_owner(rr1), ldns_rr_owner(rr2));
+			rr_chg = ldns_dname_compare(ldns_rr_owner(rr1),
+								   ldns_rr_owner(rr2));
 		} else if (i >= rrc1) {
 			/* we have reached the end of zone 1, so the current record
 			 * from zone 2 automatically sorts higher
@@ -166,7 +173,9 @@ main(int argc, char **argv)
 		}
 		if (rr_cmp < 0) {
 			i++;
-			if ((rrx != NULL) && (ldns_dname_compare(ldns_rr_owner(rr1), ldns_rr_owner(rrx)) != 0)) {
+			if ((rrx != NULL) && (ldns_dname_compare(ldns_rr_owner(rr1), 
+											 ldns_rr_owner(rrx)
+											 ) != 0)) {
 				/* The owner name is different, forget previous rr */
 				rrx = NULL;
 			}
@@ -187,7 +196,9 @@ main(int argc, char **argv)
 			}
 		} else if (rr_cmp > 0) {
 			j++;
-			if ((rrx != NULL) && (ldns_dname_compare(ldns_rr_owner(rr2), ldns_rr_owner(rrx)) != 0)) {
+			if ((rrx != NULL) && (ldns_dname_compare(ldns_rr_owner(rr2),
+											 ldns_rr_owner(rrx)
+											 ) != 0)) {
 				rrx = NULL;
 			}
 			if (rrx == NULL) {
@@ -209,7 +220,13 @@ main(int argc, char **argv)
 		}
 	}
 
-	printf("\t%c%u\t%c%u\t%c%u\n", OP_INS, (unsigned int)num_ins, OP_DEL, (unsigned int)num_del, OP_CHG, (unsigned int)num_chg);
+	printf("\t%c%u\t%c%u\t%c%u\n", 
+		  OP_INS, 
+		  (unsigned int) num_ins, 
+		  OP_DEL,
+		  (unsigned int) num_del, 
+		  OP_CHG, 
+		  (unsigned int) num_chg);
 
 	/* Free resources */
 	ldns_zone_deep_free(z2);
