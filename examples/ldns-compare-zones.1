@@ -15,16 +15,20 @@ ldns-compare-zones \- read and compare two zonefiles and print differences
 Output is formated to:
         +NUM_INS        -NUM_DEL        ~NUM_CHG
 
+The major comparison is based on the owner name. If an owner name is present in zonefile 1, but not in zonefile 2, the resource records with this owner name are considered deleted, and counted as NUM_DEL. If an owner name is present in zonefile 2, but not in zonefile 1, the resource records with this owner name are considered inserted, and counted as NUM_INS. If an owner name is present in both, but there is a difference in the amount or content of the records, these are considered changed, and counted as NUM_CHG.
+
 .SH OPTIONS
 .TP
 \fB-c\fR
-Print resource records which are in both zone files, but with different RDATA. (a.k.a. changed)
+Print resource records whose owner names are in both zone files, but with different resource records. (a.k.a. changed)
 
+.TP
 \fB-i\fR
-Print resource records which are present only in ZONEFILE2 (a.k.a. inserted)
+Print resource records whose owner names are present only in ZONEFILE2 (a.k.a. inserted)
 
+.TP
 \fB-d\fR
-Print resource records which are present only in ZONEFILE1 (a.k.a. deleted)
+Print resource records whose owner names are present only in ZONEFILE1 (a.k.a. deleted)
 
 .TP
 \fB-h\fR
