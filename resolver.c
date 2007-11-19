@@ -973,7 +973,9 @@ ldns_resolver_prepare_query_pkt(ldns_pkt **query_pkt, ldns_resolver *r,
 			ldns_resolver_set_edns_udp_size(r, 4096);
 		}
 		ldns_pkt_set_edns_do(*query_pkt, true);
-		ldns_pkt_set_cd(*query_pkt, ldns_resolver_dnssec_cd(r));
+		if (ldns_resolver_dnssec_cd(r) || (flags & LDNS_CD)) {
+			ldns_pkt_set_cd(*query_pkt, true);
+		}
 	}
 
 	/* transfer the udp_edns_size from the resolver to the packet */
