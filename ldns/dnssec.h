@@ -234,7 +234,6 @@ ldns_zone *ldns_zone_sign(const ldns_zone *zone, ldns_key_list *key_list);
  * If the file descriptor is specified, the random generator is seeded with
  * data from that file. If not, /dev/urandom is used.
  * \param[in] fd a file providing entropy data for the seed
- * \param[in] bytes number of bytes for the seed
  * \return LDNS_STATUS_OK if init succeeds
  */
 ldns_status ldns_init_random(FILE *fd);
