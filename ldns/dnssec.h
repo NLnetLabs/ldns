@@ -229,13 +229,4 @@ ldns_status ldns_pkt_verify(ldns_pkt *p, ldns_rr_type t, ldns_rdf *o, ldns_rr_li
  */
 ldns_zone *ldns_zone_sign(const ldns_zone *zone, ldns_key_list *key_list);
  
-/**
- * Initialize the random function. This calls the OpenSSL srand() function
- * If the file descriptor is specified, the random generator is seeded with
- * data from that file. If not, /dev/urandom is used.
- * \param[in] fd a file providing entropy data for the seed
- * \return LDNS_STATUS_OK if init succeeds
- */
-ldns_status ldns_init_random(FILE *fd);
-
 #endif /* LDNS_DNSSEC_H */

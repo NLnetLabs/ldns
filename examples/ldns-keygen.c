@@ -127,7 +127,7 @@ main(int argc, char *argv[])
 		}
 	}
 
-	(void)ldns_init_random(random);
+	(void)ldns_init_random(random, (unsigned int) bits/8);
 	fclose(random);
 
 	/* create an rdf from the domain name */

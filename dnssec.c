@@ -1437,37 +1437,4 @@ ldns_zone_sign(const ldns_zone *zone, ldns_key_list *key_list)
 	
 }
 
-/* Init the random source
- * apps must call this 
- */
-ldns_status 
-ldns_init_random(FILE *fd) 
-{
-	/* if fp is given, seed srand with data from file
-	   otherwise use /dev/urandom */
-	FILE *rand_f;
-	unsigned int seed;
-	size_t read;
-	
-	if (!fd) {
-		if ((rand_f = fopen("/dev/urandom", "r")) == NULL) {
-			return LDNS_STATUS_ERR;
-		}
-	} else {
-		rand_f = fd;
-	}
-	   
-	read = fread(&seed, sizeof(seed), 1, rand_f);
-	if (read == 0) {
-		return LDNS_STATUS_ERR;
-	} else {
-		srand(seed);
-	}
-	
-	if (!fd) {
-		fclose(rand_f);
-	}
-
-	return LDNS_STATUS_OK;
-}
 #endif /* HAVE_SSL */

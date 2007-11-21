@@ -910,8 +910,7 @@ ldns_resolver_prepare_query_pkt(ldns_pkt **query_pkt, ldns_resolver *r,
 	
 	/* only set the id if it is not set yet */
 	if (ldns_pkt_id(*query_pkt) == 0) {
-		srandom((unsigned) time(NULL) ^ getpid());
-		ldns_pkt_set_id(*query_pkt, (uint16_t) random());
+		ldns_pkt_set_random_id(*query_pkt);
 	}
 
 	return LDNS_STATUS_OK;

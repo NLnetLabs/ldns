@@ -17,6 +17,10 @@
 #include <strings.h>
 #include <limits.h>
 
+#ifdef HAVE_SSL
+#include <openssl/rand.h>
+#endif
+
 /* Access functions 
  * do this as functions to get type checking
  */
@@ -440,9 +444,20 @@ ldns_pkt_set_id(ldns_pkt *packet, uint16_t id)
 void
 ldns_pkt_set_random_id(ldns_pkt *packet)
 {
-	/* TODO: time is a terrible seed */
-	srandom((unsigned) time(NULL) ^ getpid());
-	ldns_pkt_set_id(packet, (uint16_t)random());
+	uint16_t rid = 0;
+#ifdef HAVE_SSL
+	unsigned char *rb;
+	rb = LDNS_XMALLOC(unsigned char, 2);
+	if (RAND_bytes(rb, 2) == 1) {
+		rid = ldns_read_uint16(rb);
+	}
+	LDNS_FREE(rb);
+#endif
+	if (rid == 0) {
+		rid = (uint16_t) random();
+	}
+
+	ldns_pkt_set_id(packet, rid);
 }
 
 
