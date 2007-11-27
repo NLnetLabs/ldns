@@ -11,7 +11,7 @@
 /**
  * \file
  *
- * Contains the definition of \ref ldns_rr and functions to manipulate those.
+ * Contains the definition of ldns_rr and functions to manipulate those.
  */
 
 
