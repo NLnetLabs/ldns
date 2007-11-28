@@ -15,6 +15,7 @@
 
 #include <stdbool.h>
 #include <time.h>
+#include <stdio.h>
 
 #define dprintf(X,Y) fprintf(stderr, (X), (Y))
 /* #define	dprintf(X, Y)  */
@@ -242,5 +243,26 @@ const char * ldns_version(void);
  * \return the seconds since epoch
  */
 time_t mktime_from_utc(const struct tm *tm);
+
+/**
+ * Seed the random function.
+ * If the file descriptor is specified, the random generator is seeded with
+ * data from that file. If not, /dev/urandom is used.
+ *
+ * applications should call this if they need entropy data within ldns
+ * If openSSL is available, it is automatically seeded from /dev/urandom
+ * or /dev/random.
+ *
+ * If you need more entropy, or have no openssl available, this function
+ * MUST be called at the start of the program
+ *
+ * If openssl *is* available, this function just adds more entropy
+ *
+ * \param[in] fd a file providing entropy data for the seed
+ * \param[in] size the number of bytes to use as entropy data. If this is 0,
+ *            only the minimal amount is taken (usually 4 bytes)
+ * \return 0 if seeding succeeds, 1 if it fails
+ */
+int ldns_init_random(FILE *fd, unsigned int size);
 
 #endif /* !_UTIL_H */

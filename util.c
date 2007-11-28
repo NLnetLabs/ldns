@@ -18,6 +18,12 @@
 #include <strings.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <sys/time.h>
+#include <time.h>
+
+#ifdef HAVE_SSL
+#include <openssl/rand.h>
+#endif
 
 /* put this here tmp. for debugging */
 void
@@ -200,3 +206,77 @@ mktime_from_utc(const struct tm *tm)
 
 	return seconds;
 }
+
+/**
+ * Init the random source
+ * applications should call this if they need entropy data within ldns
+ * If openSSL is available, it is automatically seeded from /dev/urandom
+ * or /dev/random
+ *
+ * If you need more entropy, or have no openssl available, this function
+ * MUST be called at the start of the program
+ *
+ * If openssl *is* available, this function just adds more entropy
+ **/
+int
+ldns_init_random(FILE *fd, unsigned int size) 
+{
+	/* if fp is given, seed srandom with data from file
+	   otherwise use /dev/urandom */
+	FILE *rand_f;
+	unsigned int *seed;
+	size_t read = 0;
+	unsigned int seed_i;
+	struct timeval tv;
+	struct timezone tz;
+
+	/* we'll need at least sizeof(unsigned int) bytes for the
+	   standard prng seed */
+	if (size < sizeof(seed_i)){
+		size = sizeof(seed_i);
+	}
+	
+	seed = LDNS_XMALLOC(unsigned int, size);
+
+	if (!fd) {
+		if ((rand_f = fopen("/dev/urandom", "r")) == NULL) {
+			/* no readable /dev/urandom, try /dev/random */
+			if ((rand_f = fopen("/dev/random", "r")) == NULL) {
+				/* no readable /dev/random either, and no entropy
+				   source given. we'll have to improvise */
+				for (read = 0; read < size; read++) {
+					gettimeofday(&tv, &tz);
+					seed[read] = (uint8_t) (tv.tv_usec % 256);
+				}
+			}
+		}
+	} else {
+		rand_f = fd;
+		read = fread(seed, 1, size, rand_f);
+	}
+	
+	if (read < size) {
+		LDNS_FREE(seed);
+		return 1;
+	} else {
+#ifdef HAVE_SSL
+		/* Seed the OpenSSL prng (most systems have it seeded
+		   automatically, in that case this call just adds entropy */
+		RAND_seed(seed, size);
+#else
+		/* Seed the standard prng, only uses the first
+		 * unsigned sizeof(unsiged int) bytes found in the entropy pool
+		 */
+		memcpy(&seed_i, seed, sizeof(seed_i));
+		srandom(seed_i);
+#endif
+		LDNS_FREE(seed);
+	}
+	
+	if (!fd) {
+		fclose(rand_f);
+	}
+
+	return 0;
+}
+

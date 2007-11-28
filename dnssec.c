@@ -1031,6 +1031,7 @@ ldns_sign_public_rsasha1(ldns_buffer *to_sign, RSA *key)
 	unsigned int siglen;
 	ldns_rdf *sigdata_rdf;
 	ldns_buffer *b64sig;
+	int result;
 
 	siglen = 0;
 	b64sig = ldns_buffer_new(LDNS_MAX_PACKETLEN);
@@ -1045,9 +1046,13 @@ ldns_sign_public_rsasha1(ldns_buffer *to_sign, RSA *key)
 		return NULL;
 	}
 
-	RSA_sign(NID_sha1, sha1_hash, SHA_DIGEST_LENGTH,
+	result = RSA_sign(NID_sha1, sha1_hash, SHA_DIGEST_LENGTH,
 			(unsigned char*)ldns_buffer_begin(b64sig),
 			&siglen, key);
+	if (result != 1) {
+		return NULL;
+	}
+
 	sigdata_rdf = ldns_rdf_new_frm_data(LDNS_RDF_TYPE_B64, siglen, 
 			ldns_buffer_begin(b64sig));
 	ldns_buffer_free(b64sig); /* can't free this buffer ?? */
@@ -1414,7 +1419,13 @@ ldns_zone_sign(const ldns_zone *zone, ldns_key_list *key_list)
 		    !(ldns_rr_list_contains_rr(glue_rrs, ldns_rr_list_rr(cur_rrset, 0)))
 		   ) {
 			cur_rrsigs = ldns_sign_public(cur_rrset, key_list);
-
+			if (!cur_rrsigs) {
+				ldns_zone_deep_free(signed_zone);
+				ldns_rr_list_deep_free(signed_zone_rrs);
+				ldns_rr_list_deep_free(pubkeys);
+				ldns_rr_list_free(glue_rrs);
+				return NULL;
+			}
 			/* TODO: make optional, replace exit call */
 			/* if not optional it should be left out completely
 			   (for it is possible to generate bad signarures, by
@@ -1437,37 +1448,4 @@ ldns_zone_sign(const ldns_zone *zone, ldns_key_list *key_list)
 	
 }
 
-/* Init the random source
- * apps must call this 
- */
-ldns_status 
-ldns_init_random(FILE *fd) 
-{
-	/* if fp is given, seed srand with data from file
-	   otherwise use /dev/urandom */
-	FILE *rand_f;
-	unsigned int seed;
-	size_t read;
-	
-	if (!fd) {
-		if ((rand_f = fopen("/dev/urandom", "r")) == NULL) {
-			return LDNS_STATUS_ERR;
-		}
-	} else {
-		rand_f = fd;
-	}
-	   
-	read = fread(&seed, sizeof(seed), 1, rand_f);
-	if (read == 0) {
-		return LDNS_STATUS_ERR;
-	} else {
-		srand(seed);
-	}
-	
-	if (!fd) {
-		fclose(rand_f);
-	}
-
-	return LDNS_STATUS_OK;
-}
 #endif /* HAVE_SSL */

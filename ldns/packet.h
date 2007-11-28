@@ -13,7 +13,7 @@
 /**
  * \file
  *
- * Contains the definition of \ref ldns_pkt and its parts, as well
+ * Contains the definition of ldns_pkt and its parts, as well
  * as functions to manipulate those.
  */
 

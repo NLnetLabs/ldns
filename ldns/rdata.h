@@ -14,7 +14,7 @@
 /**
  * \file
  *
- * Defines \ref ldns_rdf and functions to manipulate those.
+ * Defines ldns_rdf and functions to manipulate those.
  */
 
 
