@@ -823,8 +823,6 @@ ldns_sign_public(ldns_rr_list *rrset, ldns_key_list *keys)
 	ldns_rdf *wildcard_label;
 	ldns_rdf *new_owner;
 
-	ldns_rr_list_print(stdout, rrset);
-
 	if (!rrset || ldns_rr_list_rr_count(rrset) < 1 || !keys) {
 		return NULL;
 	}
