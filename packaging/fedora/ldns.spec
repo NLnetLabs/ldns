@@ -80,12 +80,15 @@ rm -rf %{buildroot}
 %postun -p /sbin/ldconfig
 
 %changelog
-* Web Nov 21 2007 Jelte Jansen <jelte@NLnetLabs.nl> 1.2.2-1
-- Updated spec file for release
-- Added ldns-compare-zones tool
-- Fixed parallel build problem
-- Added hmac-md5 support for key generation
-- Fixed ORIGIN and @ problem in zone reader
+* Wed Nov 21 2007 Jelte Jansen <jelte@NLnetLabs.nl> 1.2.2-1
+- Added support for HMAC-MD5 keys in generator
+- Added a new example tool (written by Ondrej Sury): ldns-compare-zones
+- ldns-keygen now checks key sizes for rfc conformancy
+- ldns-signzone outputs SSL error if present
+- Fixed manpages (thanks to Ondrej Sury)
+- Fixed Makefile for -j <x>
+- Fixed a $ORIGIN error when reading zones
+- Fixed another off-by-one error
 
 * Tue Sep 18 2007 Jelte Jansen <jelte@NLnetLabs.nl> 1.2.1-1
 - Updated spec file for release

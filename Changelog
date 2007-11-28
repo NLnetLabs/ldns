@@ -1,4 +1,4 @@
-1.2.2:
+28 Nov 2007 1.2.2:
 	* Added support for HMAC-MD5 keys in generator
 	* Added a new example tool (written by Ondrej Sury): ldns-compare-zones
 	* ldns-keygen now checks key sizes for rfc conformancy
@@ -7,7 +7,6 @@
 	* Fixed Makefile for -j <x>
 	* Fixed a $ORIGIN error when reading zones
 	* Fixed another off-by-one error
-	
 
 03 Oct 2007 1.2.1:
 	* Fixed an offset error in rr comparison
@@ -54,7 +53,6 @@
 		- wildcard on multiple labels signature verification
 		- error in -f packet writing for malformed packets
 		- made KSK check more resilient
-
 
 7 Jul 2006: 1.1.0: ldns-team
 	* Added tutorials and an introduction to the documentation
@@ -151,7 +149,6 @@
 	  the core ldns idea any how.
 	* ldns_rr_list_insert_rr(): obsoleted, because not used.
 	* char *_when was removed from the ldns_pkt structure
-
 
 18 Oct 2005: 1.0.0: ldns-team
 	* Commited a patch from Håkan Olsson
