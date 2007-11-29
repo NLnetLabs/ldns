@@ -16,7 +16,7 @@
 /**
  * \file
  *
- * Defines the \ref ldns_zone structure and functions to manipulate it.
+ * Defines the ldns_zone structure and functions to manipulate it.
  */
  
 

@@ -118,6 +118,27 @@ main(int argc, char *argv[])
 		exit(EXIT_FAILURE);
 	} 
 	free(prog);
+
+	/* check whether key size is within RFC boundaries */
+	switch (algorithm) {
+	case LDNS_SIGN_RSAMD5:
+	case LDNS_SIGN_RSASHA1:
+		if (bits < 512 || bits > 4096) {
+			fprintf(stderr, "For RSA, the key size must be between ");
+			fprintf(stderr, " 512 and 4096 bytes. Aborting.\n");
+			exit(1);
+		}
+		break;
+	case LDNS_SIGN_DSA:
+		if (bits < 512 || bits > 4096) {
+			fprintf(stderr, "For DSA, the key size must be between ");
+			fprintf(stderr, " 512 and 1024 bytes. Aborting.\n");
+			exit(1);
+		}
+		break;
+	case LDNS_SIGN_HMACMD5:
+		break;
+	}
 	
 	if (!random) {
 		random = fopen("/dev/random", "r");
@@ -235,5 +256,5 @@ PEM_write_DSAPrivateKey(file, key->_key.dsa, NULL, NULL, 0, NULL, NULL);
 	free(owner);
 	ldns_rr_free(pubkey);
 	ldns_rr_free(ds);
-        exit(EXIT_SUCCESS);
+	exit(EXIT_SUCCESS);
 }

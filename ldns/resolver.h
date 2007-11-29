@@ -13,7 +13,7 @@
 /**
  * \file
  *
- * Defines the \ref ldns_resolver structure, a stub resolver that can send queries and parse answers.
+ * Defines the  ldns_resolver structure, a stub resolver that can send queries and parse answers.
  * 
  */
 
@@ -109,7 +109,7 @@ struct ldns_struct_resolver
 	bool _random;
 	/** Keep some things to make AXFR possible */
 	int _socket;
-	/** Count the number of \ref LDNS_RR_TYPE_SOA RRs we have seen so far
+	/** Count the number of LDNS_RR_TYPE_SOA RRs we have seen so far
 	 * (the second one signifies the end of the AXFR)
 	 */
 	int _axfr_soa_count;

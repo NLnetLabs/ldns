@@ -2312,6 +2312,7 @@ ldns_sign_public_rsasha1(ldns_buffer *to_sign, RSA *key)
 	unsigned int siglen;
 	ldns_rdf *sigdata_rdf;
 	ldns_buffer *b64sig;
+	int result;
 
 	siglen = 0;
 	b64sig = ldns_buffer_new(LDNS_MAX_PACKETLEN);
@@ -2326,9 +2327,13 @@ ldns_sign_public_rsasha1(ldns_buffer *to_sign, RSA *key)
 		return NULL;
 	}
 
-	RSA_sign(NID_sha1, sha1_hash, SHA_DIGEST_LENGTH,
+	result = RSA_sign(NID_sha1, sha1_hash, SHA_DIGEST_LENGTH,
 			(unsigned char*)ldns_buffer_begin(b64sig),
 			&siglen, key);
+	if (result != 1) {
+		return NULL;
+	}
+
 	sigdata_rdf = ldns_rdf_new_frm_data(LDNS_RDF_TYPE_B64, siglen, 
 			ldns_buffer_begin(b64sig));
 	ldns_buffer_free(b64sig); /* can't free this buffer ?? */
@@ -3091,7 +3096,13 @@ ldns_zone_sign(const ldns_zone *zone, ldns_key_list *key_list)
 		    !(ldns_rr_list_contains_rr(glue_rrs, ldns_rr_list_rr(cur_rrset, 0)))
 		   ) {
 			cur_rrsigs = ldns_sign_public(cur_rrset, key_list);
-
+			if (!cur_rrsigs) {
+				ldns_zone_deep_free(signed_zone);
+				ldns_rr_list_deep_free(signed_zone_rrs);
+				ldns_rr_list_deep_free(pubkeys);
+				ldns_rr_list_free(glue_rrs);
+				return NULL;
+			}
 			/* TODO: make optional, replace exit call */
 			/* if not optional it should be left out completely
 			   (for it is possible to generate bad signarures, by
@@ -3467,10 +3478,4 @@ ldns_rr_list_print(stdout, signed_zone_rrs);
 	
 }
 
-/* taken from the ENGINE man page */
-/*
-int ldns_load_engine_fn(const char *engine_id, const char **pre_cmds, int pre_num, const char **post_cmds, int post_num)
-{
-	ENGINE *e
-*/
 #endif /* HAVE_SSL */

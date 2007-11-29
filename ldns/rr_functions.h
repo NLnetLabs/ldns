@@ -16,7 +16,7 @@
 /**
  * \file
  *
- * Defines some extra convenience functions for \ref ldns_rr structures
+ * Defines some extra convenience functions for ldns_rr structures
  */
 
 /* A / AAAA */

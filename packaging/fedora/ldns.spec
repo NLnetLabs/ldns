@@ -1,6 +1,6 @@
 Summary: Lowlevel DNS(SEC) library with API
 Name: ldns
-Version: 1.2.1
+Version: 1.3.0
 Release: 1%{?dist}
 License: BSD
 Url: http://www.nlnetlabs.nl/%{name}/
@@ -30,8 +30,6 @@ The devel package contains the ldns library and the include files
 #rm config.guess config.sub ltmain.sh
 
 %configure --disable-rpath
-# mkdir won't work in paralel build
-sed -i 's/then mkdir include/then mkdir -p include/' Makefile
 
 %build
 make %{?_smp_mflags}
@@ -82,6 +80,16 @@ rm -rf %{buildroot}
 %postun -p /sbin/ldconfig
 
 %changelog
+* Wed Nov 21 2007 Jelte Jansen <jelte@NLnetLabs.nl> 1.2.2-1
+- Added support for HMAC-MD5 keys in generator
+- Added a new example tool (written by Ondrej Sury): ldns-compare-zones
+- ldns-keygen now checks key sizes for rfc conformancy
+- ldns-signzone outputs SSL error if present
+- Fixed manpages (thanks to Ondrej Sury)
+- Fixed Makefile for -j <x>
+- Fixed a $ORIGIN error when reading zones
+- Fixed another off-by-one error
+
 * Tue Sep 18 2007 Jelte Jansen <jelte@NLnetLabs.nl> 1.2.1-1
 - Updated spec file for release
 

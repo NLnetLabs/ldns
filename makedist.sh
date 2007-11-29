@@ -132,6 +132,8 @@ info "Building configure script for drill (autoconf)."
 cd drill && autoreconf && cd .. || error_cleanup "Autoconf failed."
 
 rm -r autom4te* drill/autom4te* examples/autom4te* || error_cleanup "Failed to remove autoconf cache directory."
+rm -r drill/autom4te* || error_cleanup "Failed to remove autoconf cache directory."
+rm -r examples/autom4te* || error_cleanup "Failed to remove autoconf cache directory."
 
 # custom removes
 find . -name .c-mode-rc.el -exec rm {} \;

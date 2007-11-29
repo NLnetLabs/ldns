@@ -23,6 +23,10 @@
 #define MAX_FILENAME_LEN 250
 int verbosity = 0;
 
+#ifdef HAVE_SSL
+#include <openssl/err.h>
+#endif
+
 void
 usage(FILE *fp, const char *prog) {
 	fprintf(fp, "%s [OPTIONS] zonefile key [key [key]]\n", prog);
@@ -599,7 +603,15 @@ main(int argc, char *argv[])
 		ldns_zone_deep_free(signed_zone); 
 */
 	} else {
-		fprintf(stderr, "Error signing zone.");
+		fprintf(stderr, "Error signing zone.\n");
+
+#ifdef HAVE_SSL
+		if (ERR_peek_error()) {
+			ERR_load_crypto_strings();
+			ERR_print_errors_fp(stderr);
+			ERR_free_strings();
+		}
+#endif
 		exit(EXIT_FAILURE);
 	}
 	

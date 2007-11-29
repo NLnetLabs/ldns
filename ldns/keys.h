@@ -96,9 +96,9 @@ struct ldns_struct_key {
 #endif
 #endif /* HAVE_SSL */
 		struct {
-                	unsigned char *key;
-                	size_t size;
- 		} hmac;
+			unsigned char *key;
+			size_t size;
+		} hmac;
 	} _key;
 	/** Depending on the key we can have extra data */
 	union {
@@ -285,6 +285,13 @@ void ldns_key_set_dsa_key(ldns_key *k, DSA *d);
  * \param[in] hmac the raw key data
  */
 void ldns_key_set_hmac_key(ldns_key *k, unsigned char *hmac);
+/*
+ * Set the key's hmac size
+ * \param[in] k the key
+ * \param[in] hmac the hmac data
+ */
+void ldns_key_set_hmac_size(ldns_key *k, size_t hmac_size);
+
 /**
  * Set the key's hmac size
  * \param[in] k the key
@@ -386,14 +393,14 @@ DSA *ldns_key_dsa_key(const ldns_key *k);
  */
 ldns_signing_algorithm ldns_key_algorithm(const ldns_key *k);
 /**
- * return the hmac key 
+ * return the hmac key data
  * \param[in] k the key
- * \return the hmac key
+ * \return the hmac key data
  */
 unsigned char *ldns_key_hmac_key(const ldns_key *k);
 /**
  * return the hmac key size
- * \param[in] k the key size
+ * \param[in] k the key
  * \return the hmac key size
  */
 size_t ldns_key_hmac_size(const ldns_key *k);

@@ -181,7 +181,7 @@ ldns_zone_new_frm_fp_l(ldns_zone **z, FILE *fp, ldns_rdf *origin, uint32_t ttl, 
 		/* also set the prev */
 		my_prev   = ldns_rdf_clone(origin);
 	} else {
-		my_origin = ldns_dname_new_frm_str(".");
+		my_origin = NULL;
 		my_prev = NULL;
 	}
 
@@ -198,6 +198,10 @@ ldns_zone_new_frm_fp_l(ldns_zone **z, FILE *fp, ldns_rdf *origin, uint32_t ttl, 
 				}
 				soa_seen = true;
 				ldns_zone_set_soa(newzone, rr);
+				/* set origin to soa if not specified */
+				if (!my_origin) {
+					my_origin = ldns_rdf_clone(ldns_rr_owner(rr));
+				}
 				continue;
 			}
 			
