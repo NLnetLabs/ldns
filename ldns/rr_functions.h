@@ -235,6 +235,6 @@ bool ldns_rr_dnskey_set_key(ldns_rr *r, ldns_rdf *f);
  * \param[in] key the key rr to use
  * \return the keysize in bits
  */
-uint16_t ldns_rr_dnskey_key_size(const ldns_rr *key);
+size_t ldns_rr_dnskey_key_size(const ldns_rr *key);
 
 #endif /* LDNS_RR_FUNCTIONS_H */

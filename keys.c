@@ -819,6 +819,7 @@ ldns_key2rr(const ldns_key *k)
 			if (!ldns_key_rsa2bin(bin, ldns_key_rsa_key(k), &size)) {
 				return NULL;
 			}
+			size++;
 			break;
 		case LDNS_SIGN_RSASHA1:
 			ldns_rr_push_rdf(pubkey,
@@ -826,6 +827,7 @@ ldns_key2rr(const ldns_key *k)
 			if (!ldns_key_rsa2bin(bin, ldns_key_rsa_key(k), &size)) {
 				return NULL;
 			}
+			size++;
 			break;
 		case LDNS_SIGN_DSA:
 			ldns_rr_push_rdf(pubkey,
@@ -844,8 +846,6 @@ ldns_key2rr(const ldns_key *k)
 			break;
 	}
 	/* fourth the key bin material */
-	/* MIEK, not sure about this +1. I've re-added it--needs checking */
-	/* TODO: and i've removed it again, it's certainly wrong for HMAC */
 	keybin = ldns_rdf_new_frm_data(LDNS_RDF_TYPE_B64, size, bin);
 	LDNS_FREE(bin);
 	ldns_rr_push_rdf(pubkey, keybin);
