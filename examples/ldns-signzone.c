@@ -312,6 +312,10 @@ main(int argc, char *argv[])
 						case LDNS_SIGN_RSAMD5:
 						case LDNS_SIGN_RSASHA1:
 						case LDNS_SIGN_RSASHA1_NSEC3:
+						case LDNS_SIGN_RSASHA256:
+						case LDNS_SIGN_RSASHA256_NSEC3:
+						case LDNS_SIGN_RSASHA512:
+						case LDNS_SIGN_RSASHA512_NSEC3:
 						case LDNS_SIGN_DSA:
 						case LDNS_SIGN_DSA_NSEC3:
 							ldns_key_list_push_key(keys, key);
@@ -319,7 +323,7 @@ main(int argc, char *argv[])
 							/*ldns_key_print(stdout, key);*/
 							break;
 						default:
-							fprintf(stderr, "Warning, key not suitable for signing, ignoring key with algorith %u\n", ldns_key_algorithm(key));
+							fprintf(stderr, "Warning, key not suitable for signing, ignoring key with algorithm %u\n", ldns_key_algorithm(key));
 							break;
 					}
 				} else {
@@ -503,6 +507,10 @@ main(int argc, char *argv[])
 					case LDNS_SIGN_RSAMD5:
 					case LDNS_SIGN_RSASHA1:
 					case LDNS_SIGN_RSASHA1_NSEC3:
+					case LDNS_SIGN_RSASHA256:
+					case LDNS_SIGN_RSASHA256_NSEC3:
+					case LDNS_SIGN_RSASHA512:
+					case LDNS_SIGN_RSASHA512_NSEC3:
 					case LDNS_SIGN_DSA:
 					case LDNS_SIGN_DSA_NSEC3:
 						ldns_key_list_push_key(keys, key);
@@ -510,7 +518,7 @@ main(int argc, char *argv[])
 						/*ldns_key_print(stdout, key);*/
 						break;
 					default:
-						fprintf(stderr, "Warning, key not suitable for signing, ignoring key from %s with algorith %u\n", keyfile_name, ldns_key_algorithm(key));
+						fprintf(stderr, "Warning, key not suitable for signing, ignoring key from %s with algorithm %u\n", keyfile_name, ldns_key_algorithm(key));
 						break;
 				}
 				LDNS_FREE(keyfile_name);

@@ -2182,9 +2182,17 @@ ldns_sign_public(ldns_rr_list *rrset, ldns_key_list *keys)
 /*					b64rdf = ldns_sign_public_dsa(sign_buf, ldns_key_dsa_key(current_key));*/
 					break;
 				case LDNS_SIGN_RSASHA1:
-				case LDNS_RSASHA1_NSEC3:
+				case LDNS_SIGN_RSASHA1_NSEC3:
 					b64rdf = ldns_sign_public_evp(sign_buf, ldns_key_evp_key(current_key), EVP_sha1());
-/*					b64rdf = ldns_sign_public_rsasha1(sign_buf, ldns_key_rsa_key(current_key));*/
+					break;
+			case LDNS_SIGN_RSASHA256:
+			case LDNS_SIGN_RSASHA256_NSEC3:
+					b64rdf = ldns_sign_public_evp(sign_buf, ldns_key_evp_key(current_key), EVP_sha256());
+					break;
+			case LDNS_SIGN_RSASHA512:
+			case LDNS_SIGN_RSASHA512_NSEC3:
+					b64rdf = ldns_sign_public_evp(sign_buf, ldns_key_evp_key(current_key), EVP_sha512());
+
 					break;
 				case LDNS_SIGN_RSAMD5:
 					b64rdf = ldns_sign_public_evp(sign_buf, ldns_key_evp_key(current_key), EVP_md5());

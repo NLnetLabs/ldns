@@ -23,6 +23,8 @@
 ldns_lookup_table ldns_signing_algorithms[] = {
         { LDNS_SIGN_RSAMD5, "RSAMD5" },
         { LDNS_SIGN_RSASHA1, "RSASHA1" },
+        { LDNS_SIGN_RSASHA256, "RSASHA256" },
+        { LDNS_SIGN_RSASHA512, "RSASHA512" },
         { LDNS_SIGN_DSA, "DSAMD5" },
         { LDNS_SIGN_HMACMD5, "hmac-md5.sig-alg.reg.int" },
         { 0, NULL }
@@ -145,6 +147,12 @@ ldns_key_new_frm_fp_l(ldns_key **key, FILE *fp, int *line_nr)
 	if (strncmp(d, "5 RSASHA1", 2) == 0) {
 		alg = LDNS_SIGN_RSASHA1;
 	}
+	if (strncmp(d, "6 RSASHA256", 2) == 0) {
+		alg = LDNS_SIGN_RSASHA256;
+	}
+	if (strncmp(d, "7 RSASHA512", 2) == 0) {
+		alg = LDNS_SIGN_RSASHA512;
+	}
 	if (strncmp(d, "133 RSASHA1", 4) == 0) {
 		alg = LDNS_RSASHA1_NSEC3;
 	}
@@ -158,6 +166,10 @@ ldns_key_new_frm_fp_l(ldns_key **key, FILE *fp, int *line_nr)
 		case LDNS_SIGN_RSAMD5:
 		case LDNS_SIGN_RSASHA1:
 		case LDNS_RSASHA1_NSEC3:
+		case LDNS_SIGN_RSASHA256:
+		case LDNS_RSASHA256_NSEC3:
+		case LDNS_SIGN_RSASHA512:
+		case LDNS_RSASHA512_NSEC3:
 			ldns_key_set_algorithm(k, alg);
 			rsa = ldns_key_new_frm_fp_rsa_l(fp, line_nr);
 			ldns_key_set_rsa_key(k, rsa);
@@ -473,6 +485,10 @@ ldns_key_new_frm_algorithm(ldns_signing_algorithm alg, uint16_t size)
 		case LDNS_SIGN_RSAMD5:
 		case LDNS_SIGN_RSASHA1:
 		case LDNS_SIGN_RSASHA1_NSEC3:
+		case LDNS_SIGN_RSASHA256:
+		case LDNS_SIGN_RSASHA256_NSEC3:
+		case LDNS_SIGN_RSASHA512:
+		case LDNS_SIGN_RSASHA512_NSEC3:
 			r = RSA_generate_key((int)size, RSA_3, NULL, NULL);
 			if (RSA_check_key(r) != 1) {
 				return NULL;
@@ -893,6 +909,46 @@ ldns_key2rr(const ldns_key *k)
 		case LDNS_RSASHA1_NSEC3:
 			ldns_rr_push_rdf(pubkey,
 					ldns_native2rdf_int8(LDNS_RDF_TYPE_ALG, LDNS_RSASHA1_NSEC3));
+			if (!ldns_key_rsa2bin(bin, ldns_key_rsa_key(k), &size)) {
+				return NULL;
+			}
+			break;
+		case LDNS_SIGN_RSASHA256:
+			ldns_rr_push_rdf(pubkey,
+					ldns_native2rdf_int8(LDNS_RDF_TYPE_ALG, LDNS_RSASHA256));
+			rsa =  ldns_key_rsa_key(k);
+			if (!rsa) {
+				return NULL;
+			} else {
+				if (!ldns_key_rsa2bin(bin, rsa, &size)) {
+					return NULL;
+				}
+				RSA_free(rsa);
+			}
+			break;
+		case LDNS_RSASHA256_NSEC3:
+			ldns_rr_push_rdf(pubkey,
+					ldns_native2rdf_int8(LDNS_RDF_TYPE_ALG, LDNS_RSASHA256_NSEC3));
+			if (!ldns_key_rsa2bin(bin, ldns_key_rsa_key(k), &size)) {
+				return NULL;
+			}
+			break;
+		case LDNS_SIGN_RSASHA512:
+			ldns_rr_push_rdf(pubkey,
+					ldns_native2rdf_int8(LDNS_RDF_TYPE_ALG, LDNS_RSASHA512));
+			rsa =  ldns_key_rsa_key(k);
+			if (!rsa) {
+				return NULL;
+			} else {
+				if (!ldns_key_rsa2bin(bin, rsa, &size)) {
+					return NULL;
+				}
+				RSA_free(rsa);
+			}
+			break;
+		case LDNS_RSASHA512_NSEC3:
+			ldns_rr_push_rdf(pubkey,
+					ldns_native2rdf_int8(LDNS_RDF_TYPE_ALG, LDNS_RSASHA512_NSEC3));
 			if (!ldns_key_rsa2bin(bin, ldns_key_rsa_key(k), &size)) {
 				return NULL;
 			}
