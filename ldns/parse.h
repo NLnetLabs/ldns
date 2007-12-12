@@ -16,7 +16,7 @@
 #define LDNS_PARSE_SKIP_SPACE		"\f\n\r\v"
 #define LDNS_PARSE_NORMAL		" \f\n\r\t\v"
 #define LDNS_PARSE_NO_NL		" \t"
-#define LDNS_MAX_LINELEN		4096
+#define LDNS_MAX_LINELEN		1023
 #define LDNS_MAX_KEYWORDLEN		32
 
 

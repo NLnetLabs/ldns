@@ -152,7 +152,7 @@ ldns_wire2rdf(ldns_rr *rr, const uint8_t *wire, size_t max, size_t *pos)
 	uint8_t rdf_index;
 	uint8_t *data;
 	uint16_t rd_length;
-	ldns_rdf *cur_rdf;
+	ldns_rdf *cur_rdf = NULL;
 	ldns_rdf_type cur_rdf_type;
 	const ldns_rr_descriptor *descriptor = ldns_rr_descript(ldns_rr_get_type(rr));
 	ldns_status status;
@@ -257,7 +257,10 @@ ldns_wire2rdf(ldns_rr *rr, const uint8_t *wire, size_t max, size_t *pos)
 			*pos = *pos + cur_rdf_length;
 		}	
 
-		ldns_rr_push_rdf(rr, cur_rdf);
+		if (cur_rdf) {
+			ldns_rr_push_rdf(rr, cur_rdf);
+			cur_rdf = NULL;
+		}
 	}
 
 	return LDNS_STATUS_OK;

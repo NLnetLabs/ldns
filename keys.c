@@ -844,7 +844,7 @@ ldns_key2rr(const ldns_key *k)
 	ldns_rr *pubkey;
 	ldns_rdf *keybin;
 	unsigned char *bin;
-	uint16_t size;
+	uint16_t size = 0;
 	RSA *rsa = NULL;
 	DSA *dsa = NULL;
 
@@ -892,6 +892,7 @@ ldns_key2rr(const ldns_key *k)
 				}
 				RSA_free(rsa);
 			}
+			size++;
 			break;
 		case LDNS_SIGN_RSASHA1:
 			ldns_rr_push_rdf(pubkey,
@@ -905,6 +906,7 @@ ldns_key2rr(const ldns_key *k)
 				}
 				RSA_free(rsa);
 			}
+			size++;
 			break;
 		case LDNS_RSASHA1_NSEC3:
 			ldns_rr_push_rdf(pubkey,
@@ -983,8 +985,6 @@ ldns_key2rr(const ldns_key *k)
 			break;
 	}
 	/* fourth the key bin material */
-	/* MIEK, not sure about this +1. I've re-added it--needs checking */
-	/* TODO: and i've removed it again, it's certainly wrong for HMAC */
 	keybin = ldns_rdf_new_frm_data(LDNS_RDF_TYPE_B64, size, bin);
 	LDNS_FREE(bin);
 	ldns_rr_push_rdf(pubkey, keybin);
@@ -1045,39 +1045,44 @@ ldns_key_list_free(ldns_key_list *key_list)
 ldns_rr *
 ldns_read_anchor_file(const char *filename)
 {
-  FILE *fp;
-  char line[LDNS_MAX_PACKETLEN];
-  int c;
-  size_t i = 0;
-  ldns_rr *r;
-  ldns_status status;
+	FILE *fp;
+	/*char line[LDNS_MAX_PACKETLEN];*/
+	char *line = LDNS_XMALLOC(char, LDNS_MAX_PACKETLEN);
+	int c;
+	size_t i = 0;
+	ldns_rr *r;
+	ldns_status status;
 
-  fp = fopen(filename, "r");
-  if (!fp) {
-    fprintf(stderr, "Unable to open %s: %s\n", filename, strerror(errno));
-    return NULL;
-  }
+	fp = fopen(filename, "r");
+	if (!fp) {
+		fprintf(stderr, "Unable to open %s: %s\n", filename, strerror(errno));
+		LDNS_FREE(line);
+		return NULL;
+	}
 	
-  while ((c = fgetc(fp)) && i < LDNS_MAX_PACKETLEN && c != EOF) {
-    line[i] = c;
-    i++;
-  }
-  line[i] = '\0';
+	while ((c = fgetc(fp)) && i < LDNS_MAX_PACKETLEN && c != EOF) {
+		line[i] = c;
+		i++;
+	}
+	line[i] = '\0';
 	
-  fclose(fp);
+	fclose(fp);
 	
-  if (i <= 0) {
-    fprintf(stderr, "nothing read from %s", filename);
-    return NULL;
-  } else {
-    status = ldns_rr_new_frm_str(&r, line, 0, NULL, NULL);
-    if (status == LDNS_STATUS_OK && (ldns_rr_get_type(r) == LDNS_RR_TYPE_DNSKEY || ldns_rr_get_type(r) == LDNS_RR_TYPE_DS)) {
-      return r;
-    } else {
-      fprintf(stderr, "Error creating DNSKEY or DS rr from %s: %s\n", filename, ldns_get_errorstr_by_id(status));
-      return NULL;
-    }
-  }
+	if (i <= 0) {
+		fprintf(stderr, "nothing read from %s", filename);
+		LDNS_FREE(line);
+		return NULL;
+	} else {
+		status = ldns_rr_new_frm_str(&r, line, 0, NULL, NULL);
+		if (status == LDNS_STATUS_OK && (ldns_rr_get_type(r) == LDNS_RR_TYPE_DNSKEY || ldns_rr_get_type(r) == LDNS_RR_TYPE_DS)) {
+			LDNS_FREE(line);
+			return r;
+		} else {
+			fprintf(stderr, "Error creating DNSKEY or DS rr from %s: %s\n", filename, ldns_get_errorstr_by_id(status));
+			LDNS_FREE(line);
+			return NULL;
+		}
+	}
 }
 
 #endif /* HAVE_SSL */

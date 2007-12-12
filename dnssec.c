@@ -298,6 +298,7 @@ ldns_dnssec_build_data_chain(ldns_resolver *res, uint16_t qflags, const ldns_rr_
 					other_rrset = true;
 				} else {
 					ldns_rr_list_deep_free(my_rrset);
+					my_rrset = NULL;
 				}
 			} else {
 				/* nothing, stop */
@@ -310,10 +311,12 @@ ldns_dnssec_build_data_chain(ldns_resolver *res, uint16_t qflags, const ldns_rr_
 		my_rrset = (ldns_rr_list *) rrset;
 	}
 	
-	new_chain->rrset = ldns_rr_list_clone(my_rrset);
-	name = ldns_rr_owner(ldns_rr_list_rr(my_rrset, 0));
-	type = ldns_rr_get_type(ldns_rr_list_rr(my_rrset, 0));
-	c = ldns_rr_get_class(ldns_rr_list_rr(my_rrset, 0));
+	if (my_rrset) {
+		new_chain->rrset = ldns_rr_list_clone(my_rrset);
+		name = ldns_rr_owner(ldns_rr_list_rr(my_rrset, 0));
+		type = ldns_rr_get_type(ldns_rr_list_rr(my_rrset, 0));
+		c = ldns_rr_get_class(ldns_rr_list_rr(my_rrset, 0));
+	}
 	
 	if (other_rrset) {
 		ldns_rr_list_deep_free(my_rrset);
@@ -648,6 +651,7 @@ ldns_dnssec_derive_trust_tree_normal_rrset(ldns_dnssec_trust_tree *new_tree,
 						ldns_rr_list_sort(cur_rrset);
 						if (tmp_rrset && tmp_rrset != cur_rrset) {
 							ldns_rr_list_deep_free(tmp_rrset);
+							tmp_rrset = NULL;
 						}
 						tmp_rrset = ldns_rr_list_pop_rrset(cur_rrset);
 						
@@ -657,7 +661,7 @@ ldns_dnssec_derive_trust_tree_normal_rrset(ldns_dnssec_trust_tree *new_tree,
 						       ldns_dname_compare(
 						       ldns_rr_owner(ldns_rr_list_rr(tmp_rrset, 0)),
 						       ldns_rr_owner(cur_sig_rr)) != 0) {
-						        ldns_rr_list_deep_free(tmp_rrset);
+							ldns_rr_list_deep_free(tmp_rrset);
 							tmp_rrset = ldns_rr_list_pop_rrset(cur_rrset);
 						}
 					}

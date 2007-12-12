@@ -668,7 +668,7 @@ ldns_rdf2buffer_str_ipseckey(ldns_buffer *output, const ldns_rdf *rdf)
 	uint8_t gateway_type;
 	uint8_t algorithm;
 	
-	ldns_rdf *gateway;
+	ldns_rdf *gateway = NULL;
 	uint8_t *gateway_data;
 	
 	size_t public_key_size;

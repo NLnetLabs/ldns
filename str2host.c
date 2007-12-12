@@ -549,7 +549,7 @@ ldns_status
 ldns_str2rdf_nsec(ldns_rdf **rd, const char *str)
 {
 	const char *delimiters = "\n\t ";
-	char token[LDNS_MAX_RDFLEN];
+	char *token = LDNS_XMALLOC(char, LDNS_MAX_RDFLEN);
 	uint8_t *bitmap = LDNS_XMALLOC(uint8_t, 1);
 	uint16_t bm_len = 0;
 	ldns_buffer *str_buf;
