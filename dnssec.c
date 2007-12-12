@@ -272,9 +272,9 @@ ldns_dnssec_build_data_chain(ldns_resolver *res, uint16_t qflags, const ldns_rr_
 
 	ldns_pkt *my_pkt;
 
-	ldns_rdf *name, *key_name = NULL;
-	ldns_rr_type type;
-	ldns_rr_class c;
+	ldns_rdf *name = NULL, *key_name = NULL;
+	ldns_rr_type type = 0;
+	ldns_rr_class c = 0;
 	
 	bool other_rrset = false;
 	
@@ -2180,31 +2180,35 @@ ldns_sign_public(ldns_rr_list *rrset, ldns_key_list *keys)
 			}
 			
 			switch(ldns_key_algorithm(current_key)) {
-				case LDNS_SIGN_DSA:
-				case LDNS_DSA_NSEC3:
-					b64rdf = ldns_sign_public_evp(sign_buf, ldns_key_evp_key(current_key), EVP_dss1());
-/*					b64rdf = ldns_sign_public_dsa(sign_buf, ldns_key_dsa_key(current_key));*/
-					break;
-				case LDNS_SIGN_RSASHA1:
-				case LDNS_SIGN_RSASHA1_NSEC3:
-					b64rdf = ldns_sign_public_evp(sign_buf, ldns_key_evp_key(current_key), EVP_sha1());
-					break;
+			case LDNS_SIGN_DSA:
+			case LDNS_DSA_NSEC3:
+				b64rdf = ldns_sign_public_evp(sign_buf, ldns_key_evp_key(current_key), EVP_dss1());
+				/*					b64rdf = ldns_sign_public_dsa(sign_buf, ldns_key_dsa_key(current_key));*/
+				break;
+			case LDNS_SIGN_RSASHA1:
+			case LDNS_SIGN_RSASHA1_NSEC3:
+				b64rdf = ldns_sign_public_evp(sign_buf, ldns_key_evp_key(current_key), EVP_sha1());
+				break;
+#ifdef SHA256_DIGEST_LENGTH
 			case LDNS_SIGN_RSASHA256:
 			case LDNS_SIGN_RSASHA256_NSEC3:
-					b64rdf = ldns_sign_public_evp(sign_buf, ldns_key_evp_key(current_key), EVP_sha256());
-					break;
+				b64rdf = ldns_sign_public_evp(sign_buf, ldns_key_evp_key(current_key), EVP_sha256());
+				break;
+#endif
+#ifdef SHA512_DIGEST_LENGTH
 			case LDNS_SIGN_RSASHA512:
 			case LDNS_SIGN_RSASHA512_NSEC3:
-					b64rdf = ldns_sign_public_evp(sign_buf, ldns_key_evp_key(current_key), EVP_sha512());
+				b64rdf = ldns_sign_public_evp(sign_buf, ldns_key_evp_key(current_key), EVP_sha512());
 
-					break;
-				case LDNS_SIGN_RSAMD5:
-					b64rdf = ldns_sign_public_evp(sign_buf, ldns_key_evp_key(current_key), EVP_md5());
-					break;
-				default:
-					/* do _you_ know this alg? */
-					printf("unknown alg\n");
-					break;
+				break;
+#endif
+			case LDNS_SIGN_RSAMD5:
+				b64rdf = ldns_sign_public_evp(sign_buf, ldns_key_evp_key(current_key), EVP_md5());
+				break;
+			default:
+				/* do _you_ know this alg? */
+				printf("unknown algorithm, is the one used available on this system?\n");
+				break;
 			}
 			if (!b64rdf) {
 				/* signing went wrong */
