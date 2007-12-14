@@ -1255,6 +1255,14 @@ ldns_verify_rrsig_buffers_raw(unsigned char* sig, size_t siglen,
 		case LDNS_RSASHA1_NSEC3:
 			return ldns_verify_rrsig_rsasha1_raw(sig, siglen, verify_buf, key, keylen);
 			break;
+		case LDNS_RSASHA256:
+		case LDNS_RSASHA256_NSEC3:
+			return ldns_verify_rrsig_rsasha256_raw(sig, siglen, verify_buf, key, keylen);
+			break;
+		case LDNS_RSASHA512:
+		case LDNS_RSASHA512_NSEC3:
+			return ldns_verify_rrsig_rsasha512_raw(sig, siglen, verify_buf, key, keylen);
+			break;
 		case LDNS_RSAMD5:
 			return ldns_verify_rrsig_rsamd5_raw(sig, siglen, verify_buf, key, keylen);
 			break;
@@ -1517,6 +1525,23 @@ ldns_convert_dsa_rrsig_rdata(
 	return ldns_buffer_status(target_buffer);
 }
 
+void
+print_dates(time_t now, time_t inception)
+{
+	ldns_rdf *nrdf, *irdf;
+	char *nstr, *istr;
+	nrdf = ldns_rdf_new_frm_data(LDNS_RDF_TYPE_TIME, sizeof(now), &now);
+	irdf = ldns_rdf_new_frm_data(LDNS_RDF_TYPE_TIME, sizeof(inception), &inception);
+	nstr = ldns_rdf2str(nrdf);
+	istr = ldns_rdf2str(irdf);
+	printf("Now: %s\n", nstr);
+	printf("Inception: %s\n", istr);
+	ldns_rdf_deep_free(nrdf);
+	ldns_rdf_deep_free(irdf);
+	LDNS_FREE(nstr);
+	LDNS_FREE(istr);
+	return;
+}
 
 ldns_status
 ldns_verify_rrsig(ldns_rr_list *rrset, ldns_rr *rrsig, ldns_rr *key)
@@ -1553,7 +1578,9 @@ ldns_verify_rrsig(ldns_rr_list *rrset, ldns_rr *rrsig, ldns_rr *key)
 		return LDNS_STATUS_CRYPTO_EXPIRATION_BEFORE_INCEPTION;
 	}
 	if (now - inception < 0) {
-		/* bad sig, inception date has passed */
+		/* bad sig, inception date has not passed */
+
+print_dates(now, inception);
 		return LDNS_STATUS_CRYPTO_SIG_NOT_INCEPTED;
 	}
 
@@ -1581,6 +1608,10 @@ ldns_verify_rrsig(ldns_rr_list *rrset, ldns_rr *rrsig, ldns_rr *key)
 		case LDNS_RSAMD5:
 		case LDNS_RSASHA1:
 		case LDNS_RSASHA1_NSEC3:
+		case LDNS_RSASHA256:
+		case LDNS_RSASHA256_NSEC3:
+		case LDNS_RSASHA512:
+		case LDNS_RSASHA512_NSEC3:
 			if (ldns_rdf2buffer_wire(rawsig_buf,
 						ldns_rr_rdf(rrsig, 8)) != LDNS_STATUS_OK) {
 				ldns_buffer_free(rawsig_buf);
@@ -1798,6 +1829,45 @@ ldns_verify_rrsig_rsasha1_raw(unsigned char* sig, size_t siglen,
 
 	return result;
 }
+
+ldns_status
+ldns_verify_rrsig_rsasha256_raw(unsigned char* sig, size_t siglen,
+        ldns_buffer* rrset, unsigned char* key, size_t keylen)
+{
+#ifdef SHA256_DIGEST_LENGTH
+	EVP_PKEY *evp_key;
+	ldns_status result;
+
+	evp_key = EVP_PKEY_new();
+	EVP_PKEY_assign_RSA(evp_key, ldns_key_buf2rsa_raw(key, keylen));
+	result = ldns_verify_rrsig_evp_raw(sig, siglen, rrset, evp_key, EVP_sha256());
+	EVP_PKEY_free(evp_key);
+
+	return result;
+#else
+	return LDNS_STATUS_CRYPTO_UNKNOWN_ALGO;
+#endif
+}
+
+ldns_status
+ldns_verify_rrsig_rsasha512_raw(unsigned char* sig, size_t siglen,
+        ldns_buffer* rrset, unsigned char* key, size_t keylen)
+{
+#ifdef SHA512_DIGEST_LENGTH
+	EVP_PKEY *evp_key;
+	ldns_status result;
+
+	evp_key = EVP_PKEY_new();
+	EVP_PKEY_assign_RSA(evp_key, ldns_key_buf2rsa_raw(key, keylen));
+	result = ldns_verify_rrsig_evp_raw(sig, siglen, rrset, evp_key, EVP_sha512());
+	EVP_PKEY_free(evp_key);
+
+	return result;
+#else
+	return LDNS_STATUS_CRYPTO_UNKNOWN_ALGO;
+#endif
+}
+
 
 
 ldns_status
