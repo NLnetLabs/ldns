@@ -121,7 +121,6 @@ ldns_zone_glue_rr_list(const ldns_zone *z)
 			if (ldns_dname_is_subdomain(dname_a, ns_owner)) {
 				/* GLUE! */
 				ldns_rr_list_push_rr(glue, a);
-				break;
 			}
 		}
 	}
