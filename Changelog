@@ -1,14 +1,22 @@
-<<<<<<< .working
-1.x
-	* API changes:
-	  - various arguments have the keyword const now
-          - ldns_rr_new_frm_str, ldns_rr_new_frm_fp_l and
-	    ldns_zone_new_frm_fp_l now take a uint32_t for the default_ttl
-            value instead of a uint16_t
+28 Nov 2007 1.2.2:
+	* Added support for HMAC-MD5 keys in generator
+	* Added a new example tool (written by Ondrej Sury): ldns-compare-zones
+	* ldns-keygen now checks key sizes for rfc conformancy
+	* ldns-signzone outputs SSL error if present
+	* Fixed manpages (thanks to Ondrej Sury)
+	* Fixed Makefile for -j <x>
+	* Fixed a $ORIGIN error when reading zones
+	* Fixed another off-by-one error
 
-	* Added contribution from Simon Vallet to perform simple trust
-          anchor validation from within the library
-
+03 Oct 2007 1.2.1:
+	* Fixed an offset error in rr comparison
+	* Fixed ldns-read-zone exit code
+	* Added check for availability of SHA256 hashing algorithm
+	* Fixed ldns-key2ds -2 argument
+	* Fixed $ORIGIN bug in .key files
+	* Output algorithms as an integer instead of their mnemonic
+	* Fixed a memory leak in dnssec code when SHA256 is not available
+	* Updated fedora .spec file
 
 11 Apr 2007 1.2.0:
 	* canonicalization of rdata in DNSSEC functions now adheres to the
@@ -46,26 +54,7 @@
 		- error in -f packet writing for malformed packets
 		- made KSK check more resilient
 
-
-* 1.1.X:
-	* ldns-walk now support dnames with maximum label length
-	* capitalization issues in sign/verify/nsec creation are fixed
-	* ldnsd now takes an extra argument containing the address to listen on
-	* signing no longer signs every rrset with KSK's, but only the DNSKEY rrset
-	* ported to Solaris 10
-        * LOC RR type has been fixed
-	* added ldns_send_buffer() function
-
-	Drill:
-	* drill prints error on failed axfr.
-	* drill now accepts mangled packets with -f
-	* old -c option (use tcp) changed to -t
-	* -c option to specify alternative resolv.conf file added
-	* chaser now stops at root when no trusted keys are found
-	  instead of looping forever trying to find the DS for .
-
-
-31 Apr 2006: 1.1.0: ldns-team
+7 Jul 2006: 1.1.0: ldns-team
 	* Added tutorials and an introduction to the documentation
 	* Added include/ and lib/ dirs so that you can compile against ldns
 	  without installing ldns on your system
@@ -160,7 +149,6 @@
 	  the core ldns idea any how.
 	* ldns_rr_list_insert_rr(): obsoleted, because not used.
 	* char *_when was removed from the ldns_pkt structure
-
 
 18 Oct 2005: 1.0.0: ldns-team
 	* Commited a patch from Håkan Olsson

@@ -128,10 +128,14 @@ ldns_resolver_trusted_key(const ldns_resolver *r, ldns_rr_list * keys, ldns_rr_l
   size_t i;
   bool result = false;
   
-  ldns_rr_list * trust_anchors = ldns_resolver_dnssec_anchors(r);
+  ldns_rr_list * trust_anchors;
   ldns_rr * cur_rr;
 
-  if (!r || !trust_anchors || !keys) { return false; }
+  if (!r || !keys) { return false; }
+
+  trust_anchors = ldns_resolver_dnssec_anchors(r);
+
+  if (!trust_anchors) { return false; }
 
   for (i = 0; i < ldns_rr_list_rr_count(keys); i++) {
 

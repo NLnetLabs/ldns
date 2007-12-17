@@ -89,8 +89,8 @@ libldns.la:	$(LIBDNS_OBJECTS)
 		$(LINK_LIB) -o libldns.la $(LIBDNS_LOBJECTS) -rpath $(libdir) $(RUNTIME_PATH)
 
 $(addprefix include/ldns/, $(notdir $(LIBDNS_HEADERS))): include/ldns/%.h: $(srcdir)/ldns/%.h
-		@if [ ! -d include ] ; then ($(INSTALL) -d include||echo 'include exists') ; fi ;
-		@if [ ! -d include/ldns ] ; then (ln -s ../ldns ./include/ldns||echo 'include/ldns exists') ; fi ;
+		@if [ ! -d include ] ; then ($(INSTALL) -d include || echo "include exists") ; fi ;
+		@if [ ! -d include/ldns ] ; then (ln -s ../ldns ./include/ldns || echo "include/ldns exists") ; fi ;
 		MVPROG=/bin/cp $(INSTALL) -m 644 $< ./include/ldns/
 
 copy-headers:	$(addprefix include/ldns/, $(notdir $(LIBDNS_HEADERS)))

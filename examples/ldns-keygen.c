@@ -58,7 +58,7 @@ main(int argc, char *argv[])
 	random = NULL;
 	ksk = false; /* don't create a ksk per default */
 	
-	while ((c = getopt(argc, argv, "DRHkb:r:v")) != -1) {
+	while ((c = getopt(argc, argv, "DRHkb:r:v25")) != -1) {
 		switch (c) {
 		case 'D':
 			if (algorithm != 0) {
@@ -67,6 +67,13 @@ main(int argc, char *argv[])
 			}
 			algorithm = LDNS_SIGN_DSA;
 			break;
+		case '2':
+			if (algorithm != 0) {
+				fprintf(stderr, "%s: %s", prog, "Only one of -D, -A or -H is allowed\n");
+				exit(EXIT_FAILURE);
+			}
+			algorithm = LDNS_SIGN_RSASHA256;
+			break;
 		case 'R':
 			if (algorithm != 0) {
 				fprintf(stderr, "%s: %s", prog, "Only one of -D, -A or -H is allowed\n");
@@ -74,7 +81,14 @@ main(int argc, char *argv[])
 			}
 			algorithm = LDNS_SIGN_RSASHA1;
 			break;
-                case 'H':
+		case '5':
+			if (algorithm != 0) {
+				fprintf(stderr, "%s: %s", prog, "Only one of -D, -A or -H is allowed\n");
+				exit(EXIT_FAILURE);
+			}
+			algorithm = LDNS_SIGN_RSASHA512;
+			break;
+		case 'H':
 			if (algorithm != 0) {
 				fprintf(stderr, "%s: %s", prog, "Only one of -D, -A or -H is allowed\n");
 			}
@@ -118,6 +132,28 @@ main(int argc, char *argv[])
 		exit(EXIT_FAILURE);
 	} 
 	free(prog);
+
+	/* check whether key size is within RFC boundaries */
+	switch (algorithm) {
+	case LDNS_SIGN_RSAMD5:
+	case LDNS_SIGN_RSASHA1:
+		if (bits < 512 || bits > 4096) {
+			fprintf(stderr, "For RSA, the key size must be between ");
+			fprintf(stderr, " 512 and 4096 bytes. Aborting.\n");
+			exit(1);
+		}
+		break;
+	case LDNS_SIGN_DSA:
+		if (bits < 512 || bits > 4096) {
+			fprintf(stderr, "For DSA, the key size must be between ");
+			fprintf(stderr, " 512 and 1024 bytes. Aborting.\n");
+			exit(1);
+		}
+		break;
+	case LDNS_SIGN_HMACMD5:
+	default:
+		break;
+	}
 	
 	if (!random) {
 		random = fopen("/dev/random", "r");
@@ -224,7 +260,7 @@ main(int argc, char *argv[])
 		exit(EXIT_FAILURE);
 	} else {
 				
-PEM_write_DSAPrivateKey(file, key->_key.dsa, NULL, NULL, 0, NULL, NULL);
+		PEM_write_DSAPrivateKey(file, key->_key.dsa, NULL, NULL, 0, NULL, NULL);
 		fclose(file);
 		LDNS_FREE(filename);
 	}
@@ -235,5 +271,5 @@ PEM_write_DSAPrivateKey(file, key->_key.dsa, NULL, NULL, 0, NULL, NULL);
 	free(owner);
 	ldns_rr_free(pubkey);
 	ldns_rr_free(ds);
-        exit(EXIT_SUCCESS);
+	exit(EXIT_SUCCESS);
 }

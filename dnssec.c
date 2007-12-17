@@ -272,9 +272,9 @@ ldns_dnssec_build_data_chain(ldns_resolver *res, uint16_t qflags, const ldns_rr_
 
 	ldns_pkt *my_pkt;
 
-	ldns_rdf *name, *key_name = NULL;
-	ldns_rr_type type;
-	ldns_rr_class c;
+	ldns_rdf *name = NULL, *key_name = NULL;
+	ldns_rr_type type = 0;
+	ldns_rr_class c = 0;
 	
 	bool other_rrset = false;
 	
@@ -298,6 +298,7 @@ ldns_dnssec_build_data_chain(ldns_resolver *res, uint16_t qflags, const ldns_rr_
 					other_rrset = true;
 				} else {
 					ldns_rr_list_deep_free(my_rrset);
+					my_rrset = NULL;
 				}
 			} else {
 				/* nothing, stop */
@@ -310,10 +311,12 @@ ldns_dnssec_build_data_chain(ldns_resolver *res, uint16_t qflags, const ldns_rr_
 		my_rrset = (ldns_rr_list *) rrset;
 	}
 	
-	new_chain->rrset = ldns_rr_list_clone(my_rrset);
-	name = ldns_rr_owner(ldns_rr_list_rr(my_rrset, 0));
-	type = ldns_rr_get_type(ldns_rr_list_rr(my_rrset, 0));
-	c = ldns_rr_get_class(ldns_rr_list_rr(my_rrset, 0));
+	if (my_rrset) {
+		new_chain->rrset = ldns_rr_list_clone(my_rrset);
+		name = ldns_rr_owner(ldns_rr_list_rr(my_rrset, 0));
+		type = ldns_rr_get_type(ldns_rr_list_rr(my_rrset, 0));
+		c = ldns_rr_get_class(ldns_rr_list_rr(my_rrset, 0));
+	}
 	
 	if (other_rrset) {
 		ldns_rr_list_deep_free(my_rrset);
@@ -648,6 +651,7 @@ ldns_dnssec_derive_trust_tree_normal_rrset(ldns_dnssec_trust_tree *new_tree,
 						ldns_rr_list_sort(cur_rrset);
 						if (tmp_rrset && tmp_rrset != cur_rrset) {
 							ldns_rr_list_deep_free(tmp_rrset);
+							tmp_rrset = NULL;
 						}
 						tmp_rrset = ldns_rr_list_pop_rrset(cur_rrset);
 						
@@ -657,7 +661,7 @@ ldns_dnssec_derive_trust_tree_normal_rrset(ldns_dnssec_trust_tree *new_tree,
 						       ldns_dname_compare(
 						       ldns_rr_owner(ldns_rr_list_rr(tmp_rrset, 0)),
 						       ldns_rr_owner(cur_sig_rr)) != 0) {
-						        ldns_rr_list_deep_free(tmp_rrset);
+							ldns_rr_list_deep_free(tmp_rrset);
 							tmp_rrset = ldns_rr_list_pop_rrset(cur_rrset);
 						}
 					}
@@ -1251,6 +1255,14 @@ ldns_verify_rrsig_buffers_raw(unsigned char* sig, size_t siglen,
 		case LDNS_RSASHA1_NSEC3:
 			return ldns_verify_rrsig_rsasha1_raw(sig, siglen, verify_buf, key, keylen);
 			break;
+		case LDNS_RSASHA256:
+		case LDNS_RSASHA256_NSEC3:
+			return ldns_verify_rrsig_rsasha256_raw(sig, siglen, verify_buf, key, keylen);
+			break;
+		case LDNS_RSASHA512:
+		case LDNS_RSASHA512_NSEC3:
+			return ldns_verify_rrsig_rsasha512_raw(sig, siglen, verify_buf, key, keylen);
+			break;
 		case LDNS_RSAMD5:
 			return ldns_verify_rrsig_rsamd5_raw(sig, siglen, verify_buf, key, keylen);
 			break;
@@ -1513,6 +1525,23 @@ ldns_convert_dsa_rrsig_rdata(
 	return ldns_buffer_status(target_buffer);
 }
 
+void
+print_dates(time_t now, time_t inception)
+{
+	ldns_rdf *nrdf, *irdf;
+	char *nstr, *istr;
+	nrdf = ldns_rdf_new_frm_data(LDNS_RDF_TYPE_TIME, sizeof(now), &now);
+	irdf = ldns_rdf_new_frm_data(LDNS_RDF_TYPE_TIME, sizeof(inception), &inception);
+	nstr = ldns_rdf2str(nrdf);
+	istr = ldns_rdf2str(irdf);
+	printf("Now: %s\n", nstr);
+	printf("Inception: %s\n", istr);
+	ldns_rdf_deep_free(nrdf);
+	ldns_rdf_deep_free(irdf);
+	LDNS_FREE(nstr);
+	LDNS_FREE(istr);
+	return;
+}
 
 ldns_status
 ldns_verify_rrsig(ldns_rr_list *rrset, ldns_rr *rrsig, ldns_rr *key)
@@ -1549,7 +1578,9 @@ ldns_verify_rrsig(ldns_rr_list *rrset, ldns_rr *rrsig, ldns_rr *key)
 		return LDNS_STATUS_CRYPTO_EXPIRATION_BEFORE_INCEPTION;
 	}
 	if (now - inception < 0) {
-		/* bad sig, inception date has passed */
+		/* bad sig, inception date has not passed */
+
+print_dates(now, inception);
 		return LDNS_STATUS_CRYPTO_SIG_NOT_INCEPTED;
 	}
 
@@ -1577,6 +1608,10 @@ ldns_verify_rrsig(ldns_rr_list *rrset, ldns_rr *rrsig, ldns_rr *key)
 		case LDNS_RSAMD5:
 		case LDNS_RSASHA1:
 		case LDNS_RSASHA1_NSEC3:
+		case LDNS_RSASHA256:
+		case LDNS_RSASHA256_NSEC3:
+		case LDNS_RSASHA512:
+		case LDNS_RSASHA512_NSEC3:
 			if (ldns_rdf2buffer_wire(rawsig_buf,
 						ldns_rr_rdf(rrsig, 8)) != LDNS_STATUS_OK) {
 				ldns_buffer_free(rawsig_buf);
@@ -1794,6 +1829,45 @@ ldns_verify_rrsig_rsasha1_raw(unsigned char* sig, size_t siglen,
 
 	return result;
 }
+
+ldns_status
+ldns_verify_rrsig_rsasha256_raw(unsigned char* sig, size_t siglen,
+        ldns_buffer* rrset, unsigned char* key, size_t keylen)
+{
+#ifdef SHA256_DIGEST_LENGTH
+	EVP_PKEY *evp_key;
+	ldns_status result;
+
+	evp_key = EVP_PKEY_new();
+	EVP_PKEY_assign_RSA(evp_key, ldns_key_buf2rsa_raw(key, keylen));
+	result = ldns_verify_rrsig_evp_raw(sig, siglen, rrset, evp_key, EVP_sha256());
+	EVP_PKEY_free(evp_key);
+
+	return result;
+#else
+	return LDNS_STATUS_CRYPTO_UNKNOWN_ALGO;
+#endif
+}
+
+ldns_status
+ldns_verify_rrsig_rsasha512_raw(unsigned char* sig, size_t siglen,
+        ldns_buffer* rrset, unsigned char* key, size_t keylen)
+{
+#ifdef SHA512_DIGEST_LENGTH
+	EVP_PKEY *evp_key;
+	ldns_status result;
+
+	evp_key = EVP_PKEY_new();
+	EVP_PKEY_assign_RSA(evp_key, ldns_key_buf2rsa_raw(key, keylen));
+	result = ldns_verify_rrsig_evp_raw(sig, siglen, rrset, evp_key, EVP_sha512());
+	EVP_PKEY_free(evp_key);
+
+	return result;
+#else
+	return LDNS_STATUS_CRYPTO_UNKNOWN_ALGO;
+#endif
+}
+
 
 
 ldns_status
@@ -2176,23 +2250,35 @@ ldns_sign_public(ldns_rr_list *rrset, ldns_key_list *keys)
 			}
 			
 			switch(ldns_key_algorithm(current_key)) {
-				case LDNS_SIGN_DSA:
-				case LDNS_DSA_NSEC3:
-					b64rdf = ldns_sign_public_evp(sign_buf, ldns_key_evp_key(current_key), EVP_dss1());
-/*					b64rdf = ldns_sign_public_dsa(sign_buf, ldns_key_dsa_key(current_key));*/
-					break;
-				case LDNS_SIGN_RSASHA1:
-				case LDNS_RSASHA1_NSEC3:
-					b64rdf = ldns_sign_public_evp(sign_buf, ldns_key_evp_key(current_key), EVP_sha1());
-/*					b64rdf = ldns_sign_public_rsasha1(sign_buf, ldns_key_rsa_key(current_key));*/
-					break;
-				case LDNS_SIGN_RSAMD5:
-					b64rdf = ldns_sign_public_evp(sign_buf, ldns_key_evp_key(current_key), EVP_md5());
-					break;
-				default:
-					/* do _you_ know this alg? */
-					printf("unknown alg\n");
-					break;
+			case LDNS_SIGN_DSA:
+			case LDNS_DSA_NSEC3:
+				b64rdf = ldns_sign_public_evp(sign_buf, ldns_key_evp_key(current_key), EVP_dss1());
+				/*					b64rdf = ldns_sign_public_dsa(sign_buf, ldns_key_dsa_key(current_key));*/
+				break;
+			case LDNS_SIGN_RSASHA1:
+			case LDNS_SIGN_RSASHA1_NSEC3:
+				b64rdf = ldns_sign_public_evp(sign_buf, ldns_key_evp_key(current_key), EVP_sha1());
+				break;
+#ifdef SHA256_DIGEST_LENGTH
+			case LDNS_SIGN_RSASHA256:
+			case LDNS_SIGN_RSASHA256_NSEC3:
+				b64rdf = ldns_sign_public_evp(sign_buf, ldns_key_evp_key(current_key), EVP_sha256());
+				break;
+#endif
+#ifdef SHA512_DIGEST_LENGTH
+			case LDNS_SIGN_RSASHA512:
+			case LDNS_SIGN_RSASHA512_NSEC3:
+				b64rdf = ldns_sign_public_evp(sign_buf, ldns_key_evp_key(current_key), EVP_sha512());
+
+				break;
+#endif
+			case LDNS_SIGN_RSAMD5:
+				b64rdf = ldns_sign_public_evp(sign_buf, ldns_key_evp_key(current_key), EVP_md5());
+				break;
+			default:
+				/* do _you_ know this alg? */
+				printf("unknown algorithm, is the one used available on this system?\n");
+				break;
 			}
 			if (!b64rdf) {
 				/* signing went wrong */
@@ -2312,6 +2398,7 @@ ldns_sign_public_rsasha1(ldns_buffer *to_sign, RSA *key)
 	unsigned int siglen;
 	ldns_rdf *sigdata_rdf;
 	ldns_buffer *b64sig;
+	int result;
 
 	siglen = 0;
 	b64sig = ldns_buffer_new(LDNS_MAX_PACKETLEN);
@@ -2326,9 +2413,13 @@ ldns_sign_public_rsasha1(ldns_buffer *to_sign, RSA *key)
 		return NULL;
 	}
 
-	RSA_sign(NID_sha1, sha1_hash, SHA_DIGEST_LENGTH,
+	result = RSA_sign(NID_sha1, sha1_hash, SHA_DIGEST_LENGTH,
 			(unsigned char*)ldns_buffer_begin(b64sig),
 			&siglen, key);
+	if (result != 1) {
+		return NULL;
+	}
+
 	sigdata_rdf = ldns_rdf_new_frm_data(LDNS_RDF_TYPE_B64, siglen, 
 			ldns_buffer_begin(b64sig));
 	ldns_buffer_free(b64sig); /* can't free this buffer ?? */
@@ -3091,7 +3182,13 @@ ldns_zone_sign(const ldns_zone *zone, ldns_key_list *key_list)
 		    !(ldns_rr_list_contains_rr(glue_rrs, ldns_rr_list_rr(cur_rrset, 0)))
 		   ) {
 			cur_rrsigs = ldns_sign_public(cur_rrset, key_list);
-
+			if (!cur_rrsigs) {
+				ldns_zone_deep_free(signed_zone);
+				ldns_rr_list_deep_free(signed_zone_rrs);
+				ldns_rr_list_deep_free(pubkeys);
+				ldns_rr_list_free(glue_rrs);
+				return NULL;
+			}
 			/* TODO: make optional, replace exit call */
 			/* if not optional it should be left out completely
 			   (for it is possible to generate bad signarures, by
@@ -3467,10 +3564,4 @@ ldns_rr_list_print(stdout, signed_zone_rrs);
 	
 }
 
-/* taken from the ENGINE man page */
-/*
-int ldns_load_engine_fn(const char *engine_id, const char **pre_cmds, int pre_num, const char **post_cmds, int post_num)
-{
-	ENGINE *e
-*/
 #endif /* HAVE_SSL */

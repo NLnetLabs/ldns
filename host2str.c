@@ -668,7 +668,7 @@ ldns_rdf2buffer_str_ipseckey(ldns_buffer *output, const ldns_rdf *rdf)
 	uint8_t gateway_type;
 	uint8_t algorithm;
 	
-	ldns_rdf *gateway;
+	ldns_rdf *gateway = NULL;
 	uint8_t *gateway_data;
 	
 	size_t public_key_size;
@@ -1144,17 +1144,37 @@ ldns_key2buffer_str(ldns_buffer *output, const ldns_key *k)
 		switch(ldns_key_algorithm(k)) {
 			case LDNS_SIGN_RSASHA1:
 			case LDNS_SIGN_RSASHA1_NSEC3:
+			case LDNS_SIGN_RSASHA256:
+			case LDNS_SIGN_RSASHA256_NSEC3:
+			case LDNS_SIGN_RSASHA512:
+			case LDNS_SIGN_RSASHA512_NSEC3:
 			case LDNS_SIGN_RSAMD5:
 				/* copied by looking at dnssec-keygen output */
 				/* header */
 				rsa = ldns_key_rsa_key(k);
 				
 				ldns_buffer_printf(output,"Private-key-format: v1.2\n");
-				if (ldns_key_algorithm(k) == LDNS_SIGN_RSAMD5) {
+				switch(ldns_key_algorithm(k)) {
+				case LDNS_SIGN_RSAMD5:
 					ldns_buffer_printf(output,"Algorithm: 1 (RSA)\n");
-				} else if (ldns_key_algorithm(k) == LDNS_SIGN_RSASHA1) {
+					break;
+				case LDNS_SIGN_RSASHA1:
+				case LDNS_SIGN_RSASHA1_NSEC3:
 					ldns_buffer_printf(output,"Algorithm: 5 (RSASHA1)\n");
+					break;
+				case LDNS_SIGN_RSASHA256:
+				case LDNS_SIGN_RSASHA256_NSEC3:
+					ldns_buffer_printf(output,"Algorithm: 6 (RSASHA256)\n");
+					break;
+				case LDNS_SIGN_RSASHA512:
+				case LDNS_SIGN_RSASHA512_NSEC3:
+					ldns_buffer_printf(output,"Algorithm: 7 (RSASHA512)\n");
+					break;
+				default:
+					break;
 				}
+				
+
 
 				/* print to buf, convert to bin, convert to b64,
 				 * print to buf */

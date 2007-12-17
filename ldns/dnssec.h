@@ -368,6 +368,26 @@ ldns_status ldns_verify_rrsig_dsa_raw(unsigned char* sig, size_t siglen,
 ldns_status ldns_verify_rrsig_rsasha1_raw(unsigned char* sig, size_t siglen,
 	ldns_buffer* rrset, unsigned char* key, size_t keylen);
 /**
+ * Like ldns_verify_rrsig_rsasha256, but uses raw signature and key data.
+ * \param[in] sig raw uncompressed wireformat signature data
+ * \param[in] siglen length of signature data
+ * \param[in] rrset ldns buffer with prepared rrset data.
+ * \param[in] key raw uncompressed wireformat key data
+ * \param[in] keylen length of key data
+ */
+ldns_status ldns_verify_rrsig_rsasha256_raw(unsigned char* sig, size_t siglen,
+	ldns_buffer* rrset, unsigned char* key, size_t keylen);
+/**
+ * Like ldns_verify_rrsig_rsasha512, but uses raw signature and key data.
+ * \param[in] sig raw uncompressed wireformat signature data
+ * \param[in] siglen length of signature data
+ * \param[in] rrset ldns buffer with prepared rrset data.
+ * \param[in] key raw uncompressed wireformat key data
+ * \param[in] keylen length of key data
+ */
+ldns_status ldns_verify_rrsig_rsasha512_raw(unsigned char* sig, size_t siglen,
+	ldns_buffer* rrset, unsigned char* key, size_t keylen);
+/**
  * Like ldns_verify_rrsig_rsamd5, but uses raw signature and key data.
  * \param[in] sig raw uncompressed wireformat signature data
  * \param[in] siglen length of signature data

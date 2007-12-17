@@ -31,7 +31,7 @@ ldns_send(ldns_pkt **result_packet, ldns_resolver *r, const ldns_pkt *query_pkt)
 
 	qb = ldns_buffer_new(LDNS_MIN_BUFLEN);
 
-	if (ldns_pkt_tsig(query_pkt)) {
+	if (query_pkt && ldns_pkt_tsig(query_pkt)) {
 		tsig_mac = ldns_rr_rdf(ldns_pkt_tsig(query_pkt), 3);
 	}
 

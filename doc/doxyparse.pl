@@ -35,7 +35,7 @@ my %see_also;
 
 my $BASE="doc/man";
 my $MAN_SECTION = "3";
-my $MAN_HEADER = ".TH ldns  \"30 May 2006\"\n";
+my $MAN_HEADER = ".TH ldns $MAN_SECTION \"30 May 2006\"\n";
 my $MAN_MIDDLE = ".SH AUTHOR
 The ldns team at NLnet Labs. Which consists out of
 Jelte Jansen and Miek Gieben.

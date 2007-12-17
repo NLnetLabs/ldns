@@ -281,38 +281,41 @@ ldns_rr_dnskey_key_size_raw(const unsigned char* keydata,
 	uint16_t int16;
 	
 	switch (alg) {
-		case LDNS_SIGN_DSA:
-		case LDNS_SIGN_DSA_NSEC3:
-			if (len > 0) {
-				t = keydata[0];
-				return (64 + t*8)*8;
-			} else {
-				return 0;
-			}
-			break;
-		case LDNS_SIGN_RSAMD5:
-		case LDNS_SIGN_RSASHA1:
-		case LDNS_SIGN_RSASHA1_NSEC3:
-			if (len > 0) {
-				if (keydata[0] == 0) {
-					/* big exponent */
-					if (len > 3) {
-						memmove(&int16, keydata + 1, 2);
-						exp = ntohs(int16);
-						return (len - exp - 3)*8;
-					} else {
-						return 0;
-					}
+	case LDNS_SIGN_DSA:
+	case LDNS_SIGN_DSA_NSEC3:
+		if (len > 0) {
+			t = keydata[0];
+			return (64 + t*8)*8;
+		} else {
+			return 0;
+		}
+		break;
+	case LDNS_SIGN_RSAMD5:
+	case LDNS_SIGN_RSASHA1:
+	case LDNS_SIGN_RSASHA1_NSEC3:
+		if (len > 0) {
+			if (keydata[0] == 0) {
+				/* big exponent */
+				if (len > 3) {
+					memmove(&int16, keydata + 1, 2);
+					exp = ntohs(int16);
+					return (len - exp - 3)*8;
 				} else {
-					exp = keydata[0];
-					return (len-exp-1)*8;
+					return 0;
 				}
 			} else {
-				return 0;
+				exp = keydata[0];
+				return (len-exp-1)*8;
 			}
-			break;
-		default:
+		} else {
 			return 0;
+		}
+		break;
+	case LDNS_SIGN_HMACMD5:
+		return len;
+		break;
+	default:
+		return 0;
 	}
 }
 

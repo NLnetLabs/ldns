@@ -31,7 +31,7 @@
 /**
  * \file buffer.h
  *
- * This file contains the definition of \ref ldns_buffer, and functions to manipulate those.
+ * This file contains the definition of ldns_buffer, and functions to manipulate those.
  */
 
 /** 

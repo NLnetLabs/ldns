@@ -108,16 +108,19 @@ ldns_zone_glue_rr_list(const ldns_zone *z)
 	for(i = 0; i < ldns_rr_list_rr_count(zone_cuts); i++) {
 		ns = ldns_rr_list_rr(zone_cuts, i);
 		ns_owner = ldns_rr_owner(ns);
+
 		dname_ns = ldns_rr_ns_nsdname(ns);
 		for(j = 0; j < ldns_rr_list_rr_count(addr); j++) {
 			a = ldns_rr_list_rr(addr, j);
 			dname_a = ldns_rr_owner(a);
 			
+			/*
 			if (ldns_dname_is_subdomain(dname_a, ns_owner) &&
 			    ldns_rdf_compare(dname_ns, dname_a) == 0) {
+			*/
+			if (ldns_dname_is_subdomain(dname_a, ns_owner)) {
 				/* GLUE! */
 				ldns_rr_list_push_rr(glue, a);
-				break;
 			}
 		}
 	}
@@ -181,7 +184,7 @@ ldns_zone_new_frm_fp_l(ldns_zone **z, FILE *fp, ldns_rdf *origin, uint32_t ttl, 
 		/* also set the prev */
 		my_prev   = ldns_rdf_clone(origin);
 	} else {
-		my_origin = ldns_dname_new_frm_str(".");
+		my_origin = NULL;
 		my_prev = NULL;
 	}
 
@@ -198,6 +201,10 @@ ldns_zone_new_frm_fp_l(ldns_zone **z, FILE *fp, ldns_rdf *origin, uint32_t ttl, 
 				}
 				soa_seen = true;
 				ldns_zone_set_soa(newzone, rr);
+				/* set origin to soa if not specified */
+				if (!my_origin) {
+					my_origin = ldns_rdf_clone(ldns_rr_owner(rr));
+				}
 				continue;
 			}
 			
