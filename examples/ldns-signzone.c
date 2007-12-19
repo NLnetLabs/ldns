@@ -100,7 +100,6 @@ strip_dnssec_records(ldns_zone *zone)
 	
 	new_list = ldns_rr_list_new();
 	
-	new_list = ldns_rr_list_new();
 	while ((cur_rr = ldns_rr_list_pop_rr(ldns_zone_rrs(zone)))) {
 		if (ldns_rr_get_type(cur_rr) == LDNS_RR_TYPE_RRSIG ||
 		    ldns_rr_get_type(cur_rr) == LDNS_RR_TYPE_NSEC
@@ -625,6 +624,7 @@ main(int argc, char *argv[])
 	
 	ldns_key_list_free(keys);
 	ldns_zone_deep_free(orig_zone);
+	ldns_zone_deep_free(signed_zone);
 	
 	LDNS_FREE(outputfile_name);
 	

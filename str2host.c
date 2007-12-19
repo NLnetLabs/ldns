@@ -612,6 +612,8 @@ ldns_str2rdf_nsec(ldns_rdf **rd, const char *str)
 	*rd = ldns_rdf_new_frm_data(LDNS_RDF_TYPE_NSEC, cur_data_size, data);
 	if(data)
 		LDNS_FREE(data);
+	if (token)
+		LDNS_FREE(token);
 	if(bitmap)
 		LDNS_FREE(bitmap);
 	ldns_buffer_free(str_buf);

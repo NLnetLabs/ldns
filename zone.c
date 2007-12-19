@@ -56,10 +56,101 @@ ldns_zone_push_rr(ldns_zone *z, ldns_rr *rr)
 	return ldns_rr_list_push_rr( ldns_zone_rrs(z), rr);
 }
 
+/* return a clone of the given rr list, without the glue records
+ * rr list should be the complete zone
+ * if present, stripped records are added to the list *glue_records
+ */
+ldns_rr_list *
+ldns_zone_strip_glue_rrs(const ldns_rdf *zone_name, const ldns_rr_list *rrs, ldns_rr_list *glue_rrs)
+{
+	ldns_rr_list *new_list = ldns_rr_list_new();
+
+	/* when do we find glue? It means we find an IP address
+	 * (AAAA/A) for a nameserver listed in the zone
+	 *
+	 * Alg used here:
+	 * first find all the zonecuts (NS records)
+	 * find all the AAAA or A records (can be done it the 
+	 * above loop).
+	 *
+	 * Check if the aaaa/a list are subdomains under the
+	 * NS domains. If yes -> glue, if no -> not glue
+	 */
+
+	ldns_rr_list *zone_cuts;
+	ldns_rr_list *addr;
+	ldns_rr *r, *ns, *a;
+	ldns_rdf *dname_a, *dname_ns, *ns_owner;
+	uint16_t i,j;
+
+	zone_cuts = ldns_rr_list_new();
+	addr = ldns_rr_list_new();
+
+	for(i = 0; i < ldns_rr_list_rr_count(rrs); i++) {
+		r = ldns_rr_list_rr(rrs, i);
+		if (ldns_rr_get_type(r) == LDNS_RR_TYPE_A ||
+				ldns_rr_get_type(r) == LDNS_RR_TYPE_AAAA) {
+			/* possibly glue */
+			ldns_rr_list_push_rr(addr, r);
+			continue;
+		}
+		if (ldns_rr_get_type(r) == LDNS_RR_TYPE_NS) {
+			/* multiple zones will end up here -
+			 * for now; not a problem
+			 */
+			/* don't add NS records for the current zone itself */
+			if (ldns_rdf_compare(ldns_rr_owner(r), 
+						zone_name) != 0) {
+				ldns_rr_list_push_rr(zone_cuts, r);
+			}
+			continue;
+		}
+	}
+
+	/* will sorting make it quicker ?? */
+	for(i = 0; i < ldns_rr_list_rr_count(zone_cuts); i++) {
+		ns = ldns_rr_list_rr(zone_cuts, i);
+		ns_owner = ldns_rr_owner(ns);
+		dname_ns = ldns_rr_ns_nsdname(ns);
+		for(j = 0; j < ldns_rr_list_rr_count(addr); j++) {
+			a = ldns_rr_list_rr(addr, j);
+			dname_a = ldns_rr_owner(a);
+			
+			if (ldns_dname_is_subdomain(dname_a, ns_owner) &&
+			    ldns_rdf_compare(dname_ns, dname_a) == 0) {
+				/* GLUE! */
+				if (glue_rrs) {
+					ldns_rr_list_push_rr(glue_rrs, a);
+				}
+				break;
+			} else {
+				ldns_rr_list_push_rr(new_list, a);
+			}
+		}
+	}
+	
+	ldns_rr_list_free(addr);
+	ldns_rr_list_free(zone_cuts);
+
+	return new_list;
+}
+
 /* this will be an EXPENSIVE op with our zone structure */
 ldns_rr_list *
 ldns_zone_glue_rr_list(const ldns_zone *z)
 {
+#if 0
+	ldns_rr_list *rrs = ldns_zone_rrs(z);
+	ldns_rr_list *glue_rrs = ldns_rr_list_new();
+	ldns_rr_list *stripped_rrs = ldns_zone_strip_glue_rrs(ldns_rr_owner(ldns_zone_soa(z)), rrs, glue_rrs);
+	printf("stripped:\n");
+	ldns_rr_list_print(stdout, stripped_rrs);
+	printf("glue:\n");
+	ldns_rr_list_print(stdout, glue_rrs);
+	ldns_rr_list_free(stripped_rrs);
+	return glue_rrs;
+#endif
+
 	/* when do we find glue? It means we find an IP address
 	 * (AAAA/A) for a nameserver listed in the zone
 	 *
@@ -134,6 +225,7 @@ ldns_zone_glue_rr_list(const ldns_zone *z)
 	} else {
 		return glue;
 	}
+
 }
 
 ldns_zone *
@@ -197,6 +289,7 @@ ldns_zone_new_frm_fp_l(ldns_zone **z, FILE *fp, ldns_rdf *origin, uint32_t ttl, 
 					/* second SOA 
 					 * just skip, maybe we want to say
 					 * something??? */
+					ldns_rr_free(rr);
 					continue;
 				}
 				soa_seen = true;

@@ -37,7 +37,8 @@ INSTALL = $(srcdir)/install-sh
 LIBDNS_SOURCES	=	rdata.c util.c rr.c packet.c wire2host.c \
 			host2str.c buffer.c str2host.c tsig.c resolver.c \
 			net.c host2wire.c dname.c dnssec.c keys.c \
-			higher.c rr_functions.c parse.c update.c error.c zone.c
+			higher.c rr_functions.c parse.c update.c error.c \
+			zone.c dnssec_zone.c
 LIBDNS_HEADERS	=	$(srcdir)/ldns/error.h		\
 			$(srcdir)/ldns/packet.h		\
 			$(srcdir)/ldns/common.h		\
@@ -58,6 +59,7 @@ LIBDNS_HEADERS	=	$(srcdir)/ldns/error.h		\
 			$(srcdir)/ldns/rr_functions.h	\
 			$(srcdir)/ldns/ldns.h		\
 			$(srcdir)/ldns/zone.h		\
+			$(srcdir)/ldns/dnssec_zone.h	\
 			$(srcdir)/ldns/update.h 		\
 			$(srcdir)/ldns/tsig.h
 LIBDNS_OBJECTS	=	$(LIBDNS_SOURCES:.c=.o) $(LIBOBJS)
