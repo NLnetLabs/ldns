@@ -36,6 +36,7 @@ struct ldns_struct_dnssec_name
 	int balance;
 	ldns_dnssec_name *left;
 	ldns_dnssec_name *right;
+	ldns_dnssec_name *up;
 
 	/* rrset and dnssec data */
 	ldns_rdf *name;
@@ -98,6 +99,12 @@ ldns_dnssec_name_set_name(ldns_dnssec_name *rrset,
 						  ldns_rdf *dname);
 
 ldns_status
+ldns_dnssec_name_set_nsec(ldns_dnssec_name *rrset, ldns_rr *nsec);
+
+ldns_dnssec_name *
+ldns_dnssec_name_next(ldns_dnssec_name *name);
+
+ldns_status
 ldns_dnssec_name_add_rr_to_current(ldns_dnssec_name *rrset,
 								 ldns_rr *rr);
 
@@ -106,7 +113,7 @@ ldns_dnssec_name_add_rr(ldns_dnssec_name *rrset,
 						ldns_rr *rr);
 
 void
-ldns_dnssec_name_print(FILE *out, ldns_dnssec_name *name);
+ldns_dnssec_name_print(FILE *out, ldns_dnssec_name *name, bool single);
 
 ldns_dnssec_zone *
 ldns_dnssec_zone_new();

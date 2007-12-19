@@ -128,7 +128,7 @@ main(int argc, char *argv[])
 	ldns_zone *orig_zone;
 	ldns_rr_list *orig_rrs = NULL;
 	ldns_rr *orig_soa = NULL;
-	ldns_zone *signed_zone;
+	ldns_dnssec_zone *signed_zone;
 
 	const char *keyfile_name_base;
 	char *keyfile_name;
@@ -138,6 +138,8 @@ main(int argc, char *argv[])
 	ldns_key_list *keys;
 	size_t key_i;
 	ldns_status s;
+	size_t i;
+	ldns_rr_list *added_rrs;
 
 	bool leave_old_dnssec_data = false;
 
@@ -153,7 +155,7 @@ main(int argc, char *argv[])
 	bool use_nsec3 = false;
 	
 	uint8_t nsec3_algorithm = 1;
-	uint8_t nsec3_flags = 0;
+	/*uint8_t nsec3_flags = 0;*/
 	size_t nsec3_iterations_cmd = 1;
 	uint16_t nsec3_iterations = 1;
 	uint8_t nsec3_salt_length = 0;
@@ -581,16 +583,31 @@ main(int argc, char *argv[])
 		}
 	}
 			
+	signed_zone = ldns_dnssec_zone_new();
+	ldns_dnssec_zone_add_rr(signed_zone, ldns_zone_soa(orig_zone));
+	for (i = 0; i < ldns_rr_list_rr_count(ldns_zone_rrs(orig_zone)); i++) {
+		ldns_dnssec_zone_add_rr(signed_zone, 
+						    ldns_rr_list_rr(ldns_zone_rrs(orig_zone), i));
+	}
+
+	added_rrs = ldns_rr_list_new();
+
 	if (use_nsec3) {
-		signed_zone = ldns_zone_sign_nsec3(orig_zone,
+		/*
+		  signed_zone = ldns_zone_sign_nsec3(orig_zone,
 		                                   keys,
 		                                   nsec3_algorithm,
 		                                   nsec3_flags,
 		                                   nsec3_iterations,
 		                                   nsec3_salt_length,
 		                                   nsec3_salt);
+		*/
 	} else {
-		signed_zone = ldns_zone_sign(orig_zone, keys);
+		/*signed_zone = ldns_zone_sign(orig_zone, keys);*/
+		ldns_dnssec_zone_sign(signed_zone,
+						  added_rrs,
+						  keys,
+						  LDNS_RR_TYPE_NSEC);
 	}
 	
 	if (!outputfile_name) {
@@ -603,7 +620,7 @@ main(int argc, char *argv[])
 		if (!outputfile) {
 			fprintf(stderr, "Unable to open %s for writing: %s\n", outputfile_name, strerror(errno));
 		} else {
-			ldns_zone_print(outputfile, signed_zone);
+			ldns_dnssec_zone_print(outputfile, signed_zone);
 			fclose(outputfile);
 		}
 /*
@@ -624,7 +641,8 @@ main(int argc, char *argv[])
 	
 	ldns_key_list_free(keys);
 	ldns_zone_deep_free(orig_zone);
-	ldns_zone_deep_free(signed_zone);
+	ldns_dnssec_zone_free(signed_zone);
+	ldns_rr_list_deep_free(added_rrs);
 	
 	LDNS_FREE(outputfile_name);
 	

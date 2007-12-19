@@ -216,6 +216,7 @@ ldns_dnssec_name_new()
 	new_name->balance = 0;
 	new_name->left = NULL;
 	new_name->right = NULL;
+	new_name->up = NULL;
 
 	new_name->rrsets = NULL;
 	new_name->nsec = NULL;
@@ -234,7 +235,6 @@ ldns_dnssec_name_new_frm_rr(ldns_rr *rr)
 
 	return new_name;
 }
-
 
 void
 ldns_dnssec_name_free(ldns_dnssec_name *name)
@@ -291,6 +291,34 @@ ldns_dnssec_name_set_nsec(ldns_dnssec_name *rrset, ldns_rr *nsec)
 		return LDNS_STATUS_OK;
 	}
 	return LDNS_STATUS_ERR;
+}
+
+ldns_dnssec_name *
+ldns_dnssec_name_next(ldns_dnssec_name *name)
+{
+	ldns_dnssec_name *parent;
+	ldns_dnssec_name *current;
+
+	if (!name) {
+		return NULL;
+	}
+	if (name->right) {
+		return name->right;
+	} else {
+		/* if this is a right branch, the grandparent is the next, unless
+		   the parent is also a right branch, etc */
+		current = name;
+		parent = current->up;
+		while (parent) {
+			if (parent->right == current) {
+				current = parent;
+				parent = parent->up;
+			} else {
+				return parent;
+			}
+		}
+		return NULL;
+	}
 }
 
 ldns_status
@@ -355,6 +383,7 @@ ldns_dnssec_name_add_rr(ldns_dnssec_name *name,
 		} else {
 			new_name = ldns_dnssec_name_new();
 			new_name->name = ldns_rr_owner(rr);
+			new_name->up = name;
 			result = ldns_dnssec_name_add_rr_to_current(new_name, rr);
 			name->right = new_name;
 		}
@@ -365,6 +394,7 @@ ldns_dnssec_name_add_rr(ldns_dnssec_name *name,
 		} else {
 			new_name = ldns_dnssec_name_new();
 			new_name->name = ldns_rr_owner(rr);
+			new_name->up = name;
 			result = ldns_dnssec_name_add_rr_to_current(new_name, rr);
 			name->left = new_name;
 		}
@@ -395,23 +425,23 @@ ldns_dnssec_name_add_rr(ldns_dnssec_name *name,
 }
 
 void
-ldns_dnssec_name_print(FILE *out, ldns_dnssec_name *name)
+ldns_dnssec_name_print(FILE *out, ldns_dnssec_name *name, bool single)
 {
 	if (name) {
-		if (name->left) {
-			ldns_dnssec_name_print(out, name->left);
-		}
-		if (!name->name) {
-			printf("WTF!\n");
+		if (!single && name->left) {
+			ldns_dnssec_name_print(out, name->left, single);
 		}
 		if(name->rrsets) {
 			ldns_dnssec_rrsets_print(out, name->rrsets);
 		}
-		else {
-			fprintf(out, "no rrsets?\n");
+		if(name->nsec) {
+			ldns_rr_print(out, name->nsec);
 		}
-		if (name->right) {
-			ldns_dnssec_name_print(out, name->right);
+		if (name->nsec_signatures) {
+			ldns_dnssec_rrs_print(out, name->nsec_signatures);
+		}
+		if (!single && name->right) {
+			ldns_dnssec_name_print(out, name->right, single);
 		}
 	} else {
 		fprintf(out, "<void>\n");
@@ -473,10 +503,10 @@ ldns_dnssec_zone_print(FILE *out, ldns_dnssec_zone *zone)
 {
 	if (zone) {
 		if (zone->soa) {
-			ldns_dnssec_name_print(stdout, zone->soa);
+			ldns_dnssec_name_print(out, zone->soa, false);
 		}
 		if (zone->names) {
-			ldns_dnssec_name_print(stdout, zone->names);
+			ldns_dnssec_name_print(out, zone->names, false);
 		}
 	}
 }
