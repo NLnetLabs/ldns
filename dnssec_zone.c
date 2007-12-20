@@ -146,6 +146,13 @@ ldns_dnssec_rrsets_add_rr(ldns_dnssec_rrsets *rrsets, ldns_rr *rr)
 		rr_type = ldns_rdf2rr_type(ldns_rr_rrsig_typecovered(rr));
 	}
 
+	if (!rrsets->rrs && rrsets->type == 0) {
+		rrsets->rrs = ldns_dnssec_rrs_new();
+		rrsets->rrs->rr = rr;
+		rrsets->type = ldns_rr_get_type(rr);
+		return LDNS_STATUS_OK;
+	}
+
 	if (rr_type > ldns_dnssec_rrsets_type(rrsets)) {
 		if (rrsets->next) {
 			result = ldns_dnssec_rrsets_add_rr(rrsets->next, rr);
@@ -303,7 +310,11 @@ ldns_dnssec_name_next(ldns_dnssec_name *name)
 		return NULL;
 	}
 	if (name->right) {
-		return name->right;
+		current = name->right;
+		while(current->left) {
+			current = current->left;
+		}
+		return current;
 	} else {
 		/* if this is a right branch, the grandparent is the next, unless
 		   the parent is also a right branch, etc */

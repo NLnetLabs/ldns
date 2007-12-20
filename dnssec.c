@@ -2503,9 +2503,7 @@ ldns_dnssec_create_nsec_bitmap(ldns_rr_type rr_type_list[],
 
 	/* fold it into windows TODO: can this be done directly? */
 	memset(cur_data, 0, 32);
-	printf("[XX] full bmp: ");
 	for (i = 0; i < bm_len; i++) {
-		printf("%02x", bitmap[i]);
 		if (i / 32 > cur_window) {
 			/* check, copy, new */
 			if (cur_window_max > 0) {
@@ -2526,7 +2524,6 @@ ldns_dnssec_create_nsec_bitmap(ldns_rr_type rr_type_list[],
 			}
 		}
 	}
-	printf("\n[XX]\n");
 	if (cur_window_max > 0) {
 		/* this window has stuff, add it */
 		data = LDNS_XREALLOC(data,
@@ -2545,13 +2542,6 @@ ldns_dnssec_create_nsec_bitmap(ldns_rr_type rr_type_list[],
 	LDNS_FREE(bitmap);
 	LDNS_FREE(data);
 
-	printf("[XX] CREATORED: ");
-	ldns_rdf_print(stdout, bitmap_rdf);
-	printf("\n");
-	for (i=0; i<ldns_rdf_size(bitmap_rdf); i++) {
-		printf("%02x ", ldns_rdf_data(bitmap_rdf)[i]);
-	}
-	printf("\n[XXXXXXX]\n");
 	return bitmap_rdf;
 }
 
@@ -2576,8 +2566,6 @@ ldns_dnssec_create_nsec(ldns_dnssec_name *from, ldns_dnssec_name *to, ldns_rr_ty
 	/* XXX why the next? */
 	cur_rrsets = from->rrsets;
 	while (cur_rrsets) {
-		printf("[XX] add type %u\n", cur_rrsets->type);
-		ldns_dnssec_rrsets_print(stdout, cur_rrsets);
 		types[type_count] = cur_rrsets->type;
 		type_count++;
 		cur_rrsets = cur_rrsets->next;
