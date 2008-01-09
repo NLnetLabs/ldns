@@ -431,7 +431,7 @@ ldns_rr_new_frm_str(ldns_rr **newrr, const char *str, uint16_t default_ttl, ldns
 									}
 								}
 							} else if (rd_strlen > 1 && !ldns_dname_str_absolute(rd) && origin) {
-								if (!ldns_dname_cat(r, origin)) {
+								if (ldns_dname_cat(r, origin) != LDNS_STATUS_OK) {
 									return LDNS_STATUS_ERR;
 								}
 							}
