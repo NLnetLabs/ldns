@@ -362,6 +362,10 @@ ldns_rr_new_frm_str(ldns_rr **newrr, const char *str, uint32_t default_ttl, ldns
 							r_cnt) == LDNS_RDF_TYPE_STR &&
                                     ldns_buffer_remaining(rd_buf) > 0
 							) {
+					/* skip spaces */
+					while (*(ldns_buffer_current(rd_buf)) == ' ') {
+						ldns_buffer_skip(rd_buf, 1);
+					}
 					if (*(ldns_buffer_current(rd_buf)) == '\"') {
 						delimiters = "\"\0";
 						ldns_buffer_skip(rd_buf, 1);
