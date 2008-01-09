@@ -104,7 +104,7 @@ install:	$(PROGRAMS)
 		$(INSTALL) -d -m 755 $(DESTDIR)$(mandir)/man1
 		for i in $(PROGRAMS); do \
 			$(libtool) --tag=CC --mode=install ${INSTALL} -c $$i $(DESTDIR)$(bindir) ; \
-			$(INSTALL) -c -m 644 ($srcdir)/$$i.1 $(DESTDIR)$(mandir)/man1/$$i.1 ; \
+			$(INSTALL) -c -m 644 $(srcdir)/$$i.1 $(DESTDIR)$(mandir)/man1/$$i.1 ; \
 			done
 		exit 0
 
