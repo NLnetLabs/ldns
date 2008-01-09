@@ -166,6 +166,28 @@ ldns_int_to_hexdigit(int i)
 	}
 }
 
+int
+ldns_hexstring_to_data(uint8_t *data, const char *str)
+{
+	int i;
+
+	if (!str || !data) {
+		return -1;
+	}
+
+	if (strlen(str) % 2 != 0) {
+		return -2;
+	}
+
+	for (i = 0; i < strlen(str) / 2; i++) {
+		data[i] = 
+			16 *	ldns_hexdigit_to_int(str[i*2]) +
+			ldns_hexdigit_to_int(str[i*2 + 1]);
+	}
+
+	return i;
+}
+
 const char *
 ldns_version(void)
 {

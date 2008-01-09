@@ -128,6 +128,8 @@ ldns_rr_new_frm_str(ldns_rr **newrr, const char *str, uint32_t default_ttl, ldns
 	uint16_t hex_data_size;
 	char *hex_data_str;
 	uint16_t cur_hex_data_size;
+	uint8_t *hex_data;
+	size_t hex_pos;
 
 	new = ldns_rr_new();
 
@@ -398,19 +400,27 @@ ldns_rr_new_frm_str(ldns_rr **newrr, const char *str, uint32_t default_ttl, ldns
 						cur_hex_data_size = 0;
 						while(cur_hex_data_size < 2 * hex_data_size) {
 							c = ldns_bget_token(rd_buf, rd, delimiters, LDNS_MAX_RDFLEN);
+							rd_strlen = strlen(rd);
 							strncpy(hex_data_str + cur_hex_data_size, rd, rd_strlen);
 							cur_hex_data_size += rd_strlen;
 						}
 						hex_data_str[cur_hex_data_size] = '\0';
-						r = ldns_rdf_new_frm_str(LDNS_RDF_TYPE_HEX, hex_data_str);
+
 						/* correct the rdf type */
+						/* if *we* know the type, interpret it as wireformat */
 						if (desc) {
-							ldns_rdf_set_type(r, ldns_rr_descriptor_field_type(desc, r_cnt));
+							hex_data = LDNS_XMALLOC(uint8_t, hex_data_size + 2);
+							ldns_write_uint16(hex_data, hex_data_size);
+							ldns_hexstring_to_data(hex_data + 2, hex_data_str);
+							hex_pos = 0;
+							ldns_wire2rdf(new, hex_data, hex_data_size+2, &hex_pos);
+							LDNS_FREE(hex_data);
 						} else {
+							r = ldns_rdf_new_frm_str(LDNS_RDF_TYPE_HEX, hex_data_str);
 							ldns_rdf_set_type(r, LDNS_RDF_TYPE_UNKNOWN);
+							ldns_rr_push_rdf(new, r);
 						}
 						LDNS_FREE(hex_data_str);
-						ldns_rr_push_rdf(new, r);
 					} else {
 						/* Normal RR */
 						switch(ldns_rr_descriptor_field_type(desc, r_cnt)) {

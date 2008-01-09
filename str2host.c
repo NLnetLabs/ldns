@@ -701,6 +701,7 @@ ldns_str2rdf_unknown(ldns_rdf **rd, const char *str)
 {
 	/* this should be caught in an earlier time (general str2host for 
 	   rr's */
+	printf("[XX] ERROR!\n");
 	rd = rd;
 	str = str;
 	return LDNS_STATUS_NOT_IMPL;
