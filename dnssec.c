@@ -3374,11 +3374,11 @@ exit(0);
 									salt,
 									true);
 						
-						printf("Created NSEC3 for: ");
+						/*printf("Created NSEC3 for: ");
 						ldns_rdf_print(stdout, post);
 						printf(":\n");
 						ldns_rr_print(stdout, nsec);
-						
+						*/
 						ldns_rr_set_ttl(nsec, ldns_rdf2native_int32(ldns_rr_rdf(ldns_zone_soa(zone), 6)));
 						ldns_rr_list_push_rr(nsec3_rrs, nsec);
 					}
@@ -3472,10 +3472,12 @@ exit(0);
 	ldns_rr_set_ttl(nsec, ldns_rdf2native_int32(ldns_rr_rdf(ldns_zone_soa(zone), 6)));
 	ldns_rr_list_push_rr(nsec3_rrs, nsec);
 
+/*
 	printf("Created NSEC3 for: ");
 	ldns_rdf_print(stdout, cur_dname);
 	printf(":\n");
 	ldns_rr_print(stdout, nsec);
+*/
 	/* sort nsec3s separately, set nexts and append to signed zone */
 	ldns_rr_list_sort_nsec3(nsec3_rrs);
 	for (i = 0; i < ldns_rr_list_rr_count(nsec3_rrs); i++) {
