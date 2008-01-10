@@ -32,11 +32,11 @@ ldns_fget_token_l(FILE *f, char *token, const char *delim, size_t limit, int *li
 {	
 	int c;
 	int p; /* 0 -> no parenthese seen, >0 nr of ( seen */
-	int com;
+	int com, quoted;
 	char *t;
 	size_t i;
 	const char *d;
-        const char *del;
+	const char *del;
 
 	/* standard delimeters */
 	if (!delim) {
@@ -49,7 +49,11 @@ ldns_fget_token_l(FILE *f, char *token, const char *delim, size_t limit, int *li
 	p = 0;
 	i = 0;
 	com = 0;
+	quoted = 0;
 	t = token;
+	if (delim[0] == '"') {
+		quoted = 1;
+	}
 	while ((c = getc(f)) != EOF) {
 		if (c == '(') {
 			/* this only counts for non-comments */
@@ -74,8 +78,11 @@ ldns_fget_token_l(FILE *f, char *token, const char *delim, size_t limit, int *li
 		}
 
 		/* do something with comments ; */
-		if (c == ';') {
+		if (c == ';' && quoted == 0) {
 			com = 1;
+		}
+		if (c == '\"' && com == 0) {
+			quoted = 1 - quoted;
 		}
 
 		if (c == '\n' && com != 0) {
@@ -189,11 +196,11 @@ ldns_bget_token(ldns_buffer *b, char *token, const char *delim, size_t limit)
 {	
 	int c, lc;
 	int p; /* 0 -> no parenthese seen, >0 nr of ( seen */
-	int com;
+	int com, quoted;
 	char *t;
 	size_t i;
 	const char *d;
-        const char *del;
+	const char *del;
 
 	/* standard delimiters */
 	if (!delim) {
@@ -206,8 +213,13 @@ ldns_bget_token(ldns_buffer *b, char *token, const char *delim, size_t limit)
 	p = 0;
 	i = 0;
 	com = 0;
+	quoted = 0;
 	t = token;
 	lc = 0;
+	if (delim[0] == '"') {
+		quoted = 1;
+	}
+
 	while ((c = ldns_bgetc(b)) != EOF) {
 		if (c == '(') {
 			p++;
@@ -226,8 +238,11 @@ ldns_bget_token(ldns_buffer *b, char *token, const char *delim, size_t limit)
 		}
 
 		/* do something with comments ; */
-		if (c == ';') {
+		if (c == ';' && quoted == 0) {
 			com = 1;
+		}
+		if (c == '"' && com == 0) {
+			quoted = 1 - quoted;
 		}
 
 		if (c == '\n' && com != 0) {
