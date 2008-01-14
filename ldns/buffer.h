@@ -108,7 +108,15 @@ void ldns_buffer_new_frm_data(ldns_buffer *buffer, void *data, size_t size);
  * is set to the capacity and the position is set to 0.
  * \param[in] buffer the buffer to clear
  */
-void ldns_buffer_clear(ldns_buffer *buffer);
+INLINE void ldns_buffer_clear(ldns_buffer *buffer)
+{
+	ldns_buffer_invariant(buffer);
+
+	/* reset status here? */
+
+	buffer->_position = 0;
+	buffer->_limit = buffer->_capacity;
+}
 
 /**
  * makes the buffer ready for reading the data that has been written to
@@ -118,14 +126,25 @@ void ldns_buffer_clear(ldns_buffer *buffer);
  * \param[in] buffer the buffer to flip
  * \return void
  */
-void ldns_buffer_flip(ldns_buffer *buffer);
+INLINE void ldns_buffer_flip(ldns_buffer *buffer)
+{
+	ldns_buffer_invariant(buffer);
+
+	buffer->_limit = buffer->_position;
+	buffer->_position = 0;
+}
 
 /**
  * make the buffer ready for re-reading the data.  The buffer's
  * position is reset to 0.
  * \param[in] buffer the buffer to rewind
  */
-void ldns_buffer_rewind(ldns_buffer *buffer);
+INLINE void ldns_buffer_rewind(ldns_buffer *buffer)
+{
+	ldns_buffer_invariant(buffer);
+
+	buffer->_position = 0;
+}
 
 /**
  * returns the current position in the buffer (as a number of bytes)

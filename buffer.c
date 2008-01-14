@@ -52,34 +52,6 @@ ldns_buffer_new_frm_data(ldns_buffer *buffer, void *data, size_t size)
 	ldns_buffer_invariant(buffer);
 }
 
-void
-ldns_buffer_clear(ldns_buffer *buffer)
-{
-	ldns_buffer_invariant(buffer);
-	
-	/* reset status here? */
-	
-	buffer->_position = 0;
-	buffer->_limit = buffer->_capacity;
-}
-
-void
-ldns_buffer_flip(ldns_buffer *buffer)
-{
-	ldns_buffer_invariant(buffer);
-	
-	buffer->_limit = buffer->_position;
-	buffer->_position = 0;
-}
-
-void
-ldns_buffer_rewind(ldns_buffer *buffer)
-{
-	ldns_buffer_invariant(buffer);
-	
-	buffer->_position = 0;
-}
-
 bool
 ldns_buffer_set_capacity(ldns_buffer *buffer, size_t capacity)
 {
