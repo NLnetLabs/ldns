@@ -31,6 +31,7 @@
 #include <ldns/keys.h>
 #include <ldns/zone.h>
 #include <ldns/resolver.h>
+#include <ldns/dnssec_zone.h>
 
 #define LDNS_MAX_KEYLEN		2048
 #define LDNS_DNSSEC_KEYPROTO	3
@@ -616,6 +617,15 @@ ldns_status ldns_pkt_verify(ldns_pkt *p, ldns_rr_type t, ldns_rdf *o, ldns_rr_li
  * \param[in] key_list the list of keys to sign the zone with
  * \return the signed zone
  */
+ldns_status ldns_dnssec_zone_sign(ldns_dnssec_zone *zone, ldns_rr_list *new_rrs, ldns_key_list *key_list, ldns_rr_type nsec_type);
+ldns_status ldns_dnssec_zone_sign_nsec3(ldns_dnssec_zone *zone,
+					   ldns_rr_list *new_rrs,
+					   ldns_key_list *key_list,
+					   uint8_t algorithm,
+					   uint8_t flags,
+					   uint16_t iterations,
+					   uint8_t salt_length,
+					   uint8_t *salt);
 ldns_zone *ldns_zone_sign(const ldns_zone *zone, ldns_key_list *key_list);
 ldns_zone *ldns_zone_sign_nsec3(ldns_zone *zone, ldns_key_list *key_list, uint8_t algorithm, uint8_t flags, uint16_t iterations, uint8_t salt_length, uint8_t *salt);
  

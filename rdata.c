@@ -214,7 +214,6 @@ void
 ldns_rdf_free(ldns_rdf *rd)
 {
 	if (rd) {
-		printf("FREE RDATA AT %p\n", rd);
 		LDNS_FREE(rd);
 	}
 }

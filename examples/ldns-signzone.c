@@ -394,6 +394,7 @@ main(int argc, char *argv[])
 	
 	zonefile = fopen(zonefile_name, "r");
 	
+	printf("[XX] Reading zone file\n");
 	if (!zonefile) {
 		fprintf(stderr, "Error: unable to read %s (%s)\n", zonefile_name, strerror(errno));
 		exit(EXIT_FAILURE);
@@ -428,11 +429,17 @@ main(int argc, char *argv[])
 	while (argi < argc) {
 		keyfile_name_base = argv[argi];
 		keyfile_name = LDNS_XMALLOC(char, strlen(keyfile_name_base) + 9);
-		snprintf(keyfile_name, strlen(keyfile_name_base) + 9, "%s.private", keyfile_name_base);
+		snprintf(keyfile_name,
+			    strlen(keyfile_name_base) + 9,
+			    "%s.private",
+			    keyfile_name_base);
 		keyfile = fopen(keyfile_name, "r");
 		line_nr = 0;
 		if (!keyfile) {
-			fprintf(stderr, "Error: unable to read %s: %s\n", keyfile_name, strerror(errno));
+			fprintf(stderr,
+				   "Error: unable to read %s: %s\n",
+				   keyfile_name,
+				   strerror(errno));
 		} else {
 			s = ldns_key_new_frm_fp_l(&key, keyfile, &line_nr);
 			fclose(keyfile);
@@ -451,21 +458,33 @@ main(int argc, char *argv[])
 				
 				/* find the public key in the zone, or in a
 				 * seperate file
-				 * we 'generate' one anyway, then match that to any present in the zone,
-				 *  if it matches, we drop our own. If not, we try to see if there
-				 * is a .key file present. If not, we use our own generated one, with
+				 * we 'generate' one anyway, 
+				 * then match that to any present in the zone,
+				 * if it matches, we drop our own. If not,
+				 * we try to see if there is a .key file present.
+				 * If not, we use our own generated one, with
 				 * some default values */
 				
 				pubkey_gen = ldns_key2rr(key);
 				if (verbosity >= 2) {
-					fprintf(stderr, "Looking for key with keytag %u or %u\n", (unsigned int) ldns_calc_keytag(pubkey_gen), (unsigned int)  ldns_calc_keytag(pubkey_gen) + 1);
+					fprintf(stderr,
+						   "Looking for key with keytag %u or %u\n",
+						   (unsigned int) ldns_calc_keytag(pubkey_gen),
+						   (unsigned int) ldns_calc_keytag(pubkey_gen)+1
+						   );
 				}
-				for (key_i = 0; key_i < ldns_rr_list_rr_count(orig_rrs); key_i++) {
+				for (key_i = 0;
+					key_i < ldns_rr_list_rr_count(orig_rrs);
+					key_i++) {
 					pubkey = ldns_rr_list_rr(orig_rrs, key_i);
 					if (ldns_rr_get_type(pubkey) == LDNS_RR_TYPE_DNSKEY &&
-					    (ldns_calc_keytag(pubkey) == ldns_calc_keytag(pubkey_gen) ||
+					    (ldns_calc_keytag(pubkey)
+						==
+						ldns_calc_keytag(pubkey_gen) ||
 					     /* KSK has gen-keytag + 1 */
-					     ldns_calc_keytag(pubkey) == ldns_calc_keytag(pubkey_gen) + 1) 
+					     ldns_calc_keytag(pubkey)
+						==
+						ldns_calc_keytag(pubkey_gen) + 1) 
 					    ) {
 						/* found it, drop our own */
 						if (verbosity >= 2) {
@@ -475,16 +494,25 @@ main(int argc, char *argv[])
 					}
 				}
 				/* it was not in the zone, try to read a .key file */
-				keyfile_name = LDNS_XMALLOC(char, strlen(keyfile_name_base) + 5);
-				snprintf(keyfile_name, strlen(keyfile_name_base) + 5, "%s.key", keyfile_name_base);
+				keyfile_name = LDNS_XMALLOC(char,
+									   strlen(keyfile_name_base) + 5);
+				snprintf(keyfile_name,
+					    strlen(keyfile_name_base) + 5,
+					    "%s.key",
+					    keyfile_name_base);
 				if (verbosity >= 2) {
 					fprintf(stderr, "Trying to read %s\n", keyfile_name);
 				}
 				keyfile = fopen(keyfile_name, "r");
 				line_nr = 0;
 				if (keyfile) {
-					if (ldns_rr_new_frm_fp_l(&pubkey, keyfile, &default_ttl, NULL, NULL, &line_nr) ==
-							LDNS_STATUS_OK) {
+					if (ldns_rr_new_frm_fp_l(&pubkey,
+										keyfile,
+										&default_ttl,
+										NULL,
+										NULL,
+										&line_nr) ==
+					    LDNS_STATUS_OK) {
 						ldns_key_set_pubkey_owner(key, ldns_rdf_clone(ldns_rr_owner(pubkey)));
 						ldns_key_set_flags(key, ldns_rdf2native_int16(ldns_rr_rdf(pubkey, 0)));
 						ldns_key_set_keytag(key, ldns_calc_keytag(pubkey));
@@ -495,61 +523,35 @@ main(int argc, char *argv[])
 					goto found;
 				}
 				
-				/* okay, so reading .key didn't work either, just use our generated one */
+				/* okay, so reading .key didn't work either,
+				   just use our generated one */
 				if (verbosity >= 2) {
 					fprintf(stderr, "Not in zone, no .key file, generating DNSKEY from .private\n");
 				}
 				ldns_zone_push_rr(orig_zone, pubkey_gen);
 				
 				
-				found:
+			found:
 				ldns_rr_free(pubkey_gen);
 				switch (ldns_key_algorithm(key)) {
-					case LDNS_SIGN_RSAMD5:
-					case LDNS_SIGN_RSASHA1:
-					case LDNS_SIGN_RSASHA1_NSEC3:
-					case LDNS_SIGN_RSASHA256:
-					case LDNS_SIGN_RSASHA256_NSEC3:
-					case LDNS_SIGN_RSASHA512:
-					case LDNS_SIGN_RSASHA512_NSEC3:
-					case LDNS_SIGN_DSA:
-					case LDNS_SIGN_DSA_NSEC3:
-						ldns_key_list_push_key(keys, key);
-						/*printf("Added key at %p:\n", key);*/
-						/*ldns_key_print(stdout, key);*/
-						break;
-					default:
-						fprintf(stderr, "Warning, key not suitable for signing, ignoring key from %s with algorithm %u\n", keyfile_name, ldns_key_algorithm(key));
-						break;
+				case LDNS_SIGN_RSAMD5:
+				case LDNS_SIGN_RSASHA1:
+				case LDNS_SIGN_RSASHA1_NSEC3:
+				case LDNS_SIGN_RSASHA256:
+				case LDNS_SIGN_RSASHA256_NSEC3:
+				case LDNS_SIGN_RSASHA512:
+				case LDNS_SIGN_RSASHA512_NSEC3:
+				case LDNS_SIGN_DSA:
+				case LDNS_SIGN_DSA_NSEC3:
+					ldns_key_list_push_key(keys, key);
+					/*printf("Added key at %p:\n", key);*/
+					/*ldns_key_print(stdout, key);*/
+					break;
+				default:
+					fprintf(stderr, "Warning, key not suitable for signing, ignoring key from %s with algorithm %u\n", keyfile_name, ldns_key_algorithm(key));
+					break;
 				}
 				LDNS_FREE(keyfile_name);
-#if 0
- else {
-					/* apparently the public key is not in the zone
-					   so we try to read the .key file
-					 */
-					keyfile_name = LDNS_XMALLOC(char, strlen(keyfile_name_base) + 5);
-					snprintf(keyfile_name, strlen(keyfile_name_base) + 5, "%s.key", keyfile_name_base);
-					fprintf(stderr, "trying to read %s\n", keyfile_name);
-					keyfile = fopen(keyfile_name, "r");
-					line_nr = 0;
-					if (!keyfile) {
-						fprintf(stderr, "Error: unable to read %s: %s\n", keyfile_name, strerror(errno));
-					} else {
-						if (ldns_rr_new_frm_fp_l(&pubkey, keyfile, &default_ttl, NULL, NULL, &line_nr) ==
-								LDNS_STATUS_OK) {
-							ldns_key_set_pubkey_owner(key, ldns_rdf_clone(ldns_rr_owner(pubkey)));
-							ldns_key_set_flags(key, ldns_rdf2native_int16(ldns_rr_rdf(pubkey, 0)));
-							ldns_key_set_keytag(key, ldns_calc_keytag(pubkey));
-						}
-						ldns_key_list_push_key(keys, key);
-						ldns_zone_push_rr(orig_zone, ldns_rr_clone(pubkey));
-						ldns_rr_free(pubkey);
-						fclose(keyfile);
-					}
-					LDNS_FREE(keyfile_name);
-				}
-#endif
 			} else {
 				fprintf(stderr, "Error reading key from %s at line %d\n", argv[argi], line_nr);
 			}
@@ -583,13 +585,17 @@ main(int argc, char *argv[])
 		}
 	}
 			
+	printf("[XX] convert to dnssec zone\n");
 	signed_zone = ldns_dnssec_zone_new();
-	ldns_dnssec_zone_add_rr(signed_zone, ldns_zone_soa(orig_zone));
+    	ldns_dnssec_zone_add_rr(signed_zone, ldns_zone_soa(orig_zone));
 	for (i = 0; i < ldns_rr_list_rr_count(ldns_zone_rrs(orig_zone)); i++) {
 		ldns_dnssec_zone_add_rr(signed_zone, 
-						    ldns_rr_list_rr(ldns_zone_rrs(orig_zone), i));
+						    ldns_rr_list_rr(ldns_zone_rrs(orig_zone), 
+										i));
 	}
+	printf("[XX] done\n");
 
+	/* list to store newly created rrs, so we can free them later */
 	added_rrs = ldns_rr_list_new();
 
 	if (use_nsec3) {
@@ -602,6 +608,14 @@ main(int argc, char *argv[])
 		                                   nsec3_salt_length,
 		                                   nsec3_salt);
 		*/
+		ldns_dnssec_zone_sign_nsec3(signed_zone,
+							   added_rrs,
+							   keys,
+							   nsec3_algorithm,
+							   0,
+							   nsec3_iterations,
+							   nsec3_salt_length,
+							   nsec3_salt);
 	} else {
 		/*signed_zone = ldns_zone_sign(orig_zone, keys);*/
 		ldns_dnssec_zone_sign(signed_zone,
@@ -639,9 +653,9 @@ main(int argc, char *argv[])
 		exit(EXIT_FAILURE);
 	}
 	
+	ldns_dnssec_zone_free(signed_zone);
 	ldns_key_list_free(keys);
 	ldns_zone_deep_free(orig_zone);
-	ldns_dnssec_zone_free(signed_zone);
 	ldns_rr_list_deep_free(added_rrs);
 	
 	LDNS_FREE(outputfile_name);

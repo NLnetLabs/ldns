@@ -9,6 +9,7 @@
 #define LDNS_DNSSEC_ZONE_H
  
 #include <ldns/ldns.h>
+#include <ldns/rbtree.h>
 
 /* collection of rrs belonging to one rrset */
 typedef struct ldns_struct_dnssec_rrs ldns_dnssec_rrs;
@@ -28,18 +29,30 @@ struct ldns_struct_dnssec_rrsets
 	ldns_dnssec_rrsets *next;
 };
 
+static inline int
+ldns_max(int a, int b)
+{
+	return (a > b) ? a : b;
+}
+
+static inline int
+ldns_min(int a, int b)
+{
+	return (a < b) ? a : b;
+}
+
 /* AVL tree of names */
 typedef struct ldns_struct_dnssec_name ldns_dnssec_name;
 struct ldns_struct_dnssec_name
 {
-	/* AVL tree components */
-	int balance;
-	ldns_dnssec_name *left;
-	ldns_dnssec_name *right;
-	ldns_dnssec_name *up;
-
 	/* rrset and dnssec data */
 	ldns_rdf *name;
+	/** usually, the name is a pointer to the owner name of the first rr for
+	 *  this name, but sometimes there is no actual data, for instance in
+	 *  names representing empty nonterminals. If so, set alloced to true to
+	 *  indicate that this data must also be freed when the name is freed
+	 */
+	bool name_alloced;
 	ldns_dnssec_rrsets *rrsets;
 	ldns_rr *nsec;
 	ldns_dnssec_rrs *nsec_signatures;
@@ -47,7 +60,7 @@ struct ldns_struct_dnssec_name
 
 struct ldns_struct_dnssec_zone {
 	ldns_dnssec_name *soa;
-	ldns_dnssec_name *names;
+	ldns_rbtree_t *names;
 };
 typedef struct ldns_struct_dnssec_zone ldns_dnssec_zone;
 
@@ -80,7 +93,7 @@ ldns_status
 ldns_dnssec_rrsets_add_rr(ldns_dnssec_rrsets *rrsets, ldns_rr *rr);
 
 void
-ldns_dnssec_rrsets_print(FILE *out, ldns_dnssec_rrsets *rrsets);
+ldns_dnssec_rrsets_print(FILE *out, ldns_dnssec_rrsets *rrsets, bool follow);
 
 ldns_dnssec_name *
 ldns_dnssec_name_new();
@@ -113,7 +126,10 @@ ldns_dnssec_name_add_rr(ldns_dnssec_name *rrset,
 						ldns_rr *rr);
 
 void
-ldns_dnssec_name_print(FILE *out, ldns_dnssec_name *name, bool single);
+ldns_dnssec_name_print_names(FILE *out, ldns_dnssec_name *name, int indent);
+
+void
+ldns_dnssec_name_print(FILE *out, ldns_dnssec_name *name);
 
 ldns_dnssec_zone *
 ldns_dnssec_zone_new();
@@ -126,5 +142,8 @@ ldns_dnssec_zone_add_rr(ldns_dnssec_zone *zone, ldns_rr *rr);
 
 void
 ldns_dnssec_zone_print(FILE *out, ldns_dnssec_zone *zone);
+
+ldns_status
+ldns_dnssec_zone_add_empty_nonterminals(ldns_dnssec_zone *zone);
 
 #endif

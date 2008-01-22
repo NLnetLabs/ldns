@@ -114,6 +114,7 @@ Or you can just use the menu above to browse through the API docs.
 #include <ldns/parse.h>
 #include <ldns/zone.h>
 #include <ldns/dnssec_zone.h>
+#include <ldns/rbtree.h>
 
 #define LDNS_IP4ADDRLEN      (32/8)
 #define LDNS_IP6ADDRLEN      (128/8)

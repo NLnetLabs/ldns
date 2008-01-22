@@ -427,8 +427,12 @@ ldns_dname_label(const ldns_rdf *rdf, uint8_t labelpos)
 	while ((len > 0) && src_pos < s) {
 		if (labelcnt == labelpos) {
 			/* found our label */
-			tmpnew = ldns_rdf_new_frm_data(LDNS_RDF_TYPE_DNAME, len + 1,
-					(ldns_rdf_data(rdf) + src_pos));
+			tmpnew = LDNS_MALLOC(ldns_rdf);
+			tmpnew->_type = LDNS_RDF_TYPE_DNAME;
+			tmpnew->_data = LDNS_XMALLOC(uint8_t, len + 2);
+			memset(tmpnew->_data, 0, len + 2);
+			memcpy(tmpnew->_data, ldns_rdf_data(rdf) + src_pos, len + 1);
+			tmpnew->_size = len + 1;
 			return tmpnew;
 		}
 		src_pos++;
