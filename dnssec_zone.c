@@ -173,6 +173,7 @@ ldns_dnssec_rrsets_add_rr(ldns_dnssec_rrsets *rrsets, ldns_rr *rr)
 		new_rrsets->next = rrsets->next;
 		rrsets->rrs = ldns_dnssec_rrs_new();
 		rrsets->rrs->rr = rr;
+		rrsets->signatures = NULL;
 		rrsets->type = ldns_rr_get_type(rr);
 		rrsets->next = new_rrsets;
 	} else {
@@ -212,7 +213,7 @@ ldns_dnssec_rrsets_print_soa(FILE *out,
 			}
 		}
 		if (follow && rrsets->next) {
-			ldns_dnssec_rrsets_print(out, rrsets->next, false);
+			ldns_dnssec_rrsets_print_soa(out, rrsets->next, follow, show_soa);
 		}
 	}
 }
@@ -316,6 +317,7 @@ ldns_dnssec_name_add_rr_to_current(ldns_dnssec_name *name,
 	if (!name || !rr) {
 		return LDNS_STATUS_ERR;
 	}
+
 	if (name->rrsets) {
 		result = ldns_dnssec_rrsets_add_rr(name->rrsets, rr);
 	} else {
@@ -418,6 +420,26 @@ ldns_dnssec_name_find_rrset(ldns_dnssec_name *name,
 	return NULL;
 }
 
+ldns_dnssec_rrsets *
+ldns_dnssec_zone_find_rrset(ldns_dnssec_zone *zone,
+					   ldns_rdf *dname,
+					   ldns_rr_type type)
+{
+	ldns_rbnode_t *node;
+
+	if (!zone || !dname) {
+		return NULL;
+	}
+
+	node = ldns_rbtree_search(zone->names, dname);
+	if (node) {
+		return ldns_dnssec_name_find_rrset((ldns_dnssec_name *)node->data,
+									type);
+	} else {
+		return NULL;
+	}
+}
+
 static inline void
 print_indent(FILE *out, int c)
 {
@@ -468,7 +490,7 @@ ldns_dnssec_zone_new()
 void
 ldns_dnssec_name_node_free(ldns_rbnode_t *node, void *arg) {
 	arg = arg;
-	ldns_dnssec_name_free((ldns_dnssec_name *)node->key);
+	ldns_dnssec_name_free((ldns_dnssec_name *)node->data);
 	free(node);
 }
 
@@ -499,20 +521,20 @@ ldns_dnssec_zone_add_rr(ldns_dnssec_zone *zone, ldns_rr *rr)
 	}
 
 	if (!zone->names) {
-		zone->names = ldns_rbtree_create(ldns_dnssec_name_cmp);
+		zone->names = ldns_rbtree_create(ldns_dname_compare);
 	}
 	
-	cur_name = ldns_dnssec_name_new_frm_rr(rr);
-	cur_node = ldns_rbtree_search(zone->names, cur_name);
+	cur_node = ldns_rbtree_search(zone->names, ldns_rr_owner(rr));
 
 	if (!cur_node) {
 		/* add */
+		cur_name = ldns_dnssec_name_new_frm_rr(rr);
 		cur_node = LDNS_MALLOC(ldns_rbnode_t);
-		cur_node->key = cur_name;
+		cur_node->key = ldns_rr_owner(rr);
+		cur_node->data = cur_name;
 		ldns_rbtree_insert(zone->names, cur_node);
 	} else {
-		ldns_dnssec_name_free(cur_name);
-		cur_name = (ldns_dnssec_name *) cur_node->key;
+		cur_name = (ldns_dnssec_name *) cur_node->data;
 		ldns_dnssec_name_add_rr(cur_name, rr);
 	}
 
@@ -537,7 +559,7 @@ ldns_dnssec_zone_names_print(FILE *out, ldns_rbtree_t *tree, bool print_soa)
 
 	node = ldns_rbtree_first(tree);
 	while (node != LDNS_RBTREE_NULL) {
-		name = (ldns_dnssec_name *) node->key;
+		name = (ldns_dnssec_name *) node->data;
 		ldns_dnssec_name_print_soa(out, name, print_soa);
 		node = ldns_rbtree_next(node);
 	}
@@ -583,8 +605,8 @@ ldns_dnssec_zone_add_empty_nonterminals(ldns_dnssec_zone *zone)
 			next_node = ldns_rbtree_first(zone->names);
 		}
 
-		cur_name = (ldns_dnssec_name *)cur_node->key;
-		next_name = (ldns_dnssec_name *)next_node->key;
+		cur_name = (ldns_dnssec_name *)cur_node->data;
+		next_name = (ldns_dnssec_name *)next_node->data;
 
 		found_difference = false;
 
@@ -611,7 +633,8 @@ ldns_dnssec_zone_add_empty_nonterminals(ldns_dnssec_zone *zone)
 				new_name->name = ldns_rdf_clone(post);
 				new_name->name_alloced = true;
 				new_node = LDNS_MALLOC(ldns_rbnode_t);
-				new_node->key = new_name;
+				new_node->key = new_name->name;
+				new_node->data = new_name;
 				ldns_rbtree_insert(zone->names, new_node);
 				//ldns_dnssec_zone_add_name(zone, new_name);
 			}
@@ -643,7 +666,8 @@ ldns_dnssec_zone_add_empty_nonterminals(ldns_dnssec_zone *zone)
 			new_name->name = ldns_rdf_clone(post);
 			new_name->name_alloced = true;
 			new_node = LDNS_MALLOC(ldns_rbnode_t);
-			new_node->key = new_name;
+			new_node->key = new_name->name;
+			new_node->data = new_name;
 			ldns_rbtree_insert(zone->names, new_node);
 		}
 		ldns_rdf_deep_free(post);

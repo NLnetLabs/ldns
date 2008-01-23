@@ -117,6 +117,10 @@ ldns_dnssec_rrsets *
 ldns_dnssec_name_find_rrset(ldns_dnssec_name *name,
 					   ldns_rr_type type);
 
+ldns_dnssec_rrsets *
+ldns_dnssec_zone_find_rrset(ldns_dnssec_zone *zone,
+					   ldns_rdf *dname,
+					   ldns_rr_type type);
 
 void
 ldns_dnssec_name_print_names(FILE *out, ldns_dnssec_name *name, int indent);
@@ -132,6 +136,9 @@ ldns_dnssec_zone_free(ldns_dnssec_zone *zone);
 
 ldns_status
 ldns_dnssec_zone_add_rr(ldns_dnssec_zone *zone, ldns_rr *rr);
+
+void
+ldns_dnssec_zone_names_print(FILE *out, ldns_rbtree_t *tree, bool print_soa);
 
 void
 ldns_dnssec_zone_print(FILE *out, ldns_dnssec_zone *zone);

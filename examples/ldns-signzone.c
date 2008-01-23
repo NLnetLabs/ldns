@@ -466,6 +466,7 @@ main(int argc, char *argv[])
 				 * some default values */
 				
 				pubkey_gen = ldns_key2rr(key);
+
 				if (verbosity >= 2) {
 					fprintf(stderr,
 						   "Looking for key with keytag %u or %u\n",
@@ -566,11 +567,6 @@ main(int argc, char *argv[])
 		exit(EXIT_FAILURE);
 	}
 
-	/* remove old RRSIGS and NSECS */
-	if (!leave_old_dnssec_data) {
-		strip_dnssec_records(orig_zone);
-	}
-
 	/* walk through the keys, and add pubkeys to the orig zone */
 	for (key_i = 0; key_i < ldns_key_list_key_count(keys); key_i++) {
 		key = ldns_key_list_key(keys, key_i);
@@ -579,12 +575,12 @@ main(int argc, char *argv[])
 			pubkey = ldns_key2rr(key);
 			ldns_key_set_flags(key, ldns_rdf2native_int16(ldns_rr_rdf(pubkey, 0)));
 			ldns_key_set_keytag(key, ldns_calc_keytag(pubkey));
-			ldns_zone_push_rr(orig_zone, pubkey);
+			/*ldns_zone_push_rr(orig_zone, pubkey);*/
 			printf("Derived DNSKEY RR:\n");
 			ldns_rr_print(stdout, pubkey);
 		}
 	}
-			
+
 	printf("[XX] convert to dnssec zone\n");
 	signed_zone = ldns_dnssec_zone_new();
     	ldns_dnssec_zone_add_rr(signed_zone, ldns_zone_soa(orig_zone));
@@ -593,7 +589,6 @@ main(int argc, char *argv[])
 						    ldns_rr_list_rr(ldns_zone_rrs(orig_zone), 
 										i));
 	}
-	printf("[XX] done\n");
 
 	/* list to store newly created rrs, so we can free them later */
 	added_rrs = ldns_rr_list_new();

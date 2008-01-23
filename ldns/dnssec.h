@@ -50,6 +50,12 @@ struct ldns_dnssec_data_chain_struct {
   ldns_dnssec_data_chain *parent;
 };
 
+/** return values for the old-signature callback */
+#define LDNS_SIGNATURE_LEAVE_ADD_NEW 0
+#define LDNS_SIGNATURE_LEAVE_NO_ADD 1
+#define LDNS_SIGNATURE_REMOVE_ADD_NEW 2
+#define LDNS_SIGNATURE_REMOVE_NO_ADD 3
+
 /**
  * Returns the first RRSIG rr that corresponds to the rrset with the given name and type
  * TODO: may be more, use all sigs...

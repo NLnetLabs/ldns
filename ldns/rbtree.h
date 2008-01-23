@@ -61,6 +61,8 @@ struct ldns_rbnode_t {
 	ldns_rbnode_t   *right;
 	/** pointer to sorting key */
 	const void *key;
+	/** pointer to data */
+	const void *data;
 	/** colour of this node */
 	uint8_t	    color;
 };

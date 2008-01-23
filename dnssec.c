@@ -3413,14 +3413,14 @@ ldns_dnssec_zone_create_nsec3s(ldns_dnssec_zone *zone,
 	nsec3_list = ldns_rr_list_new();
 
 	first_name_node = ldns_rbtree_first(zone->names);
-	first_name = (ldns_dnssec_name *) first_name_node->key;
+	first_name = (ldns_dnssec_name *) first_name_node->data;
 	
 	current_name_node = first_name_node;
 	current_name = first_name;
 
 	while (ldns_rbtree_next(current_name_node) != LDNS_RBTREE_NULL) {
 		nsec_rr = ldns_dnssec_create_nsec3(current_name,
-									(ldns_dnssec_name *) ldns_rbtree_next(current_name_node)->key,
+									(ldns_dnssec_name *) ldns_rbtree_next(current_name_node)->data,
 								     zone->soa->name,
 									algorithm,
 									flags,
@@ -3431,7 +3431,7 @@ ldns_dnssec_zone_create_nsec3s(ldns_dnssec_zone *zone,
 		ldns_rr_list_push_rr(new_rrs, nsec_rr);
 		ldns_rr_list_push_rr(nsec3_list, nsec_rr);
 		current_name_node = ldns_rbtree_next(current_name_node);
-		current_name = (ldns_dnssec_name *) current_name_node->key;
+		current_name = (ldns_dnssec_name *) current_name_node->data;
 	}
 	nsec_rr = ldns_dnssec_create_nsec3(current_name,
 							     first_name,
@@ -3472,7 +3472,7 @@ ldns_dnssec_zone_create_nsecs(ldns_dnssec_zone *zone,
 	}
 
 	first_name_node = ldns_rbtree_first(zone->names);
-	first_name = (ldns_dnssec_name *) first_name_node->key;
+	first_name = (ldns_dnssec_name *) first_name_node->data;
 	
 	current_name_node = first_name_node;
 	current_name = first_name;
@@ -3481,12 +3481,12 @@ ldns_dnssec_zone_create_nsecs(ldns_dnssec_zone *zone,
 	case LDNS_RR_TYPE_NSEC:
 		while (ldns_rbtree_next(current_name_node) != LDNS_RBTREE_NULL) {
 			nsec_rr = ldns_dnssec_create_nsec(current_name,
-									    (ldns_dnssec_name *) ldns_rbtree_next(current_name_node)->key,
+									    (ldns_dnssec_name *) ldns_rbtree_next(current_name_node)->data,
 									    nsec_type);
 			ldns_dnssec_name_add_rr(current_name, nsec_rr);
 			ldns_rr_list_push_rr(new_rrs, nsec_rr);
 			current_name_node = ldns_rbtree_next(current_name_node);
-			current_name = (ldns_dnssec_name *) current_name_node->key;
+			current_name = (ldns_dnssec_name *) current_name_node->data;
 		}
 		nsec_rr = ldns_dnssec_create_nsec(current_name,
 								    first_name,
@@ -3506,10 +3506,77 @@ ldns_dnssec_zone_create_nsecs(ldns_dnssec_zone *zone,
 	return result;
 }
 
+int
+ldns_dnssec_default_leave_signatures(ldns_rr *sig, void *n)
+{
+	sig = sig;
+	n = n;
+	return LDNS_SIGNATURE_LEAVE_ADD_NEW;
+}
+
+int
+ldns_dnssec_default_replace_signatures(ldns_rr *sig, void *n)
+{
+	sig = sig;
+	n = n;
+	return LDNS_SIGNATURE_REMOVE_ADD_NEW;
+}
+
+ldns_dnssec_rrs *
+ldns_dnssec_remove_signatures(ldns_dnssec_rrs *signatures,
+						ldns_key_list *key_list,
+						int (*func)(ldns_rr *, void *),
+						void *arg) {
+	ldns_dnssec_rrs *base_rrs = signatures;
+	ldns_dnssec_rrs *cur_rr = base_rrs;
+	ldns_dnssec_rrs *prev_rr = NULL;
+	ldns_dnssec_rrs *next_rr;
+
+	key_list = key_list;
+
+	while (cur_rr) {
+		next_rr = cur_rr->next;
+		
+		switch (func(cur_rr->rr, arg)) {
+		case  LDNS_SIGNATURE_LEAVE_ADD_NEW:
+			prev_rr = cur_rr;
+			break;
+		case LDNS_SIGNATURE_LEAVE_NO_ADD:
+			prev_rr = cur_rr;
+			break;
+		case LDNS_SIGNATURE_REMOVE_NO_ADD:
+			if (prev_rr) {
+				prev_rr->next = next_rr;
+			} else {
+				base_rrs = next_rr;
+			}
+			LDNS_FREE(cur_rr);
+			break;
+		case LDNS_SIGNATURE_REMOVE_ADD_NEW:
+			if (prev_rr) {
+				prev_rr->next = next_rr;
+			} else {
+				base_rrs = next_rr;
+			}
+			LDNS_FREE(cur_rr);
+			break;
+		default:
+			fprintf(stderr, "[XX] unknown return value from callbacl\n");
+			break;
+
+		}
+		cur_rr = next_rr;
+	}
+
+	return base_rrs;
+}
+
 ldns_status
 ldns_dnssec_zone_create_rrsigs(ldns_dnssec_zone *zone,
 						 ldns_rr_list *new_rrs,
-						 ldns_key_list *key_list) {
+						 ldns_key_list *key_list,
+						 int (*func)(ldns_rr *, void*),
+						 void *arg) {
 	ldns_status result = LDNS_STATUS_OK;
 	zone = zone;
 	new_rrs = new_rrs;
@@ -3530,9 +3597,17 @@ ldns_dnssec_zone_create_rrsigs(ldns_dnssec_zone *zone,
 	/* TODO: remove 'old' signatures from signature list */
 	cur_node = ldns_rbtree_first(zone->names);
 	while (cur_node != LDNS_RBTREE_NULL) {
-		cur_name = (ldns_dnssec_name *) cur_node->key;
+		cur_name = (ldns_dnssec_name *) cur_node->data;
+
 		cur_rrset = cur_name->rrsets;
 		while (cur_rrset) {
+			/* walk through old sigs, remove the old, and mark which keys (not) to use) */
+			cur_rrset->signatures = ldns_dnssec_remove_signatures(cur_rrset->signatures,
+													    key_list,
+													    func,
+													    arg);
+
+
 			/* TODO: set count to zero? */
 			rr_list = ldns_rr_list_new();
 
@@ -3560,6 +3635,11 @@ ldns_dnssec_zone_create_rrsigs(ldns_dnssec_zone *zone,
 		}
 
 		/* sign the nsec */
+		cur_name->nsec_signatures = ldns_dnssec_remove_signatures(cur_name->nsec_signatures,
+													   key_list,
+													   func,
+													   arg);
+
 		rr_list = ldns_rr_list_new();
 		ldns_rr_list_push_rr(rr_list, cur_name->nsec);
 		siglist = ldns_sign_public(rr_list, key_list);
@@ -3601,7 +3681,7 @@ ldns_dnssec_zone_sign(ldns_dnssec_zone *zone,
 	/* zone is already sorted */
 	
 	/* check whether we need to add nsecs */
-	if (zone->names && !((ldns_dnssec_name *)zone->names->root->key)->nsec) {
+	if (zone->names && !((ldns_dnssec_name *)zone->names->root->data)->nsec) {
 		printf("[XX] Create nsecs\n");
 		result = ldns_dnssec_zone_create_nsecs(zone, new_rrs, nsec_type);
 		if (result != LDNS_STATUS_OK) {
@@ -3610,7 +3690,11 @@ ldns_dnssec_zone_sign(ldns_dnssec_zone *zone,
 	}
 
 	printf("[XX] Create signatures\n");
-	result = ldns_dnssec_zone_create_rrsigs(zone, new_rrs, key_list);
+	result = ldns_dnssec_zone_create_rrsigs(zone,
+									new_rrs,
+									key_list,
+									ldns_dnssec_default_replace_signatures,
+									NULL);
 	printf("[XX] done\n");
 
 	return result;
@@ -3626,20 +3710,32 @@ ldns_dnssec_zone_sign_nsec3(ldns_dnssec_zone *zone,
 					   uint8_t salt_length,
 					   uint8_t *salt)
 {
-	ldns_rr *nsec3;
+	ldns_rr *nsec3, *nsec3params;
 	ldns_status result = LDNS_STATUS_OK;
 
 	/* TODO if there are already nsec3s presents and their
 	 * parameters are the same as these, we don't have to recreate
 	 */
 	if (zone->names) {
-		/* first add empty nonterminals */
+		/* add empty nonterminals */
 		ldns_dnssec_zone_add_empty_nonterminals(zone);
 
-		nsec3 = ((ldns_dnssec_name *)zone->names->root->key)->nsec;
+		nsec3 = ((ldns_dnssec_name *)zone->names->root->data)->nsec;
 		if (nsec3 && ldns_rr_get_type(nsec3) == LDNS_RR_TYPE_NSEC3) {
 			// no need to recreate
 		} else {
+			if (!ldns_dnssec_zone_find_rrset(zone,
+									   zone->soa->name,
+									   LDNS_RR_TYPE_NSEC3PARAMS)) {
+				/* create and add the nsec3params rr */
+				nsec3params = ldns_rr_new_frm_type(LDNS_RR_TYPE_NSEC3PARAMS);
+				ldns_rr_set_owner(nsec3params, ldns_rdf_clone(zone->soa->name));
+				ldns_nsec3_add_param_rdfs(nsec3params, algorithm, flags, iterations, salt_length, salt);
+				printf("[XX] ADD: \n");
+				ldns_rr_print(stdout, nsec3params);
+				ldns_dnssec_zone_add_rr(zone, nsec3params);
+				ldns_rr_list_push_rr(new_rrs, nsec3params);
+			}
 			result = ldns_dnssec_zone_create_nsec3s(zone,
 											new_rrs,
 											algorithm,
@@ -3652,7 +3748,11 @@ ldns_dnssec_zone_sign_nsec3(ldns_dnssec_zone *zone,
 			}
 		}
 
-		result = ldns_dnssec_zone_create_rrsigs(zone, new_rrs, key_list);
+		result = ldns_dnssec_zone_create_rrsigs(zone,
+										new_rrs,
+										key_list,
+										ldns_dnssec_default_replace_signatures,
+										NULL);
 	}
 	
 	return result;
