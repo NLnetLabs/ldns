@@ -29,18 +29,6 @@ struct ldns_struct_dnssec_rrsets
 	ldns_dnssec_rrsets *next;
 };
 
-static inline int
-ldns_max(int a, int b)
-{
-	return (a > b) ? a : b;
-}
-
-static inline int
-ldns_min(int a, int b)
-{
-	return (a < b) ? a : b;
-}
-
 /* AVL tree of names */
 typedef struct ldns_struct_dnssec_name ldns_dnssec_name;
 struct ldns_struct_dnssec_name
@@ -124,6 +112,11 @@ ldns_dnssec_name_add_rr_to_current(ldns_dnssec_name *rrset,
 ldns_status
 ldns_dnssec_name_add_rr(ldns_dnssec_name *rrset,
 						ldns_rr *rr);
+
+ldns_dnssec_rrsets *
+ldns_dnssec_name_find_rrset(ldns_dnssec_name *name,
+					   ldns_rr_type type);
+
 
 void
 ldns_dnssec_name_print_names(FILE *out, ldns_dnssec_name *name, int indent);

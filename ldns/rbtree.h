@@ -116,6 +116,14 @@ void ldns_rbtree_init(ldns_rbtree_t *rbtree, int (*cmpf)(const void *, const voi
 ldns_rbnode_t *ldns_rbtree_insert(ldns_rbtree_t *rbtree, ldns_rbnode_t *data);
 
 /**
+ * Insert data into the tree (reversed arguments, for use as callback)
+ * \param[in] data element to insert
+ * \param[out] tree tree to insert in to
+ * \return data ptr or NULL if key is already present
+ */
+ldns_rbnode_t *ldns_rbtree_insert_vref(void *data, void *rbtree);
+
+/**
  * Delete element from tree.
  * @param rbtree: tree to delete from.
  * @param key: key of item to delete.
@@ -171,6 +179,21 @@ ldns_rbnode_t *ldns_rbtree_next(ldns_rbnode_t *rbtree);
  * @return: previous smaller element or NULL if no previous in tree.
  */
 ldns_rbnode_t *ldns_rbtree_previous(ldns_rbnode_t *ldns_rbtree);
+
+/**
+ * split off 'elements' number of elements from the start
+ * of the name tree and return a new tree containing those
+ * elements
+ */
+ldns_rbtree_t *ldns_dnssec_rbtree_split(ldns_rbtree_t *tree, 
+								size_t elements);
+
+/**
+ * add all node from the second tree to the first (removing them from the
+ * second), and fix up nsec(3)s if present
+ */
+void ldns_dnssec_rbtree_join(ldns_rbtree_t *tree1,
+					    ldns_rbtree_t *tree2);
 
 /**
  * Call with node=variable of struct* with rbnode_t as first element.

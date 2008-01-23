@@ -214,6 +214,12 @@ ldns_rbtree_insert_fixup(ldns_rbtree_t *rbtree, ldns_rbnode_t *node)
 	rbtree->root->color = BLACK;
 }
 
+ldns_rbnode_t *
+ldns_rbtree_insert_vref(void *data, void *rbtree)
+{
+	return ldns_rbtree_insert((ldns_rbtree_t *) rbtree,
+						 (ldns_rbnode_t *) data);
+}
 
 /*
  * Inserts a node into a red black tree.
@@ -589,6 +595,42 @@ ldns_rbtree_previous(ldns_rbnode_t *node)
 		node = parent;
 	}
 	return node;
+}
+
+/**
+ * split off elements number of elements from the start
+ * of the name tree and return a new tree 
+ */
+ldns_rbtree_t *
+ldns_rbtree_split(ldns_rbtree_t *tree,
+			   size_t elements)
+{
+	ldns_rbtree_t *new_tree;
+	ldns_rbnode_t *cur_node;
+	ldns_rbnode_t *move_node;
+	size_t count = 0;
+
+	new_tree = ldns_rbtree_create(tree->cmp);
+
+	cur_node = ldns_rbtree_first(tree);
+	while (count < elements && cur_node != LDNS_RBTREE_NULL) {
+		move_node = ldns_rbtree_delete(tree, cur_node->key);
+		ldns_rbtree_insert(new_tree, move_node);
+		cur_node = ldns_rbtree_first(tree);
+		count++;
+	}
+
+	return new_tree;
+}
+
+/*
+ * add all node from the second tree to the first (removing them from the
+ * second), and fix up nsec(3)s if present
+ */
+void
+ldns_rbtree_join(ldns_rbtree_t *tree1, ldns_rbtree_t *tree2)
+{
+	traverse_postorder(tree2, ldns_rbtree_insert_vref, tree1);
 }
 
 /** recursive descent traverse */

@@ -2165,6 +2165,16 @@ ldns_sign_public(ldns_rr_list *rrset, ldns_key_list *keys)
 	
 	for (key_count = 0; key_count < ldns_key_list_key_count(keys); key_count++) {
 		sign_buf = ldns_buffer_new(LDNS_MAX_PACKETLEN);
+		if (!sign_buf) {
+			printf("[XX]ERROR NO SIGN BUG, OUT OF MEM?\n");
+			ldns_rr_list_print(stdout, rrset_clone);
+			while(true) {
+				sleep(1);
+				printf(".");
+				fflush(stdout);
+			}
+			exit(123);
+		}
 		b64rdf = NULL;
 
 		current_key = ldns_key_list_key(keys, key_count);

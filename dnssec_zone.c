@@ -530,25 +530,32 @@ ldns_dnssec_zone_add_rr(ldns_dnssec_zone *zone, ldns_rr *rr)
 }
 
 void
-ldns_dnssec_zone_print(FILE *out, ldns_dnssec_zone *zone)
+ldns_dnssec_zone_names_print(FILE *out, ldns_rbtree_t *tree, bool print_soa)
 {
 	ldns_rbnode_t *node;
 	ldns_dnssec_name *name;
 
+	node = ldns_rbtree_first(tree);
+	while (node != LDNS_RBTREE_NULL) {
+		name = (ldns_dnssec_name *) node->key;
+		ldns_dnssec_name_print_soa(out, name, print_soa);
+		node = ldns_rbtree_next(node);
+	}
+}
+
+void
+ldns_dnssec_zone_print(FILE *out, ldns_dnssec_zone *zone)
+{
 	if (zone) {
 		if (zone->soa) {
 			ldns_dnssec_rrsets_print(out,
-								ldns_dnssec_name_find_rrset(zone->soa, LDNS_RR_TYPE_SOA),
+								ldns_dnssec_name_find_rrset(zone->soa,
+													   LDNS_RR_TYPE_SOA),
 								false);
 		}
 
 		if (zone->names) {
-			node = ldns_rbtree_first(zone->names);
-			while (node != LDNS_RBTREE_NULL) {
-				name = (ldns_dnssec_name *) node->key;
-				ldns_dnssec_name_print_soa(out, name, false);
-				node = ldns_rbtree_next(node);
-			}
+			ldns_dnssec_zone_names_print(out, zone->names, false);
 		}
 	}
 }
