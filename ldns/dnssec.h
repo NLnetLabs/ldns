@@ -614,6 +614,15 @@ ldns_rdf *ldns_nsec3_hash_name(ldns_rdf *name, uint8_t algorithm, uint16_t itera
  */
 ldns_status ldns_pkt_verify(ldns_pkt *p, ldns_rr_type t, ldns_rdf *o, ldns_rr_list *k, ldns_rr_list *s, ldns_rr_list *good_keys);
 
+/** 
+ * Default callback function to always leave present signatures, and
+ * add new ones
+ */
+int ldns_dnssec_default_add_to_signatures(ldns_rr *sig, void *n);
+int ldns_dnssec_default_leave_signatures(ldns_rr *sig, void *n);
+int ldns_dnssec_default_delete_signatures(ldns_rr *sig, void *n);
+int ldns_dnssec_default_replace_signatures(ldns_rr *sig, void *n);
+
 /**
  * signs the given zone with the given new zone
  * returns a newly allocated signed zone
@@ -623,15 +632,23 @@ ldns_status ldns_pkt_verify(ldns_pkt *p, ldns_rr_type t, ldns_rdf *o, ldns_rr_li
  * \param[in] key_list the list of keys to sign the zone with
  * \return the signed zone
  */
-ldns_status ldns_dnssec_zone_sign(ldns_dnssec_zone *zone, ldns_rr_list *new_rrs, ldns_key_list *key_list, ldns_rr_type nsec_type);
+ldns_status ldns_dnssec_zone_sign(ldns_dnssec_zone *zone,
+						    ldns_rr_list *new_rrs,
+						    ldns_key_list *key_list,
+						    int (*func)(ldns_rr *, void *),
+						    void *arg);
+
 ldns_status ldns_dnssec_zone_sign_nsec3(ldns_dnssec_zone *zone,
-					   ldns_rr_list *new_rrs,
-					   ldns_key_list *key_list,
-					   uint8_t algorithm,
-					   uint8_t flags,
-					   uint16_t iterations,
-					   uint8_t salt_length,
-					   uint8_t *salt);
+								ldns_rr_list *new_rrs,
+								ldns_key_list *key_list,
+								int (*func)(ldns_rr *, void *),
+								void *arg,
+								uint8_t algorithm,
+								uint8_t flags,
+								uint16_t iterations,
+								uint8_t salt_length,
+								uint8_t *salt);
+
 ldns_zone *ldns_zone_sign(const ldns_zone *zone, ldns_key_list *key_list);
 ldns_zone *ldns_zone_sign_nsec3(ldns_zone *zone, ldns_key_list *key_list, uint8_t algorithm, uint8_t flags, uint16_t iterations, uint8_t salt_length, uint8_t *salt);
  

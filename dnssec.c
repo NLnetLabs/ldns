@@ -2164,6 +2164,9 @@ ldns_sign_public(ldns_rr_list *rrset, ldns_key_list *keys)
 	ldns_rr_list_sort(rrset_clone);
 	
 	for (key_count = 0; key_count < ldns_key_list_key_count(keys); key_count++) {
+		if (!ldns_key_use(ldns_key_list_key(keys, key_count))) {
+			continue;
+		}
 		sign_buf = ldns_buffer_new(LDNS_MAX_PACKETLEN);
 		if (!sign_buf) {
 			printf("[XX]ERROR NO SIGN BUG, OUT OF MEM?\n");
@@ -3507,11 +3510,27 @@ ldns_dnssec_zone_create_nsecs(ldns_dnssec_zone *zone,
 }
 
 int
-ldns_dnssec_default_leave_signatures(ldns_rr *sig, void *n)
+ldns_dnssec_default_add_to_signatures(ldns_rr *sig, void *n)
 {
 	sig = sig;
 	n = n;
 	return LDNS_SIGNATURE_LEAVE_ADD_NEW;
+}
+
+int
+ldns_dnssec_default_leave_signatures(ldns_rr *sig, void *n)
+{
+	sig = sig;
+	n = n;
+	return LDNS_SIGNATURE_LEAVE_NO_ADD;
+}
+
+int
+ldns_dnssec_default_delete_signatures(ldns_rr *sig, void *n)
+{
+	sig = sig;
+	n = n;
+	return LDNS_SIGNATURE_REMOVE_NO_ADD;
 }
 
 int
@@ -3532,7 +3551,28 @@ ldns_dnssec_remove_signatures(ldns_dnssec_rrs *signatures,
 	ldns_dnssec_rrs *prev_rr = NULL;
 	ldns_dnssec_rrs *next_rr;
 
+	uint16_t keytag;
+	size_t i;
+	int v;
+
 	key_list = key_list;
+
+	if (!cur_rr) {
+		switch(func(NULL, arg)) {
+		case LDNS_SIGNATURE_LEAVE_ADD_NEW:
+		case LDNS_SIGNATURE_REMOVE_ADD_NEW:
+		break;
+		case LDNS_SIGNATURE_LEAVE_NO_ADD:
+		case LDNS_SIGNATURE_REMOVE_NO_ADD:
+		ldns_key_list_set_use(key_list, false);
+		break;
+		default:
+			fprintf(stderr, "[XX] unknown return value from callback\n");
+			break;
+		}
+		return NULL;
+	}
+	v = func(cur_rr->rr, arg);
 
 	while (cur_rr) {
 		next_rr = cur_rr->next;
@@ -3542,9 +3582,25 @@ ldns_dnssec_remove_signatures(ldns_dnssec_rrs *signatures,
 			prev_rr = cur_rr;
 			break;
 		case LDNS_SIGNATURE_LEAVE_NO_ADD:
+			keytag = ldns_rdf2native_int16(ldns_rr_rrsig_keytag(cur_rr->rr));
+			for (i = 0; i < ldns_key_list_key_count(key_list); i++) {
+				if (ldns_key_keytag(ldns_key_list_key(key_list, i)) ==
+				    keytag) {
+					ldns_key_set_use(ldns_key_list_key(key_list, i),
+								  false);
+				}
+			}
 			prev_rr = cur_rr;
 			break;
 		case LDNS_SIGNATURE_REMOVE_NO_ADD:
+			keytag = ldns_rdf2native_int16(ldns_rr_rrsig_keytag(cur_rr->rr));
+			for (i = 0; i < ldns_key_list_key_count(key_list); i++) {
+				if (ldns_key_keytag(ldns_key_list_key(key_list, i)) ==
+				    keytag) {
+					ldns_key_set_use(ldns_key_list_key(key_list, i),
+								  false);
+				}
+			}
 			if (prev_rr) {
 				prev_rr->next = next_rr;
 			} else {
@@ -3561,9 +3617,8 @@ ldns_dnssec_remove_signatures(ldns_dnssec_rrs *signatures,
 			LDNS_FREE(cur_rr);
 			break;
 		default:
-			fprintf(stderr, "[XX] unknown return value from callbacl\n");
+			fprintf(stderr, "[XX] unknown return value from callback\n");
 			break;
-
 		}
 		cur_rr = next_rr;
 	}
@@ -3601,12 +3656,14 @@ ldns_dnssec_zone_create_rrsigs(ldns_dnssec_zone *zone,
 
 		cur_rrset = cur_name->rrsets;
 		while (cur_rrset) {
+			/* reset keys to use */
+			ldns_key_list_set_use(key_list, true);
+
 			/* walk through old sigs, remove the old, and mark which keys (not) to use) */
 			cur_rrset->signatures = ldns_dnssec_remove_signatures(cur_rrset->signatures,
 													    key_list,
 													    func,
 													    arg);
-
 
 			/* TODO: set count to zero? */
 			rr_list = ldns_rr_list_new();
@@ -3667,14 +3724,12 @@ ldns_status
 ldns_dnssec_zone_sign(ldns_dnssec_zone *zone,
 				  ldns_rr_list *new_rrs,
 				  ldns_key_list *key_list,
-				  ldns_rr_type nsec_type)
+				  int (*func)(ldns_rr *, void *),
+				  void *arg)
 {
 	ldns_status result = LDNS_STATUS_OK;
 
-	if (!zone || !new_rrs || !key_list ||
-	    (nsec_type != LDNS_RR_TYPE_NSEC 
-		&& nsec_type != LDNS_RR_TYPE_NSEC3)
-	    ) {
+	if (!zone || !new_rrs || !key_list) {
 		return LDNS_STATUS_ERR;
 	}
 
@@ -3682,19 +3737,18 @@ ldns_dnssec_zone_sign(ldns_dnssec_zone *zone,
 	
 	/* check whether we need to add nsecs */
 	if (zone->names && !((ldns_dnssec_name *)zone->names->root->data)->nsec) {
-		printf("[XX] Create nsecs\n");
-		result = ldns_dnssec_zone_create_nsecs(zone, new_rrs, nsec_type);
+		result = ldns_dnssec_zone_create_nsecs(zone, new_rrs, LDNS_RR_TYPE_NSEC);
 		if (result != LDNS_STATUS_OK) {
 			return result;
 		}
 	}
 
-	printf("[XX] Create signatures\n");
+	printf("[XX] Create signatures!\n");
 	result = ldns_dnssec_zone_create_rrsigs(zone,
 									new_rrs,
 									key_list,
-									ldns_dnssec_default_replace_signatures,
-									NULL);
+									func,
+									arg);
 	printf("[XX] done\n");
 
 	return result;
@@ -3704,6 +3758,8 @@ ldns_status
 ldns_dnssec_zone_sign_nsec3(ldns_dnssec_zone *zone,
 					   ldns_rr_list *new_rrs,
 					   ldns_key_list *key_list,
+					   int (*func)(ldns_rr *, void *),
+					   void *arg,
 					   uint8_t algorithm,
 					   uint8_t flags,
 					   uint16_t iterations,
@@ -3731,8 +3787,6 @@ ldns_dnssec_zone_sign_nsec3(ldns_dnssec_zone *zone,
 				nsec3params = ldns_rr_new_frm_type(LDNS_RR_TYPE_NSEC3PARAMS);
 				ldns_rr_set_owner(nsec3params, ldns_rdf_clone(zone->soa->name));
 				ldns_nsec3_add_param_rdfs(nsec3params, algorithm, flags, iterations, salt_length, salt);
-				printf("[XX] ADD: \n");
-				ldns_rr_print(stdout, nsec3params);
 				ldns_dnssec_zone_add_rr(zone, nsec3params);
 				ldns_rr_list_push_rr(new_rrs, nsec3params);
 			}
@@ -3751,8 +3805,8 @@ ldns_dnssec_zone_sign_nsec3(ldns_dnssec_zone *zone,
 		result = ldns_dnssec_zone_create_rrsigs(zone,
 										new_rrs,
 										key_list,
-										ldns_dnssec_default_replace_signatures,
-										NULL);
+										func,
+										arg);
 	}
 	
 	return result;

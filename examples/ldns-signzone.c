@@ -178,7 +178,7 @@ main(int argc, char *argv[])
 	
 	keys = ldns_key_list_new();
 
-/*	OPENSSL_config(NULL);*/
+	/*	OPENSSL_config(NULL);*/
 
 	while ((c = getopt(argc, argv, "a:e:f:i:k:lno:s:t:v:E:K:")) != -1) {
 		switch (c) {
@@ -194,14 +194,14 @@ main(int argc, char *argv[])
 
 			if (strlen(optarg) == 8 &&
 			    sscanf(optarg, "%4d%2d%2d", &tm.tm_year, &tm.tm_mon, &tm.tm_mday)
-			   ) {
+			    ) {
 			   	tm.tm_year -= 1900;
 			   	tm.tm_mon--;
 			   	check_tm(tm);
 				expiration = (uint32_t) mktime_from_utc(&tm);
 			} else if (strlen(optarg) == 14 &&
-			    sscanf(optarg, "%4d%2d%2d%2d%2d%2d", &tm.tm_year, &tm.tm_mon, &tm.tm_mday, &tm.tm_hour, &tm.tm_min, &tm.tm_sec)
-			   ) {
+					 sscanf(optarg, "%4d%2d%2d%2d%2d%2d", &tm.tm_year, &tm.tm_mon, &tm.tm_mday, &tm.tm_hour, &tm.tm_min, &tm.tm_sec)
+					 ) {
 			   	tm.tm_year -= 1900;
 			   	tm.tm_mon--;
 			   	check_tm(tm);
@@ -219,14 +219,14 @@ main(int argc, char *argv[])
 
 			if (strlen(optarg) == 8 &&
 			    sscanf(optarg, "%4d%2d%2d", &tm.tm_year, &tm.tm_mon, &tm.tm_mday)
-			   ) {
+			    ) {
 			   	tm.tm_year -= 1900;
 			   	tm.tm_mon--;
 			   	check_tm(tm);
 				inception = (uint32_t) mktime_from_utc(&tm);
 			} else if (strlen(optarg) == 14 &&
-			    sscanf(optarg, "%4d%2d%2d%2d%2d%2d", &tm.tm_year, &tm.tm_mon, &tm.tm_mday, &tm.tm_hour, &tm.tm_min, &tm.tm_sec)
-			   ) {
+					 sscanf(optarg, "%4d%2d%2d%2d%2d%2d", &tm.tm_year, &tm.tm_mon, &tm.tm_mday, &tm.tm_hour, &tm.tm_min, &tm.tm_sec)
+					 ) {
 			   	tm.tm_year -= 1900;
 			   	tm.tm_mon--;
 			   	check_tm(tm);
@@ -310,22 +310,22 @@ main(int argc, char *argv[])
 				if (s == LDNS_STATUS_OK) {
 					/* must be dnssec key */
 					switch (ldns_key_algorithm(key)) {
-						case LDNS_SIGN_RSAMD5:
-						case LDNS_SIGN_RSASHA1:
-						case LDNS_SIGN_RSASHA1_NSEC3:
-						case LDNS_SIGN_RSASHA256:
-						case LDNS_SIGN_RSASHA256_NSEC3:
-						case LDNS_SIGN_RSASHA512:
-						case LDNS_SIGN_RSASHA512_NSEC3:
-						case LDNS_SIGN_DSA:
-						case LDNS_SIGN_DSA_NSEC3:
-							ldns_key_list_push_key(keys, key);
-							/*printf("Added key at %p:\n", key);*/
-							/*ldns_key_print(stdout, key);*/
-							break;
-						default:
-							fprintf(stderr, "Warning, key not suitable for signing, ignoring key with algorithm %u\n", ldns_key_algorithm(key));
-							break;
+					case LDNS_SIGN_RSAMD5:
+					case LDNS_SIGN_RSASHA1:
+					case LDNS_SIGN_RSASHA1_NSEC3:
+					case LDNS_SIGN_RSASHA256:
+					case LDNS_SIGN_RSASHA256_NSEC3:
+					case LDNS_SIGN_RSASHA512:
+					case LDNS_SIGN_RSASHA512_NSEC3:
+					case LDNS_SIGN_DSA:
+					case LDNS_SIGN_DSA_NSEC3:
+						ldns_key_list_push_key(keys, key);
+						/*printf("Added key at %p:\n", key);*/
+						/*ldns_key_print(stdout, key);*/
+						break;
+					default:
+						fprintf(stderr, "Warning, key not suitable for signing, ignoring key with algorithm %u\n", ldns_key_algorithm(key));
+						break;
 					}
 				} else {
 					printf("Error reading key '%s' from engine: %s\n", eng_key_id, ldns_get_errorstr_by_id(s));
@@ -348,28 +348,28 @@ main(int argc, char *argv[])
 			exit(EXIT_FAILURE);
 			break;
 		case 's':
-		        if (strlen(optarg) % 2 != 0) {
-                                fprintf(stderr, "Salt value is not valid hex data, not a multiple of 2 characters\n");
-                                exit(EXIT_FAILURE);
-		        }
-		        nsec3_salt_length = (uint8_t) strlen(optarg) / 2;
+			if (strlen(optarg) % 2 != 0) {
+				fprintf(stderr, "Salt value is not valid hex data, not a multiple of 2 characters\n");
+				exit(EXIT_FAILURE);
+			}
+			nsec3_salt_length = (uint8_t) strlen(optarg) / 2;
 			nsec3_salt = LDNS_XMALLOC(uint8_t, nsec3_salt_length);
-                        for (c = 0; c < (int) strlen(optarg); c += 2) {
-                                if (isxdigit(optarg[c]) && isxdigit(optarg[c+1])) {
-                                        nsec3_salt[c/2] = (uint8_t) ldns_hexdigit_to_int(optarg[c]) * 16 +
-                                                          ldns_hexdigit_to_int(optarg[c+1]);
-                                } else {
-                                        fprintf(stderr, "Salt value is not valid hex data.\n");
-                                        exit(EXIT_FAILURE);
-                                }
-                        }
+			for (c = 0; c < (int) strlen(optarg); c += 2) {
+				if (isxdigit(optarg[c]) && isxdigit(optarg[c+1])) {
+					nsec3_salt[c/2] = (uint8_t) ldns_hexdigit_to_int(optarg[c]) * 16 +
+						ldns_hexdigit_to_int(optarg[c+1]);
+				} else {
+					fprintf(stderr, "Salt value is not valid hex data.\n");
+					exit(EXIT_FAILURE);
+				}
+			}
 
 			break;
 		case 't':
 			nsec3_iterations_cmd = (size_t) atol(optarg);
 			if (nsec3_iterations_cmd > LDNS_NSEC3_MAX_ITERATIONS) {
-			  fprintf(stderr, "Iterations count can not exceed %u, quitting\n", LDNS_NSEC3_MAX_ITERATIONS);
-			  exit(EXIT_FAILURE);
+				fprintf(stderr, "Iterations count can not exceed %u, quitting\n", LDNS_NSEC3_MAX_ITERATIONS);
+				exit(EXIT_FAILURE);
 			}
 			nsec3_iterations = (uint16_t) nsec3_iterations_cmd;
 			break;
@@ -402,8 +402,8 @@ main(int argc, char *argv[])
 		s = ldns_zone_new_frm_fp_l(&orig_zone, zonefile, origin, ttl, class, &line_nr);
 		if (s != LDNS_STATUS_OK) {
 			fprintf(stderr, "Zone not read, error: %s at %s line %d\n", 
-					ldns_get_errorstr_by_id(s), 
-					zonefile_name, line_nr);
+				   ldns_get_errorstr_by_id(s), 
+				   zonefile_name, line_nr);
 			exit(EXIT_FAILURE);
 		} else {
 			orig_soa = ldns_zone_soa(orig_zone);
@@ -596,16 +596,20 @@ main(int argc, char *argv[])
 	if (use_nsec3) {
 		/*
 		  signed_zone = ldns_zone_sign_nsec3(orig_zone,
-		                                   keys,
-		                                   nsec3_algorithm,
-		                                   nsec3_flags,
-		                                   nsec3_iterations,
-		                                   nsec3_salt_length,
-		                                   nsec3_salt);
+		  keys,
+		  ldns_dnssec_default_replace_signatures,
+		  NULL,
+		  nsec3_algorithm,
+		  nsec3_flags,
+		  nsec3_iterations,
+		  nsec3_salt_length,
+		  nsec3_salt);
 		*/
 		ldns_dnssec_zone_sign_nsec3(signed_zone,
 							   added_rrs,
 							   keys,
+							   ldns_dnssec_default_replace_signatures,
+							   NULL,
 							   nsec3_algorithm,
 							   0,
 							   nsec3_iterations,
@@ -616,7 +620,8 @@ main(int argc, char *argv[])
 		ldns_dnssec_zone_sign(signed_zone,
 						  added_rrs,
 						  keys,
-						  LDNS_RR_TYPE_NSEC);
+						  ldns_dnssec_default_replace_signatures,
+						  NULL);
 	}
 	
 	if (!outputfile_name) {
