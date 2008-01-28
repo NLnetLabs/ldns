@@ -172,6 +172,7 @@ main(int argc, char *argv[])
 	ldns_rr_class class = LDNS_RR_CLASS_IN;	
 	
 	char *prog = strdup(argv[0]);
+	ldns_status result;
 	
 	inception = 0;
 	expiration = 0;
