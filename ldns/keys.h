@@ -95,6 +95,8 @@ typedef enum ldns_enum_signing_algorithm ldns_signing_algorithm;
  */
 struct ldns_struct_key {
 	ldns_signing_algorithm _alg;
+	/** Whether to use this key when signing */
+	bool _use;
 	/** Storage pointers for the types of keys supported */
 	/* TODO remove unions? */
 	struct {
@@ -401,6 +403,18 @@ DSA *ldns_key_dsa_key(const ldns_key *k);
  */
 ldns_signing_algorithm ldns_key_algorithm(const ldns_key *k);
 /**
+ * set the use flag
+ * \param[in] k the key
+ * \param[in] v the boolean value to set the _use field to
+ */
+void ldns_key_set_use(ldns_key *k, bool v);
+/**
+ * return the use flag
+ * \param[in] k the key
+ * \return the boolean value of the _use field
+ */
+bool ldns_key_use(const ldns_key *k);
+/**
  * return the hmac key data
  * \param[in] k the key
  * \return the hmac key data
@@ -442,6 +456,14 @@ uint16_t ldns_key_keytag(const ldns_key *k);
  * \return the owner
  */
 ldns_rdf *ldns_key_pubkey_owner(const ldns_key *k);
+/**
+ * Set the 'use' flag for all keys in the list
+ * \param[in] keys The key_list
+ * \param[in] v The value to set the use flags to
+ */
+void
+ldns_key_list_set_use(ldns_key_list *keys, bool v);
+
 /**
  * return the flag of the key
  * \param[in] k the key

@@ -54,6 +54,7 @@ ldns_key_new()
 		return NULL;
 	} else {
 		/* some defaults - not sure wether to do this */
+		ldns_key_set_use(newkey, true);
 		ldns_key_set_flags(newkey, LDNS_KEY_ZONE_KEY);
 		ldns_key_set_origttl(newkey, 0);
 		ldns_key_set_keytag(newkey, 0);
@@ -63,7 +64,7 @@ ldns_key_new()
 		ldns_key_set_hmac_key(newkey, NULL);
 		return newkey;
 	}
-return NULL;
+	return NULL;
 }
 
 ldns_status 
@@ -651,6 +652,23 @@ ldns_key_algorithm(const ldns_key *k)
 	return k->_alg;
 }
 
+void
+ldns_key_set_use(ldns_key *k, bool v)
+{
+	if (k) {
+		k->_use = v;
+	}
+}
+
+bool
+ldns_key_use(const ldns_key *k)
+{
+	if (k) {
+		return k->_use;
+	}
+	return false;
+}
+
 EVP_PKEY *
 ldns_key_evp_key(const ldns_key *k)
 {
@@ -718,6 +736,16 @@ ldns_key_pubkey_owner(const ldns_key *k)
 }
 
 /* write */
+void
+ldns_key_list_set_use(ldns_key_list *keys, bool v)
+{
+	size_t i;
+
+	for (i = 0; i < ldns_key_list_key_count(keys); i++) {
+		ldns_key_set_use(ldns_key_list_key(keys, i), v);
+	}
+}
+
 void            
 ldns_key_list_set_key_count(ldns_key_list *key, size_t count)
 {

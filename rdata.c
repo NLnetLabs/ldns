@@ -187,6 +187,7 @@ ldns_rdf_new_frm_data(ldns_rdf_type type, size_t size, const void *data)
 	ldns_rdf_set_type(rdf, type);
 	ldns_rdf_set_size(rdf, size);
 	memcpy(rdf->_data, data, size);
+
 	return rdf;
 }
 

@@ -31,6 +31,7 @@
 #include <ldns/keys.h>
 #include <ldns/zone.h>
 #include <ldns/resolver.h>
+#include <ldns/dnssec_zone.h>
 
 #define LDNS_MAX_KEYLEN		2048
 #define LDNS_DNSSEC_KEYPROTO	3
@@ -48,6 +49,12 @@ struct ldns_dnssec_data_chain_struct {
   ldns_rr_type parent_type;
   ldns_dnssec_data_chain *parent;
 };
+
+/** return values for the old-signature callback */
+#define LDNS_SIGNATURE_LEAVE_ADD_NEW 0
+#define LDNS_SIGNATURE_LEAVE_NO_ADD 1
+#define LDNS_SIGNATURE_REMOVE_ADD_NEW 2
+#define LDNS_SIGNATURE_REMOVE_NO_ADD 3
 
 /**
  * Returns the first RRSIG rr that corresponds to the rrset with the given name and type
@@ -607,16 +614,99 @@ ldns_rdf *ldns_nsec3_hash_name(ldns_rdf *name, uint8_t algorithm, uint16_t itera
  */
 ldns_status ldns_pkt_verify(ldns_pkt *p, ldns_rr_type t, ldns_rdf *o, ldns_rr_list *k, ldns_rr_list *s, ldns_rr_list *good_keys);
 
+/** 
+ * Default callback function to always leave present signatures, and
+ * add new ones
+ * \param[in] sig The signature to check for removal (unused)
+ * \param[in] n Optional argument (unused)
+ * \return LDNS_SIGNATURE_LEAVE_ADD_NEW
+ */
+int ldns_dnssec_default_add_to_signatures(ldns_rr *sig, void *n);
+/** 
+ * Default callback function to always leave present signatures, and
+ * add no new ones for the keys of these signatures
+ * \param[in] sig The signature to check for removal (unused)
+ * \param[in] n Optional argument (unused)
+ * \return LDNS_SIGNATURE_LEAVE_NO_ADD
+ */
+int ldns_dnssec_default_leave_signatures(ldns_rr *sig, void *n);
+/** 
+ * Default callback function to always remove present signatures, but
+ * add no new ones
+ * \param[in] sig The signature to check for removal (unused)
+ * \param[in] n Optional argument (unused)
+ * \return LDNS_SIGNATURE_REMOVE_NO_ADD
+ */
+int ldns_dnssec_default_delete_signatures(ldns_rr *sig, void *n);
+/** 
+ * Default callback function to always leave present signatures, and
+ * add new ones
+ * \param[in] sig The signature to check for removal (unused)
+ * \param[in] n Optional argument (unused)
+ * \return LDNS_SIGNATURE_REMOVE_ADD_NEW
+ */
+int ldns_dnssec_default_replace_signatures(ldns_rr *sig, void *n);
+
 /**
  * signs the given zone with the given new zone
- * returns a newly allocated signed zone
- * extra arguments will come later (expiration etc.)
+ * 
+ * \param[in] zone the zone to sign
+ * \param[in] key_list the list of keys to sign the zone with
+ * \param[in] new_rrs newly created resource records are added to this list, to free them later
+ * \param[in] func callback function that decides what to do with old signatures
+ * \param[in] arg optional argument for the callback function
+ * \return LDNS_STATUS_OK on success, an error code otherwise
+ */
+ldns_status ldns_dnssec_zone_sign(ldns_dnssec_zone *zone,
+						    ldns_rr_list *new_rrs,
+						    ldns_key_list *key_list,
+						    int (*func)(ldns_rr *, void *),
+						    void *arg);
+
+/**
+ * signs the given zone with the given new zone, with NSEC3
  *
  * \param[in] zone the zone to sign
  * \param[in] key_list the list of keys to sign the zone with
- * \return the signed zone
+ * \param[in] new_rrs newly created resource records are added to this list, to free them later
+ * \param[in] func callback function that decides what to do with old signatures
+ * \param[in] arg optional argument for the callback function
+ * \param[in] algorithm the NSEC3 hashing algorithm to use
+ * \param[in] flags NSEC3 flags
+ * \param[in] iterations the number of NSEC3 hash iterations to use
+ * \param[in] salt_length the length (in octets) of the NSEC3 salt
+ * \param[in] salt the NSEC3 salt data
+ * \return LDNS_STATUS_OK on success, an error code otherwise
+ */
+ldns_status ldns_dnssec_zone_sign_nsec3(ldns_dnssec_zone *zone,
+								ldns_rr_list *new_rrs,
+								ldns_key_list *key_list,
+								int (*func)(ldns_rr *, void *),
+								void *arg,
+								uint8_t algorithm,
+								uint8_t flags,
+								uint16_t iterations,
+								uint8_t salt_length,
+								uint8_t *salt);
+
+/**
+ * Signs the zone, and returns a newly allocated signed zone
+ * \param[in] zone the zone to sign
+ * \param[in] key_list list of keys to sign with
+ * \return signed zone
  */
 ldns_zone *ldns_zone_sign(const ldns_zone *zone, ldns_key_list *key_list);
+/**
+ * Signs the zone with NSEC3, and returns a newly allocated signed zone
+ * \param[in] zone the zone to sign
+ * \param[in] key_list list of keys to sign with
+ * \param[in] algorithm the NSEC3 hashing algorithm to use
+ * \param[in] flags NSEC3 flags
+ * \param[in] iterations the number of NSEC3 hash iterations to use
+ * \param[in] salt_length the length (in octets) of the NSEC3 salt
+ * \param[in] salt the NSEC3 salt data
+ * \return signed zone
+ */
 ldns_zone *ldns_zone_sign_nsec3(ldns_zone *zone, ldns_key_list *key_list, uint8_t algorithm, uint8_t flags, uint16_t iterations, uint8_t salt_length, uint8_t *salt);
  
 /**

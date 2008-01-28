@@ -100,7 +100,6 @@ strip_dnssec_records(ldns_zone *zone)
 	
 	new_list = ldns_rr_list_new();
 	
-	new_list = ldns_rr_list_new();
 	while ((cur_rr = ldns_rr_list_pop_rr(ldns_zone_rrs(zone)))) {
 		if (ldns_rr_get_type(cur_rr) == LDNS_RR_TYPE_RRSIG ||
 		    ldns_rr_get_type(cur_rr) == LDNS_RR_TYPE_NSEC
@@ -129,7 +128,7 @@ main(int argc, char *argv[])
 	ldns_zone *orig_zone;
 	ldns_rr_list *orig_rrs = NULL;
 	ldns_rr *orig_soa = NULL;
-	ldns_zone *signed_zone;
+	ldns_dnssec_zone *signed_zone;
 
 	const char *keyfile_name_base;
 	char *keyfile_name;
@@ -139,6 +138,8 @@ main(int argc, char *argv[])
 	ldns_key_list *keys;
 	size_t key_i;
 	ldns_status s;
+	size_t i;
+	ldns_rr_list *added_rrs;
 
 	bool leave_old_dnssec_data = false;
 
@@ -154,7 +155,7 @@ main(int argc, char *argv[])
 	bool use_nsec3 = false;
 	
 	uint8_t nsec3_algorithm = 1;
-	uint8_t nsec3_flags = 0;
+	/*uint8_t nsec3_flags = 0;*/
 	size_t nsec3_iterations_cmd = 1;
 	uint16_t nsec3_iterations = 1;
 	uint8_t nsec3_salt_length = 0;
@@ -171,13 +172,14 @@ main(int argc, char *argv[])
 	ldns_rr_class class = LDNS_RR_CLASS_IN;	
 	
 	char *prog = strdup(argv[0]);
+	ldns_status result;
 	
 	inception = 0;
 	expiration = 0;
 	
 	keys = ldns_key_list_new();
 
-/*	OPENSSL_config(NULL);*/
+	/*	OPENSSL_config(NULL);*/
 
 	while ((c = getopt(argc, argv, "a:e:f:i:k:lno:s:t:v:E:K:")) != -1) {
 		switch (c) {
@@ -193,14 +195,14 @@ main(int argc, char *argv[])
 
 			if (strlen(optarg) == 8 &&
 			    sscanf(optarg, "%4d%2d%2d", &tm.tm_year, &tm.tm_mon, &tm.tm_mday)
-			   ) {
+			    ) {
 			   	tm.tm_year -= 1900;
 			   	tm.tm_mon--;
 			   	check_tm(tm);
 				expiration = (uint32_t) mktime_from_utc(&tm);
 			} else if (strlen(optarg) == 14 &&
-			    sscanf(optarg, "%4d%2d%2d%2d%2d%2d", &tm.tm_year, &tm.tm_mon, &tm.tm_mday, &tm.tm_hour, &tm.tm_min, &tm.tm_sec)
-			   ) {
+					 sscanf(optarg, "%4d%2d%2d%2d%2d%2d", &tm.tm_year, &tm.tm_mon, &tm.tm_mday, &tm.tm_hour, &tm.tm_min, &tm.tm_sec)
+					 ) {
 			   	tm.tm_year -= 1900;
 			   	tm.tm_mon--;
 			   	check_tm(tm);
@@ -218,14 +220,14 @@ main(int argc, char *argv[])
 
 			if (strlen(optarg) == 8 &&
 			    sscanf(optarg, "%4d%2d%2d", &tm.tm_year, &tm.tm_mon, &tm.tm_mday)
-			   ) {
+			    ) {
 			   	tm.tm_year -= 1900;
 			   	tm.tm_mon--;
 			   	check_tm(tm);
 				inception = (uint32_t) mktime_from_utc(&tm);
 			} else if (strlen(optarg) == 14 &&
-			    sscanf(optarg, "%4d%2d%2d%2d%2d%2d", &tm.tm_year, &tm.tm_mon, &tm.tm_mday, &tm.tm_hour, &tm.tm_min, &tm.tm_sec)
-			   ) {
+					 sscanf(optarg, "%4d%2d%2d%2d%2d%2d", &tm.tm_year, &tm.tm_mon, &tm.tm_mday, &tm.tm_hour, &tm.tm_min, &tm.tm_sec)
+					 ) {
 			   	tm.tm_year -= 1900;
 			   	tm.tm_mon--;
 			   	check_tm(tm);
@@ -309,22 +311,22 @@ main(int argc, char *argv[])
 				if (s == LDNS_STATUS_OK) {
 					/* must be dnssec key */
 					switch (ldns_key_algorithm(key)) {
-						case LDNS_SIGN_RSAMD5:
-						case LDNS_SIGN_RSASHA1:
-						case LDNS_SIGN_RSASHA1_NSEC3:
-						case LDNS_SIGN_RSASHA256:
-						case LDNS_SIGN_RSASHA256_NSEC3:
-						case LDNS_SIGN_RSASHA512:
-						case LDNS_SIGN_RSASHA512_NSEC3:
-						case LDNS_SIGN_DSA:
-						case LDNS_SIGN_DSA_NSEC3:
-							ldns_key_list_push_key(keys, key);
-							/*printf("Added key at %p:\n", key);*/
-							/*ldns_key_print(stdout, key);*/
-							break;
-						default:
-							fprintf(stderr, "Warning, key not suitable for signing, ignoring key with algorithm %u\n", ldns_key_algorithm(key));
-							break;
+					case LDNS_SIGN_RSAMD5:
+					case LDNS_SIGN_RSASHA1:
+					case LDNS_SIGN_RSASHA1_NSEC3:
+					case LDNS_SIGN_RSASHA256:
+					case LDNS_SIGN_RSASHA256_NSEC3:
+					case LDNS_SIGN_RSASHA512:
+					case LDNS_SIGN_RSASHA512_NSEC3:
+					case LDNS_SIGN_DSA:
+					case LDNS_SIGN_DSA_NSEC3:
+						ldns_key_list_push_key(keys, key);
+						/*printf("Added key at %p:\n", key);*/
+						/*ldns_key_print(stdout, key);*/
+						break;
+					default:
+						fprintf(stderr, "Warning, key not suitable for signing, ignoring key with algorithm %u\n", ldns_key_algorithm(key));
+						break;
 					}
 				} else {
 					printf("Error reading key '%s' from engine: %s\n", eng_key_id, ldns_get_errorstr_by_id(s));
@@ -347,28 +349,28 @@ main(int argc, char *argv[])
 			exit(EXIT_FAILURE);
 			break;
 		case 's':
-		        if (strlen(optarg) % 2 != 0) {
-                                fprintf(stderr, "Salt value is not valid hex data, not a multiple of 2 characters\n");
-                                exit(EXIT_FAILURE);
-		        }
-		        nsec3_salt_length = (uint8_t) strlen(optarg) / 2;
+			if (strlen(optarg) % 2 != 0) {
+				fprintf(stderr, "Salt value is not valid hex data, not a multiple of 2 characters\n");
+				exit(EXIT_FAILURE);
+			}
+			nsec3_salt_length = (uint8_t) strlen(optarg) / 2;
 			nsec3_salt = LDNS_XMALLOC(uint8_t, nsec3_salt_length);
-                        for (c = 0; c < (int) strlen(optarg); c += 2) {
-                                if (isxdigit(optarg[c]) && isxdigit(optarg[c+1])) {
-                                        nsec3_salt[c/2] = (uint8_t) ldns_hexdigit_to_int(optarg[c]) * 16 +
-                                                          ldns_hexdigit_to_int(optarg[c+1]);
-                                } else {
-                                        fprintf(stderr, "Salt value is not valid hex data.\n");
-                                        exit(EXIT_FAILURE);
-                                }
-                        }
+			for (c = 0; c < (int) strlen(optarg); c += 2) {
+				if (isxdigit(optarg[c]) && isxdigit(optarg[c+1])) {
+					nsec3_salt[c/2] = (uint8_t) ldns_hexdigit_to_int(optarg[c]) * 16 +
+						ldns_hexdigit_to_int(optarg[c+1]);
+				} else {
+					fprintf(stderr, "Salt value is not valid hex data.\n");
+					exit(EXIT_FAILURE);
+				}
+			}
 
 			break;
 		case 't':
 			nsec3_iterations_cmd = (size_t) atol(optarg);
 			if (nsec3_iterations_cmd > LDNS_NSEC3_MAX_ITERATIONS) {
-			  fprintf(stderr, "Iterations count can not exceed %u, quitting\n", LDNS_NSEC3_MAX_ITERATIONS);
-			  exit(EXIT_FAILURE);
+				fprintf(stderr, "Iterations count can not exceed %u, quitting\n", LDNS_NSEC3_MAX_ITERATIONS);
+				exit(EXIT_FAILURE);
 			}
 			nsec3_iterations = (uint16_t) nsec3_iterations_cmd;
 			break;
@@ -393,6 +395,7 @@ main(int argc, char *argv[])
 	
 	zonefile = fopen(zonefile_name, "r");
 	
+	printf("[XX] Reading zone file\n");
 	if (!zonefile) {
 		fprintf(stderr, "Error: unable to read %s (%s)\n", zonefile_name, strerror(errno));
 		exit(EXIT_FAILURE);
@@ -400,8 +403,8 @@ main(int argc, char *argv[])
 		s = ldns_zone_new_frm_fp_l(&orig_zone, zonefile, origin, ttl, class, &line_nr);
 		if (s != LDNS_STATUS_OK) {
 			fprintf(stderr, "Zone not read, error: %s at %s line %d\n", 
-					ldns_get_errorstr_by_id(s), 
-					zonefile_name, line_nr);
+				   ldns_get_errorstr_by_id(s), 
+				   zonefile_name, line_nr);
 			exit(EXIT_FAILURE);
 		} else {
 			orig_soa = ldns_zone_soa(orig_zone);
@@ -427,11 +430,17 @@ main(int argc, char *argv[])
 	while (argi < argc) {
 		keyfile_name_base = argv[argi];
 		keyfile_name = LDNS_XMALLOC(char, strlen(keyfile_name_base) + 9);
-		snprintf(keyfile_name, strlen(keyfile_name_base) + 9, "%s.private", keyfile_name_base);
+		snprintf(keyfile_name,
+			    strlen(keyfile_name_base) + 9,
+			    "%s.private",
+			    keyfile_name_base);
 		keyfile = fopen(keyfile_name, "r");
 		line_nr = 0;
 		if (!keyfile) {
-			fprintf(stderr, "Error: unable to read %s: %s\n", keyfile_name, strerror(errno));
+			fprintf(stderr,
+				   "Error: unable to read %s: %s\n",
+				   keyfile_name,
+				   strerror(errno));
 		} else {
 			s = ldns_key_new_frm_fp_l(&key, keyfile, &line_nr);
 			fclose(keyfile);
@@ -450,21 +459,34 @@ main(int argc, char *argv[])
 				
 				/* find the public key in the zone, or in a
 				 * seperate file
-				 * we 'generate' one anyway, then match that to any present in the zone,
-				 *  if it matches, we drop our own. If not, we try to see if there
-				 * is a .key file present. If not, we use our own generated one, with
+				 * we 'generate' one anyway, 
+				 * then match that to any present in the zone,
+				 * if it matches, we drop our own. If not,
+				 * we try to see if there is a .key file present.
+				 * If not, we use our own generated one, with
 				 * some default values */
 				
 				pubkey_gen = ldns_key2rr(key);
+
 				if (verbosity >= 2) {
-					fprintf(stderr, "Looking for key with keytag %u or %u\n", (unsigned int) ldns_calc_keytag(pubkey_gen), (unsigned int)  ldns_calc_keytag(pubkey_gen) + 1);
+					fprintf(stderr,
+						   "Looking for key with keytag %u or %u\n",
+						   (unsigned int) ldns_calc_keytag(pubkey_gen),
+						   (unsigned int) ldns_calc_keytag(pubkey_gen)+1
+						   );
 				}
-				for (key_i = 0; key_i < ldns_rr_list_rr_count(orig_rrs); key_i++) {
+				for (key_i = 0;
+					key_i < ldns_rr_list_rr_count(orig_rrs);
+					key_i++) {
 					pubkey = ldns_rr_list_rr(orig_rrs, key_i);
 					if (ldns_rr_get_type(pubkey) == LDNS_RR_TYPE_DNSKEY &&
-					    (ldns_calc_keytag(pubkey) == ldns_calc_keytag(pubkey_gen) ||
+					    (ldns_calc_keytag(pubkey)
+						==
+						ldns_calc_keytag(pubkey_gen) ||
 					     /* KSK has gen-keytag + 1 */
-					     ldns_calc_keytag(pubkey) == ldns_calc_keytag(pubkey_gen) + 1) 
+					     ldns_calc_keytag(pubkey)
+						==
+						ldns_calc_keytag(pubkey_gen) + 1) 
 					    ) {
 						/* found it, drop our own */
 						if (verbosity >= 2) {
@@ -474,16 +496,25 @@ main(int argc, char *argv[])
 					}
 				}
 				/* it was not in the zone, try to read a .key file */
-				keyfile_name = LDNS_XMALLOC(char, strlen(keyfile_name_base) + 5);
-				snprintf(keyfile_name, strlen(keyfile_name_base) + 5, "%s.key", keyfile_name_base);
+				keyfile_name = LDNS_XMALLOC(char,
+									   strlen(keyfile_name_base) + 5);
+				snprintf(keyfile_name,
+					    strlen(keyfile_name_base) + 5,
+					    "%s.key",
+					    keyfile_name_base);
 				if (verbosity >= 2) {
 					fprintf(stderr, "Trying to read %s\n", keyfile_name);
 				}
 				keyfile = fopen(keyfile_name, "r");
 				line_nr = 0;
 				if (keyfile) {
-					if (ldns_rr_new_frm_fp_l(&pubkey, keyfile, &default_ttl, NULL, NULL, &line_nr) ==
-							LDNS_STATUS_OK) {
+					if (ldns_rr_new_frm_fp_l(&pubkey,
+										keyfile,
+										&default_ttl,
+										NULL,
+										NULL,
+										&line_nr) ==
+					    LDNS_STATUS_OK) {
 						ldns_key_set_pubkey_owner(key, ldns_rdf_clone(ldns_rr_owner(pubkey)));
 						ldns_key_set_flags(key, ldns_rdf2native_int16(ldns_rr_rdf(pubkey, 0)));
 						ldns_key_set_keytag(key, ldns_calc_keytag(pubkey));
@@ -494,61 +525,35 @@ main(int argc, char *argv[])
 					goto found;
 				}
 				
-				/* okay, so reading .key didn't work either, just use our generated one */
+				/* okay, so reading .key didn't work either,
+				   just use our generated one */
 				if (verbosity >= 2) {
 					fprintf(stderr, "Not in zone, no .key file, generating DNSKEY from .private\n");
 				}
 				ldns_zone_push_rr(orig_zone, pubkey_gen);
 				
 				
-				found:
+			found:
 				ldns_rr_free(pubkey_gen);
 				switch (ldns_key_algorithm(key)) {
-					case LDNS_SIGN_RSAMD5:
-					case LDNS_SIGN_RSASHA1:
-					case LDNS_SIGN_RSASHA1_NSEC3:
-					case LDNS_SIGN_RSASHA256:
-					case LDNS_SIGN_RSASHA256_NSEC3:
-					case LDNS_SIGN_RSASHA512:
-					case LDNS_SIGN_RSASHA512_NSEC3:
-					case LDNS_SIGN_DSA:
-					case LDNS_SIGN_DSA_NSEC3:
-						ldns_key_list_push_key(keys, key);
-						/*printf("Added key at %p:\n", key);*/
-						/*ldns_key_print(stdout, key);*/
-						break;
-					default:
-						fprintf(stderr, "Warning, key not suitable for signing, ignoring key from %s with algorithm %u\n", keyfile_name, ldns_key_algorithm(key));
-						break;
+				case LDNS_SIGN_RSAMD5:
+				case LDNS_SIGN_RSASHA1:
+				case LDNS_SIGN_RSASHA1_NSEC3:
+				case LDNS_SIGN_RSASHA256:
+				case LDNS_SIGN_RSASHA256_NSEC3:
+				case LDNS_SIGN_RSASHA512:
+				case LDNS_SIGN_RSASHA512_NSEC3:
+				case LDNS_SIGN_DSA:
+				case LDNS_SIGN_DSA_NSEC3:
+					ldns_key_list_push_key(keys, key);
+					/*printf("Added key at %p:\n", key);*/
+					/*ldns_key_print(stdout, key);*/
+					break;
+				default:
+					fprintf(stderr, "Warning, key not suitable for signing, ignoring key from %s with algorithm %u\n", keyfile_name, ldns_key_algorithm(key));
+					break;
 				}
 				LDNS_FREE(keyfile_name);
-#if 0
- else {
-					/* apparently the public key is not in the zone
-					   so we try to read the .key file
-					 */
-					keyfile_name = LDNS_XMALLOC(char, strlen(keyfile_name_base) + 5);
-					snprintf(keyfile_name, strlen(keyfile_name_base) + 5, "%s.key", keyfile_name_base);
-					fprintf(stderr, "trying to read %s\n", keyfile_name);
-					keyfile = fopen(keyfile_name, "r");
-					line_nr = 0;
-					if (!keyfile) {
-						fprintf(stderr, "Error: unable to read %s: %s\n", keyfile_name, strerror(errno));
-					} else {
-						if (ldns_rr_new_frm_fp_l(&pubkey, keyfile, &default_ttl, NULL, NULL, &line_nr) ==
-								LDNS_STATUS_OK) {
-							ldns_key_set_pubkey_owner(key, ldns_rdf_clone(ldns_rr_owner(pubkey)));
-							ldns_key_set_flags(key, ldns_rdf2native_int16(ldns_rr_rdf(pubkey, 0)));
-							ldns_key_set_keytag(key, ldns_calc_keytag(pubkey));
-						}
-						ldns_key_list_push_key(keys, key);
-						ldns_zone_push_rr(orig_zone, ldns_rr_clone(pubkey));
-						ldns_rr_free(pubkey);
-						fclose(keyfile);
-					}
-					LDNS_FREE(keyfile_name);
-				}
-#endif
 			} else {
 				fprintf(stderr, "Error reading key from %s at line %d\n", argv[argi], line_nr);
 			}
@@ -563,11 +568,6 @@ main(int argc, char *argv[])
 		exit(EXIT_FAILURE);
 	}
 
-	/* remove old RRSIGS and NSECS */
-	if (!leave_old_dnssec_data) {
-		strip_dnssec_records(orig_zone);
-	}
-
 	/* walk through the keys, and add pubkeys to the orig zone */
 	for (key_i = 0; key_i < ldns_key_list_key_count(keys); key_i++) {
 		key = ldns_key_list_key(keys, key_i);
@@ -576,22 +576,55 @@ main(int argc, char *argv[])
 			pubkey = ldns_key2rr(key);
 			ldns_key_set_flags(key, ldns_rdf2native_int16(ldns_rr_rdf(pubkey, 0)));
 			ldns_key_set_keytag(key, ldns_calc_keytag(pubkey));
-			ldns_zone_push_rr(orig_zone, pubkey);
+			/*ldns_zone_push_rr(orig_zone, pubkey);*/
 			printf("Derived DNSKEY RR:\n");
 			ldns_rr_print(stdout, pubkey);
 		}
 	}
-			
+
+	printf("[XX] convert to dnssec zone\n");
+	signed_zone = ldns_dnssec_zone_new();
+    	if (ldns_dnssec_zone_add_rr(signed_zone, ldns_zone_soa(orig_zone)) !=
+	    LDNS_STATUS_OK) {
+		fprintf(stderr, "Error adding SOA to dnssec zone, skipping record\n");
+	}
+
+	for (i = 0; i < ldns_rr_list_rr_count(ldns_zone_rrs(orig_zone)); i++) {
+		if (ldns_dnssec_zone_add_rr(signed_zone, 
+							   ldns_rr_list_rr(ldns_zone_rrs(orig_zone), 
+										    i)) !=
+		    LDNS_STATUS_OK) {
+			fprintf(stderr, "Error adding RR to dnssec zone");
+			fprintf(stderr, ", skipping record:\n");
+			ldns_rr_print(stderr, 
+					    ldns_rr_list_rr(ldns_zone_rrs(orig_zone), i));
+		}
+	}
+
+	/* list to store newly created rrs, so we can free them later */
+	added_rrs = ldns_rr_list_new();
+
 	if (use_nsec3) {
-		signed_zone = ldns_zone_sign_nsec3(orig_zone,
-		                                   keys,
-		                                   nsec3_algorithm,
-		                                   nsec3_flags,
-		                                   nsec3_iterations,
-		                                   nsec3_salt_length,
-		                                   nsec3_salt);
+		result = ldns_dnssec_zone_sign_nsec3(signed_zone,
+									  added_rrs,
+									  keys,
+									  ldns_dnssec_default_replace_signatures,
+									  NULL,
+									  nsec3_algorithm,
+									  0,
+									  nsec3_iterations,
+									  nsec3_salt_length,
+									  nsec3_salt);
 	} else {
-		signed_zone = ldns_zone_sign(orig_zone, keys);
+		result = ldns_dnssec_zone_sign(signed_zone,
+						  added_rrs,
+						  keys,
+						  ldns_dnssec_default_replace_signatures,
+						  NULL);
+	}
+	if (result != LDNS_STATUS_OK) {
+		fprintf(stderr, "Error signing zone: %s\n",
+			   ldns_get_errorstr_by_id(result));
 	}
 	
 	if (!outputfile_name) {
@@ -604,7 +637,7 @@ main(int argc, char *argv[])
 		if (!outputfile) {
 			fprintf(stderr, "Unable to open %s for writing: %s\n", outputfile_name, strerror(errno));
 		} else {
-			ldns_zone_print(outputfile, signed_zone);
+			ldns_dnssec_zone_print(outputfile, signed_zone);
 			fclose(outputfile);
 		}
 /*
@@ -623,8 +656,10 @@ main(int argc, char *argv[])
 		exit(EXIT_FAILURE);
 	}
 	
+	ldns_dnssec_zone_free(signed_zone);
 	ldns_key_list_free(keys);
 	ldns_zone_deep_free(orig_zone);
+	ldns_rr_list_deep_free(added_rrs);
 	
 	LDNS_FREE(outputfile_name);
 	
