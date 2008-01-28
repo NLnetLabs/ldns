@@ -583,45 +583,47 @@ main(int argc, char *argv[])
 
 	printf("[XX] convert to dnssec zone\n");
 	signed_zone = ldns_dnssec_zone_new();
-    	ldns_dnssec_zone_add_rr(signed_zone, ldns_zone_soa(orig_zone));
+    	if (ldns_dnssec_zone_add_rr(signed_zone, ldns_zone_soa(orig_zone)) !=
+	    LDNS_STATUS_OK) {
+		fprintf(stderr, "Error adding SOA to dnssec zone, skipping record\n");
+	}
+
 	for (i = 0; i < ldns_rr_list_rr_count(ldns_zone_rrs(orig_zone)); i++) {
-		ldns_dnssec_zone_add_rr(signed_zone, 
-						    ldns_rr_list_rr(ldns_zone_rrs(orig_zone), 
-										i));
+		if (ldns_dnssec_zone_add_rr(signed_zone, 
+							   ldns_rr_list_rr(ldns_zone_rrs(orig_zone), 
+										    i)) !=
+		    LDNS_STATUS_OK) {
+			fprintf(stderr, "Error adding RR to dnssec zone");
+			fprintf(stderr, ", skipping record:\n");
+			ldns_rr_print(stderr, 
+					    ldns_rr_list_rr(ldns_zone_rrs(orig_zone), i));
+		}
 	}
 
 	/* list to store newly created rrs, so we can free them later */
 	added_rrs = ldns_rr_list_new();
 
 	if (use_nsec3) {
-		/*
-		  signed_zone = ldns_zone_sign_nsec3(orig_zone,
-		  keys,
-		  ldns_dnssec_default_replace_signatures,
-		  NULL,
-		  nsec3_algorithm,
-		  nsec3_flags,
-		  nsec3_iterations,
-		  nsec3_salt_length,
-		  nsec3_salt);
-		*/
-		ldns_dnssec_zone_sign_nsec3(signed_zone,
-							   added_rrs,
-							   keys,
-							   ldns_dnssec_default_replace_signatures,
-							   NULL,
-							   nsec3_algorithm,
-							   0,
-							   nsec3_iterations,
-							   nsec3_salt_length,
-							   nsec3_salt);
+		result = ldns_dnssec_zone_sign_nsec3(signed_zone,
+									  added_rrs,
+									  keys,
+									  ldns_dnssec_default_replace_signatures,
+									  NULL,
+									  nsec3_algorithm,
+									  0,
+									  nsec3_iterations,
+									  nsec3_salt_length,
+									  nsec3_salt);
 	} else {
-		/*signed_zone = ldns_zone_sign(orig_zone, keys);*/
-		ldns_dnssec_zone_sign(signed_zone,
+		result = ldns_dnssec_zone_sign(signed_zone,
 						  added_rrs,
 						  keys,
 						  ldns_dnssec_default_replace_signatures,
 						  NULL);
+	}
+	if (result != LDNS_STATUS_OK) {
+		fprintf(stderr, "Error signing zone: %s\n",
+			   ldns_get_errorstr_by_id(result));
 	}
 	
 	if (!outputfile_name) {

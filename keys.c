@@ -666,6 +666,7 @@ ldns_key_use(const ldns_key *k)
 	if (k) {
 		return k->_use;
 	}
+	return false;
 }
 
 EVP_PKEY *

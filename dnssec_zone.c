@@ -297,14 +297,12 @@ ldns_dnssec_name_nsec(ldns_dnssec_name *rrset)
 	return NULL;
 }
 
-ldns_status
+void
 ldns_dnssec_name_set_nsec(ldns_dnssec_name *rrset, ldns_rr *nsec)
 {
 	if (rrset && nsec) {
 		rrset->nsec = nsec;
-		return LDNS_STATUS_OK;
 	}
-	return LDNS_STATUS_ERR;
 }
 
 ldns_status
@@ -509,6 +507,12 @@ ldns_dnssec_zone_free(ldns_dnssec_zone *zone)
 	}
 }
 
+/* use for dname comparison in tree */
+int
+ldns_dname_compare_v(const void *a, const void *b) {
+	return ldns_dname_compare((ldns_rdf *)a, (ldns_rdf *)b);
+}
+
 ldns_status
 ldns_dnssec_zone_add_rr(ldns_dnssec_zone *zone, ldns_rr *rr)
 {
@@ -521,7 +525,7 @@ ldns_dnssec_zone_add_rr(ldns_dnssec_zone *zone, ldns_rr *rr)
 	}
 
 	if (!zone->names) {
-		zone->names = ldns_rbtree_create(ldns_dname_compare);
+		zone->names = ldns_rbtree_create(ldns_dname_compare_v);
 	}
 	
 	cur_node = ldns_rbtree_search(zone->names, ldns_rr_owner(rr));

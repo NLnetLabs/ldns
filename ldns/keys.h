@@ -457,6 +457,14 @@ uint16_t ldns_key_keytag(const ldns_key *k);
  */
 ldns_rdf *ldns_key_pubkey_owner(const ldns_key *k);
 /**
+ * Set the 'use' flag for all keys in the list
+ * \param[in] keys The key_list
+ * \param[in] v The value to set the use flags to
+ */
+void
+ldns_key_list_set_use(ldns_key_list *keys, bool v);
+
+/**
  * return the flag of the key
  * \param[in] k the key
  * \return the flag

@@ -1,6 +1,8 @@
 /*
  * rbtree.c -- generic red black tree
  *
+ * Taken from Unbound, modified for ldns
+ *
  * Copyright (c) 2001-2007, NLnet Labs. All rights reserved.
  * 
  * This software is open source.
@@ -43,9 +45,9 @@
 #include <ldns/rbtree.h>
 
 /** Node colour black */
-#define	BLACK	0
+#define	LDNS_BLACK	0
 /** Node colour red */
-#define	RED	1
+#define	LDNS_RED	1
 
 /** the NULL node, global alloc */
 ldns_rbnode_t	ldns_rbtree_null_node = {
@@ -53,7 +55,7 @@ ldns_rbnode_t	ldns_rbtree_null_node = {
 	LDNS_RBTREE_NULL,		/* Left.  */
 	LDNS_RBTREE_NULL,		/* Right.  */
 	NULL,			/* Key.  */
-	BLACK			/* Color.  */
+	LDNS_BLACK			/* Color.  */
 };
 
 /** rotate subtree left (to preserve redblack property) */
@@ -157,19 +159,19 @@ ldns_rbtree_insert_fixup(ldns_rbtree_t *rbtree, ldns_rbnode_t *node)
 	ldns_rbnode_t	*uncle;
 
 	/* While not at the root and need fixing... */
-	while (node != rbtree->root && node->parent->color == RED) {
+	while (node != rbtree->root && node->parent->color == LDNS_RED) {
 		/* If our parent is left child of our grandparent... */
 		if (node->parent == node->parent->parent->left) {
 			uncle = node->parent->parent->right;
 
 			/* If our uncle is red... */
-			if (uncle->color == RED) {
+			if (uncle->color == LDNS_RED) {
 				/* Paint the parent and the uncle black... */
-				node->parent->color = BLACK;
-				uncle->color = BLACK;
+				node->parent->color = LDNS_BLACK;
+				uncle->color = LDNS_BLACK;
 
 				/* And the grandparent red... */
-				node->parent->parent->color = RED;
+				node->parent->parent->color = LDNS_RED;
 
 				/* And continue fixing the grandparent */
 				node = node->parent->parent;
@@ -180,21 +182,21 @@ ldns_rbtree_insert_fixup(ldns_rbtree_t *rbtree, ldns_rbnode_t *node)
 					ldns_rbtree_rotate_left(rbtree, node);
 				}
 				/* Now we're the left child, repaint and rotate... */
-				node->parent->color = BLACK;
-				node->parent->parent->color = RED;
+				node->parent->color = LDNS_BLACK;
+				node->parent->parent->color = LDNS_RED;
 				ldns_rbtree_rotate_right(rbtree, node->parent->parent);
 			}
 		} else {
 			uncle = node->parent->parent->left;
 
 			/* If our uncle is red... */
-			if (uncle->color == RED) {
+			if (uncle->color == LDNS_RED) {
 				/* Paint the parent and the uncle black... */
-				node->parent->color = BLACK;
-				uncle->color = BLACK;
+				node->parent->color = LDNS_BLACK;
+				uncle->color = LDNS_BLACK;
 
 				/* And the grandparent red... */
-				node->parent->parent->color = RED;
+				node->parent->parent->color = LDNS_RED;
 
 				/* And continue fixing the grandparent */
 				node = node->parent->parent;
@@ -205,20 +207,20 @@ ldns_rbtree_insert_fixup(ldns_rbtree_t *rbtree, ldns_rbnode_t *node)
 					ldns_rbtree_rotate_right(rbtree, node);
 				}
 				/* Now we're the right child, repaint and rotate... */
-				node->parent->color = BLACK;
-				node->parent->parent->color = RED;
+				node->parent->color = LDNS_BLACK;
+				node->parent->parent->color = LDNS_RED;
 				ldns_rbtree_rotate_left(rbtree, node->parent->parent);
 			}
 		}
 	}
-	rbtree->root->color = BLACK;
+	rbtree->root->color = LDNS_BLACK;
 }
 
 ldns_rbnode_t *
-ldns_rbtree_insert_vref(void *data, void *rbtree)
+ldns_rbtree_insert_vref(ldns_rbnode_t *data, void *rbtree)
 {
 	return ldns_rbtree_insert((ldns_rbtree_t *) rbtree,
-						 (ldns_rbnode_t *) data);
+						 data);
 }
 
 /*
@@ -255,7 +257,7 @@ ldns_rbtree_insert (ldns_rbtree_t *rbtree, ldns_rbnode_t *data)
 	/* Initialize the new node */
 	data->parent = parent;
 	data->left = data->right = LDNS_RBTREE_NULL;
-	data->color = RED;
+	data->color = LDNS_RED;
 	rbtree->count++;
 
 	/* Insert it into the tree... */
@@ -380,14 +382,14 @@ ldns_rbtree_delete(ldns_rbtree_t *rbtree, const void *key)
 	change_parent_ptr(rbtree, to_delete->parent, to_delete, child);
 	change_child_ptr(child, to_delete, to_delete->parent);
 
-	if(to_delete->color == RED)
+	if(to_delete->color == LDNS_RED)
 	{
 		/* if node is red then the child (black) can be swapped in */
 	}
-	else if(child->color == RED)
+	else if(child->color == LDNS_RED)
 	{
 		/* change child to BLACK, removing a RED node is no problem */
-		if(child!=LDNS_RBTREE_NULL) child->color = BLACK;
+		if(child!=LDNS_RBTREE_NULL) child->color = LDNS_BLACK;
 	}
 	else ldns_rbtree_delete_fixup(rbtree, child, to_delete->parent);
 
@@ -395,7 +397,7 @@ ldns_rbtree_delete(ldns_rbtree_t *rbtree, const void *key)
 	to_delete->parent = LDNS_RBTREE_NULL;
 	to_delete->left = LDNS_RBTREE_NULL;
 	to_delete->right = LDNS_RBTREE_NULL;
-	to_delete->color = BLACK;
+	to_delete->color = LDNS_BLACK;
 	return to_delete;
 }
 
@@ -416,10 +418,10 @@ static void ldns_rbtree_delete_fixup(ldns_rbtree_t* rbtree, ldns_rbnode_t* child
 			return;
 		}
 
-		if(sibling->color == RED)
+		if(sibling->color == LDNS_RED)
 		{	/* rotate to get a black sibling */
-			child_parent->color = RED;
-			sibling->color = BLACK;
+			child_parent->color = LDNS_RED;
+			sibling->color = LDNS_BLACK;
 			if(child_parent->right == child)
 				ldns_rbtree_rotate_right(rbtree, child_parent);
 			else	ldns_rbtree_rotate_left(rbtree, child_parent);
@@ -428,13 +430,13 @@ static void ldns_rbtree_delete_fixup(ldns_rbtree_t* rbtree, ldns_rbnode_t* child
 			else sibling = child_parent->right;
 		}
 
-		if(child_parent->color == BLACK 
-			&& sibling->color == BLACK
-			&& sibling->left->color == BLACK
-			&& sibling->right->color == BLACK)
+		if(child_parent->color == LDNS_BLACK 
+			&& sibling->color == LDNS_BLACK
+			&& sibling->left->color == LDNS_BLACK
+			&& sibling->right->color == LDNS_BLACK)
 		{	/* fixup local with recolor of sibling */
 			if(sibling != LDNS_RBTREE_NULL)
-				sibling->color = RED;
+				sibling->color = LDNS_RED;
 
 			child = child_parent;
 			child_parent = child_parent->parent;
@@ -445,39 +447,39 @@ static void ldns_rbtree_delete_fixup(ldns_rbtree_t* rbtree, ldns_rbnode_t* child
 		else go_up = 0;
 	}
 
-	if(child_parent->color == RED
-		&& sibling->color == BLACK
-		&& sibling->left->color == BLACK
-		&& sibling->right->color == BLACK) 
+	if(child_parent->color == LDNS_RED
+		&& sibling->color == LDNS_BLACK
+		&& sibling->left->color == LDNS_BLACK
+		&& sibling->right->color == LDNS_BLACK) 
 	{
 		/* move red to sibling to rebalance */
 		if(sibling != LDNS_RBTREE_NULL)
-			sibling->color = RED;
-		child_parent->color = BLACK;
+			sibling->color = LDNS_RED;
+		child_parent->color = LDNS_BLACK;
 		return;
 	}
 
 	/* get a new sibling, by rotating at sibling. See which child
 	   of sibling is red */
 	if(child_parent->right == child
-		&& sibling->color == BLACK
-		&& sibling->right->color == RED
-		&& sibling->left->color == BLACK)
+		&& sibling->color == LDNS_BLACK
+		&& sibling->right->color == LDNS_RED
+		&& sibling->left->color == LDNS_BLACK)
 	{
-		sibling->color = RED;
-		sibling->right->color = BLACK;
+		sibling->color = LDNS_RED;
+		sibling->right->color = LDNS_BLACK;
 		ldns_rbtree_rotate_left(rbtree, sibling);
 		/* new sibling after rotation */
 		if(child_parent->right == child) sibling = child_parent->left;
 		else sibling = child_parent->right;
 	}
 	else if(child_parent->left == child
-		&& sibling->color == BLACK
-		&& sibling->left->color == RED
-		&& sibling->right->color == BLACK)
+		&& sibling->color == LDNS_BLACK
+		&& sibling->left->color == LDNS_RED
+		&& sibling->right->color == LDNS_BLACK)
 	{
-		sibling->color = RED;
-		sibling->left->color = BLACK;
+		sibling->color = LDNS_RED;
+		sibling->left->color = LDNS_BLACK;
 		ldns_rbtree_rotate_right(rbtree, sibling);
 		/* new sibling after rotation */
 		if(child_parent->right == child) sibling = child_parent->left;
@@ -486,15 +488,15 @@ static void ldns_rbtree_delete_fixup(ldns_rbtree_t* rbtree, ldns_rbnode_t* child
 
 	/* now we have a black sibling with a red child. rotate and exchange colors. */
 	sibling->color = child_parent->color;
-	child_parent->color = BLACK;
+	child_parent->color = LDNS_BLACK;
 	if(child_parent->right == child)
 	{
-		sibling->left->color = BLACK;
+		sibling->left->color = LDNS_BLACK;
 		ldns_rbtree_rotate_right(rbtree, child_parent);
 	}
 	else
 	{
-		sibling->right->color = BLACK;
+		sibling->right->color = LDNS_BLACK;
 		ldns_rbtree_rotate_left(rbtree, child_parent);
 	}
 }

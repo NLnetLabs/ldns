@@ -120,10 +120,10 @@ ldns_rbnode_t *ldns_rbtree_insert(ldns_rbtree_t *rbtree, ldns_rbnode_t *data);
 /**
  * Insert data into the tree (reversed arguments, for use as callback)
  * \param[in] data element to insert
- * \param[out] tree tree to insert in to
+ * \param[out] rbtree tree to insert in to
  * \return data ptr or NULL if key is already present
  */
-ldns_rbnode_t *ldns_rbtree_insert_vref(void *data, void *rbtree);
+ldns_rbnode_t *ldns_rbtree_insert_vref(ldns_rbnode_t *data, void *rbtree);
 
 /**
  * Delete element from tree.
@@ -180,7 +180,7 @@ ldns_rbnode_t *ldns_rbtree_next(ldns_rbnode_t *rbtree);
  * @param rbtree: tree
  * @return: previous smaller element or NULL if no previous in tree.
  */
-ldns_rbnode_t *ldns_rbtree_previous(ldns_rbnode_t *ldns_rbtree);
+ldns_rbnode_t *ldns_rbtree_previous(ldns_rbnode_t *rbtree);
 
 /**
  * split off 'elements' number of elements from the start
