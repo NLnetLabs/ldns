@@ -169,7 +169,7 @@ ldns_int_to_hexdigit(int i)
 int
 ldns_hexstring_to_data(uint8_t *data, const char *str)
 {
-	int i;
+	unsigned int i;
 
 	if (!str || !data) {
 		return -1;
@@ -185,7 +185,7 @@ ldns_hexstring_to_data(uint8_t *data, const char *str)
 			ldns_hexdigit_to_int(str[i*2 + 1]);
 	}
 
-	return i;
+	return (int) i;
 }
 
 const char *

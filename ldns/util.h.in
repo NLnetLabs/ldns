@@ -231,6 +231,18 @@ int ldns_hexdigit_to_int(char ch);
 char ldns_int_to_hexdigit(int ch);
 
 /**
+ * Converts a hex string to binary data
+ *
+ * \param[out] data The binary result is placed here.
+ * At least strlen(str)/2 bytes should be allocated
+ * \param[in] str The hex string to convert.
+ * This string should not contain spaces
+ * \return The number of bytes of converted data, or -1 if one of the arguments * is NULL, or -2 if the string length is not an even number
+ */
+int
+ldns_hexstring_to_data(uint8_t *data, const char *str);
+
+/**
  * Show the internal library version
  * \return a string with the version in it
  */
