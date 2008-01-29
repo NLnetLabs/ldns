@@ -201,7 +201,7 @@ void ldns_dnssec_rbtree_join(ldns_rbtree_t *tree1,
  * Call with node=variable of struct* with rbnode_t as first element.
  * with type is the type of a pointer to that struct. 
  */
-#define RBTREE_FOR(node, type, rbtree) \
+#define LDNS_RBTREE_FOR(node, type, rbtree) \
 	for(node=(type)ldns_rbtree_first(rbtree); \
 		(ldns_rbnode_t*)node != LDNS_RBTREE_NULL; \
 		node = (type)ldns_rbtree_next((ldns_rbnode_t*)node))
@@ -217,7 +217,7 @@ void ldns_dnssec_rbtree_join(ldns_rbtree_t *tree1,
  * 	The function must not alter the rbtree.
  * @param arg: user argument.
  */
-void traverse_postorder(ldns_rbtree_t* tree, void (*func)(ldns_rbnode_t*, void*),
-	void* arg);
+void ldns_traverse_postorder(ldns_rbtree_t* tree, 
+	void (*func)(ldns_rbnode_t*, void*), void* arg);
 
 #endif /* UTIL_RBTREE_H_ */

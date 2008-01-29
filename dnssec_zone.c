@@ -498,7 +498,7 @@ ldns_dnssec_zone_free(ldns_dnssec_zone *zone)
 	if (zone) {
 		if (zone->names) {
 			/* destroy all name structures within the tree */
-			traverse_postorder(zone->names,
+			ldns_traverse_postorder(zone->names,
 						    ldns_dnssec_name_node_free,
 						    NULL);
 			free(zone->names);

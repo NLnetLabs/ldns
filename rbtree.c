@@ -633,12 +633,13 @@ ldns_rbtree_split(ldns_rbtree_t *tree,
 void
 ldns_rbtree_join(ldns_rbtree_t *tree1, ldns_rbtree_t *tree2)
 {
-	traverse_postorder(tree2, ldns_rbtree_insert_vref, tree1);
+	ldns_traverse_postorder(tree2, ldns_rbtree_insert_vref, tree1);
 }
 
 /** recursive descent traverse */
 static void 
-traverse_post(void (*func)(ldns_rbnode_t*, void*), void* arg, ldns_rbnode_t* node)
+traverse_post(void (*func)(ldns_rbnode_t*, void*), void* arg, 
+	ldns_rbnode_t* node)
 {
 	if(!node || node == LDNS_RBTREE_NULL)
 		return;
@@ -650,7 +651,8 @@ traverse_post(void (*func)(ldns_rbnode_t*, void*), void* arg, ldns_rbnode_t* nod
 }
 
 void 
-traverse_postorder(ldns_rbtree_t* tree, void (*func)(ldns_rbnode_t*, void*), void* arg)
+ldns_traverse_postorder(ldns_rbtree_t* tree, 
+	void (*func)(ldns_rbnode_t*, void*), void* arg)
 {
 	traverse_post(func, arg, tree->root);
 }
