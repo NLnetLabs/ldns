@@ -55,7 +55,8 @@ ldns_rbnode_t	ldns_rbtree_null_node = {
 	LDNS_RBTREE_NULL,	/* Left.  */
 	LDNS_RBTREE_NULL,	/* Right.  */
 	NULL,			/* Key.  */
-	BLACK		/* Color.  */
+	NULL,               /* Data. */
+	BLACK		     /* Color.  */
 };
 
 /** rotate subtree left (to preserve redblack property) */
