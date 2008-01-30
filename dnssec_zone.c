@@ -565,6 +565,7 @@ ldns_dnssec_zone_names_print(FILE *out, ldns_rbtree_t *tree, bool print_soa)
 	while (node != LDNS_RBTREE_NULL) {
 		name = (ldns_dnssec_name *) node->data;
 		ldns_dnssec_name_print_soa(out, name, print_soa);
+		fprintf(out, ";\n");
 		node = ldns_rbtree_next(node);
 	}
 }
@@ -574,10 +575,14 @@ ldns_dnssec_zone_print(FILE *out, ldns_dnssec_zone *zone)
 {
 	if (zone) {
 		if (zone->soa) {
+			fprintf(out, ";; Zone: ");
+			ldns_rdf_print(out, ldns_dnssec_name_name(zone->soa));
+			fprintf(out, "\n;\n");
 			ldns_dnssec_rrsets_print(out,
 								ldns_dnssec_name_find_rrset(zone->soa,
 													   LDNS_RR_TYPE_SOA),
 								false);
+			fprintf(out, ";\n");
 		}
 
 		if (zone->names) {
