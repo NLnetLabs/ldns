@@ -82,6 +82,16 @@ $4
 fi
 ])
 
+AC_CHECK_HEADERS([getopt.h stdlib.h stdio.h assert.h netinet/in.h ctype.h time.h],,, [AC_INCLUDES_DEFAULT])
+AC_CHECK_HEADERS(sys/param.h sys/mount.h,,, [AC_INCLUDES_DEFAULT]
+[ 
+  [
+   #if HAVE_SYS_PARAM_H
+   # include <sys/param.h>
+   #endif
+  ] 
+])
+
 CHECK_COMPILER_FLAG(O2, [CFLAGS="$CFLAGS -O2"])
 CHECK_COMPILER_FLAG_NEEDED(-std=c99 -D__EXTENSIONS__ -D_BSD_SOURCE -D_POSIX_C_SOURCE=200112 -D_XOPEN_SOURCE=600,
 [
@@ -145,17 +155,6 @@ int test() {
         return a;
 }
 ], [CFLAGS="$CFLAGS -D__EXTENSIONS__"])
-
-
-AC_CHECK_HEADERS([getopt.h stdlib.h stdio.h assert.h netinet/in.h ctype.h time.h],,, [AC_INCLUDES_DEFAULT])
-AC_CHECK_HEADERS(sys/param.h sys/mount.h,,, [AC_INCLUDES_DEFAULT]
-[ 
-  [
-   #if HAVE_SYS_PARAM_H
-   # include <sys/param.h>
-   #endif
-  ] 
-])
 
 AC_ARG_WITH(ssl, AC_HELP_STRING([--with-ssl=pathname],
                                     [enable SSL (will check /usr/local/ssl
