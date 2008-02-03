@@ -13,6 +13,7 @@
 #include <ldns/config.h>
 
 #include <ldns/ldns.h>
+#include <ldns/dnssec.h>
 
 #include <strings.h>
 #include <time.h>
@@ -92,6 +93,235 @@ ldns_nsec_get_bitmap(ldns_rr *nsec) {
 	}
 }
 
+/*return the owner name of the closest encloser for name from the list of rrs */
+/* this is NOT the hash, but the original name! */
+/* XXX tmp: verbosity */
+int verbosity = 5;
+
+ldns_rdf *
+ldns_dnssec_nsec3_closest_encloser(ldns_rdf *qname, ldns_rr_type qtype, ldns_rr_list *nsec3s)
+{
+	/* remember parameters, they must match */
+	uint8_t algorithm;
+	uint32_t iterations;
+	uint8_t salt_length;
+	uint8_t *salt;
+
+	ldns_rdf *sname, *hashed_sname, *tmp;
+	ldns_rr *ce;
+	bool flag;
+	
+	bool exact_match_found;
+	bool in_range_found;
+	
+	ldns_status status;
+	ldns_rdf *zone_name;
+	
+	size_t nsec_i;
+	ldns_rr *nsec;
+	ldns_rdf *result = NULL;
+	
+	if (!qname || !nsec3s || ldns_rr_list_rr_count(nsec3s) < 1) {
+		return NULL;
+	}
+
+	if (verbosity >= 4) {
+		printf(";; finding closest encloser for type %d ", qtype);
+		ldns_rdf_print(stdout, qname);
+		printf("\n");
+	}
+
+	nsec = ldns_rr_list_rr(nsec3s, 0);
+	algorithm = ldns_nsec3_algorithm(nsec);
+	salt_length = ldns_nsec3_salt_length(nsec);
+	salt = ldns_nsec3_salt_data(nsec);
+	iterations = ldns_nsec3_iterations(nsec);
+
+	sname = ldns_rdf_clone(qname);
+
+	ce = NULL;
+	flag = false;
+	
+	zone_name = ldns_dname_left_chop(ldns_rr_owner(nsec));
+
+	/* algorithm from nsec3-07 8.3 */
+	while (ldns_dname_label_count(sname) > 0) {
+		exact_match_found = false;
+		in_range_found = false;
+		
+		if (verbosity >= 3) {
+			printf(";; ");
+			ldns_rdf_print(stdout, sname);
+			printf(" hashes to: ");
+		}
+		hashed_sname = ldns_nsec3_hash_name(sname, algorithm, iterations, salt_length, salt);
+
+		status = ldns_dname_cat(hashed_sname, zone_name);
+
+		if (verbosity >= 3) {
+			ldns_rdf_print(stdout, hashed_sname);
+			printf("\n");
+		}
+
+		for (nsec_i = 0; nsec_i < ldns_rr_list_rr_count(nsec3s); nsec_i++) {
+			nsec = ldns_rr_list_rr(nsec3s, nsec_i);
+			
+			/* check values of iterations etc! */
+			
+			/* exact match? */
+			if (ldns_dname_compare(ldns_rr_owner(nsec), hashed_sname) == 0) {
+				if (verbosity >= 4) {
+					printf(";; exact match found\n");
+				}
+			 	exact_match_found = true;
+			} else if (ldns_nsec_covers_name(nsec, hashed_sname)) {
+				if (verbosity >= 4) {
+					printf(";; in range of an nsec\n");
+				}
+				in_range_found = true;
+			}
+			
+		}
+		if (!exact_match_found && in_range_found) {
+			flag = true;
+		} else if (exact_match_found && flag) {
+			result = ldns_rdf_clone(sname);
+		} else if (exact_match_found && !flag) {
+			// error!
+			if (verbosity >= 4) {
+				printf(";; the closest encloser is the same name (ie. this is an exact match, ie there is no closest encloser)\n");
+			}
+			ldns_rdf_deep_free(hashed_sname);
+			goto done;
+		} else {
+			flag = false;
+		}
+		
+		ldns_rdf_deep_free(hashed_sname);
+		tmp = sname;
+		sname = ldns_dname_left_chop(sname);
+		ldns_rdf_deep_free(tmp);
+	}
+
+	done:
+	LDNS_FREE(salt);
+	ldns_rdf_deep_free(zone_name);
+	ldns_rdf_deep_free(sname);
+
+	if (!result) {
+		if (verbosity >= 4) {
+			printf(";; no closest encloser found\n");
+		}
+	}
+
+	return result;
+}
+
+ldns_status
+ldns_dnssec_verify_denial_nsec3(ldns_rr *rr,
+						  ldns_rr_list *nsecs,
+						  ldns_rr_list *rrsigs,
+						  ldns_pkt_rcode packet_rcode,
+						  ldns_rr_type packet_qtype,
+						  bool packet_nodata)
+{
+	ldns_rdf *closest_encloser;
+	ldns_rdf *wildcard;
+	bool wildcard_covered = false;
+	ldns_rdf *zone_name;
+	ldns_rdf *hashed_name;
+	size_t i;
+
+	rrsigs = rrsigs;
+	
+	/* section 8.4 */
+	if (packet_rcode == LDNS_RCODE_NXDOMAIN) {
+		closest_encloser = ldns_dnssec_nsec3_closest_encloser(ldns_rr_owner(rr),
+												    ldns_rr_get_type(rr),
+												    nsecs);
+
+		printf("[XX} NSEC3 denial for: ");
+		ldns_rr_print(stdout, rr);
+		printf("[XX] closest encloser: ");
+		ldns_rdf_print(stdout, closest_encloser);
+		printf("\n");
+
+		wildcard = ldns_dname_new_frm_str("*");
+		ldns_dname_cat(wildcard, closest_encloser);
+
+		for (i = 0; i < ldns_rr_list_rr_count(nsecs); i++) {
+			if (ldns_nsec_covers_name(ldns_rr_list_rr(nsecs, i),
+								 wildcard)) {
+				printf("[XX] wildcard covered\n");
+				wildcard_covered = true;
+			}
+		}
+
+		if (!wildcard_covered) {
+			return LDNS_STATUS_DNSSEC_NSEC_WILDCARD_NOT_COVERED;
+		}
+		if (closest_encloser && wildcard_covered) {
+			return LDNS_STATUS_OK;
+		}
+		return LDNS_STATUS_DNSSEC_NSEC_RR_NOT_COVERED;
+	} else if (packet_nodata && packet_qtype != LDNS_RR_TYPE_DS) {
+		/* section 8.5 */
+		hashed_name = ldns_nsec3_hash_name_frm_nsec3(ldns_rr_list_rr(nsecs, 0),
+											ldns_rr_owner(rr)
+											);
+		zone_name = ldns_dname_left_chop(ldns_rr_owner(ldns_rr_list_rr(nsecs,0)));
+		ldns_dname_cat(hashed_name, zone_name);
+		printf("[XX] hashed name: ");
+		ldns_rdf_print(stdout, hashed_name);
+		printf("\n");
+		for (i = 0; i < ldns_rr_list_rr_count(nsecs); i++) {
+			if (ldns_dname_compare(hashed_name, ldns_rr_owner(ldns_rr_list_rr(nsecs, i))) == 0) {
+				if (!ldns_nsec_bitmap_covers_type(ldns_nsec3_bitmap(ldns_rr_list_rr(nsecs, i)), packet_qtype) && 
+				    !ldns_nsec_bitmap_covers_type(ldns_nsec3_bitmap(ldns_rr_list_rr(nsecs, i)), LDNS_RR_TYPE_CNAME)) {
+					printf("exact match!\n");
+					return LDNS_STATUS_OK;
+				}
+			}
+		}
+		return LDNS_STATUS_DNSSEC_NSEC_RR_NOT_COVERED;
+	} else if (packet_nodata && packet_qtype == LDNS_RR_TYPE_DS) {
+		/* section 8.6 */
+		/* note: up to XXX this is the same as for 8.5 */
+		hashed_name = ldns_nsec3_hash_name_frm_nsec3(ldns_rr_list_rr(nsecs, 0),
+											ldns_rr_owner(rr)
+											);
+		zone_name = ldns_dname_left_chop(ldns_rr_owner(ldns_rr_list_rr(nsecs,0)));
+		ldns_dname_cat(hashed_name, zone_name);
+		printf("[XX] hashed name: ");
+		ldns_rdf_print(stdout, hashed_name);
+		printf("\n");
+		for (i = 0; i < ldns_rr_list_rr_count(nsecs); i++) {
+			if (ldns_dname_compare(hashed_name, ldns_rr_owner(ldns_rr_list_rr(nsecs, i))) == 0) {
+				if (!ldns_nsec_bitmap_covers_type(ldns_nsec3_bitmap(ldns_rr_list_rr(nsecs, i)), LDNS_RR_TYPE_DS) && 
+				    !ldns_nsec_bitmap_covers_type(ldns_nsec3_bitmap(ldns_rr_list_rr(nsecs, i)), LDNS_RR_TYPE_CNAME)) {
+					printf("exact match!\n");
+					return LDNS_STATUS_OK;
+				}
+			}
+		}
+
+		/* XXX see note above */
+		closest_encloser = ldns_dnssec_nsec3_closest_encloser(ldns_rr_owner(rr),
+												    ldns_rr_get_type(rr),
+												    nsecs);
+
+		if (closest_encloser) {
+			printf("[XX] closest encloser: ");
+			ldns_rdf_print(stdout, closest_encloser);
+			printf("\n");
+			exit(0);
+		}
+		return LDNS_STATUS_DNSSEC_NSEC_RR_NOT_COVERED;
+		
+	}
+	return LDNS_STATUS_DNSSEC_NSEC_RR_NOT_COVERED;
+}
+
 ldns_status
 ldns_dnssec_verify_denial(ldns_rr *rr,
                           ldns_rr_list *nsecs,
@@ -124,29 +354,36 @@ ldns_dnssec_verify_denial(ldns_rr *rr,
 		cur_nsec = ldns_rr_list_rr(nsecs, i);
 		if (ldns_dname_compare(rr_name, ldns_rr_owner(cur_nsec)) == 0) {
 			/* see section 5.4 of RFC4035, if the label count of the NSEC's
-			   RRSIG is equal, then it is proven that wildcard expansion could
-			   not have been used to match the request */
+			   RRSIG is equal, then it is proven that wildcard expansion 
+			   could not have been used to match the request */
 			rrsig = ldns_dnssec_get_rrsig_for_name_and_type(ldns_rr_owner(cur_nsec), ldns_rr_get_type(cur_nsec), rrsigs);
 			if (rrsig && ldns_rdf2native_int8(ldns_rr_rrsig_labels(rrsig)) == ldns_dname_label_count(rr_name)) {
+				printf("[XX] wildcard covered from label count\n");
 				wildcard_covered = true;
 			}
 			
 			if (ldns_nsec_bitmap_covers_type(ldns_nsec_get_bitmap(cur_nsec), ldns_rr_get_type(rr))) {
+				printf("[XX] type covered\n");
 				type_covered = true;
 			}
 		}
-		
+		printf("[XX] Name covered?\n");
 		if (ldns_nsec_covers_name(cur_nsec, rr_name)) {
+			printf("[XX] yes!\n");
 			name_covered = true;
 		}
 		
 		if (ldns_dname_compare(wildcard_name, ldns_rr_owner(cur_nsec)) == 0) {
+			printf("[XX] Wildcard type covered?\n");
 			if (ldns_nsec_bitmap_covers_type(ldns_nsec_get_bitmap(cur_nsec), ldns_rr_get_type(rr))) {
+				printf("[XX] yes!\n");
 				wildcard_type_covered = true;
 			}
 		}
 		
+		printf("[XX] Wildcard covered?\n");
 		if (ldns_nsec_covers_name(cur_nsec, wildcard_name)) {
+			printf("[XX] yes!\n");
 			wildcard_covered = true;
 		}
 		
@@ -166,32 +403,23 @@ ldns_dnssec_verify_denial(ldns_rr *rr,
 }
 
 
-ldns_dnssec_data_chain *
-ldns_dnssec_data_chain_new()
+bool
+ldns_dnssec_pkt_has_rrsigs(const ldns_pkt *pkt)
 {
-	ldns_dnssec_data_chain *nc = LDNS_XMALLOC(ldns_dnssec_data_chain, 1);
-	nc->rrset = NULL;
-	nc->parent_type = 0;
-	nc->parent = NULL;
-	nc->signatures = NULL;
-	return nc;
-}
-
-void
-ldns_dnssec_data_chain_free(ldns_dnssec_data_chain *chain)
-{
-	LDNS_FREE(chain);
-}
-
-void
-ldns_dnssec_data_chain_deep_free(ldns_dnssec_data_chain *chain)
-{
-	ldns_rr_list_deep_free(chain->rrset);
-	ldns_rr_list_deep_free(chain->signatures);
-	if (chain->parent) {
-		ldns_dnssec_data_chain_deep_free(chain->parent);
+	size_t i;
+	for (i = 0; i < ldns_pkt_ancount(pkt); i++) {
+		if (ldns_rr_get_type(ldns_rr_list_rr(ldns_pkt_answer(pkt), i)) ==
+		    LDNS_RR_TYPE_RRSIG) {
+			return true;
+		}
 	}
-	LDNS_FREE(chain);
+	for (i = 0; i < ldns_pkt_nscount(pkt); i++) {
+		if (ldns_rr_get_type(ldns_rr_list_rr(ldns_pkt_authority(pkt), i)) ==
+		    LDNS_RR_TYPE_RRSIG) {
+			return true;
+		}
+	}
+	return false;
 }
 
 ldns_rr_list *
@@ -241,687 +469,6 @@ ldns_dnssec_pkt_get_rrsigs_for_type(const ldns_pkt *pkt, ldns_rr_type type)
 
 	return sigs_covered;
 
-}
-
-
-void
-ldns_dnssec_data_chain_print(FILE *out, const ldns_dnssec_data_chain *chain)
-{
-	if (chain) {
-		ldns_dnssec_data_chain_print(out, chain->parent);
-		if (ldns_rr_list_rr_count(chain->rrset) > 0) {
-			printf("rrset: %p\n", chain->rrset);
-			ldns_rr_list_print(out, chain->rrset);
-			printf("sigs: %p\n", chain->signatures);
-			ldns_rr_list_print(out, chain->signatures);
-			fprintf(out, "---\n");
-		} else {
-			fprintf(out, "<no data>\n");
-		}
-	}
-}
-
-ldns_dnssec_data_chain *
-ldns_dnssec_build_data_chain(ldns_resolver *res, uint16_t qflags, const ldns_rr_list *rrset, const ldns_pkt *pkt, ldns_rr *orig_rr)
-{
-	ldns_rr_list *signatures = NULL, *signatures2 = NULL;
-	ldns_rr_list *keys;
-	ldns_rr_list *dss;
-	
-	ldns_rr_list *my_rrset;
-
-	ldns_pkt *my_pkt;
-
-	ldns_rdf *name = NULL, *key_name = NULL;
-	ldns_rr_type type = 0;
-	ldns_rr_class c = 0;
-	
-	bool other_rrset = false;
-	
-	ldns_dnssec_data_chain *new_chain = ldns_dnssec_data_chain_new();
-
-	if (orig_rr) {
-		new_chain->rrset = ldns_rr_list_new();
-		ldns_rr_list_push_rr(new_chain->rrset, orig_rr);
-		new_chain->parent = ldns_dnssec_build_data_chain(res, qflags, rrset, pkt, NULL);
-		return new_chain;
-	}
-	
-	if (!rrset || ldns_rr_list_rr_count(rrset) < 1) {
-		/* hmm, no data, do we have denial? only works if pkt was given,
-		   otherwise caller has to do the check himself */
-		if (pkt) {
-			my_rrset = ldns_pkt_rr_list_by_type(pkt, LDNS_RR_TYPE_NSEC, LDNS_SECTION_ANY_NOQUESTION);
-			if (my_rrset) {
-				if (ldns_rr_list_rr_count(my_rrset) > 0) {
-					type = LDNS_RR_TYPE_NSEC;
-					other_rrset = true;
-				} else {
-					ldns_rr_list_deep_free(my_rrset);
-					my_rrset = NULL;
-				}
-			} else {
-				/* nothing, stop */
-				return new_chain;
-			}
-		} else {
-			return new_chain;
-		}
-	} else {
-		my_rrset = (ldns_rr_list *) rrset;
-	}
-	
-	if (my_rrset) {
-		new_chain->rrset = ldns_rr_list_clone(my_rrset);
-		name = ldns_rr_owner(ldns_rr_list_rr(my_rrset, 0));
-		type = ldns_rr_get_type(ldns_rr_list_rr(my_rrset, 0));
-		c = ldns_rr_get_class(ldns_rr_list_rr(my_rrset, 0));
-	}
-	
-	if (other_rrset) {
-		ldns_rr_list_deep_free(my_rrset);
-	}
-	
-	/* normally there will only be 1 signature 'set'
-	   but there can be more than 1 denial (wildcards)
-	   so check for NSEC
-	*/
-	if (type == LDNS_RR_TYPE_NSEC) {
-		/* just throw in all signatures, the tree builder must sort
-		   this out */
-		if (pkt) {
-			/*signatures = ldns_pkt_rr_list_by_type(pkt, LDNS_RR_TYPE_RRSIG, LDNS_SECTION_ANY_NOQUESTION);*/
-			signatures = ldns_dnssec_pkt_get_rrsigs_for_type(pkt, type);
-		} else {
-			my_pkt = ldns_resolver_query(res, name, type, c, qflags);
-			signatures = ldns_dnssec_pkt_get_rrsigs_for_type(pkt, type);
-			/*signatures = ldns_pkt_rr_list_by_type(my_pkt, LDNS_RR_TYPE_RRSIG, LDNS_SECTION_ANY_NOQUESTION);*/
-			ldns_pkt_free(my_pkt);
-		}
-	} else {
-		if (pkt) {
-			signatures = ldns_dnssec_pkt_get_rrsigs_for_name_and_type(pkt, name, type);
-		}
-		if (!signatures) {
-			my_pkt = ldns_resolver_query(res, name, type, c, qflags);
-			signatures = ldns_dnssec_pkt_get_rrsigs_for_name_and_type(my_pkt, name, type);
-			ldns_pkt_free(my_pkt);
-		}
-
-	}
-
-	if (signatures && ldns_rr_list_rr_count(signatures) > 0) {
-		key_name = ldns_rr_rdf(ldns_rr_list_rr(signatures, 0), 7);
-	}
-
-	if (!key_name) {
-		/* apparently we were not able to find a signing key, so
-		   we assume the chain ends here
-		*/
-		return new_chain;
-	}
-
-	if (type != LDNS_RR_TYPE_DNSKEY) {
-		if (signatures && ldns_rr_list_rr_count(signatures) > 0) {
-			new_chain->signatures = ldns_rr_list_clone(signatures);
-			new_chain->parent_type = 0;
-			
-			keys = ldns_pkt_rr_list_by_name_and_type(pkt,
-											 key_name,
-											 LDNS_RR_TYPE_DNSKEY,
-											 LDNS_SECTION_ANY_NOQUESTION
-											 );
-			if (!keys) {
-				my_pkt = ldns_resolver_query(res, key_name, LDNS_RR_TYPE_DNSKEY, c, qflags);
-				keys = ldns_pkt_rr_list_by_name_and_type(my_pkt,
-												 key_name,
-												 LDNS_RR_TYPE_DNSKEY,
-												 LDNS_SECTION_ANY_NOQUESTION
-												 );
-				new_chain->parent = ldns_dnssec_build_data_chain(res, qflags, keys, my_pkt, NULL);
-				ldns_pkt_free(my_pkt);
-			} else {
-				new_chain->parent = ldns_dnssec_build_data_chain(res, qflags, keys, pkt, NULL);
-			}
-			ldns_rr_list_deep_free(keys);
-		}
-	} else {
-		/* 'self-signed', parent is a DS */
-		
-		/* okay, either we have other keys signing the current one, or the current
-		 * one should have a DS record in the parent zone.
-		 * How do we find this out? Try both?
-		 *
-		 * request DNSKEYS for current zone, add all signatures to current level
-		 */
-
-
-		new_chain->parent_type = 1;
-
-		my_pkt = ldns_resolver_query(res, key_name, LDNS_RR_TYPE_DS, c, qflags);
-		dss = ldns_pkt_rr_list_by_name_and_type(my_pkt,
-										key_name,
-										LDNS_RR_TYPE_DS,
-										LDNS_SECTION_ANY_NOQUESTION
-										);
-		if (dss) {
-			new_chain->parent = ldns_dnssec_build_data_chain(res, qflags, dss, my_pkt, NULL);
-			ldns_rr_list_deep_free(dss);
-		}
-		ldns_pkt_free(my_pkt);
-
-
-		my_pkt = ldns_resolver_query(res, key_name, LDNS_RR_TYPE_DNSKEY, c, qflags);
-		signatures2 = ldns_pkt_rr_list_by_name_and_type(my_pkt,
-											   key_name,
-											   LDNS_RR_TYPE_RRSIG,
-											   LDNS_SECTION_ANSWER);
-		if (signatures2) {
-			/* TODO: what if there were still sigs there? */
-			new_chain->signatures = signatures2;
-		}
-		ldns_pkt_free(my_pkt);
-	}
-	if (signatures) {
-		ldns_rr_list_deep_free(signatures);
-	}
-
-	return new_chain;
-}
-
-ldns_dnssec_trust_tree *
-ldns_dnssec_trust_tree_new()
-{
-	ldns_dnssec_trust_tree *new_tree = LDNS_XMALLOC(ldns_dnssec_trust_tree, 1);
-	
-	new_tree->rr = NULL;
-	new_tree->rrset = NULL;
-	new_tree->parent_count = 0;
-
-	return new_tree;
-}
-
-void
-ldns_dnssec_trust_tree_free(ldns_dnssec_trust_tree *tree)
-{
-	size_t i;
-	if (tree) {
-		for (i = 0; i < tree->parent_count; i++) {
-			ldns_dnssec_trust_tree_free(tree->parents[i]);
-		}
-	}
-	LDNS_FREE(tree);
-}
-
-ldns_status
-ldns_dnssec_trust_tree_add_parent(ldns_dnssec_trust_tree *tree,
-                                  const ldns_dnssec_trust_tree *parent,
-                                  const ldns_rr *signature,
-                                  const ldns_status parent_status)
-{
-	if (tree && parent && tree->parent_count < LDNS_DNSSEC_TRUST_TREE_MAX_PARENTS) {
-		/*
-		  printf("Add parent for: ");
-		  ldns_rr_print(stdout, tree->rr);
-		  printf("parent: ");
-		  ldns_rr_print(stdout, parent->rr);
-		*/
-		tree->parents[tree->parent_count] = (ldns_dnssec_trust_tree *) parent;
-		tree->parent_status[tree->parent_count] = parent_status;
-		tree->parent_signature[tree->parent_count] = (ldns_rr *) signature;
-		tree->parent_count++;
-		return LDNS_STATUS_OK;
-	} else {
-		return LDNS_STATUS_ERR;
-	}
-}
-
-static void
-print_tabs(FILE *out, size_t nr, uint8_t *map, size_t treedepth)
-{
-	size_t i;
-	for (i = 0; i < nr; i++) {
-		if (i == nr - 1) {
-			fprintf(out, "|---");
-		} else if (map && i < treedepth && map[i] == 1) {
-			fprintf(out, "|   ");
-		} else {
-			fprintf(out, "    ");
-		}
-	}
-}
-
-size_t
-ldns_dnssec_trust_tree_depth(ldns_dnssec_trust_tree *tree)
-{
-	size_t result = 0;
-	size_t parent = 0;
-	size_t i;
-	
-	for (i = 0; i < tree->parent_count; i++) {
-		parent = ldns_dnssec_trust_tree_depth(tree->parents[i]);
-		if (parent > result) {
-			result = parent;
-		}
-	}
-	return 1 + result;
-}
-
-void
-ldns_dnssec_trust_tree_print_sm(FILE *out, ldns_dnssec_trust_tree *tree, size_t tabs, bool extended, uint8_t *sibmap, size_t treedepth)
-{
-	size_t i;
-	const ldns_rr_descriptor *descriptor;
-	bool mapset = false;
-	
-	if (!sibmap) {
-		treedepth = ldns_dnssec_trust_tree_depth(tree);
-		sibmap = malloc(treedepth);
-		memset(sibmap, 0, treedepth);
-		mapset = true;
-	}
-	
-	if (tree) {
-		if (tree->rr) {
-			/*
-			  if (extended && tabs > 0) {
-			  print_tabs(out, tabs - 1);
-			  if (ldns_rr_get_type(tree->rr) == LDNS_RR_TYPE_DNSKEY) {
-			  fprintf(out, "which is signed by:\n");
-			  } else if (ldns_rr_get_type(tree->rr) == LDNS_RR_TYPE_DS) {
-			  fprintf(out, "which matches:\n");
-			  } else if (ldns_rr_get_type(tree->rr) == LDNS_RR_TYPE_NSEC) {
-			  fprintf(out, "whose existence is denied by:\n");
-			  }
-			  } else {
-			*/
-			/*
-			  if (ldns_rr_get_type(tree->rr) == LDNS_RR_TYPE_NSEC) {
-			  print_tabs(out, tabs, sibmap, treedepth);
-			  fprintf(out, "Existence is denied by:\n");
-			  }
-			*/
-			/*
-			  }
-			*/
-
-			print_tabs(out, tabs, sibmap, treedepth);
-			ldns_rdf_print(out, ldns_rr_owner(tree->rr));
-			descriptor = ldns_rr_descript(ldns_rr_get_type(tree->rr));
-
-			if (descriptor->_name) {
-				fprintf(out, " (%s", descriptor->_name);
-			} else {
-				fprintf(out, " (TYPE%d", 
-					   ldns_rr_get_type(tree->rr));
-			}
-			if (ldns_rr_get_type(tree->rr) == LDNS_RR_TYPE_DNSKEY) {
-				fprintf(out, " keytag: %u", ldns_calc_keytag(tree->rr));
-			} else if (ldns_rr_get_type(tree->rr) == LDNS_RR_TYPE_DS) {
-				fprintf(out, " keytag: ");
-				ldns_rdf_print(out, ldns_rr_rdf(tree->rr, 0));
-			}
-			if (ldns_rr_get_type(tree->rr) == LDNS_RR_TYPE_NSEC) {
-				fprintf(out, " ");
-				ldns_rdf_print(out, ldns_rr_rdf(tree->rr, 0));
-				fprintf(out, " ");
-				ldns_rdf_print(out, ldns_rr_rdf(tree->rr, 1));
-			}
-			
-			
-			fprintf(out, ")\n");
-			for (i = 0; i < tree->parent_count; i++) {
-				if (tree->parent_count > 1 && i < tree->parent_count - 1) {
-					sibmap[tabs] = 1;
-				} else {
-					sibmap[tabs] = 0;
-				}
-				/* only print errors */
-				if (ldns_rr_get_type(tree->parents[i]->rr) == LDNS_RR_TYPE_NSEC) {
-					if (tree->parent_status[i] == LDNS_STATUS_OK) {
-						print_tabs(out, tabs + 1, sibmap, treedepth);
-						fprintf(out, "Existence is denied by:\n");
-					} else {
-						print_tabs(out, tabs + 1, sibmap, treedepth);
-						fprintf(out, "Error in denial of existence: %s\n", ldns_get_errorstr_by_id(tree->parent_status[i]));
-					}
-				} else
-					if (tree->parent_status[i] != LDNS_STATUS_OK) {
-						print_tabs(out, tabs + 1, sibmap, treedepth);
-						fprintf(out, "%s:\n", ldns_get_errorstr_by_id(tree->parent_status[i]));
-						/*
-						  print_tabs(out, tabs + 1, sibmap, treedepth);
-						*/
-						ldns_rr_print(out, tree->parent_signature[i]);
-						printf("For RRset:\n");
-						ldns_rr_list_print(out, tree->rrset);
-						printf("With key:\n");
-						ldns_rr_print(out, tree->parents[i]->rr);
-						/*
-						  print_tabs(out, tabs + 1, sibmap, treedepth);
-						  fprintf(out, "from:\n");
-						*/
-					}
-				ldns_dnssec_trust_tree_print_sm(out, tree->parents[i], tabs+1, extended, sibmap, treedepth);
-			}
-		} else {
-			print_tabs(out, tabs, sibmap, treedepth);
-			fprintf(out, "<no data>\n");
-		}
-	} else {
-		fprintf(out, "<null pointer>\n");
-	}
-	
-	if (mapset) {
-		free(sibmap);
-	}
-}
-
-void
-ldns_dnssec_trust_tree_print(FILE *out, ldns_dnssec_trust_tree *tree, size_t tabs, bool extended)
-{
-	ldns_dnssec_trust_tree_print_sm(out, tree, tabs, extended, NULL, 0);
-}
-
-void
-ldns_dnssec_derive_trust_tree_normal_rrset(ldns_dnssec_trust_tree *new_tree,
-                                           ldns_dnssec_data_chain *data_chain,
-                                           ldns_rr *cur_sig_rr)
-{
-	size_t i, j;
-	ldns_rr_list *cur_rrset = ldns_rr_list_clone(data_chain->rrset); 
-	ldns_dnssec_trust_tree *cur_parent_tree;
-	ldns_rr *cur_parent_rr;
-	int cur_keytag;
-	ldns_rr_list *tmp_rrset = NULL;
-	ldns_status cur_status;
-
-	cur_keytag = ldns_rdf2native_int16(ldns_rr_rrsig_keytag(cur_sig_rr));
-	
-	for (j = 0; j < ldns_rr_list_rr_count(data_chain->parent->rrset); j++) {
-		cur_parent_rr = ldns_rr_list_rr(data_chain->parent->rrset, j);
-		if (ldns_rr_get_type(cur_parent_rr) == LDNS_RR_TYPE_DNSKEY) {
-			if (ldns_calc_keytag(cur_parent_rr) == cur_keytag) {
-
-				/* TODO: check wildcard nsec too */
-				if (cur_rrset && ldns_rr_list_rr_count(cur_rrset) > 0) {
-					tmp_rrset = cur_rrset;
-					if (ldns_rr_get_type(ldns_rr_list_rr(cur_rrset, 0)) == LDNS_RR_TYPE_NSEC) {
-						/* might contain different names! sort and split */
-						ldns_rr_list_sort(cur_rrset);
-						if (tmp_rrset && tmp_rrset != cur_rrset) {
-							ldns_rr_list_deep_free(tmp_rrset);
-							tmp_rrset = NULL;
-						}
-						tmp_rrset = ldns_rr_list_pop_rrset(cur_rrset);
-						
-						/* with nsecs, this might be the wrong one */
-						while (tmp_rrset &&
-						       ldns_rr_list_rr_count(cur_rrset) > 0 &&
-						       ldns_dname_compare(
-											 ldns_rr_owner(ldns_rr_list_rr(tmp_rrset, 0)),
-											 ldns_rr_owner(cur_sig_rr)) != 0) {
-							ldns_rr_list_deep_free(tmp_rrset);
-							tmp_rrset = ldns_rr_list_pop_rrset(cur_rrset);
-						}
-					}
-					cur_status = ldns_verify_rrsig(tmp_rrset, cur_sig_rr, cur_parent_rr);
-
-					/* avoid dupes */
-					for (i = 0; i < new_tree->parent_count; i++) {
-						if (cur_parent_rr == new_tree->parents[i]->rr) {
-							goto done;
-						}
-					}
-
-					cur_parent_tree = ldns_dnssec_derive_trust_tree(data_chain->parent, cur_parent_rr);
-					ldns_dnssec_trust_tree_add_parent(new_tree, cur_parent_tree, cur_sig_rr, cur_status);
-				}
-
-
-			}
-		}
-	}
- done:
-	if (tmp_rrset && tmp_rrset != cur_rrset) {
-		ldns_rr_list_deep_free(tmp_rrset);
-	}
-	ldns_rr_list_deep_free(cur_rrset);
-}
-
-void
-ldns_dnssec_derive_trust_tree_dnskey_rrset(ldns_dnssec_trust_tree *new_tree,
-                                           ldns_dnssec_data_chain *data_chain,
-                                           ldns_rr *cur_rr,
-                                           ldns_rr *cur_sig_rr)
-{
-	size_t j;
-	ldns_rr_list *cur_rrset = data_chain->rrset;
-	ldns_dnssec_trust_tree *cur_parent_tree;
-	ldns_rr *cur_parent_rr;
-	int cur_keytag;
-	ldns_status cur_status;
-
-	cur_keytag = ldns_rdf2native_int16(ldns_rr_rrsig_keytag(cur_sig_rr));
-
-	for (j = 0; j < ldns_rr_list_rr_count(cur_rrset); j++) {
-		cur_parent_rr = ldns_rr_list_rr(cur_rrset, j);
-		if (cur_parent_rr != cur_rr &&
-		    ldns_rr_get_type(cur_parent_rr) == LDNS_RR_TYPE_DNSKEY) {
-			if (ldns_calc_keytag(cur_parent_rr) == cur_keytag
-			    ) {
-				/*cur_parent_tree = ldns_dnssec_derive_trust_tree(data_chain, cur_parent_rr);*/
-				cur_parent_tree = ldns_dnssec_trust_tree_new();
-				cur_parent_tree->rr = cur_parent_rr;
-				cur_parent_tree->rrset = cur_rrset;
-				cur_status = ldns_verify_rrsig(cur_rrset, cur_sig_rr, cur_parent_rr);
-				ldns_dnssec_trust_tree_add_parent(new_tree, cur_parent_tree, cur_sig_rr, cur_status);
-			}
-		}
-	}
-}
-
-void
-ldns_dnssec_derive_trust_tree_ds_rrset(ldns_dnssec_trust_tree *new_tree,
-                                       ldns_dnssec_data_chain *data_chain,
-                                       ldns_rr *cur_rr)
-{
-	size_t j, h;
-	ldns_rr_list *cur_rrset = data_chain->rrset;
-	ldns_dnssec_trust_tree *cur_parent_tree;
-	ldns_rr *cur_parent_rr;
-
-	/* try the parent to see whether there are DSs there */
-	if (ldns_rr_get_type(cur_rr) == LDNS_RR_TYPE_DNSKEY &&
-	    data_chain->parent &&
-	    data_chain->parent->rrset
-	    ) {
-		for (j = 0; j < ldns_rr_list_rr_count(data_chain->parent->rrset); j++) {
-			cur_parent_rr = ldns_rr_list_rr(data_chain->parent->rrset, j);
-			if (ldns_rr_get_type(cur_parent_rr) == LDNS_RR_TYPE_DS) {
-				for (h = 0; h < ldns_rr_list_rr_count(cur_rrset); h++) {
-					cur_rr = ldns_rr_list_rr(cur_rrset, h);
-					if (ldns_rr_compare_ds(cur_rr, cur_parent_rr)) {
-						cur_parent_tree = ldns_dnssec_derive_trust_tree(data_chain->parent, cur_parent_rr);
-						ldns_dnssec_trust_tree_add_parent(new_tree, cur_parent_tree, NULL, LDNS_STATUS_OK);
-					} else {
-						/*ldns_rr_print(stdout, cur_parent_rr);*/
-						
-					}
-				}
-				cur_rr = ldns_rr_list_rr(cur_rrset, 0);
-			}
-		}
-	}
-}
-
-void
-breakme()
-{
-	// just to define a break point
-	int i,j;
-	i = 123;
-	j = i + 1;	
-}
-
-void
-ldns_dnssec_derive_trust_tree_no_sig(ldns_dnssec_trust_tree *new_tree,
-                                     ldns_dnssec_data_chain *data_chain)
-{
-	size_t i;
-	ldns_rr_list *cur_rrset;
-	ldns_rr *cur_parent_rr;
-	ldns_dnssec_trust_tree *cur_parent_tree;
-	ldns_status result;
-	
-	if (data_chain->parent && data_chain->parent->rrset) {
-		cur_rrset = data_chain->parent->rrset;
-		/* nsec? check all */
-		result = ldns_dnssec_verify_denial(new_tree->rr, cur_rrset, data_chain->parent->signatures);
-		for (i = 0; i < ldns_rr_list_rr_count(cur_rrset); i++) {
-			cur_parent_rr = ldns_rr_list_rr(cur_rrset, i);
-			cur_parent_tree = ldns_dnssec_derive_trust_tree(data_chain->parent, cur_parent_rr);
-			printf("Adding without checking: ");
-			ldns_rr_print(stdout, cur_parent_rr);
-			ldns_dnssec_trust_tree_add_parent(new_tree, cur_parent_tree, NULL, result);
-		}
-	}
-}
-
-/* if rr is null, take the first from the rrset */
-ldns_dnssec_trust_tree *
-ldns_dnssec_derive_trust_tree(ldns_dnssec_data_chain *data_chain, ldns_rr *rr)
-{
-	ldns_rr_list *cur_rrset;
-	ldns_rr_list *cur_sigs;
-	ldns_rr *cur_rr = NULL;
-	ldns_rr *cur_sig_rr;
-	uint16_t cur_keytag;
-	size_t i, j;
-
-	ldns_dnssec_trust_tree *new_tree = ldns_dnssec_trust_tree_new();
-	
-	if (data_chain && data_chain->rrset) {
-		cur_rrset = data_chain->rrset;
-	
-		cur_sigs = data_chain->signatures;
-
-		if (rr) {
-			cur_rr = rr;
-		}
-
-		if (!cur_rr && ldns_rr_list_rr_count(cur_rrset) > 0) {
-			cur_rr = ldns_rr_list_rr(cur_rrset, 0);
-		}
-
-		if (cur_rr) {
-			new_tree->rr = cur_rr;
-			new_tree->rrset = cur_rrset;
-			/* there are three possibilities:
-			   1 - 'normal' rrset, signed by a key
-			   2 - dnskey signed by other dnskey
-			   3 - dnskey proven by higher level DS
-			   (data denied by nsec is a special case that can
-			   occur in multiple places)
-				   
-			*/
-			if (cur_sigs) {
-				for (i = 0; i < ldns_rr_list_rr_count(cur_sigs); i++) {
-					/* find the appropriate key in the parent list */
-					cur_sig_rr = ldns_rr_list_rr(cur_sigs, i);
-					cur_keytag = ldns_rdf2native_int16(ldns_rr_rrsig_keytag(cur_sig_rr));
-
-					if (ldns_rr_get_type(cur_rr) == LDNS_RR_TYPE_NSEC) {
-						if (ldns_dname_compare(ldns_rr_owner(cur_sig_rr), 
-										   ldns_rr_owner(cur_rr)))
-							{
-								/* find first that does match */
-
-								for (j = 0;
-								     j < ldns_rr_list_rr_count(cur_rrset) && 
-										ldns_dname_compare(ldns_rr_owner(cur_sig_rr),ldns_rr_owner(cur_rr)) != 0;
-								     j++) {
-									cur_rr = ldns_rr_list_rr(cur_rrset, j);
-									
-								}
-								if (ldns_dname_compare(ldns_rr_owner(cur_sig_rr), 
-												   ldns_rr_owner(cur_rr)))
-									{
-										break;
-									}
-							}
-							
-					}
-					/* option 1 */
-					if (data_chain->parent) {
-						ldns_dnssec_derive_trust_tree_normal_rrset(new_tree, data_chain, cur_sig_rr);
-					}
-
-					/* option 2 */
-					ldns_dnssec_derive_trust_tree_dnskey_rrset(new_tree, data_chain, cur_rr, cur_sig_rr);
-				}
-					
-				ldns_dnssec_derive_trust_tree_ds_rrset(new_tree, data_chain, cur_rr);
-			} else {
-				/* no signatures? maybe it's nsec data */
-					
-				/* just add every rr from parent as new parent */
-				ldns_dnssec_derive_trust_tree_no_sig(new_tree, data_chain);
-			}
-		}
-	}
-
-	return new_tree;
-}
-
-/*
- * returns OK if there is a path from tree to key with only OK
- * the (first) error in between otherwise
- * or NOT_FOUND if the key wasn't present at all
- */
-ldns_status
-ldns_dnssec_trust_tree_contains_keys(ldns_dnssec_trust_tree *tree, ldns_rr_list *trusted_keys)
-{
-	size_t i;
-	ldns_status result = LDNS_STATUS_CRYPTO_NO_DNSKEY;
-	bool equal;
-	ldns_status parent_result;
-	
-	if (tree && trusted_keys && ldns_rr_list_rr_count(trusted_keys) > 0)
-		{ if (tree->rr) {
-				for (i = 0; i < ldns_rr_list_rr_count(trusted_keys); i++) {
-					/*
-					  printf("Trying key: ");
-					  ldns_rr_print(stdout, tree->rr);
-					*/
-					equal = ldns_rr_compare_ds(tree->rr, ldns_rr_list_rr(trusted_keys, i));
-					if (equal) {
-						result = LDNS_STATUS_OK;
-						return result;
-					}
-				}
-			}
-			for (i = 0; i < tree->parent_count; i++) {
-				parent_result = ldns_dnssec_trust_tree_contains_keys(tree->parents[i], trusted_keys);
-				if (parent_result != LDNS_STATUS_CRYPTO_NO_DNSKEY) {
-					if (tree->parent_status[i] != LDNS_STATUS_OK) {
-						result = tree->parent_status[i];
-					} else {
-						if (ldns_rr_get_type(tree->rr) == LDNS_RR_TYPE_NSEC &&
-						    parent_result == LDNS_STATUS_OK
-						    ) {
-							result = LDNS_STATUS_DNSSEC_EXISTENCE_DENIED;
-						} else {
-							result = parent_result;
-						}
-					}
-				}
-			}
-		} else {
-		result = LDNS_STATUS_ERR;
-	}
-	
-	return result;
 }
 
 /* used only on the public key RR */
@@ -984,1009 +531,6 @@ uint16_t ldns_calc_keytag_raw(uint8_t* key, size_t keysize)
 		ac32 += (ac32 >> 16) & 0xFFFF;
 		return (uint16_t) (ac32 & 0xFFFF);
 	}
-}
-
-ldns_status
-ldns_verify(ldns_rr_list *rrset, ldns_rr_list *rrsig, const ldns_rr_list *keys, 
-		  ldns_rr_list *good_keys)
-{
-	uint16_t i;
-	bool valid;
-	ldns_status verify_result = LDNS_STATUS_ERR;
-
-	if (!rrset || !rrsig || !keys) {
-		return LDNS_STATUS_ERR;
-	}
-
-	valid = false;
-
-	if (ldns_rr_list_rr_count(rrset) < 1) {
-		return LDNS_STATUS_ERR;
-	}
-
-	if (ldns_rr_list_rr_count(rrsig) < 1) {
-		return LDNS_STATUS_CRYPTO_NO_RRSIG;
-	}
-	
-	if (ldns_rr_list_rr_count(keys) < 1) {
-		verify_result = LDNS_STATUS_CRYPTO_NO_TRUSTED_DNSKEY;
-	} else {
-		for (i = 0; i < ldns_rr_list_rr_count(rrsig); i++) {
-
-			if (ldns_verify_rrsig_keylist(rrset,
-									ldns_rr_list_rr(rrsig, i),
-									keys, good_keys) == LDNS_STATUS_OK) {
-				verify_result = LDNS_STATUS_OK;
-			}
-		}
-	}
-	return verify_result;
-}
-
-ldns_rr_list *
-ldns_fetch_valid_domain_keys(const ldns_resolver * res, const ldns_rdf * domain, const ldns_rr_list * keys, ldns_status *status)
-{
-	ldns_rr_list * trusted_keys = NULL;
-	ldns_rr_list * ds_keys = NULL;
-
-	if (res && domain && keys) {
-
-		if ((trusted_keys = ldns_validate_domain_dnskey(res, domain, keys))) {
-			*status = LDNS_STATUS_OK;
-		} else {
-      
-			/* No trusted keys in this domain, we'll have to find some in the parent domain */
-			*status = LDNS_STATUS_CRYPTO_NO_TRUSTED_DNSKEY;
-      
-			if (ldns_rdf_size(domain) > 1) { /* Fail if we are at the root */
-				ldns_rr_list * parent_keys;
-				ldns_rdf * parent_domain = ldns_dname_left_chop(domain);
-	
-				if ((parent_keys = ldns_fetch_valid_domain_keys(res, parent_domain, keys, status))) {
-	  
-					/* Check DS records */
-					if ((ds_keys = ldns_validate_domain_ds(res, domain, parent_keys))) {
-						trusted_keys = ldns_fetch_valid_domain_keys(res, domain, ds_keys, status);
-						ldns_rr_list_deep_free(ds_keys);
-					} else {
-						/* No valid DS at the parent -- fail */
-						*status = LDNS_STATUS_CRYPTO_NO_TRUSTED_DS ;
-					}
-					ldns_rr_list_deep_free(parent_keys);
-				}
-				ldns_rdf_free(parent_domain);
-			}
-		}
-	}
-	return trusted_keys;
-}
-
-ldns_rr_list *
-ldns_validate_domain_dnskey (const ldns_resolver * res, const ldns_rdf * domain, const ldns_rr_list * keys)
-{
-	ldns_status status;
-	ldns_pkt * keypkt;
-	ldns_rr * cur_key;
-	uint16_t key_i; uint16_t key_j; uint16_t key_k;
-	uint16_t sig_i; ldns_rr * cur_sig;
-
-	ldns_rr_list * domain_keys = NULL;
-	ldns_rr_list * domain_sigs = NULL;
-	ldns_rr_list * trusted_keys = NULL;
-
-	/* Fetch keys for the domain */
-	if ((keypkt = ldns_resolver_query(res, domain, LDNS_RR_TYPE_DNSKEY, LDNS_RR_CLASS_IN, LDNS_RD))) {
-
-		domain_keys = ldns_pkt_rr_list_by_type(keypkt, LDNS_RR_TYPE_DNSKEY, LDNS_SECTION_ANSWER);
-		domain_sigs = ldns_pkt_rr_list_by_type(keypkt, LDNS_RR_TYPE_RRSIG, LDNS_SECTION_ANSWER);
-
-		/* Try to validate the record using our keys */
-		for (key_i=0; key_i< ldns_rr_list_rr_count(domain_keys); key_i++) {
-      
-			cur_key = ldns_rr_list_rr(domain_keys, key_i);
-			for (key_j=0; key_j<ldns_rr_list_rr_count(keys); key_j++) {
-				if (ldns_rr_compare_ds(ldns_rr_list_rr(keys, key_j), cur_key)) {
-          
-					/* Current key is trusted -- validate */
-					trusted_keys = ldns_rr_list_new();
-          
-					for (sig_i=0; sig_i<ldns_rr_list_rr_count(domain_sigs); sig_i++) {
-						cur_sig = ldns_rr_list_rr(domain_sigs, sig_i);
-						/* Avoid non-matching sigs */
-						if (ldns_rdf2native_int16(ldns_rr_rrsig_keytag(cur_sig)) == ldns_calc_keytag(cur_key)) {
-							if ((status=ldns_verify_rrsig(domain_keys, cur_sig, cur_key)) == LDNS_STATUS_OK) {
-                
-								/* Push the whole rrset -- we can't do much more */
-								for (key_k=0; key_k<ldns_rr_list_rr_count(domain_keys); key_k++) {
-									ldns_rr_list_push_rr(trusted_keys, ldns_rr_clone(ldns_rr_list_rr(domain_keys, key_k)));
-								}
-                
-								ldns_rr_list_deep_free(domain_keys);
-								ldns_rr_list_deep_free(domain_sigs);
-								ldns_pkt_free(keypkt);
-								return trusted_keys;
-							} /* else {
-								fprintf(stderr, "# Signature verification failed: %s\n", ldns_get_errorstr_by_id(status));
-								}
-								} else {
-								fprintf(stderr, "# Non-matching keytag for sig %u. Skipping.\n", sig_i);
-							  */
-						}
-					}
-	  
-					/* Only push our trusted key */
-					ldns_rr_list_push_rr(trusted_keys, ldns_rr_clone(cur_key));
-				}
-			}
-		}
-
-		ldns_rr_list_deep_free(domain_keys);
-		ldns_rr_list_deep_free(domain_sigs);
-		ldns_pkt_free(keypkt);
-
-	} else {
-		status = LDNS_STATUS_CRYPTO_NO_DNSKEY;
-	}
-    
-	return trusted_keys;
-}
-
-ldns_rr_list *
-ldns_validate_domain_ds (const ldns_resolver * res, const ldns_rdf * domain, const ldns_rr_list * keys)
-{
-	ldns_status status;
-	ldns_pkt * dspkt;
-	uint16_t key_i;
-	ldns_rr_list * rrset = NULL;
-	ldns_rr_list * sigs = NULL;
-	ldns_rr_list * trusted_keys = NULL;
-
-	/* Fetch DS for the domain */
-	if ((dspkt = ldns_resolver_query(res, domain, LDNS_RR_TYPE_DS, LDNS_RR_CLASS_IN, LDNS_RD))) {
-
-		rrset = ldns_pkt_rr_list_by_type(dspkt, LDNS_RR_TYPE_DS, LDNS_SECTION_ANSWER);
-		sigs = ldns_pkt_rr_list_by_type(dspkt, LDNS_RR_TYPE_RRSIG, LDNS_SECTION_ANSWER);
-
-		/* Validate sigs */
-		if ((status = ldns_verify(rrset, sigs, keys, NULL)) == LDNS_STATUS_OK) {
-			trusted_keys = ldns_rr_list_new();
-			for (key_i=0; key_i<ldns_rr_list_rr_count(rrset); key_i++) {
-				ldns_rr_list_push_rr(trusted_keys, ldns_rr_clone(ldns_rr_list_rr(rrset, key_i)));
-			}
-		}
-
-		ldns_rr_list_deep_free(rrset);
-		ldns_rr_list_deep_free(sigs);
-		ldns_pkt_free(dspkt);
-
-	} else {
-		status = LDNS_STATUS_CRYPTO_NO_DS;
-	}
-
-	return trusted_keys;
-}
-
-ldns_status
-ldns_verify_trusted(ldns_resolver * res, ldns_rr_list * rrset, ldns_rr_list * rrsigs, ldns_rr_list * validating_keys)
-{
-	/* */
-	uint16_t sig_i; uint16_t key_i;
-	ldns_rr * cur_sig; ldns_rr * cur_key;
-	ldns_rr_list * trusted_keys = NULL;
-	ldns_status result = LDNS_STATUS_ERR;
-	printf("[verify_trusted] set default result to %s\n", ldns_get_errorstr_by_id(result));
-
-	if (!res || !rrset || !rrsigs) {
-		return LDNS_STATUS_ERR;
-	}
-
-	if (ldns_rr_list_rr_count(rrset) < 1) {
-		return LDNS_STATUS_ERR;
-	}
-
-	if (ldns_rr_list_rr_count(rrsigs) < 1) {
-		return LDNS_STATUS_CRYPTO_NO_RRSIG;
-	}
-  
-	/* Look at each sig */
-	for (sig_i=0; sig_i < ldns_rr_list_rr_count(rrsigs); sig_i++) {
-
-		cur_sig = ldns_rr_list_rr(rrsigs, sig_i);
-		/* Get a valid signer key and validate the sig */
-		if ((trusted_keys = ldns_fetch_valid_domain_keys(res, ldns_rr_rrsig_signame(cur_sig), ldns_resolver_dnssec_anchors(res), &result))) {
-
-			for (key_i = 0; key_i < ldns_rr_list_rr_count(trusted_keys); key_i++) {
-				cur_key = ldns_rr_list_rr(trusted_keys, key_i);
-				printf("[verify_trusted] trying:\n[verify_trusted] ");
-
-				if ((result = ldns_verify_rrsig(rrset, cur_sig, cur_key)) == LDNS_STATUS_OK) {
-					if (validating_keys) {
-						ldns_rr_list_push_rr(validating_keys, ldns_rr_clone(cur_key));
-					}
-					ldns_rr_list_deep_free(trusted_keys);
-					printf("[verify_trusted] returning OK\n");
-					return LDNS_STATUS_OK;
-				}
-				else {
-					printf("RESULT: %s\nFOR:\n", ldns_get_errorstr_by_id(result));
-					ldns_rr_list_print(stdout, rrset);
-					ldns_rr_print(stdout, cur_sig);
-					ldns_rr_print(stdout, cur_key);
-        	
-				}
-				printf("[verify_trusted] set result to %s\n", ldns_get_errorstr_by_id(result));
-			}
-		}
-		else {
-			printf("[verify_trusted] no valid domain keys\n");
-		}
-	}
-
-	ldns_rr_list_deep_free(trusted_keys);
-	printf("[verify_trusted] returning: %s\n", ldns_get_errorstr_by_id(result));
-	return result;
-}
-
-ldns_status
-ldns_verify_rrsig_buffers(ldns_buffer *rawsig_buf, ldns_buffer *verify_buf, 
-					 ldns_buffer *key_buf, uint8_t algo)
-{
-	return ldns_verify_rrsig_buffers_raw((unsigned char*)ldns_buffer_begin(
-															 rawsig_buf), ldns_buffer_position(rawsig_buf), verify_buf,
-								  (unsigned char*)ldns_buffer_begin(key_buf), 
-								  ldns_buffer_position(key_buf), algo);
-}
-
-ldns_status
-ldns_verify_rrsig_buffers_raw(unsigned char* sig, size_t siglen,
-						ldns_buffer *verify_buf, unsigned char* key, size_t keylen, 
-						uint8_t algo)
-{
-	/* check for right key */
-	switch(algo) {
-	case LDNS_DSA:
-	case LDNS_DSA_NSEC3:
-		return ldns_verify_rrsig_dsa_raw(sig, siglen, verify_buf, key, keylen);
-		break;
-	case LDNS_RSASHA1:
-	case LDNS_RSASHA1_NSEC3:
-		return ldns_verify_rrsig_rsasha1_raw(sig, siglen, verify_buf, key, keylen);
-		break;
-	case LDNS_RSASHA256:
-	case LDNS_RSASHA256_NSEC3:
-		return ldns_verify_rrsig_rsasha256_raw(sig, siglen, verify_buf, key, keylen);
-		break;
-	case LDNS_RSASHA512:
-	case LDNS_RSASHA512_NSEC3:
-		return ldns_verify_rrsig_rsasha512_raw(sig, siglen, verify_buf, key, keylen);
-		break;
-	case LDNS_RSAMD5:
-		return ldns_verify_rrsig_rsamd5_raw(sig, siglen, verify_buf, key, keylen);
-		break;
-	default:
-		/* do you know this alg?! */
-		return LDNS_STATUS_CRYPTO_UNKNOWN_ALGO;
-	}
-}
-
-/* Post 1.0 TODO: next 2 functions contain a lot of similar code */
-/* 
- * to verify:
- * - create the wire fmt of the b64 key rdata
- * - create the wire fmt of the sorted rrset
- * - create the wire fmt of the b64 sig rdata
- * - create the wire fmt of the sig without the b64 rdata
- * - cat the sig data (without b64 rdata) to the rrset
- * - verify the rrset+sig, with the b64 data and the b64 key data
- */
-ldns_status
-ldns_verify_rrsig_keylist(ldns_rr_list *rrset, ldns_rr *rrsig, const ldns_rr_list *keys, 
-					 ldns_rr_list *good_keys)
-{
-	ldns_buffer *rawsig_buf;
-	ldns_buffer *verify_buf;
-	ldns_buffer *key_buf;
-	uint32_t orig_ttl;
-	uint16_t i;
-	uint8_t sig_algo;
-	ldns_status result;
-	ldns_rr *current_key;
-	ldns_rr_list *rrset_clone;
-	ldns_rr_list *validkeys;
-	time_t now, inception, expiration;
-	uint8_t label_count;
-	ldns_rdf *wildcard_name;
-	ldns_rdf *wildcard_chopped;
-	ldns_rdf *wildcard_chopped_tmp;
-
-
-	if (!rrset) {
-		return LDNS_STATUS_ERR;
-	}
-
-	validkeys = ldns_rr_list_new();
-	if (!validkeys) {
-		return LDNS_STATUS_MEM_ERR;
-	}
-	
-	/* canonicalize the sig */
-	ldns_dname2canonical(ldns_rr_owner(rrsig));
-	
-	/* clone the rrset so that we can fiddle with it */
-	rrset_clone = ldns_rr_list_clone(rrset);
-
-	/* check if the typecovered is equal to the type checked */
-	if (ldns_rdf2rr_type(ldns_rr_rrsig_typecovered(rrsig)) !=
-	    ldns_rr_get_type(ldns_rr_list_rr(rrset_clone, 0))) {
-		ldns_rr_list_deep_free(rrset_clone);
-		ldns_rr_list_deep_free(validkeys);
-		return LDNS_STATUS_CRYPTO_TYPE_COVERED_ERR;
-	}
-	
-	/* create the buffers which will certainly hold the raw data */
-	rawsig_buf = ldns_buffer_new(LDNS_MAX_PACKETLEN);
-	verify_buf  = ldns_buffer_new(LDNS_MAX_PACKETLEN);
-	
-	sig_algo = ldns_rdf2native_int8(ldns_rr_rdf(rrsig, 1));
-	result = LDNS_STATUS_ERR;
-
-	/* check the signature time stamps */
-	inception = ldns_rdf2native_time_t(ldns_rr_rrsig_inception(rrsig));
-	expiration = ldns_rdf2native_time_t(ldns_rr_rrsig_expiration(rrsig));
-	now = time(NULL);
-
-	if (expiration - inception < 0) {
-		/* bad sig, expiration before inception?? Tsssg */
-		ldns_buffer_free(verify_buf);
-		ldns_buffer_free(rawsig_buf);
-		ldns_rr_list_deep_free(rrset_clone);
-		ldns_rr_list_deep_free(validkeys);
-		return LDNS_STATUS_CRYPTO_EXPIRATION_BEFORE_INCEPTION;
-	}
-	if (now - inception < 0) {
-		/* bad sig, inception date has not yet come to pass */
-		ldns_buffer_free(rawsig_buf);
-		ldns_buffer_free(verify_buf);
-		ldns_rr_list_deep_free(rrset_clone);
-		ldns_rr_list_deep_free(validkeys);
-		return LDNS_STATUS_CRYPTO_SIG_NOT_INCEPTED;
-	}
-	if (expiration - now < 0) {
-		/* bad sig, expiration date has passed */
-		ldns_buffer_free(rawsig_buf);
-		ldns_buffer_free(verify_buf);
-		ldns_rr_list_deep_free(rrset_clone);
-		ldns_rr_list_deep_free(validkeys);
-		return LDNS_STATUS_CRYPTO_SIG_EXPIRED;
-	}
-	
-	/* create a buffer with b64 signature rdata */
-	if (ldns_rdf2buffer_wire(rawsig_buf, ldns_rr_rdf(rrsig, 8)) != LDNS_STATUS_OK) {
-		ldns_buffer_free(rawsig_buf);
-		ldns_buffer_free(verify_buf);
-		ldns_rr_list_deep_free(rrset_clone);
-		ldns_rr_list_deep_free(validkeys);
-		return LDNS_STATUS_MEM_ERR;
-	}
-
-	orig_ttl = ldns_rdf2native_int32( ldns_rr_rdf(rrsig, 3));
-	label_count = ldns_rdf2native_int8(ldns_rr_rdf(rrsig, 2));
-
-	/* reset the ttl in the rrset with the orig_ttl from the sig */
-	/* and update owner name if it was wildcard */
-	for(i = 0; i < ldns_rr_list_rr_count(rrset_clone); i++) {
-		if (label_count < 
-		    ldns_dname_label_count(
-							  ldns_rr_owner(ldns_rr_list_rr(rrset_clone, i)))) {
-			(void) ldns_str2rdf_dname(&wildcard_name, "*");
-			wildcard_chopped = ldns_rdf_clone(ldns_rr_owner(ldns_rr_list_rr(rrset_clone, i)));
-			while (label_count < ldns_dname_label_count(wildcard_chopped)) {
-				wildcard_chopped_tmp = ldns_dname_left_chop(wildcard_chopped);
-				ldns_rdf_deep_free(wildcard_chopped);
-				wildcard_chopped = wildcard_chopped_tmp;
-			}
-			(void) ldns_dname_cat(wildcard_name, wildcard_chopped);
-			ldns_rdf_deep_free(wildcard_chopped);
-			ldns_rdf_deep_free(ldns_rr_owner(ldns_rr_list_rr(rrset_clone, i)));
-			ldns_rr_set_owner(ldns_rr_list_rr(rrset_clone, i), 
-						   wildcard_name);
-				  	
-		}
-		ldns_rr_set_ttl(ldns_rr_list_rr(rrset_clone, i), orig_ttl);
-		/* convert to lowercase */
-		ldns_rr2canonical(ldns_rr_list_rr(rrset_clone, i));
-	}
-
-	/* sort the rrset in canonical order  */
-	ldns_rr_list_sort(rrset_clone);
-
-	/* put the signature rr (without the b64) to the verify_buf */
-	if (ldns_rrsig2buffer_wire(verify_buf, rrsig) != LDNS_STATUS_OK) {
-		ldns_buffer_free(rawsig_buf);
-		ldns_buffer_free(verify_buf);
-		ldns_rr_list_deep_free(rrset_clone);
-		ldns_rr_list_deep_free(validkeys);
-		return LDNS_STATUS_MEM_ERR;
-	}
-
-	/* add the rrset in verify_buf */
-	if (ldns_rr_list2buffer_wire(verify_buf, rrset_clone) != LDNS_STATUS_OK) {
-		ldns_buffer_free(rawsig_buf);
-		ldns_buffer_free(verify_buf);
-		ldns_rr_list_deep_free(rrset_clone);
-		ldns_rr_list_deep_free(validkeys);
-		return LDNS_STATUS_MEM_ERR;
-	}
-
-	for(i = 0; i < ldns_rr_list_rr_count(keys); i++) {
-		current_key = ldns_rr_list_rr(keys, i);
-		/* before anything, check if the keytags match */
-		if (ldns_calc_keytag(current_key) ==
-		    ldns_rdf2native_int16(ldns_rr_rrsig_keytag(rrsig))) {
-			key_buf = ldns_buffer_new(LDNS_MAX_PACKETLEN);
-			
-			/* put the key-data in a buffer, that's the third rdf, with
-			 * the base64 encoded key data */
-			if (ldns_rdf2buffer_wire(key_buf,
-								ldns_rr_rdf(current_key, 3)) != LDNS_STATUS_OK) {
-				ldns_buffer_free(rawsig_buf);
-				ldns_buffer_free(verify_buf);
-				/* returning is bad might screw up good keys later in the list
-				   what to do? */
-				ldns_rr_list_deep_free(rrset_clone);
-				ldns_rr_list_deep_free(validkeys);
-				return LDNS_STATUS_MEM_ERR;
-			}
-
-			/* check for right key */
-			if (sig_algo == ldns_rdf2native_int8(ldns_rr_rdf(current_key, 
-												    2))) {
-				result = ldns_verify_rrsig_buffers(rawsig_buf, 
-											verify_buf, key_buf, sig_algo);
-			} else {
-				result = LDNS_STATUS_CRYPTO_UNKNOWN_ALGO;
-			}
-			
-			ldns_buffer_free(key_buf); 
-
-			if (result == LDNS_STATUS_OK) {
-				/* one of the keys has matched, don't break
-				 * here, instead put the 'winning' key in
-				 * the validkey list and return the list 
-				 * later */
-				if (!ldns_rr_list_push_rr(validkeys, current_key)) {
-					/* couldn't push the key?? */
-					ldns_buffer_free(rawsig_buf);
-					ldns_buffer_free(verify_buf);
-					ldns_rr_list_deep_free(rrset_clone);
-					ldns_rr_list_deep_free(validkeys);
-					return LDNS_STATUS_MEM_ERR;
-				}
-			} 
-		} else {
-			if (result == LDNS_STATUS_ERR) {
-				result = LDNS_STATUS_CRYPTO_NO_MATCHING_KEYTAG_DNSKEY;
-			}
-		}
-	}
-
-	/* no longer needed */
-	ldns_rr_list_deep_free(rrset_clone);
-	ldns_buffer_free(rawsig_buf);
-	ldns_buffer_free(verify_buf);
-	if (ldns_rr_list_rr_count(validkeys) == 0) {
-		/* no keys were added, return last error */
-		ldns_rr_list_deep_free(validkeys); 
-		return result;
-	} else {
-		ldns_rr_list_cat(good_keys, validkeys);
-		ldns_rr_list_free(validkeys);
-		return LDNS_STATUS_OK;
-	}
-}
-
-ldns_status
-ldns_convert_dsa_rrsig_rdata(
-                             ldns_buffer *target_buffer,
-                             ldns_rdf *sig_rdf
-                             )
-{
-	/* the EVP api wants the DER encoding of the signature... */
-	uint8_t t;
-	BIGNUM *R, *S;
-	DSA_SIG *dsasig;
-	unsigned char *raw_sig = NULL;
-	int raw_sig_len;
-	
-	/* extract the R and S field from the sig buffer */
-	t = ldns_rdf_data(sig_rdf)[0];
-	R = BN_new();
-	(void) BN_bin2bn(ldns_rdf_data(sig_rdf) + 1, SHA_DIGEST_LENGTH, R);
-	S = BN_new();
-	(void) BN_bin2bn(ldns_rdf_data(sig_rdf) + 21, SHA_DIGEST_LENGTH, S);
-
-	dsasig = DSA_SIG_new();
-	if (!dsasig) {
-		return LDNS_STATUS_MEM_ERR;
-	}
-
-	dsasig->r = R;
-	dsasig->s = S;
-	
-	raw_sig_len = i2d_DSA_SIG(dsasig, &raw_sig);
-	
-	/* todo reserve() */
-	if (ldns_buffer_reserve(target_buffer, raw_sig_len)) {
-		ldns_buffer_write(target_buffer, raw_sig, raw_sig_len);
-	}
-	return ldns_buffer_status(target_buffer);
-}
-
-void
-print_dates(time_t now, time_t inception)
-{
-	ldns_rdf *nrdf, *irdf;
-	char *nstr, *istr;
-	nrdf = ldns_rdf_new_frm_data(LDNS_RDF_TYPE_TIME, sizeof(now), &now);
-	irdf = ldns_rdf_new_frm_data(LDNS_RDF_TYPE_TIME, sizeof(inception), &inception);
-	nstr = ldns_rdf2str(nrdf);
-	istr = ldns_rdf2str(irdf);
-	printf("Now: %s\n", nstr);
-	printf("Inception: %s\n", istr);
-	ldns_rdf_deep_free(nrdf);
-	ldns_rdf_deep_free(irdf);
-	LDNS_FREE(nstr);
-	LDNS_FREE(istr);
-	return;
-}
-
-ldns_status
-ldns_verify_rrsig(ldns_rr_list *rrset, ldns_rr *rrsig, ldns_rr *key)
-{
-	ldns_buffer *rawsig_buf;
-	ldns_buffer *verify_buf;
-	ldns_buffer *key_buf;
-	uint32_t orig_ttl;
-	uint16_t i;
-	uint8_t sig_algo;
-	uint16_t label_count;
-	ldns_status result;
-	ldns_rr_list *rrset_clone;
-	time_t now, inception, expiration;
-	ldns_rdf *wildcard_name;
-	ldns_rdf *wildcard_chopped;
-	ldns_rdf *wildcard_chopped_tmp;
-
-	printf("START\n");
-	ldns_rr_list_print(stdout, rrset);
-	ldns_rr_print(stdout, rrsig);
-	ldns_rr_print(stdout, key);
-	printf("END\n");
-	if (!rrset) {
-		return LDNS_STATUS_NO_DATA;
-	}
-
-	/* lowercase the rrsig owner name */
-	ldns_dname2canonical(ldns_rr_owner(rrsig));
-
-	/* check the signature time stamps */
-	inception = ldns_rdf2native_time_t(ldns_rr_rrsig_inception(rrsig));
-	expiration = ldns_rdf2native_time_t(ldns_rr_rrsig_expiration(rrsig));
-	now = time(NULL);
-
-	if (expiration - inception < 0) {
-		/* bad sig, expiration before inception?? Tsssg */
-		return LDNS_STATUS_CRYPTO_EXPIRATION_BEFORE_INCEPTION;
-	}
-	if (now - inception < 0) {
-		/* bad sig, inception date has not passed */
-		return LDNS_STATUS_CRYPTO_SIG_NOT_INCEPTED;
-	}
-
-	if (expiration - now < 0) {
-		/* bad sig, expiration date has passed */
-		return LDNS_STATUS_CRYPTO_SIG_EXPIRED;
-	}
-	/* clone the rrset so that we can fiddle with it */
-	rrset_clone = ldns_rr_list_clone(rrset);
-	
-	/* create the buffers which will certainly hold the raw data */
-	rawsig_buf = ldns_buffer_new(LDNS_MAX_PACKETLEN);
-	verify_buf  = ldns_buffer_new(LDNS_MAX_PACKETLEN);
-	
-	sig_algo = ldns_rdf2native_int8(ldns_rr_rdf(rrsig, 1));
-	
-	/* check for known and implemented algo's now (otherwise 
-	 * the function could return a wrong error
-	 */
-	/* create a buffer with signature rdata */
-	/* for some algorithms we need other data than for others... */
-	/* (the DSA API wants DER encoding for instance) */
-
-	switch(sig_algo) {
-	case LDNS_RSAMD5:
-	case LDNS_RSASHA1:
-	case LDNS_RSASHA1_NSEC3:
-	case LDNS_RSASHA256:
-	case LDNS_RSASHA256_NSEC3:
-	case LDNS_RSASHA512:
-	case LDNS_RSASHA512_NSEC3:
-		if (ldns_rdf2buffer_wire(rawsig_buf,
-							ldns_rr_rdf(rrsig, 8)) != LDNS_STATUS_OK) {
-			ldns_buffer_free(rawsig_buf);
-			ldns_buffer_free(verify_buf);
-			return LDNS_STATUS_MEM_ERR;
-		}
-		break;
-	case LDNS_DSA:
-	case LDNS_DSA_NSEC3:
-		if (ldns_convert_dsa_rrsig_rdata(rawsig_buf,
-								   ldns_rr_rdf(rrsig, 8)) != LDNS_STATUS_OK) {
-			ldns_buffer_free(rawsig_buf);
-			ldns_buffer_free(verify_buf);
-			return LDNS_STATUS_MEM_ERR;
-		}
-		break;
-		break;
-	case LDNS_DH:
-	case LDNS_ECC:
-	case LDNS_INDIRECT:
-		ldns_buffer_free(rawsig_buf);
-		ldns_buffer_free(verify_buf);
-		return LDNS_STATUS_CRYPTO_ALGO_NOT_IMPL;
-	default:
-		ldns_buffer_free(rawsig_buf);
-		ldns_buffer_free(verify_buf);
-		ldns_rr_list_deep_free(rrset_clone);
-		return LDNS_STATUS_CRYPTO_UNKNOWN_ALGO;
-	}
-	
-	result = LDNS_STATUS_ERR;
-
-	/* remove labels if the label count is higher than the label count
-	   from the rrsig */
-	label_count = ldns_rdf2native_int8(ldns_rr_rdf(rrsig, 2));
-
-	orig_ttl = ldns_rdf2native_int32(
-							   ldns_rr_rdf(rrsig, 3));
-
-	/* reset the ttl in the rrset with the orig_ttl from the sig */
-	for(i = 0; i < ldns_rr_list_rr_count(rrset_clone); i++) {
-		if (label_count < 
-		    ldns_dname_label_count(
-							  ldns_rr_owner(ldns_rr_list_rr(rrset_clone, i)))) {
-			(void) ldns_str2rdf_dname(&wildcard_name, "*");
-			wildcard_chopped = ldns_rdf_clone(ldns_rr_owner(ldns_rr_list_rr(rrset_clone, i)));
-			while (label_count < ldns_dname_label_count(wildcard_chopped)) {
-				wildcard_chopped_tmp = ldns_dname_left_chop(wildcard_chopped);
-				ldns_rdf_deep_free(wildcard_chopped);
-				wildcard_chopped = wildcard_chopped_tmp;
-			}
-			(void) ldns_dname_cat(wildcard_name, wildcard_chopped);
-			ldns_rdf_deep_free(wildcard_chopped);
-			ldns_rdf_deep_free(ldns_rr_owner(ldns_rr_list_rr(rrset_clone, i)));
-			ldns_rr_set_owner(ldns_rr_list_rr(rrset_clone, i), 
-						   wildcard_name);
-				  	
-		}
-		ldns_rr_set_ttl(
-					 ldns_rr_list_rr(rrset_clone, i),
-					 orig_ttl);
-		/* convert to lowercase */
-		ldns_rr2canonical(ldns_rr_list_rr(rrset_clone, i));
-	}
-
-	/* sort the rrset in canonical order  */
-	ldns_rr_list_sort(rrset_clone);
-
-	/* put the signature rr (without the b64) to the verify_buf */
-	if (ldns_rrsig2buffer_wire(verify_buf, rrsig) != LDNS_STATUS_OK) {
-		ldns_rr_list_deep_free(rrset_clone);
-		ldns_buffer_free(rawsig_buf);
-		ldns_buffer_free(verify_buf);
-		return LDNS_STATUS_ERR;
-	}
-
-	/* add the rrset in verify_buf */
-	if (ldns_rr_list2buffer_wire(verify_buf, rrset_clone) != LDNS_STATUS_OK) {
-		ldns_rr_list_deep_free(rrset_clone);
-		ldns_buffer_free(rawsig_buf);
-		ldns_buffer_free(verify_buf);
-		return LDNS_STATUS_ERR;
-	}
-
-	if (ldns_calc_keytag(key)
-	    ==
-	    ldns_rdf2native_int16(ldns_rr_rrsig_keytag(rrsig))
-	    ) {
-		key_buf = ldns_buffer_new(LDNS_MAX_PACKETLEN);
-		
-		/* before anything, check if the keytags match */
-
-		/* put the key-data in a buffer, that's the third rdf, with
-		 * the base64 encoded key data */
-		if (ldns_rdf2buffer_wire(key_buf,
-							ldns_rr_rdf(key, 3)) != LDNS_STATUS_OK) {
-			ldns_rr_list_deep_free(rrset_clone);
-			ldns_buffer_free(rawsig_buf);
-			ldns_buffer_free(verify_buf);
-			/* returning is bad might screw up
-			   good keys later in the list
-			   what to do? */
-			return LDNS_STATUS_ERR;
-		}
-		
-		if (sig_algo == ldns_rdf2native_int8(ldns_rr_rdf(key, 2))) {
-			result = ldns_verify_rrsig_buffers(rawsig_buf, verify_buf, key_buf, sig_algo);
-		}
-		
-		ldns_buffer_free(key_buf); 
-	}
-	else {
-		/* No keys with the corresponding keytag are found */
-		if (result == LDNS_STATUS_ERR) {
-			result = LDNS_STATUS_CRYPTO_NO_MATCHING_KEYTAG_DNSKEY;
-		}
-	}
-	/* no longer needed */
-	ldns_rr_list_deep_free(rrset_clone);
-	ldns_buffer_free(rawsig_buf);
-	ldns_buffer_free(verify_buf);
-	/*
-	  printf("RETURNING RESULT: %s\n", ldns_get_errorstr_by_id(result));
-	  printf("for:\n");
-	  ldns_rr_list_print(stdout, rrset);
-	  printf("sig:\n");
-	  ldns_rr_print(stdout, rrsig);
-	  printf("key:\n");
-	  ldns_rr_print(stdout, key);
-	*/
-	return result;
-}
-
-ldns_status
-ldns_verify_rrsig_evp(ldns_buffer *sig, ldns_buffer *rrset, EVP_PKEY *key, const EVP_MD *digest_type)
-{
-	return ldns_verify_rrsig_evp_raw((unsigned char*)ldns_buffer_begin(
-														  sig), ldns_buffer_position(sig), rrset, key, digest_type);
-}
-
-ldns_status
-ldns_verify_rrsig_evp_raw(unsigned char *sig, size_t siglen, 
-					 ldns_buffer *rrset, EVP_PKEY *key, const EVP_MD *digest_type)
-{
-	EVP_MD_CTX ctx;
-	int res;
-
-	EVP_MD_CTX_init(&ctx);
-	
-	EVP_VerifyInit(&ctx, digest_type);
-	EVP_VerifyUpdate(&ctx, ldns_buffer_begin(rrset), ldns_buffer_position(rrset));
-	res = EVP_VerifyFinal(&ctx, sig, siglen, key);
-	
-	EVP_MD_CTX_cleanup(&ctx);
-	
-	if (res == 1) {
-		return LDNS_STATUS_OK;
-	} else if (res == 0) {
-		return LDNS_STATUS_CRYPTO_BOGUS;
-	}
-	/* TODO how to communicate internal SSL error? let caller use ssl's get_error() */
-	return LDNS_STATUS_SSL_ERR;
-}
-
-ldns_status
-ldns_verify_rrsig_dsa(ldns_buffer *sig, ldns_buffer *rrset, ldns_buffer *key)
-{
-	return ldns_verify_rrsig_dsa_raw((unsigned char*)ldns_buffer_begin(
-														  sig), ldns_buffer_position(sig), rrset, (unsigned char*)
-							   ldns_buffer_begin(key), ldns_buffer_position(key));
-}
-
-ldns_status
-ldns_verify_rrsig_rsasha1(ldns_buffer *sig, ldns_buffer *rrset, ldns_buffer *key)
-{
-	return ldns_verify_rrsig_rsasha1_raw((unsigned char*)ldns_buffer_begin(
-															 sig), ldns_buffer_position(sig), rrset, (unsigned char*)
-								  ldns_buffer_begin(key), ldns_buffer_position(key));
-}
-
-ldns_status
-ldns_verify_rrsig_rsamd5(ldns_buffer *sig, ldns_buffer *rrset, ldns_buffer *key)
-{
-	return ldns_verify_rrsig_rsamd5_raw((unsigned char*)ldns_buffer_begin(
-															sig), ldns_buffer_position(sig), rrset, (unsigned char*)
-								 ldns_buffer_begin(key), ldns_buffer_position(key));
-}
-
-ldns_status
-ldns_verify_rrsig_dsa_raw(unsigned char* sig, size_t siglen,
-					 ldns_buffer* rrset, unsigned char* key, size_t keylen)
-{
-	EVP_PKEY *evp_key;
-	ldns_status result;
-
-	evp_key = EVP_PKEY_new();
-	EVP_PKEY_assign_DSA(evp_key, ldns_key_buf2dsa_raw(key, keylen));
-	result = ldns_verify_rrsig_evp_raw(sig, siglen, rrset, evp_key, EVP_dss1());
-	EVP_PKEY_free(evp_key);
-	return result;
-
-}
-
-ldns_status
-ldns_verify_rrsig_rsasha1_raw(unsigned char* sig, size_t siglen,
-						ldns_buffer* rrset, unsigned char* key, size_t keylen)
-{
-	EVP_PKEY *evp_key;
-	ldns_status result;
-
-	evp_key = EVP_PKEY_new();
-	EVP_PKEY_assign_RSA(evp_key, ldns_key_buf2rsa_raw(key, keylen));
-	result = ldns_verify_rrsig_evp_raw(sig, siglen, rrset, evp_key, EVP_sha1());
-	EVP_PKEY_free(evp_key);
-
-	return result;
-}
-
-ldns_status
-ldns_verify_rrsig_rsasha256_raw(unsigned char* sig, size_t siglen,
-						  ldns_buffer* rrset, unsigned char* key, size_t keylen)
-{
-#ifdef SHA256_DIGEST_LENGTH
-	EVP_PKEY *evp_key;
-	ldns_status result;
-
-	evp_key = EVP_PKEY_new();
-	EVP_PKEY_assign_RSA(evp_key, ldns_key_buf2rsa_raw(key, keylen));
-	result = ldns_verify_rrsig_evp_raw(sig, siglen, rrset, evp_key, EVP_sha256());
-	EVP_PKEY_free(evp_key);
-
-	return result;
-#else
-	return LDNS_STATUS_CRYPTO_UNKNOWN_ALGO;
-#endif
-}
-
-ldns_status
-ldns_verify_rrsig_rsasha512_raw(unsigned char* sig, size_t siglen,
-						  ldns_buffer* rrset, unsigned char* key, size_t keylen)
-{
-#ifdef SHA512_DIGEST_LENGTH
-	EVP_PKEY *evp_key;
-	ldns_status result;
-
-	evp_key = EVP_PKEY_new();
-	EVP_PKEY_assign_RSA(evp_key, ldns_key_buf2rsa_raw(key, keylen));
-	result = ldns_verify_rrsig_evp_raw(sig, siglen, rrset, evp_key, EVP_sha512());
-	EVP_PKEY_free(evp_key);
-
-	return result;
-#else
-	return LDNS_STATUS_CRYPTO_UNKNOWN_ALGO;
-#endif
-}
-
-
-
-ldns_status
-ldns_verify_rrsig_rsamd5_raw(unsigned char* sig, size_t siglen,
-					    ldns_buffer* rrset, unsigned char* key, size_t keylen)
-{
-	EVP_PKEY *evp_key;
-	ldns_status result;
-
-	evp_key = EVP_PKEY_new();
-	EVP_PKEY_assign_RSA(evp_key, ldns_key_buf2rsa_raw(key, keylen));
-	result = ldns_verify_rrsig_evp_raw(sig, siglen, rrset, evp_key, EVP_md5());
-	EVP_PKEY_free(evp_key);
-
-	return result;
-}
-
-DSA *
-ldns_key_buf2dsa(ldns_buffer *key)
-{
-	return ldns_key_buf2dsa_raw((unsigned char*)ldns_buffer_begin(key),
-						   ldns_buffer_position(key));
-}
-
-DSA *
-ldns_key_buf2dsa_raw(unsigned char* key, size_t len)
-{
-	uint8_t T;
-	uint16_t length;
-	uint16_t offset;
-	DSA *dsa;
-	BIGNUM *Q; BIGNUM *P;
-	BIGNUM *G; BIGNUM *Y;
-
-	if(len == 0)
-		return NULL;
-	T = (uint8_t)key[0];
-	length = (64 + T * 8);
-	offset = 1;
-	
-	if (T > 8) {
-		return NULL;
-	}
-	if(len < (size_t)1 + SHA_DIGEST_LENGTH + 3*length)
-		return NULL;
-	
-	Q = BN_bin2bn(key+offset, SHA_DIGEST_LENGTH, NULL);
-	offset += SHA_DIGEST_LENGTH;
-	
-	P = BN_bin2bn(key+offset, (int)length, NULL);
-	offset += length;
-	
-	G = BN_bin2bn(key+offset, (int)length, NULL);
-	offset += length;
-	
-	Y = BN_bin2bn(key+offset, (int)length, NULL);
-	offset += length;
-	
-	/* create the key and set its properties */
-	dsa = DSA_new();
-	dsa->p = P;
-	dsa->q = Q;
-	dsa->g = G;
-	dsa->pub_key = Y;
-
-	return dsa;
-}
-
-RSA *
-ldns_key_buf2rsa(ldns_buffer *key)
-{
-	return ldns_key_buf2rsa_raw((unsigned char*)ldns_buffer_begin(key),
-						   ldns_buffer_position(key));
-}
-
-RSA *
-ldns_key_buf2rsa_raw(unsigned char* key, size_t len)
-{
-	uint16_t offset;
-	uint16_t exp;
-	uint16_t int16;
-	RSA *rsa;
-	BIGNUM *modulus;
-	BIGNUM *exponent;
-
-	if (len == 0)
-		return NULL;
-	if (key[0] == 0) {
-		if(len < 3)
-			return NULL;
-		/* need some smart comment here XXX*/
-		/* the exponent is too large so it's places
-		 * futher...???? */
-		memmove(&int16, key+1, 2);
-		exp = ntohs(int16);
-		offset = 3;
-	} else {
-		exp = key[0];
-		offset = 1;
-	}
-
-	/* key length at least one */
-	if(len < (size_t)offset + exp + 1)
-		return NULL;
-	
-	/* Exponent */
-	exponent = BN_new();
-	(void) BN_bin2bn(key+offset, (int)exp, exponent);
-	offset += exp;
-
-	/* Modulus */
-	modulus = BN_new();
-	/* length of the buffer must match the key length! */
-	(void) BN_bin2bn(key+offset, (int)(len - offset), modulus);
-
-	rsa = RSA_new();
-	rsa->n = modulus;
-	rsa->e = exponent;
-
-	return rsa;
 }
 
 ldns_rr *
@@ -2101,373 +645,6 @@ ldns_key_rr2ds(const ldns_rr *key, ldns_hash h)
 	LDNS_FREE(digest);
 	ldns_buffer_free(data_buf);
 	return ds;
-}
-
-/*
- * use this function to sign with a public/private key alg
- * return the created signatures
- */
-ldns_rr_list *
-ldns_sign_public(ldns_rr_list *rrset, ldns_key_list *keys)
-{
-	ldns_rr_list *signatures;
-	ldns_rr_list *rrset_clone;
-	ldns_rr *current_sig;
-	ldns_rdf *b64rdf;
-	ldns_key *current_key;
-	size_t key_count;
-	uint16_t i;
-	ldns_buffer *sign_buf;
-	uint32_t orig_ttl;
-	time_t now;
-	uint8_t label_count;
-	ldns_rdf *first_label;
-	ldns_rdf *wildcard_label;
-	ldns_rdf *new_owner;
-
-	if (!rrset || ldns_rr_list_rr_count(rrset) < 1 || !keys) {
-		return NULL;
-	}
-
-	key_count = 0;
-	signatures = ldns_rr_list_new();
-
-	/* prepare a signature and add all the know data
-	 * prepare the rrset. Sign this together.  */
-	rrset_clone = ldns_rr_list_clone(rrset);
-	if (!rrset_clone) {
-		return NULL;
-	}
-
-	/* check for label count and wildcard */
-	label_count = ldns_dname_label_count(ldns_rr_owner(ldns_rr_list_rr(rrset, 0)));
-	(void) ldns_str2rdf_dname(&wildcard_label, "*");
-	first_label = ldns_dname_label(ldns_rr_owner(ldns_rr_list_rr(rrset, 0)), 0);
-	if (ldns_rdf_compare(first_label, wildcard_label) == 0) {
-		label_count--;
-		for (i = 0; i < ldns_rr_list_rr_count(rrset_clone); i++) {
-			new_owner = ldns_dname_cat_clone(wildcard_label, 
-									   ldns_dname_left_chop(ldns_rr_owner(ldns_rr_list_rr(rrset_clone, i))));
-			ldns_rr_set_owner(ldns_rr_list_rr(rrset_clone, i), new_owner);
-		}
-	}
-	ldns_rdf_deep_free(wildcard_label);
-	ldns_rdf_deep_free(first_label);
-
-	/* make it canonical */
-	for(i = 0; i < ldns_rr_list_rr_count(rrset_clone); i++) {
-		ldns_rr2canonical(ldns_rr_list_rr(rrset_clone, i));
-	}
-	/* sort */
-	ldns_rr_list_sort(rrset_clone);
-	
-	for (key_count = 0; key_count < ldns_key_list_key_count(keys); key_count++) {
-		if (!ldns_key_use(ldns_key_list_key(keys, key_count))) {
-			continue;
-		}
-		sign_buf = ldns_buffer_new(LDNS_MAX_PACKETLEN);
-		if (!sign_buf) {
-			printf("[XX]ERROR NO SIGN BUG, OUT OF MEM?\n");
-			ldns_rr_list_print(stdout, rrset_clone);
-			while(true) {
-				sleep(1);
-				printf(".");
-				fflush(stdout);
-			}
-			exit(123);
-		}
-		b64rdf = NULL;
-
-		current_key = ldns_key_list_key(keys, key_count);
-		/* sign all RRs with keys that have ZSKbit, !SEPbit.
-		   sign DNSKEY RRs with keys that have ZSKbit&SEPbit */
-		if (
-		    ldns_key_flags(current_key) & LDNS_KEY_ZONE_KEY &&
-		    (!(ldns_key_flags(current_key) & LDNS_KEY_SEP_KEY) ||
-			ldns_rr_get_type(ldns_rr_list_rr(rrset, 0)) == LDNS_RR_TYPE_DNSKEY)
-		    ) {
-			current_sig = ldns_rr_new_frm_type(LDNS_RR_TYPE_RRSIG);
-			
-			/* set the type on the new signature */
-			orig_ttl = ldns_rr_ttl(ldns_rr_list_rr(rrset, 0));
-
-			ldns_rr_set_ttl(current_sig, orig_ttl);
-			ldns_rr_set_owner(current_sig, 
-						   ldns_rdf_clone(ldns_rr_owner(ldns_rr_list_rr(rrset_clone, 0))));
-
-			/* fill in what we know of the signature */
-
-			/* set the orig_ttl */
-			(void)ldns_rr_rrsig_set_origttl(current_sig, 
-									  ldns_native2rdf_int32(LDNS_RDF_TYPE_INT32, orig_ttl));
-			/* the signers name */
-
-			(void)ldns_rr_rrsig_set_signame(current_sig, 
-									  ldns_rdf_clone(ldns_key_pubkey_owner(current_key)));
-			/* label count - get it from the first rr in the rr_list */
-			(void)ldns_rr_rrsig_set_labels(current_sig, 
-									 ldns_native2rdf_int8(LDNS_RDF_TYPE_INT8, label_count));
-			/* inception, expiration */
-			now = time(NULL);
-			if (ldns_key_inception(current_key) != 0) {
-				(void)ldns_rr_rrsig_set_inception(current_sig,
-										    ldns_native2rdf_int32(LDNS_RDF_TYPE_TIME, 
-															 ldns_key_inception(current_key)));
-			} else {
-				(void)ldns_rr_rrsig_set_inception(current_sig,
-										    ldns_native2rdf_int32(LDNS_RDF_TYPE_TIME, now));
-			}
-			if (ldns_key_expiration(current_key) != 0) {
-				(void)ldns_rr_rrsig_set_expiration(current_sig,
-											ldns_native2rdf_int32(LDNS_RDF_TYPE_TIME, 
-															  ldns_key_expiration(current_key)));
-			} else {
-				(void)ldns_rr_rrsig_set_expiration(current_sig,
-											ldns_native2rdf_int32(LDNS_RDF_TYPE_TIME, 
-															  now + LDNS_DEFAULT_EXP_TIME));
-			}
-
-			/* key-tag */
-			/*printf("SETTING KEYTAG TO: %u\n", ldns_key_keytag(current_key));*/
-			(void)ldns_rr_rrsig_set_keytag(current_sig,
-									 ldns_native2rdf_int16(LDNS_RDF_TYPE_INT16, 
-													   ldns_key_keytag(current_key)));
-
-			/* algorithm - check the key and substitute that */
-			(void)ldns_rr_rrsig_set_algorithm(current_sig,
-									    ldns_native2rdf_int8(LDNS_RDF_TYPE_ALG, 
-														ldns_key_algorithm(current_key)));
-			/* type-covered */
-			(void)ldns_rr_rrsig_set_typecovered(current_sig,
-										 ldns_native2rdf_int16(LDNS_RDF_TYPE_TYPE,
-														   ldns_rr_get_type(ldns_rr_list_rr(rrset_clone, 0))));
-			/* right now, we have: a key, a semi-sig and an rrset. For
-			 * which we can create the sig and base64 encode that and
-			 * add that to the signature */
-			
-			if (ldns_rrsig2buffer_wire(sign_buf, current_sig) != LDNS_STATUS_OK) {
-				ldns_buffer_free(sign_buf);
-				/* ERROR */
-				ldns_rr_list_deep_free(rrset_clone);
-				return NULL;
-			}
-			/* add the rrset in sign_buf */
-
-			if (ldns_rr_list2buffer_wire(sign_buf, rrset_clone) != LDNS_STATUS_OK) {
-				ldns_buffer_free(sign_buf);
-				ldns_rr_list_deep_free(rrset_clone);
-				return NULL;
-			}
-			
-			switch(ldns_key_algorithm(current_key)) {
-			case LDNS_SIGN_DSA:
-			case LDNS_DSA_NSEC3:
-				b64rdf = ldns_sign_public_evp(sign_buf, ldns_key_evp_key(current_key), EVP_dss1());
-				/*					b64rdf = ldns_sign_public_dsa(sign_buf, ldns_key_dsa_key(current_key));*/
-				break;
-			case LDNS_SIGN_RSASHA1:
-			case LDNS_SIGN_RSASHA1_NSEC3:
-				b64rdf = ldns_sign_public_evp(sign_buf, ldns_key_evp_key(current_key), EVP_sha1());
-				break;
-#ifdef SHA256_DIGEST_LENGTH
-			case LDNS_SIGN_RSASHA256:
-			case LDNS_SIGN_RSASHA256_NSEC3:
-				b64rdf = ldns_sign_public_evp(sign_buf, ldns_key_evp_key(current_key), EVP_sha256());
-				break;
-#endif
-#ifdef SHA512_DIGEST_LENGTH
-			case LDNS_SIGN_RSASHA512:
-			case LDNS_SIGN_RSASHA512_NSEC3:
-				b64rdf = ldns_sign_public_evp(sign_buf, ldns_key_evp_key(current_key), EVP_sha512());
-
-				break;
-#endif
-			case LDNS_SIGN_RSAMD5:
-				b64rdf = ldns_sign_public_evp(sign_buf, ldns_key_evp_key(current_key), EVP_md5());
-				break;
-			default:
-				/* do _you_ know this alg? */
-				printf("unknown algorithm, is the one used available on this system?\n");
-				break;
-			}
-			if (!b64rdf) {
-				/* signing went wrong */
-				ldns_rr_list_deep_free(rrset_clone);
-				return NULL;
-			}
-			ldns_rr_rrsig_set_sig(current_sig, b64rdf);
-
-			/* push the signature to the signatures list */
-			ldns_rr_list_push_rr(signatures, current_sig);
-		}
-		ldns_buffer_free(sign_buf); /* restart for the next key */
-	}
-	ldns_rr_list_deep_free(rrset_clone);
-
-	return signatures;
-}
-
-ldns_rdf *
-ldns_sign_public_dsa(ldns_buffer *to_sign, DSA *key)
-{
-	unsigned char *sha1_hash;
-	ldns_rdf *sigdata_rdf;
-	ldns_buffer *b64sig;
-
-	DSA_SIG *sig;
-	uint8_t *data;
-	size_t pad;
-
-	b64sig = ldns_buffer_new(LDNS_MAX_PACKETLEN);
-	if (!b64sig) {
-		return NULL;
-	}
-	
-	sha1_hash = SHA1((unsigned char*)ldns_buffer_begin(to_sign),
-				  ldns_buffer_position(to_sign), NULL);
-	if (!sha1_hash) {
-		ldns_buffer_free(b64sig);
-		return NULL;
-	}
-
-
-	sig = DSA_do_sign(sha1_hash, SHA_DIGEST_LENGTH, key);
-
-	data = LDNS_XMALLOC(uint8_t, 1 + 2 * SHA_DIGEST_LENGTH);
-
-	data[0] = 1;
-	pad = 20 - (size_t) BN_num_bytes(sig->r);
-	if (pad > 0) {
-		memset(data + 1, 0, pad);
-	}
-	BN_bn2bin(sig->r, (unsigned char *) (data + 1) + pad);
-
-	pad = 20 - (size_t) BN_num_bytes(sig->s);
-	if (pad > 0) {
-		memset(data + 1 + SHA_DIGEST_LENGTH, 0, pad);
-	}
-	BN_bn2bin(sig->s, (unsigned char *) (data + 1 + SHA_DIGEST_LENGTH + pad));
-
-	sigdata_rdf = ldns_rdf_new_frm_data(LDNS_RDF_TYPE_B64,  1 + 2 * SHA_DIGEST_LENGTH, data);
-
-	ldns_buffer_free(b64sig);
-	LDNS_FREE(data);
-
-	return sigdata_rdf;
-}
-
-ldns_rdf *
-ldns_sign_public_evp(ldns_buffer *to_sign, EVP_PKEY *key, const EVP_MD *digest_type)
-{
-	unsigned int siglen;
-	ldns_rdf *sigdata_rdf;
-	ldns_buffer *b64sig;
-	EVP_MD_CTX ctx;
-	const EVP_MD *md_type;
-	int r;
-
-	siglen = 0;
-	b64sig = ldns_buffer_new(LDNS_MAX_PACKETLEN);
-	if (!b64sig) {
-		return NULL;
-	}
-
-	/* initializes a signing context */
-	md_type = digest_type;
-	if(!md_type) {
-		printf("Unknown message digest");
-		exit(1);
-	}
-
-	EVP_MD_CTX_init(&ctx);
-	r = EVP_SignInit(&ctx, md_type);
-	if(r == 1)
-		r = EVP_SignUpdate(&ctx, (unsigned char*)
-					    ldns_buffer_begin(to_sign), 
-					    ldns_buffer_position(to_sign));
-	if(r == 1)
-		r = EVP_SignFinal(&ctx, (unsigned char*)
-					   ldns_buffer_begin(b64sig), &siglen, key);
-	if(r != 1) {
-		ldns_buffer_free(b64sig);
-		return NULL;
-	}
-
-	sigdata_rdf = ldns_rdf_new_frm_data(LDNS_RDF_TYPE_B64, siglen,
-								 ldns_buffer_begin(b64sig));
-	ldns_buffer_free(b64sig);
-	EVP_MD_CTX_cleanup(&ctx);
-	return sigdata_rdf;
-}
-
-
-ldns_rdf *
-ldns_sign_public_rsasha1(ldns_buffer *to_sign, RSA *key)
-{
-	unsigned char *sha1_hash;
-	unsigned int siglen;
-	ldns_rdf *sigdata_rdf;
-	ldns_buffer *b64sig;
-	int result;
-
-	siglen = 0;
-	b64sig = ldns_buffer_new(LDNS_MAX_PACKETLEN);
-	if (!b64sig) {
-		return NULL;
-	}
-
-	sha1_hash = SHA1((unsigned char*)ldns_buffer_begin(to_sign),
-				  ldns_buffer_position(to_sign), NULL);
-	if (!sha1_hash) {
-		ldns_buffer_free(b64sig);
-		return NULL;
-	}
-
-	result = RSA_sign(NID_sha1, sha1_hash, SHA_DIGEST_LENGTH,
-				   (unsigned char*)ldns_buffer_begin(b64sig),
-				   &siglen, key);
-	if (result != 1) {
-		return NULL;
-	}
-
-	if (result != 1) {
-		return NULL;
-	}
-
-	sigdata_rdf = ldns_rdf_new_frm_data(LDNS_RDF_TYPE_B64, siglen, 
-								 ldns_buffer_begin(b64sig));
-	ldns_buffer_free(b64sig); /* can't free this buffer ?? */
-	return sigdata_rdf;
-}
-
-ldns_rdf *
-ldns_sign_public_rsamd5(ldns_buffer *to_sign, RSA *key)
-{
-	unsigned char *md5_hash;
-	unsigned int siglen;
-	ldns_rdf *sigdata_rdf;
-	ldns_buffer *b64sig;
-
-	b64sig = ldns_buffer_new(LDNS_MAX_PACKETLEN);
-	if (!b64sig) {
-		return NULL;
-	}
-	
-	md5_hash = MD5((unsigned char*)ldns_buffer_begin(to_sign),
-				ldns_buffer_position(to_sign), NULL);
-	if (!md5_hash) {
-		ldns_buffer_free(b64sig);
-		return NULL;
-	}
-
-	RSA_sign(NID_md5, md5_hash, MD5_DIGEST_LENGTH,
-		    (unsigned char*)ldns_buffer_begin(b64sig),
-		    &siglen, key);
-
-	sigdata_rdf = ldns_rdf_new_frm_data(LDNS_RDF_TYPE_B64, siglen, 
-								 ldns_buffer_begin(b64sig));
-	ldns_buffer_free(b64sig);
-	return sigdata_rdf;
 }
 
 ldns_rdf *
@@ -3175,13 +1352,13 @@ ldns_nsec_covers_name(const ldns_rr *nsec, const ldns_rdf *name)
 	}
 	
 	/*
-	  printf("nsec coverage:\n");
-	  ldns_rdf_print(stdout, nsec_owner);
-	  printf(" <= \n");
-	  ldns_rdf_print(stdout, name);
-	  printf(" <  \n");
-	  ldns_rdf_print(stdout, nsec_next);
-	  printf("\n\n");
+	printf("nsec coverage:\n");
+	ldns_rdf_print(stdout, nsec_owner);
+	printf(" <= \n");
+	ldns_rdf_print(stdout, name);
+	printf(" <  \n");
+	ldns_rdf_print(stdout, nsec_next);
+	printf("\n\n");
 	*/
 	/* in the case of the last nsec */
 	if(ldns_dname_compare(nsec_owner, nsec_next) > 0) {
@@ -3460,57 +1637,6 @@ ldns_dnssec_zone_create_nsec3s(ldns_dnssec_zone *zone,
 	return result;
 }
 
-ldns_status
-ldns_dnssec_zone_create_nsecs(ldns_dnssec_zone *zone,
-						ldns_rr_list *new_rrs,
-						ldns_rr_type nsec_type)
-{
-	ldns_rbnode_t *first_name_node;
-	ldns_rbnode_t *current_name_node;
-	ldns_dnssec_name *first_name;
-	ldns_dnssec_name *current_name;
-	ldns_status result = LDNS_STATUS_OK;
-	ldns_rr *nsec_rr;
-
-	if (!zone || !new_rrs || !zone->names) {
-		return LDNS_STATUS_ERR;
-	}
-
-	first_name_node = ldns_rbtree_first(zone->names);
-	first_name = (ldns_dnssec_name *) first_name_node->data;
-	
-	current_name_node = first_name_node;
-	current_name = first_name;
-
-	switch (nsec_type) {
-	case LDNS_RR_TYPE_NSEC:
-		while (ldns_rbtree_next(current_name_node) != LDNS_RBTREE_NULL) {
-			nsec_rr = ldns_dnssec_create_nsec(current_name,
-									    (ldns_dnssec_name *) ldns_rbtree_next(current_name_node)->data,
-									    nsec_type);
-			ldns_dnssec_name_add_rr(current_name, nsec_rr);
-			ldns_rr_list_push_rr(new_rrs, nsec_rr);
-			current_name_node = ldns_rbtree_next(current_name_node);
-			current_name = (ldns_dnssec_name *) current_name_node->data;
-		}
-		nsec_rr = ldns_dnssec_create_nsec(current_name,
-								    first_name,
-								    nsec_type);
-		result = ldns_dnssec_name_add_rr(current_name, nsec_rr);
-		if (result != LDNS_STATUS_OK) {
-			return result;
-		}
-		ldns_rr_list_push_rr(new_rrs, nsec_rr);
-		break;
-	case LDNS_RR_TYPE_NSEC3:
-		break;
-	default:
-		return LDNS_STATUS_ERR;
-	}
-
-	return result;
-}
-
 int
 ldns_dnssec_default_add_to_signatures(ldns_rr *sig, void *n)
 {
@@ -3541,711 +1667,6 @@ ldns_dnssec_default_replace_signatures(ldns_rr *sig, void *n)
 	sig = sig;
 	n = n;
 	return LDNS_SIGNATURE_REMOVE_ADD_NEW;
-}
-
-ldns_dnssec_rrs *
-ldns_dnssec_remove_signatures(ldns_dnssec_rrs *signatures,
-						ldns_key_list *key_list,
-						int (*func)(ldns_rr *, void *),
-						void *arg) {
-	ldns_dnssec_rrs *base_rrs = signatures;
-	ldns_dnssec_rrs *cur_rr = base_rrs;
-	ldns_dnssec_rrs *prev_rr = NULL;
-	ldns_dnssec_rrs *next_rr;
-
-	uint16_t keytag;
-	size_t i;
-	int v;
-
-	key_list = key_list;
-
-	if (!cur_rr) {
-		switch(func(NULL, arg)) {
-		case LDNS_SIGNATURE_LEAVE_ADD_NEW:
-		case LDNS_SIGNATURE_REMOVE_ADD_NEW:
-		break;
-		case LDNS_SIGNATURE_LEAVE_NO_ADD:
-		case LDNS_SIGNATURE_REMOVE_NO_ADD:
-		ldns_key_list_set_use(key_list, false);
-		break;
-		default:
-			fprintf(stderr, "[XX] unknown return value from callback\n");
-			break;
-		}
-		return NULL;
-	}
-	v = func(cur_rr->rr, arg);
-
-	while (cur_rr) {
-		next_rr = cur_rr->next;
-		
-		switch (func(cur_rr->rr, arg)) {
-		case  LDNS_SIGNATURE_LEAVE_ADD_NEW:
-			prev_rr = cur_rr;
-			break;
-		case LDNS_SIGNATURE_LEAVE_NO_ADD:
-			keytag = ldns_rdf2native_int16(ldns_rr_rrsig_keytag(cur_rr->rr));
-			for (i = 0; i < ldns_key_list_key_count(key_list); i++) {
-				if (ldns_key_keytag(ldns_key_list_key(key_list, i)) ==
-				    keytag) {
-					ldns_key_set_use(ldns_key_list_key(key_list, i),
-								  false);
-				}
-			}
-			prev_rr = cur_rr;
-			break;
-		case LDNS_SIGNATURE_REMOVE_NO_ADD:
-			keytag = ldns_rdf2native_int16(ldns_rr_rrsig_keytag(cur_rr->rr));
-			for (i = 0; i < ldns_key_list_key_count(key_list); i++) {
-				if (ldns_key_keytag(ldns_key_list_key(key_list, i)) ==
-				    keytag) {
-					ldns_key_set_use(ldns_key_list_key(key_list, i),
-								  false);
-				}
-			}
-			if (prev_rr) {
-				prev_rr->next = next_rr;
-			} else {
-				base_rrs = next_rr;
-			}
-			LDNS_FREE(cur_rr);
-			break;
-		case LDNS_SIGNATURE_REMOVE_ADD_NEW:
-			if (prev_rr) {
-				prev_rr->next = next_rr;
-			} else {
-				base_rrs = next_rr;
-			}
-			LDNS_FREE(cur_rr);
-			break;
-		default:
-			fprintf(stderr, "[XX] unknown return value from callback\n");
-			break;
-		}
-		cur_rr = next_rr;
-	}
-
-	return base_rrs;
-}
-
-ldns_status
-ldns_dnssec_zone_create_rrsigs(ldns_dnssec_zone *zone,
-						 ldns_rr_list *new_rrs,
-						 ldns_key_list *key_list,
-						 int (*func)(ldns_rr *, void*),
-						 void *arg) {
-	ldns_status result = LDNS_STATUS_OK;
-	zone = zone;
-	new_rrs = new_rrs;
-	key_list = key_list;
-	//bool sign_list = true;
-	ldns_rbnode_t *cur_node;
-	ldns_rr_list *rr_list;
-
-	ldns_dnssec_name *cur_name;
-	ldns_dnssec_rrsets *cur_rrset;
-	ldns_dnssec_rrs *cur_rr;
-
-	ldns_rr_list *siglist;
-	
-	size_t i;
-
-	/* TODO: callback to see is list should be signed */
-	/* TODO: remove 'old' signatures from signature list */
-	cur_node = ldns_rbtree_first(zone->names);
-	while (cur_node != LDNS_RBTREE_NULL) {
-		cur_name = (ldns_dnssec_name *) cur_node->data;
-
-		cur_rrset = cur_name->rrsets;
-		while (cur_rrset) {
-			/* reset keys to use */
-			ldns_key_list_set_use(key_list, true);
-
-			/* walk through old sigs, remove the old, and mark which keys (not) to use) */
-			cur_rrset->signatures = ldns_dnssec_remove_signatures(cur_rrset->signatures,
-													    key_list,
-													    func,
-													    arg);
-
-			/* TODO: set count to zero? */
-			rr_list = ldns_rr_list_new();
-
-			cur_rr = cur_rrset->rrs;
-			while (cur_rr) {
-				ldns_rr_list_push_rr(rr_list, cur_rr->rr);
-				cur_rr = cur_rr->next;
-			}
-
-			siglist = ldns_sign_public(rr_list, key_list);
-			for (i = 0; i < ldns_rr_list_rr_count(siglist); i++) {
-				if (cur_rrset->signatures) {
-					ldns_dnssec_rrs_add_rr(cur_rrset->signatures,
-									   ldns_rr_list_rr(siglist, i));
-				} else {
-					cur_rrset->signatures = ldns_dnssec_rrs_new();
-					cur_rrset->signatures->rr = ldns_rr_list_rr(siglist, i);
-					ldns_rr_list_push_rr(new_rrs, ldns_rr_list_rr(siglist, i));
-				}
-			}
-			ldns_rr_list_free(siglist);
-			ldns_rr_list_free(rr_list);
-
-			cur_rrset = cur_rrset->next;
-		}
-
-		/* sign the nsec */
-		cur_name->nsec_signatures = ldns_dnssec_remove_signatures(cur_name->nsec_signatures,
-													   key_list,
-													   func,
-													   arg);
-
-		rr_list = ldns_rr_list_new();
-		ldns_rr_list_push_rr(rr_list, cur_name->nsec);
-		siglist = ldns_sign_public(rr_list, key_list);
-		
-		for (i = 0; i < ldns_rr_list_rr_count(siglist); i++) {
-			if (cur_name->nsec_signatures) {
-				ldns_dnssec_rrs_add_rr(cur_name->nsec_signatures,
-								   ldns_rr_list_rr(siglist, i));
-			} else {
-				cur_name->nsec_signatures = ldns_dnssec_rrs_new();
-				cur_name->nsec_signatures->rr = ldns_rr_list_rr(siglist, i);
-				ldns_rr_list_push_rr(new_rrs, ldns_rr_list_rr(siglist, i));
-			}
-		}
-		ldns_rr_list_free(siglist);
-		ldns_rr_list_free(rr_list);
-
-		cur_node = ldns_rbtree_next(cur_node);
-	}
-
-	return result;
-}
-
-ldns_status
-ldns_dnssec_zone_sign(ldns_dnssec_zone *zone,
-				  ldns_rr_list *new_rrs,
-				  ldns_key_list *key_list,
-				  int (*func)(ldns_rr *, void *),
-				  void *arg)
-{
-	ldns_status result = LDNS_STATUS_OK;
-
-	if (!zone || !new_rrs || !key_list) {
-		return LDNS_STATUS_ERR;
-	}
-
-	/* zone is already sorted */
-	
-	/* check whether we need to add nsecs */
-	if (zone->names && !((ldns_dnssec_name *)zone->names->root->data)->nsec) {
-		result = ldns_dnssec_zone_create_nsecs(zone, new_rrs, LDNS_RR_TYPE_NSEC);
-		if (result != LDNS_STATUS_OK) {
-			return result;
-		}
-	}
-
-	printf("[XX] Create signatures!\n");
-	result = ldns_dnssec_zone_create_rrsigs(zone,
-									new_rrs,
-									key_list,
-									func,
-									arg);
-	printf("[XX] done\n");
-
-	return result;
-}
-
-ldns_status
-ldns_dnssec_zone_sign_nsec3(ldns_dnssec_zone *zone,
-					   ldns_rr_list *new_rrs,
-					   ldns_key_list *key_list,
-					   int (*func)(ldns_rr *, void *),
-					   void *arg,
-					   uint8_t algorithm,
-					   uint8_t flags,
-					   uint16_t iterations,
-					   uint8_t salt_length,
-					   uint8_t *salt)
-{
-	ldns_rr *nsec3, *nsec3params;
-	ldns_status result = LDNS_STATUS_OK;
-
-	/* TODO if there are already nsec3s presents and their
-	 * parameters are the same as these, we don't have to recreate
-	 */
-	if (zone->names) {
-		/* add empty nonterminals */
-		ldns_dnssec_zone_add_empty_nonterminals(zone);
-
-		nsec3 = ((ldns_dnssec_name *)zone->names->root->data)->nsec;
-		if (nsec3 && ldns_rr_get_type(nsec3) == LDNS_RR_TYPE_NSEC3) {
-			// no need to recreate
-		} else {
-			if (!ldns_dnssec_zone_find_rrset(zone,
-									   zone->soa->name,
-									   LDNS_RR_TYPE_NSEC3PARAMS)) {
-				/* create and add the nsec3params rr */
-				nsec3params = ldns_rr_new_frm_type(LDNS_RR_TYPE_NSEC3PARAMS);
-				ldns_rr_set_owner(nsec3params, ldns_rdf_clone(zone->soa->name));
-				ldns_nsec3_add_param_rdfs(nsec3params, algorithm, flags, iterations, salt_length, salt);
-				ldns_dnssec_zone_add_rr(zone, nsec3params);
-				ldns_rr_list_push_rr(new_rrs, nsec3params);
-			}
-			result = ldns_dnssec_zone_create_nsec3s(zone,
-											new_rrs,
-											algorithm,
-											flags,
-											iterations,
-											salt_length,
-											salt);
-			if (result != LDNS_STATUS_OK) {
-				return result;
-			}
-		}
-
-		result = ldns_dnssec_zone_create_rrsigs(zone,
-										new_rrs,
-										key_list,
-										func,
-										arg);
-	}
-	
-	return result;
-}
-
-
-ldns_zone *
-ldns_zone_sign(const ldns_zone *zone, ldns_key_list *key_list)
-{
-	/*
-	 * Algorithm to be created:
-	 * - sort the rrs (name/class/type?)
-	 * - if sorted, every next rr is belongs either to the rrset
-	 * you are working on, or the rrset is complete
-	 * for each rrset, calculate rrsig and nsec
-	 * put the rrset, rrsig and nsec in the new zone
-	 * done!
-	 * ow and don't sign old rrsigs etc.
-	 */
-	
-	ldns_zone *signed_zone;
-	/*
-	  ldns_rr_list *cur_rrset;
-	*/
-	ldns_rr_list *cur_rrsigs;
-
-	ldns_rr_list *orig_zone_rrs;
-	ldns_rr_list *signed_zone_rrs;
-	ldns_rr_list *pubkeys;
-	ldns_rr_list *glue_rrs;
-	ldns_rr_list *rrsig_rrs = NULL;
-	
-	/*
-	ldns_rdf *start_dname = NULL;
-	ldns_rdf *cur_dname = NULL;
-	ldns_rr *next_rr = NULL;
-	ldns_rdf *next_dname = NULL;
-	ldns_rr *nsec;
-	*/
-	ldns_rr *ckey;
-	uint16_t i;
-
-	signed_zone = ldns_zone_new();
-
-	/* there should only be 1 SOA, so the soa record is 1 rrset */
-	cur_rrsigs = NULL;
-	ldns_zone_set_soa(signed_zone, ldns_rr_clone(ldns_zone_soa(zone)));
-	ldns_rr2canonical(ldns_zone_soa(signed_zone));
-	
-	orig_zone_rrs = ldns_rr_list_clone(ldns_zone_rrs(zone));
-
-	ldns_rr_list_push_rr(orig_zone_rrs, ldns_rr_clone(ldns_zone_soa(zone)));
-	
-	/* canon now, needed for correct nsec creation */
-	for (i = 0; i < ldns_rr_list_rr_count(orig_zone_rrs); i++) {
-		ldns_rr2canonical(ldns_rr_list_rr(orig_zone_rrs, i));
-	}
-	glue_rrs = ldns_zone_glue_rr_list(zone);
-
-	/* add the key (TODO: check if it's there already? */
-	pubkeys = ldns_rr_list_new();
-	for (i = 0; i < ldns_key_list_key_count(key_list); i++) {
-		ckey = ldns_key2rr(ldns_key_list_key(key_list, i));
-		ldns_rr_list_push_rr(pubkeys, ckey);
-	}
-
-	signed_zone_rrs = ldns_rr_list_strip_dnssec(orig_zone_rrs, NULL);
-
-	ldns_rr_list_deep_free(orig_zone_rrs);
-
-	if (!signed_zone_rrs) {
-		printf("error!\n");
-		exit(1);
-	}
-
-	
-	ldns_rr_list_sort(signed_zone_rrs);
-	/*
-	nsec_rrs = ldns_zone_create_nsecs(zone, signed_zone_rrs, glue_rrs);
-
-	ldns_rr_list_cat(signed_zone_rrs, nsec_rrs);
-			if (!cur_rrsigs) {
-				ldns_zone_deep_free(signed_zone);
-				ldns_rr_list_deep_free(signed_zone_rrs);
-				ldns_rr_list_deep_free(pubkeys);
-				ldns_rr_list_free(glue_rrs);
-				return NULL;
-			}
-	ldns_rr_list_free(nsec_rrs);
-	*/
-	/*
-	rrsig_rrs = ldns_zone_create_rrsigs(signed_zone, signed_zone_rrs, glue_rrs, key_list);
-	*/
-
-	ldns_rr_list_cat(signed_zone_rrs, rrsig_rrs);
-	ldns_rr_list_free(rrsig_rrs);
-
-	ldns_rr_list_deep_free(ldns_zone_rrs(signed_zone));
-	ldns_zone_set_rrs(signed_zone, ldns_rr_list_clone(signed_zone_rrs));
-	
-	ldns_rr_list_deep_free(signed_zone_rrs);
-	ldns_rr_list_deep_free(pubkeys);
-	ldns_rr_list_free(glue_rrs);
-
-	return signed_zone;
-	
-}
-
-ldns_zone *
-ldns_zone_sign_nsec3(ldns_zone *zone, ldns_key_list *key_list, uint8_t algorithm, uint8_t flags, uint16_t iterations, uint8_t salt_length, uint8_t *salt)
-{
-	/*
-	 * Algorithm to be created:
-	 * - sort the rrs (name/class/type?)
-	 * - if sorted, every next rr is belongs either to the rrset
-	 * you are working on, or the rrset is complete
-	 * for each rrset, calculate rrsig and nsec
-	 * put the rrset, rrsig and nsec in the new zone
-	 * done!
-	 * ow and don't sign old rrsigs etc.
-	 */
-	
-	ldns_zone *signed_zone;
-	ldns_rr_list *cur_rrset;
-	ldns_rr_list *cur_rrsigs;
-	ldns_rr_list *orig_zone_rrs;
-	ldns_rr_list *signed_zone_rrs;
-	ldns_rr_list *pubkeys;
-	ldns_rr_list *glue_rrs;
-	ldns_rr_list *nsec3_rrs;
-	ldns_rr *nsec3params;
-	
-	ldns_status status;
-	
-	ldns_rdf *start_dname = NULL;
-	ldns_rdf *cur_dname = NULL;
-	ldns_rr *next_rr = NULL;
-	ldns_rdf *next_dname = NULL;
-	char *next_nsec_owner_str = NULL;
-	ldns_rdf *next_nsec_rdf = NULL;
-	ldns_rr *nsec;
-	ldns_rr *ckey;
-	uint16_t i;
-	uint16_t next_label_count;
-	uint16_t cur_label_count;
-
-	/* for the empty nonterminal finding algorithm */
-	uint16_t j;
-	ldns_rdf *l1, *l2, *post, *post2;
-	bool found_difference;
-	
-	ldns_rr_type cur_rrset_type;
-	
-	signed_zone = ldns_zone_new();
-
-	/* there should only be 1 SOA, so the soa record is 1 rrset */
-	cur_rrsigs = NULL;
-	ldns_zone_set_soa(signed_zone, ldns_rr_clone(ldns_zone_soa(zone)));
-	/*ldns_rr2canonical(ldns_zone_soa(signed_zone));*/
-	
-	orig_zone_rrs = ldns_rr_list_clone(ldns_zone_rrs(zone));
-
-	ldns_rr_list_push_rr(orig_zone_rrs, ldns_rr_clone(ldns_zone_soa(zone)));
-	
-	/* canon now, needed for correct nsec creation */
-	/*
-	for (i = 0; i < ldns_rr_list_rr_count(orig_zone_rrs); i++) {
-		ldns_rr2canonical(ldns_rr_list_rr(orig_zone_rrs, i));
-	}
-	*/
-	glue_rrs = ldns_zone_glue_rr_list(zone);
-
-	/* create and add the nsec3params rr */
-	nsec3params = ldns_rr_new_frm_type(LDNS_RR_TYPE_NSEC3PARAMS);
-	ldns_rr_set_owner(nsec3params, ldns_rdf_clone(ldns_rr_owner(ldns_zone_soa(signed_zone))));
-	ldns_nsec3_add_param_rdfs(nsec3params, algorithm, flags, iterations, salt_length, salt);
-/*	ldns_rdf_set_type(ldns_rr_rdf(nsec3params, 0), LDNS_RDF_TYPE_NSEC3_PARAMS_VARS);*/
-	ldns_rr_list_push_rr(orig_zone_rrs, nsec3params);
-/*
-ldns_rr_print(stdout, nsec3params);
-exit(0);
-*/
-	/* add the key (TODO: check if it's there already? */
-	pubkeys = ldns_rr_list_new();
-	for (i = 0; i < ldns_key_list_key_count(key_list); i++) {
-		ckey = ldns_key2rr(ldns_key_list_key(key_list, i));
-		ldns_rr_list_push_rr(pubkeys, ckey);
-	}
-
-	signed_zone_rrs = ldns_rr_list_new();
-	
-	ldns_rr_list_sort(orig_zone_rrs);
-	
-	nsec3_rrs = ldns_rr_list_new();
-	
-	/* add nsecs */
-	for (i = 0; i < ldns_rr_list_rr_count(orig_zone_rrs); i++) {
-		if (!start_dname) {
-			/*start_dname = ldns_rr_owner(ldns_zone_soa(zone));*/
-			start_dname = ldns_rr_owner(ldns_rr_list_rr(orig_zone_rrs, i));
-			cur_dname = start_dname;
-		} else {
-
-			next_rr = ldns_rr_list_rr(orig_zone_rrs, i);
-			next_dname = ldns_rr_owner(next_rr);
-			if (ldns_rdf_compare(cur_dname, next_dname) != 0) {
-
-				/* every ownername should have an nsec3, and every empty nonterminal */
-				/* the zone is sorted, so nonterminals should be visible? */
-				/* if labels after first differ with previous it's an empty nonterm? */
-
-				/* empty non-terminal detection algorithm 0.001a-pre1
-				 * walk backwards to the first different label. for each label that
-				 * is not the first label, we have found an empty nonterminal
-				 */
-				cur_label_count = ldns_dname_label_count(cur_dname);
-				next_label_count = ldns_dname_label_count(next_dname);
-				post = ldns_dname_new_frm_str(".");
-				found_difference = false;
-				for (j = 1; j <= cur_label_count && j <= next_label_count && !found_difference; j++) {
-					l1 = ldns_dname_label(cur_dname, cur_label_count - j);
-					l2 = ldns_dname_label(next_dname, next_label_count - j);
-					
-					post2 = ldns_dname_cat_clone(l2, post);
-					ldns_rdf_deep_free(post);
-					post = post2;
-
-					if (ldns_dname_compare(l1, l2) != 0 &&
-					    /*j < cur_label_count &&*/
-					    j < next_label_count
-					   ) {
-					        /*
-						printf("Found empty non-terminal: ");
-						ldns_rdf_print(stdout, post);
-						printf("\n");
-						*/
-						found_difference = true;
-						nsec = ldns_create_nsec3(post, 
-									ldns_rr_owner(ldns_zone_soa(zone)),
-									orig_zone_rrs,
-									algorithm,
-									false,
-									iterations,
-									salt_length,
-									salt,
-									true);
-						
-						/*printf("Created NSEC3 for: ");
-						ldns_rdf_print(stdout, post);
-						printf(":\n");
-						ldns_rr_print(stdout, nsec);
-						*/
-						ldns_rr_set_ttl(nsec, ldns_rdf2native_int32(ldns_rr_rdf(ldns_zone_soa(zone), 6)));
-						ldns_rr_list_push_rr(nsec3_rrs, nsec);
-					}
-					ldns_rdf_deep_free(l1);
-					ldns_rdf_deep_free(l2);
-				}
-				/* and if next label is longer than cur + 1, these must be empty nons too */
-				/* skip current label (total now equal to cur_dname) */
-				if (!found_difference && j < cur_label_count && j < next_label_count) {
-					l2 = ldns_dname_label(next_dname, next_label_count - j);
-					post2 = ldns_dname_cat_clone(l2, post);
-					ldns_rdf_deep_free(post);
-					post = post2;
-					j++;
-				}
-				while (j < next_label_count) {
-					l2 = ldns_dname_label(next_dname, next_label_count - j);
-					post2 = ldns_dname_cat_clone(l2, post);
-					ldns_rdf_deep_free(post);
-					post = post2;
-					/*
-					printf("Found empty non-terminal: ");
-					ldns_rdf_print(stdout, post);
-					printf("\n");
-					*/
-					ldns_rdf_deep_free(l2);
-					j++;	
-					nsec = ldns_create_nsec3(post, 
-								ldns_rr_owner(ldns_zone_soa(zone)),
-								orig_zone_rrs,
-								algorithm,
-								false,
-								iterations,
-								salt_length,
-								salt,
-								true);
-/*
-					printf("Created NSEC3 for: ");
-					ldns_rdf_print(stdout, post);
-					printf(":\n");
-					ldns_rr_print(stdout, nsec);
-*/
-					ldns_rr_set_ttl(nsec, ldns_rdf2native_int32(ldns_rr_rdf(ldns_zone_soa(zone), 6)));
-					ldns_rr_list_push_rr(nsec3_rrs, nsec);
-				}
-				ldns_rdf_deep_free(post);
-
-				/* skip glue */
-				if (ldns_rr_list_contains_rr(glue_rrs, next_rr)) {
-/*					cur_dname = next_dname;*/
-					printf("Skip glue: ");
-					ldns_rdf_print(stdout, cur_dname);
-					printf("\n");
-				} else {
-					nsec = ldns_create_nsec3(cur_dname, 
-								ldns_rr_owner(ldns_zone_soa(zone)),
-								orig_zone_rrs,
-								algorithm,
-								false,
-								iterations,
-								salt_length,
-								salt,
-								false);
-
-/*
-					printf("Created NSEC3 for: ");
-					ldns_rdf_print(stdout, cur_dname);
-					printf(":\n");
-					ldns_rr_print(stdout, nsec);
-*/
-					ldns_rr_set_ttl(nsec, ldns_rdf2native_int32(ldns_rr_rdf(ldns_zone_soa(zone), 6)));
-					ldns_rr_list_push_rr(nsec3_rrs, nsec);
-					/*start_dname = next_dname;*/
-					cur_dname = next_dname;
-				}
-			}
-		}
-		ldns_rr_list_push_rr(signed_zone_rrs, ldns_rr_list_rr(orig_zone_rrs, i));
-	}
-	nsec = ldns_create_nsec3(cur_dname, 
-				ldns_rr_owner(ldns_zone_soa(zone)),
-				orig_zone_rrs,
-				algorithm,
-				false,
-				iterations,
-				salt_length,
-				salt,
-				false);
-	ldns_rr_list_set_rr(nsec3_rrs, nsec, 4);
-	ldns_rr_list_free(orig_zone_rrs);
-	ldns_rr_set_ttl(nsec, ldns_rdf2native_int32(ldns_rr_rdf(ldns_zone_soa(zone), 6)));
-	ldns_rr_list_push_rr(nsec3_rrs, nsec);
-
-/*
-	printf("Created NSEC3 for: ");
-	ldns_rdf_print(stdout, cur_dname);
-	printf(":\n");
-	ldns_rr_print(stdout, nsec);
-*/
-	/* sort nsec3s separately, set nexts and append to signed zone */
-	ldns_rr_list_sort_nsec3(nsec3_rrs);
-	for (i = 0; i < ldns_rr_list_rr_count(nsec3_rrs); i++) {
-		if (i == ldns_rr_list_rr_count(nsec3_rrs) - 1) {
-			next_nsec_owner_str = ldns_rdf2str(ldns_dname_label(ldns_rr_owner(ldns_rr_list_rr(nsec3_rrs, 0)), 0));
-			if (next_nsec_owner_str[strlen(next_nsec_owner_str) - 1] == '.') {
-				next_nsec_owner_str[strlen(next_nsec_owner_str) - 1] = '\0';
-			}
-			status = ldns_str2rdf_b32_ext(&next_nsec_rdf, next_nsec_owner_str);
-			if (!ldns_rr_set_rdf(ldns_rr_list_rr(nsec3_rrs, i), next_nsec_rdf, 4)) {
-				/* todo: error */
-			}
-		} else {
-			next_nsec_owner_str = ldns_rdf2str(ldns_dname_label(ldns_rr_owner(ldns_rr_list_rr(nsec3_rrs, i + 1)), 0));
-			if (next_nsec_owner_str[strlen(next_nsec_owner_str) - 1] == '.') {
-				next_nsec_owner_str[strlen(next_nsec_owner_str) - 1] = '\0';
-			}
-			status = ldns_str2rdf_b32_ext(&next_nsec_rdf, next_nsec_owner_str);
-			if (!ldns_rr_set_rdf(ldns_rr_list_rr(nsec3_rrs, i), next_nsec_rdf, 4)) {
-				/* todo: error */
-			}
-		}
-	}
-	
-	ldns_rr_list_cat(signed_zone_rrs, nsec3_rrs);
-/*
-printf("going to sort:\n");
-ldns_rr_list_print(stdout, signed_zone_rrs);
-*/
-	ldns_rr_list_sort(signed_zone_rrs);
-	
-	/* Sign all rrsets in the zone */
-	cur_rrset = ldns_rr_list_pop_rrset(signed_zone_rrs);
-	while (cur_rrset) {
-		/* don't sign certain types */
-		cur_rrset_type = ldns_rr_get_type(ldns_rr_list_rr(cur_rrset, 0));
-		cur_dname = ldns_rr_owner(ldns_rr_list_rr(cur_rrset, 0));
-
-		/* if we have KSKs, use them for DNSKEYS, otherwise
-		   make them selfsigned (?) */
-		/* don't sign sigs, delegations, and glue */
-		if (cur_rrset_type != LDNS_RR_TYPE_RRSIG &&
-			((ldns_dname_is_subdomain(cur_dname, ldns_rr_owner(ldns_zone_soa(signed_zone)))
-			  && cur_rrset_type != LDNS_RR_TYPE_NS
-			 ) ||
-			 ldns_rdf_compare(cur_dname, ldns_rr_owner(ldns_zone_soa(signed_zone))) == 0
-			) &&
-			!(ldns_rr_list_contains_rr(glue_rrs, ldns_rr_list_rr(cur_rrset, 0)))
-		   ) {
-		   	/*
-		   	printf("About to sign RRSET:\n");
-		   	ldns_rr_list_print(stdout, cur_rrset);
-			*/
-			cur_rrsigs = ldns_sign_public(cur_rrset, key_list);
-
-			/* TODO: make optional, replace exit call */
-			/* if not optional it should be left out completely
-			   (for it is possible to generate bad signarures, by
-			   specifying a future inception date */
-/*
-			result = ldns_verify(cur_rrset, cur_rrsigs, pubkeys, NULL);
-			if (result != LDNS_STATUS_OK) {
-				dprintf("%s", "Cannot verify own sig:\n");
-				dprintf("%s\n", ldns_get_errorstr_by_id(result));
-				ERR_load_crypto_strings();
-				ERR_print_errors_fp(stdout);
-				exit(result);
-			} else {
-				printf("VERIFIED\n");
-			}
-*/
-			ldns_zone_push_rr_list(signed_zone, cur_rrset);
-			ldns_zone_push_rr_list(signed_zone, cur_rrsigs);
-			ldns_rr_list_free(cur_rrsigs);
-		} else {
-			/* push it unsigned (glue, sigs, delegations) */
-			ldns_zone_push_rr_list(signed_zone, cur_rrset);
-		}
-		ldns_rr_list_free(cur_rrset);
-		cur_rrset = ldns_rr_list_pop_rrset(signed_zone_rrs);
-	}
-	ldns_rr_list_deep_free(signed_zone_rrs);
-	ldns_rr_list_deep_free(pubkeys);
-	ldns_rr_list_free(glue_rrs);
-	return signed_zone;
-	
 }
 
 #endif /* HAVE_SSL */

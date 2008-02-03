@@ -340,14 +340,25 @@ do_chase(ldns_resolver *res, ldns_rdf *name, ldns_rr_type type, ldns_rr_class c,
 	
 		chain = ldns_dnssec_build_data_chain(res, qflags, rrset, pkt, orig_rr);
 	} else {
-		chain = ldns_dnssec_build_data_chain(res, qflags, rrset, pkt, NULL);	
+		/* chase the first answer? */
+		/*
+		printf("[XX] answer RR:\n");
+		ldns_rr_print(stdout, ldns_rr_list_rr(ldns_pkt_answer(pkt), 0));
+		chain = ldns_dnssec_build_data_chain(res,
+									  qflags,
+									  rrset,
+									  pkt,
+									  ldns_rr_list_rr(ldns_pkt_answer(pkt), 0)
+									  );
+		*/
+		chain = ldns_dnssec_build_data_chain(res, qflags, rrset, pkt, NULL);
 	}
 
 	printf("\n\nDNSSEC Data Chain:\n");
 	ldns_dnssec_data_chain_print(stdout, chain);
 	
 	result = LDNS_STATUS_OK;
-	
+
 	tree = ldns_dnssec_derive_trust_tree(chain, NULL);
 
 	printf("\n\nDNSSEC Trust tree:\n");

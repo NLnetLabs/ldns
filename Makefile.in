@@ -36,23 +36,25 @@ INSTALL = $(srcdir)/install-sh
 
 LIBDNS_SOURCES	=	rdata.c util.c rr.c packet.c wire2host.c \
 			host2str.c buffer.c str2host.c tsig.c resolver.c \
-			net.c host2wire.c dname.c dnssec.c keys.c \
-			higher.c rr_functions.c parse.c update.c error.c \
-			zone.c dnssec_zone.c rbtree.c
+			net.c host2wire.c dname.c dnssec.c dnssec_verify.c \
+			keys.c higher.c rr_functions.c parse.c update.c \
+			error.c zone.c dnssec_zone.c dnssec_sign.c rbtree.c
 LIBDNS_HEADERS	=	$(srcdir)/ldns/error.h		\
 			$(srcdir)/ldns/packet.h		\
 			$(srcdir)/ldns/common.h		\
 			$(srcdir)/ldns/rdata.h 		\
 			$(srcdir)/ldns/rr.h		\
 			$(srcdir)/ldns/wire2host.h	\
-			$(srcdir)/ldns/host2str.h		\
+			$(srcdir)/ldns/host2str.h	\
 			$(srcdir)/ldns/host2wire.h	\
-			$(srcdir)/ldns/str2host.h		\
+			$(srcdir)/ldns/str2host.h	\
 			$(srcdir)/ldns/buffer.h		\
-			$(srcdir)/ldns/resolver.h		\
+			$(srcdir)/ldns/resolver.h	\
 			$(srcdir)/ldns/net.h		\
 			$(srcdir)/ldns/dname.h		\
 			$(srcdir)/ldns/dnssec.h		\
+			$(srcdir)/ldns/dnssec_verify.h	\
+			$(srcdir)/ldns/dnssec_sign.h	\
 			$(srcdir)/ldns/keys.h		\
 			$(srcdir)/ldns/higher.h		\
 			$(srcdir)/ldns/parse.h		\
