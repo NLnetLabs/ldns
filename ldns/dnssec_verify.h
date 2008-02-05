@@ -48,6 +48,17 @@ void ldns_dnssec_data_chain_deep_free(ldns_dnssec_data_chain *chain);
  */
 void ldns_dnssec_data_chain_print(FILE *out, const ldns_dnssec_data_chain *chain);
 
+/**
+ * the data set will be cloned
+ * the pkt is optional, can contain the original packet 
+ * (and hence the sigs and maybe the key)
+ */
+ldns_dnssec_data_chain *ldns_dnssec_build_data_chain(ldns_resolver *res,
+										   const uint16_t qflags,
+										   const ldns_rr_list *data_set,
+										   const ldns_pkt *pkt,
+										   ldns_rr *orig_rr);
+
 #define LDNS_DNSSEC_TRUST_TREE_MAX_PARENTS 10
 
 /**
@@ -104,9 +115,10 @@ ldns_dnssec_trust_tree *ldns_dnssec_trust_tree_new();
  */
 void ldns_dnssec_trust_tree_free(ldns_dnssec_trust_tree *tree);
 
-
+/**
+ * returns the depth
+ */
 size_t ldns_dnssec_trust_tree_depth(ldns_dnssec_trust_tree *tree);
-
 
 /**
  * Prints the dnssec_trust_tree structure to the given file stream
@@ -119,16 +131,6 @@ size_t ldns_dnssec_trust_tree_depth(ldns_dnssec_trust_tree *tree);
  * \param[in] extended If true, add little explanation lines to the output
  */
 void ldns_dnssec_trust_tree_print(FILE *out, ldns_dnssec_trust_tree *tree, size_t tabs, bool extended);
-
-/**
- * Generates a dnssec_trust_ttree for the given rr from the given data_chain
- * Don't free the data_chain before you are done with this tree
- *
- * \param[in] *data_chain The chain to derive the trust tree from
- * \param[in] *rr The RR this tree will be about
- * \return ldns_dnssec_trust_tree *
- */
-ldns_dnssec_trust_tree *ldns_dnssec_derive_trust_tree(ldns_dnssec_data_chain *data_chain, ldns_rr *rr);
 
 /**
  * Adds a trust tree as a parent for the given trust tree
@@ -146,8 +148,50 @@ ldns_dnssec_trust_tree_add_parent(ldns_dnssec_trust_tree *tree,
                                   const ldns_status parent_status);
 
 /**
- * Returns OK if there is a trusted path in the tree to one of the DNSKEY or DS RRs in the
- * given list
+ * Generates a dnssec_trust_ttree for the given rr from the given data_chain
+ * Don't free the data_chain before you are done with this tree
+ *
+ * \param[in] *data_chain The chain to derive the trust tree from
+ * \param[in] *rr The RR this tree will be about
+ * \return ldns_dnssec_trust_tree *
+ */
+ldns_dnssec_trust_tree *ldns_dnssec_derive_trust_tree(ldns_dnssec_data_chain *data_chain, ldns_rr *rr);
+
+/**
+ * Sub function for derive_trust_tree
+ */
+void
+ldns_dnssec_derive_trust_tree_normal_rrset(ldns_dnssec_trust_tree *new_tree,
+                                           ldns_dnssec_data_chain *data_chain,
+                                           ldns_rr *cur_sig_rr);
+
+/**
+ * Sub function for derive_trust_tree
+ */
+void
+ldns_dnssec_derive_trust_tree_dnskey_rrset(ldns_dnssec_trust_tree *new_tree,
+                                           ldns_dnssec_data_chain *data_chain,
+                                           ldns_rr *cur_rr,
+                                           ldns_rr *cur_sig_rr);
+
+/**
+ * Sub function for derive_trust_tree
+ */
+void
+ldns_dnssec_derive_trust_tree_ds_rrset(ldns_dnssec_trust_tree *new_tree,
+                                       ldns_dnssec_data_chain *data_chain,
+                                       ldns_rr *cur_rr);
+
+/**
+ * Sub function for derive_trust_tree
+ */
+void
+ldns_dnssec_derive_trust_tree_no_sig(ldns_dnssec_trust_tree *new_tree,
+                                     ldns_dnssec_data_chain *data_chain);
+
+/**
+ * Returns OK if there is a trusted path in the tree to one of 
+ * the DNSKEY or DS RRs in the given list
  *
  * \param *tree The trust tree so search
  * \param *keys A ldns_rr_list of DNSKEY and DS rrs to look for
@@ -155,13 +199,6 @@ ldns_dnssec_trust_tree_add_parent(ldns_dnssec_trust_tree *tree,
  *         if there were no paths
  */
 ldns_status ldns_dnssec_trust_tree_contains_keys(ldns_dnssec_trust_tree *tree, ldns_rr_list *keys);
-
-
-/**
- * the data set will be cloned
- * the pkt is optional, can contain the original packet (and hence the sigs and maybe the key)
- */
-ldns_dnssec_data_chain *ldns_dnssec_build_data_chain(ldns_resolver *res, const uint16_t qflags, const ldns_rr_list *data_set, const ldns_pkt *pkt, ldns_rr *orig_rr);
 
 /**
  * Verifies a list of signatures for one rrset.
@@ -173,6 +210,81 @@ ldns_dnssec_data_chain *ldns_dnssec_build_data_chain(ldns_resolver *res, const u
  * \return status LDNS_STATUS_OK if there is at least one correct key
  */
 ldns_status ldns_verify(ldns_rr_list *rrset, ldns_rr_list *rrsig, const ldns_rr_list *keys, ldns_rr_list *good_keys);	
+
+/**
+ * Tries to build an authentication chain from the given keys down to the queried domain.
+ *
+ * If we find a valid trust path, return the valid keys for the domain.
+ * 
+ * \param[in] res the current resolver
+ * \param[in] domain the domain we want valid keys for
+ * \param[in] keys the current set of trusted keys
+ * \param[out] status pointer to the status variable where the result code will be stored
+ * \return the set of trusted keys for the domain, or NULL if no trust path could be built.
+ */
+ldns_rr_list *
+ldns_fetch_valid_domain_keys(const ldns_resolver * res,
+					    const ldns_rdf * domain,
+					    const ldns_rr_list * keys,
+					    ldns_status *status);
+
+/**
+ * Validates the DNSKEY RRset for the given domain using the provided trusted keys.
+ *
+ * \param[in] res the current resolver
+ * \param[in] domain the domain we want valid keys for
+ * \param[in] keys the current set of trusted keys
+ * \return the set of trusted keys for the domain, or NULL if the RRSET could not be validated
+ */
+ldns_rr_list *
+ldns_validate_domain_dnskey (const ldns_resolver *res,
+					    const ldns_rdf *domain,
+					    const ldns_rr_list *keys);
+
+/**
+ * Validates the DS RRset for the given domain using the provided trusted keys.
+ *
+ * \param[in] res the current resolver
+ * \param[in] domain the domain we want valid keys for
+ * \param[in] keys the current set of trusted keys
+ * \return the set of trusted keys for the domain, or NULL if the RRSET could not be validated
+ */
+ldns_rr_list *
+ldns_validate_domain_ds(const ldns_resolver *res,
+				    const ldns_rdf *
+				    domain,
+				    const ldns_rr_list * keys);
+
+/**
+ * Verifies a list of signatures for one RRset using a valid trust path.
+ *
+ * \param[in] res the current resolver
+ * \param[in] rrset the rrset to verify
+ * \param[in] rrsigs a list of signatures to check
+ * \param[out] validating_keys  if this is a (initialized) list, the keys from keys that validate one of the signatures are added to it
+ * \return status LDNS_STATUS_OK if there is at least one correct key
+ */
+ldns_status
+ldns_verify_trusted(ldns_resolver *res,
+				ldns_rr_list *rrset,
+				ldns_rr_list *rrsigs,
+				ldns_rr_list *validating_keys);
+
+/**
+ * denial is not just a river in egypt
+ */
+ldns_status
+ldns_dnssec_verify_denial(ldns_rr *rr,
+                          ldns_rr_list *nsecs,
+                          ldns_rr_list *rrsigs);
+
+ldns_status
+ldns_dnssec_verify_denial_nsec3(ldns_rr *rr,
+						  ldns_rr_list *nsecs,
+						  ldns_rr_list *rrsigs,
+						  ldns_pkt_rcode packet_rcode,
+						  ldns_rr_type packet_qtype,
+						  bool packet_nodata);
 
 /**
  * Verifies the already processed data in the buffers
@@ -209,6 +321,13 @@ ldns_status ldns_verify_rrsig_buffers_raw(unsigned char* sig, size_t siglen,
  * \return a list of keys which validate the rrsig + rrset. Return NULL when none of the keys validate.
  */
 ldns_status ldns_verify_rrsig_keylist(ldns_rr_list *rrset, ldns_rr *rrsig, const ldns_rr_list *keys, ldns_rr_list *good_keys);
+
+/**
+ * convert dsa data
+ */
+ldns_status
+ldns_convert_dsa_rrsig_rdata(ldns_buffer *target_buffer,
+                             ldns_rdf *sig_rdf);
 
 /**
  * verify an rrsig with 1 key
@@ -254,6 +373,7 @@ ldns_status ldns_verify_rrsig_evp_raw(unsigned char *sig, size_t siglen,
  * \param[in] key the key data
  */
 ldns_status ldns_verify_rrsig_dsa(ldns_buffer *sig, ldns_buffer *rrset, ldns_buffer *key);
+
 /**
  * verifies a buffer with signature data (RSASHA1) for a buffer with rrset data 
  * with a buffer with key data.
@@ -263,6 +383,7 @@ ldns_status ldns_verify_rrsig_dsa(ldns_buffer *sig, ldns_buffer *rrset, ldns_buf
  * \param[in] key the key data
  */
 ldns_status ldns_verify_rrsig_rsasha1(ldns_buffer *sig, ldns_buffer *rrset, ldns_buffer *key);
+
 /**
  * verifies a buffer with signature data (RSAMD5) for a buffer with rrset data 
  * with a buffer with key data.
@@ -272,6 +393,7 @@ ldns_status ldns_verify_rrsig_rsasha1(ldns_buffer *sig, ldns_buffer *rrset, ldns
  * \param[in] key the key data
  */
 ldns_status ldns_verify_rrsig_rsamd5(ldns_buffer *sig, ldns_buffer *rrset, ldns_buffer *key);
+
 /**
  * Like ldns_verify_rrsig_dsa, but uses raw signature and key data.
  * \param[in] sig raw uncompressed wireformat signature data
@@ -282,6 +404,7 @@ ldns_status ldns_verify_rrsig_rsamd5(ldns_buffer *sig, ldns_buffer *rrset, ldns_
  */
 ldns_status ldns_verify_rrsig_dsa_raw(unsigned char* sig, size_t siglen,
 	ldns_buffer* rrset, unsigned char* key, size_t keylen);
+
 /**
  * Like ldns_verify_rrsig_rsasha1, but uses raw signature and key data.
  * \param[in] sig raw uncompressed wireformat signature data
@@ -300,8 +423,10 @@ ldns_status ldns_verify_rrsig_rsasha1_raw(unsigned char* sig, size_t siglen,
  * \param[in] key raw uncompressed wireformat key data
  * \param[in] keylen length of key data
  */
+
 ldns_status ldns_verify_rrsig_rsasha256_raw(unsigned char* sig, size_t siglen,
 	ldns_buffer* rrset, unsigned char* key, size_t keylen);
+
 /**
  * Like ldns_verify_rrsig_rsasha512, but uses raw signature and key data.
  * \param[in] sig raw uncompressed wireformat signature data
@@ -312,6 +437,7 @@ ldns_status ldns_verify_rrsig_rsasha256_raw(unsigned char* sig, size_t siglen,
  */
 ldns_status ldns_verify_rrsig_rsasha512_raw(unsigned char* sig, size_t siglen,
 	ldns_buffer* rrset, unsigned char* key, size_t keylen);
+
 /**
  * Like ldns_verify_rrsig_rsamd5, but uses raw signature and key data.
  * \param[in] sig raw uncompressed wireformat signature data
@@ -322,7 +448,6 @@ ldns_status ldns_verify_rrsig_rsasha512_raw(unsigned char* sig, size_t siglen,
  */
 ldns_status ldns_verify_rrsig_rsamd5_raw(unsigned char* sig, size_t siglen,
 	ldns_buffer* rrset, unsigned char* key, size_t keylen);
-
 
 #endif
 

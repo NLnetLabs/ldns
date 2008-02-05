@@ -99,7 +99,9 @@ ldns_nsec_get_bitmap(ldns_rr *nsec) {
 int verbosity = 5;
 
 ldns_rdf *
-ldns_dnssec_nsec3_closest_encloser(ldns_rdf *qname, ldns_rr_type qtype, ldns_rr_list *nsec3s)
+ldns_dnssec_nsec3_closest_encloser(ldns_rdf *qname,
+							ldns_rr_type qtype,
+							ldns_rr_list *nsec3s)
 {
 	/* remember parameters, they must match */
 	uint8_t algorithm;
@@ -216,192 +218,6 @@ ldns_dnssec_nsec3_closest_encloser(ldns_rdf *qname, ldns_rr_type qtype, ldns_rr_
 
 	return result;
 }
-
-ldns_status
-ldns_dnssec_verify_denial_nsec3(ldns_rr *rr,
-						  ldns_rr_list *nsecs,
-						  ldns_rr_list *rrsigs,
-						  ldns_pkt_rcode packet_rcode,
-						  ldns_rr_type packet_qtype,
-						  bool packet_nodata)
-{
-	ldns_rdf *closest_encloser;
-	ldns_rdf *wildcard;
-	bool wildcard_covered = false;
-	ldns_rdf *zone_name;
-	ldns_rdf *hashed_name;
-	size_t i;
-
-	rrsigs = rrsigs;
-	
-	/* section 8.4 */
-	if (packet_rcode == LDNS_RCODE_NXDOMAIN) {
-		closest_encloser = ldns_dnssec_nsec3_closest_encloser(ldns_rr_owner(rr),
-												    ldns_rr_get_type(rr),
-												    nsecs);
-
-		printf("[XX} NSEC3 denial for: ");
-		ldns_rr_print(stdout, rr);
-		printf("[XX] closest encloser: ");
-		ldns_rdf_print(stdout, closest_encloser);
-		printf("\n");
-
-		wildcard = ldns_dname_new_frm_str("*");
-		ldns_dname_cat(wildcard, closest_encloser);
-
-		for (i = 0; i < ldns_rr_list_rr_count(nsecs); i++) {
-			if (ldns_nsec_covers_name(ldns_rr_list_rr(nsecs, i),
-								 wildcard)) {
-				printf("[XX] wildcard covered\n");
-				wildcard_covered = true;
-			}
-		}
-
-		if (!wildcard_covered) {
-			return LDNS_STATUS_DNSSEC_NSEC_WILDCARD_NOT_COVERED;
-		}
-		if (closest_encloser && wildcard_covered) {
-			return LDNS_STATUS_OK;
-		}
-		return LDNS_STATUS_DNSSEC_NSEC_RR_NOT_COVERED;
-	} else if (packet_nodata && packet_qtype != LDNS_RR_TYPE_DS) {
-		/* section 8.5 */
-		hashed_name = ldns_nsec3_hash_name_frm_nsec3(ldns_rr_list_rr(nsecs, 0),
-											ldns_rr_owner(rr)
-											);
-		zone_name = ldns_dname_left_chop(ldns_rr_owner(ldns_rr_list_rr(nsecs,0)));
-		ldns_dname_cat(hashed_name, zone_name);
-		printf("[XX] hashed name: ");
-		ldns_rdf_print(stdout, hashed_name);
-		printf("\n");
-		for (i = 0; i < ldns_rr_list_rr_count(nsecs); i++) {
-			if (ldns_dname_compare(hashed_name, ldns_rr_owner(ldns_rr_list_rr(nsecs, i))) == 0) {
-				if (!ldns_nsec_bitmap_covers_type(ldns_nsec3_bitmap(ldns_rr_list_rr(nsecs, i)), packet_qtype) && 
-				    !ldns_nsec_bitmap_covers_type(ldns_nsec3_bitmap(ldns_rr_list_rr(nsecs, i)), LDNS_RR_TYPE_CNAME)) {
-					printf("exact match!\n");
-					return LDNS_STATUS_OK;
-				}
-			}
-		}
-		return LDNS_STATUS_DNSSEC_NSEC_RR_NOT_COVERED;
-	} else if (packet_nodata && packet_qtype == LDNS_RR_TYPE_DS) {
-		/* section 8.6 */
-		/* note: up to XXX this is the same as for 8.5 */
-		hashed_name = ldns_nsec3_hash_name_frm_nsec3(ldns_rr_list_rr(nsecs, 0),
-											ldns_rr_owner(rr)
-											);
-		zone_name = ldns_dname_left_chop(ldns_rr_owner(ldns_rr_list_rr(nsecs,0)));
-		ldns_dname_cat(hashed_name, zone_name);
-		printf("[XX] hashed name: ");
-		ldns_rdf_print(stdout, hashed_name);
-		printf("\n");
-		for (i = 0; i < ldns_rr_list_rr_count(nsecs); i++) {
-			if (ldns_dname_compare(hashed_name, ldns_rr_owner(ldns_rr_list_rr(nsecs, i))) == 0) {
-				if (!ldns_nsec_bitmap_covers_type(ldns_nsec3_bitmap(ldns_rr_list_rr(nsecs, i)), LDNS_RR_TYPE_DS) && 
-				    !ldns_nsec_bitmap_covers_type(ldns_nsec3_bitmap(ldns_rr_list_rr(nsecs, i)), LDNS_RR_TYPE_CNAME)) {
-					printf("exact match!\n");
-					return LDNS_STATUS_OK;
-				}
-			}
-		}
-
-		/* XXX see note above */
-		closest_encloser = ldns_dnssec_nsec3_closest_encloser(ldns_rr_owner(rr),
-												    ldns_rr_get_type(rr),
-												    nsecs);
-
-		if (closest_encloser) {
-			printf("[XX] closest encloser: ");
-			ldns_rdf_print(stdout, closest_encloser);
-			printf("\n");
-			exit(0);
-		}
-		return LDNS_STATUS_DNSSEC_NSEC_RR_NOT_COVERED;
-		
-	}
-	return LDNS_STATUS_DNSSEC_NSEC_RR_NOT_COVERED;
-}
-
-ldns_status
-ldns_dnssec_verify_denial(ldns_rr *rr,
-                          ldns_rr_list *nsecs,
-                          ldns_rr_list *rrsigs)
-{
-	ldns_rdf *rr_name;
-	ldns_rdf *wildcard_name;
-	ldns_rdf *chopped_dname;
-	ldns_rr *cur_nsec;
-	size_t i;
-	ldns_status result;
-	/* needed for wildcard check on exact match */
-	ldns_rr *rrsig;
-	bool name_covered = false;
-	bool type_covered = false;
-	bool wildcard_covered = false;
-	bool wildcard_type_covered = false;
-
-	wildcard_name = ldns_dname_new_frm_str("*");
-	rr_name = ldns_rr_owner(rr);
-	chopped_dname = ldns_dname_left_chop(rr_name);
-	result = ldns_dname_cat(wildcard_name, chopped_dname);
-	if (result != LDNS_STATUS_OK) {
-		return result;
-	}
-	
-	ldns_rdf_deep_free(chopped_dname);
-	
-	for  (i = 0; i < ldns_rr_list_rr_count(nsecs); i++) {
-		cur_nsec = ldns_rr_list_rr(nsecs, i);
-		if (ldns_dname_compare(rr_name, ldns_rr_owner(cur_nsec)) == 0) {
-			/* see section 5.4 of RFC4035, if the label count of the NSEC's
-			   RRSIG is equal, then it is proven that wildcard expansion 
-			   could not have been used to match the request */
-			rrsig = ldns_dnssec_get_rrsig_for_name_and_type(ldns_rr_owner(cur_nsec), ldns_rr_get_type(cur_nsec), rrsigs);
-			if (rrsig && ldns_rdf2native_int8(ldns_rr_rrsig_labels(rrsig)) == ldns_dname_label_count(rr_name)) {
-				printf("[XX] wildcard covered from label count\n");
-				wildcard_covered = true;
-			}
-			
-			if (ldns_nsec_bitmap_covers_type(ldns_nsec_get_bitmap(cur_nsec), ldns_rr_get_type(rr))) {
-				printf("[XX] type covered\n");
-				type_covered = true;
-			}
-		}
-		printf("[XX] Name covered?\n");
-		if (ldns_nsec_covers_name(cur_nsec, rr_name)) {
-			printf("[XX] yes!\n");
-			name_covered = true;
-		}
-		
-		if (ldns_dname_compare(wildcard_name, ldns_rr_owner(cur_nsec)) == 0) {
-			printf("[XX] Wildcard type covered?\n");
-			if (ldns_nsec_bitmap_covers_type(ldns_nsec_get_bitmap(cur_nsec), ldns_rr_get_type(rr))) {
-				printf("[XX] yes!\n");
-				wildcard_type_covered = true;
-			}
-		}
-		
-		printf("[XX] Wildcard covered?\n");
-		if (ldns_nsec_covers_name(cur_nsec, wildcard_name)) {
-			printf("[XX] yes!\n");
-			wildcard_covered = true;
-		}
-		
-	}
-	
-	ldns_rdf_deep_free(wildcard_name);
-	
-	if (type_covered || !name_covered) {
-		return LDNS_STATUS_DNSSEC_NSEC_RR_NOT_COVERED;
-	}
-	
-	if (wildcard_type_covered || !wildcard_covered) {
-		return LDNS_STATUS_DNSSEC_NSEC_WILDCARD_NOT_COVERED;
-	}
-
-	return LDNS_STATUS_OK;
-}
-
 
 bool
 ldns_dnssec_pkt_has_rrsigs(const ldns_pkt *pkt)
@@ -531,6 +347,111 @@ uint16_t ldns_calc_keytag_raw(uint8_t* key, size_t keysize)
 		ac32 += (ac32 >> 16) & 0xFFFF;
 		return (uint16_t) (ac32 & 0xFFFF);
 	}
+}
+
+DSA *
+ldns_key_buf2dsa(ldns_buffer *key)
+{
+	return ldns_key_buf2dsa_raw((unsigned char*)ldns_buffer_begin(key),
+						   ldns_buffer_position(key));
+}
+
+DSA *
+ldns_key_buf2dsa_raw(unsigned char* key, size_t len)
+{
+	uint8_t T;
+	uint16_t length;
+	uint16_t offset;
+	DSA *dsa;
+	BIGNUM *Q; BIGNUM *P;
+	BIGNUM *G; BIGNUM *Y;
+
+	if(len == 0)
+		return NULL;
+	T = (uint8_t)key[0];
+	length = (64 + T * 8);
+	offset = 1;
+	
+	if (T > 8) {
+		return NULL;
+	}
+	if(len < (size_t)1 + SHA_DIGEST_LENGTH + 3*length)
+		return NULL;
+	
+	Q = BN_bin2bn(key+offset, SHA_DIGEST_LENGTH, NULL);
+	offset += SHA_DIGEST_LENGTH;
+	
+	P = BN_bin2bn(key+offset, (int)length, NULL);
+	offset += length;
+	
+	G = BN_bin2bn(key+offset, (int)length, NULL);
+	offset += length;
+	
+	Y = BN_bin2bn(key+offset, (int)length, NULL);
+	offset += length;
+	
+	/* create the key and set its properties */
+	dsa = DSA_new();
+	dsa->p = P;
+	dsa->q = Q;
+	dsa->g = G;
+	dsa->pub_key = Y;
+
+	return dsa;
+}
+
+RSA *
+ldns_key_buf2rsa(ldns_buffer *key)
+{
+	return ldns_key_buf2rsa_raw((unsigned char*)ldns_buffer_begin(key),
+						   ldns_buffer_position(key));
+}
+
+RSA *
+ldns_key_buf2rsa_raw(unsigned char* key, size_t len)
+{
+	uint16_t offset;
+	uint16_t exp;
+	uint16_t int16;
+	RSA *rsa;
+	BIGNUM *modulus;
+	BIGNUM *exponent;
+
+	if (len == 0)
+		return NULL;
+	if (key[0] == 0) {
+		if(len < 3)
+			return NULL;
+		/* need some smart comment here XXX*/
+		/* the exponent is too large so it's places
+		 * futher...???? */
+		memmove(&int16, key+1, 2);
+		exp = ntohs(int16);
+		offset = 3;
+	} else {
+		exp = key[0];
+		offset = 1;
+	}
+
+	/* key length at least one */
+	if(len < (size_t)offset + exp + 1)
+		return NULL;
+	
+	/* Exponent */
+	exponent = BN_new();
+	(void) BN_bin2bn(key+offset, (int)exp, exponent);
+	offset += exp;
+
+	/* Modulus */
+	modulus = BN_new();
+	/* length of the buffer must match the key length! */
+	(void) BN_bin2bn(key+offset, (int)(len - offset), modulus);
+
+	rsa = RSA_new();
+	rsa->n = modulus;
+	rsa->e = exponent;
+
+	return rsa;
 }
 
 ldns_rr *
@@ -1202,8 +1123,8 @@ ldns_nsec3_iterations(const ldns_rr *nsec3_rr)
 	
 }
 
-ldns_rdf
-*ldns_nsec3_salt(const ldns_rr *nsec3_rr)
+ldns_rdf *
+ldns_nsec3_salt(const ldns_rr *nsec3_rr)
 {
 	if (nsec3_rr && ldns_rr_get_type(nsec3_rr) == LDNS_RR_TYPE_NSEC3) {
 		return ldns_rr_rdf(nsec3_rr, 3);
@@ -1429,6 +1350,7 @@ ldns_pkt_verify(ldns_pkt *p, ldns_rr_type t, ldns_rdf *o,
 	return ldns_verify(rrset, sigs, k, good_keys);
 }
 
+#if 0
 ldns_rr_list *
 ldns_zone_create_nsecs(const ldns_zone *zone, ldns_rr_list *orig_zone_rrs, ldns_rr_list *glue_rrs)
 {
@@ -1506,6 +1428,7 @@ ldns_rr_list_strip_dnssec(ldns_rr_list *rr_list, ldns_rr_list *removed_rrs)
 
 	return new_list;
 }
+#endif
 
 ldns_status
 ldns_dnssec_chain_nsec3_list(ldns_rr_list *nsec3_rrs)
@@ -1547,7 +1470,7 @@ ldns_dnssec_chain_nsec3_list(ldns_rr_list *nsec3_rrs)
 	return status;
 }
 
-static int
+int
 qsort_rr_compare_nsec3(const void *a, const void *b)
 {
 	const ldns_rr *rr1 = * (const ldns_rr **) a;
@@ -1564,7 +1487,9 @@ qsort_rr_compare_nsec3(const void *a, const void *b)
 	return ldns_rdf_compare(ldns_rr_owner(rr1), ldns_rr_owner(rr2));
 }
 
-void ldns_rr_list_sort_nsec3(ldns_rr_list *unsorted) {
+void
+ldns_rr_list_sort_nsec3(ldns_rr_list *unsorted)
+{
 	qsort(unsorted->_rrs,
 	      ldns_rr_list_rr_count(unsorted),
 	      sizeof(ldns_rr *),

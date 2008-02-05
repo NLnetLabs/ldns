@@ -73,6 +73,31 @@ ldns_rdf *ldns_nsec_get_bitmap(ldns_rr *nsec);
 
 #define LDNS_NSEC3_MAX_ITERATIONS 65535
 
+/**
+ * Returns the dname of the closest (provable) encloser
+ */
+ldns_rdf *
+ldns_dnssec_nsec3_closest_encloser(ldns_rdf *qname,
+							ldns_rr_type qtype,
+							ldns_rr_list *nsec3s);
+
+/**
+ * Checks whether the packet contains rrsigs
+ */
+bool
+ldns_dnssec_pkt_has_rrsigs(const ldns_pkt *pkt);
+
+/**
+ * Returns a ldns_rr_list containing the signatures covering the given name
+ * and type
+ */
+ldns_rr_list *ldns_dnssec_pkt_get_rrsigs_for_name_and_type(const ldns_pkt *pkt, ldns_rdf *name, ldns_rr_type type);
+
+/**
+ * Returns a ldns_rr_list containing the signatures covering the given type
+ */
+ldns_rr_list *ldns_dnssec_pkt_get_rrsigs_for_type(const ldns_pkt *pkt, ldns_rr_type type);
+
 /** 
  * calculates a keytag of a key for use in DNSSEC.
  *
@@ -80,10 +105,6 @@ ldns_rdf *ldns_nsec_get_bitmap(ldns_rr *nsec);
  * \return the keytag
  */
 uint16_t ldns_calc_keytag(const ldns_rr *key);
-
-ldns_rr_list *ldns_dnssec_pkt_get_rrsigs_for_type(const ldns_pkt *pkt, ldns_rr_type type);
-
-ldns_rr_list *ldns_dnssec_pkt_get_rrsigs_for_name_and_type(const ldns_pkt *pkt, ldns_rdf *name, ldns_rr_type type);
 
 /**
  * Calculates keytag of DNSSEC key, operates on wireformat rdata.
@@ -118,6 +139,7 @@ DSA *ldns_key_buf2dsa_raw(unsigned char* key, size_t len);
  * \return a RSA * structure with the key material
  */
 RSA *ldns_key_buf2rsa(ldns_buffer *key);
+
 /**
  * Like ldns_key_buf2rsa, but uses raw buffer.
  * \param[in] key the uncompressed wireformat of the key.
@@ -137,6 +159,35 @@ RSA *ldns_key_buf2rsa_raw(unsigned char* key, size_t len);
 ldns_rr *ldns_key_rr2ds(const ldns_rr *key, ldns_hash h);
 
 /**
+ * Create the type bitmap for an NSEC(3) record
+ */
+ldns_rdf *
+ldns_dnssec_create_nsec_bitmap(ldns_rr_type rr_type_list[],
+						 size_t size,
+						 ldns_rr_type nsec_type);
+
+/**
+ * Creates NSEC
+ */
+ldns_rr *
+ldns_dnssec_create_nsec(ldns_dnssec_name *from,
+				    ldns_dnssec_name *to,
+				    ldns_rr_type nsec_type);
+
+/**
+ * Creates NSEC3
+ */
+ldns_rr *
+ldns_dnssec_create_nsec3(ldns_dnssec_name *from,
+					ldns_dnssec_name *to,
+					ldns_rdf *zone_name,
+					uint8_t algorithm,
+					uint8_t flags,
+					uint16_t iterations,
+					uint8_t salt_length,
+					uint8_t *salt);
+
+/**
  * Create a NSEC record
  * \param[in] cur_owner the current owner which should be taken as the starting point
  * \param[in] next_owner the rrlist which the nsec rr should point to 
@@ -146,24 +197,45 @@ ldns_rr *ldns_key_rr2ds(const ldns_rr *key, ldns_hash h);
 ldns_rr * ldns_create_nsec(ldns_rdf *cur_owner, ldns_rdf *next_owner, ldns_rr_list *rrs);
 
 /**
- * Checks coverage of NSEC RR type bitmap
- * \param[in] nsec_bitmap The NSEC bitmap rdata field to check
- * \param[in] type The type to check
- * \return true if the NSEC RR covers the type
+ * Calculates the hashed name using the given parameters
+ * \param[in] *name The owner name to calculate the hash for 
+ * \param[in] algorithm The hash algorithm to use
+ * \param[in] iterations The number of hash iterations to use
+ * \param[in] salt_length The length of the salt in bytes
+ * \param[in] salt The salt to use
+ * \return The hashed owner name rdf, without the domain name
  */
-bool ldns_nsec_bitmap_covers_type(const ldns_rdf *nsec_bitmap, ldns_rr_type type);
+ldns_rdf *ldns_nsec3_hash_name(ldns_rdf *name, uint8_t algorithm, uint16_t iterations, uint8_t salt_length, uint8_t *salt);
 
 /**
- * Checks coverage of NSEC(3) RR name span
- * Remember that nsec and name must both be in canonical form (ie use
- * \ref ldns_rr2canonical and \ref ldns_dname2canonical prior to calling this
- * function)
- *
- * \param[in] nsec The NSEC RR to check
- * \param[in] name The owner dname to check, if the nsec record is a NSEC3 record, this should be the hashed name
- * \return true if the NSEC RR covers the owner name
+ * Sets all the NSEC3 options. The rr to set them in must be initialized with _new() and
+ * type LDNS_RR_TYPE_NSEC3
+ * \param[in] *rr The RR to set the values in
+ * \param[in] algorithm The NSEC3 hash algorithm 
+ * \param[in] flags The flags field 
+ * \param[in] iterations The number of hash iterations
+ * \param[in] salt_length The length of the salt in bytes 
+ * \param[in] salt The salt bytes
  */
-bool ldns_nsec_covers_name(const ldns_rr *nsec, const ldns_rdf *name);
+void ldns_nsec3_add_param_rdfs(ldns_rr *rr,
+						 uint8_t algorithm,
+						 uint8_t flags,
+						 uint16_t iterations,
+						 uint8_t salt_length,
+						 uint8_t *salt);
+
+/* this will NOT return the NSEC3  completed, you will have to run the
+   finalize function on the rrlist later! */
+ldns_rr *
+ldns_create_nsec3(ldns_rdf *cur_owner,
+                  ldns_rdf *cur_zone,
+                  ldns_rr_list *rrs,
+                  uint8_t algorithm,
+                  uint8_t flags,
+                  uint16_t iterations,
+                  uint8_t salt_length,
+                  uint8_t *salt,
+                  bool emptynonterminal);
 
 /**
  * Returns the hash algorithm used in the given NSEC3 RR
@@ -171,6 +243,19 @@ bool ldns_nsec_covers_name(const ldns_rr *nsec, const ldns_rdf *name);
  * \return The algorithm identifier, or 0 on error
  */
 uint8_t ldns_nsec3_algorithm(const ldns_rr *nsec3_rr);
+
+/**
+ * Returns flags field
+ */
+uint8_t
+ldns_nsec3_flags(const ldns_rr *nsec3_rr);
+
+/**
+ * Returns true if the opt-out flag has been set in the given NSEC3 RR
+ * \param[in] *nsec3_rr The RR to read from
+ * \return true if the RR has type NSEC3 and the opt-out bit has been set, false otherwise
+ */
+bool ldns_nsec3_optout(const ldns_rr *nsec3_rr);
 
 /**
  * Returns the number of hash iterations used in the given NSEC3 RR
@@ -201,31 +286,11 @@ uint8_t ldns_nsec3_salt_length(const ldns_rr *nsec3_rr);
 uint8_t *ldns_nsec3_salt_data(const ldns_rr *nsec3_rr);
 
 /**
- * Returns true if the opt-out flag has been set in the given NSEC3 RR
- * \param[in] *nsec3_rr The RR to read from
- * \return true if the RR has type NSEC3 and the opt-out bit has been set, false otherwise
- */
-bool ldns_nsec3_optout(const ldns_rr *nsec3_rr);
-
-/**
  * Returns the first label of the next ownername in the NSEC3 chain (ie. without the domain)
  * \param[in] nsec3_rr The RR to read from
  * \return The first label of the next owner name in the NSEC3 chain, or NULL on error 
  */
 ldns_rdf *ldns_nsec3_next_owner(const ldns_rr *nsec3_rr);
-
-/**
- * Sets all the NSEC3 options. The rr to set them in must be initialized with _new() and
- * type LDNS_RR_TYPE_NSEC3
- * \param[in] *rr The RR to set the values in
- * \param[in] algorithm The NSEC3 hash algorithm 
- * \param[in] flags The flags field 
- * \param[in] iterations The number of hash iterations
- * \param[in] salt_length The length of the salt in bytes 
- * \param[in] salt The salt bytes
- */
-void ldns_nsec3_add_param_rdfs(ldns_rr *rr, uint8_t algorithm, uint8_t flags, uint16_t iterations, uint8_t salt_length, uint8_t *salt);
-
 
 /**
  * Returns the bitmap specifying the covered types of the given NSEC3 RR
@@ -243,16 +308,24 @@ ldns_rdf *ldns_nsec3_bitmap(const ldns_rr *nsec3_rr);
 ldns_rdf *ldns_nsec3_hash_name_frm_nsec3(const ldns_rr *nsec, ldns_rdf *name);
 
 /**
- * Calculates the hashed name using the given parameters
- * \param[in] *name The owner name to calculate the hash for 
- * \param[in] algorithm The hash algorithm to use
- * \param[in] iterations The number of hash iterations to use
- * \param[in] salt_length The length of the salt in bytes
- * \param[in] salt The salt to use
- * \return The hashed owner name rdf, without the domain name
+ * Checks coverage of NSEC RR type bitmap
+ * \param[in] nsec_bitmap The NSEC bitmap rdata field to check
+ * \param[in] type The type to check
+ * \return true if the NSEC RR covers the type
  */
-ldns_rdf *ldns_nsec3_hash_name(ldns_rdf *name, uint8_t algorithm, uint16_t iterations, uint8_t salt_length, uint8_t *salt);
+bool ldns_nsec_bitmap_covers_type(const ldns_rdf *nsec_bitmap, ldns_rr_type type);
 
+/**
+ * Checks coverage of NSEC(3) RR name span
+ * Remember that nsec and name must both be in canonical form (ie use
+ * \ref ldns_rr2canonical and \ref ldns_dname2canonical prior to calling this
+ * function)
+ *
+ * \param[in] nsec The NSEC RR to check
+ * \param[in] name The owner dname to check, if the nsec record is a NSEC3 record, this should be the hashed name
+ * \return true if the NSEC RR covers the owner name
+ */
+bool ldns_nsec_covers_name(const ldns_rr *nsec, const ldns_rdf *name);
 
 /**
  * verify a packet 
@@ -267,9 +340,35 @@ ldns_rdf *ldns_nsec3_hash_name(ldns_rdf *name, uint8_t algorithm, uint16_t itera
  */
 ldns_status ldns_pkt_verify(ldns_pkt *p, ldns_rr_type t, ldns_rdf *o, ldns_rr_list *k, ldns_rr_list *s, ldns_rr_list *good_keys);
 
-bool ldns_dnssec_pkt_has_rrsigs(const ldns_pkt *pkt);
+/**
+ * chains nsec3 list
+ */
+ldns_status
+ldns_dnssec_chain_nsec3_list(ldns_rr_list *nsec3_rrs);
 
+/**
+ * compare for nsec3 sort
+ */
+int
+qsort_rr_compare_nsec3(const void *a, const void *b);
 
+/**
+ * sort nsec3 list
+ */
+void
+ldns_rr_list_sort_nsec3(ldns_rr_list *unsorted);
+
+/**
+ * Adds NSEC3 records to the zone
+ */
+ldns_status
+ldns_dnssec_zone_create_nsec3s(ldns_dnssec_zone *zone,
+						 ldns_rr_list *new_rrs,
+						 uint8_t algorithm,
+						 uint8_t flags,
+						 uint16_t iterations,
+						 uint8_t salt_length,
+						 uint8_t *salt);
 /** 
  * Default callback function to always leave present signatures, and
  * add new ones
@@ -302,79 +401,5 @@ int ldns_dnssec_default_delete_signatures(ldns_rr *sig, void *n);
  * \return LDNS_SIGNATURE_REMOVE_ADD_NEW
  */
 int ldns_dnssec_default_replace_signatures(ldns_rr *sig, void *n);
-
-/**
- * Tries to build an authentication chain from the given keys down to the queried domain.
- *
- * If we find a valid trust path, return the valid keys for the domain.
- * 
- * \param[in] res the current resolver
- * \param[in] domain the domain we want valid keys for
- * \param[in] keys the current set of trusted keys
- * \param[out] status pointer to the status variable where the result code will be stored
- * \return the set of trusted keys for the domain, or NULL if no trust path could be built.
- */
-ldns_rr_list *
-ldns_fetch_valid_domain_keys(const ldns_resolver * res, const ldns_rdf * domain, const ldns_rr_list * keys, ldns_status *status);
-
-/**
- * Validates the DNSKEY RRset for the given domain using the provided trusted keys.
- *
- * \param[in] res the current resolver
- * \param[in] domain the domain we want valid keys for
- * \param[in] keys the current set of trusted keys
- * \return the set of trusted keys for the domain, or NULL if the RRSET could not be validated
- */
-ldns_rr_list *
-ldns_validate_domain_dnskey (const ldns_resolver * res, const ldns_rdf * domain, const ldns_rr_list * keys);
-
-/**
- * Validates the DS RRset for the given domain using the provided trusted keys.
- *
- * \param[in] res the current resolver
- * \param[in] domain the domain we want valid keys for
- * \param[in] keys the current set of trusted keys
- * \return the set of trusted keys for the domain, or NULL if the RRSET could not be validated
- */
-ldns_rr_list *
-ldns_validate_domain_ds (const ldns_resolver * res, const ldns_rdf * domain, const ldns_rr_list * keys);
-
-/**
- * Verifies a list of signatures for one RRset using a valid trust path.
- *
- * \param[in] res the current resolver
- * \param[in] rrset the rrset to verify
- * \param[in] rrsigs a list of signatures to check
- * \param[out] validating_keys  if this is a (initialized) list, the keys from keys that validate one of the signatures are added to it
- * \return status LDNS_STATUS_OK if there is at least one correct key
- */
-ldns_status
-ldns_verify_trusted(ldns_resolver * res, ldns_rr_list * rrset, ldns_rr_list * rrsigs, ldns_rr_list * validating_keys);
-
-ldns_rr *
-ldns_dnssec_create_nsec(ldns_dnssec_name *from,
-				    ldns_dnssec_name *to,
-				    ldns_rr_type nsec_type);
-
-ldns_status
-ldns_dnssec_zone_create_nsec3s(ldns_dnssec_zone *zone,
-						 ldns_rr_list *new_rrs,
-						 uint8_t algorithm,
-						 uint8_t flags,
-						 uint16_t iterations,
-						 uint8_t salt_length,
-						 uint8_t *salt);
-ldns_status
-ldns_dnssec_verify_denial_nsec3(ldns_rr *rr,
-						  ldns_rr_list *nsecs,
-						  ldns_rr_list *rrsigs,
-						  ldns_pkt_rcode packet_rcode,
-						  ldns_rr_type packet_qtype,
-						  bool packet_nodata);
-
-ldns_status
-ldns_dnssec_verify_denial(ldns_rr *rr,
-                          ldns_rr_list *nsecs,
-                          ldns_rr_list *rrsigs);
 
 #endif /* LDNS_DNSSEC_H */

@@ -32,20 +32,48 @@ ldns_rdf *ldns_sign_public_evp(ldns_buffer *to_sign,
 						 const EVP_MD *digest_type);
 
 /**
- * Sign a buffer with the RSA key (hash with MD5)
- * \param[in] to_sign buffer with the data
- * \param[in] key the key to use
- * \return a ldns_rdf with the signed data
- */
-ldns_rdf *ldns_sign_public_rsamd5(ldns_buffer *to_sign, RSA *key);
-/**
  * Sign a buffer with the RSA key (hash with SHA1)
  * \param[in] to_sign buffer with the data
  * \param[in] key the key to use
  * \return a ldns_rdf with the signed data
  */
 ldns_rdf *ldns_sign_public_rsasha1(ldns_buffer *to_sign, RSA *key);
+
+/**
+ * Sign a buffer with the RSA key (hash with MD5)
+ * \param[in] to_sign buffer with the data
+ * \param[in] key the key to use
+ * \return a ldns_rdf with the signed data
+ */
+ldns_rdf *ldns_sign_public_rsamd5(ldns_buffer *to_sign, RSA *key);
 #endif /* HAVE_SSL */
+
+/**
+ * Adds NSEC RRs to the zone
+ */
+ldns_status
+ldns_dnssec_zone_create_nsecs(ldns_dnssec_zone *zone,
+						ldns_rr_list *new_rrs,
+						ldns_rr_type nsec_type);
+
+/**
+ * remove signatures if callback function tells to
+ */
+ldns_dnssec_rrs *
+ldns_dnssec_remove_signatures(ldns_dnssec_rrs *signatures,
+						ldns_key_list *key_list,
+						int (*func)(ldns_rr *, void *),
+						void *arg);
+
+/**
+ * Adds signatures to the zone
+ */
+ldns_status
+ldns_dnssec_zone_create_rrsigs(ldns_dnssec_zone *zone,
+						 ldns_rr_list *new_rrs,
+						 ldns_key_list *key_list,
+						 int (*func)(ldns_rr *, void*),
+						 void *arg);
 
 /**
  * signs the given zone with the given new zone
@@ -96,6 +124,7 @@ ldns_status ldns_dnssec_zone_sign_nsec3(ldns_dnssec_zone *zone,
  * \return signed zone
  */
 ldns_zone *ldns_zone_sign(const ldns_zone *zone, ldns_key_list *key_list);
+
 /**
  * Signs the zone with NSEC3, and returns a newly allocated signed zone
  * \param[in] zone the zone to sign

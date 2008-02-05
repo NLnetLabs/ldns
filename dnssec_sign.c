@@ -431,6 +431,7 @@ ldns_dnssec_zone_create_nsecs(ldns_dnssec_zone *zone,
 		ldns_rr_list_push_rr(new_rrs, nsec_rr);
 		break;
 	case LDNS_RR_TYPE_NSEC3:
+		/*TODO separate function*/
 		break;
 	default:
 		return LDNS_STATUS_ERR;
@@ -443,7 +444,8 @@ ldns_dnssec_rrs *
 ldns_dnssec_remove_signatures(ldns_dnssec_rrs *signatures,
 						ldns_key_list *key_list,
 						int (*func)(ldns_rr *, void *),
-						void *arg) {
+						void *arg)
+{
 	ldns_dnssec_rrs *base_rrs = signatures;
 	ldns_dnssec_rrs *cur_rr = base_rrs;
 	ldns_dnssec_rrs *prev_rr = NULL;
@@ -529,7 +531,8 @@ ldns_dnssec_zone_create_rrsigs(ldns_dnssec_zone *zone,
 						 ldns_rr_list *new_rrs,
 						 ldns_key_list *key_list,
 						 int (*func)(ldns_rr *, void*),
-						 void *arg) {
+						 void *arg)
+{
 	ldns_status result = LDNS_STATUS_OK;
 	zone = zone;
 	new_rrs = new_rrs;
@@ -1170,7 +1173,6 @@ ldns_rr_list_print(stdout, signed_zone_rrs);
 	ldns_rr_list_free(glue_rrs);
 	return signed_zone;
 #endif
-	
 }
 
 #endif
