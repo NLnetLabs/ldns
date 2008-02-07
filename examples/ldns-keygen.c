@@ -14,12 +14,17 @@
 
 void
 usage(FILE *fp, char *prog) {
-	fprintf(fp, "%s [-D|-R] [-b bits] [-r /dev/random] [-v] domain\n", prog);
+	fprintf(fp, "%s -a <algorithm> [-b bits] [-r /dev/random] [-v] domain\n",
+		   prog);
 	fprintf(fp, "  generate a new key pair for domain\n");
-	fprintf(fp, "  -D\tgenerate a DSA key\n");
-	fprintf(fp, "  -R\tgenerate an RSA key\n");
-	fprintf(fp, "  -H\tgenerate an HMAC-MD5 key (for TSIG)\n");
-	fprintf(fp, "  -k\tset the flags to 257; key signing key\n");
+	fprintf(fp, "  -a <alg>\tuse the specified algorithm (-a list to");
+	fprintf(fp, " show a list)\n");
+	/*
+	fprintf(fp, "  -D\t\tgenerate a DSA key\n");
+	fprintf(fp, "  -R\t\tgenerate an RSA key\n");
+	fprintf(fp, "  -H\t\tgenerate an HMAC-MD5 key (for TSIG)\n");
+	*/
+	fprintf(fp, "  -k\t\tset the flags to 257; key signing key\n");
 	fprintf(fp, "  -b <bits>\tspecify the keylength\n");
 	fprintf(fp, "  -r <random>\tspecify a random device (defaults to /dev/random)\n");
 	fprintf(fp, "\t\tto seed the random generator with\n");
@@ -29,6 +34,18 @@ usage(FILE *fp, char *prog) {
 	fprintf(fp, "    K<name>+<alg>+<id>.private\tPrivate key in key format\n");
 	fprintf(fp, "    K<name>+<alg>+<id>.ds\tDS in RR format (only for DNSSEC keys)\n");
 	fprintf(fp, "  The base name (K<name>+<alg>+<id> will be printed to stdout\n");
+}
+
+void
+show_algorithms(FILE *out)
+{
+	ldns_lookup_table *lt = ldns_signing_algorithms;
+	fprintf(out, "Possible algorithms:\n");
+
+	while (lt->name) {
+		fprintf(out, "%s\n", lt->name);
+		lt++;
+	}
 }
 
 int
@@ -53,19 +70,36 @@ main(int argc, char *argv[])
 	ldns_key *key;
 	ldns_rr *ds;
 
+	ldns_lookup_table *lt;
+
 	prog = strdup(argv[0]);
 	algorithm = 0;
 	random = NULL;
 	ksk = false; /* don't create a ksk per default */
 	
-	while ((c = getopt(argc, argv, "DRHkb:r:v25")) != -1) {
+	while ((c = getopt(argc, argv, "a:kb:r:v25")) != -1) {
 		switch (c) {
-		case 'D':
+		case 'a':
 			if (algorithm != 0) {
-				fprintf(stderr, "%s: %s", prog, "Only one of -D, -A or -H is allowed\n");
+				fprintf(stderr, "The -a argument can only be used once\n");
+				exit(1);
+			}
+			if (strncmp(optarg, "list", 5) == 0) {
+				show_algorithms(stdout);
+				exit(EXIT_SUCCESS);
+			}
+			lt = ldns_signing_algorithms;
+			while (lt->name) {
+				if (strncmp(lt->name, optarg, strlen(lt->name)) == 0) {
+					algorithm = lt->id;
+				}
+				lt++;
+			}
+			if (algorithm == 0) {
+				fprintf(stderr, "Algorithm %s not found\n", optarg);
+				show_algorithms(stderr);
 				exit(EXIT_FAILURE);
 			}
-			algorithm = LDNS_SIGN_DSA;
 			break;
 		case '2':
 			if (algorithm != 0) {
@@ -73,26 +107,6 @@ main(int argc, char *argv[])
 				exit(EXIT_FAILURE);
 			}
 			algorithm = LDNS_SIGN_RSASHA256;
-			break;
-		case 'R':
-			if (algorithm != 0) {
-				fprintf(stderr, "%s: %s", prog, "Only one of -D, -A or -H is allowed\n");
-				exit(EXIT_FAILURE);
-			}
-			algorithm = LDNS_SIGN_RSASHA1;
-			break;
-		case '5':
-			if (algorithm != 0) {
-				fprintf(stderr, "%s: %s", prog, "Only one of -D, -A or -H is allowed\n");
-				exit(EXIT_FAILURE);
-			}
-			algorithm = LDNS_SIGN_RSASHA512;
-			break;
-		case 'H':
-			if (algorithm != 0) {
-				fprintf(stderr, "%s: %s", prog, "Only one of -D, -A or -H is allowed\n");
-			}
-			algorithm = LDNS_SIGN_HMACMD5;
 			break;
 		case 'b':
 			bits = (uint16_t) atoi(optarg);
@@ -124,7 +138,8 @@ main(int argc, char *argv[])
 	argv += optind;
 
 	if (algorithm == 0) {
-		algorithm = LDNS_SIGN_RSASHA1; /* default to RSA SHA1 */
+		printf("Please use the -a argument to provide an algorithm\n");
+		exit(1);
 	}
 
 	if (argc != 1) {
