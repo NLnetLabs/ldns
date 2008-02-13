@@ -51,7 +51,7 @@ ldns_fget_token_l(FILE *f, char *token, const char *delim, size_t limit, int *li
 	com = 0;
 	quoted = 0;
 	t = token;
-	if (delim[0] == '"') {
+	if (del[0] == '"') {
 		quoted = 1;
 	}
 	while ((c = getc(f)) != EOF) {
