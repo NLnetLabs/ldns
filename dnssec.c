@@ -329,8 +329,9 @@ uint16_t ldns_calc_keytag_raw(uint8_t* key, size_t keysize)
 	uint32_t ac32;
 	uint16_t ac16;
 
-	if(keysize < 4)
+	if(keysize < 4) {
 		return 0;
+	}
 	/* look at the algorithm field, copied from 2535bis */
 	if (key[3] == LDNS_RSAMD5) {
 		ac16 = 0;

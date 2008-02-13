@@ -179,7 +179,7 @@ main(int argc, char *argv[])
 	
 	keys = ldns_key_list_new();
 
-	/*	OPENSSL_config(NULL);*/
+	OPENSSL_config(NULL);
 
 	while ((c = getopt(argc, argv, "a:e:f:i:k:lno:s:t:v:E:K:")) != -1) {
 		switch (c) {

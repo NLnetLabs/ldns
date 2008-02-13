@@ -248,7 +248,7 @@ ldns_dnssec_name_new_frm_rr(ldns_rr *rr)
 	ldns_dnssec_name *new_name = ldns_dnssec_name_new();
 
 	new_name->name = ldns_rr_owner(rr);
-	ldns_dnssec_name_add_rr_to_current(new_name, rr);
+	ldns_dnssec_name_add_rr(new_name, rr);
 
 	return new_name;
 }
@@ -303,28 +303,6 @@ ldns_dnssec_name_set_nsec(ldns_dnssec_name *rrset, ldns_rr *nsec)
 	if (rrset && nsec) {
 		rrset->nsec = nsec;
 	}
-}
-
-ldns_status
-ldns_dnssec_name_add_rr_to_current(ldns_dnssec_name *name,
-							ldns_rr *rr)
-{
-	ldns_dnssec_rrsets *new_rrsets;
-	ldns_status result = LDNS_STATUS_OK;
-
-	if (!name || !rr) {
-		return LDNS_STATUS_ERR;
-	}
-
-	if (name->rrsets) {
-		result = ldns_dnssec_rrsets_add_rr(name->rrsets, rr);
-	} else {
-		new_rrsets = ldns_dnssec_rrsets_new();
-		result = ldns_dnssec_rrsets_add_rr(new_rrsets, rr);
-		name->rrsets = new_rrsets;
-	}
-
-	return result;
 }
 
 int
@@ -392,7 +370,13 @@ ldns_dnssec_name_add_rr(ldns_dnssec_name *name,
 			name->nsec_signatures->rr = rr;
 		}
 	} else {
-		result = ldns_dnssec_name_add_rr_to_current(name, rr);
+		/* it's a 'normal' RR, add it to the right rrset */
+		if (name->rrsets) {
+			result = ldns_dnssec_rrsets_add_rr(name->rrsets, rr);
+		} else {
+			name->rrsets = ldns_dnssec_rrsets_new();
+			result = ldns_dnssec_rrsets_add_rr(name->rrsets, rr);
+		}
 	}
 
 	if (hashed_name) {

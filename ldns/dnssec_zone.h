@@ -222,13 +222,25 @@ void
 ldns_dnssec_name_set_nsec(ldns_dnssec_name *name, ldns_rr *nsec);
 
 /**
+ * Compares the domain names of the two arguments in their
+ * canonical ordening.
  * 
+ * \param[in] a The first dnssec_name to compare
+ * \param[in] b The second dnssec_name to compare
+ * \return -1 if the domain name of a comes before that of b in canonical
+ *            ordening, 1 if it is the other way around, and 0 if they are
+ *            equal
  */
-ldns_status
-ldns_dnssec_name_add_rr_to_current(ldns_dnssec_name *name,
-								 ldns_rr *rr);
+int
+ldns_dnssec_name_cmp(const void *a, const void *b);
+
 /**
+ * Inserts the given rr at the right place in the current dnssec_name
+ * No checking is done whether the name matches
  *
+ * \param[in] name The ldns_dnssec_name to add the RR to
+ * \param[in] rr The RR to add
+ * \return LDNS_STATUS_OK on success, error code otherwise
  */
 ldns_status
 ldns_dnssec_name_add_rr(ldns_dnssec_name *name,

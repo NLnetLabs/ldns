@@ -19,7 +19,7 @@
 #include <openssl/md5.h>
 
 
-/*
+/**
  * use this function to sign with a public/private key alg
  * return the created signatures
  */
@@ -190,14 +190,14 @@ ldns_sign_public(ldns_rr_list *rrset, ldns_key_list *keys)
 			case LDNS_SIGN_RSASHA256_NSEC3:
 				b64rdf = ldns_sign_public_evp(sign_buf, ldns_key_evp_key(current_key), EVP_sha256());
 				break;
-#endif
+#endif  /* SHA256_DIGEST_LENGTH */
 #ifdef SHA512_DIGEST_LENGTH
 			case LDNS_SIGN_RSASHA512:
 			case LDNS_SIGN_RSASHA512_NSEC3:
 				b64rdf = ldns_sign_public_evp(sign_buf, ldns_key_evp_key(current_key), EVP_sha512());
 
 				break;
-#endif
+#endif /* SHA512_DIGEST_LENGTH */
 			case LDNS_SIGN_RSAMD5:
 				b64rdf = ldns_sign_public_evp(sign_buf, ldns_key_evp_key(current_key), EVP_md5());
 				break;
@@ -223,6 +223,14 @@ ldns_sign_public(ldns_rr_list *rrset, ldns_key_list *keys)
 	return signatures;
 }
 
+/**
+ * Sign data with DSA
+ *
+ * \param[in] to_sign The ldns_buffer containing raw data that is
+ *                    to be signed
+ * \param[in] key The DSA key structure to sign with
+ * \return ldns_rdf for the RRSIG ldns_rr
+ */
 ldns_rdf *
 ldns_sign_public_dsa(ldns_buffer *to_sign, DSA *key)
 {
@@ -390,8 +398,7 @@ ldns_sign_public_rsamd5(ldns_buffer *to_sign, RSA *key)
 
 ldns_status
 ldns_dnssec_zone_create_nsecs(ldns_dnssec_zone *zone,
-						ldns_rr_list *new_rrs,
-						ldns_rr_type nsec_type)
+						ldns_rr_list *new_rrs)
 {
 	ldns_rbnode_t *first_name_node;
 	ldns_rbnode_t *current_name_node;
@@ -410,33 +417,25 @@ ldns_dnssec_zone_create_nsecs(ldns_dnssec_zone *zone,
 	current_name_node = first_name_node;
 	current_name = first_name;
 
-	switch (nsec_type) {
-	case LDNS_RR_TYPE_NSEC:
-		while (ldns_rbtree_next(current_name_node) != LDNS_RBTREE_NULL) {
-			nsec_rr = ldns_dnssec_create_nsec(current_name,
-									    (ldns_dnssec_name *) ldns_rbtree_next(current_name_node)->data,
-									    nsec_type);
-			ldns_dnssec_name_add_rr(current_name, nsec_rr);
-			ldns_rr_list_push_rr(new_rrs, nsec_rr);
-			current_name_node = ldns_rbtree_next(current_name_node);
-			current_name = (ldns_dnssec_name *) current_name_node->data;
-		}
+	while (ldns_rbtree_next(current_name_node) != LDNS_RBTREE_NULL) {
 		nsec_rr = ldns_dnssec_create_nsec(current_name,
-								    first_name,
-								    nsec_type);
-		result = ldns_dnssec_name_add_rr(current_name, nsec_rr);
-		if (result != LDNS_STATUS_OK) {
-			return result;
-		}
+								    (ldns_dnssec_name *) ldns_rbtree_next(current_name_node)->data,
+								    LDNS_RR_TYPE_NSEC);
+		ldns_dnssec_name_add_rr(current_name, nsec_rr);
 		ldns_rr_list_push_rr(new_rrs, nsec_rr);
-		break;
-	case LDNS_RR_TYPE_NSEC3:
-		/*TODO separate function*/
-		break;
-	default:
-		return LDNS_STATUS_ERR;
+		current_name_node = ldns_rbtree_next(current_name_node);
+		current_name = (ldns_dnssec_name *) current_name_node->data;
 	}
-
+	nsec_rr = ldns_dnssec_create_nsec(current_name,
+							    first_name,
+							    LDNS_RR_TYPE_NSEC);
+	result = ldns_dnssec_name_add_rr(current_name, nsec_rr);
+	if (result != LDNS_STATUS_OK) {
+		return result;
+	}
+	ldns_rr_list_push_rr(new_rrs, nsec_rr);
+	
+	
 	return result;
 }
 
@@ -652,7 +651,7 @@ ldns_dnssec_zone_sign(ldns_dnssec_zone *zone,
 	
 	/* check whether we need to add nsecs */
 	if (zone->names && !((ldns_dnssec_name *)zone->names->root->data)->nsec) {
-		result = ldns_dnssec_zone_create_nsecs(zone, new_rrs, LDNS_RR_TYPE_NSEC);
+		result = ldns_dnssec_zone_create_nsecs(zone, new_rrs);
 		if (result != LDNS_STATUS_OK) {
 			return result;
 		}

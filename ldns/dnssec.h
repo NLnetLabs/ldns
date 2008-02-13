@@ -11,10 +11,11 @@
 /**
  * \file dnssec.h
  *
- * This module contains functions for DNSSEC operations (RFC4033 t/m RFC4035).
+ * This module contains base functions for DNSSEC operations
+ * (RFC4033 t/m RFC4035).
  * 
- * Since those functions heavily rely op cryptographic operations, this module is
- * dependent on openssl.
+ * Since those functions heavily rely op cryptographic operations,
+ * this module is dependent on openssl.
  * 
  */
  
@@ -45,10 +46,17 @@
 #define LDNS_SIGNATURE_REMOVE_NO_ADD 3
 
 /**
- * Returns the first RRSIG rr that corresponds to the rrset with the given name and type
+ * Returns the first RRSIG rr that corresponds to the rrset 
+ * with the given name and type
  * TODO: may be more, use all sigs...
+ * \param[in] name The dname of the RRset covered by the RRSIG to find
+ * \param[in] type The type of the RRset covered by the RRSIG to find
+ * \returns Pointer to the first RRsig ldns_rr found, or NULL if it is
+ * not present
  */
-ldns_rr *ldns_dnssec_get_rrsig_for_name_and_type(const ldns_rdf *name, const ldns_rr_type type, const ldns_rr_list *rrs);
+ldns_rr *ldns_dnssec_get_rrsig_for_name_and_type(const ldns_rdf *name,
+									    const ldns_rr_type type,
+									    const ldns_rr_list *rrs);
 
 /**
  * Returns the DNSKEY that corresponds to the given RRSIG rr from the list, if
