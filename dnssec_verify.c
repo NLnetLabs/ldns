@@ -1210,6 +1210,7 @@ ldns_dnssec_verify_denial_nsec3(ldns_rr *rr,
 	ldns_rdf *zone_name;
 	ldns_rdf *hashed_name;
 	size_t i;
+	ldns_status result = LDNS_STATUS_DNSSEC_NSEC_RR_NOT_COVERED;
 
 	rrsigs = rrsigs;
 	
@@ -1242,15 +1243,19 @@ ldns_dnssec_verify_denial_nsec3(ldns_rr *rr,
 				printf("[XX] wildcard covered\n");
 				wildcard_covered = true;
 			}
+			ldns_rdf_deep_free(hashed_wildcard_name);
 		}
 
+		ldns_rdf_deep_free(closest_encloser);
+		ldns_rdf_deep_free(wildcard);
+
 		if (!wildcard_covered) {
-			return LDNS_STATUS_DNSSEC_NSEC_WILDCARD_NOT_COVERED;
+			result = LDNS_STATUS_DNSSEC_NSEC_WILDCARD_NOT_COVERED;
+		} else if (closest_encloser && wildcard_covered) {
+			result = LDNS_STATUS_OK;
+		} else {
+			result = LDNS_STATUS_DNSSEC_NSEC_RR_NOT_COVERED;
 		}
-		if (closest_encloser && wildcard_covered) {
-			return LDNS_STATUS_OK;
-		}
-		return LDNS_STATUS_DNSSEC_NSEC_RR_NOT_COVERED;
 	} else if (packet_nodata && packet_qtype != LDNS_RR_TYPE_DS) {
 		/* section 8.5 */
 		hashed_name = ldns_nsec3_hash_name_frm_nsec3(ldns_rr_list_rr(nsecs, 0),
@@ -1265,18 +1270,18 @@ ldns_dnssec_verify_denial_nsec3(ldns_rr *rr,
 				if (!ldns_nsec_bitmap_covers_type(ldns_nsec3_bitmap(ldns_rr_list_rr(nsecs, i)), packet_qtype) && 
 				    !ldns_nsec_bitmap_covers_type(ldns_nsec3_bitmap(ldns_rr_list_rr(nsecs, i)), LDNS_RR_TYPE_CNAME)) {
 					printf("exact match!\n");
-					return LDNS_STATUS_OK;
+					result = LDNS_STATUS_OK;
+					goto done;
 				}
 			}
 		}
-		return LDNS_STATUS_DNSSEC_NSEC_RR_NOT_COVERED;
+		result = LDNS_STATUS_DNSSEC_NSEC_RR_NOT_COVERED;
 	} else if (packet_nodata && packet_qtype == LDNS_RR_TYPE_DS) {
 		/* section 8.6 */
 		/* note: up to XXX this is the same as for 8.5 */
 		hashed_name = ldns_nsec3_hash_name_frm_nsec3(ldns_rr_list_rr(nsecs, 0),
 											ldns_rr_owner(rr)
 											);
-		zone_name = ldns_dname_left_chop(ldns_rr_owner(ldns_rr_list_rr(nsecs,0)));
 		ldns_dname_cat(hashed_name, zone_name);
 		printf("[XX] hashed name: ");
 		ldns_rdf_print(stdout, hashed_name);
@@ -1286,7 +1291,8 @@ ldns_dnssec_verify_denial_nsec3(ldns_rr *rr,
 				if (!ldns_nsec_bitmap_covers_type(ldns_nsec3_bitmap(ldns_rr_list_rr(nsecs, i)), LDNS_RR_TYPE_DS) && 
 				    !ldns_nsec_bitmap_covers_type(ldns_nsec3_bitmap(ldns_rr_list_rr(nsecs, i)), LDNS_RR_TYPE_CNAME)) {
 					printf("exact match!\n");
-					return LDNS_STATUS_OK;
+					result = LDNS_STATUS_OK;
+					goto done;
 				}
 			}
 		}
@@ -1302,10 +1308,13 @@ ldns_dnssec_verify_denial_nsec3(ldns_rr *rr,
 			printf("\n");
 			exit(0);
 		}
-		return LDNS_STATUS_DNSSEC_NSEC_RR_NOT_COVERED;
+		result = LDNS_STATUS_DNSSEC_NSEC_RR_NOT_COVERED;
 		
 	}
-	return LDNS_STATUS_DNSSEC_NSEC_RR_NOT_COVERED;
+
+ done:
+	ldns_rdf_deep_free(zone_name);
+	return result;
 }
 
 ldns_status
