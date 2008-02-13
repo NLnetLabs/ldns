@@ -26,12 +26,12 @@ location. Multiple keys can be specified.
 
 .SH OPTIONS
 .TP
-\fB-e\f  \fIdate\fR
+\fB-e\fR \fIdate\fR
 Set expiration date of the signatures to this date, the format can be
 YYYYMMDD[hhmmss], or a timestamp.
 
 .TP
-\fB-f\f  \fIfile\fR
+\fB-f\fR \fIfile\fR
 Use this file to store the signed zone in (default <originalfile>.signed)
 
 .TP
@@ -44,7 +44,7 @@ YYYYMMDD[hhmmss], or a timestamp.
 Leave old DNSSEC RRSIGS and NSEC records intact (by default, they are removed from the zone)
 
 .TP
-\fB-o\f  \fIorigin\fR
+\fB-o\fR \fIorigin\fR
 Use this as the origin of the zone, if it cannot be read from the zonefile
 
 .TP
@@ -52,16 +52,16 @@ Use this as the origin of the zone, if it cannot be read from the zonefile
 Print the version and exit
 
 .TP
-\fB-E\f  \fIname\fR
+\fB-E\fR \fIname\fR
 Use the EVP cryptographic engine with the given name for signing. This can have some extra options; see ENGINE OPTIONS for more information.
 
 
 .TP
-\fB-k\f  \fIid,int\fR
+\fB-k\fR \fIid,int\fR
 Use the key with the given id as the signing key for algorithm int as a Zone signing key.
 
 .TP
-\fB-K\f  \fIid,int\fR
+\fB-K\fR \fIid,int\fR
 Use the key with the given id as the signing key for algorithm int as a Key signing key.
 
 

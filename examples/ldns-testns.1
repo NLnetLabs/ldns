@@ -3,7 +3,6 @@
 .Sh NAME
 ldns-testns
 .Nd simple fake nameserver tool
-
 .Sh SYNOPSIS
 .Nm ldns-testns
 .Op Fl r
@@ -12,64 +11,64 @@ ldns-testns
 .Op Fl v
 .Op Fl 6
 datafile
-
+.Pp
 .Sh DESCRIPTION
 .Ic ldns-testns 
 can be used to provide answers to DNS queries for testing.
 The answers are premade, and can be tailored to testing needs. The answers
 can be wildly invalid or unparseable.
-
+.Pp
 This program is a debugging aid. It is not efficient, especially
 with a long config file, but it can give any reply to any query.
 This can help the developer pre-script replies for queries.
-
+.Pp
 It listens to IP4 UDP and TCP by default.
 You can specify a packet RR by RR with header flags to return.
-
+.Pp
 ldns-testns is not meant for production use.
-
+.Pp
 .Sh OPTIONS
 .Pp
 .Bl -tag -width indent
 .It Fl r
 Listens to a random port. The port number is printed to stdout.
-
+.Pp
 .It Fl p Ar port
 Listens to the specified port.
-
+.Pp
 .It Fl f Ar num
 Forks this number of additional instances that serve the same ports and
 same datafile. They do not exit; printed is 'forked pid: <num>' and you
 have to kill them yourself.
-
+.Pp
 .It Fl v
 Outputs more debug information. It is possible to give this option multiple 
 times to increase verbosity level.
-
+.Pp
 .It Fl 6
 Bind to IP6 address instead of IP4. Use together with -p. 
-
+.Pp
 .It datafile
 The data file is read on start up. It contains queries and the packets 
 that should be sent in answer to those queries. The data file format is
 explained below.
-
+.Pp
 .El
 .Pp
 .Sh DATA FILE FORMAT
-
+.Pp
 The data file format has ';' to denote comment. A number of entries
 are processed first to last. The first matching entry is used to answer
 the query with. This is a line based format. DNS resource records
 are entered in zone-file format.
-
+.Pp
 You can use $ORIGIN and $TTL directives. Zone file '(' and ')' to span
 multiple lines are not allowed.
-
+.Pp
 $ORIGIN origin
 .br
 $TTL default_ttl
-
+.Pp
 ENTRY_BEGIN
 .br
 ; first give MATCH lines, that say what queries are matched
@@ -150,13 +149,11 @@ HEX_ANSWER_BEGIN        ; follow with hex data
 HEX_ANSWER_END
 .br
 ENTRY_END
-
+.Pp
 .Sh AUTHOR
 Written by the ldns team as an example for ldns usage, and for testing purposes.
-
 .Sh REPORTING BUGS
 Report bugs to <ldns-team@nlnetlabs.nl>. 
-
 .Sh COPYRIGHT
 Copyright (C) 2006 NLnet Labs. This is free software. There is NO
 warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR
