@@ -1205,6 +1205,7 @@ ldns_dnssec_verify_denial_nsec3(ldns_rr *rr,
 {
 	ldns_rdf *closest_encloser;
 	ldns_rdf *wildcard;
+	ldns_rdf *hashed_wildcard_name;
 	bool wildcard_covered = false;
 	ldns_rdf *zone_name;
 	ldns_rdf *hashed_name;
@@ -1212,6 +1213,8 @@ ldns_dnssec_verify_denial_nsec3(ldns_rr *rr,
 
 	rrsigs = rrsigs;
 	
+	zone_name = ldns_dname_left_chop(ldns_rr_owner(ldns_rr_list_rr(nsecs,0)));
+
 	/* section 8.4 */
 	if (packet_rcode == LDNS_RCODE_NXDOMAIN) {
 		closest_encloser = ldns_dnssec_nsec3_closest_encloser(ldns_rr_owner(rr),
@@ -1228,8 +1231,14 @@ ldns_dnssec_verify_denial_nsec3(ldns_rr *rr,
 		ldns_dname_cat(wildcard, closest_encloser);
 
 		for (i = 0; i < ldns_rr_list_rr_count(nsecs); i++) {
+			hashed_wildcard_name = 
+				ldns_nsec3_hash_name_frm_nsec3(ldns_rr_list_rr(nsecs, 0),
+										 wildcard
+										 );
+			ldns_dname_cat(hashed_wildcard_name, zone_name);
+
 			if (ldns_nsec_covers_name(ldns_rr_list_rr(nsecs, i),
-								 wildcard)) {
+								 hashed_wildcard_name)) {
 				printf("[XX] wildcard covered\n");
 				wildcard_covered = true;
 			}
@@ -1247,7 +1256,6 @@ ldns_dnssec_verify_denial_nsec3(ldns_rr *rr,
 		hashed_name = ldns_nsec3_hash_name_frm_nsec3(ldns_rr_list_rr(nsecs, 0),
 											ldns_rr_owner(rr)
 											);
-		zone_name = ldns_dname_left_chop(ldns_rr_owner(ldns_rr_list_rr(nsecs,0)));
 		ldns_dname_cat(hashed_name, zone_name);
 		printf("[XX] hashed name: ");
 		ldns_rdf_print(stdout, hashed_name);
