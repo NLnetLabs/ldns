@@ -96,7 +96,7 @@ ldns_nsec_get_bitmap(ldns_rr *nsec) {
 /*return the owner name of the closest encloser for name from the list of rrs */
 /* this is NOT the hash, but the original name! */
 /* XXX tmp: verbosity */
-int verbosity = 5;
+static int verbosity = 5;
 
 ldns_rdf *
 ldns_dnssec_nsec3_closest_encloser(ldns_rdf *qname,
