@@ -100,6 +100,9 @@ $(addprefix include/ldns/, $(notdir $(LIBDNS_HEADERS))): include/ldns/%.h: $(src
 
 copy-headers:	$(addprefix include/ldns/, $(notdir $(LIBDNS_HEADERS)))
 
+mancheck:
+		sh -c 'find . -name \*.\[13\] -exec troff -z {} \;' 2>&1 | sed "s/^\.\///" | sed "s/\(:[0\-9]\+:\)/\1 warning:/g"
+
 doc:		$(srcdir)/doc/function_manpages 
 		$(INSTALL) -d doc
 ifdef doxygen

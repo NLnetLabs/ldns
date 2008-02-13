@@ -618,13 +618,14 @@ ldns_dnssec_zone_create_rrsigs(ldns_dnssec_zone *zone,
 			}
 		}
 
+		/*
 		printf("[XX] Verifying signature for: ");
 		ldns_rdf_print(stdout, cur_name->name);
 		printf("\n");
 		ldns_rr_list_print(stdout, rr_list);
 		result = ldns_verify(rr_list, siglist, pubkey_list, NULL);
 		printf("%s\n", ldns_get_errorstr_by_id(result));
-
+		*/
 		ldns_rr_list_free(siglist);
 		ldns_rr_list_free(rr_list);
 
