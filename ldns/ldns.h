@@ -90,6 +90,8 @@ Or you can just use the menu above to browse through the API docs.
 #define LDNS_DNS_H
 
 #include <stdio.h>
+#include <stdlib.h>
+#include <inttypes.h>
 
 #include <ldns/util.h>
 #include <ldns/buffer.h>
