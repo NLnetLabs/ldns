@@ -48,9 +48,10 @@
 /**
  * Returns the first RRSIG rr that corresponds to the rrset 
  * with the given name and type
- * TODO: may be more, use all sigs...
+ * 
  * \param[in] name The dname of the RRset covered by the RRSIG to find
  * \param[in] type The type of the RRset covered by the RRSIG to find
+ * \param[in] rrs List of rrs to search in
  * \returns Pointer to the first RRsig ldns_rr found, or NULL if it is
  * not present
  */

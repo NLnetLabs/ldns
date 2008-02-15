@@ -119,7 +119,7 @@ void ldns_dnssec_trust_tree_free(ldns_dnssec_trust_tree *tree);
 /**
  * returns the depth of the trust tree
  *
- * \param[in] The tree to calculate the depth of
+ * \param[in] tree tree to calculate the depth of
  * \return The depth of the tree
  */
 size_t ldns_dnssec_trust_tree_depth(ldns_dnssec_trust_tree *tree);

@@ -30,6 +30,8 @@ ldns_rdf *ldns_sign_public_dsa(ldns_buffer *to_sign, DSA *key);
  * \param[in] to_sign The ldns_buffer containing raw data that is
  *                    to be signed
  * \param[in] key The EVP_PKEY key structure to sign with
+ * \param[in] digest_type The digest algorithm to use in the creation of
+ *                        the signature
  * \return ldns_rdf for the RRSIG ldns_rr
  */
 ldns_rdf *ldns_sign_public_evp(ldns_buffer *to_sign,
@@ -57,7 +59,7 @@ ldns_rdf *ldns_sign_public_rsamd5(ldns_buffer *to_sign, RSA *key);
  * Adds NSEC records to the given dnssec_zone
  *
  * \param[in] zone the zone to add the records to
- * \param[in] new ldns_rr's created by this function are
+ * \param[in] new_rrs ldns_rr's created by this function are
  *            added to this rr list, so the caller can free them later
  * \return LDNS_STATUS_OK on success, an error code otherwise
  */
@@ -73,6 +75,9 @@ ldns_dnssec_zone_create_nsecs(ldns_dnssec_zone *zone,
  *            callback
  * \param[in] key_list these are marked to be used or not,
  *            on the return value of the callback
+ * \param[in] func this function is called to specify what to
+ *            do with each signature (and corresponding key)
+ * \param[in] arg Optional argument for the callback function
  * \returns pointer to the new signatures rrs (the original
  *          passed to this function may have been removed)
  */
@@ -86,7 +91,7 @@ ldns_dnssec_remove_signatures(ldns_dnssec_rrs *signatures,
  * Adds signatures to the zone
  *
  * \param[in] zone the zone to add RRSIG Resource Records to
- * \param[in] new_rss The RRSIG RRs that are created are also
+ * \param[in] new_rrs the RRSIG RRs that are created are also
  *            added to this list, so the caller can free them
  *            later
  * \param[in] key_list list of keys to sign with.
