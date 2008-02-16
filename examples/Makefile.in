@@ -107,8 +107,17 @@ install:	$(PROGRAMS)
 			$(INSTALL) -c -m 644 $(srcdir)/$$i.1 $(DESTDIR)$(mandir)/man1/$$i.1 ; \
 			done
 		exit 0
-
-
+ 
+install-static:	all-static
+		$(INSTALL) -d -m 755 $(DESTDIR)$(bindir)
+		$(INSTALL) -d -m 755 $(DESTDIR)$(mandir)
+		$(INSTALL) -d -m 755 $(DESTDIR)$(mandir)/man1
+		for i in $(PROGRAMS); do \
+			$(libtool) --tag=CC --mode=install ${INSTALL} -c $$i.stc $(DESTDIR)$(bindir) ; \
+			$(INSTALL) -c -m 644 $(srcdir)/$$i.1 $(DESTDIR)$(mandir)/man1/$$i.1 ; \
+			done
+		exit 0
+		
 uninstall:
 		for i in $(PROGRAMS); do \
 			rm -f $(DESTDIR)$(bindir)/$$i ; \
