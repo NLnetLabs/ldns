@@ -93,36 +93,6 @@ AC_CHECK_HEADERS(sys/param.h sys/mount.h,,, [AC_INCLUDES_DEFAULT]
 ])
 
 CHECK_COMPILER_FLAG(O2, [CFLAGS="$CFLAGS -O2"])
-CHECK_COMPILER_FLAG_NEEDED(-std=c99 -D__EXTENSIONS__ -D_BSD_SOURCE -D_POSIX_C_SOURCE=200112 -D_XOPEN_SOURCE=600,
-[
-#include "confdefs.h"
-#include <stdlib.h>
-#include <ctype.h>
-#include <sys/time.h>
-#ifdef HAVE_TIME_H
-#include <time.h>
-#endif
-#include <unistd.h>
-#ifdef HAVE_GETOPT_H
-#include <getopt.h>
-#endif
-
-int test() {
-        int a;
-        char **opts = NULL;
-        struct timeval tv;
-        char *t;
-        time_t time = 0;
-        char *buf = NULL;
-        t = ctime_r(&time, buf);
-        tv.tv_usec = 10;
-        srandom(32);
-        a = getopt(2, opts, "a");
-        a = isascii(32);
-        return a;
-}
-], [CFLAGS="$CFLAGS -std=c99 -D__EXTENSIONS__ -D_BSD_SOURCE -D_POSIX_C_SOURCE=200112 -D_XOPEN_SOURCE=600"])
-
 CHECK_COMPILER_FLAG_NEEDED(-std=c99, [#include <stdbool.h>], [CFLAGS="$CFLAGS -std=c99"])
 CHECK_COMPILER_FLAG_NEEDED(-D_POSIX_C_SOURCE=200112, 
 [
@@ -155,6 +125,37 @@ int test() {
         return a;
 }
 ], [CFLAGS="$CFLAGS -D__EXTENSIONS__"])
+
+CHECK_COMPILER_FLAG_NEEDED(-std=c99 -D__EXTENSIONS__ -D_BSD_SOURCE -D_POSIX_C_SOURCE=200112 -D_XOPEN_SOURCE=600,
+[
+#include "confdefs.h"
+#include <stdlib.h>
+#include <ctype.h>
+#include <sys/time.h>
+#ifdef HAVE_TIME_H
+#include <time.h>
+#endif
+#include <unistd.h>
+#ifdef HAVE_GETOPT_H
+#include <getopt.h>
+#endif
+
+int test() {
+        int a;
+        char **opts = NULL;
+        struct timeval tv;
+        char *t;
+        time_t time = 0;
+        char *buf = NULL;
+        t = ctime_r(&time, buf);
+        tv.tv_usec = 10;
+        srandom(32);
+        a = getopt(2, opts, "a");
+        a = isascii(32);
+        return a;
+}
+], [CFLAGS="$CFLAGS -std=c99 -D__EXTENSIONS__ -D_BSD_SOURCE -D_POSIX_C_SOURCE=200112 -D_XOPEN_SOURCE=600"])
+
 
 AC_ARG_WITH(ssl, AC_HELP_STRING([--with-ssl=pathname],
                                     [enable SSL (will check /usr/local/ssl
