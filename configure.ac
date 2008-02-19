@@ -5,7 +5,7 @@ AC_PREREQ(2.57)
 AC_INIT(libdns, 1.3.0, libdns@nlnetlabs.nl, libdns)
 AC_CONFIG_SRCDIR([packet.c])
 # needed to build correct soname
-AC_SUBST(LIBTOOL_VERSION_INFO, "4:0:3")
+AC_SUBST(LIBTOOL_VERSION_INFO, "1:3:0")
 
 PACKAGE_VERSION="$PACKAGE_VERSION"
 
