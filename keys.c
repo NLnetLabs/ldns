@@ -139,23 +139,35 @@ ldns_key_new_frm_fp_l(ldns_key **key, FILE *fp, int *line_nr)
 	if (strncmp(d, "1 RSA", 2) == 0) {
 		alg = LDNS_SIGN_RSAMD5;
 	}
+	if (strncmp(d, "2 DH", 2) == 0) {
+		alg = LDNS_DH; 
+	}
 	if (strncmp(d, "3 DSA", 2) == 0) {
 		alg = LDNS_SIGN_DSA; 
 	}
-	if (strncmp(d, "131 DSA", 4) == 0) {
-		alg = LDNS_DSA_NSEC3; 
+	if (strncmp(d, "4 ECC", 2) == 0) {
+		alg = LDNS_ECC; 
 	}
 	if (strncmp(d, "5 RSASHA1", 2) == 0) {
 		alg = LDNS_SIGN_RSASHA1;
 	}
-	if (strncmp(d, "6 RSASHA256", 2) == 0) {
+	if (strncmp(d, "6 DSA", 4) == 0) {
+		alg = LDNS_DSA_NSEC3; 
+	}
+	if (strncmp(d, "7 RSASHA1", 4) == 0) {
+		alg = LDNS_RSASHA1_NSEC3;
+	}
+	if (strncmp(d, "8 RSASHA256", 2) == 0) {
 		alg = LDNS_SIGN_RSASHA256;
 	}
-	if (strncmp(d, "7 RSASHA512", 2) == 0) {
+	if (strncmp(d, "9 RSASHA512", 2) == 0) {
 		alg = LDNS_SIGN_RSASHA512;
 	}
-	if (strncmp(d, "133 RSASHA1", 4) == 0) {
-		alg = LDNS_RSASHA1_NSEC3;
+	if (strncmp(d, "10 RSASHA256", 3) == 0) {
+		alg = LDNS_SIGN_RSASHA256_NSEC3;
+	}
+	if (strncmp(d, "11 RSASHA512", 3) == 0) {
+		alg = LDNS_SIGN_RSASHA512_NSEC3;
 	}
 	if (strncmp(d, "157 HMAC-MD5", 4) == 0) {
 		alg = LDNS_SIGN_HMACMD5;
