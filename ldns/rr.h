@@ -674,7 +674,7 @@ ldns_rr_list* ldns_rr_list_clone(const ldns_rr_list *rrlist);
 void ldns_rr_list_sort(ldns_rr_list *unsorted);
 
 /**
- * compares two rrs.
+ * compares two rrs. The TTL is not looked at.
  * \param[in] rr1 the first one
  * \param[in] rr2 the second one
  * \return 0 if equal
