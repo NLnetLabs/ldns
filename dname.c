@@ -431,8 +431,8 @@ ldns_dname_label(const ldns_rdf *rdf, uint8_t labelpos)
 			tmpnew->_type = LDNS_RDF_TYPE_DNAME;
 			tmpnew->_data = LDNS_XMALLOC(uint8_t, len + 2);
 			memset(tmpnew->_data, 0, len + 2);
-			memcpy(tmpnew->_data, ldns_rdf_data(rdf) + src_pos, len + 2);
-			tmpnew->_size = len + 1;
+			memcpy(tmpnew->_data, ldns_rdf_data(rdf) + src_pos, len + 1);
+			tmpnew->_size = len + 2;
 			return tmpnew;
 		}
 		src_pos++;
