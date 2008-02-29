@@ -533,10 +533,7 @@ ldns_dnssec_zone_create_rrsigs(ldns_dnssec_zone *zone,
 						 void *arg)
 {
 	ldns_status result = LDNS_STATUS_OK;
-	zone = zone;
-	new_rrs = new_rrs;
-	key_list = key_list;
-	//bool sign_list = true;
+	/*bool sign_list = true;*/
 	ldns_rbnode_t *cur_node;
 	ldns_rr_list *rr_list;
 
@@ -549,6 +546,9 @@ ldns_dnssec_zone_create_rrsigs(ldns_dnssec_zone *zone,
 	size_t i;
 
 	ldns_rr_list *pubkey_list = ldns_rr_list_new();
+	zone = zone;
+	new_rrs = new_rrs;
+	key_list = key_list;
 	for (i = 0; i<ldns_key_list_key_count(key_list); i++) {
 		ldns_rr_list_push_rr(pubkey_list, ldns_key2rr(ldns_key_list_key(key_list, i)));
 	}

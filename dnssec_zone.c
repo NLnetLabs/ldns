@@ -329,14 +329,14 @@ ldns_dnssec_name_add_rr(ldns_dnssec_name *name,
 				    ldns_rr *rr)
 {
 	ldns_status result = LDNS_STATUS_OK;
-	name = name;
-	rr = rr;
 	ldns_rdf *name_name;
 	bool hashed_name = false;
-
-	/* special handling for NSEC3 and NSECX covering RRSIGS */
 	ldns_rr_type rr_type = ldns_rr_get_type(rr);
 	ldns_rr_type typecovered = 0;
+	name = name;
+	rr = rr;
+
+	/* special handling for NSEC3 and NSECX covering RRSIGS */
 
 	if (!name || !rr) {
 		return LDNS_STATUS_ERR;
