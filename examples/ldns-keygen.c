@@ -90,7 +90,7 @@ main(int argc, char *argv[])
 			}
 			lt = ldns_signing_algorithms;
 			while (lt->name) {
-				if (strncmp(lt->name, optarg, strlen(lt->name)) == 0) {
+				if (strncasecmp(lt->name, optarg, strlen(lt->name)) == 0) {
 					algorithm = lt->id;
 				}
 				lt++;

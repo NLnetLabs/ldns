@@ -1156,19 +1156,19 @@ ldns_key2buffer_str(ldns_buffer *output, const ldns_key *k)
 				ldns_buffer_printf(output,"Private-key-format: v1.2\n");
 				switch(ldns_key_algorithm(k)) {
 				case LDNS_SIGN_RSAMD5:
-					ldns_buffer_printf(output,"Algorithm: 1 (RSA)\n");
+					ldns_buffer_printf(output,"Algorithm: %u (RSA)\n", LDNS_RSAMD5);
 					break;
 				case LDNS_SIGN_RSASHA1:
 				case LDNS_SIGN_RSASHA1_NSEC3:
-					ldns_buffer_printf(output,"Algorithm: 5 (RSASHA1)\n");
+					ldns_buffer_printf(output,"Algorithm: %u (RSASHA1)\n", LDNS_RSASHA1);
 					break;
 				case LDNS_SIGN_RSASHA256:
 				case LDNS_SIGN_RSASHA256_NSEC3:
-					ldns_buffer_printf(output,"Algorithm: 6 (RSASHA256)\n");
+					ldns_buffer_printf(output,"Algorithm: %u (RSASHA256)\n", LDNS_RSASHA256);
 					break;
 				case LDNS_SIGN_RSASHA512:
 				case LDNS_SIGN_RSASHA512_NSEC3:
-					ldns_buffer_printf(output,"Algorithm: 7 (RSASHA512)\n");
+					ldns_buffer_printf(output,"Algorithm: %u (RSASHA512)\n", LDNS_RSASHA512);
 					break;
 				default:
 					break;
