@@ -21,8 +21,8 @@ LDNSDIR = @LDNSDIR@
 INSTALL = $(srcdir)/../install-sh 
 
 COMPILE         = $(CC) $(CPPFLAGS) $(CFLAGS)
-LINK		= $(libtool) --tag=CC --mode=link $(CC) $(LDFLAGS) $(LIBS) $(RUNTIME_PATH)
-LINK_STATIC	= $(libtool) --tag=CC --mode=link $(CC) -static $(LDFLAGS) $(LIBS) $(RUNTIME_PATH)
+LINK		= $(libtool) --tag=CC --mode=link $(CC) $(CFLAGS) $(LDFLAGS) $(LIBS) $(RUNTIME_PATH)
+LINK_STATIC	= $(libtool) --tag=CC --mode=link $(CC) $(CFLAGS) -static $(LDFLAGS) $(LIBS) $(RUNTIME_PATH)
 
 LINT		= splint
 LINTFLAGS	= +quiet -weak -warnposix -unrecog -formatcode -Din_addr_t=uint32_t -Du_int=unsigned -Du_char=uint8_t -D__u16=uint16_t -D__u32=uint32_t -preproc
