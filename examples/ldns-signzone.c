@@ -259,7 +259,6 @@ main(int argc, char *argv[])
 				printf("help\n");
 				exit(EXIT_SUCCESS);
 			}
-			ENGINE_load_openssl();
 			ENGINE_load_builtin_engines();
 			ENGINE_load_dynamic();
 			ENGINE_load_cryptodev();
@@ -574,6 +573,10 @@ main(int argc, char *argv[])
 		if (!ldns_key_pubkey_owner(key)) {
 			ldns_key_set_pubkey_owner(key, ldns_rdf_clone(origin));
 			pubkey = ldns_key2rr(key);
+			if (!key || !pubkey) {
+				fprintf(stderr, "Unknown key type; can't create public key RR. Aborting.\n");
+				exit(1);
+			}
 			ldns_key_set_flags(key, ldns_rdf2native_int16(ldns_rr_rdf(pubkey, 0)));
 			ldns_key_set_keytag(key, ldns_calc_keytag(pubkey));
 			/*ldns_zone_push_rr(orig_zone, pubkey);*/
