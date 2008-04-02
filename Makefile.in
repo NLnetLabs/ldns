@@ -15,9 +15,9 @@ libdir		= @libdir@
 includedir	= @includedir@
 doxygen		= @doxygen@
 glibtool	= @glibtool@
-libtool		= @libtool@
+libtool		= ./@libtool@
 ifdef glibtool
-libtool		= $(glibtool)
+libtool		= ./$(glibtool)
 endif
 
 CC 		= @CC@
