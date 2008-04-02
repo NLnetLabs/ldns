@@ -4,7 +4,9 @@ Contents:
 		libdns
 		examples
 		drill
-	KNOWN ISSUES
+	INFORMATION FOR SPECIFIC OPERATING SYSTEMS
+		Mac OS X
+		Solaris
 
 Project page:
 http://www.nlnetlabs.nl/ldns/
@@ -58,7 +60,7 @@ install the library.
 If you are building from the repository you will need to have (gnu)
 autotools like libtool and autoreconf installed. A list of all the commands
 needed to build everything can be found in README.svn. Note that the actual
-commands may be a little bit different on your machine.
+commands may be a little bit different on your machine. Most notable, you'll need to run libtoolize (or glibtoolize), if you skip this step, you'll get an error about missing config.sub.
 
 * Developers
 ldns is developed by the ldns team at NLnet Labs. This team currently
@@ -76,13 +78,24 @@ We have received patches from the following people, thanks!
   o Simon Vallet
 
 
-KNOWN ISSUES
+IFORMATION FOR SPECIFIC OPERATING SYSTEMS
 
-For MACOSX 10.4, it seems that you have to set the MACOSX_DEPLOYMENT_TARGET
-environment variable to 10.4 before running make. Apparently it defaults to
-10.1.
+MAC OS X
+
+For MACOSX 10.4 and later, it seems that you have to set the
+MACOSX_DEPLOYMENT_TARGET environment variable to 10.4 before running
+make. Apparently it defaults to 10.1.
 
 This appears to be a known problem in 10.2 to 10.4, see:
 http://developer.apple.com/qa/qa2001/qa1233.html
 for more information.
+
+
+SOLARIS
+
+In Solaris multi-architecture systems (that have both 32-bit and
+64-bit support), it can be a bit taxing to convince the system to
+compile in 64-bit mode. Jakob Schlyter has kindly contributed a build
+script that sets the right build and link options. You can find it in
+contrib/build-solaris.sh
 
