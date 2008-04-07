@@ -2,7 +2,7 @@
  * key2ds transforms a public key into its DS
  * It (currently) prints out the public key
  *
- * (c) NLnet Labs, 2005
+ * (c) NLnet Labs, 2005 - 2008
  * See the file LICENSE for the license
  */
 

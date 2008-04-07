@@ -2,7 +2,7 @@
  * ldns-dpa inspects the (udp) DNS packets found in a pcap file
  * and provides statistics about them
  * 
- * (C) NLnet Labs 2006
+ * (C) NLnet Labs 2006 - 2008
  *
  * See the file LICENSE for the license
  */

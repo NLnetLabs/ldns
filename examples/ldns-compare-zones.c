@@ -3,7 +3,7 @@
  * 
  * Written by Ondrej Sury in 2007
  * 
- * Modified a bit my NLnet Labs.
+ * Modified a bit by NLnet Labs.
  * 
  * See the file LICENSE for the license
  */

@@ -2,7 +2,7 @@
  * ldns-walk uses educated guesses and NSEC data to retrieve the
  * contents of a dnssec signed zone
  *
- * (c) NLnet Labs, 2005
+ * (c) NLnet Labs, 2005 - 2008
  * See the file LICENSE for the license
  */
 

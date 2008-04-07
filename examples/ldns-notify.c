@@ -1,7 +1,7 @@
 /* 
  * ldns-notify.c - ldns-notify(8)
  * 
- * Copyright (c) 2001-2005, NLnet Labs, All right reserved
+ * Copyright (c) 2001-2008, NLnet Labs, All right reserved
  *
  * See LICENSE for the license
  *

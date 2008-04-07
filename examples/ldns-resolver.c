@@ -2,7 +2,7 @@
  * ldns-resolver tries to create a resolver structure from /dev/urandom
  * this is only useful to test the library for robusteness with input data
  *
- * (c) NLnet Labs 2006
+ * (c) NLnet Labs 2006 - 2008
  * See the file LICENSE for the license
  */
 

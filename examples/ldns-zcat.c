@@ -1,15 +1,15 @@
 /*
- * read a zone from disk and split it up:
+ * read a zone that is split up with ldns-zsplit and re-create
+ * the original zone 
  *
- * zone: SOA a b c d e f g h i j k l 
- * becomes:
+ * From:
  * zone1: SOA a b c d e f
  * zone2: SOA f g h i k l
  *
- * ldns-catzone removes the last name and put
- * the zone back together.
+ * Go back to:
+ * zone: SOA a b c d e f g h i j k l 
  *
- * This way you can incremental sign a zone
+ * This is usefull in combination with ldns-zsplit
  *
  * See the file LICENSE for the license
  */

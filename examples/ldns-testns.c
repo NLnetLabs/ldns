@@ -4,7 +4,7 @@
  * Tiny dns server, that responds with specially crafted replies
  * to requests. For testing dns software.
  *
- * (c) NLnet Labs, 2005, 2006
+ * (c) NLnet Labs, 2005 - 2008
  * See the file LICENSE for the license
  */
 

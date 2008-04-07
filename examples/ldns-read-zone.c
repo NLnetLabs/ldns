@@ -1,6 +1,8 @@
 /*
  * read a zone file from disk and prints it, one RR per line
  *
+ * (c) NLnetLabs 2005-2008
+ *
  * See the file LICENSE for the license
  */
 

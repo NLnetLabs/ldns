@@ -3,7 +3,7 @@
  * It traces the authoritatives nameservers down from the root
  * And uses TCP, to minimize spoofing danger.
  *
- * (c) NLnet Labs, 2006
+ * (c) NLnet Labs, 2006 - 2008
  * See the file LICENSE for the license
  */
 

@@ -1,7 +1,7 @@
 /*
  * ldns-version shows ldns's version 
  *
- * (c) NLnet Labs, 2005
+ * (c) NLnet Labs, 2005 - 2008
  * See the file LICENSE for the license
  */
 
