@@ -488,6 +488,14 @@ ldns_dnssec_trust_tree_print_sm(FILE *out,
 					if (tree->parent_status[i] != LDNS_STATUS_OK) {
 						print_tabs(out, tabs + 1, sibmap, treedepth);
 						fprintf(out, "%s:\n", ldns_get_errorstr_by_id(tree->parent_status[i]));
+						if (tree->parent_status[i] == LDNS_STATUS_SSL_ERR) {
+							printf("; SSL Error: ");
+							ERR_load_crypto_strings();
+							ERR_print_errors_fp(stdout);
+							printf("\n");
+						} else {
+							printf("yo\n");
+						}
 						/*
 						  print_tabs(out, tabs + 1, sibmap, treedepth);
 						*/
@@ -1603,10 +1611,13 @@ ldns_convert_dsa_rrsig_rdata(ldns_buffer *target_buffer,
 	
 	raw_sig_len = i2d_DSA_SIG(dsasig, &raw_sig);
 	
-	/* todo reserve() */
 	if (ldns_buffer_reserve(target_buffer, raw_sig_len)) {
 		ldns_buffer_write(target_buffer, raw_sig, raw_sig_len);
 	}
+
+	DSA_SIG_free(dsasig);
+	free(raw_sig);
+
 	return ldns_buffer_status(target_buffer);
 }
 
@@ -1707,6 +1718,10 @@ ldns_verify_rrsig(ldns_rr_list *rrset, ldns_rr *rrsig, ldns_rr *key)
 	case LDNS_DSA_NSEC3:
 		if (ldns_convert_dsa_rrsig_rdata(rawsig_buf,
 								   ldns_rr_rdf(rrsig, 8)) != LDNS_STATUS_OK) {
+		/*
+		if (ldns_rdf2buffer_wire(rawsig_buf,
+							ldns_rr_rdf(rrsig, 8)) != LDNS_STATUS_OK) {
+		*/
 			ldns_buffer_free(rawsig_buf);
 			ldns_buffer_free(verify_buf);
 			return LDNS_STATUS_MEM_ERR;
