@@ -2,6 +2,7 @@
 * some ldns_buffer functions have been moved to inline, so a clean rebuild of applications relying on those is needed (otherwise you'll get linker errors)
 * ldns_dname_label now returns one extra (zero) byte, so it can be seen as an fqdn.
 * NSEC3 type code update for signing algorithms.
+* DSA key generation of DNSKEY RRs fixed (one byte too small).
 
 28 Nov 2007 1.2.2:
 	* Added support for HMAC-MD5 keys in generator

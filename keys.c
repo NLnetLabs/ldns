@@ -869,7 +869,7 @@ ldns_key_dsa2bin(unsigned char *data, DSA *k, uint16_t *size)
 	BN_bn2bin(k->p, data + 21 ); 		/* offset octects */
 	BN_bn2bin(k->g, data + 21 + *size); 	/* offset octets */
 	BN_bn2bin(k->pub_key, data + 21 + *size + *size); /* offset octets */
-	*size = 20 + (*size * 3);
+	*size = 21 + (*size * 3);
 	return true;
 }
 
