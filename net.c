@@ -64,7 +64,7 @@ ldns_send_buffer(ldns_pkt **result, ldns_resolver *r, ldns_buffer *qb, ldns_rdf 
 	struct sockaddr_storage *ns;
 	size_t ns_len;
 	struct timeval tv_s;
-        struct timeval tv_e;
+	struct timeval tv_e;
 
 	ldns_rdf **ns_array;
 	size_t *rtt;
@@ -78,6 +78,7 @@ ldns_send_buffer(ldns_pkt **result, ldns_resolver *r, ldns_buffer *qb, ldns_rdf 
 
 	assert(r != NULL);
 
+	fprintf(stderr, "[XX] send_buffer\n");
 	status = LDNS_STATUS_OK;
 	rtt = ldns_resolver_rtt(r);
 	ns_array = ldns_resolver_nameservers(r);
@@ -90,9 +91,11 @@ ldns_send_buffer(ldns_pkt **result, ldns_resolver *r, ldns_buffer *qb, ldns_rdf 
 		ldns_resolver_nameservers_randomize(r);
 	}
 
+	fprintf(stderr, "[XX] go to loop\n");
 	/* loop through all defined nameservers */
 	for (i = 0; i < ldns_resolver_nameserver_count(r); i++) {
 
+		fprintf(stderr, "[XX] ns %u\n", i);
 		if (rtt[i] == LDNS_RESOLV_RTT_INF) {
 			/* not reachable nameserver! */
 			continue;
@@ -109,20 +112,28 @@ ldns_send_buffer(ldns_pkt **result, ldns_resolver *r, ldns_buffer *qb, ldns_rdf 
 		
 		if ((ns->ss_family == AF_INET) && 
 				(ldns_resolver_ip6(r) == LDNS_RESOLV_INET6)) {
+			printf("a\n");
 			continue;
 		}
 
 		if ((ns->ss_family == AF_INET6) &&
 				 (ldns_resolver_ip6(r) == LDNS_RESOLV_INET)) {
+			printf("a\n");
 			continue;
 		}
 
 		gettimeofday(&tv_s, NULL);
 
 		send_status = LDNS_STATUS_ERR;
+		printf("[XX] aa\n");
 		/* reply_bytes implicitly handles our error */
 		if (1 == ldns_resolver_usevc(r)) {
 			for (retries = ldns_resolver_retry(r); retries > 0; retries--) {
+				printf("[XX] tcp try %u:\n");
+				printf("[XX] timeout %u . %u\n",
+					  ldns_resolver_timeout(r).tv_sec,
+					  ldns_resolver_timeout(r).tv_usec
+					  );
 				send_status = 
 					ldns_tcp_send(&reply_bytes, qb, ns, 
 					(socklen_t)ns_len, ldns_resolver_timeout(r), 
@@ -134,6 +145,7 @@ ldns_send_buffer(ldns_pkt **result, ldns_resolver *r, ldns_buffer *qb, ldns_rdf 
 		} else {
 			for (retries = ldns_resolver_retry(r); retries > 0; retries--) {
 				/* ldns_rdf_print(stdout, ns_array[i]); */
+				printf("[XX] udp try %u:\n");
 				send_status = 
 					ldns_udp_send(&reply_bytes, qb, ns, 
 							(socklen_t)ns_len, ldns_resolver_timeout(r), 
@@ -144,6 +156,7 @@ ldns_send_buffer(ldns_pkt **result, ldns_resolver *r, ldns_buffer *qb, ldns_rdf 
 				}
 			}
 		}
+		printf("[XX] bb\n");
 
 		if (send_status != LDNS_STATUS_OK) {
 			ldns_resolver_set_nameserver_rtt(r, i, LDNS_RESOLV_RTT_INF);
@@ -192,6 +205,7 @@ ldns_send_buffer(ldns_pkt **result, ldns_resolver *r, ldns_buffer *qb, ldns_rdf 
 		sleep((unsigned int) ldns_resolver_retrans(r));
 	}
 
+	fprintf(stderr, "[XX] done with nss\n");
 	if (all_servers_rtt_inf) {
 		LDNS_FREE(reply_bytes);
 		return LDNS_STATUS_RES_NO_NS;
@@ -225,15 +239,19 @@ ldns_udp_send(uint8_t **result, ldns_buffer *qbin, const struct sockaddr_storage
 	int sockfd;
 	uint8_t *answer;
 
+	fprintf(stderr, "[XX] sending udp packet\n");
 	sockfd = ldns_udp_bgsend(qbin, to, tolen, timeout);
 
 	if (sockfd == 0) {
 		return LDNS_STATUS_SOCKET_ERROR;
 	}
 
+	printf("[XX] waiting for response\n");
 	/* wait for an response*/
 	answer = ldns_udp_read_wire(sockfd, answer_size, NULL, NULL);
 	close(sockfd);
+
+	printf("[XX] got response\n");
 
 	if (*answer_size == 0) {
 		/* oops */
@@ -465,7 +483,9 @@ ldns_tcp_bgsend(ldns_buffer *qbin, const struct sockaddr_storage *to, socklen_t 
 {
 	int sockfd;
 	
+	printf("[XX] creating sock\n");
 	sockfd = ldns_tcp_connect(to, tolen, timeout);
+	printf("[XX] created sock\n");
 	
 	if (sockfd == 0) {
 		return 0;

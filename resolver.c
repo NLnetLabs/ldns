@@ -1056,6 +1056,7 @@ ldns_resolver_send(ldns_pkt **answer, ldns_resolver *r, const ldns_rdf *name,
 		}
 	}
 #endif /* HAVE_SSL */
+	fprintf(stderr, "sending packet");
 	status = ldns_resolver_send_pkt(&answer_pkt, r, query_pkt);
 	ldns_pkt_free(query_pkt);
 	
@@ -1146,11 +1147,13 @@ ldns_resolver_nameservers_randomize(ldns_resolver *r)
 	uint8_t i, j;
 	ldns_rdf **ns, *tmp;
 
+	printf("[XX] randomize\n");
 	/* should I check for ldns_resolver_random?? */
 	assert(r != NULL);
 
 	ns = ldns_resolver_nameservers(r);
 	
+	printf("[XX] i: %u\n", ldns_resolver_nameserver_count(r));
 	for (i = 0; i < ldns_resolver_nameserver_count(r); i++) {
 		j = random() % ldns_resolver_nameserver_count(r);
 		tmp = ns[i];
@@ -1158,5 +1161,6 @@ ldns_resolver_nameservers_randomize(ldns_resolver *r)
 		ns[j] = tmp;
 	}
 	ldns_resolver_set_nameservers(r, ns);
+	printf("[XX] done\n");
 }
 
