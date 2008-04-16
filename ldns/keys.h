@@ -32,6 +32,7 @@ extern ldns_lookup_table ldns_signing_algorithms[];
 
 #define LDNS_KEY_ZONE_KEY 0x0100
 #define LDNS_KEY_SEP_KEY 0x0001
+#define LDNS_KEY_REVOKE_KEY 0x0080 /* rfc 5011 */
 
 /**
  * Algorithms used in dns
