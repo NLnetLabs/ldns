@@ -137,6 +137,7 @@ rm -r autom4te* drill/autom4te* examples/autom4te* || error_cleanup "Failed to r
 find . -name .c-mode-rc.el -exec rm {} \;
 find . -name .cvsignore -exec rm {} \;
 rm -rf lua 
+rm -rf masterdont 
 rm makedist.sh || error_cleanup "Failed to remove makedist.sh."
 
 info "Determining LDNS version."
