@@ -411,4 +411,29 @@ int ldns_dnssec_default_delete_signatures(ldns_rr *sig, void *n);
  */
 int ldns_dnssec_default_replace_signatures(ldns_rr *sig, void *n);
 
+/**
+ * Converts the DSA signature from ASN1 representation (RFC2459, as 
+ * used by OpenSSL) to raw signature data as used in DNS (rfc2536)
+ *
+ * \param[in] asn1_sig The signature in RFC2459 format
+ * \param[in] sig_len The length of the signature
+ * \return a new rdf with the signature
+ */
+ldns_rdf *
+ldns_convert_dsa_rrsig_asn12rdf(const ldns_buffer *sig,
+						  const long sig_len);
+
+/**
+ * Converts the RRSIG signature RDF (in rfc2536 format) to a buffer
+ * with the signature in rfc2459 format
+ *
+ * \param[out] target_buffer, buffer to place the signature data
+ * \param[in] sig_rdf The signature rdf to convert
+ * \return LDNS_STATUS_OK on success, error code otherwise
+ */
+ldns_status
+ldns_convert_dsa_rrsig_rdf2asn1(ldns_buffer *target_buffer,
+						  const ldns_rdf *sig_rdf);
+
+
 #endif /* LDNS_DNSSEC_H */

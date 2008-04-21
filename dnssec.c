@@ -1595,4 +1595,70 @@ ldns_dnssec_default_replace_signatures(ldns_rr *sig, void *n)
 	return LDNS_SIGNATURE_REMOVE_ADD_NEW;
 }
 
+ldns_rdf *
+ldns_convert_dsa_rrsig_asn12rdf(const ldns_buffer *sig,
+						  const long sig_len)
+{
+	ldns_rdf *sigdata_rdf;
+	DSA_SIG *dsasig;
+	unsigned char *dsasig_data = ldns_buffer_begin(sig);
+
+	dsasig = d2i_DSA_SIG(NULL,
+					 (const unsigned char **)&dsasig_data,
+					 sig_len);
+	if (!dsasig) {
+		return NULL;
+	}
+
+	dsasig_data = LDNS_XMALLOC(unsigned char, 41);
+	dsasig_data[0] = 0;
+	BN_bn2bin(dsasig->r, &dsasig_data[1]);
+	BN_bn2bin(dsasig->s, &dsasig_data[21]);
+	
+	sigdata_rdf = ldns_rdf_new(LDNS_RDF_TYPE_B64, 41, dsasig_data);
+	DSA_SIG_free(dsasig);
+
+	return sigdata_rdf;
+}
+
+ldns_status
+ldns_convert_dsa_rrsig_rdf2asn1(ldns_buffer *target_buffer,
+						  const ldns_rdf *sig_rdf)
+{
+	/* the EVP api wants the DER encoding of the signature... */
+	uint8_t t;
+	BIGNUM *R, *S;
+	DSA_SIG *dsasig;
+	unsigned char *raw_sig = NULL;
+	int raw_sig_len;
+	
+	/* extract the R and S field from the sig buffer */
+	t = ldns_rdf_data(sig_rdf)[0];
+	R = BN_new();
+	(void) BN_bin2bn(ldns_rdf_data(sig_rdf) + 1, SHA_DIGEST_LENGTH, R);
+	S = BN_new();
+	(void) BN_bin2bn(ldns_rdf_data(sig_rdf) + 21, SHA_DIGEST_LENGTH, S);
+
+	dsasig = DSA_SIG_new();
+	if (!dsasig) {
+		return LDNS_STATUS_MEM_ERR;
+	}
+
+	dsasig->r = R;
+	dsasig->s = S;
+	
+	raw_sig_len = i2d_DSA_SIG(dsasig, &raw_sig);
+	
+	if (ldns_buffer_reserve(target_buffer, raw_sig_len)) {
+		ldns_buffer_write(target_buffer, raw_sig, raw_sig_len);
+	}
+
+	DSA_SIG_free(dsasig);
+	free(raw_sig);
+
+	return ldns_buffer_status(target_buffer);
+}
+
+
+
 #endif /* HAVE_SSL */

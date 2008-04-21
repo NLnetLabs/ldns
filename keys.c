@@ -25,7 +25,7 @@ ldns_lookup_table ldns_signing_algorithms[] = {
         { LDNS_SIGN_RSASHA1, "RSASHA1" },
         { LDNS_SIGN_RSASHA256, "RSASHA256" },
         { LDNS_SIGN_RSASHA512, "RSASHA512" },
-        { LDNS_SIGN_DSA, "DSAMD5" },
+        { LDNS_SIGN_DSA, "DSA" },
         { LDNS_SIGN_HMACMD5, "hmac-md5.sig-alg.reg.int" },
         { 0, NULL }
 };
@@ -860,6 +860,8 @@ ldns_key_dsa2bin(unsigned char *data, DSA *k, uint16_t *size)
 	memcpy(data, &T, 1);
 
 	if (T > 8) {
+		fprintf(stderr, "DSA key with T > 8 (ie. > 1024 bits)");
+		fprintf(stderr, " not implemented\n");
 		return false;
 	}
 

@@ -178,8 +178,12 @@ ldns_sign_public(ldns_rr_list *rrset, ldns_key_list *keys)
 			switch(ldns_key_algorithm(current_key)) {
 			case LDNS_SIGN_DSA:
 			case LDNS_DSA_NSEC3:
-				b64rdf = ldns_sign_public_evp(sign_buf, ldns_key_evp_key(current_key), EVP_dss1());
-				/*					b64rdf = ldns_sign_public_dsa(sign_buf, ldns_key_dsa_key(current_key));*/
+				b64rdf = ldns_sign_public_evp(sign_buf,
+										ldns_key_evp_key(current_key),
+										EVP_dss1());
+				/*
+				b64rdf = ldns_sign_public_dsa(sign_buf, ldns_key_dsa_key(current_key));
+				*/
 				break;
 			case LDNS_SIGN_RSASHA1:
 			case LDNS_SIGN_RSASHA1_NSEC3:
@@ -280,6 +284,17 @@ ldns_sign_public_dsa(ldns_buffer *to_sign, DSA *key)
 	return sigdata_rdf;
 }
 
+#ifdef HAVE_PKCS
+ldns_rdf *
+ldns_Sign_public_pkcs(ldns_Buffer *to_sign,
+				  char *key_id,
+				  const digest_type
+				  )
+{
+
+}
+#endif
+
 ldns_rdf *
 ldns_sign_public_evp(ldns_buffer *to_sign,
 				 EVP_PKEY *key,
@@ -307,20 +322,34 @@ ldns_sign_public_evp(ldns_buffer *to_sign,
 
 	EVP_MD_CTX_init(&ctx);
 	r = EVP_SignInit(&ctx, md_type);
-	if(r == 1)
+	if(r == 1) {
 		r = EVP_SignUpdate(&ctx, (unsigned char*)
 					    ldns_buffer_begin(to_sign), 
 					    ldns_buffer_position(to_sign));
-	if(r == 1)
+	} else {
+		ldns_buffer_free(b64sig);
+		return NULL;
+	}
+	if(r == 1) {
 		r = EVP_SignFinal(&ctx, (unsigned char*)
 					   ldns_buffer_begin(b64sig), &siglen, key);
+	} else {
+		ldns_buffer_free(b64sig);
+		return NULL;
+	}
 	if(r != 1) {
 		ldns_buffer_free(b64sig);
 		return NULL;
 	}
 
-	sigdata_rdf = ldns_rdf_new_frm_data(LDNS_RDF_TYPE_B64, siglen,
-								 ldns_buffer_begin(b64sig));
+	/* unfortunately, OpenSSL output is differenct from DNS DSA format */
+	if (EVP_PKEY_type(key->type) == EVP_PKEY_DSA) {
+		sigdata_rdf = ldns_convert_dsa_rrsig_asn12rdf(b64sig, siglen);
+	} else {
+		/* ok output for other types is the same */
+		sigdata_rdf = ldns_rdf_new_frm_data(LDNS_RDF_TYPE_B64, siglen,
+									 ldns_buffer_begin(b64sig));
+	}
 	ldns_buffer_free(b64sig);
 	EVP_MD_CTX_cleanup(&ctx);
 	return sigdata_rdf;

@@ -1459,7 +1459,19 @@ ldns_verify_rrsig_keylist(ldns_rr_list *rrset, ldns_rr *rrsig, const ldns_rr_lis
 	}
 	
 	/* create a buffer with b64 signature rdata */
-	if (ldns_rdf2buffer_wire(rawsig_buf, ldns_rr_rdf(rrsig, 8)) != LDNS_STATUS_OK) {
+	if (sig_algo == LDNS_DSA) {
+		if (ldns_convert_dsa_rrsig_rdf2asn1(rawsig_buf,
+									 ldns_rr_rdf(rrsig, 8))
+		    != LDNS_STATUS_OK) {
+			ldns_buffer_free(rawsig_buf);
+			ldns_buffer_free(verify_buf);
+			ldns_rr_list_deep_free(rrset_clone);
+			ldns_rr_list_deep_free(validkeys);
+			return LDNS_STATUS_MEM_ERR;
+		}
+	} else if (ldns_rdf2buffer_wire(rawsig_buf, 
+							ldns_rr_rdf(rrsig, 8))
+		    != LDNS_STATUS_OK) {
 		ldns_buffer_free(rawsig_buf);
 		ldns_buffer_free(verify_buf);
 		ldns_rr_list_deep_free(rrset_clone);
@@ -1583,44 +1595,6 @@ ldns_verify_rrsig_keylist(ldns_rr_list *rrset, ldns_rr *rrsig, const ldns_rr_lis
 	}
 }
 
-ldns_status
-ldns_convert_dsa_rrsig_rdata(ldns_buffer *target_buffer,
-                             ldns_rdf *sig_rdf)
-{
-	/* the EVP api wants the DER encoding of the signature... */
-	uint8_t t;
-	BIGNUM *R, *S;
-	DSA_SIG *dsasig;
-	unsigned char *raw_sig = NULL;
-	int raw_sig_len;
-	
-	/* extract the R and S field from the sig buffer */
-	t = ldns_rdf_data(sig_rdf)[0];
-	R = BN_new();
-	(void) BN_bin2bn(ldns_rdf_data(sig_rdf) + 1, SHA_DIGEST_LENGTH, R);
-	S = BN_new();
-	(void) BN_bin2bn(ldns_rdf_data(sig_rdf) + 21, SHA_DIGEST_LENGTH, S);
-
-	dsasig = DSA_SIG_new();
-	if (!dsasig) {
-		return LDNS_STATUS_MEM_ERR;
-	}
-
-	dsasig->r = R;
-	dsasig->s = S;
-	
-	raw_sig_len = i2d_DSA_SIG(dsasig, &raw_sig);
-	
-	if (ldns_buffer_reserve(target_buffer, raw_sig_len)) {
-		ldns_buffer_write(target_buffer, raw_sig, raw_sig_len);
-	}
-
-	DSA_SIG_free(dsasig);
-	free(raw_sig);
-
-	return ldns_buffer_status(target_buffer);
-}
-
 #if 0
 void
 print_dates(time_t now, time_t inception)
@@ -1716,12 +1690,15 @@ ldns_verify_rrsig(ldns_rr_list *rrset, ldns_rr *rrsig, ldns_rr *key)
 		break;
 	case LDNS_DSA:
 	case LDNS_DSA_NSEC3:
-		if (ldns_convert_dsa_rrsig_rdata(rawsig_buf,
-								   ldns_rr_rdf(rrsig, 8)) != LDNS_STATUS_OK) {
-		/*
-		if (ldns_rdf2buffer_wire(rawsig_buf,
-							ldns_rr_rdf(rrsig, 8)) != LDNS_STATUS_OK) {
-		*/
+		/* EVP takes rfc2459 format, which is a tad longer than dns format */
+		exit(0);
+		if (ldns_convert_dsa_rrsig_rdf2asn1(rawsig_buf,
+									 ldns_rr_rdf(rrsig, 8))
+		    != LDNS_STATUS_OK) {
+			/*
+			  if (ldns_rdf2buffer_wire(rawsig_buf,
+			  ldns_rr_rdf(rrsig, 8)) != LDNS_STATUS_OK) {
+			*/
 			ldns_buffer_free(rawsig_buf);
 			ldns_buffer_free(verify_buf);
 			return LDNS_STATUS_MEM_ERR;

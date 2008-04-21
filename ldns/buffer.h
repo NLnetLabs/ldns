@@ -250,7 +250,7 @@ bool ldns_buffer_reserve(ldns_buffer *buffer, size_t amount);
  * \return the pointer to the data
  */
 INLINE uint8_t *
-ldns_buffer_at(ldns_buffer *buffer, size_t at)
+ldns_buffer_at(const ldns_buffer *buffer, size_t at)
 {
 	assert(at <= buffer->_limit);
 	return buffer->_data + at;
@@ -263,7 +263,7 @@ ldns_buffer_at(ldns_buffer *buffer, size_t at)
  * \return the pointer
  */
 INLINE uint8_t *
-ldns_buffer_begin(ldns_buffer *buffer)
+ldns_buffer_begin(const ldns_buffer *buffer)
 {
 	return ldns_buffer_at(buffer, 0);
 }
