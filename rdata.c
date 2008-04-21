@@ -534,7 +534,7 @@ ldns_rdf_compare(const ldns_rdf *rd1, const ldns_rdf *rd2)
 		return -1;
 	}
 	i1 = ldns_rdf_size(rd1);
-	i2 = ldns_rdf_size(rd1);
+	i2 = ldns_rdf_size(rd2);
 
 	if (i1 < i2) {
 		return -1;

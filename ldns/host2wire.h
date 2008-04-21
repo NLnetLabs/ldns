@@ -44,6 +44,17 @@ ldns_status ldns_dname2buffer_wire(ldns_buffer *buffer, const ldns_rdf *name);
 ldns_status ldns_rdf2buffer_wire(ldns_buffer *output, const ldns_rdf *rdf);
 
 /**
+ * Copies the rdata data to the buffer in wire format
+ * If the rdata is a dname, the letters will be lowercased
+ * during the conversion
+ * \param[out] *output buffer to append the result to
+ * \param[in] *rdf rdata to convert
+ * \return ldns_status
+ */
+ldns_status ldns_rdf2buffer_wire_canonical(ldns_buffer *output,
+								   const ldns_rdf *rdf);
+
+/**
  * Copies the rr data to the buffer in wire format
  * \param[out] *output buffer to append the result to
  * \param[in] *rr resource record to convert
@@ -51,7 +62,24 @@ ldns_status ldns_rdf2buffer_wire(ldns_buffer *output, const ldns_rdf *rdf);
  *            (to determine whether to add rdata or not)
  * \return ldns_status
  */
-ldns_status ldns_rr2buffer_wire(ldns_buffer *output, const ldns_rr *rr, int section);
+ldns_status ldns_rr2buffer_wire(ldns_buffer *output,
+						  const ldns_rr *rr,
+						  int section);
+
+/**
+ * Copies the rr data to the buffer in wire format, in canonical format
+ * according to RFC3597 (every dname in rdata fields of RR's mentioned in
+ * that RFC will be lowercased)
+ * \param[out] *output buffer to append the result to
+ * \param[in] *rr resource record to convert
+ * \param[in] section the section in the packet this rr is supposed to be in
+ *            (to determine whether to add rdata or not)
+ * \return ldns_status
+ */
+ldns_status ldns_rr2buffer_wire_canonical(ldns_buffer *output,
+								  const ldns_rr *rr,
+								  int section);
+
 
 /**
  * Converts a rrsig to wireformat BUT EXCLUDE the rrsig rdata

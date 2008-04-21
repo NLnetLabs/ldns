@@ -1380,7 +1380,7 @@ int ldns_rr_compare_wire(ldns_buffer *rr1_buf, ldns_buffer *rr2_buf)
         /* jump to rdata section (PAST the rdata length field, otherwise
            rrs with different lengths might be sorted erroneously */
         offset += 11;
-	min_len = (rr1_len < rr2_len) ? rr1_len : rr2_len;
+	   min_len = (rr1_len < rr2_len) ? rr1_len : rr2_len;
         /* Compare RRs RDATA byte for byte. */
         for(i = offset; i < min_len; i++) {
                 if (*ldns_buffer_at(rr1_buf,i) < *ldns_buffer_at(rr2_buf,i)) {
@@ -1418,12 +1418,18 @@ ldns_rr_compare(const ldns_rr *rr1, const ldns_rr *rr2)
 		rr1_buf = ldns_buffer_new(rr1_len);
 		rr2_buf = ldns_buffer_new(rr2_len);
 
-		if (ldns_rr2buffer_wire(rr1_buf, rr1, LDNS_SECTION_ANY) != LDNS_STATUS_OK) {
+		if (ldns_rr2buffer_wire_canonical(rr1_buf,
+								    rr1,
+								    LDNS_SECTION_ANY) 
+		    != LDNS_STATUS_OK) {
 			ldns_buffer_free(rr1_buf);
 			ldns_buffer_free(rr2_buf);
 			return 0; 
 		}
-		if (ldns_rr2buffer_wire(rr2_buf, rr2, LDNS_SECTION_ANY) != LDNS_STATUS_OK) {
+		if (ldns_rr2buffer_wire_canonical(rr2_buf,
+								    rr2,
+								    LDNS_SECTION_ANY)
+		    != LDNS_STATUS_OK) {
 			ldns_buffer_free(rr1_buf);
 			ldns_buffer_free(rr2_buf);
 			return 0;
