@@ -101,22 +101,18 @@ ldns_dnssec_build_data_chain(ldns_resolver *res, uint16_t qflags, const ldns_rr_
 	
 	ldns_dnssec_data_chain *new_chain = ldns_dnssec_data_chain_new();
 
-	printf("[XX] Build data chain for: ");
-	ldns_rr_print(stdout, orig_rr);
-	printf("[XX] rrset:\n");
-	ldns_rr_list_print(stdout, rrset);
-
-	ldns_pkt_print(stdout, pkt);
-
 	if (!ldns_dnssec_pkt_has_rrsigs(pkt)) {
-		printf("[XX] unsigned!\n");
 		return new_chain;
 	}
 
 	if (orig_rr) {
 		new_chain->rrset = ldns_rr_list_new();
 		ldns_rr_list_push_rr(new_chain->rrset, orig_rr);
-		new_chain->parent = ldns_dnssec_build_data_chain(res, qflags, rrset, pkt, NULL);
+		new_chain->parent = ldns_dnssec_build_data_chain(res,
+											    qflags,
+											    rrset,
+											    pkt,
+											    NULL);
 		new_chain->packet_rcode = ldns_pkt_get_rcode(pkt);
 		new_chain->packet_qtype = ldns_rr_get_type(orig_rr);
 		if (ldns_pkt_ancount(pkt) == 0) {
@@ -210,39 +206,32 @@ ldns_dnssec_build_data_chain(ldns_resolver *res, uint16_t qflags, const ldns_rr_
 		/* apparently we were not able to find a signing key, so
 		   we assume the chain ends here
 		*/
-		printf("[XX] chain ends, no key\n");
 		/* try parents for auth denial of DS */
 		/* XX orig_owner might not be right */
-		printf("[XX] data:\norig rr:");
-		ldns_rr_print(stdout, orig_rr);
-		printf("[XX] rrset:\n");
-		ldns_rr_list_print(stdout, rrset);
 #if 0
 		if (orig_rr) {
-			printf("[XX] BRANCH A\n");
 			possible_parent_name = ldns_dname_left_chop(ldns_rr_owner(orig_rr));
 		} else if (rrset && ldns_rr_list_rr_count(rrset) > 0) {
-			printf("[XX] BRANCH B\n");
 			possible_parent_name = ldns_dname_left_chop(ldns_rr_owner(ldns_rr_list_rr(rrset, 0)));
 		} else {
 			/* no information to go on, give up */
-			printf("[XX] BRANCH C\n");
 			return new_chain;
 		}
 #endif
 		if (orig_rr) {
-			printf("[XX] BRANCH A\n");
 			possible_parent_name = ldns_rr_owner(orig_rr);
 		} else if (rrset && ldns_rr_list_rr_count(rrset) > 0) {
-			printf("[XX] BRANCH B\n");
 			possible_parent_name = ldns_rr_owner(ldns_rr_list_rr(rrset, 0));
 		} else {
 			/* no information to go on, give up */
-			printf("[XX] BRANCH C\n");
 			return new_chain;
 		}
 
-		my_pkt = ldns_resolver_query(res, possible_parent_name, LDNS_RR_TYPE_DS, LDNS_RR_CLASS_IN, qflags);
+		my_pkt = ldns_resolver_query(res,
+							    possible_parent_name,
+							    LDNS_RR_TYPE_DS,
+							    LDNS_RR_CLASS_IN,
+							    qflags);
 
 		if (ldns_pkt_ancount(my_pkt) > 0) {
 			/* TODO: add error, no sigs but DS in parent */
@@ -251,11 +240,7 @@ ldns_dnssec_build_data_chain(ldns_resolver *res, uint16_t qflags, const ldns_rr_
 			ldns_pkt_free(my_pkt);
 		} else {
 			/* TODO: ns check? */
-			printf("[XX] go on\n");
-			ldns_pkt_print(stdout, my_pkt);
 			/* are there signatures? */
-
-
 			new_chain->parent =  ldns_dnssec_build_data_chain(res, 
 													qflags, 
 													NULL,
@@ -263,9 +248,6 @@ ldns_dnssec_build_data_chain(ldns_resolver *res, uint16_t qflags, const ldns_rr_
 													NULL);
 
 			new_chain->parent->packet_qtype = LDNS_RR_TYPE_DS;
-			printf("[XX] GO ON, CHAIN NOW:\n");
-			ldns_dnssec_data_chain_print(stdout, new_chain);
-			printf("[xxxxxxx]\n\n");
 			//ldns_pkt_free(my_pkt);
 		}
 		return new_chain;
@@ -493,8 +475,6 @@ ldns_dnssec_trust_tree_print_sm(FILE *out,
 							ERR_load_crypto_strings();
 							ERR_print_errors_fp(stdout);
 							printf("\n");
-						} else {
-							printf("yo\n");
 						}
 						/*
 						  print_tabs(out, tabs + 1, sibmap, treedepth);
@@ -682,11 +662,7 @@ ldns_dnssec_derive_trust_tree_normal_rrset(ldns_dnssec_trust_tree *new_tree,
 							tmp_rrset = ldns_rr_list_pop_rrset(cur_rrset);
 						}
 					}
-					printf("[XX] VERIFY RRSET:\n");
-					ldns_rr_list_print(stdout, tmp_rrset);
 					cur_status = ldns_verify_rrsig(tmp_rrset, cur_sig_rr, cur_parent_rr);
-					printf("[XX] RESULT: %s\n", ldns_get_errorstr_by_id(cur_status));
-					printf("\n\n");
 					/* avoid dupes */
 					for (i = 0; i < new_tree->parent_count; i++) {
 						if (cur_parent_rr == new_tree->parents[i]->rr) {
@@ -789,8 +765,6 @@ ldns_dnssec_derive_trust_tree_no_sig(ldns_dnssec_trust_tree *new_tree,
 		cur_rrset = data_chain->parent->rrset;
 		/* nsec? */
 		if (cur_rrset && ldns_rr_list_rr_count(cur_rrset) > 0) {
-			printf("[XX} RRSET TO DERIVE WITH:\n");
-			ldns_rr_list_print(stdout, cur_rrset);
 			if (ldns_rr_get_type(ldns_rr_list_rr(cur_rrset, 0)) ==
 			    LDNS_RR_TYPE_NSEC3) {
 				result = ldns_dnssec_verify_denial_nsec3(new_tree->rr,
@@ -805,16 +779,12 @@ ldns_dnssec_derive_trust_tree_no_sig(ldns_dnssec_trust_tree *new_tree,
 			} else {
 				/* unsigned zone, unsigned parent */
 				result = LDNS_STATUS_OK;
-				printf("[XX] unsigned kid, unsigned parent\n");
 			}
 		} else {
 			result = LDNS_STATUS_DNSSEC_NSEC_RR_NOT_COVERED;
 		}
 		for (i = 0; i < ldns_rr_list_rr_count(cur_rrset); i++) {
 			cur_parent_rr = ldns_rr_list_rr(cur_rrset, i);
-			printf("[XX] cur parnet:\n");
-			ldns_rr_print(stdout, cur_parent_rr);
-			printf("[XX] chainparentpointer: %p\n", data_chain->parent);
 			cur_parent_tree = ldns_dnssec_derive_trust_tree(data_chain->parent, cur_parent_rr);
 			ldns_dnssec_trust_tree_add_parent(new_tree, cur_parent_tree, NULL, result);
 		}
@@ -1159,32 +1129,26 @@ ldns_dnssec_verify_denial(ldns_rr *rr,
 			   could not have been used to match the request */
 			rrsig = ldns_dnssec_get_rrsig_for_name_and_type(ldns_rr_owner(cur_nsec), ldns_rr_get_type(cur_nsec), rrsigs);
 			if (rrsig && ldns_rdf2native_int8(ldns_rr_rrsig_labels(rrsig)) == ldns_dname_label_count(rr_name)) {
-				printf("[XX] wildcard covered from label count\n");
 				wildcard_covered = true;
 			}
 			
 			if (ldns_nsec_bitmap_covers_type(ldns_nsec_get_bitmap(cur_nsec), ldns_rr_get_type(rr))) {
-				printf("[XX] type covered\n");
 				type_covered = true;
 			}
 		}
-		printf("[XX] Name covered?\n");
 		if (ldns_nsec_covers_name(cur_nsec, rr_name)) {
-			printf("[XX] yes!\n");
 			name_covered = true;
 		}
 		
-		if (ldns_dname_compare(wildcard_name, ldns_rr_owner(cur_nsec)) == 0) {
-			printf("[XX] Wildcard type covered?\n");
-			if (ldns_nsec_bitmap_covers_type(ldns_nsec_get_bitmap(cur_nsec), ldns_rr_get_type(rr))) {
-				printf("[XX] yes!\n");
+		if (ldns_dname_compare(wildcard_name,
+						   ldns_rr_owner(cur_nsec)) == 0) {
+			if (ldns_nsec_bitmap_covers_type(ldns_nsec_get_bitmap(cur_nsec),
+									   ldns_rr_get_type(rr))) {
 				wildcard_type_covered = true;
 			}
 		}
 		
-		printf("[XX] Wildcard covered?\n");
 		if (ldns_nsec_covers_name(cur_nsec, wildcard_name)) {
-			printf("[XX] yes!\n");
 			wildcard_covered = true;
 		}
 		
@@ -1230,12 +1194,6 @@ ldns_dnssec_verify_denial_nsec3(ldns_rr *rr,
 												    ldns_rr_get_type(rr),
 												    nsecs);
 
-		printf("[XX} NSEC3 denial for: ");
-		ldns_rr_print(stdout, rr);
-		printf("[XX] closest encloser: ");
-		ldns_rdf_print(stdout, closest_encloser);
-		printf("\n");
-
 		wildcard = ldns_dname_new_frm_str("*");
 		ldns_dname_cat(wildcard, closest_encloser);
 
@@ -1248,7 +1206,6 @@ ldns_dnssec_verify_denial_nsec3(ldns_rr *rr,
 
 			if (ldns_nsec_covers_name(ldns_rr_list_rr(nsecs, i),
 								 hashed_wildcard_name)) {
-				printf("[XX] wildcard covered\n");
 				wildcard_covered = true;
 			}
 			ldns_rdf_deep_free(hashed_wildcard_name);
@@ -1270,14 +1227,12 @@ ldns_dnssec_verify_denial_nsec3(ldns_rr *rr,
 											ldns_rr_owner(rr)
 											);
 		ldns_dname_cat(hashed_name, zone_name);
-		printf("[XX] hashed name: ");
-		ldns_rdf_print(stdout, hashed_name);
-		printf("\n");
 		for (i = 0; i < ldns_rr_list_rr_count(nsecs); i++) {
-			if (ldns_dname_compare(hashed_name, ldns_rr_owner(ldns_rr_list_rr(nsecs, i))) == 0) {
+			if (ldns_dname_compare(hashed_name,
+							   ldns_rr_owner(ldns_rr_list_rr(nsecs, i)))
+			    == 0) {
 				if (!ldns_nsec_bitmap_covers_type(ldns_nsec3_bitmap(ldns_rr_list_rr(nsecs, i)), packet_qtype) && 
 				    !ldns_nsec_bitmap_covers_type(ldns_nsec3_bitmap(ldns_rr_list_rr(nsecs, i)), LDNS_RR_TYPE_CNAME)) {
-					printf("exact match!\n");
 					result = LDNS_STATUS_OK;
 					goto done;
 				}
@@ -1291,14 +1246,10 @@ ldns_dnssec_verify_denial_nsec3(ldns_rr *rr,
 											ldns_rr_owner(rr)
 											);
 		ldns_dname_cat(hashed_name, zone_name);
-		printf("[XX] hashed name: ");
-		ldns_rdf_print(stdout, hashed_name);
-		printf("\n");
 		for (i = 0; i < ldns_rr_list_rr_count(nsecs); i++) {
 			if (ldns_dname_compare(hashed_name, ldns_rr_owner(ldns_rr_list_rr(nsecs, i))) == 0) {
 				if (!ldns_nsec_bitmap_covers_type(ldns_nsec3_bitmap(ldns_rr_list_rr(nsecs, i)), LDNS_RR_TYPE_DS) && 
 				    !ldns_nsec_bitmap_covers_type(ldns_nsec3_bitmap(ldns_rr_list_rr(nsecs, i)), LDNS_RR_TYPE_CNAME)) {
-					printf("exact match!\n");
 					result = LDNS_STATUS_OK;
 					goto done;
 				}
