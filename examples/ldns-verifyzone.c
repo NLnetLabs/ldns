@@ -29,7 +29,7 @@ ldns_rr_list_contains_name(const ldns_rr_list *rr_list,
 		if (ldns_dname_compare(name, 
 						   ldns_rr_owner(ldns_rr_list_rr(rr_list, 
 												   i))
-						   )
+						   ) == 0
 		    ) {
 			return true;
 		}
@@ -208,9 +208,7 @@ verify_dnssec_name(ldns_dnssec_name *name,
 		if (name->nsec) {
 			printf("Error: ");
 			ldns_rdf_print(stdout, name->name);
-			printf("\t");
-			print_type(cur_rrset->type);
-			printf(" has an NSEC(3), but is glue\n");
+			printf("\thas an NSEC(3), but is glue\n");
 			result = LDNS_STATUS_ERR;
 		}
 	} else {

@@ -1056,7 +1056,6 @@ ldns_resolver_send(ldns_pkt **answer, ldns_resolver *r, const ldns_rdf *name,
 		}
 	}
 #endif /* HAVE_SSL */
-	fprintf(stderr, "sending packet");
 	status = ldns_resolver_send_pkt(&answer_pkt, r, query_pkt);
 	ldns_pkt_free(query_pkt);
 	
