@@ -438,10 +438,12 @@ ldns_dnssec_zone_mark_glue(ldns_dnssec_zone *zone)
 		cur_node = ldns_rbtree_next(cur_node);
 
 		if (cur_name->rrsets && !cur_name->rrsets->next &&
-		    cur_name->rrsets->type == LDNS_RR_TYPE_A) {
+		    (cur_name->rrsets->type == LDNS_RR_TYPE_A ||
+			cur_name->rrsets->type == LDNS_RR_TYPE_AAAA
+			)) {
 			/* assume glue XXX check for zone cur */
-			cur_owner = ldns_dname_left_chop(ldns_rr_owner(
-								        cur_name->rrsets->rrs->rr));
+			cur_owner = ldns_rdf_clone(ldns_rr_owner(
+					      cur_name->rrsets->rrs->rr));
 			while (ldns_dname_label_count(cur_owner) >
 				  ldns_dname_label_count(zone->soa->name)) {
 				if (ldns_dnssec_zone_find_rrset(zone,
