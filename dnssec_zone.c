@@ -239,6 +239,8 @@ ldns_dnssec_name_new()
 	new_name->nsec = NULL;
 	new_name->nsec_signatures = NULL;
 
+	new_name->is_glue = false;
+
 	return new_name;
 }
 

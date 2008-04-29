@@ -426,46 +426,110 @@ ldns_sign_public_rsamd5(ldns_buffer *to_sign, RSA *key)
 }
 
 ldns_status
+ldns_dnssec_zone_mark_glue(ldns_dnssec_zone *zone)
+{
+	ldns_rbnode_t *cur_node;
+	ldns_dnssec_name *cur_name;
+	ldns_rdf *cur_owner, *cur_parent;
+
+	cur_node = ldns_rbtree_first(zone->names);
+	while (cur_node != LDNS_RBTREE_NULL) {
+		cur_name = (ldns_dnssec_name *) cur_node->data;
+		cur_node = ldns_rbtree_next(cur_node);
+
+		if (cur_name->rrsets && !cur_name->rrsets->next &&
+		    cur_name->rrsets->type == LDNS_RR_TYPE_A) {
+			/* assume glue XXX check for zone cur */
+			cur_owner = ldns_dname_left_chop(ldns_rr_owner(
+								        cur_name->rrsets->rrs->rr));
+			while (ldns_dname_label_count(cur_owner) >
+				  ldns_dname_label_count(zone->soa->name)) {
+				if (ldns_dnssec_zone_find_rrset(zone,
+										  cur_owner,
+										  LDNS_RR_TYPE_NS)) {
+					cur_name->is_glue = true;
+				}
+				cur_parent = ldns_dname_left_chop(cur_owner);
+				ldns_rdf_deep_free(cur_owner);
+				cur_owner = cur_parent;
+			}
+		}
+	}
+	return LDNS_STATUS_OK;
+}
+
+ldns_rbnode_t *
+ldns_dnssec_name_node_next_nonglue(ldns_rbnode_t *node)
+{
+	ldns_rbnode_t *next_node = NULL;
+	ldns_dnssec_name *next_name = NULL;
+	bool done = false;
+
+	if (node == LDNS_RBTREE_NULL) {
+		return NULL;
+	}
+	next_node = node;
+	while (!done) {
+		if (next_node == LDNS_RBTREE_NULL) {
+			return NULL;
+		} else {
+			next_name = (ldns_dnssec_name *)next_node->data;
+			if (!next_name->is_glue) {
+				done = true;
+			} else {
+				printf("glue!\n");
+				next_node = ldns_rbtree_next(next_node);
+			}
+		}
+	}
+	return next_node;
+}
+
+ldns_status
 ldns_dnssec_zone_create_nsecs(ldns_dnssec_zone *zone,
 						ldns_rr_list *new_rrs)
 {
-	ldns_rbnode_t *first_name_node;
-	ldns_rbnode_t *current_name_node;
-	ldns_dnssec_name *first_name;
-	ldns_dnssec_name *current_name;
-	ldns_status result = LDNS_STATUS_OK;
+
+	ldns_rbnode_t *first_node, *cur_node, *next_node;
+	ldns_dnssec_name *cur_name, *next_name;
 	ldns_rr *nsec_rr;
 
-	if (!zone || !new_rrs || !zone->names) {
-		return LDNS_STATUS_ERR;
+	first_node = ldns_dnssec_name_node_next_nonglue(
+			       ldns_rbtree_first(zone->names));
+	cur_node = first_node;
+	if (cur_node) {
+		next_node = ldns_dnssec_name_node_next_nonglue(
+			           ldns_rbtree_next(cur_node));
 	}
 
-	first_name_node = ldns_rbtree_first(zone->names);
-	first_name = (ldns_dnssec_name *) first_name_node->data;
-	
-	current_name_node = first_name_node;
-	current_name = first_name;
-
-	while (ldns_rbtree_next(current_name_node) != LDNS_RBTREE_NULL) {
-		nsec_rr = ldns_dnssec_create_nsec(current_name,
-								    (ldns_dnssec_name *) ldns_rbtree_next(current_name_node)->data,
+	while (cur_node && next_node) {
+		cur_name = (ldns_dnssec_name *)cur_node->data;
+		next_name = (ldns_dnssec_name *)next_node->data;
+		nsec_rr = ldns_dnssec_create_nsec(cur_name,
+								    next_name,
 								    LDNS_RR_TYPE_NSEC);
-		ldns_dnssec_name_add_rr(current_name, nsec_rr);
+		ldns_dnssec_name_add_rr(cur_name, nsec_rr);
 		ldns_rr_list_push_rr(new_rrs, nsec_rr);
-		current_name_node = ldns_rbtree_next(current_name_node);
-		current_name = (ldns_dnssec_name *) current_name_node->data;
+		cur_node = next_node;
+		if (cur_node) {
+			next_node = ldns_dnssec_name_node_next_nonglue(
+                               ldns_rbtree_next(cur_node));
+		}
 	}
-	nsec_rr = ldns_dnssec_create_nsec(current_name,
-							    first_name,
-							    LDNS_RR_TYPE_NSEC);
-	result = ldns_dnssec_name_add_rr(current_name, nsec_rr);
-	if (result != LDNS_STATUS_OK) {
-		return result;
+
+	if (cur_node && !next_node) {
+		cur_name = (ldns_dnssec_name *)cur_node->data;
+		next_name = (ldns_dnssec_name *)first_node->data;
+		nsec_rr = ldns_dnssec_create_nsec(cur_name,
+								    next_name,
+								    LDNS_RR_TYPE_NSEC);
+		ldns_dnssec_name_add_rr(cur_name, nsec_rr);
+		ldns_rr_list_push_rr(new_rrs, nsec_rr);
+	} else {
+		printf("error\n");
 	}
-	ldns_rr_list_push_rr(new_rrs, nsec_rr);
-	
-	
-	return result;
+
+	return LDNS_STATUS_OK;
 }
 
 ldns_dnssec_rrs *
@@ -587,69 +651,70 @@ ldns_dnssec_zone_create_rrsigs(ldns_dnssec_zone *zone,
 	while (cur_node != LDNS_RBTREE_NULL) {
 		cur_name = (ldns_dnssec_name *) cur_node->data;
 
-		cur_rrset = cur_name->rrsets;
-		while (cur_rrset) {
-			/* reset keys to use */
-			ldns_key_list_set_use(key_list, true);
-
-			/* walk through old sigs, remove the old, and mark which keys (not) to use) */
-			cur_rrset->signatures = ldns_dnssec_remove_signatures(cur_rrset->signatures,
-													    key_list,
-													    func,
-													    arg);
-
-			/* TODO: set count to zero? */
-			rr_list = ldns_rr_list_new();
-
-			cur_rr = cur_rrset->rrs;
-			while (cur_rr) {
-				ldns_rr_list_push_rr(rr_list, cur_rr->rr);
-				cur_rr = cur_rr->next;
+		if (!cur_name->is_glue) {
+			cur_rrset = cur_name->rrsets;
+			while (cur_rrset) {
+				/* reset keys to use */
+				ldns_key_list_set_use(key_list, true);
+				
+				/* walk through old sigs, remove the old, and mark which keys (not) to use) */
+				cur_rrset->signatures = ldns_dnssec_remove_signatures(cur_rrset->signatures,
+														    key_list,
+														    func,
+														    arg);
+				
+				/* TODO: set count to zero? */
+				rr_list = ldns_rr_list_new();
+				
+				cur_rr = cur_rrset->rrs;
+				while (cur_rr) {
+					ldns_rr_list_push_rr(rr_list, cur_rr->rr);
+					cur_rr = cur_rr->next;
+				}
+				
+				siglist = ldns_sign_public(rr_list, key_list);
+				for (i = 0; i < ldns_rr_list_rr_count(siglist); i++) {
+					if (cur_rrset->signatures) {
+						ldns_dnssec_rrs_add_rr(cur_rrset->signatures,
+										   ldns_rr_list_rr(siglist, i));
+					} else {
+						cur_rrset->signatures = ldns_dnssec_rrs_new();
+						cur_rrset->signatures->rr = ldns_rr_list_rr(siglist, i);
+						ldns_rr_list_push_rr(new_rrs, ldns_rr_list_rr(siglist, i));
+					}
+				}
+				
+				
+				ldns_rr_list_free(siglist);
+				ldns_rr_list_free(rr_list);
+				
+				cur_rrset = cur_rrset->next;
 			}
-
+			
+			/* sign the nsec */
+			cur_name->nsec_signatures = ldns_dnssec_remove_signatures(cur_name->nsec_signatures,
+														   key_list,
+														   func,
+														   arg);
+			
+			rr_list = ldns_rr_list_new();
+			ldns_rr_list_push_rr(rr_list, cur_name->nsec);
 			siglist = ldns_sign_public(rr_list, key_list);
+			
 			for (i = 0; i < ldns_rr_list_rr_count(siglist); i++) {
-				if (cur_rrset->signatures) {
-					ldns_dnssec_rrs_add_rr(cur_rrset->signatures,
+				if (cur_name->nsec_signatures) {
+					ldns_dnssec_rrs_add_rr(cur_name->nsec_signatures,
 									   ldns_rr_list_rr(siglist, i));
 				} else {
-					cur_rrset->signatures = ldns_dnssec_rrs_new();
-					cur_rrset->signatures->rr = ldns_rr_list_rr(siglist, i);
+					cur_name->nsec_signatures = ldns_dnssec_rrs_new();
+					cur_name->nsec_signatures->rr = ldns_rr_list_rr(siglist, i);
 					ldns_rr_list_push_rr(new_rrs, ldns_rr_list_rr(siglist, i));
 				}
 			}
-
-
+			
 			ldns_rr_list_free(siglist);
 			ldns_rr_list_free(rr_list);
-
-			cur_rrset = cur_rrset->next;
 		}
-
-		/* sign the nsec */
-		cur_name->nsec_signatures = ldns_dnssec_remove_signatures(cur_name->nsec_signatures,
-													   key_list,
-													   func,
-													   arg);
-
-		rr_list = ldns_rr_list_new();
-		ldns_rr_list_push_rr(rr_list, cur_name->nsec);
-		siglist = ldns_sign_public(rr_list, key_list);
-		
-		for (i = 0; i < ldns_rr_list_rr_count(siglist); i++) {
-			if (cur_name->nsec_signatures) {
-				ldns_dnssec_rrs_add_rr(cur_name->nsec_signatures,
-								   ldns_rr_list_rr(siglist, i));
-			} else {
-				cur_name->nsec_signatures = ldns_dnssec_rrs_new();
-				cur_name->nsec_signatures->rr = ldns_rr_list_rr(siglist, i);
-				ldns_rr_list_push_rr(new_rrs, ldns_rr_list_rr(siglist, i));
-			}
-		}
-
-		ldns_rr_list_free(siglist);
-		ldns_rr_list_free(rr_list);
-
 		cur_node = ldns_rbtree_next(cur_node);
 	}
 
@@ -670,6 +735,7 @@ ldns_dnssec_zone_sign(ldns_dnssec_zone *zone,
 	}
 
 	/* zone is already sorted */
+	ldns_dnssec_zone_mark_glue(zone);
 	
 	/* check whether we need to add nsecs */
 	if (zone->names && !((ldns_dnssec_name *)zone->names->root->data)->nsec) {

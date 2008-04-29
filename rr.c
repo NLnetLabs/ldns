@@ -158,7 +158,8 @@ ldns_rr_new_frm_str(ldns_rr **newrr, const char *str, uint32_t default_ttl, ldns
 		LDNS_FREE(rdata);
 		LDNS_FREE(rd);
 		LDNS_FREE(rd_buf);
-		ldns_buffer_free(rr_buf); 
+		LDNS_FREE(b64);
+		ldns_buffer_free(rr_buf);
 		ldns_rr_free(new);
 		return LDNS_STATUS_SYNTAX_ERR;
 	}
@@ -170,6 +171,7 @@ ldns_rr_new_frm_str(ldns_rr **newrr, const char *str, uint32_t default_ttl, ldns
 		LDNS_FREE(rdata);
 		LDNS_FREE(rd);
 		LDNS_FREE(rd_buf);
+		LDNS_FREE(b64);
 		ldns_buffer_free(rr_buf);
 		ldns_rr_free(new);
 		return LDNS_STATUS_SYNTAX_TTL_ERR;

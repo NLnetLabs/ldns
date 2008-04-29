@@ -65,6 +65,11 @@ struct ldns_struct_dnssec_name
 	 * signatures for the NSEC record
 	 */
 	ldns_dnssec_rrs *nsec_signatures;
+	/**
+	 * Set to true if this name is glue
+	 * (as marked by ldns_dnssec_zone_mark_glue())
+	 */
+	bool is_glue;
 };
 
 /**

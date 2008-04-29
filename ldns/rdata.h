@@ -24,7 +24,7 @@
 #include <ldns/common.h>
 #include <ldns/error.h>
 
-#define LDNS_MAX_RDFLEN	65535
+#define LDNS_MAX_RDFLEN	8192
 
 #define LDNS_RDF_SIZE_BYTE              1
 #define LDNS_RDF_SIZE_WORD              2

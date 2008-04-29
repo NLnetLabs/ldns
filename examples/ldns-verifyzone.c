@@ -4,6 +4,8 @@
  * (c) NLnetLabs 2005-2008
  *
  * See the file LICENSE for the license
+ *
+ * Missing from the checks: empty non-terminals
  */
 
 #include "config.h"
