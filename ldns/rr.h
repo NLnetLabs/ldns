@@ -372,15 +372,15 @@ ldns_status ldns_rr_new_frm_fp(ldns_rr **rr, FILE *fp, uint32_t *default_ttl, ld
  * creates a new rr from a file containing a string.
  * \param[out] rr the new rr
  * \param[in] fp the file pointer to use
- * \param[in] default_ttl a default ttl for the rr. If 0 DEF_TTL will be used
+ * \param[in] default_ttl a default ttl for the rr. If NULL DEF_TTL will be used
  *            the pointer will be updated if the file contains a $TTL directive
- *	      The caller must ldns_rdf_deep_free it.
  * \param[in] origin when the owner is relative add this
  * 	      the pointer will be updated if the file contains a $ORIGIN directive
  *	      The caller must ldns_rdf_deep_free it.
  * \param[in] line_nr pointer to an integer containing the current line number (for debugging purposes)
  * \param[in] prev when the owner is whitespaces use this as the * ownername
  *            the pointer will be updated after the call
+ *	      The caller must ldns_rdf_deep_free it.
  * \return a ldns_status with an error or LDNS_STATUS_OK
  */
 ldns_status ldns_rr_new_frm_fp_l(ldns_rr **rr, FILE *fp, uint32_t *default_ttl, ldns_rdf **origin, ldns_rdf **prev, int *line_nr);
