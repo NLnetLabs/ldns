@@ -57,7 +57,7 @@ int server_start(const char* config)
 		return 0;
 	}
 	printf("service for %d zones (%s) on port %d\n", 
-		sinfo->zones->ztree->count, config, sinfo->cfg->port);
+		(int)sinfo->zones->ztree->count, config, sinfo->cfg->port);
 	printf("Masterdont started pid %d\n", (int)getpid());
 
 	while(work) {

@@ -17,6 +17,7 @@
 #include <arpa/inet.h>
 #include <sys/select.h>
 #include <fcntl.h>
+#include <sys/stat.h>
 
 /* ldns */
 #include "ldns/ldns.h"

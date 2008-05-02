@@ -1,54 +1,51 @@
 config_file.o: config_file.c config.h ../ldns/ldns.h ../ldns/util.h \
-  ../ldns/buffer.h ../ldns/error.h ../ldns/common.h ../ldns/ldns/util.h \
-  ../ldns/dname.h ../ldns/rdata.h ../ldns/dnssec.h ../ldns/packet.h \
-  ../ldns/rr.h ../ldns/keys.h ../ldns/zone.h ../ldns/resolver.h \
-  ../ldns/tsig.h ../ldns/dnssec_zone.h ../ldns/ldns.h ../ldns/rbtree.h \
-  ../ldns/dnssec_verify.h ../ldns/dnssec_sign.h ../ldns/higher.h \
-  ../ldns/host2str.h ../ldns/host2wire.h ../ldns/net.h ../ldns/str2host.h \
-  ../ldns/update.h ../ldns/wire2host.h ../ldns/rr_functions.h \
-  ../ldns/parse.h config_file.h zones.h zinfo.h
+  ../ldns/buffer.h ../ldns/error.h ../ldns/common.h ../ldns/dname.h \
+  ../ldns/rdata.h ../ldns/dnssec.h ../ldns/packet.h ../ldns/rr.h \
+  ../ldns/keys.h ../ldns/zone.h ../ldns/resolver.h ../ldns/tsig.h \
+  ../ldns/dnssec_zone.h ../ldns/rbtree.h ../ldns/dnssec_verify.h \
+  ../ldns/dnssec_sign.h ../ldns/higher.h ../ldns/host2str.h \
+  ../ldns/host2wire.h ../ldns/net.h ../ldns/str2host.h ../ldns/update.h \
+  ../ldns/wire2host.h ../ldns/rr_functions.h ../ldns/parse.h \
+  config_file.h zones.h zinfo.h
 main.o: main.c config.h ../ldns/ldns.h ../ldns/util.h ../ldns/buffer.h \
-  ../ldns/error.h ../ldns/common.h ../ldns/ldns/util.h ../ldns/dname.h \
-  ../ldns/rdata.h ../ldns/dnssec.h ../ldns/packet.h ../ldns/rr.h \
-  ../ldns/keys.h ../ldns/zone.h ../ldns/resolver.h ../ldns/tsig.h \
-  ../ldns/dnssec_zone.h ../ldns/ldns.h ../ldns/rbtree.h \
-  ../ldns/dnssec_verify.h ../ldns/dnssec_sign.h ../ldns/higher.h \
-  ../ldns/host2str.h ../ldns/host2wire.h ../ldns/net.h ../ldns/str2host.h \
-  ../ldns/update.h ../ldns/wire2host.h ../ldns/rr_functions.h \
-  ../ldns/parse.h config_file.h zones.h server.h
+  ../ldns/error.h ../ldns/common.h ../ldns/dname.h ../ldns/rdata.h \
+  ../ldns/dnssec.h ../ldns/packet.h ../ldns/rr.h ../ldns/keys.h \
+  ../ldns/zone.h ../ldns/resolver.h ../ldns/tsig.h ../ldns/dnssec_zone.h \
+  ../ldns/rbtree.h ../ldns/dnssec_verify.h ../ldns/dnssec_sign.h \
+  ../ldns/higher.h ../ldns/host2str.h ../ldns/host2wire.h ../ldns/net.h \
+  ../ldns/str2host.h ../ldns/update.h ../ldns/wire2host.h \
+  ../ldns/rr_functions.h ../ldns/parse.h config_file.h zones.h server.h
 process.o: process.c config.h ../ldns/ldns.h ../ldns/util.h \
-  ../ldns/buffer.h ../ldns/error.h ../ldns/common.h ../ldns/ldns/util.h \
-  ../ldns/dname.h ../ldns/rdata.h ../ldns/dnssec.h ../ldns/packet.h \
-  ../ldns/rr.h ../ldns/keys.h ../ldns/zone.h ../ldns/resolver.h \
-  ../ldns/tsig.h ../ldns/dnssec_zone.h ../ldns/ldns.h ../ldns/rbtree.h \
-  ../ldns/dnssec_verify.h ../ldns/dnssec_sign.h ../ldns/higher.h \
-  ../ldns/host2str.h ../ldns/host2wire.h ../ldns/net.h ../ldns/str2host.h \
-  ../ldns/update.h ../ldns/wire2host.h ../ldns/rr_functions.h \
-  ../ldns/parse.h process.h zones.h zinfo.h server.h
+  ../ldns/buffer.h ../ldns/error.h ../ldns/common.h ../ldns/dname.h \
+  ../ldns/rdata.h ../ldns/dnssec.h ../ldns/packet.h ../ldns/rr.h \
+  ../ldns/keys.h ../ldns/zone.h ../ldns/resolver.h ../ldns/tsig.h \
+  ../ldns/dnssec_zone.h ../ldns/rbtree.h ../ldns/dnssec_verify.h \
+  ../ldns/dnssec_sign.h ../ldns/higher.h ../ldns/host2str.h \
+  ../ldns/host2wire.h ../ldns/net.h ../ldns/str2host.h ../ldns/update.h \
+  ../ldns/wire2host.h ../ldns/rr_functions.h ../ldns/parse.h process.h \
+  zones.h zinfo.h server.h
 server.o: server.c config.h ../ldns/ldns.h ../ldns/util.h \
-  ../ldns/buffer.h ../ldns/error.h ../ldns/common.h ../ldns/ldns/util.h \
-  ../ldns/dname.h ../ldns/rdata.h ../ldns/dnssec.h ../ldns/packet.h \
-  ../ldns/rr.h ../ldns/keys.h ../ldns/zone.h ../ldns/resolver.h \
-  ../ldns/tsig.h ../ldns/dnssec_zone.h ../ldns/ldns.h ../ldns/rbtree.h \
-  ../ldns/dnssec_verify.h ../ldns/dnssec_sign.h ../ldns/higher.h \
-  ../ldns/host2str.h ../ldns/host2wire.h ../ldns/net.h ../ldns/str2host.h \
-  ../ldns/update.h ../ldns/wire2host.h ../ldns/rr_functions.h \
-  ../ldns/parse.h config_file.h server.h zones.h process.h
+  ../ldns/buffer.h ../ldns/error.h ../ldns/common.h ../ldns/dname.h \
+  ../ldns/rdata.h ../ldns/dnssec.h ../ldns/packet.h ../ldns/rr.h \
+  ../ldns/keys.h ../ldns/zone.h ../ldns/resolver.h ../ldns/tsig.h \
+  ../ldns/dnssec_zone.h ../ldns/rbtree.h ../ldns/dnssec_verify.h \
+  ../ldns/dnssec_sign.h ../ldns/higher.h ../ldns/host2str.h \
+  ../ldns/host2wire.h ../ldns/net.h ../ldns/str2host.h ../ldns/update.h \
+  ../ldns/wire2host.h ../ldns/rr_functions.h ../ldns/parse.h \
+  config_file.h server.h zones.h process.h
 zinfo.o: zinfo.c config.h ../ldns/ldns.h ../ldns/util.h ../ldns/buffer.h \
-  ../ldns/error.h ../ldns/common.h ../ldns/ldns/util.h ../ldns/dname.h \
-  ../ldns/rdata.h ../ldns/dnssec.h ../ldns/packet.h ../ldns/rr.h \
-  ../ldns/keys.h ../ldns/zone.h ../ldns/resolver.h ../ldns/tsig.h \
-  ../ldns/dnssec_zone.h ../ldns/ldns.h ../ldns/rbtree.h \
-  ../ldns/dnssec_verify.h ../ldns/dnssec_sign.h ../ldns/higher.h \
-  ../ldns/host2str.h ../ldns/host2wire.h ../ldns/net.h ../ldns/str2host.h \
-  ../ldns/update.h ../ldns/wire2host.h ../ldns/rr_functions.h \
-  ../ldns/parse.h zinfo.h zones.h
+  ../ldns/error.h ../ldns/common.h ../ldns/dname.h ../ldns/rdata.h \
+  ../ldns/dnssec.h ../ldns/packet.h ../ldns/rr.h ../ldns/keys.h \
+  ../ldns/zone.h ../ldns/resolver.h ../ldns/tsig.h ../ldns/dnssec_zone.h \
+  ../ldns/rbtree.h ../ldns/dnssec_verify.h ../ldns/dnssec_sign.h \
+  ../ldns/higher.h ../ldns/host2str.h ../ldns/host2wire.h ../ldns/net.h \
+  ../ldns/str2host.h ../ldns/update.h ../ldns/wire2host.h \
+  ../ldns/rr_functions.h ../ldns/parse.h zinfo.h zones.h
 zones.o: zones.c config.h ../ldns/ldns.h ../ldns/util.h ../ldns/buffer.h \
-  ../ldns/error.h ../ldns/common.h ../ldns/ldns/util.h ../ldns/dname.h \
-  ../ldns/rdata.h ../ldns/dnssec.h ../ldns/packet.h ../ldns/rr.h \
-  ../ldns/keys.h ../ldns/zone.h ../ldns/resolver.h ../ldns/tsig.h \
-  ../ldns/dnssec_zone.h ../ldns/ldns.h ../ldns/rbtree.h \
-  ../ldns/dnssec_verify.h ../ldns/dnssec_sign.h ../ldns/higher.h \
-  ../ldns/host2str.h ../ldns/host2wire.h ../ldns/net.h ../ldns/str2host.h \
-  ../ldns/update.h ../ldns/wire2host.h ../ldns/rr_functions.h \
-  ../ldns/parse.h zones.h zinfo.h
+  ../ldns/error.h ../ldns/common.h ../ldns/dname.h ../ldns/rdata.h \
+  ../ldns/dnssec.h ../ldns/packet.h ../ldns/rr.h ../ldns/keys.h \
+  ../ldns/zone.h ../ldns/resolver.h ../ldns/tsig.h ../ldns/dnssec_zone.h \
+  ../ldns/rbtree.h ../ldns/dnssec_verify.h ../ldns/dnssec_sign.h \
+  ../ldns/higher.h ../ldns/host2str.h ../ldns/host2wire.h ../ldns/net.h \
+  ../ldns/str2host.h ../ldns/update.h ../ldns/wire2host.h \
+  ../ldns/rr_functions.h ../ldns/parse.h zones.h zinfo.h
