@@ -35,6 +35,11 @@ struct socket_service {
 };
 
 struct server_info_t {
+	/* zones */
+	struct zones_t* zones;
+	/* config */
+	struct config_file* cfg;
+
 	/* number of open tcp connections */
 	int num_tcp;
 	/* socket list */
@@ -49,8 +54,9 @@ struct server_info_t {
 /**
  * start the server, give zones, configfile (already read) 
  * and portnumber to bind.
+ * returns true if it needs to reload, false for exit.
 */
-void server_start(struct zones_t* zones, const char* config, int port);
+int server_start(const char* config);
 
 /**
  * free service list
@@ -76,7 +82,7 @@ void server_service_free(struct socket_service* svr);
 /**
  * Perform a select and handle the events on the sockets.
 */
-void server_handle_net(struct server_info_t *sinfo, struct zones_t* zones);
+void server_handle_net(struct server_info_t *sinfo);
 
 /**
  * Handle read possible on serviced socket.

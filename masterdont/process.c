@@ -1,7 +1,7 @@
 #include "config.h"
 #include "process.h"
 #include "zones.h"
-#include "store.h"
+#include "zinfo.h"
 #include "server.h"
 
 ldns_pkt_rcode 
@@ -46,11 +46,12 @@ process_pkt_query(struct socket_service* sv, ldns_pkt* q, ldns_pkt* r,
 	qrr = ldns_rr_list_rr(ldns_pkt_question(q), 0);
 
 	/* find query name zone */
-	entry = zones_find_rdf(zones, ldns_rr_owner(qrr));
+	entry = zones_find_rdf(zones, ldns_rr_owner(qrr), 
+		ldns_rr_get_class(qrr));
 	if(!entry) {
 		return LDNS_RCODE_REFUSED;
 	}
-	printf("Got zone for q. %s\n", entry->store->zone_name);
+	printf("Got zone for q. %s\n", entry->zstr);
 
 	/* copy question */
 	ldns_pkt_push_rr(r, LDNS_SECTION_QUESTION, ldns_rr_clone(qrr));
@@ -59,11 +60,11 @@ process_pkt_query(struct socket_service* sv, ldns_pkt* q, ldns_pkt* r,
 	case LDNS_RR_TYPE_ANY:
 		ldns_pkt_set_aa(r, false);
 	case LDNS_RR_TYPE_SOA:
-		return process_pkt_soa(sv, q, r, entry->store);
+		return process_pkt_soa(sv, q, r, entry);
 	case LDNS_RR_TYPE_AXFR:
-		return process_pkt_axfr(sv, entry->store);
+		return process_pkt_axfr(sv, entry);
 	case LDNS_RR_TYPE_IXFR:
-		return process_pkt_ixfr(sv, q, r, entry->store);
+		return process_pkt_ixfr(sv, q, r, entry);
 	default:
 		return LDNS_RCODE_REFUSED;
 	}
@@ -71,24 +72,25 @@ process_pkt_query(struct socket_service* sv, ldns_pkt* q, ldns_pkt* r,
 
 ldns_pkt_rcode 
 process_pkt_soa(struct socket_service* sv, ldns_pkt* q, ldns_pkt* r,
-	struct store_t* store)
+	struct zone_entry_t* entry)
 {
-	ldns_rr* soa = 0; 	(void)sv; (void)q;
-	store->get_latest_SOA(store, &soa);
+	ldns_rr_list* soa = ldns_rr_list_clone(entry->zinfo->last_soa);
+	(void)sv; (void)q;
 	if(!soa) /* have zone but not soa; no data for zone */
 		return LDNS_RCODE_SERVFAIL;
 	/* put the answer into the packet */
-	ldns_pkt_push_rr(r, LDNS_SECTION_ANSWER, soa);
+	ldns_pkt_push_rr_list(r, LDNS_SECTION_ANSWER, soa);
 	return LDNS_RCODE_NOERROR;
 }
 
 ldns_pkt_rcode 
 process_pkt_ixfr(struct socket_service* sv, ldns_pkt* q, ldns_pkt* r,
-	struct store_t* store)
+	struct zone_entry_t* entry)
 {
 	uint32_t serial_from, serial_to;
 	ldns_rr_list *rr_add=0, *rr_remove=0;
-	ldns_rr *soa_from=0, *soa_to=0;
+	ldns_rr *soa_from=0; 
+	ldns_rr_list *soa_to=0;
 
 	if(ldns_pkt_nscount(q) != 1 ||
 		ldns_rr_get_type(ldns_rr_list_rr(ldns_pkt_authority(q), 0))
@@ -96,34 +98,38 @@ process_pkt_ixfr(struct socket_service* sv, ldns_pkt* q, ldns_pkt* r,
 		printf("ixfr without serial indication\n");
 		return LDNS_RCODE_FORMERR;
 	}
+	if(!entry->zinfo->is_present) {
+		printf("ixfr request for zone without data\n");
+		return LDNS_RCODE_SERVFAIL;
+	}
 
-	serial_to = store->get_latest_serial(store);
+	serial_to = entry->zinfo->last_serial;
 	serial_from = ldns_rdf2native_int32(ldns_rr_rdf(
 		ldns_rr_list_rr(ldns_pkt_authority(q), 0), 2));
-	store->get_latest_SOA(store, &soa_to);
+
+	soa_to = ldns_rr_list_clone(entry->zinfo->last_soa);
 	if(!soa_to) {
-		printf("ixfr request for zone without data\n");
 		return LDNS_RCODE_SERVFAIL;
 	}
 
 	if(serial_to == serial_from) {
 		printf("ixfr request for latest version\n");
-		ldns_pkt_push_rr(r, LDNS_SECTION_ANSWER, soa_to);
+		ldns_pkt_push_rr_list(r, LDNS_SECTION_ANSWER, soa_to);
 		return LDNS_RCODE_NOERROR;
 	}
 
 	/* if UDP - reply with SOA and TC indication */
 	if(!sv->is_tcp) {
 		ldns_pkt_set_tc(r, true);
-		ldns_pkt_push_rr(r, LDNS_SECTION_ANSWER, soa_to);
+		ldns_pkt_push_rr_list(r, LDNS_SECTION_ANSWER, soa_to);
 		return LDNS_RCODE_NOERROR;
 	}
 
-	store->get_zone_diff(store, serial_from, serial_to, &rr_remove,
+	zinfo_get_zone_diff(entry, serial_from, serial_to, &rr_remove,
 		&rr_add, &soa_from, &soa_to);
 	if(!rr_remove || !rr_add || !soa_from || !soa_to) {
 		printf("get_zone_diff failed, fallback to AXFR\n");
-		return process_pkt_axfr(sv, store);
+		return process_pkt_axfr(sv, entry);
 	}
 
 	/* create rrlist for reply */
@@ -153,17 +159,17 @@ process_pkt_ixfr(struct socket_service* sv, ldns_pkt* q, ldns_pkt* r,
 }
 
 ldns_pkt_rcode 
-process_pkt_axfr(struct socket_service* sv, struct store_t* store)
+process_pkt_axfr(struct socket_service* sv, struct zone_entry_t* entry)
 {
 	uint32_t serial;
 	ldns_zone* z = 0;
 
-	serial = store->get_latest_serial(store);
-	store->get_zone_full(store, serial, &z);
+	serial = entry->zinfo->last_serial;
+	zinfo_get_zone_full(entry, serial, &z);
 	if(!z) {
 		/* no data for this zone! */
 		printf("Could not get latest zone info for zone %s %u\n",
-			store->zone_name, serial);
+			entry->zstr, serial);
 		return LDNS_RCODE_SERVFAIL;
 	}
 

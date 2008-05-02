@@ -1,4 +1,5 @@
 #include "config.h"
+#include "config_file.h"
 #include "server.h"
 #include "zones.h"
 #include "process.h"
@@ -13,8 +14,10 @@ void server_handle_signal(int sig)
 	switch(sig) {
 	case SIGHUP:
 		hupped = 1;
+		work = 0;
 		break;
 	case SIGTERM:
+	case SIGINT:
 	case SIGQUIT:
 		work = 0;
 		break;
@@ -24,47 +27,48 @@ void server_handle_signal(int sig)
 	}
 }
 
-void server_start(struct zones_t* zones, const char* config, int port)
+int server_start(const char* config)
 {
-	struct server_info_t* sinfo = (struct server_info_t*)malloc(
+	struct server_info_t* sinfo = (struct server_info_t*)calloc(1,
 		sizeof(struct server_info_t));
 	if(!sinfo) {
 		printf("out of memory\n");
-		return;
+		return 0;
 	}
-	memset(sinfo, 0, sizeof(struct server_info_t));
 	FD_ZERO(&sinfo->rset);
 	FD_ZERO(&sinfo->wset);
 	FD_ZERO(&sinfo->eset);
-
-	server_bind(sinfo, port);
-	if(!sinfo->sock_list) {
-		printf("Could not start server.\n");
-		server_free(sinfo);
-		return;
-	}
-	printf("Server started pid= %d\n", (int)getpid());
-	printf("service for %d zones (%s) on port %d\n", zones->num_zones,
-		config, port);
-
+	work = 1;
+	hupped = 0;
 	signal(SIGHUP, server_handle_signal);
 	signal(SIGQUIT, server_handle_signal);
 	signal(SIGTERM, server_handle_signal);
+	signal(SIGINT, server_handle_signal);
+	signal(SIGPIPE, SIG_IGN);
+	sinfo->zones = zones_create();
+	sinfo->cfg = config_file_create(config);
+	config_file_read(sinfo->cfg, config, sinfo->zones);
+	zones_read(sinfo->zones);
+
+	server_bind(sinfo, sinfo->cfg->port);
+	if(!sinfo->sock_list) {
+		printf("Could not start server.\n");
+		server_free(sinfo);
+		return 0;
+	}
+	printf("service for %d zones (%s) on port %d\n", 
+		sinfo->zones->ztree->count, config, sinfo->cfg->port);
+	printf("Masterdont started pid %d\n", (int)getpid());
+
 	while(work) {
-		server_handle_net(sinfo, zones);
-		if(hupped) {
-			hupped = 0;
-			printf("server: received sighup\n");
-			zones_init(zones, config);
-			printf("resume service for %d zones (%s) on port %d\n", 
-				zones->num_zones, config, port);
-		}
+		server_handle_net(sinfo);
 	}
 	
 	server_free(sinfo);
+	return hupped;
 }
 
-void server_handle_net(struct server_info_t *sinfo, struct zones_t* zones)
+void server_handle_net(struct server_info_t *sinfo)
 {
 	struct socket_service* p, **prevp;
 	int delete_me;
@@ -84,7 +88,7 @@ void server_handle_net(struct server_info_t *sinfo, struct zones_t* zones)
 	while(p) {
 		delete_me = 0;
 		if(FD_ISSET(p->s, &rset))
-			handle_read(sinfo, p, &delete_me, zones);
+			handle_read(sinfo, p, &delete_me, sinfo->zones);
 		if(!delete_me && FD_ISSET(p->s, &wset))
 			handle_write(sinfo, p, &delete_me);
 		/* eset ignored */
@@ -109,6 +113,8 @@ void server_handle_net(struct server_info_t *sinfo, struct zones_t* zones)
 void server_free(struct server_info_t* sinfo)
 {
 	struct socket_service* p = sinfo->sock_list, *np=0;
+	config_file_delete(sinfo->cfg);
+	zones_free(sinfo->zones);
 	while(p) {
 		np = p->next;
 		server_service_free(p);
@@ -147,20 +153,7 @@ void server_bind(struct server_info_t* sinfo, int port)
 			struct socket_service* sv;
 			sv = server_service_create(p);
 			if(!sv) {
-				char buf[1024];
 				err=errno;
-				buf[0]=0;
-				if(p->ai_addr) {
-					struct sockaddr_in* sin=(struct sockaddr_in*)p->ai_addr;
-					if(inet_ntop(sin->sin_family, &sin->sin_addr, 
-						buf, sizeof(buf)) == NULL)
-						perror("inet_ntop");
-				}
-				printf("Error initializing %s port %d (%s)\n", buf, 
-					ntohs(((struct sockaddr_in*)
-					p->ai_addr)->sin_port),
-					(p->ai_protocol==IPPROTO_UDP)?
-					"UDP":"TCP");
 			} else {
 				sv->next = sinfo->sock_list;
 				sinfo->sock_list = sv;
@@ -187,31 +180,41 @@ struct socket_service* server_service_create(struct addrinfo *ai)
 	
 	s = socket(ai->ai_family, ai->ai_socktype, ai->ai_protocol);
 	if(s == -1) {
-		printf("socket: %s\n", strerror(errno));
 		return 0;
 	}
 	if(setsockopt(s, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on)) < 0) {
-		printf("setsockopt(reuseaddr): %s\n", strerror(errno));
 		return 0;
 	}
+#ifdef IPV6_V6ONLY
+	if(ai->ai_protocol == AF_INET6 &&
+		setsockopt(s, IPPROTO_IPV6, IPV6_V6ONLY, &on, sizeof(on)) < 0) {
+		return 0;
+	}
+#endif
 	if(bind(s, ai->ai_addr, ai->ai_addrlen) == -1) {
-		printf("bind: %s\n", strerror(errno));
 		return 0;
 	}
 	if(ai->ai_socktype == SOCK_STREAM &&
 	   listen(s, TCP_LISTEN_BACKLOG) == -1) {
-		printf("listen: %s\n", strerror(errno));
 		return 0;
 	}
 
 	/* create service struct */
 	svr = (struct socket_service*)malloc(sizeof(struct socket_service));
+	if(!svr) {
+		errno = ENOMEM;
+		return 0;
+	}
 	memset(svr, 0, sizeof(struct socket_service));
 	svr->tcp_state = svr_tcp_listen;
 	svr->s = s;
 	if(ai->ai_socktype == SOCK_STREAM)
 		svr->is_tcp = 1;
 	svr->buffer = ldns_buffer_new(SERVER_BUFFER_SIZE);
+	if(!svr->buffer) {
+		errno = ENOMEM;
+		return 0;
+	}
 	return svr;
 }
 
@@ -239,6 +242,10 @@ handle_listen(struct server_info_t *sinfo, struct socket_service* listen_v)
 
 	if((newfd=accept(listen_v->s, NULL, NULL)) == -1) {
 		printf("Error tcp accept: %s", strerror(errno));
+		return;
+	}
+	if(fcntl(newfd, F_SETFL, O_NONBLOCK) == -1) {
+		printf("Error fnctl: %s\n", strerror(errno));
 		return;
 	}
 	sh = (struct socket_service*)malloc(sizeof(struct socket_service));

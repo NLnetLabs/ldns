@@ -6,7 +6,7 @@ LFLAGS=-L$(LDNSDIR)/lib -lcrypto
 LIBS=-lldns
 STATIC=$(LDNSDIR)/lib/libldns.a -lcrypto
 
-OBJ=main.o store.o backtext.o zones.o server.o process.o
+OBJ=main.o zones.o zinfo.o server.o process.o config_file.o
 
 all:	masterdont
 

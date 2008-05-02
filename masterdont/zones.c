@@ -1,6 +1,19 @@
 #include "config.h"
 #include "zones.h"
-#include "store.h"
+#include "zinfo.h"
+
+/** compare two zone_entry */
+static int zones_cmp(const void* a, const void* b)
+{
+	struct zone_entry_t* x = (struct zone_entry_t*)a;
+	struct zone_entry_t* y = (struct zone_entry_t*)b;
+	if(x->zclass != y->zclass) {
+		if(x->zclass < y->zclass)
+			return -1;
+		return 1;
+	}
+	return ldns_rdf_compare(x->zname, y->zname);
+}
 
 struct zones_t* zones_create()
 {
@@ -8,106 +21,106 @@ struct zones_t* zones_create()
 		sizeof(struct zones_t));
 	if(!zones) 
 		return NULL;
-	memset(zones, 0, sizeof(struct zones_t));
+	zones->ztree = ldns_rbtree_create(zones_cmp);
+	if(!zones->ztree) {
+		free(zones);
+		return NULL;
+	}
 	return zones;
 }
 
-int zones_init(struct zones_t* zones, const char* config)
+void zones_read(struct zones_t* zones)
 {
-	/* (re)read the config file */
-	FILE *in = fopen(config, "r");
-	char buf[4096], zone_name[4096], backend[4096], arg[4096];
-	int lineno = 0;
-	struct zone_entry_t* entry = 0;
-
-	if(!in) {
-		perror(config);
-		return 0;
-	}
-	while(fgets(buf, sizeof(buf), in)) {
-		lineno++;
-		printf("reading masterdontconf: %s", buf);
-		if(buf[0] == '#' || buf[0] == '\n')
-			continue; /* skip comments and empty lines */
-		if(sscanf(buf, " %s %s %s", zone_name, backend, arg) != 3) {
-			printf("Could not parse %s:%d %s\n",
-				config, lineno, buf);
-			fclose(in);
-			return 0;
-		}
-		entry = zones_find(zones, zone_name);
-		if(!entry) { /* new entry */
-			entry = zones_insert(zones, zone_name, backend);
-			if(!entry) {
-				printf("Could not add entry for %s\n",
-					zone_name);
-				fclose(in);
-				return 0;
-			}
-		}
-		/* re-init */
-		if(! entry->store->init(entry->store, arg) ) {
-			printf("Could not init zone %s\n", zone_name);
-			fclose(in);
-			return 0;
+	struct zone_entry_t* entry;
+	LDNS_RBTREE_FOR(entry, struct zone_entry_t*, zones->ztree) {
+		if(!zinfo_read(entry)) {
+			fprintf(stderr, "could not read zone %s\n", 
+				entry->zstr);
+			exit(1);
 		}
 	}
-
-	fclose(in);
-	return 1;
 }
 
-struct zone_entry_t* zones_find(struct zones_t* zones, const char* name)
+struct zone_entry_t* zones_find(struct zones_t* zones, const char* name,
+	uint16_t fclass)
 {
-	struct zone_entry_t *p = zones->first;
-	while(p) {
-		if(strcmp(name, p->store->zone_name) == 0)
-			return p;
-		p = p->next;
+	ldns_rdf* rd = ldns_dname_new_frm_str(name);
+	struct zone_entry_t* found;
+	if(!rd) {
+		printf("out of memory\n");
+		return NULL;
 	}
-	return NULL;
+	found = zones_find_rdf(zones, rd, fclass);
+	ldns_rdf_deep_free(rd);
+	return found;
 }
 
-struct zone_entry_t* zones_find_rdf(struct zones_t* zones, ldns_rdf* name)
+struct zone_entry_t* zones_find_rdf(struct zones_t* zones, ldns_rdf* name,
+	uint16_t fclass)
 {
-	char* str = ldns_rdf2str(name);
-	struct zone_entry_t* entry = 0;
-	if(str) {
-		entry = zones_find(zones, str);
-		free(str);
-	}
-	return entry;
+	struct zone_entry_t z;
+	ldns_rbnode_t* found;
+	z.node.key = &z;
+	z.zname = name;
+	z.zclass = fclass;
+	found = ldns_rbtree_search(zones->ztree, &z);
+	return (struct zone_entry_t*)found;
 }
 
 struct zone_entry_t* zones_insert(struct zones_t* zones, const char* name,
-        const char* backend)
+        uint16_t nclass)
 {
-	struct zone_entry_t* entry = zones_find(zones, name);
+	struct zone_entry_t* entry = zones_find(zones, name, nclass);
 	if(entry)
 		return entry;
 	entry = (struct zone_entry_t*)malloc(sizeof(struct zone_entry_t));
 	memset(entry, 0, sizeof(struct zone_entry_t));
-	entry->store = store_create(name, backend);
-	if(!entry->store) {
+	entry->node.key = entry;
+	entry->zstr = strdup(name);
+	if(!entry->zstr) {
 		free(entry);
 		return NULL;
 	}
+	entry->zclass = nclass;
+	entry->zname = ldns_dname_new_frm_str(name);
+	if(!entry->zname) {
+		free(entry);
+		free(entry->zstr);
+		return NULL;
+	}
+	entry->zinfo = zinfo_create();
+	if(!entry->zinfo) {
+		free(entry);
+		free(entry->zstr);
+		ldns_rdf_deep_free(entry->zname);
+		return NULL;
+	}
+
 	/* insert entry into data structure */
-	zones->num_zones ++;
-	entry->next = zones->first;
-	zones->first = entry;
+	ldns_rbtree_insert(zones->ztree, &entry->node);
 	return entry;
+}
+
+void zone_entry_free(struct zone_entry_t* entry)
+{
+	if(!entry) return;
+	zinfo_delete(entry->zinfo);
+	free(entry->zstr);
+	ldns_rdf_deep_free(entry->zname);
+	free(entry);
+}
+
+static void z_free(ldns_rbnode_t* n, void* arg)
+{
+	(void)arg;
+	zone_entry_free((struct zone_entry_t*)n);
 }
 
 void zones_free(struct zones_t* zones)
 {
-	struct zone_entry_t* p = zones->first, *np = 0;
-	while(p) {
-		np = p->next;
-		p->store->store_free(p->store);
-		free(p);
-		p = np;
-	};
-	zones->first = 0;
+	if(!zones)
+		return;
+	ldns_traverse_postorder(zones->ztree, z_free, NULL);
+	ldns_rbtree_free(zones->ztree);
 	free(zones);
 }

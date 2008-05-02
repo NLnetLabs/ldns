@@ -1,4 +1,5 @@
 #include "config.h"
+#include "config_file.h"
 #include "zones.h"
 #include "server.h"
 
@@ -8,31 +9,20 @@ usage(const char* me)
 	printf("usage: %s [options]\n", me);
 	printf("Hidden master stealth server: serves AXFR, IXFR.\n");
 	printf("-h		print this information.\n");
-	printf("-p <port>	set port number of server.\n");
 	printf("-c <file>	set config file to use.\n");
 	printf("\n");
 }
 
 int main(int argc, char* argv[])
 {
-	struct zones_t* zones = zones_create();
-	char* config = strdup(DEFAULT_CONFIG);
-	int port = DEFAULT_PORT;
+	const char* config = DEFAULT_CONFIG;
 	int c;
 
-	while((c=getopt(argc, argv, "c:hp:")) != -1)
+	while((c=getopt(argc, argv, "c:h")) != -1)
 	{
 		switch(c) {
-		case 'p':
-			port = atoi(optarg);
-			if(!port) {
-				printf("Bad port number: %s\n", optarg);
-				return 1;
-			}
-			break;
 		case 'c':
-			if(config) free(config);
-			config = strdup(optarg);
+			config = optarg;
 			break;
 		default:
 			printf("Unknown option '-%c' (%x).\n", c, c);
@@ -49,16 +39,10 @@ int main(int argc, char* argv[])
 		return 1;
 	}
 	
-	if(!zones_init(zones, config)) {
-		printf("Error reading configuration.\n");
-		return 1;
-	}
-
 	/* start server */
-	server_start(zones, config, port);
-
-	/* exit cleanup */
-	zones_free(zones); zones = 0;
-	free(config); config=0;
+	while(server_start(config)) {
+		printf("Masterdont reload\n");
+	}
+	printf("Masterdont stopped\n");
 	return 0;
 }

@@ -7,7 +7,7 @@
 
 struct socket_service;
 struct zones_t;
-struct store_t;
+struct zone_entry_t;
 
 /**
  * Calculate the reply for the query in q. Put answer in packet p.
@@ -30,22 +30,22 @@ ldns_pkt_rcode process_pkt_notify(struct socket_service* sv,
 
 /**
  * Process SOA queries
- * pass correct zone store.
+ * pass correct zone entry.
  */
 ldns_pkt_rcode process_pkt_soa(struct socket_service* sv, 
-	ldns_pkt* q, ldns_pkt* r, struct store_t* store);
+	ldns_pkt* q, ldns_pkt* r, struct zone_entry_t* entry);
 
 /**
  * Process IXFR
- * pass correct zone store.
+ * pass correct zone entry.
  */
 ldns_pkt_rcode process_pkt_ixfr(struct socket_service* sv, 
-	ldns_pkt* q, ldns_pkt* r, struct store_t* store);
+	ldns_pkt* q, ldns_pkt* r, struct zone_entry_t* entry);
 
 /**
  * Process AXFR
- * pass correct zone store.
+ * pass correct zone entry.
  */
 ldns_pkt_rcode process_pkt_axfr(struct socket_service* sv, 
-	struct store_t* store);
+	struct zone_entry_t* entry);
 #endif /* PROCESS_H */
