@@ -100,6 +100,12 @@ ldns_rbtree_init(ldns_rbtree_t *rbtree, int (*cmpf)(const void *, const void *))
 	rbtree->cmp = cmpf;
 }
 
+void 
+ldns_rbtree_free(ldns_rbtree_t *rbtree)
+{
+	free(rbtree);
+}
+
 /*
  * Rotates the node to the left.
  *
