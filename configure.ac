@@ -89,12 +89,11 @@ $4
 else
 AC_MSG_RESULT(failed)
 :
-#echo '$2'
-#echo "$CC $CFLAGS -Werror -Wall -c conftest.c"
-#echo `$CC $CFLAGS -Werror -Wall -c conftest.c`
-#echo "$CC $CFLAGS $1 -Werror -Wall -c conftest.c"
-#echo `$CC $CFLAGS $1 -Werror -Wall -c conftest.c`
-#exit
+echo '$2'
+echo "$CC $CFLAGS -Werror -Wall -c conftest.c"
+echo `$CC $CFLAGS -Werror -Wall -c conftest.c`
+echo "$CC $CFLAGS $1 -Werror -Wall -c conftest.c"
+echo `$CC $CFLAGS $1 -Werror -Wall -c conftest.c`
 $5
 fi
 fi
