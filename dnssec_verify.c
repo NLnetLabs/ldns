@@ -198,8 +198,10 @@ ldns_dnssec_build_data_chain(ldns_resolver *res, uint16_t qflags, const ldns_rr_
 
 	if (signatures && ldns_rr_list_rr_count(signatures) > 0) {
 		key_name = ldns_rr_rdf(ldns_rr_list_rr(signatures, 0), 7);
+		/*
 	} else {
-		printf("[XX] no sigs :(\n");
+		  printf("[XX] no sigs :(\n");
+		*/
 	}
 
 	if (!key_name) {
@@ -215,6 +217,7 @@ ldns_dnssec_build_data_chain(ldns_resolver *res, uint16_t qflags, const ldns_rr_
 			possible_parent_name = ldns_dname_left_chop(ldns_rr_owner(ldns_rr_list_rr(rrset, 0)));
 		} else {
 			/* no information to go on, give up */
+			printf("[XX] not enough information to go on\n");
 			return new_chain;
 		}
 #endif
@@ -224,6 +227,7 @@ ldns_dnssec_build_data_chain(ldns_resolver *res, uint16_t qflags, const ldns_rr_
 			possible_parent_name = ldns_rr_owner(ldns_rr_list_rr(rrset, 0));
 		} else {
 			/* no information to go on, give up */
+			printf("[XX] not enough information to go on\n");
 			return new_chain;
 		}
 
@@ -235,7 +239,6 @@ ldns_dnssec_build_data_chain(ldns_resolver *res, uint16_t qflags, const ldns_rr_
 
 		if (ldns_pkt_ancount(my_pkt) > 0) {
 			/* TODO: add error, no sigs but DS in parent */
-			printf("[XX] what to do?\n");
 			ldns_pkt_print(stdout, my_pkt);
 			ldns_pkt_free(my_pkt);
 		} else {

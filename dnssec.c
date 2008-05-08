@@ -277,7 +277,9 @@ ldns_dnssec_pkt_get_rrsigs_for_type(const ldns_pkt *pkt, ldns_rr_type type)
 							  );
 
 	t_netorder = htons(type); /* rdf are in network order! */
-	rdf_t = ldns_rdf_new(LDNS_RDF_TYPE_TYPE, sizeof(ldns_rr_type), &t_netorder);
+	rdf_t = ldns_rdf_new(LDNS_RDF_TYPE_TYPE,
+					 2,
+					 &t_netorder);
 	sigs_covered = ldns_rr_list_subtype_by_rdf(sigs, rdf_t, 0);
 	
 	ldns_rdf_free(rdf_t);
