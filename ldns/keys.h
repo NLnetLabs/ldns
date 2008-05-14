@@ -48,8 +48,6 @@ enum ldns_enum_algorithm
         LDNS_RSASHA1_NSEC3	= 7,
         LDNS_RSASHA256          = 8, /* not official */
         LDNS_RSASHA512          = 9, /* not official */
-        LDNS_RSASHA256_NSEC3    = 10, /* not official */
-        LDNS_RSASHA512_NSEC3    = 11, /* not official */
         LDNS_INDIRECT           = 252,
         LDNS_PRIVATEDNS         = 253,
         LDNS_PRIVATEOID         = 254
@@ -77,8 +75,6 @@ enum ldns_enum_signing_algorithm
 	LDNS_SIGN_RSASHA512	 = LDNS_RSASHA512,
 	LDNS_SIGN_DSA		 = LDNS_DSA,
 	LDNS_SIGN_RSASHA1_NSEC3  = LDNS_RSASHA1_NSEC3,
-	LDNS_SIGN_RSASHA256_NSEC3  = LDNS_RSASHA256_NSEC3,
-	LDNS_SIGN_RSASHA512_NSEC3  = LDNS_RSASHA512_NSEC3,
 	LDNS_SIGN_DSA_NSEC3	 = LDNS_DSA_NSEC3,	
 	LDNS_SIGN_HMACMD5	 = 157	/* not official! This type is for TSIG, not DNSSEC */
 };

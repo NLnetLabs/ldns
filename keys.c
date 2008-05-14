@@ -23,8 +23,10 @@
 ldns_lookup_table ldns_signing_algorithms[] = {
         { LDNS_SIGN_RSAMD5, "RSAMD5" },
         { LDNS_SIGN_RSASHA1, "RSASHA1" },
+#ifdef USE_SHA2
         { LDNS_SIGN_RSASHA256, "RSASHA256" },
         { LDNS_SIGN_RSASHA512, "RSASHA512" },
+#endif
         { LDNS_SIGN_DSA, "DSA" },
         { LDNS_SIGN_HMACMD5, "hmac-md5.sig-alg.reg.int" },
         { 0, NULL }
@@ -157,17 +159,22 @@ ldns_key_new_frm_fp_l(ldns_key **key, FILE *fp, int *line_nr)
 	if (strncmp(d, "7 RSASHA1", 4) == 0) {
 		alg = LDNS_RSASHA1_NSEC3;
 	}
+
 	if (strncmp(d, "8 RSASHA256", 2) == 0) {
+#ifdef USE_SHA2
 		alg = LDNS_SIGN_RSASHA256;
+#else
+		fprintf(stderr, "Warning: SHA256 not compiled into this ");
+		fprintf(stderr, "version of ldns\n");
+#endif
 	}
 	if (strncmp(d, "9 RSASHA512", 2) == 0) {
+#ifdef USE_SHA2
 		alg = LDNS_SIGN_RSASHA512;
-	}
-	if (strncmp(d, "10 RSASHA256", 3) == 0) {
-		alg = LDNS_SIGN_RSASHA256_NSEC3;
-	}
-	if (strncmp(d, "11 RSASHA512", 3) == 0) {
-		alg = LDNS_SIGN_RSASHA512_NSEC3;
+#else
+		fprintf(stderr, "Warning: SHA256 not compiled into this ");
+		fprintf(stderr, "version of ldns\n");
+#endif
 	}
 	if (strncmp(d, "157 HMAC-MD5", 4) == 0) {
 		alg = LDNS_SIGN_HMACMD5;
@@ -179,10 +186,10 @@ ldns_key_new_frm_fp_l(ldns_key **key, FILE *fp, int *line_nr)
 		case LDNS_SIGN_RSAMD5:
 		case LDNS_SIGN_RSASHA1:
 		case LDNS_RSASHA1_NSEC3:
+#ifdef USE_SHA2
 		case LDNS_SIGN_RSASHA256:
-		case LDNS_RSASHA256_NSEC3:
 		case LDNS_SIGN_RSASHA512:
-		case LDNS_RSASHA512_NSEC3:
+#endif
 			ldns_key_set_algorithm(k, alg);
 			rsa = ldns_key_new_frm_fp_rsa_l(fp, line_nr);
 			ldns_key_set_rsa_key(k, rsa);
@@ -498,10 +505,10 @@ ldns_key_new_frm_algorithm(ldns_signing_algorithm alg, uint16_t size)
 		case LDNS_SIGN_RSAMD5:
 		case LDNS_SIGN_RSASHA1:
 		case LDNS_SIGN_RSASHA1_NSEC3:
+#ifdef USE_SHA2
 		case LDNS_SIGN_RSASHA256:
-		case LDNS_SIGN_RSASHA256_NSEC3:
 		case LDNS_SIGN_RSASHA512:
-		case LDNS_SIGN_RSASHA512_NSEC3:
+#endif
 			r = RSA_generate_key((int)size, RSA_F4, NULL, NULL);
 			if (RSA_check_key(r) != 1) {
 				return NULL;
@@ -925,10 +932,10 @@ ldns_key2rr(const ldns_key *k)
 		case LDNS_RSAMD5:
 		case LDNS_RSASHA1:
 		case LDNS_RSASHA1_NSEC3:
+#ifdef USE_SHA2
 		case LDNS_RSASHA256:
-		case LDNS_RSASHA256_NSEC3:
 		case LDNS_RSASHA512:
-		case LDNS_RSASHA512_NSEC3:
+#endif
 			ldns_rr_push_rdf(pubkey,
 						  ldns_native2rdf_int8(LDNS_RDF_TYPE_ALG, ldns_key_algorithm(k)));
 			rsa =  ldns_key_rsa_key(k);

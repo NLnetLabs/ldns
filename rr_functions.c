@@ -293,8 +293,10 @@ ldns_rr_dnskey_key_size_raw(const unsigned char* keydata,
 	case LDNS_SIGN_RSAMD5:
 	case LDNS_SIGN_RSASHA1:
 	case LDNS_SIGN_RSASHA1_NSEC3:
+#ifdef USE_SHA2
 	case LDNS_SIGN_RSASHA256:
 	case LDNS_SIGN_RSASHA512:
+#endif
 		if (len > 0) {
 			if (keydata[0] == 0) {
 				/* big exponent */

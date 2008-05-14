@@ -101,13 +101,6 @@ main(int argc, char *argv[])
 				exit(EXIT_FAILURE);
 			}
 			break;
-		case '2':
-			if (algorithm != 0) {
-				fprintf(stderr, "%s: %s", prog, "Only one of -D, -A or -H is allowed\n");
-				exit(EXIT_FAILURE);
-			}
-			algorithm = LDNS_SIGN_RSASHA256;
-			break;
 		case 'b':
 			bits = (uint16_t) atoi(optarg);
 			if (bits == 0) {

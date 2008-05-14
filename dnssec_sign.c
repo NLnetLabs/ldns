@@ -218,24 +218,20 @@ ldns_sign_public(ldns_rr_list *rrset, ldns_key_list *keys)
 						   ldns_key_evp_key(current_key),
 						   EVP_sha1());
 				break;
-#ifdef SHA256_DIGEST_LENGTH
+#ifdef USE_SHA2
 			case LDNS_SIGN_RSASHA256:
-			case LDNS_SIGN_RSASHA256_NSEC3:
 				b64rdf = ldns_sign_public_evp(
 						   sign_buf,
 						   ldns_key_evp_key(current_key),
 						   EVP_sha256());
 				break;
-#endif  /* SHA256_DIGEST_LENGTH */
-#ifdef SHA512_DIGEST_LENGTH
 			case LDNS_SIGN_RSASHA512:
-			case LDNS_SIGN_RSASHA512_NSEC3:
 				b64rdf = ldns_sign_public_evp(
 						   sign_buf,
 						   ldns_key_evp_key(current_key),
 						   EVP_sha512());
 				break;
-#endif /* SHA512_DIGEST_LENGTH */
+#endif /* USE_SHA2 */
 			case LDNS_SIGN_RSAMD5:
 				b64rdf = ldns_sign_public_evp(
 						   sign_buf,
@@ -508,7 +504,6 @@ ldns_dnssec_name_node_next_nonglue(ldns_rbnode_t *node)
 			if (!next_name->is_glue) {
 				done = true;
 			} else {
-				printf("glue!\n");
 				next_node = ldns_rbtree_next(next_node);
 			}
 		}

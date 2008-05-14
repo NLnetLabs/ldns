@@ -1432,8 +1432,8 @@ ldns_verify_rrsig_buffers_raw(unsigned char* sig, size_t siglen,
 									  key,
 									  keylen);
 		break;
+#ifdef USE_SHA2
 	case LDNS_RSASHA256:
-	case LDNS_RSASHA256_NSEC3:
 		return ldns_verify_rrsig_rsasha256_raw(sig,
 									    siglen,
 									    verify_buf,
@@ -1441,13 +1441,13 @@ ldns_verify_rrsig_buffers_raw(unsigned char* sig, size_t siglen,
 									    keylen);
 		break;
 	case LDNS_RSASHA512:
-	case LDNS_RSASHA512_NSEC3:
 		return ldns_verify_rrsig_rsasha512_raw(sig,
 									    siglen,
 									    verify_buf,
 									    key,
 									    keylen);
 		break;
+#endif
 	case LDNS_RSAMD5:
 		return ldns_verify_rrsig_rsamd5_raw(sig,
 									 siglen,
@@ -1760,10 +1760,10 @@ ldns_verify_rrsig(ldns_rr_list *rrset, ldns_rr *rrsig, ldns_rr *key)
 	case LDNS_RSAMD5:
 	case LDNS_RSASHA1:
 	case LDNS_RSASHA1_NSEC3:
+#ifdef USE_SHA2
 	case LDNS_RSASHA256:
-	case LDNS_RSASHA256_NSEC3:
 	case LDNS_RSASHA512:
-	case LDNS_RSASHA512_NSEC3:
+#endif
 		if (ldns_rdf2buffer_wire(rawsig_buf,
 							ldns_rr_rdf(rrsig, 8)) != LDNS_STATUS_OK) {
 			ldns_buffer_free(rawsig_buf);
@@ -2021,7 +2021,7 @@ ldns_verify_rrsig_rsasha256_raw(unsigned char* sig,
 						  unsigned char* key,
 						  size_t keylen)
 {
-#ifdef SHA256_DIGEST_LENGTH
+#ifdef USE_SHA2
 	EVP_PKEY *evp_key;
 	ldns_status result;
 
@@ -2047,7 +2047,7 @@ ldns_verify_rrsig_rsasha512_raw(unsigned char* sig,
 						  unsigned char* key,
 						  size_t keylen)
 {
-#ifdef SHA512_DIGEST_LENGTH
+#ifdef USE_SHA2
 	EVP_PKEY *evp_key;
 	ldns_status result;
 
