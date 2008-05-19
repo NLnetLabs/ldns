@@ -38,7 +38,7 @@ usage(FILE *fp, const char *prog) {
 	fprintf(fp, "  -o <domain>\torigin for the zone\n");
 	fprintf(fp, "  -v\t\tprint version and exit\n");
 	fprintf(fp, "  -E <name>\tuse <name> as the crypto engine for signing\n");
-	fprintf(fp, "           \tThis can have a lot of extra options, see -E help for more info\n");
+	fprintf(fp, "           \tThis can have a lot of extra options, see the manual page for more info\n");
 	fprintf(fp, "  -k <id>,<int>\tuse key id with algorithm int from engine\n");
 	fprintf(fp, "  -K <id>,<int>\tuse key id with algorithm int from engine as KSK\n");
 	fprintf(fp, "\t\tif no key is given (but an external one is used through the engine support, it might be necessary to provide the right algorithm number.\n");
@@ -48,9 +48,11 @@ usage(FILE *fp, const char *prog) {
 	fprintf(fp, "\t\t-t [number] number of hash iterations\n");
 	fprintf(fp, "\t\t-s [string] salt\n");
 	fprintf(fp, "\n");
-	fprintf(fp, "  keys must be specified by their base name: K<name>+<alg>+<id>\n");
-	fprintf(fp, "  if the public part of the key is not present in the zone, \n");
-	fprintf(fp, "  both a .key and .private file must be present\n");
+	fprintf(fp, "  keys must be specified by their base name (usually K<name>+<alg>+<id>),\n");
+	fprintf(fp, "  i.e. WITHOUT the .private extension.\n");
+	fprintf(fp, "  If the public part of the key is not present in the zone, the DNSKEY RR\n");
+	fprintf(fp, "  will be read from the file called <base name>.key. If that does not exist,\n");
+	fprintf(fp, "  a default DNSKEY will be generated from the private key and added to the zone.\n");
 	fprintf(fp, "  A date can be a timestamp (seconds since the epoch), or of\n  the form <YYYYMMdd[hhmmss]>\n");
 }
 
@@ -255,10 +257,6 @@ main(int argc, char *argv[])
 			exit(EXIT_SUCCESS);
 			break;
 		case 'E':
-			if (strncmp("help", optarg, 5) == 0) {
-				printf("help\n");
-				exit(EXIT_SUCCESS);
-			}
 			ENGINE_load_builtin_engines();
 			ENGINE_load_dynamic();
 			ENGINE_load_cryptodev();
