@@ -1144,10 +1144,8 @@ ldns_key2buffer_str(ldns_buffer *output, const ldns_key *k)
 		switch(ldns_key_algorithm(k)) {
 			case LDNS_SIGN_RSASHA1:
 			case LDNS_SIGN_RSASHA1_NSEC3:
-#ifdef USE_SHA2
 			case LDNS_SIGN_RSASHA256:
 			case LDNS_SIGN_RSASHA512:
-#endif
 			case LDNS_SIGN_RSAMD5:
 				/* copied by looking at dnssec-keygen output */
 				/* header */

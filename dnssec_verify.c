@@ -2036,6 +2036,12 @@ ldns_verify_rrsig_rsasha256_raw(unsigned char* sig,
 
 	return result;
 #else
+	/* touch these to prevent compiler warnings */
+	(void) sig;
+	(void) siglen;
+	(void) rrset;
+	(void) key;
+	(void) keylen;
 	return LDNS_STATUS_CRYPTO_UNKNOWN_ALGO;
 #endif
 }
@@ -2062,6 +2068,12 @@ ldns_verify_rrsig_rsasha512_raw(unsigned char* sig,
 
 	return result;
 #else
+	/* touch these to prevent compiler warnings */
+	(void) sig;
+	(void) siglen;
+	(void) rrset;
+	(void) key;
+	(void) keylen;
 	return LDNS_STATUS_CRYPTO_UNKNOWN_ALGO;
 #endif
 }

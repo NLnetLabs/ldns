@@ -527,6 +527,8 @@ ldns_dnssec_zone_create_nsecs(ldns_dnssec_zone *zone,
 	if (cur_node) {
 		next_node = ldns_dnssec_name_node_next_nonglue(
 			           ldns_rbtree_next(cur_node));
+	} else {
+		next_node = NULL;
 	}
 
 	while (cur_node && next_node) {
