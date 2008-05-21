@@ -92,11 +92,7 @@ ldns_sign_public(ldns_rr_list *rrset, ldns_key_list *keys)
 		if (!sign_buf) {
 			printf("[XX]ERROR NO SIGN BUG, OUT OF MEM?\n");
 			ldns_rr_list_print(stdout, rrset_clone);
-			while(true) {
-				sleep(1);
-				printf(".");
-				fflush(stdout);
-			}
+			fflush(stdout);
 			exit(123);
 		}
 		b64rdf = NULL;

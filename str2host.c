@@ -14,12 +14,18 @@
 
 #include <ldns/ldns.h>
 
+#ifdef HAVE_SYS_SOCKET_H
 #include <sys/socket.h>
+#endif
+#ifdef HAVE_ARPA_INET_H
 #include <arpa/inet.h>
+#endif
 #include <time.h>
 
 #include <errno.h>
+#ifdef HAVE_NETDB_H
 #include <netdb.h> 
+#endif
 
 #include <limits.h>
 #ifdef HAVE_SYS_PARAM_H
@@ -995,8 +1001,12 @@ ldns_str2rdf_wks(ldns_rdf **rd, const char *str)
 	LDNS_FREE(bitmap);
 	LDNS_FREE(data);
 	free(proto_str);
+#ifdef HAVE_ENDSERVENT
 	endservent();
+#endif
+#ifdef HAVE_ENDPROTOENT
 	endprotoent();
+#endif
 	
 	return LDNS_STATUS_OK;
 }

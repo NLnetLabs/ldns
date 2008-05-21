@@ -360,7 +360,7 @@ AC_HEADER_STDC
 #AC_HEADER_SYS_WAIT
 #AC_CHECK_HEADERS([getopt.h fcntl.h stdlib.h string.h strings.h unistd.h])
 # do the very minimum - we can always extend this
-AC_CHECK_HEADERS([getopt.h stdarg.h stdbool.h openssl/ssl.h netinet/in.h time.h],,, [AC_INCLUDES_DEFAULT])
+AC_CHECK_HEADERS([getopt.h stdarg.h stdbool.h openssl/ssl.h netinet/in.h time.h arpa/inet.h netdb.h],,, [AC_INCLUDES_DEFAULT])
 AC_CHECK_HEADERS(sys/param.h sys/mount.h sys/socket.h,,,
 [AC_INCLUDES_DEFAULT
   [
@@ -413,6 +413,7 @@ AC_REPLACE_FUNCS(inet_ntop)
 AC_REPLACE_FUNCS(snprintf)
 AC_REPLACE_FUNCS(strlcpy)
 AC_REPLACE_FUNCS(memmove)
+AC_CHECK_FUNCS([endprotoent endservent sleep random])
 
 AC_DEFUN([AC_CHECK_GETADDRINFO_WITH_INCLUDES],
 [AC_REQUIRE([AC_PROG_CC])
@@ -452,6 +453,7 @@ AC_LANG_PROGRAM(
 ]
 ), 
 [ac_cv_func_getaddrinfo="yes"
+LDFLAGS="$LDFLAGS -lws2_32"
 ],
 [ac_cv_func_getaddrinfo="no" 
 LIBS="$ORIGLIBS"
@@ -575,6 +577,15 @@ static inline size_t b32_pton_calculate_size(size_t srcsize)
 }
 #endif /* !B32_NTOP */
 
+#ifndef HAVE_SLEEP
+/* use windows sleep, in millisecs, instead */
+#define sleep(x) Sleep((x)*1000)
+#endif
+
+#ifndef HAVE_RANDOM
+#define srandom(x) srand(x)
+#define random(x) rand(x)
+#endif
 
 #ifndef TIMEGM
 #include <time.h>

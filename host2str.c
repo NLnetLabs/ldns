@@ -16,9 +16,15 @@
 
 #include <limits.h>
 
+#ifdef HAVE_SYS_SOCKET_H
 #include <sys/socket.h>
+#endif
+#ifdef HAVE_ARPA_INET_H
 #include <arpa/inet.h>
+#endif
+#ifdef HAVE_NETDB_H
 #include <netdb.h>
+#endif
 #include <time.h>
 #include <sys/time.h>
 
@@ -459,7 +465,9 @@ ldns_rdf2buffer_str_wks(ldns_buffer *output, const ldns_rdf *rdf)
 		ldns_buffer_printf(output, "%u ", protocol_nr);
 	}
 
+#ifdef HAVE_ENDPROTOENT
 	endprotoent();
+#endif
 	
 	for (current_service = 0; 
 	     current_service < ldns_rdf_size(rdf) * 7; current_service++) {
@@ -471,7 +479,9 @@ ldns_rdf2buffer_str_wks(ldns_buffer *output, const ldns_rdf *rdf)
 			} else {
 				ldns_buffer_printf(output, "%u ", current_service);
 			}
+#ifdef HAVE_ENDSERVENT
 			endservent();
+#endif
 		}
 	}
 	return ldns_buffer_status(output);

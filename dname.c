@@ -17,10 +17,18 @@
 
 #include <ldns/ldns.h>
 
+#ifdef HAVE_NETINET_IN_H
 #include <netinet/in.h>
+#endif
+#ifdef HAVE_SYS_SOCKET_H
 #include <sys/socket.h>
+#endif
+#ifdef HAVE_NETDB_H
 #include <netdb.h>
+#endif
+#ifdef HAVE_ARPA_INET_H
 #include <arpa/inet.h>
+#endif
 
 ldns_rdf *
 ldns_dname_cat_clone(const ldns_rdf *rd1, const ldns_rdf *rd2)
