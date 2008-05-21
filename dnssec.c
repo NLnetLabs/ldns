@@ -693,7 +693,7 @@ ldns_dnssec_create_nsec3(ldns_dnssec_name *from,
 
 	flags = flags;
 
-	if (!from || !to) {
+	if (!from) {
 		return NULL;
 	}
 
@@ -719,7 +719,15 @@ ldns_dnssec_create_nsec3(ldns_dnssec_name *from,
 		cur_rrsets = cur_rrsets->next;
 	}
 
-	ldns_rr_set_rdf(nsec_rr, NULL, 4);
+	/* leave next rdata empty if they weren't precomputed yet */
+	if (to && to->hashed_name) {
+		ldns_rr_set_rdf(nsec_rr,
+					 ldns_rdf_clone(to->hashed_name),
+					 4);
+	} else {
+		ldns_rr_set_rdf(nsec_rr, NULL, 4);
+	}
+
 	ldns_rr_set_rdf(nsec_rr,
 				 ldns_dnssec_create_nsec_bitmap(types,
 										  type_count,
@@ -1394,7 +1402,10 @@ ldns_zone_create_nsecs(const ldns_zone *zone, ldns_rr_list *orig_zone_rrs, ldns_
 					nsec = ldns_create_nsec(cur_dname, 
 									    next_dname,
 									    orig_zone_rrs);
-					ldns_rr_set_ttl(nsec, ldns_rdf2native_int32(ldns_rr_rdf(ldns_zone_soa(zone), 6)));
+					ldns_rr_set_ttl(nsec,
+								 ldns_rdf2native_int32(
+									ldns_rr_rdf(ldns_zone_soa(zone),
+											  6)));
 					ldns_rr_list_push_rr(nsec_rrs, nsec);
 					/*start_dname = next_dname;*/
 					cur_dname = next_dname;
@@ -1406,7 +1417,9 @@ ldns_zone_create_nsecs(const ldns_zone *zone, ldns_rr_list *orig_zone_rrs, ldns_
 					    start_dname,
 					    orig_zone_rrs);
 	ldns_rr_list_push_rr(nsec_rrs, nsec);
-	ldns_rr_set_ttl(nsec, ldns_rdf2native_int32(ldns_rr_rdf(ldns_zone_soa(zone), 6)));
+	ldns_rr_set_ttl(nsec, 
+				 ldns_rdf2native_int32(ldns_rr_rdf(ldns_zone_soa(zone),
+											6)));
 
 	return nsec_rrs;
 }
@@ -1534,7 +1547,6 @@ ldns_dnssec_zone_create_nsec3s(ldns_dnssec_zone *zone,
 {
 	ldns_rbnode_t *first_name_node;
 	ldns_rbnode_t *current_name_node;
-	ldns_dnssec_name *first_name;
 	ldns_dnssec_name *current_name;
 	ldns_status result = LDNS_STATUS_OK;
 	ldns_rr *nsec_rr;
@@ -1546,17 +1558,16 @@ ldns_dnssec_zone_create_nsec3s(ldns_dnssec_zone *zone,
 
 	nsec3_list = ldns_rr_list_new();
 
-	first_name_node = ldns_rbtree_first(zone->names);
-	first_name = (ldns_dnssec_name *) first_name_node->data;
+	first_name_node = ldns_dnssec_name_node_next_nonglue(
+					  ldns_rbtree_first(zone->names));
 	
 	current_name_node = first_name_node;
-	current_name = first_name;
 
-	while (ldns_rbtree_next(current_name_node) != LDNS_RBTREE_NULL) {
+	while (current_name_node &&
+		  current_name_node != LDNS_RBTREE_NULL) {
+		current_name = (ldns_dnssec_name *) current_name_node->data;
 		nsec_rr = ldns_dnssec_create_nsec3(current_name,
-									(ldns_dnssec_name *)
-									ldns_rbtree_next(
-									    current_name_node)->data,
+									NULL,
 								     zone->soa->name,
 									algorithm,
 									flags,
@@ -1566,20 +1577,9 @@ ldns_dnssec_zone_create_nsec3s(ldns_dnssec_zone *zone,
 		ldns_dnssec_name_add_rr(current_name, nsec_rr);
 		ldns_rr_list_push_rr(new_rrs, nsec_rr);
 		ldns_rr_list_push_rr(nsec3_list, nsec_rr);
-		current_name_node = ldns_rbtree_next(current_name_node);
-		current_name = (ldns_dnssec_name *) current_name_node->data;
+		current_name_node = ldns_dnssec_name_node_next_nonglue(
+						    ldns_rbtree_next(current_name_node));
 	}
-	nsec_rr = ldns_dnssec_create_nsec3(current_name,
-							     first_name,
-								zone->soa->name,
-								algorithm,
-								flags,
-								iterations,
-								salt_length,
-								salt);
-	result = ldns_dnssec_name_add_rr(current_name, nsec_rr);
-	ldns_rr_list_push_rr(new_rrs, nsec_rr);
-	ldns_rr_list_push_rr(nsec3_list, nsec_rr);
 
 	ldns_rr_list_sort_nsec3(nsec3_list);
 	ldns_dnssec_chain_nsec3_list(nsec3_list);

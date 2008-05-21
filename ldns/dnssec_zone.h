@@ -70,6 +70,10 @@ struct ldns_struct_dnssec_name
 	 * (as marked by ldns_dnssec_zone_mark_glue())
 	 */
 	bool is_glue;
+	/**
+	 * pointer to store the hashed name (only used when in an NSEC3 zone
+	 */
+	ldns_rdf *hashed_name;
 };
 
 /**

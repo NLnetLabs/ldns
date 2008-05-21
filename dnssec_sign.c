@@ -480,6 +480,7 @@ ldns_dnssec_zone_mark_glue(ldns_dnssec_zone *zone)
 				ldns_rdf_deep_free(cur_owner);
 				cur_owner = cur_parent;
 			}
+			ldns_rdf_deep_free(cur_owner);
 		}
 	}
 	return LDNS_STATUS_OK;
@@ -756,6 +757,7 @@ ldns_dnssec_zone_create_rrsigs(ldns_dnssec_zone *zone,
 		cur_node = ldns_rbtree_next(cur_node);
 	}
 
+	ldns_rr_list_deep_free(pubkey_list);
 	return result;
 }
 
@@ -806,6 +808,9 @@ ldns_dnssec_zone_sign_nsec3(ldns_dnssec_zone *zone,
 {
 	ldns_rr *nsec3, *nsec3params;
 	ldns_status result = LDNS_STATUS_OK;
+
+	/* zone is already sorted */
+	ldns_dnssec_zone_mark_glue(zone);
 
 	/* TODO if there are already nsec3s presents and their
 	 * parameters are the same as these, we don't have to recreate
@@ -871,438 +876,90 @@ ldns_zone_sign(const ldns_zone *zone, ldns_key_list *key_list)
 	 * done!
 	 * ow and don't sign old rrsigs etc.
 	 */
-	zone = zone;
-	key_list = key_list;
-	return NULL;
-#if 0 
-	/*TODO: use _dnssec_zone_sign*/
-	ldns_zone *signed_zone;
-	/*
-	  ldns_rr_list *cur_rrset;
-	*/
-	ldns_rr_list *cur_rrsigs;
 
-	ldns_rr_list *orig_zone_rrs;
-	ldns_rr_list *signed_zone_rrs;
-	ldns_rr_list *pubkeys;
-	ldns_rr_list *glue_rrs;
-	ldns_rr_list *rrsig_rrs = NULL;
-	
-	/*
-	ldns_rdf *start_dname = NULL;
-	ldns_rdf *cur_dname = NULL;
-	ldns_rr *next_rr = NULL;
-	ldns_rdf *next_dname = NULL;
-	ldns_rr *nsec;
-	*/
-	ldns_rr *ckey;
-	uint16_t i;
+	/*TODO: use _dnssec_zone_sign*/
+	ldns_dnssec_zone *dnssec_zone;
+	ldns_zone *signed_zone;
+	ldns_rr_list *new_rrs;
+	size_t i;
 
 	signed_zone = ldns_zone_new();
+	dnssec_zone = ldns_dnssec_zone_new();;
 
-	/* there should only be 1 SOA, so the soa record is 1 rrset */
-	cur_rrsigs = NULL;
-	ldns_zone_set_soa(signed_zone, ldns_rr_clone(ldns_zone_soa(zone)));
-	ldns_rr2canonical(ldns_zone_soa(signed_zone));
+	(void) ldns_dnssec_zone_add_rr(dnssec_zone, ldns_zone_soa(zone));
+	ldns_zone_set_soa(signed_zone, ldns_zone_soa(zone));
 	
-	orig_zone_rrs = ldns_rr_list_clone(ldns_zone_rrs(zone));
-
-	ldns_rr_list_push_rr(orig_zone_rrs, ldns_rr_clone(ldns_zone_soa(zone)));
-	
-	/* canon now, needed for correct nsec creation */
-	for (i = 0; i < ldns_rr_list_rr_count(orig_zone_rrs); i++) {
-		ldns_rr2canonical(ldns_rr_list_rr(orig_zone_rrs, i));
-	}
-	glue_rrs = ldns_zone_glue_rr_list(zone);
-
-	/* add the key (TODO: check if it's there already? */
-	pubkeys = ldns_rr_list_new();
-	for (i = 0; i < ldns_key_list_key_count(key_list); i++) {
-		ckey = ldns_key2rr(ldns_key_list_key(key_list, i));
-		ldns_rr_list_push_rr(pubkeys, ckey);
+	for (i = 0; i < ldns_rr_list_rr_count(ldns_zone_rrs(zone)); i++) {
+		(void) ldns_dnssec_zone_add_rr(dnssec_zone,
+								 ldns_rr_list_rr(ldns_zone_rrs(zone),
+											  i));
+		ldns_zone_push_rr(signed_zone, 
+					   ldns_rr_clone(ldns_rr_list_rr(ldns_zone_rrs(zone),
+											   i)));
 	}
 
-	signed_zone_rrs = ldns_rr_list_strip_dnssec(orig_zone_rrs, NULL);
+	new_rrs = ldns_rr_list_new();
+	(void) ldns_dnssec_zone_sign(dnssec_zone,
+						    new_rrs,
+						    key_list,
+						    ldns_dnssec_default_replace_signatures,
+						    NULL);
 
-	ldns_rr_list_deep_free(orig_zone_rrs);
-
-	if (!signed_zone_rrs) {
-		printf("error!\n");
-		exit(1);
+    	for (i = 0; i < ldns_rr_list_rr_count(new_rrs); i++) {
+		ldns_rr_list_push_rr(ldns_zone_rrs(signed_zone),
+						 ldns_rr_clone(ldns_rr_list_rr(new_rrs, i)));
 	}
 
-	
-	ldns_rr_list_sort(signed_zone_rrs);
-	/*
-	nsec_rrs = ldns_zone_create_nsecs(zone, signed_zone_rrs, glue_rrs);
-
-	ldns_rr_list_cat(signed_zone_rrs, nsec_rrs);
-			if (!cur_rrsigs) {
-				ldns_zone_deep_free(signed_zone);
-				ldns_rr_list_deep_free(signed_zone_rrs);
-				ldns_rr_list_deep_free(pubkeys);
-				ldns_rr_list_free(glue_rrs);
-				return NULL;
-			}
-	ldns_rr_list_free(nsec_rrs);
-	*/
-	/*
-	rrsig_rrs = ldns_zone_create_rrsigs(signed_zone, signed_zone_rrs, glue_rrs, key_list);
-	*/
-
-	ldns_rr_list_cat(signed_zone_rrs, rrsig_rrs);
-	ldns_rr_list_free(rrsig_rrs);
-
-	ldns_rr_list_deep_free(ldns_zone_rrs(signed_zone));
-	ldns_zone_set_rrs(signed_zone, ldns_rr_list_clone(signed_zone_rrs));
-	
-	ldns_rr_list_deep_free(signed_zone_rrs);
-	ldns_rr_list_deep_free(pubkeys);
-	ldns_rr_list_free(glue_rrs);
+	ldns_rr_list_deep_free(new_rrs);
+	ldns_dnssec_zone_free(dnssec_zone);
 
 	return signed_zone;
-#endif	
 }
 
 ldns_zone *
 ldns_zone_sign_nsec3(ldns_zone *zone, ldns_key_list *key_list, uint8_t algorithm, uint8_t flags, uint16_t iterations, uint8_t salt_length, uint8_t *salt)
 {
-	zone = zone;
-	key_list = key_list;
-	algorithm = algorithm;
-	flags = flags;
-	iterations = iterations;
-	salt_length = salt_length;
-	salt = salt;
-	return NULL;
-#if 0
-	/* TODO use _dnssec_zone_sign */
-	/*
-	 * Algorithm to be created:
-	 * - sort the rrs (name/class/type?)
-	 * - if sorted, every next rr is belongs either to the rrset
-	 * you are working on, or the rrset is complete
-	 * for each rrset, calculate rrsig and nsec
-	 * put the rrset, rrsig and nsec in the new zone
-	 * done!
-	 * ow and don't sign old rrsigs etc.
-	 */
-	
+	ldns_dnssec_zone *dnssec_zone;
 	ldns_zone *signed_zone;
-	ldns_rr_list *cur_rrset;
-	ldns_rr_list *cur_rrsigs;
-	ldns_rr_list *orig_zone_rrs;
-	ldns_rr_list *signed_zone_rrs;
-	ldns_rr_list *pubkeys;
-	ldns_rr_list *glue_rrs;
-	ldns_rr_list *nsec3_rrs;
-	ldns_rr *nsec3params;
-	
-	ldns_status status;
-	
-	ldns_rdf *start_dname = NULL;
-	ldns_rdf *cur_dname = NULL;
-	ldns_rr *next_rr = NULL;
-	ldns_rdf *next_dname = NULL;
-	char *next_nsec_owner_str = NULL;
-	ldns_rdf *next_nsec_rdf = NULL;
-	ldns_rr *nsec;
-	ldns_rr *ckey;
-	uint16_t i;
-	uint16_t next_label_count;
-	uint16_t cur_label_count;
+	ldns_rr_list *new_rrs;
+	size_t i;
 
-	/* for the empty nonterminal finding algorithm */
-	uint16_t j;
-	ldns_rdf *l1, *l2, *post, *post2;
-	bool found_difference;
-	
-	ldns_rr_type cur_rrset_type;
-	
 	signed_zone = ldns_zone_new();
+	dnssec_zone = ldns_dnssec_zone_new();;
 
-	/* there should only be 1 SOA, so the soa record is 1 rrset */
-	cur_rrsigs = NULL;
-	ldns_zone_set_soa(signed_zone, ldns_rr_clone(ldns_zone_soa(zone)));
-	/*ldns_rr2canonical(ldns_zone_soa(signed_zone));*/
+	(void) ldns_dnssec_zone_add_rr(dnssec_zone, ldns_zone_soa(zone));
+	ldns_zone_set_soa(signed_zone, ldns_zone_soa(zone));
 	
-	orig_zone_rrs = ldns_rr_list_clone(ldns_zone_rrs(zone));
-
-	ldns_rr_list_push_rr(orig_zone_rrs, ldns_rr_clone(ldns_zone_soa(zone)));
-	
-	/* canon now, needed for correct nsec creation */
-	/*
-	for (i = 0; i < ldns_rr_list_rr_count(orig_zone_rrs); i++) {
-		ldns_rr2canonical(ldns_rr_list_rr(orig_zone_rrs, i));
-	}
-	*/
-	glue_rrs = ldns_zone_glue_rr_list(zone);
-
-	/* create and add the nsec3params rr */
-	nsec3params = ldns_rr_new_frm_type(LDNS_RR_TYPE_NSEC3PARAMS);
-	ldns_rr_set_owner(nsec3params, ldns_rdf_clone(ldns_rr_owner(ldns_zone_soa(signed_zone))));
-	ldns_nsec3_add_param_rdfs(nsec3params, algorithm, flags, iterations, salt_length, salt);
-/*	ldns_rdf_set_type(ldns_rr_rdf(nsec3params, 0), LDNS_RDF_TYPE_NSEC3_PARAMS_VARS);*/
-	ldns_rr_list_push_rr(orig_zone_rrs, nsec3params);
-/*
-ldns_rr_print(stdout, nsec3params);
-exit(0);
-*/
-	/* add the key (TODO: check if it's there already? */
-	pubkeys = ldns_rr_list_new();
-	for (i = 0; i < ldns_key_list_key_count(key_list); i++) {
-		ckey = ldns_key2rr(ldns_key_list_key(key_list, i));
-		ldns_rr_list_push_rr(pubkeys, ckey);
+	for (i = 0; i < ldns_rr_list_rr_count(ldns_zone_rrs(zone)); i++) {
+		(void) ldns_dnssec_zone_add_rr(dnssec_zone,
+								 ldns_rr_list_rr(ldns_zone_rrs(zone),
+											  i));
+		ldns_zone_push_rr(signed_zone, 
+					   ldns_rr_clone(ldns_rr_list_rr(ldns_zone_rrs(zone),
+											   i)));
 	}
 
-	signed_zone_rrs = ldns_rr_list_new();
-	
-	ldns_rr_list_sort(orig_zone_rrs);
-	
-	nsec3_rrs = ldns_rr_list_new();
-	
-	/* add nsecs */
-	for (i = 0; i < ldns_rr_list_rr_count(orig_zone_rrs); i++) {
-		if (!start_dname) {
-			/*start_dname = ldns_rr_owner(ldns_zone_soa(zone));*/
-			start_dname = ldns_rr_owner(ldns_rr_list_rr(orig_zone_rrs, i));
-			cur_dname = start_dname;
-		} else {
-
-			next_rr = ldns_rr_list_rr(orig_zone_rrs, i);
-			next_dname = ldns_rr_owner(next_rr);
-			if (ldns_rdf_compare(cur_dname, next_dname) != 0) {
-
-				/* every ownername should have an nsec3, and every empty nonterminal */
-				/* the zone is sorted, so nonterminals should be visible? */
-				/* if labels after first differ with previous it's an empty nonterm? */
-
-				/* empty non-terminal detection algorithm 0.001a-pre1
-				 * walk backwards to the first different label. for each label that
-				 * is not the first label, we have found an empty nonterminal
-				 */
-				cur_label_count = ldns_dname_label_count(cur_dname);
-				next_label_count = ldns_dname_label_count(next_dname);
-				post = ldns_dname_new_frm_str(".");
-				found_difference = false;
-				for (j = 1; j <= cur_label_count && j <= next_label_count && !found_difference; j++) {
-					l1 = ldns_dname_label(cur_dname, cur_label_count - j);
-					l2 = ldns_dname_label(next_dname, next_label_count - j);
-					
-					post2 = ldns_dname_cat_clone(l2, post);
-					ldns_rdf_deep_free(post);
-					post = post2;
-
-					if (ldns_dname_compare(l1, l2) != 0 &&
-					    /*j < cur_label_count &&*/
-					    j < next_label_count
-					   ) {
-					        /*
-						printf("Found empty non-terminal: ");
-						ldns_rdf_print(stdout, post);
-						printf("\n");
-						*/
-						found_difference = true;
-						nsec = ldns_create_nsec3(post, 
-									ldns_rr_owner(ldns_zone_soa(zone)),
-									orig_zone_rrs,
-									algorithm,
-									false,
-									iterations,
-									salt_length,
-									salt,
-									true);
-						
-						/*printf("Created NSEC3 for: ");
-						ldns_rdf_print(stdout, post);
-						printf(":\n");
-						ldns_rr_print(stdout, nsec);
-						*/
-						ldns_rr_set_ttl(nsec, ldns_rdf2native_int32(ldns_rr_rdf(ldns_zone_soa(zone), 6)));
-						ldns_rr_list_push_rr(nsec3_rrs, nsec);
-					}
-					ldns_rdf_deep_free(l1);
-					ldns_rdf_deep_free(l2);
-				}
-				/* and if next label is longer than cur + 1, these must be empty nons too */
-				/* skip current label (total now equal to cur_dname) */
-				if (!found_difference && j < cur_label_count && j < next_label_count) {
-					l2 = ldns_dname_label(next_dname, next_label_count - j);
-					post2 = ldns_dname_cat_clone(l2, post);
-					ldns_rdf_deep_free(post);
-					post = post2;
-					j++;
-				}
-				while (j < next_label_count) {
-					l2 = ldns_dname_label(next_dname, next_label_count - j);
-					post2 = ldns_dname_cat_clone(l2, post);
-					ldns_rdf_deep_free(post);
-					post = post2;
-					/*
-					printf("Found empty non-terminal: ");
-					ldns_rdf_print(stdout, post);
-					printf("\n");
-					*/
-					ldns_rdf_deep_free(l2);
-					j++;	
-					nsec = ldns_create_nsec3(post, 
-								ldns_rr_owner(ldns_zone_soa(zone)),
-								orig_zone_rrs,
+	new_rrs = ldns_rr_list_new();
+	(void) ldns_dnssec_zone_sign_nsec3(dnssec_zone,
+								new_rrs,
+								key_list,
+								ldns_dnssec_default_replace_signatures,
+								NULL,
 								algorithm,
-								false,
+								flags,
 								iterations,
 								salt_length,
-								salt,
-								true);
-/*
-					printf("Created NSEC3 for: ");
-					ldns_rdf_print(stdout, post);
-					printf(":\n");
-					ldns_rr_print(stdout, nsec);
-*/
-					ldns_rr_set_ttl(nsec, ldns_rdf2native_int32(ldns_rr_rdf(ldns_zone_soa(zone), 6)));
-					ldns_rr_list_push_rr(nsec3_rrs, nsec);
-				}
-				ldns_rdf_deep_free(post);
+								salt);
 
-				/* skip glue */
-				if (ldns_rr_list_contains_rr(glue_rrs, next_rr)) {
-/*					cur_dname = next_dname;*/
-					printf("Skip glue: ");
-					ldns_rdf_print(stdout, cur_dname);
-					printf("\n");
-				} else {
-					nsec = ldns_create_nsec3(cur_dname, 
-								ldns_rr_owner(ldns_zone_soa(zone)),
-								orig_zone_rrs,
-								algorithm,
-								false,
-								iterations,
-								salt_length,
-								salt,
-								false);
-
-/*
-					printf("Created NSEC3 for: ");
-					ldns_rdf_print(stdout, cur_dname);
-					printf(":\n");
-					ldns_rr_print(stdout, nsec);
-*/
-					ldns_rr_set_ttl(nsec, ldns_rdf2native_int32(ldns_rr_rdf(ldns_zone_soa(zone), 6)));
-					ldns_rr_list_push_rr(nsec3_rrs, nsec);
-					/*start_dname = next_dname;*/
-					cur_dname = next_dname;
-				}
-			}
-		}
-		ldns_rr_list_push_rr(signed_zone_rrs, ldns_rr_list_rr(orig_zone_rrs, i));
+    	for (i = 0; i < ldns_rr_list_rr_count(new_rrs); i++) {
+		ldns_rr_list_push_rr(ldns_zone_rrs(signed_zone),
+						 ldns_rr_clone(ldns_rr_list_rr(new_rrs, i)));
 	}
-	nsec = ldns_create_nsec3(cur_dname, 
-				ldns_rr_owner(ldns_zone_soa(zone)),
-				orig_zone_rrs,
-				algorithm,
-				false,
-				iterations,
-				salt_length,
-				salt,
-				false);
-	ldns_rr_list_set_rr(nsec3_rrs, nsec, 4);
-	ldns_rr_list_free(orig_zone_rrs);
-	ldns_rr_set_ttl(nsec, ldns_rdf2native_int32(ldns_rr_rdf(ldns_zone_soa(zone), 6)));
-	ldns_rr_list_push_rr(nsec3_rrs, nsec);
 
-/*
-	printf("Created NSEC3 for: ");
-	ldns_rdf_print(stdout, cur_dname);
-	printf(":\n");
-	ldns_rr_print(stdout, nsec);
-*/
-	/* sort nsec3s separately, set nexts and append to signed zone */
-	ldns_rr_list_sort_nsec3(nsec3_rrs);
-	for (i = 0; i < ldns_rr_list_rr_count(nsec3_rrs); i++) {
-		if (i == ldns_rr_list_rr_count(nsec3_rrs) - 1) {
-			next_nsec_owner_str = ldns_rdf2str(ldns_dname_label(ldns_rr_owner(ldns_rr_list_rr(nsec3_rrs, 0)), 0));
-			if (next_nsec_owner_str[strlen(next_nsec_owner_str) - 1] == '.') {
-				next_nsec_owner_str[strlen(next_nsec_owner_str) - 1] = '\0';
-			}
-			status = ldns_str2rdf_b32_ext(&next_nsec_rdf, next_nsec_owner_str);
-			if (!ldns_rr_set_rdf(ldns_rr_list_rr(nsec3_rrs, i), next_nsec_rdf, 4)) {
-				/* todo: error */
-			}
-		} else {
-			next_nsec_owner_str = ldns_rdf2str(ldns_dname_label(ldns_rr_owner(ldns_rr_list_rr(nsec3_rrs, i + 1)), 0));
-			if (next_nsec_owner_str[strlen(next_nsec_owner_str) - 1] == '.') {
-				next_nsec_owner_str[strlen(next_nsec_owner_str) - 1] = '\0';
-			}
-			status = ldns_str2rdf_b32_ext(&next_nsec_rdf, next_nsec_owner_str);
-			if (!ldns_rr_set_rdf(ldns_rr_list_rr(nsec3_rrs, i), next_nsec_rdf, 4)) {
-				/* todo: error */
-			}
-		}
-	}
-	
-	ldns_rr_list_cat(signed_zone_rrs, nsec3_rrs);
-/*
-printf("going to sort:\n");
-ldns_rr_list_print(stdout, signed_zone_rrs);
-*/
-	ldns_rr_list_sort(signed_zone_rrs);
-	
-	/* Sign all rrsets in the zone */
-	cur_rrset = ldns_rr_list_pop_rrset(signed_zone_rrs);
-	while (cur_rrset) {
-		/* don't sign certain types */
-		cur_rrset_type = ldns_rr_get_type(ldns_rr_list_rr(cur_rrset, 0));
-		cur_dname = ldns_rr_owner(ldns_rr_list_rr(cur_rrset, 0));
+	ldns_rr_list_deep_free(new_rrs);
+	ldns_dnssec_zone_free(dnssec_zone);
 
-		/* if we have KSKs, use them for DNSKEYS, otherwise
-		   make them selfsigned (?) */
-		/* don't sign sigs, delegations, and glue */
-		if (cur_rrset_type != LDNS_RR_TYPE_RRSIG &&
-			((ldns_dname_is_subdomain(cur_dname, ldns_rr_owner(ldns_zone_soa(signed_zone)))
-			  && cur_rrset_type != LDNS_RR_TYPE_NS
-			 ) ||
-			 ldns_rdf_compare(cur_dname, ldns_rr_owner(ldns_zone_soa(signed_zone))) == 0
-			) &&
-			!(ldns_rr_list_contains_rr(glue_rrs, ldns_rr_list_rr(cur_rrset, 0)))
-		   ) {
-		   	/*
-		   	printf("About to sign RRSET:\n");
-		   	ldns_rr_list_print(stdout, cur_rrset);
-			*/
-			cur_rrsigs = ldns_sign_public(cur_rrset, key_list);
-
-			/* TODO: make optional, replace exit call */
-			/* if not optional it should be left out completely
-			   (for it is possible to generate bad signarures, by
-			   specifying a future inception date */
-/*
-			result = ldns_verify(cur_rrset, cur_rrsigs, pubkeys, NULL);
-			if (result != LDNS_STATUS_OK) {
-				dprintf("%s", "Cannot verify own sig:\n");
-				dprintf("%s\n", ldns_get_errorstr_by_id(result));
-				ERR_load_crypto_strings();
-				ERR_print_errors_fp(stdout);
-				exit(result);
-			} else {
-				printf("VERIFIED\n");
-			}
-*/
-			ldns_zone_push_rr_list(signed_zone, cur_rrset);
-			ldns_zone_push_rr_list(signed_zone, cur_rrsigs);
-			ldns_rr_list_free(cur_rrsigs);
-		} else {
-			/* push it unsigned (glue, sigs, delegations) */
-			ldns_zone_push_rr_list(signed_zone, cur_rrset);
-		}
-		ldns_rr_list_free(cur_rrset);
-		cur_rrset = ldns_rr_list_pop_rrset(signed_zone_rrs);
-	}
-	ldns_rr_list_deep_free(signed_zone_rrs);
-	ldns_rr_list_deep_free(pubkeys);
-	ldns_rr_list_free(glue_rrs);
 	return signed_zone;
-#endif
 }
 
 #endif

@@ -392,10 +392,18 @@ main(int argc, char *argv[])
 	
 	printf("[XX] Reading zone file\n");
 	if (!zonefile) {
-		fprintf(stderr, "Error: unable to read %s (%s)\n", zonefile_name, strerror(errno));
+		fprintf(stderr,
+			   "Error: unable to read %s (%s)\n",
+			   zonefile_name,
+			   strerror(errno));
 		exit(EXIT_FAILURE);
 	} else {
-		s = ldns_zone_new_frm_fp_l(&orig_zone, zonefile, origin, ttl, class, &line_nr);
+		s = ldns_zone_new_frm_fp_l(&orig_zone,
+							  zonefile,
+							  origin,
+							  ttl,
+							  class,
+							  &line_nr);
 		if (s != LDNS_STATUS_OK) {
 			fprintf(stderr, "Zone not read, error: %s at %s line %d\n", 
 				   ldns_get_errorstr_by_id(s), 
@@ -404,12 +412,14 @@ main(int argc, char *argv[])
 		} else {
 			orig_soa = ldns_zone_soa(orig_zone);
 			if (!orig_soa) {
-				fprintf(stderr, "Error reading zonefile: missing SOA record\n");
+				fprintf(stderr,
+					   "Error reading zonefile: missing SOA record\n");
 				exit(EXIT_FAILURE);
 			}
 			orig_rrs = ldns_zone_rrs(orig_zone);
 			if (!orig_rrs) {
-				fprintf(stderr, "Error reading zonefile: no resource records\n");
+				fprintf(stderr,
+					   "Error reading zonefile: no resource records\n");
 				exit(EXIT_FAILURE);
 			}
 		}
@@ -579,7 +589,6 @@ main(int argc, char *argv[])
 		}
 	}
 
-	printf("[XX] convert to dnssec zone\n");
 	signed_zone = ldns_dnssec_zone_new();
     	if (ldns_dnssec_zone_add_rr(signed_zone, ldns_zone_soa(orig_zone)) !=
 	    LDNS_STATUS_OK) {
@@ -632,7 +641,8 @@ main(int argc, char *argv[])
 	if (signed_zone) {
 		outputfile = fopen(outputfile_name, "w");
 		if (!outputfile) {
-			fprintf(stderr, "Unable to open %s for writing: %s\n", outputfile_name, strerror(errno));
+			fprintf(stderr, "Unable to open %s for writing: %s\n",
+				   outputfile_name, strerror(errno));
 		} else {
 			ldns_dnssec_zone_print(outputfile, signed_zone);
 			fclose(outputfile);

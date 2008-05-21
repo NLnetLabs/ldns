@@ -126,6 +126,31 @@ ldns_dnssec_rrsets_set_type(ldns_dnssec_rrsets *rrsets,
 	return LDNS_STATUS_ERR;
 }
 
+ldns_dnssec_rrsets *
+ldns_dnssec_rrsets_new_frm_rr(ldns_rr *rr)
+{
+	ldns_dnssec_rrsets *new_rrsets;
+	ldns_rr_type rr_type;
+	bool rrsig;
+
+	new_rrsets = ldns_dnssec_rrsets_new();
+	rr_type = ldns_rr_get_type(rr);
+	if (rr_type == LDNS_RR_TYPE_RRSIG) {
+		rrsig = true;
+		rr_type = ldns_rdf2rr_type(ldns_rr_rrsig_typecovered(rr));
+	} else {
+		rrsig = false;
+	}
+	if (!rrsig) {
+		new_rrsets->rrs = ldns_dnssec_rrs_new();
+		new_rrsets->rrs->rr = rr;
+	} else {
+		new_rrsets->signatures = ldns_dnssec_rrs_new();
+		new_rrsets->signatures->rr = rr;
+	}
+	new_rrsets->type = rr_type;
+	return new_rrsets;
+}
 
 ldns_status
 ldns_dnssec_rrsets_add_rr(ldns_dnssec_rrsets *rrsets, ldns_rr *rr)
@@ -146,10 +171,16 @@ ldns_dnssec_rrsets_add_rr(ldns_dnssec_rrsets *rrsets, ldns_rr *rr)
 		rr_type = ldns_rdf2rr_type(ldns_rr_rrsig_typecovered(rr));
 	}
 
-	if (!rrsets->rrs && rrsets->type == 0) {
-		rrsets->rrs = ldns_dnssec_rrs_new();
-		rrsets->rrs->rr = rr;
-		rrsets->type = ldns_rr_get_type(rr);
+	if (!rrsets->rrs && rrsets->type == 0 && !rrsets->signatures) {
+		if (!rrsig) {
+			rrsets->rrs = ldns_dnssec_rrs_new();
+			rrsets->rrs->rr = rr;
+			rrsets->type = rr_type;
+		} else {
+			rrsets->signatures = ldns_dnssec_rrs_new();
+			rrsets->signatures->rr = rr;
+			rrsets->type = rr_type;
+		}
 		return LDNS_STATUS_OK;
 	}
 
@@ -157,10 +188,7 @@ ldns_dnssec_rrsets_add_rr(ldns_dnssec_rrsets *rrsets, ldns_rr *rr)
 		if (rrsets->next) {
 			result = ldns_dnssec_rrsets_add_rr(rrsets->next, rr);
 		} else {
-			new_rrsets = ldns_dnssec_rrsets_new();
-			new_rrsets->rrs = ldns_dnssec_rrs_new();
-			new_rrsets->rrs->rr = rr;
-			new_rrsets->type = ldns_rr_get_type(rr);
+			new_rrsets = ldns_dnssec_rrsets_new_frm_rr(rr);
 			rrsets->next = new_rrsets;
 		}
 	} else if (rr_type < ldns_dnssec_rrsets_type(rrsets)) {
@@ -171,10 +199,16 @@ ldns_dnssec_rrsets_add_rr(ldns_dnssec_rrsets *rrsets, ldns_rr *rr)
 		new_rrsets->type = rrsets->type;
 		new_rrsets->signatures = rrsets->signatures;
 		new_rrsets->next = rrsets->next;
-		rrsets->rrs = ldns_dnssec_rrs_new();
-		rrsets->rrs->rr = rr;
-		rrsets->signatures = NULL;
-		rrsets->type = ldns_rr_get_type(rr);
+		if (!rrsig) {
+			rrsets->rrs = ldns_dnssec_rrs_new();
+			rrsets->rrs->rr = rr;
+			rrsets->signatures = NULL;
+		} else {
+			rrsets->rrs = NULL;
+			rrsets->signatures = ldns_dnssec_rrs_new();
+			rrsets->signatures->rr = rr;
+		}
+		rrsets->type = rr_type;
 		rrsets->next = new_rrsets;
 	} else {
 		/* equal, add to current rrsets */
@@ -186,7 +220,12 @@ ldns_dnssec_rrsets_add_rr(ldns_dnssec_rrsets *rrsets, ldns_rr *rr)
 				rrsets->signatures->rr = rr;
 			}
 		} else {
-			result = ldns_dnssec_rrs_add_rr(rrsets->rrs, rr);
+			if (rrsets->rrs) {
+				result = ldns_dnssec_rrs_add_rr(rrsets->rrs, rr);
+			} else {
+				rrsets->rrs = ldns_dnssec_rrs_new();
+				rrsets->rrs->rr = rr;
+			}
 		}
 	}
 
@@ -234,12 +273,14 @@ ldns_dnssec_name_new()
 		return NULL;
 	}
 
+	new_name->name = NULL;
 	new_name->rrsets = NULL;
 	new_name->name_alloced = false;
 	new_name->nsec = NULL;
 	new_name->nsec_signatures = NULL;
 
 	new_name->is_glue = false;
+	new_name->hashed_name = NULL;
 
 	return new_name;
 }
@@ -335,8 +376,6 @@ ldns_dnssec_name_add_rr(ldns_dnssec_name *name,
 	bool hashed_name = false;
 	ldns_rr_type rr_type = ldns_rr_get_type(rr);
 	ldns_rr_type typecovered = 0;
-	name = name;
-	rr = rr;
 
 	/* special handling for NSEC3 and NSECX covering RRSIGS */
 
@@ -499,12 +538,40 @@ ldns_dname_compare_v(const void *a, const void *b) {
 	return ldns_dname_compare((ldns_rdf *)a, (ldns_rdf *)b);
 }
 
+
+ldns_rbnode_t *
+ldns_dnssec_zone_find_nsec3_original(ldns_dnssec_zone *zone,
+							  ldns_rr *rr) {
+	ldns_rbnode_t *current_node = ldns_rbtree_first(zone->names);
+	ldns_dnssec_name *current_name;
+	ldns_rdf *hashed_name;
+
+	hashed_name = ldns_dname_label(ldns_rr_owner(rr), 0);
+
+	while (current_node != LDNS_RBTREE_NULL) {
+		current_name = (ldns_dnssec_name *) current_node->data;
+
+		if (!current_name->hashed_name) {
+			current_name->hashed_name =
+				ldns_nsec3_hash_name_frm_nsec3(rr, current_name->name);
+		}
+		if (ldns_dname_compare(hashed_name,
+						   current_name->hashed_name)
+		    == 0) {
+			return current_node;
+		}
+		current_node = ldns_rbtree_next(current_node);
+	}
+	return NULL;
+}
+
 ldns_status
 ldns_dnssec_zone_add_rr(ldns_dnssec_zone *zone, ldns_rr *rr)
 {
 	ldns_status result = LDNS_STATUS_OK;
 	ldns_dnssec_name *cur_name;
 	ldns_rbnode_t *cur_node;
+	ldns_rr_type type_covered = 0;
 
 	if (!zone || !rr) {
 		return LDNS_STATUS_ERR;
@@ -514,7 +581,21 @@ ldns_dnssec_zone_add_rr(ldns_dnssec_zone *zone, ldns_rr *rr)
 		zone->names = ldns_rbtree_create(ldns_dname_compare_v);
 	}
 	
-	cur_node = ldns_rbtree_search(zone->names, ldns_rr_owner(rr));
+	/* we need the original of the hashed name if this is
+	   an NSEC3, or an RRSIG that covers an NSEC3 */
+	if (ldns_rr_get_type(rr) == LDNS_RR_TYPE_RRSIG) {
+		type_covered = ldns_rdf2rr_type(ldns_rr_rrsig_typecovered(rr));;
+	}
+	if (ldns_rr_get_type(rr) == LDNS_RR_TYPE_NSEC3 ||
+	    type_covered == LDNS_RR_TYPE_NSEC3) {
+		cur_node = ldns_dnssec_zone_find_nsec3_original(zone,
+					 						   rr);
+		if (!cur_node) {
+			return LDNS_STATUS_DNSSEC_NSEC3_ORIGINAL_NOT_FOUND;
+		}
+	} else {
+		cur_node = ldns_rbtree_search(zone->names, ldns_rr_owner(rr));
+	}
 
 	if (!cur_node) {
 		/* add */
@@ -564,10 +645,11 @@ ldns_dnssec_zone_print(FILE *out, ldns_dnssec_zone *zone)
 			fprintf(out, ";; Zone: ");
 			ldns_rdf_print(out, ldns_dnssec_name_name(zone->soa));
 			fprintf(out, "\n;\n");
-			ldns_dnssec_rrsets_print(out,
-								ldns_dnssec_name_find_rrset(zone->soa,
-													   LDNS_RR_TYPE_SOA),
-								false);
+			ldns_dnssec_rrsets_print(
+			    out,
+			    ldns_dnssec_name_find_rrset(zone->soa,
+									  LDNS_RR_TYPE_SOA),
+			    false);
 			fprintf(out, ";\n");
 		}
 
@@ -650,6 +732,7 @@ ldns_dnssec_zone_add_empty_nonterminals(ldns_dnssec_zone *zone)
 			post2 = ldns_dname_cat_clone(l2, post);
 			ldns_rdf_deep_free(post);
 			post = post2;
+			ldns_dname_cat(post, ldns_dnssec_name_name(zone->soa));
 			/*
 			  printf("Found empty non-terminal: ");
 			  ldns_rdf_print(stdout, post);

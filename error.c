@@ -83,6 +83,7 @@ ldns_lookup_table ldns_error_str[] = {
 	{ LDNS_STATUS_DNSSEC_EXISTENCE_DENIED, "Existence denied by NSEC" },
 	{ LDNS_STATUS_DNSSEC_NSEC_RR_NOT_COVERED, "RR not covered by the given NSEC RRs" },
 	{ LDNS_STATUS_DNSSEC_NSEC_WILDCARD_NOT_COVERED, "wildcard not covered by the given NSEC RRs" },
+	{ LDNS_STATUS_DNSSEC_NSEC3_ORIGINAL_NOT_FOUND, "original of NSEC3 hashed name could not be found" },
 	{ 0, NULL }
 };
 

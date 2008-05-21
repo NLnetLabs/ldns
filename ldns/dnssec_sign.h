@@ -56,6 +56,17 @@ ldns_rdf *ldns_sign_public_rsamd5(ldns_buffer *to_sign, RSA *key);
 #endif /* HAVE_SSL */
 
 /**
+ * Finds the first dnssec_name node in the rbtree that has not been marked
+ * as glue, starting at the given node
+ *
+ * \param[in] node, th first node to check
+ * \return the first node that has not been marked as glue, or NULL
+ * if not found (TODO: make that LDNS_RBTREE_NULL?)
+ */
+ldns_rbnode_t *
+ldns_dnssec_name_node_next_nonglue(ldns_rbnode_t *node);
+
+/**
  * Adds NSEC records to the given dnssec_zone
  *
  * \param[in] zone the zone to add the records to
