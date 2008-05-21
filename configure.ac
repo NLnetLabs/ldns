@@ -1,6 +1,6 @@
 #                                               -*- Autoconf -*-
 # Process this file with autoconf to produce a configure script.
-AC_PREREQ(2.57)
+AC_PREREQ(2.56)
 
 AC_INIT(libdns, 1.3.0, libdns@nlnetlabs.nl, libdns)
 AC_CONFIG_SRCDIR([packet.c])
@@ -18,6 +18,8 @@ AC_AIX
 # Checks for programs.
 AC_PROG_CC
 AC_PROG_MAKE_SET
+
+AC_DEFINE(WINVER, 0x0502, [the version of the windows API enabled])
 
 dnl routine to help check for compiler flags.
 AC_DEFUN([CHECK_COMPILER_FLAG],
@@ -106,6 +108,10 @@ CHECK_COMPILER_FLAG(g, [CFLAGS="$CFLAGS -g"])
 CHECK_COMPILER_FLAG(O2, [CFLAGS="$CFLAGS -O2"])
 
 AC_CHECK_HEADERS([getopt.h time.h],,, [AC_INCLUDES_DEFAULT])
+
+# MinGW32 tests
+AC_CHECK_HEADERS([winsock2.h ws2tcpip.h],,, [AC_INCLUDES_DEFAULT])
+# end mingw32 tests
 
 CHECK_COMPILER_FLAG_NEEDED(-std=c99 -D__EXTENSIONS__ -D_BSD_SOURCE -D_POSIX_C_SOURCE=200112 -D_XOPEN_SOURCE=600,
 [
@@ -324,6 +330,15 @@ case "$enable_sha2" in
 esac
 
 # Use libtool 
+# skip these tests, we do not need them.
+AC_DEFUN([AC_PROG_F77], [:])
+AC_DEFUN([AC_PROG_FC], [:])
+AC_DEFUN([AC_PROG_CXX], [:])
+AC_DEFUN([AC_PROG_CXXCPP], [:])
+AC_DEFUN([AC_PROG_OBJC], [:])
+AC_DEFUN([AC_PROG_OBJCCPP], [:])
+AC_DEFUN([AC_LIBTOOL_CXX], [:])
+AC_DEFUN([AC_LIBTOOL_F77], [:])
 # for macosx, see if glibtool exists and use that
 # BSD's need to know the version...
 AC_CHECK_PROG(glibtool, glibtool, [glibtool], )
@@ -399,7 +414,59 @@ AC_REPLACE_FUNCS(snprintf)
 AC_REPLACE_FUNCS(strlcpy)
 AC_REPLACE_FUNCS(memmove)
 
-AC_CHECK_FUNCS([getaddrinfo])
+AC_DEFUN([AC_CHECK_GETADDRINFO_WITH_INCLUDES],
+[AC_REQUIRE([AC_PROG_CC])
+AC_MSG_CHECKING(for getaddrinfo)
+AC_CACHE_VAL(ac_cv_func_getaddrinfo,
+[ac_cv_func_getaddrinfo=no
+AC_LINK_IFELSE( 
+[
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+char* getaddrinfo();
+char* (*f) () = getaddrinfo;
+#ifdef __cplusplus
+}
+#endif
+int main() {
+	;
+	return 0;
+}
+],
+dnl this case on linux, solaris, bsd
+[ac_cv_func_getaddrinfo="yes"],
+dnl no quick getaddrinfo, try mingw32 and winsock2 library.
+ORIGLIBS="$LIBS"
+LIBS="$LIBS -lws2_32"
+AC_LINK_IFELSE(
+AC_LANG_PROGRAM(
+[
+#ifdef HAVE_WS2TCPIP_H
+#include <ws2tcpip.h>
+#endif
+],
+[
+	(void)getaddrinfo(NULL, NULL, NULL, NULL);
+]
+), 
+[ac_cv_func_getaddrinfo="yes"
+],
+[ac_cv_func_getaddrinfo="no" 
+LIBS="$ORIGLIBS"
+])
+)
+])
+
+AC_MSG_RESULT($ac_cv_func_getaddrinfo)
+if test $ac_cv_func_getaddrinfo = yes; then
+  AC_DEFINE(HAVE_GETADDRINFO, 1, [Whether getaddrinfo is available])
+fi
+])dnl
+
+AC_CHECK_GETADDRINFO_WITH_INCLUDES
+
 if test $ac_cv_func_getaddrinfo = no; then
 AC_LIBOBJ([fake-rfc2553])
 fi
@@ -443,6 +510,14 @@ AH_BOTTOM([
 
 #ifdef HAVE_ARPA_INET_H
 #include <arpa/inet.h>
+#endif
+
+#ifdef HAVE_WINSOCK2_H
+#include <winsock2.h>
+#endif
+
+#ifdef HAVE_WS2TCPIP_H
+#include <ws2tcpip.h>
 #endif
 ])
 
