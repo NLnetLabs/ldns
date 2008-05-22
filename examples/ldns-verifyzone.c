@@ -94,7 +94,7 @@ create_dnssec_zone(ldns_zone *orig_zone)
 	}
 
 	if (ldns_rr_list_rr_count(failed_nsec3s) > 0) {
-		ldns_dnssec_zone_add_empty_nonterminals(dnssec_zone);
+		(void) ldns_dnssec_zone_add_empty_nonterminals(dnssec_zone);
 		for (i = 0; i < ldns_rr_list_rr_count(failed_nsec3s); i++) {
 			cur_rr = ldns_rr_list_rr(failed_nsec3s, i);
 			status = ldns_dnssec_zone_add_rr(dnssec_zone, cur_rr);
