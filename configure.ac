@@ -11,8 +11,6 @@ PACKAGE_VERSION="$PACKAGE_VERSION"
 
 OURCPPFLAGS=''
 CPPFLAGS=${CPPFLAGS:-${OURCPPFLAGS}}
-OURCFLAGS='-g -Wall -W -Wwrite-strings'
-CFLAGS=${CFLAGS:-${OURCFLAGS}}
 
 AC_AIX
 # Checks for programs.
@@ -101,11 +99,13 @@ fi
 fi
 ])
 
+
 # Checks for typedefs, structures, and compiler characteristics.
 AC_C_CONST
 AC_LANG_C
-CHECK_COMPILER_FLAG(g, [CFLAGS="$CFLAGS -g"])
-CHECK_COMPILER_FLAG(O2, [CFLAGS="$CFLAGS -O2"])
+CHECK_COMPILER_FLAG(Wall, [CFLAGS="$CFLAGS -Wall"])
+CHECK_COMPILER_FLAG(W, [CFLAGS="$CFLAGS -w"])
+CHECK_COMPILER_FLAG(Wwrite-strings, [CFLAGS="$CFLAGS -Wwrite-strings"])
 
 AC_CHECK_HEADERS([getopt.h time.h],,, [AC_INCLUDES_DEFAULT])
 
