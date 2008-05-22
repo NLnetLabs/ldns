@@ -280,7 +280,7 @@ ldns_udp_connect(const struct sockaddr_storage *to, struct timeval timeout)
 			== -1) {
                 return 0;
         }
-	if (setsockopt(sockfd, SOL_SOCKET, SO_RCVTIMEO, &timeout,
+	if (setsockopt(sockfd, SOL_SOCKET, SO_RCVTIMEO, (void*)&timeout,
 				(socklen_t)sizeof(timeout))) {
                 /* might fail, in that case, use default for now */
 		/*
@@ -303,7 +303,7 @@ ldns_tcp_connect(const struct sockaddr_storage *to, socklen_t tolen,
 		return 0;
 	}
 
-        if (setsockopt(sockfd, SOL_SOCKET, SO_RCVTIMEO, &timeout,
+        if (setsockopt(sockfd, SOL_SOCKET, SO_RCVTIMEO, (void*)&timeout,
                         (socklen_t) sizeof(timeout))) {
                 /*perror("setsockopt");*/
                 close(sockfd);

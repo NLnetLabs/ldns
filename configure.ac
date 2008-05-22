@@ -89,12 +89,13 @@ $4
 else
 AC_MSG_RESULT(failed)
 :
-echo '$2'
-echo "$CC $CFLAGS -Werror -Wall -c conftest.c"
-echo `$CC $CFLAGS -Werror -Wall -c conftest.c`
-echo "$CC $CFLAGS $1 -Werror -Wall -c conftest.c"
-echo `$CC $CFLAGS $1 -Werror -Wall -c conftest.c`
+#cat conftest.c
+#echo "$CC $CFLAGS -Werror -Wall -c conftest.c"
+#echo `$CC $CFLAGS -Werror -Wall -c conftest.c`
+#echo "$CC $CFLAGS $1 -Werror -Wall -c conftest.c"
+#echo `$CC $CFLAGS $1 -Werror -Wall -c conftest.c`
 $5
+
 fi
 fi
 ])
@@ -587,10 +588,13 @@ static inline size_t b32_pton_calculate_size(size_t srcsize)
 #define random(x) rand(x)
 #endif
 
-#ifndef TIMEGM
+#ifndef HAVE_TIMEGM
 #include <time.h>
 time_t timegm (struct tm *tm);
 #endif /* !TIMEGM */
+#ifndef HAVE_GMTIME_R
+struct tm *gmtime_r(const time_t *timep, struct tm *result);
+#endif
 #ifndef HAVE_ISBLANK
 int isblank(int c);
 #endif /* !HAVE_ISBLANK */
