@@ -11,7 +11,7 @@ ldns-verify-zone \- read a DNSSEC signed zone and verify it.
 
 RRSIG resource records are checked against the DNSKEY set at the zone apex.
 
-Each name is checked for an NSEC(3), if appriopriate.
+Each name is checked for an NSEC(3), if appropriate.
 
 .SH OPTIONS
 .TP
@@ -26,13 +26,15 @@ Show the version and exit
 .TP
 \fB-V\fR \fInumber\fR
 Set the verbosity level (default 3):
-0: Be silent
-1: Print result, and any errors
-2: Print result, and any errors
-3: Print result, any errors, and the names that are being checked
-4: Print result, any errors, and the names that are being checked
-5: Print the zone after it has been read, the result, 
-   any errors, and the names that are being checked
+
+ 0: Be silent
+ 1: Print result, and any errors
+ 2: Same as 1 for now
+ 3: Print result, any errors, and the names that are
+    being checked
+ 4: Same as 3 for now
+ 5: Print the zone after it has been read, the result, 
+    any errors, and the names that are being checked
 
 
 .SH AUTHOR
