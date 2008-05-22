@@ -15,6 +15,10 @@
 
 #include <ldns/ldns.h>
 
+#ifdef HAVE_SYS_SOCKET_H
+#include <sys/socket.h>
+#endif
+
 #define LDNS_DEFAULT_TIMEOUT_SEC 2
 #define LDNS_DEFAULT_TIMEOUT_USEC 0
 
