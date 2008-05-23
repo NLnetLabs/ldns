@@ -95,11 +95,9 @@ mkdir "doc/man";
 mkdir "doc/man/man$MAN_SECTION";
 
 $state = 0;
-my $cur_line;
-while($cur_line = <>) {
-	$line = $cur_line;
-	chomp($line);
-	if ($line =~ /^\/\*\*[\t ]*$/) {
+while(<>) {
+	chomp;
+	if (/^\/\*\*[\t ]*$/) {
 		# /** Seen
 		#print "Comment seen! [$_]\n";
 		$state = 1;
@@ -107,7 +105,7 @@ while($cur_line = <>) {
 		undef $struct_description;
 		next;
 	}
-	if ($line =~ /\*\// and $state == 1) {
+	if (/\*\// and $state == 1) {
 		#print "END Comment seen!\n";
 		$state = 2;
 		next;
@@ -115,11 +113,11 @@ while($cur_line = <>) {
 
 	if ($state == 1) {
 		# inside doxygen 
-		$line =~ s/^[ \t]*\*[ \t]*//;
-		$description = $description . "\n" . $line;
+		s/^[ \t]*\*[ \t]*//;
+		$description = $description . "\n" . $_;
 		#$description = $description . "\n.br\n" . $_;
 	}
-	if ($state == 2 and $line =~ /const/) {
+	if ($state == 2 and /const/) {
 		# the const word exists in the function call
 		#$const = "const";
 		#s/[\t ]*const[\t ]*//;
@@ -127,21 +125,23 @@ while($cur_line = <>) {
 		#undef $const;
 	}
 	
-	if ($line =~ /^INLINE/) {
-		$line =~ s/^INLINE\s*//;
-		while (!$line =~ /{/) {
-			$line .= " ".<>;
-			$line =~ s/\n//;
+	if (/^INLINE/) {
+		s/^INLINE\s*//;
+		while (!/{/) {
+			$_ .= " ".<>;
+			$_ =~ s/\n//;
 		}
-		$line =~ s/{/;/;
+		$_ =~ s/{/;/;
 	}
-
-	while($state == 2 and $line =~ /\(/ and $line !~ /\)/) {
-		$line .= <>;
-		$line =~ s/\s+/ /g;
-	}
-
-	if ($line =~ /([\w\* ]+)[\t ]+(.*?)\((.*)\)\s*;/ and $state == 2) {
+	
+	if (/^[^#*\/ ]([\w\*]+)[\t ]+(.*?)\((.*)\s*/ and $state == 2) {
+		while ($_ !~ /\)\s*;/) {
+			$_ .= <>;
+			chomp($_);
+			$_ =~ s/\n/ /g;
+			$_ =~ s/\s\s*/ /g;
+		}
+		$_ =~ /([\w\* ]+)[\t ]+(.*?)\((.*)\)\s*;/;
 		# this should also end the current comment parsing
 		$return = $1;
 		$key = $2;
@@ -168,10 +168,10 @@ while($cur_line = <>) {
 		undef $struct_description;
 		$state = 0;
 	} elsif ($state == 2 and (
-			$line =~ /^typedef\sstruct\s(\w+)\s(\w+);/ or
-			$line =~ /^typedef\senum\s(\w+)\s(\w+);/)
+			/^typedef\sstruct\s(\w+)\s(\w+);/ or
+			/^typedef\senum\s(\w+)\s(\w+);/)
 	        ) {
-		$struct_description .= "\n.br\n" . $line;
+		$struct_description .= "\n.br\n" . $_;
 		$key = $2;
 		$struct_description =~ s/\/\*\*\s*(.*?)\s*\*\//\\fB$1:\\fR/g;
 		$description{$key} = $struct_description;
