@@ -221,8 +221,15 @@ do_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
  * rr list we have must all be a ds for the keys in this list
  */
 ldns_status
-do_chase(ldns_resolver *res, ldns_rdf *name, ldns_rr_type type, ldns_rr_class c,
-		ldns_rr_list *trusted_keys, ldns_pkt *pkt_o, uint16_t qflags, ldns_rr_list *prev_key_list)
+do_chase(ldns_resolver *res,
+	    ldns_rdf *name,
+	    ldns_rr_type type,
+	    ldns_rr_class c,
+	    ldns_rr_list *trusted_keys,
+	    ldns_pkt *pkt_o,
+	    uint16_t qflags,
+	    ldns_rr_list *prev_key_list,
+	    int verbosity)
 {
 	ldns_rr_list *rrset = NULL;
 	ldns_status result;
@@ -354,29 +361,39 @@ do_chase(ldns_resolver *res, ldns_rdf *name, ldns_rr_type type, ldns_rr_class c,
 		chain = ldns_dnssec_build_data_chain(res, qflags, rrset, pkt, NULL);
 	}
 
-	printf("\n\nDNSSEC Data Chain:\n");
-	ldns_dnssec_data_chain_print(stdout, chain);
+	if (verbosity >= 4) {
+		printf("\n\nDNSSEC Data Chain:\n");
+		ldns_dnssec_data_chain_print(stdout, chain);
+	}
 	
 	result = LDNS_STATUS_OK;
 
 	tree = ldns_dnssec_derive_trust_tree(chain, NULL);
 
-	printf("\n\nDNSSEC Trust tree:\n");
-	ldns_dnssec_trust_tree_print(stdout, tree, 0, true);
+	if (verbosity >= 2) {
+		printf("\n\nDNSSEC Trust tree:\n");
+		ldns_dnssec_trust_tree_print(stdout, tree, 0, true);
+	}
 
 	if (ldns_rr_list_rr_count(trusted_keys) > 0) {
 		tree_result = ldns_dnssec_trust_tree_contains_keys(tree, trusted_keys);
 
 		if (tree_result == LDNS_STATUS_DNSSEC_EXISTENCE_DENIED) {
-			printf("Existence denied or verifiably insecure\n");
-			result = LDNS_STATUS_OK;
+			if (verbosity >= 1) {
+				printf("Existence denied or verifiably insecure\n");
+				result = LDNS_STATUS_OK;
+			}
 		} else if (tree_result != LDNS_STATUS_OK) {
-			printf("No trusted keys found in tree: first error was: %s\n", ldns_get_errorstr_by_id(tree_result));
-			result = tree_result;
+			if (verbosity >= 1) {
+				printf("No trusted keys found in tree: first error was: %s\n", ldns_get_errorstr_by_id(tree_result));
+				result = tree_result;
+			}
 		}
 
 	} else {
-		printf("You have not provided any trusted keys.\n");
+		if (verbosity >= 0) {
+			printf("You have not provided any trusted keys.\n");
+		}
 	}
 	
 	ldns_dnssec_trust_tree_free(tree);

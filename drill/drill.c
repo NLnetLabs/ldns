@@ -153,7 +153,7 @@ main(int argc, char *argv[])
 	PURPOSE = DRILL_QUERY;
 	qflags = LDNS_RD;
 	qport = LDNS_PORT;
-	verbosity = 0;
+	verbosity = 2;
 	qdnssec = false;
 	qfamily = LDNS_RESOLV_INETANY;
 	qfail = false;
@@ -594,7 +594,7 @@ main(int argc, char *argv[])
 				error("%s", "error pkt sending");
 				result = EXIT_FAILURE;
 			} else {
-				if (verbosity != -1) {
+				if (verbosity >= 3) {
 					ldns_pkt_print(stdout, pkt);
 				}
 				
@@ -604,7 +604,8 @@ main(int argc, char *argv[])
 					ldns_resolver_set_dnssec_anchors(res, ldns_rr_list_clone(key_list));
 					result = do_chase(res, qname, type,
 					                  clas, key_list, 
-					                  pkt, qflags, NULL);
+					                  pkt, qflags, NULL,
+								   verbosity);
 					if (result == LDNS_STATUS_OK) {
 						if (verbosity != -1) {
 							mesg("Chase successful");
