@@ -150,11 +150,10 @@ void ldns_dnssec_trust_tree_print(FILE *out,
  * \param[in] parent_status The DNSSEC status for this parent, child and RRSIG
  * \return LDNS_STATUS_OK if the addition succeeds, error otherwise
  */
-ldns_status
-ldns_dnssec_trust_tree_add_parent(ldns_dnssec_trust_tree *tree,
-                                  const ldns_dnssec_trust_tree *parent,
-                                  const ldns_rr *parent_signature,
-                                  const ldns_status parent_status);
+ldns_status ldns_dnssec_trust_tree_add_parent(ldns_dnssec_trust_tree *tree,
+									 const ldns_dnssec_trust_tree *parent,
+									 const ldns_rr *parent_signature,
+									 const ldns_status parent_status);
 
 /**
  * Generates a dnssec_trust_ttree for the given rr from the given data_chain
@@ -173,10 +172,9 @@ ldns_dnssec_trust_tree *ldns_dnssec_derive_trust_tree(ldns_dnssec_data_chain *da
  * \param[in] data_chain The data chain containing the data for the trust tree
  * \param[in] cur_sig_rr The currently relevant signature
  */
-void
-ldns_dnssec_derive_trust_tree_normal_rrset(ldns_dnssec_trust_tree *new_tree,
-                                           ldns_dnssec_data_chain *data_chain,
-                                           ldns_rr *cur_sig_rr);
+void ldns_dnssec_derive_trust_tree_normal_rrset(ldns_dnssec_trust_tree *new_tree,
+									   ldns_dnssec_data_chain *data_chain,
+									   ldns_rr *cur_sig_rr);
 
 /**
  * Sub function for derive_trust_tree that is used for DNSKEY rrsets
@@ -186,11 +184,10 @@ ldns_dnssec_derive_trust_tree_normal_rrset(ldns_dnssec_trust_tree *new_tree,
  * \param[in] cur_rr The currently relevant DNSKEY RR
  * \param[in] cur_sig_rr The currently relevant signature
  */
-void
-ldns_dnssec_derive_trust_tree_dnskey_rrset(ldns_dnssec_trust_tree *new_tree,
-                                           ldns_dnssec_data_chain *data_chain,
-                                           ldns_rr *cur_rr,
-                                           ldns_rr *cur_sig_rr);
+void ldns_dnssec_derive_trust_tree_dnskey_rrset(ldns_dnssec_trust_tree *new_tree,
+									   ldns_dnssec_data_chain *data_chain,
+									   ldns_rr *cur_rr,
+									   ldns_rr *cur_sig_rr);
 
 /**
  * Sub function for derive_trust_tree that is used for DS rrsets
@@ -199,10 +196,9 @@ ldns_dnssec_derive_trust_tree_dnskey_rrset(ldns_dnssec_trust_tree *new_tree,
  * \param[in] data_chain The data chain containing the data for the trust tree
  * \param[in] cur_rr The currently relevant DS RR
  */
-void
-ldns_dnssec_derive_trust_tree_ds_rrset(ldns_dnssec_trust_tree *new_tree,
-                                       ldns_dnssec_data_chain *data_chain,
-                                       ldns_rr *cur_rr);
+void ldns_dnssec_derive_trust_tree_ds_rrset(ldns_dnssec_trust_tree *new_tree,
+								    ldns_dnssec_data_chain *data_chain,
+								    ldns_rr *cur_rr);
 
 /**
  * Sub function for derive_trust_tree that is used when there are no
@@ -211,9 +207,8 @@ ldns_dnssec_derive_trust_tree_ds_rrset(ldns_dnssec_trust_tree *new_tree,
  * \param[in] new_tree The trust tree that we are building
  * \param[in] data_chain The data chain containing the data for the trust tree
  */
-void
-ldns_dnssec_derive_trust_tree_no_sig(ldns_dnssec_trust_tree *new_tree,
-                                     ldns_dnssec_data_chain *data_chain);
+void ldns_dnssec_derive_trust_tree_no_sig(ldns_dnssec_trust_tree *new_tree,
+								  ldns_dnssec_data_chain *data_chain);
 
 /**
  * Returns OK if there is a trusted path in the tree to one of 
@@ -258,11 +253,10 @@ ldns_status ldns_verify(ldns_rr_list *rrset,
  * \return the set of trusted keys for the domain, or NULL if no 
  *         trust path could be built.
  */
-ldns_rr_list *
-ldns_fetch_valid_domain_keys(const ldns_resolver * res,
-					    const ldns_rdf * domain,
-					    const ldns_rr_list * keys,
-					    ldns_status *status);
+ldns_rr_list *ldns_fetch_valid_domain_keys(const ldns_resolver * res,
+								   const ldns_rdf * domain,
+								   const ldns_rr_list * keys,
+								   ldns_status *status);
 
 /**
  * Validates the DNSKEY RRset for the given domain using the provided 
@@ -274,10 +268,9 @@ ldns_fetch_valid_domain_keys(const ldns_resolver * res,
  * \return the set of trusted keys for the domain, or NULL if the RRSET
  *         could not be validated
  */
-ldns_rr_list *
-ldns_validate_domain_dnskey (const ldns_resolver *res,
-					    const ldns_rdf *domain,
-					    const ldns_rr_list *keys);
+ldns_rr_list *ldns_validate_domain_dnskey (const ldns_resolver *res,
+								   const ldns_rdf *domain,
+								   const ldns_rr_list *keys);
 
 /**
  * Validates the DS RRset for the given domain using the provided trusted keys.
@@ -287,11 +280,10 @@ ldns_validate_domain_dnskey (const ldns_resolver *res,
  * \param[in] keys the current set of trusted keys
  * \return the set of trusted keys for the domain, or NULL if the RRSET could not be validated
  */
-ldns_rr_list *
-ldns_validate_domain_ds(const ldns_resolver *res,
-				    const ldns_rdf *
-				    domain,
-				    const ldns_rr_list * keys);
+ldns_rr_list *ldns_validate_domain_ds(const ldns_resolver *res,
+							   const ldns_rdf *
+							   domain,
+							   const ldns_rr_list * keys);
 
 /**
  * Verifies a list of signatures for one RRset using a valid trust path.
@@ -304,11 +296,10 @@ ldns_validate_domain_ds(const ldns_resolver *res,
  *                              the signatures are added to it
  * \return status LDNS_STATUS_OK if there is at least one correct key
  */
-ldns_status
-ldns_verify_trusted(ldns_resolver *res,
-				ldns_rr_list *rrset,
-				ldns_rr_list *rrsigs,
-				ldns_rr_list *validating_keys);
+ldns_status ldns_verify_trusted(ldns_resolver *res,
+						  ldns_rr_list *rrset,
+						  ldns_rr_list *rrsigs,
+						  ldns_rr_list *validating_keys);
 
 /**
  * denial is not just a river in egypt
@@ -320,10 +311,9 @@ ldns_verify_trusted(ldns_resolver *res,
  * \return LDNS_STATUS_OK if the NSEC RRs deny the existence, error code
  *                        containing the reason they do not otherwise
  */
-ldns_status
-ldns_dnssec_verify_denial(ldns_rr *rr,
-                          ldns_rr_list *nsecs,
-                          ldns_rr_list *rrsigs);
+ldns_status ldns_dnssec_verify_denial(ldns_rr *rr,
+							   ldns_rr_list *nsecs,
+							   ldns_rr_list *rrsigs);
 
 /**
  * Denial of existence using NSEC3 records
@@ -342,13 +332,12 @@ ldns_dnssec_verify_denial(ldns_rr *rr,
  * \return LDNS_STATUS_OK if the NSEC3 RRs deny the existence, error code
  *                        containing the reason they do not otherwise
  */
-ldns_status
-ldns_dnssec_verify_denial_nsec3(ldns_rr *rr,
-						  ldns_rr_list *nsecs,
-						  ldns_rr_list *rrsigs,
-						  ldns_pkt_rcode packet_rcode,
-						  ldns_rr_type packet_qtype,
-						  bool packet_nodata);
+ldns_status ldns_dnssec_verify_denial_nsec3(ldns_rr *rr,
+								    ldns_rr_list *nsecs,
+								    ldns_rr_list *rrsigs,
+								    ldns_pkt_rcode packet_rcode,
+								    ldns_rr_type packet_qtype,
+								    bool packet_nodata);
 
 /**
  * Verifies the already processed data in the buffers
@@ -394,7 +383,10 @@ ldns_status ldns_verify_rrsig_buffers_raw(unsigned char* sig,
  * \return a list of keys which validate the rrsig + rrset. Returns NULL
  *         when none of the keys validate.
  */
-ldns_status ldns_verify_rrsig_keylist(ldns_rr_list *rrset, ldns_rr *rrsig, const ldns_rr_list *keys, ldns_rr_list *good_keys);
+ldns_status ldns_verify_rrsig_keylist(ldns_rr_list *rrset,
+							   ldns_rr *rrsig,
+							   const ldns_rr_list *keys,
+							   ldns_rr_list *good_keys);
 
 /**
  * convert dsa data
@@ -414,7 +406,9 @@ ldns_convert_dsa_rrsig_rdata(ldns_buffer *target_buffer,
  * \param[in] key the key to use
  * \return status message wether verification succeeded.
  */
-ldns_status ldns_verify_rrsig(ldns_rr_list *rrset, ldns_rr *rrsig, ldns_rr *key);
+ldns_status ldns_verify_rrsig(ldns_rr_list *rrset,
+						ldns_rr *rrsig,
+						ldns_rr *key);
 
 /**
  * verifies a buffer with signature data for a buffer with rrset data 

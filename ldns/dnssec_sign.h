@@ -63,8 +63,7 @@ ldns_rdf *ldns_sign_public_rsamd5(ldns_buffer *to_sign, RSA *key);
  * \return the first node that has not been marked as glue, or NULL
  * if not found (TODO: make that LDNS_RBTREE_NULL?)
  */
-ldns_rbnode_t *
-ldns_dnssec_name_node_next_nonglue(ldns_rbnode_t *node);
+ldns_rbnode_t *ldns_dnssec_name_node_next_nonglue(ldns_rbnode_t *node);
 
 /**
  * Adds NSEC records to the given dnssec_zone
@@ -74,9 +73,8 @@ ldns_dnssec_name_node_next_nonglue(ldns_rbnode_t *node);
  *            added to this rr list, so the caller can free them later
  * \return LDNS_STATUS_OK on success, an error code otherwise
  */
-ldns_status
-ldns_dnssec_zone_create_nsecs(ldns_dnssec_zone *zone,
-						ldns_rr_list *new_rrs);
+ldns_status ldns_dnssec_zone_create_nsecs(ldns_dnssec_zone *zone,
+								  ldns_rr_list *new_rrs);
 
 /**
  * remove signatures if callback function tells to
@@ -92,11 +90,10 @@ ldns_dnssec_zone_create_nsecs(ldns_dnssec_zone *zone,
  * \returns pointer to the new signatures rrs (the original
  *          passed to this function may have been removed)
  */
-ldns_dnssec_rrs *
-ldns_dnssec_remove_signatures(ldns_dnssec_rrs *signatures,
-						ldns_key_list *key_list,
-						int (*func)(ldns_rr *, void *),
-						void *arg);
+ldns_dnssec_rrs *ldns_dnssec_remove_signatures(ldns_dnssec_rrs *signatures,
+									  ldns_key_list *key_list,
+									  int (*func)(ldns_rr *, void *),
+									  void *arg);
 
 /**
  * Adds signatures to the zone
@@ -111,12 +108,11 @@ ldns_dnssec_remove_signatures(ldns_dnssec_rrs *signatures,
  * \param[in] arg Optional argument for the callback function
  * \return LDNS_STATUS_OK on success, error otherwise
  */
-ldns_status
-ldns_dnssec_zone_create_rrsigs(ldns_dnssec_zone *zone,
-						 ldns_rr_list *new_rrs,
-						 ldns_key_list *key_list,
-						 int (*func)(ldns_rr *, void*),
-						 void *arg);
+ldns_status ldns_dnssec_zone_create_rrsigs(ldns_dnssec_zone *zone,
+								   ldns_rr_list *new_rrs,
+								   ldns_key_list *key_list,
+								   int (*func)(ldns_rr *, void*),
+								   void *arg);
 
 /**
  * signs the given zone with the given keys
@@ -126,16 +122,15 @@ ldns_dnssec_zone_create_rrsigs(ldns_dnssec_zone *zone,
  * \param[in] new_rrs newly created resource records are added to this list, to free them later
  * \param[in] func callback function that decides what to do with old signatures
  *            This function takes an ldns_rr* and an optional void *arg argument, and returns one of four values:
-LDNS_SIGNATURE_LEAVE_ADD_NEW:
-leave the signature and add a new one for the corresponding key
-LDNS_SIGNATURE_REMOVE_ADD_NEW:
-remove the signature and replace is with a new one from the same key
-LDNS_SIGNATURE_LEAVE_NO_ADD:
-leave the signature and do not add a new one with the corresponding key
-LDNS_SIGNATURE_REMOVE_NO_ADD:
-remove the signature and do not replace 
-
-
+ * LDNS_SIGNATURE_LEAVE_ADD_NEW:
+ * leave the signature and add a new one for the corresponding key
+ * LDNS_SIGNATURE_REMOVE_ADD_NEW:
+ * remove the signature and replace is with a new one from the same key
+ * LDNS_SIGNATURE_LEAVE_NO_ADD:
+ * leave the signature and do not add a new one with the corresponding key
+ * LDNS_SIGNATURE_REMOVE_NO_ADD:
+ * remove the signature and do not replace 
+ *
  * \param[in] arg optional argument for the callback function
  * \return LDNS_STATUS_OK on success, an error code otherwise
  */
