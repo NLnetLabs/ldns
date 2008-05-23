@@ -95,9 +95,11 @@ mkdir "doc/man";
 mkdir "doc/man/man$MAN_SECTION";
 
 $state = 0;
-while(<>) {
-	chomp;
-	if (/^\/\*\*[\t ]*$/) {
+my $cur_line;
+while($cur_line = <>) {
+	$line = $cur_line;
+	chomp($line);
+	if ($line =~ /^\/\*\*[\t ]*$/) {
 		# /** Seen
 		#print "Comment seen! [$_]\n";
 		$state = 1;
@@ -105,7 +107,7 @@ while(<>) {
 		undef $struct_description;
 		next;
 	}
-	if (/\*\// and $state == 1) {
+	if ($line =~ /\*\// and $state == 1) {
 		#print "END Comment seen!\n";
 		$state = 2;
 		next;
@@ -113,11 +115,11 @@ while(<>) {
 
 	if ($state == 1) {
 		# inside doxygen 
-		s/^[ \t]*\*[ \t]*//;
-		$description = $description . "\n" . $_;
+		$line =~ s/^[ \t]*\*[ \t]*//;
+		$description = $description . "\n" . $line;
 		#$description = $description . "\n.br\n" . $_;
 	}
-	if ($state == 2 and /const/) {
+	if ($state == 2 and $line =~ /const/) {
 		# the const word exists in the function call
 		#$const = "const";
 		#s/[\t ]*const[\t ]*//;
@@ -125,16 +127,21 @@ while(<>) {
 		#undef $const;
 	}
 	
-	if (/^INLINE/) {
-		s/^INLINE\s*//;
-		while (!/{/) {
-			$_ .= " ".<>;
-			$_ =~ s/\n//;
+	if ($line =~ /^INLINE/) {
+		$line =~ s/^INLINE\s*//;
+		while (!$line =~ /{/) {
+			$line .= " ".<>;
+			$line =~ s/\n//;
 		}
-		$_ =~ s/{/;/;
+		$line =~ s/{/;/;
 	}
-	
-	if (/([\w\* ]+)[\t ]+(.*?)\((.*)\)\s*;/ and $state == 2) {
+
+	while($state == 2 and $line =~ /\(/ and $line !~ /\)/) {
+		$line .= <>;
+		$line =~ s/\s+/ /g;
+	}
+
+	if ($line =~ /([\w\* ]+)[\t ]+(.*?)\((.*)\)\s*;/ and $state == 2) {
 		# this should also end the current comment parsing
 		$return = $1;
 		$key = $2;
@@ -161,10 +168,10 @@ while(<>) {
 		undef $struct_description;
 		$state = 0;
 	} elsif ($state == 2 and (
-			/^typedef\sstruct\s(\w+)\s(\w+);/ or
-			/^typedef\senum\s(\w+)\s(\w+);/)
+			$line =~ /^typedef\sstruct\s(\w+)\s(\w+);/ or
+			$line =~ /^typedef\senum\s(\w+)\s(\w+);/)
 	        ) {
-		$struct_description .= "\n.br\n" . $_;
+		$struct_description .= "\n.br\n" . $line;
 		$key = $2;
 		$struct_description =~ s/\/\*\*\s*(.*?)\s*\*\//\\fB$1:\\fR/g;
 		$description{$key} = $struct_description;

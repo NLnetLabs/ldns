@@ -59,7 +59,7 @@ ldns_rdf *ldns_sign_public_rsamd5(ldns_buffer *to_sign, RSA *key);
  * Finds the first dnssec_name node in the rbtree that has not been marked
  * as glue, starting at the given node
  *
- * \param[in] node, th first node to check
+ * \param[in] node the first node to check
  * \return the first node that has not been marked as glue, or NULL
  * if not found (TODO: make that LDNS_RBTREE_NULL?)
  */

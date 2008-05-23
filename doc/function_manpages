@@ -65,7 +65,7 @@ ldns_verify_rrsig_dsa, ldns_verify_rrsig_rsasha1, ldns_verify_rrsig_rsamd5 | ldn
 # tsig
 ldns_pkt_tsig_verify, ldns_pkt_tsig_sign | ldns_key
 # verify
-ldns_verify, ldns_verify_rrsig, ldns_verify_rrsig_keylist | ldns_verify_rrsig_dsa, ldns_verify_rrsig_rsasha1, ldns_verify_rrsig_rsamd5, ldns_sign_public, ldns_zone_sign, ldns_key
+ldns_verify, ldns_verify_rrsig, ldns_verify_rrsig_keylist | ldns_verify_rrsig_evp | ldns_verify_rrsig_dsa, ldns_verify_rrsig_rsasha1, ldns_verify_rrsig_rsamd5, ldns_sign_public, ldns_zone_sign, ldns_key
 # convert
 ldns_key_buf2dsa, ldns_key_buf2rsa | ldns_key_rr2ds
 ldns_key_rr2ds | ldns_key
@@ -73,9 +73,15 @@ ldns_create_nsec | ldns_sign_public
 # signing
 ldns_sign_public | ldns_sign_public_dsa, ldns_sign_public_rsamd5, ldns_sign_public_rsasha1, ldns_verify, ldns_verify_rrsig, ldns_key
 ldns_sign_public_dsa, ldns_sign_public_rsamd5, ldns_sign_public_rsasha1 | ldns_sign_public
-ldns_zone_sign | ldns_sign_public, ldns_key, ldns_init_random
+ldns_dnssec_zone_sign, ldns_dnssec_zone_sign_nsec3 | ldns_zone_sign, ldns_zone_sign_nsec3 | ldns_sign_public, ldns_key, ldns_init_random
 ldns_init_random | ldns_sign_public, ldns_key
 ldns_pkt_verify | ldns_verify, ldns_sign_public, ldns_zone_sign
+# new family of dnssec functions
+ldns_dnssec_zone, ldns_dnssec_name, ldns_dnssec_rrs, ldns_dnssec_rrsets | ldns_dnssec_zone_new, ldns_dnssec_name_new, ldns_dnssec_rrs_new, ldns_dnssec_rrsets_new
+ldns_dnssec_zone_find_rrset, ldns_dnssec_zone_new, ldns_dnssec_zone_free, ldns_dnssec_zone_add_rr, ldns_dnssec_zone_names_print, ldns_dnssec_zone_print, ldns_dnssec_zone_add_empty_nonterminals | ldns_dnssec_zone
+ldns_dnssec_name_new, ldns_dnssec_name_new_frm_rr, ldns_dnssec_name_free, ldns_dnssec_name_name, ldns_dnssec_name_set_name, ldns_dnssec_name_set_nsec, ldns_dnssec_name_cmp, ldns_dnssec_name_add_rr, ldns_dnssec_name_find_rrset, ldns_dnssec_name_print | ldns_dnssec_zone
+ldns_dnssec_rrsets_new, ldns_dnssec_rrsets_free, ldns_dnssec_rrsets_type, ldns_dnssec_rrsets_set_type, ldns_dnssec_rrsets_add_rr, ldns_dnssec_rrsets_print | ldns_dnssec_zone
+ldns_dnssec_rrs_new, ldns_dnssec_rrs_free, ldns_dnssec_rrs_add_rr, ldns_dnssec_rrs_print | ldns_dnssec_zone
 ### /dnssec.h
 
 ### dnskey.h
