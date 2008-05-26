@@ -36,7 +36,8 @@ ldns_dnssec_data_chain *ldns_dnssec_data_chain_new();
 void ldns_dnssec_data_chain_free(ldns_dnssec_data_chain *chain);
 
 /**
- * Frees a dnssec_data_chain structure, and all data contained therein
+ * Frees a dnssec_data_chain structure, and all data
+ * contained therein
  *
  * \param[in] *chain The dnssec_data_chain to free
  */
@@ -51,9 +52,19 @@ void ldns_dnssec_data_chain_deep_free(ldns_dnssec_data_chain *chain);
 void ldns_dnssec_data_chain_print(FILE *out, const ldns_dnssec_data_chain *chain);
 
 /**
- * the data set will be cloned
- * the pkt is optional, can contain the original packet 
+ * Build an ldns_dnssec_data_chain, which contains all
+ * DNSSEC data that is needed to derive the trust tree later
+ *
+ * The data_set will be cloned
+ *
+ * \param[in] *res resolver structure for further needed queries
+ * \param[in] qflags resolution flags
+ * \param[in] *data_set The original rrset where the chain ends
+ * \param[in] *pkt optional, can contain the original packet
  * (and hence the sigs and maybe the key)
+ * \param[in] *orig_rr The original Resource Record
+ *
+ * \return the DNSSEC data chain
  */
 ldns_dnssec_data_chain *ldns_dnssec_build_data_chain(ldns_resolver *res,
 										   const uint16_t qflags,
@@ -62,14 +73,15 @@ ldns_dnssec_data_chain *ldns_dnssec_build_data_chain(ldns_resolver *res,
 										   ldns_rr *orig_rr);
 
 /**
- * Tree structure that contains the relation of DNSSEC data, and
- * their cryptographic status.
+ * Tree structure that contains the relation of DNSSEC data,
+ * and their cryptographic status.
  *
- * This tree is derived from a data_chain, and can be used to look
- * whether there is a connection between an RRSET and a trusted
- * key. The tree only contains pointers to the data_chain, and
- * therefore one should *never* free() the data_chain when there is
- * still a trust tree derived from that chain.
+ * This tree is derived from a data_chain, and can be used
+ * to look whether there is a connection between an RRSET
+ * and a trusted key. The tree only contains pointers to the
+ * data_chain, and therefore one should *never* free() the
+ * data_chain when there is still a trust tree derived from
+ * that chain.
  *
  * Example tree:
  *     key   key    key
@@ -84,22 +96,26 @@ ldns_dnssec_data_chain *ldns_dnssec_build_data_chain(ldns_resolver *res,
  *            |
  *            rr
  *
- * For each signature there is a parent; if the parent pointer is
- * null, it couldn't be found and there was no denial; otherwise is
- * a tree which contains either a DNSKEY, a DS, or a NSEC rr;
+ * For each signature there is a parent; if the parent
+ * pointer is null, it couldn't be found and there was no
+ * denial; otherwise is a tree which contains either a
+ * DNSKEY, a DS, or a NSEC rr
  */
-typedef struct ldns_dnssec_trust_tree_struct ldns_dnssec_trust_tree;
 struct ldns_dnssec_trust_tree_struct {
 	ldns_rr *rr;
 	/* the complete rrset this rr was in */
 	ldns_rr_list *rrset;
-	ldns_dnssec_trust_tree *parents[LDNS_DNSSEC_TRUST_TREE_MAX_PARENTS];
-	ldns_status parent_status[LDNS_DNSSEC_TRUST_TREE_MAX_PARENTS];
-	/** for debugging, add signatures too (you might want those if they 
-	    contain errors) */
-	ldns_rr *parent_signature[LDNS_DNSSEC_TRUST_TREE_MAX_PARENTS];
+	ldns_dnssec_trust_tree *
+	    parents[LDNS_DNSSEC_TRUST_TREE_MAX_PARENTS];
+	ldns_status 
+	    parent_status[LDNS_DNSSEC_TRUST_TREE_MAX_PARENTS];
+	/** for debugging, add signatures too (you might want
+	    those if they contain errors) */
+	ldns_rr *
+	    parent_signature[LDNS_DNSSEC_TRUST_TREE_MAX_PARENTS];
 	size_t parent_count;
 };
+typedef struct ldns_dnssec_trust_tree_struct ldns_dnssec_trust_tree;
 
 /**
  * Creates a new (empty) dnssec_trust_tree structure
@@ -111,8 +127,8 @@ ldns_dnssec_trust_tree *ldns_dnssec_trust_tree_new();
 /**
  * Frees the dnssec_trust_tree recursively
  *
- * There is no deep free; all data in the trust tree consists of
- * pointers to a data_chain
+ * There is no deep free; all data in the trust tree
+ * consists of pointers to a data_chain
  *
  * \param[in] tree The tree to free
  */
@@ -127,10 +143,11 @@ void ldns_dnssec_trust_tree_free(ldns_dnssec_trust_tree *tree);
 size_t ldns_dnssec_trust_tree_depth(ldns_dnssec_trust_tree *tree);
 
 /**
- * Prints the dnssec_trust_tree structure to the given file stream
- * Each line is prepended by 2*tabs spaces
- * If a link status is not LDNS_STATUS_OK; the status and relevant
- * signatures are printed too
+ * Prints the dnssec_trust_tree structure to the given file
+ * stream.
+ *
+ * If a link status is not LDNS_STATUS_OK; the status and
+ * relevant signatures are printed too
  *
  * \param[in] *out The file stream to print to
  * \param[in] tree The trust tree to print
@@ -158,25 +175,32 @@ ldns_status ldns_dnssec_trust_tree_add_parent(ldns_dnssec_trust_tree *tree,
 									 const ldns_status parent_status);
 
 /**
- * Generates a dnssec_trust_ttree for the given rr from the given data_chain
- * Don't free the data_chain before you are done with this tree
+ * Generates a dnssec_trust_ttree for the given rr from the
+ * given data_chain
+ *
+ * This does not clone the actual data; Don't free the
+ * data_chain before you are done with this tree
  *
  * \param[in] *data_chain The chain to derive the trust tree from
  * \param[in] *rr The RR this tree will be about
  * \return ldns_dnssec_trust_tree *
  */
-ldns_dnssec_trust_tree *ldns_dnssec_derive_trust_tree(ldns_dnssec_data_chain *data_chain, ldns_rr *rr);
+ldns_dnssec_trust_tree *ldns_dnssec_derive_trust_tree(
+                            ldns_dnssec_data_chain *data_chain,
+					   ldns_rr *rr);
 
 /**
- * Sub function for derive_trust_tree that is used for a 'normal' rrset
+ * Sub function for derive_trust_tree that is used for a
+ * 'normal' rrset
  *
  * \param[in] new_tree The trust tree that we are building
  * \param[in] data_chain The data chain containing the data for the trust tree
  * \param[in] cur_sig_rr The currently relevant signature
  */
-void ldns_dnssec_derive_trust_tree_normal_rrset(ldns_dnssec_trust_tree *new_tree,
-									   ldns_dnssec_data_chain *data_chain,
-									   ldns_rr *cur_sig_rr);
+void ldns_dnssec_derive_trust_tree_normal_rrset(
+         ldns_dnssec_trust_tree *new_tree,
+	    ldns_dnssec_data_chain *data_chain,
+	    ldns_rr *cur_sig_rr);
 
 /**
  * Sub function for derive_trust_tree that is used for DNSKEY rrsets
@@ -186,10 +210,11 @@ void ldns_dnssec_derive_trust_tree_normal_rrset(ldns_dnssec_trust_tree *new_tree
  * \param[in] cur_rr The currently relevant DNSKEY RR
  * \param[in] cur_sig_rr The currently relevant signature
  */
-void ldns_dnssec_derive_trust_tree_dnskey_rrset(ldns_dnssec_trust_tree *new_tree,
-									   ldns_dnssec_data_chain *data_chain,
-									   ldns_rr *cur_rr,
-									   ldns_rr *cur_sig_rr);
+void ldns_dnssec_derive_trust_tree_dnskey_rrset(
+         ldns_dnssec_trust_tree *new_tree,
+	    ldns_dnssec_data_chain *data_chain,
+	    ldns_rr *cur_rr,
+	    ldns_rr *cur_sig_rr);
 
 /**
  * Sub function for derive_trust_tree that is used for DS rrsets
@@ -198,9 +223,10 @@ void ldns_dnssec_derive_trust_tree_dnskey_rrset(ldns_dnssec_trust_tree *new_tree
  * \param[in] data_chain The data chain containing the data for the trust tree
  * \param[in] cur_rr The currently relevant DS RR
  */
-void ldns_dnssec_derive_trust_tree_ds_rrset(ldns_dnssec_trust_tree *new_tree,
-								    ldns_dnssec_data_chain *data_chain,
-								    ldns_rr *cur_rr);
+void ldns_dnssec_derive_trust_tree_ds_rrset(
+         ldns_dnssec_trust_tree *new_tree,
+	    ldns_dnssec_data_chain *data_chain,
+	    ldns_rr *cur_rr);
 
 /**
  * Sub function for derive_trust_tree that is used when there are no
@@ -209,8 +235,9 @@ void ldns_dnssec_derive_trust_tree_ds_rrset(ldns_dnssec_trust_tree *new_tree,
  * \param[in] new_tree The trust tree that we are building
  * \param[in] data_chain The data chain containing the data for the trust tree
  */
-void ldns_dnssec_derive_trust_tree_no_sig(ldns_dnssec_trust_tree *new_tree,
-								  ldns_dnssec_data_chain *data_chain);
+void ldns_dnssec_derive_trust_tree_no_sig(
+         ldns_dnssec_trust_tree *new_tree,
+	    ldns_dnssec_data_chain *data_chain);
 
 /**
  * Returns OK if there is a trusted path in the tree to one of 
@@ -222,8 +249,9 @@ void ldns_dnssec_derive_trust_tree_no_sig(ldns_dnssec_trust_tree *new_tree,
  *                        the keys, or the *first* error encountered
  *                        if there were no paths
  */
-ldns_status ldns_dnssec_trust_tree_contains_keys(ldns_dnssec_trust_tree *tree,
-									    ldns_rr_list *keys);
+ldns_status ldns_dnssec_trust_tree_contains_keys(
+			 ldns_dnssec_trust_tree *tree,
+			 ldns_rr_list *keys);
 
 /**
  * Verifies a list of signatures for one rrset.
