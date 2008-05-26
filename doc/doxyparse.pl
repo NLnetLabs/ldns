@@ -95,30 +95,46 @@ mkdir "doc/man";
 mkdir "doc/man/man$MAN_SECTION";
 
 $state = 0;
-while(<>) {
-	chomp;
-	if (/^\/\*\*[\t ]*$/) {
+my $i;
+my @lines = <STDIN>;
+my $max = @lines;
+
+while($i < $max) {
+if ($lines[$i] =~ /^typedef struct/ and $lines[$i + 1] =~ /^struct/) {
+print("skip: $lines[$i]\n");
+print $lines[$i];
+print $lines[$i+1];
+#$i++;
+#exit(1);
+}
+
+	$cur_line = $lines[$i];
+	chomp($cur_line);
+print("new line: $cur_line\n");
+	if ($cur_line =~ /^\/\*\*[\t ]*$/) {
 		# /** Seen
-		#print "Comment seen! [$_]\n";
+		#print "Comment seen! [$cur_line]\n";
 		$state = 1;
 		undef $description;
 		undef $struct_description;
+		$i++;
 		next;
 	}
-	if (/\*\// and $state == 1) {
+	if ($cur_line =~ /\*\// and $state == 1) {
 		#print "END Comment seen!\n";
 		$state = 2;
+		$i++;
 		next;
 	}
 
 	if ($state == 1) {
 		# inside doxygen 
-		s/\\/\\\\/g;
-		s/^[ \t]*\* ?//;
-		$description = $description . "\n" . $_;
-		#$description = $description . "\n.br\n" . $_;
+		$cur_line =~ s/\\/\\\\/g;
+		$cur_line =~ s/^[ \t]*\* ?//;
+		$description = $description . "\n" . $cur_line;
+		#$description = $description . "\n.br\n" . $cur_line;
 	}
-	if ($state == 2 and /const/) {
+	if ($state == 2 and $cur_line =~ /const/) {
 		# the const word exists in the function call
 		#$const = "const";
 		#s/[\t ]*const[\t ]*//;
@@ -126,23 +142,25 @@ while(<>) {
 		#undef $const;
 	}
 	
-	if (/^INLINE/) {
-		s/^INLINE\s*//;
-		while (!/{/) {
-			$_ .= " ".<>;
-			$_ =~ s/\n//;
+	if ($cur_line =~ /^INLINE/) {
+		$cur_line =~ s/^INLINE\s*//;
+		while ($cur_line !~ /{/) {
+			$i++;
+			$cur_line .= " ".$lines[$i];
+			$cur_line =~ s/\n//;
 		}
-		$_ =~ s/{/;/;
+		$cur_line =~ s/{/;/;
 	}
 	
-	if (/^[^#*\/ ]([\w\*]+)[\t ]+(.*?)\((.*)\s*/ and $state == 2) {
-		while ($_ !~ /\)\s*;/) {
-			$_ .= <>;
-			chomp($_);
-			$_ =~ s/\n/ /g;
-			$_ =~ s/\s\s*/ /g;
+	if ($cur_line =~ /^[^#*\/ ]([\w\*]+)[\t ]+(.*?)[({](.*)\s*/ and $state == 2) {
+		while ($cur_line !~ /\)\s*;/) {
+			$i++;
+			$cur_line .= $lines[$i];
+			chomp($cur_line);
+			$cur_line =~ s/\n/ /g;
+			$cur_line =~ s/\s\s*/ /g;
 		}
-		$_ =~ /([\w\* ]+)[\t ]+(.*?)\((.*)\)\s*;/;
+		$cur_line =~ /([\w\* ]+)[\t ]+(.*?)\((.*)\)\s*;/;
 		# this should also end the current comment parsing
 		$return = $1;
 		$key = $2;
@@ -169,10 +187,9 @@ while(<>) {
 		undef $struct_description;
 		$state = 0;
 	} elsif ($state == 2 and (
-			/^typedef\sstruct\s(\w+)\s(\w+);/ or
-			/^typedef\senum\s(\w+)\s(\w+);/)
-	        ) {
-		$struct_description .= "\n.br\n" . $_;
+			$cur_line =~ /^typedef\sstruct\s(\w+)\s(\w+);/ or
+			$cur_line =~ /^typedef\senum\s(\w+)\s(\w+);/)) {
+		$struct_description .= "\n.br\n" . $cur_line;
 		$key = $2;
 		$struct_description =~ s/\/\*\*\s*(.*?)\s*\*\//\\fB$1:\\fR/g;
 		$description{$key} = $struct_description;
@@ -182,8 +199,9 @@ while(<>) {
 		undef $struct_description;
 		$state = 0;
 	} else {
-		$struct_description .= "\n.br\n" . $_;
+		$struct_description .= "\n.br\n" . $cur_line;
 	}
+	$i++;
 }
 
 # create the manpages

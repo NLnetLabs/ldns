@@ -7,12 +7,13 @@
 
 #include <ldns/dnssec.h>
 
-typedef struct ldns_dnssec_data_chain_struct ldns_dnssec_data_chain;
 /**
  * Chain structure that contains all DNSSEC data needed to
  * verify an rrset
  */
-struct ldns_dnssec_data_chain_struct {
+typedef struct ldns_dnssec_data_chain_struct ldns_dnssec_data_chain;
+struct ldns_dnssec_data_chain_struct
+{
 	ldns_rr_list *rrset;
 	ldns_rr_list *signatures;
 	ldns_rr_type parent_type;
@@ -101,21 +102,19 @@ ldns_dnssec_data_chain *ldns_dnssec_build_data_chain(ldns_resolver *res,
  * denial; otherwise is a tree which contains either a
  * DNSKEY, a DS, or a NSEC rr
  */
-struct ldns_dnssec_trust_tree_struct {
+typedef struct ldns_dnssec_trust_tree_struct ldns_dnssec_trust_tree;
+struct ldns_dnssec_trust_tree_struct
+{
 	ldns_rr *rr;
 	/* the complete rrset this rr was in */
 	ldns_rr_list *rrset;
-	ldns_dnssec_trust_tree *
-	    parents[LDNS_DNSSEC_TRUST_TREE_MAX_PARENTS];
-	ldns_status 
-	    parent_status[LDNS_DNSSEC_TRUST_TREE_MAX_PARENTS];
+	ldns_dnssec_trust_tree *parents[LDNS_DNSSEC_TRUST_TREE_MAX_PARENTS];
+	ldns_status parent_status[LDNS_DNSSEC_TRUST_TREE_MAX_PARENTS];
 	/** for debugging, add signatures too (you might want
 	    those if they contain errors) */
-	ldns_rr *
-	    parent_signature[LDNS_DNSSEC_TRUST_TREE_MAX_PARENTS];
+	ldns_rr *parent_signature[LDNS_DNSSEC_TRUST_TREE_MAX_PARENTS];
 	size_t parent_count;
 };
-typedef struct ldns_dnssec_trust_tree_struct ldns_dnssec_trust_tree;
 
 /**
  * Creates a new (empty) dnssec_trust_tree structure
