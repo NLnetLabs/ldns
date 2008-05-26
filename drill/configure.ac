@@ -2,8 +2,8 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.57)
-AC_INIT(drill, 1.3.0, libdns@nlnetlabs.nl, drill)
-AC_CONFIG_SRCDIR([drill_util.h])
+AC_INIT(libdns, 1.3.0, libdns@nlnetlabs.nl,libdns)
+AC_CONFIG_SRCDIR([drill.c])
 
 OURCPPFLAGS=''
 CPPFLAGS=${CPPFLAGS:-${OURCPPFLAGS}}
@@ -11,8 +11,10 @@ OURCFLAGS='-g'
 CFLAGS=${CFLAGS:-${OURCFLAGS}}
 
 AC_AIX
+# Checks for programs.
 AC_PROG_CC
 AC_PROG_MAKE_SET
+AC_CHECK_PROGS(libtool, [glibtool libtool15 libtool], [../libtool])
 
 dnl routine to help check for compiler flags.
 AC_DEFUN([CHECK_COMPILER_FLAG],
@@ -41,122 +43,23 @@ $3
 fi
 ])
 
-dnl routine to help check for needed compiler flags.
-# if the given code compiles without the flag, execute argument 4
-# if the given code only compiles with the flag, execute argument 3
-# otherwise fail
-AC_DEFUN([CHECK_COMPILER_FLAG_NEEDED],
-[
-AC_REQUIRE([AC_PROG_CC])
-AC_MSG_CHECKING(whether we need -$1 as a flag for $CC)
-cache=`echo $1 | sed 'y% .=/+-%____p_%'`
-AC_CACHE_VAL(cv_prog_cc_flag_needed_$cache,
-[
-echo '$2' > conftest.c
-echo 'void f(){}' >>conftest.c
-if test -z "`$CC $CFLAGS -Werror -Wall -c conftest.c 2>&1`"; then
-eval "cv_prog_cc_flag_needed_$cache=no"
-else
-[
-if test -z "`$CC $CFLAGS $1 -Werror -Wall -c conftest.c 2>&1`"; then
-eval "cv_prog_cc_flag_needed_$cache=yes"
-else
-echo 'Test with flag fails too!'
-cat conftest.c
-echo "$CC $CFLAGS $1 -Werror -Wall -c conftest.c 2>&1"
-echo `$CC $CFLAGS $1 -Werror -Wall -c conftest.c`
-exit 1
+# add option to disable the evil rpath
+dnl Check whether to use rpath or not
+AC_ARG_ENABLE(rpath,
+        [  --disable-rpath                disable hardcoded rpath (default=enabled)],
+	enable_rpath=$enableval, enable_rpath=yes)
+
+if test "x$enable_rpath" = xyes; then
+    RPATH_VAL="-Wl,-rpath=\${libdir}"
 fi
-]
-fi
-rm -f conftest*
-])
-if eval "test \"`echo '$cv_prog_cc_flag_needed_'$cache`\" = yes"; then
-AC_MSG_RESULT(yes)
-:
-$3
-else
-AC_MSG_RESULT(no)
-:
-$4
-fi
-])
-
-AC_CHECK_HEADERS([getopt.h stdlib.h stdio.h assert.h netinet/in.h ctype.h time.h arpa/inet.h sys/socket.h],,, [AC_INCLUDES_DEFAULT])
-AC_CHECK_HEADERS(sys/param.h sys/mount.h,,, [AC_INCLUDES_DEFAULT]
-[ 
-  [
-   #if HAVE_SYS_PARAM_H
-   # include <sys/param.h>
-   #endif
-  ] 
-])
-
-CHECK_COMPILER_FLAG(O2, [CFLAGS="$CFLAGS -O2"])
-CHECK_COMPILER_FLAG_NEEDED(-std=c99, [#include <stdbool.h>], [CFLAGS="$CFLAGS -std=c99"])
-CHECK_COMPILER_FLAG_NEEDED(-D_POSIX_C_SOURCE=200112, 
-[
-#include <time.h>
-
-int test() {
-	int a = 0;
-	char *t;
-	time_t time = 0;
-	char *buf = NULL;
-	t = ctime_r(&time, buf);
-        return a;
-}
-], [CFLAGS="$CFLAGS -D_POSIX_C_SOURCE=200112"])
-CHECK_COMPILER_FLAG_NEEDED(-D__EXTENSIONS__, 
-[
-#include <stdlib.h>
-#include <ctype.h>
-#include <sys/time.h>
-#include <unistd.h>
-
-int test() {  
-        int a;
-        char **opts = NULL;
-        struct timeval tv;
-        tv.tv_usec = 10;
-        srandom(32);
-        a = getopt(2, opts, "a");
-        a = isascii(32);
-        return a;
-}
-], [CFLAGS="$CFLAGS -D__EXTENSIONS__"])
-
-CHECK_COMPILER_FLAG_NEEDED(-std=c99 -D__EXTENSIONS__ -D_BSD_SOURCE -D_POSIX_C_SOURCE=200112 -D_XOPEN_SOURCE=600,
-[
-#include "confdefs.h"
-#include <stdlib.h>
-#include <ctype.h>
-#include <sys/time.h>
-#ifdef HAVE_TIME_H
-#include <time.h>
-#endif
-#include <unistd.h>
-#ifdef HAVE_GETOPT_H
-#include <getopt.h>
-#endif
-
-int test() {
-        int a;
-        char **opts = NULL;
-        struct timeval tv;
-        char *t;
-        time_t time = 0;
-        char *buf = NULL;
-        t = ctime_r(&time, buf);
-        tv.tv_usec = 10;
-        srandom(32);
-        a = getopt(2, opts, "a");
-        a = isascii(32);
-        return a;
-}
-], [CFLAGS="$CFLAGS -std=c99 -D__EXTENSIONS__ -D_BSD_SOURCE -D_POSIX_C_SOURCE=200112 -D_XOPEN_SOURCE=600"])
 
 
+
+# Checks for libraries.
+# Check for SSL, original taken from
+# http://www.gnu.org/software/ac-archive/htmldoc/check_ssl.html and
+# modified for NSD and 
+# copied again for use in ldns
 AC_ARG_WITH(ssl, AC_HELP_STRING([--with-ssl=pathname],
                                     [enable SSL (will check /usr/local/ssl
                             /usr/lib/ssl /usr/ssl /usr/pkg /usr/local /usr/sfw /usr)]),[
@@ -183,7 +86,9 @@ AC_ARG_WITH(ssl, AC_HELP_STRING([--with-ssl=pathname],
             AC_MSG_RESULT(found in $ssldir)
             HAVE_SSL=yes
             LDFLAGS="$LDFLAGS -L$ssldir/lib -lcrypto";
-	    RUNTIME_PATH="$RUNTIME_PATH -R$ssldir/lib"
+            if test "x$enable_rpath" = xyes; then
+	        RUNTIME_PATH="$RUNTIME_PATH -R$ssldir/lib"
+            fi
             AC_CHECK_LIB(crypto, HMAC_CTX_init,, [
                     AC_MSG_ERROR([OpenSSL found in $ssldir, but version 0.9.7 or higher is required])
                 ])
@@ -192,17 +97,191 @@ AC_ARG_WITH(ssl, AC_HELP_STRING([--with-ssl=pathname],
 	AC_SUBST(RUNTIME_PATH)
     fi
 
-AC_CHECK_LIB(ssl, BN_bn2bin,, [
-	AC_MSG_ERROR([Can't find ssl library])
-	]
-)
 
-AC_ARG_WITH(ldns, AC_HELP_STRING([--with-ldns=PATHNAME],[]))
 
-AC_CHECK_HEADER(openssl/ssl.h,,  [
-	AC_MSG_ERROR([Can't find (open)ssl headers])
-	], [AC_INCLUDES_DEFAULT]
-)
+dnl routine to help check for needed compiler flags.
+# if the given code compiles without the flag, execute argument 4
+# if the given code only compiles with the flag, execute argument 3
+# otherwise fail
+AC_DEFUN([CHECK_COMPILER_FLAG_NEEDED],
+[
+AC_REQUIRE([AC_PROG_CC])
+AC_MSG_CHECKING(whether we need -$1 as a flag for $CC)
+cache=`echo $1 | sed 'y% .=/+-%____p_%'`
+AC_CACHE_VAL(cv_prog_cc_flag_needed_$cache,
+[
+echo '$2' > conftest.c
+echo 'void f(){}' >>conftest.c
+if test -z "`$CC $CFLAGS -Werror -Wall -c conftest.c 2>&1`"; then
+eval "cv_prog_cc_flag_needed_$cache=no"
+else
+[
+if test -z "`$CC $CFLAGS $1 -Werror -Wall -c conftest.c 2>&1`"; then
+eval "cv_prog_cc_flag_needed_$cache=yes"
+else
+echo 'Test with flag fails too!'
+#cat conftest.c
+#echo "$CC $CFLAGS $1 -Werror -Wall -c conftest.c 2>&1"
+#echo `$CC $CFLAGS $1 -Werror -Wall -c conftest.c`
+#exit 1
+fi
+]
+fi
+rm -f conftest*
+])
+if eval "test \"`echo '$cv_prog_cc_flag_needed_'$cache`\" = yes"; then
+AC_MSG_RESULT(yes)
+:
+$3
+else
+AC_MSG_RESULT(no)
+:
+$4
+fi
+])
+
+AC_TYPE_SIZE_T
+CHECK_COMPILER_FLAG(O2, [CFLAGS="$CFLAGS -O2"])
+
+CHECK_COMPILER_FLAG_NEEDED(-std=c99 -D__EXTENSIONS__ -D_BSD_SOURCE -D_POSIX_C_SOURCE=200112 -D_XOPEN_SOURCE=600,
+[
+#include "confdefs.h"
+#include <stdlib.h>
+#include <ctype.h>
+#include <sys/time.h>
+#ifdef HAVE_TIME_H
+#include <time.h>
+#endif
+#include <unistd.h>
+#ifdef HAVE_GETOPT_H
+#include <getopt.h>
+#endif
+
+int test() {
+	int a;
+	char **opts = NULL;
+	struct timeval tv;
+	char *t;
+	time_t time = 0;
+	char *buf = NULL;
+	t = ctime_r(&time, buf);
+	tv.tv_usec = 10;
+	srandom(32);
+	a = getopt(2, opts, "a");
+	a = isascii(32);
+	return a;
+}
+], [CFLAGS="$CFLAGS -std=c99 -D__EXTENSIONS__ -D_BSD_SOURCE -D_POSIX_C_SOURCE=200112 -D_XOPEN_SOURCE=600"])
+
+
+CHECK_COMPILER_FLAG_NEEDED(-std=c99, [#include <stdbool.h>], [CFLAGS="$CFLAGS -std=c99"])
+
+AC_C_INLINE
+AC_CHECK_TYPE(int8_t, char)
+AC_CHECK_TYPE(int16_t, short)
+AC_CHECK_TYPE(int32_t, int)
+AC_CHECK_TYPE(int64_t, long long)
+AC_CHECK_TYPE(uint8_t, unsigned char)
+AC_CHECK_TYPE(uint16_t, unsigned short)
+AC_CHECK_TYPE(uint32_t, unsigned int)
+AC_CHECK_TYPE(uint64_t, unsigned long long)
+AC_CHECK_TYPE(ssize_t, int)
+
+AC_CHECK_HEADERS([sys/types.h getopt.h stdlib.h stdio.h assert.h netinet/in.h ctype.h time.h pcap.h arpa/inet.h sys/time.h sys/socket.h sys/select.h],,, [AC_INCLUDES_DEFAULT])
+AC_CHECK_HEADERS([netinet/in_systm.h net/if.h netinet/ip.h netinet/udp.h netinet/if_ether.h netinet/ip6.h],,, [
+AC_INCLUDES_DEFAULT 
+#ifdef HAVE_NETINET_IN_SYSTM_H
+#include <netinet/in_systm.h>
+#endif
+#ifdef HAVE_NETINET_IN_H
+#include <netinet/in.h>
+#endif
+#ifdef HAVE_SYS_SOCKET_H
+#include <sys/socket.h>
+#endif
+#ifdef HAVE_NET_IF_H
+#include <net/if.h>
+#endif])
+
+AC_CHECK_TYPE(socklen_t, , 
+	[AC_DEFINE([socklen_t], [int], [Define to 'int' if not defined])], [
+AC_INCLUDES_DEFAULT
+#if HAVE_SYS_SOCKET_H
+#  include <sys/socket.h>
+#endif
+])
+
+AC_CHECK_HEADERS([sys/param.h sys/mount.h],,,
+[AC_INCLUDES_DEFAULT]
+[
+  [
+   #if HAVE_SYS_PARAM_H
+   # include <sys/param.h>
+   #endif
+  ]
+])
+AC_CHECK_TYPE(in_addr_t, [], [AC_DEFINE([in_addr_t], [uint32_t], [in_addr_t])], [
+#if HAVE_SYS_TYPES_H
+# include <sys/types.h>
+#endif
+#if HAVE_NETINET_IN_H
+# include <netinet/in.h>
+#endif])
+AC_CHECK_TYPE(in_port_t, [], [AC_DEFINE([in_port_t], [uint16_t], [in_port_t])], [
+#if HAVE_SYS_TYPES_H
+# include <sys/types.h>
+#endif
+#if HAVE_NETINET_IN_H
+# include <netinet/in.h>
+#endif])
+
+# check to see if libraries are needed for these functions.
+AC_CHECK_LIB(socket, socket)
+AC_CHECK_LIB(nsl, inet_pton)
+
+# Checks for libraries.
+# Check for SSL, original taken from
+# http://www.gnu.org/software/ac-archive/htmldoc/check_ssl.html and
+# modified for NSD and 
+# copied again for use in ldns
+AC_ARG_WITH(ssl, AC_HELP_STRING([--with-ssl=pathname],
+                                    [enable SSL (will check /usr/local/ssl
+                            /usr/lib/ssl /usr/ssl /usr/pkg /usr/local /usr/sfw /usr)]),[
+        ],[
+            withval="yes"
+        ])
+    if test x_$withval != x_no; then
+        AC_MSG_CHECKING(for SSL)
+        if test x_$withval = x_ -o x_$withval = x_yes; then
+            withval="/usr/local/ssl /usr/lib/ssl /usr/ssl /usr/pkg /usr/local /usr/sfw /usr"
+        fi
+        for dir in $withval; do
+            ssldir="$dir"
+            if test -f "$dir/include/openssl/ssl.h"; then
+                found_ssl="yes";
+                AC_DEFINE_UNQUOTED([HAVE_SSL], [], [Define if you have the SSL libraries installed.])
+                CPPFLAGS="$CPPFLAGS -I$ssldir/include";
+                break;
+            fi
+        done
+        if test x_$found_ssl != x_yes; then
+            AC_MSG_ERROR(Cannot find the SSL libraries in $withval)
+        else
+            AC_MSG_RESULT(found in $ssldir)
+            HAVE_SSL=yes
+            LDFLAGS="$LDFLAGS -L$ssldir/lib -lcrypto";
+            if test "x$enable_rpath" = xyes; then
+	        RUNTIME_PATH="$RUNTIME_PATH -R$ssldir/lib"
+            fi
+            AC_CHECK_LIB(crypto, HMAC_CTX_init,, [
+                    AC_MSG_ERROR([OpenSSL found in $ssldir, but version 0.9.7 or higher is required])
+                ])
+        fi
+        AC_SUBST(HAVE_SSL)
+	AC_SUBST(RUNTIME_PATH)
+    fi
+
+
 
 # check for ldns
 AC_ARG_WITH(ldns, 
@@ -211,7 +290,8 @@ AC_ARG_WITH(ldns,
 	[
 		specialldnsdir="$withval"
 		CPPFLAGS="$CPPFLAGS -I$withval/include"
-		LDFLAGS="$LDFLAGS -L$withval/lib"
+		LDFLAGS="$LDFLAGS -L$withval -L$withval/lib"
+		LDNSDIR="$withval"
 	]
 )
 
@@ -223,7 +303,7 @@ if test -f $ldns_dev_dir/ldns/util.h && \
 	ldns_version=`grep LDNS_VERSION $ldns_dev_dir/ldns/util.h | sed -e 's/^.*"\(.*\)".*$/\1/'`
 	AC_MSG_RESULT([using $ldns_dev_dir with $ldns_version])
 	CPPFLAGS="$CPPFLAGS -I$ldns_dev_dir/include"
-	LDFLAGS="$LDFLAGS -L$ldns_dev_dir/lib"
+	LDFLAGS="$LDFLAGS -L$ldns_dev_dir -L$ldns_dev_dir/lib"
 	LIBS="$LIBS -lldns"
 	AC_DEFINE(HAVE_LIBLDNS, 1, [If the ldns library is available.])
 	LDNSDIR="$ldns_dev_dir"
@@ -237,15 +317,20 @@ fi
 
 AC_SUBST(LDNSDIR)
 
-AC_ARG_WITH(ldns, AC_HELP_STRING([--with-ldns=PATHNAME],[]))
+#AC_CHECK_HEADER(ldns/ldns.h,,  [
+#	AC_MSG_ERROR([Can't find ldns headers (make copy-headers in devel source.)])
+#	], [AC_INCLUDES_DEFAULT]
+#)
 
-AC_CHECK_HEADER(ldns/ldns.h,,  [
-	AC_MSG_ERROR([Can't find ldns headers (make copy-headers in devel source)])
-	], [AC_INCLUDES_DEFAULT]
+AC_CHECK_LIB(pcap, pcap_open_offline,, [
+	AC_MSG_WARN([Can't find pcap library (needed for ldns-dpa, will not build dpa now.)])
+	]
 )
+
 AC_CHECK_FUNCS(isblank)
 
 AH_BOTTOM([
+
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
@@ -260,10 +345,6 @@ AH_BOTTOM([
 #include <stdint.h>
 #endif
 
-#ifdef HAVE_TIME_H
-#include <time.h>
-#endif
-
 #ifdef HAVE_SYS_SOCKET_H
 #include <sys/socket.h>
 #endif
@@ -275,10 +356,53 @@ AH_BOTTOM([
 #ifdef HAVE_ARPA_INET_H
 #include <arpa/inet.h>
 #endif
+
+#ifdef HAVE_NETINET_UDP_H
+#include <netinet/udp.h>
+#endif
+
+#ifdef HAVE_TIME_H
+#include <time.h>
+#endif
+
+#ifdef HAVE_PCAP_H
+#include <pcap.h>
+#endif
+
+#ifdef HAVE_NETINET_IN_SYSTM_H
+#include <netinet/in_systm.h>
+#endif
+
+#ifdef HAVE_NETINET_IP_H
+#include <netinet/ip.h>
+#endif
+
+#ifdef HAVE_NET_IF_H
+#include <net/if.h>
+#endif
+
+#ifdef HAVE_NETINET_IF_ETHER_H
+#include <netinet/if_ether.h>
+#endif
+
+extern char *optarg;
+extern int optind, opterr;
+
+#ifndef EXIT_FAILURE
+#define EXIT_FAILURE  1
+#endif
+#ifndef EXIT_SUCCESS
+#define EXIT_SUCCESS  0
+#endif
+
+#ifdef S_SPLINT_S
+#define FD_ZERO(a) /* a */
+#define FD_SET(a,b) /* a, b */
+#endif
 ])
 
 AC_CONFIG_FILES([Makefile
-		 drill.h
-                 ])
+                 drill.h
+                ])
 AC_CONFIG_HEADER([config.h])
 AC_OUTPUT

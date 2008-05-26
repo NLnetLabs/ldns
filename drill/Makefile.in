@@ -8,7 +8,7 @@ prefix  = @prefix@
 exec_prefix = @exec_prefix@
 bindir = @bindir@
 mandir = @mandir@
-includedir = @INCLUDEDIR@
+includedir = @includedir@
 
 CC = @CC@
 CFLAGS = @CFLAGS@ -I.
@@ -46,7 +46,7 @@ drill-stc:	$(OBJ)
 	$(LINK) -o drill $(OBJ) $(LIBS_STC)
 
 ## implicit rule
-%.o:	$(srcdir)/%.c $(HEADER)
+%.o:	$(srcdir)/%.c
 	$(COMPILE) -c $<
 
 clean:
