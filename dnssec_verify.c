@@ -237,11 +237,10 @@ ldns_dnssec_build_data_chain(ldns_resolver *res,
 							    qflags);
 
 		if (ldns_pkt_ancount(my_pkt) > 0) {
-			/* TODO: add error, no sigs but DS in parent */
-			ldns_pkt_print(stdout, my_pkt);
+			/* add error, no sigs but DS in parent */
+			/*ldns_pkt_print(stdout, my_pkt);*/
 			ldns_pkt_free(my_pkt);
 		} else {
-			/* TODO: ns check? */
 			/* are there signatures? */
 			new_chain->parent =  ldns_dnssec_build_data_chain(res, 
 													qflags, 
@@ -339,7 +338,11 @@ ldns_dnssec_build_data_chain(ldns_resolver *res,
 											   LDNS_RR_TYPE_RRSIG,
 											   LDNS_SECTION_ANSWER);
 		if (signatures2) {
-			/* TODO: what if there were still sigs there? */
+			if (new_chain->signatures) {
+				printf("There were already sigs!\n");
+				ldns_rr_list_deep_free(new_chain->signatures);
+				printf("freed\n");
+			}
 			new_chain->signatures = signatures2;
 		}
 		ldns_pkt_free(my_pkt);

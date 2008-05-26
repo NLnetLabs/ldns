@@ -345,7 +345,7 @@ do_chase(ldns_resolver *res,
 		ldns_rr_set_type(orig_rr, type);
 		ldns_rr_set_owner(orig_rr, ldns_rdf_clone(name));
 	
-		chain = ldns_dnssec_build_data_chain(res, qflags, rrset, pkt, orig_rr);
+		chain = ldns_dnssec_build_data_chain(res, qflags, rrset, pkt, ldns_rr_clone(orig_rr));
 	} else {
 		/* chase the first answer? */
 		/*
@@ -396,6 +396,7 @@ do_chase(ldns_resolver *res,
 		}
 	}
 	
+	ldns_rr_free(orig_rr);
 	ldns_dnssec_trust_tree_free(tree);
 	ldns_dnssec_data_chain_deep_free(chain);
 	

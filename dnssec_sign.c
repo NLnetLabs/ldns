@@ -693,7 +693,7 @@ ldns_dnssec_zone_create_rrsigs(ldns_dnssec_zone *zone,
 											func,
 											arg);
 				
-				/* TODO: set count to zero? */
+				/* TODO: just set count to zero? */
 				rr_list = ldns_rr_list_new();
 				
 				cur_rr = cur_rrset->rrs;
@@ -864,18 +864,6 @@ ldns_dnssec_zone_sign_nsec3(ldns_dnssec_zone *zone,
 ldns_zone *
 ldns_zone_sign(const ldns_zone *zone, ldns_key_list *key_list)
 {
-	/*
-	 * Algorithm to be created:
-	 * - sort the rrs (name/class/type?)
-	 * - if sorted, every next rr is belongs either to the rrset
-	 * you are working on, or the rrset is complete
-	 * for each rrset, calculate rrsig and nsec
-	 * put the rrset, rrsig and nsec in the new zone
-	 * done!
-	 * ow and don't sign old rrsigs etc.
-	 */
-
-	/*TODO: use _dnssec_zone_sign*/
 	ldns_dnssec_zone *dnssec_zone;
 	ldns_zone *signed_zone;
 	ldns_rr_list *new_rrs;
