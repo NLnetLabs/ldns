@@ -113,7 +113,8 @@ while(<>) {
 
 	if ($state == 1) {
 		# inside doxygen 
-		s/^[ \t]*\*[ \t]*//;
+		s/\\/\\\\/g;
+		s/^[ \t]*\* ?//;
 		$description = $description . "\n" . $_;
 		#$description = $description . "\n.br\n" . $_;
 	}

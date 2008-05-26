@@ -62,12 +62,13 @@ ldns_dnssec_data_chain *ldns_dnssec_build_data_chain(ldns_resolver *res,
 										   ldns_rr *orig_rr);
 
 /**
- * Tree structure that contains the relation of DNSSEC data, and their cryptographic
- * status.
+ * Tree structure that contains the relation of DNSSEC data, and
+ * their cryptographic status.
  *
- * This tree is derived from a data_chain, and can be used to look whether there is a
- * connection between an RRSET and a trusted key. The tree only contains pointers to
- * the data_chain, and therefore one should *never* free() the data_chain when there is
+ * This tree is derived from a data_chain, and can be used to look
+ * whether there is a connection between an RRSET and a trusted
+ * key. The tree only contains pointers to the data_chain, and
+ * therefore one should *never* free() the data_chain when there is
  * still a trust tree derived from that chain.
  *
  * Example tree:
@@ -83,9 +84,9 @@ ldns_dnssec_data_chain *ldns_dnssec_build_data_chain(ldns_resolver *res,
  *            |
  *            rr
  *
- * For each signature there is a parent; if the parent pointer is null, it
- * couldn't be found and there was no denial; otherwise is a tree which
- * contains either a DNSKEY, a DS, or a NSEC rr;
+ * For each signature there is a parent; if the parent pointer is
+ * null, it couldn't be found and there was no denial; otherwise is
+ * a tree which contains either a DNSKEY, a DS, or a NSEC rr;
  */
 typedef struct ldns_dnssec_trust_tree_struct ldns_dnssec_trust_tree;
 struct ldns_dnssec_trust_tree_struct {
@@ -109,8 +110,9 @@ ldns_dnssec_trust_tree *ldns_dnssec_trust_tree_new();
 
 /**
  * Frees the dnssec_trust_tree recursively
- * There is no deep free; all data in the trust tree consists of pointers
- * to a data_chain
+ *
+ * There is no deep free; all data in the trust tree consists of
+ * pointers to a data_chain
  *
  * \param[in] tree The tree to free
  */
