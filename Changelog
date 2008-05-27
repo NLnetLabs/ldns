@@ -27,6 +27,8 @@
 	in rdata fields in resource records of the types in the list in
 	rfc3597
 
+	* Added base32 conversion functions.
+
 	* Fixed DSA RRSIG conversion when calling OpenSSL
 
 	Drill:
