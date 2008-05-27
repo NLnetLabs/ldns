@@ -435,8 +435,15 @@ ldns_rr_new_frm_str(ldns_rr **newrr, const char *str, uint32_t default_ttl, ldns
 						case LDNS_RDF_TYPE_B64:
 							/* can have spaces, and will always be the last 
 							 * record of the rrdata. Read in the rest */
-							if ((c = ldns_bget_token(rd_buf, b64, "\n", LDNS_MAX_RDFLEN)) != -1) {
-								rd = strncat(rd, b64, LDNS_MAX_RDFLEN);
+							if ((c = ldns_bget_token(rd_buf,
+												b64,
+												"\n",
+												LDNS_MAX_RDFLEN))
+							    != -1) {
+								rd = strncat(rd,
+										   b64,
+										   LDNS_MAX_RDFLEN
+										   - strlen(rd) - 1);
 							}
 							r = ldns_rdf_new_frm_str(
 									ldns_rr_descriptor_field_type(desc, r_cnt),
