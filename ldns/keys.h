@@ -273,6 +273,7 @@ void ldns_key_set_algorithm(ldns_key *k, ldns_signing_algorithm l);
  * \param[in] e the evp key
  */
 void ldns_key_set_evp_key(ldns_key *k, EVP_PKEY *e);
+
 /**
  * Set the key's rsa data
  * \param[in] k the key

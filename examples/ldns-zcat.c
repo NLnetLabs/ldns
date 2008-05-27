@@ -9,7 +9,7 @@
  * Go back to:
  * zone: SOA a b c d e f g h i j k l 
  *
- * This is usefull in combination with ldns-zsplit
+ * This is useful in combination with ldns-zsplit
  *
  * See the file LICENSE for the license
  */
