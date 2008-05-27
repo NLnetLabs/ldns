@@ -135,22 +135,12 @@ ldns_zone_strip_glue_rrs(const ldns_rdf *zone_name, const ldns_rr_list *rrs, ldn
 	return new_list;
 }
 
-/* this will be an EXPENSIVE op with our zone structure */
+/*
+ * Get the list of glue records in a zone
+ */
 ldns_rr_list *
 ldns_zone_glue_rr_list(const ldns_zone *z)
 {
-#if 0
-	ldns_rr_list *rrs = ldns_zone_rrs(z);
-	ldns_rr_list *glue_rrs = ldns_rr_list_new();
-	ldns_rr_list *stripped_rrs = ldns_zone_strip_glue_rrs(ldns_rr_owner(ldns_zone_soa(z)), rrs, glue_rrs);
-	printf("stripped:\n");
-	ldns_rr_list_print(stdout, stripped_rrs);
-	printf("glue:\n");
-	ldns_rr_list_print(stdout, glue_rrs);
-	ldns_rr_list_free(stripped_rrs);
-	return glue_rrs;
-#endif
-
 	/* when do we find glue? It means we find an IP address
 	 * (AAAA/A) for a nameserver listed in the zone
 	 *
@@ -225,7 +215,6 @@ ldns_zone_glue_rr_list(const ldns_zone *z)
 	} else {
 		return glue;
 	}
-
 }
 
 ldns_zone *

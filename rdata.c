@@ -306,7 +306,6 @@ ldns_rdf_new_frm_str(ldns_rdf_type type, const char *str)
 	case LDNS_RDF_TYPE_NONE:
 	default:
 		/* default default ??? */
-		printf("unknown\n");
 		status = LDNS_STATUS_ERR;
 		break;
 	}

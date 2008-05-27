@@ -112,7 +112,8 @@ bool ldns_zone_push_rr(ldns_zone *z, ldns_rr *rr);
  * to the zone's data.
  *
  * Due to the current zone implementation (as a list of rr's), this
- * function is extremely slow.
+ * function is extremely slow. Another (probably better) way to do this
+ * is to use an ldns_dnssec_zone structure and the mark_glue function 
  *
  * \param[in] z the zone to look for glue
  * \return the rr_list with the glue

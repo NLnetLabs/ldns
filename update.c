@@ -77,8 +77,8 @@ ldns_update_pkt_tsig_add(ldns_pkt *p, ldns_resolver *r)
 		    ldns_resolver_tsig_algorithm(r), NULL);
 #else
 	/* do nothing */
-	p = p;
-	r = r;
+	(void)p;
+	(void)r;
 #endif /* HAVE_SSL */
 	/* No TSIG to do. */
 	return LDNS_STATUS_OK;
