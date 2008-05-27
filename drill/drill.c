@@ -1,7 +1,7 @@
 /*
  * drill.c
  * the main file of drill
- * (c) 2005,2006 NLnet Labs
+ * (c) 2005-2008 NLnet Labs
  *
  * See the file LICENSE for the license
  *
