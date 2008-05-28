@@ -100,17 +100,21 @@ my @lines = <STDIN>;
 my $max = @lines;
 
 while($i < $max) {
-if ($lines[$i] =~ /^typedef struct/ and $lines[$i + 1] =~ /^struct/) {
-print("skip: $lines[$i]\n");
-print $lines[$i];
-print $lines[$i+1];
-#$i++;
-#exit(1);
-}
+	$typedef = "";
+	if ($lines[$i] =~ /^typedef struct/ and $lines[$i + 1] =~ /^struct/) {
+		# move typedef to below struct
+		$typedef = $lines[$i];
+		$j = $i;
+		while ($lines[$j] !~ /}/) {
+			$lines[$j] = $lines[$j+1];
+			$j++;
+		}
+	$lines[$j] = $lines[$j+1];
+	$lines[$j + 1] = $typedef;
+	}
 
 	$cur_line = $lines[$i];
 	chomp($cur_line);
-print("new line: $cur_line\n");
 	if ($cur_line =~ /^\/\*\*[\t ]*$/) {
 		# /** Seen
 		#print "Comment seen! [$cur_line]\n";
