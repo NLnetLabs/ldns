@@ -79,7 +79,7 @@ LINK_LIB	= $(LIBTOOL) --mode=link $(CC) $(CFLAGS) $(LDFLAGS) -version-number $(v
 %.o:    $(srcdir)/%.c $(LIBDNS_HEADERS) ldns/util.h ldns/config.h
 	$(COMP_LIB) -c $> $<
 
-.PHONY:	clean realclean docclean doc lint all lib
+.PHONY:	clean realclean docclean manpages doc lint all lib
 .PHONY: install uninstall install-doc uninstall-doc 
 .PHONY: install-h uninstall-h install-lib uninstall-lib 
 
@@ -104,25 +104,32 @@ copy-headers:	$(addprefix include/ldns/, $(notdir $(LIBDNS_HEADERS)))
 mancheck:
 		sh -c 'find . -name \*.\[13\] -exec troff -z {} \;' 2>&1 | sed "s/^\.\///" | sed "s/\(:[0\-9]\+:\)/\1 warning:/g"
 
-doc:		$(srcdir)/doc/function_manpages 
+doxygen:	manpages
 		$(INSTALL) -d doc
 ifdef doxygen
+		# if we are not in base we need to copy some html files too
+		if [ ! -e doc/header.html ] ; then \
+			MVPROG=/bin/cp $(INSTALL) -m 644 $(srcdir)/doc/header.html doc/ ; \
+		fi ;
 		$(doxygen) $(srcdir)/libdns.doxygen
 endif
+
+manpages:	$(srcdir)/doc/function_manpages 
+		$(INSTALL) -d doc
 		cat $(srcdir)/ldns/*.h | $(srcdir)/doc/doxyparse.pl -m $(srcdir)/doc/function_manpages 2>&1 | \
 		grep -v ^doxygen | grep -v ^cat  > doc/ldns_manpages
 
-install:	install-h install-lib install-doc
+install:	install-h install-lib install-manpages
 
-uninstall:	uninstall-doc uninstall-h uninstall-lib
+uninstall:	uninstall-manpages uninstall-h uninstall-lib
 
 destclean:	uninstall
 
-install-doc:	doc
+install-manpages:	manpages
 		${INSTALL} -d $(DESTDIR)$(mandir)/man3
 		cp -Rp doc/man/man3/* $(DESTDIR)$(mandir)/man3/
 
-uninstall-doc:	doc
+uninstall-manpages:
 		for i in `cat doc/ldns_manpages`; do \
 			rm -f $(DESTDIR)$(mandir)/man3/$$i.3 ; done
 		rmdir -p $(DESTDIR)$(mandir)/man3
