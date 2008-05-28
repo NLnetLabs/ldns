@@ -10,6 +10,7 @@
 
 #include <ldns/ldns.h>
 
+#ifdef HAVE_PCAP_H
 #ifdef HAVE_LIBPCAP
 
 #ifdef HAVE_NETINET_IP6_H
@@ -2988,7 +2989,13 @@ int main(int argc, char *argv[]) {
 
 #else
 int main() {
-	fprintf(stderr, "ldns-dpa was not built because there is no pcap library on this system, or i couldn't find it. Please install pcap and rebuild.\n");
+	fprintf(stderr, "ldns-dpa was not built because there is no pcap library on this system, or there was no pcap header file at compilation time. Please install pcap and rebuild.\n");
+	return 1;
+}
+#endif
+#else
+int main() {
+	fprintf(stderr, "ldns-dpa was not built because there is no pcap library on this system, or there was no pcap header file at compilation time. Please install pcap and rebuild.\n");
 	return 1;
 }
 #endif
