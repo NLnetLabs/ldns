@@ -1,6 +1,0 @@
-openssl check for ENGINE_load_ssl
-drill configure moet checks van examples
-config.h stuff
-.so name
-glue wordt soms nog gesigned
--l optie in signzone
