@@ -1,7 +1,7 @@
 /*
  * dnssec.h -- defines for the Domain Name System (SEC) (DNSSEC)
  *
- * Copyright (c) 2005-2006, NLnet Labs. All rights reserved.
+ * Copyright (c) 2005-2008, NLnet Labs. All rights reserved.
  *
  * See LICENSE for the license.
  *

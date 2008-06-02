@@ -3,7 +3,7 @@
  *
  * Taken from Unbound, modified for ldns
  *
- * Copyright (c) 2001-2007, NLnet Labs. All rights reserved.
+ * Copyright (c) 2001-2008, NLnet Labs. All rights reserved.
  * 
  * This software is open source.
  * 

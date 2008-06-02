@@ -45,7 +45,7 @@ version(void)
         fprintf(stderr, "%s version %s\n", PACKAGE_NAME, PACKAGE_VERSION);
         fprintf(stderr, "Written by NLnet Labs.\n\n");
         fprintf(stderr,
-                "Copyright (C) 2001-2005 NLnet Labs.  This is free software.\n"
+                "Copyright (C) 2001-2008 NLnet Labs.  This is free software.\n"
                 "There is NO warranty; not even for MERCHANTABILITY or FITNESS\n"
                 "FOR A PARTICULAR PURPOSE.\n");
         exit(0);

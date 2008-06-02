@@ -1,7 +1,7 @@
 /*
  * tsig.h -- defines for TSIG [RFC2845]
  *
- * Copyright (c) 2005-2006, NLnet Labs. All rights reserved.
+ * Copyright (c) 2005-2008, NLnet Labs. All rights reserved.
  *
  * See LICENSE for the license.
  */
