@@ -7,7 +7,7 @@ Url: http://www.nlnetlabs.nl/%{name}/
 Source: http://www.nlnetlabs.nl/downloads/%{name}-%{version}.tar.gz
 Group: System Environment/Libraries
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
-BuildRequires: libtool, autoconf, automake, gcc-c++, openssl-devel, doxygen, perl
+BuildRequires: libtool, autoconf, automake, gcc-c++, openssl-devel, doxygen, perl libpcap-devel
 
 %description
 ldns is a library with the aim to simplify DNS programing in C. All
@@ -25,13 +25,15 @@ The devel package contains the ldns library and the include files
 
 %prep
 %setup -q 
-
 # To built svn snapshots
 #rm config.guess config.sub ltmain.sh
+#libtoolize
+#autoreconf
 
 %configure --disable-rpath
 
 %build
+
 make %{?_smp_mflags}
 (cd drill ; %configure --disable-rpath --with-ldns=../ldns/)
 (cd examples ; %configure --disable-rpath --with-ldns=../ldns/)
@@ -42,8 +44,8 @@ make %{?_smp_mflags} doc
 %install
 rm -rf %{buildroot}
 
-make DESTDIR=%{buildroot} install
-make DESTDIR=%{buildroot} install-doc
+make DESTDIR=%{buildroot} INSTALL="%{__install} -p" install 
+make DESTDIR=%{buildroot} INSTALL="%{__install} -p" install-doc
 
 # don't package building script in doc
 rm doc/doxyparse.pl
@@ -62,7 +64,7 @@ rm -rf %{buildroot}
 
 %files 
 %defattr(-,root,root)
-%{_libdir}/libldns*so
+%{_libdir}/libldns*so.*
 %{_bindir}/drill
 %{_bindir}/ldns-*
 %{_bindir}/ldnsd
@@ -72,7 +74,9 @@ rm -rf %{buildroot}
 %files devel
 %defattr(-,root,root,-)
 %{_libdir}/libldns.a
-%dir %{_includedir}/ldns/*
+%{_libdir}/libldns*so
+%dir %{_includedir}/ldns
+%{_includedir}/ldns/*.h
 %doc doc Changelog README
 
 %post -p /sbin/ldconfig
@@ -80,22 +84,32 @@ rm -rf %{buildroot}
 %postun -p /sbin/ldconfig
 
 %changelog
-* Wed Nov 21 2007 Jelte Jansen <jelte@NLnetLabs.nl> 1.2.2-1
-- Added support for HMAC-MD5 keys in generator
-- Added a new example tool (written by Ondrej Sury): ldns-compare-zones
-- ldns-keygen now checks key sizes for rfc conformancy
-- ldns-signzone outputs SSL error if present
-- Fixed manpages (thanks to Ondrej Sury)
-- Fixed Makefile for -j <x>
-- Fixed a $ORIGIN error when reading zones
-- Fixed another off-by-one error
+* Wed May 28 2008 Paul Wouters <paul@xelerance.com> - 1.3.0-1
+- Updated to latest release
 
-* Tue Sep 18 2007 Jelte Jansen <jelte@NLnetLabs.nl> 1.2.1-1
-- Updated spec file for release
+* Wed Dec  5 2007 Paul Wouters <paul@xelerance.com> - 1.2.2-2
+- Rebuild for new libcrypto
 
-* Wed Aug  8 2007 Paul Wouters <paul@xelerance.com> 1.2.0-10
+* Thu Nov 29 2007 Paul Wouters <paul@xelerance.com> - 1.2.2-1
+- Upgraded to 1.2.2. Removed no longer needed race workaround
+
+* Tue Nov 13 2007 Paul Wouters <paul@xelerance.com> - 1.2.1-4
+- Try to fix racing ln -s statements in parallel builds
+
+* Fri Nov  9 2007 Paul Wouters <paul@xelerance.com> - 1.2.1-3
+- Added patch for ldns-read-zone that does not put @. in RRDATA
+
+* Fri Oct 19 2007 Paul Wouters <paul@xelerance.com> - 1.2.1-2
+- Use install -p to work around multilib conflicts for .h files
+
+* Wed Oct 10 2007 Paul Wouters <paul@xelerance.com> - 1.2.1-1
+- Updated to 1.2.1
+- Removed patches that got moved into upstream
+
+* Wed Aug  8 2007 Paul Wouters <paul@xelerance.com> 1.2.0-11
 - Patch for ldns-key2ds to write to stdout
 - Again remove extra set of man pages from doc
+- own /usr/include/ldns (bug 233858)
 
 * Wed Aug  8 2007 Paul Wouters <paul@xelerance.com> 1.2.0-10
 - Added sha256 DS record patch to ldns-key2ds
