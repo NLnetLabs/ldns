@@ -291,22 +291,25 @@ ldns_tcp_connect(const struct sockaddr_storage *to, socklen_t tolen,
 	
 	if ((sockfd = socket((int)((struct sockaddr*)to)->sa_family, SOCK_STREAM, 
 					IPPROTO_TCP)) == -1) {
-		/*perror("could not open socket");*/
 		return 0;
 	}
 
-        if (setsockopt(sockfd, SOL_SOCKET, SO_RCVTIMEO, (void*)&timeout,
-                        (socklen_t) sizeof(timeout))) {
-                /*perror("setsockopt");*/
-                close(sockfd);
-                return 0;
-        }
+	if (setsockopt(sockfd, SOL_SOCKET, SO_RCVTIMEO, (void*)&timeout,
+				(socklen_t) sizeof(timeout))) {
+		close(sockfd);
+		return 0;
+	}
+	if (setsockopt(sockfd, SOL_SOCKET, SO_SNDTIMEO, (void*)&timeout,
+				(socklen_t) sizeof(timeout))) {
+		close(sockfd);
+		return 0;
+	}
 
 	if (connect(sockfd, (struct sockaddr*)to, tolen) == -1) {
  		close(sockfd);
-		/*perror("could not bind socket");*/
 		return 0;
 	}
+
 	return sockfd;
 }
 
