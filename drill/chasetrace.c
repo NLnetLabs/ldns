@@ -381,13 +381,13 @@ do_chase(ldns_resolver *res,
 		if (tree_result == LDNS_STATUS_DNSSEC_EXISTENCE_DENIED) {
 			if (verbosity >= 1) {
 				printf("Existence denied or verifiably insecure\n");
-				result = LDNS_STATUS_OK;
 			}
+			result = LDNS_STATUS_OK;
 		} else if (tree_result != LDNS_STATUS_OK) {
 			if (verbosity >= 1) {
 				printf("No trusted keys found in tree: first error was: %s\n", ldns_get_errorstr_by_id(tree_result));
-				result = tree_result;
 			}
+			result = tree_result;
 		}
 
 	} else {
