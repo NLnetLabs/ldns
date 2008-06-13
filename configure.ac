@@ -362,7 +362,7 @@ AC_HEADER_STDC
 #AC_CHECK_HEADERS([getopt.h fcntl.h stdlib.h string.h strings.h unistd.h])
 # do the very minimum - we can always extend this
 AC_CHECK_HEADERS([getopt.h stdarg.h stdbool.h openssl/ssl.h netinet/in.h time.h arpa/inet.h netdb.h],,, [AC_INCLUDES_DEFAULT])
-AC_CHECK_HEADERS(sys/param.h sys/mount.h sys/socket.h,,,
+AC_CHECK_HEADERS(sys/param.h sys/mount.h,,,
 [AC_INCLUDES_DEFAULT
   [
    #if HAVE_SYS_PARAM_H
@@ -370,6 +370,20 @@ AC_CHECK_HEADERS(sys/param.h sys/mount.h sys/socket.h,,,
    #endif
   ]
 ])
+AC_CHECK_HEADER(sys/socket.h,
+[
+include_sys_socket_h='#include <sys/socket.h>'
+],[
+include_sys_socket_h=''
+],[AC_INCLUDES_DEFAULT
+  [
+   #if HAVE_SYS_PARAM_H
+   # include <sys/param.h>
+   #endif
+  ]
+])
+AC_SUBST(include_sys_socket_h)
+
 AC_CHECK_TYPE(socklen_t, , 
 	[AC_DEFINE([socklen_t], [int], [Define to 'int' if not defined])], [
 AC_INCLUDES_DEFAULT
@@ -621,7 +635,7 @@ size_t strlcpy(char *dst, const char *src, size_t siz);
 #endif
 ])
 
-AC_CONFIG_FILES([Makefile ldns/util.h])
+AC_CONFIG_FILES([Makefile ldns/net.h ldns/util.h])
 AC_CONFIG_HEADER([ldns/config.h])
 AC_OUTPUT
 
