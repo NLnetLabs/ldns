@@ -144,11 +144,26 @@ main(int argc, char *argv[])
 	ldns_rdf *trace_start_name = NULL;
 
 	int		result = 0;
-	
+
+#ifdef USE_WINSOCK
+	int r;
+	WSADATA wsa_data;
+#endif
+
 	int_type = -1; serv = NULL; type = 0; 
 	int_clas = -1; name = NULL; clas = 0;
 	qname = NULL; 
 	progname = strdup(argv[0]);
+
+#ifdef USE_WINSOCK
+	r = WSAStartup(MAKEWORD(2,2), &wsa_data);
+	if(r != 0) {
+		printf("Failed WSAStartup: %d\n", r);
+		result = EXIT_FAILURE;
+		goto exit;
+	}
+#endif /* USE_WINSOCK */
+		
 	
 	PURPOSE = DRILL_QUERY;
 	qflags = LDNS_RD;
@@ -883,6 +898,9 @@ main(int argc, char *argv[])
 	CRYPTO_cleanup_all_ex_data();
 	ERR_free_strings();
 	EVP_cleanup();
+#endif
+#ifdef USE_WINSOCK
+	WSACleanup();
 #endif
 
 	return result;
