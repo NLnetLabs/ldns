@@ -11,7 +11,9 @@
 #include <config.h>
 
 #include <stdbool.h>
+#ifdef HAVE_NETDB_H
 #include <netdb.h>
+#endif
 #include <errno.h>
 
 /* ldns */

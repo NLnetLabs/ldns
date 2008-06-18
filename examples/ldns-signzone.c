@@ -281,7 +281,7 @@ main(int argc, char *argv[])
 			}
 			break;
 		case 'k':
-			eng_key_l = index(optarg, ',');
+			eng_key_l = strchr(optarg, ',');
 			if (eng_key_l && strlen(eng_key_l) > 1) {
 				if (eng_key_l > optarg) {
 					eng_key_id_len = (size_t) (eng_key_l - optarg);

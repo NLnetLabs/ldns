@@ -10,12 +10,21 @@
 #include "config.h"
 #include <ldns/ldns.h>
 
-#include <sys/socket.h>
-
-#include <arpa/inet.h>
-#include <netinet/in.h>
-#include <netinet/udp.h>
-#include <netinet/igmp.h>
+#ifdef HAVE_SYS_SOCKET_H
+#  include <sys/socket.h>
+#endif
+#ifdef HAVE_ARPA_INET_H
+#  include <arpa/inet.h>
+#endif
+#ifdef HAVE_NETINET_IN_H
+#  include <netinet/in.h>
+#endif
+#ifdef HAVE_NETINET_UDP_H
+#  include <netinet/udp.h>
+#endif
+#ifdef HAVE_NETINET_IGMP_H
+#  include <netinet/igmp.h>
+#endif
 
 #include <errno.h>
 

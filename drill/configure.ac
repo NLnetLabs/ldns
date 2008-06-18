@@ -9,6 +9,7 @@ OURCPPFLAGS=''
 CPPFLAGS=${CPPFLAGS:-${OURCPPFLAGS}}
 OURCFLAGS='-g'
 CFLAGS=${CFLAGS:-${OURCFLAGS}}
+AC_DEFINE(WINVER, 0x0502, [the version of the windows API enabled])
 
 AC_AIX
 # Checks for programs.

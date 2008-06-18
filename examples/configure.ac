@@ -1,7 +1,7 @@
 #                                               -*- Autoconf -*-
 # Process this file with autoconf to produce a configure script.
 
-AC_PREREQ(2.57)
+AC_PREREQ(2.56)
 AC_INIT(ldns, 1.3.0, libdns@nlnetlabs.nl,libdns)
 AC_CONFIG_SRCDIR([ldns-read-zone.c])
 
@@ -9,6 +9,7 @@ OURCPPFLAGS=''
 CPPFLAGS=${CPPFLAGS:-${OURCPPFLAGS}}
 OURCFLAGS='-g'
 CFLAGS=${CFLAGS:-${OURCFLAGS}}
+AC_DEFINE(WINVER, 0x0502, [the version of the windows API enabled])
 
 AC_AIX
 # Checks for programs.
@@ -52,50 +53,6 @@ AC_ARG_ENABLE(rpath,
 if test "x$enable_rpath" = xyes; then
     RPATH_VAL="-Wl,-rpath=\${libdir}"
 fi
-
-
-
-# Checks for libraries.
-# Check for SSL, original taken from
-# http://www.gnu.org/software/ac-archive/htmldoc/check_ssl.html and
-# modified for NSD and 
-# copied again for use in ldns
-AC_ARG_WITH(ssl, AC_HELP_STRING([--with-ssl=pathname],
-                                    [enable SSL (will check /usr/local/ssl
-                            /usr/lib/ssl /usr/ssl /usr/pkg /usr/local /usr/sfw /usr)]),[
-        ],[
-            withval="yes"
-        ])
-    if test x_$withval != x_no; then
-        AC_MSG_CHECKING(for SSL)
-        if test x_$withval = x_ -o x_$withval = x_yes; then
-            withval="/usr/local/ssl /usr/lib/ssl /usr/ssl /usr/pkg /usr/local /usr/sfw /usr"
-        fi
-        for dir in $withval; do
-            ssldir="$dir"
-            if test -f "$dir/include/openssl/ssl.h"; then
-                found_ssl="yes";
-                AC_DEFINE_UNQUOTED([HAVE_SSL], [], [Define if you have the SSL libraries installed.])
-                CPPFLAGS="$CPPFLAGS -I$ssldir/include";
-                break;
-            fi
-        done
-        if test x_$found_ssl != x_yes; then
-            AC_MSG_ERROR(Cannot find the SSL libraries in $withval)
-        else
-            AC_MSG_RESULT(found in $ssldir)
-            HAVE_SSL=yes
-            LDFLAGS="$LDFLAGS -L$ssldir/lib -lcrypto";
-            if test "x$enable_rpath" = xyes; then
-	        RUNTIME_PATH="$RUNTIME_PATH -R$ssldir/lib"
-            fi
-            AC_CHECK_LIB(crypto, HMAC_CTX_init,, [
-                    AC_MSG_ERROR([OpenSSL found in $ssldir, but version 0.9.7 or higher is required])
-                ])
-        fi
-        AC_SUBST(HAVE_SSL)
-	AC_SUBST(RUNTIME_PATH)
-    fi
 
 
 
@@ -187,8 +144,9 @@ AC_CHECK_TYPE(uint32_t, unsigned int)
 AC_CHECK_TYPE(uint64_t, unsigned long long)
 AC_CHECK_TYPE(ssize_t, int)
 
-AC_CHECK_HEADERS([sys/types.h getopt.h stdlib.h stdio.h assert.h netinet/in.h ctype.h time.h pcap.h arpa/inet.h sys/time.h sys/socket.h sys/select.h],,, [AC_INCLUDES_DEFAULT])
-AC_CHECK_HEADERS([netinet/in_systm.h net/if.h netinet/ip.h netinet/udp.h netinet/if_ether.h netinet/ip6.h],,, [
+AC_CHECK_HEADERS([sys/types.h getopt.h stdlib.h stdio.h assert.h netinet/in.h ctype.h time.h pcap.h arpa/inet.h sys/time.h sys/socket.h sys/select.h netdb.h],,, [AC_INCLUDES_DEFAULT])
+AC_CHECK_HEADERS([winsock2.h ws2tcpip.h],,, [AC_INCLUDES_DEFAULT])
+AC_CHECK_HEADERS([netinet/in_systm.h net/if.h netinet/ip.h netinet/udp.h netinet/igmp.h netinet/if_ether.h netinet/ip6.h],,, [
 AC_INCLUDES_DEFAULT 
 #ifdef HAVE_NETINET_IN_SYSTM_H
 #include <netinet/in_systm.h>
@@ -269,13 +227,40 @@ AC_ARG_WITH(ssl, AC_HELP_STRING([--with-ssl=pathname],
         else
             AC_MSG_RESULT(found in $ssldir)
             HAVE_SSL=yes
-            LDFLAGS="$LDFLAGS -L$ssldir/lib -lcrypto";
+            LDFLAGS="$LDFLAGS -L$ssldir/lib";
+	    LIBS="$LIBS -lcrypto"
             if test "x$enable_rpath" = xyes; then
 	        RUNTIME_PATH="$RUNTIME_PATH -R$ssldir/lib"
             fi
-            AC_CHECK_LIB(crypto, HMAC_CTX_init,, [
-                    AC_MSG_ERROR([OpenSSL found in $ssldir, but version 0.9.7 or higher is required])
+
+            AC_MSG_CHECKING([for HMAC_CTX_init in -lcrypto])
+            AC_TRY_LINK(, [
+                int HMAC_CTX_init(void);
+                (void)HMAC_CTX_init();
+              ], [
+                AC_MSG_RESULT(yes)
+                AC_DEFINE([HAVE_HMAC_CTX_INIT], 1,
+                        [If you have HMAC_CTX_init])
+              ], [
+                AC_MSG_RESULT(no)
+                # check if -lwsock32 or -lgdi32 are needed.     
+                LIBS="$LIBS -lws2_32 -lgdi32"
+                AC_MSG_CHECKING([if -lcrypto needs -lgdi32])
+                AC_TRY_LINK([], [
+                    int HMAC_CTX_init(void);
+                    (void)HMAC_CTX_init();
+                  ],[
+                    AC_DEFINE([HAVE_HMAC_CTX_INIT], 1,
+                        [If you have HMAC_CTX_init])
+                    AC_MSG_RESULT(yes)
+		    AC_DEFINE([USE_WINSOCK], 1, [If we need to use WSA... functions])
+                  ],[
+                    AC_MSG_RESULT(no)
+                    AC_MSG_ERROR([OpenSSL found in $ssldir, but version 0.9.7 or
+ higher is required])
                 ])
+            ])
+
         fi
         AC_SUBST(HAVE_SSL)
 	AC_SUBST(RUNTIME_PATH)
@@ -327,7 +312,8 @@ AC_CHECK_LIB(pcap, pcap_open_offline,, [
 	]
 )
 
-AC_CHECK_FUNCS(isblank)
+AC_FUNC_FORK
+AC_CHECK_FUNCS(isblank srandom random sleep)
 
 AH_BOTTOM([
 
@@ -383,6 +369,24 @@ AH_BOTTOM([
 
 #ifdef HAVE_NETINET_IF_ETHER_H
 #include <netinet/if_ether.h>
+#endif
+
+#ifdef HAVE_WINSOCK2_H
+#include <winsock2.h>
+#endif
+
+#ifdef HAVE_WS2TCPIP_H
+#include <ws2tcpip.h>
+#endif
+
+#ifndef HAVE_RANDOM
+/* random can be replaced by rand for ldnsexamples */
+#define random rand
+#endif
+
+#ifndef HAVE_SRANDOM
+/* srandom can be replaced by srand for ldnsexamples */
+#define srandom srand
 #endif
 
 extern char *optarg;

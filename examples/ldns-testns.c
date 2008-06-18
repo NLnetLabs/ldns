@@ -143,7 +143,9 @@ struct sockaddr_storage;
 #ifdef HAVE_NETINET_UDP_H
 #include <netinet/udp.h>
 #endif
+#ifdef HAVE_NETINET_IGMP_H
 #include <netinet/igmp.h>
+#endif
 #include <errno.h>
 
 #define INBUF_SIZE 4096         /* max size for incoming queries */
@@ -261,9 +263,9 @@ read_n_bytes(int sock, uint8_t* buf, size_t sz)
 {
 	size_t count = 0;
 	while(count < sz) {
-		ssize_t nb = read(sock, buf+count, sz-count);
+		ssize_t nb = recv(sock, buf+count, sz-count, 0);
 		if(nb < 0) {
-			log_msg("read(): %s\n", strerror(errno));
+			log_msg("recv(): %s\n", strerror(errno));
 			return;
 		}
 		count += nb;
@@ -275,9 +277,9 @@ write_n_bytes(int sock, uint8_t* buf, size_t sz)
 {
 	size_t count = 0;
 	while(count < sz) {
-		ssize_t nb = write(sock, buf+count, sz-count);
+		ssize_t nb = send(sock, buf+count, sz-count, 0);
 		if(nb < 0) {
-			log_msg("write(): %s\n", strerror(errno));
+			log_msg("send(): %s\n", strerror(errno));
 			return;
 		}
 		count += nb;
@@ -336,6 +338,10 @@ handle_tcp(int tcp_sock, struct entry* entries, int *count)
 static void
 forkit(int number)
 {
+#ifndef HAVE_FORK
+	log_msg("error: fork() not available\n");
+	exit(1);
+#else
 	int i;
 	for(i=0; i<number; i++)
 	{
@@ -348,6 +354,7 @@ forkit(int number)
 			return; /* child starts serving */
 		log_msg("forked pid: %d\n", (int)pid);
 	}
+#endif
 }
 
 int
@@ -370,6 +377,10 @@ main(int argc, char **argv)
 
 	/* dns */
 	struct entry* entries;
+
+#ifdef USE_WINSOCK
+	WSADATA wsa_data;
+#endif
 	
 	/* parse arguments */
 	srandom(time(NULL) ^ getpid());
@@ -417,6 +428,11 @@ main(int argc, char **argv)
 	datafile = argv[0];
 	log_msg("Reading datafile %s\n", datafile);
 	entries = read_datafile(datafile);
+
+#ifdef USE_WINSOCK
+	if(WSAStartup(MAKEWORD(2,2), &wsa_data) != 0)
+		error("WSAStartup failed\n");
+#endif
 	
 	if((udp_sock = socket(fam, SOCK_DGRAM, 0)) < 0) {
 		error("udp socket(): %s\n", strerror(errno));
@@ -425,7 +441,7 @@ main(int argc, char **argv)
 		error("tcp socket(): %s\n", strerror(errno));
 	}
 	c = 1;
-	if(setsockopt(tcp_sock, SOL_SOCKET, SO_REUSEADDR, &c, (socklen_t) sizeof(int)) < 0) {
+	if(setsockopt(tcp_sock, SOL_SOCKET, SO_REUSEADDR, (void*)&c, (socklen_t) sizeof(int)) < 0) {
 		error("setsockopt(SO_REUSEADDR): %s\n", strerror(errno));
 	}
 
@@ -447,7 +463,13 @@ main(int argc, char **argv)
 			log_msg("trying to bind to port %d\n", port);
 			random_port_success = true;
 			if (bind_port(udp_sock, port, fam)) {
+#ifdef EADDRINUSE
 				if (errno != EADDRINUSE) {
+#elif defined(USE_WINSOCK)
+				if (WSAGetLastError() != WSAEADDRINUSE) {
+#else
+				if (1) {
+#endif
 					perror("bind()");
 					return -1;
 				} else {
@@ -456,7 +478,13 @@ main(int argc, char **argv)
 			}
 			if (random_port_success) {
 				if (bind_port(tcp_sock, port, fam)) {
+#ifdef EADDRINUSE
 					if (errno != EADDRINUSE) {
+#elif defined(USE_WINSOCK)
+					if (WSAGetLastError()!=WSAEADDRINUSE){
+#else
+					if (1) {
+#endif
 						perror("bind()");
 						return -1;
 					} else {
