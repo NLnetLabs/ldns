@@ -335,16 +335,69 @@ handle_tcp(int tcp_sock, struct entry* entries, int *count)
 
 }
 
+/** shared by the service and main routine (forked and threaded) */
+static int udp_sock, tcp_sock;
+static struct entry* entries;
+
+/** 
+ * Test DNS server service, uses global udpsock, tcpsock, reply entries 
+ * The signature is kept void so the function can be used as a thread function.
+ */
+static void
+service(void)
+{
+	fd_set rset, wset, eset;
+	struct timeval timeout;
+	int count;
+	int maxfd;
+
+	/* service */
+	count = 0;
+	timeout.tv_sec = 0;
+	timeout.tv_usec = 0;
+	while (1) {
+		FD_ZERO(&rset);
+		FD_ZERO(&wset);
+		FD_ZERO(&eset);
+		FD_SET(udp_sock, &rset);
+		FD_SET(tcp_sock, &rset);
+		maxfd = udp_sock;
+		if(tcp_sock > maxfd)
+			maxfd = tcp_sock;
+		if(select(maxfd+1, &rset, &wset, &eset, NULL) < 0) {
+			error("select(): %s\n", strerror(errno));
+		}
+		if(FD_ISSET(udp_sock, &rset)) {
+			handle_udp(udp_sock, entries, &count);
+		}
+		if(FD_ISSET(tcp_sock, &rset)) {
+			handle_tcp(tcp_sock, entries, &count);
+		}
+	}
+}
+
 static void
 forkit(int number)
 {
-#ifndef HAVE_FORK
-	log_msg("error: fork() not available\n");
-	exit(1);
-#else
 	int i;
 	for(i=0; i<number; i++)
 	{
+#ifndef HAVE_FORK
+#ifndef USE_WINSOCK
+		log_msg("fork() not available.\n");
+		exit(1);
+#else /* USE_WINSOCK */
+		DWORD tid;
+		HANDLE id = CreateThread(NULL, 0, 
+			(LPTHREAD_START_ROUTINE)service, NULL,
+			0, &tid);
+		if(id == NULL) {
+			log_msg("error CreateThread: %d\n", GetLastError());
+			return;
+		}
+		log_msg("thread id: %d\n", (int)tid);
+#endif /* USE_WINSOCK */
+#else /* HAVE_FORK */
 		pid_t pid = fork();
 		if(pid == -1) {
 			log_msg("error forking: %s\n", strerror(errno));
@@ -353,8 +406,8 @@ forkit(int number)
 		if(pid == 0)
 			return; /* child starts serving */
 		log_msg("forked pid: %d\n", (int)pid);
+#endif /* HAVE_FORK */
 	}
-#endif
 }
 
 int
@@ -364,19 +417,11 @@ main(int argc, char **argv)
 	int c;
 	int port = DEFAULT_PORT;
 	const char* datafile;
-	int count;
 	int forknum = 0;
 
 	/* network */
 	int fam = AF_INET;
-	int udp_sock, tcp_sock;
-	fd_set rset, wset, eset;
-	struct timeval timeout;
-	int maxfd;
 	bool random_port_success;
-
-	/* dns */
-	struct entry* entries;
 
 #ifdef USE_WINSOCK
 	WSADATA wsa_data;
@@ -506,28 +551,7 @@ main(int argc, char **argv)
 	if(forknum > 0)
 		forkit(forknum);
 
-	/* service */
-	count = 0;
-	timeout.tv_sec = 0;
-	timeout.tv_usec = 0;
-	while (1) {
-		FD_ZERO(&rset);
-		FD_ZERO(&wset);
-		FD_ZERO(&eset);
-		FD_SET(udp_sock, &rset);
-		FD_SET(tcp_sock, &rset);
-		maxfd = udp_sock;
-		if(tcp_sock > maxfd)
-			maxfd = tcp_sock;
-		if(select(maxfd+1, &rset, &wset, &eset, NULL) < 0) {
-			error("select(): %s\n", strerror(errno));
-		}
-		if(FD_ISSET(udp_sock, &rset)) {
-			handle_udp(udp_sock, entries, &count);
-		}
-		if(FD_ISSET(tcp_sock, &rset)) {
-			handle_tcp(tcp_sock, entries, &count);
-		}
-	}
+	service();
+
         return 0;
 }
