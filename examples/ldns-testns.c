@@ -251,7 +251,14 @@ handle_udp(int udp_sock, struct entry* entries, int *count)
 	nb = recvfrom(udp_sock, inbuf, INBUF_SIZE, 0, 
 		(struct sockaddr*)&userdata.addr_him, &userdata.hislen);
 	if (nb < 1) {
+#ifndef USE_WINSOCK
 		log_msg("recvfrom(): %s\n", strerror(errno));
+#else
+		if(WSAGetLastError() != WSAEINPROGRESS &&
+			WSAGetLastError() != WSAECONNRESET &&
+			WSAGetLastError()!= WSAEWOULDBLOCK)
+			log_msg("recvfrom(): %d\n", WSAGetLastError());
+#endif
 		return;
 	}
 	handle_query(inbuf, nb, entries, count, transport_udp, send_udp, 
