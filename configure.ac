@@ -401,6 +401,7 @@ AC_CHECK_HEADERS(sys/param.h sys/mount.h,,,
 AC_CHECK_HEADER(sys/socket.h,
 [
 include_sys_socket_h='#include <sys/socket.h>'
+AC_DEFINE(HAVE_SYS_SOCKET_H, 1, [define if you have sys/socket.h])
 ],[
 include_sys_socket_h=''
 ],[AC_INCLUDES_DEFAULT
