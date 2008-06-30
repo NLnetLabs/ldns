@@ -51,7 +51,6 @@ LIBDNS_HEADERS	=	$(srcdir)/ldns/error.h		\
 			$(srcdir)/ldns/str2host.h	\
 			$(srcdir)/ldns/buffer.h		\
 			$(srcdir)/ldns/resolver.h	\
-			$(srcdir)/ldns/net.h		\
 			$(srcdir)/ldns/dname.h		\
 			$(srcdir)/ldns/dnssec.h		\
 			$(srcdir)/ldns/dnssec_verify.h	\
@@ -139,6 +138,7 @@ install-h:	lib
 		for i in $(LIBDNS_HEADERS); do \
 			MVPROG=/bin/cp $(INSTALL) -m 644 $$i $(DESTDIR)$(includedir)/ldns/; done
 		MVPROG=/bin/cp $(INSTALL) -m 644 include/ldns/util.h $(DESTDIR)$(includedir)/ldns/
+		MVPROG=/bin/cp $(INSTALL) -m 644 include/ldns/net.h $(DESTDIR)$(includedir)/ldns/
 
 uninstall-h:
 		for i in $(LIBDNS_HEADERS); do \
