@@ -40,8 +40,8 @@ usage(FILE *f, char *progname)
 		fprintf(f, "  -n NUMBER\tsplit after this many RRs\n");
 		fprintf(f, "  -o ORIGIN\tuse this as initial origin, for zones starting with @\n");
 		fprintf(f, "  -z\t\tsort the zone prior to splitting. The current ldns zone\n");
-		fprintf(f, "  -v\t\tshow version number and exit\n");
 		fprintf(f, "  \t\timplementation makes this unuseable for large zones.\n");
+		fprintf(f, "  -v\t\tshow version number and exit\n");
 }
 
 
@@ -190,8 +190,9 @@ main(int argc, char **argv)
 
 	if (s != LDNS_STATUS_OK) {
 		fprintf(stderr, "Zone file %s could not be parsed correctly: %s at line %d\n", 
+				argv[0],
 				ldns_get_errorstr_by_id(s),
-				argv[0], line_nr);
+				line_nr);
 		exit(EXIT_FAILURE);
 	}
 	/* these kind of things can kill you... */
