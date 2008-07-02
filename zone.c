@@ -63,7 +63,7 @@ ldns_zone_push_rr(ldns_zone *z, ldns_rr *rr)
 ldns_rr_list *
 ldns_zone_strip_glue_rrs(const ldns_rdf *zone_name, const ldns_rr_list *rrs, ldns_rr_list *glue_rrs)
 {
-	ldns_rr_list *new_list = ldns_rr_list_new();
+	ldns_rr_list *new_list;
 
 	/* when do we find glue? It means we find an IP address
 	 * (AAAA/A) for a nameserver listed in the zone
@@ -83,15 +83,23 @@ ldns_zone_strip_glue_rrs(const ldns_rdf *zone_name, const ldns_rr_list *rrs, ldn
 	ldns_rdf *dname_a, *dname_ns, *ns_owner;
 	uint16_t i,j;
 
+	new_list = NULL;
+	zone_cuts = NULL;
+	addr = NULL;
+
+	new_list = ldns_rr_list_new();
+	if (!new_list) goto memory_error;
 	zone_cuts = ldns_rr_list_new();
+	if (!zone_cuts) goto memory_error;
 	addr = ldns_rr_list_new();
+	if (!addr) goto memory_error;
 
 	for(i = 0; i < ldns_rr_list_rr_count(rrs); i++) {
 		r = ldns_rr_list_rr(rrs, i);
 		if (ldns_rr_get_type(r) == LDNS_RR_TYPE_A ||
 				ldns_rr_get_type(r) == LDNS_RR_TYPE_AAAA) {
 			/* possibly glue */
-			ldns_rr_list_push_rr(addr, r);
+			if (!ldns_rr_list_push_rr(addr, r)) goto memory_error;
 			continue;
 		}
 		if (ldns_rr_get_type(r) == LDNS_RR_TYPE_NS) {
@@ -101,7 +109,7 @@ ldns_zone_strip_glue_rrs(const ldns_rdf *zone_name, const ldns_rr_list *rrs, ldn
 			/* don't add NS records for the current zone itself */
 			if (ldns_rdf_compare(ldns_rr_owner(r), 
 						zone_name) != 0) {
-				ldns_rr_list_push_rr(zone_cuts, r);
+				if (!ldns_rr_list_push_rr(zone_cuts, r)) goto memory_error;
 			}
 			continue;
 		}
@@ -120,11 +128,11 @@ ldns_zone_strip_glue_rrs(const ldns_rdf *zone_name, const ldns_rr_list *rrs, ldn
 			    ldns_rdf_compare(dname_ns, dname_a) == 0) {
 				/* GLUE! */
 				if (glue_rrs) {
-					ldns_rr_list_push_rr(glue_rrs, a);
+					if (!ldns_rr_list_push_rr(glue_rrs, a)) goto memory_error;
 				}
 				break;
 			} else {
-				ldns_rr_list_push_rr(new_list, a);
+				if (!ldns_rr_list_push_rr(new_list, a)) goto memory_error;
 			}
 		}
 	}
@@ -133,10 +141,24 @@ ldns_zone_strip_glue_rrs(const ldns_rdf *zone_name, const ldns_rr_list *rrs, ldn
 	ldns_rr_list_free(zone_cuts);
 
 	return new_list;
+
+memory_error:
+	if (new_list) {
+		ldns_rr_list_free(new_list);
+	}
+	if (zone_cuts) {
+		ldns_rr_list_free(zone_cuts);
+	}
+	if (addr) {
+		ldns_rr_list_free(addr);
+	}
+	return NULL;
 }
 
 /*
  * Get the list of glue records in a zone
+ * XXX: there should be a way for this to return error, other than NULL, 
+ *      since NULL is a valid return
  */
 ldns_rr_list *
 ldns_zone_glue_rr_list(const ldns_zone *z)
@@ -160,16 +182,23 @@ ldns_zone_glue_rr_list(const ldns_zone *z)
 	ldns_rdf *dname_a, *dname_ns, *ns_owner;
 	uint16_t i,j;
 
+	zone_cuts = NULL;
+	addr = NULL;
+	glue = NULL;
+
 	zone_cuts = ldns_rr_list_new();
+	if (!zone_cuts) goto memory_error;
 	addr = ldns_rr_list_new();
+	if (!addr) goto memory_error;
 	glue = ldns_rr_list_new();
+	if (!glue) goto memory_error;
 
 	for(i = 0; i < ldns_zone_rr_count(z); i++) {
 		r = ldns_rr_list_rr(ldns_zone_rrs(z), i);
 		if (ldns_rr_get_type(r) == LDNS_RR_TYPE_A ||
 				ldns_rr_get_type(r) == LDNS_RR_TYPE_AAAA) {
 			/* possibly glue */
-			ldns_rr_list_push_rr(addr, r);
+			if (!ldns_rr_list_push_rr(addr, r)) goto memory_error;
 			continue;
 		}
 		if (ldns_rr_get_type(r) == LDNS_RR_TYPE_NS) {
@@ -179,7 +208,7 @@ ldns_zone_glue_rr_list(const ldns_zone *z)
 			/* don't add NS records for the current zone itself */
 			if (ldns_rdf_compare(ldns_rr_owner(r), 
 						ldns_rr_owner(ldns_zone_soa(z))) != 0) {
-				ldns_rr_list_push_rr(zone_cuts, r);
+				if (!ldns_rr_list_push_rr(zone_cuts, r)) goto memory_error;
 			}
 			continue;
 		}
@@ -201,7 +230,7 @@ ldns_zone_glue_rr_list(const ldns_zone *z)
 			*/
 			if (ldns_dname_is_subdomain(dname_a, ns_owner)) {
 				/* GLUE! */
-				ldns_rr_list_push_rr(glue, a);
+				if (!ldns_rr_list_push_rr(glue, a)) goto memory_error;
 			}
 		}
 	}
@@ -215,6 +244,18 @@ ldns_zone_glue_rr_list(const ldns_zone *z)
 	} else {
 		return glue;
 	}
+
+memory_error:
+	if (zone_cuts) {
+		LDNS_FREE(zone_cuts);
+	}
+	if (addr) {
+		ldns_rr_list_free(addr);
+	}
+	if (glue) {
+		ldns_rr_list_free(glue);
+	}
+	return NULL;
 }
 
 ldns_zone *
@@ -228,6 +269,10 @@ ldns_zone_new(void)
 	}
 
 	z->_rrs = ldns_rr_list_new();
+	if (!z->_rrs) {
+		LDNS_FREE(z);
+		return NULL;
+	}
 	ldns_zone_set_soa(z, NULL);
 	return z;
 }
@@ -241,33 +286,41 @@ ldns_zone_new_frm_fp(ldns_zone **z, FILE *fp, ldns_rdf *origin, uint32_t ttl, ld
 	return ldns_zone_new_frm_fp_l(z, fp, origin, ttl, c, NULL);
 }
 
+/* XXX: class is never used */
 ldns_status
 ldns_zone_new_frm_fp_l(ldns_zone **z, FILE *fp, ldns_rdf *origin, uint32_t ttl, ldns_rr_class c, 
 		int *line_nr)
 {
 	ldns_zone *newzone;
 	ldns_rr *rr;
-	uint32_t my_ttl = ttl;
-	ldns_rr_class my_class = c;
-	ldns_rr *last_rr = NULL;
+	uint32_t my_ttl;
+	ldns_rr_class my_class;
 	ldns_rdf *my_origin;
 	ldns_rdf *my_prev;
 	bool soa_seen = false; 	/* 2 soa are an error */
 	ldns_status s;
+	ldns_status ret;
 
-	newzone = ldns_zone_new();
-	my_origin = origin;
+	/* most cases of error are memory problems */
+	ret = LDNS_STATUS_MEM_ERR;
+
+	newzone = NULL;
+	my_origin = NULL;
+	my_prev = NULL;
+
 	my_ttl    = ttl;
 	my_class  = c;
 	
 	if (origin) {
 		my_origin = ldns_rdf_clone(origin);
+		if (!my_origin) goto error;
 		/* also set the prev */
 		my_prev   = ldns_rdf_clone(origin);
-	} else {
-		my_origin = NULL;
-		my_prev = NULL;
+		if (!my_prev) goto error;
 	}
+
+	newzone = ldns_zone_new();
+	if (!newzone) goto error;
 
 	while(!feof(fp)) {
 		s = ldns_rr_new_frm_fp_l(&rr, fp, &my_ttl, &my_origin, &my_prev, line_nr);
@@ -291,17 +344,10 @@ ldns_zone_new_frm_fp_l(ldns_zone **z, FILE *fp, ldns_rdf *origin, uint32_t ttl, 
 			}
 			
 			/* a normal RR - as sofar the DNS is normal */
-			last_rr = rr;
-			if (!ldns_zone_push_rr(newzone, rr)) {
-				if (my_origin) {
-					ldns_rdf_deep_free(my_origin);
-				}
-				ldns_zone_free(newzone);
-				return LDNS_STATUS_MEM_ERR;
-			}
+			if (!ldns_zone_push_rr(newzone, rr)) goto error;
 
 			/*my_origin = ldns_rr_owner(rr);*/
-			my_ttl    = ldns_rr_ttl(rr);
+			my_ttl    = ldns_rr_ttl(rr); 	/* XXX: this seems like an error */
 			my_class  = ldns_rr_get_class(rr);
 		case LDNS_STATUS_SYNTAX_EMPTY:
 			/* empty line was seen */
@@ -312,8 +358,8 @@ ldns_zone_new_frm_fp_l(ldns_zone **z, FILE *fp, ldns_rdf *origin, uint32_t ttl, 
 			/* the function set the origin */
 			break;
 		default:
-			ldns_zone_free(newzone);
-			return s;
+			ret = s;
+			goto error;
 		}
 	}
 
@@ -325,9 +371,23 @@ ldns_zone_new_frm_fp_l(ldns_zone **z, FILE *fp, ldns_rdf *origin, uint32_t ttl, 
 	}
 	if (z) {
 		*z = newzone;
+	} else {
+		ldns_zone_free(newzone);
 	}
 
 	return LDNS_STATUS_OK;
+
+error:
+	if (my_origin) {
+		ldns_rdf_deep_free(my_origin);
+	}
+	if (my_prev) {
+		ldns_rdf_deep_free(my_prev);
+	}
+	if (newzone) {
+		ldns_zone_free(newzone);
+	}
+	return ret;
 }
 
 void
