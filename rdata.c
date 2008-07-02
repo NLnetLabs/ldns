@@ -132,6 +132,9 @@ ldns_rdf *
 ldns_native2rdf_int16(ldns_rdf_type type, uint16_t value)
 {
 	uint16_t *rdf_data = LDNS_XMALLOC(uint16_t, 1);
+	if (!rdf_data) {
+		return NULL;
+	}
 	ldns_write_uint16(rdf_data, value);
 	return ldns_rdf_new(type, LDNS_RDF_SIZE_WORD, rdf_data);
 }
@@ -140,6 +143,9 @@ ldns_rdf *
 ldns_native2rdf_int32(ldns_rdf_type type, uint32_t value)
 {
 	uint32_t *rdf_data = LDNS_XMALLOC(uint32_t, 1);
+	if (!rdf_data) {
+		return NULL;
+	}
 	ldns_write_uint32(rdf_data, value);
 	return ldns_rdf_new(type, LDNS_RDF_SIZE_DOUBLEWORD, rdf_data);
 }
@@ -148,11 +154,15 @@ ldns_rdf *
 ldns_native2rdf_int16_data(size_t size, uint8_t *data)
 {
 	uint8_t *rdf_data = LDNS_XMALLOC(uint8_t, size + 2);
+	if (!rdf_data) {
+		return NULL;
+	}
 	ldns_write_uint16(rdf_data, size);
 	memcpy(rdf_data + 2, data, size);
 	return ldns_rdf_new(LDNS_RDF_TYPE_INT16_DATA, size + 2, rdf_data);
 }
 
+/* note: data must be allocated memory */
 ldns_rdf *
 ldns_rdf_new(ldns_rdf_type type, size_t size, void *data)
 {
@@ -172,18 +182,23 @@ ldns_rdf_new_frm_data(ldns_rdf_type type, size_t size, const void *data)
 {
 	ldns_rdf *rdf;
 
+	/* if the size is too big, fail */
+	if (size > LDNS_MAX_RDFLEN) {
+		return NULL;
+	}
+
+	/* allocate space */
 	rdf = LDNS_MALLOC(ldns_rdf);
 	if (!rdf) {
 		return NULL;
 	}
-	if (size > LDNS_MAX_RDFLEN) {
-		return NULL;
-	}
 	rdf->_data = LDNS_XMALLOC(uint8_t, size);
 	if (!rdf->_data) {
+		LDNS_FREE(rdf);
 		return NULL;
 	}
 	
+	/* set the values */
 	ldns_rdf_set_type(rdf, type);
 	ldns_rdf_set_size(rdf, size);
 	memcpy(rdf->_data, data, size);
@@ -309,12 +324,14 @@ ldns_rdf_new_frm_str(ldns_rdf_type type, const char *str)
 		status = LDNS_STATUS_ERR;
 		break;
 	}
-	if (LDNS_STATUS_OK != status || !rdf) {
-		return NULL;
-	} else {
+	if (LDNS_STATUS_OK == status) {
 		ldns_rdf_set_type(rdf, type);
 		return rdf;
 	}
+	if (rdf) {
+		LDNS_FREE(rdf);
+	}
+	return NULL;
 }
 
 ldns_status
@@ -388,15 +405,24 @@ ldns_rdf_address_reverse(ldns_rdf *rd)
 			/* make a new rdf and convert that back  */
 			rev = ldns_rdf_new_frm_data( LDNS_RDF_TYPE_A,
 				LDNS_IP4ADDRLEN, (void*)&buf_4);
+			if (!rev) {
+				LDNS_FREE(in_addr);
+				return NULL;
+			}
 
 			/* convert rev to a string */
 			char_dname = ldns_rdf2str(rev);
 			if (!char_dname) {
+				LDNS_FREE(in_addr);
+				ldns_rdf_deep_free(rev);
 				return NULL;
 			}
 			/* transform back to rdf with type dname */
 			ret_dname = ldns_dname_new_frm_str(char_dname);
 			if (!ret_dname) {
+				LDNS_FREE(in_addr);
+				ldns_rdf_deep_free(rev);
+				LDNS_FREE(char_dname);
 				return NULL;
 			}
 			/* not needed anymore */
@@ -436,15 +462,17 @@ ldns_rdf_address_reverse(ldns_rdf *rd)
 			}
 			in_addr = ldns_dname_new_frm_str("ip6.arpa.");
 			if (!in_addr) {
+				LDNS_FREE(char_dname);
 				return NULL;
 			}
 		
 			/* convert rev to a string */
 			ret_dname = ldns_dname_new_frm_str(char_dname);
+			LDNS_FREE(char_dname);
 			if (!ret_dname) {
+				ldns_rdf_deep_free(in_addr);
 				return NULL;
 			}
-			LDNS_FREE(char_dname);
 			break;
 		default:
 			break;
