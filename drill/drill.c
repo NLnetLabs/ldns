@@ -574,7 +574,7 @@ main(int argc, char *argv[])
 			}
 			qname = ldns_dname_new_frm_str(name);
 			if (!qname) {
-				error("%s", "making qname");
+				error("%s", "parsing query name");
 			}
 			/* don't care about return packet */
 			(void)do_trace(res, qname, type, clas);

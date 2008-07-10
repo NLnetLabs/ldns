@@ -236,7 +236,7 @@ ldns_str2rdf_dname(ldns_rdf **d, const char *str)
 	
 	len = strlen((char*)str);
 	/* octet representation can make strings a lot longer than actual length */
-	if (len > LDNS_MAX_DOMAINLEN * 3) {
+	if (len > LDNS_MAX_DOMAINLEN * 4) {
 		return LDNS_STATUS_DOMAINNAME_OVERFLOW;
 	}
 	if (0 == len) {
@@ -260,6 +260,9 @@ ldns_str2rdf_dname(ldns_rdf **d, const char *str)
 	pq = buf;
 	label_len = 0;
 	for (s = p = (uint8_t *) str; *s; s++, q++) {
+		if (q > buf + LDNS_MAX_DOMAINLEN) {
+			return LDNS_STATUS_DOMAINNAME_OVERFLOW;
+		}	
 		*q = 0;
 		switch (*s) {
 		case '.':
