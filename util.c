@@ -282,7 +282,11 @@ ldns_init_random(FILE *fd, unsigned int size)
 					gettimeofday(&tv, &tz);
 					seed[read] = (uint8_t) (tv.tv_usec % 256);
 				}
+			} else {
+				read = fread(seed, 1, size, rand_f);
 			}
+		} else {
+			read = fread(seed, 1, size, rand_f);
 		}
 	} else {
 		rand_f = fd;
