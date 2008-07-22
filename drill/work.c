@@ -155,10 +155,17 @@ packetbuffromfile(char *filename, uint8_t *wire)
 	}
 
 	if (state < 2) {
-		wirelen = hexstr2bin((char *) hexbuf, hexbufpos, wire, 0, LDNS_MAX_PACKETLEN);
+		wirelen = hexstr2bin((char *) hexbuf,
+						 hexbufpos,
+						 wire,
+						 0,
+						 LDNS_MAX_PACKETLEN);
 	} else {
 		memcpy(wire, hexbuf, (size_t) hexbufpos);
 		wirelen = (size_t) hexbufpos;
+	}
+	if (fp != stdin) {
+		fclose(fp);
 	}
 	xfree(hexbuf);
 	return wirelen;
