@@ -213,20 +213,7 @@ read_hex_pkt(char *filename)
 	ldns_pkt *pkt = NULL;
 	
 	ldns_status status = LDNS_STATUS_ERR;
-	FILE *fp = NULL;
-	
-	if (strncmp(filename, "-", 2) != 0) {
-		fp = fopen(filename, "r");
-	} else {
-		fp = stdin;
-	}
-	
-	if (fp == NULL) {
-		perror("");
-		warning("Unable to open %s", filename);
-		return NULL;
-	}
-	
+
 	wire = xmalloc(LDNS_MAX_PACKETLEN);
 	
 	wiresize = packetbuffromfile(filename, wire);
@@ -235,15 +222,13 @@ read_hex_pkt(char *filename)
 		status = ldns_wire2pkt(&pkt, wire, wiresize);
 	}
 	
-	if (strncmp(filename, "-", 2) != 0) {
-		fclose(fp);
-	}
 	xfree(wire);
 	
 	if (status == LDNS_STATUS_OK) {
 		return pkt;
 	} else {
-		fprintf(stderr, "Error parsing hex file: %s\n", ldns_get_errorstr_by_id(status));
+		fprintf(stderr, "Error parsing hex file: %s\n",
+			   ldns_get_errorstr_by_id(status));
 		return NULL;
 	}
 }
