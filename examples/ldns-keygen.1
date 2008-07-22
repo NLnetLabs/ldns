@@ -18,25 +18,17 @@ It prints out the basename for these files: K<name>+<alg>+<id>
 
 .SH OPTIONS
 .TP
-\fB-R\fR
-Generate an RSA key. 
+\fB-a \fI<algorithm>\fR 
+Create a key with this algorithm. Specifying 'list' here gives a list of supported algorithms.
 
 .TP
-\fB-D\fR
-Generate a DSA key.
-
-.TP
-\fB-H\fR
-Generate an HMAC-MD5 key.
+\fB-b \fI<bits>\fR 
+Use this many bits for the key length.
 
 .TP
 \fB-k\fR 
 When given, generate a key signing key. This just sets the flag field to
-257 instead of 256.
-
-.TP
-\fB-b \fIbits\fR 
-Use this many bits for the key length.
+257 instead of 256 in the DNSKEY RR in the .key file.
 
 .TP
 \fB-r \fIdevice\fR
