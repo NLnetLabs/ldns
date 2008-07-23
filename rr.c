@@ -81,7 +81,8 @@ ldns_rr_free(ldns_rr *rr)
 }
 
 /* 
- * extra spaces are allowed
+ * trailing spaces are allowed
+ * leading spaces are not allowed
  * allow ttl to be optional
  * class is optional too
  * if ttl is missing, and default_ttl is 0, use DEF_TTL
@@ -490,7 +491,6 @@ ldns_rr_new_frm_str(ldns_rr **newrr, const char *str, uint32_t default_ttl, ldns
 							ldns_rr_free(new);
 							return LDNS_STATUS_SYNTAX_RDATA_ERR;
 						}
-						
 					}
 					if (quoted) {
 						if (ldns_buffer_available(rd_buf, 1)) {

@@ -846,7 +846,7 @@ ldns_rdf2buffer_str(ldns_buffer *buffer, const ldns_rdf *rdf)
 ldns_status
 ldns_rr2buffer_str(ldns_buffer *output, const ldns_rr *rr)
 {
-	uint16_t i;
+	uint16_t i, flags;
 	ldns_status status = LDNS_STATUS_OK;
 	ldns_lookup_table *lt;
 	const ldns_rr_descriptor *descriptor;
@@ -915,14 +915,15 @@ ldns_rr2buffer_str(ldns_buffer *output, const ldns_rr *rr)
 			switch (ldns_rr_get_type(rr)) {
 				case LDNS_RR_TYPE_DNSKEY:
 #ifdef HAVE_SSL
-					if (ldns_rdf2native_int16(ldns_rr_rdf(rr, 0)) == 256) {
+					flags = ldns_rdf2native_int16(ldns_rr_rdf(rr, 0));
+					if (flags == 256 || flags == 384) {
 						ldns_buffer_printf(output, 
 								" ;{id = %d (zsk), size = %db}", 
 								ldns_calc_keytag(rr),
 								ldns_rr_dnskey_key_size(rr)); 
 						break;
 					} 
-					if (ldns_rdf2native_int16(ldns_rr_rdf(rr, 0)) == 257) {
+					if (flags == 256 || flags == 385) {
 						ldns_buffer_printf(output, 
 								" ;{id = %d (ksk), size = %db}", 
 								ldns_calc_keytag(rr),
