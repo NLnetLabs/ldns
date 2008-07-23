@@ -220,6 +220,7 @@ read_hex_pkt(char *filename)
 	
 	if (wiresize > 0) {
 		status = ldns_wire2pkt(&pkt, wire, wiresize);
+printf("wire2pkted\n");
 	}
 	
 	xfree(wire);

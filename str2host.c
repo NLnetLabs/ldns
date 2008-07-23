@@ -190,7 +190,11 @@ ldns_str2rdf_int32(ldns_rdf **rd, const char *longstr)
 	if(*end != 0) {
 		LDNS_FREE(r);
 		return LDNS_STATUS_ERR;
-        } else {
+     } else {
+		if (errno == ERANGE) {
+			LDNS_FREE(r);
+			return LDNS_STATUS_SYNTAX_INTEGER_OVERFLOW;
+		}
 		memcpy(r, &l, sizeof(uint32_t));
 		*rd = ldns_rdf_new_frm_data(
 			LDNS_RDF_TYPE_INT32, sizeof(uint32_t), r);
