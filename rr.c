@@ -681,7 +681,7 @@ ldns_rr_pop_rdf(ldns_rr *rr)
 		return NULL;
 	}
 
-	pop = rr->_rdata_fields[rd_count];
+	pop = rr->_rdata_fields[rd_count - 1];
 	
 	/* shrink the array */
 	rr->_rdata_fields = LDNS_XREALLOC(
