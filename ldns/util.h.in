@@ -277,4 +277,14 @@ time_t mktime_from_utc(const struct tm *tm);
  */
 int ldns_init_random(FILE *fd, unsigned int size);
 
+
+/**
+ * Encode data as BubbleBabble
+ *
+ * \param[in] a pointer to data to be encoded
+ * \param[in] size the number of bytes of data
+ * \return a string of BubbleBabble
+ */
+char *ldns_bubblebabble(uint8_t *data, size_t len);
+
 #endif /* !_UTIL_H */

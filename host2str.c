@@ -938,7 +938,16 @@ ldns_rr2buffer_str(ldns_buffer *output, const ldns_rr *rr)
 				case LDNS_RR_TYPE_RRSIG:
 					ldns_buffer_printf(output, " ;{id = %d}", 
 							ldns_rdf2native_int16(ldns_rr_rdf(rr, 6)));
-							break;
+					break;
+				case LDNS_RR_TYPE_DS:
+					{
+						uint8_t *data = ldns_rdf_data(ldns_rr_rdf(rr, 3));
+						size_t len = ldns_rdf_size(ldns_rr_rdf(rr, 3));
+						char *babble = ldns_bubblebabble(data, len);
+						ldns_buffer_printf(output, " ; %s", babble);
+						LDNS_FREE(babble);
+					}
+					break;
 				default:
 					break;
 

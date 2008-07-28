@@ -318,3 +318,49 @@ ldns_init_random(FILE *fd, unsigned int size)
 	return 0;
 }
 
+char *
+ldns_bubblebabble(uint8_t *data, size_t len)
+{
+	char vowels[] = { 'a', 'e', 'i', 'o', 'u', 'y' };
+	char consonants[] = { 'b', 'c', 'd', 'f', 'g', 'h', 'k', 'l', 'm',
+	    'n', 'p', 'r', 's', 't', 'v', 'z', 'x' };
+	size_t i, j = 0, rounds, seed = 1;
+	char *retval;
+
+	rounds = (len / 2) + 1;
+	retval = LDNS_XMALLOC(char, rounds * 6);
+	retval[j++] = 'x';
+	for (i = 0; i < rounds; i++) {
+		size_t idx0, idx1, idx2, idx3, idx4;
+		if ((i + 1 < rounds) || (len % 2 != 0)) {
+			idx0 = (((((size_t)(data[2 * i])) >> 6) & 3) +
+			    seed) % 6;
+			idx1 = (((size_t)(data[2 * i])) >> 2) & 15;
+			idx2 = ((((size_t)(data[2 * i])) & 3) +
+			    (seed / 6)) % 6;
+			retval[j++] = vowels[idx0];
+			retval[j++] = consonants[idx1];
+			retval[j++] = vowels[idx2];
+			if ((i + 1) < rounds) {
+				idx3 = (((size_t)(data[(2 * i) + 1])) >> 4) & 15;
+				idx4 = (((size_t)(data[(2 * i) + 1]))) & 15;
+				retval[j++] = consonants[idx3];
+				retval[j++] = '-';
+				retval[j++] = consonants[idx4];
+				seed = ((seed * 5) +
+				    ((((size_t)(data[2 * i])) * 7) +
+				    ((size_t)(data[(2 * i) + 1])))) % 36;
+			}
+		} else {
+			idx0 = seed % 6;
+			idx1 = 16;
+			idx2 = seed / 6;
+			retval[j++] = vowels[idx0];
+			retval[j++] = consonants[idx1];
+			retval[j++] = vowels[idx2];
+		}
+	}
+	retval[j++] = 'x';
+	retval[j++] = '\0';
+	return retval;
+}
