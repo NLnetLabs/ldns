@@ -135,7 +135,7 @@ ldns-dpa -u srcaddress -uac test.tr
 Show all packet source addresses and the average number of packets sent from this address.
 
 .TP
-sudo tcpdump -i eth0 -U -w - port 53 | ldns-dpa -f qr=0 -sf 
+sudo tcpdump -i eth0 -s 0 -U -w - port 53 | ldns-dpa -f qr=0 -sf 
 Print all query packets seen on the specified interface.
 
 
