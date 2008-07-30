@@ -318,6 +318,10 @@ ldns_init_random(FILE *fd, unsigned int size)
 	return 0;
 }
 
+/*
+ * BubbleBabble code taken from OpenSSH
+ * Copyright (c) 2001 Carsten Raskgaard.  All rights reserved.
+ */
 char *
 ldns_bubblebabble(uint8_t *data, size_t len)
 {

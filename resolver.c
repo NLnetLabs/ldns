@@ -671,11 +671,6 @@ ldns_resolver_new_frm_fp_l(ldns_resolver **res, FILE *fp, int *line_nr)
 							break;
 						}
 					}
-					if (word[0] == '#') {
-						/* skip the rest of the line*/
-						gtr = ldns_fget_token_l(fp, word, LDNS_PARSE_SKIP_SPACE, 0, line_nr);
-						continue;
-					}
 					/* no keyword recognized */
 					if (expect == LDNS_RESOLV_KEYWORD) {
 						/* skip line */
