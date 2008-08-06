@@ -31,6 +31,13 @@ file, and have the KSK bit set.
 
 .SH OPTIONS
 .TP
+\fB-d\fR
+Normally, if the DNSKEY RR for a key that is used to sign the zone is
+not found in the zone file, it will be read from .key, or derived from
+the private key (in that order). This option turns that feature off,
+so that only the signatures are added to the zone.
+
+.TP
 \fB-e\fR \fIdate\fR
 Set expiration date of the signatures to this date, the format can be
 YYYYMMDD[hhmmss], or a timestamp.

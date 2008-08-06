@@ -31,6 +31,7 @@ void
 usage(FILE *fp, const char *prog) {
 	fprintf(fp, "%s [OPTIONS] zonefile key [key [key]]\n", prog);
 	fprintf(fp, "  signs the zone with the given key(s)\n");
+	fprintf(fp, "  -d\t\tused keys are not added to the zone\n");
 	fprintf(fp, "  -e <date>\texpiration date\n");
 	fprintf(fp, "  -f <file>\toutput zone to file (default <name>.signed)\n");
 	fprintf(fp, "  -i <date>\tinception date\n");
@@ -155,7 +156,9 @@ main(int argc, char *argv[])
 	int eng_key_algo;
 	
 	bool use_nsec3 = false;
-	
+
+	/* Add the given keys to the zone if they are not yet present */
+	bool add_keys = true;
 	uint8_t nsec3_algorithm = 1;
 	/*uint8_t nsec3_flags = 0;*/
 	size_t nsec3_iterations_cmd = 1;
@@ -183,10 +186,13 @@ main(int argc, char *argv[])
 
 	OPENSSL_config(NULL);
 
-	while ((c = getopt(argc, argv, "a:e:f:i:k:lno:s:t:v:E:K:")) != -1) {
+	while ((c = getopt(argc, argv, "a:de:f:i:k:lno:s:t:v:E:K:")) != -1) {
 		switch (c) {
 		case 'a':
 			nsec3_algorithm = (uint8_t) atoi(optarg);
+			break;
+		case 'd':
+			add_keys = false;
 			break;
 		case 'e':
 			/* try to parse YYYYMMDD first,
@@ -469,8 +475,12 @@ main(int argc, char *argv[])
 				 * if it matches, we drop our own. If not,
 				 * we try to see if there is a .key file present.
 				 * If not, we use our own generated one, with
-				 * some default values */
-				
+				 * some default values 
+				 *
+				 * Even if -d (do-not-add-keys) is specified, 
+				 * we still need to do this, because we need
+				 * to have any key flags that are set this way
+				 */
 				pubkey_gen = ldns_key2rr(key);
 
 				if (verbosity >= 2) {
@@ -524,7 +534,10 @@ main(int argc, char *argv[])
 						ldns_key_set_flags(key, ldns_rdf2native_int16(ldns_rr_rdf(pubkey, 0)));
 						ldns_key_set_keytag(key, ldns_calc_keytag(pubkey));
 					}
-					ldns_zone_push_rr(orig_zone, ldns_rr_clone(pubkey));
+					if (add_keys) {
+						ldns_zone_push_rr(orig_zone,
+									   ldns_rr_clone(pubkey));
+					}
 					ldns_rr_free(pubkey);
 					fclose(keyfile);
 					goto found;
@@ -535,8 +548,9 @@ main(int argc, char *argv[])
 				if (verbosity >= 2) {
 					fprintf(stderr, "Not in zone, no .key file, generating DNSKEY from .private\n");
 				}
-				ldns_zone_push_rr(orig_zone, pubkey_gen);
-				
+				if (add_keys) {
+					ldns_zone_push_rr(orig_zone, pubkey_gen);
+				}
 				
 			found:
 				ldns_rr_free(pubkey_gen);
