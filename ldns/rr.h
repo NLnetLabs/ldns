@@ -190,6 +190,9 @@ enum ldns_enum_rr_type
 	/**  any type (wildcard) */
 	LDNS_RR_TYPE_ANY = 255,
 
+	/* RFC 4431, 5074, DNSSEC Lookaside Validation */
+	LDNS_RR_TYPE_DLV = 32769,
+
 	/* type codes from nsec3 experimental phase
 	LDNS_RR_TYPE_NSEC3 = 65324,
 	LDNS_RR_TYPE_NSEC3PARAMS = 65325, */
