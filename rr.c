@@ -2080,7 +2080,7 @@ ldns_rr_descript(uint16_t type)
 	if (type <= LDNS_RDATA_FIELD_DESCRIPTORS_COMMON) {
 		return &rdata_field_descriptors[type];
 	} else {
-	        /* TODO: tmp until type code */
+		/* because not all array index equals type code */
 		for (i = LDNS_RDATA_FIELD_DESCRIPTORS_COMMON;
 		     i < LDNS_RDATA_FIELD_DESCRIPTORS_COUNT;
 		     i++) {
@@ -2150,7 +2150,8 @@ ldns_get_rr_type_by_name(const char *name)
 		if(desc_name &&
 		   strlen(name) == strlen(desc_name) &&
 		   strncasecmp(name, desc_name, strlen(desc_name)) == 0) {
-			return i;
+			/* because not all array index equals type code */
+			return desc->_type;
 		}
 	}
 	
