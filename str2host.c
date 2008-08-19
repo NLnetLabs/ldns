@@ -482,10 +482,10 @@ ldns_str2rdf_b64(ldns_rdf **rd, const char *str)
 	uint8_t *buffer;
 	int16_t i;
 	
-	buffer = LDNS_XMALLOC(uint8_t, b64_ntop_calculate_size(strlen(str)));
+	buffer = LDNS_XMALLOC(uint8_t, ldns_b64_ntop_calculate_size(strlen(str)));
 	
-	i = (uint16_t)b64_pton((const char*)str, buffer, 
-	                        b64_ntop_calculate_size(strlen(str)));
+	i = (uint16_t)ldns_b64_pton((const char*)str, buffer, 
+						   ldns_b64_ntop_calculate_size(strlen(str)));
 	if (-1 == i) {
 		LDNS_FREE(buffer);
 		return LDNS_STATUS_INVALID_B64;
@@ -504,12 +504,12 @@ ldns_str2rdf_b32_ext(ldns_rdf **rd, const char *str)
 	uint8_t *buffer;
 	int i;
 	/* first byte contains length of actual b32 data */
-	uint8_t len = b32_pton_calculate_size(strlen(str));
+	uint8_t len = ldns_b32_pton_calculate_size(strlen(str));
 	buffer = LDNS_XMALLOC(uint8_t, len + 1);
 	buffer[0] = len;
 	
-	i = b32_pton_extended_hex((const char*)str, strlen(str), buffer + 1, 
-                                  b32_ntop_calculate_size(strlen(str)));
+	i = ldns_b32_pton_extended_hex((const char*)str, strlen(str), buffer + 1, 
+							 ldns_b32_ntop_calculate_size(strlen(str)));
 	if (i < 0) {
 		return LDNS_STATUS_INVALID_B32_EXT;
 	} else {

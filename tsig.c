@@ -182,8 +182,8 @@ ldns_tsig_mac_new(ldns_rdf **tsig_mac, uint8_t *pkt_wire, size_t pkt_wire_size,
 	
 	/* prepare the key */
 	key_bytes = LDNS_XMALLOC(unsigned char, 
-			b64_pton_calculate_size(strlen(key_data)));
-	key_size = b64_pton(key_data, key_bytes, strlen(key_data) * 2);
+			ldns_b64_pton_calculate_size(strlen(key_data)));
+	key_size = ldns_b64_pton(key_data, key_bytes, strlen(key_data) * 2);
 	if (key_size < 0) {
 		/* LDNS_STATUS_INVALID_B64 */
 		return LDNS_STATUS_INVALID_B64;

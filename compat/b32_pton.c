@@ -177,7 +177,7 @@ static const char Pad32 = '=';
  */
 
 int
-b32_pton_ar(char const *src, size_t hashed_owner_str_len, uint8_t *target, size_t targsize, const char B32_ar[])
+ldns_b32_pton_ar(char const *src, size_t hashed_owner_str_len, uint8_t *target, size_t targsize, const char B32_ar[])
 {
 	int tarindex, state, ch;
 	char *pos;
@@ -363,14 +363,14 @@ b32_pton_ar(char const *src, size_t hashed_owner_str_len, uint8_t *target, size_
 }
 
 int
-b32_pton(char const *src, size_t hashed_owner_str_len, uint8_t *target, size_t targsize)
+ldns_b32_pton(char const *src, size_t hashed_owner_str_len, uint8_t *target, size_t targsize)
 {
-	return b32_pton_ar(src, hashed_owner_str_len, target, targsize, Base32);
+	return ldns_b32_pton_ar(src, hashed_owner_str_len, target, targsize, Base32);
 }
 
 int
-b32_pton_extended_hex(char const *src, size_t hashed_owner_str_len, uint8_t *target, size_t targsize)
+ldns_b32_pton_extended_hex(char const *src, size_t hashed_owner_str_len, uint8_t *target, size_t targsize)
 {
-	return b32_pton_ar(src, hashed_owner_str_len, target, targsize, Base32_extended_hex);
+	return ldns_b32_pton_ar(src, hashed_owner_str_len, target, targsize, Base32_extended_hex);
 }
 

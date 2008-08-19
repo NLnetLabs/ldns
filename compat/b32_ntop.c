@@ -174,7 +174,7 @@ static const char Pad32 = '=';
 
 
 int
-b32_ntop_ar(uint8_t const *src, size_t srclength, char *target, size_t targsize, const char B32_ar[]) {
+ldns_b32_ntop_ar(uint8_t const *src, size_t srclength, char *target, size_t targsize, const char B32_ar[]) {
 	size_t datalength = 0;
 	uint8_t input[5];
 	uint8_t output[8];
@@ -297,12 +297,12 @@ b32_ntop_ar(uint8_t const *src, size_t srclength, char *target, size_t targsize,
 }
 
 int
-b32_ntop(uint8_t const *src, size_t srclength, char *target, size_t targsize) {
-	return b32_ntop_ar(src, srclength, target, targsize, Base32);
+ldns_b32_ntop(uint8_t const *src, size_t srclength, char *target, size_t targsize) {
+	return ldns_b32_ntop_ar(src, srclength, target, targsize, Base32);
 }
 
 int
-b32_ntop_extended_hex(uint8_t const *src, size_t srclength, char *target, size_t targsize) {
-	return b32_ntop_ar(src, srclength, target, targsize, Base32_extended_hex);
+ldns_b32_ntop_extended_hex(uint8_t const *src, size_t srclength, char *target, size_t targsize) {
+	return ldns_b32_ntop_ar(src, srclength, target, targsize, Base32_extended_hex);
 }
 

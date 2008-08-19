@@ -137,7 +137,7 @@ static const char Pad64 = '=';
  */
 
 int
-b64_pton(char const *src, uint8_t *target, size_t targsize)
+ldns_b64_pton(char const *src, uint8_t *target, size_t targsize)
 {
 	int tarindex, state, ch;
 	char *pos;
