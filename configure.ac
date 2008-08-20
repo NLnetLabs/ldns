@@ -567,8 +567,8 @@ AH_BOTTOM([
 
 AH_BOTTOM([
 #ifndef B64_PTON
-int b64_ntop(uint8_t const *src, size_t srclength,
-	     char *target, size_t targsize);
+int ldns_b64_ntop(uint8_t const *src, size_t srclength,
+	 	  char *target, size_t targsize);
 /**
  * calculates the size needed to store the result of b64_ntop
  */
@@ -606,8 +606,8 @@ static inline size_t ldns_b32_ntop_calculate_size(size_t srcsize)
 }
 #endif /* !B32_PTON */
 #ifndef B32_PTON
-int b32_pton(char const *src, size_t hashed_owner_str_len, uint8_t *target, size_t targsize);
-int b32_pton_extended_hex(char const *src, size_t hashed_owner_str_len, uint8_t *target, size_t targsize);
+int ldns_b32_pton(char const *src, size_t hashed_owner_str_len, uint8_t *target, size_t targsize);
+int ldns_b32_pton_extended_hex(char const *src, size_t hashed_owner_str_len, uint8_t *target, size_t targsize);
 /**
  * calculates the size needed to store the result of b32_pton
  */
