@@ -90,7 +90,13 @@ linktest:	$(srcdir)/linktest.c $(LIBDNS_HEADERS) ldns/util.h ldns/config.h libld
 lib:		libldns.la
 		if [ ! -d lib ] ; then ln -s .libs lib ; fi ;		
 
+lib-export-all:	libldns.la-export-all
+		if [ ! -d lib ] ; then ln -s .libs lib ; fi ;		
+
 libldns.la:	$(LIBDNS_OBJECTS)
+		$(LINK_LIB) --export-symbols $(srcdir)/ldns_symbols.def -o libldns.la $(LIBDNS_LOBJECTS) -rpath $(libdir) $(RUNTIME_PATH)
+
+libldns.la-export-all:	$(LIBDNS_OBJECTS)
 		$(LINK_LIB) -o libldns.la $(LIBDNS_LOBJECTS) -rpath $(libdir) $(RUNTIME_PATH)
 
 $(addprefix include/ldns/, $(notdir $(LIBDNS_HEADERS))): include/ldns/%.h: $(srcdir)/ldns/%.h
@@ -164,7 +170,7 @@ clean:
 	rm -f *.ds
 	rm -f *.private
 	rm -rf include/
-	rm -f lib
+	rm -rf lib
 	rm -rf .libs
 	rm -f linktest
 
@@ -275,3 +281,9 @@ test-clean:
 	tpkg -b test clean
 
 #-include $(ALL_SOURCES:.c=.d)
+
+# Recreate symbols file, only needed when API changes
+# make clean first (and after this make clean; make again)
+symbols: lib-export-all
+	nm -g lib/libldns.so | cut -d " " -f 3 | grep ldns | sort > $(srcdir)/ldns_symbols.def
+
