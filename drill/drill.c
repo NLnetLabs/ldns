@@ -810,6 +810,12 @@ main(int argc, char *argv[])
 			} else {
 				if (verbosity != -1) {
 					ldns_pkt_print(stdout, pkt);
+					if (ldns_pkt_tc(pkt)) {
+						fprintf(stdout,
+							"\n;; WARNING: The answer packet was truncated; you might want to\n");
+						fprintf(stdout,
+							";; query again with TCP (-t argument), or EDNS0 (-b for buffer size)\n");
+					}
 				}
 				if (qds) {
 					if (verbosity != -1) {
