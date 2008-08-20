@@ -308,7 +308,7 @@ AC_ARG_WITH(ssl, AC_HELP_STRING([--with-ssl=pathname],
         else
             AC_MSG_RESULT(found in $ssldir)
             HAVE_SSL=yes
-            LDFLAGS="$LDFLAGS -L$ssldir/lib"
+            LDFLAGS="$LDFLAGS -L$ssldir/lib -lcrypto"
 	    if test "x$enable_rpath" = xyes; then
 	        RUNTIME_PATH="$RUNTIME_PATH -R$ssldir/lib"
 	    fi
