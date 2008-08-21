@@ -44,6 +44,12 @@ ldns_resolver_retrans(const ldns_resolver *r)
 	return r->_retrans;
 }
 
+bool
+ldns_resolver_fallback(const ldns_resolver *r)
+{
+	return r->_fallback;
+}
+
 uint8_t
 ldns_resolver_ip6(const ldns_resolver *r)
 {
@@ -436,6 +442,12 @@ ldns_resolver_set_retrans(ldns_resolver *r, uint8_t retrans)
 }
 
 void
+ldns_resolver_set_fallback(ldns_resolver *r, bool fallback)
+{
+	r->_fallback = fallback;
+}
+
+void
 ldns_resolver_set_nameservers(ldns_resolver *r, ldns_rdf **n)
 {
 	r->_nameservers = n;
@@ -575,6 +587,7 @@ ldns_resolver_new(void)
 	ldns_resolver_set_defnames(r, false);
 	ldns_resolver_set_retry(r, 3);
 	ldns_resolver_set_retrans(r, 2);
+	ldns_resolver_set_fallback(r, true);
 	ldns_resolver_set_fail(r, false);
 	ldns_resolver_set_edns_udp_size(r, 0);
 	ldns_resolver_set_dnssec(r, false);
@@ -928,13 +941,15 @@ ldns_resolver_query(const ldns_resolver *r, const ldns_rdf *name, ldns_rr_type t
 	}
 	status = ldns_resolver_send(&pkt, (ldns_resolver *)r, newname, type, class, 
 			flags);
+
 	ldns_rdf_free(newname);
+
 	return pkt;
 }
 
 ldns_status
-ldns_resolver_send_pkt(ldns_pkt **answer,const ldns_resolver *r, 
-		const ldns_pkt *query_pkt)
+ldns_resolver_send_pkt(ldns_pkt **answer, ldns_resolver *r, 
+				   ldns_pkt *query_pkt)
 {
 	ldns_pkt *answer_pkt = NULL;
 	ldns_status stat = LDNS_STATUS_OK;
@@ -945,8 +960,31 @@ ldns_resolver_send_pkt(ldns_pkt **answer,const ldns_resolver *r,
 			ldns_pkt_free(answer_pkt);
 			answer_pkt = NULL;
 		}
-	}
+	} else {
 	
+		/* if tc=1 fall back to EDNS and/or TCP */
+		/* check for tcp first (otherwise we don't care about tc=1) */
+		if (!ldns_resolver_usevc(r) && ldns_resolver_fallback(r)) {
+			if (ldns_pkt_tc(answer_pkt)) {
+				/* was EDNS0 set? */
+				if (ldns_pkt_edns_udp_size(query_pkt) == 0) {
+					ldns_pkt_set_edns_udp_size(query_pkt, 4096);
+					ldns_pkt_free(answer_pkt);
+					stat = ldns_send(&answer_pkt, r, query_pkt);
+				}
+				/* either way, if it is still truncated, use TCP */
+				if (stat != LDNS_STATUS_OK ||
+				    ldns_pkt_tc(answer_pkt)) {
+					ldns_resolver_set_usevc(r, true);
+					ldns_pkt_free(answer_pkt);
+					stat = ldns_send(&answer_pkt, r, query_pkt);
+					ldns_resolver_set_usevc(r, false);
+				}
+			}
+		}
+	}
+
+
 	if (answer) {
 		*answer = answer_pkt;
 	}

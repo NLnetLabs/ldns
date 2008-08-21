@@ -84,6 +84,8 @@ struct ldns_struct_resolver
 	uint8_t _retry;
 	/**  Time to wait before retrying */
 	uint8_t _retrans;
+	/**  Use new fallback mechanism (try EDNS, then do TCP) */
+	bool _fallback;
 
 	/**  Whether to do DNSSEC */
 	bool _dnssec;
@@ -172,6 +174,13 @@ uint8_t ldns_resolver_retry(const ldns_resolver *r);
  * \return the retransmit interval
  */
 uint8_t ldns_resolver_retrans(const ldns_resolver *r);
+
+/**
+ * Get the truncation fallback status
+ * \param[in] r the resolver
+ * \return whether the truncation fallback mechanism is used
+ */
+bool ldns_resolver_fallback(const ldns_resolver *r);
 
 /**
  * Does the resolver use ip6 or ip4
@@ -439,6 +448,14 @@ ldns_status ldns_resolver_push_dnssec_anchor(ldns_resolver *r, ldns_rr *rr);
 void ldns_resolver_set_retrans(ldns_resolver *r, uint8_t re);
 
 /**
+ * Set whether the resolvers truncation fallback mechanism is used
+ * when ldns_resolver_query() is called.
+ * \param[in] r the resolver
+ * \param[in] fallback whether to use the fallback mechanism
+ */
+void ldns_resolver_set_fallback(ldns_resolver *r, bool fallback);
+
+/**
  * Set the resolver retry interval (in seconds)
  * \param[in] r the resolver
  * \param[in] re the retry interval
@@ -587,7 +604,7 @@ ldns_status ldns_resolver_send(ldns_pkt **answer, ldns_resolver *r, const ldns_r
  * \param[in] *r operate using this resolver
  * \param[in] *query_pkt query
  */
-ldns_status ldns_resolver_send_pkt(ldns_pkt **answer, const ldns_resolver *r, const ldns_pkt *query_pkt);
+ldns_status ldns_resolver_send_pkt(ldns_pkt **answer, ldns_resolver *r, ldns_pkt *query_pkt);
 
 /**
  * Send a query to a nameserver
