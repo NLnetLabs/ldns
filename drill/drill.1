@@ -128,7 +128,14 @@ Stay on ip6. Only send queries to ip6 enabled nameservers.
 
 .TP
 \fB\-a
-Don't try the next nameserver on SERVFAIL. The default is to do this.
+Use the resolver structure's fallback mechanism if the answer
+is truncated (TC=1). If a truncated packet is received and this
+option is set, drill will first send a new query with EDNS0 
+buffer size 4096.
+
+If the EDNS0 buffer size was already set to 512+ bytes, or the
+above retry also results in a truncated answer, the resolver
+structure will fall back to TCP.
 
 .TP
 \fB\-b \fIsize\fR

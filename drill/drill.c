@@ -43,7 +43,7 @@ usage(FILE *stream, const char *progname)
 	fprintf(stream, "\n  Query options:\n");
 	fprintf(stream, "\t-4\t\tstay on ip4\n");
 	fprintf(stream, "\t-6\t\tstay on ip6\n");
-	fprintf(stream, "\t-a\t\tonly query the first nameserver (default is to try all)\n");
+	fprintf(stream, "\t-a\t\tfallback to EDNS0 and TCP if the answer is truncated\n");
 	fprintf(stream, "\t-b <bufsize>\tuse <bufsize> as the buffer size (defaults to 512 b)\n");
 	fprintf(stream, "\t-c <file>\t\tuse file for rescursive nameserver configuration (/etc/resolv.conf)\n");
 	fprintf(stream, "\t-k <file>\tspecify a file that contains a trusted DNSSEC key [**]\n");
@@ -134,7 +134,7 @@ main(int argc, char *argv[])
 	uint16_t	qport;
 	uint8_t		qfamily;
 	bool		qdnssec;
-	bool		qfail;
+	bool		qfallback;
 	bool		qds;
 	bool		qusevc;
 	bool 		qrandom;
@@ -171,7 +171,7 @@ main(int argc, char *argv[])
 	verbosity = 2;
 	qdnssec = false;
 	qfamily = LDNS_RESOLV_INETANY;
-	qfail = false;
+	qfallback = false;
 	qds = false;
 	qbuf = 0;
 	qusevc = false;
@@ -252,7 +252,7 @@ main(int argc, char *argv[])
 				break;
 			/* query options */
 			case 'a':
-				qfail = true;
+				qfallback = true;
 				break;
 			case 'b':
 				qbuf = (uint16_t)atoi(optarg);
@@ -480,7 +480,8 @@ main(int argc, char *argv[])
 		/* no server given make a resolver from /etc/resolv.conf */
 		status = ldns_resolver_new_frm_file(&res, resolv_conf_file);
 		if (status != LDNS_STATUS_OK) {
-			warning("Could not create a resolver structure: %s", ldns_get_errorstr_by_id(status));
+			warning("Could not create a resolver structure: %s",
+				   ldns_get_errorstr_by_id(status));
 			result = EXIT_FAILURE;
 			goto exit;
 		}
@@ -502,7 +503,7 @@ main(int argc, char *argv[])
 			}
 			ldns_resolver_set_dnssec(cmdline_res, qdnssec);
 			ldns_resolver_set_ip6(cmdline_res, qfamily);
-			ldns_resolver_set_fail(cmdline_res, qfail);
+			ldns_resolver_set_fallback(cmdline_res, qfallback);
 			ldns_resolver_set_usevc(cmdline_res, qusevc);
 
 			cmdline_dname = ldns_dname_new_frm_str(serv);
@@ -542,7 +543,7 @@ main(int argc, char *argv[])
 	ldns_resolver_set_dnssec(res, qdnssec);
 /*	ldns_resolver_set_dnssec_cd(res, qdnssec);*/
 	ldns_resolver_set_ip6(res, qfamily);
-	ldns_resolver_set_fail(res, qfail);
+	ldns_resolver_set_fallback(res, qfallback);
 	ldns_resolver_set_usevc(res, qusevc);
 	ldns_resolver_set_random(res, qrandom);
 	if (qbuf != 0) {
