@@ -115,7 +115,8 @@ void ldns_dname2canonical(const ldns_rdf *rdf);
 
 /**
  * test wether the name sub falls under parent (i.e. is a subdomain
- * of parent.
+ * of parent). This function will return false if the given dnames are
+ * equal.
  * \param[in] sub the name to test
  * \param[in] parent the parent's name
  * \return true if sub falls under parent, otherwise false
