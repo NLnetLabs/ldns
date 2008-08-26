@@ -515,6 +515,11 @@ ldns_rr_new_frm_str(ldns_rr **newrr, const char *str, uint32_t default_ttl, ldns
 	ldns_buffer_free(rr_buf);
 	LDNS_FREE(rdata);
 
+	if (desc && ldns_rr_rd_count(new) < r_min) {
+		ldns_rr_free(new);
+		return LDNS_STATUS_SYNTAX_MISSING_VALUE_ERR;
+	}
+
 	if (newrr) {
 		*newrr = new;
 	}
