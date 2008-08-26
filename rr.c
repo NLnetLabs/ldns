@@ -380,8 +380,13 @@ ldns_rr_new_frm_str(ldns_rr **newrr, const char *str, uint32_t default_ttl, ldns
 
 				/* because number of fields can be variable, we can't
 				   rely on _maximum() only */
+				/* skip spaces */
+				while (*(ldns_buffer_current(rd_buf)) == ' ') {
+					ldns_buffer_skip(rd_buf, 1);
+				}
+
 				if ((c = ldns_bget_token(rd_buf, rd, delimiters, 
-									LDNS_MAX_RDFLEN)) != -1) {
+							LDNS_MAX_RDFLEN)) != -1) {
 					/* hmmz, rfc3597 specifies that any type can be represented with
 					 * \# method, which can contain spaces...
 					 * it does specify size though... 
