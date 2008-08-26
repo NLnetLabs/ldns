@@ -1,160 +1,156 @@
-.Dd 14 Dec 2006
-.Dt ldns-testns
-.Sh NAME
-ldns-testns
-.Nd simple fake nameserver tool
-.Sh SYNOPSIS
-.Nm ldns-testns
-.Op Fl r
-.Op Fl p Ar port 
-.Op Fl f Ar num 
-.Op Fl v
-.Op Fl 6
-datafile
-.Pp
-.Sh DESCRIPTION
-.Ic ldns-testns 
-can be used to provide answers to DNS queries for testing.
-The answers are premade, and can be tailored to testing needs. The answers
-can be wildly invalid or unparseable.
-.Pp
+.TH ldns-testns 1 "14 Dec 2006"
+.SH NAME
+ldns-testns \- simple fake nameserver tool
+.SH SYNOPSYS
+.B ldns-testns
+[
+.IR OPTION
+]
+.IR datafile
+
+.SH DESCRIPTION
+\fBldns-testns\fR can be used to provide answers to DNS queries for
+testing.  The answers are premade, and can be tailored to testing
+needs. The answers can be wildly invalid or unparseable.
+
 This program is a debugging aid. It is not efficient, especially
 with a long config file, but it can give any reply to any query.
 This can help the developer pre-script replies for queries.
-.Pp
+
 It listens to IP4 UDP and TCP by default.
 You can specify a packet RR by RR with header flags to return.
-.Pp
+
 ldns-testns is not meant for production use.
-.Pp
-.Sh OPTIONS
-.Pp
-.Bl -tag -width indent
-.It Fl r
+
+.SH OPTIONS
+.TP
+\fB-r\fR
 Listens to a random port. The port number is printed to stdout.
-.Pp
-.It Fl p Ar port
+
+.TP
+\fB-p\fR \fIport\fR
 Listens to the specified port.
-.Pp
-.It Fl f Ar num
+
+.TP
+\fB-f\fR \fInum\fR
 Forks this number of additional instances that serve the same ports and
 same datafile. They do not exit; printed is 'forked pid: <num>' and you
 have to kill them yourself.
-.Pp
-.It Fl v
+
+.TP
+\fB-v\fR
 Outputs more debug information. It is possible to give this option multiple 
 times to increase verbosity level.
-.Pp
-.It Fl 6
+
+.TP
+\fB-6\fR
 Bind to IP6 address instead of IP4. Use together with -p. 
-.Pp
-.It datafile
+
+.TP
+\fBdatafile\fR
 The data file is read on start up. It contains queries and the packets 
 that should be sent in answer to those queries. The data file format is
 explained below.
-.Pp
-.El
-.Pp
-.Sh DATA FILE FORMAT
-.Pp
+
+.SH DATA FILE FORMAT
 The data file format has ';' to denote comment. A number of entries
 are processed first to last. The first matching entry is used to answer
 the query with. This is a line based format. DNS resource records
 are entered in zone-file format.
-.Pp
+
 You can use $ORIGIN and $TTL directives. Zone file '(' and ')' to span
 multiple lines are not allowed.
-.Pp
+
 $ORIGIN origin
-.br
+
 $TTL default_ttl
-.Pp
+
 ENTRY_BEGIN
-.br
+
 ; first give MATCH lines, that say what queries are matched
-.br
+
 ; by this entry.
-.br
+
 ; 'opcode' makes the query match the opcode from the reply
-.br
+
 ; if you leave it out, any opcode matches this entry.
-.br
+
 ; 'qtype' makes the query match the qtype from the reply
-.br
+
 ; 'qname' makes the query match the qname from the reply
-.br
+
 ; 'serial=1023' makes the query match if ixfr serial is 1023.
-.br
+
 MATCH [opcode] [qtype] [qname] [serial=<value>]
-.br
+
 MATCH [UDP|TCP]
-.br
+
 MATCH ...
-.br
+
 ; Then the REPLY header is specified.
-.br
+
 REPLY opcode, rcode or flags.
-.br
+
         (opcode)  QUERY IQUERY STATUS NOTIFY UPDATE
-.br
+
         (rcode)   NOERROR FORMERR SERVFAIL NXDOMAIN NOTIMPL YXDOMAIN
-.br
+
                         YXRRSET NXRRSET NOTAUTH NOTZONE
-.br
+
         (flags)   QR AA TC RD CD RA AD
-.br
+
 REPLY ...
-.br
+
 ; any additional actions to do.         
-.br
-.br
+
+
 ADJUST copy_id  ; 'copy_id' copies the ID from the query to the answer.
-.br
+
 ; 'sleep=10' sleeps for 10 seconds before giving the answer (TCP is open)
-.br
+
 ADJUST [sleep=<num>]    ; sleep before giving any reply
-.br
+
 ADJUST [packet_sleep=<num>]  ; sleep before this packet in sequence
-.br
+
 SECTION QUESTION
-.br
+
 <RRs, one per line>    ; the RRcount is determined automatically.
-.br
+
 SECTION ANSWER
-.br
+
 <RRs, one per line>
-.br
+
 SECTION AUTHORITY
-.br
+
 <RRs, one per line>
-.br
+
 SECTION ADDITIONAL
-.br
+
 <RRs, one per line>
-.br
+
 EXTRA_PACKET            ; follow with SECTION, REPLY for more packets.
-.br
+
 HEX_ANSWER_BEGIN        ; follow with hex data
-.br
+
                         ; this replaces any answer packet constructed
-.br
+
                         ; with the SECTION keywords (only SECTION QUERY
-.br
+
                         ; is used to match queries). If the data cannot
-.br
+
                         ; be parsed, ADJUST rules for the answer packet
-.br
+
                         ; are ignored
-.br
+
 HEX_ANSWER_END
-.br
+
 ENTRY_END
-.Pp
-.Sh AUTHOR
+
+.SH AUTHOR
 Written by the ldns team as an example for ldns usage, and for testing purposes.
-.Sh REPORTING BUGS
+.SH REPORTING BUGS
 Report bugs to <ldns-team@nlnetlabs.nl>. 
-.Sh COPYRIGHT
+.SH COPYRIGHT
 Copyright (C) 2006-2008 NLnet Labs. This is free software. There is NO
 warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR
 PURPOSE.
