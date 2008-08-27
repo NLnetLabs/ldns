@@ -8,7 +8,7 @@
  * send a notify packet to a server
  */
 
-#include <config.h>
+#include "config.h"
 
 #include <stdbool.h>
 #ifdef HAVE_NETDB_H
@@ -17,7 +17,8 @@
 #include <errno.h>
 
 /* ldns */
-#include "ldns/ldns.h"
+#include <ldns/ldns.h>
+#include <compat/fake-rfc2553.h>
 
 static int verbose = 1;
 static int max_num_retry = 15; /* times to try */
