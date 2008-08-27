@@ -312,6 +312,61 @@ AC_CHECK_LIB(pcap, pcap_open_offline,, [
 	]
 )
 
+
+AC_DEFUN([AC_CHECK_GETADDRINFO_WITH_INCLUDES],
+[AC_REQUIRE([AC_PROG_CC])
+AC_MSG_CHECKING(for getaddrinfo)
+AC_CACHE_VAL(ac_cv_func_getaddrinfo,
+[ac_cv_func_getaddrinfo=no
+AC_LINK_IFELSE( 
+[
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+char* getaddrinfo();
+char* (*f) () = getaddrinfo;
+#ifdef __cplusplus
+}
+#endif
+int main() {
+	;
+	return 0;
+}
+],
+dnl this case on linux, solaris, bsd
+[ac_cv_func_getaddrinfo="yes"],
+dnl no quick getaddrinfo, try mingw32 and winsock2 library.
+ORIGLIBS="$LIBS"
+LIBS="$LIBS -lws2_32"
+AC_LINK_IFELSE(
+AC_LANG_PROGRAM(
+[
+#ifdef HAVE_WS2TCPIP_H
+#include <ws2tcpip.h>
+#endif
+],
+[
+	(void)getaddrinfo(NULL, NULL, NULL, NULL);
+]
+), 
+[ac_cv_func_getaddrinfo="yes"
+LDFLAGS="$LDFLAGS -lws2_32"
+],
+[ac_cv_func_getaddrinfo="no" 
+LIBS="$ORIGLIBS"
+])
+)
+])
+
+AC_MSG_RESULT($ac_cv_func_getaddrinfo)
+if test $ac_cv_func_getaddrinfo = yes; then
+  AC_DEFINE(HAVE_GETADDRINFO, 1, [Whether getaddrinfo is available])
+fi
+])dnl
+
+AC_CHECK_GETADDRINFO_WITH_INCLUDES
+
 AC_FUNC_FORK
 AC_CHECK_FUNCS(isblank srandom random sleep)
 
@@ -377,6 +432,10 @@ AH_BOTTOM([
 
 #ifdef HAVE_WS2TCPIP_H
 #include <ws2tcpip.h>
+#endif
+
+#ifndef HAVE_GETADDRINFO
+#include <fake-rfc2553.h>
 #endif
 
 #ifndef HAVE_RANDOM

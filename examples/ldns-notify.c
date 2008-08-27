@@ -18,7 +18,6 @@
 
 /* ldns */
 #include <ldns/ldns.h>
-#include "fake-rfc2553.h"
 
 static int verbose = 1;
 static int max_num_retry = 15; /* times to try */
