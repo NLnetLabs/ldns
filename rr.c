@@ -2217,3 +2217,24 @@ ldns_rdf2rr_type(const ldns_rdf *rd)
         r = (ldns_rr_type) ldns_rdf2native_int16(rd);
         return r;
 }
+
+ldns_rr_type
+ldns_rr_list_type(const ldns_rr_list *rr_list)
+{
+	if (rr_list && ldns_rr_list_rr_count(rr_list) > 0) {
+		return ldns_rr_get_type(ldns_rr_list_rr(rr_list, 0));
+	} else {
+		return 0;
+	}
+}
+
+ldns_rdf *
+ldns_rr_list_owner(const ldns_rr_list *rr_list)
+{
+	if (rr_list && ldns_rr_list_rr_count(rr_list) > 0) {
+		return ldns_rr_owner(ldns_rr_list_rr(rr_list, 0));
+	} else {
+		return NULL;
+	}
+}
+

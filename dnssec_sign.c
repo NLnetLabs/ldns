@@ -702,24 +702,30 @@ ldns_dnssec_zone_create_rrsigs(ldns_dnssec_zone *zone,
 					cur_rr = cur_rr->next;
 				}
 				
-				siglist = ldns_sign_public(rr_list, key_list);
-				for (i = 0; i < ldns_rr_list_rr_count(siglist); i++) {
-					if (cur_rrset->signatures) {
-						ldns_dnssec_rrs_add_rr(cur_rrset->signatures,
-										   ldns_rr_list_rr(siglist,
-													    i));
-					} else {
-						cur_rrset->signatures = ldns_dnssec_rrs_new();
-						cur_rrset->signatures->rr =
-							ldns_rr_list_rr(siglist, i);
-						ldns_rr_list_push_rr(new_rrs,
-										 ldns_rr_list_rr(siglist,
-													  i));
+				/* only sign non-delegation RRsets */
+				/* (glue should have been marked earlier) */
+				if (ldns_rr_list_type(rr_list) != LDNS_RR_TYPE_NS ||
+					ldns_dname_compare(ldns_rr_list_owner(rr_list),
+					zone->soa->name) == 0) {
+
+					siglist = ldns_sign_public(rr_list, key_list);
+					for (i = 0; i < ldns_rr_list_rr_count(siglist); i++) {
+						if (cur_rrset->signatures) {
+							ldns_dnssec_rrs_add_rr(cur_rrset->signatures,
+											   ldns_rr_list_rr(siglist,
+														    i));
+						} else {
+							cur_rrset->signatures = ldns_dnssec_rrs_new();
+							cur_rrset->signatures->rr =
+								ldns_rr_list_rr(siglist, i);
+							ldns_rr_list_push_rr(new_rrs,
+											 ldns_rr_list_rr(siglist,
+														  i));
+						}
 					}
+					ldns_rr_list_free(siglist);
 				}
 				
-				
-				ldns_rr_list_free(siglist);
 				ldns_rr_list_free(rr_list);
 				
 				cur_rrset = cur_rrset->next;

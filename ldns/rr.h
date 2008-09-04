@@ -811,4 +811,25 @@ ldns_rr_list *ldns_rr_list_subtype_by_rdf(ldns_rr_list *l, ldns_rdf *r, size_t p
  */
 ldns_rr_type    ldns_rdf2rr_type(const ldns_rdf *rd);
 
+/**
+ * Returns the type of the first element of the RR
+ * If there are no elements present, 0 is returned
+ * (LDNS_RR_TYPE_A)
+ * 
+ * \param[in] rr_list The rr list
+ * \return rr_type of the first element, or 0 if the list is empty
+ */
+ldns_rr_type
+ldns_rr_list_type(const ldns_rr_list *rr_list);
+
+/**
+ * Returns the owner domain name rdf of the first element of the RR
+ * If there are no elements present, NULL is returned
+ * 
+ * \param[in] rr_list The rr list
+ * \return dname of the first element, or NULL if the list is empty
+ */
+ldns_rdf *
+ldns_rr_list_owner(const ldns_rr_list *rr_list);
+
 #endif /* LDNS_RR_H */
