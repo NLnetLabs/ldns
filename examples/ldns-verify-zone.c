@@ -106,7 +106,10 @@ create_dnssec_zone(ldns_zone *orig_zone)
 }
 
 ldns_status
-verify_dnssec_rrset(ldns_dnssec_rrsets *rrset, ldns_rr_list *keys)
+verify_dnssec_rrset(ldns_rdf *zone_name,
+					ldns_rdf *name,
+                    ldns_dnssec_rrsets *rrset,
+                    ldns_rr_list *keys)
 {
 	ldns_rr_list *rrset_rrs;
 	ldns_dnssec_rrs *cur_rr, *cur_sig;
@@ -161,12 +164,16 @@ verify_dnssec_rrset(ldns_dnssec_rrsets *rrset, ldns_rr_list *keys)
 			cur_sig = cur_sig->next;
 		}
 	} else {
-		if (verbosity > 0) {
-			printf("Error: no signatures for ");
-			ldns_rdf_print(stdout, ldns_rr_owner(rrset->rrs->rr));
-			printf("\t");
-			print_type(rrset->type);
-			printf("\n");
+		/* delegations are unsigned */
+		if (rrset->type != LDNS_RR_TYPE_NS ||
+			ldns_dname_compare(name, zone_name) == 0) {
+			if (verbosity > 0) {
+				printf("Error: no signatures for ");
+				ldns_rdf_print(stdout, ldns_rr_owner(rrset->rrs->rr));
+				printf("\t");
+				print_type(rrset->type);
+				printf("\n");
+			}
 		}
 	}
 	ldns_rr_list_free(rrset_rrs);
@@ -231,7 +238,8 @@ verify_single_rr(ldns_rr *rr,
 }
 
 ldns_status
-verify_dnssec_name(ldns_dnssec_name *name,
+verify_dnssec_name(ldns_rdf *zone_name,
+                ldns_dnssec_name *name,
 			    ldns_rr_list *keys,
 			    ldns_rr_list *glue_rrs)
 {
@@ -273,7 +281,7 @@ verify_dnssec_name(ldns_dnssec_name *name,
 		/* not glue, do real verify */
 		cur_rrset = name->rrsets;
 		while(cur_rrset) {
-			status = verify_dnssec_rrset(cur_rrset, keys);
+			status = verify_dnssec_rrset(zone_name, name->name, cur_rrset, keys);
 			if (status != LDNS_STATUS_OK && result == LDNS_STATUS_OK) {
 				result = status;
 			}
@@ -350,7 +358,10 @@ verify_dnssec_zone(ldns_dnssec_zone *dnssec_zone,
 		}
 		while (cur_node != LDNS_RBTREE_NULL) {
 			cur_name = (ldns_dnssec_name *) cur_node->data;
-			status = verify_dnssec_name(cur_name, keys, glue_rrs);
+			status = verify_dnssec_name(zone_name, 
+			                            cur_name,
+			                            keys,
+			                            glue_rrs);
 			if (status != LDNS_STATUS_OK && result == LDNS_STATUS_OK) {
 				result = status;
 			}

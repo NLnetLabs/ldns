@@ -381,7 +381,8 @@ ldns_rr_new_frm_str(ldns_rr **newrr, const char *str, uint32_t default_ttl, ldns
 				/* because number of fields can be variable, we can't
 				   rely on _maximum() only */
 				/* skip spaces */
-				while (*(ldns_buffer_current(rd_buf)) == ' ') {
+				while (*(ldns_buffer_current(rd_buf)) == ' ' &&
+				ldns_buffer_position(rd_buf) < ldns_buffer_limit(rd_buf)) {
 					ldns_buffer_skip(rd_buf, 1);
 				}
 
