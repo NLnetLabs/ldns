@@ -7,6 +7,7 @@
 	* zone.c memory leaks on error and allocation checks fixed (patch
 	from Shane Kerr, bug id 189)
 	* Fixed potential buffer overflow in ldns_str2rdf_dname
+	* Signing code no longer signs delegation NS rrsets
 
 1.3
 	Base library:
