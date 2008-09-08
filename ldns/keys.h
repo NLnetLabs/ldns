@@ -75,8 +75,9 @@ enum ldns_enum_signing_algorithm
 	LDNS_SIGN_RSASHA512	 = LDNS_RSASHA512,
 	LDNS_SIGN_DSA		 = LDNS_DSA,
 	LDNS_SIGN_RSASHA1_NSEC3  = LDNS_RSASHA1_NSEC3,
-	LDNS_SIGN_DSA_NSEC3	 = LDNS_DSA_NSEC3,	
-	LDNS_SIGN_HMACMD5	 = 157	/* not official! This type is for TSIG, not DNSSEC */
+	LDNS_SIGN_DSA_NSEC3	 = LDNS_DSA_NSEC3,
+	LDNS_SIGN_HMACMD5	 = 157,	/* not official! This type is for TSIG, not DNSSEC */
+	LDNS_SIGN_HMACSHA1	 = 158	/* not official! This type is for TSIG, not DNSSEC */
 };
 typedef enum ldns_enum_signing_algorithm ldns_signing_algorithm;
 

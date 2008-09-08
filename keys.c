@@ -6,7 +6,7 @@
  * handling
  *
  * (c) NLnet Labs, 2004-2006
- * 
+ *
  * See the file LICENSE for the license
  */
 
@@ -29,10 +29,11 @@ ldns_lookup_table ldns_signing_algorithms[] = {
 #endif
         { LDNS_SIGN_DSA, "DSA" },
         { LDNS_SIGN_HMACMD5, "hmac-md5.sig-alg.reg.int" },
+        { LDNS_SIGN_HMACSHA1, "hmac-sha1" },
         { 0, NULL }
 };
 
-#ifdef HAVE_SSL 
+#ifdef HAVE_SSL
 ldns_key_list *
 ldns_key_list_new()
 {
@@ -69,7 +70,7 @@ ldns_key_new()
 	return NULL;
 }
 
-ldns_status 
+ldns_status
 ldns_key_new_frm_fp(ldns_key **k, FILE *fp)
 {
 	return ldns_key_new_frm_fp_l(k, fp, NULL);
@@ -80,7 +81,7 @@ ldns_status
 ldns_key_new_frm_engine(ldns_key **key, ENGINE *e, char *key_id, ldns_algorithm alg)
 {
 	ldns_key *k;
-	
+
 	k = ldns_key_new();
 	k->_key.key = ENGINE_load_private_key(e, key_id, UI_OpenSSL(), NULL);
 	ldns_key_set_algorithm(k, alg);
@@ -111,9 +112,9 @@ ldns_key_new_frm_fp_l(ldns_key **key, FILE *fp, int *line_nr)
 	if (!k || !d) {
 		return LDNS_STATUS_MEM_ERR;
 	}
-	
+
 	alg = 0;
-	
+
 	/* the file is highly structured. Do this in sequence */
 	/* RSA:
 	 * Private-key-format: v1.2
@@ -132,7 +133,7 @@ ldns_key_new_frm_fp_l(ldns_key **key, FILE *fp, int *line_nr)
 
 	/* get the algorithm type, our file function strip ( ) so there are
 	 * not in the return string! */
-	if (ldns_fget_keyword_data_l(fp, "Algorithm", ": ", d, "\n", 
+	if (ldns_fget_keyword_data_l(fp, "Algorithm", ": ", d, "\n",
 				LDNS_MAX_LINELEN, line_nr) == -1) {
 		/* no alg information */
 		return LDNS_STATUS_SYNTAX_ALG_ERR;
@@ -142,21 +143,21 @@ ldns_key_new_frm_fp_l(ldns_key **key, FILE *fp, int *line_nr)
 		alg = LDNS_SIGN_RSAMD5;
 	}
 	if (strncmp(d, "2 DH", 2) == 0) {
-		alg = LDNS_DH; 
+		alg = LDNS_DH;
 	}
 	if (strncmp(d, "3 DSA", 2) == 0) {
-		alg = LDNS_SIGN_DSA; 
+		alg = LDNS_SIGN_DSA;
 	}
 	if (strncmp(d, "4 ECC", 2) == 0) {
-		alg = LDNS_ECC; 
+		alg = LDNS_ECC;
 	}
 	if (strncmp(d, "5 RSASHA1", 2) == 0) {
 		alg = LDNS_SIGN_RSASHA1;
 	}
-	if (strncmp(d, "6 DSA", 4) == 0) {
-		alg = LDNS_DSA_NSEC3; 
+	if (strncmp(d, "6 DSA", 2) == 0) {
+		alg = LDNS_DSA_NSEC3;
 	}
-	if (strncmp(d, "7 RSASHA1", 4) == 0) {
+	if (strncmp(d, "7 RSASHA1", 2) == 0) {
 		alg = LDNS_RSASHA1_NSEC3;
 	}
 
@@ -178,6 +179,9 @@ ldns_key_new_frm_fp_l(ldns_key **key, FILE *fp, int *line_nr)
 	}
 	if (strncmp(d, "157 HMAC-MD5", 4) == 0) {
 		alg = LDNS_SIGN_HMACMD5;
+	}
+	if (strncmp(d, "158 HMAC-SHA1", 4) == 0) {
+		alg = LDNS_SIGN_HMACSHA1;
 	}
 
 	LDNS_FREE(d);
@@ -203,6 +207,7 @@ ldns_key_new_frm_fp_l(ldns_key **key, FILE *fp, int *line_nr)
 			DSA_free(dsa);
 			break;
 		case LDNS_SIGN_HMACMD5:
+		case LDNS_SIGN_HMACSHA1:
 			ldns_key_set_algorithm(k, alg);
 			hmac = ldns_key_new_frm_fp_hmac_l(fp, line_nr, &hmac_size);
 			ldns_key_set_hmac_size(k, hmac_size);
@@ -235,14 +240,14 @@ RSA *
 ldns_key_new_frm_fp_rsa_l(FILE *f, int *line_nr)
 {
 	/* we parse
- 	 * Modulus: 
- 	 * PublicExponent: 
- 	 * PrivateExponent: 
- 	 * Prime1: 
- 	 * Prime2: 
- 	 * Exponent1: 
- 	 * Exponent2: 
- 	 * Coefficient: 
+ 	 * Modulus:
+ 	 * PublicExponent:
+ 	 * PrivateExponent:
+ 	 * Prime1:
+ 	 * Prime2:
+ 	 * Exponent1:
+ 	 * Exponent2:
+ 	 * Coefficient:
 	 *
 	 * man 3 RSA:
 	 *
@@ -272,7 +277,7 @@ ldns_key_new_frm_fp_rsa_l(FILE *f, int *line_nr)
 	}
 
 	/* I could use functions again, but that seems an overkill,
-	 * allthough this also looks tedious 
+	 * allthough this also looks tedious
 	 */
 
 	/* Modules, rsa->n */
@@ -314,7 +319,7 @@ ldns_key_new_frm_fp_rsa_l(FILE *f, int *line_nr)
 	if (!rsa->p) {
 		goto error;
 	}
-	
+
 	/* Prime2, rsa->q */
 	if (ldns_fget_keyword_data_l(f, "Prime2", ": ", d, "\n", LDNS_MAX_LINELEN, line_nr) == -1) {
 		goto error;
@@ -334,7 +339,7 @@ ldns_key_new_frm_fp_rsa_l(FILE *f, int *line_nr)
 	if (!rsa->dmp1) {
 		goto error;
 	}
-	
+
 	/* Exponent2, rsa->dmq1 */
 	if (ldns_fget_keyword_data_l(f, "Exponent2", ": ", d, "\n", LDNS_MAX_LINELEN, line_nr) == -1) {
 		goto error;
@@ -354,7 +359,7 @@ ldns_key_new_frm_fp_rsa_l(FILE *f, int *line_nr)
 	if (!rsa->iqmp) {
 		goto error;
 	}
-	
+
 	LDNS_FREE(buf);
 	LDNS_FREE(d);
 	return rsa;
@@ -468,7 +473,7 @@ ldns_key_new_frm_fp_hmac_l(FILE *f, int *line_nr, size_t *hmac_size)
 
 	d = LDNS_XMALLOC(char, LDNS_MAX_LINELEN);
 	buf = LDNS_XMALLOC(unsigned char, LDNS_MAX_LINELEN);
-	
+
 	if (ldns_fget_keyword_data_l(f, "Key", ": ", d, "\n", LDNS_MAX_LINELEN, line_nr) == -1) {
 		goto error;
 	}
@@ -476,7 +481,7 @@ ldns_key_new_frm_fp_hmac_l(FILE *f, int *line_nr, size_t *hmac_size)
 
 	*hmac_size = i;
 	return buf;
-	
+
 	error:
 	LDNS_FREE(d);
 	LDNS_FREE(buf);
@@ -511,7 +516,7 @@ ldns_key_new_frm_algorithm(ldns_signing_algorithm alg, uint16_t size)
 			if (RSA_check_key(r) != 1) {
 				return NULL;
 			}
-			
+
 			ldns_key_set_rsa_key(k, r);
 			break;
 		case LDNS_SIGN_DSA:
@@ -526,10 +531,11 @@ ldns_key_new_frm_algorithm(ldns_signing_algorithm alg, uint16_t size)
 			ldns_key_set_dsa_key(k, d);
 			break;
 		case LDNS_SIGN_HMACMD5:
+		case LDNS_SIGN_HMACSHA1:
 			k->_key.key = NULL;
 			size = size / 8;
 			ldns_key_set_hmac_size(k, size);
-			 
+
 			hmac = LDNS_XMALLOC(unsigned char, size);
 #ifdef HAVE_SSL
 			if (RAND_bytes(hmac, size) != 1) {
@@ -549,7 +555,7 @@ ldns_key_new_frm_algorithm(ldns_signing_algorithm alg, uint16_t size)
 			}
 #endif /* HAVE_SSL */
 			ldns_key_set_hmac_key(k, hmac);
-			
+
 			ldns_key_set_flags(k, 0);
 			break;
 	}
@@ -571,7 +577,7 @@ ldns_key_print(FILE *output, const ldns_key *k)
 
 
 void
-ldns_key_set_algorithm(ldns_key *k, ldns_signing_algorithm l) 
+ldns_key_set_algorithm(ldns_key *k, ldns_signing_algorithm l)
 {
 	k->_alg = l;
 }
@@ -907,6 +913,7 @@ ldns_key2rr(const ldns_key *k)
 
 	switch (ldns_key_algorithm(k)) {
 	case LDNS_SIGN_HMACMD5:
+	case LDNS_SIGN_HMACSHA1:
 		ldns_rr_set_type(pubkey, LDNS_RR_TYPE_KEY);
         	break;
 	default:
@@ -915,16 +922,16 @@ ldns_key2rr(const ldns_key *k)
         }
 	/* zero-th rdf - flags */
 	ldns_rr_push_rdf(pubkey,
-			ldns_native2rdf_int16(LDNS_RDF_TYPE_INT16, 
+			ldns_native2rdf_int16(LDNS_RDF_TYPE_INT16,
 				ldns_key_flags(k)));
 	/* first - proto */
-	ldns_rr_push_rdf(pubkey, 
+	ldns_rr_push_rdf(pubkey,
 			ldns_native2rdf_int8(LDNS_RDF_TYPE_INT8, LDNS_DNSSEC_KEYPROTO));
-	
+
 	if (ldns_key_pubkey_owner(k)) {
 		ldns_rr_set_owner(pubkey, ldns_rdf_clone(ldns_key_pubkey_owner(k)));
 	}
-	
+
 	/* third - da algorithm */
 	switch(ldns_key_algorithm(k)) {
 		case LDNS_RSAMD5:
@@ -966,12 +973,14 @@ ldns_key2rr(const ldns_key *k)
 			}
 			break;
 		case LDNS_SIGN_HMACMD5:
+		case LDNS_SIGN_HMACSHA1:
 			/* tja */
 			ldns_rr_push_rdf(pubkey,
-                                         ldns_native2rdf_int8(LDNS_RDF_TYPE_ALG, LDNS_SIGN_HMACMD5));
+                                        ldns_native2rdf_int8(LDNS_RDF_TYPE_ALG,
+						ldns_key_algorithm(k)));
                         size = ldns_key_hmac_size(k);
-                        bin = LDNS_XREALLOC(bin, unsigned char, size);
-                        memcpy(bin, ldns_key_hmac_key(k), size);
+			bin = LDNS_XREALLOC(bin, unsigned char, size);
+			memcpy(bin, ldns_key_hmac_key(k), size);
 			break;
 	}
 	/* fourth the key bin material */
@@ -1017,7 +1026,7 @@ ldns_key_deep_free(ldns_key *key)
 	}
 	if (ldns_key_hmac_key(key)) {
 		free(ldns_key_hmac_key(key));
-	}	
+	}
 	LDNS_FREE(key);
 }
 

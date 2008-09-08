@@ -76,7 +76,7 @@ main(int argc, char *argv[])
 	algorithm = 0;
 	random = NULL;
 	ksk = false; /* don't create a ksk per default */
-	
+
 	while ((c = getopt(argc, argv, "a:kb:r:v25")) != -1) {
 		switch (c) {
 		case 'a':
@@ -138,7 +138,7 @@ main(int argc, char *argv[])
 	if (argc != 1) {
 		usage(stderr, prog);
 		exit(EXIT_FAILURE);
-	} 
+	}
 	free(prog);
 
 	/* check whether key size is within RFC boundaries */
@@ -159,10 +159,11 @@ main(int argc, char *argv[])
 		}
 		break;
 	case LDNS_SIGN_HMACMD5:
+	case LDNS_SIGN_HMACSHA1:
 	default:
 		break;
 	}
-	
+
 	if (!random) {
 		random = fopen("/dev/random", "r");
 		if (!random) {
@@ -179,7 +180,7 @@ main(int argc, char *argv[])
 
 	/* generate a new key */
 	key = ldns_key_new_frm_algorithm(algorithm, bits);
-	
+
 	/* set the owner name in the key - this is a /seperate/ step */
 	ldns_key_set_pubkey_owner(key, domain);
 
