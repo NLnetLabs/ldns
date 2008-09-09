@@ -61,7 +61,7 @@ usage(FILE *stream, const char *progname)
 	fprintf(stream, "\t-r <file>\t\tuse file as root servers hint file\n");
 	fprintf(stream, "\t-t\t\tsend the query with tcp (connected)\n");
 	fprintf(stream, "\t-d <domain>\t\tuse domain as the start point for the trace\n");
-        fprintf(stream, "\t-y <name:key[:algo]>\tspecify named base64 tsig key, and optional an\n\t\t\talgorithm (defaults to hmac-md5.sig-alg.reg.int)\n");
+    fprintf(stream, "\t-y <name:key[:algo]>\tspecify named base64 tsig key, and optional an\n\t\t\talgorithm (defaults to hmac-md5.sig-alg.reg.int)\n");
 	fprintf(stream, "\t-z\t\tdon't randomize the nameservers before use\n");
 	fprintf(stream, "\n  [*] = enables/implies DNSSEC\n");
 	fprintf(stream, "  [**] = can be given more than once\n");

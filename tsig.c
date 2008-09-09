@@ -126,10 +126,15 @@ ldns_tsig_prepare_pkt_wire(uint8_t *wire, size_t wire_len, size_t *result_len)
 static const EVP_MD *
 ldns_digest_function(char *name)
 {
-	/* TODO replace with openssl's EVP_get_digestbyname
-	        (need init somewhere for that)
-	*/
-	if (strlen(name) == 10 && strncasecmp(name, "hmac-sha1.", 9) == 0)
+	/* these are the mandatory algorithms from RFC4635 */
+	/* The optional algorithms are not yet implemented */	
+	if (strlen(name) == 12 && strncasecmp(name, "hmac-sha256.", 11) == 0) {
+#ifdef SHA256_DIGEST_LENGTH
+		return EVP_sha256();
+#else
+		return NULL;	
+#endif		
+	} else if (strlen(name) == 10 && strncasecmp(name, "hmac-sha1.", 9) == 0)
 		return EVP_sha1();
 	else if (strlen(name) == 25 && strncasecmp(name,
 		     "hmac-md5.sig-alg.reg.int.", 25) == 0)

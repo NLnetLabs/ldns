@@ -19,11 +19,6 @@ usage(FILE *fp, char *prog) {
 	fprintf(fp, "  generate a new key pair for domain\n");
 	fprintf(fp, "  -a <alg>\tuse the specified algorithm (-a list to");
 	fprintf(fp, " show a list)\n");
-	/*
-	fprintf(fp, "  -D\t\tgenerate a DSA key\n");
-	fprintf(fp, "  -R\t\tgenerate an RSA key\n");
-	fprintf(fp, "  -H\t\tgenerate an HMAC-MD5 key (for TSIG)\n");
-	*/
 	fprintf(fp, "  -k\t\tset the flags to 257; key signing key\n");
 	fprintf(fp, "  -b <bits>\tspecify the keylength\n");
 	fprintf(fp, "  -r <random>\tspecify a random device (defaults to /dev/random)\n");
@@ -160,6 +155,7 @@ main(int argc, char *argv[])
 		break;
 	case LDNS_SIGN_HMACMD5:
 	case LDNS_SIGN_HMACSHA1:
+	case LDNS_SIGN_HMACSHA256:
 	default:
 		break;
 	}
@@ -241,7 +237,9 @@ main(int argc, char *argv[])
 	}
 	
 	/* print the DS to .ds */
-	if (algorithm != LDNS_SIGN_HMACMD5) {
+	if (algorithm != LDNS_SIGN_HMACMD5 &&
+		algorithm != LDNS_SIGN_HMACSHA1 &&
+		algorithm != LDNS_SIGN_HMACSHA256) {
 		filename = LDNS_XMALLOC(char, strlen(owner) + 16);
 		snprintf(filename, strlen(owner) + 15, "K%s+%03u+%05u.ds", owner, algorithm, (unsigned int) ldns_key_keytag(key));
 		file = fopen(filename, "w");

@@ -1139,6 +1139,24 @@ ldns_pkt2buffer_str(ldns_buffer *output, const ldns_pkt *pkt)
 	return status;
 }
 
+static ldns_status
+ldns_hmac_key2buffer_str(ldns_buffer *output, const ldns_key *k)
+{
+	ldns_status status;
+	size_t i;
+	ldns_rdf *b64_bignum;
+	
+	ldns_buffer_printf(output, "Key: ");
+
+ 	i = ldns_key_hmac_size(k);
+	b64_bignum =  ldns_rdf_new_frm_data(LDNS_RDF_TYPE_B64, i, ldns_key_hmac_key(k));
+	status = ldns_rdf2buffer_str(output, b64_bignum);
+	ldns_rdf_deep_free(b64_bignum);
+	ldns_buffer_printf(output, "\n");
+	return status;
+}
+
+
 ldns_status
 ldns_key2buffer_str(ldns_buffer *output, const ldns_key *k)
 {
@@ -1423,30 +1441,21 @@ ldns_key2buffer_str(ldns_buffer *output, const ldns_key *k)
 				}
 				break;
 			case LDNS_SIGN_HMACMD5:
-				/* is the filefmt specified for TSIG.. don't know */
-		                ldns_buffer_printf(output, "Private-key-format: v1.2\n");
-		                ldns_buffer_printf(output, "Algorithm: 157 (HMAC_MD5)\n");
-		                ldns_buffer_printf(output, "Key: ");
-		                i = ldns_key_hmac_size(k);
-				b64_bignum =  ldns_rdf_new_frm_data(LDNS_RDF_TYPE_B64, i, ldns_key_hmac_key(k));
-				if (ldns_rdf2buffer_str(output, b64_bignum) != LDNS_STATUS_OK) {
-					goto error;
-				}
-				ldns_rdf_deep_free(b64_bignum);
-				ldns_buffer_printf(output, "\n"); 
+				/* there's not much of a format defined for TSIG */
+				/* It's just a binary blob, Same for all algorithms */
+                ldns_buffer_printf(output, "Private-key-format: v1.2\n");
+                ldns_buffer_printf(output, "Algorithm: 157 (HMAC_MD5)\n");
+				status = ldns_hmac_key2buffer_str(output, k);
 				break;
 			case LDNS_SIGN_HMACSHA1:
-				/* is the filefmt specified for TSIG.. don't know */
-		                ldns_buffer_printf(output, "Private-key-format: v1.2\n");
-		                ldns_buffer_printf(output, "Algorithm: 158 (HMAC_SHA1)\n");
-		                ldns_buffer_printf(output, "Key: ");
-		                i = ldns_key_hmac_size(k);
-				b64_bignum =  ldns_rdf_new_frm_data(LDNS_RDF_TYPE_B64, i, ldns_key_hmac_key(k));
-				if (ldns_rdf2buffer_str(output, b64_bignum) != LDNS_STATUS_OK) {
-					goto error;
-				}
-				ldns_rdf_deep_free(b64_bignum);
-				ldns_buffer_printf(output, "\n");
+		        ldns_buffer_printf(output, "Private-key-format: v1.2\n");
+		        ldns_buffer_printf(output, "Algorithm: 158 (HMAC_SHA1)\n");
+				status = ldns_hmac_key2buffer_str(output, k);
+				break;
+			case LDNS_SIGN_HMACSHA256:
+		        ldns_buffer_printf(output, "Private-key-format: v1.2\n");
+		        ldns_buffer_printf(output, "Algorithm: 158 (HMAC_SHA256)\n");
+				status = ldns_hmac_key2buffer_str(output, k);
 				break;
 		}
 #endif /* HAVE_SSL */

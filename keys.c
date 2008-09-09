@@ -30,6 +30,7 @@ ldns_lookup_table ldns_signing_algorithms[] = {
         { LDNS_SIGN_DSA, "DSA" },
         { LDNS_SIGN_HMACMD5, "hmac-md5.sig-alg.reg.int" },
         { LDNS_SIGN_HMACSHA1, "hmac-sha1" },
+        { LDNS_SIGN_HMACSHA256, "hmac-sha256" },
         { 0, NULL }
 };
 
@@ -183,6 +184,9 @@ ldns_key_new_frm_fp_l(ldns_key **key, FILE *fp, int *line_nr)
 	if (strncmp(d, "158 HMAC-SHA1", 4) == 0) {
 		alg = LDNS_SIGN_HMACSHA1;
 	}
+	if (strncmp(d, "159 HMAC-SHA256", 4) == 0) {
+		alg = LDNS_SIGN_HMACSHA256;
+	}
 
 	LDNS_FREE(d);
 
@@ -208,6 +212,7 @@ ldns_key_new_frm_fp_l(ldns_key **key, FILE *fp, int *line_nr)
 			break;
 		case LDNS_SIGN_HMACMD5:
 		case LDNS_SIGN_HMACSHA1:
+		case LDNS_SIGN_HMACSHA256:
 			ldns_key_set_algorithm(k, alg);
 			hmac = ldns_key_new_frm_fp_hmac_l(fp, line_nr, &hmac_size);
 			ldns_key_set_hmac_size(k, hmac_size);
@@ -532,6 +537,7 @@ ldns_key_new_frm_algorithm(ldns_signing_algorithm alg, uint16_t size)
 			break;
 		case LDNS_SIGN_HMACMD5:
 		case LDNS_SIGN_HMACSHA1:
+		case LDNS_SIGN_HMACSHA256:
 			k->_key.key = NULL;
 			size = size / 8;
 			ldns_key_set_hmac_size(k, size);
@@ -914,6 +920,7 @@ ldns_key2rr(const ldns_key *k)
 	switch (ldns_key_algorithm(k)) {
 	case LDNS_SIGN_HMACMD5:
 	case LDNS_SIGN_HMACSHA1:
+	case LDNS_SIGN_HMACSHA256:
 		ldns_rr_set_type(pubkey, LDNS_RR_TYPE_KEY);
         	break;
 	default:
@@ -974,6 +981,7 @@ ldns_key2rr(const ldns_key *k)
 			break;
 		case LDNS_SIGN_HMACMD5:
 		case LDNS_SIGN_HMACSHA1:
+		case LDNS_SIGN_HMACSHA256:
 			/* tja */
 			ldns_rr_push_rdf(pubkey,
                                         ldns_native2rdf_int8(LDNS_RDF_TYPE_ALG,
