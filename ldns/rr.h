@@ -48,8 +48,8 @@ enum ldns_enum_rr_class
 	LDNS_RR_CLASS_CH	= 3,
 	/** Hesiod (Dyer 87) */
 	LDNS_RR_CLASS_HS	= 4,
-        /** None class, dynmaic update */
-        LDNS_RR_CLASS_NONE      = 254,
+    /** None class, dynamic update */
+    LDNS_RR_CLASS_NONE      = 254,
 	/** Any class */
 	LDNS_RR_CLASS_ANY	= 255,
 

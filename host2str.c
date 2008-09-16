@@ -65,6 +65,7 @@ ldns_lookup_table ldns_rr_classes[] = {
         { LDNS_RR_CLASS_IN, "IN" },
         { LDNS_RR_CLASS_CH, "CH" },
         { LDNS_RR_CLASS_HS, "HS" },
+        { LDNS_RR_CLASS_NONE, "NONE" },
         { LDNS_RR_CLASS_ANY, "ANY" },
         { 0, NULL }
 };
@@ -289,7 +290,7 @@ ldns_rdf2buffer_str_type(ldns_buffer *output, const ldns_rdf *rdf)
 ldns_status
 ldns_rdf2buffer_str_class(ldns_buffer *output, const ldns_rdf *rdf)
 {
-        uint8_t data = ldns_rdf_data(rdf)[0];
+	uint16_t data = ldns_read_uint16(ldns_rdf_data(rdf));
 	ldns_lookup_table *lt;
 
  	lt = ldns_lookup_by_id(ldns_rr_classes, (int) data);
