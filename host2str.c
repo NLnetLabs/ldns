@@ -356,6 +356,88 @@ loc_cm_print(ldns_buffer *output, uint8_t mantissa, uint8_t exponent)
 }
 
 ldns_status
+ldns_rr_type2buffer_str(ldns_buffer *output, const ldns_rr_type type)
+{
+	const ldns_rr_descriptor *descriptor;
+
+	descriptor = ldns_rr_descript(type);
+
+	if (descriptor && descriptor->_name) {
+		ldns_buffer_printf(output, "%s", descriptor->_name);
+	} else {
+		/* exceptions for pseudotypes */
+		switch (type) {
+			case LDNS_RR_TYPE_IXFR:
+				ldns_buffer_printf(output, "IXFR");
+				break;
+			case LDNS_RR_TYPE_AXFR:
+				ldns_buffer_printf(output, "AXFR");
+				break;
+			case LDNS_RR_TYPE_MAILA:
+				ldns_buffer_printf(output, "MAILA");
+				break;
+			case LDNS_RR_TYPE_MAILB:
+				ldns_buffer_printf(output, "MAILB");
+				break;
+			case LDNS_RR_TYPE_ANY:
+				ldns_buffer_printf(output, "ANY");
+				break;
+			default:
+				ldns_buffer_printf(output, "TYPE%u", type);
+		}
+	}
+	return ldns_buffer_status(output);
+}
+
+char *
+ldns_rr_type2str(const ldns_rr_type type)
+{
+	char *str;
+	ldns_buffer *buf;
+
+	buf = ldns_buffer_new(10);
+	str = NULL;
+
+	if (ldns_rr_type2buffer_str(buf, type) == LDNS_STATUS_OK) {
+		str = ldns_buffer2str(buf);
+	}
+
+	ldns_buffer_free(buf);
+	return str;
+}
+
+
+ldns_status
+ldns_rr_class2buffer_str(ldns_buffer *output,
+                         const ldns_rr_class klass)
+{
+	ldns_lookup_table *lt;
+
+	lt = ldns_lookup_by_id(ldns_rr_classes, klass);
+	if (lt) {
+		ldns_buffer_printf(output, "%s", lt->name);
+	} else {
+		ldns_buffer_printf(output, "CLASS%d", klass);
+	}
+	return ldns_buffer_status(output);
+}
+
+char *
+ldns_rr_class2str(const ldns_rr_class klass)
+{
+	ldns_buffer *buf;
+	char *str;
+
+	str = NULL;
+	buf = ldns_buffer_new(10);
+	if (ldns_rr_class2buffer_str(buf, klass) == LDNS_STATUS_OK) {
+		str = ldns_buffer2str(buf);
+	}
+	ldns_buffer_free(buf);
+	return str;
+}
+
+ldns_status
 ldns_rdf2buffer_str_loc(ldns_buffer *output, const ldns_rdf *rdf)
 {
 	/* we could do checking (ie degrees < 90 etc)? */
@@ -853,8 +935,6 @@ ldns_rr2buffer_str(ldns_buffer *output, const ldns_rr *rr)
 {
 	uint16_t i, flags;
 	ldns_status status = LDNS_STATUS_OK;
-	ldns_lookup_table *lt;
-	const ldns_rr_descriptor *descriptor;
 
 	if (!rr) {
 		ldns_buffer_printf(output, "(null)\n");
@@ -873,36 +953,12 @@ ldns_rr2buffer_str(ldns_buffer *output, const ldns_rr *rr)
 		if (ldns_rr_rd_count(rr) > 0) {
 			ldns_buffer_printf(output, "\t%d", ldns_rr_ttl(rr));
 		}
-		
-		lt = ldns_lookup_by_id(ldns_rr_classes, ldns_rr_get_class(rr));
-		if (lt) {
-			ldns_buffer_printf(output, "\t%s\t", lt->name);
-		} else {
-			ldns_buffer_printf(output, "\tCLASS%d\t", 
-					ldns_rr_get_class(rr));
-		}
 
-		descriptor = ldns_rr_descript(ldns_rr_get_type(rr));
+		ldns_buffer_printf(output, "\t");
+		ldns_rr_class2buffer_str(output, ldns_rr_get_class(rr));
+		ldns_buffer_printf(output, "\t");
 
-		if (descriptor && descriptor->_name) {
-			ldns_buffer_printf(output, "%s", descriptor->_name);
-		} else {
-			/* exceptions for qtype */
-			if (ldns_rr_get_type(rr) == 251) {
-				ldns_buffer_printf(output, "IXFR ");
-			} else if (ldns_rr_get_type(rr) == 252) {
-				ldns_buffer_printf(output, "AXFR ");
-			} else if (ldns_rr_get_type(rr) == 253) {
-				ldns_buffer_printf(output, "MAILB ");
-			} else if (ldns_rr_get_type(rr) == 254) {
-				ldns_buffer_printf(output, "MAILA ");
-			} else if (ldns_rr_get_type(rr) == 255) {
-				ldns_buffer_printf(output, "ANY ");
-			} else {
-				ldns_buffer_printf(output, "TYPE%u", 
-						ldns_rr_get_type(rr));
-			}
-		}
+		ldns_rr_type2buffer_str(output, ldns_rr_get_type(rr));
 		
 		if (ldns_rr_rd_count(rr) > 0) {
 			ldns_buffer_printf(output, "\t");
@@ -1483,7 +1539,7 @@ error:
  * Zero terminate the buffer and fix it to the size of the string.
  */
 char *
-buffer2str(ldns_buffer *buffer)
+ldns_buffer2str(ldns_buffer *buffer)
 {
 	char *tmp_str;
 	char *str;
@@ -1515,7 +1571,7 @@ ldns_rdf2str(const ldns_rdf *rdf)
 
 	if (ldns_rdf2buffer_str(tmp_buffer, rdf) == LDNS_STATUS_OK) {
 		/* export and return string, destroy rest */
-		result = buffer2str(tmp_buffer);
+		result = ldns_buffer2str(tmp_buffer);
 	}
 	
 	ldns_buffer_free(tmp_buffer);
@@ -1530,7 +1586,7 @@ ldns_rr2str(const ldns_rr *rr)
 
 	if (ldns_rr2buffer_str(tmp_buffer, rr) == LDNS_STATUS_OK) {
 		/* export and return string, destroy rest */
-		result = buffer2str(tmp_buffer);
+		result = ldns_buffer2str(tmp_buffer);
 	}
 	
 	ldns_buffer_free(tmp_buffer);
@@ -1545,7 +1601,7 @@ ldns_pkt2str(const ldns_pkt *pkt)
 
 	if (ldns_pkt2buffer_str(tmp_buffer, pkt) == LDNS_STATUS_OK) {
 		/* export and return string, destroy rest */
-		result = buffer2str(tmp_buffer);
+		result = ldns_buffer2str(tmp_buffer);
 	}
 
 	ldns_buffer_free(tmp_buffer);
@@ -1559,7 +1615,7 @@ ldns_key2str(const ldns_key *k)
 	ldns_buffer *tmp_buffer = ldns_buffer_new(LDNS_MIN_BUFLEN);
 	if (ldns_key2buffer_str(tmp_buffer, k) == LDNS_STATUS_OK) {
 		/* export and return string, destroy rest */
-		result = buffer2str(tmp_buffer);
+		result = ldns_buffer2str(tmp_buffer);
 	}
 	ldns_buffer_free(tmp_buffer);
 	return result;
@@ -1579,7 +1635,7 @@ ldns_rr_list2str(const ldns_rr_list *list)
 	}
 
 	/* export and return string, destroy rest */
-	result = buffer2str(tmp_buffer);
+	result = ldns_buffer2str(tmp_buffer);
 	ldns_buffer_free(tmp_buffer);
 	return result;
 }

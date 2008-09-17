@@ -298,12 +298,12 @@ char *ldns_rr_list2str(const ldns_rr_list *rr_list);
 
 /**
  * Returns the data in the buffer as a null terminated char * string
- * Buffer data must be char * type
+ * Buffer data must be char * type, and must be freed by the caller
  *
  * \param[in] buffer buffer containing char * data
  * \return null terminated char * data, or NULL on error
  */
-char *buffer2str(ldns_buffer *buffer);
+char *ldns_buffer2str(ldns_buffer *buffer);
 
 /**
  * Prints the data in the rdata field to the given file stream
