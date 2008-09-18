@@ -95,6 +95,130 @@ ldns_lookup_table ldns_opcodes[] = {
         { 0, NULL }
 };
 
+ldns_status
+ldns_pkt_opcode2buffer_str(ldns_buffer *output, ldns_pkt_opcode opcode)
+{
+	ldns_lookup_table *lt = ldns_lookup_by_id(ldns_opcodes, opcode);
+	if (lt && lt->name) {
+		ldns_buffer_printf(output, "%s", lt->name);
+	} else {
+		ldns_buffer_printf(output, "OPCODE%u", opcode);
+	}
+	return ldns_buffer_status(output);
+}
+
+ldns_status
+ldns_pkt_rcode2buffer_str(ldns_buffer *output, ldns_pkt_rcode rcode)
+{
+	ldns_lookup_table *lt = ldns_lookup_by_id(ldns_rcodes, rcode);
+	if (lt && lt->name) {
+		ldns_buffer_printf(output, "%s", lt->name);
+	} else {
+		ldns_buffer_printf(output, "RCODE%u", rcode);
+	}
+	return ldns_buffer_status(output);
+}
+
+ldns_status
+ldns_algorithm2buffer_str(ldns_buffer *output,
+                          ldns_algorithm algorithm)
+{
+	ldns_lookup_table *lt = ldns_lookup_by_id(ldns_algorithms,
+	                                          algorithm);
+	if (lt && lt->name) {
+		ldns_buffer_printf(output, "%s", lt->name);
+	} else {
+		ldns_buffer_printf(output, "ALG%u", algorithm);
+	}
+	return ldns_buffer_status(output);
+}
+
+ldns_status
+ldns_cert_algorithm2buffer_str(ldns_buffer *output,
+                               ldns_cert_algorithm cert_algorithm)
+{
+	ldns_lookup_table *lt = ldns_lookup_by_id(ldns_cert_algorithms,
+	                                          cert_algorithm);
+	if (lt && lt->name) {
+		ldns_buffer_printf(output, "%s", lt->name);
+	} else {
+		ldns_buffer_printf(output, "CERT_ALG%u",
+		                   cert_algorithm);
+	}
+	return ldns_buffer_status(output);
+}
+
+char *
+ldns_pkt_opcode2str(ldns_pkt_rcode opcode)
+{
+	char *str;
+	ldns_buffer *buf;
+
+	buf = ldns_buffer_new(12);
+	str = NULL;
+
+	if (ldns_pkt_opcode2buffer_str(buf, opcode) == LDNS_STATUS_OK) {
+		str = ldns_buffer2str(buf);
+	}
+
+	ldns_buffer_free(buf);
+	return str;
+}
+
+char *
+ldns_pkt_rcode2str(ldns_pkt_rcode rcode)
+{
+	char *str;
+	ldns_buffer *buf;
+
+	buf = ldns_buffer_new(10);
+	str = NULL;
+
+	if (ldns_pkt_rcode2buffer_str(buf, rcode) == LDNS_STATUS_OK) {
+		str = ldns_buffer2str(buf);
+	}
+
+	ldns_buffer_free(buf);
+	return str;
+}
+
+char *
+ldns_pkt_algorithm2str(ldns_algorithm algorithm)
+{
+	char *str;
+	ldns_buffer *buf;
+
+	buf = ldns_buffer_new(10);
+	str = NULL;
+
+	if (ldns_algorithm2buffer_str(buf, algorithm)
+	    == LDNS_STATUS_OK) {
+		str = ldns_buffer2str(buf);
+	}
+
+	ldns_buffer_free(buf);
+	return str;
+}
+
+char *
+ldns_pkt_cert_algorithm2str(ldns_algorithm cert_algorithm)
+{
+	char *str;
+	ldns_buffer *buf;
+
+	buf = ldns_buffer_new(10);
+	str = NULL;
+
+	if (ldns_cert_algorithm2buffer_str(buf, cert_algorithm)
+	    == LDNS_STATUS_OK) {
+		str = ldns_buffer2str(buf);
+	}
+
+	ldns_buffer_free(buf);
+	return str;
+}
+
+
 /* do NOT pass compressed data here :p */
 ldns_status
 ldns_rdf2buffer_str_dname(ldns_buffer *output, const ldns_rdf *dname)

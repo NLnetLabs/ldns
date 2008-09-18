@@ -35,6 +35,89 @@
 #define LDNS_APL_MASK           0x7f
 #define LDNS_APL_NEGATION       0x80
 
+/**
+ * Converts an ldns packet opcode value to its mnemonic, and adds that
+ * to the output buffer
+ * \param[in] *output the buffer to add the data to
+ * \param[in] opcode to find the string representation of
+ * \return LDNS_STATUS_OK on success, or a buffer failure mode on error
+ */
+ldns_status
+ldns_pkt_opcode2buffer_str(ldns_buffer *output, ldns_pkt_opcode opcode);
+
+/**
+ * Converts an ldns packet rcode value to its mnemonic, and adds that
+ * to the output buffer
+ * \param[in] *output the buffer to add the data to
+ * \param[in] rcode to find the string representation of
+ * \return LDNS_STATUS_OK on success, or a buffer failure mode on error
+ */
+ldns_status
+ldns_pkt_rcode2buffer_str(ldns_buffer *output, ldns_pkt_rcode rcode);
+
+/**
+ * Converts an ldns algorithm type to its mnemonic, and adds that
+ * to the output buffer
+ * \param[in] *output the buffer to add the data to
+ * \param[in] algorithm to find the string representation of
+ * \return LDNS_STATUS_OK on success, or a buffer failure mode on error
+ */
+ldns_status
+ldns_algorithm2buffer_str(ldns_buffer *output,
+                          ldns_algorithm algorithm);
+
+/**
+ * Converts an ldns certificate algorithm type to its mnemonic, 
+ * and adds that to the output buffer
+ * \param[in] *output the buffer to add the data to
+ * \param[in] cert_algorithm to find the string representation of
+ * \return LDNS_STATUS_OK on success, or a buffer failure mode on error
+ */
+ldns_status
+ldns_cert_algorithm2buffer_str(ldns_buffer *output,
+                               ldns_cert_algorithm cert_algorithm);
+
+
+/**
+ * Converts a packet opcode to its mnemonic and returns that as
+ * an allocated null-terminated string.
+ * Remember to free it.
+ *
+ * \param[in] opcode the opcode to convert to text
+ * \return null terminated char * data, or NULL on error
+ */
+char *ldns_pkt_opcode2str(ldns_pkt_rcode opcode);
+
+/**
+ * Converts a packet rcode to its mnemonic and returns that as
+ * an allocated null-terminated string.
+ * Remember to free it.
+ *
+ * \param[in] rcode the rcode to convert to text
+ * \return null terminated char * data, or NULL on error
+ */
+char *ldns_pkt_rcode2str(ldns_pkt_rcode rcode);
+
+/**
+ * Converts a signing algorithms to its mnemonic and returns that as
+ * an allocated null-terminated string.
+ * Remember to free it.
+ *
+ * \param[in] algorithm the algorithm to convert to text
+ * \return null terminated char * data, or NULL on error
+ */
+char *ldns_pkt_algorithm2str(ldns_algorithm algorithm);
+
+/**
+ * Converts a cert algorithm to its mnemonic and returns that as
+ * an allocated null-terminated string.
+ * Remember to free it.
+ *
+ * \param[in] cert_algorithm to convert to text
+ * \return null terminated char * data, or NULL on error
+ */
+char *ldns_pkt_cert_algorithm2str(ldns_algorithm cert_algorithm);
+
 /** 
  * Converts an LDNS_RDF_TYPE_A rdata element to string format and adds it to the output buffer 
  * \param[in] *rdf The rdata to convert
