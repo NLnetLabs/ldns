@@ -183,11 +183,7 @@ ldns_rr_new_frm_str_internal(ldns_rr **newrr, const char *str,
 	if (strlen(ttl) > 0 && !isdigit(ttl[0])) {
 		/* ah, it's not there or something */
 		if (default_ttl == 0) {
-			if (question) {
-				ttl_val = 0;
-			} else {
-				ttl_val = LDNS_DEFAULT_TTL;
-			}
+			ttl_val = LDNS_DEFAULT_TTL;
 		} else {
 			ttl_val = default_ttl;
 		}
