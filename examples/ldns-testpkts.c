@@ -640,7 +640,7 @@ match_all(ldns_pkt* q, ldns_pkt* p, bool mttl)
 	{ verbose(3, "allmatch: nscount different"); return 0;}
 	if(ldns_pkt_arcount(q) != ldns_pkt_arcount(p))
 	{ verbose(3, "allmatch: arcount different"); return 0;}
-	if(!match_list(ldns_pkt_question(q), ldns_pkt_question(p), mttl))
+	if(!match_list(ldns_pkt_question(q), ldns_pkt_question(p), 0))
 	{ verbose(3, "allmatch: qd section different"); return 0;}
 	if(!match_list(ldns_pkt_answer(q), ldns_pkt_answer(p), mttl))
 	{ verbose(3, "allmatch: an section different"); return 0;}
