@@ -343,17 +343,37 @@ void ldns_rr_free(ldns_rr *rr);
 /**
  * creates an rr from a string.
  * The string should be a fully filled-in rr, like
- * ownername &lt;space&gt; TTL &lt;space&gt; CLASS &lt;space&gt; TYPE &lt;space&gt; RDATA.
+ * ownername &lt;space&gt; TTL &lt;space&gt; CLASS &lt;space&gt; 
+ * TYPE &lt;space&gt; RDATA.
  * \param[out] n the rr to return
  * \param[in] str the string to convert
- * \param[in] default_ttl pointer to a default ttl for the rr. If 0 DEF_TTL will be used
+ * \param[in] default_ttl pointer to a default ttl for the rr.
+ *            If 0 DEF_TTL will be used
  * \param[in] origin when the owner is relative add this. 
  *	The caller must ldns_rdf_deep_free it.
  * \param prev the previous ownername. the function overwrite this with
  * the current found ownername. The caller must ldns_rdf_deep_free it.
  * \return a status msg describing an error or LDNS_STATUS_OK
  */
-ldns_status ldns_rr_new_frm_str(ldns_rr **n, const char *str, uint32_t default_ttl, ldns_rdf *origin, ldns_rdf **prev);
+ldns_status ldns_rr_new_frm_str(ldns_rr **n, const char *str,
+                                uint32_t default_ttl, ldns_rdf *origin,
+                                ldns_rdf **prev);
+
+/**
+ * creates an rr for the question section from a string, i.e.
+ * without RDATA fields
+ * Origin and previous RR functionality are the same as in
+ * ldns_rr_new_frm_str()
+ * \param[out] n the rr to return
+ * \param[in] str the string to convert
+ * \param[in] origin when the owner is relative add this. 
+ *	The caller must ldns_rdf_deep_free it.
+ * \param prev the previous ownername. the function overwrite this with
+ * the current found ownername. The caller must ldns_rdf_deep_free it.
+ * \return a status msg describing an error or LDNS_STATUS_OK
+ */
+ldns_status ldns_rr_new_question_frm_str(ldns_rr **n, const char *str,
+                                ldns_rdf *origin, ldns_rdf **prev);
 
 /**
  * creates a new rr from a file containing a string.

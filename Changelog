@@ -17,6 +17,9 @@
 		- ldns_rr_type2buffer_str
 		- ldns_rr_class2buffer_str
 	* buffer2str() is now called ldns_buffer2str
+	* ldns_rr_new_frm_str() now errors on missing RDATA fields.
+	  Since you cannot read QUESTION section RRs with this anymore,
+	  there is now a function called ldns_rr_new_question_frm_str()
 
 1.3
 	Base library:

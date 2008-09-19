@@ -94,9 +94,10 @@ ldns_rr_free(ldns_rr *rr)
  * or
  * miek.nl. IN MX 10 elektron.atoom.net
  */
-ldns_status
-ldns_rr_new_frm_str(ldns_rr **newrr, const char *str, uint32_t default_ttl, ldns_rdf *origin, 
-		ldns_rdf **prev)
+static ldns_status
+ldns_rr_new_frm_str_internal(ldns_rr **newrr, const char *str,
+                             uint32_t default_ttl, ldns_rdf *origin, 
+		             ldns_rdf **prev, bool question)
 {
 	ldns_rr *new;
 	const ldns_rr_descriptor *desc;
@@ -182,7 +183,11 @@ ldns_rr_new_frm_str(ldns_rr **newrr, const char *str, uint32_t default_ttl, ldns
 	if (strlen(ttl) > 0 && !isdigit(ttl[0])) {
 		/* ah, it's not there or something */
 		if (default_ttl == 0) {
-			ttl_val = LDNS_DEFAULT_TTL;
+			if (question) {
+				ttl_val = 0;
+			} else {
+				ttl_val = LDNS_DEFAULT_TTL;
+			}
 		} else {
 			ttl_val = default_ttl;
 		}
@@ -516,7 +521,7 @@ ldns_rr_new_frm_str(ldns_rr **newrr, const char *str, uint32_t default_ttl, ldns
 	ldns_buffer_free(rr_buf);
 	LDNS_FREE(rdata);
 
-	if (desc && ldns_rr_rd_count(new) < r_min) {
+	if (!question && desc && ldns_rr_rd_count(new) < r_min) {
 		ldns_rr_free(new);
 		return LDNS_STATUS_SYNTAX_MISSING_VALUE_ERR;
 	}
@@ -525,6 +530,31 @@ ldns_rr_new_frm_str(ldns_rr **newrr, const char *str, uint32_t default_ttl, ldns
 		*newrr = new;
 	}
 	return LDNS_STATUS_OK;
+}
+
+ldns_status
+ldns_rr_new_frm_str(ldns_rr **newrr, const char *str,
+                    uint32_t default_ttl, ldns_rdf *origin, 
+		    ldns_rdf **prev)
+{
+	return ldns_rr_new_frm_str_internal(newrr,
+	                                    str,
+	                                    default_ttl,
+	                                    origin,
+	                                    prev,
+	                                    false);
+}
+
+ldns_status
+ldns_rr_new_question_frm_str(ldns_rr **newrr, const char *str,
+                             ldns_rdf *origin, ldns_rdf **prev)
+{
+	return ldns_rr_new_frm_str_internal(newrr,
+	                                    str,
+	                                    0,
+	                                    origin,
+	                                    prev,
+	                                    true);
 }
 
 ldns_status
