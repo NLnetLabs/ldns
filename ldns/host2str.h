@@ -182,6 +182,47 @@ ldns_status ldns_rdf2buffer_str_class(ldns_buffer *output, const ldns_rdf *rdf);
  */
 ldns_status ldns_rdf2buffer_str_alg(ldns_buffer *output, const ldns_rdf *rdf);
 
+/**
+ * Converts an ldns_rr_type value to its string representation,
+ * and places it in the given buffer
+ * \param[in] *output The buffer to add the data to
+ * \param[in] type the ldns_rr_type to convert
+ * \return LDNS_STATUS_OK on success, and error status on failure
+ */
+ldns_status ldns_rr_type2buffer_str(ldns_buffer *output,
+                                    const ldns_rr_type type);
+
+/**
+ * Converts an ldns_rr_type value to its string representation,
+ * and returns that string. For unknown types, the string
+ * "TYPE<id>" is returned. This function allocates data that must be
+ * freed by the caller
+ * \param[in] type the ldns_rr_type to convert
+ * \return a newly allocated string
+ */
+char *ldns_rr_type2str(const ldns_rr_type type);
+
+/**
+ * Converts an ldns_rr_class value to its string representation,
+ * and places it in the given buffer
+ * \param[in] *output The buffer to add the data to
+ * \param[in] klass the ldns_rr_class to convert
+ * \return LDNS_STATUS_OK on success, and error status on failure
+ */
+ldns_status ldns_rr_class2buffer_str(ldns_buffer *output,
+                                     const ldns_rr_class klass);
+
+/**
+ * Converts an ldns_rr_class value to its string representation,
+ * and returns that string. For unknown types, the string
+ * "CLASS<id>" is returned. This function allocates data that must be
+ * freed by the caller
+ * \param[in] klass the ldns_rr_class to convert
+ * \return a newly allocated string
+ */
+char *ldns_rr_class2str(const ldns_rr_class klass);
+
+
 /** 
  * Converts an LDNS_RDF_TYPE_CERT rdata element to string format and adds it to the output buffer 
  * \param[in] *rdf The rdata to convert
