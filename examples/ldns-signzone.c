@@ -48,6 +48,7 @@ usage(FILE *fp, const char *prog) {
 	fprintf(fp, "\t\t-a [algorithm] hashing algorithm\n");
 	fprintf(fp, "\t\t-t [number] number of hash iterations\n");
 	fprintf(fp, "\t\t-s [string] salt\n");
+	fprintf(fp, "\t\t-p set the opt-out flag on all nsec3 rrs\n");
 	fprintf(fp, "\n");
 	fprintf(fp, "  keys must be specified by their base name (usually K<name>+<alg>+<id>),\n");
 	fprintf(fp, "  i.e. WITHOUT the .private extension.\n");
@@ -165,6 +166,7 @@ main(int argc, char *argv[])
 	uint16_t nsec3_iterations = 1;
 	uint8_t nsec3_salt_length = 0;
 	uint8_t *nsec3_salt = NULL;
+	bool opt_out = false;
 	
 	/* we need to know the origin before reading ksk's,
 	 * so keep an array of filenames until we know it
@@ -186,7 +188,7 @@ main(int argc, char *argv[])
 
 	OPENSSL_config(NULL);
 
-	while ((c = getopt(argc, argv, "a:de:f:i:k:lno:s:t:v:E:K:")) != -1) {
+	while ((c = getopt(argc, argv, "a:de:f:i:k:lno:ps:t:v:E:K:")) != -1) {
 		switch (c) {
 		case 'a':
 			nsec3_algorithm = (uint8_t) atoi(optarg);
@@ -257,6 +259,9 @@ main(int argc, char *argv[])
 				exit(EXIT_FAILURE);
 			}
 			
+			break;
+		case 'p':
+			opt_out = true;
 			break;
 		case 'v':
 			printf("zone signer version %s (ldns version %s)\n", LDNS_VERSION, ldns_version());
@@ -631,7 +636,7 @@ main(int argc, char *argv[])
 									  ldns_dnssec_default_replace_signatures,
 									  NULL,
 									  nsec3_algorithm,
-									  0,
+									  opt_out?LDNS_NSEC3_VARS_OPTOUT_MASK:0,
 									  nsec3_iterations,
 									  nsec3_salt_length,
 									  nsec3_salt);
