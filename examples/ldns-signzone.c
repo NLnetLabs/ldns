@@ -161,12 +161,11 @@ main(int argc, char *argv[])
 	/* Add the given keys to the zone if they are not yet present */
 	bool add_keys = true;
 	uint8_t nsec3_algorithm = 1;
-	/*uint8_t nsec3_flags = 0;*/
+	uint8_t nsec3_flags = 0;
 	size_t nsec3_iterations_cmd = 1;
 	uint16_t nsec3_iterations = 1;
 	uint8_t nsec3_salt_length = 0;
 	uint8_t *nsec3_salt = NULL;
-	bool opt_out = false;
 	
 	/* we need to know the origin before reading ksk's,
 	 * so keep an array of filenames until we know it
@@ -261,7 +260,7 @@ main(int argc, char *argv[])
 			
 			break;
 		case 'p':
-			opt_out = true;
+			nsec3_flags = nsec3_flags | LDNS_NSEC3_VARS_OPTOUT_MASK;
 			break;
 		case 'v':
 			printf("zone signer version %s (ldns version %s)\n", LDNS_VERSION, ldns_version());
@@ -631,21 +630,21 @@ main(int argc, char *argv[])
 
 	if (use_nsec3) {
 		result = ldns_dnssec_zone_sign_nsec3(signed_zone,
-									  added_rrs,
-									  keys,
-									  ldns_dnssec_default_replace_signatures,
-									  NULL,
-									  nsec3_algorithm,
-									  opt_out?LDNS_NSEC3_VARS_OPTOUT_MASK:0,
-									  nsec3_iterations,
-									  nsec3_salt_length,
-									  nsec3_salt);
+			added_rrs,
+			keys,
+			ldns_dnssec_default_replace_signatures,
+			NULL,
+			nsec3_algorithm,
+			nsec3_flags,
+			nsec3_iterations,
+			nsec3_salt_length,
+			nsec3_salt);
 	} else {
 		result = ldns_dnssec_zone_sign(signed_zone,
-						  added_rrs,
-						  keys,
-						  ldns_dnssec_default_replace_signatures,
-						  NULL);
+				added_rrs,
+				keys,
+				ldns_dnssec_default_replace_signatures,
+				NULL);
 	}
 	if (result != LDNS_STATUS_OK) {
 		fprintf(stderr, "Error signing zone: %s\n",
