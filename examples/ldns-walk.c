@@ -540,6 +540,7 @@ main(int argc, char *argv[])
 			ldns_rdf_deep_free(last_dname_p);
 		}
 		last_dname_p = create_dname_plus_1(last_dname);
+		printf(" ");
 		ldns_rdf_print(stdout, rrtypes);
 		printf("\n");
 	}
