@@ -94,12 +94,16 @@ If you use NSEC3, you can specify the following extra options:
 Algorithm used to create the hashed NSEC3 owner names
 
 .TP
-\fB-t\fR \fInumber\fR
-Number of hash iterations
+\fB-p\fR
+Opt-out. All NSEC3 records in the zone will have the Opt-out flag set. After signing, you can add insecure delegations to the signed zone.
 
 .TP
 \fB-s\fR \fIstring\fR
 Salt
+
+.TP
+\fB-t\fR \fInumber\fR
+Number of hash iterations
 
 .SH ENGINE OPTIONS
 You can modify the possible engines, if supported, by setting an
