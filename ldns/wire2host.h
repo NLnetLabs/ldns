@@ -151,11 +151,14 @@ ldns_status ldns_buffer2pkt_wire(ldns_pkt **packet, ldns_buffer *buffer);
 ldns_status ldns_wire2dname(ldns_rdf **dname, const uint8_t *wire, size_t max, size_t *pos);
 
 /**
- * converts the data on the uint8_t bytearray (in wire format) to a DNS 
- * rdata field, and adds it to the list of rdfs in the given rr.
+ * converts the data on the uint8_t bytearray (in wire format) to DNS 
+ * rdata fields, and adds them to the list of rdfs of the given rr.
  * This function will initialize and allocate memory space for the dname
- * structure.
- * The length of the wiredata of this rdf is added to the *pos value.
+ * structures.
+ * The length of the wiredata of these rdfs is added to the *pos value.
+ *
+ * All rdfs belonging to the RR are read; the rr should have no rdfs
+ * yet. An error is returned if yhe format cannot be parsed.
  *
  * \param[in] rr pointer to the ldns_rr structure to hold the rdata value
  * \param[in] wire pointer to the buffer with the data
