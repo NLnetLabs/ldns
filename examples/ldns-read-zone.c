@@ -29,6 +29,7 @@ main(int argc, char **argv)
 	size_t i;
 	ldns_rr_list *stripped_list;
 	ldns_rr *cur_rr;
+	ldns_rr_type cur_rr_type;
 
         while ((c = getopt(argc, argv, "chsvz")) != -1) {
                 switch(c) {
@@ -81,8 +82,11 @@ main(int argc, char **argv)
 	if (strip) {
 		stripped_list = ldns_rr_list_new();
 		while ((cur_rr = ldns_rr_list_pop_rr(ldns_zone_rrs(z)))) {
-			if (ldns_rr_get_type(cur_rr) == LDNS_RR_TYPE_RRSIG ||
-			    ldns_rr_get_type(cur_rr) == LDNS_RR_TYPE_NSEC
+			cur_rr_type = ldns_rr_get_type(cur_rr);
+			if (cur_rr_type == LDNS_RR_TYPE_RRSIG ||
+			    cur_rr_type == LDNS_RR_TYPE_NSEC ||
+			    cur_rr_type == LDNS_RR_TYPE_NSEC3 ||
+			    cur_rr_type == LDNS_RR_TYPE_NSEC3PARAMS
 			   ) {
 			   	
 				ldns_rr_free(cur_rr);
