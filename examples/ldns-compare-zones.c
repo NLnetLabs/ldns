@@ -87,12 +87,16 @@ main(int argc, char **argv)
 	fn1 = argv[0];
 	fp1 = fopen(fn1, "r");
 	if (!fp1) {
-		fprintf(stderr, "Unable to open %s: %s\n", fn1, strerror(errno));
+		fprintf(stderr, "Unable to open %s: %s\n",
+		        fn1, strerror(errno));
 		exit(EXIT_FAILURE);
 	}
 	/* Read first zone */
-	s = ldns_zone_new_frm_fp_l(&z1, fp1, NULL, 0, 
-						  LDNS_RR_CLASS_IN, &line_nr1);
+	s = ldns_zone_new_frm_fp_l(&z1,
+	                           fp1,
+	                           NULL,
+	                           0, 
+				   LDNS_RR_CLASS_IN, &line_nr1);
 	if (s != LDNS_STATUS_OK) {
 		fclose(fp1);
 		fprintf(stderr, "%s: %s at %d\n",
@@ -103,57 +107,24 @@ main(int argc, char **argv)
 	}
 	fclose(fp1);
 
-	fn1 = argv[0];
-	fp1 = fopen(fn1, "r");
-	if (!fp1) {
-		fprintf(stderr, "Unable to open %s: %s\n", fn1, strerror(errno));
-		exit(EXIT_FAILURE);
-	}
-	/* Read first zone */
-	s = ldns_zone_new_frm_fp_l(&z1, fp1, NULL, 0, LDNS_RR_CLASS_IN, &line_nr1);
-
-	if (s != LDNS_STATUS_OK) {
-		fclose(fp1);
-		fprintf(stderr, "%s at %d\n", 
-			   ldns_get_errorstr_by_id(s),
-			   line_nr1);
-		exit(EXIT_FAILURE);
-	}
-	fclose(fp1);
-
 	fn2 = argv[1];
 	fp2 = fopen(fn2, "r");
 	if (!fp2) {
-		fprintf(stderr, "Unable to open %s: %s\n", fn2, strerror(errno));
+		fprintf(stderr, "Unable to open %s: %s\n",
+		        fn2, strerror(errno));
 		exit(EXIT_FAILURE);
 	}
 	/* Read second zone */
-	s = ldns_zone_new_frm_fp_l(&z2, fp2, NULL, 0,
-						  LDNS_RR_CLASS_IN, &line_nr2);
+	s = ldns_zone_new_frm_fp_l(&z2,
+	                           fp2,
+	                           NULL,
+	                           0,
+				   LDNS_RR_CLASS_IN, &line_nr2);
 	if (s != LDNS_STATUS_OK) {
 		ldns_zone_deep_free(z1);
 		fclose(fp2);
 		fprintf(stderr, "%s: %s at %d\n",
 			   fn2,
-			   ldns_get_errorstr_by_id(s),
-			   line_nr2);
-		exit(EXIT_FAILURE);
-	}
-	fclose(fp2);
-
-	fn2 = argv[1];
-	fp2 = fopen(fn2, "r");
-	if (!fp2) {
-		fprintf(stderr, "Unable to open %s: %s\n", fn2, strerror(errno));
-		exit(EXIT_FAILURE);
-	}
-	/* Read second zone */
-	s = ldns_zone_new_frm_fp_l(&z2, fp2, NULL, 0, LDNS_RR_CLASS_IN, &line_nr2);
-
-	if (s != LDNS_STATUS_OK) {
-		ldns_zone_deep_free(z1);
-		fclose(fp2);
-		fprintf(stderr, "%s at %d\n", 
 			   ldns_get_errorstr_by_id(s),
 			   line_nr2);
 		exit(EXIT_FAILURE);
