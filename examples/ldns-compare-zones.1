@@ -6,6 +6,7 @@ ldns-compare-zones \- read and compare two zonefiles and print differences
 .IR [-c]
 .IR [-i]
 .IR [-d]
+.IR [-z]
 .IR ZONEFILE1
 .IR ZONEFILE2 
 
@@ -29,6 +30,11 @@ Print resource records whose owner names are present only in ZONEFILE2 (a.k.a. i
 .TP
 \fB-d\fR
 Print resource records whose owner names are present only in ZONEFILE1 (a.k.a. deleted)
+
+.TP
+\fB-z\fR
+Suppress zone sorting; this option is not recommended; it can cause records
+to be incorrectly marked as changed, depending of the nature of the changes.
 
 .TP
 \fB-h\fR

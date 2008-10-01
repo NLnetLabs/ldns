@@ -30,6 +30,7 @@ usage(int argc, char **argv)
 	printf("       -i - print inserted\n");
 	printf("       -d - print deleted\n");
 	printf("       -c - print changed\n");
+	printf("       -z - do not sort zones\n");
 }
 
 int 
@@ -47,10 +48,11 @@ main(int argc, char **argv)
 	size_t		rrc1   , rrc2;
 	size_t		num_ins = 0, num_del = 0, num_chg = 0;
 	int		c;
-	int		opt_deleted = 0, opt_inserted = 0, opt_changed = 0;
+	bool		opt_deleted = false, opt_inserted = false, opt_changed = false;
+        bool		sort = true;
 	char		op = 0;
 
-	while ((c = getopt(argc, argv, "hvdic")) != -1) {
+	while ((c = getopt(argc, argv, "hvdicz")) != -1) {
 		switch (c) {
 		case 'h':
 			usage(argc, argv);
@@ -63,14 +65,17 @@ main(int argc, char **argv)
 				  ldns_version());
 			exit(EXIT_SUCCESS);
 			break;
+		case 'z':
+			sort = false;
+                        break;
 		case 'd':
-			opt_deleted = 1;
+			opt_deleted = true;
 			break;
 		case 'i':
-			opt_inserted = 1;
+			opt_inserted = true;
 			break;
 		case 'c':
-			opt_changed = 1;
+			opt_changed = true;
 			break;
 		}
 	}
@@ -87,16 +92,12 @@ main(int argc, char **argv)
 	fn1 = argv[0];
 	fp1 = fopen(fn1, "r");
 	if (!fp1) {
-		fprintf(stderr, "Unable to open %s: %s\n",
-		        fn1, strerror(errno));
+		fprintf(stderr, "Unable to open %s: %s\n", fn1, strerror(errno));
 		exit(EXIT_FAILURE);
 	}
 	/* Read first zone */
-	s = ldns_zone_new_frm_fp_l(&z1,
-	                           fp1,
-	                           NULL,
-	                           0, 
-				   LDNS_RR_CLASS_IN, &line_nr1);
+	s = ldns_zone_new_frm_fp_l(&z1, fp1, NULL, 0, 
+						  LDNS_RR_CLASS_IN, &line_nr1);
 	if (s != LDNS_STATUS_OK) {
 		fclose(fp1);
 		fprintf(stderr, "%s: %s at %d\n",
@@ -110,16 +111,12 @@ main(int argc, char **argv)
 	fn2 = argv[1];
 	fp2 = fopen(fn2, "r");
 	if (!fp2) {
-		fprintf(stderr, "Unable to open %s: %s\n",
-		        fn2, strerror(errno));
+		fprintf(stderr, "Unable to open %s: %s\n", fn2, strerror(errno));
 		exit(EXIT_FAILURE);
 	}
 	/* Read second zone */
-	s = ldns_zone_new_frm_fp_l(&z2,
-	                           fp2,
-	                           NULL,
-	                           0,
-				   LDNS_RR_CLASS_IN, &line_nr2);
+	s = ldns_zone_new_frm_fp_l(&z2, fp2, NULL, 0,
+						  LDNS_RR_CLASS_IN, &line_nr2);
 	if (s != LDNS_STATUS_OK) {
 		ldns_zone_deep_free(z1);
 		fclose(fp2);
@@ -136,6 +133,23 @@ main(int argc, char **argv)
 
 	rrl2 = ldns_zone_rrs(z2);
 	rrc2 = ldns_rr_list_rr_count(rrl2);
+
+        if (sort) {
+		/* canonicalize zone 1 */
+		ldns_rr2canonical(ldns_zone_soa(z1));
+                for (i = 0; i < ldns_rr_list_rr_count(ldns_zone_rrs(z1)); i++) {
+                	ldns_rr2canonical(ldns_rr_list_rr(ldns_zone_rrs(z1), i));
+		}
+                /* sort zone 1 */
+                ldns_zone_sort(z1);
+		/* canonicalize zone 2 */
+		ldns_rr2canonical(ldns_zone_soa(z2));
+                for (i = 0; i < ldns_rr_list_rr_count(ldns_zone_rrs(z2)); i++) {
+                	ldns_rr2canonical(ldns_rr_list_rr(ldns_zone_rrs(z2), i));
+		}
+                /* sort zone 2 */
+                ldns_zone_sort(z2);
+        }
 
 	/*
 	 * Walk through both zones. The previously seen resource record is
