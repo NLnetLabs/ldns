@@ -143,7 +143,7 @@ ldns_rr_new_frm_str_internal(ldns_rr **newrr, const char *str,
 	rd_buf = LDNS_MALLOC(ldns_buffer);
 	rd = LDNS_XMALLOC(char, LDNS_MAX_RDFLEN);
 	b64 = LDNS_XMALLOC(char, LDNS_MAX_RDFLEN);
-	if (!new || !owner || !ttl || !clas || !rdata || !rr_buf || !rd_buf || !rd | !b64) {
+	if (!new || !owner || !ttl || !clas || !rdata || !rr_buf || !rd_buf || !rd || !b64 ) {
 		return LDNS_STATUS_MEM_ERR;
 	}
 	r_cnt = 0;
@@ -348,7 +348,9 @@ ldns_rr_new_frm_str_internal(ldns_rr **newrr, const char *str,
 				quoted = false;
 				/* if type = B64, the field may contain spaces */
 				if (ldns_rr_descriptor_field_type(desc, 
-							r_cnt) == LDNS_RDF_TYPE_B64 ||
+					    r_cnt) == LDNS_RDF_TYPE_B64 ||
+				    ldns_rr_descriptor_field_type(desc, 
+					    r_cnt) == LDNS_RDF_TYPE_HEX ||
 				    ldns_rr_descriptor_field_type(desc, 
 					    r_cnt) == LDNS_RDF_TYPE_LOC ||
 				    ldns_rr_descriptor_field_type(desc, 
@@ -441,6 +443,7 @@ ldns_rr_new_frm_str_internal(ldns_rr **newrr, const char *str,
 					} else {
 						/* Normal RR */
 						switch(ldns_rr_descriptor_field_type(desc, r_cnt)) {
+						case LDNS_RDF_TYPE_HEX:
 						case LDNS_RDF_TYPE_B64:
 							/* can have spaces, and will always be the last 
 							 * record of the rrdata. Read in the rest */

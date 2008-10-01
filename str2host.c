@@ -530,30 +530,33 @@ ldns_str2rdf_hex(ldns_rdf **rd, const char *str)
 
 	len = strlen(str);
 
-        if (len % 2 != 0) {
-                return LDNS_STATUS_INVALID_HEX;
-        } else if (len > LDNS_MAX_RDFLEN * 2) {
+	if (len > LDNS_MAX_RDFLEN * 2) {
 		return LDNS_STATUS_LABEL_OVERFLOW;
         } else {
-		t = LDNS_XMALLOC(uint8_t, (len / 2));
+		t = LDNS_XMALLOC(uint8_t, (len / 2) + 1);
 		t_orig = t;
                 /* Now process octet by octet... */
                 while (*str) {
-                        *t = 0;
-                        for (i = 16; i >= 1; i -= 15) {
-                                if (isxdigit(*str)) {
-                                        *t += ldns_hexdigit_to_int(*str) * i;
-                                } else {
-					/* error or be lenient and skip? */
-                                        /*return LDNS_STATUS_ERR;*/
-                                }
-                                ++str;
-                        }
-                        ++t;
+			*t = 0;
+			if (isspace(*str)) {
+				str++;
+			} else {
+				for (i = 16; i >= 1; i -= 15) {
+					while (*str && isspace(*str)) { str++; }
+					if (*str) {
+						if (isxdigit(*str)) {
+							*t += ldns_hexdigit_to_int(*str) * i;
+						} else {
+							return LDNS_STATUS_ERR;
+						}
+						++str;
+					}
+				}
+				++t;
+			}
                 }
-                t = t_orig;
-		*rd = ldns_rdf_new_frm_data(LDNS_RDF_TYPE_HEX, len / 2, t);
-		LDNS_FREE(t);
+		*rd = ldns_rdf_new_frm_data(LDNS_RDF_TYPE_HEX, t - t_orig, t_orig);
+		LDNS_FREE(t_orig);
         }
         return LDNS_STATUS_OK;
 }
