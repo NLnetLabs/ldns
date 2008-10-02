@@ -1,15 +1,22 @@
 
 1.3.x
 	Bug fixes:
-	* ldns-zplit output and error messages fixed (patch from Shane Kerr,
-	bug id 190)
+	* sig chase return code fix (patch from Rafael Justo, bug id 189)
 	* rdata.c memory leaks on error and allocation checks fixed (patch
-	from Shane Kerr, bug id 188)
+	  from Shane Kerr, bug id 188)
 	* zone.c memory leaks on error and allocation checks fixed (patch
 	from Shane Kerr, bug id 189)
+	* ldns-zplit output and error messages fixed (patch from Shane Kerr,
+	  bug id 190)
 	* Fixed potential buffer overflow in ldns_str2rdf_dname
 	* Signing code no longer signs delegation NS rrsets
-
+	* Some minor configure/makefile updates
+	* Fixed a bug in the randomness initialization
+	* Fixed a bug in the reading of resolv.conf
+	* Fixed a bug concerning whitespace in zone data (with patch from Ondrej
+	  Sury, bug 213)
+	* Fixed a small fallback problem in axfr client code
+	
 	API CHANGES:
 	* added 2str convenience functions:
 		- ldns_rr_type2str
@@ -17,9 +24,26 @@
 		- ldns_rr_type2buffer_str
 		- ldns_rr_class2buffer_str
 	* buffer2str() is now called ldns_buffer2str
-	* ldns_rr_new_frm_str() now errors on missing RDATA fields.
+	* base32 and base64 function names are now also prepended with ldns_
+	* ldns_rr_new_frm_str() now returns an error on missing RDATA fields.
 	  Since you cannot read QUESTION section RRs with this anymore,
 	  there is now a function called ldns_rr_new_question_frm_str()
+
+	LIBRARY FEATURES:
+	* DS RRs string representation now add bubblebabble in a comment
+	  (patch from Jakob Schlyter)
+	* DLS RR type added
+	* TCP fallback system has been improved
+	* HMAC-SHA256 TSIG support has been added.
+	
+	EXAMPLE TOOLS:
+	* New example: ldns-revoke to revoke DNSKEYs according to RFC5011
+	* ldns-testpkts has been fixed and updated
+	* ldns-signzone now has the option to not add the DNSKEY
+	* ldns-signzone now has an opt-out option
+	* ldns-keygen can create HMAC-SHA1 and HMAC-SHA256 symmetric keys
+	* ldns-walk output has been fixed
+	* ldns-compare-zones has been fixed
 
 1.3
 	Base library:
