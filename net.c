@@ -551,8 +551,9 @@ ldns_axfr_start(ldns_resolver *resolver, ldns_rdf *domain, ldns_rr_class class)
         ldns_pkt *query;
         ldns_buffer *query_wire;
 
-        struct sockaddr_storage *ns;
+        struct sockaddr_storage *ns = NULL;
         size_t ns_len = 0;
+        size_t ns_i;
         ldns_status status;
 
         if (!resolver || ldns_resolver_nameserver_count(resolver) < 1) {
@@ -565,16 +566,25 @@ ldns_axfr_start(ldns_resolver *resolver, ldns_rdf *domain, ldns_rr_class class)
                 return LDNS_STATUS_ADDRESS_ERR;
         }
         /* For AXFR, we have to make the connection ourselves */
-        ns = ldns_rdf2native_sockaddr_storage(resolver->_nameservers[0],
-                        ldns_resolver_port(resolver), &ns_len);
+        /* try all nameservers (which usually would mean v4 fallback if 
+         * @hostname is used */
+        for (ns_i = 0;
+             ns_i < ldns_resolver_nameserver_count(resolver) &&
+             resolver->_socket == 0;
+             ns_i++) {
+	        ns = ldns_rdf2native_sockaddr_storage(
+	        	resolver->_nameservers[ns_i],
+			ldns_resolver_port(resolver), &ns_len);
+	
+		resolver->_socket = ldns_tcp_connect(ns, (socklen_t)ns_len, 
+				ldns_resolver_timeout(resolver));
+	}
 
-        resolver->_socket = ldns_tcp_connect(ns, (socklen_t)ns_len, 
-			ldns_resolver_timeout(resolver));
-        if (resolver->_socket == 0) {
-                ldns_pkt_free(query);
-                LDNS_FREE(ns);
-                return LDNS_STATUS_NETWORK_ERR;
-        }
+	if (resolver->_socket == 0) {
+		ldns_pkt_free(query);
+		LDNS_FREE(ns);
+		return LDNS_STATUS_NETWORK_ERR;
+	}
 
 #ifdef HAVE_SSL
 	if (ldns_resolver_tsig_keyname(resolver) && ldns_resolver_tsig_keydata(resolver)) {
