@@ -399,7 +399,7 @@ main(int argc, char *argv[])
 			ldns_rdf_print(stdout, last_dname_p);
 			printf("\n");
 		}
-		p = ldns_resolver_query(res, last_dname_p, LDNS_RR_TYPE_ANY, LDNS_RR_CLASS_IN, LDNS_RD);
+		p = ldns_resolver_query(res, last_dname_p, LDNS_RR_TYPE_DS, LDNS_RR_CLASS_IN, LDNS_RD);
 		if (verbosity >= 5) {
 			if (p) {
 				ldns_pkt_print(stdout, p);
@@ -425,7 +425,7 @@ main(int argc, char *argv[])
 			ldns_rdf_print(stdout, last_dname_p);
 			printf("\n");
 		    }
-		    p = ldns_resolver_query(res, last_dname_p, LDNS_RR_TYPE_ANY, LDNS_RR_CLASS_IN, LDNS_RD);
+		    p = ldns_resolver_query(res, last_dname_p, LDNS_RR_TYPE_DS, LDNS_RR_CLASS_IN, LDNS_RD);
 		    /* TODO: make a general option for this (something like ignore_rtt)? */
 		    for (j = 0; j < ldns_resolver_nameserver_count(res); j++) {
 			if (ldns_resolver_nameserver_rtt(res, j) != 0) {
@@ -455,7 +455,7 @@ main(int argc, char *argv[])
 				ldns_rdf_print(stdout, last_dname);
 				printf("\n");
 			}
-			p = ldns_resolver_query(res, last_dname, LDNS_RR_TYPE_ANY, LDNS_RR_CLASS_IN, LDNS_RD);
+			p = ldns_resolver_query(res, last_dname, LDNS_RR_TYPE_DS, LDNS_RR_CLASS_IN, LDNS_RD);
 			if (verbosity >= 5) {
 				if (p) {
 					ldns_pkt_print(stdout, p);
