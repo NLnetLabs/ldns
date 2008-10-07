@@ -657,17 +657,18 @@ main(int argc, char *argv[])
 	}
 
 	if (signed_zone) {
-		outputfile = fopen(outputfile_name, "w");
-		if (!outputfile) {
-			fprintf(stderr, "Unable to open %s for writing: %s\n",
-				   outputfile_name, strerror(errno));
+		if (strncmp(outputfile_name, "-", 2) == 0) {
+			ldns_dnssec_zone_print(stdout, signed_zone);
 		} else {
-			ldns_dnssec_zone_print(outputfile, signed_zone);
-			fclose(outputfile);
+			outputfile = fopen(outputfile_name, "w");
+			if (!outputfile) {
+				fprintf(stderr, "Unable to open %s for writing: %s\n",
+					   outputfile_name, strerror(errno));
+			} else {
+				ldns_dnssec_zone_print(outputfile, signed_zone);
+				fclose(outputfile);
+			}
 		}
-/*
-		ldns_zone_deep_free(signed_zone); 
-*/
 	} else {
 		fprintf(stderr, "Error signing zone.\n");
 
