@@ -16,14 +16,18 @@ resource record per line, and no pretty-printing makeup.
 Canonicalize all resource records in the zone before printing
 
 .TP
-\fB-h\fR
-Show usage and exit
-
-.TP
 \fB-d\fR
 Only print DNSSEC data from the zone. This option skips every record
 that is not of type NSEC, NSEC3, RRSIG or DNSKEY. DS records are not
 printed.
+
+.TP
+\fB-h\fR
+Show usage and exit
+
+.TP
+\fB-n\fR
+Do not print the SOA record
 
 .TP
 \fB-s\fR

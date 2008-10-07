@@ -26,13 +26,14 @@ main(int argc, char **argv)
 	bool sort = false;
 	bool strip = false;
 	bool only_dnssec = false;
+	bool print_soa = true;
 	ldns_status s;
 	size_t i;
 	ldns_rr_list *stripped_list;
 	ldns_rr *cur_rr;
 	ldns_rr_type cur_rr_type;
 
-        while ((c = getopt(argc, argv, "cdhsvz")) != -1) {
+        while ((c = getopt(argc, argv, "cdhnsvz")) != -1) {
                 switch(c) {
                 	case 'c':
                 		canonicalize = true;
@@ -48,13 +49,17 @@ main(int argc, char **argv)
 				printf("\tReads the zonefile and prints it.\n");
 				printf("\tThe RR count of the zone is printed to stderr.\n");
 				printf("\t-c canonicalize all rrs in the zone.\n");
-				printf("\t-h show this text\n");
-				printf("\t-s strip DNSSEC data from the zone\n");
 				printf("\t-d only show DNSSEC data from the zone\n");
+				printf("\t-h show this text\n");
+				printf("\t-n do not print the SOA record\n");
+				printf("\t-s strip DNSSEC data from the zone\n");
 				printf("\t-v shows the version and exits\n");
 				printf("\t-z sort the zone (implies -c).\n");
 				printf("\nif no file is given standard input is read\n");
 				exit(EXIT_SUCCESS);
+				break;
+			case 'n':
+				print_soa = false;
 				break;
                         case 's':
                         	strip = true;
@@ -136,7 +141,10 @@ main(int argc, char **argv)
 			ldns_zone_sort(z);
 		}
 
-		ldns_zone_print(stdout, z);
+		if (print_soa) {
+			ldns_rr_print(stdout, ldns_zone_soa(z));
+		}
+		ldns_rr_list_print(stdout, ldns_zone_rrs(z));
 
 		ldns_zone_deep_free(z);
 	} else {
