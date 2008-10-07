@@ -25,17 +25,24 @@ main(int argc, char **argv)
 	bool canonicalize = false;
 	bool sort = false;
 	bool strip = false;
+	bool only_dnssec = false;
 	ldns_status s;
 	size_t i;
 	ldns_rr_list *stripped_list;
 	ldns_rr *cur_rr;
 	ldns_rr_type cur_rr_type;
 
-        while ((c = getopt(argc, argv, "chsvz")) != -1) {
+        while ((c = getopt(argc, argv, "cdhsvz")) != -1) {
                 switch(c) {
                 	case 'c':
                 		canonicalize = true;
                 		break;
+                	case 'd':
+                		only_dnssec = true;
+                		if (strip) {
+                			fprintf(stderr, "Warning: stripping both DNSSEC and non-DNSSEC records. Output will be sparse.\n");
+				}
+				break;
 			case 'h':
 				printf("Usage: %s [-c] [-v] [-z] <zonefile>\n", argv[0]);
 				printf("\tReads the zonefile and prints it.\n");
@@ -43,6 +50,7 @@ main(int argc, char **argv)
 				printf("\t-c canonicalize all rrs in the zone.\n");
 				printf("\t-h show this text\n");
 				printf("\t-s strip DNSSEC data from the zone\n");
+				printf("\t-d only show DNSSEC data from the zone\n");
 				printf("\t-v shows the version and exits\n");
 				printf("\t-z sort the zone (implies -c).\n");
 				printf("\nif no file is given standard input is read\n");
@@ -50,6 +58,9 @@ main(int argc, char **argv)
 				break;
                         case 's':
                         	strip = true;
+                		if (only_dnssec) {
+                			fprintf(stderr, "Warning: stripping both DNSSEC and non-DNSSEC records. Output will be sparse.\n");
+				}
                         	break;
 			case 'v':
 				printf("read zone version %s (ldns version %s)\n", LDNS_VERSION, ldns_version());
@@ -88,10 +99,26 @@ main(int argc, char **argv)
 			    cur_rr_type == LDNS_RR_TYPE_NSEC3 ||
 			    cur_rr_type == LDNS_RR_TYPE_NSEC3PARAMS
 			   ) {
-			   	
 				ldns_rr_free(cur_rr);
 			} else {
 				ldns_rr_list_push_rr(stripped_list, cur_rr);
+			}
+		}
+		ldns_rr_list_free(ldns_zone_rrs(z));
+		ldns_zone_set_rrs(z, stripped_list);
+	}
+	if (only_dnssec) {
+		stripped_list = ldns_rr_list_new();
+		while ((cur_rr = ldns_rr_list_pop_rr(ldns_zone_rrs(z)))) {
+			cur_rr_type = ldns_rr_get_type(cur_rr);
+			if (cur_rr_type == LDNS_RR_TYPE_RRSIG ||
+			    cur_rr_type == LDNS_RR_TYPE_NSEC ||
+			    cur_rr_type == LDNS_RR_TYPE_NSEC3 ||
+			    cur_rr_type == LDNS_RR_TYPE_NSEC3PARAMS
+			   ) {
+				ldns_rr_list_push_rr(stripped_list, cur_rr);
+			} else {
+				ldns_rr_free(cur_rr);
 			}
 		}
 		ldns_rr_list_free(ldns_zone_rrs(z));

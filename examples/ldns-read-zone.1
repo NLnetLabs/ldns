@@ -20,8 +20,16 @@ Canonicalize all resource records in the zone before printing
 Show usage and exit
 
 .TP
+\fB-d\fR
+Only print DNSSEC data from the zone. This option skips every record
+that is not of type NSEC, NSEC3, RRSIG or DNSKEY. DS records are not
+printed.
+
+.TP
 \fB-s\fR
-Strip DNSSEC data from the zone
+Strip DNSSEC data from the zone. This option skips every record
+that is of type NSEC, NSEC3, RRSIG or DNSKEY. DS records are still
+printed.
 
 .TP
 \fB-v\fR
