@@ -38,6 +38,7 @@ usage(FILE *fp, const char *prog) {
 	fprintf(fp, "  -l\t\tLeave old DNSSEC RRSIGS and NSEC records intact\n");
 	fprintf(fp, "  -o <domain>\torigin for the zone\n");
 	fprintf(fp, "  -v\t\tprint version and exit\n");
+	fprintf(fp, "  -T <ttl>\tset the TTL of the added records\n");
 	fprintf(fp, "  -E <name>\tuse <name> as the crypto engine for signing\n");
 	fprintf(fp, "           \tThis can have a lot of extra options, see the manual page for more info\n");
 	fprintf(fp, "  -k <id>,<int>\tuse key id with algorithm int from engine\n");
@@ -144,6 +145,7 @@ main(int argc, char *argv[])
 	ldns_status s;
 	size_t i;
 	ldns_rr_list *added_rrs;
+	uint32_t new_ttl = LDNS_DEFAULT_TTL;
 
 	bool leave_old_dnssec_data = false;
 
@@ -187,7 +189,7 @@ main(int argc, char *argv[])
 
 	OPENSSL_config(NULL);
 
-	while ((c = getopt(argc, argv, "a:de:f:i:k:lno:ps:t:v:E:K:")) != -1) {
+	while ((c = getopt(argc, argv, "a:de:f:i:k:lno:ps:t:T:v:E:K:")) != -1) {
 		switch (c) {
 		case 'a':
 			nsec3_algorithm = (uint8_t) atoi(optarg);
@@ -347,7 +349,6 @@ main(int argc, char *argv[])
 				printf("Error: bad engine key specification (should be: -k <id>,<algorithm>)).\n");
 				exit(EXIT_FAILURE);
 			}
-			
 			break;
 		case 'K':
 			printf("Not implemented yet\n");
@@ -379,6 +380,9 @@ main(int argc, char *argv[])
 			}
 			nsec3_iterations = (uint16_t) nsec3_iterations_cmd;
 			break;
+		case 'T':
+			new_ttl = atol(optarg);
+			break;
 		default:
 			usage(stderr, prog);
 			exit(EXIT_SUCCESS);
@@ -398,42 +402,69 @@ main(int argc, char *argv[])
 
 	/* read zonefile first to find origin if not specified */
 	
-	zonefile = fopen(zonefile_name, "r");
-	
-	printf("[XX] Reading zone file\n");
-	if (!zonefile) {
-		fprintf(stderr,
-			   "Error: unable to read %s (%s)\n",
-			   zonefile_name,
-			   strerror(errno));
-		exit(EXIT_FAILURE);
-	} else {
+	if (strncmp(zonefile_name, "-", 2) == 0) {
 		s = ldns_zone_new_frm_fp_l(&orig_zone,
-							  zonefile,
-							  origin,
-							  ttl,
-							  class,
-							  &line_nr);
-		if (s != LDNS_STATUS_OK) {
-			fprintf(stderr, "Zone not read, error: %s at %s line %d\n", 
-				   ldns_get_errorstr_by_id(s), 
-				   zonefile_name, line_nr);
+					   stdin,
+					   origin,
+					   ttl,
+					   class,
+					   &line_nr);
+			if (s != LDNS_STATUS_OK) {
+				fprintf(stderr, "Zone not read, error: %s at stdin line %d\n", 
+					   ldns_get_errorstr_by_id(s),
+					   line_nr);
+				exit(EXIT_FAILURE);
+			} else {
+				orig_soa = ldns_zone_soa(orig_zone);
+				if (!orig_soa) {
+					fprintf(stderr,
+						   "Error reading zonefile: missing SOA record\n");
+					exit(EXIT_FAILURE);
+				}
+				orig_rrs = ldns_zone_rrs(orig_zone);
+				if (!orig_rrs) {
+					fprintf(stderr,
+						   "Error reading zonefile: no resource records\n");
+					exit(EXIT_FAILURE);
+				}
+			}
+	} else {
+		zonefile = fopen(zonefile_name, "r");
+		
+		if (!zonefile) {
+			fprintf(stderr,
+				   "Error: unable to read %s (%s)\n",
+				   zonefile_name,
+				   strerror(errno));
 			exit(EXIT_FAILURE);
 		} else {
-			orig_soa = ldns_zone_soa(orig_zone);
-			if (!orig_soa) {
-				fprintf(stderr,
-					   "Error reading zonefile: missing SOA record\n");
+			s = ldns_zone_new_frm_fp_l(&orig_zone,
+			                           zonefile,
+			                           origin,
+			                           ttl,
+			                           class,
+			                           &line_nr);
+			if (s != LDNS_STATUS_OK) {
+				fprintf(stderr, "Zone not read, error: %s at %s line %d\n", 
+					   ldns_get_errorstr_by_id(s), 
+					   zonefile_name, line_nr);
 				exit(EXIT_FAILURE);
+			} else {
+				orig_soa = ldns_zone_soa(orig_zone);
+				if (!orig_soa) {
+					fprintf(stderr,
+						   "Error reading zonefile: missing SOA record\n");
+					exit(EXIT_FAILURE);
+				}
+				orig_rrs = ldns_zone_rrs(orig_zone);
+				if (!orig_rrs) {
+					fprintf(stderr,
+						   "Error reading zonefile: no resource records\n");
+					exit(EXIT_FAILURE);
+				}
 			}
-			orig_rrs = ldns_zone_rrs(orig_zone);
-			if (!orig_rrs) {
-				fprintf(stderr,
-					   "Error reading zonefile: no resource records\n");
-				exit(EXIT_FAILURE);
-			}
+			fclose(zonefile);
 		}
-		fclose(zonefile);
 	}
 
 	if (!origin) {
@@ -649,6 +680,14 @@ main(int argc, char *argv[])
 	if (result != LDNS_STATUS_OK) {
 		fprintf(stderr, "Error signing zone: %s\n",
 			   ldns_get_errorstr_by_id(result));
+	}
+
+	/* update the TTL for the new records */
+	if (new_ttl != LDNS_DEFAULT_TTL) {
+		for (i = 0; i < ldns_rr_list_rr_count(added_rrs); i++) {
+			ldns_rr_set_ttl(ldns_rr_list_rr(added_rrs, i),
+			                new_ttl);
+		}
 	}
 	
 	if (!outputfile_name) {
