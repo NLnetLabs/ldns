@@ -21,7 +21,7 @@
 
 
 #define MAX_FILENAME_LEN 250
-int verbosity = 0;
+int verbosity = 5;
 
 #ifdef HAVE_SSL
 #include <openssl/err.h>
@@ -542,9 +542,13 @@ main(int argc, char *argv[])
 						if (verbosity >= 2) {
 							fprintf(stderr, "Found it in the zone!\n");
 						}
+						ldns_key_set_pubkey_owner(key, ldns_rdf_clone(ldns_rr_owner(pubkey)));
+						ldns_key_set_flags(key, ldns_rdf2native_int16(ldns_rr_rdf(pubkey, 0)));
+						ldns_key_set_keytag(key, ldns_calc_keytag(pubkey));
 						goto found;
 					}
 				}
+				
 				/* it was not in the zone, try to read a .key file */
 				keyfile_name = LDNS_XMALLOC(char,
 									   strlen(keyfile_name_base) + 5);
@@ -621,6 +625,7 @@ main(int argc, char *argv[])
 	}
 
 	/* walk through the keys, and add pubkeys to the orig zone */
+#if 0
 	for (key_i = 0; key_i < ldns_key_list_key_count(keys); key_i++) {
 		key = ldns_key_list_key(keys, key_i);
 		if (!ldns_key_pubkey_owner(key)) {
@@ -637,6 +642,7 @@ main(int argc, char *argv[])
 			ldns_rr_print(stdout, pubkey);
 		}
 	}
+#endif
 
 	signed_zone = ldns_dnssec_zone_new();
     	if (ldns_dnssec_zone_add_rr(signed_zone, ldns_zone_soa(orig_zone)) !=

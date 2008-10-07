@@ -433,7 +433,6 @@ main(int argc, char **argv)
 	s = ldns_zone_new_frm_fp_l(&z, fp, NULL, 0, LDNS_RR_CLASS_IN, &line_nr);
 
 	glue_rrs = ldns_zone_glue_rr_list(z);
-
 	if (s == LDNS_STATUS_OK) {
 		dnssec_zone = create_dnssec_zone(z);
 
