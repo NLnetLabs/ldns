@@ -19,7 +19,7 @@ ldns_zone_soa(const ldns_zone *z)
         return z->_soa;
 }
 
-uint16_t
+size_t
 ldns_zone_rr_count(const ldns_zone *z)
 {
 	return ldns_rr_list_rr_count(z->_rrs);
@@ -180,7 +180,7 @@ ldns_zone_glue_rr_list(const ldns_zone *z)
 	ldns_rr_list *glue;
 	ldns_rr *r, *ns, *a;
 	ldns_rdf *dname_a, *dname_ns, *ns_owner;
-	uint16_t i,j;
+	size_t i,j;
 
 	zone_cuts = NULL;
 	addr = NULL;

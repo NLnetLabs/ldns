@@ -63,7 +63,7 @@ ldns_rr * ldns_zone_soa(const ldns_zone *z);
  * \param[in] z the zone to read from
  * \return the number of rr's in the zone
  */
-uint16_t ldns_zone_rr_count(const ldns_zone *z);
+size_t ldns_zone_rr_count(const ldns_zone *z);
 
 /**
  * Set the zone's soa record
