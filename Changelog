@@ -44,6 +44,7 @@
 	* ldns-keygen can create HMAC-SHA1 and HMAC-SHA256 symmetric keys
 	* ldns-walk output has been fixed
 	* ldns-compare-zones has been fixed
+	* ldns-read-zone now has an option to print DNSSEC records only
 
 1.3
 	Base library:
