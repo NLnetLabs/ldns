@@ -408,6 +408,8 @@ ldns_dname_interval(const ldns_rdf *prev, const ldns_rdf *middle,
 bool
 ldns_dname_str_absolute(const char *dname_str)
 {
+	if(dname_str && strcmp(dname_str, ".") == 0)
+		return 1;
 	return (dname_str && 
 	        strlen(dname_str) > 1 && 
 	        dname_str[strlen(dname_str) - 1] == '.' &&
