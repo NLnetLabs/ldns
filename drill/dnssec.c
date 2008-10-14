@@ -103,6 +103,9 @@ get_dnssec_rr(ldns_pkt *p, ldns_rdf *name, ldns_rr_type t,
 	size_t i;
 
 	if (!p) {
+		if (rrlist) {
+			*rrlist = NULL;
+		}
 		return LDNS_PACKET_UNKNOWN;
 	}
 
