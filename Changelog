@@ -35,12 +35,14 @@
 	* DLS RR type added
 	* TCP fallback system has been improved
 	* HMAC-SHA256 TSIG support has been added.
+	* TTLS are now correcly set in NSEC(3) recordswhen signing zones
 	
 	EXAMPLE TOOLS:
 	* New example: ldns-revoke to revoke DNSKEYs according to RFC5011
 	* ldns-testpkts has been fixed and updated
 	* ldns-signzone now has the option to not add the DNSKEY
-	* ldns-signzone now has an opt-out option
+	* ldns-signzone now has an (full zone only) opt-out option for
+	                NSEC3
 	* ldns-keygen can create HMAC-SHA1 and HMAC-SHA256 symmetric keys
 	* ldns-walk output has been fixed
 	* ldns-compare-zones has been fixed

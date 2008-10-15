@@ -38,7 +38,6 @@ usage(FILE *fp, const char *prog) {
 	fprintf(fp, "  -l\t\tLeave old DNSSEC RRSIGS and NSEC records intact\n");
 	fprintf(fp, "  -o <domain>\torigin for the zone\n");
 	fprintf(fp, "  -v\t\tprint version and exit\n");
-	fprintf(fp, "  -T <ttl>\tset the TTL of the added records\n");
 	fprintf(fp, "  -E <name>\tuse <name> as the crypto engine for signing\n");
 	fprintf(fp, "           \tThis can have a lot of extra options, see the manual page for more info\n");
 	fprintf(fp, "  -k <id>,<int>\tuse key id with algorithm int from engine\n");
@@ -145,7 +144,6 @@ main(int argc, char *argv[])
 	ldns_status s;
 	size_t i;
 	ldns_rr_list *added_rrs;
-	uint32_t new_ttl = LDNS_DEFAULT_TTL;
 
 	bool leave_old_dnssec_data = false;
 
@@ -189,7 +187,7 @@ main(int argc, char *argv[])
 
 	OPENSSL_config(NULL);
 
-	while ((c = getopt(argc, argv, "a:de:f:i:k:lno:ps:t:T:v:E:K:")) != -1) {
+	while ((c = getopt(argc, argv, "a:de:f:i:k:lno:ps:t:v:E:K:")) != -1) {
 		switch (c) {
 		case 'a':
 			nsec3_algorithm = (uint8_t) atoi(optarg);
@@ -379,9 +377,6 @@ main(int argc, char *argv[])
 				exit(EXIT_FAILURE);
 			}
 			nsec3_iterations = (uint16_t) nsec3_iterations_cmd;
-			break;
-		case 'T':
-			new_ttl = atol(optarg);
 			break;
 		default:
 			usage(stderr, prog);
@@ -688,14 +683,6 @@ main(int argc, char *argv[])
 			   ldns_get_errorstr_by_id(result));
 	}
 
-	/* update the TTL for the new records */
-	if (new_ttl != LDNS_DEFAULT_TTL) {
-		for (i = 0; i < ldns_rr_list_rr_count(added_rrs); i++) {
-			ldns_rr_set_ttl(ldns_rr_list_rr(added_rrs, i),
-			                new_ttl);
-		}
-	}
-	
 	if (!outputfile_name) {
 		outputfile_name = LDNS_XMALLOC(char, MAX_FILENAME_LEN);
 		snprintf(outputfile_name, MAX_FILENAME_LEN, "%s.signed", zonefile_name);
