@@ -77,6 +77,18 @@ ldns_status ldns_dnssec_zone_create_nsecs(ldns_dnssec_zone *zone,
 								  ldns_rr_list *new_rrs);
 
 /**
+ * Adds NSEC3 records to the zone
+ */
+ldns_status
+ldns_dnssec_zone_create_nsec3s(ldns_dnssec_zone *zone,
+						 ldns_rr_list *new_rrs,
+						 uint8_t algorithm,
+						 uint8_t flags,
+						 uint16_t iterations,
+						 uint8_t salt_length,
+						 uint8_t *salt);
+
+/**
  * remove signatures if callback function tells to
  * 
  * \param[in] signatures list of signatures to check, and

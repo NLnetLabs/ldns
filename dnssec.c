@@ -1536,61 +1536,6 @@ ldns_rr_list_sort_nsec3(ldns_rr_list *unsorted)
 	      qsort_rr_compare_nsec3);
 }
 
-ldns_status
-ldns_dnssec_zone_create_nsec3s(ldns_dnssec_zone *zone,
-						 ldns_rr_list *new_rrs,
-						 uint8_t algorithm,
-						 uint8_t flags,
-						 uint16_t iterations,
-						 uint8_t salt_length,
-						 uint8_t *salt)
-{
-	ldns_rbnode_t *first_name_node;
-	ldns_rbnode_t *current_name_node;
-	ldns_dnssec_name *current_name;
-	ldns_status result = LDNS_STATUS_OK;
-	ldns_rr *nsec_rr;
-	ldns_rr_list *nsec3_list;
-	
-	if (!zone || !new_rrs || !zone->names) {
-		return LDNS_STATUS_ERR;
-	}
-
-	nsec3_list = ldns_rr_list_new();
-
-	first_name_node = ldns_dnssec_name_node_next_nonglue(
-					  ldns_rbtree_first(zone->names));
-	
-	current_name_node = first_name_node;
-
-	while (current_name_node &&
-		  current_name_node != LDNS_RBTREE_NULL) {
-		current_name = (ldns_dnssec_name *) current_name_node->data;
-		nsec_rr = ldns_dnssec_create_nsec3(current_name,
-									NULL,
-								     zone->soa->name,
-									algorithm,
-									flags,
-									iterations,
-									salt_length,
-									salt);
-		ldns_dnssec_name_add_rr(current_name, nsec_rr);
-		ldns_rr_list_push_rr(new_rrs, nsec_rr);
-		ldns_rr_list_push_rr(nsec3_list, nsec_rr);
-		current_name_node = ldns_dnssec_name_node_next_nonglue(
-						    ldns_rbtree_next(current_name_node));
-	}
-
-	ldns_rr_list_sort_nsec3(nsec3_list);
-	ldns_dnssec_chain_nsec3_list(nsec3_list);
-	if (result != LDNS_STATUS_OK) {
-		return result;
-	}
-	
-	ldns_rr_list_free(nsec3_list);
-	return result;
-}
-
 int
 ldns_dnssec_default_add_to_signatures(ldns_rr *sig, void *n)
 {

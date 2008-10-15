@@ -367,17 +367,6 @@ qsort_rr_compare_nsec3(const void *a, const void *b);
 void
 ldns_rr_list_sort_nsec3(ldns_rr_list *unsorted);
 
-/**
- * Adds NSEC3 records to the zone
- */
-ldns_status
-ldns_dnssec_zone_create_nsec3s(ldns_dnssec_zone *zone,
-						 ldns_rr_list *new_rrs,
-						 uint8_t algorithm,
-						 uint8_t flags,
-						 uint16_t iterations,
-						 uint8_t salt_length,
-						 uint8_t *salt);
 /** 
  * Default callback function to always leave present signatures, and
  * add new ones

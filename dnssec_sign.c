@@ -510,13 +510,30 @@ ldns_dnssec_name_node_next_nonglue(ldns_rbnode_t *node)
 
 ldns_status
 ldns_dnssec_zone_create_nsecs(ldns_dnssec_zone *zone,
-						ldns_rr_list *new_rrs)
+                              ldns_rr_list *new_rrs)
 {
 
 	ldns_rbnode_t *first_node, *cur_node, *next_node;
 	ldns_dnssec_name *cur_name, *next_name;
 	ldns_rr *nsec_rr;
-
+	uint32_t nsec_ttl;
+	ldns_dnssec_rrsets *soa;
+	
+	/* the TTL of NSEC rrs should be set to the minimum TTL of
+	 * the zone SOA (RFC4035 Section 2.3)
+	 */
+	soa = ldns_dnssec_name_find_rrset(zone->soa, LDNS_RR_TYPE_SOA);
+	
+	/* did the caller actually set it? if not,
+	 * fall back to default ttl
+	 */
+	if (soa && soa->rrs && soa->rrs->rr) {
+		nsec_ttl = ldns_rdf2native_int32(ldns_rr_rdf(
+		                                     soa->rrs->rr, 6));
+	} else {
+		nsec_ttl = LDNS_DEFAULT_TTL;
+	}
+	
 	first_node = ldns_dnssec_name_node_next_nonglue(
 			       ldns_rbtree_first(zone->names));
 	cur_node = first_node;
@@ -531,8 +548,9 @@ ldns_dnssec_zone_create_nsecs(ldns_dnssec_zone *zone,
 		cur_name = (ldns_dnssec_name *)cur_node->data;
 		next_name = (ldns_dnssec_name *)next_node->data;
 		nsec_rr = ldns_dnssec_create_nsec(cur_name,
-								    next_name,
-								    LDNS_RR_TYPE_NSEC);
+		                                  next_name,
+		                                  LDNS_RR_TYPE_NSEC);
+		ldns_rr_set_ttl(nsec_rr, nsec_ttl);
 		ldns_dnssec_name_add_rr(cur_name, nsec_rr);
 		ldns_rr_list_push_rr(new_rrs, nsec_rr);
 		cur_node = next_node;
@@ -546,8 +564,9 @@ ldns_dnssec_zone_create_nsecs(ldns_dnssec_zone *zone,
 		cur_name = (ldns_dnssec_name *)cur_node->data;
 		next_name = (ldns_dnssec_name *)first_node->data;
 		nsec_rr = ldns_dnssec_create_nsec(cur_name,
-								    next_name,
-								    LDNS_RR_TYPE_NSEC);
+		                                  next_name,
+		                                  LDNS_RR_TYPE_NSEC);
+		ldns_rr_set_ttl(nsec_rr, nsec_ttl);
 		ldns_dnssec_name_add_rr(cur_name, nsec_rr);
 		ldns_rr_list_push_rr(new_rrs, nsec_rr);
 	} else {
@@ -555,6 +574,79 @@ ldns_dnssec_zone_create_nsecs(ldns_dnssec_zone *zone,
 	}
 
 	return LDNS_STATUS_OK;
+}
+
+ldns_status
+ldns_dnssec_zone_create_nsec3s(ldns_dnssec_zone *zone,
+						 ldns_rr_list *new_rrs,
+						 uint8_t algorithm,
+						 uint8_t flags,
+						 uint16_t iterations,
+						 uint8_t salt_length,
+						 uint8_t *salt)
+{
+	ldns_rbnode_t *first_name_node;
+	ldns_rbnode_t *current_name_node;
+	ldns_dnssec_name *current_name;
+	ldns_status result = LDNS_STATUS_OK;
+	ldns_rr *nsec_rr;
+	ldns_rr_list *nsec3_list;
+	uint32_t nsec_ttl;
+	ldns_dnssec_rrsets *soa;
+	
+	if (!zone || !new_rrs || !zone->names) {
+		return LDNS_STATUS_ERR;
+	}
+	
+	/* the TTL of NSEC rrs should be set to the minimum TTL of
+	 * the zone SOA (RFC4035 Section 2.3)
+	 */
+	soa = ldns_dnssec_name_find_rrset(zone->soa, LDNS_RR_TYPE_SOA);
+	
+	/* did the caller actually set it? if not,
+	 * fall back to default ttl
+	 */
+	if (soa && soa->rrs && soa->rrs->rr) {
+		nsec_ttl = ldns_rdf2native_int32(ldns_rr_rdf(
+		                                     soa->rrs->rr, 6));
+	} else {
+		nsec_ttl = LDNS_DEFAULT_TTL;
+	}
+
+	nsec3_list = ldns_rr_list_new();
+
+	first_name_node = ldns_dnssec_name_node_next_nonglue(
+					  ldns_rbtree_first(zone->names));
+	
+	current_name_node = first_name_node;
+
+	while (current_name_node &&
+		  current_name_node != LDNS_RBTREE_NULL) {
+		current_name = (ldns_dnssec_name *) current_name_node->data;
+		nsec_rr = ldns_dnssec_create_nsec3(current_name,
+									NULL,
+								     zone->soa->name,
+									algorithm,
+									flags,
+									iterations,
+									salt_length,
+									salt);
+		ldns_rr_set_ttl(nsec_rr, nsec_ttl);
+		ldns_dnssec_name_add_rr(current_name, nsec_rr);
+		ldns_rr_list_push_rr(new_rrs, nsec_rr);
+		ldns_rr_list_push_rr(nsec3_list, nsec_rr);
+		current_name_node = ldns_dnssec_name_node_next_nonglue(
+						    ldns_rbtree_next(current_name_node));
+	}
+
+	ldns_rr_list_sort_nsec3(nsec3_list);
+	ldns_dnssec_chain_nsec3_list(nsec3_list);
+	if (result != LDNS_STATUS_OK) {
+		return result;
+	}
+	
+	ldns_rr_list_free(nsec3_list);
+	return result;
 }
 
 ldns_dnssec_rrs *
