@@ -457,8 +457,7 @@ ldns_dnssec_zone_mark_glue(ldns_dnssec_zone *zone)
 	while (cur_node != LDNS_RBTREE_NULL) {
 		cur_name = (ldns_dnssec_name *) cur_node->data;
 		cur_node = ldns_rbtree_next(cur_node);
-
-		if (cur_name->rrsets && !cur_name->rrsets->next &&
+		if (cur_name->rrsets && 
 		    (cur_name->rrsets->type == LDNS_RR_TYPE_A ||
 			cur_name->rrsets->type == LDNS_RR_TYPE_AAAA
 			)) {
@@ -470,6 +469,11 @@ ldns_dnssec_zone_mark_glue(ldns_dnssec_zone *zone)
 				if (ldns_dnssec_zone_find_rrset(zone,
 										  cur_owner,
 										  LDNS_RR_TYPE_NS)) {
+					/*
+					fprintf(stderr, "[XX] Marking as glue: ");
+					ldns_rdf_print(stderr, cur_name->name);
+					fprintf(stderr, "\n");
+					*/
 					cur_name->is_glue = true;
 				}
 				cur_parent = ldns_dname_left_chop(cur_owner);
