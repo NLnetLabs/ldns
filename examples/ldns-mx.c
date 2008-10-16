@@ -1,6 +1,6 @@
 /*
- * mx is a small programs that prints out the mx records
- * for a particulary domain
+ * mx is a small program that prints out the mx records
+ * for a particular domain
  * (c) NLnet Labs, 2005 - 2008
  * See the file LICENSE for the license
  */
@@ -49,7 +49,7 @@ main(int argc, char *argv[])
 		exit(EXIT_FAILURE);
 	}
 
-	/* use the resolver to send it a query for the mx 
+	/* use the resolver to send a query for the mx 
 	 * records of the domain given on the command line
 	 */
 	p = ldns_resolver_query(res,

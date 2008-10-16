@@ -644,7 +644,9 @@ ldns_dnssec_create_nsec_bitmap(ldns_rr_type rr_type_list[],
 }
 
 ldns_rr *
-ldns_dnssec_create_nsec(ldns_dnssec_name *from, ldns_dnssec_name *to, ldns_rr_type nsec_type)
+ldns_dnssec_create_nsec(ldns_dnssec_name *from,
+                        ldns_dnssec_name *to,
+                        ldns_rr_type nsec_type)
 {
 	ldns_rr *nsec_rr;
 	ldns_rr_type types[1024];

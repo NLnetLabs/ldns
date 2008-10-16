@@ -743,10 +743,10 @@ ldns_dnssec_remove_signatures(ldns_dnssec_rrs *signatures,
 
 ldns_status
 ldns_dnssec_zone_create_rrsigs(ldns_dnssec_zone *zone,
-						 ldns_rr_list *new_rrs,
-						 ldns_key_list *key_list,
-						 int (*func)(ldns_rr *, void*),
-						 void *arg)
+                               ldns_rr_list *new_rrs,
+                               ldns_key_list *key_list,
+                               int (*func)(ldns_rr *, void*),
+                               void *arg)
 {
 	ldns_status result = LDNS_STATUS_OK;
 

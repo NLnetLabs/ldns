@@ -640,7 +640,7 @@ main(int argc, char *argv[])
 #endif
 
 	signed_zone = ldns_dnssec_zone_new();
-    	if (ldns_dnssec_zone_add_rr(signed_zone, ldns_zone_soa(orig_zone)) !=
+	if (ldns_dnssec_zone_add_rr(signed_zone, ldns_zone_soa(orig_zone)) !=
 	    LDNS_STATUS_OK) {
 		fprintf(stderr, "Error adding SOA to dnssec zone, skipping record\n");
 	}
