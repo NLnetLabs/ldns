@@ -730,10 +730,10 @@ ldns_dnssec_create_nsec3(ldns_dnssec_name *from,
 		ldns_rr_set_rdf(nsec_rr, NULL, 4);
 	}
 
-	ldns_rr_set_rdf(nsec_rr,
-				 ldns_dnssec_create_nsec_bitmap(types,
-										  type_count,
-										  LDNS_RR_TYPE_NSEC3), 5);
+	ldns_rr_push_rdf(nsec_rr,
+	                 ldns_dnssec_create_nsec_bitmap(types,
+	                 type_count,
+	                 LDNS_RR_TYPE_NSEC3));
 
 	return nsec_rr;
 }
@@ -1003,6 +1003,7 @@ ldns_create_nsec3(ldns_rdf *cur_owner,
 	uint16_t cur_data_size = 0;
 
 	ldns_status status;
+
 	
 	hashed_owner = ldns_nsec3_hash_name(cur_owner,
 								 algorithm,
@@ -1110,11 +1111,10 @@ ldns_create_nsec3(ldns_rdf *cur_owner,
 		cur_data_size += cur_window_max + 3;
 	}
 
-	ldns_rr_set_rdf(nsec,
-				 ldns_rdf_new_frm_data(LDNS_RDF_TYPE_NSEC,
-								   cur_data_size,
-								   data),
-				 5);
+	ldns_rr_push_rdf(nsec,
+	                 ldns_rdf_new_frm_data(LDNS_RDF_TYPE_NSEC,
+	                                       cur_data_size,
+	                                       data));
 
 	LDNS_FREE(bitmap);
 	LDNS_FREE(data);

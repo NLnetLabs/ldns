@@ -566,7 +566,7 @@ ldns_rr_new_frm_fp(ldns_rr **newrr, FILE *fp, uint32_t *ttl, ldns_rdf **origin, 
 ldns_status
 ldns_rr_new_frm_fp_l(ldns_rr **newrr, FILE *fp, uint32_t *default_ttl, ldns_rdf **origin, ldns_rdf **prev, int *line_nr)
 {
-        char *line;
+	char *line;
 	const char *endptr;  /* unused */
 	ldns_rr *rr;
 	char *keyword;
@@ -582,20 +582,20 @@ ldns_rr_new_frm_fp_l(ldns_rr **newrr, FILE *fp, uint32_t *default_ttl, ldns_rdf 
 		ttl = 0;
 	}
 
-        line = LDNS_XMALLOC(char, LDNS_MAX_LINELEN + 1);
-        if (!line) {
-                return LDNS_STATUS_MEM_ERR;
-        }
+	line = LDNS_XMALLOC(char, LDNS_MAX_LINELEN + 1);
+	if (!line) {
+		return LDNS_STATUS_MEM_ERR;
+	}
 
-        /* read an entire line in from the file */
-        if ((size = ldns_fget_token_l(fp, line, LDNS_PARSE_SKIP_SPACE, LDNS_MAX_LINELEN, line_nr)) == -1) {
+	/* read an entire line in from the file */
+	if ((size = ldns_fget_token_l(fp, line, LDNS_PARSE_SKIP_SPACE, LDNS_MAX_LINELEN, line_nr)) == -1) {
 		LDNS_FREE(line);
 		/* if last line was empty, we are now at feof, which is not
 		 * always a parse error (happens when for instance last line
 		 * was a comment)
 		 */
-                return LDNS_STATUS_SYNTAX_ERR;
-        }
+		return LDNS_STATUS_SYNTAX_ERR;
+	}
 
 	/* we can have the situation, where we've read ok, but still got
 	 * no bytes to play with, in this case size is 0 
@@ -617,7 +617,7 @@ ldns_rr_new_frm_fp_l(ldns_rr **newrr, FILE *fp, uint32_t *default_ttl, ldns_rdf 
 			return LDNS_STATUS_SYNTAX_DNAME_ERR;
 		}
 		*origin = tmp;
-		s = LDNS_STATUS_SYNTAX_ORIGIN;		
+		s = LDNS_STATUS_SYNTAX_ORIGIN;
 	} else if ((keyword = strstr(line, "$TTL "))) {
 		if (default_ttl) {
 			*default_ttl = ldns_str2period(keyword + 5, &endptr);
