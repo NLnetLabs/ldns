@@ -30,6 +30,7 @@ usage(int argc, char **argv)
 	printf("       -i - print inserted\n");
 	printf("       -d - print deleted\n");
 	printf("       -c - print changed\n");
+	printf("       -a - print all differences (-i -d -c)\n");
 	printf("       -z - do not sort zones\n");
 }
 
@@ -52,7 +53,7 @@ main(int argc, char **argv)
         bool		sort = true;
 	char		op = 0;
 
-	while ((c = getopt(argc, argv, "hvdicz")) != -1) {
+	while ((c = getopt(argc, argv, "ahvdicz")) != -1) {
 		switch (c) {
 		case 'h':
 			usage(argc, argv);
@@ -75,6 +76,11 @@ main(int argc, char **argv)
 			opt_inserted = true;
 			break;
 		case 'c':
+			opt_changed = true;
+			break;
+		case 'a':
+			opt_deleted = true;
+			opt_inserted = true;
 			opt_changed = true;
 			break;
 		}
