@@ -97,8 +97,8 @@ ldns_nsec_get_bitmap(ldns_rr *nsec) {
 /* this is NOT the hash, but the original name! */
 ldns_rdf *
 ldns_dnssec_nsec3_closest_encloser(ldns_rdf *qname,
-							ATTR_UNUSED(ldns_rr_type qtype),
-							ldns_rr_list *nsec3s)
+                                   ATTR_UNUSED(ldns_rr_type qtype),
+                                   ldns_rr_list *nsec3s)
 {
 	/* remember parameters, they must match */
 	uint8_t algorithm;
@@ -119,6 +119,7 @@ ldns_dnssec_nsec3_closest_encloser(ldns_rdf *qname,
 	size_t nsec_i;
 	ldns_rr *nsec;
 	ldns_rdf *result = NULL;
+	qtype = qtype;
 	
 	if (!qname || !nsec3s || ldns_rr_list_rr_count(nsec3s) < 1) {
 		return NULL;

@@ -138,7 +138,7 @@ ldns_str2rdf_nsec3_salt(ldns_rdf **rd, const char *salt_str)
 	
 	salt = LDNS_XMALLOC(uint8_t, salt_length / 2);
 	for (c = 0; c < salt_length; c += 2) {
-		if (isxdigit(salt_str[c]) && isxdigit(salt_str[c+1])) {
+		if (isxdigit((int) salt_str[c]) && isxdigit((int) salt_str[c+1])) {
 			salt[c/2] = (uint8_t) ldns_hexdigit_to_int(salt_str[c]) * 16 +
 					  ldns_hexdigit_to_int(salt_str[c+1]);
 		} else {
@@ -361,9 +361,9 @@ ldns_str2rdf_str(ldns_rdf **rd, const char *str)
 	for (str_i = 0; str_i < strlen(str); str_i++) {
 		if (str[str_i] == '\\') {
 			if(str_i + 3 < strlen(str) && 
-			   isdigit(str[str_i + 1]) &&
-			   isdigit(str[str_i + 2]) &&
-			   isdigit(str[str_i + 3])) {
+			   isdigit((int) str[str_i + 1]) &&
+			   isdigit((int) str[str_i + 2]) &&
+			   isdigit((int) str[str_i + 3])) {
 				val = (uint8_t) ldns_hexdigit_to_int((char) str[str_i + 1]) * 100 +
 				                ldns_hexdigit_to_int((char) str[str_i + 2]) * 10 +
 				                ldns_hexdigit_to_int((char) str[str_i + 3]);
@@ -538,13 +538,13 @@ ldns_str2rdf_hex(ldns_rdf **rd, const char *str)
                 /* Now process octet by octet... */
                 while (*str) {
 			*t = 0;
-			if (isspace(*str)) {
+			if (isspace((int) *str)) {
 				str++;
 			} else {
 				for (i = 16; i >= 1; i -= 15) {
-					while (*str && isspace(*str)) { str++; }
+					while (*str && isspace((int) *str)) { str++; }
 					if (*str) {
-						if (isxdigit(*str)) {
+						if (isxdigit((int) *str)) {
 							*t += ldns_hexdigit_to_int(*str) * i;
 						} else {
 							return LDNS_STATUS_ERR;
@@ -801,17 +801,17 @@ ldns_str2rdf_loc(ldns_rdf **rd, const char *str)
 	char *my_str = (char *) str;
 
 	/* only support version 0 */
-	if (isdigit(*my_str)) {
+	if (isdigit((int) *my_str)) {
 		h = (uint32_t) strtol(my_str, &my_str, 10);
 	} else {
 		return LDNS_STATUS_INVALID_STR;
 	}
 
-	while (isblank(*my_str)) {
+	while (isblank((int) *my_str)) {
 		my_str++;
 	}
 
-	if (isdigit(*my_str)) {
+	if (isdigit((int) *my_str)) {
 		m = (uint32_t) strtol(my_str, &my_str, 10);
 	} else if (*my_str == 'N' || *my_str == 'S') {
 		goto north;
@@ -819,15 +819,15 @@ ldns_str2rdf_loc(ldns_rdf **rd, const char *str)
 		return LDNS_STATUS_INVALID_STR;
 	}
 
-	while (isblank(*my_str)) {
+	while (isblank((int) *my_str)) {
 		my_str++;
 	}
 
-	if (isdigit(*my_str)) {
+	if (isdigit((int) *my_str)) {
 		s = strtod(my_str, &my_str);
 	}
 north:
-	while (isblank(*my_str)) {
+	while (isblank((int) *my_str)) {
 		my_str++;
 	}
 
@@ -857,17 +857,17 @@ north:
 		my_str++;
 	}
 
-	if (isdigit(*my_str)) {
+	if (isdigit((int) *my_str)) {
 		h = (uint32_t) strtol(my_str, &my_str, 10);
 	} else {
 		return LDNS_STATUS_INVALID_STR;
 	}
 
-	while (isblank(*my_str)) {
+	while (isblank((int) *my_str)) {
 		my_str++;
 	}
 
-	if (isdigit(*my_str)) {
+	if (isdigit((int) *my_str)) {
 		m = (uint32_t) strtol(my_str, &my_str, 10);
 	} else if (*my_str == 'E' || *my_str == 'W') {
 		goto east;
@@ -879,7 +879,7 @@ north:
 		my_str++;
 	}
 
-	if (isdigit(*my_str)) {
+	if (isdigit((int) *my_str)) {
 		s = strtod(my_str, &my_str);
 	}
 

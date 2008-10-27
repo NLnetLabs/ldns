@@ -43,6 +43,7 @@
 
 #include <ldns/config.h>
 #include <ldns/rbtree.h>
+#include <stdlib.h>
 
 /** Node colour black */
 #define	BLACK	0

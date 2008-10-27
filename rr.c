@@ -180,7 +180,7 @@ ldns_rr_new_frm_str_internal(ldns_rr **newrr, const char *str,
 	}
 	ttl_val = (uint32_t) strtol(ttl, NULL, 10);
 
-	if (strlen(ttl) > 0 && !isdigit(ttl[0])) {
+	if (strlen(ttl) > 0 && !isdigit((int) ttl[0])) {
 		/* ah, it's not there or something */
 		if (default_ttl == 0) {
 			ttl_val = LDNS_DEFAULT_TTL;

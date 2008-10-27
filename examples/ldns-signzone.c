@@ -360,7 +360,7 @@ main(int argc, char *argv[])
 			nsec3_salt_length = (uint8_t) strlen(optarg) / 2;
 			nsec3_salt = LDNS_XMALLOC(uint8_t, nsec3_salt_length);
 			for (c = 0; c < (int) strlen(optarg); c += 2) {
-				if (isxdigit(optarg[c]) && isxdigit(optarg[c+1])) {
+				if (isxdigit((int) optarg[c]) && isxdigit((int) optarg[c+1])) {
 					nsec3_salt[c/2] = (uint8_t) ldns_hexdigit_to_int(optarg[c]) * 16 +
 						ldns_hexdigit_to_int(optarg[c+1]);
 				} else {
