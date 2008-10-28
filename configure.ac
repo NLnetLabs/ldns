@@ -60,18 +60,18 @@ AC_CACHE_VAL(cv_prog_cc_flag_needed_$cache,
 [
 echo '$2' > conftest.c
 echo 'void f(){}' >>conftest.c
-if test -z "`$CC $CFLAGS -Werror -Wall -c conftest.c 2>&1`"; then
+if test -z "`$CC -Werror -Wall $CFLAGS -c conftest.c 2>&1`"; then
 eval "cv_prog_cc_flag_needed_$cache=no"
 else
 [
-if test -z "`$CC $CFLAGS $1 -Werror -Wall -c conftest.c 2>&1`"; then
+if test -z "`$CC $1 -Werror -Wall $CFLAGS -c conftest.c 2>&1`"; then
 eval "cv_prog_cc_flag_needed_$cache=yes"
 else
 eval "cv_prog_cc_flag_needed_$cache=fail"
 #echo 'Test with flag fails too!'
 #cat conftest.c
-#echo "$CC $CFLAGS $1 -Werror -Wall -c conftest.c 2>&1"
-#echo `$CC $CFLAGS $1 -Werror -Wall -c conftest.c`
+#echo "$CC $1 -Werror -Wall $CFLAGS -c conftest.c 2>&1"
+#echo `$CC $1 -Werror -Wall $CFLAGS -c conftest.c`
 #exit 1
 fi
 ]
@@ -91,10 +91,10 @@ else
 AC_MSG_RESULT(failed)
 :
 #cat conftest.c
-#echo "$CC $CFLAGS -Werror -Wall -c conftest.c"
-#echo `$CC $CFLAGS -Werror -Wall -c conftest.c`
-#echo "$CC $CFLAGS $1 -Werror -Wall -c conftest.c"
-#echo `$CC $CFLAGS $1 -Werror -Wall -c conftest.c`
+#echo "$CC -Werror -Wall $CFLAGS -c conftest.c"
+#echo `$CC -Werror -Wall $CFLAGS -c conftest.c`
+#echo "$CC $1 -Werror -Wall $CFLAGS -c conftest.c"
+#echo `$CC $1 -Werror -Wall $CFLAGS -c conftest.c`
 $5
 
 fi
@@ -105,11 +105,11 @@ fi
 # Checks for typedefs, structures, and compiler characteristics.
 AC_C_CONST
 AC_LANG_C
-CHECK_COMPILER_FLAG(g, [CFLAGS="$CFLAGS -g"])
-CHECK_COMPILER_FLAG(O2, [CFLAGS="$CFLAGS -O2"])
-CHECK_COMPILER_FLAG(Wall, [CFLAGS="$CFLAGS -Wall"])
-CHECK_COMPILER_FLAG(W, [CFLAGS="$CFLAGS -W"])
-CHECK_COMPILER_FLAG(Wwrite-strings, [CFLAGS="$CFLAGS -Wwrite-strings"])
+CHECK_COMPILER_FLAG(g, [CFLAGS="-g $CFLAGS"])
+CHECK_COMPILER_FLAG(O2, [CFLAGS="-O2 $CFLAGS"])
+CHECK_COMPILER_FLAG(Wall, [CFLAGS="-Wall $CFLAGS"])
+CHECK_COMPILER_FLAG(W, [CFLAGS="-W $CFLAGS"])
+CHECK_COMPILER_FLAG(Wwrite-strings, [CFLAGS="-Wwrite-strings $CFLAGS"])
 
 AC_CHECK_HEADERS([getopt.h time.h],,, [AC_INCLUDES_DEFAULT])
 
