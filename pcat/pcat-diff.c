@@ -400,7 +400,7 @@ usage(FILE *fp)
  
 int file_filter(const struct dirent *f)
 {
-	char *filename = f->d_name;
+	char *filename = (char *) f->d_name;
 	char *dot;
 	
 	if (strncmp(filename, ".", 2) != 0 &&
