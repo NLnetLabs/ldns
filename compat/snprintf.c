@@ -526,7 +526,7 @@ static long double abs_val (long double value)
   return result;
 }
 
-static long double pow10 (int exp)
+static double pow10 (double exp)
 {
   long double result = 1;
 

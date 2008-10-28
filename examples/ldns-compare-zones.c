@@ -43,7 +43,7 @@ main(int argc, char **argv)
 	ldns_status	s;
 	size_t		i      , j;
 	ldns_rr_list   *rrl1, *rrl2;
-	int		rr_cmp    , rr_chg;
+	int		rr_cmp, rr_chg = 0;
 	ldns_rr        *rr1 = NULL, *rr2 = NULL, *rrx = NULL;
 	int		line_nr1 = 0, line_nr2 = 0;
 	size_t		rrc1   , rrc2;
