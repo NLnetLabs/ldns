@@ -368,7 +368,7 @@ ldns_rdf2buffer_str_b64(ldns_buffer *output, const ldns_rdf *rdf)
 	}
 	LDNS_FREE(b64);
 	return ldns_buffer_status(output);
-}	
+}
 
 ldns_status
 ldns_rdf2buffer_str_b32_ext(ldns_buffer *output, const ldns_rdf *rdf)
@@ -1059,7 +1059,6 @@ ldns_rr2buffer_str(ldns_buffer *output, const ldns_rr *rr)
 {
 	uint16_t i, flags;
 	ldns_status status = LDNS_STATUS_OK;
-
 	if (!rr) {
 		ldns_buffer_printf(output, "(null)\n");
 	} else {
@@ -1091,7 +1090,7 @@ ldns_rr2buffer_str(ldns_buffer *output, const ldns_rr *rr)
 			status = ldns_rdf2buffer_str(output, ldns_rr_rdf(rr, i));
 			if (i < ldns_rr_rd_count(rr) - 1) {
 				ldns_buffer_printf(output, " ");
-			} 
+			}
 		}
 		/* per RR special comments - handy for DNSSEC types */
 		/* check to prevent question sec. rr from
@@ -1712,7 +1711,6 @@ ldns_rr2str(const ldns_rr *rr)
 		/* export and return string, destroy rest */
 		result = ldns_buffer2str(tmp_buffer);
 	}
-	
 	ldns_buffer_free(tmp_buffer);
 	return result;
 }

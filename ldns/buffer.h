@@ -26,7 +26,7 @@
  * number of initial bytes in buffer of
  * which we cannot tell the size before hand
  */
-#define LDNS_MIN_BUFLEN	256
+#define LDNS_MIN_BUFLEN	512
 
 /**
  * \file buffer.h
