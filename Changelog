@@ -1,5 +1,5 @@
 
-1.3.x
+1.4.0
 	Bug fixes:
 	* sig chase return code fix (patch from Rafael Justo, bug id 189)
 	* rdata.c memory leaks on error and allocation checks fixed (patch
@@ -35,7 +35,7 @@
 	* DLS RR type added
 	* TCP fallback system has been improved
 	* HMAC-SHA256 TSIG support has been added.
-	* TTLS are now correcly set in NSEC(3) recordswhen signing zones
+	* TTLS are now correcly set in NSEC(3) records when signing zones
 	
 	EXAMPLE TOOLS:
 	* New example: ldns-revoke to revoke DNSKEYs according to RFC5011
@@ -45,7 +45,8 @@
 	                NSEC3
 	* ldns-keygen can create HMAC-SHA1 and HMAC-SHA256 symmetric keys
 	* ldns-walk output has been fixed
-	* ldns-compare-zones has been fixed
+	* ldns-compare-zones has been fixed, and now has an option
+	  to show all differences (-a)
 	* ldns-read-zone now has an option to print DNSSEC records only
 
 1.3
