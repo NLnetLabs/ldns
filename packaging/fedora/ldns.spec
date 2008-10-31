@@ -1,13 +1,14 @@
 Summary: Lowlevel DNS(SEC) library with API
 Name: ldns
-Version: 1.3.0
+Version: 1.4.0
 Release: 1%{?dist}
 License: BSD
 Url: http://www.nlnetlabs.nl/%{name}/
 Source: http://www.nlnetlabs.nl/downloads/%{name}-%{version}.tar.gz
 Group: System Environment/Libraries
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
-BuildRequires: libtool, autoconf, automake, gcc-c++, openssl-devel, doxygen, perl libpcap-devel
+BuildRequires: libtool, autoconf, automake, gcc-c++, openssl-devel, doxygen,
+BuildRequires: perl libpcap-devel
 
 %description
 ldns is a library with the aim to simplify DNS programing in C. All
@@ -30,7 +31,7 @@ The devel package contains the ldns library and the include files
 #libtoolize
 #autoreconf
 
-%configure --disable-rpath
+%configure --disable-rpath --with-sha2
 
 %build
 
@@ -84,8 +85,20 @@ rm -rf %{buildroot}
 %postun -p /sbin/ldconfig
 
 %changelog
+* Thu Oct 30 2008 Paul Wouters <paul@xelerance.com> - 1.4.0-1
+- Updated to 1.4.0
+
+* Wed May 28 2008 Paul Wouters <paul@xelerance.com> - 1.3.0-3
+- enable SHA2 functionality
+
+* Wed May 28 2008 Paul Wouters <paul@xelerance.com> - 1.3.0-2
+- re-tag (don't do builds while renaming local repo dirs)
+
 * Wed May 28 2008 Paul Wouters <paul@xelerance.com> - 1.3.0-1
 - Updated to latest release
+
+* Tue Feb 19 2008 Fedora Release Engineering <rel-eng@fedoraproject.org> - 1.2.2-3
+- Autorebuild for GCC 4.3
 
 * Wed Dec  5 2007 Paul Wouters <paul@xelerance.com> - 1.2.2-2
 - Rebuild for new libcrypto
