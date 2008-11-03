@@ -273,7 +273,7 @@ AC_ARG_WITH(ldns,
 	[
 		specialldnsdir="$withval"
 		CPPFLAGS="$CPPFLAGS -I$withval/include"
-		LDFLAGS="$LDFLAGS -L$withval -L$withval/lib"
+		LDFLAGS="-L$withval -L$withval/lib $LDFLAGS"
 		LDNSDIR="$withval"
 		LIBS="-lldns $LIBS"
 		LIBS_STC="$withval/lib/libldns.a $LIBS_STC"
@@ -288,7 +288,7 @@ if test -f $ldns_dev_dir/ldns/util.h && \
 	ldns_version=`grep LDNS_VERSION $ldns_dev_dir/ldns/util.h | sed -e 's/^.*"\(.*\)".*$/\1/'`
 	AC_MSG_RESULT([using $ldns_dev_dir with $ldns_version])
 	CPPFLAGS="$CPPFLAGS -I$ldns_dev_dir/include"
-	LDFLAGS="$LDFLAGS -L$ldns_dev_dir -L$ldns_dev_dir/lib"
+	LDFLAGS="-L$ldns_dev_dir -L$ldns_dev_dir/lib $LDFLAGS"
 	LIBS="-lldns $LIBS"
 	AC_DEFINE(HAVE_LIBLDNS, 1, [If the ldns library is available.])
 	LDNSDIR="$ldns_dev_dir"
