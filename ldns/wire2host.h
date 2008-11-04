@@ -158,7 +158,7 @@ ldns_status ldns_wire2dname(ldns_rdf **dname, const uint8_t *wire, size_t max, s
  * The length of the wiredata of these rdfs is added to the *pos value.
  *
  * All rdfs belonging to the RR are read; the rr should have no rdfs
- * yet. An error is returned if yhe format cannot be parsed.
+ * yet. An error is returned if the format cannot be parsed.
  *
  * \param[in] rr pointer to the ldns_rr structure to hold the rdata value
  * \param[in] wire pointer to the buffer with the data
