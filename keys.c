@@ -186,7 +186,7 @@ ldns_key_new_frm_fp_l(ldns_key **key, FILE *fp, int *line_nr)
 #ifdef USE_SHA2
 		alg = LDNS_SIGN_RSASHA512;
 #else
-		fprintf(stderr, "Warning: SHA256 not compiled into this ");
+		fprintf(stderr, "Warning: SHA512 not compiled into this ");
 		fprintf(stderr, "version of ldns\n");
 #endif
 	}
@@ -194,7 +194,7 @@ ldns_key_new_frm_fp_l(ldns_key **key, FILE *fp, int *line_nr)
 #ifdef USE_SHA2
 		alg = LDNS_SIGN_RSASHA512_NSEC3;
 #else
-		fprintf(stderr, "Warning: SHA256 not compiled into this ");
+		fprintf(stderr, "Warning: SHA512 not compiled into this ");
 		fprintf(stderr, "version of ldns\n");
 #endif
 	}

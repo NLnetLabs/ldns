@@ -32,7 +32,7 @@
 	LIBRARY FEATURES:
 	* DS RRs string representation now add bubblebabble in a comment
 	  (patch from Jakob Schlyter)
-	* DLS RR type added
+	* DLV RR type added
 	* TCP fallback system has been improved
 	* HMAC-SHA256 TSIG support has been added.
 	* TTLS are now correcly set in NSEC(3) records when signing zones
