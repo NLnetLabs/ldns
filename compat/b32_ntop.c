@@ -301,8 +301,20 @@ ldns_b32_ntop(uint8_t const *src, size_t srclength, char *target, size_t targsiz
 	return ldns_b32_ntop_ar(src, srclength, target, targsize, Base32);
 }
 
+/* deprecated, here for backwards compatibility */
+int
+b32_ntop(uint8_t const *src, size_t srclength, char *target, size_t targsize) {
+	return ldns_b32_ntop_ar(src, srclength, target, targsize, Base32);
+}
+
 int
 ldns_b32_ntop_extended_hex(uint8_t const *src, size_t srclength, char *target, size_t targsize) {
+	return ldns_b32_ntop_ar(src, srclength, target, targsize, Base32_extended_hex);
+}
+
+/* deprecated, here for backwards compatibility */
+int
+b32_ntop_extended_hex(uint8_t const *src, size_t srclength, char *target, size_t targsize) {
 	return ldns_b32_ntop_ar(src, srclength, target, targsize, Base32_extended_hex);
 }
 

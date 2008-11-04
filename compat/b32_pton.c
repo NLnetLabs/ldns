@@ -368,9 +368,22 @@ ldns_b32_pton(char const *src, size_t hashed_owner_str_len, uint8_t *target, siz
 	return ldns_b32_pton_ar(src, hashed_owner_str_len, target, targsize, Base32);
 }
 
+/* deprecated, here for backwards compatibility */
+int
+b32_pton(char const *src, size_t hashed_owner_str_len, uint8_t *target, size_t targsize)
+{
+	return ldns_b32_pton_ar(src, hashed_owner_str_len, target, targsize, Base32);
+}
+
 int
 ldns_b32_pton_extended_hex(char const *src, size_t hashed_owner_str_len, uint8_t *target, size_t targsize)
 {
 	return ldns_b32_pton_ar(src, hashed_owner_str_len, target, targsize, Base32_extended_hex);
 }
 
+/* deprecated, here for backwards compatibility */
+int
+b32_pton_extended_hex(char const *src, size_t hashed_owner_str_len, uint8_t *target, size_t targsize)
+{
+	return ldns_b32_pton_ar(src, hashed_owner_str_len, target, targsize, Base32_extended_hex);
+}
