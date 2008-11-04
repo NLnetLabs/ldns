@@ -1036,25 +1036,6 @@ ldns_key_deep_free(ldns_key *key)
 	if (ldns_key_pubkey_owner(key)) {
 		ldns_rdf_deep_free(ldns_key_pubkey_owner(key));
 	}
-/*
-	switch(ldns_key_algorithm(key)) {
-	case LDNS_SIGN_RSASHA1:
-	case LDNS_SIGN_RSASHA1_NSEC3:
-	case LDNS_SIGN_RSAMD5:
-		if (ldns_key_rsa_key(key)) {
-			RSA_free(ldns_key_rsa_key(key));
-		}
-		break;
-	case LDNS_SIGN_DSA:
-	case LDNS_SIGN_DSA_NSEC3:
-		if (ldns_key_dsa_key(key)) {
-			DSA_free(ldns_key_dsa_key(key));
-		}
-		break;
-	case LDNS_SIGN_HMACMD5:
-		break;
-	}
-*/
 	if (ldns_key_evp_key(key)) {
 		EVP_PKEY_free(ldns_key_evp_key(key));
 	}
