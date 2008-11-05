@@ -319,30 +319,6 @@ main(int argc, char *argv[])
 					DRILL_OFF(qflags, LDNS_AD);
 				}
 				break;
-#if 0
-			case 'O':
-				if (strstr(optarg, "query")) {
-					opcode = LDNS_PACKET_QUERY;
-					break;
-				}
-				if (strstr(optarg, "iquery")) {
-					opcode = LDNS_PACKET_IQUERY;
-					break;
-				}
-				if (strstr(optarg, "status")) {
-					opcode = LDNS_PACKET_STATUS;
-					break;
-				}
-				if (strstr(optarg, "notify")) {
-					opcode = LDNS_PACKET_NOTIFY;
-					break;
-				}
-				if (strstr(optarg, "update")) {
-					opcode = LDNS_PACKET_UPDATE;
-					break;
-				}
-				break;
-#endif
 			case 'p':
 				qport = (uint16_t)atoi(optarg);
 				if (qport == 0) {
