@@ -416,6 +416,15 @@ include_sys_socket_h=''
   ]
 ])
 AC_SUBST(include_sys_socket_h)
+AC_CHECK_HEADER(inttypes.h,
+[
+include_inttypes_h='#include <inttypes.h>'
+AC_DEFINE(HAVE_INTTYPES_H, 1, [define if you have inttypes.h])
+],[
+include_inttypes_h=''
+],[AC_INCLUDES_DEFAULT
+])
+AC_SUBST(include_inttypes_h)
 
 AC_CHECK_TYPE(socklen_t, , 
 	[AC_DEFINE([socklen_t], [int], [Define to 'int' if not defined])], [

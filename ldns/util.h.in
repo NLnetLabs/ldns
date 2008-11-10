@@ -13,6 +13,7 @@
 #ifndef _UTIL_H
 #define _UTIL_H
 
+@include_inttypes_h@
 #include <stdbool.h>
 #include <time.h>
 #include <stdio.h>

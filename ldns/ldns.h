@@ -91,7 +91,6 @@ Or you can just use the menu above to browse through the API docs.
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <inttypes.h>
 
 #include <ldns/util.h>
 #include <ldns/buffer.h>
