@@ -1132,6 +1132,11 @@ ldns_rr2buffer_str(ldns_buffer *output, const ldns_rr *rr)
 						LDNS_FREE(babble);
 					}
 					break;
+				case LDNS_RR_TYPE_NSEC3:
+					if (ldns_nsec3_optout(rr)) {
+						ldns_buffer_printf(output, " ; flags: optout");
+					}
+					break;
 				default:
 					break;
 

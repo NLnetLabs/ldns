@@ -548,8 +548,8 @@ break;
 
 ldns_rdf *
 ldns_dnssec_create_nsec_bitmap(ldns_rr_type rr_type_list[],
-						 size_t size,
-						 ldns_rr_type nsec_type)
+                               size_t size,
+                               ldns_rr_type nsec_type)
 {
 	size_t i;
 	uint8_t *bitmap;
@@ -947,17 +947,19 @@ ldns_nsec3_add_param_rdfs(ldns_rr *rr,
 {
 	ldns_rdf *salt_rdf = NULL;
 	uint8_t *salt_data = NULL;
-	
+
 	ldns_rr_set_rdf(rr,
 				 ldns_rdf_new_frm_data(LDNS_RDF_TYPE_INT8,
 								   1,
 								   (void*)&algorithm),
 				 0);
+
 	ldns_rr_set_rdf(rr,
 				 ldns_rdf_new_frm_data(LDNS_RDF_TYPE_INT8,
 								   1,
 								   (void*)&flags),
 				 1);
+	
 	ldns_rr_set_rdf(rr,
 				 ldns_native2rdf_int16(LDNS_RDF_TYPE_INT16,
 								   iterations),
