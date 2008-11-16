@@ -623,41 +623,25 @@ main(int argc, char *argv[])
 		exit(EXIT_FAILURE);
 	}
 
-	/* walk through the keys, and add pubkeys to the orig zone */
-#if 0
-	for (key_i = 0; key_i < ldns_key_list_key_count(keys); key_i++) {
-		key = ldns_key_list_key(keys, key_i);
-		if (!ldns_key_pubkey_owner(key)) {
-			ldns_key_set_pubkey_owner(key, ldns_rdf_clone(origin));
-			pubkey = ldns_key2rr(key);
-			if (!key || !pubkey) {
-				fprintf(stderr, "Unknown key type; can't create public key RR. Aborting.\n");
-				exit(1);
-			}
-			ldns_key_set_flags(key, ldns_rdf2native_int16(ldns_rr_rdf(pubkey, 0)));
-			ldns_key_set_keytag(key, ldns_calc_keytag(pubkey));
-			/*ldns_zone_push_rr(orig_zone, pubkey);*/
-			printf("Derived DNSKEY RR:\n");
-			ldns_rr_print(stdout, pubkey);
-		}
-	}
-#endif
-
 	signed_zone = ldns_dnssec_zone_new();
 	if (ldns_dnssec_zone_add_rr(signed_zone, ldns_zone_soa(orig_zone)) !=
 	    LDNS_STATUS_OK) {
-		fprintf(stderr, "Error adding SOA to dnssec zone, skipping record\n");
+		fprintf(stderr,
+		  "Error adding SOA to dnssec zone, skipping record\n");
 	}
 
-	for (i = 0; i < ldns_rr_list_rr_count(ldns_zone_rrs(orig_zone)); i++) {
+	for (i = 0;
+	     i < ldns_rr_list_rr_count(ldns_zone_rrs(orig_zone));
+	     i++) {
 		if (ldns_dnssec_zone_add_rr(signed_zone, 
-							   ldns_rr_list_rr(ldns_zone_rrs(orig_zone), 
-										    i)) !=
+		         ldns_rr_list_rr(ldns_zone_rrs(orig_zone), 
+		         i)) !=
 		    LDNS_STATUS_OK) {
-			fprintf(stderr, "Error adding RR to dnssec zone");
+			fprintf(stderr,
+			        "Error adding RR to dnssec zone");
 			fprintf(stderr, ", skipping record:\n");
 			ldns_rr_print(stderr, 
-					    ldns_rr_list_rr(ldns_zone_rrs(orig_zone), i));
+			  ldns_rr_list_rr(ldns_zone_rrs(orig_zone), i));
 		}
 	}
 

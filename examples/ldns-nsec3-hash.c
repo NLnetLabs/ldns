@@ -116,5 +116,11 @@ main(int argc, char *argv[])
 		ldns_rdf_deep_free(hashed_dname);
 	}
 
+	if (nsec3_salt) {
+		free(nsec3_salt);
+	}
+
+	free(prog);
+	
 	return EXIT_SUCCESS;
 }

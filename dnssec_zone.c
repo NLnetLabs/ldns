@@ -666,7 +666,8 @@ ldns_dnssec_zone_add_empty_nonterminals(ldns_dnssec_zone *zone)
 	ldns_dnssec_name *cur_name;
 	ldns_dnssec_name *next_name;
 	ldns_rbnode_t *cur_node, *next_node, *new_node;
-
+	ldns_rdf *soa_dname;
+	
 	/* for the detection */
 	uint16_t j, cur_label_count, next_label_count;
 	ldns_rdf *l1, *l2, *post, *post2;
@@ -674,6 +675,9 @@ ldns_dnssec_zone_add_empty_nonterminals(ldns_dnssec_zone *zone)
 
 	if (!zone) {
 		return LDNS_STATUS_ERR;
+	}
+	if (zone->soa) {
+		soa_dname = ldns_dnssec_name_name(zone->soa);
 	}
 	cur_node = ldns_rbtree_first(zone->names);
 	while (cur_node != LDNS_RBTREE_NULL) {
@@ -703,7 +707,8 @@ ldns_dnssec_zone_add_empty_nonterminals(ldns_dnssec_zone *zone)
 			post = post2;
 
 			if (ldns_dname_compare(l1, l2) != 0 &&
-			    j < next_label_count) {
+			    j < next_label_count &&
+			    !ldns_dname_is_subdomain(soa_dname,post)) {
 				found_difference = true;
 				
 				new_name = ldns_dnssec_name_new();
@@ -712,6 +717,9 @@ ldns_dnssec_zone_add_empty_nonterminals(ldns_dnssec_zone *zone)
 				new_node = LDNS_MALLOC(ldns_rbnode_t);
 				new_node->key = new_name->name;
 				new_node->data = new_name;
+				printf("New empty nonterm: ");
+				ldns_rdf_print(stdout, new_name->name);
+				printf("\n");
 				ldns_rbtree_insert(zone->names, new_node);
 				//ldns_dnssec_zone_add_name(zone, new_name);
 			}
@@ -746,6 +754,9 @@ ldns_dnssec_zone_add_empty_nonterminals(ldns_dnssec_zone *zone)
 			new_node = LDNS_MALLOC(ldns_rbnode_t);
 			new_node->key = new_name->name;
 			new_node->data = new_name;
+			//printf("New empty nonterm2: ");
+			//ldns_rdf_print(stdout, new_name->name);
+			//printf("\n");
 			ldns_rbtree_insert(zone->names, new_node);
 		}
 		ldns_rdf_deep_free(post);

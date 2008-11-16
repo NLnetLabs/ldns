@@ -627,22 +627,22 @@ ldns_dnssec_zone_create_nsec3s(ldns_dnssec_zone *zone,
 	current_name_node = first_name_node;
 
 	while (current_name_node &&
-		  current_name_node != LDNS_RBTREE_NULL) {
+	       current_name_node != LDNS_RBTREE_NULL) {
 		current_name = (ldns_dnssec_name *) current_name_node->data;
 		nsec_rr = ldns_dnssec_create_nsec3(current_name,
-									NULL,
-								     zone->soa->name,
-									algorithm,
-									flags,
-									iterations,
-									salt_length,
-									salt);
+		                                   NULL,
+		                                   zone->soa->name,
+		                                   algorithm,
+		                                   flags,
+		                                   iterations,
+		                                   salt_length,
+		                                   salt);
 		ldns_rr_set_ttl(nsec_rr, nsec_ttl);
 		ldns_dnssec_name_add_rr(current_name, nsec_rr);
 		ldns_rr_list_push_rr(new_rrs, nsec_rr);
 		ldns_rr_list_push_rr(nsec3_list, nsec_rr);
 		current_name_node = ldns_dnssec_name_node_next_nonglue(
-						    ldns_rbtree_next(current_name_node));
+		                   ldns_rbtree_next(current_name_node));
 	}
 
 	ldns_rr_list_sort_nsec3(nsec3_list);
