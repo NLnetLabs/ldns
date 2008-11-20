@@ -637,6 +637,11 @@ ldns_dnssec_zone_create_nsec3s(ldns_dnssec_zone *zone,
 		                                   iterations,
 		                                   salt_length,
 		                                   salt);
+		/* by default, our nsec based generator adds rrsigs
+		 * remove the bitmap for empty nonterminals */
+		if (!current_name->rrsets) {
+			ldns_rdf_deep_free(ldns_rr_pop_rdf(nsec_rr));
+		}
 		ldns_rr_set_ttl(nsec_rr, nsec_ttl);
 		ldns_dnssec_name_add_rr(current_name, nsec_rr);
 		ldns_rr_list_push_rr(new_rrs, nsec_rr);
