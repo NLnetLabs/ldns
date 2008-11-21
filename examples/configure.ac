@@ -268,40 +268,6 @@ AC_ARG_WITH(ssl, AC_HELP_STRING([--with-ssl=pathname],
 
 
 
-# check for ldns
-AC_ARG_WITH(ldns, 
-	AC_HELP_STRING([--with-ldns=PATH        specify prefix of path of ldns library to use])
-	,
-	[
-		specialldnsdir="$withval"
-		CPPFLAGS="$CPPFLAGS -I$withval/include"
-		LDFLAGS="-L$withval -L$withval/lib $LDFLAGS"
-		LDNSDIR="$withval"
-	]
-)
-
-# check for ldns development source tree
-AC_MSG_CHECKING([for ldns devel source])
-ldns_dev_dir=..
-if test -f $ldns_dev_dir/ldns/util.h && \
-	grep LDNS_VERSION $ldns_dev_dir/ldns/util.h >/dev/null; then
-	ldns_version=`grep LDNS_VERSION $ldns_dev_dir/ldns/util.h | sed -e 's/^.*"\(.*\)".*$/\1/'`
-	AC_MSG_RESULT([using $ldns_dev_dir with $ldns_version])
-	CPPFLAGS="$CPPFLAGS -I$ldns_dev_dir/include"
-	LDFLAGS="-L$ldns_dev_dir -L$ldns_dev_dir/lib $LDFLAGS"
-	LIBS="$LIBS -lldns"
-	AC_DEFINE(HAVE_LIBLDNS, 1, [If the ldns library is available.])
-	LDNSDIR="$ldns_dev_dir"
-else
-	AC_MSG_RESULT([no])
-	AC_CHECK_LIB(ldns, ldns_rr_new,, [
-			AC_MSG_ERROR([Can't find ldns library])
-		]
-	)
-fi
-
-AC_SUBST(LDNSDIR)
-
 #AC_CHECK_HEADER(ldns/ldns.h,,  [
 #	AC_MSG_ERROR([Can't find ldns headers (make copy-headers in devel source.)])
 #	], [AC_INCLUDES_DEFAULT]
@@ -369,6 +335,41 @@ AC_CHECK_GETADDRINFO_WITH_INCLUDES
 
 AC_FUNC_FORK
 AC_CHECK_FUNCS(isblank srandom random sleep)
+
+# check for ldns
+AC_ARG_WITH(ldns, 
+	AC_HELP_STRING([--with-ldns=PATH        specify prefix of path of ldns library to use])
+	,
+	[
+		specialldnsdir="$withval"
+		CPPFLAGS="$CPPFLAGS -I$withval/include"
+		LDFLAGS="-L$withval -L$withval/lib $LDFLAGS"
+		LDNSDIR="$withval"
+	]
+)
+
+# check for ldns development source tree
+AC_MSG_CHECKING([for ldns devel source])
+ldns_dev_dir=..
+if test -f $ldns_dev_dir/ldns/util.h && \
+	grep LDNS_VERSION $ldns_dev_dir/ldns/util.h >/dev/null; then
+	ldns_version=`grep LDNS_VERSION $ldns_dev_dir/ldns/util.h | sed -e 's/^.*"\(.*\)".*$/\1/'`
+	AC_MSG_RESULT([using $ldns_dev_dir with $ldns_version])
+	CPPFLAGS="$CPPFLAGS -I$ldns_dev_dir/include"
+	LDFLAGS="-L$ldns_dev_dir -L$ldns_dev_dir/lib $LDFLAGS"
+	LIBS="$LIBS -lldns"
+	AC_DEFINE(HAVE_LIBLDNS, 1, [If the ldns library is available.])
+	LDNSDIR="$ldns_dev_dir"
+else
+	AC_MSG_RESULT([no])
+	AC_CHECK_LIB(ldns, ldns_rr_new,, [
+			AC_MSG_ERROR([Can't find ldns library])
+		]
+	)
+fi
+
+AC_SUBST(LDNSDIR)
+
 
 AH_BOTTOM([
 
