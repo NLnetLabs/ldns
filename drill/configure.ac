@@ -143,7 +143,7 @@ AC_CHECK_TYPE(uint32_t, unsigned int)
 AC_CHECK_TYPE(uint64_t, unsigned long long)
 AC_CHECK_TYPE(ssize_t, int)
 
-AC_CHECK_HEADERS([sys/types.h getopt.h stdlib.h stdio.h assert.h netinet/in.h ctype.h time.h pcap.h arpa/inet.h sys/time.h sys/socket.h sys/select.h],,, [AC_INCLUDES_DEFAULT])
+AC_CHECK_HEADERS([sys/types.h getopt.h stdlib.h stdio.h assert.h netinet/in.h ctype.h time.h arpa/inet.h sys/time.h sys/socket.h sys/select.h],,, [AC_INCLUDES_DEFAULT])
 AC_CHECK_HEADERS([netinet/in_systm.h net/if.h netinet/ip.h netinet/udp.h netinet/if_ether.h netinet/ip6.h],,, [
 AC_INCLUDES_DEFAULT 
 #ifdef HAVE_NETINET_IN_SYSTM_H
@@ -280,6 +280,13 @@ AC_ARG_WITH(ldns,
 	]
 )
 
+#AC_CHECK_HEADER(ldns/ldns.h,,  [
+#	AC_MSG_ERROR([Can't find ldns headers (make copy-headers in devel source.)])
+#	], [AC_INCLUDES_DEFAULT]
+#)
+
+AC_CHECK_FUNCS(isblank)
+
 # check for ldns development source tree
 AC_MSG_CHECKING([for ldns devel source])
 ldns_dev_dir=..
@@ -302,18 +309,6 @@ else
 fi
 
 AC_SUBST(LDNSDIR)
-
-#AC_CHECK_HEADER(ldns/ldns.h,,  [
-#	AC_MSG_ERROR([Can't find ldns headers (make copy-headers in devel source.)])
-#	], [AC_INCLUDES_DEFAULT]
-#)
-
-AC_CHECK_LIB(pcap, pcap_open_offline,, [
-	AC_MSG_WARN([Can't find pcap library (needed for ldns-dpa, will not build dpa now.)])
-	]
-)
-
-AC_CHECK_FUNCS(isblank)
 
 AH_BOTTOM([
 
@@ -349,10 +344,6 @@ AH_BOTTOM([
 
 #ifdef HAVE_TIME_H
 #include <time.h>
-#endif
-
-#ifdef HAVE_PCAP_H
-#include <pcap.h>
 #endif
 
 #ifdef HAVE_NETINET_IN_SYSTM_H

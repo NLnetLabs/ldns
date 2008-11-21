@@ -307,7 +307,7 @@ do_chase(ldns_resolver *res,
 	} else {
 		/* no packet? */
 		if (verbosity >= 0) {
-			fprintf(stderr, ldns_get_errorstr_by_id(LDNS_STATUS_MEM_ERR));
+			fprintf(stderr, "%s", ldns_get_errorstr_by_id(LDNS_STATUS_MEM_ERR));
 			fprintf(stderr, "\n");
 		}
 		return LDNS_STATUS_MEM_ERR;
@@ -321,7 +321,7 @@ do_chase(ldns_resolver *res,
 		
 		if (!pkt) {
 			if (verbosity >= 0) {
-				fprintf(stderr, ldns_get_errorstr_by_id(LDNS_STATUS_NETWORK_ERR));
+				fprintf(stderr, "%s", ldns_get_errorstr_by_id(LDNS_STATUS_NETWORK_ERR));
 				fprintf(stderr, "\n");
 			}
 			return LDNS_STATUS_NETWORK_ERR;
