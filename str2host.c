@@ -185,6 +185,8 @@ ldns_str2rdf_int32(ldns_rdf **rd, const char *longstr)
 	uint32_t l;
 
 	r = (uint16_t*)LDNS_MALLOC(uint32_t);
+	errno = 0; /* must set to zero before call, 
+			note race condition on errno */
 	l = htonl((uint32_t)strtol((char*)longstr, &end, 0));
 
 	if(*end != 0) {

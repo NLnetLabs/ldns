@@ -397,7 +397,7 @@ ldns_rr_new_frm_str_internal(ldns_rr **newrr, const char *str,
 					 * it does specify size though... 
 					 */
 					rd_strlen = strlen(rd);
-						
+
 					/* unknown RR data */
 					if (rd_strlen == 2 && strncmp(rd, "\\#", 2) == 0 && !quoted) {
 						c = ldns_bget_token(rd_buf, rd, delimiters, LDNS_MAX_RDFLEN);
