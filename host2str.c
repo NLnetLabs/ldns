@@ -1107,7 +1107,7 @@ ldns_rr2buffer_str(ldns_buffer *output, const ldns_rr *rr)
 								ldns_rr_dnskey_key_size(rr)); 
 						break;
 					} 
-					if (flags == 256 || flags == 385) {
+					if (flags == 257 || flags == 385) {
 						ldns_buffer_printf(output, 
 								" ;{id = %d (ksk), size = %db}", 
 								ldns_calc_keytag(rr),
