@@ -25,9 +25,9 @@
 #define DRILL_SECTRACE 	7
 
 #define DRILL_ON(VAR, BIT) \
-VAR = VAR | BIT
+(VAR) = (VAR) | (BIT)
 #define DRILL_OFF(VAR, BIT) \
-VAR = VAR & ~BIT
+(VAR) = (VAR) & ~(BIT)
 
 extern ldns_rr_list *global_dns_root;
 extern bool qds;
