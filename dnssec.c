@@ -1145,7 +1145,7 @@ ldns_nsec3_flags(const ldns_rr *nsec3_rr)
 	if (nsec3_rr && ldns_rr_get_type(nsec3_rr) == LDNS_RR_TYPE_NSEC3 &&
 	    ldns_rdf_size(ldns_rr_rdf(nsec3_rr, 1)) > 0
 	    ) {
-		return ldns_rdf2native_int8(ldns_rr_rdf(nsec3_rr, 0));
+		return ldns_rdf2native_int8(ldns_rr_rdf(nsec3_rr, 1));
 	}
 	return 0;
 }
