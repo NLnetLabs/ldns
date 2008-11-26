@@ -586,15 +586,6 @@ ldns_dnssec_create_nsec_bitmap(ldns_rr_type rr_type_list[],
 				   (int) (7 - (i_type % 8)),
 				   true);
 	}
-	/* always add nsec (if this is not nsec3 and rrsig */
-	i_type = LDNS_RR_TYPE_RRSIG;
-	ldns_set_bit(bitmap + (int) i_type / 8, (int) (7 - (i_type % 8)), true);
-	i_type = nsec_type;
-	if (i_type != LDNS_RR_TYPE_NSEC3) {
-		ldns_set_bit(bitmap + (int) i_type / 8,
-				   (int) (7 - (i_type % 8)),
-				   true);
-	}
 
 	/* fold it into windows TODO: can this be done directly? */
 	memset(cur_data, 0, 32);
@@ -619,7 +610,7 @@ ldns_dnssec_create_nsec_bitmap(ldns_rr_type rr_type_list[],
 		} else {
 			cur_data[i%32] = bitmap[i];
 			if (bitmap[i] > 0) {
-				cur_window_max = i%32;
+				cur_window_max = i%32 + 1;
 			}
 		}
 	}
@@ -670,10 +661,14 @@ ldns_dnssec_create_nsec(ldns_dnssec_name *from,
 		type_count++;
 		cur_rrsets = cur_rrsets->next;
 	}
+	types[type_count] = LDNS_RR_TYPE_RRSIG;
+	type_count++;
+	types[type_count] = LDNS_RR_TYPE_NSEC;
+	type_count++;
 
 	ldns_rr_push_rdf(nsec_rr, ldns_dnssec_create_nsec_bitmap(types,
-												  type_count,
-												  nsec_type));
+	                               type_count,
+	                               nsec_type));
 
 	return nsec_rr;
 }
@@ -702,18 +697,18 @@ ldns_dnssec_create_nsec3(ldns_dnssec_name *from,
 
 	nsec_rr = ldns_rr_new_frm_type(LDNS_RR_TYPE_NSEC3);
 	ldns_rr_set_owner(nsec_rr,
-				   ldns_nsec3_hash_name(ldns_dnssec_name_name(from),
-								    algorithm,
-								    iterations,
-								    salt_length,
-								    salt));
+	                  ldns_nsec3_hash_name(ldns_dnssec_name_name(from),
+	                  algorithm,
+	                  iterations,
+	                  salt_length,
+	                  salt));
 	status = ldns_dname_cat(ldns_rr_owner(nsec_rr), zone_name);
 	ldns_nsec3_add_param_rdfs(nsec_rr,
-						 algorithm,
-						 flags,
-						 iterations,
-						 salt_length,
-						 salt);
+	                          algorithm,
+	                          flags,
+	                          iterations,
+	                          salt_length,
+	                          salt);
 
 	cur_rrsets = from->rrsets;
 	while (cur_rrsets) {
@@ -721,12 +716,20 @@ ldns_dnssec_create_nsec3(ldns_dnssec_name *from,
 		type_count++;
 		cur_rrsets = cur_rrsets->next;
 	}
-
+	/* always add rrsig type if this is not an unsigned 
+	 * delegation
+	 */
+	if (type_count > 0 &&
+	    !(type_count == 1 && types[0] == LDNS_RR_TYPE_NS)) {
+		types[type_count] = LDNS_RR_TYPE_RRSIG;
+		type_count++;
+	}
+	
 	/* leave next rdata empty if they weren't precomputed yet */
 	if (to && to->hashed_name) {
 		ldns_rr_set_rdf(nsec_rr,
-					 ldns_rdf_clone(to->hashed_name),
-					 4);
+		                ldns_rdf_clone(to->hashed_name),
+		                4);
 	} else {
 		ldns_rr_set_rdf(nsec_rr, NULL, 4);
 	}
