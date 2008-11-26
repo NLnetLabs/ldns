@@ -69,6 +69,18 @@ ldns_status 	ldns_dname_cat(ldns_rdf *rd1, ldns_rdf *rd2);
 ldns_rdf *ldns_dname_reverse(const ldns_rdf *d);
 
 /**
+ * Clones the given dname from the nth label on
+ * \param[in] d The dname to clone
+ * \param[in] n the label nr to clone from, if this is 0, the complete
+ *              dname is cloned
+ * \return A newly allocated *rdf structure, containing the cloned dname,
+ *         or NULL if either d was NULL, not a dname, or if n >= 
+ *         label_count
+ */
+ldns_rdf *
+ldns_dname_clone_from(const ldns_rdf *d, uint16_t n);
+
+/**
  * chop one label off the left side of a dname. so 
  * wwww.nlnetlabs.nl, becomes nlnetlabs.nl
  * \param[in] d the dname to chop

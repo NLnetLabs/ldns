@@ -663,107 +663,96 @@ ldns_status
 ldns_dnssec_zone_add_empty_nonterminals(ldns_dnssec_zone *zone)
 {
 	ldns_dnssec_name *new_name;
-	ldns_dnssec_name *cur_name;
-	ldns_dnssec_name *next_name;
+	ldns_rdf *cur_name;
+	ldns_rdf *next_name;
 	ldns_rbnode_t *cur_node, *next_node, *new_node;
-	ldns_rdf *soa_dname;
-	
+
 	/* for the detection */
-	uint16_t j, cur_label_count, next_label_count;
-	ldns_rdf *l1, *l2, *post, *post2;
-	bool found_difference = false;
+	uint16_t i, cur_label_count, next_label_count;
+	uint16_t soa_label_count = 0;
+	ldns_rdf *l1, *l2;
+	int lpos;
 
 	if (!zone) {
 		return LDNS_STATUS_ERR;
 	}
-	if (zone->soa) {
-		soa_dname = ldns_dnssec_name_name(zone->soa);
+	if (zone->soa && zone->soa->name) {
+		soa_label_count = ldns_dname_label_count(zone->soa->name);
 	}
+	
 	cur_node = ldns_rbtree_first(zone->names);
 	while (cur_node != LDNS_RBTREE_NULL) {
 		next_node = ldns_rbtree_next(cur_node);
+		
+		/* skip glue */
+		while (next_node != LDNS_RBTREE_NULL && 
+		       next_node->data &&
+		       ((ldns_dnssec_name *)next_node->data)->is_glue
+		) {
+			next_node = ldns_rbtree_next(next_node);
+		}
+
 		if (next_node == LDNS_RBTREE_NULL) {
 			next_node = ldns_rbtree_first(zone->names);
 		}
 
-		cur_name = (ldns_dnssec_name *)cur_node->data;
-		next_name = (ldns_dnssec_name *)next_node->data;
+		cur_name = ((ldns_dnssec_name *)cur_node->data)->name;
+		next_name = ((ldns_dnssec_name *)next_node->data)->name;
+		cur_label_count = ldns_dname_label_count(cur_name);
+		next_label_count = ldns_dname_label_count(next_name);
 
-		found_difference = false;
+		/* Since the names are in canonical order, we can
+		 * recognize empty non-terminals by their labels;
+		 * every label after the first one on the next owner
+		 * name is a non-terminal if it either does not exist
+		 * in the current name or is different from the same
+		 * label in the current name (counting from the end)
+		 */
+		for (i = 1; i < next_label_count - soa_label_count; i++) {
+			lpos = cur_label_count - next_label_count + i;
+			if (lpos >= 0) {
+				l1 = ldns_dname_label(cur_name, lpos);
+			} else {
+				l1 = NULL;
+			}
+			l2 = ldns_dname_label(next_name, i);
 
-		cur_label_count = ldns_dname_label_count(cur_name->name);
-		next_label_count = ldns_dname_label_count(next_name->name);
-
-		post = ldns_dname_new_frm_str(".");
-		for (j = 1 + ldns_dname_label_count(zone->soa->name); 
-			j < cur_label_count && 
-				j <= next_label_count && 
-				!found_difference;
-			j++) {
-			l1 = ldns_dname_label(cur_name->name, cur_label_count - j);
-			l2 = ldns_dname_label(next_name->name, next_label_count - j);
-			post2 = ldns_dname_cat_clone(l2, post);
-			ldns_rdf_deep_free(post);
-			post = post2;
-
-			if (ldns_dname_compare(l1, l2) != 0 &&
-			    j < next_label_count &&
-			    !ldns_dname_is_subdomain(soa_dname,post)) {
-				found_difference = true;
-				
+			if (!l1 || ldns_dname_compare(l1, l2) != 0) {
+				/* We have an empty nonterminal, add it to the
+				 * tree
+				 */
 				new_name = ldns_dnssec_name_new();
-				new_name->name = ldns_rdf_clone(post);
+				if (!new_name) {
+					return LDNS_STATUS_MEM_ERR;
+				}
+				new_name->name = ldns_dname_clone_from(next_name,
+				                                       i);
+				if (!new_name) {
+					ldns_dnssec_name_free(new_name);
+					return LDNS_STATUS_MEM_ERR;
+				}
 				new_name->name_alloced = true;
 				new_node = LDNS_MALLOC(ldns_rbnode_t);
+				if (!new_node) {
+					ldns_dnssec_name_free(new_name);
+					return LDNS_STATUS_MEM_ERR;
+				}
 				new_node->key = new_name->name;
 				new_node->data = new_name;
-				printf("New empty nonterm: ");
-				ldns_rdf_print(stdout, new_name->name);
-				printf("\n");
 				ldns_rbtree_insert(zone->names, new_node);
-				//ldns_dnssec_zone_add_name(zone, new_name);
 			}
 			ldns_rdf_deep_free(l1);
 			ldns_rdf_deep_free(l2);
 		}
-		/* and if next label is longer than cur + 1, these must be empty nons too */
-		/* skip current label (total now equal to cur_dname) */
-		if (!found_difference && j < cur_label_count && j <= next_label_count) {
-			l2 = ldns_dname_label(next_name->name, next_label_count - j);
-			post2 = ldns_dname_cat_clone(l2, post);
-			ldns_rdf_deep_free(post);
-			post = post2;
-			j++;
-		}
-		while (j < next_label_count) {
-			l2 = ldns_dname_label(next_name->name, next_label_count - j);
-			post2 = ldns_dname_cat_clone(l2, post);
-			ldns_rdf_deep_free(post);
-			post = post2;
-			ldns_dname_cat(post, ldns_dnssec_name_name(zone->soa));
-			/*
-			  printf("Found empty non-terminal: ");
-			  ldns_rdf_print(stdout, post);
-			  printf("\n");
-			*/
-			ldns_rdf_deep_free(l2);
-			j++;    
-			new_name = ldns_dnssec_name_new();
-			new_name->name = ldns_rdf_clone(post);
-			new_name->name_alloced = true;
-			new_node = LDNS_MALLOC(ldns_rbnode_t);
-			new_node->key = new_name->name;
-			new_node->data = new_name;
-			//printf("New empty nonterm2: ");
-			//ldns_rdf_print(stdout, new_name->name);
-			//printf("\n");
-			ldns_rbtree_insert(zone->names, new_node);
-		}
-		ldns_rdf_deep_free(post);
-		/* TODO: other name->name (we need to free this one) */
 		
-
-		cur_node = ldns_rbtree_next(cur_node);
+		/* we might have inserted a new node after
+		 * the current one so we can't just use next()
+		 */
+		if (next_node != ldns_rbtree_first(zone->names)) {
+			cur_node = next_node;
+		} else {
+			cur_node = LDNS_RBTREE_NULL;
+		}
 	}
 	return LDNS_STATUS_OK;
 }

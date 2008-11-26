@@ -124,6 +124,35 @@ ldns_dname_reverse(const ldns_rdf *d)
 }
 
 ldns_rdf *
+ldns_dname_clone_from(const ldns_rdf *d, uint16_t n)
+{
+	uint8_t *data;
+	uint8_t label_size;
+	size_t data_size;
+	
+	if (!d ||
+	    ldns_rdf_get_type(d) != LDNS_RDF_TYPE_DNAME ||
+	    ldns_dname_label_count(d) < n) {
+		return NULL;
+	}
+
+	data = ldns_rdf_data(d);
+	data_size = ldns_rdf_size(d);
+	while (n > 0) {
+		label_size = data[0] + 1;
+		data += label_size;
+		if (data_size < label_size) {
+			/* this label is very broken */
+			return NULL;
+		}
+		data_size -= label_size;
+		n--;
+	}
+
+	return ldns_dname_new_frm_data(data_size, data);
+}
+
+ldns_rdf *
 ldns_dname_left_chop(const ldns_rdf *d)
 {
 	uint8_t label_pos;
