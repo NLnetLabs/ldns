@@ -39,7 +39,7 @@ ldns_str2rdf_int16(ldns_rdf **rd, const char *shortstr)
 	uint16_t *r;
 	r = LDNS_MALLOC(uint16_t);
 	
-	*r = htons((uint16_t)strtol((char *)shortstr, &end, 0));
+	*r = htons((uint16_t)strtol((char *)shortstr, &end, 10));
 	
 	if(*end != 0) {
 		LDNS_FREE(r);
@@ -102,7 +102,7 @@ ldns_str2rdf_time(ldns_rdf **rd, const char *time)
 		return LDNS_STATUS_OK;
 	} else {
 		/* handle it as 32 bits timestamp */
-		l = htonl((uint32_t)strtol((char*)time, &end, 0));
+		l = htonl((uint32_t)strtol((char*)time, &end, 10));
 		if(*end != 0) {
 			LDNS_FREE(r);
 			return LDNS_STATUS_ERR;
@@ -187,7 +187,7 @@ ldns_str2rdf_int32(ldns_rdf **rd, const char *longstr)
 	r = (uint16_t*)LDNS_MALLOC(uint32_t);
 	errno = 0; /* must set to zero before call, 
 			note race condition on errno */
-	l = htonl((uint32_t)strtol((char*)longstr, &end, 0));
+	l = htonl((uint32_t)strtol((char*)longstr, &end, 10));
 
 	if(*end != 0) {
 		LDNS_FREE(r);
@@ -213,7 +213,7 @@ ldns_str2rdf_int8(ldns_rdf **rd, const char *bytestr)
 
 	r = LDNS_MALLOC(uint8_t);
  
-	*r = (uint8_t)strtol((char*)bytestr, &end, 0);
+	*r = (uint8_t)strtol((char*)bytestr, &end, 10);
 
         if(*end != 0) {
 		LDNS_FREE(r);
