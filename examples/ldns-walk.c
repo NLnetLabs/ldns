@@ -19,6 +19,7 @@ usage(FILE *fp, char *prog) {
 	fprintf(fp, "OPTIONS:\n");
 	fprintf(fp, "-4\t\tonly use IPv4\n");
 	fprintf(fp, "-6\t\tonly use IPv6\n");
+	fprintf(fp, "-f\t\tfull; get all rrsets instead of only a list of names and types\n");
 	fprintf(fp, "-s <name>\t\tStart from this name\n");
 	fprintf(fp, "-v <verbosity>\t\tVerbosity level [1-5]\n");
 	fprintf(fp, "-version\tShow version and exit\n");
@@ -114,6 +115,57 @@ create_plus_1_dname(ldns_rdf *dname)
 	return label;
 }
 
+ldns_status
+query_type_bitmaps(ldns_resolver *res, 
+                   uint16_t res_flags,
+                   const ldns_rdf *name,
+                   const ldns_rdf *rdf)
+{
+	/* Note: this code is duplicated in higher.c in 
+	 * ldns_nsec_type_check() function
+	 */
+	uint8_t window_block_nr;
+	uint8_t bitmap_length;
+	uint16_t type;
+	uint16_t pos = 0;
+	uint16_t bit_pos;
+	uint8_t *data = ldns_rdf_data(rdf);
+	
+	ldns_pkt *answer_pkt;
+	
+	while(pos < ldns_rdf_size(rdf)) {
+		window_block_nr = data[pos];
+		bitmap_length = data[pos + 1];
+		pos += 2;
+		
+		for (bit_pos = 0; bit_pos < (bitmap_length) * 8; bit_pos++) {
+			if (ldns_get_bit(&data[pos], bit_pos)) {
+				type = 256 * (uint16_t) window_block_nr + bit_pos;
+				/* skip nsec and rrsig */
+				if (type != LDNS_RR_TYPE_NSEC &&
+				    type != LDNS_RR_TYPE_RRSIG) {
+					/*printf("querying for:\n");
+					ldns_rdf_print(stdout, name);
+					printf(" type %u\n", type);*/
+					answer_pkt = ldns_resolver_query(res, name, type,
+					                                 LDNS_RR_CLASS_IN,
+					                                 res_flags);
+					if (answer_pkt) {
+						ldns_rr_list_print(stdout,
+						                   ldns_pkt_answer(answer_pkt));
+						ldns_pkt_free(answer_pkt);
+					}
+				}
+			}
+		}
+		
+		pos += (uint16_t) bitmap_length;
+	}
+	
+	return LDNS_STATUS_OK;
+}
+
+
 int
 main(int argc, char *argv[])
 {
@@ -130,8 +182,9 @@ main(int argc, char *argv[])
 	ldns_rdf *last_dname;
 	ldns_rdf *last_dname_p;
 	ldns_rdf *startpoint = NULL;
-	ldns_rdf *rrtypes = NULL;
+	ldns_rr *nsec_rr = NULL;
 	const char* arg_domain = NULL;
+	int full = 0;
 
 	char *serv = NULL;
 	ldns_rdf *serv_rdf;
@@ -168,6 +221,8 @@ main(int argc, char *argv[])
                                 	exit(1);
                         	}
                         	fam = LDNS_RESOLV_INET6;
+			} else if (strncmp(argv[i], "-f", 3) == 0) {
+				full = true;
 			} else if (strncmp(argv[i], "-s", 3) == 0) {
 				if (i + 1 < argc) {
 					if (!ldns_str2rdf_dname(&startpoint, argv[i + 1]) == LDNS_STATUS_OK) {
@@ -385,9 +440,11 @@ main(int argc, char *argv[])
 		last_dname_p = ldns_rdf_clone(soa_p1);
 	}
 
-	ldns_rdf_print(stdout, ldns_rr_owner(soa));
-	printf("\t");
-
+	if (!full) {
+		ldns_rdf_print(stdout, ldns_rr_owner(soa));
+		printf("\t");
+	}
+	
 	next_dname = NULL;
 	while (!next_dname || ldns_rdf_compare(next_dname, domain) != 0) {
 		if (p) {
@@ -411,36 +468,36 @@ main(int argc, char *argv[])
 
 		if (next_dname) {
 			ldns_rdf_deep_free(next_dname);
-			ldns_rdf_deep_free(rrtypes);
+			ldns_rr_free(nsec_rr);
 			next_dname = NULL;
+			nsec_rr = NULL;
 		}
 
 		if (!p)  {
-		  fprintf(stderr, "Error trying to resolve: ");
-		  ldns_rdf_print(stderr, last_dname_p);
-		  fprintf(stderr, "\n");
-		  while (!p) {
-		    if (verbosity >= 3) {
-			printf("Querying for: ");
-			ldns_rdf_print(stdout, last_dname_p);
-			printf("\n");
-		    }
-		    p = ldns_resolver_query(res, last_dname_p, LDNS_RR_TYPE_DS, LDNS_RR_CLASS_IN, LDNS_RD);
-		    /* TODO: make a general option for this (something like ignore_rtt)? */
-		    for (j = 0; j < ldns_resolver_nameserver_count(res); j++) {
-			if (ldns_resolver_nameserver_rtt(res, j) != 0) {
-				ldns_resolver_set_nameserver_rtt(res, j, LDNS_RESOLV_RTT_MIN);
+			fprintf(stderr, "Error trying to resolve: ");
+			ldns_rdf_print(stderr, last_dname_p);
+			fprintf(stderr, "\n");
+			while (!p) {
+				if (verbosity >= 3) {
+					printf("Querying for: ");
+					ldns_rdf_print(stdout, last_dname_p);
+					printf("\n");
+				}
+				p = ldns_resolver_query(res, last_dname_p, LDNS_RR_TYPE_DS, LDNS_RR_CLASS_IN, LDNS_RD);
+				/* TODO: make a general option for this (something like ignore_rtt)? */
+				for (j = 0; j < ldns_resolver_nameserver_count(res); j++) {
+					if (ldns_resolver_nameserver_rtt(res, j) != 0) {
+						ldns_resolver_set_nameserver_rtt(res, j, LDNS_RESOLV_RTT_MIN);
+					}
+				}
+				if (verbosity >= 5) {
+					if (p) {
+						ldns_pkt_print(stdout, p);
+					} else {
+						fprintf(stdout, "No Packet Received from ldns_resolver_query()\n");
+					}
+				}
 			}
-		    }
-		    if (verbosity >= 5) {
-			if (p) {
-				ldns_pkt_print(stdout, p);
-			} else {
-				fprintf(stdout, "No Packet Received from ldns_resolver_query()\n");
-			}
-		    }
-
-		  }
 		}
 
 		/* if the current name is an empty non-terminal, bind returns
@@ -491,30 +548,30 @@ main(int argc, char *argv[])
 		/* find correct nsec */
 		next_dname = NULL;
 		for (j = 0; j < ldns_rr_list_rr_count(rrlist); j++) {
-		  if (ldns_nsec_covers_name(ldns_rr_list_rr(rrlist, j), last_dname_p)) {
-		    if (verbosity >= 3) {
-		      printf("The domain name: ");
-		      ldns_rdf_print(stdout, last_dname_p);
-		      printf("\nis covered by NSEC: ");
-		      ldns_rr_print(stdout, ldns_rr_list_rr(rrlist, j));
-                    }
-                    next_dname = ldns_rdf_clone(ldns_rr_rdf(ldns_rr_list_rr(rrlist, j), 0));
-                    rrtypes = ldns_rdf_clone(ldns_rr_rdf(ldns_rr_list_rr(rrlist, j), 1));
-		  } else {
-                      if (verbosity >= 4) {
-                        printf("\n");
-                        ldns_rdf_print(stdout, last_dname_p);
-                        printf("\nNOT covered by NSEC: ");
-                        ldns_rr_print(stdout, ldns_rr_list_rr(rrlist, j));
-                        printf("\n");
-                      }
-                  }
+			if (ldns_nsec_covers_name(ldns_rr_list_rr(rrlist, j), last_dname_p)) {
+				if (verbosity >= 3) {
+					printf("The domain name: ");
+					ldns_rdf_print(stdout, last_dname_p);
+					printf("\nis covered by NSEC: ");
+					ldns_rr_print(stdout, ldns_rr_list_rr(rrlist, j));
+				}
+				next_dname = ldns_rdf_clone(ldns_rr_rdf(ldns_rr_list_rr(rrlist, j), 0));
+				nsec_rr = ldns_rr_clone(ldns_rr_list_rr(rrlist, j));
+			} else {
+				if (verbosity >= 4) {
+					printf("\n");
+					ldns_rdf_print(stdout, last_dname_p);
+					printf("\nNOT covered by NSEC: ");
+					ldns_rr_print(stdout, ldns_rr_list_rr(rrlist, j));
+					printf("\n");
+				}
+			}
 		}
 		if (!next_dname) {
-		  printf("Error no nsec for ");
-		  ldns_rdf_print(stdout, last_dname);
-		  printf("\n");
-		  exit(1);
+			printf("Error no nsec for ");
+			ldns_rdf_print(stdout, last_dname);
+			printf("\n");
+			exit(1);
 		}
 		ldns_rr_list_deep_free(rrlist);
 	}
@@ -528,7 +585,7 @@ main(int argc, char *argv[])
 		last_dname_p = create_plus_1_dname(last_dname);
 	} else {
 		if (last_dname) {
-			ldns_rdf_print(stdout, last_dname);
+			/*ldns_rdf_print(stdout, last_dname);*/
 			if (ldns_rdf_compare(last_dname, next_dname) == 0) {
 				printf("\n\nNext dname is the same as current, this would loop forever. This is a problem that usually occurs when walking through a caching forwarder. Try using the authoritative nameserver to walk (with @nameserver).\n");
 				exit(2);
@@ -540,21 +597,30 @@ main(int argc, char *argv[])
 			ldns_rdf_deep_free(last_dname_p);
 		}
 		last_dname_p = create_dname_plus_1(last_dname);
-		printf(" ");
-		ldns_rdf_print(stdout, rrtypes);
-		printf("\n");
+		if (!full) {
+			ldns_rdf_print(stdout, ldns_rr_owner(nsec_rr));
+			printf(" ");
+			ldns_rdf_print(stdout, ldns_rr_rdf(nsec_rr, 2));
+			printf("\n");
+		} else {
+			/* ok, so now we now all the types present at this name,
+			 * query for those one by one (...)
+			 */
+			query_type_bitmaps(res, LDNS_RD, ldns_rr_owner(nsec_rr),
+			                   ldns_rr_rdf(nsec_rr, 1));
+			ldns_rr_print(stdout, nsec_rr);
+		}
 	}
 
-}
+	}
 
 	ldns_rdf_deep_free(domain);
 	ldns_rdf_deep_free(soa_p1);
 	ldns_rdf_deep_free(last_dname_p);
 	ldns_rdf_deep_free(last_dname);
 	ldns_rdf_deep_free(next_dname);
-	ldns_rdf_deep_free(rrtypes);
-
-        ldns_pkt_free(p);
+	ldns_rr_free(nsec_rr);
+	ldns_pkt_free(p);
 
 	ldns_rr_free(soa);
 

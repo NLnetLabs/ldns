@@ -21,6 +21,9 @@ authoritative nameserver directly (with the @ argument).
 Of course the nameserver that is used must be DNSSEC-aware.
 
 .SH OPTIONS
+.TP-f\fR
+Do a 'full' zone walk; by default, ldns-walk will only show the names, and types present at those names. If this option is given, all resource records will be printed.
+
 .TP
 \fB-s\fR \fIname\fR
 Start the walk with this owner name. Useful when continuing the walk for a
