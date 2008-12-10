@@ -1,4 +1,16 @@
+1.4.1
+	Bug fixes:
+	* fixed a build issue where ldns lib existence was done too early
+	* removed unnecessary check for pcap.h
+	* NSEC3 optout flag now correctly printed in string output
+	* inttypes.h moved to configured inclusion
+	* fixed NSEC3 type bitmaps for empty nonterminals and unsigned
+	  delegations 
 
+	API addition:
+	* for that last fix, we added a new function
+	  ldns_dname_add_from() that can clone parts of a dname
+	
 1.4.0
 	Bug fixes:
 	* sig chase return code fix (patch from Rafael Justo, bug id 189)
