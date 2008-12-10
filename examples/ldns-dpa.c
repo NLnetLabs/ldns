@@ -88,6 +88,7 @@ enum enum_match_ids {
 	MATCH_DST_ADDRESS,
 	MATCH_TIMESTAMP,
 	MATCH_QUERY,
+	MATCH_QTYPE,
 	MATCH_ANSWER,
 	MATCH_AUTHORITY,
 	MATCH_ADDITIONAL,
@@ -104,6 +105,7 @@ enum enum_counter_types {
 	TYPE_TIMESTAMP,
 	TYPE_ADDRESS,
 	TYPE_RR,
+	TYPE_RR_TYPE,
 	TYPE_LAST
 };
 typedef enum enum_counter_types counter_type;
@@ -183,6 +185,7 @@ const type_operators const_type_operators[] = {
 	{ TYPE_TIMESTAMP, 6, { OP_EQUAL, OP_NOTEQUAL, OP_GREATER, OP_LESSER, OP_GREATEREQUAL, OP_LESSEREQUAL, 0, 0, 0, 0 } },
 	{ TYPE_ADDRESS, 3, { OP_EQUAL, OP_NOTEQUAL, OP_CONTAINS, 0, 0, 0, 0, 0, 0, 0} },
 	{ TYPE_RR, 3, { OP_EQUAL, OP_NOTEQUAL, OP_CONTAINS, 0, 0, 0, 0, 0, 0, 0} },
+	{ TYPE_RR_TYPE, 6, { OP_EQUAL, OP_NOTEQUAL, OP_GREATER, OP_LESSER, OP_GREATEREQUAL, OP_LESSEREQUAL, 0, 0, 0, 0 } },
 	{ 0, 0, { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 } }
 };
 
@@ -211,6 +214,7 @@ typedef struct struct_match_table match_table;
  */
 const match_table matches[] = {
 	{ MATCH_QUERY, "query", "String representation of the query RR", TYPE_RR },
+	{ MATCH_QTYPE, "qtype", "RR Type of the question RR, if present", TYPE_RR_TYPE },
 	{ MATCH_SRC_ADDRESS, "srcaddress", "address the packet was sent from", TYPE_ADDRESS },
 	{ MATCH_TIMESTAMP, "timestamp", "time the packet was sent", TYPE_TIMESTAMP },
 	{ MATCH_DST_ADDRESS, "dstaddress", "address the packet was sent to", TYPE_ADDRESS },
@@ -1018,6 +1022,41 @@ match_str(type_operator operator,
 }
 
 bool
+match_rr_type(type_operator operator,
+              char *value,
+	      char *mvalue)
+{
+	ldns_rr_type a,b;
+	
+	a = ldns_get_rr_type_by_name(value);
+	b = ldns_get_rr_type_by_name(mvalue);
+	
+	switch (operator) {
+		case OP_EQUAL:
+			return a == b;
+			break;
+		case OP_NOTEQUAL:
+			return a != b;
+			break;
+		case OP_GREATER:
+			return a > b;
+			break;
+		case OP_LESSER:
+			return a < b;
+			break;
+		case OP_GREATEREQUAL:
+			return a >= b;
+			break;
+		case OP_LESSEREQUAL:
+			return a <= b;
+			break;
+		default:
+			fprintf(stderr, "Unknown operator: %u\n", operator);
+			exit(2);
+	}
+}
+
+bool
 match_rcode(type_operator operator,
              char *value,
              char *mvalue) {
@@ -1127,6 +1166,9 @@ value_matches(match_id id,
 		case MATCH_SRC_ADDRESS:
 		case MATCH_DST_ADDRESS:
 			result = match_str(operator, value, mvalue);
+			break;
+		case MATCH_QTYPE:
+			result = match_rr_type(operator, value, mvalue);
 			break;
 		default:
 			fprintf(stderr, "Error: value_matches() for operator %s not implemented yet.\n", get_op_str((type_operator) id));
@@ -1276,6 +1318,14 @@ get_string_value(match_id id, ldns_pkt *pkt, ldns_rdf *src_addr, ldns_rdf *dst_a
 				if (strchr(val, '\n')) {
 					*(strchr(val, '\n')) = '\0';
 				}
+			} else {
+				val[0] = '\0';
+			}
+			break;
+		case MATCH_QTYPE:
+			if (ldns_pkt_qdcount(pkt) > 0) {
+				free(val);
+				val = ldns_rr_type2str(ldns_rr_get_type(ldns_rr_list_rr(ldns_pkt_question(pkt), 0)));
 			} else {
 				val[0] = '\0';
 			}
@@ -2316,7 +2366,7 @@ printf("timeval: %u ; %u\n", cur_hdr.ts.tv_sec, cur_hdr.ts.tv_usec);
 				printf("\t; ??? - %u\n", ip_len);
 */
 			} else {
-				printf("Lost fragment %u\n", iptr->ip_id);
+				/*printf("Lost fragment %u\n", iptr->ip_id);*/
 				lost_packet_fragments++;
 				return 1;
 			}
