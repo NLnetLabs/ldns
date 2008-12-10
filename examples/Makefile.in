@@ -49,8 +49,7 @@ MAIN_SOURCES = ldns-read-zone.c \
 		  ldns-testns.c \
 		  ldns-compare-zones.c \
 		  ldns-verify-zone.c \
-		  ldns-revoke.c \
-		  ldns-nsec3-hash.c
+		  ldns-revoke.c
 OTHER_SOURCES = ldns-testpkts.c
 
 PROGRAMS=$(MAIN_SOURCES:.c=)
