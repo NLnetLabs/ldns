@@ -2,7 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.56)
-AC_INIT(ldns, 1.4.0, libdns@nlnetlabs.nl,libdns)
+AC_INIT(ldns, 1.4.1, libdns@nlnetlabs.nl,libdns)
 AC_CONFIG_SRCDIR([drill.c])
 
 OURCPPFLAGS=''
