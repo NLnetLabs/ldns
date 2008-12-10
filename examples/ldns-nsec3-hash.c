@@ -29,7 +29,7 @@ int verbosity = 1;
 
 void
 usage(FILE *fp, const char *prog) {
-	fprintf(fp, "%s [OPTIONS] domain name\n", prog);
+	fprintf(fp, "%s [OPTIONS] <domain name>\n", prog);
 	fprintf(fp, "  prints the NSEC3 hash of the given domain name\n");
 	fprintf(fp, "-a [algorithm] hashing algorithm\n");
 	fprintf(fp, "-t [number] number of hash iterations\n");
