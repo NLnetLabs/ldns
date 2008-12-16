@@ -149,7 +149,7 @@ info "LDNS version: $version"
 if [ "$SNAPSHOT" = "yes" ]; then
     info "Building LDNS snapshot."
     version2="${version}-`date +%Y%m%d`"
-    info "Snapshot version number: $version"
+    info "Snapshot version number: $version2"
 
     replace_text "configure.ac" "AC_INIT(ldns, $version" "AC_INIT(ldns, $version2"
     replace_text "drill/configure.ac" "AC_INIT(ldns, $version" "AC_INIT(ldns, $version2"
