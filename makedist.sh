@@ -120,7 +120,7 @@ svn export "$SVNROOT" ldns || error_cleanup "SVN command failed"
 cd ldns || error_cleanup "LDNS not exported correctly from SVN"
 
 info "Running  Libtoolize script (libtoolize)."
-libtoolize -c --install || error_cleanup "Libtoolize failed."
+libtoolize -c --install || libtoolize -c || error_cleanup "Libtoolize failed."
 
 info "Building configure script (autoconf)."
 autoreconf || error_cleanup "Autoconf failed."
@@ -148,9 +148,25 @@ info "LDNS version: $version"
 
 if [ "$SNAPSHOT" = "yes" ]; then
     info "Building LDNS snapshot."
-    version="${version}_pre_`date +%Y%m%d`"
+    version2="${version}-`date +%Y%m%d`"
     info "Snapshot version number: $version"
+
+    replace_text "configure.ac" "AC_INIT(ldns, $version" "AC_INIT(ldns, $version2"
+    replace_text "drill/configure.ac" "AC_INIT(ldns, $version" "AC_INIT(ldns, $version2"
+    replace_text "examples/configure.ac" "AC_INIT(ldns, $version" "AC_INIT(ldns, $version2"
+    version="$version2"
+
+    info "Rebuilding configure script (autoconf) snapshot."
+    autoreconf || error_cleanup "Autoconf failed."
+
+    info "Rebuilding configure script for examples (autoconf) snapshot."
+    cd examples && autoreconf && cd .. || error_cleanup "Autoconf failed."
+
+    info "Rebuilding configure script for drill (autoconf) snapshot."
+    cd drill && autoreconf && cd .. || error_cleanup "Autoconf failed."
+
 fi
+
 
 info "Renaming LDNS directory to ldns-$version."
 cd ..
