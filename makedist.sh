@@ -20,6 +20,9 @@ Generate a distribution tar file for libdns.
     -h           This usage information.
     -s           Build a snapshot distribution file.  The current date is
                  automatically appended to the current ldns version number.
+    -rc <nr>     Build a release candidate, the given string will be added
+                 to the version number 
+                 (which will then be ldns-<version>_rc<number>)
     -d SVN_root  Retrieve the libdns source from the specified repository.
 EOF
     exit 1
@@ -75,6 +78,7 @@ replace_all () {
     
 
 SNAPSHOT="no"
+RC="no"
 
 # Parse the command line arguments.
 while [ "$1" ]; do
@@ -88,6 +92,10 @@ while [ "$1" ]; do
             ;;
         "-s")
             SNAPSHOT="yes"
+            ;;
+        "-rc")
+            RC="$2"
+            shift
             ;;
         *)
             error "Unrecognized argument -- $1"
@@ -146,23 +154,40 @@ version=`./configure --version | head -1 | awk '{ print $3 }'` || \
 
 info "LDNS version: $version"
 
+RECONFIGURE="no"
+
+if [ "$RC" != "no" ]; then
+    info "Building LDNS release candidate $RC."
+    version2="${version}_rc$RC"
+    info "Version number: $version2"
+
+    replace_text "configure.ac" "AC_INIT(ldns, $version" "AC_INIT(ldns, $version2"
+    replace_text "drill/configure.ac" "AC_INIT(ldns, $version" "AC_INIT(ldns, $version2"
+    replace_text "examples/configure.ac" "AC_INIT(ldns, $version" "AC_INIT(ldns, $version2"
+    version="$version2"
+    RECONFIGURE="yes"
+fi
+
 if [ "$SNAPSHOT" = "yes" ]; then
     info "Building LDNS snapshot."
-    version2="${version}-`date +%Y%m%d`"
+    version2="${version}_`date +%Y%m%d`"
     info "Snapshot version number: $version2"
 
     replace_text "configure.ac" "AC_INIT(ldns, $version" "AC_INIT(ldns, $version2"
     replace_text "drill/configure.ac" "AC_INIT(ldns, $version" "AC_INIT(ldns, $version2"
     replace_text "examples/configure.ac" "AC_INIT(ldns, $version" "AC_INIT(ldns, $version2"
     version="$version2"
+    RECONFIGURE="yes"
+fi
 
-    info "Rebuilding configure script (autoconf) snapshot."
+if [ "$RECONFIGURE" = "yes" ]; then
+    info "Rebuilding configure script (autoconf)."
     autoreconf || error_cleanup "Autoconf failed."
 
-    info "Rebuilding configure script for examples (autoconf) snapshot."
+    info "Rebuilding configure script for examples (autoconf)."
     cd examples && autoreconf && cd .. || error_cleanup "Autoconf failed."
 
-    info "Rebuilding configure script for drill (autoconf) snapshot."
+    info "Rebuilding configure script for drill (autoconf)."
     cd drill && autoreconf && cd .. || error_cleanup "Autoconf failed."
 
 fi
