@@ -21,7 +21,8 @@ authoritative nameserver directly (with the @ argument).
 Of course the nameserver that is used must be DNSSEC-aware.
 
 .SH OPTIONS
-.TP-f\fR
+.TP
+\fB-f\fR
 Do a 'full' zone walk; by default, ldns-walk will only show the names, and types present at those names. If this option is given, all resource records will be printed.
 
 .TP
@@ -32,6 +33,9 @@ large zone.
 .TP
 \fB@\fR \fInameserver\fR
 Send the queries to this nameserver.
+
+.SH BUGS
+The full zone walk function is not complete yet, it does not correctly print delegation records
 
 .SH AUTHOR
 Written by Jelte Jansen as an example for ldns usage.
