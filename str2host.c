@@ -611,14 +611,13 @@ ldns_str2rdf_nsec(ldns_rdf **rd, const char *str)
 			cur_window++;
 			cur_window_max = 0;
 			memset(cur_data, 0, 32);
-		} else {
-			cur_data[i%32] = bitmap[i];
-			if (bitmap[i] > 0) {
-				cur_window_max = i%32;
-			}
+		}
+		cur_data[i%32] = bitmap[i];
+		if (bitmap[i] > 0) {
+			cur_window_max = i%32;
 		}
 	}
-	if (cur_window_max > 0) {
+	if (cur_window_max > 0 || cur_data[0] > 0) {
 		/* this window has stuff, add it */
 		data = LDNS_XREALLOC(data, uint8_t, cur_data_size + cur_window_max + 3);
 		data[cur_data_size] = cur_window;
