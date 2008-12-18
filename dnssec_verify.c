@@ -1777,7 +1777,6 @@ ldns_verify_rrsig(ldns_rr_list *rrset, ldns_rr *rrsig, ldns_rr *key)
 	case LDNS_DSA:
 	case LDNS_DSA_NSEC3:
 		/* EVP takes rfc2459 format, which is a tad longer than dns format */
-		exit(0);
 		if (ldns_convert_dsa_rrsig_rdf2asn1(rawsig_buf,
 									 ldns_rr_rdf(rrsig, 8))
 		    != LDNS_STATUS_OK) {
