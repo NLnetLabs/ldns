@@ -22,7 +22,7 @@ Generate a distribution tar file for libdns.
                  automatically appended to the current ldns version number.
     -rc <nr>     Build a release candidate, the given string will be added
                  to the version number 
-                 (which will then be ldns-<version>_rc<number>)
+                 (which will then be ldns-<version>rc<number>)
     -d SVN_root  Retrieve the libdns source from the specified repository.
 EOF
     exit 1
@@ -158,7 +158,7 @@ RECONFIGURE="no"
 
 if [ "$RC" != "no" ]; then
     info "Building LDNS release candidate $RC."
-    version2="${version}_rc$RC"
+    version2="${version}rc$RC"
     info "Version number: $version2"
 
     replace_text "configure.ac" "AC_INIT(ldns, $version" "AC_INIT(ldns, $version2"
