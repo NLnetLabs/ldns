@@ -93,7 +93,11 @@ ldns_sign_public(ldns_rr_list *rrset, ldns_key_list *keys)
 			printf("[XX]ERROR NO SIGN BUG, OUT OF MEM?\n");
 			ldns_rr_list_print(stdout, rrset_clone);
 			fflush(stdout);
-			exit(123);
+			ldns_rr_list_free(rrset_clone);
+			ldns_rr_list_free(signatures);
+			ldns_rdf_free(first_label);
+			ldns_rdf_free(new_owner);
+			return NULL;
 		}
 		b64rdf = NULL;
 
@@ -339,8 +343,9 @@ ldns_sign_public_evp(ldns_buffer *to_sign,
 	/* initializes a signing context */
 	md_type = digest_type;
 	if(!md_type) {
-		printf("Unknown message digest");
-		exit(1);
+		/* unknown message difest */
+		ldns_buffer_free(b64sig);
+		return NULL;
 	}
 
 	EVP_MD_CTX_init(&ctx);

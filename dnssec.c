@@ -925,7 +925,8 @@ ldns_nsec3_hash_name(ldns_rdf *name,
 		fprintf(stderr, "of hashed owner name (name: ");
 		ldns_rdf_print(stderr, name);
 		fprintf(stderr, ", return code: %d)\n", hashed_owner_b32_len);
-		exit(4);
+		LDNS_FREE(hashed_owner_b32);
+		return NULL;
 	}
 	hashed_owner_str_len = hashed_owner_b32_len;
 	hashed_owner_b32[hashed_owner_b32_len] = '\0';
@@ -933,7 +934,8 @@ ldns_nsec3_hash_name(ldns_rdf *name,
 	status = ldns_str2rdf_dname(&hashed_owner, hashed_owner_b32);
 	if (status != LDNS_STATUS_OK) {
 		fprintf(stderr, "Error creating rdf from %s\n", hashed_owner_b32);
-		exit(1);
+		LDNS_FREE(hashed_owner_b32);
+		return NULL;
 	}
 
 	LDNS_FREE(hashed_owner_b32);
