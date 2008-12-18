@@ -189,7 +189,8 @@ if [ "$RECONFIGURE" = "yes" ]; then
 
     info "Rebuilding configure script for drill (autoconf)."
     cd drill && autoreconf && cd .. || error_cleanup "Autoconf failed."
-
+    
+    rm -r autom4te* drill/autom4te* examples/autom4te* || error_cleanup "Failed to remove autoconf cache directory."
 fi
 
 
