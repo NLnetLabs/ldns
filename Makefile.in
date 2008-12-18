@@ -102,7 +102,7 @@ libldns.la-export-all:	$(LIBDNS_OBJECTS)
 $(addprefix include/ldns/, $(notdir $(LIBDNS_HEADERS))): include/ldns/%.h: $(srcdir)/ldns/%.h
 		@if [ ! -d include ] ; then ($(INSTALL) -d include || echo "include exists") ; fi ;
 		@if [ ! -d include/ldns ] ; then (cd include; ln -s ../ldns ./ldns || echo "include/ldns exists") ; fi ;
-		MVPROG=/bin/cp $(INSTALL) -m 644 $< ./include/ldns/
+		$(INSTALL) -m 644 $< ./include/ldns/
 
 copy-headers:	$(addprefix include/ldns/, $(notdir $(LIBDNS_HEADERS)))
 
@@ -114,7 +114,7 @@ doxygen:	manpages
 ifdef doxygen
 		# if we are not in base we need to copy some html files too
 		if [ ! -e doc/header.html ] ; then \
-			MVPROG=/bin/cp $(INSTALL) -m 644 $(srcdir)/doc/header.html doc/ ; \
+			$(INSTALL) -m 644 $(srcdir)/doc/header.html doc/ ; \
 		fi ;
 		$(doxygen) $(srcdir)/libdns.doxygen
 endif
@@ -142,9 +142,9 @@ uninstall-manpages:
 install-h:	lib
 		$(INSTALL) -m 755 -d $(DESTDIR)$(includedir)/ldns
 		for i in $(LIBDNS_HEADERS); do \
-			MVPROG=/bin/cp $(INSTALL) -m 644 $$i $(DESTDIR)$(includedir)/ldns/; done
-		MVPROG=/bin/cp $(INSTALL) -m 644 include/ldns/util.h $(DESTDIR)$(includedir)/ldns/
-		MVPROG=/bin/cp $(INSTALL) -m 644 include/ldns/net.h $(DESTDIR)$(includedir)/ldns/
+			$(INSTALL) -m 644 $$i $(DESTDIR)$(includedir)/ldns/; done
+		$(INSTALL) -m 644 include/ldns/util.h $(DESTDIR)$(includedir)/ldns/
+		$(INSTALL) -m 644 include/ldns/net.h $(DESTDIR)$(includedir)/ldns/
 
 uninstall-h:
 		for i in $(LIBDNS_HEADERS); do \
