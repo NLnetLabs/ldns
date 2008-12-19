@@ -568,13 +568,11 @@ ldns_str2rdf_nsec(ldns_rdf **rd, const char *str)
 {
 	const char *delimiters = "\n\t ";
 	char *token = LDNS_XMALLOC(char, LDNS_MAX_RDFLEN);
-	uint8_t *bitmap = LDNS_XMALLOC(uint8_t, 1);
 	ldns_buffer *str_buf;
 	ssize_t c;
 	uint16_t cur_type;
 	size_t type_count = 0;
 	ldns_rr_type type_list[1024];
-	uint8_t *data = NULL;
 
 	str_buf = LDNS_MALLOC(ldns_buffer);
 	ldns_buffer_new_frm_data(str_buf, (char *)str, strlen(str));
@@ -588,12 +586,9 @@ ldns_str2rdf_nsec(ldns_rdf **rd, const char *str)
 	*rd = ldns_dnssec_create_nsec_bitmap(type_list,
 	                                     type_count,
 	                                     LDNS_RR_TYPE_NSEC);
-	if(data)
-		LDNS_FREE(data);
+
 	if (token)
 		LDNS_FREE(token);
-	if(bitmap)
-		LDNS_FREE(bitmap);
 	ldns_buffer_free(str_buf);
 	return LDNS_STATUS_OK;
 }
