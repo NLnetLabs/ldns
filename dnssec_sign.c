@@ -44,6 +44,8 @@ ldns_sign_public(ldns_rr_list *rrset, ldns_key_list *keys)
 	if (!rrset || ldns_rr_list_rr_count(rrset) < 1 || !keys) {
 		return NULL;
 	}
+	
+	new_owner = NULL;
 
 	key_count = 0;
 	signatures = ldns_rr_list_new();

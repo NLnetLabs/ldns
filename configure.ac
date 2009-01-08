@@ -53,10 +53,18 @@ fi
 # working directory
 AC_DEFUN([COPY_FILES],
 [
-echo "copying: $1 to $2"
 for file in $1; do
-	$srcdir/install-sh -m 644 $srcdir/$file $2
+	$srcdir/install-sh -m 644 $file $2
 done
+])
+
+# copy all .h files in the dir at argument 1
+# (relative to source) to the dir at argument 2
+# (relative to current dir)
+AC_DEFUN([COPY_HEADER_FILES],
+[
+echo "copying header files"
+COPY_FILES($srcdir/$1/*.h, $2)
 ])
 
 dnl routine to help check for needed compiler flags.
@@ -696,16 +704,7 @@ size_t strlcpy(char *dst, const char *src, size_t siz);
 ])
 
 AC_CONFIG_FILES([Makefile ldns/net.h ldns/util.h])
-
-COPY_FILES([ldns/buffer.h ldns/dnssec_sign.h ldns/host2wire.h], ldns/)
-COPY_FILES([ldns/parse.h ldns/str2host.h ldns/zone.h], ldns/)
-COPY_FILES([ldns/common.h ldns/dnssec_verify.h ldns/keys.h], ldns/)
-COPY_FILES([ldns/rbtree.h ldns/tsig.h ldns/config.h], ldns/)
-COPY_FILES([ldns/dnssec_zone.h ldns/ldns.h ldns/rdata.h], ldns/)
-COPY_FILES([ldns/update.h ldns/error.h ldns/net.h], ldns/)
-COPY_FILES([ldns/resolver.h ldns/dname.h ldns/higher.h], ldns/)
-COPY_FILES([ldns/rr_functions.h ldns/dnssec.h ldns/host2str.h], ldns/)
-COPY_FILES([ldns/packet.h ldns/rr.h ldns/wire2host.h], ldns/)
+COPY_HEADER_FILES(ldns/, ldns/)
 
 AC_CONFIG_HEADER([ldns/config.h])
 AC_OUTPUT
