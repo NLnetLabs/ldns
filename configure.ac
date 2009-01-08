@@ -704,9 +704,9 @@ size_t strlcpy(char *dst, const char *src, size_t siz);
 ])
 
 AC_CONFIG_FILES([Makefile ldns/net.h ldns/util.h])
-COPY_HEADER_FILES(ldns/, ldns/)
 
 AC_CONFIG_HEADER([ldns/config.h])
 AC_OUTPUT
+COPY_HEADER_FILES(ldns/, ldns/)
 
 AC_CONFIG_SUBDIRS([drill])
