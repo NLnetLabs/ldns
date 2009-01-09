@@ -18,6 +18,147 @@
 #include <openssl/err.h>
 #include <openssl/md5.h>
 
+ldns_rr *
+ldns_create_empty_rrsig(ldns_rr_list *rrset,
+                        ldns_key *current_key)
+{
+	uint32_t orig_ttl;
+	time_t now;
+	uint8_t label_count;
+
+	label_count = ldns_dname_label_count(ldns_rr_owner(ldns_rr_list_rr(rrset,
+	                                                   0)));
+
+	ldns_rr *current_sig;
+	
+	current_sig = ldns_rr_new_frm_type(LDNS_RR_TYPE_RRSIG);
+	
+	/* set the type on the new signature */
+	orig_ttl = ldns_rr_ttl(ldns_rr_list_rr(rrset, 0));
+
+	ldns_rr_set_ttl(current_sig, orig_ttl);
+	ldns_rr_set_owner(current_sig, 
+			  ldns_rdf_clone(
+			       ldns_rr_owner(
+				    ldns_rr_list_rr(rrset,
+						    0))));
+
+	/* fill in what we know of the signature */
+	
+	/* set the orig_ttl */
+	(void)ldns_rr_rrsig_set_origttl(
+		   current_sig, 
+		   ldns_native2rdf_int32(LDNS_RDF_TYPE_INT32,
+					 orig_ttl));
+	/* the signers name */
+
+	(void)ldns_rr_rrsig_set_signame(
+			current_sig, 
+			ldns_rdf_clone(ldns_key_pubkey_owner(current_key)));
+	/* label count - get it from the first rr in the rr_list */
+	(void)ldns_rr_rrsig_set_labels(
+			current_sig, 
+			ldns_native2rdf_int8(LDNS_RDF_TYPE_INT8,
+			                     label_count));
+	/* inception, expiration */
+	now = time(NULL);
+	if (ldns_key_inception(current_key) != 0) {
+		(void)ldns_rr_rrsig_set_inception(
+				current_sig,
+				ldns_native2rdf_int32(
+				    LDNS_RDF_TYPE_TIME, 
+				    ldns_key_inception(current_key)));
+	} else {
+		(void)ldns_rr_rrsig_set_inception(
+				current_sig,
+				ldns_native2rdf_int32(LDNS_RDF_TYPE_TIME, now));
+	}
+	if (ldns_key_expiration(current_key) != 0) {
+		(void)ldns_rr_rrsig_set_expiration(
+				current_sig,
+				ldns_native2rdf_int32(
+				    LDNS_RDF_TYPE_TIME, 
+				    ldns_key_expiration(current_key)));
+	} else {
+		(void)ldns_rr_rrsig_set_expiration(
+			     current_sig,
+				ldns_native2rdf_int32(
+				    LDNS_RDF_TYPE_TIME, 
+				    now + LDNS_DEFAULT_EXP_TIME));
+	}
+
+	(void)ldns_rr_rrsig_set_keytag(
+		   current_sig,
+		   ldns_native2rdf_int16(LDNS_RDF_TYPE_INT16, 
+		                         ldns_key_keytag(current_key)));
+
+	(void)ldns_rr_rrsig_set_algorithm(
+			current_sig,
+			ldns_native2rdf_int8(
+			    LDNS_RDF_TYPE_ALG, 
+			    ldns_key_algorithm(current_key)));
+
+	(void)ldns_rr_rrsig_set_typecovered(
+			current_sig,
+			ldns_native2rdf_int16(
+			    LDNS_RDF_TYPE_TYPE,
+			    ldns_rr_get_type(ldns_rr_list_rr(rrset,
+			                                     0))));
+	return current_sig;
+}
+
+
+ldns_rdf *
+ldns_sign_public_buffer(ldns_buffer *sign_buf, ldns_key *current_key)
+{
+	ldns_rdf *b64rdf = NULL;
+
+	switch(ldns_key_algorithm(current_key)) {
+	case LDNS_SIGN_DSA:
+	case LDNS_DSA_NSEC3:
+		b64rdf = ldns_sign_public_evp(
+				   sign_buf,
+				   ldns_key_evp_key(current_key),
+				   EVP_dss1());
+		break;
+	case LDNS_SIGN_RSASHA1:
+	case LDNS_SIGN_RSASHA1_NSEC3:
+		b64rdf = ldns_sign_public_evp(
+				   sign_buf,
+				   ldns_key_evp_key(current_key),
+				   EVP_sha1());
+		break;
+#ifdef USE_SHA2
+	case LDNS_SIGN_RSASHA256:
+	case LDNS_SIGN_RSASHA256_NSEC3:
+		b64rdf = ldns_sign_public_evp(
+				   sign_buf,
+				   ldns_key_evp_key(current_key),
+				   EVP_sha256());
+		break;
+	case LDNS_SIGN_RSASHA512:
+	case LDNS_SIGN_RSASHA512_NSEC3:
+		b64rdf = ldns_sign_public_evp(
+				   sign_buf,
+				   ldns_key_evp_key(current_key),
+				   EVP_sha512());
+		break;
+#endif /* USE_SHA2 */
+	case LDNS_SIGN_RSAMD5:
+		b64rdf = ldns_sign_public_evp(
+				   sign_buf,
+				   ldns_key_evp_key(current_key),
+				   EVP_md5());
+		break;
+	default:
+		/* do _you_ know this alg? */
+		printf("unknown algorithm, ");
+		printf("is the one used available on this system?\n");
+		break;
+	}
+	
+	return b64rdf;
+}
 
 /**
  * use this function to sign with a public/private key alg
@@ -34,11 +175,6 @@ ldns_sign_public(ldns_rr_list *rrset, ldns_key_list *keys)
 	size_t key_count;
 	uint16_t i;
 	ldns_buffer *sign_buf;
-	uint32_t orig_ttl;
-	time_t now;
-	uint8_t label_count;
-	ldns_rdf *first_label;
-	ldns_rdf *wildcard_label;
 	ldns_rdf *new_owner;
 
 	if (!rrset || ldns_rr_list_rr_count(rrset) < 1 || !keys) {
@@ -57,26 +193,6 @@ ldns_sign_public(ldns_rr_list *rrset, ldns_key_list *keys)
 		return NULL;
 	}
 
-	/* check for label count and wildcard */
-	label_count = ldns_dname_label_count(ldns_rr_owner(ldns_rr_list_rr(rrset,
-														  0)));
-	(void) ldns_str2rdf_dname(&wildcard_label, "*");
-	first_label = ldns_dname_label(ldns_rr_owner(ldns_rr_list_rr(rrset, 0)),
-							 0);
-	if (ldns_rdf_compare(first_label, wildcard_label) == 0) {
-		label_count--;
-		for (i = 0; i < ldns_rr_list_rr_count(rrset_clone); i++) {
-			new_owner = ldns_dname_cat_clone(
-						 wildcard_label, 
-						 ldns_dname_left_chop(
-							ldns_rr_owner(ldns_rr_list_rr(rrset_clone,
-													i))));
-			ldns_rr_set_owner(ldns_rr_list_rr(rrset_clone, i), new_owner);
-		}
-	}
-	ldns_rdf_deep_free(wildcard_label);
-	ldns_rdf_deep_free(first_label);
-
 	/* make it canonical */
 	for(i = 0; i < ldns_rr_list_rr_count(rrset_clone); i++) {
 		ldns_rr2canonical(ldns_rr_list_rr(rrset_clone, i));
@@ -92,12 +208,8 @@ ldns_sign_public(ldns_rr_list *rrset, ldns_key_list *keys)
 		}
 		sign_buf = ldns_buffer_new(LDNS_MAX_PACKETLEN);
 		if (!sign_buf) {
-			printf("[XX]ERROR NO SIGN BUG, OUT OF MEM?\n");
-			ldns_rr_list_print(stdout, rrset_clone);
-			fflush(stdout);
 			ldns_rr_list_free(rrset_clone);
 			ldns_rr_list_free(signatures);
-			ldns_rdf_free(first_label);
 			ldns_rdf_free(new_owner);
 			return NULL;
 		}
@@ -112,83 +224,13 @@ ldns_sign_public(ldns_rr_list *rrset, ldns_key_list *keys)
 			|| ldns_rr_get_type(ldns_rr_list_rr(rrset, 0))
 		        == LDNS_RR_TYPE_DNSKEY)
 		    ) {
-			current_sig = ldns_rr_new_frm_type(LDNS_RR_TYPE_RRSIG);
-			
-			/* set the type on the new signature */
-			orig_ttl = ldns_rr_ttl(ldns_rr_list_rr(rrset, 0));
+			current_sig = ldns_create_empty_rrsig(rrset_clone,
+			                                      current_key);
 
-			ldns_rr_set_ttl(current_sig, orig_ttl);
-			ldns_rr_set_owner(current_sig, 
-						   ldns_rdf_clone(
-							  ldns_rr_owner(ldns_rr_list_rr(rrset_clone,
-													  0))));
-
-			/* fill in what we know of the signature */
-
-			/* set the orig_ttl */
-			(void)ldns_rr_rrsig_set_origttl(
-					current_sig, 
-					ldns_native2rdf_int32(LDNS_RDF_TYPE_INT32, orig_ttl));
-			/* the signers name */
-
-			(void)ldns_rr_rrsig_set_signame(
-					current_sig, 
-					ldns_rdf_clone(ldns_key_pubkey_owner(current_key)));
-			/* label count - get it from the first rr in the rr_list */
-			(void)ldns_rr_rrsig_set_labels(
-					current_sig, 
-					ldns_native2rdf_int8(LDNS_RDF_TYPE_INT8,
-									 label_count));
-			/* inception, expiration */
-			now = time(NULL);
-			if (ldns_key_inception(current_key) != 0) {
-				(void)ldns_rr_rrsig_set_inception(
-						current_sig,
-						ldns_native2rdf_int32(
-						    LDNS_RDF_TYPE_TIME, 
-						    ldns_key_inception(current_key)));
-			} else {
-				(void)ldns_rr_rrsig_set_inception(
-						current_sig,
-						ldns_native2rdf_int32(LDNS_RDF_TYPE_TIME, now));
-			}
-			if (ldns_key_expiration(current_key) != 0) {
-				(void)ldns_rr_rrsig_set_expiration(
-						current_sig,
-						ldns_native2rdf_int32(
-						    LDNS_RDF_TYPE_TIME, 
-						    ldns_key_expiration(current_key)));
-			} else {
-				(void)ldns_rr_rrsig_set_expiration(
-					     current_sig,
-						ldns_native2rdf_int32(
-						    LDNS_RDF_TYPE_TIME, 
-						    now + LDNS_DEFAULT_EXP_TIME));
-			}
-
-			/* key-tag */
-			(void)ldns_rr_rrsig_set_keytag(
-				     current_sig,
-					ldns_native2rdf_int16(LDNS_RDF_TYPE_INT16, 
-									  ldns_key_keytag(current_key)));
-
-			/* algorithm - check the key and substitute that */
-			(void)ldns_rr_rrsig_set_algorithm(
-					current_sig,
-					ldns_native2rdf_int8(
-					    LDNS_RDF_TYPE_ALG, 
-					    ldns_key_algorithm(current_key)));
-			/* type-covered */
-			(void)ldns_rr_rrsig_set_typecovered(
-					current_sig,
-					ldns_native2rdf_int16(
-					    LDNS_RDF_TYPE_TYPE,
-					    ldns_rr_get_type(ldns_rr_list_rr(rrset_clone,
-												  0))));
 			/* right now, we have: a key, a semi-sig and an rrset. For
 			 * which we can create the sig and base64 encode that and
 			 * add that to the signature */
-			
+
 			if (ldns_rrsig2buffer_wire(sign_buf, current_sig)
 			    != LDNS_STATUS_OK) {
 				ldns_buffer_free(sign_buf);
@@ -204,55 +246,15 @@ ldns_sign_public(ldns_rr_list *rrset, ldns_key_list *keys)
 				ldns_rr_list_deep_free(rrset_clone);
 				return NULL;
 			}
-			
-			switch(ldns_key_algorithm(current_key)) {
-			case LDNS_SIGN_DSA:
-			case LDNS_DSA_NSEC3:
-				b64rdf = ldns_sign_public_evp(
-						   sign_buf,
-						   ldns_key_evp_key(current_key),
-						   EVP_dss1());
-				break;
-			case LDNS_SIGN_RSASHA1:
-			case LDNS_SIGN_RSASHA1_NSEC3:
-				b64rdf = ldns_sign_public_evp(
-						   sign_buf,
-						   ldns_key_evp_key(current_key),
-						   EVP_sha1());
-				break;
-#ifdef USE_SHA2
-			case LDNS_SIGN_RSASHA256:
-			case LDNS_SIGN_RSASHA256_NSEC3:
-				b64rdf = ldns_sign_public_evp(
-						   sign_buf,
-						   ldns_key_evp_key(current_key),
-						   EVP_sha256());
-				break;
-			case LDNS_SIGN_RSASHA512:
-			case LDNS_SIGN_RSASHA512_NSEC3:
-				b64rdf = ldns_sign_public_evp(
-						   sign_buf,
-						   ldns_key_evp_key(current_key),
-						   EVP_sha512());
-				break;
-#endif /* USE_SHA2 */
-			case LDNS_SIGN_RSAMD5:
-				b64rdf = ldns_sign_public_evp(
-						   sign_buf,
-						   ldns_key_evp_key(current_key),
-						   EVP_md5());
-				break;
-			default:
-				/* do _you_ know this alg? */
-				printf("unknown algorithm, ");
-				printf("is the one used available on this system?\n");
-				break;
-			}
+
+			b64rdf = ldns_sign_public_buffer(sign_buf, current_key);
+
 			if (!b64rdf) {
 				/* signing went wrong */
 				ldns_rr_list_deep_free(rrset_clone);
 				return NULL;
 			}
+
 			ldns_rr_rrsig_set_sig(current_sig, b64rdf);
 
 			/* push the signature to the signatures list */

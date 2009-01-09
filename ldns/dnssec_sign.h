@@ -8,6 +8,26 @@
 /* sign functions */
 
 /**
+ * Create an empty RRSIG RR (i.e. without the actual signature data)
+ * \param[in] rrset The RRset to create the signature for
+ * \param[in] current_key The key that will create the signature
+ * \return signature rr
+ */
+ldns_rr *
+ldns_create_empty_rrsig(ldns_rr_list *rrset,
+                        ldns_key *key);
+
+/**
+ * Sign the buffer which contains the wiredata of an rrset, and the
+ * corresponding empty rrsig rr with the given key
+ * \param[in] sign_buf the buffer with data to sign
+ * \param[in] key the key to sign with
+ * \return an rdata field with the signature data
+ */
+ldns_rdf *
+ldns_sign_public_buffer(ldns_buffer *sign_buf, ldns_key *key);
+
+/**
  * Sign an rrset
  * \param[in] rrset the rrset
  * \param[in] keys the keys to use
