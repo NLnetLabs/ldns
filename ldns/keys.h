@@ -105,13 +105,22 @@ struct ldns_struct_key {
 	struct {
 #ifdef HAVE_SSL
 #ifndef S_SPLINT_S
-                EVP_PKEY *key;
+		/* The key can be an OpenSSL EVP Key
+		 */
+		EVP_PKEY *key;
 #endif
 #endif /* HAVE_SSL */
+		/**
+		 * The key can be an HMAC key
+		 */
 		struct {
 			unsigned char *key;
 			size_t size;
 		} hmac;
+		/** the key structure can also just point to some external
+		 *  key data
+		 */
+		void *external_key;
 	} _key;
 	/** Depending on the key we can have extra data */
 	union {
@@ -299,12 +308,24 @@ void ldns_key_set_dsa_key(ldns_key *k, DSA *d);
  * \param[in] hmac the raw key data
  */
 void ldns_key_set_hmac_key(ldns_key *k, unsigned char *hmac);
+
 /*
  * Set the key's hmac size
  * \param[in] k the key
  * \param[in] hmac the hmac data
  */
 void ldns_key_set_hmac_size(ldns_key *k, size_t hmac_size);
+
+/**
+ * Set the key id data. This is used if the key points to
+ * some externally stored key data
+ * 
+ * The data at the pointer is not copied, and must be freed
+ * manually; ldns_key_deep_free() does *not* free this data
+ * \param[in] k the key
+ * \param[in] hmac key id data
+ */
+void ldns_key_set_external_key(ldns_key *k, void *external_key);
 
 /**
  * Set the key's hmac size
@@ -425,6 +446,12 @@ bool ldns_key_use(const ldns_key *k);
  */
 unsigned char *ldns_key_hmac_key(const ldns_key *k);
 /**
+ * return the key id key data
+ * \param[in] k the key
+ * \return the key id data
+ */
+void *ldns_key_external_key(const ldns_key *k);
+/**
  * return the hmac key size
  * \param[in] k the key
  * \return the hmac key size
@@ -484,6 +511,9 @@ ldns_key *ldns_key_list_pop_key(ldns_key_list *key_list);
 
 /** 
  * converts a ldns_key to a public key rr
+ * If the key data exists at an external point, the corresponding
+ * rdata field must still be added with ldns_rr_rdf_push() to the
+ * result rr of this function
  *
  * \param[in] k the ldns_key to convert
  * \return ldns_rr representation of the key
@@ -499,14 +529,15 @@ ldns_rr *ldns_key2rr(const ldns_key *k);
 void ldns_key_print(FILE *output, const ldns_key *k);
 
 /**
- * frees a key structure
+ * frees a key structure, but not its internal data structures
  *
  * \param[in] key the key object to free
  */
 void ldns_key_free(ldns_key *key);
 
 /**
- * frees a key structure and all it's internal data
+ * frees a key structure and all its internal data structures, except
+ * the data set by ldns_key_set_external_key()
  *
  * \param[in] key the key object to free
  */

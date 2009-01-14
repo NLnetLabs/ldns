@@ -69,7 +69,9 @@ ldns_key_new()
 		ldns_key_set_inception(newkey, 0);
 		ldns_key_set_expiration(newkey, 0);
 		ldns_key_set_pubkey_owner(newkey, NULL);
+		ldns_key_set_evp_key(newkey, NULL);
 		ldns_key_set_hmac_key(newkey, NULL);
+		ldns_key_set_external_key(newkey, NULL);
 		return newkey;
 	}
 	return NULL;
@@ -653,6 +655,12 @@ ldns_key_set_hmac_size(ldns_key *k, size_t hmac_size)
 }
 
 void
+ldns_key_set_external_key(ldns_key *k, void *external_key)
+{
+	k->_key.external_key = external_key;
+}
+
+void
 ldns_key_set_origttl(ldns_key *k, uint32_t t)
 {
 	k->_extra.dnssec.orig_ttl = t;
@@ -731,25 +739,47 @@ ldns_key_evp_key(const ldns_key *k)
 RSA *
 ldns_key_rsa_key(const ldns_key *k)
 {
-	return EVP_PKEY_get1_RSA(k->_key.key);
+	if (k->_key.key) {
+		return EVP_PKEY_get1_RSA(k->_key.key);
+	} else {
+		return NULL;
+	}
 }
 
 DSA *
 ldns_key_dsa_key(const ldns_key *k)
 {
-	return EVP_PKEY_get1_DSA(k->_key.key);
+	if (k->_key.key) {
+		return EVP_PKEY_get1_DSA(k->_key.key);
+	} else {
+		return NULL;
+	}
 }
 
 unsigned char *
 ldns_key_hmac_key(const ldns_key *k)
 {
-	return k->_key.hmac.key;
+	if (k->_key.hmac.key) {
+		return k->_key.hmac.key;
+	} else {
+		return NULL;
+	}
 }
 
 size_t
 ldns_key_hmac_size(const ldns_key *k)
 {
-	return k->_key.hmac.size;
+	if (k->_key.hmac.size) {
+		return k->_key.hmac.size;
+	} else {
+		return 0;
+	}
+}
+
+void *
+ldns_key_external_key(const ldns_key *k)
+{
+	return k->_key.external_key;
 }
 
 uint32_t
@@ -930,6 +960,7 @@ ldns_key2rr(const ldns_key *k)
 	uint16_t size = 0;
 	RSA *rsa = NULL;
 	DSA *dsa = NULL;
+	int internal_data = 0;
 
 	pubkey = ldns_rr_new();
 	if (!k) {
@@ -975,13 +1006,12 @@ ldns_key2rr(const ldns_key *k)
 			ldns_rr_push_rdf(pubkey,
 						  ldns_native2rdf_int8(LDNS_RDF_TYPE_ALG, ldns_key_algorithm(k)));
 			rsa =  ldns_key_rsa_key(k);
-			if (!rsa) {
-				return NULL;
-			} else {
+			if (rsa) {
 				if (!ldns_key_rsa2bin(bin, rsa, &size)) {
 					return NULL;
 				}
 				RSA_free(rsa);
+				internal_data = 1;
 			}
 			size++;
 			break;
@@ -989,26 +1019,29 @@ ldns_key2rr(const ldns_key *k)
 			ldns_rr_push_rdf(pubkey,
 					ldns_native2rdf_int8(LDNS_RDF_TYPE_ALG, LDNS_DSA));
 			dsa = ldns_key_dsa_key(k);
-			if (!dsa) {
-				return NULL;
-			} else {
+			if (dsa) {
 				if (!ldns_key_dsa2bin(bin, dsa, &size)) {
 					return NULL;
 				}
 				DSA_free(dsa);
+				internal_data = 1;
 			}
 			break;
 		case LDNS_DSA_NSEC3:
 			ldns_rr_push_rdf(pubkey,
 					ldns_native2rdf_int8(LDNS_RDF_TYPE_ALG, LDNS_DSA_NSEC3));
-			if (!ldns_key_dsa2bin(bin, ldns_key_dsa_key(k), &size)) {
-				return NULL;
+			dsa = ldns_key_dsa_key(k);
+			if (dsa) {
+				if (!ldns_key_dsa2bin(bin, dsa, &size)) {
+					return NULL;
+				}
+				DSA_free(dsa);
+				internal_data = 1;
 			}
 			break;
 		case LDNS_SIGN_HMACMD5:
 		case LDNS_SIGN_HMACSHA1:
 		case LDNS_SIGN_HMACSHA256:
-			/* tja */
 			ldns_rr_push_rdf(pubkey,
                                         ldns_native2rdf_int8(LDNS_RDF_TYPE_ALG,
 						ldns_key_algorithm(k)));
@@ -1018,9 +1051,11 @@ ldns_key2rr(const ldns_key *k)
 			break;
 	}
 	/* fourth the key bin material */
-	keybin = ldns_rdf_new_frm_data(LDNS_RDF_TYPE_B64, size, bin);
-	LDNS_FREE(bin);
-	ldns_rr_push_rdf(pubkey, keybin);
+	if (internal_data) {
+		keybin = ldns_rdf_new_frm_data(LDNS_RDF_TYPE_B64, size, bin);
+		LDNS_FREE(bin);
+		ldns_rr_push_rdf(pubkey, keybin);
+	}
 	return pubkey;
 }
 
