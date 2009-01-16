@@ -363,9 +363,11 @@ ldns_pkt_rr(ldns_pkt *pkt, ldns_pkt_section sec, ldns_rr *rr)
 	for(i = 0; i < rr_count; i++) {
 		if (ldns_rr_compare(ldns_rr_list_rr(rrs, i), rr) == 0) {
 			/* a match */
+			ldns_rr_list_free(rrs);
 			return true;
 		}
 	}
+	ldns_rr_list_free(rrs);
 	return false;
 }
 
