@@ -2,7 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.56)
-AC_INIT(ldns, 1.4.0, libdns@nlnetlabs.nl,libdns)
+AC_INIT(ldns, 1.4.2, libdns@nlnetlabs.nl,libdns)
 AC_CONFIG_SRCDIR([ldns-read-zone.c])
 
 OURCPPFLAGS=''
@@ -43,6 +43,9 @@ AC_MSG_RESULT(no)
 $3
 fi
 ])
+
+CHECK_COMPILER_FLAG(std=c99, [C99FLAG="-std=c99"])
+CHECK_COMPILER_FLAG(xc99, [C99FLAG="-xc99"])
 
 # add option to disable the evil rpath
 dnl Check whether to use rpath or not
@@ -100,7 +103,7 @@ fi
 AC_TYPE_SIZE_T
 CHECK_COMPILER_FLAG(O2, [CFLAGS="$CFLAGS -O2"])
 
-CHECK_COMPILER_FLAG_NEEDED(-std=c99 -D__EXTENSIONS__ -D_BSD_SOURCE -D_POSIX_C_SOURCE=200112 -D_XOPEN_SOURCE=600,
+CHECK_COMPILER_FLAG_NEEDED($C99FLAG -D__EXTENSIONS__ -D_BSD_SOURCE -D_POSIX_C_SOURCE=200112 -D_XOPEN_SOURCE=600,
 [
 #include "confdefs.h"
 #include <stdlib.h>
@@ -128,10 +131,10 @@ int test() {
 	a = isascii(32);
 	return a;
 }
-], [CFLAGS="$CFLAGS -std=c99 -D__EXTENSIONS__ -D_BSD_SOURCE -D_POSIX_C_SOURCE=200112 -D_XOPEN_SOURCE=600"])
+], [CFLAGS="$CFLAGS $C99FLAG -D__EXTENSIONS__ -D_BSD_SOURCE -D_POSIX_C_SOURCE=200112 -D_XOPEN_SOURCE=600"])
 
 
-CHECK_COMPILER_FLAG_NEEDED(-std=c99, [#include <stdbool.h>], [CFLAGS="$CFLAGS -std=c99"])
+CHECK_COMPILER_FLAG_NEEDED($C99FLAG, [#include <stdbool.h>], [CFLAGS="$CFLAGS $C99FLAG"])
 
 AC_C_INLINE
 AC_CHECK_TYPE(int8_t, char)
