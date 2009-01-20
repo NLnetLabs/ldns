@@ -404,7 +404,6 @@ ldns_dname_match_wildcard(const ldns_rdf *dname, const ldns_rdf *wildcard)
 {
 	ldns_rdf *wc_chopped;
 	int result;
-	printf("lc: %u, l1l: %u, chr: %c\n", ldns_dname_label_count(wildcard),ldns_rdf_data(wildcard)[0],ldns_rdf_data(wildcard)[1]);
 	/* check whether it really is a wildcard */
 	if (ldns_dname_label_count(wildcard) > 0 &&
 	    ldns_rdf_data(wildcard)[0] == 1 &&
