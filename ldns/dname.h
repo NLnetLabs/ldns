@@ -83,6 +83,7 @@ ldns_dname_clone_from(const ldns_rdf *d, uint16_t n);
 /**
  * chop one label off the left side of a dname. so 
  * wwww.nlnetlabs.nl, becomes nlnetlabs.nl
+ * This new name is a clone and must be freed with ldns_deep_free()
  * \param[in] d the dname to chop
  * \return the remaining dname
  */
@@ -143,6 +144,15 @@ bool ldns_dname_is_subdomain(const ldns_rdf *sub, const ldns_rdf *parent);
  * \return -1 if dname1 comes before dname2, 1 if dname1 comes after dname2, and 0 if they are equal.
  */
 int ldns_dname_compare(const ldns_rdf *dname1, const ldns_rdf *dname2);
+
+/**
+ * Checks whether the dname matches the given wildcard
+ * \param[in] dname The dname to check
+ * \param[in] wildcard The wildcard to check with
+ * \return 1 If the wildcard matches,
+ *         0 If the wildcard does not match, or if it is not a wildcard
+ */
+int ldns_dname_match_wildcard(const ldns_rdf *dname, const ldns_rdf *wildcard);
 
 /**
  * check if middle lays in the interval defined by prev and next

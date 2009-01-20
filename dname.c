@@ -399,6 +399,29 @@ ldns_dname_compare(const ldns_rdf *dname1, const ldns_rdf *dname2)
 	return result;
 }
 
+int
+ldns_dname_match_wildcard(const ldns_rdf *dname, const ldns_rdf *wildcard)
+{
+	ldns_rdf *wc_chopped;
+	int result;
+	printf("lc: %u, l1l: %u, chr: %c\n", ldns_dname_label_count(wildcard),ldns_rdf_data(wildcard)[0],ldns_rdf_data(wildcard)[1]);
+	/* check whether it really is a wildcard */
+	if (ldns_dname_label_count(wildcard) > 0 &&
+	    ldns_rdf_data(wildcard)[0] == 1 &&
+	    ldns_rdf_data(wildcard)[1] == '*') {
+		/* ok, so the dname needs to be a subdomain of the wildcard
+		 * without the *
+		 */
+		wc_chopped = ldns_dname_left_chop(wildcard);
+		result = ldns_dname_is_subdomain(dname, wc_chopped);
+		ldns_rdf_deep_free(wc_chopped);
+		if(result) {
+			return 1;
+		}
+	}
+	return 0;
+}
+
 /* nsec test: does prev <= middle < next 
  * -1 = yes
  * 0 = error/can't tell
