@@ -149,8 +149,10 @@ int ldns_dname_compare(const ldns_rdf *dname1, const ldns_rdf *dname2);
  * Checks whether the dname matches the given wildcard
  * \param[in] dname The dname to check
  * \param[in] wildcard The wildcard to check with
- * \return 1 If the wildcard matches,
- *         0 If the wildcard does not match, or if it is not a wildcard
+ * \return 1 If the wildcard matches, OR if 'wildcard' is not a wildcard and
+ *           the names are *exactly* the same
+ *         0 If the wildcard does not match, or if it is not a wildcard and
+ *           the names are not the same
  */
 int ldns_dname_match_wildcard(const ldns_rdf *dname, const ldns_rdf *wildcard);
 

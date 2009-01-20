@@ -412,11 +412,10 @@ ldns_dname_match_wildcard(const ldns_rdf *dname, const ldns_rdf *wildcard)
 		 * without the *
 		 */
 		wc_chopped = ldns_dname_left_chop(wildcard);
-		result = ldns_dname_is_subdomain(dname, wc_chopped);
+		result = (int) ldns_dname_is_subdomain(dname, wc_chopped);
 		ldns_rdf_deep_free(wc_chopped);
-		if(result) {
-			return 1;
-		}
+	} else {
+		result = ldns_dname_compare(dname, wildcard);
 	}
 	return 0;
 }
