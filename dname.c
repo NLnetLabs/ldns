@@ -415,9 +415,9 @@ ldns_dname_match_wildcard(const ldns_rdf *dname, const ldns_rdf *wildcard)
 		result = (int) ldns_dname_is_subdomain(dname, wc_chopped);
 		ldns_rdf_deep_free(wc_chopped);
 	} else {
-		result = ldns_dname_compare(dname, wildcard);
+		result = (ldns_dname_compare(dname, wildcard) == 0);
 	}
-	return 0;
+	return result;
 }
 
 /* nsec test: does prev <= middle < next 
