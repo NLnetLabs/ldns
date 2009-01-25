@@ -89,6 +89,7 @@ enum enum_match_ids {
 	MATCH_TIMESTAMP,
 	MATCH_QUERY,
 	MATCH_QTYPE,
+	MATCH_QNAME,
 	MATCH_ANSWER,
 	MATCH_AUTHORITY,
 	MATCH_ADDITIONAL,
@@ -215,6 +216,7 @@ typedef struct struct_match_table match_table;
 const match_table matches[] = {
 	{ MATCH_QUERY, "query", "String representation of the query RR", TYPE_RR },
 	{ MATCH_QTYPE, "qtype", "RR Type of the question RR, if present", TYPE_RR_TYPE },
+	{ MATCH_QNAME, "qname", "Owner name of the question RR, if present", TYPE_STRING },
 	{ MATCH_SRC_ADDRESS, "srcaddress", "address the packet was sent from", TYPE_ADDRESS },
 	{ MATCH_TIMESTAMP, "timestamp", "time the packet was sent", TYPE_TIMESTAMP },
 	{ MATCH_DST_ADDRESS, "dstaddress", "address the packet was sent to", TYPE_ADDRESS },
@@ -358,18 +360,18 @@ print_match_operation(FILE *output, match_operation *mc)
 					value = atoi(mc->value);
 					lt = ldns_lookup_by_id(ldns_opcodes, value);
 					if (lt) {
-						fprintf(output, lt->name);
+						fprintf(output, "%s", lt->name);
 					} else {
-						fprintf(output, mc->value);
+						fprintf(output, "%s", mc->value);
 					}
 					break;
 				case TYPE_RCODE:
 					value = atoi(mc->value);
 					lt = ldns_lookup_by_id(ldns_rcodes, value);
 					if (lt) {
-						fprintf(output, lt->name);
+						fprintf(output, "%s", lt->name);
 					} else {
-						fprintf(output, mc->value);
+						fprintf(output, "%s", mc->value);
 					}
 					break;
 				case TYPE_TIMESTAMP:
@@ -1158,6 +1160,7 @@ value_matches(match_id id,
 			result = match_int(operator, value, mvalue);
 			break;
 		case MATCH_QUERY:
+		case MATCH_QNAME:
 		case MATCH_ANSWER:
 		case MATCH_AUTHORITY:
 		case MATCH_ADDITIONAL:
@@ -1314,6 +1317,18 @@ get_string_value(match_id id, ldns_pkt *pkt, ldns_rdf *src_addr, ldns_rdf *dst_a
 			if (ldns_pkt_qdcount(pkt) > 0) {
 				free(val);
 				val = ldns_rr2str(ldns_rr_list_rr(ldns_pkt_question(pkt), 0));
+				/* replace \n for nicer printing later */
+				if (strchr(val, '\n')) {
+					*(strchr(val, '\n')) = '\0';
+				}
+			} else {
+				val[0] = '\0';
+			}
+			break;
+		case MATCH_QNAME:
+			if (ldns_pkt_qdcount(pkt) > 0) {
+				free(val);
+				val = ldns_rdf2str(ldns_rr_owner(ldns_rr_list_rr(ldns_pkt_question(pkt), 0)));
 				/* replace \n for nicer printing later */
 				if (strchr(val, '\n')) {
 					*(strchr(val, '\n')) = '\0';
