@@ -250,7 +250,9 @@ ldns_pkt_edns_data(const ldns_pkt *packet)
 
 /* return only those rr that share the ownername */
 ldns_rr_list *
-ldns_pkt_rr_list_by_name(ldns_pkt *packet, ldns_rdf *ownername, ldns_pkt_section sec)
+ldns_pkt_rr_list_by_name(ldns_pkt *packet,
+                         ldns_rdf *ownername,
+                         ldns_pkt_section sec)
 {
 	ldns_rr_list *rrs;
 	ldns_rr_list *new;
@@ -279,7 +281,9 @@ ldns_pkt_rr_list_by_name(ldns_pkt *packet, ldns_rdf *ownername, ldns_pkt_section
 
 /* return only those rr that share a type */
 ldns_rr_list *
-ldns_pkt_rr_list_by_type(const ldns_pkt *packet, ldns_rr_type type, ldns_pkt_section sec)
+ldns_pkt_rr_list_by_type(const ldns_pkt *packet,
+                         ldns_rr_type type,
+                         ldns_pkt_section sec)
 {
 	ldns_rr_list *rrs;
 	ldns_rr_list *new;
@@ -313,7 +317,10 @@ ldns_pkt_rr_list_by_type(const ldns_pkt *packet, ldns_rr_type type, ldns_pkt_sec
 
 /* return only those rrs that share name and type */
 ldns_rr_list *
-ldns_pkt_rr_list_by_name_and_type(const ldns_pkt *packet, const ldns_rdf *ownername, ldns_rr_type type, ldns_pkt_section sec)
+ldns_pkt_rr_list_by_name_and_type(const ldns_pkt *packet,
+                                  const ldns_rdf *ownername,
+                                  ldns_rr_type type,
+                                  ldns_pkt_section sec)
 {
 	ldns_rr_list *rrs;
 	ldns_rr_list *new;
@@ -349,26 +356,27 @@ ldns_pkt_rr_list_by_name_and_type(const ldns_pkt *packet, const ldns_rdf *ownern
 bool
 ldns_pkt_rr(ldns_pkt *pkt, ldns_pkt_section sec, ldns_rr *rr)
 {
-	ldns_rr_list *rrs;
-	uint16_t rr_count;
-	uint16_t i;
+	bool result = false;
 
-	rrs = ldns_pkt_get_section_clone(pkt, sec);
-	if (!rrs) {
-		return false;
+	switch (sec) {
+	case LDNS_SECTION_QUESTION:
+		return ldns_rr_list_contains_rr(ldns_pkt_question(pkt), rr);
+	case LDNS_SECTION_ANSWER:
+		return ldns_rr_list_contains_rr(ldns_pkt_answer(pkt), rr);
+	case LDNS_SECTION_AUTHORITY:
+		return ldns_rr_list_contains_rr(ldns_pkt_authority(pkt), rr);
+	case LDNS_SECTION_ADDITIONAL:
+		return ldns_rr_list_contains_rr(ldns_pkt_additional(pkt), rr);
+	case LDNS_SECTION_ANY:
+		result = ldns_rr_list_contains_rr(ldns_pkt_question(pkt), rr);
+	case LDNS_SECTION_ANY_NOQUESTION:
+		result = result
+		    || ldns_rr_list_contains_rr(ldns_pkt_answer(pkt), rr)
+		    || ldns_rr_list_contains_rr(ldns_pkt_authority(pkt), rr)
+		    || ldns_rr_list_contains_rr(ldns_pkt_additional(pkt), rr);
 	}
-	rr_count = ldns_rr_list_rr_count(rrs);
-	
-	/* walk the rrs and compare them with rr */	
-	for(i = 0; i < rr_count; i++) {
-		if (ldns_rr_compare(ldns_rr_list_rr(rrs, i), rr) == 0) {
-			/* a match */
-			ldns_rr_list_free(rrs);
-			return true;
-		}
-	}
-	ldns_rr_list_free(rrs);
-	return false;
+
+	return result;
 }
 
 uint16_t
