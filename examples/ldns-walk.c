@@ -453,7 +453,7 @@ main(int argc, char *argv[])
         }
 
 	/* add \001 to soa */
-	status = ldns_str2rdf_dname(&soa_p1, "0");
+	status = ldns_str2rdf_dname(&soa_p1, "\\000");
 	if (status != LDNS_STATUS_OK) {
 		printf("error: %s\n", ldns_get_errorstr_by_id(status));
 	}

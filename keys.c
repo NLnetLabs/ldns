@@ -394,6 +394,7 @@ ldns_key_new_frm_fp_rsa_l(FILE *f, int *line_nr)
 	return rsa;
 
 error:
+	RSA_free(rsa);
 	LDNS_FREE(d);
 	LDNS_FREE(buf);
 	return NULL;
@@ -967,11 +968,6 @@ ldns_key2rr(const ldns_key *k)
 		return NULL;
 	}
 
-	bin = LDNS_XMALLOC(unsigned char, LDNS_MAX_KEYLEN);
-	if (!bin) {
-		return NULL;
-	}
-
 	switch (ldns_key_algorithm(k)) {
 	case LDNS_SIGN_HMACMD5:
 	case LDNS_SIGN_HMACSHA1:
@@ -1007,6 +1003,10 @@ ldns_key2rr(const ldns_key *k)
 						  ldns_native2rdf_int8(LDNS_RDF_TYPE_ALG, ldns_key_algorithm(k)));
 			rsa =  ldns_key_rsa_key(k);
 			if (rsa) {
+				bin = LDNS_XMALLOC(unsigned char, LDNS_MAX_KEYLEN);
+				if (!bin) {
+					return NULL;
+				}
 				if (!ldns_key_rsa2bin(bin, rsa, &size)) {
 					return NULL;
 				}
@@ -1020,6 +1020,10 @@ ldns_key2rr(const ldns_key *k)
 					ldns_native2rdf_int8(LDNS_RDF_TYPE_ALG, LDNS_DSA));
 			dsa = ldns_key_dsa_key(k);
 			if (dsa) {
+				bin = LDNS_XMALLOC(unsigned char, LDNS_MAX_KEYLEN);
+				if (!bin) {
+					return NULL;
+				}
 				if (!ldns_key_dsa2bin(bin, dsa, &size)) {
 					return NULL;
 				}
@@ -1032,6 +1036,10 @@ ldns_key2rr(const ldns_key *k)
 					ldns_native2rdf_int8(LDNS_RDF_TYPE_ALG, LDNS_DSA_NSEC3));
 			dsa = ldns_key_dsa_key(k);
 			if (dsa) {
+				bin = LDNS_XMALLOC(unsigned char, LDNS_MAX_KEYLEN);
+				if (!bin) {
+					return NULL;
+				}
 				if (!ldns_key_dsa2bin(bin, dsa, &size)) {
 					return NULL;
 				}
@@ -1042,11 +1050,14 @@ ldns_key2rr(const ldns_key *k)
 		case LDNS_SIGN_HMACMD5:
 		case LDNS_SIGN_HMACSHA1:
 		case LDNS_SIGN_HMACSHA256:
+			bin = LDNS_XMALLOC(unsigned char, size);
+			if (!bin) {
+				return NULL;
+			}
 			ldns_rr_push_rdf(pubkey,
-                                        ldns_native2rdf_int8(LDNS_RDF_TYPE_ALG,
-						ldns_key_algorithm(k)));
-                        size = ldns_key_hmac_size(k);
-			bin = LDNS_XREALLOC(bin, unsigned char, size);
+			                 ldns_native2rdf_int8(LDNS_RDF_TYPE_ALG,
+			                 ldns_key_algorithm(k)));
+			size = ldns_key_hmac_size(k);
 			memcpy(bin, ldns_key_hmac_key(k), size);
 			break;
 	}
