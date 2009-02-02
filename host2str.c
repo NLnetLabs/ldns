@@ -1287,9 +1287,11 @@ ldns_pkt2buffer_str(ldns_buffer *output, const ldns_pkt *pkt)
 			if (ldns_pkt_edns_do(pkt)) {
 				ldns_buffer_printf(output, " do");
 			}
+			/* the extended rcode is the value set, shifted four bits,
+			 * and or'd with the original rcode */
 			if (ldns_pkt_edns_extended_rcode(pkt)) {
 				ldns_buffer_printf(output, " ; ext-rcode: %d",
-					ldns_pkt_edns_extended_rcode(pkt));
+					(ldns_pkt_edns_extended_rcode(pkt) << 4 | ldns_pkt_get_rcode(pkt)));
 			}
 			ldns_buffer_printf(output, " ; udp: %u\n",
 					   ldns_pkt_edns_udp_size(pkt));
