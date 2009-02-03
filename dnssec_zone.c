@@ -23,7 +23,6 @@ ldns_dnssec_rrs_free(ldns_dnssec_rrs *rrs)
 		if (rrs->next) {
 			ldns_dnssec_rrs_free(rrs->next);
 		}
-		ldns_rr_print(stdout, rrs->rr);
 		ldns_rr_free(rrs->rr);
 		LDNS_FREE(rrs);
 	}
