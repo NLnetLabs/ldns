@@ -580,11 +580,11 @@ ldns_dnssec_zone_add_rr(ldns_dnssec_zone *zone, ldns_rr *rr)
 	if (!zone->names) {
 		zone->names = ldns_rbtree_create(ldns_dname_compare_v);
 	}
-	
+
 	/* we need the original of the hashed name if this is
 	   an NSEC3, or an RRSIG that covers an NSEC3 */
 	if (ldns_rr_get_type(rr) == LDNS_RR_TYPE_RRSIG) {
-		type_covered = ldns_rdf2rr_type(ldns_rr_rrsig_typecovered(rr));;
+		type_covered = ldns_rdf2rr_type(ldns_rr_rrsig_typecovered(rr));
 	}
 	if (ldns_rr_get_type(rr) == LDNS_RR_TYPE_NSEC3 ||
 	    type_covered == LDNS_RR_TYPE_NSEC3) {
