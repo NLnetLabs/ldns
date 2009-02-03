@@ -159,7 +159,7 @@ query_type_bitmaps(ldns_resolver *res,
 				    if (verbosity >=  3) {
 						printf("querying for:\n");
 						ldns_rdf_print(stdout, name);
-						printf(" type %u\n", type);
+						printf(" type %u\n", (unsigned int) type);
 					}
 					answer_pkt = ldns_resolver_query(res, name, type,
 					                                 LDNS_RR_CLASS_IN,
@@ -640,7 +640,7 @@ main(int argc, char *argv[])
 			/* ok, so now we now all the types present at this name,
 			 * query for those one by one (...)
 			 */
-			query_type_bitmaps(res, LDNS_RD, ldns_rr_owner(nsec_rr),
+			status = query_type_bitmaps(res, LDNS_RD, ldns_rr_owner(nsec_rr),
 			                   ldns_rr_rdf(nsec_rr, 1));
 			/* print this nsec and its signatures too */
 			ldns_rr_print(stdout, nsec_rr);
