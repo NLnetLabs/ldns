@@ -136,8 +136,8 @@ ldns_rr_new_frm_str_internal(ldns_rr **newrr, const char *str,
 	new = ldns_rr_new();
 
 	owner = LDNS_XMALLOC(char, LDNS_MAX_DOMAINLEN + 1);
-	ttl = LDNS_XMALLOC(char, 21);
-	clas = LDNS_XMALLOC(char, 11);
+	ttl = LDNS_XMALLOC(char, LDNS_TTL_DATALEN);
+	clas = LDNS_XMALLOC(char, LDNS_SYNTAX_DATALEN);
 	rdata = LDNS_XMALLOC(char, LDNS_MAX_PACKETLEN + 1);
 	rr_buf = LDNS_MALLOC(ldns_buffer);
 	rd_buf = LDNS_MALLOC(ldns_buffer);
