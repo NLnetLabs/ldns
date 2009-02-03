@@ -23,6 +23,8 @@ ldns_dnssec_rrs_free(ldns_dnssec_rrs *rrs)
 		if (rrs->next) {
 			ldns_dnssec_rrs_free(rrs->next);
 		}
+		ldns_rr_print(stdout, rrs->rr);
+		ldns_rr_free(rrs->rr);
 		LDNS_FREE(rrs);
 	}
 }
@@ -305,6 +307,9 @@ ldns_dnssec_name_free(ldns_dnssec_name *name)
 		}
 		if (name->rrsets) {
 			ldns_dnssec_rrsets_free(name->rrsets);
+		}
+		if (name->nsec) {
+			ldns_rr_free(name->nsec);
 		}
 		if (name->nsec_signatures) {
 			ldns_dnssec_rrs_free(name->nsec_signatures);
