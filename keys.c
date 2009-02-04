@@ -1146,4 +1146,22 @@ ldns_read_anchor_file(const char *filename)
 	}
 }
 
+char *
+ldns_key_get_file_base_name(ldns_key *key)
+{
+	ldns_buffer *buffer;
+	char *file_base_name;
+	
+	buffer = ldns_buffer_new(255);
+	ldns_buffer_printf(buffer, "K");
+	ldns_rdf2buffer_str_dname(buffer, ldns_key_pubkey_owner(key));
+	ldns_buffer_printf(buffer,
+	                   "+%03u+%05u",
+			   ldns_key_algorithm(key),
+			   ldns_key_keytag(key));
+	file_base_name = strdup(ldns_buffer_export(buffer));
+	ldns_buffer_free(buffer);
+	return file_base_name;
+}
+
 #endif /* HAVE_SSL */
