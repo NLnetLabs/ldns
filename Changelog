@@ -1,3 +1,39 @@
+1.x.x
+	Bug fixes:
+	* fixed a possible memory overflow in the RR parser
+	* build flag fix for Sun Studio
+	* fixed a building race condition in the copying of header
+	  files
+	* EDNS0 extended rcode; the correct assembled code number
+	  is now printed (still in the EDNS0 field, though)
+	* ldns_pkt_rr no longer leaks memory (in fact, it no longer
+	  copies anything all)
+
+	API addition:
+	* ldns_key now has support for 'external' data, in which
+	  case the OpenSSL EVP structures are not used;
+	  ldns_key_set_external_key() and ldns_key_external_key()
+	* added ldns_key_get_file_base_name() which creates a 
+	  'default' filename base string for key storage, of the
+	  form "K<zone>+<algorithm>+<keytag>"
+	* the ldns_dnssec_* family of structures now have deep_free()
+	  functions, which also free the ldns_rr's contained in them
+	* there is now an ldns_match_wildcard() function, which checks
+	  whether a domain name matches a wildcard name
+	* ldns_sign_public has been split up; this resulted in the
+	  addition of ldns_create_empty_rrsig() and
+	  ldns_sign_public_buffer()
+
+	Examples:
+	* ldns-signzone can now automatically add DNSKEY records when
+	  using an OpenSSL engine, as it already did when using key
+	  files
+	* added new example tool: ldns-nsec3-hash
+	* ldns-dpa can now filter on specific query name and types
+	
+
+
+
 1.4.1
 	Bug fixes:
 	* fixed a build issue where ldns lib existence was done too early
