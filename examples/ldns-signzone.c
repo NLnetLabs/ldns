@@ -702,8 +702,13 @@ main(int argc, char *argv[])
 		exit(EXIT_FAILURE);
 	}
 	
-	ldns_dnssec_zone_free(signed_zone);
 	ldns_key_list_free(keys);
+	/* since the ldns_rr records are pointed to in both the ldns_zone
+	 * and the ldns_dnssec_zone, we can either deep_free the
+	 * dnssec_zone and 'shallow' free the original zone and added
+	 * records, or the other way around
+	 */
+	ldns_dnssec_zone_free(signed_zone);
 	ldns_zone_deep_free(orig_zone);
 	ldns_rr_list_deep_free(added_rrs);
 	

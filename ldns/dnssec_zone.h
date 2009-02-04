@@ -94,11 +94,20 @@ typedef struct ldns_struct_dnssec_zone ldns_dnssec_zone;
 ldns_dnssec_rrs *ldns_dnssec_rrs_new();
 
 /**
- * Frees the list of rrs, but *not* its data
- *
+ * Frees the list of rrs, but *not* the individual ldns_rr records
+ * contained in the list
+ * 
  * \param[in] rrs the data structure to free
  */
 void ldns_dnssec_rrs_free(ldns_dnssec_rrs *rrs);
+
+/**
+ * Frees the list of rrs, and the individual ldns_rr records
+ * contained in the list
+ * 
+ * \param[in] rrs the data structure to free
+ */
+void ldns_dnssec_rrs_deep_free(ldns_dnssec_rrs *rrs);
 
 /**
  * Adds an RR to the list of RRs. The list will remain ordered
@@ -124,11 +133,20 @@ void ldns_dnssec_rrs_print(FILE *out, ldns_dnssec_rrs *rrs);
 ldns_dnssec_rrsets *ldns_dnssec_rrsets_new();
 
 /**
- * Frees the list of rrsets and their rrs, but *not* their data
+ * Frees the list of rrsets and their rrs, but *not* the ldns_rr
+ * records in the sets
  *
  * \param[in] rrsets the data structure to free
  */
 void ldns_dnssec_rrsets_free(ldns_dnssec_rrsets *rrsets);
+
+/**
+ * Frees the list of rrsets and their rrs, and the ldns_rr
+ * records in the sets
+ *
+ * \param[in] rrsets the data structure to free
+ */
+void ldns_dnssec_rrsets_deep_free(ldns_dnssec_rrsets *rrsets);
 
 /**
  * Returns the rr type of the rrset (that is head of the given list)
@@ -189,6 +207,14 @@ ldns_dnssec_name *ldns_dnssec_name_new_frm_rr(ldns_rr *rr);
  * \param[in] name the structure to free
  */
 void ldns_dnssec_name_free(ldns_dnssec_name *name);
+
+/**
+ * Frees the name structure and its rrs and rrsets.
+ * Individual ldns_rr records contained in the name are also freed
+ *
+ * \param[in] name the structure to free
+ */
+void ldns_dnssec_name_deep_free(ldns_dnssec_name *name);
 
 /**
  * Returns the domain name of the given dnssec_name structure
@@ -282,6 +308,13 @@ ldns_dnssec_zone *ldns_dnssec_zone_new();
  * \param[in] *zone the zone to free
  */ 
 void ldns_dnssec_zone_free(ldns_dnssec_zone *zone);
+
+/**
+ * Frees the given zone structure, and its rbtree of dnssec_names
+ * Individual ldns_rr RRs within those names are also freed
+ * \param[in] *zone the zone to free
+ */ 
+void ldns_dnssec_zone_deep_free(ldns_dnssec_zone *zone);
 
 /**
  * Adds the given RR to the zone.

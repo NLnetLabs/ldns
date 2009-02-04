@@ -16,16 +16,30 @@ ldns_dnssec_rrs_new()
 	return new_rrs;
 }
 
-void
-ldns_dnssec_rrs_free(ldns_dnssec_rrs *rrs)
+INLINE void
+ldns_dnssec_rrs_free_internal(ldns_dnssec_rrs *rrs, int deep)
 {
 	if (rrs) {
 		if (rrs->next) {
-			ldns_dnssec_rrs_free(rrs->next);
+			ldns_dnssec_rrs_free_internal(rrs->next, deep);
 		}
-		ldns_rr_free(rrs->rr);
+		if (deep) {
+			ldns_rr_free(rrs->rr);
+		}
 		LDNS_FREE(rrs);
 	}
+}
+
+void
+ldns_dnssec_rrs_free(ldns_dnssec_rrs *rrs)
+{
+	ldns_dnssec_rrs_free_internal(rrs, 0);
+}
+
+void
+ldns_dnssec_rrs_deep_free(ldns_dnssec_rrs *rrs)
+{
+	ldns_dnssec_rrs_free_internal(rrs, 1);
 }
 
 ldns_status
@@ -89,21 +103,33 @@ ldns_dnssec_rrsets_new()
 	return new_rrsets;
 }
 
-void
-ldns_dnssec_rrsets_free(ldns_dnssec_rrsets *rrsets)
+INLINE void
+ldns_dnssec_rrsets_free_internal(ldns_dnssec_rrsets *rrsets, int deep)
 {
 	if (rrsets) {
 		if (rrsets->rrs) {
-			ldns_dnssec_rrs_free(rrsets->rrs);
+			ldns_dnssec_rrs_free_internal(rrsets->rrs, deep);
 		}
 		if (rrsets->next) {
-			ldns_dnssec_rrsets_free(rrsets->next);
+			ldns_dnssec_rrsets_free_internal(rrsets->next, deep);
 		}
 		if (rrsets->signatures) {
-			ldns_dnssec_rrs_free(rrsets->signatures);
+			ldns_dnssec_rrs_free_internal(rrsets->signatures, deep);
 		}
 		LDNS_FREE(rrsets);
 	}
+}
+
+void
+ldns_dnssec_rrsets_free(ldns_dnssec_rrsets *rrsets)
+{
+	ldns_dnssec_rrsets_free_internal(rrsets, 0);
+}
+
+void
+ldns_dnssec_rrsets_deep_free(ldns_dnssec_rrsets *rrsets)
+{
+	ldns_dnssec_rrsets_free_internal(rrsets, 1);
 }
 
 ldns_rr_type
@@ -297,24 +323,37 @@ ldns_dnssec_name_new_frm_rr(ldns_rr *rr)
 	return new_name;
 }
 
-void
-ldns_dnssec_name_free(ldns_dnssec_name *name)
+INLINE void
+ldns_dnssec_name_free_internal(ldns_dnssec_name *name,
+                               int deep)
 {
 	if (name) {
 		if (name->name_alloced) {
 			ldns_rdf_deep_free(name->name);
 		}
 		if (name->rrsets) {
-			ldns_dnssec_rrsets_free(name->rrsets);
+			ldns_dnssec_rrsets_free_internal(name->rrsets, deep);
 		}
-		if (name->nsec) {
+		if (name->nsec && deep) {
 			ldns_rr_free(name->nsec);
 		}
 		if (name->nsec_signatures) {
-			ldns_dnssec_rrs_free(name->nsec_signatures);
+			ldns_dnssec_rrs_free_internal(name->nsec_signatures, deep);
 		}
 		LDNS_FREE(name);
 	}
+}
+
+void
+ldns_dnssec_name_free(ldns_dnssec_name *name)
+{
+  ldns_dnssec_name_free_internal(name, 0);
+}
+
+void
+ldns_dnssec_name_deep_free(ldns_dnssec_name *name)
+{
+  ldns_dnssec_name_free_internal(name, 1);
 }
 
 ldns_rdf *
@@ -516,8 +555,15 @@ ldns_dnssec_zone_new()
 
 void
 ldns_dnssec_name_node_free(ldns_rbnode_t *node, void *arg) {
-	arg = arg;
+	(void) arg;
 	ldns_dnssec_name_free((ldns_dnssec_name *)node->data);
+	free(node);
+}
+
+void
+ldns_dnssec_name_node_deep_free(ldns_rbnode_t *node, void *arg) {
+	(void) arg;
+	ldns_dnssec_name_deep_free((ldns_dnssec_name *)node->data);
 	free(node);
 }
 
@@ -529,6 +575,21 @@ ldns_dnssec_zone_free(ldns_dnssec_zone *zone)
 			/* destroy all name structures within the tree */
 			ldns_traverse_postorder(zone->names,
 						    ldns_dnssec_name_node_free,
+						    NULL);
+			free(zone->names);
+		}
+		LDNS_FREE(zone);
+	}
+}
+
+void
+ldns_dnssec_zone_deep_free(ldns_dnssec_zone *zone)
+{
+	if (zone) {
+		if (zone->names) {
+			/* destroy all name structures within the tree */
+			ldns_traverse_postorder(zone->names,
+						    ldns_dnssec_name_node_deep_free,
 						    NULL);
 			free(zone->names);
 		}
