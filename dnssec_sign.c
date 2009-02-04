@@ -24,12 +24,11 @@ ldns_create_empty_rrsig(ldns_rr_list *rrset,
 {
 	uint32_t orig_ttl;
 	time_t now;
+	ldns_rr *current_sig;
 	uint8_t label_count;
 
 	label_count = ldns_dname_label_count(ldns_rr_owner(ldns_rr_list_rr(rrset,
 	                                                   0)));
-
-	ldns_rr *current_sig;
 	
 	current_sig = ldns_rr_new_frm_type(LDNS_RR_TYPE_RRSIG);
 	
