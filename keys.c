@@ -957,7 +957,7 @@ ldns_key2rr(const ldns_key *k)
 	 */
 	ldns_rr *pubkey;
 	ldns_rdf *keybin;
-	unsigned char *bin;
+	unsigned char *bin = NULL;
 	uint16_t size = 0;
 	RSA *rsa = NULL;
 	DSA *dsa = NULL;
@@ -1059,6 +1059,7 @@ ldns_key2rr(const ldns_key *k)
 			                 ldns_key_algorithm(k)));
 			size = ldns_key_hmac_size(k);
 			memcpy(bin, ldns_key_hmac_key(k), size);
+			internal_data = 1;
 			break;
 	}
 	/* fourth the key bin material */
