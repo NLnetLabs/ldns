@@ -4,7 +4,11 @@
 
 # small list of commands to build all on a linux system
 # libtoolize is needed for most other targets
-libtoolize -c
+
+# older versions of libtoolize do not support --install
+# so you might need to remove that (with newer versions
+# it is needed)
+libtoolize -c --install
 autoreconf
 ./configure
 make
