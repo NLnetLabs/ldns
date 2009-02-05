@@ -19,14 +19,14 @@ ldns_dnssec_rrs_new()
 INLINE void
 ldns_dnssec_rrs_free_internal(ldns_dnssec_rrs *rrs, int deep)
 {
-	if (rrs) {
-		if (rrs->next) {
-			ldns_dnssec_rrs_free_internal(rrs->next, deep);
-		}
+	ldns_dnssec_rrs *next;
+	while (rrs) {
+		next = rrs->next;
 		if (deep) {
 			ldns_rr_free(rrs->rr);
 		}
 		LDNS_FREE(rrs);
+		rrs = next;
 	}
 }
 

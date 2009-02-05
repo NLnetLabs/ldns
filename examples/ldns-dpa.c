@@ -1186,62 +1186,6 @@ value_matches(match_id id,
 	}
 	return result;
 }
-	
-
-#if 0
-bool
-count_match(match_counters *counters,
-            match_id id,
-	    char *value
-	   )
-{
-	size_t i;
-	match_table *mt;
-
-	if (counters) {
-		for(i = 0; i < counters->size; i++) {
-			if (id == counters->counter[i].id) {
-				if (value) {
-					if (value_matches(id, 
-					                  counters->counter[i].operator,
-					                  value,
-					                  counters->counter[i].value)) {
-
-						if (verbosity >= 5) {
-							mt = get_match_by_id(counters->counter[i].id);
-							if (mt) {
-								printf("MATCH: %s: %s %s %s\n", mt->name, value, get_op_str(counters->counter[i].operator), counters->counter[i].value);
-							} else {
-								printf("MATCH: <unknown?>: %s %s %s\n", value, get_op_str(counters->counter[i].operator), counters->counter[i].value);
-							}
-						}
-						counters->counter[i].count++;
-						return true;
-					}
-				} else {
-					/*counters->counter[i].count++;*/
-				}
-			}
-		}
-	}
-	return false;
-}
-
-/* if value == NULL, always count */
-bool
-count_match_i(match_counters *counters,
-              match_id id,
-              int value)
-{
-	char intbuf[20];
-	bool result;
-
-	memset(intbuf, 0, 10);
-	snprintf(intbuf, 20, "%d", value);
-	result = count_match(counters, id, intbuf);
-	return result;
-}
-#endif
 
 char *
 get_string_value(match_id id, ldns_pkt *pkt, ldns_rdf *src_addr, ldns_rdf *dst_addr)

@@ -134,7 +134,7 @@ main(int argc, char *argv[])
 	ldns_rr *orig_soa = NULL;
 	ldns_dnssec_zone *signed_zone;
 
-	const char *keyfile_name_base;
+	char *keyfile_name_base;
 	char *keyfile_name = NULL;
 	FILE *keyfile = NULL;
 	ldns_key *key = NULL;
@@ -568,6 +568,7 @@ main(int argc, char *argv[])
 				     ldns_calc_keytag(pubkey_gen) + 1) 
 			   ) {
 				/* found it, drop our own */
+				ldns_rr_free(pubkey_gen);
 				if (verbosity >= 2) {
 					fprintf(stderr, "Found it in the zone!\n");
 				}
@@ -590,6 +591,8 @@ main(int argc, char *argv[])
 		keyfile = fopen(keyfile_name, "r");
 		line_nr = 0;
 		if (keyfile) {
+			/* drop the one we made */
+			ldns_rr_free(pubkey_gen);
 			if (ldns_rr_new_frm_fp_l(&pubkey,
 			                         keyfile,
 			                         &default_ttl,
@@ -601,10 +604,10 @@ main(int argc, char *argv[])
 				ldns_key_set_keytag(key, ldns_calc_keytag(pubkey));
 			}
 			if (add_keys) {
-				ldns_zone_push_rr(orig_zone,
-							   ldns_rr_clone(pubkey));
+				ldns_zone_push_rr(orig_zone, pubkey);
+			} else {
+				ldns_rr_free(pubkey);
 			}
-			ldns_rr_free(pubkey);
 			fclose(keyfile);
 			goto found_eng;
 		}
@@ -621,6 +624,7 @@ main(int argc, char *argv[])
 		
 		found_eng:
 		LDNS_FREE(keyfile_name);
+		free(keyfile_name_base);
 	}
 
 	for (i = 0;

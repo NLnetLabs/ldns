@@ -619,7 +619,6 @@ main(int argc, char *argv[])
 		last_dname_p = create_plus_1_dname(last_dname);
 	} else {
 		if (last_dname) {
-			/*ldns_rdf_print(stdout, last_dname);*/
 			if (ldns_rdf_compare(last_dname, next_dname) == 0) {
 				printf("\n\nNext dname is the same as current, this would loop forever. This is a problem that usually occurs when walking through a caching forwarder. Try using the authoritative nameserver to walk (with @nameserver).\n");
 				exit(2);
@@ -637,7 +636,7 @@ main(int argc, char *argv[])
 			ldns_rdf_print(stdout, ldns_rr_rdf(nsec_rr, 1));
 			printf("\n");
 		} else {
-			/* ok, so now we now all the types present at this name,
+			/* ok, so now we know all the types present at this name,
 			 * query for those one by one (...)
 			 */
 			status = query_type_bitmaps(res, LDNS_RD, ldns_rr_owner(nsec_rr),

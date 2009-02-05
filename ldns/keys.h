@@ -556,9 +556,12 @@ void ldns_key_list_free(ldns_key_list *key_list);
  */
 ldns_rr * ldns_read_anchor_file(const char *filename);
 
-/* Returns the 'default base name' for key files;
+/**
+ * Returns the 'default base name' for key files;
  * IE. K<zone>+<alg>+<keytag>
- * (without the .key or .privae)
+ * (without the .key or .private)
+ * The memory for this is allocated by this function,
+ * and should be freed by the caller
  * 
  * \param[in] key the key to get the file name from
  * \returns A string containing the file base name
