@@ -1,6 +1,6 @@
 Summary: Lowlevel DNS(SEC) library with API
 Name: ldns
-Version: 1.4.1
+Version: 1.5.0rc1
 Release: 1%{?dist}
 License: BSD
 Url: http://www.nlnetlabs.nl/%{name}/
@@ -36,8 +36,8 @@ The devel package contains the ldns library and the include files
 %build
 
 make %{?_smp_mflags}
-(cd drill ; %configure --disable-rpath --with-ldns=../ldns/)
-(cd examples ; %configure --disable-rpath --with-ldns=../ldns/)
+(cd drill ; %configure --disable-rpath --with-ldns=%{buildroot}/lib/)
+(cd examples ; %configure --disable-rpath --with-ldns=%{buildroot}/lib/)
 ( cd drill ; make %{?_smp_mflags} )
 ( cd examples ; make %{?_smp_mflags} )
 make %{?_smp_mflags} doc
@@ -85,10 +85,13 @@ rm -rf %{buildroot}
 %postun -p /sbin/ldconfig
 
 %changelog
-* Wed Dec 10 2008 Jelte Jansen <jelte@NLnetLabs.nl> - 1.4.1-1
-- Updated to 1.4.1
+* Thu Feb 05 2009 Adam Tkac <atkac redhat com> - 1.4.0-3
+- fixed configure flags
 
-* Thu Oct 30 2008 Paul Wouters <paul@xelerance.com> - 1.4.0-1
+* Sat Jan 17 2009 Tomas Mraz <tmraz@redhat.com> - 1.4.0-2
+- rebuild with new openssl
+
+* Fri Nov  7 2008 Paul Wouters <paul@xelerance.com> - 1.4.0-1
 - Updated to 1.4.0
 
 * Wed May 28 2008 Paul Wouters <paul@xelerance.com> - 1.3.0-3
