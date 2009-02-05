@@ -1,4 +1,4 @@
-1.x.x
+1.5.0
 	Bug fixes:
 	* fixed a possible memory overflow in the RR parser
 	* build flag fix for Sun Studio
