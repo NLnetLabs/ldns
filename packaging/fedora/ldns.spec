@@ -1,6 +1,6 @@
 Summary: Lowlevel DNS(SEC) library with API
 Name: ldns
-Version: 1.5.0rc1
+Version: 1.5.0
 Release: 1%{?dist}
 License: BSD
 Url: http://www.nlnetlabs.nl/%{name}/
@@ -85,6 +85,9 @@ rm -rf %{buildroot}
 %postun -p /sbin/ldconfig
 
 %changelog
+* Mon Feb 09 1009 Jelte Jansen <jelte@nlnetlabs.nl> - 1.5.0
+- Updated to 1.5.0
+
 * Thu Feb 05 2009 Adam Tkac <atkac redhat com> - 1.4.0-3
 - fixed configure flags
 

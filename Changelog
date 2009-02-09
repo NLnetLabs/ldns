@@ -30,7 +30,10 @@
 	  files
 	* added new example tool: ldns-nsec3-hash
 	* ldns-dpa can now filter on specific query name and types
-	
+	* ldnsd has fixes for the zone name, a fix for the return
+          value of recvfrom(), and an memory initialization fix
+          (Thanks to Colm MacCárthaigh for the patch)
+        * Fixed memory leaks in ldnsd
 
 
 
