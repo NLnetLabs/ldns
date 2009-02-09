@@ -96,10 +96,10 @@ main(int argc, char **argv)
 
 	/* network */
 	int sock;
-	size_t nb;
+	ssize_t nb;
 	struct sockaddr addr_me;
 	struct sockaddr addr_him;
-	socklen_t hislen;
+	socklen_t hislen = sizeof(addr_him);
 	uint8_t inbuf[INBUF_SIZE];
 	uint8_t *outbuf;
 
@@ -113,6 +113,7 @@ main(int argc, char **argv)
 	ldns_rr_list *answer_an;
 	ldns_rr_list *answer_ns;
 	ldns_rr_list *answer_ad;
+	ldns_rdf *origin = NULL;
 	
 	/* zone */
 	ldns_zone *zone;
@@ -123,13 +124,18 @@ main(int argc, char **argv)
 	char *my_address = NULL;
 		
 	if (argc < 5) {
-		usage(stdout);
+		usage(stderr);
 		exit(EXIT_FAILURE);
 	} else {
-	        my_address = argv[1];
+	    my_address = argv[1];
 		port = atoi(argv[2]);
 		if (port < 1) {
-			usage(stdout);
+			usage(stderr);
+			exit(EXIT_FAILURE);
+		}
+		if (ldns_str2rdf_dname(&origin, argv[3]) != LDNS_STATUS_OK) {
+			fprintf(stderr, "Bad origin, not a correct domain name\n");
+			usage(stderr);
 			exit(EXIT_FAILURE);
 		}
 		zone_file = argv[4];
@@ -143,7 +149,7 @@ main(int argc, char **argv)
 	}
 	
 	line_nr = 0;
-	status = ldns_zone_new_frm_fp_l(&zone, zone_fp, NULL, 0, LDNS_RR_CLASS_IN, &line_nr);
+	status = ldns_zone_new_frm_fp_l(&zone, zone_fp, origin, 0, LDNS_RR_CLASS_IN, &line_nr);
 
 	if (status != LDNS_STATUS_OK) {
 		printf("Zone reader failed, aborting\n");
@@ -169,7 +175,7 @@ main(int argc, char **argv)
 
 	/* Done. Now receive */
 	while (1) {
-		nb = (size_t) recvfrom(sock, inbuf, INBUF_SIZE, 0, &addr_him, &hislen);
+		nb = recvfrom(sock, inbuf, INBUF_SIZE, 0, &addr_him, &hislen);
 		if (nb < 1) {
 			fprintf(stderr, "%s: recvfrom(): %s\n",
 			argv[0], strerror(errno));
@@ -186,7 +192,7 @@ main(int argc, char **argv)
 		} else {
 			ldns_pkt_print(stdout, query_pkt);
 		}
-		
+
 		query_rr = ldns_rr_list_rr(ldns_pkt_question(query_pkt), 0);
 		printf("QUERY RR: \n");
 		ldns_rr_print(stdout, query_rr);
@@ -216,6 +222,18 @@ main(int argc, char **argv)
 		} else {
 			nb = (size_t) sendto(sock, outbuf, answer_size, 0, &addr_him, hislen);
 		}
+		
+		ldns_pkt_free(query_pkt);
+		ldns_pkt_free(answer_pkt);
+		LDNS_FREE(outbuf);
+		ldns_rr_list_free(answer_qr);
+		ldns_rr_list_free(answer_an);
+		ldns_rr_list_free(answer_ns);
+		ldns_rr_list_free(answer_ad);
 	}
-        return 0;
+	
+	ldns_rdf_deep_free(origin);
+	ldns_zone_deep_free(zone);
+	
+	return 0;
 }
