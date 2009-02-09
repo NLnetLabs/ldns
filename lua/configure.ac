@@ -2,7 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.57)
-AC_INIT(ldns-tests, 1.3.0, ldns@nlnetlabs.nl, ldns-tests-1.0)
+AC_INIT(ldns-tests, 1.5.0, ldns@nlnetlabs.nl, ldns-tests-1.0)
 AC_CONFIG_SRCDIR([../ldns/config.h])
 
 AC_AIX
