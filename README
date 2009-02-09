@@ -66,8 +66,10 @@ commands may be a little bit different on your machine. Most notable, you'll nee
 ldns is developed by the ldns team at NLnet Labs. This team currently
 consists of:
   o Jelte Jansen
-  o Miek Gieben
   o Wouter Wijngaards
+
+Former main developers:
+  o Miek Gieben
 
 * Credits
 We have received patches from the following people, thanks!
