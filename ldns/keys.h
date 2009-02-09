@@ -320,12 +320,13 @@ void ldns_key_set_hmac_size(ldns_key *k, size_t hmac_size);
  * Set the key id data. This is used if the key points to
  * some externally stored key data
  * 
- * The data at the pointer is not copied, and must be freed
- * manually; ldns_key_deep_free() does *not* free this data
- * \param[in] k the key
- * \param[in] hmac key id data
+ * Only the pointer is set, the data there is not copied,
+ * and must be freed manually; ldns_key_deep_free() does 
+ * *not* free this data
+ * \param[in] key the key
+ * \param[in] external_key key id data
  */
-void ldns_key_set_external_key(ldns_key *k, void *external_key);
+void ldns_key_set_external_key(ldns_key *key, void *external_key);
 
 /**
  * Set the key's hmac size
@@ -558,7 +559,7 @@ ldns_rr * ldns_read_anchor_file(const char *filename);
 
 /**
  * Returns the 'default base name' for key files;
- * IE. K<zone>+<alg>+<keytag>
+ * IE. K\<zone\>+\<alg\>+\<keytag\>
  * (without the .key or .private)
  * The memory for this is allocated by this function,
  * and should be freed by the caller

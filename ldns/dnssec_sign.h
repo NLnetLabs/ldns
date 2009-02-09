@@ -10,7 +10,7 @@
 /**
  * Create an empty RRSIG RR (i.e. without the actual signature data)
  * \param[in] rrset The RRset to create the signature for
- * \param[in] current_key The key that will create the signature
+ * \param[in] key The key that will create the signature
  * \return signature rr
  */
 ldns_rr *
