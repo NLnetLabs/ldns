@@ -99,7 +99,7 @@ main(int argc, char **argv)
 	ssize_t nb;
 	struct sockaddr addr_me;
 	struct sockaddr addr_him;
-	socklen_t hislen = sizeof(addr_him);
+	socklen_t hislen = (socklen_t) sizeof(addr_him);
 	uint8_t inbuf[INBUF_SIZE];
 	uint8_t *outbuf;
 
@@ -186,7 +186,7 @@ main(int argc, char **argv)
 		show(inbuf, nb, nn, hp, sp, ip, bp);
 		*/
 		printf("Got query of %u bytes\n", (unsigned int) nb);
-		status = ldns_wire2pkt(&query_pkt, inbuf, nb);
+		status = ldns_wire2pkt(&query_pkt, inbuf, (size_t) nb);
 		if (status != LDNS_STATUS_OK) {
 			printf("Got bad packet: %s\n", ldns_get_errorstr_by_id(status));
 		} else {
