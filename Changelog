@@ -1,3 +1,12 @@
+1.5.1
+	Example tools:
+	* ldns-signzone was broken in 1.5.0 for multiple keys, this
+          has been repaired
+
+	Build system:
+        * Removed a small erroneous output warning in
+          examples/configure and drill/configure
+
 1.5.0
 	Bug fixes:
 	* fixed a possible memory overflow in the RR parser
