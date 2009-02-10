@@ -527,6 +527,7 @@ main(int argc, char *argv[])
 	}
 	
 	for (i = 0; i < ldns_key_list_key_count(keys); i++) {
+		key = ldns_key_list_key(keys, i);
 		if (!ldns_key_pubkey_owner(key)) {
 			ldns_key_set_pubkey_owner(key, ldns_rdf_clone(ldns_rr_owner(ldns_zone_soa(orig_zone))));
 		}

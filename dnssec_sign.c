@@ -50,7 +50,6 @@ ldns_create_empty_rrsig(ldns_rr_list *rrset,
 		   ldns_native2rdf_int32(LDNS_RDF_TYPE_INT32,
 					 orig_ttl));
 	/* the signers name */
-
 	(void)ldns_rr_rrsig_set_signame(
 			current_sig, 
 			ldns_rdf_clone(ldns_key_pubkey_owner(current_key)));
