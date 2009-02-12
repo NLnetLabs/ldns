@@ -2,10 +2,10 @@
 # Process this file with autoconf to produce a configure script.
 AC_PREREQ(2.56)
 
-AC_INIT(ldns, 1.5.1, libdns@nlnetlabs.nl, libdns)
+AC_INIT(ldns, 1.6.0, libdns@nlnetlabs.nl, libdns)
 AC_CONFIG_SRCDIR([packet.c])
 # needed to build correct soname
-AC_SUBST(LIBTOOL_VERSION_INFO, "1:5:1")
+AC_SUBST(LIBTOOL_VERSION_INFO, "1:6:0")
 
 PACKAGE_VERSION="$PACKAGE_VERSION"
 
