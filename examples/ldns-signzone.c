@@ -21,7 +21,7 @@
 
 
 #define MAX_FILENAME_LEN 250
-int verbosity = 2;
+int verbosity = 1;
 
 #ifdef HAVE_SSL
 #include <openssl/err.h>
