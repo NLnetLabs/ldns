@@ -96,6 +96,153 @@ void check_tm(struct tm tm)
 
 }
 
+ldns_rr *
+find_key_in_zone(ldns_rr *pubkey_gen, ldns_zone *zone) {
+	size_t key_i;
+	ldns_rr *pubkey;
+	
+	for (key_i = 0;
+		key_i < ldns_rr_list_rr_count(ldns_zone_rrs(zone));
+		key_i++) {
+		pubkey = ldns_rr_list_rr(ldns_zone_rrs(zone), key_i);
+		if (ldns_rr_get_type(pubkey) == LDNS_RR_TYPE_DNSKEY &&
+		    (ldns_calc_keytag(pubkey)
+			==
+			ldns_calc_keytag(pubkey_gen) ||
+			     /* KSK has gen-keytag + 1 */
+			     ldns_calc_keytag(pubkey)
+			     ==
+			     ldns_calc_keytag(pubkey_gen) + 1) 
+		   ) {
+			if (verbosity >= 2) {
+				fprintf(stderr, "Found it in the zone!\n");
+			}
+			return pubkey;
+		}
+	}
+	return NULL;
+}
+
+ldns_rr *
+find_key_in_file(ldns_key *key)
+{
+	char *keyfile_name;
+	FILE *keyfile;
+	int line_nr;
+	uint32_t default_ttl = LDNS_DEFAULT_TTL;
+	char *keyfile_name_base;
+	
+	ldns_rr *pubkey = NULL;
+	keyfile_name_base = ldns_key_get_file_base_name(key);
+	keyfile_name = LDNS_XMALLOC(char,
+	                            strlen(keyfile_name_base) + 5);
+	snprintf(keyfile_name,
+		 strlen(keyfile_name_base) + 5,
+		 "%s.key",
+		 keyfile_name_base);
+	if (verbosity >= 2) {
+		fprintf(stderr, "Trying to read %s\n", keyfile_name);
+	}
+	keyfile = fopen(keyfile_name, "r");
+	line_nr = 0;
+	if (keyfile) {
+		if (ldns_rr_new_frm_fp_l(&pubkey,
+					 keyfile,
+					 &default_ttl,
+					 NULL,
+					 NULL,
+					 &line_nr) ==
+		    LDNS_STATUS_OK) {
+			if (verbosity >= 2) {
+				printf("Key found in file: %s\n", keyfile_name);
+			}
+		}
+		fclose(keyfile);
+	}
+	LDNS_FREE(keyfile_name);
+	LDNS_FREE(keyfile_name_base);
+	return pubkey;
+}
+
+/* this function tries to find the specified keys either in the zone that
+ * has been read, or in a <basename>.key file. If the key is not found,
+ * a public key is generated, and it is assumed the key is a ZSK
+ * 
+ * if add_keys is true; the DNSKEYs are added to the zone prior to signing
+ * if it is false, they are not added.
+ * Even if keys are not added, the function is still needed, to check
+ * whether keys of which we only have key data are KSKs or ZSKS
+ */
+ldns_status
+find_or_create_pubkeys(ldns_key_list *keys, ldns_zone *orig_zone, bool add_keys) {
+	ldns_key *key;
+	size_t i;
+	ldns_rr *pubkey_gen, *pubkey;
+	
+	for (i = 0; i < ldns_key_list_key_count(keys); i++) {
+		key = ldns_key_list_key(keys, i);
+		if (!ldns_key_pubkey_owner(key)) {
+			ldns_key_set_pubkey_owner(key, ldns_rdf_clone(ldns_rr_owner(ldns_zone_soa(orig_zone))));
+		}
+
+		/* find the public key in the zone, or in a
+		 * seperate file
+		 * we 'generate' one anyway, 
+		 * then match that to any present in the zone,
+		 * if it matches, we drop our own. If not,
+		 * we try to see if there is a .key file present.
+		 * If not, we use our own generated one, with
+		 * some default values 
+		 *
+		 * Even if -d (do-not-add-keys) is specified, 
+		 * we still need to do this, because we need
+		 * to have any key flags that are set this way
+		 */
+		pubkey_gen = ldns_key2rr(key);
+
+		if (verbosity >= 2) {
+			fprintf(stderr,
+				   "Looking for key with keytag %u or %u\n",
+				   (unsigned int) ldns_calc_keytag(pubkey_gen),
+				   (unsigned int) ldns_calc_keytag(pubkey_gen)+1
+				   );
+		}
+
+		pubkey = find_key_in_zone(pubkey_gen, orig_zone);
+		if (!pubkey) {
+			/* it was not in the zone, try to read a .key file */
+			pubkey = find_key_in_file(key);
+			if (!pubkey && !(ldns_key_flags(key) & LDNS_KEY_SEP_KEY)) {
+				/* maybe it is a ksk? */
+				ldns_key_set_keytag(key, ldns_key_keytag(key) + 1);
+				pubkey = find_key_in_file(key);
+				if (!pubkey) {
+					/* ok, no file, set back to ZSK */
+					ldns_key_set_keytag(key, ldns_key_keytag(key) - 1);
+				}
+			}
+		}
+		
+		if (!pubkey) {
+			/* okay, no public key found,
+			   just use our generated one */
+			pubkey = pubkey_gen;
+			if (verbosity >= 2) {
+				fprintf(stderr, "Not in zone, no .key file, generating ZSK DNSKEY from private key data\n");
+			}
+		} else {
+			ldns_rr_free(pubkey_gen);
+		}
+		ldns_key_set_flags(key, ldns_rdf2native_int16(ldns_rr_rdf(pubkey, 0)));
+		ldns_key_set_keytag(key, ldns_calc_keytag(pubkey));
+		
+		if (add_keys) {
+			ldns_zone_push_rr(orig_zone, pubkey);
+		}
+	}
+	return LDNS_STATUS_OK;
+}
+
 void
 strip_dnssec_records(ldns_zone *zone)
 {
@@ -123,7 +270,6 @@ main(int argc, char *argv[])
 {
 	const char *zonefile_name;
 	FILE *zonefile = NULL;
-	uint32_t default_ttl = LDNS_DEFAULT_TTL;
 	int line_nr = 0;
 	int c;
 	int argi;
@@ -138,12 +284,11 @@ main(int argc, char *argv[])
 	char *keyfile_name = NULL;
 	FILE *keyfile = NULL;
 	ldns_key *key = NULL;
-	ldns_rr *pubkey, *pubkey_gen;
 	ldns_key_list *keys;
-	size_t key_i;
 	ldns_status s;
 	size_t i;
 	ldns_rr_list *added_rrs;
+	ldns_status status;
 
 	bool leave_old_dnssec_data = false;
 
@@ -526,107 +671,7 @@ main(int argc, char *argv[])
 		  "Error adding SOA to dnssec zone, skipping record\n");
 	}
 	
-	for (i = 0; i < ldns_key_list_key_count(keys); i++) {
-		key = ldns_key_list_key(keys, i);
-		if (!ldns_key_pubkey_owner(key)) {
-			ldns_key_set_pubkey_owner(key, ldns_rdf_clone(ldns_rr_owner(ldns_zone_soa(orig_zone))));
-		}
-
-		/* find the public key in the zone, or in a
-		 * seperate file
-		 * we 'generate' one anyway, 
-		 * then match that to any present in the zone,
-		 * if it matches, we drop our own. If not,
-		 * we try to see if there is a .key file present.
-		 * If not, we use our own generated one, with
-		 * some default values 
-		 *
-		 * Even if -d (do-not-add-keys) is specified, 
-		 * we still need to do this, because we need
-		 * to have any key flags that are set this way
-		 */
-		pubkey_gen = ldns_key2rr(key);
-		keyfile_name_base = ldns_key_get_file_base_name(key);
-
-		if (verbosity >= 2) {
-			fprintf(stderr,
-				   "Looking for key with keytag %u or %u\n",
-				   (unsigned int) ldns_calc_keytag(pubkey_gen),
-				   (unsigned int) ldns_calc_keytag(pubkey_gen)+1
-				   );
-		}
-		for (key_i = 0;
-			key_i < ldns_rr_list_rr_count(orig_rrs);
-			key_i++) {
-			pubkey = ldns_rr_list_rr(orig_rrs, key_i);
-			if (ldns_rr_get_type(pubkey) == LDNS_RR_TYPE_DNSKEY &&
-			    (ldns_calc_keytag(pubkey)
-				==
-				ldns_calc_keytag(pubkey_gen) ||
-				     /* KSK has gen-keytag + 1 */
-				     ldns_calc_keytag(pubkey)
-				     ==
-				     ldns_calc_keytag(pubkey_gen) + 1) 
-			   ) {
-				/* found it, drop our own */
-				ldns_rr_free(pubkey_gen);
-				if (verbosity >= 2) {
-					fprintf(stderr, "Found it in the zone!\n");
-				}
-				ldns_key_set_flags(key, ldns_rdf2native_int16(ldns_rr_rdf(pubkey, 0)));
-				ldns_key_set_keytag(key, ldns_calc_keytag(pubkey));
-				goto found_eng;
-			}
-		}
-		
-		/* it was not in the zone, try to read a .key file */
-		keyfile_name = LDNS_XMALLOC(char,
-		                            strlen(keyfile_name_base) + 5);
-		snprintf(keyfile_name,
-			 strlen(keyfile_name_base) + 5,
-			 "%s.key",
-			 keyfile_name_base);
-		if (verbosity >= 2) {
-			fprintf(stderr, "Trying to read %s\n", keyfile_name);
-		}
-		keyfile = fopen(keyfile_name, "r");
-		line_nr = 0;
-		if (keyfile) {
-			/* drop the one we made */
-			ldns_rr_free(pubkey_gen);
-			if (ldns_rr_new_frm_fp_l(&pubkey,
-			                         keyfile,
-			                         &default_ttl,
-			                         NULL,
-			                         NULL,
-			                         &line_nr) ==
-			    LDNS_STATUS_OK) {
-				ldns_key_set_flags(key, ldns_rdf2native_int16(ldns_rr_rdf(pubkey, 0)));
-				ldns_key_set_keytag(key, ldns_calc_keytag(pubkey));
-			}
-			if (add_keys) {
-				ldns_zone_push_rr(orig_zone, pubkey);
-			} else {
-				ldns_rr_free(pubkey);
-			}
-			fclose(keyfile);
-			goto found_eng;
-		}
-		
-		/* okay, so reading .key didn't work either,
-		   just use our generated one */
-		ldns_key_set_keytag(key, ldns_calc_keytag(pubkey_gen));
-		if (verbosity >= 2) {
-			fprintf(stderr, "Not in zone, no .key file, generating DNSKEY from .private\n");
-		}
-		if (add_keys) {
-			ldns_zone_push_rr(orig_zone, pubkey_gen);
-		}
-		
-		found_eng:
-		LDNS_FREE(keyfile_name);
-		free(keyfile_name_base);
-	}
+	status = find_or_create_pubkeys(keys, orig_zone, add_keys);
 
 	for (i = 0;
 	     i < ldns_rr_list_rr_count(ldns_zone_rrs(orig_zone));
