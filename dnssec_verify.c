@@ -1464,7 +1464,229 @@ ldns_verify_rrsig_buffers_raw(unsigned char* sig, size_t siglen,
 	}
 }
 
-/* Post 1.0 TODO: next 2 functions contain a lot of similar code */
+
+/**
+ * Reset the ttl in the rrset with the orig_ttl from the sig 
+ * and update owner name if it was wildcard 
+ * Also canonicalizes the rrset.
+ * @param rrset: rrset to modify
+ * @param sig: signature to take TTL and wildcard values from
+ */
+static void
+ldns_rrset_use_signature_ttl(ldns_rr_list* rrset_clone, ldns_rr* rrsig)
+{
+	uint32_t orig_ttl;
+	uint16_t i;
+	uint8_t label_count;
+	ldns_rdf *wildcard_name;
+	ldns_rdf *wildcard_chopped;
+	ldns_rdf *wildcard_chopped_tmp;
+
+	orig_ttl = ldns_rdf2native_int32( ldns_rr_rdf(rrsig, 3));
+	label_count = ldns_rdf2native_int8(ldns_rr_rdf(rrsig, 2));
+
+	for(i = 0; i < ldns_rr_list_rr_count(rrset_clone); i++) {
+		if (label_count < 
+		    ldns_dname_label_count(
+			   ldns_rr_owner(ldns_rr_list_rr(rrset_clone, i)))) {
+			(void) ldns_str2rdf_dname(&wildcard_name, "*");
+			wildcard_chopped = ldns_rdf_clone(ldns_rr_owner(
+				ldns_rr_list_rr(rrset_clone, i)));
+			while (label_count < ldns_dname_label_count(wildcard_chopped)) {
+				wildcard_chopped_tmp = ldns_dname_left_chop(
+					wildcard_chopped);
+				ldns_rdf_deep_free(wildcard_chopped);
+				wildcard_chopped = wildcard_chopped_tmp;
+			}
+			(void) ldns_dname_cat(wildcard_name, wildcard_chopped);
+			ldns_rdf_deep_free(wildcard_chopped);
+			ldns_rdf_deep_free(ldns_rr_owner(ldns_rr_list_rr(
+				rrset_clone, i)));
+			ldns_rr_set_owner(ldns_rr_list_rr(rrset_clone, i), 
+				wildcard_name);
+		}
+		ldns_rr_set_ttl(ldns_rr_list_rr(rrset_clone, i), orig_ttl);
+		/* convert to lowercase */
+		ldns_rr2canonical(ldns_rr_list_rr(rrset_clone, i));
+	}
+}
+
+/**
+ * Make raw signature buffer out of rrsig
+ * @param rawsig_buf: raw signature buffer for result
+ * @param rrsig: signature to convert
+ * @return OK or more specific error.
+ */
+static ldns_status
+ldns_rrsig2rawsig_buffer(ldns_buffer* rawsig_buf, ldns_rr* rrsig)
+{
+	uint8_t sig_algo = ldns_rdf2native_int8(ldns_rr_rdf(rrsig, 1));
+	/* check for known and implemented algo's now (otherwise 
+	 * the function could return a wrong error
+	 */
+	/* create a buffer with signature rdata */
+	/* for some algorithms we need other data than for others... */
+	/* (the DSA API wants DER encoding for instance) */
+
+	switch(sig_algo) {
+	case LDNS_RSAMD5:
+	case LDNS_RSASHA1:
+	case LDNS_RSASHA1_NSEC3:
+#ifdef USE_SHA2
+	case LDNS_RSASHA256:
+	case LDNS_RSASHA512:
+#endif
+		if (ldns_rdf2buffer_wire(rawsig_buf, 
+		    ldns_rr_rdf(rrsig, 8)) != LDNS_STATUS_OK) {
+			return LDNS_STATUS_MEM_ERR;
+		}
+		break;
+	case LDNS_DSA:
+	case LDNS_DSA_NSEC3:
+		/* EVP takes rfc2459 format, which is a tad longer than dns format */
+		if (ldns_convert_dsa_rrsig_rdf2asn1(rawsig_buf, 
+			ldns_rr_rdf(rrsig, 8)) != LDNS_STATUS_OK) {
+			/*
+			  if (ldns_rdf2buffer_wire(rawsig_buf,
+			  ldns_rr_rdf(rrsig, 8)) != LDNS_STATUS_OK) {
+			*/
+			return LDNS_STATUS_MEM_ERR;
+		}
+		break;
+	case LDNS_DH:
+	case LDNS_ECC:
+	case LDNS_INDIRECT:
+		return LDNS_STATUS_CRYPTO_ALGO_NOT_IMPL;
+	default:
+		return LDNS_STATUS_CRYPTO_UNKNOWN_ALGO;
+	}
+	return LDNS_STATUS_OK;
+}
+
+/**
+ * Check RRSIG timestamps against the given 'now' time.
+ * @param rrsig: signature to check.
+ * @param now: the current time in seconds epoch.
+ * @return status code LDNS_STATUS_OK if all is fine.
+ */
+static ldns_status
+ldns_rrsig_check_timestamps(ldns_rr* rrsig, time_t now)
+{
+	time_t inception, expiration;
+	
+	/* check the signature time stamps */
+	inception = ldns_rdf2native_time_t(ldns_rr_rrsig_inception(rrsig));
+	expiration = ldns_rdf2native_time_t(ldns_rr_rrsig_expiration(rrsig));
+
+	if (expiration - inception < 0) {
+		/* bad sig, expiration before inception?? Tsssg */
+		return LDNS_STATUS_CRYPTO_EXPIRATION_BEFORE_INCEPTION;
+	}
+	if (now - inception < 0) {
+		/* bad sig, inception date has not yet come to pass */
+		return LDNS_STATUS_CRYPTO_SIG_NOT_INCEPTED;
+	}
+	if (expiration - now < 0) {
+		/* bad sig, expiration date has passed */
+		return LDNS_STATUS_CRYPTO_SIG_EXPIRED;
+	}
+	return LDNS_STATUS_OK;
+}
+
+/**
+ * Prepare for verification.
+ * @param rawsig_buf: raw signature buffer made ready.
+ * @param verify_buf: data for verification buffer made ready.
+ * @param rrset_clone: made ready.
+ * @param rrsig: signature to prepare for.
+ * @return LDNS_STATUS_OK is all went well. Otherwise specific error.
+ */
+static ldns_status
+ldns_prepare_for_verify(ldns_buffer* rawsig_buf, ldns_buffer* verify_buf, 
+	ldns_rr_list* rrset_clone, ldns_rr* rrsig)
+{
+	ldns_status result;
+
+	/* canonicalize the sig */
+	ldns_dname2canonical(ldns_rr_owner(rrsig));
+	
+	/* check if the typecovered is equal to the type checked */
+	if (ldns_rdf2rr_type(ldns_rr_rrsig_typecovered(rrsig)) !=
+	    ldns_rr_get_type(ldns_rr_list_rr(rrset_clone, 0)))
+		return LDNS_STATUS_CRYPTO_TYPE_COVERED_ERR;
+	
+	/* create a buffer with b64 signature rdata */
+	result = ldns_rrsig2rawsig_buffer(rawsig_buf, rrsig);
+	if(result != LDNS_STATUS_OK)
+		return result;
+
+	/* use TTL from signature. Use wildcard names for wildcards */
+	/* also canonicalizes rrset_clone */
+	ldns_rrset_use_signature_ttl(rrset_clone, rrsig);
+
+	/* sort the rrset in canonical order  */
+	ldns_rr_list_sort(rrset_clone);
+
+	/* put the signature rr (without the b64) to the verify_buf */
+	if (ldns_rrsig2buffer_wire(verify_buf, rrsig) != LDNS_STATUS_OK)
+		return LDNS_STATUS_MEM_ERR;
+
+	/* add the rrset in verify_buf */
+	if(ldns_rr_list2buffer_wire(verify_buf, rrset_clone) 
+		!= LDNS_STATUS_OK)
+		return LDNS_STATUS_MEM_ERR;
+
+	return LDNS_STATUS_OK;
+}
+
+/**
+ * Check if a key matches a signature.
+ * Checks keytag, sigalgo and signature.
+ * @param rawsig_buf: raw signature buffer for verify
+ * @param verify_buf: raw data buffer for verify
+ * @param rrsig: the rrsig
+ * @param key: key to attempt.
+ * @return LDNS_STATUS_OK if OK, else some specific error.
+ */
+static ldns_status
+ldns_verify_test_sig_key(ldns_buffer* rawsig_buf, ldns_buffer* verify_buf, 
+	ldns_rr* rrsig, ldns_rr* key)
+{
+	uint8_t sig_algo = ldns_rdf2native_int8(ldns_rr_rdf(rrsig, 1));
+
+	/* before anything, check if the keytags match */
+	if (ldns_calc_keytag(key)
+	    ==
+	    ldns_rdf2native_int16(ldns_rr_rrsig_keytag(rrsig))
+	    ) {
+		ldns_buffer* key_buf = ldns_buffer_new(LDNS_MAX_PACKETLEN);
+		ldns_status result = LDNS_STATUS_ERR;
+
+		/* put the key-data in a buffer, that's the third rdf, with
+		 * the base64 encoded key data */
+		if (ldns_rdf2buffer_wire(key_buf, ldns_rr_rdf(key, 3)) 
+			!= LDNS_STATUS_OK) {
+			ldns_buffer_free(key_buf); 
+			/* returning is bad might screw up
+			   good keys later in the list
+			   what to do? */
+			return LDNS_STATUS_ERR;
+		}
+		
+		if (sig_algo == ldns_rdf2native_int8(ldns_rr_rdf(key, 2))) {
+			result = ldns_verify_rrsig_buffers(rawsig_buf, 
+				verify_buf, key_buf, sig_algo);
+		}
+		
+		ldns_buffer_free(key_buf); 
+		return result;
+	}
+	else {
+		/* No keys with the corresponding keytag are found */
+		return LDNS_STATUS_CRYPTO_NO_MATCHING_KEYTAG_DNSKEY;
+	}
+}
+
 /* 
  * to verify:
  * - create the wire fmt of the b64 key rdata
@@ -1482,20 +1704,10 @@ ldns_verify_rrsig_keylist(ldns_rr_list *rrset,
 {
 	ldns_buffer *rawsig_buf;
 	ldns_buffer *verify_buf;
-	ldns_buffer *key_buf;
-	uint32_t orig_ttl;
 	uint16_t i;
-	uint8_t sig_algo;
 	ldns_status result;
-	ldns_rr *current_key;
 	ldns_rr_list *rrset_clone;
 	ldns_rr_list *validkeys;
-	time_t now, inception, expiration;
-	uint8_t label_count;
-	ldns_rdf *wildcard_name;
-	ldns_rdf *wildcard_chopped;
-	ldns_rdf *wildcard_chopped_tmp;
-
 
 	if (!rrset) {
 		return LDNS_STATUS_ERR;
@@ -1506,199 +1718,65 @@ ldns_verify_rrsig_keylist(ldns_rr_list *rrset,
 		return LDNS_STATUS_MEM_ERR;
 	}
 	
-	/* canonicalize the sig */
-	ldns_dname2canonical(ldns_rr_owner(rrsig));
-	
 	/* clone the rrset so that we can fiddle with it */
 	rrset_clone = ldns_rr_list_clone(rrset);
 
-	/* check if the typecovered is equal to the type checked */
-	if (ldns_rdf2rr_type(ldns_rr_rrsig_typecovered(rrsig)) !=
-	    ldns_rr_get_type(ldns_rr_list_rr(rrset_clone, 0))) {
-		ldns_rr_list_deep_free(rrset_clone);
-		ldns_rr_list_deep_free(validkeys);
-		return LDNS_STATUS_CRYPTO_TYPE_COVERED_ERR;
-	}
-	
 	/* create the buffers which will certainly hold the raw data */
 	rawsig_buf = ldns_buffer_new(LDNS_MAX_PACKETLEN);
 	verify_buf  = ldns_buffer_new(LDNS_MAX_PACKETLEN);
-	
-	sig_algo = ldns_rdf2native_int8(ldns_rr_rdf(rrsig, 1));
+
+	result = ldns_prepare_for_verify(rawsig_buf, verify_buf, 
+		rrset_clone, rrsig);
+	if(result != LDNS_STATUS_OK) {
+		ldns_buffer_free(verify_buf);
+		ldns_buffer_free(rawsig_buf);
+		ldns_rr_list_deep_free(rrset_clone);
+		ldns_rr_list_deep_free(validkeys);
+		return result;
+	}
 	result = LDNS_STATUS_ERR;
 
-	/* check the signature time stamps */
-	inception = ldns_rdf2native_time_t(ldns_rr_rrsig_inception(rrsig));
-	expiration = ldns_rdf2native_time_t(ldns_rr_rrsig_expiration(rrsig));
-	now = time(NULL);
-
-	if (expiration - inception < 0) {
-		/* bad sig, expiration before inception?? Tsssg */
-		ldns_buffer_free(verify_buf);
-		ldns_buffer_free(rawsig_buf);
-		ldns_rr_list_deep_free(rrset_clone);
-		ldns_rr_list_deep_free(validkeys);
-		return LDNS_STATUS_CRYPTO_EXPIRATION_BEFORE_INCEPTION;
-	}
-	if (now - inception < 0) {
-		/* bad sig, inception date has not yet come to pass */
-		ldns_buffer_free(rawsig_buf);
-		ldns_buffer_free(verify_buf);
-		ldns_rr_list_deep_free(rrset_clone);
-		ldns_rr_list_deep_free(validkeys);
-		return LDNS_STATUS_CRYPTO_SIG_NOT_INCEPTED;
-	}
-	if (expiration - now < 0) {
-		/* bad sig, expiration date has passed */
-		ldns_buffer_free(rawsig_buf);
-		ldns_buffer_free(verify_buf);
-		ldns_rr_list_deep_free(rrset_clone);
-		ldns_rr_list_deep_free(validkeys);
-		return LDNS_STATUS_CRYPTO_SIG_EXPIRED;
-	}
-	
-	/* create a buffer with b64 signature rdata */
-	if (sig_algo == LDNS_DSA) {
-		if (ldns_convert_dsa_rrsig_rdf2asn1(rawsig_buf,
-									 ldns_rr_rdf(rrsig, 8))
-		    != LDNS_STATUS_OK) {
-			ldns_buffer_free(rawsig_buf);
-			ldns_buffer_free(verify_buf);
-			ldns_rr_list_deep_free(rrset_clone);
-			ldns_rr_list_deep_free(validkeys);
-			return LDNS_STATUS_MEM_ERR;
-		}
-	} else if (ldns_rdf2buffer_wire(rawsig_buf, 
-							ldns_rr_rdf(rrsig, 8))
-		    != LDNS_STATUS_OK) {
-		ldns_buffer_free(rawsig_buf);
-		ldns_buffer_free(verify_buf);
-		ldns_rr_list_deep_free(rrset_clone);
-		ldns_rr_list_deep_free(validkeys);
-		return LDNS_STATUS_MEM_ERR;
-	}
-
-	orig_ttl = ldns_rdf2native_int32( ldns_rr_rdf(rrsig, 3));
-	label_count = ldns_rdf2native_int8(ldns_rr_rdf(rrsig, 2));
-
-	/* reset the ttl in the rrset with the orig_ttl from the sig */
-	/* and update owner name if it was wildcard */
-	for(i = 0; i < ldns_rr_list_rr_count(rrset_clone); i++) {
-		if (label_count < 
-		    ldns_dname_label_count(
-			   ldns_rr_owner(ldns_rr_list_rr(rrset_clone, i)))) {
-			(void) ldns_str2rdf_dname(&wildcard_name, "*");
-			wildcard_chopped =
-				ldns_rdf_clone(ldns_rr_owner(ldns_rr_list_rr(rrset_clone,
-													i)));
-			while (label_count < ldns_dname_label_count(wildcard_chopped)) {
-				wildcard_chopped_tmp =
-					ldns_dname_left_chop(wildcard_chopped);
-				ldns_rdf_deep_free(wildcard_chopped);
-				wildcard_chopped = wildcard_chopped_tmp;
-			}
-			(void) ldns_dname_cat(wildcard_name, wildcard_chopped);
-			ldns_rdf_deep_free(wildcard_chopped);
-			ldns_rdf_deep_free(ldns_rr_owner(ldns_rr_list_rr(rrset_clone,
-												    i)));
-			ldns_rr_set_owner(ldns_rr_list_rr(rrset_clone, i), 
-						   wildcard_name);
-				  	
-		}
-		ldns_rr_set_ttl(ldns_rr_list_rr(rrset_clone, i), orig_ttl);
-		/* convert to lowercase */
-		ldns_rr2canonical(ldns_rr_list_rr(rrset_clone, i));
-	}
-
-	/* sort the rrset in canonical order  */
-	ldns_rr_list_sort(rrset_clone);
-
-	/* put the signature rr (without the b64) to the verify_buf */
-	if (ldns_rrsig2buffer_wire(verify_buf, rrsig) != LDNS_STATUS_OK) {
-		ldns_buffer_free(rawsig_buf);
-		ldns_buffer_free(verify_buf);
-		ldns_rr_list_deep_free(rrset_clone);
-		ldns_rr_list_deep_free(validkeys);
-		return LDNS_STATUS_MEM_ERR;
-	}
-
-	/* add the rrset in verify_buf */
-	if (ldns_rr_list2buffer_wire(verify_buf, rrset_clone) != LDNS_STATUS_OK) {
-		ldns_buffer_free(rawsig_buf);
-		ldns_buffer_free(verify_buf);
-		ldns_rr_list_deep_free(rrset_clone);
-		ldns_rr_list_deep_free(validkeys);
-		return LDNS_STATUS_MEM_ERR;
-	}
-
 	for(i = 0; i < ldns_rr_list_rr_count(keys); i++) {
-		current_key = ldns_rr_list_rr(keys, i);
-		/* before anything, check if the keytags match */
-		if (ldns_calc_keytag(current_key) ==
-		    ldns_rdf2native_int16(ldns_rr_rrsig_keytag(rrsig))) {
-			key_buf = ldns_buffer_new(LDNS_MAX_PACKETLEN);
-			
-			/* put the key-data in a buffer, that's the third rdf, with
-			 * the base64 encoded key data */
-			if (ldns_rdf2buffer_wire(key_buf,
-								ldns_rr_rdf(current_key, 3))
-			    != LDNS_STATUS_OK) {
+		result = ldns_verify_test_sig_key(rawsig_buf, verify_buf, 
+			rrsig, ldns_rr_list_rr(keys, i));
+		if (result == LDNS_STATUS_OK) {
+			/* one of the keys has matched, don't break
+			 * here, instead put the 'winning' key in
+			 * the validkey list and return the list 
+			 * later */
+			if (!ldns_rr_list_push_rr(validkeys, 
+				ldns_rr_list_rr(keys,i))) {
+				/* couldn't push the key?? */
 				ldns_buffer_free(rawsig_buf);
 				ldns_buffer_free(verify_buf);
-				/* returning is bad might screw up good keys later in the list
-				   what to do? */
 				ldns_rr_list_deep_free(rrset_clone);
 				ldns_rr_list_deep_free(validkeys);
 				return LDNS_STATUS_MEM_ERR;
 			}
-
-			/* check for right key */
-			if (sig_algo == ldns_rdf2native_int8(ldns_rr_rdf(current_key, 
-												    2))) {
-				result = ldns_verify_rrsig_buffers(rawsig_buf, 
-											verify_buf,
-											key_buf,
-											sig_algo);
-			} else {
-				result = LDNS_STATUS_CRYPTO_UNKNOWN_ALGO;
-			}
-			
-			ldns_buffer_free(key_buf); 
-
-			if (result == LDNS_STATUS_OK) {
-				/* one of the keys has matched, don't break
-				 * here, instead put the 'winning' key in
-				 * the validkey list and return the list 
-				 * later */
-				if (!ldns_rr_list_push_rr(validkeys, current_key)) {
-					/* couldn't push the key?? */
-					ldns_buffer_free(rawsig_buf);
-					ldns_buffer_free(verify_buf);
-					ldns_rr_list_deep_free(rrset_clone);
-					ldns_rr_list_deep_free(validkeys);
-					return LDNS_STATUS_MEM_ERR;
-				}
-			} 
-		} else {
-			if (result == LDNS_STATUS_ERR) {
-				result = LDNS_STATUS_CRYPTO_NO_MATCHING_KEYTAG_DNSKEY;
-			}
-		}
+		} 
 	}
 
 	/* no longer needed */
 	ldns_rr_list_deep_free(rrset_clone);
 	ldns_buffer_free(rawsig_buf);
 	ldns_buffer_free(verify_buf);
+
 	if (ldns_rr_list_rr_count(validkeys) == 0) {
 		/* no keys were added, return last error */
 		ldns_rr_list_deep_free(validkeys); 
 		return result;
-	} else {
-		ldns_rr_list_cat(good_keys, validkeys);
-		ldns_rr_list_free(validkeys);
-		return LDNS_STATUS_OK;
 	}
+
+	/* check timestamps last; its OK except time */
+	result = ldns_rrsig_check_timestamps(rrsig, time(NULL));
+	if(result != LDNS_STATUS_OK) {
+		ldns_rr_list_deep_free(validkeys); 
+		return result;
+	}
+
+	ldns_rr_list_cat(good_keys, validkeys);
+	ldns_rr_list_free(validkeys);
+	return LDNS_STATUS_OK;
 }
 
 ldns_status
@@ -1706,201 +1784,37 @@ ldns_verify_rrsig(ldns_rr_list *rrset, ldns_rr *rrsig, ldns_rr *key)
 {
 	ldns_buffer *rawsig_buf;
 	ldns_buffer *verify_buf;
-	ldns_buffer *key_buf;
-	uint32_t orig_ttl;
-	uint16_t i;
-	uint8_t sig_algo;
-	uint16_t label_count;
 	ldns_status result;
 	ldns_rr_list *rrset_clone;
-	time_t now, inception, expiration;
-	ldns_rdf *wildcard_name;
-	ldns_rdf *wildcard_chopped;
-	ldns_rdf *wildcard_chopped_tmp;
 
 	if (!rrset) {
 		return LDNS_STATUS_NO_DATA;
 	}
-
-	/* lowercase the rrsig owner name */
-	ldns_dname2canonical(ldns_rr_owner(rrsig));
-
-	/* check the signature time stamps */
-	inception = ldns_rdf2native_time_t(ldns_rr_rrsig_inception(rrsig));
-	expiration = ldns_rdf2native_time_t(ldns_rr_rrsig_expiration(rrsig));
-	now = time(NULL);
-
-	if (expiration - inception < 0) {
-		/* bad sig, expiration before inception?? Tsssg */
-		return LDNS_STATUS_CRYPTO_EXPIRATION_BEFORE_INCEPTION;
-	}
-	if (now - inception < 0) {
-		/* bad sig, inception date has not passed */
-		return LDNS_STATUS_CRYPTO_SIG_NOT_INCEPTED;
-	}
-
-	if (expiration - now < 0) {
-		/* bad sig, expiration date has passed */
-		return LDNS_STATUS_CRYPTO_SIG_EXPIRED;
-	}
 	/* clone the rrset so that we can fiddle with it */
 	rrset_clone = ldns_rr_list_clone(rrset);
-	
 	/* create the buffers which will certainly hold the raw data */
 	rawsig_buf = ldns_buffer_new(LDNS_MAX_PACKETLEN);
 	verify_buf  = ldns_buffer_new(LDNS_MAX_PACKETLEN);
-	
-	sig_algo = ldns_rdf2native_int8(ldns_rr_rdf(rrsig, 1));
-	
-	/* check for known and implemented algo's now (otherwise 
-	 * the function could return a wrong error
-	 */
-	/* create a buffer with signature rdata */
-	/* for some algorithms we need other data than for others... */
-	/* (the DSA API wants DER encoding for instance) */
 
-	switch(sig_algo) {
-	case LDNS_RSAMD5:
-	case LDNS_RSASHA1:
-	case LDNS_RSASHA1_NSEC3:
-#ifdef USE_SHA2
-	case LDNS_RSASHA256:
-	case LDNS_RSASHA512:
-#endif
-		if (ldns_rdf2buffer_wire(rawsig_buf,
-							ldns_rr_rdf(rrsig, 8)) != LDNS_STATUS_OK) {
-			ldns_buffer_free(rawsig_buf);
-			ldns_buffer_free(verify_buf);
-			return LDNS_STATUS_MEM_ERR;
-		}
-		break;
-	case LDNS_DSA:
-	case LDNS_DSA_NSEC3:
-		/* EVP takes rfc2459 format, which is a tad longer than dns format */
-		if (ldns_convert_dsa_rrsig_rdf2asn1(rawsig_buf,
-									 ldns_rr_rdf(rrsig, 8))
-		    != LDNS_STATUS_OK) {
-			/*
-			  if (ldns_rdf2buffer_wire(rawsig_buf,
-			  ldns_rr_rdf(rrsig, 8)) != LDNS_STATUS_OK) {
-			*/
-			ldns_buffer_free(rawsig_buf);
-			ldns_buffer_free(verify_buf);
-			return LDNS_STATUS_MEM_ERR;
-		}
-		break;
-		break;
-	case LDNS_DH:
-	case LDNS_ECC:
-	case LDNS_INDIRECT:
-		ldns_buffer_free(rawsig_buf);
-		ldns_buffer_free(verify_buf);
-		return LDNS_STATUS_CRYPTO_ALGO_NOT_IMPL;
-	default:
-		ldns_buffer_free(rawsig_buf);
-		ldns_buffer_free(verify_buf);
-		ldns_rr_list_deep_free(rrset_clone);
-		return LDNS_STATUS_CRYPTO_UNKNOWN_ALGO;
-	}
-	
-	result = LDNS_STATUS_ERR;
-
-	/* remove labels if the label count is higher than the label count
-	   from the rrsig */
-	label_count = ldns_rdf2native_int8(ldns_rr_rdf(rrsig, 2));
-
-	orig_ttl = ldns_rdf2native_int32(
-							   ldns_rr_rdf(rrsig, 3));
-
-	/* reset the ttl in the rrset with the orig_ttl from the sig */
-	for(i = 0; i < ldns_rr_list_rr_count(rrset_clone); i++) {
-		if (label_count < 
-		    ldns_dname_label_count(
-			   ldns_rr_owner(ldns_rr_list_rr(rrset_clone, i)))) {
-			(void) ldns_str2rdf_dname(&wildcard_name, "*");
-			wildcard_chopped =
-				ldns_rdf_clone(ldns_rr_owner(ldns_rr_list_rr(rrset_clone,
-													i)));
-			while (label_count < ldns_dname_label_count(wildcard_chopped)) {
-				wildcard_chopped_tmp =
-					ldns_dname_left_chop(wildcard_chopped);
-				ldns_rdf_deep_free(wildcard_chopped);
-				wildcard_chopped = wildcard_chopped_tmp;
-			}
-			(void) ldns_dname_cat(wildcard_name, wildcard_chopped);
-			ldns_rdf_deep_free(wildcard_chopped);
-			ldns_rdf_deep_free(ldns_rr_owner(ldns_rr_list_rr(rrset_clone,
-												    i)));
-			ldns_rr_set_owner(ldns_rr_list_rr(rrset_clone, i), 
-						   wildcard_name);
-				  	
-		}
-		ldns_rr_set_ttl(
-					 ldns_rr_list_rr(rrset_clone, i),
-					 orig_ttl);
-		/* convert to lowercase */
-		ldns_rr2canonical(ldns_rr_list_rr(rrset_clone, i));
-	}
-
-	/* sort the rrset in canonical order  */
-	ldns_rr_list_sort(rrset_clone);
-
-	/* put the signature rr (without the b64) to the verify_buf */
-	if (ldns_rrsig2buffer_wire(verify_buf, rrsig) != LDNS_STATUS_OK) {
+	result = ldns_prepare_for_verify(rawsig_buf, verify_buf, 
+		rrset_clone, rrsig);
+	if(result != LDNS_STATUS_OK) {
 		ldns_rr_list_deep_free(rrset_clone);
 		ldns_buffer_free(rawsig_buf);
 		ldns_buffer_free(verify_buf);
-		return LDNS_STATUS_ERR;
+		return result;
 	}
-
-	/* add the rrset in verify_buf */
-	if (ldns_rr_list2buffer_wire(verify_buf, rrset_clone) != LDNS_STATUS_OK) {
-		ldns_rr_list_deep_free(rrset_clone);
-		ldns_buffer_free(rawsig_buf);
-		ldns_buffer_free(verify_buf);
-		return LDNS_STATUS_ERR;
-	}
-
-	if (ldns_calc_keytag(key)
-	    ==
-	    ldns_rdf2native_int16(ldns_rr_rrsig_keytag(rrsig))
-	    ) {
-		key_buf = ldns_buffer_new(LDNS_MAX_PACKETLEN);
-		
-		/* before anything, check if the keytags match */
-
-		/* put the key-data in a buffer, that's the third rdf, with
-		 * the base64 encoded key data */
-		if (ldns_rdf2buffer_wire(key_buf,
-							ldns_rr_rdf(key, 3)) != LDNS_STATUS_OK) {
-			ldns_rr_list_deep_free(rrset_clone);
-			ldns_buffer_free(rawsig_buf);
-			ldns_buffer_free(verify_buf);
-			/* returning is bad might screw up
-			   good keys later in the list
-			   what to do? */
-			return LDNS_STATUS_ERR;
-		}
-		
-		if (sig_algo == ldns_rdf2native_int8(ldns_rr_rdf(key, 2))) {
-			result = ldns_verify_rrsig_buffers(rawsig_buf,
-										verify_buf,
-										key_buf,
-										sig_algo);
-		}
-		
-		ldns_buffer_free(key_buf); 
-	}
-	else {
-		/* No keys with the corresponding keytag are found */
-		if (result == LDNS_STATUS_ERR) {
-			result = LDNS_STATUS_CRYPTO_NO_MATCHING_KEYTAG_DNSKEY;
-		}
-	}
+	result = ldns_verify_test_sig_key(rawsig_buf, verify_buf, 
+		rrsig, key);
 	/* no longer needed */
 	ldns_rr_list_deep_free(rrset_clone);
 	ldns_buffer_free(rawsig_buf);
 	ldns_buffer_free(verify_buf);
+
+	/* check timestamp last, apart from time its OK */
+	if(result == LDNS_STATUS_OK)
+		result = ldns_rrsig_check_timestamps(rrsig, time(NULL));
+
 	return result;
 }
 

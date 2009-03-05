@@ -409,8 +409,8 @@ ldns_status ldns_verify_rrsig_buffers_raw(unsigned char* sig,
  * \param[out] good_keys  if this is a (initialized) list, the keys 
  *                        from keys that validate one of the signatures
  *                        are added to it
- * \return a list of keys which validate the rrsig + rrset. Returns NULL
- *         when none of the keys validate.
+ * \return a list of keys which validate the rrsig + rrset. Returns
+ * status LDNS_STATUS_OK if at least one key matched. Else an error.
  */
 ldns_status ldns_verify_rrsig_keylist(ldns_rr_list *rrset,
 							   ldns_rr *rrsig,
