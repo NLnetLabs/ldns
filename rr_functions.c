@@ -52,12 +52,8 @@ ldns_rr_set_function(ldns_rr_type type, ldns_rr *rr, ldns_rdf *rdf, size_t pos)
                 return false;
         }
         pop = ldns_rr_set_rdf(rr, rdf, pos);
-        if (pop) {
- 		ldns_rdf_deep_free(pop);
-                return true;
-        } else {
-                return true;
-        }
+ 	ldns_rdf_deep_free(pop);
+        return true;
 }
 
 /* A/AAAA records */
