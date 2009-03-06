@@ -930,13 +930,16 @@ ldns_verify(ldns_rr_list *rrset, ldns_rr_list *rrsig, const ldns_rr_list *keys,
 		verify_result = LDNS_STATUS_CRYPTO_NO_TRUSTED_DNSKEY;
 	} else {
 		for (i = 0; i < ldns_rr_list_rr_count(rrsig); i++) {
-
-			if (ldns_verify_rrsig_keylist(rrset,
-									ldns_rr_list_rr(rrsig, i),
-									keys, good_keys)
-			    == LDNS_STATUS_OK) {
+			ldns_status s = ldns_verify_rrsig_keylist(rrset, 
+				ldns_rr_list_rr(rrsig, i), keys, good_keys);
+			/* try a little to get more descriptive error */
+			if(s == LDNS_STATUS_OK) {
 				verify_result = LDNS_STATUS_OK;
-			}
+			} else if(verify_result == LDNS_STATUS_ERR)
+				verify_result = s;
+			else if(s !=  LDNS_STATUS_ERR && verify_result ==
+				LDNS_STATUS_CRYPTO_NO_MATCHING_KEYTAG_DNSKEY)
+				verify_result = s;
 		}
 	}
 	return verify_result;
