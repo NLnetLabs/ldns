@@ -1731,7 +1731,7 @@ ldns_verify_rrsig_keylist(ldns_rr_list *rrset,
 		ldns_buffer_free(verify_buf);
 		ldns_buffer_free(rawsig_buf);
 		ldns_rr_list_deep_free(rrset_clone);
-		ldns_rr_list_deep_free(validkeys);
+		ldns_rr_list_free(validkeys);
 		return result;
 	}
 	result = LDNS_STATUS_ERR;
@@ -1750,7 +1750,7 @@ ldns_verify_rrsig_keylist(ldns_rr_list *rrset,
 				ldns_buffer_free(rawsig_buf);
 				ldns_buffer_free(verify_buf);
 				ldns_rr_list_deep_free(rrset_clone);
-				ldns_rr_list_deep_free(validkeys);
+				ldns_rr_list_free(validkeys);
 				return LDNS_STATUS_MEM_ERR;
 			}
 		} 
@@ -1763,14 +1763,14 @@ ldns_verify_rrsig_keylist(ldns_rr_list *rrset,
 
 	if (ldns_rr_list_rr_count(validkeys) == 0) {
 		/* no keys were added, return last error */
-		ldns_rr_list_deep_free(validkeys); 
+		ldns_rr_list_free(validkeys); 
 		return result;
 	}
 
 	/* check timestamps last; its OK except time */
 	result = ldns_rrsig_check_timestamps(rrsig, time(NULL));
 	if(result != LDNS_STATUS_OK) {
-		ldns_rr_list_deep_free(validkeys); 
+		ldns_rr_list_free(validkeys); 
 		return result;
 	}
 
