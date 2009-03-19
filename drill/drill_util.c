@@ -13,48 +13,68 @@
 
 #include <errno.h>
 
-ldns_rr *
-read_key_file(const char *filename)
+int
+read_line(FILE *input, char *line)
 {
-	FILE *fp;
-	char line[LDNS_MAX_PACKETLEN];
-	int c;
-	size_t i = 0;
-	ldns_rr *r;
-	ldns_status status;
+	int i;
 	
-	if (verbosity >= 4) {
-		printf("Reading key file from %s\n", filename);
-	}
-	fp = fopen(filename, "r");
-	if (!fp) {
-		fprintf(stderr, "Unable to open %s: %s\n", filename, strerror(errno));
-		return NULL;
-	}
-	
-	while ((c = fgetc(fp)) && i < LDNS_MAX_PACKETLEN && c != EOF) {
-		line[i] = c;
-		i++;
+	char c;
+	for (i = 0; i < LDNS_MAX_PACKETLEN; i++) {
+		c = getc(input);
+		if (c == EOF) {
+			return -1;
+		} else if (c != '\n') {
+			line[i] = c;
+		} else {
+			break;
+		}
 	}
 	line[i] = '\0';
-	
-	fclose(fp);
-	
-	if (i <= 0) {
-		fprintf(stderr, "nothing read from %s", filename);
-		return NULL;
-	} else {
-		status = ldns_rr_new_frm_str(&r, line, 0, NULL, NULL);
-		if (status == LDNS_STATUS_OK) {
-			if (verbosity >= 5) {
-				printf("Read trusted key:\n");
-				ldns_rr_print(stdout, r);
+	return i;
+}
+
+/* key_list must be initialized with ldns_rr_list_new() */
+ldns_status
+read_key_file(const char *filename, ldns_rr_list *key_list)
+{
+	int line_len = 0;
+	int line_nr = 0;
+	int key_count = 0;
+	char line[LDNS_MAX_PACKETLEN];
+	ldns_status status;
+	FILE *input_file;
+	ldns_rr *rr;
+
+	input_file = fopen(filename, "r");
+	if (!input_file) {
+		fprintf(stderr, "Error opening %s: %s\n",
+		        filename, strerror(errno));
+		return LDNS_STATUS_ERR;
+	}
+	while (line_len >= 0) {
+		line_len = read_line(input_file, line);
+		line_nr++;
+		if (line_len > 0 && line[0] != ';') {
+			status = ldns_rr_new_frm_str(&rr, line, 0, NULL, NULL);
+			if (status != LDNS_STATUS_OK) {
+				fprintf(stderr,
+						"Error parsing DNSKEY RR in line %d: %s\n",
+						line_nr,
+						ldns_get_errorstr_by_id(status));
+			} else if (ldns_rr_get_type(rr) == LDNS_RR_TYPE_DNSKEY) {
+				ldns_rr_list_push_rr(key_list, rr);
+				key_count++;
+			} else {
+				ldns_rr_free(rr);
 			}
-			return r;
-		} else {
-			fprintf(stderr, "Error creating DNSKEY rr from %s: %s\n", filename, ldns_get_errorstr_by_id(status));
-			return NULL;
 		}
+	}
+	printf(";; Number of trusted keys: %d\n", key_count);
+	if (key_count > 0) {
+		return LDNS_STATUS_OK;
+	} else {
+		/*fprintf(stderr, "No keys read\n");*/
+		return LDNS_STATUS_ERR;
 	}
 }
 

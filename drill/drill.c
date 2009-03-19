@@ -117,7 +117,6 @@ main(int argc, char *argv[])
 	char		*tsig_name = NULL;
 	char		*tsig_data = NULL;
 	char 		*tsig_algorithm = NULL;
-	ldns_rr		*dnssec_key;
 	size_t		tsig_separator;
 	size_t		tsig_separator2;
 	ldns_rr		*axfr_rr;
@@ -267,11 +266,10 @@ main(int argc, char *argv[])
 				qusevc = true;
 				break;
 			case 'k':
-				dnssec_key = read_key_file(optarg);
-				if (!dnssec_key) {
+				status = read_key_file(optarg, key_list);
+				if (status != LDNS_STATUS_OK) {
 					error("Could not parse the key file: %s", optarg);
 				}
-				ldns_rr_list_push_rr(key_list, dnssec_key);
 				qdnssec = true; /* enable that too */
 				break;
 			case 'o':
