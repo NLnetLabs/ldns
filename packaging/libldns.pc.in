@@ -8,6 +8,6 @@ Description: Library for DNS programming
 URL: http://www.nlnetlabs.nl/projects/ldns
 Version: @PACKAGE_VERSION@
 Requires: 
-Libs: -lldns
+Libs: -L${libdir} -lldns
 Libs.private: @LDFLAGS@
 Cflags: -I${includedir} 
