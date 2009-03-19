@@ -120,7 +120,7 @@ equalize_ttls(ldns_rr *rr1, ldns_rr *rr2, uint32_t default_ttl)
 			ldns_rr_set_ttl(rr2, ttl1);
 			fprintf(stderr, 
 			        "warning: changing non-default TTL %u to %u\n",
-			        ttl2, ttl1);
+			        (unsigned int) ttl2, (unsigned int)  ttl1);
 		}
 	}
 }
