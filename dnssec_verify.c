@@ -443,6 +443,10 @@ ldns_dnssec_trust_tree_print_sm(FILE *out,
 			}
 			if (ldns_rr_get_type(tree->rr) == LDNS_RR_TYPE_DNSKEY) {
 				fprintf(out, " keytag: %u", ldns_calc_keytag(tree->rr));
+				fprintf(out, " alg: ");
+				ldns_rdf_print(out, ldns_rr_rdf(tree->rr, 2));
+				fprintf(out, " flags: ");
+				ldns_rdf_print(out, ldns_rr_rdf(tree->rr, 0));
 			} else if (ldns_rr_get_type(tree->rr) == LDNS_RR_TYPE_DS) {
 				fprintf(out, " keytag: ");
 				ldns_rdf_print(out, ldns_rr_rdf(tree->rr, 0));
