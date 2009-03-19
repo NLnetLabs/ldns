@@ -96,6 +96,49 @@ void check_tm(struct tm tm)
 
 }
 
+/*
+ * if the ttls are different, make them equal
+ * if one of the ttls equals LDNS_DEFAULT_TTL, that one is changed
+ * otherwise, rr2 will get the ttl of rr1
+ * 
+ * prints a warning if a non-default TTL is changed
+ */
+void
+equalize_ttls(ldns_rr *rr1, ldns_rr *rr2, uint32_t default_ttl)
+{
+	uint32_t ttl1, ttl2;
+	
+	ttl1 = ldns_rr_ttl(rr1);
+	ttl2 = ldns_rr_ttl(rr2);
+	
+	if (ttl1 != ttl2) {
+		if (ttl1 == default_ttl) {
+			ldns_rr_set_ttl(rr1, ttl2);
+		} else if (ttl2 == default_ttl) {
+			ldns_rr_set_ttl(rr2, ttl1);
+		} else {
+			ldns_rr_set_ttl(rr2, ttl1);
+			fprintf(stderr, 
+			        "warning: changing non-default TTL %u to %u\n",
+			        ttl2, ttl1);
+		}
+	}
+}
+
+void
+equalize_ttls_rr_list(ldns_rr_list *rr_list, ldns_rr *rr, uint32_t default_ttl)
+{
+	size_t i;
+	ldns_rr *cur_rr;
+	
+	for (i = 0; i < ldns_rr_list_rr_count(rr_list); i++) {
+		cur_rr = ldns_rr_list_rr(rr_list, i);
+		if (ldns_rr_compare_no_rdata(cur_rr, rr) == 0) {
+			equalize_ttls(cur_rr, rr, default_ttl);
+		}
+	}
+}
+
 ldns_rr *
 find_key_in_zone(ldns_rr *pubkey_gen, ldns_zone *zone) {
 	size_t key_i;
@@ -106,18 +149,18 @@ find_key_in_zone(ldns_rr *pubkey_gen, ldns_zone *zone) {
 		key_i++) {
 		pubkey = ldns_rr_list_rr(ldns_zone_rrs(zone), key_i);
 		if (ldns_rr_get_type(pubkey) == LDNS_RR_TYPE_DNSKEY &&
-		    (ldns_calc_keytag(pubkey)
-			==
-			ldns_calc_keytag(pubkey_gen) ||
-			     /* KSK has gen-keytag + 1 */
-			     ldns_calc_keytag(pubkey)
-			     ==
-			     ldns_calc_keytag(pubkey_gen) + 1) 
-		   ) {
-			if (verbosity >= 2) {
-				fprintf(stderr, "Found it in the zone!\n");
-			}
-			return pubkey;
+			(ldns_calc_keytag(pubkey)
+				==
+				ldns_calc_keytag(pubkey_gen) ||
+					 /* KSK has gen-keytag + 1 */
+					 ldns_calc_keytag(pubkey)
+					 ==
+					 ldns_calc_keytag(pubkey_gen) + 1) 
+			   ) {
+				if (verbosity >= 2) {
+					fprintf(stderr, "Found it in the zone!\n");
+				}
+				return pubkey;
 		}
 	}
 	return NULL;
@@ -174,11 +217,15 @@ find_key_in_file(ldns_key *key)
  * whether keys of which we only have key data are KSKs or ZSKS
  */
 ldns_status
-find_or_create_pubkeys(ldns_key_list *keys, ldns_zone *orig_zone, bool add_keys) {
+find_or_create_pubkeys(ldns_key_list *keys, ldns_zone *orig_zone, bool add_keys, uint32_t default_ttl) {
 	ldns_key *key;
 	size_t i;
 	ldns_rr *pubkey_gen, *pubkey;
 	
+	if (default_ttl == LDNS_DEFAULT_TTL) {
+		default_ttl = ldns_rr_ttl(ldns_zone_soa(orig_zone));
+	}
+
 	for (i = 0; i < ldns_key_list_key_count(keys); i++) {
 		key = ldns_key_list_key(keys, i);
 		if (!ldns_key_pubkey_owner(key)) {
@@ -199,6 +246,7 @@ find_or_create_pubkeys(ldns_key_list *keys, ldns_zone *orig_zone, bool add_keys)
 		 * to have any key flags that are set this way
 		 */
 		pubkey_gen = ldns_key2rr(key);
+		ldns_rr_set_ttl(pubkey_gen, default_ttl);
 
 		if (verbosity >= 2) {
 			fprintf(stderr,
@@ -237,6 +285,7 @@ find_or_create_pubkeys(ldns_key_list *keys, ldns_zone *orig_zone, bool add_keys)
 		ldns_key_set_keytag(key, ldns_calc_keytag(pubkey));
 		
 		if (add_keys) {
+			equalize_ttls_rr_list(ldns_zone_rrs(orig_zone), pubkey, default_ttl);
 			ldns_zone_push_rr(orig_zone, pubkey);
 		}
 	}
@@ -319,7 +368,7 @@ main(int argc, char *argv[])
 	uint32_t inception;
 	uint32_t expiration;
 	ldns_rdf *origin = NULL;
-	uint32_t ttl = 0;
+	uint32_t ttl = LDNS_DEFAULT_TTL;
 	ldns_rr_class class = LDNS_RR_CLASS_IN;	
 	
 	char *prog = strdup(argv[0]);
@@ -671,7 +720,7 @@ main(int argc, char *argv[])
 		  "Error adding SOA to dnssec zone, skipping record\n");
 	}
 	
-	status = find_or_create_pubkeys(keys, orig_zone, add_keys);
+	status = find_or_create_pubkeys(keys, orig_zone, add_keys, ttl);
 
 	for (i = 0;
 	     i < ldns_rr_list_rr_count(ldns_zone_rrs(orig_zone));
