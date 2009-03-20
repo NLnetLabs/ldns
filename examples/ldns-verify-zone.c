@@ -526,7 +526,7 @@ main(int argc, char **argv)
 			printf("\tReads the zonefile and checks for DNSSEC errors.\n");
 			printf("\nIt checks whether NSEC(3)s are present,");
 			printf(" and verifies all signatures\n");
-			printf("It does NOT check the NSEC(3) chain itself\n");
+			printf("It also checks the NSEC(3) chain, but it will error on opted-out delegations\n");
 			printf("\nOPTIONS:\n");
 			printf("\t-h show this text\n");
 			printf("\t-v shows the version and exits\n");
