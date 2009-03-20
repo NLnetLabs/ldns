@@ -221,6 +221,7 @@ find_or_create_pubkeys(ldns_key_list *keys, ldns_zone *orig_zone, bool add_keys,
 	ldns_key *key;
 	size_t i;
 	ldns_rr *pubkey_gen, *pubkey;
+	int key_in_zone;
 	
 	if (default_ttl == LDNS_DEFAULT_TTL) {
 		default_ttl = ldns_rr_ttl(ldns_zone_soa(orig_zone));
@@ -257,7 +258,9 @@ find_or_create_pubkeys(ldns_key_list *keys, ldns_zone *orig_zone, bool add_keys,
 		}
 
 		pubkey = find_key_in_zone(pubkey_gen, orig_zone);
+		key_in_zone = 1;
 		if (!pubkey) {
+			key_in_zone = 0;
 			/* it was not in the zone, try to read a .key file */
 			pubkey = find_key_in_file(key);
 			if (!pubkey && !(ldns_key_flags(key) & LDNS_KEY_SEP_KEY)) {
@@ -284,7 +287,7 @@ find_or_create_pubkeys(ldns_key_list *keys, ldns_zone *orig_zone, bool add_keys,
 		ldns_key_set_flags(key, ldns_rdf2native_int16(ldns_rr_rdf(pubkey, 0)));
 		ldns_key_set_keytag(key, ldns_calc_keytag(pubkey));
 		
-		if (add_keys) {
+		if (add_keys && !key_in_zone) {
 			equalize_ttls_rr_list(ldns_zone_rrs(orig_zone), pubkey, default_ttl);
 			ldns_zone_push_rr(orig_zone, pubkey);
 		}
@@ -680,7 +683,7 @@ main(int argc, char *argv[])
 		line_nr = 0;
 		if (!keyfile) {
 			fprintf(stderr,
-				   "Error: unable to read %s: %s\n",
+				   "Error: unable to <read %s: %s\n",
 				   keyfile_name,
 				   strerror(errno));
 		} else {
