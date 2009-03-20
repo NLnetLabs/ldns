@@ -340,6 +340,11 @@ ldns_dnssec_name_free_internal(ldns_dnssec_name *name,
 		if (name->nsec_signatures) {
 			ldns_dnssec_rrs_free_internal(name->nsec_signatures, deep);
 		}
+		if (name->hashed_name) {
+			if (deep) {
+				ldns_rdf_deep_free(name->hashed_name);
+			}
+		}
 		LDNS_FREE(name);
 	}
 }
@@ -623,10 +628,12 @@ ldns_dnssec_zone_find_nsec3_original(ldns_dnssec_zone *zone,
 		if (ldns_dname_compare(hashed_name,
 						   current_name->hashed_name)
 		    == 0) {
+			ldns_rdf_deep_free(hashed_name);
 			return current_node;
 		}
 		current_node = ldns_rbtree_next(current_node);
 	}
+	ldns_rdf_deep_free(hashed_name);
 	return NULL;
 }
 

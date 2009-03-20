@@ -238,15 +238,171 @@ verify_single_rr(ldns_rr *rr,
 }
 
 ldns_status
+verify_next_hashed_name(ldns_rbtree_t *zone_nodes,
+                        ldns_dnssec_name *name)
+{
+	ldns_rbnode_t *next_node;
+	ldns_dnssec_name *next_name;
+	ldns_dnssec_name *cur_next_name = NULL;
+	ldns_dnssec_name *cur_first_name = NULL;
+	int cmp;
+	char *next_owner_str;
+	ldns_rdf *next_owner_dname;
+	
+	if (!name->hashed_name) {
+		name->hashed_name = ldns_nsec3_hash_name_frm_nsec3(name->nsec,
+		                                                   name->name);
+	}
+	next_node = ldns_rbtree_first(zone_nodes);
+	while (next_node != LDNS_RBTREE_NULL) {
+		next_name = (ldns_dnssec_name *)next_node->data;
+		if (!next_name->hashed_name) {
+			next_name->hashed_name = ldns_nsec3_hash_name_frm_nsec3(
+			                              name->nsec, next_name->name);
+		}
+		/* we keep track of what 'so far' is the next hashed name;
+		 * it must of course be 'larger' than the current name
+		 * if we find one that is larger, but smaller than what we
+		 * previously thought was the next one, that one is the next
+		 */
+		cmp = ldns_dname_compare(name->hashed_name,
+		                         next_name->hashed_name);
+		if (cmp < 0) {
+			if (!cur_next_name) {
+				cur_next_name = next_name;
+			} else {
+				cmp = ldns_dname_compare(next_name->hashed_name,
+				                         cur_next_name->hashed_name);
+				if (cmp < 0) {
+					cur_next_name = next_name;
+				}
+			}
+		}
+		/* in case the hashed name of the nsec we are checking is the
+		 * last one, we need the first hashed name of the zone */
+		if (!cur_first_name) {
+			cur_first_name = next_name;
+		} else {
+			cmp = ldns_dname_compare(next_name->hashed_name,
+									 cur_first_name->hashed_name);
+			if (cmp < 0) {
+				cur_first_name = cur_next_name;
+			}
+		}
+		next_node = ldns_rbtree_next(next_node);
+	}
+	if (!cur_next_name) {
+		cur_next_name = cur_first_name;
+	}
+	
+	next_owner_str = ldns_rdf2str(ldns_nsec3_next_owner(name->nsec));
+	next_owner_dname = ldns_dname_new_frm_str(next_owner_str);
+	cmp = ldns_dname_compare(next_owner_dname,
+	                         cur_next_name->hashed_name);
+	ldns_rdf_deep_free(next_owner_dname);
+	LDNS_FREE(next_owner_str);
+	if (cmp != 0) {
+		printf("Error: The NSEC3 record for ");
+		ldns_rdf_print(stdout, name->name);
+		printf(" points to the wrong next hashed owner name\n");
+		return LDNS_STATUS_ERR;
+	} else {
+		return LDNS_STATUS_OK;
+	}
+}
+
+ldns_status
+verify_nsec(ldns_rbtree_t *zone_nodes,
+            ldns_rbnode_t *cur_node,
+            ldns_rr_list *keys
+)
+{
+	ldns_rbnode_t *next_node;
+	ldns_dnssec_name *name, *next_name;
+	ldns_status status, result;
+	result = LDNS_STATUS_OK;
+	
+	name = (ldns_dnssec_name *) cur_node->data;
+	if (name->nsec) {
+		if (name->nsec_signatures) {
+			status = verify_single_rr(name->nsec,
+								 name->nsec_signatures,
+								 keys);
+			if (result == LDNS_STATUS_OK) {
+				result = status;
+			}
+		} else {
+			if (verbosity >= 1) {
+				printf("Error: the NSEC(3) record of ");
+				ldns_rdf_print(stdout, name->name);
+				printf(" has no signatures\n");
+			}
+			if (result == LDNS_STATUS_OK) {
+				result = LDNS_STATUS_ERR;
+			}
+		}
+		/* check whether the NSEC record points to the right name */
+		switch (ldns_rr_get_type(name->nsec)) {
+			case LDNS_RR_TYPE_NSEC:
+				/* simply try next name */
+				next_node = ldns_rbtree_next(cur_node);
+				if (next_node == LDNS_RBTREE_NULL) {
+					next_node = ldns_rbtree_first(zone_nodes);
+				}
+				next_name = (ldns_dnssec_name *)next_node->data;
+				if (ldns_dname_compare(next_name->name,
+									   ldns_rr_rdf(name->nsec, 0))
+					!= 0) {
+					printf("Error: the NSEC record for ");
+					ldns_rdf_print(stdout, name->name);
+					printf(" points to the wrong next owner name\n");
+					if (result == LDNS_STATUS_OK) {
+						result = LDNS_STATUS_ERR;
+					}
+				}
+				break;
+			case LDNS_RR_TYPE_NSEC3:
+				/* find the hashed next name in the tree */
+				/* this is expensive, do we need to add support
+				 * for this in the structs? (ie. pointer to next
+				 * hashed name?)
+				 */
+				status = verify_next_hashed_name(zone_nodes, name);
+				if (result == LDNS_STATUS_OK) {
+					result = status;
+				}
+				break;
+			default:
+				break;
+		}
+		
+	} else {
+		if (verbosity >= 1) {
+			printf("Error: there is no NSEC(3) for ");
+			ldns_rdf_print(stdout, name->name);
+			printf("\n");
+		}
+		if (result == LDNS_STATUS_OK) {
+			result = LDNS_STATUS_ERR;
+		}
+	}
+	return result;
+}
+
+ldns_status
 verify_dnssec_name(ldns_rdf *zone_name,
-                ldns_dnssec_name *name,
+                ldns_rbtree_t *zone_nodes,
+                ldns_rbnode_t *cur_node,
 			    ldns_rr_list *keys,
 			    ldns_rr_list *glue_rrs)
 {
 	ldns_status result = LDNS_STATUS_OK;
 	ldns_status status;
 	ldns_dnssec_rrsets *cur_rrset;
+	ldns_dnssec_name *name;
+	/* for NSEC chain checks */
 
+	name = (ldns_dnssec_name *) cur_node->data;
 	if (verbosity >= 3) {
 		printf("Checking: ");
 		ldns_rdf_print(stdout, name->name);
@@ -288,33 +444,9 @@ verify_dnssec_name(ldns_rdf *zone_name,
 			cur_rrset = cur_rrset->next;
 		}
 
-		if (name->nsec) {
-			if (name->nsec_signatures) {
-				status = verify_single_rr(name->nsec,
-									 name->nsec_signatures,
-									 keys);
-				if (result == LDNS_STATUS_OK) {
-					result = status;
-				}
-			} else {
-				if (verbosity >= 1) {
-					printf("Error: the NSEC(3) record of ");
-					ldns_rdf_print(stdout, name->name);
-					printf(" has no signatures\n");
-				}
-				if (result == LDNS_STATUS_OK) {
-					result = LDNS_STATUS_ERR;
-				}
-			}
-		} else {
-			if (verbosity >= 1) {
-				printf("Error: there is no NSEC(3) for ");
-				ldns_rdf_print(stdout, name->name);
-				printf("\n");
-			}
-			if (result == LDNS_STATUS_OK) {
-				result = LDNS_STATUS_ERR;
-			}
+		status = verify_nsec(zone_nodes, cur_node, keys);
+		if (result == LDNS_STATUS_OK) {
+			result = status;
 		}
 	}
 	return result;
@@ -358,8 +490,9 @@ verify_dnssec_zone(ldns_dnssec_zone *dnssec_zone,
 		}
 		while (cur_node != LDNS_RBTREE_NULL) {
 			cur_name = (ldns_dnssec_name *) cur_node->data;
-			status = verify_dnssec_name(zone_name, 
-			                            cur_name,
+			status = verify_dnssec_name(zone_name,
+			                            dnssec_zone->names,
+			                            cur_node,
 			                            keys,
 			                            glue_rrs);
 			if (status != LDNS_STATUS_OK && result == LDNS_STATUS_OK) {
@@ -455,8 +588,8 @@ main(int argc, char **argv)
 			}
 		}
 
-		ldns_zone_deep_free(z);
-		ldns_dnssec_zone_free(dnssec_zone);
+		ldns_zone_free(z);
+		ldns_dnssec_zone_deep_free(dnssec_zone);
 	} else {
 		fprintf(stderr, "%s at %d\n", 
 				ldns_get_errorstr_by_id(s),
