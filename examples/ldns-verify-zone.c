@@ -22,6 +22,45 @@
 
 int verbosity = 3;
 
+/* returns 1 if the list is empty, or if there are only ns rrs in the
+ * list, 0 otherwise */
+int
+only_ns_in_rrsets(ldns_dnssec_rrsets *rrsets) {
+	ldns_dnssec_rrsets *cur_rrset = rrsets;
+
+	while (cur_rrset) {
+		if (cur_rrset->type != LDNS_RR_TYPE_NS) {
+			return 0;
+		}
+		cur_rrset = cur_rrset->next;
+	}
+	return 1;
+}
+
+int
+zone_is_nsec3_optout(ldns_rbtree_t *zone_nodes)
+{
+	/* simply find the first NSEC3 RR and check its flags */
+	/* TODO: maybe create a general function that uses the active
+	 * NSEC3PARAM RR? */
+	ldns_rbnode_t *cur_node;
+	ldns_dnssec_name *cur_name;
+	cur_node = ldns_rbtree_first(zone_nodes);
+	while (cur_node != LDNS_RBTREE_NULL) {
+		cur_name = (ldns_dnssec_name *) cur_node->data;
+		if (cur_name && cur_name->nsec &&
+		    ldns_rr_get_type(cur_name->nsec) == LDNS_RR_TYPE_NSEC3) {
+			if (ldns_nsec3_optout(cur_name->nsec)) {
+				return 1;
+			} else {
+				return 0;
+			}
+		}
+		cur_node = ldns_rbtree_next(cur_node);
+	}
+	return 0;
+}
+
 bool
 ldns_rr_list_contains_name(const ldns_rr_list *rr_list,
 					  const ldns_rdf *name)
@@ -256,6 +295,13 @@ verify_next_hashed_name(ldns_rbtree_t *zone_nodes,
 	next_node = ldns_rbtree_first(zone_nodes);
 	while (next_node != LDNS_RBTREE_NULL) {
 		next_name = (ldns_dnssec_name *)next_node->data;
+		/* skip over names that have no NSEC3 records (whether it
+		 * actually should or should not should have been checked
+		 * already */
+		if (!next_name->nsec) {
+			next_node = ldns_rbtree_next(next_node);
+			continue;
+		}
 		if (!next_name->hashed_name) {
 			next_name->hashed_name = ldns_nsec3_hash_name_frm_nsec3(
 			                              name->nsec, next_name->name);
@@ -377,13 +423,21 @@ verify_nsec(ldns_rbtree_t *zone_nodes,
 		}
 		
 	} else {
-		if (verbosity >= 1) {
-			printf("Error: there is no NSEC(3) for ");
-			ldns_rdf_print(stdout, name->name);
-			printf("\n");
-		}
-		if (result == LDNS_STATUS_OK) {
-			result = LDNS_STATUS_ERR;
+		/* todo; do this once and cache result? */
+		if (zone_is_nsec3_optout(zone_nodes) &&
+		    only_ns_in_rrsets(name->rrsets)) {
+			/* ok, no problem, but we need to remember to check
+			 * whether the chain does not actually point to this
+			 * name later */
+		} else {
+			if (verbosity >= 1) {
+				printf("Error: there is no NSEC(3) for ");
+				ldns_rdf_print(stdout, name->name);
+				printf("\n");
+			}
+			if (result == LDNS_STATUS_OK) {
+				result = LDNS_STATUS_ERR;
+			}
 		}
 	}
 	return result;
