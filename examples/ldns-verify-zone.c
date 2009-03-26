@@ -332,7 +332,7 @@ verify_next_hashed_name(ldns_rbtree_t *zone_nodes,
 			cmp = ldns_dname_compare(next_name->hashed_name,
 									 cur_first_name->hashed_name);
 			if (cmp < 0) {
-				cur_first_name = cur_next_name;
+				cur_first_name = next_name;
 			}
 		}
 		next_node = ldns_rbtree_next(next_node);
@@ -351,6 +351,11 @@ verify_next_hashed_name(ldns_rbtree_t *zone_nodes,
 		printf("Error: The NSEC3 record for ");
 		ldns_rdf_print(stdout, name->name);
 		printf(" points to the wrong next hashed owner name\n");
+		printf("(should point to ");
+		ldns_rdf_print(stdout, cur_next_name->name);
+		printf("(whose hashed name is ");
+		ldns_rdf_print(stdout, cur_next_name->hashed_name);
+		printf(")\n");
 		return LDNS_STATUS_ERR;
 	} else {
 		return LDNS_STATUS_OK;
