@@ -1661,7 +1661,7 @@ ldns_key2buffer_str(ldns_buffer *output, const ldns_key *k)
 				break;
 			case LDNS_SIGN_HMACSHA256:
 		        ldns_buffer_printf(output, "Private-key-format: v1.2\n");
-		        ldns_buffer_printf(output, "Algorithm: 158 (HMAC_SHA256)\n");
+		        ldns_buffer_printf(output, "Algorithm: 159 (HMAC_SHA256)\n");
 				status = ldns_hmac_key2buffer_str(output, k);
 				break;
 		}
