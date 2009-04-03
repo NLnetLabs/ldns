@@ -1050,7 +1050,7 @@ ldns_key2rr(const ldns_key *k)
 		case LDNS_SIGN_HMACMD5:
 		case LDNS_SIGN_HMACSHA1:
 		case LDNS_SIGN_HMACSHA256:
-			bin = LDNS_XMALLOC(unsigned char, size);
+			bin = LDNS_XMALLOC(unsigned char, ldns_key_hmac_size(k));
 			if (!bin) {
 				return NULL;
 			}
