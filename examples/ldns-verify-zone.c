@@ -624,6 +624,11 @@ main(int argc, char **argv)
 	
 	s = ldns_zone_new_frm_fp_l(&z, fp, NULL, 0, LDNS_RR_CLASS_IN, &line_nr);
 
+	if (!ldns_zone_soa(z)) {
+		fprintf(stderr, "; Error: no SOA in the zone\n");
+		exit(1);
+	}
+
 	glue_rrs = ldns_zone_glue_rr_list(z);
 	if (s == LDNS_STATUS_OK) {
 		dnssec_zone = create_dnssec_zone(z);

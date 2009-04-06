@@ -186,6 +186,11 @@ ldns_zone_glue_rr_list(const ldns_zone *z)
 	addr = NULL;
 	glue = NULL;
 
+	/* we cannot determine glue in a 'zone' without a SOA */
+	if (!ldns_zone_soa(z)) {
+		return NULL;
+	}
+
 	zone_cuts = ldns_rr_list_new();
 	if (!zone_cuts) goto memory_error;
 	addr = ldns_rr_list_new();
