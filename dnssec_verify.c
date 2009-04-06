@@ -1577,13 +1577,15 @@ ldns_rrsig2rawsig_buffer(ldns_buffer* rawsig_buf, ldns_rr* rrsig)
  * @return status code LDNS_STATUS_OK if all is fine.
  */
 static ldns_status
-ldns_rrsig_check_timestamps(ldns_rr* rrsig, time_t now)
+ldns_rrsig_check_timestamps(ldns_rr* rrsig, int32_t now)
 {
-	time_t inception, expiration;
+	int32_t inception, expiration;
 	
 	/* check the signature time stamps */
-	inception = ldns_rdf2native_time_t(ldns_rr_rrsig_inception(rrsig));
-	expiration = ldns_rdf2native_time_t(ldns_rr_rrsig_expiration(rrsig));
+	inception = (int32_t)ldns_rdf2native_time_t(
+		ldns_rr_rrsig_inception(rrsig));
+	expiration = (int32_t)ldns_rdf2native_time_t(
+		ldns_rr_rrsig_expiration(rrsig));
 
 	if (expiration - inception < 0) {
 		/* bad sig, expiration before inception?? Tsssg */
@@ -1775,7 +1777,7 @@ ldns_verify_rrsig_keylist(ldns_rr_list *rrset,
 	}
 
 	/* check timestamps last; its OK except time */
-	result = ldns_rrsig_check_timestamps(rrsig, time(NULL));
+	result = ldns_rrsig_check_timestamps(rrsig, (int32_t)time(NULL));
 	if(result != LDNS_STATUS_OK) {
 		ldns_rr_list_free(validkeys); 
 		return result;
@@ -1820,7 +1822,8 @@ ldns_verify_rrsig(ldns_rr_list *rrset, ldns_rr *rrsig, ldns_rr *key)
 
 	/* check timestamp last, apart from time its OK */
 	if(result == LDNS_STATUS_OK)
-		result = ldns_rrsig_check_timestamps(rrsig, time(NULL));
+		result = ldns_rrsig_check_timestamps(rrsig, 
+			(int32_t)time(NULL));
 
 	return result;
 }
