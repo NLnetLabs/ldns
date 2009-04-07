@@ -226,6 +226,43 @@ ldns_str2rdf_int8(ldns_rdf **rd, const char *bytestr)
         }
 }
 
+
+/*
+ * Checks whether the escaped value at **s is an octal value or
+ * a 'normally' escaped character (and not eos)
+ *
+ * The string pointer at *s is increased by either 0 (on error), 1 (on
+ * normal escapes), or 3 (on octals)
+ * 
+ * Returns the number of bytes read from the escaped string, or
+ * 0 on error
+ */
+static int
+parse_escape(uint8_t *s, uint8_t *q) {
+	uint8_t val;
+	if (strlen((char *)s) > 3 &&
+	    isdigit((int) s[1]) &&
+	    isdigit((int) s[2]) &&
+	    isdigit((int) s[3])) {
+		/* cast this so it fits */
+		val = (uint8_t) ldns_hexdigit_to_int((char) s[1]) * 100 +
+		                ldns_hexdigit_to_int((char) s[2]) * 10 +
+		                ldns_hexdigit_to_int((char) s[3]);
+		*q = val;
+		return 3;
+	} else {
+		s++;
+		if (*s == '\0') {
+			/* apparently the string terminator
+			 * has been escaped...
+		         */
+			return 0;
+		}
+		*q = *s;
+		return 1;
+	}
+}
+
 /*
  * No special care is taken, all dots are translated into
  * label seperators.
@@ -236,7 +273,8 @@ ldns_str2rdf_dname(ldns_rdf **d, const char *str)
 {
 	size_t len;
 
-	uint8_t *s,*p,*q, *pq, val, label_len;
+	int esc;
+	uint8_t *s,*p,*q, *pq, label_len;
 	uint8_t buf[LDNS_MAX_DOMAINLEN + 1];
 	*d = NULL;
 	
@@ -286,21 +324,13 @@ ldns_str2rdf_dname(ldns_rdf **d, const char *str)
 			break;
 		case '\\':
 			/* octet value or literal char */
-			if (strlen((char *)s) > 3 &&
-			    isdigit((int) s[1]) &&
-			    isdigit((int) s[2]) &&
-			    isdigit((int) s[3])) {
-				/* cast this so it fits */
-				val = (uint8_t) ldns_hexdigit_to_int((char) s[1]) * 100 +
-				                ldns_hexdigit_to_int((char) s[2]) * 10 +
-				                ldns_hexdigit_to_int((char) s[3]);
-				*q = val;
-				s += 3;
+			esc = parse_escape(s, q);
+			if (esc > 0) {
+				s += esc;
+				label_len++;
 			} else {
-				s++;
-				*q = *s;
+				return LDNS_STATUS_SYNTAX_BAD_ESCAPE;
 			}
-			label_len++;
 			break;
 		default:
 			*q = *s;
@@ -351,8 +381,8 @@ ldns_status
 ldns_str2rdf_str(ldns_rdf **rd, const char *str)
 {
 	uint8_t *data;
-	uint8_t val;
 	size_t i, str_i;
+	int esc;
 	
 	if (strlen(str) > 255) {
 		return LDNS_STATUS_INVALID_STR;
@@ -362,20 +392,14 @@ ldns_str2rdf_str(ldns_rdf **rd, const char *str)
 	i = 1;
 	for (str_i = 0; str_i < strlen(str); str_i++) {
 		if (str[str_i] == '\\') {
-			if(str_i + 3 < strlen(str) && 
-			   isdigit((int) str[str_i + 1]) &&
-			   isdigit((int) str[str_i + 2]) &&
-			   isdigit((int) str[str_i + 3])) {
-				val = (uint8_t) ldns_hexdigit_to_int((char) str[str_i + 1]) * 100 +
-				                ldns_hexdigit_to_int((char) str[str_i + 2]) * 10 +
-				                ldns_hexdigit_to_int((char) str[str_i + 3]);
-				data[i] = val;
+			esc = parse_escape(str + str_i, data + i);
+			if (esc > 0) {
+				str_i += esc;
 				i++;
-				str_i += 3;
 			} else {
-				str_i++;
-				data[i] = (uint8_t) str[str_i];
-				i++;
+				LDNS_FREE(data);
+				*rd = NULL;
+				return LDNS_STATUS_SYNTAX_BAD_ESCAPE;
 			}
 		} else {
 			data[i] = (uint8_t) str[str_i];
