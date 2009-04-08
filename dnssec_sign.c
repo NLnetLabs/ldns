@@ -455,6 +455,22 @@ ldns_sign_public_rsamd5(ldns_buffer *to_sign, RSA *key)
 	return sigdata_rdf;
 }
 
+static int
+ldns_dnssec_name_has_only_a(ldns_dnssec_name *cur_name)
+{
+	ldns_dnssec_rrsets *cur_rrset;
+	cur_rrset = cur_name->rrsets;
+	while (cur_rrset) {
+		if (cur_rrset->type != LDNS_RR_TYPE_A &&
+			cur_rrset->type != LDNS_RR_TYPE_AAAA) {
+			return 0;
+		} else {
+			cur_rrset = cur_rrset->next;
+		}
+	}
+	return 1;
+}
+
 ldns_status
 ldns_dnssec_zone_mark_glue(ldns_dnssec_zone *zone)
 {
@@ -466,10 +482,7 @@ ldns_dnssec_zone_mark_glue(ldns_dnssec_zone *zone)
 	while (cur_node != LDNS_RBTREE_NULL) {
 		cur_name = (ldns_dnssec_name *) cur_node->data;
 		cur_node = ldns_rbtree_next(cur_node);
-		if (cur_name->rrsets && 
-		    (cur_name->rrsets->type == LDNS_RR_TYPE_A ||
-			cur_name->rrsets->type == LDNS_RR_TYPE_AAAA
-			)) {
+		if (ldns_dnssec_name_has_only_a(cur_name)) {
 			/* assume glue XXX check for zone cur */
 			cur_owner = ldns_rdf_clone(ldns_rr_owner(
 					      cur_name->rrsets->rrs->rr));
@@ -814,9 +827,18 @@ ldns_dnssec_zone_create_rrsigs(ldns_dnssec_zone *zone,
 				
 				/* only sign non-delegation RRsets */
 				/* (glue should have been marked earlier) */
-				if (ldns_rr_list_type(rr_list) != LDNS_RR_TYPE_NS ||
+				if ((ldns_rr_list_type(rr_list) != LDNS_RR_TYPE_NS ||
 					ldns_dname_compare(ldns_rr_list_owner(rr_list),
-					zone->soa->name) == 0) {
+					zone->soa->name) == 0) &&
+					/* OK, there is also the possibility that the record
+					 * is glue, but at the same owner name as other records that
+					 * are not NS nor A/AAAA. Bleh, our current data structure
+					 * doesn't really support that... */
+					!((ldns_rr_list_type(rr_list) == LDNS_RR_TYPE_A ||
+					 ldns_rr_list_type(rr_list) == LDNS_RR_TYPE_AAAA) &&
+					 !ldns_dname_compare(ldns_rr_list_owner(rr_list), zone->soa->name) == 0 &&
+					 ldns_dnssec_zone_find_rrset(zone, ldns_rr_list_owner(rr_list), LDNS_RR_TYPE_NS)
+					 )) {
 
 					siglist = ldns_sign_public(rr_list, key_list);
 					for (i = 0; i < ldns_rr_list_rr_count(siglist); i++) {

@@ -148,7 +148,8 @@ ldns_status
 verify_dnssec_rrset(ldns_rdf *zone_name,
 					ldns_rdf *name,
                     ldns_dnssec_rrsets *rrset,
-                    ldns_rr_list *keys)
+                    ldns_rr_list *keys,
+                    ldns_rr_list *glue_rrs)
 {
 	ldns_rr_list *rrset_rrs;
 	ldns_dnssec_rrs *cur_rr, *cur_sig;
@@ -158,7 +159,7 @@ verify_dnssec_rrset(ldns_rdf *zone_name,
 	
 	rrset_rrs = ldns_rr_list_new();
 	cur_rr = rrset->rrs;
-	while(cur_rr) {
+	while(cur_rr && cur_rr->rr) {
 		ldns_rr_list_push_rr(rrset_rrs, cur_rr->rr);
 		cur_rr = cur_rr->next;
 	}
@@ -362,10 +363,28 @@ verify_next_hashed_name(ldns_rbtree_t *zone_nodes,
 	}
 }
 
+ldns_rbnode_t *
+next_nonglue_node(ldns_rbnode_t *node, ldns_rr_list *glue_rrs)
+{
+	ldns_rbnode_t *cur_node = ldns_rbtree_next(node);
+	ldns_dnssec_name *cur_name;
+	while (cur_node != LDNS_RBTREE_NULL) {
+		cur_name = (ldns_dnssec_name *) cur_node->data;
+		if (cur_name && cur_name->name) {
+			if (!ldns_rr_list_contains_name(glue_rrs, cur_name->name)) {
+				return cur_node;
+			}
+		}
+		cur_node = ldns_rbtree_next(cur_node);
+	}
+	return LDNS_RBTREE_NULL;
+}
+
 ldns_status
 verify_nsec(ldns_rbtree_t *zone_nodes,
             ldns_rbnode_t *cur_node,
-            ldns_rr_list *keys
+            ldns_rr_list *keys,
+            ldns_rr_list *glue_rrs
 )
 {
 	ldns_rbnode_t *next_node;
@@ -396,7 +415,7 @@ verify_nsec(ldns_rbtree_t *zone_nodes,
 		switch (ldns_rr_get_type(name->nsec)) {
 			case LDNS_RR_TYPE_NSEC:
 				/* simply try next name */
-				next_node = ldns_rbtree_next(cur_node);
+				next_node = next_nonglue_node(cur_node, glue_rrs);
 				if (next_node == LDNS_RBTREE_NULL) {
 					next_node = ldns_rbtree_first(zone_nodes);
 				}
@@ -448,8 +467,25 @@ verify_nsec(ldns_rbtree_t *zone_nodes,
 	return result;
 }
 
+static int
+ldns_dnssec_name_has_only_a(ldns_dnssec_name *cur_name)
+{
+	ldns_dnssec_rrsets *cur_rrset;
+	cur_rrset = cur_name->rrsets;
+	while (cur_rrset) {
+		if (cur_rrset->type != LDNS_RR_TYPE_A &&
+			cur_rrset->type != LDNS_RR_TYPE_AAAA) {
+			return 0;
+		} else {
+			cur_rrset = cur_rrset->next;
+		}
+	}
+	return 1;
+}
+
 ldns_status
 verify_dnssec_name(ldns_rdf *zone_name,
+                ldns_dnssec_zone *zone,
                 ldns_rbtree_t *zone_nodes,
                 ldns_rbnode_t *cur_node,
 			    ldns_rr_list *keys,
@@ -468,7 +504,9 @@ verify_dnssec_name(ldns_rdf *zone_name,
 		printf("\n");
 	}
 
-	if (ldns_rr_list_contains_name(glue_rrs, name->name)) {
+	if (ldns_rr_list_contains_name(glue_rrs, name->name) &&
+		ldns_dnssec_name_has_only_a(name)
+	) {
 		/* glue */
 		cur_rrset = name->rrsets;
 		while (cur_rrset) {
@@ -496,14 +534,17 @@ verify_dnssec_name(ldns_rdf *zone_name,
 		/* not glue, do real verify */
 		cur_rrset = name->rrsets;
 		while(cur_rrset) {
-			status = verify_dnssec_rrset(zone_name, name->name, cur_rrset, keys);
-			if (status != LDNS_STATUS_OK && result == LDNS_STATUS_OK) {
-				result = status;
+			if (cur_rrset->type != LDNS_RR_TYPE_A ||
+			    !ldns_dnssec_zone_find_rrset(zone, name->name, LDNS_RR_TYPE_NS)) {
+				status = verify_dnssec_rrset(zone_name, name->name, cur_rrset, keys, glue_rrs);
+				if (status != LDNS_STATUS_OK && result == LDNS_STATUS_OK) {
+					result = status;
+				}
 			}
 			cur_rrset = cur_rrset->next;
 		}
 
-		status = verify_nsec(zone_nodes, cur_node, keys);
+		status = verify_nsec(zone_nodes, cur_node, keys, glue_rrs);
 		if (result == LDNS_STATUS_OK) {
 			result = status;
 		}
@@ -550,6 +591,7 @@ verify_dnssec_zone(ldns_dnssec_zone *dnssec_zone,
 		while (cur_node != LDNS_RBTREE_NULL) {
 			cur_name = (ldns_dnssec_name *) cur_node->data;
 			status = verify_dnssec_name(zone_name,
+			                            dnssec_zone,
 			                            dnssec_zone->names,
 			                            cur_node,
 			                            keys,

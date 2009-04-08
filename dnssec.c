@@ -633,6 +633,19 @@ ldns_dnssec_create_nsec_bitmap(ldns_rr_type rr_type_list[],
 	return bitmap_rdf;
 }
 
+int
+ldns_dnssec_rrsets_contains_type(ldns_dnssec_rrsets *rrsets,
+                                 ldns_rr_type type) {
+	ldns_dnssec_rrsets *cur_rrset = rrsets;
+	while (cur_rrset) {
+		if (cur_rrset->type == type) {
+			return 1;
+		}
+		cur_rrset = cur_rrset->next;
+	}
+	return 0;
+}
+
 ldns_rr *
 ldns_dnssec_create_nsec(ldns_dnssec_name *from,
                         ldns_dnssec_name *to,
@@ -655,6 +668,15 @@ ldns_dnssec_create_nsec(ldns_dnssec_name *from,
 
 	cur_rrsets = from->rrsets;
 	while (cur_rrsets) {
+		/* only add a and aaaa if there are no ns */
+		if (cur_rrsets->type == LDNS_RR_TYPE_A ||
+		    cur_rrsets->type ==  LDNS_RR_TYPE_AAAA) {
+		    if (ldns_dnssec_rrsets_contains_type(from->rrsets,
+		                                         LDNS_RR_TYPE_NS)) {
+				cur_rrsets = cur_rrsets->next;
+		    	continue;
+			}
+		}
 		types[type_count] = cur_rrsets->type;
 		type_count++;
 		cur_rrsets = cur_rrsets->next;
@@ -710,6 +732,15 @@ ldns_dnssec_create_nsec3(ldns_dnssec_name *from,
 
 	cur_rrsets = from->rrsets;
 	while (cur_rrsets) {
+		/* only add a and aaaa if there are no ns */
+		if (cur_rrsets->type == LDNS_RR_TYPE_A ||
+		    cur_rrsets->type ==  LDNS_RR_TYPE_AAAA) {
+		    if (ldns_dnssec_rrsets_contains_type(from->rrsets,
+		                                         LDNS_RR_TYPE_NS)) {
+				cur_rrsets = cur_rrsets->next;
+		    	continue;
+			}
+		}
 		types[type_count] = cur_rrsets->type;
 		type_count++;
 		cur_rrsets = cur_rrsets->next;

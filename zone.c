@@ -74,7 +74,8 @@ ldns_zone_strip_glue_rrs(const ldns_rdf *zone_name, const ldns_rr_list *rrs, ldn
 	 * above loop).
 	 *
 	 * Check if the aaaa/a list are subdomains under the
-	 * NS domains. If yes -> glue, if no -> not glue
+	 * NS domains or equal to the ns domains (and not at zone apex)
+	 * If yes -> glue, if no -> not glue
 	 */
 
 	ldns_rr_list *zone_cuts;
@@ -124,7 +125,7 @@ ldns_zone_strip_glue_rrs(const ldns_rdf *zone_name, const ldns_rr_list *rrs, ldn
 			a = ldns_rr_list_rr(addr, j);
 			dname_a = ldns_rr_owner(a);
 			
-			if (ldns_dname_is_subdomain(dname_a, ns_owner) &&
+			if (ldns_dname_is_subdomain(dname_a, ns_owner) ||
 			    ldns_rdf_compare(dname_ns, dname_a) == 0) {
 				/* GLUE! */
 				if (glue_rrs) {
@@ -229,11 +230,8 @@ ldns_zone_glue_rr_list(const ldns_zone *z)
 			a = ldns_rr_list_rr(addr, j);
 			dname_a = ldns_rr_owner(a);
 			
-			/*
-			if (ldns_dname_is_subdomain(dname_a, ns_owner) &&
+			if (ldns_dname_is_subdomain(dname_a, ns_owner) ||
 			    ldns_rdf_compare(dname_ns, dname_a) == 0) {
-			*/
-			if (ldns_dname_is_subdomain(dname_a, ns_owner)) {
 				/* GLUE! */
 				if (!ldns_rr_list_push_rr(glue, a)) goto memory_error;
 			}
