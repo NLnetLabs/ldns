@@ -1614,6 +1614,7 @@ ldns_convert_dsa_rrsig_asn12rdf(const ldns_buffer *sig,
 	ldns_rdf *sigdata_rdf;
 	DSA_SIG *dsasig;
 	unsigned char *dsasig_data = ldns_buffer_begin(sig);
+	size_t byte_offset;
 
 	dsasig = d2i_DSA_SIG(NULL,
 					 (const unsigned char **)&dsasig_data,
@@ -1624,8 +1625,18 @@ ldns_convert_dsa_rrsig_asn12rdf(const ldns_buffer *sig,
 
 	dsasig_data = LDNS_XMALLOC(unsigned char, 41);
 	dsasig_data[0] = 0;
-	BN_bn2bin(dsasig->r, &dsasig_data[1]);
-	BN_bn2bin(dsasig->s, &dsasig_data[21]);
+	byte_offset = 20 - BN_num_bytes(dsasig->r);
+	if (byte_offset > 20) {
+		return NULL;
+	}
+	memset(&dsasig_data[1], 0, byte_offset);
+	BN_bn2bin(dsasig->r, &dsasig_data[1 + byte_offset]);
+	byte_offset = 20 - BN_num_bytes(dsasig->s);
+	if (byte_offset > 20) {
+		return NULL;
+	}
+	memset(&dsasig_data[21], 0, byte_offset);
+	BN_bn2bin(dsasig->s, &dsasig_data[21 + byte_offset]);
 	
 	sigdata_rdf = ldns_rdf_new(LDNS_RDF_TYPE_B64, 41, dsasig_data);
 	DSA_SIG_free(dsasig);
