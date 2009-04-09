@@ -519,9 +519,7 @@ main(int argc, char *argv[])
 					case LDNS_SIGN_RSASHA1:
 					case LDNS_SIGN_RSASHA1_NSEC3:
 					case LDNS_SIGN_RSASHA256:
-					case LDNS_SIGN_RSASHA256_NSEC3:
 					case LDNS_SIGN_RSASHA512:
-					case LDNS_SIGN_RSASHA512_NSEC3:
 					case LDNS_SIGN_DSA:
 					case LDNS_SIGN_DSA_NSEC3:
 						ldns_key_list_push_key(keys, key);
