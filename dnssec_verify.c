@@ -1714,7 +1714,7 @@ ldns_verify_rrsig_keylist(ldns_rr_list *rrset,
 	ldns_buffer *rawsig_buf;
 	ldns_buffer *verify_buf;
 	uint16_t i;
-	ldns_status result;
+	ldns_status result, status;
 	ldns_rr_list *rrset_clone;
 	ldns_rr_list *validkeys;
 
@@ -1746,9 +1746,9 @@ ldns_verify_rrsig_keylist(ldns_rr_list *rrset,
 	result = LDNS_STATUS_ERR;
 
 	for(i = 0; i < ldns_rr_list_rr_count(keys); i++) {
-		result = ldns_verify_test_sig_key(rawsig_buf, verify_buf, 
+		status = ldns_verify_test_sig_key(rawsig_buf, verify_buf, 
 			rrsig, ldns_rr_list_rr(keys, i));
-		if (result == LDNS_STATUS_OK) {
+		if (status == LDNS_STATUS_OK) {
 			/* one of the keys has matched, don't break
 			 * here, instead put the 'winning' key in
 			 * the validkey list and return the list 
@@ -1762,7 +1762,10 @@ ldns_verify_rrsig_keylist(ldns_rr_list *rrset,
 				ldns_rr_list_free(validkeys);
 				return LDNS_STATUS_MEM_ERR;
 			}
-		} 
+		}
+		if (result == LDNS_STATUS_ERR) {
+			result = status;
+		}
 	}
 
 	/* no longer needed */
