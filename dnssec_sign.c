@@ -128,14 +128,12 @@ ldns_sign_public_buffer(ldns_buffer *sign_buf, ldns_key *current_key)
 		break;
 #ifdef USE_SHA2
 	case LDNS_SIGN_RSASHA256:
-	case LDNS_SIGN_RSASHA256_NSEC3:
 		b64rdf = ldns_sign_public_evp(
 				   sign_buf,
 				   ldns_key_evp_key(current_key),
 				   EVP_sha256());
 		break;
 	case LDNS_SIGN_RSASHA512:
-	case LDNS_SIGN_RSASHA512_NSEC3:
 		b64rdf = ldns_sign_public_evp(
 				   sign_buf,
 				   ldns_key_evp_key(current_key),

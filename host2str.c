@@ -1373,9 +1373,7 @@ ldns_key2buffer_str(ldns_buffer *output, const ldns_key *k)
 			case LDNS_SIGN_RSASHA1:
 			case LDNS_SIGN_RSASHA1_NSEC3:
 			case LDNS_SIGN_RSASHA256:
-			case LDNS_SIGN_RSASHA256_NSEC3:
 			case LDNS_SIGN_RSASHA512:
-			case LDNS_SIGN_RSASHA512_NSEC3:
 			case LDNS_SIGN_RSAMD5:
 				/* copied by looking at dnssec-keygen output */
 				/* header */
@@ -1404,20 +1402,10 @@ ldns_key2buffer_str(ldns_buffer *output, const ldns_key *k)
 								    "Algorithm: %u (RSASHA256)\n",
 								    LDNS_RSASHA256);
 					break;
-				case LDNS_SIGN_RSASHA256_NSEC3:
-					ldns_buffer_printf(output,
-								    "Algorithm: %u (RSASHA256_NSEC3)\n",
-								    LDNS_RSASHA256_NSEC3);
-					break;
 				case LDNS_SIGN_RSASHA512:
 					ldns_buffer_printf(output,
 								    "Algorithm: %u (RSASHA512)\n",
 								    LDNS_RSASHA512);
-					break;
-				case LDNS_SIGN_RSASHA512_NSEC3:
-					ldns_buffer_printf(output,
-								    "Algorithm: %u (RSASHA512_NSEC3)\n",
-								    LDNS_RSASHA512_NSEC3);
 					break;
 #endif
 				default:

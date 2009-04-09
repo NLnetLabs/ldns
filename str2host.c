@@ -392,7 +392,7 @@ ldns_str2rdf_str(ldns_rdf **rd, const char *str)
 	i = 1;
 	for (str_i = 0; str_i < strlen(str); str_i++) {
 		if (str[str_i] == '\\') {
-			esc = parse_escape(str + str_i, data + i);
+			esc = parse_escape((uint8_t *) (str + str_i), data + i);
 			if (esc > 0) {
 				str_i += esc;
 				i++;
