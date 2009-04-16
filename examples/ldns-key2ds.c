@@ -15,15 +15,27 @@
 
 void
 usage(FILE *fp, char *prog) {
-	fprintf(fp, "%s [-n] [-1|-2] keyfile\n", prog);
-	fprintf(fp, "  Generate a DS RR from the key\n");
+	fprintf(fp, "%s [-fn] [-1|-2] keyfile\n", prog);
+	fprintf(fp, "  Generate a DS RR from the DNSKEYS in keyfile\n");
 	fprintf(fp, "  The following file will be created: ");
 	fprintf(fp, "K<name>+<alg>+<id>.ds\n");
 	fprintf(fp, "  The base name (K<name>+<alg>+<id> will be printed to stdout\n");
 	fprintf(fp, "Options:\n");
-	fprintf(fp, "  -n: do not write to file but to stdout\n");
+	fprintf(fp, "  -f: ignore SEP flag (i.e. make DS records for any key)\n");
+	fprintf(fp, "  -n: do not write DS records to file(s) but to stdout\n");
 	fprintf(fp, "  -1: (default): use SHA1 for the DS hash\n");
 	fprintf(fp, "  -2: use SHA256 for the DS hash\n");
+}
+
+int
+is_suitable_dnskey(ldns_rr *rr, int sep_only)
+{
+	if (!rr || ldns_rr_get_type(rr) != LDNS_RR_TYPE_DNSKEY) {
+		return 0;
+	}
+	return !sep_only ||
+	        (ldns_rdf2native_int16(ldns_rr_dnskey_flags(rr)) &
+	        LDNS_KEY_SEP_KEY);
 }
 
 int
@@ -39,7 +51,8 @@ main(int argc, char *argv[])
 	char *program = argv[0];
 	int nofile = 0;
 	ldns_rdf *origin = NULL;
-	ldns_status result;
+	ldns_status result = LDNS_STATUS_OK;
+	int sep_only = 1;
 		
 	alg = 0;
 	h = LDNS_SHA1;
@@ -54,6 +67,9 @@ main(int argc, char *argv[])
 		          fprintf(stderr, "Error: Crypto library does not support SHA256 digests!");
 		        #endif
 			h = LDNS_SHA256;
+		}
+		if (strcmp(argv[0], "-f") == 0) { 
+			sep_only = 0;
 		}
 		if (strcmp(argv[0], "-n") == 0) { 
 			nofile=1;
@@ -74,49 +90,61 @@ main(int argc, char *argv[])
 		exit(EXIT_FAILURE);
 	}
 
-	result = ldns_rr_new_frm_fp(&k, keyfp, 0, &origin, NULL);
-	while (result == LDNS_STATUS_SYNTAX_ORIGIN) {
+	while (result == LDNS_STATUS_OK) {
 		result = ldns_rr_new_frm_fp(&k, keyfp, 0, &origin, NULL);
-	}
-	if (result != LDNS_STATUS_OK) {
-		fprintf(stderr, "Could not read public key from file %s: %s\n", keyname, ldns_get_errorstr_by_id(result));
-		exit(EXIT_FAILURE);
+		while (result == LDNS_STATUS_SYNTAX_ORIGIN ||
+			result == LDNS_STATUS_SYNTAX_TTL ||
+			(result == LDNS_STATUS_OK && !is_suitable_dnskey(k, sep_only))
+		) {
+			if (result == LDNS_STATUS_OK) {
+				ldns_rr_free(k);
+			}
+			result = ldns_rr_new_frm_fp(&k, keyfp, 0, &origin, NULL);
+		}
+		if (result == LDNS_STATUS_SYNTAX_EMPTY) {
+			/* we're done */
+			break;
+		}
+		if (result != LDNS_STATUS_OK) {
+			fprintf(stderr, "Could not read public key from file %s: %s\n", keyname, ldns_get_errorstr_by_id(result));
+			exit(EXIT_FAILURE);
+		}
+		
+		owner = ldns_rdf2str(ldns_rr_owner(k));
+		alg = ldns_rdf2native_int8(ldns_rr_dnskey_algorithm(k));
+
+		ds = ldns_key_rr2ds(k, h);
+		if (!ds) {
+			fprintf(stderr, "Conversion to a DS RR failed\n");
+			ldns_rr_free(k);
+			free(owner);
+			exit(EXIT_FAILURE);
+		}
+
+		/* print the public key RR to .key */
+		dsname = LDNS_XMALLOC(char, strlen(owner) + 16);
+		snprintf(dsname, strlen(owner) + 15, "K%s+%03u+%05u.ds", owner, alg, (unsigned int) ldns_calc_keytag(k));
+
+		if (nofile)
+			ldns_rr_print(stdout,ds);
+		else {
+			dsfp = fopen(dsname, "w");
+			if (!dsfp) {
+				fprintf(stderr, "Unable to open %s: %s\n", dsname, strerror(errno));
+				exit(EXIT_FAILURE);
+			} else {
+				ldns_rr_print(dsfp, ds);
+				fclose(dsfp);
+				fprintf(stdout, "K%s+%03u+%05u\n", owner, alg, (unsigned int) ldns_calc_keytag(k)); 
+			}
+		}
+		
+		ldns_rr_free(ds);
+		ldns_rr_free(k);
+		free(owner);
+		LDNS_FREE(dsname);
 	}
 	fclose(keyfp);
 	free(keyname);
-	
-	owner = ldns_rdf2str(ldns_rr_owner(k));
-	alg = ldns_rdf2native_int8(ldns_rr_dnskey_algorithm(k));
-
-	ds = ldns_key_rr2ds(k, h);
-	if (!ds) {
-		fprintf(stderr, "Conversion to a DS RR failed\n");
-		ldns_rr_free(k);
-		free(owner);
-		exit(EXIT_FAILURE);
-	}
-
-	/* print the public key RR to .key */
-	dsname = LDNS_XMALLOC(char, strlen(owner) + 16);
-	snprintf(dsname, strlen(owner) + 15, "K%s+%03u+%05u.ds", owner, alg, (unsigned int) ldns_calc_keytag(k));
-
-	if (nofile)
-		ldns_rr_print(stdout,ds);
-	else {
-		dsfp = fopen(dsname, "w");
-		if (!dsfp) {
-			fprintf(stderr, "Unable to open %s: %s\n", dsname, strerror(errno));
-			exit(EXIT_FAILURE);
-		} else {
-			ldns_rr_print(dsfp, ds);
-			fclose(dsfp);
-			fprintf(stdout, "K%s+%03u+%05u\n", owner, alg, (unsigned int) ldns_calc_keytag(k)); 
-		}
-	}
-	
-	ldns_rr_free(ds);
-	ldns_rr_free(k);
-	free(owner);
-	LDNS_FREE(dsname);
-        exit(EXIT_SUCCESS);
+	exit(EXIT_SUCCESS);
 }
