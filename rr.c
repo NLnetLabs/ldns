@@ -1734,7 +1734,7 @@ static const ldns_rdf_type type_kx_wireformat[] = {
 static const ldns_rdf_type type_cert_wireformat[] = {
 	 LDNS_RDF_TYPE_CERT_ALG, LDNS_RDF_TYPE_INT16, LDNS_RDF_TYPE_ALG, LDNS_RDF_TYPE_B64
 };
-static const ldns_rdf_type type_a6_wireformat[] = { LDNS_RDF_TYPE_DNAME };
+static const ldns_rdf_type type_a6_wireformat[] = { LDNS_RDF_TYPE_UNKNOWN };
 static const ldns_rdf_type type_dname_wireformat[] = { LDNS_RDF_TYPE_DNAME };
 static const ldns_rdf_type type_sink_wireformat[] = { LDNS_RDF_TYPE_INT8,
 	LDNS_RDF_TYPE_INT8, LDNS_RDF_TYPE_INT8, LDNS_RDF_TYPE_B64
