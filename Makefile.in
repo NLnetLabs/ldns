@@ -85,7 +85,7 @@ LINK_LIB	= $(LIBTOOL) --mode=link $(CC) $(CFLAGS) $(LDFLAGS) -version-number $(v
 all:		copy-headers lib linktest
 
 linktest:	$(srcdir)/linktest.c $(LIBDNS_HEADERS) ldns/util.h ldns/config.h libldns.la
-		$(LIBTOOL) --mode=link $(CC) $(srcdir)/linktest.c $(CPPFLAGS) $(CFLAGS) -lldns -o linktest
+		$(LIBTOOL) --mode=link $(CC) $(srcdir)/linktest.c $(CPPFLAGS) $(CFLAGS) -lldns $(LIBS) -o linktest
 
 lib:		libldns.la
 		if [ ! -d lib ] ; then ln -s .libs lib ; fi ;		
