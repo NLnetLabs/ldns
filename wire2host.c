@@ -129,6 +129,10 @@ ldns_wire2dname(ldns_rdf **dname, const uint8_t *wire, size_t max, size_t *pos)
 		*pos = *pos + 1;
 	}
 
+	if (dname_pos >= LDNS_MAX_DOMAINLEN) {
+		return LDNS_STATUS_DOMAINNAME_OVERFLOW;
+	}
+	
 	tmp_dname[dname_pos] = 0;
 	dname_pos++;
 	

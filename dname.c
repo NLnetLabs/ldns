@@ -286,6 +286,9 @@ ldns_dname_is_subdomain(const ldns_rdf *sub, const ldns_rdf *parent)
 	for (i = par_lab -1; i >= 0; i--) {
 		tmp_sub = ldns_dname_label(sub, j);
 		tmp_par = ldns_dname_label(parent, i);
+		if (!tmp_sub || !tmp_par) {
+			return false;
+		}
 
 		if (ldns_rdf_compare(tmp_sub, tmp_par) != 0) {
 			/* they are not equal */
@@ -488,8 +491,15 @@ ldns_dname_label(const ldns_rdf *rdf, uint8_t labelpos)
 		if (labelcnt == labelpos) {
 			/* found our label */
 			tmpnew = LDNS_MALLOC(ldns_rdf);
+			if (!tmpnew) {
+				return NULL;
+			}
 			tmpnew->_type = LDNS_RDF_TYPE_DNAME;
 			tmpnew->_data = LDNS_XMALLOC(uint8_t, len + 2);
+			if (!tmpnew->_data) {
+				LDNS_FREE(tmpnew);
+				return NULL;
+			}
 			memset(tmpnew->_data, 0, len + 2);
 			memcpy(tmpnew->_data, ldns_rdf_data(rdf) + src_pos, len + 1);
 			tmpnew->_size = len + 2;

@@ -340,6 +340,9 @@ ldns_str2rdf_dname(ldns_rdf **d, const char *str)
 
 	/* add root label if last char was not '.' */
 	if (!ldns_dname_str_absolute(str)) {
+		if (q > buf + LDNS_MAX_DOMAINLEN) {
+			return LDNS_STATUS_DOMAINNAME_OVERFLOW;
+		}
 		len += label_len + 1;
 		*pq = label_len;
 		*q = 0;
