@@ -268,7 +268,7 @@ main(int argc, char *argv[])
 			case 'k':
 				status = read_key_file(optarg, key_list);
 				if (status != LDNS_STATUS_OK) {
-					error("Could not parse the key file: %s", optarg);
+					error("Could not parse the key file %s: %s", optarg, ldns_get_errorstr_by_id(status));
 				}
 				qdnssec = true; /* enable that too */
 				break;

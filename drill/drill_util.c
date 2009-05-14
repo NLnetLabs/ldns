@@ -61,7 +61,8 @@ read_key_file(const char *filename, ldns_rr_list *key_list)
 						"Error parsing DNSKEY RR in line %d: %s\n",
 						line_nr,
 						ldns_get_errorstr_by_id(status));
-			} else if (ldns_rr_get_type(rr) == LDNS_RR_TYPE_DNSKEY) {
+			} else if (ldns_rr_get_type(rr) == LDNS_RR_TYPE_DNSKEY || 
+					   ldns_rr_get_type(rr) == LDNS_RR_TYPE_DS) {
 				ldns_rr_list_push_rr(key_list, rr);
 				key_count++;
 			} else {
