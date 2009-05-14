@@ -81,6 +81,171 @@ ldns_dnssec_data_chain_print(FILE *out, const ldns_dnssec_data_chain *chain)
 	}
 }
 
+static void
+ldns_dnssec_build_data_chain_dnskey(ldns_resolver *res,
+					    uint16_t qflags,
+					    const ldns_rr_list *rrset,
+					    const ldns_pkt *pkt,
+					    ldns_rr *orig_rr,
+						ldns_rr_list *signatures,
+						ldns_dnssec_data_chain *new_chain,
+						ldns_rdf *key_name,
+						ldns_rr_class c) {
+	ldns_rr_list *keys;
+	ldns_pkt *my_pkt;
+	if (signatures && ldns_rr_list_rr_count(signatures) > 0) {
+		new_chain->signatures = ldns_rr_list_clone(signatures);
+		new_chain->parent_type = 0;
+
+		keys = ldns_pkt_rr_list_by_name_and_type(
+				  pkt,
+				 key_name,
+				 LDNS_RR_TYPE_DNSKEY,
+				 LDNS_SECTION_ANY_NOQUESTION
+			  );
+		if (!keys) {
+			my_pkt = ldns_resolver_query(res,
+									key_name,
+									LDNS_RR_TYPE_DNSKEY,
+									c,
+									qflags);
+			keys = ldns_pkt_rr_list_by_name_and_type(
+					  my_pkt,
+					 key_name,
+					 LDNS_RR_TYPE_DNSKEY,
+					 LDNS_SECTION_ANY_NOQUESTION
+				  );
+			new_chain->parent = ldns_dnssec_build_data_chain(res,
+													qflags,
+													keys,
+													my_pkt,
+													NULL);
+			new_chain->parent->packet_qtype = LDNS_RR_TYPE_DNSKEY;
+			ldns_pkt_free(my_pkt);
+		} else {
+			new_chain->parent = ldns_dnssec_build_data_chain(res,
+													qflags,
+													keys,
+													pkt,
+													NULL);
+			new_chain->parent->packet_qtype = LDNS_RR_TYPE_DNSKEY;
+		}
+		ldns_rr_list_deep_free(keys);
+	}
+}
+
+static void
+ldns_dnssec_build_data_chain_other(ldns_resolver *res,
+					    uint16_t qflags,
+					    const ldns_rr_list *rrset,
+					    const ldns_pkt *pkt,
+					    ldns_rr *orig_rr,
+						ldns_rr_list *signatures,
+						ldns_dnssec_data_chain *new_chain,
+						ldns_rdf *key_name,
+						ldns_rr_class c,
+						ldns_rr_list *dss)
+{
+	/* 'self-signed', parent is a DS */
+	
+	/* okay, either we have other keys signing the current one,
+	 * or the current
+	 * one should have a DS record in the parent zone.
+	 * How do we find this out? Try both?
+	 *
+	 * request DNSKEYS for current zone,
+	 * add all signatures to current level
+	 */
+	ldns_pkt *my_pkt;
+	ldns_rr_list *signatures2;
+	
+	new_chain->parent_type = 1;
+
+	my_pkt = ldns_resolver_query(res,
+							key_name,
+							LDNS_RR_TYPE_DS,
+							c,
+							qflags);
+	dss = ldns_pkt_rr_list_by_name_and_type(my_pkt,
+									key_name,
+									LDNS_RR_TYPE_DS,
+									LDNS_SECTION_ANY_NOQUESTION
+									);
+	if (dss) {
+		new_chain->parent = ldns_dnssec_build_data_chain(res,
+												qflags,
+												dss,
+												my_pkt,
+												NULL);
+		new_chain->parent->packet_qtype = LDNS_RR_TYPE_DS;
+		ldns_rr_list_deep_free(dss);
+	}
+	ldns_pkt_free(my_pkt);
+
+	my_pkt = ldns_resolver_query(res,
+							key_name,
+							LDNS_RR_TYPE_DNSKEY,
+							c,
+							qflags);
+	signatures2 = ldns_pkt_rr_list_by_name_and_type(my_pkt,
+										   key_name,
+										   LDNS_RR_TYPE_RRSIG,
+										   LDNS_SECTION_ANSWER);
+	if (signatures2) {
+		if (new_chain->signatures) {
+			printf("There were already sigs!\n");
+			ldns_rr_list_deep_free(new_chain->signatures);
+			printf("replacing the old sigs\n");
+		}
+		new_chain->signatures = signatures2;
+	}
+	ldns_pkt_free(my_pkt);
+}
+
+ldns_dnssec_data_chain *
+ldns_dnssec_build_data_chain_nokeyname(ldns_resolver *res, uint16_t qflags, ldns_rr *orig_rr, ldns_rr_list *rrset, ldns_dnssec_data_chain *new_chain)
+{
+	ldns_rdf *possible_parent_name;
+	ldns_pkt *my_pkt;
+	/* apparently we were not able to find a signing key, so
+	   we assume the chain ends here
+	*/
+	/* try parents for auth denial of DS */
+	if (orig_rr) {
+		possible_parent_name = ldns_rr_owner(orig_rr);
+	} else if (rrset && ldns_rr_list_rr_count(rrset) > 0) {
+		possible_parent_name = ldns_rr_owner(ldns_rr_list_rr(rrset, 0));
+	} else {
+		/* no information to go on, give up */
+		printf("[XX] not enough information to go on\n");
+		return new_chain;
+	}
+
+	my_pkt = ldns_resolver_query(res,
+							possible_parent_name,
+							LDNS_RR_TYPE_DS,
+							LDNS_RR_CLASS_IN,
+							qflags);
+
+	if (ldns_pkt_ancount(my_pkt) > 0) {
+		/* add error, no sigs but DS in parent */
+		/*ldns_pkt_print(stdout, my_pkt);*/
+		ldns_pkt_free(my_pkt);
+	} else {
+		/* are there signatures? */
+		new_chain->parent =  ldns_dnssec_build_data_chain(res, 
+												qflags, 
+												NULL,
+												my_pkt,
+												NULL);
+
+		new_chain->parent->packet_qtype = LDNS_RR_TYPE_DS;
+		//ldns_pkt_free(my_pkt);
+	}
+	return new_chain;
+}
+
+
 ldns_dnssec_data_chain *
 ldns_dnssec_build_data_chain(ldns_resolver *res,
 					    uint16_t qflags,
@@ -106,6 +271,8 @@ ldns_dnssec_build_data_chain(ldns_resolver *res,
 	ldns_dnssec_data_chain *new_chain = ldns_dnssec_data_chain_new();
 
 	if (!ldns_dnssec_pkt_has_rrsigs(pkt)) {
+		/* hmm. no dnssec data in the packet. go up to try and deny
+		 * DS? */
 		return new_chain;
 	}
 
@@ -130,7 +297,6 @@ ldns_dnssec_build_data_chain(ldns_resolver *res,
 		   otherwise caller has to do the check himself */
 		new_chain->packet_nodata = true;
 		if (pkt) {
-
 			my_rrset = ldns_pkt_rr_list_by_type(pkt,
 										 LDNS_RR_TYPE_NSEC,
 										 LDNS_SECTION_ANY_NOQUESTION
@@ -158,6 +324,7 @@ ldns_dnssec_build_data_chain(ldns_resolver *res,
 					}
 				} else {
 					/* nothing, stop */
+					/* try parent zone? for denied insecure? */
 					return new_chain;
 				}
 			}
@@ -208,7 +375,6 @@ ldns_dnssec_build_data_chain(ldns_resolver *res,
 													type);
 			ldns_pkt_free(my_pkt);
 		}
-
 	}
 
 	if (signatures && ldns_rr_list_rr_count(signatures) > 0) {
@@ -216,136 +382,35 @@ ldns_dnssec_build_data_chain(ldns_resolver *res,
 	}
 
 	if (!key_name) {
-		/* apparently we were not able to find a signing key, so
-		   we assume the chain ends here
-		*/
-		/* try parents for auth denial of DS */
-		if (orig_rr) {
-			possible_parent_name = ldns_rr_owner(orig_rr);
-		} else if (rrset && ldns_rr_list_rr_count(rrset) > 0) {
-			possible_parent_name = ldns_rr_owner(ldns_rr_list_rr(rrset, 0));
-		} else {
-			/* no information to go on, give up */
-			printf("[XX] not enough information to go on\n");
-			return new_chain;
-		}
-
-		my_pkt = ldns_resolver_query(res,
-							    possible_parent_name,
-							    LDNS_RR_TYPE_DS,
-							    LDNS_RR_CLASS_IN,
-							    qflags);
-
-		if (ldns_pkt_ancount(my_pkt) > 0) {
-			/* add error, no sigs but DS in parent */
-			/*ldns_pkt_print(stdout, my_pkt);*/
-			ldns_pkt_free(my_pkt);
-		} else {
-			/* are there signatures? */
-			new_chain->parent =  ldns_dnssec_build_data_chain(res, 
-													qflags, 
-													NULL,
-													my_pkt,
-													NULL);
-
-			new_chain->parent->packet_qtype = LDNS_RR_TYPE_DS;
-			//ldns_pkt_free(my_pkt);
-		}
-		return new_chain;
+		return ldns_dnssec_build_data_chain_nokeyname(res, qflags, orig_rr, rrset, new_chain);
 	}
 
 	if (type != LDNS_RR_TYPE_DNSKEY) {
-		if (signatures && ldns_rr_list_rr_count(signatures) > 0) {
-			new_chain->signatures = ldns_rr_list_clone(signatures);
-			new_chain->parent_type = 0;
-
-			keys = ldns_pkt_rr_list_by_name_and_type(
-				      pkt,
-					 key_name,
-					 LDNS_RR_TYPE_DNSKEY,
-					 LDNS_SECTION_ANY_NOQUESTION
-				  );
-			if (!keys) {
-				my_pkt = ldns_resolver_query(res,
-									    key_name,
-									    LDNS_RR_TYPE_DNSKEY,
-									    c,
-									    qflags);
-				keys = ldns_pkt_rr_list_by_name_and_type(
-					      my_pkt,
-						 key_name,
-						 LDNS_RR_TYPE_DNSKEY,
-						 LDNS_SECTION_ANY_NOQUESTION
-					  );
-				new_chain->parent = ldns_dnssec_build_data_chain(res,
-													    qflags,
-													    keys,
-													    my_pkt,
-													    NULL);
-				new_chain->parent->packet_qtype = LDNS_RR_TYPE_DNSKEY;
-				ldns_pkt_free(my_pkt);
-			} else {
-				new_chain->parent = ldns_dnssec_build_data_chain(res,
-													    qflags,
-													    keys,
-													    pkt,
-													    NULL);
-				new_chain->parent->packet_qtype = LDNS_RR_TYPE_DNSKEY;
-			}
-			ldns_rr_list_deep_free(keys);
-		}
+		ldns_dnssec_build_data_chain_dnskey(res,
+		                                    qflags,
+		                                    rrset,
+		                                    pkt,
+		                                    orig_rr,
+		                                    signatures,
+		                                    new_chain,
+		                                    key_name,
+		                                    c
+		                                    
+		                                    
+		                                    );
 	} else {
-		/* 'self-signed', parent is a DS */
-		
-		/* okay, either we have other keys signing the current one,
-		 * or the current
-		 * one should have a DS record in the parent zone.
-		 * How do we find this out? Try both?
-		 *
-		 * request DNSKEYS for current zone,
-		 * add all signatures to current level
-		 */
-		new_chain->parent_type = 1;
-
-		my_pkt = ldns_resolver_query(res,
-							    key_name,
-							    LDNS_RR_TYPE_DS,
-							    c,
-							    qflags);
-		dss = ldns_pkt_rr_list_by_name_and_type(my_pkt,
-										key_name,
-										LDNS_RR_TYPE_DS,
-										LDNS_SECTION_ANY_NOQUESTION
-										);
-		if (dss) {
-			new_chain->parent = ldns_dnssec_build_data_chain(res,
-												    qflags,
-												    dss,
-												    my_pkt,
-												    NULL);
-			new_chain->parent->packet_qtype = LDNS_RR_TYPE_DS;
-			ldns_rr_list_deep_free(dss);
-		}
-		ldns_pkt_free(my_pkt);
-
-		my_pkt = ldns_resolver_query(res,
-							    key_name,
-							    LDNS_RR_TYPE_DNSKEY,
-							    c,
-							    qflags);
-		signatures2 = ldns_pkt_rr_list_by_name_and_type(my_pkt,
-											   key_name,
-											   LDNS_RR_TYPE_RRSIG,
-											   LDNS_SECTION_ANSWER);
-		if (signatures2) {
-			if (new_chain->signatures) {
-				printf("There were already sigs!\n");
-				ldns_rr_list_deep_free(new_chain->signatures);
-				printf("freed\n");
-			}
-			new_chain->signatures = signatures2;
-		}
-		ldns_pkt_free(my_pkt);
+		ldns_dnssec_build_data_chain_other(res,
+		                                   qflags,
+		                                   rrset,
+		                                   pkt,
+		                                   orig_rr,
+		                                   signatures,
+		                                   new_chain,
+		                                   key_name,
+		                                   c,
+		                                   dss
+		                                    
+		                                    );
 	}
 	if (signatures) {
 		ldns_rr_list_deep_free(signatures);
@@ -441,23 +506,24 @@ ldns_dnssec_trust_tree_print_sm(FILE *out,
 				fprintf(out, " (TYPE%d", 
 					   ldns_rr_get_type(tree->rr));
 			}
-			if (ldns_rr_get_type(tree->rr) == LDNS_RR_TYPE_DNSKEY) {
-				fprintf(out, " keytag: %u", ldns_calc_keytag(tree->rr));
-				fprintf(out, " alg: ");
-				ldns_rdf_print(out, ldns_rr_rdf(tree->rr, 2));
-				fprintf(out, " flags: ");
-				ldns_rdf_print(out, ldns_rr_rdf(tree->rr, 0));
-			} else if (ldns_rr_get_type(tree->rr) == LDNS_RR_TYPE_DS) {
-				fprintf(out, " keytag: ");
-				ldns_rdf_print(out, ldns_rr_rdf(tree->rr, 0));
+			if (tabs > 0) {
+				if (ldns_rr_get_type(tree->rr) == LDNS_RR_TYPE_DNSKEY) {
+					fprintf(out, " keytag: %u", ldns_calc_keytag(tree->rr));
+					fprintf(out, " alg: ");
+					ldns_rdf_print(out, ldns_rr_rdf(tree->rr, 2));
+					fprintf(out, " flags: ");
+					ldns_rdf_print(out, ldns_rr_rdf(tree->rr, 0));
+				} else if (ldns_rr_get_type(tree->rr) == LDNS_RR_TYPE_DS) {
+					fprintf(out, " keytag: ");
+					ldns_rdf_print(out, ldns_rr_rdf(tree->rr, 0));
+				}
+				if (ldns_rr_get_type(tree->rr) == LDNS_RR_TYPE_NSEC) {
+					fprintf(out, " ");
+					ldns_rdf_print(out, ldns_rr_rdf(tree->rr, 0));
+					fprintf(out, " ");
+					ldns_rdf_print(out, ldns_rr_rdf(tree->rr, 1));
+				}
 			}
-			if (ldns_rr_get_type(tree->rr) == LDNS_RR_TYPE_NSEC) {
-				fprintf(out, " ");
-				ldns_rdf_print(out, ldns_rr_rdf(tree->rr, 0));
-				fprintf(out, " ");
-				ldns_rdf_print(out, ldns_rr_rdf(tree->rr, 1));
-			}
-			
 			
 			fprintf(out, ")\n");
 			for (i = 0; i < tree->parent_count; i++) {
@@ -473,13 +539,24 @@ ldns_dnssec_trust_tree_print_sm(FILE *out,
 				    LDNS_RR_TYPE_NSEC3) {
 					if (tree->parent_status[i] == LDNS_STATUS_OK) {
 						print_tabs(out, tabs + 1, sibmap, treedepth);
-						fprintf(out, "Existence is denied by:\n");
+						if (tabs == 0 &&
+						    ldns_rr_get_type(tree->rr) == LDNS_RR_TYPE_NS &&
+							ldns_rr_rd_count(tree->rr) > 0) {
+							fprintf(out, "Existence of DS is denied by:\n");
+						} else {
+							fprintf(out, "Existence is denied by:\n");
+						}
 					} else {
-						print_tabs(out, tabs + 1, sibmap, treedepth);
-						fprintf(out,
-							   "Error in denial of existence: %s\n",
-							   ldns_get_errorstr_by_id(
-							       tree->parent_status[i]));
+						/* NS records aren't signed */
+						if (ldns_rr_get_type(tree->rr) == LDNS_RR_TYPE_NS) {
+							fprintf(out, "Existence of DS is denied by:\n");
+						} else {
+							print_tabs(out, tabs + 1, sibmap, treedepth);
+							fprintf(out,
+								   "Error in denial of existence: %s\n",
+								   ldns_get_errorstr_by_id(
+									   tree->parent_status[i]));
+						}
 					}
 				} else
 					if (tree->parent_status[i] != LDNS_STATUS_OK) {
