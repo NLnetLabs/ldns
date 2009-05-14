@@ -9,7 +9,7 @@
 # so you might need to remove that (with newer versions
 # it is needed)
 libtoolize -c --install
-autoreconf
+autoreconf --install
 ./configure
 make
 make doc  # needs doxygen for the html pages
