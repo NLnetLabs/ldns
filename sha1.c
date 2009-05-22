@@ -43,9 +43,9 @@
 /* Hash a single 512-bit block. This is the core of the algorithm. */
 
 void
-ldns_sha1_transform(u_int32_t state[5], const unsigned char buffer[LDNS_SHA1_BLOCK_LENGTH])
+ldns_sha1_transform(uint32_t state[5], const unsigned char buffer[LDNS_SHA1_BLOCK_LENGTH])
 {
-    u_int32_t a, b, c, d, e;
+    uint32_t a, b, c, d, e;
     typedef union {
         unsigned char c[64];
         unsigned int l[16];
@@ -122,7 +122,7 @@ ldns_sha1_update(ldns_sha1_ctx *context, const unsigned char *data, unsigned int
     unsigned int i;
     unsigned int j;
 
-    j = (u_int32_t)((context->count >> 3) & 63);
+    j = (uint32_t)((context->count >> 3) & 63);
     context->count += (len << 3);
     if ((j + len) > 63) {
         bcopy(data, &context->buffer[j], (i = 64 - j));

@@ -5,13 +5,13 @@
 #define LDNS_SHA1_DIGEST_LENGTH              20
 
 typedef struct {
-        u_int32_t       state[5];
-        u_int64_t       count;
+        uint32_t       state[5];
+        uint64_t       count;
         unsigned char   buffer[LDNS_SHA1_BLOCK_LENGTH];
 } ldns_sha1_ctx;
   
 void ldns_sha1_init(ldns_sha1_ctx * context);
-void ldns_sha1_transform(u_int32_t state[5], const unsigned char buffer[LDNS_SHA1_BLOCK_LENGTH]);
+void ldns_sha1_transform(uint32_t state[5], const unsigned char buffer[LDNS_SHA1_BLOCK_LENGTH]);
 void ldns_sha1_update(ldns_sha1_ctx *context, const unsigned char *data, unsigned int len);
 void ldns_sha1_final(unsigned char digest[LDNS_SHA1_DIGEST_LENGTH], ldns_sha1_ctx *context);
 
