@@ -410,6 +410,22 @@ if echo "$host_os" | grep "sunos4" >/dev/null; then
 fi
 AC_PROG_LIBTOOL
 
+AC_TRY_RUN(
+[
+int main()
+{
+short one = 1;
+char *cp = (char*)&one;
+if ( *cp == 0 )
+return(0);
+else
+return(1);
+}
+], [],[
+AC_DEFINE(CONFCHECK_LITTLE_ENDIAN, 1, [system appears to be little-endian])
+],[])
+
+AC_OUTPUT()
 
 # Checks for header files.
 AC_HEADER_STDC

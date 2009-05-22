@@ -1,3 +1,4 @@
+ldns_algorithm2buffer_str
 ldns_algorithms
 ldns_axfr_complete
 ldns_axfr_last_pkt
@@ -18,6 +19,7 @@ ldns_bskipc
 ldns_bskipcs
 ldns_bubblebabble
 ldns_buffer2pkt_wire
+ldns_buffer2str
 ldns_buffer_copy
 ldns_buffer_export
 ldns_buffer_free
@@ -28,9 +30,11 @@ ldns_buffer_reserve
 ldns_buffer_set_capacity
 ldns_calc_keytag
 ldns_calc_keytag_raw
+ldns_cert_algorithm2buffer_str
 ldns_cert_algorithms
 ldns_convert_dsa_rrsig_asn12rdf
 ldns_convert_dsa_rrsig_rdf2asn1
+ldns_create_empty_rrsig
 ldns_create_nsec
 ldns_create_nsec3
 ldns_directive_types
@@ -38,6 +42,7 @@ ldns_dname2buffer_wire
 ldns_dname2canonical
 ldns_dname_cat
 ldns_dname_cat_clone
+ldns_dname_clone_from
 ldns_dname_compare
 ldns_dname_compare_v
 ldns_dname_interval
@@ -45,12 +50,14 @@ ldns_dname_is_subdomain
 ldns_dname_label
 ldns_dname_label_count
 ldns_dname_left_chop
+ldns_dname_match_wildcard
 ldns_dname_new
 ldns_dname_new_frm_data
 ldns_dname_new_frm_str
 ldns_dname_reverse
 ldns_dname_str_absolute
 ldns_dnssec_build_data_chain
+ldns_dnssec_build_data_chain_nokeyname
 ldns_dnssec_chain_nsec3_list
 ldns_dnssec_create_nsec
 ldns_dnssec_create_nsec3
@@ -72,11 +79,13 @@ ldns_dnssec_get_dnskey_for_rrsig
 ldns_dnssec_get_rrsig_for_name_and_type
 ldns_dnssec_name_add_rr
 ldns_dnssec_name_cmp
+ldns_dnssec_name_deep_free
 ldns_dnssec_name_find_rrset
 ldns_dnssec_name_free
 ldns_dnssec_name_name
 ldns_dnssec_name_new
 ldns_dnssec_name_new_frm_rr
+ldns_dnssec_name_node_deep_free
 ldns_dnssec_name_node_free
 ldns_dnssec_name_node_next_nonglue
 ldns_dnssec_name_nsec
@@ -90,7 +99,10 @@ ldns_dnssec_pkt_get_rrsigs_for_type
 ldns_dnssec_pkt_has_rrsigs
 ldns_dnssec_remove_signatures
 ldns_dnssec_rrs_add_rr
+ldns_dnssec_rrs_deep_free
 ldns_dnssec_rrsets_add_rr
+ldns_dnssec_rrsets_contains_type
+ldns_dnssec_rrsets_deep_free
 ldns_dnssec_rrsets_free
 ldns_dnssec_rrsets_new
 ldns_dnssec_rrsets_new_frm_rr
@@ -115,6 +127,7 @@ ldns_dnssec_zone_add_rr
 ldns_dnssec_zone_create_nsec3s
 ldns_dnssec_zone_create_nsecs
 ldns_dnssec_zone_create_rrsigs
+ldns_dnssec_zone_deep_free
 ldns_dnssec_zone_find_nsec3_original
 ldns_dnssec_zone_find_rrset
 ldns_dnssec_zone_free
@@ -162,8 +175,10 @@ ldns_key_deep_free
 ldns_key_dsa_key
 ldns_key_evp_key
 ldns_key_expiration
+ldns_key_external_key
 ldns_key_flags
 ldns_key_free
+ldns_key_get_file_base_name
 ldns_key_hmac_key
 ldns_key_hmac_size
 ldns_key_inception
@@ -196,6 +211,7 @@ ldns_key_set_algorithm
 ldns_key_set_dsa_key
 ldns_key_set_evp_key
 ldns_key_set_expiration
+ldns_key_set_external_key
 ldns_key_set_flags
 ldns_key_set_hmac_key
 ldns_key_set_hmac_size
@@ -237,6 +253,7 @@ ldns_pkt2wire
 ldns_pkt_aa
 ldns_pkt_ad
 ldns_pkt_additional
+ldns_pkt_algorithm2str
 ldns_pkt_all
 ldns_pkt_all_noquestion
 ldns_pkt_ancount
@@ -245,6 +262,7 @@ ldns_pkt_answerfrom
 ldns_pkt_arcount
 ldns_pkt_authority
 ldns_pkt_cd
+ldns_pkt_cert_algorithm2str
 ldns_pkt_clone
 ldns_pkt_edns
 ldns_pkt_edns_data
@@ -262,6 +280,8 @@ ldns_pktheader2buffer_str
 ldns_pkt_id
 ldns_pkt_new
 ldns_pkt_nscount
+ldns_pkt_opcode2buffer_str
+ldns_pkt_opcode2str
 ldns_pkt_print
 ldns_pkt_push_rr
 ldns_pkt_push_rr_list
@@ -272,6 +292,8 @@ ldns_pkt_query_new_frm_str
 ldns_pkt_querytime
 ldns_pkt_question
 ldns_pkt_ra
+ldns_pkt_rcode2buffer_str
+ldns_pkt_rcode2str
 ldns_pkt_rd
 ldns_pkt_reply_type
 ldns_pkt_rr
@@ -404,6 +426,7 @@ ldns_resolver_dnssec_cd
 ldns_resolver_domain
 ldns_resolver_edns_udp_size
 ldns_resolver_fail
+ldns_resolver_fallback
 ldns_resolver_free
 ldns_resolver_igntc
 ldns_resolver_incr_nameserver_count
@@ -445,6 +468,7 @@ ldns_resolver_set_dnssec_cd
 ldns_resolver_set_domain
 ldns_resolver_set_edns_udp_size
 ldns_resolver_set_fail
+ldns_resolver_set_fallback
 ldns_resolver_set_igntc
 ldns_resolver_set_ip6
 ldns_resolver_set_nameserver_count
@@ -476,6 +500,8 @@ ldns_rr2str
 ldns_rr2wire
 ldns_rr_a_address
 ldns_rr_a_set_address
+ldns_rr_class2buffer_str
+ldns_rr_class2str
 ldns_rr_classes
 ldns_rr_clone
 ldns_rr_compare
@@ -512,6 +538,7 @@ ldns_rr_list_contains_rr
 ldns_rr_list_deep_free
 ldns_rr_list_free
 ldns_rr_list_new
+ldns_rr_list_owner
 ldns_rr_list_pop_rr
 ldns_rr_list_pop_rr_list
 ldns_rr_list_pop_rrset
@@ -525,6 +552,7 @@ ldns_rr_list_set_rr_count
 ldns_rr_list_sort
 ldns_rr_list_sort_nsec3
 ldns_rr_list_subtype_by_rdf
+ldns_rr_list_type
 ldns_rr_mx_exchange
 ldns_rr_mx_preference
 ldns_rr_new
@@ -532,6 +560,7 @@ ldns_rr_new_frm_fp
 ldns_rr_new_frm_fp_l
 ldns_rr_new_frm_str
 ldns_rr_new_frm_type
+ldns_rr_new_question_frm_str
 ldns_rr_ns_nsdname
 ldns_rr_owner
 ldns_rr_pop_rdf
@@ -568,12 +597,20 @@ ldns_rr_set_ttl
 ldns_rr_set_type
 ldns_rrsig2buffer_wire
 ldns_rr_ttl
+ldns_rr_type2buffer_str
+ldns_rr_type2str
 ldns_rr_uncompressed_size
 ldns_send
 ldns_send_buffer
 ldns_set_bit
+ldns_sha1
+ldns_sha1_final
+ldns_sha1_init
+ldns_sha1_transform
+ldns_sha1_update
 ldns_signing_algorithms
 ldns_sign_public
+ldns_sign_public_buffer
 ldns_sign_public_dsa
 ldns_sign_public_evp
 ldns_sign_public_rsamd5

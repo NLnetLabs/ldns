@@ -84,10 +84,8 @@ ldns_dnssec_data_chain_print(FILE *out, const ldns_dnssec_data_chain *chain)
 static void
 ldns_dnssec_build_data_chain_dnskey(ldns_resolver *res,
 					    uint16_t qflags,
-					    const ldns_rr_list *rrset,
 					    const ldns_pkt *pkt,
-					    ldns_rr *orig_rr,
-						ldns_rr_list *signatures,
+					    ldns_rr_list *signatures,
 						ldns_dnssec_data_chain *new_chain,
 						ldns_rdf *key_name,
 						ldns_rr_class c) {
@@ -137,10 +135,6 @@ ldns_dnssec_build_data_chain_dnskey(ldns_resolver *res,
 static void
 ldns_dnssec_build_data_chain_other(ldns_resolver *res,
 					    uint16_t qflags,
-					    const ldns_rr_list *rrset,
-					    const ldns_pkt *pkt,
-					    ldns_rr *orig_rr,
-						ldns_rr_list *signatures,
 						ldns_dnssec_data_chain *new_chain,
 						ldns_rdf *key_name,
 						ldns_rr_class c,
@@ -203,7 +197,11 @@ ldns_dnssec_build_data_chain_other(ldns_resolver *res,
 }
 
 ldns_dnssec_data_chain *
-ldns_dnssec_build_data_chain_nokeyname(ldns_resolver *res, uint16_t qflags, ldns_rr *orig_rr, ldns_rr_list *rrset, ldns_dnssec_data_chain *new_chain)
+ldns_dnssec_build_data_chain_nokeyname(ldns_resolver *res,
+                                       uint16_t qflags,
+                                       ldns_rr *orig_rr,
+                                       const ldns_rr_list *rrset,
+                                       ldns_dnssec_data_chain *new_chain)
 {
 	ldns_rdf *possible_parent_name;
 	ldns_pkt *my_pkt;
@@ -253,16 +251,14 @@ ldns_dnssec_build_data_chain(ldns_resolver *res,
 					    const ldns_pkt *pkt,
 					    ldns_rr *orig_rr)
 {
-	ldns_rr_list *signatures = NULL, *signatures2 = NULL;
-	ldns_rr_list *keys;
-	ldns_rr_list *dss;
+	ldns_rr_list *signatures = NULL;
+	ldns_rr_list *dss = NULL;
 	
 	ldns_rr_list *my_rrset;
 
 	ldns_pkt *my_pkt;
 
 	ldns_rdf *name = NULL, *key_name = NULL;
-	ldns_rdf *possible_parent_name;
 	ldns_rr_type type = 0;
 	ldns_rr_class c = 0;
 
@@ -382,29 +378,25 @@ ldns_dnssec_build_data_chain(ldns_resolver *res,
 	}
 
 	if (!key_name) {
-		return ldns_dnssec_build_data_chain_nokeyname(res, qflags, orig_rr, rrset, new_chain);
+		return ldns_dnssec_build_data_chain_nokeyname(res,
+		                                              qflags,
+		                                              orig_rr,
+		                                              rrset,
+		                                              new_chain);
 	}
 
 	if (type != LDNS_RR_TYPE_DNSKEY) {
 		ldns_dnssec_build_data_chain_dnskey(res,
 		                                    qflags,
-		                                    rrset,
 		                                    pkt,
-		                                    orig_rr,
 		                                    signatures,
 		                                    new_chain,
 		                                    key_name,
 		                                    c
-		                                    
-		                                    
 		                                    );
 	} else {
 		ldns_dnssec_build_data_chain_other(res,
 		                                   qflags,
-		                                   rrset,
-		                                   pkt,
-		                                   orig_rr,
-		                                   signatures,
 		                                   new_chain,
 		                                   key_name,
 		                                   c,
