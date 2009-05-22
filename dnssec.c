@@ -93,7 +93,6 @@ ldns_nsec_get_bitmap(ldns_rr *nsec) {
 
 /*return the owner name of the closest encloser for name from the list of rrs */
 /* this is NOT the hash, but the original name! */
-#ifdef HAVE_SSL
 ldns_rdf *
 ldns_dnssec_nsec3_closest_encloser(ldns_rdf *qname,
                                    ATTR_UNUSED(ldns_rr_type qtype),
@@ -188,7 +187,6 @@ ldns_dnssec_nsec3_closest_encloser(ldns_rdf *qname,
 
 	return result;
 }
-#endif /* HAVE_SSL */
 
 bool
 ldns_dnssec_pkt_has_rrsigs(const ldns_pkt *pkt)
@@ -428,7 +426,6 @@ ldns_key_buf2rsa_raw(unsigned char* key, size_t len)
 }
 #endif /* HAVE_SSL */
 
-#ifdef HAVE_SSL
 ldns_rr *
 ldns_key_rr2ds(const ldns_rr *key, ldns_hash h)
 {
@@ -456,7 +453,7 @@ ldns_key_rr2ds(const ldns_rr *key, ldns_hash h)
 	switch(h) {
 	default:
 	case LDNS_SHA1:
-		digest = LDNS_XMALLOC(uint8_t, SHA_DIGEST_LENGTH);
+		digest = LDNS_XMALLOC(uint8_t, LDNS_SHA1_DIGEST_LENGTH);
 		if (!digest) {
 			ldns_rr_free(ds);
 			return NULL;
@@ -522,11 +519,10 @@ ldns_key_rr2ds(const ldns_rr *key, ldns_hash h)
 	}
 	switch(h) {
 	case LDNS_SHA1:
-		(void) SHA1((unsigned char *) ldns_buffer_begin(data_buf),
-				  ldns_buffer_position(data_buf),
-				  (unsigned char*) digest);
+		(void) ldns_sha1((unsigned char *) ldns_buffer_begin(data_buf),
+				  ldns_buffer_position(data_buf));
 
-		tmp = ldns_rdf_new_frm_data(LDNS_RDF_TYPE_HEX, SHA_DIGEST_LENGTH,
+		tmp = ldns_rdf_new_frm_data(LDNS_RDF_TYPE_HEX, LDNS_SHA1_DIGEST_LENGTH,
 							   digest);
 		ldns_rr_push_rdf(ds, tmp);
 
@@ -547,7 +543,6 @@ ldns_key_rr2ds(const ldns_rr *key, ldns_hash h)
 	ldns_buffer_free(data_buf);
 	return ds;
 }
-#endif /* HAVE_SSL */
 
 ldns_rdf *
 ldns_dnssec_create_nsec_bitmap(ldns_rr_type rr_type_list[],
@@ -897,7 +892,6 @@ ldns_create_nsec(ldns_rdf *cur_owner, ldns_rdf *next_owner, ldns_rr_list *rrs)
 	return nsec;
 }
 
-#ifdef HAVE_SSL
 ldns_rdf *
 ldns_nsec3_hash_name(ldns_rdf *name,
 				 uint8_t algorithm,
@@ -927,26 +921,25 @@ ldns_nsec3_hash_name(ldns_rdf *name,
 	memcpy(hashed_owner_str + ldns_rdf_size(name), salt, salt_length);
 
 	for (cur_it = iterations + 1; cur_it > 0; cur_it--) {
-		hash = (char *) SHA1((unsigned char *) hashed_owner_str,
-						 hashed_owner_str_len,
-						 NULL);
+		hash = (char *) ldns_sha1((unsigned char *) hashed_owner_str,
+						 hashed_owner_str_len);
 
 		LDNS_FREE(hashed_owner_str);
-		hashed_owner_str_len = salt_length + SHA_DIGEST_LENGTH;
+		hashed_owner_str_len = salt_length + LDNS_SHA1_DIGEST_LENGTH;
 		hashed_owner_str = LDNS_XMALLOC(char, hashed_owner_str_len);
 		if (!hashed_owner_str) {
 			fprintf(stderr, "Memory error\n");
 			abort();
 		}
-		memcpy(hashed_owner_str, hash, SHA_DIGEST_LENGTH);
-		memcpy(hashed_owner_str + SHA_DIGEST_LENGTH, salt, salt_length);
-		hashed_owner_str_len = SHA_DIGEST_LENGTH + salt_length;
+		memcpy(hashed_owner_str, hash, LDNS_SHA1_DIGEST_LENGTH);
+		memcpy(hashed_owner_str + LDNS_SHA1_DIGEST_LENGTH, salt, salt_length);
+		hashed_owner_str_len = LDNS_SHA1_DIGEST_LENGTH + salt_length;
 	}
 
 	LDNS_FREE(orig_owner_str);
 	LDNS_FREE(hashed_owner_str);
 	hashed_owner_str = hash;
-	hashed_owner_str_len = SHA_DIGEST_LENGTH;
+	hashed_owner_str_len = LDNS_SHA1_DIGEST_LENGTH;
 
 	hashed_owner_b32 = LDNS_XMALLOC(char,
 							  ldns_b32_ntop_calculate_size(
@@ -978,7 +971,6 @@ ldns_nsec3_hash_name(ldns_rdf *name,
 	LDNS_FREE(hashed_owner_b32);
 	return hashed_owner;
 }
-#endif /* HAVE_SSL */
 
 void
 ldns_nsec3_add_param_rdfs(ldns_rr *rr,

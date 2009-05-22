@@ -322,6 +322,7 @@ AC_ARG_WITH(ssl, AC_HELP_STRING([--with-ssl=pathname],
             if test -f "$dir/include/openssl/ssl.h"; then
                 found_ssl="yes"
                 AC_DEFINE_UNQUOTED([HAVE_SSL], [], [Define if you have the SSL libraries installed.])
+                AC_SUBST(HAVE_SSL)
                 CPPFLAGS="$CPPFLAGS -I$ssldir/include"
                 break;
             fi
@@ -331,6 +332,7 @@ AC_ARG_WITH(ssl, AC_HELP_STRING([--with-ssl=pathname],
         else
             AC_MSG_RESULT(found in $ssldir)
             HAVE_SSL=yes
+            AC_SUBST(HAVE_SSL)
             LDFLAGS="$LDFLAGS -L$ssldir/lib -lcrypto"
 	    if test "x$enable_rpath" = xyes; then
 	        RUNTIME_PATH="$RUNTIME_PATH -R$ssldir/lib"
@@ -365,7 +367,6 @@ AC_ARG_WITH(ssl, AC_HELP_STRING([--with-ssl=pathname],
 		])
             ])
         fi
-        AC_SUBST(HAVE_SSL)
 	AC_SUBST(RUNTIME_PATH)
     fi
 AC_CHECK_HEADERS([openssl/ssl.h],,, [AC_INCLUDES_DEFAULT])

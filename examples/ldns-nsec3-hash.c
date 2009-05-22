@@ -23,9 +23,6 @@
 #define MAX_FILENAME_LEN 250
 int verbosity = 1;
 
-#ifdef HAVE_SSL
-#include <openssl/err.h>
-
 void
 usage(FILE *fp, const char *prog) {
 	fprintf(fp, "%s [OPTIONS] <domain name>\n", prog);
@@ -123,11 +120,3 @@ main(int argc, char *argv[])
 	
 	return EXIT_SUCCESS;
 }
-#else
-int
-main(int argc, char **argv)
-{
-	fprintf(stderr, "ldns-nsec3-hash needs OpenSSL support, which has not been compiled in\n");
-	return 1;
-}
-#endif /* HAVE_SSL */
