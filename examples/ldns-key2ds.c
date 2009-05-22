@@ -13,6 +13,7 @@
 
 #include <errno.h>
 
+#ifdef HAVE_SSL
 void
 usage(FILE *fp, char *prog) {
 	fprintf(fp, "%s [-fn] [-1|-2] keyfile\n", prog);
@@ -148,3 +149,11 @@ main(int argc, char *argv[])
 	free(keyname);
 	exit(EXIT_SUCCESS);
 }
+#else
+int
+main(int argc, char **argv)
+{
+	fprintf(stderr, "ldns-key2ds needs OpenSSL support, which has not been compiled in\n");
+	return 1;
+}
+#endif /* HAVE_SSL */

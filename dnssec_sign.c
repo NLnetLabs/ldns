@@ -17,6 +17,7 @@
 #include <openssl/rand.h>
 #include <openssl/err.h>
 #include <openssl/md5.h>
+#endif /* HAVE_SSL */
 
 ldns_rr *
 ldns_create_empty_rrsig(ldns_rr_list *rrset,
@@ -105,7 +106,7 @@ ldns_create_empty_rrsig(ldns_rr_list *rrset,
 	return current_sig;
 }
 
-
+#ifdef HAVE_SSL
 ldns_rdf *
 ldns_sign_public_buffer(ldns_buffer *sign_buf, ldns_key *current_key)
 {
@@ -383,7 +384,6 @@ ldns_sign_public_evp(ldns_buffer *to_sign,
 	return sigdata_rdf;
 }
 
-
 ldns_rdf *
 ldns_sign_public_rsasha1(ldns_buffer *to_sign, RSA *key)
 {
@@ -452,6 +452,7 @@ ldns_sign_public_rsamd5(ldns_buffer *to_sign, RSA *key)
 	ldns_buffer_free(b64sig);
 	return sigdata_rdf;
 }
+#endif /* HAVE_SSL */
 
 static int
 ldns_dnssec_name_has_only_a(ldns_dnssec_name *cur_name)
@@ -600,6 +601,7 @@ ldns_dnssec_zone_create_nsecs(ldns_dnssec_zone *zone,
 	return LDNS_STATUS_OK;
 }
 
+#ifdef HAVE_SSL
 ldns_status
 ldns_dnssec_zone_create_nsec3s(ldns_dnssec_zone *zone,
 						 ldns_rr_list *new_rrs,
@@ -677,6 +679,7 @@ ldns_dnssec_zone_create_nsec3s(ldns_dnssec_zone *zone,
 	ldns_rr_list_free(nsec3_list);
 	return result;
 }
+#endif /* HAVE_SSL */
 
 ldns_dnssec_rrs *
 ldns_dnssec_remove_signatures(ldns_dnssec_rrs *signatures,
@@ -766,6 +769,7 @@ ldns_dnssec_remove_signatures(ldns_dnssec_rrs *signatures,
 	return base_rrs;
 }
 
+#ifdef HAVE_SSL
 ldns_status
 ldns_dnssec_zone_create_rrsigs(ldns_dnssec_zone *zone,
                                ldns_rr_list *new_rrs,
@@ -1086,5 +1090,5 @@ ldns_zone_sign_nsec3(ldns_zone *zone, ldns_key_list *key_list, uint8_t algorithm
 
 	return signed_zone;
 }
+#endif /* HAVE_SSL */
 
-#endif

@@ -29,8 +29,10 @@ usage(FILE *stream, const char *progname)
 	fprintf(stream, "\n\targuments may be placed in random order\n");
 	fprintf(stream, "\n  Options:\n");
 	fprintf(stream, "\t-D\t\tenable DNSSEC (DO bit)\n");
+#ifdef HAVE_SSL
 	fprintf(stream, "\t-T\t\ttrace from the root down to <name>\n");
 	fprintf(stream, "\t-S\t\tchase signature(s) from <name> to a know key [*]\n");
+#endif /*HAVE_SSL*/
 	fprintf(stream, "\t-V <number>\tverbosity (0-5)\n");
 	fprintf(stream, "\t-Q\t\tquiet mode (overrules -V)\n");
 	fprintf(stream, "\n");
@@ -50,9 +52,6 @@ usage(FILE *stream, const char *progname)
 	fprintf(stream, "\t\t\tused to verify any signatures in the current answer\n");
 	fprintf(stream, "\t-o <mnemonic>\tset flags to: [QR|qr][AA|aa][TC|tc][RD|rd][CD|cd][RA|ra][AD|ad]\n");
 	fprintf(stream, "\t\t\tlowercase: unset bit, uppercase: set bit\n");
-#if 0
-	fprintf(stream, "\t-O <opcode>\tset the opcode to: [query, iquery, status, notify, update]]\n");
-#endif
 	fprintf(stream, "\t-p <port>\tuse <port> as remote port number\n");
 	fprintf(stream, "\t-s\t\tshow the DS RR for each key in a packet\n");
 	fprintf(stream, "\t-u\t\tsend the query with udp (the default)\n");
@@ -204,6 +203,7 @@ main(int argc, char *argv[])
 			case 'I':
 				/* reserved for backward compatibility */
 				break;
+#ifdef HAVE_SSL
 			case 'T':
 				if (PURPOSE == DRILL_CHASE) {
 					fprintf(stderr, "-T and -S cannot be used at the same time.\n");
@@ -218,6 +218,7 @@ main(int argc, char *argv[])
 				}
 				PURPOSE = DRILL_CHASE;
 				break;
+#endif /* HAVE_SSL */
 			case 'V':
 				verbosity = atoi(optarg);
 				break;
@@ -565,7 +566,9 @@ main(int argc, char *argv[])
 				error("%s", "making qname");
 			}
 			/* don't care about return packet */
+#ifdef HAVE_SSL
 			result = do_secure_trace(res, qname, type, clas, key_list, trace_start_name);
+#endif /* HAVE_SSL */
 			clear_root();
 			break;
 		case DRILL_CHASE:
@@ -591,6 +594,7 @@ main(int argc, char *argv[])
 				if (!ldns_pkt_answer(pkt)) {
 					mesg("No answer in packet");
 				} else {
+#ifdef HAVE_SSL
 					ldns_resolver_set_dnssec_anchors(res, ldns_rr_list_clone(key_list));
 					result = do_chase(res, qname, type,
 					                  clas, key_list, 
@@ -606,6 +610,7 @@ main(int argc, char *argv[])
 							mesg("Chase failed.");
 						}
 					}
+#endif /* HAVE_SSL */
 				}
 				ldns_pkt_free(pkt);
 			}
@@ -819,6 +824,7 @@ main(int argc, char *argv[])
 					}
 
 					/* verify */
+#ifdef HAVE_SSL
 					result = ldns_pkt_verify(pkt, type, qname, key_list, NULL, NULL);
 
 					if (result == LDNS_STATUS_OK) {
@@ -847,9 +853,10 @@ main(int argc, char *argv[])
 								printf("\n");
 							}
 						}
-
 					}
-
+#else
+					(void) key_count;
+#endif /* HAVE_SSL */
 				}
 				if (answer_file) {
 					dump_hex(pkt, answer_file);

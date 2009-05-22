@@ -414,7 +414,6 @@ ldns_dnssec_name_cmp(const void *a, const void *b)
 	}
 }
 
-
 ldns_status
 ldns_dnssec_name_add_rr(ldns_dnssec_name *name,
 				    ldns_rr *rr)
@@ -437,6 +436,7 @@ ldns_dnssec_name_add_rr(ldns_dnssec_name *name,
 		typecovered = ldns_rdf2rr_type(ldns_rr_rrsig_typecovered(rr));
 	}
 
+#ifdef HAVE_SSL
 	if (rr_type == LDNS_RR_TYPE_NSEC3 ||
 	    typecovered == LDNS_RR_TYPE_NSEC3) {
 		name_name = ldns_nsec3_hash_name_frm_nsec3(rr,
@@ -445,6 +445,9 @@ ldns_dnssec_name_add_rr(ldns_dnssec_name *name,
 	} else {
 		name_name = ldns_dnssec_name_name(name);
 	}
+#else
+	name_name = ldns_dnssec_name_name(name);
+#endif /* HAVE_SSL */
 
 	if (rr_type == LDNS_RR_TYPE_NSEC ||
 	    rr_type == LDNS_RR_TYPE_NSEC3) {
@@ -608,7 +611,7 @@ ldns_dname_compare_v(const void *a, const void *b) {
 	return ldns_dname_compare((ldns_rdf *)a, (ldns_rdf *)b);
 }
 
-
+#ifdef HAVE_SSL
 ldns_rbnode_t *
 ldns_dnssec_zone_find_nsec3_original(ldns_dnssec_zone *zone,
 							  ldns_rr *rr) {
@@ -620,7 +623,7 @@ ldns_dnssec_zone_find_nsec3_original(ldns_dnssec_zone *zone,
 
 	while (current_node != LDNS_RBTREE_NULL) {
 		current_name = (ldns_dnssec_name *) current_node->data;
-
+#ifdef HAVE_SSL
 		if (!current_name->hashed_name) {
 			current_name->hashed_name =
 				ldns_nsec3_hash_name_frm_nsec3(rr, current_name->name);
@@ -631,6 +634,7 @@ ldns_dnssec_zone_find_nsec3_original(ldns_dnssec_zone *zone,
 			ldns_rdf_deep_free(hashed_name);
 			return current_node;
 		}
+#endif /* HAVE_SSL */
 		current_node = ldns_rbtree_next(current_node);
 	}
 	ldns_rdf_deep_free(hashed_name);
@@ -693,6 +697,7 @@ ldns_dnssec_zone_add_rr(ldns_dnssec_zone *zone, ldns_rr *rr)
 
 	return result;
 }
+#endif /* HAVE_SSL */
 
 void
 ldns_dnssec_zone_names_print(FILE *out, ldns_rbtree_t *tree, bool print_soa)

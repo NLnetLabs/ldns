@@ -77,6 +77,7 @@ get_dnssec_pkt(ldns_resolver *r, ldns_rdf *name, ldns_rr_type t)
 	}
 }
 
+#ifdef HAVE_SSL
 /* 
  * retrieve keys for this zone
  */
@@ -94,6 +95,7 @@ get_ds(ldns_pkt *p, ldns_rdf *ownername, ldns_rr_list **rrlist, ldns_rr_list **o
 {
 	return get_dnssec_rr(p, ownername, LDNS_RR_TYPE_DS, rrlist, opt_sig);
 }
+#endif /* HAVE_SSL */
 
 void
 remove_resolver_nameservers(ldns_resolver *res)
@@ -119,6 +121,7 @@ show_current_nameservers(FILE *out, ldns_resolver *res)
 }
 	
 /*ldns_pkt **/
+#ifdef HAVE_SSL
 int
 do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
                 ldns_rr_class c, ldns_rr_list *trusted_keys, ldns_rdf *start_name
@@ -748,3 +751,4 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 	}
 	return result;
 }
+#endif /* HAVE_SSL */

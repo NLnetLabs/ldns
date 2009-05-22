@@ -12,6 +12,7 @@
 
 #include <errno.h>
 
+#ifdef HAVE_SSL
 void
 usage(FILE *fp, char *prog) {
 	fprintf(fp, "%s -a <algorithm> [-b bits] [-r /dev/random] [-v] domain\n",
@@ -265,3 +266,11 @@ main(int argc, char *argv[])
 	ldns_rr_free(ds);
 	exit(EXIT_SUCCESS);
 }
+#else
+int
+main(int argc, char **argv)
+{
+	fprintf(stderr, "ldns-keygen needs OpenSSL support, which has not been compiled in\n");
+	return 1;
+}
+#endif /* HAVE_SSL */

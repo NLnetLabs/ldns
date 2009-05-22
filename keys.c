@@ -36,7 +36,6 @@ ldns_lookup_table ldns_signing_algorithms[] = {
         { 0, NULL }
 };
 
-#ifdef HAVE_SSL
 ldns_key_list *
 ldns_key_list_new()
 {
@@ -67,7 +66,9 @@ ldns_key_new()
 		ldns_key_set_inception(newkey, 0);
 		ldns_key_set_expiration(newkey, 0);
 		ldns_key_set_pubkey_owner(newkey, NULL);
+#ifdef HAVE_SSL
 		ldns_key_set_evp_key(newkey, NULL);
+#endif /* HAVE_SSL */
 		ldns_key_set_hmac_key(newkey, NULL);
 		ldns_key_set_external_key(newkey, NULL);
 		return newkey;
@@ -106,10 +107,12 @@ ldns_key_new_frm_fp_l(ldns_key **key, FILE *fp, int *line_nr)
 	char *d;
 	ldns_signing_algorithm alg;
 	ldns_rr *key_rr;
+#ifdef HAVE_SSL
 	RSA *rsa;
 	DSA *dsa;
 	unsigned char *hmac;
 	size_t hmac_size;
+#endif /* HAVE_SSL */
 
 	k = ldns_key_new();
 
@@ -203,24 +206,30 @@ ldns_key_new_frm_fp_l(ldns_key **key, FILE *fp, int *line_nr)
 		case LDNS_SIGN_RSASHA512:
 #endif
 			ldns_key_set_algorithm(k, alg);
+#ifdef HAVE_SSL
 			rsa = ldns_key_new_frm_fp_rsa_l(fp, line_nr);
 			ldns_key_set_rsa_key(k, rsa);
 			RSA_free(rsa);
+#endif /* HAVE_SSL */
 			break;
 		case LDNS_SIGN_DSA:
 		case LDNS_DSA_NSEC3:
 			ldns_key_set_algorithm(k, alg);
+#ifdef HAVE_SSL
 			dsa = ldns_key_new_frm_fp_dsa_l(fp, line_nr);
 			ldns_key_set_dsa_key(k, dsa);
 			DSA_free(dsa);
+#endif /* HAVE_SSL */
 			break;
 		case LDNS_SIGN_HMACMD5:
 		case LDNS_SIGN_HMACSHA1:
 		case LDNS_SIGN_HMACSHA256:
 			ldns_key_set_algorithm(k, alg);
+#ifdef HAVE_SSL
 			hmac = ldns_key_new_frm_fp_hmac_l(fp, line_nr, &hmac_size);
 			ldns_key_set_hmac_size(k, hmac_size);
 			ldns_key_set_hmac_key(k, hmac);
+#endif /* HAVE_SSL */
 			break;
 		case 0:
 		default:
@@ -239,6 +248,7 @@ ldns_key_new_frm_fp_l(ldns_key **key, FILE *fp, int *line_nr)
 	return LDNS_STATUS_ERR;
 }
 
+#ifdef HAVE_SSL
 RSA *
 ldns_key_new_frm_fp_rsa(FILE *f)
 {
@@ -498,17 +508,19 @@ ldns_key_new_frm_fp_hmac_l(FILE *f, int *line_nr, size_t *hmac_size)
 	*hmac_size = 0;
 	return NULL;
 }
+#endif /* HAVE_SSL */
 
 
 ldns_key *
 ldns_key_new_frm_algorithm(ldns_signing_algorithm alg, uint16_t size)
 {
 	ldns_key *k;
+#ifdef HAVE_SSL
 	DSA *d;
 	RSA *r;
-#ifndef HAVE_SSL
+#else
 	int i;
-	uint16_t offset;
+	uint16_t offset = 0;
 #endif
 	unsigned char *hmac;
 
@@ -522,15 +534,18 @@ ldns_key_new_frm_algorithm(ldns_signing_algorithm alg, uint16_t size)
 		case LDNS_SIGN_RSASHA1_NSEC3:
 		case LDNS_SIGN_RSASHA256:
 		case LDNS_SIGN_RSASHA512:
+#ifdef HAVE_SSL
 			r = RSA_generate_key((int)size, RSA_F4, NULL, NULL);
 			if (RSA_check_key(r) != 1) {
 				return NULL;
 			}
 
 			ldns_key_set_rsa_key(k, r);
+#endif /* HAVE_SSL */
 			break;
 		case LDNS_SIGN_DSA:
 		case LDNS_SIGN_DSA_NSEC3:
+#ifdef HAVE_SSL
 			d = DSA_generate_parameters((int)size, NULL, 0, NULL, NULL, NULL, NULL);
 			if (!d) {
 				return NULL;
@@ -539,11 +554,14 @@ ldns_key_new_frm_algorithm(ldns_signing_algorithm alg, uint16_t size)
 				return NULL;
 			}
 			ldns_key_set_dsa_key(k, d);
+#endif /* HAVE_SSL */
 			break;
 		case LDNS_SIGN_HMACMD5:
 		case LDNS_SIGN_HMACSHA1:
 		case LDNS_SIGN_HMACSHA256:
+#ifdef HAVE_SSL
 			k->_key.key = NULL;
+#endif /* HAVE_SSL */
 			size = size / 8;
 			ldns_key_set_hmac_size(k, size);
 
@@ -599,6 +617,7 @@ ldns_key_set_flags(ldns_key *k, uint16_t f)
 	k->_extra.dnssec.flags = f;
 }
 
+#ifdef HAVE_SSL
 void
 ldns_key_set_evp_key(ldns_key *k, EVP_PKEY *e)
 {
@@ -620,6 +639,7 @@ ldns_key_set_dsa_key(ldns_key *k, DSA *d)
 	EVP_PKEY_set1_DSA(key, d);
 	k->_key.key  = key;
 }
+#endif /* HAVE_SSL */
 
 void
 ldns_key_set_hmac_key(ldns_key *k, unsigned char *hmac)
@@ -709,6 +729,7 @@ ldns_key_use(const ldns_key *k)
 	return false;
 }
 
+#ifdef HAVE_SSL
 EVP_PKEY *
 ldns_key_evp_key(const ldns_key *k)
 {
@@ -734,6 +755,7 @@ ldns_key_dsa_key(const ldns_key *k)
 		return NULL;
 	}
 }
+#endif /* HAVE_SSL */
 
 unsigned char *
 ldns_key_hmac_key(const ldns_key *k)
@@ -864,6 +886,7 @@ ldns_key_list_pop_key(ldns_key_list *key_list)
         return pop;
 }       
 
+#ifdef HAVE_SSL
 static bool
 ldns_key_rsa2bin(unsigned char *data, RSA *k, uint16_t *size)
 {
@@ -924,6 +947,7 @@ ldns_key_dsa2bin(unsigned char *data, DSA *k, uint16_t *size)
 	*size = 21 + (*size * 3);
 	return true;
 }
+#endif /* HAVE_SSL */
 
 ldns_rr *
 ldns_key2rr(const ldns_key *k)
@@ -937,8 +961,10 @@ ldns_key2rr(const ldns_key *k)
 	ldns_rdf *keybin;
 	unsigned char *bin = NULL;
 	uint16_t size = 0;
+#ifdef HAVE_SSL
 	RSA *rsa = NULL;
 	DSA *dsa = NULL;
+#endif /* HAVE_SSL */
 	int internal_data = 0;
 
 	pubkey = ldns_rr_new();
@@ -977,6 +1003,7 @@ ldns_key2rr(const ldns_key *k)
 		case LDNS_RSASHA512:
 			ldns_rr_push_rdf(pubkey,
 						  ldns_native2rdf_int8(LDNS_RDF_TYPE_ALG, ldns_key_algorithm(k)));
+#ifdef HAVE_SSL
 			rsa =  ldns_key_rsa_key(k);
 			if (rsa) {
 				bin = LDNS_XMALLOC(unsigned char, LDNS_MAX_KEYLEN);
@@ -989,11 +1016,13 @@ ldns_key2rr(const ldns_key *k)
 				RSA_free(rsa);
 				internal_data = 1;
 			}
+#endif
 			size++;
 			break;
 		case LDNS_SIGN_DSA:
 			ldns_rr_push_rdf(pubkey,
 					ldns_native2rdf_int8(LDNS_RDF_TYPE_ALG, LDNS_DSA));
+#ifdef HAVE_SSL
 			dsa = ldns_key_dsa_key(k);
 			if (dsa) {
 				bin = LDNS_XMALLOC(unsigned char, LDNS_MAX_KEYLEN);
@@ -1006,10 +1035,12 @@ ldns_key2rr(const ldns_key *k)
 				DSA_free(dsa);
 				internal_data = 1;
 			}
+#endif /* HAVE_SSL */
 			break;
 		case LDNS_DSA_NSEC3:
 			ldns_rr_push_rdf(pubkey,
 					ldns_native2rdf_int8(LDNS_RDF_TYPE_ALG, LDNS_DSA_NSEC3));
+#ifdef HAVE_SSL
 			dsa = ldns_key_dsa_key(k);
 			if (dsa) {
 				bin = LDNS_XMALLOC(unsigned char, LDNS_MAX_KEYLEN);
@@ -1022,6 +1053,7 @@ ldns_key2rr(const ldns_key *k)
 				DSA_free(dsa);
 				internal_data = 1;
 			}
+#endif /* HAVE_SSL */
 			break;
 		case LDNS_SIGN_HMACMD5:
 		case LDNS_SIGN_HMACSHA1:
@@ -1059,9 +1091,11 @@ ldns_key_deep_free(ldns_key *key)
 	if (ldns_key_pubkey_owner(key)) {
 		ldns_rdf_deep_free(ldns_key_pubkey_owner(key));
 	}
+#ifdef HAVE_SSL
 	if (ldns_key_evp_key(key)) {
 		EVP_PKEY_free(ldns_key_evp_key(key));
 	}
+#endif /* HAVE_SSL */
 	if (ldns_key_hmac_key(key)) {
 		free(ldns_key_hmac_key(key));
 	}
@@ -1140,4 +1174,3 @@ ldns_key_get_file_base_name(ldns_key *key)
 	return file_base_name;
 }
 
-#endif /* HAVE_SSL */

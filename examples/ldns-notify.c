@@ -249,6 +249,7 @@ main(int argc, char **argv)
 	}
 
 	if(tsig_cred.keyname) {
+#ifdef HAVE_SSL
 		status = ldns_pkt_tsig_sign(notify, tsig_cred.keyname,
 			tsig_cred.keydata, 300, tsig_cred.algorithm,
 			NULL);
@@ -256,6 +257,9 @@ main(int argc, char **argv)
 			printf("Error TSIG sign query: %s\n",
 				ldns_get_errorstr_by_id(status));
 		}
+#else
+	fprintf(stderr, "Warning: TSIG needs OpenSSL support, which has not been compiled in, TSIG skipped\n");
+#endif
 	}
 
 	if(verbose) {

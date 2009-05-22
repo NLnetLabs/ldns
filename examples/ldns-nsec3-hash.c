@@ -25,7 +25,6 @@ int verbosity = 1;
 
 #ifdef HAVE_SSL
 #include <openssl/err.h>
-#endif
 
 void
 usage(FILE *fp, const char *prog) {
@@ -124,3 +123,11 @@ main(int argc, char *argv[])
 	
 	return EXIT_SUCCESS;
 }
+#else
+int
+main(int argc, char **argv)
+{
+	fprintf(stderr, "ldns-nsec3-hash needs OpenSSL support, which has not been compiled in\n");
+	return 1;
+}
+#endif /* HAVE_SSL */

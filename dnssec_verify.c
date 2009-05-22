@@ -1365,6 +1365,7 @@ ldns_dnssec_verify_denial(ldns_rr *rr,
 	return LDNS_STATUS_OK;
 }
 
+#ifdef HAVE_SSL
 ldns_status
 ldns_dnssec_verify_denial_nsec3(ldns_rr *rr,
 						  ldns_rr_list *nsecs,
@@ -1483,6 +1484,7 @@ ldns_dnssec_verify_denial_nsec3(ldns_rr *rr,
 	ldns_rdf_deep_free(zone_name);
 	return result;
 }
+#endif /* HAVE_SSL */
 
 ldns_status
 ldns_verify_rrsig_buffers(ldns_buffer *rawsig_buf, ldns_buffer *verify_buf, 

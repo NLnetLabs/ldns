@@ -220,6 +220,7 @@ do_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
  * the last argument prev_key_list, if not null, and type == DS, then the ds
  * rr list we have must all be a ds for the keys in this list
  */
+#ifdef HAVE_SSL
 ldns_status
 do_chase(ldns_resolver *res,
 	    ldns_rdf *name,
@@ -341,23 +342,13 @@ do_chase(ldns_resolver *res,
 
 /* if the answer had no answer section, we need to construct our own rr (for instance if
  * the rr qe asked for doesn't exist. This rr will be destroyed when the chain is freed */
- 	if (ldns_pkt_ancount(pkt) < 1) {
+	if (ldns_pkt_ancount(pkt) < 1) {
 		ldns_rr_set_type(orig_rr, type);
 		ldns_rr_set_owner(orig_rr, ldns_rdf_clone(name));
 	
 		chain = ldns_dnssec_build_data_chain(res, qflags, rrset, pkt, ldns_rr_clone(orig_rr));
 	} else {
-		/* chase the first answer? */
-		/*
-		printf("[XX] answer RR:\n");
-		ldns_rr_print(stdout, ldns_rr_list_rr(ldns_pkt_answer(pkt), 0));
-		chain = ldns_dnssec_build_data_chain(res,
-									  qflags,
-									  rrset,
-									  pkt,
-									  ldns_rr_list_rr(ldns_pkt_answer(pkt), 0)
-									  );
-		*/
+		/* chase the first answer */
 		chain = ldns_dnssec_build_data_chain(res, qflags, rrset, pkt, NULL);
 	}
 
@@ -405,42 +396,6 @@ do_chase(ldns_resolver *res,
 	/*	ldns_rr_free(orig_rr);*/
 
 	return result;
-#if 0
-	sigs = ldns_pkt_rr_list_by_name_and_type(pkt,
-			name,
-			LDNS_RR_TYPE_RRSIG,
-			LDNS_SECTION_ANY_NOQUESTION
-			);
-	/* these can contain sigs for other rrsets too! */
-	
-	if (rrset) {
-		printf("GOT RRSET:\n");
-		ldns_rr_list_print(stdout, rrset);
-		printf("\n");
-		printf("GOT SIGS:\n");
-		ldns_rr_list_print(stdout, sigs);
-		printf("\n");
-		
-	
-		for (sig_i = 0; sig_i < ldns_rr_list_rr_count(sigs); sig_i++) {
-			cur_sig = ldns_rr_clone(ldns_rr_list_rr(sigs, sig_i));
-			if (ldns_rdf2native_int16(ldns_rr_rrsig_typecovered(cur_sig)) == type) {
-			
-				keys = ldns_pkt_rr_list_by_name_and_type(pkt,
-						ldns_rr_rdf(cur_sig, 7),
-						LDNS_RR_TYPE_DNSKEY,
-						LDNS_SECTION_ANY_NOQUESTION
-						);
-			
-				result = ldns_verify_trusted(res, rrset, sigs, keys);
-			}
-			ldns_rr_free(cur_sig);
-		}
-		ldns_rr_list_deep_free(rrset);
-
-		printf("[chase] returning: %s\n", ldns_get_errorstr_by_id(result));
-		return result;
-	}
-#endif
 }
+#endif /* HAVE_SSL */
 

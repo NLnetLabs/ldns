@@ -82,6 +82,7 @@ ldns_rdf *ldns_nsec_get_bitmap(ldns_rr *nsec);
 
 #define LDNS_NSEC3_MAX_ITERATIONS 65535
 
+#ifdef HAVE_SSL
 /**
  * Returns the dname of the closest (provable) encloser
  */
@@ -89,6 +90,7 @@ ldns_rdf *
 ldns_dnssec_nsec3_closest_encloser(ldns_rdf *qname,
 							ldns_rr_type qtype,
 							ldns_rr_list *nsec3s);
+#endif /* HAVE_SSL */
 
 /**
  * Checks whether the packet contains rrsigs
@@ -158,6 +160,7 @@ RSA *ldns_key_buf2rsa(ldns_buffer *key);
 RSA *ldns_key_buf2rsa_raw(unsigned char* key, size_t len);
 #endif /* HAVE_SSL */
 
+#ifdef HAVE_SSL
 /** 
  * returns a new DS rr that represents the given key rr.
  *
@@ -166,6 +169,7 @@ RSA *ldns_key_buf2rsa_raw(unsigned char* key, size_t len);
  * \return ldns_rr* a new rr pointer to a DS
  */
 ldns_rr *ldns_key_rr2ds(const ldns_rr *key, ldns_hash h);
+#endif /* HAVE_SSL */
 
 /**
  * Create the type bitmap for an NSEC(3) record
@@ -183,6 +187,7 @@ ldns_dnssec_create_nsec(ldns_dnssec_name *from,
 				    ldns_dnssec_name *to,
 				    ldns_rr_type nsec_type);
 
+#ifdef HAVE_SSL
 /**
  * Creates NSEC3
  */
@@ -195,6 +200,7 @@ ldns_dnssec_create_nsec3(ldns_dnssec_name *from,
 					uint16_t iterations,
 					uint8_t salt_length,
 					uint8_t *salt);
+#endif /* HAVE_SSL */
 
 /**
  * Create a NSEC record
@@ -205,6 +211,7 @@ ldns_dnssec_create_nsec3(ldns_dnssec_name *from,
  */
 ldns_rr * ldns_create_nsec(ldns_rdf *cur_owner, ldns_rdf *next_owner, ldns_rr_list *rrs);
 
+#ifdef HAVE_SSL
 /**
  * Calculates the hashed name using the given parameters
  * \param[in] *name The owner name to calculate the hash for 
@@ -215,6 +222,7 @@ ldns_rr * ldns_create_nsec(ldns_rdf *cur_owner, ldns_rdf *next_owner, ldns_rr_li
  * \return The hashed owner name rdf, without the domain name
  */
 ldns_rdf *ldns_nsec3_hash_name(ldns_rdf *name, uint8_t algorithm, uint16_t iterations, uint8_t salt_length, uint8_t *salt);
+#endif /* HAVE_SSL */
 
 /**
  * Sets all the NSEC3 options. The rr to set them in must be initialized with _new() and
@@ -233,6 +241,7 @@ void ldns_nsec3_add_param_rdfs(ldns_rr *rr,
 						 uint8_t salt_length,
 						 uint8_t *salt);
 
+#ifdef HAVE_SSL
 /* this will NOT return the NSEC3  completed, you will have to run the
    finalize function on the rrlist later! */
 ldns_rr *
@@ -245,6 +254,7 @@ ldns_create_nsec3(ldns_rdf *cur_owner,
                   uint8_t salt_length,
                   uint8_t *salt,
                   bool emptynonterminal);
+#endif
 
 /**
  * Returns the hash algorithm used in the given NSEC3 RR
@@ -308,6 +318,7 @@ ldns_rdf *ldns_nsec3_next_owner(const ldns_rr *nsec3_rr);
  */
 ldns_rdf *ldns_nsec3_bitmap(const ldns_rr *nsec3_rr);
 
+#ifdef HAVE_SSL
 /**
  * Calculates the hashed name using the parameters of the given NSEC3 RR
  * \param[in] *nsec The RR to use the parameters from
@@ -315,6 +326,7 @@ ldns_rdf *ldns_nsec3_bitmap(const ldns_rr *nsec3_rr);
  * \return The hashed owner name rdf, without the domain name
  */
 ldns_rdf *ldns_nsec3_hash_name_frm_nsec3(const ldns_rr *nsec, ldns_rdf *name);
+#endif /* HAVE_SSL */
 
 /**
  * Checks coverage of NSEC RR type bitmap
@@ -336,6 +348,7 @@ bool ldns_nsec_bitmap_covers_type(const ldns_rdf *nsec_bitmap, ldns_rr_type type
  */
 bool ldns_nsec_covers_name(const ldns_rr *nsec, const ldns_rdf *name);
 
+#ifdef HAVE_SSL
 /**
  * verify a packet 
  * \param[in] p the packet
@@ -348,6 +361,7 @@ bool ldns_nsec_covers_name(const ldns_rr *nsec, const ldns_rdf *name);
  * 
  */
 ldns_status ldns_pkt_verify(ldns_pkt *p, ldns_rr_type t, ldns_rdf *o, ldns_rr_list *k, ldns_rr_list *s, ldns_rr_list *good_keys);
+#endif
 
 /**
  * chains nsec3 list
@@ -400,6 +414,7 @@ int ldns_dnssec_default_delete_signatures(ldns_rr *sig, void *n);
  */
 int ldns_dnssec_default_replace_signatures(ldns_rr *sig, void *n);
 
+#ifdef HAVE_SSL
 /**
  * Converts the DSA signature from ASN1 representation (RFC2459, as 
  * used by OpenSSL) to raw signature data as used in DNS (rfc2536)
@@ -424,5 +439,6 @@ ldns_status
 ldns_convert_dsa_rrsig_rdf2asn1(ldns_buffer *target_buffer,
 						  const ldns_rdf *sig_rdf);
 
+#endif /* HAVE_SSL */
 
 #endif /* LDNS_DNSSEC_H */

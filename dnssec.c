@@ -18,14 +18,12 @@
 #include <time.h>
 
 #ifdef HAVE_SSL
-/* this entire file is rather useless when you don't have
- * crypto...
- */
 #include <openssl/ssl.h>
 #include <openssl/evp.h>
 #include <openssl/rand.h>
 #include <openssl/err.h>
 #include <openssl/md5.h>
+#endif
 
 ldns_rr *
 ldns_dnssec_get_rrsig_for_name_and_type(const ldns_rdf *name,
@@ -95,6 +93,7 @@ ldns_nsec_get_bitmap(ldns_rr *nsec) {
 
 /*return the owner name of the closest encloser for name from the list of rrs */
 /* this is NOT the hash, but the original name! */
+#ifdef HAVE_SSL
 ldns_rdf *
 ldns_dnssec_nsec3_closest_encloser(ldns_rdf *qname,
                                    ATTR_UNUSED(ldns_rr_type qtype),
@@ -189,6 +188,7 @@ ldns_dnssec_nsec3_closest_encloser(ldns_rdf *qname,
 
 	return result;
 }
+#endif /* HAVE_SSL */
 
 bool
 ldns_dnssec_pkt_has_rrsigs(const ldns_pkt *pkt)
@@ -321,6 +321,7 @@ uint16_t ldns_calc_keytag_raw(uint8_t* key, size_t keysize)
 	}
 }
 
+#ifdef HAVE_SSL
 DSA *
 ldns_key_buf2dsa(ldns_buffer *key)
 {
@@ -425,7 +426,9 @@ ldns_key_buf2rsa_raw(unsigned char* key, size_t len)
 
 	return rsa;
 }
+#endif /* HAVE_SSL */
 
+#ifdef HAVE_SSL
 ldns_rr *
 ldns_key_rr2ds(const ldns_rr *key, ldns_hash h)
 {
@@ -544,6 +547,7 @@ ldns_key_rr2ds(const ldns_rr *key, ldns_hash h)
 	ldns_buffer_free(data_buf);
 	return ds;
 }
+#endif /* HAVE_SSL */
 
 ldns_rdf *
 ldns_dnssec_create_nsec_bitmap(ldns_rr_type rr_type_list[],
@@ -635,7 +639,8 @@ ldns_dnssec_create_nsec_bitmap(ldns_rr_type rr_type_list[],
 
 int
 ldns_dnssec_rrsets_contains_type(ldns_dnssec_rrsets *rrsets,
-                                 ldns_rr_type type) {
+                                 ldns_rr_type type)
+{
 	ldns_dnssec_rrsets *cur_rrset = rrsets;
 	while (cur_rrset) {
 		if (cur_rrset->type == type) {
@@ -693,6 +698,7 @@ ldns_dnssec_create_nsec(ldns_dnssec_name *from,
 	return nsec_rr;
 }
 
+#ifdef HAVE_SSL
 ldns_rr *
 ldns_dnssec_create_nsec3(ldns_dnssec_name *from,
 					ldns_dnssec_name *to,
@@ -770,6 +776,7 @@ ldns_dnssec_create_nsec3(ldns_dnssec_name *from,
 
 	return nsec_rr;
 }
+#endif /* HAVE_SSL */
 
 ldns_rr *
 ldns_create_nsec(ldns_rdf *cur_owner, ldns_rdf *next_owner, ldns_rr_list *rrs)
@@ -890,6 +897,7 @@ ldns_create_nsec(ldns_rdf *cur_owner, ldns_rdf *next_owner, ldns_rr_list *rrs)
 	return nsec;
 }
 
+#ifdef HAVE_SSL
 ldns_rdf *
 ldns_nsec3_hash_name(ldns_rdf *name,
 				 uint8_t algorithm,
@@ -970,6 +978,7 @@ ldns_nsec3_hash_name(ldns_rdf *name,
 	LDNS_FREE(hashed_owner_b32);
 	return hashed_owner;
 }
+#endif /* HAVE_SSL */
 
 void
 ldns_nsec3_add_param_rdfs(ldns_rr *rr,
@@ -1010,6 +1019,7 @@ ldns_nsec3_add_param_rdfs(ldns_rr *rr,
 	LDNS_FREE(salt_data);
 }
 
+#ifdef HAVE_SSL
 /* this will NOT return the NSEC3  completed, you will have to run the
    finalize function on the rrlist later! */
 ldns_rr *
@@ -1158,6 +1168,7 @@ ldns_create_nsec3(ldns_rdf *cur_owner,
 
 	return nsec;
 }
+#endif /* HAVE_SSL */
 
 uint8_t
 ldns_nsec3_algorithm(const ldns_rr *nsec3_rr)
@@ -1255,6 +1266,7 @@ ldns_nsec3_bitmap(const ldns_rr *nsec3_rr)
 	}
 }
 
+#ifdef HAVE_SSL
 ldns_rdf *
 ldns_nsec3_hash_name_frm_nsec3(const ldns_rr *nsec, ldns_rdf *name)
 {
@@ -1279,6 +1291,7 @@ ldns_nsec3_hash_name_frm_nsec3(const ldns_rr *nsec, ldns_rdf *name)
 	LDNS_FREE(salt);
 	return hashed_owner;
 }
+#endif /* HAVE_SSL */
 
 bool
 ldns_nsec_bitmap_covers_type(const ldns_rdf *nsec_bitmap, ldns_rr_type type)
@@ -1351,6 +1364,7 @@ ldns_nsec_covers_name(const ldns_rr *nsec, const ldns_rdf *name)
 	return result;
 }
 
+#ifdef HAVE_SSL
 /* sig may be null - if so look in the packet */
 ldns_status
 ldns_pkt_verify(ldns_pkt *p, ldns_rr_type t, ldns_rdf *o, 
@@ -1410,91 +1424,7 @@ ldns_pkt_verify(ldns_pkt *p, ldns_rr_type t, ldns_rdf *o,
 
 	return ldns_verify(rrset, sigs, k, good_keys);
 }
-
-#if 0
-ldns_rr_list *
-ldns_zone_create_nsecs(const ldns_zone *zone, ldns_rr_list *orig_zone_rrs, ldns_rr_list *glue_rrs)
-{
-	ldns_rr_list *nsec_rrs = ldns_rr_list_new();
-	ldns_rdf *start_dname = NULL;
-	ldns_rdf *next_dname = NULL;
-	ldns_rdf *cur_dname = NULL;
-
-	ldns_rr *nsec = NULL;
-	ldns_rr *next_rr = NULL;
-	size_t i;
-
-	/* add nsecs */
-	for (i = 0; i < ldns_rr_list_rr_count(orig_zone_rrs); i++) {
-		if (!start_dname) {
-			/*start_dname = ldns_rr_owner(ldns_zone_soa(zone));*/
-			start_dname = ldns_rr_owner(ldns_rr_list_rr(orig_zone_rrs, i));
-			cur_dname = start_dname;
-		} else {
-			next_rr = ldns_rr_list_rr(orig_zone_rrs, i);
-			next_dname = ldns_rr_owner(next_rr);
-			if (ldns_rdf_compare(cur_dname, next_dname) != 0) {
-				/* skip glue */
-				if (ldns_rr_list_contains_rr(glue_rrs, next_rr)) {
-					cur_dname = next_dname;
-				} else {
-					nsec = ldns_create_nsec(cur_dname, 
-									    next_dname,
-									    orig_zone_rrs);
-					ldns_rr_set_ttl(nsec,
-								 ldns_rdf2native_int32(
-									ldns_rr_rdf(ldns_zone_soa(zone),
-											  6)));
-					ldns_rr_list_push_rr(nsec_rrs, nsec);
-					/*start_dname = next_dname;*/
-					cur_dname = next_dname;
-				}
-			}
-		}
-	}
-	nsec = ldns_create_nsec(cur_dname, 
-					    start_dname,
-					    orig_zone_rrs);
-	ldns_rr_list_push_rr(nsec_rrs, nsec);
-	ldns_rr_set_ttl(nsec, 
-				 ldns_rdf2native_int32(ldns_rr_rdf(ldns_zone_soa(zone),
-											6)));
-
-	return nsec_rrs;
-}
-
-
-/* return a clone of the given list without RRSIGS and NSEC(3)'s */
-/* if removed_rrs is not null, push clones of sigs and nsecs there */
-ldns_rr_list *
-ldns_rr_list_strip_dnssec(ldns_rr_list *rr_list, ldns_rr_list *removed_rrs)
-{
-	size_t i;
-	ldns_rr_list *new_list;
-	ldns_rr *cur_rr;
-	
-	if (!rr_list) {
-		return NULL;
-	}
-
-	new_list = ldns_rr_list_new();
-
-	for (i = 0; i < ldns_rr_list_rr_count(rr_list); i++) {
-		cur_rr = ldns_rr_list_rr(rr_list, i);
-		if (ldns_rr_get_type(cur_rr) != LDNS_RR_TYPE_RRSIG &&
-		    ldns_rr_get_type(cur_rr) != LDNS_RR_TYPE_NSEC &&
-		    ldns_rr_get_type(cur_rr) != LDNS_RR_TYPE_NSEC3) {
-			ldns_rr_list_push_rr(new_list, ldns_rr_clone(cur_rr));
-		} else {
-			if (removed_rrs) {
-				ldns_rr_list_push_rr(removed_rrs, ldns_rr_clone(cur_rr));
-			}
-		}
-	}
-
-	return new_list;
-}
-#endif
+#endif /* HAVE_SSL */
 
 ldns_status
 ldns_dnssec_chain_nsec3_list(ldns_rr_list *nsec3_rrs)
@@ -1607,6 +1537,7 @@ ldns_dnssec_default_replace_signatures(ldns_rr *sig, void *n)
 	return LDNS_SIGNATURE_REMOVE_ADD_NEW;
 }
 
+#ifdef HAVE_SSL
 ldns_rdf *
 ldns_convert_dsa_rrsig_asn12rdf(const ldns_buffer *sig,
 						  const long sig_len)
@@ -1681,7 +1612,4 @@ ldns_convert_dsa_rrsig_rdf2asn1(ldns_buffer *target_buffer,
 
 	return ldns_buffer_status(target_buffer);
 }
-
-
-
 #endif /* HAVE_SSL */

@@ -1097,7 +1097,6 @@ ldns_rr2buffer_str(ldns_buffer *output, const ldns_rr *rr)
 		if (ldns_rr_rd_count(rr) > 0) {
 			switch (ldns_rr_get_type(rr)) {
 				case LDNS_RR_TYPE_DNSKEY:
-#ifdef HAVE_SSL
 					flags = ldns_rdf2native_int16(ldns_rr_rdf(rr, 0));
 					if (flags == 256 || flags == 384) {
 						ldns_buffer_printf(output, 
@@ -1116,7 +1115,6 @@ ldns_rr2buffer_str(ldns_buffer *output, const ldns_rr *rr)
 					ldns_buffer_printf(output, " ;{id = %d, size = %db}", 
 							ldns_calc_keytag(rr),
 							ldns_rr_dnskey_key_size(rr)); 
-#endif /* HAVE_SSL */
 					break;
 				case LDNS_RR_TYPE_RRSIG:
 					ldns_buffer_printf(output, " ;{id = %d}", 
@@ -1325,6 +1323,7 @@ ldns_pkt2buffer_str(ldns_buffer *output, const ldns_pkt *pkt)
 	return status;
 }
 
+#ifdef HAVE_SSL
 static ldns_status
 ldns_hmac_key2buffer_str(ldns_buffer *output, const ldns_key *k)
 {
@@ -1341,7 +1340,7 @@ ldns_hmac_key2buffer_str(ldns_buffer *output, const ldns_key *k)
 	ldns_buffer_printf(output, "\n");
 	return status;
 }
-
+#endif
 
 ldns_status
 ldns_key2buffer_str(ldns_buffer *output, const ldns_key *k)

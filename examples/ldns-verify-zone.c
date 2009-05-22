@@ -18,7 +18,6 @@
 
 #ifdef HAVE_SSL
 #include <openssl/err.h>
-#endif
 
 int verbosity = 3;
 
@@ -184,12 +183,10 @@ verify_dnssec_rrset(ldns_rdf *zone_name,
 					if (result == LDNS_STATUS_OK) {
 						result = status;
 					}
-#ifdef HAVE_SSL
 					if (status == LDNS_STATUS_SSL_ERR) {
 						ERR_load_crypto_strings();
 						ERR_print_errors_fp(stdout);
 					}
-#endif
 					if (verbosity >= 4) {
 						printf("RRSet:\n");
 						ldns_dnssec_rrs_print(stdout, rrset->rrs);
@@ -252,12 +249,10 @@ verify_single_rr(ldns_rr *rr,
 				printf("\t");
 				print_type(ldns_rr_get_type(rr));
 				printf("\n");
-#ifdef HAVE_SSL
 				if (status == LDNS_STATUS_SSL_ERR) {
 					ERR_load_crypto_strings();
 					ERR_print_errors_fp(stdout);
 				}
-#endif
 				if (verbosity >= 4) {
 					printf("RRSet:\n");
 					ldns_rr_list_print(stdout, rrset_rrs);
@@ -706,4 +701,11 @@ main(int argc, char **argv)
 
 	exit(result);
 }
-
+#else
+int
+main(int argc, char **argv)
+{
+	fprintf(stderr, "ldns-verifyzone needs OpenSSL support, which has not been compiled in\n");
+	return 1;
+}
+#endif /* HAVE_SSL */
