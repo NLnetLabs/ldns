@@ -82,7 +82,6 @@ ldns_rdf *ldns_nsec_get_bitmap(ldns_rr *nsec);
 
 #define LDNS_NSEC3_MAX_ITERATIONS 65535
 
-#ifdef HAVE_SSL
 /**
  * Returns the dname of the closest (provable) encloser
  */
@@ -90,7 +89,6 @@ ldns_rdf *
 ldns_dnssec_nsec3_closest_encloser(ldns_rdf *qname,
 							ldns_rr_type qtype,
 							ldns_rr_list *nsec3s);
-#endif /* HAVE_SSL */
 
 /**
  * Checks whether the packet contains rrsigs
@@ -311,7 +309,6 @@ ldns_rdf *ldns_nsec3_next_owner(const ldns_rr *nsec3_rr);
  */
 ldns_rdf *ldns_nsec3_bitmap(const ldns_rr *nsec3_rr);
 
-#ifdef HAVE_SSL
 /**
  * Calculates the hashed name using the parameters of the given NSEC3 RR
  * \param[in] *nsec The RR to use the parameters from
@@ -319,7 +316,6 @@ ldns_rdf *ldns_nsec3_bitmap(const ldns_rr *nsec3_rr);
  * \return The hashed owner name rdf, without the domain name
  */
 ldns_rdf *ldns_nsec3_hash_name_frm_nsec3(const ldns_rr *nsec, ldns_rdf *name);
-#endif /* HAVE_SSL */
 
 /**
  * Checks coverage of NSEC RR type bitmap

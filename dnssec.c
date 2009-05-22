@@ -693,7 +693,6 @@ ldns_dnssec_create_nsec(ldns_dnssec_name *from,
 	return nsec_rr;
 }
 
-#ifdef HAVE_SSL
 ldns_rr *
 ldns_dnssec_create_nsec3(ldns_dnssec_name *from,
 					ldns_dnssec_name *to,
@@ -771,7 +770,6 @@ ldns_dnssec_create_nsec3(ldns_dnssec_name *from,
 
 	return nsec_rr;
 }
-#endif /* HAVE_SSL */
 
 ldns_rr *
 ldns_create_nsec(ldns_rdf *cur_owner, ldns_rdf *next_owner, ldns_rr_list *rrs)
@@ -1011,7 +1009,6 @@ ldns_nsec3_add_param_rdfs(ldns_rr *rr,
 	LDNS_FREE(salt_data);
 }
 
-#ifdef HAVE_SSL
 /* this will NOT return the NSEC3  completed, you will have to run the
    finalize function on the rrlist later! */
 ldns_rr *
@@ -1160,7 +1157,6 @@ ldns_create_nsec3(ldns_rdf *cur_owner,
 
 	return nsec;
 }
-#endif /* HAVE_SSL */
 
 uint8_t
 ldns_nsec3_algorithm(const ldns_rr *nsec3_rr)
@@ -1258,7 +1254,6 @@ ldns_nsec3_bitmap(const ldns_rr *nsec3_rr)
 	}
 }
 
-#ifdef HAVE_SSL
 ldns_rdf *
 ldns_nsec3_hash_name_frm_nsec3(const ldns_rr *nsec, ldns_rdf *name)
 {
@@ -1283,7 +1278,6 @@ ldns_nsec3_hash_name_frm_nsec3(const ldns_rr *nsec, ldns_rdf *name)
 	LDNS_FREE(salt);
 	return hashed_owner;
 }
-#endif /* HAVE_SSL */
 
 bool
 ldns_nsec_bitmap_covers_type(const ldns_rdf *nsec_bitmap, ldns_rr_type type)
