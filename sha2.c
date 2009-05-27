@@ -40,6 +40,7 @@
  * $Id: sha2.c,v 1.1 2001/11/08 00:01:51 adg Exp adg $
  */
 
+#include <ldns/config.h>
 #include <string.h>	/* memcpy()/memset() or bcopy()/bzero() */
 #include <assert.h>	/* assert() */
 #include <ldns/sha2.h>
@@ -101,7 +102,7 @@
  * Define the followingsha2_* types to types of the correct length on
  * the native archtecture.   Most BSD systems and Linux define u_intXX_t
  * types.  Machines with very recent ANSI C headers, can use the
- * uintXX_t definintions from inttypes.h by defining SHA2_USE_INTTYPES_H
+ * uintXX_t definintions from inttypes.h by defining HAVE_INTTYPES_H
  * during compile or in the sha.h header file.
  *
  * Machines that support neither u_intXX_t nor inttypes.h's uintXX_t
@@ -111,19 +112,19 @@
  * Thank you, Jun-ichiro itojun Hagino, for suggesting using u_intXX_t
  * types and pointing out recent ANSI C support for uintXX_t in inttypes.h.
  */
-#ifdef SHA2_USE_INTTYPES_H
+#ifdef HAVE_INTTYPES_H
 
 typedef uint8_t  sha2_byte;	/* Exactly 1 byte */
 typedef uint32_t sha2_word32;	/* Exactly 4 bytes */
 typedef uint64_t sha2_word64;	/* Exactly 8 bytes */
 
-#else /* SHA2_USE_INTTYPES_H */
+#else /* HAVE_INTTYPES_H */
 
 typedef u_int8_t  sha2_byte;	/* Exactly 1 byte */
 typedef u_int32_t sha2_word32;	/* Exactly 4 bytes */
 typedef u_int64_t sha2_word64;	/* Exactly 8 bytes */
 
-#endif /* SHA2_USE_INTTYPES_H */
+#endif /* HAVE_INTTYPES_H */
 
 
 /*** SHA-256/384/512 Various Length Definitions ***********************/

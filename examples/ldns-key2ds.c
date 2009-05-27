@@ -9,11 +9,9 @@
 #include "config.h"
 
 #include <ldns/ldns.h>
-#include <openssl/ssl.h>
 
 #include <errno.h>
 
-#ifdef HAVE_SSL
 void
 usage(FILE *fp, char *prog) {
 	fprintf(fp, "%s [-fn] [-1|-2] keyfile\n", prog);
@@ -64,9 +62,6 @@ main(int argc, char *argv[])
 			h = LDNS_SHA1;
 		} 
 		if (strcmp(argv[0], "-2") == 0) {
-		        #ifndef SHA256_DIGEST_LENGTH
-		          fprintf(stderr, "Error: Crypto library does not support SHA256 digests!");
-		        #endif
 			h = LDNS_SHA256;
 		}
 		if (strcmp(argv[0], "-f") == 0) { 
@@ -149,11 +144,3 @@ main(int argc, char *argv[])
 	free(keyname);
 	exit(EXIT_SUCCESS);
 }
-#else
-int
-main(int argc, char **argv)
-{
-	fprintf(stderr, "ldns-key2ds needs OpenSSL support, which has not been compiled in\n");
-	return 1;
-}
-#endif /* HAVE_SSL */

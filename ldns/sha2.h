@@ -63,7 +63,7 @@ extern "C" {
 
 #include <inttypes.h>
 
-#endif /* SHA2_USE_INTTYPES_H */
+#endif /* HAVE_INTTYPES_H */
 
 
 /*** SHA-256/384/512 Various Length Definitions ***********************/
@@ -98,13 +98,13 @@ typedef unsigned long long u_int64_t;	/* 8-bytes (64-bits) */
  *
  * If you choose to use <inttypes.h> then please define: 
  *
- *   #define SHA2_USE_INTTYPES_H
+ *   #define HAVE_INTTYPES_H
  *
  * Or on the command line during compile:
  *
- *   cc -DSHA2_USE_INTTYPES_H ...
+ *   cc -DHAVE_INTTYPES_H ...
  */
-#ifdef SHA2_USE_INTTYPES_H
+#ifdef HAVE_INTTYPES_H
 
 typedef struct _ldns_sha256_CTX {
 	uint32_t	state[8];
@@ -117,7 +117,7 @@ typedef struct _ldns_sha512_CTX {
 	uint8_t	buffer[LDNS_SHA512_BLOCK_LENGTH];
 } ldns_sha512_CTX;
 
-#else /* SHA2_USE_INTTYPES_H */
+#else /* HAVE_INTTYPES_H */
 
 typedef struct _ldns_sha256_CTX {
 	u_int32_t	state[8];
@@ -130,14 +130,14 @@ typedef struct _ldns_sha512_CTX {
 	u_int8_t	buffer[LDNS_SHA512_BLOCK_LENGTH];
 } ldns_sha512_CTX;
 
-#endif /* SHA2_USE_INTTYPES_H */
+#endif /* HAVE_INTTYPES_H */
 
 typedef ldns_sha512_CTX ldns_sha384_CTX;
 
 
 /*** SHA-256/384/512 Function Prototypes ******************************/
 #ifndef NOPROTO
-#ifdef SHA2_USE_INTTYPES_H
+#ifdef HAVE_INTTYPES_H
 
 void ldns_sha256_init(ldns_sha256_CTX *);
 void ldns_sha256_update(ldns_sha256_CTX*, const uint8_t*, size_t);
@@ -151,7 +151,7 @@ void ldns_sha512_init(ldns_sha512_CTX*);
 void ldns_sha512_update(ldns_sha512_CTX*, const uint8_t*, size_t);
 void ldns_sha512_final(uint8_t[LDNS_SHA512_DIGEST_LENGTH], ldns_sha512_CTX*);
 
-#else /* SHA2_USE_INTTYPES_H */
+#else /* HAVE_INTTYPES_H */
 
 void ldns_sha256_init(ldns_sha256_CTX *);
 void ldns_sha256_update(ldns_sha256_CTX*, const u_int8_t*, size_t);
@@ -165,7 +165,7 @@ void ldns_sha512_init(ldns_sha512_CTX*);
 void ldns_sha512_update(ldns_sha512_CTX*, const u_int8_t*, size_t);
 void ldns_sha512_final(u_int8_t[LDNS_SHA512_DIGEST_LENGTH], ldns_sha512_CTX*);
 
-#endif /* SHA2_USE_INTTYPES_H */
+#endif /* HAVE_INTTYPES_H */
 
 #else /* NOPROTO */
 
