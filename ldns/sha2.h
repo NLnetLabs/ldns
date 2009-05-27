@@ -9,6 +9,8 @@
  * system-defined SHA code.
  * Changes:
  *  - Renamed (external) functions and constants to fit ldns style
+ *  - Removed uintXX vs. u_intXX smartness, since ldns needs uintXX
+ *    anyway
  *  - BYTE ORDER check replaced by simple ifdef as defined or not by
  *    configure.ac
  *  - Removed _End and _Data functions
@@ -79,32 +81,6 @@ extern "C" {
 
 
 /*** SHA-256/384/512 Context Structures *******************************/
-/* NOTE: If your architecture does not define either u_intXX_t types or
- * uintXX_t (from inttypes.h), you may need to define things by hand
- * for your system:
- */
-#if 0
-typedef unsigned char u_int8_t;		/* 1-byte  (8-bits)  */
-typedef unsigned int u_int32_t;		/* 4-bytes (32-bits) */
-typedef unsigned long long u_int64_t;	/* 8-bytes (64-bits) */
-#endif
-/*
- * Most BSD systems already define u_intXX_t types, as does Linux.
- * Some systems, however, like Compaq's Tru64 Unix instead can use
- * uintXX_t types defined by very recent ANSI C standards and included
- * in the file:
- *
- *   #include <inttypes.h>
- *
- * If you choose to use <inttypes.h> then please define: 
- *
- *   #define HAVE_INTTYPES_H
- *
- * Or on the command line during compile:
- *
- *   cc -DHAVE_INTTYPES_H ...
- */
-#ifdef HAVE_INTTYPES_H
 
 typedef struct _ldns_sha256_CTX {
 	uint32_t	state[8];
@@ -117,28 +93,10 @@ typedef struct _ldns_sha512_CTX {
 	uint8_t	buffer[LDNS_SHA512_BLOCK_LENGTH];
 } ldns_sha512_CTX;
 
-#else /* HAVE_INTTYPES_H */
-
-typedef struct _ldns_sha256_CTX {
-	u_int32_t	state[8];
-	u_int64_t	bitcount;
-	u_int8_t	buffer[LDNS_SHA256_BLOCK_LENGTH];
-} ldns_sha256_CTX;
-typedef struct _ldns_sha512_CTX {
-	u_int64_t	state[8];
-	u_int64_t	bitcount[2];
-	u_int8_t	buffer[LDNS_SHA512_BLOCK_LENGTH];
-} ldns_sha512_CTX;
-
-#endif /* HAVE_INTTYPES_H */
-
 typedef ldns_sha512_CTX ldns_sha384_CTX;
 
 
 /*** SHA-256/384/512 Function Prototypes ******************************/
-#ifndef NOPROTO
-#ifdef HAVE_INTTYPES_H
-
 void ldns_sha256_init(ldns_sha256_CTX *);
 void ldns_sha256_update(ldns_sha256_CTX*, const uint8_t*, size_t);
 void ldns_sha256_final(uint8_t[LDNS_SHA256_DIGEST_LENGTH], ldns_sha256_CTX*);
@@ -150,38 +108,6 @@ void ldns_sha384_final(uint8_t[LDNS_SHA384_DIGEST_LENGTH], ldns_sha384_CTX*);
 void ldns_sha512_init(ldns_sha512_CTX*);
 void ldns_sha512_update(ldns_sha512_CTX*, const uint8_t*, size_t);
 void ldns_sha512_final(uint8_t[LDNS_SHA512_DIGEST_LENGTH], ldns_sha512_CTX*);
-
-#else /* HAVE_INTTYPES_H */
-
-void ldns_sha256_init(ldns_sha256_CTX *);
-void ldns_sha256_update(ldns_sha256_CTX*, const u_int8_t*, size_t);
-void ldns_sha256_final(u_int8_t[LDNS_SHA256_DIGEST_LENGTH], ldns_sha256_CTX*);
-
-void ldns_sha384_init(ldns_sha384_CTX*);
-void ldns_sha384_update(ldns_sha384_CTX*, const u_int8_t*, size_t);
-void ldns_sha384_final(u_int8_t[LDNS_SHA384_DIGEST_LENGTH], ldns_sha384_CTX*);
-
-void ldns_sha512_init(ldns_sha512_CTX*);
-void ldns_sha512_update(ldns_sha512_CTX*, const u_int8_t*, size_t);
-void ldns_sha512_final(u_int8_t[LDNS_SHA512_DIGEST_LENGTH], ldns_sha512_CTX*);
-
-#endif /* HAVE_INTTYPES_H */
-
-#else /* NOPROTO */
-
-void ldns_sha256_init();
-void ldns_sha256_update();
-void ldns_sha256_final();
-
-void ldns_sha384_init();
-void ldns_sha384_update();
-void ldns_sha384_final();
-
-void ldns_sha512_init();
-void ldns_sha512_update();
-void ldns_sha512_final();
-
-#endif /* NOPROTO */
 
 /**
  * Convenience function to digest a fixed block of data at once.
