@@ -588,6 +588,22 @@ AH_BOTTOM([
 #include <unistd.h>
 #include <assert.h>
 
+#ifndef LITTLE_ENDIAN
+#define LITTLE_ENDIAN 1234
+#endif
+
+#ifndef BIG_ENDIAN
+#define BIG_ENDIAN 4321
+#endif
+
+#ifndef BYTE_ORDER
+#ifdef CONFCHECK_LITTLE_ENDIAN
+#define BYTE_ORDER LITTLE_ENDIAN
+#else
+#deinfe BYTE_ORDER BIG_ENDIAN
+#endif /* CONFCHECK_LITTLE_ENDIAN */
+#endif /* BYTE_ORDER */
+
 #if STDC_HEADERS
 #include <stdlib.h>
 #include <stddef.h>

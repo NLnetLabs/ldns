@@ -40,7 +40,7 @@ LIBDNS_SOURCES	=	rdata.c util.c rr.c packet.c wire2host.c \
 			net.c host2wire.c dname.c dnssec.c dnssec_verify.c \
 			keys.c higher.c rr_functions.c parse.c update.c \
 			error.c zone.c dnssec_zone.c dnssec_sign.c rbtree.c \
-			sha1.c
+			sha1.c sha2.c
 LIBDNS_HEADERS	=	$(srcdir)/ldns/error.h		\
 			$(srcdir)/ldns/packet.h		\
 			$(srcdir)/ldns/common.h		\
@@ -66,7 +66,8 @@ LIBDNS_HEADERS	=	$(srcdir)/ldns/error.h		\
 			$(srcdir)/ldns/update.h 	\
 			$(srcdir)/ldns/tsig.h		\
 			$(srcdir)/ldns/rbtree.h \
-			$(srcdir)/ldns/sha1.h
+			$(srcdir)/ldns/sha1.h \
+			$(srcdir)/ldns/sha2.h
 LIBDNS_OBJECTS	=	$(LIBDNS_SOURCES:.c=.o) $(LIBOBJS)
 LIBDNS_LOBJECTS	=	$(LIBDNS_SOURCES:.c=.lo) $(LIBOBJS:.o=.lo)
 

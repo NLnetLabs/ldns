@@ -24,7 +24,7 @@
 
 /* blk0() and blk() perform the initial expand. */
 /* I got the idea of expanding during the round function from SSLeay */
-#if CONFCHECK_LITTLE_ENDIAN
+#if BYTE_ORDER == LITTLE_ENDIAN
 #define blk0(i) (block->l[i] = (rol(block->l[i],24)&0xFF00FF00) \
     |(rol(block->l[i],8)&0x00FF00FF))
 #else
@@ -166,13 +166,11 @@ ldns_sha1_final(unsigned char digest[LDNS_SHA1_DIGEST_LENGTH], ldns_sha1_ctx *co
 }
 
 unsigned char *
-ldns_sha1(unsigned char *data, unsigned int data_len)
+ldns_sha1(unsigned char *data, unsigned int data_len, unsigned char *digest)
 {
-    unsigned char *digest;
     ldns_sha1_ctx ctx;
     ldns_sha1_init(&ctx);
     ldns_sha1_update(&ctx, data, data_len);
-    digest = malloc(LDNS_SHA1_DIGEST_LENGTH);
     ldns_sha1_final(digest, &ctx);
     return digest;
 }

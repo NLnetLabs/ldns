@@ -454,21 +454,18 @@ ldns_key_rr2ds(const ldns_rr *key, ldns_hash h)
 	default:
 	case LDNS_SHA1:
 		digest = LDNS_XMALLOC(uint8_t, LDNS_SHA1_DIGEST_LENGTH);
+		memset(digest, 0, LDNS_SHA1_DIGEST_LENGTH);
 		if (!digest) {
 			ldns_rr_free(ds);
 			return NULL;
 		}
 		break;
 	case LDNS_SHA256:
-#ifdef SHA256_DIGEST_LENGTH
-		digest = LDNS_XMALLOC(uint8_t, SHA256_DIGEST_LENGTH);
+		digest = LDNS_XMALLOC(uint8_t, LDNS_SHA256_DIGEST_LENGTH);
 		if (!digest) {
 			ldns_rr_free(ds);
 			return NULL;
 		}
-#else
-		return NULL;
-#endif
 		break;
 	}
 
@@ -520,22 +517,23 @@ ldns_key_rr2ds(const ldns_rr *key, ldns_hash h)
 	switch(h) {
 	case LDNS_SHA1:
 		(void) ldns_sha1((unsigned char *) ldns_buffer_begin(data_buf),
-				  ldns_buffer_position(data_buf));
+		                 ldns_buffer_position(data_buf),
+		                 (unsigned char *) digest);
 
-		tmp = ldns_rdf_new_frm_data(LDNS_RDF_TYPE_HEX, LDNS_SHA1_DIGEST_LENGTH,
-							   digest);
+		tmp = ldns_rdf_new_frm_data(LDNS_RDF_TYPE_HEX,
+		                            LDNS_SHA1_DIGEST_LENGTH,
+		                            digest);
 		ldns_rr_push_rdf(ds, tmp);
 
 		break;
 	case LDNS_SHA256:
-#ifdef SHA256_DIGEST_LENGTH
-		(void) SHA256((unsigned char *) ldns_buffer_begin(data_buf),
-				    ldns_buffer_position(data_buf),
-				    (unsigned char*) digest);
-		tmp = ldns_rdf_new_frm_data(LDNS_RDF_TYPE_HEX, SHA256_DIGEST_LENGTH,
-							   digest);
+		(void) ldns_sha256((unsigned char *) ldns_buffer_begin(data_buf),
+		                   ldns_buffer_position(data_buf),
+		                   (unsigned char *) digest);
+		tmp = ldns_rdf_new_frm_data(LDNS_RDF_TYPE_HEX,
+		                            LDNS_SHA256_DIGEST_LENGTH,
+		                            digest);
 		ldns_rr_push_rdf(ds, tmp);
-#endif
 		break;
 	}
 
@@ -900,11 +898,13 @@ ldns_nsec3_hash_name(ldns_rdf *name,
 	char *orig_owner_str;
 	size_t hashed_owner_str_len;
 	ldns_rdf *hashed_owner;
-	char *hashed_owner_str;
+	unsigned char *hashed_owner_str;
 	char *hashed_owner_b32;
 	int hashed_owner_b32_len;
 	uint32_t cur_it;
-	char *hash = NULL;
+	/* define to contain the largest possible hash, which is
+	 * sha1 at the moment */
+	unsigned char hash[LDNS_SHA1_DIGEST_LENGTH];
 	ldns_status status;
 	
 	/* prepare the owner name according to the draft section bla */
@@ -914,17 +914,17 @@ ldns_nsec3_hash_name(ldns_rdf *name,
 	algorithm = algorithm;
 	
 	hashed_owner_str_len = salt_length + ldns_rdf_size(name);
-	hashed_owner_str = LDNS_XMALLOC(char, hashed_owner_str_len);
+	hashed_owner_str = LDNS_XMALLOC(unsigned char, hashed_owner_str_len);
 	memcpy(hashed_owner_str, ldns_rdf_data(name), ldns_rdf_size(name));
 	memcpy(hashed_owner_str + ldns_rdf_size(name), salt, salt_length);
 
 	for (cur_it = iterations + 1; cur_it > 0; cur_it--) {
-		hash = (char *) ldns_sha1((unsigned char *) hashed_owner_str,
-						 hashed_owner_str_len);
+		ldns_sha1((unsigned char *) hashed_owner_str,
+		          hashed_owner_str_len, hash);
 
 		LDNS_FREE(hashed_owner_str);
 		hashed_owner_str_len = salt_length + LDNS_SHA1_DIGEST_LENGTH;
-		hashed_owner_str = LDNS_XMALLOC(char, hashed_owner_str_len);
+		hashed_owner_str = LDNS_XMALLOC(unsigned char, hashed_owner_str_len);
 		if (!hashed_owner_str) {
 			fprintf(stderr, "Memory error\n");
 			abort();

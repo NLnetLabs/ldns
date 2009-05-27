@@ -17,12 +17,13 @@ void ldns_sha1_final(unsigned char digest[LDNS_SHA1_DIGEST_LENGTH], ldns_sha1_ct
 
 /**
  * Convenience function to digest a fixed block of data at once.
- * This function will allocate LDNS_SHA1_DIGEST_LENGTH of data,
- * which needs to be freed (with a simple free()) by the caller
  *
  * \param[in] data the data to digest
  * \param[in] data_len the length of data in bytes
+ * \param[out] digest the length of data in bytes
+ *             This pointer MUST have LDNS_SHA1_DIGEST_LENGTH bytes
+ *             available
  * \return the SHA1 digest of the given data
  */
-unsigned char *ldns_sha1(unsigned char *data, unsigned int data_len);
+unsigned char *ldns_sha1(unsigned char *data, unsigned int data_len, unsigned char *digest);
 #endif /* LDNS_SHA1_H */
