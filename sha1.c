@@ -19,6 +19,7 @@
 
 #include <ldns/config.h>
 #include <ldns/ldns.h>
+#include <strings.h>
 
 #define rol(value, bits) (((value) << (bits)) | ((value) >> (32 - (bits))))
 
