@@ -25,7 +25,7 @@ LINK		= $(libtool) --tag=CC --mode=link $(CC) $(CFLAGS) $(LDFLAGS) $(LIBS) $(RUN
 LINK_STATIC	= $(libtool) --tag=CC --mode=link $(CC) $(CFLAGS) -static $(LDFLAGS) $(LIBS) $(RUNTIME_PATH)
 
 LINT		= splint
-LINTFLAGS	= +quiet -weak -warnposix -unrecog -formatcode -Din_addr_t=uint32_t -Du_int=unsigned -Du_char=uint8_t -D__u16=uint16_t -D__u32=uint32_t -preproc -D__signed__=signed
+LINTFLAGS	= +quiet -weak -warnposix -unrecog -formatcode -Din_addr_t=uint32_t -Du_int=unsigned -Du_char=uint8_t -D__u16=uint16_t -D__u32=uint32_t -preproc -D__signed__=signed -fixedformalarray
 
 
 HEADER		= config.h

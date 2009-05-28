@@ -270,7 +270,7 @@ ldns_init_random(FILE *fd, unsigned int size)
 		size = (unsigned int) sizeof(seed_i);
 	}
 	
-	seed = LDNS_XMALLOC(unsigned int, size);
+	seed = LDNS_XMALLOC(uint8_t, size);
 
 	if (!fd) {
 		if ((rand_f = fopen("/dev/urandom", "r")) == NULL) {
