@@ -169,7 +169,7 @@ ldns_int_to_hexdigit(int i)
 int
 ldns_hexstring_to_data(uint8_t *data, const char *str)
 {
-	unsigned int i;
+	size_t i;
 
 	if (!str || !data) {
 		return -1;
@@ -181,8 +181,8 @@ ldns_hexstring_to_data(uint8_t *data, const char *str)
 
 	for (i = 0; i < strlen(str) / 2; i++) {
 		data[i] = 
-			16 *	ldns_hexdigit_to_int(str[i*2]) +
-			ldns_hexdigit_to_int(str[i*2 + 1]);
+			16 * (size_t) ldns_hexdigit_to_int(str[i*2]) +
+			(size_t) ldns_hexdigit_to_int(str[i*2 + 1]);
 	}
 
 	return (int) i;
@@ -258,7 +258,7 @@ ldns_init_random(FILE *fd, unsigned int size)
 	/* if fp is given, seed srandom with data from file
 	   otherwise use /dev/urandom */
 	FILE *rand_f;
-	unsigned int *seed;
+	uint8_t *seed;
 	size_t read = 0;
 	unsigned int seed_i;
 	struct timeval tv;
@@ -266,8 +266,8 @@ ldns_init_random(FILE *fd, unsigned int size)
 
 	/* we'll need at least sizeof(unsigned int) bytes for the
 	   standard prng seed */
-	if (size < sizeof(seed_i)){
-		size = sizeof(seed_i);
+	if (size < (unsigned int) sizeof(seed_i)){
+		size = (unsigned int) sizeof(seed_i);
 	}
 	
 	seed = LDNS_XMALLOC(unsigned int, size);
@@ -300,7 +300,7 @@ ldns_init_random(FILE *fd, unsigned int size)
 #ifdef HAVE_SSL
 		/* Seed the OpenSSL prng (most systems have it seeded
 		   automatically, in that case this call just adds entropy */
-		RAND_seed(seed, size);
+		RAND_seed(seed, (int) size);
 #else
 		/* Seed the standard prng, only uses the first
 		 * unsigned sizeof(unsiged int) bytes found in the entropy pool

@@ -90,7 +90,7 @@ ldns_key_new_frm_engine(ldns_key **key, ENGINE *e, char *key_id, ldns_algorithm 
 
 	k = ldns_key_new();
 	k->_key.key = ENGINE_load_private_key(e, key_id, UI_OpenSSL(), NULL);
-	ldns_key_set_algorithm(k, alg);
+	ldns_key_set_algorithm(k, (ldns_signing_algorithm) alg);
 	if (!k->_key.key) {
 		return LDNS_STATUS_ENGINE_KEY_NOT_LOADED;
 	} else {
@@ -485,7 +485,7 @@ ldns_key_new_frm_fp_hmac(FILE *f, size_t *hmac_size)
 unsigned char *
 ldns_key_new_frm_fp_hmac_l(FILE *f, int *line_nr, size_t *hmac_size)
 {
-	int i;
+	size_t i;
 	char *d;
 	unsigned char *buf;
 
@@ -497,7 +497,9 @@ ldns_key_new_frm_fp_hmac_l(FILE *f, int *line_nr, size_t *hmac_size)
 	if (ldns_fget_keyword_data_l(f, "Key", ": ", d, "\n", LDNS_MAX_LINELEN, line_nr) == -1) {
 		goto error;
 	}
-	i = ldns_b64_pton((const char*)d, buf, ldns_b64_ntop_calculate_size(strlen(d)));
+	i = (size_t) ldns_b64_pton((const char*)d,
+	                           buf,
+	                           ldns_b64_ntop_calculate_size(strlen(d)));
 
 	*hmac_size = i;
 	return buf;
@@ -567,7 +569,7 @@ ldns_key_new_frm_algorithm(ldns_signing_algorithm alg, uint16_t size)
 
 			hmac = LDNS_XMALLOC(unsigned char, size);
 #ifdef HAVE_SSL
-			if (RAND_bytes(hmac, size) != 1) {
+			if (RAND_bytes(hmac, (int) size) != 1) {
 				LDNS_FREE(hmac);
 				ldns_key_free(k);
 				return NULL;
@@ -1164,7 +1166,7 @@ ldns_key_get_file_base_name(ldns_key *key)
 	
 	buffer = ldns_buffer_new(255);
 	ldns_buffer_printf(buffer, "K");
-	ldns_rdf2buffer_str_dname(buffer, ldns_key_pubkey_owner(key));
+	(void)ldns_rdf2buffer_str_dname(buffer, ldns_key_pubkey_owner(key));
 	ldns_buffer_printf(buffer,
 	                   "+%03u+%05u",
 			   ldns_key_algorithm(key),

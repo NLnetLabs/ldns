@@ -52,7 +52,7 @@ ldns_rdf2buffer_wire_canonical(ldns_buffer *buffer, const ldns_rdf *rdf)
 			rdf_data = ldns_rdf_data(rdf);
 			for (i = 0; i < ldns_rdf_size(rdf); i++) {
 				ldns_buffer_write_u8(buffer,
-								 LDNS_DNAME_NORMALIZE(rdf_data[i]));
+				    (uint8_t) LDNS_DNAME_NORMALIZE((int)rdf_data[i]));
 			}
 		}
 	} else {

@@ -86,7 +86,7 @@ ldns_cert_algorithm2buffer_str(ldns_buffer *output,
  * \param[in] opcode the opcode to convert to text
  * \return null terminated char * data, or NULL on error
  */
-char *ldns_pkt_opcode2str(ldns_pkt_rcode opcode);
+char *ldns_pkt_opcode2str(ldns_pkt_opcode opcode);
 
 /**
  * Converts a packet rcode to its mnemonic and returns that as
@@ -116,7 +116,7 @@ char *ldns_pkt_algorithm2str(ldns_algorithm algorithm);
  * \param[in] cert_algorithm to convert to text
  * \return null terminated char * data, or NULL on error
  */
-char *ldns_pkt_cert_algorithm2str(ldns_algorithm cert_algorithm);
+char *ldns_pkt_cert_algorithm2str(ldns_cert_algorithm cert_algorithm);
 
 /** 
  * Converts an LDNS_RDF_TYPE_A rdata element to string format and adds it to the output buffer 

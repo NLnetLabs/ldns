@@ -584,7 +584,9 @@ ldns_str2rdf_hex(ldns_rdf **rd, const char *str)
 				++t;
 			}
                 }
-		*rd = ldns_rdf_new_frm_data(LDNS_RDF_TYPE_HEX, t - t_orig, t_orig);
+		*rd = ldns_rdf_new_frm_data(LDNS_RDF_TYPE_HEX,
+		                            (size_t) (t - t_orig),
+		                            t_orig);
 		LDNS_FREE(t_orig);
         }
         return LDNS_STATUS_OK;

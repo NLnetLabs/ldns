@@ -201,8 +201,8 @@ ldns_tsig_mac_new(ldns_rdf **tsig_mac, uint8_t *pkt_wire, size_t pkt_wire_size,
 	digester = ldns_digest_function(algorithm_name);
 	
 	if (digester) {
-		(void) HMAC(digester, key_bytes, key_size, (void *)wireformat, wiresize, 
-			    mac_bytes + 2, &md_len);
+		(void) HMAC(digester, key_bytes, key_size, (void *)wireformat,
+		            (size_t) wiresize, mac_bytes + 2, &md_len);
 	
 		ldns_write_uint16(mac_bytes, md_len);
 		result = ldns_rdf_new_frm_data(LDNS_RDF_TYPE_INT16_DATA, md_len + 2, 

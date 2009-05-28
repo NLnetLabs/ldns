@@ -432,7 +432,8 @@ ldns_rr_new_frm_str_internal(ldns_rr **newrr, const char *str,
 							ldns_write_uint16(hex_data, hex_data_size);
 							ldns_hexstring_to_data(hex_data + 2, hex_data_str);
 							hex_pos = 0;
-							ldns_wire2rdf(new, hex_data, hex_data_size+2, &hex_pos);
+							(void) ldns_wire2rdf(new, hex_data,
+							                 hex_data_size+2, &hex_pos);
 							LDNS_FREE(hex_data);
 						} else {
 							r = ldns_rdf_new_frm_str(LDNS_RDF_TYPE_HEX, hex_data_str);

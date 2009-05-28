@@ -149,7 +149,7 @@ ldns_cert_algorithm2buffer_str(ldns_buffer *output,
 }
 
 char *
-ldns_pkt_opcode2str(ldns_pkt_rcode opcode)
+ldns_pkt_opcode2str(ldns_pkt_opcode opcode)
 {
 	char *str;
 	ldns_buffer *buf;
@@ -201,7 +201,7 @@ ldns_pkt_algorithm2str(ldns_algorithm algorithm)
 }
 
 char *
-ldns_pkt_cert_algorithm2str(ldns_algorithm cert_algorithm)
+ldns_pkt_cert_algorithm2str(ldns_cert_algorithm cert_algorithm)
 {
 	char *str;
 	ldns_buffer *buf;
@@ -570,7 +570,7 @@ ldns_rdf2buffer_str_loc(ldns_buffer *output, const ldns_rdf *rdf)
 	uint8_t vertical_precision;
 	uint32_t longitude;
 	uint32_t latitude;
-	long altitude;
+	uint32_t altitude;
 	char northerness;
 	char easterness;
 	uint32_t h;
@@ -1077,10 +1077,16 @@ ldns_rr2buffer_str(ldns_buffer *output, const ldns_rr *rr)
 		}
 
 		ldns_buffer_printf(output, "\t");
-		ldns_rr_class2buffer_str(output, ldns_rr_get_class(rr));
+		status = ldns_rr_class2buffer_str(output, ldns_rr_get_class(rr));
+		if (status != LDNS_STATUS_OK) {
+			return status;
+		}
 		ldns_buffer_printf(output, "\t");
 
-		ldns_rr_type2buffer_str(output, ldns_rr_get_type(rr));
+		status = ldns_rr_type2buffer_str(output, ldns_rr_get_type(rr));
+		if (status != LDNS_STATUS_OK) {
+			return status;
+		}
 		
 		if (ldns_rr_rd_count(rr) > 0) {
 			ldns_buffer_printf(output, "\t");
