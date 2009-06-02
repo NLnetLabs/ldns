@@ -56,7 +56,7 @@ ldns_sha1_transform(uint32_t state[5], const unsigned char buffer[LDNS_SHA1_BLOC
     unsigned char workspace[LDNS_SHA1_BLOCK_LENGTH];
 
     block = (CHAR64LONG16 *)workspace;
-    bcopy(buffer, block, LDNS_SHA1_BLOCK_LENGTH);
+    memmove(block, buffer, LDNS_SHA1_BLOCK_LENGTH);
 #else
     block = (CHAR64LONG16 *)buffer;
 #endif
@@ -126,7 +126,7 @@ ldns_sha1_update(ldns_sha1_ctx *context, const unsigned char *data, unsigned int
     j = (uint32_t)((context->count >> 3) & 63);
     context->count += (len << 3);
     if ((j + len) > 63) {
-        bcopy(data, &context->buffer[j], (i = 64 - j));
+        memmove(&context->buffer[j], data, (i = 64 - j));
         ldns_sha1_transform(context->state, context->buffer);
         for ( ; i + 63 < len; i += 64) {
             ldns_sha1_transform(context->state, &data[i]);
@@ -134,7 +134,7 @@ ldns_sha1_update(ldns_sha1_ctx *context, const unsigned char *data, unsigned int
         j = 0;
     }
     else i = 0;
-    bcopy(&data[i], &context->buffer[j], len - i);
+    memmove(&context->buffer[j], &data[i], len - i);
 }
 
 
