@@ -156,6 +156,8 @@ verify_dnssec_rrset(ldns_rdf *zone_name,
 	ldns_rr_list *good_keys;
 	ldns_status result = LDNS_STATUS_OK;
 	
+	if (!rrset->rrs) return LDNS_STATUS_OK;
+	
 	rrset_rrs = ldns_rr_list_new();
 	cur_rr = rrset->rrs;
 	while(cur_rr && cur_rr->rr) {
