@@ -18,6 +18,10 @@
 #endif
 #include <errno.h>
 
+#ifndef IP_OFFMASK
+#define IP_OFFMASK 0x1fff
+#endif
+
 int verbosity = 1;
 
 #define ETHER_HEADER_LENGTH 14
@@ -2213,7 +2217,7 @@ handle_ether_packet(const u_char *data, struct pcap_pkthdr cur_hdr, match_counte
 	struct ip *iptr;
 	struct ip6_hdr *ip6_hdr;
 	int ip_hdr_size;
-	u_int8_t protocol;
+	uint8_t protocol;
 	size_t data_offset = 0;
 	ldns_rdf *src_addr, *dst_addr;
 	uint8_t *ap;
@@ -2358,7 +2362,7 @@ printf("timeval: %u ; %u\n", cur_hdr.ts.tv_sec, cur_hdr.ts.tv_usec);
 			}
 
 			ip_hdr_size = (int) iptr->ip_hl * 4;
-			protocol = (u_int8_t) iptr->ip_p;
+			protocol = (uint8_t) iptr->ip_p;
 			
 			data_offset += ip_hdr_size;
 
@@ -2499,7 +2503,7 @@ printf("timeval: %u ; %u\n", cur_hdr.ts.tv_sec, cur_hdr.ts.tv_usec);
 		}
 
 		ip_hdr_size = IP6_HEADER_LENGTH;
-		protocol = (u_int8_t) ip6_hdr->ip6_ctlun.ip6_un1.ip6_un1_nxt;
+		protocol = (uint8_t) ip6_hdr->ip6_ctlun.ip6_un1.ip6_un1_nxt;
 		
 		data_offset += ip_hdr_size;
 
