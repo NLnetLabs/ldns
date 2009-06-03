@@ -1420,6 +1420,9 @@ ldns_key2buffer_str(ldns_buffer *output, const ldns_key *k)
 					fprintf(stderr,
 						   "algorithm type %u\n", 
 						   ldns_key_algorithm(k));
+					ldns_buffer_printf(output,
+								    "Algorithm: %u (Unknown)\n",
+								    ldns_key_algorithm(k));
 					break;
 				}
 				

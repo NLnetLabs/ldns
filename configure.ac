@@ -291,6 +291,20 @@ fi
 # my own checks
 AC_CHECK_PROG(doxygen, doxygen, doxygen)
 
+AC_ARG_ENABLE(sha2, AC_HELP_STRING([--enable-sha2], [Enable SHA256 and SHA512 RRSIG support]))
+case "$enable_sha2" in
+    yes)
+        AC_MSG_CHECKING(for SHA256 and SHA512)
+        AC_CHECK_LIB(crypto, SHA256_Init,, [
+            AC_MSG_ERROR([SHA2 enabled, but no SHA2 functions found in OpenSSL])
+        ])
+        AC_DEFINE_UNQUOTED([USE_SHA2], [1], [Define this to enable SHA256 and SHA512 support.])
+        ;;
+    no|*)
+        ;;
+esac
+
+
 # add option to disable the evil rpath
 dnl Check whether to use rpath or not
 AC_ARG_ENABLE(rpath,
@@ -372,19 +386,6 @@ AC_ARG_WITH(ssl, AC_HELP_STRING([--with-ssl=pathname],
 AC_CHECK_HEADERS([openssl/ssl.h],,, [AC_INCLUDES_DEFAULT])
 AC_CHECK_HEADERS([openssl/err.h],,, [AC_INCLUDES_DEFAULT])
 AC_CHECK_HEADERS([openssl/rand.h],,, [AC_INCLUDES_DEFAULT])
-
-AC_ARG_ENABLE(sha2, AC_HELP_STRING([--enable-sha2], [Enable SHA256 and SHA512 RRSIG support]))
-case "$enable_sha2" in
-        yes)
-		AC_MSG_CHECKING(for SHA256 and SHA512)
-	        AC_CHECK_LIB(crypto, SHA256_Init,, [
-        	        AC_MSG_ERROR([SHA2 enabled, but no SHA2 functions found in OpenSSL])
-		])
-                AC_DEFINE_UNQUOTED([USE_SHA2], [], [Define this to enable SHA256 and SHA512 support.])
-                ;;
-        no|*)
-                ;;
-esac
 
 # Use libtool 
 # skip these tests, we do not need them.

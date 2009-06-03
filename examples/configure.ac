@@ -263,6 +263,19 @@ AC_ARG_WITH(ssl, AC_HELP_STRING([--with-ssl=pathname],
 	AC_SUBST(RUNTIME_PATH)
     fi
 
+AC_ARG_ENABLE(sha2, AC_HELP_STRING([--enable-sha2], [Enable SHA256 and SHA512 RRSIG support]))
+case "$enable_sha2" in
+    yes)
+        AC_MSG_CHECKING(for SHA256 and SHA512)
+        AC_CHECK_LIB(crypto, SHA256_Init,, [
+            AC_MSG_ERROR([SHA2 enabled, but no SHA2 functions found in OpenSSL])
+        ])
+        AC_DEFINE_UNQUOTED([USE_SHA2], [1], [Define this to enable SHA256 and SHA512 support.])
+        ;;
+    no|*)
+        ;;
+esac
+
 
 
 #AC_CHECK_HEADER(ldns/ldns.h,,  [

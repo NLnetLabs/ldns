@@ -177,7 +177,7 @@ ldns_key_new_frm_fp_l(ldns_key **key, FILE *fp, int *line_nr)
 		fprintf(stderr, "version of ldns\n");
 #endif
 	}
-	if (strncmp(d, "9 RSASHA512", 3) == 0) {
+	if (strncmp(d, "10 RSASHA512", 3) == 0) {
 #ifdef USE_SHA2
 		alg = LDNS_SIGN_RSASHA512;
 #else
