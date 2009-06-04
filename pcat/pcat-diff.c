@@ -5,6 +5,7 @@
 #include <ldns/ldns.h>
 #include <pcap.h>
 #include <errno.h>
+#include <string.h>
 
 #include <dirent.h>
 
@@ -16,6 +17,22 @@
 
 #ifndef HAVE_GETDELIM
 ssize_t getdelim(char **lineptr, size_t *n, int delim, FILE *stream);
+#endif
+
+#ifndef strndup
+static char *
+strndup(const char *s, size_t n)
+{
+	char *d;
+	size_t l;
+	if (!s) return NULL;
+	l = strlen(s);
+	if (n < l) l = n;
+	d = malloc(l + 1);
+	d[l] = '\0';
+	memcpy(d, s, l);
+	return d;
+}
 #endif
 
 #define MAX_MATCH_WORDS 100

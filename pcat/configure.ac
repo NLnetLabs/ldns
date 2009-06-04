@@ -45,46 +45,113 @@ fi
 dnl routine to help check for needed compiler flags.
 # if the given code compiles without the flag, execute argument 4
 # if the given code only compiles with the flag, execute argument 3
-# otherwise fail
+# otherwise fail, execute argument 5.
 AC_DEFUN([CHECK_COMPILER_FLAG_NEEDED],
 [
 AC_REQUIRE([AC_PROG_CC])
-AC_MSG_CHECKING(whether we need -$1 as a flag for $CC)
-cache=`echo $1 | sed 'y%.=/+-%___p_%'`
+AC_MSG_CHECKING(whether we need $1 as a flag for $CC)
+cache=`echo $1 | sed 'y%.=/+- %___p__%'`
 AC_CACHE_VAL(cv_prog_cc_flag_needed_$cache,
 [
 echo '$2' > conftest.c
 echo 'void f(){}' >>conftest.c
-if test -z "`$CC $CFLAGS -Werror -Wall -c conftest.c 2>&1`"; then
+if test -z "`$CC -Werror -Wall $CFLAGS -c conftest.c 2>&1`"; then
 eval "cv_prog_cc_flag_needed_$cache=no"
 else
 [
-if test -z "`$CC $CFLAGS $1 -Werror -Wall -c conftest.c 2>&1`"; then
+if test -z "`$CC $1 -Werror -Wall $CFLAGS -c conftest.c 2>&1`"; then
 eval "cv_prog_cc_flag_needed_$cache=yes"
 else
-echo 'Test with flag fails too!'
-cat conftest.c
-echo "$CC $CFLAGS $1 -Werror -Wall -c conftest.c 2>&1"
-echo `$CC $CFLAGS $1 -Werror -Wall -c conftest.c`
-exit 1
+eval "cv_prog_cc_flag_needed_$cache=fail"
+#echo 'Test with flag fails too!'
+#cat conftest.c
+#echo "$CC $1 -Werror -Wall $CFLAGS -c conftest.c 2>&1"
+#echo `$CC $1 -Werror -Wall $CFLAGS -c conftest.c`
+#exit 1
 fi
 ]
 fi
-rm -f conftest*
+rm -f conftest
 ])
 if eval "test \"`echo '$cv_prog_cc_flag_needed_'$cache`\" = yes"; then
 AC_MSG_RESULT(yes)
 :
 $3
 else
+if eval "test \"`echo '$cv_prog_cc_flag_needed_'$cache`\" = no"; then
 AC_MSG_RESULT(no)
 :
 $4
+else
+AC_MSG_RESULT(failed)
+:
+#cat conftest.c
+#echo "$CC -Werror -Wall $CFLAGS -c conftest.c"
+#echo `$CC -Werror -Wall $CFLAGS -c conftest.c`
+#echo "$CC $1 -Werror -Wall $CFLAGS -c conftest.c"
+#echo `$CC $1 -Werror -Wall $CFLAGS -c conftest.c`
+$5
+
+fi
 fi
 ])
-
 CHECK_COMPILER_FLAG(O2, [CFLAGS="$CFLAGS -O2"])
-CHECK_COMPILER_FLAG_NEEDED(-std=c99, [#include <stdbool.h>], [CFLAGS="$CFLAGS -std=c99"])
+
+CHECK_COMPILER_FLAG(std=c99, [C99FLAG="-std=c99"])
+CHECK_COMPILER_FLAG(xc99, [C99FLAG="-xc99"])
+
+CHECK_COMPILER_FLAG_NEEDED($C99FLAG -D__EXTENSIONS__ -D_BSD_SOURCE -D_POSIX_C_SOURCE=200112 -D_XOPEN_SOURCE=600,
+[
+#include "confdefs.h"
+#include <stdlib.h>
+#include <ctype.h>
+#include <sys/time.h>
+#ifdef HAVE_TIME_H
+#include <time.h>
+#endif
+#include <unistd.h>
+#ifdef HAVE_GETOPT_H
+#include <getopt.h>
+#endif
+
+int test() {
+	int a;
+	char **opts = NULL;
+	struct timeval tv;
+	char *t;
+	time_t time = 0;
+	char *buf = NULL;
+	t = ctime_r(&time, buf);
+	tv.tv_usec = 10;
+	srandom(32);
+	a = getopt(2, opts, "a");
+	a = isascii(32);
+	return a;
+}
+], [CFLAGS="$CFLAGS $C99FLAG -D__EXTENSIONS__ -D_BSD_SOURCE -D_POSIX_C_SOURCE=200112 -D_XOPEN_SOURCE=600"])
+
+CHECK_COMPILER_FLAG_NEEDED($C99FLAG,
+[
+#include <stdbool.h>
+#include <ctype.h>
+int test() {
+	int a = 0;
+	a = isblank(12);
+	return a;
+}
+], [CFLAGS="$CFLAGS $C99FLAG"])
+
+CHECK_COMPILER_FLAG_NEEDED(-D_BSD_SOURCE, 
+[
+#include <ctype.h>
+
+int test() {
+	int a;
+	a = isascii(32);
+	return a;
+}
+], [CFLAGS="$CFLAGS -D_BSD_SOURCE"])
+
 CHECK_COMPILER_FLAG_NEEDED(-D_POSIX_C_SOURCE=200112, 
 [
 #include <time.h>
@@ -98,12 +165,19 @@ int test() {
         return a;
 }
 ], [CFLAGS="$CFLAGS -D_POSIX_C_SOURCE=200112"])
+
 CHECK_COMPILER_FLAG_NEEDED(-D__EXTENSIONS__, 
 [
 #include <stdlib.h>
 #include <ctype.h>
 #include <sys/time.h>
+#ifdef HAVE_TIME_H
+#include <time.h>
+#endif
 #include <unistd.h>
+#ifdef HAVE_GETOPT_H
+#include <getopt.h>
+#endif
 
 int test() {  
         int a;
@@ -111,7 +185,11 @@ int test() {
         struct timeval tv;
         tv.tv_usec = 10;
         srandom(32);
+#ifdef HAVE_GETOPT_H
         a = getopt(2, opts, "a");
+#else
+	opts = opts;
+#endif
         a = isascii(32);
         return a;
 }
