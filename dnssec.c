@@ -730,9 +730,12 @@ ldns_dnssec_create_nsec3(ldns_dnssec_name *from,
 
 	cur_rrsets = from->rrsets;
 	while (cur_rrsets) {
-		/* only add a and aaaa if there are no ns */
-		if (cur_rrsets->type == LDNS_RR_TYPE_A ||
-		    cur_rrsets->type ==  LDNS_RR_TYPE_AAAA) {
+		/* only add a and aaaa if there are no ns,
+		 * or if the name is the zone apex */
+		if ((cur_rrsets->type == LDNS_RR_TYPE_A ||
+		    cur_rrsets->type ==  LDNS_RR_TYPE_AAAA) &&
+		    ldns_dname_compare(zone_name, from->name) != 0
+		    ) {
 		    if (ldns_dnssec_rrsets_contains_type(from->rrsets,
 		                                         LDNS_RR_TYPE_NS)) {
 				cur_rrsets = cur_rrsets->next;

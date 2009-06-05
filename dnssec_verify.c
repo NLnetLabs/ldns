@@ -215,7 +215,6 @@ ldns_dnssec_build_data_chain_nokeyname(ldns_resolver *res,
 		possible_parent_name = ldns_rr_owner(ldns_rr_list_rr(rrset, 0));
 	} else {
 		/* no information to go on, give up */
-		printf("[XX] not enough information to go on\n");
 		return new_chain;
 	}
 
