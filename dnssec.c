@@ -1016,6 +1016,24 @@ ldns_nsec3_add_param_rdfs(ldns_rr *rr,
 	LDNS_FREE(salt_data);
 }
 
+static int
+rr_list_delegation_only(ldns_rdf *origin, ldns_rr_list *rr_list)
+{
+	size_t i;
+	ldns_rr *cur_rr;
+	if (!origin || !rr_list) return 0;
+	for (i = 0; i < ldns_rr_list_rr_count(rr_list); i++) {
+		cur_rr = ldns_rr_list_rr(rr_list, i);
+		if (ldns_dname_compare(ldns_rr_owner(cur_rr), origin) == 0) {
+			return 0;
+		}
+		if (ldns_rr_get_type(cur_rr) != LDNS_RR_TYPE_NS) {
+			return 0;
+		}
+	}
+	return 1;
+}
+
 /* this will NOT return the NSEC3  completed, you will have to run the
    finalize function on the rrlist later! */
 ldns_rr *
@@ -1087,8 +1105,9 @@ ldns_create_nsec3(ldns_rdf *cur_owner,
 					   true);
 		}
 	}
-	/* add NSEC and RRSIG anyway */
-	if (!emptynonterminal) {
+	/* add NSEC and RRSIG anyway, but only if this is not an ENT or
+	 * an unsigned delegation */
+	if (!emptynonterminal && !rr_list_delegation_only(cur_zone, rrs)) {
 		i_type = LDNS_RR_TYPE_RRSIG;
 		if (i_type / 8 > bm_len) {
 			bitmap = LDNS_XREALLOC(bitmap, uint8_t, (i_type / 8) + 1);
@@ -1143,16 +1162,13 @@ ldns_create_nsec3(ldns_rdf *cur_owner,
 			}
 		}
 	}
-	if (cur_window_max > 0) {
-		/* this window has stuff, add it */
-		data = LDNS_XREALLOC(data,
-						 uint8_t,
-						 cur_data_size + cur_window_max + 3);
-		data[cur_data_size] = cur_window;
-		data[cur_data_size + 1] = cur_window_max + 1;
-		memcpy(data + cur_data_size + 2, cur_data, cur_window_max+1);
-		cur_data_size += cur_window_max + 3;
-	}
+	data = LDNS_XREALLOC(data,
+					 uint8_t,
+					 cur_data_size + cur_window_max + 3);
+	data[cur_data_size] = cur_window;
+	data[cur_data_size + 1] = cur_window_max + 1;
+	memcpy(data + cur_data_size + 2, cur_data, cur_window_max+1);
+	cur_data_size += cur_window_max + 3;
 
 	ldns_rr_push_rdf(nsec,
 	                 ldns_rdf_new_frm_data(LDNS_RDF_TYPE_NSEC,
