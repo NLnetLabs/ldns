@@ -1,6 +1,7 @@
 #                                               -*- Autoconf -*-
 # Process this file with autoconf to produce a configure script.
 AC_PREREQ(2.56)
+sinclude(acx_nlnetlabs.m4)
 
 AC_INIT(ldns, 1.6.0, libdns@nlnetlabs.nl, libdns)
 AC_CONFIG_SRCDIR([packet.c])
@@ -20,35 +21,8 @@ AC_PROG_MAKE_SET
 
 AC_DEFINE(WINVER, 0x0502, [the version of the windows API enabled])
 
-dnl routine to help check for compiler flags.
-AC_DEFUN([CHECK_COMPILER_FLAG],
-[
-AC_REQUIRE([AC_PROG_CC])
-AC_MSG_CHECKING(whether $CC supports -$1)
-cache=`echo $1 | sed 'y%.=/+-%___p_%'`
-AC_CACHE_VAL(cv_prog_cc_flag_$cache,
-[
-echo 'void f(){}' >conftest.c
-if test -z "`$CC -$1 -c conftest.c 2>&1`"; then
-eval "cv_prog_cc_flag_$cache=yes"
-else
-eval "cv_prog_cc_flag_$cache=no"
-fi
-rm -f conftest*
-])
-if eval "test \"`echo '$cv_prog_cc_flag_'$cache`\" = yes"; then
-AC_MSG_RESULT(yes)
-:
-$2
-else
-AC_MSG_RESULT(no)
-:
-$3
-fi
-])
-
-CHECK_COMPILER_FLAG(std=c99, [C99FLAG="-std=c99"])
-CHECK_COMPILER_FLAG(xc99, [C99FLAG="-xc99"])
+ACX_CHECK_COMPILER_FLAG(std=c99, [C99FLAG="-std=c99"])
+ACX_CHECK_COMPILER_FLAG(xc99, [C99FLAG="-xc99"])
 
 # routine to copy files
 # argument 1 is a list of files (relative to the source dir)
@@ -70,69 +44,14 @@ echo "copying header files"
 COPY_FILES($srcdir/$1/*.h, $2)
 ])
 
-dnl routine to help check for needed compiler flags.
-# if the given code compiles without the flag, execute argument 4
-# if the given code only compiles with the flag, execute argument 3
-# otherwise fail, execute argument 5.
-AC_DEFUN([CHECK_COMPILER_FLAG_NEEDED],
-[
-AC_REQUIRE([AC_PROG_CC])
-AC_MSG_CHECKING(whether we need $1 as a flag for $CC)
-cache=`echo $1 | sed 'y%.=/+- %___p__%'`
-AC_CACHE_VAL(cv_prog_cc_flag_needed_$cache,
-[
-echo '$2' > conftest.c
-echo 'void f(){}' >>conftest.c
-if test -z "`$CC -Werror -Wall $CFLAGS -c conftest.c 2>&1`"; then
-eval "cv_prog_cc_flag_needed_$cache=no"
-else
-[
-if test -z "`$CC $1 -Werror -Wall $CFLAGS -c conftest.c 2>&1`"; then
-eval "cv_prog_cc_flag_needed_$cache=yes"
-else
-eval "cv_prog_cc_flag_needed_$cache=fail"
-#echo 'Test with flag fails too!'
-#cat conftest.c
-#echo "$CC $1 -Werror -Wall $CFLAGS -c conftest.c 2>&1"
-#echo `$CC $1 -Werror -Wall $CFLAGS -c conftest.c`
-#exit 1
-fi
-]
-fi
-rm -f conftest
-])
-if eval "test \"`echo '$cv_prog_cc_flag_needed_'$cache`\" = yes"; then
-AC_MSG_RESULT(yes)
-:
-$3
-else
-if eval "test \"`echo '$cv_prog_cc_flag_needed_'$cache`\" = no"; then
-AC_MSG_RESULT(no)
-:
-$4
-else
-AC_MSG_RESULT(failed)
-:
-#cat conftest.c
-#echo "$CC -Werror -Wall $CFLAGS -c conftest.c"
-#echo `$CC -Werror -Wall $CFLAGS -c conftest.c`
-#echo "$CC $1 -Werror -Wall $CFLAGS -c conftest.c"
-#echo `$CC $1 -Werror -Wall $CFLAGS -c conftest.c`
-$5
-
-fi
-fi
-])
-
-
 # Checks for typedefs, structures, and compiler characteristics.
 AC_C_CONST
 AC_LANG_C
-CHECK_COMPILER_FLAG(g, [CFLAGS="-g $CFLAGS"])
-CHECK_COMPILER_FLAG(O2, [CFLAGS="-O2 $CFLAGS"])
-CHECK_COMPILER_FLAG(Wall, [CFLAGS="-Wall $CFLAGS"])
-CHECK_COMPILER_FLAG(W, [CFLAGS="-W $CFLAGS"])
-CHECK_COMPILER_FLAG(Wwrite-strings, [CFLAGS="-Wwrite-strings $CFLAGS"])
+ACX_CHECK_COMPILER_FLAG(g, [CFLAGS="-g $CFLAGS"])
+ACX_CHECK_COMPILER_FLAG(O2, [CFLAGS="-O2 $CFLAGS"])
+ACX_CHECK_COMPILER_FLAG(Wall, [CFLAGS="-Wall $CFLAGS"])
+ACX_CHECK_COMPILER_FLAG(W, [CFLAGS="-W $CFLAGS"])
+ACX_CHECK_COMPILER_FLAG(Wwrite-strings, [CFLAGS="-Wwrite-strings $CFLAGS"])
 
 AC_CHECK_HEADERS([getopt.h time.h],,, [AC_INCLUDES_DEFAULT])
 
@@ -140,7 +59,7 @@ AC_CHECK_HEADERS([getopt.h time.h],,, [AC_INCLUDES_DEFAULT])
 AC_CHECK_HEADERS([winsock2.h ws2tcpip.h],,, [AC_INCLUDES_DEFAULT])
 # end mingw32 tests
 
-CHECK_COMPILER_FLAG_NEEDED($C99FLAG -D__EXTENSIONS__ -D_BSD_SOURCE -D_POSIX_C_SOURCE=200112 -D_XOPEN_SOURCE=600,
+ACX_CHECK_COMPILER_FLAG_NEEDED($C99FLAG -D__EXTENSIONS__ -D_BSD_SOURCE -D_POSIX_C_SOURCE=200112 -D_XOPEN_SOURCE=600,
 [
 #include "confdefs.h"
 #include <stdlib.h>
@@ -170,7 +89,7 @@ int test() {
 }
 ], [CFLAGS="$CFLAGS $C99FLAG -D__EXTENSIONS__ -D_BSD_SOURCE -D_POSIX_C_SOURCE=200112 -D_XOPEN_SOURCE=600"])
 
-CHECK_COMPILER_FLAG_NEEDED($C99FLAG,
+ACX_CHECK_COMPILER_FLAG_NEEDED($C99FLAG,
 [
 #include <stdbool.h>
 #include <ctype.h>
@@ -181,7 +100,7 @@ int test() {
 }
 ], [CFLAGS="$CFLAGS $C99FLAG"])
 
-CHECK_COMPILER_FLAG_NEEDED(-D_BSD_SOURCE, 
+ACX_CHECK_COMPILER_FLAG_NEEDED(-D_BSD_SOURCE, 
 [
 #include <ctype.h>
 
@@ -192,7 +111,7 @@ int test() {
 }
 ], [CFLAGS="$CFLAGS -D_BSD_SOURCE"])
 
-CHECK_COMPILER_FLAG_NEEDED(-D_POSIX_C_SOURCE=200112, 
+ACX_CHECK_COMPILER_FLAG_NEEDED(-D_POSIX_C_SOURCE=200112, 
 [
 #include <time.h>
 
@@ -206,7 +125,7 @@ int test() {
 }
 ], [CFLAGS="$CFLAGS -D_POSIX_C_SOURCE=200112"])
 
-CHECK_COMPILER_FLAG_NEEDED(-D__EXTENSIONS__, 
+ACX_CHECK_COMPILER_FLAG_NEEDED(-D__EXTENSIONS__, 
 [
 #include <stdlib.h>
 #include <ctype.h>
@@ -245,48 +164,6 @@ AC_CHECK_TYPE(uint16_t, unsigned short)
 AC_CHECK_TYPE(uint32_t, unsigned int)
 AC_CHECK_TYPE(uint64_t, unsigned long long)
 
-AC_DEFUN([AC_CHECK_FORMAT_ATTRIBUTE],
-[AC_REQUIRE([AC_PROG_CC])
-AC_MSG_CHECKING(whether the C compiler (${CC-cc}) accepts the "format" attribute)
-AC_CACHE_VAL(ac_cv_c_format_attribute,
-[ac_cv_c_format_attribute=no
-AC_TRY_COMPILE(
-[#include <stdio.h>
-void f (char *format, ...) __attribute__ ((format (printf, 1, 2)));
-void (*pf) (char *format, ...) __attribute__ ((format (printf, 1, 2)));
-], [
-   f ("%s", "str");
-],
-[ac_cv_c_format_attribute="yes"],
-[ac_cv_c_format_attribute="no"])
-])
-
-AC_MSG_RESULT($ac_cv_c_format_attribute)
-if test $ac_cv_c_format_attribute = yes; then
-  AC_DEFINE(HAVE_ATTR_FORMAT, 1, [Whether the C compiler accepts the "format" attribute])
-fi
-])dnl
-
-AC_DEFUN([AC_CHECK_UNUSED_ATTRIBUTE],
-[AC_REQUIRE([AC_PROG_CC])
-AC_MSG_CHECKING(whether the C compiler (${CC-cc}) accepts the "unused" attribute)
-AC_CACHE_VAL(ac_cv_c_unused_attribute,
-[ac_cv_c_unused_attribute=no
-AC_TRY_COMPILE(
-[#include <stdio.h>
-void f (char *u __attribute__((unused)));
-], [
-   f ("x");
-],
-[ac_cv_c_unused_attribute="yes"],
-[ac_cv_c_unused_attribute="no"])
-])
-
-AC_MSG_RESULT($ac_cv_c_unused_attribute)
-if test $ac_cv_c_unused_attribute = yes; then
-  AC_DEFINE(HAVE_ATTR_UNUSED, 1, [Whether the C compiler accepts the "unused" attribute])
-fi
-])dnl
 
 # my own checks
 AC_CHECK_PROG(doxygen, doxygen, doxygen)
@@ -573,8 +450,8 @@ fi
 
 #AC_SEARCH_LIBS(RSA_new, [crypto])
 
-AC_CHECK_FORMAT_ATTRIBUTE
-AC_CHECK_UNUSED_ATTRIBUTE
+ACX_CHECK_FORMAT_ATTRIBUTE
+ACX_CHECK_UNUSED_ATTRIBUTE
 
 # check OSX deployment target which is needed
 if echo $build_os | grep darwin > /dev/null; then
