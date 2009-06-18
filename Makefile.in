@@ -14,7 +14,7 @@ datadir		= @datadir@
 libdir		= @libdir@
 includedir	= @includedir@
 doxygen		= @doxygen@
-glibtool	= @glibtool@
+glibtool	= @libtool@
 libtool		= ./libtool
 ifdef glibtool
 libtool		= $(glibtool)

@@ -59,100 +59,7 @@ AC_CHECK_HEADERS([getopt.h time.h],,, [AC_INCLUDES_DEFAULT])
 AC_CHECK_HEADERS([winsock2.h ws2tcpip.h],,, [AC_INCLUDES_DEFAULT])
 # end mingw32 tests
 
-ACX_CHECK_COMPILER_FLAG_NEEDED($C99FLAG -D__EXTENSIONS__ -D_BSD_SOURCE -D_POSIX_C_SOURCE=200112 -D_XOPEN_SOURCE=600,
-[
-#include "confdefs.h"
-#include <stdlib.h>
-#include <ctype.h>
-#include <sys/time.h>
-#ifdef HAVE_TIME_H
-#include <time.h>
-#endif
-#include <unistd.h>
-#ifdef HAVE_GETOPT_H
-#include <getopt.h>
-#endif
-
-int test() {
-	int a;
-	char **opts = NULL;
-	struct timeval tv;
-	char *t;
-	time_t time = 0;
-	char *buf = NULL;
-	t = ctime_r(&time, buf);
-	tv.tv_usec = 10;
-	srandom(32);
-	a = getopt(2, opts, "a");
-	a = isascii(32);
-	return a;
-}
-], [CFLAGS="$CFLAGS $C99FLAG -D__EXTENSIONS__ -D_BSD_SOURCE -D_POSIX_C_SOURCE=200112 -D_XOPEN_SOURCE=600"])
-
-ACX_CHECK_COMPILER_FLAG_NEEDED($C99FLAG,
-[
-#include <stdbool.h>
-#include <ctype.h>
-int test() {
-	int a = 0;
-	a = isblank(12);
-	return a;
-}
-], [CFLAGS="$CFLAGS $C99FLAG"])
-
-ACX_CHECK_COMPILER_FLAG_NEEDED(-D_BSD_SOURCE, 
-[
-#include <ctype.h>
-
-int test() {
-	int a;
-	a = isascii(32);
-	return a;
-}
-], [CFLAGS="$CFLAGS -D_BSD_SOURCE"])
-
-ACX_CHECK_COMPILER_FLAG_NEEDED(-D_POSIX_C_SOURCE=200112, 
-[
-#include <time.h>
-
-int test() {
-	int a = 0;
-	char *t;
-	time_t time = 0;
-	char *buf = NULL;
-	t = ctime_r(&time, buf);
-        return a;
-}
-], [CFLAGS="$CFLAGS -D_POSIX_C_SOURCE=200112"])
-
-ACX_CHECK_COMPILER_FLAG_NEEDED(-D__EXTENSIONS__, 
-[
-#include <stdlib.h>
-#include <ctype.h>
-#include <sys/time.h>
-#ifdef HAVE_TIME_H
-#include <time.h>
-#endif
-#include <unistd.h>
-#ifdef HAVE_GETOPT_H
-#include <getopt.h>
-#endif
-
-int test() {  
-        int a;
-        char **opts = NULL;
-        struct timeval tv;
-        tv.tv_usec = 10;
-        srandom(32);
-#ifdef HAVE_GETOPT_H
-        a = getopt(2, opts, "a");
-#else
-	opts = opts;
-#endif
-        a = isascii(32);
-        return a;
-}
-], [CFLAGS="$CFLAGS -D__EXTENSIONS__"])
+ACX_DETERMINE_EXT_FLAGS_UNBOUND
 
 AC_C_INLINE
 AC_CHECK_TYPE(int8_t, char)
@@ -265,29 +172,12 @@ AC_CHECK_HEADERS([openssl/err.h],,, [AC_INCLUDES_DEFAULT])
 AC_CHECK_HEADERS([openssl/rand.h],,, [AC_INCLUDES_DEFAULT])
 
 # Use libtool 
-# skip these tests, we do not need them.
-AC_DEFUN([AC_PROG_F77], [:])
-AC_DEFUN([AC_PROG_FC], [:])
-AC_DEFUN([AC_PROG_CXX], [:])
-AC_DEFUN([AC_PROG_CXXCPP], [:])
-AC_DEFUN([AC_PROG_OBJC], [:])
-AC_DEFUN([AC_PROG_OBJCCPP], [:])
-AC_DEFUN([AC_LIBTOOL_CXX], [:])
-AC_DEFUN([AC_LIBTOOL_F77], [:])
+ACX_LIBTOOL_C_ONLY
+
 # for macosx, see if glibtool exists and use that
 # BSD's need to know the version...
-AC_CHECK_PROG(glibtool, glibtool, [glibtool], )
-AC_CHECK_PROGS(libtool, [libtool15 libtool], [./libtool])
-AC_PATH_TOOL(AR, ar, [false])
-if test $AR = false; then
-	AC_MSG_ERROR([Cannot find 'ar', please extend PATH to include it])
-fi
-# avoid libtool max commandline length test on systems that fork slowly.
-AC_CANONICAL_HOST
-if echo "$host_os" | grep "sunos4" >/dev/null; then
-	lt_cv_sys_max_cmd_len=32750;
-fi
-AC_PROG_LIBTOOL
+#AC_CHECK_PROG(glibtool, glibtool, [glibtool], )
+#AC_CHECK_PROGS(libtool, [libtool15 libtool], [./libtool])
 
 AC_TRY_RUN(
 [
