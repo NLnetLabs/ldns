@@ -182,20 +182,24 @@ ACX_LIBTOOL_C_ONLY
 #AC_CHECK_PROG(glibtool, glibtool, [glibtool], )
 #AC_CHECK_PROGS(libtool, [libtool15 libtool], [./libtool])
 
-AC_TRY_RUN(
-[
-int main()
-{
-short one = 1;
-char *cp = (char*)&one;
-if ( *cp == 0 )
-return(0);
-else
-return(1);
-}
-], [],[
-AC_DEFINE(CONFCHECK_LITTLE_ENDIAN, 1, [system appears to be little-endian])
-],[])
+#AC_TRY_RUN(
+#[
+#int main()
+#{
+#short one = 1;
+#char *cp = (char*)&one;
+#if ( *cp == 0 )
+#return(0);
+#else
+#return(1);
+#}
+#], [],[
+#AC_DEFINE(CONFCHECK_LITTLE_ENDIAN, 1, [system appears to be little-endian])
+#],[])
+
+# should define WORDS_BIGENDIAN if the system is big-endian
+AC_C_BIGENDIAN
+
 
 AC_OUTPUT()
 
@@ -368,10 +372,10 @@ AH_BOTTOM([
 #endif
 
 #ifndef BYTE_ORDER
-#ifdef CONFCHECK_LITTLE_ENDIAN
-#define BYTE_ORDER LITTLE_ENDIAN
-#else
+#ifdef WORDS_BIGENDIAN
 #define BYTE_ORDER BIG_ENDIAN
+#else
+#define BYTE_ORDER LITTLE_ENDIAN
 #endif /* CONFCHECK_LITTLE_ENDIAN */
 #endif /* BYTE_ORDER */
 
