@@ -124,20 +124,24 @@ ldns_status
 ldns_str2rdf_nsec3_salt(ldns_rdf **rd, const char *salt_str)
 {
 	uint8_t salt_length;
-	uint8_t c;
+	int c;
+	int salt_length_str;
 
 	uint8_t *salt;
 	uint8_t *data;
 
-	salt_length = (uint8_t) strlen(salt_str);
-	if (salt_length == 1 && salt_str[0] == '-') {
-		salt_length = 0;
-	} else if (salt_length % 2 != 0) {
+	salt_length_str = strlen(salt_str);
+	if (salt_length_str == 1 && salt_str[0] == '-') {
+		salt_length_str = 0;
+	} else if (salt_length_str % 2 != 0) {
+		return LDNS_STATUS_INVALID_HEX;
+	}
+	if (salt_length_str > 512) {
 		return LDNS_STATUS_INVALID_HEX;
 	}
 	
-	salt = LDNS_XMALLOC(uint8_t, salt_length / 2);
-	for (c = 0; c < salt_length; c += 2) {
+	salt = LDNS_XMALLOC(uint8_t, salt_length_str / 2);
+	for (c = 0; c < salt_length_str; c += 2) {
 		if (isxdigit((int) salt_str[c]) && isxdigit((int) salt_str[c+1])) {
 			salt[c/2] = (uint8_t) ldns_hexdigit_to_int(salt_str[c]) * 16 +
 					  ldns_hexdigit_to_int(salt_str[c+1]);
@@ -146,7 +150,7 @@ ldns_str2rdf_nsec3_salt(ldns_rdf **rd, const char *salt_str)
 			return LDNS_STATUS_INVALID_HEX;
 		}
 	}
-	salt_length = salt_length / 2;
+	salt_length = (uint8_t) (salt_length_str / 2);
 	
 	data = LDNS_XMALLOC(uint8_t, 1 + salt_length);
 	data[0] = salt_length;

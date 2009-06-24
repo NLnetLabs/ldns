@@ -55,7 +55,11 @@ main(int argc, char *argv[])
 				fprintf(stderr, "Salt value is not valid hex data, not a multiple of 2 characters\n");
 				exit(EXIT_FAILURE);
 			}
-			nsec3_salt_length = (uint8_t) strlen(optarg) / 2;
+			if (strlen(optarg) > 512) {
+				fprintf(stderr, "Salt too long\n");
+				exit(EXIT_FAILURE);
+			}
+			nsec3_salt_length = (uint8_t) (strlen(optarg) / 2);
 			nsec3_salt = LDNS_XMALLOC(uint8_t, nsec3_salt_length);
 			for (c = 0; c < (int) strlen(optarg); c += 2) {
 				if (isxdigit((int) optarg[c]) && isxdigit((int) optarg[c+1])) {
