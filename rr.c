@@ -1082,7 +1082,7 @@ ldns_is_rrset(ldns_rr_list *rr_list)
 	ldns_rr *tmp;
 	size_t i;
 	
-	if (!rr_list) {
+	if (!rr_list || ldns_rr_list_rr_count(rr_list) == 0) {
 		return false;
 	}
 
