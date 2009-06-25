@@ -1,3 +1,9 @@
+x.x.x
+	Bugfixes:
+	* ldns_is_rrset did not go through the complete rrset, but
+          only compared the first two records. Thanks to Olafur
+          Gudmundsson for report and patch
+
 1.5.1
 	Example tools:
 	* ldns-signzone was broken in 1.5.0 for multiple keys, this

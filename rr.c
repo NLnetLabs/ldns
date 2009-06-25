@@ -1094,7 +1094,7 @@ ldns_is_rrset(ldns_rr_list *rr_list)
 
 	/* compare these with the rest of the rr_list, start with 1 */
 	for (i = 1; i < ldns_rr_list_rr_count(rr_list); i++) {
-		tmp = ldns_rr_list_rr(rr_list, 1);
+		tmp = ldns_rr_list_rr(rr_list, i);
 		if (t != ldns_rr_get_type(tmp)) {
 			return false;
 		}
