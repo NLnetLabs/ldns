@@ -8,12 +8,13 @@ CPPFLAGS="@CPPFLAGS@"
 LDFLAGS="@LDFLAGS@"
 LIBS="@LIBS@"
 LIBDIR="@libdir@"
+INCLUDEDIR="@includedir@"
 
 for arg in $@
 do
     if [ $arg = "--cflags" ]
     then
-        echo "${CPPFLAGS}"
+        echo "-I${INCLUDEDIR}"
     fi
     if [ $arg = "--libs" ]
     then
