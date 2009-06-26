@@ -3,6 +3,7 @@ VERSION="@PACKAGE_VERSION@"
 CFLAGS="@CFLAGS@"
 LDFLAGS="@LDFLAGS@"
 LIBS="@LIBS@"
+LIBDIR="@libdir@"
 
 for arg in $@
 do
@@ -12,15 +13,11 @@ do
     fi
     if [ $arg = "--libs" ]
     then
-        echo "${LIBS}"
-    fi
-    if [ $arg = "--ldflags" ]
-    then
-        echo "${LDFLAGS}"
+        echo "${LDFLAGS} -L${LIBDIR} ${LIBS} -lldns"
     fi
     if [ $arg = "-h" ] || [ $arg = "--help" ]
     then
-        echo "Usage: $0 [--cflags] [--libs] [--ldflags] [--version]"
+        echo "Usage: $0 [--cflags] [--libs] [--version]"
     fi
     if [ $arg = "--version" ]
     then
