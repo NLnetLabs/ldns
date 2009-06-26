@@ -91,6 +91,15 @@ case "$enable_sha2" in
         ;;
 esac
 
+# add option to disable installation of ldns-config script
+AC_ARG_ENABLE(ldns-config, [ --disable-ldns-config          disable installation of ldns-config (default=enabled)],
+	enable_ldns_config=$enableval, enable_ldns_config=yes)
+if test "x$enable_ldns_config" = xyes; then
+	INSTALL_LDNS_CONFIG="yes"
+else
+	INSTALL_LDNS_CONFIG="no"
+fi
+AC_SUBST(INSTALL_LDNS_CONFIG)
 
 # add option to disable the evil rpath
 dnl Check whether to use rpath or not

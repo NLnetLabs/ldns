@@ -30,6 +30,7 @@ RUNTIME_PATH	= @RUNTIME_PATH@
 DATE		= $(shell date +%Y%m%d)
 LIBTOOL		= $(libtool) --tag=CC
 ACLOCAL_AMFLAGS	= -Im4
+INSTALL_LDNS_CONFIG = @INSTALL_LDNS_CONFIG@
 
 LINT		= splint
 LINTFLAGS	= +quiet -weak -warnposix -unrecog -Din_addr_t=uint32_t -Du_int=unsigned -Du_char=uint8_t -preproc -D__u16=uint16_t -fixedformalarray
@@ -128,11 +129,17 @@ manpages:	$(srcdir)/doc/function_manpages
 		cat $(srcdir)/ldns/*.h | $(srcdir)/doc/doxyparse.pl -m $(srcdir)/doc/function_manpages 2>&1 | \
 		grep -v ^doxygen | grep -v ^cat  > doc/ldns_manpages
 
-install:	install-h install-lib install-manpages
+install:	install-h install-lib install-config install-manpages
 
 uninstall:	uninstall-manpages uninstall-h uninstall-lib
 
 destclean:	uninstall
+
+install-config:
+	if [ $(INSTALL_LDNS_CONFIG) = "yes" ] ; then \
+		$(INSTALL) -d $(DESTDIR)$(bindir); \
+		$(INSTALL) -m 755 packaging/ldns-config $(DESTDIR)$(bindir)/; \
+	fi
 
 install-manpages:	manpages
 		${INSTALL} -d $(DESTDIR)$(mandir)/man3

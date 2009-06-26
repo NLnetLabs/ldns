@@ -1,4 +1,9 @@
 x.x.x
+	Additions:
+	* Addition of an ldns-config script which gives cflags and libs
+	  values, for use in configure scripts for applications that use
+	  use ldns. Can be disabled with ./configure --disable-ldns-config
+
 	Bugfixes:
 	* ldns_is_rrset did not go through the complete rrset, but
           only compared the first two records. Thanks to Olafur
