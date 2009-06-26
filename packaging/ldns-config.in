@@ -1,0 +1,29 @@
+#!/bin/sh
+VERSION="@PACKAGE_VERSION@"
+CFLAGS="@CFLAGS@"
+LDFLAGS="@LDFLAGS@"
+LIBS="@LIBS@"
+
+for arg in $@
+do
+    if [ $arg = "--cflags" ]
+    then
+        echo "${CFLAGS}"
+    fi
+    if [ $arg = "--libs" ]
+    then
+        echo "${LIBS}"
+    fi
+    if [ $arg = "--ldflags" ]
+    then
+        echo "${LDFLAGS}"
+    fi
+    if [ $arg = "-h" ] || [ $arg = "--help" ]
+    then
+        echo "Usage: $0 [--cflags] [--libs] [--ldflags] [--version]"
+    fi
+    if [ $arg = "--version" ]
+    then
+        echo "${VERSION}"
+    fi
+done

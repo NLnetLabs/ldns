@@ -479,7 +479,7 @@ size_t strlcpy(char *dst, const char *src, size_t siz);
 #endif
 ])
 
-AC_CONFIG_FILES([Makefile ldns/net.h ldns/util.h packaging/libldns.pc])
+AC_CONFIG_FILES([Makefile ldns/net.h ldns/util.h packaging/libldns.pc packaging/ldns-config])
 
 AC_CONFIG_HEADER([ldns/config.h])
 AC_OUTPUT
