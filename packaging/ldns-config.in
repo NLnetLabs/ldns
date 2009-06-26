@@ -4,7 +4,7 @@ prefix="@prefix@"
 exec_prefix="@exec_prefix@"
 VERSION="@PACKAGE_VERSION@"
 CFLAGS="@CFLAGS@"
-CPPFLAGS="@CFLAGS@"
+CPPFLAGS="@CPPFLAGS@"
 LDFLAGS="@LDFLAGS@"
 LIBS="@LIBS@"
 LIBDIR="@libdir@"
@@ -13,7 +13,7 @@ for arg in $@
 do
     if [ $arg = "--cflags" ]
     then
-        echo "${CFLAGS} ${CPPFLAGS}"
+        echo "${CPPFLAGS}"
     fi
     if [ $arg = "--libs" ]
     then
