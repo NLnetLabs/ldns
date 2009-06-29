@@ -20,7 +20,7 @@ INSTALL_PROGRAM = $(INSTALL)
 LDNSDIR = @LDNSDIR@
 LIBS_STC = @LIBS_STC@
 
-COMPILE         = $(CC) -Wall $(CPPFLAGS) $(CFLAGS) -I. -I$(srcdir)
+COMPILE         = $(CC) $(CPPFLAGS) $(CFLAGS) -I. -I$(srcdir)
 LINK            = $(CC) $(CFLAGS) $(LDFLAGS) 
 
 LINT            = splint
