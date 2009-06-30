@@ -1,14 +1,36 @@
-x.x.x
+1.6.0
 	Additions:
 	* Addition of an ldns-config script which gives cflags and libs
 	  values, for use in configure scripts for applications that use
 	  use ldns. Can be disabled with ./configure --disable-ldns-config
-
+	* Added direct sha1, sha256, and sha512 support in ldns.
+	  With these functions, all NSEC3 functionality can still be
+	  used, even if ldns is built without OpenSSL. Thanks to OpenBSD,
+	  Steve Reid, and Aaron D. Gifford for the code.
+	* Added reading/writing support for the SPF Resource Record
+	* Base32 functions are now exported
 	Bugfixes:
 	* ldns_is_rrset did not go through the complete rrset, but
-          only compared the first two records. Thanks to Olafur
-          Gudmundsson for report and patch
-
+	  only compared the first two records. Thanks to Olafur
+	  Gudmundsson for report and patch
+	* Fixed a small memory bug in ldns_rr_list_subtype_by_rdf(),
+	  thanks to Marius Rieder for finding an patching this.
+	* --without-ssl should now work. Make sure that examples/ and
+	  drill also get the --without-ssl flag on their configure, if
+	  this is used.
+	* Some malloc() return value checks have been added
+	* NSEC3 creation has been improved wrt to empty nonterminals,
+	  and opt-out.
+	* Fixed a bug in the parser when reading large NSEC3 salt
+	  values.
+	* Made the allowed length for domain names on wire
+	  and presentation format the same.
+	Example tools:
+	* ldns-key2ds can now also generate DS records for keys without
+	  the SEP flag
+	* ldns-signzone now equalizes the TTL of the DNSKEY RRset (to
+	  the first non-default DNSKEY TTL value it sees)
+	
 1.5.1
 	Example tools:
 	* ldns-signzone was broken in 1.5.0 for multiple keys, this
