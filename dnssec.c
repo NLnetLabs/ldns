@@ -167,7 +167,7 @@ ldns_dnssec_nsec3_closest_encloser(ldns_rdf *qname,
 		} else if (exact_match_found && flag) {
 			result = ldns_rdf_clone(sname);
 		} else if (exact_match_found && !flag) {
-			// error!
+			/* error! */
 			ldns_rdf_deep_free(hashed_sname);
 			goto done;
 		} else {

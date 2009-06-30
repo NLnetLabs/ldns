@@ -959,7 +959,7 @@ ldns_dnssec_zone_sign_nsec3(ldns_dnssec_zone *zone,
 
 		nsec3 = ((ldns_dnssec_name *)zone->names->root->data)->nsec;
 		if (nsec3 && ldns_rr_get_type(nsec3) == LDNS_RR_TYPE_NSEC3) {
-			// no need to recreate
+			/* no need to recreate */
 		} else {
 			if (!ldns_dnssec_zone_find_rrset(zone,
 									   zone->soa->name,

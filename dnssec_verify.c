@@ -70,9 +70,9 @@ ldns_dnssec_data_chain_print(FILE *out, const ldns_dnssec_data_chain *chain)
 			if (chain->packet_nodata) {
 				fprintf(out, ";; NODATA response\n");
 			}
-			fprintf(out, "rrset: %p\n", chain->rrset);
+			fprintf(out, "rrset:\n");
 			ldns_rr_list_print(out, chain->rrset);
-			fprintf(out, "sigs: %p\n", chain->signatures);
+			fprintf(out, "sigs:\n");
 			ldns_rr_list_print(out, chain->signatures);
 			fprintf(out, "---\n");
 		} else {
@@ -219,10 +219,10 @@ ldns_dnssec_build_data_chain_nokeyname(ldns_resolver *res,
 	}
 
 	my_pkt = ldns_resolver_query(res,
-							possible_parent_name,
-							LDNS_RR_TYPE_DS,
-							LDNS_RR_CLASS_IN,
-							qflags);
+	              possible_parent_name,
+	              LDNS_RR_TYPE_DS,
+	              LDNS_RR_CLASS_IN,
+	              qflags);
 
 	if (ldns_pkt_ancount(my_pkt) > 0) {
 		/* add error, no sigs but DS in parent */
@@ -231,13 +231,13 @@ ldns_dnssec_build_data_chain_nokeyname(ldns_resolver *res,
 	} else {
 		/* are there signatures? */
 		new_chain->parent =  ldns_dnssec_build_data_chain(res, 
-												qflags, 
-												NULL,
-												my_pkt,
-												NULL);
+		                          qflags, 
+		                          NULL,
+		                          my_pkt,
+		                          NULL);
 
 		new_chain->parent->packet_qtype = LDNS_RR_TYPE_DS;
-		//ldns_pkt_free(my_pkt);
+		
 	}
 	return new_chain;
 }

@@ -567,7 +567,7 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 						ldns_rr_list_print(stdout, nsec_rrs);
 						printf("With signatures:\n");
 						ldns_rr_list_print(stdout, nsec_rr_sigs);
-						printf("correct keys at %p:\n", correct_key_list);
+						printf("correct keys:\n");
 						ldns_rr_list_print(stdout, correct_key_list);
 					}
 
@@ -645,7 +645,7 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 						ldns_rr_list_print(stdout, nsec_rrs);
 						printf("With signatures:\n");
 						ldns_rr_list_print(stdout, nsec_rr_sigs);
-						printf("correct keys at %p:\n", correct_key_list);
+						printf("correct keys:\n");
 						ldns_rr_list_print(stdout, correct_key_list);
 /*
 						printf("trusted keys at %p:\n", trusted_keys);
