@@ -935,6 +935,7 @@ ldns_rr_list_subtype_by_rdf(ldns_rr_list *l, ldns_rdf *r, size_t pos)
 			pos);
 		if (!list_rdf) {
 			/* pos is too large or any other error */
+			ldns_rr_list_deep_free(subtyped);
 			return NULL;
 		}
 
@@ -948,6 +949,7 @@ ldns_rr_list_subtype_by_rdf(ldns_rr_list *l, ldns_rdf *r, size_t pos)
 	if (ldns_rr_list_rr_count(subtyped) > 0) {
 		return subtyped;
 	} else {
+		ldns_rr_list_free(subtyped);
 		return NULL;
 	}
 }
@@ -1265,7 +1267,7 @@ ldns_rr_list_clone(const ldns_rr_list *rrlist)
 		    );
 		if (!r) {
 			/* huh, failure in cloning */
-			ldns_rr_list_free(new_list);
+			ldns_rr_list_deep_free(new_list);
 			return NULL;
 		}
 		ldns_rr_list_push_rr(new_list, r);
