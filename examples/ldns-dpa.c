@@ -2590,7 +2590,7 @@ printf("timeval: %u ; %u\n", cur_hdr.ts.tv_sec, cur_hdr.ts.tv_usec);
 			/* tcp packets are skipped */
 			tcp_packets++;
 		} else {
-			printf("ipv6 unknown next header type: %u\n", protocol);
+			printf("ipv6 unknown next header type: %u\n", (unsigned int) protocol);
 		}
 
 
