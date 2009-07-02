@@ -181,8 +181,8 @@ ldns_hexstring_to_data(uint8_t *data, const char *str)
 
 	for (i = 0; i < strlen(str) / 2; i++) {
 		data[i] = 
-			16 * (size_t) ldns_hexdigit_to_int(str[i*2]) +
-			(size_t) ldns_hexdigit_to_int(str[i*2 + 1]);
+			16 * (uint8_t) ldns_hexdigit_to_int(str[i*2]) +
+			(uint8_t) ldns_hexdigit_to_int(str[i*2 + 1]);
 	}
 
 	return (int) i;

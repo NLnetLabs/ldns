@@ -34,7 +34,7 @@ usage(FILE *fp, const char *prog) {
 	fprintf(fp, "  -e <date>\texpiration date\n");
 	fprintf(fp, "  -f <file>\toutput zone to file (default <name>.signed)\n");
 	fprintf(fp, "  -i <date>\tinception date\n");
-	fprintf(fp, "  -l\t\tLeave old DNSSEC RRSIGS and NSEC records intact\n");
+	fprintf(fp, "  -l\t\tLeave old DNSSEC RRSIGS and NSEC(3) records intact\n");
 	fprintf(fp, "  -o <domain>\torigin for the zone\n");
 	fprintf(fp, "  -v\t\tprint version and exit\n");
 	fprintf(fp, "  -E <name>\tuse <name> as the crypto engine for signing\n");
@@ -304,7 +304,8 @@ strip_dnssec_records(ldns_zone *zone)
 	
 	while ((cur_rr = ldns_rr_list_pop_rr(ldns_zone_rrs(zone)))) {
 		if (ldns_rr_get_type(cur_rr) == LDNS_RR_TYPE_RRSIG ||
-		    ldns_rr_get_type(cur_rr) == LDNS_RR_TYPE_NSEC
+		    ldns_rr_get_type(cur_rr) == LDNS_RR_TYPE_NSEC ||
+		    ldns_rr_get_type(cur_rr) == LDNS_RR_TYPE_NSEC3
 		   ) {
 			
 			ldns_rr_free(cur_rr);

@@ -454,7 +454,6 @@ ldns_key_rr2ds(const ldns_rr *key, ldns_hash h)
 	default:
 	case LDNS_SHA1:
 		digest = LDNS_XMALLOC(uint8_t, LDNS_SHA1_DIGEST_LENGTH);
-		memset(digest, 0, LDNS_SHA1_DIGEST_LENGTH);
 		if (!digest) {
 			ldns_rr_free(ds);
 			return NULL;
@@ -670,9 +669,12 @@ ldns_dnssec_create_nsec(ldns_dnssec_name *from,
 		if (cur_rrsets->type == LDNS_RR_TYPE_A ||
 		    cur_rrsets->type ==  LDNS_RR_TYPE_AAAA) {
 		    if (ldns_dnssec_rrsets_contains_type(from->rrsets,
-		                                         LDNS_RR_TYPE_NS)) {
+		                                         LDNS_RR_TYPE_NS) &&
+		       !ldns_dnssec_rrsets_contains_type(from->rrsets,
+		                                         LDNS_RR_TYPE_SOA)
+			) {
 				cur_rrsets = cur_rrsets->next;
-		    	continue;
+			continue;
 			}
 		}
 		types[type_count] = cur_rrsets->type;

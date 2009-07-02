@@ -287,6 +287,9 @@ ldns_dname_is_subdomain(const ldns_rdf *sub, const ldns_rdf *parent)
 		tmp_sub = ldns_dname_label(sub, j);
 		tmp_par = ldns_dname_label(parent, i);
 		if (!tmp_sub || !tmp_par) {
+			/* deep free does null check */
+			ldns_rdf_deep_free(tmp_sub);
+			ldns_rdf_deep_free(tmp_par);
 			return false;
 		}
 

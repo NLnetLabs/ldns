@@ -206,9 +206,6 @@ ACX_LIBTOOL_C_ONLY
 # should define WORDS_BIGENDIAN if the system is big-endian
 AC_C_BIGENDIAN
 
-
-AC_OUTPUT()
-
 # Checks for header files.
 AC_HEADER_STDC
 #AC_HEADER_SYS_WAIT
