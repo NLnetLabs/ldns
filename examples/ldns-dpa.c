@@ -150,7 +150,7 @@ const ldns_lookup_table lt_operators[] = {
 	{ 0, NULL }
 };
 
-const char *get_op_str(type_operator op) {
+static const char *get_op_str(type_operator op) {
 	const ldns_lookup_table *lt;
 	lt = ldns_lookup_by_id((ldns_lookup_table *) lt_operators, op);
 	if (lt) {
@@ -161,7 +161,7 @@ const char *get_op_str(type_operator op) {
 	}
 }
 
-type_operator
+static type_operator
 get_op_id(char *op_str)
 {
 	const ldns_lookup_table *lt;
@@ -295,7 +295,7 @@ get_match_by_name(char *name) {
 	return NULL;
 }
 
-match_table *
+static match_table *
 get_match_by_id(match_id id) {
 	match_table *mt = (match_table *) matches;
 
@@ -308,7 +308,7 @@ get_match_by_id(match_id id) {
 	return NULL;
 }
 
-const char *
+static const char *
 get_match_name_str(match_id id) {
 	match_table *mt = get_match_by_id(id);
 	if (mt) {
@@ -320,7 +320,8 @@ get_match_name_str(match_id id) {
 	}
 }
 
-bool is_match_name(char *name) {
+static bool
+is_match_name(char *name) {
 	match_table *mt = get_match_by_name(name);
 	if (mt) {
 		return true;
@@ -329,7 +330,7 @@ bool is_match_name(char *name) {
 	}
 }
 
-void
+static void
 print_match_operation(FILE *output, match_operation *mc)
 {
 	match_table *mt = NULL;
@@ -406,7 +407,7 @@ print_match_operation(FILE *output, match_operation *mc)
 	}
 }
 
-void
+static void
 print_match_expression(FILE *output, match_expression *expr)
 {
 	if (expr) {
@@ -452,7 +453,7 @@ fprintf(output, "_");
 	}			
 }
 
-size_t 
+static size_t 
 calculate_counters_total(match_counters *counters)
 {
 	size_t result = 0;
@@ -471,7 +472,7 @@ calculate_counters_total(match_counters *counters)
 	return result;
 }
 
-void
+static void
 print_counters(FILE *output, match_counters *counters, bool show_percentages, size_t total, int count_minimum)
 {
 	double percentage;
@@ -501,7 +502,7 @@ print_counters(FILE *output, match_counters *counters, bool show_percentages, si
 	return;	
 }
 
-void
+static void
 ldns_pkt2file_hex(FILE *fp, const ldns_pkt *pkt)
 {
 	uint8_t *wire;
@@ -539,7 +540,7 @@ ldns_pkt2file_hex(FILE *fp, const ldns_pkt *pkt)
  * (if they are 'under' this one in the tree, which should be the case in
  * the unique counter tree
  */
-size_t
+static size_t
 calculate_total_value(match_counters *counters, match_operation *cur)
 {
 	size_t result = 0;
@@ -562,7 +563,7 @@ calculate_total_value(match_counters *counters, match_operation *cur)
 	return result;
 }
 
-size_t
+static size_t
 calculate_total_count_matches(match_counters *counters, match_operation *cur)
 {
 	size_t result = 0;
@@ -599,7 +600,7 @@ calculate_total_count_matches(match_counters *counters, match_operation *cur)
  * Returns true if there is a previous match operation with the given type
  * in the counters structure
  */
-bool
+static bool
 has_previous_match(match_counters *counters, match_operation *cur)
 {
 	if (!counters) {
@@ -626,7 +627,7 @@ has_previous_match(match_counters *counters, match_operation *cur)
  * Returns true if there is a later match operation with the given type
  * in the counters structure
  */
-bool
+static bool
 has_next_match(match_counters *counters, match_operation *cur)
 {
 	if (!counters) {
@@ -653,7 +654,7 @@ has_next_match(match_counters *counters, match_operation *cur)
  * Returns the first match with the same type at *cur in
  * the counter list, or NULL if it is not found
  */
-match_expression *
+static match_expression *
 get_first_match_expression(match_counters *counters, match_operation *cur)
 {
 	if (!counters) {
@@ -675,7 +676,7 @@ get_first_match_expression(match_counters *counters, match_operation *cur)
  * Returns the second match expression with the same type at *cur in
  * the counter list, or NULL if it is not found
  */
-match_expression *
+static match_expression *
 get_second_match_expression(match_counters *counters, match_operation *cur)
 {
 	if (!counters) {
@@ -702,7 +703,7 @@ get_second_match_expression(match_counters *counters, match_operation *cur)
  * Returns the last match expression with the same type at *cur in
  * the counter list, or NULL if it is not found
  */
-match_expression *
+static match_expression *
 get_last_match_expression(match_counters *counters, match_operation *cur)
 {
 	if (!counters) {
@@ -724,7 +725,7 @@ get_last_match_expression(match_counters *counters, match_operation *cur)
  * Returns the last but one match expression with the same type at *cur in
  * the counter list, or NULL if it is not found
  */
-match_expression *
+static match_expression *
 get_last_but_one_match_expression(match_counters *counters, match_operation *cur)
 {
 	if (!counters) {
@@ -747,7 +748,7 @@ get_last_but_one_match_expression(match_counters *counters, match_operation *cur
 	}
 }
 
-size_t
+static size_t
 get_first_count(match_counters *counters, match_operation *cur)
 {
 	match_expression *o = get_first_match_expression(counters, cur);
@@ -758,7 +759,7 @@ get_first_count(match_counters *counters, match_operation *cur)
 	}
 }
 
-size_t
+static size_t
 get_last_count(match_counters *counters, match_operation *cur)
 {
 	match_expression *o = get_last_match_expression(counters, cur);
@@ -770,7 +771,7 @@ get_last_count(match_counters *counters, match_operation *cur)
 }
 
 
-size_t
+static size_t
 calculate_total_count(match_counters *counters, match_operation *cur)
 {
 	size_t result = 0;
@@ -793,7 +794,7 @@ calculate_total_count(match_counters *counters, match_operation *cur)
 	return result;
 }
 
-void
+static void
 print_counter_averages(FILE *output, match_counters *counters, match_operation *cur)
 {
 	size_t total_value;
@@ -832,7 +833,7 @@ print_counter_averages(FILE *output, match_counters *counters, match_operation *
 	return;	
 }
 
-void
+static void
 print_counter_average_count(FILE *output, match_counters *counters, match_operation *cur, bool remove_first_last)
 {
 	size_t total_matches;
@@ -891,7 +892,7 @@ print_counter_average_count(FILE *output, match_counters *counters, match_operat
 	return;	
 }
 
-bool
+static bool
 match_int(type_operator operator,
           char *value,
 	  char *mvalue)
@@ -930,10 +931,11 @@ match_int(type_operator operator,
 	}
 }
 
-bool
+static bool
 match_opcode(type_operator operator,
              char *value,
-             char *mvalue) {
+             char *mvalue)
+{
 	ldns_pkt_opcode a, b;
 	int i;
 	ldns_lookup_table *lt;
@@ -995,7 +997,7 @@ match_opcode(type_operator operator,
 	}
 }
 
-bool
+static bool
 match_str(type_operator operator,
           char *value,
           char *mvalue)
@@ -1027,7 +1029,7 @@ match_str(type_operator operator,
 	}	
 }
 
-bool
+static bool
 match_rr_type(type_operator operator,
               char *value,
 	      char *mvalue)
@@ -1062,10 +1064,11 @@ match_rr_type(type_operator operator,
 	}
 }
 
-bool
+static bool
 match_rcode(type_operator operator,
              char *value,
-             char *mvalue) {
+             char *mvalue)
+{
 	int a, b;
 	int i;
 	ldns_lookup_table *lt;
@@ -1128,7 +1131,7 @@ match_rcode(type_operator operator,
 	}
 }
 
-bool
+static bool
 value_matches(match_id id,
         type_operator operator,
         char *value,
@@ -1191,7 +1194,7 @@ value_matches(match_id id,
 	return result;
 }
 
-char *
+static char *
 get_string_value(match_id id, ldns_pkt *pkt, ldns_rdf *src_addr, ldns_rdf *dst_addr)
 {
 	char *val;
@@ -1331,30 +1334,7 @@ get_string_value(match_id id, ldns_pkt *pkt, ldns_rdf *src_addr, ldns_rdf *dst_a
 	return val;
 }
 
-/*
-bool
-match_pkt(ldns_pkt *pkt, match_counter *counter)
-{
-	bool result;
-	char *val;
-
-	if (!pkt || !counter) {
-		return false;
-	} else {
-		val = get_string_value(counter->id, pkt);
-		if (!val) {
-			return false;
-		}
-		result = value_matches(counter->id, counter->operator, val, counter->value);
-		if (result) {
-			counter->count++;
-		}
-		free(val);
-		return result;
-	}
-}
-*/
-bool
+static bool
 match_packet_to_operation(ldns_pkt *pkt, ldns_rdf *src_addr, ldns_rdf *dst_addr, match_operation *operation)
 {
 	bool result;
@@ -1373,22 +1353,7 @@ match_packet_to_operation(ldns_pkt *pkt, ldns_rdf *src_addr, ldns_rdf *dst_addr,
 	}
 }
 
-
-
-/*
-int
-add_counter(match_counters *counters,
-            match_expression *expr)
-{
-		counters->counter = realloc(counters->counter, (counters->size + 1) * sizeof(match_expression *));
-		counters->counter[counters->size] = expr;
-		counters->size = counters->size + 1;
-
-		return 0;
-}
-*/
-
-int
+static int
 match_expression_compare_count(const void *a, const void *b)
 {
 	match_expression *mea, *meb;
@@ -1411,7 +1376,7 @@ match_expression_compare_count(const void *a, const void *b)
 	}
 }
 
-int
+static int
 match_expression_compare_count_p(const void *a, const void *b)
 {
 	match_expression **pmea, **pmeb;
@@ -1427,7 +1392,7 @@ match_expression_compare_count_p(const void *a, const void *b)
 	}
 }
 
-int
+static int
 match_operation_compare(const void *a, const void *b)
 {
 	match_operation *moa, *mob;
@@ -1479,7 +1444,7 @@ match_operation_compare(const void *a, const void *b)
 	}
 }
 
-int
+static int
 match_expression_compare(const void *a, const void *b)
 {
 	match_expression *mea, *meb;
@@ -1518,7 +1483,8 @@ match_expression_compare(const void *a, const void *b)
 		}
 	}
 }
-int
+
+static int
 match_expression_compare_p(const void *a, const void *b)
 {
 	
@@ -1538,7 +1504,7 @@ match_expression_compare_p(const void *a, const void *b)
 /**
  * If count is true, and the counter is found, its count is increased by 1
  */
-int
+static int
 add_match_counter(match_counters *counters,
 		  match_expression *expr,
                   bool count)
@@ -1593,7 +1559,7 @@ add_match_counter(match_counters *counters,
 	return 0;
 }
 
-bool
+static bool
 match_dns_packet_to_expr(ldns_pkt *pkt, ldns_rdf *src_addr, ldns_rdf *dst_addr, match_expression *expr)
 {
 	bool result;
@@ -1634,7 +1600,7 @@ match_dns_packet_to_expr(ldns_pkt *pkt, ldns_rdf *src_addr, ldns_rdf *dst_addr, 
 	return result;
 }
 
-bool
+static bool
 match_expression_equals(match_expression *expr1, match_expression *expr2)
 {
 	if (!expr1 || !expr2) {
@@ -1665,8 +1631,7 @@ match_expression_equals(match_expression *expr1, match_expression *expr2)
 
 }
 
-
-void
+static void
 free_match_operation(match_operation *operation)
 {
 	if (operation) {
@@ -1677,7 +1642,7 @@ free_match_operation(match_operation *operation)
 	}
 }
 
-void
+static void
 free_match_expression(match_expression *expr)
 {
 	if (expr) {
@@ -1695,7 +1660,7 @@ free_match_expression(match_expression *expr)
 	}
 }
 
-void
+static void
 free_counters(match_counters *counters)
 {
 	if (counters) {
@@ -1712,7 +1677,7 @@ free_counters(match_counters *counters)
 	}
 }
 
-void
+static void
 match_pkt_counters(ldns_pkt *pkt, ldns_rdf *src_addr, ldns_rdf *dst_addr, match_counters *counts)
 {
 	if (counts->left) {
@@ -1730,7 +1695,7 @@ match_pkt_counters(ldns_pkt *pkt, ldns_rdf *src_addr, ldns_rdf *dst_addr, match_
 	}	
 }
 
-void
+static void
 match_pkt_uniques(ldns_pkt *pkt, ldns_rdf *src_addr, ldns_rdf *dst_addr, match_counters *uniques, match_id unique_ids[], size_t unique_id_count)
 {
 	match_expression *me;
@@ -1793,26 +1758,7 @@ match_pkt_uniques(ldns_pkt *pkt, ldns_rdf *src_addr, ldns_rdf *dst_addr, match_c
 #endif
 }
 
-
-/*
-void
-print_match_counter(FILE *output, match_counter *mc)
-{
-	match_table *mt = NULL;
-	if (mc) {
-		mt = get_match_by_id(mc->id);
-		if (mt) {
-			fprintf(output, "%s %s '%s'", mt->name, get_op_str(mc->operator), mc->value);
-		} else {
-			fprintf(output, "%u %s '%s'", mc->id, get_op_str(mc->operator), mc->value);
-		}
-	} else {
-		fprintf(output, "(nil)");
-	}
-}
-
-*/
-match_expression *
+static match_expression *
 parse_match_expression(char *string)
 {
 	match_expression *expr;
@@ -1830,21 +1776,13 @@ parse_match_expression(char *string)
 
 	j = 0;
 	for (i = 0; i < strlen(string); i++) {
-/*
 		if(!isspace(string[i])) {
-*/
 			str[j] = string[i];
 			j++;
-/*
 		}
-*/
 	}
 	str[j] = '\0';
 	
-	/*
-	printf("Parsing: %s\n", string);
-	printf("Parsing short : %s\n", str);
-	*/
 	expr = malloc(sizeof(match_expression));
 	expr->left = NULL;
 	expr->right = NULL;

@@ -23,7 +23,7 @@ int verbosity = 3;
 
 /* returns 1 if the list is empty, or if there are only ns rrs in the
  * list, 0 otherwise */
-int
+static int
 only_ns_in_rrsets(ldns_dnssec_rrsets *rrsets) {
 	ldns_dnssec_rrsets *cur_rrset = rrsets;
 
@@ -36,7 +36,7 @@ only_ns_in_rrsets(ldns_dnssec_rrsets *rrsets) {
 	return 1;
 }
 
-int
+static int
 zone_is_nsec3_optout(ldns_rbtree_t *zone_nodes)
 {
 	/* simply find the first NSEC3 RR and check its flags */
@@ -60,7 +60,7 @@ zone_is_nsec3_optout(ldns_rbtree_t *zone_nodes)
 	return 0;
 }
 
-bool
+static bool
 ldns_rr_list_contains_name(const ldns_rr_list *rr_list,
 					  const ldns_rdf *name)
 {
@@ -77,7 +77,7 @@ ldns_rr_list_contains_name(const ldns_rr_list *rr_list,
 	return false;
 }
 
-void
+static void
 print_type(ldns_rr_type type)
 {
 	const ldns_rr_descriptor *descriptor;
@@ -92,7 +92,7 @@ print_type(ldns_rr_type type)
 
 }
 
-ldns_dnssec_zone *
+static ldns_dnssec_zone *
 create_dnssec_zone(ldns_zone *orig_zone)
 {
 	size_t i;
@@ -143,7 +143,7 @@ create_dnssec_zone(ldns_zone *orig_zone)
 	return dnssec_zone;
 }
 
-ldns_status
+static ldns_status
 verify_dnssec_rrset(ldns_rdf *zone_name,
 					ldns_rdf *name,
                     ldns_dnssec_rrsets *rrset,
@@ -219,7 +219,7 @@ verify_dnssec_rrset(ldns_rdf *zone_name,
 	return result;
 }
 
-ldns_status
+static ldns_status
 verify_single_rr(ldns_rr *rr,
 			  ldns_dnssec_rrs *signature_rrs,
 			  ldns_rr_list *keys)
@@ -274,7 +274,7 @@ verify_single_rr(ldns_rr *rr,
 	return result;
 }
 
-ldns_status
+static ldns_status
 verify_next_hashed_name(ldns_rbtree_t *zone_nodes,
                         ldns_dnssec_name *name)
 {
@@ -360,7 +360,7 @@ verify_next_hashed_name(ldns_rbtree_t *zone_nodes,
 	}
 }
 
-ldns_rbnode_t *
+static ldns_rbnode_t *
 next_nonglue_node(ldns_rbnode_t *node, ldns_rr_list *glue_rrs)
 {
 	ldns_rbnode_t *cur_node = ldns_rbtree_next(node);
@@ -377,7 +377,7 @@ next_nonglue_node(ldns_rbnode_t *node, ldns_rr_list *glue_rrs)
 	return LDNS_RBTREE_NULL;
 }
 
-ldns_status
+static ldns_status
 verify_nsec(ldns_rbtree_t *zone_nodes,
             ldns_rbnode_t *cur_node,
             ldns_rr_list *keys,
@@ -480,7 +480,7 @@ ldns_dnssec_name_has_only_a(ldns_dnssec_name *cur_name)
 	return 1;
 }
 
-ldns_status
+static ldns_status
 verify_dnssec_name(ldns_rdf *zone_name,
                 ldns_dnssec_zone *zone,
                 ldns_rbtree_t *zone_nodes,
@@ -549,7 +549,7 @@ verify_dnssec_name(ldns_rdf *zone_name,
 	return result;
 }
 
-ldns_status
+static ldns_status
 verify_dnssec_zone(ldns_dnssec_zone *dnssec_zone,
 			    ldns_rdf *zone_name,
 			    ldns_rr_list *glue_rrs)

@@ -12,7 +12,7 @@
 
 #include <errno.h>
 
-void
+static void
 usage(FILE *fp, char *prog) {
 	fprintf(fp, "%s [-n] keyfile\n", prog);
 	fprintf(fp, "  Revokes a key\n");

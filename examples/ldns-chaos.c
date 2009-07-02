@@ -11,14 +11,14 @@
 
 #include <ldns/ldns.h>
 
-int
+static int
 usage(FILE *fp, char *prog) {
 	fprintf(fp, "%s server\n", prog);
 	fprintf(fp, "  print out some information about server\n");
 	return 0;
 }
 
-void
+static void
 remove_nameservers(ldns_resolver *res)
 {
 	ldns_rdf *ns;
@@ -97,7 +97,7 @@ main(int argc, char *argv[])
 		p = ldns_resolver_query(res, version, LDNS_RR_TYPE_TXT,
 				LDNS_RR_CLASS_CH, LDNS_RD);
 		if (p) {
-ldns_pkt_print(stdout, p);
+			ldns_pkt_print(stdout, p);
 			info = ldns_pkt_rr_list_by_type(p,
 					LDNS_RR_TYPE_TXT, LDNS_SECTION_ANSWER);
 

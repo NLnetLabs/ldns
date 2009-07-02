@@ -22,7 +22,7 @@
 #define OP_DEL '-'
 #define OP_CHG '~'
 
-void 
+static void 
 usage(int argc, char **argv)
 {
 	printf("Usage: %s [-v] [-i] [-d] [-c] <zonefile1> <zonefile2>\n",

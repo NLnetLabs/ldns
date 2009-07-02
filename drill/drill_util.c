@@ -13,7 +13,7 @@
 
 #include <errno.h>
 
-int
+static int
 read_line(FILE *input, char *line)
 {
 	int i;

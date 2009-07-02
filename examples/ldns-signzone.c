@@ -26,7 +26,7 @@ int verbosity = 1;
 #ifdef HAVE_SSL
 #include <openssl/err.h>
 
-void
+static void
 usage(FILE *fp, const char *prog) {
 	fprintf(fp, "%s [OPTIONS] zonefile key [key [key]]\n", prog);
 	fprintf(fp, "  signs the zone with the given key(s)\n");
@@ -57,13 +57,13 @@ usage(FILE *fp, const char *prog) {
 	fprintf(fp, "  A date can be a timestamp (seconds since the epoch), or of\n  the form <YYYYMMdd[hhmmss]>\n");
 }
 
-void
+static void
 usage_openssl(FILE *fp, const char *prog) {
 	fprintf(fp, "Special commands for openssl engines:\n");
 	fprintf(fp, "-c <file>\tOpenSSL config file\n");
 }
 
-void check_tm(struct tm tm)
+static void check_tm(struct tm tm)
 {
 	if (tm.tm_year < 70) {
 		fprintf(stderr, "You cannot specify dates before 1970\n");
@@ -102,7 +102,7 @@ void check_tm(struct tm tm)
  * 
  * prints a warning if a non-default TTL is changed
  */
-void
+static void
 equalize_ttls(ldns_rr *rr1, ldns_rr *rr2, uint32_t default_ttl)
 {
 	uint32_t ttl1, ttl2;
@@ -124,7 +124,7 @@ equalize_ttls(ldns_rr *rr1, ldns_rr *rr2, uint32_t default_ttl)
 	}
 }
 
-void
+static void
 equalize_ttls_rr_list(ldns_rr_list *rr_list, ldns_rr *rr, uint32_t default_ttl)
 {
 	size_t i;
@@ -138,7 +138,7 @@ equalize_ttls_rr_list(ldns_rr_list *rr_list, ldns_rr *rr, uint32_t default_ttl)
 	}
 }
 
-ldns_rr *
+static ldns_rr *
 find_key_in_zone(ldns_rr *pubkey_gen, ldns_zone *zone) {
 	size_t key_i;
 	ldns_rr *pubkey;
@@ -165,7 +165,7 @@ find_key_in_zone(ldns_rr *pubkey_gen, ldns_zone *zone) {
 	return NULL;
 }
 
-ldns_rr *
+static ldns_rr *
 find_key_in_file(ldns_key *key)
 {
 	char *keyfile_name;
@@ -215,7 +215,7 @@ find_key_in_file(ldns_key *key)
  * Even if keys are not added, the function is still needed, to check
  * whether keys of which we only have key data are KSKs or ZSKS
  */
-ldns_status
+static ldns_status
 find_or_create_pubkeys(ldns_key_list *keys, ldns_zone *orig_zone, bool add_keys, uint32_t default_ttl) {
 	ldns_key *key;
 	size_t i;
@@ -294,7 +294,7 @@ find_or_create_pubkeys(ldns_key_list *keys, ldns_zone *orig_zone, bool add_keys,
 	return LDNS_STATUS_OK;
 }
 
-void
+static void
 strip_dnssec_records(ldns_zone *zone)
 {
 	ldns_rr_list *new_list;
@@ -681,7 +681,7 @@ main(int argc, char *argv[])
 		line_nr = 0;
 		if (!keyfile) {
 			fprintf(stderr,
-				   "Error: unable to <read %s: %s\n",
+				   "Error: unable to read %s: %s\n",
 				   keyfile_name,
 				   strerror(errno));
 		} else {

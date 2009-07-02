@@ -25,7 +25,7 @@
 #define INTENT_TO_SPLIT 1
 #define SPLIT_NOW	2
 
-void
+static void
 usage(FILE *f, char *progname)
 {
 		fprintf(f, "Usage: %s [OPTIONS] <zonefile> [keys]\n", progname);
@@ -46,7 +46,7 @@ usage(FILE *f, char *progname)
 
 
 /* key the keys from the cmd line */
-ldns_rr_list *
+static ldns_rr_list *
 open_keyfiles(char **files, uint16_t filec) 
 {
 	uint16_t i;
@@ -72,7 +72,7 @@ open_keyfiles(char **files, uint16_t filec)
 }
 
 /* open a new zone file with the correct suffix */
-FILE *
+static FILE *
 open_newfile(char *basename, ldns_zone *z, size_t counter, ldns_rr_list *keys)
 {
 	char filename[FILE_SIZE];

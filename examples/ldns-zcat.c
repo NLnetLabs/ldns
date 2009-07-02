@@ -22,7 +22,7 @@
 #define MIDDLE_ZONE 	1
 #define LAST_ZONE 	2
 
-void
+static void
 usage(FILE *f, char *progname)
 {
 		fprintf(f, "Usage: %s [OPTIONS] <zonefiles>\n", progname);

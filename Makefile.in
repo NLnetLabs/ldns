@@ -148,7 +148,7 @@ install-manpages:	manpages
 uninstall-manpages:
 		for i in `cat doc/ldns_manpages`; do \
 			rm -f $(DESTDIR)$(mandir)/man3/$$i.3 ; done
-		rmdir -p $(DESTDIR)$(mandir)/man3 || echo "never mind"
+		rmdir -p $(DESTDIR)$(mandir)/man3 || echo "ok, dir already gone"
 
 install-h:	lib
 		$(INSTALL) -m 755 -d $(DESTDIR)$(includedir)/ldns
@@ -160,7 +160,7 @@ install-h:	lib
 uninstall-h:
 		for i in $(LIBDNS_HEADERS); do \
 			rm -f $(DESTDIR)$(includedir)/$$i; done
-		[ ! -d $(DESTDIR)$(includedir)/ldns ] || rmdir -p $(DESTDIR)$(includedir)/ldns || echo "never mind"
+		[ ! -d $(DESTDIR)$(includedir)/ldns ] || rmdir -p $(DESTDI)$(includedir)/ldns || echo "ok, dir already gone"
 		exit 0
 	
 install-lib:	lib
@@ -170,7 +170,7 @@ install-lib:	lib
 
 uninstall-lib:	
 		$(LIBTOOL) --mode=uninstall rm -f $(DESTDIR)$(libdir)/libldns.la
-		rmdir -p $(DESTDIR)$(libdir) || echo "never mind"
+		rmdir -p $(DESTDIR)$(libdir) || echo "ok, dir already gone"
 
 clean:
 	rm -f *.o *.d *.lo

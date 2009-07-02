@@ -12,7 +12,7 @@
 
 #include <errno.h>
 
-void
+static void
 usage(FILE *fp, char *prog) {
 	fprintf(fp, "%s [-fn] [-1|-2] keyfile\n", prog);
 	fprintf(fp, "  Generate a DS RR from the DNSKEYS in keyfile\n");
@@ -26,7 +26,7 @@ usage(FILE *fp, char *prog) {
 	fprintf(fp, "  -2: use SHA256 for the DS hash\n");
 }
 
-int
+static int
 is_suitable_dnskey(ldns_rr *rr, int sep_only)
 {
 	if (!rr || ldns_rr_get_type(rr) != LDNS_RR_TYPE_DNSKEY) {

@@ -16,7 +16,7 @@ int verbosity = 0;
 uint8_t address_family = 0;
 bool store_in_file = false;
 
-void
+static void
 usage(FILE *fp, char *prog) {
 	fprintf(fp, "%s domain\n", prog);
 	fprintf(fp, "  retrieve the dnskeys for a domain\n");
@@ -30,7 +30,7 @@ usage(FILE *fp, char *prog) {
 	fprintf(fp, "-v <int>\tVerbosity level (0-5, not verbose-very verbose)\n");
 }
 
-ldns_rr_list *
+static ldns_rr_list *
 retrieve_dnskeys(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 		ldns_rr_class c, ldns_rr_list *dns_root)
 {

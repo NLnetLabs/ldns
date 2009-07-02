@@ -11,7 +11,7 @@
 
 #include <ldns/ldns.h>
 
-int
+static int
 usage(FILE *fp, char *prog) {
 	fprintf(fp, "%s domain [type]\n", prog);
 	fprintf(fp, "  print out the inception and expiration dates\n");

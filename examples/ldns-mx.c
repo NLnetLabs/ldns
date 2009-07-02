@@ -9,7 +9,7 @@
 
 #include <ldns/ldns.h>
 
-int
+static int
 usage(FILE *fp, char *prog) {
 	fprintf(fp, "%s domain\n", prog);
 	fprintf(fp, "  print out the mx for domain\n");

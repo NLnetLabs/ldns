@@ -643,6 +643,20 @@ ldns_dnssec_rrsets_contains_type(ldns_dnssec_rrsets *rrsets,
 	return 0;
 }
 
+/* returns true if the current dnssec_rrset from the given list of rrsets
+ * is glue */
+static int
+is_glue(ldns_dnssec_rrsets *cur_rrsets, ldns_dnssec_rrsets *orig_rrsets)
+{
+	/* only glue if a or aaaa if there are no ns, unless there is soa */
+	return (cur_rrsets->type == LDNS_RR_TYPE_A ||
+	        cur_rrsets->type ==  LDNS_RR_TYPE_AAAA) &&
+	        (ldns_dnssec_rrsets_contains_type(orig_rrsets,
+	              LDNS_RR_TYPE_NS) &&
+	        !ldns_dnssec_rrsets_contains_type(orig_rrsets,
+	              LDNS_RR_TYPE_SOA));
+}
+
 ldns_rr *
 ldns_dnssec_create_nsec(ldns_dnssec_name *from,
                         ldns_dnssec_name *to,
@@ -665,17 +679,9 @@ ldns_dnssec_create_nsec(ldns_dnssec_name *from,
 
 	cur_rrsets = from->rrsets;
 	while (cur_rrsets) {
-		/* only add a and aaaa if there are no ns */
-		if (cur_rrsets->type == LDNS_RR_TYPE_A ||
-		    cur_rrsets->type ==  LDNS_RR_TYPE_AAAA) {
-		    if (ldns_dnssec_rrsets_contains_type(from->rrsets,
-		                                         LDNS_RR_TYPE_NS) &&
-		       !ldns_dnssec_rrsets_contains_type(from->rrsets,
-		                                         LDNS_RR_TYPE_SOA)
-			) {
-				cur_rrsets = cur_rrsets->next;
+		if (is_glue(cur_rrsets, from->rrsets)) {
+			cur_rrsets = cur_rrsets->next;
 			continue;
-			}
 		}
 		types[type_count] = cur_rrsets->type;
 		type_count++;
@@ -732,17 +738,9 @@ ldns_dnssec_create_nsec3(ldns_dnssec_name *from,
 
 	cur_rrsets = from->rrsets;
 	while (cur_rrsets) {
-		/* only add a and aaaa if there are no ns,
-		 * or if the name is the zone apex */
-		if ((cur_rrsets->type == LDNS_RR_TYPE_A ||
-		    cur_rrsets->type ==  LDNS_RR_TYPE_AAAA) &&
-		    ldns_dname_compare(zone_name, from->name) != 0
-		    ) {
-		    if (ldns_dnssec_rrsets_contains_type(from->rrsets,
-		                                         LDNS_RR_TYPE_NS)) {
-				cur_rrsets = cur_rrsets->next;
-		    	continue;
-			}
+		if (is_glue(cur_rrsets, from->rrsets)) {
+			cur_rrsets = cur_rrsets->next;
+			continue;
 		}
 		types[type_count] = cur_rrsets->type;
 		type_count++;

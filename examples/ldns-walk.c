@@ -12,7 +12,7 @@
 
 int verbosity = 0;
 
-int
+static int
 usage(FILE *fp, char *prog) {
 	fprintf(fp, "%s [options] domain\n", prog);
 	fprintf(fp, "  print out the owner names for domain and the record types for those names\n");

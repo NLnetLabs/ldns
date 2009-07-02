@@ -23,7 +23,7 @@
 #define MAX_FILENAME_LEN 250
 int verbosity = 1;
 
-void
+static void
 usage(FILE *fp, const char *prog) {
 	fprintf(fp, "%s [OPTIONS] <domain name>\n", prog);
 	fprintf(fp, "  prints the NSEC3 hash of the given domain name\n");

@@ -614,7 +614,7 @@ ldns_dname_compare_v(const void *a, const void *b) {
 #ifdef HAVE_SSL
 ldns_rbnode_t *
 ldns_dnssec_zone_find_nsec3_original(ldns_dnssec_zone *zone,
-							  ldns_rr *rr) {
+                                     ldns_rr *rr) {
 	ldns_rbnode_t *current_node = ldns_rbtree_first(zone->names);
 	ldns_dnssec_name *current_name;
 	ldns_rdf *hashed_name;
@@ -623,7 +623,6 @@ ldns_dnssec_zone_find_nsec3_original(ldns_dnssec_zone *zone,
 
 	while (current_node != LDNS_RBTREE_NULL) {
 		current_name = (ldns_dnssec_name *) current_node->data;
-#ifdef HAVE_SSL
 		if (!current_name->hashed_name) {
 			current_name->hashed_name =
 				ldns_nsec3_hash_name_frm_nsec3(rr, current_name->name);
@@ -634,7 +633,6 @@ ldns_dnssec_zone_find_nsec3_original(ldns_dnssec_zone *zone,
 			ldns_rdf_deep_free(hashed_name);
 			return current_node;
 		}
-#endif /* HAVE_SSL */
 		current_node = ldns_rbtree_next(current_node);
 	}
 	ldns_rdf_deep_free(hashed_name);

@@ -13,7 +13,7 @@
 #include <errno.h>
 
 #ifdef HAVE_SSL
-void
+static void
 usage(FILE *fp, char *prog) {
 	fprintf(fp, "%s -a <algorithm> [-b bits] [-r /dev/random] [-v] domain\n",
 		   prog);
@@ -32,7 +32,7 @@ usage(FILE *fp, char *prog) {
 	fprintf(fp, "  The base name (K<name>+<alg>+<id> will be printed to stdout\n");
 }
 
-void
+static void
 show_algorithms(FILE *out)
 {
 	ldns_lookup_table *lt = ldns_signing_algorithms;

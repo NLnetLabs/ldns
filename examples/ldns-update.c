@@ -12,7 +12,7 @@
 #include <ldns/ldns.h>
 
 /* dynamic update stuff */
-ldns_resolver *
+static ldns_resolver *
 ldns_update_resolver_new(const char *fqdn, const char *zone,
     ldns_rr_class class, uint16_t port, ldns_tsig_credentials *tsig_cred, ldns_rdf **zone_rdf)
 {
@@ -131,7 +131,7 @@ ldns_update_resolver_new(const char *fqdn, const char *zone,
 }
 
 
-ldns_status
+static ldns_status
 ldns_update_send_simple_addr(const char *fqdn, const char *zone,
     const char *ipaddr, uint16_t p, uint32_t ttl, ldns_tsig_credentials *tsig_cred)
 {
@@ -233,8 +233,9 @@ ldns_update_send_simple_addr(const char *fqdn, const char *zone,
 }
 
 
-void
-usage(FILE *fp, char *prog) {
+static void
+usage(FILE *fp, char *prog)
+{
         fprintf(fp, "%s domain [zone] ip tsig_name tsig_alg tsig_hmac\n", prog);
         fprintf(fp, "  send a dynamic update packet to <ip>\n\n");
         fprintf(fp, "  Use 'none' instead of ip to remove any previous address\n");
