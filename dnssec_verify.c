@@ -1016,9 +1016,9 @@ ldns_verify(ldns_rr_list *rrset, ldns_rr_list *rrsig, const ldns_rr_list *keys,
 
 ldns_rr_list *
 ldns_fetch_valid_domain_keys(const ldns_resolver *res,
-					    const ldns_rdf *domain,
-					    const ldns_rr_list *keys,
-					    ldns_status *status)
+                             const ldns_rdf *domain,
+                             const ldns_rr_list *keys,
+                             ldns_status *status)
 {
 	ldns_rr_list * trusted_keys = NULL;
 	ldns_rr_list * ds_keys = NULL;
@@ -1026,8 +1026,8 @@ ldns_fetch_valid_domain_keys(const ldns_resolver *res,
 	if (res && domain && keys) {
 
 		if ((trusted_keys = ldns_validate_domain_dnskey(res,
-											   domain,
-											   keys))) {
+                                         domain,
+                                         keys))) {
 			*status = LDNS_STATUS_OK;
 		} else {
 			/* No trusted keys in this domain, we'll have to find some in the parent domain */
@@ -1040,19 +1040,19 @@ ldns_fetch_valid_domain_keys(const ldns_resolver *res,
 	
 				if ((parent_keys = 
 					ldns_fetch_valid_domain_keys(res,
-										    parent_domain,
-										    keys,
-										    status))) {
+					     parent_domain,
+					     keys,
+					     status))) {
 					/* Check DS records */
 					if ((ds_keys =
 						ldns_validate_domain_ds(res,
-										    domain,
-										    parent_keys))) {
+						     domain,
+						     parent_keys))) {
 						trusted_keys =
 							ldns_fetch_valid_domain_keys(res,
-												    domain,
-												    ds_keys,
-												    status);
+							     domain,
+							     ds_keys,
+							     status);
 						ldns_rr_list_deep_free(ds_keys);
 					} else {
 						/* No valid DS at the parent -- fail */
@@ -1060,7 +1060,7 @@ ldns_fetch_valid_domain_keys(const ldns_resolver *res,
 					}
 					ldns_rr_list_deep_free(parent_keys);
 				}
-				ldns_rdf_free(parent_domain);
+				ldns_rdf_deep_free(parent_domain);
 			}
 		}
 	}
