@@ -1413,8 +1413,9 @@ ldns_pkt_verify(ldns_pkt *p, ldns_rr_type t, ldns_rdf *o,
 	 * sigs for the type t
 	 */
 	t_netorder = htons(t); /* rdf are in network order! */
+	/* a type identifier is a 16-bit number, so the size is 2 bytes */
 	rdf_t = ldns_rdf_new(LDNS_RDF_TYPE_TYPE,
-					 sizeof(ldns_rr_type),
+					 2,
 					 &t_netorder);
 	sigs_covered = ldns_rr_list_subtype_by_rdf(sigs, rdf_t, 0);
 	

@@ -120,6 +120,7 @@ main(int argc, char *argv[])
 	size_t		tsig_separator2;
 	ldns_rr		*axfr_rr;
 	ldns_status	status;
+	char *type_str;
 	
 	/* list of keys used in dnssec operations */
 	ldns_rr_list	*key_list = ldns_rr_list_new(); 
@@ -828,13 +829,33 @@ main(int argc, char *argv[])
 
 					/* verify */
 #ifdef HAVE_SSL
-					result = ldns_pkt_verify(pkt, type, qname, key_list, NULL, NULL);
+					key_verified = ldns_rr_list_new();
+					result = ldns_pkt_verify(pkt, type, qname, key_list, NULL, key_verified);
 
-					if (result == LDNS_STATUS_OK) {
+					if (result == LDNS_STATUS_ERR) {
+						/* is the existence denied then? */
+						result = ldns_verify_denial(pkt, qname, type, NULL, NULL);
+						if (result == LDNS_STATUS_OK) {
+							if (verbosity != -1) {
+								printf("Existence denied for ");
+								ldns_rdf_print(stdout, qname);
+								type_str = ldns_rr_type2str(type);
+								printf("\t%s\n", type_str);
+								LDNS_FREE(type_str);
+							}
+						} else {
+							if (verbosity != -1) {
+								printf("Bad data; RR for name and "
+								       "type not found or failed to "
+								       "verify, and denial of "
+								       "existence failed.\n");
+							}
+						}
+					} else if (result == LDNS_STATUS_OK) {
 						for(key_count = 0; key_count < ldns_rr_list_rr_count(key_verified);
 								key_count++) {
 							if (verbosity != -1) {
-								printf("VALIDATED by id = %d, owner = ",
+								printf("; VALIDATED by id = %d, owner = ",
 										(int)ldns_calc_keytag(
 												      ldns_rr_list_rr(key_verified, key_count)));
 								ldns_rdf_print(stdout, ldns_rr_owner(
@@ -846,8 +867,9 @@ main(int argc, char *argv[])
 						for(key_count = 0; key_count < ldns_rr_list_rr_count(key_list);
 								key_count++) {
 							if (verbosity != -1) {
-								printf("BOGUS by id = %d, owner = ",
-										(int)ldns_calc_keytag(
+								printf("; %s for id = %d, owner = ",
+								       ldns_get_errorstr_by_id(result),
+								       (int)ldns_calc_keytag(
 												      ldns_rr_list_rr(key_list, key_count)));
 								ldns_rdf_print(stdout, ldns_rr_owner(
 
@@ -857,6 +879,7 @@ main(int argc, char *argv[])
 							}
 						}
 					}
+					ldns_rr_list_free(key_verified);
 #else
 					(void) key_count;
 #endif /* HAVE_SSL */
