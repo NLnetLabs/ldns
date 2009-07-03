@@ -644,6 +644,9 @@ main(int argc, char *argv[])
 		case DRILL_REVERSE:
 			/* ipv4 or ipv6 addr? */
 			if (strchr(name, ':')) {
+				if (strchr(name, '.')) {
+					error("Syntax error: both '.' and ':' seen in address\n");
+				}
 				name2 = malloc(IP6_ARPA_MAX_LEN + 20);
 				c = 0;
 				for (i=0; i<(int)strlen(name); i++) {
