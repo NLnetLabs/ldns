@@ -11,7 +11,7 @@ mandir = @mandir@
 includedir = @includedir@
 
 CC = @CC@
-CFLAGS = @CFLAGS@ -I.
+CFLAGS = -I. @CFLAGS@
 CPPFLAGS = @CPPFLAGS@ 
 LDFLAGS = @LDFLAGS@
 LIBS = @LIBS@

@@ -11,7 +11,7 @@ mandir = @mandir@
 libtool = @libtool@
 
 CC = @CC@
-CFLAGS = @CFLAGS@ -I. -I${srcdir}
+CFLAGS = -I. -I${srcdir} @CFLAGS@
 CPPFLAGS = @CPPFLAGS@ 
 LDFLAGS = @LDFLAGS@
 LIBS = @LIBS@

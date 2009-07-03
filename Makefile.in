@@ -21,8 +21,8 @@ libtool		= $(glibtool)
 endif
 
 CC 		= @CC@
-CPPFLAGS	= @CPPFLAGS@ @DEFS@ -I. -I$(srcdir)
-CFLAGS 		= @CFLAGS@  -I. -I$(srcdir)
+CPPFLAGS	= -I. -I$(srcdir) @CPPFLAGS@ @DEFS@
+CFLAGS 		= -I. -I$(srcdir) @CFLAGS@
 LDFLAGS		= @LDFLAGS@
 LIBS 		= @LIBS@
 LIBOBJS		= @LIBOBJS@
