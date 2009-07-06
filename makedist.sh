@@ -219,6 +219,7 @@ tar czf ../ldns-$version.tar.gz ldns-$version || error_cleanup "Failed to create
 
 cleanup
 
+echo "ostype $OSTYPE"
 case $OSTYPE in
         linux*)
                 sha=`sha1sum ldns-$version.tar.gz |  awk '{ print $1 }'`
@@ -226,6 +227,17 @@ case $OSTYPE in
         freebsd*)
                 sha=`sha1  ldns$version.tar.gz |  awk '{ print $5 }'`
                 ;;
+        *)
+        	uname=`uname`
+        	case $uname in
+        		Linux*)
+                        	sha=`sha1sum ldns-$version.tar.gz |  awk '{ print $1 }'`
+                        	;;
+		        FreeBSD*)
+                		sha=`sha1  ldns$version.tar.gz |  awk '{ print $5 }'`
+		                ;;
+		esac
+        	;;
 esac
 echo $sha > ldns-$version.tar.gz.sha1
 
