@@ -1,6 +1,6 @@
 Summary: Lowlevel DNS(SEC) library with API
 Name: ldns
-Version: 1.5.1
+Version: 1.6.0
 Release: 1%{?dist}
 License: BSD
 Url: http://www.nlnetlabs.nl/%{name}/
@@ -67,8 +67,11 @@ rm -rf %{buildroot}
 %defattr(-,root,root)
 %{_libdir}/libldns*so.*
 %{_bindir}/drill
-%{_bindir}/ldns-*
 %{_bindir}/ldnsd
+#%{_bindir}/ldns-*
+%{_bindir}/ldns-chaos
+%{_bindir}/ldns-compare-zones
+%{_bindir}/ldns-[d-z]*
 %doc README LICENSE 
 %{_mandir}/*/*
 
@@ -76,6 +79,7 @@ rm -rf %{buildroot}
 %defattr(-,root,root,-)
 %{_libdir}/libldns.a
 %{_libdir}/libldns*so
+%{_bindir}/ldns-config
 %dir %{_includedir}/ldns
 %{_includedir}/ldns/*.h
 %doc doc Changelog README
@@ -85,11 +89,22 @@ rm -rf %{buildroot}
 %postun -p /sbin/ldconfig
 
 %changelog
-* Tue Feb 10 1009 Jelte Jansen <jelte@nlnetlabs.nl> - 1.5.1
-- Updated to 1.5.1
+* Fri Jul 03 2009 Paul Wouters <paul@xelerance.com> - 1.6.0-1
+- Updated to 1.6.0
 
-* Mon Feb 09 1009 Jelte Jansen <jelte@nlnetlabs.nl> - 1.5.0
-- Updated to 1.5.0
+* Thu Apr 16 2009 Paul Wouters <paul@xelerance.com> - 1.5.1-4
+- Memory management bug when generating a sha256 key, see:
+  https://bugzilla.redhat.com/show_bug.cgi?id=493953
+
+* Wed Feb 25 2009 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 1.5.1-2
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_11_Mass_Rebuild
+
+* Mon Feb 10 2009 Paul Wouters <paul@xelerance.com> - 1.5.1-1
+- Updated to new version, 1.5.0 had a bug preventing
+  zone signing.
+
+* Mon Feb  9 2009 Paul Wouters <paul@xelerance.com> - 1.5.0-1
+- Updated to new version
 
 * Thu Feb 05 2009 Adam Tkac <atkac redhat com> - 1.4.0-3
 - fixed configure flags
