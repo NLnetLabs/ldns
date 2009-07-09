@@ -37,7 +37,6 @@ usage(FILE *fp, const char *prog) {
 	fprintf(fp, "  -l\t\tLeave old DNSSEC RRSIGS and NSEC(3) records intact\n");
 	fprintf(fp, "  -o <domain>\torigin for the zone\n");
 	fprintf(fp, "  -v\t\tprint version and exit\n");
-	fprintf(fp, "  -v <int>\t\tset verbosity level\n");
 	fprintf(fp, "  -E <name>\tuse <name> as the crypto engine for signing\n");
 	fprintf(fp, "           \tThis can have a lot of extra options, see the manual page for more info\n");
 	fprintf(fp, "  -k <id>,<int>\tuse key id with algorithm int from engine\n");
