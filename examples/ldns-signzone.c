@@ -37,6 +37,7 @@ usage(FILE *fp, const char *prog) {
 	fprintf(fp, "  -l\t\tLeave old DNSSEC RRSIGS and NSEC(3) records intact\n");
 	fprintf(fp, "  -o <domain>\torigin for the zone\n");
 	fprintf(fp, "  -v\t\tprint version and exit\n");
+	fprintf(fp, "  -v <int>\t\tset verbosity level\n");
 	fprintf(fp, "  -E <name>\tuse <name> as the crypto engine for signing\n");
 	fprintf(fp, "           \tThis can have a lot of extra options, see the manual page for more info\n");
 	fprintf(fp, "  -k <id>,<int>\tuse key id with algorithm int from engine\n");
@@ -166,16 +167,14 @@ find_key_in_zone(ldns_rr *pubkey_gen, ldns_zone *zone) {
 }
 
 static ldns_rr *
-find_key_in_file(ldns_key *key)
+find_key_in_file(const char *keyfile_name_base, ldns_key *key)
 {
 	char *keyfile_name;
 	FILE *keyfile;
 	int line_nr;
 	uint32_t default_ttl = LDNS_DEFAULT_TTL;
-	char *keyfile_name_base;
 	
 	ldns_rr *pubkey = NULL;
-	keyfile_name_base = ldns_key_get_file_base_name(key);
 	keyfile_name = LDNS_XMALLOC(char,
 	                            strlen(keyfile_name_base) + 5);
 	snprintf(keyfile_name,
@@ -202,7 +201,6 @@ find_key_in_file(ldns_key *key)
 		fclose(keyfile);
 	}
 	LDNS_FREE(keyfile_name);
-	LDNS_FREE(keyfile_name_base);
 	return pubkey;
 }
 
@@ -216,8 +214,7 @@ find_key_in_file(ldns_key *key)
  * whether keys of which we only have key data are KSKs or ZSKS
  */
 static ldns_status
-find_or_create_pubkeys(ldns_key_list *keys, ldns_zone *orig_zone, bool add_keys, uint32_t default_ttl) {
-	ldns_key *key;
+find_or_create_pubkey(const char *keyfile_name_base, ldns_key *key, ldns_zone *orig_zone, bool add_keys, uint32_t default_ttl) {
 	size_t i;
 	ldns_rr *pubkey_gen, *pubkey;
 	int key_in_zone;
@@ -226,70 +223,67 @@ find_or_create_pubkeys(ldns_key_list *keys, ldns_zone *orig_zone, bool add_keys,
 		default_ttl = ldns_rr_ttl(ldns_zone_soa(orig_zone));
 	}
 
-	for (i = 0; i < ldns_key_list_key_count(keys); i++) {
-		key = ldns_key_list_key(keys, i);
-		if (!ldns_key_pubkey_owner(key)) {
-			ldns_key_set_pubkey_owner(key, ldns_rdf_clone(ldns_rr_owner(ldns_zone_soa(orig_zone))));
+	if (!ldns_key_pubkey_owner(key)) {
+		ldns_key_set_pubkey_owner(key, ldns_rdf_clone(ldns_rr_owner(ldns_zone_soa(orig_zone))));
+	}
+
+	/* find the public key in the zone, or in a
+	 * seperate file
+	 * we 'generate' one anyway, 
+	 * then match that to any present in the zone,
+	 * if it matches, we drop our own. If not,
+	 * we try to see if there is a .key file present.
+	 * If not, we use our own generated one, with
+	 * some default values 
+	 *
+	 * Even if -d (do-not-add-keys) is specified, 
+	 * we still need to do this, because we need
+	 * to have any key flags that are set this way
+	 */
+	pubkey_gen = ldns_key2rr(key);
+	ldns_rr_set_ttl(pubkey_gen, default_ttl);
+
+	if (verbosity >= 2) {
+		fprintf(stderr,
+			   "Looking for key with keytag %u or %u\n",
+			   (unsigned int) ldns_calc_keytag(pubkey_gen),
+			   (unsigned int) ldns_calc_keytag(pubkey_gen)+1
+			   );
+	}
+
+	pubkey = find_key_in_zone(pubkey_gen, orig_zone);
+	key_in_zone = 1;
+	if (!pubkey) {
+		key_in_zone = 0;
+		/* it was not in the zone, try to read a .key file */
+		pubkey = find_key_in_file(keyfile_name_base, key);
+		if (!pubkey && !(ldns_key_flags(key) & LDNS_KEY_SEP_KEY)) {
+			/* maybe it is a ksk? */
+			ldns_key_set_keytag(key, ldns_key_keytag(key) + 1);
+			pubkey = find_key_in_file(keyfile_name_base, key);
+			if (!pubkey) {
+				/* ok, no file, set back to ZSK */
+				ldns_key_set_keytag(key, ldns_key_keytag(key) - 1);
+			}
 		}
-
-		/* find the public key in the zone, or in a
-		 * seperate file
-		 * we 'generate' one anyway, 
-		 * then match that to any present in the zone,
-		 * if it matches, we drop our own. If not,
-		 * we try to see if there is a .key file present.
-		 * If not, we use our own generated one, with
-		 * some default values 
-		 *
-		 * Even if -d (do-not-add-keys) is specified, 
-		 * we still need to do this, because we need
-		 * to have any key flags that are set this way
-		 */
-		pubkey_gen = ldns_key2rr(key);
-		ldns_rr_set_ttl(pubkey_gen, default_ttl);
-
+	}
+	
+	if (!pubkey) {
+		/* okay, no public key found,
+		   just use our generated one */
+		pubkey = pubkey_gen;
 		if (verbosity >= 2) {
-			fprintf(stderr,
-				   "Looking for key with keytag %u or %u\n",
-				   (unsigned int) ldns_calc_keytag(pubkey_gen),
-				   (unsigned int) ldns_calc_keytag(pubkey_gen)+1
-				   );
+			fprintf(stderr, "Not in zone, no .key file, generating ZSK DNSKEY from private key data\n");
 		}
-
-		pubkey = find_key_in_zone(pubkey_gen, orig_zone);
-		key_in_zone = 1;
-		if (!pubkey) {
-			key_in_zone = 0;
-			/* it was not in the zone, try to read a .key file */
-			pubkey = find_key_in_file(key);
-			if (!pubkey && !(ldns_key_flags(key) & LDNS_KEY_SEP_KEY)) {
-				/* maybe it is a ksk? */
-				ldns_key_set_keytag(key, ldns_key_keytag(key) + 1);
-				pubkey = find_key_in_file(key);
-				if (!pubkey) {
-					/* ok, no file, set back to ZSK */
-					ldns_key_set_keytag(key, ldns_key_keytag(key) - 1);
-				}
-			}
-		}
-		
-		if (!pubkey) {
-			/* okay, no public key found,
-			   just use our generated one */
-			pubkey = pubkey_gen;
-			if (verbosity >= 2) {
-				fprintf(stderr, "Not in zone, no .key file, generating ZSK DNSKEY from private key data\n");
-			}
-		} else {
-			ldns_rr_free(pubkey_gen);
-		}
-		ldns_key_set_flags(key, ldns_rdf2native_int16(ldns_rr_rdf(pubkey, 0)));
-		ldns_key_set_keytag(key, ldns_calc_keytag(pubkey));
-		
-		if (add_keys && !key_in_zone) {
-			equalize_ttls_rr_list(ldns_zone_rrs(orig_zone), pubkey, default_ttl);
-			ldns_zone_push_rr(orig_zone, pubkey);
-		}
+	} else {
+		ldns_rr_free(pubkey_gen);
+	}
+	ldns_key_set_flags(key, ldns_rdf2native_int16(ldns_rr_rdf(pubkey, 0)));
+	ldns_key_set_keytag(key, ldns_calc_keytag(pubkey));
+	
+	if (add_keys && !key_in_zone) {
+		equalize_ttls_rr_list(ldns_zone_rrs(orig_zone), pubkey, default_ttl);
+		ldns_zone_push_rr(orig_zone, pubkey);
 	}
 	return LDNS_STATUS_OK;
 }
@@ -705,6 +699,11 @@ main(int argc, char *argv[])
 				fprintf(stderr, "Error reading key from %s at line %d\n", argv[argi], line_nr);
 			}
 		}
+		/* and, if not unset by -p, find or create the corresponding DNSKEY record */
+		status = find_or_create_pubkey(keyfile_name_base,
+		                               key, orig_zone,
+		                               add_keys, ttl);
+
 		argi++;
 	}
 	
@@ -721,8 +720,6 @@ main(int argc, char *argv[])
 		  "Error adding SOA to dnssec zone, skipping record\n");
 	}
 	
-	status = find_or_create_pubkeys(keys, orig_zone, add_keys, ttl);
-
 	for (i = 0;
 	     i < ldns_rr_list_rr_count(ldns_zone_rrs(orig_zone));
 	     i++) {
