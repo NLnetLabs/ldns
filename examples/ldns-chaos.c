@@ -18,18 +18,6 @@ usage(FILE *fp, char *prog) {
 	return 0;
 }
 
-static void
-remove_nameservers(ldns_resolver *res)
-{
-	ldns_rdf *ns;
-	
-	ns = ldns_resolver_pop_nameserver(res);
-	while (ns) {
-		ldns_rdf_deep_free(ns);
-		ns = ldns_resolver_pop_nameserver(res);
-	}
-}
-
 int
 main(int argc, char *argv[])
 {
