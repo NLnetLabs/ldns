@@ -108,77 +108,7 @@ if test "x$enable_rpath" = xyes; then
     RPATH_VAL="-Wl,-rpath=\${libdir}"
 fi
 
-# Checks for libraries.
-# Check for SSL, original taken from
-# http://www.gnu.org/software/ac-archive/htmldoc/check_ssl.html and
-# modified for NSD and 
-# copied again for use in ldns
-AC_ARG_WITH(ssl, AC_HELP_STRING([--with-ssl=pathname],
-                                    [enable SSL (will check /usr/local/ssl
-                            /usr/lib/ssl /usr/ssl /usr/pkg /usr/local /opt/local /usr/sfw /usr)]),[
-        ],[
-            withval="yes"
-        ])
-    if test x_$withval != x_no; then
-        AC_MSG_CHECKING(for SSL)
-        if test x_$withval = x_ -o x_$withval = x_yes; then
-            withval="/usr/local/ssl /usr/lib/ssl /usr/ssl /usr/pkg /usr/local /opt/local /usr/sfw /usr"
-        fi
-        for dir in $withval; do
-            ssldir="$dir"
-            if test -f "$dir/include/openssl/ssl.h"; then
-                found_ssl="yes"
-                AC_DEFINE_UNQUOTED([HAVE_SSL], [], [Define if you have the SSL libraries installed.])
-                AC_SUBST(HAVE_SSL)
-                CPPFLAGS="$CPPFLAGS -I$ssldir/include"
-                break;
-            fi
-        done
-        if test x_$found_ssl != x_yes; then
-            AC_MSG_ERROR(Cannot find the SSL libraries in $withval)
-        else
-            AC_MSG_RESULT(found in $ssldir)
-            HAVE_SSL=yes
-            AC_SUBST(HAVE_SSL)
-            LDFLAGS="$LDFLAGS -L$ssldir/lib -lcrypto"
-	    if test "x$enable_rpath" = xyes; then
-	        RUNTIME_PATH="$RUNTIME_PATH -R$ssldir/lib"
-	    fi
-	
-	    AC_MSG_CHECKING([for HMAC_CTX_init in -lcrypto])
-	    ORIGLIBS="$LIBS"
-	    LIBS="$LIBS -lcrypto"
-	    AC_TRY_LINK(, [
-		int HMAC_CTX_init(void);
-		(void)HMAC_CTX_init();
-	      ], [
-		AC_MSG_RESULT(yes)
-		AC_DEFINE([HAVE_HMAC_CTX_INIT], 1, 
-			[If you have HMAC_CTX_init])
-	      ], [
-		AC_MSG_RESULT(no)
-	    	# check if -lwsock32 or -lgdi32 are needed.	
-		LIBS="$LIBS -lgdi32"
-		AC_MSG_CHECKING([if -lcrypto needs -lgdi32])
-		AC_TRY_LINK([], [
-		    int HMAC_CTX_init(void);
-		    (void)HMAC_CTX_init();
-		  ],[
-		    AC_DEFINE([HAVE_HMAC_CTX_INIT], 1, 
-			[If you have HMAC_CTX_init])
-		    AC_MSG_RESULT(yes)
-		    LDFLAGS="$LDFLAGS -lgdi32" 
-		  ],[
-		    AC_MSG_RESULT(no)
-                    AC_MSG_ERROR([OpenSSL found in $ssldir, but version 0.9.7 or higher is required])
-		])
-            ])
-        fi
-	AC_SUBST(RUNTIME_PATH)
-    fi
-AC_CHECK_HEADERS([openssl/ssl.h],,, [AC_INCLUDES_DEFAULT])
-AC_CHECK_HEADERS([openssl/err.h],,, [AC_INCLUDES_DEFAULT])
-AC_CHECK_HEADERS([openssl/rand.h],,, [AC_INCLUDES_DEFAULT])
+ACX_WITH_SSL_OPTIONAL
 
 # Use libtool 
 ACX_LIBTOOL_C_ONLY
