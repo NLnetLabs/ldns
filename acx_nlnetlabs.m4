@@ -6,7 +6,7 @@
 #
 # Changelog
 # 2009-07-13
-# - added AXC_WITH_SSL_OPTIONAL
+# - added ACX_WITH_SSL_OPTIONAL
 # 2009-07-03
 # - fixup LDFLAGS for empty ssl dir.
 #
@@ -560,112 +560,11 @@ AC_DEFUN([ACX_RUNTIME_PATH_ADD], [
 	fi
 ])
 
-dnl Check for SSL. 
-dnl Adds --with-ssl option, searches for openssl and defines HAVE_SSL if found
-dnl Setup of CPPFLAGS, CFLAGS.  Adds -lcrypto to LIBS. 
-dnl Checks main header files of SSL.
-dnl
-AC_DEFUN([ACX_WITH_SSL],
-[
-AC_ARG_WITH(ssl, AC_HELP_STRING([--with-ssl=pathname],
-                                    [enable SSL (will check /usr/local/ssl
-                            /usr/lib/ssl /usr/ssl /usr/pkg /usr/local /opt/local /usr/sfw /usr)]),[
-        ],[
-            withval="yes"
-        ])
-    if test x_$withval = x_no; then
-	AC_MSG_ERROR([Need SSL library to do digital signature cryptography])
-    fi
-    if test x_$withval != x_no; then
-        AC_MSG_CHECKING(for SSL)
-        if test x_$withval = x_ -o x_$withval = x_yes; then
-            withval="/usr/local/ssl /usr/lib/ssl /usr/ssl /usr/pkg /usr/local /opt/local /usr/sfw /usr"
-        fi
-        for dir in $withval; do
-            ssldir="$dir"
-            if test -f "$dir/include/openssl/ssl.h"; then
-                found_ssl="yes"
-                AC_DEFINE_UNQUOTED([HAVE_SSL], [], [Define if you have the SSL libraries installed.])
-		dnl assume /usr/include is already in the include-path.
-		if test "$ssldir" != "/usr"; then
-			CPPFLAGS="$CPPFLAGS -I$ssldir/include"
-		fi
-                break;
-            fi
-        done
-        if test x_$found_ssl != x_yes; then
-            AC_MSG_ERROR(Cannot find the SSL libraries in $withval)
-        else
-            AC_MSG_RESULT(found in $ssldir)
-            HAVE_SSL=yes
-	    dnl assume /usr is already in the lib and dynlib paths.
-	    if test "$ssldir" != "/usr" -a "$ssldir" != ""; then
-                LDFLAGS="$LDFLAGS -L$ssldir/lib"
-		ACX_RUNTIME_PATH_ADD([$ssldir/lib])
-	    fi
-	
-	    AC_MSG_CHECKING([for HMAC_CTX_init in -lcrypto])
-	    LIBS="$LIBS -lcrypto"
-	    AC_TRY_LINK(, [
-		int HMAC_CTX_init(void);
-		(void)HMAC_CTX_init();
-	      ], [
-		AC_MSG_RESULT(yes)
-		AC_DEFINE([HAVE_HMAC_CTX_INIT], 1, 
-			[If you have HMAC_CTX_init])
-	      ], [
-		AC_MSG_RESULT(no)
-	    	# check if -lwsock32 or -lgdi32 are needed.	
-		BAKLIBS="$LIBS"
-		LIBS="$LIBS -lgdi32"
-		AC_MSG_CHECKING([if -lcrypto needs -lgdi32])
-		AC_TRY_LINK([], [
-		    int HMAC_CTX_init(void);
-		    (void)HMAC_CTX_init();
-		  ],[
-		    AC_DEFINE([HAVE_HMAC_CTX_INIT], 1, 
-			[If you have HMAC_CTX_init])
-		    AC_MSG_RESULT(yes) 
-		  ],[
-		    AC_MSG_RESULT(no)
-		    LIBS="$BAKLIBS"
-		    LIBS="$LIBS -ldl"
-		    AC_MSG_CHECKING([if -lcrypto needs -ldl])
-		    AC_TRY_LINK([], [
-			int HMAC_CTX_init(void);
-			(void)HMAC_CTX_init();
-		      ],[
-			AC_DEFINE([HAVE_HMAC_CTX_INIT], 1, 
-			    [If you have HMAC_CTX_init])
-			AC_MSG_RESULT(yes) 
-		      ],[
-			AC_MSG_RESULT(no)
-                    AC_MSG_ERROR([OpenSSL found in $ssldir, but version 0.9.7 or higher is required])
-		    ])
-		])
-            ])
-        fi
-        AC_SUBST(HAVE_SSL)
-	AC_SUBST(RUNTIME_PATH)
-    fi
-AC_CHECK_HEADERS([openssl/ssl.h],,, [AC_INCLUDES_DEFAULT])
-AC_CHECK_HEADERS([openssl/err.h],,, [AC_INCLUDES_DEFAULT])
-AC_CHECK_HEADERS([openssl/rand.h],,, [AC_INCLUDES_DEFAULT])
-])dnl End of ACX_WITH_SSL
-
-dnl Check for SSL. 
-dnl Adds --with-ssl option, searches for openssl and defines HAVE_SSL if found
-dnl Setup of CPPFLAGS, CFLAGS.  Adds -lcrypto to LIBS. 
-dnl Checks main header files of SSL.
-dnl
-AC_DEFUN([ACX_WITH_SSL_OPTIONAL],
-[
-AC_ARG_WITH(ssl, AC_HELP_STRING([--with-ssl=pathname],
-                                [enable SSL (will check /usr/local/ssl
-                                /usr/lib/ssl /usr/ssl /usr/pkg /usr/local /opt/local /usr/sfw /usr)]),[
-        ],[
-            withval="yes"
-        ])
+dnl Common code for both ACX_WITH_SSL and ACX_WITH_SSL_OPTIONAL
+dnl Takes one argument; the withval checked in those 2 functions
+dnl sets up the environment for the given openssl path
+AC_DEFUN([ACX_SSL_CHECKS], [
+    withval=$1
     if test x_$withval != x_no; then
         AC_MSG_CHECKING(for SSL)
         if test x_$withval = x_ -o x_$withval = x_yes; then
@@ -741,6 +640,41 @@ AC_ARG_WITH(ssl, AC_HELP_STRING([--with-ssl=pathname],
 AC_CHECK_HEADERS([openssl/ssl.h],,, [AC_INCLUDES_DEFAULT])
 AC_CHECK_HEADERS([openssl/err.h],,, [AC_INCLUDES_DEFAULT])
 AC_CHECK_HEADERS([openssl/rand.h],,, [AC_INCLUDES_DEFAULT])
+])dnl End of ACX_SSL_CHECKS
+
+dnl Check for SSL, where SSL is mandatory
+dnl Adds --with-ssl option, searches for openssl and defines HAVE_SSL if found
+dnl Setup of CPPFLAGS, CFLAGS.  Adds -lcrypto to LIBS. 
+dnl Checks main header files of SSL.
+dnl
+AC_DEFUN([ACX_WITH_SSL],
+[
+AC_ARG_WITH(ssl, AC_HELP_STRING([--with-ssl=pathname],
+                                    [enable SSL (will check /usr/local/ssl
+                            /usr/lib/ssl /usr/ssl /usr/pkg /usr/local /opt/local /usr/sfw /usr)]),[
+        ],[
+            withval="yes"
+        ])
+    if test x_$withval = x_no; then
+	AC_MSG_ERROR([Need SSL library to do digital signature cryptography])
+    fi
+    ACX_SSL_CHECKS($withval)
+])dnl End of ACX_WITH_SSL
+
+dnl Check for SSL, where ssl is optional (--without-ssl is allowed)
+dnl Adds --with-ssl option, searches for openssl and defines HAVE_SSL if found
+dnl Setup of CPPFLAGS, CFLAGS.  Adds -lcrypto to LIBS. 
+dnl Checks main header files of SSL.
+dnl
+AC_DEFUN([ACX_WITH_SSL_OPTIONAL],
+[
+AC_ARG_WITH(ssl, AC_HELP_STRING([--with-ssl=pathname],
+                                [enable SSL (will check /usr/local/ssl
+                                /usr/lib/ssl /usr/ssl /usr/pkg /usr/local /opt/local /usr/sfw /usr)]),[
+        ],[
+            withval="yes"
+        ])
+    ACX_SSL_CHECKS($withval)
 ])dnl End of ACX_WITH_SSL_OPTIONAL
 
 dnl Setup to use -lssl
