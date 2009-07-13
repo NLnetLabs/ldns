@@ -15,8 +15,10 @@
 
 #include <ldns/ldns.h>
 
+#ifdef HAVE_SSL
 #include <openssl/ssl.h>
 #include <openssl/sha.h>
+#endif /* HAVE_SSL */
 
 ldns_rr_list *
 ldns_get_rr_list_addr_by_name(ldns_resolver *res, ldns_rdf *name, ldns_rr_class c, 

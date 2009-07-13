@@ -7,8 +7,10 @@
 
 #include "config.h"
 
+#ifdef HAVE_SSL
 #include <ldns/ldns.h>
 #include <openssl/ssl.h>
+#endif /* HAVE_SSL */
 
 #include <errno.h>
 
