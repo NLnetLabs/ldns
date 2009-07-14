@@ -2,13 +2,14 @@
 # Copyright 2009, Wouter Wijngaards, NLnet Labs.   
 # BSD licensed.
 #
-# Version 3 - 2009-07-13
-#
+# Version 4
 # Changelog
-# 2009-07-13
-# - added ACX_WITH_SSL_OPTIONAL
-# 2009-07-03
-# - fixup LDFLAGS for empty ssl dir.
+# 2009-07-14 U_CHAR detection improved for windows crosscompile.
+#            added ACX_FUNC_MALLOC
+#            fixup some #if to #ifdef
+#            NONBLOCKING test for mingw crosscompile.
+# 2009-07-13 added ACX_WITH_SSL_OPTIONAL
+# 2009-07-03 fixup LDFLAGS for empty ssl dir.
 #
 # Automates some of the checking constructs.  Aims at portability for POSIX.
 # Documentation for functions is below.
@@ -42,6 +43,7 @@
 # ACX_CHECK_NONBLOCKING_BROKEN	- see if nonblocking sockets really work.
 # ACX_MKDIR_ONE_ARG		- determine mkdir(2) number of arguments.
 # ACX_FUNC_IOCTLSOCKET		- find ioctlsocket, portably.
+# ACX_FUNC_MALLOC		- check malloc, define replacement .
 # AHX_CONFIG_FORMAT_ATTRIBUTE	- config.h text for format.
 # AHX_CONFIG_UNUSED_ATTRIBUTE	- config.h text for unused.
 # AHX_CONFIG_FSEEKO		- define fseeko, ftello fallback.
@@ -485,14 +487,20 @@ AC_PROG_LIBTOOL
 
 dnl Detect if u_char type is defined, otherwise define it.
 AC_DEFUN([ACX_TYPE_U_CHAR], 
-	[AC_CHECK_TYPE(u_char, unsigned char)])
+[AC_CHECK_TYPE([u_char], ,
+	[AC_DEFINE([u_char], [unsigned char], [Define to 'unsigned char if not defined])], [
+AC_INCLUDES_DEFAULT
+#ifdef HAVE_WINSOCK2_H
+#  include <winsock2.h>
+#endif
+]) ])
 
 dnl Detect if rlim_t type is defined, otherwise define it.
 AC_DEFUN([ACX_TYPE_RLIM_T],
 [AC_CHECK_TYPE(rlim_t, , 
 	[AC_DEFINE([rlim_t], [unsigned long], [Define to 'int' if not defined])], [
 AC_INCLUDES_DEFAULT
-#if HAVE_SYS_RESOURCE_H
+#ifdef HAVE_SYS_RESOURCE_H
 #  include <sys/resource.h>
 #endif
 ]) ])
@@ -503,31 +511,34 @@ AC_DEFUN([ACX_TYPE_SOCKLEN_T],
 AC_CHECK_TYPE(socklen_t, , 
 	[AC_DEFINE([socklen_t], [int], [Define to 'int' if not defined])], [
 AC_INCLUDES_DEFAULT
-#if HAVE_SYS_SOCKET_H
+#ifdef HAVE_SYS_SOCKET_H
 #  include <sys/socket.h>
+#endif
+#ifdef HAVE_WS2TCPIP_H
+#  include <ws2tcpip.h>
 #endif
 ]) ])
 
-dnl Detect if socklen_t type is defined, otherwise define it.
+dnl Detect if in_addr_t type is defined, otherwise define it.
 AC_DEFUN([ACX_TYPE_IN_ADDR_T],
 [ AC_CHECK_TYPE(in_addr_t, [], [AC_DEFINE([in_addr_t], [uint32_t], [in_addr_t])], [
 AC_INCLUDES_DEFAULT
-#if HAVE_SYS_TYPES_H
+#ifdef HAVE_SYS_TYPES_H
 # include <sys/types.h>
 #endif
-#if HAVE_NETINET_IN_H
+#ifdef HAVE_NETINET_IN_H
 # include <netinet/in.h>
 #endif
 ]) ])
 
-dnl Detect if socklen_t type is defined, otherwise define it.
+dnl Detect if in_port_t type is defined, otherwise define it.
 AC_DEFUN([ACX_TYPE_IN_PORT_T],
 [ AC_CHECK_TYPE(in_port_t, [], [AC_DEFINE([in_port_t], [uint16_t], [in_port_t])], [
 AC_INCLUDES_DEFAULT
-#if HAVE_SYS_TYPES_H
+#ifdef HAVE_SYS_TYPES_H
 # include <sys/types.h>
 #endif
-#if HAVE_NETINET_IN_H
+#ifdef HAVE_NETINET_IN_H
 # include <netinet/in.h>
 #endif
 ]) ])
@@ -808,6 +819,10 @@ dnl a nonblocking socket do not work, a new call to select is necessary.
 AC_DEFUN([ACX_CHECK_NONBLOCKING_BROKEN],
 [
 AC_MSG_CHECKING([if nonblocking sockets work])
+if echo $target | grep mingw32 >/dev/null; then 
+	AC_MSG_RESULT([no (windows)])
+	AC_DEFINE([NONBLOCKING_IS_BROKEN], 1, [Define if the network stack does not fully support nonblocking io (causes lower performance).])
+else
 AC_RUN_IFELSE(AC_LANG_PROGRAM([
 #include <stdio.h>
 #include <string.h>
@@ -933,6 +948,7 @@ AC_RUN_IFELSE(AC_LANG_PROGRAM([
 ], [
 	AC_MSG_RESULT([crosscompile(yes)])
 ])
+fi
 ])dnl End of ACX_CHECK_NONBLOCKING_BROKEN
 
 dnl Check if mkdir has one or two arguments.
@@ -975,6 +991,16 @@ AC_MSG_RESULT(yes)
 AC_DEFINE(HAVE_IOCTLSOCKET, 1, [if the function 'ioctlsocket' is available])
 ],[AC_MSG_RESULT(no)])
 ])dnl end of ACX_FUNC_IOCTLSOCKET
+
+dnl detect malloc and provide malloc compat prototype.
+dnl $1: unique name for compat code
+AC_DEFUN([ACX_FUNC_MALLOC],
+[
+	AC_FUNC_MALLOC
+	if test "$ac_cv_func_malloc_0_nonnull" = no; then
+		AC_DEFINE_UNQUOTED([malloc], [rpl_malloc_$1], [Define if  replacement function should be used.])
+	fi
+])
 
 dnl Define fallback for fseeko and ftello if needed.
 AC_DEFUN([AHX_CONFIG_FSEEKO],
