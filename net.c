@@ -325,7 +325,7 @@ ldns_tcp_send_query(ldns_buffer *qbin, int sockfd,
 	ldns_write_uint16(sendbuf, ldns_buffer_position(qbin));
 	memcpy(sendbuf + 2, ldns_buffer_export(qbin), ldns_buffer_position(qbin));
 
-	bytes = sendto(sockfd, sendbuf,
+	bytes = sendto(sockfd, (void*)sendbuf,
 			ldns_buffer_position(qbin) + 2, 0, (struct sockaddr *)to, tolen);
 
         LDNS_FREE(sendbuf);
@@ -343,7 +343,7 @@ ldns_udp_send_query(ldns_buffer *qbin, int sockfd, const struct sockaddr_storage
 {
 	ssize_t bytes;
 
-	bytes = sendto(sockfd, ldns_buffer_begin(qbin),
+	bytes = sendto(sockfd, (void*)ldns_buffer_begin(qbin),
 			ldns_buffer_position(qbin), 0, (struct sockaddr *)to, tolen);
 
 	if (bytes == -1 || (size_t)bytes != ldns_buffer_position(qbin)) {
@@ -368,7 +368,7 @@ ldns_udp_read_wire(int sockfd, size_t *size, struct sockaddr_storage *from,
 		return NULL;
 	}
 
-	wire_size = recvfrom(sockfd, wire, LDNS_MAX_PACKETLEN, 0, 
+	wire_size = recvfrom(sockfd, (void*)wire, LDNS_MAX_PACKETLEN, 0, 
 			(struct sockaddr *)from, fromlen);
 
 	/* recvfrom can also return 0 */
@@ -398,7 +398,7 @@ ldns_tcp_read_wire(int sockfd, size_t *size)
 	}
 	
 	while (bytes < 2) {
-		bytes = recv(sockfd, wire, 2, 0);
+		bytes = recv(sockfd, (void*)wire, 2, 0);
 		if (bytes == -1 || bytes == 0) {
 			*size = 0;
 			LDNS_FREE(wire);
@@ -413,7 +413,8 @@ ldns_tcp_read_wire(int sockfd, size_t *size)
 	bytes = 0;
 
 	while (bytes < (ssize_t) wire_size) {
-		bytes += recv(sockfd, wire + bytes, (size_t) (wire_size - bytes), 0);
+		bytes += recv(sockfd, (void*) (wire + bytes), 
+				(size_t) (wire_size - bytes), 0);
 		if (bytes == -1 || bytes == 0) {
 			LDNS_FREE(wire);
 			*size = 0;
