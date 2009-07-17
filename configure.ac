@@ -3,10 +3,10 @@
 AC_PREREQ(2.56)
 sinclude(acx_nlnetlabs.m4)
 
-AC_INIT(ldns, 1.6.0, libdns@nlnetlabs.nl, libdns)
+AC_INIT(ldns, 1.6.1, libdns@nlnetlabs.nl, libdns)
 AC_CONFIG_SRCDIR([packet.c])
 # needed to build correct soname
-AC_SUBST(LIBTOOL_VERSION_INFO, "1:6:0")
+AC_SUBST(LIBTOOL_VERSION_INFO, "1:6:1")
 
 PACKAGE_VERSION="$PACKAGE_VERSION"
 

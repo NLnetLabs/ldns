@@ -1,3 +1,5 @@
+1.6.x
+
 1.6.0
 	Additions:
 	* Addition of an ldns-config script which gives cflags and libs
