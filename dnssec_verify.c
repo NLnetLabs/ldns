@@ -978,14 +978,11 @@ ldns_verify(ldns_rr_list *rrset, ldns_rr_list *rrsig, const ldns_rr_list *keys,
 		  ldns_rr_list *good_keys)
 {
 	uint16_t i;
-	bool valid;
 	ldns_status verify_result = LDNS_STATUS_ERR;
 
 	if (!rrset || !rrsig || !keys) {
 		return LDNS_STATUS_ERR;
 	}
-
-	valid = false;
 
 	if (ldns_rr_list_rr_count(rrset) < 1) {
 		return LDNS_STATUS_ERR;
@@ -1000,6 +997,44 @@ ldns_verify(ldns_rr_list *rrset, ldns_rr_list *rrsig, const ldns_rr_list *keys,
 	} else {
 		for (i = 0; i < ldns_rr_list_rr_count(rrsig); i++) {
 			ldns_status s = ldns_verify_rrsig_keylist(rrset, 
+				ldns_rr_list_rr(rrsig, i), keys, good_keys);
+			/* try a little to get more descriptive error */
+			if(s == LDNS_STATUS_OK) {
+				verify_result = LDNS_STATUS_OK;
+			} else if(verify_result == LDNS_STATUS_ERR)
+				verify_result = s;
+			else if(s !=  LDNS_STATUS_ERR && verify_result ==
+				LDNS_STATUS_CRYPTO_NO_MATCHING_KEYTAG_DNSKEY)
+				verify_result = s;
+		}
+	}
+	return verify_result;
+}
+
+ldns_status
+ldns_verify_notime(ldns_rr_list *rrset, ldns_rr_list *rrsig, 
+	const ldns_rr_list *keys, ldns_rr_list *good_keys)
+{
+	uint16_t i;
+	ldns_status verify_result = LDNS_STATUS_ERR;
+
+	if (!rrset || !rrsig || !keys) {
+		return LDNS_STATUS_ERR;
+	}
+
+	if (ldns_rr_list_rr_count(rrset) < 1) {
+		return LDNS_STATUS_ERR;
+	}
+
+	if (ldns_rr_list_rr_count(rrsig) < 1) {
+		return LDNS_STATUS_CRYPTO_NO_RRSIG;
+	}
+	
+	if (ldns_rr_list_rr_count(keys) < 1) {
+		verify_result = LDNS_STATUS_CRYPTO_NO_TRUSTED_DNSKEY;
+	} else {
+		for (i = 0; i < ldns_rr_list_rr_count(rrsig); i++) {
+			ldns_status s = ldns_verify_rrsig_keylist_notime(rrset, 
 				ldns_rr_list_rr(rrsig, i), keys, good_keys);
 			/* try a little to get more descriptive error */
 			if(s == LDNS_STATUS_OK) {
@@ -1777,6 +1812,35 @@ ldns_verify_rrsig_keylist(ldns_rr_list *rrset,
 					 const ldns_rr_list *keys, 
 					 ldns_rr_list *good_keys)
 {
+	ldns_status result;
+	ldns_rr_list *valid = ldns_rr_list_new();
+	if (!valid)
+		return LDNS_STATUS_MEM_ERR;
+
+	result = ldns_verify_rrsig_keylist_notime(rrset, rrsig, keys, valid);
+	if(result != LDNS_STATUS_OK) {
+		ldns_rr_list_free(valid); 
+		return result;
+	}
+
+	/* check timestamps last; its OK except time */
+	result = ldns_rrsig_check_timestamps(rrsig, (int32_t)time(NULL));
+	if(result != LDNS_STATUS_OK) {
+		ldns_rr_list_free(valid); 
+		return result;
+	}
+
+	ldns_rr_list_cat(good_keys, valid);
+	ldns_rr_list_free(valid);
+	return LDNS_STATUS_OK;
+}
+
+ldns_status
+ldns_verify_rrsig_keylist_notime(ldns_rr_list *rrset,
+					 ldns_rr *rrsig,
+					 const ldns_rr_list *keys, 
+					 ldns_rr_list *good_keys)
+{
 	ldns_buffer *rawsig_buf;
 	ldns_buffer *verify_buf;
 	uint16_t i;
@@ -1845,12 +1909,7 @@ ldns_verify_rrsig_keylist(ldns_rr_list *rrset,
 		return result;
 	}
 
-	/* check timestamps last; its OK except time */
-	result = ldns_rrsig_check_timestamps(rrsig, (int32_t)time(NULL));
-	if(result != LDNS_STATUS_OK) {
-		ldns_rr_list_free(validkeys); 
-		return result;
-	}
+	/* do not check timestamps */
 
 	ldns_rr_list_cat(good_keys, validkeys);
 	ldns_rr_list_free(validkeys);

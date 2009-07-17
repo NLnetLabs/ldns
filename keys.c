@@ -1176,3 +1176,13 @@ ldns_key_get_file_base_name(ldns_key *key)
 	return file_base_name;
 }
 
+int ldns_key_algo_supported(int algo)
+{
+	ldns_lookup_table *lt = ldns_signing_algorithms;
+	while(lt->name) {
+		if(lt->id == algo)
+			return 1;
+		lt++;
+	}
+	return 0;
+}

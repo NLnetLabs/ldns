@@ -269,6 +269,23 @@ ldns_status ldns_verify(ldns_rr_list *rrset,
 				    ldns_rr_list *good_keys);	
 
 /**
+ * Verifies a list of signatures for one rrset, but disregard the time.
+ * Inception and Expiration are not checked.
+ *
+ * \param[in] rrset the rrset to verify
+ * \param[in] rrsig a list of signatures to check
+ * \param[in] keys a list of keys to check with
+ * \param[out] good_keys  if this is a (initialized) list, the keys
+ *                        from keys that validate one of the signatures
+ *                        are added to it
+ * \return status LDNS_STATUS_OK if there is at least one correct key
+ */
+ldns_status ldns_verify_notime(ldns_rr_list *rrset,
+				    ldns_rr_list *rrsig,
+				    const ldns_rr_list *keys,
+				    ldns_rr_list *good_keys);	
+
+/**
  * Tries to build an authentication chain from the given 
  * keys down to the queried domain.
  *
@@ -413,6 +430,22 @@ ldns_status ldns_verify_rrsig_buffers_raw(unsigned char* sig,
  * status LDNS_STATUS_OK if at least one key matched. Else an error.
  */
 ldns_status ldns_verify_rrsig_keylist(ldns_rr_list *rrset,
+							   ldns_rr *rrsig,
+							   const ldns_rr_list *keys,
+							   ldns_rr_list *good_keys);
+
+/**
+ * Verifies an rrsig. All keys in the keyset are tried. Time is not checked.
+ * \param[in] rrset the rrset to check
+ * \param[in] rrsig the signature of the rrset
+ * \param[in] keys the keys to try
+ * \param[out] good_keys  if this is a (initialized) list, the keys 
+ *                        from keys that validate one of the signatures
+ *                        are added to it
+ * \return a list of keys which validate the rrsig + rrset. Returns
+ * status LDNS_STATUS_OK if at least one key matched. Else an error.
+ */
+ldns_status ldns_verify_rrsig_keylist_notime(ldns_rr_list *rrset,
 							   ldns_rr *rrsig,
 							   const ldns_rr_list *keys,
 							   ldns_rr_list *good_keys);

@@ -565,4 +565,11 @@ ldns_rr * ldns_read_anchor_file(const char *filename);
  */
 char *ldns_key_get_file_base_name(ldns_key *key);
 
+/**
+ * See if a key algorithm is supported
+ * \param[in] algo the signing algorithm number.
+ * \returns true if supported.
+ */
+int ldns_key_algo_supported(int algo);
+
 #endif /* LDNS_KEYS_H */
