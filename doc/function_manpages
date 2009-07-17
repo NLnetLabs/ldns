@@ -70,7 +70,7 @@ ldns_verify_rrsig_dsa, ldns_verify_rrsig_rsasha1, ldns_verify_rrsig_rsamd5 | ldn
 ldns_pkt_tsig_verify, ldns_pkt_tsig_sign | ldns_key
 
 # verify
-ldns_verify, ldns_verify_rrsig, ldns_verify_rrsig_keylist | ldns_verify_rrsig_evp | ldns_verify_rrsig_dsa, ldns_verify_rrsig_rsasha1, ldns_verify_rrsig_rsamd5, ldns_sign_public, ldns_zone_sign, ldns_key
+ldns_verify, ldns_verify_rrsig, ldns_verify_rrsig_keylist, ldns_verify_rrsig_keylist_notime, ldns_verify_notime | ldns_verify_rrsig_evp | ldns_verify_rrsig_dsa, ldns_verify_rrsig_rsasha1, ldns_verify_rrsig_rsamd5, ldns_sign_public, ldns_zone_sign, ldns_key
 
 # convert
 ldns_key_buf2dsa, ldns_key_buf2rsa | ldns_key_rr2ds
@@ -109,7 +109,7 @@ ldns_key_new_frm_fp_rsa, ldns_key_new_frm_fp_rsa_l | ldns_key_new_frm_fp, ldns_k
 ldns_key_new_frm_fp_dsa, ldns_key_new_frm_fp_dsa_l | ldns_key_new_frm_fp, ldns_key
 ldns_key_list_new | ldns_key_new, ldns_key
 # access, write
-ldns_key_set_algorithm, ldns_key_set_rsa_key, ldns_key_set_dsa_key, ldns_key_set_hmac_key, ldns_key_set_origttl, ldns_key_set_inception, ldns_key_set_expiration, ldns_key_set_pubkey_owner, ldns_key_set_keytag, ldns_key_set_flags, ldns_key_list_set_key_count | ldns_key_push_key, ldns_key
+ldns_key_set_algorithm, ldns_key_set_rsa_key, ldns_key_set_dsa_key, ldns_key_set_hmac_key, ldns_key_set_origttl, ldns_key_set_inception, ldns_key_set_expiration, ldns_key_set_pubkey_owner, ldns_key_set_keytag, ldns_key_set_flags, ldns_key_list_set_key_count, ldns_key_algo_supported | ldns_key_push_key, ldns_key
 ldns_key_list_push_key | ldns_key_list_pop_key, ldns_key
 ldns_key_list_pop_key | ldns_key_list_push_key, ldns_key
 # access, read

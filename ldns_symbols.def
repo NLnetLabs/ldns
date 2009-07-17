@@ -166,6 +166,7 @@ ldns_is_rrset
 ldns_key2buffer_str
 ldns_key2rr
 ldns_key2str
+ldns_key_algo_supported
 ldns_key_algorithm
 ldns_key_buf2dsa
 ldns_key_buf2dsa_raw
@@ -674,6 +675,7 @@ ldns_update_zocount
 ldns_validate_domain_dnskey
 ldns_validate_domain_ds
 ldns_verify
+ldns_verify_notime
 ldns_verify_rrsig
 ldns_verify_rrsig_buffers
 ldns_verify_rrsig_buffers_raw
@@ -682,6 +684,7 @@ ldns_verify_rrsig_dsa_raw
 ldns_verify_rrsig_evp
 ldns_verify_rrsig_evp_raw
 ldns_verify_rrsig_keylist
+ldns_verify_rrsig_keylist_notime
 ldns_verify_rrsig_rsamd5
 ldns_verify_rrsig_rsamd5_raw
 ldns_verify_rrsig_rsasha1
