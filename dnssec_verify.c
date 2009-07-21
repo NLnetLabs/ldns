@@ -508,6 +508,8 @@ ldns_dnssec_trust_tree_print_sm(FILE *out,
 				} else if (ldns_rr_get_type(tree->rr) == LDNS_RR_TYPE_DS) {
 					fprintf(out, " keytag: ");
 					ldns_rdf_print(out, ldns_rr_rdf(tree->rr, 0));
+					fprintf(out, " digest type: ");
+					ldns_rdf_print(out, ldns_rr_rdf(tree->rr, 2));
 				}
 				if (ldns_rr_get_type(tree->rr) == LDNS_RR_TYPE_NSEC) {
 					fprintf(out, " ");
