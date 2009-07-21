@@ -1501,13 +1501,19 @@ ldns_rr_compare(const ldns_rr *rr1, const ldns_rr *rr2)
  * then compare the result with the given ds */
 static int
 ldns_rr_compare_ds_dnskey(ldns_rr *ds,
-                          ldns_rr *dnskey,
-                          ldns_algorithm algo)
+                          ldns_rr *dnskey)
 {
 	ldns_rr *ds_gen;
 	bool result = false;
+	ldns_algorithm algo;
 	
-	if (!dnskey || !ds) return false;
+	if (!dnskey || !ds ||
+	    ldns_rr_get_type(ds) != LDNS_RR_TYPE_DS ||
+	    ldns_rr_get_type(dnskey) != LDNS_RR_TYPE_DNSKEY) {
+		return false;
+	}
+	
+	algo = ldns_rdf2native_int8(ldns_rr_rdf(ds, 2));
 
 	ds_gen = ldns_key_rr2ds(dnskey, algo);
 	if (ds_gen) {
@@ -1530,22 +1536,10 @@ ldns_rr_compare_ds(const ldns_rr *orr1, const ldns_rr *orr2)
 
 	if (ldns_rr_get_type(rr1) == LDNS_RR_TYPE_DS &&
 	    ldns_rr_get_type(rr2) == LDNS_RR_TYPE_DNSKEY) {
-		result = ldns_rr_compare_ds_dnskey(rr1, rr2, LDNS_SHA1);
-		if (!result) {
-			/* also try SHA2 DS */
-			result = ldns_rr_compare_ds_dnskey(rr1,
-			                                   rr2,
-			                                   LDNS_SHA256);
-		}
+		result = ldns_rr_compare_ds_dnskey(rr1, rr2);
 	} else if (ldns_rr_get_type(rr1) == LDNS_RR_TYPE_DNSKEY &&
 	    ldns_rr_get_type(rr2) == LDNS_RR_TYPE_DS) {
-		result = ldns_rr_compare_ds_dnskey(rr2, rr1, LDNS_SHA1);
-		if (!result) {
-			/* also try SHA2 DS */
-			result = ldns_rr_compare_ds_dnskey(rr2,
-			                                   rr1,
-			                                   LDNS_SHA256);
-		}
+		result = ldns_rr_compare_ds_dnskey(rr2, rr1);
 	} else {
 		result = (ldns_rr_compare(rr1, rr2) == 0);
 	}	
