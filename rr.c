@@ -1497,11 +1497,30 @@ ldns_rr_compare(const ldns_rr *rr1, const ldns_rr *rr2)
 	return result;
 }
 
+/* convert dnskey to a ds with the given algorithm,
+ * then compare the result with the given ds */
+static int
+ldns_rr_compare_ds_dnskey(ldns_rr *ds,
+                          ldns_rr *dnskey,
+                          ldns_algorithm algo)
+{
+	ldns_rr *ds_gen;
+	bool result = false;
+	
+	if (!dnskey || !ds) return false;
+
+	ds_gen = ldns_key_rr2ds(dnskey, algo);
+	if (ds_gen) {
+		result = ldns_rr_compare(ds, ds_gen) == 0;
+		ldns_rr_free(ds_gen);
+	}
+	return result;
+}
+
 bool
 ldns_rr_compare_ds(const ldns_rr *orr1, const ldns_rr *orr2)
 {
 	bool result;
-	ldns_rr *ds_repr;
 	ldns_rr *rr1 = ldns_rr_clone(orr1);
 	ldns_rr *rr2 = ldns_rr_clone(orr2);
 	
@@ -1511,15 +1530,22 @@ ldns_rr_compare_ds(const ldns_rr *orr1, const ldns_rr *orr2)
 
 	if (ldns_rr_get_type(rr1) == LDNS_RR_TYPE_DS &&
 	    ldns_rr_get_type(rr2) == LDNS_RR_TYPE_DNSKEY) {
-	    	ds_repr = ldns_key_rr2ds(rr2, LDNS_SHA1);
-	    	result = (ldns_rr_compare(rr1, ds_repr) == 0);
-	    	ldns_rr_free(ds_repr);
+		result = ldns_rr_compare_ds_dnskey(rr1, rr2, LDNS_SHA1);
+		if (!result) {
+			/* also try SHA2 DS */
+			result = ldns_rr_compare_ds_dnskey(rr1,
+			                                   rr2,
+			                                   LDNS_SHA256);
+		}
 	} else if (ldns_rr_get_type(rr1) == LDNS_RR_TYPE_DNSKEY &&
 	    ldns_rr_get_type(rr2) == LDNS_RR_TYPE_DS) {
-	    	ds_repr = ldns_key_rr2ds(rr1, LDNS_SHA1);
-	    	result = (ldns_rr_compare(rr2, ds_repr) == 0);
-
-	    	ldns_rr_free(ds_repr);
+		result = ldns_rr_compare_ds_dnskey(rr2, rr1, LDNS_SHA1);
+		if (!result) {
+			/* also try SHA2 DS */
+			result = ldns_rr_compare_ds_dnskey(rr2,
+			                                   rr1,
+			                                   LDNS_SHA256);
+		}
 	} else {
 		result = (ldns_rr_compare(rr1, rr2) == 0);
 	}	
