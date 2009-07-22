@@ -129,7 +129,7 @@ ldns_digest_function(char *name)
 	/* these are the mandatory algorithms from RFC4635 */
 	/* The optional algorithms are not yet implemented */	
 	if (strlen(name) == 12 && strncasecmp(name, "hmac-sha256.", 11) == 0) {
-#ifdef SHA256_DIGEST_LENGTH
+#ifdef USE_SHA2
 		return EVP_sha256();
 #else
 		return NULL;	
