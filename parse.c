@@ -30,7 +30,7 @@ ldns_fget_token(FILE *f, char *token, const char *delim, size_t limit)
 ssize_t
 ldns_fget_token_l(FILE *f, char *token, const char *delim, size_t limit, int *line_nr)
 {	
-	int c;
+	int c, prev_c;
 	int p; /* 0 -> no parenthese seen, >0 nr of ( seen */
 	int com, quoted;
 	char *t;
@@ -50,24 +50,27 @@ ldns_fget_token_l(FILE *f, char *token, const char *delim, size_t limit, int *li
 	i = 0;
 	com = 0;
 	quoted = 0;
+	prev_c = 0;
 	t = token;
 	if (del[0] == '"') {
 		quoted = 1;
 	}
 	while ((c = getc(f)) != EOF) {
-		if (c == '(') {
+		if (c == '(' && prev_c != '\\') {
 			/* this only counts for non-comments */
 			if (com == 0) {
 				p++;
 			}
+			prev_c = c;
 			continue;
 		}
 
-		if (c == ')') {
+		if (c == ')' && prev_c != '\\') {
 			/* this only counts for non-comments */
 			if (com == 0) {
 				p--;
 			}
+			prev_c = c;
 			continue;
 		}
 
@@ -79,9 +82,13 @@ ldns_fget_token_l(FILE *f, char *token, const char *delim, size_t limit, int *li
 
 		/* do something with comments ; */
 		if (c == ';' && quoted == 0) {
-			com = 1;
+			if (prev_c == '\\') {
+				*t++ = 'a';
+			} else {
+				com = 1;
+			}
 		}
-		if (c == '\"' && com == 0) {
+		if (c == '\"' && com == 0 && prev_c != '\\') {
 			quoted = 1 - quoted;
 		}
 
@@ -95,12 +102,14 @@ ldns_fget_token_l(FILE *f, char *token, const char *delim, size_t limit, int *li
 			if (p == 0 && i > 0) {
 				goto tokenread;
 			} else {
+				prev_c = c;
 				continue;
 			}
 		}
 
 		if (com == 1) {
 			*t = ' ';
+			prev_c = c;
 			continue;
 		}
 
@@ -110,6 +119,7 @@ ldns_fget_token_l(FILE *f, char *token, const char *delim, size_t limit, int *li
 			if (line_nr) {
 				*line_nr = *line_nr + 1;
 			}
+			prev_c = c;
 			continue;
 		}
 
@@ -130,6 +140,7 @@ ldns_fget_token_l(FILE *f, char *token, const char *delim, size_t limit, int *li
 			*t = '\0';
 			return -1;
 		}
+		prev_c = c;
 	}
 	*t = '\0';
 	if (c == EOF) {
@@ -223,25 +234,32 @@ ldns_bget_token(ldns_buffer *b, char *token, const char *delim, size_t limit)
 	while ((c = ldns_bgetc(b)) != EOF) {
 		if (c == '(') {
 			p++;
+			lc = c;
 			continue;
 		}
 
 		if (c == ')') {
 			p--;
+			lc = c;
 			continue;
 		}
 
 		if (p < 0) {
 			/* more ) then ( */
 			*t = '\0';
+			lc = c;
 			return 0;
 		}
 
 		/* do something with comments ; */
 		if (c == ';' && quoted == 0) {
-			com = 1;
+			if (lc != '\\') {
+				com = 1;
+			} else {
+				*t++ = '\\';
+			}
 		}
-		if (c == '"' && com == 0) {
+		if (c == '"' && com == 0 && lc != '\\') {
 			quoted = 1 - quoted;
 		}
 
@@ -249,16 +267,19 @@ ldns_bget_token(ldns_buffer *b, char *token, const char *delim, size_t limit)
 			/* comments */
 			com = 0;
 			*t = ' ';
+			lc = c;
 			continue;
 		}
 
 		if (com == 1) {
 			*t = ' ';
+			lc = c;
 			continue;
 		}
 
 		if (c == '\n' && p != 0) {
 			/* in parentheses */
+			lc = c;
 			continue;
 		}
 
@@ -278,8 +299,9 @@ ldns_bget_token(ldns_buffer *b, char *token, const char *delim, size_t limit)
 
 		if (c == '\\' && lc == '\\') {
 			lc = 0;
+		} else {
+			lc = c;
 		}
-		lc = c;
 	}
 	*t = '\0';
 	if (i == 0) {
