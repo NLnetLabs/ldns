@@ -75,6 +75,16 @@ AC_CHECK_TYPE(uint64_t, unsigned long long)
 # my own checks
 AC_CHECK_PROG(doxygen, doxygen, doxygen)
 
+ACX_WITH_SSL_OPTIONAL
+
+# Use libtool 
+ACX_LIBTOOL_C_ONLY
+
+# for macosx, see if glibtool exists and use that
+# BSD's need to know the version...
+#AC_CHECK_PROG(glibtool, glibtool, [glibtool], )
+#AC_CHECK_PROGS(libtool, [libtool15 libtool], [./libtool])
+
 AC_ARG_ENABLE(sha2, AC_HELP_STRING([--enable-sha2], [Enable SHA256 and SHA512 RRSIG support]))
 case "$enable_sha2" in
     yes)
@@ -83,6 +93,19 @@ case "$enable_sha2" in
             AC_MSG_ERROR([SHA2 enabled, but no SHA2 functions found in OpenSSL])
         ])
         AC_DEFINE_UNQUOTED([USE_SHA2], [1], [Define this to enable SHA256 and SHA512 support.])
+        ;;
+    no|*)
+        ;;
+esac
+
+AC_ARG_ENABLE(gost, AC_HELP_STRING([--enable-gost], [Enable GOST support]))
+case "$enable_gost" in
+    yes)
+        AC_MSG_CHECKING(for GOST)
+        AC_CHECK_LIB(crypto, ENGINE_load_gost,, [
+            AC_MSG_ERROR([GOST enabled, but no GOST functions found in OpenSSL. Need openssl-1.0.0 or later.])
+        ])
+        AC_DEFINE_UNQUOTED([USE_GOST], [1], [Define this to enable GOST support.])
         ;;
     no|*)
         ;;
@@ -107,16 +130,6 @@ AC_ARG_ENABLE(rpath,
 if test "x$enable_rpath" = xyes; then
     RPATH_VAL="-Wl,-rpath=\${libdir}"
 fi
-
-ACX_WITH_SSL_OPTIONAL
-
-# Use libtool 
-ACX_LIBTOOL_C_ONLY
-
-# for macosx, see if glibtool exists and use that
-# BSD's need to know the version...
-#AC_CHECK_PROG(glibtool, glibtool, [glibtool], )
-#AC_CHECK_PROGS(libtool, [libtool15 libtool], [./libtool])
 
 #AC_TRY_RUN(
 #[

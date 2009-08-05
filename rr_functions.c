@@ -311,6 +311,11 @@ ldns_rr_dnskey_key_size_raw(const unsigned char* keydata,
 			return 0;
 		}
 		break;
+#ifdef USE_GOST
+	case LDNS_SIGN_GOST:
+		return 512;
+		break;
+#endif
 	case LDNS_SIGN_HMACMD5:
 		return len;
 		break;

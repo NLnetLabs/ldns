@@ -28,6 +28,9 @@ ldns_lookup_table ldns_signing_algorithms[] = {
         { LDNS_SIGN_RSASHA256, "RSASHA256" },
         { LDNS_SIGN_RSASHA512, "RSASHA512" },
 #endif
+#ifdef USE_GOST
+        { LDNS_SIGN_GOST, "GOST" },
+#endif
         { LDNS_SIGN_DSA, "DSA" },
         { LDNS_SIGN_DSA_NSEC3, "DSA_NSEC3" },
         { LDNS_SIGN_HMACMD5, "hmac-md5.sig-alg.reg.int" },
@@ -97,6 +100,64 @@ ldns_key_new_frm_engine(ldns_key **key, ENGINE *e, char *key_id, ldns_algorithm 
 		*key = k;
 		return LDNS_STATUS_OK;
 	}
+}
+#endif
+
+#ifdef USE_GOST
+/** returns the PKEY id for GOST, loads GOST into openssl */
+static int
+ldns_get_EVP_gost_id()
+{
+	const EVP_PKEY_ASN1_METHOD* meth;
+	int gost_id;
+	ENGINE* e;
+
+	ENGINE_load_gost();
+	e = ENGINE_by_id("gost");
+	if(!e) {
+		/* no gost engine in openssl */
+		return 0;
+	}
+	if(!ENGINE_set_default(e, ENGINE_METHOD_ALL)) {
+		ENGINE_free(e);
+		return 0;
+	}
+
+	meth = EVP_PKEY_asn1_find_str(&e, "gost2001", -1);
+	ENGINE_free(e);
+	if(!meth) {
+		/* algo not found */
+		return 0;
+	}
+	
+	EVP_PKEY_asn1_get0_info(&gost_id, NULL, NULL, NULL, NULL, meth);
+	return gost_id;
+}
+
+/** read GOST private key */
+static EVP_PKEY*
+ldns_key_new_frm_fp_gost_l(FILE* fp, int* line_nr)
+{
+	ssize_t len;
+	char token[16384];
+	const unsigned char* pp;
+	int gost_id;
+	EVP_PKEY* pkey;
+	ldns_rdf* b64rdf = NULL;
+
+	gost_id = ldns_get_EVP_gost_id();
+	if(!gost_id)
+		return NULL;
+
+	len = ldns_fget_token_l(fp, token, "", sizeof(token), line_nr);
+	if(len == -1)
+		return NULL;
+	if(ldns_str2rdf_b64(&b64rdf, token) != LDNS_STATUS_OK)
+		return NULL;
+	pp = (unsigned char*)ldns_rdf_data(b64rdf);
+	pkey = d2i_PrivateKey(gost_id, NULL, &pp, ldns_rdf_size(b64rdf));
+	ldns_rdf_deep_free(b64rdf);
+	return pkey;
 }
 #endif
 
@@ -185,6 +246,14 @@ ldns_key_new_frm_fp_l(ldns_key **key, FILE *fp, int *line_nr)
 		fprintf(stderr, "version of ldns\n");
 #endif
 	}
+	if (strncmp(d, "11 GOST", 3) == 0) {
+#ifdef USE_GOST
+		alg = LDNS_SIGN_GOST;
+#else
+		fprintf(stderr, "Warning: GOST not compiled into this ");
+		fprintf(stderr, "version of ldns\n");
+#endif
+	}
 	if (strncmp(d, "157 HMAC-MD5", 4) == 0) {
 		alg = LDNS_SIGN_HMACMD5;
 	}
@@ -230,6 +299,15 @@ ldns_key_new_frm_fp_l(ldns_key **key, FILE *fp, int *line_nr)
 			ldns_key_set_hmac_size(k, hmac_size);
 			ldns_key_set_hmac_key(k, hmac);
 #endif /* HAVE_SSL */
+			break;
+		case LDNS_SIGN_GOST:
+			ldns_key_set_algorithm(k, alg);
+#if defined(HAVE_SSL) && defined(USE_GOST)
+			ldns_key_set_evp_key(k, 
+				ldns_key_new_frm_fp_gost_l(fp, line_nr));
+			if(!k->_key.key)
+				return LDNS_STATUS_ERR;
+#endif
 			break;
 		case 0:
 		default:
@@ -588,6 +666,39 @@ ldns_key_new_frm_algorithm(ldns_signing_algorithm alg, uint16_t size)
 			ldns_key_set_hmac_key(k, hmac);
 
 			ldns_key_set_flags(k, 0);
+			break;
+		case LDNS_SIGN_GOST:
+#if defined(HAVE_SSL) && defined(USE_GOST)
+			if(1) { /* new stack context */
+				EVP_PKEY_CTX* ctx;
+				EVP_PKEY* p = NULL;
+				int gost_id = ldns_get_EVP_gost_id();
+				if(!gost_id)
+					return NULL;
+				ctx = EVP_PKEY_CTX_new_id(gost_id, NULL);
+				if(!ctx) {
+					/* the id should be available now */
+					return NULL;
+				}
+				if(EVP_PKEY_CTX_ctrl_str(ctx, "paramset", "A") <= 0) {
+					/* cannot set paramset */
+					EVP_PKEY_CTX_free(ctx);
+					return NULL;
+				}
+
+				if(EVP_PKEY_keygen_init(ctx) <= 0) {
+					EVP_PKEY_CTX_free(ctx);
+					return NULL;
+				}
+				if(EVP_PKEY_keygen(ctx, &p) <= 0) {
+					EVP_PKEY_free(p);
+					EVP_PKEY_CTX_free(ctx);
+					return NULL;
+				}
+				EVP_PKEY_CTX_free(ctx);
+				ldns_key_set_evp_key(k, p);
+			}
+#endif /* HAVE_SSL and USE_GOST */
 			break;
 	}
 	ldns_key_set_algorithm(k, alg);
@@ -949,6 +1060,24 @@ ldns_key_dsa2bin(unsigned char *data, DSA *k, uint16_t *size)
 	*size = 21 + (*size * 3);
 	return true;
 }
+
+static bool
+ldns_key_gost2bin(unsigned char* data, EVP_PKEY* k, uint16_t* size)
+{
+	int i;
+	unsigned char* pp = NULL;
+	if(i2d_PUBKEY(k, &pp) != 37 + 64) {
+		/* expect 37 byte(ASN header) and 64 byte(X and Y) */
+		CRYPTO_free(pp);
+		return false;
+	}
+	/* omit ASN header */
+	for(i=0; i<64; i++)
+		data[i] = pp[i+37];
+	CRYPTO_free(pp);
+	*size = 64;
+	return true;
+}
 #endif /* HAVE_SSL */
 
 ldns_rr *
@@ -1057,6 +1186,19 @@ ldns_key2rr(const ldns_key *k)
 			}
 #endif /* HAVE_SSL */
 			break;
+		case LDNS_SIGN_GOST:
+			ldns_rr_push_rdf(pubkey, ldns_native2rdf_int8(
+				LDNS_RDF_TYPE_ALG, ldns_key_algorithm(k)));
+#if defined(HAVE_SSL) && defined(USE_GOST)
+			bin = LDNS_XMALLOC(unsigned char, LDNS_MAX_KEYLEN);
+			if (!bin) 
+				return NULL;
+			if (!ldns_key_gost2bin(bin, k->_key.key, &size)) {
+				return NULL;
+			}
+			internal_data = 1;
+			break;
+#endif /* HAVE_SSL and USE_GOST */
 		case LDNS_SIGN_HMACMD5:
 		case LDNS_SIGN_HMACSHA1:
 		case LDNS_SIGN_HMACSHA256:

@@ -1510,6 +1510,42 @@ ldns_dnssec_verify_denial_nsec3(ldns_rr *rr,
 }
 #endif /* HAVE_SSL */
 
+#ifdef USE_GOST
+static ldns_status
+ldns_verify_rrsig_gost_raw(unsigned char* sig, size_t siglen, 
+	ldns_buffer* rrset, unsigned char* key, size_t keylen)
+{
+	EVP_PKEY *evp_key;
+	ldns_status result;
+	/* prefix header for X509 encoding */
+	uint8_t asn[37] = { 0x30, 0x63, 0x30, 0x1c, 0x06, 0x06, 0x2a, 0x85, 
+		0x03, 0x02, 0x02, 0x13, 0x30, 0x12, 0x06, 0x07, 0x2a, 0x85, 
+		0x03, 0x02, 0x02, 0x23, 0x01, 0x06, 0x07, 0x2a, 0x85, 0x03, 
+		0x02, 0x02, 0x1e, 0x01, 0x03, 0x43, 0x00, 0x04, 0x40};
+	unsigned char encoded[37+64];
+	const unsigned char* pp;
+	int i;
+	if(keylen != 64)
+		return LDNS_STATUS_CRYPTO_BOGUS;
+
+	/* create evp_key */
+	for(i=0; i<37; i++)
+		encoded[i] = asn[i];
+	for(i=0; i<64; i++)
+		encoded[i+37] = key[i];
+	pp = (unsigned char*)&encoded[0];
+	evp_key = d2i_PUBKEY(NULL, &pp, sizeof(encoded));
+
+	/* verify signature */
+	result = ldns_verify_rrsig_evp_raw(sig, siglen, rrset, 
+		evp_key, EVP_get_digestbyname("md_gost94"));
+	EVP_PKEY_free(evp_key);
+
+	return result;
+}
+#endif
+
+
 ldns_status
 ldns_verify_rrsig_buffers(ldns_buffer *rawsig_buf, ldns_buffer *verify_buf, 
 					 ldns_buffer *key_buf, uint8_t algo)
@@ -1559,6 +1595,12 @@ ldns_verify_rrsig_buffers_raw(unsigned char* sig, size_t siglen,
 									    verify_buf,
 									    key,
 									    keylen);
+		break;
+#endif
+#ifdef USE_GOST
+	case LDNS_GOST:
+		return ldns_verify_rrsig_gost_raw(sig, siglen, verify_buf,
+			key, keylen);
 		break;
 #endif
 	case LDNS_RSAMD5:
@@ -1645,6 +1687,9 @@ ldns_rrsig2rawsig_buffer(ldns_buffer* rawsig_buf, ldns_rr* rrsig)
 #ifdef USE_SHA2
 	case LDNS_RSASHA256:
 	case LDNS_RSASHA512:
+#endif
+#ifdef USE_GOST
+	case LDNS_GOST:
 #endif
 		if (ldns_rdf2buffer_wire(rawsig_buf, 
 		    ldns_rr_rdf(rrsig, 8)) != LDNS_STATUS_OK) {
@@ -2109,12 +2154,12 @@ ldns_verify_rrsig_rsasha512_raw(unsigned char* sig,
 						  unsigned char* key,
 						  size_t keylen)
 {
-#ifdef USE_SHA2
-	EVP_PKEY *evp_key;
+#ifdef use_sha2
+	evp_pkey *evp_key;
 	ldns_status result;
 
-	evp_key = EVP_PKEY_new();
-	EVP_PKEY_assign_RSA(evp_key, ldns_key_buf2rsa_raw(key, keylen));
+	evp_key = evp_pkey_new();
+	evp_pkey_assign_rsa(evp_key, ldns_key_buf2rsa_raw(key, keylen));
 	result = ldns_verify_rrsig_evp_raw(sig,
 								siglen,
 								rrset,
@@ -2133,7 +2178,6 @@ ldns_verify_rrsig_rsasha512_raw(unsigned char* sig,
 	return LDNS_STATUS_CRYPTO_UNKNOWN_ALGO;
 #endif
 }
-
 
 
 ldns_status

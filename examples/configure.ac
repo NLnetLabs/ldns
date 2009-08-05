@@ -210,7 +210,18 @@ case "$enable_sha2" in
         ;;
 esac
 
-
+AC_ARG_ENABLE(gost, AC_HELP_STRING([--enable-gost], [Enable GOST support]))
+case "$enable_gost" in
+    yes)
+        AC_MSG_CHECKING(for GOST)
+        AC_CHECK_LIB(crypto, ENGINE_load_gost,, [
+            AC_MSG_ERROR([GOST enabled, but no GOST functions found in OpenSSL. Need openssl-1.0.0 or later.])
+        ])
+        AC_DEFINE_UNQUOTED([USE_GOST], [1], [Define this to enable GOST support.])
+        ;;
+    no|*)
+        ;;
+esac
 
 #AC_CHECK_HEADER(ldns/ldns.h,,  [
 #	AC_MSG_ERROR([Can't find ldns headers (make copy-headers in devel source.)])

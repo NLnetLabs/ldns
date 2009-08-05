@@ -1350,6 +1350,26 @@ ldns_hmac_key2buffer_str(ldns_buffer *output, const ldns_key *k)
 }
 #endif
 
+#if defined(HAVE_SSL) && defined(USE_GOST)
+static ldns_status
+ldns_gost_key2buffer_str(ldns_buffer *output, EVP_PKEY *p)
+{
+	unsigned char* pp = NULL;
+	int ret;
+	ldns_rdf *b64_bignum;
+	ldns_status status;
+
+	ret = i2d_PrivateKey(p, &pp);
+	b64_bignum = ldns_rdf_new_frm_data(LDNS_RDF_TYPE_B64, ret, pp);
+	status = ldns_rdf2buffer_str(output, b64_bignum);
+
+	ldns_rdf_deep_free(b64_bignum);
+	OPENSSL_free(pp);
+	ldns_buffer_printf(output, "\n");
+	return LDNS_STATUS_OK;
+}
+#endif
+
 ldns_status
 ldns_key2buffer_str(ldns_buffer *output, const ldns_key *k)
 {
@@ -1643,6 +1663,14 @@ ldns_key2buffer_str(ldns_buffer *output, const ldns_key *k)
 				} else {
 					printf("(Not available)\n");
 				}
+				break;
+			case LDNS_SIGN_GOST:
+				/* no format defined, use blob */
+#if defined(HAVE_SSL) && defined(USE_GOST)
+				ldns_buffer_printf(output, "Private-key-format: v1.2\n");
+				ldns_buffer_printf(output, "Algorithm: 11 (GOST)\n");
+				status = ldns_gost_key2buffer_str(output, k->_key.key);
+#endif
 				break;
 			case LDNS_SIGN_HMACMD5:
 				/* there's not much of a format defined for TSIG */
