@@ -113,8 +113,13 @@ ldns_key_EVP_load_gost_id()
 
 	if(gost_id) return gost_id;
 
-	ENGINE_load_gost();
+	/* loaded already */
 	e = ENGINE_by_id("gost");
+	if(!e) {
+		/* load it ourself */
+		ENGINE_load_gost();
+		e = ENGINE_by_id("gost");
+	}
 	if(!e) {
 		/* no gost engine in openssl */
 		return 0;
@@ -591,6 +596,39 @@ ldns_key_new_frm_fp_hmac_l(FILE *f, int *line_nr, size_t *hmac_size)
 }
 #endif /* HAVE_SSL */
 
+#ifdef USE_GOST
+static EVP_PKEY*
+ldns_gen_gost_key(void)
+{
+	EVP_PKEY_CTX* ctx;
+	EVP_PKEY* p = NULL;
+	int gost_id = ldns_key_EVP_load_gost_id();
+	if(!gost_id)
+		return NULL;
+	ctx = EVP_PKEY_CTX_new_id(gost_id, NULL);
+	if(!ctx) {
+		/* the id should be available now */
+		return NULL;
+	}
+	if(EVP_PKEY_CTX_ctrl_str(ctx, "paramset", "A") <= 0) {
+		/* cannot set paramset */
+		EVP_PKEY_CTX_free(ctx);
+		return NULL;
+	}
+
+	if(EVP_PKEY_keygen_init(ctx) <= 0) {
+		EVP_PKEY_CTX_free(ctx);
+		return NULL;
+	}
+	if(EVP_PKEY_keygen(ctx, &p) <= 0) {
+		EVP_PKEY_free(p);
+		EVP_PKEY_CTX_free(ctx);
+		return NULL;
+	}
+	EVP_PKEY_CTX_free(ctx);
+	return p;
+}
+#endif
 
 ldns_key *
 ldns_key_new_frm_algorithm(ldns_signing_algorithm alg, uint16_t size)
@@ -670,35 +708,7 @@ ldns_key_new_frm_algorithm(ldns_signing_algorithm alg, uint16_t size)
 			break;
 		case LDNS_SIGN_GOST:
 #if defined(HAVE_SSL) && defined(USE_GOST)
-			if(1) { /* new stack context */
-				EVP_PKEY_CTX* ctx;
-				EVP_PKEY* p = NULL;
-				int gost_id = ldns_key_EVP_load_gost_id();
-				if(!gost_id)
-					return NULL;
-				ctx = EVP_PKEY_CTX_new_id(gost_id, NULL);
-				if(!ctx) {
-					/* the id should be available now */
-					return NULL;
-				}
-				if(EVP_PKEY_CTX_ctrl_str(ctx, "paramset", "A") <= 0) {
-					/* cannot set paramset */
-					EVP_PKEY_CTX_free(ctx);
-					return NULL;
-				}
-
-				if(EVP_PKEY_keygen_init(ctx) <= 0) {
-					EVP_PKEY_CTX_free(ctx);
-					return NULL;
-				}
-				if(EVP_PKEY_keygen(ctx, &p) <= 0) {
-					EVP_PKEY_free(p);
-					EVP_PKEY_CTX_free(ctx);
-					return NULL;
-				}
-				EVP_PKEY_CTX_free(ctx);
-				ldns_key_set_evp_key(k, p);
-			}
+			ldns_key_set_evp_key(k, ldns_gen_gost_key());
 #endif /* HAVE_SSL and USE_GOST */
 			break;
 	}
