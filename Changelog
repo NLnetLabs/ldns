@@ -1,4 +1,5 @@
 1.6.x
+	* --enable-gost : use the GOST algorithm.
 
 1.6.0
 	Additions:

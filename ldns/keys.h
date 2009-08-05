@@ -300,7 +300,15 @@ void ldns_key_set_rsa_key(ldns_key *k, RSA *r);
  * \param[in] d the dsa data
  */
 void ldns_key_set_dsa_key(ldns_key *k, DSA *d);
+
+/** 
+ * Get the PKEY id for GOST, loads GOST into openssl as a side effect.
+ * Only available if GOST is compiled into the library and openssl.
+ * \return the gost id for EVP_CTX creation.
+ */
+int ldns_key_EVP_load_gost_id(void);
 #endif /* HAVE_SSL */
+
 /**
  * Set the key's hmac data
  * \param[in] k the key

@@ -1524,17 +1524,23 @@ ldns_verify_rrsig_gost_raw(unsigned char* sig, size_t siglen,
 		0x02, 0x02, 0x1e, 0x01, 0x03, 0x43, 0x00, 0x04, 0x40};
 	unsigned char encoded[37+64];
 	const unsigned char* pp;
-	int i;
-	if(keylen != 64)
+	if(keylen != 64) {
+		/* key wrong size */
 		return LDNS_STATUS_CRYPTO_BOGUS;
+	}
 
 	/* create evp_key */
-	for(i=0; i<37; i++)
-		encoded[i] = asn[i];
-	for(i=0; i<64; i++)
-		encoded[i+37] = key[i];
+	memmove(encoded, asn, 37);
+	memmove(encoded+37, key, 64);
 	pp = (unsigned char*)&encoded[0];
+
+	(void) ldns_key_EVP_load_gost_id();
+
 	evp_key = d2i_PUBKEY(NULL, &pp, sizeof(encoded));
+	if(!evp_key) {
+		/* could not convert key */
+		return LDNS_STATUS_CRYPTO_BOGUS;
+	}
 
 	/* verify signature */
 	result = ldns_verify_rrsig_evp_raw(sig, siglen, rrset, 

@@ -104,13 +104,14 @@ ldns_key_new_frm_engine(ldns_key **key, ENGINE *e, char *key_id, ldns_algorithm 
 #endif
 
 #ifdef USE_GOST
-/** returns the PKEY id for GOST, loads GOST into openssl */
-static int
-ldns_get_EVP_gost_id()
+int
+ldns_key_EVP_load_gost_id()
 {
+	static int gost_id = 0;
 	const EVP_PKEY_ASN1_METHOD* meth;
-	int gost_id;
 	ENGINE* e;
+
+	if(gost_id) return gost_id;
 
 	ENGINE_load_gost();
 	e = ENGINE_by_id("gost");
@@ -145,7 +146,7 @@ ldns_key_new_frm_fp_gost_l(FILE* fp, int* line_nr)
 	EVP_PKEY* pkey;
 	ldns_rdf* b64rdf = NULL;
 
-	gost_id = ldns_get_EVP_gost_id();
+	gost_id = ldns_key_EVP_load_gost_id();
 	if(!gost_id)
 		return NULL;
 
@@ -672,7 +673,7 @@ ldns_key_new_frm_algorithm(ldns_signing_algorithm alg, uint16_t size)
 			if(1) { /* new stack context */
 				EVP_PKEY_CTX* ctx;
 				EVP_PKEY* p = NULL;
-				int gost_id = ldns_get_EVP_gost_id();
+				int gost_id = ldns_key_EVP_load_gost_id();
 				if(!gost_id)
 					return NULL;
 				ctx = EVP_PKEY_CTX_new_id(gost_id, NULL);
