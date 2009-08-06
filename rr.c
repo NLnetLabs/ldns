@@ -481,7 +481,7 @@ ldns_rr_new_frm_str_internal(ldns_rr **newrr, const char *str,
 										r = ldns_rdf_new_frm_str(LDNS_RDF_TYPE_DNAME, ".");
 									}
 								}
-							} else if (rd_strlen > 1 && !ldns_dname_str_absolute(rd) && origin) {
+							} else if (rd_strlen >= 1 && !ldns_dname_str_absolute(rd) && origin) {
 								if (ldns_dname_cat(r, origin) != LDNS_STATUS_OK) {
 									return LDNS_STATUS_ERR;
 								}
