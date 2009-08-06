@@ -62,7 +62,7 @@ enum ldns_enum_hash
 {
         LDNS_SHA1               = 1,
         LDNS_SHA256             = 2,
-	LDNS_GOST34_11_94	= 3 /* not official */
+	LDNS_HASH_GOST94	= 3 /* not official */
 };
 typedef enum ldns_enum_hash ldns_hash;
 

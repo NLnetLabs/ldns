@@ -426,6 +426,26 @@ ldns_key_buf2rsa_raw(unsigned char* key, size_t len)
 }
 #endif /* HAVE_SSL */
 
+#ifdef USE_GOST
+static int
+ldns_digest_evp(unsigned char* data, unsigned int len, unsigned char* dest,
+	const EVP_MD* md)
+{
+	EVP_MD_CTX* ctx;
+	ctx = EVP_MD_CTX_create();
+	if(!ctx) 
+		return false;
+	if(!EVP_DigestInit_ex(ctx, md, NULL) ||
+		!EVP_DigestUpdate(ctx, data, len) ||
+		!EVP_DigestFinal_ex(ctx, dest, NULL)) {
+		EVP_MD_CTX_destroy(ctx);
+		return false;
+	}
+	EVP_MD_CTX_destroy(ctx);
+	return true;
+}
+#endif
+
 ldns_rr *
 ldns_key_rr2ds(const ldns_rr *key, ldns_hash h)
 {
@@ -435,6 +455,9 @@ ldns_key_rr2ds(const ldns_rr *key, ldns_hash h)
 	uint8_t  sha1hash;
 	uint8_t *digest;
 	ldns_buffer *data_buf;
+#ifdef USE_GOST
+	const EVP_MD* md = NULL;
+#endif
 
 	if (ldns_rr_get_type(key) != LDNS_RR_TYPE_DNSKEY) {
 		return NULL;
@@ -465,6 +488,25 @@ ldns_key_rr2ds(const ldns_rr *key, ldns_hash h)
 			ldns_rr_free(ds);
 			return NULL;
 		}
+		break;
+	case LDNS_HASH_GOST94:
+#ifdef USE_GOST
+		(void)ldns_key_EVP_load_gost_id();
+		md = EVP_get_digestbyname("md_gost94");
+		if(!md) {
+			ldns_rr_free(ds);
+			return NULL;
+		}
+		digest = LDNS_XMALLOC(uint8_t, EVP_MD_size(md));
+		if (!digest) {
+			ldns_rr_free(ds);
+			return NULL;
+		}
+#else
+		/* not implemented */
+		ldns_rr_free(ds);
+		return NULL;
+#endif
 		break;
 	}
 
@@ -533,6 +575,22 @@ ldns_key_rr2ds(const ldns_rr *key, ldns_hash h)
 		                            LDNS_SHA256_DIGEST_LENGTH,
 		                            digest);
 		ldns_rr_push_rdf(ds, tmp);
+		break;
+	case LDNS_HASH_GOST94:
+#ifdef USE_GOST
+		if(!ldns_digest_evp((unsigned char *) ldns_buffer_begin(data_buf),
+				(unsigned int) ldns_buffer_position(data_buf),
+				(unsigned char *) digest, md)) {
+			LDNS_FREE(digest);
+			ldns_buffer_free(data_buf);
+			ldns_rr_free(ds);
+			return NULL;
+		}
+		tmp = ldns_rdf_new_frm_data(LDNS_RDF_TYPE_HEX,
+		                            EVP_MD_size(md),
+		                            digest);
+		ldns_rr_push_rdf(ds, tmp);
+#endif
 		break;
 	}
 

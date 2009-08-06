@@ -1072,6 +1072,7 @@ ldns_key_dsa2bin(unsigned char *data, DSA *k, uint16_t *size)
 	return true;
 }
 
+#ifdef USE_GOST
 static bool
 ldns_key_gost2bin(unsigned char* data, EVP_PKEY* k, uint16_t* size)
 {
@@ -1089,6 +1090,7 @@ ldns_key_gost2bin(unsigned char* data, EVP_PKEY* k, uint16_t* size)
 	*size = 64;
 	return true;
 }
+#endif /* USE_GOST */
 #endif /* HAVE_SSL */
 
 ldns_rr *
