@@ -389,7 +389,6 @@ ldns_str2rdf_str(ldns_rdf **rd, const char *str)
 {
 	uint8_t *data;
 	size_t i, str_i;
-	int esc;
 
 	if (strlen(str) > 255) {
 		return LDNS_STATUS_INVALID_STR;
