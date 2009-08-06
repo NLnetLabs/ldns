@@ -199,7 +199,18 @@ main(int argc, char *argv[])
 	ldns_key_set_keytag(key, ldns_calc_keytag(pubkey));
 
 	/* build the DS record */
-	ds = ldns_key_rr2ds(pubkey, LDNS_SHA1);
+	switch (algorithm) {
+	default:
+		ds = ldns_key_rr2ds(pubkey, LDNS_SHA1);
+		break;
+	case LDNS_SIGN_RSASHA256:
+	case LDNS_SIGN_RSASHA512:
+		ds = ldns_key_rr2ds(pubkey, LDNS_SHA256);
+		break;
+	case LDNS_SIGN_GOST:
+		ds = ldns_key_rr2ds(pubkey, LDNS_HASH_GOST94);
+		break;
+	}
 
 	/* print the public key RR to .key */
 	filename = LDNS_XMALLOC(char, strlen(owner) + 17);

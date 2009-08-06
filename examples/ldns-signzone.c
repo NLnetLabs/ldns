@@ -516,6 +516,9 @@ main(int argc, char *argv[])
 					case LDNS_SIGN_RSASHA512:
 					case LDNS_SIGN_DSA:
 					case LDNS_SIGN_DSA_NSEC3:
+#ifdef USE_GOST
+					case LDNS_SIGN_GOST:
+#endif
 						ldns_key_list_push_key(keys, key);
 						/*printf("Added key at %p:\n", key);*/
 						/*ldns_key_print(stdout, key);*/

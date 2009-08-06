@@ -24,6 +24,9 @@ usage(FILE *fp, char *prog) {
 	fprintf(fp, "  -n: do not write DS records to file(s) but to stdout\n");
 	fprintf(fp, "  -1: (default): use SHA1 for the DS hash\n");
 	fprintf(fp, "  -2: use SHA256 for the DS hash\n");
+#ifdef USE_GOST
+	fprintf(fp, "  -g: use GOST for the DS hash\n");
+#endif
 }
 
 static int
@@ -64,6 +67,11 @@ main(int argc, char *argv[])
 		if (strcmp(argv[0], "-2") == 0) {
 			h = LDNS_SHA256;
 		}
+#ifdef USE_GOST
+		if (strcmp(argv[0], "-g") == 0) {
+			h = LDNS_HASH_GOST94;
+		}
+#endif
 		if (strcmp(argv[0], "-f") == 0) { 
 			sep_only = 0;
 		}
