@@ -468,7 +468,7 @@ ldns_rr_new_frm_str_internal(ldns_rr **newrr, const char *str,
 									rd);
 
 							/* check if the origin should be used or concatenated */
-							if (ldns_rdf_size(r) > 0 && ldns_rdf_data(r)[0] == 1 
+							if (ldns_rdf_size(r) > 1 && ldns_rdf_data(r)[0] == 1 
 								&& ldns_rdf_data(r)[1] == '@') {
 								ldns_rdf_deep_free(r);
 								if (origin) {
