@@ -320,16 +320,6 @@ get_match_name_str(match_id id) {
 	}
 }
 
-static bool
-is_match_name(char *name) {
-	match_table *mt = get_match_by_name(name);
-	if (mt) {
-		return true;
-	} else {
-		return false;
-	}
-}
-
 static void
 print_match_operation(FILE *output, match_operation *mc)
 {
@@ -1354,45 +1344,6 @@ match_packet_to_operation(ldns_pkt *pkt, ldns_rdf *src_addr, ldns_rdf *dst_addr,
 }
 
 static int
-match_expression_compare_count(const void *a, const void *b)
-{
-	match_expression *mea, *meb;
-	
-	if (!a) {
-		return 1;
-	} else if (!b) {
-		return -1;
-	} else {
-		mea = (match_expression *) a;
-		meb = (match_expression *) b;
-		
-		if (mea->count < meb->count) {
-			return -1;
-		} else if (mea->count > meb->count) {
-			return 1;
-		} else {
-			return 0;
-		}
-	}
-}
-
-static int
-match_expression_compare_count_p(const void *a, const void *b)
-{
-	match_expression **pmea, **pmeb;
-	
-	if (!a) {
-		return 1;
-	} else if (!b) {
-		return -1;
-	} else {
-		pmea = (match_expression **) a;
-		pmeb = (match_expression **) b;
-		return match_expression_compare_count(*pmea, *pmeb);
-	}
-}
-
-static int
 match_operation_compare(const void *a, const void *b)
 {
 	match_operation *moa, *mob;
@@ -1481,23 +1432,6 @@ match_expression_compare(const void *a, const void *b)
 					exit(1);
 			}
 		}
-	}
-}
-
-static int
-match_expression_compare_p(const void *a, const void *b)
-{
-	
-	match_expression **pmea, **pmeb;
-	
-	if (!a) {
-		return 1;
-	} else if (!b) {
-		return -1;
-	} else {
-		pmea = (match_expression **) a;
-		pmeb = (match_expression **) b;
-		return match_expression_compare(*pmea, *pmeb);
 	}
 }
 

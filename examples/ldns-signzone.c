@@ -58,7 +58,7 @@ usage(FILE *fp, const char *prog) {
 	fprintf(fp, "  A date can be a timestamp (seconds since the epoch), or of\n  the form <YYYYMMdd[hhmmss]>\n");
 }
 
-static void
+void
 usage_openssl(FILE *fp, const char *prog) {
 	fprintf(fp, "Special commands for openssl engines:\n");
 	fprintf(fp, "-c <file>\tOpenSSL config file\n");
@@ -215,7 +215,6 @@ find_key_in_file(const char *keyfile_name_base, ldns_key *key)
  */
 static ldns_status
 find_or_create_pubkey(const char *keyfile_name_base, ldns_key *key, ldns_zone *orig_zone, bool add_keys, uint32_t default_ttl) {
-	size_t i;
 	ldns_rr *pubkey_gen, *pubkey;
 	int key_in_zone;
 	
@@ -288,7 +287,7 @@ find_or_create_pubkey(const char *keyfile_name_base, ldns_key *key, ldns_zone *o
 	return LDNS_STATUS_OK;
 }
 
-static void
+void
 strip_dnssec_records(ldns_zone *zone)
 {
 	ldns_rr_list *new_list;
