@@ -28,7 +28,7 @@ LIBS 		= @LIBS@
 LIBOBJS		= @LIBOBJS@
 RUNTIME_PATH	= @RUNTIME_PATH@
 DATE		= $(shell date +%Y%m%d)
-LIBTOOL		= $(libtool) --tag=CC
+LIBTOOL		= $(libtool) --tag=CC --quiet
 ACLOCAL_AMFLAGS	= -Im4
 INSTALL_LDNS_CONFIG = @INSTALL_LDNS_CONFIG@
 
