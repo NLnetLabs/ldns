@@ -138,6 +138,27 @@ DSA *ldns_key_buf2dsa(ldns_buffer *key);
  * \return a DSA * structure with the key material
  */
 DSA *ldns_key_buf2dsa_raw(unsigned char* key, size_t len);
+
+/**
+ * Utility function to calculate hash using generic EVP_MD pointer.
+ * \param[in] data the data to hash.
+ * \param[in] len  length of data.
+ * \param[out] dest the destination of the hash, must be large enough.
+ * \param[in] md the message digest to use.
+ * \return true if worked, false on failure.
+ */
+int ldns_digest_evp(unsigned char* data, unsigned int len, 
+	unsigned char* dest, const EVP_MD* md);
+
+/**
+ * Converts a holding buffer with key material to EVP PKEY in openssl.
+ * Only available if ldns was compiled with GOST.
+ * \param[in] key data to convert
+ * \param[in] keylen length of the key data
+ * \return the key or NULL on error.
+ */
+EVP_PKEY* ldns_gost2pkey_raw(unsigned char* key, size_t keylen);
+
 #endif /* HAVE_SSL */
 
 #ifdef HAVE_SSL

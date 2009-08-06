@@ -105,7 +105,7 @@ ldns_key_new_frm_engine(ldns_key **key, ENGINE *e, char *key_id, ldns_algorithm 
 
 #ifdef USE_GOST
 int
-ldns_key_EVP_load_gost_id()
+ldns_key_EVP_load_gost_id(void)
 {
 	static int gost_id = 0;
 	const EVP_PKEY_ASN1_METHOD* meth;

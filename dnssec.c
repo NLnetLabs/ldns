@@ -426,8 +426,7 @@ ldns_key_buf2rsa_raw(unsigned char* key, size_t len)
 }
 #endif /* HAVE_SSL */
 
-#ifdef USE_GOST
-static int
+int
 ldns_digest_evp(unsigned char* data, unsigned int len, unsigned char* dest,
 	const EVP_MD* md)
 {
@@ -444,7 +443,6 @@ ldns_digest_evp(unsigned char* data, unsigned int len, unsigned char* dest,
 	EVP_MD_CTX_destroy(ctx);
 	return true;
 }
-#endif
 
 ldns_rr *
 ldns_key_rr2ds(const ldns_rr *key, ldns_hash h)

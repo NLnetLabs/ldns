@@ -1511,12 +1511,9 @@ ldns_dnssec_verify_denial_nsec3(ldns_rr *rr,
 #endif /* HAVE_SSL */
 
 #ifdef USE_GOST
-static ldns_status
-ldns_verify_rrsig_gost_raw(unsigned char* sig, size_t siglen, 
-	ldns_buffer* rrset, unsigned char* key, size_t keylen)
+EVP_PKEY*
+ldns_gost2pkey_raw(unsigned char* key, size_t keylen)
 {
-	EVP_PKEY *evp_key;
-	ldns_status result;
 	/* prefix header for X509 encoding */
 	uint8_t asn[37] = { 0x30, 0x63, 0x30, 0x1c, 0x06, 0x06, 0x2a, 0x85, 
 		0x03, 0x02, 0x02, 0x13, 0x30, 0x12, 0x06, 0x07, 0x2a, 0x85, 
@@ -1526,7 +1523,7 @@ ldns_verify_rrsig_gost_raw(unsigned char* sig, size_t siglen,
 	const unsigned char* pp;
 	if(keylen != 64) {
 		/* key wrong size */
-		return LDNS_STATUS_CRYPTO_BOGUS;
+		return NULL;
 	}
 
 	/* create evp_key */
@@ -1534,9 +1531,18 @@ ldns_verify_rrsig_gost_raw(unsigned char* sig, size_t siglen,
 	memmove(encoded+37, key, 64);
 	pp = (unsigned char*)&encoded[0];
 
-	(void) ldns_key_EVP_load_gost_id();
+	return d2i_PUBKEY(NULL, &pp, sizeof(encoded));
+}
 
-	evp_key = d2i_PUBKEY(NULL, &pp, sizeof(encoded));
+static ldns_status
+ldns_verify_rrsig_gost_raw(unsigned char* sig, size_t siglen, 
+	ldns_buffer* rrset, unsigned char* key, size_t keylen)
+{
+	EVP_PKEY *evp_key;
+	ldns_status result;
+
+	(void) ldns_key_EVP_load_gost_id();
+	evp_key = ldns_gost2pkey_raw(key, keylen);
 	if(!evp_key) {
 		/* could not convert key */
 		return LDNS_STATUS_CRYPTO_BOGUS;
