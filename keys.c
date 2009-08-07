@@ -113,11 +113,19 @@ ldns_key_EVP_load_gost_id(void)
 
 	if(gost_id) return gost_id;
 
-	/* loaded already */
+	/* see if configuration loaded gost implementation from other engine*/
+	meth = EVP_PKEY_asn1_find_str(NULL, "gost2001", -1);
+	if(meth) {
+		EVP_PKEY_asn1_get0_info(&gost_id, NULL, NULL, NULL, NULL, meth);
+		return gost_id;
+	}
+
+	/* see if engine can be loaded already */
 	e = ENGINE_by_id("gost");
 	if(!e) {
-		/* load it ourself */
-		ENGINE_load_gost();
+		/* load it ourself, in case statically linked */
+		ENGINE_load_builtin_engines();
+		ENGINE_load_dynamic();
 		e = ENGINE_by_id("gost");
 	}
 	if(!e) {
