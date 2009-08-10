@@ -702,10 +702,11 @@ main(int argc, char *argv[])
 			}
 		}
 		/* and, if not unset by -p, find or create the corresponding DNSKEY record */
-		status = find_or_create_pubkey(keyfile_name_base,
-		                               key, orig_zone,
-		                               add_keys, ttl);
-
+		if (key) {
+			status = find_or_create_pubkey(keyfile_name_base,
+			                               key, orig_zone,
+			                               add_keys, ttl);
+		}
 		argi++;
 	}
 	
