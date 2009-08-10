@@ -389,10 +389,15 @@ main(int argc, char *argv[])
 
 	/* do a secure trace when requested */
 	if (PURPOSE == DRILL_TRACE && qdnssec) {
+#ifdef HAVE_SSL
 		if (ldns_rr_list_rr_count(key_list) == 0) {
 			warning("%s", "No trusted keys were given. Will not be able to verify authenticity!");
 		}
 		PURPOSE = DRILL_SECTRACE;
+#else
+		fprintf(stderr, "ldns has not been compiled with OpenSSL support. Secure trace not available\n");
+		exit(1);
+#endif /* HAVE_SSL */
 	}
 
 	/* parse the arguments, with multiple arguments, the last argument
@@ -546,7 +551,6 @@ main(int argc, char *argv[])
 		case DRILL_TRACE:
 			/* do a trace from the root down */
 			if (!global_dns_root) {
-
 				init_root();
 			}
 			qname = ldns_dname_new_frm_str(name);
