@@ -1,5 +1,5 @@
 1.6.x
-	* --enable-gost : use the GOST algorithm.
+	* --enable-gost : use the GOST algorithm (experimental).
 	* Added some missing options to drill manpage
 	* Some fixes to --without-ssl option
 	* Fixed quote parsing withing strings
