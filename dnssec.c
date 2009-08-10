@@ -424,7 +424,6 @@ ldns_key_buf2rsa_raw(unsigned char* key, size_t len)
 
 	return rsa;
 }
-#endif /* HAVE_SSL */
 
 int
 ldns_digest_evp(unsigned char* data, unsigned int len, unsigned char* dest,
@@ -443,6 +442,7 @@ ldns_digest_evp(unsigned char* data, unsigned int len, unsigned char* dest,
 	EVP_MD_CTX_destroy(ctx);
 	return true;
 }
+#endif /* HAVE_SSL */
 
 ldns_rr *
 ldns_key_rr2ds(const ldns_rr *key, ldns_hash h)
