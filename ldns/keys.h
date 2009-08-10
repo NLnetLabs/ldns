@@ -44,11 +44,11 @@ enum ldns_enum_algorithm
         LDNS_DSA                = 3,
         LDNS_ECC                = 4,
         LDNS_RSASHA1            = 5,
-        LDNS_DSA_NSEC3		= 6,
-        LDNS_RSASHA1_NSEC3	= 7,
+        LDNS_DSA_NSEC3          = 6,
+        LDNS_RSASHA1_NSEC3      = 7,
         LDNS_RSASHA256          = 8, /* not official */
         LDNS_RSASHA512          = 10, /* not official */
-	LDNS_GOST		= 11, /* not official */
+        LDNS_GOST               = 211, /* not official */
         LDNS_INDIRECT           = 252,
         LDNS_PRIVATEDNS         = 253,
         LDNS_PRIVATEOID         = 254
@@ -62,7 +62,7 @@ enum ldns_enum_hash
 {
         LDNS_SHA1               = 1,
         LDNS_SHA256             = 2,
-	LDNS_HASH_GOST94	= 3 /* not official */
+        LDNS_HASH_GOST94        = 203 /* not official */
 };
 typedef enum ldns_enum_hash ldns_hash;
 
