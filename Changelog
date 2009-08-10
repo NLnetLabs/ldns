@@ -6,8 +6,7 @@
 	* Bitmask fix in EDNS handling
 	* Fixed non-fqdn domain name completion for rdata field domain
 	  names of length 1
-	* Fixed chasing with SHA256 DS records
-	
+	* Fixed chain validation with SHA256 DS records
 
 1.6.0
 	Additions:
