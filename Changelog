@@ -1,5 +1,13 @@
 1.6.x
 	* --enable-gost : use the GOST algorithm.
+	* Added some missing options to drill manpage
+	* Some fixes to --without-ssl option
+	* Fixed quote parsing withing strings
+	* Bitmask fix in EDNS handling
+	* Fixed non-fqdn domain name completion for rdata field domain
+	  names of length 1
+	* Fixed chasing with SHA256 DS records
+	
 
 1.6.0
 	Additions:
