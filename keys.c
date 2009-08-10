@@ -291,6 +291,10 @@ ldns_key_new_frm_fp_l(ldns_key **key, FILE *fp, int *line_nr)
 			ldns_key_set_algorithm(k, alg);
 #ifdef HAVE_SSL
 			rsa = ldns_key_new_frm_fp_rsa_l(fp, line_nr);
+			if (!rsa) {
+				ldns_key_free(k);
+				return LDNS_STATUS_ERR;
+			}
 			ldns_key_set_rsa_key(k, rsa);
 			RSA_free(rsa);
 #endif /* HAVE_SSL */
@@ -300,6 +304,10 @@ ldns_key_new_frm_fp_l(ldns_key **key, FILE *fp, int *line_nr)
 			ldns_key_set_algorithm(k, alg);
 #ifdef HAVE_SSL
 			dsa = ldns_key_new_frm_fp_dsa_l(fp, line_nr);
+			if (!dsa) {
+				ldns_key_free(k);
+				return LDNS_STATUS_ERR;
+			}
 			ldns_key_set_dsa_key(k, dsa);
 			DSA_free(dsa);
 #endif /* HAVE_SSL */
@@ -310,6 +318,10 @@ ldns_key_new_frm_fp_l(ldns_key **key, FILE *fp, int *line_nr)
 			ldns_key_set_algorithm(k, alg);
 #ifdef HAVE_SSL
 			hmac = ldns_key_new_frm_fp_hmac_l(fp, line_nr, &hmac_size);
+			if (!hmac) {
+				ldns_key_free(k);
+				return LDNS_STATUS_ERR;
+			}
 			ldns_key_set_hmac_size(k, hmac_size);
 			ldns_key_set_hmac_key(k, hmac);
 #endif /* HAVE_SSL */
@@ -319,8 +331,10 @@ ldns_key_new_frm_fp_l(ldns_key **key, FILE *fp, int *line_nr)
 #if defined(HAVE_SSL) && defined(USE_GOST)
 			ldns_key_set_evp_key(k, 
 				ldns_key_new_frm_fp_gost_l(fp, line_nr));
-			if(!k->_key.key)
+			if(!k->_key.key) {
+				ldns_key_free(k);
 				return LDNS_STATUS_ERR;
+			}
 #endif
 			break;
 		case 0:
@@ -328,7 +342,6 @@ ldns_key_new_frm_fp_l(ldns_key **key, FILE *fp, int *line_nr)
 			return LDNS_STATUS_SYNTAX_ALG_ERR;
 			break;
 	}
-
 	key_rr = ldns_key2rr(k);
 	ldns_key_set_keytag(k, ldns_calc_keytag(key_rr));
 	ldns_rr_free(key_rr);
