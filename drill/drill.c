@@ -204,7 +204,6 @@ main(int argc, char *argv[])
 			case 'I':
 				/* reserved for backward compatibility */
 				break;
-#ifdef HAVE_SSL
 			case 'T':
 				if (PURPOSE == DRILL_CHASE) {
 					fprintf(stderr, "-T and -S cannot be used at the same time.\n");
@@ -212,6 +211,7 @@ main(int argc, char *argv[])
 				}
 				PURPOSE = DRILL_TRACE;
 				break;
+#ifdef HAVE_SSL
 			case 'S':
 				if (PURPOSE == DRILL_TRACE) {
 					fprintf(stderr, "-T and -S cannot be used at the same time.\n");
