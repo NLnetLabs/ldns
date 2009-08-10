@@ -1665,7 +1665,7 @@ ldns_key2buffer_str(ldns_buffer *output, const ldns_key *k)
 				/* no format defined, use blob */
 #if defined(HAVE_SSL) && defined(USE_GOST)
 				ldns_buffer_printf(output, "Private-key-format: v1.2\n");
-				ldns_buffer_printf(output, "Algorithm: 11 (GOST)\n");
+				ldns_buffer_printf(output, "Algorithm: 211 (GOST)\n");
 				status = ldns_gost_key2buffer_str(output, k->_key.key);
 #endif
 				break;

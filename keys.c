@@ -260,7 +260,7 @@ ldns_key_new_frm_fp_l(ldns_key **key, FILE *fp, int *line_nr)
 		fprintf(stderr, "version of ldns\n");
 #endif
 	}
-	if (strncmp(d, "11 GOST", 3) == 0) {
+	if (strncmp(d, "211 GOST", 4) == 0) {
 #ifdef USE_GOST
 		alg = LDNS_SIGN_GOST;
 #else
