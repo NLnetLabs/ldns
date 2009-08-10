@@ -85,7 +85,7 @@ ACX_LIBTOOL_C_ONLY
 #AC_CHECK_PROG(glibtool, glibtool, [glibtool], )
 #AC_CHECK_PROGS(libtool, [libtool15 libtool], [./libtool])
 
-AC_ARG_ENABLE(sha2, AC_HELP_STRING([--enable-sha2], [Enable SHA256 and SHA512 RRSIG support]))
+AC_ARG_ENABLE(sha2, AC_HELP_STRING([--enable-sha2], [Enable SHA256 and SHA512 RRSIG support, experimental]))
 case "$enable_sha2" in
     yes)
         AC_MSG_CHECKING(for SHA256 and SHA512)
@@ -98,7 +98,7 @@ case "$enable_sha2" in
         ;;
 esac
 
-AC_ARG_ENABLE(gost, AC_HELP_STRING([--enable-gost], [Enable GOST support]))
+AC_ARG_ENABLE(gost, AC_HELP_STRING([--enable-gost], [Enable GOST support, experimental]))
 case "$enable_gost" in
     yes)
         AC_MSG_CHECKING(for GOST)
