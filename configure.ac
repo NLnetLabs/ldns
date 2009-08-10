@@ -77,7 +77,7 @@ AC_CHECK_PROG(doxygen, doxygen, doxygen)
 
 ACX_WITH_SSL_OPTIONAL
 
-AC_CHECK_FUNC([EVP_sha256], AC_DEFINE_UNQUOTED([HAVE_EVP_SHA256], [1], [Define this when there is EVP_SHA256 support]))
+AC_CHECK_FUNCS([EVP_sha256])
 
 # Use libtool 
 ACX_LIBTOOL_C_ONLY
