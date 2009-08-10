@@ -52,7 +52,8 @@ Show the MX records of the domain miek.nl
 
 .TP
 \fBdrill -S jelte.nlnetlabs.nl\fR
-Chase any signatures in the jelte.nlnetlab.nl domain.
+Chase any signatures in the jelte.nlnetlab.nl domain. This option is
+only available when ldns has been compiled with openssl-support.
 
 .TP
 \fBdrill -TD www.example.com\fR
@@ -141,6 +142,14 @@ structure will fall back to TCP.
 Use size as the buffer size in the EDNS0 pseudo RR.
 
 .TP
+\fB\-c \fIfile\fR
+Use file instead of /etc/resolv.conf for nameserver configuration.
+
+.TP
+\fB\-d \fIdomain\fR
+When tracing (-T), start from this domain instead of the root.
+
+.TP
 \fB\-t
 Use TCP/IP when querying a server
 
@@ -174,6 +183,10 @@ cache to not validate the answers it gives out.
 Use this port instead of the default of 53.
 
 .TP
+\fB\-r \fIfile\fR
+When tracing (-T), use file as a root servers hint file.
+
+.TP
 \fB\-s
 When encountering a DNSKEY print the equivalent DS also.
 
@@ -193,6 +206,10 @@ Do a reverse loopup. The type argument is not used, it is preset to PTR.
 .TP
 \fB\-y \fI<name:key[:algo]>\fR
 specify named base64 tsig key, and optional an algorithm (defaults to hmac-md5.sig-alg.reg.int)
+
+.TP
+\fB\-z \fR
+don't randomize the nameserver list before sending queries.
 
 
 .SH AUTHOR
