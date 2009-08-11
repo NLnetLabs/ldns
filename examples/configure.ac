@@ -214,6 +214,7 @@ AC_ARG_ENABLE(gost, AC_HELP_STRING([--enable-gost], [Enable GOST support, experi
 case "$enable_gost" in
     yes)
         AC_MSG_CHECKING(for GOST)
+	AC_CHECK_LIB(crypto, EVP_PKEY_set_type_str,,[AC_MSG_ERROR([OpenSSL >= 1.0.0 is needed for GOST support])])
         AC_DEFINE_UNQUOTED([USE_GOST], [1], [Define this to enable GOST support.])
         ;;
     no|*)
