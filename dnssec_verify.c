@@ -2166,12 +2166,12 @@ ldns_verify_rrsig_rsasha512_raw(unsigned char* sig,
 						  unsigned char* key,
 						  size_t keylen)
 {
-#ifdef use_sha2
-	evp_pkey *evp_key;
+#ifdef USE_SHA2
+	EVP_PKEY *evp_key;
 	ldns_status result;
 
-	evp_key = evp_pkey_new();
-	evp_pkey_assign_rsa(evp_key, ldns_key_buf2rsa_raw(key, keylen));
+	evp_key = EVP_PKEY_new();
+	EVP_PKEY_assign_RSA(evp_key, ldns_key_buf2rsa_raw(key, keylen));
 	result = ldns_verify_rrsig_evp_raw(sig,
 								siglen,
 								rrset,
