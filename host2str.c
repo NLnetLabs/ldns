@@ -1363,7 +1363,7 @@ ldns_gost_key2buffer_str(ldns_buffer *output, EVP_PKEY *p)
 	ldns_rdf_deep_free(b64_bignum);
 	OPENSSL_free(pp);
 	ldns_buffer_printf(output, "\n");
-	return LDNS_STATUS_OK;
+	return status;
 }
 #endif
 
