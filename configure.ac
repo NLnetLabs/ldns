@@ -90,6 +90,9 @@ ACX_LIBTOOL_C_ONLY
 AC_ARG_ENABLE(sha2, AC_HELP_STRING([--enable-sha2], [Enable SHA256 and SHA512 RRSIG support, experimental]))
 case "$enable_sha2" in
     yes)
+        if test "x$HAVE_SSL" != "xyes"; then
+            AC_MSG_ERROR([RSA/SHA2 enabled, but no SSL support])
+        fi
         AC_MSG_CHECKING(for SHA256 and SHA512)
         AC_CHECK_LIB(crypto, SHA256_Init,, [
             AC_MSG_ERROR([SHA2 enabled, but no SHA2 functions found in OpenSSL])
@@ -103,6 +106,9 @@ esac
 AC_ARG_ENABLE(gost, AC_HELP_STRING([--enable-gost], [Enable GOST support, experimental]))
 case "$enable_gost" in
     yes)
+        if test "x$HAVE_SSL" != "xyes"; then
+            AC_MSG_ERROR([GOST enabled, but no SSL support])
+        fi
         AC_MSG_CHECKING(for GOST)
         AC_CHECK_LIB(crypto, EVP_PKEY_set_type_str,,[AC_MSG_ERROR([OpenSSL >= 1.0.0 is needed for GOST support])])
         AC_DEFINE_UNQUOTED([USE_GOST], [1], [Define this to enable GOST support.])
