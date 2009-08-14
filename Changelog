@@ -1,4 +1,6 @@
-1.6.x
+1.x.x
+
+1.6.1   2009-09-14
 	* --enable-gost : use the GOST algorithm (experimental).
 	* Added some missing options to drill manpage
 	* Some fixes to --without-ssl option
