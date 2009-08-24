@@ -133,11 +133,13 @@ ldns_key_EVP_load_gost_id(void)
 		return 0;
 	}
 	if(!ENGINE_set_default(e, ENGINE_METHOD_ALL)) {
+		ENGINE_finish(e);
 		ENGINE_free(e);
 		return 0;
 	}
 
 	meth = EVP_PKEY_asn1_find_str(&e, "gost2001", -1);
+	ENGINE_finish(e);
 	ENGINE_free(e);
 	if(!meth) {
 		/* algo not found */
