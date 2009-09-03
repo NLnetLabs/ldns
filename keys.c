@@ -76,7 +76,6 @@ ldns_key_new()
 		ldns_key_set_external_key(newkey, NULL);
 		return newkey;
 	}
-	return NULL;
 }
 
 ldns_status
