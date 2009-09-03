@@ -1506,7 +1506,7 @@ ldns_rr_compare_ds_dnskey(ldns_rr *ds,
 {
 	ldns_rr *ds_gen;
 	bool result = false;
-	ldns_algorithm algo;
+	ldns_hash algo;
 	
 	if (!dnskey || !ds ||
 	    ldns_rr_get_type(ds) != LDNS_RR_TYPE_DS ||
