@@ -227,13 +227,13 @@ ldns_key_new_frm_fp_l(ldns_key **key, FILE *fp, int *line_nr)
 		alg = LDNS_SIGN_RSAMD5;
 	}
 	if (strncmp(d, "2 DH", 2) == 0) {
-		alg = LDNS_DH;
+		alg = (ldns_signing_algorithm)LDNS_DH;
 	}
 	if (strncmp(d, "3 DSA", 2) == 0) {
 		alg = LDNS_SIGN_DSA;
 	}
 	if (strncmp(d, "4 ECC", 2) == 0) {
-		alg = LDNS_ECC;
+		alg = (ldns_signing_algorithm)LDNS_ECC;
 	}
 	if (strncmp(d, "5 RSASHA1", 2) == 0) {
 		alg = LDNS_SIGN_RSASHA1;
