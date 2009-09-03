@@ -239,10 +239,10 @@ ldns_key_new_frm_fp_l(ldns_key **key, FILE *fp, int *line_nr)
 		alg = LDNS_SIGN_RSASHA1;
 	}
 	if (strncmp(d, "6 DSA", 2) == 0) {
-		alg = LDNS_DSA_NSEC3;
+		alg = LDNS_SIGN_DSA_NSEC3;
 	}
 	if (strncmp(d, "7 RSASHA1", 2) == 0) {
-		alg = LDNS_RSASHA1_NSEC3;
+		alg = LDNS_SIGN_RSASHA1_NSEC3;
 	}
 
 	if (strncmp(d, "8 RSASHA256", 2) == 0) {
