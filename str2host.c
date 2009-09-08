@@ -191,7 +191,9 @@ ldns_str2rdf_int32(ldns_rdf **rd, const char *longstr)
 	r = (uint16_t*)LDNS_MALLOC(uint32_t);
 	errno = 0; /* must set to zero before call, 
 			note race condition on errno */
-	l = htonl((uint32_t)strtol((char*)longstr, &end, 10));
+	if(*longstr == '-')
+		l = htonl((uint32_t)strtol((char*)longstr, &end, 10));
+	else	l = htonl((uint32_t)strtoul((char*)longstr, &end, 10));
 
 	if(*end != 0) {
 		LDNS_FREE(r);
