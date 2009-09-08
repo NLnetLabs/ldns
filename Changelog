@@ -1,6 +1,8 @@
 1.x.x
 	* Fix Makefile patch from Havard Eidnes, better install.sh usage.
 	* Fix parse error on SOA serial of 2910532839.
+	  Fix print of ';' and readback of '\;' in names.
+	  Fix parse of '\(' and '\)' in names.
 
 1.6.1   2009-09-14
 	* --enable-gost : use the GOST algorithm (experimental).

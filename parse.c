@@ -232,13 +232,13 @@ ldns_bget_token(ldns_buffer *b, char *token, const char *delim, size_t limit)
 	}
 
 	while ((c = ldns_bgetc(b)) != EOF) {
-		if (c == '(') {
+		if (c == '(' && lc != '\\') {
 			p++;
 			lc = c;
 			continue;
 		}
 
-		if (c == ')') {
+		if (c == ')' && lc != '\\') {
 			p--;
 			lc = c;
 			continue;
@@ -255,8 +255,6 @@ ldns_bget_token(ldns_buffer *b, char *token, const char *delim, size_t limit)
 		if (c == ';' && quoted == 0) {
 			if (lc != '\\') {
 				com = 1;
-			} else {
-				*t++ = '\\';
 			}
 		}
 		if (c == '"' && com == 0 && lc != '\\') {
