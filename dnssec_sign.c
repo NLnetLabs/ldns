@@ -200,6 +200,8 @@ ldns_sign_public(ldns_rr_list *rrset, ldns_key_list *keys)
 
 	/* make it canonical */
 	for(i = 0; i < ldns_rr_list_rr_count(rrset_clone); i++) {
+		ldns_rr_set_ttl(ldns_rr_list_rr(rrset_clone, i), 
+			ldns_rr_ttl(ldns_rr_list_rr(rrset, 0)));
 		ldns_rr2canonical(ldns_rr_list_rr(rrset_clone, i));
 	}
 	/* sort */
