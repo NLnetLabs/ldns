@@ -316,7 +316,13 @@ ldns_pkt2buffer_wire(ldns_buffer *buffer, const ldns_pkt *packet)
 		edata[1] = ldns_pkt_edns_version(packet);
 		ldns_write_uint16(&edata[2], ldns_pkt_edns_z(packet));
 		ldns_rr_set_ttl(edns_rr, ldns_read_uint32(edata));
+		/* don't forget to add the edns rdata (if any) */
+		if (packet->_edns_data)
+			ldns_rr_push_rdf (edns_rr, packet->_edns_data);
 		(void)ldns_rr2buffer_wire(buffer, edns_rr, LDNS_SECTION_ADDITIONAL);
+		/* take the edns rdata back out of the rr before we free rr */
+		if (packet->_edns_data)
+			ldns_rr_pop_rdf (edns_rr);
 		ldns_rr_free(edns_rr);
 	}
 	

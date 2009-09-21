@@ -4,6 +4,7 @@
 	  Fix print of ';' and readback of '\;' in names, also for '\\'.
 	  Fix parse of '\(' and '\)' in names.  Also for file read. Also '\.'
 	* Fix signature creation when TTLs are different for RRs in RRset.
+	* bug273: fix so EDNS rdata is included in pkt to wire conversion.
 
 1.6.1   2009-09-14
 	* --enable-gost : use the GOST algorithm (experimental).
