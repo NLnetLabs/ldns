@@ -610,13 +610,13 @@ ldns_status ldns_resolver_send_pkt(ldns_pkt **answer, ldns_resolver *r, ldns_pkt
  * Send a query to a nameserver
  * \param[in] *r operate using this resolver
  * \param[in] *name query for this name
- * \param[in] *type query for this type (may be 0, defaults to A)
- * \param[in] *class query for this class (may be 0, default to IN)
+ * \param[in] *t query for this type (may be 0, defaults to A)
+ * \param[in] *c query for this class (may be 0, default to IN)
  * \param[in] flags the query flags
  * \return ldns_pkt* a packet with the reply from the nameserver
  * if _defnames is true the default domain will be added
  */
-ldns_pkt* ldns_resolver_query(const ldns_resolver *r, const ldns_rdf *name, ldns_rr_type type, ldns_rr_class class, uint16_t flags);
+ldns_pkt* ldns_resolver_query(const ldns_resolver *r, const ldns_rdf *name, ldns_rr_type t, ldns_rr_class c, uint16_t flags);
 
 
 /** 

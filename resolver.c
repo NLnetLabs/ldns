@@ -864,8 +864,8 @@ ldns_resolver_deep_free(ldns_resolver *res)
 }
 
 ldns_pkt *
-ldns_resolver_search(const ldns_resolver *r,const  ldns_rdf *name, ldns_rr_type type, 
-                ldns_rr_class class, uint16_t flags)
+ldns_resolver_search(const ldns_resolver *r,const  ldns_rdf *name, 
+	ldns_rr_type t, ldns_rr_class c, uint16_t flags)
 {
 
 	char *str_dname;
@@ -878,13 +878,13 @@ ldns_resolver_search(const ldns_resolver *r,const  ldns_rdf *name, ldns_rr_type 
 
 	if (ldns_dname_str_absolute(str_dname)) {
 		/* query as-is */
-		return ldns_resolver_query(r, name, type, class, flags);
+		return ldns_resolver_query(r, name, t, c, flags);
 	} else {
 		search_list = ldns_resolver_searchlist(r);
 		for (i = 0; i < ldns_resolver_searchlist_count(r); i++) {
 			new_name = ldns_dname_cat_clone(name, search_list[i]);
 
-			p = ldns_resolver_query(r, new_name, type, class, flags);
+			p = ldns_resolver_query(r, new_name, t, c, flags);
 			ldns_rdf_free(new_name);
 			if (p) {
 				return p;
@@ -895,8 +895,8 @@ ldns_resolver_search(const ldns_resolver *r,const  ldns_rdf *name, ldns_rr_type 
 }
 
 ldns_pkt *
-ldns_resolver_query(const ldns_resolver *r, const ldns_rdf *name, ldns_rr_type type, 
-		ldns_rr_class class, uint16_t flags)
+ldns_resolver_query(const ldns_resolver *r, const ldns_rdf *name, 
+	ldns_rr_type t, ldns_rr_class c, uint16_t flags)
 {
 	ldns_rdf *newname;
 	ldns_pkt *pkt;
@@ -905,8 +905,8 @@ ldns_resolver_query(const ldns_resolver *r, const ldns_rdf *name, ldns_rr_type t
 	pkt = NULL;
 
 	if (!ldns_resolver_defnames(r)) {
-		status = ldns_resolver_send(&pkt, (ldns_resolver *)r, name, type, class, 
-				flags);
+		status = ldns_resolver_send(&pkt, (ldns_resolver *)r, name, 
+				t, c, flags);
 		if (status == LDNS_STATUS_OK) {
 			return pkt;
 		} else {
@@ -920,8 +920,8 @@ ldns_resolver_query(const ldns_resolver *r, const ldns_rdf *name, ldns_rr_type t
 
 	if (!ldns_resolver_domain(r)) {
 		/* _defnames is set, but the domain is not....?? */
-		status = ldns_resolver_send(&pkt, (ldns_resolver *)r, name, type, class, 
-				flags);
+		status = ldns_resolver_send(&pkt, (ldns_resolver *)r, name, 
+				t, c, flags);
 		if (status == LDNS_STATUS_OK) {
 			return pkt;
 		} else {
@@ -939,7 +939,7 @@ ldns_resolver_query(const ldns_resolver *r, const ldns_rdf *name, ldns_rr_type t
 		}
 		return NULL;
 	}
-	status = ldns_resolver_send(&pkt, (ldns_resolver *)r, newname, type, class, 
+	status = ldns_resolver_send(&pkt, (ldns_resolver *)r, newname, t, c, 
 			flags);
 
 	ldns_rdf_free(newname);
@@ -994,12 +994,12 @@ ldns_resolver_send_pkt(ldns_pkt **answer, ldns_resolver *r,
 
 ldns_status
 ldns_resolver_prepare_query_pkt(ldns_pkt **query_pkt, ldns_resolver *r,
-                                const ldns_rdf *name, ldns_rr_type type, 
-                                ldns_rr_class class, uint16_t flags)
+                                const ldns_rdf *name, ldns_rr_type t, 
+                                ldns_rr_class c, uint16_t flags)
 {
 	/* prepare a question pkt from the parameters
 	 * and then send this */
-	*query_pkt = ldns_pkt_query_new(ldns_rdf_clone(name), type, class, flags);
+	*query_pkt = ldns_pkt_query_new(ldns_rdf_clone(name), t, c, flags);
 	if (!*query_pkt) {
 		return LDNS_STATUS_ERR;
 	}
@@ -1035,7 +1035,7 @@ ldns_resolver_prepare_query_pkt(ldns_pkt **query_pkt, ldns_resolver *r,
 
 ldns_status
 ldns_resolver_send(ldns_pkt **answer, ldns_resolver *r, const ldns_rdf *name, 
-		ldns_rr_type type, ldns_rr_class class, uint16_t flags)
+		ldns_rr_type t, ldns_rr_class c, uint16_t flags)
 {
 	ldns_pkt *query_pkt;
 	ldns_pkt *answer_pkt;
@@ -1049,11 +1049,11 @@ ldns_resolver_send(ldns_pkt **answer, ldns_resolver *r, const ldns_rdf *name,
 	/* do all the preprocessing here, then fire of an query to 
 	 * the network */
 
-	if (0 == type) {
-		type = LDNS_RR_TYPE_A;
+	if (0 == t) {
+		t= LDNS_RR_TYPE_A;
 	}
-	if (0 == class) {
-		class = LDNS_RR_CLASS_IN;
+	if (0 == c) {
+		c= LDNS_RR_CLASS_IN;
 	}
 	if (0 == ldns_resolver_nameserver_count(r)) {
 		return LDNS_STATUS_RES_NO_NS;
@@ -1062,12 +1062,8 @@ ldns_resolver_send(ldns_pkt **answer, ldns_resolver *r, const ldns_rdf *name,
 		return LDNS_STATUS_RES_QUERY;
 	}
 
-	status = ldns_resolver_prepare_query_pkt(&query_pkt,
-	                                         r,
-	                                         name,
-	                                         type,
-	                                         class,
-	                                         flags);
+	status = ldns_resolver_prepare_query_pkt(&query_pkt, r, name,
+	                                         t, c, flags);
 	if (status != LDNS_STATUS_OK) {
 		return status;
 	}

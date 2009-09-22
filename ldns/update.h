@@ -97,11 +97,11 @@ void ldns_update_set_adcount(ldns_pkt *p, uint16_t c);
  * Not sure if we want to keep these like this, therefore
  * not documented
  */
-ldns_status ldns_update_soa_mname(ldns_rdf *zone, ldns_resolver *r, ldns_rr_class class, ldns_rdf **mname);
+ldns_status ldns_update_soa_mname(ldns_rdf *zone, ldns_resolver *r, ldns_rr_class c, ldns_rdf **mname);
 /* 
  * Not sure if we want to keep these like this, therefore
  * not documented
  */
-ldns_status ldns_update_soa_zone_mname(const char *fqdn, ldns_resolver *r, ldns_rr_class class, ldns_rdf **zone_rdf, ldns_rdf **mname_rdf);
+ldns_status ldns_update_soa_zone_mname(const char *fqdn, ldns_resolver *r, ldns_rr_class c, ldns_rdf **zone_rdf, ldns_rdf **mname_rdf);
 
 #endif  /* LDNS_UPDATE_H */

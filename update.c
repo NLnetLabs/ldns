@@ -24,7 +24,7 @@
  */
 
 ldns_pkt *
-ldns_update_pkt_new(ldns_rdf *zone_rdf, ldns_rr_class class,
+ldns_update_pkt_new(ldns_rdf *zone_rdf, ldns_rr_class c,
     ldns_rr_list *pr_rrlist, ldns_rr_list *up_rrlist, ldns_rr_list *ad_rrlist)
 {
 	ldns_pkt *p;
@@ -33,12 +33,12 @@ ldns_update_pkt_new(ldns_rdf *zone_rdf, ldns_rr_class class,
 		return NULL;
 	}
 
-	if (class == 0) { 
-		class = LDNS_RR_CLASS_IN;
+	if (c == 0) { 
+		c = LDNS_RR_CLASS_IN;
 	}
 
 	/* Create packet, fill in Zone Section. */
-	p = ldns_pkt_query_new(zone_rdf, LDNS_RR_TYPE_SOA, class, LDNS_RD);
+	p = ldns_pkt_query_new(zone_rdf, LDNS_RR_TYPE_SOA, c, LDNS_RD);
 	if (!p) {
 		return NULL;
 	}
@@ -88,14 +88,14 @@ ldns_update_pkt_tsig_add(ldns_pkt *p, ldns_resolver *r)
 /* XXX doc */
 ldns_status
 ldns_update_soa_mname(ldns_rdf *zone, ldns_resolver *r,
-    ldns_rr_class class, ldns_rdf **mname)
+    ldns_rr_class c, ldns_rdf **mname)
 {
 	ldns_rr		*soa_rr;
 	ldns_pkt	*query, *resp;
 
 	/* Nondestructive, so clone 'zone' here */
 	query = ldns_pkt_query_new(ldns_rdf_clone(zone), LDNS_RR_TYPE_SOA,
-	    class, LDNS_RD);
+	    c, LDNS_RD);
 	if (!query) {
 		return LDNS_STATUS_ERR;
 	}
@@ -127,7 +127,7 @@ ldns_update_soa_mname(ldns_rdf *zone, ldns_resolver *r,
 /* Try to get zone and MNAME from SOA queries. */
 ldns_status
 ldns_update_soa_zone_mname(const char *fqdn, ldns_resolver *r,
-    ldns_rr_class class, ldns_rdf **zone_rdf, ldns_rdf **mname_rdf)
+    ldns_rr_class c, ldns_rdf **zone_rdf, ldns_rdf **mname_rdf)
 {
 	ldns_rr		*soa_rr, *rr;
 	ldns_rdf	*soa_zone = NULL, *soa_mname = NULL;
@@ -143,7 +143,7 @@ ldns_update_soa_zone_mname(const char *fqdn, ldns_resolver *r,
 
 	/* Step 1 - first find a nameserver that should know *something* */
 	fqdn_rdf = ldns_dname_new_frm_str(fqdn);
-	query = ldns_pkt_query_new(fqdn_rdf, LDNS_RR_TYPE_SOA, class, LDNS_RD);
+	query = ldns_pkt_query_new(fqdn_rdf, LDNS_RR_TYPE_SOA, c, LDNS_RD);
 	if (!query) {
 		return LDNS_STATUS_ERR;
 	}
@@ -173,7 +173,7 @@ ldns_update_soa_zone_mname(const char *fqdn, ldns_resolver *r,
 	}
 
 	/* Step 2 - find SOA MNAME IP address, add to resolver */
-	query = ldns_pkt_query_new(soa_mname, LDNS_RR_TYPE_A, class, LDNS_RD);
+	query = ldns_pkt_query_new(soa_mname, LDNS_RR_TYPE_A, c, LDNS_RD);
 	if (!query) {
 		return LDNS_STATUS_ERR;
 	}
@@ -226,7 +226,7 @@ ldns_update_soa_zone_mname(const char *fqdn, ldns_resolver *r,
 
 	/* Step 3 - Redo SOA query, sending to SOA MNAME directly. */
 	fqdn_rdf = ldns_dname_new_frm_str(fqdn);
-	query = ldns_pkt_query_new(fqdn_rdf, LDNS_RR_TYPE_SOA, class, LDNS_RD);
+	query = ldns_pkt_query_new(fqdn_rdf, LDNS_RR_TYPE_SOA, c, LDNS_RD);
 	if (!query) {
 		return LDNS_STATUS_ERR;
 	}
