@@ -6,6 +6,7 @@
 	* Fix signature creation when TTLs are different for RRs in RRset.
 	* bug273: fix so EDNS rdata is included in pkt to wire conversion.
 	* bug274: fix use of c++ keyword 'class' for RR class in the code.
+	* bug275: fix memory leak of packet edns rdata.
 
 1.6.1   2009-09-14
 	* --enable-gost : use the GOST algorithm (experimental).

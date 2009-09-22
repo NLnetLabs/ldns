@@ -793,6 +793,7 @@ ldns_pkt_free(ldns_pkt *packet)
 		ldns_rr_list_deep_free(packet->_authority);
 		ldns_rr_list_deep_free(packet->_additional);
 		ldns_rr_free(packet->_tsig_rr);
+		ldns_rdf_deep_free(packet->_edns_data);
 		LDNS_FREE(packet);
 	}
 }
