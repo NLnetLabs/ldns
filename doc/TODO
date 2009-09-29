@@ -2,3 +2,6 @@ TODO
 
 Features:
 * Multi-line zone file parsing
+
+Bugfixes:
+* ldns_dname_match_wildcard is case sensitive (reported by Ray Bellis)
