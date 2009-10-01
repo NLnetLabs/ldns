@@ -1,4 +1,6 @@
 1.x.x
+
+1.6.2	2009-10-01
 	* Fix Makefile patch from Havard Eidnes, better install.sh usage.
 	* Fix parse error on SOA serial of 2910532839.
 	  Fix print of ';' and readback of '\;' in names, also for '\\'.
