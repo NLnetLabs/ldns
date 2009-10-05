@@ -29,6 +29,7 @@
 #endif
 #include <sys/time.h>
 #include <errno.h>
+#include <fcntl.h>
 
 ldns_status
 ldns_send(ldns_pkt **result_packet, ldns_resolver *r, const ldns_pkt *query_pkt)
@@ -218,6 +219,67 @@ ldns_send_buffer(ldns_pkt **result, ldns_resolver *r, ldns_buffer *qb, ldns_rdf 
 	return status;
 }
 
+/** best effort to set nonblocking */
+static void
+ldns_sock_nonblock(int sockfd)
+{
+#ifdef HAVE_FCNTL
+	int flag;
+	if((flag = fcntl(sockfd, F_GETFL)) != -1) {
+		flag |= O_NONBLOCK;
+		if(fcntl(sockfd, F_SETFL, flag) == -1) {
+			/* ignore error, continue blockingly */
+		}
+	}
+#elif defined(HAVE_IOCTLSOCKET)
+	unsigned long on = 1;
+	if(ioctlsocket(s, FIONBIO, &on) != 0) {
+		/* ignore error, continue blockingly */
+	}
+#endif
+}
+
+/** best effort to set blocking */
+static void
+ldns_sock_block(int sockfd)
+{
+#ifdef HAVE_FCNTL
+	int flag;
+	if((flag = fcntl(sockfd, F_GETFL)) != -1) {
+		flag &= ~O_NONBLOCK;
+		if(fcntl(sockfd, F_SETFL, flag) == -1) {
+			/* ignore error, continue */
+		}
+	}
+#elif defined(HAVE_IOCTLSOCKET)
+	unsigned long off = 0;
+	if(ioctlsocket(s, FIONBIO, &off) != 0) {
+		/* ignore error, continue */
+	}
+#endif
+}
+
+/** wait for a socket to become ready */
+static int
+ldns_sock_wait(int sockfd, struct timeval timeout, int write)
+{
+	fd_set fds;
+	int ret;
+	FD_ZERO(&fds);
+	FD_SET(sockfd, &fds);
+	if(write)
+		ret = select(sockfd+1, NULL, &fds, NULL, &timeout);
+	else
+		ret = select(sockfd+1, &fds, NULL, NULL, &timeout);
+	if(ret == 0)
+		/* timeout expired */
+		return 0;
+	else if(ret == -1)
+		/* error */
+		return 0;
+	return 1;
+}
+
 ldns_status
 ldns_udp_send(uint8_t **result, ldns_buffer *qbin, const struct sockaddr_storage *to, 
 		socklen_t tolen, struct timeval timeout, size_t *answer_size)
@@ -232,6 +294,11 @@ ldns_udp_send(uint8_t **result, ldns_buffer *qbin, const struct sockaddr_storage
 	}
 
 	/* wait for an response*/
+	if(!ldns_sock_wait(sockfd, timeout, 0)) {
+		close(sockfd);
+		return LDNS_STATUS_NETWORK_ERR;
+	}
+	
 	answer = ldns_udp_read_wire(sockfd, answer_size, NULL, NULL);
 	close(sockfd);
 
@@ -263,7 +330,7 @@ ldns_udp_bgsend(ldns_buffer *qbin, const struct sockaddr_storage *to, socklen_t 
 }
 
 int
-ldns_udp_connect(const struct sockaddr_storage *to, struct timeval timeout)
+ldns_udp_connect(const struct sockaddr_storage *to, struct timeval ATTR_UNUSED(timeout))
 {
 	int sockfd;
 	
@@ -271,14 +338,6 @@ ldns_udp_connect(const struct sockaddr_storage *to, struct timeval timeout)
 					IPPROTO_UDP)) 
 			== -1) {
                 return 0;
-        }
-	if (setsockopt(sockfd, SOL_SOCKET, SO_RCVTIMEO, (void*)&timeout,
-				(socklen_t)sizeof(timeout))) {
-                /* might fail, in that case, use default for now */
-		/*
-		close(sockfd);
-		return 0;
-		*/
         }
 	return sockfd;
 }
@@ -294,21 +353,75 @@ ldns_tcp_connect(const struct sockaddr_storage *to, socklen_t tolen,
 		return 0;
 	}
 
-	if (setsockopt(sockfd, SOL_SOCKET, SO_RCVTIMEO, (void*)&timeout,
-				(socklen_t) sizeof(timeout))) {
-		close(sockfd);
-		return 0;
-	}
-	if (setsockopt(sockfd, SOL_SOCKET, SO_SNDTIMEO, (void*)&timeout,
-				(socklen_t) sizeof(timeout))) {
-		close(sockfd);
-		return 0;
+	/* perform nonblocking connect, to be able to wait with select() */
+	ldns_sock_nonblock(sockfd);
+	if (connect(sockfd, (struct sockaddr*)to, tolen) == -1) {
+#ifndef USE_WINSOCK
+#ifdef EINPROGRESS
+		if(errno != EINPROGRESS) {
+#else
+		if(1) {
+#endif
+			close(sockfd);
+			return 0;
+		}
+#else /* USE_WINSOCK */
+		if(WSAGetLastError() != WSAEINPROGRESS &&
+			WSAGetLastError() != WSAEWOULDBLOCK) {
+			closesocket(sockfd);
+			return 0;
+		}
+#endif
+		/* error was only telling us that it would block */
 	}
 
-	if (connect(sockfd, (struct sockaddr*)to, tolen) == -1) {
- 		close(sockfd);
-		return 0;
+	/* wait(write) until connected or error */
+	while(1) {
+		int error = 0;
+		socklen_t len = (socklen_t)sizeof(error);
+
+		if(!ldns_sock_wait(sockfd, timeout, 1)) {
+			close(sockfd);
+			return 0;
+		}
+
+		/* check if there is a pending error for nonblocking connect */
+		if(getsockopt(sockfd, SOL_SOCKET, SO_ERROR, (void*)&error,
+			&len) < 0) {
+#ifndef USE_WINSOCK
+			error = errno; /* on solaris errno is error */
+#else
+			error = WSAGetLastError();
+#endif
+		}
+#ifndef USE_WINSOCK
+#if defined(EINPROGRESS) && defined(EWOULDBLOCK)
+		if(error == EINPROGRESS || error == EWOULDBLOCK)
+			continue; /* try again */
+#endif
+		else if(error != 0) {
+			close(sockfd);
+			/* error in errno for our user */
+			errno = error;
+			return 0;
+		}
+#else /* USE_WINSOCK */
+		if(error == WSAEINPROGRESS)
+			continue;
+		else if(error == WSAEWOULDBLOCK)
+			continue;
+		else if(error != 0) {
+			closesocket(sockfd);
+			errno = error;
+			return 0;
+		}
+#endif /* USE_WINSOCK */
+		/* connected */
+		break;
 	}
+
+	/* set the socket blocking again */
+	ldns_sock_block(sockfd);
 
 	return sockfd;
 }
@@ -440,6 +553,11 @@ ldns_tcp_send(uint8_t **result,  ldns_buffer *qbin, const struct sockaddr_storag
 	
 	if (sockfd == 0) {
 		return LDNS_STATUS_ERR;
+	}
+
+	if(!ldns_sock_wait(sockfd, timeout, 0)) {
+		close(sockfd);
+		return LDNS_STATUS_NETWORK_ERR;
 	}
 	
 	answer = ldns_tcp_read_wire(sockfd, answer_size);

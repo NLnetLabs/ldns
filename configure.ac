@@ -237,7 +237,7 @@ AC_REPLACE_FUNCS(inet_ntop)
 AC_REPLACE_FUNCS(snprintf)
 AC_REPLACE_FUNCS(strlcpy)
 AC_REPLACE_FUNCS(memmove)
-AC_CHECK_FUNCS([endprotoent endservent sleep random])
+AC_CHECK_FUNCS([endprotoent endservent sleep random fcntl ioctlsocket])
 
 ACX_CHECK_GETADDRINFO_WITH_INCLUDES
 if test $ac_cv_func_getaddrinfo = no; then
