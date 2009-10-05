@@ -147,7 +147,7 @@ ssize_t ldns_udp_send_query(ldns_buffer *qbin, int sockfd, const struct sockaddr
 uint8_t *ldns_tcp_read_wire_timeout(int sockfd, size_t *size, struct timeval timeout);
 
 /**
- * *DEPRECATED* please use ldns_tcp_read_wire_timeout, that checks for timeouts.
+ * This routine may block. Use ldns_tcp_read_wire_timeout, it checks timeouts.
  * Gives back a raw packet from the wire and reads the header data from the given
  * socket. Allocates the data (of size size) itself, so don't forget to free
  *
