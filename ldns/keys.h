@@ -46,8 +46,8 @@ enum ldns_enum_algorithm
         LDNS_RSASHA1            = 5,
         LDNS_DSA_NSEC3          = 6,
         LDNS_RSASHA1_NSEC3      = 7,
-        LDNS_RSASHA256          = 8, /* not official */
-        LDNS_RSASHA512          = 10, /* not official */
+        LDNS_RSASHA256          = 8,
+        LDNS_RSASHA512          = 10,
         LDNS_GOST               = 211, /* not official */
         LDNS_INDIRECT           = 252,
         LDNS_PRIVATEDNS         = 253,
