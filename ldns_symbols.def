@@ -649,6 +649,7 @@ ldns_str2rdf_wks
 ldns_tcp_bgsend
 ldns_tcp_connect
 ldns_tcp_read_wire
+ldns_tcp_read_wire_timeout
 ldns_tcp_send
 ldns_tcp_send_query
 ldns_traverse_postorder

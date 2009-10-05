@@ -498,6 +498,58 @@ ldns_udp_read_wire(int sockfd, size_t *size, struct sockaddr_storage *from,
 }
 
 uint8_t *
+ldns_tcp_read_wire_timeout(int sockfd, size_t *size, struct timeval timeout)
+{
+	uint8_t *wire;
+	uint16_t wire_size;
+	ssize_t bytes = 0;
+
+	wire = LDNS_XMALLOC(uint8_t, 2);
+	if (!wire) {
+		*size = 0;
+		return NULL;
+	}
+	
+	while (bytes < 2) {
+		if(!ldns_sock_wait(sockfd, timeout, 0)) {
+			*size = 0;
+			LDNS_FREE(wire);
+			return NULL;
+		}
+		bytes = recv(sockfd, (void*)wire, 2, 0);
+		if (bytes == -1 || bytes == 0) {
+			*size = 0;
+			LDNS_FREE(wire);
+			return NULL;
+		}
+	}
+
+	wire_size = ldns_read_uint16(wire);
+	
+	LDNS_FREE(wire);
+	wire = LDNS_XMALLOC(uint8_t, wire_size);
+	bytes = 0;
+
+	while (bytes < (ssize_t) wire_size) {
+		if(!ldns_sock_wait(sockfd, timeout, 0)) {
+			*size = 0;
+			LDNS_FREE(wire);
+			return NULL;
+		}
+		bytes += recv(sockfd, (void*) (wire + bytes), 
+				(size_t) (wire_size - bytes), 0);
+		if (bytes == -1 || bytes == 0) {
+			LDNS_FREE(wire);
+			*size = 0;
+			return NULL;
+		}
+	}
+	
+	*size = (size_t) bytes;
+	return wire;
+}
+
+uint8_t *
 ldns_tcp_read_wire(int sockfd, size_t *size)
 {
 	uint8_t *wire;
@@ -555,12 +607,7 @@ ldns_tcp_send(uint8_t **result,  ldns_buffer *qbin, const struct sockaddr_storag
 		return LDNS_STATUS_ERR;
 	}
 
-	if(!ldns_sock_wait(sockfd, timeout, 0)) {
-		close(sockfd);
-		return LDNS_STATUS_NETWORK_ERR;
-	}
-	
-	answer = ldns_tcp_read_wire(sockfd, answer_size);
+	answer = ldns_tcp_read_wire_timeout(sockfd, answer_size, timeout);
 	close(sockfd);
 
 	if (*answer_size == 0) {

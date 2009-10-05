@@ -134,7 +134,20 @@ ssize_t ldns_tcp_send_query(ldns_buffer *qbin, int sockfd, const struct sockaddr
  * \return number of bytes sent
  */
 ssize_t ldns_udp_send_query(ldns_buffer *qbin, int sockfd, const struct sockaddr_storage *to, socklen_t tolen);
+
 /**
+ * Gives back a raw packet from the wire and reads the header data from the given
+ * socket. Allocates the data (of size size) itself, so don't forget to free
+ *
+ * \param[in] sockfd the socket to read from
+ * \param[out] size the number of bytes that are read
+ * \param[in] timeout the time allowed between packets.
+ * \return the data read
+ */
+uint8_t *ldns_tcp_read_wire_timeout(int sockfd, size_t *size, struct timeval timeout);
+
+/**
+ * *DEPRECATED* please use ldns_tcp_read_wire_timeout, that checks for timeouts.
  * Gives back a raw packet from the wire and reads the header data from the given
  * socket. Allocates the data (of size size) itself, so don't forget to free
  *
