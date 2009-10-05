@@ -339,6 +339,7 @@ main(int argc, char *argv[])
 				PURPOSE = DRILL_REVERSE;
 				break;
 			case 'y':
+#ifdef HAVE_SSL
 				if (strchr(optarg, ':')) {
 					tsig_separator = (size_t) (strchr(optarg, ':') - optarg);
 					if (strchr(optarg + tsig_separator + 1, ':')) {
@@ -360,6 +361,11 @@ main(int argc, char *argv[])
 					tsig_name[tsig_separator] = '\0';
 					tsig_data[ tsig_separator2 - tsig_separator - 1] = '\0';
 				}
+#else
+				fprintf(stderr, "TSIG requested, but SSL is not supported\n");
+				result = EXIT_FAILURE;
+				goto exit;
+#endif /* HAVE_SSL */
 				break;
 			case 'z':
 				qrandom = false;
@@ -773,7 +779,7 @@ main(int argc, char *argv[])
 					axfr_rr = ldns_axfr_next(res);
 					if(!axfr_rr) {
 						fprintf(stderr, "AXFR failed.\n");
-						ldns_pkt_print(stdout, 
+						ldns_pkt_print(stdout,
 							ldns_axfr_last_pkt(res));
 						goto exit;
 					}
