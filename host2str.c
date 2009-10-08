@@ -44,6 +44,15 @@ ldns_lookup_table ldns_algorithms[] = {
         { LDNS_DSA, "DSA" },
         { LDNS_ECC, "ECC" },
         { LDNS_RSASHA1, "RSASHA1" },
+        { LDNS_DSA_NSEC3, "DSA_NSEC3" },
+        { LDNS_RSASHA1_NSEC3, "RSASHA1_NSEC3" },
+#ifdef USE_SHA2
+	{ LDNS_RSASHA256, "RSASHA256"},
+	{ LDNS_RSASHA512, "RSASHA512"},
+#endif
+#ifdef USE_GOST
+	{ LDNS_GOST, "GOST"},
+#endif
         { LDNS_INDIRECT, "INDIRECT" },
         { LDNS_PRIVATEDNS, "PRIVATEDNS" },
         { LDNS_PRIVATEOID, "PRIVATEOID" },
