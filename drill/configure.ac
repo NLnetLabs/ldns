@@ -159,14 +159,7 @@ AC_INCLUDES_DEFAULT
 # MinGW32 tests
 AC_CHECK_HEADERS([winsock2.h ws2tcpip.h],,, [AC_INCLUDES_DEFAULT])
 
-AC_CHECK_TYPE(socklen_t, , 
-	[AC_DEFINE([socklen_t], [int], [Define to 'int' if not defined])], [
-AC_INCLUDES_DEFAULT
-#if HAVE_SYS_SOCKET_H
-#  include <sys/socket.h>
-#endif
-])
-
+ACX_TYPE_SOCKLEN_T
 AC_CHECK_HEADERS([sys/param.h sys/mount.h],,,
 [AC_INCLUDES_DEFAULT]
 [
@@ -196,6 +189,8 @@ AC_CHECK_LIB(socket, socket)
 AC_CHECK_LIB(nsl, inet_pton)
 
 ACX_WITH_SSL_OPTIONAL
+
+ACX_CHECK_GETADDRINFO_WITH_INCLUDES
 
 LIBS_STC="$LIBS"
 AC_SUBST(LIBS_STC)

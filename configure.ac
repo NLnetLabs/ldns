@@ -193,13 +193,7 @@ include_inttypes_h=''
 ])
 AC_SUBST(include_inttypes_h)
 
-AC_CHECK_TYPE(socklen_t, , 
-	[AC_DEFINE([socklen_t], [int], [Define to 'int' if not defined])], [
-AC_INCLUDES_DEFAULT
-#if HAVE_SYS_SOCKET_H
-#  include <sys/socket.h>
-#endif
-])
+ACX_TYPE_SOCKLEN_T
 AC_CHECK_TYPE(ssize_t, int)
 AC_CHECK_TYPE(in_addr_t, [], [AC_DEFINE([in_addr_t], [uint32_t], [in_addr_t])], [
 #if HAVE_SYS_TYPES_H
@@ -237,12 +231,16 @@ AC_REPLACE_FUNCS(inet_ntop)
 AC_REPLACE_FUNCS(snprintf)
 AC_REPLACE_FUNCS(strlcpy)
 AC_REPLACE_FUNCS(memmove)
-AC_CHECK_FUNCS([endprotoent endservent sleep random fcntl ioctlsocket])
+AC_CHECK_FUNCS([endprotoent endservent sleep random fcntl])
 
 ACX_CHECK_GETADDRINFO_WITH_INCLUDES
 if test $ac_cv_func_getaddrinfo = no; then
 	AC_LIBOBJ([fake-rfc2553])
 fi
+if test "$USE_WINSOCK" = 1; then
+	AC_CHECK_TOOL(WINDRES, windres)
+fi
+ACX_FUNC_IOCTLSOCKET
 
 #AC_SEARCH_LIBS(RSA_new, [crypto])
 
@@ -306,7 +304,9 @@ AH_BOTTOM([
 #ifdef HAVE_WS2TCPIP_H
 #include <ws2tcpip.h>
 #endif
-])
+]
+AHX_CONFIG_W32_FD_SET_T
+)
 
 AH_BOTTOM([
 #ifndef B64_PTON

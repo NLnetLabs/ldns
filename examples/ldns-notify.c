@@ -71,8 +71,8 @@ notify_host(int s, struct addrinfo* res, uint8_t* wire, size_t wiresize,
 	
 	while(!got_ack) {
 		/* send it */
-		if(sendto(s, wire, wiresize, 0, res->ai_addr, res->ai_addrlen)
-			== -1) {
+		if(sendto(s, (void*)wire, wiresize, 0, 
+			res->ai_addr, res->ai_addrlen) == -1) {
 			printf("warning: send to %s failed: %s\n",
 				addrstr, strerror(errno));
 			close(s);
@@ -108,7 +108,7 @@ notify_host(int s, struct addrinfo* res, uint8_t* wire, size_t wiresize,
 
 	/* got reply */
 	addrlen = res->ai_addrlen;
-	received = recvfrom(s, replybuf, sizeof(replybuf), 0,
+	received = recvfrom(s, (void*)replybuf, sizeof(replybuf), 0,
 		res->ai_addr, &addrlen);
 	res->ai_addrlen = addrlen;
 

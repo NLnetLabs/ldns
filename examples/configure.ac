@@ -159,14 +159,7 @@ AC_INCLUDES_DEFAULT
 #include <net/if.h>
 #endif])
 
-AC_CHECK_TYPE(socklen_t, , 
-	[AC_DEFINE([socklen_t], [int], [Define to 'int' if not defined])], [
-AC_INCLUDES_DEFAULT
-#if HAVE_SYS_SOCKET_H
-#  include <sys/socket.h>
-#endif
-])
-
+ACX_TYPE_SOCKLEN_T
 AC_CHECK_HEADERS([sys/param.h sys/mount.h],,,
 [AC_INCLUDES_DEFAULT]
 [

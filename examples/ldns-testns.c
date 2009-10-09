@@ -229,7 +229,7 @@ send_udp(uint8_t* buf, size_t len, void* data)
 	struct handle_udp_userdata *userdata = (struct handle_udp_userdata*)data;
 	/* udp send reply */
 	ssize_t nb;
-	nb = sendto(userdata->udp_sock, buf, len, 0, 
+	nb = sendto(userdata->udp_sock, (void*)buf, len, 0, 
 		(struct sockaddr*)&userdata->addr_him, userdata->hislen);
 	if(nb == -1)
 		log_msg("sendto(): %s\n", strerror(errno));
@@ -248,7 +248,7 @@ handle_udp(int udp_sock, struct entry* entries, int *count)
 
 	userdata.hislen = (socklen_t)sizeof(userdata.addr_him);
 	/* udp recv */
-	nb = recvfrom(udp_sock, inbuf, INBUF_SIZE, 0, 
+	nb = recvfrom(udp_sock, (void*)inbuf, INBUF_SIZE, 0, 
 		(struct sockaddr*)&userdata.addr_him, &userdata.hislen);
 	if (nb < 1) {
 #ifndef USE_WINSOCK
@@ -270,7 +270,7 @@ read_n_bytes(int sock, uint8_t* buf, size_t sz)
 {
 	size_t count = 0;
 	while(count < sz) {
-		ssize_t nb = recv(sock, buf+count, sz-count, 0);
+		ssize_t nb = recv(sock, (void*)(buf+count), sz-count, 0);
 		if(nb < 0) {
 			log_msg("recv(): %s\n", strerror(errno));
 			return;
@@ -284,7 +284,7 @@ write_n_bytes(int sock, uint8_t* buf, size_t sz)
 {
 	size_t count = 0;
 	while(count < sz) {
-		ssize_t nb = send(sock, buf+count, sz-count, 0);
+		ssize_t nb = send(sock, (void*)(buf+count), sz-count, 0);
 		if(nb < 0) {
 			log_msg("send(): %s\n", strerror(errno));
 			return;

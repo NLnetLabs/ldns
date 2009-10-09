@@ -233,7 +233,7 @@ ldns_sock_nonblock(int sockfd)
 	}
 #elif defined(HAVE_IOCTLSOCKET)
 	unsigned long on = 1;
-	if(ioctlsocket(s, FIONBIO, &on) != 0) {
+	if(ioctlsocket(sockfd, FIONBIO, &on) != 0) {
 		/* ignore error, continue blockingly */
 	}
 #endif
@@ -253,7 +253,7 @@ ldns_sock_block(int sockfd)
 	}
 #elif defined(HAVE_IOCTLSOCKET)
 	unsigned long off = 0;
-	if(ioctlsocket(s, FIONBIO, &off) != 0) {
+	if(ioctlsocket(sockfd, FIONBIO, &off) != 0) {
 		/* ignore error, continue */
 	}
 #endif
@@ -266,7 +266,7 @@ ldns_sock_wait(int sockfd, struct timeval timeout, int write)
 	fd_set fds;
 	int ret;
 	FD_ZERO(&fds);
-	FD_SET(sockfd, &fds);
+	FD_SET(FD_SET_T sockfd, &fds);
 	if(write)
 		ret = select(sockfd+1, NULL, &fds, NULL, &timeout);
 	else

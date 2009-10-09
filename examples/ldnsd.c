@@ -175,7 +175,8 @@ main(int argc, char **argv)
 
 	/* Done. Now receive */
 	while (1) {
-		nb = recvfrom(sock, inbuf, INBUF_SIZE, 0, &addr_him, &hislen);
+		nb = recvfrom(sock, (void*)inbuf, INBUF_SIZE, 0, 
+			&addr_him, &hislen);
 		if (nb < 1) {
 			fprintf(stderr, "%s: recvfrom(): %s\n",
 			argv[0], strerror(errno));
@@ -220,7 +221,8 @@ main(int argc, char **argv)
 		if (status != LDNS_STATUS_OK) {
 			printf("Error creating answer: %s\n", ldns_get_errorstr_by_id(status));
 		} else {
-			nb = sendto(sock, outbuf, answer_size, 0, &addr_him, hislen);
+			nb = sendto(sock, (void*)outbuf, answer_size, 0, 
+				&addr_him, hislen);
 		}
 		
 		ldns_pkt_free(query_pkt);
