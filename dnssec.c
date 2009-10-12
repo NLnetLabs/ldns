@@ -870,7 +870,7 @@ ldns_create_nsec(ldns_rdf *cur_owner, ldns_rdf *next_owner, ldns_rr_list *rrs)
 			if ((i_type / 8) + 1 > bm_len) {
 				bitmap = LDNS_XREALLOC(bitmap, uint8_t, (i_type / 8) + 2);
 				/* set to 0 */
-				for (; bm_len <= i_type / 8; bm_len++) {
+				for (; bm_len < (i_type / 8) + 2; bm_len++) {
 					bitmap[bm_len] = 0;
 				}
 			}
