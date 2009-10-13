@@ -1397,14 +1397,16 @@ ldns_rr_compare_no_rdata(const ldns_rr *rr1, const ldns_rr *rr2)
 		return 1;
 	}
 
+        /* should return -1 if rr1 comes before rr2, so need to do rr1 - rr2, not rr2 - rr1 */
         if (ldns_rr_get_class(rr1) != ldns_rr_get_class(rr2)) {
-            return ldns_rr_get_class(rr2) - ldns_rr_get_class(rr1);
+            return ldns_rr_get_class(rr1) - ldns_rr_get_class(rr2);
         }
 
+        /* should return -1 if rr1 comes before rr2, so need to do rr1 - rr2, not rr2 - rr1 */
         if (ldns_rr_get_type(rr1) != ldns_rr_get_type(rr2)) {
-            return ldns_rr_get_type(rr2) - ldns_rr_get_type(rr1);
+            return ldns_rr_get_type(rr1) - ldns_rr_get_type(rr2);
         }
-        
+
         /* offset is the owername length + ttl + type + class + rdlen == start of wire format rdata */
         offset = ldns_rdf_size(ldns_rr_owner(rr1)) + 4 + 2 + 2 + 2;
         /* if either record doesn't have any RDATA... */
