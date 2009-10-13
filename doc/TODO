@@ -5,3 +5,4 @@ Features:
 
 Bugfixes:
 * ldns_dname_match_wildcard is case sensitive (reported by Ray Bellis)
+* ldns-verify-zone sees NS records at the apex as delegations (and falsely report 
