@@ -32,7 +32,7 @@ xprintf_rdf(ldns_rdf *rd)
 	/* assume printable string */
 	fprintf(stderr, "size\t:%u\n", (unsigned int)ldns_rdf_size(rd));
 	fprintf(stderr, "type\t:%u\n", (unsigned int)ldns_rdf_get_type(rd));
-	fprintf(stderr, "data\t:[%.*s]\n", (int)ldns_rdf_size(rd), 
+	fprintf(stderr, "data\t:[%.*s]\n", (int)ldns_rdf_size(rd),
 			(char*)ldns_rdf_data(rd));
 }
 
@@ -84,7 +84,7 @@ ldns_lookup_by_id(ldns_lookup_table *table, int id)
 	return NULL;
 }
 
-int 
+int
 ldns_get_bit(uint8_t bits[], size_t index)
 {
 	/*
@@ -94,7 +94,7 @@ ldns_get_bit(uint8_t bits[], size_t index)
 	return (int) (bits[index / 8] & (1 << (7 - index % 8)));
 }
 
-int 
+int
 ldns_get_bit_r(uint8_t bits[], size_t index)
 {
 	/*
@@ -105,7 +105,7 @@ ldns_get_bit_r(uint8_t bits[], size_t index)
 }
 
 void
-ldns_set_bit(uint8_t *byte, int bit_nr, bool value) 
+ldns_set_bit(uint8_t *byte, int bit_nr, bool value)
 {
 	if (bit_nr >= 0 && bit_nr < 8) {
 		if (value) {
@@ -141,7 +141,7 @@ ldns_hexdigit_to_int(char ch)
 	}
 }
 
-char 
+char
 ldns_int_to_hexdigit(int i)
 {
 	switch (i) {
@@ -180,7 +180,7 @@ ldns_hexstring_to_data(uint8_t *data, const char *str)
 	}
 
 	for (i = 0; i < strlen(str) / 2; i++) {
-		data[i] = 
+		data[i] =
 			16 * (uint8_t) ldns_hexdigit_to_int(str[i*2]) +
 			(uint8_t) ldns_hexdigit_to_int(str[i*2 + 1]);
 	}
@@ -199,7 +199,7 @@ static const int mdays[] = {
 	31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31
 };
 
-static int 
+static int
 is_leap_year(int year)
 {
 	return year % 4 == 0 && (year % 100 != 0 || year % 400 == 0);
@@ -253,7 +253,7 @@ mktime_from_utc(const struct tm *tm)
  * If openssl *is* available, this function just adds more entropy
  **/
 int
-ldns_init_random(FILE *fd, unsigned int size) 
+ldns_init_random(FILE *fd, unsigned int size)
 {
 	/* if fp is given, seed srandom with data from file
 	   otherwise use /dev/urandom */
@@ -269,7 +269,7 @@ ldns_init_random(FILE *fd, unsigned int size)
 	if (size < (unsigned int) sizeof(seed_i)){
 		size = (unsigned int) sizeof(seed_i);
 	}
-	
+
 	seed = LDNS_XMALLOC(uint8_t, size);
 
 	if (!fd) {
@@ -292,7 +292,7 @@ ldns_init_random(FILE *fd, unsigned int size)
 		rand_f = fd;
 		read = fread(seed, 1, size, rand_f);
 	}
-	
+
 	if (read < size) {
 		LDNS_FREE(seed);
 		return 1;
@@ -310,7 +310,7 @@ ldns_init_random(FILE *fd, unsigned int size)
 #endif
 		LDNS_FREE(seed);
 	}
-	
+
 	if (!fd) {
 		fclose(rand_f);
 	}
