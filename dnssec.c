@@ -1148,10 +1148,10 @@ ldns_create_nsec3(ldns_rdf *cur_owner,
 		                     ldns_rr_owner(i_rr)) == 0) {
 			/* add type to bitmap */
 			i_type = ldns_rr_get_type(i_rr);
-			if ((i_type / 8) + 1 > bm_len) {
+			if (i_type / 8 >= bm_len) {
 				bitmap = LDNS_XREALLOC(bitmap, uint8_t, (i_type / 8) + 1);
 				/* set to 0 */
-				for (; bm_len < (i_type / 8) + 2; bm_len++) {
+				for (; bm_len < (i_type / 8) + 1; bm_len++) {
 					bitmap[bm_len] = 0;
 				}
 			}
@@ -1164,10 +1164,10 @@ ldns_create_nsec3(ldns_rdf *cur_owner,
 	 * an unsigned delegation */
 	if (!emptynonterminal && !rr_list_delegation_only(cur_zone, rrs)) {
 		i_type = LDNS_RR_TYPE_RRSIG;
-		if (i_type / 8 > bm_len) {
+		if (i_type / 8 >= bm_len) {
 			bitmap = LDNS_XREALLOC(bitmap, uint8_t, (i_type / 8) + 1);
 			/* set to 0 */
-			for (; bm_len <= i_type / 8; bm_len++) {
+			for (; bm_len < (i_type / 8) + 1; bm_len++) {
 				bitmap[bm_len] = 0;
 			}
 		}
@@ -1179,10 +1179,10 @@ ldns_create_nsec3(ldns_rdf *cur_owner,
 	/* and SOA if owner == zone */
 	if (ldns_dname_compare(cur_zone, cur_owner) == 0) {
 		i_type = LDNS_RR_TYPE_SOA;
-		if (i_type / 8 > bm_len) {
+		if (i_type / 8 >= bm_len) {
 			bitmap = LDNS_XREALLOC(bitmap, uint8_t, (i_type / 8) + 1);
 			/* set to 0 */
-			for (; bm_len <= i_type / 8; bm_len++) {
+			for (; bm_len < (i_type / 8) + 1; bm_len++) {
 				bitmap[bm_len] = 0;
 			}
 		}
