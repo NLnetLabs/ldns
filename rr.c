@@ -355,9 +355,7 @@ ldns_rr_new_frm_str_internal(ldns_rr **newrr, const char *str,
 				    ldns_rr_descriptor_field_type(desc,
 					    r_cnt) == LDNS_RDF_TYPE_WKS ||
 				    ldns_rr_descriptor_field_type(desc,
-					    r_cnt) == LDNS_RDF_TYPE_NSEC ||
-				    ldns_rr_descriptor_field_type(desc,
-					    r_cnt) == LDNS_RDF_TYPE_STR) {
+					    r_cnt) == LDNS_RDF_TYPE_NSEC) {
 					delimiters = "\n\t";
 				} else {
 					delimiters = "\n\t ";
@@ -374,9 +372,8 @@ ldns_rr_new_frm_str_internal(ldns_rr **newrr, const char *str,
 					if (*(ldns_buffer_current(rd_buf)) == '\"') {
 						delimiters = "\"\0";
 						ldns_buffer_skip(rd_buf, 1);
+						quoted = true;
 					}
-
-					quoted = true;
 				}
 
 				/* because number of fields can be variable, we can't
