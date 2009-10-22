@@ -10,7 +10,7 @@
 	* bug274: fix use of c++ keyword 'class' for RR class in the code.
 	* bug275: fix memory leak of packet edns rdata.
 	* Fix timeout procedure for TCP and AXFR on Solaris.
-	* Fix occansional NSEC bitmap bogus
+	* Fix occasional NSEC bitmap bogus
 
 1.6.1   2009-09-14
 	* --enable-gost : use the GOST algorithm (experimental).
