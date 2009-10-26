@@ -24,7 +24,7 @@
 
 #include <errno.h>
 #ifdef HAVE_NETDB_H
-#include <netdb.h> 
+#include <netdb.h>
 #endif
 
 #include <limits.h>
@@ -35,12 +35,12 @@
 ldns_status
 ldns_str2rdf_int16(ldns_rdf **rd, const char *shortstr)
 {
-	char *end = NULL;    
+	char *end = NULL;
 	uint16_t *r;
 	r = LDNS_MALLOC(uint16_t);
-	
+
 	*r = htons((uint16_t)strtol((char *)shortstr, &end, 10));
-	
+
 	if(*end != 0) {
 		LDNS_FREE(r);
 		return LDNS_STATUS_INVALID_INT;
@@ -81,7 +81,7 @@ ldns_str2rdf_time(ldns_rdf **rd, const char *time)
 		if (tm.tm_mday < 1 || tm.tm_mday > 31) {
 			goto bad_format;
 		}
-		
+
 		if (tm.tm_hour < 0 || tm.tm_hour > 23) {
 			goto bad_format;
 		}
@@ -114,7 +114,7 @@ ldns_str2rdf_time(ldns_rdf **rd, const char *time)
 			return LDNS_STATUS_OK;
 		}
 	}
-	
+
 	bad_format:
 	LDNS_FREE(r);
 	return LDNS_STATUS_INVALID_TIME;
@@ -139,7 +139,7 @@ ldns_str2rdf_nsec3_salt(ldns_rdf **rd, const char *salt_str)
 	if (salt_length_str > 512) {
 		return LDNS_STATUS_INVALID_HEX;
 	}
-	
+
 	salt = LDNS_XMALLOC(uint8_t, salt_length_str / 2);
 	for (c = 0; c < salt_length_str; c += 2) {
 		if (isxdigit((int) salt_str[c]) && isxdigit((int) salt_str[c+1])) {
@@ -151,7 +151,7 @@ ldns_str2rdf_nsec3_salt(ldns_rdf **rd, const char *salt_str)
 		}
 	}
 	salt_length = (uint8_t) (salt_length_str / 2);
-	
+
 	data = LDNS_XMALLOC(uint8_t, 1 + salt_length);
 	data[0] = salt_length;
 	memcpy(&data[1], salt, salt_length);
@@ -181,15 +181,15 @@ ldns_str2rdf_period(ldns_rdf **rd,const char *period)
 	return LDNS_STATUS_OK;
 }
 
-ldns_status 
+ldns_status
 ldns_str2rdf_int32(ldns_rdf **rd, const char *longstr)
 {
-	char *end;  
+	char *end;
 	uint16_t *r = NULL;
 	uint32_t l;
 
 	r = (uint16_t*)LDNS_MALLOC(uint32_t);
-	errno = 0; /* must set to zero before call, 
+	errno = 0; /* must set to zero before call,
 			note race condition on errno */
 	if(*longstr == '-')
 		l = htonl((uint32_t)strtol((char*)longstr, &end, 10));
@@ -214,11 +214,11 @@ ldns_str2rdf_int32(ldns_rdf **rd, const char *longstr)
 ldns_status
 ldns_str2rdf_int8(ldns_rdf **rd, const char *bytestr)
 {
-	char *end;     
+	char *end;
 	uint8_t *r = NULL;
 
 	r = LDNS_MALLOC(uint8_t);
- 
+
 	*r = (uint8_t)strtol((char*)bytestr, &end, 10);
 
         if(*end != 0) {
@@ -239,7 +239,7 @@ ldns_str2rdf_int8(ldns_rdf **rd, const char *bytestr)
  *
  * The string pointer at *s is increased by either 0 (on error), 1 (on
  * normal escapes), or 3 (on octals)
- * 
+ *
  * Returns the number of bytes read from the escaped string, or
  * 0 on error
  */
@@ -283,7 +283,7 @@ ldns_str2rdf_dname(ldns_rdf **d, const char *str)
 	uint8_t *s,*p,*q, *pq, label_len;
 	uint8_t buf[LDNS_MAX_DOMAINLEN + 1];
 	*d = NULL;
-	
+
 	len = strlen((char*)str);
 	/* octet representation can make strings a lot longer than actual length */
 	if (len > LDNS_MAX_DOMAINLEN * 4) {
@@ -291,11 +291,11 @@ ldns_str2rdf_dname(ldns_rdf **d, const char *str)
 	}
 	if (0 == len) {
 		return LDNS_STATUS_DOMAINNAME_UNDERFLOW;
-	} 
-	
+	}
+
 	/* root label */
 	if (1 == len && *str == '.') {
-		*d = ldns_rdf_new_frm_data(LDNS_RDF_TYPE_DNAME, 1, "\0"); 
+		*d = ldns_rdf_new_frm_data(LDNS_RDF_TYPE_DNAME, 1, "\0");
 		return LDNS_STATUS_OK;
 	}
 
@@ -312,7 +312,7 @@ ldns_str2rdf_dname(ldns_rdf **d, const char *str)
 	for (s = p = (uint8_t *) str; *s; s++, q++) {
 		if (q > buf + LDNS_MAX_DOMAINLEN) {
 			return LDNS_STATUS_DOMAINNAME_OVERFLOW;
-		}	
+		}
 		*q = 0;
 		switch (*s) {
 		case '.':
@@ -355,7 +355,7 @@ ldns_str2rdf_dname(ldns_rdf **d, const char *str)
 	}
 	len++;
 
-	*d = ldns_rdf_new_frm_data(LDNS_RDF_TYPE_DNAME, len, buf); 
+	*d = ldns_rdf_new_frm_data(LDNS_RDF_TYPE_DNAME, len, buf);
 	return LDNS_STATUS_OK;
 }
 
@@ -423,7 +423,7 @@ ldns_str2rdf_apl(ldns_rdf **rd, const char *str)
 	uint8_t prefix;
 
 	uint8_t *data;
-	
+
 	size_t i = 0;
 
 	/* [!]afi:address/prefix */
@@ -439,7 +439,7 @@ ldns_str2rdf_apl(ldns_rdf **rd, const char *str)
 	}
 
 	family = (uint16_t) atoi(my_str);
-	
+
 	my_str = strchr(my_str, ':') + 1;
 
 	/* need ip addr and only ip addr for inet_pton */
@@ -487,7 +487,7 @@ ldns_str2rdf_apl(ldns_rdf **rd, const char *str)
 		/* set bit 1 of byte 3 */
 		data[3] = data[3] | 0x80;
 	}
-	
+
 	memcpy(data + 4, afdpart, afdlength);
 
 	*rd = ldns_rdf_new_frm_data(LDNS_RDF_TYPE_APL, afdlength + 4, data);
@@ -503,10 +503,10 @@ ldns_str2rdf_b64(ldns_rdf **rd, const char *str)
 {
 	uint8_t *buffer;
 	int16_t i;
-	
+
 	buffer = LDNS_XMALLOC(uint8_t, ldns_b64_ntop_calculate_size(strlen(str)));
-	
-	i = (uint16_t)ldns_b64_pton((const char*)str, buffer, 
+
+	i = (uint16_t)ldns_b64_pton((const char*)str, buffer,
 						   ldns_b64_ntop_calculate_size(strlen(str)));
 	if (-1 == i) {
 		LDNS_FREE(buffer);
@@ -529,8 +529,8 @@ ldns_str2rdf_b32_ext(ldns_rdf **rd, const char *str)
 	uint8_t len = ldns_b32_pton_calculate_size(strlen(str));
 	buffer = LDNS_XMALLOC(uint8_t, len + 1);
 	buffer[0] = len;
-	
-	i = ldns_b32_pton_extended_hex((const char*)str, strlen(str), buffer + 1, 
+
+	i = ldns_b32_pton_extended_hex((const char*)str, strlen(str), buffer + 1,
 							 ldns_b32_ntop_calculate_size(strlen(str)));
 	if (i < 0) {
 		return LDNS_STATUS_INVALID_B32_EXT;
@@ -604,7 +604,7 @@ ldns_str2rdf_nsec(ldns_rdf **rd, const char *str)
 		type_list[type_count] = cur_type;
 		type_count++;
 	}
-	
+
 	*rd = ldns_dnssec_create_nsec_bitmap(type_list,
 	                                     type_count,
 	                                     LDNS_RR_TYPE_NSEC);
@@ -667,7 +667,7 @@ ldns_str2rdf_cert_alg(ldns_rdf **rd, const char *str)
 
 	return st;
 }
-		
+
 /* An alg field can either be specified as a 8 bits number
  * or by its symbolic name. Handle both
  */
@@ -692,11 +692,11 @@ ldns_str2rdf_alg(ldns_rdf **rd, const char *str)
 	}
 	return st;
 }
-		
+
 ldns_status
 ldns_str2rdf_unknown(ldns_rdf **rd, const char *str)
 {
-	/* this should be caught in an earlier time (general str2host for 
+	/* this should be caught in an earlier time (general str2host for
 	   rr's */
 	rd = rd;
 	str = str;
@@ -747,7 +747,7 @@ loc_parse_cm(char* my_str, char** endstr, uint8_t* m, uint8_t* e)
 		val /= 10;
 	}
 	*m = (uint8_t)val;
-	
+
 	if (*e > 9)
 		return 0;
 	if (*my_str == 'm' || *my_str == 'M') {
@@ -772,7 +772,7 @@ ldns_str2rdf_loc(ldns_rdf **rd, const char *str)
 	uint8_t size_b = 1, size_e = 2;
 	uint8_t horiz_pre_b = 1, horiz_pre_e = 6;
 	uint8_t vert_pre_b = 1, vert_pre_e = 3;
-	
+
 	double s = 0.0;
 	bool northerness;
 	bool easterness;
@@ -935,16 +935,16 @@ ldns_str2rdf_wks(ldns_rdf **rd, const char *str)
 	uint8_t *bitmap = NULL;
 	uint8_t *data;
 	int bm_len = 0;
-	
+
 	struct protoent *proto = NULL;
 	struct servent *serv = NULL;
 	int serv_port;
-	
+
 	ldns_buffer *str_buf;
-	
+
 	char *proto_str = NULL;
 	char *token = LDNS_XMALLOC(char, 50);
-	
+
 	str_buf = LDNS_MALLOC(ldns_buffer);
 	ldns_buffer_new_frm_data(str_buf, (char *)str, strlen(str));
 
@@ -973,7 +973,7 @@ ldns_str2rdf_wks(ldns_rdf **rd, const char *str)
 			ldns_set_bit(bitmap + (serv_port / 8), 7 - (serv_port % 8), true);
 		}
 	}
-	
+
 	data = LDNS_XMALLOC(uint8_t, bm_len + 1);
 	proto = getprotobyname(proto_str);
 	if (proto) {
@@ -982,7 +982,7 @@ ldns_str2rdf_wks(ldns_rdf **rd, const char *str)
 		data[0] = (uint8_t) atoi(proto_str);
 	}
 	memcpy(data + 1, bitmap, (size_t) bm_len);
-	
+
 	*rd = ldns_rdf_new_frm_data(LDNS_RDF_TYPE_WKS, (uint16_t) (bm_len + 1), data);
 
 	LDNS_FREE(token);
@@ -996,7 +996,7 @@ ldns_str2rdf_wks(ldns_rdf **rd, const char *str)
 #ifdef HAVE_ENDPROTOENT
 	endprotoent();
 #endif
-	
+
 	return LDNS_STATUS_OK;
 }
 
