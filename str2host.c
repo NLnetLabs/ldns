@@ -1012,10 +1012,18 @@ ldns_str2rdf_wks(ldns_rdf **rd, const char *str)
 ldns_status
 ldns_str2rdf_nsap(ldns_rdf **rd, const char *str)
 {
+    size_t len, i;
+    char* nsap_str = (char*) str;
+
 	/* just a hex string with optional dots? */
 	if (str[0] != '0' || str[1] != 'x') {
 		return LDNS_STATUS_INVALID_STR;
 	} else {
+		len = strlen(str);
+		for (i=0; i < len; i++) {
+			if (nsap_str[i] == '.')
+				nsap_str[i] = ' ';
+        }
 		return ldns_str2rdf_hex(rd, str+2);
 	}
 }
