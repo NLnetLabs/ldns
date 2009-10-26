@@ -1707,8 +1707,8 @@ static const ldns_rdf_type type_nsap_ptr_wireformat[] = {
 	LDNS_RDF_TYPE_STR
 };
 static const ldns_rdf_type type_sig_wireformat[] = {
-	LDNS_RDF_TYPE_INT8, LDNS_RDF_TYPE_INT8, LDNS_RDF_TYPE_INT8, LDNS_RDF_TYPE_TIME,
-	LDNS_RDF_TYPE_INT32, LDNS_RDF_TYPE_INT32, LDNS_RDF_TYPE_INT16,
+	LDNS_RDF_TYPE_TYPE, LDNS_RDF_TYPE_ALG, LDNS_RDF_TYPE_INT8, LDNS_RDF_TYPE_INT32,
+	LDNS_RDF_TYPE_TIME, LDNS_RDF_TYPE_TIME, LDNS_RDF_TYPE_INT16,
 	LDNS_RDF_TYPE_DNAME, LDNS_RDF_TYPE_B64
 };
 static const ldns_rdf_type type_key_wireformat[] = {
