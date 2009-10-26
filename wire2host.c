@@ -236,6 +236,7 @@ ldns_wire2rdf(ldns_rr *rr, const uint8_t *wire, size_t max, size_t *pos)
 		case LDNS_RDF_TYPE_LOC:
 		case LDNS_RDF_TYPE_WKS:
 		case LDNS_RDF_TYPE_NSAP:
+		case LDNS_RDF_TYPE_ATMA:
 		case LDNS_RDF_TYPE_IPSECKEY:
 		case LDNS_RDF_TYPE_TSIG:
 		case LDNS_RDF_TYPE_NONE:

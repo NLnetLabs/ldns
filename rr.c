@@ -1736,9 +1736,8 @@ static const ldns_rdf_type type_nimloc_wireformat[] = {
 static const ldns_rdf_type type_srv_wireformat[] = {
 	LDNS_RDF_TYPE_INT16, LDNS_RDF_TYPE_INT16, LDNS_RDF_TYPE_INT16, LDNS_RDF_TYPE_DNAME
 };
-/* according to "spec", atma rdata can also be specified in E.164 format */
 static const ldns_rdf_type type_atma_wireformat[] = {
-	LDNS_RDF_TYPE_NSAP
+	LDNS_RDF_TYPE_ATMA
 };
 static const ldns_rdf_type type_naptr_wireformat[] = {
 	LDNS_RDF_TYPE_INT16, LDNS_RDF_TYPE_INT16, LDNS_RDF_TYPE_STR, LDNS_RDF_TYPE_STR, LDNS_RDF_TYPE_STR, LDNS_RDF_TYPE_DNAME

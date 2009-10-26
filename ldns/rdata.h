@@ -50,7 +50,7 @@ enum ldns_enum_rdf_type
 	/** 32 bits */
 	LDNS_RDF_TYPE_INT32,
 	/** A record */
-	LDNS_RDF_TYPE_A,	
+	LDNS_RDF_TYPE_A,
 	/** AAAA record */
 	LDNS_RDF_TYPE_AAAA,
 	/** txt string */
@@ -64,9 +64,9 @@ enum ldns_enum_rdf_type
 	/** hex string */
 	LDNS_RDF_TYPE_HEX,
 	/** nsec type codes */
-	LDNS_RDF_TYPE_NSEC, 
+	LDNS_RDF_TYPE_NSEC,
 	/** a RR type */
-	LDNS_RDF_TYPE_TYPE, 
+	LDNS_RDF_TYPE_TYPE,
 	/** a class */
 	LDNS_RDF_TYPE_CLASS,
 	/** certificate algorithm */
@@ -93,6 +93,8 @@ enum ldns_enum_rdf_type
 	LDNS_RDF_TYPE_WKS,
 	/** NSAP */
 	LDNS_RDF_TYPE_NSAP,
+	/** ATMA */
+	LDNS_RDF_TYPE_ATMA,
 	/** IPSECKEY */
 	LDNS_RDF_TYPE_IPSECKEY,
 	/** nsec3 hash salt */

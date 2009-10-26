@@ -662,6 +662,12 @@ ldns_rdf2buffer_str_nsap(ldns_buffer *output, const ldns_rdf *rdf)
 }
 
 ldns_status
+ldns_rdf2buffer_str_atma(ldns_buffer *output, const ldns_rdf *rdf)
+{
+	return ldns_rdf2buffer_str_hex(output, rdf);
+}
+
+ldns_status
 ldns_rdf2buffer_str_wks(ldns_buffer *output, const ldns_rdf *rdf)
 {
 	/* protocol, followed by bitmap of services */
@@ -1040,6 +1046,9 @@ ldns_rdf2buffer_str(ldns_buffer *buffer, const ldns_rdf *rdf)
 			break;
 		case LDNS_RDF_TYPE_NSAP:
 			res = ldns_rdf2buffer_str_nsap(buffer, rdf);
+			break;
+		case LDNS_RDF_TYPE_ATMA:
+			res = ldns_rdf2buffer_str_atma(buffer, rdf);
 			break;
 		case LDNS_RDF_TYPE_IPSECKEY:
 			res = ldns_rdf2buffer_str_ipseckey(buffer, rdf);

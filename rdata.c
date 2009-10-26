@@ -239,6 +239,7 @@ ldns_rdf_new_frm_str(ldns_rdf_type type, const char *str)
 	ldns_rdf *rdf = NULL;
 	ldns_status status;
 
+
 	switch (type) {
 	case LDNS_RDF_TYPE_DNAME:
 		status = ldns_str2rdf_dname(&rdf, str);
@@ -312,6 +313,14 @@ ldns_rdf_new_frm_str(ldns_rdf_type type, const char *str)
 	case LDNS_RDF_TYPE_NSAP:
 		status = ldns_str2rdf_nsap(&rdf, str);
 		break;
+	case LDNS_RDF_TYPE_ATMA:
+		status = ldns_str2rdf_atma(&rdf, str);
+		break;
+/*
+	case LDNS_RDF_TYPE_IPSECKEY:
+		status = ldns_str2rdf_ipseckey(&rdf, str);
+		break;
+*/
 	case LDNS_RDF_TYPE_NSEC3_SALT:
 		status = ldns_str2rdf_nsec3_salt(&rdf, str);
 		break;

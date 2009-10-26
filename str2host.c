@@ -1027,3 +1027,23 @@ ldns_str2rdf_nsap(ldns_rdf **rd, const char *str)
 		return ldns_str2rdf_hex(rd, str+2);
 	}
 }
+
+ldns_status
+ldns_str2rdf_atma(ldns_rdf **rd, const char *str)
+{
+    size_t len, i;
+    char* atma_str = (char*) str;
+	ldns_status status;
+
+	/* just a hex string with optional dots? */
+	len = strlen(str);
+	for (i=0; i < len; i++) {
+		if (atma_str[i] == '.')
+			atma_str[i] = ' ';
+	}
+	status = ldns_str2rdf_hex(rd, str);
+    if (status != LDNS_STATUS_OK) {
+		; /* probably in e.164 format than */
+	}
+	return status;
+}
