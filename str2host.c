@@ -963,7 +963,7 @@ ldns_str2rdf_wks(ldns_rdf **rd, const char *str)
 			} else {
 				serv_port = atoi(token);
 			}
-			if (serv_port / 8 > bm_len) {
+			if (serv_port / 8 >= bm_len) {
 				bitmap = LDNS_XREALLOC(bitmap, uint8_t, (serv_port / 8) + 1);
 				/* set to zero to be sure */
 				for (; bm_len <= serv_port / 8; bm_len++) {
@@ -974,21 +974,30 @@ ldns_str2rdf_wks(ldns_rdf **rd, const char *str)
 		}
 	}
 
+	if (!proto_str) {
+		LDNS_FREE(token);
+		LDNS_FREE(str_buf);
+		return LDNS_STATUS_INVALID_STR;
+	}
+
 	data = LDNS_XMALLOC(uint8_t, bm_len + 1);
-	proto = getprotobyname(proto_str);
+    if (proto_str)
+		proto = getprotobyname(proto_str);
 	if (proto) {
 		data[0] = (uint8_t) proto->p_proto;
-	} else {
+	} else if (proto_str) {
 		data[0] = (uint8_t) atoi(proto_str);
+	} else {
+		data[0] = 0;
 	}
 	memcpy(data + 1, bitmap, (size_t) bm_len);
 
 	*rd = ldns_rdf_new_frm_data(LDNS_RDF_TYPE_WKS, (uint16_t) (bm_len + 1), data);
 
+	LDNS_FREE(data);
 	LDNS_FREE(token);
 	ldns_buffer_free(str_buf);
 	LDNS_FREE(bitmap);
-	LDNS_FREE(data);
 	free(proto_str);
 #ifdef HAVE_ENDSERVENT
 	endservent();
