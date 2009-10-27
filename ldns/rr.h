@@ -76,23 +76,23 @@ typedef enum ldns_enum_rr_compress ldns_rr_compress;
 enum ldns_enum_rr_type
 {
 	/**  a host address */
-	LDNS_RR_TYPE_A = 1, 
+	LDNS_RR_TYPE_A = 1,
 	/**  an authoritative name server */
-	LDNS_RR_TYPE_NS = 2, 
+	LDNS_RR_TYPE_NS = 2,
 	/**  a mail destination (Obsolete - use MX) */
-	LDNS_RR_TYPE_MD = 3, 
+	LDNS_RR_TYPE_MD = 3,
 	/**  a mail forwarder (Obsolete - use MX) */
-	LDNS_RR_TYPE_MF = 4, 
+	LDNS_RR_TYPE_MF = 4,
 	/**  the canonical name for an alias */
-	LDNS_RR_TYPE_CNAME = 5, 
+	LDNS_RR_TYPE_CNAME = 5,
 	/**  marks the start of a zone of authority */
-	LDNS_RR_TYPE_SOA = 6, 
+	LDNS_RR_TYPE_SOA = 6,
 	/**  a mailbox domain name (EXPERIMENTAL) */
-	LDNS_RR_TYPE_MB = 7, 
+	LDNS_RR_TYPE_MB = 7,
 	/**  a mail group member (EXPERIMENTAL) */
-	LDNS_RR_TYPE_MG = 8, 
+	LDNS_RR_TYPE_MG = 8,
 	/**  a mail rename domain name (EXPERIMENTAL) */
-	LDNS_RR_TYPE_MR = 9, 
+	LDNS_RR_TYPE_MR = 9,
 	/**  a null RR (EXPERIMENTAL) */
 	LDNS_RR_TYPE_NULL = 10,
 	/**  a well known service description */
@@ -167,11 +167,10 @@ enum ldns_enum_rr_type
 	LDNS_RR_TYPE_IPSECKEY = 45,
 	/**  draft-ietf-dnsext-dnssec-25 */
 	LDNS_RR_TYPE_RRSIG = 46,
-	LDNS_RR_TYPE_NSEC = 47,      
+	LDNS_RR_TYPE_NSEC = 47,
 	LDNS_RR_TYPE_DNSKEY = 48,
 	LDNS_RR_TYPE_DHCID = 49,
 
-        /* TODO: Temporary assume type code 50, 51 (from draft-11) */
 	LDNS_RR_TYPE_NSEC3 = 50,
 	LDNS_RR_TYPE_NSEC3PARAMS = 51,
 
@@ -268,13 +267,13 @@ RDATA           a variable length string of octets that describes the
 struct ldns_struct_rr
 {
 	/**  Owner name, uncompressed */
-	ldns_rdf	*_owner;	
+	ldns_rdf	*_owner;
 	/**  Time to live  */
-	uint32_t	_ttl;	
+	uint32_t	_ttl;
 	/**  Number of data fields */
 	size_t	        _rd_count;
 	/**  the type of the RR. A, MX etc. */
-	ldns_rr_type	_rr_type;	
+	ldns_rr_type	_rr_type;
 	/**  Class of the resource record.  */
 	ldns_rr_class	_rr_class;
 	/* everything in the rdata is in network order */
@@ -287,7 +286,7 @@ typedef struct ldns_struct_rr ldns_rr;
  * List or Set of Resource Records
  *
  * Contains a list of rr's <br>
- * No official RFC-like checks are made 
+ * No official RFC-like checks are made
  */
 struct ldns_struct_rr_list
 {
@@ -323,13 +322,13 @@ struct ldns_struct_rr_descriptor
 };
 typedef struct ldns_struct_rr_descriptor ldns_rr_descriptor;
 
-/**     
+/**
  * creates a new rr structure.
  * \return ldns_rr *
  */
 ldns_rr* ldns_rr_new(void);
 
-/** 
+/**
  * creates a new rr structure, based on the given type.
  * alloc enough space to hold all the rdf's
  */
@@ -337,7 +336,7 @@ ldns_rr* ldns_rr_new_frm_type(ldns_rr_type t);
 
 /**
  * frees an RR structure
- * \param[in] *rr the RR to be freed 
+ * \param[in] *rr the RR to be freed
  * \return void
  */
 void ldns_rr_free(ldns_rr *rr);
@@ -345,13 +344,13 @@ void ldns_rr_free(ldns_rr *rr);
 /**
  * creates an rr from a string.
  * The string should be a fully filled-in rr, like
- * ownername &lt;space&gt; TTL &lt;space&gt; CLASS &lt;space&gt; 
+ * ownername &lt;space&gt; TTL &lt;space&gt; CLASS &lt;space&gt;
  * TYPE &lt;space&gt; RDATA.
  * \param[out] n the rr to return
  * \param[in] str the string to convert
  * \param[in] default_ttl default ttl value for the rr.
  *            If 0 DEF_TTL will be used
- * \param[in] origin when the owner is relative add this. 
+ * \param[in] origin when the owner is relative add this.
  *	The caller must ldns_rdf_deep_free it.
  * \param[out] prev the previous ownername. if this value is not NULL,
  * the function overwrites this with the ownername found in this
@@ -369,7 +368,7 @@ ldns_status ldns_rr_new_frm_str(ldns_rr **n, const char *str,
  * ldns_rr_new_frm_str()
  * \param[out] n the rr to return
  * \param[in] str the string to convert
- * \param[in] origin when the owner is relative add this. 
+ * \param[in] origin when the owner is relative add this.
  *	The caller must ldns_rdf_deep_free it.
  * \param prev the previous ownername. the function overwrite this with
  * the current found ownername. The caller must ldns_rdf_deep_free it.
@@ -452,7 +451,7 @@ void ldns_rr_set_type(ldns_rr *rr, ldns_rr_type rr_type);
 void ldns_rr_set_class(ldns_rr *rr, ldns_rr_class rr_class);
 
 /**
- * sets a rdf member, it will be set on the 
+ * sets a rdf member, it will be set on the
  * position given. The old value is returned, like pop.
  * \param[in] *rr the rr to operate on
  * \param[in] *f the rdf to set
@@ -462,7 +461,7 @@ void ldns_rr_set_class(ldns_rr *rr, ldns_rr_class rr_class);
 ldns_rdf* ldns_rr_set_rdf(ldns_rr *rr, const ldns_rdf *f, size_t position);
 
 /**
- * sets rd_field member, it will be 
+ * sets rd_field member, it will be
  * placed in the next available spot.
  * \param[in] *rr rr to operate on
  * \param[in] *f the data field member to set
@@ -471,7 +470,7 @@ ldns_rdf* ldns_rr_set_rdf(ldns_rr *rr, const ldns_rdf *f, size_t position);
 bool ldns_rr_push_rdf(ldns_rr *rr, const ldns_rdf *f);
 
 /**
- * removes a rd_field member, it will be 
+ * removes a rd_field member, it will be
  * popped from the last position.
  * \param[in] *rr rr to operate on
  * \return rdf which was popped (null if nothing)
@@ -489,7 +488,7 @@ ldns_rdf* ldns_rr_rdf(const ldns_rr *rr, size_t nr);
 /**
  * returns the owner name of an rr structure.
  * \param[in] *rr rr to operate on
- * \return ldns_rdf * 
+ * \return ldns_rdf *
  */
 ldns_rdf* ldns_rr_owner(const ldns_rr *rr);
 
