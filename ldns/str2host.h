@@ -240,6 +240,14 @@ ldns_status ldns_str2rdf_nsap(ldns_rdf **rd, const char *str);
 ldns_status ldns_str2rdf_atma(ldns_rdf **rd, const char *str);
 
 /**
+ * convert a str with a IPSECKEY RR into wireformat
+ * \param[in] rd the rdf where to put the data
+ * \param[in] str the string to be converted
+ * \return ldns_status
+ */
+ldns_status ldns_str2rdf_ipseckey(ldns_rdf **rd, const char *str);
+
+/**
  * convert a dname string into wireformat
  * \param[in] rd the rdf where to put the data
  * \param[in] str the string to be converted

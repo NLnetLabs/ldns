@@ -924,10 +924,12 @@ ldns_rdf2buffer_str_ipseckey(ldns_buffer *output, const ldns_rdf *rdf)
 			gateway_data = LDNS_XMALLOC(uint8_t, LDNS_IP4ADDRLEN);
 			memcpy(gateway_data, &data[offset], LDNS_IP4ADDRLEN);
 			gateway = ldns_rdf_new(LDNS_RDF_TYPE_A, LDNS_IP4ADDRLEN , gateway_data);
+			offset += LDNS_IP4ADDRLEN;
 			break;
 		case 2:
 			gateway_data = LDNS_XMALLOC(uint8_t, LDNS_IP6ADDRLEN);
 			memcpy(gateway_data, &data[offset], LDNS_IP6ADDRLEN);
+			offset += LDNS_IP6ADDRLEN;
 			gateway =
 				ldns_rdf_new(LDNS_RDF_TYPE_AAAA, LDNS_IP6ADDRLEN, gateway_data);
 			break;
@@ -939,13 +941,16 @@ ldns_rdf2buffer_str_ipseckey(ldns_buffer *output, const ldns_rdf *rdf)
 			break;
 	}
 
-	public_key_size = ldns_rdf_size(rdf) - offset;
+	public_key_size = ldns_rdf_size(rdf) - offset - 1;
 	public_key_data = LDNS_XMALLOC(uint8_t, public_key_size);
 	memcpy(public_key_data, &data[offset], public_key_size);
 	public_key = ldns_rdf_new(LDNS_RDF_TYPE_B64, public_key_size, public_key_data);
 
 	ldns_buffer_printf(output, "%u %u %u ", precedence, gateway_type, algorithm);
-	(void) ldns_rdf2buffer_str(output, gateway);
+    if (gateway)
+	  	(void) ldns_rdf2buffer_str(output, gateway);
+	else
+		ldns_buffer_printf(output, ".");
 	ldns_buffer_printf(output, " ");
 	(void) ldns_rdf2buffer_str(output, public_key);
 

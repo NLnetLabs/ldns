@@ -355,6 +355,8 @@ ldns_rr_new_frm_str_internal(ldns_rr **newrr, const char *str,
 				    ldns_rr_descriptor_field_type(desc,
 					    r_cnt) == LDNS_RDF_TYPE_WKS ||
 				    ldns_rr_descriptor_field_type(desc,
+					    r_cnt) == LDNS_RDF_TYPE_IPSECKEY ||
+				    ldns_rr_descriptor_field_type(desc,
 					    r_cnt) == LDNS_RDF_TYPE_NSEC) {
 					delimiters = "\n\t";
 				} else {
