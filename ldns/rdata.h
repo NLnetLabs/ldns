@@ -117,8 +117,6 @@ enum ldns_enum_cert_algorithm
 };
 typedef enum ldns_enum_cert_algorithm ldns_cert_algorithm;
 
-
-
 /**
  * Resource record data field.
  *
@@ -140,48 +138,54 @@ typedef struct ldns_struct_rdf ldns_rdf;
 /* prototypes */
 
 /* write access functions */
+
 /**
  * sets the size of the rdf.
  * \param[in] *rd the rdf to operate on
  * \param[in] size the new size
  * \return void
  */
-void            ldns_rdf_set_size(ldns_rdf *rd, size_t size);
+void ldns_rdf_set_size(ldns_rdf *rd, size_t size);
+
 /**
  * sets the size of the rdf.
  * \param[in] *rd the rdf to operate on
  * \param[in] type the new type
  * \return void
  */
-void            ldns_rdf_set_type(ldns_rdf *rd, ldns_rdf_type type);
+void ldns_rdf_set_type(ldns_rdf *rd, ldns_rdf_type type);
+
 /**
  * sets the size of the rdf.
  * \param[in] *rd the rdf to operate on
  * \param[in] *data pointer to the new data
  * \return void
  */
-void            ldns_rdf_set_data(ldns_rdf *rd, void *data);
+void ldns_rdf_set_data(ldns_rdf *rd, void *data);
 
 /* read access */
+
 /**
  * returns the size of the rdf.
  * \param[in] *rd the rdf to read from
  * \return uint16_t with the size
  */
-size_t        ldns_rdf_size(const ldns_rdf *rd);
+size_t ldns_rdf_size(const ldns_rdf *rd);
+
 /**
  * returns the type of the rdf. We need to insert _get_
  * here to prevent conflict the the rdf_type TYPE.
  * \param[in] *rd the rdf to read from
  * \return ldns_rdf_type with the type
  */
-ldns_rdf_type   ldns_rdf_get_type(const ldns_rdf *rd);
+ldns_rdf_type ldns_rdf_get_type(const ldns_rdf *rd);
+
 /**
  * returns the data of the rdf.
  * \param[in] *rd the rdf to read from
  * \return uint8_t* pointer to the rdf's data
  */
-uint8_t         *ldns_rdf_data(const ldns_rdf *rd);
+uint8_t *ldns_rdf_data(const ldns_rdf *rd);
 
 /* creator functions */
 
@@ -194,7 +198,7 @@ uint8_t         *ldns_rdf_data(const ldns_rdf *rd);
  * \param[in] data pointer to the buffer to be copied
  * \return the new rdf structure or NULL on failure
  */
-ldns_rdf	*ldns_rdf_new(ldns_rdf_type type, size_t size, void *data);
+ldns_rdf *ldns_rdf_new(ldns_rdf_type type, size_t size, void *data);
 
 /**
  * allocates a new rdf structure and fills it.
@@ -205,7 +209,7 @@ ldns_rdf	*ldns_rdf_new(ldns_rdf_type type, size_t size, void *data);
  * \param[in] data pointer to the buffer to be copied
  * \return the new rdf structure or NULL on failure
  */
-ldns_rdf	*ldns_rdf_new_frm_data(ldns_rdf_type type, size_t size, const void *data);
+ldns_rdf *ldns_rdf_new_frm_data(ldns_rdf_type type, size_t size, const void *data);
 
 /**
  * creates a new rdf from a string.
@@ -213,36 +217,36 @@ ldns_rdf	*ldns_rdf_new_frm_data(ldns_rdf_type type, size_t size, const void *dat
  * \param[in] str string to use
  * \return ldns_rdf* or NULL in case of an error
  */
-ldns_rdf 	*ldns_rdf_new_frm_str(ldns_rdf_type type, const char *str);
+ldns_rdf *ldns_rdf_new_frm_str(ldns_rdf_type type, const char *str);
 
-/**     
+/**
  * creates a new rdf from a file containing a string.
  * \param[out] r the new rdf
  * \param[in] type   type to use
  * \param[in] fp the file pointer  to use
  * \return LDNS_STATUS_OK or the error
- */             
+ */
 ldns_status ldns_rdf_new_frm_fp(ldns_rdf **r, ldns_rdf_type type, FILE *fp);
 
-/**     
+/**
  * creates a new rdf from a file containing a string.
  * \param[out] r the new rdf
  * \param[in] type   type to use
  * \param[in] fp the file pointer  to use
  * \param[in] line_nr pointer to an integer containing the current line number (for debugging purposes)
  * \return LDNS_STATUS_OK or the error
- */             
-ldns_status  ldns_rdf_new_frm_fp_l(ldns_rdf **r, ldns_rdf_type type, FILE *fp, int *line_nr);
+ */
+ldns_status ldns_rdf_new_frm_fp_l(ldns_rdf **r, ldns_rdf_type type, FILE *fp, int *line_nr);
 
 /* destroy functions */
 
 /**
- * frees a rdf structure, leaving the 
+ * frees a rdf structure, leaving the
  * data pointer intact.
  * \param[in] rd the pointer to be freed
  * \return void
  */
-void            ldns_rdf_free(ldns_rdf *rd);
+void ldns_rdf_free(ldns_rdf *rd);
 
 /**
  * frees a rdf structure _and_ frees the
@@ -250,25 +254,25 @@ void            ldns_rdf_free(ldns_rdf *rd);
  * \param[in] rd the rdf structure to be freed
  * \return void
  */
-void            ldns_rdf_deep_free(ldns_rdf *rd);
+void ldns_rdf_deep_free(ldns_rdf *rd);
 
 /* conversion functions */
 
-/** 
+/**
  * returns the rdf containing the native uint8_t repr.
  * \param[in] type the ldns_rdf type to use
  * \param[in] value the uint8_t to use
  * \return ldns_rdf* with the converted value
  */
-ldns_rdf 	*ldns_native2rdf_int8(ldns_rdf_type type, uint8_t value);
+ldns_rdf *ldns_native2rdf_int8(ldns_rdf_type type, uint8_t value);
 
-/** 
+/**
  * returns the rdf containing the native uint16_t representation.
  * \param[in] type the ldns_rdf type to use
  * \param[in] value the uint16_t to use
  * \return ldns_rdf* with the converted value
  */
-ldns_rdf 	*ldns_native2rdf_int16(ldns_rdf_type type, uint16_t value);
+ldns_rdf *ldns_native2rdf_int16(ldns_rdf_type type, uint16_t value);
 
 /**
  * returns an rdf that contains the given int32 value.
@@ -279,7 +283,7 @@ ldns_rdf 	*ldns_native2rdf_int16(ldns_rdf_type type, uint16_t value);
  * \param[in] value the uint32_t to use
  * \return ldns_rdf* with the converted value
  */
-ldns_rdf 	*ldns_native2rdf_int32(ldns_rdf_type type, uint32_t value);
+ldns_rdf *ldns_native2rdf_int32(ldns_rdf_type type, uint32_t value);
 
 /**
  * returns an int16_data rdf that contains the data in the
@@ -290,7 +294,7 @@ ldns_rdf 	*ldns_native2rdf_int32(ldns_rdf_type type, uint32_t value);
  * \param[in] *data pointer to the actual data
  * \return ldns_rd* the rdf with the data
  */
-ldns_rdf 	*ldns_native2rdf_int16_data(size_t size, uint8_t *data);
+ldns_rdf *ldns_native2rdf_int16_data(size_t size, uint8_t *data);
 
 /**
  * reverses an rdf, only actually useful for AAAA and A records.
@@ -298,35 +302,35 @@ ldns_rdf 	*ldns_native2rdf_int16_data(size_t size, uint8_t *data);
  * \param[in] *rd rdf to be reversed
  * \return the reversed rdf (a newly created rdf)
  */
-ldns_rdf	*ldns_rdf_address_reverse(ldns_rdf *rd);
+ldns_rdf *ldns_rdf_address_reverse(ldns_rdf *rd);
 
-/** 
+/**
  * returns the native uint8_t representation from the rdf.
  * \param[in] rd the ldns_rdf to operate on
  * \return uint8_t the value extracted
  */
-uint8_t		ldns_rdf2native_int8(const ldns_rdf *rd);
+uint8_t 	ldns_rdf2native_int8(const ldns_rdf *rd);
 
-/** 
+/**
  * returns the native uint16_t representation from the rdf.
  * \param[in] rd the ldns_rdf to operate on
  * \return uint16_t the value extracted
  */
 uint16_t	ldns_rdf2native_int16(const ldns_rdf *rd);
 
-/** 
+/**
  * returns the native uint32_t representation from the rdf.
  * \param[in] rd the ldns_rdf to operate on
  * \return uint32_t the value extracted
  */
-uint32_t	ldns_rdf2native_int32(const ldns_rdf *rd);
+uint32_t ldns_rdf2native_int32(const ldns_rdf *rd);
 
-/** 
+/**
  * returns the native time_t representation from the rdf.
  * \param[in] rd the ldns_rdf to operate on
  * \return time_t the value extracted (32 bits currently)
  */
-time_t 		ldns_rdf2native_time_t(const ldns_rdf *rd);
+time_t ldns_rdf2native_time_t(const ldns_rdf *rd);
 
 /**
  * converts a ttl value (like 5d2h) to a long.
@@ -334,7 +338,7 @@ time_t 		ldns_rdf2native_time_t(const ldns_rdf *rd);
  * \param[out] endptr points to the last char in case of error
  * \return the convert duration value
  */
-uint32_t	ldns_str2period(const char *nptr, const char **endptr);
+uint32_t ldns_str2period(const char *nptr, const char **endptr);
 
 /**
  * removes \\DDD, \\[space] and other escapes from the input.
@@ -343,14 +347,14 @@ uint32_t	ldns_str2period(const char *nptr, const char **endptr);
  * \param[in] length the string
  * \return ldns_status mesg
  */
-ldns_status     ldns_octet(char *word, size_t *length);
+ldns_status ldns_octet(char *word, size_t *length);
 
 /**
  * clones a rdf structure. The data is copied.
  * \param[in] rd rdf to be copied
  * \return a new rdf structure
  */
-ldns_rdf	*ldns_rdf_clone(const ldns_rdf *rd);
+ldns_rdf *ldns_rdf_clone(const ldns_rdf *rd);
 
 /**
  * compares two rdf's on their wire formats.
@@ -361,6 +365,6 @@ ldns_rdf	*ldns_rdf_clone(const ldns_rdf *rd);
  * \return -1 if rd1 comes before rd2
  * \return +1 if rd2 comes before rd1
  */
-int		ldns_rdf_compare(const ldns_rdf *rd1, const ldns_rdf *rd2);
+int ldns_rdf_compare(const ldns_rdf *rd1, const ldns_rdf *rd2);
 
 #endif	/* LDNS_RDATA_H */
