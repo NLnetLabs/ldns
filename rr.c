@@ -117,6 +117,7 @@ ldns_rr_new_frm_str_internal(ldns_rr **newrr, const char *str,
 	const char *delimiters;
 	ssize_t c;
 	ldns_rdf *owner_dname;
+    const char* endptr;
 
 	/* used for types with unknown number of rdatas */
 	bool done;
@@ -178,7 +179,7 @@ ldns_rr_new_frm_str_internal(ldns_rr **newrr, const char *str,
 		ldns_rr_free(new);
 		return LDNS_STATUS_SYNTAX_TTL_ERR;
 	}
-	ttl_val = (uint32_t) strtol(ttl, NULL, 10);
+	ttl_val = (uint32_t) ldns_str2period(ttl, &endptr);
 
 	if (strlen(ttl) > 0 && !isdigit((int) ttl[0])) {
 		/* ah, it's not there or something */
