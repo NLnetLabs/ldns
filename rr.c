@@ -268,6 +268,12 @@ ldns_rr_new_frm_str_internal(ldns_rr **newrr, const char *str,
 			/* default to root */
 			ldns_rr_set_owner(new, ldns_dname_new_frm_str("."));
 		}
+
+		/* @ also overrides prev */
+		if (prev) {
+			ldns_rdf_deep_free(*prev);
+			*prev = ldns_rdf_clone(ldns_rr_owner(new));
+		}
 	} else {
 		if (strlen(owner) == 0) {
 			/* no ownername was given, try prev, if that fails
