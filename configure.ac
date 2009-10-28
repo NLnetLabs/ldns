@@ -87,19 +87,18 @@ ACX_LIBTOOL_C_ONLY
 #AC_CHECK_PROG(glibtool, glibtool, [glibtool], )
 #AC_CHECK_PROGS(libtool, [libtool15 libtool], [./libtool])
 
-AC_ARG_ENABLE(sha2, AC_HELP_STRING([--enable-sha2], [Enable SHA256 and SHA512 RRSIG support, experimental]))
+AC_ARG_ENABLE(sha2, AC_HELP_STRING([--disable-sha2], [Disable SHA256 and SHA512 RRSIG support]))
 case "$enable_sha2" in
-    yes)
-        if test "x$HAVE_SSL" != "xyes"; then
-            AC_MSG_ERROR([RSA/SHA2 enabled, but no SSL support])
-        fi
-        AC_MSG_CHECKING(for SHA256 and SHA512)
-        AC_CHECK_LIB(crypto, SHA256_Init,, [
-            AC_MSG_ERROR([SHA2 enabled, but no SHA2 functions found in OpenSSL])
-        ])
-        AC_DEFINE_UNQUOTED([USE_SHA2], [1], [Define this to enable SHA256 and SHA512 support.])
+    no)
         ;;
-    no|*)
+    yes|*)
+        if test "x$HAVE_SSL" = "xyes"; then
+	    AC_MSG_CHECKING(for SHA256 and SHA512)
+	    AC_CHECK_LIB(crypto, SHA256_Init,, [
+		AC_MSG_ERROR([No SHA2 functions found in OpenSSL: please upgrade OpenSSL or rerun with --disable-sha2])
+	    ])
+	    AC_DEFINE_UNQUOTED([USE_SHA2], [1], [Define this to enable SHA256 and SHA512 support.])
+        fi
         ;;
 esac
 

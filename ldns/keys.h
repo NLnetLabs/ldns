@@ -30,8 +30,8 @@
 
 extern ldns_lookup_table ldns_signing_algorithms[];
 
-#define LDNS_KEY_ZONE_KEY 0x0100
-#define LDNS_KEY_SEP_KEY 0x0001
+#define LDNS_KEY_ZONE_KEY 0x0100   /* rfc 4034 */
+#define LDNS_KEY_SEP_KEY 0x0001    /* rfc 4034 */
 #define LDNS_KEY_REVOKE_KEY 0x0080 /* rfc 5011 */
 
 /**
@@ -39,15 +39,15 @@ extern ldns_lookup_table ldns_signing_algorithms[];
  */
 enum ldns_enum_algorithm
 {
-        LDNS_RSAMD5             = 1,
+        LDNS_RSAMD5             = 1,   /* RFC 4034,4035 */
         LDNS_DH                 = 2,
         LDNS_DSA                = 3,
         LDNS_ECC                = 4,
         LDNS_RSASHA1            = 5,
         LDNS_DSA_NSEC3          = 6,
         LDNS_RSASHA1_NSEC3      = 7,
-        LDNS_RSASHA256          = 8,
-        LDNS_RSASHA512          = 10,
+        LDNS_RSASHA256          = 8,   /* RFC 5702 */
+        LDNS_RSASHA512          = 10,  /* RFC 5702 */
         LDNS_GOST               = 211, /* not official */
         LDNS_INDIRECT           = 252,
         LDNS_PRIVATEDNS         = 253,
@@ -60,8 +60,8 @@ typedef enum ldns_enum_algorithm ldns_algorithm;
  */
 enum ldns_enum_hash
 {
-        LDNS_SHA1               = 1,
-        LDNS_SHA256             = 2,
+        LDNS_SHA1               = 1,  /* RFC 4034 */
+        LDNS_SHA256             = 2,  /* RFC 4509 */
         LDNS_HASH_GOST94        = 203 /* not official */
 };
 typedef enum ldns_enum_hash ldns_hash;
