@@ -1,8 +1,20 @@
 TODO
 
+1.6.2
+
 Features:
-* Multi-line zone file parsing
+* HMAC and MD5 without OpenSSL
+* HIP RR support
 
 Bugfixes:
 * ldns_dname_match_wildcard is case sensitive (reported by Ray Bellis)
 * ldns-verify-zone sees NS records at the apex as delegations (and falsely report 
+* Several RRtypes parsing
+* Bug #279
+
+later versions
+
+Features:
+* Multi-line zone file parsing
+* Configure option for not printing DNSSEC RR comments
+
