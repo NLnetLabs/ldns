@@ -153,7 +153,6 @@ ldns_key_EVP_load_gost_id(void)
 static EVP_PKEY*
 ldns_key_new_frm_fp_gost_l(FILE* fp, int* line_nr)
 {
-	ssize_t len;
 	char token[16384];
 	const unsigned char* pp;
 	int gost_id;
@@ -164,9 +163,15 @@ ldns_key_new_frm_fp_gost_l(FILE* fp, int* line_nr)
 	if(!gost_id)
 		return NULL;
 
-	len = ldns_fget_token_l(fp, token, "", sizeof(token), line_nr);
-	if(len == -1)
+	if (ldns_fget_keyword_data_l(fp, "GostAsn1", ": ", token, "\n", 
+		sizeof(token), line_nr) == -1)
 		return NULL;
+	while(strlen(token) < 96) {
+		/* read more b64 from the file, b64 split on multiple lines */
+		if(ldns_fget_token_l(fp, token+strlen(token), "\n",
+			sizeof(token)-strlen(token), line_nr) == -1)
+			return NULL;
+	}
 	if(ldns_str2rdf_b64(&b64rdf, token) != LDNS_STATUS_OK)
 		return NULL;
 	pp = (unsigned char*)ldns_rdf_data(b64rdf);
@@ -261,7 +266,7 @@ ldns_key_new_frm_fp_l(ldns_key **key, FILE *fp, int *line_nr)
 		fprintf(stderr, "version of ldns\n");
 #endif
 	}
-	if (strncmp(d, "211 GOST", 4) == 0) {
+	if (strncmp(d, "249 GOST", 4) == 0) {
 #ifdef USE_GOST
 		alg = LDNS_SIGN_GOST;
 #else
@@ -1106,10 +1111,13 @@ ldns_key_gost2bin(unsigned char* data, EVP_PKEY* k, uint16_t* size)
 		return false;
 	}
 	/* omit ASN header */
+	/* insert parameters */
+	data[0] = 0;
+	data[1] = 0;
 	for(i=0; i<64; i++)
-		data[i] = pp[i+37];
+		data[i+2] = pp[i+37];
 	CRYPTO_free(pp);
-	*size = 64;
+	*size = 66;
 	return true;
 }
 #endif /* USE_GOST */

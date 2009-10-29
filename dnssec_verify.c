@@ -1521,14 +1521,18 @@ ldns_gost2pkey_raw(unsigned char* key, size_t keylen)
 		0x02, 0x02, 0x1e, 0x01, 0x03, 0x43, 0x00, 0x04, 0x40};
 	unsigned char encoded[37+64];
 	const unsigned char* pp;
-	if(keylen != 64) {
+	if(keylen != 66) {
 		/* key wrong size */
+		return NULL;
+	}
+	if(key[0] != 0 || key[1] != 0) {
+		/* unsupported GOST algo or digest paramset */
 		return NULL;
 	}
 
 	/* create evp_key */
 	memmove(encoded, asn, 37);
-	memmove(encoded+37, key, 64);
+	memmove(encoded+37, key+2, 64);
 	pp = (unsigned char*)&encoded[0];
 
 	return d2i_PUBKEY(NULL, &pp, sizeof(encoded));

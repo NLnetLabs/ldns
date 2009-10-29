@@ -1379,6 +1379,8 @@ ldns_gost_key2buffer_str(ldns_buffer *output, EVP_PKEY *p)
 	ldns_rdf *b64_bignum;
 	ldns_status status;
 
+	ldns_buffer_printf(output, "GostAsn1: ");
+
 	ret = i2d_PrivateKey(p, &pp);
 	b64_bignum = ldns_rdf_new_frm_data(LDNS_RDF_TYPE_B64, ret, pp);
 	status = ldns_rdf2buffer_str(output, b64_bignum);
@@ -1686,7 +1688,7 @@ ldns_key2buffer_str(ldns_buffer *output, const ldns_key *k)
 				/* no format defined, use blob */
 #if defined(HAVE_SSL) && defined(USE_GOST)
 				ldns_buffer_printf(output, "Private-key-format: v1.2\n");
-				ldns_buffer_printf(output, "Algorithm: 211 (GOST)\n");
+				ldns_buffer_printf(output, "Algorithm: %d (GOST)\n", LDNS_SIGN_GOST);
 				status = ldns_gost_key2buffer_str(output, k->_key.key);
 #endif
 				break;
