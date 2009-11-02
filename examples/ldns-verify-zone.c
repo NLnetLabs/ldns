@@ -66,11 +66,8 @@ ldns_rr_list_contains_name(const ldns_rr_list *rr_list,
 {
 	size_t i;
 	for (i = 0; i < ldns_rr_list_rr_count(rr_list); i++) {
-		if (ldns_dname_compare(name, 
-						   ldns_rr_owner(ldns_rr_list_rr(rr_list, 
-												   i))
-						   ) == 0
-		    ) {
+		if (ldns_dname_compare(name,
+		    ldns_rr_owner(ldns_rr_list_rr(rr_list, i))) == 0) {
 			return true;
 		}
 	}
@@ -155,9 +152,9 @@ verify_dnssec_rrset(ldns_rdf *zone_name,
 	ldns_status status;
 	ldns_rr_list *good_keys;
 	ldns_status result = LDNS_STATUS_OK;
-	
+
 	if (!rrset->rrs) return LDNS_STATUS_OK;
-	
+
 	rrset_rrs = ldns_rr_list_new();
 	cur_rr = rrset->rrs;
 	while(cur_rr && cur_rr->rr) {
@@ -229,7 +226,7 @@ verify_single_rr(ldns_rr *rr,
 	ldns_dnssec_rrs *cur_sig;
 	ldns_status status;
 	ldns_status result = LDNS_STATUS_OK;
-    
+
 	rrset_rrs = ldns_rr_list_new();
 	ldns_rr_list_push_rr(rrset_rrs, rr);
 
@@ -285,7 +282,7 @@ verify_next_hashed_name(ldns_rbtree_t *zone_nodes,
 	int cmp;
 	char *next_owner_str;
 	ldns_rdf *next_owner_dname;
-	
+
 	if (!name->hashed_name) {
 		name->hashed_name = ldns_nsec3_hash_name_frm_nsec3(name->nsec,
 		                                                   name->name);
@@ -338,7 +335,7 @@ verify_next_hashed_name(ldns_rbtree_t *zone_nodes,
 	if (!cur_next_name) {
 		cur_next_name = cur_first_name;
 	}
-	
+
 	next_owner_str = ldns_rdf2str(ldns_nsec3_next_owner(name->nsec));
 	next_owner_dname = ldns_dname_new_frm_str(next_owner_str);
 	cmp = ldns_dname_compare(next_owner_dname,
@@ -388,7 +385,7 @@ verify_nsec(ldns_rbtree_t *zone_nodes,
 	ldns_dnssec_name *name, *next_name;
 	ldns_status status, result;
 	result = LDNS_STATUS_OK;
-	
+
 	name = (ldns_dnssec_name *) cur_node->data;
 	if (name->nsec) {
 		if (name->nsec_signatures) {
@@ -442,7 +439,6 @@ verify_nsec(ldns_rbtree_t *zone_nodes,
 			default:
 				break;
 		}
-		
 	} else {
 		/* todo; do this once and cache result? */
 		if (zone_is_nsec3_optout(zone_nodes) &&
@@ -616,7 +612,7 @@ main(int argc, char **argv)
 	ldns_dnssec_zone *dnssec_zone;
 	ldns_status result = LDNS_STATUS_ERR;
 	ldns_rr_list *glue_rrs;
-	
+
 	while ((c = getopt(argc, argv, "hvV:")) != -1) {
 		switch(c) {
 		case 'h':
@@ -633,7 +629,7 @@ main(int argc, char **argv)
 			exit(EXIT_SUCCESS);
 			break;
 		case 'v':
-			printf("read zone version %s (ldns version %s)\n", 
+			printf("read zone version %s (ldns version %s)\n",
 				  LDNS_VERSION, ldns_version());
 			exit(EXIT_SUCCESS);
 			break;
@@ -645,7 +641,7 @@ main(int argc, char **argv)
 
 	argc -= optind;
 	argv += optind;
-	
+
 	if (argc == 0) {
 		fp = stdin;
 	} else {
@@ -660,7 +656,7 @@ main(int argc, char **argv)
 			exit(EXIT_FAILURE);
 		}
 	}
-	
+
 	s = ldns_zone_new_frm_fp_l(&z, fp, NULL, 0, LDNS_RR_CLASS_IN, &line_nr);
 
 	if (!ldns_zone_soa(z)) {
@@ -694,7 +690,7 @@ main(int argc, char **argv)
 		ldns_zone_free(z);
 		ldns_dnssec_zone_deep_free(dnssec_zone);
 	} else {
-		fprintf(stderr, "%s at %d\n", 
+		fprintf(stderr, "%s at %d\n",
 				ldns_get_errorstr_by_id(s),
 				line_nr);
                 exit(EXIT_FAILURE);
