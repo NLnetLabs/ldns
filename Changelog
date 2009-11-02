@@ -1,5 +1,6 @@
 1.x.x
-	* RFC5702: enabled sha2 functions by default.
+	* RFC5702: enabled sha2 functions by default. This requires OpenSSL 0.9.8 or higher.
+      Reason for this default is the root to be signed with RSASHA256.
 
 1.6.2	2009-10-01
 	* Fix Makefile patch from Havard Eidnes, better install.sh usage.

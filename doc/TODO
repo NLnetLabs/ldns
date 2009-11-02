@@ -8,8 +8,7 @@ Features:
 
 Bugfixes:
 * ldns_dname_match_wildcard is case sensitive (reported by Ray Bellis)
-* ldns-verify-zone sees NS records at the apex as delegations (and falsely report 
-* Several RRtypes parsing
+* ldns-verify-zone sees NS records at the apex as delegations (and falsely report)
 * Bug #279
 
 later versions
@@ -17,4 +16,3 @@ later versions
 Features:
 * Multi-line zone file parsing
 * Configure option for not printing DNSSEC RR comments
-
