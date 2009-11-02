@@ -61,7 +61,7 @@ ldns_dname_cat_clone(const ldns_rdf *rd1, const ldns_rdf *rd2)
 	/* put the two dname's after each other */
 	memcpy(buf, ldns_rdf_data(rd1), left_size);
 	memcpy(buf + left_size, ldns_rdf_data(rd2), ldns_rdf_size(rd2));
-	
+
 	new = ldns_rdf_new_frm_data(LDNS_RDF_TYPE_DNAME, new_size, buf);
 
 	LDNS_FREE(buf);
@@ -90,7 +90,7 @@ ldns_dname_cat(ldns_rdf *rd1, ldns_rdf *rd2)
 	size = left_size + ldns_rdf_size(rd2);
 
 	ldns_rdf_set_data(rd1, LDNS_XREALLOC(ldns_rdf_data(rd1), uint8_t, size));
-	memcpy(ldns_rdf_data(rd1) + left_size, ldns_rdf_data(rd2), 
+	memcpy(ldns_rdf_data(rd1) + left_size, ldns_rdf_data(rd2),
 			ldns_rdf_size(rd2));
 	ldns_rdf_set_size(rd1, size);
 
@@ -129,7 +129,7 @@ ldns_dname_clone_from(const ldns_rdf *d, uint16_t n)
 	uint8_t *data;
 	uint8_t label_size;
 	size_t data_size;
-	
+
 	if (!d ||
 	    ldns_rdf_get_type(d) != LDNS_RDF_TYPE_DNAME ||
 	    ldns_dname_label_count(d) < n) {
@@ -161,7 +161,7 @@ ldns_dname_left_chop(const ldns_rdf *d)
 	if (!d) {
 		return NULL;
 	}
-		
+
 	if (ldns_rdf_get_type(d) != LDNS_RDF_TYPE_DNAME) {
 		return NULL;
 	}
@@ -177,9 +177,9 @@ ldns_dname_left_chop(const ldns_rdf *d)
 	return chop;
 }
 
-uint8_t         
+uint8_t
 ldns_dname_label_count(const ldns_rdf *r)
-{       
+{
         uint16_t src_pos;
         uint16_t len;
         uint8_t i;
@@ -189,28 +189,28 @@ ldns_dname_label_count(const ldns_rdf *r)
 		return 0;
 	}
 
-        i = 0; 
+	i = 0;
 	src_pos = 0;
-        r_size = ldns_rdf_size(r);
+	r_size = ldns_rdf_size(r);
 
-        if (ldns_rdf_get_type(r) != LDNS_RDF_TYPE_DNAME) {
-                return 0;
-        } else {
-                len = ldns_rdf_data(r)[src_pos]; /* start of the label */
+	if (ldns_rdf_get_type(r) != LDNS_RDF_TYPE_DNAME) {
+		return 0;
+	} else {
+		len = ldns_rdf_data(r)[src_pos]; /* start of the label */
 
-                /* single root label */
-                if (1 == r_size) {
-                        return 0; 
-                } else {
-                        while ((len > 0) && src_pos < r_size) {
-                                src_pos++;
-                                src_pos += len;
-                                len = ldns_rdf_data(r)[src_pos];
-                                i++;
-                        }
-                }
-                return i;
-        }
+		/* single root label */
+		if (1 == r_size) {
+			return 0;
+		} else {
+			while ((len > 0) && src_pos < r_size) {
+				src_pos++;
+				src_pos += len;
+				len = ldns_rdf_data(r)[src_pos];
+				i++;
+			}
+		}
+	}
+	return i;
 }
 
 ldns_rdf *
@@ -278,8 +278,8 @@ ldns_dname_is_subdomain(const ldns_rdf *sub, const ldns_rdf *parent)
 	if (sub_lab < par_lab) {
 		return false;
 	}
-	
-	/* check all labels the from the parent labels, from right to left. 
+
+	/* check all labels the from the parent labels, from right to left.
 	 * When they /all/ match we have found a subdomain
 	 */
 	j = sub_lab - 1; /* we count from zero, thank you */
@@ -303,7 +303,7 @@ ldns_dname_is_subdomain(const ldns_rdf *sub, const ldns_rdf *parent)
 		ldns_rdf_deep_free(tmp_par);
 		j--;
 	}
-	return true; 
+	return true;
 }
 
 int
@@ -331,10 +331,9 @@ ldns_dname_compare(const ldns_rdf *dname1, const ldns_rdf *dname2)
 	assert(ldns_rdf_get_type(dname1) == LDNS_RDF_TYPE_DNAME);
 	assert(ldns_rdf_get_type(dname2) == LDNS_RDF_TYPE_DNAME);
 
-	
 	lc1 = ldns_dname_label_count(dname1);
 	lc2 = ldns_dname_label_count(dname2);
-	
+
 	if (lc1 == 0 && lc2 == 0) {
 		return 0;
 	}
@@ -355,7 +354,7 @@ ldns_dname_compare(const ldns_rdf *dname1, const ldns_rdf *dname2)
 			lp1 += *lp1 + 1;
 			lc1f--;
 		}
-		
+
 		/* and find the other one */
 		lc2f = lc2;
 		lp2 = ldns_rdf_data(dname2);
@@ -363,7 +362,7 @@ ldns_dname_compare(const ldns_rdf *dname1, const ldns_rdf *dname2)
 			lp2 += *lp2 + 1;
 			lc2f--;
 		}
-		
+
 		/* now check the label character for character. */
 		for (i = 1; i < (size_t)(*lp1 + 1); i++) {
 			if (i > *lp2) {
@@ -399,8 +398,7 @@ ldns_dname_compare(const ldns_rdf *dname1, const ldns_rdf *dname2)
 		lc1--;
 		lc2--;
 	}
-		
-	
+
 	done:
 	return result;
 }
@@ -426,13 +424,13 @@ ldns_dname_match_wildcard(const ldns_rdf *dname, const ldns_rdf *wildcard)
 	return result;
 }
 
-/* nsec test: does prev <= middle < next 
+/* nsec test: does prev <= middle < next
  * -1 = yes
  * 0 = error/can't tell
  * 1 = no
  */
 int
-ldns_dname_interval(const ldns_rdf *prev, const ldns_rdf *middle, 
+ldns_dname_interval(const ldns_rdf *prev, const ldns_rdf *middle,
 		const ldns_rdf *next)
 {
 	int prev_check, next_check;
@@ -456,7 +454,7 @@ ldns_dname_interval(const ldns_rdf *prev, const ldns_rdf *middle,
 			next_check == -1) {
 		return -1;
 	} else {
-		return 1; 
+		return 1;
 	}
 }
 
@@ -466,8 +464,8 @@ ldns_dname_str_absolute(const char *dname_str)
 {
 	if(dname_str && strcmp(dname_str, ".") == 0)
 		return 1;
-	return (dname_str && 
-	        strlen(dname_str) > 1 && 
+	return (dname_str &&
+	        strlen(dname_str) > 1 &&
 	        dname_str[strlen(dname_str) - 1] == '.' &&
 	        dname_str[strlen(dname_str) - 2] != '\\');
 }
@@ -480,15 +478,15 @@ ldns_dname_label(const ldns_rdf *rdf, uint8_t labelpos)
 	uint16_t len;
 	ldns_rdf *tmpnew;
 	size_t s;
-	
+
 	if (ldns_rdf_get_type(rdf) != LDNS_RDF_TYPE_DNAME) {
 		return NULL;
 	}
 
-	labelcnt = 0; 
+	labelcnt = 0;
 	src_pos = 0;
 	s = ldns_rdf_size(rdf);
-	
+
 	len = ldns_rdf_data(rdf)[src_pos]; /* label start */
 	while ((len > 0) && src_pos < s) {
 		if (labelcnt == labelpos) {
