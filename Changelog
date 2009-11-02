@@ -12,6 +12,11 @@
 	* bug275: fix memory leak of packet edns rdata.
 	* Fix timeout procedure for TCP and AXFR on Solaris.
 	* Fix occasional NSEC bitmap bogus
+    * Fix rr comparing (was in reversed order since 1.6.0)
+    * bug278: fix parsing HINFO rdata (and other cases).
+    * Added period (e.g. '3m6d') support at explicit TTLs.
+    * Fix previous owner name: also pick up if owner name is @.
+    * Fix various LDNS RR parsing issues: IPSECKEY, WKS, NSAP, very long lines
 
 1.6.1   2009-09-14
 	* --enable-gost : use the GOST algorithm (experimental).
