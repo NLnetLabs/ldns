@@ -262,8 +262,11 @@ ldns_dname_is_subdomain(const ldns_rdf *sub, const ldns_rdf *parent)
 	uint8_t sub_lab;
 	uint8_t par_lab;
 	int8_t i, j;
-	ldns_rdf *tmp_sub;
-	ldns_rdf *tmp_par;
+	ldns_rdf *tmp_sub = NULL;
+	ldns_rdf *tmp_par = NULL;
+    ldns_rdf *sub_clone;
+    ldns_rdf *parent_clone;
+    bool result = true;
 
 	if (ldns_rdf_get_type(sub) != LDNS_RDF_TYPE_DNAME ||
 			ldns_rdf_get_type(parent) != LDNS_RDF_TYPE_DNAME ||
@@ -271,39 +274,48 @@ ldns_dname_is_subdomain(const ldns_rdf *sub, const ldns_rdf *parent)
 		return false;
 	}
 
-	sub_lab = ldns_dname_label_count(sub);
-	par_lab = ldns_dname_label_count(parent);
+    sub_clone = ldns_dname_clone_from(sub, 0);
+    parent_clone = ldns_dname_clone_from(parent, 0);
+    ldns_dname2canonical(sub_clone);
+    ldns_dname2canonical(parent_clone);
+
+	sub_lab = ldns_dname_label_count(sub_clone);
+	par_lab = ldns_dname_label_count(parent_clone);
 
 	/* if sub sits above parent, it cannot be a child/sub domain */
 	if (sub_lab < par_lab) {
-		return false;
-	}
+		result = false;
+	} else {
+		/* check all labels the from the parent labels, from right to left.
+		 * When they /all/ match we have found a subdomain
+		 */
+		j = sub_lab - 1; /* we count from zero, thank you */
+		for (i = par_lab -1; i >= 0; i--) {
+			tmp_sub = ldns_dname_label(sub_clone, j);
+			tmp_par = ldns_dname_label(parent_clone, i);
+			if (!tmp_sub || !tmp_par) {
+				/* deep free does null check */
+				ldns_rdf_deep_free(tmp_sub);
+				ldns_rdf_deep_free(tmp_par);
+				result = false;
+				break;
+			}
 
-	/* check all labels the from the parent labels, from right to left.
-	 * When they /all/ match we have found a subdomain
-	 */
-	j = sub_lab - 1; /* we count from zero, thank you */
-	for (i = par_lab -1; i >= 0; i--) {
-		tmp_sub = ldns_dname_label(sub, j);
-		tmp_par = ldns_dname_label(parent, i);
-		if (!tmp_sub || !tmp_par) {
-			/* deep free does null check */
-			ldns_rdf_deep_free(tmp_sub);
-			ldns_rdf_deep_free(tmp_par);
-			return false;
-		}
-
-		if (ldns_rdf_compare(tmp_sub, tmp_par) != 0) {
-			/* they are not equal */
-			ldns_rdf_deep_free(tmp_sub);
-			ldns_rdf_deep_free(tmp_par);
-			return false;
+			if (ldns_rdf_compare(tmp_sub, tmp_par) != 0) {
+				/* they are not equal */
+				ldns_rdf_deep_free(tmp_sub);
+				ldns_rdf_deep_free(tmp_par);
+				result = false;
+				break;
+			}
 		}
 		ldns_rdf_deep_free(tmp_sub);
 		ldns_rdf_deep_free(tmp_par);
 		j--;
 	}
-	return true;
+	ldns_rdf_deep_free(sub_clone);
+	ldns_rdf_deep_free(parent_clone);
+	return result;
 }
 
 int
