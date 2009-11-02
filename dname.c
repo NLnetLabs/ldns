@@ -308,13 +308,13 @@ ldns_dname_is_subdomain(const ldns_rdf *sub, const ldns_rdf *parent)
 				result = false;
 				break;
 			}
+			ldns_rdf_deep_free(tmp_sub);
+			ldns_rdf_deep_free(tmp_par);
+			j--;
 		}
-		ldns_rdf_deep_free(tmp_sub);
-		ldns_rdf_deep_free(tmp_par);
-		j--;
 	}
-	ldns_rdf_free(sub_clone);
-	ldns_rdf_free(parent_clone);
+	ldns_rdf_deep_free(sub_clone);
+	ldns_rdf_deep_free(parent_clone);
 	return result;
 }
 
