@@ -941,7 +941,7 @@ ldns_rdf2buffer_str_ipseckey(ldns_buffer *output, const ldns_rdf *rdf)
 			break;
 	}
 
-	public_key_size = ldns_rdf_size(rdf) - offset - 1;
+	public_key_size = ldns_rdf_size(rdf) - offset;
 	public_key_data = LDNS_XMALLOC(uint8_t, public_key_size);
 	memcpy(public_key_data, &data[offset], public_key_size);
 	public_key = ldns_rdf_new(LDNS_RDF_TYPE_B64, public_key_size, public_key_data);

@@ -19,6 +19,8 @@
       Reason for this default is the root to be signed with RSASHA256.
 	* Fix various LDNS RR parsing issues: IPSECKEY, WKS, NSAP, very long lines
 	* Fix: Make ldns_dname_is_subdomain case insensitive.
+	* Fix ldns-verify-zone so that address records at zone NS set are not considered glue
+		(Or glue records fall below delegation)
 	* Feature: DNSKEY rrset by default signed with minimal signatures
 		but -A option for ldns-signzone to sign it with all keys.
 		This makes the DNSKEY responses smaller for signed domains.

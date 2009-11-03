@@ -7,7 +7,6 @@ Features:
 * HIP RR support
 
 Bugfixes:
-* ldns-verify-zone sees NS records at the apex as delegations (and falsely report)
 * Bug #279
 
 later versions
