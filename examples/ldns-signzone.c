@@ -38,6 +38,7 @@ usage(FILE *fp, const char *prog) {
 	fprintf(fp, "  -l\t\tLeave old DNSSEC RRSIGS and NSEC(3) records intact\n");
 	fprintf(fp, "  -o <domain>\torigin for the zone\n");
 	fprintf(fp, "  -v\t\tprint version and exit\n");
+	fprintf(fp, "  -A\t\tsign DNSKEY with all keys instead of minimal\n");
 	fprintf(fp, "  -E <name>\tuse <name> as the crypto engine for signing\n");
 	fprintf(fp, "           \tThis can have a lot of extra options, see the manual page for more info\n");
 	fprintf(fp, "  -k <id>,<int>\tuse key id with algorithm int from engine\n");
@@ -347,6 +348,7 @@ main(int argc, char *argv[])
 	int eng_key_algo;
 	
 	bool use_nsec3 = false;
+	int signflags = 0;
 
 	/* Add the given keys to the zone if they are not yet present */
 	bool add_keys = true;
@@ -377,7 +379,7 @@ main(int argc, char *argv[])
 
 	OPENSSL_config(NULL);
 
-	while ((c = getopt(argc, argv, "a:de:f:i:k:lno:ps:t:vE:K:")) != -1) {
+	while ((c = getopt(argc, argv, "a:de:f:i:k:lno:ps:t:vAE:K:")) != -1) {
 		switch (c) {
 		case 'a':
 			nsec3_algorithm = (uint8_t) atoi(optarg);
@@ -455,6 +457,9 @@ main(int argc, char *argv[])
 		case 'v':
 			printf("zone signer version %s (ldns version %s)\n", LDNS_VERSION, ldns_version());
 			exit(EXIT_SUCCESS);
+			break;
+		case 'A':
+			signflags |= LDNS_SIGN_DNSKEY_WITH_ZSK;
 			break;
 		case 'E':
 			ENGINE_load_builtin_engines();
@@ -742,7 +747,7 @@ main(int argc, char *argv[])
 	added_rrs = ldns_rr_list_new();
 
 	if (use_nsec3) {
-		result = ldns_dnssec_zone_sign_nsec3(signed_zone,
+		result = ldns_dnssec_zone_sign_nsec3_flg(signed_zone,
 			added_rrs,
 			keys,
 			ldns_dnssec_default_replace_signatures,
@@ -751,13 +756,15 @@ main(int argc, char *argv[])
 			nsec3_flags,
 			nsec3_iterations,
 			nsec3_salt_length,
-			nsec3_salt);
+			nsec3_salt,
+			signflags);
 	} else {
-		result = ldns_dnssec_zone_sign(signed_zone,
+		result = ldns_dnssec_zone_sign_flg(signed_zone,
 				added_rrs,
 				keys,
 				ldns_dnssec_default_replace_signatures,
-				NULL);
+				NULL,
+				signflags);
 	}
 	if (result != LDNS_STATUS_OK) {
 		fprintf(stderr, "Error signing zone: %s\n",

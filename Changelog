@@ -1,6 +1,4 @@
 1.x.x
-	* RFC5702: enabled sha2 functions by default. This requires OpenSSL 0.9.8 or higher.
-      Reason for this default is the root to be signed with RSASHA256.
 
 1.6.2	2009-10-01
 	* Fix Makefile patch from Havard Eidnes, better install.sh usage.
@@ -17,8 +15,13 @@
 	* bug278: fix parsing HINFO rdata (and other cases).
 	* Added period (e.g. '3m6d') support at explicit TTLs.
 	* Fix previous owner name: also pick up if owner name is @.
+	* RFC5702: enabled sha2 functions by default. This requires OpenSSL 0.9.8 or higher.
+      Reason for this default is the root to be signed with RSASHA256.
 	* Fix various LDNS RR parsing issues: IPSECKEY, WKS, NSAP, very long lines
 	* Fix: Make ldns_dname_is_subdomain case insensitive.
+	* Feature: DNSKEY rrset by default signed with minimal signatures
+		but -A option for ldns-signzone to sign it with all keys.
+		This makes the DNSKEY responses smaller for signed domains.
 
 1.6.1   2009-09-14
 	* --enable-gost : use the GOST algorithm (experimental).

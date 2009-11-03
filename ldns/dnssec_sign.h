@@ -7,6 +7,9 @@
 
 /* sign functions */
 
+/** Sign flag that makes DNSKEY type signed by all keys, not only by SEP keys*/
+#define LDNS_SIGN_DNSKEY_WITH_ZSK 1
+
 /**
  * Create an empty RRSIG RR (i.e. without the actual signature data)
  * \param[in] rrset The RRset to create the signature for
@@ -138,6 +141,28 @@ ldns_dnssec_rrs *ldns_dnssec_remove_signatures(ldns_dnssec_rrs *signatures,
  * \param[in] func Callback function to decide what keys to
  *            use and what to do with old signatures
  * \param[in] arg Optional argument for the callback function
+ * \param[in] flags option flags for signing process. 0 is defaults.
+ * 	LDNS_SIGN_DNSKEY_WITH_ZSK makes DNSKEY type signed with all keys.
+ * \return LDNS_STATUS_OK on success, error otherwise
+ */
+ldns_status ldns_dnssec_zone_create_rrsigs_flg(ldns_dnssec_zone *zone,
+					ldns_rr_list *new_rrs,
+					ldns_key_list *key_list,
+					int (*func)(ldns_rr *, void*),
+					void *arg,
+					int flags);
+
+/**
+ * Adds signatures to the zone
+ *
+ * \param[in] zone the zone to add RRSIG Resource Records to
+ * \param[in] new_rrs the RRSIG RRs that are created are also
+ *            added to this list, so the caller can free them
+ *            later
+ * \param[in] key_list list of keys to sign with.
+ * \param[in] func Callback function to decide what keys to
+ *            use and what to do with old signatures
+ * \param[in] arg Optional argument for the callback function
  * \return LDNS_STATUS_OK on success, error otherwise
  */
 ldns_status ldns_dnssec_zone_create_rrsigs(ldns_dnssec_zone *zone,
@@ -145,6 +170,63 @@ ldns_status ldns_dnssec_zone_create_rrsigs(ldns_dnssec_zone *zone,
 								   ldns_key_list *key_list,
 								   int (*func)(ldns_rr *, void*),
 								   void *arg);
+
+/**
+ * signs the given zone with the given keys
+ * 
+ * \param[in] zone the zone to sign
+ * \param[in] key_list the list of keys to sign the zone with
+ * \param[in] new_rrs newly created resource records are added to this list, to free them later
+ * \param[in] func callback function that decides what to do with old signatures
+ *            This function takes an ldns_rr* and an optional void *arg argument, and returns one of four values:
+ * LDNS_SIGNATURE_LEAVE_ADD_NEW:
+ * leave the signature and add a new one for the corresponding key
+ * LDNS_SIGNATURE_REMOVE_ADD_NEW:
+ * remove the signature and replace is with a new one from the same key
+ * LDNS_SIGNATURE_LEAVE_NO_ADD:
+ * leave the signature and do not add a new one with the corresponding key
+ * LDNS_SIGNATURE_REMOVE_NO_ADD:
+ * remove the signature and do not replace 
+ *
+ * \param[in] arg optional argument for the callback function
+ * \param[in] flags option flags for signing process. 0 is defaults.
+ * 	LDNS_SIGN_DNSKEY_WITH_ZSK makes DNSKEY type signed with all keys.
+ * \return LDNS_STATUS_OK on success, an error code otherwise
+ */
+ldns_status ldns_dnssec_zone_sign_flg(ldns_dnssec_zone *zone,
+					ldns_rr_list *new_rrs,
+					ldns_key_list *key_list,
+					int (*func)(ldns_rr *, void *),
+					void *arg, 
+					int flags);
+
+/**
+ * signs the given zone with the given new zone, with NSEC3
+ *
+ * \param[in] zone the zone to sign
+ * \param[in] key_list the list of keys to sign the zone with
+ * \param[in] new_rrs newly created resource records are added to this list, to free them later
+ * \param[in] func callback function that decides what to do with old signatures
+ * \param[in] arg optional argument for the callback function
+ * \param[in] algorithm the NSEC3 hashing algorithm to use
+ * \param[in] flags NSEC3 flags
+ * \param[in] iterations the number of NSEC3 hash iterations to use
+ * \param[in] salt_length the length (in octets) of the NSEC3 salt
+ * \param[in] salt the NSEC3 salt data
+ * \param[in] signflags option flags for signing process. 0 is defaults.
+ * \return LDNS_STATUS_OK on success, an error code otherwise
+ */
+ldns_status ldns_dnssec_zone_sign_nsec3_flg(ldns_dnssec_zone *zone,
+				ldns_rr_list *new_rrs,
+				ldns_key_list *key_list,
+				int (*func)(ldns_rr *, void *),
+				void *arg,
+				uint8_t algorithm,
+				uint8_t flags,
+				uint16_t iterations,
+				uint8_t salt_length,
+				uint8_t *salt,
+				int signflags);
 
 /**
  * signs the given zone with the given keys

@@ -65,6 +65,14 @@ Use this as the origin of the zone
 Print the version and exit
 
 .TP
+\fB-A\fR
+Sign the DNSKEY record with all keys.  By default it is signed with a
+minimal number of keys, to keep the response size for the DNSKEY query
+small, and only the SEP keys that are passed are used.  If there are no
+SEP keys, the DNSKEY record is signed with the non\-SEP keys.  This option
+turns off the default and all keys are used to sign the DNSKEY record.
+
+.TP
 \fB-E\fR \fIname\fR
 Use the EVP cryptographic engine with the given name for signing. This
 can have some extra options; see ENGINE OPTIONS for more information.

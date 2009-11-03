@@ -787,6 +787,36 @@ ldns_dnssec_zone_create_rrsigs(ldns_dnssec_zone *zone,
                                int (*func)(ldns_rr *, void*),
                                void *arg)
 {
+	return ldns_dnssec_zone_create_rrsigs_flg(zone, new_rrs, key_list, 
+		func, arg, 0);
+}
+
+/** If there are KSKs use only them and mark ZSKs unused */
+static void
+ldns_key_list_filter_for_dnskey(ldns_key_list *key_list)
+{
+	int saw_ksk = 0;
+	size_t i;
+	for(i=0; i<ldns_key_list_key_count(key_list); i++)
+		if((ldns_key_flags(ldns_key_list_key(key_list, i))&LDNS_KEY_SEP_KEY)) {
+			saw_ksk = 1;
+			break;
+		}
+	if(!saw_ksk)
+		return;
+	for(i=0; i<ldns_key_list_key_count(key_list); i++)
+		if(!(ldns_key_flags(ldns_key_list_key(key_list, i))&LDNS_KEY_SEP_KEY))
+			ldns_key_set_use(ldns_key_list_key(key_list, i), 0);
+}
+
+ldns_status
+ldns_dnssec_zone_create_rrsigs_flg(ldns_dnssec_zone *zone,
+                               ldns_rr_list *new_rrs,
+                               ldns_key_list *key_list,
+                               int (*func)(ldns_rr *, void*),
+                               void *arg,
+			       int flags)
+{
 	ldns_status result = LDNS_STATUS_OK;
 
 	ldns_rbnode_t *cur_node;
@@ -827,6 +857,9 @@ ldns_dnssec_zone_create_rrsigs(ldns_dnssec_zone *zone,
 											key_list,
 											func,
 											arg);
+				if(!(flags&LDNS_SIGN_DNSKEY_WITH_ZSK) &&
+					cur_rrset->type == LDNS_RR_TYPE_DNSKEY)
+					ldns_key_list_filter_for_dnskey(key_list);
 				
 				/* TODO: just set count to zero? */
 				rr_list = ldns_rr_list_new();
@@ -916,6 +949,17 @@ ldns_dnssec_zone_sign(ldns_dnssec_zone *zone,
 				  int (*func)(ldns_rr *, void *),
 				  void *arg)
 {
+	return ldns_dnssec_zone_sign_flg(zone, new_rrs, key_list, func, arg, 0);
+}
+
+ldns_status
+ldns_dnssec_zone_sign_flg(ldns_dnssec_zone *zone,
+				  ldns_rr_list *new_rrs,
+				  ldns_key_list *key_list,
+				  int (*func)(ldns_rr *, void *),
+				  void *arg,
+				  int flags)
+{
 	ldns_status result = LDNS_STATUS_OK;
 
 	if (!zone || !new_rrs || !key_list) {
@@ -933,11 +977,12 @@ ldns_dnssec_zone_sign(ldns_dnssec_zone *zone,
 		}
 	}
 
-	result = ldns_dnssec_zone_create_rrsigs(zone,
-									new_rrs,
-									key_list,
-									func,
-									arg);
+	result = ldns_dnssec_zone_create_rrsigs_flg(zone,
+					new_rrs,
+					key_list,
+					func,
+					arg,
+					flags);
 
 	return result;
 }
@@ -953,6 +998,23 @@ ldns_dnssec_zone_sign_nsec3(ldns_dnssec_zone *zone,
 					   uint16_t iterations,
 					   uint8_t salt_length,
 					   uint8_t *salt)
+{
+	return ldns_dnssec_zone_sign_nsec3_flg(zone, new_rrs, key_list,
+		func, arg, algorithm, flags, iterations, salt_length, salt, 0);
+}
+
+ldns_status
+ldns_dnssec_zone_sign_nsec3_flg(ldns_dnssec_zone *zone,
+					   ldns_rr_list *new_rrs,
+					   ldns_key_list *key_list,
+					   int (*func)(ldns_rr *, void *),
+					   void *arg,
+					   uint8_t algorithm,
+					   uint8_t flags,
+					   uint16_t iterations,
+					   uint8_t salt_length,
+					   uint8_t *salt,
+					   int signflags)
 {
 	ldns_rr *nsec3, *nsec3params;
 	ldns_status result = LDNS_STATUS_OK;
@@ -1003,11 +1065,12 @@ ldns_dnssec_zone_sign_nsec3(ldns_dnssec_zone *zone,
 			}
 		}
 
-		result = ldns_dnssec_zone_create_rrsigs(zone,
-										new_rrs,
-										key_list,
-										func,
-										arg);
+		result = ldns_dnssec_zone_create_rrsigs_flg(zone,
+						new_rrs,
+						key_list,
+						func,
+						arg,
+						signflags);
 	}
 	
 	return result;
