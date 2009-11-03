@@ -1934,6 +1934,7 @@ ldns_resolver_print(FILE *output, const ldns_resolver *r)
 void
 ldns_zone_print(FILE *output, const ldns_zone *z)
 {
-	ldns_rr_print(output, ldns_zone_soa(z));
+	if(ldns_zone_soa(z))
+		ldns_rr_print(output, ldns_zone_soa(z));
 	ldns_rr_list_print(output, ldns_zone_rrs(z));
 }

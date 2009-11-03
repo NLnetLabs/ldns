@@ -141,7 +141,7 @@ main(int argc, char **argv)
 			ldns_zone_sort(z);
 		}
 
-		if (print_soa) {
+		if (print_soa && ldns_zone_soa(z)) {
 			ldns_rr_print(stdout, ldns_zone_soa(z));
 		}
 		ldns_rr_list_print(stdout, ldns_zone_rrs(z));
