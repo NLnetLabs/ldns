@@ -1162,7 +1162,7 @@ ldns_str2rdf_ipseckey(ldns_rdf **rd, const char *str)
 			ldns_rdf_data(publickey_rdf), ldns_rdf_size(publickey_rdf));
 	}
 
-	*rd = ldns_rdf_new_frm_data(LDNS_RDF_TYPE_IPSECKEY, (uint16_t) ipseckey_len + 1, data);
+	*rd = ldns_rdf_new_frm_data(LDNS_RDF_TYPE_IPSECKEY, (uint16_t) ipseckey_len, data);
 
 	if (gateway)
 		LDNS_FREE(gateway);
