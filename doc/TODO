@@ -1,16 +1,13 @@
 TODO
 
 1.6.2
+* LOC RR parsing bug
 
 Features:
+* Multi-line zone file parsing
+* Configure option for not printing DNSSEC RR comments
 * HMAC and MD5 without OpenSSL
 * HIP RR support
 
 Bugfixes:
 * Bug #279
-
-later versions
-
-Features:
-* Multi-line zone file parsing
-* Configure option for not printing DNSSEC RR comments
