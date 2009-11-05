@@ -13,7 +13,6 @@
 	* Fix occasional NSEC bitmap bogus
 	* Fix rr comparing (was in reversed order since 1.6.0)
 	* bug278: fix parsing HINFO rdata (and other cases).
-	* Added period (e.g. '3m6d') support at explicit TTLs.
 	* Fix previous owner name: also pick up if owner name is @.
 	* RFC5702: enabled sha2 functions by default. This requires OpenSSL 0.9.8 or higher.
       Reason for this default is the root to be signed with RSASHA256.
@@ -22,6 +21,7 @@
 	* Fix ldns-verify-zone so that address records at zone NS set are not considered glue
 		(Or glue records fall below delegation)
     * Fix LOC RR altitude printing.
+	* Feature: Added period (e.g. '3m6d') support at explicit TTLs.
     * Feature: DNSKEY rrset by default signed with minimal signatures
 		but -A option for ldns-signzone to sign it with all keys.
 		This makes the DNSKEY responses smaller for signed domains.
