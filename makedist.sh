@@ -225,7 +225,7 @@ case $OSTYPE in
                 sha=`sha1sum ldns-$version.tar.gz |  awk '{ print $1 }'`
                 ;;
         freebsd*)
-                sha=`sha1  ldns$version.tar.gz |  awk '{ print $5 }'`
+                sha=`sha1  ldns-$version.tar.gz |  awk '{ print $5 }'`
                 ;;
         *)
         	uname=`uname`
