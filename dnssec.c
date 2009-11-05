@@ -362,7 +362,13 @@ ldns_key_buf2dsa_raw(unsigned char* key, size_t len)
 	offset += length;
 
 	/* create the key and set its properties */
-	dsa = DSA_new();
+	if(!Q || !P || !G || !Y || !(dsa = DSA_new())) {
+		BN_free(Q);
+		BN_free(P);
+		BN_free(G);
+		BN_free(Y);
+		return NULL;
+	}
 	dsa->p = P;
 	dsa->q = Q;
 	dsa->g = G;
@@ -410,15 +416,25 @@ ldns_key_buf2rsa_raw(unsigned char* key, size_t len)
 
 	/* Exponent */
 	exponent = BN_new();
+	if(!exponent) return NULL;
 	(void) BN_bin2bn(key+offset, (int)exp, exponent);
 	offset += exp;
 
 	/* Modulus */
 	modulus = BN_new();
+	if(!modulus) {
+		BN_free(exponent);
+		return NULL;
+	}
 	/* length of the buffer must match the key length! */
 	(void) BN_bin2bn(key+offset, (int)(len - offset), modulus);
 
 	rsa = RSA_new();
+	if(!rsa) {
+		BN_free(exponent);
+		BN_free(modulus);
+		return NULL;
+	}
 	rsa->n = modulus;
 	rsa->e = exponent;
 
@@ -1654,14 +1670,21 @@ ldns_convert_dsa_rrsig_rdf2asn1(ldns_buffer *target_buffer,
 	/* extract the R and S field from the sig buffer */
 	t = ldns_rdf_data(sig_rdf)[0];
 	R = BN_new();
+	if(!R) return LDNS_STATUS_MEM_ERR;
 	(void) BN_bin2bn((unsigned char *) ldns_rdf_data(sig_rdf) + 1,
 	                 SHA_DIGEST_LENGTH, R);
 	S = BN_new();
+	if(!S) {
+		BN_free(R);
+		return LDNS_STATUS_MEM_ERR;
+	}
 	(void) BN_bin2bn((unsigned char *) ldns_rdf_data(sig_rdf) + 21,
 	                 SHA_DIGEST_LENGTH, S);
 
 	dsasig = DSA_SIG_new();
 	if (!dsasig) {
+		BN_free(R);
+		BN_free(S);
 		return LDNS_STATUS_MEM_ERR;
 	}
 
