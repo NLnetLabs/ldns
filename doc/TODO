@@ -1,8 +1,5 @@
 TODO
 
-1.6.2
-* LOC RR parsing bug
-
 Features:
 * Multi-line zone file parsing
 * Configure option for not printing DNSSEC RR comments
