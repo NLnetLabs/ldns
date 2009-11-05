@@ -117,6 +117,8 @@ enum ldns_enum_cert_algorithm
 };
 typedef enum ldns_enum_cert_algorithm ldns_cert_algorithm;
 
+
+
 /**
  * Resource record data field.
  *

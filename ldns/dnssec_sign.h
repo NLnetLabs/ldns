@@ -141,8 +141,11 @@ ldns_dnssec_rrs *ldns_dnssec_remove_signatures(ldns_dnssec_rrs *signatures,
  * \param[in] func Callback function to decide what keys to
  *            use and what to do with old signatures
  * \param[in] arg Optional argument for the callback function
- * \param[in] flags option flags for signing process. 0 is defaults.
- * 	LDNS_SIGN_DNSKEY_WITH_ZSK makes DNSKEY type signed with all keys.
+ * \param[in] flags option flags for signing process. 0 makes DNSKEY
+ * RRset signed with the minimal key set, that is only SEP keys are used
+ * for signing. If there are no SEP keys available, non-SEP keys will
+ * be used. LDNS_SIGN_DNSKEY_WITH_ZSK makes DNSKEY type signed with all
+ * keys. 0 is the default.
  * \return LDNS_STATUS_OK on success, error otherwise
  */
 ldns_status ldns_dnssec_zone_create_rrsigs_flg(ldns_dnssec_zone *zone,
@@ -189,8 +192,11 @@ ldns_status ldns_dnssec_zone_create_rrsigs(ldns_dnssec_zone *zone,
  * remove the signature and do not replace 
  *
  * \param[in] arg optional argument for the callback function
- * \param[in] flags option flags for signing process. 0 is defaults.
- * 	LDNS_SIGN_DNSKEY_WITH_ZSK makes DNSKEY type signed with all keys.
+ * \param[in] flags option flags for signing process. 0 makes DNSKEY
+ * RRset signed with the minimal key set, that is only SEP keys are used
+ * for signing. If there are no SEP keys available, non-SEP keys will
+ * be used. LDNS_SIGN_DNSKEY_WITH_ZSK makes DNSKEY type signed with all
+ * keys. 0 is the default.
  * \return LDNS_STATUS_OK on success, an error code otherwise
  */
 ldns_status ldns_dnssec_zone_sign_flg(ldns_dnssec_zone *zone,
@@ -213,7 +219,7 @@ ldns_status ldns_dnssec_zone_sign_flg(ldns_dnssec_zone *zone,
  * \param[in] iterations the number of NSEC3 hash iterations to use
  * \param[in] salt_length the length (in octets) of the NSEC3 salt
  * \param[in] salt the NSEC3 salt data
- * \param[in] signflags option flags for signing process. 0 is defaults.
+ * \param[in] signflags option flags for signing process. 0 is the default.
  * \return LDNS_STATUS_OK on success, an error code otherwise
  */
 ldns_status ldns_dnssec_zone_sign_nsec3_flg(ldns_dnssec_zone *zone,
