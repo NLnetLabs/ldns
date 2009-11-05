@@ -625,9 +625,15 @@ ldns_rdf2buffer_str_loc(ldns_buffer *output, const ldns_rdf *rdf)
 		ldns_buffer_printf(output, "%02u %02u %0.3f %c ",
 			h, m, s, easterness);
 
-		ldns_buffer_printf(output, "%ld", altitude/100 - 100000);
+
+        s = (double) altitude / 100;
+        s -= 100000;
+
 		if(altitude%100 != 0)
-			ldns_buffer_printf(output, ".%02ld", altitude%100);
+			ldns_buffer_printf(output, "%.2f", s);
+        else
+			ldns_buffer_printf(output, "%.0f", s);
+
 		ldns_buffer_printf(output, "m ");
 
 		loc_cm_print(output, (size & 0xf0) >> 4, size & 0x0f);
