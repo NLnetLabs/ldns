@@ -626,7 +626,7 @@ ldns_rdf2buffer_str_loc(ldns_buffer *output, const ldns_rdf *rdf)
 			h, m, s, easterness);
 
 
-        s = (double) altitude / 100;
+        s = ((double) altitude) / 100;
         s -= 100000;
 
 		if(altitude%100 != 0)
