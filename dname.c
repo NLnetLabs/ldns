@@ -274,6 +274,7 @@ ldns_dname_is_subdomain(const ldns_rdf *sub, const ldns_rdf *parent)
 		return false;
 	}
 
+    /* would be nicer if we do not have to clone... */
     sub_clone = ldns_dname_clone_from(sub, 0);
     parent_clone = ldns_dname_clone_from(parent, 0);
     ldns_dname2canonical(sub_clone);
