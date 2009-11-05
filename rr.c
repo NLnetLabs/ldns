@@ -1757,7 +1757,7 @@ static const ldns_rdf_type type_kx_wireformat[] = {
 static const ldns_rdf_type type_cert_wireformat[] = {
 	 LDNS_RDF_TYPE_CERT_ALG, LDNS_RDF_TYPE_INT16, LDNS_RDF_TYPE_ALG, LDNS_RDF_TYPE_B64
 };
-static const ldns_rdf_type type_a6_wireformat[] = { LDNS_RDF_TYPE_INT8, LDNS_RDF_TYPE_AAAA, LDNS_RDF_TYPE_DNAME };
+static const ldns_rdf_type type_a6_wireformat[] = { LDNS_RDF_TYPE_UNKNOWN };
 static const ldns_rdf_type type_dname_wireformat[] = { LDNS_RDF_TYPE_DNAME };
 static const ldns_rdf_type type_sink_wireformat[] = { LDNS_RDF_TYPE_INT8,
 	LDNS_RDF_TYPE_INT8, LDNS_RDF_TYPE_INT8, LDNS_RDF_TYPE_B64
@@ -1898,7 +1898,7 @@ static ldns_rr_descriptor rdata_field_descriptors[] = {
 	/* 37 */
 	{LDNS_RR_TYPE_CERT, "CERT", 4, 4, type_cert_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 0 },
 	/* 38 */
-	{LDNS_RR_TYPE_A6, "A6", 3, 3, type_a6_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 1 },
+	{LDNS_RR_TYPE_A6, "A6", 1, 1, type_a6_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 0 },
 	/* 39 */
 	{LDNS_RR_TYPE_DNAME, "DNAME", 1, 1, type_dname_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 1 },
 	/* 40 */
