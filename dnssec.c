@@ -635,12 +635,15 @@ ldns_dnssec_create_nsec_bitmap(ldns_rr_type rr_type_list[],
 		return NULL;
 	}
 
-	/* the types in the list should be orders, lowest first,
-	   so the last one contains the highest type */
-	i_type = rr_type_list[size-1];
+	i_type = 0;
+	for (i = 0; i < size; i++) {
+		if (i_type < rr_type_list[i])
+			i_type = rr_type_list[i];
+	}
 	if (i_type < nsec_type) {
 		i_type = nsec_type;
 	}
+
 	bm_len = i_type / 8 + 2;
 	bitmap = LDNS_XMALLOC(uint8_t, bm_len);
 	for (i = 0; i < bm_len; i++) {
