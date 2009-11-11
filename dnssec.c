@@ -860,108 +860,38 @@ ldns_create_nsec(ldns_rdf *cur_owner, ldns_rdf *next_owner, ldns_rr_list *rrs)
 	/* todo: make something more efficient :) */
 	uint16_t i;
 	ldns_rr *i_rr;
-
-	uint8_t *bitmap = LDNS_XMALLOC(uint8_t, 2);
-	uint16_t bm_len = 0;
 	uint16_t i_type;
 
 	ldns_rr *nsec = NULL;
-
-	uint8_t *data = NULL;
-	uint8_t cur_data[32];
-	uint8_t cur_window = 0;
-	uint8_t cur_window_max = 0;
-	uint16_t cur_data_size = 0;
+    ldns_rr_type i_type_list[1024];
+	int type_count = 0;
 
 	nsec = ldns_rr_new();
 	ldns_rr_set_type(nsec, LDNS_RR_TYPE_NSEC);
 	ldns_rr_set_owner(nsec, ldns_rdf_clone(cur_owner));
 	ldns_rr_push_rdf(nsec, ldns_rdf_clone(next_owner));
 
-	bitmap[0] = 0;
 	for (i = 0; i < ldns_rr_list_rr_count(rrs); i++) {
 		i_rr = ldns_rr_list_rr(rrs, i);
-
 		if (ldns_rdf_compare(cur_owner,
 						 ldns_rr_owner(i_rr)) == 0) {
-			/* add type to bitmap */
 			i_type = ldns_rr_get_type(i_rr);
-			if (i_type / 8 >= bm_len) {
-				bitmap = LDNS_XREALLOC(bitmap, uint8_t, (i_type / 8) + 2);
-				/* set to 0 */
-				for (; bm_len < (i_type / 8) + 1; bm_len++) {
-					bitmap[bm_len] = 0;
-				}
+			if (type_count == 0 || i_type_list[type_count-1] != i_type) {
+				i_type_list[type_count] = i_type;
+				type_count++;
 			}
-			ldns_set_bit(bitmap + (int) i_type / 8,
-					   (int) (7 - (i_type % 8)),
-					   true);
 		}
 	}
-	/* add NSEC and RRSIG anyway */
-	i_type = LDNS_RR_TYPE_RRSIG;
-	if (i_type / 8 >= bm_len) {
-		bitmap = LDNS_XREALLOC(bitmap, uint8_t, (i_type / 8) + 2);
-		/* set to 0 */
-		for (; bm_len < (i_type / 8) + 1; bm_len++) {
-			bitmap[bm_len] = 0;
-		}
-	}
-	ldns_set_bit(bitmap + (int) i_type / 8, (int) (7 - (i_type % 8)), true);
-	i_type = LDNS_RR_TYPE_NSEC;
 
-	if (i_type / 8 >= bm_len) {
-		bitmap = LDNS_XREALLOC(bitmap, uint8_t, (i_type / 8) + 2);
-		/* set to 0 */
-		for (; bm_len < (i_type / 8) + 1; bm_len++) {
-			bitmap[bm_len] = 0;
-		}
-	}
-	ldns_set_bit(bitmap + (int) i_type / 8, (int) (7 - (i_type % 8)), true);
-
-	memset(cur_data, 0, 32);
-	for (i = 0; i < bm_len; i++) {
-		if (i / 32 > cur_window) {
-			/* check, copy, new */
-			if (cur_window_max > 0) {
-				/* this window has stuff, add it */
-				data = LDNS_XREALLOC(data,
-								 uint8_t,
-								 cur_data_size + cur_window_max + 3);
-				data[cur_data_size] = cur_window;
-				data[cur_data_size + 1] = cur_window_max + 1;
-				memcpy(data + cur_data_size + 2,
-					  cur_data,
-					  cur_window_max+1);
-				cur_data_size += cur_window_max + 3;
-			}
-			cur_window++;
-			cur_window_max = 0;
-			memset(cur_data, 0, 32);
-		} else {
-			cur_data[i%32] = bitmap[i];
-			if (bitmap[i] > 0) {
-				cur_window_max = i%32;
-			}
-		}
-	}
-	if (cur_window_max > 0) {
-		/* this window has stuff, add it */
-		data = LDNS_XREALLOC(data,
-						 uint8_t,
-						 cur_data_size + cur_window_max + 3);
-		data[cur_data_size] = cur_window;
-		data[cur_data_size + 1] = cur_window_max + 1;
-		memcpy(data + cur_data_size + 2, cur_data, cur_window_max+1);
-		cur_data_size += cur_window_max + 3;
-	}
+	i_type_list[type_count] = LDNS_RR_TYPE_RRSIG;
+	type_count++;
+	i_type_list[type_count] = LDNS_RR_TYPE_NSEC;
+	type_count++;
 
 	ldns_rr_push_rdf(nsec,
-				  ldns_rdf_new_frm_data(LDNS_RDF_TYPE_NSEC,
-								    cur_data_size,
-								    data));
-	LDNS_FREE(bitmap);
-	LDNS_FREE(data);
+				  ldns_dnssec_create_nsec_bitmap(i_type_list,
+						type_count, LDNS_RR_TYPE_NSEC));
+
 	return nsec;
 }
 
@@ -1123,22 +1053,15 @@ ldns_create_nsec3(ldns_rdf *cur_owner,
 {
 	size_t i;
 	ldns_rr *i_rr;
-
-	uint8_t *bitmap = LDNS_XMALLOC(uint8_t, 1);
-	uint16_t bm_len = 0;
 	uint16_t i_type;
 
 	ldns_rr *nsec = NULL;
 	ldns_rdf *hashed_owner = NULL;
 
-	uint8_t *data = NULL;
-	uint8_t cur_data[32];
-	uint8_t cur_window = 0;
-	uint8_t cur_window_max = 0;
-	uint16_t cur_data_size = 0;
-
 	ldns_status status;
 
+    ldns_rr_type i_type_list[1024];
+	int type_count = 0;
 
 	hashed_owner = ldns_nsec3_hash_name(cur_owner,
 								 algorithm,
@@ -1159,98 +1082,37 @@ ldns_create_nsec3(ldns_rdf *cur_owner,
 						 salt);
 	(void) ldns_rr_set_rdf(nsec, NULL, 4);
 
-	bitmap[0] = 0;
+
 	for (i = 0; i < ldns_rr_list_rr_count(rrs); i++) {
 		i_rr = ldns_rr_list_rr(rrs, i);
-
 		if (ldns_rdf_compare(cur_owner,
-		                     ldns_rr_owner(i_rr)) == 0) {
-			/* add type to bitmap */
+						 ldns_rr_owner(i_rr)) == 0) {
 			i_type = ldns_rr_get_type(i_rr);
-			if (i_type / 8 >= bm_len) {
-				bitmap = LDNS_XREALLOC(bitmap, uint8_t, (i_type / 8) + 1);
-				/* set to 0 */
-				for (; bm_len < (i_type / 8) + 1; bm_len++) {
-					bitmap[bm_len] = 0;
-				}
+			if (type_count == 0 || i_type_list[type_count-1] != i_type) {
+				i_type_list[type_count] = i_type;
+				type_count++;
 			}
-			ldns_set_bit(bitmap + (int) i_type / 8,
-					   (int) (7 - (i_type % 8)),
-					   true);
 		}
 	}
+
 	/* add NSEC and RRSIG anyway, but only if this is not an ENT or
 	 * an unsigned delegation */
 	if (!emptynonterminal && !rr_list_delegation_only(cur_zone, rrs)) {
-		i_type = LDNS_RR_TYPE_RRSIG;
-		if (i_type / 8 >= bm_len) {
-			bitmap = LDNS_XREALLOC(bitmap, uint8_t, (i_type / 8) + 1);
-			/* set to 0 */
-			for (; bm_len < (i_type / 8) + 1; bm_len++) {
-				bitmap[bm_len] = 0;
-			}
-		}
-		ldns_set_bit(bitmap + (int) i_type / 8,
-				   (int) (7 - (i_type % 8)),
-				   true);
+		i_type_list[type_count] = LDNS_RR_TYPE_RRSIG;
+		type_count++;
+		i_type_list[type_count] = LDNS_RR_TYPE_NSEC;
+		type_count++;
 	}
 
 	/* and SOA if owner == zone */
 	if (ldns_dname_compare(cur_zone, cur_owner) == 0) {
-		i_type = LDNS_RR_TYPE_SOA;
-		if (i_type / 8 >= bm_len) {
-			bitmap = LDNS_XREALLOC(bitmap, uint8_t, (i_type / 8) + 1);
-			/* set to 0 */
-			for (; bm_len < (i_type / 8) + 1; bm_len++) {
-				bitmap[bm_len] = 0;
-			}
-		}
-		ldns_set_bit(bitmap + (int) i_type / 8,
-				   (int) (7 - (i_type % 8)),
-				   true);
+		i_type_list[type_count] = LDNS_RR_TYPE_SOA;
+		type_count++;
 	}
-
-	memset(cur_data, 0, 32);
-	for (i = 0; i < bm_len; i++) {
-		if (i / 32 > cur_window) {
-			/* check, copy, new */
-			if (cur_window_max > 0) {
-				/* this window has stuff, add it */
-				data = LDNS_XREALLOC(data,
-								 uint8_t,
-								 cur_data_size + cur_window_max + 3);
-				data[cur_data_size] = cur_window;
-				data[cur_data_size + 1] = cur_window_max + 1;
-				memcpy(data + cur_data_size + 2,
-					  cur_data,
-					  cur_window_max+1);
-				cur_data_size += cur_window_max + 3;
-			}
-			cur_window++;
-			cur_window_max = 0;
-			memset(cur_data, 0, 32);
-		} else {
-			cur_data[i%32] = bitmap[i];
-			if (bitmap[i] > 0) {
-				cur_window_max = i%32;
-			}
-		}
-	}
-	data = LDNS_XREALLOC(data,
-					 uint8_t,
-					 cur_data_size + cur_window_max + 3);
-	data[cur_data_size] = cur_window;
-	data[cur_data_size + 1] = cur_window_max + 1;
-	memcpy(data + cur_data_size + 2, cur_data, cur_window_max+1);
-	cur_data_size += cur_window_max + 3;
 
 	ldns_rr_push_rdf(nsec,
-	                 ldns_rdf_new_frm_data(LDNS_RDF_TYPE_NSEC,
-	                                       cur_data_size,
-	                                       data));
-
-	LDNS_FREE(bitmap);
-	LDNS_FREE(data);
+				  ldns_dnssec_create_nsec_bitmap(i_type_list,
+						type_count, LDNS_RR_TYPE_NSEC3));
 
 	return nsec;
 }
