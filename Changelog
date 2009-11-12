@@ -1,4 +1,6 @@
-1.x.x
+1.6.3	2009-11-12
+
+...
 
 1.6.2	2009-11-05
 	* Fix Makefile patch from Havard Eidnes, better install.sh usage.
