@@ -272,6 +272,8 @@ struct ldns_struct_rr
 	uint32_t	_ttl;
 	/**  Number of data fields */
 	size_t	        _rd_count;
+	/**  question rr */
+	bool		_rr_question;
 	/**  the type of the RR. A, MX etc. */
 	ldns_rr_type	_rr_type;
 	/**  Class of the resource record.  */
@@ -419,6 +421,14 @@ ldns_status ldns_rr_new_frm_fp_l(ldns_rr **rr, FILE *fp, uint32_t *default_ttl, 
 void ldns_rr_set_owner(ldns_rr *rr, ldns_rdf *owner);
 
 /**
+ * sets the question flag in the rr structure.
+ * \param[in] *rr rr to operate on
+ * \param[in] question question flag
+ * \return void
+ */
+void ldns_rr_set_question(ldns_rr *rr, bool question);
+
+/**
  * sets the ttl in the rr structure.
  * \param[in] *rr rr to operate on
  * \param[in] ttl set to this ttl
@@ -491,6 +501,13 @@ ldns_rdf* ldns_rr_rdf(const ldns_rr *rr, size_t nr);
  * \return ldns_rdf *
  */
 ldns_rdf* ldns_rr_owner(const ldns_rr *rr);
+
+/**
+ * returns the question flag of an rr structure.
+ * \param[in] *rr rr to operate on
+ * \return bool true if question
+ */
+bool ldns_rr_is_question(const ldns_rr *rr);
 
 /**
  * returns the ttl of an rr structure.

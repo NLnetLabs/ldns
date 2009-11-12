@@ -30,6 +30,7 @@ ldns_rr_new(void)
 	}
 
 	ldns_rr_set_owner(rr, NULL);
+	ldns_rr_set_question(rr, false);
 	ldns_rr_set_rd_count(rr, 0);
 	rr->_rdata_fields = NULL;
 	ldns_rr_set_class(rr, LDNS_RR_CLASS_IN);
@@ -56,6 +57,8 @@ ldns_rr_new_frm_type(ldns_rr_type t)
 		rr->_rdata_fields[i] = NULL;
 	}
 
+	ldns_rr_set_owner(rr, NULL);
+	ldns_rr_set_question(rr, false);
 	/* set the count to minimum */
 	ldns_rr_set_rd_count(rr, ldns_rr_descriptor_minimum(desc));
 	ldns_rr_set_class(rr, LDNS_RR_CLASS_IN);
@@ -323,6 +326,8 @@ ldns_rr_new_frm_str_internal(ldns_rr **newrr, const char *str,
 		}
 	}
 	LDNS_FREE(owner);
+
+	ldns_rr_set_question(new, question);
 
 	ldns_rr_set_ttl(new, ttl_val);
 	LDNS_FREE(ttl);
@@ -650,6 +655,12 @@ ldns_rr_set_owner(ldns_rr *rr, ldns_rdf *owner)
 }
 
 void
+ldns_rr_set_question(ldns_rr *rr, bool question)
+{
+   rr->_rr_question = question;
+}
+
+void
 ldns_rr_set_ttl(ldns_rr *rr, uint32_t ttl)
 {
 	rr->_ttl = ttl;
@@ -751,6 +762,12 @@ ldns_rdf *
 ldns_rr_owner(const ldns_rr *rr)
 {
 	return rr->_owner;
+}
+
+bool
+ldns_rr_is_question(const ldns_rr *rr)
+{
+   return rr->_rr_question;
 }
 
 uint32_t

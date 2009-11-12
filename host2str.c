@@ -1094,11 +1094,8 @@ ldns_rr2buffer_str(ldns_buffer *output, const ldns_rr *rr)
 			return status;
 		}
 
-		/* TTL should NOT be printed if it is a question,
-		 * but we don't know that anymore... (do we?)
-		 * if the rd count is 0 we deal with a question sec. RR
-		 */
-		if (ldns_rr_rd_count(rr) > 0) {
+		/* TTL should NOT be printed if it is a question */
+		if (!ldns_rr_is_question(rr)) {
 			ldns_buffer_printf(output, "\t%d", ldns_rr_ttl(rr));
 		}
 
