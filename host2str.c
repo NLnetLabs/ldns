@@ -1113,7 +1113,10 @@ ldns_rr2buffer_str(ldns_buffer *output, const ldns_rr *rr)
 
 		if (ldns_rr_rd_count(rr) > 0) {
 			ldns_buffer_printf(output, "\t");
+		} else if (!ldns_rr_is_question(rr)) {
+			ldns_buffer_printf(output, "\t\\# 0");
 		}
+
 		for (i = 0; i < ldns_rr_rd_count(rr); i++) {
 			status = ldns_rdf2buffer_str(output, ldns_rr_rdf(rr, i));
 			if (i < ldns_rr_rd_count(rr) - 1) {
