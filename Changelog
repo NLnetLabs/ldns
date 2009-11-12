@@ -1,8 +1,7 @@
-1.6.3	2009-11-12
+1.6.3
+	* Bugfix: allow for unknown resource records in zonefile with rdlen=0.
 
-...
-
-1.6.2	2009-11-05
+1.6.2	2009-11-12
 	* Fix Makefile patch from Havard Eidnes, better install.sh usage.
 	* Fix parse error on SOA serial of 2910532839.
 	  Fix print of ';' and readback of '\;' in names, also for '\\'.
