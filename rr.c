@@ -340,7 +340,7 @@ ldns_rr_new_frm_str_internal(ldns_rr **newrr, const char *str,
 		r_max = ldns_rr_descriptor_maximum(desc);
 		r_min = ldns_rr_descriptor_minimum(desc);
 	} else {
-		r_min = 1;
+		r_min = 0;
 		r_max = 1;
 	}
 
@@ -1822,7 +1822,7 @@ static const ldns_rdf_type type_tsig_wireformat[] = {
  */
 static ldns_rr_descriptor rdata_field_descriptors[] = {
 	/* 0 */
-	{ 0, NULL, 1, 1, type_0_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 0 },
+	{ 0, NULL, 0, 1, type_0_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 0 },
 	/* 1 */
 	{LDNS_RR_TYPE_A, "A", 1, 1, type_a_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 0 },
 	/* 2 */
