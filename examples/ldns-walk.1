@@ -11,8 +11,8 @@ ldns-walk \- Retrieve the contents of a DNSSEC signed zone
 .SH DESCRIPTION
 
 \fBldns-walk\fR is used to retrieve the contents of a DNSSEC signed zone.
-It does this through NSEC-walking (following the chain of NSEC records) and
-'guessing' the next non-existent owner name for each NSEC.
+It does this through NSEC-walking (following the chain of NSEC records)
+and 'guessing' the next non-existent owner name for each NSEC.
 
 Note that it might get stuck on some wildcard records when used through a
 caching forwarder. This problem can be circumvented by querying the
