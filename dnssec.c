@@ -738,7 +738,7 @@ ldns_dnssec_create_nsec(ldns_dnssec_name *from,
                         ldns_rr_type nsec_type)
 {
 	ldns_rr *nsec_rr;
-	ldns_rr_type types[1024];
+	ldns_rr_type types[65535];
 	size_t type_count = 0;
 	ldns_dnssec_rrsets *cur_rrsets;
 
@@ -785,7 +785,7 @@ ldns_dnssec_create_nsec3(ldns_dnssec_name *from,
 					uint8_t *salt)
 {
 	ldns_rr *nsec_rr;
-	ldns_rr_type types[1024];
+	ldns_rr_type types[65535];
 	size_t type_count = 0;
 	ldns_dnssec_rrsets *cur_rrsets;
 	ldns_status status;
@@ -863,7 +863,7 @@ ldns_create_nsec(ldns_rdf *cur_owner, ldns_rdf *next_owner, ldns_rr_list *rrs)
 	uint16_t i_type;
 
 	ldns_rr *nsec = NULL;
-    ldns_rr_type i_type_list[1024];
+    ldns_rr_type i_type_list[65535];
 	int type_count = 0;
 
 	nsec = ldns_rr_new();
