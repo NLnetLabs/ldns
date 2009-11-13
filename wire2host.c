@@ -312,7 +312,10 @@ ldns_wire2rr(ldns_rr **rr_p, const uint8_t *wire, size_t max,
 		status = ldns_wire2rdf(rr, wire, max, pos);
 
 		LDNS_STATUS_CHECK_GOTO(status, status_error);
-	}
+        ldns_rr_set_question(rr, false);
+	} else {
+        ldns_rr_set_question(rr, true);
+    }
 
 	*rr_p = rr;
 	return LDNS_STATUS_OK;
