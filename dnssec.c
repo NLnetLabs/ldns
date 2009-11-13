@@ -1100,7 +1100,7 @@ ldns_create_nsec3(ldns_rdf *cur_owner,
 	if (!emptynonterminal && !rr_list_delegation_only(cur_zone, rrs)) {
 		i_type_list[type_count] = LDNS_RR_TYPE_RRSIG;
 		type_count++;
-		i_type_list[type_count] = LDNS_RR_TYPE_NSEC;
+		i_type_list[type_count] = LDNS_RR_TYPE_NSEC3;
 		type_count++;
 	}
 
