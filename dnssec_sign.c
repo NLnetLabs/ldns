@@ -24,6 +24,7 @@ ldns_create_empty_rrsig(ldns_rr_list *rrset,
                         ldns_key *current_key)
 {
 	uint32_t orig_ttl;
+	ldns_rr_class orig_class;
 	time_t now;
 	ldns_rr *current_sig;
 	uint8_t label_count;
@@ -35,8 +36,10 @@ ldns_create_empty_rrsig(ldns_rr_list *rrset,
 	
 	/* set the type on the new signature */
 	orig_ttl = ldns_rr_ttl(ldns_rr_list_rr(rrset, 0));
+	orig_class = ldns_rr_get_class(ldns_rr_list_rr(rrset, 0));
 
 	ldns_rr_set_ttl(current_sig, orig_ttl);
+	ldns_rr_set_class(current_sig, orig_class);
 	ldns_rr_set_owner(current_sig, 
 			  ldns_rdf_clone(
 			       ldns_rr_owner(
