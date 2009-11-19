@@ -9,3 +9,4 @@ Features:
 Bugfixes:
 * Bug #279
 * Long out-standing packaging bugs (debian)
+* Lazy ABI
