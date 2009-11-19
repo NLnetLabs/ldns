@@ -1,7 +1,7 @@
 1.6.3
 	* Bugfix: allow for unknown resource records in zonefile with rdlen=0.
 	* Bugfix: also mark an RR as question if it comes from the wire
-	* Bugfix: NSEC3 bitmap contained NSEC, not NSEC3
+	* Bugfix: NSEC3 bitmap contained NSEC
 	* Bugfix: Inherit class when creating signatures
 
 1.6.2	2009-11-12
