@@ -570,6 +570,10 @@ verify_dnssec_zone(ldns_dnssec_zone *dnssec_zone,
 	} else {
 		cur_key = cur_key_rrset->rrs;
 		while (cur_key) {
+			if (verbosity >= 4) {
+				printf("DNSKEY: ");
+				ldns_rr_print(stdout, cur_key->rr);
+			}
 			ldns_rr_list_push_rr(keys, cur_key->rr);
 			cur_key = cur_key->next;
 		}
@@ -672,7 +676,7 @@ main(int argc, char **argv)
 			ldns_dnssec_zone_print(stdout, dnssec_zone);
 		}
 
-		result = verify_dnssec_zone(dnssec_zone, 
+		result = verify_dnssec_zone(dnssec_zone,
 							   ldns_rr_owner(ldns_zone_soa(z)),
 							   glue_rrs);
 
