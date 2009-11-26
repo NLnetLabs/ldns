@@ -467,10 +467,9 @@ main(int argc, char *argv[])
 		/* no server given make a resolver from /etc/resolv.conf */
 		status = ldns_resolver_new_frm_file(&res, resolv_conf_file);
 		if (status != LDNS_STATUS_OK) {
-			warning("Could not create a resolver structure, %s\n"
-					"%s: %s\n"
+			warning("Could not create a resolver structure: %s (%s)\n"
 					"Try drill @localhost if you have a resolver running on your machine.",
-				    ldns_get_errorstr_by_id(status), strerror(errno), resolv_conf_file);
+				    ldns_get_errorstr_by_id(status), resolv_conf_file);
 			result = EXIT_FAILURE;
 			goto exit;
 		}
