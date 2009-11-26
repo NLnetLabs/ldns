@@ -1014,7 +1014,7 @@ ldns_verify(ldns_rr_list *rrset, ldns_rr_list *rrsig, const ldns_rr_list *keys,
 }
 
 ldns_status
-ldns_verify_notime(ldns_rr_list *rrset, ldns_rr_list *rrsig, 
+ldns_verify_notime(ldns_rr_list *rrset, ldns_rr_list *rrsig,
 	const ldns_rr_list *keys, ldns_rr_list *good_keys)
 {
 	uint16_t i;
@@ -1031,21 +1031,23 @@ ldns_verify_notime(ldns_rr_list *rrset, ldns_rr_list *rrsig,
 	if (ldns_rr_list_rr_count(rrsig) < 1) {
 		return LDNS_STATUS_CRYPTO_NO_RRSIG;
 	}
-	
+
 	if (ldns_rr_list_rr_count(keys) < 1) {
 		verify_result = LDNS_STATUS_CRYPTO_NO_TRUSTED_DNSKEY;
 	} else {
 		for (i = 0; i < ldns_rr_list_rr_count(rrsig); i++) {
-			ldns_status s = ldns_verify_rrsig_keylist_notime(rrset, 
+			ldns_status s = ldns_verify_rrsig_keylist_notime(rrset,
 				ldns_rr_list_rr(rrsig, i), keys, good_keys);
+
 			/* try a little to get more descriptive error */
-			if(s == LDNS_STATUS_OK) {
+			if (s == LDNS_STATUS_OK) {
 				verify_result = LDNS_STATUS_OK;
-			} else if(verify_result == LDNS_STATUS_ERR)
+			} else if (verify_result == LDNS_STATUS_ERR) {
 				verify_result = s;
-			else if(s !=  LDNS_STATUS_ERR && verify_result ==
-				LDNS_STATUS_CRYPTO_NO_MATCHING_KEYTAG_DNSKEY)
+			} else if (s !=  LDNS_STATUS_ERR && verify_result ==
+				LDNS_STATUS_CRYPTO_NO_MATCHING_KEYTAG_DNSKEY) {
 				verify_result = s;
+			}
 		}
 	}
 	return verify_result;
@@ -1845,12 +1847,15 @@ ldns_verify_test_sig_key(ldns_buffer* rawsig_buf, ldns_buffer* verify_buf,
 			   what to do? */
 			return LDNS_STATUS_ERR;
 		}
-		
+
 		if (sig_algo == ldns_rdf2native_int8(ldns_rr_rdf(key, 2))) {
 			result = ldns_verify_rrsig_buffers(rawsig_buf, 
 				verify_buf, key_buf, sig_algo);
+		} else {
+			/* No keys with the corresponding algorithm are found */
+			result = LDNS_STATUS_CRYPTO_NO_MATCHING_KEYTAG_DNSKEY;
 		}
-		
+
 		ldns_buffer_free(key_buf); 
 		return result;
 	}
@@ -1955,6 +1960,8 @@ ldns_verify_rrsig_keylist_notime(ldns_rr_list *rrset,
 				ldns_rr_list_free(validkeys);
 				return LDNS_STATUS_MEM_ERR;
 			}
+			/* reset no keytag match error */
+			result = LDNS_STATUS_ERR;
 		}
 		if (result == LDNS_STATUS_ERR) {
 			result = status;

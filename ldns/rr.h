@@ -272,8 +272,6 @@ struct ldns_struct_rr
 	uint32_t	_ttl;
 	/**  Number of data fields */
 	size_t	        _rd_count;
-	/**  question rr */
-	bool		_rr_question;
 	/**  the type of the RR. A, MX etc. */
 	ldns_rr_type	_rr_type;
 	/**  Class of the resource record.  */
@@ -281,6 +279,10 @@ struct ldns_struct_rr
 	/* everything in the rdata is in network order */
 	/**  The array of rdata's */
 	ldns_rdf	 **_rdata_fields;
+	/**  question rr [it would be nicer if thous is after _rd_count]
+		 ABI change: Fix this in next major release
+	 */
+	bool		_rr_question;
 };
 typedef struct ldns_struct_rr ldns_rr;
 
