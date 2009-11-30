@@ -726,7 +726,6 @@ void ldns_rr_list_sort(ldns_rr_list *unsorted);
  *         +1 if rr2 comes before rr1
  */
 int ldns_rr_compare(const ldns_rr *rr1, const ldns_rr *rr2);
-int ldns_rr_compare_nsec3(const ldns_rr *rr1, const ldns_rr *rr2);
 
 /**
  * compares two rrs, up to the rdata.

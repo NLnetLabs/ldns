@@ -187,15 +187,13 @@ ldns_rbnode_t *ldns_rbtree_previous(ldns_rbnode_t *rbtree);
  * of the name tree and return a new tree containing those
  * elements
  */
-ldns_rbtree_t *ldns_dnssec_rbtree_split(ldns_rbtree_t *tree, 
-								size_t elements);
+ldns_rbtree_t *ldns_rbtree_split(ldns_rbtree_t *tree, size_t elements);
 
 /**
  * add all node from the second tree to the first (removing them from the
  * second), and fix up nsec(3)s if present
  */
-void ldns_dnssec_rbtree_join(ldns_rbtree_t *tree1,
-					    ldns_rbtree_t *tree2);
+void ldns_rbtree_join(ldns_rbtree_t *tree1, ldns_rbtree_t *tree2);
 
 /**
  * Call with node=variable of struct* with rbnode_t as first element.

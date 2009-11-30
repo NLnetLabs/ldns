@@ -58,13 +58,6 @@ ldns_status ldns_str2rdf_int32(ldns_rdf **rd, const char *longstr);
  */
 ldns_status ldns_str2rdf_time(ldns_rdf **rd, const char *time);
 
-/* convert string with NSEC3 vars to wireformat) 
- * \param[in] rd the rdf where to put the data
- * \param[in] str the string to be converted
- * return ldns_status
- */
-ldns_status ldns_str2rdf_nsec3_vars(ldns_rdf **rd, const char *nsec3_vars);
-
 /* convert string with NSEC3 salt to wireformat) 
  * \param[in] rd the rdf where to put the data
  * \param[in] str the string to be converted
@@ -158,14 +151,6 @@ ldns_status ldns_str2rdf_type(ldns_rdf **rd, const char *str);
  * \return ldns_status
  */
 ldns_status ldns_str2rdf_class(ldns_rdf **rd, const char *str);
-
-/**
- * convert string with a CERT RR into wireformat
- * \param[in] rd the rdf where to put the data
- * \param[in] str the string to be converted
- * \return ldns_status
- */
-ldns_status ldns_str2rdf_cert(ldns_rdf **rd, const char *str);
 
 /**
  * convert an certificate algorithm value into wireformat

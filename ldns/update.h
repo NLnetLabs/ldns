@@ -66,13 +66,13 @@ uint16_t ldns_update_upcount(const ldns_pkt *p);
  * \param[in] p the packet
  * \return the ad count
  */
-uint16_t ldns_update_adcount(const ldns_pkt *p);
+uint16_t ldns_update_ad(const ldns_pkt *p);
 /**
  * Set the zo count
  * \param[in] p the packet
  * \param[in] c the zo count to set
  */
-void ldns_update_set_zocount(ldns_pkt *p, uint16_t c);
+void ldns_update_set_zo(ldns_pkt *p, uint16_t c);
 /**
  * Set the pr count
  * \param[in] p the packet

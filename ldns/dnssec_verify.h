@@ -451,17 +451,6 @@ ldns_status ldns_verify_rrsig_keylist_notime(ldns_rr_list *rrset,
 							   ldns_rr_list *good_keys);
 
 /**
- * convert dsa data
- *
- * \param[in] target_buffer Buffer to place the result in
- * \param[in] sig_rdf the rdata containing the DSA signature
- * \return LDNS_STATUS_OK on success, error code otherwise
- */
-ldns_status
-ldns_convert_dsa_rrsig_rdata(ldns_buffer *target_buffer,
-                             ldns_rdf *sig_rdf);
-
-/**
  * verify an rrsig with 1 key
  * \param[in] rrset the rrset
  * \param[in] rrsig the rrsig to verify

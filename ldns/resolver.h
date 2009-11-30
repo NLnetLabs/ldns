@@ -348,14 +348,6 @@ void ldns_resolver_incr_nameserver_count(ldns_resolver *r);
 void ldns_resolver_dec_nameserver_count(ldns_resolver *r);
 
 /**
- * Set the resolver's nameserver list directly. Note the
- * rr's should be A or AAAA 
- * \param[in] r the resolver
- * \param[in] ns the rr's to use as nameservers
- */
-void ldns_resolver_set_nameserver_rrlist(ldns_resolver *r, ldns_rr_list *ns);
-
-/**
  * Set the resolver's nameserver count directly.
  * \param[in] r the resolver
  * \param[in] c the nameserver count
