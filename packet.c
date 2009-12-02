@@ -861,6 +861,7 @@ ldns_pkt_query_new_frm_str(ldns_pkt **p, const char *name, ldns_rr_type rr_type,
 		ldns_rr_set_owner(question_rr, name_rdf);
 		ldns_rr_set_type(question_rr, rr_type);
 		ldns_rr_set_class(question_rr, rr_class);
+                ldns_rr_set_question(question_rr, true);
 		
 		ldns_pkt_push_rr(packet, LDNS_SECTION_QUESTION, question_rr);
 	} else {
@@ -911,6 +912,7 @@ ldns_pkt_query_new(ldns_rdf *rr_name, ldns_rr_type rr_type, ldns_rr_class rr_cla
 	ldns_rr_set_owner(question_rr, rr_name);
 	ldns_rr_set_type(question_rr, rr_type);
 	ldns_rr_set_class(question_rr, rr_class);
+        ldns_rr_set_question(question_rr, true);
 	
 	packet->_tsig_rr = NULL;
 	
