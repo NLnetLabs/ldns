@@ -437,6 +437,20 @@ ldns_rr_list *ldns_pkt_authority(const ldns_pkt *p);
  * \return the section
  */
 ldns_rr_list *ldns_pkt_additional(const ldns_pkt *p);
+/**
+ * Return the packet's question, answer, authority and additional sections
+ * concatenated, in a new rr_list clone.
+ * \param[in] p the packet
+ * \return the rrs
+ */
+ldns_rr_list *ldns_pkt_all(const ldns_pkt *p);
+/**
+ * Return the packet's answer, authority and additional sections concatenated, 
+ * in a new rr_list clone.  Like ldns_pkt_all but without the questions.
+ * \param[in] p the packet
+ * \return the rrs except the question rrs
+ */
+ldns_rr_list *ldns_pkt_all_noquestion(const ldns_pkt *p);
 
 /**
  * return all the rr_list's in the packet. Clone the lists, instead
