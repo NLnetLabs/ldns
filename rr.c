@@ -477,7 +477,7 @@ ldns_rr_new_frm_str_internal(ldns_rr **newrr, const char *str,
 									rd);
 
 							/* check if the origin should be used or concatenated */
-							if (ldns_rdf_size(r) > 1 && ldns_rdf_data(r)[0] == 1
+							if (r && ldns_rdf_size(r) > 1 && ldns_rdf_data(r)[0] == 1
 								&& ldns_rdf_data(r)[1] == '@') {
 								ldns_rdf_deep_free(r);
 								if (origin) {
@@ -490,7 +490,7 @@ ldns_rr_new_frm_str_internal(ldns_rr **newrr, const char *str,
 										r = ldns_rdf_new_frm_str(LDNS_RDF_TYPE_DNAME, ".");
 									}
 								}
-							} else if (rd_strlen >= 1 && !ldns_dname_str_absolute(rd) && origin) {
+							} else if (r && rd_strlen >= 1 && !ldns_dname_str_absolute(rd) && origin) {
 								if (ldns_dname_cat(r, origin) != LDNS_STATUS_OK) {
 									return LDNS_STATUS_ERR;
 								}
