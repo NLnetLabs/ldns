@@ -399,7 +399,12 @@ ldns_str2rdf_str(ldns_rdf **rd, const char *str)
 	data = LDNS_XMALLOC(uint8_t, strlen(str) + 1);
 	i = 1;
 	for (str_i = 0; str_i < strlen(str); str_i++) {
-		data[i] = (uint8_t) str[str_i];
+		if (str[str_i] == '\\') {
+			/* octet value or literal char */
+			str_i += (size_t) parse_escape((uint8_t*) &str[str_i], (uint8_t*) &data[i]);
+		} else {
+			data[i] = (uint8_t) str[str_i];
+		}
 		i++;
 	}
 	data[0] = i - 1;

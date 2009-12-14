@@ -355,7 +355,10 @@ ldns_rdf2buffer_str_str(ldns_buffer *output, const ldns_rdf *rdf)
 	for (i = 1; i <= length; ++i) {
 		char ch = (char) data[i];
 		if (isprint((int)ch) || ch=='\t') {
-			ldns_buffer_printf(output, "%c", ch);
+			if (ch=='\"')
+				ldns_buffer_printf(output, "\\%c", ch);
+			else
+				ldns_buffer_printf(output, "%c", ch);
 		} else {
 			ldns_buffer_printf(output, "\\%03u", (unsigned) ch);
 		}
