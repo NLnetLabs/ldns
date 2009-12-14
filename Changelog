@@ -1,5 +1,6 @@
 1.6.4
 	* Bugfix: parse PTR target of .tomhendrikx.nl with error not crash.
+	* Bugfix: handle escaped characters in TXT rdata.
 
 1.6.3	2009-12-04
 	* Bugfix: allow for unknown resource records in zonefile with rdlen=0.
