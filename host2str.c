@@ -344,6 +344,14 @@ ldns_rdf2buffer_str_aaaa(ldns_buffer *output, const ldns_rdf *rdf)
 	return ldns_buffer_status(output);
 }
 
+static bool
+ldns_needs_escape_char(char c)
+{
+	if (c == '\"' || c == ';' || c == '@' || c == '(' || c == ')')
+		return true;
+	return false;
+}
+
 ldns_status
 ldns_rdf2buffer_str_str(ldns_buffer *output, const ldns_rdf *rdf)
 {
@@ -355,6 +363,8 @@ ldns_rdf2buffer_str_str(ldns_buffer *output, const ldns_rdf *rdf)
 	for (i = 1; i <= length; ++i) {
 		char ch = (char) data[i];
 		if (isprint((int)ch) || ch=='\t') {
+			if (ldns_needs_escape_char(ch))
+				ldns_buffer_printf(output, "\\");
 			ldns_buffer_printf(output, "%c", ch);
 		} else {
 			ldns_buffer_printf(output, "\\%03u", (unsigned) ch);
