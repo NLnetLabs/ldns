@@ -56,7 +56,7 @@ ldns_fget_token_l(FILE *f, char *token, const char *delim, size_t limit, int *li
 		quoted = 1;
 	}
 	while ((c = getc(f)) != EOF) {
-		if (c == '(' && prev_c != '\\') {
+		if (c == '(' && prev_c != '\\' && !quoted) {
 			/* this only counts for non-comments */
 			if (com == 0) {
 				p++;
@@ -65,7 +65,7 @@ ldns_fget_token_l(FILE *f, char *token, const char *delim, size_t limit, int *li
 			continue;
 		}
 
-		if (c == ')' && prev_c != '\\') {
+		if (c == ')' && prev_c != '\\' && !quoted) {
 			/* this only counts for non-comments */
 			if (com == 0) {
 				p--;
@@ -232,7 +232,7 @@ ldns_bget_token(ldns_buffer *b, char *token, const char *delim, size_t limit)
 	}
 
 	while ((c = ldns_bgetc(b)) != EOF) {
-		if (c == '(' && lc != '\\') {
+		if (c == '(' && lc != '\\' && !quoted) {
 			/* this only counts for non-comments */
 			if (com == 0) {
 				p++;
@@ -241,7 +241,7 @@ ldns_bget_token(ldns_buffer *b, char *token, const char *delim, size_t limit)
 			continue;
 		}
 
-		if (c == ')' && lc != '\\') {
+		if (c == ')' && lc != '\\' && !quoted) {
 			/* this only counts for non-comments */
 			if (com == 0) {
 				p--;
