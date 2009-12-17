@@ -6,6 +6,7 @@
 	  Declared ldns_pkt_all and ldns_pkt_all_noquestion so swig sees them.
 	* Bugfix: parse PTR target of .tomhendrikx.nl with error not crash.
 	* Bugfix: handle escaped characters in TXT rdata.
+	* Bugfix: TSIG: keys longer than B bytes are now first hashed using H
 
 1.6.3	2009-12-04
 	* Bugfix: allow for unknown resource records in zonefile with rdlen=0.
