@@ -16,13 +16,7 @@
 #ifdef HAVE_SSL
 #include <openssl/hmac.h>
 #include <openssl/md5.h>
-
-#define LDNS_TSIG_MD5_BLOCK_LENGTH 64
-#define LDNS_TSIG_SHA1_BLOCK_LENGTH 64
-#define LDNS_TSIG_SHA256_BLOCK_LENGTH 64
-
 #endif /* HAVE_SSL */
-
 
 char *
 ldns_tsig_algorithm(ldns_tsig_credentials *tc)
@@ -130,34 +124,23 @@ ldns_tsig_prepare_pkt_wire(uint8_t *wire, size_t wire_len, size_t *result_len)
 
 #ifdef HAVE_SSL
 static const EVP_MD *
-ldns_digest_function(char *name, int* blocklen, int* digestlen)
+ldns_digest_function(char *name)
 {
 	/* these are the mandatory algorithms from RFC4635 */
 	/* The optional algorithms are not yet implemented */
 	if (strlen(name) == 12 && strncasecmp(name, "hmac-sha256.", 11) == 0) {
 #ifdef HAVE_EVP_SHA256
-		*blocklen = LDNS_TSIG_SHA256_BLOCK_LENGTH;
-		*digestlen = SHA256_DIGEST_LENGTH;
 		return EVP_sha256();
 #else
-		*digestlen = 0;
-		*blocklen = 0;
 		return NULL;
 #endif
-	} else if (strlen(name) == 10 && strncasecmp(name, "hmac-sha1.", 9) == 0) {
-		*blocklen = LDNS_TSIG_SHA1_BLOCK_LENGTH;
-		*digestlen = SHA_DIGEST_LENGTH;
+	} else if (strlen(name) == 10 && strncasecmp(name, "hmac-sha1.", 9) == 0)
 		return EVP_sha1();
-	} else if (strlen(name) == 25 && strncasecmp(name,
-		     "hmac-md5.sig-alg.reg.int.", 25) == 0) {
-		*blocklen = LDNS_TSIG_MD5_BLOCK_LENGTH;
-		*digestlen = MD5_DIGEST_LENGTH;
+	else if (strlen(name) == 25 && strncasecmp(name,
+		     "hmac-md5.sig-alg.reg.int.", 25) == 0)
 		return EVP_md5();
-	}
-
-	*blocklen = 0;
-	*digestlen = 0;
-	return NULL;
+	else
+		return NULL;
 }
 #endif
 
@@ -173,10 +156,7 @@ ldns_tsig_mac_new(ldns_rdf **tsig_mac, uint8_t *pkt_wire, size_t pkt_wire_size,
 	unsigned char *mac_bytes;
 	unsigned char *key_bytes;
 	int key_size;
-	int block_len = LDNS_TSIG_MD5_BLOCK_LENGTH;
-	int digest_len = MD5_DIGEST_LENGTH;
 	const EVP_MD *digester;
-	EVP_MD_CTX ectx;
 	char *algorithm_name;
 	unsigned int md_len = EVP_MAX_MD_SIZE;
 	ldns_rdf *result = NULL;
@@ -218,16 +198,9 @@ ldns_tsig_mac_new(ldns_rdf **tsig_mac, uint8_t *pkt_wire, size_t pkt_wire_size,
 	mac_bytes = LDNS_XMALLOC(unsigned char, md_len);
 	memset(mac_bytes, 0, md_len);
 
-	digester = ldns_digest_function(algorithm_name, &block_len, &digest_len);
+	digester = ldns_digest_function(algorithm_name);
 
 	if (digester) {
-		if (key_size > block_len) {
-			EVP_DigestInit(&ectx, digester);
-			EVP_DigestUpdate(&ectx, (const void*) key_bytes, key_size);
-			EVP_DigestFinal(&ectx, key_bytes, NULL);
-			key_size = digest_len;
-		}
-
 		(void) HMAC(digester, key_bytes, key_size, (void *)wireformat,
 		            (size_t) wiresize, mac_bytes + 2, &md_len);
 
