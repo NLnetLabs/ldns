@@ -14,6 +14,18 @@ datadir		= @datadir@
 libdir		= @libdir@
 includedir	= @includedir@
 doxygen		= @doxygen@
+pywrapdir       = ${srcdir}/contrib/python
+swig    	= @swig@
+python_site	=@PYTHON_SITE_PKG@
+pyldns_inst	=@PYLDNS@
+pyldns_uninst	=@PYLDNS@
+ifeq "$(pyldns_inst)" "pyldns"
+   pyldns_inst=install-@PYLDNS@
+   pyldns_uninst=uninstall-@PYLDNS@
+else
+   pyldns_inst=
+   pyldns_uninst=
+endif
 glibtool	= @libtool@
 libtool		= ./libtool
 ifdef glibtool
@@ -21,8 +33,12 @@ libtool		= $(glibtool)
 endif
 
 CC 		= @CC@
-CPPFLAGS	= -I. -I$(srcdir) @CPPFLAGS@ @DEFS@
-CFLAGS 		= -I. -I$(srcdir) @CFLAGS@
+ifeq "$(srcdir)" "."
+  CPPFLAGS	= $(strip -I. @CPPFLAGS@ @DEFS@)
+else
+  CPPFLAGS	= $(strip -I. -I$(srcdir) @CPPFLAGS@ @DEFS@)
+endif
+CFLAGS 		= $(strip @CFLAGS@)
 LDFLAGS		= @LDFLAGS@
 LIBS 		= @LIBS@
 LIBOBJS		= @LIBOBJS@
@@ -77,17 +93,17 @@ ALL_SOURCES	=	$(LIBDNS_SOURCES)
 
 COMPILE		= $(CC) $(CPPFLAGS) $(CFLAGS)
 COMP_LIB	= $(LIBTOOL) --mode=compile $(CC) $(CPPFLAGS) $(CFLAGS)
-LINK		= $(CC) $(CFLAGS) $(LDFLAGS) $(LIBS)
-LINK_LIB	= $(LIBTOOL) --mode=link $(CC) $(CFLAGS) $(LDFLAGS) $(LIBS) -version-number $(version_info) -no-undefined
+LINK		= $(CC) $(strip $(CFLAGS) $(LDFLAGS) $(LIBS))
+LINK_LIB	= $(LIBTOOL) --mode=link $(CC) $(strip $(CFLAGS) $(LDFLAGS) $(LIBS) -version-number $(version_info) -no-undefined)
 
 %.o:    $(srcdir)/%.c $(LIBDNS_HEADERS) ldns/util.h ldns/config.h
-	$(COMP_LIB) -c $> $<
+	$(COMP_LIB) -c $<
 
-.PHONY:	clean realclean docclean manpages doc lint all lib
-.PHONY: install uninstall install-doc uninstall-doc 
-.PHONY: install-h uninstall-h install-lib uninstall-lib 
+.PHONY:	clean realclean docclean manpages doc lint all lib pyldns
+.PHONY: install uninstall install-doc uninstall-doc uninstall-pyldns
+.PHONY: install-h uninstall-h install-lib uninstall-lib install-pyldns
 
-all:		copy-headers lib linktest manpages
+all:		copy-headers lib linktest manpages @PYLDNS@
 
 linktest:	$(srcdir)/linktest.c $(LIBDNS_HEADERS) ldns/util.h ldns/config.h libldns.la
 		$(LIBTOOL) --mode=link $(CC) $(srcdir)/linktest.c $(CPPFLAGS) $(CFLAGS) -lldns $(LIBS) -o linktest
@@ -129,9 +145,20 @@ manpages:	$(srcdir)/doc/function_manpages
 		cat $(srcdir)/ldns/*.h | $(srcdir)/doc/doxyparse.pl -m $(srcdir)/doc/function_manpages 2>&1 | \
 		grep -v ^doxygen | grep -v ^cat  > doc/ldns_manpages
 
-install:	install-h install-lib install-config install-manpages
+pyldns:		_ldns.la
 
-uninstall:	uninstall-manpages uninstall-h uninstall-lib
+$(pywrapdir)/ldns_wrapper.c:	$(pywrapdir)/ldns.i $(wildcard $(pywrapdir)/*.i) $(LIBDNS_HEADERS) ldns/util.h ldns/config.h
+	$(swig) -python -o $@ $(CPPFLAGS) $<
+
+ldns_wrapper.lo:	$(pywrapdir)/ldns_wrapper.c $(LIBDNS_HEADERS) ldns/util.h ldns/config.h
+	$(COMP_LIB) -I./include/ldns -c $< -o $@
+
+_ldns.la: ldns_wrapper.lo libldns.la 
+	$(LIBTOOL) --tag=CC --mode=link $(CC) $(strip $(CFLAGS) $(LDFLAGS) -module -version-number $(version_info) -no-undefined -o $@ $< -rpath $(python_site) -L. -L.libs -lldns $(LIBS))
+
+install:	install-h install-lib install-config install-manpages $(pyldns_inst)
+
+uninstall:	uninstall-manpages uninstall-h uninstall-lib $(pyldns_uninst)
 
 destclean:	uninstall
 
@@ -174,6 +201,15 @@ uninstall-lib:
 		$(LIBTOOL) --mode=uninstall rm -f $(DESTDIR)$(libdir)/libldns.la
 		rmdir -p $(DESTDIR)$(libdir) || echo "ok, dir already gone"
 
+install-pyldns: @PYLDNS@
+		$(INSTALL) -m 755 -d $(python_site)/ldns
+		$(INSTALL) -c -m 755 $(pywrapdir)/ldns.py $(python_site)/ldns/__init__.py
+		$(INSTALL) -c -m 755 _ldns.* $(python_site)/ldns/
+
+uninstall-pyldns:	
+		rm -f $(python_site)/ldns/*
+		rmdir -p $(python_site)/ldns
+
 clean:
 	rm -f *.o *.d *.lo
 	rm -f *~
@@ -186,6 +222,7 @@ clean:
 	rm -rf lib
 	rm -rf .libs
 	rm -f linktest
+	rm -f $(pywrapdir)/ldns_wrapper.c $(pywrapdir)/ldns.py
 
 distclean: clean docclean libclean
 	rm -f ltmain.sh
@@ -216,6 +253,8 @@ libclean:
 	$(LIBTOOL) --mode clean rm -f libldns.a
 	$(LIBTOOL) --mode clean rm -f libldns.so
 	$(LIBTOOL) --mode clean rm -f libldns.so.*
+	$(LIBTOOL) --mode clean rm -f _ldns.la
+	rm -rf ldns/net.h ldns/util.h ldns/config.h
 	rm -rf *.lo
 	rm -rf .libs
 	rm -rf libtool
@@ -276,10 +315,10 @@ snprintf$U.o:	$(srcdir)/compat/snprintf.c
 fake-rfc2553$U.o:	$(srcdir)/compat/fake-rfc2553.c
 	$(COMP_LIB) -c $(srcdir)/compat/fake-rfc2553.c -o $@
 
-gmtime_r$U.o:   $(srcdir)/compat/gmtime_r.c
+gmtime_r$U.o:	$(srcdir)/compat/gmtime_r.c
 	$(COMP_LIB) -c $(srcdir)/compat/gmtime_r.c -o $@
 
-ctime_r$U.o:   $(srcdir)/compat/ctime_r.c
+ctime_r$U.o:	$(srcdir)/compat/ctime_r.c
 	$(COMP_LIB) -c $(srcdir)/compat/ctime_r.c -o $@
 
 # Automatic dependencies.

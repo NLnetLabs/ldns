@@ -75,6 +75,41 @@ AC_CHECK_TYPE(uint64_t, unsigned long long)
 # my own checks
 AC_CHECK_PROG(doxygen, doxygen, doxygen)
 
+# check for python
+AC_ARG_WITH(python, AC_HELP_STRING([--with-pyldns], 
+ [generate python library, or --without-pyldns to disable Python support.]), 
+ [ ],[ withval="yes" ])
+ldns_have_python=no
+if test x_$withval != x_no; then
+   sinclude(acx_python.m4)
+   AC_PYTHON_DEVEL
+   if test ! -z "$PYTHON_VERSION"; then
+        if test `$PYTHON -c "print '$PYTHON_VERSION' >= '2.4.0'"` = "False"; then
+                AC_ERROR([Python version >= 2.4.0 is required])
+        fi
+	# Have Python
+	AC_DEFINE(HAVE_PYTHON,1,[Define if you have Python libraries and header files.])
+	LIBS="$PYTHON_LDFLAGS $LIBS"
+	CPPFLAGS="$CPPFLAGS $PYTHON_CPPFLAGS"
+	ldns_have_python=yes
+   fi
+
+   # check for swig
+   if test x_$ldns_have_python != x_no; then
+	sinclude(ac_pkg_swig.m4)
+	AC_PROG_SWIG
+	if test ! -x "$SWIG"; then
+		AC_ERROR([failed to find swig tool, install it, or do not build pyldns])
+	else
+		AC_DEFINE(HAVE_SWIG,1,[Define if you have Swig libraries and header files.])
+		AC_SUBST(PYLDNS, "pyldns")
+		AC_SUBST(swig, "$SWIG")
+	fi
+   else
+	AC_MSG_RESULT([*** don't have Python, skipping Swig, no pyldns ***])
+   fi
+fi
+
 ACX_WITH_SSL_OPTIONAL
 
 AC_CHECK_FUNCS([EVP_sha256])

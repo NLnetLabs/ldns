@@ -1,4 +1,9 @@
 1.6.4
+	* Imported pyldns contribution by Zdenek Vasicek and Karel Slany.
+	  Changed its configure and Makefile to fit into ldns.
+	  Added its dname_* methods to the rdf_* class (as is the ldns API).
+	  Changed swig destroy of ldns_buffer class to ldns_buffer_free.
+	  Declared ldns_pkt_all and ldns_pkt_all_noquestion so swig sees them.
 	* Bugfix: parse PTR target of .tomhendrikx.nl with error not crash.
 	* Bugfix: handle escaped characters in TXT rdata.
 
