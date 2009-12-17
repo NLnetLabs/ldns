@@ -76,9 +76,9 @@ AC_CHECK_TYPE(uint64_t, unsigned long long)
 AC_CHECK_PROG(doxygen, doxygen, doxygen)
 
 # check for python
-AC_ARG_WITH(python, AC_HELP_STRING([--with-pyldns], 
+AC_ARG_WITH(pyldns, AC_HELP_STRING([--with-pyldns], 
  [generate python library, or --without-pyldns to disable Python support.]), 
- [ ],[ withval="yes" ])
+ [],[ withval="no" ])
 ldns_have_python=no
 if test x_$withval != x_no; then
    sinclude(acx_python.m4)
