@@ -105,6 +105,10 @@ ldns_wire2dname(ldns_rdf **dname, const uint8_t *wire, size_t max, size_t *pos)
 			return LDNS_STATUS_LABEL_OVERFLOW;
 		}
 
+		/* check space for labelcount itself */
+		if (dname_pos + 1 > LDNS_MAX_DOMAINLEN) {
+			return LDNS_STATUS_DOMAINNAME_OVERFLOW;
+		}
 		tmp_dname[dname_pos] = label_size;
 		if (label_size > 0) {
 			dname_pos++;

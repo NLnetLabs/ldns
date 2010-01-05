@@ -6,6 +6,8 @@
 	  Declared ldns_pkt_all and ldns_pkt_all_noquestion so swig sees them.
 	* Bugfix: parse PTR target of .tomhendrikx.nl with error not crash.
 	* Bugfix: handle escaped characters in TXT rdata.
+	* bug292: no longer crash on malformed domain names where a label is
+	  on position 255, which was a buffer overflow by one.
 
 1.6.3	2009-12-04
 	* Bugfix: allow for unknown resource records in zonefile with rdlen=0.
