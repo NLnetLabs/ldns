@@ -456,17 +456,12 @@ ldns_pkt_set_random_id(ldns_pkt *packet)
 {
 	uint16_t rid = 0;
 #ifdef HAVE_SSL
-	unsigned char *rb;
-	rb = LDNS_XMALLOC(unsigned char, 2);
-	if (RAND_bytes(rb, 2) == 1) {
-		rid = ldns_read_uint16(rb);
-	}
-	LDNS_FREE(rb);
-#endif
-	if (rid == 0) {
+	if (RAND_bytes((unsigned char*)&rid, 2) != 1) {
 		rid = (uint16_t) random();
 	}
-
+#else
+	rid = (uint16_t) random();
+#endif
 	ldns_pkt_set_id(packet, rid);
 }
 

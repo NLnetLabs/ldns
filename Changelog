@@ -8,6 +8,12 @@
 	* Bugfix: handle escaped characters in TXT rdata.
 	* bug292: no longer crash on malformed domain names where a label is
 	  on position 255, which was a buffer overflow by one.
+	* Fix ldns_get_rr_list_hosts_frm_fp_l (strncpy to strlcpy change),
+	  which fixes resolv.conf reading badly terminated string buffers.
+	* Fix ldns_pkt_set_random_id to be more random, and a little faster,
+	  it did not do value 0 statistically correctly.
+	* Fix ldns_rdf2native_sockaddr_storage to set sockaddr type to zeroes,
+	  for portability.
 
 1.6.3	2009-12-04
 	* Bugfix: allow for unknown resource records in zonefile with rdlen=0.
