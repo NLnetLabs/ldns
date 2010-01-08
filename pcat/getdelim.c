@@ -1,6 +1,5 @@
-#ifndef HAVE_GETDELIM
-
 #include "config.h"
+#ifndef HAVE_GETDELIM
 
 #define GETDELIM_BUFFER 128
 
