@@ -19,7 +19,7 @@
 ssize_t getdelim(char **lineptr, size_t *n, int delim, FILE *stream);
 #endif
 
-#ifndef strndup
+#ifndef HAVE_STRNDUP
 static char *
 strndup(const char *s, size_t n)
 {

@@ -267,6 +267,7 @@ AC_CHECK_LIB(pcap, pcap_open_offline,, [
 
 AC_CHECK_FUNCS(getdelim)
 AC_CHECK_FUNCS(isblank)
+AC_CHECK_FUNCS(strndup)
 
 AH_BOTTOM([
 
