@@ -902,8 +902,8 @@ ldns_nsec3_hash_name(ldns_rdf *name,
 				 uint8_t salt_length,
 				 uint8_t *salt)
 {
-	char *orig_owner_str;
 	size_t hashed_owner_str_len;
+        ldns_rdf *cann;
 	ldns_rdf *hashed_owner;
 	unsigned char *hashed_owner_str;
 	char *hashed_owner_b32;
@@ -915,15 +915,21 @@ ldns_nsec3_hash_name(ldns_rdf *name,
 	ldns_status status;
 
 	/* prepare the owner name according to the draft section bla */
-	orig_owner_str = ldns_rdf2str(name);
+        cann = ldns_rdf_clone(name);
+        if(!cann) {
+		fprintf(stderr, "Memory error\n");
+		return NULL;
+        }
+        ldns_dname2canonical(cann);
 
 	/* TODO: mnemonic list for hash algs SHA-1, default to 1 now (sha1) */
 	algorithm = algorithm;
 
-	hashed_owner_str_len = salt_length + ldns_rdf_size(name);
+	hashed_owner_str_len = salt_length + ldns_rdf_size(cann);
 	hashed_owner_str = LDNS_XMALLOC(unsigned char, hashed_owner_str_len);
-	memcpy(hashed_owner_str, ldns_rdf_data(name), ldns_rdf_size(name));
-	memcpy(hashed_owner_str + ldns_rdf_size(name), salt, salt_length);
+	memcpy(hashed_owner_str, ldns_rdf_data(cann), ldns_rdf_size(cann));
+	memcpy(hashed_owner_str + ldns_rdf_size(cann), salt, salt_length);
+        ldns_rdf_deep_free(cann);
 
 	for (cur_it = iterations + 1; cur_it > 0; cur_it--) {
 		(void) ldns_sha1((unsigned char *) hashed_owner_str,
@@ -934,27 +940,24 @@ ldns_nsec3_hash_name(ldns_rdf *name,
 		hashed_owner_str = LDNS_XMALLOC(unsigned char, hashed_owner_str_len);
 		if (!hashed_owner_str) {
 			fprintf(stderr, "Memory error\n");
-			abort();
+		        return NULL;
 		}
 		memcpy(hashed_owner_str, hash, LDNS_SHA1_DIGEST_LENGTH);
 		memcpy(hashed_owner_str + LDNS_SHA1_DIGEST_LENGTH, salt, salt_length);
 		hashed_owner_str_len = LDNS_SHA1_DIGEST_LENGTH + salt_length;
 	}
 
-	LDNS_FREE(orig_owner_str);
 	LDNS_FREE(hashed_owner_str);
 	hashed_owner_str = hash;
 	hashed_owner_str_len = LDNS_SHA1_DIGEST_LENGTH;
 
 	hashed_owner_b32 = LDNS_XMALLOC(char,
-							  ldns_b32_ntop_calculate_size(
-							       hashed_owner_str_len) + 1);
-	hashed_owner_b32_len =
-		(size_t) ldns_b32_ntop_extended_hex((uint8_t *) hashed_owner_str,
-									 hashed_owner_str_len,
-									 hashed_owner_b32,
-									 ldns_b32_ntop_calculate_size(
-										 hashed_owner_str_len));
+                  ldns_b32_ntop_calculate_size(hashed_owner_str_len) + 1);
+        hashed_owner_b32_len = (size_t) ldns_b32_ntop_extended_hex(
+                (uint8_t *) hashed_owner_str,
+                hashed_owner_str_len,
+                hashed_owner_b32,
+                ldns_b32_ntop_calculate_size(hashed_owner_str_len));
 	if (hashed_owner_b32_len < 1) {
 		fprintf(stderr, "Error in base32 extended hex encoding ");
 		fprintf(stderr, "of hashed owner name (name: ");

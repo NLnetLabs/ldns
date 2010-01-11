@@ -14,6 +14,7 @@
 	  it did not do value 0 statistically correctly.
 	* Fix ldns_rdf2native_sockaddr_storage to set sockaddr type to zeroes,
 	  for portability.
+	* bug295: nsec3-hash routine no longer case sensitive.
 
 1.6.3	2009-12-04
 	* Bugfix: allow for unknown resource records in zonefile with rdlen=0.
