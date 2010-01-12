@@ -1411,7 +1411,7 @@ ldns_dnssec_verify_denial_nsec3(ldns_rr *rr,
 	ldns_status result = LDNS_STATUS_DNSSEC_NSEC_RR_NOT_COVERED;
 
 	rrsigs = rrsigs;
-	
+
 	zone_name = ldns_dname_left_chop(ldns_rr_owner(ldns_rr_list_rr(nsecs,0)));
 
 	/* section 8.4 */
@@ -1425,7 +1425,7 @@ ldns_dnssec_verify_denial_nsec3(ldns_rr *rr,
 		(void) ldns_dname_cat(wildcard, closest_encloser);
 
 		for (i = 0; i < ldns_rr_list_rr_count(nsecs); i++) {
-			hashed_wildcard_name = 
+			hashed_wildcard_name =
 				ldns_nsec3_hash_name_frm_nsec3(ldns_rr_list_rr(nsecs, 0),
 										 wildcard
 										 );

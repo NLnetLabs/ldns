@@ -166,6 +166,9 @@ ldns_dnssec_nsec3_closest_encloser(ldns_rdf *qname,
 			flag = true;
 		} else if (exact_match_found && flag) {
 			result = ldns_rdf_clone(sname);
+			/* RFC 5155: 8.3. 2.** "The proof is complete" */
+			ldns_rdf_deep_free(hashed_sname);
+			goto done;
 		} else if (exact_match_found && !flag) {
 			/* error! */
 			ldns_rdf_deep_free(hashed_sname);
