@@ -652,8 +652,8 @@ ldns_rdf2native_sockaddr_storage(const ldns_rdf *rd, uint16_t port, size_t *size
         if (!data) {
                 return NULL;
         }
-	/* zero the structure for portability */
-        memset(data, 0, sizeof(struct sockaddr_storage));
+		/* zero the structure for portability */
+		memset(data, 0, sizeof(struct sockaddr_storage));
         if (port == 0) {
                 port =  LDNS_PORT;
         }

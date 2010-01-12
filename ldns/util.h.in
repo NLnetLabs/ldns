@@ -22,6 +22,7 @@
 /* #define	dprintf(X, Y)  */
 
 #define LDNS_VERSION "@PACKAGE_VERSION@"
+#define LDNS_REVISION "@PACKAGE_REVISION@"
 
 /**
  * splint static inline workaround

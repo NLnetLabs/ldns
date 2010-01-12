@@ -903,7 +903,7 @@ ldns_nsec3_hash_name(ldns_rdf *name,
 				 uint8_t *salt)
 {
 	size_t hashed_owner_str_len;
-        ldns_rdf *cann;
+	ldns_rdf *cann;
 	ldns_rdf *hashed_owner;
 	unsigned char *hashed_owner_str;
 	char *hashed_owner_b32;
@@ -915,12 +915,12 @@ ldns_nsec3_hash_name(ldns_rdf *name,
 	ldns_status status;
 
 	/* prepare the owner name according to the draft section bla */
-        cann = ldns_rdf_clone(name);
-        if(!cann) {
+	cann = ldns_rdf_clone(name);
+	if(!cann) {
 		fprintf(stderr, "Memory error\n");
 		return NULL;
-        }
-        ldns_dname2canonical(cann);
+	}
+	ldns_dname2canonical(cann);
 
 	/* TODO: mnemonic list for hash algs SHA-1, default to 1 now (sha1) */
 	algorithm = algorithm;
@@ -929,7 +929,7 @@ ldns_nsec3_hash_name(ldns_rdf *name,
 	hashed_owner_str = LDNS_XMALLOC(unsigned char, hashed_owner_str_len);
 	memcpy(hashed_owner_str, ldns_rdf_data(cann), ldns_rdf_size(cann));
 	memcpy(hashed_owner_str + ldns_rdf_size(cann), salt, salt_length);
-        ldns_rdf_deep_free(cann);
+	ldns_rdf_deep_free(cann);
 
 	for (cur_it = iterations + 1; cur_it > 0; cur_it--) {
 		(void) ldns_sha1((unsigned char *) hashed_owner_str,
@@ -940,7 +940,7 @@ ldns_nsec3_hash_name(ldns_rdf *name,
 		hashed_owner_str = LDNS_XMALLOC(unsigned char, hashed_owner_str_len);
 		if (!hashed_owner_str) {
 			fprintf(stderr, "Memory error\n");
-		        return NULL;
+			return NULL;
 		}
 		memcpy(hashed_owner_str, hash, LDNS_SHA1_DIGEST_LENGTH);
 		memcpy(hashed_owner_str + LDNS_SHA1_DIGEST_LENGTH, salt, salt_length);
