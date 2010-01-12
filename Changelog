@@ -15,6 +15,7 @@
 	* Fix ldns_rdf2native_sockaddr_storage to set sockaddr type to zeroes,
 	  for portability.
 	* bug295: nsec3-hash routine no longer case sensitive.
+	* bug298: drill failed nsec3 denial of existence proof.
 
 1.6.3	2009-12-04
 	* Bugfix: allow for unknown resource records in zonefile with rdlen=0.
