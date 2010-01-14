@@ -72,6 +72,11 @@
 %include "file.i"     // FILE * 
 %include "typemaps.i"
 
+%immutable ldns_struct_lookup_table::name;
+%immutable ldns_struct_rr_descriptor::_name;
+%immutable ldns_error_str;
+%immutable ldns_signing_algorithms;
+
 //new_frm_fp_l
 %apply int *OUTPUT { int *line_nr};
 %apply uint32_t *OUTPUT { uint32_t *default_ttl};

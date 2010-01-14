@@ -316,13 +316,6 @@ int ldns_key_EVP_load_gost_id(void);
  */
 void ldns_key_set_hmac_key(ldns_key *k, unsigned char *hmac);
 
-/*
- * Set the key's hmac size
- * \param[in] k the key
- * \param[in] hmac the hmac data
- */
-void ldns_key_set_hmac_size(ldns_key *k, size_t hmac_size);
-
 /**
  * Set the key id data. This is used if the key points to
  * some externally stored key data

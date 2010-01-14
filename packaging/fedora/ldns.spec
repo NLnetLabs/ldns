@@ -1,14 +1,25 @@
+%{?!with_python:      %global with_python      1}
+
+%if %{with_python}
+%{!?python_sitelib: %global python_sitelib %(%{__python} -c "from distutils.sysconfig import get_python_lib; print get_python_lib()")}
+%{!?python_sitearch: %global python_sitearch %(%{__python} -c "from distutils.sysconfig import get_python_lib; print get_python_lib(1)")}
+%endif
+
 Summary: Lowlevel DNS(SEC) library with API
 Name: ldns
-Version: 1.6.0
+Version: 1.6.4
 Release: 1%{?dist}
 License: BSD
 Url: http://www.nlnetlabs.nl/%{name}/
 Source: http://www.nlnetlabs.nl/downloads/%{name}-%{version}.tar.gz
 Group: System Environment/Libraries
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
-BuildRequires: libtool, autoconf, automake, gcc-c++, openssl-devel, doxygen,
-BuildRequires: perl libpcap-devel
+BuildRequires: libtool, autoconf, automake, gcc-c++, doxygen,
+BuildRequires: perl, libpcap-devel, openssl-devel
+
+%if %{with_python}
+BuildRequires:  python-devel, swig
+%endif
 
 %description
 ldns is a library with the aim to simplify DNS programing in C. All
@@ -19,10 +30,21 @@ packets.
 %package devel
 Summary: Development package that includes the ldns header files
 Group: Development/Libraries
-Requires: %{name} = %{version}-%{release}, openssl-devel
+Requires: %{name} = %{version}-%{release}
 
 %description devel
 The devel package contains the ldns library and the include files
+
+%if %{with_python}
+%package python
+Summary: Python extensions for ldns
+Group: Applications/System
+Requires: %{name}-libs = %{version}-%{release}
+
+%description python
+Python extensions for ldns
+%endif
+
 
 %prep
 %setup -q 
@@ -31,13 +53,16 @@ The devel package contains the ldns library and the include files
 #libtoolize
 #autoreconf
 
-%configure --disable-rpath --with-sha2
-
 %build
+%configure --disable-rpath --with-sha2 \
+%if %{with_python}
+ --with-pyldns
+%endif
 
-make %{?_smp_mflags}
-(cd drill ; %configure --disable-rpath --with-ldns=%{buildroot}/lib/)
-(cd examples ; %configure --disable-rpath --with-ldns=%{buildroot}/lib/)
+(cd drill ; %configure --disable-rpath --with-ldns=%{buildroot}/lib/ )
+(cd examples ; %configure --disable-rpath --with-ldns=%{buildroot}/lib/ )
+
+make %{?_smp_mflags} 
 ( cd drill ; make %{?_smp_mflags} )
 ( cd examples ; make %{?_smp_mflags} )
 make %{?_smp_mflags} doc
@@ -56,7 +81,7 @@ rm -rf doc/.svn
 rm -rf doc/man
 
 # remove .la files
-rm -rf %{buildroot}%{_libdir}/*.la
+rm -rf %{buildroot}%{_libdir}/*.la %{buildroot}%{python_sitelib}/*.la
 (cd drill ; make DESTDIR=%{buildroot} install)
 (cd examples; make DESTDIR=%{buildroot} install)
 
@@ -84,13 +109,62 @@ rm -rf %{buildroot}
 %{_includedir}/ldns/*.h
 %doc doc Changelog README
 
+%if %{with_python}
+%files python
+%defattr(-,root,root)
+%{python_sitelib}/*
+%endif
+
 %post -p /sbin/ldconfig
 
 %postun -p /sbin/ldconfig
 
 %changelog
-* Fri Jul 03 2009 Paul Wouters <paul@xelerance.com> - 1.6.0-1
+* Wed Jan 14 2010 Wouter Wijngaards <wouter@nlnetlabs.nl> - 1.6.4-1
+- Renamed to 1.6.4
+- Fixes into ldns, so removed DESTDIR patch, and .py permission fix here. 
+
+* Wed Jan 13 2010 Paul Wouters <paul@xelerance.com> - 1.6.4rc1-1
+- Upgraded to 1.6.4rc1. 
+- Added ldns-python sub package
+- Added patch for Makefile.in to fix DESTDIR
+
+* Fri Dec 04 2009 Paul Wouters <paul@xelerance.com> - 1.6.3-1
+- Upgraded to 1.6.3, which has minor bugfixes
+
+* Fri Nov 13 2009 Paul Wouters <paul@xelerance.com> - 1.6.2-1
+- Upgraded to 1.6.2. This fixes various bugs.
+  (upstream released mostly to default with sha2 for the imminent
+   signed root, but we already enabled that in our builds)
+
+* Tue Aug 25 2009 Tomas Mraz <tmraz@redhat.com> - 1.6.1-3
+- rebuilt with new openssl
+
+* Sun Aug 16 2009 Paul Wouters <paul@xelerance.com> - 1.6.1-2
+- Added openssl dependancy back in, since we get more functionality
+ when using openssl. Especially in 'drill'.
+
+* Sun Aug 16 2009 Paul Wouters <paul@xelerance.com> - 1.6.1-1
+- Updated to 1.6.1
+
+* Fri Jul 24 2009 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 1.6.0-5
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_12_Mass_Rebuild
+
+* Mon Jul 13 2009 Paul Wouters <paul@xelerance.com> - 1.6.0-4
+- Fixed the ssl patch so it can now compile --without-ssl
+
+* Sat Jul 11 2009 Paul Wouters <paul@xelerance.com> - 1.6.0-3
+- Added patch to compile with --without-ssl
+- Removed openssl dependancies
+- Recompiled with --without-ssl
+
+* Sat Jul 11 2009 Paul Wouters <paul@xelerance.com> - 1.6.0-2
 - Updated to 1.6.0
+- (did not yet compile with --without-ssl due to compile failures)
+
+* Fri Jul 10 2009 Paul Wouters <paul@xelerance.com> - 1.6.0-1
+- Updated to 1.6.0
+- Compile without openssl
 
 * Thu Apr 16 2009 Paul Wouters <paul@xelerance.com> - 1.5.1-4
 - Memory management bug when generating a sha256 key, see:

@@ -443,25 +443,6 @@ fprintf(output, "_");
 	}			
 }
 
-static size_t 
-calculate_counters_total(match_counters *counters)
-{
-	size_t result = 0;
-	if (counters) {
-		if (counters->left) {
-			result += calculate_counters_total(counters->left);
-		}
-		if (counters->match) {
-			result += counters->match->count;
-		}
-		if (counters->right) {
-			result += calculate_counters_total(counters->left);
-		}
-	}
-	
-	return result;
-}
-
 static void
 print_counters(FILE *output, match_counters *counters, bool show_percentages, size_t total, int count_minimum)
 {
@@ -1532,37 +1513,6 @@ match_dns_packet_to_expr(ldns_pkt *pkt, ldns_rdf *src_addr, ldns_rdf *dst_addr, 
 	}
 
 	return result;
-}
-
-static bool
-match_expression_equals(match_expression *expr1, match_expression *expr2)
-{
-	if (!expr1 || !expr2) {
-		return false;
-	}
-
-	switch(expr1->op) {
-		case MATCH_EXPR_OR:
-		case MATCH_EXPR_AND:
-			if (!expr2->left || !expr2->right) {
-				return false;
-			}
-			return (match_expression_equals(expr1->left, expr2->left) &&
-			        match_expression_equals(expr1->right, expr2->right)
-			       );
-			break;
-		case MATCH_EXPR_LEAF:
-			if (!expr2->match) {
-				return false;
-			}
-			return expr1->match->id == expr2->match->id &&
-			       expr1->match->operator == expr2->match->operator &&
-			       strcmp(expr1->match->value, expr2->match->value) == 0;
-			break;
-		default:
-			return false;
-	}
-
 }
 
 static void

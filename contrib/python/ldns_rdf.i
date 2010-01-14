@@ -103,6 +103,7 @@ const char *ldns_rdf_type2str(const ldns_rdf *rdf)
 		case LDNS_RDF_TYPE_WKS:      return "WKS";
 		case LDNS_RDF_TYPE_SERVICE:  return "SERVICE";
 		case LDNS_RDF_TYPE_NSAP:     return "NSAP";
+		case LDNS_RDF_TYPE_ATMA:     return "ATMA";
 		case LDNS_RDF_TYPE_IPSECKEY: return "IPSECKEY";
 		case LDNS_RDF_TYPE_TSIG:     return "TSIG";
 		case LDNS_RDF_TYPE_INT16_DATA: return "INT16_DATA";
