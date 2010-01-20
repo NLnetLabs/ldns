@@ -7,7 +7,7 @@
 
 Summary: Lowlevel DNS(SEC) library with API
 Name: ldns
-Version: 1.6.4
+Version: 1.6.5
 Release: 1%{?dist}
 License: BSD
 Url: http://www.nlnetlabs.nl/%{name}/
@@ -120,7 +120,10 @@ rm -rf %{buildroot}
 %postun -p /sbin/ldconfig
 
 %changelog
-* Wed Jan 14 2010 Wouter Wijngaards <wouter@nlnetlabs.nl> - 1.6.4-1
+* Wed Jan 20 2010 Wouter Wijngaards <wouter@nlnetlabs.nl> - 1.6.4-1
+- Renamed to 1.6.5
+
+* Thu Jan 14 2010 Wouter Wijngaards <wouter@nlnetlabs.nl> - 1.6.4-1
 - Renamed to 1.6.4
 - Fixes into ldns, so removed DESTDIR patch, and .py permission fix here. 
 
