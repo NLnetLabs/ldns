@@ -68,8 +68,7 @@
 
 //#define LDNS_DEBUG
 
-%include "stdint.i"
-%include "inttypes.i" // uint_16_t is known type now
+%include "stdint.i" // uint_16_t is known type now
 %include "file.i"     // FILE * 
 %include "typemaps.i"
 
