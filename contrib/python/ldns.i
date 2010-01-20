@@ -72,6 +72,20 @@
 %include "file.i"     // FILE * 
 %include "typemaps.i"
 
+%inline %{
+struct timeval* ldns_make_timeval(uint32_t sec, uint32_t usec)
+{
+        struct timeval* res = (struct timeval*)malloc(sizeof(res));
+        res->tv_sec = sec;
+        res->tv_usec = usec;
+        return res;
+}
+uint32_t ldns_read_timeval_sec(struct timeval* t) { 
+        return (uint32_t)t->tv_sec; }
+uint32_t ldns_read_timeval_usec(struct timeval* t) { 
+        return (uint32_t)t->tv_usec; }
+%}
+
 %immutable ldns_struct_lookup_table::name;
 %immutable ldns_struct_rr_descriptor::_name;
 %immutable ldns_error_str;
