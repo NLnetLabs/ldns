@@ -164,14 +164,7 @@ fi
 AC_SUBST(INSTALL_LDNS_CONFIG)
 
 # add option to disable the evil rpath
-dnl Check whether to use rpath or not
-AC_ARG_ENABLE(rpath,
-        [  --disable-rpath                disable hardcoded rpath (default=enabled)],
-	enable_rpath=$enableval, enable_rpath=yes)
-
-if test "x$enable_rpath" = xyes; then
-    RPATH_VAL="-Wl,-rpath=\${libdir}"
-fi
+ACX_ARG_RPATH
 
 #AC_TRY_RUN(
 #[
