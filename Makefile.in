@@ -203,8 +203,9 @@ uninstall-lib:
 
 install-pyldns: @PYLDNS@
 		$(INSTALL) -m 755 -d $(DESTDIR)$(python_site)/ldns
-		$(INSTALL) -c -m 644 $(pywrapdir)/ldns.py $(DESTDIR)$(python_site)/ldns/__init__.py
-		$(LIBTOOL) --mode=install cp _ldns.la $(DESTDIR)$(python_site)/ldns/
+		$(INSTALL) -c -m 644 $(pywrapdir)/ldns.py $(DESTDIR)$(python_site)/ldns.py
+		$(LIBTOOL) --mode=install cp _ldns.la $(DESTDIR)$(python_site)
+		$(LIBTOOL) --mode=finish $(DESTDIR)$(python_site)
 
 uninstall-pyldns:	
 		rm -f $(DESTDIR)$(python_site)/ldns/*
