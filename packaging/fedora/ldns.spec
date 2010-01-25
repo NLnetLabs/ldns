@@ -7,8 +7,8 @@
 
 Summary: Lowlevel DNS(SEC) library with API
 Name: ldns
-Version: 1.6.5
-Release: 1%{?dist}
+Version: 1.6.4
+Release: 2%{?dist}
 License: BSD
 Url: http://www.nlnetlabs.nl/%{name}/
 Source: http://www.nlnetlabs.nl/downloads/%{name}-%{version}.tar.gz
@@ -39,7 +39,7 @@ The devel package contains the ldns library and the include files
 %package python
 Summary: Python extensions for ldns
 Group: Applications/System
-Requires: %{name}-libs = %{version}-%{release}
+Requires: %{name} = %{version}-%{release}
 
 %description python
 Python extensions for ldns
@@ -50,17 +50,18 @@ Python extensions for ldns
 %setup -q 
 # To built svn snapshots
 #rm config.guess config.sub ltmain.sh
-#libtoolize
-#autoreconf
+#aclocal
+#libtoolize -c --install
+#autoreconf --install
 
 %build
-%configure --disable-rpath --with-sha2 \
+%configure --disable-rpath --disable-static --with-sha2 \
 %if %{with_python}
  --with-pyldns
 %endif
 
-(cd drill ; %configure --disable-rpath --with-ldns=%{buildroot}/lib/ )
-(cd examples ; %configure --disable-rpath --with-ldns=%{buildroot}/lib/ )
+(cd drill ; %configure --disable-rpath --disable-static --with-ldns=%{buildroot}/lib/ )
+(cd examples ; %configure --disable-rpath --disable-static --with-ldns=%{buildroot}/lib/ )
 
 make %{?_smp_mflags} 
 ( cd drill ; make %{?_smp_mflags} )
@@ -102,7 +103,6 @@ rm -rf %{buildroot}
 
 %files devel
 %defattr(-,root,root,-)
-%{_libdir}/libldns.a
 %{_libdir}/libldns*so
 %{_bindir}/ldns-config
 %dir %{_includedir}/ldns
@@ -120,17 +120,15 @@ rm -rf %{buildroot}
 %postun -p /sbin/ldconfig
 
 %changelog
-* Wed Jan 20 2010 Wouter Wijngaards <wouter@nlnetlabs.nl> - 1.6.4-1
-- Renamed to 1.6.5
+* Fri Jan 22 2010 Paul Wouters <paul@xelerance.com> - 1.6.4-2
+- Fix missing _ldns.so causing ldns-python to not work
+- Patch for installing ldns-python files
+- Patch for rpath in ldns-python
+- Don't install .a file for ldns-python
 
-* Thu Jan 14 2010 Wouter Wijngaards <wouter@nlnetlabs.nl> - 1.6.4-1
-- Renamed to 1.6.4
-- Fixes into ldns, so removed DESTDIR patch, and .py permission fix here. 
-
-* Wed Jan 13 2010 Paul Wouters <paul@xelerance.com> - 1.6.4rc1-1
-- Upgraded to 1.6.4rc1. 
+* Wed Jan 20 2010 Paul Wouters <paul@xelerance.com> - 1.6.4-1
+- Upgraded to 1.6.4. 
 - Added ldns-python sub package
-- Added patch for Makefile.in to fix DESTDIR
 
 * Fri Dec 04 2009 Paul Wouters <paul@xelerance.com> - 1.6.3-1
 - Upgraded to 1.6.3, which has minor bugfixes
