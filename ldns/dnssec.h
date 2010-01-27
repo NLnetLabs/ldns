@@ -363,7 +363,7 @@ bool ldns_nsec_covers_name(const ldns_rr *nsec, const ldns_rdf *name);
  * verify a packet 
  * \param[in] p the packet
  * \param[in] t the rr set type to check
- * \param[in] o the rr set name to ckeck
+ * \param[in] o the rr set name to check
  * \param[in] k list of keys
  * \param[in] s list of sigs (may be null)
  * \param[out] good_keys keys which validated the packet
