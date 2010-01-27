@@ -3,6 +3,9 @@
 #endif
 
 #include "config.h"
+#ifdef HAVE_GETOPT_H
+#  include <getopt.h>
+#endif
 
 #include <ldns/ldns.h>
 #include <errno.h>
