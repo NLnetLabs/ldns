@@ -262,7 +262,7 @@ AC_REPLACE_FUNCS(inet_ntop)
 AC_REPLACE_FUNCS(snprintf)
 AC_REPLACE_FUNCS(strlcpy)
 AC_REPLACE_FUNCS(memmove)
-AC_CHECK_FUNCS([endprotoent endservent sleep random fcntl])
+AC_CHECK_FUNCS([endprotoent endservent sleep random fcntl strtoul])
 
 ACX_CHECK_GETADDRINFO_WITH_INCLUDES
 if test $ac_cv_func_getaddrinfo = no; then
@@ -406,6 +406,9 @@ size_t strlcpy(char *dst, const char *src, size_t siz);
 #endif
 #ifndef HAVE_GETADDRINFO
 #include "compat/fake-rfc2553.h"
+#endif
+#ifndef HAVE_STRTOUL
+#define strtoul (unsigned long))strtol
 #endif
 ])
 
