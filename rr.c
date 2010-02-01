@@ -634,6 +634,8 @@ ldns_rr_new_frm_fp_l(ldns_rr **newrr, FILE *fp, uint32_t *default_ttl, ldns_rdf 
 			*default_ttl = ldns_str2period(keyword + 5, &endptr);
 		}
 		s = LDNS_STATUS_SYNTAX_TTL;
+	} else if ((keyword = strstr(line, "$INCLUDE "))) {
+		s = LDNS_STATUS_SYNTAX_INCLUDE;
 	} else {
 		if (origin && *origin) {
 			s = ldns_rr_new_frm_str(&rr, (const char*) line, ttl, *origin, prev);

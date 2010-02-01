@@ -359,6 +359,9 @@ ldns_zone_new_frm_fp_l(ldns_zone **z, FILE *fp, ldns_rdf *origin, uint32_t ttl, 
 		case LDNS_STATUS_SYNTAX_ORIGIN:
 			/* the function set the origin */
 			break;
+		case LDNS_STATUS_SYNTAX_INCLUDE:
+			ret = LDNS_STATUS_SYNTAX_INCLUDE_ERR_NOTIMPL;
+			break;
 		default:
 			ret = s;
 			goto error;
