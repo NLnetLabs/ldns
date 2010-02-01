@@ -42,6 +42,12 @@ CFLAGS 		= $(strip @CFLAGS@)
 LDFLAGS		= @LDFLAGS@
 LIBS 		= @LIBS@
 LIBOBJS		= @LIBOBJS@
+PYTHON_CPPFLAGS	= @PYTHON_CPPFLAGS@
+PYTHON_LDFLAGS	= @PYTHON_LDFLAGS@
+LIBNSL_LIBS	= @LIBNSL_LIBS@
+LIBSSL_CPPFLAGS = @LIBSSL_CPPFLAGS@
+LIBSSL_LDFLAGS  = @LIBSSL_LDFLAGS@
+LIBSSL_LIBS     = @LIBSSL_LIBS@
 RUNTIME_PATH	= @RUNTIME_PATH@
 DATE		= $(shell date +%Y%m%d)
 LIBTOOL		= $(libtool) --tag=CC --quiet
@@ -97,7 +103,7 @@ LINK		= $(CC) $(strip $(CFLAGS) $(LDFLAGS) $(LIBS))
 LINK_LIB	= $(LIBTOOL) --mode=link $(CC) $(strip $(CFLAGS) $(LDFLAGS) $(LIBS) -version-number $(version_info) -no-undefined)
 
 %.o:    $(srcdir)/%.c $(LIBDNS_HEADERS) ldns/util.h ldns/config.h
-	$(COMP_LIB) -c $<
+	$(COMP_LIB) $(LIBSSL_CPPFLAGS) -c $<
 
 .PHONY:	clean realclean docclean manpages doc lint all lib pyldns
 .PHONY: install uninstall install-doc uninstall-doc uninstall-pyldns
@@ -115,7 +121,7 @@ lib-export-all:	libldns.la-export-all
 		if [ ! -d lib ] ; then ln -s .libs lib ; fi ;		
 
 libldns.la:	$(LIBDNS_OBJECTS)
-		$(LINK_LIB) --export-symbols $(srcdir)/ldns_symbols.def -o libldns.la $(LIBDNS_LOBJECTS) -rpath $(libdir) $(RUNTIME_PATH)
+		$(LINK_LIB) $(LIBSSL_LDFLAGS) $(LIBSSL_LIBS) --export-symbols $(srcdir)/ldns_symbols.def -o libldns.la $(LIBDNS_LOBJECTS) -rpath $(libdir) $(RUNTIME_PATH)
 
 libldns.la-export-all:	$(LIBDNS_OBJECTS)
 		$(LINK_LIB) -o libldns.la $(LIBDNS_LOBJECTS) -rpath $(libdir) $(RUNTIME_PATH)
@@ -133,7 +139,7 @@ mancheck:
 doxygen:	manpages
 		$(INSTALL) -d doc
 ifdef doxygen
-		# if we are not in base we need to copy some html files too
+# if we are not in base we need to copy some html files too
 		if [ ! -e doc/header.html ] ; then \
 			$(INSTALL) -c -m 644 $(srcdir)/doc/header.html doc/ ; \
 		fi ;
@@ -148,13 +154,13 @@ manpages:	$(srcdir)/doc/function_manpages
 pyldns:		_ldns.la
 
 $(pywrapdir)/ldns_wrapper.c:	$(pywrapdir)/ldns.i $(wildcard $(pywrapdir)/*.i) $(LIBDNS_HEADERS) ldns/util.h ldns/config.h
-	$(swig) -python -o $@ $(CPPFLAGS) $<
+	$(swig) -python -o $@ $(CPPFLAGS) $(PYTHON_CPPFLAGS) $<
 
 ldns_wrapper.lo:	$(pywrapdir)/ldns_wrapper.c $(LIBDNS_HEADERS) ldns/util.h ldns/config.h
-	$(COMP_LIB) -I./include/ldns -c $< -o $@
+	$(COMP_LIB) -I./include/ldns $(PYTHON_CPPFLAGS) -c $< -o $@
 
 _ldns.la: ldns_wrapper.lo libldns.la 
-	$(LIBTOOL) --tag=CC --mode=link $(CC) $(strip $(CFLAGS) $(LDFLAGS) -module -version-number $(version_info) -no-undefined -o $@ $< -rpath $(python_site) -L. -L.libs -lldns $(LIBS))
+	$(LIBTOOL) --tag=CC --mode=link $(CC) $(strip $(CFLAGS) $(PYTHON_CFLAGS) $(LDFLAGS) $(PYTHON_LDFLAGS) -module -version-number $(version_info) -no-undefined -o $@ $< -rpath $(python_site) -L. -L.libs -lldns $(LIBS))
 
 install:	install-h install-lib install-config install-manpages $(pyldns_inst)
 
@@ -191,7 +197,7 @@ uninstall-h:
 			rm -f $(DESTDIR)$(includedir)/$$i; done
 		[ ! -d $(DESTDIR)$(includedir)/ldns ] || rmdir -p $(DESTDI)$(includedir)/ldns || echo "ok, dir already gone"
 		exit 0
-	
+
 install-lib:	lib
 		$(INSTALL) -m 755 -d $(DESTDIR)$(libdir)
 		$(LIBTOOL) --mode=install cp libldns.la $(DESTDIR)$(libdir)

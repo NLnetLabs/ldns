@@ -14,6 +14,10 @@ CC = @CC@
 CFLAGS = -I. -I${srcdir} @CFLAGS@
 CPPFLAGS = @CPPFLAGS@ 
 LDFLAGS = @LDFLAGS@
+LIBNSL_LIBS = @LIBNSL_LIBS@
+LIBSSL_CPPFLAGS = @LIBSSL_CPPFLAGS@
+LIBSSL_LDFLAGS = @LIBSSL_LDFLAGS@
+LIBSSL_LIBS = @LIBSSL_LIBS@
 LIBS = @LIBS@
 RUNTIME_PATH = @RUNTIME_PATH@
 LDNSDIR = @LDNSDIR@
@@ -35,7 +39,6 @@ MAIN_SOURCES = ldns-read-zone.c \
 		  ldns-update.c \
 		  ldns-keygen.c \
 		  ldns-key2ds.c \
-		  ldns-signzone.c \
 		  ldns-version.c \
 		  ldns-rrsig.c \
 		  ldns-walk.c \
@@ -43,24 +46,28 @@ MAIN_SOURCES = ldns-read-zone.c \
 		  ldns-zcat.c \
 		  ldns-dpa.c \
 		  ldns-resolver.c \
-		  ldnsd.c \
 		  ldns-keyfetcher.c \
 		  ldns-notify.c \
 		  ldns-testns.c \
 		  ldns-compare-zones.c \
+		  ldnsd.c
+
+MAIN_SSL_SOURCES = ldns-signzone.c \
 		  ldns-verify-zone.c \
 		  ldns-revoke.c \
 		  ldns-nsec3-hash.c
+
 OTHER_SOURCES = ldns-testpkts.c
 
 PROGRAMS=$(MAIN_SOURCES:.c=)
+SSL_PROGRAMS=$(MAIN_SSL_SOURCES:.c=)
 
 .PHONY:	all clean realclean all-static
-.SECONDARY: $(MAIN_SOURCES:.c=.o) $(OTHER_SOURCES:.c=.o)
+.SECONDARY: $(MAIN_SOURCES:.c=.o) $(OTHER_SOURCES:.c=.o) $(MAIN_SSL_SOURCES:.c=.o)
 
-all:	$(addsuffix .prg,$(PROGRAMS))
+all:	$(addsuffix .prg,$(PROGRAMS)) $(addsuffix .prg-ssl,$(SSL_PROGRAMS))
 
-all-static: $(addsuffix .stc,$(PROGRAMS))
+all-static: $(addsuffix .stc,$(PROGRAMS)) $(addsuffix .stc-ssl,$(SSL_PROGRAMS))
 
 %.o:    $(srcdir)/%.c
 	$(COMPILE) -o $@ -c $<
@@ -69,6 +76,30 @@ all-static: $(addsuffix .stc,$(PROGRAMS))
 ldns-testns.o: $(srcdir)/ldns-testns.c $(srcdir)/ldns-testpkts.c $(srcdir)/ldns-testpkts.h
 ldns-testns.prg: ldns-testpkts.o
 ldns-testns.stc: ldns-testpkts.o
+
+ldnsd.prg: ldnsd.o
+	@if test ! -f $(@:.prg=) -o $< -nt $(@:.prg=); then \
+	echo $(LINK) $(LIBNSL_LIBS) -o $(@:.prg=) $^ ; \
+	$(LINK) $(LIBNSL_LIBS) -o $(@:.prg=) $^ ; \
+	fi
+
+ldnsd.stc: ldnsd.o
+	@if test ! -f $@ -o $< -nt $@; then \
+	echo $(LINK_STATIC) $(LIBNSL_LDFLAGS) -o $@ $^ ; \
+	$(LINK_STATIC) $(LIBNSL_LDFLAGS) -o $@ $^ ; \
+	fi
+
+%.prg-ssl: %.o
+	@if test ! -f $(@:.prg-ssl=) -o $< -nt $(@:.prg-ssl=); then \
+	echo $(LINK) $(LIBNSL_LIBS) $(LIBSSL_LDFLAGS) $(LIBSSL_LIBS) -o $(@:.prg-ssl=) $^ ; \
+	$(LINK) $(LIBNSL_LIBS) $(LIBSSL_LDFLAGS) $(LIBSSL_LIBS) -o $(@:.prg-ssl=) $^ ; \
+	fi
+
+%.stc-ssl: %.o
+	@if test ! -f $@ -o $< -nt $@; then \
+	echo $(LINK_STATIC) $(LIBNSL_LIBS) $(LIBSSL_LDFLAGS) $(LIBSSL_LIBS) -o $@ $^ ; \
+	$(LINK_STATIC) $(LIBNSL_LIBS) $(LIBSSL_LDFLAGS) $(LIBSSL_LIBS) -o $@ $^ ; \
+	fi
 
 %.prg:  %.o
 	@if test ! -f $(@:.prg=) -o $< -nt $(@:.prg=); then \
@@ -91,8 +122,8 @@ lint:
 clean:
 	rm -f *.o *.lo 
 	rm -rf .libs
-	rm -f $(PROGRAMS) 
-	rm -f $(addsuffix .stc,$(PROGRAMS))
+	rm -f $(PROGRAMS) $(SSL_PROGRAMS)
+	rm -f $(addsuffix .stc,$(PROGRAMS)) $(addsuffix .stc,$(SSL_PROGRAMS))
 
 realclean: clean
 	rm -rf autom4te.cache/
@@ -102,16 +133,16 @@ realclean: clean
 confclean: clean
 	rm -rf config.log config.status config.h Makefile
 
-install:	$(PROGRAMS)
+install:	$(PROGRAMS) $(SSL_PROGRAMS)
 		$(INSTALL) -d -m 755 $(DESTDIR)$(bindir)
 		$(INSTALL) -d -m 755 $(DESTDIR)$(mandir)
 		$(INSTALL) -d -m 755 $(DESTDIR)$(mandir)/man1
-		for i in $(PROGRAMS); do \
+		for i in $(PROGRAMS) $(SSL_PROGRAMS); do \
 			$(libtool) --tag=CC --mode=install ${INSTALL} -c $$i $(DESTDIR)$(bindir) ; \
 			$(INSTALL) -c -m 644 $(srcdir)/$$i.1 $(DESTDIR)$(mandir)/man1/$$i.1 ; \
 			done
 		exit 0
- 
+
 install-static:	all-static
 		$(INSTALL) -d -m 755 $(DESTDIR)$(bindir)
 		$(INSTALL) -d -m 755 $(DESTDIR)$(mandir)
@@ -120,10 +151,14 @@ install-static:	all-static
 			$(libtool) --tag=CC --mode=install ${INSTALL} -c $$i.stc $(DESTDIR)$(bindir) ; \
 			$(INSTALL) -c -m 644 $(srcdir)/$$i.1 $(DESTDIR)$(mandir)/man1/$$i.1 ; \
 			done
+		for i in $(SSL_PROGRAMS); do \
+			$(libtool) --tag=CC --mode=install ${INSTALL} -c $$i.stc-ssl $(DESTDIR)$(bindir) ; \
+			$(INSTALL) -c -m 644 $(srcdir)/$$i.1 $(DESTDIR)$(mandir)/man1/$$i.1 ; \
+			done
 		exit 0
-		
+
 uninstall:
-		for i in $(PROGRAMS); do \
+		for i in $(PROGRAMS) $(SSL_PROGRAMS); do \
 			rm -f $(DESTDIR)$(bindir)/$$i ; \
 			rm -f $(DESTDIR)$(mandir)/man1/$$i.1 ; \
 			done

@@ -91,8 +91,6 @@ if test x_$withval != x_no; then
         fi
 	# Have Python
 	AC_DEFINE(HAVE_PYTHON,1,[Define if you have Python libraries and header files.])
-	LIBS="$PYTHON_LDFLAGS $LIBS"
-	CPPFLAGS="$CPPFLAGS $PYTHON_CPPFLAGS"
 	ldns_have_python=yes
    fi
 
@@ -112,12 +110,19 @@ if test x_$withval != x_no; then
    fi
 fi
 
+# Use libtool
+ACX_LIBTOOL_C_ONLY
+
+tmp_CPPFLAGS=$CPPFLAGS
+tmp_LDFLAGS=$LDFLAGS
+tmp_LIBS=$LIBS
+CPPFLAGS=
+LDFLAGS=
+LIBS=
+
 ACX_WITH_SSL_OPTIONAL
 
 AC_CHECK_FUNCS([EVP_sha256])
-
-# Use libtool 
-ACX_LIBTOOL_C_ONLY
 
 # for macosx, see if glibtool exists and use that
 # BSD's need to know the version...
@@ -126,16 +131,17 @@ ACX_LIBTOOL_C_ONLY
 
 AC_ARG_ENABLE(sha2, AC_HELP_STRING([--disable-sha2], [Disable SHA256 and SHA512 RRSIG support]))
 case "$enable_sha2" in
-    no)
-        ;;
     yes|*)
-        if test "x$HAVE_SSL" = "xyes"; then
-	    AC_MSG_CHECKING(for SHA256 and SHA512)
-	    AC_CHECK_LIB(crypto, SHA256_Init,, [
-		AC_MSG_ERROR([No SHA2 functions found in OpenSSL: please upgrade OpenSSL or rerun with --disable-sha2])
-	    ])
-	    AC_DEFINE_UNQUOTED([USE_SHA2], [1], [Define this to enable SHA256 and SHA512 support.])
+        if test "x$HAVE_SSL" != "xyes"; then
+            AC_MSG_ERROR([SHA2 enabled, but no SSL support])
         fi
+	AC_MSG_CHECKING(for SHA256 and SHA512)
+	AC_CHECK_FUNC(SHA256_Init, [], [
+		AC_MSG_ERROR([No SHA2 functions found in OpenSSL: please upgrade OpenSSL or rerun with --disable-sha2])
+		])
+	AC_DEFINE_UNQUOTED([USE_SHA2], [1], [Define this to enable SHA256 and SHA512 support.])
+        ;;
+    no)
         ;;
 esac
 
@@ -146,12 +152,20 @@ case "$enable_gost" in
             AC_MSG_ERROR([GOST enabled, but no SSL support])
         fi
         AC_MSG_CHECKING(for GOST)
-        AC_CHECK_LIB(crypto, EVP_PKEY_set_type_str,,[AC_MSG_ERROR([OpenSSL >= 1.0.0 is needed for GOST support])])
+        AC_CHECK_FUNC(EVP_PKEY_set_type_str, [],[AC_MSG_ERROR([OpenSSL >= 1.0.0 is needed for GOST support])])
         AC_DEFINE_UNQUOTED([USE_GOST], [1], [Define this to enable GOST support.])
         ;;
     no|*)
         ;;
 esac
+
+AC_SUBST(LIBSSL_CPPFLAGS,$CPPFLAGS)
+AC_SUBST(LIBSSL_LDFLAGS,$LDFLAGS)
+AC_SUBST(LIBSSL_LIBS,$LIBS)
+
+CPPFLAGS=$tmp_CPPFLAGS
+LDFLAGS=$tmp_LDFLAGS
+LIBS=$tmp_LIBS
 
 # add option to disable installation of ldns-config script
 AC_ARG_ENABLE(ldns-config, [ --disable-ldns-config          disable installation of ldns-config (default=enabled)],
@@ -241,7 +255,13 @@ AC_CHECK_TYPE(in_port_t, [], [AC_DEFINE([in_port_t], [uint16_t], [in_port_t])], 
 
 # check to see if libraries are needed for these functions.
 AC_CHECK_LIB(socket, socket)
-AC_CHECK_LIB(nsl, inet_pton)
+
+tmp_LIBS=$LIBS
+LIBS=
+AC_SEARCH_LIBS(inet_pton, nsl)
+AC_SUBST(LIBNSL_LIBS,$LIBS)
+LIBS=$tmp_LIBS
+
 # AC_SEARCH_LIBS([socket], [socket])
 # AC_SEARCH_LIBS([inet_pton], [nsl])
 
