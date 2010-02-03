@@ -258,9 +258,9 @@ parse_escape(uint8_t *s, uint8_t *q) {
 		return 3;
 	} else {
 		s++;
-		if (*s == '\0') {
+		if (*s == '\0' || isdigit((int) *s)) {
 			/* apparently the string terminator
-			 * has been escaped...
+			 * or a digit has been escaped...
 		         */
 			return 0;
 		}
@@ -390,7 +390,7 @@ ldns_status
 ldns_str2rdf_str(ldns_rdf **rd, const char *str)
 {
 	uint8_t *data;
-	size_t i, str_i;
+	size_t i, str_i, esc_i;
 
 	if (strlen(str) > 255) {
 		return LDNS_STATUS_INVALID_STR;
@@ -401,7 +401,12 @@ ldns_str2rdf_str(ldns_rdf **rd, const char *str)
 	for (str_i = 0; str_i < strlen(str); str_i++) {
 		if (str[str_i] == '\\') {
 			/* octet value or literal char */
-			str_i += (size_t) parse_escape((uint8_t*) &str[str_i], (uint8_t*) &data[i]);
+			esc_i = (size_t) parse_escape((uint8_t*) &str[str_i], (uint8_t*) &data[i]);
+			if (esc_i == 0) {
+				LDNS_FREE(data);
+				return LDNS_STATUS_SYNTAX_BAD_ESCAPE;
+			}
+			str_i += esc_i;
 		} else {
 			data[i] = (uint8_t) str[str_i];
 		}
