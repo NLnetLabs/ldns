@@ -1,5 +1,6 @@
 1.6.5
 	* Catch \X where X is a digit as an error.
+	* Fix NSEC record after DNSKEY at zone apex not properly signed.
 
 1.6.4	2010-01-20
 	* Imported pyldns contribution by Zdenek Vasicek and Karel Slany.

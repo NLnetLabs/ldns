@@ -912,6 +912,7 @@ ldns_dnssec_zone_create_rrsigs_flg(ldns_dnssec_zone *zone,
 			}
 			
 			/* sign the nsec */
+			ldns_key_list_set_use(key_list, true);
 			cur_name->nsec_signatures =
 				ldns_dnssec_remove_signatures(cur_name->nsec_signatures,
 										key_list,
