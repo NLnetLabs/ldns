@@ -1771,7 +1771,7 @@ char *
 ldns_rdf2str(const ldns_rdf *rdf)
 {
 	char *result = NULL;
-	ldns_buffer *tmp_buffer = ldns_buffer_new(LDNS_MIN_BUFLEN);
+	ldns_buffer *tmp_buffer = ldns_buffer_new(LDNS_MAX_PACKETLEN);
 
 	if (ldns_rdf2buffer_str(tmp_buffer, rdf) == LDNS_STATUS_OK) {
 		/* export and return string, destroy rest */
@@ -1786,7 +1786,7 @@ char *
 ldns_rr2str(const ldns_rr *rr)
 {
 	char *result = NULL;
-	ldns_buffer *tmp_buffer = ldns_buffer_new(LDNS_MIN_BUFLEN);
+	ldns_buffer *tmp_buffer = ldns_buffer_new(LDNS_MAX_PACKETLEN);
 
 	if (ldns_rr2buffer_str(tmp_buffer, rr) == LDNS_STATUS_OK) {
 		/* export and return string, destroy rest */
@@ -1815,7 +1815,7 @@ char *
 ldns_key2str(const ldns_key *k)
 {
 	char *result = NULL;
-	ldns_buffer *tmp_buffer = ldns_buffer_new(LDNS_MIN_BUFLEN);
+	ldns_buffer *tmp_buffer = ldns_buffer_new(LDNS_MAX_PACKETLEN);
 	if (ldns_key2buffer_str(tmp_buffer, k) == LDNS_STATUS_OK) {
 		/* export and return string, destroy rest */
 		result = ldns_buffer2str(tmp_buffer);
@@ -1828,7 +1828,7 @@ char *
 ldns_rr_list2str(const ldns_rr_list *list)
 {
 	char *result = NULL;
-	ldns_buffer *tmp_buffer = ldns_buffer_new(LDNS_MIN_BUFLEN);
+	ldns_buffer *tmp_buffer = ldns_buffer_new(LDNS_MAX_PACKETLEN);
 
 	if (list) {
 		if (ldns_rr_list2buffer_str(tmp_buffer, list) == LDNS_STATUS_OK) {
