@@ -201,7 +201,7 @@ void verbose(int lvl, const char* msg, ...)
 static int bind_port(int sock, int port, int fam)
 {
     struct sockaddr_in addr;
-#ifdef AF_INET6
+#if defined(AF_INET6) && defined(HAVE_GETADDRINFO)
     if(fam == AF_INET6) {
     	struct sockaddr_in6 addr6;
 	memset(&addr6, 0, sizeof(addr6));
