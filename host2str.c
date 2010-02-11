@@ -648,7 +648,7 @@ ldns_rdf2buffer_str_loc(ldns_buffer *output, const ldns_rdf *rdf)
 
 		loc_cm_print(output, (vertical_precision & 0xf0) >> 4,
 			vertical_precision & 0x0f);
-		ldns_buffer_printf(output, "m ");
+		ldns_buffer_printf(output, "m");
 
 		return ldns_buffer_status(output);
 	} else {

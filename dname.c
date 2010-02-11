@@ -475,12 +475,30 @@ ldns_dname_interval(const ldns_rdf *prev, const ldns_rdf *middle,
 bool
 ldns_dname_str_absolute(const char *dname_str)
 {
+        const char* s;
 	if(dname_str && strcmp(dname_str, ".") == 0)
 		return 1;
-	return (dname_str &&
-	        strlen(dname_str) > 1 &&
-	        dname_str[strlen(dname_str) - 1] == '.' &&
-	        dname_str[strlen(dname_str) - 2] != '\\');
+        if(!dname_str || strlen(dname_str) < 2)
+                return 0;
+        if(dname_str[strlen(dname_str) - 1] != '.')
+                return 0;
+        if(dname_str[strlen(dname_str) - 2] == '\\')
+                return 1; /* ends in . and no \ before it */
+        /* so we have the case of ends in . and there is \ before it */
+        for(s=dname_str; s; s++) {
+                if(*s == '\\') {
+                        if(s[1] && s[2] && s[3] /* check length */
+                                && isdigit(s[1]) && isdigit(s[2]) && 
+                                isdigit(s[3]))
+                                s += 3;
+                        else if(!s[1] || isdigit(s[1])) /* escape of nul,0-9 */
+                                return 0; /* parse error */
+                        else s++; /* another character escaped */
+                }
+                else if(!*(s+1) && *s == '.')
+                        return 1; /* trailing dot, unescaped */
+        }
+        return 0;
 }
 
 ldns_rdf *

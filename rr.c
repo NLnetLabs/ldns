@@ -404,7 +404,6 @@ ldns_rr_new_frm_str_internal(ldns_rr **newrr, const char *str,
 					rd_strlen = strlen(rd);
 
 					/* unknown RR data */
-                                        printf("rd %d: %s\n", rd_strlen, rd);
 					if (strncmp(rd, "\\#", 2) == 0 && !quoted && (rd_strlen == 2 || rd[2]==' ')) {
                                         	uint16_t hex_data_size;
                                                 char *hex_data_str;
