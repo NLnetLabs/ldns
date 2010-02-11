@@ -120,7 +120,7 @@ ldns_rr_new_frm_str_internal(ldns_rr **newrr, const char *str,
 	const char *delimiters;
 	ssize_t c;
 	ldns_rdf *owner_dname;
-    const char* endptr;
+        const char* endptr;
 
 	/* used for types with unknown number of rdatas */
 	bool done;
@@ -130,12 +130,7 @@ ldns_rr_new_frm_str_internal(ldns_rr **newrr, const char *str,
 	uint16_t r_cnt;
 	uint16_t r_min;
 	uint16_t r_max;
-
-	uint16_t hex_data_size;
-	char *hex_data_str;
-	uint16_t cur_hex_data_size;
-	uint8_t *hex_data;
-	size_t hex_pos;
+        size_t pre_data_pos;
 
 	new = ldns_rr_new();
 
@@ -399,6 +394,7 @@ ldns_rr_new_frm_str_internal(ldns_rr **newrr, const char *str,
 					ldns_buffer_skip(rd_buf, 1);
 				}
 
+                                pre_data_pos = ldns_buffer_position(rd_buf);
 				if ((c = ldns_bget_token(rd_buf, rd, delimiters,
 							LDNS_MAX_RDFLEN)) != -1) {
 					/* hmmz, rfc3597 specifies that any type can be represented with
@@ -408,7 +404,17 @@ ldns_rr_new_frm_str_internal(ldns_rr **newrr, const char *str,
 					rd_strlen = strlen(rd);
 
 					/* unknown RR data */
-					if (rd_strlen == 2 && strncmp(rd, "\\#", 2) == 0 && !quoted) {
+                                        printf("rd %d: %s\n", rd_strlen, rd);
+					if (strncmp(rd, "\\#", 2) == 0 && !quoted && (rd_strlen == 2 || rd[2]==' ')) {
+                                        	uint16_t hex_data_size;
+                                                char *hex_data_str;
+                                                uint16_t cur_hex_data_size;
+
+                                                /* go back to before \# and skip it while setting delimiters better */
+                                                ldns_buffer_set_position(rd_buf, pre_data_pos);
+					        delimiters = "\n\t ";
+                                                (void)ldns_bget_token(rd_buf, rd, delimiters, LDNS_MAX_RDFLEN);
+                                                /* read rdata octet length */
 						c = ldns_bget_token(rd_buf, rd, delimiters, LDNS_MAX_RDFLEN);
 						if (c == -1) {
 							/* something goes very wrong here */
@@ -437,10 +443,10 @@ ldns_rr_new_frm_str_internal(ldns_rr **newrr, const char *str,
 						/* correct the rdf type */
 						/* if *we* know the type, interpret it as wireformat */
 						if (desc) {
-							hex_data = LDNS_XMALLOC(uint8_t, hex_data_size + 2);
+                                                        size_t hex_pos = 0;
+                                                        uint8_t *hex_data = LDNS_XMALLOC(uint8_t, hex_data_size + 2);
 							ldns_write_uint16(hex_data, hex_data_size);
 							ldns_hexstring_to_data(hex_data + 2, hex_data_str);
-							hex_pos = 0;
 							(void) ldns_wire2rdf(new, hex_data,
 							                 hex_data_size+2, &hex_pos);
 							LDNS_FREE(hex_data);
