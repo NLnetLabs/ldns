@@ -280,7 +280,7 @@ ldns_str2rdf_dname(ldns_rdf **d, const char *str)
 	size_t len;
 
 	int esc;
-	uint8_t *s,*p,*q, *pq, label_len;
+	uint8_t *s, *q, *pq, label_len;
 	uint8_t buf[LDNS_MAX_DOMAINLEN + 1];
 	*d = NULL;
 
@@ -301,15 +301,16 @@ ldns_str2rdf_dname(ldns_rdf **d, const char *str)
 
 	/* get on with the rest */
 
-	/* s is on the current dot
-	 * p on the previous one
-	 * q builds the dname
+	/* s is on the current character in the string
+         * pq points to where the labellength is going to go
+         * label_len keeps track of the current label's length
+	 * q builds the dname inside the buf array
 	 */
 	len = 0;
 	q = buf+1;
 	pq = buf;
 	label_len = 0;
-	for (s = p = (uint8_t *) str; *s; s++, q++) {
+	for (s = (uint8_t *)str; *s; s++, q++) {
 		if (q > buf + LDNS_MAX_DOMAINLEN) {
 			return LDNS_STATUS_DOMAINNAME_OVERFLOW;
 		}
@@ -326,7 +327,6 @@ ldns_str2rdf_dname(ldns_rdf **d, const char *str)
 			*pq = label_len;
 			label_len = 0;
 			pq = q;
-			p = s+1;
 			break;
 		case '\\':
 			/* octet value or literal char */
@@ -349,6 +349,12 @@ ldns_str2rdf_dname(ldns_rdf **d, const char *str)
 		if (q > buf + LDNS_MAX_DOMAINLEN) {
 			return LDNS_STATUS_DOMAINNAME_OVERFLOW;
 		}
+                if (label_len > LDNS_MAX_LABELLEN) {
+                        return LDNS_STATUS_LABEL_OVERFLOW;
+                }
+                if (label_len == 0) { /* label_len 0 but not . at end? */
+                        return LDNS_STATUS_EMPTY_LABEL;
+                }
 		len += label_len + 1;
 		*pq = label_len;
 		*q = 0;
