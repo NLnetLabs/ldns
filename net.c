@@ -44,7 +44,6 @@ ldns_send(ldns_pkt **result_packet, ldns_resolver *r, const ldns_pkt *query_pkt)
 		tsig_mac = ldns_rr_rdf(ldns_pkt_tsig(query_pkt), 3);
 	}
 
-
 	if (!query_pkt ||
 	    ldns_pkt2buffer_wire(qb, query_pkt) != LDNS_STATUS_OK) {
 		result = LDNS_STATUS_ERR;
@@ -53,7 +52,7 @@ ldns_send(ldns_pkt **result_packet, ldns_resolver *r, const ldns_pkt *query_pkt)
 	}
 
 	ldns_buffer_free(qb);
-	
+
 	return result;
 }
 
@@ -97,7 +96,6 @@ ldns_send_buffer(ldns_pkt **result, ldns_resolver *r, ldns_buffer *qb, ldns_rdf 
 			/* not reachable nameserver! */
 			continue;
 		}
-		all_servers_rtt_inf = false;
 
 		/* maybe verbosity setting?
 		printf("Sending to ");
@@ -106,16 +104,20 @@ ldns_send_buffer(ldns_pkt **result, ldns_resolver *r, ldns_buffer *qb, ldns_rdf 
 		*/
 		ns = ldns_rdf2native_sockaddr_storage(ns_array[i],
 				ldns_resolver_port(r), &ns_len);
-		
-		if ((ns->ss_family == AF_INET) && 
+
+		if ((ns->ss_family == AF_INET) &&
 				(ldns_resolver_ip6(r) == LDNS_RESOLV_INET6)) {
+			/* not reachable */
 			continue;
 		}
 
 		if ((ns->ss_family == AF_INET6) &&
 				 (ldns_resolver_ip6(r) == LDNS_RESOLV_INET)) {
+			/* not reachable */
 			continue;
 		}
+
+		all_servers_rtt_inf = false;
 
 		gettimeofday(&tv_s, NULL);
 
@@ -210,7 +212,7 @@ ldns_send_buffer(ldns_pkt **result, ldns_resolver *r, ldns_buffer *qb, ldns_rdf 
 #else
 	(void)tsig_mac;
 #endif /* HAVE_SSL */
-	
+
 	LDNS_FREE(reply_bytes);
 	if (result) {
 		*result = reply;

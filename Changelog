@@ -1,5 +1,6 @@
 1.6.5
 	* Catch \X where X is a digit as an error.
+	* Fix segfault when ip6 ldns resolver only has ip4 servers.
 	* Fix NSEC record after DNSKEY at zone apex not properly signed.
 	* Fix syntax error if last label too long and no dot at end of domain. 
 	* Fix parse of \# syntax with space for type LOC.

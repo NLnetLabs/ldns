@@ -895,7 +895,7 @@ ldns_resolver_search(const ldns_resolver *r,const  ldns_rdf *name,
 }
 
 ldns_pkt *
-ldns_resolver_query(const ldns_resolver *r, const ldns_rdf *name, 
+ldns_resolver_query(const ldns_resolver *r, const ldns_rdf *name,
 	ldns_rr_type t, ldns_rr_class c, uint16_t flags)
 {
 	ldns_rdf *newname;
@@ -905,7 +905,7 @@ ldns_resolver_query(const ldns_resolver *r, const ldns_rdf *name,
 	pkt = NULL;
 
 	if (!ldns_resolver_defnames(r)) {
-		status = ldns_resolver_send(&pkt, (ldns_resolver *)r, name, 
+		status = ldns_resolver_send(&pkt, (ldns_resolver *)r, name,
 				t, c, flags);
 		if (status == LDNS_STATUS_OK) {
 			return pkt;
@@ -939,6 +939,7 @@ ldns_resolver_query(const ldns_resolver *r, const ldns_rdf *name,
 		}
 		return NULL;
 	}
+
 	status = ldns_resolver_send(&pkt, (ldns_resolver *)r, newname, t, c,
 			flags);
 
@@ -961,7 +962,6 @@ ldns_resolver_send_pkt(ldns_pkt **answer, ldns_resolver *r,
 			answer_pkt = NULL;
 		}
 	} else {
-
 		/* if tc=1 fall back to EDNS and/or TCP */
 		/* check for tcp first (otherwise we don't care about tc=1) */
 		if (!ldns_resolver_usevc(r) && ldns_resolver_fallback(r)) {
@@ -983,7 +983,6 @@ ldns_resolver_send_pkt(ldns_pkt **answer, ldns_resolver *r,
 			}
 		}
 	}
-
 
 	if (answer) {
 		*answer = answer_pkt;
@@ -1087,6 +1086,7 @@ ldns_resolver_send(ldns_pkt **answer, ldns_resolver *r, const ldns_rdf *name,
 #else
 	return LDNS_STATUS_CRYPTO_TSIG_ERR;
 #endif /* HAVE_SSL */
+
 	status = ldns_resolver_send_pkt(&answer_pkt, r, query_pkt);
 	ldns_pkt_free(query_pkt);
 

@@ -56,7 +56,7 @@ ldns_lookup_table ldns_error_str[] = {
         { LDNS_STATUS_CRYPTO_EXPIRATION_BEFORE_INCEPTION, "DNSSEC signature has expiration date earlier than inception date" },
 	{ LDNS_STATUS_ENGINE_KEY_NOT_LOADED, "Unable to load private key from engine" },
         { LDNS_STATUS_NSEC3_ERR, "Error in NSEC3 denial of existence proof" },
-	{ LDNS_STATUS_RES_NO_NS, "No nameservers defined in the resolver" },
+	{ LDNS_STATUS_RES_NO_NS, "No (valid) nameservers defined in the resolver" },
 	{ LDNS_STATUS_RES_QUERY, "No correct query given to resolver" },
 	{ LDNS_STATUS_WIRE_INCOMPLETE_HEADER, "header section incomplete" },
 	{ LDNS_STATUS_WIRE_INCOMPLETE_QUESTION, "question section incomplete" },
