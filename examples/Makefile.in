@@ -24,7 +24,7 @@ LDNSDIR = @LDNSDIR@
 
 INSTALL = $(srcdir)/../install-sh 
 
-COMPILE         = $(CC) $(CPPFLAGS) $(CFLAGS)
+COMPILE         = $(CC) $(CPPFLAGS) $(LIBSSL_CPPFLAGS) $(CFLAGS)
 LINK		= $(libtool) --tag=CC --quiet --mode=link $(CC) $(CFLAGS) $(LDFLAGS) $(LIBS) $(RUNTIME_PATH)
 LINK_STATIC	= $(libtool) --tag=CC --quiet --mode=link $(CC) $(CFLAGS) -static $(LDFLAGS) $(LIBS) $(RUNTIME_PATH)
 

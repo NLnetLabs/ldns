@@ -185,36 +185,33 @@ AC_CHECK_TYPE(in_port_t, [], [AC_DEFINE([in_port_t], [uint16_t], [in_port_t])], 
 #endif])
 
 # check to see if libraries are needed for these functions.
-AC_CHECK_LIB(socket, socket)
-
-tmp_LIBS=$LIBS
-LIBS=
+AC_SEARCH_LIBS(socket, socket)
 AC_SEARCH_LIBS(inet_pton, nsl)
-AC_SUBST(LIBNSL_LIBS,$LIBS)
-LIBS=$tmp_LIBS
 
 tmp_CPPFLAGS=$CPPFLAGS
 tmp_LDFLAGS=$LDFLAGS
 tmp_LIBS=$LIBS
-CPPFLAGS=
-LDFLAGS=
-LIBS=
 
 ACX_WITH_SSL_OPTIONAL
 
-AC_SUBST(LIBSSL_CPPFLAGS,$CPPFLAGS)
-AC_SUBST(LIBSSL_LDFLAGS,$LDFLAGS)
-AC_SUBST(LIBSSL_LIBS,$LIBS)
+AC_SUBST(LIBSSL_CPPFLAGS)
+AC_SUBST(LIBSSL_LDFLAGS)
+AC_SUBST(LIBSSL_LIBS)
 
 CPPFLAGS=$tmp_CPPFLAGS
 LDFLAGS=$tmp_LDFLAGS
 LIBS=$tmp_LIBS
 
+# use libcrypto to check the following:
+tmp_LDFLAGS=$LDFLAGS
+tmp_LIBS=$LIBS
+LDFLAGS="$LDFLAGS $LIBSSL_LDFLAGS"
+LIBS="$LIBS $LIBSSL_LIBS"
 AC_ARG_ENABLE(sha2, AC_HELP_STRING([--enable-sha2], [Enable SHA256 and SHA512 RRSIG support, experimental]))
 case "$enable_sha2" in
     yes)
         AC_MSG_CHECKING(for SHA256 and SHA512)
-        AC_CHECK_LIB(crypto, SHA256_Init,, [
+        AC_CHECK_FUNC(SHA256_Init,, [
             AC_MSG_ERROR([SHA2 enabled, but no SHA2 functions found in OpenSSL])
         ])
         AC_DEFINE_UNQUOTED([USE_SHA2], [1], [Define this to enable SHA256 and SHA512 support.])
@@ -227,12 +224,14 @@ AC_ARG_ENABLE(gost, AC_HELP_STRING([--enable-gost], [Enable GOST support, experi
 case "$enable_gost" in
     yes)
         AC_MSG_CHECKING(for GOST)
-	AC_CHECK_LIB(crypto, EVP_PKEY_set_type_str,,[AC_MSG_ERROR([OpenSSL >= 1.0.0 is needed for GOST support])])
+	AC_CHECK_FUNC(EVP_PKEY_set_type_str,,[AC_MSG_ERROR([OpenSSL >= 1.0.0 is needed for GOST support])])
         AC_DEFINE_UNQUOTED([USE_GOST], [1], [Define this to enable GOST support.])
         ;;
     no|*)
         ;;
 esac
+LDFLAGS=$tmp_LDFLAGS
+LIBS=$tmp_LIBS
 
 #AC_CHECK_HEADER(ldns/ldns.h,,  [
 #	AC_MSG_ERROR([Can't find ldns headers (make copy-headers in devel source.)])
