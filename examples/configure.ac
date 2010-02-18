@@ -186,11 +186,15 @@ AC_CHECK_TYPE(in_port_t, [], [AC_DEFINE([in_port_t], [uint16_t], [in_port_t])], 
 
 # check to see if libraries are needed for these functions.
 AC_SEARCH_LIBS(socket, socket)
+tmp_LIBS="$LIBS"
+LIBS=
 AC_SEARCH_LIBS(inet_pton, nsl)
+AC_SUBST(LIBNSL_LIBS,$LIBS)
+LIBS="$tmp_LIBS"
 
-tmp_CPPFLAGS=$CPPFLAGS
-tmp_LDFLAGS=$LDFLAGS
-tmp_LIBS=$LIBS
+tmp_CPPFLAGS="$CPPFLAGS"
+tmp_LDFLAGS="$LDFLAGS"
+tmp_LIBS="$LIBS"
 
 ACX_WITH_SSL_OPTIONAL
 
@@ -198,13 +202,13 @@ AC_SUBST(LIBSSL_CPPFLAGS)
 AC_SUBST(LIBSSL_LDFLAGS)
 AC_SUBST(LIBSSL_LIBS)
 
-CPPFLAGS=$tmp_CPPFLAGS
-LDFLAGS=$tmp_LDFLAGS
-LIBS=$tmp_LIBS
+CPPFLAGS="$tmp_CPPFLAGS"
+LDFLAGS="$tmp_LDFLAGS"
+LIBS="$tmp_LIBS"
 
 # use libcrypto to check the following:
-tmp_LDFLAGS=$LDFLAGS
-tmp_LIBS=$LIBS
+tmp_LDFLAGS="$LDFLAGS"
+tmp_LIBS="$LIBS"
 LDFLAGS="$LDFLAGS $LIBSSL_LDFLAGS"
 LIBS="$LIBS $LIBSSL_LIBS"
 AC_ARG_ENABLE(sha2, AC_HELP_STRING([--enable-sha2], [Enable SHA256 and SHA512 RRSIG support, experimental]))
@@ -230,8 +234,8 @@ case "$enable_gost" in
     no|*)
         ;;
 esac
-LDFLAGS=$tmp_LDFLAGS
-LIBS=$tmp_LIBS
+LDFLAGS="$tmp_LDFLAGS"
+LIBS="$tmp_LIBS"
 
 #AC_CHECK_HEADER(ldns/ldns.h,,  [
 #	AC_MSG_ERROR([Can't find ldns headers (make copy-headers in devel source.)])
