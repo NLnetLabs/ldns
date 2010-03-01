@@ -25,12 +25,13 @@
 static void 
 usage(int argc, char **argv)
 {
-	printf("Usage: %s [-v] [-i] [-d] [-c] <zonefile1> <zonefile2>\n",
+	printf("Usage: %s [-v] [-i] [-d] [-c] [-s] <zonefile1> <zonefile2>\n",
 		  argv[0]);
 	printf("       -i - print inserted\n");
 	printf("       -d - print deleted\n");
 	printf("       -c - print changed\n");
 	printf("       -a - print all differences (-i -d -c)\n");
+	printf("       -s - do not exclude SOA record from comparison\n");
 	printf("       -z - do not sort zones\n");
 }
 
@@ -50,10 +51,10 @@ main(int argc, char **argv)
 	size_t		num_ins = 0, num_del = 0, num_chg = 0;
 	int		c;
 	bool		opt_deleted = false, opt_inserted = false, opt_changed = false;
-        bool		sort = true;
+        bool		sort = true, inc_soa = false;
 	char		op = 0;
 
-	while ((c = getopt(argc, argv, "ahvdicz")) != -1) {
+	while ((c = getopt(argc, argv, "ahvdicsz")) != -1) {
 		switch (c) {
 		case 'h':
 			usage(argc, argv);
@@ -65,6 +66,9 @@ main(int argc, char **argv)
 				  LDNS_VERSION,
 				  ldns_version());
 			exit(EXIT_SUCCESS);
+			break;
+		case 's':
+			inc_soa = true;
 			break;
 		case 'z':
 			sort = false;
@@ -156,6 +160,23 @@ main(int argc, char **argv)
                 /* sort zone 2 */
                 ldns_zone_sort(z2);
         }
+
+	if(inc_soa) {
+		ldns_rr_list* wsoa = ldns_rr_list_new();
+		ldns_rr_list_push_rr(wsoa, ldns_zone_soa(z1));
+		ldns_rr_list_cat(wsoa, rrl1);
+		rrl1 = wsoa;
+		rrc1 = ldns_rr_list_rr_count(rrl1);
+		wsoa = ldns_rr_list_new();
+		ldns_rr_list_push_rr(wsoa, ldns_zone_soa(z2));
+		ldns_rr_list_cat(wsoa, rrl2);
+		rrl2 = wsoa;
+		rrc2 = ldns_rr_list_rr_count(rrl2);
+		if(sort) {
+			ldns_rr_list_sort(rrl1);
+			ldns_rr_list_sort(rrl2);
+		}
+	}
 
 	/*
 	 * Walk through both zones. The previously seen resource record is
@@ -251,6 +272,10 @@ main(int argc, char **argv)
 		  (unsigned int) num_chg);
 
 	/* Free resources */
+	if(inc_soa) {
+		ldns_rr_list_free(rrl1);
+		ldns_rr_list_free(rrl2);
+	}
 	ldns_zone_deep_free(z2);
 	ldns_zone_deep_free(z1);
 
