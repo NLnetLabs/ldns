@@ -112,7 +112,7 @@ LINK_LIB	= $(LIBTOOL) --mode=link $(CC) $(strip $(CFLAGS) $(LDFLAGS) $(LIBS) -ve
 all:		copy-headers lib linktest manpages @PYLDNS@
 
 linktest:	$(srcdir)/linktest.c $(LIBDNS_HEADERS) ldns/util.h ldns/config.h libldns.la
-		$(LIBTOOL) --mode=link $(CC) $(srcdir)/linktest.c $(CPPFLAGS) $(CFLAGS) -lldns $(LIBS) -o linktest
+		$(LIBTOOL) --mode=link $(CC) $(srcdir)/linktest.c $(CPPFLAGS) $(LIBSSL_CPPFLAGS) $(CFLAGS) -lldns $(LIBS) -o linktest
 
 lib:		libldns.la
 		if [ ! -d lib ] ; then ln -s .libs lib ; fi ;		
