@@ -7,6 +7,7 @@
 	* Fix ldns_dname_absolute for escape sequences, fixes some parse errs.
 	* bugfix #297: linking ssl, bug due to patch submitted as #296.
 	* ldns-compare-zones -s to not exclude SOA record from comparison.
+	* --disable-rpath fix
 
 1.6.4	2010-01-20
 	* Imported pyldns contribution by Zdenek Vasicek and Karel Slany.
