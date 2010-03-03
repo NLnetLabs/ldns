@@ -6,10 +6,10 @@ sinclude(acx_nlnetlabs.m4)
 AC_INIT(ldns, 1.6.5, libdns@nlnetlabs.nl, libdns)
 AC_CONFIG_SRCDIR([packet.c])
 # needed to build correct soname
-AC_SUBST(LIBTOOL_VERSION_INFO, "1:6:3")
+AC_SUBST(LIBTOOL_VERSION_INFO, "1:6:5")
 
 PACKAGE_VERSION="$PACKAGE_VERSION"
-PACKAGE_REVISION=m4_format(0x%02x%02x%02x, 1, 6, 4)
+PACKAGE_REVISION=m4_format(0x%02x%02x%02x, 1, 6, 5)
 AC_SUBST(PACKAGE_REVISION)
 
 OURCPPFLAGS=''
