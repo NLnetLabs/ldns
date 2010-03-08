@@ -6,6 +6,7 @@
 	* Fix parse of \# syntax with space for type LOC.
 	* Fix ldns_dname_absolute for escape sequences, fixes some parse errs.
 	* bugfix #297: linking ssl, bug due to patch submitted as #296.
+	* bugfix #299: added missing declarations to host2str.h
 	* ldns-compare-zones -s to not exclude SOA record from comparison.
 	* --disable-rpath fix
 
