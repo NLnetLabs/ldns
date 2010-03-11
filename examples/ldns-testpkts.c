@@ -31,8 +31,12 @@ struct sockaddr_storage;
 /** string to show in warnings and errors */
 static const char* prog_name = "ldns-testpkts";
 
+#ifndef UTIL_LOG_H
+/** verbosity definition for compat */
+enum verbosity_value { NO_VERBOSE=0 };
+#endif
 /** logging routine, provided by caller */
-void verbose(int lvl, const char* msg, ...);
+void verbose(enum verbosity_value lvl, const char* msg, ...) ATTR_FORMAT(printf, 2, 3);
 
 /** print error and exit */
 static void error(const char* msg, ...)
@@ -589,12 +593,12 @@ match_list(ldns_rr_list* q, ldns_rr_list *p, bool mttl)
 	{
 		if(ldns_rr_compare(ldns_rr_list_rr(q, i), 
 			ldns_rr_list_rr(p, i)) != 0) {
-			verbose(3, "rr %d different", i);
+			verbose(3, "rr %d different", (int)i);
 			return 0;
 		}
 		if(mttl && ldns_rr_ttl(ldns_rr_list_rr(q, i)) !=
 			ldns_rr_ttl(ldns_rr_list_rr(p, i))) {
-			verbose(3, "rr %d ttl different", i);
+			verbose(3, "rr %d ttl different", (int)i);
 			return 0;
 		}
 	}
@@ -768,7 +772,7 @@ handle_query(uint8_t* inbuf, ssize_t inlen, struct entry* entries, int* count,
 	
 	query_rr = ldns_rr_list_rr(ldns_pkt_question(query_pkt), 0);
 	verbose(1, "query %d: id %d: %s %d bytes: ", ++(*count), (int)ldns_pkt_id(query_pkt), 
-		(transport==transport_tcp)?"TCP":"UDP", inlen);
+		(transport==transport_tcp)?"TCP":"UDP", (int)inlen);
 	if(verbose_out) ldns_rr_print(verbose_out, query_rr);
 	if(verbose_out) ldns_pkt_print(verbose_out, query_pkt);
 
