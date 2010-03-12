@@ -73,9 +73,12 @@ AC_CHECK_TYPE(uint16_t, unsigned short)
 AC_CHECK_TYPE(uint32_t, unsigned int)
 AC_CHECK_TYPE(uint64_t, unsigned long long)
 
-
 # my own checks
 AC_CHECK_PROG(doxygen, doxygen, doxygen)
+
+# check to see if libraries are needed for these functions.
+AC_SEARCH_LIBS([socket], [socket])
+AC_SEARCH_LIBS([inet_pton], [nsl])
 
 # check for python
 AC_ARG_WITH(pyldns, AC_HELP_STRING([--with-pyldns], 
@@ -248,10 +251,6 @@ AC_CHECK_TYPE(in_port_t, [], [AC_DEFINE([in_port_t], [uint16_t], [in_port_t])], 
 #if HAVE_NETINET_IN_H
 # include <netinet/in.h>
 #endif])
-
-# check to see if libraries are needed for these functions.
-AC_SEARCH_LIBS([socket], [socket])
-AC_SEARCH_LIBS([inet_pton], [nsl])
 
 AC_FUNC_MALLOC
 AC_FUNC_REALLOC
