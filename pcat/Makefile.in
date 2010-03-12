@@ -20,7 +20,7 @@ INSTALL = $(srcdir)/../install-sh
 
 COMPILE         = $(CC) $(CPPFLAGS) $(CFLAGS)
 LINK            = $(CC) $(CFLAGS) $(LDFLAGS)
-LIBS_STC        = -lpcap -lcrypto $(LDNSDIR)/lib/libldns.a
+LIBS_STC        = -lpcap $(LDNSDIR)/lib/libldns.a -lcrypto -ldl
 
 HEADER		= config.h
 
