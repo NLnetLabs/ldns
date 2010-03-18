@@ -22,7 +22,7 @@ A DNS Resource record looks like this:
 nlnetlabs.nl.   600     IN      MX             10    open.nlnetlabs.nl.
  \              \       \       \              \                     /
   owner          ttl     class   type           \        rdf[]      /
-  (rdf)     (uint16_t) (rr_class) (rr_type)
+  (rdf)     (uint32_t) (rr_class) (rr_type)
                                                  10          := rdf[0]
                                                  open.nlnetlabs.nl. := rdf[1]
 </pre>
