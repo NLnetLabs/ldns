@@ -636,6 +636,8 @@ ldns_resolver_new_frm_fp_l(ldns_resolver **res, FILE *fp, int *line_nr)
 #endif
 	ssize_t gtr;
 	ldns_buffer *b;
+        int lnr = 0, oldline;
+        if(!line_nr) line_nr = &lnr;
 
 	/* do this better
 	 * expect =
@@ -661,15 +663,24 @@ ldns_resolver_new_frm_fp_l(ldns_resolver **res, FILE *fp, int *line_nr)
 
 	gtr = 1;
 	word[0] = 0;
+        oldline = *line_nr;
 	while (gtr > 0) {
 		/* check comments */
 		if (word[0] == '#') {
-			/* read the rest of the line, should be 1 word */
-			gtr = ldns_fget_token_l(fp, word, LDNS_PARSE_NORMAL, 0, line_nr);
-			/* prepare the next string for further parsing */
+                        if(oldline == *line_nr) {
+                                /* skip until end of line */
+                                int c;
+                                do {
+                                        c = fgetc(fp);
+                                } while(c != EOF && c != '\n');
+                                if(c=='\n' && line_nr) (*line_nr)++;
+                        }
+			/* and read next to prepare for further parsing */
+                        oldline = *line_nr;
 			gtr = ldns_fget_token_l(fp, word, LDNS_PARSE_NORMAL, 0, line_nr);
 			continue;
 		}
+                oldline = *line_nr;
 		switch(expect) {
 			case LDNS_RESOLV_KEYWORD:
 				/* keyword */

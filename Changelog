@@ -10,6 +10,7 @@
 	* ldns-compare-zones -s to not exclude SOA record from comparison.
 	* --disable-rpath fix
 	* fix ldns_pkt_empty(), reported by Alex Nicoll.
+	* fix ldns_resolver_new_frm_fp not ignore lines after a comment.
 
 1.6.4	2010-01-20
 	* Imported pyldns contribution by Zdenek Vasicek and Karel Slany.
