@@ -412,9 +412,9 @@ ldns_pkt_empty(ldns_pkt *p)
 		return true; /* NULL is empty? */
 	}
 	if (ldns_pkt_section_count(p, LDNS_SECTION_ANY) > 0) {
-		return true;
-	} else
 		return false;
+	} else
+		return true;
 }
 
 

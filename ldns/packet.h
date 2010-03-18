@@ -840,7 +840,7 @@ bool ldns_pkt_safe_push_rr_list(ldns_pkt *pkt, ldns_pkt_section sec, ldns_rr_lis
 /**
  * check if a packet is empty
  * \param[in] p packet
- * \return true: empty, false: empty
+ * \return true: empty, false: not empty
  */
 bool ldns_pkt_empty(ldns_pkt *p);
 
