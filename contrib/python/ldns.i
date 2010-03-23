@@ -211,4 +211,30 @@ typedef struct ldns_dnssec_zone { };
                              Py_None);
    return tuple;
  }
+
+ PyObject* ldns_rr_new_question_frm_str_(const char *str, ldns_rdf* origin, ldns_rdf* prev) 
+ //returns tuple (status, ldns_rr, prev)
+ {
+   PyObject* tuple;
+
+   ldns_rdf *p_prev = prev;
+   ldns_rdf **pp_prev = &p_prev;
+   if (p_prev == 0) pp_prev = 0;
+
+   ldns_rr *p_rr = 0;
+   ldns_rr **pp_rr = &p_rr;
+
+   ldns_status st = ldns_rr_new_question_frm_str(pp_rr, str, origin, pp_prev);
+
+   tuple = PyTuple_New(3);
+   PyTuple_SetItem(tuple, 0, SWIG_From_int(st)); 
+   PyTuple_SetItem(tuple, 1, (st == LDNS_STATUS_OK) ? 
+                             SWIG_NewPointerObj(SWIG_as_voidptr(p_rr), SWIGTYPE_p_ldns_struct_rr, SWIG_POINTER_OWN |  0 ) : 
+                             Py_None);
+   PyTuple_SetItem(tuple, 2, (p_prev != prev) ? 
+                             SWIG_NewPointerObj(SWIG_as_voidptr(p_prev), SWIGTYPE_p_ldns_struct_rdf, SWIG_POINTER_OWN |  0 ) :
+                             Py_None);
+   return tuple;
+ }
+
 %}

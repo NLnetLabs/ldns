@@ -115,6 +115,25 @@ The RR is the basic DNS element that contains actual data. This class allows to 
             return rr
 
         @staticmethod
+        def new_question_frm_str(str, default_ttl=0, origin=None, prev=None, raiseException=True):
+            """Creates an rr object from a string.
+
+               The string is like new_frm_str but without rdata.
+
+               :param str: the string to convert
+               :param origin: when the owner is relative add this
+               :param prev: the previous ownername
+               :param raiseException: if True, an exception occurs in case a rr instance can't be created
+               :returns: 
+                  * rr - (ldnsrr) RR instance or None. If the object can't be created and raiseException is True, an exception occurs.
+            """
+            status, rr, prev = _ldns.ldns_rr_new_question_frm_str_(str, origin, prev)
+            if status != LDNS_STATUS_OK:
+                if (raiseException): raise Exception("Can't create RR, error: %d" % status)
+                return None
+            return rr
+
+        @staticmethod
         def new_frm_str_prev(str, default_ttl=0, origin=None, prev=None, raiseException=True):
             """Creates an rr object from a string.
 
