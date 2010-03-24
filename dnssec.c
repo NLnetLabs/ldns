@@ -42,7 +42,7 @@ ldns_dnssec_get_rrsig_for_name_and_type(const ldns_rdf *name,
 		if (ldns_rr_get_type(candidate) == LDNS_RR_TYPE_RRSIG) {
 			if (ldns_dname_compare(ldns_rr_owner(candidate),
 			                       name) == 0 &&
-			    ldns_rdf2native_int8(ldns_rr_rrsig_typecovered(candidate))
+			    ldns_rdf2rr_type(ldns_rr_rrsig_typecovered(candidate))
 			    == type
 			    ) {
 				return candidate;
