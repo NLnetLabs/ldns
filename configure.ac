@@ -4,10 +4,10 @@ AC_PREREQ(2.56)
 sinclude(acx_nlnetlabs.m4)
 
 # must be numbers. ac_defun because of later processing.
-AC_DEFUN([VERSION_MAJOR],[1])
-AC_DEFUN([VERSION_MINOR],[6])
-AC_DEFUN([VERSION_MICRO],[5])
-AC_INIT(ldns, [VERSION_MAJOR.VERSION_MINOR.VERSION_MICRO], libdns@nlnetlabs.nl, libdns)
+m4_define([VERSION_MAJOR],[1])
+m4_define([VERSION_MINOR],[6])
+m4_define([VERSION_MICRO],[5])
+AC_INIT(ldns, m4_defn([VERSION_MAJOR]).m4_defn([VERSION_MINOR]).m4_defn([VERSION_MICRO]), libdns@nlnetlabs.nl, libdns)
 AC_CONFIG_SRCDIR([packet.c])
 # needed to build correct soname
 AC_SUBST(LIBTOOL_VERSION_INFO, VERSION_MAJOR:VERSION_MINOR:VERSION_MICRO)
