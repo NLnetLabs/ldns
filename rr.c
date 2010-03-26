@@ -1808,6 +1808,9 @@ static const ldns_rdf_type type_nsec_wireformat[] = {
 static const ldns_rdf_type type_dhcid_wireformat[] = {
 	LDNS_RDF_TYPE_B64
 };
+static const ldns_rdf_type type_talink_wireformat[] = {
+	LDNS_RDF_TYPE_DNAME, LDNS_RDF_TYPE_DNAME
+};
 /* nsec3 is some vars, followed by same type of data of nsec */
 static const ldns_rdf_type type_nsec3_wireformat[] = {
 /*	LDNS_RDF_TYPE_NSEC3_VARS, LDNS_RDF_TYPE_NSEC3_NEXT_OWNER, LDNS_RDF_TYPE_NSEC*/
@@ -1956,7 +1959,7 @@ static ldns_rr_descriptor rdata_field_descriptors[] = {
 {LDNS_RR_TYPE_NULL, "TYPE55", 1, 1, type_0_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 0 },
 {LDNS_RR_TYPE_NULL, "TYPE56", 1, 1, type_0_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 0 },
 {LDNS_RR_TYPE_NULL, "TYPE57", 1, 1, type_0_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 0 },
-{LDNS_RR_TYPE_NULL, "TYPE58", 1, 1, type_0_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 0 },
+{LDNS_RR_TYPE_TALINK, "TALINK", 2, 2, type_talink_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 2 },
 {LDNS_RR_TYPE_NULL, "TYPE59", 1, 1, type_0_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 0 },
 {LDNS_RR_TYPE_NULL, "TYPE60", 1, 1, type_0_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 0 },
 {LDNS_RR_TYPE_NULL, "TYPE61", 1, 1, type_0_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 0 },

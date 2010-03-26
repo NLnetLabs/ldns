@@ -33,7 +33,7 @@
 #define LDNS_RR_OVERHEAD	10
 
 /* The first fields are 'common' and can be referenced instantly */
-#define LDNS_RDATA_FIELD_DESCRIPTORS_COMMON 51
+#define LDNS_RDATA_FIELD_DESCRIPTORS_COMMON 58
 
 
 
@@ -173,6 +173,9 @@ enum ldns_enum_rr_type
 
 	LDNS_RR_TYPE_NSEC3 = 50,
 	LDNS_RR_TYPE_NSEC3PARAMS = 51,
+
+        /** draft-ietf-dnsop-trust-history */
+        LDNS_RR_TYPE_TALINK = 58,
 
 	LDNS_RR_TYPE_SPF = 99,
 

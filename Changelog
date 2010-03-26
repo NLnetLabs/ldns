@@ -13,6 +13,7 @@
 	* fix ldns_resolver_new_frm_fp not ignore lines after a comment.
 	* python code for ldns_rr.new_question_frm_str()
 	* Fix ldns_dnssec_verify_denial: the signature selection routine.
+	* Type TALINK parsed (draft-ietf-dnsop-trust-history).
 
 1.6.4	2010-01-20
 	* Imported pyldns contribution by Zdenek Vasicek and Karel Slany.
