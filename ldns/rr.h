@@ -33,7 +33,7 @@
 #define LDNS_RR_OVERHEAD	10
 
 /* The first fields are 'common' and can be referenced instantly */
-#define LDNS_RDATA_FIELD_DESCRIPTORS_COMMON 58
+#define LDNS_RDATA_FIELD_DESCRIPTORS_COMMON 52
 
 
 
