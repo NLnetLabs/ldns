@@ -14,6 +14,8 @@
 	* python code for ldns_rr.new_question_frm_str()
 	* Fix ldns_dnssec_verify_denial: the signature selection routine.
 	* Type TALINK parsed (draft-ietf-dnsop-trust-history).
+	* bugfix #304: fixed dead loop in ldns_tcp_read_wire() and
+	  ldns_tcp_read_wire_timeout().
 
 1.6.4	2010-01-20
 	* Imported pyldns contribution by Zdenek Vasicek and Karel Slany.
