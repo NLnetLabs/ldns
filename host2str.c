@@ -51,7 +51,7 @@ ldns_lookup_table ldns_algorithms[] = {
 	{ LDNS_RSASHA512, "RSASHA512"},
 #endif
 #ifdef USE_GOST
-	{ LDNS_GOST, "GOST"},
+	{ LDNS_ECC_GOST, "ECC-GOST"},
 #endif
         { LDNS_INDIRECT, "INDIRECT" },
         { LDNS_PRIVATEDNS, "PRIVATEDNS" },
@@ -1693,11 +1693,11 @@ ldns_key2buffer_str(ldns_buffer *output, const ldns_key *k)
 					printf("(Not available)\n");
 				}
 				break;
-			case LDNS_SIGN_GOST:
+			case LDNS_SIGN_ECC_GOST:
 				/* no format defined, use blob */
 #if defined(HAVE_SSL) && defined(USE_GOST)
 				ldns_buffer_printf(output, "Private-key-format: v1.2\n");
-				ldns_buffer_printf(output, "Algorithm: %d (GOST)\n", LDNS_SIGN_GOST);
+				ldns_buffer_printf(output, "Algorithm: %d (ECC-GOST)\n", LDNS_SIGN_ECC_GOST);
 				status = ldns_gost_key2buffer_str(output, k->_key.key);
 #endif
 				break;

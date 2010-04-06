@@ -1523,18 +1523,14 @@ ldns_gost2pkey_raw(unsigned char* key, size_t keylen)
 		0x02, 0x02, 0x1e, 0x01, 0x03, 0x43, 0x00, 0x04, 0x40};
 	unsigned char encoded[37+64];
 	const unsigned char* pp;
-	if(keylen != 66) {
+	if(keylen != 64) {
 		/* key wrong size */
-		return NULL;
-	}
-	if(key[0] != 0 || key[1] != 0) {
-		/* unsupported GOST algo or digest paramset */
 		return NULL;
 	}
 
 	/* create evp_key */
 	memmove(encoded, asn, 37);
-	memmove(encoded+37, key+2, 64);
+	memmove(encoded+37, key, 64);
 	pp = (unsigned char*)&encoded[0];
 
 	return d2i_PUBKEY(NULL, &pp, sizeof(encoded));
@@ -1616,7 +1612,7 @@ ldns_verify_rrsig_buffers_raw(unsigned char* sig, size_t siglen,
 		break;
 #endif
 #ifdef USE_GOST
-	case LDNS_GOST:
+	case LDNS_ECC_GOST:
 		return ldns_verify_rrsig_gost_raw(sig, siglen, verify_buf,
 			key, keylen);
 		break;
@@ -1707,7 +1703,7 @@ ldns_rrsig2rawsig_buffer(ldns_buffer* rawsig_buf, ldns_rr* rrsig)
 	case LDNS_RSASHA512:
 #endif
 #ifdef USE_GOST
-	case LDNS_GOST:
+	case LDNS_ECC_GOST:
 #endif
 		if (ldns_rdf2buffer_wire(rawsig_buf, 
 		    ldns_rr_rdf(rrsig, 8)) != LDNS_STATUS_OK) {

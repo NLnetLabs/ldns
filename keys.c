@@ -29,7 +29,7 @@ ldns_lookup_table ldns_signing_algorithms[] = {
         { LDNS_SIGN_RSASHA512, "RSASHA512" },
 #endif
 #ifdef USE_GOST
-        { LDNS_SIGN_GOST, "GOST" },
+        { LDNS_SIGN_ECC_GOST, "ECC-GOST" },
 #endif
         { LDNS_SIGN_DSA, "DSA" },
         { LDNS_SIGN_DSA_NSEC3, "DSA_NSEC3" },
@@ -266,12 +266,12 @@ ldns_key_new_frm_fp_l(ldns_key **key, FILE *fp, int *line_nr)
 		fprintf(stderr, "version of ldns\n");
 #endif
 	}
-	if (strncmp(d, "249 GOST", 4) == 0) {
+	if (strncmp(d, "11 ECC-GOST", 3) == 0) {
 #ifdef USE_GOST
-		alg = LDNS_SIGN_GOST;
+		alg = LDNS_SIGN_ECC_GOST;
 #else
-		fprintf(stderr, "Warning: GOST not compiled into this ");
-		fprintf(stderr, "version of ldns\n");
+		fprintf(stderr, "Warning: ECC-GOST not compiled into this ");
+		fprintf(stderr, "version of ldns, use --enable-gost\n");
 #endif
 	}
 	if (strncmp(d, "157 HMAC-MD5", 4) == 0) {
@@ -332,7 +332,7 @@ ldns_key_new_frm_fp_l(ldns_key **key, FILE *fp, int *line_nr)
 			ldns_key_set_hmac_key(k, hmac);
 #endif /* HAVE_SSL */
 			break;
-		case LDNS_SIGN_GOST:
+		case LDNS_SIGN_ECC_GOST:
 			ldns_key_set_algorithm(k, alg);
 #if defined(HAVE_SSL) && defined(USE_GOST)
 			ldns_key_set_evp_key(k, 
@@ -733,7 +733,7 @@ ldns_key_new_frm_algorithm(ldns_signing_algorithm alg, uint16_t size)
 
 			ldns_key_set_flags(k, 0);
 			break;
-		case LDNS_SIGN_GOST:
+		case LDNS_SIGN_ECC_GOST:
 #if defined(HAVE_SSL) && defined(USE_GOST)
 			ldns_key_set_evp_key(k, ldns_gen_gost_key());
 #endif /* HAVE_SSL and USE_GOST */
@@ -1111,13 +1111,10 @@ ldns_key_gost2bin(unsigned char* data, EVP_PKEY* k, uint16_t* size)
 		return false;
 	}
 	/* omit ASN header */
-	/* insert parameters */
-	data[0] = 0;
-	data[1] = 0;
 	for(i=0; i<64; i++)
-		data[i+2] = pp[i+37];
+		data[i] = pp[i+37];
 	CRYPTO_free(pp);
-	*size = 66;
+	*size = 64;
 	return true;
 }
 #endif /* USE_GOST */
@@ -1229,7 +1226,7 @@ ldns_key2rr(const ldns_key *k)
 			}
 #endif /* HAVE_SSL */
 			break;
-		case LDNS_SIGN_GOST:
+		case LDNS_SIGN_ECC_GOST:
 			ldns_rr_push_rdf(pubkey, ldns_native2rdf_int8(
 				LDNS_RDF_TYPE_ALG, ldns_key_algorithm(k)));
 #if defined(HAVE_SSL) && defined(USE_GOST)

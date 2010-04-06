@@ -506,7 +506,7 @@ ldns_key_rr2ds(const ldns_rr *key, ldns_hash h)
 			return NULL;
 		}
 		break;
-	case LDNS_HASH_GOST94:
+	case LDNS_HASH_GOST:
 #ifdef USE_GOST
 		(void)ldns_key_EVP_load_gost_id();
 		md = EVP_get_digestbyname("md_gost94");
@@ -593,7 +593,7 @@ ldns_key_rr2ds(const ldns_rr *key, ldns_hash h)
 		                            digest);
 		ldns_rr_push_rdf(ds, tmp);
 		break;
-	case LDNS_HASH_GOST94:
+	case LDNS_HASH_GOST:
 #ifdef USE_GOST
 		if(!ldns_digest_evp((unsigned char *) ldns_buffer_begin(data_buf),
 				(unsigned int) ldns_buffer_position(data_buf),

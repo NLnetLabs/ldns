@@ -312,7 +312,7 @@ ldns_rr_dnskey_key_size_raw(const unsigned char* keydata,
 		}
 		break;
 #ifdef USE_GOST
-	case LDNS_SIGN_GOST:
+	case LDNS_SIGN_ECC_GOST:
 		return 512;
 		break;
 #endif

@@ -207,11 +207,13 @@ main(int argc, char *argv[])
 	case LDNS_SIGN_RSASHA512:
 		ds = ldns_key_rr2ds(pubkey, LDNS_SHA256);
 		break;
+	case LDNS_SIGN_ECC_GOST:
 #ifdef USE_GOST
-	case LDNS_SIGN_GOST:
-		ds = ldns_key_rr2ds(pubkey, LDNS_HASH_GOST94);
-		break;
+		ds = ldns_key_rr2ds(pubkey, LDNS_HASH_GOST);
+#else
+		ds = ldns_key_rr2ds(pubkey, LDNS_HASH_SHA256);
 #endif
+		break;
 	}
 
 	/* print the public key RR to .key */

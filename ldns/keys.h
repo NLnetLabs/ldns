@@ -48,7 +48,7 @@ enum ldns_enum_algorithm
         LDNS_RSASHA1_NSEC3      = 7,
         LDNS_RSASHA256          = 8,   /* RFC 5702 */
         LDNS_RSASHA512          = 10,  /* RFC 5702 */
-        LDNS_GOST               = 249, /* not official */
+        LDNS_ECC_GOST           = 11,  /* draft-ietf-dnsext-dnssec-gost */
         LDNS_INDIRECT           = 252,
         LDNS_PRIVATEDNS         = 253,
         LDNS_PRIVATEOID         = 254
@@ -62,7 +62,7 @@ enum ldns_enum_hash
 {
         LDNS_SHA1               = 1,  /* RFC 4034 */
         LDNS_SHA256             = 2,  /* RFC 4509 */
-        LDNS_HASH_GOST94        = 203 /* not official */
+        LDNS_HASH_GOST          = 3   /* draft-ietf-dnsext-dnssec-gost */
 };
 typedef enum ldns_enum_hash ldns_hash;
 
@@ -78,7 +78,7 @@ enum ldns_enum_signing_algorithm
 	LDNS_SIGN_RSASHA256	 = LDNS_RSASHA256,
 	LDNS_SIGN_RSASHA512	 = LDNS_RSASHA512,
 	LDNS_SIGN_DSA_NSEC3	 = LDNS_DSA_NSEC3,
-	LDNS_SIGN_GOST		 = LDNS_GOST,
+	LDNS_SIGN_ECC_GOST       = LDNS_ECC_GOST,
 	LDNS_SIGN_HMACMD5	 = 157,	/* not official! This type is for TSIG, not DNSSEC */
 	LDNS_SIGN_HMACSHA1	 = 158,	/* not official! This type is for TSIG, not DNSSEC */
 	LDNS_SIGN_HMACSHA256 = 159  /* ditto */

@@ -22,7 +22,8 @@ usage(FILE *fp, char *prog) {
 	fprintf(fp, "Options:\n");
 	fprintf(fp, "  -f: ignore SEP flag (i.e. make DS records for any key)\n");
 	fprintf(fp, "  -n: do not write DS records to file(s) but to stdout\n");
-	fprintf(fp, "  -1: (default): use SHA1 for the DS hash\n");
+	fprintf(fp, "  (default) use similar hash to the key algorithm.\n");
+	fprintf(fp, "  -1: use SHA1 for the DS hash\n");
 	fprintf(fp, "  -2: use SHA256 for the DS hash\n");
 #ifdef USE_GOST
 	fprintf(fp, "  -g: use GOST for the DS hash\n");
@@ -40,6 +41,25 @@ is_suitable_dnskey(ldns_rr *rr, int sep_only)
 	        LDNS_KEY_SEP_KEY);
 }
 
+static ldns_hash
+suitable_hash(ldns_signing_algorithm algorithm)
+{
+	switch (algorithm) {
+	default:
+		return LDNS_SHA1;
+	case LDNS_SIGN_RSASHA256:
+	case LDNS_SIGN_RSASHA512:
+		return LDNS_SHA256;
+	case LDNS_SIGN_ECC_GOST:
+#ifdef USE_GOST
+		return LDNS_HASH_GOST;
+#else
+		return LDNS_SHA256;
+#endif
+	}
+	return LDNS_SHA1;
+}
+
 int
 main(int argc, char *argv[])
 {
@@ -50,6 +70,7 @@ main(int argc, char *argv[])
 	ldns_rr *k, *ds;
 	ldns_signing_algorithm alg;
 	ldns_hash h;
+	int similar_hash=1;
 	char *program = argv[0];
 	int nofile = 0;
 	ldns_rdf *origin = NULL;
@@ -63,13 +84,16 @@ main(int argc, char *argv[])
 	while (argc && argv[0][0] == '-') {
 		if (strcmp(argv[0], "-1") == 0) {
 			h = LDNS_SHA1;
+			similar_hash = 0;
 		} 
 		if (strcmp(argv[0], "-2") == 0) {
 			h = LDNS_SHA256;
+			similar_hash = 0;
 		}
 #ifdef USE_GOST
 		if (strcmp(argv[0], "-g") == 0) {
-			h = LDNS_HASH_GOST94;
+			h = LDNS_HASH_GOST;
+			similar_hash = 0;
 		}
 #endif
 		if (strcmp(argv[0], "-f") == 0) { 
@@ -116,6 +140,8 @@ main(int argc, char *argv[])
 		
 		owner = ldns_rdf2str(ldns_rr_owner(k));
 		alg = ldns_rdf2native_int8(ldns_rr_dnskey_algorithm(k));
+		if(similar_hash)
+			h = suitable_hash(alg);
 
 		ds = ldns_key_rr2ds(k, h);
 		if (!ds) {

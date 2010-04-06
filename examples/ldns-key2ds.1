@@ -12,6 +12,9 @@ it will create a .ds file with the DS RR in it.
 
 It prints out the basename for this file (K<name>+<alg>+<id>).
 
+By default it takes a pick of algorithm similar to the key algorithm,
+SHA1 for RSASHA1, and so on.
+
 .SH OPTIONS
 .TP
 \fB-n\fR
@@ -19,7 +22,7 @@ Write the result DS Resource Record to stdout instead of a file
 
 .TP
 \fB-1\fR
-Use SHA1 as the hash function (default)
+Use SHA1 as the hash function.
 
 .TP
 \fB-2\fR

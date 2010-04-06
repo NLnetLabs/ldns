@@ -145,7 +145,7 @@ ldns_sign_public_buffer(ldns_buffer *sign_buf, ldns_key *current_key)
 		break;
 #endif /* USE_SHA2 */
 #ifdef USE_GOST
-	case LDNS_SIGN_GOST:
+	case LDNS_SIGN_ECC_GOST:
 		b64rdf = ldns_sign_public_evp(
 				   sign_buf,
 				   ldns_key_evp_key(current_key),
