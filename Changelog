@@ -18,6 +18,8 @@
 	  ldns_tcp_read_wire_timeout().
 	* GOST support with correct algorithm numbers.
 	  OpenSSL 1.0.0 is necessary (or use --disable-gost).
+	* Fixed comment in rbtree.h about being first member and data ptr.
+	* Fixed possibly leak in case of out of memory in ldns_native2rdf...
 
 1.6.4	2010-01-20
 	* Imported pyldns contribution by Zdenek Vasicek and Karel Slany.
