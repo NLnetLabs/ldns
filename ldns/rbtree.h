@@ -47,6 +47,7 @@
  * This structure must be the first member of the data structure in
  * the rbtree.  This allows easy casting between an rbnode_t and the
  * user data (poor man's inheritance).
+ * Or you can use the data pointer member to get to your data item.
  */
 typedef struct ldns_rbnode_t ldns_rbnode_t;
 /**
