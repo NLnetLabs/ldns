@@ -211,7 +211,7 @@ main(int argc, char *argv[])
 #ifdef USE_GOST
 		ds = ldns_key_rr2ds(pubkey, LDNS_HASH_GOST);
 #else
-		ds = ldns_key_rr2ds(pubkey, LDNS_HASH_SHA256);
+		ds = ldns_key_rr2ds(pubkey, LDNS_SHA256);
 #endif
 		break;
 	}
