@@ -183,4 +183,11 @@ bool ldns_dname_str_absolute(const char *dname_str);
  */
 ldns_rdf * ldns_dname_label(const ldns_rdf *rdf, uint8_t labelpos);
 
+/**
+ * Check if dname is a wildcard, starts with *.
+ * \param[in] dname: the rdf to look in
+ * \return true if a wildcard, false if not.
+ */
+int ldns_dname_is_wildcard(const ldns_rdf* dname);
+
 #endif	/* LDNS_DNAME_H */

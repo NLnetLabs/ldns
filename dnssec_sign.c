@@ -31,6 +31,9 @@ ldns_create_empty_rrsig(ldns_rr_list *rrset,
 
 	label_count = ldns_dname_label_count(ldns_rr_owner(ldns_rr_list_rr(rrset,
 	                                                   0)));
+        /* RFC4035 2.2: not counting the leftmost label if it is a wildcard */
+        if(ldns_dname_is_wildcard(ldns_rr_owner(ldns_rr_list_rr(rrset, 0))))
+                label_count --; 
 	
 	current_sig = ldns_rr_new_frm_type(LDNS_RR_TYPE_RRSIG);
 	

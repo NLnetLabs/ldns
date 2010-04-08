@@ -416,7 +416,7 @@ ldns_dname_compare(const ldns_rdf *dname1, const ldns_rdf *dname2)
 	return result;
 }
 
-static int
+int
 ldns_dname_is_wildcard(const ldns_rdf* dname)
 {
 	return ( ldns_dname_label_count(dname) > 0 &&

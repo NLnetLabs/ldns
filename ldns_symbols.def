@@ -47,6 +47,7 @@ ldns_dname_compare
 ldns_dname_compare_v
 ldns_dname_interval
 ldns_dname_is_subdomain
+ldns_dname_is_wildcard
 ldns_dname_label
 ldns_dname_label_count
 ldns_dname_left_chop
