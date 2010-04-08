@@ -416,15 +416,21 @@ ldns_dname_compare(const ldns_rdf *dname1, const ldns_rdf *dname2)
 	return result;
 }
 
+static int
+ldns_dname_is_wildcard(const ldns_rdf* dname)
+{
+	return ( ldns_dname_label_count(dname) > 0 &&
+		 ldns_rdf_data(dname)[0] == 1 &&
+		 ldns_rdf_data(dname)[1] == '*');
+}
+
 int
 ldns_dname_match_wildcard(const ldns_rdf *dname, const ldns_rdf *wildcard)
 {
 	ldns_rdf *wc_chopped;
 	int result;
 	/* check whether it really is a wildcard */
-	if (ldns_dname_label_count(wildcard) > 0 &&
-	    ldns_rdf_data(wildcard)[0] == 1 &&
-	    ldns_rdf_data(wildcard)[1] == '*') {
+	if (ldns_dname_is_wildcard(wildcard)) {
 		/* ok, so the dname needs to be a subdomain of the wildcard
 		 * without the *
 		 */
