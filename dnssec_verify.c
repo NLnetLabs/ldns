@@ -1937,8 +1937,8 @@ ldns_verify_rrsig_keylist_notime(ldns_rr_list *rrset,
 		ldns_rr_list_free(validkeys);
 		return result;
 	}
-	result = LDNS_STATUS_ERR;
 
+	result = LDNS_STATUS_CRYPTO_NO_MATCHING_KEYTAG_DNSKEY;
 	for(i = 0; i < ldns_rr_list_rr_count(keys); i++) {
 		status = ldns_verify_test_sig_key(rawsig_buf, verify_buf, 
 			rrsig, ldns_rr_list_rr(keys, i));
@@ -1956,10 +1956,11 @@ ldns_verify_rrsig_keylist_notime(ldns_rr_list *rrset,
 				ldns_rr_list_free(validkeys);
 				return LDNS_STATUS_MEM_ERR;
 			}
-			/* reset no keytag match error */
-			result = LDNS_STATUS_ERR;
+
+			result = status;
 		}
-		if (result == LDNS_STATUS_ERR) {
+
+		if (result == LDNS_STATUS_CRYPTO_NO_MATCHING_KEYTAG_DNSKEY) {
 			result = status;
 		}
 	}
