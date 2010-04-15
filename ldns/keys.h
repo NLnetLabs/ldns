@@ -48,7 +48,7 @@ enum ldns_enum_algorithm
         LDNS_RSASHA1_NSEC3      = 7,
         LDNS_RSASHA256          = 8,   /* RFC 5702 */
         LDNS_RSASHA512          = 10,  /* RFC 5702 */
-        LDNS_ECC_GOST           = 11,  /* draft-ietf-dnsext-dnssec-gost */
+        LDNS_ECC_GOST           = 12,  /* draft-ietf-dnsext-dnssec-gost */
         LDNS_INDIRECT           = 252,
         LDNS_PRIVATEDNS         = 253,
         LDNS_PRIVATEOID         = 254
