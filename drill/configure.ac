@@ -186,6 +186,7 @@ AC_CHECK_TYPE(in_port_t, [], [AC_DEFINE([in_port_t], [uint16_t], [in_port_t])], 
 
 # check to see if libraries are needed for these functions.
 AC_SEARCH_LIBS(socket, socket)
+AC_SEARCH_LIBS([inet_pton], [nsl])
 
 ACX_WITH_SSL_OPTIONAL
 
