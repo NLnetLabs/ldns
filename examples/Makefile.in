@@ -123,7 +123,7 @@ clean:
 	rm -f *.o *.lo 
 	rm -rf .libs
 	rm -f $(PROGRAMS) $(SSL_PROGRAMS)
-	rm -f $(addsuffix .stc,$(PROGRAMS)) $(addsuffix .stc,$(SSL_PROGRAMS))
+	rm -f $(addsuffix .stc,$(PROGRAMS)) $(addsuffix .stc-ssl,$(SSL_PROGRAMS))
 
 realclean: clean
 	rm -rf autom4te.cache/
