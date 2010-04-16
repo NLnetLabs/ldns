@@ -1850,8 +1850,7 @@ parse_match_expression(char *string)
 									val = malloc(4);
 									snprintf(val, 3, "%u", (unsigned int) lt->id);
 								} else {
-									val = malloc(strlen(str) - i + 1);
-									strcpy(val, &str[i]);
+									val = strdup(&str[i]);
 								}
 								break;
 							case TYPE_RCODE:
@@ -1860,13 +1859,11 @@ parse_match_expression(char *string)
 									val = malloc(4);
 									snprintf(val, 3, "%u", (unsigned int) lt->id);
 								} else {
-									val = malloc(strlen(str) - i + 1);
-									strcpy(val, &str[i]);
+									val = strdup(&str[i]);
 								}
 								break;
 							default:
-								val = malloc(strlen(str) - i + 1);
-								strcpy(val, &str[i]);
+								val = strdup(&str[i]);
 								break;
 						}
 						mo->value = val;
