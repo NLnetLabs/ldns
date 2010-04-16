@@ -912,9 +912,7 @@ main(int argc, char *argv[])
 	ldns_rr_list_deep_free(cmdline_rr_list);
 	ldns_rdf_deep_free(trace_start_name);
 	xfree(progname);
-/*
 	xfree(tsig_name);
-*/
 	xfree(tsig_data);
 	xfree(tsig_algorithm);
 

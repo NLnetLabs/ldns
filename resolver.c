@@ -542,19 +542,19 @@ ldns_resolver_push_searchlist(ldns_resolver *r, ldns_rdf *d)
 void
 ldns_resolver_set_tsig_keyname(ldns_resolver *r, char *tsig_keyname)
 {
-	r->_tsig_keyname = tsig_keyname;
+	r->_tsig_keyname = strdup(tsig_keyname);
 }
 
 void
 ldns_resolver_set_tsig_algorithm(ldns_resolver *r, char *tsig_algorithm)
 {
-	r->_tsig_algorithm = tsig_algorithm;
+	r->_tsig_algorithm = strdup(tsig_algorithm);
 }
 
 void
 ldns_resolver_set_tsig_keydata(ldns_resolver *r, char *tsig_keydata)
 {
-	r->_tsig_keydata = tsig_keydata;
+	r->_tsig_keydata = strdup(tsig_keydata);
 }
 
 void
@@ -856,8 +856,14 @@ ldns_resolver_deep_free(ldns_resolver *res)
 		if (ldns_resolver_domain(res)) {
 			ldns_rdf_deep_free(ldns_resolver_domain(res));
 		}
-		if (ldns_resolver_tsig_keyname(res)) {
+		if (res->_tsig_keyname) {
 			LDNS_FREE(res->_tsig_keyname);
+		}
+		if (res->_tsig_keydata) {
+			LDNS_FREE(res->_tsig_keydata);
+		}
+		if (res->_tsig_algorithm) {
+			LDNS_FREE(res->_tsig_algorithm);
 		}
 
 		if (res->_cur_axfr_pkt) {

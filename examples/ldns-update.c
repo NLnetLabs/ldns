@@ -46,12 +46,8 @@ ldns_update_resolver_new(const char *fqdn, const char *zone,
         /* TSIG key data available? Copy into the resolver. */
         if (tsig_cred) {
                 ldns_resolver_set_tsig_algorithm(r2, ldns_tsig_algorithm(tsig_cred));
-                ldns_resolver_set_tsig_keyname(r2, ldns_tsig_keyname_clone(tsig_cred));
-                /*
-                 * XXX Weird that ldns_resolver_deep_free() will free()
-                 * keyname but not hmac key data?
-                 */
-                ldns_resolver_set_tsig_keydata(r2, ldns_tsig_keydata_clone(tsig_cred));
+                ldns_resolver_set_tsig_keyname(r2, ldns_tsig_keyname(tsig_cred));
+                ldns_resolver_set_tsig_keydata(r2, ldns_tsig_keydata(tsig_cred));
         }
 
         /* Now get SOA zone, mname, NS, and construct r2. [RFC2136 4.3] */
