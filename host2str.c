@@ -1920,9 +1920,6 @@ ldns_resolver_print(FILE *output, const ldns_resolver *r)
 	fprintf(output, "trust anchors (%i listed):\n",
 		ldns_rr_list_rr_count(ldns_resolver_dnssec_anchors(r)));
 	ldns_rr_list_print(output, ldns_resolver_dnssec_anchors(r));
-	fprintf(output, "transport: %s\n", ldns_resolver_usevc(r)?"tcp":"udp");
-	fprintf(output, "tc: %s\n", ldns_resolver_igntc(r)?"ignore":"yes");
-	fprintf(output, "ip: %d\n", ldns_resolver_ip6(r));
 	fprintf(output, "tsig: %s %s\n", ldns_resolver_tsig_keyname(r), ldns_resolver_tsig_algorithm(r));
 	fprintf(output, "debug: %d\n", ldns_resolver_debug(r));
 
