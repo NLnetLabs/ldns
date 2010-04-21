@@ -745,9 +745,9 @@ ldns_resolver_new_frm_fp_l(ldns_resolver **res, FILE *fp, int *line_nr)
 				/* search list domain dname */
 				gtr = ldns_fget_token_l(fp, word, LDNS_PARSE_SKIP_SPACE, 0, line_nr);
 				b = LDNS_MALLOC(ldns_buffer);
-				ldns_buffer_new_frm_data(b, word, (size_t) gtr);
 
-				gtr = ldns_bget_token(b, word, LDNS_PARSE_NORMAL, (size_t) gtr);
+				ldns_buffer_new_frm_data(b, word, (size_t) gtr);
+				gtr = ldns_bget_token(b, word, LDNS_PARSE_NORMAL, (size_t) gtr + 1);
 				while (gtr > 0) {
 					tmp = ldns_rdf_new_frm_str(LDNS_RDF_TYPE_DNAME, word);
 					if (!tmp) {
@@ -758,7 +758,7 @@ ldns_resolver_new_frm_fp_l(ldns_resolver **res, FILE *fp, int *line_nr)
 					ldns_resolver_push_searchlist(r, tmp);
 
 					ldns_rdf_deep_free(tmp);
-					gtr = ldns_bget_token(b, word, LDNS_PARSE_NORMAL, (size_t) gtr);
+					gtr = ldns_bget_token(b, word, LDNS_PARSE_NORMAL, (size_t) gtr + 1);
 				}
 				ldns_buffer_free(b);
 				gtr = 1;
