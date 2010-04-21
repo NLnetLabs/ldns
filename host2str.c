@@ -1917,12 +1917,14 @@ ldns_resolver_print(FILE *output, const ldns_resolver *r)
 	fprintf(output, "timeout: %d\n", (int)ldns_resolver_timeout(r).tv_sec);
 	fprintf(output, "dnssec: %d\n", ldns_resolver_dnssec(r));
 	fprintf(output, "dnssec cd: %d\n", ldns_resolver_dnssec_cd(r));
-	/* trust anchors */
+	fprintf(output, "trust anchors (%i listed):\n",
+		ldns_rr_list_rr_count(ldns_resolver_dnssec_anchors(r)));
+	ldns_rr_list_print(output, ldns_resolver_dnssec_anchors(r));
 	fprintf(output, "transport: %s\n", ldns_resolver_usevc(r)?"tcp":"udp");
 	fprintf(output, "tc: %s\n", ldns_resolver_igntc(r)?"ignore":"yes");
 	fprintf(output, "ip: %d\n", ldns_resolver_ip6(r));
+	fprintf(output, "tsig: %s %s\n", ldns_resolver_tsig_keyname(r), ldns_resolver_tsig_algorithm(r));
 	fprintf(output, "debug: %d\n", ldns_resolver_debug(r));
-	/* tsig */
 
 	fprintf(output, "default domain: ");
 	ldns_rdf_print(output, ldns_resolver_domain(r));

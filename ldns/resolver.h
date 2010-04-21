@@ -214,11 +214,11 @@ bool ldns_resolver_fail(const ldns_resolver *r);
  */
 bool ldns_resolver_defnames(const ldns_resolver *r);
 /**
- * Does the resolver ignore TC bit
+ * Does the resolver apply search list
  * \param[in] r the resolver
  * \return true: yes, false: no
  */
-bool ldns_resolver_igntc(const ldns_resolver *r);
+bool ldns_resolver_dnsrch(const ldns_resolver *r);
 /**
  * Does the resolver do DNSSEC
  * \param[in] r the resolver
