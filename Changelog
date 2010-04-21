@@ -24,6 +24,7 @@
 	* Fixed: signatures over wildcards had the wrong labelcount.
 	* Fixed ldns_verify() inconsistent return values.
 	* Fixed ldns_resolver to copy and free tsig name, data and algorithm.
+	* Fixed ldns_resolver to push search onto searchlist.
 	* Fixed ldns_rdf2buffer_str_time(), which did not print timestramps
 	  on 64bit systems.
 
