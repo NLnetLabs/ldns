@@ -14,7 +14,7 @@
  * \file
  *
  * Defines the  ldns_resolver structure, a stub resolver that can send queries and parse answers.
- * 
+ *
  */
 
 #ifndef LDNS_RESOLVER_H
@@ -33,7 +33,7 @@
 /** Default location of the hosts file */
 #define LDNS_RESOLV_HOSTS	"/etc/hosts"
 
-#define LDNS_RESOLV_KEYWORD     -1	
+#define LDNS_RESOLV_KEYWORD     -1
 #define LDNS_RESOLV_DEFDOMAIN	0
 #define LDNS_RESOLV_NAMESERVER	1
 #define LDNS_RESOLV_SEARCH	2
@@ -58,7 +58,7 @@ struct ldns_struct_resolver
 	uint16_t _port;
 
 	/** Array of nameservers to query (IP addresses or dnames) */
-	ldns_rdf **_nameservers; 
+	ldns_rdf **_nameservers;
 	/** Number of nameservers in \c _nameservers */
 	size_t _nameserver_count; /* how many do we have */
 
@@ -70,9 +70,9 @@ struct ldns_struct_resolver
 
 	/**  Print debug information */
 	bool _debug;
-	
+
 	/**  Default domain to add to non fully qualified domain names */
-	ldns_rdf *_domain; 
+	ldns_rdf *_domain;
 
 	/**  Searchlist array, add the names in this array if a query cannot be found */
 	ldns_rdf **_searchlist;
@@ -124,7 +124,7 @@ struct ldns_struct_resolver
 	uint16_t _axfr_i;
 	/* EDNS0 available buffer size */
 	uint16_t _edns_udp_size;
-	
+
 	/* Optional tsig key for signing queries,
 	outgoing messages are signed if and only if both are set
 	*/
@@ -143,7 +143,7 @@ typedef struct ldns_struct_resolver ldns_resolver;
 /**
  * Get the port the resolver should use
  * \param[in] r the resolver
- * \return the port number 
+ * \return the port number
  */
 uint16_t ldns_resolver_port(const ldns_resolver *r);
 
@@ -214,7 +214,7 @@ bool ldns_resolver_fail(const ldns_resolver *r);
  */
 bool ldns_resolver_dnssec(const ldns_resolver *r);
 /**
- * Does the resolver set the CD bit 
+ * Does the resolver set the CD bit
  * \param[in] r the resolver
  * \return true: yes, false: no
  */
@@ -362,7 +362,7 @@ void ldns_resolver_set_nameserver_count(ldns_resolver *r, size_t c);
 void ldns_resolver_set_nameservers(ldns_resolver *r, ldns_rdf **rd);
 
 /**
- * Set the resolver's default domain. This gets appended when no 
+ * Set the resolver's default domain. This gets appended when no
  * absolute name is given
  * \param[in] r the resolver
  * \param[in] rd the name to append
@@ -528,7 +528,7 @@ void ldns_resolver_set_nameserver_rtt(ldns_resolver *r, size_t pos, size_t value
 void ldns_resolver_set_random(ldns_resolver *r, bool b);
 
 /**
- * push a new nameserver to the resolver. It must be an IP
+ * Push a new nameserver to the resolver. It must be an IP
  * address v4 or v6.
  * \param[in] r the resolver
  * \param[in] n the ip address
@@ -537,16 +537,16 @@ void ldns_resolver_set_random(ldns_resolver *r, bool b);
 ldns_status ldns_resolver_push_nameserver(ldns_resolver *r, ldns_rdf *n);
 
 /**
- * push a new nameserver to the resolver. It must be an 
+ * Push a new nameserver to the resolver. It must be an
  * A or AAAA RR record type
  * \param[in] r the resolver
- * \param[in] rr the resource record 
+ * \param[in] rr the resource record
  * \return ldns_status a status
  */
 ldns_status ldns_resolver_push_nameserver_rr(ldns_resolver *r, ldns_rr *rr);
 
 /**
- * push a new nameserver rr_list to the resolver.
+ * Push a new nameserver rr_list to the resolver.
  * \param[in] r the resolver
  * \param[in] rrlist the rr_list to push
  * \return ldns_status a status
@@ -579,7 +579,7 @@ ldns_pkt* ldns_resolver_search(const ldns_resolver *r, const ldns_rdf *rdf, ldns
 ldns_status ldns_resolver_prepare_query_pkt(ldns_pkt **q, ldns_resolver *r, const  ldns_rdf *name, ldns_rr_type t, ldns_rr_class c, uint16_t f);
 
 /**
- * Send the query for name as-is 
+ * Send the query for name as-is
  * \param[out] **answer a pointer to a ldns_pkt pointer (initialized by this function)
  * \param[in] *r operate using this resolver
  * \param[in] *name query for this name
@@ -611,8 +611,8 @@ ldns_status ldns_resolver_send_pkt(ldns_pkt **answer, ldns_resolver *r, ldns_pkt
 ldns_pkt* ldns_resolver_query(const ldns_resolver *r, const ldns_rdf *name, ldns_rr_type t, ldns_rr_class c, uint16_t flags);
 
 
-/** 
- * Create a new resolver structure 
+/**
+ * Create a new resolver structure
  * \return ldns_resolver* pointer to new strcture
  */
 ldns_resolver* ldns_resolver_new(void);
@@ -637,29 +637,29 @@ ldns_status ldns_resolver_new_frm_fp(ldns_resolver **r, FILE *fp);
 ldns_status ldns_resolver_new_frm_fp_l(ldns_resolver **r, FILE *fp, int *line_nr);
 
 /**
- * configure a resolver by means of a resolv.conf file 
+ * configure a resolver by means of a resolv.conf file
  * The file may be NULL in which case there will  be
  * looked the RESOLV_CONF (defaults to /etc/resolv.conf
  * \param[out] r the new resolver
  * \param[in] filename the filename to use
  * \return LDNS_STATUS_OK or the error
- */                             
+ */
 ldns_status ldns_resolver_new_frm_file(ldns_resolver **r, const char *filename);
 
-/**                             
+/**
  * Frees the allocated space for this resolver. Only frees the resolver pionter! You should probably be using _deep_free.
- * \param res resolver to free  
- */     
+ * \param res resolver to free
+ */
 void ldns_resolver_free(ldns_resolver *res);
 
-/**                             
+/**
  * Frees the allocated space for this resolver and all it's data
- * \param res resolver to free  
- */     
+ * \param res resolver to free
+ */
 void ldns_resolver_deep_free(ldns_resolver *res);
 
 /**
- *  get the next stream of RRs in a AXFR 
+ * Get the next stream of RRs in a AXFR
  * \param[in] resolver the resolver to use. First ldns_axfr_start() must be
  * called
  * \return ldns_rr the next RR from the AXFR stream
@@ -667,14 +667,14 @@ void ldns_resolver_deep_free(ldns_resolver *res);
 ldns_rr* ldns_axfr_next(ldns_resolver *resolver);
 
 /**
- * returns true if the axfr transfer has completed (i.e. 2 SOA RRs and no errors were encountered 
+ * Returns true if the axfr transfer has completed (i.e. 2 SOA RRs and no errors were encountered
  * \param[in] resolver the resolver that is used
  * \return bool true if axfr transfer was completed without error
  */
 bool ldns_axfr_complete(const ldns_resolver *resolver);
 
 /**
- * returns a pointer to the last ldns_pkt that was sent by the server in the AXFR transfer
+ * Returns a pointer to the last ldns_pkt that was sent by the server in the AXFR transfer
  * uasable for instance to get the error code on failure
  * \param[in] res the resolver that was used in the axfr transfer
  * \return ldns_pkt the last packet sent
@@ -682,12 +682,12 @@ bool ldns_axfr_complete(const ldns_resolver *resolver);
 ldns_pkt *ldns_axfr_last_pkt(const ldns_resolver *res);
 
 /**
- * randomize the nameserver list in the resolver
+ * Randomize the nameserver list in the resolver
  * \param[in] r the resolver
  */
 void ldns_resolver_nameservers_randomize(ldns_resolver *r);
 
-/** 
+/**
  * Returns true if at least one of the provided keys is a trust anchor
  * \param[in] r the current resolver
  * \param[in] keys the keyset to check
