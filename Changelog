@@ -24,6 +24,8 @@
 	* Fixed: signatures over wildcards had the wrong labelcount.
 	* Fixed ldns_verify() inconsistent return values.
 	* Fixed ldns_resolver to copy and free tsig name, data and algorithm.
+	* Fixed ldns_rdf2buffer_str_time(), which did not print timestramps
+	  on 64bit systems.
 
 1.6.4	2010-01-20
 	* Imported pyldns contribution by Zdenek Vasicek and Karel Slany.
