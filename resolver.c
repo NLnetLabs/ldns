@@ -594,6 +594,9 @@ ldns_resolver_new(void)
 	ldns_resolver_set_dnssec_cd(r, false);
 	ldns_resolver_set_dnssec_anchors(r, NULL);
 	ldns_resolver_set_ip6(r, LDNS_RESOLV_INETANY);
+	ldns_resolver_set_igntc(r, false);
+	ldns_resolver_set_recursive(r, false);
+	ldns_resolver_set_dnsrch(r, true); /* is not used? */
 
 	/* randomize the nameserver to be queried
 	 * when there are multiple

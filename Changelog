@@ -25,6 +25,9 @@
 	* Fixed ldns_verify() inconsistent return values.
 	* Fixed ldns_resolver to copy and free tsig name, data and algorithm.
 	* Fixed ldns_resolver to push search onto searchlist.
+	* A ldns resolver now defaults to a non-recursive resolver that handles
+	  the TC bit.
+	* ldns_resolver_print() prints more details.
 	* Fixed ldns_rdf2buffer_str_time(), which did not print timestramps
 	  on 64bit systems.
 

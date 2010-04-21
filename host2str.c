@@ -1911,20 +1911,33 @@ ldns_resolver_print(FILE *output, const ldns_resolver *r)
 	fprintf(output, "igntc: %d\n", ldns_resolver_igntc(r));
 	fprintf(output, "fail: %d\n", ldns_resolver_fail(r));
 	fprintf(output, "retry: %d\n", (int)ldns_resolver_retry(r));
+	fprintf(output, "retrans: %d\n", (int)ldns_resolver_retrans(r));
+	fprintf(output, "fallback: %d\n", ldns_resolver_fallback(r));
+	fprintf(output, "random: %d\n", ldns_resolver_random(r));
 	fprintf(output, "timeout: %d\n", (int)ldns_resolver_timeout(r).tv_sec);
+	fprintf(output, "dnssec: %d\n", ldns_resolver_dnssec(r));
+	fprintf(output, "dnssec cd: %d\n", ldns_resolver_dnssec_cd(r));
+	/* trust anchors */
+	fprintf(output, "transport: %s\n", ldns_resolver_usevc(r)?"tcp":"udp");
+	fprintf(output, "tc: %s\n", ldns_resolver_igntc(r)?"ignore":"yes");
+	fprintf(output, "ip: %d\n", ldns_resolver_ip6(r));
+	fprintf(output, "debug: %d\n", ldns_resolver_debug(r));
+	/* tsig */
 
 	fprintf(output, "default domain: ");
 	ldns_rdf_print(output, ldns_resolver_domain(r));
 	fprintf(output, "\n");
+	fprintf(output, "apply default domain: %d\n", ldns_resolver_defnames(r));
 
-	fprintf(output, "searchlist:\n");
+	fprintf(output, "searchlist (%i listed):\n",  ldns_resolver_searchlist_count(r));
 	for (i = 0; i < ldns_resolver_searchlist_count(r); i++) {
 		fprintf(output, "\t");
 		ldns_rdf_print(output, s[i]);
 		fprintf(output, "\n");
 	}
+	fprintf(output, "apply search list: %d\n", ldns_resolver_dnsrch(r));
 
-	fprintf(output, "nameservers:\n");
+	fprintf(output, "nameservers (%i listed):\n", ldns_resolver_nameserver_count(r));
 	for (i = 0; i < ldns_resolver_nameserver_count(r); i++) {
 		fprintf(output, "\t");
 		ldns_rdf_print(output, n[i]);
