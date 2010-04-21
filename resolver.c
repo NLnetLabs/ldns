@@ -884,7 +884,7 @@ ldns_resolver_deep_free(ldns_resolver *res)
 }
 
 ldns_pkt *
-ldns_resolver_search(const ldns_resolver *r,const  ldns_rdf *name, 
+ldns_resolver_search(const ldns_resolver *r,const  ldns_rdf *name,
 	ldns_rr_type t, ldns_rr_class c, uint16_t flags)
 {
 
@@ -899,7 +899,7 @@ ldns_resolver_search(const ldns_resolver *r,const  ldns_rdf *name,
 	if (ldns_dname_str_absolute(str_dname)) {
 		/* query as-is */
 		return ldns_resolver_query(r, name, t, c, flags);
-	} else {
+	} else if (ldns_resolver_dnsrch(r)) {
 		search_list = ldns_resolver_searchlist(r);
 		for (i = 0; i < ldns_resolver_searchlist_count(r); i++) {
 			new_name = ldns_dname_cat_clone(name, search_list[i]);
