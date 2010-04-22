@@ -305,13 +305,9 @@ ldns_status
 ldns_rdf2buffer_str_time(ldns_buffer *output, const ldns_rdf *rdf)
 {
 	/* create a YYYYMMDDHHMMSS string if possible */
-	time_t data = (time_t) ldns_read_uint32(ldns_rdf_data(rdf));
-	time_t data_time;
+	time_t data_time = (time_t) ldns_read_uint32(ldns_rdf_data(rdf));
 	struct tm tm;
 	char date_buf[16];
-
-	data_time = 0;
-	memcpy(&data_time, &data, sizeof(time_t));
 
 	memset(&tm, 0, sizeof(tm));
 
