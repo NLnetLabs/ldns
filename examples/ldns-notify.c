@@ -10,14 +10,13 @@
 
 #include "config.h"
 
-#include <stdbool.h>
+/* ldns */
+#include <ldns/ldns.h>
+
 #ifdef HAVE_NETDB_H
 #include <netdb.h>
 #endif
 #include <errno.h>
-
-/* ldns */
-#include <ldns/ldns.h>
 
 static int verbose = 1;
 static int max_num_retry = 15; /* times to try */
