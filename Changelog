@@ -28,7 +28,7 @@
 	* A ldns resolver now defaults to a non-recursive resolver that handles
 	  the TC bit.
 	* ldns_resolver_print() prints more details.
-	* Fixed ldns_rdf2buffer_str_time(), which did not print timestramps
+	* Fixed ldns_rdf2buffer_str_time(), which did not print timestamps
 	  on 64bit systems.
 
 1.6.4	2010-01-20
