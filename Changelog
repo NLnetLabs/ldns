@@ -16,8 +16,8 @@
 	* Type TALINK parsed (draft-ietf-dnsop-trust-history).
 	* bugfix #304: fixed dead loop in ldns_tcp_read_wire() and
 	  ldns_tcp_read_wire_timeout().
-	* GOST support with correct algorithm numbers.  Disabled by default
-	  for now, needs openssl 1.0.0.
+	* GOST support with correct algorithm numbers.  By default enabled
+	  if openssl support is detected.
 	* Fixed comment in rbtree.h about being first member and data ptr.
 	* Fixed possibly leak in case of out of memory in ldns_native2rdf...
 	* ldns_dname_is_wildcard added.
