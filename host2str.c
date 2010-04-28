@@ -1913,7 +1913,7 @@ ldns_resolver_print(FILE *output, const ldns_resolver *r)
 	fprintf(output, "timeout: %d\n", (int)ldns_resolver_timeout(r).tv_sec);
 	fprintf(output, "dnssec: %d\n", ldns_resolver_dnssec(r));
 	fprintf(output, "dnssec cd: %d\n", ldns_resolver_dnssec_cd(r));
-	fprintf(output, "trust anchors (%i listed):\n",
+	fprintf(output, "trust anchors (%d listed):\n",
 		ldns_rr_list_rr_count(ldns_resolver_dnssec_anchors(r)));
 	ldns_rr_list_print(output, ldns_resolver_dnssec_anchors(r));
 	fprintf(output, "tsig: %s %s\n", ldns_resolver_tsig_keyname(r), ldns_resolver_tsig_algorithm(r));
@@ -1924,7 +1924,7 @@ ldns_resolver_print(FILE *output, const ldns_resolver *r)
 	fprintf(output, "\n");
 	fprintf(output, "apply default domain: %d\n", ldns_resolver_defnames(r));
 
-	fprintf(output, "searchlist (%i listed):\n",  ldns_resolver_searchlist_count(r));
+	fprintf(output, "searchlist (%d listed):\n",  ldns_resolver_searchlist_count(r));
 	for (i = 0; i < ldns_resolver_searchlist_count(r); i++) {
 		fprintf(output, "\t");
 		ldns_rdf_print(output, s[i]);
@@ -1932,7 +1932,7 @@ ldns_resolver_print(FILE *output, const ldns_resolver *r)
 	}
 	fprintf(output, "apply search list: %d\n", ldns_resolver_dnsrch(r));
 
-	fprintf(output, "nameservers (%i listed):\n", ldns_resolver_nameserver_count(r));
+	fprintf(output, "nameservers (%d listed):\n", ldns_resolver_nameserver_count(r));
 	for (i = 0; i < ldns_resolver_nameserver_count(r); i++) {
 		fprintf(output, "\t");
 		ldns_rdf_print(output, n[i]);
