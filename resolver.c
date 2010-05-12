@@ -596,7 +596,7 @@ ldns_resolver_new(void)
 	ldns_resolver_set_ip6(r, LDNS_RESOLV_INETANY);
 	ldns_resolver_set_igntc(r, false);
 	ldns_resolver_set_recursive(r, false);
-	ldns_resolver_set_dnsrch(r, true); /* is not used? */
+	ldns_resolver_set_dnsrch(r, true);
 
 	/* randomize the nameserver to be queried
 	 * when there are multiple
@@ -1201,7 +1201,8 @@ ldns_resolver_nameservers_randomize(ldns_resolver *r)
 	assert(r != NULL);
 
 	ns = ldns_resolver_nameservers(r);
-
+	/* initialize seed for randomness */
+	srandom((unsigned int)time(NULL));
 	for (i = 0; i < ldns_resolver_nameserver_count(r); i++) {
 		j = random() % ldns_resolver_nameserver_count(r);
 		tmp = ns[i];
