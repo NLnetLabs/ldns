@@ -283,6 +283,12 @@ time_t mktime_from_utc(const struct tm *tm);
  */
 int ldns_init_random(FILE *fd, unsigned int size);
 
+/**
+ * Get random number.
+ * \return random number.
+ *
+ */
+uint16_t ldns_get_random(void);
 
 /**
  * Encode data as BubbleBabble

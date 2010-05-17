@@ -1194,17 +1194,15 @@ ldns_axfr_last_pkt(const ldns_resolver *res)
 void
 ldns_resolver_nameservers_randomize(ldns_resolver *r)
 {
-	uint8_t i, j;
+	uint16_t i, j;
 	ldns_rdf **ns, *tmp;
 
 	/* should I check for ldns_resolver_random?? */
 	assert(r != NULL);
 
 	ns = ldns_resolver_nameservers(r);
-	/* initialize seed for randomness */
-	srandom((unsigned int)time(NULL));
 	for (i = 0; i < ldns_resolver_nameserver_count(r); i++) {
-		j = random() % ldns_resolver_nameserver_count(r);
+		j = ldns_get_random() % ldns_resolver_nameserver_count(r);
 		tmp = ns[i];
 		ns[i] = ns[j];
 		ns[j] = tmp;

@@ -318,6 +318,24 @@ ldns_init_random(FILE *fd, unsigned int size)
 	return 0;
 }
 
+/**
+ * Get random number.
+ *
+ */
+uint16_t
+ldns_get_random(void)
+{
+        uint16_t rid = 0;
+#ifdef HAVE_SSL
+        if (RAND_bytes((unsigned char*)&rid, 2) != 1) {
+                rid = (uint16_t) random();
+        }
+#else
+        rid = (uint16_t) random();
+#endif
+	return rid;
+}
+
 /*
  * BubbleBabble code taken from OpenSSH
  * Copyright (c) 2001 Carsten Raskgaard.  All rights reserved.

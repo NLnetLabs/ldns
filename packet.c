@@ -454,14 +454,7 @@ ldns_pkt_set_id(ldns_pkt *packet, uint16_t id)
 void
 ldns_pkt_set_random_id(ldns_pkt *packet)
 {
-	uint16_t rid = 0;
-#ifdef HAVE_SSL
-	if (RAND_bytes((unsigned char*)&rid, 2) != 1) {
-		rid = (uint16_t) random();
-	}
-#else
-	rid = (uint16_t) random();
-#endif
+	uint16_t rid = ldns_get_random();
 	ldns_pkt_set_id(packet, rid);
 }
 
