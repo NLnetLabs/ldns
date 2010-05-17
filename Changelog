@@ -30,6 +30,7 @@
 	* ldns_resolver_print() prints more details.
 	* Fixed ldns_rdf2buffer_str_time(), which did not print timestamps
 	  on 64bit systems.
+	* Make ldns_resolver_nameservers_randomize() more random.
 
 1.6.4	2010-01-20
 	* Imported pyldns contribution by Zdenek Vasicek and Karel Slany.

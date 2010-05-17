@@ -58,7 +58,7 @@ ldns_dnssec_rrs_add_rr(ldns_dnssec_rrs *rrs, ldns_rr *rr)
 	/* should we error on equal? */
 	if (cmp <= 0) {
 		if (rrs->next) {
-			ldns_dnssec_rrs_add_rr(rrs->next, rr);
+			return ldns_dnssec_rrs_add_rr(rrs->next, rr);
 		} else {
 			new_rrs = ldns_dnssec_rrs_new();
 			new_rrs->rr = rr;
