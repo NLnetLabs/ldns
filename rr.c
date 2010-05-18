@@ -145,9 +145,6 @@ ldns_rr_new_frm_str_internal(ldns_rr **newrr, const char *str,
 	if (!new || !owner || !ttl || !clas || !rdata || !rr_buf || !rd_buf || !rd || !b64 ) {
 		return LDNS_STATUS_MEM_ERR;
 	}
-	r_cnt = 0;
-	ttl_val = 0;
-	clas_val = 0;
 
 	ldns_buffer_new_frm_data(rr_buf, (char*)str, strlen(str));
 
@@ -591,7 +588,6 @@ ldns_rr_new_frm_fp_l(ldns_rr **newrr, FILE *fp, uint32_t *default_ttl, ldns_rdf 
 	ldns_status s;
 	ssize_t size;
 
-	s = LDNS_STATUS_ERR;
 	if (default_ttl) {
 		ttl = *default_ttl;
 	} else {
@@ -639,7 +635,7 @@ ldns_rr_new_frm_fp_l(ldns_rr **newrr, FILE *fp, uint32_t *default_ttl, ldns_rdf 
 			*default_ttl = ldns_str2period(keyword + 5, &endptr);
 		}
 		s = LDNS_STATUS_SYNTAX_TTL;
-	} else if ((keyword = strstr(line, "$INCLUDE "))) {
+	} else if (strstr(line, "$INCLUDE ")) {
 		s = LDNS_STATUS_SYNTAX_INCLUDE;
 	} else {
 		if (origin && *origin) {
@@ -696,11 +692,9 @@ ldns_rr_set_rdf(ldns_rr *rr, const ldns_rdf *f, size_t position)
 {
 	size_t rd_count;
 	ldns_rdf *pop;
-	ldns_rdf **rdata_fields;
 
 	rd_count = ldns_rr_rd_count(rr);
 	if (position < rd_count) {
-		rdata_fields = rr->_rdata_fields;
 		/* dicard the old one */
 		pop = rr->_rdata_fields[position];
 		rr->_rdata_fields[position] = (ldns_rdf*)f;
@@ -885,12 +879,9 @@ bool
 ldns_rr_list_cat(ldns_rr_list *left, ldns_rr_list *right)
 {
 	size_t r_rr_count;
-	size_t l_rr_count;
 	size_t i;
 
-	if (left) {
-		l_rr_count = ldns_rr_list_rr_count(left);
-	} else {
+	if (!left) {
 		return false;
 	}
 
@@ -914,8 +905,6 @@ ldns_rr_list_cat_clone(ldns_rr_list *left, ldns_rr_list *right)
 	size_t r_rr_count;
 	size_t i;
 	ldns_rr_list *cat;
-
-	l_rr_count = 0;
 
 	if (left) {
 		l_rr_count = ldns_rr_list_rr_count(left);

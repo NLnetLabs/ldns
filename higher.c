@@ -110,9 +110,7 @@ ldns_get_rr_list_name_by_addr(ldns_resolver *res, ldns_rdf *addr, ldns_rr_class 
 	ldns_pkt *pkt;
 	ldns_rr_list *names;
 	ldns_rdf *name;
-	size_t i;
 
-	i = 0; 
 	names = NULL;
 
 	if (!res || !addr) {

@@ -108,10 +108,17 @@ ldns_dname_reverse(const ldns_rdf *d)
 	d_tmp = ldns_rdf_clone(d);
 
 	new = ldns_dname_new_frm_str(".");
+        if(!new)
+                return NULL;
 
 	while(ldns_dname_label_count(d_tmp) > 0) {
 		tmp = ldns_dname_label(d_tmp, 0);
 		status = ldns_dname_cat(tmp, new);
+                if(status != LDNS_STATUS_OK) {
+                        ldns_rdf_deep_free(new);
+	                ldns_rdf_deep_free(d_tmp);
+                        return NULL;
+                }
 		ldns_rdf_deep_free(new);
 		new = tmp;
 		tmp = ldns_dname_left_chop(d_tmp);

@@ -194,7 +194,6 @@ ldns_sign_public(ldns_rr_list *rrset, ldns_key_list *keys)
 	
 	new_owner = NULL;
 
-	key_count = 0;
 	signatures = ldns_rr_list_new();
 
 	/* prepare a signature and add all the know data
@@ -710,7 +709,6 @@ ldns_dnssec_remove_signatures(ldns_dnssec_rrs *signatures,
 
 	uint16_t keytag;
 	size_t i;
-	int v;
 
 	key_list = key_list;
 
@@ -729,7 +727,7 @@ ldns_dnssec_remove_signatures(ldns_dnssec_rrs *signatures,
 		}
 		return NULL;
 	}
-	v = func(cur_rr->rr, arg);
+	(void)func(cur_rr->rr, arg);
 
 	while (cur_rr) {
 		next_rr = cur_rr->next;

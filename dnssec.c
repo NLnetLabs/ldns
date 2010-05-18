@@ -148,6 +148,12 @@ ldns_dnssec_nsec3_closest_encloser(ldns_rdf *qname,
 									 salt);
 
 		status = ldns_dname_cat(hashed_sname, zone_name);
+                if(status != LDNS_STATUS_OK) {
+	                LDNS_FREE(salt);
+	                ldns_rdf_deep_free(zone_name);
+	                ldns_rdf_deep_free(sname);
+                        return NULL;
+                }
 
 		for (nsec_i = 0; nsec_i < ldns_rr_list_rr_count(nsec3s); nsec_i++) {
 			nsec = ldns_rr_list_rr(nsec3s, nsec_i);
@@ -807,6 +813,10 @@ ldns_dnssec_create_nsec3(ldns_dnssec_name *from,
 	                  salt_length,
 	                  salt));
 	status = ldns_dname_cat(ldns_rr_owner(nsec_rr), zone_name);
+        if(status != LDNS_STATUS_OK) {
+                ldns_rr_free(nsec_rr);
+                return NULL;
+        }
 	ldns_nsec3_add_param_rdfs(nsec_rr,
 	                          algorithm,
 	                          flags,
@@ -970,7 +980,6 @@ ldns_nsec3_hash_name(ldns_rdf *name,
 		LDNS_FREE(hashed_owner_b32);
 		return NULL;
 	}
-	hashed_owner_str_len = hashed_owner_b32_len;
 	hashed_owner_b32[hashed_owner_b32_len] = '\0';
 
 	status = ldns_str2rdf_dname(&hashed_owner, hashed_owner_b32);
@@ -1075,8 +1084,12 @@ ldns_create_nsec3(ldns_rdf *cur_owner,
 								 salt_length,
 								 salt);
 	status = ldns_dname_cat(hashed_owner, cur_zone);
+        if(status != LDNS_STATUS_OK)
+                return NULL;
 
 	nsec = ldns_rr_new_frm_type(LDNS_RR_TYPE_NSEC3);
+        if(!nsec)
+                return NULL;
 	ldns_rr_set_type(nsec, LDNS_RR_TYPE_NSEC3);
 	ldns_rr_set_owner(nsec, hashed_owner);
 
@@ -1530,14 +1543,14 @@ ldns_convert_dsa_rrsig_rdf2asn1(ldns_buffer *target_buffer,
 						  const ldns_rdf *sig_rdf)
 {
 	/* the EVP api wants the DER encoding of the signature... */
-	uint8_t t;
 	BIGNUM *R, *S;
 	DSA_SIG *dsasig;
 	unsigned char *raw_sig = NULL;
 	int raw_sig_len;
 
+        if(ldns_rdf_size(sig_rdf) < 1 + 2*SHA_DIGEST_LENGTH)
+                return LDNS_STATUS_SYNTAX_RDATA_ERR;
 	/* extract the R and S field from the sig buffer */
-	t = ldns_rdf_data(sig_rdf)[0];
 	R = BN_new();
 	if(!R) return LDNS_STATUS_MEM_ERR;
 	(void) BN_bin2bn((unsigned char *) ldns_rdf_data(sig_rdf) + 1,

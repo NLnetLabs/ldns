@@ -615,7 +615,7 @@ ldns_str2rdf_nsec(ldns_rdf **rd, const char *str)
 	str_buf = LDNS_MALLOC(ldns_buffer);
 	ldns_buffer_new_frm_data(str_buf, (char *)str, strlen(str));
 
-	while ((c = ldns_bget_token(str_buf, token, delimiters, LDNS_MAX_RDFLEN)) != -1) {
+	while ((c = ldns_bget_token(str_buf, token, delimiters, LDNS_MAX_RDFLEN)) != -1 && c != 0) {
 		cur_type = ldns_get_rr_type_by_name(token);
 		type_list[type_count] = cur_type;
 		type_count++;
@@ -969,7 +969,7 @@ ldns_str2rdf_wks(ldns_rdf **rd, const char *str)
 			proto_str = strdup(token);
 			if (!proto_str) {
 				LDNS_FREE(token);
-				LDNS_FREE(str_buf);
+	                        ldns_buffer_free(str_buf);
 				return LDNS_STATUS_INVALID_STR;
 			}
 		} else {
@@ -981,6 +981,12 @@ ldns_str2rdf_wks(ldns_rdf **rd, const char *str)
 			}
 			if (serv_port / 8 >= bm_len) {
 				bitmap = LDNS_XREALLOC(bitmap, uint8_t, (serv_port / 8) + 1);
+                                if(!bitmap) {
+				        LDNS_FREE(token);
+	                                ldns_buffer_free(str_buf);
+				        free(proto_str);
+				        return LDNS_STATUS_INVALID_STR;
+                                }
 				/* set to zero to be sure */
 				for (; bm_len <= serv_port / 8; bm_len++) {
 					bitmap[bm_len] = 0;
@@ -992,11 +998,24 @@ ldns_str2rdf_wks(ldns_rdf **rd, const char *str)
 
 	if (!proto_str) {
 		LDNS_FREE(token);
-		LDNS_FREE(str_buf);
+	        ldns_buffer_free(str_buf);
 		return LDNS_STATUS_INVALID_STR;
 	}
+        if(!bitmap) {
+	        LDNS_FREE(token);
+	        ldns_buffer_free(str_buf);
+	        free(proto_str);
+	        return LDNS_STATUS_INVALID_STR;
+        }
 
 	data = LDNS_XMALLOC(uint8_t, bm_len + 1);
+        if(!data) {
+	        LDNS_FREE(token);
+	        ldns_buffer_free(str_buf);
+	        LDNS_FREE(bitmap);
+	        free(proto_str);
+	        return LDNS_STATUS_INVALID_STR;
+        }
     if (proto_str)
 		proto = getprotobyname(proto_str);
 	if (proto) {

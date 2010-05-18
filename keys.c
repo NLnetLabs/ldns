@@ -994,7 +994,6 @@ ldns_key_list_push_key(ldns_key_list *key_list, ldns_key *key)
         ldns_key **keys;
 
         key_count = ldns_key_list_key_count(key_list);
-        keys = key_list->_keys;
 
         /* grow the array */
         keys = LDNS_XREALLOC(

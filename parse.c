@@ -183,9 +183,14 @@ ldns_fget_keyword_data_l(FILE *f, const char *keyword, const char *k_del, char *
        ssize_t i;
 
        fkeyword = LDNS_XMALLOC(char, LDNS_MAX_KEYWORDLEN);
-       i = 0;
+       if(!fkeyword)
+               return -1;
 
        i = ldns_fget_token(f, fkeyword, k_del, LDNS_MAX_KEYWORDLEN);
+       if(i==0 || i==-1) {
+               LDNS_FREE(fkeyword);
+               return -1;
+       }
 
        /* case??? i instead of strlen? */
        if (strncmp(fkeyword, keyword, LDNS_MAX_KEYWORDLEN - 1) == 0) {
@@ -227,7 +232,7 @@ ldns_bget_token(ldns_buffer *b, char *token, const char *delim, size_t limit)
 	quoted = 0;
 	t = token;
 	lc = 0;
-	if (delim[0] == '"') {
+	if (del[0] == '"') {
 		quoted = 1;
 	}
 
@@ -253,7 +258,6 @@ ldns_bget_token(ldns_buffer *b, char *token, const char *delim, size_t limit)
 		if (p < 0) {
 			/* more ) then ( */
 			*t = '\0';
-			lc = c;
 			return 0;
 		}
 
@@ -411,17 +415,24 @@ ldns_bget_keyword_data(ldns_buffer *b, const char *keyword, const char *k_del, c
        ssize_t i;
 
        fkeyword = LDNS_XMALLOC(char, LDNS_MAX_KEYWORDLEN);
-       i = 0;
+       if(!fkeyword)
+               return -1; /* out of memory */
 
        i = ldns_bget_token(b, fkeyword, k_del, data_limit);
+       if(i==0 || i==-1) {
+               LDNS_FREE(fkeyword);
+               return -1; /* nothing read */
+       }
 
        /* case??? */
        if (strncmp(fkeyword, keyword, strlen(keyword)) == 0) {
+               LDNS_FREE(fkeyword);
                /* whee, the match! */
                /* retrieve it's data */
                i = ldns_bget_token(b, data, d_del, 0);
                return i;
        } else {
+               LDNS_FREE(fkeyword);
                return -1;
        }
 }

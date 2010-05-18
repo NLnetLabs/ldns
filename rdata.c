@@ -371,7 +371,7 @@ ldns_rdf_new_frm_fp_l(ldns_rdf **rdf, ldns_rdf_type type, FILE *fp, int *line_nr
 	}
 
 	/* read an entire line in from the file */
-	if ((t = ldns_fget_token_l(fp, line, LDNS_PARSE_SKIP_SPACE, 0, line_nr)) == -1) {
+	if ((t = ldns_fget_token_l(fp, line, LDNS_PARSE_SKIP_SPACE, 0, line_nr)) == -1 || t == 0) {
 		LDNS_FREE(line);
 		return LDNS_STATUS_SYNTAX_RDATA_ERR;
 	}

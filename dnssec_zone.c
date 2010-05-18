@@ -421,7 +421,7 @@ ldns_dnssec_name_add_rr(ldns_dnssec_name *name,
 	ldns_status result = LDNS_STATUS_OK;
 	ldns_rdf *name_name;
 	bool hashed_name = false;
-	ldns_rr_type rr_type = ldns_rr_get_type(rr);
+	ldns_rr_type rr_type;
 	ldns_rr_type typecovered = 0;
 
 	/* special handling for NSEC3 and NSECX covering RRSIGS */

@@ -960,7 +960,7 @@ ldns_resolver_query(const ldns_resolver *r, const ldns_rdf *name,
 		return NULL;
 	}
 
-	status = ldns_resolver_send(&pkt, (ldns_resolver *)r, newname, t, c,
+	(void)ldns_resolver_send(&pkt, (ldns_resolver *)r, newname, t, c,
 			flags);
 
 	ldns_rdf_free(newname);

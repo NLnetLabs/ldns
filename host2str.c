@@ -812,14 +812,16 @@ ldns_status
 ldns_rdf2buffer_str_apl(ldns_buffer *output, const ldns_rdf *rdf)
 {
 	uint8_t *data = ldns_rdf_data(rdf);
-	uint16_t address_family = ldns_read_uint16(data);
-	uint8_t prefix = data[2];
+	uint16_t address_family;
+	uint8_t prefix;
 	bool negation;
 	uint8_t adf_length;
 	unsigned short i;
 	unsigned int pos = 0;
 
 	while (pos < (unsigned int) ldns_rdf_size(rdf)) {
+                if(pos + 3 >= ldns_rdf_size(rdf))
+                        return LDNS_STATUS_SYNTAX_RDATA_ERR;
 		address_family = ldns_read_uint16(&data[pos]);
 		prefix = data[pos + 2];
 		negation = data[pos + 3] & LDNS_APL_NEGATION;
@@ -836,6 +838,8 @@ ldns_rdf2buffer_str_apl(ldns_buffer *output, const ldns_rdf *rdf)
 					ldns_buffer_printf(output, ".");
 				}
 				if (i < (unsigned short) adf_length) {
+                                        if(pos+i+4 >= ldns_rdf_size(rdf))
+                                                return LDNS_STATUS_SYNTAX_RDATA_ERR;
 					ldns_buffer_printf(output, "%d",
 					                   data[pos + i + 4]);
 				} else {
@@ -855,6 +859,8 @@ ldns_rdf2buffer_str_apl(ldns_buffer *output, const ldns_rdf *rdf)
 					ldns_buffer_printf(output, ":");
 				}
 				if (i < (unsigned short) adf_length) {
+                                        if(pos+i+4 >= ldns_rdf_size(rdf))
+                                                return LDNS_STATUS_SYNTAX_RDATA_ERR;
 					ldns_buffer_printf(output, "%02x",
 					                   data[pos + i + 4]);
 				} else {
@@ -868,6 +874,8 @@ ldns_rdf2buffer_str_apl(ldns_buffer *output, const ldns_rdf *rdf)
 			ldns_buffer_printf(output, "Unknown address family: %u data: ",
 					address_family);
 			for (i = 1; i < (unsigned short) (4 + adf_length); i++) {
+                                if(pos+i >= ldns_rdf_size(rdf))
+                                        return LDNS_STATUS_SYNTAX_RDATA_ERR;
 				ldns_buffer_printf(output, "%02x", data[i]);
 			}
 		}
@@ -940,6 +948,8 @@ ldns_rdf2buffer_str_ipseckey(ldns_buffer *output, const ldns_rdf *rdf)
 			break;
 		case 3:
 			status = ldns_wire2dname(&gateway, data, ldns_rdf_size(rdf), &offset);
+                        if(status != LDNS_STATUS_OK)
+                                return status;
 			break;
 		default:
 			/* error? */
@@ -976,7 +986,7 @@ ldns_rdf2buffer_str_tsig(ldns_buffer *output, const ldns_rdf *rdf)
 ldns_status
 ldns_rdf2buffer_str(ldns_buffer *buffer, const ldns_rdf *rdf)
 {
-	ldns_status res;
+	ldns_status res = LDNS_STATUS_OK;
 
 	/*ldns_buffer_printf(buffer, "%u:", ldns_rdf_get_type(rdf));*/
 	if (rdf) {
@@ -1074,8 +1084,9 @@ ldns_rdf2buffer_str(ldns_buffer *buffer, const ldns_rdf *rdf)
 		}
 	} else {
 		ldns_buffer_printf(buffer, "(null) ");
+	        res = ldns_buffer_status(buffer);
 	}
-	return LDNS_STATUS_OK;
+	return res;
 }
 
 ldns_status
@@ -1118,6 +1129,8 @@ ldns_rr2buffer_str(ldns_buffer *output, const ldns_rr *rr)
 
 		for (i = 0; i < ldns_rr_rd_count(rr); i++) {
 			status = ldns_rdf2buffer_str(output, ldns_rr_rdf(rr, i));
+                        if(status != LDNS_STATUS_OK)
+                                return status;
 			if (i < ldns_rr_rd_count(rr) - 1) {
 				ldns_buffer_printf(output, " ");
 			}
