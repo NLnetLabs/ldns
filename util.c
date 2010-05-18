@@ -262,7 +262,6 @@ ldns_init_random(FILE *fd, unsigned int size)
 	size_t read = 0;
 	unsigned int seed_i;
 	struct timeval tv;
-	struct timezone tz;
 
 	/* we'll need at least sizeof(unsigned int) bytes for the
 	   standard prng seed */
@@ -279,7 +278,7 @@ ldns_init_random(FILE *fd, unsigned int size)
 				/* no readable /dev/random either, and no entropy
 				   source given. we'll have to improvise */
 				for (read = 0; read < size; read++) {
-					gettimeofday(&tv, &tz);
+					gettimeofday(&tv, NULL);
 					seed[read] = (uint8_t) (tv.tv_usec % 256);
 				}
 			} else {
