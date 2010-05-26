@@ -982,7 +982,7 @@ ldns_pkt_clone(ldns_pkt *pkt)
 	ldns_pkt_set_answerfrom(new_pkt, ldns_pkt_answerfrom(pkt));
 	ldns_pkt_set_querytime(new_pkt, ldns_pkt_querytime(pkt));
 	ldns_pkt_set_size(new_pkt, ldns_pkt_size(pkt));
-	ldns_pkt_set_tsig(new_pkt, ldns_pkt_tsig(pkt));
+	ldns_pkt_set_tsig(new_pkt, ldns_rr_clone(ldns_pkt_tsig(pkt)));
 	
 	ldns_pkt_set_edns_udp_size(new_pkt, ldns_pkt_edns_udp_size(pkt));
 	ldns_pkt_set_edns_extended_rcode(new_pkt, 
