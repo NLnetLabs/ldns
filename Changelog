@@ -34,6 +34,7 @@
 	* bugfix #310: POSIX specifies NULL second argument of gettimeofday.
 	* fix compiler warnings from llvm clang compiler.
 	* bugfix #309: ldns_pkt_clone did not clone the tsig_rr.
+	* Fix gentoo ebuild for drill, 'no m4 directory'.
 
 1.6.4	2010-01-20
 	* Imported pyldns contribution by Zdenek Vasicek and Karel Slany.

@@ -51,7 +51,6 @@ LIBSSL_LIBS     = @LIBSSL_LIBS@
 RUNTIME_PATH	= @RUNTIME_PATH@
 DATE		= $(shell date +%Y%m%d)
 LIBTOOL		= $(libtool) --tag=CC --quiet
-ACLOCAL_AMFLAGS	= -Im4
 INSTALL_LDNS_CONFIG = @INSTALL_LDNS_CONFIG@
 
 LINT		= splint
