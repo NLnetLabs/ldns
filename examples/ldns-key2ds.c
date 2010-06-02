@@ -45,8 +45,6 @@ static ldns_hash
 suitable_hash(ldns_signing_algorithm algorithm)
 {
 	switch (algorithm) {
-	default:
-		return LDNS_SHA1;
 	case LDNS_SIGN_RSASHA256:
 	case LDNS_SIGN_RSASHA512:
 		return LDNS_SHA256;
@@ -56,6 +54,8 @@ suitable_hash(ldns_signing_algorithm algorithm)
 #else
 		return LDNS_SHA256;
 #endif
+	default:
+		return LDNS_SHA1;
 	}
 	return LDNS_SHA1;
 }
