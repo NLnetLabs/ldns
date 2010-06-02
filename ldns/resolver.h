@@ -649,7 +649,7 @@ ldns_status ldns_resolver_new_frm_fp(ldns_resolver **r, FILE *fp);
 ldns_status ldns_resolver_new_frm_fp_l(ldns_resolver **r, FILE *fp, int *line_nr);
 
 /**
- * configure a resolver by means of a resolv.conf file
+ * Configure a resolver by means of a resolv.conf file
  * The file may be NULL in which case there will  be
  * looked the RESOLV_CONF (defaults to /etc/resolv.conf
  * \param[out] r the new resolver
