@@ -200,9 +200,6 @@ main(int argc, char *argv[])
 
 	/* build the DS record */
 	switch (algorithm) {
-	default:
-		ds = ldns_key_rr2ds(pubkey, LDNS_SHA1);
-		break;
 	case LDNS_SIGN_RSASHA256:
 	case LDNS_SIGN_RSASHA512:
 		ds = ldns_key_rr2ds(pubkey, LDNS_SHA256);
@@ -213,6 +210,9 @@ main(int argc, char *argv[])
 #else
 		ds = ldns_key_rr2ds(pubkey, LDNS_SHA256);
 #endif
+		break;
+	default:
+		ds = ldns_key_rr2ds(pubkey, LDNS_SHA1);
 		break;
 	}
 
