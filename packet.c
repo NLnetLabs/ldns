@@ -413,8 +413,9 @@ ldns_pkt_empty(ldns_pkt *p)
 	}
 	if (ldns_pkt_section_count(p, LDNS_SECTION_ANY) > 0) {
 		return false;
-	} else
+	} else {
 		return true;
+    }
 }
 
 

@@ -451,19 +451,7 @@ ldns_rdf2buffer_str_alg(ldns_buffer *output, const ldns_rdf *rdf)
 	/* don't use algorithm mnemonics in the presentation format
 	   this kind of got sneaked into the rfc's */
         uint8_t data = ldns_rdf_data(rdf)[0];
-/*
-
-	ldns_lookup_table *lt;
-
- 	lt = ldns_lookup_by_id(ldns_algorithms, (int) data);
-	if (lt) {
-		ldns_buffer_printf(output, "%s", lt->name);
-	} else {
-*/
 		ldns_buffer_printf(output, "%d", data);
-/*
-	}
-*/
 	return ldns_buffer_status(output);
 }
 

@@ -391,7 +391,7 @@ ldns_rr_new_frm_str_internal(ldns_rr **newrr, const char *str,
 					ldns_buffer_skip(rd_buf, 1);
 				}
 
-                                pre_data_pos = ldns_buffer_position(rd_buf);
+				pre_data_pos = ldns_buffer_position(rd_buf);
 				if ((c = ldns_bget_token(rd_buf, rd, delimiters,
 							LDNS_MAX_RDFLEN)) != -1) {
 					/* hmmz, rfc3597 specifies that any type can be represented with
@@ -439,8 +439,8 @@ ldns_rr_new_frm_str_internal(ldns_rr **newrr, const char *str,
 						/* correct the rdf type */
 						/* if *we* know the type, interpret it as wireformat */
 						if (desc) {
-                                                        size_t hex_pos = 0;
-                                                        uint8_t *hex_data = LDNS_XMALLOC(uint8_t, hex_data_size + 2);
+							size_t hex_pos = 0;
+							uint8_t *hex_data = LDNS_XMALLOC(uint8_t, hex_data_size + 2);
 							ldns_write_uint16(hex_data, hex_data_size);
 							ldns_hexstring_to_data(hex_data + 2, hex_data_str);
 							(void) ldns_wire2rdf(new, hex_data,
