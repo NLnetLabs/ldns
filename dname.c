@@ -495,7 +495,7 @@ ldns_dname_str_absolute(const char *dname_str)
                 return 0;
         if(dname_str[strlen(dname_str) - 1] != '.')
                 return 0;
-        if(dname_str[strlen(dname_str) - 2] == '\\')
+        if(dname_str[strlen(dname_str) - 2] != '\\')
                 return 1; /* ends in . and no \ before it */
         /* so we have the case of ends in . and there is \ before it */
         for(s=dname_str; s; s++) {

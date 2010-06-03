@@ -75,7 +75,7 @@
 %inline %{
 struct timeval* ldns_make_timeval(uint32_t sec, uint32_t usec)
 {
-        struct timeval* res = (struct timeval*)malloc(sizeof(res));
+        struct timeval* res = (struct timeval*)malloc(sizeof(*res));
         res->tv_sec = sec;
         res->tv_usec = usec;
         return res;
