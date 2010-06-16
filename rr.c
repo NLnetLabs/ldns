@@ -1253,6 +1253,7 @@ ldns_rr_clone(const ldns_rr *rr)
 	ldns_rr_set_ttl(new_rr, ldns_rr_ttl(rr));
 	ldns_rr_set_type(new_rr, ldns_rr_get_type(rr));
 	ldns_rr_set_class(new_rr, ldns_rr_get_class(rr));
+	ldns_rr_set_question(new_rr, ldns_rr_is_question(rr));
 
 	for (i = 0; i < ldns_rr_rd_count(rr); i++) {
         	if (ldns_rr_rdf(rr,i)) {

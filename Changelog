@@ -1,4 +1,5 @@
 1.6.6
+	* Fix ldns_rr_clone to copy question rrs properly.
 
 1.6.5
 	* Catch \X where X is a digit as an error.
