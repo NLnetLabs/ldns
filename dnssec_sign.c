@@ -1094,7 +1094,7 @@ ldns_zone_sign(const ldns_zone *zone, ldns_key_list *key_list)
 	dnssec_zone = ldns_dnssec_zone_new();
 
 	(void) ldns_dnssec_zone_add_rr(dnssec_zone, ldns_zone_soa(zone));
-	ldns_zone_set_soa(signed_zone, ldns_zone_soa(zone));
+	ldns_zone_set_soa(signed_zone, ldns_rr_clone(ldns_zone_soa(zone)));
 	
 	for (i = 0; i < ldns_rr_list_rr_count(ldns_zone_rrs(zone)); i++) {
 		(void) ldns_dnssec_zone_add_rr(dnssec_zone,
@@ -1135,7 +1135,7 @@ ldns_zone_sign_nsec3(ldns_zone *zone, ldns_key_list *key_list, uint8_t algorithm
 	dnssec_zone = ldns_dnssec_zone_new();
 
 	(void) ldns_dnssec_zone_add_rr(dnssec_zone, ldns_zone_soa(zone));
-	ldns_zone_set_soa(signed_zone, ldns_zone_soa(zone));
+	ldns_zone_set_soa(signed_zone, ldns_rr_clone(ldns_zone_soa(zone)));
 	
 	for (i = 0; i < ldns_rr_list_rr_count(ldns_zone_rrs(zone)); i++) {
 		(void) ldns_dnssec_zone_add_rr(dnssec_zone,
