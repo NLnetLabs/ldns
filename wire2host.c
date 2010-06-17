@@ -101,7 +101,7 @@ ldns_wire2dname(ldns_rdf **dname, const uint8_t *wire, size_t max, size_t *pos)
 		if (label_size > LDNS_MAX_LABELLEN) {
 			return LDNS_STATUS_LABEL_OVERFLOW;
 		}
-		if (*pos + label_size > max) {
+		if (*pos + 1 + label_size > max) {
 			return LDNS_STATUS_LABEL_OVERFLOW;
 		}
 
