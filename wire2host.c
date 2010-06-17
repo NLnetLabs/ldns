@@ -88,7 +88,7 @@ ldns_wire2dname(ldns_rdf **dname, const uint8_t *wire, size_t max, size_t *pos)
 
 			if (pointer_target == 0) {
 				return LDNS_STATUS_INVALID_POINTER;
-			} else if (pointer_target > max) {
+			} else if (pointer_target >= max) {
 				return LDNS_STATUS_INVALID_POINTER;
 			} else if (pointer_count > LDNS_MAX_POINTERS) {
 				return LDNS_STATUS_INVALID_POINTER;
