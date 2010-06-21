@@ -3,6 +3,7 @@
 	* Fix ldns_sign_zone(_nsec3) to clone the soa for the new zone.
 	* Fix ldns_wire2dname size check from reading 1 byte beyond buffer end.
 	* Fix ldns_wire2dname from reading 1 byte beyond end for pointer.
+	* Fix crash using GOST for particular platform configurations.
 
 1.6.5
 	* Catch \X where X is a digit as an error.
