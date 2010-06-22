@@ -307,6 +307,9 @@ void ldns_key_set_dsa_key(ldns_key *k, DSA *d);
  * \return the gost id for EVP_CTX creation.
  */
 int ldns_key_EVP_load_gost_id(void);
+
+/** Release the engine reference held for the GOST engine. */
+void ldns_key_EVP_unload_gost(void);
 #endif /* HAVE_SSL */
 
 /**

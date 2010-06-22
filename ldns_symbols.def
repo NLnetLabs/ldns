@@ -165,6 +165,7 @@ ldns_get_rr_type_by_name
 ldns_gost2pkey_raw
 ldns_digest_evp
 ldns_key_EVP_load_gost_id
+ldns_key_EVP_unload_gost
 ldns_hexdigit_to_int
 ldns_hexstring_to_data
 ldns_init_random

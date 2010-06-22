@@ -103,6 +103,9 @@ ldns_key_new_frm_engine(ldns_key **key, ENGINE *e, char *key_id, ldns_algorithm 
 #endif
 
 #ifdef USE_GOST
+/** store GOST engine reference loaded into OpenSSL library */
+ENGINE* ldns_gost_engine = NULL;
+
 int
 ldns_key_EVP_load_gost_id(void)
 {
@@ -146,9 +149,19 @@ ldns_key_EVP_load_gost_id(void)
 	}
         /* Note: do not ENGINE_finish and ENGINE_free the acquired engine
          * on some platforms this frees up the meth and unloads gost stuff */
+        ldns_gost_engine = e;
 	
 	EVP_PKEY_asn1_get0_info(&gost_id, NULL, NULL, NULL, NULL, meth);
 	return gost_id;
+} 
+
+void ldns_key_EVP_unload_gost(void)
+{
+        if(ldns_gost_engine) {
+                ENGINE_finish(ldns_gost_engine);
+                ENGINE_free(ldns_gost_engine);
+                ldns_gost_engine = NULL;
+        }
 }
 
 /** read GOST private key */
