@@ -92,6 +92,10 @@ main(int argc, char *argv[])
 		}
 #ifdef USE_GOST
 		if (strcmp(argv[0], "-g") == 0) {
+			if(!ldns_key_EVP_load_gost_id()) {
+				fprintf(stderr, "error: libcrypto does not provide GOST\n");
+				exit(EXIT_FAILURE);
+			}
 			h = LDNS_HASH_GOST;
 			similar_hash = 0;
 		}

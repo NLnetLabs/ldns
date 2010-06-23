@@ -157,6 +157,12 @@ main(int argc, char *argv[])
 	case LDNS_SIGN_HMACMD5:
 	case LDNS_SIGN_HMACSHA1:
 	case LDNS_SIGN_HMACSHA256:
+	case LDNS_SIGN_ECC_GOST:
+		if(!ldns_key_EVP_load_gost_id()) {
+			fprintf(stderr, "error: libcrypto does not provide GOST\n");
+			exit(EXIT_FAILURE);
+		}
+		break;
 	default:
 		break;
 	}

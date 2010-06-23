@@ -703,7 +703,7 @@ main(int argc, char *argv[])
 				
 				ldns_key_list_push_key(keys, key);
 			} else {
-				fprintf(stderr, "Error reading key from %s at line %d\n", argv[argi], line_nr);
+				fprintf(stderr, "Error reading key from %s at line %d: %s\n", argv[argi], line_nr, ldns_get_errorstr_by_id(s));
 			}
 		}
 		/* and, if not unset by -p, find or create the corresponding DNSKEY record */

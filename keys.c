@@ -350,6 +350,10 @@ ldns_key_new_frm_fp_l(ldns_key **key, FILE *fp, int *line_nr)
 		case LDNS_SIGN_ECC_GOST:
 			ldns_key_set_algorithm(k, alg);
 #if defined(HAVE_SSL) && defined(USE_GOST)
+                        if(!ldns_key_EVP_load_gost_id()) {
+				ldns_key_free(k);
+                                return LDNS_STATUS_CRYPTO_ALGO_NOT_IMPL;
+                        }
 			ldns_key_set_evp_key(k, 
 				ldns_key_new_frm_fp_gost_l(fp, line_nr));
 			if(!k->_key.key) {
