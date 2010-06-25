@@ -435,7 +435,7 @@ size_t strlcpy(char *dst, const char *src, size_t siz);
 #include "compat/fake-rfc2553.h"
 #endif
 #ifndef HAVE_STRTOUL
-#define strtoul (unsigned long))strtol
+#define strtoul (unsigned long)strtol
 #endif
 ])
 
