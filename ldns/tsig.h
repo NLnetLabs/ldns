@@ -9,6 +9,10 @@
 #ifndef LDNS_TSIG_H
 #define LDNS_TSIG_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /**
  * \file
  *
@@ -52,5 +56,9 @@ bool ldns_pkt_tsig_verify(ldns_pkt *pkt, uint8_t *wire, size_t wire_size, const 
  * \return status (OK if success)
  */
 ldns_status ldns_pkt_tsig_sign(ldns_pkt *pkt, const char *key_name, const char *key_data, uint16_t fudge, const char *algorithm_name, ldns_rdf *query_mac);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* LDNS_TSIG_H */

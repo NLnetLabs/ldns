@@ -43,6 +43,10 @@
 #ifndef LDNS_RBTREE_H_
 #define	LDNS_RBTREE_H_
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /**
  * This structure must be the first member of the data structure in
  * the rbtree.  This allows easy casting between an rbnode_t and the
@@ -218,5 +222,9 @@ void ldns_rbtree_join(ldns_rbtree_t *tree1, ldns_rbtree_t *tree2);
  */
 void ldns_traverse_postorder(ldns_rbtree_t* tree,
 	void (*func)(ldns_rbnode_t*, void*), void* arg);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* UTIL_RBTREE_H_ */

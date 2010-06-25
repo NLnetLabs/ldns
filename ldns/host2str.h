@@ -30,6 +30,10 @@
 
 #include "ldns/util.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #define LDNS_APL_IP4            1
 #define LDNS_APL_IP6            2
 #define LDNS_APL_MASK           0x7f
@@ -555,5 +559,8 @@ void ldns_zone_print(FILE *output, const ldns_zone *z);
  */
 ldns_status ldns_rdf2buffer_str_dname(ldns_buffer *output, const ldns_rdf *dname);
 
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* LDNS_HOST2STR_H */

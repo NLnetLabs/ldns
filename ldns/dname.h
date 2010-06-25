@@ -42,6 +42,10 @@
 #include <ldns/common.h>
 #include <ldns/rdata.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #define LDNS_DNAME_NORMALIZE        tolower
 
 /**
@@ -189,5 +193,9 @@ ldns_rdf * ldns_dname_label(const ldns_rdf *rdf, uint8_t labelpos);
  * \return true if a wildcard, false if not.
  */
 int ldns_dname_is_wildcard(const ldns_rdf* dname);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif	/* LDNS_DNAME_H */

@@ -7,6 +7,10 @@
 
 #include <ldns/dnssec.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /**
  * Chain structure that contains all DNSSEC data needed to
  * verify an rrset
@@ -599,6 +603,10 @@ ldns_status ldns_verify_rrsig_rsamd5_raw(unsigned char* sig,
 								 ldns_buffer* rrset,
 								 unsigned char* key,
 								 size_t keylen);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
 

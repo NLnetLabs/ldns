@@ -28,6 +28,10 @@
 #include <ldns/packet.h>
 #include <sys/time.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /** Default location of the resolv.conf file */
 #define LDNS_RESOLV_CONF	"/etc/resolv.conf"
 /** Default location of the hosts file */
@@ -707,5 +711,9 @@ void ldns_resolver_nameservers_randomize(ldns_resolver *r);
  * \return true if at least one of the provided keys is a configured trust anchor
  */
 bool ldns_resolver_trusted_key(const ldns_resolver *r, ldns_rr_list * keys, ldns_rr_list * trusted_keys);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif  /* LDNS_RESOLVER_H */

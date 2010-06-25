@@ -34,6 +34,10 @@
 #include <ldns/resolver.h>
 #include <ldns/dnssec_zone.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #define LDNS_MAX_KEYLEN		2048
 #define LDNS_DNSSEC_KEYPROTO	3
 /* default time before sigs expire */
@@ -450,5 +454,9 @@ ldns_convert_dsa_rrsig_rdf2asn1(ldns_buffer *target_buffer,
 						  const ldns_rdf *sig_rdf);
 
 #endif /* HAVE_SSL */
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* LDNS_DNSSEC_H */

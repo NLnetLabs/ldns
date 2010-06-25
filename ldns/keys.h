@@ -28,6 +28,10 @@
 #include <ldns/util.h>
 #include <errno.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 extern ldns_lookup_table ldns_signing_algorithms[];
 
 #define LDNS_KEY_ZONE_KEY 0x0100   /* rfc 4034 */
@@ -578,5 +582,9 @@ char *ldns_key_get_file_base_name(ldns_key *key);
  * \returns true if supported.
  */
 int ldns_key_algo_supported(int algo);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* LDNS_KEYS_H */

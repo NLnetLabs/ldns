@@ -18,6 +18,10 @@
 #include <time.h>
 #include <stdio.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #define dprintf(X,Y) fprintf(stderr, (X), (Y))
 /* #define	dprintf(X, Y)  */
 
@@ -333,5 +337,9 @@ INLINE size_t ldns_b32_pton_calculate_size(size_t srcsize)
 	return result;
 }
 #endif /* !B32_PTON */
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* !_UTIL_H */

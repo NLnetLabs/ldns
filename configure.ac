@@ -360,6 +360,10 @@ AHX_CONFIG_W32_FD_SET_T
 )
 
 AH_BOTTOM([
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #ifndef B64_PTON
 int ldns_b64_ntop(uint8_t const *src, size_t srclength,
 	 	  char *target, size_t targsize);
@@ -423,6 +427,9 @@ void *memmove(void *dest, const void *src, size_t n);
 #endif
 #ifndef HAVE_STRLCPY
 size_t strlcpy(char *dst, const char *src, size_t siz);
+#endif
+#ifdef __cplusplus
+}
 #endif
 #ifndef HAVE_GETADDRINFO
 #include "compat/fake-rfc2553.h"
