@@ -933,7 +933,6 @@ ldns_resolver_query(const ldns_resolver *r, const ldns_rdf *name,
 			if (pkt) {
 				ldns_pkt_free(pkt);
 			}
-			fprintf(stderr, "error: %s\n", ldns_get_errorstr_by_id(status));
 			return NULL;
 		}
 	}
