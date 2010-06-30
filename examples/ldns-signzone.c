@@ -266,6 +266,11 @@ find_or_create_pubkey(const char *keyfile_name_base, ldns_key *key, ldns_zone *o
 				ldns_key_set_keytag(key, ldns_key_keytag(key) - 1);
 			}
 		}
+		if(pubkey && ldns_dname_compare(ldns_rr_owner(pubkey), ldns_rr_owner(ldns_zone_soa(orig_zone))) != 0) {
+			fprintf(stderr, "Error %s.key has wrong name: %s\n",
+				keyfile_name_base, ldns_rdf2str(ldns_rr_owner(pubkey)));
+			exit(EXIT_FAILURE); /* leak rdf2str, but we exit */
+		}
 	}
 	
 	if (!pubkey) {
