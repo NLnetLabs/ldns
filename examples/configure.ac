@@ -239,6 +239,32 @@ AC_CHECK_GETADDRINFO_WITH_INCLUDES
 
 AC_FUNC_FORK
 AC_CHECK_FUNCS(isblank srandom random sleep)
+AC_CHECK_DECLS([in6addr_any],,,[AC_INCLUDES_DEFAULT
+#ifdef HAVE_SYS_SOCKET_H
+#include <sys/socket.h>
+#endif
+#ifdef HAVE_TIME_H
+#include <time.h>
+#endif
+#ifdef HAVE_SYS_TIME_H
+#include <sys/time.h>
+#endif
+#ifdef HAVE_SYS_SELECT_H
+#include <sys/select.h>
+#endif
+#ifdef HAVE_ARPA_INET_H
+#include <arpa/inet.h>
+#endif
+#ifdef HAVE_NETINET_IN_H
+#include <netinet/in.h>
+#endif
+#ifdef HAVE_NETINET_UDP_H
+#include <netinet/udp.h>
+#endif
+#ifdef HAVE_NETINET_IGMP_H
+#include <netinet/igmp.h>
+#endif
+])
 
 # check for ldns
 AC_ARG_WITH(ldns, 

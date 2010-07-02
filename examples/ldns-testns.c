@@ -207,7 +207,11 @@ static int bind_port(int sock, int port, int fam)
 	memset(&addr6, 0, sizeof(addr6));
 	addr6.sin6_family = AF_INET6;
     	addr6.sin6_port = (in_port_t)htons((uint16_t)port);
+#  ifdef HAVE_DECL_IN6ADDR_ANY
 	addr6.sin6_addr = in6addr_any;
+#  else
+	memset(&addr6.sin6_addr, 0, sizeof(addr6.sin6_addr));
+#  endif
     	return bind(sock, (struct sockaddr *)&addr6, (socklen_t) sizeof(addr6));
     }
 #endif
