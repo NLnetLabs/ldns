@@ -264,6 +264,7 @@ AC_CHECK_TYPE(in_port_t, [], [AC_DEFINE([in_port_t], [uint16_t], [in_port_t])], 
 #if HAVE_NETINET_IN_H
 # include <netinet/in.h>
 #endif])
+ACX_CHECK_SS_FAMILY
 
 AC_FUNC_MALLOC
 AC_FUNC_REALLOC
