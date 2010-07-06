@@ -7,7 +7,7 @@
 	* extern C declarations used in the header file.
 	* Removed debug fprintf from resolver.c.
 	* ldns-signzone checks if public key file is for the right zone.
-	* ADNS, .NET port of ldns functionality, by Alex Nicoll, in contrib.
+	* NETLDNS, .NET port of ldns functionality, by Alex Nicoll, in contrib.
 
 1.6.5
 	* Catch \X where X is a digit as an error.
