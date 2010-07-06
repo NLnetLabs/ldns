@@ -1,8 +1,0 @@
-This is a .NET functionality port of ldns, contributed by Alex Nicoll,
-confusingly called ADNS (but not the other ADNS dns library).  Alex Nicoll
-indicates that it uses the BSD license and the BIGNUM type under another
-license from http://www.codeproject.com/KB/cs/BigInteger_Library.aspx.
-He can be reached for inquiries or newer versions at anicoll@cert.org.
-
-This project is not supported by NLnet Labs.
-
