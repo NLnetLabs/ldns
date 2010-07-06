@@ -1,7 +1,8 @@
-Attached please find the source for ADNS - my functionality port of LDNS to the .NET platform.  AS .NET does not have a native BIGNUM type, I used Mihnea Rădulescu's BigInteger Library (http://www.codeproject.com/KB/cs/BigInteger_Library.aspx) from CodeProject to help with key manipulation.  BigInteger Library is released under the Code Project Open License (http://www.codeproject.com/info/cpol10.aspx) which seems, to my reading, to be compatible with the BSD license.  I would like to release ADNS under the BSD license to make it compatible with the rest of the LDNS project.  
+This is a .NET functionality port of ldns, contributed by Alex Nicoll,
+confusingly called ADNS (but not the other ADNS dns library).  Alex Nicoll
+indicates that it uses the BSD license and the BIGNUM type under another
+license from http://www.codeproject.com/KB/cs/BigInteger_Library.aspx.
+He can be reached for inquiries or newer versions at anicoll@cert.org.
 
-I have included the Visual Studio .NET 2008 solutions file so that anyone who wants to build the library from that can, although it isn't strictly necessary to build it that way.  
+This project is not supported by NLnet Labs.
 
-Until documentation is completed, please direct all inquiries/etc to anicoll@cert.org.  
-
-Alex
