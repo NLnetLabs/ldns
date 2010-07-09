@@ -8,6 +8,7 @@
 	* Removed debug fprintf from resolver.c.
 	* ldns-signzone checks if public key file is for the right zone.
 	* NETLDNS, .NET port of ldns functionality, by Alex Nicoll, in contrib.
+	* Fix handling of comments in resolv.conf parse.
 
 1.6.5
 	* Catch \X where X is a digit as an error.

@@ -667,9 +667,11 @@ ldns_resolver_new_frm_fp_l(ldns_resolver **res, FILE *fp, int *line_nr)
 	gtr = 1;
 	word[0] = 0;
         oldline = *line_nr;
+        expect = LDNS_RESOLV_KEYWORD;
 	while (gtr > 0) {
 		/* check comments */
 		if (word[0] == '#') {
+                        word[0]='x';
                         if(oldline == *line_nr) {
                                 /* skip until end of line */
                                 int c;
@@ -680,7 +682,6 @@ ldns_resolver_new_frm_fp_l(ldns_resolver **res, FILE *fp, int *line_nr)
                         }
 			/* and read next to prepare for further parsing */
                         oldline = *line_nr;
-			gtr = ldns_fget_token_l(fp, word, LDNS_PARSE_NORMAL, 0, line_nr);
 			continue;
 		}
                 oldline = *line_nr;
@@ -689,11 +690,12 @@ ldns_resolver_new_frm_fp_l(ldns_resolver **res, FILE *fp, int *line_nr)
 				/* keyword */
 				gtr = ldns_fget_token_l(fp, word, LDNS_PARSE_NORMAL, 0, line_nr);
 				if (gtr != 0) {
+                                        if(word[0] == '#') continue;
 					for(i = 0; i < LDNS_RESOLV_KEYWORDS; i++) {
 						if (strcasecmp(keyword[i], word) == 0) {
 							/* chosen the keyword and
 							 * expect values carefully
-							 */
+	        					 */
 							expect = i;
 							break;
 						}
@@ -714,6 +716,10 @@ ldns_resolver_new_frm_fp_l(ldns_resolver **res, FILE *fp, int *line_nr)
 				if (gtr == 0) {
 					return LDNS_STATUS_SYNTAX_MISSING_VALUE_ERR;
 				}
+                                if(word[0] == '#') {
+                                        expect = LDNS_RESOLV_KEYWORD;
+                                        continue;
+                                }
 				tmp = ldns_rdf_new_frm_str(LDNS_RDF_TYPE_DNAME, word);
 				if (!tmp) {
 					ldns_resolver_deep_free(r);
@@ -730,6 +736,10 @@ ldns_resolver_new_frm_fp_l(ldns_resolver **res, FILE *fp, int *line_nr)
 				if (gtr == 0) {
 					return LDNS_STATUS_SYNTAX_MISSING_VALUE_ERR;
 				}
+                                if(word[0] == '#') {
+                                        expect = LDNS_RESOLV_KEYWORD;
+                                        continue;
+                                }
 				tmp = ldns_rdf_new_frm_str(LDNS_RDF_TYPE_AAAA, word);
 				if (!tmp) {
 					/* try ip4 */
@@ -752,6 +762,10 @@ ldns_resolver_new_frm_fp_l(ldns_resolver **res, FILE *fp, int *line_nr)
 				ldns_buffer_new_frm_data(b, word, (size_t) gtr);
 				gtr = ldns_bget_token(b, word, LDNS_PARSE_NORMAL, (size_t) gtr + 1);
 				while (gtr > 0) {
+                                        if(word[0] == '#') {
+                                                expect = LDNS_RESOLV_KEYWORD;
+                                                continue;
+                                        }
 					tmp = ldns_rdf_new_frm_str(LDNS_RDF_TYPE_DNAME, word);
 					if (!tmp) {
 						ldns_resolver_deep_free(r);
@@ -783,6 +797,10 @@ ldns_resolver_new_frm_fp_l(ldns_resolver **res, FILE *fp, int *line_nr)
 				if (gtr == 0) {
 					return LDNS_STATUS_SYNTAX_MISSING_VALUE_ERR;
 				}
+                                if(word[0] == '#') {
+                                        expect = LDNS_RESOLV_KEYWORD;
+                                        continue;
+                                }
 
 #ifdef HAVE_SSL
 				tmp_rr = ldns_read_anchor_file(word);
