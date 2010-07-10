@@ -162,13 +162,12 @@ case "$enable_gost" in
     no)
         ;;
     *)  dnl default
-dnl disabled-by-default RFC not ready.
-dnl        if test "x$HAVE_SSL" = "xyes"; then
-dnl                AC_MSG_CHECKING(for GOST)
-dnl                AC_CHECK_FUNC(EVP_PKEY_set_type_str, [
-dnl                AC_DEFINE_UNQUOTED([USE_GOST], [1], [Define this to enable GOST support.])
-dnl                ],[])
-dnl        fi
+        if test "x$HAVE_SSL" = "xyes"; then
+                AC_MSG_CHECKING(for GOST)
+                AC_CHECK_FUNC(EVP_PKEY_set_type_str, [
+                AC_DEFINE_UNQUOTED([USE_GOST], [1], [Define this to enable GOST support.])
+                ],[])
+        fi
         ;;
 esac
 
