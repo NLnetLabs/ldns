@@ -10,6 +10,7 @@
 	* NETLDNS, .NET port of ldns functionality, by Alex Nicoll, in contrib.
 	* Fix handling of comments in resolv.conf parse.
 	* GOST code enabled if SSL recent, RFC 5933.
+	* bugfix #317: segfault util.c ldns_init_random() fixed.
 
 1.6.5
 	* Catch \X where X is a digit as an error.

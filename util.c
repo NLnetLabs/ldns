@@ -311,7 +311,7 @@ ldns_init_random(FILE *fd, unsigned int size)
 	}
 
 	if (!fd) {
-		fclose(rand_f);
+                if (rand_f) fclose(rand_f);
 	}
 
 	return 0;
