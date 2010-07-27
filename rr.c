@@ -732,6 +732,7 @@ ldns_rr_pop_rdf(ldns_rr *rr)
 {
 	size_t rd_count;
 	ldns_rdf *pop;
+	ldns_rdf** newrd;
 
 	rd_count = ldns_rr_rd_count(rr);
 
@@ -741,9 +742,15 @@ ldns_rr_pop_rdf(ldns_rr *rr)
 
 	pop = rr->_rdata_fields[rd_count - 1];
 
-	/* shrink the array */
-	rr->_rdata_fields = LDNS_XREALLOC(
-		rr->_rdata_fields, ldns_rdf *, rd_count - 1);
+	/* try to shrink the array */
+	if(rd_count > 1) {
+		newrd = LDNS_XREALLOC(
+			rr->_rdata_fields, ldns_rdf *, rd_count - 1);
+		if(newrd)
+			rr->_rdata_fields = newrd;
+	} else {
+		LDNS_FREE(rr->_rdata_fields);
+	}
 
 	ldns_rr_set_rd_count(rr, rd_count - 1);
 	return pop;

@@ -14,6 +14,7 @@
 	* fix ldns_tsig_mac_new: allocate enough memory for the hash, fix use of
 	  b64_pton_calculate_size.
 	* fix ldns_dname_cat: size calculation and handling of realloc().
+	* fix ldns_rr_pop_rdf: fix handling of realloc().
 
 1.6.5
 	* Catch \X where X is a digit as an error.
