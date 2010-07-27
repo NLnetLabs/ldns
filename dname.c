@@ -73,6 +73,7 @@ ldns_dname_cat(ldns_rdf *rd1, ldns_rdf *rd2)
 {
 	uint16_t left_size;
 	uint16_t size;
+	uint8_t* newd;
 
 	if (ldns_rdf_get_type(rd1) != LDNS_RDF_TYPE_DNAME ||
 			ldns_rdf_get_type(rd2) != LDNS_RDF_TYPE_DNAME) {
@@ -91,12 +92,12 @@ ldns_dname_cat(ldns_rdf *rd1, ldns_rdf *rd2)
         }
 
 	size = left_size + ldns_rdf_size(rd2);
-
-	ldns_rdf_set_data(rd1, LDNS_XREALLOC(ldns_rdf_data(rd1), uint8_t, size));
-	if(ldns_rdf_data(rd1) == NULL) {
-		ldns_rdf_set_size(rd1, 0);
+	newd = LDNS_XREALLOC(ldns_rdf_data(rd1), uint8_t, size);
+	if(!newd) {
 		return LDNS_STATUS_MEM_ERR;
 	}
+
+	ldns_rdf_set_data(rd1, newd);
 	memcpy(ldns_rdf_data(rd1) + left_size, ldns_rdf_data(rd2),
 			ldns_rdf_size(rd2));
 	ldns_rdf_set_size(rd1, size);
