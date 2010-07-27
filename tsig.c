@@ -166,6 +166,9 @@ ldns_tsig_mac_new(ldns_rdf **tsig_mac, uint8_t *pkt_wire, size_t pkt_wire_size,
 	 * prepare the digestable information
 	 */
 	data_buffer = ldns_buffer_new(LDNS_MAX_PACKETLEN);
+	if(!data_buffer) {
+		return LDNS_STATUS_MEM_ERR;
+	}
 	/* if orig_mac is not NULL, add it too */
 	if (orig_mac_rdf) {
 		(void) ldns_rdf2buffer_wire(data_buffer, orig_mac_rdf);
@@ -184,19 +187,37 @@ ldns_tsig_mac_new(ldns_rdf **tsig_mac, uint8_t *pkt_wire, size_t pkt_wire_size,
 	wiresize = (int) ldns_buffer_position(data_buffer);
 
 	algorithm_name = ldns_rdf2str(algorithm_rdf);
+	if(!algorithm_name) {
+		ldns_buffer_free(data_buffer);
+		return LDNS_STATUS_MEM_ERR;
+	}
 
 	/* prepare the key */
 	key_bytes = LDNS_XMALLOC(unsigned char,
 			ldns_b64_pton_calculate_size(strlen(key_data)));
+	if(!key_bytes) {
+		LDNS_FREE(algorithm_name);
+		ldns_buffer_free(data_buffer);
+		return LDNS_STATUS_MEM_ERR;
+	}
 	key_size = ldns_b64_pton(key_data, key_bytes, strlen(key_data) * 2);
 	if (key_size < 0) {
+		LDNS_FREE(algorithm_name);
+		LDNS_FREE(key_bytes);
+		ldns_buffer_free(data_buffer);
 		/* LDNS_STATUS_INVALID_B64 */
 		return LDNS_STATUS_INVALID_B64;
 	}
 	/* hmac it */
 	/* 2 spare bytes for the length */
-	mac_bytes = LDNS_XMALLOC(unsigned char, md_len);
-	memset(mac_bytes, 0, md_len);
+	mac_bytes = LDNS_XMALLOC(unsigned char, md_len+2);
+	if(!mac_bytes) {
+		LDNS_FREE(algorithm_name);
+		LDNS_FREE(key_bytes);
+		ldns_buffer_free(data_buffer);
+		return LDNS_STATUS_MEM_ERR;
+	}
+	memset(mac_bytes, 0, md_len+2);
 
 	digester = ldns_digest_function(algorithm_name);
 
@@ -208,6 +229,10 @@ ldns_tsig_mac_new(ldns_rdf **tsig_mac, uint8_t *pkt_wire, size_t pkt_wire_size,
 		result = ldns_rdf_new_frm_data(LDNS_RDF_TYPE_INT16_DATA, md_len + 2,
 				mac_bytes);
 	} else {
+		LDNS_FREE(algorithm_name);
+		LDNS_FREE(mac_bytes);
+		LDNS_FREE(key_bytes);
+		ldns_buffer_free(data_buffer);
 		return LDNS_STATUS_CRYPTO_UNKNOWN_ALGO;
 	}
 

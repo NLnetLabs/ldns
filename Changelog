@@ -11,6 +11,7 @@
 	* Fix handling of comments in resolv.conf parse.
 	* GOST code enabled if SSL recent, RFC 5933.
 	* bugfix #317: segfault util.c ldns_init_random() fixed.
+	* fix ldns_tsig_mac_new: allocate enough memory for the hash.
 
 1.6.5
 	* Catch \X where X is a digit as an error.
