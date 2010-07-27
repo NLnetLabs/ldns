@@ -34,13 +34,11 @@ ldns_update_resolver_new(const char *fqdn, const char *zone,
         /* First, get data from /etc/resolv.conf */
         s = ldns_resolver_new_frm_file(&r1, NULL);
         if (s != LDNS_STATUS_OK) {
-		fprintf(stderr, "cannot read /etc/resolv.conf\n");
                 return NULL;
         }
 
         r2 = ldns_resolver_new();
         if (!r2) {
-		fprintf(stderr, "cannot create resolver\n");
                 goto bad;
         }
         ldns_resolver_set_port(r2, port);
@@ -59,13 +57,11 @@ ldns_update_resolver_new(const char *fqdn, const char *zone,
                 soa_zone = ldns_dname_new_frm_str(zone);
                 if (ldns_update_soa_mname(soa_zone, r1, class, &soa_mname)
                     != LDNS_STATUS_OK) {
-			fprintf(stderr, "cannot explicitly update soa mnane\n");
                         goto bad;
 		}
         } else {
                 if (ldns_update_soa_zone_mname(fqdn, r1, class, &soa_zone,
                         &soa_mname) != LDNS_STATUS_OK) {
-			fprintf(stderr, "cannot implicitly update soa mnane\n");
                         goto bad;
 		}
         }
@@ -76,7 +72,6 @@ ldns_update_resolver_new(const char *fqdn, const char *zone,
         /* NS */
         query = ldns_pkt_query_new(soa_zone, LDNS_RR_TYPE_NS, class, LDNS_RD);
         if (!query) {
-		fprintf(stderr, "cannot create query\n");
                 goto bad;
 	}
         soa_zone = NULL;
@@ -84,12 +79,11 @@ ldns_update_resolver_new(const char *fqdn, const char *zone,
         ldns_pkt_set_random_id(query);
 
         if (ldns_resolver_send_pkt(&resp, r1, query) != LDNS_STATUS_OK) {
-                fprintf(stderr, "%s", "NS query failed!\n");
+                dprintf("%s", "NS query failed!\n");
                 goto bad;
         }
         ldns_pkt_free(query);
         if (!resp) {
-		fprintf(stderr, "no response\n");
                 goto bad;
 	}
         /* Match SOA MNAME to NS list, adding it first */
@@ -121,7 +115,6 @@ ldns_update_resolver_new(const char *fqdn, const char *zone,
         ldns_resolver_set_random(r2, false);
         ldns_pkt_free(resp);
         ldns_resolver_deep_free(r1);
-	fprintf(stderr, "all ok\n");
         return r2;
 
   bad:
@@ -133,7 +126,6 @@ ldns_update_resolver_new(const char *fqdn, const char *zone,
                 ldns_pkt_free(query);
         if (resp)
                 ldns_pkt_free(resp);
-	fprintf(stderr, "bad stuff happened\n");
         return NULL;
 }
 
@@ -156,18 +148,12 @@ ldns_update_send_simple_addr(const char *fqdn, const char *zone,
         /* Create resolver */
         res = ldns_update_resolver_new(fqdn, zone, 0, p, tsig_cred, &zone_rdf);
         if (!res || !zone_rdf) {
-	        if (!res) {
-			fprintf(stderr, "cannot create update client\n");
-		} else {
-			fprintf(stderr, "cannot create zone raw data format\n");
-		}
                 goto cleanup;
 	}
 
         /* Set up the update section. */
         up_rrlist = ldns_rr_list_new();
         if (!up_rrlist) {
-		fprintf(stderr, "cannot create update RR list\n");
                 goto cleanup;
 	}
         /* Create input for ldns_rr_new_frm_str() */
@@ -177,7 +163,6 @@ ldns_update_send_simple_addr(const char *fqdn, const char *zone,
                 rrstr = (char *)malloc(rrstrlen);
                 if (!rrstr) {
                         ldns_rr_list_deep_free(up_rrlist);
-			fprintf(stderr, "cannot create address of master server\n");
                         goto cleanup;
                 }
                 snprintf(rrstr, rrstrlen, "%s IN %s %s", fqdn,
@@ -187,7 +172,6 @@ ldns_update_send_simple_addr(const char *fqdn, const char *zone,
                                 LDNS_STATUS_OK) {
                         ldns_rr_list_deep_free(up_rrlist);
                         free(rrstr);
-			fprintf(stderr, "cannot create address of master server\n");
                         goto cleanup;
                 }
                 free(rrstr);
@@ -211,7 +195,6 @@ ldns_update_send_simple_addr(const char *fqdn, const char *zone,
         zone_rdf = NULL;
         if (!u_pkt) {
                 ldns_rr_list_deep_free(up_rrlist);
-		fprintf(stderr, "cannot create update packet\n");
                 goto cleanup;
         }
         ldns_pkt_set_random_id(u_pkt);
@@ -219,26 +202,23 @@ ldns_update_send_simple_addr(const char *fqdn, const char *zone,
         /* Add TSIG */
         if (tsig_cred)
                 if (ldns_update_pkt_tsig_add(u_pkt, res) != LDNS_STATUS_OK) {
-			fprintf(stderr, "cannot add tsig\n");
                         goto cleanup;
 		}
 
         if (ldns_resolver_send_pkt(&r_pkt, res, u_pkt) != LDNS_STATUS_OK) {
-		fprintf(stderr, "cannot send\n");
                 goto cleanup;
 	}
         ldns_pkt_free(u_pkt);
         if (!r_pkt) {
-		fprintf(stderr, "no packet received\n");
                 goto cleanup;
 	}
         if (ldns_pkt_get_rcode(r_pkt) != LDNS_RCODE_NOERROR) {
                 ldns_lookup_table *t = ldns_lookup_by_id(ldns_rcodes,
                                 (int)ldns_pkt_get_rcode(r_pkt));
                 if (t) {
-                        fprintf(stdout, ";; UPDATE response was %s\n", t->name);
+                        dprintf(";; UPDATE response was %s\n", t->name);
                 } else {
-                        fprintf(stdout, ";; UPDATE response was (%d)\n", ldns_pkt_get_rcode(r_pkt));
+                        dprintf(";; UPDATE response was (%d)\n", ldns_pkt_get_rcode(r_pkt));
                 }
                 status = LDNS_STATUS_ERR;
         }
