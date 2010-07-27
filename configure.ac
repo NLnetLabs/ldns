@@ -248,15 +248,7 @@ include_inttypes_h=''
 AC_SUBST(include_inttypes_h)
 
 ACX_TYPE_SOCKLEN_T
-AC_CHECK_TYPE(ssize_t, [], [AC_DEFINE([ssize_t], [size_t], [ssize_t])], [
-#if HAVE_SYS_SOCKET_H
-# include <sys/socket.h>
-#endif
-#if HAVE_UNISTD_H
-# include <unistd.h>
-#endif])
-
-AC_CHECK_TYPE(int)
+AC_CHECK_TYPE(ssize_t, int)
 AC_CHECK_TYPE(in_addr_t, [], [AC_DEFINE([in_addr_t], [uint32_t], [in_addr_t])], [
 #if HAVE_SYS_TYPES_H
 # include <sys/types.h>
