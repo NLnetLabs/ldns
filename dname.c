@@ -86,10 +86,17 @@ ldns_dname_cat(ldns_rdf *rd1, ldns_rdf *rd2)
 	if (left_size > 0 &&ldns_rdf_data(rd1)[left_size - 1] == 0) {
 		left_size--;
 	}
+        if(left_size == 0) {
+                return LDNS_STATUS_OK;
+        }
 
 	size = left_size + ldns_rdf_size(rd2);
 
 	ldns_rdf_set_data(rd1, LDNS_XREALLOC(ldns_rdf_data(rd1), uint8_t, size));
+	if(ldns_rdf_data(rd1) == NULL) {
+		ldns_rdf_set_size(rd1, 0);
+		return LDNS_STATUS_MEM_ERR;
+	}
 	memcpy(ldns_rdf_data(rd1) + left_size, ldns_rdf_data(rd2),
 			ldns_rdf_size(rd2));
 	ldns_rdf_set_size(rd1, size);
