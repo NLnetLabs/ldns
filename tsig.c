@@ -200,7 +200,8 @@ ldns_tsig_mac_new(ldns_rdf **tsig_mac, uint8_t *pkt_wire, size_t pkt_wire_size,
 		ldns_buffer_free(data_buffer);
 		return LDNS_STATUS_MEM_ERR;
 	}
-	key_size = ldns_b64_pton(key_data, key_bytes, strlen(key_data) * 2);
+	key_size = ldns_b64_pton(key_data, key_bytes,
+                ldns_b64_pton_calculate_size(strlen(key_data)));
 	if (key_size < 0) {
 		LDNS_FREE(algorithm_name);
 		LDNS_FREE(key_bytes);
