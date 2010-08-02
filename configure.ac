@@ -384,7 +384,7 @@ int ldns_b64_pton(char const *src, uint8_t *target, size_t targsize);
 /*@unused@*/
 static inline size_t ldns_b64_pton_calculate_size(size_t srcsize)
 {
-	return ((srcsize / 4) * 3);
+	return ((((srcsize + 3) / 4) * 3)) + 1);
 }
 #endif /* !B64_NTOP */
 
