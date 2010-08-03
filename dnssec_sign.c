@@ -230,12 +230,7 @@ ldns_sign_public(ldns_rr_list *rrset, ldns_key_list *keys)
 		current_key = ldns_key_list_key(keys, key_count);
 		/* sign all RRs with keys that have ZSKbit, !SEPbit.
 		   sign DNSKEY RRs with keys that have ZSKbit&SEPbit */
-		if (
-		    ldns_key_flags(current_key) & LDNS_KEY_ZONE_KEY &&
-		    (!(ldns_key_flags(current_key) & LDNS_KEY_SEP_KEY)
-			|| ldns_rr_get_type(ldns_rr_list_rr(rrset, 0))
-		        == LDNS_RR_TYPE_DNSKEY)
-		    ) {
+		if (ldns_key_flags(current_key) & LDNS_KEY_ZONE_KEY) {
 			current_sig = ldns_create_empty_rrsig(rrset_clone,
 			                                      current_key);
 
@@ -813,6 +808,25 @@ ldns_key_list_filter_for_dnskey(ldns_key_list *key_list)
 			ldns_key_set_use(ldns_key_list_key(key_list, i), 0);
 }
 
+/** If there are no ZSKs use KSK as ZSK */
+static void
+ldns_key_list_filter_for_non_dnskey(ldns_key_list *key_list)
+{
+	int saw_zsk = 0;
+	size_t i;
+	for(i=0; i<ldns_key_list_key_count(key_list); i++)
+		if(!(ldns_key_flags(ldns_key_list_key(key_list, i))&LDNS_KEY_SEP_KEY)) {
+			saw_zsk = 1;
+			break;
+		}
+	if(!saw_zsk)
+		return;
+	/* else filter all KSKs */
+	for(i=0; i<ldns_key_list_key_count(key_list); i++)
+		if((ldns_key_flags(ldns_key_list_key(key_list, i))&LDNS_KEY_SEP_KEY))
+			ldns_key_set_use(ldns_key_list_key(key_list, i), 0);
+}
+
 ldns_status
 ldns_dnssec_zone_create_rrsigs_flg(ldns_dnssec_zone *zone,
                                ldns_rr_list *new_rrs,
@@ -864,6 +878,9 @@ ldns_dnssec_zone_create_rrsigs_flg(ldns_dnssec_zone *zone,
 				if(!(flags&LDNS_SIGN_DNSKEY_WITH_ZSK) &&
 					cur_rrset->type == LDNS_RR_TYPE_DNSKEY)
 					ldns_key_list_filter_for_dnskey(key_list);
+
+				if(cur_rrset->type != LDNS_RR_TYPE_DNSKEY)
+					ldns_key_list_filter_for_non_dnskey(key_list);
 
 				/* TODO: just set count to zero? */
 				rr_list = ldns_rr_list_new();
