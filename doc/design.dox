@@ -7,7 +7,7 @@ functionality.
 
 \section central_structures Central structures
 
-  - \ref ldns_pkt A DNS Packet, which can contain a qeury, answers, and additional information.
+  - \ref ldns_pkt A DNS Packet, which can contain a query, answers, and additional information.
   - \ref ldns_rr A Resource Record, which holds a bit of information about a specific domain name.
   - \ref ldns_rdf An RDATA field, every Resource Record contains one or more RDATA fields, depending on the type of RR. These are the 'basic types' of DNS data.
   - \ref ldns_rr_list A list of resource records
@@ -52,7 +52,7 @@ An RR list structure is simply a structure with a counter
 and an array of RR structures. Different kinds of RR's can
 be grouped together this way.
 
-* RRset structure
+* RRset structure:
 An RRset structure is an RR list structure, but its accessor
 function checks if the \c ldns_rr structures in there are: 
  - from the same type
@@ -63,7 +63,7 @@ This is the RFC definition of an RRset.
 
 * pkt structure:
 A pkt structure consists out of a header structure where 
-packet specific flags are kept, TC, RD, IP from server which
+packet specific flags are kept, TC, RD, IP from the server which
 sent the packet, etc.
 Further more it is divided in 4 sections: question, authority, answer
 and additional.
