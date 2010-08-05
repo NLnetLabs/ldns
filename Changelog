@@ -11,14 +11,16 @@
 	* Fix handling of comments in resolv.conf parse.
 	* GOST code enabled if SSL recent, RFC 5933.
 	* bugfix #317: segfault util.c ldns_init_random() fixed.
-	* fix ldns_tsig_mac_new: allocate enough memory for the hash, fix use of
+	* Fix ldns_tsig_mac_new: allocate enough memory for the hash, fix use of
 	  b64_pton_calculate_size.
-	* fix ldns_dname_cat: size calculation and handling of realloc().
-	* fix ldns_rr_pop_rdf: fix handling of realloc().
-	* fix ldns-signzone for single type key scheme: sign whole zone if there
+	* Fix ldns_dname_cat: size calculation and handling of realloc().
+	* Fix ldns_rr_pop_rdf: fix handling of realloc().
+	* Fix ldns-signzone for single type key scheme: sign whole zone if there
 	  are only KSKs.
-	* fix ldns_resolver: also close socket if AXFR failed (if you don't,
+	* Fix ldns_resolver: also close socket if AXFR failed (if you don't,
           it would block subsequent transfers (thanks Roland van Rijswijk).
+        * Fix drill: allow for a secure trace if you use DS records as trust
+	  anchors (thanks Jan Komissar).
 
 1.6.5
 	* Catch \X where X is a digit as an error.
