@@ -608,6 +608,8 @@ ldns_resolver_new(void)
 	r->_timeout.tv_sec = LDNS_DEFAULT_TIMEOUT_SEC;
 	r->_timeout.tv_usec = LDNS_DEFAULT_TIMEOUT_USEC;
 
+	/* TODO: fd=0 is actually a valid socket (stdin),
+           replace with -1 */
 	r->_socket = 0;
 	r->_axfr_soa_count = 0;
 	r->_axfr_i = 0;
@@ -1181,10 +1183,24 @@ ldns_axfr_next(ldns_resolver *resolver)
 		if (status != LDNS_STATUS_OK) {
 			/* TODO: make status return type of this function (...api change) */
 			fprintf(stderr, "Error parsing rr during AXFR: %s\n", ldns_get_errorstr_by_id(status));
+
+			/* RoRi: we must now also close the socket, otherwise subsequent uses of the
+			   same resolver structure will fail because the link is still open or
+			   in an undefined state */
+			close(resolver->_socket);
+			resolver->_socket = 0;
+
 			return NULL;
 		} else if (ldns_pkt_get_rcode(resolver->_cur_axfr_pkt) != 0) {
 			rcode = ldns_lookup_by_id(ldns_rcodes, (int) ldns_pkt_get_rcode(resolver->_cur_axfr_pkt));
 			fprintf(stderr, "Error in AXFR: %s\n", rcode->name);
+
+			/* RoRi: we must now also close the socket, otherwise subsequent uses of the
+			   same resolver structure will fail because the link is still open or
+			   in an undefined state */
+			close(resolver->_socket);
+			resolver->_socket = 0;
+
 			return NULL;
 		} else {
 			return ldns_axfr_next(resolver);

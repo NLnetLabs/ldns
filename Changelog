@@ -17,6 +17,8 @@
 	* fix ldns_rr_pop_rdf: fix handling of realloc().
 	* fix ldns-signzone for single type key scheme: sign whole zone if there
 	  are only KSKs.
+	* fix ldns_resolver: also close socket if AXFR failed (if you don't,
+          it would block subsequent transfers (thanks Roland van Rijswijk).
 
 1.6.5
 	* Catch \X where X is a digit as an error.
