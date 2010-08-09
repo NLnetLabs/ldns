@@ -1344,7 +1344,6 @@ qsort_schwartz_rr_compare(const void *a, const void *b)
 			ldns_rr2canonical(canonical_a);
 			sa->transformed_object = ldns_buffer_new(ldns_rr_uncompressed_size(canonical_a));
 			if (ldns_rr2buffer_wire(sa->transformed_object, canonical_a, LDNS_SECTION_ANY) != LDNS_STATUS_OK) {
-				fprintf(stderr, "ERR!\n");
 				ldns_rr_free(canonical_a);
 				return 0;
 			}
@@ -1355,7 +1354,6 @@ qsort_schwartz_rr_compare(const void *a, const void *b)
 			ldns_rr2canonical(canonical_b);
 			sb->transformed_object = ldns_buffer_new(ldns_rr_uncompressed_size(canonical_b));
 			if (ldns_rr2buffer_wire(sb->transformed_object, canonical_b, LDNS_SECTION_ANY) != LDNS_STATUS_OK) {
-				fprintf(stderr, "ERR!\n");
 				ldns_rr_free(canonical_b);
 				return 0;
 			}
