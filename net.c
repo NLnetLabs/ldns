@@ -475,7 +475,7 @@ uint8_t *
 ldns_udp_read_wire(int sockfd, size_t *size, struct sockaddr_storage *from,
 		socklen_t *fromlen)
 {
-	uint8_t *wire;
+	uint8_t *wire, *wireout;
 	ssize_t wire_size;
 
 	wire = LDNS_XMALLOC(uint8_t, LDNS_MAX_PACKETLEN);
@@ -495,9 +495,10 @@ ldns_udp_read_wire(int sockfd, size_t *size, struct sockaddr_storage *from,
 	}
 
 	*size = (size_t)wire_size;
-	wire = LDNS_XREALLOC(wire, uint8_t, (size_t)wire_size);
+	wireout = LDNS_XREALLOC(wire, uint8_t, (size_t)wire_size);
+	if(!wireout) LDNS_FREE(wire);
 
-	return wire;
+	return wireout;
 }
 
 uint8_t *
