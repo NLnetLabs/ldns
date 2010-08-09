@@ -502,11 +502,11 @@ main(int argc, char *argv[])
 					/* no id given, use default from engine */
 					eng_key_id = NULL;
 				}
-				
+
 				eng_key_algo = atoi(eng_key_l + 1);
 
 				printf("Engine key id: %s, algo %d\n", eng_key_id, eng_key_algo);
-				
+
 				if (expiration != 0) {
 					ldns_key_set_expiration(key, expiration);
 				}
@@ -525,9 +525,7 @@ main(int argc, char *argv[])
 					case LDNS_SIGN_RSASHA512:
 					case LDNS_SIGN_DSA:
 					case LDNS_SIGN_DSA_NSEC3:
-#ifdef USE_GOST
 					case LDNS_SIGN_ECC_GOST:
-#endif
 						ldns_key_list_push_key(keys, key);
 						/*printf("Added key at %p:\n", key);*/
 						/*ldns_key_print(stdout, key);*/
@@ -547,7 +545,7 @@ main(int argc, char *argv[])
 					#endif
 					exit(EXIT_FAILURE);
 				}
-				
+
 				if (eng_key_id) {
 					free(eng_key_id);
 				}
