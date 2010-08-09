@@ -611,9 +611,23 @@ ldns_str2rdf_nsec(ldns_rdf **rd, const char *str)
 	uint16_t cur_type;
 	size_t type_count = 0;
 	ldns_rr_type type_list[1024];
+	if(!token) return LDNS_STATUS_MEM_ERR;
+	if(rd == NULL) {
+		LDNS_FREE(token);
+		return LDNS_STATUS_NULL;
+	}
 
 	str_buf = LDNS_MALLOC(ldns_buffer);
+	if(!str_buf) {
+		LDNS_FREE(token);
+		return LDNS_STATUS_MEM_ERR;
+	}
 	ldns_buffer_new_frm_data(str_buf, (char *)str, strlen(str));
+	if(ldns_buffer_status(str_buf) != LDNS_STATUS_OK) {
+		LDNS_FREE(str_buf);
+		LDNS_FREE(token);
+		return LDNS_STATUS_MEM_ERR;
+	}
 
 	while ((c = ldns_bget_token(str_buf, token, delimiters, LDNS_MAX_RDFLEN)) != -1 && c != 0) {
 		cur_type = ldns_get_rr_type_by_name(token);
@@ -625,8 +639,7 @@ ldns_str2rdf_nsec(ldns_rdf **rd, const char *str)
 	                                     type_count,
 	                                     LDNS_RR_TYPE_NSEC);
 
-	if (token)
-		LDNS_FREE(token);
+	LDNS_FREE(token);
 	ldns_buffer_free(str_buf);
 	return LDNS_STATUS_OK;
 }

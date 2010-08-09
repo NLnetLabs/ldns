@@ -760,17 +760,28 @@ ldns_resolver_new_frm_fp_l(ldns_resolver **res, FILE *fp, int *line_nr)
 				/* search list domain dname */
 				gtr = ldns_fget_token_l(fp, word, LDNS_PARSE_SKIP_SPACE, 0, line_nr);
 				b = LDNS_MALLOC(ldns_buffer);
+				if(!b) {
+					ldns_resolver_deep_free(r);
+					return LDNS_STATUS_MEM_ERR;
+				}
 
 				ldns_buffer_new_frm_data(b, word, (size_t) gtr);
+				if(ldns_buffer_status(b) != LDNS_STATUS_OK) {
+					LDNS_FREE(b);
+					ldns_resolver_deep_free(r);
+					return LDNS_STATUS_MEM_ERR;
+				}
 				gtr = ldns_bget_token(b, word, LDNS_PARSE_NORMAL, (size_t) gtr + 1);
 				while (gtr > 0) {
                                         if(word[0] == '#') {
                                                 expect = LDNS_RESOLV_KEYWORD;
+						ldns_buffer_free(b);
                                                 continue;
                                         }
 					tmp = ldns_rdf_new_frm_str(LDNS_RDF_TYPE_DNAME, word);
 					if (!tmp) {
 						ldns_resolver_deep_free(r);
+						ldns_buffer_free(b);
 						return LDNS_STATUS_SYNTAX_DNAME_ERR;
 					}
 
@@ -797,6 +808,7 @@ ldns_resolver_new_frm_fp_l(ldns_resolver **res, FILE *fp, int *line_nr)
 				/* a file containing a DNSSEC trust anchor */
 				gtr = ldns_fget_token_l(fp, word, LDNS_PARSE_NORMAL, 0, line_nr);
 				if (gtr == 0) {
+					ldns_resolver_deep_free(r);
 					return LDNS_STATUS_SYNTAX_MISSING_VALUE_ERR;
 				}
                                 if(word[0] == '#') {
@@ -818,6 +830,7 @@ ldns_resolver_new_frm_fp_l(ldns_resolver **res, FILE *fp, int *line_nr)
 		*res = r;
 		return LDNS_STATUS_OK;
 	} else {
+		ldns_resolver_deep_free(r);
 		return LDNS_STATUS_NULL;
 	}
 }

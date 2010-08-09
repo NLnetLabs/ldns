@@ -350,6 +350,7 @@ ldns_bubblebabble(uint8_t *data, size_t len)
 
 	rounds = (len / 2) + 1;
 	retval = LDNS_XMALLOC(char, rounds * 6);
+	if(!retval) return NULL;
 	retval[j++] = 'x';
 	for (i = 0; i < rounds; i++) {
 		size_t idx0, idx1, idx2, idx3, idx4;

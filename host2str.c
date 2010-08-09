@@ -368,6 +368,7 @@ ldns_rdf2buffer_str_b64(ldns_buffer *output, const ldns_rdf *rdf)
 {
 	size_t size = ldns_b64_ntop_calculate_size(ldns_rdf_size(rdf));
 	char *b64 = LDNS_XMALLOC(char, size);
+	if(!b64) return LDNS_STATUS_MEM_ERR;
 	if (ldns_b64_ntop(ldns_rdf_data(rdf), ldns_rdf_size(rdf), b64, size)) {
 		ldns_buffer_printf(output, "%s", b64);
 	}
@@ -378,11 +379,15 @@ ldns_rdf2buffer_str_b64(ldns_buffer *output, const ldns_rdf *rdf)
 ldns_status
 ldns_rdf2buffer_str_b32_ext(ldns_buffer *output, const ldns_rdf *rdf)
 {
-	size_t size = ldns_b32_ntop_calculate_size(ldns_rdf_size(rdf) - 1);
-	char *b32 = LDNS_XMALLOC(char, size + 1);
+	size_t size;
+	char *b32;
+	if(ldns_rdf_size(rdf) == 0)
+		return LDNS_STATUS_OK;
+	size = ldns_b32_ntop_calculate_size(ldns_rdf_size(rdf) - 1);
+	b32 = LDNS_XMALLOC(char, size + 1);
+	if(!b32) return LDNS_STATUS_MEM_ERR;
 	size = (size_t) ldns_b32_ntop_extended_hex(ldns_rdf_data(rdf) + 1,
-									   ldns_rdf_size(rdf) - 1,
-									   b32, size);
+		ldns_rdf_size(rdf) - 1, b32, size);
 	if (size > 0) {
 		ldns_buffer_printf(output, "%s", b32);
 	}
@@ -1159,7 +1164,8 @@ ldns_rr2buffer_str(ldns_buffer *output, const ldns_rr *rr)
 						uint8_t *data = ldns_rdf_data(ldns_rr_rdf(rr, 3));
 						size_t len = ldns_rdf_size(ldns_rr_rdf(rr, 3));
 						char *babble = ldns_bubblebabble(data, len);
-						ldns_buffer_printf(output, " ; %s", babble);
+						if(babble)
+						  ldns_buffer_printf(output, " ; %s", babble);
 						LDNS_FREE(babble);
 					}
 					break;
