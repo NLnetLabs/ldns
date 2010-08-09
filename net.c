@@ -784,6 +784,7 @@ ldns_axfr_start(ldns_resolver *resolver, ldns_rdf *domain, ldns_rr_class class)
         status = ldns_pkt2buffer_wire(query_wire, query);
         if (status != LDNS_STATUS_OK) {
                 ldns_pkt_free(query);
+		ldns_buffer_free(query_wire);
                 LDNS_FREE(ns);
 
 		/* RoRi: to prevent problems on subsequent calls to ldns_axfr_start
