@@ -76,7 +76,7 @@ main(int argc, char *argv[])
 	ldns_rdf *origin = NULL;
 	ldns_status result = LDNS_STATUS_OK;
 	int sep_only = 1;
-		
+
 	alg = 0;
 	h = LDNS_SHA1;
 
@@ -85,7 +85,7 @@ main(int argc, char *argv[])
 		if (strcmp(argv[0], "-1") == 0) {
 			h = LDNS_SHA1;
 			similar_hash = 0;
-		} 
+		}
 		if (strcmp(argv[0], "-2") == 0) {
 			h = LDNS_SHA256;
 			similar_hash = 0;
@@ -100,10 +100,10 @@ main(int argc, char *argv[])
 			similar_hash = 0;
 		}
 #endif
-		if (strcmp(argv[0], "-f") == 0) { 
+		if (strcmp(argv[0], "-f") == 0) {
 			sep_only = 0;
 		}
-		if (strcmp(argv[0], "-n") == 0) { 
+		if (strcmp(argv[0], "-n") == 0) {
 			nofile=1;
 		}
 		argv++, argc--;
@@ -141,7 +141,7 @@ main(int argc, char *argv[])
 			fprintf(stderr, "Could not read public key from file %s: %s\n", keyname, ldns_get_errorstr_by_id(result));
 			exit(EXIT_FAILURE);
 		}
-		
+
 		owner = ldns_rdf2str(ldns_rr_owner(k));
 		alg = ldns_rdf2native_int8(ldns_rr_dnskey_algorithm(k));
 		if(similar_hash)
@@ -172,7 +172,7 @@ main(int argc, char *argv[])
 				fprintf(stdout, "K%s+%03u+%05u\n", owner, alg, (unsigned int) ldns_calc_keytag(k)); 
 			}
 		}
-		
+
 		ldns_rr_free(ds);
 		ldns_rr_free(k);
 		free(owner);
