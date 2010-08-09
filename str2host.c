@@ -1117,15 +1117,26 @@ ldns_str2rdf_ipseckey(ldns_rdf **rd, const char *str)
 	char* publickey = NULL;
 	uint8_t *data;
 	ldns_buffer *str_buf;
-	char *token = LDNS_XMALLOC(char, 256);
+	char *token;
 	int token_count = 0;
 	int ipseckey_len = 0;
 	ldns_rdf* gateway_rdf = NULL;
 	ldns_rdf* publickey_rdf = NULL;
 	ldns_status status = LDNS_STATUS_OK;
+	
+	if(strlen(str) == 0)
+		token = LDNS_XMALLOC(char, 256);
+	else	token = LDNS_XMALLOC(char, strlen(str)+2);
+	if(!token) return LDNS_STATUS_MEM_ERR;
 
 	str_buf = LDNS_MALLOC(ldns_buffer);
+	if(!str_buf) {LDNS_FREE(token); return LDNS_STATUS_MEM_ERR;}
 	ldns_buffer_new_frm_data(str_buf, (char *)str, strlen(str));
+	if(ldns_buffer_status(str_buf) != LDNS_STATUS_OK) {
+		LDNS_FREE(str_buf);
+		LDNS_FREE(token);
+		return LDNS_STATUS_MEM_ERR;
+	}
 	while(ldns_bget_token(str_buf, token, "\t\n ", strlen(str)) > 0) {
 		switch (token_count) {
 				case 0:
@@ -1143,7 +1154,7 @@ ldns_str2rdf_ipseckey(ldns_rdf **rd, const char *str)
 							(token[0] != '.' || token[1] != '\0'))) {
 						LDNS_FREE(gateway);
 						LDNS_FREE(token);
-						LDNS_FREE(str_buf);
+						ldns_buffer_free(str_buf);
 						return LDNS_STATUS_INVALID_STR;
 					}
 					break;
@@ -1152,7 +1163,7 @@ ldns_str2rdf_ipseckey(ldns_rdf **rd, const char *str)
 					break;
 				default:
 					LDNS_FREE(token);
-					LDNS_FREE(str_buf);
+					ldns_buffer_free(str_buf);
 					return LDNS_STATUS_INVALID_STR;
 					break;
 		}
@@ -1165,7 +1176,7 @@ ldns_str2rdf_ipseckey(ldns_rdf **rd, const char *str)
 		if (publickey)
 			LDNS_FREE(publickey);
 		LDNS_FREE(token);
-		LDNS_FREE(str_buf);
+		ldns_buffer_free(str_buf);
 		return LDNS_STATUS_INVALID_STR;
 	}
 
@@ -1183,7 +1194,7 @@ ldns_str2rdf_ipseckey(ldns_rdf **rd, const char *str)
 		if (publickey)
 			LDNS_FREE(publickey);
 		LDNS_FREE(token);
-		LDNS_FREE(str_buf);
+		ldns_buffer_free(str_buf);
 		return LDNS_STATUS_INVALID_STR;
 	}
 
@@ -1195,7 +1206,7 @@ ldns_str2rdf_ipseckey(ldns_rdf **rd, const char *str)
 		if (publickey)
 			LDNS_FREE(publickey);
 		LDNS_FREE(token);
-		LDNS_FREE(str_buf);
+		ldns_buffer_free(str_buf);
 		return LDNS_STATUS_INVALID_STR;
 	}
 
@@ -1206,6 +1217,15 @@ ldns_str2rdf_ipseckey(ldns_rdf **rd, const char *str)
 		ipseckey_len = 3 + ldns_rdf_size(publickey_rdf);
 
 	data = LDNS_XMALLOC(uint8_t, ipseckey_len);
+	if(!data) {
+		if (gateway)
+			LDNS_FREE(gateway);
+		if (publickey)
+			LDNS_FREE(publickey);
+		LDNS_FREE(token);
+		ldns_buffer_free(str_buf);
+		return LDNS_STATUS_MEM_ERR;
+	}
 
 	data[0] = precedence;
 	data[1] = gateway_type;
@@ -1232,5 +1252,6 @@ ldns_str2rdf_ipseckey(ldns_rdf **rd, const char *str)
 	ldns_rdf_free(gateway_rdf);
 	ldns_rdf_free(publickey_rdf);
 	LDNS_FREE(data);
+	if(!*rd) return LDNS_STATUS_MEM_ERR;
 	return LDNS_STATUS_OK;
 }
