@@ -14,6 +14,8 @@
 #define _UTIL_H
 
 @include_inttypes_h@
+@include_systypes_h@
+@include_unistd_h@
 #include <ldns/common.h>
 #include <time.h>
 #include <stdio.h>

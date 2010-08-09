@@ -246,6 +246,24 @@ include_inttypes_h=''
 ],[AC_INCLUDES_DEFAULT
 ])
 AC_SUBST(include_inttypes_h)
+AC_CHECK_HEADER(sys/types.h,
+[
+include_systypes_h='#include <sys/types.h>'
+AC_DEFINE(HAVE_SYS_TYPES_H, 1, [define if you have sys/types.h])
+],[
+include_systypes_h=''
+],[AC_INCLUDES_DEFAULT
+])
+AC_SUBST(include_systypes_h)
+AC_CHECK_HEADER(unistd.h,
+[
+include_unistd_h='#include <unistd.h>'
+AC_DEFINE(HAVE_UNISTD_H, 1, [define if you have unistd.h])
+],[
+include_unistd_h=''
+],[AC_INCLUDES_DEFAULT
+])
+AC_SUBST(include_unistd_h)
 
 ACX_TYPE_SOCKLEN_T
 AC_CHECK_TYPE(ssize_t, int)
