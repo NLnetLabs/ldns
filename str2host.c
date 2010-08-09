@@ -972,15 +972,26 @@ ldns_str2rdf_wks(ldns_rdf **rd, const char *str)
 	ldns_buffer *str_buf;
 
 	char *proto_str = NULL;
-	char *token = LDNS_XMALLOC(char, 50);
+	char *token;
+	if(strlen(str) == 0)
+		token = LDNS_XMALLOC(char, 50);
+	else 	token = LDNS_XMALLOC(char, strlen(str)+2);
+	if(!token) return LDNS_STATUS_MEM_ERR;
 
 	str_buf = LDNS_MALLOC(ldns_buffer);
+	if(!str_buf) {LDNS_FREE(token); return LDNS_STATUS_MEM_ERR;}
 	ldns_buffer_new_frm_data(str_buf, (char *)str, strlen(str));
+	if(ldns_buffer_status(str_buf) != LDNS_STATUS_OK) {
+		LDNS_FREE(str_buf);
+		LDNS_FREE(token);
+		return LDNS_STATUS_MEM_ERR;
+	}
 
 	while(ldns_bget_token(str_buf, token, "\t\n ", strlen(str)) > 0) {
 		if (!proto_str) {
 			proto_str = strdup(token);
 			if (!proto_str) {
+				LDNS_FREE(bitmap);
 				LDNS_FREE(token);
 	                        ldns_buffer_free(str_buf);
 				return LDNS_STATUS_INVALID_STR;
@@ -993,13 +1004,15 @@ ldns_str2rdf_wks(ldns_rdf **rd, const char *str)
 				serv_port = atoi(token);
 			}
 			if (serv_port / 8 >= bm_len) {
-				bitmap = LDNS_XREALLOC(bitmap, uint8_t, (serv_port / 8) + 1);
-                                if(!bitmap) {
+				uint8_t *b2 = LDNS_XREALLOC(bitmap, uint8_t, (serv_port / 8) + 1);
+                                if(!b2) {
+					LDNS_FREE(bitmap);
 				        LDNS_FREE(token);
 	                                ldns_buffer_free(str_buf);
 				        free(proto_str);
 				        return LDNS_STATUS_INVALID_STR;
                                 }
+				bitmap = b2;
 				/* set to zero to be sure */
 				for (; bm_len <= serv_port / 8; bm_len++) {
 					bitmap[bm_len] = 0;
@@ -1009,17 +1022,13 @@ ldns_str2rdf_wks(ldns_rdf **rd, const char *str)
 		}
 	}
 
-	if (!proto_str) {
+	if (!proto_str || !bitmap) {
+		LDNS_FREE(bitmap);
 		LDNS_FREE(token);
 	        ldns_buffer_free(str_buf);
+	        free(proto_str);
 		return LDNS_STATUS_INVALID_STR;
 	}
-        if(!bitmap) {
-	        LDNS_FREE(token);
-	        ldns_buffer_free(str_buf);
-	        free(proto_str);
-	        return LDNS_STATUS_INVALID_STR;
-        }
 
 	data = LDNS_XMALLOC(uint8_t, bm_len + 1);
         if(!data) {
@@ -1053,6 +1062,8 @@ ldns_str2rdf_wks(ldns_rdf **rd, const char *str)
 #ifdef HAVE_ENDPROTOENT
 	endprotoent();
 #endif
+
+	if(!*rd) return LDNS_STATUS_MEM_ERR;
 
 	return LDNS_STATUS_OK;
 }
