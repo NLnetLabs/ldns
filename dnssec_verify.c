@@ -1545,6 +1545,69 @@ ldns_verify_rrsig_gost_raw(unsigned char* sig, size_t siglen,
 }
 #endif
 
+#ifdef USE_ECDSA
+EVP_PKEY*
+ldns_ecdsa2pkey_raw(unsigned char* key, size_t keylen, uint8_t algo)
+{
+	unsigned char buf[256+2]; /* sufficient for 2*384/8+1 */
+        const unsigned char* pp = buf;
+        EVP_PKEY *evp_key;
+        EC_KEY *ec;
+	/* check length, which uncompressed must be 2 bignums */
+        if(algo == LDNS_ECDSAP224SHA256) {
+		if(keylen != 2*224/8) return NULL;
+                ec = EC_KEY_new_by_curve_name(NID_secp224r1);
+        } else if(algo == LDNS_ECDSAP256SHA256) {
+		if(keylen != 2*256/8) return NULL;
+                ec = EC_KEY_new_by_curve_name(NID_X9_62_prime256v1);
+        } else if(algo == LDNS_ECDSAP384SHA384) {
+		if(keylen != 2*384/8) return NULL;
+                ec = EC_KEY_new_by_curve_name(NID_secp384r1);
+        } else    ec = NULL;
+        if(!ec) return NULL;
+	if(keylen+1 > sizeof(buf))
+		return NULL; /* sanity check */
+	/* prepend the 0x02 (from docs) (or actually 0x04 from implementation
+	 * of openssl) for uncompressed data */
+	buf[0] = POINT_CONVERSION_UNCOMPRESSED;
+	memmove(buf+1, key, keylen);
+        if(!o2i_ECPublicKey(&ec, &pp, keylen+1)) {
+                EC_KEY_free(ec);
+                return NULL;
+        }
+        evp_key = EVP_PKEY_new();
+        if(!evp_key) {
+                EC_KEY_free(ec);
+                return NULL;
+        }
+        EVP_PKEY_assign_EC_KEY(evp_key, ec);
+        return evp_key;
+}
+
+static ldns_status
+ldns_verify_rrsig_ecdsa_raw(unsigned char* sig, size_t siglen, 
+	ldns_buffer* rrset, unsigned char* key, size_t keylen, uint8_t algo)
+{
+        EVP_PKEY *evp_key;
+        ldns_status result;
+        const EVP_MD *d;
+
+        evp_key = ldns_ecdsa2pkey_raw(key, keylen, algo);
+        if(!evp_key) {
+		/* could not convert key */
+		return LDNS_STATUS_CRYPTO_BOGUS;
+        }
+        if(algo == LDNS_ECDSAP224SHA256)
+                d = EVP_sha256();
+        else if(algo == LDNS_ECDSAP256SHA256)
+                d = EVP_sha256();
+        else if(algo == LDNS_ECDSAP384SHA384)
+                d = EVP_sha384();
+	result = ldns_verify_rrsig_evp_raw(sig, siglen, rrset, evp_key, d);
+	EVP_PKEY_free(evp_key);
+	return result;
+}
+#endif
 
 ldns_status
 ldns_verify_rrsig_buffers(ldns_buffer *rawsig_buf, ldns_buffer *verify_buf, 
@@ -1601,6 +1664,14 @@ ldns_verify_rrsig_buffers_raw(unsigned char* sig, size_t siglen,
 	case LDNS_ECC_GOST:
 		return ldns_verify_rrsig_gost_raw(sig, siglen, verify_buf,
 			key, keylen);
+		break;
+#endif
+#ifdef USE_ECDSA
+        case LDNS_ECDSAP224SHA256:
+        case LDNS_ECDSAP256SHA256:
+        case LDNS_ECDSAP384SHA384:
+		return ldns_verify_rrsig_ecdsa_raw(sig, siglen, verify_buf,
+			key, keylen, algo);
 		break;
 #endif
 	case LDNS_RSAMD5:
@@ -1708,6 +1779,18 @@ ldns_rrsig2rawsig_buffer(ldns_buffer* rawsig_buf, ldns_rr* rrsig)
 			return LDNS_STATUS_MEM_ERR;
 		}
 		break;
+#ifdef USE_ECDSA
+        case LDNS_ECDSAP224SHA256:
+        case LDNS_ECDSAP256SHA256:
+        case LDNS_ECDSAP384SHA384:
+                /* EVP produces an ASN prefix on the signature, which is
+                 * not used in the DNS */
+		if (ldns_convert_ecdsa_rrsig_rdf2asn1(rawsig_buf, 
+			ldns_rr_rdf(rrsig, 8)) != LDNS_STATUS_OK) {
+			return LDNS_STATUS_MEM_ERR;
+                }
+                break;
+#endif
 	case LDNS_DH:
 	case LDNS_ECC:
 	case LDNS_INDIRECT:

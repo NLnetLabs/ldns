@@ -526,6 +526,11 @@ main(int argc, char *argv[])
 					case LDNS_SIGN_DSA:
 					case LDNS_SIGN_DSA_NSEC3:
 					case LDNS_SIGN_ECC_GOST:
+#ifdef USE_ECDSA
+					case LDNS_SIGN_ECDSAP384SHA384:
+					case LDNS_SIGN_ECDSAP224SHA256:
+					case LDNS_SIGN_ECDSAP256SHA256:
+#endif
 						ldns_key_list_push_key(keys, key);
 						/*printf("Added key at %p:\n", key);*/
 						/*ldns_key_print(stdout, key);*/

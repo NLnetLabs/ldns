@@ -181,6 +181,16 @@ case "$enable_gost" in
         ;;
 esac
 
+AC_ARG_ENABLE(ecdsa, AC_HELP_STRING([--enable-ecdsa], [Enable ECDSA support, experimental]))
+case "$enable_ecdsa" in
+    yes)
+	AC_CHECK_FUNC(ECDSA_sign,,[AC_MSG_ERROR([OpenSSL does not support ECDSA])])
+        AC_DEFINE_UNQUOTED([USE_ECDSA], [1], [Define this to enable ECDSA support.])
+      ;;
+    no|*)
+      ;;
+esac
+
 LDFLAGS="$tmp_LDFLAGS"
 LIBS="$tmp_LIBS"
 

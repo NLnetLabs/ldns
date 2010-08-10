@@ -28,6 +28,9 @@ usage(FILE *fp, char *prog) {
 #ifdef USE_GOST
 	fprintf(fp, "  -g: use GOST for the DS hash\n");
 #endif
+#ifdef USE_ECDSA
+	fprintf(fp, "  -4: use SHA384 for the DS hash\n");
+#endif
 }
 
 static int
@@ -53,6 +56,13 @@ suitable_hash(ldns_signing_algorithm algorithm)
 		return LDNS_HASH_GOST;
 #else
 		return LDNS_SHA256;
+#endif
+#ifdef USE_ECDSA
+	case LDNS_SIGN_ECDSAP224SHA256:
+	case LDNS_SIGN_ECDSAP256SHA256:
+		return LDNS_SHA256;
+	case LDNS_SIGN_ECDSAP384SHA384:
+		return LDNS_SHA384;
 #endif
 	default:
 		return LDNS_SHA1;
@@ -97,6 +107,12 @@ main(int argc, char *argv[])
 				exit(EXIT_FAILURE);
 			}
 			h = LDNS_HASH_GOST;
+			similar_hash = 0;
+		}
+#endif
+#ifdef USE_ECDSA
+		if (strcmp(argv[0], "-4") == 0) {
+			h = LDNS_SHA384;
 			similar_hash = 0;
 		}
 #endif

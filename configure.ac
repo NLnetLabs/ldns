@@ -149,7 +149,7 @@ case "$enable_sha2" in
         ;;
 esac
 
-AC_ARG_ENABLE(gost, AC_HELP_STRING([--enable-gost], [Enable GOST support, experimental]))
+AC_ARG_ENABLE(gost, AC_HELP_STRING([--disable-gost], [Disable GOST support]))
 case "$enable_gost" in
     yes)
         if test "x$HAVE_SSL" != "xyes"; then
@@ -169,6 +169,31 @@ case "$enable_gost" in
                 ],[])
         fi
         ;;
+esac
+
+AC_ARG_ENABLE(ecdsa, AC_HELP_STRING([--enable-ecdsa], [Enable ECDSA support, experimental]))
+case "$enable_ecdsa" in
+    yes)
+      if test "x$HAVE_SSL" != "xyes"; then
+        AC_MSG_ERROR([ECDSA enabled, but no SSL support])
+      fi
+      AC_CHECK_FUNC(ECDSA_sign, [], [AC_MSG_ERROR([OpenSSL does not support ECDSA])])
+      AC_CHECK_FUNC(SHA384_Init, [], [AC_MSG_ERROR([OpenSSL does not support SHA384])])
+      AC_CHECK_DECLS([NID_secp224r1, NID_X9_62_prime256v1, NID_secp384r1], [], [AC_MSG_ERROR([OpenSSL does not support the ECDSA curve])], [AC_INCLUDES_DEFAULT
+#include <openssl/evp.h>
+      ])
+      # we now know we have ECDSA and the required curves.
+      AC_DEFINE_UNQUOTED([USE_ECDSA], [1], [Define this to enable ECDSA support.])
+      AC_WARN([
+      *****************************************************************
+      *** YOU HAVE ENABLED ECDSA WHICH IS EXPERIMENTAL AT THIS TIME ***
+      *** PLEASE DO NOT USE THIS ON THE PUBLIC INTERNET             ***
+      *****************************************************************])
+      ;;
+    no)
+      ;;
+    *)
+      ;;
 esac
 
 AC_SUBST(LIBSSL_CPPFLAGS)

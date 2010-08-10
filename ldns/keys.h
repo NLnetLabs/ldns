@@ -52,7 +52,14 @@ enum ldns_enum_algorithm
         LDNS_RSASHA1_NSEC3      = 7,
         LDNS_RSASHA256          = 8,   /* RFC 5702 */
         LDNS_RSASHA512          = 10,  /* RFC 5702 */
-        LDNS_ECC_GOST           = 12,  /* draft-ietf-dnsext-dnssec-gost */
+        LDNS_ECC_GOST           = 12,  /* RFC 5933 */
+#ifdef USE_ECDSA
+	/* this ifdef has to be removed once it is no longer experimental,
+	 * to be able to use these values outside of the ldns library itself */
+        LDNS_ECDSAP224SHA256    = 13,  /* draft-hoffman-dnssec-ecdsa and */
+        LDNS_ECDSAP256SHA256    = 14,  /* EXPERIMENTAL */
+        LDNS_ECDSAP384SHA384    = 15,
+#endif
         LDNS_INDIRECT           = 252,
         LDNS_PRIVATEDNS         = 253,
         LDNS_PRIVATEOID         = 254
@@ -66,7 +73,12 @@ enum ldns_enum_hash
 {
         LDNS_SHA1               = 1,  /* RFC 4034 */
         LDNS_SHA256             = 2,  /* RFC 4509 */
-        LDNS_HASH_GOST          = 3   /* draft-ietf-dnsext-dnssec-gost */
+        LDNS_HASH_GOST          = 3   /* RFC 5933 */
+#ifdef USE_ECDSA
+	/* this ifdef has to be removed once it is no longer experimental,
+	 * to be able to use these values outside of the ldns library itself */
+        ,LDNS_SHA384             = 4   /* draft-hoffman-dnssec-ecdsa EXPERIMENTAL */
+#endif
 };
 typedef enum ldns_enum_hash ldns_hash;
 
@@ -83,6 +95,13 @@ enum ldns_enum_signing_algorithm
 	LDNS_SIGN_RSASHA512	 = LDNS_RSASHA512,
 	LDNS_SIGN_DSA_NSEC3	 = LDNS_DSA_NSEC3,
 	LDNS_SIGN_ECC_GOST       = LDNS_ECC_GOST,
+#ifdef USE_ECDSA
+	/* this ifdef has to be removed once it is no longer experimental,
+	 * to be able to use these values outside of the ldns library itself */
+        LDNS_SIGN_ECDSAP224SHA256 = LDNS_ECDSAP224SHA256,
+        LDNS_SIGN_ECDSAP256SHA256 = LDNS_ECDSAP256SHA256,
+        LDNS_SIGN_ECDSAP384SHA384 = LDNS_ECDSAP384SHA384,
+#endif
 	LDNS_SIGN_HMACMD5	 = 157,	/* not official! This type is for TSIG, not DNSSEC */
 	LDNS_SIGN_HMACSHA1	 = 158,	/* not official! This type is for TSIG, not DNSSEC */
 	LDNS_SIGN_HMACSHA256 = 159  /* ditto */

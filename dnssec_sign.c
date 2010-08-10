@@ -155,6 +155,21 @@ ldns_sign_public_buffer(ldns_buffer *sign_buf, ldns_key *current_key)
 				   EVP_get_digestbyname("md_gost94"));
 		break;
 #endif /* USE_GOST */
+#ifdef USE_ECDSA
+        case LDNS_SIGN_ECDSAP224SHA256:
+        case LDNS_SIGN_ECDSAP256SHA256:
+       		b64rdf = ldns_sign_public_evp(
+				   sign_buf,
+				   ldns_key_evp_key(current_key),
+				   EVP_sha256());
+                break;
+        case LDNS_SIGN_ECDSAP384SHA384:
+       		b64rdf = ldns_sign_public_evp(
+				   sign_buf,
+				   ldns_key_evp_key(current_key),
+				   EVP_sha384());
+                break;
+#endif
 	case LDNS_SIGN_RSAMD5:
 		b64rdf = ldns_sign_public_evp(
 				   sign_buf,
@@ -333,6 +348,32 @@ ldns_sign_public_dsa(ldns_buffer *to_sign, DSA *key)
 	return sigdata_rdf;
 }
 
+#ifdef USE_ECDSA
+static int
+ldns_pkey_is_ecdsa(EVP_PKEY* pkey)
+{
+        EC_KEY* ec;
+        const EC_GROUP* g;
+        if(EVP_PKEY_type(pkey->type) != EVP_PKEY_EC)
+                return 0;
+        ec = EVP_PKEY_get1_EC_KEY(pkey);
+        g = EC_KEY_get0_group(ec);
+        if(!g) {
+                EC_KEY_free(ec);
+                return 0;
+        }
+        if(EC_GROUP_get_curve_name(g) == NID_secp224r1 ||
+                EC_GROUP_get_curve_name(g) == NID_X9_62_prime256v1 ||
+                EC_GROUP_get_curve_name(g) == NID_secp384r1) {
+                EC_KEY_free(ec);
+                return 1;
+        }
+        /* downref the eckey, the original is still inside the pkey */
+        EC_KEY_free(ec);
+        return 0;
+}
+#endif /* USE_ECDSA */
+
 ldns_rdf *
 ldns_sign_public_evp(ldns_buffer *to_sign,
 				 EVP_PKEY *key,
@@ -384,6 +425,11 @@ ldns_sign_public_evp(ldns_buffer *to_sign,
 	/* unfortunately, OpenSSL output is differenct from DNS DSA format */
 	if (EVP_PKEY_type(key->type) == EVP_PKEY_DSA) {
 		sigdata_rdf = ldns_convert_dsa_rrsig_asn12rdf(b64sig, siglen);
+#ifdef USE_ECDSA
+        } else if(EVP_PKEY_type(key->type) == EVP_PKEY_EC &&
+                ldns_pkey_is_ecdsa(key)) {
+                sigdata_rdf = ldns_convert_ecdsa_rrsig_asn12rdf(b64sig, siglen);
+#endif
 	} else {
 		/* ok output for other types is the same */
 		sigdata_rdf = ldns_rdf_new_frm_data(LDNS_RDF_TYPE_B64, siglen,

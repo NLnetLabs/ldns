@@ -53,6 +53,11 @@ ldns_lookup_table ldns_algorithms[] = {
 #ifdef USE_GOST
 	{ LDNS_ECC_GOST, "ECC-GOST"},
 #endif
+#ifdef USE_ECDSA
+        { LDNS_ECDSAP224SHA256, "ECDSAP224SHA256"},
+        { LDNS_ECDSAP256SHA256, "ECDSAP256SHA256"},
+        { LDNS_ECDSAP384SHA384, "ECDSAP384SHA384"},
+#endif
         { LDNS_INDIRECT, "INDIRECT" },
         { LDNS_PRIVATEDNS, "PRIVATEDNS" },
         { LDNS_PRIVATEOID, "PRIVATEOID" },
@@ -1700,6 +1705,34 @@ ldns_key2buffer_str(ldns_buffer *output, const ldns_key *k)
 				status = ldns_gost_key2buffer_str(output, k->_key.key);
 #endif
 				break;
+#ifdef USE_ECDSA
+			case LDNS_SIGN_ECDSAP224SHA256:
+			case LDNS_SIGN_ECDSAP256SHA256:
+			case LDNS_SIGN_ECDSAP384SHA384:
+                                ldns_buffer_printf(output, "Private-key-format: v1.2\n");
+				ldns_buffer_printf(output, "Algorithm: %d (", ldns_key_algorithm(k));
+                                ldns_algorithm2buffer_str(output, ldns_key_algorithm(k));
+				ldns_buffer_printf(output, ")\n");
+                                if(k->_key.key) {
+                                        EC_KEY* ec = EVP_PKEY_get1_EC_KEY(k->_key.key);
+                                        const BIGNUM* b = EC_KEY_get0_private_key(ec);
+                                        ldns_buffer_printf(output, "D: ");
+                                        i = (uint16_t)BN_bn2bin(b, bignum);
+                                        if (i > LDNS_MAX_KEYLEN) {
+                                                goto error;
+                                        }
+                                        b64_bignum =  ldns_rdf_new_frm_data(LDNS_RDF_TYPE_B64, i, bignum);
+                                        if (ldns_rdf2buffer_str(output, b64_bignum) != LDNS_STATUS_OK) {
+                                                goto error;
+                                        }
+                                        ldns_rdf_deep_free(b64_bignum);
+				        ldns_buffer_printf(output, "\n");
+                                        /* down reference count in EC_KEY
+                                         * its still assigned to the PKEY */
+                                        EC_KEY_free(ec);
+                                }
+                                break;
+#endif
 			case LDNS_SIGN_HMACMD5:
 				/* there's not much of a format defined for TSIG */
 				/* It's just a binary blob, Same for all algorithms */

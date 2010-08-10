@@ -32,6 +32,8 @@ ldns_calc_keytag
 ldns_calc_keytag_raw
 ldns_cert_algorithm2buffer_str
 ldns_cert_algorithms
+ldns_convert_ecdsa_rrsig_asn12rdf
+ldns_convert_ecdsa_rrsig_rdf2asn1
 ldns_convert_dsa_rrsig_asn12rdf
 ldns_convert_dsa_rrsig_rdf2asn1
 ldns_create_empty_rrsig
@@ -141,6 +143,7 @@ ldns_dnssec_zone_sign
 ldns_dnssec_zone_sign_flg
 ldns_dnssec_zone_sign_nsec3
 ldns_dnssec_zone_sign_nsec3_flg
+ldns_ecdsa2pkey_raw
 ldns_edns_flags
 ldns_error_str
 ldns_fetch_valid_domain_keys

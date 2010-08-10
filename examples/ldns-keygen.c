@@ -154,9 +154,6 @@ main(int argc, char *argv[])
 			exit(1);
 		}
 		break;
-	case LDNS_SIGN_HMACMD5:
-	case LDNS_SIGN_HMACSHA1:
-	case LDNS_SIGN_HMACSHA256:
 #ifdef USE_GOST
 	case LDNS_SIGN_ECC_GOST:
 		if(!ldns_key_EVP_load_gost_id()) {
@@ -165,6 +162,14 @@ main(int argc, char *argv[])
 		}
 		break;
 #endif
+#ifdef USE_ECDSA
+	case LDNS_SIGN_ECDSAP224SHA256:
+	case LDNS_SIGN_ECDSAP256SHA256:
+	case LDNS_SIGN_ECDSAP384SHA384:
+#endif
+	case LDNS_SIGN_HMACMD5:
+	case LDNS_SIGN_HMACSHA1:
+	case LDNS_SIGN_HMACSHA256:
 	default:
 		break;
 	}
@@ -208,6 +213,13 @@ main(int argc, char *argv[])
 
 	/* build the DS record */
 	switch (algorithm) {
+#ifdef USE_ECDSA
+	case LDNS_SIGN_ECDSAP384SHA384:
+		ds = ldns_key_rr2ds(pubkey, LDNS_SHA384);
+		break;
+	case LDNS_SIGN_ECDSAP224SHA256:
+	case LDNS_SIGN_ECDSAP256SHA256:
+#endif
 	case LDNS_SIGN_RSASHA256:
 	case LDNS_SIGN_RSASHA512:
 		ds = ldns_key_rr2ds(pubkey, LDNS_SHA256);
