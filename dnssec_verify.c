@@ -1411,6 +1411,10 @@ ldns_dnssec_verify_denial_nsec3(ldns_rr *rr,
 						   ldns_rr_owner(rr),
 						   ldns_rr_get_type(rr),
 						   nsecs);
+                if(!closest_encloser) {
+                        result = LDNS_STATUS_NSEC3_ERR;
+                        goto done;
+                }
 
 		wildcard = ldns_dname_new_frm_str("*");
 		(void) ldns_dname_cat(wildcard, closest_encloser);
