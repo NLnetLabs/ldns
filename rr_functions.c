@@ -316,8 +316,6 @@ ldns_rr_dnskey_key_size_raw(const unsigned char* keydata,
 		return 512;
 #endif
 #ifdef USE_ECDSA
-        case LDNS_SIGN_ECDSAP224SHA256:
-                return 224;
         case LDNS_SIGN_ECDSAP256SHA256:
                 return 256;
         case LDNS_SIGN_ECDSAP384SHA384:

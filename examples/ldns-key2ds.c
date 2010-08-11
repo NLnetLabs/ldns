@@ -58,7 +58,6 @@ suitable_hash(ldns_signing_algorithm algorithm)
 		return LDNS_SHA256;
 #endif
 #ifdef USE_ECDSA
-	case LDNS_SIGN_ECDSAP224SHA256:
 	case LDNS_SIGN_ECDSAP256SHA256:
 		return LDNS_SHA256;
 	case LDNS_SIGN_ECDSAP384SHA384:

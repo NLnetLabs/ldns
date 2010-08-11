@@ -163,7 +163,6 @@ main(int argc, char *argv[])
 		break;
 #endif
 #ifdef USE_ECDSA
-	case LDNS_SIGN_ECDSAP224SHA256:
 	case LDNS_SIGN_ECDSAP256SHA256:
 	case LDNS_SIGN_ECDSAP384SHA384:
 #endif
@@ -217,7 +216,6 @@ main(int argc, char *argv[])
 	case LDNS_SIGN_ECDSAP384SHA384:
 		ds = ldns_key_rr2ds(pubkey, LDNS_SHA384);
 		break;
-	case LDNS_SIGN_ECDSAP224SHA256:
 	case LDNS_SIGN_ECDSAP256SHA256:
 #endif
 	case LDNS_SIGN_RSASHA256:

@@ -32,7 +32,6 @@ ldns_lookup_table ldns_signing_algorithms[] = {
         { LDNS_SIGN_ECC_GOST, "ECC-GOST" },
 #endif
 #ifdef USE_ECDSA
-        { LDNS_SIGN_ECDSAP224SHA256, "ECDSAP224SHA256" },
         { LDNS_SIGN_ECDSAP256SHA256, "ECDSAP256SHA256" },
         { LDNS_SIGN_ECDSAP384SHA384, "ECDSAP384SHA384" },
 #endif
@@ -245,9 +244,7 @@ ldns_key_new_frm_fp_ecdsa_l(FILE* fp, ldns_algorithm alg, int* line_nr)
 		return NULL;
         pp = (unsigned char*)ldns_rdf_data(b64rdf);
 
-        if(alg == LDNS_ECDSAP224SHA256)
-                ec = EC_KEY_new_by_curve_name(NID_secp224r1);
-        else if(alg == LDNS_ECDSAP256SHA256)
+        if(alg == LDNS_ECDSAP256SHA256)
                 ec = EC_KEY_new_by_curve_name(NID_X9_62_prime256v1);
         else if(alg == LDNS_ECDSAP384SHA384)
                 ec = EC_KEY_new_by_curve_name(NID_secp384r1);
@@ -374,13 +371,10 @@ ldns_key_new_frm_fp_l(ldns_key **key, FILE *fp, int *line_nr)
 #endif
 	}
 #ifdef USE_ECDSA
-	if (strncmp(d, "13 ECDSAP224SHA256", 3) == 0) {
-                alg = LDNS_ECDSAP224SHA256;
-        }
-	if (strncmp(d, "14 ECDSAP256SHA256", 3) == 0) {
+	if (strncmp(d, "13 ECDSAP256SHA256", 3) == 0) {
                 alg = LDNS_ECDSAP256SHA256;
         }
-	if (strncmp(d, "15 ECDSAP384SHA384", 3) == 0) {
+	if (strncmp(d, "14 ECDSAP384SHA384", 3) == 0) {
                 alg = LDNS_ECDSAP384SHA384;
         }
 #endif
@@ -458,7 +452,6 @@ ldns_key_new_frm_fp_l(ldns_key **key, FILE *fp, int *line_nr)
 #endif
 			break;
 #ifdef USE_ECDSA
-               case LDNS_SIGN_ECDSAP224SHA256:
                case LDNS_SIGN_ECDSAP256SHA256:
                case LDNS_SIGN_ECDSAP384SHA384:
                         ldns_key_set_algorithm(k, alg);
@@ -868,13 +861,9 @@ ldns_key_new_frm_algorithm(ldns_signing_algorithm alg, uint16_t size)
 #endif /* HAVE_SSL and USE_GOST */
                         break;
 #ifdef USE_ECDSA
-                case LDNS_ECDSAP224SHA256:
                 case LDNS_ECDSAP256SHA256:
                 case LDNS_ECDSAP384SHA384:
-
-                        if(alg == LDNS_ECDSAP224SHA256)
-                                ec = EC_KEY_new_by_curve_name(NID_secp224r1);
-                        else if(alg == LDNS_ECDSAP256SHA256)
+                        if(alg == LDNS_ECDSAP256SHA256)
                                 ec = EC_KEY_new_by_curve_name(NID_X9_62_prime256v1);
                         else if(alg == LDNS_ECDSAP384SHA384)
                                 ec = EC_KEY_new_by_curve_name(NID_secp384r1);
@@ -1395,7 +1384,6 @@ ldns_key2rr(const ldns_key *k)
 #endif /* HAVE_SSL and USE_GOST */
 			break;
 #ifdef USE_ECDSA
-                case LDNS_SIGN_ECDSAP224SHA256:
                 case LDNS_SIGN_ECDSAP256SHA256:
                 case LDNS_SIGN_ECDSAP384SHA384:
 			ldns_rr_push_rdf(pubkey, ldns_native2rdf_int8(

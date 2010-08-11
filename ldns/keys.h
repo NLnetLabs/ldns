@@ -56,9 +56,8 @@ enum ldns_enum_algorithm
 #ifdef USE_ECDSA
 	/* this ifdef has to be removed once it is no longer experimental,
 	 * to be able to use these values outside of the ldns library itself */
-        LDNS_ECDSAP224SHA256    = 13,  /* draft-hoffman-dnssec-ecdsa and */
-        LDNS_ECDSAP256SHA256    = 14,  /* EXPERIMENTAL */
-        LDNS_ECDSAP384SHA384    = 15,
+        LDNS_ECDSAP256SHA256    = 13,  /* draft-hoffman-dnssec-ecdsa */
+        LDNS_ECDSAP384SHA384    = 14,  /* EXPERIMENTAL */
 #endif
         LDNS_INDIRECT           = 252,
         LDNS_PRIVATEDNS         = 253,
@@ -98,7 +97,6 @@ enum ldns_enum_signing_algorithm
 #ifdef USE_ECDSA
 	/* this ifdef has to be removed once it is no longer experimental,
 	 * to be able to use these values outside of the ldns library itself */
-        LDNS_SIGN_ECDSAP224SHA256 = LDNS_ECDSAP224SHA256,
         LDNS_SIGN_ECDSAP256SHA256 = LDNS_ECDSAP256SHA256,
         LDNS_SIGN_ECDSAP384SHA384 = LDNS_ECDSAP384SHA384,
 #endif

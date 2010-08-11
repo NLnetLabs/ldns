@@ -1558,10 +1558,7 @@ ldns_ecdsa2pkey_raw(unsigned char* key, size_t keylen, uint8_t algo)
         EVP_PKEY *evp_key;
         EC_KEY *ec;
 	/* check length, which uncompressed must be 2 bignums */
-        if(algo == LDNS_ECDSAP224SHA256) {
-		if(keylen != 2*224/8) return NULL;
-                ec = EC_KEY_new_by_curve_name(NID_secp224r1);
-        } else if(algo == LDNS_ECDSAP256SHA256) {
+        if(algo == LDNS_ECDSAP256SHA256) {
 		if(keylen != 2*256/8) return NULL;
                 ec = EC_KEY_new_by_curve_name(NID_X9_62_prime256v1);
         } else if(algo == LDNS_ECDSAP384SHA384) {
@@ -1601,12 +1598,9 @@ ldns_verify_rrsig_ecdsa_raw(unsigned char* sig, size_t siglen,
 		/* could not convert key */
 		return LDNS_STATUS_CRYPTO_BOGUS;
         }
-        if(algo == LDNS_ECDSAP224SHA256)
+        if(algo == LDNS_ECDSAP256SHA256)
                 d = EVP_sha256();
-        else if(algo == LDNS_ECDSAP256SHA256)
-                d = EVP_sha256();
-        else if(algo == LDNS_ECDSAP384SHA384)
-                d = EVP_sha384();
+        else    d = EVP_sha384(); /* LDNS_ECDSAP384SHA384 */
 	result = ldns_verify_rrsig_evp_raw(sig, siglen, rrset, evp_key, d);
 	EVP_PKEY_free(evp_key);
 	return result;
@@ -1671,7 +1665,6 @@ ldns_verify_rrsig_buffers_raw(unsigned char* sig, size_t siglen,
 		break;
 #endif
 #ifdef USE_ECDSA
-        case LDNS_ECDSAP224SHA256:
         case LDNS_ECDSAP256SHA256:
         case LDNS_ECDSAP384SHA384:
 		return ldns_verify_rrsig_ecdsa_raw(sig, siglen, verify_buf,
@@ -1784,7 +1777,6 @@ ldns_rrsig2rawsig_buffer(ldns_buffer* rawsig_buf, ldns_rr* rrsig)
 		}
 		break;
 #ifdef USE_ECDSA
-        case LDNS_ECDSAP224SHA256:
         case LDNS_ECDSAP256SHA256:
         case LDNS_ECDSAP384SHA384:
                 /* EVP produces an ASN prefix on the signature, which is

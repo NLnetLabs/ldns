@@ -54,7 +54,6 @@ ldns_lookup_table ldns_algorithms[] = {
 	{ LDNS_ECC_GOST, "ECC-GOST"},
 #endif
 #ifdef USE_ECDSA
-        { LDNS_ECDSAP224SHA256, "ECDSAP224SHA256"},
         { LDNS_ECDSAP256SHA256, "ECDSAP256SHA256"},
         { LDNS_ECDSAP384SHA384, "ECDSAP384SHA384"},
 #endif
@@ -1708,7 +1707,6 @@ ldns_key2buffer_str(ldns_buffer *output, const ldns_key *k)
 #endif
 				break;
 #ifdef USE_ECDSA
-			case LDNS_SIGN_ECDSAP224SHA256:
 			case LDNS_SIGN_ECDSAP256SHA256:
 			case LDNS_SIGN_ECDSAP384SHA384:
                                 ldns_buffer_printf(output, "Private-key-format: v1.2\n");

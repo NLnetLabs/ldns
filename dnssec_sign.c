@@ -156,7 +156,6 @@ ldns_sign_public_buffer(ldns_buffer *sign_buf, ldns_key *current_key)
 		break;
 #endif /* USE_GOST */
 #ifdef USE_ECDSA
-        case LDNS_SIGN_ECDSAP224SHA256:
         case LDNS_SIGN_ECDSAP256SHA256:
        		b64rdf = ldns_sign_public_evp(
 				   sign_buf,
