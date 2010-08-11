@@ -1716,7 +1716,7 @@ ldns_key2buffer_str(ldns_buffer *output, const ldns_key *k)
                                 if(k->_key.key) {
                                         EC_KEY* ec = EVP_PKEY_get1_EC_KEY(k->_key.key);
                                         const BIGNUM* b = EC_KEY_get0_private_key(ec);
-                                        ldns_buffer_printf(output, "D: ");
+                                        ldns_buffer_printf(output, "PrivateKey: ");
                                         i = (uint16_t)BN_bn2bin(b, bignum);
                                         if (i > LDNS_MAX_KEYLEN) {
                                                 goto error;

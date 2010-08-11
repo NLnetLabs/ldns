@@ -238,7 +238,7 @@ ldns_key_new_frm_fp_ecdsa_l(FILE* fp, ldns_algorithm alg, int* line_nr)
         BIGNUM* bn;
         EVP_PKEY* evp_key;
         EC_KEY* ec;
-	if (ldns_fget_keyword_data_l(fp, "D", ": ", token, "\n", 
+	if (ldns_fget_keyword_data_l(fp, "PrivateKey", ": ", token, "\n", 
 		sizeof(token), line_nr) == -1)
 		return NULL;
 	if(ldns_str2rdf_b64(&b64rdf, token) != LDNS_STATUS_OK)
