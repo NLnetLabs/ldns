@@ -563,6 +563,7 @@ l_pkt2buf(lua_State *L)
 	b = ldns_buffer_new(LDNS_MIN_BUFLEN);
 
 	if (ldns_pkt2buffer_wire(b, p) != LDNS_STATUS_OK) {
+		ldns_buffer_free(b);
 		return 0;
 	}
 	lua_pushlightuserdata(L, b);
