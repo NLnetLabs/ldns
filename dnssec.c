@@ -994,7 +994,7 @@ ldns_nsec3_hash_name(ldns_rdf *name,
                 (uint8_t *) hashed_owner_str,
                 hashed_owner_str_len,
                 hashed_owner_b32,
-                ldns_b32_ntop_calculate_size(hashed_owner_str_len));
+                ldns_b32_ntop_calculate_size(hashed_owner_str_len)+1);
 	if (hashed_owner_b32_len < 1) {
 		fprintf(stderr, "Error in base32 extended hex encoding ");
 		fprintf(stderr, "of hashed owner name (name: ");

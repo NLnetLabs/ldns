@@ -303,7 +303,7 @@ ldns_b32_ntop_ar(uint8_t const *src, size_t srclength, char *target, size_t targ
 		target[datalength++] = Pad32;
 	}
 	if (datalength+1 > targsize) {
-		return (-3);
+		return (int) (datalength);
 	}
 	target[datalength] = '\0';	/* Returned value doesn't count \0. */
 	return (int) (datalength);

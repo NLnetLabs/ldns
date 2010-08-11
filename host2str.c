@@ -388,11 +388,13 @@ ldns_rdf2buffer_str_b32_ext(ldns_buffer *output, const ldns_rdf *rdf)
 	char *b32;
 	if(ldns_rdf_size(rdf) == 0)
 		return LDNS_STATUS_OK;
+        /* remove -1 for the b32-hash-len octet */
 	size = ldns_b32_ntop_calculate_size(ldns_rdf_size(rdf) - 1);
+        /* add one for the end nul for the string */
 	b32 = LDNS_XMALLOC(char, size + 1);
 	if(!b32) return LDNS_STATUS_MEM_ERR;
 	size = (size_t) ldns_b32_ntop_extended_hex(ldns_rdf_data(rdf) + 1,
-		ldns_rdf_size(rdf) - 1, b32, size);
+		ldns_rdf_size(rdf) - 1, b32, size+1);
 	if (size > 0) {
 		ldns_buffer_printf(output, "%s", b32);
 	}
