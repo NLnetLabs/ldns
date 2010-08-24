@@ -7,7 +7,7 @@
 
 Summary: Lowlevel DNS(SEC) library with API
 Name: ldns
-Version: 1.6.4
+Version: 1.6.7
 Release: 2%{?dist}
 License: BSD
 Url: http://www.nlnetlabs.nl/%{name}/
@@ -120,6 +120,9 @@ rm -rf %{buildroot}
 %postun -p /sbin/ldconfig
 
 %changelog
+* Tue Aug 24 2010 Matthijs Mekking <matthijs@nlnetlabs.nl> - 1.6.7
+- Upgraded to 1.6.7.
+
 * Fri Jan 22 2010 Paul Wouters <paul@xelerance.com> - 1.6.4-2
 - Fix missing _ldns.so causing ldns-python to not work
 - Patch for installing ldns-python files
