@@ -117,6 +117,7 @@ ldns_fget_token_l(FILE *f, char *token, const char *delim, size_t limit, int *li
 			if (line_nr) {
 				*line_nr = *line_nr + 1;
 			}
+			*t++ = ' ';
 			prev_c = c;
 			continue;
 		}
@@ -287,6 +288,7 @@ ldns_bget_token(ldns_buffer *b, char *token, const char *delim, size_t limit)
 
 		if (c == '\n' && p != 0) {
 			/* in parentheses */
+			*t++ = ' ';
 			lc = c;
 			continue;
 		}
