@@ -586,11 +586,11 @@ ldns_rr_new_frm_fp_l(ldns_rr **newrr, FILE *fp, uint32_t *default_ttl, ldns_rdf 
 	char *line;
 	const char *endptr;  /* unused */
 	ldns_rr *rr;
-	char *keyword;
 	uint32_t ttl;
 	ldns_rdf *tmp;
 	ldns_status s;
 	ssize_t size;
+	int offset = 0;
 
 	if (default_ttl) {
 		ttl = *default_ttl;
@@ -621,12 +621,16 @@ ldns_rr_new_frm_fp_l(ldns_rr **newrr, FILE *fp, uint32_t *default_ttl, ldns_rdf 
 		return LDNS_STATUS_SYNTAX_EMPTY;
 	}
 
-	if ((keyword = strstr(line, "$ORIGIN "))) {
+	if (strncmp(line, "$ORIGIN", 7) == 0 && isspace(line[7])) {
 		if (*origin) {
 			ldns_rdf_deep_free(*origin);
 			*origin = NULL;
 		}
-		tmp = ldns_rdf_new_frm_str(LDNS_RDF_TYPE_DNAME, keyword + 8);
+		offset = 8;
+		while (isspace(line[offset])) {
+			offset++;
+		}
+		tmp = ldns_rdf_new_frm_str(LDNS_RDF_TYPE_DNAME, line + offset);
 		if (!tmp) {
 			/* could not parse what next to $ORIGIN */
 			LDNS_FREE(line);
@@ -634,12 +638,16 @@ ldns_rr_new_frm_fp_l(ldns_rr **newrr, FILE *fp, uint32_t *default_ttl, ldns_rdf 
 		}
 		*origin = tmp;
 		s = LDNS_STATUS_SYNTAX_ORIGIN;
-	} else if ((keyword = strstr(line, "$TTL "))) {
+	} else if (strncmp(line, "$TTL", 4) == 0 && isspace(line[4])) {
+		offset = 5;
+		while (isspace(line[offset])) {
+			offset++;
+		}
 		if (default_ttl) {
-			*default_ttl = ldns_str2period(keyword + 5, &endptr);
+			*default_ttl = ldns_str2period(line + offset, &endptr);
 		}
 		s = LDNS_STATUS_SYNTAX_TTL;
-	} else if (strstr(line, "$INCLUDE ")) {
+	} else if (strncmp(line, "$INCLUDE", 8) == 0) {
 		s = LDNS_STATUS_SYNTAX_INCLUDE;
 	} else {
 		if (origin && *origin) {
