@@ -2,6 +2,8 @@
 	* EXPERIMENTAL ecdsa implementation, please do not enable on real
 	  servers.
         * bugfix #326: ignore whitespace between directives and their values.
+	* Header comment to advertise ldns_axfr_complete to check for
+	  successfully completed zone transfers.
 
 1.6.6
 	* Fix ldns_rr_clone to copy question rrs properly.

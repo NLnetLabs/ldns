@@ -679,6 +679,8 @@ void ldns_resolver_deep_free(ldns_resolver *res);
  * \param[in] resolver the resolver to use. First ldns_axfr_start() must be
  * called
  * \return ldns_rr the next RR from the AXFR stream
+ * After you get this returned RR (not NULL: on error), then check if 
+ * ldns_axfr_complete() is true to see if the zone transfer has completed.
  */
 ldns_rr* ldns_axfr_next(ldns_resolver *resolver);
 
