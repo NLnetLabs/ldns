@@ -4,6 +4,7 @@
         * bugfix #326: ignore whitespace between directives and their values.
 	* Header comment to advertise ldns_axfr_complete to check for
 	  successfully completed zone transfers.
+	* read resolv.conf skips interface labels, e.g. %eth0.
 
 1.6.6
 	* Fix ldns_rr_clone to copy question rrs properly.

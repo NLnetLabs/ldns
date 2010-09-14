@@ -742,6 +742,11 @@ ldns_resolver_new_frm_fp_l(ldns_resolver **res, FILE *fp, int *line_nr)
                                         expect = LDNS_RESOLV_KEYWORD;
                                         continue;
                                 }
+                                if(strchr(word, '%')) {
+                                        /* snip off interface labels,
+                                         * fe80::222:19ff:fe31:4222%eth0 */
+                                        strchr(word, '%')[0]=0;
+                                }
 				tmp = ldns_rdf_new_frm_str(LDNS_RDF_TYPE_AAAA, word);
 				if (!tmp) {
 					/* try ip4 */
