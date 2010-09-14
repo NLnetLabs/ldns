@@ -5,6 +5,7 @@
 	* Header comment to advertise ldns_axfr_complete to check for
 	  successfully completed zone transfers.
 	* read resolv.conf skips interface labels, e.g. %eth0.
+	* Fix drill verify NSEC3 denials.
 
 1.6.6
 	* Fix ldns_rr_clone to copy question rrs properly.
