@@ -297,12 +297,20 @@ ldns_udp_send(uint8_t **result, ldns_buffer *qbin, const struct sockaddr_storage
 
 	/* wait for an response*/
 	if(!ldns_sock_wait(sockfd, timeout, 0)) {
+#ifndef USE_WINSOCK
 		close(sockfd);
+#else
+                closesocket(sockfd);
+#endif
 		return LDNS_STATUS_NETWORK_ERR;
 	}
 
 	answer = ldns_udp_read_wire(sockfd, answer_size, NULL, NULL);
+#ifndef USE_WINSOCK
 	close(sockfd);
+#else
+        closesocket(sockfd);
+#endif
 
 	if (*answer_size == 0) {
 		/* oops */
@@ -383,7 +391,11 @@ ldns_tcp_connect(const struct sockaddr_storage *to, socklen_t tolen,
 		socklen_t len = (socklen_t)sizeof(error);
 
 		if(!ldns_sock_wait(sockfd, timeout, 1)) {
+#ifndef USE_WINSOCK
 			close(sockfd);
+#else
+			closesocket(sockfd);
+#endif
 			return 0;
 		}
 
@@ -614,7 +626,11 @@ ldns_tcp_send(uint8_t **result,  ldns_buffer *qbin, const struct sockaddr_storag
 	}
 
 	answer = ldns_tcp_read_wire_timeout(sockfd, answer_size, timeout);
+#ifndef USE_WINSOCK
 	close(sockfd);
+#else
+	closesocket(sockfd);
+#endif
 
 	if (*answer_size == 0) {
 		/* oops */
@@ -769,7 +785,11 @@ ldns_axfr_start(ldns_resolver *resolver, ldns_rdf *domain, ldns_rr_class class)
 		if (status != LDNS_STATUS_OK) {
 			/* RoRi: to prevent problems on subsequent calls to ldns_axfr_start
 			   we have to close the socket here! */
+#ifndef USE_WINSOCK
 			close(resolver->_socket);
+#else
+			closesocket(resolver->_socket);
+#endif
 			resolver->_socket = 0;
 
 			return LDNS_STATUS_CRYPTO_TSIG_ERR;
@@ -789,7 +809,11 @@ ldns_axfr_start(ldns_resolver *resolver, ldns_rdf *domain, ldns_rr_class class)
 
 		/* RoRi: to prevent problems on subsequent calls to ldns_axfr_start
 		    we have to close the socket here! */
+#ifndef USE_WINSOCK
 		close(resolver->_socket);
+#else
+		closesocket(resolver->_socket);
+#endif
 		resolver->_socket = 0;
 
                 return status;
@@ -804,7 +828,11 @@ ldns_axfr_start(ldns_resolver *resolver, ldns_rdf *domain, ldns_rr_class class)
 		/* RoRi: to prevent problems on subsequent calls to ldns_axfr_start
 		         we have to close the socket here! */
 
+#ifndef USE_WINSOCK
 		close(resolver->_socket);
+#else
+		closesocket(resolver->_socket);
+#endif
 		resolver->_socket = 0;
 
                 return LDNS_STATUS_NETWORK_ERR;

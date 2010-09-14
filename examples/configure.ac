@@ -380,6 +380,7 @@ AH_BOTTOM([
 #endif
 
 #ifdef HAVE_WINSOCK2_H
+#define USE_WINSOCK 1
 #include <winsock2.h>
 #endif
 

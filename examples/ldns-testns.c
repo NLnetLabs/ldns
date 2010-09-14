@@ -335,14 +335,22 @@ handle_tcp(int tcp_sock, struct entry* entries, int *count)
 	if(tcplen >= INBUF_SIZE) {
 		log_msg("query %d bytes too large, buffer %d bytes.\n",
 			tcplen, INBUF_SIZE);
+#ifndef USE_WINSOCK
 		close(s);
+#else
+		closesocket(s);
+#endif
 		return;
 	}
 	read_n_bytes(s, inbuf, tcplen);
 
 	handle_query(inbuf, (ssize_t) tcplen, entries, count, transport_tcp, 
 		send_tcp, &userdata, do_verbose?logfile:0);
+#ifndef USE_WINSOCK
 	close(s);
+#else
+	closesocket(s);
+#endif
 
 }
 

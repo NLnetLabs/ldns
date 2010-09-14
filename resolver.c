@@ -1181,7 +1181,11 @@ ldns_axfr_next(ldns_resolver *resolver)
 		if (ldns_rr_get_type(cur_rr) == LDNS_RR_TYPE_SOA) {
 			resolver->_axfr_soa_count++;
 			if (resolver->_axfr_soa_count >= 2) {
+#ifndef USE_WINSOCK
 				close(resolver->_socket);
+#else
+				closesocket(resolver->_socket);
+#endif
 				resolver->_socket = 0;
 				ldns_pkt_free(resolver->_cur_axfr_pkt);
 				resolver->_cur_axfr_pkt = NULL;
@@ -1205,7 +1209,11 @@ ldns_axfr_next(ldns_resolver *resolver)
 			/* RoRi: we must now also close the socket, otherwise subsequent uses of the
 			   same resolver structure will fail because the link is still open or
 			   in an undefined state */
+#ifndef USE_WINSOCK
 			close(resolver->_socket);
+#else
+			closesocket(resolver->_socket);
+#endif
 			resolver->_socket = 0;
 
 			return NULL;
@@ -1216,7 +1224,11 @@ ldns_axfr_next(ldns_resolver *resolver)
 			/* RoRi: we must now also close the socket, otherwise subsequent uses of the
 			   same resolver structure will fail because the link is still open or
 			   in an undefined state */
+#ifndef USE_WINSOCK
 			close(resolver->_socket);
+#else
+			closesocket(resolver->_socket);
+#endif
 			resolver->_socket = 0;
 
 			return NULL;

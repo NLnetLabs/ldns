@@ -6,6 +6,7 @@
 	  successfully completed zone transfers.
 	* read resolv.conf skips interface labels, e.g. %eth0.
 	* Fix drill verify NSEC3 denials.
+	* Use closesocket() on windows.
 
 1.6.6
 	* Fix ldns_rr_clone to copy question rrs properly.

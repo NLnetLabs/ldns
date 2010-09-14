@@ -74,7 +74,11 @@ notify_host(int s, struct addrinfo* res, uint8_t* wire, size_t wiresize,
 			res->ai_addr, res->ai_addrlen) == -1) {
 			printf("warning: send to %s failed: %s\n",
 				addrstr, strerror(errno));
+#ifndef USE_WINSOCK
 			close(s);
+#else
+			closesocket(s);
+#endif
 			return;
 		}
 
@@ -87,7 +91,11 @@ notify_host(int s, struct addrinfo* res, uint8_t* wire, size_t wiresize,
 		if (retval == -1) {
 			printf("error waiting for reply from %s: %s\n",
 				addrstr, strerror(errno));
+#ifndef USE_WINSOCK
 			close(s);
+#else
+			closesocket(s);
+#endif
 			return;
 		}
 		if(retval == 0) {
@@ -111,7 +119,11 @@ notify_host(int s, struct addrinfo* res, uint8_t* wire, size_t wiresize,
 		res->ai_addr, &addrlen);
 	res->ai_addrlen = addrlen;
 
+#ifndef USE_WINSOCK
 	close(s);
+#else
+	closesocket(s);
+#endif
 	if (received == -1) {
 		printf("recv %s failed: %s\n", addrstr, strerror(errno));
 		return;
