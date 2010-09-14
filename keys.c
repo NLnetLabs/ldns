@@ -1562,13 +1562,13 @@ ldns_signing_algorithm ldns_get_signing_algorithm_by_name(const char* name)
                 {0, NULL}};
         ldns_lookup_table* lt = ldns_signing_algorithms;
         while(lt->name) {
-                if(strcasecmp(lt->name, name))
+                if(strcasecmp(lt->name, name) == 0)
                         return lt->id;
                 lt++;
         }
         lt = aliases;
         while(lt->name) {
-                if(strcasecmp(lt->name, name))
+                if(strcasecmp(lt->name, name) == 0)
                         return lt->id;
                 lt++;
         }
