@@ -165,6 +165,7 @@ ldns_get_rr_list_hosts_frm_fp
 ldns_get_rr_list_hosts_frm_fp_l
 ldns_get_rr_list_name_by_addr
 ldns_get_rr_type_by_name
+ldns_get_signing_algorithm_by_name
 ldns_gost2pkey_raw
 ldns_digest_evp
 ldns_key_EVP_load_gost_id

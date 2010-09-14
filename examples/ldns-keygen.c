@@ -66,8 +66,6 @@ main(int argc, char *argv[])
 	ldns_key *key;
 	ldns_rr *ds;
 
-	ldns_lookup_table *lt;
-
 	prog = strdup(argv[0]);
 	algorithm = 0;
 	random = NULL;
@@ -84,13 +82,7 @@ main(int argc, char *argv[])
 				show_algorithms(stdout);
 				exit(EXIT_SUCCESS);
 			}
-			lt = ldns_signing_algorithms;
-			while (lt->name) {
-				if (strncasecmp(lt->name, optarg, strlen(lt->name)) == 0) {
-					algorithm = lt->id;
-				}
-				lt++;
-			}
+                        algorithm = ldns_get_signing_algorithm_by_name(optarg);
 			if (algorithm == 0) {
 				fprintf(stderr, "Algorithm %s not found\n", optarg);
 				show_algorithms(stderr);

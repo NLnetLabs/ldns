@@ -600,6 +600,13 @@ char *ldns_key_get_file_base_name(ldns_key *key);
  */
 int ldns_key_algo_supported(int algo);
 
+/**
+ * Get signing algorithm by name.  Comparison is case insensitive.
+ * \param[in] name string with the name.
+ * \returns 0 on parse failure or the algorithm number.
+ */
+ldns_signing_algorithm ldns_get_signing_algorithm_by_name(const char* name);
+
 #ifdef __cplusplus
 }
 #endif

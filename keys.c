@@ -23,7 +23,7 @@
 ldns_lookup_table ldns_signing_algorithms[] = {
         { LDNS_SIGN_RSAMD5, "RSAMD5" },
         { LDNS_SIGN_RSASHA1, "RSASHA1" },
-        { LDNS_SIGN_RSASHA1_NSEC3, "RSASHA1_NSEC3" },
+        { LDNS_SIGN_RSASHA1_NSEC3, "RSASHA1-NSEC3-SHA1" },
 #ifdef USE_SHA2
         { LDNS_SIGN_RSASHA256, "RSASHA256" },
         { LDNS_SIGN_RSASHA512, "RSASHA512" },
@@ -36,7 +36,7 @@ ldns_lookup_table ldns_signing_algorithms[] = {
         { LDNS_SIGN_ECDSAP384SHA384, "ECDSAP384SHA384" },
 #endif
         { LDNS_SIGN_DSA, "DSA" },
-        { LDNS_SIGN_DSA_NSEC3, "DSA_NSEC3" },
+        { LDNS_SIGN_DSA_NSEC3, "DSA-NSEC3-SHA1" },
         { LDNS_SIGN_HMACMD5, "hmac-md5.sig-alg.reg.int" },
         { LDNS_SIGN_HMACSHA1, "hmac-sha1" },
         { LDNS_SIGN_HMACSHA256, "hmac-sha256" },
@@ -1537,4 +1537,42 @@ int ldns_key_algo_supported(int algo)
 		lt++;
 	}
 	return 0;
+}
+
+ldns_signing_algorithm ldns_get_signing_algorithm_by_name(const char* name)
+{
+        /* list of (signing algorithm id, alias_name) */
+        ldns_lookup_table aliases[] = {
+                /* from bind dnssec-keygen */
+                {LDNS_SIGN_HMACMD5, "HMAC-MD5"},
+                {LDNS_SIGN_DSA_NSEC3, "NSEC3DSA"},
+                {LDNS_SIGN_RSASHA1_NSEC3, "NSEC3RSASHA1"},
+                /* old ldns usage, now RFC names */
+                {LDNS_SIGN_DSA_NSEC3, "DSA_NSEC3" },
+                {LDNS_SIGN_RSASHA1_NSEC3, "RSASHA1_NSEC3" },
+#ifdef USE_GOST
+                {LDNS_SIGN_ECC_GOST, "GOST"},
+#endif
+                /* compat with possible output */
+                {LDNS_DH, "DH"},
+                {LDNS_ECC, "ECC"},
+                {LDNS_INDIRECT, "INDIRECT"},
+                {LDNS_PRIVATEDNS, "PRIVATEDNS"},
+                {LDNS_PRIVATEOID, "PRIVATEOID"},
+                {0, NULL}};
+        ldns_lookup_table* lt = ldns_signing_algorithms;
+        while(lt->name) {
+                if(strcasecmp(lt->name, name))
+                        return lt->id;
+                lt++;
+        }
+        lt = aliases;
+        while(lt->name) {
+                if(strcasecmp(lt->name, name))
+                        return lt->id;
+                lt++;
+        }
+        if(atoi(name) != 0)
+                return atoi(name);
+        return 0;
 }
