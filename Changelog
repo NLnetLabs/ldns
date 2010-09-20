@@ -10,6 +10,7 @@
 	* Add ldns_get_signing_algorithm_by_name that understand aliases,
 	  names changed to RFC names and aliases for compatibility added.
 	* bugfix: don't print final dot if the domain is relative.
+	* bugfix: resolver search continue when packet rcode != NOERROR.
 
 1.6.6
 	* Fix ldns_rr_clone to copy question rrs properly.
