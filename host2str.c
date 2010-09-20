@@ -274,8 +274,10 @@ ldns_rdf2buffer_str_dname(ldns_buffer *output, const ldns_rdf *dname)
 				src_pos++;
 			}
 
+			if (src_pos < ldns_rdf_size(dname)) {
+				ldns_buffer_printf(output, ".");
+			}
 			len = data[src_pos];
-			ldns_buffer_printf(output, ".");
 		}
 	}
 	return ldns_buffer_status(output);

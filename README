@@ -65,10 +65,11 @@ commands may be a little bit different on your machine. Most notable, you'll nee
 * Developers
 ldns is developed by the ldns team at NLnet Labs. This team currently
 consists of:
-  o Jelte Jansen
   o Wouter Wijngaards
+  o Matthijs Mekking
 
 Former main developers:
+  o Jelte Jansen
   o Miek Gieben
 
 * Credits
