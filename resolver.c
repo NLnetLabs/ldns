@@ -945,7 +945,12 @@ ldns_resolver_search(const ldns_resolver *r,const  ldns_rdf *name,
 			p = ldns_resolver_query(r, new_name, t, c, flags);
 			ldns_rdf_free(new_name);
 			if (p) {
-				return p;
+				if (ldns_pkt_get_rcode(p) == LDNS_RCODE_NOERROR) {
+					return p;
+				} else {
+					ldns_pkt_free(p);
+					p = NULL;
+				}
 			}
 		}
 	}
