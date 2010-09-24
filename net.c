@@ -532,12 +532,14 @@ ldns_tcp_read_wire_timeout(int sockfd, size_t *size, struct timeval timeout)
 			LDNS_FREE(wire);
 			return NULL;
 		}
-		bytes = recv(sockfd, (void*)wire, 2, 0);
-		if (bytes == -1 || bytes == 0) {
+		rc = recv(sockfd, (void*) (wire + bytes), 
+				(size_t) (2 - bytes), 0);
+		if (rc == -1 || rc == 0) {
 			*size = 0;
 			LDNS_FREE(wire);
 			return NULL;
 		}
+                bytes += rc;
 	}
 
 	wire_size = ldns_read_uint16(wire);
@@ -580,12 +582,14 @@ ldns_tcp_read_wire(int sockfd, size_t *size)
 	}
 	
 	while (bytes < 2) {
-		bytes = recv(sockfd, (void*)wire, 2, 0);
-		if (bytes == -1 || bytes == 0) {
+		rc = recv(sockfd, (void*) (wire + bytes), 
+				(size_t) (2 - bytes), 0);
+		if (rc == -1 || rc == 0) {
 			*size = 0;
 			LDNS_FREE(wire);
 			return NULL;
 		}
+                bytes += rc;
 	}
 
 	wire_size = ldns_read_uint16(wire);
