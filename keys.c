@@ -784,7 +784,7 @@ ldns_key_new_frm_algorithm(ldns_signing_algorithm alg, uint16_t size)
 	DSA *d;
 	RSA *r;
 #  ifdef USE_ECDSA
-        EC_KEY *ec;
+        EC_KEY *ec = NULL;
 #  endif
 #else
 	int i;
