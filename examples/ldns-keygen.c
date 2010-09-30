@@ -82,7 +82,7 @@ main(int argc, char *argv[])
 				show_algorithms(stdout);
 				exit(EXIT_SUCCESS);
 			}
-                        algorithm = ldns_get_signing_algorithm_by_name(optarg);
+			algorithm = ldns_get_signing_algorithm_by_name(optarg);
 			if (algorithm == 0) {
 				fprintf(stderr, "Algorithm %s not found\n", optarg);
 				show_algorithms(stderr);
