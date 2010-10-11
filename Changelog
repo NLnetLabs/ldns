@@ -12,6 +12,7 @@
 	* bugfix: don't print final dot if the domain is relative.
 	* bugfix: resolver search continue when packet rcode != NOERROR.
 	* bugfix: tcp read could fail on single octet recv.
+	* bugfix: read of RR in unknown syntax with missing fields.
 
 1.6.6
 	* Fix ldns_rr_clone to copy question rrs properly.

@@ -121,6 +121,7 @@ ldns_rr_new_frm_str_internal(ldns_rr **newrr, const char *str,
 	ssize_t c;
 	ldns_rdf *owner_dname;
         const char* endptr;
+        int was_unknown_rr_format = 0;
 
 	/* used for types with unknown number of rdatas */
 	bool done;
@@ -410,6 +411,7 @@ ldns_rr_new_frm_str_internal(ldns_rr **newrr, const char *str,
                                                 char *hex_data_str;
                                                 uint16_t cur_hex_data_size;
 
+                                                was_unknown_rr_format = 1;
                                                 /* go back to before \# and skip it while setting delimiters better */
                                                 ldns_buffer_set_position(rd_buf, pre_data_pos);
 					        delimiters = "\n\t ";
@@ -538,7 +540,7 @@ ldns_rr_new_frm_str_internal(ldns_rr **newrr, const char *str,
 	ldns_buffer_free(rr_buf);
 	LDNS_FREE(rdata);
 
-	if (!question && desc && ldns_rr_rd_count(new) < r_min) {
+	if (!question && desc && !was_unknown_rr_format && ldns_rr_rd_count(new) < r_min) {
 		ldns_rr_free(new);
 		return LDNS_STATUS_SYNTAX_MISSING_VALUE_ERR;
 	}
