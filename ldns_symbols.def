@@ -158,6 +158,7 @@ ldns_getaddrinfo
 ldns_get_bit
 ldns_get_bit_r
 ldns_get_errorstr_by_id
+ldns_get_random
 ldns_get_rr_class_by_name
 ldns_get_rr_list_addr_by_name
 ldns_get_rr_list_hosts_frm_file
