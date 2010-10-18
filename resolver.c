@@ -639,7 +639,7 @@ ldns_resolver_new_frm_fp_l(ldns_resolver **res, FILE *fp, int *line_nr)
 #ifdef HAVE_SSL
 	ldns_rr *tmp_rr;
 #endif
-	ssize_t gtr;
+	ssize_t gtr, bgtr;
 	ldns_buffer *b;
         int lnr = 0, oldline;
         if(!line_nr) line_nr = &lnr;
@@ -776,8 +776,9 @@ ldns_resolver_new_frm_fp_l(ldns_resolver **res, FILE *fp, int *line_nr)
 					ldns_resolver_deep_free(r);
 					return LDNS_STATUS_MEM_ERR;
 				}
-				gtr = ldns_bget_token(b, word, LDNS_PARSE_NORMAL, (size_t) gtr + 1);
-				while (gtr > 0) {
+				bgtr = ldns_bget_token(b, word, LDNS_PARSE_NORMAL, (size_t) gtr + 1);
+				while (bgtr > 0) {
+					gtr -= bgtr;
                                         if(word[0] == '#') {
                                                 expect = LDNS_RESOLV_KEYWORD;
 						ldns_buffer_free(b);
@@ -793,7 +794,8 @@ ldns_resolver_new_frm_fp_l(ldns_resolver **res, FILE *fp, int *line_nr)
 					ldns_resolver_push_searchlist(r, tmp);
 
 					ldns_rdf_deep_free(tmp);
-					gtr = ldns_bget_token(b, word, LDNS_PARSE_NORMAL, (size_t) gtr + 1);
+					bgtr = ldns_bget_token(b, word, LDNS_PARSE_NORMAL,
+					    (size_t) gtr + 1);
 				}
 				ldns_buffer_free(b);
 				gtr = 1;
