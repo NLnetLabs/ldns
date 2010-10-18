@@ -1207,6 +1207,7 @@ ldns_str2rdf_ipseckey(ldns_rdf **rd, const char *str)
 			LDNS_FREE(publickey);
 		LDNS_FREE(token);
 		ldns_buffer_free(str_buf);
+		if (gateway_rdf) ldns_rdf_free(gateway_rdf);
 		return LDNS_STATUS_INVALID_STR;
 	}
 
@@ -1224,6 +1225,8 @@ ldns_str2rdf_ipseckey(ldns_rdf **rd, const char *str)
 			LDNS_FREE(publickey);
 		LDNS_FREE(token);
 		ldns_buffer_free(str_buf);
+		if (gateway_rdf) ldns_rdf_free(gateway_rdf);
+		if (publickey_rdf) ldns_rdf_free(publickey_rdf);
 		return LDNS_STATUS_MEM_ERR;
 	}
 
