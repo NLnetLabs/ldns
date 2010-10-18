@@ -40,7 +40,14 @@ char *ldns_tsig_keydata_clone(ldns_tsig_credentials *);
 /**
  * verifies the tsig rr for the given packet and key.
  * The wire must be given too because tsig does not sign normalized packets.
- *
+ * \param[in] pkt the packet to verify
+ * \param[in] wire needed to verify the mac
+ * \param[in] wire_size size of wire
+ * \param[in] key_name the name of the shared key
+ * \param[in] key_data the key in base 64 format
+ * \param[in] mac original mac
+ * \param[in] tsig_timers_only must be zero for the first packet and positive for subsequent packets. If zero, all digest
+   components are used to verify the _mac. If non-zero, only the TSIG timers are used to verify the mac.
  * \return true if tsig is correct, false if not, or if tsig is not set
  */
 bool ldns_pkt_tsig_verify(ldns_pkt *pkt, uint8_t *wire, size_t wire_size, const char *key_name, const char *key_data, ldns_rdf *mac);
@@ -56,6 +63,8 @@ bool ldns_pkt_tsig_verify_next(ldns_pkt *pkt, uint8_t *wire, size_t wire_size, c
  * \param[in] fudge seconds of error permitted in time signed
  * \param[in] algorithm_name the name of the algorithm used
  * \param[in] query_mac is added to the digest if not NULL (so NULL is for signing queries, not NULL is for signing answers)
+ * \param[in] tsig_timers_only must be zero for the first packet and positive for subsequent packets. If zero, all digest
+   components are used to create the query_mac. If non-zero, only the TSIG timers are used to create the query_mac.
  * \return status (OK if success)
  */
 ldns_status ldns_pkt_tsig_sign(ldns_pkt *pkt, const char *key_name, const char *key_data, uint16_t fudge,
