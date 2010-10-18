@@ -168,13 +168,13 @@ find_key_in_zone(ldns_rr *pubkey_gen, ldns_zone *zone) {
 }
 
 static ldns_rr *
-find_key_in_file(const char *keyfile_name_base, ldns_key *key)
+find_key_in_file(const char *keyfile_name_base, ldns_key *key, uint32_t zone_ttl)
 {
 	char *keyfile_name;
 	FILE *keyfile;
 	int line_nr;
-	uint32_t default_ttl = LDNS_DEFAULT_TTL;
-	
+	uint32_t default_ttl = zone_ttl;
+
 	ldns_rr *pubkey = NULL;
 	keyfile_name = LDNS_XMALLOC(char,
 	                            strlen(keyfile_name_base) + 5);
@@ -256,11 +256,11 @@ find_or_create_pubkey(const char *keyfile_name_base, ldns_key *key, ldns_zone *o
 	if (!pubkey) {
 		key_in_zone = 0;
 		/* it was not in the zone, try to read a .key file */
-		pubkey = find_key_in_file(keyfile_name_base, key);
+		pubkey = find_key_in_file(keyfile_name_base, key, default_ttl);
 		if (!pubkey && !(ldns_key_flags(key) & LDNS_KEY_SEP_KEY)) {
 			/* maybe it is a ksk? */
 			ldns_key_set_keytag(key, ldns_key_keytag(key) + 1);
-			pubkey = find_key_in_file(keyfile_name_base, key);
+			pubkey = find_key_in_file(keyfile_name_base, key, default_ttl);
 			if (!pubkey) {
 				/* ok, no file, set back to ZSK */
 				ldns_key_set_keytag(key, ldns_key_keytag(key) - 1);
