@@ -198,7 +198,7 @@ main(int argc, char *argv[])
 		exit(EXIT_FAILURE);
 	}
 	owner = ldns_rdf2str(ldns_rr_owner(pubkey));
-	
+
 	/* calculate and set the keytag */
 	ldns_key_set_keytag(key, ldns_calc_keytag(pubkey));
 
@@ -239,11 +239,14 @@ main(int argc, char *argv[])
 		LDNS_FREE(filename);
 		exit(EXIT_FAILURE);
 	} else {
+		/* temporarily set question so that TTL is not printed */
+		ldns_rr_set_question(pubkey, true);
 		ldns_rr_print(file, pubkey);
+		ldns_rr_set_question(pubkey, false);
 		fclose(file);
 		LDNS_FREE(filename);
 	}
-	
+
 	/* print the priv key to stderr */
 	filename = LDNS_XMALLOC(char, strlen(owner) + 21);
 	snprintf(filename, strlen(owner) + 20, "K%s+%03u+%05u.private", owner, algorithm, (unsigned int) ldns_key_keytag(key));
@@ -261,7 +264,7 @@ main(int argc, char *argv[])
 		fclose(file);
 		LDNS_FREE(filename);
 	}
-	
+
 	/* print the DS to .ds */
 	if (algorithm != LDNS_SIGN_HMACMD5 &&
 		algorithm != LDNS_SIGN_HMACSHA1 &&
@@ -278,11 +281,14 @@ main(int argc, char *argv[])
 			LDNS_FREE(filename);
 			exit(EXIT_FAILURE);
 		} else {
+			/* temporarily set question so that TTL is not printed */
+			ldns_rr_set_question(ds, true);
 			ldns_rr_print(file, ds);
+			ldns_rr_set_question(ds, false);
 			fclose(file);
 			LDNS_FREE(filename);
 		}
-	}	
+	}
 
 	fprintf(stdout, "K%s+%03u+%05u\n", owner, algorithm, (unsigned int) ldns_key_keytag(key));
 	ldns_key_deep_free(key);
