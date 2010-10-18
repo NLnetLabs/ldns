@@ -11,6 +11,8 @@
 	  names changed to RFC names and aliases for compatibility added.
 	* bugfix: don't print final dot if the domain is relative.
 	* bugfix: resolver search continue when packet rcode != NOERROR.
+	* bugfix: resolver push all domains in search directive to list.
+	* bugfix: resolver search by default includes the root domain.
 	* bugfix: tcp read could fail on single octet recv.
 	* bugfix: read of RR in unknown syntax with missing fields.
 
