@@ -356,6 +356,7 @@ ldns_pkt_tsig
 ldns_pkt_tsig_sign
 ldns_pkt_tsig_sign_next
 ldns_pkt_tsig_verify
+ldns_pkt_tsig_verify_next
 ldns_pkt_verify
 ldns_print_rr_rdf
 ldns_rbtree_create

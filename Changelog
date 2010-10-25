@@ -1,7 +1,7 @@
 1.6.7
 	* EXPERIMENTAL ecdsa implementation, please do not enable on real
 	  servers.
-        * bugfix #326: ignore whitespace between directives and their values.
+	* bugfix #326: ignore whitespace between directives and their values.
 	* Header comment to advertise ldns_axfr_complete to check for
 	  successfully completed zone transfers.
 	* read resolv.conf skips interface labels, e.g. %eth0.
