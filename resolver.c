@@ -833,9 +833,6 @@ ldns_resolver_new_frm_fp_l(ldns_resolver **res, FILE *fp, int *line_nr)
 		}
 	}
 
-	/* finally, add the root domain to the search list */
-	ldns_resolver_push_searchlist(r, ldns_dname_new_frm_str("."));
-
 	if (res) {
 		*res = r;
 		return LDNS_STATUS_OK;
