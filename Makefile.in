@@ -125,7 +125,12 @@ libldns.la:	$(LIBDNS_OBJECTS)
 libldns.la-export-all:	$(LIBDNS_OBJECTS)
 		$(LINK_LIB) -o libldns.la $(LIBDNS_LOBJECTS) -rpath $(libdir) $(RUNTIME_PATH)
 
-$(addprefix include/ldns/, $(notdir $(LIBDNS_HEADERS))) include/ldns/util.h include/ldns/net.h include/ldns/config.h: include/ldns/%.h: $(srcdir)/ldns/%.h
+$(addprefix include/ldns/, $(notdir $(LIBDNS_HEADERS))): include/ldns/%.h: $(srcdir)/ldns/%.h
+		@if [ ! -d include ] ; then ($(INSTALL) -d include || echo "include exists") ; fi ;
+		@if [ ! -d include/ldns ] ; then (cd include; ln -s ../ldns ./ldns || echo "include/ldns exists") ; fi ;
+		$(INSTALL) -c -m 644 $< ./include/ldns/
+
+include/ldns/util.h include/ldns/net.h include/ldns/config.h: include/ldns/%.h: ./ldns/%.h
 		@if [ ! -d include ] ; then ($(INSTALL) -d include || echo "include exists") ; fi ;
 		@if [ ! -d include/ldns ] ; then (cd include; ln -s ../ldns ./ldns || echo "include/ldns exists") ; fi ;
 		$(INSTALL) -c -m 644 $< ./include/ldns/
