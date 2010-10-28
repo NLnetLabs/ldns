@@ -981,6 +981,7 @@ ldns_dnssec_zone_create_rrsigs_flg(ldns_dnssec_zone *zone,
 										key_list,
 										func,
 										arg);
+			ldns_key_list_filter_for_non_dnskey(key_list);
 
 			rr_list = ldns_rr_list_new();
 			ldns_rr_list_push_rr(rr_list, cur_name->nsec);
