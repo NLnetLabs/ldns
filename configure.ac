@@ -151,23 +151,16 @@ esac
 
 AC_ARG_ENABLE(gost, AC_HELP_STRING([--disable-gost], [Disable GOST support]))
 case "$enable_gost" in
-    yes)
+    no)
+        ;;
+    *)  dnl default
         if test "x$HAVE_SSL" != "xyes"; then
             AC_MSG_ERROR([GOST enabled, but no SSL support])
         fi
         AC_MSG_CHECKING(for GOST)
         AC_CHECK_FUNC(EVP_PKEY_set_type_str, [],[AC_MSG_ERROR([OpenSSL >= 1.0.0 is needed for GOST support])])
+        AC_CHECK_FUNC(EC_KEY_new, [], [AC_MSG_ERROR([OpenSSL does not support ECC])])
         AC_DEFINE_UNQUOTED([USE_GOST], [1], [Define this to enable GOST support.])
-        ;;
-    no)
-        ;;
-    *)  dnl default
-        if test "x$HAVE_SSL" = "xyes"; then
-                AC_MSG_CHECKING(for GOST)
-                AC_CHECK_FUNC(EVP_PKEY_set_type_str, [
-                AC_DEFINE_UNQUOTED([USE_GOST], [1], [Define this to enable GOST support.])
-                ],[])
-        fi
         ;;
 esac
 

@@ -1,6 +1,7 @@
 1.6.7
 	* EXPERIMENTAL ecdsa implementation, please do not enable on real
 	  servers.
+	* GOST code enabled by default (RFC 5933).
 	* bugfix #326: ignore whitespace between directives and their values.
 	* Header comment to advertise ldns_axfr_complete to check for
 	  successfully completed zone transfers.
