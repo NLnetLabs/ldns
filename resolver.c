@@ -542,18 +542,27 @@ ldns_resolver_push_searchlist(ldns_resolver *r, ldns_rdf *d)
 void
 ldns_resolver_set_tsig_keyname(ldns_resolver *r, char *tsig_keyname)
 {
+	if (r && r->_tsig_keyname) {
+		LDNS_FREE(r->_tsig_keyname);
+	}
 	r->_tsig_keyname = strdup(tsig_keyname);
 }
 
 void
 ldns_resolver_set_tsig_algorithm(ldns_resolver *r, char *tsig_algorithm)
 {
+	if (r && r->_tsig_algorithm) {
+		LDNS_FREE(r->_tsig_algorithm);
+	}
 	r->_tsig_algorithm = strdup(tsig_algorithm);
 }
 
 void
 ldns_resolver_set_tsig_keydata(ldns_resolver *r, char *tsig_keydata)
 {
+	if (r && r->_tsig_keydata) {
+		LDNS_FREE(r->_tsig_keydata);
+	}
 	r->_tsig_keydata = strdup(tsig_keydata);
 }
 
