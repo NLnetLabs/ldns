@@ -22,7 +22,7 @@ ACX_CHECK_COMPILER_FLAG(std=c99, [C99FLAG="-std=c99"])
 ACX_CHECK_COMPILER_FLAG(xc99, [C99FLAG="-xc99"])
 
 AC_ARG_ENABLE(rpath,
-        [  --disable-rpath                disable hardcoded rpath (default=enabled)],
+        [AC_HELP_STRING([--disable-rpath], [Disable hardcoded rpath (default=enabled)])],
 	enable_rpath=$enableval, enable_rpath=yes)
 
 if test "x$enable_rpath" = xyes; then
@@ -146,38 +146,31 @@ tmp_LDFLAGS="$LDFLAGS"
 tmp_LIBS="$LIBS"
 LDFLAGS="$LDFLAGS $LIBSSL_LDFLAGS"
 LIBS="$LIBS $LIBSSL_LIBS"
-AC_ARG_ENABLE(sha2, AC_HELP_STRING([--enable-sha2], [Enable SHA256 and SHA512 RRSIG support, experimental]))
+AC_ARG_ENABLE(sha2, AC_HELP_STRING([--disable-sha2], [Disable SHA256 and SHA512 RRSIG support]))
 case "$enable_sha2" in
-    yes)
+    no)
+        ;;
+    *)
         AC_MSG_CHECKING(for SHA256 and SHA512)
         AC_CHECK_FUNC(SHA256_Init,, [
             AC_MSG_ERROR([SHA2 enabled, but no SHA2 functions found in OpenSSL])
         ])
         AC_DEFINE_UNQUOTED([USE_SHA2], [1], [Define this to enable SHA256 and SHA512 support.])
         ;;
-    no|*)
-        ;;
 esac
 
-AC_ARG_ENABLE(gost, AC_HELP_STRING([--enable-gost], [Enable GOST support, experimental]))
+AC_ARG_ENABLE(gost, AC_HELP_STRING([--disable-gost], [Disable GOST support]))
 case "$enable_gost" in
-    yes)
+    no)
+        ;;
+    *)
         if test "x$HAVE_SSL" != "xyes"; then
             AC_MSG_ERROR([GOST enabled, but no SSL support])
         fi
         AC_MSG_CHECKING(for GOST)
         AC_CHECK_FUNC(EVP_PKEY_set_type_str, [],[AC_MSG_ERROR([OpenSSL >= 1.0.0 is needed for GOST support])])
+        AC_CHECK_FUNC(EC_KEY_new, [], [AC_MSG_ERROR([OpenSSL does not support ECC, needed for GOST support])])
         AC_DEFINE_UNQUOTED([USE_GOST], [1], [Define this to enable GOST support.])
-        ;;
-    no)
-        ;;
-    *)  dnl default
-        if test "x$HAVE_SSL" = "xyes"; then
-                AC_MSG_CHECKING(for GOST)
-                AC_CHECK_FUNC(EVP_PKEY_set_type_str, [
-                AC_DEFINE_UNQUOTED([USE_GOST], [1], [Define this to enable GOST support.])
-                ],[])
-        fi
         ;;
 esac
 
