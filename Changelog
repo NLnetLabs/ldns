@@ -19,6 +19,7 @@
 	  to sign and verify TSIG RRs on subsequent messages
 	  (section 4.4, RFC 2845).
 	* bugfix: signer sigs nsecs with zsks only.
+	* bugfix #333: fix ldns_dname_absolute for name ending with backslash.
 
 1.6.6
 	* Fix ldns_rr_clone to copy question rrs properly.

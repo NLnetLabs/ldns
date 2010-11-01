@@ -506,7 +506,7 @@ ldns_dname_str_absolute(const char *dname_str)
         if(dname_str[strlen(dname_str) - 2] != '\\')
                 return 1; /* ends in . and no \ before it */
         /* so we have the case of ends in . and there is \ before it */
-        for(s=dname_str; s; s++) {
+        for(s=dname_str; *s; s++) {
                 if(*s == '\\') {
                         if(s[1] && s[2] && s[3] /* check length */
                                 && isdigit(s[1]) && isdigit(s[2]) && 
