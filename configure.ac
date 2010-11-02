@@ -158,8 +158,8 @@ case "$enable_gost" in
             AC_MSG_ERROR([GOST enabled, but no SSL support])
         fi
         AC_MSG_CHECKING(for GOST)
-        AC_CHECK_FUNC(EVP_PKEY_set_type_str, [],[AC_MSG_ERROR([OpenSSL >= 1.0.0 is needed for GOST support])])
-        AC_CHECK_FUNC(EC_KEY_new, [], [AC_MSG_ERROR([OpenSSL does not support ECC, needed for GOST support])])
+        AC_CHECK_FUNC(EVP_PKEY_set_type_str, [],[AC_MSG_ERROR([OpenSSL >= 1.0.0 is needed for GOST support or rerun with --disable-gost])])
+        AC_CHECK_FUNC(EC_KEY_new, [], [AC_MSG_ERROR([No ECC functions found in OpenSSL: please upgrade OpenSSL or rerun with --disable-gost])])
         AC_DEFINE_UNQUOTED([USE_GOST], [1], [Define this to enable GOST support.])
         ;;
 esac
