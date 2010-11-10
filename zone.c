@@ -345,7 +345,7 @@ ldns_zone_new_frm_fp_l(ldns_zone **z, FILE *fp, ldns_rdf *origin, uint32_t ttl,
 			if (!ldns_zone_push_rr(newzone, rr)) goto error;
 
 			/*my_origin = ldns_rr_owner(rr);*/
-			my_ttl    = ldns_rr_ttl(rr); 	/* XXX: this seems like an error */
+			/* my_ttl    = ldns_rr_ttl(rr); */	/* XXX: this seems like an error */
 		case LDNS_STATUS_SYNTAX_EMPTY:
 			/* empty line was seen */
 		case LDNS_STATUS_SYNTAX_TTL:

@@ -1,5 +1,5 @@
 1.6.8
-
+	* Fix ldns zone, so that $TTL definition match RFC 2308.
 
 1.6.7	2010-11-08
 	* EXPERIMENTAL ecdsa implementation, please do not enable on real
