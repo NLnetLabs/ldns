@@ -107,6 +107,7 @@ ldns_dnssec_build_data_chain_dnskey(ldns_resolver *res,
 									LDNS_RR_TYPE_DNSKEY,
 									c,
 									qflags);
+			if (my_pkt) {
 			keys = ldns_pkt_rr_list_by_name_and_type(
 					  my_pkt,
 					 key_name,
@@ -120,6 +121,7 @@ ldns_dnssec_build_data_chain_dnskey(ldns_resolver *res,
 													NULL);
 			new_chain->parent->packet_qtype = LDNS_RR_TYPE_DNSKEY;
 			ldns_pkt_free(my_pkt);
+			}
 		} else {
 			new_chain->parent = ldns_dnssec_build_data_chain(res,
 													qflags,
@@ -160,6 +162,7 @@ ldns_dnssec_build_data_chain_other(ldns_resolver *res,
 							LDNS_RR_TYPE_DS,
 							c,
 							qflags);
+	if (my_pkt) {
 	dss = ldns_pkt_rr_list_by_name_and_type(my_pkt,
 									key_name,
 									LDNS_RR_TYPE_DS,
@@ -175,12 +178,14 @@ ldns_dnssec_build_data_chain_other(ldns_resolver *res,
 		ldns_rr_list_deep_free(dss);
 	}
 	ldns_pkt_free(my_pkt);
+	}
 
 	my_pkt = ldns_resolver_query(res,
 							key_name,
 							LDNS_RR_TYPE_DNSKEY,
 							c,
 							qflags);
+	if (my_pkt) {
 	signatures2 = ldns_pkt_rr_list_by_name_and_type(my_pkt,
 										   key_name,
 										   LDNS_RR_TYPE_RRSIG,
@@ -194,6 +199,7 @@ ldns_dnssec_build_data_chain_other(ldns_resolver *res,
 		new_chain->signatures = signatures2;
 	}
 	ldns_pkt_free(my_pkt);
+	}
 }
 
 ldns_dnssec_data_chain *
@@ -223,6 +229,9 @@ ldns_dnssec_build_data_chain_nokeyname(ldns_resolver *res,
 	              LDNS_RR_TYPE_DS,
 	              LDNS_RR_CLASS_IN,
 	              qflags);
+	if (!my_pkt) {
+		return new_chain;
+	}
 
 	if (ldns_pkt_ancount(my_pkt) > 0) {
 		/* add error, no sigs but DS in parent */
@@ -352,8 +361,10 @@ ldns_dnssec_build_data_chain(ldns_resolver *res,
 			signatures = ldns_dnssec_pkt_get_rrsigs_for_type(pkt, type);
 		} else {
 			my_pkt = ldns_resolver_query(res, name, type, c, qflags);
+			if (my_pkt) {
 			signatures = ldns_dnssec_pkt_get_rrsigs_for_type(pkt, type);
 			ldns_pkt_free(my_pkt);
+			}
 		}
 	} else {
 		if (pkt) {
@@ -364,11 +375,13 @@ ldns_dnssec_build_data_chain(ldns_resolver *res,
 		}
 		if (!signatures) {
 			my_pkt = ldns_resolver_query(res, name, type, c, qflags);
+			if (my_pkt) {
 			signatures =
 				ldns_dnssec_pkt_get_rrsigs_for_name_and_type(my_pkt,
 													name,
 													type);
 			ldns_pkt_free(my_pkt);
+			}
 		}
 	}
 
@@ -1116,12 +1129,9 @@ ldns_validate_domain_dnskey(const ldns_resolver * res,
 	ldns_rr_list * trusted_keys = NULL;
 
 	/* Fetch keys for the domain */
-	if ((keypkt = ldns_resolver_query(res,
-							    domain,
-							    LDNS_RR_TYPE_DNSKEY,
-							    LDNS_RR_CLASS_IN,
-							    LDNS_RD))) {
-
+	keypkt = ldns_resolver_query(res, domain,
+		LDNS_RR_TYPE_DNSKEY, LDNS_RR_CLASS_IN, LDNS_RD);
+	if (keypkt) {
 		domain_keys = ldns_pkt_rr_list_by_type(keypkt,
 									    LDNS_RR_TYPE_DNSKEY,
 									    LDNS_SECTION_ANSWER);
@@ -1205,12 +1215,9 @@ ldns_validate_domain_ds(const ldns_resolver *res,
 	ldns_rr_list * trusted_keys = NULL;
 
 	/* Fetch DS for the domain */
-	if ((dspkt = ldns_resolver_query(res,
-							   domain,
-							   LDNS_RR_TYPE_DS,
-							   LDNS_RR_CLASS_IN,
-							   LDNS_RD))) {
-
+	dspkt = ldns_resolver_query(res, domain,
+		LDNS_RR_TYPE_DS, LDNS_RR_CLASS_IN, LDNS_RD);
+	if (dspkt) {
 		rrset = ldns_pkt_rr_list_by_type(dspkt,
 								   LDNS_RR_TYPE_DS,
 								   LDNS_SECTION_ANSWER);

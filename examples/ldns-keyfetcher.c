@@ -665,7 +665,9 @@ main(int argc, char *argv[])
 
 	if (insecure) {
 		pkt = ldns_resolver_query(res, domain, LDNS_RR_TYPE_DNSKEY, LDNS_RR_CLASS_IN, LDNS_RD);
+		if (pkt) {
 		l = ldns_pkt_rr_list_by_type(pkt, LDNS_RR_TYPE_DNSKEY, LDNS_SECTION_ANY_NOQUESTION);
+		}
 	} else {
 		l = retrieve_dnskeys(res, domain, LDNS_RR_TYPE_DNSKEY, LDNS_RR_CLASS_IN, dns_root);
 	}
