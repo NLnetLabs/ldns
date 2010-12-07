@@ -262,6 +262,18 @@ ldns_rr_new_frm_str_internal(ldns_rr **newrr, const char *str,
 
 	if (!type) {
 		type = LDNS_XMALLOC(char, LDNS_SYNTAX_DATALEN);
+                if(!type) {
+			LDNS_FREE(owner);
+			LDNS_FREE(ttl);
+			LDNS_FREE(clas);
+			LDNS_FREE(rdata);
+			LDNS_FREE(rd);
+			LDNS_FREE(rd_buf);
+			LDNS_FREE(b64);
+			ldns_buffer_free(rr_buf);
+			ldns_rr_free(new);
+			return LDNS_STATUS_MEM_ERR;
+                }
 		if (ldns_bget_token(rr_buf, type, "\t\n ", LDNS_SYNTAX_DATALEN) == -1) {
 			LDNS_FREE(owner);
 			LDNS_FREE(ttl);
@@ -1189,9 +1201,10 @@ ldns_rr_list_pop_rr(ldns_rr_list *rr_list)
                 ldns_rr** a;
 		cap /= 2;
                 a = LDNS_XREALLOC(rr_list->_rrs, ldns_rr *, cap);
-                if(!a) return NULL;
-		rr_list->_rrs = a;
-		rr_list->_rr_capacity = cap;
+                if(a) {
+		        rr_list->_rrs = a;
+		        rr_list->_rr_capacity = cap;
+                }
 	}
 
 	ldns_rr_list_set_rr_count(rr_list, rr_count - 1);

@@ -254,12 +254,12 @@ ldns_resolver_pop_nameserver(ldns_resolver *r)
 	pop = nameservers[ns_count - 1];
 
 	nameservers = LDNS_XREALLOC(nameservers, ldns_rdf *, (ns_count - 1));
-        if(!nameservers) return NULL;
 	rtt = LDNS_XREALLOC(rtt, size_t, (ns_count - 1));
-        if(!rtt) return NULL;
 
-	ldns_resolver_set_nameservers(r, nameservers);
-	ldns_resolver_set_rtt(r, rtt);
+        if(nameservers)
+	        ldns_resolver_set_nameservers(r, nameservers);
+        if(rtt)
+	        ldns_resolver_set_rtt(r, rtt);
 	/* decr the count */
 	ldns_resolver_dec_nameserver_count(r);
 	return pop;
@@ -285,13 +285,14 @@ ldns_resolver_push_nameserver(ldns_resolver *r, ldns_rdf *n)
 	nameservers = LDNS_XREALLOC(nameservers, ldns_rdf *, (ns_count + 1));
         if(!nameservers)
                 return LDNS_STATUS_MEM_ERR;
+
+	/* set the new value in the resolver */
+	ldns_resolver_set_nameservers(r, nameservers);
+
 	/* don't forget the rtt */
 	rtt = LDNS_XREALLOC(rtt, size_t, (ns_count + 1));
         if(!rtt)
                 return LDNS_STATUS_MEM_ERR;
-
-	/* set the new value in the resolver */
-	ldns_resolver_set_nameservers(r, nameservers);
 
 	/* slide n in its slot. */
 	/* we clone it here, because then we can free the original
@@ -542,7 +543,7 @@ ldns_resolver_push_searchlist(ldns_resolver *r, ldns_rdf *d)
 
 		searchlist[list_count] = ldns_rdf_clone(d);
 		ldns_resolver_set_searchlist_count(r, list_count + 1);
-	}
+	} /* no way to report mem err */
 }
 
 void
