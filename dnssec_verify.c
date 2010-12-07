@@ -19,6 +19,7 @@ ldns_dnssec_data_chain *
 ldns_dnssec_data_chain_new()
 {
 	ldns_dnssec_data_chain *nc = LDNS_XMALLOC(ldns_dnssec_data_chain, 1);
+        if(!nc) return NULL;
 	nc->rrset = NULL;
 	nc->parent_type = 0;
 	nc->parent = NULL;
@@ -428,6 +429,7 @@ ldns_dnssec_trust_tree_new()
 {
 	ldns_dnssec_trust_tree *new_tree = LDNS_XMALLOC(ldns_dnssec_trust_tree,
 										   1);
+        if(!new_tree) return NULL;
 	new_tree->rr = NULL;
 	new_tree->rrset = NULL;
 	new_tree->parent_count = 0;
@@ -494,6 +496,8 @@ ldns_dnssec_trust_tree_print_sm(FILE *out,
 	if (!sibmap) {
 		treedepth = ldns_dnssec_trust_tree_depth(tree);
 		sibmap = malloc(treedepth);
+                if(!sibmap)
+                        return; /* mem err */
 		memset(sibmap, 0, treedepth);
 		mapset = true;
 	}
@@ -651,6 +655,8 @@ ldns_dnssec_derive_trust_tree(ldns_dnssec_data_chain *data_chain, ldns_rr *rr)
 	size_t i, j;
 
 	ldns_dnssec_trust_tree *new_tree = ldns_dnssec_trust_tree_new();
+        if(!new_tree)
+                return NULL;
 	
 	if (data_chain && data_chain->rrset) {
 		cur_rrset = data_chain->rrset;

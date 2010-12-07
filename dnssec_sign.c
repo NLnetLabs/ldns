@@ -319,10 +319,18 @@ ldns_sign_public_dsa(ldns_buffer *to_sign, DSA *key)
 		return NULL;
 	}
 
-
 	sig = DSA_do_sign(sha1_hash, SHA_DIGEST_LENGTH, key);
+        if(!sig) {
+		ldns_buffer_free(b64sig);
+		return NULL;
+        }
 
 	data = LDNS_XMALLOC(uint8_t, 1 + 2 * SHA_DIGEST_LENGTH);
+        if(!data) {
+		ldns_buffer_free(b64sig);
+                DSA_SIG_free(sig);
+		return NULL;
+        }
 
 	data[0] = 1;
 	pad = 20 - (size_t) BN_num_bytes(sig->r);
@@ -343,6 +351,7 @@ ldns_sign_public_dsa(ldns_buffer *to_sign, DSA *key)
 
 	ldns_buffer_free(b64sig);
 	LDNS_FREE(data);
+        DSA_SIG_free(sig);
 
 	return sigdata_rdf;
 }

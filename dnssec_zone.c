@@ -11,6 +11,7 @@ ldns_dnssec_rrs_new()
 {
 	ldns_dnssec_rrs *new_rrs;
 	new_rrs = LDNS_MALLOC(ldns_dnssec_rrs);
+        if(!new_rrs) return NULL;
 	new_rrs->rr = NULL;
 	new_rrs->next = NULL;
 	return new_rrs;
@@ -96,6 +97,7 @@ ldns_dnssec_rrsets_new()
 {
 	ldns_dnssec_rrsets *new_rrsets;
 	new_rrsets = LDNS_MALLOC(ldns_dnssec_rrsets);
+        if(!new_rrsets) return NULL;
 	new_rrsets->rrs = NULL;
 	new_rrsets->type = 0;
 	new_rrsets->signatures = NULL;
@@ -555,6 +557,7 @@ ldns_dnssec_zone *
 ldns_dnssec_zone_new()
 {
 	ldns_dnssec_zone *zone = LDNS_MALLOC(ldns_dnssec_zone);
+        if(!zone) return NULL;
 	zone->soa = NULL;
 	zone->names = NULL;
 
@@ -653,6 +656,7 @@ ldns_dnssec_zone_add_rr(ldns_dnssec_zone *zone, ldns_rr *rr)
 
 	if (!zone->names) {
 		zone->names = ldns_rbtree_create(ldns_dname_compare_v);
+                if(!zone->names) return LDNS_STATUS_MEM_ERR;
 	}
 
 	/* we need the original of the hashed name if this is
@@ -675,6 +679,7 @@ ldns_dnssec_zone_add_rr(ldns_dnssec_zone *zone, ldns_rr *rr)
 		/* add */
 		cur_name = ldns_dnssec_name_new_frm_rr(rr);
 		cur_node = LDNS_MALLOC(ldns_rbnode_t);
+                if(!cur_node) return LDNS_STATUS_MEM_ERR;
 		cur_node->key = ldns_rr_owner(rr);
 		cur_node->data = cur_name;
 		ldns_rbtree_insert(zone->names, cur_node);

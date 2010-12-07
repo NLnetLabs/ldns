@@ -53,6 +53,10 @@ ldns_rr_new_frm_type(ldns_rr_type t)
 	desc = ldns_rr_descript(t);
 
 	rr->_rdata_fields = LDNS_XMALLOC(ldns_rdf *, ldns_rr_descriptor_minimum(desc));
+        if(!rr->_rdata_fields) {
+                LDNS_FREE(rr);
+                return NULL;
+        }
 	for (i = 0; i < ldns_rr_descriptor_minimum(desc); i++) {
 		rr->_rdata_fields[i] = NULL;
 	}
@@ -144,6 +148,15 @@ ldns_rr_new_frm_str_internal(ldns_rr **newrr, const char *str,
 	rd = LDNS_XMALLOC(char, LDNS_MAX_RDFLEN);
 	b64 = LDNS_XMALLOC(char, LDNS_MAX_RDFLEN);
 	if (!new || !owner || !ttl || !clas || !rdata || !rr_buf || !rd_buf || !rd || !b64 ) {
+                ldns_rr_free(new);
+                LDNS_FREE(owner);
+                LDNS_FREE(ttl);
+                LDNS_FREE(clas);
+                LDNS_FREE(rdata);
+                LDNS_FREE(rr_buf);
+                LDNS_FREE(rd_buf);
+                LDNS_FREE(rd);
+                LDNS_FREE(b64);
 		return LDNS_STATUS_MEM_ERR;
 	}
 
@@ -196,6 +209,18 @@ ldns_rr_new_frm_str_internal(ldns_rr **newrr, const char *str,
 		if (clas_val == 0) {
 			clas_val = LDNS_RR_CLASS_IN;
 			type = LDNS_XMALLOC(char, strlen(ttl) + 1);
+                        if(!type) {
+                                ldns_rr_free(new);
+                                LDNS_FREE(owner);
+                                LDNS_FREE(ttl);
+                                LDNS_FREE(clas);
+                                LDNS_FREE(rdata);
+			        ldns_buffer_free(rr_buf);
+                                LDNS_FREE(rd_buf);
+                                LDNS_FREE(rd);
+                                LDNS_FREE(b64);
+                                return LDNS_STATUS_MEM_ERR;
+                        }
 			strncpy(type, ttl, strlen(ttl) + 1);
 		}
 	} else {
@@ -218,6 +243,18 @@ ldns_rr_new_frm_str_internal(ldns_rr **newrr, const char *str,
 		if (clas_val == 0) {
 			clas_val = LDNS_RR_CLASS_IN;
 			type = LDNS_XMALLOC(char, strlen(clas) + 1);
+                        if(!type) {
+                                ldns_rr_free(new);
+                                LDNS_FREE(owner);
+                                LDNS_FREE(ttl);
+                                LDNS_FREE(clas);
+                                LDNS_FREE(rdata);
+			        ldns_buffer_free(rr_buf);
+                                LDNS_FREE(rd_buf);
+                                LDNS_FREE(rd);
+                                LDNS_FREE(b64);
+                                return LDNS_STATUS_MEM_ERR;
+                        }
 			strncpy(type, clas, strlen(clas) + 1);
 		}
 	}
@@ -271,6 +308,19 @@ ldns_rr_new_frm_str_internal(ldns_rr **newrr, const char *str,
 		if (prev) {
 			ldns_rdf_deep_free(*prev);
 			*prev = ldns_rdf_clone(ldns_rr_owner(new));
+                        if(!*prev) {
+                                LDNS_FREE(owner);
+                                LDNS_FREE(ttl);
+                                LDNS_FREE(clas);
+                                LDNS_FREE(type);
+                                LDNS_FREE(rdata);
+                                LDNS_FREE(rd);
+                                LDNS_FREE(rd_buf);
+                                LDNS_FREE(b64);
+                                ldns_buffer_free(rr_buf);
+                                ldns_rr_free(new);
+                                return LDNS_STATUS_MEM_ERR;
+                        }
 		}
 	} else {
 		if (strlen(owner) == 0) {
@@ -283,6 +333,19 @@ ldns_rr_new_frm_str_internal(ldns_rr **newrr, const char *str,
 			} else {
 				ldns_rr_set_owner(new, ldns_dname_new_frm_str("."));
 			}
+                        if(!ldns_rr_owner(new)) {
+                                LDNS_FREE(owner);
+                                LDNS_FREE(ttl);
+                                LDNS_FREE(clas);
+                                LDNS_FREE(type);
+                                LDNS_FREE(rdata);
+                                LDNS_FREE(rd);
+                                LDNS_FREE(rd_buf);
+                                LDNS_FREE(b64);
+                                ldns_buffer_free(rr_buf);
+                                ldns_rr_free(new);
+                                return LDNS_STATUS_MEM_ERR;
+                        }
 		} else {
 			owner_dname = ldns_dname_new_frm_str(owner);
 			if (!owner_dname) {
@@ -319,6 +382,19 @@ ldns_rr_new_frm_str_internal(ldns_rr **newrr, const char *str,
 			if (prev) {
 				ldns_rdf_deep_free(*prev);
 				*prev = ldns_rdf_clone(ldns_rr_owner(new));
+                                if(!*prev) {
+					LDNS_FREE(owner);
+					LDNS_FREE(ttl);
+					LDNS_FREE(clas);
+					LDNS_FREE(type);
+					LDNS_FREE(rdata);
+					LDNS_FREE(rd);
+					LDNS_FREE(rd_buf);
+					LDNS_FREE(b64);
+					ldns_buffer_free(rr_buf);
+					ldns_rr_free(new);
+					return LDNS_STATUS_MEM_ERR;
+                                }
 			}
 		}
 	}
@@ -420,8 +496,12 @@ ldns_rr_new_frm_str_internal(ldns_rr **newrr, const char *str,
 						c = ldns_bget_token(rd_buf, rd, delimiters, LDNS_MAX_RDFLEN);
 						if (c == -1) {
 							/* something goes very wrong here */
-							ldns_buffer_free(rd_buf);
-							LDNS_FREE(rd);
+                                                        LDNS_FREE(rd);
+                                                        LDNS_FREE(b64);
+                                                        ldns_buffer_free(rd_buf);
+                                                        ldns_buffer_free(rr_buf);
+                                                        LDNS_FREE(rdata);
+                                                        ldns_rr_free(new);
 							return LDNS_STATUS_SYNTAX_RDATA_ERR;
 						}
 						hex_data_size = (uint16_t) atoi(rd);
@@ -429,8 +509,12 @@ ldns_rr_new_frm_str_internal(ldns_rr **newrr, const char *str,
 						hex_data_str = LDNS_XMALLOC(char, 2 * hex_data_size + 1);
 						if (!hex_data_str) {
 							/* malloc error */
-							ldns_buffer_free(rd_buf);
-							LDNS_FREE(rd);
+                                                        LDNS_FREE(rd);
+                                                        LDNS_FREE(b64);
+                                                        ldns_buffer_free(rd_buf);
+                                                        ldns_buffer_free(rr_buf);
+                                                        LDNS_FREE(rdata);
+                                                        ldns_rr_free(new);
 							return LDNS_STATUS_SYNTAX_RDATA_ERR;
 						}
 						cur_hex_data_size = 0;
@@ -447,15 +531,55 @@ ldns_rr_new_frm_str_internal(ldns_rr **newrr, const char *str,
 						if (desc) {
 							size_t hex_pos = 0;
 							uint8_t *hex_data = LDNS_XMALLOC(uint8_t, hex_data_size + 2);
+                                                        ldns_status s;
+                                                        if(!hex_data) {
+                                                                LDNS_FREE(hex_data_str);
+                                                                LDNS_FREE(rd);
+                                                                LDNS_FREE(b64);
+                                                                ldns_buffer_free(rd_buf);
+                                                                ldns_buffer_free(rr_buf);
+                                                                LDNS_FREE(rdata);
+                                                                ldns_rr_free(new);
+                                                                return LDNS_STATUS_MEM_ERR;
+                                                        }
 							ldns_write_uint16(hex_data, hex_data_size);
 							ldns_hexstring_to_data(hex_data + 2, hex_data_str);
-							(void) ldns_wire2rdf(new, hex_data,
+							s = ldns_wire2rdf(new, hex_data,
 							                 hex_data_size+2, &hex_pos);
+                                                        if(s != LDNS_STATUS_OK) {
+                                                                LDNS_FREE(hex_data_str);
+                                                                LDNS_FREE(rd);
+                                                                LDNS_FREE(b64);
+                                                                ldns_buffer_free(rd_buf);
+                                                                ldns_buffer_free(rr_buf);
+                                                                LDNS_FREE(rdata);
+                                                                ldns_rr_free(new);
+                                                                return s;
+                                                        }
 							LDNS_FREE(hex_data);
 						} else {
 							r = ldns_rdf_new_frm_str(LDNS_RDF_TYPE_HEX, hex_data_str);
+                                                        if(!r) {
+                                                                LDNS_FREE(hex_data_str);
+                                                                LDNS_FREE(rd);
+                                                                LDNS_FREE(b64);
+                                                                ldns_buffer_free(rd_buf);
+                                                                ldns_buffer_free(rr_buf);
+                                                                LDNS_FREE(rdata);
+                                                                ldns_rr_free(new);
+                                                                return LDNS_STATUS_MEM_ERR;
+                                                        }
 							ldns_rdf_set_type(r, LDNS_RDF_TYPE_UNKNOWN);
-							ldns_rr_push_rdf(new, r);
+							if(!ldns_rr_push_rdf(new, r)) {
+                                                                LDNS_FREE(hex_data_str);
+                                                                LDNS_FREE(rd);
+                                                                LDNS_FREE(b64);
+                                                                ldns_buffer_free(rd_buf);
+                                                                ldns_buffer_free(rr_buf);
+                                                                LDNS_FREE(rdata);
+                                                                ldns_rr_free(new);
+                                                                return LDNS_STATUS_MEM_ERR;
+                                                        }
 						}
 						LDNS_FREE(hex_data_str);
 					} else {
@@ -500,6 +624,12 @@ ldns_rr_new_frm_str_internal(ldns_rr **newrr, const char *str,
 								}
 							} else if (r && rd_strlen >= 1 && !ldns_dname_str_absolute(rd) && origin) {
 								if (ldns_dname_cat(r, origin) != LDNS_STATUS_OK) {
+							                LDNS_FREE(rd);
+							                LDNS_FREE(b64);
+							                ldns_buffer_free(rd_buf);
+							                ldns_buffer_free(rr_buf);
+							                LDNS_FREE(rdata);
+							                ldns_rr_free(new);
 									return LDNS_STATUS_ERR;
 								}
 							}
@@ -865,6 +995,7 @@ ldns_rr_list *
 ldns_rr_list_new()
 {
 	ldns_rr_list *rr_list = LDNS_MALLOC(ldns_rr_list);
+        if(!rr_list) return NULL;
 	rr_list->_rr_count = 0;
 	rr_list->_rr_capacity = 0;
 	rr_list->_rrs = NULL;
@@ -1055,8 +1186,11 @@ ldns_rr_list_pop_rr(ldns_rr_list *rr_list)
 
 	/* shrink the array */
 	if(cap > LDNS_RRLIST_INIT && rr_count-1 <= cap/2) {
+                ldns_rr** a;
 		cap /= 2;
-		rr_list->_rrs = LDNS_XREALLOC(rr_list->_rrs, ldns_rr *, cap);
+                a = LDNS_XREALLOC(rr_list->_rrs, ldns_rr *, cap);
+                if(!a) return NULL;
+		rr_list->_rrs = a;
 		rr_list->_rr_capacity = cap;
 	}
 
@@ -1358,6 +1492,8 @@ qsort_schwartz_rr_compare(const void *a, const void *b)
 			ldns_rr2canonical(canonical_a);
 			sa->transformed_object = ldns_buffer_new(ldns_rr_uncompressed_size(canonical_a));
 			if (ldns_rr2buffer_wire(sa->transformed_object, canonical_a, LDNS_SECTION_ANY) != LDNS_STATUS_OK) {
+		                ldns_buffer_free((ldns_buffer *)sa->transformed_object);
+                                sa->transformed_object = NULL;
 				ldns_rr_free(canonical_a);
 				return 0;
 			}
@@ -1368,6 +1504,10 @@ qsort_schwartz_rr_compare(const void *a, const void *b)
 			ldns_rr2canonical(canonical_b);
 			sb->transformed_object = ldns_buffer_new(ldns_rr_uncompressed_size(canonical_b));
 			if (ldns_rr2buffer_wire(sb->transformed_object, canonical_b, LDNS_SECTION_ANY) != LDNS_STATUS_OK) {
+		                ldns_buffer_free((ldns_buffer *)sa->transformed_object);
+		                ldns_buffer_free((ldns_buffer *)sb->transformed_object);
+                                sa->transformed_object = NULL;
+                                sb->transformed_object = NULL;
 				ldns_rr_free(canonical_b);
 				return 0;
 			}
@@ -1394,8 +1534,18 @@ ldns_rr_list_sort(ldns_rr_list *unsorted)
 
 		sortables = LDNS_XMALLOC(struct ldns_schwartzian_compare_struct *,
 					 item_count);
+                if(!sortables) return; /* no way to return error */
 		for (i = 0; i < item_count; i++) {
 			sortables[i] = LDNS_XMALLOC(struct ldns_schwartzian_compare_struct, 1);
+                        if(!sortables[i]) {
+                                /* free the allocated parts */
+                                while(i>0) {
+                                        i--;
+                                        LDNS_FREE(sortables[i]);
+                                }
+                                /* no way to return error */
+                                return;
+                        }
 			sortables[i]->original_object = ldns_rr_list_rr(unsorted, i);
 			sortables[i]->transformed_object = NULL;
 		}

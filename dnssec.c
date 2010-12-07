@@ -679,6 +679,7 @@ ldns_dnssec_create_nsec_bitmap(ldns_rr_type rr_type_list[],
 
 	bm_len = i_type / 8 + 2;
 	bitmap = LDNS_XMALLOC(uint8_t, bm_len);
+        if(!bitmap) return NULL;
 	for (i = 0; i < bm_len; i++) {
 		bitmap[i] = 0;
 	}
@@ -700,6 +701,10 @@ ldns_dnssec_create_nsec_bitmap(ldns_rr_type rr_type_list[],
 				data = LDNS_XREALLOC(data,
 								 uint8_t,
 								 cur_data_size + cur_window_max + 3);
+                                if(!data) {
+                                        LDNS_FREE(bitmap);
+                                        return NULL;
+                                }
 				data[cur_data_size] = cur_window;
 				data[cur_data_size + 1] = cur_window_max + 1;
 				memcpy(data + cur_data_size + 2,
@@ -721,6 +726,10 @@ ldns_dnssec_create_nsec_bitmap(ldns_rr_type rr_type_list[],
 		data = LDNS_XREALLOC(data,
 						 uint8_t,
 						 cur_data_size + cur_window_max + 3);
+                if(!data) {
+                        LDNS_FREE(bitmap);
+                        return NULL;
+                }
 		data[cur_data_size] = cur_window;
 		data[cur_data_size + 1] = cur_window_max + 1;
 		memcpy(data + cur_data_size + 2, cur_data, cur_window_max+1);
@@ -964,6 +973,10 @@ ldns_nsec3_hash_name(ldns_rdf *name,
 
 	hashed_owner_str_len = salt_length + ldns_rdf_size(cann);
 	hashed_owner_str = LDNS_XMALLOC(unsigned char, hashed_owner_str_len);
+        if(!hashed_owner_str) {
+	        ldns_rdf_deep_free(cann);
+                return NULL;
+        }
 	memcpy(hashed_owner_str, ldns_rdf_data(cann), ldns_rdf_size(cann));
 	memcpy(hashed_owner_str + ldns_rdf_size(cann), salt, salt_length);
 	ldns_rdf_deep_free(cann);
@@ -976,7 +989,6 @@ ldns_nsec3_hash_name(ldns_rdf *name,
 		hashed_owner_str_len = salt_length + LDNS_SHA1_DIGEST_LENGTH;
 		hashed_owner_str = LDNS_XMALLOC(unsigned char, hashed_owner_str_len);
 		if (!hashed_owner_str) {
-			fprintf(stderr, "Memory error\n");
 			return NULL;
 		}
 		memcpy(hashed_owner_str, hash, LDNS_SHA1_DIGEST_LENGTH);
@@ -990,6 +1002,9 @@ ldns_nsec3_hash_name(ldns_rdf *name,
 
 	hashed_owner_b32 = LDNS_XMALLOC(char,
                   ldns_b32_ntop_calculate_size(hashed_owner_str_len) + 1);
+        if(!hashed_owner_b32) {
+                return NULL;
+        }
         hashed_owner_b32_len = (size_t) ldns_b32_ntop_extended_hex(
                 (uint8_t *) hashed_owner_str,
                 hashed_owner_str_len,
@@ -1048,11 +1063,20 @@ ldns_nsec3_add_param_rdfs(ldns_rr *rr,
 	if (old) ldns_rdf_deep_free(old);
 
 	salt_data = LDNS_XMALLOC(uint8_t, salt_length + 1);
+        if(!salt_data) {
+                /* no way to return error */
+                return;
+        }
 	salt_data[0] = salt_length;
 	memcpy(salt_data + 1, salt, salt_length);
 	salt_rdf = ldns_rdf_new_frm_data(LDNS_RDF_TYPE_NSEC3_SALT,
 							   salt_length + 1,
 							   salt_data);
+        if(!salt_rdf) {
+                LDNS_FREE(salt_data);
+                /* no way to return error */
+                return;
+        }
 
 	old = ldns_rr_set_rdf(rr, salt_rdf, 3);
 	if (old) ldns_rdf_deep_free(old);
@@ -1228,6 +1252,7 @@ ldns_nsec3_salt_data(const ldns_rr *nsec3_rr)
 	if (salt_rdf && ldns_rdf_size(salt_rdf) > 0) {
 	    	salt_length = ldns_rdf_data(salt_rdf)[0];
 		salt = LDNS_XMALLOC(uint8_t, salt_length);
+                if(!salt) return NULL;
 		memcpy(salt, &ldns_rdf_data(salt_rdf)[1], salt_length);
 		return salt;
 	}
@@ -1538,25 +1563,35 @@ ldns_convert_dsa_rrsig_asn12rdf(const ldns_buffer *sig,
 					 (const unsigned char **)&dsasig_data,
 					 sig_len);
 	if (!dsasig) {
+                DSA_SIG_free(dsasig);
 		return NULL;
 	}
 
 	dsasig_data = LDNS_XMALLOC(unsigned char, 41);
+        if(!dsasig_data) {
+                DSA_SIG_free(dsasig);
+                return NULL;
+        }
 	dsasig_data[0] = 0;
 	byte_offset = (size_t) (20 - BN_num_bytes(dsasig->r));
 	if (byte_offset > 20) {
+                DSA_SIG_free(dsasig);
 		return NULL;
 	}
 	memset(&dsasig_data[1], 0, byte_offset);
 	BN_bn2bin(dsasig->r, &dsasig_data[1 + byte_offset]);
 	byte_offset = (size_t) (20 - BN_num_bytes(dsasig->s));
 	if (byte_offset > 20) {
+                DSA_SIG_free(dsasig);
 		return NULL;
 	}
 	memset(&dsasig_data[21], 0, byte_offset);
 	BN_bn2bin(dsasig->s, &dsasig_data[21 + byte_offset]);
 
 	sigdata_rdf = ldns_rdf_new(LDNS_RDF_TYPE_B64, 41, dsasig_data);
+        if(!sigdata_rdf) {
+                LDNS_FREE(dsasig_data);
+        }
 	DSA_SIG_free(dsasig);
 
 	return sigdata_rdf;

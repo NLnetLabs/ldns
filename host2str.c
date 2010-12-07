@@ -761,6 +761,10 @@ ldns_rdf2buffer_str_nsec3_salt(ldns_buffer *output, const ldns_rdf *rdf)
 
 	uint8_t *data = ldns_rdf_data(rdf);
 
+        if(ldns_rdf_size(rdf) == 0) {
+                output->_status = LDNS_STATUS_ERR;
+	        return ldns_buffer_status(output);
+        }
 	salt_length = data[0];
 	/* from now there are variable length entries so remember pos */
 	if (salt_length == 0 || ((size_t)salt_length)+1 > ldns_rdf_size(rdf)) {
@@ -887,6 +891,10 @@ ldns_rdf2buffer_str_int16_data(ldns_buffer *output, const ldns_rdf *rdf)
 	/* Subtract the size (2) of the number that specifies the length */
 	size_t size = ldns_b64_ntop_calculate_size(ldns_rdf_size(rdf) - 2);
 	char *b64 = LDNS_XMALLOC(char, size);
+        if(!b64) {
+                output->_status = LDNS_STATUS_MEM_ERR;
+                return ldns_buffer_status(output);
+        }
 
 	ldns_buffer_printf(output, "%u ", ldns_rdf_size(rdf) - 2);
 
@@ -932,16 +940,28 @@ ldns_rdf2buffer_str_ipseckey(ldns_buffer *output, const ldns_rdf *rdf)
 			break;
 		case 1:
 			gateway_data = LDNS_XMALLOC(uint8_t, LDNS_IP4ADDRLEN);
+                        if(!gateway_data)
+                                return LDNS_STATUS_MEM_ERR;
 			memcpy(gateway_data, &data[offset], LDNS_IP4ADDRLEN);
 			gateway = ldns_rdf_new(LDNS_RDF_TYPE_A, LDNS_IP4ADDRLEN , gateway_data);
 			offset += LDNS_IP4ADDRLEN;
+                        if(!gateway) {
+                                LDNS_FREE(gateway_data);
+                                return LDNS_STATUS_MEM_ERR;
+                        }
 			break;
 		case 2:
 			gateway_data = LDNS_XMALLOC(uint8_t, LDNS_IP6ADDRLEN);
+                        if(!gateway_data)
+                                return LDNS_STATUS_MEM_ERR;
 			memcpy(gateway_data, &data[offset], LDNS_IP6ADDRLEN);
 			offset += LDNS_IP6ADDRLEN;
 			gateway =
 				ldns_rdf_new(LDNS_RDF_TYPE_AAAA, LDNS_IP6ADDRLEN, gateway_data);
+                        if(!gateway) {
+                                LDNS_FREE(gateway_data);
+                                return LDNS_STATUS_MEM_ERR;
+                        }
 			break;
 		case 3:
 			status = ldns_wire2dname(&gateway, data, ldns_rdf_size(rdf), &offset);
@@ -955,8 +975,17 @@ ldns_rdf2buffer_str_ipseckey(ldns_buffer *output, const ldns_rdf *rdf)
 
 	public_key_size = ldns_rdf_size(rdf) - offset;
 	public_key_data = LDNS_XMALLOC(uint8_t, public_key_size);
+        if(!public_key_data) {
+                ldns_rdf_free(gateway);
+                return LDNS_STATUS_MEM_ERR;
+        }
 	memcpy(public_key_data, &data[offset], public_key_size);
 	public_key = ldns_rdf_new(LDNS_RDF_TYPE_B64, public_key_size, public_key_data);
+        if(!public_key) {
+                LDNS_FREE(public_key_data);
+                ldns_rdf_free(gateway);
+                return LDNS_STATUS_MEM_ERR;
+        }
 
 	ldns_buffer_printf(output, "%u %u %u ", precedence, gateway_type, algorithm);
     if (gateway)
@@ -1796,6 +1825,9 @@ ldns_buffer2str(ldns_buffer *buffer)
 
 	tmp_str = ldns_buffer_export(buffer);
 	str = LDNS_XMALLOC(char, strlen(tmp_str) + 1);
+        if(!str) {
+                return NULL;
+        }
 	memcpy(str, tmp_str, strlen(tmp_str) + 1);
 
 	return str;

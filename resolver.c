@@ -254,7 +254,9 @@ ldns_resolver_pop_nameserver(ldns_resolver *r)
 	pop = nameservers[ns_count - 1];
 
 	nameservers = LDNS_XREALLOC(nameservers, ldns_rdf *, (ns_count - 1));
+        if(!nameservers) return NULL;
 	rtt = LDNS_XREALLOC(rtt, size_t, (ns_count - 1));
+        if(!rtt) return NULL;
 
 	ldns_resolver_set_nameservers(r, nameservers);
 	ldns_resolver_set_rtt(r, rtt);
@@ -281,8 +283,12 @@ ldns_resolver_push_nameserver(ldns_resolver *r, ldns_rdf *n)
 
 	/* make room for the next one */
 	nameservers = LDNS_XREALLOC(nameservers, ldns_rdf *, (ns_count + 1));
+        if(!nameservers)
+                return LDNS_STATUS_MEM_ERR;
 	/* don't forget the rtt */
 	rtt = LDNS_XREALLOC(rtt, size_t, (ns_count + 1));
+        if(!rtt)
+                return LDNS_STATUS_MEM_ERR;
 
 	/* set the new value in the resolver */
 	ldns_resolver_set_nameservers(r, nameservers);
