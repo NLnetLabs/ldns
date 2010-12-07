@@ -67,7 +67,7 @@ ldns_tsig_prepare_pkt_wire(uint8_t *wire, size_t wire_len, size_t *result_len)
 	ldns_status status;
 
         if(wire_len < LDNS_HEADER_SIZE) {
-                return LDNS_STATUS_WIRE_INCOMPLETE_HEADER;
+                return NULL;
         }
 	/* fake parse the wire */
 	qd_count = LDNS_QDCOUNT(wire);
