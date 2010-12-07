@@ -650,10 +650,11 @@ ldns_tcp_send(uint8_t **result,  ldns_buffer *qbin, const struct sockaddr_storag
 	}
 
 	/* resize accordingly */
-	answer = (uint8_t*)LDNS_XREALLOC(answer, uint8_t *, (size_t)*answer_size);
-	*result = answer;
-        if(!answer)
+	*result = (uint8_t*)LDNS_XREALLOC(answer, uint8_t *, (size_t)*answer_size);
+        if(!*result) {
+                LDNS_FREE(answer);
                 return LDNS_STATUS_MEM_ERR;
+        }
 	return LDNS_STATUS_OK;
 }
 

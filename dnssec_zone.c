@@ -678,8 +678,12 @@ ldns_dnssec_zone_add_rr(ldns_dnssec_zone *zone, ldns_rr *rr)
 	if (!cur_node) {
 		/* add */
 		cur_name = ldns_dnssec_name_new_frm_rr(rr);
+                if(!cur_name) return LDNS_STATUS_MEM_ERR;
 		cur_node = LDNS_MALLOC(ldns_rbnode_t);
-                if(!cur_node) return LDNS_STATUS_MEM_ERR;
+                if(!cur_node) {
+                        ldns_dnssec_name_free(cur_name);
+                        return LDNS_STATUS_MEM_ERR;
+                }
 		cur_node->key = ldns_rr_owner(rr);
 		cur_node->data = cur_name;
 		ldns_rbtree_insert(zone->names, cur_node);

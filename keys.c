@@ -1211,10 +1211,9 @@ ldns_key_list_pop_key(ldns_key_list *key_list)
         
         /* shrink the array */
         a = LDNS_XREALLOC(key_list->_keys, ldns_key *, key_count - 1);
-        if(!a) {
-                return NULL;
+        if(a) {
+                key_list->_keys = a;
         }
-        key_list->_keys = a;
 
         ldns_key_list_set_key_count(key_list, key_count - 1);
 

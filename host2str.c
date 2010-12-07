@@ -891,10 +891,8 @@ ldns_rdf2buffer_str_int16_data(ldns_buffer *output, const ldns_rdf *rdf)
 	/* Subtract the size (2) of the number that specifies the length */
 	size_t size = ldns_b64_ntop_calculate_size(ldns_rdf_size(rdf) - 2);
 	char *b64 = LDNS_XMALLOC(char, size);
-        if(!b64) {
-                output->_status = LDNS_STATUS_MEM_ERR;
-                return ldns_buffer_status(output);
-        }
+        if(!b64)
+                return LDNS_STATUS_MEM_ERR;
 
 	ldns_buffer_printf(output, "%u ", ldns_rdf_size(rdf) - 2);
 
