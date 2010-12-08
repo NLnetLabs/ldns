@@ -109,17 +109,17 @@ ldns_rr_new_frm_str_internal(ldns_rr **newrr, const char *str,
 	ldns_rr *new;
 	const ldns_rr_descriptor *desc;
 	ldns_rr_type rr_type;
-	ldns_buffer *rr_buf;
-	ldns_buffer *rd_buf;
+	ldns_buffer *rr_buf = NULL;
+	ldns_buffer *rd_buf = NULL;
 	uint32_t ttl_val;
-	char  *owner;
-	char  *ttl;
+	char  *owner = NULL;
+	char  *ttl = NULL;
 	ldns_rr_class clas_val;
-	char  *clas;
+	char  *clas = NULL;
 	char  *type = NULL;
-	char  *rdata;
-	char  *rd;
-	char  *b64;
+	char  *rdata = NULL;
+	char  *rd = NULL;
+	char  *b64 = NULL;
 	size_t rd_strlen;
 	const char *delimiters;
 	ssize_t c;
@@ -258,7 +258,7 @@ ldns_rr_new_frm_str_internal(ldns_rr **newrr, const char *str,
 			if (!*prev) {
 				status = LDNS_STATUS_MEM_ERR;
 				ldns_buffer_free(rr_buf);
-				goto ldnstypeerror;
+				goto ldnserror;
 			}
 		}
 	} else {
@@ -275,14 +275,14 @@ ldns_rr_new_frm_str_internal(ldns_rr **newrr, const char *str,
 			if(!ldns_rr_owner(new)) {
 				status = LDNS_STATUS_MEM_ERR;
 				ldns_buffer_free(rr_buf);
-				goto ldnstypeerror;
+				goto ldnserror;
 			}
 		} else {
 			owner_dname = ldns_dname_new_frm_str(owner);
 			if (!owner_dname) {
 				status = LDNS_STATUS_SYNTAX_ERR;
 				ldns_buffer_free(rr_buf);
-				goto ldnstypeerror;
+				goto ldnserror;
 			}
 
 			ldns_rr_set_owner(new, owner_dname);
@@ -291,7 +291,7 @@ ldns_rr_new_frm_str_internal(ldns_rr **newrr, const char *str,
 							origin) != LDNS_STATUS_OK) {
 					status = LDNS_STATUS_SYNTAX_ERR;
 					ldns_buffer_free(rr_buf);
-					goto ldnstypeerror;
+					goto ldnserror;
 				}
 			}
 			if (prev) {
@@ -300,23 +300,27 @@ ldns_rr_new_frm_str_internal(ldns_rr **newrr, const char *str,
 				if(!*prev) {
 					status = LDNS_STATUS_MEM_ERR;
 					ldns_buffer_free(rr_buf);
-					goto ldnstypeerror;
+					goto ldnserror;
 				}
 			}
 		}
 	}
 	LDNS_FREE(owner);
+	owner = NULL;
 
 	ldns_rr_set_question(new, question);
 
 	ldns_rr_set_ttl(new, ttl_val);
 	LDNS_FREE(ttl);
+	ttl = NULL;
 
 	ldns_rr_set_class(new, clas_val);
 	LDNS_FREE(clas);
+	clas = NULL;
 
 	rr_type = ldns_get_rr_type_by_name(type);
 	LDNS_FREE(type);
+	type = NULL;
 
 	desc = ldns_rr_descript((uint16_t)rr_type);
 	ldns_rr_set_type(new, rr_type);
@@ -587,9 +591,8 @@ ldns_rr_new_frm_str_internal(ldns_rr **newrr, const char *str,
 	}
 	return LDNS_STATUS_OK;
 
-ldnstypeerror:
-	LDNS_FREE(type);
 ldnserror:
+	LDNS_FREE(type);
 	LDNS_FREE(owner);
 	LDNS_FREE(ttl);
 	LDNS_FREE(clas);
