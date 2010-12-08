@@ -1576,6 +1576,7 @@ ldns_convert_dsa_rrsig_asn12rdf(const ldns_buffer *sig,
 	byte_offset = (size_t) (20 - BN_num_bytes(dsasig->r));
 	if (byte_offset > 20) {
                 DSA_SIG_free(dsasig);
+                LDNS_FREE(dsasig_data);
 		return NULL;
 	}
 	memset(&dsasig_data[1], 0, byte_offset);
@@ -1583,6 +1584,7 @@ ldns_convert_dsa_rrsig_asn12rdf(const ldns_buffer *sig,
 	byte_offset = (size_t) (20 - BN_num_bytes(dsasig->s));
 	if (byte_offset > 20) {
                 DSA_SIG_free(dsasig);
+                LDNS_FREE(dsasig_data);
 		return NULL;
 	}
 	memset(&dsasig_data[21], 0, byte_offset);
