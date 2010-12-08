@@ -282,7 +282,11 @@ ldns_resolver_push_nameserver(ldns_resolver *r, ldns_rdf *n)
 	rtt = ldns_resolver_rtt(r);
 
 	/* make room for the next one */
-	nameservers = LDNS_XREALLOC(nameservers, ldns_rdf *, (ns_count + 1));
+	if (ns_count == 0) {
+		nameservers = LDNS_XMALLOC(ldns_rdf *, 1);
+	} else {
+		nameservers = LDNS_XREALLOC(nameservers, ldns_rdf *, (ns_count + 1));
+	}
         if(!nameservers)
                 return LDNS_STATUS_MEM_ERR;
 
@@ -290,7 +294,11 @@ ldns_resolver_push_nameserver(ldns_resolver *r, ldns_rdf *n)
 	ldns_resolver_set_nameservers(r, nameservers);
 
 	/* don't forget the rtt */
-	rtt = LDNS_XREALLOC(rtt, size_t, (ns_count + 1));
+	if (ns_count == 0) {
+		rtt = LDNS_XMALLOC(size_t, 1);
+	} else {
+		rtt = LDNS_XREALLOC(rtt, size_t, (ns_count + 1));
+	}
         if(!rtt)
                 return LDNS_STATUS_MEM_ERR;
 
@@ -333,6 +341,7 @@ ldns_resolver_push_nameserver_rr_list(ldns_resolver *r, ldns_rr_list *rrlist)
 			rr = ldns_rr_list_rr(rrlist, i);
 			if (ldns_resolver_push_nameserver_rr(r, rr) != LDNS_STATUS_OK) {
 				stat = LDNS_STATUS_ERR;
+				break;
 			}
 		}
 		return stat;
