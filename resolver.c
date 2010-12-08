@@ -1079,6 +1079,8 @@ ldns_resolver_prepare_query_pkt(ldns_pkt **query_pkt, ldns_resolver *r,
                                 const ldns_rdf *name, ldns_rr_type t,
                                 ldns_rr_class c, uint16_t flags)
 {
+	struct timeval now;
+
 	/* prepare a question pkt from the parameters
 	 * and then send this */
 	*query_pkt = ldns_pkt_query_new(ldns_rdf_clone(name), t, c, flags);
@@ -1101,6 +1103,12 @@ ldns_resolver_prepare_query_pkt(ldns_pkt **query_pkt, ldns_resolver *r,
 	if (ldns_resolver_edns_udp_size(r) != 0) {
 		ldns_pkt_set_edns_udp_size(*query_pkt, ldns_resolver_edns_udp_size(r));
 	}
+
+	/* set the timestamp */
+	now.tv_sec = time(NULL);
+	now.tv_usec = 0;
+	ldns_pkt_set_timestamp(*query_pkt, now);
+
 
 	if (ldns_resolver_debug(r)) {
 		ldns_pkt_print(stdout, *query_pkt);
