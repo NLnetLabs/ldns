@@ -6,6 +6,7 @@
 	  Justin Ferguson).
 	* Drill: Print both SHA-1 and SHA-256 corresponding DS records.
 	* Print correct WHEN in query packet (is not always 1-1-1970)
+	* ldns-test-edns: new example tool that detects EDNS support.
 
 1.6.7	2010-11-08
 	* EXPERIMENTAL ecdsa implementation, please do not enable on real

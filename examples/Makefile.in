@@ -46,6 +46,7 @@ MAIN_SOURCES = ldns-read-zone.c \
 		  ldns-zcat.c \
 		  ldns-dpa.c \
 		  ldns-resolver.c \
+		  ldns-test-edns.c \
 		  ldns-keyfetcher.c \
 		  ldns-notify.c \
 		  ldns-testns.c \
