@@ -1164,8 +1164,8 @@ ldns_resolver_send(ldns_pkt **answer, ldns_resolver *r, const ldns_rdf *name,
 	  Jelte
 	  should this go in pkt_prepare?
 	*/
-#ifdef HAVE_SSL
 	if (ldns_resolver_tsig_keyname(r) && ldns_resolver_tsig_keydata(r)) {
+#ifdef HAVE_SSL
 		status = ldns_pkt_tsig_sign(query_pkt,
 		                            ldns_resolver_tsig_keyname(r),
 		                            ldns_resolver_tsig_keydata(r),
@@ -1173,10 +1173,10 @@ ldns_resolver_send(ldns_pkt **answer, ldns_resolver *r, const ldns_rdf *name,
 		if (status != LDNS_STATUS_OK) {
 			return LDNS_STATUS_CRYPTO_TSIG_ERR;
 		}
-	}
 #else
-	return LDNS_STATUS_CRYPTO_TSIG_ERR;
+	        return LDNS_STATUS_CRYPTO_TSIG_ERR;
 #endif /* HAVE_SSL */
+	}
 
 	status = ldns_resolver_send_pkt(&answer_pkt, r, query_pkt);
 	ldns_pkt_free(query_pkt);
