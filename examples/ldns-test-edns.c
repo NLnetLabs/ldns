@@ -213,6 +213,12 @@ int
 main(int argc, char **argv)
 {
 	int i, r;
+#ifdef USE_WINSOCK
+	WSADATA wsa_data;
+	if(WSAStartup(MAKEWORD(2,2), &wsa_data) != 0) {
+		printf("WSAStartup failed\n"); exit(1);
+	}
+#endif
 	if (argc < 2 || strncmp(argv[1], "-h", 3) == 0) {
 		printf("Usage: ldns-test-edns {ip address}\n");
 		printf("Tests if the DNS cache at IP address supports EDNS.\n");
