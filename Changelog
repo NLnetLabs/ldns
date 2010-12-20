@@ -8,6 +8,7 @@
 	* Print correct WHEN in query packet (is not always 1-1-1970)
 	* ldns-test-edns: new example tool that detects EDNS support.
 	* fix ldns_resolver_send without openssl.
+	* bugfix #342: patch for support for more CERT key types (RFC4398).
 
 1.6.7	2010-11-08
 	* EXPERIMENTAL ecdsa implementation, please do not enable on real

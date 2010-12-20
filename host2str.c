@@ -63,13 +63,18 @@ ldns_lookup_table ldns_algorithms[] = {
         { 0, NULL }
 };
 
-/* Taken from RFC 2538  */
+/* Taken from RFC 4398  */
 ldns_lookup_table ldns_cert_algorithms[] = {
         { LDNS_CERT_PKIX, "PKIX" },
-	{ LDNS_CERT_SPKI, "SPKI" },
-	{ LDNS_CERT_PGP, "PGP" },
-	{ LDNS_CERT_URI, "URI" },
-	{ LDNS_CERT_OID, "OID" },
+        { LDNS_CERT_SPKI, "SPKI" },
+        { LDNS_CERT_PGP, "PGP" },
+        { LDNS_CERT_IPKIX, "IPKIX" },
+        { LDNS_CERT_ISPKI, "ISPKI" },
+        { LDNS_CERT_IPGP, "IPGP" },
+        { LDNS_CERT_ACPKIX, "ACPKIX" },
+        { LDNS_CERT_IACPKIX, "IACPKIX" },
+        { LDNS_CERT_URI, "URI" },
+        { LDNS_CERT_OID, "OID" },
         { 0, NULL }
 };
 
