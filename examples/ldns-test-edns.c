@@ -12,6 +12,9 @@
 #include "errno.h"
 #include <ldns/ldns.h>
 
+/** print error details */
+static int verb = 1;
+
 /** parse IP address */
 static int
 convert_addr(char* str, int p, struct sockaddr_storage* addr, socklen_t* len)
@@ -35,7 +38,7 @@ convert_addr(char* str, int p, struct sockaddr_storage* addr, socklen_t* len)
 #ifdef AF_INET6
 	}
 #endif
-	printf("error: cannot parse IP address %s\n", str);
+	if(verb) printf("error: cannot parse IP address %s\n", str);
 	return 0;
 }
 
@@ -48,19 +51,19 @@ make_query(char* nm, int tp)
 	ldns_pkt* p;
 	ldns_status s;
 	if(!b) {
-		printf("error: out of memory\n");
+		if(verb) printf("error: out of memory\n");
 		return NULL;
 	}
 
 	s = ldns_pkt_query_new_frm_str(&p, nm, tp, LDNS_RR_CLASS_IN,
 		LDNS_RD|LDNS_CD);
 	if(s != LDNS_STATUS_OK) {
-		printf("error: %s\n", ldns_get_errorstr_by_id(s));
+		if(verb) printf("error: %s\n", ldns_get_errorstr_by_id(s));
 		ldns_buffer_free(b);
 		return NULL;
 	}
 	if(!p) {
-		printf("error: out of memory\n");
+		if(verb) printf("error: out of memory\n");
 		ldns_buffer_free(b);
 		return NULL;
 	}
@@ -69,7 +72,7 @@ make_query(char* nm, int tp)
 	ldns_pkt_set_edns_udp_size(p, 4096);
 	ldns_pkt_set_id(p, ldns_get_random());
 	if( (s=ldns_pkt2buffer_wire(b, p)) != LDNS_STATUS_OK) {
-		printf("error: %s\n", ldns_get_errorstr_by_id(s));
+		if(verb) printf("error: %s\n", ldns_get_errorstr_by_id(s));
 		ldns_pkt_free(p);
 		ldns_buffer_free(b);
 		return NULL;
@@ -109,11 +112,11 @@ get_packet(struct sockaddr_storage* addr, socklen_t len, char* nm, int tp,
 	}
 	ldns_buffer_free(qbin);
 	if(tries == 4) {
-		printf("timeout\n");
+		if(verb) printf("timeout\n");
 		return 0;
 	}
 	if(s != LDNS_STATUS_OK) {
-		printf("error: %s\n", ldns_get_errorstr_by_id(s));
+		if(verb) printf("error: %s\n", ldns_get_errorstr_by_id(s));
 		return 0;
 	}
 	return 1;
@@ -126,7 +129,7 @@ check_type_in_answer(ldns_pkt* p, int t)
 	ldns_rr_list *l = ldns_pkt_rr_list_by_type(p, t, LDNS_SECTION_ANSWER);
 	if(!l) {
 		char* s = ldns_rr_type2str(t);
-		printf("no DNSSEC %s\n", s?s:"(out of memory)");
+		if(verb) printf("no DNSSEC %s\n", s?s:"(out of memory)");
 		LDNS_FREE(s);
 		return 0;
 	}
@@ -142,18 +145,18 @@ check_packet(uint8_t* wire, size_t len, int tp)
 	ldns_rr_list* l;
 	ldns_status s;
 	if( (s=ldns_wire2pkt(&p, wire, len)) != LDNS_STATUS_OK) {
-		printf("error: %s\n", ldns_get_errorstr_by_id(s));
+		if(verb) printf("error: %s\n", ldns_get_errorstr_by_id(s));
 		goto failed;
 	}
 	if(!p) {
-		printf("error: out of memory\n");
+		if(verb) printf("error: out of memory\n");
 		goto failed;
 	}
 
 	/* does DNS work? */
 	if(ldns_pkt_get_rcode(p) != LDNS_RCODE_NOERROR) {
 		char* r = ldns_pkt_rcode2str(ldns_pkt_get_rcode(p));
-		printf("no answer, %s\n", r?r:"(out of memory)");
+		if(verb) printf("no answer, %s\n", r?r:"(out of memory)");
 		LDNS_FREE(r);
 		goto failed;
 	}
@@ -164,7 +167,7 @@ check_packet(uint8_t* wire, size_t len, int tp)
 	 * same additional RRs as before means no EDNS OPT */
 	if(LDNS_ARCOUNT(wire) == 0 ||
 		ldns_pkt_arcount(p) == LDNS_ARCOUNT(wire)) {
-		printf("no EDNS\n");
+		if(verb) printf("no EDNS\n");
 		goto failed;
 	}
 
@@ -185,14 +188,14 @@ failed:
 
 /** check EDNS at this IP and port */
 static int
-check_edns_ip(char* ip, int port)
+check_edns_ip(char* ip, int port, int info)
 {
 	struct sockaddr_storage addr;
 	socklen_t len = 0;
 	uint8_t* wire;
 	size_t wlen;
 	memset(&addr, 0, sizeof(addr));
-	printf("%s ", ip);
+	if(verb) printf("%s ", ip);
 	if(!convert_addr(ip, port, &addr, &len))
 		return 2;
 	/* try to send 3 times to the IP address, test root key */
@@ -205,14 +208,15 @@ check_edns_ip(char* ip, int port)
 		return 2;
 	if(!check_packet(wire, wlen, LDNS_RR_TYPE_DS))
 		return 1;
-	printf("OK\n");
+	if(verb) printf("OK\n");
+	if(info) printf(" %s", ip);
 	return 0;
 }
 
 int
 main(int argc, char **argv)
 {
-	int i, r;
+	int i, r, info=0, ok=0;
 #ifdef USE_WINSOCK
 	WSADATA wsa_data;
 	if(WSAStartup(MAKEWORD(2,2), &wsa_data) != 0) {
@@ -220,14 +224,24 @@ main(int argc, char **argv)
 	}
 #endif
 	if (argc < 2 || strncmp(argv[1], "-h", 3) == 0) {
-		printf("Usage: ldns-test-edns {ip address}\n");
+		printf("Usage: ldns-test-edns [-i] {ip address}\n");
 		printf("Tests if the DNS cache at IP address supports EDNS.\n");
 		printf("if it works, print IP address OK.\n");
+		printf("-i: print IPs that are OK or print 'off'.\n");
 		printf("exit value, last IP is 0:OK, 1:fail, 2:net error.\n");
 		exit(1);
 	}
+	if(strcmp(argv[1], "-i") == 0) {
+		info = 1;
+		verb = 0;
+	}
 
-	for(i=1; i<argc; i++)
-		r = check_edns_ip(argv[i], LDNS_PORT);
+	for(i=1+info; i<argc; i++) {
+		r = check_edns_ip(argv[i], LDNS_PORT, info);
+		if(r == 0)
+			ok++;
+	}
+	if(info && !ok)
+		printf("off\n");
 	return r;
 }
