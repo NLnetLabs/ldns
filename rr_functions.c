@@ -276,7 +276,7 @@ ldns_rr_dnskey_key_size_raw(const unsigned char* keydata,
 	uint16_t exp;
 	uint16_t int16;
 	
-	switch (alg) {
+	switch ((ldns_signing_algorithm)alg) {
 	case LDNS_SIGN_DSA:
 	case LDNS_SIGN_DSA_NSEC3:
 		if (len > 0) {

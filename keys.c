@@ -477,7 +477,6 @@ ldns_key_new_frm_fp_l(ldns_key **key, FILE *fp, int *line_nr)
 			}
 			break;
 #endif
-		case 0:
 		default:
 			ldns_key_free(k);
 			return LDNS_STATUS_SYNTAX_ALG_ERR;
@@ -897,9 +896,9 @@ ldns_key_new_frm_algorithm(ldns_signing_algorithm alg, uint16_t size)
 #ifdef USE_ECDSA
                 case LDNS_ECDSAP256SHA256:
                 case LDNS_ECDSAP384SHA384:
-                        if(alg == LDNS_ECDSAP256SHA256)
+                        if(alg == LDNS_SIGN_ECDSAP256SHA256)
                                 ec = EC_KEY_new_by_curve_name(NID_X9_62_prime256v1);
-                        else if(alg == LDNS_ECDSAP384SHA384)
+                        else if(alg == LDNS_SIGN_ECDSAP384SHA384)
                                 ec = EC_KEY_new_by_curve_name(NID_secp384r1);
                         if(!ec) {
                                 ldns_key_free(k);
