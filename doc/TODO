@@ -6,12 +6,11 @@ Features:
 * HMAC and MD5 without OpenSSL
 * HIP RR support
 * Parse 'search' attribute in /etc/resolv.conf
-* Make use of automake
-* ./configure --with-tools --with-drill
+* Make use of automake (Bug #173)
+* ./configure --with-tools --with-drill (Bug #264)
+* Drill: print appropriate DS RRs (relates to Bug #355)
 
 Bugfixes:
-* Bug #173 
-* Bug #264
 * Bug #279: fix return values for net.h functions, and related: make return
   values for functions that cannot return memory-failure today. Needs medium
   version increase because of API change.

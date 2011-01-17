@@ -4,7 +4,8 @@
 	  NSEC with many types and max parse length in hosts_frm_fp routine
 	  and off by one in read_anchor_file routine (thanks Dan Kaminsky and
 	  Justin Ferguson).
-	* Drill: Print both SHA-1 and SHA-256 corresponding DS records.
+	* bugfix #355: Drill: Print both SHA-1 and SHA-256 corresponding DS
+	  records.
 	* Print correct WHEN in query packet (is not always 1-1-1970)
 	* ldns-test-edns: new example tool that detects EDNS support.
 	* fix ldns_resolver_send without openssl.
