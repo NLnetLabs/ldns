@@ -12,6 +12,8 @@ Features:
 Bugfixes:
 * Bug #173 
 * Bug #264
-* Bug #279
+* Bug #279: fix return values for net.h functions, and related: make return
+  values for functions that cannot return memory-failure today. Needs medium
+  version increase because of API change.
 * Long out-standing packaging bugs (debian)
 * Lazy ABI
