@@ -9,6 +9,7 @@ Features:
 * Make use of automake (Bug #173)
 * ./configure --with-tools --with-drill (Bug #264)
 * Drill: print appropriate DS RRs (relates to Bug #355)
+* ldns-signzone optout to be really optout
 
 Bugfixes:
 * Bug #279: fix return values for net.h functions, and related: make return
