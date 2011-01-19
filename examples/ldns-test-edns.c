@@ -142,7 +142,6 @@ static int
 check_packet(uint8_t* wire, size_t len, int tp)
 {
 	ldns_pkt *p = NULL;
-	ldns_rr_list* l;
 	ldns_status s;
 	if( (s=ldns_wire2pkt(&p, wire, len)) != LDNS_STATUS_OK) {
 		if(verb) printf("error: %s\n", ldns_get_errorstr_by_id(s));
