@@ -305,6 +305,11 @@ ldns_udp_send(uint8_t **result, ldns_buffer *qbin, const struct sockaddr_storage
 		return LDNS_STATUS_NETWORK_ERR;
 	}
 
+        /* set to nonblocking, so if the checksum is bad, it becomes
+         * an EGAIN error and the ldns_udp_send function does not block,
+         * but returns a 'NETWORK_ERROR' much like a timeout. */
+        ldns_sock_nonblock(sockfd);
+
 	answer = ldns_udp_read_wire(sockfd, answer_size, NULL, NULL);
 #ifndef USE_WINSOCK
 	close(sockfd);
