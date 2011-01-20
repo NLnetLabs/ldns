@@ -24,7 +24,19 @@ COMPILE         = $(CC) $(CPPFLAGS) $(CFLAGS) -I. -I$(srcdir)
 LINK            = $(CC) $(CFLAGS) $(LDFLAGS) 
 
 LINT            = splint
-LINTFLAGS       = +quiet -weak -warnposix -unrecog -Din_addr_t=uint32_t -Du_int=unsigned -Du_char=uint8_t -D__signed__=signed -I../ -fixedformalarray
+LINTFLAGS=+quiet -weak -warnposix -unrecog -Din_addr_t=uint32_t -Du_int=unsigned -Du_char=uint8_t -preproc -Drlimit=rlimit64 -D__gnuc_va_list=va_list
+#-Dglob64=glob -Dglobfree64=globfree
+# compat with openssl linux edition.
+LINTFLAGS+="-DBN_ULONG=unsigned long" -Dkrb5_int32=int "-Dkrb5_ui_4=unsigned int" -DPQ_64BIT=uint64_t -DRC4_INT=unsigned -fixedformalarray -D"ENGINE=unsigned" -D"RSA=unsigned" -D"DSA=unsigned" -D"EVP_PKEY=unsigned" -D"EVP_MD=unsigned" -D"SSL=unsigned" -D"SSL_CTX=unsigned" -D"X509=unsigned" -D"RC4_KEY=unsigned" -D"EVP_MD_CTX=unsigned"
+# compat with NetBSD
+ifeq "$(shell uname)" "NetBSD"
+LINTFLAGS+="-D__RENAME(x)=" -D_NETINET_IN_H_
+endif
+# compat with OpenBSD
+LINTFLAGS+="-Dsigset_t=long"
+# FreeBSD8
+LINTFLAGS+="-D__uint16_t=uint16_t"
+LINTFLAGS+=-D__signed__=signed
 
 OBJ=drill.o drill_util.o error.o root.o work.o chasetrace.o dnssec.o securetrace.o
 SRC=$(OBJ:.o=.c)
@@ -97,7 +109,7 @@ uninstall:
 
 lint:
 	@for i in $(SRC) ; do \
-                $(LINT) $(LINTFLAGS) -I$(srcdir) $(srcdir)/$$i ; \
+                $(LINT) $(LINTFLAGS) $(CPPFLAGS) -I$(srcdir) $(srcdir)/$$i ; \
                 if [ $$? -ne 0 ] ; then exit 1 ; fi ; \
         done
 
