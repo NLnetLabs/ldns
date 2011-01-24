@@ -1,4 +1,4 @@
-1.6.8
+1.6.8	2011-01-24
 	* Fix ldns zone, so that $TTL definition match RFC 2308.
 	* Fix lots of missing checks on allocation failures and parse of 
 	  NSEC with many types and max parse length in hosts_frm_fp routine
@@ -11,6 +11,7 @@
 	* fix ldns_resolver_send without openssl.
 	* bugfix #342: patch for support for more CERT key types (RFC4398).
 	* bugfix #351: fix udp_send hang if UDP checksum error.
+	* fix set_bit (from NSEC3 sign) patch from Jan Komissar.
 
 1.6.7	2010-11-08
 	* EXPERIMENTAL ecdsa implementation, please do not enable on real
