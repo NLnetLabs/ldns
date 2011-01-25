@@ -272,7 +272,7 @@ ldns_rdf2buffer_str_dname(ldns_buffer *output, const ldns_rdf *dname)
 							data[src_pos]);
 				} else if (!isgraph((int) data[src_pos])) {
 					ldns_buffer_printf(output, "\\%03u",
-							data[src_pos]);
+						        data[src_pos]);
 				} else {
 					ldns_buffer_printf(output, "%c", data[src_pos]);
 				}
@@ -367,7 +367,8 @@ ldns_rdf2buffer_str_str(ldns_buffer *output, const ldns_rdf *rdf)
 			else
 				ldns_buffer_printf(output, "%c", ch);
 		} else {
-			ldns_buffer_printf(output, "\\%03u", (unsigned) ch);
+			ldns_buffer_printf(output, "\\%03u",
+                                (unsigned)(uint8_t) ch);
 		}
 	}
 	ldns_buffer_printf(output, "\"");

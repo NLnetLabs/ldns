@@ -1,4 +1,7 @@
-1.6.8
+1.6.9
+	* Fix printout of escaped binary in TXT records.
+
+1.6.8	2011-01-24
 	* Fix ldns zone, so that $TTL definition match RFC 2308.
 	* Fix lots of missing checks on allocation failures and parse of 
 	  NSEC with many types and max parse length in hosts_frm_fp routine
