@@ -780,7 +780,7 @@ ldns_dnssec_create_nsec(ldns_dnssec_name *from,
                         ldns_rr_type nsec_type)
 {
 	ldns_rr *nsec_rr;
-	ldns_rr_type types[65535];
+	ldns_rr_type types[65536];
 	size_t type_count = 0;
 	ldns_dnssec_rrsets *cur_rrsets;
 
@@ -800,9 +800,13 @@ ldns_dnssec_create_nsec(ldns_dnssec_name *from,
 			cur_rrsets = cur_rrsets->next;
 			continue;
 		}
-		types[type_count] = cur_rrsets->type;
-		type_count++;
+		if (cur_rrsets->type != LDNS_RR_TYPE_RRSIG &&
+		    cur_rrsets->type != LDNS_RR_TYPE_NSEC) {
+			types[type_count] = cur_rrsets->type;
+			type_count++;
+		}
 		cur_rrsets = cur_rrsets->next;
+
 	}
 	types[type_count] = LDNS_RR_TYPE_RRSIG;
 	type_count++;
@@ -827,7 +831,7 @@ ldns_dnssec_create_nsec3(ldns_dnssec_name *from,
 					uint8_t *salt)
 {
 	ldns_rr *nsec_rr;
-	ldns_rr_type types[65535];
+	ldns_rr_type types[65536];
 	size_t type_count = 0;
 	ldns_dnssec_rrsets *cur_rrsets;
 	ldns_status status;
@@ -863,8 +867,10 @@ ldns_dnssec_create_nsec3(ldns_dnssec_name *from,
 			cur_rrsets = cur_rrsets->next;
 			continue;
 		}
-		types[type_count] = cur_rrsets->type;
-		type_count++;
+		if (cur_rrsets->type != LDNS_RR_TYPE_RRSIG) {
+			types[type_count] = cur_rrsets->type;
+			type_count++;
+		}
 		cur_rrsets = cur_rrsets->next;
 	}
 	/* always add rrsig type if this is not an unsigned
@@ -909,7 +915,7 @@ ldns_create_nsec(ldns_rdf *cur_owner, ldns_rdf *next_owner, ldns_rr_list *rrs)
 	uint16_t i_type;
 
 	ldns_rr *nsec = NULL;
-    ldns_rr_type i_type_list[65535];
+	ldns_rr_type i_type_list[65536];
 	int type_count = 0;
 
 	nsec = ldns_rr_new();
@@ -922,9 +928,11 @@ ldns_create_nsec(ldns_rdf *cur_owner, ldns_rdf *next_owner, ldns_rr_list *rrs)
 		if (ldns_rdf_compare(cur_owner,
 						 ldns_rr_owner(i_rr)) == 0) {
 			i_type = ldns_rr_get_type(i_rr);
-			if (type_count == 0 || i_type_list[type_count-1] != i_type) {
-				i_type_list[type_count] = i_type;
-				type_count++;
+			if (i_type != LDNS_RR_TYPE_RRSIG && i_type != LDNS_RR_TYPE_NSEC) {
+				if (type_count == 0 || i_type_list[type_count-1] != i_type) {
+					i_type_list[type_count] = i_type;
+					type_count++;
+				}
 			}
 		}
 	}
