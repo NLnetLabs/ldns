@@ -968,6 +968,11 @@ ldns_nsec3_hash_name(ldns_rdf *name,
 	unsigned char hash[LDNS_SHA1_DIGEST_LENGTH];
 	ldns_status status;
 
+	/* TODO: mnemonic list for hash algs SHA-1, default to 1 now (sha1) */
+	if (algorithm != LDNS_SHA1) {
+		return NULL;
+        }
+
 	/* prepare the owner name according to the draft section bla */
 	cann = ldns_rdf_clone(name);
 	if(!cann) {
@@ -975,9 +980,6 @@ ldns_nsec3_hash_name(ldns_rdf *name,
 		return NULL;
 	}
 	ldns_dname2canonical(cann);
-
-	/* TODO: mnemonic list for hash algs SHA-1, default to 1 now (sha1) */
-	algorithm = algorithm;
 
 	hashed_owner_str_len = salt_length + ldns_rdf_size(cann);
 	hashed_owner_str = LDNS_XMALLOC(unsigned char, hashed_owner_str_len);
