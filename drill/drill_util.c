@@ -125,7 +125,7 @@ print_ds_of_keys(ldns_pkt *p)
 	if (keys) {
 		for (i = 0; i < ldns_rr_list_rr_count(keys); i++) {
 			fprintf(stdout, ";\n; equivalent DS records for key %u:\n",
-				ldns_calc_keytag(ldns_rr_list_rr(keys, i)));
+				(unsigned)ldns_calc_keytag(ldns_rr_list_rr(keys, i)));
 
 			ds = ldns_key_rr2ds(ldns_rr_list_rr(keys, i), LDNS_SHA1);
 			local_print_ds(stdout, "; sha1: ", ds);
