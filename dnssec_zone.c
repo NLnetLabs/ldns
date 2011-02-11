@@ -320,7 +320,10 @@ ldns_dnssec_name_new_frm_rr(ldns_rr *rr)
 	ldns_dnssec_name *new_name = ldns_dnssec_name_new();
 
 	new_name->name = ldns_rr_owner(rr);
-	ldns_dnssec_name_add_rr(new_name, rr);
+	if(ldns_dnssec_name_add_rr(new_name, rr) != LDNS_STATUS_OK) {
+		ldns_dnssec_name_free(new_name);
+		return NULL;
+	}
 
 	return new_name;
 }
@@ -458,7 +461,7 @@ ldns_dnssec_name_add_rr(ldns_dnssec_name *name,
 	} else if (typecovered == LDNS_RR_TYPE_NSEC ||
 			 typecovered == LDNS_RR_TYPE_NSEC3) {
 		if (name->nsec_signatures) {
-			ldns_dnssec_rrs_add_rr(name->nsec_signatures, rr);
+			result = ldns_dnssec_rrs_add_rr(name->nsec_signatures, rr);
 		} else {
 			name->nsec_signatures = ldns_dnssec_rrs_new();
 			name->nsec_signatures->rr = rr;
@@ -513,15 +516,6 @@ ldns_dnssec_zone_find_rrset(ldns_dnssec_zone *zone,
 									type);
 	} else {
 		return NULL;
-	}
-}
-
-static inline void
-print_indent(FILE *out, int c)
-{
-	int i;
-	for (i=0; i<c; i++) {
-		fprintf(out, "    ");
 	}
 }
 
@@ -686,10 +680,10 @@ ldns_dnssec_zone_add_rr(ldns_dnssec_zone *zone, ldns_rr *rr)
                 }
 		cur_node->key = ldns_rr_owner(rr);
 		cur_node->data = cur_name;
-		ldns_rbtree_insert(zone->names, cur_node);
+		(void)ldns_rbtree_insert(zone->names, cur_node);
 	} else {
 		cur_name = (ldns_dnssec_name *) cur_node->data;
-		ldns_dnssec_name_add_rr(cur_name, rr);
+		result = ldns_dnssec_name_add_rr(cur_name, rr);
 	}
 
 	if (result != LDNS_STATUS_OK) {
@@ -793,9 +787,9 @@ ldns_dnssec_zone_add_empty_nonterminals(ldns_dnssec_zone *zone)
 		 * label in the current name (counting from the end)
 		 */
 		for (i = 1; i < next_label_count - soa_label_count; i++) {
-			lpos = cur_label_count - next_label_count + i;
+			lpos = (int)cur_label_count - (int)next_label_count + (int)i;
 			if (lpos >= 0) {
-				l1 = ldns_dname_label(cur_name, lpos);
+				l1 = ldns_dname_label(cur_name, (uint8_t)lpos);
 			} else {
 				l1 = NULL;
 			}
@@ -823,7 +817,7 @@ ldns_dnssec_zone_add_empty_nonterminals(ldns_dnssec_zone *zone)
 				}
 				new_node->key = new_name->name;
 				new_node->data = new_name;
-				ldns_rbtree_insert(zone->names, new_node);
+				(void)ldns_rbtree_insert(zone->names, new_node);
 			}
 			ldns_rdf_deep_free(l1);
 			ldns_rdf_deep_free(l2);

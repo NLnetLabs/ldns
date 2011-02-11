@@ -1536,7 +1536,7 @@ ldns_gost2pkey_raw(unsigned char* key, size_t keylen)
 	memmove(encoded+37, key, 64);
 	pp = (unsigned char*)&encoded[0];
 
-	return d2i_PUBKEY(NULL, &pp, sizeof(encoded));
+	return d2i_PUBKEY(NULL, &pp, (int)sizeof(encoded));
 }
 
 static ldns_status
@@ -1585,7 +1585,7 @@ ldns_ecdsa2pkey_raw(unsigned char* key, size_t keylen, uint8_t algo)
 	 * of openssl) for uncompressed data */
 	buf[0] = POINT_CONVERSION_UNCOMPRESSED;
 	memmove(buf+1, key, keylen);
-        if(!o2i_ECPublicKey(&ec, &pp, keylen+1)) {
+        if(!o2i_ECPublicKey(&ec, &pp, (int)keylen+1)) {
                 EC_KEY_free(ec);
                 return NULL;
         }

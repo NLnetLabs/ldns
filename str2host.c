@@ -135,7 +135,7 @@ ldns_str2rdf_nsec3_salt(ldns_rdf **rd, const char *salt_str)
 		return LDNS_STATUS_NULL;
 	}
 
-	salt_length_str = strlen(salt_str);
+	salt_length_str = (int)strlen(salt_str);
 	if (salt_length_str == 1 && salt_str[0] == '-') {
 		salt_length_str = 0;
 	} else if (salt_length_str % 2 != 0) {
@@ -1191,13 +1191,13 @@ ldns_str2rdf_ipseckey(ldns_rdf **rd, const char *str)
 	while(ldns_bget_token(str_buf, token, "\t\n ", strlen(str)) > 0) {
 		switch (token_count) {
 				case 0:
-					precedence = atoi(token);
+					precedence = (uint8_t)atoi(token);
 					break;
 				case 1:
-					gateway_type = atoi(token);
+					gateway_type = (uint8_t)atoi(token);
 					break;
 				case 2:
-					algorithm = atoi(token);
+					algorithm = (uint8_t)atoi(token);
 					break;
 				case 3:
 					gateway = strdup(token);
@@ -1264,9 +1264,9 @@ ldns_str2rdf_ipseckey(ldns_rdf **rd, const char *str)
 
 	/* now copy all into one ipseckey rdf */
 	if (gateway_type)
-		ipseckey_len = 3 + ldns_rdf_size(gateway_rdf) + ldns_rdf_size(publickey_rdf);
+		ipseckey_len = 3 + (int)ldns_rdf_size(gateway_rdf) + (int)ldns_rdf_size(publickey_rdf);
 	else
-		ipseckey_len = 3 + ldns_rdf_size(publickey_rdf);
+		ipseckey_len = 3 + (int)ldns_rdf_size(publickey_rdf);
 
 	data = LDNS_XMALLOC(uint8_t, ipseckey_len);
 	if(!data) {

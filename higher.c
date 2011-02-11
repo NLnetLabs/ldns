@@ -212,7 +212,7 @@ ldns_get_rr_list_hosts_frm_fp_l(FILE *fp, int *line_nr)
 						break;
 					}
 				}
-				strlcpy(addr, word, LDNS_MAX_LINELEN+1);
+				(void)strlcpy(addr, word, LDNS_MAX_LINELEN+1);
 			} else {
 				/* la al la la */
 				if (ip6) {

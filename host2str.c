@@ -823,11 +823,11 @@ ldns_rdf2buffer_str_apl(ldns_buffer *output, const ldns_rdf *rdf)
 	uint8_t prefix;
 	bool negation;
 	uint8_t adf_length;
-	unsigned short i;
-	unsigned int pos = 0;
+	size_t i;
+	size_t pos = 0;
 
 	while (pos < (unsigned int) ldns_rdf_size(rdf)) {
-                if(pos + 3 >= ldns_rdf_size(rdf))
+                if(pos + 3 >= (unsigned)ldns_rdf_size(rdf))
                         return LDNS_STATUS_SYNTAX_RDATA_ERR;
 		address_family = ldns_read_uint16(&data[pos]);
 		prefix = data[pos + 2];
@@ -1431,7 +1431,7 @@ ldns_gost_key2buffer_str(ldns_buffer *output, EVP_PKEY *p)
 	ldns_buffer_printf(output, "GostAsn1: ");
 
 	ret = i2d_PrivateKey(p, &pp);
-	b64_bignum = ldns_rdf_new_frm_data(LDNS_RDF_TYPE_B64, ret, pp);
+	b64_bignum = ldns_rdf_new_frm_data(LDNS_RDF_TYPE_B64, (size_t)ret, pp);
 	status = ldns_rdf2buffer_str(output, b64_bignum);
 
 	ldns_rdf_deep_free(b64_bignum);
@@ -1446,11 +1446,13 @@ ldns_key2buffer_str(ldns_buffer *output, const ldns_key *k)
 {
 	ldns_status status = LDNS_STATUS_OK;
 	unsigned char  *bignum;
+#ifndef S_SPLINT_S
+	uint16_t i;
+#endif
 
 #ifdef HAVE_SSL
 	/* not used when ssl is not defined */
 	ldns_rdf *b64_bignum = NULL;
-	uint16_t i;
 
 	RSA *rsa;
 	DSA *dsa;
@@ -1520,6 +1522,7 @@ ldns_key2buffer_str(ldns_buffer *output, const ldns_key *k)
 				/* print to buf, convert to bin, convert to b64,
 				 * print to buf */
 				ldns_buffer_printf(output, "Modulus: ");
+#ifndef S_SPLINT_S
 				i = (uint16_t)BN_bn2bin(rsa->n, bignum);
 				if (i > LDNS_MAX_KEYLEN) {
 					goto error;
@@ -1637,6 +1640,7 @@ ldns_key2buffer_str(ldns_buffer *output, const ldns_key *k)
 				} else {
 					ldns_buffer_printf(output, "(Not available)\n");
 				}
+#endif /* splint */
 
 				RSA_free(rsa);
 				break;
@@ -1654,6 +1658,7 @@ ldns_key2buffer_str(ldns_buffer *output, const ldns_key *k)
 				/* print to buf, convert to bin, convert to b64,
 				 * print to buf */
 				ldns_buffer_printf(output, "Prime(p): ");
+#ifndef S_SPLINT_S
 				if (dsa->p) {
 					i = (uint16_t)BN_bn2bin(dsa->p, bignum);
 					if (i > LDNS_MAX_KEYLEN) {
@@ -1732,13 +1737,21 @@ ldns_key2buffer_str(ldns_buffer *output, const ldns_key *k)
 				} else {
 					printf("(Not available)\n");
 				}
+#endif /* splint */
 				break;
 			case LDNS_SIGN_ECC_GOST:
 				/* no format defined, use blob */
 #if defined(HAVE_SSL) && defined(USE_GOST)
 				ldns_buffer_printf(output, "Private-key-format: v1.2\n");
 				ldns_buffer_printf(output, "Algorithm: %d (ECC-GOST)\n", LDNS_SIGN_ECC_GOST);
-				status = ldns_gost_key2buffer_str(output, k->_key.key);
+				status = ldns_gost_key2buffer_str(output, 
+#ifndef S_SPLINT_S
+					k->_key.key
+#else
+					NULL
+#endif
+				);
+
 #endif
 				break;
 #ifdef USE_ECDSA
@@ -1746,7 +1759,8 @@ ldns_key2buffer_str(ldns_buffer *output, const ldns_key *k)
 			case LDNS_SIGN_ECDSAP384SHA384:
                                 ldns_buffer_printf(output, "Private-key-format: v1.2\n");
 				ldns_buffer_printf(output, "Algorithm: %d (", ldns_key_algorithm(k));
-                                ldns_algorithm2buffer_str(output, ldns_key_algorithm(k));
+                                status=ldns_algorithm2buffer_str(output, (ldns_algorithm)ldns_key_algorithm(k));
+#ifndef S_SPLINT_S
 				ldns_buffer_printf(output, ")\n");
                                 if(k->_key.key) {
                                         EC_KEY* ec = EVP_PKEY_get1_EC_KEY(k->_key.key);
@@ -1766,6 +1780,7 @@ ldns_key2buffer_str(ldns_buffer *output, const ldns_key *k)
                                          * its still assigned to the PKEY */
                                         EC_KEY_free(ec);
                                 }
+#endif /* splint */
                                 break;
 #endif
 			case LDNS_SIGN_HMACMD5:

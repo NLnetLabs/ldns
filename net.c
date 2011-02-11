@@ -267,8 +267,10 @@ ldns_sock_wait(int sockfd, struct timeval timeout, int write)
 {
 	fd_set fds;
 	int ret;
+#ifndef S_SPLINT_S
 	FD_ZERO(&fds);
 	FD_SET(FD_SET_T sockfd, &fds);
+#endif
 	if(write)
 		ret = select(sockfd+1, NULL, &fds, NULL, &timeout);
 	else
