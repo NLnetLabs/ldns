@@ -1,22 +1,35 @@
-TPKG=$1
-if [ -z "$TPKG" ]
-then
-  TPKG=$HOME/repos/tpkg/tpkg
+#!/bin/bash
+# do ldns tests
+cd test
+. common.sh
+
+# find tpkg
+if test -x "`which tpkg 2>&1`"; then
+	TPKG=tpkg
+else
+	TPKG=$1
+	if [ -z "$TPKG" ]
+	then
+	TPKG=$HOME/repos/tpkg/tpkg
+	fi
 fi
 
+test_tool_avail "dig"
+
+echo start the test at `date` in `pwd`
+$TPKG clean
+$TPKG -a ../.. fake 01-compile.tpkg
+$TPKG -a ../.. fake 07-compile-examples.tpkg
+$TPKG -a ../.. fake 16-compile-builddir.tpkg
+$TPKG -a ../.. fake 999-compile-nossl.tpkg
 
 for tests in *.tpkg
 do
 	COMMAND="$TPKG -a ../.. exe `basename $tests`"
 	echo $COMMAND
 	$COMMAND
-	if [ $? = 1 ]; then
-		if [ $tests = "01-compile.tpkg" ]; then
-			echo "Important base test failed, stopping."
-			$TPKG report
-			exit 1
-		fi
-	fi
 done 
+echo finished the test at `date` in `pwd`
 $TPKG report
+cd ..
 

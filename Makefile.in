@@ -114,7 +114,7 @@ LINK_LIB	= $(LIBTOOL) --mode=link $(CC) $(strip $(CFLAGS) $(LDFLAGS) $(LIBS) -ve
 %.o:    $(srcdir)/%.c $(LIBDNS_HEADERS) ldns/net.h ldns/util.h ldns/config.h
 	$(COMP_LIB) $(LIBSSL_CPPFLAGS) -c $<
 
-.PHONY:	clean realclean docclean manpages doc lint all lib pyldns
+.PHONY:	clean realclean docclean manpages doc lint all lib pyldns test
 .PHONY: install uninstall install-doc uninstall-doc uninstall-pyldns
 .PHONY: install-h uninstall-h install-lib uninstall-lib install-pyldns
 
@@ -352,6 +352,9 @@ allclean: test-clean clean
 
 test-clean:
 	tpkg -b test clean
+
+test:
+	if test -x "`which bash`"; then bash test/test_all.sh; else sh test/test_all.sh; fi
 
 #-include $(ALL_SOURCES:.c=.d)
 
