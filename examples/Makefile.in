@@ -41,7 +41,7 @@ endif
 LINTFLAGS+="-Dsigset_t=long"
 # FreeBSD8
 LINTFLAGS+="-D__uint16_t=uint16_t"
-LINTFLAGS+=-D__signed__=signed
+LINTFLAGS+=-D__signed__=signed "-D__packed=" "-D__aligned(x)="
 
 HEADER		= config.h
 MAIN_SOURCES = ldns-read-zone.c \

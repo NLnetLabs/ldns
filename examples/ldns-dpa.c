@@ -370,7 +370,9 @@ print_match_operation(FILE *output, match_operation *mc)
 					}
 					break;
 				case TYPE_TIMESTAMP:
+#ifndef S_SPLINT_S
 					time.tv_sec = (long int) atol(mc->value);
+#endif
 					time_tt = (time_t)time.tv_sec;
 					tmp = ctime(&time_tt);
 					tmp2 = malloc(strlen(tmp) + 1);
