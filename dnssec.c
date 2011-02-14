@@ -1665,6 +1665,7 @@ ldns_convert_dsa_rrsig_rdf2asn1(ldns_buffer *target_buffer,
 }
 
 #ifdef USE_ECDSA
+#ifndef S_SPLINT_S
 ldns_rdf *
 ldns_convert_ecdsa_rrsig_asn12rdf(const ldns_buffer *sig, const long sig_len)
 {
@@ -1724,5 +1725,6 @@ ldns_convert_ecdsa_rrsig_rdf2asn1(ldns_buffer *target_buffer,
 	return ldns_buffer_status(target_buffer);
 }
 
+#endif /* S_SPLINT_S */
 #endif /* USE_ECDSA */
 #endif /* HAVE_SSL */
