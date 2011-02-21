@@ -2,6 +2,8 @@
 	* Fix creating NSEC(3) bitmaps: make array size 65536,
 	  don't add doubles.
 	* Fix printout of escaped binary in TXT records.
+	* bugfix #358: Check if memory was successfully allocated in
+	  ldns_rdf2str().
 
 1.6.8	2011-01-24
 	* Fix ldns zone, so that $TTL definition match RFC 2308.
