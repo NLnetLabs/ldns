@@ -4,6 +4,7 @@
 	* Fix printout of escaped binary in TXT records.
 	* bugfix #358: Check if memory was successfully allocated in
 	  ldns_rdf2str().
+	* Added more memory allocation checks in host2str.c
 
 1.6.8	2011-01-24
 	* Fix ldns zone, so that $TTL definition match RFC 2308.
