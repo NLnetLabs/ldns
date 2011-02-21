@@ -1858,11 +1858,13 @@ ldns_rdf2str(const ldns_rdf *rdf)
 	char *result = NULL;
 	ldns_buffer *tmp_buffer = ldns_buffer_new(LDNS_MAX_PACKETLEN);
 
+	if (!tmp_buffer) {
+		return NULL;
+	}
 	if (ldns_rdf2buffer_str(tmp_buffer, rdf) == LDNS_STATUS_OK) {
 		/* export and return string, destroy rest */
 		result = ldns_buffer2str(tmp_buffer);
 	}
-
 	ldns_buffer_free(tmp_buffer);
 	return result;
 }
