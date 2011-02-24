@@ -419,6 +419,7 @@ ldns_str2rdf_str(ldns_rdf **rd, const char *str)
 	data = LDNS_XMALLOC(uint8_t, strlen(str) + 1);
         if(!data) return LDNS_STATUS_MEM_ERR;
 	i = 1;
+
 	for (str_i = 0; str_i < strlen(str); str_i++) {
 		if (str[str_i] == '\\') {
 			/* octet value or literal char */
@@ -435,6 +436,7 @@ ldns_str2rdf_str(ldns_rdf **rd, const char *str)
 	}
 	data[0] = i - 1;
 	*rd = ldns_rdf_new_frm_data(LDNS_RDF_TYPE_STR, i, data);
+
 	LDNS_FREE(data);
 	return *rd?LDNS_STATUS_OK:LDNS_STATUS_MEM_ERR;
 }
