@@ -6,6 +6,7 @@
 	* bugfix #358: Check if memory was successfully allocated in
 	  ldns_rdf2str().
 	* Added more memory allocation checks in host2str.c
+	* python wrapper for ldns_fetch_valid_domain_keys by Bedrich Kosata.
 
 1.6.8	2011-01-24
 	* Fix ldns zone, so that $TTL definition match RFC 2308.
