@@ -2039,7 +2039,9 @@ ldns_resolver_print(FILE *output, const ldns_resolver *r)
 	fprintf(output, "trust anchors (%d listed):\n",
 		(int)ldns_rr_list_rr_count(ldns_resolver_dnssec_anchors(r)));
 	ldns_rr_list_print(output, ldns_resolver_dnssec_anchors(r));
-	fprintf(output, "tsig: %s %s\n", ldns_resolver_tsig_keyname(r), ldns_resolver_tsig_algorithm(r));
+	fprintf(output, "tsig: %s %s\n",
+                ldns_resolver_tsig_keyname(r)?ldns_resolver_tsig_keyname(r):"-",
+                ldns_resolver_tsig_algorithm(r)?ldns_resolver_tsig_algorithm(r):"-");
 	fprintf(output, "debug: %d\n", ldns_resolver_debug(r));
 
 	fprintf(output, "default domain: ");
