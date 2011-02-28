@@ -113,13 +113,13 @@ uint32_t ldns_read_timeval_usec(struct timeval* t) {
 %include <ldns/higher.h>
   %include <ldns/host2str.h>
   %include <ldns/host2wire.h>
-%include <ldns/net.h>//ruzne fce
+%include <ldns/net.h>
   %include <ldns/packet.h>
   %include <ldns/rdata.h>
   %include <ldns/resolver.h>
   %include <ldns/rr.h>
 %include <ldns/str2host.h>
-%include <ldns/tsig.h> //potrebuje wire
+%include <ldns/tsig.h>
   %include <ldns/update.h>
 %include <ldns/wire2host.h>
   %include <ldns/rr_functions.h>
