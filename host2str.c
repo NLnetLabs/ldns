@@ -258,6 +258,7 @@ ldns_rdf2buffer_str_dname(ldns_buffer *output, const ldns_rdf *dname)
 	uint8_t len;
 	uint8_t *data;
 	uint8_t i;
+	unsigned char c;
 
 	data = (uint8_t*)ldns_rdf_data(dname);
 	len = data[src_pos];
@@ -277,12 +278,13 @@ ldns_rdf2buffer_str_dname(ldns_buffer *output, const ldns_rdf *dname)
 				/* paranoia check for various 'strange'
 				   characters in dnames
 				*/
+				c = (unsigned char) data[src_pos];
 				if(data[src_pos]=='.' || data[src_pos]==';' ||
 				   data[src_pos]=='(' || data[src_pos]==')' ||
 				   data[src_pos]=='\\') {
 					ldns_buffer_printf(output, "\\%c",
 							data[src_pos]);
-				} else if (!isgraph((int) data[src_pos])) {
+				} else if (!(isascii(c) && isgraph(c))) {
 					ldns_buffer_printf(output, "\\%03u",
 						        data[src_pos]);
 				} else {
