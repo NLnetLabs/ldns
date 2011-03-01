@@ -315,6 +315,9 @@ timegm$U.o:	$(srcdir)/compat/timegm.c
 isblank$U.o:	$(srcdir)/compat/isblank.c
 	$(COMP_LIB) -c $(srcdir)/compat/isblank.c -o $@
 
+isasciik$U.o:	$(srcdir)/compat/isascii.c
+	$(COMP_LIB) -c $(srcdir)/compat/isascii.c -o $@
+
 strlcpy$U.o:	$(srcdir)/compat/strlcpy.c
 	$(COMP_LIB) -c $(srcdir)/compat/strlcpy.c -o $@
 

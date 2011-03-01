@@ -312,6 +312,7 @@ AC_REPLACE_FUNCS(timegm)
 AC_REPLACE_FUNCS(gmtime_r)
 AC_REPLACE_FUNCS(ctime_r)
 AC_REPLACE_FUNCS(isblank)
+AC_REPLACE_FUNCS(isascii)
 AC_REPLACE_FUNCS(inet_aton)
 AC_REPLACE_FUNCS(inet_pton)
 AC_REPLACE_FUNCS(inet_ntop)
@@ -443,6 +444,9 @@ struct tm *gmtime_r(const time_t *timep, struct tm *result);
 #endif
 #ifndef HAVE_ISBLANK
 int isblank(int c);
+#endif /* !HAVE_ISBLANK */
+#ifndef HAVE_ISASCII
+int isascii(int c);
 #endif /* !HAVE_ISBLANK */
 #ifndef HAVE_SNPRINTF
 #include <stdarg.h>
