@@ -7,7 +7,7 @@
 
 int isascii(int c);
 
-/* true if character is a blank (space or tab). C99. */
+/* true if character is ascii. */
 int
 isascii(int c)
 {
