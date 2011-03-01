@@ -22,6 +22,7 @@
 	* fix ldns_resolver_send without openssl.
 	* bugfix #342: patch for support for more CERT key types (RFC4398).
 	* bugfix #351: fix udp_send hang if UDP checksum error.
+	* fix set_bit (from NSEC3 sign) patch from Jan Komissar.
 
 1.6.7	2010-11-08
 	* EXPERIMENTAL ecdsa implementation, please do not enable on real
