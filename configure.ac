@@ -447,7 +447,7 @@ int isblank(int c);
 #endif /* !HAVE_ISBLANK */
 #ifndef HAVE_ISASCII
 int isascii(int c);
-#endif /* !HAVE_ISBLANK */
+#endif /* !HAVE_ISASCII */
 #ifndef HAVE_SNPRINTF
 #include <stdarg.h>
 int snprintf (char *str, size_t count, const char *fmt, ...);
