@@ -279,9 +279,9 @@ ldns_rdf2buffer_str_dname(ldns_buffer *output, const ldns_rdf *dname)
 				   characters in dnames
 				*/
 				c = (unsigned char) data[src_pos];
-				if(data[src_pos]=='.' || data[src_pos]==';' ||
-				   data[src_pos]=='(' || data[src_pos]==')' ||
-				   data[src_pos]=='\\') {
+				if(c == '.' || c == ';' ||
+				   c == '(' || c == ')' ||
+				   c == '\\') {
 					ldns_buffer_printf(output, "\\%c",
 							data[src_pos]);
 				} else if (!(isascii(c) && isgraph(c))) {
