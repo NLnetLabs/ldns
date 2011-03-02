@@ -8,6 +8,9 @@
 	* Added more memory allocation checks in host2str.c
 	* python wrapper for ldns_fetch_valid_domain_keys by Bedrich Kosata.
 	* fix to compile python wrapper with swig 2.0.2.
+	* Don't fallback to SHA-1 when creating NSEC3 hash with another
+	  algorithm identifier, fail instead (no other algorithm identifiers
+	  are assigned yet).
 
 1.6.8	2011-01-24
 	* Fix ldns zone, so that $TTL definition match RFC 2308.
