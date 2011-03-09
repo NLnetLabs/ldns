@@ -279,9 +279,9 @@ ldns_rdf2buffer_str_dname(ldns_buffer *output, const ldns_rdf *dname)
 				   characters in dnames
 				*/
 				c = (unsigned char) data[src_pos];
-				if(data[src_pos]=='.' || data[src_pos]==';' ||
-				   data[src_pos]=='(' || data[src_pos]==')' ||
-				   data[src_pos]=='\\') {
+				if(c == '.' || c == ';' ||
+				   c == '(' || c == ')' ||
+				   c == '\\') {
 					ldns_buffer_printf(output, "\\%c",
 							data[src_pos]);
 				} else if (!(isascii(c) && isgraph(c))) {
@@ -1196,20 +1196,20 @@ ldns_rr2buffer_str(ldns_buffer *output, const ldns_rr *rr)
 						flags = ldns_rdf2native_int16(ldns_rr_rdf(rr, 0));
 						if (flags == 256 || flags == 384) {
 							ldns_buffer_printf(output,
-									" ;{id = %d (zsk), size = %db}",
-									ldns_calc_keytag(rr),
+									" ;{id = %u (zsk), size = %db}",
+									(unsigned int) ldns_calc_keytag(rr),
 									ldns_rr_dnskey_key_size(rr));
 							break;
 						}
 						if (flags == 257 || flags == 385) {
 							ldns_buffer_printf(output,
-									" ;{id = %d (ksk), size = %db}",
-									ldns_calc_keytag(rr),
+									" ;{id = %u (ksk), size = %db}",
+									(unsigned int) ldns_calc_keytag(rr),
 									ldns_rr_dnskey_key_size(rr));
 							break;
 						}
-						ldns_buffer_printf(output, " ;{id = %d, size = %db}",
-								ldns_calc_keytag(rr),
+						ldns_buffer_printf(output, " ;{id = %u, size = %db}",
+								(unsigned int) ldns_calc_keytag(rr),
 								ldns_rr_dnskey_key_size(rr));
 					}
 					break;

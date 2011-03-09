@@ -975,7 +975,7 @@ ldns_nsec3_hash_name(ldns_rdf *name,
 	/* TODO: mnemonic list for hash algs SHA-1, default to 1 now (sha1) */
 	if (algorithm != LDNS_SHA1) {
 		return NULL;
-        }
+	}
 
 	/* prepare the owner name according to the draft section bla */
 	cann = ldns_rdf_clone(name);
