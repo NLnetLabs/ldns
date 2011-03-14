@@ -244,7 +244,7 @@ mktime_from_utc(const struct tm *tm)
 #if SIZEOF_TIME_T <= 4
 
 void
-year_and_yday_from_days_since_epoch(int days, struct tm *result)
+year_and_yday_from_days_since_epoch(int64_t days, struct tm *result)
 {
 	int year = 1970;
 	int new_year;
@@ -297,13 +297,13 @@ wday_from_year_and_yday(struct tm *result)
 struct tm *
 ldns_gmtime64_r(int64_t clock, struct tm *result)
 {
-	result->tm_isdst =          0;
-	result->tm_sec   = clock % 60;
-	clock           /=         60;
-	result->tm_min   = clock % 60;
-	clock           /=         60;
-	result->tm_hour  = clock % 24;
-	clock           /=         24;
+	result->tm_isdst =                 0;
+	result->tm_sec   = (int) (clock % 60);
+	clock           /=                60;
+	result->tm_min   = (int) (clock % 60);
+	clock           /=                60;
+	result->tm_hour  = (int) (clock % 24);
+	clock           /=                24;
 
 	year_and_yday_from_days_since_epoch(clock, result);
 	mon_and_mday_from_year_and_yday(result);
