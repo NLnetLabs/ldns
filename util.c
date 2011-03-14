@@ -326,11 +326,12 @@ serial_arithmitics_time(int32_t time, time_t now)
 struct tm *
 serial_arithmitics_gmtime_r(int32_t time, time_t now, struct tm *result)
 {
-	int64_t secs_since_epoch = serial_arithmitics_time(time, now);
 #if SIZEOF_TIME_T <= 4
-	return ldns_gmtime64_r(secs_since_epoch, result);
+	int64_t secs_since_epoch = serial_arithmitics_time(time, now);
+	return  ldns_gmtime64_r(secs_since_epoch, result);
 #else
-	return gmtime_r(& (time_t) secs_since_epoch, result);
+	time_t  secs_since_epoch = serial_arithmitics_time(time, now);
+	return  gmtime_r(&secs_since_epoch, result);
 #endif
 }
 
