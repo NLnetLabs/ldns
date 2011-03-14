@@ -249,8 +249,8 @@ year_and_yday_from_days_since_epoch(int64_t days, struct tm *result)
 	int year = 1970;
 	int new_year;
 
-	while (days < 0 || days >= (is_leap_year(year) ? 366 : 365)) {
-		new_year = year + (days / 366);
+	while (days < 0 || days >= (int64_t) (is_leap_year(year) ? 366 : 365)) {
+		new_year = year + (int) (days / 366);
 		if (year == new_year) {
 			year += days < 0 ? -1 : 1;
 		}
@@ -259,7 +259,7 @@ year_and_yday_from_days_since_epoch(int64_t days, struct tm *result)
 		year  = new_year;
 	}
 	result->tm_year = year;
-	result->tm_yday = days;
+	result->tm_yday = (int) days;
 }
 
 /* Number of days per month in a leap year. */
