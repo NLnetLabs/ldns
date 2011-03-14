@@ -330,13 +330,12 @@ ldns_status
 ldns_rdf2buffer_str_time(ldns_buffer *output, const ldns_rdf *rdf)
 {
 	/* create a YYYYMMDDHHMMSS string if possible */
-	time_t data_time = (time_t) ldns_read_uint32(ldns_rdf_data(rdf));
 	struct tm tm;
 	char date_buf[16];
 
 	memset(&tm, 0, sizeof(tm));
-
-	if (gmtime_r(&data_time, &tm) && strftime(date_buf, 15, "%Y%m%d%H%M%S", &tm)) {
+	if (serial_arithmitics_gmtime_r(ldns_rdf2native_int32(rdf), time(NULL), &tm)
+	    && strftime(date_buf, 15, "%Y%m%d%H%M%S", &tm)) {
 		ldns_buffer_printf(output, "%s", date_buf);
 	}
 	return ldns_buffer_status(output);

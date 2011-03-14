@@ -241,6 +241,99 @@ mktime_from_utc(const struct tm *tm)
 	return seconds;
 }
 
+#if SIZEOF_TIME_T <= 4
+
+void
+year_and_yday_from_days_since_epoch(int days, struct tm *result)
+{
+	int year = 1970;
+	int new_year;
+
+	while (days < 0 || days >= (is_leap_year(year) ? 366 : 365)) {
+		new_year = year + (days / 366);
+		if (year == new_year) {
+			year += days < 0 ? -1 : 1;
+		}
+		days -= (new_year - year) * 365;
+		days -= leap_days(year, new_year);
+		year  = new_year;
+	}
+	result->tm_year = year;
+	result->tm_yday = days;
+}
+
+/* Number of days per month in a leap year. */
+static const int leap_year_mdays[] = {
+	31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31
+};
+
+void
+mon_and_mday_from_year_and_yday(struct tm *result)
+{
+	int idays = result->tm_yday;
+	const int *mon_lengths = is_leap_year(result->tm_year) ? 
+					leap_year_mdays : mdays;
+
+	result->tm_mon = 0;
+	while  (idays >= mon_lengths[result->tm_mon]) {
+		idays -= mon_lengths[result->tm_mon++];
+	}
+	result->tm_mday = idays + 1;
+}
+
+void
+wday_from_year_and_yday(struct tm *result)
+{
+	result->tm_wday  = 4 /* 1-1-1970 was a thursday */
+			 + ((result->tm_year - 1970) % 7) * (365 % 7)
+			 + leap_days(1970, result->tm_year)
+			 + result->tm_yday;
+	result->tm_wday %= 7;
+	if (result->tm_wday < 0) {
+		result->tm_wday += 7;
+	}
+}
+
+struct tm *
+ldns_gmtime64_r(int64_t clock, struct tm *result)
+{
+	result->tm_isdst =          0;
+	result->tm_sec   = clock % 60;
+	clock           /=         60;
+	result->tm_min   = clock % 60;
+	clock           /=         60;
+	result->tm_hour  = clock % 24;
+	clock           /=         24;
+
+	year_and_yday_from_days_since_epoch(clock, result);
+	mon_and_mday_from_year_and_yday(result);
+	wday_from_year_and_yday(result);
+	result->tm_year -= 1900;
+
+	return result;
+}
+
+#endif /* SIZEOF_TIME_T <= 4 */
+
+int64_t
+serial_arithmitics_time(int32_t time, time_t now)
+{
+	int32_t offset = time - (int32_t) now;
+	return (int64_t) now + offset;
+}
+
+
+struct tm *
+serial_arithmitics_gmtime_r(int32_t time, time_t now, struct tm *result)
+{
+	int64_t secs_since_epoch = serial_arithmitics_time(time, now);
+#if SIZEOF_TIME_T <= 4
+	return ldns_gmtime64_r(secs_since_epoch, result);
+#else
+	return gmtime_r(& (time_t) secs_since_epoch, result);
+#endif
+}
+
 /**
  * Init the random source
  * applications should call this if they need entropy data within ldns

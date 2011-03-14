@@ -34,10 +34,11 @@ main(int argc, char *argv[])
 	uint8_t i, j;
 	ldns_rr_type t;
 	char * type_name;
-	time_t incep, expir;
+	struct tm incep, expir;
 	char incep_buf[26];
 	char expir_buf[26];
 	ldns_status s;
+	time_t now = time(NULL);
 	
 	p = NULL;
 	rrsig = NULL;
@@ -178,19 +179,30 @@ main(int argc, char *argv[])
 			}
 			
 			for(i = 0; i < ldns_rr_list_rr_count(rrsig_type); i++) {
-				incep = ldns_rdf2native_time_t(
-					ldns_rr_rrsig_inception(
-					ldns_rr_list_rr(rrsig_type, i)));
-				expir = ldns_rdf2native_time_t(
-					ldns_rr_rrsig_expiration(
-					ldns_rr_list_rr(rrsig_type, i)));
-
-				/* convert to human readable */
-				ctime_r(&incep, incep_buf);
-				ctime_r(&expir, expir_buf);
-				/* kill the newline */
-				incep_buf[24] = '\0';
-				expir_buf[24] = '\0';
+				memset(&incep, 0, sizeof(incep));
+				if (serial_arithmitics_gmtime_r(
+						ldns_rdf2native_time_t(
+						ldns_rr_rrsig_inception(
+						ldns_rr_list_rr(rrsig_type, i))),
+					       	now, &incep
+					)
+				    && asctime_r(&incep, incep_buf)) {
+					incep_buf[24] = '\0';
+				} else {
+					incep_buf[0] = '\0';
+				}
+				memset(&expir, 0, sizeof(expir));
+				if (serial_arithmitics_gmtime_r(
+						ldns_rdf2native_time_t(
+						ldns_rr_rrsig_expiration(
+						ldns_rr_list_rr(rrsig_type, i))),
+					       	now, &expir
+					)
+				    && asctime_r(&expir, expir_buf)) {
+					expir_buf[24] = '\0';
+				} else {
+					expir_buf[0] = '\0';
+				}
 
 				fprintf(stdout, "%s RRSIG(%s):  %s - %s\n",
 					argv[1], type_name, incep_buf, expir_buf);

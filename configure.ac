@@ -283,6 +283,20 @@ include_unistd_h=''
 ])
 AC_SUBST(include_unistd_h)
 
+AC_CHECK_SIZEOF(time_t,,[
+AC_INCLUDES_DEFAULT
+#ifdef TIME_WITH_SYS_TIME
+# include <sys/time.h>
+# include <time.h>
+#else
+# ifdef HAVE_SYS_TIME_H
+#  include <sys/time.h>
+# else
+#  include <time.h>
+# endif
+#endif
+])
+
 ACX_TYPE_SOCKLEN_T
 AC_CHECK_TYPE(ssize_t, int)
 AC_CHECK_TYPE(in_addr_t, [], [AC_DEFINE([in_addr_t], [uint32_t], [in_addr_t])], [
