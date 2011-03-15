@@ -21,21 +21,6 @@
 
 int verbosity = 3;
 
-/* returns 1 if the list is empty, or if there are only ns rrs in the
- * list, 0 otherwise */
-static int
-only_ns_in_rrsets(ldns_dnssec_rrsets *rrsets) {
-	ldns_dnssec_rrsets *cur_rrset = rrsets;
-
-	while (cur_rrset) {
-		if (cur_rrset->type != LDNS_RR_TYPE_NS) {
-			return 0;
-		}
-		cur_rrset = cur_rrset->next;
-	}
-	return 1;
-}
-
 static int
 zone_is_nsec3_optout(ldns_rbtree_t *zone_nodes)
 {
@@ -72,6 +57,26 @@ ldns_rr_list_contains_name(const ldns_rr_list *rr_list,
 		}
 	}
 	return false;
+}
+
+/* returns 1 if the list is empty, or if there are only ns or glue rrs in the
+ * list, 0 otherwise */
+static int
+only_ns_and_glues_in_rrsets(ldns_dnssec_name *name,
+                            ldns_rr_list *glue_rrs
+)
+{
+	ldns_dnssec_rrsets *cur_rrset = name->rrsets;
+
+	while (cur_rrset) {
+		if (cur_rrset->type != LDNS_RR_TYPE_NS &&
+                    !ldns_rr_list_contains_name(glue_rrs, name->name)
+		) {
+			return 0;
+		}
+		cur_rrset = cur_rrset->next;
+	}
+	return 1;
 }
 
 static void
@@ -442,7 +447,7 @@ verify_nsec(ldns_rbtree_t *zone_nodes,
 	} else {
 		/* todo; do this once and cache result? */
 		if (zone_is_nsec3_optout(zone_nodes) &&
-		    only_ns_in_rrsets(name->rrsets)) {
+		    only_ns_and_glues_in_rrsets(name, glue_rrs)) {
 			/* ok, no problem, but we need to remember to check
 			 * whether the chain does not actually point to this
 			 * name later */

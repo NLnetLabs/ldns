@@ -1,4 +1,8 @@
-1.6.9
+1.6.10	
+	* Serial-arithmetic for the inception and expiration fields of a RRSIG
+	  and correctly converting them to broken-out time information.
+
+1.6.9	2011-03-16
 	* Fix creating NSEC(3) bitmaps: make array size 65536,
 	  don't add doubles.
 	* Fix printout of escaped binary in TXT records.
