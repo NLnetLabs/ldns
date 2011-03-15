@@ -497,8 +497,8 @@ verify_dnssec_name(ldns_rdf *zone_name,
 		printf("\n");
 	}
 
-	if (ldns_rr_list_contains_name(glue_rrs, name->name) &&
-		ldns_dnssec_name_has_only_a(name)
+	if (ldns_dnssec_name_has_only_a(name) &&
+		ldns_rr_list_contains_name(glue_rrs, name->name)
 	) {
 		/* glue */
 		cur_rrset = name->rrsets;
