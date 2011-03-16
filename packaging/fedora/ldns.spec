@@ -7,7 +7,7 @@
 
 Summary: Lowlevel DNS(SEC) library with API
 Name: ldns
-Version: 1.6.8
+Version: 1.6.9
 Release: 2%{?dist}
 License: BSD
 Url: http://www.nlnetlabs.nl/%{name}/
@@ -120,6 +120,9 @@ rm -rf %{buildroot}
 %postun -p /sbin/ldconfig
 
 %changelog
+* Wed Mar 16 2011 Willem Toorop <willem@nlnetlabs.nl> - 1.6.9
+- Upgraded to 1.6.9.
+
 * Mon Nov 8 2010 Matthijs Mekking <matthijs@nlnetlabs.nl> - 1.6.8
 - Upgraded to 1.6.8.
 
