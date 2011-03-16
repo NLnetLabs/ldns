@@ -378,10 +378,12 @@ ldns_key_buf2dsa_raw(unsigned char* key, size_t len)
 		BN_free(Y);
 		return NULL;
 	}
+#ifndef S_SPLINT_S
 	dsa->p = P;
 	dsa->q = Q;
 	dsa->g = G;
 	dsa->pub_key = Y;
+#endif /* splint */
 
 	return dsa;
 }
@@ -444,8 +446,10 @@ ldns_key_buf2rsa_raw(unsigned char* key, size_t len)
 		BN_free(modulus);
 		return NULL;
 	}
+#ifndef S_SPLINT_S
 	rsa->n = modulus;
 	rsa->e = exponent;
+#endif /* splint */
 
 	return rsa;
 }
@@ -623,7 +627,7 @@ ldns_key_rr2ds(const ldns_rr *key, ldns_hash h)
 			return NULL;
 		}
 		tmp = ldns_rdf_new_frm_data(LDNS_RDF_TYPE_HEX,
-		                            EVP_MD_size(md),
+		                            (size_t)EVP_MD_size(md),
 		                            digest);
 		ldns_rr_push_rdf(ds, tmp);
 #endif
@@ -780,7 +784,7 @@ ldns_dnssec_create_nsec(ldns_dnssec_name *from,
                         ldns_rr_type nsec_type)
 {
 	ldns_rr *nsec_rr;
-	ldns_rr_type types[65535];
+	ldns_rr_type types[65536];
 	size_t type_count = 0;
 	ldns_dnssec_rrsets *cur_rrsets;
 
@@ -800,9 +804,13 @@ ldns_dnssec_create_nsec(ldns_dnssec_name *from,
 			cur_rrsets = cur_rrsets->next;
 			continue;
 		}
-		types[type_count] = cur_rrsets->type;
-		type_count++;
+		if (cur_rrsets->type != LDNS_RR_TYPE_RRSIG &&
+		    cur_rrsets->type != LDNS_RR_TYPE_NSEC) {
+			types[type_count] = cur_rrsets->type;
+			type_count++;
+		}
 		cur_rrsets = cur_rrsets->next;
+
 	}
 	types[type_count] = LDNS_RR_TYPE_RRSIG;
 	type_count++;
@@ -827,7 +835,7 @@ ldns_dnssec_create_nsec3(ldns_dnssec_name *from,
 					uint8_t *salt)
 {
 	ldns_rr *nsec_rr;
-	ldns_rr_type types[65535];
+	ldns_rr_type types[65536];
 	size_t type_count = 0;
 	ldns_dnssec_rrsets *cur_rrsets;
 	ldns_status status;
@@ -863,8 +871,10 @@ ldns_dnssec_create_nsec3(ldns_dnssec_name *from,
 			cur_rrsets = cur_rrsets->next;
 			continue;
 		}
-		types[type_count] = cur_rrsets->type;
-		type_count++;
+		if (cur_rrsets->type != LDNS_RR_TYPE_RRSIG) {
+			types[type_count] = cur_rrsets->type;
+			type_count++;
+		}
 		cur_rrsets = cur_rrsets->next;
 	}
 	/* always add rrsig type if this is not an unsigned
@@ -909,8 +919,8 @@ ldns_create_nsec(ldns_rdf *cur_owner, ldns_rdf *next_owner, ldns_rr_list *rrs)
 	uint16_t i_type;
 
 	ldns_rr *nsec = NULL;
-    ldns_rr_type i_type_list[65535];
-	int type_count = 0;
+	ldns_rr_type i_type_list[65536];
+	size_t type_count = 0;
 
 	nsec = ldns_rr_new();
 	ldns_rr_set_type(nsec, LDNS_RR_TYPE_NSEC);
@@ -922,9 +932,11 @@ ldns_create_nsec(ldns_rdf *cur_owner, ldns_rdf *next_owner, ldns_rr_list *rrs)
 		if (ldns_rdf_compare(cur_owner,
 						 ldns_rr_owner(i_rr)) == 0) {
 			i_type = ldns_rr_get_type(i_rr);
-			if (type_count == 0 || i_type_list[type_count-1] != i_type) {
-				i_type_list[type_count] = i_type;
-				type_count++;
+			if (i_type != LDNS_RR_TYPE_RRSIG && i_type != LDNS_RR_TYPE_NSEC) {
+				if (type_count == 0 || i_type_list[type_count-1] != i_type) {
+					i_type_list[type_count] = i_type;
+					type_count++;
+				}
 			}
 		}
 	}
@@ -960,6 +972,11 @@ ldns_nsec3_hash_name(ldns_rdf *name,
 	unsigned char hash[LDNS_SHA1_DIGEST_LENGTH];
 	ldns_status status;
 
+	/* TODO: mnemonic list for hash algs SHA-1, default to 1 now (sha1) */
+	if (algorithm != LDNS_SHA1) {
+		return NULL;
+	}
+
 	/* prepare the owner name according to the draft section bla */
 	cann = ldns_rdf_clone(name);
 	if(!cann) {
@@ -967,9 +984,6 @@ ldns_nsec3_hash_name(ldns_rdf *name,
 		return NULL;
 	}
 	ldns_dname2canonical(cann);
-
-	/* TODO: mnemonic list for hash algs SHA-1, default to 1 now (sha1) */
-	algorithm = algorithm;
 
 	hashed_owner_str_len = salt_length + ldns_rdf_size(cann);
 	hashed_owner_str = LDNS_XMALLOC(unsigned char, hashed_owner_str_len);
@@ -1124,7 +1138,7 @@ ldns_create_nsec3(ldns_rdf *cur_owner,
 	ldns_status status;
 
     ldns_rr_type i_type_list[1024];
-	int type_count = 0;
+	size_t type_count = 0;
 
 	hashed_owner = ldns_nsec3_hash_name(cur_owner,
 								 algorithm,
@@ -1651,6 +1665,7 @@ ldns_convert_dsa_rrsig_rdf2asn1(ldns_buffer *target_buffer,
 }
 
 #ifdef USE_ECDSA
+#ifndef S_SPLINT_S
 ldns_rdf *
 ldns_convert_ecdsa_rrsig_asn12rdf(const ldns_buffer *sig, const long sig_len)
 {
@@ -1669,8 +1684,8 @@ ldns_convert_ecdsa_rrsig_asn12rdf(const ldns_buffer *sig, const long sig_len)
         }
         BN_bn2bin(ecdsa_sig->r, data);
         BN_bn2bin(ecdsa_sig->s, data+BN_num_bytes(ecdsa_sig->r));
-	rdf = ldns_rdf_new(LDNS_RDF_TYPE_B64,
-                BN_num_bytes(ecdsa_sig->r) + BN_num_bytes(ecdsa_sig->s), data);
+	rdf = ldns_rdf_new(LDNS_RDF_TYPE_B64, (size_t)(
+		BN_num_bytes(ecdsa_sig->r) + BN_num_bytes(ecdsa_sig->s)), data);
         ECDSA_SIG_free(ecdsa_sig);
         return rdf;
 }
@@ -1681,7 +1696,7 @@ ldns_convert_ecdsa_rrsig_rdf2asn1(ldns_buffer *target_buffer,
 {
         ECDSA_SIG* sig;
 	int raw_sig_len;
-        long bnsize = ldns_rdf_size(sig_rdf) / 2;
+        long bnsize = (long)ldns_rdf_size(sig_rdf) / 2;
         /* if too short, or not even length, do not bother */
         if(bnsize < 16 || (size_t)bnsize*2 != ldns_rdf_size(sig_rdf))
                 return LDNS_STATUS_ERR;
@@ -1700,14 +1715,16 @@ ldns_convert_ecdsa_rrsig_rdf2asn1(ldns_buffer *target_buffer,
 
 	raw_sig_len = i2d_ECDSA_SIG(sig, NULL);
 	if (ldns_buffer_reserve(target_buffer, (size_t) raw_sig_len)) {
-                unsigned char* pp = ldns_buffer_current(target_buffer);
+                unsigned char* pp = (unsigned char*)
+			ldns_buffer_current(target_buffer);
 	        raw_sig_len = i2d_ECDSA_SIG(sig, &pp);
-                ldns_buffer_skip(target_buffer, (size_t) raw_sig_len);
+                ldns_buffer_skip(target_buffer, (ssize_t) raw_sig_len);
 	}
         ECDSA_SIG_free(sig);
 
 	return ldns_buffer_status(target_buffer);
 }
 
+#endif /* S_SPLINT_S */
 #endif /* USE_ECDSA */
 #endif /* HAVE_SSL */

@@ -6,7 +6,7 @@ sinclude(acx_nlnetlabs.m4)
 # must be numbers. ac_defun because of later processing.
 m4_define([VERSION_MAJOR],[1])
 m4_define([VERSION_MINOR],[6])
-m4_define([VERSION_MICRO],[8])
+m4_define([VERSION_MICRO],[9])
 AC_INIT(ldns, m4_defn([VERSION_MAJOR]).m4_defn([VERSION_MINOR]).m4_defn([VERSION_MICRO]), libdns@nlnetlabs.nl, libdns)
 AC_CONFIG_SRCDIR([packet.c])
 # needed to build correct soname
@@ -312,6 +312,7 @@ AC_REPLACE_FUNCS(timegm)
 AC_REPLACE_FUNCS(gmtime_r)
 AC_REPLACE_FUNCS(ctime_r)
 AC_REPLACE_FUNCS(isblank)
+AC_REPLACE_FUNCS(isascii)
 AC_REPLACE_FUNCS(inet_aton)
 AC_REPLACE_FUNCS(inet_pton)
 AC_REPLACE_FUNCS(inet_ntop)
@@ -444,6 +445,9 @@ struct tm *gmtime_r(const time_t *timep, struct tm *result);
 #ifndef HAVE_ISBLANK
 int isblank(int c);
 #endif /* !HAVE_ISBLANK */
+#ifndef HAVE_ISASCII
+int isascii(int c);
+#endif /* !HAVE_ISASCII */
 #ifndef HAVE_SNPRINTF
 #include <stdarg.h>
 int snprintf (char *str, size_t count, const char *fmt, ...);

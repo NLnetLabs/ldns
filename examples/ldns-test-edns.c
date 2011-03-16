@@ -21,17 +21,17 @@ convert_addr(char* str, int p, struct sockaddr_storage* addr, socklen_t* len)
 {
 #ifdef AF_INET6
 	if(strchr(str, ':')) {
-		*len = sizeof(struct sockaddr_in6);
+		*len = (socklen_t)sizeof(struct sockaddr_in6);
 		((struct sockaddr_in6*)addr)->sin6_family = AF_INET6;
-		((struct sockaddr_in6*)addr)->sin6_port = htons(p);
+		((struct sockaddr_in6*)addr)->sin6_port = htons((uint16_t)p);
 		if(inet_pton(AF_INET6, str,
 			&((struct sockaddr_in6*)addr)->sin6_addr) == 1)
 			return 1;
 	} else {
 #endif
-		*len = sizeof(struct sockaddr_in);
+		*len = (socklen_t)sizeof(struct sockaddr_in);
 		((struct sockaddr_in*)addr)->sin_family = AF_INET;
-		((struct sockaddr_in*)addr)->sin_port = htons(p);
+		((struct sockaddr_in*)addr)->sin_port = htons((uint16_t)p);
 		if(inet_pton(AF_INET, str,
 			&((struct sockaddr_in*)addr)->sin_addr) == 1)
 			return 1;
@@ -56,7 +56,7 @@ make_query(char* nm, int tp)
 	}
 
 	s = ldns_pkt_query_new_frm_str(&p, nm, tp, LDNS_RR_CLASS_IN,
-		LDNS_RD|LDNS_CD);
+		(uint16_t)(LDNS_RD|LDNS_CD));
 	if(s != LDNS_STATUS_OK) {
 		if(verb) printf("error: %s\n", ldns_get_errorstr_by_id(s));
 		ldns_buffer_free(b);
@@ -142,7 +142,6 @@ static int
 check_packet(uint8_t* wire, size_t len, int tp)
 {
 	ldns_pkt *p = NULL;
-	ldns_rr_list* l;
 	ldns_status s;
 	if( (s=ldns_wire2pkt(&p, wire, len)) != LDNS_STATUS_OK) {
 		if(verb) printf("error: %s\n", ldns_get_errorstr_by_id(s));

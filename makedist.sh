@@ -234,7 +234,7 @@ case $OSTYPE in
                         	sha=`sha1sum ldns-$version.tar.gz |  awk '{ print $1 }'`
                         	;;
 		        FreeBSD*)
-                		sha=`sha1  ldns-$version.tar.gz |  awk '{ print $5 }'`
+                		sha=`sha1  ldns-$version.tar.gz |  awk '{ print $4 }'`
 		                ;;
 		esac
         	;;

@@ -125,7 +125,7 @@ print_ds_of_keys(ldns_pkt *p)
 	if (keys) {
 		for (i = 0; i < ldns_rr_list_rr_count(keys); i++) {
 			fprintf(stdout, ";\n; equivalent DS records for key %u:\n",
-				ldns_calc_keytag(ldns_rr_list_rr(keys, i)));
+				(unsigned int)ldns_calc_keytag(ldns_rr_list_rr(keys, i)));
 
 			ds = ldns_key_rr2ds(ldns_rr_list_rr(keys, i), LDNS_SHA1);
 			local_print_ds(stdout, "; sha1: ", ds);
@@ -226,16 +226,16 @@ print_dnskey_abbr(FILE *fp, ldns_rr *key)
         ldns_rdf_print(fp, ldns_rr_rdf(key, 2));
 
 	if (ldns_rdf2native_int16(ldns_rr_rdf(key, 0)) == 256) {
-		fprintf(fp, " ;{id = %d (zsk), size = %db}", (int)ldns_calc_keytag(key),
+		fprintf(fp, " ;{id = %u (zsk), size = %db}", (unsigned int)ldns_calc_keytag(key),
 				(int)ldns_rr_dnskey_key_size(key));
 		return;
 	}
 	if (ldns_rdf2native_int16(ldns_rr_rdf(key, 0)) == 257) {
-		fprintf(fp, " ;{id = %d (ksk), size = %db}", (int)ldns_calc_keytag(key),
+		fprintf(fp, " ;{id = %u (ksk), size = %db}", (unsigned int)ldns_calc_keytag(key),
 				(int)ldns_rr_dnskey_key_size(key));
 		return;
 	}
-	fprintf(fp, " ;{id = %d, size = %db}", (int)ldns_calc_keytag(key),
+	fprintf(fp, " ;{id = %u, size = %db}", (unsigned int)ldns_calc_keytag(key),
 			(int)ldns_rr_dnskey_key_size(key));
 }
 

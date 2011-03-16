@@ -111,7 +111,7 @@ ldns_set_bit(uint8_t *byte, int bit_nr, bool value)
 		if (value) {
 			*byte = *byte | (0x01 << bit_nr);
 		} else {
-			*byte = *byte & !(0x01 << bit_nr);
+			*byte = *byte & ~(0x01 << bit_nr);
 		}
 	}
 }
