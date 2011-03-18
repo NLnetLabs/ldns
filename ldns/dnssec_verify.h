@@ -399,6 +399,26 @@ ldns_status ldns_dnssec_verify_denial_nsec3(ldns_rr *rr,
  * \param[in] algo Signing algorithm
  * \return status LDNS_STATUS_OK if the data verifies. Error if not.
  */
+ldns_status ldns_dnssec_verify_denial_nsec3_match(ldns_rr *rr,
+								    ldns_rr_list *nsecs,
+								    ldns_rr_list *rrsigs,
+								    ldns_pkt_rcode packet_rcode,
+								    ldns_rr_type packet_qtype,
+								    bool packet_nodata,
+								    ldns_rr **match);
+/**
+ * Same as ldns_status ldns_dnssec_verify_denial_nsec3 but also returns
+ * the nsec rr that matched.
+ * This function should probably not be used directly.
+ *
+ * \param[in] rawsig_buf Buffer containing signature data to use
+ * \param[in] verify_buf Buffer containing data to verify
+ * \param[in] key_buf Buffer containing key data to use
+ * \param[in] algo Signing algorithm
+ * \return status LDNS_STATUS_OK if the data verifies. Error if not.
+ */
+
+
 ldns_status ldns_verify_rrsig_buffers(ldns_buffer *rawsig_buf,
 							   ldns_buffer *verify_buf,
 							   ldns_buffer *key_buf,
