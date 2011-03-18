@@ -157,10 +157,10 @@ typedef struct ldns_dnssec_zone { };
    PyTuple_SetItem(tuple, 0, SWIG_From_int(st)); 
    PyTuple_SetItem(tuple, 1, (st == LDNS_STATUS_OK) ? 
                              SWIG_NewPointerObj(SWIG_as_voidptr(p_rr), SWIGTYPE_p_ldns_struct_rr, SWIG_POINTER_OWN |  0 ) : 
-                             Py_None);
+		   (Py_INCREF(Py_None), Py_None));
    PyTuple_SetItem(tuple, 2, (p_prev != prev) ? 
                              SWIG_NewPointerObj(SWIG_as_voidptr(p_prev), SWIGTYPE_p_ldns_struct_rdf, SWIG_POINTER_OWN |  0 ) :
-                             Py_None);
+		   (Py_INCREF(Py_None), Py_None));
    return tuple;
  }
 
@@ -194,21 +194,21 @@ typedef struct ldns_dnssec_zone { };
    idx++;
    PyTuple_SetItem(tuple, idx, (st == LDNS_STATUS_OK) ? 
                              SWIG_NewPointerObj(SWIG_as_voidptr(p_rr), SWIGTYPE_p_ldns_struct_rr, SWIG_POINTER_OWN |  0 ) : 
-                             Py_None);
+		   (Py_INCREF(Py_None), Py_None));
    idx++;
    if (ret_linenr) {
       PyTuple_SetItem(tuple, idx, SWIG_From_int(linenr));
       idx++;
    }
-   PyTuple_SetItem(tuple, idx, (defttl != default_ttl) ? SWIG_From_int(defttl) : Py_None);
+   PyTuple_SetItem(tuple, idx, (defttl != default_ttl) ? SWIG_From_int(defttl) : (Py_INCREF(Py_None), Py_None));
    idx++;
    PyTuple_SetItem(tuple, idx, (p_origin != origin) ? 
                              SWIG_NewPointerObj(SWIG_as_voidptr(p_origin), SWIGTYPE_p_ldns_struct_rdf, SWIG_POINTER_OWN |  0 ) :
-                             Py_None);
+		   (Py_INCREF(Py_None), Py_None));
    idx++;
    PyTuple_SetItem(tuple, idx, (p_prev != prev) ? 
                              SWIG_NewPointerObj(SWIG_as_voidptr(p_prev), SWIGTYPE_p_ldns_struct_rdf, SWIG_POINTER_OWN |  0 ) :
-                             Py_None);
+		   (Py_INCREF(Py_None), Py_None));
    return tuple;
  }
 
@@ -230,10 +230,10 @@ typedef struct ldns_dnssec_zone { };
    PyTuple_SetItem(tuple, 0, SWIG_From_int(st)); 
    PyTuple_SetItem(tuple, 1, (st == LDNS_STATUS_OK) ? 
                              SWIG_NewPointerObj(SWIG_as_voidptr(p_rr), SWIGTYPE_p_ldns_struct_rr, SWIG_POINTER_OWN |  0 ) : 
-                             Py_None);
+		   (Py_INCREF(Py_None), Py_None));
    PyTuple_SetItem(tuple, 2, (p_prev != prev) ? 
                              SWIG_NewPointerObj(SWIG_as_voidptr(p_prev), SWIGTYPE_p_ldns_struct_rdf, SWIG_POINTER_OWN |  0 ) :
-                             Py_None);
+		   (Py_INCREF(Py_None), Py_None));
    return tuple;
  }
 
@@ -254,7 +254,7 @@ PyObject* ldns_fetch_valid_domain_keys_(const ldns_resolver * res, const ldns_rd
    PyTuple_SetItem(tuple, 0, SWIG_From_int(st)); 
    PyTuple_SetItem(tuple, 1, (st == LDNS_STATUS_OK) ? 
                              SWIG_NewPointerObj(SWIG_as_voidptr(rrl), SWIGTYPE_p_ldns_struct_rr_list, SWIG_POINTER_OWN |  0 ) : 
-                             Py_None);
+		   (Py_INCREF(Py_None), Py_None));
    return tuple;
  }
 
