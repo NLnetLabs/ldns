@@ -1109,7 +1109,7 @@ ldns_dnssec_zone_sign_nsec3_flg(ldns_dnssec_zone *zone,
 					   uint8_t *salt,
 					   int signflags)
 {
-	ldns_rr *nsec3, *nsec3params;
+	ldns_rr *nsec3, *nsec3param;
 	ldns_status result = LDNS_STATUS_OK;
 
 	/* zone is already sorted */
@@ -1134,13 +1134,13 @@ ldns_dnssec_zone_sign_nsec3_flg(ldns_dnssec_zone *zone,
 		} else {
 			if (!ldns_dnssec_zone_find_rrset(zone,
 									   zone->soa->name,
-									   LDNS_RR_TYPE_NSEC3PARAMS)) {
-				/* create and add the nsec3params rr */
-				nsec3params =
-					ldns_rr_new_frm_type(LDNS_RR_TYPE_NSEC3PARAMS);
-				ldns_rr_set_owner(nsec3params,
+									   LDNS_RR_TYPE_NSEC3PARAM)) {
+				/* create and add the nsec3param rr */
+				nsec3param =
+					ldns_rr_new_frm_type(LDNS_RR_TYPE_NSEC3PARAM);
+				ldns_rr_set_owner(nsec3param,
 							   ldns_rdf_clone(zone->soa->name));
-				ldns_nsec3_add_param_rdfs(nsec3params,
+				ldns_nsec3_add_param_rdfs(nsec3param,
 									 algorithm,
 									 flags,
 									 iterations,
@@ -1148,12 +1148,12 @@ ldns_dnssec_zone_sign_nsec3_flg(ldns_dnssec_zone *zone,
 									 salt);
 				/* always set bit 7 of the flags to zero, according to
 				 * rfc5155 section 11 */
-				ldns_set_bit(ldns_rdf_data(ldns_rr_rdf(nsec3params, 1)), 7, 0);
-				result = ldns_dnssec_zone_add_rr(zone, nsec3params);
+				ldns_set_bit(ldns_rdf_data(ldns_rr_rdf(nsec3param, 1)), 7, 0);
+				result = ldns_dnssec_zone_add_rr(zone, nsec3param);
 				if (result != LDNS_STATUS_OK) {
 					return result;
 				}
-				ldns_rr_list_push_rr(new_rrs, nsec3params);
+				ldns_rr_list_push_rr(new_rrs, nsec3param);
 			}
 			result = ldns_dnssec_zone_create_nsec3s(zone,
 											new_rrs,

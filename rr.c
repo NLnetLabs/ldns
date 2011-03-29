@@ -1900,7 +1900,7 @@ static const ldns_rdf_type type_nsec3_wireformat[] = {
 	LDNS_RDF_TYPE_INT8, LDNS_RDF_TYPE_INT8, LDNS_RDF_TYPE_INT16, LDNS_RDF_TYPE_NSEC3_SALT, LDNS_RDF_TYPE_NSEC3_NEXT_OWNER, LDNS_RDF_TYPE_NSEC
 };
 
-static const ldns_rdf_type type_nsec3params_wireformat[] = {
+static const ldns_rdf_type type_nsec3param_wireformat[] = {
 /*	LDNS_RDF_TYPE_NSEC3_PARAMS_VARS*/
 	LDNS_RDF_TYPE_INT8,
 	LDNS_RDF_TYPE_INT8,
@@ -2034,7 +2034,7 @@ static ldns_rr_descriptor rdata_field_descriptors[] = {
 	/* 50 */
 	{LDNS_RR_TYPE_NSEC3, "NSEC3", 5, 6, type_nsec3_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 0 },
 	/* 51 */
-{LDNS_RR_TYPE_NSEC3PARAMS, "NSEC3PARAM", 4, 4, type_nsec3params_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 0 },
+{LDNS_RR_TYPE_NSEC3PARAM, "NSEC3PARAM", 4, 4, type_nsec3param_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 0 },
 	/* 52 */
 {LDNS_RR_TYPE_NULL, "TYPE52", 1, 1, type_0_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 0 },
 {LDNS_RR_TYPE_NULL, "TYPE53", 1, 1, type_0_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 0 },
