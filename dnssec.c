@@ -1199,8 +1199,10 @@ ldns_create_nsec3(ldns_rdf *cur_owner,
 uint8_t
 ldns_nsec3_algorithm(const ldns_rr *nsec3_rr)
 {
-	if (nsec3_rr && ldns_rr_get_type(nsec3_rr) == LDNS_RR_TYPE_NSEC3 &&
-	    ldns_rdf_size(ldns_rr_rdf(nsec3_rr, 0)) > 0
+	if (nsec3_rr && 
+	      (ldns_rr_get_type(nsec3_rr) == LDNS_RR_TYPE_NSEC3 ||
+	       ldns_rr_get_type(nsec3_rr) == LDNS_RR_TYPE_NSEC3PARAMS)
+	    && ldns_rdf_size(ldns_rr_rdf(nsec3_rr, 0)) > 0
 	    ) {
 		return ldns_rdf2native_int8(ldns_rr_rdf(nsec3_rr, 0));
 	}
@@ -1210,8 +1212,10 @@ ldns_nsec3_algorithm(const ldns_rr *nsec3_rr)
 uint8_t
 ldns_nsec3_flags(const ldns_rr *nsec3_rr)
 {
-	if (nsec3_rr && ldns_rr_get_type(nsec3_rr) == LDNS_RR_TYPE_NSEC3 &&
-	    ldns_rdf_size(ldns_rr_rdf(nsec3_rr, 1)) > 0
+	if (nsec3_rr && 
+	      (ldns_rr_get_type(nsec3_rr) == LDNS_RR_TYPE_NSEC3 ||
+	       ldns_rr_get_type(nsec3_rr) == LDNS_RR_TYPE_NSEC3PARAMS)
+	    && ldns_rdf_size(ldns_rr_rdf(nsec3_rr, 1)) > 0
 	    ) {
 		return ldns_rdf2native_int8(ldns_rr_rdf(nsec3_rr, 1));
 	}
@@ -1227,8 +1231,10 @@ ldns_nsec3_optout(const ldns_rr *nsec3_rr)
 uint16_t
 ldns_nsec3_iterations(const ldns_rr *nsec3_rr)
 {
-	if (nsec3_rr && ldns_rr_get_type(nsec3_rr) == LDNS_RR_TYPE_NSEC3 &&
-	    ldns_rdf_size(ldns_rr_rdf(nsec3_rr, 2)) > 0
+	if (nsec3_rr &&
+	      (ldns_rr_get_type(nsec3_rr) == LDNS_RR_TYPE_NSEC3 ||
+	       ldns_rr_get_type(nsec3_rr) == LDNS_RR_TYPE_NSEC3PARAMS)
+	    && ldns_rdf_size(ldns_rr_rdf(nsec3_rr, 2)) > 0
 	    ) {
 		return ldns_rdf2native_int16(ldns_rr_rdf(nsec3_rr, 2));
 	}
@@ -1239,7 +1245,10 @@ ldns_nsec3_iterations(const ldns_rr *nsec3_rr)
 ldns_rdf *
 ldns_nsec3_salt(const ldns_rr *nsec3_rr)
 {
-	if (nsec3_rr && ldns_rr_get_type(nsec3_rr) == LDNS_RR_TYPE_NSEC3) {
+	if (nsec3_rr && 
+	      (ldns_rr_get_type(nsec3_rr) == LDNS_RR_TYPE_NSEC3 ||
+	       ldns_rr_get_type(nsec3_rr) == LDNS_RR_TYPE_NSEC3PARAMS)
+	    ) {
 		return ldns_rr_rdf(nsec3_rr, 3);
 	}
 	return NULL;
