@@ -1,4 +1,5 @@
-1.6.10	
+1.6.10
+	* New example tool added: ldns-gen-zone.
 	* Serial-arithmetic for the inception and expiration fields of a RRSIG
 	  and correctly converting them to broken-out time information.
 	* Slight performance increase of ldns-verifyzone
