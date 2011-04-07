@@ -62,6 +62,7 @@ MAIN_SOURCES = ldns-read-zone.c \
 		  ldns-notify.c \
 		  ldns-testns.c \
 		  ldns-compare-zones.c \
+		  ldns-gen-zone.c \
 		  ldnsd.c
 
 MAIN_SSL_SOURCES = ldns-signzone.c \
