@@ -42,7 +42,7 @@ usage(FILE *fp, char *prog) {
  *
  */
 static int
-insert_ds(ldns_rdf *dsowner, int ttl)
+insert_ds(ldns_rdf *dsowner, uint32_t ttl)
 {
         int d, dsrand;
         int keytag = 0;
@@ -63,14 +63,14 @@ insert_ds(ldns_rdf *dsowner, int ttl)
                  */
                 snprintf(digeststr, 65,
                         "%08x%08x%08x%08x%08x%08x%08x%08x%08x%08x%08x%08x%08x%08x%08x%08x",
-                        rand()%RAND_MAX, rand()%RAND_MAX, rand()%RAND_MAX,
-                        rand()%RAND_MAX, rand()%RAND_MAX, rand()%RAND_MAX,
-                        rand()%RAND_MAX, rand()%RAND_MAX, rand()%RAND_MAX,
-                        rand()%RAND_MAX, rand()%RAND_MAX, rand()%RAND_MAX,
-                        rand()%RAND_MAX, rand()%RAND_MAX, rand()%RAND_MAX,
-                        rand()%RAND_MAX);
+                        (unsigned) rand()%RAND_MAX, (unsigned) rand()%RAND_MAX, (unsigned) rand()%RAND_MAX,
+                        (unsigned) rand()%RAND_MAX, (unsigned) rand()%RAND_MAX, (unsigned) rand()%RAND_MAX,
+                        (unsigned) rand()%RAND_MAX, (unsigned) rand()%RAND_MAX, (unsigned) rand()%RAND_MAX,
+                        (unsigned) rand()%RAND_MAX, (unsigned) rand()%RAND_MAX, (unsigned) rand()%RAND_MAX,
+                        (unsigned) rand()%RAND_MAX, (unsigned) rand()%RAND_MAX, (unsigned) rand()%RAND_MAX,
+                        (unsigned) rand()%RAND_MAX);
                 dsownerstr = ldns_rdf2str(dsowner);
-                fprintf(stdout, "%s\t%d\tIN\tDS\t%d %d %d %s\n", dsownerstr, ttl, keytag, ALGO, DIGESTTYPE, digeststr);
+                fprintf(stdout, "%s\t%u\tIN\tDS\t%d %d %d %s\n", dsownerstr, (unsigned) ttl, keytag, ALGO, DIGESTTYPE, digeststr);
         }
         return dsrand;
 }
@@ -80,13 +80,14 @@ main(int argc, char **argv) {
         char *filename, *rrstr, *ownerstr;
         char *classtypestr1 = "IN NS ns1.example.com.";
         char *classtypestr2 = "IN NS ns2.example.com.";
-        const int classtypelen = strlen(classtypestr1);
+        const size_t classtypelen = strlen(classtypestr1);
         /* Simply because this was developed by SIDN and we don't use xn-- for .nl :-) */
         const char *punystr = "xn--fake-rr";
-        const int punylen = strlen(punystr);
-        int rrstrlen, ownerlen;
+        const size_t punylen = strlen(punystr);
+        size_t rrstrlen, ownerlen;
         FILE *fp;
-        int c, ttl, nsrand;
+        int c, nsrand;
+        uint32_t ttl;
         int counta,countd,countr;
         ldns_zone *z;
         ldns_rdf *origin = NULL;
@@ -102,6 +103,7 @@ main(int argc, char **argv) {
         ldns_rdf *owner;
         ldns_rr_type cur_rr_type;
         ldns_rr *cur_rr;
+        ldns_status status;
 
         counta = countd = countr = 0;
 
@@ -173,6 +175,11 @@ main(int argc, char **argv) {
                 fprintf(stderr, "%s at %d\n", ldns_get_errorstr_by_id(s), line_nr);
                 exit(EXIT_FAILURE);
         }
+        if (!ldns_zone_soa(z)) {
+                fprintf(stderr, "No zone data seen\n");
+                exit(EXIT_FAILURE);
+        }
+
         ttl = ldns_rr_ttl(ldns_zone_soa(z));
         if (!origin) {
                 origin = ldns_rr_owner(ldns_zone_soa(z));
@@ -191,21 +198,32 @@ main(int argc, char **argv) {
                 while (addrrs > counta) {
                         counta++;
                         rrstrlen = punylen + ownerlen + classtypelen + 4;
+                        rrstrlen *= 2; /* estimate */
                         rrstr = (char*)malloc(rrstrlen);
                         if (!rrstr) {
                                 fprintf(stderr, "malloc() failed: Out of memory\n");
                                 exit(EXIT_FAILURE);
                         }
-                        snprintf(rrstr, rrstrlen, "%s%d.%s %d %s", punystr, counta,
-                                ownerstr, ttl, classtypestr1);
-                        ldns_rr_new_frm_str(&cur_rr, rrstr, 0, NULL, NULL);
-	                    ldns_rr_print(stdout, cur_rr);
-                        ldns_rr_free(cur_rr);
+                        (void)snprintf(rrstr, rrstrlen, "%s%d.%s %u %s", punystr, counta,
+                                ownerstr, (unsigned) ttl, classtypestr1);
+                        status = ldns_rr_new_frm_str(&cur_rr, rrstr, 0, NULL, NULL);
+                        if (status == LDNS_STATUS_OK) {
+                                ldns_rr_print(stdout, cur_rr);
+                                ldns_rr_free(cur_rr);
+                        } else {
+                                fprintf(stderr, "ldns_rr_new_frm_str() failed\n");
+                                exit(EXIT_FAILURE);
+                        }
 
-                        snprintf(rrstr, rrstrlen, "%s%d.%s %d %s", punystr, counta,
-                            ownerstr, ttl, classtypestr2);
-                        ldns_rr_new_frm_str(&cur_rr, rrstr, 0, NULL, NULL);
-	                    ldns_rr_print(stdout, cur_rr);
+                        (void)snprintf(rrstr, rrstrlen, "%s%d.%s %u %s", punystr, counta,
+                                ownerstr, (unsigned) ttl, classtypestr2);
+                        status = ldns_rr_new_frm_str(&cur_rr, rrstr, 0, NULL, NULL);
+                        if (status == LDNS_STATUS_OK) {
+                                ldns_rr_print(stdout, cur_rr);
+                        } else {
+                                fprintf(stderr, "ldns_rr_new_frm_str() failed\n");
+                                exit(EXIT_FAILURE);
+                        }
 
                         free(rrstr);
 
@@ -257,9 +275,11 @@ main(int argc, char **argv) {
                         /**
                          * Print them...
                          */
-                        while (cur_rr = ldns_rr_list_pop_rr(rrset_list)) {
+                        cur_rr = ldns_rr_list_pop_rr(rrset_list);
+                        while (cur_rr) {
                                 ttl = ldns_rr_ttl(cur_rr);
                                 fprintf(stdout, "%s", ldns_rr2str(cur_rr));
+                                cur_rr = ldns_rr_list_pop_rr(rrset_list);
                         }
                         /*
                          * And all the way at the end a DS record if
@@ -287,7 +307,7 @@ main(int argc, char **argv) {
          * And done...
          */
         fclose(fp);
-        fprintf(stdout, ";; Added %d DS records to %d NS RRset's (from input-zone: %d, from added: %d)\n;; lines in original input-zone: %d\n",
-                countd, counta + countr, countr, counta, line_nr, dsperc);
+        fprintf(stdout, ";; Added %d DS records (percentage was %d) to %d NS RRset's (from input-zone: %d, from added: %d)\n;; lines in original input-zone: %d\n",
+                countd, dsperc, counta + countr, countr, counta, line_nr);
         exit(EXIT_SUCCESS);
 }
