@@ -267,9 +267,6 @@ main(int argc, char **argv) {
                  * was used in combination with an unsorted zone file
                  */
                 while((rrset_list = ldns_rr_list_pop_rrset(ldns_zone_rrs(z)))) {
-                        /**
-                         * SOA record is not counted as a RRset apparantly - hence not printed, unless we do it explicitly (below).
-                         */
                         owner = ldns_rr_list_owner(rrset_list);
                         cur_rr_type = ldns_rr_list_type(rrset_list);
                         /**
@@ -296,7 +293,7 @@ main(int argc, char **argv) {
                                  * No DS records for the $ORIGIN, only for delegations, obey dsperc.
                                  */
                                 countr++;
-                                insert_ds(owner, ttl);
+                                countd += insert_ds(owner, ttl);
                         }
                         ldns_rr_list_free(rrset_list);
                         ldns_rdf_free(owner);
