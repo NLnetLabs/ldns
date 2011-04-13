@@ -41,11 +41,13 @@
  $result = SWIG_Python_AppendOutput($result, SWIG_NewPointerObj(SWIG_as_voidptr($1_pkt), SWIGTYPE_p_ldns_struct_pkt, SWIG_POINTER_OWN |  0 ));
 }
 
+%newobject ldns_pkt_new;
 %newobject ldns_pkt_clone;
 %newobject ldns_pkt_rr_list_by_type;
 %newobject ldns_pkt_rr_list_by_name_and_type;
 %newobject ldns_pkt_rr_list_by_name;
 %newobject ldns_update_pkt_new;
+
 
 %nodefaultctor ldns_struct_pkt; //no default constructor & destructor
 %nodefaultdtor ldns_struct_pkt;
@@ -69,9 +71,57 @@ void _ldns_pkt_free (ldns_pkt* p) {
 %newobject ldns_pkt_algorithm2str;
 %newobject ldns_pkt_cert_algorithm2str;
 
-%exception ldns_pkt_push_rr(ldns_pkt *packet, ldns_pkt_section section, ldns_rr *rr) %{ $action if (result) Py_INCREF(obj2); %}
-%exception ldns_pkt_push_rr_list(ldns_pkt *packet, ldns_pkt_section section, ldns_rr_list *list) %{ $action if (result) Py_INCREF(obj2); %}
 
+/* cloning of packet_lists to make them independent of the original packet */
+
+%newobject _ldns_pkt_additional;
+%newobject _ldns_pkt_answer;
+%newobject _ldns_pkt_authority;
+%newobject _ldns_pkt_question;
+
+%rename(__ldns_pkt_additional) ldns_pkt_additional;
+%inline %{
+ldns_rr_list* _ldns_pkt_additional(ldns_pkt* p) {
+   return ldns_rr_list_clone(ldns_pkt_additional(p));
+}
+%}
+
+%rename(__ldns_pkt_answer) ldns_pkt_answer;
+%inline %{
+ldns_rr_list* _ldns_pkt_answer(ldns_pkt* p) {
+   return ldns_rr_list_clone(ldns_pkt_answer(p));
+}
+%}
+
+%rename(__ldns_pkt_authority) ldns_pkt_authority;
+%inline %{
+ldns_rr_list* _ldns_pkt_authority(ldns_pkt* p) {
+   return ldns_rr_list_clone(ldns_pkt_authority(p));
+}
+%}
+
+%rename(__ldns_pkt_question) ldns_pkt_question;
+%inline %{
+ldns_rr_list* _ldns_pkt_question(ldns_pkt* p) {
+   return ldns_rr_list_clone(ldns_pkt_question(p));
+}
+%}
+
+/* clone data when pushed in */
+
+%rename(__ldns_pkt_push_rr) ldns_pkt_push_rr;
+%inline %{
+bool _ldns_pkt_push_rr(ldns_pkt* p, ldns_pkt_section sec, ldns_rr *rr) {
+   return ldns_pkt_push_rr(p, sec, ldns_rr_clone(rr));
+}
+%}
+
+%rename(__ldns_pkt_push_rr_list) ldns_pkt_push_rr_list;
+%inline %{
+bool _ldns_pkt_push_rr_list(ldns_pkt* p, ldns_pkt_section sec, ldns_rr_list *rrl) {
+   return ldns_pkt_push_rr_list(p, sec, ldns_rr_list_clone(rrl));
+}
+%}
 
 %feature("docstring") ldns_struct_pkt "LDNS packet object. 
 
@@ -224,7 +274,7 @@ This simple example instances a resolver in order to resolve NS for nic.cz.
                
                :returns: (ldns_rr_list \*) the section
             """
-            return _ldns.ldns_pkt_additional(self)
+            return _ldns._ldns_pkt_additional(self)
             #parameters: const ldns_pkt *,
             #retvals: ldns_rr_list *
 
@@ -252,7 +302,7 @@ This simple example instances a resolver in order to resolve NS for nic.cz.
                
                :returns: (ldns_rr_list \*) the section
             """
-            return _ldns.ldns_pkt_answer(self)
+            return _ldns._ldns_pkt_answer(self)
             #parameters: const ldns_pkt *,
             #retvals: ldns_rr_list *
 
@@ -279,7 +329,7 @@ This simple example instances a resolver in order to resolve NS for nic.cz.
                
                :returns: (ldns_rr_list \*) the section
             """
-            return _ldns.ldns_pkt_authority(self)
+            return _ldns._ldns_pkt_authority(self)
             #parameters: const ldns_pkt *,
             #retvals: ldns_rr_list *
 
@@ -433,7 +483,7 @@ This simple example instances a resolver in order to resolve NS for nic.cz.
                    rr to push
                :returns: (bool) a boolean which is true when the rr was added
             """
-            return _ldns.ldns_pkt_push_rr(self,section,rr)
+            return _ldns._ldns_pkt_push_rr(self,section,rr)
             #parameters: ldns_pkt *,ldns_pkt_section,ldns_rr *,
             #retvals: bool
 
@@ -446,7 +496,7 @@ This simple example instances a resolver in order to resolve NS for nic.cz.
                    the rr_list to push
                :returns: (bool) a boolean which is true when the rr was added
             """
-            return _ldns.ldns_pkt_push_rr_list(self,section,list)
+            return _ldns._ldns_pkt_push_rr_list(self,section,list)
             #parameters: ldns_pkt *,ldns_pkt_section,ldns_rr_list *,
             #retvals: bool
 
@@ -482,7 +532,7 @@ This simple example instances a resolver in order to resolve NS for nic.cz.
                
                :returns: (ldns_rr_list \*) the section
             """
-            return _ldns.ldns_pkt_question(self)
+            return _ldns._ldns_pkt_question(self)
             #parameters: const ldns_pkt *,
             #retvals: ldns_rr_list *
 

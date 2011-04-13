@@ -66,6 +66,10 @@
 %newobject ldns_dname_new_frm_str;
 %newobject ldns_dname_new_frm_data;
 
+%newobject ldns_rdf_new;
+%newobject ldns_rdf_new_frm_str;
+%newobject ldns_rdf_new_frm_data;
+
 %delobject ldns_rdf_deep_free;
 %delobject ldns_rdf_free;
 
@@ -141,7 +145,7 @@ The data is a network ordered array of bytes, which size is specified by the (16
         def __init__(self):
             raise Exception("This class can't be created directly. Please use: ldns_rdf_new, ldns_rdf_new_frm_data, ldns_rdf_new_frm_str, ldns_rdf_new_frm_fp, ldns_rdf_new_frm_fp_l")
        
-        __swig_destroy__ = _ldns._ldns_rdf_free
+        __swig_destroy__ = _ldns._ldns_rdf_deep_free
 
         #LDNS_RDF_CONSTRUCTORS_#
         @staticmethod

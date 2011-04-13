@@ -48,6 +48,7 @@
 %ignore ldns_struct_rr::_rdata_fields;
 
 %newobject ldns_rr_clone;
+%newobject ldns_rr_new;
 %newobject ldns_rr_pop_rdf;
 %delobject ldns_rr_free;
 
@@ -828,6 +829,8 @@ The RR is the basic DNS element that contains actual data. This class allows to 
 %newobject ldns_rr_list_pop_rr;
 %newobject ldns_rr_list_pop_rr_list;
 %newobject ldns_rr_list_pop_rrset;
+%newobject ldns_rr_list_rr;
+%newobject ldns_rr_list_new;
 %delobject ldns_rr_list_deep_free;
 %delobject ldns_rr_list_free;
 
@@ -846,8 +849,40 @@ void _ldns_rr_list_free(ldns_rr_list* r) {
 %rename(_ldns_rr_list_free) ldns_rr_list_free;
 #endif
 
-%exception ldns_rr_list_push_rr(ldns_rr_list *rr_list, const ldns_rr *rr) %{ $action if (result) Py_INCREF(obj1); %}
-%exception ldns_rr_list_push_rr_list(ldns_rr_list *rr_list, const ldns_rr_list *push_list) %{ $action if (result) Py_INCREF(obj1); %}
+/* clone data on push */
+
+%rename(__ldns_rr_list_push_rr) ldns_rr_list_push_rr;
+%inline %{
+void _ldns_rr_list_push_rr(ldns_rr_list* r, ldns_rr *rr) {
+   ldns_rr_list_push_rr(r, ldns_rr_clone(rr));
+}
+%}
+
+%rename(__ldns_rr_list_push_rr_list) ldns_rr_list_push_rr_list;
+%inline %{
+void _ldns_rr_list_push_rr_list(ldns_rr_list* r, ldns_rr_list *r2) {
+   ldns_rr_list_push_rr_list(r, ldns_rr_list_clone(r2));
+}
+%}
+
+%rename(__ldns_rr_list_cat) ldns_rr_list_cat;
+%inline %{
+void _ldns_rr_list_cat(ldns_rr_list* r, ldns_rr_list *r2) {
+   ldns_rr_list_cat(r, ldns_rr_list_clone(r2));
+}
+%}
+
+
+/* clone data on pull */
+
+%newobject _ldns_rr_list_rr;
+
+%rename(__ldns_rr_list_rr) ldns_rr_list_rr;
+%inline %{
+ldns_rr* _ldns_rr_list_rr(ldns_rr_list* r, int i) {
+   return ldns_rr_clone(ldns_rr_list_rr(r, i));
+}
+%}
 
 %newobject ldns_rr_list2str;
 
@@ -867,7 +902,7 @@ This class contains a list of RR's (see :class:`ldns.ldns_rr`).
             if not self.this:
                 raise Exception("Can't create new RR_LIST")
        
-        __swig_destroy__ = _ldns._ldns_rr_list_free
+        __swig_destroy__ = _ldns._ldns_rr_list_deep_free
 
         #LDNS_RR_LIST_CONSTRUCTORS_#
         @staticmethod
@@ -942,7 +977,7 @@ This class contains a list of RR's (see :class:`ldns.ldns_rr`).
                    the rightside
                :returns: (bool) a left with right concatenated to it
             """
-            return _ldns.ldns_rr_list_cat(self,right)
+            return _ldns._ldns_rr_list_cat(self,right)
             #parameters: ldns_rr_list *,ldns_rr_list *,
             #retvals: bool
 
@@ -991,7 +1026,10 @@ This class contains a list of RR's (see :class:`ldns.ldns_rr`).
                
                :returns: (ldns_rr \*) NULL if nothing to pop. Otherwise the popped RR
             """
-            return _ldns.ldns_rr_list_pop_rr(self)
+            rr = _ldns.ldns_rr_list_pop_rr(self)
+            #if hasattr(self, "_python_rr_refs") and rr in self._python_rr_refs:
+            #    self._python_rr_refs.remove(rr)
+            return rr
             #parameters: ldns_rr_list *,
             #retvals: ldns_rr *
 
@@ -1022,7 +1060,11 @@ This class contains a list of RR's (see :class:`ldns.ldns_rr`).
                    the rr to push
                :returns: (bool) false on error, otherwise true
             """
-            return _ldns.ldns_rr_list_push_rr(self,rr)
+            #if hasattr(self, "_python_rr_refs"):
+            #    self._python_rr_refs.add(rr)
+            #else:
+            #    self._python_rr_refs = set([rr])
+            return _ldns._ldns_rr_list_push_rr(self,rr)
             #parameters: ldns_rr_list *,const ldns_rr *,
             #retvals: bool
 
@@ -1033,7 +1075,7 @@ This class contains a list of RR's (see :class:`ldns.ldns_rr`).
                    the rr_list to push
                :returns: (bool) false on error, otherwise true
             """
-            return _ldns.ldns_rr_list_push_rr_list(self,push_list)
+            return _ldns._ldns_rr_list_push_rr_list(self,push_list)
             #parameters: ldns_rr_list *,const ldns_rr_list *,
             #retvals: bool
 
@@ -1044,7 +1086,7 @@ This class contains a list of RR's (see :class:`ldns.ldns_rr`).
                    return this rr
                :returns: (ldns_rr \*) the rr at position nr
             """
-            return _ldns.ldns_rr_list_rr(self,nr)
+            return _ldns._ldns_rr_list_rr(self,nr)
             #parameters: const ldns_rr_list *,size_t,
             #retvals: ldns_rr *
 
