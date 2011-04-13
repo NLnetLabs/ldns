@@ -95,6 +95,9 @@ uint32_t ldns_read_timeval_usec(struct timeval* t) {
 %apply int *OUTPUT { int *line_nr};
 %apply uint32_t *OUTPUT { uint32_t *default_ttl};
 
+// wire2pkt
+%apply (char *STRING, int LENGTH) { (const char *str, int len) };
+
 %include "ldns_packet.i"
 %include "ldns_resolver.i"
 %include "ldns_rr.i"
@@ -258,10 +261,34 @@ PyObject* ldns_fetch_valid_domain_keys_(const ldns_resolver * res, const ldns_rd
    return tuple;
  }
 
+PyObject* ldns_wire2pkt_(const char *str, int len)
+ //returns tuple (status, result)
+ {
+  PyObject *resultobj = 0;
+  ldns_pkt *arg1 = NULL;
+  uint8_t *arg2 = (uint8_t *) str;
+  size_t arg3 = (size_t) len;
+  ldns_status result;
+  PyObject* tuple;
+  
+  result = (ldns_status)ldns_wire2pkt(&arg1,arg2,arg3);
+  tuple = PyTuple_New(2);
+  PyTuple_SetItem(tuple, 0, SWIG_From_int(result));
+  if (result == LDNS_STATUS_OK)
+     PyTuple_SetItem(tuple, 1, SWIG_NewPointerObj(SWIG_as_voidptr(arg1), SWIGTYPE_p_ldns_struct_pkt, SWIG_POINTER_OWN |  0 ));
+  else {
+     Py_INCREF(Py_None);
+     PyTuple_SetItem(tuple, 1, Py_None);
+  }
+  return tuple;
+}
+
 %}
 
 %pythoncode %{
 def ldns_fetch_valid_domain_keys(res, domain, keys):
     return _ldns.ldns_fetch_valid_domain_keys_(res, domain, keys)
-%}
 
+def ldns_wire2pkt(data):
+    return _ldns.ldns_wire2pkt_(data)
+%}

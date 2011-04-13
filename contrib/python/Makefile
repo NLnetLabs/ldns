@@ -62,6 +62,6 @@ doc: ../../.libs/ldns.so.1 _ldns.so
 #for development only
 swig: ldns.i
 	swig -python -o ldns_wrapper.c -I../.. ldns.i
-	gcc -c ldns_wrapper.c -O9 -fPIC -I../.. -I../../ldns -I/usr/include/python2.5 -I. -o ldns_wrapper.o
+	gcc -c ldns_wrapper.c -O9 -fPIC -I../.. -I../../ldns -I/usr/local/include/python2.6 -I. -o ldns_wrapper.o
 	ld -shared ldns_wrapper.o -L../../.libs -lldns -o _ldns.so 
 
