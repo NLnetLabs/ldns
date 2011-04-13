@@ -166,7 +166,10 @@ This simple example instances a resolver in order to resolve www.nic.cz record o
                  www.l.google.com.	300	IN	A	74.125.43.147
                     
             """
-            return _ldns.ldns_get_rr_list_addr_by_name(self, name, aclass, flags)
+            rdf = name
+            if isinstance(name, str):
+                rdf =  _ldns.ldns_dname_new_frm_str(name)
+            return _ldns.ldns_get_rr_list_addr_by_name(self, rdf, aclass, flags)
 
         def get_name_by_addr(self, addr, aclass = _ldns.LDNS_RR_CLASS_IN, flags = _ldns.LDNS_RD):
             """Ask the resolver about the address and return the name
