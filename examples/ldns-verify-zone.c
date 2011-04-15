@@ -532,7 +532,7 @@ verify_dnssec_name(ldns_rdf *zone_name,
 		/* not glue, do real verify */
 		cur_rrset = name->rrsets;
 		while(cur_rrset) {
-			if (cur_rrset->type != LDNS_RR_TYPE_A ||
+			if ((cur_rrset->type != LDNS_RR_TYPE_A && cur_rrset->type != LDNS_RR_TYPE_AAAA) ||
 			    !ldns_dnssec_zone_find_rrset(zone, name->name, LDNS_RR_TYPE_NS)) {
 				status = verify_dnssec_rrset(zone_name, name->name, cur_rrset, keys, glue_rrs);
 				if (status != LDNS_STATUS_OK && result == LDNS_STATUS_OK) {
