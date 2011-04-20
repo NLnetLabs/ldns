@@ -431,6 +431,17 @@ ldns_rr_new_frm_str_internal(ldns_rr **newrr, const char *str,
 						cur_hex_data_size = 0;
 						while(cur_hex_data_size < 2 * hex_data_size) {
 							c = ldns_bget_token(rd_buf, rd, delimiters, LDNS_MAX_RDFLEN);
+							if (c == -1) {
+								LDNS_FREE(hex_data_str);
+								LDNS_FREE(rd);
+								LDNS_FREE(b64);
+								ldns_buffer_free(rd_buf);
+								ldns_buffer_free(rr_buf);
+								LDNS_FREE(rdata);
+								ldns_rr_free(new);
+								return LDNS_STATUS_SYNTAX_RDATA_ERR;
+							}
+ 							rd_strlen = strlen(rd);
 							rd_strlen = strlen(rd);
 							strncpy(hex_data_str + cur_hex_data_size, rd, rd_strlen);
 							cur_hex_data_size += rd_strlen;
