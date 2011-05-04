@@ -25,7 +25,7 @@
  */
 static int
 usage(FILE *fp, char *prog) {
-        fprintf(fp, "\n\nUsage: %s [-cshnv] [-ap NUM] [-o ORIGIN] [<zonefile>]\n", prog);
+        fprintf(fp, "\n\nUsage: %s [-hsv] [-ap NUM] [-o ORIGIN] [<zonefile>]\n", prog);
         fprintf(fp, "\tReads a zonefile and add some artificial NS RRsets and DS records.\n");
         fprintf(fp, "\tIf no zonefile is given, the zone is read from stdin.\n");
         fprintf(fp, "\t-a <NUM> add NUM artifical delegations (NS RRSets) to output.\n");
