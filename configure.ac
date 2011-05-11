@@ -229,10 +229,27 @@ AC_C_BIGENDIAN
 
 # Checks for header files.
 AC_HEADER_STDC
+
+# AC_HEADER_STDBOOL
+# Below a workaround to export HAVE_STDBOOL_H and HAVE__BOOL as Output 
+# variables as well.
+#
+AC_CHECK_HEADER(stdbool.h, [
+AC_SUBST(HAVE_STDBOOL_H, 1)
+],[
+AC_SUBST(HAVE_STDBOOL_H, 0)
+],[AC_INCLUDES_DEFAULT])
+
+AC_CHECK_TYPES(_Bool,[
+AC_SUBST(HAVENOT__BOOL, 0)
+],[
+AC_SUBST(HAVENOT__BOOL, 1)
+],[AC_INCLUDES_DEFAULT])
+
 #AC_HEADER_SYS_WAIT
 #AC_CHECK_HEADERS([getopt.h fcntl.h stdlib.h string.h strings.h unistd.h])
 # do the very minimum - we can always extend this
-AC_CHECK_HEADERS([getopt.h stdarg.h stdbool.h openssl/ssl.h netinet/in.h time.h arpa/inet.h netdb.h],,, [AC_INCLUDES_DEFAULT])
+AC_CHECK_HEADERS([getopt.h stdarg.h openssl/ssl.h netinet/in.h time.h arpa/inet.h netdb.h],,, [AC_INCLUDES_DEFAULT])
 AC_CHECK_HEADERS(sys/param.h sys/mount.h,,,
 [AC_INCLUDES_DEFAULT
   [
@@ -493,7 +510,7 @@ size_t strlcpy(char *dst, const char *src, size_t siz);
 #endif
 ])
 
-AC_CONFIG_FILES([Makefile ldns/net.h ldns/util.h packaging/libldns.pc packaging/ldns-config])
+AC_CONFIG_FILES([Makefile ldns/common.h ldns/net.h ldns/util.h packaging/libldns.pc packaging/ldns-config])
 
 AC_CONFIG_HEADER([ldns/config.h])
 AC_OUTPUT
