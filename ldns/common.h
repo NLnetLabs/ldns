@@ -15,20 +15,23 @@
 #ifndef LDNS_COMMON_H
 #define LDNS_COMMON_H
 
-#if @HAVE_STDBOOL_H@
-# include <stdbool.h>
+#if !defined(__cplusplus) && !defined(__bool_true_false_are_defined)
+
+#if defined(HAVE_STDBOOL_H)
+#include <stdbool.h>
 #else
-# if @HAVENOT__BOOL@
-#  ifdef __cplusplus
-typedef bool _Bool;
-#  else
-#   define _Bool signed char
-#  endif
-# endif
-# define bool _Bool
-# define false 0
-# define true 1
-# define __bool_true_false_are_defined 1
+
+/*@ignore@*/
+/* splint barfs on this construct */
+typedef unsigned int bool;
+#define bool bool
+#define false 0
+#define true  1
+#define __bool_true_false_are_defined 1
+/*@end@*/
+
+#endif
+
 #endif
 
 #ifdef HAVE_ATTR_FORMAT
