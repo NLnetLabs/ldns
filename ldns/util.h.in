@@ -50,6 +50,8 @@ extern "C" {
 
 #define LDNS_XMALLOC(type, count)	((type *) malloc((count) * sizeof(type)))
 
+#define LDNS_CALLOC(type, count)	((type *) calloc((count), sizeof(type)))
+
 #define LDNS_REALLOC(ptr, type)		LDNS_XREALLOC((ptr), type, 1)
 
 #define LDNS_XREALLOC(ptr, type, count)				\
