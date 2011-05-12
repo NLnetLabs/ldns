@@ -18,8 +18,11 @@
 ldns_dnssec_data_chain *
 ldns_dnssec_data_chain_new()
 {
-	ldns_dnssec_data_chain *nc = LDNS_XMALLOC(ldns_dnssec_data_chain, 1);
+	ldns_dnssec_data_chain *nc = LDNS_CALLOC(ldns_dnssec_data_chain, 1);
         if(!nc) return NULL;
+	/* 
+	 * not needed anymore because of CALLOC
+
 	nc->rrset = NULL;
 	nc->parent_type = 0;
 	nc->parent = NULL;
@@ -27,6 +30,8 @@ ldns_dnssec_data_chain_new()
 	nc->packet_rcode = 0;
 	nc->packet_qtype = 0;
 	nc->packet_nodata = false;
+
+	 */
 	return nc;
 }
 

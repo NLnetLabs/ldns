@@ -237,6 +237,15 @@ ldns_rdf *ldns_dnssec_name_name(ldns_dnssec_name *name);
  */
 void ldns_dnssec_name_set_name(ldns_dnssec_name *name,
 						 ldns_rdf *dname);
+/**
+ * Returns if dnssec_name structure is marked as glue.
+ * Note that the ldns_dnssec_zone_mark_glue function has to be called
+ * on a zone before using this function.
+ *
+ * \param[in] name the dnssec name to get the domain name from
+ * \return true if the structure is marked as glue, false otherwise.
+ */
+bool ldns_dnssec_name_is_glue(ldns_dnssec_name *name);
 
 /**
  * Sets the NSEC(3) RR of the given dnssec_name structure

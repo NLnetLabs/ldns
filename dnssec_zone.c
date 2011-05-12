@@ -297,10 +297,12 @@ ldns_dnssec_name_new()
 {
 	ldns_dnssec_name *new_name;
 
-	new_name = LDNS_MALLOC(ldns_dnssec_name);
+	new_name = LDNS_CALLOC(ldns_dnssec_name, 1);
 	if (!new_name) {
 		return NULL;
 	}
+	/*
+         * not needed anymore because of CALLOC
 
 	new_name->name = NULL;
 	new_name->rrsets = NULL;
@@ -311,6 +313,7 @@ ldns_dnssec_name_new()
 	new_name->is_glue = false;
 	new_name->hashed_name = NULL;
 
+	 */
 	return new_name;
 }
 
@@ -373,6 +376,15 @@ ldns_dnssec_name_name(ldns_dnssec_name *name)
 		return name->name;
 	}
 	return NULL;
+}
+
+bool
+ldns_dnssec_name_is_glue(ldns_dnssec_name *name)
+{
+	if (name) {
+		return name->is_glue;
+	}
+	return false;
 }
 
 void
