@@ -801,11 +801,11 @@ ldns_dnssec_zone_add_empty_nonterminals(ldns_dnssec_zone *zone)
 		for (i = 1; i < next_label_count - soa_label_count; i++) {
 			lpos = (int)cur_label_count - (int)next_label_count + (int)i;
 			if (lpos >= 0) {
-				l1 = ldns_dname_label(cur_name, (uint8_t)lpos);
+				l1 = ldns_dname_clone_from(cur_name, (uint8_t)lpos);
 			} else {
 				l1 = NULL;
 			}
-			l2 = ldns_dname_label(next_name, i);
+			l2 = ldns_dname_clone_from(next_name, i);
 
 			if (!l1 || ldns_dname_compare(l1, l2) != 0) {
 				/* We have an empty nonterminal, add it to the
