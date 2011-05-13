@@ -817,7 +817,7 @@ ldns_dnssec_zone_add_empty_nonterminals(ldns_dnssec_zone *zone)
 				}
 				new_name->name = ldns_dname_clone_from(next_name,
 				                                       i);
-				if (!new_name) {
+				if (!new_name->name) {
 					ldns_dnssec_name_free(new_name);
 					return LDNS_STATUS_MEM_ERR;
 				}

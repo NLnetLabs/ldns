@@ -15,6 +15,8 @@
 #ifndef LDNS_COMMON_H
 #define LDNS_COMMON_H
 
+/*@ignore@*/
+/* splint barfs on this construct */
 #ifdef HAVE_STDBOOL_H
 # include <stdbool.h>
 #else
@@ -30,6 +32,7 @@ typedef bool _Bool;
 # define true 1
 # define __bool_true_false_are_defined 1
 #endif
+/*@end@*/
 
 #ifdef HAVE_ATTR_FORMAT
 #define ATTR_FORMAT(archetype, string_index, first_to_check) \
