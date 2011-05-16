@@ -92,9 +92,7 @@ ldns_rdf *ldns_sign_public_rsamd5(ldns_buffer *to_sign, RSA *key);
  * \return LDNS_STATUS_OK on succesful completion
  */
 ldns_status
-ldns_dnssec_zone_mark_glue(ldns_dnssec_zone *zone)
-{
-}
+ldns_dnssec_zone_mark_glue(ldns_dnssec_zone *zone);
 
 /**
  * Finds the first dnssec_name node in the rbtree that has not been marked
