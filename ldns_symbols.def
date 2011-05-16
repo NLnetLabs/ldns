@@ -85,6 +85,7 @@ ldns_dnssec_name_cmp
 ldns_dnssec_name_deep_free
 ldns_dnssec_name_find_rrset
 ldns_dnssec_name_free
+ldns_dnssec_name_is_glue
 ldns_dnssec_name_name
 ldns_dnssec_name_new
 ldns_dnssec_name_new_frm_rr

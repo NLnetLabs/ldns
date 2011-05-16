@@ -538,6 +538,19 @@ ldns_dnssec_name_has_only_a(ldns_dnssec_name *cur_name)
 	return 1;
 }
 
+/*
+ * Regardless of its name, this function does not mark the glue rrsets as glue,
+ * but only names that have ONLY glue rrsets.
+ *
+ * TODO
+ * Names with glue on the delegation are NOT marked! They are handled seperatly
+ * and specially within the is_glue() function in dnssec.c to exclude them 
+ * from the NSEC and NSEC3 bitmaps; and in ldns_dnssec_zone_create_rrsigs_flg()
+ * in dnssec_sign.c to make sure those rrsets are not signed.
+ * 
+ * Also, names that have other obscured rrsets besides A and AAAA types will NOT
+ * be marked. This is probably a mistake.
+ */
 ldns_status
 ldns_dnssec_zone_mark_glue(ldns_dnssec_zone *zone)
 {
@@ -550,7 +563,7 @@ ldns_dnssec_zone_mark_glue(ldns_dnssec_zone *zone)
 		cur_name = (ldns_dnssec_name *) cur_node->data;
 		cur_node = ldns_rbtree_next(cur_node);
 		if (ldns_dnssec_name_has_only_a(cur_name)) {
-			/* assume glue XXX check for zone cur */
+			/* assume glue XXX check for zone cut */
 			cur_owner = ldns_rdf_clone(ldns_rr_owner(
 					      cur_name->rrsets->rrs->rr));
 			while (ldns_dname_label_count(cur_owner) >

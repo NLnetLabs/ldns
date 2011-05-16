@@ -769,7 +769,8 @@ ldns_dnssec_rrsets_contains_type(ldns_dnssec_rrsets *rrsets,
 static int
 is_glue(ldns_dnssec_rrsets *cur_rrsets, ldns_dnssec_rrsets *orig_rrsets)
 {
-	/* only glue if a or aaaa if there are no ns, unless there is soa */
+	/* only glue if a or aaaa with names that have an NS rrset and are not the 
+	   apex (do not have a soa rrset) */
 	return (cur_rrsets->type == LDNS_RR_TYPE_A ||
 	        cur_rrsets->type ==  LDNS_RR_TYPE_AAAA) &&
 	        (ldns_dnssec_rrsets_contains_type(orig_rrsets,

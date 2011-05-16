@@ -83,6 +83,20 @@ ldns_rdf *ldns_sign_public_rsamd5(ldns_buffer *to_sign, RSA *key);
 #endif /* HAVE_SSL */
 
 /**
+ * Marks the names in the zone that contain only glue, by setting the
+ * is_glue attribute of the ldns_dnssec_name structure to true.
+ * Names with glue on the delegation point and occluded names with other 
+ * rrsets than only A and AAAA are not marked!
+ *
+ * \param[in] zone the zone in which to mark the names
+ * \return LDNS_STATUS_OK on succesful completion
+ */
+ldns_status
+ldns_dnssec_zone_mark_glue(ldns_dnssec_zone *zone)
+{
+}
+
+/**
  * Finds the first dnssec_name node in the rbtree that has not been marked
  * as glue, starting at the given node
  *

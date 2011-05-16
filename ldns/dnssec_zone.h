@@ -70,8 +70,14 @@ struct ldns_struct_dnssec_name
 	 */
 	ldns_dnssec_rrs *nsec_signatures;
 	/**
-	 * Set to true if this name is glue
-	 * (as marked by ldns_dnssec_zone_mark_glue())
+	 * Set to true if this name contains only glue rrsets.
+	 * Names that contain other obscured rrsets and records with glue on the
+	 * delegation point will NOT have this bool set to true.
+	 * ldns_dnssec_zone_mark_glue() should have been called before using this
+	 * field.
+	 * This field should not be read directly, but only via the 
+	 * ldns_dnssec_name_is_glue() function.
+	 * 
 	 */
 	bool is_glue;
 	/**
@@ -239,8 +245,11 @@ void ldns_dnssec_name_set_name(ldns_dnssec_name *name,
 						 ldns_rdf *dname);
 /**
  * Returns if dnssec_name structure is marked as glue.
- * Note that the ldns_dnssec_zone_mark_glue function has to be called
- * on a zone before using this function.
+ * The ldns_dnssec_zone_mark_glue() function has to be called on a zone before
+ * using this function.
+ * Only names that have only glue rrsets will be marked.
+ * Names that have other obscured rrsets and names containing glue on the 
+ * delegation point will NOT be marked!
  *
  * \param[in] name the dnssec name to get the domain name from
  * \return true if the structure is marked as glue, false otherwise.
