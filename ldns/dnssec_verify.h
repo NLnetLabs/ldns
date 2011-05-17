@@ -494,7 +494,7 @@ ldns_status ldns_verify_rrsig(ldns_rr_list *rrset,
  * \param[in] key the EVP key structure
  * \param[in] digest_type The digest type of the signature
  */
-#ifdef HAVE_SSL
+#if LDNS_BUILD_CONFIG_HAVE_SSL
 ldns_status ldns_verify_rrsig_evp(ldns_buffer *sig,
 						    ldns_buffer *rrset,
 						    EVP_PKEY *key,
@@ -509,7 +509,7 @@ ldns_status ldns_verify_rrsig_evp(ldns_buffer *sig,
  * \param[in] key the EVP key structure
  * \param[in] digest_type The digest type of the signature
  */
-#ifdef HAVE_SSL
+#if LDNS_BUILD_CONFIG_HAVE_SSL
 ldns_status ldns_verify_rrsig_evp_raw(unsigned char *sig,
 							   size_t siglen,
 							   ldns_buffer *rrset,

@@ -405,6 +405,9 @@ void (*pf) (char *format, ...) __attribute__ ((format (printf, 1, 2)));
 AC_MSG_RESULT($ac_cv_c_format_attribute)
 if test $ac_cv_c_format_attribute = yes; then
   AC_DEFINE(HAVE_ATTR_FORMAT, 1, [Whether the C compiler accepts the "format" attribute])
+  AC_SUBST(ldns_build_config_have_attr_format, 1)
+else
+  AC_SUBST(ldns_build_config_have_attr_format, 0)
 fi
 ])dnl End of ACX_CHECK_FORMAT_ATTRIBUTE
 
@@ -456,6 +459,9 @@ AC_DEFUN([AHX_CONFIG_UNUSED_ATTRIBUTE],
 AC_MSG_RESULT($ac_cv_c_unused_attribute)
 if test $ac_cv_c_unused_attribute = yes; then
   AC_DEFINE(HAVE_ATTR_UNUSED, 1, [Whether the C compiler accepts the "unused" attribute])
+  AC_SUBST(ldns_build_config_have_attr_unused, 1)
+else
+  AC_SUBST(ldns_build_config_have_attr_unused, 0)
 fi
 ])dnl
 

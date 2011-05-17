@@ -42,7 +42,7 @@ ldns_sign_public_buffer(ldns_buffer *sign_buf, ldns_key *key);
  */
 ldns_rr_list *ldns_sign_public(ldns_rr_list *rrset, ldns_key_list *keys);
 
-#ifdef HAVE_SSL
+#if LDNS_BUILD_CONFIG_HAVE_SSL
 /**
  * Sign a buffer with the DSA key (hash with SHA1)
  * \param[in] to_sign buffer with the data
@@ -80,7 +80,7 @@ ldns_rdf *ldns_sign_public_rsasha1(ldns_buffer *to_sign, RSA *key);
  * \return a ldns_rdf with the signed data
  */
 ldns_rdf *ldns_sign_public_rsamd5(ldns_buffer *to_sign, RSA *key);
-#endif /* HAVE_SSL */
+#endif /* LDNS_BUILD_CONFIG_HAVE_SSL */
 
 /**
  * Marks the names in the zone that are occluded. Those names will be skipped

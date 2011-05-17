@@ -177,6 +177,7 @@ case "$enable_ecdsa" in
       ])
       # we now know we have ECDSA and the required curves.
       AC_DEFINE_UNQUOTED([USE_ECDSA], [1], [Define this to enable ECDSA support.])
+      AC_SUBST(ldns_build_config_use_ecdsa, 1)
       AC_WARN([
       *****************************************************************
       *** YOU HAVE ENABLED ECDSA WHICH IS EXPERIMENTAL AT THIS TIME ***
@@ -184,8 +185,10 @@ case "$enable_ecdsa" in
       *****************************************************************])
       ;;
     no)
+      AC_SUBST(ldns_build_config_use_ecdsa, 0)
       ;;
     *)
+      AC_SUBST(ldns_build_config_use_ecdsa, 0)
       ;;
 esac
 
@@ -260,8 +263,10 @@ AC_CHECK_HEADER(inttypes.h,
 [
 include_inttypes_h='#include <inttypes.h>'
 AC_DEFINE(HAVE_INTTYPES_H, 1, [define if you have inttypes.h])
+AC_SUBST(ldns_build_config_have_inttypes_h, 1)
 ],[
 include_inttypes_h=''
+AC_SUBST(ldns_build_config_have_inttypes_h, 0)
 ],[AC_INCLUDES_DEFAULT
 ])
 AC_SUBST(include_inttypes_h)
@@ -495,7 +500,13 @@ size_t strlcpy(char *dst, const char *src, size_t siz);
 #endif
 ])
 
-AC_CONFIG_FILES([Makefile ldns/net.h ldns/util.h packaging/libldns.pc packaging/ldns-config])
+if test "x$HAVE_SSL" = "xyes"; then
+	AC_SUBST(ldns_build_config_have_ssl, 1)
+else
+	AC_SUBST(ldns_build_config_have_ssl, 0)
+fi
+
+AC_CONFIG_FILES([Makefile ldns/common.h ldns/net.h ldns/util.h packaging/libldns.pc packaging/ldns-config])
 
 AC_CONFIG_HEADER([ldns/config.h])
 AC_OUTPUT
