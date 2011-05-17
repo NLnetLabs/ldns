@@ -1,11 +1,31 @@
 1.6.10
 	* New example tool added: ldns-gen-zone.
-	* Serial-arithmetic for the inception and expiration fields of a RRSIG
-	  and correctly converting them to broken-out time information.
-	* Slight performance increase of ldns-verifyzone
-	* Fix to allow glue records with the same name as the delegation
-	* Fix ldns-verifyzone to allow NSEC3 less records for NS rrsets *and* 
+	* bugfix #359: Serial-arithmetic for the inception and expiration
+	  fields of a RRSIG and correctly converting them to broken-out time
+	  information.
+	* bugfix #364: Slight performance increase of ldns-verifyzone.
+	* bugfix #367: Fix to allow glue records with the same name as the
+	  delegation.
+	* Fix ldns-verifyzone to allow NSEC3-less records for NS rrsets *and* 
 	  glue when the zone is opt-out.
+	* bugfix #376: Adapt ldns_nsec3_salt, ldns_nsec3_iterations, 
+	  ldns_nsec3_flags and ldns_nsec3_algorithm to work for NSEC3PARAMS too.
+	* pyldns memory leaks fixed by Bedrich Kosata (at the cost of a bit
+	  performance)
+	* Better handling of reference variables in ldns_rr_new_frm_fp_l from
+	  pyldns, with a very nice generator function by Bedrich Kosata.
+	* Decoupling of the rdfs in rrs in the python wrappers to enable
+	  the python garbage collector by Bedrich Kosata.
+	* bugfix #380: Minimizing effect of discrepancies in sizeof(bool) at
+	  build time and when used.
+	* bugfix #383: Fix detection of empty nonterminals of multiple labels.
+	* Fixed the ommission of rrsets in nsec(3)s and rrsigs to all occluded
+	  names (in stead of just the ones that contain glue only) and all
+	  obscured records on the delegation points (in stead of just the glue).
+	* Clarify the operation of ldns_dnssec_mark_glue and the usage of
+	  ldns_dnssec_node_next_nonglue functions in the documentation.
+	* Added function ldns_dnssec_mark_and_get_glue as an real fast
+	  alternative for ldns_zone_glue_rr_list.
 
 1.6.9	2011-03-16
 	* Fix creating NSEC(3) bitmaps: make array size 65536,
