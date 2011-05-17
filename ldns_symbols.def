@@ -136,6 +136,7 @@ ldns_dnssec_zone_deep_free
 ldns_dnssec_zone_find_nsec3_original
 ldns_dnssec_zone_find_rrset
 ldns_dnssec_zone_free
+ldns_dnssec_zone_mark_and_get_glue
 ldns_dnssec_zone_mark_glue
 ldns_dnssec_zone_names_print
 ldns_dnssec_zone_new

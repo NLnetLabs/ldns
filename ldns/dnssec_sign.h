@@ -83,10 +83,30 @@ ldns_rdf *ldns_sign_public_rsamd5(ldns_buffer *to_sign, RSA *key);
 #endif /* HAVE_SSL */
 
 /**
- * Marks the names in the zone that contain only glue, by setting the
- * is_glue attribute of the ldns_dnssec_name structure to true.
- * Names with glue on the delegation point and occluded names with other 
- * rrsets than only A and AAAA are not marked!
+ * Marks the names in the zone that are occluded. Those names will be skipped
+ * when walking the tree with the ldns_dnssec_name_node_next_nonglue()
+ * function. But watch out! Names that are partially obscured (like glue with
+ * the same name as the delegation) will not be marked and should specifically 
+ * be taken into account seperatly.
+ *
+ * When glue_list is given (not NULL), in the process of marking the names, all
+ * glue resource records will be pushed to that list. Even glue in partially
+ * obscured names.
+ *
+ * \param[in] zone the zone in which to mark the names
+ * \param[in] glue_list the list to which to push the glue rrs
+ * \return LDNS_STATUS_OK on success, an error code otherwise
+ */
+ldns_status
+ldns_dnssec_zone_mark_and_get_glue(
+		ldns_dnssec_zone *zone, ldns_rr_list *glue_list);
+
+/**
+ * Marks the names in the zone that are occluded. Those names will be skipped
+ * when walking the tree with the ldns_dnssec_name_node_next_nonglue()
+ * function. But watch out! Names that are partially obscured (like glue with
+ * the same name as the delegation) will not be marked and should specifically 
+ * be taken into account seperatly.
  *
  * \param[in] zone the zone in which to mark the names
  * \return LDNS_STATUS_OK on succesful completion
@@ -95,8 +115,8 @@ ldns_status
 ldns_dnssec_zone_mark_glue(ldns_dnssec_zone *zone);
 
 /**
- * Finds the first dnssec_name node in the rbtree that has not been marked
- * as glue, starting at the given node
+ * Finds the first dnssec_name node in the rbtree that is not occluded.
+ * It *does* return names that are partially obscured.
  *
  * \param[in] node the first node to check
  * \return the first node that has not been marked as glue, or NULL

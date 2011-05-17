@@ -211,6 +211,16 @@ ldns_dnssec_create_nsec_bitmap(ldns_rr_type rr_type_list[],
 						 ldns_rr_type nsec_type);
 
 /**
+ * returns whether a rrset of the given type is found in the rrsets.
+ *
+ * \param[in] *rsets the rrsets to be tested
+ * \param[in] type the type to test for
+ * \return int 1 if the type was found, 0 otherwise.
+ */
+int
+ldns_dnssec_rrsets_contains_type (ldns_dnssec_rrsets *rrsets, ldns_rr_type type);
+
+/**
  * Creates NSEC
  */
 ldns_rr *

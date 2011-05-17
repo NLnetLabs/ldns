@@ -764,21 +764,6 @@ ldns_dnssec_rrsets_contains_type(ldns_dnssec_rrsets *rrsets,
 	return 0;
 }
 
-/* returns true if the current dnssec_rrset from the given list of rrsets
- * is glue */
-static int
-is_glue(ldns_dnssec_rrsets *cur_rrsets, ldns_dnssec_rrsets *orig_rrsets)
-{
-	/* only glue if a or aaaa with names that have an NS rrset and are not the 
-	   apex (do not have a soa rrset) */
-	return (cur_rrsets->type == LDNS_RR_TYPE_A ||
-	        cur_rrsets->type ==  LDNS_RR_TYPE_AAAA) &&
-	        (ldns_dnssec_rrsets_contains_type(orig_rrsets,
-	              LDNS_RR_TYPE_NS) &&
-	        !ldns_dnssec_rrsets_contains_type(orig_rrsets,
-	              LDNS_RR_TYPE_SOA));
-}
-
 ldns_rr *
 ldns_dnssec_create_nsec(ldns_dnssec_name *from,
                         ldns_dnssec_name *to,
@@ -788,6 +773,7 @@ ldns_dnssec_create_nsec(ldns_dnssec_name *from,
 	ldns_rr_type types[65536];
 	size_t type_count = 0;
 	ldns_dnssec_rrsets *cur_rrsets;
+	int on_delegation_point;
 
 	if (!from || !to || (nsec_type != LDNS_RR_TYPE_NSEC &&
 					 nsec_type != LDNS_RR_TYPE_NSEC3)) {
@@ -799,14 +785,22 @@ ldns_dnssec_create_nsec(ldns_dnssec_name *from,
 	ldns_rr_set_owner(nsec_rr, ldns_rdf_clone(ldns_dnssec_name_name(from)));
 	ldns_rr_push_rdf(nsec_rr, ldns_rdf_clone(ldns_dnssec_name_name(to)));
 
+	on_delegation_point = ldns_dnssec_rrsets_contains_type(
+			from->rrsets, LDNS_RR_TYPE_NS)
+		&& !ldns_dnssec_rrsets_contains_type(
+			from->rrsets, LDNS_RR_TYPE_SOA);
+
 	cur_rrsets = from->rrsets;
 	while (cur_rrsets) {
-		if (is_glue(cur_rrsets, from->rrsets)) {
-			cur_rrsets = cur_rrsets->next;
-			continue;
-		}
-		if (cur_rrsets->type != LDNS_RR_TYPE_RRSIG &&
-		    cur_rrsets->type != LDNS_RR_TYPE_NSEC) {
+		/* Do not include obscured rrsets on the delegation point
+		 * in the type bitmap */
+		if (	   ( on_delegation_point && (
+				cur_rrsets->type == LDNS_RR_TYPE_NS 
+			     || cur_rrsets->type == LDNS_RR_TYPE_DS))
+			|| (!on_delegation_point &&
+				cur_rrsets->type != LDNS_RR_TYPE_RRSIG
+			     && cur_rrsets->type != LDNS_RR_TYPE_NSEC)) {
+
 			types[type_count] = cur_rrsets->type;
 			type_count++;
 		}
@@ -840,6 +834,7 @@ ldns_dnssec_create_nsec3(ldns_dnssec_name *from,
 	size_t type_count = 0;
 	ldns_dnssec_rrsets *cur_rrsets;
 	ldns_status status;
+	int on_delegation_point;
 
 	flags = flags;
 
@@ -866,13 +861,23 @@ ldns_dnssec_create_nsec3(ldns_dnssec_name *from,
 	                          salt_length,
 	                          salt);
 
+	on_delegation_point = ldns_dnssec_rrsets_contains_type(
+			from->rrsets, LDNS_RR_TYPE_NS)
+		&& !ldns_dnssec_rrsets_contains_type(
+			from->rrsets, LDNS_RR_TYPE_SOA);
 	cur_rrsets = from->rrsets;
 	while (cur_rrsets) {
-		if (is_glue(cur_rrsets, from->rrsets)) {
-			cur_rrsets = cur_rrsets->next;
-			continue;
-		}
-		if (cur_rrsets->type != LDNS_RR_TYPE_RRSIG) {
+		/* Do not include obscured rrsets on the delegation point
+		 * in the type bitmap. Potentionally not skipping insecure
+		 * delegation should have been done earlier, in
+		 * 
+		 */
+		if (	   ( on_delegation_point && (
+				cur_rrsets->type == LDNS_RR_TYPE_NS
+			     || cur_rrsets->type == LDNS_RR_TYPE_DS))
+			|| (!on_delegation_point &&
+				cur_rrsets->type != LDNS_RR_TYPE_RRSIG)) {
+
 			types[type_count] = cur_rrsets->type;
 			type_count++;
 		}
