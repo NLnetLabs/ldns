@@ -70,14 +70,13 @@ struct ldns_struct_dnssec_name
 	 */
 	ldns_dnssec_rrs *nsec_signatures;
 	/**
-	 * Set to true if this name contains only glue rrsets.
-	 * Names that contain other obscured rrsets and records with glue on the
-	 * delegation point will NOT have this bool set to true.
-	 * ldns_dnssec_zone_mark_glue() should have been called before using this
-	 * field.
-	 * This field should not be read directly, but only via the 
-	 * ldns_dnssec_name_is_glue() function.
-	 * 
+	 * Unlike what the name is_glue suggests, this field is set to true by
+	 * ldns_dnssec_zone_mark_glue() or ldns_dnssec_zone_mark_and_get_glue()
+	 * when the name, this dnssec_name struct represents, is occluded.
+	 * Names that contain other obscured rrsets and records with glue on
+	 * the delegation point will NOT have this bool set to true.
+	 * This field should NOT be read directly, but only via the 
+	 * ldns_dnssec_name_is_glue() function!
 	 */
 	bool is_glue;
 	/**
