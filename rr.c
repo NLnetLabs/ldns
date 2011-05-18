@@ -441,7 +441,6 @@ ldns_rr_new_frm_str_internal(ldns_rr **newrr, const char *str,
 								ldns_rr_free(new);
 								return LDNS_STATUS_SYNTAX_RDATA_ERR;
 							}
- 							rd_strlen = strlen(rd);
 							rd_strlen = strlen(rd);
 							strncpy(hex_data_str + cur_hex_data_size, rd, rd_strlen);
 							cur_hex_data_size += rd_strlen;

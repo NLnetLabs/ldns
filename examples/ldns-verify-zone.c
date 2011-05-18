@@ -386,11 +386,13 @@ verify_nsec(ldns_rbtree_t *zone_nodes,
 					printf("Error: the NSEC record for ");
 					ldns_rdf_print(stdout, name->name);
 					printf(" points to the wrong next owner name\n");
-					printf("     : ");
-					ldns_rdf_print(stdout, ldns_rr_rdf(name->nsec, 0));
-					printf(" i.s.o. ");
-					ldns_rdf_print(stdout, next_name->name);
-					printf(".\n");
+					if (verbosity >= 4) {
+						printf("     : ");
+						ldns_rdf_print(stdout,ldns_rr_rdf(name->nsec, 0));
+						printf(" i.s.o. ");
+						ldns_rdf_print(stdout, next_name->name);
+						printf(".\n");
+					}
 					if (result == LDNS_STATUS_OK) {
 						result = LDNS_STATUS_ERR;
 					}

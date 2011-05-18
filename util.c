@@ -243,8 +243,8 @@ mktime_from_utc(const struct tm *tm)
 
 #if SIZEOF_TIME_T <= 4
 
-void
-year_and_yday_from_days_since_epoch(int64_t days, struct tm *result)
+static void
+ldns_year_and_yday_from_days_since_epoch(int64_t days, struct tm *result)
 {
 	int year = 1970;
 	int new_year;
@@ -267,8 +267,8 @@ static const int leap_year_mdays[] = {
 	31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31
 };
 
-void
-mon_and_mday_from_year_and_yday(struct tm *result)
+static void
+ldns_mon_and_mday_from_year_and_yday(struct tm *result)
 {
 	int idays = result->tm_yday;
 	const int *mon_lengths = is_leap_year(result->tm_year) ? 
@@ -281,8 +281,8 @@ mon_and_mday_from_year_and_yday(struct tm *result)
 	result->tm_mday = idays + 1;
 }
 
-void
-wday_from_year_and_yday(struct tm *result)
+static void
+ldns_wday_from_year_and_yday(struct tm *result)
 {
 	result->tm_wday  = 4 /* 1-1-1970 was a thursday */
 			 + ((result->tm_year - 1970) % 7) * (365 % 7)
@@ -294,7 +294,7 @@ wday_from_year_and_yday(struct tm *result)
 	}
 }
 
-struct tm *
+static struct tm *
 ldns_gmtime64_r(int64_t clock, struct tm *result)
 {
 	result->tm_isdst =                 0;
@@ -305,9 +305,9 @@ ldns_gmtime64_r(int64_t clock, struct tm *result)
 	result->tm_hour  = (int) (clock % 24);
 	clock           /=                24;
 
-	year_and_yday_from_days_since_epoch(clock, result);
-	mon_and_mday_from_year_and_yday(result);
-	wday_from_year_and_yday(result);
+	ldns_year_and_yday_from_days_since_epoch(clock, result);
+	ldns_mon_and_mday_from_year_and_yday(result);
+	ldns_wday_from_year_and_yday(result);
 	result->tm_year -= 1900;
 
 	return result;
@@ -315,8 +315,8 @@ ldns_gmtime64_r(int64_t clock, struct tm *result)
 
 #endif /* SIZEOF_TIME_T <= 4 */
 
-int64_t
-serial_arithmitics_time(int32_t time, time_t now)
+static int64_t
+ldns_serial_arithmitics_time(int32_t time, time_t now)
 {
 	int32_t offset = time - (int32_t) now;
 	return (int64_t) now + offset;
@@ -324,13 +324,13 @@ serial_arithmitics_time(int32_t time, time_t now)
 
 
 struct tm *
-serial_arithmitics_gmtime_r(int32_t time, time_t now, struct tm *result)
+ldns_serial_arithmitics_gmtime_r(int32_t time, time_t now, struct tm *result)
 {
 #if SIZEOF_TIME_T <= 4
-	int64_t secs_since_epoch = serial_arithmitics_time(time, now);
+	int64_t secs_since_epoch = ldns_serial_arithmitics_time(time, now);
 	return  ldns_gmtime64_r(secs_since_epoch, result);
 #else
-	time_t  secs_since_epoch = serial_arithmitics_time(time, now);
+	time_t  secs_since_epoch = ldns_serial_arithmitics_time(time, now);
 	return  gmtime_r(&secs_since_epoch, result);
 #endif
 }

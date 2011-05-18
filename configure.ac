@@ -505,6 +505,16 @@ if test "x$HAVE_SSL" = "xyes"; then
 else
 	AC_SUBST(ldns_build_config_have_ssl, 0)
 fi
+if test "x$ac_cv_c_format_attribute" = "xyes"; then
+  AC_SUBST(ldns_build_config_have_attr_format, 1)
+else
+  AC_SUBST(ldns_build_config_have_attr_format, 0)
+fi
+if test "x$ac_cv_c_unused_attribute" = "xyes"; then
+  AC_SUBST(ldns_build_config_have_attr_unused, 1)
+else
+  AC_SUBST(ldns_build_config_have_attr_unused, 0)
+fi
 
 AC_CONFIG_FILES([Makefile ldns/common.h ldns/net.h ldns/util.h packaging/libldns.pc packaging/ldns-config])
 
