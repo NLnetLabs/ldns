@@ -42,6 +42,8 @@ LINTFLAGS+="-Dsigset_t=long"
 # FreeBSD8
 LINTFLAGS+="-D__uint16_t=uint16_t"
 LINTFLAGS+=-D__signed__=signed "-D__packed=" "-D__aligned(x)="
+# Ubuntu 11.04
+LINTFLAGS+="-D__u16=struct __u16" "-D__u32=struct __u32" "-D__u64=struct __u64"
 
 HEADER		= config.h
 MAIN_SOURCES = ldns-read-zone.c \
