@@ -496,7 +496,7 @@ verify_dnssec_name(ldns_rdf *zone_name,
 		cur_rrset = name->rrsets;
 		while(cur_rrset) {
 
-			/* Do not check obscured rrsets 
+			/* Do not check occluded rrsets
 			 * on the delegation point
 			 */
 			if (       ( on_delegation_point && (

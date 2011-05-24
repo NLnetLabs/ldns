@@ -73,7 +73,7 @@ struct ldns_struct_dnssec_name
 	 * Unlike what the name is_glue suggests, this field is set to true by
 	 * ldns_dnssec_zone_mark_glue() or ldns_dnssec_zone_mark_and_get_glue()
 	 * when the name, this dnssec_name struct represents, is occluded.
-	 * Names that contain other obscured rrsets and records with glue on
+	 * Names that contain other occluded rrsets and records with glue on
 	 * the delegation point will NOT have this bool set to true.
 	 * This field should NOT be read directly, but only via the 
 	 * ldns_dnssec_name_is_glue() function!
@@ -247,7 +247,7 @@ void ldns_dnssec_name_set_name(ldns_dnssec_name *name,
  * The ldns_dnssec_zone_mark_glue() function has to be called on a zone before
  * using this function.
  * Only names that have only glue rrsets will be marked.
- * Names that have other obscured rrsets and names containing glue on the 
+ * Names that have other occluded rrsets and names containing glue on the 
  * delegation point will NOT be marked!
  *
  * \param[in] name the dnssec name to get the domain name from

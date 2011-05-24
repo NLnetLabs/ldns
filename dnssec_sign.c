@@ -558,13 +558,12 @@ ldns_dnssec_addresses_on_glue_list(
 /**
  * Marks the names in the zone that are occluded. Those names will be skipped
  * when walking the tree with the ldns_dnssec_name_node_next_nonglue()
- * function. But watch out! Names that are partially obscured (like glue with
+ * function. But watch out! Names that are partially occluded (like glue with
  * the same name as the delegation) will not be marked and should specifically 
- * be taken into account seperatly.
+ * be taken into account seperately.
  *
  * When glue_list is given (not NULL), in the process of marking the names, all
- * glue resource records will be pushed to that list. Even glue in partially
- * obscured names.
+ * glue resource records will be pushed to that list, even glue at delegation names.
  *
  * \param[in] zone the zone in which to mark the names
  * \param[in] glue_list the list to which to push the glue rrs
@@ -652,9 +651,9 @@ ldns_dnssec_zone_mark_and_get_glue(ldns_dnssec_zone *zone,
 /**
  * Marks the names in the zone that are occluded. Those names will be skipped
  * when walking the tree with the ldns_dnssec_name_node_next_nonglue()
- * function. But watch out! Names that are partially obscured (like glue with
+ * function. But watch out! Names that are partially occluded (like glue with
  * the same name as the delegation) will not be marked and should specifically 
- * be taken into account seperatly.
+ * be taken into account seperately.
  *
  * \param[in] zone the zone in which to mark the names
  * \return LDNS_STATUS_OK on success, an error code otherwise
@@ -1005,7 +1004,7 @@ ldns_dnssec_zone_create_rrsigs_flg(ldns_dnssec_zone *zone,
 
 	size_t i;
 
-	int on_delegation_point = 0; /* handle partially obscured names */
+	int on_delegation_point = 0; /* handle partially occluded names */
 
 	ldns_rr_list *pubkey_list = ldns_rr_list_new();
 	zone = zone;

@@ -792,9 +792,9 @@ ldns_dnssec_create_nsec(ldns_dnssec_name *from,
 
 	cur_rrsets = from->rrsets;
 	while (cur_rrsets) {
-		/* Do not include obscured rrsets on the delegation point
+		/* Do not include non-authoritative rrsets on the delegation point
 		 * in the type bitmap */
-		if (	   ( on_delegation_point && (
+		if ((on_delegation_point && (
 				cur_rrsets->type == LDNS_RR_TYPE_NS 
 			     || cur_rrsets->type == LDNS_RR_TYPE_DS))
 			|| (!on_delegation_point &&
@@ -867,13 +867,13 @@ ldns_dnssec_create_nsec3(ldns_dnssec_name *from,
 			from->rrsets, LDNS_RR_TYPE_SOA);
 	cur_rrsets = from->rrsets;
 	while (cur_rrsets) {
-		/* Do not include obscured rrsets on the delegation point
+		/* Do not include non-authoritative rrsets on the delegation point
 		 * in the type bitmap. Potentionally not skipping insecure
 		 * delegation should have been done earlier, in function
 		 * ldns_dnssec_zone_create_nsec3s, or even earlier in:
 		 * ldns_dnssec_zone_sign_nsec3_flg .
 		 */
-		if (	   ( on_delegation_point && (
+		if ((on_delegation_point && (
 				cur_rrsets->type == LDNS_RR_TYPE_NS
 			     || cur_rrsets->type == LDNS_RR_TYPE_DS))
 			|| (!on_delegation_point &&
