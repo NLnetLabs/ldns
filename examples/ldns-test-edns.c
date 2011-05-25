@@ -215,7 +215,7 @@ check_edns_ip(char* ip, int port, int info)
 int
 main(int argc, char **argv)
 {
-	int i, r, info=0, ok=0;
+	int i, r=0, info=0, ok=0;
 #ifdef USE_WINSOCK
 	WSADATA wsa_data;
 	if(WSAStartup(MAKEWORD(2,2), &wsa_data) != 0) {

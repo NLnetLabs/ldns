@@ -23,7 +23,7 @@
  * Usage function.
  *
  */
-static int
+static void
 usage(FILE *fp, char *prog) {
         fprintf(fp, "\n\nUsage: %s [-hsv] [-ap NUM] [-o ORIGIN] [<zonefile>]\n", prog);
         fprintf(fp, "\tReads a zonefile and add some artificial NS RRsets and DS records.\n");
