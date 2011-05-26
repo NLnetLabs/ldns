@@ -51,6 +51,10 @@
 %newobject ldns_dname_new_frm_data;
 %newobject ldns_dname_label;
 
+# limit the number of arguments to 2 and
+# deal with variable number of arguments the Python way
+%varargs(2, char *arg = NULL) ldns_buffer_printf;
+
 %rename(ldns_buffer) ldns_struct_buffer;
 
 #ifdef LDNS_DEBUG
@@ -232,14 +236,15 @@ void _ldns_buffer_free (ldns_buffer* b) {
             #parameters: ldns_buffer *,
             #retvals: size_t
 
-        def printf(self,*str):
+        def printf(self, str, *args):
             """Prints to the buffer, increasing the capacity if required using buffer_reserve().
                
                The buffer's position is set to the terminating '\0'. Returns the number of characters written (not including the terminating '\0') or -1 on failure.
                :param str: a string
                :returns: (int) 
             """
-            return _ldns.ldns_buffer_printf(self,*str)
+            data = str % args
+            return _ldns.ldns_buffer_printf(self,data)
             #parameters: ldns_buffer *,const char *,...
             #retvals: int
 

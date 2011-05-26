@@ -84,6 +84,7 @@ AC_SEARCH_LIBS([socket], [socket])
 AC_SEARCH_LIBS([inet_pton], [nsl])
 
 # check for python
+PYTHON_X_CFLAGS=""
 AC_ARG_WITH(pyldns, AC_HELP_STRING([--with-pyldns], 
  [generate python library, or --without-pyldns to disable Python support.]), 
  [],[ withval="no" ])
@@ -113,9 +114,15 @@ if test x_$withval != x_no; then
 		AC_SUBST(swig, "$SWIG")
 	fi
    else
-	AC_MSG_RESULT([*** don't have Python, skipping Swig, no pyldns ***])
+	AC_MSG_RESULT([*** don't have Python, skipping Swig, no pyldns ***]) # '
+   fi
+
+   # xtra cflags for pyldns
+   if test x_$ldns_have_python != x_no; then
+	ACX_CHECK_COMPILER_FLAG(fno-strict-aliasing, [PYTHON_X_CFLAGS="-fno-strict-aliasing"])
    fi
 fi
+AC_SUBST(PYTHON_X_CFLAGS)
 
 # Use libtool
 ACX_LIBTOOL_C_ONLY

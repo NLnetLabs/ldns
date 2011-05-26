@@ -44,6 +44,7 @@ LIBS 		= @LIBS@
 LIBOBJS		= @LIBOBJS@
 PYTHON_CPPFLAGS	= @PYTHON_CPPFLAGS@
 PYTHON_LDFLAGS	= @PYTHON_LDFLAGS@
+PYTHON_X_CFLAGS = @PYTHON_X_CFLAGS@
 LIBSSL_CPPFLAGS = @LIBSSL_CPPFLAGS@
 LIBSSL_LDFLAGS  = @LIBSSL_LDFLAGS@
 LIBSSL_LIBS     = @LIBSSL_LIBS@
@@ -170,7 +171,7 @@ $(pywrapdir)/ldns_wrapper.c:	$(pywrapdir)/ldns.i $(wildcard $(pywrapdir)/*.i) $(
 	$(swig) -python -o $@ $(CPPFLAGS) $(PYTHON_CPPFLAGS) $<
 
 ldns_wrapper.lo:	$(pywrapdir)/ldns_wrapper.c $(LIBDNS_HEADERS) ldns/common.h ldns/util.h ldns/config.h
-	$(COMP_LIB) -I./include/ldns $(PYTHON_CPPFLAGS) -c $< -o $@
+	$(COMP_LIB) -I./include/ldns $(PYTHON_CPPFLAGS) $(PYTHON_X_CFLAGS) -c $< -o $@
 
 _ldns.la: ldns_wrapper.lo libldns.la 
 	$(LIBTOOL) --tag=CC --mode=link $(CC) $(strip $(CFLAGS) $(PYTHON_CFLAGS) $(LDFLAGS) $(PYTHON_LDFLAGS) -module -version-number $(version_info) -no-undefined -o $@ $< -rpath $(python_site) -L. -L.libs -lldns $(LIBS))
