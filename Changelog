@@ -27,6 +27,8 @@
 	* Added function ldns_dnssec_mark_and_get_glue as an real fast
 	  alternative for ldns_zone_glue_rr_list.
 	* Fix parse buffer overflow for max length domain names.
+	* Fix Makefile for U in environment, since wrong U is more common than
+	  deansification necessity.
 
 1.6.9	2011-03-16
 	* Fix creating NSEC(3) bitmaps: make array size 65536,
