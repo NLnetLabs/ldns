@@ -1,4 +1,6 @@
-1.6.10
+1.6.11
+
+1.6.10	2011-05-31
 	* New example tool added: ldns-gen-zone.
 	* bugfix #359: Serial-arithmetic for the inception and expiration
 	  fields of a RRSIG and correctly converting them to broken-out time
