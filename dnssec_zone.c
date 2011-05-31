@@ -297,10 +297,12 @@ ldns_dnssec_name_new()
 {
 	ldns_dnssec_name *new_name;
 
-	new_name = LDNS_MALLOC(ldns_dnssec_name);
+	new_name = LDNS_CALLOC(ldns_dnssec_name, 1);
 	if (!new_name) {
 		return NULL;
 	}
+	/*
+	 * not needed anymore because CALLOC initalizes everything to zero.
 
 	new_name->name = NULL;
 	new_name->rrsets = NULL;
@@ -311,6 +313,7 @@ ldns_dnssec_name_new()
 	new_name->is_glue = false;
 	new_name->hashed_name = NULL;
 
+	 */
 	return new_name;
 }
 
@@ -373,6 +376,15 @@ ldns_dnssec_name_name(ldns_dnssec_name *name)
 		return name->name;
 	}
 	return NULL;
+}
+
+bool
+ldns_dnssec_name_is_glue(ldns_dnssec_name *name)
+{
+	if (name) {
+		return name->is_glue;
+	}
+	return false;
 }
 
 void
@@ -789,11 +801,11 @@ ldns_dnssec_zone_add_empty_nonterminals(ldns_dnssec_zone *zone)
 		for (i = 1; i < next_label_count - soa_label_count; i++) {
 			lpos = (int)cur_label_count - (int)next_label_count + (int)i;
 			if (lpos >= 0) {
-				l1 = ldns_dname_label(cur_name, (uint8_t)lpos);
+				l1 = ldns_dname_clone_from(cur_name, (uint8_t)lpos);
 			} else {
 				l1 = NULL;
 			}
-			l2 = ldns_dname_label(next_name, i);
+			l2 = ldns_dname_clone_from(next_name, i);
 
 			if (!l1 || ldns_dname_compare(l1, l2) != 0) {
 				/* We have an empty nonterminal, add it to the
@@ -805,7 +817,7 @@ ldns_dnssec_zone_add_empty_nonterminals(ldns_dnssec_zone *zone)
 				}
 				new_name->name = ldns_dname_clone_from(next_name,
 				                                       i);
-				if (!new_name) {
+				if (!new_name->name) {
 					ldns_dnssec_name_free(new_name);
 					return LDNS_STATUS_MEM_ERR;
 				}

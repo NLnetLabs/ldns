@@ -21,21 +21,6 @@
 
 int verbosity = 3;
 
-/* returns 1 if the list is empty, or if there are only ns rrs in the
- * list, 0 otherwise */
-static int
-only_ns_in_rrsets(ldns_dnssec_rrsets *rrsets) {
-	ldns_dnssec_rrsets *cur_rrset = rrsets;
-
-	while (cur_rrset) {
-		if (cur_rrset->type != LDNS_RR_TYPE_NS) {
-			return 0;
-		}
-		cur_rrset = cur_rrset->next;
-	}
-	return 1;
-}
-
 static int
 zone_is_nsec3_optout(ldns_rbtree_t *zone_nodes)
 {
@@ -144,8 +129,7 @@ static ldns_status
 verify_dnssec_rrset(ldns_rdf *zone_name,
 					ldns_rdf *name,
                     ldns_dnssec_rrsets *rrset,
-                    ldns_rr_list *keys,
-                    ldns_rr_list *glue_rrs)
+                    ldns_rr_list *keys)
 {
 	ldns_rr_list *rrset_rrs;
 	ldns_dnssec_rrs *cur_rr, *cur_sig;
@@ -357,29 +341,10 @@ verify_next_hashed_name(ldns_rbtree_t *zone_nodes,
 	}
 }
 
-static ldns_rbnode_t *
-next_nonglue_node(ldns_rbnode_t *node, ldns_rr_list *glue_rrs)
-{
-	ldns_rbnode_t *cur_node = ldns_rbtree_next(node);
-	ldns_dnssec_name *cur_name;
-	while (cur_node != LDNS_RBTREE_NULL) {
-		cur_name = (ldns_dnssec_name *) cur_node->data;
-		if (cur_name && cur_name->name) {
-			if (!ldns_rr_list_contains_name(glue_rrs, cur_name->name)) {
-				return cur_node;
-			}
-		}
-		cur_node = ldns_rbtree_next(cur_node);
-	}
-	return LDNS_RBTREE_NULL;
-}
-
 static ldns_status
 verify_nsec(ldns_rbtree_t *zone_nodes,
             ldns_rbnode_t *cur_node,
-            ldns_rr_list *keys,
-            ldns_rr_list *glue_rrs
-)
+            ldns_rr_list *keys)
 {
 	ldns_rbnode_t *next_node;
 	ldns_dnssec_name *name, *next_name;
@@ -409,10 +374,11 @@ verify_nsec(ldns_rbtree_t *zone_nodes,
 		switch (ldns_rr_get_type(name->nsec)) {
 			case LDNS_RR_TYPE_NSEC:
 				/* simply try next name */
-				next_node = next_nonglue_node(cur_node, glue_rrs);
+				next_node = ldns_rbtree_next(cur_node);
 				if (next_node == LDNS_RBTREE_NULL) {
 					next_node = ldns_rbtree_first(zone_nodes);
 				}
+				next_node = ldns_dnssec_name_node_next_nonglue(next_node);
 				next_name = (ldns_dnssec_name *)next_node->data;
 				if (ldns_dname_compare(next_name->name,
 									   ldns_rr_rdf(name->nsec, 0))
@@ -420,6 +386,13 @@ verify_nsec(ldns_rbtree_t *zone_nodes,
 					printf("Error: the NSEC record for ");
 					ldns_rdf_print(stdout, name->name);
 					printf(" points to the wrong next owner name\n");
+					if (verbosity >= 4) {
+						printf("     : ");
+						ldns_rdf_print(stdout,ldns_rr_rdf(name->nsec, 0));
+						printf(" i.s.o. ");
+						ldns_rdf_print(stdout, next_name->name);
+						printf(".\n");
+					}
 					if (result == LDNS_STATUS_OK) {
 						result = LDNS_STATUS_ERR;
 					}
@@ -442,7 +415,14 @@ verify_nsec(ldns_rbtree_t *zone_nodes,
 	} else {
 		/* todo; do this once and cache result? */
 		if (zone_is_nsec3_optout(zone_nodes) &&
-		    only_ns_in_rrsets(name->rrsets)) {
+				(   ldns_dnssec_name_is_glue(name)
+				 || (
+					 ldns_dnssec_rrsets_contains_type(
+						name->rrsets, LDNS_RR_TYPE_NS)
+				     && !ldns_dnssec_rrsets_contains_type(
+						name->rrsets, LDNS_RR_TYPE_DS)
+				    )
+				)) {
 			/* ok, no problem, but we need to remember to check
 			 * whether the chain does not actually point to this
 			 * name later */
@@ -460,34 +440,18 @@ verify_nsec(ldns_rbtree_t *zone_nodes,
 	return result;
 }
 
-static int
-ldns_dnssec_name_has_only_a(ldns_dnssec_name *cur_name)
-{
-	ldns_dnssec_rrsets *cur_rrset;
-	cur_rrset = cur_name->rrsets;
-	while (cur_rrset) {
-		if (cur_rrset->type != LDNS_RR_TYPE_A &&
-			cur_rrset->type != LDNS_RR_TYPE_AAAA) {
-			return 0;
-		} else {
-			cur_rrset = cur_rrset->next;
-		}
-	}
-	return 1;
-}
-
 static ldns_status
 verify_dnssec_name(ldns_rdf *zone_name,
                 ldns_dnssec_zone *zone,
                 ldns_rbtree_t *zone_nodes,
                 ldns_rbnode_t *cur_node,
-			    ldns_rr_list *keys,
-			    ldns_rr_list *glue_rrs)
+			    ldns_rr_list *keys)
 {
 	ldns_status result = LDNS_STATUS_OK;
 	ldns_status status;
 	ldns_dnssec_rrsets *cur_rrset;
 	ldns_dnssec_name *name;
+	int on_delegation_point;
 	/* for NSEC chain checks */
 
 	name = (ldns_dnssec_name *) cur_node->data;
@@ -497,9 +461,7 @@ verify_dnssec_name(ldns_rdf *zone_name,
 		printf("\n");
 	}
 
-	if (ldns_rr_list_contains_name(glue_rrs, name->name) &&
-		ldns_dnssec_name_has_only_a(name)
-	) {
+	if (ldns_dnssec_name_is_glue(name)) {
 		/* glue */
 		cur_rrset = name->rrsets;
 		while (cur_rrset) {
@@ -525,11 +487,26 @@ verify_dnssec_name(ldns_rdf *zone_name,
 		}
 	} else {
 		/* not glue, do real verify */
+
+		on_delegation_point = ldns_dnssec_rrsets_contains_type(
+				name->rrsets, LDNS_RR_TYPE_NS)
+			&& !ldns_dnssec_rrsets_contains_type(
+				name->rrsets, LDNS_RR_TYPE_SOA);
+
 		cur_rrset = name->rrsets;
 		while(cur_rrset) {
-			if (cur_rrset->type != LDNS_RR_TYPE_A ||
-			    !ldns_dnssec_zone_find_rrset(zone, name->name, LDNS_RR_TYPE_NS)) {
-				status = verify_dnssec_rrset(zone_name, name->name, cur_rrset, keys, glue_rrs);
+
+			/* Do not check occluded rrsets
+			 * on the delegation point
+			 */
+			if (       ( on_delegation_point && (
+					cur_rrset->type == LDNS_RR_TYPE_NS
+				     || cur_rrset->type == LDNS_RR_TYPE_DS))
+				|| (!on_delegation_point &&
+					cur_rrset->type != LDNS_RR_TYPE_RRSIG
+				     && cur_rrset->type != LDNS_RR_TYPE_NSEC)) {
+
+				status = verify_dnssec_rrset(zone_name, name->name, cur_rrset, keys);
 				if (status != LDNS_STATUS_OK && result == LDNS_STATUS_OK) {
 					result = status;
 				}
@@ -537,7 +514,7 @@ verify_dnssec_name(ldns_rdf *zone_name,
 			cur_rrset = cur_rrset->next;
 		}
 
-		status = verify_nsec(zone_nodes, cur_node, keys, glue_rrs);
+		status = verify_nsec(zone_nodes, cur_node, keys);
 		if (result == LDNS_STATUS_OK) {
 			result = status;
 		}
@@ -547,9 +524,7 @@ verify_dnssec_name(ldns_rdf *zone_name,
 
 static ldns_status
 verify_dnssec_zone(ldns_dnssec_zone *dnssec_zone,
-			    ldns_rdf *zone_name,
-			    ldns_rr_list *glue_rrs)
-{
+			    ldns_rdf *zone_name) {
 	ldns_rr_list *keys;
 	ldns_rbnode_t *cur_node;
 	ldns_dnssec_rrsets *cur_key_rrset;
@@ -591,8 +566,7 @@ verify_dnssec_zone(ldns_dnssec_zone *dnssec_zone,
 			                            dnssec_zone,
 			                            dnssec_zone->names,
 			                            cur_node,
-			                            keys,
-			                            glue_rrs);
+			                            keys);
 			if (status != LDNS_STATUS_OK && result == LDNS_STATUS_OK) {
 				result = status;
 			}
@@ -615,7 +589,6 @@ main(int argc, char **argv)
 	ldns_status s;
 	ldns_dnssec_zone *dnssec_zone;
 	ldns_status result = LDNS_STATUS_ERR;
-	ldns_rr_list *glue_rrs;
 
 	while ((c = getopt(argc, argv, "hvV:")) != -1) {
 		switch(c) {
@@ -669,16 +642,20 @@ main(int argc, char **argv)
 			exit(1);
 		}
 
-		glue_rrs = ldns_zone_glue_rr_list(z);
 		dnssec_zone = create_dnssec_zone(z);
+		result = ldns_dnssec_zone_mark_glue(dnssec_zone);
+		if (result != LDNS_STATUS_OK) {
+			if (verbosity >= 1) {
+				printf("There were errors identifying the glue in the zone\n");
+			}
+		}
 
 		if (verbosity >= 5) {
 			ldns_dnssec_zone_print(stdout, dnssec_zone);
 		}
 
 		result = verify_dnssec_zone(dnssec_zone,
-							   ldns_rr_owner(ldns_zone_soa(z)),
-							   glue_rrs);
+							   ldns_rr_owner(ldns_zone_soa(z)));
 
 
 		if (result == LDNS_STATUS_OK) {

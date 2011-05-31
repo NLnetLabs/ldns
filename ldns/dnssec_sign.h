@@ -42,7 +42,7 @@ ldns_sign_public_buffer(ldns_buffer *sign_buf, ldns_key *key);
  */
 ldns_rr_list *ldns_sign_public(ldns_rr_list *rrset, ldns_key_list *keys);
 
-#ifdef HAVE_SSL
+#if LDNS_BUILD_CONFIG_HAVE_SSL
 /**
  * Sign a buffer with the DSA key (hash with SHA1)
  * \param[in] to_sign buffer with the data
@@ -80,11 +80,42 @@ ldns_rdf *ldns_sign_public_rsasha1(ldns_buffer *to_sign, RSA *key);
  * \return a ldns_rdf with the signed data
  */
 ldns_rdf *ldns_sign_public_rsamd5(ldns_buffer *to_sign, RSA *key);
-#endif /* HAVE_SSL */
+#endif /* LDNS_BUILD_CONFIG_HAVE_SSL */
 
 /**
- * Finds the first dnssec_name node in the rbtree that has not been marked
- * as glue, starting at the given node
+ * Marks the names in the zone that are occluded. Those names will be skipped
+ * when walking the tree with the ldns_dnssec_name_node_next_nonglue()
+ * function. But watch out! Names that are partially occluded (like glue with
+ * the same name as the delegation) will not be marked and should specifically 
+ * be taken into account seperately.
+ *
+ * When glue_list is given (not NULL), in the process of marking the names, all
+ * glue resource records will be pushed to that list, even glue at the delegation name.
+ *
+ * \param[in] zone the zone in which to mark the names
+ * \param[in] glue_list the list to which to push the glue rrs
+ * \return LDNS_STATUS_OK on success, an error code otherwise
+ */
+ldns_status
+ldns_dnssec_zone_mark_and_get_glue(
+		ldns_dnssec_zone *zone, ldns_rr_list *glue_list);
+
+/**
+ * Marks the names in the zone that are occluded. Those names will be skipped
+ * when walking the tree with the ldns_dnssec_name_node_next_nonglue()
+ * function. But watch out! Names that are partially occluded (like glue with
+ * the same name as the delegation) will not be marked and should specifically 
+ * be taken into account seperately.
+ *
+ * \param[in] zone the zone in which to mark the names
+ * \return LDNS_STATUS_OK on succesful completion
+ */
+ldns_status
+ldns_dnssec_zone_mark_glue(ldns_dnssec_zone *zone);
+
+/**
+ * Finds the first dnssec_name node in the rbtree that is not occluded.
+ * It *does* return names that are partially occluded.
  *
  * \param[in] node the first node to check
  * \return the first node that has not been marked as glue, or NULL

@@ -18,8 +18,11 @@
 ldns_dnssec_data_chain *
 ldns_dnssec_data_chain_new()
 {
-	ldns_dnssec_data_chain *nc = LDNS_XMALLOC(ldns_dnssec_data_chain, 1);
+	ldns_dnssec_data_chain *nc = LDNS_CALLOC(ldns_dnssec_data_chain, 1);
         if(!nc) return NULL;
+	/* 
+	 * not needed anymore because CALLOC initalizes everything to zero.
+
 	nc->rrset = NULL;
 	nc->parent_type = 0;
 	nc->parent = NULL;
@@ -27,6 +30,8 @@ ldns_dnssec_data_chain_new()
 	nc->packet_rcode = 0;
 	nc->packet_qtype = 0;
 	nc->packet_nodata = false;
+
+	 */
 	return nc;
 }
 
@@ -1398,12 +1403,13 @@ ldns_dnssec_verify_denial(ldns_rr *rr,
 
 #ifdef HAVE_SSL
 ldns_status
-ldns_dnssec_verify_denial_nsec3(ldns_rr *rr,
+ldns_dnssec_verify_denial_nsec3_match(ldns_rr *rr,
 						  ldns_rr_list *nsecs,
 						  ldns_rr_list *rrsigs,
 						  ldns_pkt_rcode packet_rcode,
 						  ldns_rr_type packet_qtype,
-						  bool packet_nodata)
+						  bool packet_nodata,
+						  ldns_rr **match)
 {
 	ldns_rdf *closest_encloser;
 	ldns_rdf *wildcard;
@@ -1415,6 +1421,10 @@ ldns_dnssec_verify_denial_nsec3(ldns_rr *rr,
 	ldns_status result = LDNS_STATUS_DNSSEC_NSEC_RR_NOT_COVERED;
 
 	rrsigs = rrsigs;
+
+	if (match) {
+		*match = NULL;
+	}
 
 	zone_name = ldns_dname_left_chop(ldns_rr_owner(ldns_rr_list_rr(nsecs,0)));
 
@@ -1442,6 +1452,9 @@ ldns_dnssec_verify_denial_nsec3(ldns_rr *rr,
 			if (ldns_nsec_covers_name(ldns_rr_list_rr(nsecs, i),
 								 hashed_wildcard_name)) {
 				wildcard_covered = true;
+				if (match) {
+					*match = ldns_rr_list_rr(nsecs, i);
+				}
 			}
 			ldns_rdf_deep_free(hashed_wildcard_name);
 		}
@@ -1474,6 +1487,9 @@ ldns_dnssec_verify_denial_nsec3(ldns_rr *rr,
 					    ldns_nsec3_bitmap(ldns_rr_list_rr(nsecs, i)),
 					    LDNS_RR_TYPE_CNAME)) {
 					result = LDNS_STATUS_OK;
+					if (match) {
+						*match = ldns_rr_list_rr(nsecs, i);
+					}
 					goto done;
 				}
 			}
@@ -1500,6 +1516,9 @@ ldns_dnssec_verify_denial_nsec3(ldns_rr *rr,
 					    ldns_nsec3_bitmap(ldns_rr_list_rr(nsecs, i)),
 					    LDNS_RR_TYPE_CNAME)) {
 					result = LDNS_STATUS_OK;
+					if (match) {
+						*match = ldns_rr_list_rr(nsecs, i);
+					}
 					goto done;
 				}
 			}
@@ -1513,6 +1532,22 @@ ldns_dnssec_verify_denial_nsec3(ldns_rr *rr,
 	ldns_rdf_deep_free(zone_name);
 	return result;
 }
+
+ldns_status
+ldns_dnssec_verify_denial_nsec3(ldns_rr *rr,
+						  ldns_rr_list *nsecs,
+						  ldns_rr_list *rrsigs,
+						  ldns_pkt_rcode packet_rcode,
+						  ldns_rr_type packet_qtype,
+						  bool packet_nodata)
+{
+	return ldns_dnssec_verify_denial_nsec3_match(
+				rr, nsecs, rrsigs, packet_rcode,
+				packet_qtype, packet_nodata, NULL
+	       );
+}
+
+
 #endif /* HAVE_SSL */
 
 #ifdef USE_GOST

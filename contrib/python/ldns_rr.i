@@ -48,6 +48,7 @@
 %ignore ldns_struct_rr::_rdata_fields;
 
 %newobject ldns_rr_clone;
+%newobject ldns_rr_new;
 %newobject ldns_rr_pop_rdf;
 %delobject ldns_rr_free;
 
@@ -69,6 +70,299 @@ void _ldns_rr_free (ldns_rr* r) {
 %newobject ldns_rr_type2str;
 %newobject ldns_rr_class2str;
 %newobject ldns_read_anchor_file;
+
+
+// clone rdf data on pull
+
+%newobject _ldns_rr_rdf;
+%rename(__ldns_rr_rdf) ldns_rr_rdf;
+%inline %{
+ldns_rdf* _ldns_rr_rdf(ldns_rr* rr, size_t i) {
+   return ldns_rdf_clone(ldns_rr_rdf(rr, i));
+}
+%}
+
+%newobject _ldns_rr_rrsig_algorithm;
+%rename(__ldns_rr_rrsig_algorithm) ldns_rr_rrsig_algorithm;
+%inline %{
+ldns_rdf* _ldns_rr_rrsig_algorithm(ldns_rr* rr) {
+   return ldns_rdf_clone(ldns_rr_rrsig_algorithm(rr));
+}
+%}
+
+%newobject _ldns_rr_dnskey_algorithm;
+%rename(__ldns_rr_dnskey_algorithm) ldns_rr_dnskey_algorithm;
+%inline %{
+ldns_rdf* _ldns_rr_dnskey_algorithm(ldns_rr* rr) {
+   return ldns_rdf_clone(ldns_rr_dnskey_algorithm(rr));
+}
+%}
+
+%newobject _ldns_rr_dnskey_flags;
+%rename(__ldns_rr_dnskey_flags) ldns_rr_dnskey_flags;
+%inline %{
+ldns_rdf* _ldns_rr_dnskey_flags(ldns_rr* rr) {
+   return ldns_rdf_clone(ldns_rr_dnskey_flags(rr));
+}
+%}
+
+%newobject _ldns_rr_dnskey_key;
+%rename(__ldns_rr_dnskey_key) ldns_rr_dnskey_key;
+%inline %{
+ldns_rdf* _ldns_rr_dnskey_key(ldns_rr* rr) {
+   return ldns_rdf_clone(ldns_rr_dnskey_key(rr));
+}
+%}
+
+%newobject _ldns_rr_dnskey_protocol;
+%rename(__ldns_rr_dnskey_protocol) ldns_rr_dnskey_protocol;
+%inline %{
+ldns_rdf* _ldns_rr_dnskey_protocol(ldns_rr* rr) {
+   return ldns_rdf_clone(ldns_rr_dnskey_protocol(rr));
+}
+%}
+
+
+%newobject _ldns_rr_owner;
+%rename(__ldns_rr_owner) ldns_rr_owner;
+%inline %{
+ldns_rdf* _ldns_rr_owner(ldns_rr* rr) {
+   return ldns_rdf_clone(ldns_rr_owner(rr));
+}
+%}
+
+
+%newobject _ldns_rr_a_address;
+%rename(__ldns_rr_a_address) ldns_rr_a_address;
+%inline %{
+ldns_rdf* _ldns_rr_a_address(ldns_rr* rr) {
+   return ldns_rdf_clone(ldns_rr_a_address(rr));
+}
+%}
+
+
+%newobject _ldns_rr_mx_exchange;
+%rename(__ldns_rr_mx_exchange) ldns_rr_mx_exchange;
+%inline %{
+ldns_rdf* _ldns_rr_mx_exchange(ldns_rr* rr) {
+   return ldns_rdf_clone(ldns_rr_mx_exchange(rr));
+}
+%}
+
+
+%newobject _ldns_rr_mx_preference;
+%rename(__ldns_rr_mx_preference) ldns_rr_mx_preference;
+%inline %{
+ldns_rdf* _ldns_rr_mx_preference(ldns_rr* rr) {
+   return ldns_rdf_clone(ldns_rr_mx_preference(rr));
+}
+%}
+
+
+%newobject _ldns_rr_ns_nsdname;
+%rename(__ldns_rr_ns_nsdname) ldns_rr_ns_nsdname;
+%inline %{
+ldns_rdf* _ldns_rr_ns_nsdname(ldns_rr* rr) {
+   return ldns_rdf_clone(ldns_rr_ns_nsdname(rr));
+}
+%}
+
+
+%newobject _ldns_rr_rrsig_expiration;
+%rename(__ldns_rr_rrsig_expiration) ldns_rr_rrsig_expiration;
+%inline %{
+ldns_rdf* _ldns_rr_rrsig_expiration(ldns_rr* rr) {
+   return ldns_rdf_clone(ldns_rr_rrsig_expiration(rr));
+}
+%}
+
+
+%newobject _ldns_rr_rrsig_inception;
+%rename(__ldns_rr_rrsig_inception) ldns_rr_rrsig_inception;
+%inline %{
+ldns_rdf* _ldns_rr_rrsig_inception(ldns_rr* rr) {
+   return ldns_rdf_clone(ldns_rr_rrsig_inception(rr));
+}
+%}
+
+
+%newobject _ldns_rr_rrsig_keytag;
+%rename(__ldns_rr_rrsig_keytag) ldns_rr_rrsig_keytag;
+%inline %{
+ldns_rdf* _ldns_rr_rrsig_keytag(ldns_rr* rr) {
+   return ldns_rdf_clone(ldns_rr_rrsig_keytag(rr));
+}
+%}
+
+
+%newobject _ldns_rr_rrsig_labels;
+%rename(__ldns_rr_rrsig_labels) ldns_rr_rrsig_labels;
+%inline %{
+ldns_rdf* _ldns_rr_rrsig_labels(ldns_rr* rr) {
+   return ldns_rdf_clone(ldns_rr_rrsig_labels(rr));
+}
+%}
+
+
+%newobject _ldns_rr_rrsig_origttl;
+%rename(__ldns_rr_rrsig_origttl) ldns_rr_rrsig_origttl;
+%inline %{
+ldns_rdf* _ldns_rr_rrsig_origttl(ldns_rr* rr) {
+   return ldns_rdf_clone(ldns_rr_rrsig_origttl(rr));
+}
+%}
+
+
+%newobject _ldns_rr_rrsig_sig;
+%rename(__ldns_rr_rrsig_sig) ldns_rr_rrsig_sig;
+%inline %{
+ldns_rdf* _ldns_rr_rrsig_sig(ldns_rr* rr) {
+   return ldns_rdf_clone(ldns_rr_rrsig_sig(rr));
+}
+%}
+
+
+%newobject _ldns_rr_rrsig_signame;
+%rename(__ldns_rr_rrsig_signame) ldns_rr_rrsig_signame;
+%inline %{
+ldns_rdf* _ldns_rr_rrsig_signame(ldns_rr* rr) {
+   return ldns_rdf_clone(ldns_rr_rrsig_signame(rr));
+}
+%}
+
+
+%newobject _ldns_rr_rrsig_typecovered;
+%rename(__ldns_rr_rrsig_typecovered) ldns_rr_rrsig_typecovered;
+%inline %{
+ldns_rdf* _ldns_rr_rrsig_typecovered(ldns_rr* rr) {
+   return ldns_rdf_clone(ldns_rr_rrsig_typecovered(rr));
+}
+%}
+
+// end of pull cloning
+
+// clone rdf data on push
+
+%rename(__ldns_rr_a_set_address) ldns_rr_a_set_address;
+%inline %{
+bool _ldns_rr_a_set_address(ldns_rr* rr, ldns_rdf* rdf) {
+  return ldns_rr_a_set_address(rr, ldns_rdf_clone(rdf));
+}
+%}
+
+%rename(__ldns_rr_dnskey_set_algorithm) ldns_rr_dnskey_set_algorithm;
+%inline %{
+bool _ldns_rr_dnskey_set_algorithm(ldns_rr* rr, ldns_rdf* rdf) {
+  return ldns_rr_dnskey_set_algorithm(rr, ldns_rdf_clone(rdf));
+}
+%}
+
+%rename(__ldns_rr_dnskey_set_flags) ldns_rr_dnskey_set_flags;
+%inline %{
+bool _ldns_rr_dnskey_set_flags(ldns_rr* rr, ldns_rdf* rdf) {
+  return ldns_rr_dnskey_set_flags(rr, ldns_rdf_clone(rdf));
+}
+%}
+
+%rename(__ldns_rr_dnskey_set_key) ldns_rr_dnskey_set_key;
+%inline %{
+bool _ldns_rr_dnskey_set_key(ldns_rr* rr, ldns_rdf* rdf) {
+  return ldns_rr_dnskey_set_key(rr, ldns_rdf_clone(rdf));
+}
+%}
+
+%rename(__ldns_rr_dnskey_set_protocol) ldns_rr_dnskey_set_protocol;
+%inline %{
+bool _ldns_rr_dnskey_set_protocol(ldns_rr* rr, ldns_rdf* rdf) {
+  return ldns_rr_dnskey_set_protocol(rr, ldns_rdf_clone(rdf));
+}
+%}
+
+%rename(__ldns_rr_push_rdf) ldns_rr_push_rdf;
+%inline %{
+bool _ldns_rr_push_rdf(ldns_rr* rr, ldns_rdf* rdf) {
+  return ldns_rr_push_rdf(rr, ldns_rdf_clone(rdf));
+}
+%}
+
+%rename(__ldns_rr_rrsig_set_algorithm) ldns_rr_rrsig_set_algorithm;
+%inline %{
+bool _ldns_rr_rrsig_set_algorithm(ldns_rr* rr, ldns_rdf* rdf) {
+  return ldns_rr_rrsig_set_algorithm(rr, ldns_rdf_clone(rdf));
+}
+%}
+
+%rename(__ldns_rr_rrsig_set_expiration) ldns_rr_rrsig_set_expiration;
+%inline %{
+bool _ldns_rr_rrsig_set_expiration(ldns_rr* rr, ldns_rdf* rdf) {
+  return ldns_rr_rrsig_set_expiration(rr, ldns_rdf_clone(rdf));
+}
+%}
+
+%rename(__ldns_rr_rrsig_set_inception) ldns_rr_rrsig_set_inception;
+%inline %{
+bool _ldns_rr_rrsig_set_inception(ldns_rr* rr, ldns_rdf* rdf) {
+  return ldns_rr_rrsig_set_inception(rr, ldns_rdf_clone(rdf));
+}
+%}
+
+%rename(__ldns_rr_rrsig_set_keytag) ldns_rr_rrsig_set_keytag;
+%inline %{
+bool _ldns_rr_rrsig_set_keytag(ldns_rr* rr, ldns_rdf* rdf) {
+  return ldns_rr_rrsig_set_keytag(rr, ldns_rdf_clone(rdf));
+}
+%}
+
+%rename(__ldns_rr_rrsig_set_labels) ldns_rr_rrsig_set_labels;
+%inline %{
+bool _ldns_rr_rrsig_set_labels(ldns_rr* rr, ldns_rdf* rdf) {
+  return ldns_rr_rrsig_set_labels(rr, ldns_rdf_clone(rdf));
+}
+%}
+
+%rename(__ldns_rr_rrsig_set_origttl) ldns_rr_rrsig_set_origttl;
+%inline %{
+bool _ldns_rr_rrsig_set_origttl(ldns_rr* rr, ldns_rdf* rdf) {
+  return ldns_rr_rrsig_set_origttl(rr, ldns_rdf_clone(rdf));
+}
+%}
+
+%rename(__ldns_rr_rrsig_set_sig) ldns_rr_rrsig_set_sig;
+%inline %{
+bool _ldns_rr_rrsig_set_sig(ldns_rr* rr, ldns_rdf* rdf) {
+  return ldns_rr_rrsig_set_sig(rr, ldns_rdf_clone(rdf));
+}
+%}
+
+%rename(__ldns_rr_rrsig_set_signame) ldns_rr_rrsig_set_signame;
+%inline %{
+bool _ldns_rr_rrsig_set_signame(ldns_rr* rr, ldns_rdf* rdf) {
+  return ldns_rr_rrsig_set_signame(rr, ldns_rdf_clone(rdf));
+}
+%}
+
+%rename(__ldns_rr_rrsig_set_typecovered) ldns_rr_rrsig_set_typecovered;
+%inline %{
+bool _ldns_rr_rrsig_set_typecovered(ldns_rr* rr, ldns_rdf* rdf) {
+  return ldns_rr_rrsig_set_typecovered(rr, ldns_rdf_clone(rdf));
+}
+%}
+
+%rename(__ldns_rr_set_owner) ldns_rr_set_owner;
+%inline %{
+void _ldns_rr_set_owner(ldns_rr* rr, ldns_rdf* rdf) {
+  return ldns_rr_set_owner(rr, ldns_rdf_clone(rdf));
+}
+%}
+
+%rename(__ldns_rr_set_rdf) ldns_rr_set_rdf;
+%inline %{
+  ldns_rdf* _ldns_rr_set_rdf(ldns_rr* rr, ldns_rdf* rdf, size_t pos) {
+  return ldns_rr_set_rdf(rr, ldns_rdf_clone(rdf), pos);
+}
+%}
+
+// end of push cloning
 
 %rename(_ldns_rr_new_frm_str) ldns_rr_new_frm_str;
 %rename(_ldns_rr_new_frm_fp_l) ldns_rr_new_frm_fp_l;
@@ -227,18 +521,6 @@ The RR is the basic DNS element that contains actual data. This class allows to 
             for i in range(0,self.rd_count()):
                 yield self.rdf(i)
 
-        def get_function(self,rtype,pos):
-            """return a specific rdf"""
-            return _ldns.ldns_rr_function(rtype,self,pos)
-            #parameters: ldns_rr_type,const ldns_rr *,size_t,
-            #retvals: ldns_rdf *
-
-        def set_function(self,rtype,rdf,pos):
-            """set a specific rdf"""
-            return _ldns.ldns_rr_set_function(rtype,self,rdf,pos)
-            #parameters: ldns_rr_type,ldns_rr *,ldns_rdf *,size_t,
-            #retvals: bool
-
         def print_to_file(self,output):
             """Prints the data in the resource record to the given file stream (in presentation format)."""
             _ldns.ldns_rr_print(output,self)
@@ -313,7 +595,7 @@ The RR is the basic DNS element that contains actual data. This class allows to 
                
                :returns: (ldns_rdf \*) a ldns_rdf* with the address or NULL on failure
             """
-            return _ldns.ldns_rr_a_address(self)
+            return _ldns._ldns_rr_a_address(self)
             #parameters: const ldns_rr *,
             #retvals: ldns_rdf *
 
@@ -324,7 +606,7 @@ The RR is the basic DNS element that contains actual data. This class allows to 
                    the address to set
                :returns: (bool) true on success, false otherwise
             """
-            return _ldns.ldns_rr_a_set_address(self,f)
+            return _ldns._ldns_rr_a_set_address(self,f)
             #parameters: ldns_rr *,ldns_rdf *,
             #retvals: bool
 
@@ -366,7 +648,7 @@ The RR is the basic DNS element that contains actual data. This class allows to 
                
                :returns: (ldns_rdf \*) a ldns_rdf* with the algorithm or NULL on failure
             """
-            return _ldns.ldns_rr_dnskey_algorithm(self)
+            return _ldns._ldns_rr_dnskey_algorithm(self)
             #parameters: const ldns_rr *,
             #retvals: ldns_rdf *
 
@@ -375,7 +657,7 @@ The RR is the basic DNS element that contains actual data. This class allows to 
                
                :returns: (ldns_rdf \*) a ldns_rdf* with the flags or NULL on failure
             """
-            return _ldns.ldns_rr_dnskey_flags(self)
+            return _ldns._ldns_rr_dnskey_flags(self)
             #parameters: const ldns_rr *,
             #retvals: ldns_rdf *
 
@@ -384,7 +666,7 @@ The RR is the basic DNS element that contains actual data. This class allows to 
                
                :returns: (ldns_rdf \*) a ldns_rdf* with the key data or NULL on failure
             """
-            return _ldns.ldns_rr_dnskey_key(self)
+            return _ldns._ldns_rr_dnskey_key(self)
             #parameters: const ldns_rr *,
             #retvals: ldns_rdf *
 
@@ -402,7 +684,7 @@ The RR is the basic DNS element that contains actual data. This class allows to 
                
                :returns: (ldns_rdf \*) a ldns_rdf* with the protocol or NULL on failure
             """
-            return _ldns.ldns_rr_dnskey_protocol(self)
+            return _ldns._ldns_rr_dnskey_protocol(self)
             #parameters: const ldns_rr *,
             #retvals: ldns_rdf *
 
@@ -413,7 +695,7 @@ The RR is the basic DNS element that contains actual data. This class allows to 
                    the algorithm to set
                :returns: (bool) true on success, false otherwise
             """
-            return _ldns.ldns_rr_dnskey_set_algorithm(self,f)
+            return _ldns._ldns_rr_dnskey_set_algorithm(self,f)
             #parameters: ldns_rr *,ldns_rdf *,
             #retvals: bool
 
@@ -424,7 +706,7 @@ The RR is the basic DNS element that contains actual data. This class allows to 
                    the flags to set
                :returns: (bool) true on success, false otherwise
             """
-            return _ldns.ldns_rr_dnskey_set_flags(self,f)
+            return _ldns._ldns_rr_dnskey_set_flags(self,f)
             #parameters: ldns_rr *,ldns_rdf *,
             #retvals: bool
 
@@ -435,7 +717,7 @@ The RR is the basic DNS element that contains actual data. This class allows to 
                    the key data to set
                :returns: (bool) true on success, false otherwise
             """
-            return _ldns.ldns_rr_dnskey_set_key(self,f)
+            return _ldns._ldns_rr_dnskey_set_key(self,f)
             #parameters: ldns_rr *,ldns_rdf *,
             #retvals: bool
 
@@ -446,7 +728,7 @@ The RR is the basic DNS element that contains actual data. This class allows to 
                    the protocol to set
                :returns: (bool) true on success, false otherwise
             """
-            return _ldns.ldns_rr_dnskey_set_protocol(self,f)
+            return _ldns._ldns_rr_dnskey_set_protocol(self,f)
             #parameters: ldns_rr *,ldns_rdf *,
             #retvals: bool
 
@@ -482,7 +764,7 @@ The RR is the basic DNS element that contains actual data. This class allows to 
                
                :returns: (ldns_rdf \*) a ldns_rdf* with the name of the MX host or NULL on failure
             """
-            return _ldns.ldns_rr_mx_exchange(self)
+            return _ldns._ldns_rr_mx_exchange(self)
             #parameters: const ldns_rr *,
             #retvals: ldns_rdf *
 
@@ -493,7 +775,7 @@ The RR is the basic DNS element that contains actual data. This class allows to 
                
                :returns: (ldns_rdf \*) a ldns_rdf* with the preference or NULL on failure
             """
-            return _ldns.ldns_rr_mx_preference(self)
+            return _ldns._ldns_rr_mx_preference(self)
             #parameters: const ldns_rr *,
             #retvals: ldns_rdf *
 
@@ -502,7 +784,7 @@ The RR is the basic DNS element that contains actual data. This class allows to 
                
                :returns: (ldns_rdf \*) a ldns_rdf* with the name or NULL on failure
             """
-            return _ldns.ldns_rr_ns_nsdname(self)
+            return _ldns._ldns_rr_ns_nsdname(self)
             #parameters: const ldns_rr *,
             #retvals: ldns_rdf *
 
@@ -511,7 +793,7 @@ The RR is the basic DNS element that contains actual data. This class allows to 
                
                :returns: (ldns_rdf \*) ldns_rdf *
             """
-            return _ldns.ldns_rr_owner(self)
+            return _ldns._ldns_rr_owner(self)
             #parameters: const ldns_rr *,
             #retvals: ldns_rdf *
 
@@ -530,7 +812,7 @@ The RR is the basic DNS element that contains actual data. This class allows to 
                :param f:
                :returns: (bool) bool
             """
-            return _ldns.ldns_rr_push_rdf(self,f)
+            return _ldns._ldns_rr_push_rdf(self,f)
             #parameters: ldns_rr *,const ldns_rdf *,
             #retvals: bool
 
@@ -550,7 +832,7 @@ The RR is the basic DNS element that contains actual data. This class allows to 
                    the number of the rdf to return
                :returns: (ldns_rdf \*) ldns_rdf *
             """
-            return _ldns.ldns_rr_rdf(self,nr)
+            return _ldns._ldns_rr_rdf(self,nr)
             #parameters: const ldns_rr *,size_t,
             #retvals: ldns_rdf *
 
@@ -559,7 +841,7 @@ The RR is the basic DNS element that contains actual data. This class allows to 
                
                :returns: (ldns_rdf \*) a ldns_rdf* with the algorithm or NULL on failure
             """
-            return _ldns.ldns_rr_rrsig_algorithm(self)
+            return _ldns._ldns_rr_rrsig_algorithm(self)
             #parameters: const ldns_rr *,
             #retvals: ldns_rdf *
 
@@ -568,7 +850,7 @@ The RR is the basic DNS element that contains actual data. This class allows to 
                
                :returns: (ldns_rdf \*) a ldns_rdf* with the expiration time or NULL on failure
             """
-            return _ldns.ldns_rr_rrsig_expiration(self)
+            return _ldns._ldns_rr_rrsig_expiration(self)
             #parameters: const ldns_rr *,
             #retvals: ldns_rdf *
 
@@ -577,7 +859,7 @@ The RR is the basic DNS element that contains actual data. This class allows to 
                
                :returns: (ldns_rdf \*) a ldns_rdf* with the inception time or NULL on failure
             """
-            return _ldns.ldns_rr_rrsig_inception(self)
+            return _ldns._ldns_rr_rrsig_inception(self)
             #parameters: const ldns_rr *,
             #retvals: ldns_rdf *
 
@@ -586,7 +868,7 @@ The RR is the basic DNS element that contains actual data. This class allows to 
                
                :returns: (ldns_rdf \*) a ldns_rdf* with the keytag or NULL on failure
             """
-            return _ldns.ldns_rr_rrsig_keytag(self)
+            return _ldns._ldns_rr_rrsig_keytag(self)
             #parameters: const ldns_rr *,
             #retvals: ldns_rdf *
 
@@ -595,7 +877,7 @@ The RR is the basic DNS element that contains actual data. This class allows to 
                
                :returns: (ldns_rdf \*) a ldns_rdf* with the number of labels or NULL on failure
             """
-            return _ldns.ldns_rr_rrsig_labels(self)
+            return _ldns._ldns_rr_rrsig_labels(self)
             #parameters: const ldns_rr *,
             #retvals: ldns_rdf *
 
@@ -604,7 +886,7 @@ The RR is the basic DNS element that contains actual data. This class allows to 
                
                :returns: (ldns_rdf \*) a ldns_rdf* with the original TTL or NULL on failure
             """
-            return _ldns.ldns_rr_rrsig_origttl(self)
+            return _ldns._ldns_rr_rrsig_origttl(self)
             #parameters: const ldns_rr *,
             #retvals: ldns_rdf *
 
@@ -615,7 +897,7 @@ The RR is the basic DNS element that contains actual data. This class allows to 
                    the algorithm to set
                :returns: (bool) true on success, false otherwise
             """
-            return _ldns.ldns_rr_rrsig_set_algorithm(self,f)
+            return _ldns._ldns_rr_rrsig_set_algorithm(self,f)
             #parameters: ldns_rr *,ldns_rdf *,
             #retvals: bool
 
@@ -626,7 +908,7 @@ The RR is the basic DNS element that contains actual data. This class allows to 
                    the expireation date to set
                :returns: (bool) true on success, false otherwise
             """
-            return _ldns.ldns_rr_rrsig_set_expiration(self,f)
+            return _ldns._ldns_rr_rrsig_set_expiration(self,f)
             #parameters: ldns_rr *,ldns_rdf *,
             #retvals: bool
 
@@ -637,7 +919,7 @@ The RR is the basic DNS element that contains actual data. This class allows to 
                    the inception date to set
                :returns: (bool) true on success, false otherwise
             """
-            return _ldns.ldns_rr_rrsig_set_inception(self,f)
+            return _ldns._ldns_rr_rrsig_set_inception(self,f)
             #parameters: ldns_rr *,ldns_rdf *,
             #retvals: bool
 
@@ -648,7 +930,7 @@ The RR is the basic DNS element that contains actual data. This class allows to 
                    the keytag to set
                :returns: (bool) true on success, false otherwise
             """
-            return _ldns.ldns_rr_rrsig_set_keytag(self,f)
+            return _ldns._ldns_rr_rrsig_set_keytag(self,f)
             #parameters: ldns_rr *,ldns_rdf *,
             #retvals: bool
 
@@ -659,7 +941,7 @@ The RR is the basic DNS element that contains actual data. This class allows to 
                    the number of labels to set
                :returns: (bool) true on success, false otherwise
             """
-            return _ldns.ldns_rr_rrsig_set_labels(self,f)
+            return _ldns._ldns_rr_rrsig_set_labels(self,f)
             #parameters: ldns_rr *,ldns_rdf *,
             #retvals: bool
 
@@ -670,7 +952,7 @@ The RR is the basic DNS element that contains actual data. This class allows to 
                    the original TTL to set
                :returns: (bool) true on success, false otherwise
             """
-            return _ldns.ldns_rr_rrsig_set_origttl(self,f)
+            return _ldns._ldns_rr_rrsig_set_origttl(self,f)
             #parameters: ldns_rr *,ldns_rdf *,
             #retvals: bool
 
@@ -681,7 +963,7 @@ The RR is the basic DNS element that contains actual data. This class allows to 
                    the signature data to set
                :returns: (bool) true on success, false otherwise
             """
-            return _ldns.ldns_rr_rrsig_set_sig(self,f)
+            return _ldns._ldns_rr_rrsig_set_sig(self,f)
             #parameters: ldns_rr *,ldns_rdf *,
             #retvals: bool
 
@@ -692,7 +974,7 @@ The RR is the basic DNS element that contains actual data. This class allows to 
                    the signers name to set
                :returns: (bool) true on success, false otherwise
             """
-            return _ldns.ldns_rr_rrsig_set_signame(self,f)
+            return _ldns._ldns_rr_rrsig_set_signame(self,f)
             #parameters: ldns_rr *,ldns_rdf *,
             #retvals: bool
 
@@ -703,7 +985,7 @@ The RR is the basic DNS element that contains actual data. This class allows to 
                    the typecovered to set
                :returns: (bool) true on success, false otherwise
             """
-            return _ldns.ldns_rr_rrsig_set_typecovered(self,f)
+            return _ldns._ldns_rr_rrsig_set_typecovered(self,f)
             #parameters: ldns_rr *,ldns_rdf *,
             #retvals: bool
 
@@ -712,7 +994,7 @@ The RR is the basic DNS element that contains actual data. This class allows to 
                
                :returns: (ldns_rdf \*) a ldns_rdf* with the signature data or NULL on failure
             """
-            return _ldns.ldns_rr_rrsig_sig(self)
+            return _ldns._ldns_rr_rrsig_sig(self)
             #parameters: const ldns_rr *,
             #retvals: ldns_rdf *
 
@@ -721,7 +1003,7 @@ The RR is the basic DNS element that contains actual data. This class allows to 
                
                :returns: (ldns_rdf \*) a ldns_rdf* with the signers name or NULL on failure
             """
-            return _ldns.ldns_rr_rrsig_signame(self)
+            return _ldns._ldns_rr_rrsig_signame(self)
             #parameters: const ldns_rr *,
             #retvals: ldns_rdf *
 
@@ -730,7 +1012,7 @@ The RR is the basic DNS element that contains actual data. This class allows to 
                
                :returns: (ldns_rdf \*) a ldns_rdf* with the type covered or NULL on failure
             """
-            return _ldns.ldns_rr_rrsig_typecovered(self)
+            return _ldns._ldns_rr_rrsig_typecovered(self)
             #parameters: const ldns_rr *,
             #retvals: ldns_rdf *
 
@@ -749,7 +1031,7 @@ The RR is the basic DNS element that contains actual data. This class allows to 
                
                :param owner:
             """
-            _ldns.ldns_rr_set_owner(self,owner)
+            _ldns._ldns_rr_set_owner(self,owner)
             #parameters: ldns_rr *,ldns_rdf *,
             #retvals: 
 
@@ -773,7 +1055,7 @@ The RR is the basic DNS element that contains actual data. This class allows to 
                    the position the set the rdf
                :returns: (ldns_rdf \*) the old value in the rr, NULL on failyre
             """
-            return _ldns.ldns_rr_set_rdf(self,f,position)
+            return _ldns._ldns_rr_set_rdf(self,f,position)
             #parameters: ldns_rr *,const ldns_rdf *,size_t,
             #retvals: ldns_rdf *
 
@@ -828,6 +1110,8 @@ The RR is the basic DNS element that contains actual data. This class allows to 
 %newobject ldns_rr_list_pop_rr;
 %newobject ldns_rr_list_pop_rr_list;
 %newobject ldns_rr_list_pop_rrset;
+%newobject ldns_rr_list_rr;
+%newobject ldns_rr_list_new;
 %delobject ldns_rr_list_deep_free;
 %delobject ldns_rr_list_free;
 
@@ -846,11 +1130,49 @@ void _ldns_rr_list_free(ldns_rr_list* r) {
 %rename(_ldns_rr_list_free) ldns_rr_list_free;
 #endif
 
-%exception ldns_rr_list_push_rr(ldns_rr_list *rr_list, const ldns_rr *rr) %{ $action if (result) Py_INCREF(obj1); %}
-%exception ldns_rr_list_push_rr_list(ldns_rr_list *rr_list, const ldns_rr_list *push_list) %{ $action if (result) Py_INCREF(obj1); %}
+/* clone data on push */
+
+%rename(__ldns_rr_list_push_rr) ldns_rr_list_push_rr;
+%inline %{
+void _ldns_rr_list_push_rr(ldns_rr_list* r, ldns_rr *rr) {
+   ldns_rr_list_push_rr(r, ldns_rr_clone(rr));
+}
+%}
+
+%rename(__ldns_rr_list_push_rr_list) ldns_rr_list_push_rr_list;
+%inline %{
+void _ldns_rr_list_push_rr_list(ldns_rr_list* r, ldns_rr_list *r2) {
+   ldns_rr_list_push_rr_list(r, ldns_rr_list_clone(r2));
+}
+%}
+
+%rename(__ldns_rr_list_cat) ldns_rr_list_cat;
+%inline %{
+void _ldns_rr_list_cat(ldns_rr_list* r, ldns_rr_list *r2) {
+   ldns_rr_list_cat(r, ldns_rr_list_clone(r2));
+}
+%}
+
+
+/* clone data on pull */
+
+%newobject _ldns_rr_list_rr;
+
+%rename(__ldns_rr_list_rr) ldns_rr_list_rr;
+%inline %{
+ldns_rr* _ldns_rr_list_rr(ldns_rr_list* r, int i) {
+   return ldns_rr_clone(ldns_rr_list_rr(r, i));
+}
+%}
 
 %newobject ldns_rr_list2str;
 
+%rename(__ldns_rr_list_owner) ldns_rr_list_owner;
+%inline %{
+ldns_rdf* _ldns_rr_list_owner(ldns_rr_list* r) {
+   return ldns_rdf_clone(ldns_rr_list_owner(r));
+}
+%}
 
 
 
@@ -867,7 +1189,7 @@ This class contains a list of RR's (see :class:`ldns.ldns_rr`).
             if not self.this:
                 raise Exception("Can't create new RR_LIST")
        
-        __swig_destroy__ = _ldns._ldns_rr_list_free
+        __swig_destroy__ = _ldns._ldns_rr_list_deep_free
 
         #LDNS_RR_LIST_CONSTRUCTORS_#
         @staticmethod
@@ -942,7 +1264,7 @@ This class contains a list of RR's (see :class:`ldns.ldns_rr`).
                    the rightside
                :returns: (bool) a left with right concatenated to it
             """
-            return _ldns.ldns_rr_list_cat(self,right)
+            return _ldns._ldns_rr_list_cat(self,right)
             #parameters: ldns_rr_list *,ldns_rr_list *,
             #retvals: bool
 
@@ -982,7 +1304,7 @@ This class contains a list of RR's (see :class:`ldns.ldns_rr`).
                
                :returns: (ldns_rdf \*) dname of the first element, or NULL if the list is empty
             """
-            return _ldns.ldns_rr_list_owner(self)
+            return _ldns._ldns_rr_list_owner(self)
             #parameters: const ldns_rr_list *,
             #retvals: ldns_rdf *
 
@@ -991,7 +1313,10 @@ This class contains a list of RR's (see :class:`ldns.ldns_rr`).
                
                :returns: (ldns_rr \*) NULL if nothing to pop. Otherwise the popped RR
             """
-            return _ldns.ldns_rr_list_pop_rr(self)
+            rr = _ldns.ldns_rr_list_pop_rr(self)
+            #if hasattr(self, "_python_rr_refs") and rr in self._python_rr_refs:
+            #    self._python_rr_refs.remove(rr)
+            return rr
             #parameters: ldns_rr_list *,
             #retvals: ldns_rr *
 
@@ -1022,7 +1347,11 @@ This class contains a list of RR's (see :class:`ldns.ldns_rr`).
                    the rr to push
                :returns: (bool) false on error, otherwise true
             """
-            return _ldns.ldns_rr_list_push_rr(self,rr)
+            #if hasattr(self, "_python_rr_refs"):
+            #    self._python_rr_refs.add(rr)
+            #else:
+            #    self._python_rr_refs = set([rr])
+            return _ldns._ldns_rr_list_push_rr(self,rr)
             #parameters: ldns_rr_list *,const ldns_rr *,
             #retvals: bool
 
@@ -1033,7 +1362,7 @@ This class contains a list of RR's (see :class:`ldns.ldns_rr`).
                    the rr_list to push
                :returns: (bool) false on error, otherwise true
             """
-            return _ldns.ldns_rr_list_push_rr_list(self,push_list)
+            return _ldns._ldns_rr_list_push_rr_list(self,push_list)
             #parameters: ldns_rr_list *,const ldns_rr_list *,
             #retvals: bool
 
@@ -1044,7 +1373,7 @@ This class contains a list of RR's (see :class:`ldns.ldns_rr`).
                    return this rr
                :returns: (ldns_rr \*) the rr at position nr
             """
-            return _ldns.ldns_rr_list_rr(self,nr)
+            return _ldns._ldns_rr_list_rr(self,nr)
             #parameters: const ldns_rr_list *,size_t,
             #retvals: ldns_rr *
 
@@ -1126,7 +1455,6 @@ This class contains a list of RR's (see :class:`ldns.ldns_rr`).
 
 
 %feature("docstring") ldns_struct_rr_descriptor "Resource Record descriptor
-
 This structure contains, for all rr types, the rdata fields that are defined."
 
 %extend ldns_struct_rr_descriptor {
@@ -1166,4 +1494,91 @@ This structure contains, for all rr types, the rdata fields that are defined."
             #_LDNS_RR_DESCRIPTOR_METHODS#
  %}
 }
- 
+
+/*
+
+rrsig checking wrappers
+
+   copying of rr pointers into the good_keys list leads to double free
+   problems, therefore we provide two options - either ignore the keys
+   or get list of indexes of the keys. The latter allows fetching of the
+   keys later on from the original key set
+*/
+
+%rename(__ldns_verify_rrsig_keylist) ldns_verify_rrsig_keylist;
+%inline %{
+ldns_status ldns_verify_rrsig_keylist_status_only(ldns_rr_list *rrset,
+		ldns_rr *rrsig,
+		const ldns_rr_list *keys) {
+    ldns_rr_list *good_keys = ldns_rr_list_new();
+    ldns_status status = ldns_verify_rrsig_keylist(rrset, rrsig, keys, good_keys);
+    ldns_rr_list_free(good_keys);
+    return status;
+}
+%}
+
+%rename(__ldns_verify_rrsig_keylist) ldns_verify_rrsig_keylist;
+%inline %{
+PyObject* ldns_verify_rrsig_keylist_(ldns_rr_list *rrset,
+		ldns_rr *rrsig,
+		const ldns_rr_list *keys) {
+   PyObject* tuple;
+   PyObject* keylist;
+   ldns_rr_list *good_keys = ldns_rr_list_new();
+   ldns_status status = ldns_verify_rrsig_keylist(rrset, rrsig, keys, good_keys);
+
+   tuple = PyTuple_New(2);
+   PyTuple_SetItem(tuple, 0, SWIG_From_int(status)); 
+   keylist = PyList_New(0);
+   if (status == LDNS_STATUS_OK) {
+       unsigned int i;
+       for (i = 0; i < ldns_rr_list_rr_count(keys); i++)
+            if (ldns_rr_list_contains_rr(good_keys, ldns_rr_list_rr(keys, i)))
+                PyList_Append(keylist, SWIG_From_int(i));
+   }
+   PyTuple_SetItem(tuple, 1, keylist);
+   ldns_rr_list_free(good_keys);
+   return tuple;
+   }
+%}
+
+
+%rename(__ldns_verify_rrsig_keylist_notime) ldns_verify_rrsig_keylist_notime;
+%inline %{
+ldns_status ldns_verify_rrsig_keylist_notime_status_only(ldns_rr_list *rrset,
+		ldns_rr *rrsig,
+		const ldns_rr_list *keys) {
+    ldns_rr_list *good_keys = ldns_rr_list_new();
+    ldns_status status = ldns_verify_rrsig_keylist_notime(rrset, rrsig, keys, good_keys);
+    ldns_rr_list_free(good_keys);
+    return status;
+}
+%}
+
+%rename(__ldns_verify_rrsig_keylist_notime) ldns_verify_rrsig_keylist_notime;
+%inline %{
+PyObject* ldns_verify_rrsig_keylist_notime_(ldns_rr_list *rrset,
+		ldns_rr *rrsig,
+		const ldns_rr_list *keys) {
+   PyObject* tuple;
+   PyObject* keylist;
+   ldns_rr_list *good_keys = ldns_rr_list_new();
+   ldns_status status = ldns_verify_rrsig_keylist_notime(rrset, rrsig, keys, good_keys);
+
+   tuple = PyTuple_New(2);
+   PyTuple_SetItem(tuple, 0, SWIG_From_int(status)); 
+   keylist = PyList_New(0);
+   if (status == LDNS_STATUS_OK) {
+       unsigned int i;
+       for (i = 0; i < ldns_rr_list_rr_count(keys); i++)
+            if (ldns_rr_list_contains_rr(good_keys, ldns_rr_list_rr(keys, i)))
+                PyList_Append(keylist, SWIG_From_int(i));
+   }
+   PyTuple_SetItem(tuple, 1, keylist);
+   ldns_rr_list_free(good_keys);
+   return tuple;
+   }
+%}
+
+/* -- end of rrsig checking wrappers */
+

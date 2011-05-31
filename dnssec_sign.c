@@ -522,57 +522,146 @@ ldns_sign_public_rsamd5(ldns_buffer *to_sign, RSA *key)
 }
 #endif /* HAVE_SSL */
 
-static int
-ldns_dnssec_name_has_only_a(ldns_dnssec_name *cur_name)
+/**
+ * Pushes all rrs from the rrsets of type A and AAAA on gluelist.
+ */
+static ldns_status
+ldns_dnssec_addresses_on_glue_list(
+		ldns_dnssec_rrsets *cur_rrset,
+		ldns_rr_list *glue_list)
 {
-	ldns_dnssec_rrsets *cur_rrset;
-	cur_rrset = cur_name->rrsets;
+	ldns_dnssec_rrs *cur_rrs;
 	while (cur_rrset) {
-		if (cur_rrset->type != LDNS_RR_TYPE_A &&
-			cur_rrset->type != LDNS_RR_TYPE_AAAA) {
-			return 0;
-		} else {
-			cur_rrset = cur_rrset->next;
+		if (cur_rrset->type == LDNS_RR_TYPE_A 
+				|| cur_rrset->type == LDNS_RR_TYPE_AAAA) {
+			for (cur_rrs = cur_rrset->rrs; 
+					cur_rrs; 
+					cur_rrs = cur_rrs->next) {
+				if (cur_rrs->rr) {
+					if (!ldns_rr_list_push_rr(glue_list, 
+							cur_rrs->rr)) {
+						return LDNS_STATUS_MEM_ERR; 
+						/* ldns_rr_list_push_rr()
+						 * returns false when unable
+						 * to increase the capacity
+						 * of the ldsn_rr_list
+						 */
+					}
+				}
+			}
 		}
+		cur_rrset = cur_rrset->next;
 	}
-	return 1;
+	return LDNS_STATUS_OK;
 }
 
+/**
+ * Marks the names in the zone that are occluded. Those names will be skipped
+ * when walking the tree with the ldns_dnssec_name_node_next_nonglue()
+ * function. But watch out! Names that are partially occluded (like glue with
+ * the same name as the delegation) will not be marked and should specifically 
+ * be taken into account seperately.
+ *
+ * When glue_list is given (not NULL), in the process of marking the names, all
+ * glue resource records will be pushed to that list, even glue at delegation names.
+ *
+ * \param[in] zone the zone in which to mark the names
+ * \param[in] glue_list the list to which to push the glue rrs
+ * \return LDNS_STATUS_OK on success, an error code otherwise
+ */
 ldns_status
-ldns_dnssec_zone_mark_glue(ldns_dnssec_zone *zone)
+ldns_dnssec_zone_mark_and_get_glue(ldns_dnssec_zone *zone, 
+	ldns_rr_list *glue_list)
 {
-	ldns_rbnode_t *cur_node;
-	ldns_dnssec_name *cur_name;
-	ldns_rdf *cur_owner, *cur_parent;
+	ldns_rbnode_t    *node;
+	ldns_dnssec_name *name;
+	ldns_rdf         *owner;
+	ldns_rdf         *cut = NULL; /* keeps track of zone cuts */
+	/* When the cut is caused by a delegation, below_delegation will be 1.
+	 * When caused by a DNAME, below_delegation will be 0.
+	 */
+	int below_delegation = -1; /* init suppresses comiler warning */
+	ldns_status s;
 
-	cur_node = ldns_rbtree_first(zone->names);
-	while (cur_node != LDNS_RBTREE_NULL) {
-		cur_name = (ldns_dnssec_name *) cur_node->data;
-		cur_node = ldns_rbtree_next(cur_node);
-		if (ldns_dnssec_name_has_only_a(cur_name)) {
-			/* assume glue XXX check for zone cur */
-			cur_owner = ldns_rdf_clone(ldns_rr_owner(
-					      cur_name->rrsets->rrs->rr));
-			while (ldns_dname_label_count(cur_owner) >
-				  ldns_dname_label_count(zone->soa->name)) {
-				if (ldns_dnssec_zone_find_rrset(zone,
-										  cur_owner,
-										  LDNS_RR_TYPE_NS)) {
-					/*
-					fprintf(stderr, "[XX] Marking as glue: ");
-					ldns_rdf_print(stderr, cur_name->name);
-					fprintf(stderr, "\n");
-					*/
-					cur_name->is_glue = true;
+	if (!zone || !zone->names) {
+		return LDNS_STATUS_NULL;
+	}
+	for (node = ldns_rbtree_first(zone->names); 
+			node != LDNS_RBTREE_NULL; 
+			node = ldns_rbtree_next(node)) {
+		name = (ldns_dnssec_name *) node->data;
+		owner = ldns_dnssec_name_name(name);
+
+		if (cut) { 
+			/* The previous node was a zone cut, or a subdomain
+			 * below a zone cut. Is this node (still) a subdomain
+			 * below the cut? Then the name is occluded. Unless
+			 * the name contains a SOA, after which we are 
+			 * authoritative again.
+			 *
+			 * FIXME! If there are labels in between the SOA and
+			 * the cut, going from the authoritative space (below
+			 * the SOA) up into occluded space again, will not be
+			 * detected with the contruct below!
+			 */
+			if (ldns_dname_is_subdomain(owner, cut) &&
+					!ldns_dnssec_rrsets_contains_type(
+					name->rrsets, LDNS_RR_TYPE_SOA)) {
+
+				if (below_delegation && glue_list) {
+					s = ldns_dnssec_addresses_on_glue_list(
+						name->rrsets, glue_list);
+					if (s != LDNS_STATUS_OK) {
+						return s;
+					}
 				}
-				cur_parent = ldns_dname_left_chop(cur_owner);
-				ldns_rdf_deep_free(cur_owner);
-				cur_owner = cur_parent;
+				name->is_glue = true; /* Mark occluded name! */
+				continue;
+			} else {
+				cut = NULL;
 			}
-			ldns_rdf_deep_free(cur_owner);
+		}
+
+		/* The node is not below a zone cut. Is it a zone cut itself?
+		 * Everything below a SOA is authoritative of course; Except
+		 * when the name also contains a DNAME :).
+		 */
+		if (ldns_dnssec_rrsets_contains_type(
+				name->rrsets, LDNS_RR_TYPE_NS)
+			    && !ldns_dnssec_rrsets_contains_type(
+				name->rrsets, LDNS_RR_TYPE_SOA)) {
+			cut = owner;
+			below_delegation = 1;
+			if (glue_list) { /* record glue on the zone cut */
+				s = ldns_dnssec_addresses_on_glue_list(
+					name->rrsets, glue_list);
+				if (s != LDNS_STATUS_OK) {
+					return s;
+				}
+			}
+		} else if (ldns_dnssec_rrsets_contains_type(
+				name->rrsets, LDNS_RR_TYPE_DNAME)) {
+			cut = owner;
+			below_delegation = 0;
 		}
 	}
 	return LDNS_STATUS_OK;
+}
+
+/**
+ * Marks the names in the zone that are occluded. Those names will be skipped
+ * when walking the tree with the ldns_dnssec_name_node_next_nonglue()
+ * function. But watch out! Names that are partially occluded (like glue with
+ * the same name as the delegation) will not be marked and should specifically 
+ * be taken into account seperately.
+ *
+ * \param[in] zone the zone in which to mark the names
+ * \return LDNS_STATUS_OK on success, an error code otherwise
+ */
+ldns_status
+ldns_dnssec_zone_mark_glue(ldns_dnssec_zone *zone)
+{
+	return ldns_dnssec_zone_mark_and_get_glue(zone, NULL);
 }
 
 ldns_rbnode_t *
@@ -915,6 +1004,8 @@ ldns_dnssec_zone_create_rrsigs_flg(ldns_dnssec_zone *zone,
 
 	size_t i;
 
+	int on_delegation_point = 0; /* handle partially occluded names */
+
 	ldns_rr_list *pubkey_list = ldns_rr_list_new();
 	zone = zone;
 	new_rrs = new_rrs;
@@ -930,6 +1021,10 @@ ldns_dnssec_zone_create_rrsigs_flg(ldns_dnssec_zone *zone,
 		cur_name = (ldns_dnssec_name *) cur_node->data;
 
 		if (!cur_name->is_glue) {
+			on_delegation_point = ldns_dnssec_rrsets_contains_type(
+					cur_name->rrsets, LDNS_RR_TYPE_NS)
+				&& !ldns_dnssec_rrsets_contains_type(
+					cur_name->rrsets, LDNS_RR_TYPE_SOA);
 			cur_rrset = cur_name->rrsets;
 			while (cur_rrset) {
 				/* reset keys to use */
@@ -959,20 +1054,15 @@ ldns_dnssec_zone_create_rrsigs_flg(ldns_dnssec_zone *zone,
 				}
 
 				/* only sign non-delegation RRsets */
-				/* (glue should have been marked earlier) */
-				if ((ldns_rr_list_type(rr_list) != LDNS_RR_TYPE_NS ||
-					ldns_dname_compare(ldns_rr_list_owner(rr_list),
-					zone->soa->name) == 0) &&
-					/* OK, there is also the possibility that the record
-					 * is glue, but at the same owner name as other records that
-					 * are not NS nor A/AAAA. Bleh, our current data structure
-					 * doesn't really support that... */
-					!((ldns_rr_list_type(rr_list) == LDNS_RR_TYPE_A ||
-					 ldns_rr_list_type(rr_list) == LDNS_RR_TYPE_AAAA) &&
-					 !ldns_dname_compare(ldns_rr_list_owner(rr_list), zone->soa->name) == 0 &&
-					 ldns_dnssec_zone_find_rrset(zone, ldns_rr_list_owner(rr_list), LDNS_RR_TYPE_NS)
-					 )) {
-
+				/* (glue should have been marked earlier, 
+				 *  except on the delegation points itself) */
+				if (!on_delegation_point ||
+						ldns_rr_list_type(rr_list) 
+							== LDNS_RR_TYPE_DS ||
+						ldns_rr_list_type(rr_list) 
+							== LDNS_RR_TYPE_NSEC ||
+						ldns_rr_list_type(rr_list) 
+							== LDNS_RR_TYPE_NSEC3) {
 					siglist = ldns_sign_public(rr_list, key_list);
 					for (i = 0; i < ldns_rr_list_rr_count(siglist); i++) {
 						if (cur_rrset->signatures) {
@@ -1109,7 +1199,7 @@ ldns_dnssec_zone_sign_nsec3_flg(ldns_dnssec_zone *zone,
 					   uint8_t *salt,
 					   int signflags)
 {
-	ldns_rr *nsec3, *nsec3params;
+	ldns_rr *nsec3, *nsec3param;
 	ldns_status result = LDNS_STATUS_OK;
 
 	/* zone is already sorted */
@@ -1134,13 +1224,13 @@ ldns_dnssec_zone_sign_nsec3_flg(ldns_dnssec_zone *zone,
 		} else {
 			if (!ldns_dnssec_zone_find_rrset(zone,
 									   zone->soa->name,
-									   LDNS_RR_TYPE_NSEC3PARAMS)) {
-				/* create and add the nsec3params rr */
-				nsec3params =
-					ldns_rr_new_frm_type(LDNS_RR_TYPE_NSEC3PARAMS);
-				ldns_rr_set_owner(nsec3params,
+									   LDNS_RR_TYPE_NSEC3PARAM)) {
+				/* create and add the nsec3param rr */
+				nsec3param =
+					ldns_rr_new_frm_type(LDNS_RR_TYPE_NSEC3PARAM);
+				ldns_rr_set_owner(nsec3param,
 							   ldns_rdf_clone(zone->soa->name));
-				ldns_nsec3_add_param_rdfs(nsec3params,
+				ldns_nsec3_add_param_rdfs(nsec3param,
 									 algorithm,
 									 flags,
 									 iterations,
@@ -1148,12 +1238,12 @@ ldns_dnssec_zone_sign_nsec3_flg(ldns_dnssec_zone *zone,
 									 salt);
 				/* always set bit 7 of the flags to zero, according to
 				 * rfc5155 section 11 */
-				ldns_set_bit(ldns_rdf_data(ldns_rr_rdf(nsec3params, 1)), 7, 0);
-				result = ldns_dnssec_zone_add_rr(zone, nsec3params);
+				ldns_set_bit(ldns_rdf_data(ldns_rr_rdf(nsec3param, 1)), 7, 0);
+				result = ldns_dnssec_zone_add_rr(zone, nsec3param);
 				if (result != LDNS_STATUS_OK) {
 					return result;
 				}
-				ldns_rr_list_push_rr(new_rrs, nsec3params);
+				ldns_rr_list_push_rr(new_rrs, nsec3param);
 			}
 			result = ldns_dnssec_zone_create_nsec3s(zone,
 											new_rrs,
@@ -1266,4 +1356,5 @@ ldns_zone_sign_nsec3(ldns_zone *zone, ldns_key_list *key_list, uint8_t algorithm
 	return signed_zone;
 }
 #endif /* HAVE_SSL */
+
 

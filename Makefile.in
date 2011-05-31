@@ -32,6 +32,10 @@ ifdef glibtool
 libtool		= $(glibtool)
 endif
 
+# override $U variable which is used by autotools for deansification (for
+# K&R C compilers), but causes problems if $U is defined in the env).
+U=
+
 CC 		= @CC@
 ifeq "$(srcdir)" "."
   CPPFLAGS	= $(strip -I. @CPPFLAGS@ @DEFS@)
@@ -44,6 +48,7 @@ LIBS 		= @LIBS@
 LIBOBJS		= @LIBOBJS@
 PYTHON_CPPFLAGS	= @PYTHON_CPPFLAGS@
 PYTHON_LDFLAGS	= @PYTHON_LDFLAGS@
+PYTHON_X_CFLAGS = @PYTHON_X_CFLAGS@
 LIBSSL_CPPFLAGS = @LIBSSL_CPPFLAGS@
 LIBSSL_LDFLAGS  = @LIBSSL_LDFLAGS@
 LIBSSL_LIBS     = @LIBSSL_LIBS@
@@ -56,7 +61,7 @@ LINT		= splint
 LINTFLAGS=+quiet -weak -warnposix -unrecog -Din_addr_t=uint32_t -Du_int=unsigned -Du_char=uint8_t -preproc -Drlimit=rlimit64 -D__gnuc_va_list=va_list
 #-Dglob64=glob -Dglobfree64=globfree
 # compat with openssl linux edition.
-LINTFLAGS+="-DBN_ULONG=unsigned long" -Dkrb5_int32=int "-Dkrb5_ui_4=unsigned int" -DPQ_64BIT=uint64_t -DRC4_INT=unsigned -fixedformalarray -D"ENGINE=unsigned" -D"RSA=unsigned" -D"DSA=unsigned" -D"EVP_PKEY=unsigned" -D"EVP_MD=unsigned" -D"SSL=unsigned" -D"SSL_CTX=unsigned" -D"X509=unsigned" -D"RC4_KEY=unsigned" -D"EVP_MD_CTX=unsigned" -D"EC_KEY=unsigned" -D"EC_POINT=unsigned" -D"EC_GROUP=unsigned"
+LINTFLAGS+="-DBN_ULONG=unsigned long" -Dkrb5_int32=int "-Dkrb5_ui_4=unsigned int" -DPQ_64BIT=uint64_t -DRC4_INT=unsigned -fixedformalarray -D"ENGINE=unsigned" -D"RSA=unsigned" -D"DSA=unsigned" -D"EVP_PKEY=unsigned" -D"EVP_MD=unsigned" -D"SSL=unsigned" -D"SSL_CTX=unsigned" -D"X509=unsigned" -D"RC4_KEY=unsigned" -D"EVP_MD_CTX=unsigned" -D"EC_KEY=unsigned" -D"EC_POINT=unsigned" -D"EC_GROUP=unsigned" -D"EVP_PKEY_ASN1_METHOD=struct evp_pkey_asn1_method_st" -D"EVP_PKEY_CTX=struct evp_pkey_ctx_st"
 # compat with NetBSD
 ifeq "$(shell uname)" "NetBSD"
 LINTFLAGS+="-D__RENAME(x)=" -D_NETINET_IN_H_
@@ -76,7 +81,6 @@ LIBDNS_SOURCES	=	rdata.c util.c rr.c packet.c wire2host.c \
 			sha1.c sha2.c
 LIBDNS_HEADERS	=	$(srcdir)/ldns/error.h		\
 			$(srcdir)/ldns/packet.h		\
-			$(srcdir)/ldns/common.h		\
 			$(srcdir)/ldns/rdata.h 		\
 			$(srcdir)/ldns/rr.h		\
 			$(srcdir)/ldns/wire2host.h	\
@@ -111,7 +115,7 @@ COMP_LIB	= $(LIBTOOL) --mode=compile $(CC) $(CPPFLAGS) $(CFLAGS)
 LINK		= $(CC) $(strip $(CFLAGS) $(LDFLAGS) $(LIBS))
 LINK_LIB	= $(LIBTOOL) --mode=link $(CC) $(strip $(CFLAGS) $(LDFLAGS) $(LIBS) -version-number $(version_info) -no-undefined)
 
-%.o:    $(srcdir)/%.c $(LIBDNS_HEADERS) ldns/net.h ldns/util.h ldns/config.h
+%.o:    $(srcdir)/%.c $(LIBDNS_HEADERS) ldns/common.h ldns/net.h ldns/util.h ldns/config.h
 	$(COMP_LIB) $(LIBSSL_CPPFLAGS) -c $<
 
 .PHONY:	clean realclean docclean manpages doc lint all lib pyldns test
@@ -120,7 +124,7 @@ LINK_LIB	= $(LIBTOOL) --mode=link $(CC) $(strip $(CFLAGS) $(LDFLAGS) $(LIBS) -ve
 
 all:		copy-headers lib linktest manpages @PYLDNS@
 
-linktest:	$(srcdir)/linktest.c $(LIBDNS_HEADERS) ldns/net.h ldns/util.h ldns/config.h libldns.la
+linktest:	$(srcdir)/linktest.c $(LIBDNS_HEADERS) ldns/common.h ldns/net.h ldns/util.h ldns/config.h libldns.la
 		$(LIBTOOL) --mode=link $(CC) $(srcdir)/linktest.c $(CPPFLAGS) $(LIBSSL_CPPFLAGS) $(CFLAGS) -lldns $(LIBS) -o linktest
 
 lib:		libldns.la
@@ -140,12 +144,12 @@ $(addprefix include/ldns/, $(notdir $(LIBDNS_HEADERS))): include/ldns/%.h: $(src
 		@if [ ! -d include/ldns ] ; then (cd include; ln -s ../ldns ./ldns || echo "include/ldns exists") ; fi ;
 		$(INSTALL) -c -m 644 $< ./include/ldns/
 
-include/ldns/util.h include/ldns/net.h include/ldns/config.h: include/ldns/%.h: ./ldns/%.h
+include/ldns/util.h include/ldns/common.h include/ldns/net.h include/ldns/config.h: include/ldns/%.h: ./ldns/%.h
 		@if [ ! -d include ] ; then ($(INSTALL) -d include || echo "include exists") ; fi ;
 		@if [ ! -d include/ldns ] ; then (cd include; ln -s ../ldns ./ldns || echo "include/ldns exists") ; fi ;
 		$(INSTALL) -c -m 644 $< ./include/ldns/
 
-copy-headers:	$(addprefix include/ldns/, $(notdir $(LIBDNS_HEADERS))) include/ldns/util.h include/ldns/net.h include/ldns/config.h
+copy-headers:	$(addprefix include/ldns/, $(notdir $(LIBDNS_HEADERS))) include/ldns/common.h include/ldns/util.h include/ldns/net.h include/ldns/config.h
 
 mancheck:
 		sh -c 'find . -name \*.\[13\] -exec troff -z {} \;' 2>&1 | sed "s/^\.\///" | sed "s/\(:[0\-9]\+:\)/\1 warning:/g"
@@ -167,18 +171,18 @@ manpages:	$(srcdir)/doc/function_manpages
 
 pyldns:		_ldns.la
 
-$(pywrapdir)/ldns_wrapper.c:	$(pywrapdir)/ldns.i $(wildcard $(pywrapdir)/*.i) $(LIBDNS_HEADERS) ldns/util.h ldns/config.h
+$(pywrapdir)/ldns_wrapper.c:	$(pywrapdir)/ldns.i $(wildcard $(pywrapdir)/*.i) $(LIBDNS_HEADERS) ldns/common.h ldns/util.h ldns/config.h
 	$(swig) -python -o $@ $(CPPFLAGS) $(PYTHON_CPPFLAGS) $<
 
-ldns_wrapper.lo:	$(pywrapdir)/ldns_wrapper.c $(LIBDNS_HEADERS) ldns/util.h ldns/config.h
-	$(COMP_LIB) -I./include/ldns $(PYTHON_CPPFLAGS) -c $< -o $@
+ldns_wrapper.lo:	$(pywrapdir)/ldns_wrapper.c $(LIBDNS_HEADERS) ldns/common.h ldns/util.h ldns/config.h
+	$(COMP_LIB) -I./include/ldns $(PYTHON_CPPFLAGS) $(PYTHON_X_CFLAGS) -c $< -o $@
 
 _ldns.la: ldns_wrapper.lo libldns.la 
 	$(LIBTOOL) --tag=CC --mode=link $(CC) $(strip $(CFLAGS) $(PYTHON_CFLAGS) $(LDFLAGS) $(PYTHON_LDFLAGS) -module -version-number $(version_info) -no-undefined -o $@ $< -rpath $(python_site) -L. -L.libs -lldns $(LIBS))
 
 install:	install-h install-lib install-config install-manpages $(pyldns_inst)
 
-uninstall:	uninstall-manpages uninstall-h uninstall-lib $(pyldns_uninst)
+uninstall:	uninstall-manpages uninstall-config uninstall-h uninstall-lib $(pyldns_uninst)
 
 destclean:	uninstall
 
@@ -186,6 +190,12 @@ install-config:
 	if [ $(INSTALL_LDNS_CONFIG) = "yes" ] ; then \
 		$(INSTALL) -d $(DESTDIR)$(bindir); \
 		$(INSTALL) -c -m 755 packaging/ldns-config $(DESTDIR)$(bindir)/; \
+	fi
+
+uninstall-config:
+	if [ $(INSTALL_LDNS_CONFIG) = "yes" ] ; then \
+		rm -f $(DESTDIR)$(bindir)/ldns-config; \
+		[ ! -d $(DESTDIR)$(bindir) ] || rmdir -p $(DESTDIR)$(bindir) || echo "ok, dir already gone"; \
 	fi
 
 install-manpages:	manpages
@@ -203,12 +213,16 @@ install-h:	lib
 		$(INSTALL) -m 755 -d $(DESTDIR)$(includedir)/ldns
 		for i in $(LIBDNS_HEADERS); do \
 			$(INSTALL) -c -m 644 $$i $(DESTDIR)$(includedir)/ldns/; done
+		$(INSTALL) -c -m 644 include/ldns/common.h $(DESTDIR)$(includedir)/ldns/
 		$(INSTALL) -c -m 644 include/ldns/util.h $(DESTDIR)$(includedir)/ldns/
 		$(INSTALL) -c -m 644 include/ldns/net.h $(DESTDIR)$(includedir)/ldns/
 
 uninstall-h:
 		for i in $(LIBDNS_HEADERS); do \
 			rm -f $(DESTDIR)$(includedir)/$$i; done
+		rm -f  $(DESTDIR)$(includedir)/ldns/net.h
+		rm -f  $(DESTDIR)$(includedir)/ldns/util.h
+		rm -f  $(DESTDIR)$(includedir)/ldns/common.h
 		[ ! -d $(DESTDIR)$(includedir)/ldns ] || rmdir -p $(DESTDI)$(includedir)/ldns || echo "ok, dir already gone"
 		exit 0
 
@@ -255,6 +269,7 @@ realclean: clean docclean libclean
 	rm -f ldns/config.h.in
 	rm -f ldns/config.h
 	rm -f ldns/util.h
+	rm -f ldns/common.h
 	rm -f config.h.in
 	rm -f configure
 	rm -f config.sub
@@ -275,7 +290,7 @@ libclean:
 	$(LIBTOOL) --mode clean rm -f libldns.so
 	$(LIBTOOL) --mode clean rm -f libldns.so.*
 	$(LIBTOOL) --mode clean rm -f _ldns.la
-	rm -rf ldns/net.h ldns/util.h ldns/config.h
+	rm -rf ldns/net.h ldns/util.h ldns/config.h ldns/common.h
 	rm -rf *.lo
 	rm -rf .libs
 	rm -rf libtool

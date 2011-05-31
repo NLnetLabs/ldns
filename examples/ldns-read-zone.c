@@ -102,7 +102,7 @@ main(int argc, char **argv)
 			if (cur_rr_type == LDNS_RR_TYPE_RRSIG ||
 			    cur_rr_type == LDNS_RR_TYPE_NSEC ||
 			    cur_rr_type == LDNS_RR_TYPE_NSEC3 ||
-			    cur_rr_type == LDNS_RR_TYPE_NSEC3PARAMS
+			    cur_rr_type == LDNS_RR_TYPE_NSEC3PARAM
 			   ) {
 				ldns_rr_free(cur_rr);
 			} else {
@@ -119,7 +119,7 @@ main(int argc, char **argv)
 			if (cur_rr_type == LDNS_RR_TYPE_RRSIG ||
 			    cur_rr_type == LDNS_RR_TYPE_NSEC ||
 			    cur_rr_type == LDNS_RR_TYPE_NSEC3 ||
-			    cur_rr_type == LDNS_RR_TYPE_NSEC3PARAMS
+			    cur_rr_type == LDNS_RR_TYPE_NSEC3PARAM
 			   ) {
 				ldns_rr_list_push_rr(stripped_list, cur_rr);
 			} else {

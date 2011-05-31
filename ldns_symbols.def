@@ -85,6 +85,7 @@ ldns_dnssec_name_cmp
 ldns_dnssec_name_deep_free
 ldns_dnssec_name_find_rrset
 ldns_dnssec_name_free
+ldns_dnssec_name_is_glue
 ldns_dnssec_name_name
 ldns_dnssec_name_new
 ldns_dnssec_name_new_frm_rr
@@ -135,6 +136,7 @@ ldns_dnssec_zone_deep_free
 ldns_dnssec_zone_find_nsec3_original
 ldns_dnssec_zone_find_rrset
 ldns_dnssec_zone_free
+ldns_dnssec_zone_mark_and_get_glue
 ldns_dnssec_zone_mark_glue
 ldns_dnssec_zone_names_print
 ldns_dnssec_zone_new
@@ -618,6 +620,7 @@ ldns_rr_type2str
 ldns_rr_uncompressed_size
 ldns_send
 ldns_send_buffer
+ldns_serial_arithmitics_gmtime_r
 ldns_set_bit
 ldns_sha1
 ldns_sha1_final

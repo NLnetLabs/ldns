@@ -6,7 +6,7 @@ sinclude(acx_nlnetlabs.m4)
 # must be numbers. ac_defun because of later processing.
 m4_define([VERSION_MAJOR],[1])
 m4_define([VERSION_MINOR],[6])
-m4_define([VERSION_MICRO],[9])
+m4_define([VERSION_MICRO],[10])
 AC_INIT(ldns, m4_defn([VERSION_MAJOR]).m4_defn([VERSION_MINOR]).m4_defn([VERSION_MICRO]), libdns@nlnetlabs.nl, libdns)
 AC_CONFIG_SRCDIR([packet.c])
 # needed to build correct soname
@@ -84,6 +84,7 @@ AC_SEARCH_LIBS([socket], [socket])
 AC_SEARCH_LIBS([inet_pton], [nsl])
 
 # check for python
+PYTHON_X_CFLAGS=""
 AC_ARG_WITH(pyldns, AC_HELP_STRING([--with-pyldns], 
  [generate python library, or --without-pyldns to disable Python support.]), 
  [],[ withval="no" ])
@@ -113,9 +114,15 @@ if test x_$withval != x_no; then
 		AC_SUBST(swig, "$SWIG")
 	fi
    else
-	AC_MSG_RESULT([*** don't have Python, skipping Swig, no pyldns ***])
+	AC_MSG_RESULT([*** don't have Python, skipping Swig, no pyldns ***]) # '
+   fi
+
+   # xtra cflags for pyldns
+   if test x_$ldns_have_python != x_no; then
+	ACX_CHECK_COMPILER_FLAG(fno-strict-aliasing, [PYTHON_X_CFLAGS="-fno-strict-aliasing"])
    fi
 fi
+AC_SUBST(PYTHON_X_CFLAGS)
 
 # Use libtool
 ACX_LIBTOOL_C_ONLY
@@ -177,6 +184,7 @@ case "$enable_ecdsa" in
       ])
       # we now know we have ECDSA and the required curves.
       AC_DEFINE_UNQUOTED([USE_ECDSA], [1], [Define this to enable ECDSA support.])
+      AC_SUBST(ldns_build_config_use_ecdsa, 1)
       AC_WARN([
       *****************************************************************
       *** YOU HAVE ENABLED ECDSA WHICH IS EXPERIMENTAL AT THIS TIME ***
@@ -184,8 +192,10 @@ case "$enable_ecdsa" in
       *****************************************************************])
       ;;
     no)
+      AC_SUBST(ldns_build_config_use_ecdsa, 0)
       ;;
     *)
+      AC_SUBST(ldns_build_config_use_ecdsa, 0)
       ;;
 esac
 
@@ -229,10 +239,11 @@ AC_C_BIGENDIAN
 
 # Checks for header files.
 AC_HEADER_STDC
+AC_HEADER_STDBOOL
 #AC_HEADER_SYS_WAIT
 #AC_CHECK_HEADERS([getopt.h fcntl.h stdlib.h string.h strings.h unistd.h])
 # do the very minimum - we can always extend this
-AC_CHECK_HEADERS([getopt.h stdarg.h stdbool.h openssl/ssl.h netinet/in.h time.h arpa/inet.h netdb.h],,, [AC_INCLUDES_DEFAULT])
+AC_CHECK_HEADERS([getopt.h stdarg.h openssl/ssl.h netinet/in.h time.h arpa/inet.h netdb.h],,, [AC_INCLUDES_DEFAULT])
 AC_CHECK_HEADERS(sys/param.h sys/mount.h,,,
 [AC_INCLUDES_DEFAULT
   [
@@ -259,8 +270,10 @@ AC_CHECK_HEADER(inttypes.h,
 [
 include_inttypes_h='#include <inttypes.h>'
 AC_DEFINE(HAVE_INTTYPES_H, 1, [define if you have inttypes.h])
+AC_SUBST(ldns_build_config_have_inttypes_h, 1)
 ],[
 include_inttypes_h=''
+AC_SUBST(ldns_build_config_have_inttypes_h, 0)
 ],[AC_INCLUDES_DEFAULT
 ])
 AC_SUBST(include_inttypes_h)
@@ -282,6 +295,20 @@ include_unistd_h=''
 ],[AC_INCLUDES_DEFAULT
 ])
 AC_SUBST(include_unistd_h)
+
+AC_CHECK_SIZEOF(time_t,,[
+AC_INCLUDES_DEFAULT
+#ifdef TIME_WITH_SYS_TIME
+# include <sys/time.h>
+# include <time.h>
+#else
+# ifdef HAVE_SYS_TIME_H
+#  include <sys/time.h>
+# else
+#  include <time.h>
+# endif
+#endif
+])
 
 ACX_TYPE_SOCKLEN_T
 AC_CHECK_TYPE(ssize_t, int)
@@ -308,6 +335,7 @@ AC_REPLACE_FUNCS(b64_pton)
 AC_REPLACE_FUNCS(b64_ntop)
 AC_REPLACE_FUNCS(b32_pton)
 AC_REPLACE_FUNCS(b32_ntop)
+AC_REPLACE_FUNCS(calloc)
 AC_REPLACE_FUNCS(timegm)
 AC_REPLACE_FUNCS(gmtime_r)
 AC_REPLACE_FUNCS(ctime_r)
@@ -319,7 +347,7 @@ AC_REPLACE_FUNCS(inet_ntop)
 AC_REPLACE_FUNCS(snprintf)
 AC_REPLACE_FUNCS(strlcpy)
 AC_REPLACE_FUNCS(memmove)
-AC_CHECK_FUNCS([endprotoent endservent sleep random fcntl strtoul])
+AC_CHECK_FUNCS([endprotoent endservent sleep random fcntl strtoul bzero memset])
 
 ACX_CHECK_GETADDRINFO_WITH_INCLUDES
 if test $ac_cv_func_getaddrinfo = no; then
@@ -479,7 +507,23 @@ size_t strlcpy(char *dst, const char *src, size_t siz);
 #endif
 ])
 
-AC_CONFIG_FILES([Makefile ldns/net.h ldns/util.h packaging/libldns.pc packaging/ldns-config])
+if test "x$HAVE_SSL" = "xyes"; then
+	AC_SUBST(ldns_build_config_have_ssl, 1)
+else
+	AC_SUBST(ldns_build_config_have_ssl, 0)
+fi
+if test "x$ac_cv_c_format_attribute" = "xyes"; then
+  AC_SUBST(ldns_build_config_have_attr_format, 1)
+else
+  AC_SUBST(ldns_build_config_have_attr_format, 0)
+fi
+if test "x$ac_cv_c_unused_attribute" = "xyes"; then
+  AC_SUBST(ldns_build_config_have_attr_unused, 1)
+else
+  AC_SUBST(ldns_build_config_have_attr_unused, 0)
+fi
+
+AC_CONFIG_FILES([Makefile ldns/common.h ldns/net.h ldns/util.h packaging/libldns.pc packaging/ldns-config])
 
 AC_CONFIG_HEADER([ldns/config.h])
 AC_OUTPUT
