@@ -213,7 +213,7 @@ ldns_dnssec_create_nsec_bitmap(ldns_rr_type rr_type_list[],
 /**
  * returns whether a rrset of the given type is found in the rrsets.
  *
- * \param[in] *rsets the rrsets to be tested
+ * \param[in] rrsets the rrsets to be tested
  * \param[in] type the type to test for
  * \return int 1 if the type was found, 0 otherwise.
  */
