@@ -524,7 +524,7 @@ verify_dnssec_name(ldns_rdf *zone_name,
 
 static ldns_status
 verify_dnssec_zone(ldns_dnssec_zone *dnssec_zone,
-			    ldns_rdf *zone_name) {
+		ldns_rdf *zone_name, bool apexonly, int percentage) {
 	ldns_rr_list *keys;
 	ldns_rbnode_t *cur_node;
 	ldns_dnssec_rrsets *cur_key_rrset;
@@ -560,20 +560,31 @@ verify_dnssec_zone(ldns_dnssec_zone *dnssec_zone,
 			}
 			result = LDNS_STATUS_ERR;
 		}
-		while (cur_node != LDNS_RBTREE_NULL) {
-			cur_name = (ldns_dnssec_name *) cur_node->data;
-			status = verify_dnssec_name(zone_name,
-			                            dnssec_zone,
-			                            dnssec_zone->names,
-			                            cur_node,
-			                            keys);
-			if (status != LDNS_STATUS_OK && result == LDNS_STATUS_OK) {
-				result = status;
+
+                if (apexonly == false && percentage > 0) {
+			while (cur_node != LDNS_RBTREE_NULL) {
+				/* should we check this one */
+				if (percentage == 100
+						|| ((random() % 100) 
+						>= 100 - percentage)) {
+					cur_name = (ldns_dnssec_name *)
+					       	cur_node->data;
+					status = verify_dnssec_name(
+							zone_name,
+							dnssec_zone,
+							dnssec_zone->names,
+							cur_node,
+							keys);
+					if (status != LDNS_STATUS_OK
+							&& result
+							== LDNS_STATUS_OK) {
+						result = status;
+					}
+				}
+				cur_node = ldns_rbtree_next(cur_node);
 			}
-			cur_node = ldns_rbtree_next(cur_node);
 		}
 	}
-
 	ldns_rr_list_free(keys);
 	return result;
 }
@@ -589,9 +600,14 @@ main(int argc, char **argv)
 	ldns_status s;
 	ldns_dnssec_zone *dnssec_zone;
 	ldns_status result = LDNS_STATUS_ERR;
+	bool apexonly = false;
+	int percentage = 100;
 
-	while ((c = getopt(argc, argv, "hvV:")) != -1) {
+	while ((c = getopt(argc, argv, "ahvV:p:")) != -1) {
 		switch(c) {
+                case 'a':
+                        apexonly = true;
+                        break;
 		case 'h':
 			printf("Usage: %s [OPTIONS] <zonefile>\n", argv[0]);
 			printf("\tReads the zonefile and checks for DNSSEC errors.\n");
@@ -599,6 +615,8 @@ main(int argc, char **argv)
 			printf(" and verifies all signatures\n");
 			printf("It also checks the NSEC(3) chain, but it will error on opted-out delegations\n");
 			printf("\nOPTIONS:\n");
+			printf("\t-a apex only, check only the zone apex\n");
+			printf("\t-p [0-100] only perform this many checks, defaults to 100\n");
 			printf("\t-h show this text\n");
 			printf("\t-v shows the version and exits\n");
 			printf("\t-V [0-5]\tset verbosity level (default 3)\n");
@@ -606,13 +624,21 @@ main(int argc, char **argv)
 			exit(EXIT_SUCCESS);
 			break;
 		case 'v':
-			printf("read zone version %s (ldns version %s)\n",
+			printf("verify-zone version %s (ldns version %s)\n",
 				  LDNS_VERSION, ldns_version());
 			exit(EXIT_SUCCESS);
 			break;
 		case 'V':
 			verbosity = atoi(optarg);
 			break;
+                case 'p':
+                        percentage = atoi(optarg);
+                        if (percentage < 0 || percentage > 100) {
+	                        fprintf(stderr, "ldns-verify-zone: percentage needs to fall between 0..100\n");
+                                exit(EXIT_FAILURE);
+                        }
+                        srandom(time(NULL) ^ getpid());
+                        break;
 		}
 	}
 
@@ -654,9 +680,9 @@ main(int argc, char **argv)
 			ldns_dnssec_zone_print(stdout, dnssec_zone);
 		}
 
-		result = verify_dnssec_zone(dnssec_zone,
-							   ldns_rr_owner(ldns_zone_soa(z)));
-
+		result = verify_dnssec_zone(dnssec_zone, 
+				ldns_rr_owner(ldns_zone_soa(z)),
+				apexonly, percentage);
 
 		if (result == LDNS_STATUS_OK) {
 			if (verbosity >= 1) {
@@ -684,7 +710,7 @@ main(int argc, char **argv)
 int
 main(int argc, char **argv)
 {
-	fprintf(stderr, "ldns-verifyzone needs OpenSSL support, which has not been compiled in\n");
+	fprintf(stderr, "ldns-verify-zone needs OpenSSL support, which has not been compiled in\n");
 	return 1;
 }
 #endif /* HAVE_SSL */
