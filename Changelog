@@ -1,4 +1,5 @@
 1.6.11
+	* bugfix #394: Fix socket leak on errors
 
 1.6.10	2011-05-31
 	* New example tool added: ldns-gen-zone.
