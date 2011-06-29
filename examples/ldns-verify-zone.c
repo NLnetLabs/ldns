@@ -525,18 +525,17 @@ verify_dnssec_name(ldns_rdf *zone_name,
 static ldns_status
 verify_dnssec_zone(ldns_dnssec_zone *dnssec_zone,
 		ldns_rdf *zone_name, bool apexonly, int percentage) {
+
 	ldns_rr_list *keys;
 	ldns_rbnode_t *cur_node;
 	ldns_dnssec_rrsets *cur_key_rrset;
 	ldns_dnssec_rrs *cur_key;
-	ldns_dnssec_name *cur_name;
 	ldns_status status;
 	ldns_status result = LDNS_STATUS_OK;
 
 	keys = ldns_rr_list_new();
-	cur_key_rrset = ldns_dnssec_zone_find_rrset(dnssec_zone,
-									    zone_name,
-									    LDNS_RR_TYPE_DNSKEY);
+	cur_key_rrset = ldns_dnssec_zone_find_rrset(
+				dnssec_zone, zone_name, LDNS_RR_TYPE_DNSKEY);
 	if (!cur_key_rrset || !cur_key_rrset->rrs) {
 		if (verbosity >= 1) {
 			printf("No DNSKEY records at zone apex\n");
@@ -560,29 +559,38 @@ verify_dnssec_zone(ldns_dnssec_zone *dnssec_zone,
 			}
 			result = LDNS_STATUS_ERR;
 		}
-
-                if (apexonly == false && percentage > 0) {
-			while (cur_node != LDNS_RBTREE_NULL) {
-				/* should we check this one */
-				if (percentage == 100
-						|| ((random() % 100) 
+		if (apexonly) {
+			/*
+			 * In this case, only the first node in the treewalk
+			 * below should be checked.
+			 */
+			assert( cur_node->data == dnssec_zone->soa );
+			/* 
+			 * Allthough the percentage option doesn't make sense
+			 * here, we set it to 100 to force the first node to 
+			 * be checked.
+			 */
+			percentage = 100;
+		}
+		while (cur_node != LDNS_RBTREE_NULL) {
+			/* should we check this one? saves calls to random. */
+			if (percentage == 100
+					|| ((random() % 100) 
 						>= 100 - percentage)) {
-					cur_name = (ldns_dnssec_name *)
-					       	cur_node->data;
-					status = verify_dnssec_name(
-							zone_name,
-							dnssec_zone,
-							dnssec_zone->names,
-							cur_node,
-							keys);
-					if (status != LDNS_STATUS_OK
-							&& result
-							== LDNS_STATUS_OK) {
-						result = status;
-					}
+				status = verify_dnssec_name(
+						zone_name,
+						dnssec_zone,
+						dnssec_zone->names,
+						cur_node,
+						keys);
+				if (status != LDNS_STATUS_OK
+						&& result == LDNS_STATUS_OK) {
+					result = status;
 				}
-				cur_node = ldns_rbtree_next(cur_node);
+				if (apexonly)
+					break;
 			}
+			cur_node = ldns_rbtree_next(cur_node);
 		}
 	}
 	ldns_rr_list_free(keys);
