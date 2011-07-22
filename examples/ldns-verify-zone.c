@@ -87,6 +87,7 @@ create_dnssec_zone(ldns_zone *orig_zone)
 	   because the needed information is to be read later. in that case
 	   we keep a list of those nsec3's and retry to add them later */
 	ldns_rr_list *failed_nsec3s = ldns_rr_list_new();
+	ldns_rr_list *failed_nsec3_rrsigs = ldns_rr_list_new();
 
 	dnssec_zone = ldns_dnssec_zone_new();
     	if (ldns_dnssec_zone_add_rr(dnssec_zone, ldns_zone_soa(orig_zone)) !=
@@ -102,7 +103,20 @@ create_dnssec_zone(ldns_zone *orig_zone)
 		status = ldns_dnssec_zone_add_rr(dnssec_zone, cur_rr);
 		if (status != LDNS_STATUS_OK) {
 			if (status == LDNS_STATUS_DNSSEC_NSEC3_ORIGINAL_NOT_FOUND) {
-				ldns_rr_list_push_rr(failed_nsec3s, cur_rr);
+				if (ldns_rr_get_type(cur_rr)
+					    == LDNS_RR_TYPE_RRSIG
+					    && ldns_rdf2rr_type(
+						  ldns_rr_rrsig_typecovered(
+							  cur_rr
+						   )
+						) == LDNS_RR_TYPE_NSEC3) {
+					ldns_rr_list_push_rr(
+							failed_nsec3_rrsigs, 
+							cur_rr);
+				} else {
+					ldns_rr_list_push_rr(failed_nsec3s, 
+							cur_rr);
+				}
 			} else {
 				if (verbosity > 0) {
 					fprintf(stderr, "Error adding RR to dnssec zone");
@@ -117,6 +131,11 @@ create_dnssec_zone(ldns_zone *orig_zone)
 		(void) ldns_dnssec_zone_add_empty_nonterminals(dnssec_zone);
 		for (i = 0; i < ldns_rr_list_rr_count(failed_nsec3s); i++) {
 			cur_rr = ldns_rr_list_rr(failed_nsec3s, i);
+			status = ldns_dnssec_zone_add_rr(dnssec_zone, cur_rr);
+		}
+		for (i = 0; i < ldns_rr_list_rr_count(failed_nsec3_rrsigs); 
+				i++) {
+			cur_rr = ldns_rr_list_rr(failed_nsec3_rrsigs, i);
 			status = ldns_dnssec_zone_add_rr(dnssec_zone, cur_rr);
 		}
 	}

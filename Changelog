@@ -1,6 +1,7 @@
 1.6.11
 	* bugfix #394: Fix socket leak on errors
 	* bugfix #392: Apex only and percentage checks for ldns-verify-zone
+	* bugfix #398: Allow nsec rrsig before the nsec3 in ldns-verify-zone
 
 1.6.10	2011-05-31
 	* New example tool added: ldns-gen-zone.
