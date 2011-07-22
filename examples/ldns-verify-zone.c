@@ -140,6 +140,7 @@ create_dnssec_zone(ldns_zone *orig_zone)
 		}
 	}
 
+	ldns_rr_list_free(failed_nsec3_rrsigs);
 	ldns_rr_list_free(failed_nsec3s);
 	return dnssec_zone;
 }
