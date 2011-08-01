@@ -219,7 +219,7 @@ AC_SUBST(INSTALL_LDNS_CONFIG)
 # add option to disable the evil rpath
 ACX_ARG_RPATH
 
-#AC_TRY_RUN(
+#AC_RUN_IFELSE([AC_LANG_SOURCE(
 #[
 #int main()
 #{
@@ -230,7 +230,7 @@ ACX_ARG_RPATH
 #else
 #return(1);
 #}
-#], [],[
+#])], [],[
 #AC_DEFINE(CONFCHECK_LITTLE_ENDIAN, 1, [system appears to be little-endian])
 #],[])
 
