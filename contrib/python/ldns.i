@@ -101,6 +101,17 @@ uint32_t ldns_read_timeval_usec(struct timeval* t) {
 %include "ldns_packet.i"
 %include "ldns_resolver.i"
 %include "ldns_rr.i"
+
+%inline %{
+int Python_str_Check(PyObject *o) {
+#if PY_VERSION_HEX>=0x03000000
+  return PyUnicode_Check(o);
+#else
+  return PyString_Check(o);
+#endif
+}
+%}
+
 %include "ldns_rdf.i"
 %include "ldns_zone.i"
 %include "ldns_key.i"

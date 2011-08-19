@@ -9,7 +9,7 @@ debug = True
 argc = len(sys.argv)
 name = "www.nic.cz"
 if argc < 2:
-   print "Usage:", sys.argv[0], "domain [resolver_addr]"
+   print("Usage:", sys.argv[0], "domain [resolver_addr]")
    sys.exit(1)
 else:
    name = sys.argv[1]
@@ -33,13 +33,13 @@ if pkt and pkt.answer():
 
    # Debug
    if debug:
-      print "NS returned:", pkt.get_rcode(), "(AA: %d AD: %d)" % ( pkt.ad(), pkt.ad() )
+      print("NS returned:", pkt.get_rcode(), "(AA: %d AD: %d)" % ( pkt.ad(), pkt.ad() ))
 
    # SERVFAIL indicated bogus name
    if pkt.get_rcode() is ldns.LDNS_RCODE_SERVFAIL:
-      print name, "is bogus"
+      print(name, "is bogus")
 
    # Check AD (Authenticated) bit
    if pkt.get_rcode() is ldns.LDNS_RCODE_NOERROR:
-      if pkt.ad(): print name, "is secure"
-      else:        print name, "is insecure"
+      if pkt.ad(): print(name, "is secure")
+      else:        print(name, "is insecure")

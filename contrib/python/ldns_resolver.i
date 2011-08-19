@@ -217,7 +217,10 @@ This simple example instances a resolver in order to resolve www.nic.cz record o
                        print rr
 
             """
-            return _ldns.ldns_axfr_start(self, domain, aclass)
+            rdf = domain
+            if isinstance(domain, str):
+                rdf = _ldns.ldns_dname_new_frm_str(domain)
+            return _ldns.ldns_axfr_start(self, rdf, aclass)
             #parameters: ldns_resolver *resolver, ldns_rdf *domain, ldns_rr_class c
             #retvals: int
 

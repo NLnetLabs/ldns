@@ -3,6 +3,7 @@
 	* bugfix #392: Apex only and percentage checks for ldns-verify-zone
 	* bugfix #398: Allow NSEC RRSIGs before the NSEC3 in ldns-verify-zone
 	* Fix python site package path to /usr/lib64.
+	* Fix python api to support python2 and python3 (thanks Karel Slany).
 
 1.6.10	2011-05-31
 	* New example tool added: ldns-gen-zone.

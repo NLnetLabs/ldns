@@ -94,12 +94,21 @@ if test x_$withval != x_no; then
    ac_save_LIBS="$LIBS" dnl otherwise AC_PYTHON_DEVEL thrashes $LIBS
    AC_PYTHON_DEVEL
    if test ! -z "$PYTHON_VERSION"; then
-        if test `$PYTHON -c "print '$PYTHON_VERSION' >= '2.4.0'"` = "False"; then
+        if test `$PYTHON -c "import sys; \
+            ver = sys.version.split()[[0]]; \
+            print(ver >= '2.4.0')"` = "False"; then
                 AC_ERROR([Python version >= 2.4.0 is required])
         fi
 	# Have Python
 	AC_DEFINE(HAVE_PYTHON,1,[Define if you have Python libraries and header files.])
 	ldns_have_python=yes
+   fi
+
+   # pass additional Python 3 option to swig
+   if test `$PYTHON -c "import sys; \
+       ver = sys.version.split()[[0]]; \
+       print(ver >= '3.0.0')"` = "True"; then
+       AC_SUBST(SWIGPY3, [-py3])
    fi
 
    # check for swig

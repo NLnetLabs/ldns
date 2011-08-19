@@ -15,7 +15,8 @@ libdir		= @libdir@
 includedir	= @includedir@
 doxygen		= @doxygen@
 pywrapdir       = ${srcdir}/contrib/python
-swig    	= @swig@
+swig		= @swig@
+swigpy_flags	= -python @SWIGPY3@
 python_site	=@PYTHON_SITE_PKG@
 pyldns_inst	=@PYLDNS@
 pyldns_uninst	=@PYLDNS@
@@ -172,7 +173,7 @@ manpages:	$(srcdir)/doc/function_manpages
 pyldns:		_ldns.la
 
 $(pywrapdir)/ldns_wrapper.c:	$(pywrapdir)/ldns.i $(wildcard $(pywrapdir)/*.i) $(LIBDNS_HEADERS) ldns/common.h ldns/util.h ldns/config.h
-	$(swig) -python -o $@ $(CPPFLAGS) $(PYTHON_CPPFLAGS) $<
+	$(swig) $(swigpy_flags) -o $@ $(CPPFLAGS) $(PYTHON_CPPFLAGS) $<
 
 ldns_wrapper.lo:	$(pywrapdir)/ldns_wrapper.c $(LIBDNS_HEADERS) ldns/common.h ldns/util.h ldns/config.h
 	$(COMP_LIB) -I./include/ldns $(PYTHON_CPPFLAGS) $(PYTHON_X_CFLAGS) -c $< -o $@
