@@ -431,7 +431,10 @@ ldns_rr_new_frm_str_internal(ldns_rr **newrr, const char *str,
 						cur_hex_data_size = 0;
 						while(cur_hex_data_size < 2 * hex_data_size) {
 							c = ldns_bget_token(rd_buf, rd, delimiters, LDNS_MAX_RDFLEN);
-							if (c == -1) {
+							if (c != -1) {
+								rd_strlen = strlen(rd);
+							}
+							if (c == -1 || cur_hex_data_size + rd_strlen > 2 * hex_data_size) {
 								LDNS_FREE(hex_data_str);
 								LDNS_FREE(rd);
 								LDNS_FREE(b64);
@@ -441,7 +444,6 @@ ldns_rr_new_frm_str_internal(ldns_rr **newrr, const char *str,
 								ldns_rr_free(new);
 								return LDNS_STATUS_SYNTAX_RDATA_ERR;
 							}
-							rd_strlen = strlen(rd);
 							strncpy(hex_data_str + cur_hex_data_size, rd, rd_strlen);
 							cur_hex_data_size += rd_strlen;
 						}
