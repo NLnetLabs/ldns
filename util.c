@@ -199,10 +199,14 @@ static const int mdays[] = {
 	31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31
 };
 
+#define LDNS_MOD(x,y) (((x) % (y) < 0) ? ((x) % (y) + (y)) : ((x) % (y)))
+#define LDNS_DIV(x,y) (((x) % (y) < 0) ? ((x) / (y) -  1 ) : ((x) / (y)))
+
 static int
 is_leap_year(int year)
 {
-	return year % 4 == 0 && (year % 100 != 0 || year % 400 == 0);
+	return LDNS_MOD(year,   4) == 0 && (LDNS_MOD(year, 100) != 0 
+	    || LDNS_MOD(year, 400) == 0);
 }
 
 static int
@@ -210,7 +214,9 @@ leap_days(int y1, int y2)
 {
 	--y1;
 	--y2;
-	return (y2/4 - y1/4) - (y2/100 - y1/100) + (y2/400 - y1/400);
+	return (LDNS_DIV(y2,   4) - LDNS_DIV(y1,   4)) - 
+	       (LDNS_DIV(y2, 100) - LDNS_DIV(y1, 100)) +
+	       (LDNS_DIV(y2, 400) - LDNS_DIV(y1, 400));
 }
 
 /*
@@ -250,7 +256,7 @@ ldns_year_and_yday_from_days_since_epoch(int64_t days, struct tm *result)
 	int new_year;
 
 	while (days < 0 || days >= (int64_t) (is_leap_year(year) ? 366 : 365)) {
-		new_year = year + (int) (days / 366);
+		new_year = year + (int) LDNS_DIV(days, 366);
 		if (year == new_year) {
 			year += days < 0 ? -1 : 1;
 		}
@@ -284,11 +290,11 @@ ldns_mon_and_mday_from_year_and_yday(struct tm *result)
 static void
 ldns_wday_from_year_and_yday(struct tm *result)
 {
-	result->tm_wday  = 4 /* 1-1-1970 was a thursday */
-			 + ((result->tm_year - 1970) % 7) * (365 % 7)
-			 + leap_days(1970, result->tm_year)
-			 + result->tm_yday;
-	result->tm_wday %= 7;
+	result->tm_wday = 4 /* 1-1-1970 was a thursday */
+			+ LDNS_MOD((result->tm_year - 1970), 7) * LDNS_MOD(365, 7)
+			+ leap_days(1970, result->tm_year)
+			+ result->tm_yday;
+	result->tm_wday = LDNS_MOD(result->tm_wday, 7);
 	if (result->tm_wday < 0) {
 		result->tm_wday += 7;
 	}
@@ -297,13 +303,13 @@ ldns_wday_from_year_and_yday(struct tm *result)
 static struct tm *
 ldns_gmtime64_r(int64_t clock, struct tm *result)
 {
-	result->tm_isdst =                 0;
-	result->tm_sec   = (int) (clock % 60);
-	clock           /=                60;
-	result->tm_min   = (int) (clock % 60);
-	clock           /=                60;
-	result->tm_hour  = (int) (clock % 24);
-	clock           /=                24;
+	result->tm_isdst = 0;
+	result->tm_sec   = (int) LDNS_MOD(clock, 60);
+	clock            =       LDNS_DIV(clock, 60);
+	result->tm_min   = (int) LDNS_MOD(clock, 60);
+	clock            =       LDNS_DIV(clock, 60);
+	result->tm_hour  = (int) LDNS_MOD(clock, 24);
+	clock            =       LDNS_DIV(clock, 24);
 
 	ldns_year_and_yday_from_days_since_epoch(clock, result);
 	ldns_mon_and_mday_from_year_and_yday(result);
