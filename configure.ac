@@ -108,7 +108,7 @@ if test x_$withval != x_no; then
    if test `$PYTHON -c "import sys; \
        ver = sys.version.split()[[0]]; \
        print(ver >= '3.0.0')"` = "True"; then
-       AC_SUBST(SWIGPY3, [-py3])
+       AC_SUBST(SWIGPY3, ["-py3 -DPY3"])
    fi
 
    # check for swig

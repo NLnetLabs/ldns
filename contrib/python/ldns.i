@@ -67,9 +67,14 @@
 %}
 
 //#define LDNS_DEBUG
+//#define SWIG_FILE3_DEBUG
 
 %include "stdint.i" // uint_16_t is known type now
+#ifdef PY3
+%include "file_py3.i" // python 3 FILE *
+#else
 %include "file.i"     // FILE * 
+#endif
 %include "typemaps.i"
 
 %inline %{
