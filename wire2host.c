@@ -271,6 +271,9 @@ ldns_wire2rdf(ldns_rr *rr, const uint8_t *wire, size_t max, size_t *pos)
 			cur_rdf = NULL;
 		}
 	}
+	if (rdf_index < ldns_rr_descriptor_minimum(descriptor)) {
+		return LDNS_STATUS_WIRE_MISSING_RDATA_FIELDS;
+	}
 
 	return LDNS_STATUS_OK;
 }
@@ -316,10 +319,10 @@ ldns_wire2rr(ldns_rr **rr_p, const uint8_t *wire, size_t max,
 		status = ldns_wire2rdf(rr, wire, max, pos);
 
 		LDNS_STATUS_CHECK_GOTO(status, status_error);
-        ldns_rr_set_question(rr, false);
+		ldns_rr_set_question(rr, false);
 	} else {
-        ldns_rr_set_question(rr, true);
-    }
+		ldns_rr_set_question(rr, true);
+	}
 
 	*rr_p = rr;
 	return LDNS_STATUS_OK;
