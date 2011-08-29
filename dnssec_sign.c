@@ -709,9 +709,9 @@ ldns_dnssec_zone_create_nsecs(ldns_dnssec_zone *zone,
 	/* did the caller actually set it? if not,
 	 * fall back to default ttl
 	 */
-	if (soa && soa->rrs && soa->rrs->rr) {
-		nsec_ttl = ldns_rdf2native_int32(ldns_rr_rdf(
-		                                     soa->rrs->rr, 6));
+	if (soa && soa->rrs && soa->rrs->rr
+			&& (ldns_rr_rdf(soa->rrs->rr, 6) != NULL)) {
+		nsec_ttl = ldns_rdf2native_int32(ldns_rr_rdf(soa->rrs->rr, 6));
 	} else {
 		nsec_ttl = LDNS_DEFAULT_TTL;
 	}
@@ -795,9 +795,9 @@ ldns_dnssec_zone_create_nsec3s(ldns_dnssec_zone *zone,
 	/* did the caller actually set it? if not,
 	 * fall back to default ttl
 	 */
-	if (soa && soa->rrs && soa->rrs->rr) {
-		nsec_ttl = ldns_rdf2native_int32(ldns_rr_rdf(
-		                                     soa->rrs->rr, 6));
+	if (soa && soa->rrs && soa->rrs->rr
+			&& ldns_rr_rdf(soa->rrs->rr, 6) != NULL) {
+		nsec_ttl = ldns_rdf2native_int32(ldns_rr_rdf(soa->rrs->rr, 6));
 	} else {
 		nsec_ttl = LDNS_DEFAULT_TTL;
 	}

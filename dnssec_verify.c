@@ -391,7 +391,9 @@ ldns_dnssec_build_data_chain(ldns_resolver *res,
 		}
 	}
 
-	if (signatures && ldns_rr_list_rr_count(signatures) > 0) {
+	if (signatures && ldns_rr_list_rr_count(signatures) > 0
+			&& ldns_rr_rd_count(ldns_rr_list_rr(signatures, 0))
+		       		> 7) {
 		key_name = ldns_rr_rdf(ldns_rr_list_rr(signatures, 0), 7);
 	}
 
@@ -1749,6 +1751,10 @@ ldns_rrset_use_signature_ttl(ldns_rr_list* rrset_clone, ldns_rr* rrsig)
 	ldns_rdf *wildcard_name;
 	ldns_rdf *wildcard_chopped;
 	ldns_rdf *wildcard_chopped_tmp;
+	
+	if ((rrsig == NULL) || ldns_rr_rd_count(rrsig) < 4) {
+		return;
+	}
 
 	orig_ttl = ldns_rdf2native_int32( ldns_rr_rdf(rrsig, 3));
 	label_count = ldns_rdf2native_int8(ldns_rr_rdf(rrsig, 2));
@@ -1788,7 +1794,15 @@ ldns_rrset_use_signature_ttl(ldns_rr_list* rrset_clone, ldns_rr* rrsig)
 static ldns_status
 ldns_rrsig2rawsig_buffer(ldns_buffer* rawsig_buf, ldns_rr* rrsig)
 {
-	uint8_t sig_algo = ldns_rdf2native_int8(ldns_rr_rdf(rrsig, 1));
+	uint8_t sig_algo;
+       
+	if (rrsig == NULL) {
+		return LDNS_STATUS_CRYPTO_NO_RRSIG;
+	}
+	if (ldns_rr_rdf(rrsig, 1) == NULL) {
+		return LDNS_STATUS_MALFORMED_RRSIG;
+	}
+	sig_algo = ldns_rdf2native_int8(ldns_rr_rdf(rrsig, 1));
 	/* check for known and implemented algo's now (otherwise 
 	 * the function could return a wrong error
 	 */
@@ -1807,16 +1821,23 @@ ldns_rrsig2rawsig_buffer(ldns_buffer* rawsig_buf, ldns_rr* rrsig)
 #ifdef USE_GOST
 	case LDNS_ECC_GOST:
 #endif
-		if (ldns_rdf2buffer_wire(rawsig_buf, 
-		    ldns_rr_rdf(rrsig, 8)) != LDNS_STATUS_OK) {
+		if (ldns_rr_rdf(rrsig, 8) == NULL) {
+			return LDNS_STATUS_MALFORMED_RRSIG;
+		}
+		if (ldns_rdf2buffer_wire(rawsig_buf, ldns_rr_rdf(rrsig, 8))
+			       	!= LDNS_STATUS_OK) {
 			return LDNS_STATUS_MEM_ERR;
 		}
 		break;
 	case LDNS_DSA:
 	case LDNS_DSA_NSEC3:
 		/* EVP takes rfc2459 format, which is a tad longer than dns format */
-		if (ldns_convert_dsa_rrsig_rdf2asn1(rawsig_buf, 
-			ldns_rr_rdf(rrsig, 8)) != LDNS_STATUS_OK) {
+		if (ldns_rr_rdf(rrsig, 8) == NULL) {
+			return LDNS_STATUS_MALFORMED_RRSIG;
+		}
+		if (ldns_convert_dsa_rrsig_rdf2asn1(
+					rawsig_buf, ldns_rr_rdf(rrsig, 8)) 
+				!= LDNS_STATUS_OK) {
 			/*
 			  if (ldns_rdf2buffer_wire(rawsig_buf,
 			  ldns_rr_rdf(rrsig, 8)) != LDNS_STATUS_OK) {
@@ -1829,8 +1850,12 @@ ldns_rrsig2rawsig_buffer(ldns_buffer* rawsig_buf, ldns_rr* rrsig)
         case LDNS_ECDSAP384SHA384:
                 /* EVP produces an ASN prefix on the signature, which is
                  * not used in the DNS */
-		if (ldns_convert_ecdsa_rrsig_rdf2asn1(rawsig_buf, 
-			ldns_rr_rdf(rrsig, 8)) != LDNS_STATUS_OK) {
+		if (ldns_rr_rdf(rrsig, 8) == NULL) {
+			return LDNS_STATUS_MALFORMED_RRSIG;
+		}
+		if (ldns_convert_ecdsa_rrsig_rdf2asn1(
+					rawsig_buf, ldns_rr_rdf(rrsig, 8))
+				!= LDNS_STATUS_OK) {
 			return LDNS_STATUS_MEM_ERR;
                 }
                 break;
@@ -1936,7 +1961,15 @@ static ldns_status
 ldns_verify_test_sig_key(ldns_buffer* rawsig_buf, ldns_buffer* verify_buf, 
 	ldns_rr* rrsig, ldns_rr* key)
 {
-	uint8_t sig_algo = ldns_rdf2native_int8(ldns_rr_rdf(rrsig, 1));
+	uint8_t sig_algo;
+       
+	if (rrsig == NULL) {
+		return LDNS_STATUS_CRYPTO_NO_RRSIG;
+	}
+	if (ldns_rr_rdf(rrsig, 1) == NULL) {
+		return LDNS_STATUS_MALFORMED_RRSIG;
+	}
+	sig_algo = ldns_rdf2native_int8(ldns_rr_rdf(rrsig, 1));
 
 	/* before anything, check if the keytags match */
 	if (ldns_calc_keytag(key)
@@ -1948,8 +1981,12 @@ ldns_verify_test_sig_key(ldns_buffer* rawsig_buf, ldns_buffer* verify_buf,
 
 		/* put the key-data in a buffer, that's the third rdf, with
 		 * the base64 encoded key data */
-		if (ldns_rdf2buffer_wire(key_buf, ldns_rr_rdf(key, 3)) 
-			!= LDNS_STATUS_OK) {
+		if (ldns_rr_rdf(rrsig, 3) == NULL) {
+			ldns_buffer_free(key_buf);
+			return LDNS_STATUS_MALFORMED_RRSIG;
+		}
+		if (ldns_rdf2buffer_wire(key_buf, ldns_rr_rdf(rrsig, 3))
+			       	!= LDNS_STATUS_OK) {
 			ldns_buffer_free(key_buf); 
 			/* returning is bad might screw up
 			   good keys later in the list
@@ -1957,7 +1994,11 @@ ldns_verify_test_sig_key(ldns_buffer* rawsig_buf, ldns_buffer* verify_buf,
 			return LDNS_STATUS_ERR;
 		}
 
-		if (sig_algo == ldns_rdf2native_int8(ldns_rr_rdf(key, 2))) {
+		if (ldns_rr_rdf(rrsig, 2) == NULL) {
+			result = LDNS_STATUS_MALFORMED_RRSIG;
+		}
+		else if (sig_algo == ldns_rdf2native_int8(
+					ldns_rr_rdf(rrsig, 2))) {
 			result = ldns_verify_rrsig_buffers(rawsig_buf, 
 				verify_buf, key_buf, sig_algo);
 		} else {

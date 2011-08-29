@@ -838,7 +838,7 @@ ldns_rr_pop_rdf(ldns_rr *rr)
 ldns_rdf *
 ldns_rr_rdf(const ldns_rr *rr, size_t nr)
 {
-	if (nr < ldns_rr_rd_count(rr)) {
+	if (rr && nr < ldns_rr_rd_count(rr)) {
 		return rr->_rdata_fields[nr];
 	} else {
 		return NULL;
@@ -1638,7 +1638,10 @@ ldns_rr_compare_ds_dnskey(ldns_rr *ds,
 		return false;
 	}
 
-algo = ldns_rdf2native_int8(ldns_rr_rdf(ds, 2));
+	if (ldns_rr_rdf(ds, 2) == NULL) {
+		return false;
+	}
+	algo = ldns_rdf2native_int8(ldns_rr_rdf(ds, 2));
 
 	ds_gen = ldns_key_rr2ds(dnskey, algo);
 	if (ds_gen) {

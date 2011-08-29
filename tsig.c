@@ -288,7 +288,7 @@ ldns_pkt_tsig_verify_next(ldns_pkt *pkt, uint8_t *wire, size_t wirelen, const ch
 
 	ldns_rr *orig_tsig = ldns_pkt_tsig(pkt);
 
-	if (!orig_tsig) {
+	if (!orig_tsig || ldns_rr_rd_count(orig_tsig) <= 6) {
 		ldns_rdf_deep_free(key_name_rdf);
 		return false;
 	}

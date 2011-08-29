@@ -565,7 +565,14 @@ ldns_key_rr2ds(const ldns_rr *key, ldns_hash h)
 	ldns_rr_push_rdf(ds, tmp);
 
 	/* copy the algorithm field */
-	ldns_rr_push_rdf(ds, ldns_rdf_clone( ldns_rr_rdf(key, 2))); 
+	if ((tmp = ldns_rr_rdf(key, 2)) == NULL) {
+		LDNS_FREE(digest);
+		ldns_buffer_free(data_buf);
+		ldns_rr_free(ds);
+		return NULL;
+	} else {
+		ldns_rr_push_rdf(ds, ldns_rdf_clone( tmp )); 
+	}
 
 	/* digest hash type */
 	sha1hash = (uint8_t)h;
@@ -1209,8 +1216,8 @@ ldns_nsec3_algorithm(const ldns_rr *nsec3_rr)
 	if (nsec3_rr && 
 	      (ldns_rr_get_type(nsec3_rr) == LDNS_RR_TYPE_NSEC3 ||
 	       ldns_rr_get_type(nsec3_rr) == LDNS_RR_TYPE_NSEC3PARAM)
-	    && ldns_rdf_size(ldns_rr_rdf(nsec3_rr, 0)) > 0
-	    ) {
+	    && (ldns_rr_rdf(nsec3_rr, 0) != NULL)
+	    && ldns_rdf_size(ldns_rr_rdf(nsec3_rr, 0)) > 0) {
 		return ldns_rdf2native_int8(ldns_rr_rdf(nsec3_rr, 0));
 	}
 	return 0;
@@ -1222,8 +1229,8 @@ ldns_nsec3_flags(const ldns_rr *nsec3_rr)
 	if (nsec3_rr && 
 	      (ldns_rr_get_type(nsec3_rr) == LDNS_RR_TYPE_NSEC3 ||
 	       ldns_rr_get_type(nsec3_rr) == LDNS_RR_TYPE_NSEC3PARAM)
-	    && ldns_rdf_size(ldns_rr_rdf(nsec3_rr, 1)) > 0
-	    ) {
+	    && (ldns_rr_rdf(nsec3_rr, 1) != NULL)
+	    && ldns_rdf_size(ldns_rr_rdf(nsec3_rr, 1)) > 0) {
 		return ldns_rdf2native_int8(ldns_rr_rdf(nsec3_rr, 1));
 	}
 	return 0;
@@ -1241,8 +1248,8 @@ ldns_nsec3_iterations(const ldns_rr *nsec3_rr)
 	if (nsec3_rr &&
 	      (ldns_rr_get_type(nsec3_rr) == LDNS_RR_TYPE_NSEC3 ||
 	       ldns_rr_get_type(nsec3_rr) == LDNS_RR_TYPE_NSEC3PARAM)
-	    && ldns_rdf_size(ldns_rr_rdf(nsec3_rr, 2)) > 0
-	    ) {
+	    && (ldns_rr_rdf(nsec3_rr, 2) != NULL)
+	    && ldns_rdf_size(ldns_rr_rdf(nsec3_rr, 2)) > 0) {
 		return ldns_rdf2native_int16(ldns_rr_rdf(nsec3_rr, 2));
 	}
 	return 0;
@@ -1375,7 +1382,11 @@ ldns_nsec_covers_name(const ldns_rr *nsec, const ldns_rdf *name)
 	bool result;
 
 	if (ldns_rr_get_type(nsec) == LDNS_RR_TYPE_NSEC) {
-		nsec_next = ldns_rdf_clone(ldns_rr_rdf(nsec, 0));
+		if (ldns_rr_rdf(nsec, 0) != NULL) {
+			nsec_next = ldns_rdf_clone(ldns_rr_rdf(nsec, 0));
+		} else {
+			return false;
+		}
 	} else if (ldns_rr_get_type(nsec) == LDNS_RR_TYPE_NSEC3) {
 		hash_next = ldns_nsec3_next_owner(nsec);
 		next_hash_str = ldns_rdf2str(hash_next);

@@ -1144,6 +1144,7 @@ ldns_rr2buffer_str(ldns_buffer *output, const ldns_rr *rr)
 {
 	uint16_t i, flags;
 	ldns_status status = LDNS_STATUS_OK;
+
 	if (!rr) {
 		ldns_buffer_printf(output, "(null)\n");
 	} else {
@@ -1178,6 +1179,7 @@ ldns_rr2buffer_str(ldns_buffer *output, const ldns_rr *rr)
 		}
 
 		for (i = 0; i < ldns_rr_rd_count(rr); i++) {
+			/* ldns_rdf2buffer_str handles NULL input fine! */
 			status = ldns_rdf2buffer_str(output, ldns_rr_rdf(rr, i));
                         if(status != LDNS_STATUS_OK)
                                 return status;
@@ -1191,33 +1193,35 @@ ldns_rr2buffer_str(ldns_buffer *output, const ldns_rr *rr)
 		if (ldns_rr_rd_count(rr) > 0) {
 			switch (ldns_rr_get_type(rr)) {
 				case LDNS_RR_TYPE_DNSKEY:
-					if (ldns_rr_rdf(rr, 0)) {
-						flags = ldns_rdf2native_int16(ldns_rr_rdf(rr, 0));
-						if (flags == 256 || flags == 384) {
-							ldns_buffer_printf(output,
-									" ;{id = %u (zsk), size = %db}",
-									(unsigned int) ldns_calc_keytag(rr),
-									ldns_rr_dnskey_key_size(rr));
-							break;
-						}
-						if (flags == 257 || flags == 385) {
-							ldns_buffer_printf(output,
-									" ;{id = %u (ksk), size = %db}",
-									(unsigned int) ldns_calc_keytag(rr),
-									ldns_rr_dnskey_key_size(rr));
-							break;
-						}
-						ldns_buffer_printf(output, " ;{id = %u, size = %db}",
+					/* if ldns_rr_rd_count(rr) > 0
+					   then ldns_rr_rdf(rr, 0) exists! */
+					flags = ldns_rdf2native_int16(ldns_rr_rdf(rr, 0));
+					if (flags == 256 || flags == 384) {
+						ldns_buffer_printf(output,
+								" ;{id = %u (zsk), size = %db}",
 								(unsigned int) ldns_calc_keytag(rr),
 								ldns_rr_dnskey_key_size(rr));
+						break;
 					}
+					if (flags == 257 || flags == 385) {
+						ldns_buffer_printf(output,
+								" ;{id = %u (ksk), size = %db}",
+								(unsigned int) ldns_calc_keytag(rr),
+								ldns_rr_dnskey_key_size(rr));
+						break;
+					}
+					ldns_buffer_printf(output, " ;{id = %u, size = %db}",
+							(unsigned int) ldns_calc_keytag(rr),
+							ldns_rr_dnskey_key_size(rr));
 					break;
 				case LDNS_RR_TYPE_RRSIG:
-					ldns_buffer_printf(output, " ;{id = %d}",
-							ldns_rdf2native_int16(ldns_rr_rdf(rr, 6)));
+					if (ldns_rr_rdf(rr, 6) != NULL) {
+						ldns_buffer_printf(output, " ;{id = %d}",
+								ldns_rdf2native_int16(ldns_rr_rdf(rr, 6)));
+					}
 					break;
 				case LDNS_RR_TYPE_DS:
-					{
+					if (ldns_rr_rdf(rr, 3) != NULL) {
 						uint8_t *data = ldns_rdf_data(ldns_rr_rdf(rr, 3));
 						size_t len = ldns_rdf_size(ldns_rr_rdf(rr, 3));
 						char *babble = ldns_bubblebabble(data, len);
