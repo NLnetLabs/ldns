@@ -391,9 +391,7 @@ ldns_dnssec_build_data_chain(ldns_resolver *res,
 		}
 	}
 
-	if (signatures && ldns_rr_list_rr_count(signatures) > 0
-			&& ldns_rr_rd_count(ldns_rr_list_rr(signatures, 0))
-		       		> 7) {
+	if (signatures && ldns_rr_list_rr_count(signatures) > 0) {
 		key_name = ldns_rr_rdf(ldns_rr_list_rr(signatures, 0), 7);
 	}
 
@@ -1981,11 +1979,11 @@ ldns_verify_test_sig_key(ldns_buffer* rawsig_buf, ldns_buffer* verify_buf,
 
 		/* put the key-data in a buffer, that's the third rdf, with
 		 * the base64 encoded key data */
-		if (ldns_rr_rdf(rrsig, 3) == NULL) {
+		if (ldns_rr_rdf(key, 3) == NULL) {
 			ldns_buffer_free(key_buf);
 			return LDNS_STATUS_MALFORMED_RRSIG;
 		}
-		if (ldns_rdf2buffer_wire(key_buf, ldns_rr_rdf(rrsig, 3))
+		if (ldns_rdf2buffer_wire(key_buf, ldns_rr_rdf(key, 3))
 			       	!= LDNS_STATUS_OK) {
 			ldns_buffer_free(key_buf); 
 			/* returning is bad might screw up
@@ -1994,11 +1992,11 @@ ldns_verify_test_sig_key(ldns_buffer* rawsig_buf, ldns_buffer* verify_buf,
 			return LDNS_STATUS_ERR;
 		}
 
-		if (ldns_rr_rdf(rrsig, 2) == NULL) {
+		if (ldns_rr_rdf(key, 2) == NULL) {
 			result = LDNS_STATUS_MALFORMED_RRSIG;
 		}
 		else if (sig_algo == ldns_rdf2native_int8(
-					ldns_rr_rdf(rrsig, 2))) {
+					ldns_rr_rdf(key, 2))) {
 			result = ldns_verify_rrsig_buffers(rawsig_buf, 
 				verify_buf, key_buf, sig_algo);
 		} else {
