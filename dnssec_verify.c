@@ -1798,7 +1798,7 @@ ldns_rrsig2rawsig_buffer(ldns_buffer* rawsig_buf, ldns_rr* rrsig)
 		return LDNS_STATUS_CRYPTO_NO_RRSIG;
 	}
 	if (ldns_rr_rdf(rrsig, 1) == NULL) {
-		return LDNS_STATUS_MALFORMED_RRSIG;
+		return LDNS_STATUS_MISSING_RDATA_FIELDS_RRSIG;
 	}
 	sig_algo = ldns_rdf2native_int8(ldns_rr_rdf(rrsig, 1));
 	/* check for known and implemented algo's now (otherwise 
@@ -1820,7 +1820,7 @@ ldns_rrsig2rawsig_buffer(ldns_buffer* rawsig_buf, ldns_rr* rrsig)
 	case LDNS_ECC_GOST:
 #endif
 		if (ldns_rr_rdf(rrsig, 8) == NULL) {
-			return LDNS_STATUS_MALFORMED_RRSIG;
+			return LDNS_STATUS_MISSING_RDATA_FIELDS_RRSIG;
 		}
 		if (ldns_rdf2buffer_wire(rawsig_buf, ldns_rr_rdf(rrsig, 8))
 			       	!= LDNS_STATUS_OK) {
@@ -1831,7 +1831,7 @@ ldns_rrsig2rawsig_buffer(ldns_buffer* rawsig_buf, ldns_rr* rrsig)
 	case LDNS_DSA_NSEC3:
 		/* EVP takes rfc2459 format, which is a tad longer than dns format */
 		if (ldns_rr_rdf(rrsig, 8) == NULL) {
-			return LDNS_STATUS_MALFORMED_RRSIG;
+			return LDNS_STATUS_MISSING_RDATA_FIELDS_RRSIG;
 		}
 		if (ldns_convert_dsa_rrsig_rdf2asn1(
 					rawsig_buf, ldns_rr_rdf(rrsig, 8)) 
@@ -1849,7 +1849,7 @@ ldns_rrsig2rawsig_buffer(ldns_buffer* rawsig_buf, ldns_rr* rrsig)
                 /* EVP produces an ASN prefix on the signature, which is
                  * not used in the DNS */
 		if (ldns_rr_rdf(rrsig, 8) == NULL) {
-			return LDNS_STATUS_MALFORMED_RRSIG;
+			return LDNS_STATUS_MISSING_RDATA_FIELDS_RRSIG;
 		}
 		if (ldns_convert_ecdsa_rrsig_rdf2asn1(
 					rawsig_buf, ldns_rr_rdf(rrsig, 8))
@@ -1965,7 +1965,7 @@ ldns_verify_test_sig_key(ldns_buffer* rawsig_buf, ldns_buffer* verify_buf,
 		return LDNS_STATUS_CRYPTO_NO_RRSIG;
 	}
 	if (ldns_rr_rdf(rrsig, 1) == NULL) {
-		return LDNS_STATUS_MALFORMED_RRSIG;
+		return LDNS_STATUS_MISSING_RDATA_FIELDS_RRSIG;
 	}
 	sig_algo = ldns_rdf2native_int8(ldns_rr_rdf(rrsig, 1));
 
@@ -1981,7 +1981,7 @@ ldns_verify_test_sig_key(ldns_buffer* rawsig_buf, ldns_buffer* verify_buf,
 		 * the base64 encoded key data */
 		if (ldns_rr_rdf(key, 3) == NULL) {
 			ldns_buffer_free(key_buf);
-			return LDNS_STATUS_MALFORMED_RRSIG;
+			return LDNS_STATUS_MISSING_RDATA_FIELDS_KEY;
 		}
 		if (ldns_rdf2buffer_wire(key_buf, ldns_rr_rdf(key, 3))
 			       	!= LDNS_STATUS_OK) {
@@ -1993,7 +1993,7 @@ ldns_verify_test_sig_key(ldns_buffer* rawsig_buf, ldns_buffer* verify_buf,
 		}
 
 		if (ldns_rr_rdf(key, 2) == NULL) {
-			result = LDNS_STATUS_MALFORMED_RRSIG;
+			result = LDNS_STATUS_MISSING_RDATA_FIELDS_KEY;
 		}
 		else if (sig_algo == ldns_rdf2native_int8(
 					ldns_rr_rdf(key, 2))) {
