@@ -1629,7 +1629,11 @@ ldns_ecdsa2pkey_raw(unsigned char* key, size_t keylen, uint8_t algo)
                 EC_KEY_free(ec);
                 return NULL;
         }
-        EVP_PKEY_assign_EC_KEY(evp_key, ec);
+        if (!EVP_PKEY_assign_EC_KEY(evp_key, ec)) {
+		EVP_PKEY_free(evp_key);
+		EC_KEY_free(ec);
+		return NULL;
+	}
         return evp_key;
 }
 
@@ -2257,12 +2261,15 @@ ldns_verify_rrsig_dsa_raw(unsigned char* sig, size_t siglen,
 	ldns_status result;
 
 	evp_key = EVP_PKEY_new();
-	EVP_PKEY_assign_DSA(evp_key, ldns_key_buf2dsa_raw(key, keylen));
-	result = ldns_verify_rrsig_evp_raw(sig,
+	if (EVP_PKEY_assign_DSA(evp_key, ldns_key_buf2dsa_raw(key, keylen))) {
+		result = ldns_verify_rrsig_evp_raw(sig,
 								siglen,
 								rrset,
 								evp_key,
 								EVP_dss1());
+	} else {
+		result = LDNS_STATUS_SSL_ERR;
+	}
 	EVP_PKEY_free(evp_key);
 	return result;
 
@@ -2276,12 +2283,15 @@ ldns_verify_rrsig_rsasha1_raw(unsigned char* sig, size_t siglen,
 	ldns_status result;
 
 	evp_key = EVP_PKEY_new();
-	EVP_PKEY_assign_RSA(evp_key, ldns_key_buf2rsa_raw(key, keylen));
-	result = ldns_verify_rrsig_evp_raw(sig,
+	if (EVP_PKEY_assign_RSA(evp_key, ldns_key_buf2rsa_raw(key, keylen))) {
+		result = ldns_verify_rrsig_evp_raw(sig,
 								siglen,
 								rrset,
 								evp_key,
 								EVP_sha1());
+	} else {
+		result = LDNS_STATUS_SSL_ERR;
+	}
 	EVP_PKEY_free(evp_key);
 
 	return result;
@@ -2299,12 +2309,15 @@ ldns_verify_rrsig_rsasha256_raw(unsigned char* sig,
 	ldns_status result;
 
 	evp_key = EVP_PKEY_new();
-	EVP_PKEY_assign_RSA(evp_key, ldns_key_buf2rsa_raw(key, keylen));
-	result = ldns_verify_rrsig_evp_raw(sig,
+	if (EVP_PKEY_assign_RSA(evp_key, ldns_key_buf2rsa_raw(key, keylen))) {
+		result = ldns_verify_rrsig_evp_raw(sig,
 								siglen,
 								rrset,
 								evp_key,
 								EVP_sha256());
+	} else {
+		result = LDNS_STATUS_SSL_ERR;
+	}
 	EVP_PKEY_free(evp_key);
 
 	return result;
@@ -2331,12 +2344,15 @@ ldns_verify_rrsig_rsasha512_raw(unsigned char* sig,
 	ldns_status result;
 
 	evp_key = EVP_PKEY_new();
-	EVP_PKEY_assign_RSA(evp_key, ldns_key_buf2rsa_raw(key, keylen));
-	result = ldns_verify_rrsig_evp_raw(sig,
+	if (EVP_PKEY_assign_RSA(evp_key, ldns_key_buf2rsa_raw(key, keylen))) {
+		result = ldns_verify_rrsig_evp_raw(sig,
 								siglen,
 								rrset,
 								evp_key,
 								EVP_sha512());
+	} else {
+		result = LDNS_STATUS_SSL_ERR;
+	}
 	EVP_PKEY_free(evp_key);
 
 	return result;
@@ -2363,12 +2379,15 @@ ldns_verify_rrsig_rsamd5_raw(unsigned char* sig,
 	ldns_status result;
 
 	evp_key = EVP_PKEY_new();
-	EVP_PKEY_assign_RSA(evp_key, ldns_key_buf2rsa_raw(key, keylen));
-	result = ldns_verify_rrsig_evp_raw(sig,
+	if (EVP_PKEY_assign_RSA(evp_key, ldns_key_buf2rsa_raw(key, keylen))) {
+		result = ldns_verify_rrsig_evp_raw(sig,
 								siglen,
 								rrset,
 								evp_key,
 								EVP_md5());
+	} else {
+		result = LDNS_STATUS_SSL_ERR;
+	}
 	EVP_PKEY_free(evp_key);
 
 	return result;
