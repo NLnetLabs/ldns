@@ -434,7 +434,7 @@ ldns_rr_new_frm_str_internal(ldns_rr **newrr, const char *str,
 							if (c != -1) {
 								rd_strlen = strlen(rd);
 							}
-							if (c == -1 || cur_hex_data_size + rd_strlen > 2 * hex_data_size) {
+							if (c == -1 || (size_t)cur_hex_data_size + rd_strlen > 2 * (size_t)hex_data_size) {
 								LDNS_FREE(hex_data_str);
 								LDNS_FREE(rd);
 								LDNS_FREE(b64);
