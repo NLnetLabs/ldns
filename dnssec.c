@@ -535,18 +535,17 @@ ldns_key_rr2ds(const ldns_rr *key, ldns_hash h)
 		ldns_rr_free(ds);
 		return NULL;
 #endif
-	case LDNS_SHA384:
 #ifdef USE_ECDSA
+		/* Make similar ``not implemented'' construct as above when 
+		   draft-hoffman-dnssec-ecdsa-04 becomes a standard
+		 */
+	case LDNS_SHA384:
 		digest = LDNS_XMALLOC(uint8_t, SHA384_DIGEST_LENGTH);
 		if (!digest) {
 			ldns_rr_free(ds);
 			return NULL;
 		}
                 break;
-#else
-		/* not implemented */
-		ldns_rr_free(ds);
-		return NULL;
 #endif
 	}
 

@@ -1080,6 +1080,9 @@ ldns_fetch_valid_domain_keys(const ldns_resolver *res,
 {
 	ldns_rr_list * trusted_keys = NULL;
 	ldns_rr_list * ds_keys = NULL;
+	ldns_rdf * prev_parent_domain;
+	ldns_rdf *      parent_domain;
+	ldns_rr_list * parent_keys = NULL;
 
 	if (res && domain && keys) {
 
@@ -1091,10 +1094,7 @@ ldns_fetch_valid_domain_keys(const ldns_resolver *res,
 			/* No trusted keys in this domain, we'll have to find some in the parent domain */
 			*status = LDNS_STATUS_CRYPTO_NO_TRUSTED_DNSKEY;
 
-			ldns_rdf * parent_domain = ldns_dname_left_chop(domain);
-			ldns_rdf * prev_parent_domain;
-			ldns_rr_list * parent_keys = NULL;
-      
+			parent_domain = ldns_dname_left_chop(domain);
 			while (ldns_rdf_size(parent_domain) > 0) {
 				/* Fail if we are at the root */
 	
