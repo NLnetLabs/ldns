@@ -535,8 +535,8 @@ ldns_key_rr2ds(const ldns_rr *key, ldns_hash h)
 		ldns_rr_free(ds);
 		return NULL;
 #endif
-#ifdef USE_ECDSA
 	case LDNS_SHA384:
+#ifdef USE_ECDSA
 		digest = LDNS_XMALLOC(uint8_t, SHA384_DIGEST_LENGTH);
 		if (!digest) {
 			ldns_rr_free(ds);
