@@ -263,8 +263,10 @@ ldns_nsec_type_check
 ldns_octet
 ldns_opcodes
 ldns_pkt2buffer_str
+ldns_pkt2buffer_str_comments
 ldns_pkt2buffer_wire
 ldns_pkt2str
+ldns_pkt2str_comments
 ldns_pkt2wire
 ldns_pkt_aa
 ldns_pkt_ad
@@ -511,10 +513,12 @@ ldns_resolver_tsig_keydata
 ldns_resolver_tsig_keyname
 ldns_resolver_usevc
 ldns_rr2buffer_str
+ldns_rr2buffer_str_comments
 ldns_rr2buffer_wire
 ldns_rr2buffer_wire_canonical
 ldns_rr2canonical
 ldns_rr2str
+ldns_rr2str_comments
 ldns_rr2wire
 ldns_rr_a_address
 ldns_rr_a_set_address
@@ -545,9 +549,11 @@ ldns_rr_get_class
 ldns_rr_get_type
 ldns_rr_label_count
 ldns_rr_list2buffer_str
+ldns_rr_list2buffer_str_comments
 ldns_rr_list2buffer_wire
 ldns_rr_list2canonical
 ldns_rr_list2str
+ldns_rr_list2str_comments
 ldns_rr_list_cat
 ldns_rr_list_cat_clone
 ldns_rr_list_clone

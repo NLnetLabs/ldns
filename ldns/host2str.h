@@ -39,6 +39,21 @@ extern "C" {
 #define LDNS_APL_MASK           0x7f
 #define LDNS_APL_NEGATION       0x80
 
+#define LDNS_COMMENT_NULL	0x01
+#define LDNS_COMMENT_KEY_ID	0x02
+#define LDNS_COMMENT_KEY_TYPE	0x04
+#define LDNS_COMMENT_KEY_SIZE	0x08
+#define LDNS_COMMENT_KEY	(LDNS_COMMENT_KEY_ID  \
+				|LDNS_COMMENT_KEY_TYPE\
+				|LDNS_COMMENT_KEY_SIZE)
+#define LDNS_COMMENT_BUBBLEBABBLE	0x10
+#define LDNS_COMMENT_FLAGS	0x20
+#define LDNS_COMMENT_DEFAULT	(LDNS_COMMENT_NULL        \
+				|LDNS_COMMENT_KEY         \
+				|LDNS_COMMENT_BUBBLEBABBLE\
+				|LDNS_COMMENT_FLAGS       )
+
+
 /**
  * Converts an ldns packet opcode value to its mnemonic, and adds that
  * to the output buffer
@@ -352,13 +367,38 @@ ldns_status ldns_rdf2buffer_str(ldns_buffer *output, const ldns_rdf *rdf);
 
 /**
  * Converts the data in the resource record to presentation
- * format (as char *) and appends it to the given buffer
+ * format (as char *) and appends it to the given buffer.
+ * The presentation format is annotated with comments giving
+ * additional information on the record.
  *
  * \param[in] output pointer to the buffer to append the data to
  * \param[in] rr the pointer to the rr field to convert
  * \return status
  */
 ldns_status ldns_rr2buffer_str(ldns_buffer *output, const ldns_rr *rr);
+
+/**
+ * Converts the data in the resource record to presentation
+ * format (as char *) and appends it to the given buffer
+ *
+ * \param[in] output pointer to the buffer to append the data to
+ * \param[in] rr the pointer to the rr field to convert
+ * \param[in] comments flags indicating what type of comments should
+ *            annotate the presentation format. Can be any of
+ *            LDNS_COMMENT_NULL (to also indicate an NULL rr,
+ *            LDNS_COMMENT_KEY_ID (to show key identity),
+ *            LDNS_COMMENT_KEY_TYPE (to show if the key is a ksk or a zsk),
+ *            LDNS_COMMENT_KEY_SIZE (to show the key size),
+ *            LDNS_COMMENT_KEY (to show all key annotations),
+ *            LDNS_COMMENT_BUBBLEBABBLE (to show readable and communicable
+ *                                       version of a blob of binary data 
+ *                                       (currently only with DS records)),
+ *            LDNS_COMMENT_FLAGS (to show what flags are set (currently only
+ *                                if optout flag is set with NSEC3 records))
+ * \return status
+ */
+ldns_status ldns_rr2buffer_str_comments(
+		ldns_buffer *output, const ldns_rr *rr, int comments);
 
 /**
  * Converts the data in the DNS packet to presentation
@@ -369,6 +409,8 @@ ldns_status ldns_rr2buffer_str(ldns_buffer *output, const ldns_rr *rr);
  * \return status
  */
 ldns_status ldns_pkt2buffer_str(ldns_buffer *output, const ldns_pkt *pkt);
+ldns_status ldns_pkt2buffer_str_comments(
+		ldns_buffer *output, const ldns_pkt *pkt, int comments);
 
 /** 
  * Converts an LDNS_RDF_TYPE_NSEC3_SALT rdata element to string format and adds it to the output buffer 
@@ -440,6 +482,7 @@ char *ldns_rdf2str(const ldns_rdf *rdf);
  * \return null terminated char * data, or NULL on error
  */
 char *ldns_rr2str(const ldns_rr *rr);
+char *ldns_rr2str_comments(const ldns_rr *rr, int comments);
 
 /**
  * Converts the data in the DNS packet to presentation format and
@@ -450,6 +493,7 @@ char *ldns_rr2str(const ldns_rr *rr);
  * \return null terminated char * data, or NULL on error
  */
 char *ldns_pkt2str(const ldns_pkt *pkt);
+char *ldns_pkt2str_comments(const ldns_pkt *pkt, int comments);
 
 /**
  * Converts a private key to the test presentation fmt and
@@ -470,6 +514,7 @@ char *ldns_key2str(const ldns_key *k);
  * \return null terminated char * data, or NULL on error
  */
 char *ldns_rr_list2str(const ldns_rr_list *rr_list);
+char *ldns_rr_list2str_comments(const ldns_rr_list *rr_list, int comments);
 
 /**
  * Returns the data in the buffer as a null terminated char * string
@@ -518,6 +563,7 @@ void ldns_pkt_print(FILE *output, const ldns_pkt *pkt);
  * \return ldns_status
  */
 ldns_status ldns_rr_list2buffer_str(ldns_buffer *output, const ldns_rr_list *list);
+ldns_status ldns_rr_list2buffer_str_comments(ldns_buffer *output, const ldns_rr_list *list, int comments);
 
 /**
  * Converts the header of a packet to presentation format and appends it to
