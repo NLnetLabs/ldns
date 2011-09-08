@@ -113,6 +113,25 @@ ldns_lookup_table ldns_opcodes[] = {
         { 0, NULL }
 };
 
+const ldns_output_format   ldns_output_format_nocomments_record = { 0 };
+const ldns_output_format  *ldns_output_format_nocomments 
+			= &ldns_output_format_nocomments_record;
+const ldns_output_format   ldns_output_format_onlykeyids_record = {
+	LDNS_COMMENT_KEY
+};
+const ldns_output_format  *ldns_output_format_onlykeyids
+			= &ldns_output_format_onlykeyids_record;
+const ldns_output_format  *ldns_output_format_default
+			= &ldns_output_format_onlykeyids_record;
+const ldns_output_format   ldns_output_format_bubblebabble_record = { 
+	LDNS_COMMENT_KEY | LDNS_COMMENT_BUBBLEBABBLE | LDNS_COMMENT_FLAGS
+};
+const ldns_output_format  *ldns_output_format_bubblebabble 
+			= &ldns_output_format_bubblebabble_record;
+
+
+
+
 ldns_status
 ldns_pkt_opcode2buffer_str(ldns_buffer *output, ldns_pkt_opcode opcode)
 {
@@ -1141,14 +1160,17 @@ ldns_rdf2buffer_str(ldns_buffer *buffer, const ldns_rdf *rdf)
 
 
 ldns_status
-ldns_rr2buffer_str_comments(
-		ldns_buffer *output, const ldns_rr *rr, int comments)
+ldns_rr2buffer_str_fmt(
+		ldns_buffer *output, const ldns_rr *rr, const ldns_output_format *fmt)
 {
 	uint16_t i, flags;
 	ldns_status status = LDNS_STATUS_OK;
 
+	if (fmt == NULL) {
+		fmt = ldns_output_format_default;
+	}
 	if (!rr) {
-		if (LDNS_COMMENT_NULL & comments) {
+		if (LDNS_COMMENT_NULLS & fmt->flags) {
 			ldns_buffer_printf(output, "; (null)\n");
 		}
 		return ldns_buffer_status(output);
@@ -1200,17 +1222,17 @@ ldns_rr2buffer_str_comments(
 			case LDNS_RR_TYPE_DNSKEY:
 				/* if ldns_rr_rd_count(rr) > 0
 				   then ldns_rr_rdf(rr, 0) exists! */
-				if (! (comments & LDNS_COMMENT_KEY)) {
+				if (! (fmt->flags & LDNS_COMMENT_KEY)) {
 					break;
 				}
 				flags = ldns_rdf2native_int16(ldns_rr_rdf(rr, 0));
 				ldns_buffer_printf(output, " ;{");
-				if (comments & LDNS_COMMENT_KEY_ID) {
+				if (fmt->flags & LDNS_COMMENT_KEY_ID) {
 					ldns_buffer_printf(output, "id = %u",
 							(unsigned int)
 							ldns_calc_keytag(rr));
 				}
-				if ((comments & LDNS_COMMENT_KEY_TYPE)
+				if ((fmt->flags & LDNS_COMMENT_KEY_TYPE)
 						&& (flags & LDNS_KEY_ZONE_KEY)){
 					if (flags & LDNS_KEY_SEP_KEY) {
 						ldns_buffer_printf(
@@ -1220,30 +1242,30 @@ ldns_rr2buffer_str_comments(
 						ldns_buffer_printf(
 							output, " (zsk)");
 					}
-					if (comments & LDNS_COMMENT_KEY_SIZE) {
+					if (fmt->flags & LDNS_COMMENT_KEY_SIZE) {
 						ldns_buffer_printf(
 							output, ", ");
 					}
-				} else if (comments
+				} else if (fmt->flags
 						& (LDNS_COMMENT_KEY_ID
 						  |LDNS_COMMENT_KEY_SIZE)) {
 					ldns_buffer_printf( output, ", ");
 				}
-				if (comments & LDNS_COMMENT_KEY_SIZE) {
+				if (fmt->flags & LDNS_COMMENT_KEY_SIZE) {
 					ldns_buffer_printf(output, "size = %db",
 						ldns_rr_dnskey_key_size(rr));
 				}
 				ldns_buffer_printf(output, "}");
 				break;
 			case LDNS_RR_TYPE_RRSIG:
-				if ((comments & LDNS_COMMENT_KEY)
+				if ((fmt->flags & LDNS_COMMENT_KEY)
 						&& ldns_rr_rdf(rr, 6) != NULL) {
 					ldns_buffer_printf(output, " ;{id = %d}",
 							ldns_rdf2native_int16(ldns_rr_rdf(rr, 6)));
 				}
 				break;
 			case LDNS_RR_TYPE_DS:
-				if ((comments & LDNS_COMMENT_BUBBLEBABBLE)
+				if ((fmt->flags & LDNS_COMMENT_BUBBLEBABBLE)
 						&& ldns_rr_rdf(rr, 3) != NULL) {
 					uint8_t *data = ldns_rdf_data(ldns_rr_rdf(rr, 3));
 					size_t len = ldns_rdf_size(ldns_rr_rdf(rr, 3));
@@ -1254,7 +1276,7 @@ ldns_rr2buffer_str_comments(
 				}
 				break;
 			case LDNS_RR_TYPE_NSEC3:
-				if ((comments & LDNS_COMMENT_FLAGS)
+				if ((fmt->flags & LDNS_COMMENT_FLAGS)
 						&& ldns_nsec3_optout(rr)) {
 					ldns_buffer_printf(output, " ; flags: optout");
 				}
@@ -1272,18 +1294,18 @@ ldns_rr2buffer_str_comments(
 ldns_status
 ldns_rr2buffer_str(ldns_buffer *output, const ldns_rr *rr)
 {
-	return ldns_rr2buffer_str_comments(output, rr, LDNS_COMMENT_DEFAULT);
+	return ldns_rr2buffer_str_fmt(output, rr, ldns_output_format_default);
 }
 
 ldns_status
-ldns_rr_list2buffer_str_comments(
-		ldns_buffer *output, const ldns_rr_list *list, int comments)
+ldns_rr_list2buffer_str_fmt(
+		ldns_buffer *output, const ldns_rr_list *list, const ldns_output_format *fmt)
 {
 	uint16_t i;
 
 	for(i = 0; i < ldns_rr_list_rr_count(list); i++) {
-		(void) ldns_rr2buffer_str_comments(
-				output, ldns_rr_list_rr(list, i), comments);
+		(void) ldns_rr2buffer_str_fmt(
+				output, ldns_rr_list_rr(list, i), fmt);
 	}
 	return ldns_buffer_status(output);
 }
@@ -1291,8 +1313,8 @@ ldns_rr_list2buffer_str_comments(
 ldns_status
 ldns_rr_list2buffer_str(ldns_buffer *output, const ldns_rr_list *list)
 {
-	return ldns_rr_list2buffer_str_comments(
-			output, list, LDNS_COMMENT_DEFAULT);
+	return ldns_rr_list2buffer_str_fmt(
+			output, list, ldns_output_format_default);
 }
 
 ldns_status
@@ -1348,8 +1370,8 @@ ldns_pktheader2buffer_str(ldns_buffer *output, const ldns_pkt *pkt)
 }
 
 ldns_status
-ldns_pkt2buffer_str_comments(
-		ldns_buffer *output, const ldns_pkt *pkt, int comments)
+ldns_pkt2buffer_str_fmt(
+		ldns_buffer *output, const ldns_pkt *pkt, const ldns_output_format *fmt)
 {
 	uint16_t i;
 	ldns_status status = LDNS_STATUS_OK;
@@ -1374,9 +1396,9 @@ ldns_pkt2buffer_str_comments(
 
 
 		for (i = 0; i < ldns_pkt_qdcount(pkt); i++) {
-			status = ldns_rr2buffer_str_comments(output,
+			status = ldns_rr2buffer_str_fmt(output,
 				       ldns_rr_list_rr(ldns_pkt_question(pkt), i),
-				       comments);
+				       fmt);
 			if (status != LDNS_STATUS_OK) {
 				return status;
 			}
@@ -1385,9 +1407,9 @@ ldns_pkt2buffer_str_comments(
 
 		ldns_buffer_printf(output, ";; ANSWER SECTION:\n");
 		for (i = 0; i < ldns_pkt_ancount(pkt); i++) {
-			status = ldns_rr2buffer_str_comments(output,
+			status = ldns_rr2buffer_str_fmt(output,
 				       ldns_rr_list_rr(ldns_pkt_answer(pkt), i),
-				       comments);
+				       fmt);
 			if (status != LDNS_STATUS_OK) {
 				return status;
 			}
@@ -1398,9 +1420,9 @@ ldns_pkt2buffer_str_comments(
 		ldns_buffer_printf(output, ";; AUTHORITY SECTION:\n");
 
 		for (i = 0; i < ldns_pkt_nscount(pkt); i++) {
-			status = ldns_rr2buffer_str_comments(output,
+			status = ldns_rr2buffer_str_fmt(output,
 				       ldns_rr_list_rr(ldns_pkt_authority(pkt), i),
-				       comments);
+				       fmt);
 			if (status != LDNS_STATUS_OK) {
 				return status;
 			}
@@ -1409,9 +1431,9 @@ ldns_pkt2buffer_str_comments(
 
 		ldns_buffer_printf(output, ";; ADDITIONAL SECTION:\n");
 		for (i = 0; i < ldns_pkt_arcount(pkt); i++) {
-			status = ldns_rr2buffer_str_comments(output,
+			status = ldns_rr2buffer_str_fmt(output,
 				       ldns_rr_list_rr(ldns_pkt_additional(pkt), i),
-				       comments);
+				       fmt);
 			if (status != LDNS_STATUS_OK) {
 				return status;
 			}
@@ -1446,8 +1468,8 @@ ldns_pkt2buffer_str_comments(
 		}
 		if (ldns_pkt_tsig(pkt)) {
 			ldns_buffer_printf(output, ";; TSIG:\n;; ");
-			(void) ldns_rr2buffer_str_comments(
-					output, ldns_pkt_tsig(pkt), comments);
+			(void) ldns_rr2buffer_str_fmt(
+					output, ldns_pkt_tsig(pkt), fmt);
 			ldns_buffer_printf(output, "\n");
 		}
 		if (ldns_pkt_answerfrom(pkt)) {
@@ -1471,7 +1493,7 @@ ldns_pkt2buffer_str_comments(
 ldns_status
 ldns_pkt2buffer_str(ldns_buffer *output, const ldns_pkt *pkt)
 {
-	return ldns_pkt2buffer_str_comments(output, pkt, LDNS_COMMENT_DEFAULT);
+	return ldns_pkt2buffer_str_fmt(output, pkt, ldns_output_format_default);
 }
 
 
@@ -1945,7 +1967,7 @@ ldns_rdf2str(const ldns_rdf *rdf)
 }
 
 char *
-ldns_rr2str_comments(const ldns_rr *rr, int comments)
+ldns_rr2str_fmt(const ldns_rr *rr, const ldns_output_format *fmt)
 {
 	char *result = NULL;
 	ldns_buffer *tmp_buffer = ldns_buffer_new(LDNS_MAX_PACKETLEN);
@@ -1953,7 +1975,7 @@ ldns_rr2str_comments(const ldns_rr *rr, int comments)
 	if (!tmp_buffer) {
 		return NULL;
 	}
-	if (ldns_rr2buffer_str_comments(tmp_buffer, rr, comments)
+	if (ldns_rr2buffer_str_fmt(tmp_buffer, rr, fmt)
 		       	== LDNS_STATUS_OK) {
 		/* export and return string, destroy rest */
 		result = ldns_buffer2str(tmp_buffer);
@@ -1965,11 +1987,11 @@ ldns_rr2str_comments(const ldns_rr *rr, int comments)
 char *
 ldns_rr2str(const ldns_rr *rr)
 {
-	return ldns_rr2str_comments(rr, LDNS_COMMENT_DEFAULT);
+	return ldns_rr2str_fmt(rr, ldns_output_format_default);
 }
 
 char *
-ldns_pkt2str_comments(const ldns_pkt *pkt, int comments)
+ldns_pkt2str_fmt(const ldns_pkt *pkt, const ldns_output_format *fmt)
 {
 	char *result = NULL;
 	ldns_buffer *tmp_buffer = ldns_buffer_new(LDNS_MAX_PACKETLEN);
@@ -1977,7 +1999,7 @@ ldns_pkt2str_comments(const ldns_pkt *pkt, int comments)
 	if (!tmp_buffer) {
 		return NULL;
 	}
-	if (ldns_pkt2buffer_str_comments(tmp_buffer, pkt, comments)
+	if (ldns_pkt2buffer_str_fmt(tmp_buffer, pkt, fmt)
 		       	== LDNS_STATUS_OK) {
 		/* export and return string, destroy rest */
 		result = ldns_buffer2str(tmp_buffer);
@@ -1990,7 +2012,7 @@ ldns_pkt2str_comments(const ldns_pkt *pkt, int comments)
 char *
 ldns_pkt2str(const ldns_pkt *pkt)
 {
-	return ldns_pkt2str_comments(pkt, LDNS_COMMENT_DEFAULT);
+	return ldns_pkt2str_fmt(pkt, ldns_output_format_default);
 }
 
 char *
@@ -2011,7 +2033,7 @@ ldns_key2str(const ldns_key *k)
 }
 
 char *
-ldns_rr_list2str_comments(const ldns_rr_list *list, int comments)
+ldns_rr_list2str_fmt(const ldns_rr_list *list, const ldns_output_format *fmt)
 {
 	char *result = NULL;
 	ldns_buffer *tmp_buffer = ldns_buffer_new(LDNS_MAX_PACKETLEN);
@@ -2020,12 +2042,15 @@ ldns_rr_list2str_comments(const ldns_rr_list *list, int comments)
 		return NULL;
 	}
 	if (list) {
-		if (ldns_rr_list2buffer_str_comments(
-				   tmp_buffer, list, comments)
+		if (ldns_rr_list2buffer_str_fmt(
+				   tmp_buffer, list, fmt)
 			       	== LDNS_STATUS_OK) {
 		}
 	} else {
-		if (comments & LDNS_COMMENT_NULL) {
+		if (fmt == NULL) {
+			fmt = ldns_output_format_default;
+		}
+		if (fmt->flags & LDNS_COMMENT_NULLS) {
 			ldns_buffer_printf(tmp_buffer, "; (null)\n");
 		}
 	}
@@ -2039,7 +2064,7 @@ ldns_rr_list2str_comments(const ldns_rr_list *list, int comments)
 char *
 ldns_rr_list2str(const ldns_rr_list *list)
 {
-	return ldns_rr_list2str_comments(list, LDNS_COMMENT_DEFAULT);
+	return ldns_rr_list2str_fmt(list, ldns_output_format_default);
 }
 
 void
@@ -2055,9 +2080,9 @@ ldns_rdf_print(FILE *output, const ldns_rdf *rdf)
 }
 
 void
-ldns_rr_print(FILE *output, const ldns_rr *rr)
+ldns_rr_print_fmt(FILE *output, const ldns_rr *rr, const ldns_output_format *fmt)
 {
-	char *str = ldns_rr2str(rr);
+	char *str = ldns_rr2str_fmt(rr, fmt);
 	if (str) {
 		fprintf(output, "%s", str);
 	} else {
@@ -2067,9 +2092,15 @@ ldns_rr_print(FILE *output, const ldns_rr *rr)
 }
 
 void
-ldns_pkt_print(FILE *output, const ldns_pkt *pkt)
+ldns_rr_print(FILE *output, const ldns_rr *rr)
 {
-	char *str = ldns_pkt2str(pkt);
+	ldns_rr_print_fmt(output, rr, ldns_output_format_default);
+}
+
+void
+ldns_pkt_print_fmt(FILE *output, const ldns_pkt *pkt, const ldns_output_format *fmt)
+{
+	char *str = ldns_pkt2str_fmt(pkt, fmt);
 	if (str) {
 		fprintf(output, "%s", str);
 	} else {
@@ -2079,16 +2110,28 @@ ldns_pkt_print(FILE *output, const ldns_pkt *pkt)
 }
 
 void
-ldns_rr_list_print(FILE *output, const ldns_rr_list *lst)
+ldns_pkt_print(FILE *output, const ldns_pkt *pkt)
+{
+	ldns_pkt_print_fmt(output, pkt, ldns_output_format_default);
+}
+
+void
+ldns_rr_list_print_fmt(FILE *output, const ldns_rr_list *lst, const ldns_output_format *fmt)
 {
 	size_t i;
 	for (i = 0; i < ldns_rr_list_rr_count(lst); i++) {
-		ldns_rr_print(output, ldns_rr_list_rr(lst, i));
+		ldns_rr_print_fmt(output, ldns_rr_list_rr(lst, i), fmt);
 	}
 }
 
 void
-ldns_resolver_print(FILE *output, const ldns_resolver *r)
+ldns_rr_list_print(FILE *output, const ldns_rr_list *lst)
+{
+	ldns_rr_list_print_fmt(output, lst, ldns_output_format_default);
+}
+
+void
+ldns_resolver_print_fmt(FILE *output, const ldns_resolver *r, const ldns_output_format *fmt)
 {
 	uint16_t i;
 	ldns_rdf **n;
@@ -2118,7 +2161,7 @@ ldns_resolver_print(FILE *output, const ldns_resolver *r)
 	fprintf(output, "dnssec cd: %d\n", ldns_resolver_dnssec_cd(r));
 	fprintf(output, "trust anchors (%d listed):\n",
 		(int)ldns_rr_list_rr_count(ldns_resolver_dnssec_anchors(r)));
-	ldns_rr_list_print(output, ldns_resolver_dnssec_anchors(r));
+	ldns_rr_list_print_fmt(output, ldns_resolver_dnssec_anchors(r), fmt);
 	fprintf(output, "tsig: %s %s\n",
                 ldns_resolver_tsig_keyname(r)?ldns_resolver_tsig_keyname(r):"-",
                 ldns_resolver_tsig_algorithm(r)?ldns_resolver_tsig_algorithm(r):"-");
@@ -2154,9 +2197,20 @@ ldns_resolver_print(FILE *output, const ldns_resolver *r)
 }
 
 void
-ldns_zone_print(FILE *output, const ldns_zone *z)
+ldns_resolver_print(FILE *output, const ldns_resolver *r)
+{
+	ldns_resolver_print_fmt(output, r, ldns_output_format_default);
+}
+
+void
+ldns_zone_print_fmt(FILE *output, const ldns_zone *z, const ldns_output_format *fmt)
 {
 	if(ldns_zone_soa(z))
-		ldns_rr_print(output, ldns_zone_soa(z));
-	ldns_rr_list_print(output, ldns_zone_rrs(z));
+		ldns_rr_print_fmt(output, ldns_zone_soa(z), fmt);
+	ldns_rr_list_print_fmt(output, ldns_zone_rrs(z), fmt);
+}
+void
+ldns_zone_print(FILE *output, const ldns_zone *z)
+{
+	ldns_zone_print_fmt(output, z, ldns_output_format_default);
 }

@@ -10,6 +10,7 @@
  
 #include <ldns/ldns.h>
 #include <ldns/rbtree.h>
+#include <ldns/host2str.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -134,6 +135,8 @@ ldns_status ldns_dnssec_rrs_add_rr(ldns_dnssec_rrs *rrs, ldns_rr *rr);
  * \param[in] rrs the list of RRs to print
  */
 void ldns_dnssec_rrs_print(FILE *out, ldns_dnssec_rrs *rrs);
+void ldns_dnssec_rrs_print_fmt(FILE *out, 
+		ldns_dnssec_rrs *rrs, const ldns_output_format *fmt);
 
 /**
  * Creates a new list (entry) of RRsets
@@ -193,8 +196,13 @@ ldns_status ldns_dnssec_rrsets_add_rr(ldns_dnssec_rrsets *rrsets, ldns_rr *rr);
  * \param[in] follow if set to false, only print the first RRset
  */ 
 void ldns_dnssec_rrsets_print(FILE *out,
-						ldns_dnssec_rrsets *rrsets,
-						bool follow);
+		ldns_dnssec_rrsets *rrsets,
+		bool follow);
+void ldns_dnssec_rrsets_print_fmt(FILE *out,
+		ldns_dnssec_rrsets *rrsets,
+		bool follow,
+		const ldns_output_format *fmt);
+
 
 /**
  * Create a new data structure for a dnssec name
@@ -316,6 +324,8 @@ ldns_dnssec_rrsets *ldns_dnssec_zone_find_rrset(ldns_dnssec_zone *zone,
  * \param[in] name the name structure to print the contents of
  */
 void ldns_dnssec_name_print(FILE *out, ldns_dnssec_name *name);
+void ldns_dnssec_name_print_fmt(FILE *out, 
+		ldns_dnssec_name *name, const ldns_output_format *fmt);
 
 /**
  * Creates a new dnssec_zone structure
@@ -358,6 +368,8 @@ ldns_status ldns_dnssec_zone_add_rr(ldns_dnssec_zone *zone,
  * \param[in] print_soa if true, print SOA records, if false, skip them
  */
 void ldns_dnssec_zone_names_print(FILE *out, ldns_rbtree_t *tree, bool print_soa);
+void ldns_dnssec_zone_names_print_fmt(FILE *out, ldns_rbtree_t *tree, 
+		bool print_soa, const ldns_output_format *fmt);
 
 /**
  * Prints the complete zone to the given file descriptor
@@ -366,6 +378,8 @@ void ldns_dnssec_zone_names_print(FILE *out, ldns_rbtree_t *tree, bool print_soa
  * \param[in] zone the dnssec_zone to print
  */
 void ldns_dnssec_zone_print(FILE *out, ldns_dnssec_zone *zone);
+void ldns_dnssec_zone_print_fmt(FILE *out, 
+		ldns_dnssec_zone *zone, const ldns_output_format *fmt);
 
 /**
  * Adds explicit dnssec_name structures for the empty nonterminals

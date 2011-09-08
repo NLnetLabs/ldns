@@ -39,7 +39,7 @@ extern "C" {
 #define LDNS_APL_MASK           0x7f
 #define LDNS_APL_NEGATION       0x80
 
-#define LDNS_COMMENT_NULL	0x01
+#define LDNS_COMMENT_NULLS	0x01
 #define LDNS_COMMENT_KEY_ID	0x02
 #define LDNS_COMMENT_KEY_TYPE	0x04
 #define LDNS_COMMENT_KEY_SIZE	0x08
@@ -48,11 +48,17 @@ extern "C" {
 				|LDNS_COMMENT_KEY_SIZE)
 #define LDNS_COMMENT_BUBBLEBABBLE	0x10
 #define LDNS_COMMENT_FLAGS	0x20
-#define LDNS_COMMENT_DEFAULT	(LDNS_COMMENT_NULL        \
-				|LDNS_COMMENT_KEY         \
-				|LDNS_COMMENT_BUBBLEBABBLE\
-				|LDNS_COMMENT_FLAGS       )
 
+struct ldns_struct_output_format
+{
+	int flags;
+};
+typedef struct ldns_struct_output_format ldns_output_format;
+
+extern const ldns_output_format *ldns_output_format_nocomments;   
+extern const ldns_output_format *ldns_output_format_onlykeyids;   /* default */
+extern const ldns_output_format *ldns_output_format_default;
+extern const ldns_output_format *ldns_output_format_bubblebabble;
 
 /**
  * Converts an ldns packet opcode value to its mnemonic, and adds that
@@ -397,8 +403,8 @@ ldns_status ldns_rr2buffer_str(ldns_buffer *output, const ldns_rr *rr);
  *                                if optout flag is set with NSEC3 records))
  * \return status
  */
-ldns_status ldns_rr2buffer_str_comments(
-		ldns_buffer *output, const ldns_rr *rr, int comments);
+ldns_status ldns_rr2buffer_str_fmt(
+		ldns_buffer *output, const ldns_rr *rr, const ldns_output_format *fmt);
 
 /**
  * Converts the data in the DNS packet to presentation
@@ -409,8 +415,8 @@ ldns_status ldns_rr2buffer_str_comments(
  * \return status
  */
 ldns_status ldns_pkt2buffer_str(ldns_buffer *output, const ldns_pkt *pkt);
-ldns_status ldns_pkt2buffer_str_comments(
-		ldns_buffer *output, const ldns_pkt *pkt, int comments);
+ldns_status ldns_pkt2buffer_str_fmt(
+		ldns_buffer *output, const ldns_pkt *pkt, const ldns_output_format *fmt);
 
 /** 
  * Converts an LDNS_RDF_TYPE_NSEC3_SALT rdata element to string format and adds it to the output buffer 
@@ -482,7 +488,7 @@ char *ldns_rdf2str(const ldns_rdf *rdf);
  * \return null terminated char * data, or NULL on error
  */
 char *ldns_rr2str(const ldns_rr *rr);
-char *ldns_rr2str_comments(const ldns_rr *rr, int comments);
+char *ldns_rr2str_fmt(const ldns_rr *rr, const ldns_output_format *fmt);
 
 /**
  * Converts the data in the DNS packet to presentation format and
@@ -493,7 +499,7 @@ char *ldns_rr2str_comments(const ldns_rr *rr, int comments);
  * \return null terminated char * data, or NULL on error
  */
 char *ldns_pkt2str(const ldns_pkt *pkt);
-char *ldns_pkt2str_comments(const ldns_pkt *pkt, int comments);
+char *ldns_pkt2str_fmt(const ldns_pkt *pkt, const ldns_output_format *fmt);
 
 /**
  * Converts a private key to the test presentation fmt and
@@ -514,7 +520,7 @@ char *ldns_key2str(const ldns_key *k);
  * \return null terminated char * data, or NULL on error
  */
 char *ldns_rr_list2str(const ldns_rr_list *rr_list);
-char *ldns_rr_list2str_comments(const ldns_rr_list *rr_list, int comments);
+char *ldns_rr_list2str_fmt(const ldns_rr_list *rr_list, const ldns_output_format *fmt);
 
 /**
  * Returns the data in the buffer as a null terminated char * string
@@ -544,6 +550,7 @@ void ldns_rdf_print(FILE *output, const ldns_rdf *rdf);
  * \return void
  */
 void ldns_rr_print(FILE *output, const ldns_rr *rr);
+void ldns_rr_print_fmt(FILE *output, const ldns_rr *rr, const ldns_output_format *fmt);
 
 /**
  * Prints the data in the DNS packet to the given file stream
@@ -554,6 +561,7 @@ void ldns_rr_print(FILE *output, const ldns_rr *rr);
  * \return void
  */
 void ldns_pkt_print(FILE *output, const ldns_pkt *pkt);
+void ldns_pkt_print_fmt(FILE *output, const ldns_pkt *pkt, const ldns_output_format *fmt);
 
 /**
  * Converts a rr_list to presentation format and appends it to
@@ -563,7 +571,7 @@ void ldns_pkt_print(FILE *output, const ldns_pkt *pkt);
  * \return ldns_status
  */
 ldns_status ldns_rr_list2buffer_str(ldns_buffer *output, const ldns_rr_list *list);
-ldns_status ldns_rr_list2buffer_str_comments(ldns_buffer *output, const ldns_rr_list *list, int comments);
+ldns_status ldns_rr_list2buffer_str_fmt(ldns_buffer *output, const ldns_rr_list *list, const ldns_output_format *fmt);
 
 /**
  * Converts the header of a packet to presentation format and appends it to
@@ -580,6 +588,7 @@ ldns_status ldns_pktheader2buffer_str(ldns_buffer *output, const ldns_pkt *pkt);
  * param[in] list the rr_list to print
  */
 void ldns_rr_list_print(FILE *output, const ldns_rr_list *list);
+void ldns_rr_list_print_fmt(FILE *output, const ldns_rr_list *list, const ldns_output_format *fmt);
 
 /**
  * Print a resolver (in sofar that is possible) state
@@ -588,6 +597,7 @@ void ldns_rr_list_print(FILE *output, const ldns_rr_list *list);
  * \param[in] r the resolver to print
  */
 void ldns_resolver_print(FILE *output, const ldns_resolver *r);
+void ldns_resolver_print_fmt(FILE *output, const ldns_resolver *r, const ldns_output_format *fmt);
 
 /**
  * Print a zone structure * to output. Note the SOA record
@@ -596,6 +606,7 @@ void ldns_resolver_print(FILE *output, const ldns_resolver *r);
  * \param[in] z the zone to print
  */
 void ldns_zone_print(FILE *output, const ldns_zone *z);
+void ldns_zone_print_fmt(FILE *output, const ldns_zone *z, const ldns_output_format *fmt);
 
 /**
  * Print the ldns_rdf containing a dname to the buffer

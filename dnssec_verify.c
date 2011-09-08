@@ -53,12 +53,14 @@ ldns_dnssec_data_chain_deep_free(ldns_dnssec_data_chain *chain)
 }
 
 void
-ldns_dnssec_data_chain_print(FILE *out, const ldns_dnssec_data_chain *chain)
+ldns_dnssec_data_chain_print_fmt(FILE *out, 
+		const ldns_dnssec_data_chain *chain, 
+		const ldns_output_format *fmt)
 {
 	ldns_lookup_table *rcode;
 	const ldns_rr_descriptor *rr_descriptor;
 	if (chain) {
-		ldns_dnssec_data_chain_print(out, chain->parent);
+		ldns_dnssec_data_chain_print_fmt(out, chain->parent, fmt);
 		if (ldns_rr_list_rr_count(chain->rrset) > 0) {
 			rcode = ldns_lookup_by_id(ldns_rcodes,
 								 (int) chain->packet_rcode);
@@ -77,15 +79,21 @@ ldns_dnssec_data_chain_print(FILE *out, const ldns_dnssec_data_chain *chain)
 				fprintf(out, ";; NODATA response\n");
 			}
 			fprintf(out, "rrset:\n");
-			ldns_rr_list_print(out, chain->rrset);
+			ldns_rr_list_print_fmt(out, chain->rrset, fmt);
 			fprintf(out, "sigs:\n");
-			ldns_rr_list_print(out, chain->signatures);
+			ldns_rr_list_print_fmt(out, chain->signatures, fmt);
 			fprintf(out, "---\n");
 		} else {
 			fprintf(out, "<no data>\n");
 		}
 	}
 }
+void
+ldns_dnssec_data_chain_print(FILE *out, const ldns_dnssec_data_chain *chain)
+{
+	ldns_dnssec_data_chain_print_fmt(out, chain, ldns_output_format_default);
+}
+
 
 static void
 ldns_dnssec_build_data_chain_dnskey(ldns_resolver *res,
@@ -487,12 +495,13 @@ print_tabs(FILE *out, size_t nr, uint8_t *map, size_t treedepth)
 }
 
 void
-ldns_dnssec_trust_tree_print_sm(FILE *out,
-						  ldns_dnssec_trust_tree *tree,
-						  size_t tabs,
-						  bool extended,
-						  uint8_t *sibmap,
-						  size_t treedepth)
+ldns_dnssec_trust_tree_print_sm_fmt(FILE *out, 
+		ldns_dnssec_trust_tree *tree,
+		size_t tabs,
+		bool extended,
+		uint8_t *sibmap,
+		size_t treedepth,
+		const ldns_output_format *fmt)
 {
 	size_t i;
 	const ldns_rr_descriptor *descriptor;
@@ -588,18 +597,19 @@ ldns_dnssec_trust_tree_print_sm(FILE *out,
 							ERR_print_errors_fp(stdout);
 							printf("\n");
 						}
-						ldns_rr_print(out, tree->parent_signature[i]);
+						ldns_rr_print_fmt(out, tree->parent_signature[i], fmt);
 						printf("For RRset:\n");
-						ldns_rr_list_print(out, tree->rrset);
+						ldns_rr_list_print_fmt(out, tree->rrset, fmt);
 						printf("With key:\n");
-						ldns_rr_print(out, tree->parents[i]->rr);
+						ldns_rr_print_fmt(out, tree->parents[i]->rr, fmt);
 					}
-				ldns_dnssec_trust_tree_print_sm(out,
-										  tree->parents[i],
-										  tabs+1,
-										  extended,
-										  sibmap,
-										  treedepth);
+				ldns_dnssec_trust_tree_print_sm_fmt(out,
+						tree->parents[i],
+						tabs+1,
+						extended,
+						sibmap,
+						treedepth,
+						fmt);
 			}
 		} else {
 			print_tabs(out, tabs, sibmap, treedepth);
@@ -615,13 +625,35 @@ ldns_dnssec_trust_tree_print_sm(FILE *out,
 }
 
 void
-ldns_dnssec_trust_tree_print(FILE *out,
-					    ldns_dnssec_trust_tree *tree,
-					    size_t tabs,
-					    bool extended)
+ldns_dnssec_trust_tree_print_sm(FILE *out, 
+		ldns_dnssec_trust_tree *tree,
+		size_t tabs,
+		bool extended,
+		uint8_t *sibmap,
+		size_t treedepth)
 {
-	ldns_dnssec_trust_tree_print_sm(out, tree, tabs, extended, NULL, 0);
+	ldns_dnssec_trust_tree_print_sm_fmt(out, tree, tabs, extended, sibmap, treedepth, ldns_output_format_default);
 }
+
+void
+ldns_dnssec_trust_tree_print_fmt(FILE *out,
+		ldns_dnssec_trust_tree *tree,
+		size_t tabs,
+		bool extended,
+		const ldns_output_format *fmt)
+{
+	ldns_dnssec_trust_tree_print_sm_fmt(out, tree, tabs, extended, NULL, 0, fmt);
+}
+
+void
+ldns_dnssec_trust_tree_print(FILE *out,
+		ldns_dnssec_trust_tree *tree,
+		size_t tabs,
+		bool extended)
+{
+	ldns_dnssec_trust_tree_print_fmt(out, tree, tabs, extended, ldns_output_format_default);
+}
+
 
 ldns_status
 ldns_dnssec_trust_tree_add_parent(ldns_dnssec_trust_tree *tree,
@@ -1317,12 +1349,14 @@ ldns_verify_trusted(ldns_resolver *res,
 					}
 					ldns_rr_list_deep_free(trusted_keys);
 					return LDNS_STATUS_OK;
-				} else {
+				} 
+				/* This was for debugging I guess!
+				 * else {
 					ldns_rr_list_print(stdout, rrset);
 					ldns_rr_print(stdout, cur_sig);
 					ldns_rr_print(stdout, cur_key);
         	
-				}
+				} */
 			}
 		}
 	}

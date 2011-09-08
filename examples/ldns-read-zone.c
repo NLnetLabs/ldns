@@ -11,6 +11,7 @@
 #include <stdlib.h>
 
 #include <ldns/ldns.h>
+#include <ldns/host2str.h>
 
 #include <errno.h>
 
@@ -32,9 +33,12 @@ main(int argc, char **argv)
 	ldns_rr_list *stripped_list;
 	ldns_rr *cur_rr;
 	ldns_rr_type cur_rr_type;
+	const ldns_output_format *fmt = NULL;
 
-        while ((c = getopt(argc, argv, "cdhnsvz")) != -1) {
+        while ((c = getopt(argc, argv, "bcdhnsvz")) != -1) {
                 switch(c) {
+			case 'b':
+				fmt = ldns_output_format_bubblebabble;
                 	case 'c':
                 		canonicalize = true;
                 		break;
@@ -48,6 +52,7 @@ main(int argc, char **argv)
 				printf("Usage: %s [-c] [-v] [-z] <zonefile>\n", argv[0]);
 				printf("\tReads the zonefile and prints it.\n");
 				printf("\tThe RR count of the zone is printed to stderr.\n");
+				printf("\t-b include bubblebabble of DS's.\n");
 				printf("\t-c canonicalize all rrs in the zone.\n");
 				printf("\t-d only show DNSSEC data from the zone\n");
 				printf("\t-h show this text\n");
@@ -142,9 +147,9 @@ main(int argc, char **argv)
 		}
 
 		if (print_soa && ldns_zone_soa(z)) {
-			ldns_rr_print(stdout, ldns_zone_soa(z));
+			ldns_rr_print_fmt(stdout, ldns_zone_soa(z), fmt);
 		}
-		ldns_rr_list_print(stdout, ldns_zone_rrs(z));
+		ldns_rr_list_print_fmt(stdout, ldns_zone_rrs(z), fmt);
 
 		ldns_zone_deep_free(z);
 	} else {

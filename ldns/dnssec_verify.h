@@ -6,6 +6,7 @@
 #define LDNS_DNSSEC_TRUST_TREE_MAX_PARENTS 10
 
 #include <ldns/dnssec.h>
+#include <ldns/host2str.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -55,6 +56,9 @@ void ldns_dnssec_data_chain_deep_free(ldns_dnssec_data_chain *chain);
  * \param[in] *chain The dnssec_data_chain to print
  */
 void ldns_dnssec_data_chain_print(FILE *out, const ldns_dnssec_data_chain *chain);
+void ldns_dnssec_data_chain_print_fmt(FILE *out, 
+		const ldns_dnssec_data_chain *chain, 
+		const ldns_output_format *fmt);
 
 /**
  * Build an ldns_dnssec_data_chain, which contains all
@@ -158,9 +162,14 @@ size_t ldns_dnssec_trust_tree_depth(ldns_dnssec_trust_tree *tree);
  * \param[in] extended If true, add little explanation lines to the output
  */
 void ldns_dnssec_trust_tree_print(FILE *out,
-						    ldns_dnssec_trust_tree *tree,
-						    size_t tabs,
-						    bool extended);
+	       	ldns_dnssec_trust_tree *tree,
+		size_t tabs,
+		bool extended);
+void ldns_dnssec_trust_tree_print_fmt(FILE *out,
+	       	ldns_dnssec_trust_tree *tree,
+		size_t tabs,
+		bool extended,
+		const ldns_output_format *fmt);
 
 /**
  * Adds a trust tree as a parent for the given trust tree
