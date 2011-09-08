@@ -1,4 +1,5 @@
 1.6.11
+	* bugfix #407: Canonicalize TSIG dnames
 	* bugfix #394: Fix socket leak on errors
 	* bugfix #392: Apex only and percentage checks for ldns-verify-zone
 	* bugfix #398: Allow NSEC RRSIGs before the NSEC3 in ldns-verify-zone
