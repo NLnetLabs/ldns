@@ -173,13 +173,16 @@ ldns_tsig_mac_new(ldns_rdf **tsig_mac, uint8_t *pkt_wire, size_t pkt_wire_size,
 	ldns_rdf *result = NULL;
 	ldns_buffer *data_buffer = NULL;
 	ldns_rdf *canonical_key_name_rdf = NULL;
+	ldns_rdf *canonical_algorithm_rdf = NULL;
 	
-	if (key_name_rdf == NULL) {
+	if (key_name_rdf == NULL || algorithm_rdf == NULL) {
 		return LDNS_STATUS_NULL;
 	}
-	canonical_key_name_rdf = ldns_rdf_clone(key_name_rdf);
+	canonical_key_name_rdf  = ldns_rdf_clone(key_name_rdf);
+	canonical_algorithm_rdf = ldns_rdf_clone(algorithm_rdf);
 
-	if (canonical_key_name_rdf == NULL) {
+	if (canonical_key_name_rdf == NULL 
+			|| canonical_algorithm_rdf  == NULL) {
 		return LDNS_STATUS_MEM_ERR;
 	}
 	/*
@@ -197,10 +200,13 @@ ldns_tsig_mac_new(ldns_rdf **tsig_mac, uint8_t *pkt_wire, size_t pkt_wire_size,
 	ldns_buffer_write(data_buffer, pkt_wire, pkt_wire_size);
 	if (!tsig_timers_only) {
 		ldns_dname2canonical(canonical_key_name_rdf);
-		(void)ldns_rdf2buffer_wire(data_buffer, canonical_key_name_rdf);
+		(void)ldns_rdf2buffer_wire(data_buffer, 
+				canonical_key_name_rdf);
 		ldns_buffer_write_u16(data_buffer, LDNS_RR_CLASS_ANY);
 		ldns_buffer_write_u32(data_buffer, 0);
-		(void)ldns_rdf2buffer_wire(data_buffer, algorithm_rdf);
+		ldns_dname2canonical(canonical_algorithm_rdf);
+		(void)ldns_rdf2buffer_wire(data_buffer, 
+				canonical_algorithm_rdf);
 	}
 	(void)ldns_rdf2buffer_wire(data_buffer, time_signed_rdf);
 	(void)ldns_rdf2buffer_wire(data_buffer, fudge_rdf);
@@ -260,6 +266,7 @@ ldns_tsig_mac_new(ldns_rdf **tsig_mac, uint8_t *pkt_wire, size_t pkt_wire_size,
 	LDNS_FREE(key_bytes);
 	LDNS_FREE(algorithm_name);
 	ldns_buffer_free(data_buffer);
+	ldns_rdf_free(canonical_algorithm_rdf);
 	ldns_rdf_free(canonical_key_name_rdf);
 	return status;
 }
