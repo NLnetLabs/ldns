@@ -57,8 +57,8 @@ void ldns_dnssec_data_chain_deep_free(ldns_dnssec_data_chain *chain);
  */
 void ldns_dnssec_data_chain_print(FILE *out, const ldns_dnssec_data_chain *chain);
 void ldns_dnssec_data_chain_print_fmt(FILE *out, 
-		const ldns_dnssec_data_chain *chain, 
-		const ldns_output_format *fmt);
+		const ldns_output_format *fmt,
+		const ldns_dnssec_data_chain *chain);
 
 /**
  * Build an ldns_dnssec_data_chain, which contains all
@@ -166,10 +166,10 @@ void ldns_dnssec_trust_tree_print(FILE *out,
 		size_t tabs,
 		bool extended);
 void ldns_dnssec_trust_tree_print_fmt(FILE *out,
+		const ldns_output_format *fmt,
 	       	ldns_dnssec_trust_tree *tree,
 		size_t tabs,
-		bool extended,
-		const ldns_output_format *fmt);
+		bool extended);
 
 /**
  * Adds a trust tree as a parent for the given trust tree

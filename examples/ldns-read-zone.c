@@ -147,9 +147,9 @@ main(int argc, char **argv)
 		}
 
 		if (print_soa && ldns_zone_soa(z)) {
-			ldns_rr_print_fmt(stdout, ldns_zone_soa(z), fmt);
+			ldns_rr_print_fmt(stdout, fmt, ldns_zone_soa(z));
 		}
-		ldns_rr_list_print_fmt(stdout, ldns_zone_rrs(z), fmt);
+		ldns_rr_list_print_fmt(stdout, fmt, ldns_zone_rrs(z));
 
 		ldns_zone_deep_free(z);
 	} else {
