@@ -56,6 +56,14 @@ void ldns_dnssec_data_chain_deep_free(ldns_dnssec_data_chain *chain);
  * \param[in] *chain The dnssec_data_chain to print
  */
 void ldns_dnssec_data_chain_print(FILE *out, const ldns_dnssec_data_chain *chain);
+
+/**
+ * Prints the dnssec_data_chain to the given file stream
+ * 
+ * \param[in] *out The file stream to print to
+ * \param[in] *fmt The format of the textual representation
+ * \param[in] *chain The dnssec_data_chain to print
+ */
 void ldns_dnssec_data_chain_print_fmt(FILE *out, 
 		const ldns_output_format *fmt,
 		const ldns_dnssec_data_chain *chain);
@@ -165,6 +173,20 @@ void ldns_dnssec_trust_tree_print(FILE *out,
 	       	ldns_dnssec_trust_tree *tree,
 		size_t tabs,
 		bool extended);
+
+/**
+ * Prints the dnssec_trust_tree structure to the given file
+ * stream.
+ *
+ * If a link status is not LDNS_STATUS_OK; the status and
+ * relevant signatures are printed too
+ *
+ * \param[in] *out The file stream to print to
+ * \param[in] *fmt The format of the textual representation
+ * \param[in] tree The trust tree to print
+ * \param[in] tabs Prepend each line with tabs*2 spaces
+ * \param[in] extended If true, add little explanation lines to the output
+ */
 void ldns_dnssec_trust_tree_print_fmt(FILE *out,
 		const ldns_output_format *fmt,
 	       	ldns_dnssec_trust_tree *tree,

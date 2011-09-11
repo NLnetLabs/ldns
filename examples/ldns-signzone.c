@@ -50,6 +50,8 @@ usage(FILE *fp, const char *prog) {
 	fprintf(fp, "\t\t-t [number] number of hash iterations\n");
 	fprintf(fp, "\t\t-s [string] salt\n");
 	fprintf(fp, "\t\t-p set the opt-out flag on all nsec3 rrs\n");
+	fprintf(fp, "\t\t-u include the unhashed NSEC3 names as comments "
+			"in the zone\n");
 	fprintf(fp, "\n");
 	fprintf(fp, "  keys must be specified by their base name (usually K<name>+<alg>+<id>),\n");
 	fprintf(fp, "  i.e. WITHOUT the .private extension.\n");
@@ -376,6 +378,10 @@ main(int argc, char *argv[])
 	
 	char *prog = strdup(argv[0]);
 	ldns_status result;
+
+	ldns_output_format fmt = { ldns_output_format_default->flags, NULL };
+	ldns_rbtree_t **hashmap = NULL;
+
 	
 	inception = 0;
 	expiration = 0;
@@ -384,7 +390,7 @@ main(int argc, char *argv[])
 
 	OPENSSL_config(NULL);
 
-	while ((c = getopt(argc, argv, "a:de:f:i:k:lno:ps:t:vAE:K:")) != -1) {
+	while ((c = getopt(argc, argv, "a:de:f:i:k:lno:ps:t:uvAE:K:")) != -1) {
 		switch (c) {
 		case 'a':
 			nsec3_algorithm = (uint8_t) atoi(optarg);
@@ -588,6 +594,10 @@ main(int argc, char *argv[])
 			}
 			nsec3_iterations = (uint16_t) nsec3_iterations_cmd;
 			break;
+		case 'u':
+			fmt.flags |= LDNS_COMMENT_NSEC3_CHAIN;
+			hashmap = (ldns_rbtree_t **)&fmt.data;
+			break;
 		default:
 			usage(stderr, prog);
 			exit(EXIT_SUCCESS);
@@ -754,7 +764,7 @@ main(int argc, char *argv[])
 	added_rrs = ldns_rr_list_new();
 
 	if (use_nsec3) {
-		result = ldns_dnssec_zone_sign_nsec3_flg(signed_zone,
+		result = ldns_dnssec_zone_sign_nsec3_flg_mkmap(signed_zone,
 			added_rrs,
 			keys,
 			ldns_dnssec_default_replace_signatures,
@@ -764,7 +774,8 @@ main(int argc, char *argv[])
 			nsec3_iterations,
 			nsec3_salt_length,
 			nsec3_salt,
-			signflags);
+			signflags,
+			hashmap);
 	} else {
 		result = ldns_dnssec_zone_sign_flg(signed_zone,
 				added_rrs,
@@ -792,7 +803,8 @@ main(int argc, char *argv[])
 				fprintf(stderr, "Unable to open %s for writing: %s\n",
 					   outputfile_name, strerror(errno));
 			} else {
-				ldns_dnssec_zone_print(outputfile, signed_zone);
+				ldns_dnssec_zone_print_fmt(
+						outputfile, &fmt, signed_zone);
 				fclose(outputfile);
 			}
 		}

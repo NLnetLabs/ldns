@@ -39,27 +39,66 @@ extern "C" {
 #define LDNS_APL_MASK           0x7f
 #define LDNS_APL_NEGATION       0x80
 
+/** 
+ * Represent a NULL pointer (in stead of a pointer to a ldns_rr as "; (null)" 
+ * as opposed to outputting nothing at all in such a case.
+ */
 #define LDNS_COMMENT_NULLS		0x01
+/** Show key id with DNSKEY RR's as comment */
 #define LDNS_COMMENT_KEY_ID		0x02
+/** Show if a DNSKEY is a ZSK or KSK as comment */
 #define LDNS_COMMENT_KEY_TYPE		0x04
+/** Show DNSKEY key size as comment */
 #define LDNS_COMMENT_KEY_SIZE		0x08
+/** Show key id, type and size as comment for DNSKEY RR's */
 #define LDNS_COMMENT_KEY		(LDNS_COMMENT_KEY_ID  \
 					|LDNS_COMMENT_KEY_TYPE\
 					|LDNS_COMMENT_KEY_SIZE)
+/** Provide bubblebabble representation for DS RR's as comment */
 #define LDNS_COMMENT_BUBBLEBABBLE	0x10
+/** Show when a NSEC3 RR has the optout flag set as comment */
 #define LDNS_COMMENT_FLAGS		0x20
+/** Show the unhashed owner and next owner names for NSEC3 RR's as comment */
 #define LDNS_COMMENT_NSEC3_CHAIN	0x40
 
+/**
+ * Output format specifier
+ *
+ * Determines how Packets, Resource Records and Resource record data fiels are
+ * formatted when printing or converting to string.
+ * Currently it is only used to specify what aspects of a Resource Record are
+ * annotated in the comment section of the textual representation the record.
+ * This is speciefed with flags and potential exra data (such as for example
+ * a lookup map of hashes to real names for annotation NSEC3 records).
+ */
 struct ldns_struct_output_format
 {
+	/** Specification of how RR's should be formatted in text */
 	int   flags;
+	/** Potential extra data to be used with formatting RR's in text */
 	void *data;
 };
 typedef struct ldns_struct_output_format ldns_output_format;
 
-extern const ldns_output_format *ldns_output_format_nocomments;   
-extern const ldns_output_format *ldns_output_format_onlykeyids;   /* default */
+/**
+ * Standard output format record that disables commenting in the textual 
+ * representation of Resource Records completely.
+ */
+extern const ldns_output_format *ldns_output_format_nocomments;
+/**
+ * Standard output format record that annotated only DNSKEY RR's with commenti
+ * text.
+ */
+extern const ldns_output_format *ldns_output_format_onlykeyids;
+/**
+ * The default output format record. Same as ldns_output_format_onlykeyids.
+ */
 extern const ldns_output_format *ldns_output_format_default;
+/**
+ * Standard output format record that shows all DNSKEY related information in
+ * the comment text, plus the optout flag when set with NSEC3's, plus the
+ * bubblebabble representation of DS RR's.
+ */
 extern const ldns_output_format *ldns_output_format_bubblebabble;
 
 /**
@@ -376,14 +415,27 @@ ldns_status ldns_rdf2buffer_str(ldns_buffer *output, const ldns_rdf *rdf);
 /**
  * Converts the data in the resource record to presentation
  * format (as char *) and appends it to the given buffer.
- * The presentation format is annotated with comments giving
- * additional information on the record.
+ * The presentation format of DNSKEY record is annotated with comments giving
+ * the id, type and size of the key.
  *
  * \param[in] output pointer to the buffer to append the data to
  * \param[in] rr the pointer to the rr field to convert
  * \return status
  */
 ldns_status ldns_rr2buffer_str(ldns_buffer *output, const ldns_rr *rr);
+
+/**
+ * Converts the data in the resource record to presentation
+ * format (as char *) and appends it to the given buffer.
+ * The presentation format is annotated with comments giving
+ * additional information on the record.
+ *
+ * \param[in] output pointer to the buffer to append the data to
+ * \param[in] fmt how to format the textual representation of the 
+ *            resource record.
+ * \param[in] rr the pointer to the rr field to convert
+ * \return status
+ */
 ldns_status ldns_rr2buffer_str_fmt(ldns_buffer *output, 
 		const ldns_output_format *fmt, const ldns_rr *rr);
 
@@ -396,6 +448,16 @@ ldns_status ldns_rr2buffer_str_fmt(ldns_buffer *output,
  * \return status
  */
 ldns_status ldns_pkt2buffer_str(ldns_buffer *output, const ldns_pkt *pkt);
+
+/**
+ * Converts the data in the DNS packet to presentation
+ * format (as char *) and appends it to the given buffer
+ *
+ * \param[in] output pointer to the buffer to append the data to
+ * \param[in] fmt how to format the textual representation of the packet
+ * \param[in] pkt the pointer to the packet to convert
+ * \return status
+ */
 ldns_status ldns_pkt2buffer_str_fmt(ldns_buffer *output,
 		const ldns_output_format *fmt, const ldns_pkt *pkt);
 
@@ -469,6 +531,16 @@ char *ldns_rdf2str(const ldns_rdf *rdf);
  * \return null terminated char * data, or NULL on error
  */
 char *ldns_rr2str(const ldns_rr *rr);
+
+/**
+ * Converts the data in the resource record to presentation format and
+ * returns that as a char *.
+ * Remember to free it.
+ *
+ * \param[in] fmt how to format the resource record
+ * \param[in] rr The rdata field to convert
+ * \return null terminated char * data, or NULL on error
+ */
 char *ldns_rr2str_fmt(const ldns_output_format *fmt, const ldns_rr *rr);
 
 /**
@@ -480,6 +552,16 @@ char *ldns_rr2str_fmt(const ldns_output_format *fmt, const ldns_rr *rr);
  * \return null terminated char * data, or NULL on error
  */
 char *ldns_pkt2str(const ldns_pkt *pkt);
+
+/**
+ * Converts the data in the DNS packet to presentation format and
+ * returns that as a char *.
+ * Remember to free it.
+ *
+ * \param[in] fmt how to format the packet
+ * \param[in] pkt The rdata field to convert
+ * \return null terminated char * data, or NULL on error
+ */
 char *ldns_pkt2str_fmt(const ldns_output_format *fmt, const ldns_pkt *pkt);
 
 /**
@@ -501,6 +583,16 @@ char *ldns_key2str(const ldns_key *k);
  * \return null terminated char * data, or NULL on error
  */
 char *ldns_rr_list2str(const ldns_rr_list *rr_list);
+
+/**
+ * Converts a list of resource records to presentation format
+ * and returns that as a char *.
+ * Remember to free it.
+ *
+ * \param[in] fmt how to format the list of resource records
+ * \param[in] rr_list the rr_list to convert to text
+ * \return null terminated char * data, or NULL on error
+ */
 char *ldns_rr_list2str_fmt(
 		const ldns_output_format *fmt, const ldns_rr_list *rr_list);
 
@@ -532,6 +624,16 @@ void ldns_rdf_print(FILE *output, const ldns_rdf *rdf);
  * \return void
  */
 void ldns_rr_print(FILE *output, const ldns_rr *rr);
+
+/**
+ * Prints the data in the resource record to the given file stream
+ * (in presentation format)
+ *
+ * \param[in] output the file stream to print to
+ * \param[in] fmt format of the textual representation
+ * \param[in] rr the resource record to print
+ * \return void
+ */
 void ldns_rr_print_fmt(FILE *output, 
 		const ldns_output_format *fmt, const ldns_rr *rr);
 
@@ -544,6 +646,16 @@ void ldns_rr_print_fmt(FILE *output,
  * \return void
  */
 void ldns_pkt_print(FILE *output, const ldns_pkt *pkt);
+
+/**
+ * Prints the data in the DNS packet to the given file stream
+ * (in presentation format)
+ *
+ * \param[in] output the file stream to print to
+ * \param[in] fmt format of the textual representation
+ * \param[in] pkt the packet to print
+ * \return void
+ */
 void ldns_pkt_print_fmt(FILE *output, 
 		const ldns_output_format *fmt, const ldns_pkt *pkt);
 
@@ -555,6 +667,15 @@ void ldns_pkt_print_fmt(FILE *output,
  * \return ldns_status
  */
 ldns_status ldns_rr_list2buffer_str(ldns_buffer *output, const ldns_rr_list *list);
+
+/**
+ * Converts a rr_list to presentation format and appends it to
+ * the output buffer
+ * \param[in] output the buffer to append output to
+ * \param[in] fmt format of the textual representation
+ * \param[in] list the ldns_rr_list to print
+ * \return ldns_status
+ */
 ldns_status ldns_rr_list2buffer_str_fmt(ldns_buffer *output, 
 		const ldns_output_format *fmt, const ldns_rr_list *list);
 
@@ -569,10 +690,17 @@ ldns_status ldns_pktheader2buffer_str(ldns_buffer *output, const ldns_pkt *pkt);
 
 /**
  * print a rr_list to output
- * param[in] output the fd to print to
- * param[in] list the rr_list to print
+ * \param[in] output the fd to print to
+ * \param[in] list the rr_list to print
  */
 void ldns_rr_list_print(FILE *output, const ldns_rr_list *list);
+
+/**
+ * print a rr_list to output
+ * \param[in] output the fd to print to
+ * \param[in] fmt format of the textual representation
+ * \param[in] list the rr_list to print
+ */
 void ldns_rr_list_print_fmt(FILE *output, 
 		const ldns_output_format *fmt, const ldns_rr_list *list);
 
@@ -583,6 +711,14 @@ void ldns_rr_list_print_fmt(FILE *output,
  * \param[in] r the resolver to print
  */
 void ldns_resolver_print(FILE *output, const ldns_resolver *r);
+
+/**
+ * Print a resolver (in sofar that is possible) state
+ * to output.
+ * \param[in] output the fd to print to
+ * \param[in] fmt format of the textual representation
+ * \param[in] r the resolver to print
+ */
 void ldns_resolver_print_fmt(FILE *output, 
 		const ldns_output_format *fmt, const ldns_resolver *r);
 
@@ -593,6 +729,14 @@ void ldns_resolver_print_fmt(FILE *output,
  * \param[in] z the zone to print
  */
 void ldns_zone_print(FILE *output, const ldns_zone *z);
+
+/**
+ * Print a zone structure * to output. Note the SOA record
+ * is included in this output
+ * \param[in] output the fd to print to
+ * \param[in] fmt format of the textual representation
+ * \param[in] z the zone to print
+ */
 void ldns_zone_print_fmt(FILE *output, 
 		const ldns_output_format *fmt, const ldns_zone *z);
 

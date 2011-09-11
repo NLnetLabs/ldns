@@ -155,6 +155,7 @@ ldns_dnssec_zone_sign
 ldns_dnssec_zone_sign_flg
 ldns_dnssec_zone_sign_nsec3
 ldns_dnssec_zone_sign_nsec3_flg
+ldns_dnssec_zone_sign_nsec3_flg_mkmap
 ldns_ecdsa2pkey_raw
 ldns_edns_flags
 ldns_error_str
@@ -311,6 +312,7 @@ ldns_pkt_nscount
 ldns_pkt_opcode2buffer_str
 ldns_pkt_opcode2str
 ldns_pkt_print
+ldns_pkt_print_fmt
 ldns_pkt_push_rr
 ldns_pkt_push_rr_list
 ldns_pkt_qdcount
@@ -473,6 +475,7 @@ ldns_resolver_pop_nameserver
 ldns_resolver_port
 ldns_resolver_prepare_query_pkt
 ldns_resolver_print
+ldns_resolver_print_fmt
 ldns_resolver_push_dnssec_anchor
 ldns_resolver_push_nameserver
 ldns_resolver_push_nameserver_rr
@@ -577,6 +580,7 @@ ldns_rr_list_pop_rr
 ldns_rr_list_pop_rr_list
 ldns_rr_list_pop_rrset
 ldns_rr_list_print
+ldns_rr_list_print_fmt
 ldns_rr_list_push_rr
 ldns_rr_list_push_rr_list
 ldns_rr_list_rr
@@ -599,6 +603,7 @@ ldns_rr_ns_nsdname
 ldns_rr_owner
 ldns_rr_pop_rdf
 ldns_rr_print
+ldns_rr_print_fmt
 ldns_rr_push_rdf
 ldns_rr_rdata2buffer_wire
 ldns_rr_rd_count
@@ -739,6 +744,7 @@ ldns_zone_new
 ldns_zone_new_frm_fp
 ldns_zone_new_frm_fp_l
 ldns_zone_print
+ldns_zone_print_fmt
 ldns_zone_push_rr
 ldns_zone_push_rr_list
 ldns_zone_rr_count

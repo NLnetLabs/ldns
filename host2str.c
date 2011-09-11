@@ -1155,6 +1155,30 @@ ldns_rdf2buffer_str(ldns_buffer *buffer, const ldns_rdf *rdf)
 	return res;
 }
 
+ldns_rdf *
+ldns_b32_ext2dname(const ldns_rdf *rdf)
+{
+	size_t size;
+	char *b32;
+	ldns_rdf *out;
+	if(ldns_rdf_size(rdf) == 0)
+		return NULL;
+        /* remove -1 for the b32-hash-len octet */
+	size = ldns_b32_ntop_calculate_size(ldns_rdf_size(rdf) - 1);
+        /* add one for the end nul for the string */
+	b32 = LDNS_XMALLOC(char, size + 2);
+	if (b32 && ldns_b32_ntop_extended_hex(ldns_rdf_data(rdf) + 1, 
+				ldns_rdf_size(rdf) - 1, b32, size+1) > 0) {
+		b32[size] = '.';
+		b32[size+1] = '\0';
+		if (ldns_str2rdf_dname(&out, b32) == LDNS_STATUS_OK) {
+			LDNS_FREE(b32);
+			return out;
+		}
+		LDNS_FREE(b32);
+	}
+	return NULL;
+}
 
 ldns_status
 ldns_rr2buffer_str_fmt(ldns_buffer *output, 
@@ -1275,8 +1299,53 @@ ldns_rr2buffer_str_fmt(ldns_buffer *output,
 			case LDNS_RR_TYPE_NSEC3:
 				if ((fmt->flags & LDNS_COMMENT_FLAGS)
 						&& ldns_nsec3_optout(rr)) {
-					ldns_buffer_printf(output, " ; flags: optout");
+					ldns_buffer_printf(output,
+							" ; flags: optout");
+				} else if (fmt->flags 
+						& LDNS_COMMENT_NSEC3_CHAIN) {
+					ldns_buffer_printf(output, " ;");
 				}
+				if (fmt->flags & LDNS_COMMENT_NSEC3_CHAIN
+						&& fmt->data != NULL) {
+					ldns_rbnode_t *node;
+					ldns_rdf *key = ldns_dname_label(
+							ldns_rr_owner(rr), 0);
+					if (key) {
+				       		node = ldns_rbtree_search(
+							(ldns_rbtree_t *)
+								fmt->data,
+							(void *) key);
+						if (node->data) {
+							ldns_buffer_printf(
+								output,
+							       	" from: ");
+							ldns_rdf2buffer_str(
+								output, 
+								(ldns_rdf *)
+								node->data);
+						}
+						ldns_rdf_free(key);
+					}
+					key = ldns_b32_ext2dname(
+						ldns_nsec3_next_owner(rr));
+					if (key) {
+						node = ldns_rbtree_search(
+							(ldns_rbtree_t *)
+								fmt->data,
+							(void *) key);
+						if (node->data) {
+							ldns_buffer_printf(
+								output,
+								" to: ");
+							ldns_rdf2buffer_str(
+								output, 
+								(ldns_rdf *)
+								node->data);
+						}
+						ldns_rdf_free(key);
+					}
+				}
+
 				break;
 			default:
 				break;
