@@ -1319,6 +1319,7 @@ ldns_rr2buffer_str_fmt(ldns_buffer *output,
 							ldns_buffer_printf(
 								output,
 							       	" from: ");
+							(void)
 							ldns_rdf2buffer_str(
 								output, 
 								(ldns_rdf *)
@@ -1337,6 +1338,7 @@ ldns_rr2buffer_str_fmt(ldns_buffer *output,
 							ldns_buffer_printf(
 								output,
 								" to: ");
+							(void)
 							ldns_rdf2buffer_str(
 								output, 
 								(ldns_rdf *)

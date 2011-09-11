@@ -847,7 +847,8 @@ ldns_dnssec_zone_create_nsec3s_mkmap(ldns_dnssec_zone *zone,
 					ldns_rr_owner(nsec_rr), 0);
 				if (hashmap_node->key) {
 					hashmap_node->data = current_name->name;
-					ldns_rbtree_insert(*map, hashmap_node);
+					(void) ldns_rbtree_insert(
+							*map, hashmap_node);
 				}
 			}
 		}
