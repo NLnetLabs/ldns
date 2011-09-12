@@ -31,6 +31,7 @@
  */
 
 %module ldns
+#pragma SWIG nowarn=454
 %{
 
 #include "ldns.h"

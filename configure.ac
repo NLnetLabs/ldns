@@ -90,9 +90,10 @@ AC_ARG_WITH(pyldns, AC_HELP_STRING([--with-pyldns],
  [],[ withval="no" ])
 ldns_have_python=no
 if test x_$withval != x_no; then
-   sinclude(acx_python.m4)
+   sinclude(ax_python_devel.m4)
    ac_save_LIBS="$LIBS" dnl otherwise AC_PYTHON_DEVEL thrashes $LIBS
-   AC_PYTHON_DEVEL
+
+   AX_PYTHON_DEVEL
    if test ! -z "$PYTHON_VERSION"; then
         if test `$PYTHON -c "import sys; \
             ver = sys.version.split()[[0]]; \
