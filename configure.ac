@@ -97,33 +97,42 @@ if test x_$withval != x_no; then
         if test `$PYTHON -c "import sys; \
             ver = sys.version.split()[[0]]; \
             print(ver >= '2.4.0')"` = "False"; then
-                AC_ERROR([Python version >= 2.4.0 is required])
+                AC_MSG_ERROR([Python version >= 2.4.0 is required])
         fi
 	# Have Python
 	AC_DEFINE(HAVE_PYTHON,1,[Define if you have Python libraries and header files.])
 	ldns_have_python=yes
    fi
 
-   # pass additional Python 3 option to swig
+   # pass additional Python 3 option to SWIG
    if test `$PYTHON -c "import sys; \
        ver = sys.version.split()[[0]]; \
-       print(ver >= '3.0.0')"` = "True"; then
+       print(ver >= '3')"` = "True"; then
        AC_SUBST(SWIGPY3, ["-py3 -DPY3"])
    fi
 
-   # check for swig
+   # check for SWIG
    if test x_$ldns_have_python != x_no; then
-	sinclude(ac_pkg_swig.m4)
-	AC_PROG_SWIG
+        sinclude(ax_pkg_swig.m4)
+
+        # check for >=SWIG-2.0.4 if Python 3.2 used
+        if test `$PYTHON -c "import sys; \
+            ver = sys.version.split()[[0]]; \
+            print(ver >= '3.2')"` = "True"; then
+            AX_PKG_SWIG(2.0.4, [], [AC_MSG_ERROR([SWIG-2.0.4 is required to build pyldns for Python 3.2 and greater.])])
+        else
+            AX_PKG_SWIG
+        fi
+
 	if test ! -x "$SWIG"; then
-		AC_ERROR([failed to find swig tool, install it, or do not build pyldns])
+		AC_MSG_ERROR([failed to find SWIG tool, install it, or do not build pyldns])
 	else
-		AC_DEFINE(HAVE_SWIG,1,[Define if you have Swig libraries and header files.])
+		AC_DEFINE(HAVE_SWIG,1,[Define if you have SWIG libraries and header files.])
 		AC_SUBST(PYLDNS, "pyldns")
 		AC_SUBST(swig, "$SWIG")
 	fi
    else
-	AC_MSG_RESULT([*** don't have Python, skipping Swig, no pyldns ***]) # '
+	AC_MSG_RESULT([*** don't have Python, skipping SWIG, no pyldns ***]) # '
    fi
 
    # xtra cflags for pyldns
