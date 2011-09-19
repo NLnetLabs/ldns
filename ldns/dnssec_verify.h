@@ -224,8 +224,7 @@ ldns_dnssec_trust_tree *ldns_dnssec_derive_trust_tree(
 					   ldns_rr *rr);
 
 /**
- * Sub function for derive_trust_tree that is used for a
- * 'normal' rrset
+ * Sub function for derive_trust_tree that is used for a 'normal' rrset
  *
  * \param[in] new_tree The trust tree that we are building
  * \param[in] data_chain The data chain containing the data for the trust tree

@@ -93,15 +93,8 @@ if test x_$withval != x_no; then
    sinclude(ax_python_devel.m4)
    ac_save_LIBS="$LIBS" dnl otherwise AC_PYTHON_DEVEL thrashes $LIBS
 
-   AX_PYTHON_DEVEL
-   if test ! -z "$PYTHON_VERSION"; then
-        if test `$PYTHON -c "import sys; \
-            ver = sys.version.split()[[0]]; \
-            print(ver >= '2.4.0')"` = "False"; then
-                AC_MSG_ERROR([Python version >= 2.4.0 is required])
-        fi
-	# Have Python
-	AC_DEFINE(HAVE_PYTHON,1,[Define if you have Python libraries and header files.])
+   AX_PYTHON_DEVEL([>= '2.4.0'])
+   if test ! -z "$ac_python_version"; then
 	ldns_have_python=yes
    fi
 
@@ -139,6 +132,9 @@ if test x_$withval != x_no; then
    # xtra cflags for pyldns
    if test x_$ldns_have_python != x_no; then
 	ACX_CHECK_COMPILER_FLAG(fno-strict-aliasing, [PYTHON_X_CFLAGS="-fno-strict-aliasing"])
+	ACX_CHECK_COMPILER_FLAG(Wno-missing-field-initializers, [PYTHON_X_CFLAGS="-Wno-missing-field-initializers $PYTHON_X_CFLAGS"])
+	ACX_CHECK_COMPILER_FLAG(Wno-unused-parameter, [PYTHON_X_CFLAGS="-Wno-unused-parameter $PYTHON_X_CFLAGS"])
+	ACX_CHECK_COMPILER_FLAG(Wno-unused-variable, [PYTHON_X_CFLAGS="-Wno-unused-variable $PYTHON_X_CFLAGS"])
    fi
 fi
 AC_SUBST(PYTHON_X_CFLAGS)
