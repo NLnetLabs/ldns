@@ -85,6 +85,7 @@ AC_SEARCH_LIBS([inet_pton], [nsl])
 
 # check for python
 PYTHON_X_CFLAGS=""
+ldns_with_pyldns=no
 AC_ARG_WITH(pyldns, AC_HELP_STRING([--with-pyldns], 
  [generate python library, or --without-pyldns to disable Python support.]), 
  [],[ withval="no" ])
@@ -124,6 +125,7 @@ if test x_$withval != x_no; then
 		AC_DEFINE(HAVE_SWIG,1,[Define if you have SWIG libraries and header files.])
 		AC_SUBST(PYLDNS, "pyldns")
 		AC_SUBST(swig, "$SWIG")
+		ldns_with_pyldns=yes
 	fi
    else
 	AC_MSG_RESULT([*** don't have Python, skipping SWIG, no pyldns ***]) # '
@@ -138,6 +140,25 @@ if test x_$withval != x_no; then
    fi
 fi
 AC_SUBST(PYTHON_X_CFLAGS)
+
+# Check for pyldnsx
+AC_ARG_WITH(pyldnsx, AC_HELP_STRING([--without-pyldnsx], 
+  [Do not install the ldnsx python module, or --with-pyldnsx to install it.]), 
+  [],[ withval="with_pyldns" ])
+if test x_$withval != x_no; then
+  if test x_$ldns_with_pyldns != x_no; then
+    # The python ipcalc module is needed for pyldnsx, but it is not
+    # a build dependency
+    #
+    #sinclude(ax_python_module.m4)
+    #AX_PYTHON_MODULE(ipcalc)
+    AC_SUBST(PYLDNSX, "pyldnsx")
+  else
+    if test x_$withval != x_with_pyldns; then
+      AC_MSG_ERROR([--with-pyldns is needed for the ldnsx python module])
+    fi
+  fi
+fi
 
 # Use libtool
 ACX_LIBTOOL_C_ONLY

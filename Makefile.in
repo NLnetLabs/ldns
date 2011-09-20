@@ -15,6 +15,7 @@ libdir		= @libdir@
 includedir	= @includedir@
 doxygen		= @doxygen@
 pywrapdir       = ${srcdir}/contrib/python
+pyldnsxwrapdir  = ${srcdir}/contrib/ldnsx
 swig		= @swig@
 swigpy_flags	= -python @SWIGPY3@
 python_site	=@PYTHON_SITE_PKG@
@@ -26,6 +27,15 @@ ifeq "$(pyldns_inst)" "pyldns"
 else
    pyldns_inst=
    pyldns_uninst=
+endif
+pyldnsx_inst	=@PYLDNSX@
+pyldnsx_uninst	=@PYLDNSX@
+ifeq "$(pyldnsx_inst)" "pyldnsx"
+   pyldnsx_inst=install-@PYLDNSX@
+   pyldnsx_uninst=uninstall-@PYLDNSX@
+else
+   pyldnsx_inst=
+   pyldnsx_uninst=
 endif
 glibtool	= @libtool@
 libtool		= ./libtool
@@ -181,9 +191,9 @@ ldns_wrapper.lo:	$(pywrapdir)/ldns_wrapper.c $(LIBDNS_HEADERS) ldns/common.h ldn
 _ldns.la: ldns_wrapper.lo libldns.la 
 	$(LIBTOOL) --tag=CC --mode=link $(CC) $(strip $(CFLAGS) $(PYTHON_CFLAGS) $(LDFLAGS) $(PYTHON_LDFLAGS) -module -version-number $(version_info) -no-undefined -o $@ $< -rpath $(python_site) -L. -L.libs -lldns $(LIBS))
 
-install:	install-h install-lib install-config install-manpages $(pyldns_inst)
+install:	install-h install-lib install-config install-manpages $(pyldns_inst) $(pyldnsx_inst)
 
-uninstall:	uninstall-manpages uninstall-config uninstall-h uninstall-lib $(pyldns_uninst)
+uninstall:	uninstall-manpages uninstall-config uninstall-h uninstall-lib $(pyldns_uninst) $(pyldnsx_uninst)
 
 destclean:	uninstall
 
@@ -245,6 +255,12 @@ install-pyldns: @PYLDNS@
 uninstall-pyldns:	
 		rm -f $(DESTDIR)$(python_site)/ldns/*
 		rmdir -p $(DESTDIR)$(python_site)/ldns
+
+install-pyldnsx:
+		$(INSTALL) -c -m 644 $(pyldnsxwrapdir)/ldnsx.py $(DESTDIR)$(python_site)/ldnsx.py
+
+uninstall-pyldnsx:
+		rm -f $(DESTDIR)$(python_site)/ldnsx.py
 
 clean:
 	rm -f *.o *.d *.lo
