@@ -150,8 +150,8 @@ create_dnssec_zone(ldns_zone *orig_zone)
 static ldns_status
 verify_dnssec_rrset(
 		ldns_rdf *zone_name, 
-		ldns_rdf *name, i
-		ldns_dnssec_rrsets *rrset, i
+		ldns_rdf *name,
+		ldns_dnssec_rrsets *rrset,
 		ldns_rr_list *keys) 
 {
 	ldns_rr_list *rrset_rrs;
