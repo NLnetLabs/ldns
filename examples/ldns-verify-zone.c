@@ -90,11 +90,11 @@ create_dnssec_zone(ldns_zone *orig_zone)
 	ldns_rr_list *failed_nsec3_rrsigs = ldns_rr_list_new();
 
 	dnssec_zone = ldns_dnssec_zone_new();
-    	if (ldns_dnssec_zone_add_rr(dnssec_zone, ldns_zone_soa(orig_zone)) !=
-	    LDNS_STATUS_OK) {
+    	if (ldns_dnssec_zone_add_rr(dnssec_zone, ldns_zone_soa(orig_zone))
+		       	!= LDNS_STATUS_OK) {
 		if (verbosity > 0) {
-			fprintf(stderr,
-				   "Error adding SOA to dnssec zone, skipping record\n");
+			fprintf(stderr, "Error adding SOA to dnssec zone, "
+					"skipping record\n");
 		}
 	}
 
@@ -102,7 +102,8 @@ create_dnssec_zone(ldns_zone *orig_zone)
 		cur_rr = ldns_rr_list_rr(ldns_zone_rrs(orig_zone), i);
 		status = ldns_dnssec_zone_add_rr(dnssec_zone, cur_rr);
 		if (status != LDNS_STATUS_OK) {
-			if (status == LDNS_STATUS_DNSSEC_NSEC3_ORIGINAL_NOT_FOUND) {
+			if (LDNS_STATUS_DNSSEC_NSEC3_ORIGINAL_NOT_FOUND
+					== status) {
 				if (ldns_rr_get_type(cur_rr)
 					    == LDNS_RR_TYPE_RRSIG
 					    && ldns_rdf2rr_type(
@@ -119,8 +120,9 @@ create_dnssec_zone(ldns_zone *orig_zone)
 				}
 			} else {
 				if (verbosity > 0) {
-					fprintf(stderr, "Error adding RR to dnssec zone");
-					fprintf(stderr, ", skipping record:\n");
+					fprintf(stderr, "Error adding RR to "
+							"dnssec zone"
+							", skipping record:\n");
 					ldns_rr_print(stderr, cur_rr);
 				}
 			}
@@ -146,10 +148,11 @@ create_dnssec_zone(ldns_zone *orig_zone)
 }
 
 static ldns_status
-verify_dnssec_rrset(ldns_rdf *zone_name,
-					ldns_rdf *name,
-                    ldns_dnssec_rrsets *rrset,
-                    ldns_rr_list *keys)
+verify_dnssec_rrset(
+		ldns_rdf *zone_name, 
+		ldns_rdf *name, i
+		ldns_dnssec_rrsets *rrset, i
+		ldns_rr_list *keys) 
 {
 	ldns_rr_list *rrset_rrs;
 	ldns_dnssec_rrs *cur_rr, *cur_sig;
@@ -169,17 +172,16 @@ verify_dnssec_rrset(ldns_rdf *zone_name,
 	if (cur_sig) {
 		while (cur_sig) {
 			good_keys = ldns_rr_list_new();
-			status = ldns_verify_rrsig_keylist(rrset_rrs,
-										cur_sig->rr,
-										keys,
-										good_keys);
+			status = ldns_verify_rrsig_keylist(rrset_rrs, 
+					cur_sig->rr, keys, good_keys);
 			if (status != LDNS_STATUS_OK) {
 				if (verbosity > 0) {
 					printf("Error: %s",
-						  ldns_get_errorstr_by_id(status));
+						ldns_get_errorstr_by_id(
+							status));
 					printf(" for ");
 					ldns_rdf_print(stdout,
-								ldns_rr_owner(rrset->rrs->rr));
+						ldns_rr_owner(rrset->rrs->rr));
 					printf("\t");
 					print_type(rrset->type);
 					printf("\n");
@@ -192,9 +194,11 @@ verify_dnssec_rrset(ldns_rdf *zone_name,
 					}
 					if (verbosity >= 4) {
 						printf("RRSet:\n");
-						ldns_dnssec_rrs_print(stdout, rrset->rrs);
+						ldns_dnssec_rrs_print(stdout,
+								rrset->rrs);
 						printf("Signature:\n");
-						ldns_rr_print(stdout, cur_sig->rr);
+						ldns_rr_print(stdout,
+								cur_sig->rr);
 						printf("\n");
 					}
 				}
@@ -209,7 +213,8 @@ verify_dnssec_rrset(ldns_rdf *zone_name,
 			ldns_dname_compare(name, zone_name) == 0) {
 			if (verbosity > 0) {
 				printf("Error: no signatures for ");
-				ldns_rdf_print(stdout, ldns_rr_owner(rrset->rrs->rr));
+				ldns_rdf_print(stdout, 
+						ldns_rr_owner(rrset->rrs->rr));
 				printf("\t");
 				print_type(rrset->type);
 				printf("\n");
@@ -221,9 +226,10 @@ verify_dnssec_rrset(ldns_rdf *zone_name,
 }
 
 static ldns_status
-verify_single_rr(ldns_rr *rr,
-			  ldns_dnssec_rrs *signature_rrs,
-			  ldns_rr_list *keys)
+verify_single_rr(
+		ldns_rr *rr, 
+		ldns_dnssec_rrs *signature_rrs, 
+		ldns_rr_list *keys)
 {
 	ldns_rr_list *rrset_rrs;
 	ldns_rr_list *good_keys;
@@ -237,13 +243,12 @@ verify_single_rr(ldns_rr *rr,
 	cur_sig = signature_rrs;
 	while (cur_sig) {
 		good_keys = ldns_rr_list_new();
-		status = ldns_verify_rrsig_keylist(rrset_rrs,
-									cur_sig->rr,
-									keys,
-									good_keys);
+		status = ldns_verify_rrsig_keylist(
+				rrset_rrs, cur_sig->rr, keys, good_keys);
 		if (status != LDNS_STATUS_OK) {
 			if (verbosity >= 1) {
-				printf("Error: %s ", ldns_get_errorstr_by_id(status));
+				printf("Error: %s ", 
+					ldns_get_errorstr_by_id(status));
 				if (result == LDNS_STATUS_OK) {
 					result = status;
 				}
@@ -276,8 +281,7 @@ verify_single_rr(ldns_rr *rr,
 }
 
 static ldns_status
-verify_next_hashed_name(ldns_rbtree_t *zone_nodes,
-                        ldns_dnssec_name *name)
+verify_next_hashed_name(ldns_rbtree_t *zone_nodes, ldns_dnssec_name *name)
 {
 	ldns_rbnode_t *next_node;
 	ldns_dnssec_name *next_name;
@@ -288,8 +292,8 @@ verify_next_hashed_name(ldns_rbtree_t *zone_nodes,
 	ldns_rdf *next_owner_dname;
 
 	if (!name->hashed_name) {
-		name->hashed_name = ldns_nsec3_hash_name_frm_nsec3(name->nsec,
-		                                                   name->name);
+		name->hashed_name = ldns_nsec3_hash_name_frm_nsec3(
+				name->nsec, name->name);
 	}
 	next_node = ldns_rbtree_first(zone_nodes);
 	while (next_node != LDNS_RBTREE_NULL) {
@@ -303,21 +307,21 @@ verify_next_hashed_name(ldns_rbtree_t *zone_nodes,
 		}
 		if (!next_name->hashed_name) {
 			next_name->hashed_name = ldns_nsec3_hash_name_frm_nsec3(
-			                              name->nsec, next_name->name);
+					name->nsec, next_name->name);
 		}
 		/* we keep track of what 'so far' is the next hashed name;
 		 * it must of course be 'larger' than the current name
 		 * if we find one that is larger, but smaller than what we
 		 * previously thought was the next one, that one is the next
 		 */
-		cmp = ldns_dname_compare(name->hashed_name,
-		                         next_name->hashed_name);
+		cmp = ldns_dname_compare(
+				name->hashed_name, next_name->hashed_name);
 		if (cmp < 0) {
 			if (!cur_next_name) {
 				cur_next_name = next_name;
 			} else {
 				cmp = ldns_dname_compare(next_name->hashed_name,
-				                         cur_next_name->hashed_name);
+						cur_next_name->hashed_name);
 				if (cmp < 0) {
 					cur_next_name = next_name;
 				}
@@ -329,8 +333,8 @@ verify_next_hashed_name(ldns_rbtree_t *zone_nodes,
 			cur_first_name = next_name;
 		} else {
 			cmp = ldns_dname_compare(next_name->hashed_name,
-									 cur_first_name->hashed_name);
-			if (cmp < 0) {
+					cur_first_name->hashed_name);
+		       	if (cmp < 0) {
 				cur_first_name = next_name;
 			}
 		}
@@ -362,9 +366,10 @@ verify_next_hashed_name(ldns_rbtree_t *zone_nodes,
 }
 
 static ldns_status
-verify_nsec(ldns_rbtree_t *zone_nodes,
-            ldns_rbnode_t *cur_node,
-            ldns_rr_list *keys)
+verify_nsec(
+		ldns_rbtree_t *zone_nodes, 
+		ldns_rbnode_t *cur_node, 
+		ldns_rr_list *keys)
 {
 	ldns_rbnode_t *next_node;
 	ldns_dnssec_name *name, *next_name;
@@ -375,8 +380,7 @@ verify_nsec(ldns_rbtree_t *zone_nodes,
 	if (name->nsec) {
 		if (name->nsec_signatures) {
 			status = verify_single_rr(name->nsec,
-								 name->nsec_signatures,
-								 keys);
+					name->nsec_signatures, keys);
 			if (result == LDNS_STATUS_OK) {
 				result = status;
 			}
@@ -396,21 +400,29 @@ verify_nsec(ldns_rbtree_t *zone_nodes,
 				/* simply try next name */
 				next_node = ldns_rbtree_next(cur_node);
 				if (next_node == LDNS_RBTREE_NULL) {
-					next_node = ldns_rbtree_first(zone_nodes);
+					next_node = ldns_rbtree_first(
+							zone_nodes);
 				}
-				next_node = ldns_dnssec_name_node_next_nonglue(next_node);
+				next_node = ldns_dnssec_name_node_next_nonglue(
+						next_node);
 				next_name = (ldns_dnssec_name *)next_node->data;
-				if (ldns_dname_compare(next_name->name,
-									   ldns_rr_rdf(name->nsec, 0))
-					!= 0) {
+				if (ldns_dname_compare(
+							next_name->name,
+							ldns_rr_rdf(
+								name->nsec, 0)) 
+						!= 0) {
 					printf("Error: the NSEC record for ");
 					ldns_rdf_print(stdout, name->name);
-					printf(" points to the wrong next owner name\n");
+					printf(" points to the wrong next "
+							"owner name\n");
 					if (verbosity >= 4) {
 						printf("     : ");
-						ldns_rdf_print(stdout,ldns_rr_rdf(name->nsec, 0));
+						ldns_rdf_print(stdout,
+							ldns_rr_rdf(name->nsec, 
+								0));
 						printf(" i.s.o. ");
-						ldns_rdf_print(stdout, next_name->name);
+						ldns_rdf_print(stdout, 
+							next_name->name);
 						printf(".\n");
 					}
 					if (result == LDNS_STATUS_OK) {
@@ -424,7 +436,8 @@ verify_nsec(ldns_rbtree_t *zone_nodes,
 				 * for this in the structs? (ie. pointer to next
 				 * hashed name?)
 				 */
-				status = verify_next_hashed_name(zone_nodes, name);
+				status = verify_next_hashed_name(
+						zone_nodes, name);
 				if (result == LDNS_STATUS_OK) {
 					result = status;
 				}
@@ -462,10 +475,10 @@ verify_nsec(ldns_rbtree_t *zone_nodes,
 
 static ldns_status
 verify_dnssec_name(ldns_rdf *zone_name,
-                ldns_dnssec_zone *zone,
+		ldns_dnssec_zone *zone,
                 ldns_rbtree_t *zone_nodes,
                 ldns_rbnode_t *cur_node,
-			    ldns_rr_list *keys)
+		ldns_rr_list *keys)
 {
 	ldns_status result = LDNS_STATUS_OK;
 	ldns_status status;
@@ -491,7 +504,8 @@ verify_dnssec_name(ldns_rdf *zone_name,
 					ldns_rdf_print(stdout, name->name);
 					printf("\t");
 					print_type(cur_rrset->type);
-					printf(" has signature(s), but is glue\n");
+					printf(" has signature(s), "
+							"but is glue\n");
 				}
 				result = LDNS_STATUS_ERR;
 			}
@@ -526,8 +540,10 @@ verify_dnssec_name(ldns_rdf *zone_name,
 					cur_rrset->type != LDNS_RR_TYPE_RRSIG
 				     && cur_rrset->type != LDNS_RR_TYPE_NSEC)) {
 
-				status = verify_dnssec_rrset(zone_name, name->name, cur_rrset, keys);
-				if (status != LDNS_STATUS_OK && result == LDNS_STATUS_OK) {
+				status = verify_dnssec_rrset(zone_name,
+						name->name, cur_rrset, keys);
+				if (status != LDNS_STATUS_OK 
+						&& result == LDNS_STATUS_OK) {
 					result = status;
 				}
 			}
@@ -638,17 +654,21 @@ main(int argc, char **argv)
                         break;
 		case 'h':
 			printf("Usage: %s [OPTIONS] <zonefile>\n", argv[0]);
-			printf("\tReads the zonefile and checks for DNSSEC errors.\n");
+			printf("\tReads the zonefile and checks for DNSSEC "
+					"errors.\n");
 			printf("\nIt checks whether NSEC(3)s are present,");
 			printf(" and verifies all signatures\n");
-			printf("It also checks the NSEC(3) chain, but it will error on opted-out delegations\n");
+			printf("It also checks the NSEC(3) chain, but it will "
+					"error on opted-out delegations\n");
 			printf("\nOPTIONS:\n");
 			printf("\t-a apex only, check only the zone apex\n");
-			printf("\t-p [0-100] only perform this many checks, defaults to 100\n");
+			printf("\t-p [0-100] only perform this many checks, "
+					"defaults to 100\n");
 			printf("\t-h show this text\n");
 			printf("\t-v shows the version and exits\n");
 			printf("\t-V [0-5]\tset verbosity level (default 3)\n");
-			printf("\nif no file is given standard input is read\n");
+			printf("\nif no file is given standard input is "
+					"read\n");
 			exit(EXIT_SUCCESS);
 			break;
 		case 'v':
@@ -662,7 +682,8 @@ main(int argc, char **argv)
                 case 'p':
                         percentage = atoi(optarg);
                         if (percentage < 0 || percentage > 100) {
-	                        fprintf(stderr, "ldns-verify-zone: percentage needs to fall between 0..100\n");
+	                        fprintf(stderr, "percentage needs to fall "
+						"between 0..100\n");
                                 exit(EXIT_FAILURE);
                         }
                         srandom(time(NULL) ^ getpid());
@@ -689,7 +710,6 @@ main(int argc, char **argv)
 	}
 
 	s = ldns_zone_new_frm_fp_l(&z, fp, NULL, 0, LDNS_RR_CLASS_IN, &line_nr);
-
 	if (s == LDNS_STATUS_OK) {
 		if (!ldns_zone_soa(z)) {
 			fprintf(stderr, "; Error: no SOA in the zone\n");
@@ -700,7 +720,8 @@ main(int argc, char **argv)
 		result = ldns_dnssec_zone_mark_glue(dnssec_zone);
 		if (result != LDNS_STATUS_OK) {
 			if (verbosity >= 1) {
-				printf("There were errors identifying the glue in the zone\n");
+				printf("There were errors identifying the glue "
+						"in the zone\n");
 			}
 		}
 
@@ -738,7 +759,8 @@ main(int argc, char **argv)
 int
 main(int argc, char **argv)
 {
-	fprintf(stderr, "ldns-verify-zone needs OpenSSL support, which has not been compiled in\n");
+	fprintf(stderr, "ldns-verify-zone needs OpenSSL support, "
+			"which has not been compiled in\n");
 	return 1;
 }
 #endif /* HAVE_SSL */
