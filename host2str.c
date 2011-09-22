@@ -1292,18 +1292,28 @@ ldns_rr2buffer_str_fmt(ldns_buffer *output,
 					size_t len = ldns_rdf_size(ldns_rr_rdf(rr, 3));
 					char *babble = ldns_bubblebabble(data, len);
 					if(babble)
-					  ldns_buffer_printf(output, " ; %s", babble);
+					  ldns_buffer_printf(output, " ;{%s}", babble);
 					LDNS_FREE(babble);
 				}
 				break;
 			case LDNS_RR_TYPE_NSEC3:
-				if ((fmt->flags & LDNS_COMMENT_FLAGS)
-						&& ldns_nsec3_optout(rr)) {
-					ldns_buffer_printf(output,
-							" ; flags: optout");
-				} else if (fmt->flags 
-						& LDNS_COMMENT_NSEC3_CHAIN) {
-					ldns_buffer_printf(output, " ;");
+				if (! (fmt->flags & LDNS_COMMENT_FLAGS) &&
+				    ! (fmt->flags & LDNS_COMMENT_NSEC3_CHAIN)) {
+					break;
+				}
+				ldns_buffer_printf(output, " ;{");
+				if ((fmt->flags & LDNS_COMMENT_FLAGS)) {
+					if (ldns_nsec3_optout(rr)) {
+						ldns_buffer_printf(output,
+							" flags: optout");
+					} else {
+						ldns_buffer_printf(output,
+							" flags: -");
+					}
+					if (fmt->flags & LDNS_COMMENT_NSEC3_CHAIN
+							&& fmt->data != NULL) {
+						ldns_buffer_printf(output, ", ");
+					}
 				}
 				if (fmt->flags & LDNS_COMMENT_NSEC3_CHAIN
 						&& fmt->data != NULL) {
@@ -1318,7 +1328,7 @@ ldns_rr2buffer_str_fmt(ldns_buffer *output,
 						if (node->data) {
 							ldns_buffer_printf(
 								output,
-							       	" from: ");
+							       	"from: ");
 							(void)
 							ldns_rdf2buffer_str(
 								output, 
@@ -1347,7 +1357,7 @@ ldns_rr2buffer_str_fmt(ldns_buffer *output,
 						ldns_rdf_free(key);
 					}
 				}
-
+				ldns_buffer_printf(output, "}");
 				break;
 			default:
 				break;

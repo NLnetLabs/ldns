@@ -1355,13 +1355,6 @@ ldns_verify_trusted(ldns_resolver *res,
 					ldns_rr_list_deep_free(trusted_keys);
 					return LDNS_STATUS_OK;
 				} 
-				/* This was for debugging I guess!
-				 * else {
-					ldns_rr_list_print(stdout, rrset);
-					ldns_rr_print(stdout, cur_sig);
-					ldns_rr_print(stdout, cur_key);
-        	
-				} */
 			}
 		}
 	}

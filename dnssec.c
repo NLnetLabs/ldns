@@ -781,8 +781,7 @@ ldns_dnssec_create_nsec(ldns_dnssec_name *from,
 	ldns_dnssec_rrsets *cur_rrsets;
 	int on_delegation_point;
 
-	if (!from || !to || (nsec_type != LDNS_RR_TYPE_NSEC &&
-					 nsec_type != LDNS_RR_TYPE_NSEC3)) {
+	if (!from || !to || (nsec_type != LDNS_RR_TYPE_NSEC)) {
 		return NULL;
 	}
 
