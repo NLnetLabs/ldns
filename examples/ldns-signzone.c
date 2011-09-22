@@ -31,6 +31,7 @@ static void
 usage(FILE *fp, const char *prog) {
 	fprintf(fp, "%s [OPTIONS] zonefile key [key [key]]\n", prog);
 	fprintf(fp, "  signs the zone with the given key(s)\n");
+	fprintf(fp, "  -b\t\tuse layout in signed zone and print comments DNSSEC records\n");
 	fprintf(fp, "  -d\t\tused keys are not added to the zone\n");
 	fprintf(fp, "  -e <date>\texpiration date\n");
 	fprintf(fp, "  -f <file>\toutput zone to file (default <name>.signed)\n");
@@ -50,8 +51,6 @@ usage(FILE *fp, const char *prog) {
 	fprintf(fp, "\t\t-t [number] number of hash iterations\n");
 	fprintf(fp, "\t\t-s [string] salt\n");
 	fprintf(fp, "\t\t-p set the opt-out flag on all nsec3 rrs\n");
-	fprintf(fp, "\t\t-u include the unhashed NSEC3 names as comments "
-			"in the zone\n");
 	fprintf(fp, "\n");
 	fprintf(fp, "  keys must be specified by their base name (usually K<name>+<alg>+<id>),\n");
 	fprintf(fp, "  i.e. WITHOUT the .private extension.\n");
@@ -390,10 +389,17 @@ main(int argc, char *argv[])
 
 	OPENSSL_config(NULL);
 
-	while ((c = getopt(argc, argv, "a:de:f:i:k:lno:ps:t:uvAE:K:")) != -1) {
+	while ((c = getopt(argc, argv, "a:bde:f:i:k:lno:ps:t:vAE:K:")) != -1) {
 		switch (c) {
 		case 'a':
 			nsec3_algorithm = (uint8_t) atoi(optarg);
+			break;
+		case 'b':
+			fmt.flags |= LDNS_COMMENT_BUBBLEBABBLE;
+			fmt.flags |= LDNS_COMMENT_FLAGS;
+			fmt.flags |= LDNS_COMMENT_NSEC3_CHAIN;
+			fmt.flags |= LDNS_COMMENT_LAYOUT;
+			hashmap = (ldns_rbtree_t **)&fmt.data;
 			break;
 		case 'd':
 			add_keys = false;
@@ -460,7 +466,6 @@ main(int argc, char *argv[])
 				usage(stderr, prog);
 				exit(EXIT_FAILURE);
 			}
-			
 			break;
 		case 'p':
 			nsec3_flags = nsec3_flags | LDNS_NSEC3_VARS_OPTOUT_MASK;
@@ -593,10 +598,6 @@ main(int argc, char *argv[])
 				exit(EXIT_FAILURE);
 			}
 			nsec3_iterations = (uint16_t) nsec3_iterations_cmd;
-			break;
-		case 'u':
-			fmt.flags |= LDNS_COMMENT_NSEC3_CHAIN;
-			hashmap = (ldns_rbtree_t **)&fmt.data;
 			break;
 		default:
 			usage(stderr, prog);

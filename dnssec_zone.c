@@ -82,7 +82,8 @@ ldns_dnssec_rrs_print_fmt(FILE *out, const ldns_output_format *fmt,
 	       ldns_dnssec_rrs *rrs)
 {
 	if (!rrs) {
-		fprintf(out, "<void>");
+		if ((fmt->flags & LDNS_COMMENT_LAYOUT))
+			fprintf(out, "; <void>");
 	} else {
 		if (rrs->rr) {
 			ldns_rr_print_fmt(out, fmt, rrs->rr);
@@ -276,7 +277,8 @@ ldns_dnssec_rrsets_print_soa_fmt(FILE *out, const ldns_output_format *fmt,
 		bool show_soa)
 {
 	if (!rrsets) {
-		fprintf(out, "<void>\n");
+		if ((fmt->flags & LDNS_COMMENT_LAYOUT))
+			fprintf(out, "; <void>\n");
 	} else {
 		if (rrsets->rrs &&
 		    (show_soa ||
@@ -570,7 +572,7 @@ ldns_dnssec_name_print_soa_fmt(FILE *out, const ldns_output_format *fmt,
 		if(name->rrsets) {
 			ldns_dnssec_rrsets_print_soa_fmt(out, fmt, 
 					name->rrsets, true, show_soa);
-		} else {
+		} else if ((fmt->flags & LDNS_COMMENT_LAYOUT)) {
 			fprintf(out, ";; Empty nonterminal: ");
 			ldns_rdf_print(out, name->name);
 			fprintf(out, "\n");
@@ -582,8 +584,8 @@ ldns_dnssec_name_print_soa_fmt(FILE *out, const ldns_output_format *fmt,
 			ldns_dnssec_rrs_print_fmt(out, fmt, 
 					name->nsec_signatures);
 		}
-	} else {
-		fprintf(out, "<void>\n");
+	} else if ((fmt->flags & LDNS_COMMENT_LAYOUT)) {
+		fprintf(out, "; <void>\n");
 	}
 }
 
@@ -773,7 +775,8 @@ ldns_dnssec_zone_names_print_fmt(FILE *out, const ldns_output_format *fmt,
 	while (node != LDNS_RBTREE_NULL) {
 		name = (ldns_dnssec_name *) node->data;
 		ldns_dnssec_name_print_soa_fmt(out, fmt, name, print_soa);
-		fprintf(out, ";\n");
+		if ((fmt->flags & LDNS_COMMENT_LAYOUT))
+			fprintf(out, ";\n");
 		node = ldns_rbtree_next(node);
 	}
 }
@@ -791,16 +794,19 @@ ldns_dnssec_zone_print_fmt(FILE *out, const ldns_output_format *fmt,
 {
 	if (zone) {
 		if (zone->soa) {
-			fprintf(out, ";; Zone: ");
+			if ((fmt->flags & LDNS_COMMENT_LAYOUT))
+				fprintf(out, ";; Zone: ");
 			ldns_rdf_print(out,
 					ldns_dnssec_name_name(zone->soa));
-			fprintf(out, "\n;\n");
+			if ((fmt->flags & LDNS_COMMENT_LAYOUT))
+				fprintf(out, "\n;\n");
 			ldns_dnssec_rrsets_print_fmt(out, fmt,
 					ldns_dnssec_name_find_rrset(
 						zone->soa, 
 						LDNS_RR_TYPE_SOA), 
 					false);
-			fprintf(out, ";\n");
+			if ((fmt->flags & LDNS_COMMENT_LAYOUT))
+				fprintf(out, ";\n");
 		}
 
 		if (zone->names) {

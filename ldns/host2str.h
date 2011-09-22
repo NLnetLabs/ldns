@@ -60,6 +60,8 @@ extern "C" {
 #define LDNS_COMMENT_FLAGS		0x20
 /** Show the unhashed owner and next owner names for NSEC3 RR's as comment */
 #define LDNS_COMMENT_NSEC3_CHAIN	0x40
+/** Print mark up */
+#define LDNS_COMMENT_LAYOUT		0x80
 
 /**
  * Output format specifier
