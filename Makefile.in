@@ -199,8 +199,8 @@ destclean:	uninstall
 
 install-config:
 	if [ $(INSTALL_LDNS_CONFIG) = "yes" ] ; then \
-		$(INSTALL) -d $(DESTDIR)$(bindir); \
-		$(INSTALL) -c -m 755 packaging/ldns-config $(DESTDIR)$(bindir)/; \
+		$(INSTALL) -d $(DESTDIR)$(bindir) \
+		$(INSTALL) -c -m 755 packaging/ldns-config $(DESTDIR)$(bindir)/ \
 	fi
 
 uninstall-config:
@@ -214,11 +214,19 @@ install-manpages:	manpages
 		for f in doc/man/man3/*; do \
 			${INSTALL} -c -m 444 $$f $(DESTDIR)$(mandir)/man3/; \
 		done
+		if [ $(INSTALL_LDNS_CONFIG) = "yes" ] ; then \
+			${INSTALL} -d $(DESTDIR)$(mandir)/man1 \
+			${INSTALL} -c -m 444 packaging/ldns-config.1 $(DESTDIR)$(mandir)/man1/ \
+		fi
 
 uninstall-manpages:
 		for i in `cat doc/ldns_manpages`; do \
 			rm -f $(DESTDIR)$(mandir)/man3/$$i.3 ; done
 		rmdir -p $(DESTDIR)$(mandir)/man3 || echo "ok, dir already gone"
+		if [ $(INSTALL_LDNS_CONFIG) = "yes" ] ; then \
+			rm -f $(DESTDIR)$(mandir)/man1/ldns-config.1 \
+			[ ! -d $(DESTDIR)$(mandir)/man1 ] || rmdir -p $(DESTDIR)$(mandir)/man1 || echo "ok, dir already gone"; \
+		fi
 
 install-h:	lib
 		$(INSTALL) -m 755 -d $(DESTDIR)$(includedir)/ldns
