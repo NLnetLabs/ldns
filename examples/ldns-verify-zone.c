@@ -662,8 +662,8 @@ main(int argc, char **argv)
 					"error on opted-out delegations\n");
 			printf("\nOPTIONS:\n");
 			printf("\t-a apex only, check only the zone apex\n");
-			printf("\t-p [0-100] only perform this many checks, "
-					"defaults to 100\n");
+			printf("\t-p [0-100] only checks this percentage of "
+					"the zone. Defaults to 100\n");
 			printf("\t-h show this text\n");
 			printf("\t-v shows the version and exits\n");
 			printf("\t-V [0-5]\tset verbosity level (default 3)\n");

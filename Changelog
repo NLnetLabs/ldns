@@ -1,11 +1,45 @@
 1.6.11
-	* bugfix #407: Canonicalize TSIG dnames
 	* bugfix #394: Fix socket leak on errors
-	* bugfix #392: Apex only and percentage checks for ldns-verify-zone
+	* bugfix #392: Apex only and percentage checks for ldns-verify-zone 
+	  (thanks Miek Gieben)
 	* bugfix #398: Allow NSEC RRSIGs before the NSEC3 in ldns-verify-zone
 	* Fix python site package path to /usr/lib64.
 	* Fix python api to support python2 and python3 (thanks Karel Slany).
-	* bugfix #391: Prevent assertion error in ldns_rdf_size
+	* bugfix #401: Correction of date/time functions algorithm and 
+	  prevention of an infinite loop therein
+	* bugfix #402: Correct the minimum and maximum number of rdata fields
+	  in TSIG. (thanks David Keeler)
+	* bugfix #403: Fix heap overflow (thanks David Keeler)
+	* bugfix #404: Make parsing APL strings more robust
+	  (thanks David Keeler)
+	* bugfix #391: Complete library assessment to prevent assertion errors
+       	  through ldns_rdf_size usage.
+	* Slightly more specific error messaging on wrong number of rdata
+	  fields with the LDNS_STATUS_MISSING_RDATA_FIELDS_RRSIG and
+	  LDNS_STATUS_MISSING_RDATA_FIELDS_KEY result codes.
+	* bugfix #406: More rigorous openssl result code handling to prevent
+	  future crashes within openssl.
+	* Fix ldns_fetch_valid_domain_keys to search deeper than just one level
+          for a DNSKEY that signed a DS RR. (this function was used in the
+	  check_dnssec_trace nagios module)
+	* bugfix #407: Canonicalize TSIG dnames and algorithm fields
+	* A new output specifier to accommodate configuration of what to show
+	  in comment texts when converting host and/or wire-format data to
+	  string. All conversion to string and printing functions have a new
+	  version that have such a format specifier as an extra argument.
+	  The default is changed so that only DNSKEY RR's are annotated with 
+	  an comment show the Key Tag of the DNSKEY.
+	* Fixed the ldns resolver to not mark a nameserver unreachable when
+	  edns0 is tried unsuccessfully with size 4096 (no return packet came),
+	  but to still try TCP. A big UDP packet might have been corrupted by 
+	  fragments dropping firewalls.
+	* Update of libdns.vim (thanks Miek Gieben)
+	* Added the ldnsx Python module to our contrib section, which adds even
+	  more pythonisticism to the usage of ldns with  Python. (Many thanks 
+	  to Christpher Olah and Paul Wouters)
+	  The ldnsx module is automatically installed when --with-pyldns is
+	  used with configuring, but may explicitly be excluded with the
+	  --without-pyldnsx option to configure.
 
 1.6.10	2011-05-31
 	* New example tool added: ldns-gen-zone.
