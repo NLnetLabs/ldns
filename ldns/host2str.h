@@ -43,25 +43,27 @@ extern "C" {
  * Represent a NULL pointer (in stead of a pointer to a ldns_rr as "; (null)" 
  * as opposed to outputting nothing at all in such a case.
  */
-#define LDNS_COMMENT_NULLS		0x01
+#define LDNS_COMMENT_NULLS		0x0001
 /** Show key id with DNSKEY RR's as comment */
-#define LDNS_COMMENT_KEY_ID		0x02
+#define LDNS_COMMENT_KEY_ID		0x0002
 /** Show if a DNSKEY is a ZSK or KSK as comment */
-#define LDNS_COMMENT_KEY_TYPE		0x04
+#define LDNS_COMMENT_KEY_TYPE		0x0004
 /** Show DNSKEY key size as comment */
-#define LDNS_COMMENT_KEY_SIZE		0x08
+#define LDNS_COMMENT_KEY_SIZE		0x0008
 /** Show key id, type and size as comment for DNSKEY RR's */
 #define LDNS_COMMENT_KEY		(LDNS_COMMENT_KEY_ID  \
 					|LDNS_COMMENT_KEY_TYPE\
 					|LDNS_COMMENT_KEY_SIZE)
 /** Provide bubblebabble representation for DS RR's as comment */
-#define LDNS_COMMENT_BUBBLEBABBLE	0x10
+#define LDNS_COMMENT_BUBBLEBABBLE	0x0010
 /** Show when a NSEC3 RR has the optout flag set as comment */
-#define LDNS_COMMENT_FLAGS		0x20
+#define LDNS_COMMENT_FLAGS		0x0020
 /** Show the unhashed owner and next owner names for NSEC3 RR's as comment */
-#define LDNS_COMMENT_NSEC3_CHAIN	0x40
+#define LDNS_COMMENT_NSEC3_CHAIN	0x0040
 /** Print mark up */
-#define LDNS_COMMENT_LAYOUT		0x80
+#define LDNS_COMMENT_LAYOUT		0x0080
+/** Also comment KEY_ID with RRSIGS **/
+#define LDNS_COMMENT_RRSIGS		0x0100
 
 /**
  * Output format specifier

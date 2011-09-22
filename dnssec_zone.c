@@ -794,12 +794,12 @@ ldns_dnssec_zone_print_fmt(FILE *out, const ldns_output_format *fmt,
 {
 	if (zone) {
 		if (zone->soa) {
-			if ((fmt->flags & LDNS_COMMENT_LAYOUT))
+			if ((fmt->flags & LDNS_COMMENT_LAYOUT)) {
 				fprintf(out, ";; Zone: ");
-			ldns_rdf_print(out,
-					ldns_dnssec_name_name(zone->soa));
-			if ((fmt->flags & LDNS_COMMENT_LAYOUT))
+				ldns_rdf_print(out, ldns_dnssec_name_name(
+							zone->soa));
 				fprintf(out, "\n;\n");
+			}
 			ldns_dnssec_rrsets_print_fmt(out, fmt,
 					ldns_dnssec_name_find_rrset(
 						zone->soa, 
