@@ -137,10 +137,12 @@ notify_host(int s, struct addrinfo* res, uint8_t* wire, size_t wiresize,
 		ssize_t i;
 		printf("Could not parse reply packet: %s\n",
 			ldns_get_errorstr_by_id(status));
-		printf("hexdump of reply: ");
-		for(i=0; i<received; i++)
-			printf("%02x", (unsigned)replybuf[i]);
-		printf("\n");
+		if (verbose > 1) {
+			printf("hexdump of reply: ");
+			for(i=0; i<received; i++)
+				printf("%02x", (unsigned)replybuf[i]);
+			printf("\n");
+		}
 		exit(1);
 	}
 
@@ -148,11 +150,12 @@ notify_host(int s, struct addrinfo* res, uint8_t* wire, size_t wiresize,
 		ssize_t i;
 		printf("# reply from %s:\n", addrstr);
 		ldns_pkt_print(stdout, pkt);
-		
-		printf("hexdump of reply: ");
-		for(i=0; i<received; i++)
-			printf("%02x", (unsigned)replybuf[i]);
-		printf("\n");
+		if (verbose > 1) {
+			printf("hexdump of reply: ");
+			for(i=0; i<received; i++)
+				printf("%02x", (unsigned)replybuf[i]);
+			printf("\n");
+		}
 	}
 	ldns_pkt_free(pkt);
 }
@@ -179,11 +182,11 @@ main(int argc, char **argv)
 	char *port = "53";
 
 	srandom(time(NULL) ^ getpid());
-	
+
         while ((c = getopt(argc, argv, "vhdp:r:s:y:z:")) != -1) {
                 switch (c) {
                 case 'd':
-			verbose = 1;
+			verbose++;
 			break;
                 case 'p':
 			port = optarg;
@@ -287,7 +290,7 @@ main(int argc, char **argv)
 		exit(1);
 	}
 
-	if(do_hexdump && verbose) {
+	if(do_hexdump && verbose > 1) {
 		printf("Hexdump of notify packet:\n");
 		for(i=0; i<(int)wiresize; i++)
 			printf("%02x", (unsigned)wire[i]);
