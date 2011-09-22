@@ -1,4 +1,5 @@
-# (c) Christopher Olah <colah@xelerance.com>, 2011. Xelerance <http://www.xelerance.com/>.
+# Copyright (C) Xelerance Corp. <http://www.xelerance.com/>.
+# Author: Christopher Olah <colah@xelerance.com>
 # License: BSD
 
 """ Easy DNS (including DNSSEC) via ldns.
@@ -41,15 +42,7 @@ response, else an error message.
 
 """
 
-import time, sys, calendar, warnings
-try:
-	import ipcalc
-except ImportError:
-	print >> sys.stderr, "ldnsx requires the python-ipcalc"
-	print >> sys.stderr, "Fedora/CentOS: yum install python-ipcalc"
-	print >> sys.stderr, "Debian/Ubuntu: apt-get install python-ipcalc"
-	print >> sys.stderr, "openSUSE: zypper in python-ipcalc"
-	sys.exit(1)
+import time, sys, calendar, warnings, socket
 try:
 	import ldns
 except ImportError:
@@ -63,11 +56,14 @@ __version__ = "0.1"
 
 def isValidIP(ipaddr):
 	try:
-		bits_to_type = { 32 : 4, 128 : 6}
-		bits = len(ipcalc.IP(ipaddr).bin())
-		return bits_to_type[bits]
+		v4 = socket.inet_pton(socket.AF_INET,ipaddr)
+		return 4
 	except:
-		return 0
+		try:
+			v6 = socket.inet_pton(socket.AF_INET6,ipaddr)
+			return 6
+		except:
+			return 0
 
 def query(name, rr_type, rr_class="IN", flags=["RD"], tries = 3, res=None):
 	"""Convenience function. Creates a resolver and then queries it. Refer to resolver.query() 

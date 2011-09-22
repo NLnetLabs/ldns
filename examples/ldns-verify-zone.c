@@ -45,20 +45,6 @@ zone_is_nsec3_optout(ldns_rbtree_t *zone_nodes)
 	return 0;
 }
 
-static bool
-ldns_rr_list_contains_name(const ldns_rr_list *rr_list,
-					  const ldns_rdf *name)
-{
-	size_t i;
-	for (i = 0; i < ldns_rr_list_rr_count(rr_list); i++) {
-		if (ldns_dname_compare(name,
-		    ldns_rr_owner(ldns_rr_list_rr(rr_list, i))) == 0) {
-			return true;
-		}
-	}
-	return false;
-}
-
 static void
 print_type(ldns_rr_type type)
 {

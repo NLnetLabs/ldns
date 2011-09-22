@@ -147,11 +147,6 @@ AC_ARG_WITH(pyldnsx, AC_HELP_STRING([--without-pyldnsx],
   [],[ withval="with_pyldns" ])
 if test x_$withval != x_no; then
   if test x_$ldns_with_pyldns != x_no; then
-    # The python ipcalc module is needed for pyldnsx, but it is not
-    # a build dependency
-    #
-    #sinclude(ax_python_module.m4)
-    #AX_PYTHON_MODULE(ipcalc)
     AC_SUBST(PYLDNSX, "pyldnsx")
   else
     if test x_$withval != x_with_pyldns; then
