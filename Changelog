@@ -3,7 +3,7 @@
 	* bugfix #392: Apex only and percentage checks for ldns-verify-zone 
 	  (thanks Miek Gieben)
 	* bugfix #398: Allow NSEC RRSIGs before the NSEC3 in ldns-verify-zone
-	* Fix python site package path to /usr/lib64.
+	* Fix python site package path from sitelib to sitearch for pyldns.
 	* Fix python api to support python2 and python3 (thanks Karel Slany).
 	* bugfix #401: Correction of date/time functions algorithm and 
 	  prevention of an infinite loop therein
@@ -40,6 +40,7 @@
 	  The ldnsx module is automatically installed when --with-pyldns is
 	  used with configuring, but may explicitly be excluded with the
 	  --without-pyldnsx option to configure.
+	* bugfix #410: Fix clearing out temporary data on stack in sha2.c
 
 1.6.10	2011-05-31
 	* New example tool added: ldns-gen-zone.
