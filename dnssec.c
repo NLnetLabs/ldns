@@ -1347,8 +1347,12 @@ ldns_nsec_bitmap_covers_type(const ldns_rdf *nsec_bitmap, ldns_rr_type type)
 	uint16_t cur_type;
 	uint16_t pos = 0;
 	uint16_t bit_pos;
-	uint8_t *data = ldns_rdf_data(nsec_bitmap);
+	uint8_t *data;
 
+	if (nsec_bitmap == NULL) {
+		return false;
+	}
+	data = ldns_rdf_data(nsec_bitmap);
 	while(pos < ldns_rdf_size(nsec_bitmap)) {
 		window_block_nr = data[pos];
 		bitmap_length = data[pos + 1];
