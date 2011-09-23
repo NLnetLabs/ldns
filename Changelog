@@ -41,6 +41,7 @@
 	  used with configuring, but may explicitly be excluded with the
 	  --without-pyldnsx option to configure.
 	* bugfix #410: Fix clearing out temporary data on stack in sha2.c
+	* bugfix #411: Don't let empty non-terminal NSEC3s cause assertion failure.
 
 1.6.10	2011-05-31
 	* New example tool added: ldns-gen-zone.
