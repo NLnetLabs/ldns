@@ -1167,13 +1167,15 @@ ldns_b32_ext2dname(const ldns_rdf *rdf)
 	size = ldns_b32_ntop_calculate_size(ldns_rdf_size(rdf) - 1);
         /* add one for the end nul for the string */
 	b32 = LDNS_XMALLOC(char, size + 2);
-	if (b32 && ldns_b32_ntop_extended_hex(ldns_rdf_data(rdf) + 1, 
+	if (b32) {
+		if (ldns_b32_ntop_extended_hex(ldns_rdf_data(rdf) + 1, 
 				ldns_rdf_size(rdf) - 1, b32, size+1) > 0) {
-		b32[size] = '.';
-		b32[size+1] = '\0';
-		if (ldns_str2rdf_dname(&out, b32) == LDNS_STATUS_OK) {
-			LDNS_FREE(b32);
-			return out;
+			b32[size] = '.';
+			b32[size+1] = '\0';
+			if (ldns_str2rdf_dname(&out, b32) == LDNS_STATUS_OK) {
+				LDNS_FREE(b32);
+				return out;
+			}
 		}
 		LDNS_FREE(b32);
 	}
