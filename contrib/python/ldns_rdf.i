@@ -33,7 +33,11 @@
 //automatic conversion of const ldns_rdf* parameter from string 
 %typemap(in,noblock=1) const ldns_rdf * (void* argp, $1_ltype tmp = 0, int res) {
    if (Python_str_Check($input)) {
+#ifdef SWIG_Python_str_AsChar
       tmp = ldns_dname_new_frm_str(SWIG_Python_str_AsChar($input));
+#else
+      tmp = ldns_dname_new_frm_str(PyString_AsString($input));
+#endif
       if (tmp == NULL) {
          %argument_fail(SWIG_TypeError, "char *", $symname, $argnum);
       }
