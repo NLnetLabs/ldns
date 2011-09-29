@@ -1,3 +1,6 @@
+1.6.12
+	* 
+
 1.6.11	2011-09-29
 	* bugfix #394: Fix socket leak on errors
 	* bugfix #392: Apex only and percentage checks for ldns-verify-zone 
