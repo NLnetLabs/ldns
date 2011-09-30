@@ -62,14 +62,14 @@ ldns_status ldns_str2rdf_int32(ldns_rdf **rd, const char *longstr);
  */
 ldns_status ldns_str2rdf_time(ldns_rdf **rd, const char *time);
 
-/* convert string with NSEC3 salt to wireformat) 
+/* convert string with NSEC3 salt to wireformat)
  * \param[in] rd the rdf where to put the data
  * \param[in] str the string to be converted
  * return ldns_status
  */
 ldns_status ldns_str2rdf_nsec3_salt(ldns_rdf **rd, const char *nsec3_salt);
 
-/* convert a time period (think TTL's) to wireformat) 
+/* convert a time period (think TTL's) to wireformat)
  * \param[in] rd the rdf where to put the data
  * \param[in] str the string to be converted
  * return ldns_status

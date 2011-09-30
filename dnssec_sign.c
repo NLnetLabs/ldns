@@ -121,6 +121,9 @@ ldns_sign_public_buffer(ldns_buffer *sign_buf, ldns_key *current_key)
 	switch(ldns_key_algorithm(current_key)) {
 	case LDNS_SIGN_DSA:
 	case LDNS_SIGN_DSA_NSEC3:
+#if USE_NSEC4
+	case LDNS_SIGN_DSA_NSEC4:
+#endif
 		b64rdf = ldns_sign_public_evp(
 				   sign_buf,
 				   ldns_key_evp_key(current_key),
@@ -128,6 +131,9 @@ ldns_sign_public_buffer(ldns_buffer *sign_buf, ldns_key *current_key)
 		break;
 	case LDNS_SIGN_RSASHA1:
 	case LDNS_SIGN_RSASHA1_NSEC3:
+#if USE_NSEC4
+	case LDNS_SIGN_RSASHA1_NSEC4:
+#endif
 		b64rdf = ldns_sign_public_evp(
 				   sign_buf,
 				   ldns_key_evp_key(current_key),
@@ -559,7 +565,7 @@ ldns_dnssec_addresses_on_glue_list(
  * Marks the names in the zone that are occluded. Those names will be skipped
  * when walking the tree with the ldns_dnssec_name_node_next_nonglue()
  * function. But watch out! Names that are partially occluded (like glue with
- * the same name as the delegation) will not be marked and should specifically 
+ * the same name as the delegation) will not be marked and should specifically
  * be taken into account seperately.
  *
  * When glue_list is given (not NULL), in the process of marking the names, all
@@ -570,7 +576,7 @@ ldns_dnssec_addresses_on_glue_list(
  * \return LDNS_STATUS_OK on success, an error code otherwise
  */
 ldns_status
-ldns_dnssec_zone_mark_and_get_glue(ldns_dnssec_zone *zone, 
+ldns_dnssec_zone_mark_and_get_glue(ldns_dnssec_zone *zone,
 	ldns_rr_list *glue_list)
 {
 	ldns_rbnode_t    *node;
@@ -586,17 +592,17 @@ ldns_dnssec_zone_mark_and_get_glue(ldns_dnssec_zone *zone,
 	if (!zone || !zone->names) {
 		return LDNS_STATUS_NULL;
 	}
-	for (node = ldns_rbtree_first(zone->names); 
-			node != LDNS_RBTREE_NULL; 
+	for (node = ldns_rbtree_first(zone->names);
+			node != LDNS_RBTREE_NULL;
 			node = ldns_rbtree_next(node)) {
 		name = (ldns_dnssec_name *) node->data;
 		owner = ldns_dnssec_name_name(name);
 
-		if (cut) { 
+		if (cut) {
 			/* The previous node was a zone cut, or a subdomain
 			 * below a zone cut. Is this node (still) a subdomain
 			 * below the cut? Then the name is occluded. Unless
-			 * the name contains a SOA, after which we are 
+			 * the name contains a SOA, after which we are
 			 * authoritative again.
 			 *
 			 * FIXME! If there are labels in between the SOA and
@@ -652,7 +658,7 @@ ldns_dnssec_zone_mark_and_get_glue(ldns_dnssec_zone *zone,
  * Marks the names in the zone that are occluded. Those names will be skipped
  * when walking the tree with the ldns_dnssec_name_node_next_nonglue()
  * function. But watch out! Names that are partially occluded (like glue with
- * the same name as the delegation) will not be marked and should specifically 
+ * the same name as the delegation) will not be marked and should specifically
  * be taken into account seperately.
  *
  * \param[in] zone the zone in which to mark the names
@@ -845,6 +851,88 @@ ldns_dnssec_zone_create_nsec3s(ldns_dnssec_zone *zone,
 	ldns_rr_list_free(nsec3_list);
 	return result;
 }
+
+#if USE_NSEC4
+ldns_status
+ldns_dnssec_zone_create_nsec4s(ldns_dnssec_zone *zone,
+						 ldns_rr_list *new_rrs,
+						 uint8_t algorithm,
+						 uint8_t flags,
+						 uint16_t iterations,
+						 uint8_t salt_length,
+						 uint8_t *salt)
+{
+	ldns_rbnode_t *first_name_node;
+	ldns_rbnode_t *current_name_node;
+	ldns_dnssec_name *current_name;
+	ldns_status result = LDNS_STATUS_OK;
+	ldns_rr *nsec_rr;
+	ldns_rr_list *nsec4_list;
+	uint32_t nsec_ttl;
+	ldns_dnssec_rrsets *soa;
+
+	if (!zone || !new_rrs || !zone->names) {
+		return LDNS_STATUS_ERR;
+	}
+
+	/* the TTL of NSEC rrs should be set to the minimum TTL of
+	 * the zone SOA (RFC4035 Section 2.3)
+	 */
+	soa = ldns_dnssec_name_find_rrset(zone->soa, LDNS_RR_TYPE_SOA);
+
+	/* did the caller actually set it? if not,
+	 * fall back to default ttl
+	 */
+	if (soa && soa->rrs && soa->rrs->rr) {
+		nsec_ttl = ldns_rdf2native_int32(ldns_rr_rdf(
+		                                     soa->rrs->rr, 6));
+	} else {
+		nsec_ttl = LDNS_DEFAULT_TTL;
+	}
+	nsec4_list = ldns_rr_list_new();
+
+	first_name_node = ldns_dnssec_name_node_next_nonglue(
+					  ldns_rbtree_first(zone->names));
+
+	current_name_node = first_name_node;
+
+	while (current_name_node &&
+	       current_name_node != LDNS_RBTREE_NULL) {
+		current_name = (ldns_dnssec_name *) current_name_node->data;
+		nsec_rr = ldns_dnssec_create_nsec4(current_name,
+		                                   NULL,
+		                                   zone->soa->name,
+		                                   algorithm,
+		                                   flags,
+		                                   iterations,
+		                                   salt_length,
+		                                   salt);
+		/* by default, our nsec based generator adds rrsigs
+		 * remove the bitmap for empty nonterminals */
+		if (!current_name->rrsets) {
+			ldns_rdf_deep_free(ldns_rr_pop_rdf(nsec_rr));
+		}
+		ldns_rr_set_ttl(nsec_rr, nsec_ttl);
+		result = ldns_dnssec_name_add_rr(current_name, nsec_rr);
+		ldns_rr_list_push_rr(new_rrs, nsec_rr);
+		ldns_rr_list_push_rr(nsec4_list, nsec_rr);
+		current_name_node = ldns_dnssec_name_node_next_nonglue(
+		                   ldns_rbtree_next(current_name_node));
+	}
+	if (result != LDNS_STATUS_OK) {
+		return result;
+	}
+
+	ldns_rr_list_sort_nsec4(nsec4_list);
+	result = ldns_dnssec_chain_nsec4_list(nsec4_list);
+	if (result != LDNS_STATUS_OK) {
+		return result;
+	}
+
+	ldns_rr_list_free(nsec4_list);
+	return result;
+}
+#endif /* USE_NSEC4 */
 #endif /* HAVE_SSL */
 
 ldns_dnssec_rrs *
@@ -1061,6 +1149,10 @@ ldns_dnssec_zone_create_rrsigs_flg(ldns_dnssec_zone *zone,
 							== LDNS_RR_TYPE_DS ||
 						ldns_rr_list_type(rr_list) 
 							== LDNS_RR_TYPE_NSEC ||
+#if USE_NSEC4
+						ldns_rr_list_type(rr_list) 
+							== LDNS_RR_TYPE_NSEC4 ||
+#endif
 						ldns_rr_list_type(rr_list) 
 							== LDNS_RR_TYPE_NSEC3) {
 					siglist = ldns_sign_public(rr_list, key_list);
@@ -1232,7 +1324,7 @@ ldns_dnssec_zone_sign_nsec3_flg(ldns_dnssec_zone *zone,
 							   ldns_rdf_clone(zone->soa->name));
 				ldns_nsec3_add_param_rdfs(nsec3param,
 									 algorithm,
-									 flags,
+									 0,
 									 iterations,
 									 salt_length,
 									 salt);
@@ -1268,6 +1360,113 @@ ldns_dnssec_zone_sign_nsec3_flg(ldns_dnssec_zone *zone,
 	return result;
 }
 
+#if USE_NSEC4
+ldns_status
+ldns_dnssec_zone_sign_nsec4(ldns_dnssec_zone *zone,
+					   ldns_rr_list *new_rrs,
+					   ldns_key_list *key_list,
+					   int (*func)(ldns_rr *, void *),
+					   void *arg,
+					   uint8_t algorithm,
+					   uint8_t flags,
+					   uint16_t iterations,
+					   uint8_t salt_length,
+					   uint8_t *salt)
+{
+	return ldns_dnssec_zone_sign_nsec4_flg(zone, new_rrs, key_list,
+		func, arg, algorithm, flags, iterations, salt_length, salt, 0);
+}
+
+ldns_status
+ldns_dnssec_zone_sign_nsec4_flg(ldns_dnssec_zone *zone,
+					   ldns_rr_list *new_rrs,
+					   ldns_key_list *key_list,
+					   int (*func)(ldns_rr *, void *),
+					   void *arg,
+					   uint8_t algorithm,
+					   uint8_t flags,
+					   uint16_t iterations,
+					   uint8_t salt_length,
+					   uint8_t *salt,
+					   int signflags)
+{
+	ldns_rr *nsec4, *nsec4param;
+	ldns_status result = LDNS_STATUS_OK;
+
+	/* zone is already sorted */
+	result = ldns_dnssec_zone_mark_glue(zone);
+	if (result != LDNS_STATUS_OK) {
+		return result;
+	}
+
+	/* reset iterations if algo is zero */
+	if (!algorithm) {
+		iterations = 0;
+	}
+
+	/* TODO if there are already nsec4s presents and their
+	 * parameters are the same as these, we don't have to recreate
+	 */
+	if (zone->names) {
+		/* add empty nonterminals */
+		result = ldns_dnssec_zone_add_empty_nonterminals(zone);
+		if (result != LDNS_STATUS_OK) {
+			return result;
+		}
+		nsec4 = ((ldns_dnssec_name *)zone->names->root->data)->nsec;
+		if (nsec4 && ldns_rr_get_type(nsec4) == LDNS_RR_TYPE_NSEC4) {
+			/* no need to recreate */
+		} else {
+			if (!ldns_dnssec_zone_find_rrset(zone,
+					   zone->soa->name,
+						   LDNS_RR_TYPE_NSEC4PARAM)) {
+				/* create and add the nsec4param rr */
+				nsec4param =
+					ldns_rr_new_frm_type(LDNS_RR_TYPE_NSEC4PARAM);
+				ldns_rr_set_owner(nsec4param,
+							   ldns_rdf_clone(zone->soa->name));
+				ldns_nsec4_add_param_rdfs(nsec4param,
+									 algorithm,
+									 0,
+									 iterations,
+									 salt_length,
+									 salt);
+				/* always set bit 7 of the flags to zero, according to
+				 * rfc5155 section 11 */
+				ldns_set_bit(ldns_rdf_data(ldns_rr_rdf(nsec4param, 1)), 7, 0);
+				result = ldns_dnssec_zone_add_rr(zone, nsec4param);
+				if (result != LDNS_STATUS_OK) {
+					return result;
+				}
+
+				ldns_rr_list_push_rr(new_rrs, nsec4param);
+			}
+			result = ldns_dnssec_zone_create_nsec4s(zone,
+											new_rrs,
+											algorithm,
+											flags,
+											iterations,
+											salt_length,
+											salt);
+			if (result != LDNS_STATUS_OK) {
+				return result;
+			}
+			result = ldns_dnssec_zone_set_wildcard_bits(zone);
+			if (result != LDNS_STATUS_OK) {
+				return result;
+			}
+		}
+		result = ldns_dnssec_zone_create_rrsigs_flg(zone,
+						new_rrs,
+						key_list,
+						func,
+						arg,
+						signflags);
+	}
+
+	return result;
+}
+#endif /* USE_NSEC4 */
 
 ldns_zone *
 ldns_zone_sign(const ldns_zone *zone, ldns_key_list *key_list)
@@ -1355,6 +1554,55 @@ ldns_zone_sign_nsec3(ldns_zone *zone, ldns_key_list *key_list, uint8_t algorithm
 
 	return signed_zone;
 }
+
+#if USE_NSEC4
+ldns_zone *
+ldns_zone_sign_nsec4(ldns_zone *zone, ldns_key_list *key_list, uint8_t algorithm, uint8_t flags, uint16_t iterations, uint8_t salt_length, uint8_t *salt)
+{
+	ldns_dnssec_zone *dnssec_zone;
+	ldns_zone *signed_zone;
+	ldns_rr_list *new_rrs;
+	size_t i;
+
+	signed_zone = ldns_zone_new();
+	dnssec_zone = ldns_dnssec_zone_new();
+
+	(void) ldns_dnssec_zone_add_rr(dnssec_zone, ldns_zone_soa(zone));
+	ldns_zone_set_soa(signed_zone, ldns_rr_clone(ldns_zone_soa(zone)));
+
+	for (i = 0; i < ldns_rr_list_rr_count(ldns_zone_rrs(zone)); i++) {
+		(void) ldns_dnssec_zone_add_rr(dnssec_zone,
+								 ldns_rr_list_rr(ldns_zone_rrs(zone),
+											  i));
+		ldns_zone_push_rr(signed_zone, 
+					   ldns_rr_clone(ldns_rr_list_rr(ldns_zone_rrs(zone),
+											   i)));
+	}
+
+	new_rrs = ldns_rr_list_new();
+	(void) ldns_dnssec_zone_sign_nsec4(dnssec_zone,
+								new_rrs,
+								key_list,
+								ldns_dnssec_default_replace_signatures,
+								NULL,
+								algorithm,
+								flags,
+								iterations,
+								salt_length,
+								salt);
+
+    	for (i = 0; i < ldns_rr_list_rr_count(new_rrs); i++) {
+		ldns_rr_list_push_rr(ldns_zone_rrs(signed_zone),
+						 ldns_rr_clone(ldns_rr_list_rr(new_rrs, i)));
+	}
+
+	ldns_rr_list_deep_free(new_rrs);
+	ldns_dnssec_zone_free(dnssec_zone);
+
+	return signed_zone;
+}
+#endif /* USE_NSEC4 */
+
 #endif /* HAVE_SSL */
 
 

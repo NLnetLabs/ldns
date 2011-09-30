@@ -56,6 +56,9 @@ ldns_lookup_table ldns_error_str[] = {
         { LDNS_STATUS_CRYPTO_EXPIRATION_BEFORE_INCEPTION, "DNSSEC signature has expiration date earlier than inception date" },
 	{ LDNS_STATUS_ENGINE_KEY_NOT_LOADED, "Unable to load private key from engine" },
         { LDNS_STATUS_NSEC3_ERR, "Error in NSEC3 denial of existence proof" },
+#if USE_NSEC4
+        { LDNS_STATUS_NSEC4_ERR, "Error in NSEC4 denial of existence proof" },
+#endif
 	{ LDNS_STATUS_RES_NO_NS, "No (valid) nameservers defined in the resolver" },
 	{ LDNS_STATUS_RES_QUERY, "No correct query given to resolver" },
 	{ LDNS_STATUS_WIRE_INCOMPLETE_HEADER, "header section incomplete" },
@@ -79,15 +82,21 @@ ldns_lookup_table ldns_error_str[] = {
 	{ LDNS_STATUS_SYNTAX_TTL, "$TTL directive was seen in the zone" },
 	{ LDNS_STATUS_SYNTAX_ORIGIN, "$ORIGIN directive was seen in the zone" },
 	{ LDNS_STATUS_SYNTAX_INCLUDE, "$INCLUDE directive was seen in the zone" },
-	{ LDNS_STATUS_SYNTAX_ITERATIONS_OVERFLOW, "Iterations count for NSEC3 record higher than maximum" },
+	{ LDNS_STATUS_SYNTAX_ITERATIONS_OVERFLOW, "Iterations count for NSEC record higher than maximum" },
 	{ LDNS_STATUS_SYNTAX_MISSING_VALUE_ERR, "Syntax error, value expected" },
 	{ LDNS_STATUS_SYNTAX_INTEGER_OVERFLOW, "Syntax error, integer value too large" },
 	{ LDNS_STATUS_SYNTAX_BAD_ESCAPE, "Syntax error, bad escape sequence" },
 	{ LDNS_STATUS_SOCKET_ERROR, "Error creating socket" },
 	{ LDNS_STATUS_DNSSEC_EXISTENCE_DENIED, "Existence denied by NSEC" },
+	{ LDNS_STATUS_DNSSEC_CLOSEST_ENCLOSER_NOT_FOUND, "Closest encloser not found" },
 	{ LDNS_STATUS_DNSSEC_NSEC_RR_NOT_COVERED, "RR not covered by the given NSEC RRs" },
 	{ LDNS_STATUS_DNSSEC_NSEC_WILDCARD_NOT_COVERED, "wildcard not covered by the given NSEC RRs" },
 	{ LDNS_STATUS_DNSSEC_NSEC3_ORIGINAL_NOT_FOUND, "original of NSEC3 hashed name could not be found" },
+#if USE_NSEC4
+	{ LDNS_STATUS_DNSSEC_NSEC4_ORIGINAL_NOT_FOUND, "original of NSEC4 hashed name could not be found" },
+	{ LDNS_STATUS_DNSSEC_NSEC4_WILDCARD_BIT_UNSET, "NSEC4 has its wildcard bit unset, but source of synthesis exists" },
+	{ LDNS_STATUS_DNSSEC_NSEC4_CHAIN_FAILED, "Error chaining NSEC4s" },
+#endif
 	{ 0, NULL }
 };
 

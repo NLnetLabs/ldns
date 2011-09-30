@@ -95,15 +95,19 @@ see ENGINE OPTIONS for more information.
 Use NSEC3 instead of NSEC.
 
 .TP
-If you use NSEC3, you can specify the following extra options:
+\fB-4\fR
+Use NSEC4 instead of NSEC.
+
+.TP
+If you use NSEC3 or NSEC4, you can specify the following extra options:
 
 .TP
 \fB-a\fR \fIalgorithm\fR
-Algorithm used to create the hashed NSEC3 owner names
+Algorithm used to create the hashed NSEC3 or NSEC4 owner names
 
 .TP
 \fB-p\fR
-Opt-out. All NSEC3 records in the zone will have the Opt-out flag set. After signing, you can add insecure delegations to the signed zone.
+Opt-out. All NSEC3 or NSEC4 records in the zone will have the Opt-out flag set. After signing, you can add insecure delegations to the signed zone.
 
 .TP
 \fB-s\fR \fIstring\fR

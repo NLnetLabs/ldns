@@ -39,7 +39,7 @@ struct ldns_struct_dnssec_rrsets
 
 /**
  * Structure containing all resource records for a domain name
- * Including the derived NSEC3, if present
+ * Including the derived NSEC3 or NSEC4, if present
  */
 typedef struct ldns_struct_dnssec_name ldns_dnssec_name;
 struct ldns_struct_dnssec_name
@@ -49,9 +49,9 @@ struct ldns_struct_dnssec_name
 	 * Usually points to the owner name of the first RR of the first RRset
 	 */
 	ldns_rdf *name;
-	/** 
+	/**
 	 * Usually, the name is a pointer to the owner name of the first rr for
-	 * this name, but sometimes there is no actual data to point to, 
+	 * this name, but sometimes there is no actual data to point to,
 	 * for instance in
 	 * names representing empty nonterminals. If so, set alloced to true to
 	 * indicate that this data must also be freed when the name is freed
@@ -62,7 +62,7 @@ struct ldns_struct_dnssec_name
 	 */
 	ldns_dnssec_rrsets *rrsets;
 	/**
-	 * NSEC pointing to the next name (or NSEC3 pointing to the next NSEC3)
+	 * NSEC pointing to the next name (or NSEC3 or NSEC4)
 	 */
 	ldns_rr *nsec;
 	/**
@@ -75,12 +75,13 @@ struct ldns_struct_dnssec_name
 	 * when the name, this dnssec_name struct represents, is occluded.
 	 * Names that contain other occluded rrsets and records with glue on
 	 * the delegation point will NOT have this bool set to true.
-	 * This field should NOT be read directly, but only via the 
+	 * This field should NOT be read directly, but only via the
 	 * ldns_dnssec_name_is_glue() function!
 	 */
 	bool is_glue;
 	/**
-	 * pointer to store the hashed name (only used when in an NSEC3 zone
+	 * pointer to store the hashed name (only used when in an NSEC3
+         * or NSEC4 hashing zone)
 	 */
 	ldns_rdf *hashed_name;
 };
@@ -105,7 +106,7 @@ ldns_dnssec_rrs *ldns_dnssec_rrs_new();
 /**
  * Frees the list of rrs, but *not* the individual ldns_rr records
  * contained in the list
- * 
+ *
  * \param[in] rrs the data structure to free
  */
 void ldns_dnssec_rrs_free(ldns_dnssec_rrs *rrs);
@@ -369,7 +370,7 @@ void ldns_dnssec_zone_print(FILE *out, ldns_dnssec_zone *zone);
 
 /**
  * Adds explicit dnssec_name structures for the empty nonterminals
- * in this zone. (this is needed for NSEC3 generation)
+ * in this zone. (this is needed for NSEC3 and NSEC4 generation)
  *
  * \param[in] zone the zone to check for empty nonterminals
  * return LDNS_STATUS_OK on success.

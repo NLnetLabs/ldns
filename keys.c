@@ -24,6 +24,9 @@ ldns_lookup_table ldns_signing_algorithms[] = {
         { LDNS_SIGN_RSAMD5, "RSAMD5" },
         { LDNS_SIGN_RSASHA1, "RSASHA1" },
         { LDNS_SIGN_RSASHA1_NSEC3, "RSASHA1-NSEC3-SHA1" },
+#ifdef USE_NSEC4
+        { LDNS_SIGN_RSASHA1_NSEC4, "RSASHA1-NSEC4-SHA1" },
+#endif
 #ifdef USE_SHA2
         { LDNS_SIGN_RSASHA256, "RSASHA256" },
         { LDNS_SIGN_RSASHA512, "RSASHA512" },
@@ -37,6 +40,9 @@ ldns_lookup_table ldns_signing_algorithms[] = {
 #endif
         { LDNS_SIGN_DSA, "DSA" },
         { LDNS_SIGN_DSA_NSEC3, "DSA-NSEC3-SHA1" },
+#ifdef USE_NSEC4
+        { LDNS_SIGN_DSA_NSEC4, "DSA-NSEC4-SHA1" },
+#endif
         { LDNS_SIGN_HMACMD5, "hmac-md5.sig-alg.reg.int" },
         { LDNS_SIGN_HMACSHA1, "hmac-sha1" },
         { LDNS_SIGN_HMACSHA256, "hmac-sha256" },
@@ -360,7 +366,6 @@ ldns_key_new_frm_fp_l(ldns_key **key, FILE *fp, int *line_nr)
 	if (strncmp(d, "7 RSASHA1", 2) == 0) {
 		alg = LDNS_SIGN_RSASHA1_NSEC3;
 	}
-
 	if (strncmp(d, "8 RSASHA256", 2) == 0) {
 #ifdef USE_SHA2
 		alg = LDNS_SIGN_RSASHA256;
@@ -393,6 +398,22 @@ ldns_key_new_frm_fp_l(ldns_key **key, FILE *fp, int *line_nr)
                 alg = LDNS_SIGN_ECDSAP384SHA384;
         }
 #endif
+	if (strncmp(d, "15 DSA", 2) == 0) {
+#ifdef USE_NSEC4
+		alg = LDNS_SIGN_DSA_NSEC4;
+#else
+		fprintf(stderr, "Warning: NSEC4 not compiled into this ");
+		fprintf(stderr, "version of ldns\n");
+#endif
+	}
+	if (strncmp(d, "16 RSASHA1", 2) == 0) {
+#ifdef USE_NSEC4
+		alg = LDNS_SIGN_RSASHA1_NSEC4;
+#else
+		fprintf(stderr, "Warning: NSEC4 not compiled into this ");
+		fprintf(stderr, "version of ldns\n");
+#endif
+	}
 	if (strncmp(d, "157 HMAC-MD5", 4) == 0) {
 		alg = LDNS_SIGN_HMACMD5;
 	}
@@ -409,6 +430,9 @@ ldns_key_new_frm_fp_l(ldns_key **key, FILE *fp, int *line_nr)
 		case LDNS_SIGN_RSAMD5:
 		case LDNS_SIGN_RSASHA1:
 		case LDNS_SIGN_RSASHA1_NSEC3:
+#ifdef USE_NSEC4
+		case LDNS_SIGN_RSASHA1_NSEC4:
+#endif
 #ifdef USE_SHA2
 		case LDNS_SIGN_RSASHA256:
 		case LDNS_SIGN_RSASHA512:
@@ -426,6 +450,9 @@ ldns_key_new_frm_fp_l(ldns_key **key, FILE *fp, int *line_nr)
 			break;
 		case LDNS_SIGN_DSA:
 		case LDNS_SIGN_DSA_NSEC3:
+#ifdef USE_NSEC4
+		case LDNS_SIGN_DSA_NSEC4:
+#endif
 			ldns_key_set_algorithm(k, alg);
 #ifdef HAVE_SSL
 			dsa = ldns_key_new_frm_fp_dsa_l(fp, line_nr);
@@ -827,6 +854,9 @@ ldns_key_new_frm_algorithm(ldns_signing_algorithm alg, uint16_t size)
 		case LDNS_SIGN_RSAMD5:
 		case LDNS_SIGN_RSASHA1:
 		case LDNS_SIGN_RSASHA1_NSEC3:
+#ifdef USE_NSEC4
+		case LDNS_SIGN_RSASHA1_NSEC4:
+#endif
 		case LDNS_SIGN_RSASHA256:
 		case LDNS_SIGN_RSASHA512:
 #ifdef HAVE_SSL
@@ -845,6 +875,9 @@ ldns_key_new_frm_algorithm(ldns_signing_algorithm alg, uint16_t size)
 			break;
 		case LDNS_SIGN_DSA:
 		case LDNS_SIGN_DSA_NSEC3:
+#ifdef USE_NSEC4
+		case LDNS_SIGN_DSA_NSEC4:
+#endif
 #ifdef HAVE_SSL
 			d = DSA_generate_parameters((int)size, NULL, 0, NULL, NULL, NULL, NULL);
 			if (!d) {
@@ -1378,6 +1411,9 @@ ldns_key2rr(const ldns_key *k)
 		case LDNS_SIGN_RSAMD5:
 		case LDNS_SIGN_RSASHA1:
 		case LDNS_SIGN_RSASHA1_NSEC3:
+#ifdef USE_NSEC4
+		case LDNS_SIGN_RSASHA1_NSEC4:
+#endif
 		case LDNS_SIGN_RSASHA256:
 		case LDNS_SIGN_RSASHA512:
 			ldns_rr_push_rdf(pubkey,
@@ -1423,8 +1459,11 @@ ldns_key2rr(const ldns_key *k)
 #endif /* HAVE_SSL */
 			break;
 		case LDNS_SIGN_DSA_NSEC3:
+#ifdef USE_NSEC4
+		case LDNS_SIGN_DSA_NSEC4:
+#endif
 			ldns_rr_push_rdf(pubkey,
-					ldns_native2rdf_int8(LDNS_RDF_TYPE_ALG, LDNS_DSA_NSEC3));
+					ldns_native2rdf_int8(LDNS_RDF_TYPE_ALG, ldns_key_algorithm(k)));
 #ifdef HAVE_SSL
 			dsa = ldns_key_dsa_key(k);
 			if (dsa) {
@@ -1638,6 +1677,11 @@ ldns_signing_algorithm ldns_get_signing_algorithm_by_name(const char* name)
                 /* old ldns usage, now RFC names */
                 {LDNS_SIGN_DSA_NSEC3, "DSA_NSEC3" },
                 {LDNS_SIGN_RSASHA1_NSEC3, "RSASHA1_NSEC3" },
+#ifdef USE_NSEC4
+                {LDNS_SIGN_DSA_NSEC4, "DSA_NSEC4" },
+                {LDNS_SIGN_RSASHA1_NSEC4, "RSASHA1_NSEC4" },
+#endif
+
 #ifdef USE_GOST
                 {LDNS_SIGN_ECC_GOST, "GOST"},
 #endif

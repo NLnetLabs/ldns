@@ -87,6 +87,11 @@ ldns_nsec_get_bitmap(ldns_rr *nsec) {
 	} else if (ldns_rr_get_type(nsec) == LDNS_RR_TYPE_NSEC3) {
 		return ldns_rr_rdf(nsec, 5);
 	} else {
+#if USE_NSEC4
+		if (ldns_rr_get_type(nsec) == LDNS_RR_TYPE_NSEC4) {
+			return ldns_rr_rdf(nsec, 1);
+		}
+#endif
 		return NULL;
 	}
 }
@@ -668,6 +673,9 @@ ldns_dnssec_create_nsec_bitmap(ldns_rr_type rr_type_list[],
 	uint16_t cur_data_size = 0;
 
 	if (nsec_type != LDNS_RR_TYPE_NSEC &&
+#if USE_NSEC4
+	    nsec_type != LDNS_RR_TYPE_NSEC4 &&
+#endif
 	    nsec_type != LDNS_RR_TYPE_NSEC3) {
 		return NULL;
 	}
@@ -775,8 +783,7 @@ ldns_dnssec_create_nsec(ldns_dnssec_name *from,
 	ldns_dnssec_rrsets *cur_rrsets;
 	int on_delegation_point;
 
-	if (!from || !to || (nsec_type != LDNS_RR_TYPE_NSEC &&
-					 nsec_type != LDNS_RR_TYPE_NSEC3)) {
+	if (!from || !to || (nsec_type != LDNS_RR_TYPE_NSEC)) {
 		return NULL;
 	}
 
@@ -795,7 +802,7 @@ ldns_dnssec_create_nsec(ldns_dnssec_name *from,
 		/* Do not include non-authoritative rrsets on the delegation point
 		 * in the type bitmap */
 		if ((on_delegation_point && (
-				cur_rrsets->type == LDNS_RR_TYPE_NS 
+				cur_rrsets->type == LDNS_RR_TYPE_NS
 			     || cur_rrsets->type == LDNS_RR_TYPE_DS))
 			|| (!on_delegation_point &&
 				cur_rrsets->type != LDNS_RR_TYPE_RRSIG
@@ -1387,6 +1394,10 @@ ldns_nsec_covers_name(const ldns_rr *nsec, const ldns_rdf *name)
 		if (status != LDNS_STATUS_OK) {
 			printf("error catting: %s\n", ldns_get_errorstr_by_id(status));
 		}
+#if USE_NSEC4
+	} else if (ldns_rr_get_type(nsec) == LDNS_RR_TYPE_NSEC4) {
+		nsec_next = ldns_rdf_clone(ldns_rr_rdf(nsec, 4));
+#endif
 	} else {
 		ldns_rdf_deep_free(nsec_next);
 		return false;
@@ -1480,8 +1491,7 @@ ldns_dnssec_chain_nsec3_list(ldns_rr_list *nsec3_rrs)
 	for (i = 0; i < ldns_rr_list_rr_count(nsec3_rrs); i++) {
 		if (i == ldns_rr_list_rr_count(nsec3_rrs) - 1) {
 			next_nsec_owner_label =
-				ldns_dname_label(ldns_rr_owner(ldns_rr_list_rr(nsec3_rrs,
-													  0)), 0);
+				ldns_dname_label(ldns_rr_owner(ldns_rr_list_rr(nsec3_rrs, 0)), 0);
 			next_nsec_owner_str = ldns_rdf2str(next_nsec_owner_label);
 			if (next_nsec_owner_str[strlen(next_nsec_owner_str) - 1]
 			    == '.') {
@@ -1499,8 +1509,7 @@ ldns_dnssec_chain_nsec3_list(ldns_rr_list *nsec3_rrs)
 			LDNS_FREE(next_nsec_owner_str);
 		} else {
 			next_nsec_owner_label =
-				ldns_dname_label(ldns_rr_owner(ldns_rr_list_rr(nsec3_rrs,
-													  i + 1)),
+				ldns_dname_label(ldns_rr_owner(ldns_rr_list_rr(nsec3_rrs, i + 1)),
 							  0);
 			next_nsec_owner_str = ldns_rdf2str(next_nsec_owner_label);
 			if (next_nsec_owner_str[strlen(next_nsec_owner_str) - 1]

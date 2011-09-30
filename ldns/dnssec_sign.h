@@ -146,6 +146,20 @@ ldns_dnssec_zone_create_nsec3s(ldns_dnssec_zone *zone,
 						 uint8_t salt_length,
 						 uint8_t *salt);
 
+#if LDNS_BUILD_CONFIG_USE_NSEC4
+/**
+ * Adds NSEC4 records to the zone
+ */
+ldns_status
+ldns_dnssec_zone_create_nsec4s(ldns_dnssec_zone *zone,
+						 ldns_rr_list *new_rrs,
+						 uint8_t algorithm,
+						 uint8_t flags,
+						 uint16_t iterations,
+						 uint8_t salt_length,
+						 uint8_t *salt);
+#endif
+
 /**
  * remove signatures if callback function tells to
  * 
@@ -269,6 +283,36 @@ ldns_status ldns_dnssec_zone_sign_nsec3_flg(ldns_dnssec_zone *zone,
 				uint8_t *salt,
 				int signflags);
 
+#if LDNS_BUILD_CONFIG_USE_NSEC4
+/**
+ * signs the given zone with the given new zone, with NSEC4
+ *
+ * \param[in] zone the zone to sign
+ * \param[in] key_list the list of keys to sign the zone with
+ * \param[in] new_rrs newly created resource records are added to this list, to free them later
+ * \param[in] func callback function that decides what to do with old signatures
+ * \param[in] arg optional argument for the callback function
+ * \param[in] algorithm the NSEC4 hashing algorithm to use
+ * \param[in] flags NSEC4 flags
+ * \param[in] iterations the number of NSEC4 hash iterations to use
+ * \param[in] salt_length the length (in octets) of the NSEC4 salt
+ * \param[in] salt the NSEC4 salt data
+ * \param[in] signflags option flags for signing process. 0 is the default.
+ * \return LDNS_STATUS_OK on success, an error code otherwise
+ */
+ldns_status ldns_dnssec_zone_sign_nsec4_flg(ldns_dnssec_zone *zone,
+				ldns_rr_list *new_rrs,
+				ldns_key_list *key_list,
+				int (*func)(ldns_rr *, void *),
+				void *arg,
+				uint8_t algorithm,
+				uint8_t flags,
+				uint16_t iterations,
+				uint8_t salt_length,
+				uint8_t *salt,
+				int signflags);
+#endif
+
 /**
  * signs the given zone with the given keys
  * 
@@ -321,6 +365,34 @@ ldns_status ldns_dnssec_zone_sign_nsec3(ldns_dnssec_zone *zone,
 								uint8_t salt_length,
 								uint8_t *salt);
 
+#if LDNS_BUILD_CONFIG_USE_NSEC4
+/**
+ * signs the given zone with the given new zone, with NSEC4
+ *
+ * \param[in] zone the zone to sign
+ * \param[in] key_list the list of keys to sign the zone with
+ * \param[in] new_rrs newly created resource records are added to this list, to free them later
+ * \param[in] func callback function that decides what to do with old signatures
+ * \param[in] arg optional argument for the callback function
+ * \param[in] algorithm the NSEC4 hashing algorithm to use
+ * \param[in] flags NSEC4 flags
+ * \param[in] iterations the number of NSEC4 hash iterations to use
+ * \param[in] salt_length the length (in octets) of the NSEC4 salt
+ * \param[in] salt the NSEC4 salt data
+ * \return LDNS_STATUS_OK on success, an error code otherwise
+ */
+ldns_status ldns_dnssec_zone_sign_nsec4(ldns_dnssec_zone *zone,
+						ldns_rr_list *new_rrs,
+						ldns_key_list *key_list,
+						int (*func)(ldns_rr *, void *),
+						void *arg,
+						uint8_t algorithm,
+						uint8_t flags,
+						uint16_t iterations,
+						uint8_t salt_length,
+						uint8_t *salt);
+#endif
+
 /**
  * Signs the zone, and returns a newly allocated signed zone
  * \param[in] zone the zone to sign
@@ -341,7 +413,22 @@ ldns_zone *ldns_zone_sign(const ldns_zone *zone, ldns_key_list *key_list);
  * \return signed zone
  */
 ldns_zone *ldns_zone_sign_nsec3(ldns_zone *zone, ldns_key_list *key_list, uint8_t algorithm, uint8_t flags, uint16_t iterations, uint8_t salt_length, uint8_t *salt);
- 
+
+#ifdef LDNS_BUILD_CONFIG_USE_NSEC4
+/**
+ * Signs the zone with NSEC4, and returns a newly allocated signed zone
+ * \param[in] zone the zone to sign
+ * \param[in] key_list list of keys to sign with
+ * \param[in] algorithm the NSEC4 hashing algorithm to use
+ * \param[in] flags NSEC4 flags
+ * \param[in] iterations the number of NSEC4 hash iterations to use
+ * \param[in] salt_length the length (in octets) of the NSEC4 salt
+ * \param[in] salt the NSEC4 salt data
+ * \return signed zone
+ */
+ldns_zone *ldns_zone_sign_nsec3(ldns_zone *zone, ldns_key_list *key_list, uint8_t algorithm, uint8_t flags, uint16_t iterations, uint8_t salt_length, uint8_t *salt);
+#endif
+
 #ifdef __cplusplus
 }
 #endif

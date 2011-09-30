@@ -102,6 +102,10 @@ main(int argc, char **argv)
 			if (cur_rr_type == LDNS_RR_TYPE_RRSIG ||
 			    cur_rr_type == LDNS_RR_TYPE_NSEC ||
 			    cur_rr_type == LDNS_RR_TYPE_NSEC3 ||
+#ifdef USE_NSEC4
+			    cur_rr_type == LDNS_RR_TYPE_NSEC4 ||
+			    cur_rr_type == LDNS_RR_TYPE_NSEC4PARAM ||
+#endif
 			    cur_rr_type == LDNS_RR_TYPE_NSEC3PARAM
 			   ) {
 				ldns_rr_free(cur_rr);
@@ -119,6 +123,10 @@ main(int argc, char **argv)
 			if (cur_rr_type == LDNS_RR_TYPE_RRSIG ||
 			    cur_rr_type == LDNS_RR_TYPE_NSEC ||
 			    cur_rr_type == LDNS_RR_TYPE_NSEC3 ||
+#ifdef USE_NSEC4
+			    cur_rr_type == LDNS_RR_TYPE_NSEC4 ||
+			    cur_rr_type == LDNS_RR_TYPE_NSEC4PARAM ||
+#endif
 			    cur_rr_type == LDNS_RR_TYPE_NSEC3PARAM
 			   ) {
 				ldns_rr_list_push_rr(stripped_list, cur_rr);

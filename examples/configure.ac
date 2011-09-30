@@ -189,6 +189,21 @@ case "$enable_ecdsa" in
       ;;
 esac
 
+AC_ARG_ENABLE(nsec4, AC_HELP_STRING([--enable-nsec4], [Enable NSEC4 support, experimental]))
+case "$enable_nsec4" in
+    yes)
+      AC_DEFINE_UNQUOTED([USE_NSEC4], [1], [Define this to enable NSEC4 support.])
+      AC_WARN([
+      *****************************************************************
+      *** YOU HAVE ENABLED NSEC4 WHICH IS EXPERIMENTAL AT THIS TIME ***
+      *** PLEASE DO NOT USE THIS ON THE PUBLIC INTERNET             ***
+      *****************************************************************])
+      ;;
+    no|*)
+      ;;
+esac
+
+
 LDFLAGS="$tmp_LDFLAGS"
 LIBS="$tmp_LIBS"
 

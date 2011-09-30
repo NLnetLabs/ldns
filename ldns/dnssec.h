@@ -85,6 +85,9 @@ ldns_rdf *ldns_nsec_get_bitmap(ldns_rr *nsec);
 
 
 #define LDNS_NSEC3_MAX_ITERATIONS 65535
+#if LDNS_BUILD_CONFIG_USE_NSEC4
+#define LDNS_NSEC4_MAX_ITERATIONS 65535
+#endif
 
 /**
  * Returns the dname of the closest (provable) encloser
@@ -241,6 +244,21 @@ ldns_dnssec_create_nsec3(ldns_dnssec_name *from,
 					uint16_t iterations,
 					uint8_t salt_length,
 					uint8_t *salt);
+
+#if LDNS_BUILD_CONFIG_USE_NSEC4
+/**
+ * Creates NSEC4
+ */
+ldns_rr *
+ldns_dnssec_create_nsec4(ldns_dnssec_name *from,
+					ldns_dnssec_name *to,
+					ldns_rdf *zone_name,
+					uint8_t algorithm,
+					uint8_t flags,
+					uint16_t iterations,
+					uint8_t salt_length,
+					uint8_t *salt);
+#endif
 
 /**
  * Create a NSEC record

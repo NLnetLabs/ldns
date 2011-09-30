@@ -389,6 +389,7 @@ ldns_status ldns_dnssec_verify_denial_nsec3(ldns_rr *rr,
 								    ldns_rr_type packet_qtype,
 								    bool packet_nodata);
 
+
 /**
  * Same as ldns_status ldns_dnssec_verify_denial_nsec3 but also returns
  * the nsec rr that matched.
@@ -414,6 +415,57 @@ ldns_status ldns_dnssec_verify_denial_nsec3_match(ldns_rr *rr,
 						  ldns_rr_type packet_qtype,
 						  bool packet_nodata,
 						  ldns_rr **match);
+
+#if LDNS_BUILD_CONFIG_USE_NSEC4
+/**
+ * Denial of existence using NSEC4 records.
+ *
+ * \param[in] rr The (query) RR to check the denial of existence for
+ * \param[in] nsecs The list of NSEC4 RRs that are supposed to deny the
+ *                  existence of the RR
+ * \param[in] rrsigs The RRSIG rr covering the NSEC4 RRs
+ * \param[in] packet_rcode The RCODE value of the packet that provided the
+ *                         NSEC4 RRs
+ * \param[in] packet_qtype The original query RR type
+ * \param[in] packet_nodata True if the providing packet had an empty ANSWER
+ *                          section
+ * \return LDNS_STATUS_OK if the NSEC4 RRs deny the existence, error code
+ *                        containing the reason they do not otherwise
+ */
+ldns_status ldns_dnssec_verify_denial_nsec4(ldns_rr *rr,
+						    ldns_rr_list *nsecs,
+						    ldns_rr_list *rrsigs,
+						    ldns_pkt_rcode packet_rcode,
+						    ldns_rr_type packet_qtype,
+						    bool packet_nodata);
+
+/**
+ * Same as ldns_status ldns_dnssec_verify_denial_nsec4 but also returns
+ * the nsec rr that matched.
+ *
+ * \param[in] rr The (query) RR to check the denial of existence for
+ * \param[in] nsecs The list of NSEC4 RRs that are supposed to deny the
+ *                  existence of the RR
+ * \param[in] rrsigs The RRSIG rr covering the NSEC RRs
+ * \param[in] packet_rcode The RCODE value of the packet that provided the
+ *                         NSEC4 RRs
+ * \param[in] packet_qtype The original query RR type
+ * \param[in] packet_nodata True if the providing packet had an empty ANSWER
+ *                          section
+ * \param[in] match On match, the given (reference to a) pointer will be set 
+ *                  to point to the matching nsec resource record.
+ * \return LDNS_STATUS_OK if the NSEC4 RRs deny the existence, error code
+ *                        containing the reason they do not otherwise
+ */
+ldns_status ldns_dnssec_verify_denial_nsec4_match(ldns_rr *rr,
+						  ldns_rr_list *nsecs,
+						  ldns_rr_list *rrsigs,
+						  ldns_pkt_rcode packet_rcode,
+						  ldns_rr_type packet_qtype,
+						  bool packet_nodata,
+						  ldns_rr **match);
+#endif
+
 /**
  * Verifies the already processed data in the buffers
  * This function should probably not be used directly.

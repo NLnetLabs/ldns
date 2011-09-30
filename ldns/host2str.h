@@ -370,7 +370,7 @@ ldns_status ldns_rr2buffer_str(ldns_buffer *output, const ldns_rr *rr);
  */
 ldns_status ldns_pkt2buffer_str(ldns_buffer *output, const ldns_pkt *pkt);
 
-/** 
+/**
  * Converts an LDNS_RDF_TYPE_NSEC3_SALT rdata element to string format and adds it to the output buffer 
  * \param[in] *rdf The rdata to convert
  * \param[in] *output The buffer to add the data to

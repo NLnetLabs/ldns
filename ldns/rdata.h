@@ -37,6 +37,9 @@ extern "C" {
 #define LDNS_RDF_SIZE_16BYTES           16
 
 #define LDNS_NSEC3_VARS_OPTOUT_MASK 0x01
+#if LDNS_BUILD_CONFIG_USE_NSEC4
+#define LDNS_NSEC4_VARS_WILDCARD_MASK 0x02
+#endif
 
 /**
  * The different types of RDATA fields.
@@ -103,7 +106,7 @@ enum ldns_enum_rdf_type
 	LDNS_RDF_TYPE_IPSECKEY,
 	/** nsec3 hash salt */
 	LDNS_RDF_TYPE_NSEC3_SALT,
-	/** nsec3 base32 string (with length byte on wire */
+	/** nsec3 base32 string (with length byte on wire) */
 	LDNS_RDF_TYPE_NSEC3_NEXT_OWNER
 };
 typedef enum ldns_enum_rdf_type ldns_rdf_type;

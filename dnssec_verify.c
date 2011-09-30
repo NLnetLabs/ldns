@@ -301,16 +301,15 @@ ldns_dnssec_build_data_chain(ldns_resolver *res,
 		}
 		return new_chain;
 	}
-	
+
 	if (!rrset || ldns_rr_list_rr_count(rrset) < 1) {
 		/* hmm, no data, do we have denial? only works if pkt was given,
 		   otherwise caller has to do the check himself */
 		new_chain->packet_nodata = true;
 		if (pkt) {
 			my_rrset = ldns_pkt_rr_list_by_type(pkt,
-										 LDNS_RR_TYPE_NSEC,
-										 LDNS_SECTION_ANY_NOQUESTION
-										 );
+						 LDNS_RR_TYPE_NSEC,
+						 LDNS_SECTION_ANY_NOQUESTION);
 			if (my_rrset) {
 				if (ldns_rr_list_rr_count(my_rrset) > 0) {
 					type = LDNS_RR_TYPE_NSEC;
@@ -322,8 +321,8 @@ ldns_dnssec_build_data_chain(ldns_resolver *res,
 			} else {
 				/* nothing, try nsec3 */
 				my_rrset = ldns_pkt_rr_list_by_type(pkt,
-						     LDNS_RR_TYPE_NSEC3,
-							LDNS_SECTION_ANY_NOQUESTION);
+					LDNS_RR_TYPE_NSEC3,
+					LDNS_SECTION_ANY_NOQUESTION);
 				if (my_rrset) {
 					if (ldns_rr_list_rr_count(my_rrset) > 0) {
 						type = LDNS_RR_TYPE_NSEC3;
@@ -333,6 +332,27 @@ ldns_dnssec_build_data_chain(ldns_resolver *res,
 						my_rrset = NULL;
 					}
 				} else {
+
+#if USE_NSEC4
+					/* nothing, try nsec4 */
+					my_rrset = ldns_pkt_rr_list_by_type(pkt,
+						LDNS_RR_TYPE_NSEC4,
+						LDNS_SECTION_ANY_NOQUESTION);
+					if (my_rrset) {
+						if (ldns_rr_list_rr_count(my_rrset) > 0) {
+							type = LDNS_RR_TYPE_NSEC4;
+							other_rrset = true;
+						} else {
+							ldns_rr_list_deep_free(my_rrset);
+							my_rrset = NULL;
+						}
+					} else {
+						/* nothing, stop */
+						/* try parent zone? for denied insecure? */
+						return new_chain;
+					}
+#endif
+
 					/* nothing, stop */
 					/* try parent zone? for denied insecure? */
 					return new_chain;
@@ -344,23 +364,27 @@ ldns_dnssec_build_data_chain(ldns_resolver *res,
 	} else {
 		my_rrset = (ldns_rr_list *) rrset;
 	}
-	
+
 	if (my_rrset && ldns_rr_list_rr_count(my_rrset) > 0) {
 		new_chain->rrset = ldns_rr_list_clone(my_rrset);
 		name = ldns_rr_owner(ldns_rr_list_rr(my_rrset, 0));
 		type = ldns_rr_get_type(ldns_rr_list_rr(my_rrset, 0));
 		c = ldns_rr_get_class(ldns_rr_list_rr(my_rrset, 0));
 	}
-	
+
 	if (other_rrset) {
 		ldns_rr_list_deep_free(my_rrset);
 	}
-	
+
 	/* normally there will only be 1 signature 'set'
 	   but there can be more than 1 denial (wildcards)
 	   so check for NSEC
 	*/
-	if (type == LDNS_RR_TYPE_NSEC || type == LDNS_RR_TYPE_NSEC3) {
+	if (type == LDNS_RR_TYPE_NSEC ||
+#if USE_NSEC4
+		type == LDNS_RR_TYPE_NSEC4 ||
+#endif
+		type == LDNS_RR_TYPE_NSEC3) {
 		/* just throw in all signatures, the tree builder must sort
 		   this out */
 		if (pkt) {
@@ -419,7 +443,6 @@ ldns_dnssec_build_data_chain(ldns_resolver *res,
 		                                   key_name,
 		                                   c,
 		                                   dss
-		                                    
 		                                    );
 	}
 	if (signatures) {
@@ -460,7 +483,7 @@ ldns_dnssec_trust_tree_depth(ldns_dnssec_trust_tree *tree)
 	size_t result = 0;
 	size_t parent = 0;
 	size_t i;
-	
+
 	for (i = 0; i < tree->parent_count; i++) {
 		parent = ldns_dnssec_trust_tree_depth(tree->parents[i]);
 		if (parent > result) {
@@ -497,7 +520,7 @@ ldns_dnssec_trust_tree_print_sm(FILE *out,
 	size_t i;
 	const ldns_rr_descriptor *descriptor;
 	bool mapset = false;
-	
+
 	if (!sibmap) {
 		treedepth = ldns_dnssec_trust_tree_depth(tree);
 		sibmap = malloc(treedepth);
@@ -506,7 +529,7 @@ ldns_dnssec_trust_tree_print_sm(FILE *out,
 		memset(sibmap, 0, treedepth);
 		mapset = true;
 	}
-	
+
 	if (tree) {
 		if (tree->rr) {
 			print_tabs(out, tabs, sibmap, treedepth);
@@ -516,7 +539,7 @@ ldns_dnssec_trust_tree_print_sm(FILE *out,
 			if (descriptor->_name) {
 				fprintf(out, " (%s", descriptor->_name);
 			} else {
-				fprintf(out, " (TYPE%d", 
+				fprintf(out, " (TYPE%d",
 					   ldns_rr_get_type(tree->rr));
 			}
 			if (tabs > 0) {
@@ -540,7 +563,7 @@ ldns_dnssec_trust_tree_print_sm(FILE *out,
 					ldns_rdf_print(out, ldns_rr_rdf(tree->rr, 1));
 				}
 			}
-			
+
 			fprintf(out, ")\n");
 			for (i = 0; i < tree->parent_count; i++) {
 				if (tree->parent_count > 1 && i < tree->parent_count - 1) {
@@ -549,8 +572,12 @@ ldns_dnssec_trust_tree_print_sm(FILE *out,
 					sibmap[tabs] = 0;
 				}
 				/* only print errors */
-				if (ldns_rr_get_type(tree->parents[i]->rr) == 
+				if (ldns_rr_get_type(tree->parents[i]->rr) ==
 				    LDNS_RR_TYPE_NSEC ||
+#if USE_NSEC4
+				    ldns_rr_get_type(tree->parents[i]->rr) ==
+				    LDNS_RR_TYPE_NSEC4 ||
+#endif
 				    ldns_rr_get_type(tree->parents[i]->rr) ==
 				    LDNS_RR_TYPE_NSEC3) {
 					if (tree->parent_status[i] == LDNS_STATUS_OK) {
@@ -608,7 +635,7 @@ ldns_dnssec_trust_tree_print_sm(FILE *out,
 	} else {
 		fprintf(out, "<null pointer>\n");
 	}
-	
+
 	if (mapset) {
 		free(sibmap);
 	}
@@ -662,10 +689,9 @@ ldns_dnssec_derive_trust_tree(ldns_dnssec_data_chain *data_chain, ldns_rr *rr)
 	ldns_dnssec_trust_tree *new_tree = ldns_dnssec_trust_tree_new();
         if(!new_tree)
                 return NULL;
-	
+
 	if (data_chain && data_chain->rrset) {
 		cur_rrset = data_chain->rrset;
-	
 		cur_sigs = data_chain->signatures;
 
 		if (rr) {
@@ -685,7 +711,6 @@ ldns_dnssec_derive_trust_tree(ldns_dnssec_data_chain *data_chain, ldns_rr *rr)
 			   3 - dnskey proven by higher level DS
 			   (data denied by nsec is a special case that can
 			   occur in multiple places)
-				   
 			*/
 			if (cur_sigs) {
 				for (i = 0; i < ldns_rr_list_rr_count(cur_sigs); i++) {
@@ -695,23 +720,20 @@ ldns_dnssec_derive_trust_tree(ldns_dnssec_data_chain *data_chain, ldns_rr *rr)
 					if (ldns_rr_get_type(cur_rr) == LDNS_RR_TYPE_NSEC) {
 						if (ldns_dname_compare(ldns_rr_owner(cur_sig_rr),
 										   ldns_rr_owner(cur_rr)))
-							{
-								/* find first that does match */
-
-								for (j = 0;
-								     j < ldns_rr_list_rr_count(cur_rrset) && 
-										ldns_dname_compare(ldns_rr_owner(cur_sig_rr),ldns_rr_owner(cur_rr)) != 0;
-								     j++) {
-									cur_rr = ldns_rr_list_rr(cur_rrset, j);
-									
-								}
-								if (ldns_dname_compare(ldns_rr_owner(cur_sig_rr), 
-												   ldns_rr_owner(cur_rr)))
-									{
-										break;
-									}
+						{
+							/* find first that does match */
+							for (j = 0;
+							     j < ldns_rr_list_rr_count(cur_rrset) && 
+									ldns_dname_compare(ldns_rr_owner(cur_sig_rr),ldns_rr_owner(cur_rr)) != 0;
+							     j++) {
+								cur_rr = ldns_rr_list_rr(cur_rrset, j);
 							}
-							
+							if (ldns_dname_compare(ldns_rr_owner(cur_sig_rr), 
+										   ldns_rr_owner(cur_rr)))
+							{
+								break;
+							}
+						}
 					}
 					/* option 1 */
 					if (data_chain->parent) {
@@ -728,13 +750,11 @@ ldns_dnssec_derive_trust_tree(ldns_dnssec_data_chain *data_chain, ldns_rr *rr)
 					    cur_rr,
 					    cur_sig_rr);
 				}
-					
 				ldns_dnssec_derive_trust_tree_ds_rrset(new_tree,
 											    data_chain,
 											    cur_rr);
 			} else {
 				/* no signatures? maybe it's nsec data */
-					
 				/* just add every rr from parent as new parent */
 				ldns_dnssec_derive_trust_tree_no_sig(new_tree, data_chain);
 			}
@@ -758,7 +778,7 @@ ldns_dnssec_derive_trust_tree_normal_rrset(ldns_dnssec_trust_tree *new_tree,
 	ldns_status cur_status;
 
 	cur_keytag = ldns_rdf2native_int16(ldns_rr_rrsig_keytag(cur_sig_rr));
-	
+
 	for (j = 0; j < ldns_rr_list_rr_count(data_chain->parent->rrset); j++) {
 		cur_parent_rr = ldns_rr_list_rr(data_chain->parent->rrset, j);
 		if (ldns_rr_get_type(cur_parent_rr) == LDNS_RR_TYPE_DNSKEY) {
@@ -769,9 +789,13 @@ ldns_dnssec_derive_trust_tree_normal_rrset(ldns_dnssec_trust_tree *new_tree,
 					tmp_rrset = cur_rrset;
 					if (ldns_rr_get_type(ldns_rr_list_rr(cur_rrset, 0))
 					    == LDNS_RR_TYPE_NSEC ||
+#if USE_NSEC4
+					    ldns_rr_get_type(ldns_rr_list_rr(cur_rrset, 0))
+					    == LDNS_RR_TYPE_NSEC4 ||
+#endif
 					    ldns_rr_get_type(ldns_rr_list_rr(cur_rrset, 0))
 					    == LDNS_RR_TYPE_NSEC3) {
-						/* might contain different names! 
+						/* might contain different names!
 						   sort and split */
 						ldns_rr_list_sort(cur_rrset);
 						if (tmp_rrset && tmp_rrset != cur_rrset) {
@@ -779,7 +803,6 @@ ldns_dnssec_derive_trust_tree_normal_rrset(ldns_dnssec_trust_tree *new_tree,
 							tmp_rrset = NULL;
 						}
 						tmp_rrset = ldns_rr_list_pop_rrset(cur_rrset);
-						
 						/* with nsecs, this might be the wrong one */
 						while (tmp_rrset &&
 						       ldns_rr_list_rr_count(cur_rrset) > 0 &&
@@ -903,7 +926,7 @@ ldns_dnssec_derive_trust_tree_no_sig(ldns_dnssec_trust_tree *new_tree,
 	ldns_rr *cur_parent_rr;
 	ldns_dnssec_trust_tree *cur_parent_tree;
 	ldns_status result;
-	
+
 	if (data_chain->parent && data_chain->parent->rrset) {
 		cur_rrset = data_chain->parent->rrset;
 		/* nsec? */
@@ -917,8 +940,19 @@ ldns_dnssec_derive_trust_tree_no_sig(ldns_dnssec_trust_tree *new_tree,
 						   data_chain->packet_rcode,
 						   data_chain->packet_qtype,
 						   data_chain->packet_nodata);
+#if USE_NSEC4
 			} else if (ldns_rr_get_type(ldns_rr_list_rr(cur_rrset, 0)) ==
-					 LDNS_RR_TYPE_NSEC3) {
+			    LDNS_RR_TYPE_NSEC4) {
+				result = ldns_dnssec_verify_denial_nsec4(
+					        new_tree->rr,
+						   cur_rrset,
+						   data_chain->parent->signatures,
+						   data_chain->packet_rcode,
+						   data_chain->packet_qtype,
+						   data_chain->packet_nodata);
+#endif
+			} else if (ldns_rr_get_type(ldns_rr_list_rr(cur_rrset, 0)) ==
+					 LDNS_RR_TYPE_NSEC) {
 				result = ldns_dnssec_verify_denial(
 					        new_tree->rr,
 						   cur_rrset,
@@ -932,7 +966,7 @@ ldns_dnssec_derive_trust_tree_no_sig(ldns_dnssec_trust_tree *new_tree,
 		}
 		for (i = 0; i < ldns_rr_list_rr_count(cur_rrset); i++) {
 			cur_parent_rr = ldns_rr_list_rr(cur_rrset, i);
-			cur_parent_tree = 
+			cur_parent_tree =
 				ldns_dnssec_derive_trust_tree(data_chain->parent,
 										cur_parent_rr);
 			(void) ldns_dnssec_trust_tree_add_parent(new_tree,
@@ -954,7 +988,7 @@ ldns_dnssec_trust_tree_contains_keys(ldns_dnssec_trust_tree *tree,
 	ldns_status result = LDNS_STATUS_CRYPTO_NO_DNSKEY;
 	bool equal;
 	ldns_status parent_result;
-	
+
 	if (tree && trusted_keys && ldns_rr_list_rr_count(trusted_keys) > 0)
 		{ if (tree->rr) {
 				for (i = 0; i < ldns_rr_list_rr_count(trusted_keys); i++) {
@@ -990,7 +1024,7 @@ ldns_dnssec_trust_tree_contains_keys(ldns_dnssec_trust_tree *tree,
 		} else {
 		result = LDNS_STATUS_ERR;
 	}
-	
+
 	return result;
 }
 
@@ -1012,7 +1046,7 @@ ldns_verify(ldns_rr_list *rrset, ldns_rr_list *rrsig, const ldns_rr_list *keys,
 	if (ldns_rr_list_rr_count(rrsig) < 1) {
 		return LDNS_STATUS_CRYPTO_NO_RRSIG;
 	}
-	
+
 	if (ldns_rr_list_rr_count(keys) < 1) {
 		verify_result = LDNS_STATUS_CRYPTO_NO_TRUSTED_DNSKEY;
 	} else {
@@ -1548,6 +1582,151 @@ ldns_dnssec_verify_denial_nsec3(ldns_rr *rr,
 }
 
 
+#if USE_NSEC4
+ldns_status
+ldns_dnssec_verify_denial_nsec4_match(ldns_rr *rr,
+						  ldns_rr_list *nsecs,
+						  ldns_rr_list *rrsigs,
+						  ldns_pkt_rcode packet_rcode,
+						  ldns_rr_type packet_qtype,
+						  bool packet_nodata,
+						  ldns_rr **match)
+{
+	ldns_rdf *closest_encloser;
+	ldns_rdf *wildcard;
+	ldns_rdf *hashed_wildcard_name;
+	bool wildcard_covered = false;
+	ldns_rdf *zone_name;
+	ldns_rdf *hashed_name;
+	size_t i;
+	ldns_status result = LDNS_STATUS_DNSSEC_NSEC_RR_NOT_COVERED;
+
+	rrsigs = rrsigs;
+
+	if (match) {
+		*match = NULL;
+	}
+
+	zone_name = ldns_dname_left_chop(ldns_rr_owner(ldns_rr_list_rr(nsecs,0)));
+
+	/* section 8.4 */
+	if (packet_rcode == LDNS_RCODE_NXDOMAIN) {
+		closest_encloser = ldns_dnssec_nsec4_closest_encloser(
+						   ldns_rr_owner(rr),
+						   ldns_rr_get_type(rr),
+						   nsecs);
+                if(!closest_encloser) {
+                        result = LDNS_STATUS_NSEC4_ERR;
+                        goto done;
+                }
+
+		wildcard = ldns_dname_new_frm_str("*");
+		(void) ldns_dname_cat(wildcard, closest_encloser);
+
+		for (i = 0; i < ldns_rr_list_rr_count(nsecs); i++) {
+			hashed_wildcard_name =
+				ldns_nsec3_hash_name_frm_nsec3(ldns_rr_list_rr(nsecs, 0),
+										 wildcard
+										 );
+			(void) ldns_dname_cat(hashed_wildcard_name, zone_name);
+
+			if (ldns_nsec_covers_name(ldns_rr_list_rr(nsecs, i),
+								 hashed_wildcard_name)) {
+				wildcard_covered = true;
+				if (match) {
+					*match = ldns_rr_list_rr(nsecs, i);
+				}
+			}
+			ldns_rdf_deep_free(hashed_wildcard_name);
+		}
+
+		ldns_rdf_deep_free(closest_encloser);
+		ldns_rdf_deep_free(wildcard);
+
+		if (!wildcard_covered) {
+			result = LDNS_STATUS_DNSSEC_NSEC_WILDCARD_NOT_COVERED;
+		} else if (closest_encloser && wildcard_covered) {
+			result = LDNS_STATUS_OK;
+		} else {
+			result = LDNS_STATUS_DNSSEC_NSEC_RR_NOT_COVERED;
+		}
+	} else if (packet_nodata && packet_qtype != LDNS_RR_TYPE_DS) {
+		/* section 8.5 */
+		hashed_name = ldns_nsec4_hash_name_frm_nsec4(
+		                   ldns_rr_list_rr(nsecs, 0),
+		                   ldns_rr_owner(rr));
+		for (i = 0; i < ldns_rr_list_rr_count(nsecs); i++) {
+			if (ldns_dname_compare(hashed_name,
+			         ldns_rr_owner(ldns_rr_list_rr(nsecs, i)))
+			    == 0) {
+				if (!ldns_nsec_bitmap_covers_type(
+					    ldns_nsec4_bitmap(ldns_rr_list_rr(nsecs, i)),
+					    packet_qtype)
+				    &&
+				    !ldns_nsec_bitmap_covers_type(
+					    ldns_nsec4_bitmap(ldns_rr_list_rr(nsecs, i)),
+					    LDNS_RR_TYPE_CNAME)) {
+					result = LDNS_STATUS_OK;
+					if (match) {
+						*match = ldns_rr_list_rr(nsecs, i);
+					}
+					goto done;
+				}
+			}
+		}
+		result = LDNS_STATUS_DNSSEC_NSEC_RR_NOT_COVERED;
+	} else if (packet_nodata && packet_qtype == LDNS_RR_TYPE_DS) {
+		/* section 8.6 */
+		/* note: up to XXX this is the same as for 8.5 */
+		hashed_name = ldns_nsec4_hash_name_frm_nsec4(ldns_rr_list_rr(nsecs,
+														 0),
+											ldns_rr_owner(rr)
+											);
+		for (i = 0; i < ldns_rr_list_rr_count(nsecs); i++) {
+			if (ldns_dname_compare(hashed_name,
+							   ldns_rr_owner(ldns_rr_list_rr(nsecs,
+													   i)))
+			    == 0) {
+				if (!ldns_nsec_bitmap_covers_type(
+					    ldns_nsec4_bitmap(ldns_rr_list_rr(nsecs, i)),
+					    LDNS_RR_TYPE_DS)
+				    && 
+				    !ldns_nsec_bitmap_covers_type(
+					    ldns_nsec4_bitmap(ldns_rr_list_rr(nsecs, i)),
+					    LDNS_RR_TYPE_CNAME)) {
+					result = LDNS_STATUS_OK;
+					if (match) {
+						*match = ldns_rr_list_rr(nsecs, i);
+					}
+					goto done;
+				}
+			}
+		}
+
+		/* XXX see note above */
+		result = LDNS_STATUS_DNSSEC_NSEC_RR_NOT_COVERED;
+	}
+
+ done:
+	ldns_rdf_deep_free(zone_name);
+	return result;
+}
+
+ldns_status
+ldns_dnssec_verify_denial_nsec4(ldns_rr *rr,
+						  ldns_rr_list *nsecs,
+						  ldns_rr_list *rrsigs,
+						  ldns_pkt_rcode packet_rcode,
+						  ldns_rr_type packet_qtype,
+						  bool packet_nodata)
+{
+	return ldns_dnssec_verify_denial_nsec4_match(
+				rr, nsecs, rrsigs, packet_rcode,
+				packet_qtype, packet_nodata, NULL
+	       );
+}
+#endif /* USE_NSEC4 */
+
 #endif /* HAVE_SSL */
 
 #ifdef USE_GOST
@@ -1676,6 +1855,9 @@ ldns_verify_rrsig_buffers_raw(unsigned char* sig, size_t siglen,
 	switch(algo) {
 	case LDNS_DSA:
 	case LDNS_DSA_NSEC3:
+#if USE_NSEC4
+	case LDNS_DSA_NSEC4:
+#endif
 		return ldns_verify_rrsig_dsa_raw(sig,
 								   siglen,
 								   verify_buf,
@@ -1684,6 +1866,9 @@ ldns_verify_rrsig_buffers_raw(unsigned char* sig, size_t siglen,
 		break;
 	case LDNS_RSASHA1:
 	case LDNS_RSASHA1_NSEC3:
+#if USE_NSEC4
+	case LDNS_RSASHA1_NSEC4:
+#endif
 		return ldns_verify_rrsig_rsasha1_raw(sig,
 									  siglen,
 									  verify_buf,
@@ -1800,6 +1985,9 @@ ldns_rrsig2rawsig_buffer(ldns_buffer* rawsig_buf, ldns_rr* rrsig)
 	case LDNS_RSAMD5:
 	case LDNS_RSASHA1:
 	case LDNS_RSASHA1_NSEC3:
+#ifdef USE_NSEC4
+	case LDNS_RSASHA1_NSEC4:
+#endif
 #ifdef USE_SHA2
 	case LDNS_RSASHA256:
 	case LDNS_RSASHA512:
@@ -1814,6 +2002,9 @@ ldns_rrsig2rawsig_buffer(ldns_buffer* rawsig_buf, ldns_rr* rrsig)
 		break;
 	case LDNS_DSA:
 	case LDNS_DSA_NSEC3:
+#if USE_NSEC4
+	case LDNS_DSA_NSEC4:
+#endif
 		/* EVP takes rfc2459 format, which is a tad longer than dns format */
 		if (ldns_convert_dsa_rrsig_rdf2asn1(rawsig_buf, 
 			ldns_rr_rdf(rrsig, 8)) != LDNS_STATUS_OK) {

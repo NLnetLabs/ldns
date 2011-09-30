@@ -97,6 +97,7 @@ Or you can just use the menu above to browse through the API docs.
 #include <ldns/common.h>
 #include <ldns/dname.h>
 #include <ldns/dnssec.h>
+#include <ldns/dnssec_nsec4.h>
 #include <ldns/dnssec_verify.h>
 #include <ldns/dnssec_sign.h>
 #include <ldns/error.h>

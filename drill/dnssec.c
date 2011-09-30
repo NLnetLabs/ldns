@@ -133,7 +133,7 @@ get_dnssec_rr(ldns_pkt *p, ldns_rdf *name, ldns_rr_type t,
 			/* only add the sigs that cover this type */
 			if (ldns_rdf2rr_type(ldns_rr_rrsig_typecovered(ldns_rr_list_rr(sigs, i))) ==
 			    t) {
-			 	ldns_rr_list_push_rr(*sig, ldns_rr_clone(ldns_rr_list_rr(sigs, i)));   
+			 	ldns_rr_list_push_rr(*sig, ldns_rr_clone(ldns_rr_list_rr(sigs, i)));
 			}
 		}
 	}
@@ -157,7 +157,7 @@ ldns_verify_denial(ldns_pkt *pkt, ldns_rdf *name, ldns_rr_type type, ldns_rr_lis
 
 	ldns_rr_list *nsecs;
 	ldns_status result;
-	
+
 	if (verbosity >= 5) {
 		printf("VERIFY DENIAL FROM:\n");
 		ldns_pkt_print(stdout, pkt);
@@ -223,7 +223,7 @@ ldns_verify_denial(ldns_pkt *pkt, ldns_rdf *name, ldns_rr_type type, ldns_rr_lis
                 ldns_rr_set_owner(q, ldns_rdf_clone(name));
                 if(!ldns_rr_owner(q)) return LDNS_STATUS_MEM_ERR;
                 ldns_rr_set_type(q, type);
-                
+
                 /* result = ldns_dnssec_verify_denial_nsec3(q, nsecs, sigs, ldns_pkt_get_rcode(pkt), type, ldns_pkt_ancount(pkt) == 0); */
                 result = ldns_dnssec_verify_denial_nsec3_match(q, nsecs, sigs, ldns_pkt_get_rcode(pkt), type, ldns_pkt_ancount(pkt) == 0, &match);
 		if (result == LDNS_STATUS_OK && match && nsec_rrs && nsec_rr_sigs) {
@@ -232,6 +232,27 @@ ldns_verify_denial(ldns_pkt *pkt, ldns_rdf *name, ldns_rr_type type, ldns_rr_lis
                 ldns_rr_free(q);
 		ldns_rr_list_deep_free(nsecs);
 		ldns_rr_list_deep_free(sigs);
+#if USE_NSEC4
+	} else if( (nsecs = ldns_pkt_rr_list_by_type(pkt, LDNS_RR_TYPE_NSEC4, LDNS_SECTION_ANY_NOQUESTION)) ) {
+                ldns_rr_list* sigs = ldns_pkt_rr_list_by_type(pkt, LDNS_RR_TYPE_RRSIG, LDNS_SECTION_ANY_NOQUESTION);
+                ldns_rr* q = ldns_rr_new();
+		ldns_rr* match = NULL;
+                if(!sigs) return LDNS_STATUS_MEM_ERR;
+                if(!q) return LDNS_STATUS_MEM_ERR;
+                ldns_rr_set_question(q, 1);
+                ldns_rr_set_ttl(q, 0);
+                ldns_rr_set_owner(q, ldns_rdf_clone(name));
+                if(!ldns_rr_owner(q)) return LDNS_STATUS_MEM_ERR;
+                ldns_rr_set_type(q, type);
+
+                result = ldns_dnssec_verify_denial_nsec4_match(q, nsecs, sigs, ldns_pkt_get_rcode(pkt), type, ldns_pkt_ancount(pkt) == 0, &match);
+		if (result == LDNS_STATUS_OK && match && nsec_rrs && nsec_rr_sigs) {
+			(void) get_dnssec_rr(pkt, ldns_rr_owner(match), LDNS_RR_TYPE_NSEC3, nsec_rrs, nsec_rr_sigs);
+		}
+                ldns_rr_free(q);
+		ldns_rr_list_deep_free(nsecs);
+		ldns_rr_list_deep_free(sigs);
+#endif
         }
 	return result;
 }
@@ -244,19 +265,19 @@ ldns_nsec3_exact_match(ldns_rdf *qname, ldns_rr_type qtype, ldns_rr_list *nsec3s
 	uint32_t iterations;
 	uint8_t salt_length;
 	uint8_t *salt;
-	
+
 	ldns_rdf *sname, *hashed_sname;
-	
+
 	size_t nsec_i;
 	ldns_rr *nsec;
 	ldns_rr *result = NULL;
-	
+
 	ldns_status status;
-	
+
 	const ldns_rr_descriptor *descriptor;
-	
+
 	ldns_rdf *zone_name;
-	
+
 	if (verbosity >= 4) {
 		printf(";; finding exact match for ");
 		descriptor = ldns_rr_descript(qtype);
@@ -268,7 +289,7 @@ ldns_nsec3_exact_match(ldns_rdf *qname, ldns_rr_type qtype, ldns_rr_list *nsec3s
 		ldns_rdf_print(stdout, qname);
 		printf("\n");
 	}
-	
+
 	if (!qname || !nsec3s || ldns_rr_list_rr_count(nsec3s) < 1) {
 		if (verbosity >= 4) {
 			printf("no qname, nsec3s or list empty\n");
@@ -291,7 +312,7 @@ ldns_nsec3_exact_match(ldns_rdf *qname, ldns_rr_type qtype, ldns_rr_list *nsec3s
 
 	zone_name = ldns_dname_left_chop(ldns_rr_owner(nsec));
 	status = ldns_dname_cat(hashed_sname, zone_name);
-	
+
 	if (verbosity >= 4) {
 		ldns_rdf_print(stdout, hashed_sname);
 		printf("\n");
@@ -299,15 +320,15 @@ ldns_nsec3_exact_match(ldns_rdf *qname, ldns_rr_type qtype, ldns_rr_list *nsec3s
 
 	for (nsec_i = 0; nsec_i < ldns_rr_list_rr_count(nsec3s); nsec_i++) {
 		nsec = ldns_rr_list_rr(nsec3s, nsec_i);
-		
+
 		/* check values of iterations etc! */
-		
+
 		/* exact match? */
 		if (ldns_dname_compare(ldns_rr_owner(nsec), hashed_sname) == 0) {
 			result = nsec;
 			goto done;
 		}
-		
+
 	}
 
 done:
@@ -315,7 +336,7 @@ done:
 	ldns_rdf_deep_free(sname);
 	ldns_rdf_deep_free(hashed_sname);
 	LDNS_FREE(salt);
-	
+
 	if (verbosity >= 4) {
 		if (result) {
 			printf(";; Found.\n");
@@ -340,17 +361,17 @@ ldns_nsec3_closest_encloser(ldns_rdf *qname, ldns_rr_type qtype, ldns_rr_list *n
 	ldns_rdf *sname, *hashed_sname, *tmp;
 	ldns_rr *ce;
 	bool flag;
-	
+
 	bool exact_match_found;
 	bool in_range_found;
-	
+
 	ldns_status status;
 	ldns_rdf *zone_name;
-	
+
 	size_t nsec_i;
 	ldns_rr *nsec;
 	ldns_rdf *result = NULL;
-	
+
 	if (!qname || !nsec3s || ldns_rr_list_rr_count(nsec3s) < 1) {
 		return NULL;
 	}
@@ -371,14 +392,14 @@ ldns_nsec3_closest_encloser(ldns_rdf *qname, ldns_rr_type qtype, ldns_rr_list *n
 
 	ce = NULL;
 	flag = false;
-	
+
 	zone_name = ldns_dname_left_chop(ldns_rr_owner(nsec));
 
 	/* algorithm from nsec3-07 8.3 */
 	while (ldns_dname_label_count(sname) > 0) {
 		exact_match_found = false;
 		in_range_found = false;
-		
+
 		if (verbosity >= 3) {
 			printf(";; ");
 			ldns_rdf_print(stdout, sname);
@@ -395,9 +416,9 @@ ldns_nsec3_closest_encloser(ldns_rdf *qname, ldns_rr_type qtype, ldns_rr_list *n
 
 		for (nsec_i = 0; nsec_i < ldns_rr_list_rr_count(nsec3s); nsec_i++) {
 			nsec = ldns_rr_list_rr(nsec3s, nsec_i);
-			
+
 			/* check values of iterations etc! */
-			
+
 			/* exact match? */
 			if (ldns_dname_compare(ldns_rr_owner(nsec), hashed_sname) == 0) {
 				if (verbosity >= 4) {
@@ -410,7 +431,7 @@ ldns_nsec3_closest_encloser(ldns_rdf *qname, ldns_rr_type qtype, ldns_rr_list *n
 				}
 				in_range_found = true;
 			}
-			
+
 		}
 		if (!exact_match_found && in_range_found) {
 			flag = true;
@@ -426,7 +447,7 @@ ldns_nsec3_closest_encloser(ldns_rdf *qname, ldns_rr_type qtype, ldns_rr_list *n
 		} else {
 			flag = false;
 		}
-		
+
 		ldns_rdf_deep_free(hashed_sname);
 		tmp = sname;
 		sname = ldns_dname_left_chop(sname);
@@ -443,7 +464,7 @@ ldns_nsec3_closest_encloser(ldns_rdf *qname, ldns_rr_type qtype, ldns_rr_list *n
 			printf(";; no closest encloser found\n");
 		}
 	}
-	
+
 	/* todo checks from end of 6.2. here or in caller? */
 	return result;
 }
@@ -471,9 +492,9 @@ ldns_verify_denial_wildcard(ldns_pkt *pkt, ldns_rdf *name, ldns_rr_type type, ld
 
 		nsec3_ex = ldns_nsec3_exact_match(name, type, nsecs);
 		nsec3_ce = ldns_nsec3_closest_encloser(name, type, nsecs);
-		nsec3_wc_ce = ldns_nsec3_closest_encloser(wildcard_name, type, nsecs);				
+		nsec3_wc_ce = ldns_nsec3_closest_encloser(wildcard_name, type, nsecs);
 		nsec3_wc_ex = ldns_nsec3_exact_match(wildcard_name, type, nsecs);
-		
+
 		if (nsec3_ex) {
 			if (verbosity >= 3) {
 				printf(";; Error, exact match for for name found, but should not exist (draft -07 section 8.8)\n");
@@ -504,7 +525,7 @@ ldns_verify_denial_wildcard(ldns_pkt *pkt, ldns_rdf *name, ldns_rr_type type, ld
 		}
 		result = LDNS_STATUS_CRYPTO_NO_RRSIG;
 	}
-	
+
 	if (nsecs && nsec_rrs && nsec_rr_sigs) {
 		(void) get_dnssec_rr(pkt, ldns_rr_owner(ldns_rr_list_rr(nsecs, 0)), LDNS_RR_TYPE_NSEC3, nsec_rrs, nsec_rr_sigs);
 	}

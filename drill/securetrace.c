@@ -561,7 +561,7 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 					ldns_rr_list_deep_free(ds_sig_list);
 					p = get_dnssec_pkt(res, labels[i-1], LDNS_RR_TYPE_DS);
 					pt = get_ds(p, labels[i-1], &ds_list, &ds_sig_list);
-					
+
 					status = ldns_verify_denial(p, labels[i-1], LDNS_RR_TYPE_DS, &nsec_rrs, &nsec_rr_sigs);
 
 					if (verbosity >= 4) {
@@ -653,7 +653,7 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 						printf("trusted keys at %p:\n", trusted_keys);
 						ldns_rr_list_print(stdout, trusted_keys);
 */					}
-					
+
 					if ((st = ldns_verify(nsec_rrs, nsec_rr_sigs, trusted_keys, NULL)) == LDNS_STATUS_OK) {
 						fprintf(stdout, "%s ", TRUST);
 						fprintf(stdout, "Existence denied: ");
@@ -687,7 +687,7 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 						}
 						printf(": %s\n", ldns_get_errorstr_by_id(st));
 					}
-					
+
 					ldns_rr_list_deep_free(nsec_rrs);
 					ldns_rr_list_deep_free(nsec_rr_sigs);
 				} else {

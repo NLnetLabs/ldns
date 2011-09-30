@@ -334,7 +334,7 @@ ldns_rr_new_frm_str_internal(ldns_rr **newrr, const char *str,
 	}
 
 	/* depending on the rr_type we need to extract
-	 * the rdata differently, e.g. NSEC/NSEC3 */
+	 * the rdata differently, e.g. NSEC/NSEC3/NSEC4 */
 	switch(rr_type) {
 		default:
 			done = false;
@@ -1909,7 +1909,6 @@ static const ldns_rdf_type type_nsec3_wireformat[] = {
 /*	LDNS_RDF_TYPE_NSEC3_VARS, LDNS_RDF_TYPE_NSEC3_NEXT_OWNER, LDNS_RDF_TYPE_NSEC*/
 	LDNS_RDF_TYPE_INT8, LDNS_RDF_TYPE_INT8, LDNS_RDF_TYPE_INT16, LDNS_RDF_TYPE_NSEC3_SALT, LDNS_RDF_TYPE_NSEC3_NEXT_OWNER, LDNS_RDF_TYPE_NSEC
 };
-
 static const ldns_rdf_type type_nsec3param_wireformat[] = {
 /*	LDNS_RDF_TYPE_NSEC3_PARAMS_VARS*/
 	LDNS_RDF_TYPE_INT8,
@@ -1917,6 +1916,18 @@ static const ldns_rdf_type type_nsec3param_wireformat[] = {
 	LDNS_RDF_TYPE_INT16,
 	LDNS_RDF_TYPE_NSEC3_SALT
 };
+
+#if USE_NSEC4
+static const ldns_rdf_type type_nsec4_wireformat[] = {
+	LDNS_RDF_TYPE_INT8, LDNS_RDF_TYPE_INT8, LDNS_RDF_TYPE_INT16, LDNS_RDF_TYPE_NSEC3_SALT, LDNS_RDF_TYPE_DNAME, LDNS_RDF_TYPE_NSEC
+};
+static const ldns_rdf_type type_nsec4param_wireformat[] = {
+	LDNS_RDF_TYPE_INT8,
+	LDNS_RDF_TYPE_INT8,
+	LDNS_RDF_TYPE_INT16,
+	LDNS_RDF_TYPE_NSEC3_SALT
+};
+#endif
 
 static const ldns_rdf_type type_dnskey_wireformat[] = {
 	LDNS_RDF_TYPE_INT16,
@@ -2246,7 +2257,13 @@ static ldns_rr_descriptor rdata_field_descriptors[] = {
 {LDNS_RR_TYPE_NULL, "TYPE249", 1, 1, type_0_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 0 },
 {LDNS_RR_TYPE_TSIG, "TSIG", 8, 9, type_tsig_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 0 },
 /* split in array, no longer contiguous */
+#if USE_NSEC4
+{LDNS_RR_TYPE_DLV, "DLV", 4, 4, type_ds_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 0 },
+{LDNS_RR_TYPE_NSEC4, "NSEC4", 5, 6, type_nsec4_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 0 },
+{LDNS_RR_TYPE_NSEC4PARAM, "NSEC4PARAM", 4, 4, type_nsec4param_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 0 }
+#else
 {LDNS_RR_TYPE_DLV, "DLV", 4, 4, type_ds_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 0 }
+#endif
 };
 /** \endcond */
 

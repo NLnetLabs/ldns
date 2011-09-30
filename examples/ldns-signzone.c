@@ -45,11 +45,14 @@ usage(FILE *fp, const char *prog) {
 	fprintf(fp, "  -K <id>,<int>\tuse key id with algorithm int from engine as KSK\n");
 	fprintf(fp, "\t\tif no key is given (but an external one is used through the engine support, it might be necessary to provide the right algorithm number.\n");
 	fprintf(fp, "  -n\t\tuse NSEC3 instead of NSEC.\n");
-	fprintf(fp, "\t\tIf you use NSEC3, you can specify the following extra options:\n");
+#if USE_NSEC4
+	fprintf(fp, "  -4\t\tuse NSEC4 instead of NSEC.\n");
+#endif
+	fprintf(fp, "\t\tIf you use NSEC3 or NSEC4, you can specify the following extra options:\n");
 	fprintf(fp, "\t\t-a [algorithm] hashing algorithm\n");
 	fprintf(fp, "\t\t-t [number] number of hash iterations\n");
 	fprintf(fp, "\t\t-s [string] salt\n");
-	fprintf(fp, "\t\t-p set the opt-out flag on all nsec3 rrs\n");
+	fprintf(fp, "\t\t-p set the opt-out flag on all nsec3 or nsec4 rrs\n");
 	fprintf(fp, "\n");
 	fprintf(fp, "  keys must be specified by their base name (usually K<name>+<alg>+<id>),\n");
 	fprintf(fp, "  i.e. WITHOUT the .private extension.\n");
@@ -79,7 +82,7 @@ static void check_tm(struct tm tm)
 		fprintf(stderr, "The day must be in the range 1 to 31\n");
 		exit(EXIT_FAILURE);
 	}
-	
+
 	if (tm.tm_hour < 0 || tm.tm_hour > 23) {
 		fprintf(stderr, "The hour must be in the range 0-23\n");
 		exit(EXIT_FAILURE);
@@ -101,17 +104,17 @@ static void check_tm(struct tm tm)
  * if the ttls are different, make them equal
  * if one of the ttls equals LDNS_DEFAULT_TTL, that one is changed
  * otherwise, rr2 will get the ttl of rr1
- * 
+ *
  * prints a warning if a non-default TTL is changed
  */
 static void
 equalize_ttls(ldns_rr *rr1, ldns_rr *rr2, uint32_t default_ttl)
 {
 	uint32_t ttl1, ttl2;
-	
+
 	ttl1 = ldns_rr_ttl(rr1);
 	ttl2 = ldns_rr_ttl(rr2);
-	
+
 	if (ttl1 != ttl2) {
 		if (ttl1 == default_ttl) {
 			ldns_rr_set_ttl(rr1, ttl2);
@@ -119,7 +122,7 @@ equalize_ttls(ldns_rr *rr1, ldns_rr *rr2, uint32_t default_ttl)
 			ldns_rr_set_ttl(rr2, ttl1);
 		} else {
 			ldns_rr_set_ttl(rr2, ttl1);
-			fprintf(stderr, 
+			fprintf(stderr,
 			        "warning: changing non-default TTL %u to %u\n",
 			        (unsigned int) ttl2, (unsigned int)  ttl1);
 		}
@@ -131,7 +134,7 @@ equalize_ttls_rr_list(ldns_rr_list *rr_list, ldns_rr *rr, uint32_t default_ttl)
 {
 	size_t i;
 	ldns_rr *cur_rr;
-	
+
 	for (i = 0; i < ldns_rr_list_rr_count(rr_list); i++) {
 		cur_rr = ldns_rr_list_rr(rr_list, i);
 		if (ldns_rr_compare_no_rdata(cur_rr, rr) == 0) {
@@ -144,7 +147,7 @@ static ldns_rr *
 find_key_in_zone(ldns_rr *pubkey_gen, ldns_zone *zone) {
 	size_t key_i;
 	ldns_rr *pubkey;
-	
+
 	for (key_i = 0;
 		key_i < ldns_rr_list_rr_count(ldns_zone_rrs(zone));
 		key_i++) {
@@ -208,7 +211,7 @@ find_key_in_file(const char *keyfile_name_base, ldns_key *key, uint32_t zone_ttl
 /* this function tries to find the specified keys either in the zone that
  * has been read, or in a <basename>.key file. If the key is not found,
  * a public key is generated, and it is assumed the key is a ZSK
- * 
+ *
  * if add_keys is true; the DNSKEYs are added to the zone prior to signing
  * if it is false, they are not added.
  * Even if keys are not added, the function is still needed, to check
@@ -218,7 +221,7 @@ static ldns_status
 find_or_create_pubkey(const char *keyfile_name_base, ldns_key *key, ldns_zone *orig_zone, bool add_keys, uint32_t default_ttl) {
 	ldns_rr *pubkey_gen, *pubkey;
 	int key_in_zone;
-	
+
 	if (default_ttl == LDNS_DEFAULT_TTL) {
 		default_ttl = ldns_rr_ttl(ldns_zone_soa(orig_zone));
 	}
@@ -234,9 +237,9 @@ find_or_create_pubkey(const char *keyfile_name_base, ldns_key *key, ldns_zone *o
 	 * if it matches, we drop our own. If not,
 	 * we try to see if there is a .key file present.
 	 * If not, we use our own generated one, with
-	 * some default values 
+	 * some default values
 	 *
-	 * Even if -d (do-not-add-keys) is specified, 
+	 * Even if -d (do-not-add-keys) is specified,
 	 * we still need to do this, because we need
 	 * to have any key flags that are set this way
 	 */
@@ -272,7 +275,7 @@ find_or_create_pubkey(const char *keyfile_name_base, ldns_key *key, ldns_zone *o
 			exit(EXIT_FAILURE); /* leak rdf2str, but we exit */
 		}
 	}
-	
+
 	if (!pubkey) {
 		/* okay, no public key found,
 		   just use our generated one */
@@ -285,7 +288,7 @@ find_or_create_pubkey(const char *keyfile_name_base, ldns_key *key, ldns_zone *o
 	}
 	ldns_key_set_flags(key, ldns_rdf2native_int16(ldns_rr_rdf(pubkey, 0)));
 	ldns_key_set_keytag(key, ldns_calc_keytag(pubkey));
-	
+
 	if (add_keys && !key_in_zone) {
 		equalize_ttls_rr_list(ldns_zone_rrs(orig_zone), pubkey, default_ttl);
 		ldns_zone_push_rr(orig_zone, pubkey);
@@ -298,15 +301,19 @@ strip_dnssec_records(ldns_zone *zone)
 {
 	ldns_rr_list *new_list;
 	ldns_rr *cur_rr;
-	
+
 	new_list = ldns_rr_list_new();
-	
+
 	while ((cur_rr = ldns_rr_list_pop_rr(ldns_zone_rrs(zone)))) {
 		if (ldns_rr_get_type(cur_rr) == LDNS_RR_TYPE_RRSIG ||
 		    ldns_rr_get_type(cur_rr) == LDNS_RR_TYPE_NSEC ||
-		    ldns_rr_get_type(cur_rr) == LDNS_RR_TYPE_NSEC3
+		    ldns_rr_get_type(cur_rr) == LDNS_RR_TYPE_NSEC3 ||
+#if USE_NSEC4
+		    ldns_rr_get_type(cur_rr) == LDNS_RR_TYPE_NSEC4 ||
+		    ldns_rr_get_type(cur_rr) == LDNS_RR_TYPE_NSEC4PARAM ||
+#endif
+		    ldns_rr_get_type(cur_rr) == LDNS_RR_TYPE_NSEC3PARAM
 		   ) {
-			
 			ldns_rr_free(cur_rr);
 		} else {
 			ldns_rr_list_push_rr(new_list, cur_rr);
@@ -345,25 +352,31 @@ main(int argc, char *argv[])
 
 	char *outputfile_name = NULL;
 	FILE *outputfile;
-	
+
 	/* tmp vars for engine keys */
 	char *eng_key_l;
 	size_t eng_key_id_len;
 	char *eng_key_id;
 	int eng_key_algo;
-	
+
 	bool use_nsec3 = false;
+#if USE_NSEC4
+	bool use_nsec4 = false;
+#endif
 	int signflags = 0;
 
 	/* Add the given keys to the zone if they are not yet present */
 	bool add_keys = true;
+#if USE_NSEC4
+	uint8_t nsec4_algorithm = 0;
+#endif
 	uint8_t nsec3_algorithm = 1;
 	uint8_t nsec3_flags = 0;
 	size_t nsec3_iterations_cmd = 1;
 	uint16_t nsec3_iterations = 1;
 	uint8_t nsec3_salt_length = 0;
 	uint8_t *nsec3_salt = NULL;
-	
+
 	/* we need to know the origin before reading ksk's,
 	 * so keep an array of filenames until we know it
 	 */
@@ -372,21 +385,37 @@ main(int argc, char *argv[])
 	uint32_t expiration;
 	ldns_rdf *origin = NULL;
 	uint32_t ttl = LDNS_DEFAULT_TTL;
-	ldns_rr_class class = LDNS_RR_CLASS_IN;	
-	
+	ldns_rr_class class = LDNS_RR_CLASS_IN;
+
 	char *prog = strdup(argv[0]);
 	ldns_status result;
-	
+
 	inception = 0;
 	expiration = 0;
-	
+
 	keys = ldns_key_list_new();
 
 	OPENSSL_config(NULL);
 
+#if USE_NSEC4
+	while ((c = getopt(argc, argv, "4a:de:f:i:k:lno:ps:t:vAE:K:")) != -1) {
+#else
 	while ((c = getopt(argc, argv, "a:de:f:i:k:lno:ps:t:vAE:K:")) != -1) {
+#endif
 		switch (c) {
+#if USE_NSEC4
+		case '4':
+			if (use_nsec3) {
+				fprintf(stderr, "Cannot use NSEC3 and NSEC4 at the same time\n");
+				exit(EXIT_FAILURE);
+			}
+			use_nsec4 = true;
+			break;
+#endif
 		case 'a':
+#if USE_NSEC4
+			nsec4_algorithm = (uint8_t) atoi(optarg);
+#endif
 			nsec3_algorithm = (uint8_t) atoi(optarg);
 			break;
 		case 'd':
@@ -446,6 +475,12 @@ main(int argc, char *argv[])
 			leave_old_dnssec_data = true;
 			break;
 		case 'n':
+#if USE_NSEC4
+			if (use_nsec4) {
+				fprintf(stderr, "Cannot use NSEC3 and NSEC4 at the same time\n");
+				exit(EXIT_FAILURE);
+			}
+#endif
 			use_nsec3 = true;
 			break;
 		case 'o':
@@ -454,7 +489,7 @@ main(int argc, char *argv[])
 				usage(stderr, prog);
 				exit(EXIT_FAILURE);
 			}
-			
+
 			break;
 		case 'p':
 			nsec3_flags = nsec3_flags | LDNS_NSEC3_VARS_OPTOUT_MASK;
@@ -522,6 +557,10 @@ main(int argc, char *argv[])
 					case LDNS_SIGN_RSASHA1:
 					case LDNS_SIGN_RSASHA1_NSEC3:
 					case LDNS_SIGN_RSASHA256:
+#if USE_NSEC4
+					case LDNS_SIGN_RSASHA1_NSEC4:
+					case LDNS_SIGN_DSA_NSEC4:
+#endif
 					case LDNS_SIGN_RSASHA512:
 					case LDNS_SIGN_DSA:
 					case LDNS_SIGN_DSA_NSEC3:
@@ -593,7 +632,7 @@ main(int argc, char *argv[])
 			exit(EXIT_SUCCESS);
 		}
 	}
-	
+
 	argc -= optind;
 	argv += optind;
 
@@ -606,7 +645,7 @@ main(int argc, char *argv[])
 	}
 
 	/* read zonefile first to find origin if not specified */
-	
+
 	if (strncmp(zonefile_name, "-", 2) == 0) {
 		s = ldns_zone_new_frm_fp_l(&orig_zone,
 					   stdin,
@@ -635,7 +674,7 @@ main(int argc, char *argv[])
 			}
 	} else {
 		zonefile = fopen(zonefile_name, "r");
-		
+
 		if (!zonefile) {
 			fprintf(stderr,
 				   "Error: unable to read %s (%s)\n",
@@ -675,7 +714,7 @@ main(int argc, char *argv[])
 	if (!origin) {
 		origin = ldns_rr_owner(orig_soa);
 	}
-	
+
 	/* read the ZSKs */
 	argi = 1;
 	while (argi < argc) {
@@ -707,7 +746,7 @@ main(int argc, char *argv[])
 				}
 
 				LDNS_FREE(keyfile_name);
-				
+
 				ldns_key_list_push_key(keys, key);
 			} else {
 				fprintf(stderr, "Error reading key from %s at line %d: %s\n", argv[argi], line_nr, ldns_get_errorstr_by_id(s));
@@ -721,7 +760,7 @@ main(int argc, char *argv[])
 		}
 		argi++;
 	}
-	
+
 	if (ldns_key_list_key_count(keys) < 1) {
 		fprintf(stderr, "Error: no keys to sign with. Aborting.\n\n");
 		usage(stderr, prog);
@@ -734,18 +773,18 @@ main(int argc, char *argv[])
 		fprintf(stderr,
 		  "Error adding SOA to dnssec zone, skipping record\n");
 	}
-	
+
 	for (i = 0;
 	     i < ldns_rr_list_rr_count(ldns_zone_rrs(orig_zone));
 	     i++) {
-		if (ldns_dnssec_zone_add_rr(signed_zone, 
-		         ldns_rr_list_rr(ldns_zone_rrs(orig_zone), 
+		if (ldns_dnssec_zone_add_rr(signed_zone,
+		         ldns_rr_list_rr(ldns_zone_rrs(orig_zone),
 		         i)) !=
 		    LDNS_STATUS_OK) {
 			fprintf(stderr,
 			        "Error adding RR to dnssec zone");
 			fprintf(stderr, ", skipping record:\n");
-			ldns_rr_print(stderr, 
+			ldns_rr_print(stderr,
 			  ldns_rr_list_rr(ldns_zone_rrs(orig_zone), i));
 		}
 	}
@@ -753,7 +792,23 @@ main(int argc, char *argv[])
 	/* list to store newly created rrs, so we can free them later */
 	added_rrs = ldns_rr_list_new();
 
+#if USE_NSEC4
+	if (use_nsec4) {
+		result = ldns_dnssec_zone_sign_nsec4_flg(signed_zone,
+			added_rrs,
+			keys,
+			ldns_dnssec_default_replace_signatures,
+			NULL,
+			nsec4_algorithm,
+			nsec3_flags,
+			nsec3_iterations,
+			nsec3_salt_length,
+			nsec3_salt,
+			signflags);
+	} else if (use_nsec3) {
+#else
 	if (use_nsec3) {
+#endif
 		result = ldns_dnssec_zone_sign_nsec3_flg(signed_zone,
 			added_rrs,
 			keys,

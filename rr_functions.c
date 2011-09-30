@@ -279,6 +279,9 @@ ldns_rr_dnskey_key_size_raw(const unsigned char* keydata,
 	switch ((ldns_signing_algorithm)alg) {
 	case LDNS_SIGN_DSA:
 	case LDNS_SIGN_DSA_NSEC3:
+#if USE_NSEC4
+	case LDNS_SIGN_DSA_NSEC4:
+#endif
 		if (len > 0) {
 			t = keydata[0];
 			return (64 + t*8)*8;
@@ -289,6 +292,9 @@ ldns_rr_dnskey_key_size_raw(const unsigned char* keydata,
 	case LDNS_SIGN_RSAMD5:
 	case LDNS_SIGN_RSASHA1:
 	case LDNS_SIGN_RSASHA1_NSEC3:
+#if USE_NSEC4
+	case LDNS_SIGN_RSASHA1_NSEC4:
+#endif
 #ifdef USE_SHA2
 	case LDNS_SIGN_RSASHA256:
 	case LDNS_SIGN_RSASHA512:

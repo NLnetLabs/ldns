@@ -441,7 +441,7 @@ ldns_dnssec_name_add_rr(ldns_dnssec_name *name,
 	ldns_rr_type rr_type;
 	ldns_rr_type typecovered = 0;
 
-	/* special handling for NSEC3 and NSECX covering RRSIGS */
+	/* special handling for NSECx and NSECx covering RRSIGS */
 
 	if (!name || !rr) {
 		return LDNS_STATUS_ERR;
@@ -457,8 +457,15 @@ ldns_dnssec_name_add_rr(ldns_dnssec_name *name,
 	if (rr_type == LDNS_RR_TYPE_NSEC3 ||
 	    typecovered == LDNS_RR_TYPE_NSEC3) {
 		name_name = ldns_nsec3_hash_name_frm_nsec3(rr,
-										   ldns_dnssec_name_name(name));
+				   ldns_dnssec_name_name(name));
 		hashed_name = true;
+#if USE_NSEC4
+	} else if (rr_type == LDNS_RR_TYPE_NSEC4 ||
+            typecovered == LDNS_RR_TYPE_NSEC4) {
+                name_name = ldns_nsec4_hash_name_frm_nsec4(rr,
+                                   ldns_dnssec_name_name(name));
+                hashed_name = true;
+#endif /* USE_NSEC4 */
 	} else {
 		name_name = ldns_dnssec_name_name(name);
 	}
@@ -467,11 +474,17 @@ ldns_dnssec_name_add_rr(ldns_dnssec_name *name,
 #endif /* HAVE_SSL */
 
 	if (rr_type == LDNS_RR_TYPE_NSEC ||
+#if USE_NSEC4
+	    rr_type == LDNS_RR_TYPE_NSEC4 ||
+#endif
 	    rr_type == LDNS_RR_TYPE_NSEC3) {
 		/* XX check if is already set (and error?) */
 		name->nsec = rr;
 	} else if (typecovered == LDNS_RR_TYPE_NSEC ||
-			 typecovered == LDNS_RR_TYPE_NSEC3) {
+#if USE_NSEC4
+			typecovered == LDNS_RR_TYPE_NSEC4 ||
+#endif
+			typecovered == LDNS_RR_TYPE_NSEC3) {
 		if (name->nsec_signatures) {
 			result = ldns_dnssec_rrs_add_rr(name->nsec_signatures, rr);
 		} else {
@@ -648,6 +661,31 @@ ldns_dnssec_zone_find_nsec3_original(ldns_dnssec_zone *zone,
 	return NULL;
 }
 
+#if USE_NSEC4
+ldns_rbnode_t *
+ldns_dnssec_zone_find_nsec4_original(ldns_dnssec_zone *zone,
+                                     ldns_rr *rr) {
+	ldns_rbnode_t *current_node = ldns_rbtree_first(zone->names);
+	ldns_dnssec_name *current_name;
+	ldns_rdf *hashed_name;
+
+	hashed_name = ldns_rr_owner(rr);
+
+	while (current_node != LDNS_RBTREE_NULL) {
+		current_name = (ldns_dnssec_name *) current_node->data;
+		if (!current_name->hashed_name) {
+			current_name->hashed_name =
+				ldns_nsec4_hash_name_frm_nsec4(rr, current_name->name);
+		}
+		if (ldns_dname_compare(hashed_name, current_name->hashed_name) == 0) {
+			return current_node;
+		}
+		current_node = ldns_rbtree_next(current_node);
+	}
+	return NULL;
+}
+#endif /* USE_NSEC4 */
+
 ldns_status
 ldns_dnssec_zone_add_rr(ldns_dnssec_zone *zone, ldns_rr *rr)
 {
@@ -672,11 +710,18 @@ ldns_dnssec_zone_add_rr(ldns_dnssec_zone *zone, ldns_rr *rr)
 	}
 	if (ldns_rr_get_type(rr) == LDNS_RR_TYPE_NSEC3 ||
 	    type_covered == LDNS_RR_TYPE_NSEC3) {
-		cur_node = ldns_dnssec_zone_find_nsec3_original(zone,
-					 						   rr);
+		cur_node = ldns_dnssec_zone_find_nsec3_original(zone, rr);
 		if (!cur_node) {
 			return LDNS_STATUS_DNSSEC_NSEC3_ORIGINAL_NOT_FOUND;
 		}
+#if USE_NSEC4
+	} else if (ldns_rr_get_type(rr) == LDNS_RR_TYPE_NSEC4 ||
+	    type_covered == LDNS_RR_TYPE_NSEC4) {
+		cur_node = ldns_dnssec_zone_find_nsec4_original(zone, rr);
+		if (!cur_node) {
+			return LDNS_STATUS_DNSSEC_NSEC4_ORIGINAL_NOT_FOUND;
+		}
+#endif
 	} else {
 		cur_node = ldns_rbtree_search(zone->names, ldns_rr_owner(rr));
 	}
@@ -769,11 +814,11 @@ ldns_dnssec_zone_add_empty_nonterminals(ldns_dnssec_zone *zone)
 	if (zone->soa && zone->soa->name) {
 		soa_label_count = ldns_dname_label_count(zone->soa->name);
 	}
-	
+
 	cur_node = ldns_rbtree_first(zone->names);
 	while (cur_node != LDNS_RBTREE_NULL) {
 		next_node = ldns_rbtree_next(cur_node);
-		
+
 		/* skip glue */
 		while (next_node != LDNS_RBTREE_NULL && 
 		       next_node->data &&
@@ -834,7 +879,7 @@ ldns_dnssec_zone_add_empty_nonterminals(ldns_dnssec_zone *zone)
 			ldns_rdf_deep_free(l1);
 			ldns_rdf_deep_free(l2);
 		}
-		
+
 		/* we might have inserted a new node after
 		 * the current one so we can't just use next()
 		 */

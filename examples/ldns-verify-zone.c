@@ -22,28 +22,39 @@
 int verbosity = 3;
 
 static int
-zone_is_nsec3_optout(ldns_rbtree_t *zone_nodes)
+zone_is_optout(ldns_rbtree_t *zone_nodes)
 {
-	/* simply find the first NSEC3 RR and check its flags */
+	/* simply find the first NSEC3 or NSEC4 RR and check its flags */
 	/* TODO: maybe create a general function that uses the active
-	 * NSEC3PARAM RR? */
+	 * NSEC3PARAM NSEC4PARAM RR? */
 	ldns_rbnode_t *cur_node;
 	ldns_dnssec_name *cur_name;
 	cur_node = ldns_rbtree_first(zone_nodes);
 	while (cur_node != LDNS_RBTREE_NULL) {
 		cur_name = (ldns_dnssec_name *) cur_node->data;
-		if (cur_name && cur_name->nsec &&
-		    ldns_rr_get_type(cur_name->nsec) == LDNS_RR_TYPE_NSEC3) {
-			if (ldns_nsec3_optout(cur_name->nsec)) {
-				return 1;
-			} else {
-				return 0;
+		if (cur_name && cur_name->nsec) {
+			if (ldns_rr_get_type(cur_name->nsec) == LDNS_RR_TYPE_NSEC3) {
+				if (ldns_nsec3_optout(cur_name->nsec)) {
+					return 1;
+				} else {
+					return 0;
+				}
 			}
+#if USE_NSEC4
+			if (ldns_rr_get_type(cur_name->nsec) == LDNS_RR_TYPE_NSEC4) {
+				if (ldns_nsec4_optout(cur_name->nsec)) {
+					return 1;
+				} else {
+					return 0;
+				}
+			}
+#endif
 		}
 		cur_node = ldns_rbtree_next(cur_node);
 	}
 	return 0;
 }
+
 
 static bool
 ldns_rr_list_contains_name(const ldns_rr_list *rr_list,
@@ -82,10 +93,10 @@ create_dnssec_zone(ldns_zone *orig_zone)
 	ldns_rr *cur_rr;
 	ldns_status status;
 
-	/* when reading NSEC3s, there is a chance that we encounter nsecs
+	/* when reading NSEC3/4s, there is a chance that we encounter nsecs
 	   for empty nonterminals, whose nonterminals we cannot derive yet
 	   because the needed information is to be read later. in that case
-	   we keep a list of those nsec3's and retry to add them later */
+	   we keep a list of those nsec3/4's and retry to add them later */
 	ldns_rr_list *failed_nsec3s = ldns_rr_list_new();
 
 	dnssec_zone = ldns_dnssec_zone_new();
@@ -103,6 +114,10 @@ create_dnssec_zone(ldns_zone *orig_zone)
 		if (status != LDNS_STATUS_OK) {
 			if (status == LDNS_STATUS_DNSSEC_NSEC3_ORIGINAL_NOT_FOUND) {
 				ldns_rr_list_push_rr(failed_nsec3s, cur_rr);
+#if USE_NSEC4
+			} else if (status == LDNS_STATUS_DNSSEC_NSEC4_ORIGINAL_NOT_FOUND) {
+				ldns_rr_list_push_rr(failed_nsec3s, cur_rr);
+#endif
 			} else {
 				if (verbosity > 0) {
 					fprintf(stderr, "Error adding RR to dnssec zone");
@@ -268,13 +283,19 @@ verify_next_hashed_name(ldns_rbtree_t *zone_nodes,
 	ldns_rdf *next_owner_dname;
 
 	if (!name->hashed_name) {
-		name->hashed_name = ldns_nsec3_hash_name_frm_nsec3(name->nsec,
-		                                                   name->name);
+#if USE_NSEC4
+		if (ldns_rr_get_type(name->nsec) == LDNS_RR_TYPE_NSEC4)
+			name->hashed_name = ldns_nsec4_hash_name_frm_nsec4(name->nsec,
+				name->name);
+		else
+#endif
+			name->hashed_name = ldns_nsec3_hash_name_frm_nsec3(name->nsec,
+				name->name);
 	}
 	next_node = ldns_rbtree_first(zone_nodes);
 	while (next_node != LDNS_RBTREE_NULL) {
 		next_name = (ldns_dnssec_name *)next_node->data;
-		/* skip over names that have no NSEC3 records (whether it
+		/* skip over names that have no NSEC3/4 records (whether it
 		 * actually should or should not should have been checked
 		 * already */
 		if (!next_name->nsec) {
@@ -282,8 +303,14 @@ verify_next_hashed_name(ldns_rbtree_t *zone_nodes,
 			continue;
 		}
 		if (!next_name->hashed_name) {
-			next_name->hashed_name = ldns_nsec3_hash_name_frm_nsec3(
-			                              name->nsec, next_name->name);
+#if USE_NSEC4
+			if (ldns_rr_get_type(name->nsec) == LDNS_RR_TYPE_NSEC4)
+			name->hashed_name = ldns_nsec4_hash_name_frm_nsec4(
+				name->nsec, next_name->name);
+			else
+#endif
+			name->hashed_name = ldns_nsec3_hash_name_frm_nsec3(
+				name->nsec, next_name->name);
 		}
 		/* we keep track of what 'so far' is the next hashed name;
 		 * it must of course be 'larger' than the current name
@@ -320,14 +347,26 @@ verify_next_hashed_name(ldns_rbtree_t *zone_nodes,
 		cur_next_name = cur_first_name;
 	}
 
-	next_owner_str = ldns_rdf2str(ldns_nsec3_next_owner(name->nsec));
+#if USE_NSEC4
+	if (ldns_rr_get_type(name->nsec) == LDNS_RR_TYPE_NSEC4)
+		next_owner_str = ldns_rdf2str(ldns_nsec4_next_owner(name->nsec));
+	else
+#endif
+		next_owner_str = ldns_rdf2str(ldns_nsec3_next_owner(name->nsec));
+
 	next_owner_dname = ldns_dname_new_frm_str(next_owner_str);
 	cmp = ldns_dname_compare(next_owner_dname,
 	                         cur_next_name->hashed_name);
 	ldns_rdf_deep_free(next_owner_dname);
 	LDNS_FREE(next_owner_str);
 	if (cmp != 0) {
-		printf("Error: The NSEC3 record for ");
+#if USE_NSEC4
+		if (ldns_rr_get_type(name->nsec) == LDNS_RR_TYPE_NSEC4)
+			printf("Error: The NSEC3 record for ");
+		else
+#endif
+			printf("Error: The NSEC4 record for ");
+
 		ldns_rdf_print(stdout, name->name);
 		printf(" points to the wrong next hashed owner name\n");
 		printf("(should point to ");
@@ -342,12 +381,13 @@ verify_next_hashed_name(ldns_rbtree_t *zone_nodes,
 }
 
 static ldns_status
-verify_nsec(ldns_rbtree_t *zone_nodes,
+verify_nsec(ldns_dnssec_zone* zone, ldns_rbtree_t *zone_nodes,
             ldns_rbnode_t *cur_node,
             ldns_rr_list *keys)
 {
 	ldns_rbnode_t *next_node;
-	ldns_dnssec_name *name, *next_name;
+	ldns_dnssec_name *name, *next_name, *closest_encloser;
+	ldns_rdf* parent;
 	ldns_status status, result;
 	result = LDNS_STATUS_OK;
 
@@ -362,7 +402,7 @@ verify_nsec(ldns_rbtree_t *zone_nodes,
 			}
 		} else {
 			if (verbosity >= 1) {
-				printf("Error: the NSEC(3) record of ");
+				printf("Error: the NSEC(3,4) record of ");
 				ldns_rdf_print(stdout, name->name);
 				printf(" has no signatures\n");
 			}
@@ -399,6 +439,9 @@ verify_nsec(ldns_rbtree_t *zone_nodes,
 				}
 				break;
 			case LDNS_RR_TYPE_NSEC3:
+#if USE_NSEC4
+			case LDNS_RR_TYPE_NSEC4:
+#endif
 				/* find the hashed next name in the tree */
 				/* this is expensive, do we need to add support
 				 * for this in the structs? (ie. pointer to next
@@ -408,13 +451,38 @@ verify_nsec(ldns_rbtree_t *zone_nodes,
 				if (result == LDNS_STATUS_OK) {
 					result = status;
 				}
+#if USE_NSEC4
+				if (ldns_rr_get_type(name->nsec) == LDNS_RR_TYPE_NSEC4) {
+					if (ldns_dname_is_wildcard(ldns_dnssec_name_name(name))) {
+						/* chop of left most asterisk label */
+						parent = ldns_dname_left_chop(ldns_dnssec_name_name(name));
+						/* look up closest encloser */
+						closest_encloser = ldns_nsec4_dnssec_name_find(
+							zone, parent, cur_node);
+						if (!closest_encloser) {
+							result = LDNS_STATUS_DNSSEC_CLOSEST_ENCLOSER_NOT_FOUND;
+						} else if (!closest_encloser->nsec) {
+							result = LDNS_STATUS_DNSSEC_NSEC4_WILDCARD_BIT_UNSET;
+						} else if (!ldns_nsec4_wildcard(closest_encloser->nsec)) {
+							result = LDNS_STATUS_DNSSEC_NSEC4_WILDCARD_BIT_UNSET;
+						}
+						ldns_rdf_deep_free(parent);
+
+						if (result != LDNS_STATUS_OK && verbosity >= 1) {
+						printf("Error: ");
+						ldns_rdf_print(stdout, closest_encloser->name);
+						printf("\t%s\n", ldns_get_errorstr_by_id(result));
+						}
+					}
+				}
+#endif
 				break;
 			default:
 				break;
 		}
 	} else {
 		/* todo; do this once and cache result? */
-		if (zone_is_nsec3_optout(zone_nodes) &&
+		if (zone_is_optout(zone_nodes) &&
 				(   ldns_dnssec_name_is_glue(name)
 				 || (
 					 ldns_dnssec_rrsets_contains_type(
@@ -428,7 +496,7 @@ verify_nsec(ldns_rbtree_t *zone_nodes,
 			 * name later */
 		} else {
 			if (verbosity >= 1) {
-				printf("Error: there is no NSEC(3) for ");
+				printf("Error: there is no NSEC(3,4) for ");
 				ldns_rdf_print(stdout, name->name);
 				printf("\n");
 			}
@@ -481,7 +549,7 @@ verify_dnssec_name(ldns_rdf *zone_name,
 			if (verbosity >= 1) {
 				printf("Error: ");
 				ldns_rdf_print(stdout, name->name);
-				printf("\thas an NSEC(3), but is glue\n");
+				printf("\thas an NSEC(3,4), but is glue\n");
 			}
 			result = LDNS_STATUS_ERR;
 		}
@@ -514,7 +582,7 @@ verify_dnssec_name(ldns_rdf *zone_name,
 			cur_rrset = cur_rrset->next;
 		}
 
-		status = verify_nsec(zone_nodes, cur_node, keys);
+		status = verify_nsec(zone, zone_nodes, cur_node, keys);
 		if (result == LDNS_STATUS_OK) {
 			result = status;
 		}
@@ -595,9 +663,9 @@ main(int argc, char **argv)
 		case 'h':
 			printf("Usage: %s [OPTIONS] <zonefile>\n", argv[0]);
 			printf("\tReads the zonefile and checks for DNSSEC errors.\n");
-			printf("\nIt checks whether NSEC(3)s are present,");
+			printf("\nIt checks whether NSEC(3,4)s are present,");
 			printf(" and verifies all signatures\n");
-			printf("It also checks the NSEC(3) chain, but it will error on opted-out delegations\n");
+			printf("It also checks the NSEC(3,4) chain, but it will error on opted-out delegations\n");
 			printf("\nOPTIONS:\n");
 			printf("\t-h show this text\n");
 			printf("\t-v shows the version and exits\n");

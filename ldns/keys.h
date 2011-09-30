@@ -60,6 +60,11 @@ enum ldns_enum_algorithm
         LDNS_ECDSAP256SHA256    = 13,  /* draft-hoffman-dnssec-ecdsa */
         LDNS_ECDSAP384SHA384    = 14,  /* EXPERIMENTAL */
 #endif
+
+#if LDNS_BUILD_CONFIG_USE_NSEC4
+        LDNS_DSA_NSEC4          = 15,
+        LDNS_RSASHA1_NSEC4      = 16,
+#endif
         LDNS_INDIRECT           = 252,
         LDNS_PRIVATEDNS         = 253,
         LDNS_PRIVATEOID         = 254
@@ -100,6 +105,10 @@ enum ldns_enum_signing_algorithm
 	 * to be able to use these values outside of the ldns library itself */
         LDNS_SIGN_ECDSAP256SHA256 = LDNS_ECDSAP256SHA256,
         LDNS_SIGN_ECDSAP384SHA384 = LDNS_ECDSAP384SHA384,
+#endif
+#if LDNS_BUILD_CONFIG_USE_NSEC4
+	LDNS_SIGN_RSASHA1_NSEC4  = LDNS_RSASHA1_NSEC4,
+	LDNS_SIGN_DSA_NSEC4	 = LDNS_DSA_NSEC4,
 #endif
 	LDNS_SIGN_HMACMD5	 = 157,	/* not official! This type is for TSIG, not DNSSEC */
 	LDNS_SIGN_HMACSHA1	 = 158,	/* not official! This type is for TSIG, not DNSSEC */

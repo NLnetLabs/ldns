@@ -46,6 +46,10 @@ ldns_lookup_table ldns_algorithms[] = {
         { LDNS_RSASHA1, "RSASHA1" },
         { LDNS_DSA_NSEC3, "DSA-NSEC3-SHA1" },
         { LDNS_RSASHA1_NSEC3, "RSASHA1-NSEC3-SHA1" },
+#if USE_NSEC4
+        { LDNS_DSA_NSEC4, "DSA-NSEC4-SHA1" },
+        { LDNS_RSASHA1_NSEC4, "RSASHA1-NSEC4-SHA1" },
+#endif
 #ifdef USE_SHA2
 	{ LDNS_RSASHA256, "RSASHA256"},
 	{ LDNS_RSASHA512, "RSASHA512"},
@@ -1230,7 +1234,17 @@ ldns_rr2buffer_str(ldns_buffer *output, const ldns_rr *rr)
 					if (ldns_nsec3_optout(rr)) {
 						ldns_buffer_printf(output, " ; flags: optout");
 					}
+#if USE_NSEC4
+				case LDNS_RR_TYPE_NSEC4:
+					if (ldns_nsec4_optout(rr) && ldns_nsec4_wildcard(rr)) {
+						ldns_buffer_printf(output, " ; flags: wildcard optout");
+					} else if (ldns_nsec4_optout(rr)) {
+						ldns_buffer_printf(output, " ; flags: optout");
+					} else if (ldns_nsec4_wildcard(rr)) {
+						ldns_buffer_printf(output, " ; flags: wildcard");
+					}
 					break;
+#endif
 				default:
 					break;
 
@@ -1492,6 +1506,9 @@ ldns_key2buffer_str(ldns_buffer *output, const ldns_key *k)
 		switch(ldns_key_algorithm(k)) {
 			case LDNS_SIGN_RSASHA1:
 			case LDNS_SIGN_RSASHA1_NSEC3:
+#if USE_NSEC4
+			case LDNS_SIGN_RSASHA1_NSEC4:
+#endif
 			case LDNS_SIGN_RSASHA256:
 			case LDNS_SIGN_RSASHA512:
 			case LDNS_SIGN_RSAMD5:
@@ -1516,6 +1533,13 @@ ldns_key2buffer_str(ldns_buffer *output, const ldns_key *k)
 								    "Algorithm: %u (RSASHA1_NSEC3)\n",
 								    LDNS_RSASHA1_NSEC3);
 					break;
+#if USE_NSEC4
+				case LDNS_SIGN_RSASHA1_NSEC4:
+					ldns_buffer_printf(output,
+					    "Algorithm: %u (RSASHA1_NSEC4)\n",
+					    LDNS_RSASHA1_NSEC4);
+					break;
+#endif
 #ifdef USE_SHA2
 				case LDNS_SIGN_RSASHA256:
 					ldns_buffer_printf(output,
@@ -1666,13 +1690,24 @@ ldns_key2buffer_str(ldns_buffer *output, const ldns_key *k)
 				break;
 			case LDNS_SIGN_DSA:
 			case LDNS_SIGN_DSA_NSEC3:
+#if USE_NSEC4
+			case LDNS_SIGN_DSA_NSEC4:
+#endif
 				dsa = ldns_key_dsa_key(k);
 
 				ldns_buffer_printf(output,"Private-key-format: v1.2\n");
 				if (ldns_key_algorithm(k) == LDNS_SIGN_DSA) {
-					ldns_buffer_printf(output,"Algorithm: 3 (DSA)\n");
+					ldns_buffer_printf(output,"Algorithm: %u (DSA)\n");
 				} else if (ldns_key_algorithm(k) == LDNS_SIGN_DSA_NSEC3) {
-					ldns_buffer_printf(output,"Algorithm: 6 (DSA_NSEC3)\n");
+					ldns_buffer_printf(output,
+					    "Algorithm: %u (DSA_NSEC3)\n",
+					    LDNS_DSA_NSEC3);
+#if USE_NSEC4
+				} else if (ldns_key_algorithm(k) == LDNS_SIGN_DSA_NSEC4) {
+					ldns_buffer_printf(output,
+					    "Algorithm: %u (DSA_NSEC4)\n",
+					    LDNS_DSA_NSEC4);
+#endif
 				}
 
 				/* print to buf, convert to bin, convert to b64,
