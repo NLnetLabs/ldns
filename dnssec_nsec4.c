@@ -220,12 +220,18 @@ ldns_dnssec_create_nsec4(ldns_dnssec_name *from, ldns_dnssec_name *to,
 	/* always add rrsig type if this is not an unsigned
 	 * delegation
 	 */
-	if (type_count > 0 &&
-	    !(type_count == 1 && types[0] == LDNS_RR_TYPE_NS)) {
+	if (algorithm) {
+		if (type_count > 0 &&
+		    !(type_count == 1 && types[0] == LDNS_RR_TYPE_NS)) {
+			types[type_count] = LDNS_RR_TYPE_RRSIG;
+			type_count++;
+		}
+	} else {
+		types[type_count] = LDNS_RR_TYPE_NSEC4;
+		type_count++;
 		types[type_count] = LDNS_RR_TYPE_RRSIG;
 		type_count++;
 	}
-
 	/* leave next rdata empty if they weren't precomputed yet */
 	if (to && to->hashed_name && algorithm) {
 		(void) ldns_rr_set_rdf(nsec_rr,
@@ -240,7 +246,7 @@ ldns_dnssec_create_nsec4(ldns_dnssec_name *from, ldns_dnssec_name *to,
 	ldns_rr_push_rdf(nsec_rr,
 	                 ldns_dnssec_create_nsec_bitmap(types,
 	                 type_count,
-	                 LDNS_RR_TYPE_NSEC4));
+	                 LDNS_RR_TYPE_NSEC3)); /* why doesnt NSEC4 work on unsigned delegations? */
 	return nsec_rr;
 }
 
