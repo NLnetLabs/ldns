@@ -1,5 +1,5 @@
 1.6.12
-	* 
+	* bugfix #413: Fix manpage source for srcdir != builddir
 
 1.6.11	2011-09-29
 	* bugfix #394: Fix socket leak on errors

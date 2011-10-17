@@ -216,7 +216,7 @@ install-manpages:	manpages
 		done
 		if [ $(INSTALL_LDNS_CONFIG) = "yes" ] ; then \
 			${INSTALL} -d $(DESTDIR)$(mandir)/man1; \
-			${INSTALL} -c -m 444 packaging/ldns-config.1 $(DESTDIR)$(mandir)/man1/; \
+			${INSTALL} -c -m 444 $(srcdir)/packaging/ldns-config.1 $(DESTDIR)$(mandir)/man1/; \
 		fi
 
 uninstall-manpages:

@@ -105,7 +105,6 @@ ldns_dnssec_nsec3_closest_encloser(ldns_rdf *qname,
 	uint8_t *salt;
 
 	ldns_rdf *sname, *hashed_sname, *tmp;
-	ldns_rr *ce;
 	bool flag;
 
 	bool exact_match_found;
@@ -131,7 +130,6 @@ ldns_dnssec_nsec3_closest_encloser(ldns_rdf *qname,
 
 	sname = ldns_rdf_clone(qname);
 
-	ce = NULL;
 	flag = false;
 
 	zone_name = ldns_dname_left_chop(ldns_rr_owner(nsec));
