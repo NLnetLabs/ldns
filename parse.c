@@ -111,7 +111,6 @@ ldns_fget_token_l(FILE *f, char *token, const char *delim, size_t limit, int *li
 			continue;
 		}
 
-
 		if (c == '\n' && p != 0 && t > token) {
 			/* in parentheses */
 			if (line_nr) {
@@ -124,7 +123,7 @@ ldns_fget_token_l(FILE *f, char *token, const char *delim, size_t limit, int *li
 
 		/* check if we hit the delim */
 		for (d = del; *d; d++) {
-			if (c == *d && i > 0 && prev_c != '\\') {
+			if (c == *d && i > 0 && prev_c != '\\' && p == 0) {
 				if (c == '\n' && line_nr) {
 					*line_nr = *line_nr + 1;
 				}
@@ -299,7 +298,7 @@ ldns_bget_token(ldns_buffer *b, char *token, const char *delim, size_t limit)
 
 		/* check if we hit the delim */
 		for (d = del; *d; d++) {
-                        if (c == *d && lc != '\\') {
+                        if (c == *d && lc != '\\' && p == 0) {
 				goto tokenread;
                         }
 		}
