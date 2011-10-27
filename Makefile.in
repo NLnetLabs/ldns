@@ -116,7 +116,6 @@ LIBDNS_HEADERS	=	$(srcdir)/ldns/error.h		\
 			$(srcdir)/ldns/rbtree.h \
 			$(srcdir)/ldns/sha1.h \
 			$(srcdir)/ldns/sha2.h
-LIBDNS_OBJECTS	=	$(LIBDNS_SOURCES:.c=.o) $(LIBOBJS)
 LIBDNS_LOBJECTS	=	$(LIBDNS_SOURCES:.c=.lo) $(LIBOBJS:.o=.lo)
 
 ALL_SOURCES	=	$(LIBDNS_SOURCES)
@@ -126,7 +125,7 @@ COMP_LIB	= $(LIBTOOL) --mode=compile $(CC) $(CPPFLAGS) $(CFLAGS)
 LINK		= $(CC) $(strip $(CFLAGS) $(LDFLAGS) $(LIBS))
 LINK_LIB	= $(LIBTOOL) --mode=link $(CC) $(strip $(CFLAGS) $(LDFLAGS) $(LIBS) -version-number $(version_info) -no-undefined)
 
-%.o:    $(srcdir)/%.c $(LIBDNS_HEADERS) ldns/common.h ldns/net.h ldns/util.h ldns/config.h
+%.lo:    $(srcdir)/%.c $(LIBDNS_HEADERS) ldns/common.h ldns/net.h ldns/util.h ldns/config.h
 	$(COMP_LIB) $(LIBSSL_CPPFLAGS) -c $<
 
 .PHONY:	clean realclean docclean manpages doc lint all lib pyldns test
@@ -144,10 +143,10 @@ lib:		libldns.la
 lib-export-all:	libldns.la-export-all
 		if [ ! -d lib ] ; then ln -s .libs lib ; fi ;		
 
-libldns.la:	$(LIBDNS_OBJECTS)
+libldns.la:	$(LIBDNS_LOBJECTS)
 		$(LINK_LIB) $(LIBSSL_LDFLAGS) $(LIBSSL_LIBS) --export-symbols $(srcdir)/ldns_symbols.def -o libldns.la $(LIBDNS_LOBJECTS) -rpath $(libdir) $(RUNTIME_PATH)
 
-libldns.la-export-all:	$(LIBDNS_OBJECTS)
+libldns.la-export-all:	$(LIBDNS_LOBJECTS)
 		$(LINK_LIB) -o libldns.la $(LIBDNS_LOBJECTS) -rpath $(libdir) $(RUNTIME_PATH)
 
 $(addprefix include/ldns/, $(notdir $(LIBDNS_HEADERS))): include/ldns/%.h: $(srcdir)/ldns/%.h
@@ -331,64 +330,64 @@ lint:
 tags:	$(srcdir)/*.c ldns/*.[ch]
 	ctags  -f $(srcdir)/tags $(srcdir)/*.[ch] ldns/*.[ch]
 
-b64_pton$U.o:	$(srcdir)/compat/b64_pton.c
+b64_pton$U.lo:	$(srcdir)/compat/b64_pton.c
 	$(COMP_LIB) -c $(srcdir)/compat/b64_pton.c -o $@
 
-b64_ntop$U.o:	$(srcdir)/compat/b64_ntop.c
+b64_ntop$U.lo:	$(srcdir)/compat/b64_ntop.c
 	$(COMP_LIB) -c $(srcdir)/compat/b64_ntop.c -o $@
 
-b32_pton$U.o:	$(srcdir)/compat/b32_pton.c
+b32_pton$U.lo:	$(srcdir)/compat/b32_pton.c
 	$(COMP_LIB) -c $(srcdir)/compat/b32_pton.c -o $@
 
-b32_ntop$U.o:	$(srcdir)/compat/b32_ntop.c
+b32_ntop$U.lo:	$(srcdir)/compat/b32_ntop.c
 	$(COMP_LIB) -c $(srcdir)/compat/b32_ntop.c -o $@
 
-malloc$U.o:	$(srcdir)/compat/malloc.c
+malloc$U.lo:	$(srcdir)/compat/malloc.c
 	$(COMP_LIB) -c $(srcdir)/compat/malloc.c -o $@
 
-realloc$U.o:	$(srcdir)/compat/realloc.c
+realloc$U.lo:	$(srcdir)/compat/realloc.c
 	$(COMP_LIB) -c $(srcdir)/compat/realloc.c -o $@
 
-timegm$U.o:	$(srcdir)/compat/timegm.c
+timegm$U.lo:	$(srcdir)/compat/timegm.c
 	$(COMP_LIB) -c $(srcdir)/compat/timegm.c -o $@
 
-isblank$U.o:	$(srcdir)/compat/isblank.c
+isblank$U.lo:	$(srcdir)/compat/isblank.c
 	$(COMP_LIB) -c $(srcdir)/compat/isblank.c -o $@
 
-isasciik$U.o:	$(srcdir)/compat/isascii.c
+isasciik$U.lo:	$(srcdir)/compat/isascii.c
 	$(COMP_LIB) -c $(srcdir)/compat/isascii.c -o $@
 
-strlcpy$U.o:	$(srcdir)/compat/strlcpy.c
+strlcpy$U.lo:	$(srcdir)/compat/strlcpy.c
 	$(COMP_LIB) -c $(srcdir)/compat/strlcpy.c -o $@
 
-memmove$U.o:	$(srcdir)/compat/memmove.c
+memmove$U.lo:	$(srcdir)/compat/memmove.c
 	$(COMP_LIB) -c $(srcdir)/compat/memmove.c -o $@
 
-inet_pton$U.o:	$(srcdir)/compat/inet_pton.c
+inet_pton$U.lo:	$(srcdir)/compat/inet_pton.c
 	$(COMP_LIB) -c $(srcdir)/compat/inet_pton.c -o $@
 
-inet_aton$U.o:	$(srcdir)/compat/inet_aton.c
+inet_aton$U.lo:	$(srcdir)/compat/inet_aton.c
 	$(COMP_LIB) -c $(srcdir)/compat/inet_aton.c -o $@
 
-inet_ntop$U.o:	$(srcdir)/compat/inet_ntop.c
+inet_ntop$U.lo:	$(srcdir)/compat/inet_ntop.c
 	$(COMP_LIB) -c $(srcdir)/compat/inet_ntop.c -o $@
 
-snprintf$U.o:	$(srcdir)/compat/snprintf.c
+snprintf$U.lo:	$(srcdir)/compat/snprintf.c
 	$(COMP_LIB) -c $(srcdir)/compat/snprintf.c -o $@
 
-fake-rfc2553$U.o:	$(srcdir)/compat/fake-rfc2553.c
+fake-rfc2553$U.lo:	$(srcdir)/compat/fake-rfc2553.c
 	$(COMP_LIB) -c $(srcdir)/compat/fake-rfc2553.c -o $@
 
-gmtime_r$U.o:	$(srcdir)/compat/gmtime_r.c
+gmtime_r$U.lo:	$(srcdir)/compat/gmtime_r.c
 	$(COMP_LIB) -c $(srcdir)/compat/gmtime_r.c -o $@
 
-ctime_r$U.o:	$(srcdir)/compat/ctime_r.c
+ctime_r$U.lo:	$(srcdir)/compat/ctime_r.c
 	$(COMP_LIB) -c $(srcdir)/compat/ctime_r.c -o $@
 
 # Automatic dependencies.
 %.d: $(srcdir)/%.c
 	$(SHELL) -ec '$(CC) -MM $(CPPFLAGS) $< \
-	              | sed '\''s!\(.*\)\.o[ :]*!$(dir $@)\1.o $@ : !g'\'' > $@; \
+	              | sed '\''s!\(.*\)\.o[ :]*!$(dir $@)\1.lo $@ : !g'\'' > $@; \
 	              [ -s $@ ] || rm -f $@'
 
 allclean: test-clean clean
