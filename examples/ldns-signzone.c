@@ -393,6 +393,10 @@ main(int argc, char *argv[])
 		switch (c) {
 		case 'a':
 			nsec3_algorithm = (uint8_t) atoi(optarg);
+			if (nsec3_algorithm != 1) {
+				fprintf(stderr, "Bad NSEC3 algorithm, only RSASHA1 allowed\n");
+				exit(EXIT_FAILURE);
+			}
 			break;
 		case 'b':
 			fmt.flags |= LDNS_COMMENT_BUBBLEBABBLE;
