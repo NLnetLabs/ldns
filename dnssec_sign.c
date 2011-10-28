@@ -28,6 +28,7 @@ ldns_create_empty_rrsig(ldns_rr_list *rrset,
 	time_t now;
 	ldns_rr *current_sig;
 	uint8_t label_count;
+	ldns_rdf *signame;
 
 	label_count = ldns_dname_label_count(ldns_rr_owner(ldns_rr_list_rr(rrset,
 	                                                   0)));
@@ -57,9 +58,11 @@ ldns_create_empty_rrsig(ldns_rr_list *rrset,
 		   ldns_native2rdf_int32(LDNS_RDF_TYPE_INT32,
 					 orig_ttl));
 	/* the signers name */
+	signame = ldns_rdf_clone(ldns_key_pubkey_owner(current_key));
+	ldns_dname2canonical(signame);
 	(void)ldns_rr_rrsig_set_signame(
 			current_sig,
-			ldns_rdf_clone(ldns_key_pubkey_owner(current_key)));
+			signame);
 	/* label count - get it from the first rr in the rr_list */
 	(void)ldns_rr_rrsig_set_labels(
 			current_sig,
