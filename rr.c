@@ -1747,7 +1747,6 @@ ldns_rr2canonical(ldns_rr *rr)
         	case LDNS_RR_TYPE_MG:
         	case LDNS_RR_TYPE_MR:
         	case LDNS_RR_TYPE_PTR:
-        	case LDNS_RR_TYPE_HINFO:
         	case LDNS_RR_TYPE_MINFO:
         	case LDNS_RR_TYPE_MX:
         	case LDNS_RR_TYPE_RP:
