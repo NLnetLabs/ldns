@@ -358,6 +358,8 @@ INLINE size_t ldns_b32_pton_calculate_size(size_t srcsize)
 }
 #endif /* !B32_PTON */
 
+INLINE time_t ldns_time(time_t *t) { return time(t); }
+
 #ifdef __cplusplus
 }
 #endif

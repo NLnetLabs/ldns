@@ -1418,9 +1418,11 @@ ldns_nsec_covers_name(const ldns_rr *nsec, const ldns_rdf *name)
 
 #ifdef HAVE_SSL
 /* sig may be null - if so look in the packet */
+
 ldns_status
-ldns_pkt_verify(ldns_pkt *p, ldns_rr_type t, ldns_rdf *o,
-			 ldns_rr_list *k, ldns_rr_list *s, ldns_rr_list *good_keys)
+ldns_pkt_verify_time(ldns_pkt *p, ldns_rr_type t, ldns_rdf *o, 
+		ldns_rr_list *k, ldns_rr_list *s, 
+		time_t check_time, ldns_rr_list *good_keys)
 {
 	ldns_rr_list *rrset;
 	ldns_rr_list *sigs;
@@ -1475,7 +1477,14 @@ ldns_pkt_verify(ldns_pkt *p, ldns_rr_type t, ldns_rdf *o,
 		return LDNS_STATUS_ERR;
 	}
 
-	return ldns_verify(rrset, sigs, k, good_keys);
+	return ldns_verify_time(rrset, sigs, k, check_time, good_keys);
+}
+
+ldns_status
+ldns_pkt_verify(ldns_pkt *p, ldns_rr_type t, ldns_rdf *o, 
+		ldns_rr_list *k, ldns_rr_list *s, ldns_rr_list *good_keys)
+{
+	return ldns_pkt_verify_time(p, t, o, k, s, ldns_time(NULL), good_keys);
 }
 #endif /* HAVE_SSL */
 

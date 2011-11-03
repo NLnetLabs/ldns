@@ -138,7 +138,9 @@ verify_dnssec_rrset(
 		ldns_rdf *zone_name, 
 		ldns_rdf *name,
 		ldns_dnssec_rrsets *rrset,
-		ldns_rr_list *keys) 
+		ldns_rr_list *keys,
+		time_t check_time
+		) 
 {
 	ldns_rr_list *rrset_rrs;
 	ldns_dnssec_rrs *cur_rr, *cur_sig;
@@ -158,8 +160,9 @@ verify_dnssec_rrset(
 	if (cur_sig) {
 		while (cur_sig) {
 			good_keys = ldns_rr_list_new();
-			status = ldns_verify_rrsig_keylist(rrset_rrs, 
-					cur_sig->rr, keys, good_keys);
+			status = ldns_verify_rrsig_keylist_time(
+					rrset_rrs, cur_sig->rr, 
+					keys, check_time, good_keys);
 			if (status != LDNS_STATUS_OK) {
 				if (verbosity > 0) {
 					printf("Error: %s",
@@ -464,7 +467,9 @@ verify_dnssec_name(ldns_rdf *zone_name,
 		ldns_dnssec_zone *zone,
                 ldns_rbtree_t *zone_nodes,
                 ldns_rbnode_t *cur_node,
-		ldns_rr_list *keys)
+		ldns_rr_list *keys,
+		time_t check_time
+		)
 {
 	ldns_status result = LDNS_STATUS_OK;
 	ldns_status status;
@@ -526,8 +531,9 @@ verify_dnssec_name(ldns_rdf *zone_name,
 					cur_rrset->type != LDNS_RR_TYPE_RRSIG
 				     && cur_rrset->type != LDNS_RR_TYPE_NSEC)) {
 
-				status = verify_dnssec_rrset(zone_name,
-						name->name, cur_rrset, keys);
+				status = verify_dnssec_rrset(
+						zone_name, name->name, 
+						cur_rrset, keys, check_time);
 				if (status != LDNS_STATUS_OK 
 						&& result == LDNS_STATUS_OK) {
 					result = status;
@@ -545,9 +551,14 @@ verify_dnssec_name(ldns_rdf *zone_name,
 }
 
 static ldns_status
-verify_dnssec_zone(ldns_dnssec_zone *dnssec_zone,
-		ldns_rdf *zone_name, bool apexonly, int percentage) {
-
+verify_dnssec_zone(
+		ldns_dnssec_zone *dnssec_zone, 
+		ldns_rdf *zone_name, 
+		bool apexonly, 
+		int percentage,
+		time_t check_time
+		) 
+{
 	ldns_rr_list *keys;
 	ldns_rbnode_t *cur_node;
 	ldns_dnssec_rrsets *cur_key_rrset;
@@ -604,7 +615,8 @@ verify_dnssec_zone(ldns_dnssec_zone *dnssec_zone,
 						dnssec_zone,
 						dnssec_zone->names,
 						cur_node,
-						keys);
+						keys,
+						check_time);
 				if (status != LDNS_STATUS_OK
 						&& result == LDNS_STATUS_OK) {
 					result = status;
@@ -632,6 +644,7 @@ main(int argc, char **argv)
 	ldns_status result = LDNS_STATUS_ERR;
 	bool apexonly = false;
 	int percentage = 100;
+	time_t check_time = ldns_time(NULL);
 
 	while ((c = getopt(argc, argv, "ahvV:p:")) != -1) {
 		switch(c) {
@@ -717,7 +730,7 @@ main(int argc, char **argv)
 
 		result = verify_dnssec_zone(dnssec_zone, 
 				ldns_rr_owner(ldns_zone_soa(z)),
-				apexonly, percentage);
+				apexonly, percentage, check_time);
 
 		if (result == LDNS_STATUS_OK) {
 			if (verbosity >= 1) {
