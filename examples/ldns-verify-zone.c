@@ -644,9 +644,10 @@ main(int argc, char **argv)
 	ldns_status result = LDNS_STATUS_ERR;
 	bool apexonly = false;
 	int percentage = 100;
+	struct tm tm;
 	time_t check_time = ldns_time(NULL);
 
-	while ((c = getopt(argc, argv, "ahvV:p:")) != -1) {
+	while ((c = getopt(argc, argv, "ahvV:p:t:")) != -1) {
 		switch(c) {
                 case 'a':
                         apexonly = true;
@@ -660,11 +661,15 @@ main(int argc, char **argv)
 			printf("It also checks the NSEC(3) chain, but it will "
 					"error on opted-out delegations\n");
 			printf("\nOPTIONS:\n");
-			printf("\t-a apex only, check only the zone apex\n");
-			printf("\t-p [0-100] only checks this percentage of "
-					"the zone. Defaults to 100\n");
-			printf("\t-h show this text\n");
-			printf("\t-v shows the version and exits\n");
+			printf("\t-a\t\tapex only, check only the zone apex\n");
+			printf("\t-p [0-100]\tonly checks this percentage of "
+					"the zone.\n\t\t\tDefaults to 100\n");
+			printf("\t-h\t\tshow this text\n");
+			printf("\t-t YYYYMMDDhhmmss | [+|-]offset\n\t\t\t"
+					"Set the validation time either by an "
+					"absolute time\n\t\t\tvalue or as an offset "
+					"in seconds from <now>.\n");
+			printf("\t-v\t\tshows the version and exits\n");
 			printf("\t-V [0-5]\tset verbosity level (default 3)\n");
 			printf("\nif no file is given standard input is "
 					"read\n");
@@ -687,6 +692,19 @@ main(int argc, char **argv)
                         }
                         srandom(time(NULL) ^ getpid());
                         break;
+		case 't':
+			if (strlen(optarg) == 14 && sscanf(optarg, 
+						"%4d%2d%2d%2d%2d%2d",
+						&tm.tm_year, &tm.tm_mon,
+						&tm.tm_mday, &tm.tm_hour,
+					       	&tm.tm_min, &tm.tm_sec) == 6) {
+				tm.tm_year -= 1900;
+				tm.tm_mon--;
+				check_time = mktime_from_utc(&tm);
+			}
+			else  {
+				check_time += atoi(optarg);
+			}
 		}
 	}
 
