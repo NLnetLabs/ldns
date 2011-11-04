@@ -314,7 +314,7 @@ ldns_key_new_frm_fp_l(ldns_key **key, FILE *fp, int *line_nr)
 
 	/* the file is highly structured. Do this in sequence */
 	/* RSA:
-	 * Private-key-format: v1.2
+	 * Private-key-format: v1.x.
  	 * Algorithm: 1 (RSA)
 
 	 */
@@ -326,7 +326,7 @@ ldns_key_new_frm_fp_l(ldns_key **key, FILE *fp, int *line_nr)
                 LDNS_FREE(d);
 		return LDNS_STATUS_SYNTAX_ERR;
 	}
-	if (strncmp(d, "v1.2", strlen(d)) != 0) {
+	if (strncmp(d, "v1.", 3) != 0) {
                 ldns_key_free(k);
                 LDNS_FREE(d);
 		return LDNS_STATUS_SYNTAX_VERSION_ERR;

@@ -200,7 +200,7 @@ ldns_key *ldns_key_new_frm_algorithm(ldns_signing_algorithm a, uint16_t size);
  * Creates a new priv key based on the 
  * contents of the file pointed by fp.
  *
- * The file should be in Private-key-format v1.2.
+ * The file should be in Private-key-format v1.x.
  *
  * \param[out] k the new ldns_key structure
  * \param[in] fp the file pointer to use
@@ -212,7 +212,7 @@ ldns_status ldns_key_new_frm_fp(ldns_key **k, FILE *fp);
  * Creates a new private key based on the 
  * contents of the file pointed by fp
  *
- * The file should be in Private-key-format v1.2.
+ * The file should be in Private-key-format v1.x.
  *
  * \param[out] k the new ldns_key structure
  * \param[in] fp the file pointer to use

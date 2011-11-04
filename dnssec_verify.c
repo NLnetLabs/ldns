@@ -980,7 +980,7 @@ ldns_dnssec_derive_trust_tree_ds_rrset(ldns_dnssec_trust_tree *new_tree,
                                        ldns_dnssec_data_chain *data_chain,
                                        ldns_rr *cur_rr)
 {
-	return ldns_dnssec_derive_trust_tree_ds_rrset_time(
+	ldns_dnssec_derive_trust_tree_ds_rrset_time(
 			new_tree, data_chain, cur_rr, ldns_time(NULL));
 }
 
@@ -1039,7 +1039,7 @@ void
 ldns_dnssec_derive_trust_tree_no_sig(ldns_dnssec_trust_tree *new_tree,
                                      ldns_dnssec_data_chain *data_chain)
 {
-	return ldns_dnssec_derive_trust_tree_no_sig_time(
+	ldns_dnssec_derive_trust_tree_no_sig_time(
 			new_tree, data_chain, ldns_time(NULL));
 }
 
