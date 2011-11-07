@@ -340,3 +340,61 @@ ldns_rr_dnskey_key_size(const ldns_rr *key)
 	                                   ldns_rdf2native_int8(ldns_rr_dnskey_algorithm(key))
 	                                  );
 }
+
+uint32_t ldns_soa_serial_identity(uint32_t ATTR_UNUSED(_), void *data)
+{
+	return (intptr_t)data; /* yes, data is int not pointer! */
+}
+
+uint32_t ldns_soa_serial_increment(uint32_t s, void *ATTR_UNUSED(_))
+{
+	return ldns_soa_serial_increment_by(s, (void *)1);
+}
+
+uint32_t ldns_soa_serial_increment_by(uint32_t s, void *data)
+{
+	return s + (intptr_t)data;
+}
+
+void
+ldns_rr_soa_increment(ldns_rr *soa)
+{
+	ldns_rr_soa_increment_func_data(soa, ldns_soa_serial_increment, NULL);
+}
+
+void
+ldns_rr_soa_increment_func(ldns_rr *soa, ldns_soa_serial_increment_func_t f)
+{
+	ldns_rr_soa_increment_func_data(soa, f, NULL);
+}
+
+void
+ldns_rr_soa_increment_func_data(ldns_rr *soa, 
+		ldns_soa_serial_increment_func_t f, void *data)
+{
+	ldns_rdf *prev_soa_serial_rdf;
+	if ( !soa || !f || ldns_rr_get_type(soa) != LDNS_RR_TYPE_SOA 
+			|| !ldns_rr_rdf(soa, 2)) {
+		return;
+	}
+	prev_soa_serial_rdf = ldns_rr_set_rdf(
+		  soa
+		, ldns_native2rdf_int32(
+			  LDNS_RDF_TYPE_INT32
+			, (*f)( ldns_rdf2native_int32(
+					ldns_rr_rdf(soa, 2))
+			      , data
+			)
+		)
+		, 2
+	);
+	LDNS_FREE(prev_soa_serial_rdf);
+}
+
+void
+ldns_rr_soa_increment_func_int(ldns_rr *soa, 
+		ldns_soa_serial_increment_func_t f, int data)
+{
+	ldns_rr_soa_increment_func_data(soa, f, (void *) (intptr_t) data);
+}
+

@@ -34,8 +34,10 @@ main(int argc, char **argv)
 	ldns_rr *cur_rr;
 	ldns_rr_type cur_rr_type;
 	const ldns_output_format *fmt = NULL;
+	ldns_soa_serial_increment_func_t soa_serial_increment_func = NULL;
+	int soa_serial_increment_func_data;
 
-        while ((c = getopt(argc, argv, "bcdhnsvz")) != -1) {
+        while ((c = getopt(argc, argv, "bcdhnsvzS:")) != -1) {
                 switch(c) {
 			case 'b':
 				fmt = ldns_output_format_bubblebabble;
@@ -58,6 +60,12 @@ main(int argc, char **argv)
 				printf("\t-h show this text\n");
 				printf("\t-n do not print the SOA record\n");
 				printf("\t-s strip DNSSEC data from the zone\n");
+				printf("\t-S [+|-]<number>\n"
+				       "\t\tSet serial number to <number> or,"
+						" when preceded by a sign,\n"
+				       "\t\toffset the exisiting number with "
+						"<number>.\n");
+
 				printf("\t-v shows the version and exits\n");
 				printf("\t-z sort the zone (implies -c).\n");
 				printf("\nif no file is given standard input is read\n");
@@ -80,6 +88,26 @@ main(int argc, char **argv)
                 		canonicalize = true;
                                 sort = true;
                                 break;
+			case 'S':
+				strip = true;
+				if (*optarg == '+' || *optarg == '-') {
+					soa_serial_increment_func_data =
+						atoi(optarg);
+					soa_serial_increment_func =
+						ldns_soa_serial_increment_by;
+				} else if (! strtok(optarg, "0123456789")) {
+					soa_serial_increment_func_data =
+						atoi(optarg);
+					soa_serial_increment_func =
+						ldns_soa_serial_identity;
+				} else {
+					fprintf(stderr, "-S expects a number "
+						"optionally preceded by a "
+						"+ or - sign to indicate an "
+						"offset.\n");
+					exit(EXIT_FAILURE);
+				}
+				break;
 		}
 	}
 
@@ -147,6 +175,13 @@ main(int argc, char **argv)
 		}
 
 		if (print_soa && ldns_zone_soa(z)) {
+			if (soa_serial_increment_func) {
+				ldns_rr_soa_increment_func_int(
+					  ldns_zone_soa(z)
+					, soa_serial_increment_func
+					, soa_serial_increment_func_data
+					);
+			}
 			ldns_rr_print_fmt(stdout, fmt, ldns_zone_soa(z));
 		}
 		ldns_rr_list_print_fmt(stdout, fmt, ldns_zone_rrs(z));

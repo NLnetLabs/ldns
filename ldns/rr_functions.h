@@ -252,6 +252,24 @@ size_t ldns_rr_dnskey_key_size_raw(const unsigned char *keydata,
  */
 size_t ldns_rr_dnskey_key_size(const ldns_rr *key);
 
+typedef uint32_t (*ldns_soa_serial_increment_func_t)(uint32_t, void*);
+
+uint32_t ldns_soa_serial_identity(uint32_t _, void *data);
+uint32_t ldns_soa_serial_increment(uint32_t s, void *_);
+uint32_t ldns_soa_serial_increment_by(uint32_t s, void *data);
+
+void ldns_rr_soa_increment(
+		ldns_rr *soa);
+
+void ldns_rr_soa_increment_func(
+		ldns_rr *soa, ldns_soa_serial_increment_func_t f);
+
+void ldns_rr_soa_increment_func_data(
+		ldns_rr *soa, ldns_soa_serial_increment_func_t f, void *data);
+
+void ldns_rr_soa_increment_func_int(
+		ldns_rr *soa, ldns_soa_serial_increment_func_t f, int data);
+
 #ifdef __cplusplus
 }
 #endif

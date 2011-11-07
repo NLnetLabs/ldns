@@ -641,6 +641,10 @@ ldns_rr_set_rd_count
 ldns_rr_set_rdf
 ldns_rr_set_ttl
 ldns_rr_set_type
+ldns_rr_soa_increment
+ldns_rr_soa_increment_func
+ldns_rr_soa_increment_func_data
+ldns_rr_soa_increment_func_int
 ldns_rrsig2buffer_wire
 ldns_rr_ttl
 ldns_rr_type2buffer_str
@@ -662,6 +666,9 @@ ldns_sign_public_dsa
 ldns_sign_public_evp
 ldns_sign_public_rsamd5
 ldns_sign_public_rsasha1
+ldns_soa_serial_identity
+ldns_soa_serial_increment
+ldns_soa_serial_increment_by
 ldns_sockaddr_storage2rdf
 ldns_str2period
 ldns_str2rdf_a

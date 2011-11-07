@@ -342,7 +342,9 @@ AC_INCLUDES_DEFAULT
 ])
 
 ACX_TYPE_SOCKLEN_T
-AC_CHECK_TYPE(ssize_t, int)
+AC_TYPE_SIZE_T
+AC_TYPE_SSIZE_T
+AC_TYPE_INTPTR_T
 AC_CHECK_TYPE(in_addr_t, [], [AC_DEFINE([in_addr_t], [uint32_t], [in_addr_t])], [
 #if HAVE_SYS_TYPES_H
 # include <sys/types.h>
