@@ -343,7 +343,7 @@ ldns_rr_dnskey_key_size(const ldns_rr *key)
 
 uint32_t ldns_soa_serial_identity(uint32_t ATTR_UNUSED(_), void *data)
 {
-	return (intptr_t)data; /* yes, data is int not pointer! */
+	return (uint32_t) (intptr_t) data;
 }
 
 uint32_t ldns_soa_serial_increment(uint32_t s, void *ATTR_UNUSED(_))
@@ -353,7 +353,7 @@ uint32_t ldns_soa_serial_increment(uint32_t s, void *ATTR_UNUSED(_))
 
 uint32_t ldns_soa_serial_increment_by(uint32_t s, void *data)
 {
-	return s + (intptr_t)data;
+	return s + (intptr_t) data;
 }
 
 void
