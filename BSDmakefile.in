@@ -1,0 +1,386 @@
+# Standard installation pathnames
+# See the file LICENSE for the license
+SHELL 		= @SHELL@
+VERSION         = @PACKAGE_VERSION@
+version_info	= @LIBTOOL_VERSION_INFO@
+srcdir 		= @srcdir@
+prefix  	= @prefix@
+exec_prefix 	= @exec_prefix@
+bindir 		= @bindir@
+mandir 		= @mandir@
+datarootdir	= @datarootdir@
+datadir		= @datadir@
+libdir		= @libdir@
+includedir	= @includedir@
+doxygen		= @doxygen@
+pywrapdir       = ${srcdir}/contrib/python
+pyldnsxwrapdir  = ${srcdir}/contrib/ldnsx
+swig		= @swig@
+swigpy_flags	= -python @SWIGPY3@
+python_site	=@PYTHON_SITE_PKG@
+pyldns_inst	=@PYLDNSINST@
+pyldns_uninst	=@PYLDNSUNINST@
+pyldnsx_inst	=@PYLDNSXINST@
+pyldnsx_uninst	=@PYLDNSXUNINST@
+libtool		= @libtool@
+
+# override $U variable which is used by autotools for deansification (for
+# K&R C compilers), but causes problems if $U is defined in the env).
+U=
+
+CC 		= @CC@
+CPPFLAGS	= -I. -I$(srcdir) @CPPFLAGS@ @DEFS@
+LDFLAGS		= @LDFLAGS@
+LIBS 		= @LIBS@
+LIBOBJS		= @LIBOBJS@
+PYTHON_CPPFLAGS	= @PYTHON_CPPFLAGS@
+PYTHON_LDFLAGS	= @PYTHON_LDFLAGS@
+PYTHON_X_CFLAGS = @PYTHON_X_CFLAGS@
+LIBSSL_CPPFLAGS = @LIBSSL_CPPFLAGS@
+LIBSSL_LDFLAGS  = @LIBSSL_LDFLAGS@
+LIBSSL_LIBS     = @LIBSSL_LIBS@
+RUNTIME_PATH	= @RUNTIME_PATH@
+LIBTOOL		= $(libtool) --tag=CC --quiet
+INSTALL_LDNS_CONFIG = @INSTALL_LDNS_CONFIG@
+LINT		= splint
+LINTFLAGS	= +quiet -weak -warnposix -unrecog -Din_addr_t=uint32_t -Du_int=unsigned -Du_char=uint8_t -preproc -Drlimit=rlimit64 -D__gnuc_va_list=va_list
+LINTFLAGS+="-DBN_ULONG=unsigned long" -Dkrb5_int32=int "-Dkrb5_ui_4=unsigned int" -DPQ_64BIT=uint64_t -DRC4_INT=unsigned -fixedformalarray -D"ENGINE=unsigned" -D"RSA=unsigned" -D"DSA=unsigned" -D"EVP_PKEY=unsigned" -D"EVP_MD=unsigned" -D"SSL=unsigned" -D"SSL_CTX=unsigned" -D"X509=unsigned" -D"RC4_KEY=unsigned" -D"EVP_MD_CTX=unsigned" -D"EC_KEY=unsigned" -D"EC_POINT=unsigned" -D"EC_GROUP=unsigned" -D"EVP_PKEY_ASN1_METHOD=struct evp_pkey_asn1_method_st" -D"EVP_PKEY_CTX=struct evp_pkey_ctx_st"
+# compat with OpenBSD
+LINTFLAGS+="-Dsigset_t=long"
+# FreeBSD8
+LINTFLAGS+="-D__uint16_t=uint16_t"
+LINTFLAGS+= @LINTFLAGS@
+
+INSTALL = $(srcdir)/install-sh 
+
+LIBDNS_SOURCES	=	rdata.c util.c rr.c packet.c wire2host.c \
+			host2str.c buffer.c str2host.c tsig.c resolver.c \
+			net.c host2wire.c dname.c dnssec.c dnssec_verify.c \
+			keys.c higher.c rr_functions.c parse.c update.c \
+			error.c zone.c dnssec_zone.c dnssec_sign.c rbtree.c \
+			sha1.c sha2.c
+LIBDNS_HEADERS	=	$(srcdir)/ldns/error.h		\
+			$(srcdir)/ldns/packet.h		\
+			$(srcdir)/ldns/rdata.h 		\
+			$(srcdir)/ldns/rr.h		\
+			$(srcdir)/ldns/wire2host.h	\
+			$(srcdir)/ldns/host2str.h	\
+			$(srcdir)/ldns/host2wire.h	\
+			$(srcdir)/ldns/str2host.h	\
+			$(srcdir)/ldns/buffer.h		\
+			$(srcdir)/ldns/resolver.h	\
+			$(srcdir)/ldns/dname.h		\
+			$(srcdir)/ldns/dnssec.h		\
+			$(srcdir)/ldns/dnssec_verify.h	\
+			$(srcdir)/ldns/dnssec_sign.h	\
+			$(srcdir)/ldns/keys.h		\
+			$(srcdir)/ldns/higher.h		\
+			$(srcdir)/ldns/parse.h		\
+			$(srcdir)/ldns/rr_functions.h	\
+			$(srcdir)/ldns/ldns.h		\
+			$(srcdir)/ldns/zone.h		\
+			$(srcdir)/ldns/dnssec_zone.h	\
+			$(srcdir)/ldns/update.h 	\
+			$(srcdir)/ldns/tsig.h		\
+			$(srcdir)/ldns/rbtree.h \
+			$(srcdir)/ldns/sha1.h \
+			$(srcdir)/ldns/sha2.h \
+			$(srcdir)/ldns/common.h \
+			$(srcdir)/ldns/net.h \
+			$(srcdir)/ldns/util.h
+LIBDNS_INCLUDE	=	include/ldns
+LIBDNS_LOBJECTS	=	$(LIBDNS_SOURCES:.c=.lo)
+LIBDNS_DEPS	=	$(LIBDNS_SOURCES:.c=.d)
+LIBDNS_ALL_LOBJECTS	=	\
+			$(LIBDNS_LOBJECTS) $(LIBOBJS:.o=.lo)
+ALL_SOURCES	=	$(LIBDNS_SOURCES)
+PYLDNS_I_FILES	=	$(pywrapdir)/ldns_key.i	\
+			$(pywrapdir)/ldns_buffer.i	\
+			$(pywrapdir)/ldns_rr.i	\
+			$(pywrapdir)/ldns_dname.i	\
+			$(pywrapdir)/ldns_resolver.i	\
+			$(pywrapdir)/ldns_dnssec.i	\
+			$(pywrapdir)/ldns_rdf.i	\
+			$(pywrapdir)/file_py3.i	\
+			$(pywrapdir)/ldns.i	\
+			$(pywrapdir)/ldns_packet.i	\
+			$(pywrapdir)/ldns_zone.i
+
+COMPILE		= $(CC) $(CPPFLAGS) $(CFLAGS)
+COMP_LIB	= $(LIBTOOL) --mode=compile $(CC) $(CPPFLAGS) $(CFLAGS)
+LINK		= $(CC) $(CFLAGS) $(LDFLAGS) $(LIBS)
+LINK_LIB	= $(LIBTOOL) --mode=link $(CC) $(CFLAGS) $(LDFLAGS) $(LIBS) -version-number $(version_info) -no-undefined
+
+.PHONY:	clean realclean docclean manpages doc lint all lib pyldns test
+.PHONY: install uninstall install-doc uninstall-doc uninstall-pyldns
+.PHONY: install-h uninstall-h install-lib uninstall-lib install-pyldns
+
+all:		copy-headers lib linktest manpages @PYLDNS@
+
+$(LIBDNS_LOBJECTS):    $(LIBDNS_SOURCES) $(LIBDNS_HEADERS) ldns/config.h
+
+.SUFFIXES: .c .o .a .lo .h .i
+
+.c.lo:
+	$(COMP_LIB) $(LIBSSL_CPPFLAGS) -c $<
+
+linktest:	$(srcdir)/linktest.c $(LIBDNS_HEADERS) ldns/config.h libldns.la
+		$(LIBTOOL) --mode=link $(CC) $(srcdir)/linktest.c $(CPPFLAGS) $(LIBSSL_CPPFLAGS) $(CFLAGS) -lldns $(LIBS) -o linktest
+
+lib:		libldns.la
+		if [ ! -d lib ] ; then ln -s .libs lib ; fi ;		
+
+lib-export-all:	libldns.la-export-all
+		if [ ! -d lib ] ; then ln -s .libs lib ; fi ;		
+
+libldns.la:	$(LIBDNS_ALL_LOBJECTS)
+		$(LINK_LIB) $(LIBSSL_LDFLAGS) $(LIBSSL_LIBS) --export-symbols $(srcdir)/ldns_symbols.def -o libldns.la $(LIBDNS_ALL_LOBJECTS) -rpath $(libdir) $(RUNTIME_PATH)
+
+libldns.la-export-all:	$(LIBDNS_ALL_LOBJECTS)
+		$(LINK_LIB) -o libldns.la $(LIBDNS_ALL_LOBJECTS) -rpath $(libdir) $(RUNTIME_PATH)
+
+$(LIBDNS_INCLUDE):
+		@if [ ! -d include ] ; then ($(INSTALL) -d include || echo "include exists") ; fi ;
+		@if [ ! -d include/ldns ] ; then (cd include; ln -s ../ldns ./ldns || echo "include/ldns exists") ; fi ;
+
+copy-headers:	$(LIBDNS_INCLUDE)
+
+mancheck:
+		sh -c 'find . -name \*.\[13\] -exec troff -z {} \;' 2>&1 | sed "s/^\.\///" | sed "s/\(:[0\-9]\+:\)/\1 warning:/g"
+
+doxygen:	manpages
+		if [ ! -e doc/header.html ] ; then \
+			$(INSTALL) -c -m 644 $(srcdir)/doc/header.html doc/ ; \
+		fi ;
+		$(doxygen) $(srcdir)/libdns.doxygen
+
+doc:		manpages $(doxygen)
+		$(INSTALL) -d doc
+
+manpages:	$(srcdir)/doc/function_manpages 
+		$(INSTALL) -d doc
+		cat $(srcdir)/ldns/*.h | $(srcdir)/doc/doxyparse.pl -m $(srcdir)/doc/function_manpages 2>&1 | \
+		grep -v ^doxygen | grep -v ^cat  > doc/ldns_manpages
+
+pyldns:		_ldns.la
+
+$(pywrapdir)/ldns_wrapper.c:	$(PYLDNS_I_FILES) $(LIBDNS_HEADERS) ldns/config.h
+	$(swig) $(swigpy_flags) -o $@ $(CPPFLAGS) $(PYTHON_CPPFLAGS) $<
+
+ldns_wrapper.lo:	$(pywrapdir)/ldns_wrapper.c $(LIBDNS_HEADERS) ldns/config.h
+	$(COMP_LIB) -I./include/ldns $(PYTHON_CPPFLAGS) $(PYTHON_X_CFLAGS) -c $< -o $@
+
+_ldns.la: ldns_wrapper.lo libldns.la 
+	$(LIBTOOL) --tag=CC --mode=link $(CC) $(CFLAGS) $(PYTHON_CFLAGS) $(LDFLAGS) $(PYTHON_LDFLAGS) -module -version-number $(version_info) -no-undefined -o $@ $< -rpath $(python_site) -L. -L.libs -lldns $(LIBS)
+
+install:	install-h install-lib install-config install-manpages $(pyldns_inst) $(pyldnsx_inst)
+
+uninstall:	uninstall-manpages uninstall-config uninstall-h uninstall-lib $(pyldns_uninst) $(pyldnsx_uninst)
+
+destclean:	uninstall
+
+install-config:
+	if [ $(INSTALL_LDNS_CONFIG) = "yes" ] ; then \
+		$(INSTALL) -d $(DESTDIR)$(bindir) ; \
+		$(INSTALL) -c -m 755 packaging/ldns-config $(DESTDIR)$(bindir)/ ; \
+	fi
+
+uninstall-config:
+	if [ $(INSTALL_LDNS_CONFIG) = "yes" ] ; then \
+		rm -f $(DESTDIR)$(bindir)/ldns-config; \
+		[ ! -d $(DESTDIR)$(bindir) ] || rmdir -p $(DESTDIR)$(bindir) || echo "ok, dir already gone"; \
+	fi
+
+install-manpages:	manpages
+		${INSTALL} -d $(DESTDIR)$(mandir)/man3
+		for f in doc/man/man3/*; do \
+			${INSTALL} -c -m 444 $$f $(DESTDIR)$(mandir)/man3/; \
+		done
+		if [ $(INSTALL_LDNS_CONFIG) = "yes" ] ; then \
+			${INSTALL} -d $(DESTDIR)$(mandir)/man1; \
+			${INSTALL} -c -m 444 $(srcdir)/packaging/ldns-config.1 $(DESTDIR)$(mandir)/man1/; \
+		fi
+
+uninstall-manpages:
+		for i in `cat doc/ldns_manpages`; do \
+			rm -f $(DESTDIR)$(mandir)/man3/$$i.3 ; done
+		rmdir -p $(DESTDIR)$(mandir)/man3 || echo "ok, dir already gone"
+		if [ $(INSTALL_LDNS_CONFIG) = "yes" ] ; then \
+			rm -f $(DESTDIR)$(mandir)/man1/ldns-config.1; \
+			[ ! -d $(DESTDIR)$(mandir)/man1 ] || rmdir -p $(DESTDIR)$(mandir)/man1 || echo "ok, dir already gone"; \
+		fi
+
+install-h:	lib
+		$(INSTALL) -m 755 -d $(DESTDIR)$(includedir)/ldns
+		for i in $(LIBDNS_HEADERS); do \
+			$(INSTALL) -c -m 644 $$i $(DESTDIR)$(includedir)/ldns/; done
+
+uninstall-h:
+		for i in $(LIBDNS_HEADERS); do \
+			rm -f $(DESTDIR)$(includedir)/$$i; done
+		[ ! -d $(DESTDIR)$(includedir)/ldns ] || rmdir -p $(DESTDIR)$(includedir)/ldns || echo "ok, dir already gone"
+		exit 0
+
+install-lib:	lib
+		$(INSTALL) -m 755 -d $(DESTDIR)$(libdir)
+		$(LIBTOOL) --mode=install cp libldns.la $(DESTDIR)$(libdir)
+		$(LIBTOOL) --mode=finish $(DESTDIR)$(libdir)
+
+uninstall-lib:	
+		$(LIBTOOL) --mode=uninstall rm -f $(DESTDIR)$(libdir)/libldns.la
+		rmdir -p $(DESTDIR)$(libdir) || echo "ok, dir already gone"
+
+install-pyldns: @PYLDNS@
+		$(INSTALL) -m 755 -d $(DESTDIR)$(python_site)/ldns
+		$(INSTALL) -c -m 644 $(pywrapdir)/ldns.py $(DESTDIR)$(python_site)/ldns.py
+		$(LIBTOOL) --mode=install cp _ldns.la $(DESTDIR)$(python_site)
+		$(LIBTOOL) --mode=finish $(DESTDIR)$(python_site)
+
+uninstall-pyldns:	
+		rm -f $(DESTDIR)$(python_site)/ldns/*
+		rmdir $(DESTDIR)$(python_site)/ldns || echo "ok, dir already gone"
+
+install-pyldnsx:
+		$(INSTALL) -c -m 644 $(pyldnsxwrapdir)/ldnsx.py $(DESTDIR)$(python_site)/ldnsx.py
+
+uninstall-pyldnsx:
+		rm -f $(DESTDIR)$(python_site)/ldnsx.py
+
+clean:
+	rm -f *.o *.d *.lo
+	rm -f *~
+	rm -rf autom4te.cache/
+	rm -f tags
+	rm -f *.key
+	rm -f *.ds
+	rm -f *.private
+	rm -rf include/
+	rm -rf lib
+	rm -rf .libs
+	rm -f linktest
+	rm -f $(pywrapdir)/ldns_wrapper.c $(pywrapdir)/ldns.py
+
+distclean: clean docclean libclean
+	rm -f ltmain.sh
+
+realclean: clean docclean libclean
+	rm -f config.status
+	rm -f config.log
+	rm -f Makefile
+	rm -f ldns/config.h.in
+	rm -f ldns/config.h
+	rm -f ldns/util.h
+	rm -f ldns/common.h
+	rm -f config.h.in
+	rm -f configure
+	rm -f config.sub
+	rm -f config.guess
+	rm -f ltmain.sh
+
+docclean:
+	rm -rf doc/html/
+	rm -rf doc/man/
+	rm -rf doc/latex/
+	rm -f doc/*.txt
+	rm -f doc/*.tex
+	rm -f doc/ldns_manpages
+
+libclean:
+	$(LIBTOOL) --mode clean rm -f libldns.la
+	$(LIBTOOL) --mode clean rm -f libldns.a
+	$(LIBTOOL) --mode clean rm -f libldns.so
+	$(LIBTOOL) --mode clean rm -f libldns.so.*
+	$(LIBTOOL) --mode clean rm -f _ldns.la
+	rm -rf ldns/net.h ldns/util.h ldns/config.h ldns/common.h
+	rm -rf *.lo
+	rm -rf .libs
+	rm -rf libtool
+
+## No need for changes here
+
+lint:
+	for i in $(LIBDNS_SOURCES); do \
+		$(LINT) $(LINTFLAGS) -I. -I$(srcdir) $(srcdir)/$$i ; \
+		if [ $$? -ne 0 ] ; then exit 1 ; fi ; \
+	done
+
+tags:	$(srcdir)/*.c ldns/*.[ch]
+	ctags  -f $(srcdir)/tags $(srcdir)/*.[ch] ldns/*.[ch]
+
+b64_pton$U.lo:	$(srcdir)/compat/b64_pton.c
+	$(COMP_LIB) -c $(srcdir)/compat/b64_pton.c -o $@
+
+b64_ntop$U.lo:	$(srcdir)/compat/b64_ntop.c
+	$(COMP_LIB) -c $(srcdir)/compat/b64_ntop.c -o $@
+
+b32_pton$U.lo:	$(srcdir)/compat/b32_pton.c
+	$(COMP_LIB) -c $(srcdir)/compat/b32_pton.c -o $@
+
+b32_ntop$U.lo:	$(srcdir)/compat/b32_ntop.c
+	$(COMP_LIB) -c $(srcdir)/compat/b32_ntop.c -o $@
+
+malloc$U.lo:	$(srcdir)/compat/malloc.c
+	$(COMP_LIB) -c $(srcdir)/compat/malloc.c -o $@
+
+realloc$U.lo:	$(srcdir)/compat/realloc.c
+	$(COMP_LIB) -c $(srcdir)/compat/realloc.c -o $@
+
+timegm$U.lo:	$(srcdir)/compat/timegm.c
+	$(COMP_LIB) -c $(srcdir)/compat/timegm.c -o $@
+
+isblank$U.lo:	$(srcdir)/compat/isblank.c
+	$(COMP_LIB) -c $(srcdir)/compat/isblank.c -o $@
+
+isasciik$U.lo:	$(srcdir)/compat/isascii.c
+	$(COMP_LIB) -c $(srcdir)/compat/isascii.c -o $@
+
+strlcpy$U.lo:	$(srcdir)/compat/strlcpy.c
+	$(COMP_LIB) -c $(srcdir)/compat/strlcpy.c -o $@
+
+memmove$U.lo:	$(srcdir)/compat/memmove.c
+	$(COMP_LIB) -c $(srcdir)/compat/memmove.c -o $@
+
+inet_pton$U.lo:	$(srcdir)/compat/inet_pton.c
+	$(COMP_LIB) -c $(srcdir)/compat/inet_pton.c -o $@
+
+inet_aton$U.lo:	$(srcdir)/compat/inet_aton.c
+	$(COMP_LIB) -c $(srcdir)/compat/inet_aton.c -o $@
+
+inet_ntop$U.lo:	$(srcdir)/compat/inet_ntop.c
+	$(COMP_LIB) -c $(srcdir)/compat/inet_ntop.c -o $@
+
+snprintf$U.lo:	$(srcdir)/compat/snprintf.c
+	$(COMP_LIB) -c $(srcdir)/compat/snprintf.c -o $@
+
+fake-rfc2553$U.lo:	$(srcdir)/compat/fake-rfc2553.c
+	$(COMP_LIB) -c $(srcdir)/compat/fake-rfc2553.c -o $@
+
+gmtime_r$U.lo:	$(srcdir)/compat/gmtime_r.c
+	$(COMP_LIB) -c $(srcdir)/compat/gmtime_r.c -o $@
+
+ctime_r$U.lo:	$(srcdir)/compat/ctime_r.c
+	$(COMP_LIB) -c $(srcdir)/compat/ctime_r.c -o $@
+
+# Automatic dependencies.
+$(LIBDNS_DEPS): $(LIBDNS_SOURCES)
+
+.c.d:
+	$(SHELL) -ec '$(CC) -MM $(CPPFLAGS) $< \
+	              | sed '\''s!\(.*\)\.o[ :]*!$(dir $@)\1.lo $@ : !g'\'' > $@; \
+	              [ -s $@ ] || rm -f $@'
+
+allclean: test-clean clean
+
+test-clean:
+	tpkg -b test clean
+
+test:
+	if test -x "`which bash`"; then bash test/test_all.sh; else sh test/test_all.sh; fi
+
+#-include $(ALL_SOURCES:.c=.d)
+
+# Recreate symbols file, only needed when API changes
+# make clean first (and after this make clean; make again)
+symbols: lib-export-all
+	nm -g lib/libldns.so | cut -d " " -f 3 | grep ldns | sort > $(srcdir)/ldns_symbols.def
+

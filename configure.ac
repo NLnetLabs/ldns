@@ -24,6 +24,16 @@ AC_AIX
 AC_PROG_CC
 AC_PROG_MAKE_SET
 
+# Extra (sp)lint flags for NetBSD
+AC_CANONICAL_HOST
+case "$host_os" in
+	netbsd*) LINTFLAGS="'-D__RENAME(x)=' -D_NETINET_IN_H_ $LINTFLAGS" 
+		 ;;
+	*)       LINTFLAGS="$LINTFLAGS"
+		 ;;
+esac
+AC_SUBST(LINTFLAGS)
+
 AC_DEFINE(WINVER, 0x0502, [the version of the windows API enabled])
 
 ACX_CHECK_COMPILER_FLAG(std=c99, [C99FLAG="-std=c99"])
@@ -86,6 +96,7 @@ AC_SEARCH_LIBS([inet_pton], [nsl])
 # check for python
 PYTHON_X_CFLAGS=""
 ldns_with_pyldns=no
+ldns_with_pyldnsx=no
 AC_ARG_WITH(pyldns, AC_HELP_STRING([--with-pyldns], 
  [generate python library, or --without-pyldns to disable Python support.]), 
  [],[ withval="no" ])
@@ -148,12 +159,29 @@ AC_ARG_WITH(pyldnsx, AC_HELP_STRING([--without-pyldnsx],
 if test x_$withval != x_no; then
   if test x_$ldns_with_pyldns != x_no; then
     AC_SUBST(PYLDNSX, "pyldnsx")
+    ldns_with_pyldnsx=yes
   else
     if test x_$withval != x_with_pyldns; then
       AC_MSG_ERROR([--with-pyldns is needed for the ldnsx python module])
     fi
   fi
 fi
+
+if test x_$ldns_with_pyldns != x_no; then
+  AC_SUBST(PYLDNSINST, "install-pyldns")dnl
+  AC_SUBST(PYLDNSUNINST, "uninstall-pyldns")
+else
+  AC_SUBST(PYLDNSINST, "")dnl
+  AC_SUBST(PYLDNSUNINST, "")
+fi
+if test x_$ldns_with_pyldnsx != x_no; then
+  AC_SUBST(PYLDNSXINST, "install-pyldnsx")dnl
+  AC_SUBST(PYLDNSXUNINST, "uninstall-pyldnsx")
+else
+  AC_SUBST(PYLDNSXINST, "")dnl
+  AC_SUBST(PYLDNSXUNINST, "")
+fi
+
 
 # Use libtool
 ACX_LIBTOOL_C_ONLY
@@ -556,7 +584,7 @@ else
   AC_SUBST(ldns_build_config_have_attr_unused, 0)
 fi
 
-AC_CONFIG_FILES([Makefile ldns/common.h ldns/net.h ldns/util.h packaging/libldns.pc packaging/ldns-config])
+AC_CONFIG_FILES([Makefile BSDmakefile ldns/common.h ldns/net.h ldns/util.h packaging/libldns.pc packaging/ldns-config])
 
 AC_CONFIG_HEADER([ldns/config.h])
 AC_OUTPUT
