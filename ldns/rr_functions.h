@@ -257,6 +257,8 @@ typedef uint32_t (*ldns_soa_serial_increment_func_t)(uint32_t, void*);
 uint32_t ldns_soa_serial_identity(uint32_t _, void *data);
 uint32_t ldns_soa_serial_increment(uint32_t s, void *_);
 uint32_t ldns_soa_serial_increment_by(uint32_t s, void *data);
+uint32_t ldns_soa_serial_unixtime(uint32_t s, void *data);
+uint32_t ldns_soa_serial_YYYYMMDDxx(uint32_t s, void *data);
 
 void ldns_rr_soa_increment(
 		ldns_rr *soa);

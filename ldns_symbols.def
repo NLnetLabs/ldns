@@ -666,9 +666,11 @@ ldns_sign_public_dsa
 ldns_sign_public_evp
 ldns_sign_public_rsamd5
 ldns_sign_public_rsasha1
+ldns_soa_serial_YYYYMMDDxx
 ldns_soa_serial_identity
 ldns_soa_serial_increment
 ldns_soa_serial_increment_by
+ldns_soa_serial_unixtime
 ldns_sockaddr_storage2rdf
 ldns_str2period
 ldns_str2rdf_a

@@ -60,12 +60,18 @@ main(int argc, char **argv)
 				printf("\t-h show this text\n");
 				printf("\t-n do not print the SOA record\n");
 				printf("\t-s strip DNSSEC data from the zone\n");
-				printf("\t-S [+|-]<number>\n"
+				printf("\t-S [[+|-]<number> | YYYYMMDDxx | "
+						" unixtime ]\n"
 				       "\t\tSet serial number to <number> or,"
 						" when preceded by a sign,\n"
 				       "\t\toffset the exisiting number with "
-						"<number>.\n");
-
+						"<number>.  With YYYYMMDDxx\n"
+				       "\t\tthe serial is formatted as a date"
+						", and with unixtime as the\n"
+				       "\t\tnumber of seconds since 1-1-1970."
+				       		"  However, on serial number"
+				       "\n\t\tdecrease, +1 is used in stead"
+						".  (implies -s)\n");
 				printf("\t-v shows the version and exits\n");
 				printf("\t-z sort the zone (implies -c).\n");
 				printf("\nif no file is given standard input is read\n");
@@ -100,11 +106,18 @@ main(int argc, char **argv)
 						atoi(optarg);
 					soa_serial_increment_func =
 						ldns_soa_serial_identity;
+				} else if (!strcasecmp(optarg, "YYYYMMDDxx")){
+					soa_serial_increment_func =
+						ldns_soa_serial_YYYYMMDDxx;
+				} else if (!strcasecmp(optarg, "unixtime")){
+					soa_serial_increment_func =
+						ldns_soa_serial_unixtime;
 				} else {
 					fprintf(stderr, "-S expects a number "
 						"optionally preceded by a "
 						"+ or - sign to indicate an "
-						"offset.\n");
+						"offset, or the text YYYYMM"
+						"DDxx or unixtime\n");
 					exit(EXIT_FAILURE);
 				}
 				break;
