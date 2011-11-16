@@ -254,8 +254,6 @@ extern int optind, opterr;
 #endif
 ])
 
-AC_CONFIG_FILES([Makefile
-                 drill.h
-                ])
+AC_CONFIG_FILES([Makefile])
 AC_CONFIG_HEADER([config.h])
 AC_OUTPUT

@@ -22,6 +22,7 @@ CFLAGS="$CFLAGS"
 AC_AIX
 # Checks for programs.
 AC_PROG_CC
+ACX_DEPFLAG
 AC_PROG_MAKE_SET
 
 # Extra (sp)lint flags for NetBSD
@@ -584,7 +585,7 @@ else
   AC_SUBST(ldns_build_config_have_attr_unused, 0)
 fi
 
-AC_CONFIG_FILES([Makefile BSDmakefile ldns/common.h ldns/net.h ldns/util.h packaging/libldns.pc packaging/ldns-config])
+AC_CONFIG_FILES([Makefile ldns/common.h ldns/net.h ldns/util.h packaging/libldns.pc packaging/ldns-config])
 
 AC_CONFIG_HEADER([ldns/config.h])
 AC_OUTPUT
