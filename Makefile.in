@@ -73,7 +73,7 @@ COMP_LIB	= $(LIBTOOL) --mode=compile $(CC) $(CPPFLAGS) $(CFLAGS)
 LINK		= $(CC) $(CFLAGS) $(LDFLAGS) $(LIBS)
 LINK_LIB	= $(LIBTOOL) --mode=link $(CC) $(CFLAGS) $(LDFLAGS) \
 		  $(LIBS) -version-number $(version_info) -no-undefined
-LINK_EXE	= $(LIBTOOL) --mode=link $(CC) $(CFLAGS) $(LDFLAGS)
+LINK_EXE	= $(LIBTOOL) --mode=link $(CC) $(CPPFLAGS) $(LIBSSL_CPPFLAGS) $(CFLAGS) $(LDFLAGS)
 
 .PHONY:	clean realclean docclean manpages doc lint all lib pyldns test
 .PHONY: install uninstall install-doc uninstall-doc uninstall-pyldns
@@ -99,8 +99,8 @@ setup-builddir:
 	@if [ ! -d include/ldns ] ; then ln -s ../ldns include/ldns || echo "include/ldns exists"; fi
 
 drill: drill/drill
-drill/drill: $(DRILL_LOBJS)
-	$(LINK_EXE) -o drill/drill $(DRILL_LOBJS) $(LIBS) -lldns
+drill/drill: $(DRILL_LOBJS) libldns.la
+	$(LINK_EXE) $(DRILL_LOBJS) $(LIBS) -lldns -o drill/drill
 
 examples: $(EXAMPLE_LOBJS)
 
@@ -137,7 +137,7 @@ manpages:	$(srcdir)/doc/function_manpages
 pyldns:		_ldns.la
 
 $(pywrapdir)/ldns_wrapper.c:	$(PYLDNS_I_FILES) ldns/config.h
-	$(swig) $(swigpy_flags) -o $@ $(CPPFLAGS) $(PYTHON_CPPFLAGS) $<
+	$(swig) $(swigpy_flags) -o $@ $(CPPFLAGS) $(PYTHON_CPPFLAGS) $(pywrapdir)/ldns.i
 
 ldns_wrapper.lo:	$(pywrapdir)/ldns_wrapper.c ldns/config.h
 	$(COMP_LIB) -I./include/ldns $(PYTHON_CPPFLAGS) $(PYTHON_X_CFLAGS) -c $< -o $@
