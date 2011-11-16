@@ -73,48 +73,43 @@ COMP_LIB	= $(LIBTOOL) --mode=compile $(CC) $(CPPFLAGS) $(CFLAGS)
 LINK		= $(CC) $(CFLAGS) $(LDFLAGS) $(LIBS)
 LINK_LIB	= $(LIBTOOL) --mode=link $(CC) $(CFLAGS) $(LDFLAGS) \
 		  $(LIBS) -version-number $(version_info) -no-undefined
+LINK_EXE	= $(LIBTOOL) --mode=link $(CC) $(CFLAGS) $(LDFLAGS)
 
 .PHONY:	clean realclean docclean manpages doc lint all lib pyldns test
 .PHONY: install uninstall install-doc uninstall-doc uninstall-pyldns
 .PHONY: install-h uninstall-h install-lib uninstall-lib install-pyldns
 
-all:		include lib linktest manpages @PYLDNS@
+all:		setup-builddir lib linktest manpages @PYLDNS@
 
 .SUFFIXES: .c .o .a .lo .h .i
 
 .c.lo:
 	$(COMP_LIB) $(LIBSSL_CPPFLAGS) -c $< -o $@
 
-$(LDNS_LOBJS):
+$(LDNS_LOBJS) $(LIBLOBJS) $(DRILL_LOBJS) $(EXAMPLE_LOBJS):
 	$(COMP_LIB) $(LIBSSL_CPPFLAGS) -c $(srcdir)/$(@:.lo=.c) -o $@
 
-compat/tick:
-	if [ ! -e config.h ] ; then ln -s ldns/config.h . ; fi
-	if [ ! -d drill ] ; then mkdir drill ; fi
-	if [ ! -d examples ] ; then mkdir examples ; fi
-	if [ ! -d compat ] ; then mkdir compat ; fi
-	echo ticked > compat/tick
+setup-builddir:
+	@if [ ! -d compat ] ; then mkdir compat ; fi
+	@if [ ! -d drill ] ; then mkdir drill ; fi
+	@if [ ! -d examples ] ; then mkdir examples ; fi
+	@if [ ! -e config.h ] ; then ln -s ldns/config.h . ; fi
+	@if [ ! -d lib ] ; then ln -s .libs lib ; fi ;
+	@if [ ! -d include ] ; then $(INSTALL) -d include; fi
+	@if [ ! -d include/ldns ] ; then ln -s ../ldns include/ldns || echo "include/ldns exists"; fi
 
-$(LIBLOBJS) $(DRILL_LOBJS) $(EXAMPLE_LOBJS): compat/tick
-	$(COMP_LIB) $(LIBSSL_CPPFLAGS) -c $(srcdir)/$(@:.lo=.c) -o $@
-
-drill: $(DRILL_LOBJS)
+drill: drill/drill
+drill/drill: $(DRILL_LOBJS)
+	$(LINK_EXE) -o drill/drill $(DRILL_LOBJS) $(LIBS) -lldns
 
 examples: $(EXAMPLE_LOBJS)
 
 linktest:	$(srcdir)/linktest.c libldns.la
 		$(LIBTOOL) --mode=link $(CC) $(srcdir)/linktest.c $(CPPFLAGS) $(LIBSSL_CPPFLAGS) $(CFLAGS) -lldns $(LIBS) -o linktest
 
-include:
-		if [ ! -d include ] ; then ($(INSTALL) -d include || echo "include exists") ; fi ;
-		if [ ! -d include/ldns ] ; then ln -s ../ldns include/ldns || echo "include/ldns exists" ; fi ;
-
-
 lib:		libldns.la
-		if [ ! -d lib ] ; then ln -s .libs lib ; fi ;		
 
 lib-export-all:	libldns.la-export-all
-		if [ ! -d lib ] ; then ln -s .libs lib ; fi ;		
 
 libldns.la:	$(LDNS_ALL_LOBJS)
 		$(LINK_LIB) $(LIBSSL_LDFLAGS) $(LIBSSL_LIBS) --export-symbols $(srcdir)/ldns_symbols.def -o libldns.la $(LDNS_ALL_LOBJS) -rpath $(libdir) $(RUNTIME_PATH)
