@@ -1644,6 +1644,8 @@ ldns_dnssec_verify_denial_nsec3_match(ldns_rr *rr,
 		} else {
 			result = LDNS_STATUS_DNSSEC_NSEC_RR_NOT_COVERED;
 		}
+
+		/* still need to check covering next closer */
 	} else if (packet_nodata && packet_qtype != LDNS_RR_TYPE_DS) {
 		/* section 8.5 */
 		hashed_name = ldns_nsec3_hash_name_frm_nsec3(
@@ -1657,7 +1659,7 @@ ldns_dnssec_verify_denial_nsec3_match(ldns_rr *rr,
 				if (!ldns_nsec_bitmap_covers_type(
 					    ldns_nsec3_bitmap(ldns_rr_list_rr(nsecs, i)),
 					    packet_qtype)
-				    && 
+				    &&
 				    !ldns_nsec_bitmap_covers_type(
 					    ldns_nsec3_bitmap(ldns_rr_list_rr(nsecs, i)),
 					    LDNS_RR_TYPE_CNAME)) {
@@ -1670,6 +1672,48 @@ ldns_dnssec_verify_denial_nsec3_match(ldns_rr *rr,
 			}
 		}
 		result = LDNS_STATUS_DNSSEC_NSEC_RR_NOT_COVERED;
+		/* wildcard no data? section 8.7 */
+		closest_encloser = ldns_dnssec_nsec3_closest_encloser(
+				   ldns_rr_owner(rr),
+				   ldns_rr_get_type(rr),
+				   nsecs);
+		if(!closest_encloser) {
+			result = LDNS_STATUS_NSEC3_ERR;
+			goto done;
+		}
+		wildcard = ldns_dname_new_frm_str("*");
+		(void) ldns_dname_cat(wildcard, closest_encloser);
+		for (i = 0; i < ldns_rr_list_rr_count(nsecs); i++) {
+			hashed_wildcard_name =
+				ldns_nsec3_hash_name_frm_nsec3(ldns_rr_list_rr(nsecs, 0),
+					 wildcard);
+			(void) ldns_dname_cat(hashed_wildcard_name, zone_name);
+
+			if (ldns_dname_compare(hashed_wildcard_name,
+			         ldns_rr_owner(ldns_rr_list_rr(nsecs, i)))
+			    == 0) {
+				if (!ldns_nsec_bitmap_covers_type(
+					    ldns_nsec3_bitmap(ldns_rr_list_rr(nsecs, i)),
+					    packet_qtype)
+				    &&
+				    !ldns_nsec_bitmap_covers_type(
+					    ldns_nsec3_bitmap(ldns_rr_list_rr(nsecs, i)),
+					    LDNS_RR_TYPE_CNAME)) {
+					result = LDNS_STATUS_OK;
+					if (match) {
+						*match = ldns_rr_list_rr(nsecs, i);
+					}
+				}
+			}
+			ldns_rdf_deep_free(hashed_wildcard_name);
+			if (result == LDNS_STATUS_OK) {
+				break;
+			}
+		}
+		ldns_rdf_deep_free(closest_encloser);
+		ldns_rdf_deep_free(wildcard);
+
+		/* still need to check covering next closer */
 	} else if (packet_nodata && packet_qtype == LDNS_RR_TYPE_DS) {
 		/* section 8.6 */
 		/* note: up to XXX this is the same as for 8.5 */
