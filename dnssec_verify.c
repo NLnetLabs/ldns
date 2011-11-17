@@ -1644,8 +1644,6 @@ ldns_dnssec_verify_denial_nsec3_match(ldns_rr *rr,
 		} else {
 			result = LDNS_STATUS_DNSSEC_NSEC_RR_NOT_COVERED;
 		}
-
-		/* still need to check covering next closer */
 	} else if (packet_nodata && packet_qtype != LDNS_RR_TYPE_DS) {
 		/* section 8.5 */
 		hashed_name = ldns_nsec3_hash_name_frm_nsec3(
@@ -1712,8 +1710,6 @@ ldns_dnssec_verify_denial_nsec3_match(ldns_rr *rr,
 		}
 		ldns_rdf_deep_free(closest_encloser);
 		ldns_rdf_deep_free(wildcard);
-
-		/* still need to check covering next closer */
 	} else if (packet_nodata && packet_qtype == LDNS_RR_TYPE_DS) {
 		/* section 8.6 */
 		/* note: up to XXX this is the same as for 8.5 */
