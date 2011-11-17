@@ -1,6 +1,8 @@
 1.6.12
 	* Canonicalize the signers name rdata field in RRSIGs when signing
 	* bugfix #413: Fix manpage source for srcdir != builddir
+	* bugfix #419: NSEC3 validation of a name covered by a wildcard with
+	  no data.
 
 1.6.11	2011-09-29
 	* bugfix #394: Fix socket leak on errors
