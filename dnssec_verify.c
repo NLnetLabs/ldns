@@ -1010,7 +1010,7 @@ ldns_dnssec_derive_trust_tree_no_sig_time(
 						   data_chain->packet_qtype,
 						   data_chain->packet_nodata);
 			} else if (ldns_rr_get_type(ldns_rr_list_rr(cur_rrset, 0)) ==
-					 LDNS_RR_TYPE_NSEC3) {
+					 LDNS_RR_TYPE_NSEC) {
 				result = ldns_dnssec_verify_denial(
 					        new_tree->rr,
 						   cur_rrset,
