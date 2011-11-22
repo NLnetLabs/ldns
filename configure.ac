@@ -69,6 +69,7 @@ ACX_CHECK_COMPILER_FLAG(Wall, [CFLAGS="-Wall $CFLAGS"])
 ACX_CHECK_COMPILER_FLAG(W, [CFLAGS="-W $CFLAGS"])
 ACX_CHECK_COMPILER_FLAG(Wwrite-strings, [CFLAGS="-Wwrite-strings $CFLAGS"])
 
+
 AC_CHECK_HEADERS([getopt.h time.h],,, [AC_INCLUDES_DEFAULT])
 
 # MinGW32 tests
@@ -93,6 +94,38 @@ AC_CHECK_PROG(doxygen, doxygen, doxygen)
 # check to see if libraries are needed for these functions.
 AC_SEARCH_LIBS([socket], [socket])
 AC_SEARCH_LIBS([inet_pton], [nsl])
+
+
+AC_ARG_WITH(drill, AC_HELP_STRING([--with-drill], 
+ [Also build drill.]), 
+ [],[with_drill="no"])
+if test x_$with_drill != x_no; then
+	AC_SUBST(DRILL,[drill])
+	AC_SUBST(INSTALL_DRILL,[install-drill])
+	AC_SUBST(UNINSTALL_DRILL,[uninstall-drill])
+	AC_SUBST(CLEAN_DRILL,[clean-drill])
+else
+	AC_SUBST(DRILL,[""])
+	AC_SUBST(INSTALL_DRILL,[""])
+	AC_SUBST(UNINSTALL_DRILL,[""])
+	AC_SUBST(CLEAN_DRILL,[""])
+fi
+
+
+AC_ARG_WITH(examples, AC_HELP_STRING([--with-examples], 
+ [Also build examples.]), 
+ [],[with_examples="no"])
+if test x_$with_examples != x_no; then
+	AC_SUBST(EXAMPLES,[examples])
+	AC_SUBST(INSTALL_EXAMPLES,[install-examples])
+	AC_SUBST(UNINSTALL_EXAMPLES,[uninstall-examples])
+	AC_SUBST(CLEAN_EXAMPLES,[clean-examples])
+else
+	AC_SUBST(EXAMPLES,[""])
+	AC_SUBST(INSTALL_EXAMPLES,[""])
+	AC_SUBST(UNINSTALL_EXAMPLES,[""])
+	AC_SUBST(CLEAN_EXAMPLES,[""])
+fi
 
 # check for python
 PYTHON_X_CFLAGS=""
@@ -267,7 +300,7 @@ LDFLAGS=$tmp_LDFLAGS
 LIBS=$tmp_LIBS
 
 # add option to disable installation of ldns-config script
-AC_ARG_ENABLE(ldns-config, [ --disable-ldns-config          disable installation of ldns-config (default=enabled)],
+AC_ARG_ENABLE(ldns-config, [ --disable-ldns-config	disable installation of ldns-config (default=enabled)],
 	enable_ldns_config=$enableval, enable_ldns_config=yes)
 if test "x$enable_ldns_config" = xyes; then
 	INSTALL_LDNS_CONFIG="yes"
@@ -591,4 +624,6 @@ AC_CONFIG_HEADER([ldns/config.h])
 AC_OUTPUT
 COPY_HEADER_FILES(ldns/, ldns/)
 
-AC_CONFIG_SUBDIRS([drill])
+dnl AC_CONFIG_SUBDIRS([drill])
+
+
