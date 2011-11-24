@@ -130,7 +130,8 @@ uninstall-drill:
 	[ ! -d $(DESTDIR)$(bindir) ] || rmdir -p $(DESTDIR)$(bindir) || : ;
 
 clean-drill:
-	$(LIBTOOL) --mode clean rm -f $(DRILL_LOBJS) drill/drill
+	if [ -x $(LIBTOOL) ] ; then \
+		$(LIBTOOL) --mode clean rm -f $(DRILL_LOBJS) drill/drill ; fi
 
 examples:  $(EXAMPLE_PROGS) $(TESTNS)
 $(EXAMPLE_PROGS): $(EXAMPLE_LOBJS) $(LIB)
@@ -156,8 +157,9 @@ uninstall-examples:
 	[ ! -d $(DESTDIR)$(bindir) ] || rmdir -p $(DESTDIR)$(bindir) || : ;
 
 clean-examples:
-	$(LIBTOOL) --mode clean rm -f $(EXAMPLE_PROGS) $(TESTNS) 
-	$(LIBTOOL) --mode clean rm -f $(EXAMPLE_LOBJS)
+	if [ -x $(LIBTOOL) ] ; then \
+		$(LIBTOOL) --mode clean rm -f $(EXAMPLE_PROGS) $(TESTNS) ; \
+		$(LIBTOOL) --mode clean rm -f $(EXAMPLE_LOBJS) ; fi
 
 linktest:	$(srcdir)/linktest.c libldns.la
 		$(LIBTOOL) --mode=link $(CC) $(srcdir)/linktest.c $(CPPFLAGS) $(LIBSSL_CPPFLAGS) $(CFLAGS) -lldns $(LIBS) -o linktest
@@ -282,20 +284,18 @@ clean-manpages:
 	rmdir -p doc/man/man3 || :
 
 clean-lib:
-	$(LIBTOOL) --mode clean rm -f $(LDNS_LOBJS) $(LIBLOBJS)
-	$(LIBTOOL) --mode clean rm -f linktest libldns.la
-	$(LIBTOOL) --mode clean rm -f $(pywrapdir)/ldns_wrapper.c $(pywrapdir)/ldns.py
+	if [ -x $(LIBTOOL) ] ; then \
+		$(LIBTOOL) --mode clean rm -f $(LDNS_LOBJS) $(LIBLOBJS) ; \
+		$(LIBTOOL) --mode clean rm -f linktest libldns.la ; \
+		$(LIBTOOL) --mode clean rm -f $(pywrapdir)/ldns_wrapper.c ; \
+                $(LIBTOOL) --mode clean rm -f $(pywrapdir)/ldns.py ; fi
 
 clean: @CLEAN_DRILL@ @CLEAN_EXAMPLES@ clean-manpages clean-lib  putdown-builddir
-
-distclean: clean docclean
-	rm -f ltmain.sh
 
 realclean: clean docclean
 	rm -f config.status
 	rm -f config.log
 	rm -f Makefile
-	rm -f ldns/config.h.in
 	rm -f ldns/config.h
 	rm -f ldns/util.h
 	rm -f ldns/common.h
@@ -314,8 +314,8 @@ realclean: clean docclean
 			for f in `(cd $(srcdir); echo ldns/*.h)`; do \
 				rm -f $$f ; done ; \
 			rm -f ldns/YES; \
+			rmdir ldns || : ; \
                 fi ;\
-		rmdir ldns || : ; \
 	fi
 
 docclean:
@@ -325,6 +325,10 @@ docclean:
 	rm -f doc/*.txt
 	rm -f doc/*.tex
 	rm -f doc/ldns_manpages
+
+distclean: realclean
+	rm -fr autom4te.cache 
+	rm -f config.guess config.sub configure ltmain.sh ldns/config.h.in
 
 ## No need for changes here
 
