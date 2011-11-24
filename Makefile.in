@@ -106,6 +106,13 @@ setup-builddir:
 	@if [ ! -d include ] ; then $(INSTALL) -d include; fi
 	@if [ ! -d include/ldns ] ; then ln -s ../ldns include/ldns || echo "include/ldns exists"; fi
 
+putdown-builddir:
+	rm -f include/ldns lib config.h
+	@rmdir include  || :
+	@rmdir examples || :
+	@rmdir drill    || :
+	@rmdir compat   || :
+
 drill: drill/drill
 drill/drill: $(DRILL_LOBJS) $(LIB)
 	$(LINK_EXE) $(DRILL_LOBJS) $(LIBS) -lldns -o drill/drill
@@ -123,7 +130,7 @@ uninstall-drill:
 	[ ! -d $(DESTDIR)$(bindir) ] || rmdir -p $(DESTDIR)$(bindir) || : ;
 
 clean-drill:
-	rm -f $(DRILL_LOBJS) $(DRILL_LOBJS:.lo=.o) drill/drill
+	$(LIBTOOL) --mode clean rm -f $(DRILL_LOBJS) drill/drill
 
 examples:  $(EXAMPLE_PROGS) $(TESTNS)
 $(EXAMPLE_PROGS): $(EXAMPLE_LOBJS) $(LIB)
@@ -149,8 +156,8 @@ uninstall-examples:
 	[ ! -d $(DESTDIR)$(bindir) ] || rmdir -p $(DESTDIR)$(bindir) || : ;
 
 clean-examples:
-	rm -f $(EXAMPLE_PROGS) $(TESTNS) \
-		$(EXAMPLE_LOBJS) $(EXAMPLE_LOBJS:.lo=.o) 
+	$(LIBTOOL) --mode clean rm -f $(EXAMPLE_PROGS) $(TESTNS) 
+	$(LIBTOOL) --mode clean rm -f $(EXAMPLE_LOBJS)
 
 linktest:	$(srcdir)/linktest.c libldns.la
 		$(LIBTOOL) --mode=link $(CC) $(srcdir)/linktest.c $(CPPFLAGS) $(LIBSSL_CPPFLAGS) $(CFLAGS) -lldns $(LIBS) -o linktest
@@ -222,8 +229,8 @@ install-manpages:	manpages
 		fi
 
 uninstall-manpages:
-		for i in `cat doc/ldns_manpages`; do \
-			rm -f $(DESTDIR)$(mandir)/man3/$$i.3 ; done
+		for m in `cat $(srcdir)/ldns/*.h | $(srcdir)/doc/doxyparse.pl -m $(srcdir)/doc/function_manpages 2>&1 | grep -v ^doxygen | grep -v ^cat` ; do \
+			rm -f $(DESTDIR)$(mandir)/man3/$$m.3 ; done
 		rmdir -p $(DESTDIR)$(mandir)/man3 || echo "ok, dir already gone"
 		if [ $(INSTALL_LDNS_CONFIG) = "yes" ] ; then \
 			rm -f $(DESTDIR)$(mandir)/man1/ldns-config.1; \
@@ -268,25 +275,23 @@ install-pyldnsx:
 uninstall-pyldnsx:
 		rm -f $(DESTDIR)$(python_site)/ldnsx.py
 
-clean: @CLEAN_DRILL@ @CLEAN_EXAMPLES@
-	rm -f *.o *.d *.lo
-	rm -f $(LIBOBJS) $(LOBLOBJS)
-	rm -f *~
-	rm -rf autom4te.cache/
-	rm -f tags
-	rm -f *.key
-	rm -f *.ds
-	rm -f *.private
-	rm -rf include/
-	rm -rf lib
-	rm -rf .libs
-	rm -f linktest
-	rm -f $(pywrapdir)/ldns_wrapper.c $(pywrapdir)/ldns.py
+clean-manpages:
+	for m in `cat $(srcdir)/ldns/*.h | $(srcdir)/doc/doxyparse.pl -m $(srcdir)/doc/function_manpages 2>&1 | grep -v ^doxygen | grep -v ^cat` ; do\
+		rm -f doc/man/man3/$${m}.3 ; done
+	rm -f doc/ldns_manpages
+	rmdir -p doc/man/man3 || :
 
-distclean: clean docclean libclean
+clean-lib:
+	$(LIBTOOL) --mode clean rm -f $(LDNS_LOBJS) $(LIBLOBJS)
+	$(LIBTOOL) --mode clean rm -f linktest libldns.la
+	$(LIBTOOL) --mode clean rm -f $(pywrapdir)/ldns_wrapper.c $(pywrapdir)/ldns.py
+
+clean: @CLEAN_DRILL@ @CLEAN_EXAMPLES@ clean-manpages clean-lib  putdown-builddir
+
+distclean: clean docclean
 	rm -f ltmain.sh
 
-realclean: clean docclean libclean
+realclean: clean docclean
 	rm -f config.status
 	rm -f config.log
 	rm -f Makefile
@@ -294,11 +299,24 @@ realclean: clean docclean libclean
 	rm -f ldns/config.h
 	rm -f ldns/util.h
 	rm -f ldns/common.h
-	rm -f config.h.in
-	rm -f configure
-	rm -f config.sub
-	rm -f config.guess
-	rm -f ltmain.sh
+	rm -f ldns/net.h
+	rm -f packaging/ldns-config
+	rm -f packaging/libldns.pc
+	@rmdir packaging || :
+	rm -f libtool
+	if [ -d ldns ] ; then \
+		echo "is builddir srcdir" > ldns/YES ; \
+                if [ -f $(srcdir)/ldns/YES ] ; then \
+			echo Leaving headers files because srcdir == builddir;\
+			rm -f ldns/YES; \
+		else \
+                        echo Removing header files in builddir;\
+			for f in `(cd $(srcdir); echo ldns/*.h)`; do \
+				rm -f $$f ; done ; \
+			rm -f ldns/YES; \
+                fi ;\
+		rmdir ldns || : ; \
+	fi
 
 docclean:
 	rm -rf doc/html/
@@ -307,17 +325,6 @@ docclean:
 	rm -f doc/*.txt
 	rm -f doc/*.tex
 	rm -f doc/ldns_manpages
-
-libclean:
-	$(LIBTOOL) --mode clean rm -f libldns.la
-	$(LIBTOOL) --mode clean rm -f libldns.a
-	$(LIBTOOL) --mode clean rm -f libldns.so
-	$(LIBTOOL) --mode clean rm -f libldns.so.*
-	$(LIBTOOL) --mode clean rm -f _ldns.la
-	rm -rf ldns/net.h ldns/util.h ldns/config.h ldns/common.h
-	rm -rf *.lo
-	rm -rf .libs
-	rm -rf libtool
 
 ## No need for changes here
 
