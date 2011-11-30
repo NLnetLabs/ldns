@@ -127,6 +127,21 @@ else
 	AC_SUBST(CLEAN_EXAMPLES,[""])
 fi
 
+# add option to disable installation of ldns-config script
+AC_ARG_ENABLE(ldns-config, [ --disable-ldns-config	disable installation of ldns-config (default=enabled)],
+	enable_ldns_config=$enableval, enable_ldns_config=yes)
+if test "x$enable_ldns_config" = xyes; then
+	AC_SUBST(INSTALL_CONFIG, [install-config])
+	AC_SUBST(INSTALL_CONFIG_MANPAGE, [install-config-manpage])
+	AC_SUBST(UNINSTALL_CONFIG, [install-config])
+	AC_SUBST(UNINSTALL_CONFIG_MANPAGE, [install-config-manpage])
+else
+	AC_SUBST(INSTALL_CONFIG, [""])
+	AC_SUBST(INSTALL_CONFIG_MANPAGE, [""])
+	AC_SUBST(UNINSTALL_CONFIG, [""])
+	AC_SUBST(UNINSTALL_CONFIG_MANPAGE, [""])
+fi
+
 # check for python
 PYTHON_X_CFLAGS=""
 ldns_with_pyldns=no
@@ -298,16 +313,6 @@ AC_SUBST(LIBSSL_LIBS)
 CPPFLAGS=$tmp_CPPFLAGS
 LDFLAGS=$tmp_LDFLAGS
 LIBS=$tmp_LIBS
-
-# add option to disable installation of ldns-config script
-AC_ARG_ENABLE(ldns-config, [ --disable-ldns-config	disable installation of ldns-config (default=enabled)],
-	enable_ldns_config=$enableval, enable_ldns_config=yes)
-if test "x$enable_ldns_config" = xyes; then
-	INSTALL_LDNS_CONFIG="yes"
-else
-	INSTALL_LDNS_CONFIG="no"
-fi
-AC_SUBST(INSTALL_LDNS_CONFIG)
 
 # add option to disable the evil rpath
 ACX_ARG_RPATH
