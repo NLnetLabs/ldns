@@ -216,7 +216,9 @@ static int bind_port(int sock, int port, int fam)
     }
 #endif
 
+#ifndef S_SPLINT_S
     addr.sin_family = AF_INET;
+#endif
     addr.sin_port = (in_port_t)htons((uint16_t)port);
     addr.sin_addr.s_addr = INADDR_ANY;
     return bind(sock, (struct sockaddr *)&addr, (socklen_t) sizeof(addr));
@@ -365,7 +367,9 @@ static struct entry* entries;
 static void
 service(void)
 {
+#ifndef S_SPLINT_S
 	fd_set rset, wset, eset;
+#endif
 	struct timeval timeout;
 	int count;
 	int maxfd;
@@ -418,7 +422,7 @@ forkit(int number)
 #endif /* USE_WINSOCK */
 #else /* HAVE_FORK */
 		pid_t pid = fork();
-		if(pid == -1) {
+		if(pid == (pid_t) -1) {
 			log_msg("error forking: %s\n", strerror(errno));
 			return;
 		}

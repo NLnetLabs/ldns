@@ -44,12 +44,16 @@ RUNTIME_PATH	= @RUNTIME_PATH@
 LIBTOOL		= $(libtool) --tag=CC --quiet
 LINT		= splint
 LINTFLAGS	= +quiet -weak -warnposix -unrecog -Din_addr_t=uint32_t -Du_int=unsigned -Du_char=uint8_t -preproc -Drlimit=rlimit64 -D__gnuc_va_list=va_list
-LINTFLAGS	+="-DBN_ULONG=unsigned long" -Dkrb5_int32=int "-Dkrb5_ui_4=unsigned int" -DPQ_64BIT=uint64_t -DRC4_INT=unsigned -fixedformalarray -D"ENGINE=unsigned" -D"RSA=unsigned" -D"DSA=unsigned" -D"EVP_PKEY=unsigned" -D"EVP_MD=unsigned" -D"SSL=unsigned" -D"SSL_CTX=unsigned" -D"X509=unsigned" -D"RC4_KEY=unsigned" -D"EVP_MD_CTX=unsigned" -D"EC_KEY=unsigned" -D"EC_POINT=unsigned" -D"EC_GROUP=unsigned" -D"EVP_PKEY_ASN1_METHOD=struct evp_pkey_asn1_method_st" -D"EVP_PKEY_CTX=struct evp_pkey_ctx_st"
+# Extra flags from configure
+LINTFLAGS	+= @LINTFLAGS@
+LINTFLAGS	+= "-DBN_ULONG=unsigned long" -Dkrb5_int32=int "-Dkrb5_ui_4=unsigned int" -DPQ_64BIT=uint64_t -DRC4_INT=unsigned -fixedformalarray -D"ENGINE=unsigned" -D"RSA=unsigned" -D"DSA=unsigned" -D"EVP_PKEY=unsigned" -D"EVP_MD=unsigned" -D"SSL=unsigned" -D"SSL_CTX=unsigned" -D"X509=unsigned" -D"RC4_KEY=unsigned" -D"EVP_MD_CTX=unsigned" -D"EC_KEY=unsigned" -D"EC_POINT=unsigned" -D"EC_GROUP=unsigned" -D"EVP_PKEY_ASN1_METHOD=struct evp_pkey_asn1_method_st" -D"EVP_PKEY_CTX=struct evp_pkey_ctx_st"
 # compat with OpenBSD
-LINTFLAGS	+="-Dsigset_t=long"
+LINTFLAGS	+= "-Dsigset_t=long"
 # FreeBSD8
-LINTFLAGS	+="-D__uint16_t=uint16_t"
-LINTFLAGS	+=@LINTFLAGS@
+LINTFLAGS	+= "-D__uint16_t=uint16_t"
+# Ubuntu oneiric"
+LINTFLAGS       += -D"__BEGIN_DECLS=" -D"__ssize_t=ssize_t" -D"__intptr_t=intptr_t" -D"__nonnull(x)=" -D"__THROW=" -D"__wur=" -D"__off_t=unsigned" -D"__off64_t=unsigned" -D"__useconds_t=unsigned" -D"__uid_t=unsigned" -D"__gid_t=unsigned" -D"__attribute_deprecated__=" -D"__pid_t=unsigned" -D"__restrict=" -D"__END_DECLS=" -D"__BEGIN_NAMESPACE_STD=" -D"__END_NAMESPACE_STD=" -D"__BEGIN_NAMESPACE_C99=" -D"__END_NAMESPACE_C99="  -D"__socklen_t=unsigned" -D"sa_family_t=unsigned " -D"__mode_t=unsigned" -D"u_int16_t=uint16_t" -D"u_int32_t=uint32_t" -D"u_int8_t=uint8_t" -D"u_short=unsigned short" -D"__u16=uint16_t" -D"__u32=uint32_t"
+-D"__u64=uint64_t"
 DEPFLAG		= @DEPFLAG@
 
 INSTALL		= $(srcdir)/install-sh 
@@ -108,9 +112,9 @@ setup-builddir:
 putdown-builddir:
 	rm -f include/ldns lib config.h
 	test ! -d include  || rmdir include  || :
-	test ! -d examples || rmdir examples || :
-	test ! -d drill    || rmdir drill    || :
-	test ! -d compat   || rmdir compat   || :
+	if test -d examples -a ! -f examples/README; then rmdir examples || : ; fi
+	if test -d drill    -a ! -f drill/README   ; then rmdir drill    || : ; fi
+	if test -d compat   -a ! -f compat/malloc.c; then rmdir compat   || : ; fi
 
 drill: drill/drill
 drill/drill: $(DRILL_LOBJS) $(LIB)
@@ -295,7 +299,8 @@ realclean: clean docclean
 	rm -f ldns/net.h
 	rm -f packaging/ldns-config
 	rm -f packaging/libldns.pc
-	test ! -d packaging || rmdir packaging || :
+	if test -d packaging -a ! -f packaging/ldns-config.in ; then \
+            rmdir packaging || : ; fi
 	rm -f libtool
 	if test -d ldns ; then \
 		echo "is builddir srcdir" > ldns/YES ; \
@@ -325,8 +330,20 @@ distclean: realclean
 
 ## No need for changes here
 
-lint:
+lint: @LINT_DRILL@ @LINT_EXAMPLES@
 	for i in $(srcdir)/*.c; do \
+		$(LINT) $(LINTFLAGS) -I. -I$(srcdir) $(srcdir)/$$i ; \
+		if test $$? -ne 0 ; then exit 1 ; fi ; \
+	done
+
+lint-drill:
+	for i in $(srcdir)/drill/*.c; do \
+		$(LINT) $(LINTFLAGS) -I. -I$(srcdir) $(srcdir)/$$i ; \
+		if test $$? -ne 0 ; then exit 1 ; fi ; \
+	done
+
+lint-examples:
+	for i in $(srcdir)/examples/*.c; do \
 		$(LINT) $(LINTFLAGS) -I. -I$(srcdir) $(srcdir)/$$i ; \
 		if test $$? -ne 0 ; then exit 1 ; fi ; \
 	done

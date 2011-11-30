@@ -30,7 +30,9 @@ convert_addr(char* str, int p, struct sockaddr_storage* addr, socklen_t* len)
 	} else {
 #endif
 		*len = (socklen_t)sizeof(struct sockaddr_in);
+#ifndef S_SPLINT_S
 		((struct sockaddr_in*)addr)->sin_family = AF_INET;
+#endif
 		((struct sockaddr_in*)addr)->sin_port = htons((uint16_t)p);
 		if(inet_pton(AF_INET, str,
 			&((struct sockaddr_in*)addr)->sin_addr) == 1)

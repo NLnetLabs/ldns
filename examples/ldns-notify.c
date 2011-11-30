@@ -58,7 +58,9 @@ notify_host(int s, struct addrinfo* res, uint8_t* wire, size_t wiresize,
 {
 	int timeout_retry = 5; /* seconds */
 	int num_retry = max_num_retry;
+#ifndef S_SPLINT_S
 	fd_set rfds;
+#endif
 	struct timeval tv;
 	int retval = 0;
 	ssize_t received = 0;
@@ -83,9 +85,9 @@ notify_host(int s, struct addrinfo* res, uint8_t* wire, size_t wiresize,
 		}
 
 		/* wait for ACK packet */
+#ifndef S_SPLINT_S
 		FD_ZERO(&rfds);
 		FD_SET(s, &rfds);
-#ifndef S_SPLINT_S
 		tv.tv_sec = timeout_retry; /* seconds */
 #endif
 		tv.tv_usec = 0; /* microseconds */

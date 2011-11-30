@@ -104,11 +104,13 @@ if test x_$with_drill != x_no; then
 	AC_SUBST(INSTALL_DRILL,[install-drill])
 	AC_SUBST(UNINSTALL_DRILL,[uninstall-drill])
 	AC_SUBST(CLEAN_DRILL,[clean-drill])
+	AC_SUBST(LINT_DRILL,[lint-drill])
 else
 	AC_SUBST(DRILL,[""])
 	AC_SUBST(INSTALL_DRILL,[""])
 	AC_SUBST(UNINSTALL_DRILL,[""])
 	AC_SUBST(CLEAN_DRILL,[""])
+	AC_SUBST(LINT_DRILL,[""])
 fi
 
 
@@ -120,11 +122,13 @@ if test x_$with_examples != x_no; then
 	AC_SUBST(INSTALL_EXAMPLES,[install-examples])
 	AC_SUBST(UNINSTALL_EXAMPLES,[uninstall-examples])
 	AC_SUBST(CLEAN_EXAMPLES,[clean-examples])
+	AC_SUBST(LINT_EXAMPLES,[lint-examples])
 else
 	AC_SUBST(EXAMPLES,[""])
 	AC_SUBST(INSTALL_EXAMPLES,[""])
 	AC_SUBST(UNINSTALL_EXAMPLES,[""])
 	AC_SUBST(CLEAN_EXAMPLES,[""])
+	AC_SUBST(LINT_EXAMPLES,[""])
 fi
 
 # add option to disable installation of ldns-config script
@@ -133,8 +137,8 @@ AC_ARG_ENABLE(ldns-config, [ --disable-ldns-config	disable installation of ldns-
 if test "x$enable_ldns_config" = xyes; then
 	AC_SUBST(INSTALL_CONFIG, [install-config])
 	AC_SUBST(INSTALL_CONFIG_MANPAGE, [install-config-manpage])
-	AC_SUBST(UNINSTALL_CONFIG, [install-config])
-	AC_SUBST(UNINSTALL_CONFIG_MANPAGE, [install-config-manpage])
+	AC_SUBST(UNINSTALL_CONFIG, [uninstall-config])
+	AC_SUBST(UNINSTALL_CONFIG_MANPAGE, [uninstall-config-manpage])
 else
 	AC_SUBST(INSTALL_CONFIG, [""])
 	AC_SUBST(INSTALL_CONFIG_MANPAGE, [""])
