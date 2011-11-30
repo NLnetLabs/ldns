@@ -98,13 +98,13 @@ $(LDNS_LOBJS) $(LIBLOBJS) $(DRILL_LOBJS) $(EXAMPLE_LOBJS):
 	$(COMP_LIB) $(LIBSSL_CPPFLAGS) -c $(srcdir)/$(@:.lo=.c) -o $@
 
 setup-builddir:
-	@if [ ! -d compat ] ; then mkdir compat ; fi
-	@if [ ! -d drill ] ; then mkdir drill ; fi
-	@if [ ! -d examples ] ; then mkdir examples ; fi
-	@if [ ! -e config.h ] ; then ln -s ldns/config.h . ; fi
-	@if [ ! -d lib ] ; then ln -s .libs lib ; fi ;
-	@if [ ! -d include ] ; then $(INSTALL) -d include; fi
-	@if [ ! -d include/ldns ] ; then ln -s ../ldns include/ldns || echo "include/ldns exists"; fi
+	@if test ! -d compat ; then mkdir compat ; fi
+	@if test ! -d drill ; then mkdir drill ; fi
+	@if test ! -d examples ; then mkdir examples ; fi
+	@if test ! -e config.h ; then ln -s ldns/config.h . ; fi
+	@if test ! -d lib ; then ln -s .libs lib ; fi ;
+	@if test ! -d include ; then $(INSTALL) -d include; fi
+	@if test ! -d include/ldns ; then ln -s ../ldns include/ldns || echo "include/ldns exists"; fi
 
 putdown-builddir:
 	rm -f include/ldns lib config.h
@@ -126,12 +126,11 @@ install-drill: drill/drill
 
 uninstall-drill:
 	rm -f $(DESTDIR)$(bindir)/drill $(DESTDIR)$(mandir)/man1/drill.1
-	[ ! -d $(DESTDIR)$(mandir) ] || rmdir -p $(DESTDIR)$(mandir)/man1 || :;
-	[ ! -d $(DESTDIR)$(bindir) ] || rmdir -p $(DESTDIR)$(bindir) || : ;
+	[ ! -d $(DESTDIR)$(mandir) || rmdir -p $(DESTDIR)$(mandir)/man1 || :;
+	[ ! -d $(DESTDIR)$(bindir) || rmdir -p $(DESTDIR)$(bindir) || : ;
 
 clean-drill:
-	if [ -x $(LIBTOOL) ] ; then \
-		$(LIBTOOL) --mode clean rm -f $(DRILL_LOBJS) drill/drill ; fi
+	$(LIBTOOL) --mode clean rm -f $(DRILL_LOBJS) drill/drill
 
 examples:  $(EXAMPLE_PROGS) $(TESTNS)
 $(EXAMPLE_PROGS): $(EXAMPLE_LOBJS) $(LIB)
@@ -153,13 +152,12 @@ uninstall-examples:
 	for p in $(EX_PROGS_BASENM) ldns-testns ; do \
 		rm -f $(DESTDIR)$(bindir)/$$p $(DESTDIR)$(mandir)/man1/$$p.1 ;\
 	done
-	[ ! -d $(DESTDIR)$(mandir) ] || rmdir -p $(DESTDIR)$(mandir)/man1 || :;
-	[ ! -d $(DESTDIR)$(bindir) ] || rmdir -p $(DESTDIR)$(bindir) || : ;
+	[ ! -d $(DESTDIR)$(mandir) || rmdir -p $(DESTDIR)$(mandir)/man1 || :;
+	[ ! -d $(DESTDIR)$(bindir) || rmdir -p $(DESTDIR)$(bindir) || : ;
 
 clean-examples:
-	if [ -x $(LIBTOOL) ] ; then \
-		$(LIBTOOL) --mode clean rm -f $(EXAMPLE_PROGS) $(TESTNS) ; \
-		$(LIBTOOL) --mode clean rm -f $(EXAMPLE_LOBJS) ; fi
+	$(LIBTOOL) --mode clean rm -f $(EXAMPLE_PROGS) $(TESTNS)
+	$(LIBTOOL) --mode clean rm -f $(EXAMPLE_LOBJS)
 
 linktest:	$(srcdir)/linktest.c libldns.la
 		$(LIBTOOL) --mode=link $(CC) $(srcdir)/linktest.c $(CPPFLAGS) $(LIBSSL_CPPFLAGS) $(CFLAGS) -lldns $(LIBS) -o linktest
@@ -178,7 +176,7 @@ mancheck:
 		sh -c 'find . -name \*.\[13\] -exec troff -z {} \;' 2>&1 | sed "s/^\.\///" | sed "s/\(:[0\-9]\+:\)/\1 warning:/g"
 
 doxygen:	manpages
-		if [ ! -e doc/header.html ] ; then \
+		if test ! -e doc/header.html ; then \
 			$(INSTALL) -c -m 644 $(srcdir)/doc/header.html doc/ ; \
 		fi ;
 		$(doxygen) $(srcdir)/libdns.doxygen
@@ -209,15 +207,15 @@ uninstall:	uninstall-manpages uninstall-config uninstall-h uninstall-lib $(pyldn
 destclean:	uninstall
 
 install-config:
-	if [ $(INSTALL_LDNS_CONFIG) = "yes" ] ; then \
+	if test $(INSTALL_LDNS_CONFIG) = "yes" ; then \
 		$(INSTALL) -d $(DESTDIR)$(bindir) ; \
 		$(INSTALL) -c -m 755 packaging/ldns-config $(DESTDIR)$(bindir)/ ; \
 	fi
 
 uninstall-config:
-	if [ $(INSTALL_LDNS_CONFIG) = "yes" ] ; then \
+	if test $(INSTALL_LDNS_CONFIG) = "yes" ; then \
 		rm -f $(DESTDIR)$(bindir)/ldns-config; \
-		[ ! -d $(DESTDIR)$(bindir) ] || rmdir -p $(DESTDIR)$(bindir) || echo "ok, dir already gone"; \
+		[ ! -d $(DESTDIR)$(bindir) || rmdir -p $(DESTDIR)$(bindir) || echo "ok, dir already gone"; \
 	fi
 
 install-manpages:	manpages
@@ -225,7 +223,7 @@ install-manpages:	manpages
 		for f in doc/man/man3/*; do \
 			${INSTALL} -c -m 444 $$f $(DESTDIR)$(mandir)/man3/; \
 		done
-		if [ $(INSTALL_LDNS_CONFIG) = "yes" ] ; then \
+		if test $(INSTALL_LDNS_CONFIG) = "yes" ; then \
 			${INSTALL} -d $(DESTDIR)$(mandir)/man1; \
 			${INSTALL} -c -m 444 $(srcdir)/packaging/ldns-config.1 $(DESTDIR)$(mandir)/man1/; \
 		fi
@@ -234,9 +232,9 @@ uninstall-manpages:
 		for m in `cat $(srcdir)/ldns/*.h | $(srcdir)/doc/doxyparse.pl -m $(srcdir)/doc/function_manpages 2>&1 | grep -v ^doxygen | grep -v ^cat` ; do \
 			rm -f $(DESTDIR)$(mandir)/man3/$$m.3 ; done
 		rmdir -p $(DESTDIR)$(mandir)/man3 || echo "ok, dir already gone"
-		if [ $(INSTALL_LDNS_CONFIG) = "yes" ] ; then \
+		if test $(INSTALL_LDNS_CONFIG) = "yes" ; then \
 			rm -f $(DESTDIR)$(mandir)/man1/ldns-config.1; \
-			[ ! -d $(DESTDIR)$(mandir)/man1 ] || rmdir -p $(DESTDIR)$(mandir)/man1 || echo "ok, dir already gone"; \
+			[ ! -d $(DESTDIR)$(mandir)/man1 || rmdir -p $(DESTDIR)$(mandir)/man1 || echo "ok, dir already gone"; \
 		fi
 
 install-h:	lib
@@ -249,7 +247,7 @@ install-h:	lib
 uninstall-h:
 		for i in $(LDNS_HEADERS) $(LDNS_HEADERS_GEN); do \
 			rm -f $(DESTDIR)$(includedir)/ldns/$$i; done
-		[ ! -d $(DESTDIR)$(includedir)/ldns ] || rmdir -p $(DESTDIR)$(includedir)/ldns || echo "ok, dir already gone"
+		[ ! -d $(DESTDIR)$(includedir)/ldns || rmdir -p $(DESTDIR)$(includedir)/ldns || echo "ok, dir already gone"
 		exit 0
 
 install-lib:	lib
@@ -284,11 +282,10 @@ clean-manpages:
 	rmdir -p doc/man/man3 || :
 
 clean-lib:
-	if [ -x $(LIBTOOL) ] ; then \
-		$(LIBTOOL) --mode clean rm -f $(LDNS_LOBJS) $(LIBLOBJS) ; \
-		$(LIBTOOL) --mode clean rm -f linktest libldns.la ; \
-		$(LIBTOOL) --mode clean rm -f $(pywrapdir)/ldns_wrapper.c ; \
-                $(LIBTOOL) --mode clean rm -f $(pywrapdir)/ldns.py ; fi
+	$(LIBTOOL) --mode clean rm -f $(LDNS_LOBJS) $(LIBLOBJS)
+	$(LIBTOOL) --mode clean rm -f linktest libldns.la
+	$(LIBTOOL) --mode clean rm -f $(pywrapdir)/ldns_wrapper.c
+	$(LIBTOOL) --mode clean rm -f $(pywrapdir)/ldns.py
 
 clean: @CLEAN_DRILL@ @CLEAN_EXAMPLES@ clean-manpages clean-lib  putdown-builddir
 
@@ -304,9 +301,9 @@ realclean: clean docclean
 	rm -f packaging/libldns.pc
 	@rmdir packaging || :
 	rm -f libtool
-	if [ -d ldns ] ; then \
+	if test -d ldns ; then \
 		echo "is builddir srcdir" > ldns/YES ; \
-                if [ -f $(srcdir)/ldns/YES ] ; then \
+                if test -f $(srcdir)/ldns/YES ; then \
 			echo Leaving headers files because srcdir == builddir;\
 			rm -f ldns/YES; \
 		else \
@@ -335,7 +332,7 @@ distclean: realclean
 lint:
 	for i in $(srcdir)/*.c; do \
 		$(LINT) $(LINTFLAGS) -I. -I$(srcdir) $(srcdir)/$$i ; \
-		if [ $$? -ne 0 ] ; then exit 1 ; fi ; \
+		if test $$? -ne 0 ; then exit 1 ; fi ; \
 	done
 
 tags:	$(srcdir)/*.c ldns/*.[ch]
@@ -358,7 +355,7 @@ symbols: lib-export-all
 TMP_FILE=temporary.tmp
 sources:
 	for mf in $(srcdir)/Makefile.in Makefile ; do \
-		if [ -e $$mf ] ; then \
+		if test -e $$mf ; then \
 			cp $$mf $$mf.bak ;\
 			sed 	-e 's/^LDNS_LOBJS[ 	]*=.*$$/LDNS_LOBJS	= '"`(cd $(srcdir); ls -1 *.c | egrep -v '$(LDNS_LOBJS_EX)' | sed 's/\.c/\.lo/g' | tr '\n' ' ')`"'/g' \
 				-e 's/^LDNS_HEADERS[ 	]*=.*$$/LDNS_HEADERS	= '"`(cd $(srcdir)/ldns; ls -1 *.h | egrep -v '$(LDNS_HEADERS_EX)' | tr '\n' ' ')`"'/g' \
@@ -385,7 +382,7 @@ DEPEND_TARGET2=$(srcdir)/Makefile.in
 # then, remove srcdir from the (generated) parser and lexer.
 # and mention the .lo
 depend:
-	if [ ! -e config.h ] ; then ln -s ldns/config.h . ; fi
+	if test ! -e config.h ; then ln -s ldns/config.h . ; fi
 	echo "" > $(DEPEND_TMP)
 	for builddir in `pwd` ; do \
 		for subdir in "" compat/ examples/ drill/; do \
