@@ -367,9 +367,7 @@ static struct entry* entries;
 static void
 service(void)
 {
-#ifndef S_SPLINT_S
 	fd_set rset, wset, eset;
-#endif
 	struct timeval timeout;
 	int count;
 	int maxfd;
@@ -379,11 +377,13 @@ service(void)
 	timeout.tv_sec = 0;
 	timeout.tv_usec = 0;
 	while (1) {
+#ifndef S_SPLINT_S
 		FD_ZERO(&rset);
 		FD_ZERO(&wset);
 		FD_ZERO(&eset);
 		FD_SET(udp_sock, &rset);
 		FD_SET(tcp_sock, &rset);
+#endif
 		maxfd = udp_sock;
 		if(tcp_sock > maxfd)
 			maxfd = tcp_sock;
