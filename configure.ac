@@ -318,6 +318,29 @@ CPPFLAGS=$tmp_CPPFLAGS
 LDFLAGS=$tmp_LDFLAGS
 LIBS=$tmp_LIBS
 
+
+if test x_$with_examples != x_no; then
+AC_CHECK_HEADERS([pcap.h],, [AC_INCLUDES_DEFAULT])
+AC_CHECK_LIB(pcap, pcap_open_offline,, [
+    AC_MSG_WARN([Can't find pcap library (needed for ldns-dpa, will not build dpa now.)])
+    ]
+)
+AC_CHECK_HEADERS([netinet/in_systm.h net/if.h netinet/ip.h netinet/udp.h netinet/igmp.h netinet/if_ether.h netinet/ip6.h],,, [
+AC_INCLUDES_DEFAULT 
+#ifdef HAVE_NETINET_IN_SYSTM_H
+#include <netinet/in_systm.h>
+#endif
+#ifdef HAVE_NETINET_IN_H
+#include <netinet/in.h>
+#endif
+#ifdef HAVE_SYS_SOCKET_H
+#include <sys/socket.h>
+#endif
+#ifdef HAVE_NET_IF_H
+#include <net/if.h>
+#endif])
+fi
+
 # add option to disable the evil rpath
 ACX_ARG_RPATH
 

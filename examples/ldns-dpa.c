@@ -12,6 +12,39 @@
 
 #ifdef HAVE_PCAP_H
 #ifdef HAVE_LIBPCAP
+#include <pcap/pcap.h>
+
+#ifdef HAVE_SYS_SOCKET_H
+#include <sys/socket.h>
+#endif
+
+#ifdef HAVE_NETINET_IN_H
+#include <netinet/in.h>
+#endif
+
+#ifdef HAVE_ARPA_INET_H
+#include <arpa/inet.h>
+#endif
+
+#ifdef HAVE_NETINET_UDP_H
+#include <netinet/udp.h>
+#endif
+
+#ifdef HAVE_NETINET_IN_SYSTM_H
+#include <netinet/in_systm.h>
+#endif
+
+#ifdef HAVE_NETINET_IP_H
+#include <netinet/ip.h>
+#endif
+
+#ifdef HAVE_NET_IF_H
+#include <net/if.h>
+#endif
+
+#ifdef HAVE_NETINET_IF_ETHER_H
+#include <netinet/if_ether.h>
+#endif
 
 #ifdef HAVE_NETINET_IP6_H
 #include <netinet/ip6.h>
