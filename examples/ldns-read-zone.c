@@ -35,7 +35,7 @@ main(int argc, char **argv)
 	ldns_rr_type cur_rr_type;
 	const ldns_output_format *fmt = NULL;
 	ldns_soa_serial_increment_func_t soa_serial_increment_func = NULL;
-	int soa_serial_increment_func_data;
+	int soa_serial_increment_func_data = 0;
 
         while ((c = getopt(argc, argv, "bcdhnsvzS:")) != -1) {
                 switch(c) {
