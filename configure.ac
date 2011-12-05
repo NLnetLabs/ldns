@@ -470,6 +470,7 @@ AC_REPLACE_FUNCS(calloc)
 AC_REPLACE_FUNCS(timegm)
 AC_REPLACE_FUNCS(gmtime_r)
 AC_REPLACE_FUNCS(ctime_r)
+AC_REPLACE_FUNCS(localtime_r)
 AC_REPLACE_FUNCS(isblank)
 AC_REPLACE_FUNCS(isascii)
 AC_REPLACE_FUNCS(inet_aton)
@@ -600,6 +601,9 @@ time_t timegm (struct tm *tm);
 #endif /* !TIMEGM */
 #ifndef HAVE_GMTIME_R
 struct tm *gmtime_r(const time_t *timep, struct tm *result);
+#endif
+#ifndef HAVE_LOCALTIME_R
+struct tm *localtime_r(const time_t *timep, struct tm *result);
 #endif
 #ifndef HAVE_ISBLANK
 int isblank(int c);
