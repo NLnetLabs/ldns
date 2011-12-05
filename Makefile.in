@@ -40,6 +40,7 @@ PYTHON_X_CFLAGS = @PYTHON_X_CFLAGS@
 LIBSSL_CPPFLAGS = @LIBSSL_CPPFLAGS@
 LIBSSL_LDFLAGS  = @LIBSSL_LDFLAGS@
 LIBSSL_LIBS     = @LIBSSL_LIBS@
+LIBPCAP_LIBS    = @LIBPCAP_LIBS@
 RUNTIME_PATH	= @RUNTIME_PATH@
 LIBTOOL		= $(libtool) --tag=CC --quiet
 LINT		= splint
@@ -63,20 +64,22 @@ LDNS_LOBJS	= buffer.lo dname.lo dnssec.lo dnssec_sign.lo dnssec_verify.lo dnssec
 LDNS_LOBJS_EX	= ^linktest\.c$$
 LDNS_ALL_LOBJS	= $(LDNS_LOBJS) $(LIBLOBJS)
 
-LDNS_HEADERS	= buffer.h dname.h dnssec.h dnssec_sign.h dnssec_verify.h dnssec_zone.h error.h higher.h host2str.h host2wire.h keys.h ldns.h packet.h parse.h rbtree.h rdata.h resolver.h rr_functions.h rr.h sha1.h sha2.h str2host.h tsig.h update.h wire2host.h zone.h 
+LDNS_HEADERS	= buffer.h dname.h dnssec.h dnssec_sign.h dnssec_verify.h dnssec_zone.h error.h higher.h host2str.h host2wire.h keys.h ldns.h packet.h parse.h rbtree.h rdata.h resolver.h rr.h rr_functions.h sha1.h sha2.h str2host.h tsig.h update.h wire2host.h zone.h 
 LDNS_HEADERS_EX	= ^config\.h|common\.h|util\.h|net\.h$$
 LDNS_HEADERS_GEN= common.h util.h net.h
 
-PYLDNS_I_FILES	= $(pywrapdir)/file_py3.i $(pywrapdir)/ldns_buffer.i $(pywrapdir)/ldns_dname.i $(pywrapdir)/ldns_dnssec.i $(pywrapdir)/ldns.i $(pywrapdir)/ldns_key.i $(pywrapdir)/ldns_packet.i $(pywrapdir)/ldns_rdf.i $(pywrapdir)/ldns_resolver.i $(pywrapdir)/ldns_rr.i $(pywrapdir)/ldns_zone.i
+PYLDNS_I_FILES	= $(pywrapdir)/file_py3.i $(pywrapdir)/ldns.i $(pywrapdir)/ldns_buffer.i $(pywrapdir)/ldns_dname.i $(pywrapdir)/ldns_dnssec.i $(pywrapdir)/ldns_key.i $(pywrapdir)/ldns_packet.i $(pywrapdir)/ldns_rdf.i $(pywrapdir)/ldns_resolver.i $(pywrapdir)/ldns_rr.i $(pywrapdir)/ldns_zone.i
 
 DRILL_LOBJS	= drill/chasetrace.lo drill/dnssec.lo drill/drill.lo drill/drill_util.lo drill/error.lo drill/root.lo drill/securetrace.lo drill/work.lo
 
-EXAMPLE_LOBJS	= examples/ldns-chaos.lo examples/ldns-compare-zones.lo examples/ldnsd.lo examples/ldns-dpa.lo examples/ldns-gen-zone.lo examples/ldns-key2ds.lo examples/ldns-keyfetcher.lo examples/ldns-keygen.lo examples/ldns-mx.lo examples/ldns-notify.lo examples/ldns-nsec3-hash.lo examples/ldns-read-zone.lo examples/ldns-resolver.lo examples/ldns-revoke.lo examples/ldns-rrsig.lo examples/ldns-signzone.lo examples/ldns-test-edns.lo examples/ldns-testns.lo examples/ldns-testpkts.lo examples/ldns-update.lo examples/ldns-verify-zone.lo examples/ldns-version.lo examples/ldns-walk.lo examples/ldns-zcat.lo examples/ldns-zsplit.lo
-EXAMPLE_PROGS	= examples/ldns-chaos examples/ldns-compare-zones examples/ldnsd examples/ldns-dpa examples/ldns-gen-zone examples/ldns-key2ds examples/ldns-keyfetcher examples/ldns-keygen examples/ldns-mx examples/ldns-notify examples/ldns-nsec3-hash examples/ldns-read-zone examples/ldns-resolver examples/ldns-revoke examples/ldns-rrsig examples/ldns-signzone examples/ldns-test-edns examples/ldns-update examples/ldns-verify-zone examples/ldns-version examples/ldns-walk examples/ldns-zcat examples/ldns-zsplit 
-EX_PROGS_BASENM	= ldns-chaos ldns-compare-zones ldnsd ldns-dpa ldns-gen-zone ldns-key2ds ldns-keyfetcher ldns-keygen ldns-mx ldns-notify ldns-nsec3-hash ldns-read-zone ldns-resolver ldns-revoke ldns-rrsig ldns-signzone ldns-test-edns ldns-update ldns-verify-zone ldns-version ldns-walk ldns-zcat ldns-zsplit 
-EXAMPLE_PROGS_EX= ^examples/ldns-testpkts\.c|examples/ldns-testns\.c$$
+EXAMPLE_LOBJS	= examples/ldns-chaos.lo examples/ldns-compare-zones.lo examples/ldns-dpa.lo examples/ldns-gen-zone.lo examples/ldns-key2ds.lo examples/ldns-keyfetcher.lo examples/ldns-keygen.lo examples/ldns-mx.lo examples/ldns-notify.lo examples/ldns-nsec3-hash.lo examples/ldns-read-zone.lo examples/ldns-resolver.lo examples/ldns-revoke.lo examples/ldns-rrsig.lo examples/ldns-signzone.lo examples/ldns-test-edns.lo examples/ldns-testns.lo examples/ldns-testpkts.lo examples/ldns-update.lo examples/ldns-verify-zone.lo examples/ldns-version.lo examples/ldns-walk.lo examples/ldns-zcat.lo examples/ldns-zsplit.lo examples/ldnsd.lo
+EXAMPLE_PROGS	= examples/ldns-chaos examples/ldns-compare-zones examples/ldns-gen-zone examples/ldns-key2ds examples/ldns-keyfetcher examples/ldns-keygen examples/ldns-mx examples/ldns-notify examples/ldns-nsec3-hash examples/ldns-read-zone examples/ldns-resolver examples/ldns-revoke examples/ldns-rrsig examples/ldns-signzone examples/ldns-test-edns examples/ldns-update examples/ldns-verify-zone examples/ldns-version examples/ldns-walk examples/ldns-zcat examples/ldns-zsplit examples/ldnsd 
+EX_PROGS_BASENM	= ldns-chaos ldns-compare-zones ldns-gen-zone ldns-key2ds ldns-keyfetcher ldns-keygen ldns-mx ldns-notify ldns-nsec3-hash ldns-read-zone ldns-resolver ldns-revoke ldns-rrsig ldns-signzone ldns-test-edns ldns-update ldns-verify-zone ldns-version ldns-walk ldns-zcat ldns-zsplit ldnsd 
+EXAMPLE_PROGS_EX= ^examples/ldns-testpkts\.c|examples/ldns-testns\.c|examples/ldns-dpa\.c$$
 TESTNS		= examples/ldns-testns
 TESTNS_LOBJS	= examples/ldns-testns.lo examples/ldns-testpkts.lo
+LDNS_DPA	= examples/ldns-dpa
+LDNS_DPA_LOBJS	= examples/ldns-dpa.lo
 
 COMPILE		= $(CC) $(CPPFLAGS) $(CFLAGS)
 COMP_LIB	= $(LIBTOOL) --mode=compile $(CC) $(CPPFLAGS) $(CFLAGS)
@@ -135,31 +138,35 @@ uninstall-drill:
 clean-drill:
 	$(LIBTOOL) --mode clean rm -f $(DRILL_LOBJS) drill/drill
 
-examples:  $(EXAMPLE_PROGS) $(TESTNS)
+examples:  $(EXAMPLE_PROGS) $(TESTNS) $(LDNS_DPA)
 $(EXAMPLE_PROGS): $(EXAMPLE_LOBJS) $(LIB)
 	$(LINK_EXE) $@.lo $(LIBS) -lldns -o $@
 
 $(TESTNS): $(TESTNS_LOBJS) $(LIB)
 	$(LINK_EXE) $(TESTNS_LOBJS) $(LIBS) -lldns -o $(TESTNS)
 
-install-examples: $(EXAMPLE_PROGS) $(TESTNS)
+$(LDNS_DPA): $(LDNS_DPA_LOBJS) $(LIB)
+	$(LINK_EXE) $(LDNS_DPA_LOBJS) $(LIBS) $(LIBPCAP_LIBS) -lldns \
+		 -o $(LDNS_DPA)
+
+install-examples: $(EXAMPLE_PROGS) $(TESTNS) $(LDNS_DPA)
 	$(INSTALL) -m 755 -d $(DESTDIR)$(bindir)
 	$(INSTALL) -m 755 -d $(DESTDIR)$(mandir)
 	$(INSTALL) -m 755 -d $(DESTDIR)$(mandir)/man1
-	for p in $(EXAMPLE_PROGS) $(TESTNS) ; do \
+	for p in $(EXAMPLE_PROGS) $(TESTNS) $(LDNS_DPA); do \
 		$(LIBTOOL) --mode=install cp $$p $(DESTDIR)$(bindir) ; \
 		$(INSTALL) -m 644 $(srcdir)/$$p.1 $(DESTDIR)$(mandir)/man1 ; \
 	done
 
 uninstall-examples:
-	for p in $(EX_PROGS_BASENM) ldns-testns ; do \
+	for p in $(EX_PROGS_BASENM) ldns-testns ldns-dpa ; do \
 		rm -f $(DESTDIR)$(bindir)/$$p $(DESTDIR)$(mandir)/man1/$$p.1 ;\
 	done
 	test ! -d $(DESTDIR)$(mandir) || rmdir -p $(DESTDIR)$(mandir)/man1 || :;
 	test ! -d $(DESTDIR)$(bindir) || rmdir -p $(DESTDIR)$(bindir) || : ;
 
 clean-examples:
-	$(LIBTOOL) --mode clean rm -f $(EXAMPLE_PROGS) $(TESTNS)
+	$(LIBTOOL) --mode clean rm -f $(EXAMPLE_PROGS) $(TESTNS) $(LDNS_DPA)
 	$(LIBTOOL) --mode clean rm -f $(EXAMPLE_LOBJS)
 
 linktest: $(srcdir)/linktest.c libldns.la
