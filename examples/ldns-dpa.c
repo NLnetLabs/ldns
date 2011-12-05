@@ -2765,7 +2765,7 @@ int main(int argc, char *argv[]) {
 	
 	while ((cur = pcap_next(pc, &cur_hdr))) {
 		if (verbosity >= 5) {
-			printf("\n\n\n[PKT_HDR] caplen: %u \tlen: %u\n", cur_hdr.caplen, cur_hdr.len);
+			printf("\n\n\n[PKT_HDR] caplen: %u \tlen: %u\n", (unsigned int)cur_hdr.caplen, (unsigned int)cur_hdr.len);
 		}
 		handle_ether_packet(cur, cur_hdr, count, expr, uniques, unique_ids, unique_id_count);
 	}
