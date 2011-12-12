@@ -106,10 +106,10 @@ setup-builddir:
 	if test ! -d compat ; then mkdir compat ; fi
 	if test ! -d drill ; then mkdir drill ; fi
 	if test ! -d examples ; then mkdir examples ; fi
-	if test ! -e config.h ; then ln -s ldns/config.h . ; fi
-	if test ! -d lib ; then ln -s .libs lib ; fi ;
+	if test ! -h config.h ; then ln -s ldns/config.h . ; fi
+	if test ! -h lib ; then ln -s .libs lib ; fi ;
 	if test ! -d include ; then $(INSTALL) -d include; fi
-	if test ! -d include/ldns ; then ln -s ../ldns include/ldns || echo "include/ldns exists"; fi
+	if test ! -h include/ldns ; then ln -s ../ldns include/ldns || echo "include/ldns exists"; fi
 
 putdown-builddir:
 	rm -f include/ldns lib config.h
