@@ -118,7 +118,15 @@ putdown-builddir:
 	if test -d drill    -a ! -f drill/README   ; then rmdir drill    || : ; fi
 	if test -d compat   -a ! -f compat/malloc.c; then rmdir compat   || : ; fi
 
-drill: drill/drill
+drill: no-drill-config-h drill/drill
+no-drill-config-h:
+	if test -e $(srcdir)/drill/config.h -o -e drill/config.h ; then \
+		echo "A config.h was detected in the drill subdirectory." ; \
+		echo "This does not work when building drill from here." ; \
+		echo "Either remove the config.h from the subdirectory" ; \
+		echo "or build drill there." ; \
+		exit -1 ; \
+	fi
 drill/drill: $(DRILL_LOBJS) $(LIB)
 	$(LINK_EXE) $(DRILL_LOBJS) $(LIBS) -lldns -o drill/drill
 
@@ -137,7 +145,15 @@ uninstall-drill:
 clean-drill:
 	$(LIBTOOL) --mode clean rm -f $(DRILL_LOBJS) drill/drill
 
-examples:  $(EXAMPLE_PROGS) $(TESTNS) $(LDNS_DPA)
+examples: no-examples-config-h $(EXAMPLE_PROGS) $(TESTNS) $(LDNS_DPA)
+no-examples-config-h:
+	if test -e $(srcdir)/examples/config.h -o -e examples/config.h ; then \
+		echo "A config.h was detected in the examples subdirectory." ; \
+		echo "This does not work when building examples from here." ; \
+		echo "Either remove the config.h from the subdirectory" ; \
+		echo "or build examples there." ; \
+		exit -1 ; \
+	fi
 $(EXAMPLE_PROGS): $(EXAMPLE_LOBJS) $(LIB)
 	$(LINK_EXE) $@.lo $(LIBS) -lldns -o $@
 

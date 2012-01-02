@@ -252,23 +252,104 @@ size_t ldns_rr_dnskey_key_size_raw(const unsigned char *keydata,
  */
 size_t ldns_rr_dnskey_key_size(const ldns_rr *key);
 
+/**
+ * The type of function to be passed to ldns_rr_soa_increment_func,
+ * ldns_rr_soa_increment_func_data or ldns_rr_soa_increment_int.
+ * The function will be called with as the first argument the current serial
+ * number of the SOA RR to be updated, and as the second argument a value
+ * given when calling ldns_rr_soa_increment_func_data or 
+ * ldns_rr_soa_increment_int.
+ */
 typedef uint32_t (*ldns_soa_serial_increment_func_t)(uint32_t, void*);
 
+/**
+ * Function to be used with dns_rr_soa_increment_func_int, to set the soa
+ * serial number. 
+ * \param[in] _ the (unused) current serial number.
+ * \param[in] data the serial number to be set (when casted to uint32_t).
+ */
 uint32_t ldns_soa_serial_identity(uint32_t _, void *data);
+
+/**
+ * Function to be used with dns_rr_soa_increment_func, to increment the soa
+ * serial number with one. 
+ * \param[in] s the current serial number.
+ * \param[in] _ unused.
+ */
 uint32_t ldns_soa_serial_increment(uint32_t s, void *_);
+
+/**
+ * Function to be used with dns_rr_soa_increment_func_int, to increment the soa
+ * serial number with a certain amount. 
+ * \param[in] s the current serial number.
+ * \param[in] data (casted to intptr_t) the amount to add to the 
+ *                 current serial number.
+ */
 uint32_t ldns_soa_serial_increment_by(uint32_t s, void *data);
+
+/**
+ * Function to be used with ldns_rr_soa_increment_func or 
+ * ldns_rr_soa_increment_func_int to set the soa serial to the number of 
+ * seconds since unix epoch (1-1-1970 00:00). 
+ * When data is given (i.e. the function is called via
+ * ldns_rr_soa_increment_func_int), it is used as the current time. 
+ * When the resulting serial number is smaller than the current serial number,
+ * the current serial number is increased by one.
+ * \param[in] s the current serial number.
+ * \param[in] data the time in seconds since 1-1-1970 00:00
+ */
 uint32_t ldns_soa_serial_unixtime(uint32_t s, void *data);
+
+/**
+ * Function to be used with ldns_rr_soa_increment_func or 
+ * ldns_rr_soa_increment_func_int to set the soa serial to the current date
+ * succeeded by a two digit iteration.
+ * When data is given (i.e. the function is called via
+ * ldns_rr_soa_increment_func_int), it is used as the current time. 
+ * When the resulting serial number is smaller than the current serial number,
+ * the current serial number is increased by one.
+ * \param[in] s the current serial number.
+ * \param[in] data the time in seconds since 1-1-1970 00:00
+ */
 uint32_t ldns_soa_serial_YYYYMMDDxx(uint32_t s, void *data);
 
+/**
+ * Increment the serial number of the given SOA by one.
+ * \param[in] soa The soa rr to be incremented
+ */
 void ldns_rr_soa_increment(
 		ldns_rr *soa);
 
+/**
+ * Increment the serial number of the given SOA with the given function.
+ * Included functions to be used here are: ldns_rr_soa_increment, 
+ * ldns_soa_serial_unixtime and ldns_soa_serial_YYYYMMDDxx.
+ * \param[in] soa The soa rr to be incremented
+ * \param[in] f the function to use to increment the soa rr.
+ */
 void ldns_rr_soa_increment_func(
 		ldns_rr *soa, ldns_soa_serial_increment_func_t f);
 
+/**
+ * Increment the serial number of the given SOA with the given function
+ * passing it the given data argument.
+ * \param[in] soa The soa rr to be incremented
+ * \param[in] f the function to use to increment the soa rr.
+ * \param[in] data this argument will be passed to f as the second argument.
+ */
 void ldns_rr_soa_increment_func_data(
 		ldns_rr *soa, ldns_soa_serial_increment_func_t f, void *data);
 
+/**
+ * Increment the serial number of the given SOA with the given function
+ * using data as an argument for the function.
+ * Included functions to be used here are: ldns_soa_serial_identity,
+ * ldns_rr_soa_increment_by, ldns_soa_serial_unixtime and 
+ * ldns_soa_serial_YYYYMMDDxx.
+ * \param[in] soa The soa rr to be incremented
+ * \param[in] f the function to use to increment the soa rr.
+ * \param[in] data this argument will be passed to f as the second argument.
+ */
 void ldns_rr_soa_increment_func_int(
 		ldns_rr *soa, ldns_soa_serial_increment_func_t f, int data);
 

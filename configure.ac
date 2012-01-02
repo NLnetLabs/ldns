@@ -99,12 +99,19 @@ AC_SEARCH_LIBS([inet_pton], [nsl])
 AC_ARG_WITH(drill, AC_HELP_STRING([--with-drill], 
  [Also build drill.]), 
  [],[with_drill="no"])
-if test x_$with_drill != x_no; then
+if test x_$with_drill != x_no ; then
 	AC_SUBST(DRILL,[drill])
 	AC_SUBST(INSTALL_DRILL,[install-drill])
 	AC_SUBST(UNINSTALL_DRILL,[uninstall-drill])
 	AC_SUBST(CLEAN_DRILL,[clean-drill])
 	AC_SUBST(LINT_DRILL,[lint-drill])
+	if test -e $srcdir/drill/config.h -o -e drill/config.h ; then
+		AC_MSG_ERROR([
+A config.h was detected in the drill subdirectory.
+This does not work with the --with-drill option.
+Please remove the config.h from the drill subdirectory 
+or do not use the --with-drill option.])
+	fi
 else
 	AC_SUBST(DRILL,[""])
 	AC_SUBST(INSTALL_DRILL,[""])
@@ -117,12 +124,19 @@ fi
 AC_ARG_WITH(examples, AC_HELP_STRING([--with-examples], 
  [Also build examples.]), 
  [],[with_examples="no"])
-if test x_$with_examples != x_no; then
+if test x_$with_examples != x_no ; then
 	AC_SUBST(EXAMPLES,[examples])
 	AC_SUBST(INSTALL_EXAMPLES,[install-examples])
 	AC_SUBST(UNINSTALL_EXAMPLES,[uninstall-examples])
 	AC_SUBST(CLEAN_EXAMPLES,[clean-examples])
 	AC_SUBST(LINT_EXAMPLES,[lint-examples])
+	if test -e $srcdir/examples/config.h -o -e examples/config.h ; then
+		AC_MSG_ERROR([
+A config.h was detected in the examples subdirectory.
+This does not work with the --with-examples option.
+Please remove the config.h from the examples subdirectory 
+or do not use the --with-examples option.])
+	fi
 else
 	AC_SUBST(EXAMPLES,[""])
 	AC_SUBST(INSTALL_EXAMPLES,[""])
