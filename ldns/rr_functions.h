@@ -258,7 +258,10 @@ size_t ldns_rr_dnskey_key_size(const ldns_rr *key);
  * The function will be called with as the first argument the current serial
  * number of the SOA RR to be updated, and as the second argument a value
  * given when calling ldns_rr_soa_increment_func_data or 
- * ldns_rr_soa_increment_int.
+ * ldns_rr_soa_increment_int. With ldns_rr_soa_increment_int the pointer
+ * value holds the integer value passed to ldns_rr_soa_increment_int,
+ * and it should be cast to intptr_t to be used as an integer by the
+ * serial modifying function.
  */
 typedef uint32_t (*ldns_soa_serial_increment_func_t)(uint32_t, void*);
 
@@ -266,7 +269,7 @@ typedef uint32_t (*ldns_soa_serial_increment_func_t)(uint32_t, void*);
  * Function to be used with dns_rr_soa_increment_func_int, to set the soa
  * serial number. 
  * \param[in] _ the (unused) current serial number.
- * \param[in] data the serial number to be set (when cast to uint32_t).
+ * \param[in] data the serial number to be set.
  */
 uint32_t ldns_soa_serial_identity(uint32_t _, void *data);
 
@@ -282,8 +285,7 @@ uint32_t ldns_soa_serial_increment(uint32_t s, void *_);
  * Function to be used with dns_rr_soa_increment_func_int, to increment the soa
  * serial number with a certain amount. 
  * \param[in] s the current serial number.
- * \param[in] data (when cast to intptr_t) the amount to add to the 
- *            current serial number.
+ * \param[in] data the amount to add to the current serial number.
  */
 uint32_t ldns_soa_serial_increment_by(uint32_t s, void *data);
 
@@ -348,7 +350,8 @@ void ldns_rr_soa_increment_func_data(
  * ldns_soa_serial_YYYYMMDDxx.
  * \param[in] soa The soa rr to be incremented
  * \param[in] f the function to use to increment the soa rr.
- * \param[in] data this argument will be passed to f as the second argument.
+ * \param[in] data this argument will be passed to f as the second argument
+ *                 (by casting it to void*).
  */
 void ldns_rr_soa_increment_func_int(
 		ldns_rr *soa, ldns_soa_serial_increment_func_t f, int data);
