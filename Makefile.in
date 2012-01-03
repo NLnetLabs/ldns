@@ -255,7 +255,7 @@ install-manpages: manpages  @INSTALL_CONFIG_MANPAGE@
 	done
 
 uninstall-manpages: @UNINSTALL_CONFIG_MANPAGE@
-	for m in `cat $(srcdir)/ldns/*.h | $(srcdir)/doc/doxyparse.pl -m $(srcdir)/doc/function_manpages 2>&1 | grep -v ^doxygen | grep -v ^cat` ; do \
+	for m in `cat $(srcdir)/ldns/*.h | perl $(srcdir)/doc/doxyparse.pl -m $(srcdir)/doc/function_manpages 2>&1 | grep -v ^doxygen | grep -v ^cat` ; do \
 		rm -f $(DESTDIR)$(mandir)/man3/$$m.3 ; done
 	test ! -d $(DESTDIR)$(mandir)/man3 || rmdir -p $(DESTDIR)$(mandir)/man3 || echo "ok, dir already gone"
 
