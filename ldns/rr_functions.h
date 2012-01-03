@@ -266,7 +266,7 @@ typedef uint32_t (*ldns_soa_serial_increment_func_t)(uint32_t, void*);
  * Function to be used with dns_rr_soa_increment_func_int, to set the soa
  * serial number. 
  * \param[in] _ the (unused) current serial number.
- * \param[in] data the serial number to be set (when casted to uint32_t).
+ * \param[in] data the serial number to be set (when cast to uint32_t).
  */
 uint32_t ldns_soa_serial_identity(uint32_t _, void *data);
 
@@ -282,8 +282,8 @@ uint32_t ldns_soa_serial_increment(uint32_t s, void *_);
  * Function to be used with dns_rr_soa_increment_func_int, to increment the soa
  * serial number with a certain amount. 
  * \param[in] s the current serial number.
- * \param[in] data (casted to intptr_t) the amount to add to the 
- *                 current serial number.
+ * \param[in] data (when cast to intptr_t) the amount to add to the 
+ *            current serial number.
  */
 uint32_t ldns_soa_serial_increment_by(uint32_t s, void *data);
 
