@@ -47,7 +47,6 @@ ldns_lookup_table ldns_algorithms[] = {
         { LDNS_DSA_NSEC3, "DSA-NSEC3-SHA1" },
         { LDNS_RSASHA1_NSEC3, "RSASHA1-NSEC3-SHA1" },
 #if USE_NSEC4
-        { LDNS_DSA_NSEC4, "DSA-NSEC4-SHA1" },
         { LDNS_RSASHA1_NSEC4, "RSASHA1-NSEC4-SHA1" },
 #endif
 #ifdef USE_SHA2
@@ -1690,9 +1689,6 @@ ldns_key2buffer_str(ldns_buffer *output, const ldns_key *k)
 				break;
 			case LDNS_SIGN_DSA:
 			case LDNS_SIGN_DSA_NSEC3:
-#if USE_NSEC4
-			case LDNS_SIGN_DSA_NSEC4:
-#endif
 				dsa = ldns_key_dsa_key(k);
 
 				ldns_buffer_printf(output,"Private-key-format: v1.2\n");
@@ -1702,12 +1698,6 @@ ldns_key2buffer_str(ldns_buffer *output, const ldns_key *k)
 					ldns_buffer_printf(output,
 					    "Algorithm: %u (DSA_NSEC3)\n",
 					    LDNS_DSA_NSEC3);
-#if USE_NSEC4
-				} else if (ldns_key_algorithm(k) == LDNS_SIGN_DSA_NSEC4) {
-					ldns_buffer_printf(output,
-					    "Algorithm: %u (DSA_NSEC4)\n",
-					    LDNS_DSA_NSEC4);
-#endif
 				}
 
 				/* print to buf, convert to bin, convert to b64,

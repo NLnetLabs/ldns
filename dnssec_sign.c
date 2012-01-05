@@ -121,9 +121,6 @@ ldns_sign_public_buffer(ldns_buffer *sign_buf, ldns_key *current_key)
 	switch(ldns_key_algorithm(current_key)) {
 	case LDNS_SIGN_DSA:
 	case LDNS_SIGN_DSA_NSEC3:
-#if USE_NSEC4
-	case LDNS_SIGN_DSA_NSEC4:
-#endif
 		b64rdf = ldns_sign_public_evp(
 				   sign_buf,
 				   ldns_key_evp_key(current_key),

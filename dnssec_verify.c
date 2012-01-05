@@ -1855,9 +1855,6 @@ ldns_verify_rrsig_buffers_raw(unsigned char* sig, size_t siglen,
 	switch(algo) {
 	case LDNS_DSA:
 	case LDNS_DSA_NSEC3:
-#if USE_NSEC4
-	case LDNS_DSA_NSEC4:
-#endif
 		return ldns_verify_rrsig_dsa_raw(sig,
 								   siglen,
 								   verify_buf,
@@ -2002,9 +1999,6 @@ ldns_rrsig2rawsig_buffer(ldns_buffer* rawsig_buf, ldns_rr* rrsig)
 		break;
 	case LDNS_DSA:
 	case LDNS_DSA_NSEC3:
-#if USE_NSEC4
-	case LDNS_DSA_NSEC4:
-#endif
 		/* EVP takes rfc2459 format, which is a tad longer than dns format */
 		if (ldns_convert_dsa_rrsig_rdf2asn1(rawsig_buf, 
 			ldns_rr_rdf(rrsig, 8)) != LDNS_STATUS_OK) {

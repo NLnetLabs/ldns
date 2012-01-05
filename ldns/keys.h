@@ -62,9 +62,9 @@ enum ldns_enum_algorithm
 #endif
 
 #if LDNS_BUILD_CONFIG_USE_NSEC4
-        LDNS_DSA_NSEC4          = 15,
-        LDNS_RSASHA1_NSEC4      = 16,
+        LDNS_RSASHA1_NSEC4      = 16,   /* EXPERIMENTAL */
 #endif
+
         LDNS_INDIRECT           = 252,
         LDNS_PRIVATEDNS         = 253,
         LDNS_PRIVATEOID         = 254
@@ -108,7 +108,6 @@ enum ldns_enum_signing_algorithm
 #endif
 #if LDNS_BUILD_CONFIG_USE_NSEC4
 	LDNS_SIGN_RSASHA1_NSEC4  = LDNS_RSASHA1_NSEC4,
-	LDNS_SIGN_DSA_NSEC4	 = LDNS_DSA_NSEC4,
 #endif
 	LDNS_SIGN_HMACMD5	 = 157,	/* not official! This type is for TSIG, not DNSSEC */
 	LDNS_SIGN_HMACSHA1	 = 158,	/* not official! This type is for TSIG, not DNSSEC */

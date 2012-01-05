@@ -40,9 +40,6 @@ ldns_lookup_table ldns_signing_algorithms[] = {
 #endif
         { LDNS_SIGN_DSA, "DSA" },
         { LDNS_SIGN_DSA_NSEC3, "DSA-NSEC3-SHA1" },
-#ifdef USE_NSEC4
-        { LDNS_SIGN_DSA_NSEC4, "DSA-NSEC4-SHA1" },
-#endif
         { LDNS_SIGN_HMACMD5, "hmac-md5.sig-alg.reg.int" },
         { LDNS_SIGN_HMACSHA1, "hmac-sha1" },
         { LDNS_SIGN_HMACSHA256, "hmac-sha256" },
@@ -398,15 +395,7 @@ ldns_key_new_frm_fp_l(ldns_key **key, FILE *fp, int *line_nr)
                 alg = LDNS_SIGN_ECDSAP384SHA384;
         }
 #endif
-	if (strncmp(d, "15 DSA", 2) == 0) {
-#ifdef USE_NSEC4
-		alg = LDNS_SIGN_DSA_NSEC4;
-#else
-		fprintf(stderr, "Warning: NSEC4 not compiled into this ");
-		fprintf(stderr, "version of ldns\n");
-#endif
-	}
-	if (strncmp(d, "16 RSASHA1", 2) == 0) {
+	if (strncmp(d, "16 RSASHA1", 4) == 0) {
 #ifdef USE_NSEC4
 		alg = LDNS_SIGN_RSASHA1_NSEC4;
 #else
@@ -450,9 +439,6 @@ ldns_key_new_frm_fp_l(ldns_key **key, FILE *fp, int *line_nr)
 			break;
 		case LDNS_SIGN_DSA:
 		case LDNS_SIGN_DSA_NSEC3:
-#ifdef USE_NSEC4
-		case LDNS_SIGN_DSA_NSEC4:
-#endif
 			ldns_key_set_algorithm(k, alg);
 #ifdef HAVE_SSL
 			dsa = ldns_key_new_frm_fp_dsa_l(fp, line_nr);
@@ -875,9 +861,6 @@ ldns_key_new_frm_algorithm(ldns_signing_algorithm alg, uint16_t size)
 			break;
 		case LDNS_SIGN_DSA:
 		case LDNS_SIGN_DSA_NSEC3:
-#ifdef USE_NSEC4
-		case LDNS_SIGN_DSA_NSEC4:
-#endif
 #ifdef HAVE_SSL
 			d = DSA_generate_parameters((int)size, NULL, 0, NULL, NULL, NULL, NULL);
 			if (!d) {
@@ -1459,9 +1442,6 @@ ldns_key2rr(const ldns_key *k)
 #endif /* HAVE_SSL */
 			break;
 		case LDNS_SIGN_DSA_NSEC3:
-#ifdef USE_NSEC4
-		case LDNS_SIGN_DSA_NSEC4:
-#endif
 			ldns_rr_push_rdf(pubkey,
 					ldns_native2rdf_int8(LDNS_RDF_TYPE_ALG, ldns_key_algorithm(k)));
 #ifdef HAVE_SSL
@@ -1678,7 +1658,6 @@ ldns_signing_algorithm ldns_get_signing_algorithm_by_name(const char* name)
                 {LDNS_SIGN_DSA_NSEC3, "DSA_NSEC3" },
                 {LDNS_SIGN_RSASHA1_NSEC3, "RSASHA1_NSEC3" },
 #ifdef USE_NSEC4
-                {LDNS_SIGN_DSA_NSEC4, "DSA_NSEC4" },
                 {LDNS_SIGN_RSASHA1_NSEC4, "RSASHA1_NSEC4" },
 #endif
 
