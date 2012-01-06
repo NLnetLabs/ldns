@@ -559,7 +559,6 @@ main(int argc, char *argv[])
 					case LDNS_SIGN_RSASHA256:
 #if USE_NSEC4
 					case LDNS_SIGN_RSASHA1_NSEC4:
-					case LDNS_SIGN_DSA_NSEC4:
 #endif
 					case LDNS_SIGN_RSASHA512:
 					case LDNS_SIGN_DSA:
