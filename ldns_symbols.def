@@ -666,7 +666,7 @@ ldns_sign_public_dsa
 ldns_sign_public_evp
 ldns_sign_public_rsamd5
 ldns_sign_public_rsasha1
-ldns_soa_serial_YYYYMMDDxx
+ldns_soa_serial_datecounter
 ldns_soa_serial_identity
 ldns_soa_serial_increment
 ldns_soa_serial_increment_by

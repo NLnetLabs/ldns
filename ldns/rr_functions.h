@@ -305,7 +305,7 @@ uint32_t ldns_soa_serial_unixtime(uint32_t s, void *data);
 /**
  * Function to be used with ldns_rr_soa_increment_func or 
  * ldns_rr_soa_increment_func_int to set the soa serial to the current date
- * succeeded by a two digit iteration.
+ * succeeded by a two digit iteration (datecounter).
  * When data is given (i.e. the function is called via
  * ldns_rr_soa_increment_func_int), it is used as the current time. 
  * When the resulting serial number is smaller than the current serial number,
@@ -313,7 +313,7 @@ uint32_t ldns_soa_serial_unixtime(uint32_t s, void *data);
  * \param[in] s the current serial number.
  * \param[in] data the time in seconds since 1-1-1970 00:00
  */
-uint32_t ldns_soa_serial_YYYYMMDDxx(uint32_t s, void *data);
+uint32_t ldns_soa_serial_datecounter(uint32_t s, void *data);
 
 /**
  * Increment the serial number of the given SOA by one.
@@ -325,7 +325,7 @@ void ldns_rr_soa_increment(
 /**
  * Increment the serial number of the given SOA with the given function.
  * Included functions to be used here are: ldns_rr_soa_increment, 
- * ldns_soa_serial_unixtime and ldns_soa_serial_YYYYMMDDxx.
+ * ldns_soa_serial_unixtime and ldns_soa_serial_datecounter.
  * \param[in] soa The soa rr to be incremented
  * \param[in] f the function to use to increment the soa rr.
  */
@@ -347,7 +347,7 @@ void ldns_rr_soa_increment_func_data(
  * using data as an argument for the function.
  * Included functions to be used here are: ldns_soa_serial_identity,
  * ldns_rr_soa_increment_by, ldns_soa_serial_unixtime and 
- * ldns_soa_serial_YYYYMMDDxx.
+ * ldns_soa_serial_datecounter.
  * \param[in] soa The soa rr to be incremented
  * \param[in] f the function to use to increment the soa rr.
  * \param[in] data this argument will be passed to f as the second argument

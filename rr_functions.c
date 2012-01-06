@@ -356,7 +356,7 @@ uint32_t ldns_soa_serial_increment_by(uint32_t s, void *data)
 	return s + (intptr_t) data;
 }
 
-uint32_t ldns_soa_serial_YYYYMMDDxx(uint32_t s, void *data)
+uint32_t ldns_soa_serial_datecounter(uint32_t s, void *data)
 {
 	struct tm tm;
 	char s_str[11];

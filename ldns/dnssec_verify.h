@@ -222,6 +222,7 @@ ldns_status ldns_dnssec_trust_tree_add_parent(ldns_dnssec_trust_tree *tree,
 ldns_dnssec_trust_tree *ldns_dnssec_derive_trust_tree(
                             ldns_dnssec_data_chain *data_chain,
 					   ldns_rr *rr);
+
 /**
  * Generates a dnssec_trust_ttree for the given rr from the
  * given data_chain
@@ -237,7 +238,6 @@ ldns_dnssec_trust_tree *ldns_dnssec_derive_trust_tree(
 ldns_dnssec_trust_tree *ldns_dnssec_derive_trust_tree_time(
 		ldns_dnssec_data_chain *data_chain, 
 		ldns_rr *rr, time_t check_time);
-
 
 /**
  * Sub function for derive_trust_tree that is used for a 'normal' rrset

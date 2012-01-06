@@ -64,9 +64,9 @@ main(int argc, char **argv)
 						" unixtime ]\n"
 				       "\t\tSet serial number to <number> or,"
 						" when preceded by a sign,\n"
-				       "\t\toffset the exisiting number with "
+				       "\t\toffset the existing number with "
 						"<number>.  With YYYYMMDDxx\n"
-				       "\t\tthe serial is formatted as a date"
+				       "\t\tthe serial is formatted as a datecounter"
 						", and with unixtime as the\n"
 				       "\t\tnumber of seconds since 1-1-1970."
 				       		"  However, on serial number"
@@ -108,7 +108,7 @@ main(int argc, char **argv)
 						ldns_soa_serial_identity;
 				} else if (!strcasecmp(optarg, "YYYYMMDDxx")){
 					soa_serial_increment_func =
-						ldns_soa_serial_YYYYMMDDxx;
+						ldns_soa_serial_datecounter;
 				} else if (!strcasecmp(optarg, "unixtime")){
 					soa_serial_increment_func =
 						ldns_soa_serial_unixtime;
