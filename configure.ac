@@ -493,6 +493,7 @@ AC_REPLACE_FUNCS(inet_ntop)
 AC_REPLACE_FUNCS(snprintf)
 AC_REPLACE_FUNCS(strlcpy)
 AC_REPLACE_FUNCS(memmove)
+AC_FUNC_FORK
 AC_CHECK_FUNCS([endprotoent endservent sleep random fcntl strtoul bzero memset])
 
 ACX_CHECK_GETADDRINFO_WITH_INCLUDES

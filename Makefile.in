@@ -62,6 +62,7 @@ LIBLOBJS	= $(LIBOBJS:.o=.lo)
 LDNS_LOBJS	= buffer.lo dname.lo dnssec.lo dnssec_sign.lo dnssec_verify.lo dnssec_zone.lo error.lo higher.lo host2str.lo host2wire.lo keys.lo net.lo packet.lo parse.lo rbtree.lo rdata.lo resolver.lo rr.lo rr_functions.lo sha1.lo sha2.lo str2host.lo tsig.lo update.lo util.lo wire2host.lo zone.lo 
 LDNS_LOBJS_EX	= ^linktest\.c$$
 LDNS_ALL_LOBJS	= $(LDNS_LOBJS) $(LIBLOBJS)
+LIB		= libldns.la
 
 LDNS_HEADERS	= buffer.h dname.h dnssec.h dnssec_sign.h dnssec_verify.h dnssec_zone.h error.h higher.h host2str.h host2wire.h keys.h ldns.h packet.h parse.h rbtree.h rdata.h resolver.h rr.h rr_functions.h sha1.h sha2.h str2host.h tsig.h update.h wire2host.h zone.h 
 LDNS_HEADERS_EX	= ^config\.h|common\.h|util\.h|net\.h$$
