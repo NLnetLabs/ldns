@@ -1,6 +1,7 @@
 1.6.13
+	* Fix reading \DDD: Error on values that are outside range (>255).
 
-1.6.12	2012-01-11
+1.6.12
 	* bugfix #413: Fix manpage source for srcdir != builddir
 	* Canonicalize the signers name rdata field in RRSIGs when signing
 	* Ignore minor version of Private-key-format (so v1.3 may be used)
