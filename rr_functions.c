@@ -363,7 +363,7 @@ uint32_t ldns_soa_serial_datecounter(uint32_t s, void *data)
 	uint32_t new_s;
 	time_t t = data ? (time_t) (intptr_t) data : ldns_time(NULL);
 
-	(void) strftime(s_str, 11, "%Y%m%d00\000", localtime_r(&t, &tm));
+	(void) strftime(s_str, 11, "%Y%m%d00", localtime_r(&t, &tm));
 	new_s = (uint32_t) atoi(s_str);
 	return new_s > s ? new_s : s+1;
 }
