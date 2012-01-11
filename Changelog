@@ -1,3 +1,5 @@
+1.6.13
+
 1.6.12	2012-01-11
 	* bugfix #413: Fix manpage source for srcdir != builddir
 	* Canonicalize the signers name rdata field in RRSIGs when signing
