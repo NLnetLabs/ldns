@@ -29,6 +29,7 @@ libtool		= @libtool@
 U=
 
 CC 		= @CC@
+CFLAGS		= @CFLAGS@
 CPPFLAGS	= -I. -I$(srcdir) @CPPFLAGS@ @DEFS@
 LDFLAGS		= @LDFLAGS@
 LIBS 		= @LIBS@
