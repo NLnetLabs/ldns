@@ -1,4 +1,4 @@
-1.6.12
+1.6.12	2012-01-11
 	* bugfix #413: Fix manpage source for srcdir != builddir
 	* Canonicalize the signers name rdata field in RRSIGs when signing
 	* Ignore minor version of Private-key-format (so v1.3 may be used)
