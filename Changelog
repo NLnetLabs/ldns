@@ -1,4 +1,5 @@
 1.6.13
+	* bugfix #427: Eplicitely link ssl with the programs that use it.
 	* Fix reading \DDD: Error on values that are outside range (>255).
 
 1.6.12
