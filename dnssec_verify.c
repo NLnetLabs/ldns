@@ -2108,11 +2108,11 @@ ldns_rrsig_check_timestamps(ldns_rr* rrsig, time_t now)
 		/* bad sig, expiration before inception?? Tsssg */
 		return LDNS_STATUS_CRYPTO_EXPIRATION_BEFORE_INCEPTION;
 	}
-	if (now - inception < 0) {
+	if (((int32_t) now) - inception < 0) {
 		/* bad sig, inception date has not yet come to pass */
 		return LDNS_STATUS_CRYPTO_SIG_NOT_INCEPTED;
 	}
-	if (expiration - now < 0) {
+	if (expiration - ((int32_t) now) < 0) {
 		/* bad sig, expiration date has passed */
 		return LDNS_STATUS_CRYPTO_SIG_EXPIRED;
 	}

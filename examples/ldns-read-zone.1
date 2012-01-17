@@ -44,8 +44,8 @@ in datecounter or in unixtime format respectively. Though is the updated serial
 number is smaller than the original one, the original one is simply
 increased by one.
 
-When updating a zone's serial serial number, it will be stripped from DNSSEC
-data as well.
+When updating a serial number, records of type NSEC, NSEC3, RRSIG and DNSKEY
+will be skipped when printing the zone.
 
 
 .TP
