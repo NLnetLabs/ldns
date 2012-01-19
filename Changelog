@@ -1,6 +1,8 @@
 1.6.13
 	* bugfix #427: Eplicitely link ssl with the programs that use it.
 	* Fix reading \DDD: Error on values that are outside range (>255).
+	* bugfix #429: fix doxyparse.plfails on NetBSD because specified
+	  path to perl.
 
 1.6.12
 	* bugfix #413: Fix manpage source for srcdir != builddir
