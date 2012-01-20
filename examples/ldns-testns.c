@@ -188,7 +188,7 @@ static void error(const char* msg, ...)
 	exit(EXIT_FAILURE);
 }
 
-void verbose(int lvl, const char* msg, ...)
+void verbose(int ATTR_UNUSED(lvl), const char* msg, ...)
 {
 	va_list args;
 	va_start(args, msg);

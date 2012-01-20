@@ -240,7 +240,7 @@ print_dnskey_abbr(FILE *fp, ldns_rr *key)
 }
 
 void
-print_rr_list_abbr(FILE *fp, ldns_rr_list *rrlist, char *usr) 
+print_rr_list_abbr(FILE *fp, ldns_rr_list *rrlist, const char *usr) 
 {
 	size_t i;
 	ldns_rr_type tp;

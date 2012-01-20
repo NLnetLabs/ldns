@@ -46,7 +46,7 @@ convert_addr(char* str, int p, struct sockaddr_storage* addr, socklen_t* len)
 
 /** create a query to test */
 static ldns_buffer*
-make_query(char* nm, int tp)
+make_query(const char* nm, int tp)
 {
 	/* with EDNS DO and CDFLAG */
 	ldns_buffer* b = ldns_buffer_new(512);
@@ -86,8 +86,8 @@ make_query(char* nm, int tp)
 
 /** try 3 times to get an EDNS reply from the server, exponential backoff */
 static int
-get_packet(struct sockaddr_storage* addr, socklen_t len, char* nm, int tp,
-	uint8_t **wire, size_t* wlen)
+get_packet(struct sockaddr_storage* addr, socklen_t len, const char* nm,
+	int tp, uint8_t **wire, size_t* wlen)
 {
 	struct timeval t;
 	ldns_buffer* qbin;

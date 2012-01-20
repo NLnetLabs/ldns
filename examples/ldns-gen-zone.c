@@ -78,8 +78,8 @@ insert_ds(ldns_rdf *dsowner, uint32_t ttl)
 int
 main(int argc, char **argv) {
         char *filename, *rrstr, *ownerstr;
-        char *classtypestr1 = "IN NS ns1.example.com.";
-        char *classtypestr2 = "IN NS ns2.example.com.";
+        const char *classtypestr1 = "IN NS ns1.example.com.";
+        const char *classtypestr2 = "IN NS ns2.example.com.";
         const size_t classtypelen = strlen(classtypestr1);
         /* Simply because this was developed by SIDN and we don't use xn-- for .nl :-) */
         const char *punystr = "xn--fake-rr";

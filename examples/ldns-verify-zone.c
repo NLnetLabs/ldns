@@ -464,7 +464,7 @@ verify_nsec(
 
 static ldns_status
 verify_dnssec_name(ldns_rdf *zone_name,
-		ldns_dnssec_zone *zone,
+		ldns_dnssec_zone* ATTR_UNUSED(zone),
                 ldns_rbtree_t *zone_nodes,
                 ldns_rbnode_t *cur_node,
 		ldns_rr_list *keys,

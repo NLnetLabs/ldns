@@ -181,7 +181,7 @@ main(int argc, char **argv)
 	int do_hexdump = 1;
 	uint8_t *wire = NULL;
 	size_t wiresize = 0;
-	char *port = "53";
+	const char *port = "53";
 
 	srandom(time(NULL) ^ getpid());
 
@@ -201,7 +201,7 @@ main(int argc, char **argv)
 			soa_version = (uint32_t)atoi(optarg);
 			break;
                 case 'y':
-			tsig_cred.algorithm = "hmac-md5.sig-alg.reg.int.";
+			tsig_cred.algorithm = (char*)"hmac-md5.sig-alg.reg.int.";
 			tsig_cred.keyname = optarg;
 			tsig_cred.keydata = strchr(optarg, ':');
 			*tsig_cred.keydata = '\0';

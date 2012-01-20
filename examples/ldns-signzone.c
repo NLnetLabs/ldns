@@ -61,7 +61,7 @@ usage(FILE *fp, const char *prog) {
 }
 
 void
-usage_openssl(FILE *fp, const char *prog) {
+usage_openssl(FILE *fp, const char* ATTR_UNUSED(prog)) {
 	fprintf(fp, "Special commands for openssl engines:\n");
 	fprintf(fp, "-c <file>\tOpenSSL config file\n");
 }
@@ -169,7 +169,8 @@ find_key_in_zone(ldns_rr *pubkey_gen, ldns_zone *zone) {
 }
 
 static ldns_rr *
-find_key_in_file(const char *keyfile_name_base, ldns_key *key, uint32_t zone_ttl)
+find_key_in_file(const char *keyfile_name_base, ldns_key* ATTR_UNUSED(key),
+	uint32_t zone_ttl)
 {
 	char *keyfile_name;
 	FILE *keyfile;

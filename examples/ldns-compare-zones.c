@@ -23,7 +23,7 @@
 #define OP_CHG '~'
 
 static void 
-usage(int argc, char **argv)
+usage(int ATTR_UNUSED(argc), char **argv)
 {
 	printf("Usage: %s [-v] [-i] [-d] [-c] [-s] <zonefile1> <zonefile2>\n",
 		  argv[0]);
