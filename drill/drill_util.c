@@ -14,12 +14,12 @@
 #include <errno.h>
 
 static int
-read_line(FILE *input, char *line)
+read_line(FILE *input, char *line, size_t len)
 {
-	int i;
+	size_t i;
 	
 	char c;
-	for (i = 0; i < LDNS_MAX_PACKETLEN; i++) {
+	for (i = 0; i < len-1; i++) {
 		c = getc(input);
 		if (c == EOF) {
 			return -1;
@@ -52,7 +52,7 @@ read_key_file(const char *filename, ldns_rr_list *key_list)
 		return LDNS_STATUS_ERR;
 	}
 	while (line_len >= 0) {
-		line_len = read_line(input_file, line);
+		line_len = read_line(input_file, line, sizeof(line));
 		line_nr++;
 		if (line_len > 0 && line[0] != ';') {
 			status = ldns_rr_new_frm_str(&rr, line, 0, NULL, NULL);
