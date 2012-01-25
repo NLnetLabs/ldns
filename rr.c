@@ -1736,6 +1736,9 @@ ldns_rr2canonical(ldns_rr *rr)
 	/*
 	 * lowercase the rdata dnames if the rr type is one
 	 * of the list in chapter 7 of RFC3597
+	 * Also added RRSIG, because a "Signer's Name" should be canonicalized
+	 * too. See dnssec-bis-updates-16. We can add it to this list because
+	 * the "Signer's Name"  is the only dname type rdata field in a RRSIG.
 	 */
 	switch(ldns_rr_get_type(rr)) {
         	case LDNS_RR_TYPE_NS:
@@ -1760,6 +1763,7 @@ ldns_rr2canonical(ldns_rr *rr)
         	case LDNS_RR_TYPE_SRV:
         	case LDNS_RR_TYPE_DNAME:
         	case LDNS_RR_TYPE_A6:
+        	case LDNS_RR_TYPE_RRSIG:
 			for (i = 0; i < ldns_rr_rd_count(rr); i++) {
 				ldns_dname2canonical(ldns_rr_rdf(rr, i));
 			}
