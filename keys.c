@@ -651,14 +651,12 @@ ldns_key_new_frm_fp_dsa(FILE *f)
 }
 
 DSA *
-ldns_key_new_frm_fp_dsa_l(FILE *f, int *line_nr)
+ldns_key_new_frm_fp_dsa_l(FILE *f, ATTR_UNUSED(int *line_nr))
 {
 	int i;
 	char *d;
 	DSA *dsa;
 	uint8_t *buf;
-
-	line_nr = line_nr;
 
 	d = LDNS_XMALLOC(char, LDNS_MAX_LINELEN);
 	buf = LDNS_XMALLOC(uint8_t, LDNS_MAX_LINELEN);
@@ -740,13 +738,14 @@ ldns_key_new_frm_fp_hmac(FILE *f, size_t *hmac_size)
 }
 
 unsigned char *
-ldns_key_new_frm_fp_hmac_l(FILE *f, int *line_nr, size_t *hmac_size)
+ldns_key_new_frm_fp_hmac_l( FILE *f
+			  , ATTR_UNUSED(int *line_nr)
+			  , size_t *hmac_size
+			  )
 {
 	size_t i;
 	char *d;
 	unsigned char *buf;
-
-	line_nr = line_nr;
 
 	d = LDNS_XMALLOC(char, LDNS_MAX_LINELEN);
 	buf = LDNS_XMALLOC(unsigned char, LDNS_MAX_LINELEN);

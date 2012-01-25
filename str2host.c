@@ -780,30 +780,30 @@ ldns_str2rdf_alg(ldns_rdf **rd, const char *str)
 }
 
 ldns_status
-ldns_str2rdf_unknown(ldns_rdf **rd, const char *str)
+ldns_str2rdf_unknown( ATTR_UNUSED(ldns_rdf **rd)
+		    , ATTR_UNUSED(const char *str)
+		    )
 {
 	/* this should be caught in an earlier time (general str2host for
 	   rr's */
-	rd = rd;
-	str = str;
 	return LDNS_STATUS_NOT_IMPL;
 }
 
 ldns_status
-ldns_str2rdf_tsig(ldns_rdf **rd, const char *str)
+ldns_str2rdf_tsig( ATTR_UNUSED(ldns_rdf **rd)
+		 , ATTR_UNUSED(const char *str)
+		 )
 {
 	/* there is no strign representation for TSIG rrs */
-	rd = rd;
-	str = str;
 	return LDNS_STATUS_NOT_IMPL;
 }
 
 ldns_status
-ldns_str2rdf_service(ldns_rdf **rd, const char *str)
+ldns_str2rdf_service( ATTR_UNUSED(ldns_rdf **rd)
+		    , ATTR_UNUSED(const char *str)
+		    )
 {
 	/* is this used? is this actually WKS? or SRV? */
-	rd = rd;
-	str = str;
 	return LDNS_STATUS_NOT_IMPL;
 }
 

@@ -116,7 +116,6 @@ ldns_dnssec_nsec3_closest_encloser(ldns_rdf *qname,
 	size_t nsec_i;
 	ldns_rr *nsec;
 	ldns_rdf *result = NULL;
-	qtype = qtype;
 
 	if (!qname || !nsec3s || ldns_rr_list_rr_count(nsec3s) < 1) {
 		return NULL;
@@ -838,8 +837,6 @@ ldns_dnssec_create_nsec3(ldns_dnssec_name *from,
 	ldns_dnssec_rrsets *cur_rrsets;
 	ldns_status status;
 	int on_delegation_point;
-
-	flags = flags;
 
 	if (!from) {
 		return NULL;
@@ -1568,34 +1565,34 @@ ldns_rr_list_sort_nsec3(ldns_rr_list *unsorted)
 }
 
 int
-ldns_dnssec_default_add_to_signatures(ldns_rr *sig, void *n)
+ldns_dnssec_default_add_to_signatures( ATTR_UNUSED(ldns_rr *sig)
+				     , ATTR_UNUSED(void *n)
+				     )
 {
-	sig = sig;
-	n = n;
 	return LDNS_SIGNATURE_LEAVE_ADD_NEW;
 }
 
 int
-ldns_dnssec_default_leave_signatures(ldns_rr *sig, void *n)
+ldns_dnssec_default_leave_signatures( ATTR_UNUSED(ldns_rr *sig)
+				    , ATTR_UNUSED(void *n)
+				    )
 {
-	sig = sig;
-	n = n;
 	return LDNS_SIGNATURE_LEAVE_NO_ADD;
 }
 
 int
-ldns_dnssec_default_delete_signatures(ldns_rr *sig, void *n)
+ldns_dnssec_default_delete_signatures( ATTR_UNUSED(ldns_rr *sig)
+				     , ATTR_UNUSED(void *n)
+				     )
 {
-	sig = sig;
-	n = n;
 	return LDNS_SIGNATURE_REMOVE_NO_ADD;
 }
 
 int
-ldns_dnssec_default_replace_signatures(ldns_rr *sig, void *n)
+ldns_dnssec_default_replace_signatures( ATTR_UNUSED(ldns_rr *sig)
+				      , ATTR_UNUSED(void *n)
+				      )
 {
-	sig = sig;
-	n = n;
 	return LDNS_SIGNATURE_REMOVE_ADD_NEW;
 }
 

@@ -1578,13 +1578,14 @@ ldns_dnssec_verify_denial(ldns_rr *rr,
 
 #ifdef HAVE_SSL
 ldns_status
-ldns_dnssec_verify_denial_nsec3_match(ldns_rr *rr,
-						  ldns_rr_list *nsecs,
-						  ldns_rr_list *rrsigs,
-						  ldns_pkt_rcode packet_rcode,
-						  ldns_rr_type packet_qtype,
-						  bool packet_nodata,
-						  ldns_rr **match)
+ldns_dnssec_verify_denial_nsec3_match( ldns_rr *rr
+				     , ldns_rr_list *nsecs
+				     , ATTR_UNUSED(ldns_rr_list *rrsigs)
+				     , ldns_pkt_rcode packet_rcode
+				     , ldns_rr_type packet_qtype
+				     , bool packet_nodata
+				     , ldns_rr **match
+				     )
 {
 	ldns_rdf *closest_encloser;
 	ldns_rdf *wildcard;
@@ -1594,8 +1595,6 @@ ldns_dnssec_verify_denial_nsec3_match(ldns_rr *rr,
 	ldns_rdf *hashed_name;
 	size_t i;
 	ldns_status result = LDNS_STATUS_DNSSEC_NSEC_RR_NOT_COVERED;
-
-	rrsigs = rrsigs;
 
 	if (match) {
 		*match = NULL;
