@@ -380,10 +380,7 @@ main(int argc, char *argv[])
 	ldns_status result;
 
 	ldns_output_format fmt = { ldns_output_format_default->flags, NULL };
-	union { void** from_void_p_p;
-		ldns_rbtree_t** to_ldns_rbtree_p_p; 
-		} hashmap_cast;
-	hashmap_cast.from_void_p_p = NULL;
+	void **hashmap = NULL;
 
 	
 	inception = 0;
@@ -407,7 +404,7 @@ main(int argc, char *argv[])
 			fmt.flags |= LDNS_COMMENT_FLAGS;
 			fmt.flags |= LDNS_COMMENT_NSEC3_CHAIN;
 			fmt.flags |= LDNS_COMMENT_LAYOUT;
-			hashmap_cast.from_void_p_p = &fmt.data;
+			hashmap = &fmt.data;
 			break;
 		case 'd':
 			add_keys = false;
@@ -784,7 +781,7 @@ main(int argc, char *argv[])
 			nsec3_salt_length,
 			nsec3_salt,
 			signflags,
-			hashmap_cast.to_ldns_rbtree_p_p);
+			(ldns_rbtree_t**) hashmap);
 	} else {
 		result = ldns_dnssec_zone_sign_flg(signed_zone,
 				added_rrs,
