@@ -305,7 +305,7 @@ case "$enable_ecdsa" in
       fi
       AC_CHECK_FUNC(ECDSA_sign, [], [AC_MSG_ERROR([OpenSSL does not support ECDSA])])
       AC_CHECK_FUNC(SHA384_Init, [], [AC_MSG_ERROR([OpenSSL does not support SHA384])])
-      AC_CHECK_DECLS([NID_X9_62_prime256v1, NID_secp384r1], [], [AC_MSG_ERROR([OpenSSL does not support the ECDSA curve])], [AC_INCLUDES_DEFAULT
+      AC_CHECK_DECLS([NID_X9_62_prime256v1, NID_secp384r1], [], [AC_MSG_ERROR([OpenSSL does not support the ECDSA curves])], [AC_INCLUDES_DEFAULT
 #include <openssl/evp.h>
       ])
       # we now know we have ECDSA and the required curves.
