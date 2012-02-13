@@ -1541,7 +1541,7 @@ ldns_key_deep_free(ldns_key *key)
 	}
 #endif /* HAVE_SSL */
 	if (ldns_key_hmac_key(key)) {
-		free(ldns_key_hmac_key(key));
+		LDNS_FREE(ldns_key_hmac_key(key));
 	}
 	LDNS_FREE(key);
 }

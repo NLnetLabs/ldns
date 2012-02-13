@@ -530,6 +530,7 @@ ldns_dname_label(const ldns_rdf *rdf, uint8_t labelpos)
 	uint16_t len;
 	ldns_rdf *tmpnew;
 	size_t s;
+	uint8_t *data;
 
 	if (ldns_rdf_get_type(rdf) != LDNS_RDF_TYPE_DNAME) {
 		return NULL;
@@ -543,19 +544,19 @@ ldns_dname_label(const ldns_rdf *rdf, uint8_t labelpos)
 	while ((len > 0) && src_pos < s) {
 		if (labelcnt == labelpos) {
 			/* found our label */
-			tmpnew = LDNS_MALLOC(ldns_rdf);
+			data = LDNS_XMALLOC(uint8_t, len + 2);
+			if (!data) {
+				return NULL;
+			}
+			memcpy(data, ldns_rdf_data(rdf) + src_pos, len + 1);
+			data[len + 2 - 1] = 0;
+
+			tmpnew = ldns_rdf_new( LDNS_RDF_TYPE_DNAME
+					     , len + 2, data);
 			if (!tmpnew) {
+				LDNS_FREE(data);
 				return NULL;
 			}
-			tmpnew->_type = LDNS_RDF_TYPE_DNAME;
-			tmpnew->_data = LDNS_XMALLOC(uint8_t, len + 2);
-			if (!tmpnew->_data) {
-				LDNS_FREE(tmpnew);
-				return NULL;
-			}
-			memset(tmpnew->_data, 0, len + 2);
-			memcpy(tmpnew->_data, ldns_rdf_data(rdf) + src_pos, len + 1);
-			tmpnew->_size = len + 2;
 			return tmpnew;
 		}
 		src_pos++;

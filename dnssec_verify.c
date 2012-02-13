@@ -509,7 +509,7 @@ ldns_dnssec_trust_tree_print_sm_fmt(FILE *out,
 	
 	if (!sibmap) {
 		treedepth = ldns_dnssec_trust_tree_depth(tree);
-		sibmap = malloc(treedepth);
+		sibmap = LDNS_MALLOC(treedepth);
                 if(!sibmap)
                         return; /* mem err */
 		memset(sibmap, 0, treedepth);
@@ -623,7 +623,7 @@ ldns_dnssec_trust_tree_print_sm_fmt(FILE *out,
 	}
 	
 	if (mapset) {
-		free(sibmap);
+		LDNS_FREE(sibmap);
 	}
 }
 

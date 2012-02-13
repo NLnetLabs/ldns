@@ -625,14 +625,14 @@ void
 ldns_dnssec_name_node_free(ldns_rbnode_t *node, void *arg) {
 	(void) arg;
 	ldns_dnssec_name_free((ldns_dnssec_name *)node->data);
-	free(node);
+	LDNS_FREE(node);
 }
 
 void
 ldns_dnssec_name_node_deep_free(ldns_rbnode_t *node, void *arg) {
 	(void) arg;
 	ldns_dnssec_name_deep_free((ldns_dnssec_name *)node->data);
-	free(node);
+	LDNS_FREE(node);
 }
 
 void
@@ -644,7 +644,7 @@ ldns_dnssec_zone_free(ldns_dnssec_zone *zone)
 			ldns_traverse_postorder(zone->names,
 						    ldns_dnssec_name_node_free,
 						    NULL);
-			free(zone->names);
+			LDNS_FREE(zone->names);
 		}
 		LDNS_FREE(zone);
 	}
@@ -659,7 +659,7 @@ ldns_dnssec_zone_deep_free(ldns_dnssec_zone *zone)
 			ldns_traverse_postorder(zone->names,
 						    ldns_dnssec_name_node_deep_free,
 						    NULL);
-			free(zone->names);
+			LDNS_FREE(zone->names);
 		}
 		LDNS_FREE(zone);
 	}
