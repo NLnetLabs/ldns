@@ -43,7 +43,7 @@
 
 #include <ldns/config.h>
 #include <ldns/rbtree.h>
-#include <ldns/utils.h>
+#include <ldns/util.h>
 #include <stdlib.h>
 
 /** Node colour black */
@@ -82,7 +82,7 @@ ldns_rbtree_create (int (*cmpf)(const void *, const void *))
 	ldns_rbtree_t *rbtree;
 
 	/* Allocate memory for it */
-	rbtree = (ldns_rbtree_t *) LDNS_MALLOC(sizeof(ldns_rbtree_t));
+	rbtree = (ldns_rbtree_t *) LDNS_MALLOC(ldns_rbtree_t);
 	if (!rbtree) {
 		return NULL;
 	}

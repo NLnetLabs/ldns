@@ -1532,6 +1532,7 @@ ldns_key_free(ldns_key *key)
 void
 ldns_key_deep_free(ldns_key *key)
 {
+	unsigned char* hmac;
 	if (ldns_key_pubkey_owner(key)) {
 		ldns_rdf_deep_free(ldns_key_pubkey_owner(key));
 	}
@@ -1541,7 +1542,8 @@ ldns_key_deep_free(ldns_key *key)
 	}
 #endif /* HAVE_SSL */
 	if (ldns_key_hmac_key(key)) {
-		LDNS_FREE(ldns_key_hmac_key(key));
+		hmac = ldns_key_hmac_key(key);
+		LDNS_FREE(hmac);
 	}
 	LDNS_FREE(key);
 }
