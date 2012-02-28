@@ -1,4 +1,6 @@
 1.6.13
+	* Canonicalize RRSIG's Signer's name too when validating, because 
+	  bind and unbound do that too. Thanks Peter van Dijk.
 	* bugfix #433: Allocate rdf using ldns_rdf_new in ldns_dname_label
 	* bugfix #432: Use LDNS_MALLOC & LDNS_FREE i.s.o. malloc & free
 	* bugfix #431: Added error message for LDNS_STATUS_INVALID_B32_EXT
