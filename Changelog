@@ -1,4 +1,6 @@
 1.6.13
+	* Zero the correct flag (opt-out) when creating NSEC3PARAMS.
+	  Thanks Peter van Dijk.
 	* Canonicalize RRSIG's Signer's name too when validating, because 
 	  bind and unbound do that too. Thanks Peter van Dijk.
 	* bugfix #433: Allocate rdf using ldns_rdf_new in ldns_dname_label
