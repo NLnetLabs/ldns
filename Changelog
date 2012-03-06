@@ -1,4 +1,10 @@
 1.6.13
+	* New -S option for ldns-verify-zone to chase signatures online.
+	* New -k option for ldns-verify-zone to validate using a trusted key.
+	* New inception and expiration margin options (-i and -e) to 
+	  ldns-verify-zone.
+	* fix ldns-verify-zone to allow NSEC3 signatures to come before
+	  the NSEC3 RR in all cases. Thanks Wolfgang Nagele.
 	* Zero the correct flag (opt-out) when creating NSEC3PARAMS.
 	  Thanks Peter van Dijk.
 	* Canonicalize RRSIG's Signer's name too when validating, because 
@@ -6,9 +12,9 @@
 	* bugfix #433: Allocate rdf using ldns_rdf_new in ldns_dname_label
 	* bugfix #432: Use LDNS_MALLOC & LDNS_FREE i.s.o. malloc & free
 	* bugfix #431: Added error message for LDNS_STATUS_INVALID_B32_EXT
-	* bugfix #427: Eplicitely link ssl with the programs that use it.
+	* bugfix #427: Explicitely link ssl with the programs that use it.
 	* Fix reading \DDD: Error on values that are outside range (>255).
-	* bugfix #429: fix doxyparse.plfails on NetBSD because specified
+	* bugfix #429: fix doxyparse.pl fails on NetBSD because specified
 	  path to perl.
 
 1.6.12

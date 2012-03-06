@@ -15,8 +15,25 @@ Each name is checked for an NSEC(3), if appropriate.
 
 .SH OPTIONS
 .TP
+\fB-h\fR
+Show usage and exit
+
+.TP
 \fB-a\fR
 Apex only, check only the zone apex
+
+.TP
+\fB-e\fR \fIperiod\fR
+Signatures may not expire within this period.
+
+.TP
+\fB-i\fR \fIperiod\fR
+Signatures must have been valid at least this long.
+
+.TP
+\fB-k\fR \fIfile\fR
+A file that contains a trusted DNSKEY or DS rr.
+This option may be given more than once.
 
 .TP
 \fB-p\fR \fI[0-100]\fR
@@ -25,8 +42,9 @@ Which names to check is determined randomly.
 Defaults to 100.
 
 .TP
-\fB-h\fR
-Show usage and exit
+\fB-S\fR
+Chase signature(s) to a known key.
+The network may be accessed to validate the zone's DNSKEYs. (implies -k)
 
 .TP
 \fB-t\fR \fIYYYYMMDDhhmmss | [+|-]offset\fR
