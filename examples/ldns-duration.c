@@ -1,5 +1,5 @@
 /*
- * $Id: duration.c 4518 2011-02-24 15:39:09Z matthijs $
+ * $Id: ldns-duration.c 4518 2011-02-24 15:39:09Z matthijs $
  *
  * Copyright (c) 2009 NLNet Labs. All rights reserved.
  *
@@ -84,25 +84,25 @@ ldns_duration_compare(ldns_duration_type* d1, ldns_duration_type* d2)
     }
 
     if (d1->years != d2->years) {
-        return d1->years - d2->years;
+        return (int) (d1->years - d2->years);
     }
     if (d1->months != d2->months) {
-        return d1->months - d2->months;
+        return (int) (d1->months - d2->months);
     }
     if (d1->weeks != d2->weeks) {
-        return d1->weeks - d2->weeks;
+        return (int) (d1->weeks - d2->weeks);
     }
     if (d1->days != d2->days) {
-        return d1->days - d2->days;
+        return (int) (d1->days - d2->days);
     }
     if (d1->hours != d2->hours) {
-        return d1->hours - d2->hours;
+        return (int) (d1->hours - d2->hours);
     }
     if (d1->minutes != d2->minutes) {
-        return d1->minutes - d2->minutes;
+        return (int) (d1->minutes - d2->minutes);
     }
     if (d1->seconds != d2->seconds) {
-        return d1->seconds - d2->seconds;
+        return (int) (d1->seconds - d2->seconds);
     }
 
     return 0;
@@ -136,19 +136,19 @@ ldns_duration_create_from_string(const char* str)
     T = strchr(str, 'T');
     X = strchr(str, 'Y');
     if (X) {
-        duration->years = atoi(str+1);
+        duration->years = (time_t) atoi(str+1);
         str = X;
         not_weeks = 1;
     }
     X = strchr(str, 'M');
     if (X && (!T || (size_t) (X-P) < (size_t) (T-P))) {
-        duration->months = atoi(str+1);
+        duration->months = (time_t) atoi(str+1);
         str = X;
         not_weeks = 1;
     }
     X = strchr(str, 'D');
     if (X) {
-        duration->days = atoi(str+1);
+        duration->days = (time_t) atoi(str+1);
         str = X;
         not_weeks = 1;
     }
@@ -158,19 +158,19 @@ ldns_duration_create_from_string(const char* str)
     }
     X = strchr(str, 'H');
     if (X && T) {
-        duration->hours = atoi(str+1);
+        duration->hours = (time_t) atoi(str+1);
         str = X;
         not_weeks = 1;
     }
     X = strrchr(str, 'M');
     if (X && T && (size_t) (X-P) > (size_t) (T-P)) {
-        duration->minutes = atoi(str+1);
+        duration->minutes = (time_t) atoi(str+1);
         str = X;
         not_weeks = 1;
     }
     X = strchr(str, 'S');
     if (X && T) {
-        duration->seconds = atoi(str+1);
+        duration->seconds = (time_t) atoi(str+1);
         str = X;
         not_weeks = 1;
     }
@@ -181,7 +181,7 @@ ldns_duration_create_from_string(const char* str)
             ldns_duration_cleanup(duration);
             return NULL;
         } else {
-            duration->weeks = atoi(str+1);
+            duration->weeks = (time_t) atoi(str+1);
             str = W;
         }
     }
@@ -257,28 +257,28 @@ ldns_duration2string(ldns_duration_type* duration)
     if (duration->years > 0) {
         count = digits_in_number(duration->years);
         num = (char*) calloc(count+2, sizeof(char));
-        snprintf(num, count+2, "%uY", (uint32_t) duration->years);
+        snprintf(num, count+2, "%uY", (unsigned int) duration->years);
         str = strncat(str, num, count+2);
         free((void*) num);
     }
     if (duration->months > 0) {
         count = digits_in_number(duration->months);
         num = (char*) calloc(count+2, sizeof(char));
-        snprintf(num, count+2, "%uM", (uint32_t) duration->months);
+        snprintf(num, count+2, "%uM", (unsigned int) duration->months);
         str = strncat(str, num, count+2);
         free((void*) num);
     }
     if (duration->weeks > 0) {
         count = digits_in_number(duration->weeks);
         num = (char*) calloc(count+2, sizeof(char));
-        snprintf(num, count+2, "%uW", (uint32_t) duration->weeks);
+        snprintf(num, count+2, "%uW", (unsigned int) duration->weeks);
         str = strncat(str, num, count+2);
         free((void*) num);
     }
     if (duration->days > 0) {
         count = digits_in_number(duration->days);
         num = (char*) calloc(count+2, sizeof(char));
-        snprintf(num, count+2, "%uD", (uint32_t) duration->days);
+        snprintf(num, count+2, "%uD", (unsigned int) duration->days);
         str = strncat(str, num, count+2);
         free((void*) num);
     }
@@ -288,21 +288,21 @@ ldns_duration2string(ldns_duration_type* duration)
     if (duration->hours > 0) {
         count = digits_in_number(duration->hours);
         num = (char*) calloc(count+2, sizeof(char));
-        snprintf(num, count+2, "%uH", (uint32_t) duration->hours);
+        snprintf(num, count+2, "%uH", (unsigned int) duration->hours);
         str = strncat(str, num, count+2);
         free((void*) num);
     }
     if (duration->minutes > 0) {
         count = digits_in_number(duration->minutes);
         num = (char*) calloc(count+2, sizeof(char));
-        snprintf(num, count+2, "%uM", (uint32_t) duration->minutes);
+        snprintf(num, count+2, "%uM", (unsigned int) duration->minutes);
         str = strncat(str, num, count+2);
         free((void*) num);
     }
     if (duration->seconds > 0) {
         count = digits_in_number(duration->seconds);
         num = (char*) calloc(count+2, sizeof(char));
-        snprintf(num, count+2, "%uS", (uint32_t) duration->seconds);
+        snprintf(num, count+2, "%uS", (unsigned int) duration->seconds);
         str = strncat(str, num, count+2);
         free((void*) num);
     }
@@ -318,7 +318,6 @@ time_t
 ldns_duration2time(ldns_duration_type* duration)
 {
     time_t period = 0;
-    char* dstr = NULL;
 
     if (duration) {
         period += (duration->seconds);
@@ -373,77 +372,6 @@ ods_rand(time_t mod)
 #else
     return (time_t) (random() % (unsigned) mod+1);
 #endif
-}
-
-
-/* Number of days per month (except for February in leap years). */
-static const int mdays[] = {
-    31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31
-};
-
-
-static int
-is_leap_year(int year)
-{
-    return year % 4 == 0 && (year % 100 != 0 || year % 400 == 0);
-}
-
-
-static int
-leap_days(int y1, int y2)
-{
-    --y1;
-    --y2;
-    return (y2/4 - y1/4) - (y2/100 - y1/100) + (y2/400 - y1/400);
-}
-
-
-/*
- * Code taken from NSD 3.2.5, which is
- * code adapted from Python 2.4.1 sources (Lib/calendar.py).
- */
-static time_t
-mktime_from_utc(const struct tm *tm)
-{
-    int year = 1900 + tm->tm_year;
-    time_t days = 365 * (year - 1970) + leap_days(1970, year);
-    time_t hours;
-    time_t minutes;
-    time_t seconds;
-    int i;
-
-    for (i = 0; i < tm->tm_mon; ++i) {
-        days += mdays[i];
-    }
-    if (tm->tm_mon > 1 && is_leap_year(year)) {
-        ++days;
-    }
-    days += tm->tm_mday - 1;
-
-    hours = days * 24 + tm->tm_hour;
-    minutes = hours * 60 + tm->tm_min;
-    seconds = minutes * 60 + tm->tm_sec;
-
-    return seconds;
-}
-
-
-/**
- * Convert time in string format into seconds.
- *
- */
-static time_t
-timeshift2time(const char *time)
-{
-        /* convert a string in format YYMMDDHHMMSS to time_t */
-        struct tm tm;
-        time_t timeshift = 0;
-
-        /* Try to scan the time... */
-        if (strptime(time, "%Y%m%d%H%M%S", &tm)) {
-                timeshift = mktime_from_utc(&tm);
-	}
-        return timeshift;
 }
 
 
@@ -502,7 +430,7 @@ time_datestamp(time_t tt, const char* format, char** str)
 static void
 time_itoa_reverse(char* s)
 {
-    int i, j;
+    size_t i, j;
     char c;
 
     for (i = 0, j = strlen(s)-1; i<j; i++, j--) {
@@ -524,7 +452,7 @@ time_itoa(time_t n, char* s)
     int i = 0;
 
     do {       /* generate digits in reverse order */
-        s[i++] = n % 10 + '0';   /* get next digit */
+        s[i++] = (char) n % 10 + '0';   /* get next digit */
     } while ((n /= 10) > 0);     /* delete it */
     s[i] = '\0';
     time_itoa_reverse(s);

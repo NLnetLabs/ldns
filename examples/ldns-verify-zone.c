@@ -935,11 +935,11 @@ main(int argc, char **argv)
 	struct tm tm;
 	ldns_duration_type *duration;
 	ldns_rr_list *keys = ldns_rr_list_new();
+	size_t nkeys = 0;
 
 	check_time = ldns_time(NULL);
 	myout = stdout;
-	// myerr = stderr;
-	myerr = stdout;
+	myerr = stderr;
 
 	while ((c = getopt(argc, argv, "ae:hi:k:vV:p:St:")) != -1) {
 		switch(c) {
@@ -1028,6 +1028,14 @@ main(int argc, char **argv)
 				       );
                                 exit(EXIT_FAILURE);
 			}
+			if (ldns_rr_list_rr_count(keys) == nkeys) {
+				fprintf( myerr
+				       , "No keys found in file %s\n"
+				       , optarg
+				       );
+				exit(EXIT_FAILURE);
+			}
+			nkeys = ldns_rr_list_rr_count(keys);
 			break;
                 case 'p':
                         percentage = atoi(optarg);
@@ -1070,7 +1078,7 @@ main(int argc, char **argv)
 			break;
 		}
 	}
-	if (do_sigchase && ldns_rr_list_rr_count(keys) == 0) {
+	if (do_sigchase && nkeys == 0) {
 		fprintf(myerr, "Unable to chase signature without keys.\n");
 		exit(EXIT_SUCCESS);
 	}

@@ -72,7 +72,7 @@ MAIN_SSL_SOURCES = ldns-signzone.c \
 		  ldns-revoke.c \
 		  ldns-nsec3-hash.c
 
-OTHER_SOURCES = ldns-testpkts.c
+OTHER_SOURCES = ldns-testpkts.c ldns-duration.c
 
 PROGRAMS=$(MAIN_SOURCES:.c=)
 SSL_PROGRAMS=$(MAIN_SSL_SOURCES:.c=)
@@ -91,6 +91,11 @@ all-static: $(addsuffix .stc,$(PROGRAMS)) $(addsuffix .stc-ssl,$(SSL_PROGRAMS))
 ldns-testns.o: $(srcdir)/ldns-testns.c $(srcdir)/ldns-testpkts.c $(srcdir)/ldns-testpkts.h
 ldns-testns.prg: ldns-testpkts.o
 ldns-testns.stc: ldns-testpkts.o
+
+# ldns-verify-zone uses more sources.
+ldns-verify-zone.o: $(srcdir)/ldns-verify-zone.c $(srcdir)/ldns-duration.c $(srcdir)/ldns-duration.h
+ldns-verify-zone.prg-ssl: ldns-duration.o
+ldns-verify-zone.stc-ssl: ldns-duration.o
 
 ldnsd.prg: ldnsd.o
 	@if test ! -f $(@:.prg=) -o $< -nt $(@:.prg=); then \
