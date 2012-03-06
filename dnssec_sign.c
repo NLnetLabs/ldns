@@ -1278,7 +1278,8 @@ ldns_dnssec_zone_sign_nsec3_flg_mkmap(ldns_dnssec_zone *zone,
 									 salt_length,
 									 salt);
 				/* always set bit 7 of the flags to zero, according to
-				 * rfc5155 section 11 */
+				 * rfc5155 section 11. The bits are counted from right to left,
+				 * so bit 7 in rfc5155 is bit 0 in ldns */
 				ldns_set_bit(ldns_rdf_data(ldns_rr_rdf(nsec3param, 1)), 0, 0);
 				result = ldns_dnssec_zone_add_rr(zone, nsec3param);
 				if (result != LDNS_STATUS_OK) {
