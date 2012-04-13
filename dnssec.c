@@ -532,17 +532,18 @@ ldns_key_rr2ds(const ldns_rr *key, ldns_hash h)
 		ldns_rr_free(ds);
 		return NULL;
 #endif
-#ifdef USE_ECDSA
-		/* Make similar ``not implemented'' construct as above when 
-		   draft-hoffman-dnssec-ecdsa-04 becomes a standard
-		 */
 	case LDNS_SHA384:
+#ifdef USE_ECDSA
 		digest = LDNS_XMALLOC(uint8_t, SHA384_DIGEST_LENGTH);
 		if (!digest) {
 			ldns_rr_free(ds);
 			return NULL;
 		}
                 break;
+#else
+		/* not implemented */
+		ldns_rr_free(ds);
+		return NULL;
 #endif
 	}
 
@@ -635,8 +636,8 @@ ldns_key_rr2ds(const ldns_rr *key, ldns_hash h)
 		ldns_rr_push_rdf(ds, tmp);
 #endif
 		break;
-#ifdef USE_ECDSA
 	case LDNS_SHA384:
+#ifdef USE_ECDSA
 		(void) SHA384((unsigned char *) ldns_buffer_begin(data_buf),
 		                 (unsigned int) ldns_buffer_position(data_buf),
 		                 (unsigned char *) digest);
@@ -644,8 +645,8 @@ ldns_key_rr2ds(const ldns_rr *key, ldns_hash h)
 		                            SHA384_DIGEST_LENGTH,
 		                            digest);
 		ldns_rr_push_rdf(ds, tmp);
-		break;
 #endif
+		break;
 	}
 
 	LDNS_FREE(digest);

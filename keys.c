@@ -388,14 +388,22 @@ ldns_key_new_frm_fp_l(ldns_key **key, FILE *fp, int *line_nr)
 		fprintf(stderr, "version of ldns, use --enable-gost\n");
 #endif
 	}
-#ifdef USE_ECDSA
 	if (strncmp(d, "13 ECDSAP256SHA256", 3) == 0) {
+#ifdef USE_ECDSA
                 alg = LDNS_SIGN_ECDSAP256SHA256;
+#else
+		fprintf(stderr, "Warning: ECDSA not compiled into this ");
+		fprintf(stderr, "version of ldns, use --enable-ecdsa\n");
+#endif
         }
 	if (strncmp(d, "14 ECDSAP384SHA384", 3) == 0) {
+#ifdef USE_ECDSA
                 alg = LDNS_SIGN_ECDSAP384SHA384;
-        }
+#else
+		fprintf(stderr, "Warning: ECDSA not compiled into this ");
+		fprintf(stderr, "version of ldns, use --enable-ecdsa\n");
 #endif
+        }
 	if (strncmp(d, "157 HMAC-MD5", 4) == 0) {
 		alg = LDNS_SIGN_HMACMD5;
 	}
