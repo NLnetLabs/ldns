@@ -297,7 +297,7 @@ case "$enable_gost" in
         ;;
 esac
 
-AC_ARG_ENABLE(ecdsa, AC_HELP_STRING([--enable-ecdsa], [Enable ECDSA support]))
+AC_ARG_ENABLE(ecdsa, AC_HELP_STRING([--disable-ecdsa], [Disable ECDSA support]))
 case "$enable_ecdsa" in
     no)
       ;;
