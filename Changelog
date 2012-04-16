@@ -17,6 +17,7 @@
 	* bugfix #429: fix doxyparse.pl fails on NetBSD because specified
 	  path to perl.
 	* New ECDSA support (RFC 6605), use --disable-ecdsa for older openssl.
+	* New TLSA support (draft-ietf-dane-protocol).
 
 1.6.12
 	* bugfix #413: Fix manpage source for srcdir != builddir
