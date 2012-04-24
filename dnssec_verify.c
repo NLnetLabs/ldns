@@ -1593,6 +1593,8 @@ ldns_dnssec_verify_denial_nsec3_match( ldns_rr *rr
 	bool wildcard_covered = false;
 	ldns_rdf *zone_name;
 	ldns_rdf *hashed_name;
+	ldns_rdf *next_closer;
+	ldns_rdf *hashed_next_closer;
 	size_t i;
 	ldns_status result = LDNS_STATUS_DNSSEC_NSEC_RR_NOT_COVERED;
 
@@ -1740,6 +1742,42 @@ ldns_dnssec_verify_denial_nsec3_match( ldns_rr *rr
 
 		/* XXX see note above */
 		result = LDNS_STATUS_DNSSEC_NSEC_RR_NOT_COVERED;
+
+		closest_encloser = ldns_dnssec_nsec3_closest_encloser(
+				   ldns_rr_owner(rr),
+				   ldns_rr_get_type(rr),
+				   nsecs);
+		if(!closest_encloser) {
+			result = LDNS_STATUS_NSEC3_ERR;
+			goto done;
+		}
+		/* Now check if we have a Opt-Out NSEC3 that covers the "next closer" */
+		next_closer = ldns_dname_clone_from(
+				ldns_rr_owner(rr),
+				ldns_dname_label_count(ldns_rr_owner(rr))
+				- (ldns_dname_label_count(closest_encloser) + 1)
+				);
+		hashed_next_closer = ldns_nsec3_hash_name_frm_nsec3(
+				ldns_rr_list_rr(nsecs, 0),
+				next_closer
+				);
+		(void) ldns_dname_cat(hashed_next_closer, zone_name);
+
+		for (i = 0; i < ldns_rr_list_rr_count(nsecs); i++) {
+			if (ldns_nsec_covers_name(ldns_rr_list_rr(nsecs, i),
+			                          hashed_next_closer) && 
+				ldns_nsec3_optout(ldns_rr_list_rr(nsecs, i))) {
+
+				result = LDNS_STATUS_OK;
+				if (match) {
+					*match = ldns_rr_list_rr(nsecs, i);
+				}
+				break;
+			}
+		}
+		ldns_rdf_deep_free(hashed_next_closer);
+		ldns_rdf_deep_free(next_closer);
+		ldns_rdf_deep_free(closest_encloser);
 	}
 
  done:

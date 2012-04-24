@@ -18,6 +18,8 @@
 	  path to perl.
 	* New ECDSA support (RFC 6605), use --disable-ecdsa for older openssl.
 	* New TLSA support (draft-ietf-dane-protocol).
+	* fix verifying denial of existence for DS's in NSEC3 Opt-Out zones.
+	  Thanks John Barnitz
 
 1.6.12
 	* bugfix #413: Fix manpage source for srcdir != builddir
