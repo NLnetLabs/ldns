@@ -1593,7 +1593,8 @@ ldns_dnssec_verify_denial_nsec3_match( ldns_rr *rr
 	bool wildcard_covered = false;
 	ldns_rdf *zone_name;
 	ldns_rdf *hashed_name;
-	ldns_rdf *next_closer;
+	/* self assignment to suppress uninitialized warning */
+	ldns_rdf *next_closer = next_closer;
 	ldns_rdf *hashed_next_closer;
 	size_t i;
 	ldns_status result = LDNS_STATUS_DNSSEC_NSEC_RR_NOT_COVERED;
@@ -1751,18 +1752,30 @@ ldns_dnssec_verify_denial_nsec3_match( ldns_rr *rr
 			result = LDNS_STATUS_NSEC3_ERR;
 			goto done;
 		}
-		/* Now check if we have a Opt-Out NSEC3 that covers the "next closer" */
-		next_closer = ldns_dname_clone_from(
-				ldns_rr_owner(rr),
-				ldns_dname_label_count(ldns_rr_owner(rr))
-				- (ldns_dname_label_count(closest_encloser) + 1)
-				);
-		hashed_next_closer = ldns_nsec3_hash_name_frm_nsec3(
-				ldns_rr_list_rr(nsecs, 0),
-				next_closer
-				);
-		(void) ldns_dname_cat(hashed_next_closer, zone_name);
+		/* Now check if we have a Opt-Out NSEC3 that covers the "next closer"*/
 
+		if (ldns_dname_label_count(closest_encloser) + 1
+		    >= ldns_dname_label_count(ldns_rr_owner(rr))) {
+			
+			/* Query name *is* the "next closer". */
+			hashed_next_closer = hashed_name;
+		} else {
+
+			/* "next closer" has less labels than the query name.
+			 * Create the name and hash it.
+			 */
+			next_closer = ldns_dname_clone_from(
+					ldns_rr_owner(rr),
+					ldns_dname_label_count(ldns_rr_owner(rr))
+					- (ldns_dname_label_count(closest_encloser) + 1)
+					);
+			hashed_next_closer = ldns_nsec3_hash_name_frm_nsec3(
+					ldns_rr_list_rr(nsecs, 0),
+					next_closer
+					);
+			(void) ldns_dname_cat(hashed_next_closer, zone_name);
+		}
+		/* Find the NSEC3 that covers the "next closer" */
 		for (i = 0; i < ldns_rr_list_rr_count(nsecs); i++) {
 			if (ldns_nsec_covers_name(ldns_rr_list_rr(nsecs, i),
 			                          hashed_next_closer) && 
@@ -1775,8 +1788,15 @@ ldns_dnssec_verify_denial_nsec3_match( ldns_rr *rr
 				break;
 			}
 		}
-		ldns_rdf_deep_free(hashed_next_closer);
-		ldns_rdf_deep_free(next_closer);
+		if (ldns_dname_label_count(closest_encloser) + 1
+		    < ldns_dname_label_count(ldns_rr_owner(rr))) {
+
+			/* "next closer" has less labels than the query name.
+			 * Dispose of the temporary variables that held that name.
+			 */
+			ldns_rdf_deep_free(hashed_next_closer);
+			ldns_rdf_deep_free(next_closer);
+		}
 		ldns_rdf_deep_free(closest_encloser);
 	}
 
