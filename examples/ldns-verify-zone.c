@@ -11,7 +11,6 @@
 #include "config.h"
 #include <unistd.h>
 #include <stdlib.h>
-#include "ldns-duration.h"
 
 #include <ldns/ldns.h>
 
@@ -32,7 +31,6 @@ time_t inception_offset = 0;
 time_t expiration_offset = 0;
 bool do_sigchase = false;
 bool no_nomatch_msg = false;
-bool zone_is_nsec3_optout = false;
 
 FILE* myout;
 FILE* myerr;
@@ -105,137 +103,6 @@ read_key_file(const char *filename, ldns_rr_list *keys)
 			status = LDNS_STATUS_OK;
 		else
 			break;
-	}
-	return status;
-}
-
-static bool
-rr_is_rrsig_covering(ldns_rr* rr, ldns_rr_type t)
-{
-	return     ldns_rr_get_type(rr) == LDNS_RR_TYPE_RRSIG
-		&& ldns_rdf2rr_type(ldns_rr_rrsig_typecovered(rr)) == t;
-}
-
-static ldns_status
-dnssec_zone_new_frm_fp_l( ldns_dnssec_zone** z
-			, FILE* fp
-			, ldns_rdf* origin
-			, uint32_t ttl
-			, ldns_rr_class ATTR_UNUSED(c)
-			, int* line_nr
-			)
-{
-	ldns_rr* cur_rr;
-	size_t i;
-
-	uint32_t  my_ttl = ttl;
-	ldns_rdf *my_origin = NULL;
-	ldns_rdf *my_prev = NULL;
-
-	ldns_dnssec_zone *newzone = ldns_dnssec_zone_new();
-	/* when reading NSEC3s, there is a chance that we encounter nsecs
-	   for empty nonterminals, whose nonterminals we cannot derive yet
-	   because the needed information is to be read later. in that case
-	   we keep a list of those nsec3's and retry to add them later */
-	ldns_rr_list* todo_nsec3s = ldns_rr_list_new();
-	ldns_rr_list* todo_nsec3_rrsigs = ldns_rr_list_new();
-
-	ldns_status status = LDNS_STATUS_MEM_ERR;
-
-	if ( ! newzone || ! todo_nsec3s || ! todo_nsec3_rrsigs ) goto error;
-
-	if (origin) {
-		if (! (my_origin = ldns_rdf_clone(origin))) goto error;
-		if (! (my_prev   = ldns_rdf_clone(origin))) goto error;
-	}
-
-	while (!feof(fp)) {
-		status = ldns_rr_new_frm_fp_l( &cur_rr
-					     , fp
-					     , &my_ttl
-					     , &my_origin
-					     , &my_prev
-					     , line_nr
-					     );
-		switch (status) {
-		case LDNS_STATUS_OK:
-
-			status = ldns_dnssec_zone_add_rr(newzone, cur_rr);
-			if (status 
-			==  LDNS_STATUS_DNSSEC_NSEC3_ORIGINAL_NOT_FOUND) {
-
-				if (rr_is_rrsig_covering( cur_rr
-							, LDNS_RR_TYPE_NSEC3)){
-					ldns_rr_list_push_rr( todo_nsec3_rrsigs
-							    , cur_rr
-							    );
-				} else {
-					ldns_rr_list_push_rr( todo_nsec3s
-							    , cur_rr
-							    );
-				}
-			} else if (status != LDNS_STATUS_OK)
-				goto error;
-
-			if (ldns_rr_get_type(cur_rr) == LDNS_RR_TYPE_NSEC3)
-				zone_is_nsec3_optout
-					=  zone_is_nsec3_optout
-					   || ldns_nsec3_optout(cur_rr);
-
-			break;
-
-
-		case LDNS_STATUS_SYNTAX_EMPTY:	/* empty line was seen */
-		case LDNS_STATUS_SYNTAX_TTL:	/* the ttl was set*/
-		case LDNS_STATUS_SYNTAX_ORIGIN:	/* the origin was set*/
-			break;
-
-		case LDNS_STATUS_SYNTAX_INCLUDE:/* $include not implemented */
-			status =  LDNS_STATUS_SYNTAX_INCLUDE_ERR_NOTIMPL;
-			break;
-
-		default:
-			goto error;
-		}
-	}
-
-	if (ldns_rr_list_rr_count(todo_nsec3s) > 0) {
-		(void) ldns_dnssec_zone_add_empty_nonterminals(newzone);
-		for (i = 0; i < ldns_rr_list_rr_count(todo_nsec3s); i++) {
-			cur_rr = ldns_rr_list_rr(todo_nsec3s, i);
-			status = ldns_dnssec_zone_add_rr(newzone, cur_rr);
-		}
-		for (i = 0; i < ldns_rr_list_rr_count(todo_nsec3_rrsigs); i++){
-			cur_rr = ldns_rr_list_rr(todo_nsec3_rrsigs, i);
-			status = ldns_dnssec_zone_add_rr(newzone, cur_rr);
-		}
-	} else if (ldns_rr_list_rr_count(todo_nsec3_rrsigs) > 0) {
-		for (i = 0; i < ldns_rr_list_rr_count(todo_nsec3_rrsigs); i++){
-			cur_rr = ldns_rr_list_rr(todo_nsec3_rrsigs, i);
-			status = ldns_dnssec_zone_add_rr(newzone, cur_rr);
-		}
-	}
-
-	ldns_rr_list_free(todo_nsec3_rrsigs);
-	ldns_rr_list_free(todo_nsec3s);
-
-	if (z) {
-		*z = newzone;
-	} else {
-		ldns_dnssec_zone_free(newzone);
-	}
-
-	return LDNS_STATUS_OK;
-
-error:
-	if (my_origin) {
-		ldns_rdf_deep_free(my_origin);
-	}
-	if (my_prev) {
-		ldns_rdf_deep_free(my_prev);
-	}
-	if (newzone) {
-		ldns_dnssec_zone_free(newzone);
 	}
 	return status;
 }
@@ -404,7 +271,7 @@ verify_single_rr( ldns_rr *rr
 }
 
 static ldns_status
-verify_next_hashed_name(ldns_rbtree_t *zone_nodes, ldns_dnssec_name *name)
+verify_next_hashed_name(ldns_dnssec_zone* zone, ldns_dnssec_name *name)
 {
 	ldns_rbnode_t *next_node;
 	ldns_dnssec_name *next_name;
@@ -418,7 +285,7 @@ verify_next_hashed_name(ldns_rbtree_t *zone_nodes, ldns_dnssec_name *name)
 		name->hashed_name = ldns_nsec3_hash_name_frm_nsec3(
 				name->nsec, name->name);
 	}
-	next_node = ldns_rbtree_first(zone_nodes);
+	next_node = ldns_rbtree_first(zone->names);
 	while (next_node != LDNS_RBTREE_NULL) {
 		next_name = (ldns_dnssec_name *)next_node->data;
 		/* skip over names that have no NSEC3 records (whether it
@@ -499,8 +366,18 @@ verify_next_hashed_name(ldns_rbtree_t *zone_nodes, ldns_dnssec_name *name)
 	}
 }
 
+static bool zone_is_nsec3_optout(ldns_dnssec_zone* zone)
+{
+	static int remember = -1;
+	
+	if (remember == -1) {
+		remember = ldns_dnssec_zone_is_nsec3_optout(zone) ? 1 : 0;
+	}
+	return remember == 1;
+}
+
 static ldns_status
-verify_nsec( ldns_rbtree_t *zone_nodes
+verify_nsec( ldns_dnssec_zone* zone
 	   , ldns_rbnode_t *cur_node
 	   , ldns_rr_list *keys
 	   )
@@ -536,11 +413,16 @@ verify_nsec( ldns_rbtree_t *zone_nodes
 				next_node = ldns_rbtree_next(cur_node);
 				if (next_node == LDNS_RBTREE_NULL) {
 					next_node = ldns_rbtree_first(
-							zone_nodes);
+							zone->names);
 				}
 				next_node = ldns_dnssec_name_node_next_nonglue(
 						next_node);
-				next_name = (ldns_dnssec_name *)next_node->data;
+				if (!next_node) {
+					next_node =
+					    ldns_dnssec_name_node_next_nonglue(
+						ldns_rbtree_first(zone->names));
+				}
+				next_name = (ldns_dnssec_name*)next_node->data;
 				if (ldns_dname_compare( next_name->name
 						      , ldns_rr_rdf( name->nsec
 							           , 0
@@ -576,16 +458,14 @@ verify_nsec( ldns_rbtree_t *zone_nodes
 				 * support for this in the structs?
 				 * (ie. pointer to next hashed name?)
 				 */
-				status = verify_next_hashed_name( zone_nodes
-								, name
-								);
+				status = verify_next_hashed_name(zone, name);
 				result = result ? result : status;
 				break;
 			default:
 				break;
 		}
 	} else {
-		if (zone_is_nsec3_optout
+		if (zone_is_nsec3_optout(zone)
 		&& (ldns_dnssec_name_is_glue(name)
 		    || (    ldns_dnssec_rrsets_contains_type( name->rrsets
 							    , LDNS_RR_TYPE_NS
@@ -612,8 +492,7 @@ verify_nsec( ldns_rbtree_t *zone_nodes
 
 static ldns_status
 verify_dnssec_name( ldns_rdf *zone_name
-		  , ldns_dnssec_zone* ATTR_UNUSED(zone)
-		  , ldns_rbtree_t *zone_nodes
+		  , ldns_dnssec_zone* zone
 		  , ldns_rbnode_t *cur_node
 		  , ldns_rr_list *keys
 		  )
@@ -695,10 +574,7 @@ verify_dnssec_name( ldns_rdf *zone_name
 			cur_rrset = cur_rrset->next;
 		}
 
-		status = verify_nsec( zone_nodes
-				    , cur_node
-				    , keys
-				    );
+		status = verify_nsec(zone, cur_node, keys);
 		result = result ? result : status;
 	}
 	return result;
@@ -902,12 +778,8 @@ verify_dnssec_zone( ldns_dnssec_zone *dnssec_zone
 			/* should we check this one? saves calls to random. */
 			if (percentage == 100
 			|| ((random() % 100) >= 100 - percentage)) {
-				status = verify_dnssec_name( zone_name
-							   , dnssec_zone
-							   , dnssec_zone->names
-							   , cur_node
-							   , keys
-							   );
+				status = verify_dnssec_name(zone_name,
+						dnssec_zone, cur_node, keys);
 				result = result ? result : status;
 				if (apexonly)
 					break;
@@ -1102,7 +974,7 @@ main(int argc, char **argv)
 		}
 	}
 
-	s = dnssec_zone_new_frm_fp_l( &dnssec_zone
+	s = ldns_dnssec_zone_new_frm_fp_l( &dnssec_zone
 				    , fp
 				    , NULL
 				    , 0

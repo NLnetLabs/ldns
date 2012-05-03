@@ -1,5 +1,5 @@
 /*
- * $Id: ldns-duration.h 4341 2011-01-31 15:21:09Z matthijs $
+ * $Id: duration.h 4341 2011-01-31 15:21:09Z matthijs $
  *
  * Copyright (c) 2009 NLNet Labs. All rights reserved.
  *
@@ -98,58 +98,6 @@ char* ldns_duration2string(ldns_duration_type* duration);
  *
  */
 time_t ldns_duration2time(ldns_duration_type* duration);
-
-/**
- * Return a random time.
- * \param[in] mod modulo
- * \return time_t random time
- *
- */
-time_t ods_rand(time_t mod);
-
-/**
- * Return the shortest time.
- * \param[in] a one time
- * \param[in] b another time
- * \return time_t the shortest time
- *
- */
-time_t time_minimum(time_t a, time_t b);
-
-/**
- * Return the longest time.
- * \param[in] a one time
- * \param[in] b another time
- * \return time_t the shortest time
- *
- */
-time_t time_maximum(time_t a, time_t b);
-
-/**
- * Convert time into string.
- * \param[in] n time
- * \param[in] s string
- *
- */
-void time_itoa(time_t n, char* s);
-
-/**
- * Return time in datestamp.
- * \param[in] tt time
- * \param[in] format stamp format
- * \param[out] str store string
- * \return uint32_t integer based datestamp.
- *
- */
-uint32_t time_datestamp(time_t tt, const char* format, char** str);
-
-/**
- * Return the time since Epoch, measured in seconds.
- * If the timeshift is enabled, return the environment variable.
- * \return time_t now (or timeshift).
- *
- */
-time_t time_now(void);
 
 /**
  * Clean up duration.
