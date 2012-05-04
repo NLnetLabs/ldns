@@ -3,6 +3,8 @@
 	* New -k option for ldns-verify-zone to validate using a trusted key.
 	* New inception and expiration margin options (-i and -e) to 
 	  ldns-verify-zone.
+	* New ldns_dnssec_zone_new_frm_fp and ldns_dnssec_zone_new_frm_fp_l
+	* New ldns_duration* functions (copied from OpenDNSSEC source)
 	* fix ldns-verify-zone to allow NSEC3 signatures to come before
 	  the NSEC3 RR in all cases. Thanks Wolfgang Nagele.
 	* Zero the correct flag (opt-out) when creating NSEC3PARAMS.
@@ -20,8 +22,9 @@
 	* New TLSA support (draft-ietf-dane-protocol).
 	* fix verifying denial of existence for DS's in NSEC3 Opt-Out zones.
 	  Thanks John Barnitz
+	  functions.
 
-1.6.12
+1.6.12	2012-01-11
 	* bugfix #413: Fix manpage source for srcdir != builddir
 	* Canonicalize the signers name rdata field in RRSIGs when signing
 	* Ignore minor version of Private-key-format (so v1.3 may be used)
