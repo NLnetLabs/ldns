@@ -368,14 +368,11 @@ static void
 service(void)
 {
 	fd_set rset, wset, eset;
-	struct timeval timeout;
 	int count;
 	int maxfd;
 
 	/* service */
 	count = 0;
-	timeout.tv_sec = 0;
-	timeout.tv_usec = 0;
 	while (1) {
 #ifndef S_SPLINT_S
 		FD_ZERO(&rset);

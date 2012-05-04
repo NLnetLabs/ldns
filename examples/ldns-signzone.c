@@ -36,7 +36,6 @@ usage(FILE *fp, const char *prog) {
 	fprintf(fp, "  -e <date>\texpiration date\n");
 	fprintf(fp, "  -f <file>\toutput zone to file (default <name>.signed)\n");
 	fprintf(fp, "  -i <date>\tinception date\n");
-	fprintf(fp, "  -l\t\tLeave old DNSSEC RRSIGS and NSEC(3) records intact\n");
 	fprintf(fp, "  -o <domain>\torigin for the zone\n");
 	fprintf(fp, "  -v\t\tprint version and exit\n");
 	fprintf(fp, "  -A\t\tsign DNSKEY with all keys instead of minimal\n");
@@ -341,9 +340,6 @@ main(int argc, char *argv[])
 	ldns_status s;
 	size_t i;
 	ldns_rr_list *added_rrs;
-	ldns_status status;
-
-	bool leave_old_dnssec_data = false;
 
 	char *outputfile_name = NULL;
 	FILE *outputfile;
@@ -458,9 +454,6 @@ main(int argc, char *argv[])
 			} else {
 				inception = (uint32_t) atol(optarg);
 			}
-			break;
-		case 'l':
-			leave_old_dnssec_data = true;
 			break;
 		case 'n':
 			use_nsec3 = true;
@@ -731,9 +724,9 @@ main(int argc, char *argv[])
 		}
 		/* and, if not unset by -p, find or create the corresponding DNSKEY record */
 		if (key) {
-			status = find_or_create_pubkey(keyfile_name_base,
-			                               key, orig_zone,
-			                               add_keys, ttl);
+			(void) find_or_create_pubkey(keyfile_name_base,
+			                             key, orig_zone,
+			                             add_keys, ttl);
 		}
 		argi++;
 	}
