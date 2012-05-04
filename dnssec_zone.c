@@ -628,7 +628,7 @@ rr_is_rrsig_covering(ldns_rr* rr, ldns_rr_type t)
 		&& ldns_rdf2rr_type(ldns_rr_rrsig_typecovered(rr)) == t;
 }
 
-
+#define FASTER_DNSSEC_ZONE_NEW_FRM_FP 1 /* But why? Help! */
 ldns_status
 ldns_dnssec_zone_new_frm_fp_l(ldns_dnssec_zone** z, FILE* fp, ldns_rdf* origin,
 	       	uint32_t ttl, ldns_rr_class ATTR_UNUSED(c), int* line_nr)
@@ -636,7 +636,6 @@ ldns_dnssec_zone_new_frm_fp_l(ldns_dnssec_zone** z, FILE* fp, ldns_rdf* origin,
 	ldns_rr* cur_rr;
 	size_t i;
 
-	uint32_t  my_ttl = ttl;
 	ldns_rdf *my_origin = NULL;
 	ldns_rdf *my_prev = NULL;
 
@@ -650,6 +649,14 @@ ldns_dnssec_zone_new_frm_fp_l(ldns_dnssec_zone** z, FILE* fp, ldns_rdf* origin,
 
 	ldns_status status = LDNS_STATUS_MEM_ERR;
 
+#ifdef FASTER_DNSSEC_ZONE_NEW_FRM_FP
+	ldns_zone* zone;
+	if (ldns_zone_new_frm_fp_l(&zone, fp, origin,ttl, c, line_nr)
+			!= LDNS_STATUS_OK) goto error;
+#else
+	uint32_t  my_ttl = ttl;
+#endif
+
 	if (!newzone || !todo_nsec3s || !todo_nsec3_rrsigs ) goto error;
 
 	if (origin) {
@@ -657,9 +664,19 @@ ldns_dnssec_zone_new_frm_fp_l(ldns_dnssec_zone** z, FILE* fp, ldns_rdf* origin,
 		if (!(my_prev   = ldns_rdf_clone(origin))) goto error;
 	}
 
+#ifdef FASTER_DNSSEC_ZONE_NEW_FRM_FP
+	if (ldns_dnssec_zone_add_rr(newzone, ldns_zone_soa(zone))
+			!= LDNS_STATUS_OK) goto error;
+
+	for (i = 0; i < ldns_rr_list_rr_count(ldns_zone_rrs(zone)); i++) {
+		cur_rr = ldns_rr_list_rr(ldns_zone_rrs(zone), i);
+		status = LDNS_STATUS_OK;
+#else
 	while (!feof(fp)) {
 		status = ldns_rr_new_frm_fp_l(&cur_rr, fp, &my_ttl, &my_origin,
-			       	&my_prev, line_nr);
+				&my_prev, line_nr);
+
+#endif
 		switch (status) {
 		case LDNS_STATUS_OK:
 
