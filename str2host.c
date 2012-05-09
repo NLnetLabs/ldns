@@ -794,7 +794,7 @@ ldns_str2rdf_tsig( ATTR_UNUSED(ldns_rdf **rd)
 		 , ATTR_UNUSED(const char *str)
 		 )
 {
-	/* there is no strign representation for TSIG rrs */
+	/* there is no string representation for TSIG rrs */
 	return LDNS_STATUS_NOT_IMPL;
 }
 
