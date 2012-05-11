@@ -59,12 +59,6 @@ usage(FILE *fp, const char *prog) {
 	fprintf(fp, "  A date can be a timestamp (seconds since the epoch), or of\n  the form <YYYYMMdd[hhmmss]>\n");
 }
 
-void
-usage_openssl(FILE *fp, const char* ATTR_UNUSED(prog)) {
-	fprintf(fp, "Special commands for openssl engines:\n");
-	fprintf(fp, "-c <file>\tOpenSSL config file\n");
-}
-
 static void check_tm(struct tm tm)
 {
 	if (tm.tm_year < 70) {
@@ -215,7 +209,7 @@ find_key_in_file(const char *keyfile_name_base, ldns_key* ATTR_UNUSED(key),
  * Even if keys are not added, the function is still needed, to check
  * whether keys of which we only have key data are KSKs or ZSKS
  */
-static ldns_status
+static void
 find_or_create_pubkey(const char *keyfile_name_base, ldns_key *key, ldns_zone *orig_zone, bool add_keys, uint32_t default_ttl) {
 	ldns_rr *pubkey_gen, *pubkey;
 	int key_in_zone;
@@ -291,7 +285,6 @@ find_or_create_pubkey(const char *keyfile_name_base, ldns_key *key, ldns_zone *o
 		equalize_ttls_rr_list(ldns_zone_rrs(orig_zone), pubkey, default_ttl);
 		ldns_zone_push_rr(orig_zone, pubkey);
 	}
-	return LDNS_STATUS_OK;
 }
 
 void
@@ -724,9 +717,8 @@ main(int argc, char *argv[])
 		}
 		/* and, if not unset by -p, find or create the corresponding DNSKEY record */
 		if (key) {
-			(void) find_or_create_pubkey(keyfile_name_base,
-			                             key, orig_zone,
-			                             add_keys, ttl);
+			find_or_create_pubkey(keyfile_name_base, key,
+			                      orig_zone, add_keys, ttl);
 		}
 		argi++;
 	}

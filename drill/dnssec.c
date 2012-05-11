@@ -245,7 +245,7 @@ ldns_nsec3_exact_match(ldns_rdf *qname, ldns_rr_type qtype, ldns_rr_list *nsec3s
 	uint8_t salt_length;
 	uint8_t *salt;
 	
-	ldns_rdf *sname, *hashed_sname;
+	ldns_rdf *sname = NULL, *hashed_sname = NULL;
 	
 	size_t nsec_i;
 	ldns_rr *nsec;
@@ -253,7 +253,7 @@ ldns_nsec3_exact_match(ldns_rdf *qname, ldns_rr_type qtype, ldns_rr_list *nsec3s
 	
 	const ldns_rr_descriptor *descriptor;
 	
-	ldns_rdf *zone_name;
+	ldns_rdf *zone_name = NULL;
 	
 	if (verbosity >= 4) {
 		printf(";; finding exact match for ");
@@ -279,16 +279,28 @@ ldns_nsec3_exact_match(ldns_rdf *qname, ldns_rr_type qtype, ldns_rr_list *nsec3s
 	salt_length = ldns_nsec3_salt_length(nsec);
 	salt = ldns_nsec3_salt_data(nsec);
 	iterations = ldns_nsec3_iterations(nsec);
+	if (salt == NULL) {
+		goto done;
+	}
 
 	sname = ldns_rdf_clone(qname);
-
+	if (sname == NULL) {
+		goto done;
+	}
 	if (verbosity >= 4) {
 		printf(";; owner name hashes to: ");
 	}
 	hashed_sname = ldns_nsec3_hash_name(sname, algorithm, iterations, salt_length, salt);
-
+	if (hashed_sname == NULL) {
+		goto done;
+	}
 	zone_name = ldns_dname_left_chop(ldns_rr_owner(nsec));
-	(void)ldns_dname_cat(hashed_sname, zone_name);
+	if (zone_name == NULL) {
+		goto done;
+	}
+	if (ldns_dname_cat(hashed_sname, zone_name) != LDNS_STATUS_OK) {
+		goto done;
+	};
 	
 	if (verbosity >= 4) {
 		ldns_rdf_print(stdout, hashed_sname);
@@ -335,7 +347,7 @@ ldns_nsec3_closest_encloser(ldns_rdf *qname, ldns_rr_type qtype, ldns_rr_list *n
 	uint8_t salt_length;
 	uint8_t *salt;
 
-	ldns_rdf *sname, *hashed_sname, *tmp;
+	ldns_rdf *sname = NULL, *hashed_sname = NULL, *tmp;
 	bool flag;
 	
 	bool exact_match_found;
@@ -362,12 +374,21 @@ ldns_nsec3_closest_encloser(ldns_rdf *qname, ldns_rr_type qtype, ldns_rr_list *n
 	salt_length = ldns_nsec3_salt_length(nsec);
 	salt = ldns_nsec3_salt_data(nsec);
 	iterations = ldns_nsec3_iterations(nsec);
+	if (salt == NULL) {
+		goto done;
+	}
 
 	sname = ldns_rdf_clone(qname);
+	if (sname == NULL) {
+		goto done;
+	}
 
 	flag = false;
 	
 	zone_name = ldns_dname_left_chop(ldns_rr_owner(nsec));
+	if (zone_name == NULL) {
+		goto done;
+	}
 
 	/* algorithm from nsec3-07 8.3 */
 	while (ldns_dname_label_count(sname) > 0) {
@@ -380,8 +401,13 @@ ldns_nsec3_closest_encloser(ldns_rdf *qname, ldns_rr_type qtype, ldns_rr_list *n
 			printf(" hashes to: ");
 		}
 		hashed_sname = ldns_nsec3_hash_name(sname, algorithm, iterations, salt_length, salt);
+		if (hashed_sname == NULL) {
+			goto done;
+		}
 
-		(void) ldns_dname_cat(hashed_sname, zone_name);
+		if (ldns_dname_cat(hashed_sname, zone_name) != LDNS_STATUS_OK){
+			goto done;
+		}
 
 		if (verbosity >= 3) {
 			ldns_rdf_print(stdout, hashed_sname);
@@ -426,9 +452,12 @@ ldns_nsec3_closest_encloser(ldns_rdf *qname, ldns_rr_type qtype, ldns_rr_list *n
 		tmp = sname;
 		sname = ldns_dname_left_chop(sname);
 		ldns_rdf_deep_free(tmp);
+		if (sname == NULL) {
+			goto done;
+		}
 	}
 
-	done:
+done:
 	LDNS_FREE(salt);
 	ldns_rdf_deep_free(zone_name);
 	ldns_rdf_deep_free(sname);

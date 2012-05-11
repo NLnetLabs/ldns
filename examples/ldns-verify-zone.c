@@ -19,32 +19,26 @@
 #ifdef HAVE_SSL
 #include <openssl/err.h>
 
-#define LDNS_VERIFY_ZONE_ERROR	0x8000
-#define LDNS_STATUS_CRYPTO_SIG_NOT_INCEPTED_WITHIN_MARGIN \
-				LDNS_VERIFY_ZONE_ERROR | 0
-#define LDNS_STATUS_CRYPTO_SIG_EXPIRED_WITHIN_MARGIN \
-				LDNS_VERIFY_ZONE_ERROR | 1
+static int verbosity = 3;
+static time_t check_time = 0;
+static int32_t inception_offset = 0;
+static int32_t expiration_offset = 0;
+static bool do_sigchase = false;
+static bool no_nomatch_msg = false;
 
-int verbosity = 3;
-time_t check_time = 0;
-time_t inception_offset = 0;
-time_t expiration_offset = 0;
-bool do_sigchase = false;
-bool no_nomatch_msg = false;
+static FILE* myout;
+static FILE* myerr;
 
-FILE* myout;
-FILE* myerr;
-
-static const char*
-get_errorstr_by_id(int err)
+static void
+update_error(ldns_status* result, ldns_status status)
 {
-	switch (err) {
-		case LDNS_STATUS_CRYPTO_SIG_NOT_INCEPTED_WITHIN_MARGIN:
-			return "DNSSEC signature not incepted long enough";
-		case LDNS_STATUS_CRYPTO_SIG_EXPIRED_WITHIN_MARGIN:
-			return "DNSSEC signature will expire to soon";
-		default:
-			return ldns_get_errorstr_by_id(err);
+	if (status != LDNS_STATUS_OK) {
+		if (*result == LDNS_STATUS_OK || *result == LDNS_STATUS_ERR || 
+		    (  *result == LDNS_STATUS_CRYPTO_NO_MATCHING_KEYTAG_DNSKEY 
+		     && status != LDNS_STATUS_ERR 
+		    )) {
+			*result = status;
+		}
 	}
 }
 
@@ -72,9 +66,11 @@ read_key_file(const char *filename, ldns_rr_list *keys)
 	int line_nr;
 
 	if (!(fp = fopen(filename, "r"))) {
-		fprintf(myerr, "Error opening %s: %s\n", filename,
-				strerror(errno));
-		return LDNS_STATUS_ERR;
+		if (verbosity > 0) {
+			fprintf(myerr, "Error opening %s: %s\n", filename,
+					strerror(errno));
+		}
+		return LDNS_STATUS_FILE_ERR;
 	}
 	while (!feof(fp)) {
 		status = ldns_rr_new_frm_fp_l(&rr, fp, &my_ttl, &my_origin,
@@ -117,7 +113,7 @@ static void
 print_rr_status_error(FILE* stream, ldns_rr* rr, ldns_status status)
 {
 	if (status != LDNS_STATUS_OK) {
-		print_rr_error(stream, rr, get_errorstr_by_id(status));
+		print_rr_error(stream, rr, ldns_get_errorstr_by_id(status));
 		if (verbosity > 0 && status == LDNS_STATUS_SSL_ERR) {
 			ERR_load_crypto_strings();
 			ERR_print_errors_fp(stream);
@@ -133,9 +129,9 @@ print_rrs_status_error(FILE* stream, ldns_rr_list* rrs, ldns_status status,
 		if (ldns_rr_list_rr_count(rrs) > 0) {
 			print_rr_status_error(stream, ldns_rr_list_rr(rrs, 0),
 					status);
-		} else {
+		} else if (verbosity > 0) {
 			fprintf(stream, "Error: %s for <unknown>\n",
-					get_errorstr_by_id(status));
+					ldns_get_errorstr_by_id(status));
 		}
 		if (verbosity >= 4) {
 			fprintf(stream, "RRSet:\n");
@@ -148,27 +144,31 @@ print_rrs_status_error(FILE* stream, ldns_rr_list* rrs, ldns_status status,
 }
 
 static ldns_status
-rrsig_check_time_margins(ldns_rr* rrsig)
+rrsig_check_time_margins(ldns_rr* rrsig
+#if 0 /* Passing those as arguments becomes sensible when 
+       * rrsig_check_time_margins will be added to the library.
+       */
+	,time_t check_time, int32_t inception_offset, int32_t expiration_offset
+#endif
+	)
 {
 	int32_t inception, expiration;
 
 	inception  = ldns_rdf2native_int32(ldns_rr_rrsig_inception (rrsig));
 	expiration = ldns_rdf2native_int32(ldns_rr_rrsig_expiration(rrsig));
 
-	if (check_time - inception_offset  - inception  < 0) {
+	if (((int32_t) (check_time - inception_offset))  - inception  < 0) {
 		return LDNS_STATUS_CRYPTO_SIG_NOT_INCEPTED_WITHIN_MARGIN;
 	}
-	if (expiration - expiration_offset - check_time < 0) {
+	if (expiration - ((int32_t) (check_time + expiration_offset)) < 0) {
 		return LDNS_STATUS_CRYPTO_SIG_EXPIRED_WITHIN_MARGIN;
 	}
 	return LDNS_STATUS_OK;
 }
 
 static ldns_status
-verify_rrs( ldns_rr_list* rrset_rrs
-	  , ldns_dnssec_rrs* cur_sig
-	  , ldns_rr_list* keys
-	  )
+verify_rrs(ldns_rr_list* rrset_rrs, ldns_dnssec_rrs* cur_sig,
+		ldns_rr_list* keys)
 {
 	ldns_rr_list* good_keys;
 	ldns_status status, result = LDNS_STATUS_OK;
@@ -185,7 +185,7 @@ verify_rrs( ldns_rr_list* rrset_rrs
 			print_rrs_status_error(myerr, rrset_rrs, status,
 					cur_sig);
 		}
-		result = result ? result : status;
+		update_error(&result, status);
 		ldns_rr_list_free(good_keys);
 		cur_sig = cur_sig->next;
 	}
@@ -356,15 +356,15 @@ verify_nsec(ldns_dnssec_zone* zone, ldns_rbnode_t *cur_node,
 			status = verify_single_rr(name->nsec,
 					name->nsec_signatures, keys);
 
-			result = result ? result : status;
+			update_error(&result, status);
 		} else {
-			if (verbosity >= 0) {
+			if (verbosity > 0) {
 				fprintf(myerr,
 					"Error: the NSEC(3) record of ");
 				ldns_rdf_print(myerr, name->name);
 				fprintf(myerr, " has no signatures\n");
 			}
-			result = result ? result : LDNS_STATUS_ERR;
+			update_error(&result, LDNS_STATUS_ERR);
 		}
 		/* check whether the NSEC record points to the right name */
 		switch (ldns_rr_get_type(name->nsec)) {
@@ -386,12 +386,15 @@ verify_nsec(ldns_dnssec_zone* zone, ldns_rbnode_t *cur_node,
 				if (ldns_dname_compare(next_name->name,
 							ldns_rr_rdf(name->nsec,
 								0)) != 0) {
-					fprintf(myerr,
-						"Error: the NSEC record for ");
-					ldns_rdf_print(myerr, name->name);
-					fprintf(myerr,
-						" points to the wrong next"
-						" owner name\n");
+					if (verbosity > 0) {
+						fprintf(myerr, "Error: the "
+							"NSEC record for ");
+						ldns_rdf_print(myerr,
+								name->name);
+						fprintf(myerr, " points to "
+							"the wrong "
+							"next owner name\n");
+					}
 					if (verbosity >= 4) {
 						fprintf(myerr, "\t: ");
 						ldns_rdf_print(myerr,
@@ -403,8 +406,8 @@ verify_nsec(ldns_dnssec_zone* zone, ldns_rbnode_t *cur_node,
 							next_name->name);
 						fprintf(myerr, ".\n");
 					}
-					result = result ? result 
-					                : LDNS_STATUS_ERR;
+					update_error(&result,
+							LDNS_STATUS_ERR);
 				}
 				break;
 			case LDNS_RR_TYPE_NSEC3:
@@ -414,7 +417,7 @@ verify_nsec(ldns_dnssec_zone* zone, ldns_rbnode_t *cur_node,
 				 * (ie. pointer to next hashed name?)
 				 */
 				status = verify_next_hashed_name(zone, name);
-				result = result ? result : status;
+				update_error(&result, status);
 				break;
 			default:
 				break;
@@ -426,18 +429,17 @@ verify_nsec(ldns_dnssec_zone* zone, ldns_rbnode_t *cur_node,
 							   LDNS_RR_TYPE_NS)
 		      && !ldns_dnssec_rrsets_contains_type(name->rrsets,
 							   LDNS_RR_TYPE_DS)))) {
-			/* TODO */
 			/* ok, no problem, but we need to remember to check
 			 * whether the chain does not actually point to this
 			 * name later */
 		} else {
-			if (verbosity >= 1) {
+			if (verbosity > 0) {
 				fprintf(myerr,
 					"Error: there is no NSEC(3) for ");
 				ldns_rdf_print(myerr, name->name);
 				fprintf(myerr, "\n");
 			}
-			result = result ? result : LDNS_STATUS_ERR;
+			update_error(&result, LDNS_STATUS_ERR);
 		}
 	}
 	return result;
@@ -466,7 +468,7 @@ verify_dnssec_name(ldns_rdf *zone_name, ldns_dnssec_zone* zone,
 		cur_rrset = name->rrsets;
 		while (cur_rrset) {
 			if (cur_rrset->signatures) {
-				if (verbosity >= 0) {
+				if (verbosity > 0) {
 					fprintf(myerr, "Error: ");
 					ldns_rdf_print(myerr, name->name);
 					fprintf(myerr, "\t");
@@ -479,7 +481,7 @@ verify_dnssec_name(ldns_rdf *zone_name, ldns_dnssec_zone* zone,
 			cur_rrset = cur_rrset->next;
 		}
 		if (name->nsec) {
-			if (verbosity >= 0) {
+			if (verbosity > 0) {
 				fprintf(myerr, "Error: ");
 				ldns_rdf_print(myerr, name->name);
 				fprintf(myerr, " has an NSEC(3),"
@@ -510,12 +512,12 @@ verify_dnssec_name(ldns_rdf *zone_name, ldns_dnssec_zone* zone,
 
 				status = verify_dnssec_rrset(zone_name,
 						name->name, cur_rrset, keys);
-				result = result ? result : status;
+				update_error(&result, status);
 			}
 			cur_rrset = cur_rrset->next;
 		}
 		status = verify_nsec(zone, cur_node, keys);
-		result = result ? result : status;
+		update_error(&result, status);
 	}
 	return result;
 }
@@ -577,9 +579,13 @@ sigchase(ldns_resolver* res, ldns_rdf *zone_name, ldns_dnssec_rrsets *zonekeys,
 		if (!res) {
 			if ((status = ldns_resolver_new_frm_file(&res, NULL))){
 				ldns_resolver_free(res);
-				fprintf(myerr,
-					"Could not create resolver: %s\n",
-					ldns_get_errorstr_by_id(status));
+				if (verbosity > 0) {
+					fprintf(myerr,
+						"Could not create resolver: "
+						"%s\n",
+						ldns_get_errorstr_by_id(status)
+						);
+				}
 				return status;
 			}
 			free_resolver = true;
@@ -642,7 +648,7 @@ verify_dnssec_zone(ldns_dnssec_zone *dnssec_zone, ldns_rdf *zone_name,
 	cur_key_rrset = ldns_dnssec_zone_find_rrset(dnssec_zone, zone_name,
 			LDNS_RR_TYPE_DNSKEY);
 	if (!cur_key_rrset || !cur_key_rrset->rrs) {
-		if (verbosity >= 0) {
+		if (verbosity > 0) {
 			fprintf(myerr,
 				"Error: No DNSKEY records at zone apex\n");
 		}
@@ -660,7 +666,7 @@ verify_dnssec_zone(ldns_dnssec_zone *dnssec_zone, ldns_rdf *zone_name,
 
 		cur_node = ldns_rbtree_first(dnssec_zone->names);
 		if (cur_node == LDNS_RBTREE_NULL) {
-			if (verbosity >= 0) {
+			if (verbosity > 0) {
 				fprintf(myerr, "Error: Empty zone?\n");
 			}
 			result = LDNS_STATUS_ERR;
@@ -684,7 +690,7 @@ verify_dnssec_zone(ldns_dnssec_zone *dnssec_zone, ldns_rdf *zone_name,
 			    || ((random() % 100) >= 100 - percentage)) {
 				status = verify_dnssec_name(zone_name,
 						dnssec_zone, cur_node, keys);
-				result = result ? result : status;
+				update_error(&result, status);
 				if (apexonly)
 					break;
 			}
@@ -767,10 +773,13 @@ main(int argc, char **argv)
 		case 'i':
 			duration = ldns_duration_create_from_string(optarg);
 			if (!duration) {
-				fprintf(myerr,
-					"<period> should be in ISO 8601 "
-					"duration format: "
-					"P[n]Y[n]M[n]DT[n]H[n]M[n]S\n");
+				if (verbosity > 0) {
+					fprintf(myerr,
+						"<period> should be in ISO "
+						"8601 duration format: "
+						"P[n]Y[n]M[n]DT[n]H[n]M[n]S\n"
+						);
+				}
                                 exit(EXIT_FAILURE);
 			}
 			if (c == 'e')
@@ -783,14 +792,20 @@ main(int argc, char **argv)
 		case 'k':
 			s = read_key_file(optarg, keys);
 			if (s != LDNS_STATUS_OK) {
-				fprintf(myerr,
-					"Could not parse key file %s: %s\n",
-					optarg, get_errorstr_by_id(s));
+				if (verbosity > 0) {
+					fprintf(myerr,
+						"Could not parse key file "
+						"%s: %s\n",optarg,
+						ldns_get_errorstr_by_id(s));
+				}
                                 exit(EXIT_FAILURE);
 			}
 			if (ldns_rr_list_rr_count(keys) == nkeys) {
-				fprintf(myerr, "No keys found in file %s\n",
+				if (verbosity > 0) {
+					fprintf(myerr,
+						"No keys found in file %s\n",
 						optarg);
+				}
 				exit(EXIT_FAILURE);
 			}
 			nkeys = ldns_rr_list_rr_count(keys);
@@ -798,8 +813,11 @@ main(int argc, char **argv)
                 case 'p':
                         percentage = atoi(optarg);
                         if (percentage < 0 || percentage > 100) {
-	                        fprintf(myerr, "percentage needs to fall "
+				if (verbosity > 0) {
+	                        	fprintf(myerr,
+						"percentage needs to fall "
 						"between 0..100\n");
+				}
                                 exit(EXIT_FAILURE);
                         }
                         srandom(time(NULL) ^ getpid());
@@ -834,8 +852,11 @@ main(int argc, char **argv)
 		}
 	}
 	if (do_sigchase && nkeys == 0) {
-		fprintf(myerr, "Unable to chase signature without keys.\n");
-		exit(EXIT_SUCCESS);
+		if (verbosity > 0) {
+			fprintf(myerr,
+				"Unable to chase signature without keys.\n");
+		}
+		exit(EXIT_FAILURE);
 	}
 
 	argc -= optind;
@@ -848,8 +869,10 @@ main(int argc, char **argv)
 
 		fp = fopen(filename, "r");
 		if (!fp) {
-			fprintf(myerr, "Unable to open %s: %s\n",
+			if (verbosity > 0) {
+				fprintf(myerr, "Unable to open %s: %s\n",
 					filename, strerror(errno));
+			}
 			exit(EXIT_FAILURE);
 		}
 	}
@@ -858,13 +881,16 @@ main(int argc, char **argv)
 			LDNS_RR_CLASS_IN, &line_nr);
 	if (s == LDNS_STATUS_OK) {
 		if (!dnssec_zone->soa) {
-			fprintf(myerr, "; Error: no SOA in the zone\n");
-			exit(1);
+			if (verbosity > 0) {
+				fprintf(myerr,
+					"; Error: no SOA in the zone\n");
+			}
+			exit(EXIT_FAILURE);
 		}
 
 		result = ldns_dnssec_zone_mark_glue(dnssec_zone);
 		if (result != LDNS_STATUS_OK) {
-			if (verbosity >= 1) {
+			if (verbosity > 0) {
 				fprintf(myerr,
 					"There were errors identifying the "
 					"glue in the zone\n");
@@ -885,7 +911,7 @@ main(int argc, char **argv)
 					"Zone is verified and complete\n");
 			}
 		} else {
-			if (verbosity >= 1) {
+			if (verbosity > 0) {
 				fprintf(myerr,
 					"There were errors in the zone\n");
 			}
@@ -893,7 +919,10 @@ main(int argc, char **argv)
 
 		ldns_dnssec_zone_deep_free(dnssec_zone);
 	} else {
-		fprintf(myerr, "%s at %d\n", get_errorstr_by_id(s), line_nr);
+		if (verbosity > 0) {
+			fprintf(myerr, "%s at %d\n",
+				ldns_get_errorstr_by_id(s), line_nr);
+		}
                 exit(EXIT_FAILURE);
 	}
 	fclose(fp);

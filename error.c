@@ -91,6 +91,10 @@ ldns_lookup_table ldns_error_str[] = {
 	{ LDNS_STATUS_DNSSEC_NSEC3_ORIGINAL_NOT_FOUND, "original of NSEC3 hashed name could not be found" },
 	{ LDNS_STATUS_MISSING_RDATA_FIELDS_RRSIG, "The RRSIG has to few rdata fields" },
 	{ LDNS_STATUS_MISSING_RDATA_FIELDS_KEY, "The DNSKEY has to few rdata fields" },
+	{ LDNS_STATUS_CRYPTO_SIG_EXPIRED_WITHIN_MARGIN, 
+		"DNSSEC signature will expire too soon" },
+	{ LDNS_STATUS_CRYPTO_SIG_NOT_INCEPTED_WITHIN_MARGIN,
+		"DNSSEC signature not incepted long enough" },
 	{ 0, NULL }
 };
 

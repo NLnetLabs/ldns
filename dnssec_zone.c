@@ -628,7 +628,14 @@ rr_is_rrsig_covering(ldns_rr* rr, ldns_rr_type t)
 		&& ldns_rdf2rr_type(ldns_rr_rrsig_typecovered(rr)) == t;
 }
 
-#define FASTER_DNSSEC_ZONE_NEW_FRM_FP 1 /* But why? Help! */
+/* When the zone is first read into an list and then inserted into an
+ * ldns_dnssec_zone (rbtree) the nodes of the rbtree are allocated close (next)
+ * to each other. Because ldns-verify-zone (the only program that uses this
+ * function) uses the rbtree mostly for sequentual walking, this results
+ * in a speed increase (of 15% on linux) because we have less CPU-cache misses.
+ */
+#define FASTER_DNSSEC_ZONE_NEW_FRM_FP 1
+
 ldns_status
 ldns_dnssec_zone_new_frm_fp_l(ldns_dnssec_zone** z, FILE* fp, ldns_rdf* origin,
 	       	uint32_t ttl, ldns_rr_class ATTR_UNUSED(c), int* line_nr)
