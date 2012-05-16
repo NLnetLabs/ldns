@@ -913,11 +913,14 @@ ldns_key_new_frm_algorithm(ldns_signing_algorithm alg, uint16_t size)
                                 return NULL;
                         }
 #endif /* splint */
+#else
+			ldns_key_free(k);
+			return NULL;
 #endif /* HAVE_SSL and USE_GOST */
                         break;
-#ifdef USE_ECDSA
                 case LDNS_SIGN_ECDSAP256SHA256:
                 case LDNS_SIGN_ECDSAP384SHA384:
+#ifdef USE_ECDSA
                         if(alg == LDNS_SIGN_ECDSAP256SHA256)
                                 ec = EC_KEY_new_by_curve_name(NID_X9_62_prime256v1);
                         else if(alg == LDNS_SIGN_ECDSAP384SHA384)
@@ -944,8 +947,11 @@ ldns_key_new_frm_algorithm(ldns_signing_algorithm alg, uint16_t size)
                                 return NULL;
 			}
 #endif /* splint */
+#else
+			ldns_key_free(k);
+			return NULL;
+#endif /* ECDSA */
 			break;
-#endif
 	}
 	ldns_key_set_algorithm(k, alg);
 	return k;
@@ -1473,11 +1479,14 @@ ldns_key2rr(const ldns_key *k)
 			}
 #endif /* splint */
 			internal_data = 1;
+#else
+                        ldns_rr_free(pubkey);
+			return NULL;
 #endif /* HAVE_SSL and USE_GOST */
 			break;
-#ifdef USE_ECDSA
                 case LDNS_SIGN_ECDSAP256SHA256:
                 case LDNS_SIGN_ECDSAP384SHA384:
+#ifdef USE_ECDSA
 			ldns_rr_push_rdf(pubkey, ldns_native2rdf_int8(
 				LDNS_RDF_TYPE_ALG, ldns_key_algorithm(k)));
                         bin = NULL;
@@ -1504,8 +1513,11 @@ ldns_key2rr(const ldns_key *k)
                          * to the pkey */
                         EC_KEY_free(ec);
 			internal_data = 1;
+#else
+                        ldns_rr_free(pubkey);
+			return NULL;
+#endif /* ECDSA */
                         break;
-#endif
 		case LDNS_SIGN_HMACMD5:
 		case LDNS_SIGN_HMACSHA1:
 		case LDNS_SIGN_HMACSHA256:
