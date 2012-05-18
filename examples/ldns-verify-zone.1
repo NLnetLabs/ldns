@@ -25,10 +25,12 @@ Apex only, check only the zone apex
 .TP
 \fB-e\fR \fIperiod\fR
 Signatures may not expire within this period.
+Default no period is used.
 
 .TP
 \fB-i\fR \fIperiod\fR
 Signatures must have been valid at least this long.
+Default signatures should just be valid now.
 
 .TP
 \fB-k\fR \fIfile\fR
@@ -67,6 +69,13 @@ Set the verbosity level (default 3):
  5: Print the zone after it has been read, the result, 
     any errors, and the names that are being checked
 
+.LP
+\fIperiod\fRs are given in ISO 8601 duration format:
+.RS
+P[n]Y[n]M[n]DT[n]H[n]M[n]S
+.RE
+.LP
+If no file is given standard input is read.
 
 .SH AUTHOR
 Written by the ldns team as an example for ldns usage.

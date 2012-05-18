@@ -353,7 +353,7 @@ ldns_nsec3_closest_encloser(ldns_rdf *qname, ldns_rr_type qtype, ldns_rr_list *n
 	bool exact_match_found;
 	bool in_range_found;
 	
-	ldns_rdf *zone_name;
+	ldns_rdf *zone_name = NULL;
 	
 	size_t nsec_i;
 	ldns_rr *nsec;

@@ -634,7 +634,7 @@ rr_is_rrsig_covering(ldns_rr* rr, ldns_rr_type t)
  * function) uses the rbtree mostly for sequentual walking, this results
  * in a speed increase (of 15% on linux) because we have less CPU-cache misses.
  */
-#define FASTER_DNSSEC_ZONE_NEW_FRM_FP 1
+#define FASTER_DNSSEC_ZONE_NEW_FRM_FP 1 /* Because of L2 cache efficiency */
 
 ldns_status
 ldns_dnssec_zone_new_frm_fp_l(ldns_dnssec_zone** z, FILE* fp, ldns_rdf* origin,
@@ -657,7 +657,7 @@ ldns_dnssec_zone_new_frm_fp_l(ldns_dnssec_zone** z, FILE* fp, ldns_rdf* origin,
 	ldns_status status = LDNS_STATUS_MEM_ERR;
 
 #ifdef FASTER_DNSSEC_ZONE_NEW_FRM_FP
-	ldns_zone* zone;
+	ldns_zone* zone = NULL;
 	if (ldns_zone_new_frm_fp_l(&zone, fp, origin,ttl, c, line_nr)
 			!= LDNS_STATUS_OK) goto error;
 #else
@@ -748,6 +748,11 @@ ldns_dnssec_zone_new_frm_fp_l(ldns_dnssec_zone** z, FILE* fp, ldns_rdf* origin,
 	return LDNS_STATUS_OK;
 
 error:
+#ifdef FASTER_DNSSEC_ZONE_NEW_FRM_FP
+	if (zone) {
+		ldns_zone_free(zone);
+	}
+#endif
 	if (my_origin) {
 		ldns_rdf_deep_free(my_origin);
 	}

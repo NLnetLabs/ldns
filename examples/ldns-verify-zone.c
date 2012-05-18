@@ -741,9 +741,12 @@ main(int argc, char **argv)
 			printf("\t-a\t\tapex only, "
 			       "check only the zone apex\n");
 			printf("\t-e <period>\tsignatures may not expire "
-			       "within this period.\n");
+			       "within this period.\n\t\t\t"
+			       "(default no period is used)\n");
 			printf("\t-i <period>\tsignatures must have been "
-			       "valid at least this long.\n");
+			       "valid at least this long.\n\t\t\t"
+			       "(default signatures should just be valid "
+			       "now)\n");
 			printf("\t-k <file>\tspecify a file that contains a "
 			       "trusted DNSKEY or DS rr.\n\t\t\t"
 			       "This option may be given more than once.\n");
