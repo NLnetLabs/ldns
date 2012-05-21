@@ -1,4 +1,4 @@
-1.6.13
+1.6.13	2012-05-21
 	* New -S option for ldns-verify-zone to chase signatures online.
 	* New -k option for ldns-verify-zone to validate using a trusted key.
 	* New inception and expiration margin options (-i and -e) to 
