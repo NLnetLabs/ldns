@@ -6,6 +6,7 @@
 #define LDNS_DNSSEC_TRUST_TREE_MAX_PARENTS 10
 
 #include <ldns/dnssec.h>
+#include <ldns/host2str.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -55,6 +56,17 @@ void ldns_dnssec_data_chain_deep_free(ldns_dnssec_data_chain *chain);
  * \param[in] *chain The dnssec_data_chain to print
  */
 void ldns_dnssec_data_chain_print(FILE *out, const ldns_dnssec_data_chain *chain);
+
+/**
+ * Prints the dnssec_data_chain to the given file stream
+ * 
+ * \param[in] *out The file stream to print to
+ * \param[in] *fmt The format of the textual representation
+ * \param[in] *chain The dnssec_data_chain to print
+ */
+void ldns_dnssec_data_chain_print_fmt(FILE *out, 
+		const ldns_output_format *fmt,
+		const ldns_dnssec_data_chain *chain);
 
 /**
  * Build an ldns_dnssec_data_chain, which contains all
@@ -158,9 +170,28 @@ size_t ldns_dnssec_trust_tree_depth(ldns_dnssec_trust_tree *tree);
  * \param[in] extended If true, add little explanation lines to the output
  */
 void ldns_dnssec_trust_tree_print(FILE *out,
-						    ldns_dnssec_trust_tree *tree,
-						    size_t tabs,
-						    bool extended);
+	       	ldns_dnssec_trust_tree *tree,
+		size_t tabs,
+		bool extended);
+
+/**
+ * Prints the dnssec_trust_tree structure to the given file
+ * stream.
+ *
+ * If a link status is not LDNS_STATUS_OK; the status and
+ * relevant signatures are printed too
+ *
+ * \param[in] *out The file stream to print to
+ * \param[in] *fmt The format of the textual representation
+ * \param[in] tree The trust tree to print
+ * \param[in] tabs Prepend each line with tabs*2 spaces
+ * \param[in] extended If true, add little explanation lines to the output
+ */
+void ldns_dnssec_trust_tree_print_fmt(FILE *out,
+		const ldns_output_format *fmt,
+	       	ldns_dnssec_trust_tree *tree,
+		size_t tabs,
+		bool extended);
 
 /**
  * Adds a trust tree as a parent for the given trust tree
@@ -178,7 +209,7 @@ ldns_status ldns_dnssec_trust_tree_add_parent(ldns_dnssec_trust_tree *tree,
 									 const ldns_status parent_status);
 
 /**
- * Generates a dnssec_trust_ttree for the given rr from the
+ * Generates a dnssec_trust_tree for the given rr from the
  * given data_chain
  *
  * This does not clone the actual data; Don't free the
@@ -193,8 +224,23 @@ ldns_dnssec_trust_tree *ldns_dnssec_derive_trust_tree(
 					   ldns_rr *rr);
 
 /**
- * Sub function for derive_trust_tree that is used for a
- * 'normal' rrset
+ * Generates a dnssec_trust_tree for the given rr from the
+ * given data_chain
+ *
+ * This does not clone the actual data; Don't free the
+ * data_chain before you are done with this tree
+ *
+ * \param[in] *data_chain The chain to derive the trust tree from
+ * \param[in] *rr The RR this tree will be about
+ * \param[in] check_time the time for which the validation is performed
+ * \return ldns_dnssec_trust_tree *
+ */
+ldns_dnssec_trust_tree *ldns_dnssec_derive_trust_tree_time(
+		ldns_dnssec_data_chain *data_chain, 
+		ldns_rr *rr, time_t check_time);
+
+/**
+ * Sub function for derive_trust_tree that is used for a 'normal' rrset
  *
  * \param[in] new_tree The trust tree that we are building
  * \param[in] data_chain The data chain containing the data for the trust tree
@@ -204,6 +250,20 @@ void ldns_dnssec_derive_trust_tree_normal_rrset(
          ldns_dnssec_trust_tree *new_tree,
 	    ldns_dnssec_data_chain *data_chain,
 	    ldns_rr *cur_sig_rr);
+
+/**
+ * Sub function for derive_trust_tree that is used for a 'normal' rrset
+ *
+ * \param[in] new_tree The trust tree that we are building
+ * \param[in] data_chain The data chain containing the data for the trust tree
+ * \param[in] cur_sig_rr The currently relevant signature
+ * \param[in] check_time the time for which the validation is performed
+ */
+void ldns_dnssec_derive_trust_tree_normal_rrset_time(
+         ldns_dnssec_trust_tree *new_tree,
+	    ldns_dnssec_data_chain *data_chain,
+	    ldns_rr *cur_sig_rr, time_t check_time);
+
 
 /**
  * Sub function for derive_trust_tree that is used for DNSKEY rrsets
@@ -220,6 +280,38 @@ void ldns_dnssec_derive_trust_tree_dnskey_rrset(
 	    ldns_rr *cur_sig_rr);
 
 /**
+ * Sub function for derive_trust_tree that is used for DNSKEY rrsets
+ *
+ * \param[in] new_tree The trust tree that we are building
+ * \param[in] data_chain The data chain containing the data for the trust tree
+ * \param[in] cur_rr The currently relevant DNSKEY RR
+ * \param[in] cur_sig_rr The currently relevant signature
+ * \param[in] check_time the time for which the validation is performed
+ */
+void ldns_dnssec_derive_trust_tree_dnskey_rrset_time(
+         ldns_dnssec_trust_tree *new_tree,
+	    ldns_dnssec_data_chain *data_chain,
+	    ldns_rr *cur_rr, ldns_rr *cur_sig_rr,
+	    time_t check_time);
+
+
+/**
+ * Sub function for derive_trust_tree that is used for DNSKEY rrsets
+ *
+ * \param[in] new_tree The trust tree that we are building
+ * \param[in] data_chain The data chain containing the data for the trust tree
+ * \param[in] cur_rr The currently relevant DNSKEY RR
+ * \param[in] cur_sig_rr The currently relevant signature
+ * \param[in] check_time the time for which the validation is performed
+ */
+void ldns_dnssec_derive_trust_tree_dnskey_rrset_time(
+         ldns_dnssec_trust_tree *new_tree,
+	    ldns_dnssec_data_chain *data_chain,
+	    ldns_rr *cur_rr, ldns_rr *cur_sig_rr,
+	    time_t check_time);
+
+
+/**
  * Sub function for derive_trust_tree that is used for DS rrsets
  *
  * \param[in] new_tree The trust tree that we are building
@@ -232,6 +324,19 @@ void ldns_dnssec_derive_trust_tree_ds_rrset(
 	    ldns_rr *cur_rr);
 
 /**
+ * Sub function for derive_trust_tree that is used for DS rrsets
+ *
+ * \param[in] new_tree The trust tree that we are building
+ * \param[in] data_chain The data chain containing the data for the trust tree
+ * \param[in] cur_rr The currently relevant DS RR
+ * \param[in] check_time the time for which the validation is performed
+ */
+void ldns_dnssec_derive_trust_tree_ds_rrset_time(
+         ldns_dnssec_trust_tree *new_tree,
+	    ldns_dnssec_data_chain *data_chain,
+	    ldns_rr *cur_rr, time_t check_time);
+
+/**
  * Sub function for derive_trust_tree that is used when there are no
  * signatures
  *
@@ -241,6 +346,20 @@ void ldns_dnssec_derive_trust_tree_ds_rrset(
 void ldns_dnssec_derive_trust_tree_no_sig(
          ldns_dnssec_trust_tree *new_tree,
 	    ldns_dnssec_data_chain *data_chain);
+
+/**
+ * Sub function for derive_trust_tree that is used when there are no
+ * signatures
+ *
+ * \param[in] new_tree The trust tree that we are building
+ * \param[in] data_chain The data chain containing the data for the trust tree
+ * \param[in] check_time the time for which the validation is performed
+ */
+void ldns_dnssec_derive_trust_tree_no_sig_time(
+         ldns_dnssec_trust_tree *new_tree,
+	    ldns_dnssec_data_chain *data_chain,
+	    time_t check_time);
+
 
 /**
  * Returns OK if there is a trusted path in the tree to one of 
@@ -271,6 +390,25 @@ ldns_status ldns_verify(ldns_rr_list *rrset,
 				    ldns_rr_list *rrsig,
 				    const ldns_rr_list *keys,
 				    ldns_rr_list *good_keys);	
+
+/**
+ * Verifies a list of signatures for one rrset.
+ *
+ * \param[in] rrset the rrset to verify
+ * \param[in] rrsig a list of signatures to check
+ * \param[in] keys a list of keys to check with
+ * \param[in] check_time the time for which the validation is performed
+ * \param[out] good_keys  if this is a (initialized) list, the pointer to keys
+ *                        from keys that validate one of the signatures
+ *                        are added to it
+ * \return status LDNS_STATUS_OK if there is at least one correct key
+ */
+ldns_status ldns_verify_time(ldns_rr_list *rrset,
+				    ldns_rr_list *rrsig,
+				    const ldns_rr_list *keys,
+				    time_t check_time,
+				    ldns_rr_list *good_keys);	
+
 
 /**
  * Verifies a list of signatures for one rrset, but disregard the time.
@@ -309,6 +447,26 @@ ldns_rr_list *ldns_fetch_valid_domain_keys(const ldns_resolver * res,
 								   ldns_status *status);
 
 /**
+ * Tries to build an authentication chain from the given 
+ * keys down to the queried domain.
+ *
+ * If we find a valid trust path, return the valid keys for the domain.
+ * 
+ * \param[in] res the current resolver
+ * \param[in] domain the domain we want valid keys for
+ * \param[in] keys the current set of trusted keys
+ * \param[in] check_time the time for which the validation is performed
+ * \param[out] status pointer to the status variable where the result
+ *                    code will be stored
+ * \return the set of trusted keys for the domain, or NULL if no 
+ *         trust path could be built.
+ */
+ldns_rr_list *ldns_fetch_valid_domain_keys_time(const ldns_resolver * res,
+		const ldns_rdf * domain, const ldns_rr_list * keys,
+		time_t check_time, ldns_status *status);
+
+
+/**
  * Validates the DNSKEY RRset for the given domain using the provided 
  * trusted keys.
  *
@@ -323,6 +481,22 @@ ldns_rr_list *ldns_validate_domain_dnskey (const ldns_resolver *res,
 								   const ldns_rr_list *keys);
 
 /**
+ * Validates the DNSKEY RRset for the given domain using the provided 
+ * trusted keys.
+ *
+ * \param[in] res the current resolver
+ * \param[in] domain the domain we want valid keys for
+ * \param[in] keys the current set of trusted keys
+ * \param[in] check_time the time for which the validation is performed
+ * \return the set of trusted keys for the domain, or NULL if the RRSET
+ *         could not be validated
+ */
+ldns_rr_list *ldns_validate_domain_dnskey_time(
+		const ldns_resolver *res, const ldns_rdf *domain, 
+		const ldns_rr_list *keys, time_t check_time);
+
+
+/**
  * Validates the DS RRset for the given domain using the provided trusted keys.
  *
  * \param[in] res the current resolver
@@ -334,6 +508,20 @@ ldns_rr_list *ldns_validate_domain_ds(const ldns_resolver *res,
 							   const ldns_rdf *
 							   domain,
 							   const ldns_rr_list * keys);
+
+/**
+ * Validates the DS RRset for the given domain using the provided trusted keys.
+ *
+ * \param[in] res the current resolver
+ * \param[in] domain the domain we want valid keys for
+ * \param[in] keys the current set of trusted keys
+ * \param[in] check_time the time for which the validation is performed
+ * \return the set of trusted keys for the domain, or NULL if the RRSET could not be validated
+ */
+ldns_rr_list *ldns_validate_domain_ds_time(
+		const ldns_resolver *res, const ldns_rdf *domain, 
+		const ldns_rr_list * keys, time_t check_time);
+
 
 /**
  * Verifies a list of signatures for one RRset using a valid trust path.
@@ -350,6 +538,24 @@ ldns_status ldns_verify_trusted(ldns_resolver *res,
 						  ldns_rr_list *rrset,
 						  ldns_rr_list *rrsigs,
 						  ldns_rr_list *validating_keys);
+
+/**
+ * Verifies a list of signatures for one RRset using a valid trust path.
+ *
+ * \param[in] res the current resolver
+ * \param[in] rrset the rrset to verify
+ * \param[in] rrsigs a list of signatures to check
+ * \param[in] check_time the time for which the validation is performed
+ * \param[out] validating_keys  if this is a (initialized) list, the
+ *                              keys from keys that validate one of
+ *                              the signatures are added to it
+ * \return status LDNS_STATUS_OK if there is at least one correct key
+ */
+ldns_status ldns_verify_trusted_time(
+		ldns_resolver *res, ldns_rr_list *rrset, 
+		ldns_rr_list *rrsigs, time_t check_time,
+		ldns_rr_list *validating_keys);
+
 
 /**
  * denial is not just a river in egypt
@@ -464,6 +670,24 @@ ldns_status ldns_verify_rrsig_keylist(ldns_rr_list *rrset,
 							   ldns_rr_list *good_keys);
 
 /**
+ * Verifies an rrsig. All keys in the keyset are tried.
+ * \param[in] rrset the rrset to check
+ * \param[in] rrsig the signature of the rrset
+ * \param[in] keys the keys to try
+ * \param[in] check_time the time for which the validation is performed
+ * \param[out] good_keys  if this is a (initialized) list, the pointer to keys
+ *                        from keys that validate one of the signatures
+ *                        are added to it
+ * \return a list of keys which validate the rrsig + rrset. Returns
+ * status LDNS_STATUS_OK if at least one key matched. Else an error.
+ */
+ldns_status ldns_verify_rrsig_keylist_time(
+		ldns_rr_list *rrset, ldns_rr *rrsig, 
+		const ldns_rr_list *keys, time_t check_time,
+	       	ldns_rr_list *good_keys);
+
+
+/**
  * Verifies an rrsig. All keys in the keyset are tried. Time is not checked.
  * \param[in] rrset the rrset to check
  * \param[in] rrsig the signature of the rrset
@@ -489,6 +713,20 @@ ldns_status ldns_verify_rrsig_keylist_notime(ldns_rr_list *rrset,
 ldns_status ldns_verify_rrsig(ldns_rr_list *rrset,
 						ldns_rr *rrsig,
 						ldns_rr *key);
+
+
+/**
+ * verify an rrsig with 1 key
+ * \param[in] rrset the rrset
+ * \param[in] rrsig the rrsig to verify
+ * \param[in] key the key to use
+ * \param[in] check_time the time for which the validation is performed
+ * \return status message wether verification succeeded.
+ */
+ldns_status ldns_verify_rrsig_time(
+		ldns_rr_list *rrset, ldns_rr *rrsig, 
+		ldns_rr *key, time_t check_time);
+
 
 #if LDNS_BUILD_CONFIG_HAVE_SSL
 /**

@@ -188,7 +188,7 @@ static void error(const char* msg, ...)
 	exit(EXIT_FAILURE);
 }
 
-void verbose(int lvl, const char* msg, ...)
+void verbose(int ATTR_UNUSED(lvl), const char* msg, ...)
 {
 	va_list args;
 	va_start(args, msg);
@@ -216,7 +216,9 @@ static int bind_port(int sock, int port, int fam)
     }
 #endif
 
+#ifndef S_SPLINT_S
     addr.sin_family = AF_INET;
+#endif
     addr.sin_port = (in_port_t)htons((uint16_t)port);
     addr.sin_addr.s_addr = INADDR_ANY;
     return bind(sock, (struct sockaddr *)&addr, (socklen_t) sizeof(addr));
@@ -366,20 +368,19 @@ static void
 service(void)
 {
 	fd_set rset, wset, eset;
-	struct timeval timeout;
 	int count;
 	int maxfd;
 
 	/* service */
 	count = 0;
-	timeout.tv_sec = 0;
-	timeout.tv_usec = 0;
 	while (1) {
+#ifndef S_SPLINT_S
 		FD_ZERO(&rset);
 		FD_ZERO(&wset);
 		FD_ZERO(&eset);
 		FD_SET(udp_sock, &rset);
 		FD_SET(tcp_sock, &rset);
+#endif
 		maxfd = udp_sock;
 		if(tcp_sock > maxfd)
 			maxfd = tcp_sock;
@@ -418,7 +419,7 @@ forkit(int number)
 #endif /* USE_WINSOCK */
 #else /* HAVE_FORK */
 		pid_t pid = fork();
-		if(pid == -1) {
+		if(pid == (pid_t) -1) {
 			log_msg("error forking: %s\n", strerror(errno));
 			return;
 		}

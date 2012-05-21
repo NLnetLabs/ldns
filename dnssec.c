@@ -105,7 +105,6 @@ ldns_dnssec_nsec3_closest_encloser(ldns_rdf *qname,
 	uint8_t *salt;
 
 	ldns_rdf *sname, *hashed_sname, *tmp;
-	ldns_rr *ce;
 	bool flag;
 
 	bool exact_match_found;
@@ -117,7 +116,6 @@ ldns_dnssec_nsec3_closest_encloser(ldns_rdf *qname,
 	size_t nsec_i;
 	ldns_rr *nsec;
 	ldns_rdf *result = NULL;
-	qtype = qtype;
 
 	if (!qname || !nsec3s || ldns_rr_list_rr_count(nsec3s) < 1) {
 		return NULL;
@@ -131,7 +129,6 @@ ldns_dnssec_nsec3_closest_encloser(ldns_rdf *qname,
 
 	sname = ldns_rdf_clone(qname);
 
-	ce = NULL;
 	flag = false;
 
 	zone_name = ldns_dname_left_chop(ldns_rr_owner(nsec));
@@ -535,8 +532,8 @@ ldns_key_rr2ds(const ldns_rr *key, ldns_hash h)
 		ldns_rr_free(ds);
 		return NULL;
 #endif
-#ifdef USE_ECDSA
 	case LDNS_SHA384:
+#ifdef USE_ECDSA
 		digest = LDNS_XMALLOC(uint8_t, SHA384_DIGEST_LENGTH);
 		if (!digest) {
 			ldns_rr_free(ds);
@@ -565,7 +562,14 @@ ldns_key_rr2ds(const ldns_rr *key, ldns_hash h)
 	ldns_rr_push_rdf(ds, tmp);
 
 	/* copy the algorithm field */
-	ldns_rr_push_rdf(ds, ldns_rdf_clone( ldns_rr_rdf(key, 2))); 
+	if ((tmp = ldns_rr_rdf(key, 2)) == NULL) {
+		LDNS_FREE(digest);
+		ldns_buffer_free(data_buf);
+		ldns_rr_free(ds);
+		return NULL;
+	} else {
+		ldns_rr_push_rdf(ds, ldns_rdf_clone( tmp )); 
+	}
 
 	/* digest hash type */
 	sha1hash = (uint8_t)h;
@@ -632,8 +636,8 @@ ldns_key_rr2ds(const ldns_rr *key, ldns_hash h)
 		ldns_rr_push_rdf(ds, tmp);
 #endif
 		break;
-#ifdef USE_ECDSA
 	case LDNS_SHA384:
+#ifdef USE_ECDSA
 		(void) SHA384((unsigned char *) ldns_buffer_begin(data_buf),
 		                 (unsigned int) ldns_buffer_position(data_buf),
 		                 (unsigned char *) digest);
@@ -641,8 +645,8 @@ ldns_key_rr2ds(const ldns_rr *key, ldns_hash h)
 		                            SHA384_DIGEST_LENGTH,
 		                            digest);
 		ldns_rr_push_rdf(ds, tmp);
-		break;
 #endif
+		break;
 	}
 
 	LDNS_FREE(digest);
@@ -775,8 +779,7 @@ ldns_dnssec_create_nsec(ldns_dnssec_name *from,
 	ldns_dnssec_rrsets *cur_rrsets;
 	int on_delegation_point;
 
-	if (!from || !to || (nsec_type != LDNS_RR_TYPE_NSEC &&
-					 nsec_type != LDNS_RR_TYPE_NSEC3)) {
+	if (!from || !to || (nsec_type != LDNS_RR_TYPE_NSEC)) {
 		return NULL;
 	}
 
@@ -835,8 +838,6 @@ ldns_dnssec_create_nsec3(ldns_dnssec_name *from,
 	ldns_dnssec_rrsets *cur_rrsets;
 	ldns_status status;
 	int on_delegation_point;
-
-	flags = flags;
 
 	if (!from) {
 		return NULL;
@@ -1209,8 +1210,8 @@ ldns_nsec3_algorithm(const ldns_rr *nsec3_rr)
 	if (nsec3_rr && 
 	      (ldns_rr_get_type(nsec3_rr) == LDNS_RR_TYPE_NSEC3 ||
 	       ldns_rr_get_type(nsec3_rr) == LDNS_RR_TYPE_NSEC3PARAM)
-	    && ldns_rdf_size(ldns_rr_rdf(nsec3_rr, 0)) > 0
-	    ) {
+	    && (ldns_rr_rdf(nsec3_rr, 0) != NULL)
+	    && ldns_rdf_size(ldns_rr_rdf(nsec3_rr, 0)) > 0) {
 		return ldns_rdf2native_int8(ldns_rr_rdf(nsec3_rr, 0));
 	}
 	return 0;
@@ -1222,8 +1223,8 @@ ldns_nsec3_flags(const ldns_rr *nsec3_rr)
 	if (nsec3_rr && 
 	      (ldns_rr_get_type(nsec3_rr) == LDNS_RR_TYPE_NSEC3 ||
 	       ldns_rr_get_type(nsec3_rr) == LDNS_RR_TYPE_NSEC3PARAM)
-	    && ldns_rdf_size(ldns_rr_rdf(nsec3_rr, 1)) > 0
-	    ) {
+	    && (ldns_rr_rdf(nsec3_rr, 1) != NULL)
+	    && ldns_rdf_size(ldns_rr_rdf(nsec3_rr, 1)) > 0) {
 		return ldns_rdf2native_int8(ldns_rr_rdf(nsec3_rr, 1));
 	}
 	return 0;
@@ -1241,8 +1242,8 @@ ldns_nsec3_iterations(const ldns_rr *nsec3_rr)
 	if (nsec3_rr &&
 	      (ldns_rr_get_type(nsec3_rr) == LDNS_RR_TYPE_NSEC3 ||
 	       ldns_rr_get_type(nsec3_rr) == LDNS_RR_TYPE_NSEC3PARAM)
-	    && ldns_rdf_size(ldns_rr_rdf(nsec3_rr, 2)) > 0
-	    ) {
+	    && (ldns_rr_rdf(nsec3_rr, 2) != NULL)
+	    && ldns_rdf_size(ldns_rr_rdf(nsec3_rr, 2)) > 0) {
 		return ldns_rdf2native_int16(ldns_rr_rdf(nsec3_rr, 2));
 	}
 	return 0;
@@ -1342,8 +1343,12 @@ ldns_nsec_bitmap_covers_type(const ldns_rdf *nsec_bitmap, ldns_rr_type type)
 	uint16_t cur_type;
 	uint16_t pos = 0;
 	uint16_t bit_pos;
-	uint8_t *data = ldns_rdf_data(nsec_bitmap);
+	uint8_t *data;
 
+	if (nsec_bitmap == NULL) {
+		return false;
+	}
+	data = ldns_rdf_data(nsec_bitmap);
 	while(pos < ldns_rdf_size(nsec_bitmap)) {
 		window_block_nr = data[pos];
 		bitmap_length = data[pos + 1];
@@ -1375,7 +1380,11 @@ ldns_nsec_covers_name(const ldns_rr *nsec, const ldns_rdf *name)
 	bool result;
 
 	if (ldns_rr_get_type(nsec) == LDNS_RR_TYPE_NSEC) {
-		nsec_next = ldns_rdf_clone(ldns_rr_rdf(nsec, 0));
+		if (ldns_rr_rdf(nsec, 0) != NULL) {
+			nsec_next = ldns_rdf_clone(ldns_rr_rdf(nsec, 0));
+		} else {
+			return false;
+		}
 	} else if (ldns_rr_get_type(nsec) == LDNS_RR_TYPE_NSEC3) {
 		hash_next = ldns_nsec3_next_owner(nsec);
 		next_hash_str = ldns_rdf2str(hash_next);
@@ -1407,9 +1416,11 @@ ldns_nsec_covers_name(const ldns_rr *nsec, const ldns_rdf *name)
 
 #ifdef HAVE_SSL
 /* sig may be null - if so look in the packet */
+
 ldns_status
-ldns_pkt_verify(ldns_pkt *p, ldns_rr_type t, ldns_rdf *o,
-			 ldns_rr_list *k, ldns_rr_list *s, ldns_rr_list *good_keys)
+ldns_pkt_verify_time(ldns_pkt *p, ldns_rr_type t, ldns_rdf *o, 
+		ldns_rr_list *k, ldns_rr_list *s, 
+		time_t check_time, ldns_rr_list *good_keys)
 {
 	ldns_rr_list *rrset;
 	ldns_rr_list *sigs;
@@ -1464,7 +1475,14 @@ ldns_pkt_verify(ldns_pkt *p, ldns_rr_type t, ldns_rdf *o,
 		return LDNS_STATUS_ERR;
 	}
 
-	return ldns_verify(rrset, sigs, k, good_keys);
+	return ldns_verify_time(rrset, sigs, k, check_time, good_keys);
+}
+
+ldns_status
+ldns_pkt_verify(ldns_pkt *p, ldns_rr_type t, ldns_rdf *o, 
+		ldns_rr_list *k, ldns_rr_list *s, ldns_rr_list *good_keys)
+{
+	return ldns_pkt_verify_time(p, t, o, k, s, ldns_time(NULL), good_keys);
 }
 #endif /* HAVE_SSL */
 
@@ -1548,34 +1566,34 @@ ldns_rr_list_sort_nsec3(ldns_rr_list *unsorted)
 }
 
 int
-ldns_dnssec_default_add_to_signatures(ldns_rr *sig, void *n)
+ldns_dnssec_default_add_to_signatures( ATTR_UNUSED(ldns_rr *sig)
+				     , ATTR_UNUSED(void *n)
+				     )
 {
-	sig = sig;
-	n = n;
 	return LDNS_SIGNATURE_LEAVE_ADD_NEW;
 }
 
 int
-ldns_dnssec_default_leave_signatures(ldns_rr *sig, void *n)
+ldns_dnssec_default_leave_signatures( ATTR_UNUSED(ldns_rr *sig)
+				    , ATTR_UNUSED(void *n)
+				    )
 {
-	sig = sig;
-	n = n;
 	return LDNS_SIGNATURE_LEAVE_NO_ADD;
 }
 
 int
-ldns_dnssec_default_delete_signatures(ldns_rr *sig, void *n)
+ldns_dnssec_default_delete_signatures( ATTR_UNUSED(ldns_rr *sig)
+				     , ATTR_UNUSED(void *n)
+				     )
 {
-	sig = sig;
-	n = n;
 	return LDNS_SIGNATURE_REMOVE_NO_ADD;
 }
 
 int
-ldns_dnssec_default_replace_signatures(ldns_rr *sig, void *n)
+ldns_dnssec_default_replace_signatures( ATTR_UNUSED(ldns_rr *sig)
+				      , ATTR_UNUSED(void *n)
+				      )
 {
-	sig = sig;
-	n = n;
 	return LDNS_SIGNATURE_REMOVE_ADD_NEW;
 }
 

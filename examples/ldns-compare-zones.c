@@ -23,10 +23,10 @@
 #define OP_CHG '~'
 
 static void 
-usage(int argc, char **argv)
+usage(char *prog)
 {
 	printf("Usage: %s [-v] [-i] [-d] [-c] [-s] <zonefile1> <zonefile2>\n",
-		  argv[0]);
+		prog);
 	printf("       -i - print inserted\n");
 	printf("       -d - print deleted\n");
 	printf("       -c - print changed\n");
@@ -57,7 +57,7 @@ main(int argc, char **argv)
 	while ((c = getopt(argc, argv, "ahvdicsz")) != -1) {
 		switch (c) {
 		case 'h':
-			usage(argc, argv);
+			usage(argv[0]);
 			exit(EXIT_SUCCESS);
 			break;
 		case 'v':
@@ -96,7 +96,7 @@ main(int argc, char **argv)
 	if (argc != 2) {
 		argc -= optind;
 		argv -= optind;
-		usage(argc, argv);
+		usage(argv[0]);
 		exit(EXIT_FAILURE);
 	}
 	fn1 = argv[0];

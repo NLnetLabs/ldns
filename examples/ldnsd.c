@@ -54,7 +54,9 @@ static int udp_bind(int sock, int port, const char *my_address)
         }
     }
 
+#ifndef S_SPLINT_S
     addr.sin_family = AF_INET;
+#endif
     addr.sin_port = (in_port_t) htons((uint16_t)port);
     addr.sin_addr.s_addr = maddr;
     return bind(sock, (struct sockaddr *)&addr, (socklen_t) sizeof(addr));

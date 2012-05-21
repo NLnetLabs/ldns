@@ -33,7 +33,7 @@ main(int argc, char *argv[])
 	ldns_rr_list *ns_ip;
 	uint8_t i, j;
 	ldns_rr_type t;
-	char * type_name;
+	const char * type_name;
 	struct tm incep, expir;
 	char incep_buf[26];
 	char expir_buf[26];

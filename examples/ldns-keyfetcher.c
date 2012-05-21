@@ -38,7 +38,6 @@ retrieve_dnskeys(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 	ldns_pkt *p;
 	ldns_rr_list *new_nss_a;
 	ldns_rr_list *new_nss_aaaa;
-	ldns_rr_list *final_answer;
 	ldns_rr_list *new_nss;
 	ldns_rr_list *ns_addr;
 	ldns_rr_list *ns_addr2;
@@ -60,7 +59,6 @@ retrieve_dnskeys(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 	new_nss = NULL;
 	ns_addr = NULL;
 	ns_addr2 = NULL;
-	final_answer = NULL;
 	p = ldns_pkt_new();
 	res = ldns_resolver_new();
 	

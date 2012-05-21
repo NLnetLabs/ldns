@@ -6,7 +6,7 @@ sinclude(acx_nlnetlabs.m4)
 # must be numbers. ac_defun because of later processing.
 m4_define([VERSION_MAJOR],[1])
 m4_define([VERSION_MINOR],[6])
-m4_define([VERSION_MICRO],[10])
+m4_define([VERSION_MICRO],[13])
 AC_INIT(ldns, m4_defn([VERSION_MAJOR]).m4_defn([VERSION_MINOR]).m4_defn([VERSION_MICRO]), libdns@nlnetlabs.nl, libdns)
 AC_CONFIG_SRCDIR([packet.c])
 # needed to build correct soname
@@ -22,7 +22,18 @@ CFLAGS="$CFLAGS"
 AC_AIX
 # Checks for programs.
 AC_PROG_CC
+ACX_DEPFLAG
 AC_PROG_MAKE_SET
+
+# Extra (sp)lint flags for NetBSD
+AC_CANONICAL_HOST
+case "$host_os" in
+	netbsd*) LINTFLAGS="'-D__RENAME(x)=' -D_NETINET_IN_H_ $LINTFLAGS" 
+		 ;;
+	*)       LINTFLAGS="$LINTFLAGS"
+		 ;;
+esac
+AC_SUBST(LINTFLAGS)
 
 AC_DEFINE(WINVER, 0x0502, [the version of the windows API enabled])
 
@@ -58,6 +69,7 @@ ACX_CHECK_COMPILER_FLAG(Wall, [CFLAGS="-Wall $CFLAGS"])
 ACX_CHECK_COMPILER_FLAG(W, [CFLAGS="-W $CFLAGS"])
 ACX_CHECK_COMPILER_FLAG(Wwrite-strings, [CFLAGS="-Wwrite-strings $CFLAGS"])
 
+
 AC_CHECK_HEADERS([getopt.h time.h],,, [AC_INCLUDES_DEFAULT])
 
 # MinGW32 tests
@@ -83,46 +95,160 @@ AC_CHECK_PROG(doxygen, doxygen, doxygen)
 AC_SEARCH_LIBS([socket], [socket])
 AC_SEARCH_LIBS([inet_pton], [nsl])
 
+
+AC_ARG_WITH(drill, AC_HELP_STRING([--with-drill], 
+ [Also build drill.]), 
+ [],[with_drill="no"])
+if test x_$with_drill != x_no ; then
+	AC_SUBST(DRILL,[drill])
+	AC_SUBST(INSTALL_DRILL,[install-drill])
+	AC_SUBST(UNINSTALL_DRILL,[uninstall-drill])
+	AC_SUBST(CLEAN_DRILL,[clean-drill])
+	AC_SUBST(LINT_DRILL,[lint-drill])
+	if test -e $srcdir/drill/config.h -o -e drill/config.h ; then
+		AC_MSG_ERROR([
+A config.h was detected in the drill subdirectory.
+This does not work with the --with-drill option.
+Please remove the config.h from the drill subdirectory 
+or do not use the --with-drill option.])
+	fi
+else
+	AC_SUBST(DRILL,[""])
+	AC_SUBST(INSTALL_DRILL,[""])
+	AC_SUBST(UNINSTALL_DRILL,[""])
+	AC_SUBST(CLEAN_DRILL,[""])
+	AC_SUBST(LINT_DRILL,[""])
+fi
+
+
+AC_ARG_WITH(examples, AC_HELP_STRING([--with-examples], 
+ [Also build examples.]), 
+ [],[with_examples="no"])
+if test x_$with_examples != x_no ; then
+	AC_SUBST(EXAMPLES,[examples])
+	AC_SUBST(INSTALL_EXAMPLES,[install-examples])
+	AC_SUBST(UNINSTALL_EXAMPLES,[uninstall-examples])
+	AC_SUBST(CLEAN_EXAMPLES,[clean-examples])
+	AC_SUBST(LINT_EXAMPLES,[lint-examples])
+	if test -e $srcdir/examples/config.h -o -e examples/config.h ; then
+		AC_MSG_ERROR([
+A config.h was detected in the examples subdirectory.
+This does not work with the --with-examples option.
+Please remove the config.h from the examples subdirectory 
+or do not use the --with-examples option.])
+	fi
+else
+	AC_SUBST(EXAMPLES,[""])
+	AC_SUBST(INSTALL_EXAMPLES,[""])
+	AC_SUBST(UNINSTALL_EXAMPLES,[""])
+	AC_SUBST(CLEAN_EXAMPLES,[""])
+	AC_SUBST(LINT_EXAMPLES,[""])
+fi
+
+# add option to disable installation of ldns-config script
+AC_ARG_ENABLE(ldns-config, [ --disable-ldns-config	disable installation of ldns-config (default=enabled)],
+	enable_ldns_config=$enableval, enable_ldns_config=yes)
+if test "x$enable_ldns_config" = xyes; then
+	AC_SUBST(INSTALL_CONFIG, [install-config])
+	AC_SUBST(INSTALL_CONFIG_MANPAGE, [install-config-manpage])
+	AC_SUBST(UNINSTALL_CONFIG, [uninstall-config])
+	AC_SUBST(UNINSTALL_CONFIG_MANPAGE, [uninstall-config-manpage])
+else
+	AC_SUBST(INSTALL_CONFIG, [""])
+	AC_SUBST(INSTALL_CONFIG_MANPAGE, [""])
+	AC_SUBST(UNINSTALL_CONFIG, [""])
+	AC_SUBST(UNINSTALL_CONFIG_MANPAGE, [""])
+fi
+
 # check for python
 PYTHON_X_CFLAGS=""
+ldns_with_pyldns=no
+ldns_with_pyldnsx=no
 AC_ARG_WITH(pyldns, AC_HELP_STRING([--with-pyldns], 
  [generate python library, or --without-pyldns to disable Python support.]), 
  [],[ withval="no" ])
 ldns_have_python=no
 if test x_$withval != x_no; then
-   sinclude(acx_python.m4)
+   sinclude(ax_python_devel.m4)
    ac_save_LIBS="$LIBS" dnl otherwise AC_PYTHON_DEVEL thrashes $LIBS
-   AC_PYTHON_DEVEL
-   if test ! -z "$PYTHON_VERSION"; then
-        if test `$PYTHON -c "print '$PYTHON_VERSION' >= '2.4.0'"` = "False"; then
-                AC_ERROR([Python version >= 2.4.0 is required])
-        fi
-	# Have Python
-	AC_DEFINE(HAVE_PYTHON,1,[Define if you have Python libraries and header files.])
+
+   AX_PYTHON_DEVEL([>= '2.4.0'])
+   if test ! -z "$ac_python_version"; then
 	ldns_have_python=yes
    fi
 
-   # check for swig
+   # pass additional Python 3 option to SWIG
+   if test `$PYTHON -c "import sys; \
+       ver = sys.version.split()[[0]]; \
+       print(ver >= '3')"` = "True"; then
+       AC_SUBST(SWIGPY3, ["-py3 -DPY3"])
+   fi
+
+   # check for SWIG
    if test x_$ldns_have_python != x_no; then
-	sinclude(ac_pkg_swig.m4)
-	AC_PROG_SWIG
+        sinclude(ax_pkg_swig.m4)
+
+        # check for >=SWIG-2.0.4 if Python 3.2 used
+        if test `$PYTHON -c "import sys; \
+            ver = sys.version.split()[[0]]; \
+            print(ver >= '3.2')"` = "True"; then
+            AX_PKG_SWIG(2.0.4, [], [AC_MSG_ERROR([SWIG-2.0.4 is required to build pyldns for Python 3.2 and greater.])])
+        else
+            AX_PKG_SWIG
+        fi
+
 	if test ! -x "$SWIG"; then
-		AC_ERROR([failed to find swig tool, install it, or do not build pyldns])
+		AC_MSG_ERROR([failed to find SWIG tool, install it, or do not build pyldns])
 	else
-		AC_DEFINE(HAVE_SWIG,1,[Define if you have Swig libraries and header files.])
+		AC_DEFINE(HAVE_SWIG,1,[Define if you have SWIG libraries and header files.])
 		AC_SUBST(PYLDNS, "pyldns")
 		AC_SUBST(swig, "$SWIG")
+		ldns_with_pyldns=yes
 	fi
    else
-	AC_MSG_RESULT([*** don't have Python, skipping Swig, no pyldns ***]) # '
+	AC_MSG_RESULT([*** don't have Python, skipping SWIG, no pyldns ***]) # '
    fi
 
    # xtra cflags for pyldns
    if test x_$ldns_have_python != x_no; then
 	ACX_CHECK_COMPILER_FLAG(fno-strict-aliasing, [PYTHON_X_CFLAGS="-fno-strict-aliasing"])
+	ACX_CHECK_COMPILER_FLAG(Wno-missing-field-initializers, [PYTHON_X_CFLAGS="-Wno-missing-field-initializers $PYTHON_X_CFLAGS"])
+	ACX_CHECK_COMPILER_FLAG(Wno-unused-parameter, [PYTHON_X_CFLAGS="-Wno-unused-parameter $PYTHON_X_CFLAGS"])
+	ACX_CHECK_COMPILER_FLAG(Wno-unused-variable, [PYTHON_X_CFLAGS="-Wno-unused-variable $PYTHON_X_CFLAGS"])
    fi
 fi
 AC_SUBST(PYTHON_X_CFLAGS)
+
+# Check for pyldnsx
+AC_ARG_WITH(pyldnsx, AC_HELP_STRING([--without-pyldnsx], 
+  [Do not install the ldnsx python module, or --with-pyldnsx to install it.]), 
+  [],[ withval="with_pyldns" ])
+if test x_$withval != x_no; then
+  if test x_$ldns_with_pyldns != x_no; then
+    AC_SUBST(PYLDNSX, "pyldnsx")
+    ldns_with_pyldnsx=yes
+  else
+    if test x_$withval != x_with_pyldns; then
+      AC_MSG_ERROR([--with-pyldns is needed for the ldnsx python module])
+    fi
+  fi
+fi
+
+if test x_$ldns_with_pyldns != x_no; then
+  AC_SUBST(PYLDNSINST, "install-pyldns")dnl
+  AC_SUBST(PYLDNSUNINST, "uninstall-pyldns")
+else
+  AC_SUBST(PYLDNSINST, "")dnl
+  AC_SUBST(PYLDNSUNINST, "")
+fi
+if test x_$ldns_with_pyldnsx != x_no; then
+  AC_SUBST(PYLDNSXINST, "install-pyldnsx")dnl
+  AC_SUBST(PYLDNSXUNINST, "uninstall-pyldnsx")
+else
+  AC_SUBST(PYLDNSXINST, "")dnl
+  AC_SUBST(PYLDNSXUNINST, "")
+fi
+
 
 # Use libtool
 ACX_LIBTOOL_C_ONLY
@@ -171,31 +297,21 @@ case "$enable_gost" in
         ;;
 esac
 
-AC_ARG_ENABLE(ecdsa, AC_HELP_STRING([--enable-ecdsa], [Enable ECDSA support, experimental]))
+AC_ARG_ENABLE(ecdsa, AC_HELP_STRING([--disable-ecdsa], [Disable ECDSA support]))
 case "$enable_ecdsa" in
-    yes)
+    no)
+      ;;
+    *) dnl default
       if test "x$HAVE_SSL" != "xyes"; then
         AC_MSG_ERROR([ECDSA enabled, but no SSL support])
       fi
-      AC_CHECK_FUNC(ECDSA_sign, [], [AC_MSG_ERROR([OpenSSL does not support ECDSA])])
-      AC_CHECK_FUNC(SHA384_Init, [], [AC_MSG_ERROR([OpenSSL does not support SHA384])])
-      AC_CHECK_DECLS([NID_X9_62_prime256v1, NID_secp384r1], [], [AC_MSG_ERROR([OpenSSL does not support the ECDSA curve])], [AC_INCLUDES_DEFAULT
+      AC_CHECK_FUNC(ECDSA_sign, [], [AC_MSG_ERROR([OpenSSL does not support ECDSA: please upgrade OpenSSL or rerun with --disable-ecdsa])])
+      AC_CHECK_FUNC(SHA384_Init, [], [AC_MSG_ERROR([OpenSSL does not support SHA384: please upgrade OpenSSL or rerun with --disable-ecdsa])])
+      AC_CHECK_DECLS([NID_X9_62_prime256v1, NID_secp384r1], [], [AC_MSG_ERROR([OpenSSL does not support the ECDSA curves: please upgrade OpenSSL or rerun with --disable-ecdsa])], [AC_INCLUDES_DEFAULT
 #include <openssl/evp.h>
       ])
       # we now know we have ECDSA and the required curves.
       AC_DEFINE_UNQUOTED([USE_ECDSA], [1], [Define this to enable ECDSA support.])
-      AC_SUBST(ldns_build_config_use_ecdsa, 1)
-      AC_WARN([
-      *****************************************************************
-      *** YOU HAVE ENABLED ECDSA WHICH IS EXPERIMENTAL AT THIS TIME ***
-      *** PLEASE DO NOT USE THIS ON THE PUBLIC INTERNET             ***
-      *****************************************************************])
-      ;;
-    no)
-      AC_SUBST(ldns_build_config_use_ecdsa, 0)
-      ;;
-    *)
-      AC_SUBST(ldns_build_config_use_ecdsa, 0)
       ;;
 esac
 
@@ -206,20 +322,11 @@ CPPFLAGS=$tmp_CPPFLAGS
 LDFLAGS=$tmp_LDFLAGS
 LIBS=$tmp_LIBS
 
-# add option to disable installation of ldns-config script
-AC_ARG_ENABLE(ldns-config, [ --disable-ldns-config          disable installation of ldns-config (default=enabled)],
-	enable_ldns_config=$enableval, enable_ldns_config=yes)
-if test "x$enable_ldns_config" = xyes; then
-	INSTALL_LDNS_CONFIG="yes"
-else
-	INSTALL_LDNS_CONFIG="no"
-fi
-AC_SUBST(INSTALL_LDNS_CONFIG)
 
 # add option to disable the evil rpath
 ACX_ARG_RPATH
 
-#AC_TRY_RUN(
+#AC_RUN_IFELSE([AC_LANG_SOURCE(
 #[
 #int main()
 #{
@@ -230,7 +337,7 @@ ACX_ARG_RPATH
 #else
 #return(1);
 #}
-#], [],[
+#])], [],[
 #AC_DEFINE(CONFCHECK_LITTLE_ENDIAN, 1, [system appears to be little-endian])
 #],[])
 
@@ -310,8 +417,36 @@ AC_INCLUDES_DEFAULT
 #endif
 ])
 
+if test x_$with_examples != x_no; then
+AC_CHECK_HEADERS([pcap.h],, [AC_INCLUDES_DEFAULT])
+AC_CHECK_LIB(pcap, pcap_open_offline, [
+	AC_DEFINE([HAVE_LIBPCAP], [1], [Define to 1 if you have the `pcap' library (-lpcap).])dnl`
+	AC_SUBST([LIBPCAP_LIBS], [-lpcap])
+    ], [
+	AC_MSG_WARN([Can't find pcap library (needed for ldns-dpa, will not build dpa now.)])dnl'
+	AC_SUBST([LIBPCAP_LIBS], [])
+    ]
+)
+AC_CHECK_HEADERS([netinet/in_systm.h net/if.h netinet/ip.h netinet/udp.h netinet/igmp.h netinet/if_ether.h netinet/ip6.h net/ethernet.h netinet/ip_compat.h],,, [
+AC_INCLUDES_DEFAULT 
+#ifdef HAVE_NETINET_IN_SYSTM_H
+#include <netinet/in_systm.h>
+#endif
+#ifdef HAVE_NETINET_IN_H
+#include <netinet/in.h>
+#endif
+#ifdef HAVE_SYS_SOCKET_H
+#include <sys/socket.h>
+#endif
+#ifdef HAVE_NET_IF_H
+#include <net/if.h>
+#endif])
+fi
+
 ACX_TYPE_SOCKLEN_T
-AC_CHECK_TYPE(ssize_t, int)
+AC_TYPE_SIZE_T
+AC_TYPE_SSIZE_T
+AC_TYPE_INTPTR_T
 AC_CHECK_TYPE(in_addr_t, [], [AC_DEFINE([in_addr_t], [uint32_t], [in_addr_t])], [
 #if HAVE_SYS_TYPES_H
 # include <sys/types.h>
@@ -339,6 +474,7 @@ AC_REPLACE_FUNCS(calloc)
 AC_REPLACE_FUNCS(timegm)
 AC_REPLACE_FUNCS(gmtime_r)
 AC_REPLACE_FUNCS(ctime_r)
+AC_REPLACE_FUNCS(localtime_r)
 AC_REPLACE_FUNCS(isblank)
 AC_REPLACE_FUNCS(isascii)
 AC_REPLACE_FUNCS(inet_aton)
@@ -347,6 +483,7 @@ AC_REPLACE_FUNCS(inet_ntop)
 AC_REPLACE_FUNCS(snprintf)
 AC_REPLACE_FUNCS(strlcpy)
 AC_REPLACE_FUNCS(memmove)
+AC_FUNC_FORK
 AC_CHECK_FUNCS([endprotoent endservent sleep random fcntl strtoul bzero memset])
 
 ACX_CHECK_GETADDRINFO_WITH_INCLUDES
@@ -470,6 +607,9 @@ time_t timegm (struct tm *tm);
 #ifndef HAVE_GMTIME_R
 struct tm *gmtime_r(const time_t *timep, struct tm *result);
 #endif
+#ifndef HAVE_LOCALTIME_R
+struct tm *localtime_r(const time_t *timep, struct tm *result);
+#endif
 #ifndef HAVE_ISBLANK
 int isblank(int c);
 #endif /* !HAVE_ISBLANK */
@@ -529,4 +669,6 @@ AC_CONFIG_HEADER([ldns/config.h])
 AC_OUTPUT
 COPY_HEADER_FILES(ldns/, ldns/)
 
-AC_CONFIG_SUBDIRS([drill])
+dnl AC_CONFIG_SUBDIRS([drill])
+
+

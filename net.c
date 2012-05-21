@@ -105,6 +105,8 @@ ldns_send_buffer(ldns_pkt **result, ldns_resolver *r, ldns_buffer *qb, ldns_rdf 
 		ns = ldns_rdf2native_sockaddr_storage(ns_array[i],
 				ldns_resolver_port(r), &ns_len);
 
+
+#ifndef S_SPLINT_S
 		if ((ns->ss_family == AF_INET) &&
 				(ldns_resolver_ip6(r) == LDNS_RESOLV_INET6)) {
 			/* not reachable */
@@ -116,6 +118,7 @@ ldns_send_buffer(ldns_pkt **result, ldns_resolver *r, ldns_buffer *qb, ldns_rdf 
 			/* not reachable */
 			continue;
 		}
+#endif
 
 		all_servers_rtt_inf = false;
 
@@ -265,16 +268,16 @@ ldns_sock_block(int sockfd)
 static int
 ldns_sock_wait(int sockfd, struct timeval timeout, int write)
 {
-	fd_set fds;
 	int ret;
 #ifndef S_SPLINT_S
+	fd_set fds;
 	FD_ZERO(&fds);
 	FD_SET(FD_SET_T sockfd, &fds);
-#endif
 	if(write)
 		ret = select(sockfd+1, NULL, &fds, NULL, &timeout);
 	else
 		ret = select(sockfd+1, &fds, NULL, NULL, &timeout);
+#endif
 	if(ret == 0)
 		/* timeout expired */
 		return 0;
@@ -341,6 +344,11 @@ ldns_udp_bgsend(ldns_buffer *qbin, const struct sockaddr_storage *to, socklen_t 
 	}
 
 	if (ldns_udp_send_query(qbin, sockfd, to, tolen) == 0) {
+#ifndef USE_WINSOCK
+		close(sockfd);
+#else
+		closesocket(sockfd);
+#endif
 		return 0;
 	}
 	return sockfd;
@@ -351,11 +359,13 @@ ldns_udp_connect(const struct sockaddr_storage *to, struct timeval ATTR_UNUSED(t
 {
 	int sockfd;
 
+#ifndef S_SPLINT_S
 	if ((sockfd = socket((int)((struct sockaddr*)to)->sa_family, SOCK_DGRAM, 
 					IPPROTO_UDP)) 
 			== -1) {
                 return 0;
         }
+#endif
 	return sockfd;
 }
 
@@ -365,10 +375,12 @@ ldns_tcp_connect(const struct sockaddr_storage *to, socklen_t tolen,
 {
 	int sockfd;
 
+#ifndef S_SPLINT_S
 	if ((sockfd = socket((int)((struct sockaddr*)to)->sa_family, SOCK_STREAM, 
 					IPPROTO_TCP)) == -1) {
 		return 0;
 	}
+#endif
 
 	/* perform nonblocking connect, to be able to wait with select() */
 	ldns_sock_nonblock(sockfd);
@@ -678,6 +690,11 @@ ldns_tcp_bgsend(ldns_buffer *qbin, const struct sockaddr_storage *to, socklen_t 
 	}
 	
 	if (ldns_tcp_send_query(qbin, sockfd, to, tolen) == 0) {
+#ifndef USE_WINSOCK
+		close(sockfd);
+#else
+		closesocket(sockfd);
+#endif
 		return 0;
 	}
 	
@@ -704,14 +721,18 @@ ldns_rdf2native_sockaddr_storage(const ldns_rdf *rd, uint16_t port, size_t *size
 
         switch(ldns_rdf_get_type(rd)) {
                 case LDNS_RDF_TYPE_A:
+#ifndef S_SPLINT_S
                         data->ss_family = AF_INET;
+#endif
                         data_in = (struct sockaddr_in*) data;
                         data_in->sin_port = (in_port_t)htons(port);
                         memcpy(&(data_in->sin_addr), ldns_rdf_data(rd), ldns_rdf_size(rd));
                         *size = sizeof(struct sockaddr_in);
                         return data;
                 case LDNS_RDF_TYPE_AAAA:
+#ifndef S_SPLINT_S
                         data->ss_family = AF_INET6;
+#endif
                         data_in6 = (struct sockaddr_in6*) data;
                         data_in6->sin6_port = (in_port_t)htons(port);
                         memcpy(&data_in6->sin6_addr, ldns_rdf_data(rd), ldns_rdf_size(rd));
@@ -723,6 +744,7 @@ ldns_rdf2native_sockaddr_storage(const ldns_rdf *rd, uint16_t port, size_t *size
         }
 }
 
+#ifndef S_SPLINT_S
 ldns_rdf *
 ldns_sockaddr_storage2rdf(struct sockaddr_storage *sock, uint16_t *port)
 {
@@ -755,6 +777,7 @@ ldns_sockaddr_storage2rdf(struct sockaddr_storage *sock, uint16_t *port)
         }
         return addr;
 }
+#endif
 
 /* code from resolver.c */
 ldns_status

@@ -36,6 +36,19 @@ that is of type NSEC, NSEC3, RRSIG or DNSKEY. DS records are still
 printed.
 
 .TP
+\fB-S\fR \fI[[+|0]number | YYYYMMDDxx | unixtime ]\fR
+Set serial number to the given \fInumber\fR, or when preceded by a sign,
+offset the exisiting number with it. When giving the literal strings 
+\fIYYYYMMDDxx\fR or \fIunixtime\fR, the serial number is tried to be reset
+in datecounter or in unixtime format respectively. Though is the updated serial
+number is smaller than the original one, the original one is simply
+increased by one.
+
+When updating a serial number, records of type NSEC, NSEC3, RRSIG and DNSKEY
+will be skipped when printing the zone.
+
+
+.TP
 \fB-v\fR
 Show the version and exit
 

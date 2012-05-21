@@ -31,6 +31,16 @@ file, and have the KSK bit set.
 
 .SH OPTIONS
 .TP
+\fB-b\fR
+Augments the zone and the RR's with extra comment texts for a more readable
+layout, easier to debug. DS records will have a bubblebabble version of
+the data in the comment text, NSEC3 records will have the original NSEC3
+in the comment text.
+
+Without this option, only DNSKEY RR's will have their Key Tag annotated in
+the comment text.
+
+.TP
 \fB-d\fR
 Normally, if the DNSKEY RR for a key that is used to sign the zone is
 not found in the zone file, it will be read from .key, or derived from
@@ -50,11 +60,6 @@ Use this file to store the signed zone in (default <originalfile>.signed)
 \fB-i\fR \fIdate\fR
 Set inception date of the signatures to this date, the format can be
 YYYYMMDD[hhmmss], or a timestamp.
-
-.TP
-\fB-l\fR
-Leave old DNSSEC RRSIGS and NSEC records intact (by default, they are
-removed from the zone)
 
 .TP
 \fB-o\fR \fIorigin\fR

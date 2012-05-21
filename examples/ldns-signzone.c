@@ -31,11 +31,11 @@ static void
 usage(FILE *fp, const char *prog) {
 	fprintf(fp, "%s [OPTIONS] zonefile key [key [key]]\n", prog);
 	fprintf(fp, "  signs the zone with the given key(s)\n");
+	fprintf(fp, "  -b\t\tuse layout in signed zone and print comments DNSSEC records\n");
 	fprintf(fp, "  -d\t\tused keys are not added to the zone\n");
 	fprintf(fp, "  -e <date>\texpiration date\n");
 	fprintf(fp, "  -f <file>\toutput zone to file (default <name>.signed)\n");
 	fprintf(fp, "  -i <date>\tinception date\n");
-	fprintf(fp, "  -l\t\tLeave old DNSSEC RRSIGS and NSEC(3) records intact\n");
 	fprintf(fp, "  -o <domain>\torigin for the zone\n");
 	fprintf(fp, "  -v\t\tprint version and exit\n");
 	fprintf(fp, "  -A\t\tsign DNSKEY with all keys instead of minimal\n");
@@ -57,12 +57,6 @@ usage(FILE *fp, const char *prog) {
 	fprintf(fp, "  will be read from the file called <base name>.key. If that does not exist,\n");
 	fprintf(fp, "  a default DNSKEY will be generated from the private key and added to the zone.\n");
 	fprintf(fp, "  A date can be a timestamp (seconds since the epoch), or of\n  the form <YYYYMMdd[hhmmss]>\n");
-}
-
-void
-usage_openssl(FILE *fp, const char *prog) {
-	fprintf(fp, "Special commands for openssl engines:\n");
-	fprintf(fp, "-c <file>\tOpenSSL config file\n");
 }
 
 static void check_tm(struct tm tm)
@@ -168,7 +162,8 @@ find_key_in_zone(ldns_rr *pubkey_gen, ldns_zone *zone) {
 }
 
 static ldns_rr *
-find_key_in_file(const char *keyfile_name_base, ldns_key *key, uint32_t zone_ttl)
+find_key_in_file(const char *keyfile_name_base, ldns_key* ATTR_UNUSED(key),
+	uint32_t zone_ttl)
 {
 	char *keyfile_name;
 	FILE *keyfile;
@@ -214,7 +209,7 @@ find_key_in_file(const char *keyfile_name_base, ldns_key *key, uint32_t zone_ttl
  * Even if keys are not added, the function is still needed, to check
  * whether keys of which we only have key data are KSKs or ZSKS
  */
-static ldns_status
+static void
 find_or_create_pubkey(const char *keyfile_name_base, ldns_key *key, ldns_zone *orig_zone, bool add_keys, uint32_t default_ttl) {
 	ldns_rr *pubkey_gen, *pubkey;
 	int key_in_zone;
@@ -290,7 +285,6 @@ find_or_create_pubkey(const char *keyfile_name_base, ldns_key *key, ldns_zone *o
 		equalize_ttls_rr_list(ldns_zone_rrs(orig_zone), pubkey, default_ttl);
 		ldns_zone_push_rr(orig_zone, pubkey);
 	}
-	return LDNS_STATUS_OK;
 }
 
 void
@@ -339,9 +333,6 @@ main(int argc, char *argv[])
 	ldns_status s;
 	size_t i;
 	ldns_rr_list *added_rrs;
-	ldns_status status;
-
-	bool leave_old_dnssec_data = false;
 
 	char *outputfile_name = NULL;
 	FILE *outputfile;
@@ -376,6 +367,10 @@ main(int argc, char *argv[])
 	
 	char *prog = strdup(argv[0]);
 	ldns_status result;
+
+	ldns_output_format fmt = { ldns_output_format_default->flags, NULL };
+	void **hashmap = NULL;
+
 	
 	inception = 0;
 	expiration = 0;
@@ -384,10 +379,21 @@ main(int argc, char *argv[])
 
 	OPENSSL_config(NULL);
 
-	while ((c = getopt(argc, argv, "a:de:f:i:k:lno:ps:t:vAE:K:")) != -1) {
+	while ((c = getopt(argc, argv, "a:bde:f:i:k:lno:ps:t:vAE:K:")) != -1) {
 		switch (c) {
 		case 'a':
 			nsec3_algorithm = (uint8_t) atoi(optarg);
+			if (nsec3_algorithm != 1) {
+				fprintf(stderr, "Bad NSEC3 algorithm, only RSASHA1 allowed\n");
+				exit(EXIT_FAILURE);
+			}
+			break;
+		case 'b':
+			fmt.flags |= LDNS_COMMENT_BUBBLEBABBLE;
+			fmt.flags |= LDNS_COMMENT_FLAGS;
+			fmt.flags |= LDNS_COMMENT_NSEC3_CHAIN;
+			fmt.flags |= LDNS_COMMENT_LAYOUT;
+			hashmap = &fmt.data;
 			break;
 		case 'd':
 			add_keys = false;
@@ -442,9 +448,6 @@ main(int argc, char *argv[])
 				inception = (uint32_t) atol(optarg);
 			}
 			break;
-		case 'l':
-			leave_old_dnssec_data = true;
-			break;
 		case 'n':
 			use_nsec3 = true;
 			break;
@@ -454,7 +457,6 @@ main(int argc, char *argv[])
 				usage(stderr, prog);
 				exit(EXIT_FAILURE);
 			}
-			
 			break;
 		case 'p':
 			nsec3_flags = nsec3_flags | LDNS_NSEC3_VARS_OPTOUT_MASK;
@@ -715,9 +717,8 @@ main(int argc, char *argv[])
 		}
 		/* and, if not unset by -p, find or create the corresponding DNSKEY record */
 		if (key) {
-			status = find_or_create_pubkey(keyfile_name_base,
-			                               key, orig_zone,
-			                               add_keys, ttl);
+			find_or_create_pubkey(keyfile_name_base, key,
+			                      orig_zone, add_keys, ttl);
 		}
 		argi++;
 	}
@@ -754,7 +755,7 @@ main(int argc, char *argv[])
 	added_rrs = ldns_rr_list_new();
 
 	if (use_nsec3) {
-		result = ldns_dnssec_zone_sign_nsec3_flg(signed_zone,
+		result = ldns_dnssec_zone_sign_nsec3_flg_mkmap(signed_zone,
 			added_rrs,
 			keys,
 			ldns_dnssec_default_replace_signatures,
@@ -764,7 +765,8 @@ main(int argc, char *argv[])
 			nsec3_iterations,
 			nsec3_salt_length,
 			nsec3_salt,
-			signflags);
+			signflags,
+			(ldns_rbtree_t**) hashmap);
 	} else {
 		result = ldns_dnssec_zone_sign_flg(signed_zone,
 				added_rrs,
@@ -792,7 +794,8 @@ main(int argc, char *argv[])
 				fprintf(stderr, "Unable to open %s for writing: %s\n",
 					   outputfile_name, strerror(errno));
 			} else {
-				ldns_dnssec_zone_print(outputfile, signed_zone);
+				ldns_dnssec_zone_print_fmt(
+						outputfile, &fmt, signed_zone);
 				fclose(outputfile);
 			}
 		}

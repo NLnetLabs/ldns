@@ -97,7 +97,7 @@ main(int argc, char *argv[])
         ldns_pkt	*pkt;
         ldns_pkt	*qpkt;
         char 		*serv;
-        char 		*name;
+        const char 	*name;
         char 		*name2;
 	char		*progname;
 	char 		*query_file = NULL;
@@ -221,6 +221,10 @@ main(int argc, char *argv[])
 				break;
 #endif /* HAVE_SSL */
 			case 'V':
+				if (strtok(optarg, "0123456789") != NULL) {
+					fprintf(stderr, "-V expects an number as an argument.\n");
+					exit(EXIT_FAILURE);
+				}
 				verbosity = atoi(optarg);
 				break;
 			case 'Q':
