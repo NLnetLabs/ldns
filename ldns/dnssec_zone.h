@@ -364,8 +364,8 @@ ldns_dnssec_zone *ldns_dnssec_zone_new();
  * \param[out] z the new zone
  * \param[in] *fp the filepointer to use
  * \param[in] *origin the zones' origin
+ * \param[in] c default class to use (IN)
  * \param[in] ttl default ttl to use
- * \param[out] line_nr used for error msg, to get to the line number
  *
  * \return ldns_status mesg with an error or LDNS_STATUS_OK
  */
