@@ -2168,20 +2168,20 @@ ldns_rdf_print(FILE *output, const ldns_rdf *rdf)
 	if (str) {
 		fprintf(output, "%s", str);
 	} else {
-		fprintf(output, "Unable to convert rdf to string\n");
+		fprintf(output, ";Unable to convert rdf to string\n");
 	}
 	LDNS_FREE(str);
 }
 
 void
-ldns_rr_print_fmt(FILE *output, 
+ldns_rr_print_fmt(FILE *output,
 		const ldns_output_format *fmt, const ldns_rr *rr)
 {
 	char *str = ldns_rr2str_fmt(fmt, rr);
 	if (str) {
 		fprintf(output, "%s", str);
 	} else {
-		fprintf(output, "Unable to convert rr to string\n");
+		fprintf(output, ";Unable to convert rr to string\n");
 	}
 	LDNS_FREE(str);
 }
@@ -2200,7 +2200,7 @@ ldns_pkt_print_fmt(FILE *output,
 	if (str) {
 		fprintf(output, "%s", str);
 	} else {
-		fprintf(output, "Unable to convert packet to string\n");
+		fprintf(output, ";Unable to convert packet to string\n");
 	}
 	LDNS_FREE(str);
 }
