@@ -1149,6 +1149,7 @@ ldns_rdf2buffer_str(ldns_buffer *buffer, const ldns_rdf *rdf)
 			break;
 		}
 	} else {
+		/** This will write mangled RRs */
 		ldns_buffer_printf(buffer, "(null) ");
 	        res = ldns_buffer_status(buffer);
 	}
