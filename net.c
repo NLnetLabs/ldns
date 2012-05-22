@@ -182,7 +182,8 @@ ldns_send_buffer(ldns_pkt **result, ldns_resolver *r, ldns_buffer *qb, ldns_rdf 
 			ldns_pkt_set_querytime(reply, (uint32_t)
 				((tv_e.tv_sec - tv_s.tv_sec) * 1000) +
 				(tv_e.tv_usec - tv_s.tv_usec) / 1000);
-			ldns_pkt_set_answerfrom(reply, ns_array[i]);
+			ldns_pkt_set_answerfrom(reply,
+					ldns_rdf_clone(ns_array[i]));
 			ldns_pkt_set_timestamp(reply, tv_s);
 			ldns_pkt_set_size(reply, reply_size);
 			break;

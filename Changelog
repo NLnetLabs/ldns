@@ -1,4 +1,8 @@
 1.6.14
+	* bugfix #448: Copy nameserver value (in stead of reference) of the
+	  answering nameserver to the answer packet in ldns_send_buffer, so
+	  the original value may be deep freed with the ldns_resolver struct.
+	  Thanks Michael Meisel.
 
 1.6.13	2012-05-21
 	* New -S option for ldns-verify-zone to chase signatures online.
