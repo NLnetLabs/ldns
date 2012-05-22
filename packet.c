@@ -981,7 +981,9 @@ ldns_pkt_clone(ldns_pkt *pkt)
 	ldns_pkt_set_ancount(new_pkt, ldns_pkt_ancount(pkt));
 	ldns_pkt_set_nscount(new_pkt, ldns_pkt_nscount(pkt));
 	ldns_pkt_set_arcount(new_pkt, ldns_pkt_arcount(pkt));
-	ldns_pkt_set_answerfrom(new_pkt, ldns_pkt_answerfrom(pkt));
+	if (ldns_pkt_answerfrom(pkt))
+		ldns_pkt_set_answerfrom(new_pkt,
+			ldns_rdf_clone(ldns_pkt_answerfrom(pkt)));
 	ldns_pkt_set_querytime(new_pkt, ldns_pkt_querytime(pkt));
 	ldns_pkt_set_size(new_pkt, ldns_pkt_size(pkt));
 	ldns_pkt_set_tsig(new_pkt, ldns_rr_clone(ldns_pkt_tsig(pkt)));
