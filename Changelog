@@ -1,6 +1,6 @@
 1.6.14
-	* bugfix #450: Base # bytes for P and G (T) on the guaranteed
-	  to be bigger P in ldns_key_dsa2bin.
+	* bugfix #450: Base # bytes for P, G and Y (T) on the guaranteed
+	  to be bigger (or equal) P in ldns_key_dsa2bin.
 	  Thanks Peter Koch and Patrick Fedick.
 	* bugfix #449: Deep free cloned rdf's in ldns_tsig_mac_new.
 	  Thanks Michael Sheldon.
