@@ -1302,7 +1302,7 @@ ldns_key_dsa2bin(unsigned char *data, DSA *k, uint16_t *size)
 	}
 	
 	/* See RFC2536 */
-	*size = (uint16_t)BN_num_bytes(k->g);
+	*size = (uint16_t)BN_num_bytes(k->p);
 	T = (*size - 64) / 8;
 	memcpy(data, &T, 1);
 
