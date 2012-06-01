@@ -46,8 +46,10 @@ main(int argc, char **argv)
 				fmt.flags |= 
 					( LDNS_COMMENT_BUBBLEBABBLE |
 					  LDNS_COMMENT_FLAGS        );
+				break;
 			case '0':
 				fmt.flags |= LDNS_FMT_ZEROIZE_RRSIGS;
+				break;
                 	case 'c':
                 		canonicalize = true;
                 		break;
@@ -92,6 +94,7 @@ main(int argc, char **argv)
 				break;
 			case 'p':
 				fmt.flags |= LDNS_FMT_PAD_SOA_SERIAL;
+				break;
                         case 's':
                         	strip = true;
                 		if (only_dnssec) {
