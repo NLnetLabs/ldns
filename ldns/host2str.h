@@ -64,6 +64,8 @@ extern "C" {
 #define LDNS_COMMENT_LAYOUT		0x0080
 /** Also comment KEY_ID with RRSIGS **/
 #define LDNS_COMMENT_RRSIGS		0x0100
+#define LDNS_FMT_ZEROIZE_RRSIGS		0x0200
+#define LDNS_FMT_PAD_SOA_SERIAL		0x0400
 
 /**
  * Output format specifier

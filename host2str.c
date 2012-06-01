@@ -123,6 +123,7 @@ const ldns_output_format  *ldns_output_format_onlykeyids
 			= &ldns_output_format_onlykeyids_record;
 const ldns_output_format  *ldns_output_format_default
 			= &ldns_output_format_onlykeyids_record;
+
 const ldns_output_format   ldns_output_format_bubblebabble_record = { 
 	LDNS_COMMENT_KEY | LDNS_COMMENT_BUBBLEBABBLE | LDNS_COMMENT_FLAGS, NULL
 };
@@ -1231,7 +1232,33 @@ ldns_rr2buffer_str_fmt(ldns_buffer *output,
 
 	for (i = 0; i < ldns_rr_rd_count(rr); i++) {
 		/* ldns_rdf2buffer_str handles NULL input fine! */
-		status = ldns_rdf2buffer_str(output, ldns_rr_rdf(rr, i));
+		if ((fmt->flags & LDNS_FMT_ZEROIZE_RRSIGS) &&
+				(ldns_rr_get_type(rr) == LDNS_RR_TYPE_RRSIG) &&
+				((/* inception  */ i == 4 &&
+				  ldns_rdf_get_type(ldns_rr_rdf(rr, 4)) == 
+							LDNS_RDF_TYPE_TIME) ||
+				  (/* expiration */ i == 5 &&
+				   ldns_rdf_get_type(ldns_rr_rdf(rr, 5)) ==
+				   			LDNS_RDF_TYPE_TIME) ||
+				  (/* signature  */ i == 8 &&
+				   ldns_rdf_get_type(ldns_rr_rdf(rr, 8)) ==
+				   			LDNS_RDF_TYPE_B64))) {
+
+			ldns_buffer_printf(output, "(null)");
+			status = ldns_buffer_status(output);
+		} else if ((fmt->flags & LDNS_FMT_PAD_SOA_SERIAL) &&
+				(ldns_rr_get_type(rr) == LDNS_RR_TYPE_SOA) &&
+				/* serial */ i == 2 &&
+			 	ldns_rdf_get_type(ldns_rr_rdf(rr, 2)) ==
+			 				LDNS_RDF_TYPE_INT32) {
+			ldns_buffer_printf(output, "%10lu",
+				(unsigned long) ldns_read_uint32(
+					ldns_rdf_data(ldns_rr_rdf(rr, 2))));
+			status = ldns_buffer_status(output);
+		} else {
+			status = ldns_rdf2buffer_str(output,
+					ldns_rr_rdf(rr, i));
+		}
 		if(status != LDNS_STATUS_OK)
 			return status;
 		if (i < ldns_rr_rd_count(rr) - 1) {

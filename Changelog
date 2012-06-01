@@ -8,6 +8,10 @@
 	  answering nameserver to the answer packet in ldns_send_buffer, so
 	  the original value may be deep freed with the ldns_resolver struct.
 	  Thanks Michael Meisel.
+	* New -0 option for ldns-read-zone to replace inception, expiration
+	  and signature rdata fields with (null). Thanks Paul Wouters.
+	* New -p option for ldns-read-zone to prepend-pad SOA serial to take
+	  up ten characters.
 
 1.6.13	2012-05-21
 	* New -S option for ldns-verify-zone to chase signatures online.

@@ -33,14 +33,21 @@ main(int argc, char **argv)
 	ldns_rr_list *stripped_list;
 	ldns_rr *cur_rr;
 	ldns_rr_type cur_rr_type;
-	const ldns_output_format *fmt = NULL;
+	ldns_output_format fmt = { 
+		ldns_output_format_default->flags,
+		ldns_output_format_default->data
+	};
 	ldns_soa_serial_increment_func_t soa_serial_increment_func = NULL;
 	int soa_serial_increment_func_data = 0;
 
-        while ((c = getopt(argc, argv, "bcdhnsvzS:")) != -1) {
+        while ((c = getopt(argc, argv, "0bcdhnpsvzS:")) != -1) {
                 switch(c) {
 			case 'b':
-				fmt = ldns_output_format_bubblebabble;
+				fmt.flags |= 
+					( LDNS_COMMENT_BUBBLEBABBLE |
+					  LDNS_COMMENT_FLAGS        );
+			case '0':
+				fmt.flags |= LDNS_FMT_ZEROIZE_RRSIGS;
                 	case 'c':
                 		canonicalize = true;
                 		break;
@@ -55,10 +62,13 @@ main(int argc, char **argv)
 				printf("\tReads the zonefile and prints it.\n");
 				printf("\tThe RR count of the zone is printed to stderr.\n");
 				printf("\t-b include bubblebabble of DS's.\n");
+				printf("\t-0 zeroize timestamps and signature in RRSIG records.\n");
 				printf("\t-c canonicalize all rrs in the zone.\n");
 				printf("\t-d only show DNSSEC data from the zone\n");
 				printf("\t-h show this text\n");
 				printf("\t-n do not print the SOA record\n");
+				printf("\t-p prepend SOA serial with spaces so"
+					" it takes exactly ten characters.\n");
 				printf("\t-s strip DNSSEC data from the zone\n");
 				printf("\t-S [[+|-]<number> | YYYYMMDDxx | "
 						" unixtime ]\n"
@@ -80,6 +90,8 @@ main(int argc, char **argv)
 			case 'n':
 				print_soa = false;
 				break;
+			case 'p':
+				fmt.flags |= LDNS_FMT_PAD_SOA_SERIAL;
                         case 's':
                         	strip = true;
                 		if (only_dnssec) {
@@ -195,9 +207,9 @@ main(int argc, char **argv)
 					, soa_serial_increment_func_data
 					);
 			}
-			ldns_rr_print_fmt(stdout, fmt, ldns_zone_soa(z));
+			ldns_rr_print_fmt(stdout, &fmt, ldns_zone_soa(z));
 		}
-		ldns_rr_list_print_fmt(stdout, fmt, ldns_zone_rrs(z));
+		ldns_rr_list_print_fmt(stdout, &fmt, ldns_zone_rrs(z));
 
 		ldns_zone_deep_free(z);
 	} else {
