@@ -119,7 +119,7 @@ ldns_rr_new_frm_str_internal(ldns_rr **newrr, const char *str,
 	char  *type = NULL;
 	char  *rdata = NULL;
 	char  *rd = NULL;
-	char  *b64 = NULL;
+	char  *	b64 = NULL;
 	size_t rd_strlen;
 	const char *delimiters;
 	ssize_t c;
