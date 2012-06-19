@@ -822,7 +822,6 @@ ldns_dname_compare_v(const void *a, const void *b) {
 	return ldns_dname_compare((ldns_rdf *)a, (ldns_rdf *)b);
 }
 
-#ifdef HAVE_SSL
 ldns_rbnode_t *
 ldns_dnssec_zone_find_nsec3_original(ldns_dnssec_zone *zone,
                                      ldns_rr *rr) {
@@ -912,7 +911,6 @@ ldns_dnssec_zone_add_rr(ldns_dnssec_zone *zone, ldns_rr *rr)
 
 	return result;
 }
-#endif /* HAVE_SSL */
 
 void
 ldns_dnssec_zone_names_print_fmt(FILE *out, const ldns_output_format *fmt,

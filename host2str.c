@@ -1661,11 +1661,10 @@ ldns_key2buffer_str(ldns_buffer *output, const ldns_key *k)
 {
 	ldns_status status = LDNS_STATUS_OK;
 	unsigned char  *bignum;
-#ifndef S_SPLINT_S
-	uint16_t i;
-#endif
-
 #ifdef HAVE_SSL
+#  ifndef S_SPLINT_S
+	uint16_t i;
+#  endif
 	/* not used when ssl is not defined */
 	ldns_rdf *b64_bignum = NULL;
 

@@ -1576,7 +1576,6 @@ ldns_dnssec_verify_denial(ldns_rr *rr,
 	return LDNS_STATUS_OK;
 }
 
-#ifdef HAVE_SSL
 ldns_status
 ldns_dnssec_verify_denial_nsec3_match( ldns_rr *rr
 				     , ldns_rr_list *nsecs
@@ -1818,9 +1817,6 @@ ldns_dnssec_verify_denial_nsec3(ldns_rr *rr,
 				packet_qtype, packet_nodata, NULL
 	       );
 }
-
-
-#endif /* HAVE_SSL */
 
 #ifdef USE_GOST
 EVP_PKEY*

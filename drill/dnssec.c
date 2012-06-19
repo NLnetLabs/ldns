@@ -153,6 +153,7 @@ get_dnssec_rr(ldns_pkt *p, ldns_rdf *name, ldns_rr_type t,
 ldns_status
 ldns_verify_denial(ldns_pkt *pkt, ldns_rdf *name, ldns_rr_type type, ldns_rr_list **nsec_rrs, ldns_rr_list **nsec_rr_sigs)
 {
+#ifdef HAVE_SSL
 	uint16_t nsec_i;
 
 	ldns_rr_list *nsecs;
@@ -234,6 +235,14 @@ ldns_verify_denial(ldns_pkt *pkt, ldns_rdf *name, ldns_rr_type type, ldns_rr_lis
 		ldns_rr_list_deep_free(sigs);
         }
 	return result;
+#else
+	(void)pkt;
+	(void)name;
+	(void)type;
+	(void)nsec_rrs;
+	(void)nsec_rr_sigs;
+	return LDNS_STATUS_ERR;
+#endif /* HAVE_SSL */
 }
 
 /* NSEC3 draft -07 */
