@@ -13,6 +13,7 @@
 	* New -p option for ldns-read-zone to prepend-pad SOA serial to take
 	  up ten characters.
 	* Return error if printing RR fails due to unknown/null RDATA.
+	* New TLSA support (draft-ietf-dane-protocol).
 
 1.6.13	2012-05-21
 	* New -S option for ldns-verify-zone to chase signatures online.
