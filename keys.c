@@ -850,6 +850,7 @@ ldns_key_new_frm_algorithm(ldns_signing_algorithm alg, uint16_t size)
 				return NULL;
 			}
 			ldns_key_set_rsa_key(k, r);
+			RSA_free(r);
 #endif /* HAVE_SSL */
 			break;
 		case LDNS_SIGN_DSA:
@@ -865,6 +866,7 @@ ldns_key_new_frm_algorithm(ldns_signing_algorithm alg, uint16_t size)
 				return NULL;
 			}
 			ldns_key_set_dsa_key(k, d);
+			DSA_free(d);
 #endif /* HAVE_SSL */
 			break;
 		case LDNS_SIGN_HMACMD5:

@@ -1,4 +1,7 @@
 1.6.14
+	* Memroy leak fix for ldns_key_new_frm_algorithm from Michael Sheldon.
+	* pyldns memory handling fixes and the python3/ldns-signzone.py
+	  examples script contribution from Karel Slany.
 	* bugfix #450: Base # bytes for P, G and Y (T) on the guaranteed
 	  to be bigger (or equal) P in ldns_key_dsa2bin.
 	  Thanks Peter Koch and Patrick Fedick.

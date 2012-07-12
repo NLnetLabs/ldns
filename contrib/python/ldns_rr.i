@@ -467,7 +467,7 @@ The RR is the basic DNS element that contains actual data. This class allows to 
 
                   * prev - (ldns_rdf) None or updated value of prev parameter
             """
-            res = _ldns.ldns_rr_new_frm_fp_l_(file, default_ttl, origin, prev, 0)
+            res = _ldns.ldns_rr_new_frm_fp_(file, default_ttl, origin, prev)
             if res[0] != LDNS_STATUS_OK:
                 if (raiseException): raise Exception("Can't create RR, error: %d" % res[0])
                 return None
@@ -493,7 +493,7 @@ The RR is the basic DNS element that contains actual data. This class allows to 
 
                   * prev - (ldns_rdf) None or updated value of prev parameter
             """
-            res = _ldns.ldns_rr_new_frm_fp_l_(file, default_ttl, origin, prev, 1)
+            res = _ldns.ldns_rr_new_frm_fp_l_(file, default_ttl, origin, prev)
             if res[0] != LDNS_STATUS_OK:
                 if (raiseException): raise Exception("Can't create RR, error: %d" % res[0])
                 return None
