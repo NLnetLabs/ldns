@@ -201,6 +201,8 @@ ldns_key2rr
 ldns_key2str
 ldns_key_algorithm
 ldns_key_algo_supported
+ldns_key_assign_dsa_key
+ldns_key_assign_rsa_key
 ldns_key_buf2dsa
 ldns_key_buf2dsa_raw
 ldns_key_buf2rsa

@@ -299,17 +299,36 @@ void ldns_key_set_algorithm(ldns_key *k, ldns_signing_algorithm l);
 void ldns_key_set_evp_key(ldns_key *k, EVP_PKEY *e);
 
 /**
- * Set the key's rsa data
+ * Set the key's rsa data.
+ * The rsa data should be freed by the user themselve.
  * \param[in] k the key
  * \param[in] r the rsa data
  */
 void ldns_key_set_rsa_key(ldns_key *k, RSA *r);
+
 /**
  * Set the key's dsa data
+ * The dsa data should be freed by the user themselve.
  * \param[in] k the key
  * \param[in] d the dsa data
  */
 void ldns_key_set_dsa_key(ldns_key *k, DSA *d);
+
+/**
+ * Assign the key's rsa data
+ * The rsa data will be freed automatically when the key is freed.
+ * \param[in] k the key
+ * \param[in] r the rsa data
+ */
+void ldns_key_assign_rsa_key(ldns_key *k, RSA *r);
+
+/**
+ * Assign the key's dsa data
+ * The dsa data will be freed automatically when the key is freed.
+ * \param[in] k the key
+ * \param[in] d the dsa data
+ */
+void ldns_key_assign_dsa_key(ldns_key *k, DSA *d);
 
 /** 
  * Get the PKEY id for GOST, loads GOST into openssl as a side effect.

@@ -431,8 +431,7 @@ ldns_key_new_frm_fp_l(ldns_key **key, FILE *fp, int *line_nr)
 				ldns_key_free(k);
 				return LDNS_STATUS_ERR;
 			}
-			ldns_key_set_rsa_key(k, rsa);
-			RSA_free(rsa);
+			ldns_key_assign_rsa_key(k, rsa);
 #endif /* HAVE_SSL */
 			break;
 		case LDNS_SIGN_DSA:
@@ -444,8 +443,7 @@ ldns_key_new_frm_fp_l(ldns_key **key, FILE *fp, int *line_nr)
 				ldns_key_free(k);
 				return LDNS_STATUS_ERR;
 			}
-			ldns_key_set_dsa_key(k, dsa);
-			DSA_free(dsa);
+			ldns_key_assign_dsa_key(k, dsa);
 #endif /* HAVE_SSL */
 			break;
 		case LDNS_SIGN_HMACMD5:
@@ -1005,6 +1003,22 @@ ldns_key_set_dsa_key(ldns_key *k, DSA *d)
 {
 	EVP_PKEY *key = EVP_PKEY_new();
 	EVP_PKEY_set1_DSA(key, d);
+	k->_key.key  = key;
+}
+
+void
+ldns_key_assign_rsa_key(ldns_key *k, RSA *r)
+{
+	EVP_PKEY *key = EVP_PKEY_new();
+	EVP_PKEY_assign_RSA(key, r);
+	k->_key.key = key;
+}
+
+void
+ldns_key_assign_dsa_key(ldns_key *k, DSA *d)
+{
+	EVP_PKEY *key = EVP_PKEY_new();
+	EVP_PKEY_assign_DSA(key, d);
 	k->_key.key  = key;
 }
 #endif /* splint */
