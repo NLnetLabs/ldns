@@ -118,7 +118,7 @@ do_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 		drill_pkt_print_footer(stdout, local_res, p);
 		
 		/* remove the old nameserver from the resolver */
-		while((pop = ldns_resolver_pop_nameserver(res))) { /* do it */ }
+		while(ldns_resolver_pop_nameserver(res)) { /* do it */ }
 
 		/* also check for new_nss emptyness */
 

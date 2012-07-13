@@ -674,10 +674,6 @@ main(int argc, char *argv[])
 		}
 	}
 
-	if (!origin) {
-		origin = ldns_rr_owner(orig_soa);
-	}
-	
 	/* read the ZSKs */
 	argi = 1;
 	while (argi < argc) {

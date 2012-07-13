@@ -302,8 +302,10 @@ main(int argc, char **argv)
 
 	printf(";; trying UPDATE with FQDN \"%s\" and IP \"%s\"\n",
 	    fqdn, ipaddr ? ipaddr : "<none>");
-	printf(";; tsig: \"%s\" \"%s\" \"%s\"\n", tsig_cr.keyname,
-	    tsig_cr.algorithm, tsig_cr.keydata);
+	if (argc == 6 || argc == 7) {
+		printf(";; tsig: \"%s\" \"%s\" \"%s\"\n", tsig_cr.keyname,
+			tsig_cr.algorithm, tsig_cr.keydata);
+	}
 
 	ret = ldns_update_send_simple_addr(fqdn, zone, ipaddr, port, defttl, tsig_cred);
 	exit(ret);
