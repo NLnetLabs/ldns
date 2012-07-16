@@ -1023,9 +1023,9 @@ ldns_key_list_filter_for_non_dnskey(ldns_key_list *key_list)
 }
 
 ldns_status
-ldns_dnssec_zone_create_rrsigs_flg( ATTR_UNUSED(ldns_dnssec_zone *zone)
-				  , ATTR_UNUSED(ldns_rr_list *new_rrs)
-				  , ATTR_UNUSED(ldns_key_list *key_list)
+ldns_dnssec_zone_create_rrsigs_flg( ldns_dnssec_zone *zone
+				  , ldns_rr_list *new_rrs
+				  , ldns_key_list *key_list
 				  , int (*func)(ldns_rr *, void*)
 				  , void *arg
 				  , int flags
@@ -1112,9 +1112,11 @@ ldns_dnssec_zone_create_rrsigs_flg( ATTR_UNUSED(ldns_dnssec_zone *zone)
 							cur_rrset->signatures = ldns_dnssec_rrs_new();
 							cur_rrset->signatures->rr =
 								ldns_rr_list_rr(siglist, i);
+						}
+						if (new_rrs) {
 							ldns_rr_list_push_rr(new_rrs,
-											 ldns_rr_list_rr(siglist,
-														  i));
+												 ldns_rr_list_rr(siglist,
+															  i));
 						}
 					}
 					ldns_rr_list_free(siglist);
@@ -1146,8 +1148,10 @@ ldns_dnssec_zone_create_rrsigs_flg( ATTR_UNUSED(ldns_dnssec_zone *zone)
 					cur_name->nsec_signatures = ldns_dnssec_rrs_new();
 					cur_name->nsec_signatures->rr =
 						ldns_rr_list_rr(siglist, i);
+				}
+				if (new_rrs) {
 					ldns_rr_list_push_rr(new_rrs,
-									 ldns_rr_list_rr(siglist, i));
+								 ldns_rr_list_rr(siglist, i));
 				}
 			}
 

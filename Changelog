@@ -1,4 +1,5 @@
 1.6.14
+	* bugfix #458: Track all newly created signatures when signing.
 	* bugfix #454: Don't set -g and -O2 CFLAGS from configure.
 	* bugfix #457: Memroy leak fix for ldns_key_new_frm_algorithm.
 	* pyldns memory handling fixes and the python3/ldns-signzone.py
