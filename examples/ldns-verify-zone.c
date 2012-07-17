@@ -838,7 +838,7 @@ main(int argc, char **argv)
 
 				tm.tm_year -= 1900;
 				tm.tm_mon--;
-				check_time = mktime_from_utc(&tm);
+				check_time = ldns_mktime_from_utc(&tm);
 			}
 			else  {
 				check_time += atoi(optarg);

@@ -411,14 +411,16 @@ main(int argc, char *argv[])
 			   	tm.tm_year -= 1900;
 			   	tm.tm_mon--;
 			   	check_tm(tm);
-				expiration = (uint32_t) mktime_from_utc(&tm);
+				expiration = 
+					(uint32_t) ldns_mktime_from_utc(&tm);
 			} else if (strlen(optarg) == 14 &&
 					 sscanf(optarg, "%4d%2d%2d%2d%2d%2d", &tm.tm_year, &tm.tm_mon, &tm.tm_mday, &tm.tm_hour, &tm.tm_min, &tm.tm_sec)
 					 ) {
 			   	tm.tm_year -= 1900;
 			   	tm.tm_mon--;
 			   	check_tm(tm);
-				expiration = (uint32_t) mktime_from_utc(&tm);
+				expiration = 
+					(uint32_t) ldns_mktime_from_utc(&tm);
 			} else {
 				expiration = (uint32_t) atol(optarg);
 			}
@@ -436,14 +438,16 @@ main(int argc, char *argv[])
 			   	tm.tm_year -= 1900;
 			   	tm.tm_mon--;
 			   	check_tm(tm);
-				inception = (uint32_t) mktime_from_utc(&tm);
+				inception = 
+					(uint32_t) ldns_mktime_from_utc(&tm);
 			} else if (strlen(optarg) == 14 &&
 					 sscanf(optarg, "%4d%2d%2d%2d%2d%2d", &tm.tm_year, &tm.tm_mon, &tm.tm_mday, &tm.tm_hour, &tm.tm_min, &tm.tm_sec)
 					 ) {
 			   	tm.tm_year -= 1900;
 			   	tm.tm_mon--;
 			   	check_tm(tm);
-				inception = (uint32_t) mktime_from_utc(&tm);
+				inception = 
+					(uint32_t) ldns_mktime_from_utc(&tm);
 			} else {
 				inception = (uint32_t) atol(optarg);
 			}

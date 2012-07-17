@@ -140,6 +140,7 @@ ldns_dnssec_trust_tree_print_sm
 ldns_dnssec_trust_tree_print_sm_fmt
 ldns_dnssec_verify_denial
 ldns_dnssec_verify_denial_nsec3
+ldns_dnssec_verify_denial_nsec3_match
 ldns_dnssec_zone_add_empty_nonterminals
 ldns_dnssec_zone_add_rr
 ldns_dnssec_zone_create_nsec3s
@@ -165,6 +166,12 @@ ldns_dnssec_zone_sign_flg
 ldns_dnssec_zone_sign_nsec3
 ldns_dnssec_zone_sign_nsec3_flg
 ldns_dnssec_zone_sign_nsec3_flg_mkmap
+ldns_duration2string
+ldns_duration2time
+ldns_duration_cleanup
+ldns_duration_compare
+ldns_duration_create
+ldns_duration_create_from_string
 ldns_ecdsa2pkey_raw
 ldns_edns_flags
 ldns_error_str
@@ -262,6 +269,7 @@ ldns_key_set_use
 ldns_key_use
 ldns_lookup_by_id
 ldns_lookup_by_name
+ldns_mktime_from_utc
 ldns_native2rdf_int16
 ldns_native2rdf_int16_data
 ldns_native2rdf_int32
@@ -284,6 +292,10 @@ ldns_nsec_get_bitmap
 ldns_nsec_type_check
 ldns_octet
 ldns_opcodes
+ldns_output_format_bubblebabble
+ldns_output_format_default 
+ldns_output_format_nocomments 
+ldns_output_format_onlykeyids 
 ldns_pkt2buffer_str
 ldns_pkt2buffer_str_fmt
 ldns_pkt2buffer_wire
@@ -408,6 +420,7 @@ ldns_rdf2buffer_str_a
 ldns_rdf2buffer_str_aaaa
 ldns_rdf2buffer_str_alg
 ldns_rdf2buffer_str_apl
+ldns_rdf2buffer_str_atma
 ldns_rdf2buffer_str_b32_ext
 ldns_rdf2buffer_str_b64
 ldns_rdf2buffer_str_cert_alg
@@ -572,6 +585,7 @@ ldns_rr_dnskey_set_protocol
 ldns_rr_free
 ldns_rr_get_class
 ldns_rr_get_type
+ldns_rr_is_question
 ldns_rr_label_count
 ldns_rr_list2buffer_str
 ldns_rr_list2buffer_str_fmt
@@ -617,6 +631,7 @@ ldns_rr_pop_rdf
 ldns_rr_print
 ldns_rr_print_fmt
 ldns_rr_push_rdf
+ldns_rr_set_question
 ldns_rr_rdata2buffer_wire
 ldns_rr_rd_count
 ldns_rr_rdf
@@ -664,6 +679,18 @@ ldns_sha1_final
 ldns_sha1_init
 ldns_sha1_transform
 ldns_sha1_update
+ldns_sha256
+ldns_sha256_final
+ldns_sha256_init
+ldns_sha256_update
+ldns_sha384
+ldns_sha384_final
+ldns_sha384_init
+ldns_sha384_update
+ldns_sha512
+ldns_sha512_final
+ldns_sha512_init
+ldns_sha512_update
 ldns_signing_algorithms
 ldns_sign_public
 ldns_sign_public_buffer
@@ -682,6 +709,7 @@ ldns_str2rdf_a
 ldns_str2rdf_aaaa
 ldns_str2rdf_alg
 ldns_str2rdf_apl
+ldns_str2rdf_atma
 ldns_str2rdf_b32_ext
 ldns_str2rdf_b64
 ldns_str2rdf_cert_alg
@@ -691,6 +719,7 @@ ldns_str2rdf_hex
 ldns_str2rdf_int16
 ldns_str2rdf_int32
 ldns_str2rdf_int8
+ldns_str2rdf_ipseckey
 ldns_str2rdf_loc
 ldns_str2rdf_nsap
 ldns_str2rdf_nsec
@@ -783,3 +812,4 @@ ldns_zone_sign_nsec3
 ldns_zone_soa
 ldns_zone_sort
 ldns_zone_strip_glue_rrs
+mktime_from_utc
