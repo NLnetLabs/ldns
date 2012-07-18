@@ -1,3 +1,7 @@
+b32_ntop
+b32_ntop_extended_hex
+b32_pton
+b32_pton_extended_hex
 ldns_algorithm2buffer_str
 ldns_algorithms
 ldns_axfr_complete
@@ -813,3 +817,4 @@ ldns_zone_soa
 ldns_zone_sort
 ldns_zone_strip_glue_rrs
 mktime_from_utc
+qsort_rr_compare_nsec3
