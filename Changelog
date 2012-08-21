@@ -1,4 +1,5 @@
 1.6.14
+	* Various improvements and fixes of pyldns from Katel Slany
 	* bugfix: Make ldns_resolver_pop_nameserver clear the array when
 	  there was only one.
 	* bugfix #459: Export only symbols defined in ldns_symbols

@@ -78,6 +78,36 @@
 #endif
 %include "typemaps.i"
 
+
+/* ========================================================================= */
+/* Preliminary Python code. */
+/* ========================================================================= */
+
+%pythoncode
+%{
+	#
+	# Use and don't ignore DeprecationWarning and
+	# PendingDeprecationWarning.
+	#
+	import warnings
+	warnings.filterwarnings("module", category=DeprecationWarning)
+	warnings.filterwarnings("module", category=PendingDeprecationWarning)
+%}
+
+
+/* Tell SWIG how to handle ssize_t as input parameter. */
+%typemap(in, noblock=1) (ssize_t)
+{
+  int $1_res = 0;
+  $1_res = SWIG_AsVal_long($input, &$1);
+  if (!SWIG_IsOK($1_res)) {
+    SWIG_exception_fail(SWIG_ArgError($1_res), "in method '"
+      "$symname" "', argument " "$argnum" " of type '"
+      "$type""'");
+  }
+}
+
+
 %inline %{
 struct timeval* ldns_make_timeval(uint32_t sec, uint32_t usec)
 {
@@ -97,8 +127,9 @@ uint32_t ldns_read_timeval_usec(struct timeval* t) {
 %immutable ldns_error_str;
 %immutable ldns_signing_algorithms;
 
-//new_frm_fp_l
-%apply int *OUTPUT { int *line_nr};
+//*_new_frm_fp_l
+%apply int *OUTPUT { (int *line_nr) };
+
 %apply uint32_t *OUTPUT { uint32_t *default_ttl};
 
 // wire2pkt

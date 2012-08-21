@@ -1120,9 +1120,14 @@ The RR is the basic DNS element that contains actual data. This class allows to 
 %rename(__ldns_rr_list_deep_free) ldns_rr_list_deep_free;
 %rename(__ldns_rr_list_free) ldns_rr_list_free;
 %inline %{
-void _ldns_rr_list_free(ldns_rr_list* r) {
+void _ldns_rr_list_deep_free(ldns_rr_list* r) {
    printf("******** LDNS_RR_LIST deep free 0x%lX ************\n", (long unsigned int)r);
    ldns_rr_list_deep_free(r);
+}
+
+void _ldns_rr_list_free(ldns_rr_list* r) {
+   printf("******** LDNS_RR_LIST deep free 0x%lX ************\n", (long unsigned int)r);
+   ldns_rr_list_free(r);
 }
 %}
 #else
