@@ -253,13 +253,20 @@ ldns_resolver_pop_nameserver(ldns_resolver *r)
 
 	pop = nameservers[ns_count - 1];
 
-	nameservers = LDNS_XREALLOC(nameservers, ldns_rdf *, (ns_count - 1));
-	rtt = LDNS_XREALLOC(rtt, size_t, (ns_count - 1));
+	if (ns_count == 1) {
+		LDNS_FREE(nameservers);
+		LDNS_FREE(rtt);
 
-        if(nameservers)
+		ldns_resolver_set_nameservers(r, NULL);
+		ldns_resolver_set_rtt(r, NULL);
+	} else {
+		nameservers = LDNS_XREALLOC(nameservers, ldns_rdf *, 
+				(ns_count - 1));
+		rtt = LDNS_XREALLOC(rtt, size_t, (ns_count - 1));
+
 	        ldns_resolver_set_nameservers(r, nameservers);
-        if(rtt)
 	        ldns_resolver_set_rtt(r, rtt);
+	}
 	/* decr the count */
 	ldns_resolver_dec_nameserver_count(r);
 	return pop;

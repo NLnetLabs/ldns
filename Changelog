@@ -1,4 +1,6 @@
 1.6.14
+	* bugfix: Make ldns_resolver_pop_nameserver clear the array when
+	  there was only one.
 	* bugfix #459: Export only symbols defined in ldns_symbols
 	* bugfix #458: Track all newly created signatures when signing.
 	* bugfix #454: Only set -g and -O2 CFLAGS when no CFLAGS was given.
