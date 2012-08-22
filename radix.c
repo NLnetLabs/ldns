@@ -188,15 +188,12 @@ ldns_radix_insert(ldns_radix_t* tree, uint8_t* key, radix_strlen_t len,
 			 * Example 1: The root:
 			 * | [0]
 			 **/
-			fprintf(stdout, "[radix] insert root\n");
 			tree->root = add;
 		} else {
 			/** Example 2: 'dns':
 			 * | [0]
 			 * --| [d+ns] dns
 			 **/
-			fprintf(stdout, "[radix] insert shadow root\n");
-
 			prefix = ldns_radix_new_node(NULL, (uint8_t*)"", 0);
 			if (!prefix) {
 				LDNS_FREE(add);
@@ -209,7 +206,6 @@ ldns_radix_insert(ldns_radix_t* tree, uint8_t* key, radix_strlen_t len,
 				LDNS_FREE(prefix->array);
 				return LDNS_STATUS_MEM_ERR;
 			}
-			fprintf(stdout, "[radix] insert %s at root[0]\n", (char*) key);
 			/** Set relational pointers */
 			add->parent = prefix;
 			add->parent_index = 0;
@@ -229,7 +225,6 @@ ldns_radix_insert(ldns_radix_t* tree, uint8_t* key, radix_strlen_t len,
 		}
 	} else if (pos == len) {
 		/** Exact match found */
-		fprintf(stdout, "[radix] exact match found for %s\n", (char*) key);
 		if (prefix->data) {
 			/* Element already exists */
 			LDNS_FREE(add);
@@ -258,7 +253,6 @@ ldns_radix_insert(ldns_radix_t* tree, uint8_t* key, radix_strlen_t len,
 			assert(byte >= prefix->offset);
 			assert((byte - prefix->offset) <= prefix->len);
 			byte -= prefix->offset;
-			fprintf(stdout, "[radix] insert %s at node[%u]\n", (char*) key, byte);
 			if (pos+1 < len) {
 				/** Create remainder of the string. */
 				if (!ldns_radix_str_create(
@@ -282,7 +276,6 @@ ldns_radix_insert(ldns_radix_t* tree, uint8_t* key, radix_strlen_t len,
 			 * --| [l+dns] ldns
 			 **/
 			byte -= prefix->offset;
-			fprintf(stdout, "[radix] insert %s at node[%u]\n", (char*) key, byte);
 			if (pos+1 < len) {
 				/** Create remainder of the string. */
 				if (!ldns_radix_str_create(
@@ -301,8 +294,6 @@ ldns_radix_insert(ldns_radix_t* tree, uint8_t* key, radix_strlen_t len,
 			 * Use existing element, but it has a shared prefix,
 			 * we need a split.
 			 */
-			fprintf(stdout, "[radix] shared prefix found for %s\n", (char*) key);
-
 			if (!ldns_radix_array_split(&prefix->array[byte-(prefix->offset)],
 				key, pos+1, len, add)) {
 				LDNS_FREE(add);
@@ -403,7 +394,6 @@ ldns_radix_find_less_equal(ldns_radix_t* tree, uint8_t* key,
 	while (pos < len) {
 		byte = key[pos];
 		if (byte < node->offset) {
-			fprintf(stdout, "[radix] byte < node->offset\n");
 			/**
 			 * No exact match. The lesser is in this or the
 			 * previous node.
@@ -413,7 +403,6 @@ ldns_radix_find_less_equal(ldns_radix_t* tree, uint8_t* key,
 		}
 		byte -= node->offset;
 		if (byte >= node->len) {
-			fprintf(stdout, "[radix] byte >= node->len\n");
 			/**
 			 * No exact match. The lesser is in this node or the
 			 * last of this array, or something before this node.
@@ -426,7 +415,6 @@ ldns_radix_find_less_equal(ldns_radix_t* tree, uint8_t* key,
 		}
 		pos++;
 		if (!node->array[byte].edge) {
-			fprintf(stdout, "[radix] !node->array[byte].edge\n");
 			/**
 			 * No exact match. Find the previous in the array
 			 * from this index.
@@ -438,7 +426,6 @@ ldns_radix_find_less_equal(ldns_radix_t* tree, uint8_t* key,
 			return 0;
 		}
 		if (node->array[byte].len != 0) {
-			fprintf(stdout, "[radix] node->array[byte].len != 0\n");
 			/** Must match additional string. */
 			if (pos + node->array[byte].len > len) {
 				/** Additional string is longer than key. */
@@ -475,7 +462,6 @@ ldns_radix_find_less_equal(ldns_radix_t* tree, uint8_t* key,
 		node = node->array[byte].edge;
 	}
 	if (node->data) {
-		fprintf(stdout, "[radix] node->data\n");
 		/** Exact match. */
 		*result = node;
 		return 1;
@@ -668,7 +654,6 @@ ldns_radix_join(ldns_radix_t* tree1, ldns_radix_t* tree2)
 		status = LDNS_STATUS_NO_DATA;
 		/** Insert current node into tree1 */
 		if (cur_node->data) {
-			fprintf(stdout, "[radix] join insert %s\n", (char*) cur_node->data);
 			status = ldns_radix_insert(tree1, cur_node->key,
 				cur_node->klen, cur_node->data);
 			/** Exist errors may occur */
@@ -706,7 +691,6 @@ ldns_radix_split(ldns_radix_t* tree1, size_t num, ldns_radix_t** tree2)
 		return LDNS_STATUS_NULL;
 	}
 	if (!*tree2) {
-		fprintf(stdout, "[radix] split create new tree\n");
 		*tree2 = ldns_radix_create();
 		if (!*tree2) {
 			return LDNS_STATUS_MEM_ERR;
@@ -715,21 +699,15 @@ ldns_radix_split(ldns_radix_t* tree1, size_t num, ldns_radix_t** tree2)
 	cur_node = ldns_radix_first(tree1);
 	while (count < num && cur_node) {
 		if (cur_node->data) {
-			fprintf(stdout, "[radix] split element %u %s\n",
-				count, (char*) cur_node->data);
 			/** Delete current node from tree1. */
 			uint8_t* cur_key = cur_node->key;
 			radix_strlen_t cur_len = cur_node->klen;
-			fprintf(stdout, "[radix] delete element %s\n",
-				(char*) cur_node->data);
 			void* cur_data = ldns_radix_delete(tree1, cur_key,
 				cur_len);
 			/** Insert current node into tree2/ */
 			if (!cur_data) {
 				return LDNS_STATUS_NO_DATA;
 			}
-			fprintf(stdout, "[radix] insert element %s\n",
-				(char*) cur_data);
 			status = ldns_radix_insert(*tree2, cur_key, cur_len,
 				cur_data);
 			if (status != LDNS_STATUS_OK &&
@@ -1029,7 +1007,6 @@ ldns_radix_array_split(ldns_radix_array_t* array, uint8_t* key,
 		/** The string to add is a prefix of the existing string */
 		uint8_t* split_str = NULL, *dup_str = NULL;
 		radix_strlen_t split_len = 0;
-		fprintf(stdout, "[radix] (new) %s is prefix of (existing) %s\n", (char*) key, (char*) array->str);
 		/**
 		 * Example 5: 'ld'
 		 * | [0]
@@ -1092,7 +1069,6 @@ ldns_radix_array_split(ldns_radix_array_t* array, uint8_t* key,
 		 **/
 		uint8_t* split_str = NULL;
 		radix_strlen_t split_len = 0;
-		fprintf(stdout, "[radix] (existing) %s is prefix of (new) %s\n", (char*) array->str, (char*) key);
 		assert(array->len < strlen_to_add);
 		if (strlen_to_add - array->len > 1) {
 			if (!ldns_radix_prefix_remainder(array->len+1,
@@ -1129,8 +1105,6 @@ ldns_radix_array_split(ldns_radix_array_t* array, uint8_t* key,
 		 * --| [l+d] ld
 		 * ----| [n+s] ldns
 		 **/
-		fprintf(stdout, "[radix] split (existing) %s \n", (char*) array->str);
-
 		ldns_radix_node_t* common = NULL;
 		uint8_t* common_str = NULL, *s1 = NULL, *s2 = NULL;
 		radix_strlen_t common_len = 0, l1 = 0, l2 = 0;
@@ -1155,8 +1129,6 @@ ldns_radix_array_split(ldns_radix_array_t* array, uint8_t* key,
 				return 0;
 			}
 		}
-		fprintf(stdout, "[radix] %u bytes in common... \n", (unsigned) common_len);
-
 		/** Create the shared prefix. */
 		if (common_len > 0) {
 			common_str = LDNS_XMALLOC(uint8_t, common_len);
@@ -1168,8 +1140,6 @@ ldns_radix_array_split(ldns_radix_array_t* array, uint8_t* key,
 			}
 			memcpy(common_str, str_to_add, common_len);
 		}
-		fprintf(stdout, "[radix] common prefix is %s \n", (char*) common_str);
-
 		/** Make space in the common node array. */
 		if (!ldns_radix_array_space(common, array->str[common_len]) ||
 		    !ldns_radix_array_space(common, str_to_add[common_len])) {
@@ -1372,7 +1342,6 @@ ldns_radix_del_fix(ldns_radix_t* tree, ldns_radix_node_t* node)
 			return;
 		} else if (node->len == 1 && node->parent) {
 			/** Node with one child is fold back into. */
-			fprintf(stdout, "[radix] delfix cleanup onechild\n");
 			ldns_radix_cleanup_onechild(node);
 			return;
 		} else if (node->len == 0) {
@@ -1385,7 +1354,6 @@ ldns_radix_del_fix(ldns_radix_t* tree, ldns_radix_node_t* node)
 				return;
 			}
 			/** Cleanup leaf node and continue with parent. */
-			fprintf(stdout, "[radix] delfix cleanup leaf\n");
 			ldns_radix_cleanup_leaf(node);
 			node = parent;
 		} else {
