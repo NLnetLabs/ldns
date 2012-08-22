@@ -649,19 +649,27 @@ ldns_pkt_push_rr(ldns_pkt *packet, ldns_pkt_section section, ldns_rr *rr)
 {
 	switch(section) {
 		case LDNS_SECTION_QUESTION:
-			ldns_rr_list_push_rr(ldns_pkt_question(packet), rr);
+			if (!ldns_rr_list_push_rr(ldns_pkt_question(packet), rr)) {
+				return false;
+			}
 			ldns_pkt_set_qdcount(packet, ldns_pkt_qdcount(packet) + 1);
 			break;
 		case LDNS_SECTION_ANSWER:
-			ldns_rr_list_push_rr(ldns_pkt_answer(packet), rr);
+			if (!ldns_rr_list_push_rr(ldns_pkt_answer(packet), rr)) {
+				return false;
+			}
 			ldns_pkt_set_ancount(packet, ldns_pkt_ancount(packet) + 1);
 			break;
 		case LDNS_SECTION_AUTHORITY:
-			ldns_rr_list_push_rr(ldns_pkt_authority(packet), rr);
+			if (!ldns_rr_list_push_rr(ldns_pkt_authority(packet), rr)) {
+				return false;
+			}
 			ldns_pkt_set_nscount(packet, ldns_pkt_nscount(packet) + 1);
 			break;
 		case LDNS_SECTION_ADDITIONAL:
-			ldns_rr_list_push_rr(ldns_pkt_additional(packet), rr);
+			if (!ldns_rr_list_push_rr(ldns_pkt_additional(packet), rr)) {
+				return false;
+			}
 			ldns_pkt_set_arcount(packet, ldns_pkt_arcount(packet) + 1);
 			break;
 		case LDNS_SECTION_ANY:

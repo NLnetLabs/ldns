@@ -1340,17 +1340,22 @@ void
 ldns_resolver_nameservers_randomize(ldns_resolver *r)
 {
 	uint16_t i, j;
-	ldns_rdf **ns, *tmp;
+	ldns_rdf **ns, *tmpns;
+	size_t *rtt, tmprtt;
 
 	/* should I check for ldns_resolver_random?? */
 	assert(r != NULL);
 
 	ns = ldns_resolver_nameservers(r);
+	rtt = ldns_resolver_rtt(r);
 	for (i = 0; i < ldns_resolver_nameserver_count(r); i++) {
 		j = ldns_get_random() % ldns_resolver_nameserver_count(r);
-		tmp = ns[i];
+		tmpns = ns[i];
 		ns[i] = ns[j];
-		ns[j] = tmp;
+		ns[j] = tmpns;
+		tmprtt = rtt[i];
+		rtt[i] = rtt[j];
+		rtt[j] = tmprtt;
 	}
 	ldns_resolver_set_nameservers(r, ns);
 }
