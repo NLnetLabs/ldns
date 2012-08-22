@@ -196,7 +196,7 @@ ldns_pkt_opcode2str(ldns_pkt_opcode opcode)
 
 	str = NULL;
 	if (ldns_pkt_opcode2buffer_str(buf, opcode) == LDNS_STATUS_OK) {
-		str = ldns_buffer2str(buf);
+		str = ldns_buffer_export2str(buf);
 	}
 
 	ldns_buffer_free(buf);
@@ -216,7 +216,7 @@ ldns_pkt_rcode2str(ldns_pkt_rcode rcode)
 
 	str = NULL;
 	if (ldns_pkt_rcode2buffer_str(buf, rcode) == LDNS_STATUS_OK) {
-		str = ldns_buffer2str(buf);
+		str = ldns_buffer_export2str(buf);
 	}
 
 	ldns_buffer_free(buf);
@@ -237,7 +237,7 @@ ldns_pkt_algorithm2str(ldns_algorithm algorithm)
 	str = NULL;
 	if (ldns_algorithm2buffer_str(buf, algorithm)
 	    == LDNS_STATUS_OK) {
-		str = ldns_buffer2str(buf);
+		str = ldns_buffer_export2str(buf);
 	}
 
 	ldns_buffer_free(buf);
@@ -258,7 +258,7 @@ ldns_pkt_cert_algorithm2str(ldns_cert_algorithm cert_algorithm)
 	str = NULL;
 	if (ldns_cert_algorithm2buffer_str(buf, cert_algorithm)
 	    == LDNS_STATUS_OK) {
-		str = ldns_buffer2str(buf);
+		str = ldns_buffer_export2str(buf);
 	}
 
 	ldns_buffer_free(buf);
@@ -568,7 +568,7 @@ ldns_rr_type2str(const ldns_rr_type type)
 
 	str = NULL;
 	if (ldns_rr_type2buffer_str(buf, type) == LDNS_STATUS_OK) {
-		str = ldns_buffer2str(buf);
+		str = ldns_buffer_export2str(buf);
 	}
 
 	ldns_buffer_free(buf);
@@ -604,7 +604,7 @@ ldns_rr_class2str(const ldns_rr_class klass)
 
 	str = NULL;
 	if (ldns_rr_class2buffer_str(buf, klass) == LDNS_STATUS_OK) {
-		str = ldns_buffer2str(buf);
+		str = ldns_buffer_export2str(buf);
 	}
 	ldns_buffer_free(buf);
 	return str;
@@ -2039,12 +2039,11 @@ error:
 }
 
 /*
- * Zero terminate the buffer and fix it to the size of the string.
+ * Zero terminate the buffer and copy data.
  */
 char *
 ldns_buffer2str(ldns_buffer *buffer)
 {
-	char *tmp_str;
 	char *str;
 
 	/* check if buffer ends with \0, if not, and
@@ -2059,14 +2058,32 @@ ldns_buffer2str(ldns_buffer *buffer)
 		}
 	}
 
-	tmp_str = ldns_buffer_export(buffer);
-	str = LDNS_XMALLOC(char, strlen(tmp_str) + 1);
+	str = strdup((const char *)ldns_buffer_begin(buffer));
         if(!str) {
                 return NULL;
         }
-	memcpy(str, tmp_str, strlen(tmp_str) + 1);
-
 	return str;
+}
+
+/*
+ * Zero terminate the buffer and export data.
+ */
+char *
+ldns_buffer_export2str(ldns_buffer *buffer)
+{
+	/* check if buffer ends with \0, if not, and
+	   if there is space, add it */
+	if (*(ldns_buffer_at(buffer, ldns_buffer_position(buffer))) != 0) {
+		if (!ldns_buffer_reserve(buffer, 1)) {
+			return NULL;
+		}
+		ldns_buffer_write_u8(buffer, (uint8_t) '\0');
+		if (!ldns_buffer_set_capacity(buffer, ldns_buffer_position(buffer))) {
+			return NULL;
+		}
+	}
+
+	return ldns_buffer_export(buffer);
 }
 
 char *
@@ -2080,7 +2097,7 @@ ldns_rdf2str(const ldns_rdf *rdf)
 	}
 	if (ldns_rdf2buffer_str(tmp_buffer, rdf) == LDNS_STATUS_OK) {
 		/* export and return string, destroy rest */
-		result = ldns_buffer2str(tmp_buffer);
+		result = ldns_buffer_export2str(tmp_buffer);
 	}
 	ldns_buffer_free(tmp_buffer);
 	return result;
@@ -2098,7 +2115,7 @@ ldns_rr2str_fmt(const ldns_output_format *fmt, const ldns_rr *rr)
 	if (ldns_rr2buffer_str_fmt(tmp_buffer, fmt, rr)
 		       	== LDNS_STATUS_OK) {
 		/* export and return string, destroy rest */
-		result = ldns_buffer2str(tmp_buffer);
+		result = ldns_buffer_export2str(tmp_buffer);
 	}
 	ldns_buffer_free(tmp_buffer);
 	return result;
@@ -2122,7 +2139,7 @@ ldns_pkt2str_fmt(const ldns_output_format *fmt, const ldns_pkt *pkt)
 	if (ldns_pkt2buffer_str_fmt(tmp_buffer, fmt, pkt)
 		       	== LDNS_STATUS_OK) {
 		/* export and return string, destroy rest */
-		result = ldns_buffer2str(tmp_buffer);
+		result = ldns_buffer_export2str(tmp_buffer);
 	}
 
 	ldns_buffer_free(tmp_buffer);
@@ -2146,7 +2163,7 @@ ldns_key2str(const ldns_key *k)
 	}
 	if (ldns_key2buffer_str(tmp_buffer, k) == LDNS_STATUS_OK) {
 		/* export and return string, destroy rest */
-		result = ldns_buffer2str(tmp_buffer);
+		result = ldns_buffer_export2str(tmp_buffer);
 	}
 	ldns_buffer_free(tmp_buffer);
 	return result;
@@ -2176,7 +2193,7 @@ ldns_rr_list2str_fmt(const ldns_output_format *fmt, const ldns_rr_list *list)
 	}
 
 	/* export and return string, destroy rest */
-	result = ldns_buffer2str(tmp_buffer);
+	result = ldns_buffer_export2str(tmp_buffer);
 	ldns_buffer_free(tmp_buffer);
 	return result;
 }

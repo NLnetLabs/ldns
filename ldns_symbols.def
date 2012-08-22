@@ -26,6 +26,7 @@ ldns_buffer2pkt_wire
 ldns_buffer2str
 ldns_buffer_copy
 ldns_buffer_export
+ldns_buffer_export2str
 ldns_buffer_free
 ldns_buffer_new
 ldns_buffer_new_frm_data

@@ -1654,7 +1654,7 @@ ldns_key_get_file_base_name(ldns_key *key)
 	                   "+%03u+%05u",
 			   ldns_key_algorithm(key),
 			   ldns_key_keytag(key));
-	file_base_name = strdup(ldns_buffer_export(buffer));
+	file_base_name = ldns_buffer_export(buffer);
 	ldns_buffer_free(buffer);
 	return file_base_name;
 }

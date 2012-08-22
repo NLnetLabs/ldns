@@ -1,4 +1,5 @@
 1.6.14
+	* Make buffer_export comply to documentation and fix buffer2str
 	* Various improvements and fixes of pyldns from Katel Slany
 	* bugfix: Make ldns_resolver_pop_nameserver clear the array when
 	  there was only one.

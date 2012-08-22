@@ -323,7 +323,7 @@ data_buffer2wire(ldns_buffer *data_buffer)
 	uint8_t *hexbuf;
 	int hexbufpos = 0;
 	size_t wirelen;
-	uint8_t *data_wire = (uint8_t *) ldns_buffer_export(data_buffer);
+	uint8_t *data_wire = (uint8_t *) ldns_buffer_begin(data_buffer);
 	uint8_t *wire = LDNS_XMALLOC(uint8_t, LDNS_MAX_PACKETLEN);
 	
 	hexbuf = LDNS_XMALLOC(uint8_t, LDNS_MAX_PACKETLEN);
@@ -815,7 +815,7 @@ handle_query(uint8_t* inbuf, ssize_t inlen, struct entry* entries, int* count,
 				/* still try to adjust ID */
 				answer_size = ldns_buffer_capacity(p->reply_from_hex);
 				outbuf = LDNS_XMALLOC(uint8_t, answer_size);
-				memcpy(outbuf, ldns_buffer_export(p->reply_from_hex), answer_size);
+				memcpy(outbuf, ldns_buffer_begin(p->reply_from_hex), answer_size);
 				if(entry->copy_id) {
 					ldns_write_uint16(outbuf, 
 						ldns_pkt_id(query_pkt));
