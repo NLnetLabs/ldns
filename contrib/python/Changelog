@@ -1,0 +1,23 @@
+1.6.14
+	* Fixed automatic conversion from Python string to ldns_rdf and
+	  ldns_dname. Caused memory corruption when using Python 3.
+	* The Python 3 wrapper code now raises TypeError instead of ValueError
+	  when receiving a non FILE * argument when it should be a FILE *.
+	* Fixed wrong handling of _ldns_rr_list_free() and
+	  _ldns_rr_list_deep_free() when compiling with LDNS_DEBUG directive.
+	* Fixed malfunctioning ldns.ldns_rdf_new_frm_fp_l().
+	* Fixed malfunctioning ldns_drf.absolute() and ldns_dname.absolute().
+	* Marked several functions related to ldns_rdf and ldns_buffer as
+	  returning new objects.
+	* Method operating on ldns_dnames and returning dname ldns_rdfs now
+	  return ldns_dname instances.
+	* Improved documentation of ldns_buffer, ldns_rdf and ldns_dname
+	  classes.
+	* Methods ldns_buffer.available() and ldns_buffer.available_at() now
+	  return bool types as described in the documentation.
+	* Added scripts for testing the basic functionality of the ldns_buffer,
+	  ldns_rdf, ldns_dname class code.
+	* Added deprecation warnings to ldns_rdf methods operating on dname
+	  rdfs. The user is encouraged to converts dname ldns_rdfs to
+	  ldns_dnames.
+	* Extended ldns_dname constructor to accept ldns_rdfs containing dnames.
