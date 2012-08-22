@@ -204,6 +204,11 @@ main(int argc, char **argv)
 			tsig_cred.algorithm = (char*)"hmac-md5.sig-alg.reg.int.";
 			tsig_cred.keyname = optarg;
 			tsig_cred.keydata = strchr(optarg, ':');
+			if (tsig_cred.keydata == NULL) {
+				printf("TSIG argument is not in form "
+					"key:data: %s\n", optarg);
+				exit(1);
+			}
 			*tsig_cred.keydata = '\0';
 			tsig_cred.keydata++;
 			printf("Sign with %s : %s\n", tsig_cred.keyname,

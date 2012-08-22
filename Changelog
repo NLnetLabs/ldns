@@ -1,4 +1,5 @@
 1.6.14
+	* ldns-notify TSIG option argument checking
 	* Let ldns_resolver_nameservers_randomize keep nameservers and rtt's
 	  in sync.
 	* Let ldns_pkt_push_rr now return false on (memory) errors.
