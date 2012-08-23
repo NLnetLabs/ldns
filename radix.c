@@ -66,7 +66,7 @@ static radix_strlen_t ldns_radix_str_common(uint8_t* str1, radix_strlen_t len1,
 	uint8_t* str2, radix_strlen_t len2);
 static ldns_radix_node_t* ldns_radix_next_in_subtree(ldns_radix_node_t* node);
 static ldns_radix_node_t* ldns_radix_prev_from_index(ldns_radix_node_t* node,
-	unsigned index);
+	uint8_t index);
 static ldns_radix_node_t* ldns_radix_last_in_subtree_incl_self(
 	ldns_radix_node_t* node);
 static ldns_radix_node_t* ldns_radix_last_in_subtree(ldns_radix_node_t* node);
@@ -524,7 +524,7 @@ ldns_radix_next(ldns_radix_node_t* node)
 	}
 	/** No elements in subtree, get to parent and go down next branch. */
 	while (node->parent) {
-		unsigned index = node->parent_index;
+		uint8_t index = node->parent_index;
 		node = node->parent;
 		index++;
 		for (; index < node->len; index++) {
@@ -583,7 +583,7 @@ static void
 ldns_radix_node_print(FILE* fd, ldns_radix_node_t* node,
 	uint8_t i, uint8_t* str, radix_strlen_t len, unsigned d)
 {
-	unsigned j;
+	uint8_t j;
 	if (!node) {
 		return;
 	}
@@ -592,13 +592,13 @@ ldns_radix_node_print(FILE* fd, ldns_radix_node_t* node,
 	}
 	if (str) {
 		radix_strlen_t l;
-		fprintf(fd, "| [%u+", i);
+		fprintf(fd, "| [%u+", (unsigned) i);
 		for (l=0; l < len; l++) {
 			fprintf(fd, "%c", (char) str[l]);
 		}
-		fprintf(fd, "]%u", len);
+		fprintf(fd, "]%u", (unsigned) len);
 	} else {
-		fprintf(fd, "| [%u]", i);
+		fprintf(fd, "| [%u]", (unsigned) i);
 	}
 
 	if (node->data) {
@@ -740,7 +740,7 @@ void
 ldns_radix_traverse_postorder(ldns_radix_node_t* node,
 	void (*func)(ldns_radix_node_t*, void*), void* arg)
 {
-	unsigned i;
+	uint8_t i;
 	if (!node) {
 		return;
 	}
@@ -851,7 +851,7 @@ ldns_radix_array_space(ldns_radix_node_t* node, uint8_t byte)
 		return 1;
 	}
 	/** Array exist */
-	assert(node->array);
+	assert(node->array != NULL);
 	assert(node->capacity > 0);
 
 	if (node->len == 0) {
@@ -860,13 +860,13 @@ ldns_radix_array_space(ldns_radix_node_t* node, uint8_t byte)
 		node->offset = byte;
 	} else if (byte < node->offset) {
 		/** Byte is below the offset */
-		unsigned index;
-		unsigned need = node->offset - byte;
+		uint8_t index;
+		uint16_t need = node->offset - byte;
 		/** Is there enough capacity? */
 		if (node->len + need > node->capacity) {
 			/** Not enough capacity, grow array */
 			if (!ldns_radix_array_grow(node,
-				node->len + need)) {
+				(unsigned) (node->len + need))) {
 				return 0; /* failed to grow array */
 			}
 		}
@@ -886,12 +886,12 @@ ldns_radix_array_space(ldns_radix_node_t* node, uint8_t byte)
 		node->offset = byte;
 	} else if (byte - node->offset >= node->len) {
 		/** Byte does not fit in array */
-		unsigned need = (byte - node->offset) - node->len + 1;
+		uint16_t need = (byte - node->offset) - node->len + 1;
 		/** Is there enough capacity? */
 		if (node->len + need > node->capacity) {
 			/** Not enough capacity, grow array */
 			if (!ldns_radix_array_grow(node,
-				node->len + need)) {
+				(unsigned) (node->len + need))) {
 				return 0; /* failed to grow array */
 			}
 		}
@@ -1212,7 +1212,7 @@ static radix_strlen_t
 ldns_radix_str_common(uint8_t* str1, radix_strlen_t len1,
 	uint8_t* str2, radix_strlen_t len2)
 {
-	unsigned i, max = (len1<len2)?len1:len2;
+	radix_strlen_t i, max = (len1<len2)?len1:len2;
 	for (i=0; i<max; i++) {
 		if (str1[i] != str2[i]) {
 			return i;
@@ -1231,7 +1231,7 @@ ldns_radix_str_common(uint8_t* str1, radix_strlen_t len1,
 static ldns_radix_node_t*
 ldns_radix_next_in_subtree(ldns_radix_node_t* node)
 {
-	unsigned i;
+	uint16_t i;
 	ldns_radix_node_t* next;
 	/** Try every subnode. */
 	for (i = 0; i < node->len; i++) {
@@ -1259,9 +1259,9 @@ ldns_radix_next_in_subtree(ldns_radix_node_t* node)
  *
  */
 static ldns_radix_node_t*
-ldns_radix_prev_from_index(ldns_radix_node_t* node, unsigned index)
+ldns_radix_prev_from_index(ldns_radix_node_t* node, uint8_t index)
 {
-	unsigned i = index;
+	uint8_t i = index;
 	while (i > 0) {
 		i--;
 		if (node->array[i].edge) {
@@ -1304,7 +1304,7 @@ ldns_radix_last_in_subtree_incl_self(ldns_radix_node_t* node)
 static ldns_radix_node_t*
 ldns_radix_last_in_subtree(ldns_radix_node_t* node)
 {
-	int i;
+	uint16_t i;
 	/** Look for the most right leaf node. */
 	for (i=(node->len)-1; i >= 0; i--) {
 		if (node->array[i].edge) {
@@ -1379,7 +1379,7 @@ ldns_radix_cleanup_onechild(ldns_radix_node_t* node)
 {
 	uint8_t* join_str;
 	radix_strlen_t join_len;
-	uint8_t parent_index = node->parent_index;;
+	uint8_t parent_index = node->parent_index;
 	ldns_radix_node_t* child = node->array[0].edge;
 	ldns_radix_node_t* parent = node->parent;
 
@@ -1453,7 +1453,7 @@ ldns_radix_cleanup_leaf(ldns_radix_node_t* node)
 static void
 ldns_radix_node_free(ldns_radix_node_t* node, void* arg)
 {
-	unsigned i;
+	uint16_t i;
 	(void) arg;
 	if (!node) {
 		return;
@@ -1494,7 +1494,7 @@ ldns_radix_node_array_free(ldns_radix_node_t* node)
 static void
 ldns_radix_node_array_free_front(ldns_radix_node_t* node)
 {
-	unsigned i, n = 0;
+	uint16_t i, n = 0;
 	/** Remove until a non NULL entry. */
    	while (n < node->len && node->array[n].edge == NULL) {
 		n++;
@@ -1530,7 +1530,7 @@ ldns_radix_node_array_free_front(ldns_radix_node_t* node)
 static void
 ldns_radix_node_array_free_end(ldns_radix_node_t* node)
 {
-	unsigned n = 0;
+	uint16_t n = 0;
 	/** Shorten array. */
 	while (n < node->len && node->array[node->len-1-n].edge == NULL) {
 		n++;
