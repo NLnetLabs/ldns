@@ -285,6 +285,8 @@ ldns_dnssec_build_data_chain(ldns_resolver *res,
 	ldns_rr_class c = 0;
 
 	bool other_rrset = false;
+
+	assert(pkt != NULL);
 	
 	ldns_dnssec_data_chain *new_chain = ldns_dnssec_data_chain_new();
 

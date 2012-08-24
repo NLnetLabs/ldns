@@ -404,6 +404,7 @@ ldns_init_random(FILE *fd, unsigned int size)
 
 	if (read < size) {
 		LDNS_FREE(seed);
+		if (!fd) fclose(rand_f);
 		return 1;
 	} else {
 #ifdef HAVE_SSL

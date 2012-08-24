@@ -534,6 +534,7 @@ ldns_str2rdf_apl(ldns_rdf **rd, const char *str)
 
 	data = LDNS_XMALLOC(uint8_t, 4 + afdlength);
         if(!data) {
+		LDNS_FREE(afdpart);
 		LDNS_FREE(my_ip_str);
 		return LDNS_STATUS_INVALID_STR;
         }

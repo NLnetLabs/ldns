@@ -40,7 +40,7 @@ read_key_file(const char *filename, ldns_rr_list *key_list)
 	int line_len = 0;
 	int line_nr = 0;
 	int key_count = 0;
-	char line[LDNS_MAX_PACKETLEN];
+	char line[LDNS_MAX_LINELEN];
 	ldns_status status;
 	FILE *input_file;
 	ldns_rr *rr;

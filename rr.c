@@ -477,6 +477,7 @@ ldns_rr_new_frm_str_internal(ldns_rr **newrr, const char *str,
                                                                 ldns_buffer_free(rr_buf);
                                                                 LDNS_FREE(rdata);
                                                                 ldns_rr_free(new);
+								LDNS_FREE(hex_data);
                                                                 return s;
                                                         }
 							LDNS_FREE(hex_data);
@@ -600,6 +601,9 @@ ldns_rr_new_frm_str_internal(ldns_rr **newrr, const char *str,
 
 	if (newrr) {
 		*newrr = new;
+	} else {
+		/* Maybe the caller just wanted to see if it would parse? */
+		ldns_rr_free(new);
 	}
 	return LDNS_STATUS_OK;
 
@@ -724,8 +728,13 @@ ldns_rr_new_frm_fp_l(ldns_rr **newrr, FILE *fp, uint32_t *default_ttl, ldns_rdf 
 		}
 	}
 	LDNS_FREE(line);
-	if (newrr && s == LDNS_STATUS_OK) {
-		*newrr = rr;
+	if (s == LDNS_STATUS_OK) {
+		if (newrr) {
+			*newrr = rr;
+		} else {
+			/* Just testing if it would parse? */
+			ldns_rr_free(rr);
+		}
 	}
 	return s;
 }
@@ -1156,7 +1165,8 @@ ldns_rr_list_pop_rr_list(ldns_rr_list *rr_list, size_t howmany)
 		i--;
 	}
 
-	if (i == howmany) {
+	if (i == howmany) { /* so i <= 0 */
+		ldns_rr_list_free(popped);
 		return NULL;
 	} else {
 		return popped;
@@ -1480,6 +1490,7 @@ ldns_rr_list_sort(ldns_rr_list *unsorted)
                                         LDNS_FREE(sortables[i]);
                                 }
                                 /* no way to return error */
+				LDNS_FREE(sortables);
                                 return;
                         }
 			sortables[i]->original_object = ldns_rr_list_rr(unsorted, i);

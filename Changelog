@@ -1,4 +1,5 @@
 1.6.14
+	* Various bugfixes from code reviews from CZ.NIC and Paul Wouters
 	* ldns-notify TSIG option argument checking
 	* Let ldns_resolver_nameservers_randomize keep nameservers and rtt's
 	  in sync.
