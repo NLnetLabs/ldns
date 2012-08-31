@@ -46,8 +46,8 @@
 %typemap(argout, noblock=1) (ldns_rdf **)
 {
   $result = SWIG_Python_AppendOutput($result,
-  SWIG_NewPointerObj(SWIG_as_voidptr($1_rdf),
-    SWIGTYPE_p_ldns_struct_rdf, SWIG_POINTER_OWN | 0));
+    SWIG_NewPointerObj(SWIG_as_voidptr($1_rdf),
+      SWIGTYPE_p_ldns_struct_rdf, SWIG_POINTER_OWN | 0));
 }
 
 /*
@@ -102,7 +102,7 @@
 
 /*
  * This file must contain all %newobject and %delobject tags also for
- * ldns_dname. This is because the ldns_dname us a derived class from ldns_rdf.
+ * ldns_dname. This is because the ldns_dname is a derived class from ldns_rdf.
  */
 
 
@@ -128,8 +128,7 @@
 
 
 /*
- * Should the ldns_rdf_new() should also be marked as deleting its data
- * parameter?
+ * Should the ldns_rdf_new() also be marked as deleting its data parameter?
  */
 %delobject ldns_rdf_set_data; /* Because data are directly coupled into rdf. */
 
@@ -169,8 +168,6 @@
 %rename(_ldns_rdf_deep_free) ldns_rdf_deep_free;
 %rename(_ldns_rdf_free) ldns_rdf_free;
 #endif /* LDNS_DEBUG */
-
-%newobject ldns_rdf2str;
 
 
 /* ========================================================================= */
@@ -277,7 +274,7 @@ specified in the (16-bit) type field with a value from ldns_rdf_type."
 
                **Usage**
 
-                   >>> rdf = ldns.ldns_rdf.new_frm_str("74.125.43.99",ldns.LDNS_RDF_TYPE_A)
+                   >>> rdf = ldns.ldns_rdf.new_frm_str("74.125.43.99", ldns.LDNS_RDF_TYPE_A)
                    >>> print rdf, rdf.get_type_str()
                    A 74.125.43.99
                    >>> name = ldns.ldns_resolver.new_frm_file().get_name_by_addr(rdf)

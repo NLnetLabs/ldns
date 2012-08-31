@@ -10,6 +10,7 @@
 
 import ldns
 import sys
+import os
 import inspect
 
 
@@ -836,7 +837,7 @@ if True:
 
 
 if not error_detected:
-    sys.stdout.write("%s: passed.\n" % (class_name))
+    sys.stdout.write("%s: passed.\n" % (os.path.basename(__file__)))
 else:
-    sys.stdout.write("%s: errors detected.\n" % (class_name))
+    sys.stdout.write("%s: errors detected.\n" % (os.path.basename(__file__)))
     sys.exit(1)
