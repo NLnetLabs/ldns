@@ -92,6 +92,7 @@ read_key_file(const char *filename, ldns_rr_list *keys)
 		else
 			break;
 	}
+	fclose(fp);
 	return status;
 }
 

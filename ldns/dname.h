@@ -178,6 +178,13 @@ int ldns_dname_interval(const ldns_rdf *prev, const ldns_rdf *middle, const ldns
 bool ldns_dname_str_absolute(const char *dname_str);
 
 /**
+ * Checks whether the given dname is absolute (i.e. ends with a '.')
+ * \param[in] *dname a rdf representing the dname
+ * \return true or false
+ */
+bool ldns_dname_absolute(const ldns_rdf *rdf);
+
+/**
  * look inside the rdf and if it is an LDNS_RDF_TYPE_DNAME
  * try and retrieve a specific label. The labels are numbered
  * starting from 0 (left most).

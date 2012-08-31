@@ -48,6 +48,7 @@ ldns_digest_evp
 ldns_directive_types
 ldns_dname2buffer_wire
 ldns_dname2canonical
+ldns_dname_absolute
 ldns_dname_cat
 ldns_dname_cat_clone
 ldns_dname_clone_from

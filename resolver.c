@@ -892,6 +892,7 @@ ldns_resolver_new_frm_file(ldns_resolver **res, const char *filename)
 			*res = r;
 			return LDNS_STATUS_OK;
 		} else  {
+			ldns_resolver_free(r);
 			return LDNS_STATUS_NULL;
 		}
 	}
@@ -954,15 +955,12 @@ ldns_resolver_search(const ldns_resolver *r,const  ldns_rdf *name,
 	ldns_rr_type t, ldns_rr_class c, uint16_t flags)
 {
 
-	char *str_dname;
 	ldns_rdf *new_name;
 	ldns_rdf **search_list;
 	size_t i;
 	ldns_pkt *p;
 
-	str_dname = ldns_rdf2str(name);
-
-	if (ldns_dname_str_absolute(str_dname)) {
+	if (ldns_dname_absolute(name)) {
 		/* query as-is */
 		return ldns_resolver_query(r, name, t, c, flags);
 	} else if (ldns_resolver_dnsrch(r)) {
@@ -1219,9 +1217,11 @@ ldns_resolver_send(ldns_pkt **answer, ldns_resolver *r, const ldns_rdf *name,
 		                            ldns_resolver_tsig_keydata(r),
 		                            300, ldns_resolver_tsig_algorithm(r), NULL);
 		if (status != LDNS_STATUS_OK) {
+			ldns_pkt_free(query_pkt);
 			return LDNS_STATUS_CRYPTO_TSIG_ERR;
 		}
 #else
+		ldns_pkt_free(query_pkt);
 	        return LDNS_STATUS_CRYPTO_TSIG_ERR;
 #endif /* HAVE_SSL */
 	}

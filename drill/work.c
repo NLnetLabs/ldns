@@ -201,6 +201,10 @@ read_hex_buffer(char *filename)
 	ldns_buffer_set_position(result_buffer, ldns_buffer_capacity(result_buffer));
 	
 	xfree(wire);
+
+	if (fp != stdin) {
+		fclose(fp);
+	}
 	return result_buffer;
 }
 
@@ -236,7 +240,7 @@ read_hex_pkt(char *filename)
 void
 dump_hex(const ldns_pkt *pkt, const char *filename)
 {
-	uint8_t *wire;
+	uint8_t *wire = NULL;
 	size_t size, i;
 	FILE *fp;
 	ldns_status status;
@@ -273,4 +277,5 @@ dump_hex(const ldns_pkt *pkt, const char *filename)
 	}
 	fprintf(fp, "\n");
 	fclose(fp);
+	LDNS_FREE(wire);
 }

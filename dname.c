@@ -519,6 +519,18 @@ ldns_dname_str_absolute(const char *dname_str)
         return 0;
 }
 
+bool
+ldns_dname_absolute(const ldns_rdf *rdf)
+{
+	char *str = ldns_rdf2str(rdf);
+	if (str) {
+		bool r = ldns_dname_str_absolute(str);
+		LDNS_FREE(str);
+		return r;
+	}
+	return false;
+}
+
 ldns_rdf *
 ldns_dname_label(const ldns_rdf *rdf, uint8_t labelpos)
 {

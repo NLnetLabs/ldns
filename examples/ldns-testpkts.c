@@ -485,7 +485,10 @@ read_entry(FILE* in, const char* name, int *lineno, uint32_t* default_ttl,
 			reading_hex = false;
 			cur_reply->reply_from_hex = data_buffer2wire(hex_data_buffer);
 			ldns_buffer_free(hex_data_buffer);
+			hex_data_buffer = NULL;
 		} else if(str_keyword(&parse, "ENTRY_END")) {
+			if (hex_data_buffer)
+				ldns_buffer_free(hex_data_buffer);
 			return current;
 		} else if(reading_hex) {
 			ldns_buffer_printf(hex_data_buffer, line);

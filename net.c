@@ -110,12 +110,14 @@ ldns_send_buffer(ldns_pkt **result, ldns_resolver *r, ldns_buffer *qb, ldns_rdf 
 		if ((ns->ss_family == AF_INET) &&
 				(ldns_resolver_ip6(r) == LDNS_RESOLV_INET6)) {
 			/* not reachable */
+			LDNS_FREE(ns);
 			continue;
 		}
 
 		if ((ns->ss_family == AF_INET6) &&
 				 (ldns_resolver_ip6(r) == LDNS_RESOLV_INET)) {
 			/* not reachable */
+			LDNS_FREE(ns);
 			continue;
 		}
 #endif
@@ -808,6 +810,9 @@ ldns_axfr_start(ldns_resolver *resolver, ldns_rdf *domain, ldns_rr_class class)
              ns_i < ldns_resolver_nameserver_count(resolver) &&
              resolver->_socket == 0;
              ns_i++) {
+		if (ns != NULL) {
+			LDNS_FREE(ns);
+		}
 	        ns = ldns_rdf2native_sockaddr_storage(
 	        	resolver->_nameservers[ns_i],
 			ldns_resolver_port(resolver), &ns_len);
@@ -837,6 +842,9 @@ ldns_axfr_start(ldns_resolver *resolver, ldns_rdf *domain, ldns_rr_class class)
 			closesocket(resolver->_socket);
 #endif
 			resolver->_socket = 0;
+
+			ldns_pkt_free(query);
+			LDNS_FREE(ns);
 
 			return LDNS_STATUS_CRYPTO_TSIG_ERR;
 		}
