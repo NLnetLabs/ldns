@@ -202,7 +202,7 @@
 
         def __cmp__(self, other):
             """
-               Compares the two dname rdf's according to the algorithm for
+               Compares two dname rdf according to the algorithm for
                ordering in RFC4034 Section 6.
                
                :param other: The second dname rdf to compare.
@@ -233,6 +233,206 @@
             if (other.get_type() != _ldns.LDNS_RDF_TYPE_DNAME):
                 raise Exception("Operands must be ldns_dname.")
             return _ldns.ldns_dname_compare(self, other)
+
+        def __lt__(self, other):
+            """
+               Compares two dname rdf according to the algorithm for
+               ordering in RFC4034 Section 6.
+               
+               :param other: The second dname rdf to compare.
+               :type other: :class:`ldns_dname`
+               :throws TypeError: When `other` of invalid type.
+               :return: (bool) True when `self` is less than 'other'.
+
+               .. note::
+                   The type checking of parameter `other` is benevolent.
+                   It allows also to pass a dname :class:`ldns_rdf` object.
+                   This will probably change in future.                   
+            """
+            #
+            # The wrapped function generates asserts instead of setting
+            # error status. They cannot be caught from Python so a check
+            # is necessary. 
+            #
+            if (not isinstance(other, ldns_dname)) and \
+               isinstance(other, ldns_rdf) and \
+               other.get_type() == _ldns.LDNS_RDF_TYPE_DNAME:
+                warnings.warn("The ldns_dname.__lt__() method will" +
+                    " drop the possibility to compare ldns_rdf." +
+                    " Convert arguments to ldns_dname.",
+                    PendingDeprecationWarning, stacklevel=2)
+            if not isinstance(other, ldns_rdf):
+                raise TypeError("Parameter must be derived from ldns_rdf.")
+            if (other.get_type() != _ldns.LDNS_RDF_TYPE_DNAME):
+                raise Exception("Operands must be ldns_dname.")
+            return _ldns.ldns_dname_compare(self, other) == -1
+
+        def __le__(self, other):
+            """
+               Compares two dname rdf according to the algorithm for
+               ordering in RFC4034 Section 6.
+               
+               :param other: The second dname rdf to compare.
+               :type other: :class:`ldns_dname`
+               :throws TypeError: When `other` of invalid type.
+               :return: (bool) True when `self` is less than or equal to
+                   'other'.
+
+               .. note::
+                   The type checking of parameter `other` is benevolent.
+                   It allows also to pass a dname :class:`ldns_rdf` object.
+                   This will probably change in future.                   
+            """
+            #
+            # The wrapped function generates asserts instead of setting
+            # error status. They cannot be caught from Python so a check
+            # is necessary. 
+            #
+            if (not isinstance(other, ldns_dname)) and \
+               isinstance(other, ldns_rdf) and \
+               other.get_type() == _ldns.LDNS_RDF_TYPE_DNAME:
+                warnings.warn("The ldns_dname.__le__() method will" +
+                    " drop the possibility to compare ldns_rdf." +
+                    " Convert arguments to ldns_dname.",
+                    PendingDeprecationWarning, stacklevel=2)
+            if not isinstance(other, ldns_rdf):
+                raise TypeError("Parameter must be derived from ldns_rdf.")
+            if (other.get_type() != _ldns.LDNS_RDF_TYPE_DNAME):
+                raise Exception("Operands must be ldns_dname.")
+            return _ldns.ldns_dname_compare(self, other) != 1
+
+        def __eq__(self, other):
+            """
+               Compares two dname rdf according to the algorithm for
+               ordering in RFC4034 Section 6.
+               
+               :param other: The second dname rdf to compare.
+               :type other: :class:`ldns_dname`
+               :throws TypeError: When `other` of invalid type.
+               :return: (bool) True when `self` is equal to 'other'.
+
+               .. note::
+                   The type checking of parameter `other` is benevolent.
+                   It allows also to pass a dname :class:`ldns_rdf` object.
+                   This will probably change in future.                   
+            """
+            #
+            # The wrapped function generates asserts instead of setting
+            # error status. They cannot be caught from Python so a check
+            # is necessary. 
+            #
+            if (not isinstance(other, ldns_dname)) and \
+               isinstance(other, ldns_rdf) and \
+               other.get_type() == _ldns.LDNS_RDF_TYPE_DNAME:
+                warnings.warn("The ldns_dname.__eq__() method will" +
+                    " drop the possibility to compare ldns_rdf." +
+                    " Convert arguments to ldns_dname.",
+                    PendingDeprecationWarning, stacklevel=2)
+            if not isinstance(other, ldns_rdf):
+                raise TypeError("Parameter must be derived from ldns_rdf.")
+            if (other.get_type() != _ldns.LDNS_RDF_TYPE_DNAME):
+                raise Exception("Operands must be ldns_dname.")
+            return _ldns.ldns_dname_compare(self, other) == 0
+
+        def __ne__(self, other):
+            """
+               Compares two dname rdf according to the algorithm for
+               ordering in RFC4034 Section 6.
+               
+               :param other: The second dname rdf to compare.
+               :type other: :class:`ldns_dname`
+               :throws TypeError: When `other` of invalid type.
+               :return: (bool) True when `self` is not equal to 'other'.
+
+               .. note::
+                   The type checking of parameter `other` is benevolent.
+                   It allows also to pass a dname :class:`ldns_rdf` object.
+                   This will probably change in future.                   
+            """
+            #
+            # The wrapped function generates asserts instead of setting
+            # error status. They cannot be caught from Python so a check
+            # is necessary. 
+            #
+            if (not isinstance(other, ldns_dname)) and \
+               isinstance(other, ldns_rdf) and \
+               other.get_type() == _ldns.LDNS_RDF_TYPE_DNAME:
+                warnings.warn("The ldns_dname.__ne__() method will" +
+                    " drop the possibility to compare ldns_rdf." +
+                    " Convert arguments to ldns_dname.",
+                    PendingDeprecationWarning, stacklevel=2)
+            if not isinstance(other, ldns_rdf):
+                raise TypeError("Parameter must be derived from ldns_rdf.")
+            if (other.get_type() != _ldns.LDNS_RDF_TYPE_DNAME):
+                raise Exception("Operands must be ldns_dname.")
+            return _ldns.ldns_dname_compare(self, other) != 0
+
+        def __gt__(self, other):
+            """
+               Compares two dname rdf according to the algorithm for
+               ordering in RFC4034 Section 6.
+               
+               :param other: The second dname rdf to compare.
+               :type other: :class:`ldns_dname`
+               :throws TypeError: When `other` of invalid type.
+               :return: (bool) True when `self` is greater than 'other'.
+
+               .. note::
+                   The type checking of parameter `other` is benevolent.
+                   It allows also to pass a dname :class:`ldns_rdf` object.
+                   This will probably change in future.                   
+            """
+            #
+            # The wrapped function generates asserts instead of setting
+            # error status. They cannot be caught from Python so a check
+            # is necessary. 
+            #
+            if (not isinstance(other, ldns_dname)) and \
+               isinstance(other, ldns_rdf) and \
+               other.get_type() == _ldns.LDNS_RDF_TYPE_DNAME:
+                warnings.warn("The ldns_dname.__gt__() method will" +
+                    " drop the possibility to compare ldns_rdf." +
+                    " Convert arguments to ldns_dname.",
+                    PendingDeprecationWarning, stacklevel=2)
+            if not isinstance(other, ldns_rdf):
+                raise TypeError("Parameter must be derived from ldns_rdf.")
+            if (other.get_type() != _ldns.LDNS_RDF_TYPE_DNAME):
+                raise Exception("Operands must be ldns_dname.")
+            return _ldns.ldns_dname_compare(self, other) == 1
+
+        def __ge__(self, other):
+            """
+               Compares two dname rdf according to the algorithm for
+               ordering in RFC4034 Section 6.
+               
+               :param other: The second dname rdf to compare.
+               :type other: :class:`ldns_dname`
+               :throws TypeError: When `other` of invalid type.
+               :return: (bool) True when `self` is greater than or equal to
+                   'other'.
+
+               .. note::
+                   The type checking of parameter `other` is benevolent.
+                   It allows also to pass a dname :class:`ldns_rdf` object.
+                   This will probably change in future.                   
+            """
+            #
+            # The wrapped function generates asserts instead of setting
+            # error status. They cannot be caught from Python so a check
+            # is necessary. 
+            #
+            if (not isinstance(other, ldns_dname)) and \
+               isinstance(other, ldns_rdf) and \
+               other.get_type() == _ldns.LDNS_RDF_TYPE_DNAME:
+                warnings.warn("The ldns_dname.__ge__() method will" +
+                    " drop the possibility to compare ldns_rdf." +
+                    " Convert arguments to ldns_dname.",
+                    PendingDeprecationWarning, stacklevel=2)
+            if not isinstance(other, ldns_rdf):
+                raise TypeError("Parameter must be derived from ldns_rdf.")
+            if (other.get_type() != _ldns.LDNS_RDF_TYPE_DNAME):
+                raise Exception("Operands must be ldns_dname.")
+            return _ldns.ldns_dname_compare(self, other) != -1
 
         def cat(self, rd2):
             """

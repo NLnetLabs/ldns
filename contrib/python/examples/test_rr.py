@@ -32,36 +32,108 @@ def set_error():
        (inspect.currentframe().f_back.f_lineno, method_name))
 
 
+
 #if not error_detected:
-#if True:
-#    method_name = class_name + ".__cmp__()"
-#    rr1 = ldns.ldns_rr.new_frm_str("test1 600 IN A 0.0.0.0")
-#    rr2 = ldns.ldns_rr.new_frm_str("test2 600 IN A 1.1.1.1")
-#    try:
-#        ret = rr1 < rr2
-#        if ret != True:
-#            set_error()
-#    except:
-#        set_error()
-#    try:
-#        ret = rr1 == rr2
-#        if ret != False:
-#            set_error()
-#    except:
-#        set_error()
-#    try:
-#        ret = rr1 > rr2
-#        if ret != False:
-#            set_error()
-#    except:
-#        set_error()
-#    try:
-#        ret = rr1 != ""
-#        set_error()
-#    except TypeError:
-#        pass
-#    except:
-#        set_error()
+if True:
+    method_name = class_name + ".[comparison operators]"
+    rr1 = ldns.ldns_rr.new_frm_str("test1 600 IN A 0.0.0.0")
+    rr2 = ldns.ldns_rr.new_frm_str("test2 600 IN A 1.1.1.1")
+    try:
+        ret = rr1 < rr2
+        if not isinstance(ret, bool):
+            set_error()
+        if ret != True:
+            set_error()
+    except:
+        set_error()
+    try:
+        ret = rr2 < rr1
+        if not isinstance(ret, bool):
+            set_error()
+        if ret != False:
+            set_error()
+    except:
+        set_error()
+    try:
+        ret = rr1 <= rr2
+        if not isinstance(ret, bool):
+            set_error()
+        if ret != True:
+            set_error()
+    except:
+        set_error()
+    try:
+        ret = rr2 <= rr1
+        if not isinstance(ret, bool):
+            set_error()
+        if ret != False:
+            set_error()
+    except:
+        set_error()
+    try:
+        ret = rr1 == rr2
+        if not isinstance(ret, bool):
+            set_error()
+        if ret != False:
+            set_error()
+    except:
+        set_error()
+    try:
+        ret = rr1 == rr1
+        if not isinstance(ret, bool):
+            set_error()
+        if ret != True:
+            set_error()
+    except:
+        set_error()
+    try:
+        ret = rr1 != rr2
+        if not isinstance(ret, bool):
+            set_error()
+        if ret != True:
+            set_error()
+    except:
+        set_error()
+    try:
+        ret = rr1 != rr1
+        if not isinstance(ret, bool):
+            set_error()
+        if ret != False:
+            set_error()
+    except:
+        set_error()
+    try:
+        ret = rr1 > rr2
+        if not isinstance(ret, bool):
+            set_error()
+        if ret != False:
+            set_error()
+    except:
+        set_error()
+    try:
+        ret = rr2 > rr1
+        if not isinstance(ret, bool):
+            set_error()
+        if ret != True:
+            set_error()
+    except:
+        set_error()
+    try:
+        ret = rr1 >= rr2
+        if not isinstance(ret, bool):
+            set_error()
+        if ret != False:
+            set_error()
+    except:
+        set_error()
+    try:
+        ret = rr2 >= rr1
+        if not isinstance(ret, bool):
+            set_error()
+        if ret != True:
+            set_error()
+    except:
+        set_error()
 
 
 #if not error_detected:
@@ -1684,37 +1756,108 @@ temp_fname = "tmp_rr_list.txt"
 
 
 #if not error_detected:
-#if True:
-#    method_name = class_name + ".__cmp__()"
-#    rrl1 = ldns.ldns_rr_list.new()
-#    rrl1.push_rr(ldns.ldns_rr.new_frm_str("test1 600 IN A 0.0.0.0"))
-#    rrl2 = ldns.ldns_rr_list.new()
-#    rrl2.push_rr(ldns.ldns_rr.new_frm_str("test2 600 IN A 1.1.1.1"))
-#    try:
-#        ret = rrl1 < rrl2
-#        if ret != True:
-#            set_error()
-#    except:
-#        set_error()
-#    try:
-#        ret = rrl1 == rrl2
-#        if ret != False:
-#            set_error()
-#    except:
-#        set_error()
-#    try:
-#        ret = rrl1 > rrl2
-#        if ret != False:
-#            set_error()
-#    except:
-#        set_error()
-#    try:
-#        ret = rrl1 != ""
-#        set_error()
-#    except TypeError:
-#        pass
-#    except:
-#        set_error()
+if True:
+    method_name = class_name + ".[comparison operators]"
+    rrl1 = ldns.ldns_rr_list.new()
+    rrl1.push_rr(ldns.ldns_rr.new_frm_str("test1 600 IN A 0.0.0.0"))
+    rrl2 = ldns.ldns_rr_list.new()
+    rrl2.push_rr(ldns.ldns_rr.new_frm_str("test2 600 IN A 1.1.1.1"))
+    try:
+        ret = rrl1 < rrl2
+        if not isinstance(ret, bool):
+            set_error()
+        if ret != True:
+            set_error()
+    except:
+        set_error()
+    try:
+        ret = rrl2 < rrl1
+        if not isinstance(ret, bool):
+            set_error()
+        if ret != False:
+            set_error()
+    except:
+        set_error()
+    try:
+        ret = rrl1 <= rrl2
+        if not isinstance(ret, bool):
+            set_error()
+        if ret != True:
+            set_error()
+    except:
+        set_error()
+    try:
+        ret = rrl2 <= rrl1
+        if not isinstance(ret, bool):
+            set_error()
+        if ret != False:
+            set_error()
+    except:
+        set_error()
+    try:
+        ret = rrl1 == rrl2
+        if not isinstance(ret, bool):
+            set_error()
+        if ret != False:
+            set_error()
+    except:
+        set_error()
+    try:
+        ret = rrl1 == rrl1
+        if not isinstance(ret, bool):
+            set_error()
+        if ret != True:
+            set_error()
+    except:
+        set_error()
+    try:
+        ret = rrl1 != rrl2
+        if not isinstance(ret, bool):
+            set_error()
+        if ret != True:
+            set_error()
+    except:
+        set_error()
+    try:
+        ret = rrl1 != rrl1
+        if not isinstance(ret, bool):
+            set_error()
+        if ret != False:
+            set_error()
+    except:
+        set_error()
+    try:
+        ret = rrl1 > rrl2
+        if not isinstance(ret, bool):
+            set_error()
+        if ret != False:
+            set_error()
+    except:
+        set_error()
+    try:
+        ret = rrl2 > rrl1
+        if not isinstance(ret, bool):
+            set_error()
+        if ret != True:
+            set_error()
+    except:
+        set_error()
+    try:
+        ret = rrl1 >= rrl2
+        if not isinstance(ret, bool):
+            set_error()
+        if ret != False:
+            set_error()
+    except:
+        set_error()
+    try:
+        ret = rrl2 >= rrl1
+        if not isinstance(ret, bool):
+            set_error()
+        if ret != True:
+            set_error()
+    except:
+        set_error()
 
 
 #if not error_detected:

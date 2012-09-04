@@ -1,4 +1,6 @@
 1.6.14
+	* Added rich comparison methods for ldns_dname, ldns_rdf, ldns_rr and
+	  ldns_rr_list classes.
 	* Added deprecation warnings into ldns_rr.new_frm_fp() and
 	  ldns_rr.new_frm_fp_l() and others.
 	* Fixed ldns_rr.set_rdf(), which may cause memory leaks, because it

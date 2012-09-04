@@ -45,6 +45,109 @@ if True:
 
 #if not error_detected:
 if True:
+    method_name = class_name + ".[comparison operators]"
+    rdf1 = ldns.ldns_rdf.new_frm_str("0.0.0.0", ldns.LDNS_RDF_TYPE_A)
+    rdf2 = ldns.ldns_rdf.new_frm_str("1.1.1.1", ldns.LDNS_RDF_TYPE_A)
+    try:
+        ret = rdf1 < rdf2
+        if not isinstance(ret, bool):
+            set_error()
+        if ret != True:
+            set_error()
+    except:
+        set_error()
+    try:
+        ret = rdf2 < rdf1
+        if not isinstance(ret, bool):
+            set_error()
+        if ret != False:
+            set_error()
+    except:
+        set_error()
+    try:
+        ret = rdf1 <= rdf2
+        if not isinstance(ret, bool):
+            set_error()
+        if ret != True:
+            set_error()
+    except:
+        set_error()
+    try:
+        ret = rdf2 <= rdf1
+        if not isinstance(ret, bool):
+            set_error()
+        if ret != False:
+            set_error()
+    except:
+        set_error()
+    try:
+        ret = rdf1 == rdf2
+        if not isinstance(ret, bool):
+            set_error()
+        if ret != False:
+            set_error()
+    except:
+        set_error()
+    try:
+        ret = rdf1 == rdf1
+        if not isinstance(ret, bool):
+            set_error()
+        if ret != True:
+            set_error()
+    except:
+        set_error()
+    try:
+        ret = rdf1 != rdf2
+        if not isinstance(ret, bool):
+            set_error()
+        if ret != True:
+            set_error()
+    except:
+        set_error()
+    try:
+        ret = rdf1 != rdf1
+        if not isinstance(ret, bool):
+            set_error()
+        if ret != False:
+            set_error()
+    except:
+        set_error()
+    try:
+        ret = rdf1 > rdf2
+        if not isinstance(ret, bool):
+            set_error()
+        if ret != False:
+            set_error()
+    except:
+        set_error()
+    try:
+        ret = rdf2 > rdf1
+        if not isinstance(ret, bool):
+            set_error()
+        if ret != True:
+            set_error()
+    except:
+        set_error()
+    try:
+        ret = rdf1 >= rdf2
+        if not isinstance(ret, bool):
+            set_error()
+        if ret != False:
+            set_error()
+    except:
+        set_error()
+    try:
+        ret = rdf2 >= rdf1
+        if not isinstance(ret, bool):
+            set_error()
+        if ret != True:
+            set_error()
+    except:
+        set_error()
+
+
+#if not error_detected:
+if True:
     method_name = "ldns_rdf_new()"
     sys.stderr.write("%s not tested.\n" % (method_name))
 

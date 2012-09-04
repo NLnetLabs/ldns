@@ -796,7 +796,6 @@ to create :class:`ldns_rr` instances.
         # _LDNS_RR_CONSTRUCTORS
         #
 
-
         def __str__(self):
             """
                Converts the data in the resource record to presentation format.
@@ -818,6 +817,86 @@ to create :class:`ldns_rr` instances.
                    1 if `other` RR comes before `self`.
             """
             return _ldns.ldns_rr_compare(self, other)
+
+        def __lt__(self, other):
+            """
+               Compares two rrs.
+               
+               The TTL is not looked at.
+               
+               :param other: The second RR one.
+               :type other: :class:`ldns_rr`
+               :throws TypeError: When `other` of non-:class:`ldns_rr` type.
+               :return: (bool) True when `self` is less than 'other'.
+            """
+            return _ldns.ldns_rr_compare(self, other) == -1
+
+        def __le__(self, other):
+            """
+               Compares two rrs.
+               
+               The TTL is not looked at.
+               
+               :param other: The second RR one.
+               :type other: :class:`ldns_rr`
+               :throws TypeError: When `other` of non-:class:`ldns_rr` type.
+               :return: (bool) True when `self` is less than or equal to
+                   'other'.
+            """
+            return _ldns.ldns_rr_compare(self, other) != 1
+
+        def __eq__(self, other):
+            """
+               Compares two rrs.
+               
+               The TTL is not looked at.
+               
+               :param other: The second RR one.
+               :type other: :class:`ldns_rr`
+               :throws TypeError: When `other` of non-:class:`ldns_rr` type.
+               :return: (bool) True when `self` is equal to 'other'.
+            """
+            return _ldns.ldns_rr_compare(self, other) == 0
+
+        def __ne__(self, other):
+            """
+               Compares two rrs.
+               
+               The TTL is not looked at.
+               
+               :param other: The second RR one.
+               :type other: :class:`ldns_rr`
+               :throws TypeError: When `other` of non-:class:`ldns_rr` type.
+               :return: (bool) True when `self` is not equal to 'other'.
+            """
+            return _ldns.ldns_rr_compare(self, other) != 0
+
+        def __gt__(self, other):
+            """
+               Compares two rrs.
+               
+               The TTL is not looked at.
+               
+               :param other: The second RR one.
+               :type other: :class:`ldns_rr`
+               :throws TypeError: When `other` of non-:class:`ldns_rr` type.
+               :return: (bool) True when `self` is greater than 'other'.
+            """
+            return _ldns.ldns_rr_compare(self, other) == 1
+
+        def __ge__(self, other):
+            """
+               Compares two rrs.
+               
+               The TTL is not looked at.
+               
+               :param other: The second RR one.
+               :type other: :class:`ldns_rr`
+               :throws TypeError: When `other` of non-:class:`ldns_rr` type.
+               :return: (bool) True when `self` is greater than or equal to
+                    'other'.
+            """
+            return _ldns.ldns_rr_compare(self, other) != -1
 
         @staticmethod
         def class_by_name(string):
@@ -1922,6 +2001,80 @@ This class contains a list of RR's (see :class:`ldns.ldns_rr`).
                    `rrl2`, 1 if `rrl2` comes before this list.
             """
             return _ldns.ldns_rr_list_compare(self, rrl2)
+
+        def __lt__(self, other):
+            """
+               Compares two rr lists.
+               
+               :param other: The second one.
+               :type other: :class:`ldns_rr_list`
+               :throws TypeError: when `other` of non-:class:`ldns_rr_list`
+                   type.
+               :return: (bool) True when `self` is less than 'other'.
+            """
+            return _ldns.ldns_rr_list_compare(self, other) == -1
+
+        def __le__(self, other):
+            """
+               Compares two rr lists.
+               
+               :param other: The second one.
+               :type other: :class:`ldns_rr_list`
+               :throws TypeError: when `other` of non-:class:`ldns_rr_list`
+                   type.
+               :return: (bool) True when `self` is less than or equal to
+                   'other'.
+            """
+            return _ldns.ldns_rr_list_compare(self, other) != 1
+
+        def __eq__(self, other):
+            """
+               Compares two rr lists.
+               
+               :param other: The second one.
+               :type other: :class:`ldns_rr_list`
+               :throws TypeError: when `other` of non-:class:`ldns_rr_list`
+                   type.
+               :return: (bool) True when `self` is equal to 'other'.
+            """
+            return _ldns.ldns_rr_list_compare(self, other) == 0
+
+        def __ne__(self, other):
+            """
+               Compares two rr lists.
+               
+               :param other: The second one.
+               :type other: :class:`ldns_rr_list`
+               :throws TypeError: when `other` of non-:class:`ldns_rr_list`
+                   type.
+               :return: (bool) True when `self` is not equal to 'other'.
+            """
+            return _ldns.ldns_rr_list_compare(self, other) != 0
+
+        def __gt__(self, other):
+            """
+               Compares two rr lists.
+               
+               :param other: The second one.
+               :type other: :class:`ldns_rr_list`
+               :throws TypeError: when `other` of non-:class:`ldns_rr_list`
+                   type.
+               :return: (bool) True when `self` is greater than 'other'.
+            """
+            return _ldns.ldns_rr_list_compare(self, other) == 1
+
+        def __ge__(self, other):
+            """
+               Compares two rr lists.
+               
+               :param other: The second one.
+               :type other: :class:`ldns_rr_list`
+               :throws TypeError: when `other` of non-:class:`ldns_rr_list`
+                   type.
+               :return: (bool) True when `self` is greater than or equal to
+                   'other'.
+            """
+            return _ldns.ldns_rr_list_compare(self, other) != -1
 
         def write_to_buffer(self, buffer):
             """

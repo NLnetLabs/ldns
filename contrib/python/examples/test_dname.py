@@ -81,6 +81,109 @@ if True:
 
 #if not error_detected:
 if True:
+    method_name = class_name + ".[comparison operators]"
+    dn1 = ldns.ldns_dname("a.test")
+    dn2 = ldns.ldns_dname("b.test")
+    try:
+        ret = dn1 < dn2
+        if not isinstance(ret, bool):
+            set_error()
+        if ret != True:
+            set_error()
+    except:
+        set_error()
+    try:
+        ret = dn2 < dn1
+        if not isinstance(ret, bool):
+            set_error()
+        if ret != False:
+            set_error()
+    except:
+        set_error()
+    try:
+        ret = dn1 <= dn2
+        if not isinstance(ret, bool):
+            set_error()
+        if ret != True:
+            set_error()
+    except:
+        set_error()
+    try:
+        ret = dn2 <= dn1
+        if not isinstance(ret, bool):
+            set_error()
+        if ret != False:
+            set_error()
+    except:
+        set_error()
+    try:
+        ret = dn1 == dn2
+        if not isinstance(ret, bool):
+            set_error()
+        if ret != False:
+            set_error()
+    except:
+        set_error()
+    try:
+        ret = dn1 == dn1
+        if not isinstance(ret, bool):
+            set_error()
+        if ret != True:
+            set_error()
+    except:
+        set_error()
+    try:
+        ret = dn1 != dn2
+        if not isinstance(ret, bool):
+            set_error()
+        if ret != True:
+            set_error()
+    except:
+        set_error()
+    try:
+        ret = dn1 != dn1
+        if not isinstance(ret, bool):
+            set_error()
+        if ret != False:
+            set_error()
+    except:
+        set_error()
+    try:
+        ret = dn1 > dn2
+        if not isinstance(ret, bool):
+            set_error()
+        if ret != False:
+            set_error()
+    except:
+        set_error()
+    try:
+        ret = dn2 > dn1
+        if not isinstance(ret, bool):
+            set_error()
+        if ret != True:
+            set_error()
+    except:
+        set_error()
+    try:
+        ret = dn1 >= dn2
+        if not isinstance(ret, bool):
+            set_error()
+        if ret != False:
+            set_error()
+    except:
+        set_error()
+    try:
+        ret = dn2 >= dn1
+        if not isinstance(ret, bool):
+            set_error()
+        if ret != True:
+            set_error()
+    except:
+        set_error()
+
+
+#if not error_detected:
+if True:
     method_name = class_name + ".absolute()"
     dname = ldns.ldns_dname("www.nic.cz.")
     try:

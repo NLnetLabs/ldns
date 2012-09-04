@@ -299,18 +299,86 @@ specified in the (16-bit) type field with a value from ldns_rdf_type."
 
         def __cmp__(self, other):
             """
-               Compares two rdf's on their wire formats.
+               Compares two rdfs on their wire formats.
                
                (To order dnames according to rfc4034, use ldns_dname_compare.)
                
                :param other: The second one RDF.
                :type other: :class:`ldns_rdf`
-               :throws TypeError: When other of non-:class:`ldns_rdf` type.
+               :throws TypeError: When `other` of non-:class:`ldns_rdf` type.
                :return: (int) -1, 0 or 1 if self comes before other,
                    is equal or self comes after other respectively.
             """
             return _ldns.ldns_rdf_compare(self, other)
-            
+
+        def __lt__(self, other):
+            """
+                Compares two rdfs on their formats.
+
+                :param other: The socond one RDF.
+                :type other: :class:`ldns_rdf`
+                :throws TypeError: When `other` of non-:class:`ldns_rdf` type.
+                :return: (bool) True when `self` is less than 'other'.
+            """
+            return _ldns.ldns_rdf_compare(self, other) == -1
+
+        def __le__(self, other):
+            """
+                Compares two rdfs on their formats.
+
+                :param other: The socond one RDF.
+                :type other: :class:`ldns_rdf`
+                :throws TypeError: When `other` of non-:class:`ldns_rdf` type.
+                :return: (bool) True when `self` is less than or equal to
+                    'other'.
+            """
+            return _ldns.ldns_rdf_compare(self, other) != 1
+
+        def __eq__(self, other):
+            """
+                Compares two rdfs on their formats.
+
+                :param other: The socond one RDF.
+                :type other: :class:`ldns_rdf`
+                :throws TypeError: When `other` of non-:class:`ldns_rdf` type.
+                :return: (bool) True when `self` is equal to 'other'.
+            """
+            return _ldns.ldns_rdf_compare(self, other) == 0
+
+        def __ne__(self, other):
+            """
+                Compares two rdfs on their formats.
+
+                :param other: The socond one RDF.
+                :type other: :class:`ldns_rdf`
+                :throws TypeError: When `other` of non-:class:`ldns_rdf` type.
+                :return: (bool) True when `self` is not equal to 'other'.
+            """
+            return _ldns.ldns_rdf_compare(self, other) != 0
+
+        def __gt__(self, other):
+            """
+                Compares two rdfs on their formats.
+
+                :param other: The socond one RDF.
+                :type other: :class:`ldns_rdf`
+                :throws TypeError: When `other` of non-:class:`ldns_rdf` type.
+                :return: (bool) True when `self` is greater than 'other'.
+            """
+            return _ldns.ldns_rdf_compare(self, other) == 1
+
+        def __ge__(self, other):
+            """
+                Compares two rdfs on their formats.
+
+                :param other: The socond one RDF.
+                :type other: :class:`ldns_rdf`
+                :throws TypeError: When `other` of non-:class:`ldns_rdf` type.
+                :return: (bool) True when `self` is greater than or equal to
+                    'other'.
+            """
+            return _ldns.ldns_rdf_compare(self, other) != -1
+
         def print_to_file(self, output):
             """
                Prints the data in the rdata field to the given `output` file
@@ -527,15 +595,15 @@ specified in the (16-bit) type field with a value from ldns_rdf_type."
 
         def dname_compare(self, other):
             """
-               Compares the two dname rdf's according to the algorithm
+               Compares two dname rdf according to the algorithm
                for ordering in RFC4034 Section 6.
 
                :param other: The second dname rdf to compare.
                :type other: :class:`ldns_rdf`
                :throws TypeError: When not a :class:`ldns_rdf` used.
                :throws Exception: When not dnames compared.
-               :return: (int) -1, 0 or 1 if self comes before other,
-                   self is equal or self comes after other respectively.
+               :return: (int) -1, 0 or 1 if `self` comes before `other`,
+                   `self` is equal or `self` comes after `other` respectively.
 
                .. warning::
 
