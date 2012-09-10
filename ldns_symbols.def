@@ -44,6 +44,12 @@ ldns_convert_ecdsa_rrsig_rdf2asn1
 ldns_create_empty_rrsig
 ldns_create_nsec
 ldns_create_nsec3
+ldns_dane_cert2rdf
+ldns_dane_create_tlsa_owner
+ldns_dane_create_tlsa_rr
+ldns_dane_select_certificate
+ldns_dane_verify
+ldns_dane_verify_rr
 ldns_digest_evp
 ldns_directive_types
 ldns_dname2buffer_wire
