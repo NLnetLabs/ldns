@@ -156,6 +156,15 @@ main(int argc, char **argv)
 	
 	s = ldns_zone_new_frm_fp_l(&z, fp, NULL, 0, LDNS_RR_CLASS_IN, &line_nr);
 
+	fclose(fp);
+	if (s != LDNS_STATUS_OK) {
+		fprintf(stderr, "%s at %d\n", 
+				ldns_get_errorstr_by_id(s),
+				line_nr);
+                exit(EXIT_FAILURE);
+	}
+
+
 	if (strip) {
 		stripped_list = ldns_rr_list_new();
 		while ((cur_rr = ldns_rr_list_pop_rr(ldns_zone_rrs(z)))) {
@@ -191,37 +200,29 @@ main(int argc, char **argv)
 		ldns_zone_set_rrs(z, stripped_list);
 	}
 
-	if (s == LDNS_STATUS_OK) {
-		if (canonicalize) {
-			ldns_rr2canonical(ldns_zone_soa(z));
-			for (i = 0; i < ldns_rr_list_rr_count(ldns_zone_rrs(z)); i++) {
-				ldns_rr2canonical(ldns_rr_list_rr(ldns_zone_rrs(z), i));
-			}
+	if (canonicalize) {
+		ldns_rr2canonical(ldns_zone_soa(z));
+		for (i = 0; i < ldns_rr_list_rr_count(ldns_zone_rrs(z)); i++) {
+			ldns_rr2canonical(ldns_rr_list_rr(ldns_zone_rrs(z), i));
 		}
-		if (sort) {
-			ldns_zone_sort(z);
-		}
-
-		if (print_soa && ldns_zone_soa(z)) {
-			if (soa_serial_increment_func) {
-				ldns_rr_soa_increment_func_int(
-					  ldns_zone_soa(z)
-					, soa_serial_increment_func
-					, soa_serial_increment_func_data
-					);
-			}
-			ldns_rr_print_fmt(stdout, &fmt, ldns_zone_soa(z));
-		}
-		ldns_rr_list_print_fmt(stdout, &fmt, ldns_zone_rrs(z));
-
-		ldns_zone_deep_free(z);
-	} else {
-		fprintf(stderr, "%s at %d\n", 
-				ldns_get_errorstr_by_id(s),
-				line_nr);
-                exit(EXIT_FAILURE);
 	}
-	fclose(fp);
+	if (sort) {
+		ldns_zone_sort(z);
+	}
+
+	if (print_soa && ldns_zone_soa(z)) {
+		if (soa_serial_increment_func) {
+			ldns_rr_soa_increment_func_int(
+					ldns_zone_soa(z)
+				, soa_serial_increment_func
+				, soa_serial_increment_func_data
+				);
+		}
+		ldns_rr_print_fmt(stdout, &fmt, ldns_zone_soa(z));
+	}
+	ldns_rr_list_print_fmt(stdout, &fmt, ldns_zone_rrs(z));
+
+	ldns_zone_deep_free(z);
 
         exit(EXIT_SUCCESS);
 }
