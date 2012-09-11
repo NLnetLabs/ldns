@@ -27,8 +27,8 @@
 #endif
 
 ldns_status
-ldns_dane_create_tlsa_owner(ldns_rdf** tlsa_owner,
-		const ldns_rdf* name, int port, ldns_dane_transport transport)
+ldns_dane_create_tlsa_owner(ldns_rdf** tlsa_owner, const ldns_rdf* name,
+		uint16_t port, ldns_dane_transport transport)
 {
 	char buf[LDNS_MAX_DOMAINLEN];
 	size_t s;
@@ -37,20 +37,20 @@ ldns_dane_create_tlsa_owner(ldns_rdf** tlsa_owner,
 	assert(name != NULL);
 	assert(ldns_rdf_get_type(name) == LDNS_RDF_TYPE_DNAME);
 
-	s = snprintf(buf, LDNS_MAX_DOMAINLEN, "X_%d", port);
-	buf[0] = s - 1;
+	s = (size_t)snprintf(buf, LDNS_MAX_DOMAINLEN, "X_%d", (int)port);
+	buf[0] = (char)(s - 1);
 
 	switch(transport) {
 	case LDNS_DANE_TRANSPORT_TCP:
-		s += snprintf(&buf[s], LDNS_MAX_DOMAINLEN, "\004_tcp");
+		s += snprintf(buf + s, LDNS_MAX_DOMAINLEN - s, "\004_tcp");
 		break;
 	
 	case LDNS_DANE_TRANSPORT_UDP:
-		s += snprintf(&buf[s], LDNS_MAX_DOMAINLEN, "\004_udp");
+		s += snprintf(buf + s, LDNS_MAX_DOMAINLEN - s, "\004_udp");
 		break;
 
 	case LDNS_DANE_TRANSPORT_SCTP:
-		s += snprintf(&buf[s], LDNS_MAX_DOMAINLEN, "\005_sctp");
+		s += snprintf(buf + s, LDNS_MAX_DOMAINLEN - s, "\005_sctp");
 		break;
 	
 	default:
@@ -75,12 +75,12 @@ ldns_dane_cert2rdf(ldns_rdf** rdf, X509* cert,
 		ldns_tlsa_matching_type matching_type)
 {
 	unsigned char* buf = NULL;
-	int len;
+	size_t len;
 
 	X509_PUBKEY* xpubkey;
 	EVP_PKEY* epubkey;
 
-	uint8_t* digest;
+	unsigned char* digest;
 
 	assert(rdf != NULL);
 	assert(cert != NULL);
@@ -88,12 +88,14 @@ ldns_dane_cert2rdf(ldns_rdf** rdf, X509* cert,
 	switch(selector) {
 	case LDNS_TLSA_SELECTOR_FULL_CERTIFICATE:
 
-		len = i2d_X509(cert, &buf);
+		len = (size_t)i2d_X509(cert, &buf);
 		break;
 
 	case LDNS_TLSA_SELECTOR_SUBJECTPUBLICKEYINFO:
 
+#ifndef S_SPLINT_S
 		xpubkey = X509_get_X509_PUBKEY(cert);
+#endif
 		if (! xpubkey) {
 			return LDNS_STATUS_SSL_ERR;
 		}
@@ -101,7 +103,7 @@ ldns_dane_cert2rdf(ldns_rdf** rdf, X509* cert,
 		if (! epubkey) {
 			return LDNS_STATUS_SSL_ERR;
 		}
-		len = i2d_PUBKEY(epubkey, &buf);
+		len = (size_t)i2d_PUBKEY(epubkey, &buf);
 		break;
 	
 	default:
@@ -118,12 +120,12 @@ ldns_dane_cert2rdf(ldns_rdf** rdf, X509* cert,
 	
 	case LDNS_TLSA_MATCHING_TYPE_SHA256:
 
-		digest = LDNS_XMALLOC(uint8_t, SHA256_DIGEST_LENGTH);
+		digest = LDNS_XMALLOC(unsigned char, SHA256_DIGEST_LENGTH);
 		if (digest == NULL) {
 			LDNS_FREE(buf);
 			return LDNS_STATUS_MEM_ERR;
 		}
-		(void) ldns_sha256(buf, len, digest);
+		(void) ldns_sha256(buf, (unsigned int)len, digest);
 		*rdf = ldns_rdf_new(LDNS_RDF_TYPE_HEX, SHA256_DIGEST_LENGTH,
 				digest);
 		LDNS_FREE(buf);
@@ -133,12 +135,12 @@ ldns_dane_cert2rdf(ldns_rdf** rdf, X509* cert,
 
 	case LDNS_TLSA_MATCHING_TYPE_SHA512:
 
-		digest = LDNS_XMALLOC(uint8_t, SHA512_DIGEST_LENGTH);
+		digest = LDNS_XMALLOC(unsigned char, SHA512_DIGEST_LENGTH);
 		if (digest == NULL) {
 			LDNS_FREE(buf);
 			return LDNS_STATUS_MEM_ERR;
 		}
-		(void) ldns_sha512(buf, len, digest);
+		(void) ldns_sha512(buf, (unsigned int)len, digest);
 		*rdf = ldns_rdf_new(LDNS_RDF_TYPE_HEX, SHA512_DIGEST_LENGTH,
 				digest);
 		LDNS_FREE(buf);
@@ -468,7 +470,7 @@ ldns_dane_create_tlsa_rr(ldns_rr** tlsa,
 
 	s = ldns_dane_cert2rdf(&rdf, cert, selector, matching_type);
 	if (s == LDNS_STATUS_OK) {
-		ldns_rr_set_rdf(*tlsa, rdf, 3);
+		(void) ldns_rr_set_rdf(*tlsa, rdf, 3);
 		return LDNS_STATUS_OK;
 	}
 	ldns_rr_free(*tlsa);
@@ -537,7 +539,7 @@ ldns_dane_match_any_cert_with_data(STACK_OF(X509)* chain,
 	size_t n, i;
 	X509* cert;
 
-	n = sk_X509_num(chain);
+	n = (size_t)sk_X509_num(chain);
 	for (i = 0; i < n; i++) {
 		cert = sk_X509_pop(chain);
 		if (! cert) {

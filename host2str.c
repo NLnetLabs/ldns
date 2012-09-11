@@ -1666,6 +1666,7 @@ ldns_key2buffer_str(ldns_buffer *output, const ldns_key *k)
 	uint16_t i;
 #  endif
 	/* not used when ssl is not defined */
+	/*@unused@*/
 	ldns_rdf *b64_bignum = NULL;
 
 	RSA *rsa;

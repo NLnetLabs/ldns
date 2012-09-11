@@ -204,7 +204,7 @@ get_ssl_cert_chain(X509** cert, STACK_OF(X509)** extra_certs, SSL* ssl,
 		s = LDNS_STATUS_NETWORK_ERR;
 		goto error;
 	}
-	if (connect(sock, (struct sockaddr*)a, a_len) == -1) {
+	if (connect(sock, (struct sockaddr*)a, (socklen_t)a_len) == -1) {
 		s = LDNS_STATUS_NETWORK_ERR;
 		goto error;
 	}
@@ -215,7 +215,7 @@ get_ssl_cert_chain(X509** cert, STACK_OF(X509)** extra_certs, SSL* ssl,
 		goto error;
 	}
 	SSL_set_connect_state(ssl);
-	SSL_set_mode(ssl, SSL_MODE_AUTO_RETRY);
+	(void) SSL_set_mode(ssl, SSL_MODE_AUTO_RETRY);
 	if (! SSL_set_fd(ssl, sock)) {
 		close(sock);
 		s = LDNS_STATUS_SSL_ERR;
@@ -685,7 +685,7 @@ main(int argc, char **argv)
 
 	char*         name_str;
 	ldns_rdf*     name;
-	int           port;
+	uint16_t      port;
 
 	ldns_resolver* res            = NULL;
 	ldns_rdf*      tlsa_owner     = NULL;
@@ -838,7 +838,7 @@ main(int argc, char **argv)
 	s = ldns_str2rdf_dname(&name, name_str);
 	LDNS_ERR(s, "could not ldns_str2rdf_dname");
 
-	port = usage_within_range(argv[1], 65535, "port");
+	port = (uint16_t) usage_within_range(argv[1], 65535, "port");
 
 	s = ldns_dane_create_tlsa_owner(&tlsa_owner, name, port, transport);
 	LDNS_ERR(s, "could not create TLSA owner name");
@@ -959,7 +959,9 @@ main(int argc, char **argv)
 		if (! cert) {
 			ssl_err("could not SSL_get_certificate");
 		}
+#ifndef S_SPLINT_S
 		extra_certs = ctx->extra_certs;
+#endif
 
 		switch (mode) {
 		case CREATE: dane_create(tlsas, tlsa_owner, certificate_usage,

@@ -370,7 +370,8 @@ distclean: realclean
 
 ## No need for changes here
 
-lint: @LINT_DRILL@ @LINT_EXAMPLES@
+lint: lint-lib @LINT_DRILL@ @LINT_EXAMPLES@
+lint-lib:
 	for i in $(srcdir)/*.c; do \
 		$(LINT) $(LINTFLAGS) -I. -I$(srcdir) $(srcdir)/$$i ; \
 		if test $$? -ne 0 ; then exit 1 ; fi ; \

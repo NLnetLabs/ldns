@@ -92,7 +92,8 @@ typedef enum ldns_enum_dane_transport ldns_dane_transport;
  * \return LDNS_STATUS_OK on success or an error code otherwise.
  */
 ldns_status ldns_dane_create_tlsa_owner(ldns_rdf** tlsa_owner,
-		const ldns_rdf* name, int port, ldns_dane_transport transport);
+		const ldns_rdf* name, uint16_t port,
+		ldns_dane_transport transport);
 
 
 #if LDNS_BUILD_CONFIG_HAVE_SSL

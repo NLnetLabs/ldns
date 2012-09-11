@@ -286,9 +286,9 @@ ldns_dnssec_build_data_chain(ldns_resolver *res,
 
 	bool other_rrset = false;
 
-	assert(pkt != NULL);
-	
 	ldns_dnssec_data_chain *new_chain = ldns_dnssec_data_chain_new();
+
+	assert(pkt != NULL);
 
 	if (!ldns_dnssec_pkt_has_rrsigs(pkt)) {
 		/* hmm. no dnssec data in the packet. go up to try and deny
