@@ -36,58 +36,77 @@
 extern "C" {
 #endif
 
+/**
+ * The different "Certificate usage" rdata field values for a TLSA RR.
+ */
 enum ldns_enum_tlsa_certificate_usage
 {
+	/** CA constraint */
 	LDNS_TLSA_USAGE_CA_CONSTRAINT			= 0,
+	/** Sevice certificate constraint */
 	LDNS_TLSA_USAGE_SERVICE_CERTIFICATE_CONSTRAINT	= 1,
+	/** Trust anchor assertion */
 	LDNS_TLSA_USAGE_TRUST_ANCHOR_ASSERTION		= 2,
+	/** Domain issued certificate */
 	LDNS_TLSA_USAGE_DOMAIN_ISSUED_CERTIFICATE	= 3
 };
 typedef enum ldns_enum_tlsa_certificate_usage ldns_tlsa_certificate_usage;
 
+/**
+ * The different "Selector" rdata field values for a TLSA RR.
+ */
 enum ldns_enum_tlsa_selector
 {
+	/** 
+	 * Full certificate: the Certificate binary structure
+	 * as defined in [RFC5280]
+	 */
 	LDNS_TLSA_SELECTOR_FULL_CERTIFICATE	= 0,
+
+	/** 
+	 * SubjectPublicKeyInfo: DER-encoded binary structure
+	 * as defined in [RFC5280]
+	 */
 	LDNS_TLSA_SELECTOR_SUBJECTPUBLICKEYINFO	= 1
 };
 typedef enum ldns_enum_tlsa_selector ldns_tlsa_selector;
 
+/**
+ * The different "Matching type" rdata field values for a TLSA RR.
+ */
 enum ldns_enum_tlsa_matching_type
 {
+	/** Exact match on selected content */
 	LDNS_TLSA_MATCHING_TYPE_NO_HASH_USED	= 0,
+	/** SHA-256 hash of selected content [RFC6234] */
 	LDNS_TLSA_MATCHING_TYPE_SHA256		= 1,
+	/** SHA-512 hash of selected content [RFC6234] */
 	LDNS_TLSA_MATCHING_TYPE_SHA512		= 2
 };
 typedef enum ldns_enum_tlsa_matching_type ldns_tlsa_matching_type;
 
-enum ldns_enum_dane_protocol
-{
-	LDNS_DANE_PROTOCOL_UNSPEC = 0,
-	LDNS_DANE_PROTOCOL_IPV4   = 1,
-	LDNS_DANE_PROTOCOL_IPV6   = 2,
-	LDNS_DANE_PROTOCOL_IP     = 3
-};
-typedef enum ldns_enum_dane_protocol ldns_dane_protocol;
-
+/**
+ * Known transports to use with TLSA owner names.
+ */
 enum ldns_enum_dane_transport
 {
+	/** TCP */
 	LDNS_DANE_TRANSPORT_TCP  = 0,
+	/** UDP */
 	LDNS_DANE_TRANSPORT_UDP  = 1,
+	/** SCTP */
 	LDNS_DANE_TRANSPORT_SCTP = 2
 };
 typedef enum ldns_enum_dane_transport ldns_dane_transport;
 
 
 /**
- * Creates a dname consisting of the given name, prefixed by the service
- * port and protocol name of the transport:
- * _<port>._<protocol>.<name>
- * TODO: How to choose protocol SCTP?
+ * Creates a dname consisting of the given name, prefixed by the service port
+ * and type of transport: _<EM>port</EM>._<EM>transport</EM>.<EM>name</EM>.
  *
  * \param[out] tlsa_owner The created dname.
- * \param[in] name The dname that should be prefixed by the service and
- *                 protocol.
- * \param[in] port The service port number.
+ * \param[in] name The dname that should be prefixed.
+ * \param[in] port The service port number for wich the name should be created.
  * \param[in] transport The transport for wich the name should be created.
  * \return LDNS_STATUS_OK on success or an error code otherwise.
  */
@@ -105,7 +124,7 @@ ldns_status ldns_dane_create_tlsa_owner(ldns_rdf** tlsa_owner,
  * \param[in] cert The certificate from which the data is selected
  * \param[in] selector The full certificate or the public key
  * \param[in] matching_type The full data or the SHA256 or SHA512 hash
- *                          of the selected data
+ *            of the selected data
  * \return LDNS_STATUS_OK on success or an error code otherwise.
  */
 ldns_status ldns_dane_cert2rdf(ldns_rdf** rdf, X509* cert,
@@ -138,6 +157,7 @@ ldns_status ldns_dane_cert2rdf(ldns_rdf** rdf, X509* cert,
  *            This can help to make sure that the intended (self signed)
  *            trust anchor is actually present in extra_certs (which is a
  *            DANE requirement).
+ *
  * \return LDNS_STATUS_OK on success or an error code otherwise.
  */
 ldns_status ldns_dane_select_certificate(X509** selected_cert,
@@ -158,18 +178,61 @@ ldns_status ldns_dane_select_certificate(X509** selected_cert,
  *
  * \return LDNS_STATUS_OK on success or an error code otherwise.
  */
-ldns_status
-ldns_dane_create_tlsa_rr(ldns_rr** tlsa,
+ldns_status ldns_dane_create_tlsa_rr(ldns_rr** tlsa,
 		ldns_tlsa_certificate_usage certificate_usage,
 		ldns_tlsa_selector          selector,
 		ldns_tlsa_matching_type     matching_type,
 		X509* cert);
 
+/**
+ * Verify if the given TLSA resource record matces the given certificate.
+ * Reporting on a TLSA rr mismatch (LDNS_STATUS_DANE_TLSA_DID_NOT_MATCH)
+ * is preferred over PKIX failure  (LDNS_STATUS_DANE_PKIX_DID_NOT_VALIDATE).
+ * So when PKIX validation is required by the TLSA Certificate usage,
+ * but the TLSA data does not match, LDNS_STATUS_DANE_TLSA_DID_NOT_MATCH
+ * is returned whether the PKIX validated or not.
+ *
+ * \param[in] tlsa_rr The resource record that specifies what and how to
+ *            match the certificate. With tlsa_rr == NULL, regular PKIX
+ *            validation is performed.
+ * \param[in] cert The certificate to match (and validate)
+ * \param[in] extra_certs Intermediate certificates that might be necessary
+ *            creating the validation chain.
+ * \param[in] pkix_validation_store Used when the certificate usage is 
+ *            "CA constraint" or "Service Certificate Constraint" to 
+ *            validate the certificate.
+ *
+ * \return LDNS_STATUS_OK on success,
+ *         LDNS_STATUS_DANE_TLSA_DID_NOT_MATCH on TLSA data mismatch,
+ *         LDNS_STATUS_DANE_PKIX_DID_NOT_VALIDATE when TLSA matched,
+ *         but the PKIX validation failed, or other ldns_status errors.
+ */
 ldns_status
 ldns_dane_verify_rr(const ldns_rr* tlsa_rr,
 		X509* cert, STACK_OF(X509)* extra_certs,
 		X509_STORE* pkix_validation_store);
 
+/**
+ * Verify if any of the given TLSA resource records matces the given
+ * certificate.
+ *
+ * \param[in] tlsas The resource records that specify what and how to
+ *            match the certificate. One must match for this function
+ *            to succeed. With tlsas == NULL or the number of TLSA records
+ *            in tlsas == 0, regular PKIX validation is performed.
+ * \param[in] cert The certificate to match (and validate)
+ * \param[in] extra_certs Intermediate certificates that might be necessary
+ *            creating the validation chain.
+ * \param[in] pkix_validation_store Used when the certificate usage is 
+ *            "CA constraint" or "Service Certificate Constraint" to 
+ *            validate the certificate.
+ *
+ * \return LDNS_STATUS_OK on success,
+ *         LDNS_STATUS_DANE_PKIX_DID_NOT_VALIDATE when one of the TLSA's
+ *         matched but the PKIX validation failed,
+ *         LDNS_STATUS_DANE_TLSA_DID_NOT_MATCH when none of the TLSA's matched,
+ *         or other ldns_status errors.
+ */
 ldns_status
 ldns_dane_verify(ldns_rr_list* tlsas,
 		X509* cert, STACK_OF(X509)* extra_certs,

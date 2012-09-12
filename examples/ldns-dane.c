@@ -544,7 +544,7 @@ dane_query(ldns_rr_list** rrs, ldns_resolver* r,
 
 ldns_rr_list*
 dane_lookup_addresses(ldns_resolver* res, ldns_rdf* dname,
-		ldns_dane_protocol protocol)
+		int ai_family)
 {
 	ldns_status s;
 	ldns_rr_list *as = NULL;
@@ -554,8 +554,7 @@ dane_lookup_addresses(ldns_resolver* res, ldns_rdf* dname,
 	if (r == NULL) {
 		MEMERR("ldns_rr_list_new");
 	}
-	if (protocol == LDNS_DANE_PROTOCOL_UNSPEC ||
-			(protocol & LDNS_DANE_PROTOCOL_IPV4)) {
+	if (ai_family == AF_UNSPEC || ai_family == AF_INET) {
 
 		s = dane_query(&as, res,
 				dname, LDNS_RR_TYPE_A, LDNS_RR_CLASS_IN,
@@ -572,8 +571,7 @@ dane_lookup_addresses(ldns_resolver* res, ldns_rdf* dname,
 			MEMERR("ldns_rr_list_push_rr_list");
 		}
 	}
-	if (protocol == LDNS_DANE_PROTOCOL_UNSPEC ||
-			(protocol & LDNS_DANE_PROTOCOL_IPV6)) {
+	if (ai_family == AF_UNSPEC || ai_family == AF_INET6) {
 
 		s = dane_query(&aaas, res,
 				dname, LDNS_RR_TYPE_AAAA, LDNS_RR_CLASS_IN,
@@ -680,7 +678,7 @@ main(int argc, char **argv)
 	ldns_rr*      address_rr;
 	ldns_rdf*     address;
 
-	int           protocol  = LDNS_DANE_PROTOCOL_UNSPEC;
+	int           ai_family = AF_UNSPEC;
 	int           transport = LDNS_DANE_TRANSPORT_TCP;
 
 	char*         name_str;
@@ -719,10 +717,10 @@ main(int argc, char **argv)
 			print_usage("ldns-dane");
 			break;
 		case '4':
-			protocol = LDNS_DANE_PROTOCOL_IPV4;
+			ai_family = AF_INET;
 			break;
 		case '6':
-			protocol = LDNS_DANE_PROTOCOL_IPV6;
+			ai_family = AF_INET6;
 			break;
 		case 'a':
 			s = ldns_str2rdf_a(&address, optarg);
@@ -810,11 +808,11 @@ main(int argc, char **argv)
 	 * and IPv6 addresses when -4 was given.
 	 */
 	if (ldns_rr_list_rr_count(addresses) > 0 &&
-			protocol != LDNS_DANE_PROTOCOL_UNSPEC) {
+			ai_family != AF_UNSPEC) {
 		/* TODO: resource leak, previous addresses */
 		originals = addresses;
 		addresses = rr_list_filter_rr_type(originals,
-				(protocol == LDNS_DANE_PROTOCOL_IPV4
+				(ai_family == AF_INET
 				 ? LDNS_RR_TYPE_A : LDNS_RR_TYPE_AAAA));
 		ldns_rr_list_free(originals);
 		if (addresses == NULL) {
@@ -983,7 +981,7 @@ main(int argc, char **argv)
 					assume_dnssec_validity);
 			LDNS_ERR(s, "could not dane_setup_resolver");
 			ldns_rr_list_free(addresses);
-			addresses = dane_lookup_addresses(res, name, protocol);
+			addresses =dane_lookup_addresses(res, name, ai_family);
 			ldns_resolver_free(res);
 		}
 		if (ldns_rr_list_rr_count(addresses) == 0) {

@@ -182,7 +182,7 @@ bool ldns_dname_str_absolute(const char *dname_str);
  * \param[in] *dname a rdf representing the dname
  * \return true or false
  */
-bool ldns_dname_absolute(const ldns_rdf *rdf);
+bool ldns_dname_absolute(const ldns_rdf *dname);
 
 /**
  * look inside the rdf and if it is an LDNS_RDF_TYPE_DNAME

@@ -26,6 +26,10 @@
 #include <openssl/err.h>
 #endif
 
+#ifndef max
+#define max( a, b ) ( ((a) > (b)) ? (a) : (b) )
+#endif
+
 ldns_status
 ldns_dane_create_tlsa_owner(ldns_rdf** tlsa_owner, const ldns_rdf* name,
 		uint16_t port, ldns_dane_transport transport)
@@ -67,6 +71,7 @@ ldns_dane_create_tlsa_owner(ldns_rdf** tlsa_owner, const ldns_rdf* name,
 	}
 	return LDNS_STATUS_OK;
 }
+
 
 #ifdef HAVE_SSL
 ldns_status
@@ -155,6 +160,9 @@ ldns_dane_cert2rdf(ldns_rdf** rdf, X509* cert,
 }
 
 
+/* Ordinary PKIX validation of cert (with extra_certs to help)
+ * against the CA's in store
+ */
 static ldns_status
 ldns_dane_pkix_validate(X509* cert, STACK_OF(X509)* extra_certs,
 		X509_STORE* store)
@@ -186,6 +194,9 @@ ldns_dane_pkix_validate(X509* cert, STACK_OF(X509)* extra_certs,
 }
 
 
+/* Orinary PKIX validation of cert (with extra_certs to help)
+ * against the CA's in store, but also return the validation chain.
+ */
 static ldns_status
 ldns_dane_pkix_validate_and_get_chain(STACK_OF(X509)** chain, X509* cert,
 		STACK_OF(X509)* extra_certs, X509_STORE* store)
@@ -232,6 +243,8 @@ exit_free_empty_store:
 }
 
 
+/* Return the validation chain that can be build out of cert, with extra_certs.
+ */
 static ldns_status
 ldns_dane_pkix_get_chain(STACK_OF(X509)** chain,
 		X509* cert, STACK_OF(X509)* extra_certs)
@@ -269,6 +282,8 @@ exit_free_empty_store:
 }
 
 
+/* Pop n+1 certs and return the last popped.
+ */
 static ldns_status
 ldns_dane_get_nth_cert_from_validation_chain(
 		X509** cert, STACK_OF(X509)* chain, int n)
@@ -287,6 +302,9 @@ ldns_dane_get_nth_cert_from_validation_chain(
 }
 
 
+/* Create validation chain with cert and extra_certs and returns the last
+ * self-signed (if present).
+ */
 static ldns_status
 ldns_dane_pkix_get_last_self_signed(X509** out_cert,
 		X509* cert, STACK_OF(X509)* extra_certs)
@@ -484,6 +502,9 @@ memerror:
 }
 
 
+/* Return tlsas that actually are TLSA resource records with known values
+ * for the Certificate usage, Selector and Matching type rdata fields.
+ */
 static ldns_rr_list*
 ldns_dane_filter_unusable_records(const ldns_rr_list* tlsas)
 {
@@ -512,6 +533,8 @@ ldns_dane_filter_unusable_records(const ldns_rr_list* tlsas)
 }
 
 
+/* Return whether cert/selector/matching_type matches data.
+ */
 static ldns_status
 ldns_dane_match_cert_with_data(X509* cert, ldns_tlsa_selector selector,
 		ldns_tlsa_matching_type matching_type, ldns_rdf* data)
@@ -530,6 +553,9 @@ ldns_dane_match_cert_with_data(X509* cert, ldns_tlsa_selector selector,
 }
 
 
+/* Return whether any certificate from the chain with selector/matching_type
+ * matches data.
+ */
 static ldns_status
 ldns_dane_match_any_cert_with_data(STACK_OF(X509)* chain,
 		ldns_tlsa_selector      selector,
@@ -683,11 +709,11 @@ ldns_dane_verify_rr(const ldns_rr* tlsa_rr,
 ldns_status
 ldns_dane_verify(ldns_rr_list* tlsas,
 		X509* cert, STACK_OF(X509)* extra_certs,
-		X509_STORE* validate_store)
+		X509_STORE* pkix_validation_store)
 {
 	size_t i;
 	ldns_rr* tlsa_rr;
-	ldns_status s = LDNS_STATUS_DANE_TLSA_DID_NOT_MATCH;
+	ldns_status s = LDNS_STATUS_OK, ps;
 
 	assert(cert != NULL);
 
@@ -698,17 +724,19 @@ ldns_dane_verify(ldns_rr_list* tlsas,
 		}
 	}
 	if (! tlsas || ldns_rr_list_rr_count(tlsas) == 0) {
-
-		return ldns_dane_verify_rr(NULL,
-				cert, extra_certs, validate_store);
+		/* No TLSA's, so regular PKIX validation
+		 */
+		return ldns_dane_pkix_validate(cert, extra_certs,
+				pkix_validation_store);
 	} else {
 		for (i = 0; i < ldns_rr_list_rr_count(tlsas); i++) {
 			tlsa_rr = ldns_rr_list_rr(tlsas, i);
-			s = ldns_dane_verify_rr(tlsa_rr,
-					cert, extra_certs, validate_store);
+			ps = s;
+			s = ldns_dane_verify_rr(tlsa_rr, cert, extra_certs,
+					pkix_validation_store);
 
 			if (s != LDNS_STATUS_DANE_TLSA_DID_NOT_MATCH &&
-			    s != LDNS_STATUS_DANE_PKIX_DID_NOT_VALIDATE){
+			    s != LDNS_STATUS_DANE_PKIX_DID_NOT_VALIDATE) {
 
 				/* which would be LDNS_STATUS_OK (match)
 				 * or some fatal error preventing use from
@@ -716,6 +744,9 @@ ldns_dane_verify(ldns_rr_list* tlsas,
 				 */
 				break;
 			}
+			s = max(s, ps); /* prefer PKIX_DID_NOT_VALIDATE
+					 * over   TLSA_DID_NOT_MATCH
+					 */
 		}
 		ldns_rr_list_free(tlsas);
 	}
