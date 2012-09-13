@@ -392,7 +392,9 @@ ldns_resolver_push_dnssec_anchor(ldns_resolver *r, ldns_rr *rr)
 {
   ldns_rr_list * trust_anchors;
 
-  if ((!rr) || (ldns_rr_get_type(rr) != LDNS_RR_TYPE_DNSKEY)) {
+  if ((!rr) || (ldns_rr_get_type(rr) != LDNS_RR_TYPE_DNSKEY &&
+                ldns_rr_get_type(rr) != LDNS_RR_TYPE_DS)) {
+
     return LDNS_STATUS_ERR;
   }
 
