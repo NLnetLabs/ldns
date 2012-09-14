@@ -7,8 +7,8 @@
  *
  * TODO before release:
  * 
- * - verify_server_name
  * - sigchase
+ * - trace up from root
  *
  * Long term wishlist:
  * - Interact with user after connect
@@ -28,6 +28,7 @@
 #ifdef HAVE_SSL
 #include <openssl/ssl.h>
 #include <openssl/err.h>
+#include <openssl/x509v3.h>
 
 #define LDNS_ERR(code, msg) do { if (code != LDNS_STATUS_OK) \
 					ldns_err(msg, code); } while(0)
@@ -113,7 +114,7 @@ print_usage(const char* progname)
 	       "\t\t\tThis option may be given more than once.\n"
 	       "\n"
 	      );
-	printf("\t-n\t\tverify server name in certificate too\n\n");
+	printf("\t-n\t\tDo *not* verify server name in certificate\n\n");
 	printf("\t-r <file>\tuse <file> to read root hints from\n\n");
 	printf("\t-s\t\twhen creating TLSA resource records with the\n\t\t\t"
 	       "\"CA Constraint\" and the \"Service Certificate\n\t\t\t"
@@ -218,6 +219,7 @@ get_ssl_cert_chain(X509** cert, STACK_OF(X509)** extra_certs, SSL* ssl,
 	(void) SSL_set_mode(ssl, SSL_MODE_AUTO_RETRY);
 	if (! SSL_set_fd(ssl, sock)) {
 		close(sock);
+		fprintf(stderr, "SSL_set_fd\n");
 		s = LDNS_STATUS_SSL_ERR;
 		goto error;
 	}
@@ -228,6 +230,7 @@ get_ssl_cert_chain(X509** cert, STACK_OF(X509)** extra_certs, SSL* ssl,
 		}
 		r = SSL_get_error(ssl, r);
 		if (r != SSL_ERROR_WANT_READ && r != SSL_ERROR_WANT_WRITE) {
+			fprintf(stderr, "SSL_get_error unknown return code\n");
 			s = LDNS_STATUS_SSL_ERR;
 			goto error;
 		}
@@ -240,10 +243,19 @@ get_ssl_cert_chain(X509** cert, STACK_OF(X509)** extra_certs, SSL* ssl,
 	 */
 	while ((r = SSL_shutdown(ssl)) == 0)
 		;
+
+	/* TODO: SSL_shutdown errors with www.google.com:443. Why?
+	 *       SSL_get_error(ssl, r) gives SSL_ERROR_SYSCALL, but errno == 0
+	 *       and there are no messages on the SSL error stack!
+	 
 	if (r == -1) {
+		fprintf(stderr, "SSL_shutdown\n");
+		r = SSL_get_error(ssl, r);
+		fprintf(stderr, "SSL_get_error return code: %d\n", r);
 		s = LDNS_STATUS_SSL_ERR;
 		goto error;
 	}
+	*/
 
 	LDNS_FREE(a);
 	return LDNS_STATUS_OK;
@@ -251,15 +263,6 @@ error:
 	LDNS_FREE(a);
 	return s;
 }
-
-void
-print_cert(X509* cert)
-{
-	fprintf(stderr, "cert: %p, ", cert);
-	X509_NAME_print_ex_fp(stderr, X509_get_subject_name(cert), 0, 0);
-	fprintf(stderr, "\n");
-}
-
 
 ldns_rr_list*
 rr_list_filter_rr_type(ldns_rr_list* l, ldns_rr_type t)
@@ -591,6 +594,181 @@ dane_lookup_addresses(ldns_resolver* res, ldns_rdf* dname,
 	return r;
 }
 
+bool
+dane_wildcard_label_cmp(int iw, const char* w, int il, const char* l)
+{
+	if (iw == 0) { /* End of match label */
+		if (il == 0) { /* And end in the to be matched label */
+			return true;
+		}
+		return false;
+	}
+	do {
+		if (*w == '*') {
+			if (iw == 1) { /* '*' is the last match char,
+					  remainder matches wildcard */
+				return true;
+			}
+			while (il > 0) { /* more to match? */
+
+				if (w[1] == *l) { /* Char after '*' matches.
+						   * Recursion for backtracking
+						   */
+					if (dane_wildcard_label_cmp(
+								iw - 1, w + 1,
+								il    , l)) {
+						return true;
+					}
+				}
+				l += 1;
+				il -= 1;
+			}
+		}
+		/* Skip up till next wildcard (if possible) */
+		while (il > 0 && iw > 0 && *w != '*' && *w == *l) {
+			w += 1;
+			l += 1;
+			il -= 1;
+			iw -= 1;
+		}
+	} while (iw > 0 && *w == '*' &&  /* More to match a next wildcard? */
+			(il > 0 || iw == 1));
+
+	return iw == 0 && il == 0;
+}
+
+bool
+dane_label_matches_label(ldns_rdf* w, ldns_rdf* l)
+{
+	int iw;
+	int il;
+
+	iw = ldns_rdf_data(w)[0];
+	il = ldns_rdf_data(l)[0];
+	return dane_wildcard_label_cmp(
+			iw, (const char*)ldns_rdf_data(w) + 1,
+			il, (const char*)ldns_rdf_data(l) + 1);
+}
+
+bool
+dane_name_matches_server_name(const char* name_str, ldns_rdf* server_name)
+{
+	ldns_rdf* name;
+	uint8_t nn, ns, i;
+	ldns_rdf* ln;
+	ldns_rdf* ls;
+	
+	name = ldns_dname_new_frm_str((const char*)name_str);
+	if (! name) {
+		LDNS_ERR(LDNS_STATUS_ERR, "ldns_dname_new_frm_str");
+	}
+	nn = ldns_dname_label_count(name);
+	ns = ldns_dname_label_count(server_name);
+	if (nn != ns) {
+		ldns_rdf_free(name);
+		return false;
+	}
+	ldns_dname2canonical(name);
+	for (i = 0; i < nn; i++) {
+		ln = ldns_dname_label(name, i);
+		if (! ln) {
+			return false;
+		}
+		ls = ldns_dname_label(server_name, i);
+		if (! ls) {
+			ldns_rdf_free(ln);
+			return false;
+		}
+		if (! dane_label_matches_label(ln, ls)) {
+			ldns_rdf_free(ln);
+			ldns_rdf_free(ls);
+			return false;
+		}
+		ldns_rdf_free(ln);
+		ldns_rdf_free(ls);
+	}
+	return true;
+}
+
+bool
+dane_X509_any_subject_alt_name_matches_server_name(
+		X509 *cert, ldns_rdf* server_name)
+{
+	GENERAL_NAMES* names;
+	GENERAL_NAME*  name;
+	unsigned char* subject_alt_name_str = NULL;
+	int i, n;
+
+	names = X509_get_ext_d2i(cert, NID_subject_alt_name, 0, 0 );
+	if (! names) { /* No subjectAltName extension */
+		return false;
+	}
+	n = sk_GENERAL_NAME_num(names);
+	for (i = 0; i < n; i++) {
+		name = sk_GENERAL_NAME_value(names, i);
+		if (name->type == GEN_DNS) {
+			(void) ASN1_STRING_to_UTF8(&subject_alt_name_str,
+					name->d.dNSName);
+			if (subject_alt_name_str) {
+				if (dane_name_matches_server_name((char*)
+							subject_alt_name_str,
+							server_name)) {
+					OPENSSL_free(subject_alt_name_str);
+					return true;
+				}
+				OPENSSL_free(subject_alt_name_str);
+			}
+		}
+	}
+	/* sk_GENERAL_NAMES_pop_free(names, sk_GENERAL_NAME_free); */
+	return false;
+}
+
+bool
+dane_X509_subject_name_matches_server_name(X509 *cert, ldns_rdf* server_name)
+{
+	X509_NAME* subject_name;
+	int i;
+	X509_NAME_ENTRY* entry;
+	ASN1_STRING* entry_data;
+	unsigned char* subject_name_str = NULL;
+	bool r;
+ 
+	subject_name = X509_get_subject_name(cert);
+	if (! subject_name ) {
+		ssl_err("could not X509_get_subject_name");
+	}
+	i = X509_NAME_get_index_by_NID(subject_name, NID_commonName, -1);
+	entry = X509_NAME_get_entry(subject_name, i);
+	entry_data = X509_NAME_ENTRY_get_data(entry);
+	(void) ASN1_STRING_to_UTF8(&subject_name_str, entry_data);
+	if (subject_name_str) {
+		r = dane_name_matches_server_name(
+				(char*)subject_name_str, server_name);
+		OPENSSL_free(subject_name_str);
+		return r;
+	} else {
+		return false;
+	}
+}
+
+bool
+dane_verify_server_name(X509* cert, ldns_rdf* server_name)
+{
+	ldns_rdf* server_name_lc;
+	bool r;
+	server_name_lc = ldns_rdf_clone(server_name);
+	if (! server_name_lc) {
+		LDNS_ERR(LDNS_STATUS_MEM_ERR, "ldns_rdf_clone");
+	}
+	ldns_dname2canonical(server_name_lc);
+	r = dane_X509_any_subject_alt_name_matches_server_name(
+			cert, server_name_lc) || 
+	    dane_X509_subject_name_matches_server_name(
+			cert, server_name_lc);
+	ldns_rdf_free(server_name_lc);
+	return r;
+}
 
 void
 dane_create(ldns_rr_list* tlsas, ldns_rdf* tlsa_owner,
@@ -598,11 +776,18 @@ dane_create(ldns_rr_list* tlsas, ldns_rdf* tlsa_owner,
 		ldns_tlsa_selector          selector,
 		ldns_tlsa_matching_type     matching_type,
 		X509* cert, STACK_OF(X509)* extra_certs,
-		X509_STORE* validate_store)
+		X509_STORE* validate_store,
+		bool verify_server_name, ldns_rdf* name)
 {
 	ldns_status s;
 	X509* selected_cert;
 	ldns_rr* tlsa_rr;
+
+	if (verify_server_name && ! dane_verify_server_name(cert, name)) {
+		fprintf(stderr, "The certificate does not match the "
+				"server name\n");
+		exit(EXIT_FAILURE);
+	}
 
 	s = ldns_dane_select_certificate(&selected_cert,
 			cert, extra_certs, validate_store,
@@ -626,7 +811,8 @@ dane_create(ldns_rr_list* tlsas, ldns_rdf* tlsa_owner,
 bool
 dane_verify(ldns_rr_list* tlsas, ldns_rdf* address,
 		X509* cert, STACK_OF(X509)* extra_certs,
-		X509_STORE* validate_store)
+		X509_STORE* validate_store,
+		bool verify_server_name, ldns_rdf* name)
 {
 	ldns_status s;
 	char* address_str = NULL;
@@ -641,6 +827,14 @@ dane_verify(ldns_rr_list* tlsas, ldns_rdf* address,
 				X509_get_subject_name(cert), 0, 0);
 	}
 	if (s == LDNS_STATUS_OK) {
+		if (verify_server_name &&
+				! dane_verify_server_name(cert, name)) {
+
+			fprintf(stdout, " did not dane-validate, because:"
+					" the certificate name did not match"
+					" the server name\n");
+			return false;
+		}
 		fprintf(stdout, " dane-validated successfully\n");
 		return true;
 	}
@@ -651,7 +845,7 @@ dane_verify(ldns_rr_list* tlsas, ldns_rdf* address,
 
 
 int
-main(int argc, char **argv)
+main(int argc, char** argv)
 {
 	int c;
 	enum { VERIFY, CREATE } mode = VERIFY;
@@ -662,7 +856,7 @@ main(int argc, char **argv)
 	bool print_tlsa_as_type52   = false;
 	bool assume_dnssec_validity = false;
 	bool assume_pkix_validity   = false;
-	bool verify_server_name     = false;
+	bool verify_server_name     = true;
 
 	char* CAfile    = NULL;
 	char* CApath    = NULL;
@@ -670,7 +864,7 @@ main(int argc, char **argv)
 	X509* cert                  = NULL;
 	STACK_OF(X509)* extra_certs = NULL;
 	
-	ldns_rr_list *keys = ldns_rr_list_new();
+	ldns_rr_list* keys = ldns_rr_list_new();
 	size_t nkeys = 0;
 	ldns_rr_list* dns_root = NULL;
 
@@ -782,7 +976,7 @@ main(int argc, char **argv)
 			nkeys = ldns_rr_list_rr_count(keys);
 			break;
 		case 'n':
-			verify_server_name = true;
+			verify_server_name = false;
 			break;
 		case 'p':
 			CApath = optarg;
@@ -964,10 +1158,12 @@ main(int argc, char **argv)
 		switch (mode) {
 		case CREATE: dane_create(tlsas, tlsa_owner, certificate_usage,
 					     index, selector, matching_type,
-					     cert, extra_certs, store);
+					     cert, extra_certs, store,
+					     verify_server_name, name);
 			     break;
 		case VERIFY: if (! dane_verify(tlsas, NULL,
-			                       cert, extra_certs, store)) {
+			                       cert, extra_certs, store,
+					       verify_server_name, name)) {
 				     success = false;
 			     }
 			     break;
@@ -1001,17 +1197,20 @@ main(int argc, char **argv)
 			LDNS_ERR(s, "could not get cert chain from ssl");
 
 			switch (mode) {
+
 			case CREATE: dane_create(tlsas, tlsa_owner,
 						     certificate_usage, index,
 						     selector, matching_type,
-						     cert, extra_certs, store);
-				break;
+						     cert, extra_certs, store,
+						     verify_server_name, name);
+				     break;
+
 			case VERIFY: if (! dane_verify(tlsas, address,
-							     cert, extra_certs,
-							     store)) {
+						cert, extra_certs, store,
+						verify_server_name, name)) {
 					success = false;
-				}
-				break;
+				     }
+				     break;
 			}
 		} /* end for all addresses */
 	} /* end No certification file */
