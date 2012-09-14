@@ -1304,9 +1304,9 @@ ldns_radix_last_in_subtree_incl_self(ldns_radix_node_t* node)
 static ldns_radix_node_t*
 ldns_radix_last_in_subtree(ldns_radix_node_t* node)
 {
-	uint16_t i;
+	int i;
 	/** Look for the most right leaf node. */
-	for (i=(node->len)-1; i >= 0; i--) {
+	for (i=(int)(node->len)-1; i >= 0; i--) {
 		if (node->array[i].edge) {
 			/** Keep looking for the most right leaf node. */
 			if (node->array[i].edge->len > 0) {

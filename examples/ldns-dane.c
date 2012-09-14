@@ -595,7 +595,7 @@ dane_lookup_addresses(ldns_resolver* res, ldns_rdf* dname,
 }
 
 bool
-dane_wildcard_label_cmp(int iw, const char* w, int il, const char* l)
+dane_wildcard_label_cmp(uint8_t iw, const char* w, uint8_t il, const char* l)
 {
 	if (iw == 0) { /* End of match label */
 		if (il == 0) { /* And end in the to be matched label */
@@ -640,8 +640,8 @@ dane_wildcard_label_cmp(int iw, const char* w, int il, const char* l)
 bool
 dane_label_matches_label(ldns_rdf* w, ldns_rdf* l)
 {
-	int iw;
-	int il;
+	uint8_t iw;
+	uint8_t il;
 
 	iw = ldns_rdf_data(w)[0];
 	il = ldns_rdf_data(l)[0];
