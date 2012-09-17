@@ -9,6 +9,7 @@ exec_prefix = @exec_prefix@
 bindir = @bindir@
 mandir = @mandir@
 libtool = @libtool@
+datarootdir = @datarootdir@
 
 CC = @CC@
 CFLAGS = -I. -I${srcdir} @CFLAGS@
@@ -18,6 +19,7 @@ LIBNSL_LIBS = @LIBNSL_LIBS@
 LIBSSL_CPPFLAGS = @LIBSSL_CPPFLAGS@
 LIBSSL_LDFLAGS = @LIBSSL_LDFLAGS@
 LIBSSL_LIBS = @LIBSSL_LIBS@
+LIBSSL_SSL_LIBS = @LIBSSL_SSL_LIBS@
 LIBS = @LIBS@
 RUNTIME_PATH = @RUNTIME_PATH@
 LDNSDIR = @LDNSDIR@
@@ -70,7 +72,8 @@ MAIN_SOURCES = ldns-read-zone.c \
 MAIN_SSL_SOURCES = ldns-signzone.c \
 		  ldns-verify-zone.c \
 		  ldns-revoke.c \
-		  ldns-nsec3-hash.c
+		  ldns-nsec3-hash.c \
+		  ldns-dane.c
 
 OTHER_SOURCES = ldns-testpkts.c
 
@@ -102,6 +105,18 @@ ldnsd.stc: ldnsd.o
 	@if test ! -f $@ -o $< -nt $@; then \
 	echo $(LINK_STATIC) $(LIBNSL_LDFLAGS) -o $@ $^ ; \
 	$(LINK_STATIC) $(LIBNSL_LDFLAGS) -o $@ $^ ; \
+	fi
+
+ldns-dane.prg-ssl: ldns-dane.o
+	@if test ! -f $(@:.prg-ssl=) -o $< -nt $(@:.prg-ssl=); then \
+	echo $(LINK) $(LIBNSL_LIBS) $(LIBSSL_LDFLAGS) $(LIBSSL_SSL_LIBS) -o $(@:.prg-ssl=) $^ ; \
+	$(LINK) $(LIBNSL_LIBS) $(LIBSSL_LDFLAGS) $(LIBSSL_SSL_LIBS) -o $(@:.prg-ssl=) $^ ; \
+	fi
+
+ldns-dane.stc-ssl: ldns-dane.o
+	@if test ! -f $@ -o $< -nt $@; then \
+	echo $(LINK_STATIC) $(LIBNSL_LIBS) $(LIBSSL_LDFLAGS) $(LIBSSL_SSL_LIBS) -o $@ $^ ; \
+	$(LINK_STATIC) $(LIBNSL_LIBS) $(LIBSSL_LDFLAGS) $(LIBSSL_SSL_LIBS) -o $@ $^ ; \
 	fi
 
 %.prg-ssl: %.o
