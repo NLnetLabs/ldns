@@ -45,6 +45,9 @@ print_usage(const char* progname)
 			"and use the TLSA\n\t"
 			"resource record(s) at <name> to authenticate "
 			"the connection.\n");
+	printf("\n  or: %s [OPTIONS] -t <file>\n", progname);
+	printf("\n\tRead TLSA record(s) from <file> and authenticate the\n"
+			"\tTLS service they reference.\n");
 	printf("\n  or: %s [OPTIONS] <name> <port> <cert usage> <selector> "
 			"<matching type>\n", progname);
 	printf("\n\tMake a TLS connection to <name> <port> "
@@ -614,9 +617,8 @@ dane_read_tlsas_from_file(ldns_rr_list** tlsas,
 	int line_nr;
 	ldns_status s = LDNS_STATUS_MEM_ERR;
 
-	assert(tlsas);
-	assert(filename);
-	assert(origin);
+	assert(tlsas != NULL);
+	assert(filename != NULL);
 
 	if (strcmp(filename, "-") == 0) {
 		fp = stdin;
@@ -628,20 +630,21 @@ dane_read_tlsas_from_file(ldns_rr_list** tlsas,
 			exit(EXIT_FAILURE);
 		}
 	}
-
-	my_origin = ldns_rdf_clone(origin);
-	if (! my_origin) {
-		goto error;
+	if (origin) {
+		my_origin = ldns_rdf_clone(origin);
+		if (! my_origin) {
+			goto error;
+		}
+		my_prev   = ldns_rdf_clone(origin);
+		if (! my_prev) {
+			goto error;
+		}
+		origin_lc = ldns_rdf_clone(origin);
+		if (! origin_lc) {
+			goto error;
+		}
+		ldns_dname2canonical(origin_lc);
 	}
-	my_prev   = ldns_rdf_clone(origin);
-	if (! my_prev) {
-		goto error;
-	}
-	origin_lc = ldns_rdf_clone(origin);
-	if (! origin_lc) {
-		goto error;
-	}
-	ldns_dname2canonical(origin_lc);
 	*tlsas = ldns_rr_list_new();
 	if (! *tlsas) {
 		goto error;
@@ -654,7 +657,7 @@ dane_read_tlsas_from_file(ldns_rr_list** tlsas,
 		}
 		if (ldns_rr_get_type(rr) == LDNS_RR_TYPE_TLSA) {
 			ldns_dname2canonical(ldns_rr_owner(rr));
-			if (ldns_dname_compare(ldns_rr_owner(rr),
+			if (! origin || ldns_dname_compare(ldns_rr_owner(rr),
 						origin_lc) == 0) {
 				if (ldns_rr_list_push_rr(*tlsas, rr)) {
 					continue;
@@ -948,7 +951,7 @@ int
 main(int argc, char** argv)
 {
 	int c;
-	enum { VERIFY, CREATE } mode = VERIFY;
+	enum { UNDETERMINED, VERIFY, CREATE } mode = UNDETERMINED;
 
 	ldns_status   s;
 	size_t        i;
@@ -978,13 +981,20 @@ main(int argc, char** argv)
 
 	char*         name_str;
 	ldns_rdf*     name;
-	uint16_t      port;
-
+	uint16_t      port = 0; /* assignment to suppress
+				 * uninitialized warning
+				 */
 	ldns_resolver* res            = NULL;
 	ldns_rdf*      tlsa_owner     = NULL;
 	char*          tlsa_owner_str = NULL;
 	ldns_rr_list*  tlsas          = NULL;
 	char*          tlsas_file     = NULL;
+
+	/* For extracting service port and transport from tla_owner. */
+	ldns_rdf*      port_rdf       = NULL;
+	char*          port_str       = NULL;
+	ldns_rdf*      transport_rdf  = NULL;
+	char*          transport_str  = NULL;
 
 	ldns_rr_list*  originals      = NULL; /* original tlsas (before
 					       * transform), but also used
@@ -1137,21 +1147,120 @@ main(int argc, char** argv)
 	argc -= optind;
 	argv += optind;
 
-	if (argc < 2) {
+	if (argc == 0 && tlsas_file != NULL) {
+
+		mode = VERIFY;
+
+		s = dane_read_tlsas_from_file(&tlsas, tlsas_file, NULL);
+		LDNS_ERR(s, "could not read tlas from file");
+
+		/* extract port, transport and hostname from TLSA owner name */
+
+		if (ldns_rr_list_rr_count(tlsas) == 0) {
+
+			fprintf(stderr, "ERROR! No TLSA records to extract "
+					"service port, transport and hostname"
+					"\n");
+			exit(EXIT_FAILURE);
+		}
+		tlsa_owner = ldns_rr_list_owner(tlsas);
+		if (ldns_dname_label_count(tlsa_owner) < 2) {
+			fprintf(stderr, "ERROR! To few labels in TLSA owner\n");
+			exit(EXIT_FAILURE);
+		}
+		do {
+			s = LDNS_STATUS_MEM_ERR;
+			port_rdf = ldns_dname_label(tlsa_owner, 0);
+			if (! port_rdf) {
+				break;
+			}
+			port_str = ldns_rdf2str(port_rdf);
+			if (! port_str) {
+				break;
+			}
+			if (*port_str != '_') {
+				fprintf(stderr, "ERROR! Badly formatted "
+						"service port label in the "
+						"TLSA owner name\n");
+				exit(EXIT_FAILURE);
+			}
+			if (port_str[strlen(port_str) - 1] == '.') {
+				port_str[strlen(port_str) - 1] = '\000';
+			}
+			port = (uint16_t) usage_within_range(
+					port_str + 1, 65535, "port");
+			s = LDNS_STATUS_OK;
+		} while (false);
+		LDNS_ERR(s, "could not extract service port from TLSA owner");
+
+		do {
+			s = LDNS_STATUS_MEM_ERR;
+			transport_rdf = ldns_dname_label(tlsa_owner, 1);
+			if (! transport_rdf) {
+				break;
+			}
+			transport_str = ldns_rdf2str(transport_rdf);
+			if (! transport_str) {
+				break;
+			}
+			if (transport_str[strlen(transport_str) - 1] == '.') {
+				transport_str[strlen(transport_str) - 1] =
+					'\000';
+			}
+			if (strcmp(transport_str, "_tcp") == 0) {
+
+				transport = LDNS_DANE_TRANSPORT_TCP;
+
+			} else if (strcmp(transport_str, "_udp") == 0) {
+
+				transport = LDNS_DANE_TRANSPORT_UDP;
+
+			} else if (strcmp(transport_str, "_sctp") == 0) {
+
+				transport = LDNS_DANE_TRANSPORT_SCTP;
+
+			} else {
+				fprintf(stderr, "ERROR! Badly formatted "
+						"transport label in the "
+						"TLSA owner name\n");
+				exit(EXIT_FAILURE);
+			}
+			s = LDNS_STATUS_OK;
+			break;
+		} while(false);
+		LDNS_ERR(s, "could not extract transport from TLSA owner");
+
+		tlsa_owner_str = ldns_rdf2str(tlsa_owner);
+		if (! tlsa_owner_str) {
+			MEMERR("ldns_rdf2str");
+		}
+		name = ldns_dname_clone_from(tlsa_owner, 2);
+		if (! name) {
+			MEMERR("ldns_dname_clone_from");
+		}
+		name_str = ldns_rdf2str(name);
+		if (! name_str) {
+			MEMERR("ldns_rdf2str");
+		}
+
+	} else if (argc < 2) {
+
 		print_usage("ldns-dane");
-	}
 
-	name_str = argv[0];
-	s = ldns_str2rdf_dname(&name, name_str);
-	LDNS_ERR(s, "could not ldns_str2rdf_dname");
+	} else {
+		name_str = argv[0];
+		s = ldns_str2rdf_dname(&name, name_str);
+		LDNS_ERR(s, "could not ldns_str2rdf_dname");
 
-	port = (uint16_t) usage_within_range(argv[1], 65535, "port");
+		port = (uint16_t) usage_within_range(argv[1], 65535, "port");
 
-	s = ldns_dane_create_tlsa_owner(&tlsa_owner, name, port, transport);
-	LDNS_ERR(s, "could not create TLSA owner name");
-	tlsa_owner_str = ldns_rdf2str(tlsa_owner);
-	if (tlsa_owner_str == NULL) {
-		MEMERR("ldns_rdf2str");
+		s = ldns_dane_create_tlsa_owner(&tlsa_owner,
+				name, port, transport);
+		LDNS_ERR(s, "could not create TLSA owner name");
+		tlsa_owner_str = ldns_rdf2str(tlsa_owner);
+		if (! tlsa_owner_str) {
+			MEMERR("ldns_rdf2str");
+		}
 	}
 
 	if (argc == 2) {
@@ -1162,6 +1271,7 @@ main(int argc, char** argv)
 
 			s = dane_read_tlsas_from_file(&tlsas, tlsas_file,
 					tlsa_owner);
+			LDNS_ERR(s, "could not read tlas from file");
 		} else {
 			/* lookup tlsas */
 			s = dane_setup_resolver(&res, keys, dns_root,
@@ -1171,7 +1281,6 @@ main(int argc, char** argv)
 					LDNS_RR_TYPE_TLSA, LDNS_RR_CLASS_IN,
 					false);
 			ldns_resolver_free(res);
-
 		}
 
 		if (s == LDNS_STATUS_DANE_INSECURE) {
@@ -1235,7 +1344,8 @@ main(int argc, char** argv)
 
 			exit(EXIT_FAILURE);
 		}
-	} else {
+	} else if (mode == UNDETERMINED) {
+
 		print_usage("ldns-dane");
 	}
 
@@ -1290,6 +1400,7 @@ main(int argc, char** argv)
 				     success = false;
 			     }
 			     break;
+		default:     break; /* suppress warning */
 		}
 
 	} else {/* No certificate file given, creation/validation via TLS. */
@@ -1334,6 +1445,7 @@ main(int argc, char** argv)
 					success = false;
 				     }
 				     break;
+			default:     break; /* suppress warning */
 			}
 		} /* end for all addresses */
 	} /* end No certification file */
