@@ -153,6 +153,52 @@ usage_within_range(const char* arg, int max, const char* name)
 	return val;
 }
 
+struct dane_param_choice_struct {
+	const char* name;
+	int number;
+};
+typedef struct dane_param_choice_struct dane_param_choice;
+
+dane_param_choice dane_certificate_usage_table[] = {
+	{ "CA constraint"			, 0 },
+	{ "CA-constraint"			, 0 },
+	{ "Service certificate constraint"	, 1 },
+	{ "Service-certificate-constraint"	, 1 },
+	{ "Trust anchor assertion"		, 2 },
+	{ "Trust-anchor-assertion"		, 2 },
+	{ "anchor"				, 2 },
+	{ "Domain-issued certificate"		, 3 },
+	{ "Domain-issued-certificate"		, 3 },
+	{ NULL, -1 }
+};
+
+dane_param_choice dane_selector_table[] = {
+	{ "Full certificate"	, 0 },
+	{ "Full-certificate"	, 0 },
+	{ "certificate"		, 0 },
+	{ "SubjectPublicKeyInfo", 1 },
+	{ "PublicKey"		, 1 },
+	{ "pubkey"		, 1 },
+	{ "key"			, 1 },
+	{ NULL, -1 }
+};
+
+int
+usage_within_range_table(const char* arg, int max, const char* name,
+		dane_param_choice table[])
+{
+	dane_param_choice* t;
+
+	if (*arg) {
+		for (t = table; t->name; t++) {
+			if (strncasecmp(arg, t->name, strlen(arg)) == 0) {
+				return t->number;
+			}
+		}
+	}
+	return usage_within_range(arg, max, name);
+}
+
 void
 ssl_err(const char* s)
 {
@@ -1319,12 +1365,36 @@ main(int argc, char** argv)
 
 		tlsas = ldns_rr_list_new();
 
-		certificate_usage = usage_within_range(argv[2], 3,
-				"certificate usage");
-		selector          = usage_within_range(argv[3], 1, "selector");
-		matching_type     = usage_within_range(argv[4], 2,
-				"matching type");
+		certificate_usage = usage_within_range_table(
+				argv[2], 3, "certificate usage",
+				dane_certificate_usage_table);
+		// certificate_usage = usage_within_range(argv[2], 3, "certificate usage");
+		//selector          = usage_within_range(argv[3], 1, "selector");
+		selector = usage_within_range_table(
+				argv[3], 1, "selector",
+				dane_selector_table);
 
+		if (*argv[4] && /* strlen(argv[4]) > 0 */
+				(strncasecmp(argv[4], "no-hash-used",
+					     strlen(argv[4])) == 0 ||
+				 strncasecmp(argv[4], "no hash used",
+					     strlen(argv[4])) == 0 )) {
+			matching_type = 0;
+
+		} else if (strcasecmp(argv[4], "sha256") == 0 ||
+				strcasecmp(argv[4], "sha-256") == 0) {
+
+			matching_type = 1;
+
+		} else if (strcasecmp(argv[4], "sha512") == 0 ||
+				strcasecmp(argv[4], "sha-512") == 0) {
+
+			matching_type = 2;
+
+		} else {
+			matching_type = usage_within_range(argv[4], 2,
+					"matching type");
+		}
 		if ((certificate_usage == LDNS_TLSA_USAGE_CA_CONSTRAINT ||
 		     certificate_usage ==
 			     LDNS_TLSA_USAGE_SERVICE_CERTIFICATE_CONSTRAINT) &&
