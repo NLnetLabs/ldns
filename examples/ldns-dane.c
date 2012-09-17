@@ -35,6 +35,8 @@
 #define MEMERR(msg) do { fprintf(stderr, "memory error in %s\n", msg); \
 			 exit(EXIT_FAILURE); } while(0)
 
+int verbosity = 3;
+
 void
 print_usage(const char* progname)
 {
@@ -49,18 +51,18 @@ print_usage(const char* progname)
 			"and create the TLSA\n\t"
 			"resource record(s) that would "
 			"authenticate the connection.\n");
-	printf("\n\t<certificate usage>"
+	printf("\n\t<cert usage>"
 			"\t0: CA constraint\n"
-			"\t\t\t\t1: Service certificate constraint\n"
-			"\t\t\t\t2: Trust anchor assertion\n"
-			"\t\t\t\t3: Domain-issued certificate\n");
+			"\t\t\t1: Service certificate constraint\n"
+			"\t\t\t2: Trust anchor assertion\n"
+			"\t\t\t3: Domain-issued certificate\n");
 	printf("\n\t<selector>"
-			"\t\t0: Full certificate\n"
-			"\t\t\t\t1: SubjectPublicKeyInfo\n");
+			"\t0: Full certificate\n"
+			"\t\t\t1: SubjectPublicKeyInfo\n");
 	printf("\n\t<matching type>"
-			"\t\t0: No hash used\n"
-			"\t\t\t\t1: SHA-256\n"
-			"\t\t\t\t2: SHA-512\n");
+			"\t0: No hash used\n"
+			"\t\t\t1: SHA-256\n"
+			"\t\t\t2: SHA-512\n");
 
 	printf("\nOPTIONS:\n");
 	printf("\t-h\t\tshow this text\n\n");
@@ -85,23 +87,7 @@ print_usage(const char* progname)
 	      );
 	printf("\t-d\t\tassume DNSSEC validity even when insecure\n\n");
 	printf("\t-f <CAfile>\tuse CAfile to validate\n\n");
-	printf("\t-i <number>\t"
-	       "When creating a \"Trust anchor assertion\" TLSA resource\n"
-	       "\t\t\trecord, select the <number>th certificate from the\n"
-	       "\t\t\tthe validation chain. Where 0 means the last\n"
-	       "\t\t\tcertificate, 1 the one but last, etc.\n"
-	       "\n"
-	       "\t\t\tWhen <number> is -1, the last certificate is used\n"
-	       "\t\t\t(like with 0) that MUST be self-signed. This can help\n"
-	       "\t\t\tto make sure that the intended (self signed) trust\n"
-	       "\t\t\tanchor is actually present in the server certificate\n"
-	       "\t\t\tchain (which is a DANE requirement)\n"
-	       "\n"
-	      );
-	printf("\t-p <CApath>\t"
-	       "use certificates in the <CApath> directory to validate\n"
-	       "\n"
-	      );
+	printf("\t-i\t\tinteract after connecting\n\n");
 	printf("\t-k <file>\t"
 	       "specify a file that contains a trusted DNSKEY or DS rr.\n"
 	       "\t\t\tWithout a trusted DNSKEY, the local network is trusted\n"
@@ -115,6 +101,24 @@ print_usage(const char* progname)
 	       "\n"
 	      );
 	printf("\t-n\t\tDo *not* verify server name in certificate\n\n");
+	printf("\t-o <number>\t"
+	       "When creating a \"Trust anchor assertion\" TLSA resource\n"
+	       "\t\t\trecord, select the <number>th certificate offset from\n"
+	       "\t\t\tthe end of the validation chain. 0 means the last\n"
+	       "\t\t\tcertificate, 1 the one but last, 2 the second but\n"
+	       "\t\t\tlast, etc.\n"
+	       "\n"
+	       "\t\t\tWhen <number> is -1 (the default), the last certificate"
+	     "\n\t\t\tis used (like with 0) that MUST be self-signed. This\n"
+	       "\t\t\tcan help to make sure that the intended (self signed)\n"
+	       "\t\t\ttrust anchor is actually present in the server certi-\n"
+	       "\t\t\tficate chain (which is a DANE requirement)\n"
+	       "\n"
+	      );
+	printf("\t-p <CApath>\t"
+	       "use certificates in the <CApath> directory to validate\n"
+	       "\n"
+	      );
 	printf("\t-r <file>\tuse <file> to read root hints from\n\n");
 	printf("\t-s\t\twhen creating TLSA resource records with the\n\t\t\t"
 	       "\"CA Constraint\" and the \"Service Certificate\n\t\t\t"
@@ -122,7 +126,10 @@ print_usage(const char* progname)
 	       "assume PKIX is valid.\n\n\t\t\t"
 	       "For \"CA Constraint\" this means that verification\n\t\t\t"
 	       "should end with a self-signed certificate.\n\n");
+	printf("\t-t <file>\tRead TLSA record(s) from <file>\n\n");
 	printf("\t-u\t\tuse UDP in stead of TCP to TLS connect\n\n");
+	printf("\t-v\t\tshow version and exit\n\n");
+	printf("\t-V [0-5]\tSet verbosity level (defaul 3)\n\n");
 	exit(EXIT_SUCCESS);
 }
 
@@ -165,7 +172,8 @@ ldns_err(const char* s, ldns_status err)
 ldns_status
 get_ssl_cert_chain(X509** cert, STACK_OF(X509)** extra_certs, SSL* ssl,
 		ldns_rdf* address, uint16_t port,
-		ldns_dane_transport transport)
+		ldns_dane_transport transport,
+		bool interact)
 {
 	struct sockaddr_storage *a = NULL;
 	size_t a_len = 0;
@@ -594,6 +602,98 @@ dane_lookup_addresses(ldns_resolver* res, ldns_rdf* dname,
 	return r;
 }
 
+ldns_status
+dane_read_tlsas_from_file(ldns_rr_list** tlsas,
+		char* filename, ldns_rdf* origin)
+{
+	FILE* fp = NULL;
+	ldns_rr* rr = NULL;
+	ldns_rdf *my_origin = NULL;
+	ldns_rdf *my_prev = NULL;
+	ldns_rdf *origin_lc = NULL;
+	int line_nr;
+	ldns_status s = LDNS_STATUS_MEM_ERR;
+
+	assert(tlsas);
+	assert(filename);
+	assert(origin);
+
+	if (strcmp(filename, "-") == 0) {
+		fp = stdin;
+	} else {
+		fp = fopen(filename, "r");
+		if (!fp) {
+			fprintf(stderr, "Unable to open %s: %s\n",
+					filename, strerror(errno));
+			exit(EXIT_FAILURE);
+		}
+	}
+
+	my_origin = ldns_rdf_clone(origin);
+	if (! my_origin) {
+		goto error;
+	}
+	my_prev   = ldns_rdf_clone(origin);
+	if (! my_prev) {
+		goto error;
+	}
+	origin_lc = ldns_rdf_clone(origin);
+	if (! origin_lc) {
+		goto error;
+	}
+	ldns_dname2canonical(origin_lc);
+	*tlsas = ldns_rr_list_new();
+	if (! *tlsas) {
+		goto error;
+	}
+	while (! feof(fp)) {
+		s = ldns_rr_new_frm_fp_l(&rr, fp, NULL,
+				&my_origin, &my_prev, &line_nr);
+		if (s != LDNS_STATUS_OK) {
+			goto error;
+		}
+		if (ldns_rr_get_type(rr) == LDNS_RR_TYPE_TLSA) {
+			ldns_dname2canonical(ldns_rr_owner(rr));
+			if (ldns_dname_compare(ldns_rr_owner(rr),
+						origin_lc) == 0) {
+				if (ldns_rr_list_push_rr(*tlsas, rr)) {
+					continue;
+				} else {
+					s = LDNS_STATUS_MEM_ERR;
+					goto error;
+				}
+			}
+		}
+		ldns_rr_free(rr);
+	}
+
+	ldns_rdf_deep_free(origin_lc);
+	ldns_rdf_deep_free(my_prev);
+	ldns_rdf_deep_free(my_origin);
+	fclose(fp);
+
+	return LDNS_STATUS_OK;
+
+error:
+	if (*tlsas) {
+		ldns_rr_list_deep_free(*tlsas);
+		*tlsas = NULL;
+	}
+	if (origin_lc) {
+		ldns_rdf_deep_free(origin_lc);
+	}
+	if (my_prev) {
+		ldns_rdf_deep_free(my_prev);
+	}
+	if (my_origin) {
+		ldns_rdf_deep_free(my_origin);
+	}
+	if (fp && fp != stdin) {
+		fclose(fp);
+	}
+	return s;
+}
+
 bool
 dane_wildcard_label_cmp(uint8_t iw, const char* w, uint8_t il, const char* l)
 {
@@ -772,7 +872,7 @@ dane_verify_server_name(X509* cert, ldns_rdf* server_name)
 
 void
 dane_create(ldns_rr_list* tlsas, ldns_rdf* tlsa_owner,
-		ldns_tlsa_certificate_usage certificate_usage, int index,
+		ldns_tlsa_certificate_usage certificate_usage, int offset,
 		ldns_tlsa_selector          selector,
 		ldns_tlsa_matching_type     matching_type,
 		X509* cert, STACK_OF(X509)* extra_certs,
@@ -791,7 +891,7 @@ dane_create(ldns_rr_list* tlsas, ldns_rdf* tlsa_owner,
 
 	s = ldns_dane_select_certificate(&selected_cert,
 			cert, extra_certs, validate_store,
-			certificate_usage, index);
+			certificate_usage, offset);
 	LDNS_ERR(s, "could not select certificate");
 
 	s = ldns_dane_create_tlsa_rr(&tlsa_rr,
@@ -857,6 +957,7 @@ main(int argc, char** argv)
 	bool assume_dnssec_validity = false;
 	bool assume_pkix_validity   = false;
 	bool verify_server_name     = true;
+	bool interact               = true;
 
 	char* CAfile    = NULL;
 	char* CApath    = NULL;
@@ -883,6 +984,7 @@ main(int argc, char** argv)
 	ldns_rdf*      tlsa_owner     = NULL;
 	char*          tlsa_owner_str = NULL;
 	ldns_rr_list*  tlsas          = NULL;
+	char*          tlsas_file     = NULL;
 
 	ldns_rr_list*  originals      = NULL; /* original tlsas (before
 					       * transform), but also used
@@ -890,7 +992,7 @@ main(int argc, char** argv)
 					       */
 
 	ldns_tlsa_certificate_usage certificate_usage = 666;
-	int                         index             =   0;
+	int                         offset            =  -1;
 	ldns_tlsa_selector          selector          = 666;
 	ldns_tlsa_matching_type     matching_type     = 666;
 	
@@ -905,7 +1007,7 @@ main(int argc, char** argv)
 	if (! keys || ! addresses) {
 		MEMERR("ldns_rr_list_new");
 	}
-	while((c = getopt(argc, argv, "46a:bc:df:hi:k:np:r:su")) != -1) {
+	while((c = getopt(argc, argv, "46a:bc:df:hik:no:p:r:st:uvV:")) != -1) {
 		switch(c) {
 		case 'h':
 			print_usage("ldns-dane");
@@ -963,7 +1065,7 @@ main(int argc, char** argv)
 			CAfile = optarg;
 			break;
 		case 'i':
-			index = atoi(optarg); /* todo check if all numeric */
+			interact = true;
 			break;
 		case 'k':
 			s = read_key_file(optarg, keys);
@@ -977,6 +1079,9 @@ main(int argc, char** argv)
 			break;
 		case 'n':
 			verify_server_name = false;
+			break;
+		case 'o':
+			offset = atoi(optarg); /* todo check if all numeric */
 			break;
 		case 'p':
 			CApath = optarg;
@@ -992,8 +1097,19 @@ main(int argc, char** argv)
 		case 's':
 			assume_pkix_validity = true;
 			break;
+		case 't':
+			tlsas_file = optarg;
+			break;
 		case 'u':
 			transport = LDNS_DANE_TRANSPORT_UDP;
+			break;
+		case 'v':
+			printf("verify-zone version %s (ldns version %s)\n",
+					LDNS_VERSION, ldns_version());
+			exit(EXIT_SUCCESS);
+			break;
+		case 'V':
+			verbosity = atoi(optarg);
 			break;
 		}
 	}
@@ -1003,7 +1119,6 @@ main(int argc, char** argv)
 	 */
 	if (ldns_rr_list_rr_count(addresses) > 0 &&
 			ai_family != AF_UNSPEC) {
-		/* TODO: resource leak, previous addresses */
 		originals = addresses;
 		addresses = rr_list_filter_rr_type(originals,
 				(ai_family == AF_INET
@@ -1043,13 +1158,21 @@ main(int argc, char** argv)
 
 		mode = VERIFY;
 
-		/* lookup tlsas */
-		s = dane_setup_resolver(&res, keys, dns_root,
-				assume_dnssec_validity);
-		LDNS_ERR(s, "could not dane_setup_resolver");
-		s = dane_query(&tlsas, res, tlsa_owner, LDNS_RR_TYPE_TLSA,
-				LDNS_RR_CLASS_IN, false);
-		ldns_resolver_free(res);
+		if (tlsas_file) {
+
+			s = dane_read_tlsas_from_file(&tlsas, tlsas_file,
+					tlsa_owner);
+		} else {
+			/* lookup tlsas */
+			s = dane_setup_resolver(&res, keys, dns_root,
+					assume_dnssec_validity);
+			LDNS_ERR(s, "could not dane_setup_resolver");
+			s = dane_query(&tlsas, res, tlsa_owner,
+					LDNS_RR_TYPE_TLSA, LDNS_RR_CLASS_IN,
+					false);
+			ldns_resolver_free(res);
+
+		}
 
 		if (s == LDNS_STATUS_DANE_INSECURE) {
 
@@ -1157,7 +1280,7 @@ main(int argc, char** argv)
 
 		switch (mode) {
 		case CREATE: dane_create(tlsas, tlsa_owner, certificate_usage,
-					     index, selector, matching_type,
+					     offset, selector, matching_type,
 					     cert, extra_certs, store,
 					     verify_server_name, name);
 			     break;
@@ -1192,14 +1315,14 @@ main(int argc, char** argv)
 					ldns_rr_list_rr(addresses, i));
 			assert(address != NULL);
 			
-			s = get_ssl_cert_chain(&cert, &extra_certs,
-					ssl, address, port, transport);
+			s = get_ssl_cert_chain(&cert, &extra_certs, ssl,
+					address, port, transport, interact);
 			LDNS_ERR(s, "could not get cert chain from ssl");
 
 			switch (mode) {
 
 			case CREATE: dane_create(tlsas, tlsa_owner,
-						     certificate_usage, index,
+						     certificate_usage, offset,
 						     selector, matching_type,
 						     cert, extra_certs, store,
 						     verify_server_name, name);

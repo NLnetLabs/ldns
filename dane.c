@@ -413,7 +413,7 @@ ldns_dane_select_certificate(X509** selected_cert,
 
 	case LDNS_TLSA_USAGE_TRUST_ANCHOR_ASSERTION:
 
-		if (index == 0) {
+		if (index == -1) {
 			s = ldns_dane_pkix_get_last_self_signed(
 					selected_cert, cert, extra_certs);
 			return s;
@@ -425,7 +425,7 @@ ldns_dane_select_certificate(X509** selected_cert,
 				s =
 				ldns_dane_get_nth_cert_from_validation_chain(
 					selected_cert, pkix_validation_chain,
-					index - 1);
+					index);
 			} else if (! pkix_validation_chain) {
 				return s;
 			}

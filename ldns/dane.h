@@ -150,8 +150,8 @@ ldns_status ldns_dane_cert2rdf(ldns_rdf** rdf, X509* cert,
  *            and "Domain issued certificate" respectively.
  * \param[in] cert_usage Which certificate to use and how to validate.
  * \param[in] index Used to select the trust anchor when certificate usage
- *            is "Trust Anchor Assertion". 1 is the last certificate in the
- *            validation chain. 2 the one but last, etc. When index is 0,
+ *            is "Trust Anchor Assertion". 0 is the last certificate in the
+ *            validation chain. 1 the one but last, etc. When index is -1,
  *            the last certificate is used that MUST be self-signed.
  *            This can help to make sure that the intended (self signed)
  *            trust anchor is actually present in extra_certs (which is a
@@ -184,7 +184,7 @@ ldns_status ldns_dane_create_tlsa_rr(ldns_rr** tlsa,
 		X509* cert);
 
 /**
- * Verify if the given TLSA resource record matces the given certificate.
+ * Verify if the given TLSA resource record matches the given certificate.
  * Reporting on a TLSA rr mismatch (LDNS_STATUS_DANE_TLSA_DID_NOT_MATCH)
  * is preferred over PKIX failure  (LDNS_STATUS_DANE_PKIX_DID_NOT_VALIDATE).
  * So when PKIX validation is required by the TLSA Certificate usage,
@@ -211,7 +211,7 @@ ldns_status ldns_dane_verify_rr(const ldns_rr* tlsa_rr,
 		X509_STORE* pkix_validation_store);
 
 /**
- * Verify if any of the given TLSA resource records matces the given
+ * Verify if any of the given TLSA resource records matches the given
  * certificate.
  *
  * \param[in] tlsas The resource records that specify what and how to
