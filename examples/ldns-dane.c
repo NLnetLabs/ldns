@@ -41,17 +41,14 @@ void
 print_usage(const char* progname)
 {
 	printf("Usage: %s [OPTIONS] <name> <port>\n", progname);
-	printf("\n\tMake a TLS connection to <name> <port> "
-			"and use the TLSA\n\t"
-			"resource record(s) at <name> to authenticate "
-			"the connection.\n");
-	printf("\n  or: %s [OPTIONS] -t <file>\n", progname);
-	printf("\n\tRead TLSA record(s) from <file> and authenticate the\n"
+	printf("   or: %s [OPTIONS] -t <tlsafile>\n", progname);
+	printf("\n\tVerify the TLS connection at <name>:<port> or"
+	       "\n\tuse TLSA record(s) from <tlsafile> to verify the\n"
 			"\tTLS service they reference.\n");
-	printf("\n  or: %s [OPTIONS] <name> <port> <cert usage> <selector> "
-			"<matching type>\n", progname);
-	printf("\n\tMake a TLS connection to <name> <port> "
-			"and create the TLSA\n\t"
+	printf("\n   or: %s [OPTIONS] <name> <port> <cert usage> <selector> "
+			"<match type>\n", progname);
+	printf("\n\tUse the TLS connection(s) to <name> <port> "
+			"to create the TLSA\n\t"
 			"resource record(s) that would "
 			"authenticate the connection.\n");
 	printf("\n\t<cert usage>"
@@ -62,77 +59,44 @@ print_usage(const char* progname)
 	printf("\n\t<selector>"
 			"\t0: Full certificate\n"
 			"\t\t\t1: SubjectPublicKeyInfo\n");
-	printf("\n\t<matching type>"
+	printf("\n\t<match type>"
 			"\t0: No hash used\n"
 			"\t\t\t1: SHA-256\n"
 			"\t\t\t2: SHA-512\n");
 
-	printf("\nOPTIONS:\n");
-	printf("\t-h\t\tshow this text\n\n");
+	printf("OPTIONS:\n");
+	printf("\t-h\t\tshow this text\n");
 	printf("\t-4\t\tTLS connect IPv4 only\n");
-	printf("\t-6\t\tTLS connect IPv6 only\n\n");
+	printf("\t-6\t\tTLS connect IPv6 only\n");
 	printf("\t-a <address>\t"
-	       "Don't try to resolve <name>, but connect to <address>\n"
-	       "\t\t\tin stead.\n"
-	       "\t\t\tThis option may be given more than once.\n"
-	       "\n"
-	      );
+	       "don't resolve <name>, but connect to <address>(es)\n");
 	printf("\t-b\t\t"
 	       "print \"<name>. TYPE52 \\#<size> <hex data>\" form\n"
-	       "\t\t\tin stead of TLSA presentation format.\n"
-	       "\n"
 	      );
-	printf("\t-c <file>\t"
-	       "do not TLS connect to <name> <port>,\n"
-	       "\t\t\tbut authenticate (or make TLSA records)\n"
-	       "\t\t\tfor the certificate (chain) in <file> in stead\n"
-	       "\n"
+	printf("\t-c <certfile>\t"
+	       "verify or create TLSA records for the\n"
+	       "\t\t\tcertificate (chain) in <certfile>\n"
 	      );
-	printf("\t-d\t\tassume DNSSEC validity even when insecure\n\n");
-	printf("\t-f <CAfile>\tuse CAfile to validate\n\n");
-	printf("\t-i\t\tinteract after connecting\n\n");
-	printf("\t-k <file>\t"
-	       "specify a file that contains a trusted DNSKEY or DS rr.\n"
-	       "\t\t\tWithout a trusted DNSKEY, the local network is trusted\n"
-	       "\t\t\tto provide a DNSSEC resolver (i.e. AD bit is checked).\n"
-	       "\n"
-	       "\t\t\tWhen -r <file> is also given, DNSSEC validation is\n"
-	       "\t\t\t\"traced\" from the root down. With only -k <file> and\n"
-	       "\t\t\tno root hints, signature(s) are chased to a known key.\n"
-	       "\n"
-	       "\t\t\tThis option may be given more than once.\n"
-	       "\n"
+	printf("\t-d\t\tassume DNSSEC validity even when insecure\n");
+	printf("\t-f <CAfile>\tuse CAfile to validate\n");
+	printf("\t-i\t\tinteract after connecting\n");
+	printf("\t-k <keyfile>\t"
+	       "use DNSKEY/DS rr(s) in <keyfile> to validate TLSAs\n"
 	      );
-	printf("\t-n\t\tDo *not* verify server name in certificate\n\n");
-	printf("\t-o <number>\t"
-	       "When creating a \"Trust anchor assertion\" TLSA resource\n"
-	       "\t\t\trecord, select the <number>th certificate offset from\n"
-	       "\t\t\tthe end of the validation chain. 0 means the last\n"
-	       "\t\t\tcertificate, 1 the one but last, 2 the second but\n"
-	       "\t\t\tlast, etc.\n"
-	       "\n"
-	       "\t\t\tWhen <number> is -1 (the default), the last certificate"
-	     "\n\t\t\tis used (like with 0) that MUST be self-signed. This\n"
-	       "\t\t\tcan help to make sure that the intended (self signed)\n"
-	       "\t\t\ttrust anchor is actually present in the server certi-\n"
-	       "\t\t\tficate chain (which is a DANE requirement)\n"
-	       "\n"
+	printf("\t-n\t\tdo *not* verify server name in certificate\n");
+	printf("\t-o <offset>\t"
+	       "select <offset>th certificate from the end of\n"
+	       "\t\t\tthe validation chain. -1 means self-signed at end\n"
 	      );
 	printf("\t-p <CApath>\t"
 	       "use certificates in the <CApath> directory to validate\n"
-	       "\n"
 	      );
-	printf("\t-r <file>\tuse <file> to read root hints from\n\n");
-	printf("\t-s\t\twhen creating TLSA resource records with the\n\t\t\t"
-	       "\"CA Constraint\" and the \"Service Certificate\n\t\t\t"
-	       "Constraint\" certificate usage, do not validate and\n\t\t\t"
-	       "assume PKIX is valid.\n\n\t\t\t"
-	       "For \"CA Constraint\" this means that verification\n\t\t\t"
-	       "should end with a self-signed certificate.\n\n");
-	printf("\t-t <file>\tRead TLSA record(s) from <file>\n\n");
-	printf("\t-u\t\tuse UDP in stead of TCP to TLS connect\n\n");
-	printf("\t-v\t\tshow version and exit\n\n");
-	printf("\t-V [0-5]\tSet verbosity level (defaul 3)\n\n");
+	printf("\t-r <hintsfile>\tuse <hintsfile> to read root hints from\n");
+	printf("\t-s\t\tassume PKIX validity\n");
+	printf("\t-t <tlsafile>\tread TLSA record(s) from <tlsafile>\n");
+	printf("\t-u\t\tuse UDP in stead of TCP to TLS connect\n");
+	printf("\t-v\t\tshow version and exit\n");
+	printf("\t-V [0-5]\tset verbosity level (defaul 3)\n");
 	exit(EXIT_SUCCESS);
 }
 

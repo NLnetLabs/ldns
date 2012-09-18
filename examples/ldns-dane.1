@@ -1,0 +1,164 @@
+.TH ldns-dane 1 "17 September 2012"
+.SH NAME
+ldns-dane \- verify or create TLS authentication with DANE (RFC6698)
+.SH SYNOPSIS
+.PD 0
+.B ldns-dane
+.IR [OPTIONS]
+.IR name
+.IR port
+.PP
+.B ldns-dane
+.IR [OPTIONS]
+.IR -t
+.IR tlsafile
+
+.B ldns-dane
+.IR [OPTIONS]
+.IR name
+.IR port
+.IR Certificate-usage
+.IR Selector
+.IR Matching-type
+
+.B ldns-dane
+.IR -h
+.PP
+.B ldns-dane
+.IR -v
+.PD 1
+
+.SH DESCRIPTION
+
+In the first two forms ldns-dane will be in \fBverify\fR modus.
+In the third form in \fBcreate\fR modus.
+
+In the first form: 
+A TLS connection to \fIname\fR:\fIport\fR is made. The TLSA resource
+record(s) for \fIname\fR are used to authenticate the connection.
+
+In the second form:
+The TLSA record(s) are read from \fItlsafile\fR and user to authenticate
+the TLS service they reference.
+
+In the third form:
+A TLS connection to \fIname\fR:\fIport\fR is made and used to create the TLSA
+resource record(s) that would authenticate the connection.
+The parameters that determine the form of the TLSA records to be created
+are:
+
+.PD 0
+.I Certificate-usage\fR:
+.RS
+.IP 0
+CA constraint
+.IP 1
+Service certificate constraint
+.IP 2
+Trust anchor assertion
+.IP 3
+Domain-issued certificate
+.RE
+
+.I Selector\fR:
+.RS
+.IP 0
+Full certificate
+.IP 1
+SubjectPublicKeyInfo
+.RE
+
+.I Matching-type\fR:
+.RS
+.IP 0
+No hash used
+.IP 1
+SHA-256
+.IP 2
+SHA-512
+.RE
+.PD 1
+
+In case of numbers the first few letters of the intended meaning may be used.
+Except for the hash algorithm names in which need the full name.
+
+.SH OPTIONS
+.IP -4
+TLS connect IPv4 only
+.IP -6
+TLS connect IPv6 only
+.IP "-a \fIaddress\fR"
+Don't try to resolve \fIname\fR, but connect to \fIaddress\fR in stead.
+
+This option may be given more than once.
+.IP -b
+print "\fIname\fR\. TYPE52 \\#\fIsize\fR \fIhexdata\fR" form in stead
+of TLSA presentation format.
+.IP "-c \fIcertfile\fR"
+Do not TLS connect to \fIname\fR:\fIport\fR, but authenticate (or make
+TLSA records) for the certificate (chain) in \fIcertfile\fR in stead.
+.IP -d
+Assume DNSSEC validity even when the TLSA records were acquired insecure
+or were bogus.
+.IP "-f \fICAfile\fR"
+Use CAfile to validate.
+.IP -h
+Print short usage help
+.IP -i
+Interact after connecting.
+.IP "-k \fIkeyfile\fR"
+Specify a file that contains a trusted DNSKEY or DS rr.
+Without a trusted DNSKEY, the local network is trusted to provide
+a DNSSEC resolver (i.e. AD bit is checked).
+
+When \fB-r\fR \fIhintsfile\fR is also given, DNSSEC validation is "traced"
+from the root down. With only \fB-k\fR \fIkeyfile\fR and no root hints,
+signature(s) are chased to a known key.
+
+This option may be given more than once.
+.IP -n
+Do \fBnot\fR verify server name in certificate.
+.IP "-o \fIoffset\fR"
+When creating a "Trust anchor assertion" TLSA resource record,
+select the \fIoffset\fRth certificate offset from the end
+of the validation chain. 0 means the last certificate, 1 the one but last,
+2 the second but last, etc.
+
+When \fIoffset\fR is -1 (the default), the last certificate
+is used (like with 0) that MUST be self-signed. This can help to make
+sure that the intended (self signed) trust anchor is actually present
+in the server certificate chain (which is a DANE requirement).
+.IP "-p \fICApath\fR"
+Use certificates in the \fICApath\fR directory to validate.
+.IP "-r \fIhintsfile\fR"
+Use \fIhintsfile\fR to read root hints from.
+.IP -s
+When creating TLSA resource records with the "CA Constraint" and the
+"Service Certificate Constraint" certificate usage, do not validate and
+assume PKIX is valid.
+
+For "CA Constraint" this means that verification should end with a
+self-signed certificate.
+.IP "-t \fItlsafile\fR"
+Read TLSA record(s) from \fItlsafile\fR. When \fIname\fR and \fIport\fR
+are also given, only TLSA records that match the \fIname\fR, \fIport\fR and
+\fItransport\fR are used. Otherwise the owner name of the TLSA record(s)
+will be used to determine \fIname\fR, \fIport\fR and \fItransport\fR.
+.IP -u
+Use UDP transport in stead of TCP to TLS connect.
+.IP -v
+Show version and exit.
+.IP "-V \fI[0-5]\fR
+Set verbosity level (defaul 3)
+
+.SH AUTHOR
+Written by the ldns team as an example for ldns usage.
+
+.SH REPORTING BUGS
+Report bugs to \fIldns-team@nlnetlabs.nl\fR. 
+
+.SH COPYRIGHT
+Copyright (C) 2012 NLnet Labs. This is free software. There is NO
+warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR
+PURPOSE.
+
