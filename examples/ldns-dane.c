@@ -20,6 +20,8 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netdb.h>
+#include <fcntl.h>
+#include <signal.h>
 
 #include <ldns/ldns.h>
 
@@ -77,7 +79,7 @@ print_usage(const char* progname)
 	       "verify or create TLSA records for the\n"
 	       "\t\t\tcertificate (chain) in <certfile>\n"
 	      );
-	printf("\t-d\t\tassume DNSSEC validity even when insecure\n");
+	printf("\t-d\t\tassume DNSSEC validity even when insecure or bogus\n");
 	printf("\t-f <CAfile>\tuse CAfile to validate\n");
 	printf("\t-i\t\tinteract after connecting\n");
 	printf("\t-k <keyfile>\t"
@@ -93,7 +95,9 @@ print_usage(const char* progname)
 	      );
 	printf("\t-r <hintsfile>\tuse <hintsfile> to read root hints from\n");
 	printf("\t-s\t\tassume PKIX validity\n");
-	printf("\t-t <tlsafile>\tread TLSA record(s) from <tlsafile>\n");
+	printf("\t-t <tlsafile>\tdo not use DNS, "
+	       "but read TLSA record(s) from <tlsafile>\n"
+	      );
 	printf("\t-u\t\tuse UDP in stead of TCP to TLS connect\n");
 	printf("\t-v\t\tshow version and exit\n");
 	printf("\t-V [0-5]\tset verbosity level (defaul 3)\n");
@@ -183,16 +187,15 @@ ldns_err(const char* s, ldns_status err)
 }
 
 ldns_status
-get_ssl_cert_chain(X509** cert, STACK_OF(X509)** extra_certs, SSL* ssl,
-		ldns_rdf* address, uint16_t port,
-		ldns_dane_transport transport,
-		bool interact)
+ssl_connect_and_get_cert_chain(
+		X509** cert, STACK_OF(X509)** extra_certs,
+	       	SSL* ssl, ldns_rdf* address, uint16_t port,
+		ldns_dane_transport transport)
 {
 	struct sockaddr_storage *a = NULL;
 	size_t a_len = 0;
 	int sock;
 	int r;
-	ldns_status s;
 
 	assert(cert != NULL);
 	assert(extra_certs != NULL);
@@ -219,70 +222,217 @@ get_ssl_cert_chain(X509** cert, STACK_OF(X509)** extra_certs, SSL* ssl,
 
 	default:
 		LDNS_FREE(a);
-		s = LDNS_STATUS_DANE_UNKNOWN_TRANSPORT;
-		goto error;
+		return LDNS_STATUS_DANE_UNKNOWN_TRANSPORT;
 	}
 	if (sock == -1) {
-		s = LDNS_STATUS_NETWORK_ERR;
-		goto error;
+		LDNS_FREE(a);
+		return LDNS_STATUS_NETWORK_ERR;
 	}
 	if (connect(sock, (struct sockaddr*)a, (socklen_t)a_len) == -1) {
-		s = LDNS_STATUS_NETWORK_ERR;
-		goto error;
+		LDNS_FREE(a);
+		return LDNS_STATUS_NETWORK_ERR;
 	}
+	LDNS_FREE(a);
 	if (! SSL_clear(ssl)) {
 		close(sock);
 		fprintf(stderr, "SSL_clear\n");
-		s = LDNS_STATUS_SSL_ERR;
-		goto error;
+		return LDNS_STATUS_SSL_ERR;
 	}
 	SSL_set_connect_state(ssl);
 	(void) SSL_set_mode(ssl, SSL_MODE_AUTO_RETRY);
 	if (! SSL_set_fd(ssl, sock)) {
 		close(sock);
 		fprintf(stderr, "SSL_set_fd\n");
-		s = LDNS_STATUS_SSL_ERR;
-		goto error;
+		return LDNS_STATUS_SSL_ERR;
 	}
-	while (1) {
+	for (;;) {
 		ERR_clear_error();
 		if ((r = SSL_do_handshake(ssl)) == 1) {
 			break;
 		}
 		r = SSL_get_error(ssl, r);
 		if (r != SSL_ERROR_WANT_READ && r != SSL_ERROR_WANT_WRITE) {
-			fprintf(stderr, "SSL_get_error unknown return code\n");
-			s = LDNS_STATUS_SSL_ERR;
-			goto error;
+			fprintf(stderr, "handshaking SSL_get_error: %d\n", r);
+			return LDNS_STATUS_SSL_ERR;
 		}
 	}
 	*cert = SSL_get_peer_certificate(ssl);
 	*extra_certs = SSL_get_peer_cert_chain(ssl);
 
-	/*
-	 * TODO: feature request: interact with user here
-	 */
-	while ((r = SSL_shutdown(ssl)) == 0)
-		;
-
-	/* TODO: SSL_shutdown errors with www.google.com:443. Why?
-	 *       SSL_get_error(ssl, r) gives SSL_ERROR_SYSCALL, but errno == 0
-	 *       and there are no messages on the SSL error stack!
-	 
-	if (r == -1) {
-		fprintf(stderr, "SSL_shutdown\n");
-		r = SSL_get_error(ssl, r);
-		fprintf(stderr, "SSL_get_error return code: %d\n", r);
-		s = LDNS_STATUS_SSL_ERR;
-		goto error;
-	}
-	*/
-
-	LDNS_FREE(a);
 	return LDNS_STATUS_OK;
-error:
-	LDNS_FREE(a);
-	return s;
+}
+
+#define BUFSIZE 16384
+#define MAX( a, b ) ( (a) > (b) ? (a) : (b) )
+
+bool
+cp_line_from_file2fd_networkline(FILE* file, int fd)
+{
+	char buf[BUFSIZE];
+	char* bufptr;
+	size_t to_write;
+	ssize_t written;
+
+	/* get line from file */
+	if (fgets(buf, BUFSIZE - 2, file) == NULL) {
+		return false;
+	}
+	to_write = strlen(buf);
+	if (to_write == 0) {
+		return false;
+	}
+	/* Convert to network line */
+	if (buf[to_write - 1] == '\n') {
+		buf[to_write - 1] = '\r';
+		buf[to_write    ] = '\n';
+		buf[to_write + 1] = '\000';
+		to_write += 1;
+	}
+	/* And write to fd */
+	bufptr = buf;
+	while (to_write > 0) {
+		written = write(fd, bufptr, to_write);
+		if (written == -1) {
+			perror("write");
+			close(fd);
+			return false;
+		}
+		to_write -= written;
+		bufptr += written;
+	}
+	return true;
+}
+
+bool
+cp_ssl2file(SSL* ssl, FILE* file)
+{
+	char buf[BUFSIZE];
+	char* bufptr;
+	int to_write;
+	ssize_t written;
+	int r;
+
+	to_write = SSL_read(ssl, buf, BUFSIZE);
+	if (to_write <= 0) {
+		r = SSL_get_error(ssl, to_write);
+		if (r != SSL_ERROR_ZERO_RETURN) {
+			fprintf(stderr, "reading SSL_get_error:" " %d\n", r);
+		}
+		return false;
+	}
+	bufptr = buf;
+	while (to_write > 0) {
+		written = fwrite(bufptr, 1, to_write, file);
+		if (written == -1) {
+			perror("fwrite");
+			return false;
+		}
+		to_write -= written;
+		bufptr += written;
+	}
+	return true;
+}
+
+bool
+cp_fd2ssl(int fd, SSL* ssl)
+{
+	char buf[BUFSIZE];
+	char* bufptr;
+	ssize_t to_write;
+	int written;
+	int r;
+
+	to_write = read(fd, buf, BUFSIZE);
+	if (to_write == -1) {
+		perror("read");
+		return false;
+	}
+	if (to_write == 0) {
+		return false;
+	}
+	bufptr = buf;
+	while (to_write > 0) {
+		written = SSL_write(ssl, bufptr, to_write);
+		if (written <= 0) {
+			r = SSL_get_error(ssl, to_write);
+			if (r != SSL_ERROR_ZERO_RETURN) {
+				fprintf(stderr,
+					"writing SSL_get_error: %d\n", r);
+			}
+			return false;
+		}
+		to_write -= written;
+		bufptr += written;
+	}
+	return true;
+}
+
+void
+ssl_interact(SSL* ssl)
+{
+	pid_t child;
+	int pipefd[2];
+	fd_set rfds;
+	int maxfd;
+	int sock;
+	int r;
+
+	sock = SSL_get_fd(ssl);
+	if (sock == -1) {
+		return;
+	}
+	if (pipe(pipefd) == -1) {
+		perror("pipe");
+		return;
+	}
+	child = fork();
+	if (child == -1) {
+		perror("fork");
+		return;
+	} else if (child == 0) {	/* Child process */
+		close(pipefd[0]);	/* close read end */
+
+		while (cp_line_from_file2fd_networkline(stdin, pipefd[1]));
+
+		close(pipefd[1]);
+		exit(EXIT_SUCCESS);
+
+	} else {			/* Parent process*/
+		close(pipefd[1]);	/* close write end */
+
+		maxfd = MAX(pipefd[0], sock) + 1;
+		for (;;) {
+			FD_ZERO(&rfds);
+			FD_SET(sock, &rfds);
+			FD_SET(pipefd[0], &rfds);
+
+			r = select(maxfd, &rfds, NULL, NULL, NULL);
+			if (r == -1) {
+				perror("select");
+				break;
+			}
+			if (FD_ISSET(sock, &rfds)) {
+				if (! cp_ssl2file(ssl, stdout)) {
+					break;
+				}
+			}
+			if (FD_ISSET(pipefd[0], &rfds)) {
+				if (! cp_fd2ssl(pipefd[0], ssl)) {
+					break;
+				}
+			}
+		}
+		close(pipefd[0]);
+		if (kill(child, SIGTERM) == -1) {
+			perror("kill");
+		}
+	}
+}
+
+void
+ssl_shutdown(SSL* ssl)
+{
+	while (SSL_shutdown(ssl) == 0);
 }
 
 ldns_rr_list*
@@ -970,7 +1120,7 @@ main(int argc, char** argv)
 	bool assume_dnssec_validity = false;
 	bool assume_pkix_validity   = false;
 	bool verify_server_name     = true;
-	bool interact               = true;
+	bool interact               = false;
 
 	char* CAfile    = NULL;
 	char* CApath    = NULL;
@@ -1460,8 +1610,8 @@ main(int argc, char** argv)
 					ldns_rr_list_rr(addresses, i));
 			assert(address != NULL);
 			
-			s = get_ssl_cert_chain(&cert, &extra_certs, ssl,
-					address, port, transport, interact);
+			s = ssl_connect_and_get_cert_chain(&cert, &extra_certs,
+					ssl, address, port, transport);
 			LDNS_ERR(s, "could not get cert chain from ssl");
 
 			switch (mode) {
@@ -1477,10 +1627,14 @@ main(int argc, char** argv)
 						cert, extra_certs, store,
 						verify_server_name, name)) {
 					success = false;
+
+				     } else if (interact) {
+					     ssl_interact(ssl);
 				     }
 				     break;
 			default:     break; /* suppress warning */
 			}
+			ssl_shutdown(ssl);
 		} /* end for all addresses */
 	} /* end No certification file */
 
