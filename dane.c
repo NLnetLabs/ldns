@@ -638,7 +638,7 @@ ldns_dane_verify_rr(const ldns_rr* tlsa_rr,
 				s = LDNS_STATUS_DANE_PKIX_DID_NOT_VALIDATE;
 			}
 
-		} else if (LDNS_STATUS_OK) { 
+		} else if (s == LDNS_STATUS_OK) { 
 			/* PKIX validated, does the TLSA match too? */
 
 			/* Pop the last cert from the validation chain */
