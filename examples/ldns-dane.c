@@ -309,7 +309,7 @@ cp_ssl2file(SSL* ssl, FILE* file)
 	char buf[BUFSIZE];
 	char* bufptr;
 	int to_write;
-	ssize_t written;
+	size_t written;
 	int r;
 
 	to_write = SSL_read(ssl, buf, BUFSIZE);
@@ -322,8 +322,8 @@ cp_ssl2file(SSL* ssl, FILE* file)
 	}
 	bufptr = buf;
 	while (to_write > 0) {
-		written = fwrite(bufptr, 1, to_write, file);
-		if (written == -1) {
+		written = fwrite(bufptr, 1, (size_t)to_write, file);
+		if (written == 0) {
 			perror("fwrite");
 			return false;
 		}
@@ -352,9 +352,9 @@ cp_fd2ssl(int fd, SSL* ssl)
 	}
 	bufptr = buf;
 	while (to_write > 0) {
-		written = SSL_write(ssl, bufptr, to_write);
+		written = SSL_write(ssl, bufptr, (int)to_write);
 		if (written <= 0) {
-			r = SSL_get_error(ssl, to_write);
+			r = SSL_get_error(ssl, (int)to_write);
 			if (r != SSL_ERROR_ZERO_RETURN) {
 				fprintf(stderr,
 					"writing SSL_get_error: %d\n", r);
@@ -386,10 +386,7 @@ ssl_interact(SSL* ssl)
 		return;
 	}
 	child = fork();
-	if (child == -1) {
-		perror("fork");
-		return;
-	} else if (child == 0) {	/* Child process */
+	if (child == 0) {		/* Child process */
 		close(pipefd[0]);	/* close read end */
 
 		while (cp_line_from_file2fd_networkline(stdin, pipefd[1]));
@@ -397,12 +394,14 @@ ssl_interact(SSL* ssl)
 		close(pipefd[1]);
 		exit(EXIT_SUCCESS);
 
-	} else {			/* Parent process*/
+	} else if (child > 0) {		/* Parent process*/
 		close(pipefd[1]);	/* close write end */
 
 		maxfd = MAX(pipefd[0], sock) + 1;
 		for (;;) {
+#ifndef S_SPLINT_S
 			FD_ZERO(&rfds);
+#endif /* splint */
 			FD_SET(sock, &rfds);
 			FD_SET(pipefd[0], &rfds);
 
@@ -426,6 +425,8 @@ ssl_interact(SSL* ssl)
 		if (kill(child, SIGTERM) == -1) {
 			perror("kill");
 		}
+	} else {
+		perror("fork");
 	}
 }
 
@@ -1139,11 +1140,10 @@ main(int argc, char** argv)
 	int           ai_family = AF_UNSPEC;
 	int           transport = LDNS_DANE_TRANSPORT_TCP;
 
-	char*         name_str;
+	char*         name_str = NULL;	/* supress uninitialized warning */
 	ldns_rdf*     name;
-	uint16_t      port = 0; /* assignment to suppress
-				 * uninitialized warning
-				 */
+	uint16_t      port = 0;		/* supress uninitialized warning */
+
 	ldns_resolver* res            = NULL;
 	ldns_rdf*      tlsa_owner     = NULL;
 	char*          tlsa_owner_str = NULL;
