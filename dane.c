@@ -24,6 +24,7 @@
 #ifdef HAVE_SSL
 #include <openssl/ssl.h>
 #include <openssl/err.h>
+#include <openssl/x509v3.h>
 #endif
 
 #ifndef max
@@ -555,11 +556,13 @@ ldns_dane_match_cert_with_data(X509* cert, ldns_tlsa_selector selector,
 
 /* Return whether any certificate from the chain with selector/matching_type
  * matches data.
+ * ca should be true if the certificate has to be a CA certificate too.
  */
 static ldns_status
 ldns_dane_match_any_cert_with_data(STACK_OF(X509)* chain,
 		ldns_tlsa_selector      selector,
-		ldns_tlsa_matching_type matching_type, ldns_rdf* data)
+		ldns_tlsa_matching_type matching_type,
+		ldns_rdf* data, bool ca)
 {
 	ldns_status s = LDNS_STATUS_DANE_TLSA_DID_NOT_MATCH;
 	size_t n, i;
@@ -574,10 +577,16 @@ ldns_dane_match_any_cert_with_data(STACK_OF(X509)* chain,
 		}
 		s = ldns_dane_match_cert_with_data(cert,
 				selector, matching_type, data);
+		if (ca && s == LDNS_STATUS_OK && ! X509_check_ca(cert)) {
+			s = LDNS_STATUS_DANE_TLSA_MATCHED_NON_CA_CERTIFICATE;
+		}
 		X509_free(cert);
 		if (s != LDNS_STATUS_DANE_TLSA_DID_NOT_MATCH) {
 			break;
 		}
+		/* when s == LDNS_STATUS_DANE_TLSA_DID_NOT_MATCH,
+		 * try to match the next certificate
+		 */
 	}
 	return s;
 }
@@ -628,7 +637,7 @@ ldns_dane_verify_rr(const ldns_rr* tlsa_rr,
 			 */
 			s = ldns_dane_match_any_cert_with_data(
 					pkix_validation_chain,
-					selector, matching_type, data);
+					selector, matching_type, data, true);
 
 			if (s == LDNS_STATUS_OK) {
 				/* A TLSA record did match a cert from the
@@ -641,30 +650,9 @@ ldns_dane_verify_rr(const ldns_rr* tlsa_rr,
 		} else if (s == LDNS_STATUS_OK) { 
 			/* PKIX validated, does the TLSA match too? */
 
-			/* Pop the last cert from the validation chain */
-			cert = sk_X509_pop(pkix_validation_chain);
-			if (! cert) {
-				s = LDNS_STATUS_SSL_ERR;
-			}  else {
-				s = ldns_dane_match_cert_with_data(cert,
-						selector, matching_type, data);
-				X509_free(cert);
-				/*
-				 * TODO: What to do when we had no match?
-				 *
-				 * Does OpenSSL create the longest possible
-				 * validation_chain?
-				 *
-				 * In that case we have to test whether
-				 * intermediate certificates are in the
-				 * pkix_validation_store.
-				 *
-				 * Otherwise, we have to remove the signing
-				 * CA from the pkix_validation_store, and see
-				 * if that removed cert might itself be
-				 * validated by a CA that *does* match.
-				*/
-			}
+			s = ldns_dane_match_any_cert_with_data(
+					pkix_validation_chain,
+					selector, matching_type, data, true);
 		}
 		sk_X509_pop_free(pkix_validation_chain, X509_free);
 		return s;
@@ -685,7 +673,7 @@ ldns_dane_verify_rr(const ldns_rr* tlsa_rr,
 		if (s == LDNS_STATUS_OK) {
 			s = ldns_dane_match_any_cert_with_data(
 					pkix_validation_chain,
-					selector, matching_type, data);
+					selector, matching_type, data, false);
 
 		} else if (! pkix_validation_chain) {
 			return s;

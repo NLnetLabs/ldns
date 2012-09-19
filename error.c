@@ -114,11 +114,15 @@ ldns_lookup_table ldns_error_str[] = {
 		"extra certificates" },
 	{ LDNS_STATUS_DANE_INSECURE,             /* Unused by library */
 		"The queried resource records were insecure" },
+	{ LDNS_STATUS_DANE_BOGUS,             /* Unused by library */
+		"The queried resource records were bogus" },
 	{ LDNS_STATUS_DANE_TLSA_DID_NOT_MATCH,
 		"The TLSA record(s) "
 		"did not match with the server certificate (chain)" },
+	{ LDNS_STATUS_DANE_TLSA_MATCHED_NON_CA_CERTIFICATE,
+		"A TLSA record matched, but was not a CA certificate" },
 	{ LDNS_STATUS_DANE_PKIX_DID_NOT_VALIDATE,
-		"DANE PKIX Could not validate" },
+		"Could not PKIX validate" },
 	{ LDNS_STATUS_DANE_PKIX_NO_SELF_SIGNED_TRUST_ANCHOR, /* Trust anchor assertion */
 		"The validation chain must end in a self-signed certificate " },
 	{ 0, NULL }
