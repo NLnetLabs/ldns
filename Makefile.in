@@ -208,7 +208,7 @@ lib: libldns.la
 lib-export-all: libldns.la-export-all
 
 libldns.la: $(LDNS_ALL_LOBJS)
-	$(LINK_LIB) $(LIBSSL_LDFLAGS) $(LIBSSL_LIBS) -export-symbols $(srcdir)/ldns_symbols.def -o libldns.la $(LDNS_ALL_LOBJS) -rpath $(libdir) $(RUNTIME_PATH)
+	$(LINK_LIB) $(LIBSSL_LDFLAGS) $(LIBSSL_LIBS) -export-symbols-regex '^(ldns_|b32_[bn]to[bn]|mktime_from_utc|qsort_rr_compare_nsec3)' -o libldns.la $(LDNS_ALL_LOBJS) -rpath $(libdir) $(RUNTIME_PATH)
 
 libldns.la-export-all: $(LDNS_ALL_LOBJS)
 	$(LINK_LIB) -o libldns.la $(LDNS_ALL_LOBJS) -rpath $(libdir) $(RUNTIME_PATH)
