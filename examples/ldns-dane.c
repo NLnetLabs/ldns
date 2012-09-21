@@ -637,11 +637,8 @@ dane_query(ldns_rr_list** rrs, ldns_resolver* r,
 		return LDNS_STATUS_MEM_ERR;
 	}
 	*rrs = ldns_pkt_rr_list_by_type(p, t, LDNS_SECTION_ANSWER);
-	if (! *rrs) {
-		ldns_pkt_free(p);
-		return LDNS_STATUS_MEM_ERR;
-	}
-	if (ldns_rr_list_rr_count(*rrs) == 0 || ! ldns_resolver_dnssec(r)) {
+	if (ldns_rr_list_rr_count(*rrs) == 0 /* *rrs will actually be NULL then! */
+			|| ! ldns_resolver_dnssec(r)) {
 		ldns_pkt_free(p);
 		return LDNS_STATUS_OK;
 	}
