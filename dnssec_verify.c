@@ -1212,8 +1212,8 @@ ldns_fetch_valid_domain_keys_time(const ldns_resolver *res,
 			*status = LDNS_STATUS_CRYPTO_NO_TRUSTED_DNSKEY;
 
 			parent_domain = ldns_dname_left_chop(domain);
-			while (ldns_rdf_size(parent_domain) > 0) {
-				/* Fail if we are at the root */
+			while (parent_domain && /* Fail if we are at the root*/
+					ldns_rdf_size(parent_domain) > 0) {
 	
 				if ((parent_keys = 
 					ldns_fetch_valid_domain_keys_time(res,
@@ -1249,7 +1249,9 @@ ldns_fetch_valid_domain_keys_time(const ldns_resolver *res,
 					ldns_rdf_deep_free(prev_parent_domain);
 				}
 			}
-			ldns_rdf_deep_free(parent_domain);
+			if (parent_domain) {
+				ldns_rdf_deep_free(parent_domain);
+			}
 		}
 	}
 	return trusted_keys;

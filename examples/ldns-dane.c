@@ -5,13 +5,10 @@
  *
  * See the file LICENSE for the license.
  *
- * TODO before release:
- * 
- * - sigchase
- * - trace up from root
- *
- * Long term wishlist:
- * - Interact with user after connect
+ * wish list:
+ * - nicer reporting (tracing of evaluation process)
+ * - verbosity levels
+ * - STARTTLS support
  */
 
 #include "config.h"
@@ -20,7 +17,6 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netdb.h>
-#include <fcntl.h>
 #include <signal.h>
 
 #include <ldns/ldns.h>
@@ -36,8 +32,9 @@
 					ldns_err(msg, code); } while(0)
 #define MEMERR(msg) do { fprintf(stderr, "memory error in %s\n", msg); \
 			 exit(EXIT_FAILURE); } while(0)
+#define BUFSIZE 16384
 
-int verbosity = 3;
+/* int verbosity = 3; */
 
 void
 print_usage(const char* progname)
@@ -93,19 +90,18 @@ print_usage(const char* progname)
 	printf("\t-p <CApath>\t"
 	       "use certificates in the <CApath> directory to validate\n"
 	      );
-	printf("\t-r <hintsfile>\tuse <hintsfile> to read root hints from\n");
 	printf("\t-s\t\tassume PKIX validity\n");
 	printf("\t-t <tlsafile>\tdo not use DNS, "
 	       "but read TLSA record(s) from <tlsafile>\n"
 	      );
 	printf("\t-u\t\tuse UDP in stead of TCP to TLS connect\n");
 	printf("\t-v\t\tshow version and exit\n");
-	printf("\t-V [0-5]\tset verbosity level (defaul 3)\n");
+	/* printf("\t-V [0-5]\tset verbosity level (defaul 3)\n"); */
 	exit(EXIT_SUCCESS);
 }
 
 int
-usage_within_range(const char* arg, int max, const char* name)
+dane_int_within_range(const char* arg, int max, const char* name)
 {
 	char* endptr; /* utility var for strtol usage */
 	int val = strtol(arg, &endptr, 10);
@@ -152,7 +148,7 @@ dane_param_choice dane_selector_table[] = {
 };
 
 int
-usage_within_range_table(const char* arg, int max, const char* name,
+dane_int_within_range_table(const char* arg, int max, const char* name,
 		dane_param_choice table[])
 {
 	dane_param_choice* t;
@@ -164,7 +160,7 @@ usage_within_range_table(const char* arg, int max, const char* name,
 			}
 		}
 	}
-	return usage_within_range(arg, max, name);
+	return dane_int_within_range(arg, max, name);
 }
 
 void
@@ -262,11 +258,9 @@ ssl_connect_and_get_cert_chain(
 	return LDNS_STATUS_OK;
 }
 
-#define BUFSIZE 16384
-#define MAX( a, b ) ( (a) > (b) ? (a) : (b) )
 
 bool
-cp_line_from_file2fd_networkline(FILE* file, int fd)
+copy_line_from_file2fd_networkline(FILE* file, int fd)
 {
 	char buf[BUFSIZE];
 	char* bufptr;
@@ -304,7 +298,7 @@ cp_line_from_file2fd_networkline(FILE* file, int fd)
 }
 
 bool
-cp_ssl2file(SSL* ssl, FILE* file)
+copy_ssl2file(SSL* ssl, FILE* file)
 {
 	char buf[BUFSIZE];
 	char* bufptr;
@@ -334,7 +328,7 @@ cp_ssl2file(SSL* ssl, FILE* file)
 }
 
 bool
-cp_fd2ssl(int fd, SSL* ssl)
+copy_fd2ssl(int fd, SSL* ssl)
 {
 	char buf[BUFSIZE];
 	char* bufptr;
@@ -389,7 +383,7 @@ ssl_interact(SSL* ssl)
 	if (child == 0) {		/* Child process */
 		close(pipefd[0]);	/* close read end */
 
-		while (cp_line_from_file2fd_networkline(stdin, pipefd[1]));
+		while (copy_line_from_file2fd_networkline(stdin, pipefd[1]));
 
 		close(pipefd[1]);
 		exit(EXIT_SUCCESS);
@@ -397,7 +391,7 @@ ssl_interact(SSL* ssl)
 	} else if (child > 0) {		/* Parent process*/
 		close(pipefd[1]);	/* close write end */
 
-		maxfd = MAX(pipefd[0], sock) + 1;
+		maxfd = (pipefd[0] > sock ? pipefd[0] : sock) + 1;
 		for (;;) {
 #ifndef S_SPLINT_S
 			FD_ZERO(&rfds);
@@ -411,12 +405,12 @@ ssl_interact(SSL* ssl)
 				break;
 			}
 			if (FD_ISSET(sock, &rfds)) {
-				if (! cp_ssl2file(ssl, stdout)) {
+				if (! copy_ssl2file(ssl, stdout)) {
 					break;
 				}
 			}
 			if (FD_ISSET(pipefd[0], &rfds)) {
-				if (! cp_fd2ssl(pipefd[0], ssl)) {
+				if (! copy_fd2ssl(pipefd[0], ssl)) {
 					break;
 				}
 			}
@@ -603,59 +597,9 @@ read_key_file(const char *filename, ldns_rr_list *keys)
 }
 
 
-/*
- * The file with the given path should contain a list of NS RRs
- * for the root zone and A records for those NS RRs.
- * Read them, check them, and append the a records to the rr list given.
- */
-ldns_rr_list *
-read_root_hints(const char *filename)
-{
-	FILE *fp = NULL;
-	int line_nr = 0;
-	ldns_zone *z;
-	ldns_status status;
-	ldns_rr_list *addresses = NULL;
-	ldns_rr *rr;
-	size_t i;
-
-	fp = fopen(filename, "r");
-	if (!fp) {
-		fprintf(stderr, "Unable to open %s for reading: %s\n", filename, strerror(errno));
-		return NULL;
-	}
-
-	status = ldns_zone_new_frm_fp_l(&z, fp, NULL, 0, 0, &line_nr);
-	fclose(fp);
-	if (status != LDNS_STATUS_OK) {
-		fprintf(stderr, "Error reading root hints file: %s\n", ldns_get_errorstr_by_id(status));
-		return NULL;
-	} else {
-		addresses = ldns_rr_list_new();
-		for (i = 0; i < ldns_rr_list_rr_count(ldns_zone_rrs(z)); i++) { 
-			rr = ldns_rr_list_rr(ldns_zone_rrs(z), i);
-			/*
-			if ((address_family == 0 || address_family == 1) &&
-			    ldns_rr_get_type(rr) == LDNS_RR_TYPE_A ) {
-				ldns_rr_list_push_rr(addresses, ldns_rr_clone(rr));
-			}
-			if ((address_family == 0 || address_family == 2) &&
-			    ldns_rr_get_type(rr) == LDNS_RR_TYPE_AAAA) {
-				ldns_rr_list_push_rr(addresses, ldns_rr_clone(rr));
-			}
-			*/
-			ldns_rr_list_push_rr(addresses, ldns_rr_clone(rr));
-		}
-		ldns_zone_deep_free(z);
-		return addresses;
-	}
-}
-
-
 ldns_status
 dane_setup_resolver(ldns_resolver** res,
-		ldns_rr_list* keys, ldns_rr_list* dns_root,
-		bool dnssec_off)
+		ldns_rr_list* keys, bool dnssec_off)
 {
 	ldns_status s;
 
@@ -665,22 +609,10 @@ dane_setup_resolver(ldns_resolver** res,
 	if (s == LDNS_STATUS_OK) {
 		ldns_resolver_set_dnssec(*res, ! dnssec_off);
 
-		/* anchors must trigger signature chasing */
-		ldns_resolver_set_dnssec_anchors(*res, keys);
-
-		if (dns_root) {
-			if (ldns_resolver_nameserver_count(*res) > 0) {
-				free(ldns_resolver_nameservers(*res));
-				free(ldns_resolver_rtt(*res));
-				ldns_resolver_set_nameserver_count(*res, 0);
-				ldns_resolver_set_nameservers(*res, NULL);
-				ldns_resolver_set_rtt(*res, NULL);
-			}
-			s = ldns_resolver_push_nameserver_rr_list(*res,
-					dns_root);
-
-			/* recursive set to false will trigger tracing */
-			ldns_resolver_set_recursive(*res, false);
+		if (keys && ldns_rr_list_rr_count(keys) > 0) {
+			/* anchors must trigger signature chasing */
+			ldns_resolver_set_dnssec_anchors(*res, keys);
+			ldns_resolver_set_dnssec_cd(*res, true);
 		}
 	}
 	return s;
@@ -692,28 +624,92 @@ dane_query(ldns_rr_list** rrs, ldns_resolver* r,
 		ldns_rdf *name, ldns_rr_type t, ldns_rr_class c,
 		bool insecure_is_ok)
 {
-	ldns_pkt* p;
+	ldns_pkt* p = NULL;
+	ldns_rr_list* keys = NULL;
+	ldns_rr_list* rrsigs  = NULL;
+	ldns_rdf* signame = NULL;
+	ldns_status s;
 
 	assert(rrs != NULL);
 
 	p = ldns_resolver_query(r, name, t, c, LDNS_RD);
 	if (! p) {
-		ldns_err("ldns_resolver_query", LDNS_STATUS_MEM_ERR);
 		return LDNS_STATUS_MEM_ERR;
 	}
 	*rrs = ldns_pkt_rr_list_by_type(p, t, LDNS_SECTION_ANSWER);
-	if (ldns_rr_list_rr_count(*rrs) > 0 &&
-			ldns_resolver_dnssec(r) && ! ldns_pkt_ad(p) &&
-			! insecure_is_ok) {
+	if (! *rrs) {
 		ldns_pkt_free(p);
-		if (! insecure_is_ok) {
-			ldns_rr_list_deep_free(*rrs);
-			*rrs = NULL;
+		return LDNS_STATUS_MEM_ERR;
+	}
+	if (ldns_rr_list_rr_count(*rrs) == 0 || ! ldns_resolver_dnssec(r)) {
+		ldns_pkt_free(p);
+		return LDNS_STATUS_OK;
+	}
+	/* We have answers and we have dnssec. */
+
+	if (! ldns_pkt_cd(p)) { /* we act as stub resolver (no sigchase) */
+		if (! ldns_pkt_ad(p)) { /* Not secure */
+			goto insecure;
 		}
-		return LDNS_STATUS_DANE_INSECURE;
+		ldns_pkt_free(p);
+		return LDNS_STATUS_OK;
+	}
+
+	/* sigchase */
+
+	/* TODO: handle cname reference check */
+
+	rrsigs = ldns_pkt_rr_list_by_type(p,
+			LDNS_RR_TYPE_RRSIG,
+			LDNS_SECTION_ANSWER);
+
+	if (! rrsigs || ldns_rr_list_rr_count(rrsigs) == 0) {
+		goto insecure;
+	}
+
+	signame = ldns_rr_rrsig_signame(ldns_rr_list_rr(rrsigs, 0));
+	if (! signame) {
+		s = LDNS_STATUS_ERR;
+		goto error;
+	}
+	/* First try with the keys we already have */
+	s = ldns_verify(*rrs, rrsigs, ldns_resolver_dnssec_anchors(r), NULL);
+	if (s == LDNS_STATUS_OK) {
+		goto cleanup;
+	}
+	/* Fetch the necessary keys and recheck */
+	keys = ldns_fetch_valid_domain_keys(r, signame,
+			ldns_resolver_dnssec_anchors(r), &s);
+
+	if (s != LDNS_STATUS_OK) {
+		goto error;
+	}
+	if (ldns_rr_list_rr_count(keys) == 0) { /* An insecure island */
+		goto insecure;
+	}
+	s = ldns_verify(*rrs, rrsigs, keys, NULL);
+	switch (s) {
+	case LDNS_STATUS_CRYPTO_BOGUS: goto bogus;
+	case LDNS_STATUS_OK          : goto cleanup;
+	default                      : break;
+	}
+insecure:
+	s = LDNS_STATUS_DANE_INSECURE;
+bogus:
+	if (! insecure_is_ok) {
+error:
+		ldns_rr_list_deep_free(*rrs);
+		*rrs = NULL;
+	}
+cleanup:
+	if (keys) {
+		ldns_rr_list_deep_free(keys);
+	}
+	if (rrsigs) {
+		ldns_rr_list_deep_free(rrsigs);
 	}
 	ldns_pkt_free(p);
-	return LDNS_STATUS_OK;
+	return s;
 }
 
 
@@ -1131,7 +1127,6 @@ main(int argc, char** argv)
 	
 	ldns_rr_list* keys = ldns_rr_list_new();
 	size_t nkeys = 0;
-	ldns_rr_list* dns_root = NULL;
 
 	ldns_rr_list* addresses = ldns_rr_list_new();
 	ldns_rr*      address_rr;
@@ -1177,7 +1172,7 @@ main(int argc, char** argv)
 	if (! keys || ! addresses) {
 		MEMERR("ldns_rr_list_new");
 	}
-	while((c = getopt(argc, argv, "46a:bc:df:hik:no:p:r:st:uvV:")) != -1) {
+	while((c = getopt(argc, argv, "46a:bc:df:hik:no:p:st:uvV:")) != -1) {
 		switch(c) {
 		case 'h':
 			print_usage("ldns-dane");
@@ -1256,14 +1251,6 @@ main(int argc, char** argv)
 		case 'p':
 			CApath = optarg;
 			break;
-		case 'r':
-			dns_root = read_root_hints(optarg);
-			if (!dns_root) {
-				fprintf(stderr,
-				"cannot read the root hints file\n");
-				exit(EXIT_FAILURE);
-			}
-			break;
 		case 's':
 			assume_pkix_validity = true;
 			break;
@@ -1278,9 +1265,10 @@ main(int argc, char** argv)
 					LDNS_VERSION, ldns_version());
 			exit(EXIT_SUCCESS);
 			break;
-		case 'V':
+/*		case 'V':
 			verbosity = atoi(optarg);
 			break;
+ */
 		}
 	}
 
@@ -1347,7 +1335,7 @@ main(int argc, char** argv)
 			if (port_str[strlen(port_str) - 1] == '.') {
 				port_str[strlen(port_str) - 1] = '\000';
 			}
-			port = (uint16_t) usage_within_range(
+			port = (uint16_t) dane_int_within_range(
 					port_str + 1, 65535, "port");
 			s = LDNS_STATUS_OK;
 		} while (false);
@@ -1412,7 +1400,7 @@ main(int argc, char** argv)
 		s = ldns_str2rdf_dname(&name, name_str);
 		LDNS_ERR(s, "could not ldns_str2rdf_dname");
 
-		port = (uint16_t) usage_within_range(argv[1], 65535, "port");
+		port = (uint16_t)dane_int_within_range(argv[1], 65535, "port");
 
 		s = ldns_dane_create_tlsa_owner(&tlsa_owner,
 				name, port, transport);
@@ -1434,7 +1422,7 @@ main(int argc, char** argv)
 			LDNS_ERR(s, "could not read tlas from file");
 		} else {
 			/* lookup tlsas */
-			s = dane_setup_resolver(&res, keys, dns_root,
+			s = dane_setup_resolver(&res, keys,
 					assume_dnssec_validity);
 			LDNS_ERR(s, "could not dane_setup_resolver");
 			s = dane_query(&tlsas, res, tlsa_owner,
@@ -1479,12 +1467,10 @@ main(int argc, char** argv)
 
 		tlsas = ldns_rr_list_new();
 
-		certificate_usage = usage_within_range_table(
+		certificate_usage = dane_int_within_range_table(
 				argv[2], 3, "certificate usage",
 				dane_certificate_usage_table);
-		// certificate_usage = usage_within_range(argv[2], 3, "certificate usage");
-		//selector          = usage_within_range(argv[3], 1, "selector");
-		selector = usage_within_range_table(
+		selector = dane_int_within_range_table(
 				argv[3], 1, "selector",
 				dane_selector_table);
 
@@ -1506,7 +1492,7 @@ main(int argc, char** argv)
 			matching_type = 2;
 
 		} else {
-			matching_type = usage_within_range(argv[4], 2,
+			matching_type = dane_int_within_range(argv[4], 2,
 					"matching type");
 		}
 		if ((certificate_usage == LDNS_TLSA_USAGE_CA_CONSTRAINT ||
@@ -1591,7 +1577,7 @@ main(int argc, char** argv)
 
 		/* We need addresses to connect to */
 		if (ldns_rr_list_rr_count(addresses) == 0) {
-			s = dane_setup_resolver(&res, keys, dns_root,
+			s = dane_setup_resolver(&res, keys,
 					assume_dnssec_validity);
 			LDNS_ERR(s, "could not dane_setup_resolver");
 			ldns_rr_list_free(addresses);

@@ -111,10 +111,6 @@ Specify a file that contains a trusted DNSKEY or DS rr.
 Without a trusted DNSKEY, the local network is trusted to provide
 a DNSSEC resolver (i.e. AD bit is checked).
 
-When \fB-r\fR \fIhintsfile\fR is also given, DNSSEC validation is "traced"
-from the root down. With only \fB-k\fR \fIkeyfile\fR and no root hints,
-signature(s) are chased to a known key.
-
 This option may be given more than once.
 .IP -n
 Do \fBnot\fR verify server name in certificate.
@@ -130,8 +126,6 @@ sure that the intended (self signed) trust anchor is actually present
 in the server certificate chain (which is a DANE requirement).
 .IP "-p \fICApath\fR"
 Use certificates in the \fICApath\fR directory to validate.
-.IP "-r \fIhintsfile\fR"
-Use \fIhintsfile\fR to read root hints from.
 .IP -s
 When creating TLSA resource records with the "CA Constraint" and the
 "Service Certificate Constraint" certificate usage, do not validate and

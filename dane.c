@@ -5,9 +5,6 @@
  *
  * See the file LICENSE for the license.
  *
- * TODO before release:
- * - Check for CA other than the last in OpenSSL's validation chain,
- *   with "CA constraint".
  */
 
 #include <ldns/config.h>
@@ -25,10 +22,6 @@
 #include <openssl/ssl.h>
 #include <openssl/err.h>
 #include <openssl/x509v3.h>
-#endif
-
-#ifndef max
-#define max( a, b ) ( ((a) > (b)) ? (a) : (b) )
 #endif
 
 ldns_status
@@ -287,10 +280,10 @@ exit_free_empty_store:
  */
 static ldns_status
 ldns_dane_get_nth_cert_from_validation_chain(
-		X509** cert, STACK_OF(X509)* chain, int n)
+		X509** cert, STACK_OF(X509)* chain, int n, bool ca)
 {
-	if (n >= sk_X509_num(chain)) {
-		return LDNS_STATUS_DANE_INDEX_OUT_OF_RANGE;
+	if (n >= sk_X509_num(chain) || n < 0) {
+		return LDNS_STATUS_DANE_OFFSET_OUT_OF_RANGE;
 	}
 	for (;;) { 
 		*cert = sk_X509_pop(chain);
@@ -298,6 +291,9 @@ ldns_dane_get_nth_cert_from_validation_chain(
 			break;
 		}
 		X509_free(*cert);
+	}
+	if (ca && ! X509_check_ca(*cert)) {
+		return LDNS_STATUS_DANE_NON_CA_CERTIFICATE;
 	}
 	return LDNS_STATUS_OK;
 }
@@ -349,7 +345,7 @@ ldns_status
 ldns_dane_select_certificate(X509** selected_cert,
 		X509* cert, STACK_OF(X509)* extra_certs,
 		X509_STORE* pkix_validation_store,
-		ldns_tlsa_certificate_usage cert_usage, int index)
+		ldns_tlsa_certificate_usage cert_usage, int offset)
 {
 	ldns_status s;
 	STACK_OF(X509)* pkix_validation_chain = NULL;
@@ -394,10 +390,12 @@ ldns_dane_select_certificate(X509** selected_cert,
 			return s;
 		}
 		if (s == LDNS_STATUS_OK) {
-			*selected_cert = sk_X509_pop(pkix_validation_chain);
-			if (! *selected_cert) {
-				s = LDNS_STATUS_SSL_ERR;
+			if (offset == -1) {
+				offset = 0;
 			}
+			s = ldns_dane_get_nth_cert_from_validation_chain(
+					selected_cert, pkix_validation_chain,
+					offset, true);
 		}
 		sk_X509_pop_free(pkix_validation_chain, X509_free);
 		return s;
@@ -414,7 +412,7 @@ ldns_dane_select_certificate(X509** selected_cert,
 
 	case LDNS_TLSA_USAGE_TRUST_ANCHOR_ASSERTION:
 
-		if (index == -1) {
+		if (offset == -1) {
 			s = ldns_dane_pkix_get_last_self_signed(
 					selected_cert, cert, extra_certs);
 			return s;
@@ -426,7 +424,7 @@ ldns_dane_select_certificate(X509** selected_cert,
 				s =
 				ldns_dane_get_nth_cert_from_validation_chain(
 					selected_cert, pkix_validation_chain,
-					index);
+					offset, false);
 			} else if (! pkix_validation_chain) {
 				return s;
 			}
@@ -578,7 +576,7 @@ ldns_dane_match_any_cert_with_data(STACK_OF(X509)* chain,
 		s = ldns_dane_match_cert_with_data(cert,
 				selector, matching_type, data);
 		if (ca && s == LDNS_STATUS_OK && ! X509_check_ca(cert)) {
-			s = LDNS_STATUS_DANE_TLSA_MATCHED_NON_CA_CERTIFICATE;
+			s = LDNS_STATUS_DANE_NON_CA_CERTIFICATE;
 		}
 		X509_free(cert);
 		if (s != LDNS_STATUS_DANE_TLSA_DID_NOT_MATCH) {
@@ -732,9 +730,9 @@ ldns_dane_verify(ldns_rr_list* tlsas,
 				 */
 				break;
 			}
-			s = max(s, ps); /* prefer PKIX_DID_NOT_VALIDATE
-					 * over   TLSA_DID_NOT_MATCH
-					 */
+			s = (s > ps ? s : ps); /* prefer PKIX_DID_NOT_VALIDATE
+						* over   TLSA_DID_NOT_MATCH
+						*/
 		}
 		ldns_rr_list_free(tlsas);
 	}

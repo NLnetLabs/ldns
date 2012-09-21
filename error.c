@@ -109,9 +109,8 @@ ldns_lookup_table ldns_error_str[] = {
 		"More than one certificate should be provided" },
 	{ LDNS_STATUS_DANE_EXTRA_CERTS_NOT_USED, /* Trust anchor assertion */
 		"Non of the extra certificates is used to sign the first" },
-	{ LDNS_STATUS_DANE_INDEX_OUT_OF_RANGE,   /* Trust anchor assertion */
-		"The specified index was greater than the number of "
-		"extra certificates" },
+	{ LDNS_STATUS_DANE_OFFSET_OUT_OF_RANGE,   /* Trust anchor assertion */
+		"The offset was out of range" },
 	{ LDNS_STATUS_DANE_INSECURE,             /* Unused by library */
 		"The queried resource records were insecure" },
 	{ LDNS_STATUS_DANE_BOGUS,             /* Unused by library */
@@ -119,12 +118,13 @@ ldns_lookup_table ldns_error_str[] = {
 	{ LDNS_STATUS_DANE_TLSA_DID_NOT_MATCH,
 		"The TLSA record(s) "
 		"did not match with the server certificate (chain)" },
-	{ LDNS_STATUS_DANE_TLSA_MATCHED_NON_CA_CERTIFICATE,
-		"A TLSA record matched, but was not a CA certificate" },
+	{ LDNS_STATUS_DANE_NON_CA_CERTIFICATE,
+		"The certificate was not a CA certificate" },
 	{ LDNS_STATUS_DANE_PKIX_DID_NOT_VALIDATE,
 		"Could not PKIX validate" },
-	{ LDNS_STATUS_DANE_PKIX_NO_SELF_SIGNED_TRUST_ANCHOR, /* Trust anchor assertion */
-		"The validation chain must end in a self-signed certificate " },
+	{ LDNS_STATUS_DANE_PKIX_NO_SELF_SIGNED_TRUST_ANCHOR,
+		"The validation path "
+		"did not end in a self-signed certificate" },
 	{ 0, NULL }
 };
 
