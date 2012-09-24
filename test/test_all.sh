@@ -19,11 +19,9 @@ test_tool_avail "dig"
 echo start the test at `date` in `pwd`
 $TPKG clean
 $TPKG -a ../.. fake 01-compile.tpkg
-$TPKG -a ../.. fake 02-lint.tpkg
 $TPKG -a ../.. fake 07-compile-examples.tpkg
 $TPKG -a ../.. fake 16-compile-builddir.tpkg
 $TPKG -a ../.. fake 999-compile-nossl.tpkg
-$TPKG -a ../.. fake codingstyle.tpkg
 
 for tests in *.tpkg
 do
