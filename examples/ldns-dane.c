@@ -178,6 +178,7 @@ ldns_err(const char* s, ldns_status err)
 		ssl_err(s);
 	} else {
 		fprintf(stderr, "error: %s\n", ldns_get_errorstr_by_id(err));
+		assert(0);
 		exit(EXIT_FAILURE);
 	}
 }
@@ -696,7 +697,7 @@ bogus:
 	if (! insecure_is_ok) {
 error:
 		ldns_rr_list_deep_free(*rrs);
-		*rrs = NULL;
+		*rrs = ldns_rr_list_new();
 	}
 cleanup:
 	if (keys) {

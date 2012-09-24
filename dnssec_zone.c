@@ -708,6 +708,7 @@ ldns_dnssec_zone_new_frm_fp_l(ldns_dnssec_zone** z, FILE* fp, ldns_rdf* origin,
 		case LDNS_STATUS_SYNTAX_EMPTY:	/* empty line was seen */
 		case LDNS_STATUS_SYNTAX_TTL:	/* the ttl was set*/
 		case LDNS_STATUS_SYNTAX_ORIGIN:	/* the origin was set*/
+			status = LDNS_STATUS_OK;
 			break;
 
 		case LDNS_STATUS_SYNTAX_INCLUDE:/* $include not implemented */
@@ -721,31 +722,32 @@ ldns_dnssec_zone_new_frm_fp_l(ldns_dnssec_zone** z, FILE* fp, ldns_rdf* origin,
 
 	if (ldns_rr_list_rr_count(todo_nsec3s) > 0) {
 		(void) ldns_dnssec_zone_add_empty_nonterminals(newzone);
-		for (i = 0; i < ldns_rr_list_rr_count(todo_nsec3s); i++) {
+		for (i = 0; status == LDNS_STATUS_OK && 
+				i < ldns_rr_list_rr_count(todo_nsec3s); i++) {
 			cur_rr = ldns_rr_list_rr(todo_nsec3s, i);
 			status = ldns_dnssec_zone_add_rr(newzone, cur_rr);
 		}
-		for (i = 0; i < ldns_rr_list_rr_count(todo_nsec3_rrsigs); i++){
+		for (i = 0; status == LDNS_STATUS_OK &&
+				i < ldns_rr_list_rr_count(todo_nsec3_rrsigs);
+			       	i++){
 			cur_rr = ldns_rr_list_rr(todo_nsec3_rrsigs, i);
 			status = ldns_dnssec_zone_add_rr(newzone, cur_rr);
 		}
 	} else if (ldns_rr_list_rr_count(todo_nsec3_rrsigs) > 0) {
-		for (i = 0; i < ldns_rr_list_rr_count(todo_nsec3_rrsigs); i++){
+		for (i = 0; status == LDNS_STATUS_OK &&
+				i < ldns_rr_list_rr_count(todo_nsec3_rrsigs);
+				i++){
 			cur_rr = ldns_rr_list_rr(todo_nsec3_rrsigs, i);
 			status = ldns_dnssec_zone_add_rr(newzone, cur_rr);
 		}
 	}
 
-	ldns_rr_list_free(todo_nsec3_rrsigs);
-	ldns_rr_list_free(todo_nsec3s);
-
 	if (z) {
 		*z = newzone;
+		newzone = NULL;
 	} else {
 		ldns_dnssec_zone_free(newzone);
 	}
-
-	return LDNS_STATUS_OK;
 
 error:
 #ifdef FASTER_DNSSEC_ZONE_NEW_FRM_FP
@@ -753,6 +755,9 @@ error:
 		ldns_zone_free(zone);
 	}
 #endif
+	ldns_rr_list_free(todo_nsec3_rrsigs);
+	ldns_rr_list_free(todo_nsec3s);
+
 	if (my_origin) {
 		ldns_rdf_deep_free(my_origin);
 	}

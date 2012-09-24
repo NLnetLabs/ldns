@@ -132,6 +132,7 @@ print_ds_of_keys(ldns_pkt *p)
 			ds = ldns_key_rr2ds(ldns_rr_list_rr(keys, i), LDNS_SHA256);
 			local_print_ds(stdout, "; sha256: ", ds);
 		}
+		ldns_rr_list_deep_free(keys);
 	}
 }
 

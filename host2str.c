@@ -2083,18 +2083,14 @@ ldns_buffer2str(ldns_buffer *buffer)
 char *
 ldns_buffer_export2str(ldns_buffer *buffer)
 {
-	/* check if buffer ends with \0, if not, and
-	   if there is space, add it */
-	if (*(ldns_buffer_at(buffer, ldns_buffer_position(buffer))) != 0) {
-		if (!ldns_buffer_reserve(buffer, 1)) {
-			return NULL;
-		}
-		ldns_buffer_write_u8(buffer, (uint8_t) '\0');
-		if (!ldns_buffer_set_capacity(buffer, ldns_buffer_position(buffer))) {
-			return NULL;
-		}
+	/* Append '\0' as string terminator */
+	if (! ldns_buffer_reserve(buffer, 1)) {
+		return NULL;
 	}
+	ldns_buffer_write_u8(buffer, 0);
 
+	/* reallocate memory to the size of the string and export */
+	ldns_buffer_set_capacity(buffer, ldns_buffer_position(buffer));
 	return ldns_buffer_export(buffer);
 }
 

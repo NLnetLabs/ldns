@@ -30,6 +30,20 @@
 #include <arpa/inet.h>
 #endif
 
+static bool
+ldns_dname_has_root_label(const ldns_rdf* dname)
+{
+	size_t src_pos;
+	size_t len = 0;
+
+	for (src_pos = 0; src_pos < ldns_rdf_size(dname); src_pos += len + 1) {
+		len = ldns_rdf_data(dname)[src_pos];
+	}
+	assert(src_pos == ldns_rdf_size(dname));
+
+	return src_pos > 0 && len == 0;
+}
+
 ldns_rdf *
 ldns_dname_cat_clone(const ldns_rdf *rd1, const ldns_rdf *rd2)
 {
@@ -47,7 +61,7 @@ ldns_dname_cat_clone(const ldns_rdf *rd1, const ldns_rdf *rd2)
 	 * rd, by reducing the size with 1
 	 */
 	left_size = ldns_rdf_size(rd1);
-	if (left_size > 0 &&ldns_rdf_data(rd1)[left_size - 1] == 0) {
+	if (ldns_dname_has_root_label(rd1)) {
 		left_size--;
 	}
 
@@ -84,7 +98,7 @@ ldns_dname_cat(ldns_rdf *rd1, ldns_rdf *rd2)
 	 * rd, by reducing the size with 1
 	 */
 	left_size = ldns_rdf_size(rd1);
-	if (left_size > 0 &&ldns_rdf_data(rd1)[left_size - 1] == 0) {
+	if (ldns_dname_has_root_label(rd1)) {
 		left_size--;
 	}
 
@@ -102,36 +116,39 @@ ldns_dname_cat(ldns_rdf *rd1, ldns_rdf *rd2)
 	return LDNS_STATUS_OK;
 }
 
-ldns_rdf *
-ldns_dname_reverse(const ldns_rdf *d)
+ldns_rdf*
+ldns_dname_reverse(const ldns_rdf *dname)
 {
-	ldns_rdf *new;
-	ldns_rdf *tmp;
-	ldns_rdf *d_tmp;
-	ldns_status status;
+	size_t rd_size;
+	uint8_t* buf;
+	ldns_rdf* new;
+	size_t src_pos;
+	size_t len ;
 
-	d_tmp = ldns_rdf_clone(d);
-
-	new = ldns_dname_new_frm_str(".");
-        if(!new)
-                return NULL;
-
-	while(ldns_dname_label_count(d_tmp) > 0) {
-		tmp = ldns_dname_label(d_tmp, 0);
-		status = ldns_dname_cat(tmp, new);
-                if(status != LDNS_STATUS_OK) {
-                        ldns_rdf_deep_free(new);
-	                ldns_rdf_deep_free(d_tmp);
-                        return NULL;
-                }
-		ldns_rdf_deep_free(new);
-		new = tmp;
-		tmp = ldns_dname_left_chop(d_tmp);
-		ldns_rdf_deep_free(d_tmp);
-		d_tmp = tmp;
+	assert(ldns_rdf_get_type(dname) == LDNS_RDF_TYPE_DNAME);
+	
+	rd_size = ldns_rdf_size(dname);
+	buf = LDNS_XMALLOC(uint8_t, rd_size);
+	if (! buf) {
+		return NULL;
 	}
-	ldns_rdf_deep_free(d_tmp);
-
+	new = ldns_rdf_new(LDNS_RDF_TYPE_DNAME, rd_size, buf);
+	if (! new) {
+		LDNS_FREE(buf);
+		return NULL;
+	}
+	
+	/* If dname ends in a root label, the reverse should too.
+	 */
+	if (ldns_dname_has_root_label(dname)) {
+		buf[rd_size - 1] = 0;
+		rd_size -= 1;
+	}
+	for (src_pos = 0; src_pos < rd_size; src_pos += len + 1) {
+		len = ldns_rdf_data(dname)[src_pos];
+		memcpy(&buf[rd_size - src_pos - len - 1],
+				&ldns_rdf_data(dname)[src_pos], len + 1);
+	}
 	return new;
 }
 
