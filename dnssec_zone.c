@@ -1012,7 +1012,9 @@ ldns_dnssec_zone_add_empty_nonterminals(ldns_dnssec_zone *zone)
 		if (next_node == LDNS_RBTREE_NULL) {
 			next_node = ldns_rbtree_first(zone->names);
 		}
-
+		if (! cur_node->data || ! next_node->data) {
+			return LDNS_STATUS_ERR;
+		}
 		cur_name = ((ldns_dnssec_name *)cur_node->data)->name;
 		next_name = ((ldns_dnssec_name *)next_node->data)->name;
 		cur_label_count = ldns_dname_label_count(cur_name);

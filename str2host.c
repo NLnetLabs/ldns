@@ -1105,8 +1105,6 @@ ldns_str2rdf_wks(ldns_rdf **rd, const char *str)
 		data[0] = (uint8_t) proto->p_proto;
 	} else if (proto_str) {
 		data[0] = (uint8_t) atoi(proto_str);
-	} else {
-		data[0] = 0;
 	}
 	memcpy(data + 1, bitmap, (size_t) bm_len);
 

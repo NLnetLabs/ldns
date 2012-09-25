@@ -513,13 +513,6 @@ main(int argc, char *argv[])
 
 				printf("Engine key id: %s, algo %d\n", eng_key_id, eng_key_algo);
 
-				if (expiration != 0) {
-					ldns_key_set_expiration(key, expiration);
-				}
-				if (inception != 0) {
-					ldns_key_set_inception(key, inception);
-				}
-
 				s = ldns_key_new_frm_engine(&key, engine, eng_key_id, eng_key_algo);
 				if (s == LDNS_STATUS_OK) {
 					/* must be dnssec key */
@@ -543,6 +536,14 @@ main(int argc, char *argv[])
 					default:
 						fprintf(stderr, "Warning, key not suitable for signing, ignoring key with algorithm %u\n", ldns_key_algorithm(key));
 						break;
+					}
+					if (expiration != 0) {
+						ldns_key_set_expiration(key,
+								expiration);
+					}
+					if (inception != 0) {
+						ldns_key_set_inception(key,
+								inception);
 					}
 				} else {
 					printf("Error reading key '%s' from engine: %s\n", eng_key_id, ldns_get_errorstr_by_id(s));

@@ -809,8 +809,7 @@ ldns_resolver_new_frm_fp_l(ldns_resolver **res, FILE *fp, int *line_nr)
 					gtr -= bgtr;
                                         if(word[0] == '#') {
                                                 expect = LDNS_RESOLV_KEYWORD;
-						ldns_buffer_free(b);
-                                                continue;
+                                                break;
                                         }
 					tmp = ldns_rdf_new_frm_str(LDNS_RDF_TYPE_DNAME, word);
 					if (!tmp) {
@@ -826,8 +825,10 @@ ldns_resolver_new_frm_fp_l(ldns_resolver **res, FILE *fp, int *line_nr)
 					    (size_t) gtr + 1);
 				}
 				ldns_buffer_free(b);
-				gtr = 1;
-				expect = LDNS_RESOLV_KEYWORD;
+				if (expect != LDNS_RESOLV_KEYWORD) {
+					gtr = 1;
+					expect = LDNS_RESOLV_KEYWORD;
+				}
 				break;
 			case LDNS_RESOLV_SORTLIST:
 				gtr = ldns_fget_token_l(fp, word, LDNS_PARSE_SKIP_SPACE, 0, line_nr);
@@ -1024,9 +1025,6 @@ ldns_resolver_query(const ldns_resolver *r, const ldns_rdf *name,
 
 	newname = ldns_dname_cat_clone((const ldns_rdf*)name, ldns_resolver_domain(r));
 	if (!newname) {
-		if (pkt) {
-			ldns_pkt_free(pkt);
-		}
 		return NULL;
 	}
 
@@ -1303,7 +1301,14 @@ ldns_axfr_next(ldns_resolver *resolver)
 			return NULL;
 		} else if (ldns_pkt_get_rcode(resolver->_cur_axfr_pkt) != 0) {
 			rcode = ldns_lookup_by_id(ldns_rcodes, (int) ldns_pkt_get_rcode(resolver->_cur_axfr_pkt));
-			fprintf(stderr, "Error in AXFR: %s\n", rcode->name);
+			if (rcode) {
+				fprintf(stderr, "Error in AXFR: %s\n", 
+						rcode->name);
+			} else {
+				fprintf(stderr, "Error in AXFR: %d\n", 
+						(int) ldns_pkt_get_rcode(
+						resolver->_cur_axfr_pkt));
+			}
 
 			/* RoRi: we must now also close the socket, otherwise subsequent uses of the
 			   same resolver structure will fail because the link is still open or

@@ -1078,7 +1078,8 @@ ldns_dnssec_trust_tree_contains_keys(ldns_dnssec_trust_tree *tree,
 					if (tree->parent_status[i] != LDNS_STATUS_OK) {
 						result = tree->parent_status[i];
 					} else {
-						if (ldns_rr_get_type(tree->rr)
+						if (tree->rr &&
+						    ldns_rr_get_type(tree->rr)
 						    == LDNS_RR_TYPE_NSEC &&
 						    parent_result == LDNS_STATUS_OK
 						    ) {
@@ -1613,7 +1614,7 @@ ldns_dnssec_verify_denial_nsec3_match( ldns_rr *rr
 						   ldns_rr_get_type(rr),
 						   nsecs);
                 if(!closest_encloser) {
-                        result = LDNS_STATUS_NSEC3_ERR;
+                        result = LDNS_STATUS_DNSSEC_NSEC_RR_NOT_COVERED;
                         goto done;
                 }
 
@@ -1637,16 +1638,14 @@ ldns_dnssec_verify_denial_nsec3_match( ldns_rr *rr
 			ldns_rdf_deep_free(hashed_wildcard_name);
 		}
 
+		if (! wildcard_covered) {
+			result = LDNS_STATUS_DNSSEC_NSEC_WILDCARD_NOT_COVERED;
+		} else {
+			result = LDNS_STATUS_OK;
+		}
 		ldns_rdf_deep_free(closest_encloser);
 		ldns_rdf_deep_free(wildcard);
 
-		if (!wildcard_covered) {
-			result = LDNS_STATUS_DNSSEC_NSEC_WILDCARD_NOT_COVERED;
-		} else if (closest_encloser && wildcard_covered) {
-			result = LDNS_STATUS_OK;
-		} else {
-			result = LDNS_STATUS_DNSSEC_NSEC_RR_NOT_COVERED;
-		}
 	} else if (packet_nodata && packet_qtype != LDNS_RR_TYPE_DS) {
 		/* section 8.5 */
 		hashed_name = ldns_nsec3_hash_name_frm_nsec3(

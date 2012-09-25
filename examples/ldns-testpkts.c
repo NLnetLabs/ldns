@@ -340,6 +340,12 @@ data_buffer2wire(ldns_buffer *data_buffer)
 					(c >= 'a' && c <= 'f') ||
 					(c >= 'A' && c <= 'F') )
 				{
+					if (hexbufpos >= LDNS_MAX_PACKETLEN) {
+						error("buffer overflow");
+						LDNS_FREE(hexbuf);
+						return 0;
+
+					}
 					hexbuf[hexbufpos] = (uint8_t) c;
 					hexbufpos++;
 				} else if (c == ';') {
@@ -354,13 +360,13 @@ data_buffer2wire(ldns_buffer *data_buffer)
 				}
 				break;
 			case 2:
+				if (hexbufpos >= LDNS_MAX_PACKETLEN) {
+					error("buffer overflow");
+					LDNS_FREE(hexbuf);
+					return 0;
+				}
 				hexbuf[hexbufpos] = (uint8_t) c;
 				hexbufpos++;
-				break;
-			default:
-				error("unknown state while reading");
-				LDNS_FREE(hexbuf);
-				return 0;
 				break;
 		}
 	}
@@ -371,6 +377,11 @@ data_buffer2wire(ldns_buffer *data_buffer)
 	
 	/* lenient mode: length must be multiple of 2 */
 	if (hexbufpos % 2 != 0) {
+		if (hexbufpos >= LDNS_MAX_PACKETLEN) {
+			error("buffer overflow");
+			LDNS_FREE(hexbuf);
+			return 0;
+		}
 		hexbuf[hexbufpos] = (uint8_t) '0';
 		hexbufpos++;
 	}

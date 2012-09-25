@@ -122,11 +122,6 @@ packetbuffromfile(char *filename, uint8_t *wire)
 				hexbuf[hexbufpos] = (uint8_t) c;
 				hexbufpos++;
 				break;
-			default:
-				warning("unknown state while reading %s", filename);
-				xfree(hexbuf);
-				return 0;
-				break;
 		}
 		c = fgetc(fp);
 	}

@@ -206,7 +206,7 @@ ldns_send_buffer(ldns_pkt **result, ldns_resolver *r, ldns_buffer *qb, ldns_rdf 
 		return LDNS_STATUS_RES_NO_NS;
 	}
 #ifdef HAVE_SSL
-	if (tsig_mac && reply_bytes) {
+	if (tsig_mac && reply && reply_bytes) {
 		if (!ldns_pkt_tsig_verify(reply,
 		                          reply_bytes,
 					  reply_size,

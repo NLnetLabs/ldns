@@ -60,7 +60,7 @@ main(int argc, char **argv)
 				}
 				break;
 			case 'h':
-				printf("Usage: %s [-c] [-v] [-z] <zonefile>\n", argv[0]);
+				printf("Usage: %s [OPTIONS] <zonefile>\n", argv[0]);
 				printf("\tReads the zonefile and prints it.\n");
 				printf("\tThe RR count of the zone is printed to stderr.\n");
 				printf("\t-b include bubblebabble of DS's.\n");
