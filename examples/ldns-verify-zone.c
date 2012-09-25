@@ -309,9 +309,10 @@ verify_next_hashed_name(ldns_dnssec_zone* zone, ldns_dnssec_name *name)
 	if (!cur_next_name) {
 		cur_next_name = cur_first_name;
 	}
-	assert(cur_next_name); /* Because this function is called on nsec
-				* occurrence, it must be there!
-				*/
+	assert(cur_next_name != NULL);
+       	/* Because this function is called on nsec occurrence,
+	 * there must be a cur_next_name!
+	 */
 
 	next_owner_str = ldns_rdf2str(ldns_nsec3_next_owner(name->nsec));
 	next_owner_dname = ldns_dname_new_frm_str(next_owner_str);

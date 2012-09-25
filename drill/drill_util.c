@@ -20,7 +20,7 @@ read_line(FILE *input, char *line, size_t len)
 	
 	char c;
 	for (i = 0; i < len-1; i++) {
-		c = (int)getc(input);
+		c = (char)getc(input);
 		if (c == EOF) {
 			return -1;
 		} else if (c != '\n') {
