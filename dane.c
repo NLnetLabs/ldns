@@ -285,12 +285,10 @@ ldns_dane_get_nth_cert_from_validation_chain(
 	if (n >= sk_X509_num(chain) || n < 0) {
 		return LDNS_STATUS_DANE_OFFSET_OUT_OF_RANGE;
 	}
-	for (;;) { 
-		*cert = sk_X509_pop(chain);
-		if (n-- == 0) {
-			break;
-		}
+	*cert = sk_X509_pop(chain);
+	while (n-- > 0) {
 		X509_free(*cert);
+		*cert = sk_X509_pop(chain);
 	}
 	if (ca && ! X509_check_ca(*cert)) {
 		return LDNS_STATUS_DANE_NON_CA_CERTIFICATE;

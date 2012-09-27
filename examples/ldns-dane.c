@@ -29,9 +29,9 @@
 #include <openssl/x509v3.h>
 
 #define LDNS_ERR(code, msg) do { if (code != LDNS_STATUS_OK) \
-					ldns_err(msg, code); } while(0)
+					ldns_err(msg, code); } while (false)
 #define MEMERR(msg) do { fprintf(stderr, "memory error in %s\n", msg); \
-			 exit(EXIT_FAILURE); } while(0)
+			 exit(EXIT_FAILURE); } while (false)
 #define BUFSIZE 16384
 
 /* int verbosity = 3; */
