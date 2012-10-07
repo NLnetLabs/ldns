@@ -173,20 +173,7 @@ read_hex_buffer(char *filename)
 	size_t wiresize;
 	ldns_buffer *result_buffer = NULL;
 	
-	FILE *fp = NULL;
-	
-	if (strncmp(filename, "-", 2) != 0) {
-		fp = fopen(filename, "r");
-	} else {
-		fp = stdin;
-	}
-	
-	if (fp == NULL) {
-		perror("");
-		warning("Unable to open %s", filename);
-		return NULL;
-	}
-	
+
 	wire = xmalloc(LDNS_MAX_PACKETLEN);
 	
 	wiresize = packetbuffromfile(filename, wire);
@@ -194,12 +181,8 @@ read_hex_buffer(char *filename)
 	result_buffer = LDNS_MALLOC(ldns_buffer);
 	ldns_buffer_new_frm_data(result_buffer, wire, wiresize);
 	ldns_buffer_set_position(result_buffer, ldns_buffer_capacity(result_buffer));
-	
 	xfree(wire);
 
-	if (fp != stdin) {
-		fclose(fp);
-	}
 	return result_buffer;
 }
 

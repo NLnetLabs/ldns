@@ -13,7 +13,7 @@
 
 #include <errno.h>
 
-static size_t
+static int
 read_line(FILE *input, char *line, size_t len)
 {
 	size_t i;
@@ -71,6 +71,7 @@ read_key_file(const char *filename, ldns_rr_list *key_list)
 		}
 	}
 	printf(";; Number of trusted keys: %d\n", key_count);
+	fclose(input_file);
 	if (key_count > 0) {
 		return LDNS_STATUS_OK;
 	} else {

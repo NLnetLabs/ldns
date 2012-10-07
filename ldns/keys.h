@@ -25,7 +25,6 @@
 #if LDNS_BUILD_CONFIG_HAVE_SSL
 #include <openssl/ssl.h>
 #endif /* LDNS_BUILD_CONFIG_HAVE_SSL */
-#include <ldns/dnssec.h>
 #include <ldns/util.h>
 #include <errno.h>
 
