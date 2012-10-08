@@ -178,7 +178,6 @@ ldns_err(const char* s, ldns_status err)
 		ssl_err(s);
 	} else {
 		fprintf(stderr, "error: %s\n", ldns_get_errorstr_by_id(err));
-		assert(0);
 		exit(EXIT_FAILURE);
 	}
 }
@@ -536,7 +535,7 @@ print_rr_as_TYPEXXX(FILE* out, ldns_rr* rr)
 	for (i = 0; i < ldns_rr_rd_count(rr); i++) {
 		 sz += ldns_rdf_size(ldns_rr_rdf(rr, i));
 	}
-	ldns_buffer_printf(buf, "\t\\#%d ", sz);
+	ldns_buffer_printf(buf, "\t\\# %d ", sz);
 	for (i = 0; i < ldns_rr_rd_count(rr); i++) {
 		s = ldns_rdf2buffer_str_hex(buf, ldns_rr_rdf(rr, i));
 		LDNS_ERR(s, "could not ldns_rdf2buffer_str_hex");

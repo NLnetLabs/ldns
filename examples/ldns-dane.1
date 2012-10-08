@@ -30,22 +30,19 @@ ldns-dane \- verify or create TLS authentication with DANE (RFC6698)
 
 .SH DESCRIPTION
 
-In the first two forms ldns-dane will be in \fBverify\fR modus.
-In the third form in \fBcreate\fR modus.
-
 In the first form: 
-A TLS connection to \fIname\fR:\fIport\fR is made. The TLSA resource
-record(s) for \fIname\fR are used to authenticate the connection.
+A TLS connection to \fIname\fR:\fIport\fR is established.
+The TLSA resource record(s) for \fIname\fR are used to authenticate
+the connection.
 
 In the second form:
-The TLSA record(s) are read from \fItlsafile\fR and user to authenticate
+The TLSA record(s) are read from \fItlsafile\fR and used to authenticate
 the TLS service they reference.
 
 In the third form:
-A TLS connection to \fIname\fR:\fIport\fR is made and used to create the TLSA
-resource record(s) that would authenticate the connection.
-The parameters that determine the form of the TLSA records to be created
-are:
+A TLS connection to \fIname\fR:\fIport\fR is established and used to
+create the TLSA resource record(s) that would authenticate the connection.
+The parameters for TLSA rr creation are:
 
 .PD 0
 .I Certificate-usage\fR:
@@ -79,8 +76,8 @@ SHA-512
 .RE
 .PD 1
 
-In case of numbers the first few letters of the intended meaning may be used.
-Except for the hash algorithm names in which need the full name.
+In stead of numbers the first few letters of the value may be used.
+Except for the hash algorithm name, where the full name must be specified.
 
 .SH OPTIONS
 .IP -4
@@ -92,7 +89,7 @@ Don't try to resolve \fIname\fR, but connect to \fIaddress\fR in stead.
 
 This option may be given more than once.
 .IP -b
-print "\fIname\fR\. TYPE52 \\#\fIsize\fR \fIhexdata\fR" form in stead
+print "\fIname\fR\. TYPE52 \\# \fIsize\fR \fIhexdata\fR" form in stead
 of TLSA presentation format.
 .IP "-c \fIcertfile\fR"
 Do not TLS connect to \fIname\fR:\fIport\fR, but authenticate (or make
@@ -139,11 +136,9 @@ are also given, only TLSA records that match the \fIname\fR, \fIport\fR and
 \fItransport\fR are used. Otherwise the owner name of the TLSA record(s)
 will be used to determine \fIname\fR, \fIport\fR and \fItransport\fR.
 .IP -u
-Use UDP transport in stead of TCP to TLS connect.
+Use UDP transport in stead of TCP.
 .IP -v
 Show version and exit.
-.IP "-V \fI[0-5]\fR
-Set verbosity level (defaul 3)
 
 .SH AUTHOR
 Written by the ldns team as an example for ldns usage.

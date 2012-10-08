@@ -299,7 +299,7 @@ void ldns_key_set_evp_key(ldns_key *k, EVP_PKEY *e);
 
 /**
  * Set the key's rsa data.
- * The rsa data should be freed by the user themselve.
+ * The rsa data should be freed by the user.
  * \param[in] k the key
  * \param[in] r the rsa data
  */
@@ -307,7 +307,7 @@ void ldns_key_set_rsa_key(ldns_key *k, RSA *r);
 
 /**
  * Set the key's dsa data
- * The dsa data should be freed by the user themselve.
+ * The dsa data should be freed by the user.
  * \param[in] k the key
  * \param[in] d the dsa data
  */

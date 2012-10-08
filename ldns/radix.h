@@ -162,8 +162,6 @@ ldns_radix_node_t* ldns_radix_search(ldns_radix_t* tree, uint8_t* key,
 int ldns_radix_find_less_equal(ldns_radix_t* tree, uint8_t* key,
 	radix_strlen_t len, ldns_radix_node_t** result);
 
-/** ldns_radix_find_less_equal */
-
 /**
  * Get the first element in the tree.
  * @param tree: tree.
