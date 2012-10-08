@@ -16,7 +16,7 @@
 static int
 read_line(FILE *input, char *line, size_t len)
 {
-	size_t i;
+	int i;
 	
 	char c;
 	for (i = 0; i < len-1; i++) {

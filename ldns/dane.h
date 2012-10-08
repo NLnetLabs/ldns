@@ -145,9 +145,9 @@ ldns_status ldns_dane_cert2rdf(ldns_rdf** rdf, X509* cert,
  *            "CA constraint" or "Service Certificate Constraint" to 
  *            validate the certificate and, in case of "CA constraint",
  *            select the CA.
- *            When NULL, validation is explicitely turned off and the
- *            behaviour is then the same as for "Trust anchor assertion"
- *            and "Domain issued certificate" respectively.
+ *            When pkix_validation_store is NULL, validation is explicitely
+ *            turned off and the behaviour is then the same as for "Trust
+ *            anchor assertion" and "Domain issued certificate" respectively.
  * \param[in] cert_usage Which certificate to use and how to validate.
  * \param[in] index Used to select the trust anchor when certificate usage
  *            is "Trust Anchor Assertion". 0 is the last certificate in the

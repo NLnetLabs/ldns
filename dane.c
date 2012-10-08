@@ -658,8 +658,11 @@ ldns_dane_verify_rr(const ldns_rr* tlsa_rr,
 		s = ldns_dane_match_cert_with_data(cert,
 				selector, matching_type, data);
 
-		return ldns_dane_pkix_validate(cert, extra_certs,
-				pkix_validation_store);
+		if (s == LDNS_STATUS_OK) {
+			return ldns_dane_pkix_validate(cert, extra_certs,
+					pkix_validation_store);
+		}
+		return s;
 		break;
 
 	case LDNS_TLSA_USAGE_TRUST_ANCHOR_ASSERTION:
