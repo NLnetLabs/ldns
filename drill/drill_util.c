@@ -14,7 +14,7 @@
 #include <errno.h>
 
 static int
-read_line(FILE *input, char *line, size_t len)
+read_line(FILE *input, char *line, int len)
 {
 	int i;
 	

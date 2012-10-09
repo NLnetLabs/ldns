@@ -448,6 +448,11 @@ AC_INCLUDES_DEFAULT
 fi
 
 ACX_TYPE_SOCKLEN_T
+if test "x$ac_cv_type_socklen_t" = xyes; then
+  AC_SUBST(ldns_build_config_have_socklen_t, 1)
+else
+  AC_SUBST(ldns_build_config_have_socklen_t, 0)
+fi
 AC_TYPE_SIZE_T
 AC_TYPE_SSIZE_T
 AC_TYPE_INTPTR_T

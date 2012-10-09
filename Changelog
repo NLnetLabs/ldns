@@ -1,6 +1,7 @@
 1.6.14
 	* DANE support (RFC6698), including ldns-dane example tool.
 	* A default key for drill when none is given
+	* bugfix #474: Define socklen_t when undefined (like in Win32)
 	* bugfix #473: Dead code removal and resource leak fix in drill
 	* bugfix #471: Let ldns_resolver_push_dnssec_anchor accept DS RR's too.
 	* Various bugfixes from code reviews from CZ.NIC and Paul Wouters
