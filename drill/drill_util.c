@@ -35,7 +35,7 @@ read_line(FILE *input, char *line, size_t len)
 
 /* key_list must be initialized with ldns_rr_list_new() */
 ldns_status
-read_key_file(const char *filename, ldns_rr_list *key_list)
+read_key_file(const char *filename, ldns_rr_list *key_list, bool silently)
 {
 	int line_len = 0;
 	int line_nr = 0;
@@ -47,8 +47,10 @@ read_key_file(const char *filename, ldns_rr_list *key_list)
 
 	input_file = fopen(filename, "r");
 	if (!input_file) {
-		fprintf(stderr, "Error opening %s: %s\n",
-		        filename, strerror(errno));
+		if (! silently) {
+			fprintf(stderr, "Error opening %s: %s\n",
+				filename, strerror(errno));
+		}
 		return LDNS_STATUS_ERR;
 	}
 	while (line_len >= 0) {
@@ -57,10 +59,13 @@ read_key_file(const char *filename, ldns_rr_list *key_list)
 		if (line_len > 0 && line[0] != ';') {
 			status = ldns_rr_new_frm_str(&rr, line, 0, NULL, NULL);
 			if (status != LDNS_STATUS_OK) {
-				fprintf(stderr,
-						"Error parsing DNSKEY RR in line %d: %s\n",
-						line_nr,
-						ldns_get_errorstr_by_id(status));
+				if (! silently) {
+					fprintf(stderr,
+						"Error parsing DNSKEY RR "
+						"in line %d: %s\n", line_nr,
+						ldns_get_errorstr_by_id(status)
+						);
+				}
 			} else if (ldns_rr_get_type(rr) == LDNS_RR_TYPE_DNSKEY || 
 					   ldns_rr_get_type(rr) == LDNS_RR_TYPE_DS) {
 				ldns_rr_list_push_rr(key_list, rr);
@@ -70,7 +75,6 @@ read_key_file(const char *filename, ldns_rr_list *key_list)
 			}
 		}
 	}
-	printf(";; Number of trusted keys: %d\n", key_count);
 	fclose(input_file);
 	if (key_count > 0) {
 		return LDNS_STATUS_OK;

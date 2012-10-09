@@ -251,7 +251,6 @@ else
   AC_SUBST(PYLDNSXUNINST, "")
 fi
 
-
 # Use libtool
 ACX_LIBTOOL_C_ONLY
 
@@ -511,6 +510,17 @@ if echo $build_os | grep darwin > /dev/null; then
 fi
 
 AC_DEFINE([SYSCONFDIR], [sysconfdir], [System configuration dir])
+
+AC_ARG_WITH(trusted-key, AC_HELP_STRING([--with-trusted-key=[KEYFILE]], 
+ [Default location of the trusted key with drill. [default=SYSCONFDIR/trusted-key.key]]), [
+AC_SUBST(LDNS_TRUSTED_KEY_FILE, [${with_trusted_key}])
+],[
+if test "x$sysconfdir" = 'x${prefix}/etc' ; then
+AC_SUBST(LDNS_TRUSTED_KEY_FILE, [${prefix}/etc/trusted-key.key])
+else
+AC_SUBST(LDNS_TRUSTED_KEY_FILE, [${sysconfdir}/trusted-key.key])
+fi
+])
 
 AH_BOTTOM([
 #include <stdio.h>

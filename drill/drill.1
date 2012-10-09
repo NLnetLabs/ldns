@@ -161,6 +161,10 @@ given \fBdrill\fR tries to validate the current answer with this
 key. No chasing is done. When \fBdrill\fR is doing a secure trace, this
 key will be used as trust anchor. Can contain a DNSKEY or a DS record.
 
+Alternatively, if \fB-k\fR is not specified, and a default trusted key
+exists and contains a valid DNSKEY or DS record, it will be used
+as the trust anchor.
+
 .TP
 \fB\-o \fImnemonic\fR
 Use this option to set or unset specific header bits. A bit is

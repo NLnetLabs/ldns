@@ -65,4 +65,6 @@ typedef bool _Bool;
 #define ATTR_UNUSED(x)  x
 #endif /* !LDNS_BUILD_CONFIG_HAVE_ATTR_UNUSED */
 
+#define LDNS_TRUSTED_KEY_FILE "@LDNS_TRUSTED_KEY_FILE@"
+
 #endif /* LDNS_COMMON_H */

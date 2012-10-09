@@ -14,6 +14,13 @@
 
 #define DRILL_VERSION PACKAGE_VERSION
 
+#if HAVE_DRILL_TRUSTED_KEY == 0
+# ifdef LDNS_TRUSTED_KEY_FILE
+#  undef DRILL_TRUSTED_KEY_FILE
+#  define DRILL_TRUSTED_KEY_FILE LDNS_TRUSTED_KEY_FILE
+# endif
+#endif
+
 /* what kind of stuff do we allow */
 #define DRILL_QUERY	0
 #define DRILL_TRACE	1
@@ -85,7 +92,6 @@ ldns_status ldns_verify_denial(ldns_pkt *pkt,
 						 ldns_rr_list **nsec_rrs, 
 						 ldns_rr_list **nsec_rr_sigs);
 
-ldns_status read_key_file(const char *filename, ldns_rr_list *key_list);
 ldns_pkt *read_hex_pkt(char *filename);
 ldns_buffer *read_hex_buffer(char *filename);
 void	init_root(void);

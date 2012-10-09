@@ -170,12 +170,29 @@ if test -f $ldns_dev_dir/ldns/util.h && \
 else
 	AC_MSG_RESULT([no])
 	AC_CHECK_LIB(ldns, ldns_rr_new, , [
-			AC_MSG_ERROR([Can't find ldns library])
+			AC_MSG_ERROR([Can't find ldns library])dnl '
 		]
 	)
 fi
 
 AC_SUBST(LDNSDIR)
+
+AC_ARG_WITH(trusted-key, AC_HELP_STRING([--with-trusted-key=[KEYFILE]],
+ [Default location of the trusted key with drill. [default=LDNS_TRUSTED_KEY_FILE or SYSCONFDIR/trusted-key.key]]), [
+AC_DEFINE([HAVE_DRILL_TRUSTED_KEY], [1], [Is the trusted key file explicitely given at configure time])
+AC_DEFINE_UNQUOTED([DRILL_TRUSTED_KEY_FILE], ["$with_trusted_key"], [Default trusted key file])
+],[
+AC_DEFINE([HAVE_DRILL_TRUSTED_KEY], [0], [Is the trusted key file explicitely given at configure time])
+if test "x$sysconfdir" = 'x${prefix}/etc' ; then
+if test "x$prefix" = 'xNONE' ; then
+AC_DEFINE_UNQUOTED([DRILL_TRUSTED_KEY_FILE], ["/etc/trusted-key.key"], [Default trusted key file])
+else
+AC_DEFINE_UNQUOTED([DRILL_TRUSTED_KEY_FILE], ["${prefix}/etc/trusted-key.key"], [Default trusted key file])
+fi
+else
+AC_DEFINE_UNQUOTED([DRILL_TRUSTED_KEY_FILE], ["${sysconfdir}/trusted-key.key"], [Default trusted key file])
+fi
+])
 
 AH_BOTTOM([
 
