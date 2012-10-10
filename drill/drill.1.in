@@ -161,9 +161,9 @@ given \fBdrill\fR tries to validate the current answer with this
 key. No chasing is done. When \fBdrill\fR is doing a secure trace, this
 key will be used as trust anchor. Can contain a DNSKEY or a DS record.
 
-Alternatively, if \fB-k\fR is not specified, and a default trusted key
-exists and contains a valid DNSKEY or DS record, it will be used
-as the trust anchor.
+Alternatively, if \fB-k\fR is not specified, and a default trust anchor
+(@LDNS_TRUST_ANCHOR_FILE@) exists and contains a valid DNSKEY or DS record,
+it will be used as the trust anchor.
 
 .TP
 \fB\-o \fImnemonic\fR
@@ -216,6 +216,13 @@ specify named base64 tsig key, and optional an algorithm (defaults to hmac-md5.s
 \fB\-z \fR
 don't randomize the nameserver list before sending queries.
 
+.SH "FILES"
+.TP
+@LDNS_TRUST_ANCHOR_FILE@
+The file from which trusted keys are loaded when no \fB-k\fR option is given.
+.SH "SEE ALSO"
+.LP
+unbound-anchor(8)
 
 .SH AUTHOR
 Jelte Jansen and Miek Gieben. Both of NLnet Labs.

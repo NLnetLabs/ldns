@@ -90,6 +90,7 @@ realclean: clean docclean
 	rm -f config.h.in
 	rm -f configure
 	rm -f Makefile	
+	rm -f drill.1
 	rm -f aclocal.m4
 
 doc:	
@@ -115,4 +116,4 @@ lint:
         done
 
 confclean: clean
-	rm -rf config.log config.status config.h Makefile
+	rm -rf config.log config.status config.h Makefile drill.1

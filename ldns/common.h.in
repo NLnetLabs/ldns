@@ -66,7 +66,7 @@ typedef bool _Bool;
 #define ATTR_UNUSED(x)  x
 #endif /* !LDNS_BUILD_CONFIG_HAVE_ATTR_UNUSED */
 
-#define LDNS_TRUSTED_KEY_FILE "@LDNS_TRUSTED_KEY_FILE@"
+#define LDNS_TRUST_ANCHOR_FILE "@LDNS_TRUST_ANCHOR_FILE@"
 
 #if !LDNS_BUILD_CONFIG_HAVE_SOCKLEN_T
 typedef int socklen_t;

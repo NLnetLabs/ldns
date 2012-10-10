@@ -23,6 +23,7 @@ pyldns_uninst	= @PYLDNSUNINST@
 pyldnsx_inst	= @PYLDNSXINST@
 pyldnsx_uninst	= @PYLDNSXUNINST@
 libtool		= @libtool@
+CONFIG_FILES	= @CONFIG_FILES@
 
 # override $U variable which is used by autotools for deansification (for
 # K&R C compilers), but causes problems if $U is defined in the env).
@@ -143,7 +144,7 @@ install-drill: drill/drill
 	$(INSTALL) -m 755 -d $(DESTDIR)$(mandir)
 	$(INSTALL) -m 755 -d $(DESTDIR)$(mandir)/man1
 	$(LIBTOOL) --mode=install cp drill/drill $(DESTDIR)$(bindir)
-	$(INSTALL) -m 644 $(srcdir)/drill/drill.1 $(DESTDIR)$(mandir)/man1/drill.1
+	$(INSTALL) -m 644 drill/drill.1 $(DESTDIR)$(mandir)/man1/drill.1
 
 uninstall-drill:
 	rm -f $(DESTDIR)$(bindir)/drill $(DESTDIR)$(mandir)/man1/drill.1
@@ -332,13 +333,8 @@ clean: @CLEAN_DRILL@ @CLEAN_EXAMPLES@ clean-manpages clean-lib  putdown-builddir
 realclean: clean docclean
 	rm -f config.status
 	rm -f config.log
-	rm -f Makefile
+	rm -f $(CONFIG_FILES)
 	rm -f ldns/config.h
-	rm -f ldns/util.h
-	rm -f ldns/common.h
-	rm -f ldns/net.h
-	rm -f packaging/ldns-config
-	rm -f packaging/libldns.pc
 	if test -d packaging -a ! -f packaging/ldns-config.in ; then \
             rmdir packaging || : ; fi
 	rm -f libtool

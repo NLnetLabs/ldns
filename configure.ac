@@ -114,12 +114,14 @@ This does not work with the --with-drill option.
 Please remove the config.h from the drill subdirectory 
 or do not use the --with-drill option.])
 	fi
+	DRILL_CONFIG=" drill/drill.1"
 else
 	AC_SUBST(DRILL,[""])
 	AC_SUBST(INSTALL_DRILL,[""])
 	AC_SUBST(UNINSTALL_DRILL,[""])
 	AC_SUBST(CLEAN_DRILL,[""])
 	AC_SUBST(LINT_DRILL,[""])
+	DRILL_CONFIG=""
 fi
 
 
@@ -516,14 +518,14 @@ fi
 
 AC_DEFINE([SYSCONFDIR], [sysconfdir], [System configuration dir])
 
-AC_ARG_WITH(trusted-key, AC_HELP_STRING([--with-trusted-key=[KEYFILE]], 
- [Default location of the trusted key with drill. [default=SYSCONFDIR/trusted-key.key]]), [
-AC_SUBST(LDNS_TRUSTED_KEY_FILE, [${with_trusted_key}])
+AC_ARG_WITH(trust-anchor, AC_HELP_STRING([--with-trust-anchor=[KEYFILE]], 
+[Default location of the trust anchor file for drill. [default=SYSCONFDIR/unbound/root.key]]), [
+AC_SUBST(LDNS_TRUST_ANCHOR_FILE, [${with_trust_anchor}])
 ],[
 if test "x$sysconfdir" = 'x${prefix}/etc' ; then
-AC_SUBST(LDNS_TRUSTED_KEY_FILE, [${prefix}/etc/trusted-key.key])
+AC_SUBST(LDNS_TRUST_ANCHOR_FILE, [${prefix}/etc/unbound/root.key])
 else
-AC_SUBST(LDNS_TRUSTED_KEY_FILE, [${sysconfdir}/trusted-key.key])
+AC_SUBST(LDNS_TRUST_ANCHOR_FILE, [${sysconfdir}/unbound/root.key])
 fi
 ])
 
@@ -683,7 +685,9 @@ else
   AC_SUBST(ldns_build_config_have_attr_unused, 0)
 fi
 
-AC_CONFIG_FILES([Makefile ldns/common.h ldns/net.h ldns/util.h packaging/libldns.pc packaging/ldns-config])
+CONFIG_FILES="Makefile ldns/common.h ldns/net.h ldns/util.h packaging/libldns.pc packaging/ldns-config $DRILL_CONFIG"
+AC_SUBST(CONFIG_FILES)
+AC_CONFIG_FILES([$CONFIG_FILES])
 
 AC_CONFIG_HEADER([ldns/config.h])
 AC_OUTPUT

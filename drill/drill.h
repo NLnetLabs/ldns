@@ -12,14 +12,11 @@
 
 #include "drill_util.h"
 
-#define DRILL_VERSION PACKAGE_VERSION
-
-#if HAVE_DRILL_TRUSTED_KEY == 0
-# ifdef LDNS_TRUSTED_KEY_FILE
-#  undef DRILL_TRUSTED_KEY_FILE
-#  define DRILL_TRUSTED_KEY_FILE LDNS_TRUSTED_KEY_FILE
-# endif
+#ifndef LDNS_TRUST_ANCHOR_FILE
+#define LDNS_TRUST_ANCHOR_FILE DRILL_TRUST_ANCHOR_FILE
 #endif
+
+#define DRILL_VERSION PACKAGE_VERSION
 
 /* what kind of stuff do we allow */
 #define DRILL_QUERY	0

@@ -54,7 +54,7 @@ usage(FILE *stream, const char *progname)
 	fprintf(stream, "\t\t\tused to verify any signatures in the current answer\n");
 	fprintf(stream, "\t\t\tIf DNSSEC is enabled and no key files are given, keys\n"
 			"\t\t\tare read from %s\n",
-			DRILL_TRUSTED_KEY_FILE);
+			LDNS_TRUST_ANCHOR_FILE);
 	fprintf(stream, "\t-o <mnemonic>\tset flags to:"
 			"\n\t\t\t[QR|qr][AA|aa][TC|tc][RD|rd][CD|cd][RA|ra][AD|ad]\n");
 	fprintf(stream, "\t\t\tlowercase: unset bit, uppercase: set bit\n");
@@ -405,7 +405,7 @@ main(int argc, char *argv[])
 	argv += optind;
 
 	if (qdnssec && ldns_rr_list_rr_count(key_list) == 0) {
-		(void) read_key_file(DRILL_TRUSTED_KEY_FILE, key_list, true);
+		(void) read_key_file(LDNS_TRUST_ANCHOR_FILE, key_list, true);
 	}
 	if (ldns_rr_list_rr_count(key_list) > 0) {
 		printf(";; Number of trusted keys: %d\n",

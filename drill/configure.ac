@@ -177,22 +177,34 @@ fi
 
 AC_SUBST(LDNSDIR)
 
-AC_ARG_WITH(trusted-key, AC_HELP_STRING([--with-trusted-key=[KEYFILE]],
- [Default location of the trusted key with drill. [default=LDNS_TRUSTED_KEY_FILE or SYSCONFDIR/trusted-key.key]]), [
-AC_DEFINE([HAVE_DRILL_TRUSTED_KEY], [1], [Is the trusted key file explicitely given at configure time])
-AC_DEFINE_UNQUOTED([DRILL_TRUSTED_KEY_FILE], ["$with_trusted_key"], [Default trusted key file])
+if test -f $LDNSDIR/ldns/common.h && \
+	grep LDNS_TRUST_ANCHOR_FILE $LDNSDIR/ldns/common.h >/dev/null; then
+	LDNS_TRUST_ANCHOR_FILE=`grep LDNS_TRUST_ANCHOR_FILE $LDNSDIR/ldns/common.h | sed -e 's/^.*"\(.*\)".*$/\1/'`
+else
+	LDNS_TRUST_ANCHOR_FILE=""
+fi
+
+AC_ARG_WITH(trust-anchor, AC_HELP_STRING([--with-trust-anchor=[KEYFILE]],
+[Default location of the trust anchor file. [default=LDNS_TRUST_ANCHOR_FILE or SYSCONFDIR/unbound/root.key]]), [
+ AC_DEFINE([HAVE_DRILL_TRUST_ANCHOR], [1], [Is the trust anchor file explicitely given at configure time])
+ LDNS_TRUST_ANCHOR_FILE="$withval"
 ],[
-AC_DEFINE([HAVE_DRILL_TRUSTED_KEY], [0], [Is the trusted key file explicitely given at configure time])
-if test "x$sysconfdir" = 'x${prefix}/etc' ; then
-if test "x$prefix" = 'xNONE' ; then
-AC_DEFINE_UNQUOTED([DRILL_TRUSTED_KEY_FILE], ["/etc/trusted-key.key"], [Default trusted key file])
-else
-AC_DEFINE_UNQUOTED([DRILL_TRUSTED_KEY_FILE], ["${prefix}/etc/trusted-key.key"], [Default trusted key file])
-fi
-else
-AC_DEFINE_UNQUOTED([DRILL_TRUSTED_KEY_FILE], ["${sysconfdir}/trusted-key.key"], [Default trusted key file])
-fi
+ AC_DEFINE([HAVE_DRILL_TRUST_ANCHOR], [0], [Is the trust anchor file explicitely given at configure time])
+ if test "x$LDNS_TRUST_ANCHOR_FILE" = "x"; then
+  if test "x$sysconfdir" = 'x${prefix}/etc' ; then
+   if test "x$prefix" = 'xNONE' ; then
+    LDNS_TRUST_ANCHOR_FILE="/etc/unbound/root.key"
+   else
+    LDNS_TRUST_ANCHOR_FILE="${prefix}/etc/unbound/root.key"
+   fi
+  else
+    LDNS_TRUST_ANCHOR_FILE="${sysconfdir}/unbound/root.key"
+  fi
+ fi
 ])
+
+AC_DEFINE_UNQUOTED([DRILL_TRUST_ANCHOR_FILE], ["$LDNS_TRUST_ANCHOR_FILE"], [Default trust anchor file])
+AC_SUBST(LDNS_TRUST_ANCHOR_FILE)
 
 AH_BOTTOM([
 
@@ -271,6 +283,6 @@ extern int optind, opterr;
 #endif
 ])
 
-AC_CONFIG_FILES([Makefile])
+AC_CONFIG_FILES([Makefile drill.1])
 AC_CONFIG_HEADER([config.h])
 AC_OUTPUT

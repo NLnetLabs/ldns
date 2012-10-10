@@ -14,12 +14,12 @@
 #include <errno.h>
 
 static int
-read_line(FILE *input, char *line, int len)
+read_line(FILE *input, char *line, size_t len)
 {
 	int i;
 	
 	char c;
-	for (i = 0; i < len-1; i++) {
+	for (i = 0; i < (int)len-1; i++) {
 		c = (char)getc(input);
 		if (c == EOF) {
 			return -1;
