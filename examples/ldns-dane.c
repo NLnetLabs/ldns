@@ -177,7 +177,7 @@ ldns_err(const char* s, ldns_status err)
 	if (err == LDNS_STATUS_SSL_ERR) {
 		ssl_err(s);
 	} else {
-		fprintf(stderr, "error: %s\n", ldns_get_errorstr_by_id(err));
+		fprintf(stderr, "%s: %s\n", s, ldns_get_errorstr_by_id(err));
 		exit(EXIT_FAILURE);
 	}
 }
@@ -259,170 +259,93 @@ ssl_connect_and_get_cert_chain(
 }
 
 
-bool
-copy_line_from_file2fd_networkline(FILE* file, int fd)
-{
-	char buf[BUFSIZE];
-	char* bufptr;
-	size_t to_write;
-	ssize_t written;
-
-	/* get line from file */
-	if (fgets(buf, BUFSIZE - 2, file) == NULL) {
-		return false;
-	}
-	to_write = strlen(buf);
-	if (to_write == 0) {
-		return false;
-	}
-	/* Convert to network line */
-	if (buf[to_write - 1] == '\n') {
-		buf[to_write - 1] = '\r';
-		buf[to_write    ] = '\n';
-		buf[to_write + 1] = '\000';
-		to_write += 1;
-	}
-	/* And write to fd */
-	bufptr = buf;
-	while (to_write > 0) {
-		written = write(fd, bufptr, to_write);
-		if (written == -1) {
-			perror("write");
-			close(fd);
-			return false;
-		}
-		to_write -= written;
-		bufptr += written;
-	}
-	return true;
-}
-
-bool
-copy_ssl2file(SSL* ssl, FILE* file)
-{
-	char buf[BUFSIZE];
-	char* bufptr;
-	int to_write;
-	size_t written;
-	int r;
-
-	to_write = SSL_read(ssl, buf, BUFSIZE);
-	if (to_write <= 0) {
-		r = SSL_get_error(ssl, to_write);
-		if (r != SSL_ERROR_ZERO_RETURN) {
-			fprintf(stderr, "reading SSL_get_error:" " %d\n", r);
-		}
-		return false;
-	}
-	bufptr = buf;
-	while (to_write > 0) {
-		written = fwrite(bufptr, 1, (size_t)to_write, file);
-		if (written == 0) {
-			perror("fwrite");
-			return false;
-		}
-		to_write -= written;
-		bufptr += written;
-	}
-	return true;
-}
-
-bool
-copy_fd2ssl(int fd, SSL* ssl)
-{
-	char buf[BUFSIZE];
-	char* bufptr;
-	ssize_t to_write;
-	int written;
-	int r;
-
-	to_write = read(fd, buf, BUFSIZE);
-	if (to_write == -1) {
-		perror("read");
-		return false;
-	}
-	if (to_write == 0) {
-		return false;
-	}
-	bufptr = buf;
-	while (to_write > 0) {
-		written = SSL_write(ssl, bufptr, (int)to_write);
-		if (written <= 0) {
-			r = SSL_get_error(ssl, (int)to_write);
-			if (r != SSL_ERROR_ZERO_RETURN) {
-				fprintf(stderr,
-					"writing SSL_get_error: %d\n", r);
-			}
-			return false;
-		}
-		to_write -= written;
-		bufptr += written;
-	}
-	return true;
-}
-
 void
 ssl_interact(SSL* ssl)
 {
-	pid_t child;
-	int pipefd[2];
 	fd_set rfds;
 	int maxfd;
 	int sock;
 	int r;
 
+	char buf[BUFSIZE];
+	char* bufptr;
+	int to_write;
+	int written;
+
 	sock = SSL_get_fd(ssl);
 	if (sock == -1) {
 		return;
 	}
-	if (pipe(pipefd) == -1) {
-		perror("pipe");
-		return;
-	}
-	child = fork();
-	if (child == 0) {		/* Child process */
-		close(pipefd[0]);	/* close read end */
-
-		while (copy_line_from_file2fd_networkline(stdin, pipefd[1]));
-
-		close(pipefd[1]);
-		exit(EXIT_SUCCESS);
-
-	} else if (child > 0) {		/* Parent process*/
-		close(pipefd[1]);	/* close write end */
-
-		maxfd = (pipefd[0] > sock ? pipefd[0] : sock) + 1;
-		for (;;) {
+	maxfd = (STDIN_FILENO > sock ? STDIN_FILENO : sock) + 1;
+	for (;;) {
 #ifndef S_SPLINT_S
-			FD_ZERO(&rfds);
+		FD_ZERO(&rfds);
 #endif /* splint */
-			FD_SET(sock, &rfds);
-			FD_SET(pipefd[0], &rfds);
+		FD_SET(sock, &rfds);
+		FD_SET(STDIN_FILENO, &rfds);
 
-			r = select(maxfd, &rfds, NULL, NULL, NULL);
-			if (r == -1) {
-				perror("select");
+		r = select(maxfd, &rfds, NULL, NULL, NULL);
+		if (r == -1) {
+			perror("select");
+			break;
+		}
+		if (FD_ISSET(sock, &rfds)) {
+			to_write = SSL_read(ssl, buf, BUFSIZE);
+			if (to_write <= 0) {
+				r = SSL_get_error(ssl, to_write);
+				if (r != SSL_ERROR_ZERO_RETURN) {
+					fprintf(stderr,
+						"reading SSL_get_error:"
+						" %d\n", r);
+				}
 				break;
 			}
-			if (FD_ISSET(sock, &rfds)) {
-				if (! copy_ssl2file(ssl, stdout)) {
+			bufptr = buf;
+			while (to_write > 0) {
+				written = (int) fwrite(bufptr, 1, 
+						(size_t) to_write, stdout);
+				if (written == 0) {
+					perror("fwrite");
 					break;
 				}
+				to_write -= written;
+				bufptr += written;
 			}
-			if (FD_ISSET(pipefd[0], &rfds)) {
-				if (! copy_fd2ssl(pipefd[0], ssl)) {
+		} /* if (FD_ISSET(sock, &rfds)) */
+
+		if (FD_ISSET(STDIN_FILENO, &rfds)) {
+			to_write = (int) read(STDIN_FILENO, buf, BUFSIZE - 1);
+			if (to_write <= 0) {
+				if (to_write == -1) {
+					perror("read");
+				}
+				break;
+			}
+			if (buf[to_write - 1] == '\n') {
+				buf[to_write - 1] = '\r';
+				buf[to_write    ] = '\n';
+				to_write += 1;
+			}
+			bufptr = buf;
+			while (to_write > 0) {
+				written = SSL_write(ssl, bufptr, to_write);
+				if (written <= 0) {
+					r = SSL_get_error(ssl, to_write);
+					if (r != SSL_ERROR_ZERO_RETURN) {
+						fprintf(stderr,
+							"writing SSL_get_error"
+							": %d\n", r);
+					}
 					break;
 				}
+				to_write -= written;
+				bufptr += written;
 			}
-		}
-		close(pipefd[0]);
-		if (kill(child, SIGTERM) == -1) {
-			perror("kill");
-		}
-	} else {
-		perror("fork");
-	}
+		} /* if (FD_ISSET(STDIN_FILENO, &rfds)) */
+
+	} /* for (;;) */
 }
+
 
 void
 ssl_shutdown(SSL* ssl)
@@ -453,6 +376,13 @@ rr_list_filter_rr_type(ldns_rr_list* l, ldns_rr_type t)
 }
 
 
+/* Return a copy of the list of tlsa records where the usage types
+ * "CA constraint" are replaced with "Trust anchor assertion" and the usage
+ * types "Service certificate constraint" are replaced with 
+ * "Domain-issued certificate".
+ *
+ * This to check what would happen if PKIX validation was successfull always.
+ */
 ldns_rr_list*
 dane_no_pkix_transform(const ldns_rr_list* tlas)
 {
@@ -1595,8 +1525,16 @@ main(int argc, char** argv)
 			
 			s = ssl_connect_and_get_cert_chain(&cert, &extra_certs,
 					ssl, address, port, transport);
-			LDNS_ERR(s, "could not get cert chain from ssl");
+			if (s == LDNS_STATUS_NETWORK_ERR) {
+				fprintf(stderr, "Could not connect to ");
+				ldns_rdf_print(stderr, address);
+				fprintf(stderr, " %d\n", (int) port);
 
+				/* All addresses should succeed */
+				success = false;
+				continue;
+			}
+			LDNS_ERR(s, "could not get cert chain from ssl");
 			switch (mode) {
 
 			case CREATE: dane_create(tlsas, tlsa_owner,
