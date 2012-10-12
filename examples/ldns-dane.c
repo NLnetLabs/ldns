@@ -17,7 +17,6 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netdb.h>
-#include <signal.h>
 
 #include <ldns/ldns.h>
 
@@ -27,6 +26,10 @@
 #include <openssl/ssl.h>
 #include <openssl/err.h>
 #include <openssl/x509v3.h>
+
+#ifndef IPPROTO_SCTP
+#define IPPROTO_SCTP 132
+#endif
 
 #define LDNS_ERR(code, msg) do { if (code != LDNS_STATUS_OK) \
 					ldns_err(msg, code); } while (false)
