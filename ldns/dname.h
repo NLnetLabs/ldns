@@ -111,6 +111,7 @@ ldns_rdf *ldns_dname_new_frm_str(const char *str);
  * Create a new dname rdf from a string
  * \param[in] s the size of the new dname
  * \param[in] *data pointer to the actual data
+ *
  * \return ldns_rdf*
  */
 ldns_rdf *ldns_dname_new(uint16_t s, void *data);
@@ -119,6 +120,7 @@ ldns_rdf *ldns_dname_new(uint16_t s, void *data);
  * Create a new dname rdf from data (the data is copied)
  * \param[in] size the size of the data
  * \param[in] *data pointer to the actual data
+ *
  * \return ldns_rdf*
  */
 ldns_rdf *ldns_dname_new_frm_data(uint16_t size, const void *data);
