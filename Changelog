@@ -14,7 +14,7 @@
 	  now documented in their own Changelog.
 	* bugfix: Make ldns_resolver_pop_nameserver clear the array when
 	  there was only one.
-	* bugfix #459: Export only symbols defined in ldns_symbols
+	* bugfix #459: Remove ldns_symbols and export symbols based on regex
 	* bugfix #458: Track all newly created signatures when signing.
 	* bugfix #454: Only set -g and -O2 CFLAGS when no CFLAGS was given.
 	* bugfix #457: Memory leak fix for ldns_key_new_frm_algorithm.

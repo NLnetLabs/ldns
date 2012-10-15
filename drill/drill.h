@@ -12,10 +12,6 @@
 
 #include "drill_util.h"
 
-#ifndef LDNS_TRUST_ANCHOR_FILE
-#define LDNS_TRUST_ANCHOR_FILE DRILL_TRUST_ANCHOR_FILE
-#endif
-
 #define DRILL_VERSION PACKAGE_VERSION
 
 /* what kind of stuff do we allow */

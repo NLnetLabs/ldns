@@ -518,15 +518,39 @@ fi
 
 AC_DEFINE([SYSCONFDIR], [sysconfdir], [System configuration dir])
 
-AC_ARG_WITH(trust-anchor, AC_HELP_STRING([--with-trust-anchor=[KEYFILE]], 
-[Default location of the trust anchor file for drill. [default=SYSCONFDIR/unbound/root.key]]), [
-AC_SUBST(LDNS_TRUST_ANCHOR_FILE, [${with_trust_anchor}])
+AC_ARG_WITH(trust-anchor, AC_HELP_STRING([--with-trust-anchor=KEYFILE], [Default location of the trust anchor file for drill and ldns-dane. [default=SYSCONFDIR/unbound/root.key]]), [
+ LDNS_TRUST_ANCHOR_FILE="$withval"
 ],[
-if test "x$sysconfdir" = 'x${prefix}/etc' ; then
-AC_SUBST(LDNS_TRUST_ANCHOR_FILE, [${prefix}/etc/unbound/root.key])
-else
-AC_SUBST(LDNS_TRUST_ANCHOR_FILE, [${sysconfdir}/unbound/root.key])
-fi
+ if test "x$LDNS_TRUST_ANCHOR_FILE" = "x"; then
+  if test "x$sysconfdir" = 'x${prefix}/etc' ; then
+   if test "x$prefix" = 'xNONE' ; then
+    LDNS_TRUST_ANCHOR_FILE="/etc/unbound/root.key"
+   else
+    LDNS_TRUST_ANCHOR_FILE="${prefix}/etc/unbound/root.key"
+   fi
+  else
+    LDNS_TRUST_ANCHOR_FILE="${sysconfdir}/unbound/root.key"
+  fi
+ fi
+])
+AC_DEFINE_UNQUOTED([LDNS_TRUST_ANCHOR_FILE], ["$LDNS_TRUST_ANCHOR_FILE"], [Default trust anchor file])
+AC_SUBST(LDNS_TRUST_ANCHOR_FILE)
+AC_MSG_NOTICE([Default trust anchor: $LDNS_TRUST_ANCHOR_FILE])
+
+AC_ARG_WITH(ca-file, AC_HELP_STRING([--with-ca-file=CAFILE], [File containing CA certificates for ldns-dane]), [
+ AC_DEFINE([HAVE_DANE_CA_FILE], [1], [Is a CAFILE given at configure time])
+ AC_DEFINE_UNQUOTED([LDNS_DANE_CA_FILE], ["$withval"], [Is a CAFILE given at configure time])
+ AC_MSG_NOTICE([Using CAfile: $withval])
+],[
+ AC_DEFINE([HAVE_DANE_CA_FILE], [0], [Is a CAFILE given at configure time])
+])
+
+AC_ARG_WITH(ca-path, AC_HELP_STRING([--with-ca-path=CAPATH], [Directory containing CA certificate files for ldns-dane]), [
+ AC_DEFINE([HAVE_DANE_CA_PATH], [1], [Is a CAPATH given at configure time])
+ AC_DEFINE_UNQUOTED([LDNS_DANE_CA_PATH], ["$withval"], [Is a CAPATH given at configure time])
+ AC_MSG_NOTICE([Using CApath: $withval])
+],[
+ AC_DEFINE([HAVE_DANE_CA_PATH], [0], [Is a CAPATH given at configure time])
 ])
 
 AH_BOTTOM([

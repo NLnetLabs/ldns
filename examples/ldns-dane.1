@@ -5,6 +5,7 @@ ldns-dane \- verify or create TLS authentication with DANE (RFC6698)
 .PD 0
 .B ldns-dane
 .IR [OPTIONS]
+.IR verify
 .IR name
 .IR port
 .PP
@@ -12,14 +13,21 @@ ldns-dane \- verify or create TLS authentication with DANE (RFC6698)
 .IR [OPTIONS]
 .IR -t
 .IR tlsafile
+.IR verify
 
 .B ldns-dane
 .IR [OPTIONS]
 .IR name
 .IR port
+.IR create
+.PP
+          [
 .IR Certificate-usage
+[
 .IR Selector
+[
 .IR Matching-type
+] ] ]
 
 .B ldns-dane
 .IR -h
@@ -54,13 +62,13 @@ Service certificate constraint
 .IP 2
 Trust anchor assertion
 .IP 3
-Domain-issued certificate
+Domain-issued certificate (default)
 .RE
 
 .I Selector\fR:
 .RS
 .IP 0
-Full certificate
+Full certificate (default)
 .IP 1
 SubjectPublicKeyInfo
 .RE
@@ -70,7 +78,7 @@ SubjectPublicKeyInfo
 .IP 0
 No hash used
 .IP 1
-SHA-256
+SHA-256 (default)
 .IP 2
 SHA-512
 .RE
@@ -105,8 +113,7 @@ Print short usage help
 Interact after connecting.
 .IP "-k \fIkeyfile\fR"
 Specify a file that contains a trusted DNSKEY or DS rr.
-Without a trusted DNSKEY, the local network is trusted to provide
-a DNSSEC resolver (i.e. AD bit is checked).
+Key(s) are used when chasing signatures (i.e. \fI-S\fR is given).
 
 This option may be given more than once.
 .IP -n
@@ -130,6 +137,11 @@ assume PKIX is valid.
 
 For "CA Constraint" this means that verification should end with a
 self-signed certificate.
+.IP -S
+Chase signature(s) to a known key.
+
+Without this option, the local network is trusted to provide
+a DNSSEC resolver (i.e. AD bit is checked).
 .IP "-t \fItlsafile\fR"
 Read TLSA record(s) from \fItlsafile\fR. When \fIname\fR and \fIport\fR
 are also given, only TLSA records that match the \fIname\fR, \fIport\fR and

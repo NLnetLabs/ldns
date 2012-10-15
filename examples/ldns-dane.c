@@ -42,28 +42,28 @@
 void
 print_usage(const char* progname)
 {
-	printf("Usage: %s [OPTIONS] <name> <port>\n", progname);
-	printf("   or: %s [OPTIONS] -t <tlsafile>\n", progname);
+	printf("Usage: %s [OPTIONS] verify <name> <port>\n", progname);
+	printf("   or: %s [OPTIONS] -t <tlsafile> verify\n", progname);
 	printf("\n\tVerify the TLS connection at <name>:<port> or"
 	       "\n\tuse TLSA record(s) from <tlsafile> to verify the\n"
 			"\tTLS service they reference.\n");
-	printf("\n   or: %s [OPTIONS] <name> <port> <cert usage> <selector> "
-			"<match type>\n", progname);
+	printf("\n   or: %s [OPTIONS] create <name> <port> [<usage> "
+			"[<selector> [<type>]]]\n", progname);
 	printf("\n\tUse the TLS connection(s) to <name> <port> "
 			"to create the TLSA\n\t"
 			"resource record(s) that would "
 			"authenticate the connection.\n");
-	printf("\n\t<cert usage>"
-			"\t0: CA constraint\n"
+	printf("\n\t<usage>"
+			"\t\t0: CA constraint\n"
 			"\t\t\t1: Service certificate constraint\n"
 			"\t\t\t2: Trust anchor assertion\n"
-			"\t\t\t3: Domain-issued certificate\n");
+			"\t\t\t3: Domain-issued certificate (default)\n");
 	printf("\n\t<selector>"
-			"\t0: Full certificate\n"
+			"\t0: Full certificate (default)\n"
 			"\t\t\t1: SubjectPublicKeyInfo\n");
-	printf("\n\t<match type>"
-			"\t0: No hash used\n"
-			"\t\t\t1: SHA-256\n"
+	printf("\n\t<type>"
+			"\t\t0: No hash used\n"
+			"\t\t\t1: SHA-256 (default)\n"
 			"\t\t\t2: SHA-512\n");
 
 	printf("OPTIONS:\n");
@@ -81,10 +81,15 @@ print_usage(const char* progname)
 	      );
 	printf("\t-d\t\tassume DNSSEC validity even when insecure or bogus\n");
 	printf("\t-f <CAfile>\tuse CAfile to validate\n");
+#if HAVE_DANE_CA_FILE
+	printf("\t\t\tDefault is %s\n", LDNS_DANE_CA_FILE);
+#endif
 	printf("\t-i\t\tinteract after connecting\n");
 	printf("\t-k <keyfile>\t"
 	       "use DNSKEY/DS rr(s) in <keyfile> to validate TLSAs\n"
+	       "\t\t\twhen signature chasing (i.e. -S)\n"
 	      );
+	printf("\t\t\tDefault is %s\n", LDNS_TRUST_ANCHOR_FILE);
 	printf("\t-n\t\tdo *not* verify server name in certificate\n");
 	printf("\t-o <offset>\t"
 	       "select <offset>th certificate from the end of\n"
@@ -93,7 +98,11 @@ print_usage(const char* progname)
 	printf("\t-p <CApath>\t"
 	       "use certificates in the <CApath> directory to validate\n"
 	      );
+#if HAVE_DANE_CA_PATH
+	printf("\t\t\tDefaults is %s\n", LDNS_DANE_CA_PATH);
+#endif
 	printf("\t-s\t\tassume PKIX validity\n");
+	printf("\t-S\t\tChase signature(s) to a known key\n");
 	printf("\t-t <tlsafile>\tdo not use DNS, "
 	       "but read TLSA record(s) from <tlsafile>\n"
 	      );
@@ -501,8 +510,6 @@ read_key_file(const char *filename, ldns_rr_list *keys)
 	int line_nr;
 
 	if (!(fp = fopen(filename, "r"))) {
-		fprintf(stderr, "Error opening %s: %s\n", filename,
-				strerror(errno));
 		return LDNS_STATUS_FILE_ERR;
 	}
 	while (!feof(fp)) {
@@ -668,7 +675,8 @@ dane_lookup_addresses(ldns_resolver* res, ldns_rdf* dname,
 		} else if (s != LDNS_STATUS_OK) {
 			LDNS_ERR(s, "dane_query");
 
-		} else if (! ldns_rr_list_push_rr_list(r, as)) {
+		}
+		if (! ldns_rr_list_push_rr_list(r, as)) {
 			MEMERR("ldns_rr_list_push_rr_list");
 		}
 	}
@@ -685,7 +693,8 @@ dane_lookup_addresses(ldns_resolver* res, ldns_rdf* dname,
 		} else if (s != LDNS_STATUS_OK) {
 			LDNS_ERR(s, "dane_query");
 
-		} else if (! ldns_rr_list_push_rr_list(r, aaas)) {
+		}
+		if (! ldns_rr_list_push_rr_list(r, aaas)) {
 			MEMERR("ldns_rr_list_push_rr_list");
 		}
 	}
@@ -1035,7 +1044,7 @@ dane_verify(ldns_rr_list* tlsas, ldns_rdf* address,
 
 
 int
-main(int argc, char** argv)
+main(int argc, char* const* argv)
 {
 	int c;
 	enum { UNDETERMINED, VERIFY, CREATE } mode = UNDETERMINED;
@@ -1049,14 +1058,23 @@ main(int argc, char** argv)
 	bool verify_server_name     = true;
 	bool interact               = false;
 
-	char* CAfile    = NULL;
-	char* CApath    = NULL;
+#if HAVE_DANE_CA_FILE
+	const char* CAfile    = LDNS_DANE_CA_FILE;
+#else
+	const char* CAfile    = NULL;
+#endif
+#if HAVE_DANE_CA_PATH
+	const char* CApath    = LDNS_DANE_CA_PATH;
+#else
+	const char* CApath    = NULL;
+#endif
 	char* cert_file = NULL;
 	X509* cert                  = NULL;
 	STACK_OF(X509)* extra_certs = NULL;
 	
-	ldns_rr_list* keys = ldns_rr_list_new();
-	size_t nkeys = 0;
+	ldns_rr_list*  keys = ldns_rr_list_new();
+	size_t        nkeys = 0;
+	bool    do_sigchase = false;
 
 	ldns_rr_list* addresses = ldns_rr_list_new();
 	ldns_rr*      address_rr;
@@ -1102,7 +1120,7 @@ main(int argc, char** argv)
 	if (! keys || ! addresses) {
 		MEMERR("ldns_rr_list_new");
 	}
-	while((c = getopt(argc, argv, "46a:bc:df:hik:no:p:st:uvV:")) != -1) {
+	while((c = getopt(argc, argv, "46a:bc:df:hik:no:p:sSt:uvV:")) != -1) {
 		switch(c) {
 		case 'h':
 			print_usage("ldns-dane");
@@ -1164,13 +1182,18 @@ main(int argc, char** argv)
 			break;
 		case 'k':
 			s = read_key_file(optarg, keys);
-			LDNS_ERR(s, "Could not parse key file");
-			if (ldns_rr_list_rr_count(keys) == nkeys) {
-				fprintf(stderr, "No keys found in file %s\n",
-						optarg);
-				exit(EXIT_FAILURE);
+			if (s == LDNS_STATUS_FILE_ERR) {
+				fprintf(stderr, "Error opening %s: %s\n",
+						optarg, strerror(errno));
+			} else {
+				LDNS_ERR(s, "Could not parse key file");
+				if (ldns_rr_list_rr_count(keys) == nkeys) {
+					fprintf(stderr, "No keys found in file"
+							" %s\n", optarg);
+					exit(EXIT_FAILURE);
+				}
+				nkeys = ldns_rr_list_rr_count(keys);
 			}
-			nkeys = ldns_rr_list_rr_count(keys);
 			break;
 		case 'n':
 			verify_server_name = false;
@@ -1183,6 +1206,9 @@ main(int argc, char** argv)
 			break;
 		case 's':
 			assume_pkix_validity = true;
+			break;
+		case 'S':
+			do_sigchase = true;
 			break;
 		case 't':
 			tlsas_file = optarg;
@@ -1222,13 +1248,44 @@ main(int argc, char** argv)
 		}
 	}
 
+	if (do_sigchase) {
+		if (nkeys == 0) {
+			(void) read_key_file(LDNS_TRUST_ANCHOR_FILE, keys);
+		}
+	} else {
+		keys = NULL;
+	}
+
 	argc -= optind;
 	argv += optind;
 
-	if (argc == 0 && tlsas_file != NULL) {
+	if (argc == 0) {
+
+		print_usage("ldns-dane");
+	}
+	if (strncasecmp(*argv, "create", strlen(*argv)) == 0) {
+
+		mode = CREATE;
+		argc--;
+		argv++;
+
+	} else if (strncasecmp(*argv, "verify", strlen(*argv)) == 0) {
 
 		mode = VERIFY;
+		argc--;
+		argv++;
 
+	} else {
+		fprintf(stderr, "Specify create or verify mode\n");
+		exit(EXIT_FAILURE);
+	}
+
+	if (mode == VERIFY && argc == 0) {
+
+		if (! tlsas_file) {
+			fprintf(stderr, "ERROR! Nothing given to verify\n");
+			exit(EXIT_FAILURE);
+		}
 		s = dane_read_tlsas_from_file(&tlsas, tlsas_file, NULL);
 		LDNS_ERR(s, "could not read tlas from file");
 
@@ -1321,16 +1378,18 @@ main(int argc, char** argv)
 			MEMERR("ldns_rdf2str");
 		}
 
+
 	} else if (argc < 2) {
 
 		print_usage("ldns-dane");
 
 	} else {
-		name_str = argv[0];
+		name_str = *argv++; argc--;
 		s = ldns_str2rdf_dname(&name, name_str);
 		LDNS_ERR(s, "could not ldns_str2rdf_dname");
 
-		port = (uint16_t)dane_int_within_range(argv[1], 65535, "port");
+		port = (uint16_t)dane_int_within_range(*argv++, 65535, "port");
+		--argc;
 
 		s = ldns_dane_create_tlsa_owner(&tlsa_owner,
 				name, port, transport);
@@ -1341,10 +1400,12 @@ main(int argc, char** argv)
 		}
 	}
 
-	if (argc == 2) {
+	switch (mode) {
+	case VERIFY:
+		if (argc > 0) {
 
-		mode = VERIFY;
-
+			print_usage("ldns-dane");
+		}
 		if (tlsas_file) {
 
 			s = dane_read_tlsas_from_file(&tlsas, tlsas_file,
@@ -1391,39 +1452,57 @@ main(int argc, char** argv)
 			tlsas = dane_no_pkix_transform(originals);
 		}
 
-	} else if (argc == 5) {
+		break;
 
-		mode = CREATE;
-
-		tlsas = ldns_rr_list_new();
-
-		certificate_usage = dane_int_within_range_table(
-				argv[2], 3, "certificate usage",
-				dane_certificate_usage_table);
-		selector = dane_int_within_range_table(
-				argv[3], 1, "selector",
-				dane_selector_table);
-
-		if (*argv[4] && /* strlen(argv[4]) > 0 */
-				(strncasecmp(argv[4], "no-hash-used",
-					     strlen(argv[4])) == 0 ||
-				 strncasecmp(argv[4], "no hash used",
-					     strlen(argv[4])) == 0 )) {
-			matching_type = 0;
-
-		} else if (strcasecmp(argv[4], "sha256") == 0 ||
-				strcasecmp(argv[4], "sha-256") == 0) {
-
-			matching_type = 1;
-
-		} else if (strcasecmp(argv[4], "sha512") == 0 ||
-				strcasecmp(argv[4], "sha-512") == 0) {
-
-			matching_type = 2;
-
+	case CREATE:
+		if (argc > 0) {
+			certificate_usage = dane_int_within_range_table(
+					*argv++, 3, "certificate usage",
+					dane_certificate_usage_table);
+			argc--;
 		} else {
-			matching_type = dane_int_within_range(argv[4], 2,
-					"matching type");
+			certificate_usage =
+				LDNS_TLSA_USAGE_DOMAIN_ISSUED_CERTIFICATE;
+		}
+		if (argc > 0) {
+			selector = dane_int_within_range_table(
+					*argv++, 1, "selector",
+					dane_selector_table);
+			argc--;
+		} else {
+			selector = LDNS_TLSA_SELECTOR_FULL_CERTIFICATE;
+		}
+		if (argc > 0) {
+			if (*argv && /* strlen(argv) > 0 */
+					(strncasecmp(*argv, "no-hash-used",
+						strlen(*argv)) == 0 ||
+					strncasecmp(*argv, "no hash used",
+						strlen(*argv)) == 0 )) {
+				matching_type =
+					LDNS_TLSA_MATCHING_TYPE_NO_HASH_USED;
+
+			} else if (strcasecmp(*argv, "sha256") == 0 ||
+					strcasecmp(*argv, "sha-256") == 0) {
+
+				matching_type = LDNS_TLSA_MATCHING_TYPE_SHA256;
+
+			} else if (strcasecmp(*argv, "sha512") == 0 ||
+					strcasecmp(*argv, "sha-512") == 0) {
+
+				matching_type = LDNS_TLSA_MATCHING_TYPE_SHA512;
+
+			} else {
+				matching_type = dane_int_within_range(
+						*argv, 2, "matching type");
+			}
+			argv++;
+			argc--;
+		} else {
+			matching_type = LDNS_TLSA_MATCHING_TYPE_SHA256;
+		}
+		if (argc > 0) {
+
+			print_usage("ldns-dane");
 		}
 		if ((certificate_usage == LDNS_TLSA_USAGE_CA_CONSTRAINT ||
 		     certificate_usage ==
@@ -1444,9 +1523,11 @@ main(int argc, char** argv)
 
 			exit(EXIT_FAILURE);
 		}
-	} else if (mode == UNDETERMINED) {
-
-		print_usage("ldns-dane");
+		tlsas = ldns_rr_list_new();
+		break;
+	default:
+		fprintf(stderr, "Unreachable code\n");
+		assert(0);
 	}
 
 	/* ssl inititalize */
