@@ -106,7 +106,7 @@ TLSA records) for the certificate (chain) in \fIcertfile\fR instead.
 Assume DNSSEC validity even when the TLSA records were acquired insecure
 or were bogus.
 .IP "-f \fICAfile\fR"
-Use CAfile to validate.
+Use CAfile to validate. @DEFAULT_CAFILE@
 .IP -h
 Print short usage help
 .IP -i
@@ -116,6 +116,10 @@ Specify a file that contains a trusted DNSKEY or DS rr.
 Key(s) are used when chasing signatures (i.e. \fI-S\fR is given).
 
 This option may be given more than once.
+
+Alternatively, if \fB-k\fR is not specified, and a default trust anchor
+(@LDNS_TRUST_ANCHOR_FILE@) exists and contains a valid DNSKEY or DS record,
+it will be used as the trust anchor.
 .IP -n
 Do \fBnot\fR verify server name in certificate.
 .IP "-o \fIoffset\fR"
@@ -129,7 +133,7 @@ is used (like with 0) that MUST be self-signed. This can help to make
 sure that the intended (self signed) trust anchor is actually present
 in the server certificate chain (which is a DANE requirement).
 .IP "-p \fICApath\fR"
-Use certificates in the \fICApath\fR directory to validate.
+Use certificates in the \fICApath\fR directory to validate. @DEFAULT_CAPATH@
 .IP -s
 When creating TLSA resource records with the "CA Constraint" and the
 "Service Certificate Constraint" certificate usage, do not validate and
@@ -151,6 +155,16 @@ will be used to determine \fIname\fR, \fIport\fR and \fItransport\fR.
 Use UDP transport instead of TCP.
 .IP -v
 Show version and exit.
+
+.SH "FILES"
+.TP
+@LDNS_TRUST_ANCHOR_FILE@
+The file from which trusted keys are loaded for signature chasing,
+when no \fB-k\fR option is given.
+
+.SH "SEE ALSO"
+.LP
+unbound-anchor(8)
 
 .SH AUTHOR
 Written by the ldns team as an example for ldns usage.

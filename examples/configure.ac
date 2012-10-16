@@ -345,16 +345,20 @@ AC_ARG_WITH(ca-file, AC_HELP_STRING([--with-ca-file=CAFILE], [File containing CA
  AC_DEFINE([HAVE_DANE_CA_FILE], [1], [Is a CAFILE given at configure time])
  AC_DEFINE_UNQUOTED([LDNS_DANE_CA_FILE], ["$withval"], [Is a CAFILE given at configure time])
  AC_MSG_NOTICE([Using CAfile: $withval])
+ AC_SUBST(DEFAULT_CAFILE, ["Default is $withval"])
 ],[
  AC_DEFINE([HAVE_DANE_CA_FILE], [0], [Is a CAFILE given at configure time])
+ AC_SUBST(DEFAULT_CAFILE, [])
 ])
 
 AC_ARG_WITH(ca-path, AC_HELP_STRING([--with-ca-path=CAPATH], [Directory containing CA certificate files for ldns-dane]), [
  AC_DEFINE([HAVE_DANE_CA_PATH], [1], [Is a CAPATH given at configure time])
  AC_DEFINE_UNQUOTED([LDNS_DANE_CA_PATH], ["$withval"], [Is a CAPATH given at configure time])
  AC_MSG_NOTICE([Using CApath: $withval])
+ AC_SUBST(DEFAULT_CAPATH, ["Default is $withval"])
 ],[
  AC_DEFINE([HAVE_DANE_CA_PATH], [0], [Is a CAPATH given at configure time])
+ AC_SUBST(DEFAULT_CAPATH, [])
 ])
 
 AH_BOTTOM([
@@ -452,6 +456,6 @@ extern int optind, opterr;
 #endif
 ])
 
-AC_CONFIG_FILES([Makefile])
+AC_CONFIG_FILES([Makefile ldns-dane.1 ldns-verify-zone.1])
 AC_CONFIG_HEADER([config.h])
 AC_OUTPUT

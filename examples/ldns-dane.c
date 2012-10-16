@@ -1185,15 +1185,14 @@ main(int argc, char* const* argv)
 			if (s == LDNS_STATUS_FILE_ERR) {
 				fprintf(stderr, "Error opening %s: %s\n",
 						optarg, strerror(errno));
-			} else {
-				LDNS_ERR(s, "Could not parse key file");
-				if (ldns_rr_list_rr_count(keys) == nkeys) {
-					fprintf(stderr, "No keys found in file"
-							" %s\n", optarg);
-					exit(EXIT_FAILURE);
-				}
-				nkeys = ldns_rr_list_rr_count(keys);
 			}
+			LDNS_ERR(s, "Could not parse key file");
+			if (ldns_rr_list_rr_count(keys) == nkeys) {
+				fprintf(stderr, "No keys found in file"
+						" %s\n", optarg);
+				exit(EXIT_FAILURE);
+			}
+			nkeys = ldns_rr_list_rr_count(keys);
 			break;
 		case 'n':
 			verify_server_name = false;
@@ -1251,6 +1250,13 @@ main(int argc, char* const* argv)
 	if (do_sigchase) {
 		if (nkeys == 0) {
 			(void) read_key_file(LDNS_TRUST_ANCHOR_FILE, keys);
+			nkeys = ldns_rr_list_rr_count(keys);
+
+			if (nkeys == 0) {
+				fprintf(stderr, "Unable to chase "
+						"signature without keys.\n");
+				exit(EXIT_FAILURE);
+			}
 		}
 	} else {
 		keys = NULL;

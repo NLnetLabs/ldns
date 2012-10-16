@@ -141,12 +141,14 @@ This does not work with the --with-examples option.
 Please remove the config.h from the examples subdirectory 
 or do not use the --with-examples option.])
 	fi
+	EXAMPLES_CONFIG=" examples/ldns-dane.1 examples/ldns-verify-zone.1"
 else
 	AC_SUBST(EXAMPLES,[""])
 	AC_SUBST(INSTALL_EXAMPLES,[""])
 	AC_SUBST(UNINSTALL_EXAMPLES,[""])
 	AC_SUBST(CLEAN_EXAMPLES,[""])
 	AC_SUBST(LINT_EXAMPLES,[""])
+	EXAMPLES_CONFIG=""
 fi
 
 # add option to disable installation of ldns-config script
@@ -541,16 +543,20 @@ AC_ARG_WITH(ca-file, AC_HELP_STRING([--with-ca-file=CAFILE], [File containing CA
  AC_DEFINE([HAVE_DANE_CA_FILE], [1], [Is a CAFILE given at configure time])
  AC_DEFINE_UNQUOTED([LDNS_DANE_CA_FILE], ["$withval"], [Is a CAFILE given at configure time])
  AC_MSG_NOTICE([Using CAfile: $withval])
+ AC_SUBST(DEFAULT_CAFILE, ["Default is $withval"])
 ],[
  AC_DEFINE([HAVE_DANE_CA_FILE], [0], [Is a CAFILE given at configure time])
+ AC_SUBST(DEFAULT_CAFILE, [])
 ])
 
 AC_ARG_WITH(ca-path, AC_HELP_STRING([--with-ca-path=CAPATH], [Directory containing CA certificate files for ldns-dane]), [
  AC_DEFINE([HAVE_DANE_CA_PATH], [1], [Is a CAPATH given at configure time])
  AC_DEFINE_UNQUOTED([LDNS_DANE_CA_PATH], ["$withval"], [Is a CAPATH given at configure time])
  AC_MSG_NOTICE([Using CApath: $withval])
+ AC_SUBST(DEFAULT_CAPATH, ["Default is $withval"])
 ],[
  AC_DEFINE([HAVE_DANE_CA_PATH], [0], [Is a CAPATH given at configure time])
+ AC_SUBST(DEFAULT_CAPATH, [])
 ])
 
 AH_BOTTOM([
@@ -709,7 +715,7 @@ else
   AC_SUBST(ldns_build_config_have_attr_unused, 0)
 fi
 
-CONFIG_FILES="Makefile ldns/common.h ldns/net.h ldns/util.h packaging/libldns.pc packaging/ldns-config $DRILL_CONFIG"
+CONFIG_FILES="Makefile ldns/common.h ldns/net.h ldns/util.h packaging/libldns.pc packaging/ldns-config $DRILL_CONFIG $EXAMPLES_CONFIG"
 AC_SUBST(CONFIG_FILES)
 AC_CONFIG_FILES([$CONFIG_FILES])
 

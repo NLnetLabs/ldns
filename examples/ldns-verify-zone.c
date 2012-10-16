@@ -66,10 +66,6 @@ read_key_file(const char *filename, ldns_rr_list *keys)
 	int line_nr;
 
 	if (!(fp = fopen(filename, "r"))) {
-		if (verbosity > 0) {
-			fprintf(myerr, "Error opening %s: %s\n", filename,
-					strerror(errno));
-		}
 		return LDNS_STATUS_FILE_ERR;
 	}
 	while (!feof(fp)) {
@@ -754,7 +750,8 @@ main(int argc, char **argv)
 			       "now)\n");
 			printf("\t-k <file>\tspecify a file that contains a "
 			       "trusted DNSKEY or DS rr.\n\t\t\t"
-			       "This option may be given more than once.\n");
+			       "This option may be given more than once.\n"
+			       "\t\t\tDefault is %s", LDNS_TRUST_ANCHOR_FILE);
 			printf("\t-p [0-100]\tonly checks this percentage of "
 			       "the zone.\n\t\t\tDefaults to 100\n");
 			printf("\t-S\t\tchase signature(s) to a known key. "
@@ -799,6 +796,13 @@ main(int argc, char **argv)
 			break;
 		case 'k':
 			s = read_key_file(optarg, keys);
+			if (s == LDNS_STATUS_FILE_ERR) {
+				if (verbosity > 0) {
+					fprintf(myerr,
+						"Error opening %s: %s\n",
+						optarg, strerror(errno));
+				}
+			}
 			if (s != LDNS_STATUS_OK) {
 				if (verbosity > 0) {
 					fprintf(myerr,
@@ -860,11 +864,16 @@ main(int argc, char **argv)
 		}
 	}
 	if (do_sigchase && nkeys == 0) {
-		if (verbosity > 0) {
-			fprintf(myerr,
-				"Unable to chase signature without keys.\n");
+		(void) read_key_file(LDNS_TRUST_ANCHOR_FILE, keys);
+		nkeys = ldns_rr_list_rr_count(keys);
+
+		if (nkeys == 0) {
+			if (verbosity > 0) {
+				fprintf(myerr, "Unable to chase "
+						"signature without keys.\n");
+			}
+			exit(EXIT_FAILURE);
 		}
-		exit(EXIT_FAILURE);
 	}
 
 	argc -= optind;
