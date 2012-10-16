@@ -404,7 +404,9 @@ main(int argc, char *argv[])
 	argc -= optind;
 	argv += optind;
 
-	if (qdnssec && ldns_rr_list_rr_count(key_list) == 0) {
+	if ((qdnssec || PURPOSE == DRILL_CHASE) &&
+			ldns_rr_list_rr_count(key_list) == 0) {
+
 		(void) read_key_file(LDNS_TRUST_ANCHOR_FILE, key_list, true);
 	}
 	if (ldns_rr_list_rr_count(key_list) > 0) {

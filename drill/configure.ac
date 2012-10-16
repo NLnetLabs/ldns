@@ -177,19 +177,10 @@ fi
 
 AC_SUBST(LDNSDIR)
 
-if test -f $LDNSDIR/ldns/common.h && \
-	grep LDNS_TRUST_ANCHOR_FILE $LDNSDIR/ldns/common.h >/dev/null; then
-	LDNS_TRUST_ANCHOR_FILE=`grep LDNS_TRUST_ANCHOR_FILE $LDNSDIR/ldns/common.h | sed -e 's/^.*"\(.*\)".*$/\1/'`
-else
-	LDNS_TRUST_ANCHOR_FILE=""
-fi
-
-AC_ARG_WITH(trust-anchor, AC_HELP_STRING([--with-trust-anchor=[KEYFILE]],
-[Default location of the trust anchor file. [default=LDNS_TRUST_ANCHOR_FILE or SYSCONFDIR/unbound/root.key]]), [
- AC_DEFINE([HAVE_DRILL_TRUST_ANCHOR], [1], [Is the trust anchor file explicitely given at configure time])
+AC_ARG_WITH(trust-anchor, AC_HELP_STRING([--with-trust-anchor=KEYFILE],
+[Default location of the trust anchor file. [default=SYSCONFDIR/unbound/root.key]]), [
  LDNS_TRUST_ANCHOR_FILE="$withval"
 ],[
- AC_DEFINE([HAVE_DRILL_TRUST_ANCHOR], [0], [Is the trust anchor file explicitely given at configure time])
  if test "x$LDNS_TRUST_ANCHOR_FILE" = "x"; then
   if test "x$sysconfdir" = 'x${prefix}/etc' ; then
    if test "x$prefix" = 'xNONE' ; then
@@ -202,9 +193,9 @@ AC_ARG_WITH(trust-anchor, AC_HELP_STRING([--with-trust-anchor=[KEYFILE]],
   fi
  fi
 ])
-
-AC_DEFINE_UNQUOTED([DRILL_TRUST_ANCHOR_FILE], ["$LDNS_TRUST_ANCHOR_FILE"], [Default trust anchor file])
+AC_DEFINE_UNQUOTED([LDNS_TRUST_ANCHOR_FILE], ["$LDNS_TRUST_ANCHOR_FILE"], [Default trust anchor file])
 AC_SUBST(LDNS_TRUST_ANCHOR_FILE)
+AC_MSG_NOTICE([Default trust anchor: $LDNS_TRUST_ANCHOR_FILE])
 
 AH_BOTTOM([
 

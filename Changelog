@@ -1,6 +1,9 @@
 1.6.14
 	* DANE support (RFC6698), including ldns-dane example tool.
-	* A default key for drill when none is given
+	* Configurable default CA certificate repository for ldns-dane with
+	  --with-ca-file=CAFILE and --with-ca-path=CAPATH
+	* Configurable default trust anchor with --with-trust-anchor=FILE
+	  for drill, ldns-verify-zone and ldns-dane
 	* bugfix #474: Define socklen_t when undefined (like in Win32)
 	* bugfix #473: Dead code removal and resource leak fix in drill
 	* bugfix #471: Let ldns_resolver_push_dnssec_anchor accept DS RR's too.
@@ -14,7 +17,7 @@
 	  now documented in their own Changelog.
 	* bugfix: Make ldns_resolver_pop_nameserver clear the array when
 	  there was only one.
-	* bugfix #459: Export only symbols defined in ldns_symbols
+	* bugfix #459: Remove ldns_symbols and export symbols based on regex
 	* bugfix #458: Track all newly created signatures when signing.
 	* bugfix #454: Only set -g and -O2 CFLAGS when no CFLAGS was given.
 	* bugfix #457: Memory leak fix for ldns_key_new_frm_algorithm.
