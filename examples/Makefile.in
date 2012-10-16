@@ -157,11 +157,12 @@ clean:
 
 realclean: clean
 	rm -rf autom4te.cache/
-	rm -f config.log config.status aclocal.m4 config.h.in configure Makefile
-	rm -f config.h
+	rm -f config.log config.status aclocal.m4 config.h.in configure
+	rm -f config.h ldns-dane.1 ldns-verify-zone.1 Makefile
 
 confclean: clean
-	rm -rf config.log config.status config.h Makefile
+	rm -rf config.log config.status
+	rm -f config.h ldns-dane.1 ldns-verify-zone.1 Makefile
 
 install:	$(PROGRAMS) $(SSL_PROGRAMS)
 		$(INSTALL) -d -m 755 $(DESTDIR)$(bindir)
