@@ -170,7 +170,10 @@ install:	$(PROGRAMS) $(SSL_PROGRAMS)
 		$(INSTALL) -d -m 755 $(DESTDIR)$(mandir)/man1
 		for i in $(PROGRAMS) $(SSL_PROGRAMS); do \
 			$(libtool) --tag=CC --mode=install ${INSTALL} -c $$i $(DESTDIR)$(bindir) ; \
-			$(INSTALL) -c -m 644 $(srcdir)/$$i.1 $(DESTDIR)$(mandir)/man1/$$i.1 ; \
+			if test -f $$i.1 ; \
+			then $(INSTALL) -c -m 644 $$i.1 $(DESTDIR)$(mandir)/man1/$$i.1 ; \
+			else $(INSTALL) -c -m 644 $(srcdir)/$$i.1 $(DESTDIR)$(mandir)/man1/$$i.1 ; \
+			fi ; \
 			done
 		exit 0
 
@@ -180,11 +183,17 @@ install-static:	all-static
 		$(INSTALL) -d -m 755 $(DESTDIR)$(mandir)/man1
 		for i in $(PROGRAMS); do \
 			$(libtool) --tag=CC --mode=install ${INSTALL} -c $$i.stc $(DESTDIR)$(bindir) ; \
-			$(INSTALL) -c -m 644 $(srcdir)/$$i.1 $(DESTDIR)$(mandir)/man1/$$i.1 ; \
+			if test -f $$i.1 ; \
+			then $(INSTALL) -c -m 644 $$i.1 $(DESTDIR)$(mandir)/man1/$$i.1 ; \
+			else $(INSTALL) -c -m 644 $(srcdir)/$$i.1 $(DESTDIR)$(mandir)/man1/$$i.1 ; \
+			fi ; \
 			done
 		for i in $(SSL_PROGRAMS); do \
 			$(libtool) --tag=CC --mode=install ${INSTALL} -c $$i.stc-ssl $(DESTDIR)$(bindir) ; \
-			$(INSTALL) -c -m 644 $(srcdir)/$$i.1 $(DESTDIR)$(mandir)/man1/$$i.1 ; \
+			if test -f $$i.1 ; \
+			then $(INSTALL) -c -m 644 $$i.1 $(DESTDIR)$(mandir)/man1/$$i.1 ; \
+			else $(INSTALL) -c -m 644 $(srcdir)/$$i.1 $(DESTDIR)$(mandir)/man1/$$i.1 ; \
+			fi ; \
 			done
 		exit 0
 
