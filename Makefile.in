@@ -186,7 +186,10 @@ install-examples: $(EXAMPLE_PROGS) $(TESTNS) $(LDNS_DPA) $(LDNS_DANE) $(EX_SSL_P
 	$(INSTALL) -m 755 -d $(DESTDIR)$(mandir)/man1
 	for p in $(EXAMPLE_PROGS) $(TESTNS) $(LDNS_DPA) $(LDNS_DANE) $(EX_SSL_PROGS) ; do \
 		$(LIBTOOL) --mode=install cp $$p $(DESTDIR)$(bindir) ; \
-		$(INSTALL) -m 644 $(srcdir)/$$p.1 $(DESTDIR)$(mandir)/man1 ; \
+		if test -f $$p.1 ; \
+		then $(INSTALL) -m 644 $$p.1 $(DESTDIR)$(mandir)/man1 ; \
+		else $(INSTALL) -m 644 $(srcdir)/$$p.1 $(DESTDIR)$(mandir)/man1 ; \
+		fi ; \
 	done
 
 uninstall-examples:

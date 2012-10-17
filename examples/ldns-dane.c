@@ -106,7 +106,7 @@ print_usage(const char* progname)
 	printf("\t-t <tlsafile>\tdo not use DNS, "
 	       "but read TLSA record(s) from <tlsafile>\n"
 	      );
-	printf("\t-u\t\tuse UDP in stead of TCP to TLS connect\n");
+	printf("\t-u\t\tuse UDP transport instead of TCP\n");
 	printf("\t-v\t\tshow version and exit\n");
 	/* printf("\t-V [0-5]\tset verbosity level (defaul 3)\n"); */
 	exit(EXIT_SUCCESS);
