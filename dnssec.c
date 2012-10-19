@@ -1467,7 +1467,7 @@ ldns_pkt_verify_time(ldns_pkt *p, ldns_rr_type t, ldns_rdf *o,
 	rdf_t = ldns_rdf_new(LDNS_RDF_TYPE_TYPE, 2, &t_netorder);
 
 	sigs_covered = ldns_rr_list_subtype_by_rdf(sigs, rdf_t, 0);
-	ldns_rdf_deep_free(rdf_t);
+	ldns_rdf_free(rdf_t);
 	if (! sigs_covered) {
 		if (! s) {
 			ldns_rr_list_deep_free(sigs);

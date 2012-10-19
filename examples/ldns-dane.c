@@ -577,16 +577,31 @@ dane_query(ldns_rr_list** rrs, ldns_resolver* r,
 		return LDNS_STATUS_MEM_ERR;
 	}
 	*rrs = ldns_pkt_rr_list_by_type(p, t, LDNS_SECTION_ANSWER);
-	if (ldns_rr_list_rr_count(*rrs) == 0 /* *rrs will actually be NULL then! */
-			|| ! ldns_resolver_dnssec(r)) {
+
+	if (! ldns_resolver_dnssec(r)) { /* DNSSEC explicitely disabled,
+					    anything goes */
 		ldns_pkt_free(p);
 		return LDNS_STATUS_OK;
+	}
+	if (ldns_rr_list_rr_count(*rrs) == 0) { /* assert(*rrs == NULL) */
+
+		if (ldns_pkt_get_rcode(p) == LDNS_RCODE_SERVFAIL) {
+
+			ldns_pkt_free(p);
+			return LDNS_STATUS_DANE_BOGUS;
+		} else {
+			ldns_pkt_free(p);
+			return LDNS_STATUS_OK;
+		}
 	}
 	/* We have answers and we have dnssec. */
 
 	if (! ldns_pkt_cd(p)) { /* we act as stub resolver (no sigchase) */
+
 		if (! ldns_pkt_ad(p)) { /* Not secure */
-			goto insecure;
+
+			ldns_pkt_free(p);
+			return LDNS_STATUS_DANE_INSECURE;
 		}
 		ldns_pkt_free(p);
 		return LDNS_STATUS_OK;
@@ -670,7 +685,15 @@ dane_lookup_addresses(ldns_resolver* res, ldns_rdf* dname,
 
 		if (s == LDNS_STATUS_DANE_INSECURE &&
 			ldns_rr_list_rr_count(as) > 0) {
-			fprintf(stderr, "Warning! Insecure IPv4 addresses\n");
+			fprintf(stderr, "Warning! Insecure IPv4 addresses. "
+					"Continuing with them...\n");
+
+		} else if (s == LDNS_STATUS_DANE_BOGUS ||
+				LDNS_STATUS_CRYPTO_BOGUS == s) {
+			fprintf(stderr, "Warning! Bogus IPv4 addresses. "
+					"Discarding...\n");
+			ldns_rr_list_deep_free(as);
+			as = ldns_rr_list_new();
 
 		} else if (s != LDNS_STATUS_OK) {
 			LDNS_ERR(s, "dane_query");
@@ -688,7 +711,15 @@ dane_lookup_addresses(ldns_resolver* res, ldns_rdf* dname,
 
 		if (s == LDNS_STATUS_DANE_INSECURE &&
 			ldns_rr_list_rr_count(aaas) > 0) {
-			fprintf(stderr, "Warning! Insecure IPv6 addresses\n");
+			fprintf(stderr, "Warning! Insecure IPv6 addresses. "
+					"Continuing with them...\n");
+
+		} else if (s == LDNS_STATUS_DANE_BOGUS ||
+				LDNS_STATUS_CRYPTO_BOGUS == s) {
+			fprintf(stderr, "Warning! Bogus IPv4 addresses. "
+					"Discarding...\n");
+			ldns_rr_list_deep_free(aaas);
+			aaas = ldns_rr_list_new();
 
 		} else if (s != LDNS_STATUS_OK) {
 			LDNS_ERR(s, "dane_query");
@@ -1216,7 +1247,7 @@ main(int argc, char* const* argv)
 			transport = LDNS_DANE_TRANSPORT_UDP;
 			break;
 		case 'v':
-			printf("verify-zone version %s (ldns version %s)\n",
+			printf("ldns-dane version %s (ldns version %s)\n",
 					LDNS_VERSION, ldns_version());
 			exit(EXIT_SUCCESS);
 			break;
