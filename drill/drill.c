@@ -49,11 +49,11 @@ usage(FILE *stream, const char *progname)
 	fprintf(stream, "\t-b <bufsize>\tuse <bufsize> as the buffer size (defaults to 512 b)\n");
 	fprintf(stream, "\t-c <file>\tuse file for rescursive nameserver configuration"
 			"\n\t\t\t(/etc/resolv.conf)\n");
-	fprintf(stream, "\t-k <file>\tspecify a file that contains a trusted DNSSEC key"
-			"\n\t\t\t(DNSKEY|DS) [**]\n");
-	fprintf(stream, "\t\t\tused to verify any signatures in the current answer\n");
-	fprintf(stream, "\t\t\tIf DNSSEC is enabled and no key files are given, keys\n"
-			"\t\t\tare read from %s\n",
+	fprintf(stream, "\t-k <file>\tspecify a file that contains a trusted DNSSEC key [**]\n");
+	fprintf(stream, "\t\t\tUsed to verify any signatures in the current answer.\n");
+	fprintf(stream, "\t\t\tWhen DNSSEC enabled tracing (-TD) or signature\n"
+			"\t\t\tchasing (-S) and no key files are given, keys are read\n"
+			"\t\t\tfrom: %s\n",
 			LDNS_TRUST_ANCHOR_FILE);
 	fprintf(stream, "\t-o <mnemonic>\tset flags to:"
 			"\n\t\t\t[QR|qr][AA|aa][TC|tc][RD|rd][CD|cd][RA|ra][AD|ad]\n");
@@ -404,7 +404,7 @@ main(int argc, char *argv[])
 	argc -= optind;
 	argv += optind;
 
-	if ((qdnssec || PURPOSE == DRILL_CHASE) &&
+	if ((PURPOSE == DRILL_CHASE || (PURPOSE == DRILL_TRACE && qdnssec)) &&
 			ldns_rr_list_rr_count(key_list) == 0) {
 
 		(void) read_key_file(LDNS_TRUST_ANCHOR_FILE, key_list, true);

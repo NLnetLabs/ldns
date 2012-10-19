@@ -161,7 +161,8 @@ given \fBdrill\fR tries to validate the current answer with this
 key. No chasing is done. When \fBdrill\fR is doing a secure trace, this
 key will be used as trust anchor. Can contain a DNSKEY or a DS record.
 
-Alternatively, if \fB-k\fR is not specified, and a default trust anchor
+Alternatively, when DNSSEC enabled tracing (\fB-TD\fR) or signature
+chasing (\fB-S\fR), if \fB-k\fR is not specified, and a default trust anchor
 (@LDNS_TRUST_ANCHOR_FILE@) exists and contains a valid DNSKEY or DS record,
 it will be used as the trust anchor.
 
