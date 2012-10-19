@@ -600,8 +600,7 @@ dane_query(ldns_rr_list** rrs, ldns_resolver* r,
 
 		if (! ldns_pkt_ad(p)) { /* Not secure */
 
-			ldns_pkt_free(p);
-			return LDNS_STATUS_DANE_INSECURE;
+			goto insecure;
 		}
 		ldns_pkt_free(p);
 		return LDNS_STATUS_OK;
