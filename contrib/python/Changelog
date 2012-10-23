@@ -1,4 +1,6 @@
-1.6.14
+1.6.15
+
+1.6.14	2012-10-23
 	* Added rich comparison methods for ldns_dname, ldns_rdf, ldns_rr and
 	  ldns_rr_list classes.
 	* Added deprecation warnings into ldns_rr.new_frm_fp() and

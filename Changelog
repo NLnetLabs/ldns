@@ -1,4 +1,6 @@
-1.6.14
+1.6.15
+
+1.6.14	2012-10-23
 	* DANE support (RFC6698), including ldns-dane example tool.
 	* Configurable default CA certificate repository for ldns-dane with
 	  --with-ca-file=CAFILE and --with-ca-path=CAPATH
