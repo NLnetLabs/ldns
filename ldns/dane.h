@@ -116,7 +116,7 @@ ldns_status ldns_dane_create_tlsa_owner(ldns_rdf** tlsa_owner,
 
 #if LDNS_BUILD_CONFIG_HAVE_SSL
 /**
- * Creates a LDNS_RDF_TYPE_HEX type rdf bases on the binary data choosen by
+ * Creates a LDNS_RDF_TYPE_HEX type rdf based on the binary data choosen by
  * the selector and encoded using matching_type.
  *
  * \param[out] rdf The created created rdf of type LDNS_RDF_TYPE_HEX.
