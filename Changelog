@@ -1,3 +1,6 @@
+1.6.16
+	* Fix typo in exporting b32_* symbols to make pyldns load again
+
 1.6.15	2012-10-25
 	* Remove LDNS_STATUS_EXISTS_ERR from ldns/error.h to make ldns
 	  binary compatible with earlier releases again.
