@@ -743,10 +743,6 @@ ldns_dnssec_create_nsec_bitmap(ldns_rr_type rr_type_list[],
 		memcpy(data + cur_data_size + 2, cur_data, cur_window_max+1);
 		cur_data_size += cur_window_max + 3;
 	}
-	if (! data) {
-		LDNS_FREE(bitmap);
-		return NULL;
-	}
 	bitmap_rdf = ldns_rdf_new_frm_data(LDNS_RDF_TYPE_NSEC,
 								cur_data_size,
 								data);
