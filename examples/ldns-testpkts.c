@@ -509,12 +509,12 @@ read_entry(FILE* in, const char* name, int *lineno, uint32_t* default_ttl,
 			ldns_status status;
 			if(add_section == LDNS_SECTION_QUESTION)
 				status = ldns_rr_new_question_frm_str(
-					&n, parse, *origin, prev_rr);
-			else status = ldns_rr_new_frm_str(&n, parse, 
+					&n, line, *origin, prev_rr);
+			else status = ldns_rr_new_frm_str(&n, line, 
 				*default_ttl, *origin, prev_rr);
 			if(status != LDNS_STATUS_OK)
 				error("%s line %d:\n\t%s: %s", name, *lineno,
-					ldns_get_errorstr_by_id(status), parse);
+					ldns_get_errorstr_by_id(status), line);
 			ldns_pkt_push_rr(cur_reply->reply, add_section, n);
 		}
 
