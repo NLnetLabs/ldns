@@ -1,4 +1,5 @@
 1.6.16
+	* Fix Makefile to build pyldns with BSD make
 	* Fix typo in exporting b32_* symbols to make pyldns load again
 	* Allow leaving the RR owner name empty in ldns-testns datafiles.
 	* Fix fail to create NSEC3 bitmap for empty non-terminal (bug
