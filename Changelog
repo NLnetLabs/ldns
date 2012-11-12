@@ -1,5 +1,8 @@
 1.6.16
 	* Fix typo in exporting b32_* symbols to make pyldns load again
+	* Allow leaving the RR owner name empty in ldns-testns datafiles.
+    * Fix fail to create NSEC3 bitmap for empty non-terminal (bug
+      introduced in 1.6.14).
 
 1.6.15	2012-10-25
 	* Remove LDNS_STATUS_EXISTS_ERR from ldns/error.h to make ldns
