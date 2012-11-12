@@ -1,3 +1,5 @@
+1.6.17
+
 1.6.16
 	* Fix Makefile to build pyldns with BSD make
 	* Fix typo in exporting b32_* symbols to make pyldns load again
