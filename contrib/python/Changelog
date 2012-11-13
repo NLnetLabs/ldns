@@ -1,4 +1,4 @@
-1.6.16
+1.6.16	2012-11-13
 	* Fix typo in ldns_struct_pkt.opcode2str
 
 1.6.14	2012-10-23
