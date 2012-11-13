@@ -1,4 +1,4 @@
-1.6.16
+1.6.16	2012-11-13
 	* Fix Makefile to build pyldns with BSD make
 	* Fix typo in exporting b32_* symbols to make pyldns load again
 	* Allow leaving the RR owner name empty in ldns-testns datafiles.
