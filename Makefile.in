@@ -212,7 +212,7 @@ lib: libldns.la
 lib-export-all: libldns.la-export-all
 
 libldns.la: $(LDNS_ALL_LOBJS)
-	$(LINK_LIB) $(LIBSSL_LDFLAGS) $(LIBSSL_LIBS) -export-symbols-regex '^(ldns_|b32_[bn]to[bn]|mktime_from_utc|qsort_rr_compare_nsec3)' -o libldns.la $(LDNS_ALL_LOBJS) -rpath $(libdir) $(RUNTIME_PATH)
+	$(LINK_LIB) $(LIBSSL_LDFLAGS) $(LIBSSL_LIBS) -export-symbols-regex '^(ldns_|b32_[pn]to[pn]|mktime_from_utc|qsort_rr_compare_nsec3)' -o libldns.la $(LDNS_ALL_LOBJS) -rpath $(libdir) $(RUNTIME_PATH)
 
 libldns.la-export-all: $(LDNS_ALL_LOBJS)
 	$(LINK_LIB) -o libldns.la $(LDNS_ALL_LOBJS) -rpath $(libdir) $(RUNTIME_PATH)
@@ -245,7 +245,7 @@ ldns_wrapper.lo: $(pywrapdir)/ldns_wrapper.c ldns/config.h
 	$(COMP_LIB) -I./include/ldns $(PYTHON_CPPFLAGS) $(PYTHON_X_CFLAGS) -c $< -o $@
 
 _ldns.la: ldns_wrapper.lo libldns.la 
-	$(LIBTOOL) --tag=CC --mode=link $(CC) $(CFLAGS) $(PYTHON_CFLAGS) $(LDFLAGS) $(PYTHON_LDFLAGS) -module -version-number $(version_info) -no-undefined -o $@ $< -rpath $(python_site) -L. -L.libs -lldns $(LIBS)
+	$(LIBTOOL) --tag=CC --mode=link $(CC) $(CFLAGS) $(PYTHON_CFLAGS) $(LDFLAGS) $(PYTHON_LDFLAGS) -module -version-number $(version_info) -no-undefined -o $@ ldns_wrapper.lo -rpath $(python_site) -L. -L.libs -lldns $(LIBS)
 
 install: install-h install-lib @INSTALL_CONFIG@ install-manpages $(pyldns_inst) $(pyldnsx_inst) @INSTALL_DRILL@ @INSTALL_EXAMPLES@
 

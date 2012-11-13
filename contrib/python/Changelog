@@ -1,3 +1,6 @@
+1.6.16
+	* Fix typo in ldns_struct_pkt.opcode2str
+
 1.6.14	2012-10-23
 	* Added rich comparison methods for ldns_dname, ldns_rdf, ldns_rr and
 	  ldns_rr_list classes.
