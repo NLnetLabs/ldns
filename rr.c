@@ -1958,6 +1958,22 @@ static const ldns_rdf_type type_tlsa_wireformat[] = {
 	LDNS_RDF_TYPE_INT8,
 	LDNS_RDF_TYPE_HEX
 };
+static const ldns_rdf_type type_nid_wireformat[] = {
+	LDNS_RDF_TYPE_INT16,
+	LDNS_RDF_TYPE_4_SHORTS
+};
+static const ldns_rdf_type type_l32_wireformat[] = {
+	LDNS_RDF_TYPE_INT16,
+	LDNS_RDF_TYPE_A
+};
+static const ldns_rdf_type type_l64_wireformat[] = {
+	LDNS_RDF_TYPE_INT16,
+	LDNS_RDF_TYPE_4_SHORTS
+};
+static const ldns_rdf_type type_lp_wireformat[] = {
+	LDNS_RDF_TYPE_INT16,
+	LDNS_RDF_TYPE_DNAME
+};
 /** \endcond */
 
 /** \cond */
@@ -2125,10 +2141,14 @@ static ldns_rr_descriptor rdata_field_descriptors[] = {
 {LDNS_RR_TYPE_NULL, "TYPE101", 1, 1, type_0_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 0 },
 {LDNS_RR_TYPE_NULL, "TYPE102", 1, 1, type_0_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 0 },
 {LDNS_RR_TYPE_NULL, "TYPE103", 1, 1, type_0_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 0 },
-{LDNS_RR_TYPE_NULL, "TYPE104", 1, 1, type_0_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 0 },
-{LDNS_RR_TYPE_NULL, "TYPE105", 1, 1, type_0_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 0 },
-{LDNS_RR_TYPE_NULL, "TYPE106", 1, 1, type_0_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 0 },
-{LDNS_RR_TYPE_NULL, "TYPE107", 1, 1, type_0_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 0 },
+	/* 104 */
+{LDNS_RR_TYPE_NID, "NID", 2, 2, type_nid_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 0 },
+	/* 105 */
+{LDNS_RR_TYPE_NID, "L32", 2, 2, type_l32_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 0 },
+	/* 106 */
+{LDNS_RR_TYPE_NID, "L64", 2, 2, type_l64_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 0 },
+	/* 107 */
+{LDNS_RR_TYPE_NID, "LP", 2, 2, type_lp_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 1 },
 {LDNS_RR_TYPE_NULL, "TYPE108", 1, 1, type_0_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 0 },
 {LDNS_RR_TYPE_NULL, "TYPE109", 1, 1, type_0_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 0 },
 {LDNS_RR_TYPE_NULL, "TYPE110", 1, 1, type_0_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 0 },

@@ -336,6 +336,9 @@ ldns_rdf_new_frm_str(ldns_rdf_type type, const char *str)
 	case LDNS_RDF_TYPE_NSEC3_NEXT_OWNER:
 		status = ldns_str2rdf_b32_ext(&rdf, str);
 		break;
+	case LDNS_RDF_TYPE_4_SHORTS:
+		status = ldns_str2rdf_4_shorts(&rdf, str);
+		break;
 	case LDNS_RDF_TYPE_NONE:
 	default:
 		/* default default ??? */

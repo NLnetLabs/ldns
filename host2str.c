@@ -1049,6 +1049,16 @@ ldns_rdf2buffer_str_tsig(ldns_buffer *output, const ldns_rdf *rdf)
 	return ldns_rdf2buffer_str_unknown(output, rdf);
 }
 
+ldns_status
+ldns_rdf2buffer_str_4_shorts(ldns_buffer *output, const ldns_rdf *rdf)
+{
+	ldns_buffer_printf(output,"%.4x:%.4x:%.4d:%.4x",
+				ldns_read_uint16(ldns_rdf_data(rdf)),
+				ldns_read_uint16(ldns_rdf_data(rdf)+2),
+				ldns_read_uint16(ldns_rdf_data(rdf)+4),
+				ldns_read_uint16(ldns_rdf_data(rdf)+6));
+	return ldns_buffer_status(output);
+}
 
 ldns_status
 ldns_rdf2buffer_str(ldns_buffer *buffer, const ldns_rdf *rdf)
@@ -1147,6 +1157,9 @@ ldns_rdf2buffer_str(ldns_buffer *buffer, const ldns_rdf *rdf)
 			break;
 		case LDNS_RDF_TYPE_NSEC3_NEXT_OWNER:
 			res = ldns_rdf2buffer_str_b32_ext(buffer, rdf);
+			break;
+		case LDNS_RDF_TYPE_4_SHORTS:
+			res = ldns_rdf2buffer_str_4_shorts(buffer, rdf);
 			break;
 		}
 	} else {

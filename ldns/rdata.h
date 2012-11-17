@@ -34,6 +34,7 @@ extern "C" {
 #define LDNS_RDF_SIZE_WORD              2
 #define LDNS_RDF_SIZE_DOUBLEWORD        4
 #define LDNS_RDF_SIZE_6BYTES            6
+#define LDNS_RDF_SIZE_8BYTES            8
 #define LDNS_RDF_SIZE_16BYTES           16
 
 #define LDNS_NSEC3_VARS_OPTOUT_MASK 0x01
@@ -104,7 +105,9 @@ enum ldns_enum_rdf_type
 	/** nsec3 hash salt */
 	LDNS_RDF_TYPE_NSEC3_SALT,
 	/** nsec3 base32 string (with length byte on wire */
-	LDNS_RDF_TYPE_NSEC3_NEXT_OWNER
+	LDNS_RDF_TYPE_NSEC3_NEXT_OWNER,
+	/** 4 shorts represented as 4 * 16 bit hex numbers seperated by colons */
+	LDNS_RDF_TYPE_4_SHORTS
 };
 typedef enum ldns_enum_rdf_type ldns_rdf_type;
 
