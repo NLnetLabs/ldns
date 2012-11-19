@@ -212,7 +212,7 @@ ldns_wire2rdf(ldns_rr *rr, const uint8_t *wire, size_t max, size_t *pos)
 		case LDNS_RDF_TYPE_TSIGTIME:
 			cur_rdf_length = LDNS_RDF_SIZE_6BYTES;
 			break;
-		case LDNS_RDF_TYPE_4_SHORTS:
+		case LDNS_RDF_TYPE_AAAA_SHORT:
 			cur_rdf_length = LDNS_RDF_SIZE_8BYTES;
 			break;
 		case LDNS_RDF_TYPE_AAAA:

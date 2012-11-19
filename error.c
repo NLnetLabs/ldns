@@ -125,7 +125,7 @@ ldns_lookup_table ldns_error_str[] = {
 	{ LDNS_STATUS_DANE_PKIX_NO_SELF_SIGNED_TRUST_ANCHOR,
 		"The validation path "
 		"did not end in a self-signed certificate" },
-        { LDNS_STATUS_INVALID_4_SHORTS, 
+        { LDNS_STATUS_INVALID_AAAA_SHORT, 
 		"Conversion error, 4 colon seperated hex numbers expected" },
 	{ 0, NULL }
 };

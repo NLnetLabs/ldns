@@ -519,13 +519,13 @@ ldns_status ldns_rdf2buffer_str_int32(ldns_buffer *output, const ldns_rdf *rdf);
 ldns_status ldns_rdf2buffer_str_time(ldns_buffer *output, const ldns_rdf *rdf);
 
 /** 
- * Converts an LDNS_RDF_TYPE_4_SHORTS rdata element to 4 hexadecimal numbers
+ * Converts an LDNS_RDF_TYPE_AAAA_SHORT rdata element to 4 hexadecimal numbers
  * seperated by colons and adds it to the output buffer 
  * \param[in] *rdf The rdata to convert
  * \param[in] *output The buffer to add the data to
  * \return LDNS_STATUS_OK on success, and error status on failure
  */
-ldns_status ldns_rdf2buffer_str_4_shorts(ldns_buffer *output,
+ldns_status ldns_rdf2buffer_str_aaaa_short(ldns_buffer *output,
 		const ldns_rdf *rdf);
 
 /**
