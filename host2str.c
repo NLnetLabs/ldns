@@ -1050,7 +1050,7 @@ ldns_rdf2buffer_str_tsig(ldns_buffer *output, const ldns_rdf *rdf)
 }
 
 ldns_status
-ldns_rdf2buffer_str_aaaa_short(ldns_buffer *output, const ldns_rdf *rdf)
+ldns_rdf2buffer_str_aaaa_half(ldns_buffer *output, const ldns_rdf *rdf)
 {
 	ldns_buffer_printf(output,"%.4x:%.4x:%.4d:%.4x",
 				ldns_read_uint16(ldns_rdf_data(rdf)),
@@ -1158,8 +1158,8 @@ ldns_rdf2buffer_str(ldns_buffer *buffer, const ldns_rdf *rdf)
 		case LDNS_RDF_TYPE_NSEC3_NEXT_OWNER:
 			res = ldns_rdf2buffer_str_b32_ext(buffer, rdf);
 			break;
-		case LDNS_RDF_TYPE_AAAA_SHORT:
-			res = ldns_rdf2buffer_str_aaaa_short(buffer, rdf);
+		case LDNS_RDF_TYPE_AAAA_HALF:
+			res = ldns_rdf2buffer_str_aaaa_half(buffer, rdf);
 			break;
 		}
 	} else {

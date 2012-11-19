@@ -1319,20 +1319,20 @@ ldns_str2rdf_ipseckey(ldns_rdf **rd, const char *str)
 }
 
 ldns_status
-ldns_str2rdf_aaaa_short(ldns_rdf **rd, const char *str)
+ldns_str2rdf_aaaa_half(ldns_rdf **rd, const char *str)
 {
 	unsigned int a, b, c, d;
 	uint16_t shorts[4];
 
 	if (sscanf(str, "%x:%x:%x:%x", &a, &b, &c, &d) == EOF) {
-		return LDNS_STATUS_INVALID_AAAA_SHORT;
+		return LDNS_STATUS_INVALID_AAAA_HALF;
 	} else {
 		shorts[0] = htons(shorts[0]);
 		shorts[1] = htons(shorts[1]);
 		shorts[2] = htons(shorts[2]);
 		shorts[3] = htons(shorts[3]);
 		*rd = ldns_rdf_new_frm_data(
-			LDNS_RDF_TYPE_AAAA_SHORT, 4 * sizeof(uint16_t), &shorts);
+			LDNS_RDF_TYPE_AAAA_HALF, 4 * sizeof(uint16_t), &shorts);
 	}
 	return *rd ? LDNS_STATUS_OK : LDNS_STATUS_MEM_ERR;
 }

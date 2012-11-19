@@ -1960,7 +1960,7 @@ static const ldns_rdf_type type_tlsa_wireformat[] = {
 };
 static const ldns_rdf_type type_nid_wireformat[] = {
 	LDNS_RDF_TYPE_INT16,
-	LDNS_RDF_TYPE_AAAA_SHORT
+	LDNS_RDF_TYPE_AAAA_HALF
 };
 static const ldns_rdf_type type_l32_wireformat[] = {
 	LDNS_RDF_TYPE_INT16,
@@ -1968,7 +1968,7 @@ static const ldns_rdf_type type_l32_wireformat[] = {
 };
 static const ldns_rdf_type type_l64_wireformat[] = {
 	LDNS_RDF_TYPE_INT16,
-	LDNS_RDF_TYPE_AAAA_SHORT
+	LDNS_RDF_TYPE_AAAA_HALF
 };
 static const ldns_rdf_type type_lp_wireformat[] = {
 	LDNS_RDF_TYPE_INT16,
