@@ -699,6 +699,8 @@ ldns_dnssec_zone_new_frm_fp_l(ldns_dnssec_zone** z, FILE* fp, ldns_rdf* origin,
 					ldns_rr_list_push_rr(todo_nsec3s,
 						       	cur_rr);
 				}
+				status = LDNS_STATUS_OK;
+
 			} else if (status != LDNS_STATUS_OK)
 				goto error;
 
@@ -722,18 +724,13 @@ ldns_dnssec_zone_new_frm_fp_l(ldns_dnssec_zone** z, FILE* fp, ldns_rdf* origin,
 
 	if (ldns_rr_list_rr_count(todo_nsec3s) > 0) {
 		(void) ldns_dnssec_zone_add_empty_nonterminals(newzone);
-		for (i = 0; status == LDNS_STATUS_OK && 
+		for (i = 0; status == LDNS_STATUS_OK &&
 				i < ldns_rr_list_rr_count(todo_nsec3s); i++) {
 			cur_rr = ldns_rr_list_rr(todo_nsec3s, i);
 			status = ldns_dnssec_zone_add_rr(newzone, cur_rr);
 		}
-		for (i = 0; status == LDNS_STATUS_OK &&
-				i < ldns_rr_list_rr_count(todo_nsec3_rrsigs);
-			       	i++){
-			cur_rr = ldns_rr_list_rr(todo_nsec3_rrsigs, i);
-			status = ldns_dnssec_zone_add_rr(newzone, cur_rr);
-		}
-	} else if (ldns_rr_list_rr_count(todo_nsec3_rrsigs) > 0) {
+	} 
+	if (ldns_rr_list_rr_count(todo_nsec3_rrsigs) > 0) {
 		for (i = 0; status == LDNS_STATUS_OK &&
 				i < ldns_rr_list_rr_count(todo_nsec3_rrsigs);
 				i++){
