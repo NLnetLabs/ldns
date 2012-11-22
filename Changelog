@@ -1,6 +1,7 @@
 1.6.17
-	* Fix ldns_dnssec_zone_new_frm_fp_l to allow NSEC3 (or its RRSIG)
-	  covering an empty non terminal as the last line. 
+	* Fix ldns_dnssec_zone_new_frm_fp_l to allow the last parsed line of a
+	  zone to be an NSEC3 (or its RRSIG) covering an empty non terminal.
+
 
 1.6.16	2012-11-13
 	* Fix Makefile to build pyldns with BSD make

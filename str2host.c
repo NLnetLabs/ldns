@@ -1327,10 +1327,10 @@ ldns_str2rdf_aaaa_half(ldns_rdf **rd, const char *str)
 	if (sscanf(str, "%x:%x:%x:%x", &a, &b, &c, &d) == EOF) {
 		return LDNS_STATUS_INVALID_AAAA_HALF;
 	} else {
-		shorts[0] = htons(shorts[0]);
-		shorts[1] = htons(shorts[1]);
-		shorts[2] = htons(shorts[2]);
-		shorts[3] = htons(shorts[3]);
+		shorts[0] = htons(a);
+		shorts[1] = htons(b);
+		shorts[2] = htons(c);
+		shorts[3] = htons(d);
 		*rd = ldns_rdf_new_frm_data(
 			LDNS_RDF_TYPE_AAAA_HALF, 4 * sizeof(uint16_t), &shorts);
 	}
