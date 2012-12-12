@@ -1323,9 +1323,12 @@ ldns_str2rdf_ilnp64(ldns_rdf **rd, const char *str)
 {
 	unsigned int a, b, c, d;
 	uint16_t shorts[4];
+	int l;
 
-	if (sscanf(str, "%4x:%4x:%4x:%4x", &a, &b, &c, &d) != 4 ||
-			strpbrk(str, "+-") /* no signs */) {
+	if (sscanf(str, "%4x:%4x:%4x:%4x%n", &a, &b, &c, &d, &l) != 4 ||
+			l != (int)strlen(str) || /* more data to read */
+			strpbrk(str, "+-")       /* signed hexes */
+			) {
 		return LDNS_STATUS_INVALID_ILNP64;
 	} else {
 		shorts[0] = htons(a);
