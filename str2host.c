@@ -387,12 +387,22 @@ ldns_status
 ldns_str2rdf_a(ldns_rdf **rd, const char *str)
 {
 	in_addr_t address;
-        if (inet_pton(AF_INET, (char*)str, &address) != 1) {
-                return LDNS_STATUS_INVALID_IP4;
-        } else {
+	uint8_t a[4];
+	int l;
+
+        if (inet_pton(AF_INET, (char*)str, &address) == 1) {
 		*rd = ldns_rdf_new_frm_data(
-			LDNS_RDF_TYPE_A, sizeof(address), &address);
-        }
+				LDNS_RDF_TYPE_A, sizeof(address), &address);
+        } else if (sscanf(str, "%3hhu.%3hhu.%3hhu.%3hhu%n",
+				&a[0], &a[1], &a[2], &a[3], &l) == 4
+			&& l == (int)strlen(str) /* at end of data */
+			&& !strpbrk(str, "+-")   /* no signs anywhere */
+			) {
+		*rd = ldns_rdf_new_frm_data(
+				LDNS_RDF_TYPE_A, sizeof(a), a);
+	} else {
+                return LDNS_STATUS_INVALID_IP4;
+	}
 	return *rd?LDNS_STATUS_OK:LDNS_STATUS_MEM_ERR;
 }
 
