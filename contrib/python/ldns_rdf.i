@@ -216,7 +216,7 @@
 			case LDNS_RDF_TYPE_NSEC3_SALT: return "NSEC3_SALT";
 			case LDNS_RDF_TYPE_NSEC3_NEXT_OWNER:
 			    return "NSEC3_NEXT_OWNER";
-			case LDNS_RDF_TYPE_AAAA_HALF:   return "AAAA_HALF";
+			case LDNS_RDF_TYPE_ILNP64:     return "ILNP64";
 			}
 		}
 		return 0;
