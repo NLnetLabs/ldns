@@ -395,7 +395,8 @@ ldns_str2rdf_a(ldns_rdf **rd, const char *str)
 			&& a >= 0 && a < 256 && b >= 0 && b < 256 /* within */
 			&& c >= 0 && c < 256 && d >= 0 && d < 256 /* range */
 			) {
-		bytes[0] = a; bytes[1] = b; bytes[2] = c; bytes[3] = d;
+		bytes[0] = (uint8_t)a; bytes[1] = (uint8_t)b;
+		bytes[2] = (uint8_t)c; bytes[3] = (uint8_t)d;
 		*rd = ldns_rdf_new_frm_data(
 				LDNS_RDF_TYPE_A, 4 * sizeof(uint8_t), bytes);
 	} else {
