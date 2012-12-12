@@ -386,20 +386,18 @@ ldns_str2rdf_dname(ldns_rdf **d, const char *str)
 ldns_status
 ldns_str2rdf_a(ldns_rdf **rd, const char *str)
 {
-	in_addr_t address;
-	uint8_t a[4];
-	int l;
+	int a, b, c, d, l;
+	uint8_t bytes[4];
 
-        if (inet_pton(AF_INET, (char*)str, &address) == 1) {
-		*rd = ldns_rdf_new_frm_data(
-				LDNS_RDF_TYPE_A, sizeof(address), &address);
-        } else if (sscanf(str, "%3hhu.%3hhu.%3hhu.%3hhu%n",
-				&a[0], &a[1], &a[2], &a[3], &l) == 4
+	if (sscanf(str, "%3d.%3d.%3d.%3d%n", &a, &b, &c, &d, &l) == 4
 			&& l == (int)strlen(str) /* at end of data */
-			&& !strpbrk(str, "+-")   /* no signs anywhere */
+			&& !strpbrk(str, "+-")   /* no signs */
+			&& a >= 0 && a < 256 && b >= 0 && b < 256 /* within */
+			&& c >= 0 && c < 256 && d >= 0 && d < 256 /* range */
 			) {
+		bytes[0] = a; bytes[1] = b; bytes[2] = c; bytes[3] = d;
 		*rd = ldns_rdf_new_frm_data(
-				LDNS_RDF_TYPE_A, sizeof(a), a);
+				LDNS_RDF_TYPE_A, 4 * sizeof(uint8_t), bytes);
 	} else {
                 return LDNS_STATUS_INVALID_IP4;
 	}
