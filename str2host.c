@@ -386,22 +386,13 @@ ldns_str2rdf_dname(ldns_rdf **d, const char *str)
 ldns_status
 ldns_str2rdf_a(ldns_rdf **rd, const char *str)
 {
-	int a, b, c, d, l;
-	uint8_t bytes[4];
-
-	if (sscanf(str, "%3d.%3d.%3d.%3d%n", &a, &b, &c, &d, &l) == 4
-			&& l == (int)strlen(str) /* at end of data */
-			&& !strpbrk(str, "+-")   /* no signs */
-			&& a >= 0 && a < 256 && b >= 0 && b < 256 /* within */
-			&& c >= 0 && c < 256 && d >= 0 && d < 256 /* range */
-			) {
-		bytes[0] = (uint8_t)a; bytes[1] = (uint8_t)b;
-		bytes[2] = (uint8_t)c; bytes[3] = (uint8_t)d;
-		*rd = ldns_rdf_new_frm_data(
-				LDNS_RDF_TYPE_A, 4 * sizeof(uint8_t), bytes);
-	} else {
+	in_addr_t address;
+        if (inet_pton(AF_INET, (char*)str, &address) != 1) {
                 return LDNS_STATUS_INVALID_IP4;
-	}
+        } else {
+		*rd = ldns_rdf_new_frm_data(
+			LDNS_RDF_TYPE_A, sizeof(address), &address);
+        }
 	return *rd?LDNS_STATUS_OK:LDNS_STATUS_MEM_ERR;
 }
 
