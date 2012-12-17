@@ -121,6 +121,7 @@ ldns_dane_cert2rdf(ldns_rdf** rdf, X509* cert,
 		return *rdf ? LDNS_STATUS_OK : LDNS_STATUS_MEM_ERR;
 		break;
 	
+#ifdef USE_SHA2
 	case LDNS_TLSA_MATCHING_TYPE_SHA256:
 
 		digest = LDNS_XMALLOC(unsigned char, SHA256_DIGEST_LENGTH);
@@ -150,6 +151,7 @@ ldns_dane_cert2rdf(ldns_rdf** rdf, X509* cert,
 
 		return *rdf ? LDNS_STATUS_OK : LDNS_STATUS_MEM_ERR;
 		break;
+#endif /* USE_SHA2 */
 	
 	default:
 		LDNS_FREE(buf);
