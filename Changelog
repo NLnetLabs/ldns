@@ -1,7 +1,8 @@
 1.6.17
+	* Add --disable-dane option to configure and check availability of the
+	  for dane needed X509_check_ca function in openssl.
 	* Fix ldns_dnssec_zone_new_frm_fp_l to allow the last parsed line of a
 	  zone to be an NSEC3 (or its RRSIG) covering an empty non terminal.
-
 
 1.6.16	2012-11-13
 	* Fix Makefile to build pyldns with BSD make

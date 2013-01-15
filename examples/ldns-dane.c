@@ -22,6 +22,7 @@
 
 #include <errno.h>
 
+#ifdef USE_DANE
 #ifdef HAVE_SSL
 #include <openssl/ssl.h>
 #include <openssl/err.h>
@@ -1710,7 +1711,7 @@ main(int argc, char* const* argv)
 		exit(EXIT_FAILURE);
 	}
 }
-#else
+#else  /* HAVE_SSL */
 
 int
 main(int argc, char **argv)
@@ -1720,3 +1721,15 @@ main(int argc, char **argv)
 	return 1;
 }
 #endif /* HAVE_SSL */
+
+#else  /* USE_DANE */
+
+int
+main(int argc, char **argv)
+{
+	fprintf(stderr, "dane support was disabled with this build of ldns, "
+			"and has not been compiled in\n");
+	return 1;
+}
+
+#endif /* USE_DANE */

@@ -320,6 +320,21 @@ case "$enable_ecdsa" in
       ;;
 esac
 
+AC_ARG_ENABLE(dane, AC_HELP_STRING([--disable-dane], [Disable DANE support]))
+case "$enable_dane" in
+    no)
+      AC_SUBST(ldns_build_config_use_dane, 0)
+      ;;
+    *) dnl default
+      if test "x$HAVE_SSL" != "xyes"; then
+        AC_MSG_ERROR([DANE enabled, but no SSL support])
+      fi
+      AC_CHECK_FUNC(X509_check_ca, [], [AC_MSG_ERROR([OpenSSL does not support DANE: please upgrade OpenSSL or rerun with --disable-dane])])
+      AC_DEFINE_UNQUOTED([USE_DANE], [1], [Define this to enable DANE support.])
+      AC_SUBST(ldns_build_config_use_dane, 1)
+      ;;
+esac
+
 AC_SUBST(LIBSSL_CPPFLAGS)
 AC_SUBST(LIBSSL_LDFLAGS)
 AC_SUBST(LIBSSL_LIBS)

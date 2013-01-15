@@ -8,6 +8,7 @@
  */
 
 #include <ldns/config.h>
+#ifdef USE_DANE
 
 #include <ldns/ldns.h>
 #include <ldns/dane.h>
@@ -744,3 +745,4 @@ ldns_dane_verify(ldns_rr_list* tlsas,
 	return s;
 }
 #endif /* HAVE_SSL */
+#endif /* USE_DANE */
