@@ -1329,6 +1329,26 @@ ldns_axfr_next(ldns_resolver *resolver)
 
 }
 
+/* RoRi: this function is needed to abort a transfer that is in progress;
+ *       without it an aborted transfer will lead to the AXFR code in the
+ *       library staying in an indetermined state because the socket for the
+ *       AXFR is never closed
+ */
+void
+ldns_axfr_abort(ldns_resolver *resolver)
+{
+	/* Only abort if an actual AXFR is in progress */
+	if (resolver->_socket != 0)
+	{
+#ifndef USE_WINSOCK
+		close(resolver->_socket);
+#else
+		closesocket(resolver->_socket);
+#endif
+		resolver->_socket = 0;
+	}
+}
+
 bool
 ldns_axfr_complete(const ldns_resolver *res)
 {
