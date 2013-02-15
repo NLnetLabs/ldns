@@ -441,7 +441,7 @@ AC_INCLUDES_DEFAULT
 ])
 
 if test x_$with_examples != x_no; then
-AC_CHECK_HEADERS([pcap.h],, [AC_INCLUDES_DEFAULT])
+AC_CHECK_HEADERS([pcap.h],,, [AC_INCLUDES_DEFAULT])
 AC_CHECK_LIB(pcap, pcap_open_offline, [
 	AC_DEFINE([HAVE_LIBPCAP], [1], [Define to 1 if you have the `pcap' library (-lpcap).])dnl`
 	AC_SUBST([LIBPCAP_LIBS], [-lpcap])
@@ -473,8 +473,9 @@ else
   AC_SUBST(ldns_build_config_have_socklen_t, 0)
 fi
 AC_TYPE_SIZE_T
-AC_TYPE_SSIZE_T
-AC_TYPE_INTPTR_T
+AC_CHECK_TYPE(ssize_t, int)
+dnl AC_TYPE_INTPTR_T does not work on all platforms (autoconf)
+AC_CHECK_TYPE(intptr_t, size_t)
 AC_CHECK_TYPE(in_addr_t, [], [AC_DEFINE([in_addr_t], [uint32_t], [in_addr_t])], [
 #if HAVE_SYS_TYPES_H
 # include <sys/types.h>
