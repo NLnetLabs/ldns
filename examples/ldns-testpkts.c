@@ -694,7 +694,7 @@ match_all(ldns_pkt* q, ldns_pkt* p, bool mttl)
 
 /** Convert to hexstring and call verbose(), prepend with header */
 void
-verbose_hex(int lvl, uint8_t *data, size_t datalen, char *header)
+verbose_hex(int lvl, uint8_t *data, size_t datalen, const char *header)
 {
 	size_t i;
 	char errmsg[strlen(header) + datalen*3];
