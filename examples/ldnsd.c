@@ -89,7 +89,7 @@ get_rrset(const ldns_zone *zone, const ldns_rdf *owner_name, const ldns_rr_type 
 	return rrlist;
 }
 
-int
+void
 main(int argc, char **argv)
 {
 	/* arguments */
@@ -236,8 +236,10 @@ main(int argc, char **argv)
 		ldns_rr_list_free(answer_ad);
 	}
 	
-	ldns_rdf_deep_free(origin);
-	ldns_zone_deep_free(zone);
-	
-	return 0;
+	/* No cleanup because of the infinite loop
+	 *
+	 * ldns_rdf_deep_free(origin);
+	 * ldns_zone_deep_free(zone);
+	 * return 0;
+	 */
 }
