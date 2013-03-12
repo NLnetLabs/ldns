@@ -138,7 +138,7 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 	size_t j;
 	size_t k;
 	size_t l;
-	uint8_t labels_count;
+	uint8_t labels_count = 0;
 
 	/* dnssec */
 	ldns_rr_list *key_list;
