@@ -693,16 +693,14 @@ match_all(ldns_pkt* q, ldns_pkt* p, bool mttl)
 }
 
 /** Convert to hexstring and call verbose(), prepend with header */
-void
+static void
 verbose_hex(int lvl, uint8_t *data, size_t datalen, const char *header)
 {
-	size_t i;
-	char errmsg[strlen(header) + datalen*3];
-	strcpy(errmsg, header);
-	for(i = 0; i < datalen; i++)
-		snprintf(errmsg + strlen(header) + i*3, 4, "%02x ", (unsigned int)data[i]);
-	errmsg[strlen(header) + datalen*3 - 1] = 0;
-	verbose(lvl, "%s", errmsg);
+	verbose(lvl, "%s", header);
+	while (datalen-- > 0) {
+		verbose(lvl, " %02x", (unsigned int)*data++);
+	}
+	verbose(lvl, "\n");
 }
 
 /** Match q edns data to p raw edns data */
@@ -721,8 +719,8 @@ match_ednsdata(ldns_pkt* q, struct reply_packet* p)
 	pd = ldns_buffer_begin(p->raw_ednsdata);
 	if( qdlen == pdlen && 0 == memcmp(qd, pd, qdlen) ) return 1;
 	verbose(3, "EDNS data does not match.\n");
-	verbose_hex(3, qd, qdlen, "q: ");
-	verbose_hex(3, pd, pdlen, "p: ");
+	verbose_hex(3, qd, qdlen, "q:");
+	verbose_hex(3, pd, pdlen, "p:");
 	return 0;
 }
 
