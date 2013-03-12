@@ -91,11 +91,9 @@ EX_SSL_LOBJS	= examples/ldns-nsec3-hash.lo examples/ldns-revoke.lo examples/ldns
 
 COMPILE		= $(CC) $(CPPFLAGS) $(CFLAGS)
 COMP_LIB	= $(LIBTOOL) --mode=compile $(CC) $(CPPFLAGS) $(CFLAGS)
-LINK		= $(CC) $(CFLAGS) $(LDFLAGS) $(LIBS)
-LINK_LIB	= $(LIBTOOL) --mode=link $(CC) $(CFLAGS) $(LDFLAGS) \
-		  $(LIBS) -version-number $(version_info) -no-undefined
-LINK_EXE	= $(LIBTOOL) --mode=link $(CC) $(CFLAGS) $(LDFLAGS) \
-			    $(LIBSSL_LDFLAGS)
+LINK		= $(CC) $(LDFLAGS) $(LIBS)
+LINK_LIB	= $(LIBTOOL) --mode=link $(CC) $(LDFLAGS) $(LIBS) -version-number $(version_info) -no-undefined
+LINK_EXE	= $(LIBTOOL) --mode=link $(CC) $(LDFLAGS) $(LIBSSL_LDFLAGS)
 
 .PHONY:	clean realclean docclean manpages doc lint all lib pyldns test
 .PHONY: install uninstall install-doc uninstall-doc uninstall-pyldns
