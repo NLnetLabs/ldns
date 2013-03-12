@@ -702,7 +702,7 @@ verbose_hex(int lvl, uint8_t *data, size_t datalen, const char *header)
 	for(i = 0; i < datalen; i++)
 		snprintf(errmsg + strlen(header) + i*3, 4, "%02x ", (unsigned int)data[i]);
 	errmsg[strlen(header) + datalen*3 - 1] = 0;
-	verbose(lvl, errmsg);
+	verbose(lvl, "%s", errmsg);
 }
 
 /** Match q edns data to p raw edns data */
