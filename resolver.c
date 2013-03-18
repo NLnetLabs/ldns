@@ -1288,7 +1288,7 @@ ldns_axfr_next(ldns_resolver *resolver)
 			/* TODO: make status return type of this function (...api change) */
 			fprintf(stderr, "Error parsing rr during AXFR: %s\n", ldns_get_errorstr_by_id(status));
 
-			/* RoRi: we must now also close the socket, otherwise subsequent uses of the
+			/* we must now also close the socket, otherwise subsequent uses of the
 			   same resolver structure will fail because the link is still open or
 			   in an undefined state */
 #ifndef USE_WINSOCK
@@ -1310,7 +1310,7 @@ ldns_axfr_next(ldns_resolver *resolver)
 						resolver->_cur_axfr_pkt));
 			}
 
-			/* RoRi: we must now also close the socket, otherwise subsequent uses of the
+			/* we must now also close the socket, otherwise subsequent uses of the
 			   same resolver structure will fail because the link is still open or
 			   in an undefined state */
 #ifndef USE_WINSOCK
@@ -1329,10 +1329,10 @@ ldns_axfr_next(ldns_resolver *resolver)
 
 }
 
-/* RoRi: this function is needed to abort a transfer that is in progress;
- *       without it an aborted transfer will lead to the AXFR code in the
- *       library staying in an indetermined state because the socket for the
- *       AXFR is never closed
+/* this function is needed to abort a transfer that is in progress;
+ * without it an aborted transfer will lead to the AXFR code in the
+ * library staying in an indetermined state because the socket for the
+ * AXFR is never closed
  */
 void
 ldns_axfr_abort(ldns_resolver *resolver)

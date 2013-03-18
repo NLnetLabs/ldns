@@ -1052,7 +1052,7 @@ ldns_rdf2buffer_str_tsig(ldns_buffer *output, const ldns_rdf *rdf)
 ldns_status
 ldns_rdf2buffer_str_ilnp64(ldns_buffer *output, const ldns_rdf *rdf)
 {
-	ldns_buffer_printf(output,"%.4x:%.4x:%.4d:%.4x",
+	ldns_buffer_printf(output,"%.4x:%.4x:%.4x:%.4x",
 				ldns_read_uint16(ldns_rdf_data(rdf)),
 				ldns_read_uint16(ldns_rdf_data(rdf)+2),
 				ldns_read_uint16(ldns_rdf_data(rdf)+4),

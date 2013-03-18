@@ -834,8 +834,8 @@ ldns_axfr_start(ldns_resolver *resolver, ldns_rdf *domain, ldns_rr_class class)
 		                            ldns_resolver_tsig_keydata(resolver),
 		                            300, ldns_resolver_tsig_algorithm(resolver), NULL);
 		if (status != LDNS_STATUS_OK) {
-			/* RoRi: to prevent problems on subsequent calls to ldns_axfr_start
-			   we have to close the socket here! */
+			/* to prevent problems on subsequent calls to 
+			 * ldns_axfr_start we have to close the socket here! */
 #ifndef USE_WINSOCK
 			close(resolver->_socket);
 #else
@@ -873,8 +873,8 @@ ldns_axfr_start(ldns_resolver *resolver, ldns_rdf *domain, ldns_rr_class class)
 		ldns_buffer_free(query_wire);
                 LDNS_FREE(ns);
 
-		/* RoRi: to prevent problems on subsequent calls to ldns_axfr_start
-		    we have to close the socket here! */
+		/* to prevent problems on subsequent calls to ldns_axfr_start
+		 * we have to close the socket here! */
 #ifndef USE_WINSOCK
 		close(resolver->_socket);
 #else
@@ -891,8 +891,8 @@ ldns_axfr_start(ldns_resolver *resolver, ldns_rdf *domain, ldns_rr_class class)
                 ldns_buffer_free(query_wire);
                 LDNS_FREE(ns);
 
-		/* RoRi: to prevent problems on subsequent calls to ldns_axfr_start
-		         we have to close the socket here! */
+		/* to prevent problems on subsequent calls to ldns_axfr_start
+		 * we have to close the socket here! */
 
 #ifndef USE_WINSOCK
 		close(resolver->_socket);
