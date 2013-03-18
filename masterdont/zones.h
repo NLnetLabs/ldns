@@ -36,7 +36,7 @@ struct zones_t {
 /**
  * create new empty zones struct
 */
-struct zones_t* zones_create();
+struct zones_t* zones_create(void);
 
 /**
  * Read all the zone entry storage

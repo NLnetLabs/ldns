@@ -435,14 +435,14 @@ int file_filter(const struct dirent *f)
 #define MAX_DESCR_LEN 100
 
 bool
-compare_query()
+compare_query(void)
 {
 	bool result = true;
 	return result;
 }
 
 bool
-compare_packets()
+compare_packets(void)
 {
 	bool result = true;
 	return result;
@@ -1277,7 +1277,7 @@ read_match_files(char *directory)
 }
 
 void
-free_match_files()
+free_match_files(void)
 {
 	size_t i;
 	for (i = 0; i < match_file_count; i++) {

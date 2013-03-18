@@ -89,7 +89,7 @@ get_rrset(const ldns_zone *zone, const ldns_rdf *owner_name, const ldns_rr_type 
 	return rrlist;
 }
 
-void
+int
 main(int argc, char **argv)
 {
 	/* arguments */

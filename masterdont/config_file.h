@@ -46,7 +46,7 @@ struct config_read {
 };
 
 /** create structure with defaults */
-struct config_file* config_file_create();
+struct config_file* config_file_create(void);
 
 /** delete structure */
 void config_file_delete(struct config_file* cfg);

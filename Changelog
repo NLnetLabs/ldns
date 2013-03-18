@@ -1,4 +1,6 @@
 1.6.17
+	* README now shows preferred way to configure for examples and drill.
+	* Miscellaneous prototype fixes. Thanks Dag-Erling Smørgrav.
 	* Add --disable-dane option to configure and check availability of the
 	  for dane needed X509_check_ca function in openssl.
 	* Fix ldns_dnssec_zone_new_frm_fp_l to allow the last parsed line of a
