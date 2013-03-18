@@ -26,6 +26,12 @@ ldns_resolver_port(const ldns_resolver *r)
 	return r->_port;
 }
 
+ldns_rdf *
+ldns_resolver_source(const ldns_resolver *r)
+{
+	return r->_source;
+}
+
 uint16_t
 ldns_resolver_edns_udp_size(const ldns_resolver *r)
 {
@@ -232,6 +238,12 @@ void
 ldns_resolver_set_port(ldns_resolver *r, uint16_t p)
 {
 	r->_port = p;
+}
+
+void
+ldns_resolver_set_source(ldns_resolver *r, ldns_rdf *s)
+{
+	r->_source = s;
 }
 
 ldns_rdf *
@@ -625,6 +637,7 @@ ldns_resolver_new(void)
 	ldns_resolver_set_igntc(r, false);
 	ldns_resolver_set_recursive(r, false);
 	ldns_resolver_set_dnsrch(r, true);
+	ldns_resolver_set_source(r, NULL);
 
 	/* randomize the nameserver to be queried
 	 * when there are multiple

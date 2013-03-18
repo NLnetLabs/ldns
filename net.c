@@ -60,7 +60,9 @@ ldns_status
 ldns_send_buffer(ldns_pkt **result, ldns_resolver *r, ldns_buffer *qb, ldns_rdf *tsig_mac)
 {
 	uint8_t i;
-	
+
+	struct sockaddr_storage *src = NULL;
+	size_t src_len;
 	struct sockaddr_storage *ns;
 	size_t ns_len;
 	struct timeval tv_s;
@@ -88,6 +90,10 @@ ldns_send_buffer(ldns_pkt **result, ldns_resolver *r, ldns_buffer *qb, ldns_rdf 
 
 	if (ldns_resolver_random(r)) {
 		ldns_resolver_nameservers_randomize(r);
+	}
+
+	if(ldns_resolver_source(r)) {
+		src = ldns_rdf2native_sockaddr_storage(ldns_resolver_source(r), 0, &src_len);
 	}
 
 	/* loop through all defined nameservers */
@@ -143,10 +149,11 @@ ldns_send_buffer(ldns_pkt **result, ldns_resolver *r, ldns_buffer *qb, ldns_rdf 
 			for (retries = ldns_resolver_retry(r); retries > 0; retries--) {
 				/* ldns_rdf_print(stdout, ns_array[i]); */
 				send_status = 
-					ldns_udp_send(&reply_bytes, qb, ns, 
-							(socklen_t)ns_len, ldns_resolver_timeout(r), 
-							&reply_size);
-				
+					ldns_udp_send_from(&reply_bytes, qb,
+						ns,  (socklen_t)ns_len,
+						src, (socklen_t)src_len,
+						ldns_resolver_timeout(r),
+						&reply_size);
 				if (send_status == LDNS_STATUS_OK) {
 					break;
 				}
@@ -201,6 +208,9 @@ ldns_send_buffer(ldns_pkt **result, ldns_resolver *r, ldns_buffer *qb, ldns_rdf 
 		sleep((unsigned int) ldns_resolver_retrans(r));
 	}
 
+	if(src) {
+		LDNS_FREE(src);
+	}
 	if (all_servers_rtt_inf) {
 		LDNS_FREE(reply_bytes);
 		return LDNS_STATUS_RES_NO_NS;
@@ -291,13 +301,15 @@ ldns_sock_wait(int sockfd, struct timeval timeout, int write)
 }
 
 ldns_status
-ldns_udp_send(uint8_t **result, ldns_buffer *qbin, const struct sockaddr_storage *to,
-		socklen_t tolen, struct timeval timeout, size_t *answer_size)
+ldns_udp_send_from(uint8_t **result, ldns_buffer *qbin,
+		const struct sockaddr_storage *to  , socklen_t tolen,
+		const struct sockaddr_storage *from, socklen_t fromlen,
+		struct timeval timeout, size_t *answer_size)
 {
 	int sockfd;
 	uint8_t *answer;
 
-	sockfd = ldns_udp_bgsend(qbin, to, tolen, timeout);
+	sockfd = ldns_udp_bgsend_from(qbin, to, tolen, from, fromlen, timeout);
 
 	if (sockfd == 0) {
 		return LDNS_STATUS_SOCKET_ERROR;
@@ -334,8 +346,20 @@ ldns_udp_send(uint8_t **result, ldns_buffer *qbin, const struct sockaddr_storage
 	return LDNS_STATUS_OK;
 }
 
+ldns_status
+ldns_udp_send(uint8_t **result, ldns_buffer *qbin,
+		const struct sockaddr_storage *to  , socklen_t tolen,
+		struct timeval timeout, size_t *answer_size)
+{
+	return ldns_udp_send_from(result, qbin, to, tolen, NULL, 0,
+			timeout, answer_size);
+}
+
+
 int
-ldns_udp_bgsend(ldns_buffer *qbin, const struct sockaddr_storage *to, socklen_t tolen, 
+ldns_udp_bgsend_from(ldns_buffer *qbin,
+		const struct sockaddr_storage *to  , socklen_t tolen, 
+		const struct sockaddr_storage *from, socklen_t fromlen, 
 		struct timeval timeout)
 {
 	int sockfd;
@@ -344,6 +368,12 @@ ldns_udp_bgsend(ldns_buffer *qbin, const struct sockaddr_storage *to, socklen_t 
 
 	if (sockfd == 0) {
 		return 0;
+	}
+
+	if (from) {
+		if (bind(sockfd, (const struct sockaddr*)from, fromlen)) {
+			return 0;
+		}
 	}
 
 	if (ldns_udp_send_query(qbin, sockfd, to, tolen) == 0) {
@@ -355,6 +385,14 @@ ldns_udp_bgsend(ldns_buffer *qbin, const struct sockaddr_storage *to, socklen_t 
 		return 0;
 	}
 	return sockfd;
+}
+
+int
+ldns_udp_bgsend(ldns_buffer *qbin,
+		const struct sockaddr_storage *to  , socklen_t tolen, 
+		struct timeval timeout)
+{
+	return ldns_udp_bgsend_from(qbin, to, tolen, NULL, 0, timeout);
 }
 
 int

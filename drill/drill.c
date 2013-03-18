@@ -29,6 +29,7 @@ usage(FILE *stream, const char *progname)
 	fprintf(stream, "\n\targuments may be placed in random order\n");
 	fprintf(stream, "\n  Options:\n");
 	fprintf(stream, "\t-D\t\tenable DNSSEC (DO bit)\n");
+	fprintf(stream, "\t-I\t\tsource address to query from\n");
 #ifdef HAVE_SSL
 	fprintf(stream, "\t-T\t\ttrace from the root down to <name>\n");
 	fprintf(stream, "\t-S\t\tchase signature(s) from <name> to a know key [*]\n");
@@ -103,6 +104,7 @@ main(int argc, char *argv[])
         ldns_pkt	*pkt;
         ldns_pkt	*qpkt;
         char 		*serv;
+        char 		*src = NULL;
         const char 	*name;
         char 		*name2;
 	char		*progname;
@@ -110,6 +112,7 @@ main(int argc, char *argv[])
 	char		*answer_file = NULL;
 	ldns_buffer	*query_buffer = NULL;
 	ldns_rdf 	*serv_rdf;
+	ldns_rdf 	*src_rdf = NULL;
         ldns_rr_type 	type;
         ldns_rr_class	clas;
 #if 0
@@ -157,7 +160,7 @@ main(int argc, char *argv[])
 
 	int_type = -1; serv = NULL; type = 0; 
 	int_clas = -1; name = NULL; clas = 0;
-	qname = NULL; 
+	qname = NULL; src = NULL;
 	progname = strdup(argv[0]);
 
 #ifdef USE_WINSOCK
@@ -195,7 +198,7 @@ main(int argc, char *argv[])
 	/* global first, query opt next, option with parm's last
 	 * and sorted */ /*  "46DITSVQf:i:w:q:achuvxzy:so:p:b:k:" */
 	                               
-	while ((c = getopt(argc, argv, "46ab:c:d:Df:hi:Ik:o:p:q:Qr:sStTuvV:w:xy:z")) != -1) {
+	while ((c = getopt(argc, argv, "46ab:c:d:Df:hi:I:k:o:p:q:Qr:sStTuvV:w:xy:z")) != -1) {
 		switch(c) {
 			/* global options */
 			case '4':
@@ -208,7 +211,7 @@ main(int argc, char *argv[])
 				qdnssec = true;
 				break;
 			case 'I':
-				/* reserved for backward compatibility */
+				src = optarg;
 				break;
 			case 'T':
 				if (PURPOSE == DRILL_CHASE) {
@@ -482,6 +485,14 @@ main(int argc, char *argv[])
 		}
 	}
 
+	if (src) {
+		src_rdf = ldns_rdf_new_addr_frm_str(src);
+		if(!src_rdf) {
+			fprintf(stderr, "-I must be (or resolve) to a valid IP[v6] address.\n");
+			exit(EXIT_FAILURE);
+		}
+	}
+
 	/* set the nameserver to use */
 	if (!serv) {
 		/* no server given make a resolver from /etc/resolv.conf */
@@ -543,6 +554,9 @@ main(int argc, char *argv[])
 	}
 	/* set the resolver options */
 	ldns_resolver_set_port(res, qport);
+	if(src_rdf) {
+		ldns_resolver_set_source(res, src_rdf);
+	}
 	if (verbosity >= 5) {
 		ldns_resolver_set_debug(res, true);
 	} else {
@@ -926,6 +940,7 @@ main(int argc, char *argv[])
 
 	exit:
 	ldns_rdf_deep_free(qname);
+	ldns_rdf_deep_free(src_rdf);
 	ldns_resolver_deep_free(res);
 	ldns_resolver_deep_free(cmdline_res);
 	ldns_rr_list_deep_free(key_list);

@@ -138,6 +138,9 @@ struct ldns_struct_resolver
 	char *_tsig_keydata;
 	/** TSIG signing algorithm */
 	char *_tsig_algorithm;
+
+	/** Source address to query from */
+	ldns_rdf *_source;
 };
 typedef struct ldns_struct_resolver ldns_resolver;
 
@@ -150,6 +153,13 @@ typedef struct ldns_struct_resolver ldns_resolver;
  * \return the port number
  */
 uint16_t ldns_resolver_port(const ldns_resolver *r);
+
+/**
+ * Get the source address the resolver should use
+ * \param[in] r the resolver
+ * \return the source rdf
+ */
+ldns_rdf *ldns_resolver_source(const ldns_resolver *r);
 
 /**
  * Is the resolver set to recurse
@@ -336,6 +346,13 @@ size_t ldns_resolver_searchlist_count(const ldns_resolver *r);
  * \param[in] p the port number
  */
 void ldns_resolver_set_port(ldns_resolver *r, uint16_t p);
+
+/**
+ * Set the source rdf (address) the resolver should use
+ * \param[in] r the resolver
+ * \param[in] s the source address
+ */
+void ldns_resolver_set_source(ldns_resolver *r, ldns_rdf *s);
 
 /**
  * Set the resolver recursion
