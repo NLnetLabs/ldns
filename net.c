@@ -102,7 +102,7 @@ ldns_rdf2native_sockaddr_storage(
 		const ldns_rdf *rd, uint16_t port, size_t *size)
 {
 	return ldns_rdf2native_sockaddr_storage_port(
-			rd, (port == 0 ? LDNS_PORT : port), size);
+			rd, (port == 0 ? (uint16_t)LDNS_PORT : port), size);
 }
 
 /** best effort to set nonblocking */
