@@ -627,10 +627,17 @@ main(int argc, char *argv[])
 			ldns_resolver_set_dnssec_cd(res, true);
 			/* set dnssec implies udp_size of 4096 */
 			ldns_resolver_set_edns_udp_size(res, 4096);
-			pkt = ldns_resolver_query(res, qname, type, clas, qflags);
-			
+			pkt = NULL;
+			status = ldns_resolver_query_status(
+					&pkt, res, qname, type, clas, qflags);
+			if (status != LDNS_STATUS_OK) {
+				error("error sending query: %s",
+					ldns_get_errorstr_by_id(status));
+			}
 			if (!pkt) {
-				error("%s", "error pkt sending");
+				if (status == LDNS_STATUS_OK) {
+					error("%s", "error pkt sending");
+				}
 				result = EXIT_FAILURE;
 			} else {
 				if (verbosity >= 3) {
@@ -756,9 +763,17 @@ main(int argc, char *argv[])
 			}
 			
 			/* create a packet and set the RD flag on it */
-			pkt = ldns_resolver_query(res, qname, type, clas, qflags);
+			pkt = NULL;
+			status = ldns_resolver_query_status(
+					&pkt, res, qname, type, clas, qflags);
+			if (status != LDNS_STATUS_OK) {
+				error("error sending query: %s",
+					ldns_get_errorstr_by_id(status));
+			}
 			if (!pkt)  {
-				error("%s", "pkt sending");
+				if (status == LDNS_STATUS_OK) {
+					error("%s", "pkt sending");
+				}
 				result = EXIT_FAILURE;
 			} else {
 				if (verbosity != -1) {
@@ -829,7 +844,15 @@ main(int argc, char *argv[])
 					goto exit;
 				} else {
 					/* create a packet and set the RD flag on it */
-					pkt = ldns_resolver_query(res, qname, type, clas, qflags);
+					pkt = NULL;
+					status = ldns_resolver_query_status(
+							&pkt, res, qname,
+							type, clas, qflags);
+					if (status != LDNS_STATUS_OK) {
+						error("error sending query: %s"
+						     , ldns_get_errorstr_by_id(
+							     status));
+					}
 				}
 			}
 			

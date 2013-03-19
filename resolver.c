@@ -966,86 +966,82 @@ ldns_resolver_deep_free(ldns_resolver *res)
 	}
 }
 
-ldns_pkt *
-ldns_resolver_search(const ldns_resolver *r,const  ldns_rdf *name,
-	ldns_rr_type t, ldns_rr_class c, uint16_t flags)
+ldns_status
+ldns_resolver_search_status(ldns_pkt** pkt,
+		ldns_resolver *r, const  ldns_rdf *name,
+		ldns_rr_type t, ldns_rr_class c, uint16_t flags)
 {
-
 	ldns_rdf *new_name;
 	ldns_rdf **search_list;
 	size_t i;
-	ldns_pkt *p;
+	ldns_status s = LDNS_STATUS_OK;
 
 	if (ldns_dname_absolute(name)) {
 		/* query as-is */
-		return ldns_resolver_query(r, name, t, c, flags);
+		return ldns_resolver_query_status(pkt, r, name, t, c, flags);
 	} else if (ldns_resolver_dnsrch(r)) {
 		search_list = ldns_resolver_searchlist(r);
 		for (i = 0; i < ldns_resolver_searchlist_count(r); i++) {
 			new_name = ldns_dname_cat_clone(name, search_list[i]);
 
-			p = ldns_resolver_query(r, new_name, t, c, flags);
+			s = ldns_resolver_query_status(pkt, r,
+					new_name, t, c, flags);
 			ldns_rdf_free(new_name);
-			if (p) {
-				if (ldns_pkt_get_rcode(p) == LDNS_RCODE_NOERROR) {
-					return p;
-				} else {
-					ldns_pkt_free(p);
-					p = NULL;
+			if (pkt) {
+				if (s == LDNS_STATUS_OK && *pkt &&
+						ldns_pkt_get_rcode(*pkt) ==
+						LDNS_RCODE_NOERROR) {
+					return LDNS_STATUS_OK;
 				}
+				ldns_pkt_free(*pkt);
 			}
 		}
 	}
-	return NULL;
+	return s;
+}
+
+ldns_pkt *
+ldns_resolver_search(const ldns_resolver *r,const  ldns_rdf *name,
+	ldns_rr_type t, ldns_rr_class c, uint16_t flags)
+{
+	ldns_pkt* pkt = NULL;
+	if (ldns_resolver_search_status(&pkt, (ldns_resolver *)r,
+				name, t, c, flags) != LDNS_STATUS_OK) {
+		ldns_pkt_free(pkt);
+	}
+	return pkt;
+}
+
+ldns_status
+ldns_resolver_query_status(ldns_pkt** pkt,
+		ldns_resolver *r, const ldns_rdf *name,
+		ldns_rr_type t, ldns_rr_class c, uint16_t flags)
+{
+	ldns_rdf *newname;
+	ldns_status status;
+
+	if (!ldns_resolver_defnames(r) || !ldns_resolver_domain(r)) {
+		return ldns_resolver_send(pkt, r, name, t, c, flags);
+	}
+
+	newname = ldns_dname_cat_clone(name, ldns_resolver_domain(r));
+	if (!newname) {
+		return LDNS_STATUS_MEM_ERR;
+	}
+	status = ldns_resolver_send(pkt, r, newname, t, c, flags);
+	ldns_rdf_free(newname);
+	return status;
 }
 
 ldns_pkt *
 ldns_resolver_query(const ldns_resolver *r, const ldns_rdf *name,
 	ldns_rr_type t, ldns_rr_class c, uint16_t flags)
 {
-	ldns_rdf *newname;
-	ldns_pkt *pkt;
-	ldns_status status;
-
-	pkt = NULL;
-
-	if (!ldns_resolver_defnames(r)) {
-		status = ldns_resolver_send(&pkt, (ldns_resolver *)r, name,
-				t, c, flags);
-		if (status == LDNS_STATUS_OK) {
-			return pkt;
-		} else {
-			if (pkt) {
-				ldns_pkt_free(pkt);
-			}
-			return NULL;
-		}
+	ldns_pkt* pkt = NULL;
+	if (ldns_resolver_query_status(&pkt, (ldns_resolver *)r,
+				name, t, c, flags) != LDNS_STATUS_OK) {
+		ldns_pkt_free(pkt);
 	}
-
-	if (!ldns_resolver_domain(r)) {
-		/* _defnames is set, but the domain is not....?? */
-		status = ldns_resolver_send(&pkt, (ldns_resolver *)r, name,
-				t, c, flags);
-		if (status == LDNS_STATUS_OK) {
-			return pkt;
-		} else {
-			if (pkt) {
-				ldns_pkt_free(pkt);
-			}
-			return NULL;
-		}
-	}
-
-	newname = ldns_dname_cat_clone((const ldns_rdf*)name, ldns_resolver_domain(r));
-	if (!newname) {
-		return NULL;
-	}
-
-	(void)ldns_resolver_send(&pkt, (ldns_resolver *)r, newname, t, c,
-			flags);
-
-	ldns_rdf_free(newname);
-
 	return pkt;
 }
 

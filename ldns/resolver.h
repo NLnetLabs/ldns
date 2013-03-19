@@ -600,6 +600,22 @@ ldns_status ldns_resolver_push_nameserver_rr_list(ldns_resolver *r, ldns_rr_list
  */
 ldns_pkt* ldns_resolver_search(const ldns_resolver *r, const ldns_rdf *rdf, ldns_rr_type t, ldns_rr_class c, uint16_t flags);
 
+
+/**
+ * Send the query for using the resolver and take the search list into account
+ * The search algorithm is as follows:
+ * If the name is absolute, try it as-is, otherwise apply the search list
+ * \param[out] pkt a packet with the reply from the nameserver
+ * \param[in] *r operate using this resolver
+ * \param[in] *rdf query for this name
+ * \param[in] t query for this type (may be 0, defaults to A)
+ * \param[in] c query for this class (may be 0, default to IN)
+ * \param[in] flags the query flags
+ *
+ * \return ldns_status LDNS_STATUS_OK on success
+ */
+ldns_status ldns_resolver_search_status(ldns_pkt** pkt, ldns_resolver *r, const ldns_rdf *rdf, ldns_rr_type t, ldns_rr_class c, uint16_t flags);
+
 /**
  * Form a query packet from a resolver and name/type/class combo
  * \param[out] **q a pointer to a ldns_pkt pointer (initialized by this function)
@@ -636,7 +652,24 @@ ldns_status ldns_resolver_send_pkt(ldns_pkt **answer, ldns_resolver *r, ldns_pkt
 
 /**
  * Send a query to a nameserver
+ * \param[out] pkt a packet with the reply from the nameserver
  * \param[in] *r operate using this resolver
+ * \param[in] *name query for this name
+ * \param[in] *t query for this type (may be 0, defaults to A)
+ * \param[in] *c query for this class (may be 0, default to IN)
+ * \param[in] flags the query flags
+ *
+ * \return ldns_status LDNS_STATUS_OK on success
+ * if _defnames is true the default domain will be added
+ */
+ldns_status ldns_resolver_query_status(ldns_pkt** pkt, ldns_resolver *r, const ldns_rdf *name, ldns_rr_type t, ldns_rr_class c, uint16_t flags);
+
+
+/**
+ * Send a query to a nameserver
+ * \param[in] *r operate using this resolver 
+ *               (despite the const in the declaration,
+ *                the struct is altered as a side-effect)
  * \param[in] *name query for this name
  * \param[in] *t query for this type (may be 0, defaults to A)
  * \param[in] *c query for this class (may be 0, default to IN)
