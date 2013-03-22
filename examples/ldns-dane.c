@@ -248,7 +248,9 @@ connect_with_timeout(
 		return -1;
 	}
 
+#ifndef S_SPLINT_S
 	FD_ZERO(&fdset);
+#endif
 	FD_SET(sockfd, &fdset);
 
 	can_write = select(sockfd + 1, NULL, &fdset, NULL, timeout);
@@ -1344,9 +1346,11 @@ main(int argc, char* const* argv)
 						"a numeric value\n");
 				exit(EXIT_FAILURE);
 			}
-			timeout.tv_sec  = (long) timeout_d;
-			timeout.tv_usec = (long) 
+#ifndef S_SPLINT_S
+			timeout.tv_sec  = (int) timeout_d;
+			timeout.tv_usec = (int) 
 				((timeout_d - timeout.tv_sec) * 1000000);
+#endif /* splint */
 			timeout_p = &timeout;
 			break;
 		case 'u':
