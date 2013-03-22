@@ -1344,9 +1344,9 @@ main(int argc, char* const* argv)
 						"a numeric value\n");
 				exit(EXIT_FAILURE);
 			}
-			timeout.tv_sec  = (int) timeout_d;
-			timeout.tv_usec = 
-				(int) ((timeout_d - timeout.tv_sec) * 1000000);
+			timeout.tv_sec  = (long) timeout_d;
+			timeout.tv_usec = (long) 
+				((timeout_d - timeout.tv_sec) * 1000000);
 			timeout_p = &timeout;
 			break;
 		case 'u':

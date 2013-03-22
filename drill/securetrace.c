@@ -220,6 +220,8 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 			ldns_resolver_usevc(local_res));
 	ldns_resolver_set_random(res,
 			ldns_resolver_random(local_res));
+	ldns_resolver_set_source(res,
+			ldns_resolver_source(local_res));
 	ldns_resolver_set_recursive(local_res, true);
 
 	ldns_resolver_set_recursive(res, false);

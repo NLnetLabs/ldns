@@ -524,6 +524,7 @@ main(int argc, char *argv[])
 			ldns_resolver_set_ip6(cmdline_res, qfamily);
 			ldns_resolver_set_fallback(cmdline_res, qfallback);
 			ldns_resolver_set_usevc(cmdline_res, qusevc);
+			ldns_resolver_set_source(cmdline_res, src_rdf);
 
 			cmdline_dname = ldns_dname_new_frm_str(serv);
 
@@ -554,9 +555,7 @@ main(int argc, char *argv[])
 	}
 	/* set the resolver options */
 	ldns_resolver_set_port(res, qport);
-	if(src_rdf) {
-		ldns_resolver_set_source(res, src_rdf);
-	}
+	ldns_resolver_set_source(res, src_rdf);
 	if (verbosity >= 5) {
 		ldns_resolver_set_debug(res, true);
 	} else {
