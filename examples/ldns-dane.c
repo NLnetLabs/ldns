@@ -15,11 +15,24 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <sys/types.h>
+
+#ifdef HAVE_NETINET_IN_H
+#include <netinet/in.h>
+#endif
+#ifdef HAVE_SYS_SOCKET_H
 #include <sys/socket.h>
+#endif
+#ifdef HAVE_NETDB_H
 #include <netdb.h>
+#endif
+#ifdef HAVE_ARPA_INET_H
+#include <arpa/inet.h>
+#endif
+#include <sys/time.h>
+#include <errno.h>
+#include <fcntl.h>
 
 #include <ldns/ldns.h>
-
 #include <errno.h>
 
 #ifdef USE_DANE
@@ -107,6 +120,10 @@ print_usage(const char* progname)
 	printf("\t-t <tlsafile>\tdo not use DNS, "
 	       "but read TLSA record(s) from <tlsafile>\n"
 	      );
+	printf("\t-T <timeout>\tTimeout connection after\n"
+	       "<timeout> seconds\n"
+	      );
+
 	printf("\t-u\t\tuse UDP transport instead of TCP\n");
 	printf("\t-v\t\tshow version and exit\n");
 	/* printf("\t-V [0-5]\tset verbosity level (defaul 3)\n"); */
@@ -195,11 +212,73 @@ ldns_err(const char* s, ldns_status err)
 	}
 }
 
+int
+connect_with_timeout(
+		int sockfd, 
+		const struct sockaddr* addr, socklen_t addrlen,
+		struct timeval* timeout)
+{
+	int ret, can_write;
+	fd_set fdset;
+
+#ifdef HAVE_FCNTL
+	int flag;
+	if((flag = fcntl(sockfd, F_GETFL)) != -1) {
+		flag |= O_NONBLOCK;
+		if(fcntl(sockfd, F_SETFL, flag) == -1) {
+			/* ignore error, continue blockingly */
+		}
+	}
+#elif defined(HAVE_IOCTLSOCKET)
+	unsigned long on = 1;
+	unsigned long off = 0;
+	if(ioctlsocket(sockfd, FIONBIO, &on) != 0) {
+		/* ignore error, continue blockingly */
+	}
+#endif
+
+	ret = connect(sockfd, addr, addrlen);
+	fprintf(stderr, "connect returned: %d\n", ret);
+	if (ret == -1) {
+		fprintf(stderr, "errno: %d\n", errno);
+		perror("connect");
+	}
+
+	if (ret == -1 && errno != EINPROGRESS) {
+		return -1;
+	}
+
+	FD_ZERO(&fdset);
+	FD_SET(sockfd, &fdset);
+
+	can_write = select(sockfd + 1, NULL, &fdset, NULL, timeout);
+	if (can_write == 0) { /* timeout */
+		return -2;
+	} else if (can_write == -1) { /* error */
+		return -1;
+	}
+
+#ifdef HAVE_FCNTL
+	if((flag = fcntl(sockfd, F_GETFL)) != -1) {
+		flag &= ~O_NONBLOCK;
+		if(fcntl(sockfd, F_SETFL, flag) == -1) {
+			/* ignore error, continue */
+		}
+	}
+#elif defined(HAVE_IOCTLSOCKET)
+	if(ioctlsocket(sockfd, FIONBIO, &off) != 0) {
+		/* ignore error, continue */
+	}
+#endif
+	return 0;
+}
+
 ldns_status
 ssl_connect_and_get_cert_chain(
 		X509** cert, STACK_OF(X509)** extra_certs,
 	       	SSL* ssl, ldns_rdf* address, uint16_t port,
-		ldns_dane_transport transport)
+		ldns_dane_transport transport,
+		struct timeval* timeout)
 {
 	struct sockaddr_storage *a = NULL;
 	size_t a_len = 0;
@@ -237,16 +316,21 @@ ssl_connect_and_get_cert_chain(
 		LDNS_FREE(a);
 		return LDNS_STATUS_NETWORK_ERR;
 	}
-	if (connect(sock, (struct sockaddr*)a, (socklen_t)a_len) == -1) {
+	fprintf(stderr, "voor connect\n");
+	r = connect_with_timeout(sock, (struct sockaddr*)a, (socklen_t)a_len,
+			timeout);
+	if (r < 0) {
 		LDNS_FREE(a);
 		return LDNS_STATUS_NETWORK_ERR;
 	}
 	LDNS_FREE(a);
+	fprintf(stderr, "na connect\n");
 	if (! SSL_clear(ssl)) {
 		close(sock);
 		fprintf(stderr, "SSL_clear\n");
 		return LDNS_STATUS_SSL_ERR;
 	}
+	fprintf(stderr, "voor set connect state\n");
 	SSL_set_connect_state(ssl);
 	(void) SSL_set_mode(ssl, SSL_MODE_AUTO_RETRY);
 	if (! SSL_set_fd(ssl, sock)) {
@@ -254,8 +338,10 @@ ssl_connect_and_get_cert_chain(
 		fprintf(stderr, "SSL_set_fd\n");
 		return LDNS_STATUS_SSL_ERR;
 	}
+	fprintf(stderr, "na set connect state\n");
 	for (;;) {
 		ERR_clear_error();
+		fprintf(stderr, "handshaking\n");
 		if ((r = SSL_do_handshake(ssl)) == 1) {
 			break;
 		}
@@ -265,8 +351,10 @@ ssl_connect_and_get_cert_chain(
 			return LDNS_STATUS_SSL_ERR;
 		}
 	}
+	fprintf(stderr, "get peer certificate\n");
 	*cert = SSL_get_peer_certificate(ssl);
 	*extra_certs = SSL_get_peer_cert_chain(ssl);
+	fprintf(stderr, "connected\n");
 
 	return LDNS_STATUS_OK;
 }
@@ -1148,10 +1236,15 @@ main(int argc, char* const* argv)
 
 	bool success = true;
 
+	double          timeout_d;
+	char*           endptr;
+	struct timeval  timeout;
+	struct timeval* timeout_p = NULL;
+
 	if (! keys || ! addresses) {
 		MEMERR("ldns_rr_list_new");
 	}
-	while((c = getopt(argc, argv, "46a:bc:df:hik:no:p:sSt:uvV:")) != -1) {
+	while((c = getopt(argc, argv, "46a:bc:df:hik:no:p:sSt:T:uvV:")) != -1){
 		switch(c) {
 		case 'h':
 			print_usage("ldns-dane");
@@ -1242,6 +1335,19 @@ main(int argc, char* const* argv)
 			break;
 		case 't':
 			tlsas_file = optarg;
+			break;
+		case 'T':
+			timeout_d = strtod(optarg, &endptr);
+			if (endptr != NULL &&
+					(endptr == optarg || *endptr != 0)) {
+				fprintf(stderr, "<timeout> value should be "
+						"a numeric value\n");
+				exit(EXIT_FAILURE);
+			}
+			timeout.tv_sec  = (int) timeout_d;
+			timeout.tv_usec = 
+				(int) ((timeout_d - timeout.tv_sec) * 1000000);
+			timeout_p = &timeout;
 			break;
 		case 'u':
 			transport = LDNS_DANE_TRANSPORT_UDP;
@@ -1645,7 +1751,8 @@ main(int argc, char* const* argv)
 			assert(address != NULL);
 			
 			s = ssl_connect_and_get_cert_chain(&cert, &extra_certs,
-					ssl, address, port, transport);
+					ssl, address, port, transport,
+				       	timeout_p);
 			if (s == LDNS_STATUS_NETWORK_ERR) {
 				fprintf(stderr, "Could not connect to ");
 				ldns_rdf_print(stderr, address);
