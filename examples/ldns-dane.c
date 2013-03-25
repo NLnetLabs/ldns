@@ -51,6 +51,11 @@
 			 exit(EXIT_FAILURE); } while (false)
 #define BUFSIZE 16384
 
+/* Exit status on a PKIX validated connection but without TLSA records
+ * when the -T option was given:
+ */
+#define NO_TLSAS_EXIT_STATUS 2
+
 /* int verbosity = 3; */
 
 void
@@ -120,13 +125,11 @@ print_usage(const char* progname)
 	printf("\t-t <tlsafile>\tdo not use DNS, "
 	       "but read TLSA record(s) from <tlsafile>\n"
 	      );
-	printf("\t-T <timeout>\tTimeout connection after\n"
-	       "<timeout> seconds\n"
-	      );
-
+	printf("\t-T\t\tReturns exit status 2 for PKIX validated connections\n"
+	       "\t\t\twithout (secure) TLSA records(s)\n");
 	printf("\t-u\t\tuse UDP transport instead of TCP\n");
 	printf("\t-v\t\tshow version and exit\n");
-	/* printf("\t-V [0-5]\tset verbosity level (defaul 3)\n"); */
+	/* printf("\t-V [0-5]\tset verbosity level (default 3)\n"); */
 	exit(EXIT_SUCCESS);
 }
 
@@ -212,75 +215,11 @@ ldns_err(const char* s, ldns_status err)
 	}
 }
 
-int
-connect_with_timeout(
-		int sockfd, 
-		const struct sockaddr* addr, socklen_t addrlen,
-		struct timeval* timeout)
-{
-	int ret, can_write;
-	fd_set fdset;
-
-#ifdef HAVE_FCNTL
-	int flag;
-	if((flag = fcntl(sockfd, F_GETFL)) != -1) {
-		flag |= O_NONBLOCK;
-		if(fcntl(sockfd, F_SETFL, flag) == -1) {
-			/* ignore error, continue blockingly */
-		}
-	}
-#elif defined(HAVE_IOCTLSOCKET)
-	unsigned long on = 1;
-	unsigned long off = 0;
-	if(ioctlsocket(sockfd, FIONBIO, &on) != 0) {
-		/* ignore error, continue blockingly */
-	}
-#endif
-
-	ret = connect(sockfd, addr, addrlen);
-	fprintf(stderr, "connect returned: %d\n", ret);
-	if (ret == -1) {
-		fprintf(stderr, "errno: %d\n", errno);
-		perror("connect");
-	}
-
-	if (ret == -1 && errno != EINPROGRESS) {
-		return -1;
-	}
-
-#ifndef S_SPLINT_S
-	FD_ZERO(&fdset);
-#endif
-	FD_SET(sockfd, &fdset);
-
-	can_write = select(sockfd + 1, NULL, &fdset, NULL, timeout);
-	if (can_write == 0) { /* timeout */
-		return -2;
-	} else if (can_write == -1) { /* error */
-		return -1;
-	}
-
-#ifdef HAVE_FCNTL
-	if((flag = fcntl(sockfd, F_GETFL)) != -1) {
-		flag &= ~O_NONBLOCK;
-		if(fcntl(sockfd, F_SETFL, flag) == -1) {
-			/* ignore error, continue */
-		}
-	}
-#elif defined(HAVE_IOCTLSOCKET)
-	if(ioctlsocket(sockfd, FIONBIO, &off) != 0) {
-		/* ignore error, continue */
-	}
-#endif
-	return 0;
-}
-
 ldns_status
 ssl_connect_and_get_cert_chain(
 		X509** cert, STACK_OF(X509)** extra_certs,
 	       	SSL* ssl, ldns_rdf* address, uint16_t port,
-		ldns_dane_transport transport,
-		struct timeval* timeout)
+		ldns_dane_transport transport)
 {
 	struct sockaddr_storage *a = NULL;
 	size_t a_len = 0;
@@ -318,21 +257,16 @@ ssl_connect_and_get_cert_chain(
 		LDNS_FREE(a);
 		return LDNS_STATUS_NETWORK_ERR;
 	}
-	fprintf(stderr, "voor connect\n");
-	r = connect_with_timeout(sock, (struct sockaddr*)a, (socklen_t)a_len,
-			timeout);
-	if (r < 0) {
+	if (connect(sock, (struct sockaddr*)a, (socklen_t)a_len) == -1) {
 		LDNS_FREE(a);
 		return LDNS_STATUS_NETWORK_ERR;
 	}
 	LDNS_FREE(a);
-	fprintf(stderr, "na connect\n");
 	if (! SSL_clear(ssl)) {
 		close(sock);
 		fprintf(stderr, "SSL_clear\n");
 		return LDNS_STATUS_SSL_ERR;
 	}
-	fprintf(stderr, "voor set connect state\n");
 	SSL_set_connect_state(ssl);
 	(void) SSL_set_mode(ssl, SSL_MODE_AUTO_RETRY);
 	if (! SSL_set_fd(ssl, sock)) {
@@ -340,10 +274,8 @@ ssl_connect_and_get_cert_chain(
 		fprintf(stderr, "SSL_set_fd\n");
 		return LDNS_STATUS_SSL_ERR;
 	}
-	fprintf(stderr, "na set connect state\n");
 	for (;;) {
 		ERR_clear_error();
-		fprintf(stderr, "handshaking\n");
 		if ((r = SSL_do_handshake(ssl)) == 1) {
 			break;
 		}
@@ -353,10 +285,8 @@ ssl_connect_and_get_cert_chain(
 			return LDNS_STATUS_SSL_ERR;
 		}
 	}
-	fprintf(stderr, "get peer certificate\n");
 	*cert = SSL_get_peer_certificate(ssl);
 	*extra_certs = SSL_get_peer_cert_chain(ssl);
-	fprintf(stderr, "connected\n");
 
 	return LDNS_STATUS_OK;
 }
@@ -806,7 +736,7 @@ dane_lookup_addresses(ldns_resolver* res, ldns_rdf* dname,
 
 		} else if (s == LDNS_STATUS_DANE_BOGUS ||
 				LDNS_STATUS_CRYPTO_BOGUS == s) {
-			fprintf(stderr, "Warning! Bogus IPv4 addresses. "
+			fprintf(stderr, "Warning! Bogus IPv6 addresses. "
 					"Discarding...\n");
 			ldns_rr_list_deep_free(aaas);
 			aaas = ldns_rr_list_new();
@@ -1132,7 +1062,8 @@ bool
 dane_verify(ldns_rr_list* tlsas, ldns_rdf* address,
 		X509* cert, STACK_OF(X509)* extra_certs,
 		X509_STORE* validate_store,
-		bool verify_server_name, ldns_rdf* name)
+		bool verify_server_name, ldns_rdf* name,
+		bool assume_pkix_validity)
 {
 	ldns_status s;
 	char* address_str = NULL;
@@ -1156,6 +1087,11 @@ dane_verify(ldns_rr_list* tlsas, ldns_rdf* address,
 			return false;
 		}
 		fprintf(stdout, " dane-validated successfully\n");
+		return true;
+	} else if (assume_pkix_validity &&
+			s == LDNS_STATUS_DANE_PKIX_DID_NOT_VALIDATE) {
+		fprintf(stdout, " dane-validated successfully,"
+				" because PKIX is assumed valid\n");
 		return true;
 	}
 	fprintf(stdout, " did not dane-validate, because: %s\n",
@@ -1236,17 +1172,15 @@ main(int argc, char* const* argv)
 	SSL_CTX* ctx = NULL;
 	SSL*     ssl = NULL;
 
-	bool success = true;
+	int  no_tlsas_exit_status  = EXIT_SUCCESS;
+	int           exit_success = EXIT_SUCCESS; 
 
-	double          timeout_d;
-	char*           endptr;
-	struct timeval  timeout;
-	struct timeval* timeout_p = NULL;
+	bool success = true;
 
 	if (! keys || ! addresses) {
 		MEMERR("ldns_rr_list_new");
 	}
-	while((c = getopt(argc, argv, "46a:bc:df:hik:no:p:sSt:T:uvV:")) != -1){
+	while((c = getopt(argc, argv, "46a:bc:df:hik:no:p:sSt:TuvV:")) != -1){
 		switch(c) {
 		case 'h':
 			print_usage("ldns-dane");
@@ -1339,19 +1273,7 @@ main(int argc, char* const* argv)
 			tlsas_file = optarg;
 			break;
 		case 'T':
-			timeout_d = strtod(optarg, &endptr);
-			if (endptr != NULL &&
-					(endptr == optarg || *endptr != 0)) {
-				fprintf(stderr, "<timeout> value should be "
-						"a numeric value\n");
-				exit(EXIT_FAILURE);
-			}
-#ifndef S_SPLINT_S
-			timeout.tv_sec  = (int) timeout_d;
-			timeout.tv_usec = (int) 
-				((timeout_d - timeout.tv_sec) * 1000000);
-#endif /* splint */
-			timeout_p = &timeout;
+			no_tlsas_exit_status = NO_TLSAS_EXIT_STATUS;
 			break;
 		case 'u':
 			transport = LDNS_DANE_TRANSPORT_UDP;
@@ -1434,7 +1356,7 @@ main(int argc, char* const* argv)
 			exit(EXIT_FAILURE);
 		}
 		s = dane_read_tlsas_from_file(&tlsas, tlsas_file, NULL);
-		LDNS_ERR(s, "could not read tlas from file");
+		LDNS_ERR(s, "could not read tlsas from file");
 
 		/* extract port, transport and hostname from TLSA owner name */
 
@@ -1576,7 +1498,9 @@ main(int argc, char* const* argv)
 				"PKIX validation without DANE will be "
 				"performed. If you wish to perform DANE\n"
 				"even though the RR's are insecure, "
-				"se the -d option.\n", tlsa_owner_str);
+				"use the -d option.\n", tlsa_owner_str);
+
+			exit_success = no_tlsas_exit_status;
 
 		} else if (s != LDNS_STATUS_OK) {
 
@@ -1588,6 +1512,8 @@ main(int argc, char* const* argv)
 				"were found.\n"
 				"PKIX validation without DANE will be "
 				"performed.\n", ldns_rdf2str(tlsa_owner));
+
+			exit_success = no_tlsas_exit_status;
 
 		} else if (assume_pkix_validity) { /* number of  tlsa's > 0 */
 			
@@ -1724,7 +1650,8 @@ main(int argc, char* const* argv)
 			     break;
 		case VERIFY: if (! dane_verify(tlsas, NULL,
 			                       cert, extra_certs, store,
-					       verify_server_name, name)) {
+					       verify_server_name, name,
+					       assume_pkix_validity)) {
 				     success = false;
 			     }
 			     break;
@@ -1755,8 +1682,7 @@ main(int argc, char* const* argv)
 			assert(address != NULL);
 			
 			s = ssl_connect_and_get_cert_chain(&cert, &extra_certs,
-					ssl, address, port, transport,
-				       	timeout_p);
+					ssl, address, port, transport);
 			if (s == LDNS_STATUS_NETWORK_ERR) {
 				fprintf(stderr, "Could not connect to ");
 				ldns_rdf_print(stderr, address);
@@ -1778,7 +1704,8 @@ main(int argc, char* const* argv)
 
 			case VERIFY: if (! dane_verify(tlsas, address,
 						cert, extra_certs, store,
-						verify_server_name, name)) {
+						verify_server_name, name,
+						assume_pkix_validity)) {
 					success = false;
 
 				     } else if (interact) {
@@ -1817,7 +1744,7 @@ main(int argc, char* const* argv)
 		ldns_rr_list_deep_free(addresses);
 	}
 	if (success) {
-		exit(EXIT_SUCCESS);
+		exit(exit_success);
 	} else {
 		exit(EXIT_FAILURE);
 	}
