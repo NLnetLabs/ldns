@@ -32,7 +32,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
+#include <ldns/config.h>
 #include <stdio.h>
 #include <ctype.h>
 #include <string.h>
