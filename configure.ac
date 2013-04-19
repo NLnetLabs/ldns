@@ -500,8 +500,6 @@ AC_FUNC_REALLOC
 
 AC_REPLACE_FUNCS(b64_pton)
 AC_REPLACE_FUNCS(b64_ntop)
-AC_REPLACE_FUNCS(b32_pton)
-AC_REPLACE_FUNCS(b32_ntop)
 AC_REPLACE_FUNCS(calloc)
 AC_REPLACE_FUNCS(timegm)
 AC_REPLACE_FUNCS(gmtime_r)
@@ -516,7 +514,17 @@ AC_REPLACE_FUNCS(snprintf)
 AC_REPLACE_FUNCS(strlcpy)
 AC_REPLACE_FUNCS(memmove)
 AC_FUNC_FORK
-AC_CHECK_FUNCS([endprotoent endservent sleep random fcntl strtoul bzero memset])
+AC_CHECK_FUNCS([endprotoent endservent sleep random fcntl strtoul bzero memset b32_ntop b32_pton])
+if test "x$HAVE_B32_NTOP" = "xyes"; then
+	AC_SUBST(ldns_build_config_have_b32_ntop, 1)
+else
+	AC_SUBST(ldns_build_config_have_b32_ntop, 0)
+fi
+if test "x$HAVE_B32_PTON" = "xyes"; then
+	AC_SUBST(ldns_build_config_have_b32_pton, 1)
+else
+	AC_SUBST(ldns_build_config_have_b32_pton, 0)
+fi
 
 ACX_CHECK_GETADDRINFO_WITH_INCLUDES
 if test $ac_cv_func_getaddrinfo = no; then
@@ -637,7 +645,6 @@ AH_BOTTOM([
 extern "C" {
 #endif
 
-#ifndef B64_PTON
 int ldns_b64_ntop(uint8_t const *src, size_t srclength,
 	 	  char *target, size_t targsize);
 /**
@@ -648,8 +655,6 @@ static inline size_t ldns_b64_ntop_calculate_size(size_t srcsize)
 {
 	return ((((srcsize + 2) / 3) * 4) + 1);
 }
-#endif /* !B64_PTON */
-#ifndef B64_NTOP
 int ldns_b64_pton(char const *src, uint8_t *target, size_t targsize);
 /**
  * calculates the size needed to store the result of ldns_b64_pton
@@ -659,7 +664,12 @@ static inline size_t ldns_b64_pton_calculate_size(size_t srcsize)
 {
 	return (((((srcsize + 3) / 4) * 3)) + 1);
 }
-#endif /* !B64_NTOP */
+
+/**
+ * Given in dnssec_zone.c, also used in dnssec_sign.c:w
+
+ */
+int ldns_dname_compare_v(const void *a, const void *b);
 
 #ifndef HAVE_SLEEP
 /* use windows sleep, in millisecs, instead */
