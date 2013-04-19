@@ -506,7 +506,7 @@ ldns_b32_ntop_base(const uint8_t* src, size_t src_sz,
 		return -1;
 
 	/* We know the size; terminate the string */
-	dst[ret_sz + 1] = '\0';
+	dst[ret_sz] = '\0';
 
 	/* First process all chunks of five */
 	while (src_sz >= 5) {
@@ -575,7 +575,7 @@ ldns_b32_ntop_base(const uint8_t* src, size_t src_sz,
 			case 4: dst[7] = '=';
 		}
 	}
-	return ret_sz;
+	return (int)ret_sz;
 }
 
 int 
@@ -634,20 +634,20 @@ ldns_b32_pton_base(const char* src, size_t src_sz,
 			else if (extended_hex)
 
 				if (ch >= '0' && ch <= '9')
-					buf[i] = ch - '0';
+					buf[i] = (uint8_t)ch - '0';
 				else if (ch >= 'a' && ch <= 'v')
-					buf[i] = ch - 'a' + 10;
+					buf[i] = (uint8_t)ch - 'a' + 10;
 				else if (ch >= 'A' && ch <= 'V')
-					buf[i] = ch - 'A' + 10;
+					buf[i] = (uint8_t)ch - 'A' + 10;
 				else
 					return -1;
 
 			else if (ch >= 'a' && ch <= 'z')
-				buf[i] = ch - 'a';
+				buf[i] = (uint8_t)ch - 'a';
 			else if (ch >= 'A' && ch <= 'Z')
-				buf[i] = ch - 'A';
+				buf[i] = (uint8_t)ch - 'A';
 			else if (ch >= '2' && ch <= '7')
-				buf[i] = ch - '2' + 26;
+				buf[i] = (uint8_t)ch - '2' + 26;
 			else
 				return -1;
 		}
