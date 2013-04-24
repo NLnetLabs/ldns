@@ -182,8 +182,14 @@ enum ldns_enum_rr_type
 	/** draft-ietf-dane-protocol */
 	LDNS_RR_TYPE_TLSA = 52,
 
+	/** draft-reid-dnsext-zs */
+	LDNS_RR_TYPE_NINFO = 56,
+	/** draft-reid-dnsext-rkey */
+	LDNS_RR_TYPE_RKEY = 57,
         /** draft-ietf-dnsop-trust-history */
         LDNS_RR_TYPE_TALINK = 58,
+	/** draft-barwood-dnsop-ds-publis */
+	LDNS_RR_TYPE_CDS = 59,
 
 	LDNS_RR_TYPE_SPF = 99,
 
@@ -207,6 +213,8 @@ enum ldns_enum_rr_type
 	/**  any type (wildcard) */
 	LDNS_RR_TYPE_ANY = 255,
 
+	/** DNSSEC Trust Authorities */
+	LDNS_RR_TYPE_TA = 32768,
 	/* RFC 4431, 5074, DNSSEC Lookaside Validation */
 	LDNS_RR_TYPE_DLV = 32769,
 
