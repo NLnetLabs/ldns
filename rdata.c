@@ -112,14 +112,14 @@ time_t
 ldns_rdf2native_time_t(const ldns_rdf *rd)
 {
 	uint32_t data;
-	
-	switch(ldns_rdf_get_type(rd)) {
-		case LDNS_RDF_TYPE_TIME:
-			memcpy(&data, ldns_rdf_data(rd), sizeof(data));
-			return (time_t)ntohl(data);
-		default:
-			return 0;
+
+	/* only allow 32 bit rdfs */
+	if (ldns_rdf_size(rd) != LDNS_RDF_SIZE_DOUBLEWORD ||
+			ldns_rdf_get_type(rd) != LDNS_RDF_TYPE_TIME) {
+		return 0;
 	}
+	memcpy(&data, ldns_rdf_data(rd), sizeof(data));
+	return (time_t)ntohl(data);
 }
 
 ldns_rdf *

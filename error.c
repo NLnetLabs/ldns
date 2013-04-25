@@ -133,6 +133,7 @@ ldns_lookup_table ldns_error_str[] = {
         { LDNS_STATUS_INVALID_EUI64, 
 		"Conversion error, 8 two character hex numbers "
 		"seperated by dashes expected (i.e. xx-xx-xx-xx-xx-xx-xx-xx" },
+	{ LDNS_STATUS_WIRE_RDATA_ERR, "invalid rdata in wire format" },
 	{ 0, NULL }
 };
 

@@ -64,10 +64,12 @@ ldns_wire2dname(ldns_rdf **dname, const uint8_t *wire, size_t max, size_t *pos)
 	uint8_t tmp_dname[LDNS_MAX_DOMAINLEN];
 	unsigned int pointer_count = 0;
 
+	if (pos == NULL) {
+		return LDNS_STATUS_WIRE_RDATA_ERR;
+	}
 	if (*pos >= max) {
 		return LDNS_STATUS_PACKET_OVERFLOW;
 	}
-
 	label_size = wire[*pos];
 	while (label_size > 0) {
 		/* compression */
