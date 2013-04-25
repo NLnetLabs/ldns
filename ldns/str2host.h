@@ -252,6 +252,22 @@ ldns_status ldns_str2rdf_dname(ldns_rdf **rd, const char *str);
  */
 ldns_status ldns_str2rdf_ilnp64(ldns_rdf **rd, const char *str);
 
+/**
+ * convert 6 hex bytes seperated by dashes into wireformat
+ * \param[in] rd the rdf where to put the data
+ * \param[in] str the string to be converted
+ * \return ldns_status
+ */
+ldns_status ldns_str2rdf_eui48(ldns_rdf **rd, const char *str);
+
+/**
+ * convert 8 hex bytes seperated by dashes into wireformat
+ * \param[in] rd the rdf where to put the data
+ * \param[in] str the string to be converted
+ * \return ldns_status
+ */
+ldns_status ldns_str2rdf_eui64(ldns_rdf **rd, const char *str);
+
 #ifdef __cplusplus
 }
 #endif

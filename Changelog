@@ -1,12 +1,18 @@
 1.6.17
+	* New RR types NINFO, RKEY, CDS, EUI48, EUI64 & TA.
+	* Fix b{32,64}_{ntop,pton} detection and handling.
+	* -T option for ldns-dane that has specific exit status for PKIX
+	  validated connections without (secure) TLSA records.
+	* Bind to source address for resolvers. drill binds to source with -I.
+	  Thanks Bryan Duff.
 	* README now shows preferred way to configure for examples and drill.
 	* Miscellaneous prototype fixes. Thanks Dag-Erling Smørgrav.
+	* Make sure executables are linked against libcrypto with the 
+	  LIBSSL_LDFLAGS. Thanks Leo Baltus.
 	* Add --disable-dane option to configure and check availability of the
 	  for dane needed X509_check_ca function in openssl.
 	* Fix ldns_dnssec_zone_new_frm_fp_l to allow the last parsed line of a
 	  zone to be an NSEC3 (or its RRSIG) covering an empty non terminal.
-	* Make sure executables are linked against libcrypto with the 
-	  LIBSSL_LDFLAGS. Thanks Leo Baltus.
 
 1.6.16	2012-11-13
 	* Fix Makefile to build pyldns with BSD make

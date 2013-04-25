@@ -107,7 +107,11 @@ enum ldns_enum_rdf_type
 	/** nsec3 base32 string (with length byte on wire */
 	LDNS_RDF_TYPE_NSEC3_NEXT_OWNER,
 	/** 4 shorts represented as 4 * 16 bit hex numbers seperated by colons */
-	LDNS_RDF_TYPE_ILNP64
+	LDNS_RDF_TYPE_ILNP64,
+	/** EUI48; 6 * 8 bit hex numbers seperated by dashes */
+	LDNS_RDF_TYPE_EUI48,
+	/** EUI64; 8 * 8 bit hex numbers seperated by dashes */
+	LDNS_RDF_TYPE_EUI64
 };
 typedef enum ldns_enum_rdf_type ldns_rdf_type;
 

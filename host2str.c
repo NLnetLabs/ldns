@@ -1061,6 +1061,27 @@ ldns_rdf2buffer_str_ilnp64(ldns_buffer *output, const ldns_rdf *rdf)
 }
 
 ldns_status
+ldns_rdf2buffer_str_eui48(ldns_buffer *output, const ldns_rdf *rdf)
+{
+	ldns_buffer_printf(output,"%.2x-%.2x-%.2x-%.2x-%.2x-%.2x",
+				ldns_rdf_data(rdf)[0], ldns_rdf_data(rdf)[1],
+				ldns_rdf_data(rdf)[2], ldns_rdf_data(rdf)[3],
+				ldns_rdf_data(rdf)[4], ldns_rdf_data(rdf)[5]);
+	return ldns_buffer_status(output);
+}
+
+ldns_status
+ldns_rdf2buffer_str_eui64(ldns_buffer *output, const ldns_rdf *rdf)
+{
+	ldns_buffer_printf(output,"%.2x-%.2x-%.2x-%.2x-%.2x-%.2x-%.2x-%.2x",
+				ldns_rdf_data(rdf)[0], ldns_rdf_data(rdf)[1],
+				ldns_rdf_data(rdf)[2], ldns_rdf_data(rdf)[3],
+				ldns_rdf_data(rdf)[4], ldns_rdf_data(rdf)[5],
+				ldns_rdf_data(rdf)[6], ldns_rdf_data(rdf)[7]);
+	return ldns_buffer_status(output);
+}
+
+ldns_status
 ldns_rdf2buffer_str(ldns_buffer *buffer, const ldns_rdf *rdf)
 {
 	ldns_status res = LDNS_STATUS_OK;
@@ -1160,6 +1181,12 @@ ldns_rdf2buffer_str(ldns_buffer *buffer, const ldns_rdf *rdf)
 			break;
 		case LDNS_RDF_TYPE_ILNP64:
 			res = ldns_rdf2buffer_str_ilnp64(buffer, rdf);
+			break;
+		case LDNS_RDF_TYPE_EUI48:
+			res = ldns_rdf2buffer_str_eui48(buffer, rdf);
+			break;
+		case LDNS_RDF_TYPE_EUI64:
+			res = ldns_rdf2buffer_str_eui64(buffer, rdf);
 			break;
 		}
 	} else {
