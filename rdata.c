@@ -345,6 +345,15 @@ ldns_rdf_new_frm_str(ldns_rdf_type type, const char *str)
 	case LDNS_RDF_TYPE_EUI64:
 		status = ldns_str2rdf_eui64(&rdf, str);
 		break;
+	case LDNS_RDF_TYPE_TAG:
+		status = ldns_str2rdf_tag(&rdf, str);
+		break;
+	case LDNS_RDF_TYPE_LONG_STR:
+		status = ldns_str2rdf_long_str(&rdf, str);
+		break;
+	case LDNS_RDF_TYPE_MULTI_STR:
+		status = ldns_str2rdf_multi_str(&rdf, str);
+		break;
 	case LDNS_RDF_TYPE_NONE:
 	default:
 		/* default default ??? */

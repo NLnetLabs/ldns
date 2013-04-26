@@ -134,6 +134,9 @@ ldns_lookup_table ldns_error_str[] = {
 		"Conversion error, 8 two character hex numbers "
 		"seperated by dashes expected (i.e. xx-xx-xx-xx-xx-xx-xx-xx" },
 	{ LDNS_STATUS_WIRE_RDATA_ERR, "invalid rdata in wire format" },
+        { LDNS_STATUS_INVALID_TAG, 
+		"Conversion error, a non-zero sequence of US-ASCII letters "
+		"and numbers in lower case expected" },
 	{ 0, NULL }
 };
 

@@ -28,7 +28,7 @@
 extern "C" {
 #endif
 
-#define LDNS_MAX_RDFLEN	8192
+#define LDNS_MAX_RDFLEN	65535
 
 #define LDNS_RDF_SIZE_BYTE              1
 #define LDNS_RDF_SIZE_WORD              2
@@ -106,12 +106,36 @@ enum ldns_enum_rdf_type
 	LDNS_RDF_TYPE_NSEC3_SALT,
 	/** nsec3 base32 string (with length byte on wire */
 	LDNS_RDF_TYPE_NSEC3_NEXT_OWNER,
-	/** 4 shorts represented as 4 * 16 bit hex numbers seperated by colons */
+
+	/** 4 shorts represented as 4 * 16 bit hex numbers
+	 *  seperated by colons. For NID and L64.
+	 */
 	LDNS_RDF_TYPE_ILNP64,
-	/** EUI48; 6 * 8 bit hex numbers seperated by dashes */
+
+	/** 6 * 8 bit hex numbers seperated by dashes. For EUI48. */
 	LDNS_RDF_TYPE_EUI48,
-	/** EUI64; 8 * 8 bit hex numbers seperated by dashes */
-	LDNS_RDF_TYPE_EUI64
+	/** 8 * 8 bit hex numbers seperated by dashes. For EUI64. */
+	LDNS_RDF_TYPE_EUI64,
+
+	/** A non-zero sequence of US-ASCII letters and numbers in lower case.
+	 *  For CAA.
+	 */
+	LDNS_RDF_TYPE_TAG,
+
+	/** A <character-string> encoding of the value field as specified 
+	 * [RFC1035], Section 5.1., encoded as remaining rdata.
+	 * For CAA.
+	 */
+	LDNS_RDF_TYPE_LONG_STR,
+
+	/** A <character-string> encoding of the value field as specified in
+	 *  section 5.1 of [RFC1035], encoded as a sequence of one or more 
+	 *  <character-string> (as specified in section 3.3 of [RFC1035]),
+	 *  where all but the last <character-string> are filled up to the 
+	 *  maximum length of 255 octets.
+	 * For URI.
+	 */
+	LDNS_RDF_TYPE_MULTI_STR
 };
 typedef enum ldns_enum_rdf_type ldns_rdf_type;
 

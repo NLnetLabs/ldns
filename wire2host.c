@@ -159,6 +159,7 @@ ldns_wire2rdf(ldns_rr *rr, const uint8_t *wire, size_t max, size_t *pos)
 {
 	size_t end;
 	size_t cur_rdf_length;
+	size_t str_sz;
 	uint8_t rdf_index;
 	uint8_t *data;
 	uint16_t rd_length;
@@ -224,11 +225,23 @@ ldns_wire2rdf(ldns_rr *rr, const uint8_t *wire, size_t max, size_t *pos)
 			break;
 		case LDNS_RDF_TYPE_STR:
 		case LDNS_RDF_TYPE_NSEC3_SALT:
+		case LDNS_RDF_TYPE_TAG:
 			/* len is stored in first byte
 			 * it should be in the rdf too, so just
 			 * copy len+1 from this position
 			 */
 			cur_rdf_length = ((size_t) wire[*pos]) + 1;
+			break;
+
+		case LDNS_RDF_TYPE_MULTI_STR:
+			cur_rdf_length = 0;
+			while (*pos + cur_rdf_length < end) {
+				str_sz = wire[*pos + cur_rdf_length];
+				cur_rdf_length += str_sz + 1;
+				if (str_sz < 255) {
+					break;
+				}
+			}
 			break;
 		case LDNS_RDF_TYPE_INT16_DATA:
 			cur_rdf_length = (size_t) ldns_read_uint16(&wire[*pos]) + 2;
@@ -250,6 +263,7 @@ ldns_wire2rdf(ldns_rr *rr, const uint8_t *wire, size_t max, size_t *pos)
 		case LDNS_RDF_TYPE_ATMA:
 		case LDNS_RDF_TYPE_IPSECKEY:
 		case LDNS_RDF_TYPE_TSIG:
+		case LDNS_RDF_TYPE_LONG_STR:
 		case LDNS_RDF_TYPE_NONE:
 			/*
 			 * Read to end of rr rdata

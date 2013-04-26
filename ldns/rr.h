@@ -163,7 +163,7 @@ enum ldns_enum_rr_type
 	LDNS_RR_TYPE_OPT = 41,
 	/**  RFC3123 */
 	LDNS_RR_TYPE_APL = 42,
-	/**  draft-ietf-dnsext-delegation */
+	/**  RFC4034, RFC3658 */
 	LDNS_RR_TYPE_DS = 43,
 	/**  SSH Key Fingerprint */
 	LDNS_RR_TYPE_SSHFP = 44, /* RFC 4255 */
@@ -179,8 +179,7 @@ enum ldns_enum_rr_type
 	LDNS_RR_TYPE_NSEC3 = 50, /* RFC 5155 */
 	LDNS_RR_TYPE_NSEC3PARAM = 51, /* RFC 5155 */
 	LDNS_RR_TYPE_NSEC3PARAMS = 51,
-	/** draft-ietf-dane-protocol */
-	LDNS_RR_TYPE_TLSA = 52,
+	LDNS_RR_TYPE_TLSA = 52, /* RFC 6698 */
 
 	/** draft-reid-dnsext-zs */
 	LDNS_RR_TYPE_NINFO = 56,
@@ -191,7 +190,7 @@ enum ldns_enum_rr_type
 	/** draft-barwood-dnsop-ds-publis */
 	LDNS_RR_TYPE_CDS = 59,
 
-	LDNS_RR_TYPE_SPF = 99,
+	LDNS_RR_TYPE_SPF = 99, /* RFC 4408 */
 
 	LDNS_RR_TYPE_UINFO = 100,
 	LDNS_RR_TYPE_UID = 101,
@@ -216,6 +215,9 @@ enum ldns_enum_rr_type
 	LDNS_RR_TYPE_MAILA = 254,
 	/**  any type (wildcard) */
 	LDNS_RR_TYPE_ANY = 255,
+	/** draft-faltstrom-uri-06 */
+	LDNS_RR_TYPE_URI = 256,
+	LDNS_RR_TYPE_CAA = 257, /* RFC 6844 */
 
 	/** DNSSEC Trust Authorities */
 	LDNS_RR_TYPE_TA = 32768,

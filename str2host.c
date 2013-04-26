@@ -257,33 +257,47 @@ ldns_str2rdf_int8(ldns_rdf **rd, const char *bytestr)
  * Returns the number of bytes read from the escaped string, or
  * 0 on error
  */
-static int
-parse_escape(uint8_t *s, uint8_t *q) {
+INLINE bool
+parse_escape(uint8_t *ch_p, const char** str_p)
+{
 	uint16_t val;
-	if (strlen((char *)s) > 3 &&
-	    isdigit((int) s[1]) &&
-	    isdigit((int) s[2]) &&
-	    isdigit((int) s[3])) {
-		/* cast this so it fits */
-		val = (uint16_t) ldns_hexdigit_to_int((char) s[1]) * 100 +
-		                ldns_hexdigit_to_int((char) s[2]) * 10 +
-		                ldns_hexdigit_to_int((char) s[3]);
+
+	if ((*str_p)[0] && isdigit((*str_p)[0])  &&
+	    (*str_p)[1] && isdigit((*str_p)[1])  &&
+	    (*str_p)[2] && isdigit((*str_p)[2]))  {
+
+		val =   ((*str_p)[0] - '0') * 100 +
+			((*str_p)[1] - '0') *  10 +
+			((*str_p)[2] - '0');
+
 		if (val > 255) {
-			/* outside range */
-			return 0;
+			*str_p = NULL;
+			return false;
 		}
-		*q = (uint8_t) val;
-                return 3;
+		*ch_p = (uint8_t)val;
+		*str_p += 3;
+
+	} else if ((*str_p)[0]) {
+
+		*ch_p = *(*str_p)++;
 	} else {
-		s++;
-		if (*s == '\0' || isdigit((int) *s)) {
-			/* apparently the string terminator
-			 * or a digit has been escaped...
-		         */
-			return 0;
-		}
-		*q = *s;
-		return 1;
+		*ch_p = '\\';
+	}
+	return true;
+}
+
+INLINE bool
+parse_char(uint8_t *ch_p, const char** str_p)
+{
+	switch (**str_p) {
+
+	case '\0':	return false;
+
+	case '\\':	*str_p += 1;
+			return parse_escape(ch_p, str_p);
+
+	default:	*ch_p = *(*str_p)++;
+			return true;
 	}
 }
 
@@ -297,8 +311,8 @@ ldns_str2rdf_dname(ldns_rdf **d, const char *str)
 {
 	size_t len;
 
-	int esc;
-	uint8_t *s, *q, *pq, label_len;
+	const char *s;
+	uint8_t *q, *pq, label_len;
 	uint8_t buf[LDNS_MAX_DOMAINLEN + 1];
 	*d = NULL;
 
@@ -328,7 +342,7 @@ ldns_str2rdf_dname(ldns_rdf **d, const char *str)
 	q = buf+1;
 	pq = buf;
 	label_len = 0;
-	for (s = (uint8_t *)str; *s; s++, q++) {
+	for (s = str; *s; s++, q++) {
 		if (q > buf + LDNS_MAX_DOMAINLEN) {
 			return LDNS_STATUS_DOMAINNAME_OVERFLOW;
 		}
@@ -348,13 +362,11 @@ ldns_str2rdf_dname(ldns_rdf **d, const char *str)
 			break;
 		case '\\':
 			/* octet value or literal char */
-			esc = parse_escape(s, q);
-			if (esc > 0) {
-				s += esc;
-				label_len++;
-			} else {
+			s += 1;
+			if (! parse_escape(q, &s)) {
 				return LDNS_STATUS_SYNTAX_BAD_ESCAPE;
 			}
+			label_len++;
 			break;
 		default:
 			*q = *s;
@@ -413,36 +425,41 @@ ldns_str2rdf_aaaa(ldns_rdf **rd, const char *str)
 ldns_status
 ldns_str2rdf_str(ldns_rdf **rd, const char *str)
 {
-	uint8_t *data;
-	size_t i, str_i, esc_i;
+	uint8_t *data, *dp, ch;
 
-	if (strlen(str) > 255) {
-		return LDNS_STATUS_INVALID_STR;
+	/* Worst case space requirement. We'll realloc to actual size later. */
+	dp = data = LDNS_XMALLOC(uint8_t, strlen(str));
+	if (! data) {
+		return LDNS_STATUS_MEM_ERR;
 	}
 
-	data = LDNS_XMALLOC(uint8_t, strlen(str) + 1);
-        if(!data) return LDNS_STATUS_MEM_ERR;
-	i = 1;
-
-	for (str_i = 0; str_i < strlen(str); str_i++) {
-		if (str[str_i] == '\\') {
-			/* octet value or literal char */
-			esc_i = (size_t) parse_escape((uint8_t*) &str[str_i], (uint8_t*) &data[i]);
-			if (esc_i == 0) {
-				LDNS_FREE(data);
-				return LDNS_STATUS_SYNTAX_BAD_ESCAPE;
-			}
-			str_i += esc_i;
-		} else {
-			data[i] = (uint8_t) str[str_i];
+	/* Fill data (up to 255 characters) */
+	while (parse_char(&ch, &str)) {
+		if (dp - data >= 255) {
+			LDNS_FREE(data);
+			return LDNS_STATUS_INVALID_STR;
 		}
-		i++;
+		*++dp = ch;
 	}
-	data[0] = i - 1;
-	*rd = ldns_rdf_new_frm_data(LDNS_RDF_TYPE_STR, i, data);
+	if (! str) {
+		return LDNS_STATUS_SYNTAX_BAD_ESCAPE;
+	}
+	/* Fix last length byte */
+	data[0] = (dp - data) - 1;
 
-	LDNS_FREE(data);
-	return *rd?LDNS_STATUS_OK:LDNS_STATUS_MEM_ERR;
+	/* Lose the overmeasure */
+	data = LDNS_XREALLOC(data, uint8_t, dp - data);
+	if (! data) {
+		return LDNS_STATUS_MEM_ERR;
+	}
+
+	/* Create rdf */
+	*rd = ldns_rdf_new(LDNS_RDF_TYPE_LONG_STR,  dp - data, data);
+	if (! *rd) {
+		LDNS_FREE(data);
+		return LDNS_STATUS_MEM_ERR;
+	}
+	return LDNS_STATUS_OK;
 }
 
 ldns_status
@@ -1391,4 +1408,115 @@ ldns_str2rdf_eui64(ldns_rdf **rd, const char *str)
 		*rd = ldns_rdf_new_frm_data(LDNS_RDF_TYPE_EUI64, 8, &bytes);
 	}
 	return *rd ? LDNS_STATUS_OK : LDNS_STATUS_MEM_ERR;
+}
+
+ldns_status
+ldns_str2rdf_tag(ldns_rdf **rd, const char *str)
+{
+	uint8_t *data;
+	const char* ptr;
+
+	if (strlen(str) > 255) {
+		return LDNS_STATUS_INVALID_TAG;
+	}
+	for (ptr = str; *ptr; ptr++) {
+		if (! isalnum(*ptr)) {
+			return LDNS_STATUS_INVALID_TAG;
+		}
+	}
+	data = LDNS_XMALLOC(uint8_t, strlen(str) + 1);
+        if (!data) {
+		return LDNS_STATUS_MEM_ERR;
+	}
+	data[0] = strlen(str);
+	memcpy(data + 1, str, strlen(str));
+
+	*rd = ldns_rdf_new(LDNS_RDF_TYPE_TAG, strlen(str) + 1, data);
+	if (!*rd) {
+		LDNS_FREE(data);
+		return LDNS_STATUS_MEM_ERR;
+	}
+	return LDNS_STATUS_OK;
+}
+
+ldns_status
+ldns_str2rdf_long_str(ldns_rdf **rd, const char *str)
+{
+	uint8_t *data, *dp, ch;
+
+	/* Worst case space requirement. We'll realloc to actual size later. */
+	dp = data = LDNS_XMALLOC(uint8_t, strlen(str));
+        if (! data) {
+		return LDNS_STATUS_MEM_ERR;
+	}
+
+	/* Fill data with parsed bytes */
+	while (parse_char(&ch, &str)) {
+		*dp++ = ch;
+		if (dp - data > LDNS_MAX_RDFLEN) {
+			LDNS_FREE(data);
+			return LDNS_STATUS_INVALID_STR;
+		}
+	}
+	if (! str) {
+		return LDNS_STATUS_SYNTAX_BAD_ESCAPE;
+	}
+
+	/* Lose the overmeasure */
+	data = LDNS_XREALLOC(data, uint8_t, dp - data);
+	if (! data) {
+		return LDNS_STATUS_MEM_ERR;
+	}
+
+	/* Create rdf */
+	*rd = ldns_rdf_new(LDNS_RDF_TYPE_LONG_STR,  dp - data, data);
+	if (! *rd) {
+		LDNS_FREE(data);
+		return LDNS_STATUS_MEM_ERR;
+	}
+	return LDNS_STATUS_OK;
+}
+
+ldns_status
+ldns_str2rdf_multi_str(ldns_rdf **rd, const char *str)
+{
+	uint8_t *data, *dp, ch;
+
+	/* Worst case space requirement. We'll realloc to actual size later. */
+	dp = data = LDNS_XMALLOC(uint8_t, strlen(str) + strlen(str) / 255 + 1);
+	if (! data) {
+		return LDNS_STATUS_MEM_ERR;
+	}
+
+	/* Fill data with length byte (255) followed by 255 chars, repeatedly */
+	*dp++ = 255;
+	while (parse_char(&ch, &str)) {
+		*dp++ = ch;
+		if ((dp - data) % 256 == 0) {
+			*dp++ = 255;
+		}
+		if (dp - data > LDNS_MAX_RDFLEN) {
+			LDNS_FREE(data);
+			return LDNS_STATUS_INVALID_STR;
+		}
+	}
+	if (! str) {
+		return LDNS_STATUS_SYNTAX_BAD_ESCAPE;
+	}
+	/* Fix last length byte */
+	data[(dp - data) / 256 * 256] = (dp - data) % 256 - 1;
+
+	/* Lose the overmeasure */
+	data = LDNS_XREALLOC(data, uint8_t, dp - data);
+	if (! data) {
+		return LDNS_STATUS_MEM_ERR;
+	}
+
+	/* Create rdf */
+	*rd = ldns_rdf_new(LDNS_RDF_TYPE_LONG_STR,  dp - data, data);
+	if (! *rd) {
+		LDNS_FREE(data);
+		return LDNS_STATUS_MEM_ERR;
+	}
+	return LDNS_STATUS_OK;
 }

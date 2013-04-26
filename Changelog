@@ -1,5 +1,5 @@
 1.6.17
-	* New RR types NINFO, RKEY, CDS, EUI48, EUI64 & TA.
+	* New RR types NINFO, RKEY, CDS, EUI48, EUI64, URI, CAA and TA.
 	* Fix b{32,64}_{ntop,pton} detection and handling.
 	* -T option for ldns-dane that has specific exit status for PKIX
 	  validated connections without (secure) TLSA records.

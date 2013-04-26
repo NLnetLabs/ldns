@@ -268,6 +268,35 @@ ldns_status ldns_str2rdf_eui48(ldns_rdf **rd, const char *str);
  */
 ldns_status ldns_str2rdf_eui64(ldns_rdf **rd, const char *str);
 
+/**
+ * Convert a non-zero sequence of US-ASCII letters and numbers into wireformat
+ * \param[in] rd the rdf where to put the data
+ * \param[in] str the string to be converted
+ * \return ldns_status
+ */
+ldns_status ldns_str2rdf_tag(ldns_rdf **rd, const char *str);
+
+/**
+ * Convert a <character-string> encoding of the value field as specified 
+ * [RFC1035], Section 5.1., encoded as one bug chunk of data.
+ * \param[in] rd the rdf where to put the data
+ * \param[in] str the string to be converted
+ * \return ldns_status
+ */
+ldns_status ldns_str2rdf_long_str(ldns_rdf **rd, const char *str);
+
+/**
+ * Convert A <character-string> encoding of the value field as specified in
+ * section 5.1 of [RFC1035], encoded as a sequence of one or more 
+ * <character-string> (as specified in section 3.3 of [RFC1035]),
+ * where all but the last <character-string> are filled up to the 
+ * maximum length of 255 octets.
+ * \param[in] rd the rdf where to put the data
+ * \param[in] str the string to be converted
+ * \return ldns_status
+ */
+ldns_status ldns_str2rdf_multi_str(ldns_rdf **rd, const char *str);
+
 #ifdef __cplusplus
 }
 #endif

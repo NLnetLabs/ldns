@@ -87,6 +87,15 @@ ldns_rr_free(ldns_rr *rr)
 	}
 }
 
+/* Syntactic sugar for ldns_rr_new_frm_str_internal */
+INLINE bool
+ldns_rdf_type_maybe_quoted(ldns_rdf_type rdf_type)
+{
+	return  rdf_type == LDNS_RDF_TYPE_STR ||
+		rdf_type == LDNS_RDF_TYPE_LONG_STR ||
+		rdf_type == LDNS_RDF_TYPE_MULTI_STR;
+}
+
 /*
  * trailing spaces are allowed
  * leading spaces are not allowed
@@ -359,9 +368,11 @@ ldns_rr_new_frm_str_internal(ldns_rr **newrr, const char *str,
 					delimiters = "\n\t ";
 				}
 
-				if (ldns_rr_descriptor_field_type(desc,
-							r_cnt) == LDNS_RDF_TYPE_STR &&
-							ldns_buffer_remaining(rd_buf) > 0) {
+				if (ldns_rdf_type_maybe_quoted(
+					    ldns_rr_descriptor_field_type(
+						desc, r_cnt)) &&
+					    ldns_buffer_remaining(rd_buf) > 0){
+
 					/* skip spaces */
 					while (*(ldns_buffer_current(rd_buf)) == ' ') {
 						ldns_buffer_skip(rd_buf, 1);
@@ -1962,6 +1973,16 @@ static const ldns_rdf_type type_eui48_wireformat[] = {
 static const ldns_rdf_type type_eui64_wireformat[] = {
 	LDNS_RDF_TYPE_EUI64
 };
+static const ldns_rdf_type type_uri_wireformat[] = {
+	LDNS_RDF_TYPE_INT16,
+	LDNS_RDF_TYPE_INT16,
+	LDNS_RDF_TYPE_MULTI_STR
+};
+static const ldns_rdf_type type_caa_wireformat[] = {
+	LDNS_RDF_TYPE_INT8,
+	LDNS_RDF_TYPE_TAG,
+	LDNS_RDF_TYPE_LONG_STR
+};
 /** \endcond */
 
 /** \cond */
@@ -2128,23 +2149,24 @@ static ldns_rr_descriptor rdata_field_descriptors[] = {
 {LDNS_RR_TYPE_NULL, "TYPE96", 1, 1, type_0_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 0 },
 {LDNS_RR_TYPE_NULL, "TYPE97", 1, 1, type_0_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 0 },
 {LDNS_RR_TYPE_NULL, "TYPE98", 1, 1, type_0_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 0 },
-{LDNS_RR_TYPE_SPF,  "SPF", 1, 0, NULL, LDNS_RDF_TYPE_STR, LDNS_RR_NO_COMPRESS, 0 },
+	/* 99 */
+	{LDNS_RR_TYPE_SPF,  "SPF", 1, 0, NULL, LDNS_RDF_TYPE_STR, LDNS_RR_NO_COMPRESS, 0 },
 {LDNS_RR_TYPE_NULL, "TYPE100", 1, 1, type_0_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 0 },
 {LDNS_RR_TYPE_NULL, "TYPE101", 1, 1, type_0_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 0 },
 {LDNS_RR_TYPE_NULL, "TYPE102", 1, 1, type_0_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 0 },
 {LDNS_RR_TYPE_NULL, "TYPE103", 1, 1, type_0_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 0 },
 	/* 104 */
-{LDNS_RR_TYPE_NID, "NID", 2, 2, type_nid_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 0 },
+	{LDNS_RR_TYPE_NID, "NID", 2, 2, type_nid_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 0 },
 	/* 105 */
-{LDNS_RR_TYPE_L32, "L32", 2, 2, type_l32_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 0 },
+	{LDNS_RR_TYPE_L32, "L32", 2, 2, type_l32_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 0 },
 	/* 106 */
-{LDNS_RR_TYPE_L64, "L64", 2, 2, type_l64_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 0 },
+	{LDNS_RR_TYPE_L64, "L64", 2, 2, type_l64_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 0 },
 	/* 107 */
-{LDNS_RR_TYPE_LP, "LP", 2, 2, type_lp_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 1 },
+	{LDNS_RR_TYPE_LP, "LP", 2, 2, type_lp_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 1 },
 	/* 108 */
-{LDNS_RR_TYPE_EUI48, "EUI48", 1, 1, type_eui48_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 0 },
+	{LDNS_RR_TYPE_EUI48, "EUI48", 1, 1, type_eui48_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 0 },
 	/* 109 */
-{LDNS_RR_TYPE_EUI64, "EUI64", 1, 1, type_eui64_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 0 },
+	{LDNS_RR_TYPE_EUI64, "EUI64", 1, 1, type_eui64_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 0 },
 {LDNS_RR_TYPE_NULL, "TYPE110", 1, 1, type_0_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 0 },
 {LDNS_RR_TYPE_NULL, "TYPE111", 1, 1, type_0_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 0 },
 {LDNS_RR_TYPE_NULL, "TYPE112", 1, 1, type_0_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 0 },
@@ -2289,10 +2311,20 @@ static ldns_rr_descriptor rdata_field_descriptors[] = {
  * makes them into one. So, while in rfc 2845 is specified that a TSIG may have 
  * 8 or 9 rdata fields, by this implementation, the min/max are 7 each. 
  */
-{LDNS_RR_TYPE_TSIG, "TSIG", 7, 7, type_tsig_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 0 },
+	/* 250 */
+	{LDNS_RR_TYPE_TSIG, "TSIG", 7, 7, type_tsig_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 0 },
+
 /* split in array, no longer contiguous */
-{LDNS_RR_TYPE_TA, "TA", 4, 4, type_ds_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 0 },
-{LDNS_RR_TYPE_DLV, "DLV", 4, 4, type_ds_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 0 }
+
+	/* 256 */
+	{LDNS_RR_TYPE_URI, "URI", 3, 3, type_uri_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 0 },
+	/* 257 */
+	{LDNS_RR_TYPE_CAA, "CAA", 3, 3, type_caa_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 0 },
+
+	/* 32768 */
+	{LDNS_RR_TYPE_TA, "TA", 4, 4, type_ds_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 0 },
+	/* 32769 */
+	{LDNS_RR_TYPE_DLV, "DLV", 4, 4, type_ds_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 0 }
 };
 /** \endcond */
 
