@@ -266,24 +266,25 @@ parse_escape(uint8_t *ch_p, const char** str_p)
 	    (*str_p)[1] && isdigit((*str_p)[1])  &&
 	    (*str_p)[2] && isdigit((*str_p)[2]))  {
 
-		val =   ((*str_p)[0] - '0') * 100 +
-			((*str_p)[1] - '0') *  10 +
-			((*str_p)[2] - '0');
+		val = (uint16_t)(((*str_p)[0] - '0') * 100 +
+				 ((*str_p)[1] - '0') *  10 +
+				 ((*str_p)[2] - '0'));
 
 		if (val > 255) {
-			*str_p = NULL;
-			return false;
+			goto error;
 		}
 		*ch_p = (uint8_t)val;
 		*str_p += 3;
+		return true;
 
-	} else if ((*str_p)[0]) {
+	} else if ((*str_p)[0] && !isdigit((*str_p)[0])) {
 
-		*ch_p = *(*str_p)++;
-	} else {
-		*ch_p = '\\';
+		*ch_p = (uint8_t)*(*str_p)++;
+		return true;
 	}
-	return true;
+error:
+	*str_p = NULL;
+	return false; /* LDNS_STATUS_SYNTAX_BAD_ESCAPE */
 }
 
 INLINE bool
@@ -296,7 +297,7 @@ parse_char(uint8_t *ch_p, const char** str_p)
 	case '\\':	*str_p += 1;
 			return parse_escape(ch_p, str_p);
 
-	default:	*ch_p = *(*str_p)++;
+	default:	*ch_p = (uint8_t)*(*str_p)++;
 			return true;
 	}
 }
@@ -366,10 +367,11 @@ ldns_str2rdf_dname(ldns_rdf **d, const char *str)
 			if (! parse_escape(q, &s)) {
 				return LDNS_STATUS_SYNTAX_BAD_ESCAPE;
 			}
+			s -= 1;
 			label_len++;
 			break;
 		default:
-			*q = *s;
+			*q = (uint8_t)*s;
 			label_len++;
 		}
 	}
@@ -425,10 +427,11 @@ ldns_str2rdf_aaaa(ldns_rdf **rd, const char *str)
 ldns_status
 ldns_str2rdf_str(ldns_rdf **rd, const char *str)
 {
-	uint8_t *data, *dp, ch;
+	uint8_t *data, *dp, ch = 0;
+	size_t length;
 
 	/* Worst case space requirement. We'll realloc to actual size later. */
-	dp = data = LDNS_XMALLOC(uint8_t, strlen(str));
+	dp = data = LDNS_XMALLOC(uint8_t, strlen(str) > 255 ? 256 : (strlen(str) + 1));
 	if (! data) {
 		return LDNS_STATUS_MEM_ERR;
 	}
@@ -444,17 +447,19 @@ ldns_str2rdf_str(ldns_rdf **rd, const char *str)
 	if (! str) {
 		return LDNS_STATUS_SYNTAX_BAD_ESCAPE;
 	}
+	length = (size_t)(dp - data);
 	/* Fix last length byte */
-	data[0] = (dp - data) - 1;
+	data[0] = (uint8_t)length;
 
 	/* Lose the overmeasure */
-	data = LDNS_XREALLOC(data, uint8_t, dp - data);
+	data = LDNS_XREALLOC(dp = data, uint8_t, length + 1);
 	if (! data) {
+		LDNS_FREE(dp);
 		return LDNS_STATUS_MEM_ERR;
 	}
 
 	/* Create rdf */
-	*rd = ldns_rdf_new(LDNS_RDF_TYPE_LONG_STR,  dp - data, data);
+	*rd = ldns_rdf_new(LDNS_RDF_TYPE_STR, length + 1, data);
 	if (! *rd) {
 		LDNS_FREE(data);
 		return LDNS_STATUS_MEM_ERR;
@@ -1442,7 +1447,8 @@ ldns_str2rdf_tag(ldns_rdf **rd, const char *str)
 ldns_status
 ldns_str2rdf_long_str(ldns_rdf **rd, const char *str)
 {
-	uint8_t *data, *dp, ch;
+	uint8_t *data, *dp, ch = 0;
+	size_t length;
 
 	/* Worst case space requirement. We'll realloc to actual size later. */
 	dp = data = LDNS_XMALLOC(uint8_t, strlen(str));
@@ -1461,15 +1467,17 @@ ldns_str2rdf_long_str(ldns_rdf **rd, const char *str)
 	if (! str) {
 		return LDNS_STATUS_SYNTAX_BAD_ESCAPE;
 	}
+	length = (size_t)(dp - data);
 
 	/* Lose the overmeasure */
-	data = LDNS_XREALLOC(data, uint8_t, dp - data);
+	data = LDNS_XREALLOC(dp = data, uint8_t, length);
 	if (! data) {
+		LDNS_FREE(dp);
 		return LDNS_STATUS_MEM_ERR;
 	}
 
 	/* Create rdf */
-	*rd = ldns_rdf_new(LDNS_RDF_TYPE_LONG_STR,  dp - data, data);
+	*rd = ldns_rdf_new(LDNS_RDF_TYPE_LONG_STR, length, data);
 	if (! *rd) {
 		LDNS_FREE(data);
 		return LDNS_STATUS_MEM_ERR;
@@ -1480,7 +1488,8 @@ ldns_str2rdf_long_str(ldns_rdf **rd, const char *str)
 ldns_status
 ldns_str2rdf_multi_str(ldns_rdf **rd, const char *str)
 {
-	uint8_t *data, *dp, ch;
+	uint8_t *data, *dp, ch = 0;
+	size_t length;
 
 	/* Worst case space requirement. We'll realloc to actual size later. */
 	dp = data = LDNS_XMALLOC(uint8_t, strlen(str) + strlen(str) / 255 + 1);
@@ -1503,17 +1512,20 @@ ldns_str2rdf_multi_str(ldns_rdf **rd, const char *str)
 	if (! str) {
 		return LDNS_STATUS_SYNTAX_BAD_ESCAPE;
 	}
+	length = (size_t)(dp - data);
+
 	/* Fix last length byte */
-	data[(dp - data) / 256 * 256] = (dp - data) % 256 - 1;
+	data[length / 256 * 256] = (uint8_t)(length % 256 - 1);
 
 	/* Lose the overmeasure */
-	data = LDNS_XREALLOC(data, uint8_t, dp - data);
+	data = LDNS_XREALLOC(dp = data, uint8_t, length);
 	if (! data) {
+		LDNS_FREE(dp);
 		return LDNS_STATUS_MEM_ERR;
 	}
 
 	/* Create rdf */
-	*rd = ldns_rdf_new(LDNS_RDF_TYPE_LONG_STR,  dp - data, data);
+	*rd = ldns_rdf_new(LDNS_RDF_TYPE_MULTI_STR, length, data);
 	if (! *rd) {
 		LDNS_FREE(data);
 		return LDNS_STATUS_MEM_ERR;
