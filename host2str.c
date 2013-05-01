@@ -407,7 +407,7 @@ ldns_rdf2buffer_str_str(ldns_buffer *output, const ldns_rdf *rdf)
         if(ldns_rdf_size(rdf) < 1) {
                 return LDNS_STATUS_WIRE_RDATA_ERR;
         }
-        if((int)ldns_rdf_size(rdf) < ldns_rdf_data(rdf)[0] + 1) {
+        if((int)ldns_rdf_size(rdf) < (int)ldns_rdf_data(rdf)[0] + 1) {
                 return LDNS_STATUS_WIRE_RDATA_ERR;
         }
 	ldns_buffer_printf(output, "\"");
@@ -1154,7 +1154,7 @@ ldns_rdf2buffer_str_tag(ldns_buffer *output, const ldns_rdf *rdf)
 	}
 	chars = ldns_rdf_data(rdf) + 1;
 	while (nchars > 0) {
-		ch = *chars++;
+		ch = (char)*chars++;
 		if (! isalnum(ch)) {
 			return LDNS_STATUS_WIRE_RDATA_ERR;
 		}
