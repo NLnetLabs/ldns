@@ -36,8 +36,8 @@ extern "C" {
 /** The bytes TTL, CLASS and length use up in an rr */
 #define LDNS_RR_OVERHEAD	10
 
-/* The first fields are 'common' and can be referenced instantly */
-#define LDNS_RDATA_FIELD_DESCRIPTORS_COMMON 53
+/* The first fields are contiguous and can be referenced instantly */
+#define LDNS_RDATA_FIELD_DESCRIPTORS_COMMON 258
 
 
 
@@ -206,6 +206,7 @@ enum ldns_enum_rr_type
 	LDNS_RR_TYPE_EUI48 = 108,
 	LDNS_RR_TYPE_EUI64 = 109,
 
+	LDNS_RR_TYPE_TKEY = 249, /* RFC 2930 */
 	LDNS_RR_TYPE_TSIG = 250,
 	LDNS_RR_TYPE_IXFR = 251,
 	LDNS_RR_TYPE_AXFR = 252,

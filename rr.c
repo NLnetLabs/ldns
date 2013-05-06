@@ -147,6 +147,12 @@ ldns_rr_new_frm_str_internal(ldns_rr **newrr, const char *str,
 	uint16_t r_max;
         size_t pre_data_pos;
 
+	uint16_t hex_data_size;
+	char *hex_data_str = NULL;
+	uint16_t cur_hex_data_size;
+	size_t hex_pos = 0;
+	uint8_t *hex_data = NULL;
+
 	new = ldns_rr_new();
 
 	owner = LDNS_XMALLOC(char, LDNS_MAX_DOMAINLEN + 1);
@@ -157,25 +163,31 @@ ldns_rr_new_frm_str_internal(ldns_rr **newrr, const char *str,
 	rd_buf = LDNS_MALLOC(ldns_buffer);
 	rd = LDNS_XMALLOC(char, LDNS_MAX_RDFLEN);
 	b64 = LDNS_XMALLOC(char, LDNS_MAX_RDFLEN);
-	if (!new || !owner || !ttl || !clas || !rdata || !rr_buf || !rd_buf || !rd || !b64 ) {
-		status = LDNS_STATUS_MEM_ERR;
-		LDNS_FREE(rr_buf);
-		goto ldnserror;
+	if (rr_buf) {
+		rr_buf->_data = NULL;
+	}
+	if (rd_buf) {
+		rd_buf->_data = NULL;
+	}
+	if (!new || !owner || !ttl || !clas || !rdata ||
+			!rr_buf || !rd_buf || !rd || !b64) {
+
+		goto memerror;
 	}
 
 	ldns_buffer_new_frm_data(rr_buf, (char*)str, strlen(str));
 
 	/* split the rr in its parts -1 signals trouble */
-	if (ldns_bget_token(rr_buf, owner, "\t\n ", LDNS_MAX_DOMAINLEN) == -1) {
+	if (ldns_bget_token(rr_buf, owner, "\t\n ", LDNS_MAX_DOMAINLEN) == -1){
+
 		status = LDNS_STATUS_SYNTAX_ERR;
-		ldns_buffer_free(rr_buf);
-		goto ldnserror;
+		goto error;
 	}
 
 	if (ldns_bget_token(rr_buf, ttl, "\t\n ", LDNS_TTL_DATALEN) == -1) {
+
 		status = LDNS_STATUS_SYNTAX_TTL_ERR;
-		ldns_buffer_free(rr_buf);
-		goto ldnserror;
+		goto error;
 	}
 	ttl_val = (uint32_t) ldns_str2period(ttl, &endptr);
 
@@ -198,18 +210,17 @@ ldns_rr_new_frm_str_internal(ldns_rr **newrr, const char *str,
 		if (clas_val == 0) {
 			clas_val = LDNS_RR_CLASS_IN;
 			type = LDNS_XMALLOC(char, strlen(ttl) + 1);
-			if(!type) {
-				status = LDNS_STATUS_MEM_ERR;
-				ldns_buffer_free(rr_buf);
-				goto ldnserror;
+			if (!type) {
+				goto memerror;
 			}
 			strncpy(type, ttl, strlen(ttl) + 1);
 		}
 	} else {
-		if (ldns_bget_token(rr_buf, clas, "\t\n ", LDNS_SYNTAX_DATALEN) == -1) {
+		if (-1 == ldns_bget_token(
+				rr_buf, clas, "\t\n ", LDNS_SYNTAX_DATALEN)) {
+
 			status = LDNS_STATUS_SYNTAX_CLASS_ERR;
-			ldns_buffer_free(rr_buf);
-			goto ldnserror;
+			goto error;
 		}
 		clas_val = ldns_get_rr_class_by_name(clas);
 		/* class can be left out too, assume IN, current
@@ -218,10 +229,8 @@ ldns_rr_new_frm_str_internal(ldns_rr **newrr, const char *str,
 		if (clas_val == 0) {
 			clas_val = LDNS_RR_CLASS_IN;
 			type = LDNS_XMALLOC(char, strlen(clas) + 1);
-			if(!type) {
-				status = LDNS_STATUS_MEM_ERR;
-				ldns_buffer_free(rr_buf);
-				goto ldnserror;
+			if (!type) {
+				goto memerror;
 			}
 			strncpy(type, clas, strlen(clas) + 1);
 		}
@@ -230,24 +239,22 @@ ldns_rr_new_frm_str_internal(ldns_rr **newrr, const char *str,
 
 	if (!type) {
 		type = LDNS_XMALLOC(char, LDNS_SYNTAX_DATALEN);
-		if(!type) {
-			status = LDNS_STATUS_MEM_ERR;
-			ldns_buffer_free(rr_buf);
-			goto ldnserror;
+		if (!type) {
+			goto memerror;
 		}
-		if (ldns_bget_token(rr_buf, type, "\t\n ", LDNS_SYNTAX_DATALEN) == -1) {
+		if (-1 == ldns_bget_token(
+				rr_buf, type, "\t\n ", LDNS_SYNTAX_DATALEN)) {
+
 			status = LDNS_STATUS_SYNTAX_TYPE_ERR;
-			ldns_buffer_free(rr_buf);
-			goto ldnserror;
+			goto error;
 		}
 	}
 
 	if (ldns_bget_token(rr_buf, rdata, "\0", LDNS_MAX_PACKETLEN) == -1) {
 		/* apparently we are done, and it's only a question RR
 		 * so do not set status and go to ldnserror here
-		*/
+		 */
 	}
-
 	ldns_buffer_new_frm_data(rd_buf, rdata, strlen(rdata));
 
 	if (strlen(owner) <= 1 && strncmp(owner, "@", 1) == 0) {
@@ -265,9 +272,7 @@ ldns_rr_new_frm_str_internal(ldns_rr **newrr, const char *str,
 			ldns_rdf_deep_free(*prev);
 			*prev = ldns_rdf_clone(ldns_rr_owner(new));
 			if (!*prev) {
-				status = LDNS_STATUS_MEM_ERR;
-				ldns_buffer_free(rr_buf);
-				goto ldnserror;
+				goto memerror;
 			}
 		}
 	} else {
@@ -279,57 +284,49 @@ ldns_rr_new_frm_str_internal(ldns_rr **newrr, const char *str,
 			} else if (origin) {
 				ldns_rr_set_owner(new, ldns_rdf_clone(origin));
 			} else {
-				ldns_rr_set_owner(new, ldns_dname_new_frm_str("."));
+				ldns_rr_set_owner(new,
+						ldns_dname_new_frm_str("."));
 			}
 			if(!ldns_rr_owner(new)) {
-				status = LDNS_STATUS_MEM_ERR;
-				ldns_buffer_free(rr_buf);
-				goto ldnserror;
+				goto memerror;
 			}
 		} else {
 			owner_dname = ldns_dname_new_frm_str(owner);
 			if (!owner_dname) {
 				status = LDNS_STATUS_SYNTAX_ERR;
-				ldns_buffer_free(rr_buf);
-				goto ldnserror;
+				goto error;
 			}
 
 			ldns_rr_set_owner(new, owner_dname);
 			if (!ldns_dname_str_absolute(owner) && origin) {
-				if(ldns_dname_cat(ldns_rr_owner(new),
-							origin) != LDNS_STATUS_OK) {
+				if(ldns_dname_cat(ldns_rr_owner(new), origin)
+						!= LDNS_STATUS_OK) {
+
 					status = LDNS_STATUS_SYNTAX_ERR;
-					ldns_buffer_free(rr_buf);
-					goto ldnserror;
+					goto error;
 				}
 			}
 			if (prev) {
 				ldns_rdf_deep_free(*prev);
 				*prev = ldns_rdf_clone(ldns_rr_owner(new));
-				if(!*prev) {
-					status = LDNS_STATUS_MEM_ERR;
-					ldns_buffer_free(rr_buf);
-					goto ldnserror;
+				if (!*prev) {
+					goto error;
 				}
 			}
 		}
 	}
 	LDNS_FREE(owner);
-	owner = NULL;
 
 	ldns_rr_set_question(new, question);
 
 	ldns_rr_set_ttl(new, ttl_val);
 	LDNS_FREE(ttl);
-	ttl = NULL;
 
 	ldns_rr_set_class(new, clas_val);
 	LDNS_FREE(clas);
-	clas = NULL;
 
 	rr_type = ldns_get_rr_type_by_name(type);
 	LDNS_FREE(type);
-	type = NULL;
 
 	desc = ldns_rr_descript((uint16_t)rr_type);
 	ldns_rr_set_type(new, rr_type);
@@ -342,270 +339,231 @@ ldns_rr_new_frm_str_internal(ldns_rr **newrr, const char *str,
 		r_max = 1;
 	}
 
-	/* depending on the rr_type we need to extract
-	 * the rdata differently, e.g. NSEC/NSEC3 */
-	switch(rr_type) {
-		default:
-			done = false;
+	for (done = false, r_cnt = 0; !done && r_cnt < r_max; r_cnt++) {
+		quoted = false;
+		/* if type = B64, the field may contain spaces */
+		if (ldns_rr_descriptor_field_type(desc,
+				r_cnt) == LDNS_RDF_TYPE_B64 ||
+			ldns_rr_descriptor_field_type(desc,
+				r_cnt) == LDNS_RDF_TYPE_HEX ||
+			ldns_rr_descriptor_field_type(desc,
+				r_cnt) == LDNS_RDF_TYPE_LOC ||
+			ldns_rr_descriptor_field_type(desc,
+				r_cnt) == LDNS_RDF_TYPE_WKS ||
+			ldns_rr_descriptor_field_type(desc,
+				r_cnt) == LDNS_RDF_TYPE_IPSECKEY ||
+			ldns_rr_descriptor_field_type(desc,
+				r_cnt) == LDNS_RDF_TYPE_NSEC) {
+			delimiters = "\n\t";
+		} else {
+			delimiters = "\n\t ";
+		}
 
-			for (r_cnt = 0; !done && r_cnt < r_max; r_cnt++) {
-				quoted = false;
-				/* if type = B64, the field may contain spaces */
-				if (ldns_rr_descriptor_field_type(desc,
-					    r_cnt) == LDNS_RDF_TYPE_B64 ||
-				    ldns_rr_descriptor_field_type(desc,
-					    r_cnt) == LDNS_RDF_TYPE_HEX ||
-				    ldns_rr_descriptor_field_type(desc,
-					    r_cnt) == LDNS_RDF_TYPE_LOC ||
-				    ldns_rr_descriptor_field_type(desc,
-					    r_cnt) == LDNS_RDF_TYPE_WKS ||
-				    ldns_rr_descriptor_field_type(desc,
-					    r_cnt) == LDNS_RDF_TYPE_IPSECKEY ||
-				    ldns_rr_descriptor_field_type(desc,
-					    r_cnt) == LDNS_RDF_TYPE_NSEC) {
-					delimiters = "\n\t";
-				} else {
-					delimiters = "\n\t ";
-				}
+		if (ldns_rdf_type_maybe_quoted(
+				ldns_rr_descriptor_field_type(
+				desc, r_cnt)) &&
+				ldns_buffer_remaining(rd_buf) > 0){
 
-				if (ldns_rdf_type_maybe_quoted(
-					    ldns_rr_descriptor_field_type(
-						desc, r_cnt)) &&
-					    ldns_buffer_remaining(rd_buf) > 0){
+			/* skip spaces */
+			while (*(ldns_buffer_current(rd_buf)) == ' ') {
+				ldns_buffer_skip(rd_buf, 1);
+			}
 
-					/* skip spaces */
-					while (*(ldns_buffer_current(rd_buf)) == ' ') {
-						ldns_buffer_skip(rd_buf, 1);
-					}
+			if (*(ldns_buffer_current(rd_buf)) == '\"') {
+				delimiters = "\"\0";
+				ldns_buffer_skip(rd_buf, 1);
+				quoted = true;
+			}
+		}
 
-					if (*(ldns_buffer_current(rd_buf)) == '\"') {
-						delimiters = "\"\0";
-						ldns_buffer_skip(rd_buf, 1);
-						quoted = true;
-					}
-				}
+		/* because number of fields can be variable, we can't rely on
+		 * _maximum() only
+		 */
 
-				/* because number of fields can be variable, we can't
-				   rely on _maximum() only */
-				/* skip spaces */
-				while (ldns_buffer_position(rd_buf) < ldns_buffer_limit(rd_buf) &&
-					*(ldns_buffer_current(rd_buf)) == ' ' && !quoted
-				      ) {
-					ldns_buffer_skip(rd_buf, 1);
-				}
+		/* skip spaces */
+		while (ldns_buffer_position(rd_buf) < ldns_buffer_limit(rd_buf)
+				&& *(ldns_buffer_current(rd_buf)) == ' '
+				&& !quoted) {
 
-				pre_data_pos = ldns_buffer_position(rd_buf);
-				if ((c = ldns_bget_token(rd_buf, rd, delimiters,
-							LDNS_MAX_RDFLEN)) != -1) {
-					/* hmmz, rfc3597 specifies that any type can be represented with
-					 * \# method, which can contain spaces...
-					 * it does specify size though...
-					 */
+			ldns_buffer_skip(rd_buf, 1);
+		}
+
+		pre_data_pos = ldns_buffer_position(rd_buf);
+		if (-1 == (c = ldns_bget_token(
+				rd_buf, rd, delimiters, LDNS_MAX_RDFLEN))) {
+
+			done = true;
+			break;
+		}
+		/* hmmz, rfc3597 specifies that any type can be represented 
+		 * with \# method, which can contain spaces...
+		 * it does specify size though...
+		 */
+		rd_strlen = strlen(rd);
+
+		/* unknown RR data */
+		if (strncmp(rd, "\\#", 2) == 0 && !quoted &&
+				(rd_strlen == 2 || rd[2]==' ')) {
+
+			was_unknown_rr_format = 1;
+			/* go back to before \#
+			 * and skip it while setting delimiters better
+			 */
+			ldns_buffer_set_position(rd_buf, pre_data_pos);
+			delimiters = "\n\t ";
+			(void)ldns_bget_token(rd_buf, rd,
+					delimiters, LDNS_MAX_RDFLEN);
+			/* read rdata octet length */
+			c = ldns_bget_token(rd_buf, rd,
+					delimiters, LDNS_MAX_RDFLEN);
+			if (c == -1) {
+				/* something goes very wrong here */
+				status = LDNS_STATUS_SYNTAX_RDATA_ERR;
+				goto error;
+			}
+			hex_data_size = (uint16_t) atoi(rd);
+			/* copy hex chars into hex str (2 chars per byte) */
+			hex_data_str = LDNS_XMALLOC(char, 2*hex_data_size + 1);
+			if (!hex_data_str) {
+				/* malloc error */
+				goto memerror;
+			}
+			cur_hex_data_size = 0;
+			while(cur_hex_data_size < 2 * hex_data_size) {
+				c = ldns_bget_token(rd_buf, rd,
+						delimiters, LDNS_MAX_RDFLEN);
+				if (c != -1) {
 					rd_strlen = strlen(rd);
+				}
+				if (c == -1 || 
+				    (size_t)cur_hex_data_size + rd_strlen >
+				    2 * (size_t)hex_data_size) {
 
-					/* unknown RR data */
-					if (strncmp(rd, "\\#", 2) == 0 && !quoted && (rd_strlen == 2 || rd[2]==' ')) {
-                                        	uint16_t hex_data_size;
-                                                char *hex_data_str;
-                                                uint16_t cur_hex_data_size;
+					status = LDNS_STATUS_SYNTAX_RDATA_ERR;
+					goto error;
+				}
+				strncpy(hex_data_str + cur_hex_data_size, rd,
+						rd_strlen);
 
-                                                was_unknown_rr_format = 1;
-                                                /* go back to before \# and skip it while setting delimiters better */
-                                                ldns_buffer_set_position(rd_buf, pre_data_pos);
-					        delimiters = "\n\t ";
-                                                (void)ldns_bget_token(rd_buf, rd, delimiters, LDNS_MAX_RDFLEN);
-                                                /* read rdata octet length */
-						c = ldns_bget_token(rd_buf, rd, delimiters, LDNS_MAX_RDFLEN);
-						if (c == -1) {
-							/* something goes very wrong here */
-                                                        LDNS_FREE(rd);
-                                                        LDNS_FREE(b64);
-                                                        ldns_buffer_free(rd_buf);
-                                                        ldns_buffer_free(rr_buf);
-                                                        LDNS_FREE(rdata);
-                                                        ldns_rr_free(new);
-							return LDNS_STATUS_SYNTAX_RDATA_ERR;
-						}
-						hex_data_size = (uint16_t) atoi(rd);
-						/* copy the hex chars into hex str (which is 2 chars per byte) */
-						hex_data_str = LDNS_XMALLOC(char, 2 * hex_data_size + 1);
-						if (!hex_data_str) {
-							/* malloc error */
-                                                        LDNS_FREE(rd);
-                                                        LDNS_FREE(b64);
-                                                        ldns_buffer_free(rd_buf);
-                                                        ldns_buffer_free(rr_buf);
-                                                        LDNS_FREE(rdata);
-                                                        ldns_rr_free(new);
-							return LDNS_STATUS_SYNTAX_RDATA_ERR;
-						}
-						cur_hex_data_size = 0;
-						while(cur_hex_data_size < 2 * hex_data_size) {
-							c = ldns_bget_token(rd_buf, rd, delimiters, LDNS_MAX_RDFLEN);
-							if (c != -1) {
-								rd_strlen = strlen(rd);
-							}
-							if (c == -1 || (size_t)cur_hex_data_size + rd_strlen > 2 * (size_t)hex_data_size) {
-								LDNS_FREE(hex_data_str);
-								LDNS_FREE(rd);
-								LDNS_FREE(b64);
-								ldns_buffer_free(rd_buf);
-								ldns_buffer_free(rr_buf);
-								LDNS_FREE(rdata);
-								ldns_rr_free(new);
-								return LDNS_STATUS_SYNTAX_RDATA_ERR;
-							}
-							strncpy(hex_data_str + cur_hex_data_size, rd, rd_strlen);
-							cur_hex_data_size += rd_strlen;
-						}
-						hex_data_str[cur_hex_data_size] = '\0';
+				cur_hex_data_size += rd_strlen;
+			}
+			hex_data_str[cur_hex_data_size] = '\0';
 
-						/* correct the rdf type */
-						/* if *we* know the type, interpret it as wireformat */
-						if (desc) {
-							size_t hex_pos = 0;
-							uint8_t *hex_data = LDNS_XMALLOC(uint8_t, hex_data_size + 2);
-                                                        ldns_status s;
-                                                        if(!hex_data) {
-                                                                LDNS_FREE(hex_data_str);
-                                                                LDNS_FREE(rd);
-                                                                LDNS_FREE(b64);
-                                                                ldns_buffer_free(rd_buf);
-                                                                ldns_buffer_free(rr_buf);
-                                                                LDNS_FREE(rdata);
-                                                                ldns_rr_free(new);
-                                                                return LDNS_STATUS_MEM_ERR;
-                                                        }
-							ldns_write_uint16(hex_data, hex_data_size);
-							ldns_hexstring_to_data(hex_data + 2, hex_data_str);
-							s = ldns_wire2rdf(new, hex_data,
-							                 hex_data_size+2, &hex_pos);
-                                                        if(s != LDNS_STATUS_OK) {
-                                                                LDNS_FREE(hex_data_str);
-                                                                LDNS_FREE(rd);
-                                                                LDNS_FREE(b64);
-                                                                ldns_buffer_free(rd_buf);
-                                                                ldns_buffer_free(rr_buf);
-                                                                LDNS_FREE(rdata);
-                                                                ldns_rr_free(new);
-								LDNS_FREE(hex_data);
-                                                                return s;
-                                                        }
-							LDNS_FREE(hex_data);
-						} else {
-							r = ldns_rdf_new_frm_str(LDNS_RDF_TYPE_HEX, hex_data_str);
-                                                        if(!r) {
-                                                                LDNS_FREE(hex_data_str);
-                                                                LDNS_FREE(rd);
-                                                                LDNS_FREE(b64);
-                                                                ldns_buffer_free(rd_buf);
-                                                                ldns_buffer_free(rr_buf);
-                                                                LDNS_FREE(rdata);
-                                                                ldns_rr_free(new);
-                                                                return LDNS_STATUS_MEM_ERR;
-                                                        }
-							ldns_rdf_set_type(r, LDNS_RDF_TYPE_UNKNOWN);
-							if(!ldns_rr_push_rdf(new, r)) {
-                                                                LDNS_FREE(hex_data_str);
-                                                                LDNS_FREE(rd);
-                                                                LDNS_FREE(b64);
-                                                                ldns_buffer_free(rd_buf);
-                                                                ldns_buffer_free(rr_buf);
-                                                                LDNS_FREE(rdata);
-                                                                ldns_rr_free(new);
-                                                                return LDNS_STATUS_MEM_ERR;
-                                                        }
-						}
-						LDNS_FREE(hex_data_str);
-					} else {
-						/* Normal RR */
-						switch(ldns_rr_descriptor_field_type(desc, r_cnt)) {
-						case LDNS_RDF_TYPE_HEX:
-						case LDNS_RDF_TYPE_B64:
-							/* can have spaces, and will always be the last
-							 * record of the rrdata. Read in the rest */
-							if ((c = ldns_bget_token(rd_buf,
-												b64,
-												"\n",
-												LDNS_MAX_RDFLEN))
-							    != -1) {
-								rd = strncat(rd,
-										   b64,
-										   LDNS_MAX_RDFLEN
-										   - strlen(rd) - 1);
-							}
-							r = ldns_rdf_new_frm_str(
-									ldns_rr_descriptor_field_type(desc, r_cnt),
-									rd);
-							break;
-						case LDNS_RDF_TYPE_DNAME:
-							r = ldns_rdf_new_frm_str(
-									ldns_rr_descriptor_field_type(desc, r_cnt),
-									rd);
+			/* correct the rdf type */
+			/* if *we* know the type, interpret it as wireformat */
+			if (desc) {
+				hex_pos = 0;
+				hex_data =
+					LDNS_XMALLOC(uint8_t, hex_data_size+2);
 
-							/* check if the origin should be used or concatenated */
-							if (r && ldns_rdf_size(r) > 1 && ldns_rdf_data(r)[0] == 1
-								&& ldns_rdf_data(r)[1] == '@') {
-								ldns_rdf_deep_free(r);
-								if (origin) {
-									r = ldns_rdf_clone(origin);
-								} else {
-								     /* if this is the SOA, use its own owner name */
-									if (rr_type == LDNS_RR_TYPE_SOA) {
-										r = ldns_rdf_clone(ldns_rr_owner(new));
-									} else {
-										r = ldns_rdf_new_frm_str(LDNS_RDF_TYPE_DNAME, ".");
-									}
-								}
-							} else if (r && rd_strlen >= 1 && !ldns_dname_str_absolute(rd) && origin) {
-								if (ldns_dname_cat(r, origin) != LDNS_STATUS_OK) {
-							                LDNS_FREE(rd);
-							                LDNS_FREE(b64);
-							                ldns_buffer_free(rd_buf);
-							                ldns_buffer_free(rr_buf);
-							                LDNS_FREE(rdata);
-							                ldns_rr_free(new);
-									return LDNS_STATUS_ERR;
-								}
-							}
-							break;
-						default:
-							r = ldns_rdf_new_frm_str(
-									ldns_rr_descriptor_field_type(desc, r_cnt),
-									rd);
-							break;
-						}
-						if (r) {
-							ldns_rr_push_rdf(new, r);
-						} else {
-							LDNS_FREE(rd);
-							LDNS_FREE(b64);
-							ldns_buffer_free(rd_buf);
-							ldns_buffer_free(rr_buf);
-							LDNS_FREE(rdata);
-							ldns_rr_free(new);
-							return LDNS_STATUS_SYNTAX_RDATA_ERR;
-						}
-					}
-					if (quoted) {
-						if (ldns_buffer_available(rd_buf, 1)) {
-							ldns_buffer_skip(rd_buf, 1);
-						} else {
-							done = true;
-						}
-					}
-				} else {
-					done = true;
+				if (!hex_data) {
+					goto memerror;
+				}
+				ldns_write_uint16(hex_data, hex_data_size);
+				ldns_hexstring_to_data(
+						hex_data + 2, hex_data_str);
+				status = ldns_wire2rdf(new, hex_data,
+						hex_data_size + 2, &hex_pos);
+				if (status != LDNS_STATUS_OK) {
+					goto error;
+				}
+				LDNS_FREE(hex_data);
+			} else {
+				r = ldns_rdf_new_frm_str(LDNS_RDF_TYPE_HEX,
+						hex_data_str);
+				if (!r) {
+					goto memerror;
+				}
+				ldns_rdf_set_type(r, LDNS_RDF_TYPE_UNKNOWN);
+				if (!ldns_rr_push_rdf(new, r)) {
+					goto memerror;
 				}
 			}
-	}
+			LDNS_FREE(hex_data_str);
+
+		} else {
+			/* Normal RR */
+			switch(ldns_rr_descriptor_field_type(desc, r_cnt)) {
+
+			case LDNS_RDF_TYPE_HEX:
+			case LDNS_RDF_TYPE_B64:
+				/* can have spaces, and will always be the
+				 * last record of the rrdata. Read in the rest
+				 */
+				c = ldns_bget_token(rd_buf, b64,
+						"\n", LDNS_MAX_RDFLEN);
+				if (c != -1) {
+					rd = strncat(rd, b64, LDNS_MAX_RDFLEN
+							- strlen(rd) - 1);
+				}
+				r = ldns_rdf_new_frm_str(
+						ldns_rr_descriptor_field_type(
+							desc, r_cnt), rd);
+				break;
+			case LDNS_RDF_TYPE_DNAME:
+				r = ldns_rdf_new_frm_str(
+						ldns_rr_descriptor_field_type(
+							desc, r_cnt), rd);
+
+				/* check if the origin should be used
+				 * or concatenated
+				 */
+				if (r && ldns_rdf_size(r) > 1 &&
+						ldns_rdf_data(r)[0] == 1 &&
+						ldns_rdf_data(r)[1] == '@') {
+
+					ldns_rdf_deep_free(r);
+
+					r = origin ? ldns_rdf_clone(origin)
+
+					  : ( rr_type == LDNS_RR_TYPE_SOA ?
+
+					      ldns_rdf_clone(
+						      ldns_rr_owner(new))
+
+					    : ldns_rdf_new_frm_str(
+						    LDNS_RDF_TYPE_DNAME, ".")
+					    );
+
+				} else if (r && rd_strlen >= 1 && origin &&
+						!ldns_dname_str_absolute(rd)) {
+
+					status = ldns_dname_cat(r, origin);
+					if (status != LDNS_STATUS_OK) {
+						goto error;
+					}
+				}
+				break;
+			default:
+				r = ldns_rdf_new_frm_str(
+						ldns_rr_descriptor_field_type(
+							desc, r_cnt), rd);
+				break;
+			}
+			if (!r) {
+				status = LDNS_STATUS_SYNTAX_RDATA_ERR;
+				goto error;
+			}
+			ldns_rr_push_rdf(new, r);
+		}
+		if (quoted) {
+			if (ldns_buffer_available(rd_buf, 1)) {
+				ldns_buffer_skip(rd_buf, 1);
+			} else {
+				done = true;
+			}
+		}
+
+	} /* for (done = false, r_cnt = 0; !done && r_cnt < r_max; r_cnt++) */
 	LDNS_FREE(rd);
 	LDNS_FREE(b64);
 	ldns_buffer_free(rd_buf);
 	ldns_buffer_free(rr_buf);
 	LDNS_FREE(rdata);
 
-	if (!question && desc && !was_unknown_rr_format && ldns_rr_rd_count(new) < r_min) {
+	if (!question && desc && !was_unknown_rr_format &&
+			ldns_rr_rd_count(new) < r_min) {
+
 		ldns_rr_free(new);
 		return LDNS_STATUS_SYNTAX_MISSING_VALUE_ERR;
 	}
@@ -618,17 +576,30 @@ ldns_rr_new_frm_str_internal(ldns_rr **newrr, const char *str,
 	}
 	return LDNS_STATUS_OK;
 
-ldnserror:
+memerror:
+	status = LDNS_STATUS_MEM_ERR;
+error:
+	if (rd_buf && rd_buf->_data) {
+		ldns_buffer_free(rd_buf);
+	} else {
+		LDNS_FREE(rd_buf);
+	}
+	if (rr_buf && rr_buf->_data) {
+		ldns_buffer_free(rr_buf);
+	} else {
+		LDNS_FREE(rr_buf);
+	}
 	LDNS_FREE(type);
 	LDNS_FREE(owner);
 	LDNS_FREE(ttl);
 	LDNS_FREE(clas);
-	LDNS_FREE(rdata);
-	LDNS_FREE(rd);
-	LDNS_FREE(rd_buf);
+	LDNS_FREE(hex_data);
+	LDNS_FREE(hex_data_str);
 	LDNS_FREE(b64);
+	LDNS_FREE(rd);
+	LDNS_FREE(rdata);
 	ldns_rr_free(new);
-    return status;
+	return status;
 }
 
 ldns_status
@@ -1936,6 +1907,15 @@ static const ldns_rdf_type type_dnskey_wireformat[] = {
 	LDNS_RDF_TYPE_ALG,
 	LDNS_RDF_TYPE_B64
 };
+static const ldns_rdf_type type_tkey_wireformat[] = {
+	LDNS_RDF_TYPE_DNAME,
+	LDNS_RDF_TYPE_TIME,
+	LDNS_RDF_TYPE_TIME,
+	LDNS_RDF_TYPE_INT16,
+	LDNS_RDF_TYPE_INT16,
+	LDNS_RDF_TYPE_INT16_DATA,
+	LDNS_RDF_TYPE_INT16_DATA,
+};
 static const ldns_rdf_type type_tsig_wireformat[] = {
 	LDNS_RDF_TYPE_DNAME,
 	LDNS_RDF_TYPE_TSIGTIME,
@@ -2101,6 +2081,7 @@ static ldns_rr_descriptor rdata_field_descriptors[] = {
 {LDNS_RR_TYPE_NULL, "TYPE53", 1, 1, type_0_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 0 },
 {LDNS_RR_TYPE_NULL, "TYPE54", 1, 1, type_0_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 0 },
 {LDNS_RR_TYPE_NULL, "TYPE55", 1, 1, type_0_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 0 },
+
 	/* 56 */
 	{LDNS_RR_TYPE_NINFO, "NINFO", 1, 0, NULL, LDNS_RDF_TYPE_STR, LDNS_RR_NO_COMPRESS, 0 },
 	/* 57 */
@@ -2109,7 +2090,7 @@ static ldns_rr_descriptor rdata_field_descriptors[] = {
 	{LDNS_RR_TYPE_TALINK, "TALINK", 2, 2, type_talink_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 2 },
 	/* 59 */
 	{LDNS_RR_TYPE_CDS, "CDS", 4, 4, type_ds_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 0 },
-{LDNS_RR_TYPE_NULL, "TYPE59", 1, 1, type_0_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 0 },
+
 {LDNS_RR_TYPE_NULL, "TYPE60", 1, 1, type_0_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 0 },
 {LDNS_RR_TYPE_NULL, "TYPE61", 1, 1, type_0_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 0 },
 {LDNS_RR_TYPE_NULL, "TYPE62", 1, 1, type_0_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 0 },
@@ -2149,12 +2130,19 @@ static ldns_rr_descriptor rdata_field_descriptors[] = {
 {LDNS_RR_TYPE_NULL, "TYPE96", 1, 1, type_0_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 0 },
 {LDNS_RR_TYPE_NULL, "TYPE97", 1, 1, type_0_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 0 },
 {LDNS_RR_TYPE_NULL, "TYPE98", 1, 1, type_0_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 0 },
+
 	/* 99 */
 	{LDNS_RR_TYPE_SPF,  "SPF", 1, 0, NULL, LDNS_RDF_TYPE_STR, LDNS_RR_NO_COMPRESS, 0 },
+
+	/* UINFO  [IANA-Reserved] */
 {LDNS_RR_TYPE_NULL, "TYPE100", 1, 1, type_0_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 0 },
+	/* UID    [IANA-Reserved] */
 {LDNS_RR_TYPE_NULL, "TYPE101", 1, 1, type_0_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 0 },
+	/* GID    [IANA-Reserved] */
 {LDNS_RR_TYPE_NULL, "TYPE102", 1, 1, type_0_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 0 },
+	/* UNSPEC [IANA-Reserved] */
 {LDNS_RR_TYPE_NULL, "TYPE103", 1, 1, type_0_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 0 },
+
 	/* 104 */
 	{LDNS_RR_TYPE_NID, "NID", 2, 2, type_nid_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 0 },
 	/* 105 */
@@ -2167,6 +2155,7 @@ static ldns_rr_descriptor rdata_field_descriptors[] = {
 	{LDNS_RR_TYPE_EUI48, "EUI48", 1, 1, type_eui48_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 0 },
 	/* 109 */
 	{LDNS_RR_TYPE_EUI64, "EUI64", 1, 1, type_eui64_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 0 },
+
 {LDNS_RR_TYPE_NULL, "TYPE110", 1, 1, type_0_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 0 },
 {LDNS_RR_TYPE_NULL, "TYPE111", 1, 1, type_0_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 0 },
 {LDNS_RR_TYPE_NULL, "TYPE112", 1, 1, type_0_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 0 },
@@ -2306,20 +2295,35 @@ static ldns_rr_descriptor rdata_field_descriptors[] = {
 {LDNS_RR_TYPE_NULL, "TYPE246", 1, 1, type_0_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 0 },
 {LDNS_RR_TYPE_NULL, "TYPE247", 1, 1, type_0_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 0 },
 {LDNS_RR_TYPE_NULL, "TYPE248", 1, 1, type_0_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 0 },
-{LDNS_RR_TYPE_NULL, "TYPE249", 1, 1, type_0_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 0 },
-/* LDNS_RDF_TYPE_INT16_DATA essentially takes two fields (length and data) and
- * makes them into one. So, while in rfc 2845 is specified that a TSIG may have 
- * 8 or 9 rdata fields, by this implementation, the min/max are 7 each. 
- */
-	/* 250 */
-	{LDNS_RR_TYPE_TSIG, "TSIG", 7, 7, type_tsig_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 0 },
 
-/* split in array, no longer contiguous */
+	/* LDNS_RDF_TYPE_INT16_DATA takes two fields (length and data) as one.
+	 * So, unlike RFC 2930 spec, we have 7 min/max rdf's i.s.o. 8/9.
+	 */
+	/* 249 */
+	{LDNS_RR_TYPE_TKEY, "TKEY", 7, 7, type_tkey_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 1 },
+	/* LDNS_RDF_TYPE_INT16_DATA takes two fields (length and data) as one.
+	 * So, unlike RFC 2930 spec, we have 7 min/max rdf's i.s.o. 8/9.
+	 */
+	/* 250 */
+	{LDNS_RR_TYPE_TSIG, "TSIG", 7, 7, type_tsig_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 1 },
+
+	/* IXFR: A request for a transfer of an incremental zone transfer */
+{LDNS_RR_TYPE_NULL, "TYPE251", 1, 1, type_0_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 0 },
+	/* AXFR: A request for a transfer of an entire zone */
+{LDNS_RR_TYPE_NULL, "TYPE252", 1, 1, type_0_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 0 },
+	/* MAILB: A request for mailbox-related records (MB, MG or MR) */
+{LDNS_RR_TYPE_NULL, "TYPE253", 1, 1, type_0_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 0 },
+	/* MAILA: A request for mail agent RRs (Obsolete - see MX) */
+{LDNS_RR_TYPE_NULL, "TYPE254", 1, 1, type_0_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 0 },
+	/* ANY: A request for all (available) records */
+{LDNS_RR_TYPE_NULL, "TYPE255", 1, 1, type_0_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 0 },
 
 	/* 256 */
 	{LDNS_RR_TYPE_URI, "URI", 3, 3, type_uri_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 0 },
 	/* 257 */
 	{LDNS_RR_TYPE_CAA, "CAA", 3, 3, type_caa_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 0 },
+
+/* split in array, no longer contiguous */
 
 	/* 32768 */
 	{LDNS_RR_TYPE_TA, "TA", 4, 4, type_ds_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 0 },
@@ -2339,7 +2343,7 @@ const ldns_rr_descriptor *
 ldns_rr_descript(uint16_t type)
 {
 	size_t i;
-	if (type <= LDNS_RDATA_FIELD_DESCRIPTORS_COMMON) {
+	if (type < LDNS_RDATA_FIELD_DESCRIPTORS_COMMON) {
 		return &rdata_field_descriptors[type];
 	} else {
 		/* because not all array index equals type code */
