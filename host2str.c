@@ -813,10 +813,8 @@ ldns_rdf2buffer_str_nsec(ldns_buffer *output, const ldns_rdf *rdf)
 				}
 			}
 		}
-
 		pos += (uint16_t) bitmap_length;
 	}
-
 	return ldns_buffer_status(output);
 }
 

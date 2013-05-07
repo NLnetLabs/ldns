@@ -341,22 +341,18 @@ ldns_rr_new_frm_str_internal(ldns_rr **newrr, const char *str,
 
 	for (done = false, r_cnt = 0; !done && r_cnt < r_max; r_cnt++) {
 		quoted = false;
-		/* if type = B64, the field may contain spaces */
-		if (ldns_rr_descriptor_field_type(desc,
-				r_cnt) == LDNS_RDF_TYPE_B64 ||
-			ldns_rr_descriptor_field_type(desc,
-				r_cnt) == LDNS_RDF_TYPE_HEX ||
-			ldns_rr_descriptor_field_type(desc,
-				r_cnt) == LDNS_RDF_TYPE_LOC ||
-			ldns_rr_descriptor_field_type(desc,
-				r_cnt) == LDNS_RDF_TYPE_WKS ||
-			ldns_rr_descriptor_field_type(desc,
-				r_cnt) == LDNS_RDF_TYPE_IPSECKEY ||
-			ldns_rr_descriptor_field_type(desc,
-				r_cnt) == LDNS_RDF_TYPE_NSEC) {
-			delimiters = "\n\t";
-		} else {
-			delimiters = "\n\t ";
+
+		switch (ldns_rr_descriptor_field_type(desc, r_cnt)) {
+		case LDNS_RDF_TYPE_B64        :
+		case LDNS_RDF_TYPE_HEX        : /* These rdf types may con- */
+		case LDNS_RDF_TYPE_LOC        : /* tain whitespace, only if */
+		case LDNS_RDF_TYPE_WKS        : /* it is the last rd field. */
+		case LDNS_RDF_TYPE_IPSECKEY   :
+		case LDNS_RDF_TYPE_NSEC       :	if (r_cnt == r_max - 1) {
+							delimiters = "\n\t";
+							break;
+						}
+		default                       :	delimiters = "\n\t "; 
 		}
 
 		if (ldns_rdf_type_maybe_quoted(
@@ -487,14 +483,18 @@ ldns_rr_new_frm_str_internal(ldns_rr **newrr, const char *str,
 
 			case LDNS_RDF_TYPE_HEX:
 			case LDNS_RDF_TYPE_B64:
-				/* can have spaces, and will always be the
-				 * last record of the rrdata. Read in the rest
+				/* When this is the last rdata field, then the
+				 * rest should be read in (cause then these
+				 * rdf types may contain spaces).
 				 */
-				c = ldns_bget_token(rd_buf, b64,
-						"\n", LDNS_MAX_RDFLEN);
-				if (c != -1) {
-					rd = strncat(rd, b64, LDNS_MAX_RDFLEN
-							- strlen(rd) - 1);
+				if (r_cnt == r_max - 1) {
+					c = ldns_bget_token(rd_buf, b64,
+							"\n", LDNS_MAX_RDFLEN);
+					if (c != -1) {
+						rd = strncat(rd, b64,
+							LDNS_MAX_RDFLEN -
+							strlen(rd) - 1);
+					}
 				}
 				r = ldns_rdf_new_frm_str(
 						ldns_rr_descriptor_field_type(
@@ -1931,6 +1931,37 @@ static const ldns_rdf_type type_tlsa_wireformat[] = {
 	LDNS_RDF_TYPE_INT8,
 	LDNS_RDF_TYPE_HEX
 };
+
+/** 
+ * With HIP, wire and presentation format are out of step.
+ * In presentation format, we have:
+ * - a PK algorithm presented as integer in range [0..255]
+ * - a variable length HIT field presented as hexstring
+ * - a variable length Public Key field presented as Base64
+ *
+ * Unfortunately in the wireformat the lengths of the variable
+ * length HIT and Public Key fields do not directly preceed them.
+ * In stead we have:
+ * - 1 byte  HIT length: h
+ * - 1 byte  PK algorithm
+ * - 2 bytes Public Key length: p
+ * - h bytes HIT
+ * - p bytes Public Key
+ *
+ * In ldns those deviations from the conventions for rdata fields are best 
+ * tackeled by letting the array refered to by the descriptor for HIP represent
+ * host format only.
+ *
+ * BEWARE! Unlike other RR types, actual HIP wire format does not directly
+ * follow the RDF types enumerated in the array pointed to by _wireformat in
+ * its descriptor record.
+ */
+static const ldns_rdf_type type_hip_hostformat[] = {
+	LDNS_RDF_TYPE_INT8,
+	LDNS_RDF_TYPE_HEX,
+	LDNS_RDF_TYPE_B64
+};
+
 static const ldns_rdf_type type_nid_wireformat[] = {
 	LDNS_RDF_TYPE_INT16,
 	LDNS_RDF_TYPE_ILNP64
@@ -2066,7 +2097,7 @@ static ldns_rr_descriptor rdata_field_descriptors[] = {
 	/* 46 */
 	{LDNS_RR_TYPE_RRSIG, "RRSIG", 9, 9, type_rrsig_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 1 },
 	/* 47 */
-	{LDNS_RR_TYPE_NSEC, "NSEC", 1, 2, type_nsec_wireformat, LDNS_RDF_TYPE_NSEC, LDNS_RR_NO_COMPRESS, 1 },
+	{LDNS_RR_TYPE_NSEC, "NSEC", 1, 2, type_nsec_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 1 },
 	/* 48 */
 	{LDNS_RR_TYPE_DNSKEY, "DNSKEY", 4, 4, type_dnskey_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 0 },
 	/* 49 */
@@ -2080,7 +2111,17 @@ static ldns_rr_descriptor rdata_field_descriptors[] = {
 
 {LDNS_RR_TYPE_NULL, "TYPE53", 1, 1, type_0_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 0 },
 {LDNS_RR_TYPE_NULL, "TYPE54", 1, 1, type_0_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 0 },
-{LDNS_RR_TYPE_NULL, "TYPE55", 1, 1, type_0_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 0 },
+
+	/* 55
+	 * Hip ends with 0 or more Rendezvous Servers represented as dname's.
+	 * Hence the LDNS_RDF_TYPE_DNAME _variable field and the _maximum field
+	 * set to 0.
+	 *
+	 * BEWARE! Unlike other RR types, actual HIP wire format does not 
+	 * directly follow the RDF types enumerated in the array pointed to
+	 * by _wireformat. For more info see type_hip_hostformat declaration.
+	 */
+	{LDNS_RR_TYPE_HIP, "HIP", 3, 3, type_hip_hostformat, LDNS_RDF_TYPE_DNAME, LDNS_RR_NO_COMPRESS, 0 },
 
 	/* 56 */
 	{LDNS_RR_TYPE_NINFO, "NINFO", 1, 0, NULL, LDNS_RDF_TYPE_STR, LDNS_RR_NO_COMPRESS, 0 },

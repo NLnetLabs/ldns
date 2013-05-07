@@ -81,6 +81,64 @@ ldns_rr_list2buffer_wire(ldns_buffer *buffer,const ldns_rr_list *rr_list)
 	return ldns_buffer_status(buffer);
 }
 
+static ldns_status
+ldns_hip_rdata2buffer_wire(ldns_buffer *buffer, const ldns_rr *rr)
+{
+	uint16_t i;
+
+	assert(ldns_rr_get_type(rr) == LDNS_RR_TYPE_HIP);
+
+	if (ldns_rr_rd_count(rr) >= 3 &&
+	    ldns_rdf_get_type(ldns_rr_rdf(rr, 0)) == LDNS_RDF_TYPE_INT8 &&
+	    ldns_rdf_get_type(ldns_rr_rdf(rr, 1)) == LDNS_RDF_TYPE_HEX  &&
+		ldns_rdf_size(ldns_rr_rdf(rr, 1)) >    0 &&
+		ldns_rdf_size(ldns_rr_rdf(rr, 1)) <= 255 &&
+	    ldns_rdf_get_type(ldns_rr_rdf(rr, 2)) == LDNS_RDF_TYPE_B64) {
+
+		/* From RFC 5205 section 5. HIP RR Storage Format:
+		 *************************************************
+
+	0                   1                   2                   3
+	0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+	+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+	|  HIT length   | PK algorithm  |          PK length            |
+	+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+	|                                                               |
+	~                           HIT                                 ~
+	|                                                               |
+	+                     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+	|                     |                                         |
+	+-+-+-+-+-+-+-+-+-+-+-+                                         +
+	|                           Public Key                          |
+	~                                                               ~
+	|                                                               |
+	+                               +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+	|                               |                               |
+	+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+                               +
+	|                                                               |
+	~                       Rendezvous Servers                      ~
+	|                                                               |
+	+             +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+	|             |
+	+-+-+-+-+-+-+-+                                                    */
+
+		ldns_buffer_write_u8(buffer,
+				 (uint8_t) ldns_rdf_size(ldns_rr_rdf(rr, 1)));
+		ldns_rdf2buffer_wire(buffer, ldns_rr_rdf(rr, 0));
+		ldns_buffer_write_u16(buffer,
+				(uint16_t) ldns_rdf_size(ldns_rr_rdf(rr, 2)));
+		i = 1;
+	} else {
+		i = 0;
+	}
+	while (i < ldns_rr_rd_count(rr)) {
+		(void) ldns_rdf2buffer_wire(buffer, ldns_rr_rdf(rr, i));
+		i++;
+	}
+	return ldns_buffer_status(buffer);
+}
+
+
 ldns_status
 ldns_rr2buffer_wire_canonical(ldns_buffer *buffer,
 						const ldns_rr *rr,
@@ -137,16 +195,19 @@ ldns_rr2buffer_wire_canonical(ldns_buffer *buffer,
 			ldns_buffer_write_u16(buffer, 0);
 		}	
 
-		for (i = 0; i < ldns_rr_rd_count(rr); i++) {
-			if (pre_rfc3597) {
-				(void) ldns_rdf2buffer_wire_canonical(
+		if (ldns_rr_get_type(rr) == LDNS_RR_TYPE_HIP) {
+			(void) ldns_hip_rdata2buffer_wire(buffer, rr);
+		} else {
+			for (i = 0; i < ldns_rr_rd_count(rr); i++) {
+				if (pre_rfc3597) {
+					(void) ldns_rdf2buffer_wire_canonical(
 						buffer, ldns_rr_rdf(rr, i));
-			} else {
-				(void) ldns_rdf2buffer_wire(
+				} else {
+					(void) ldns_rdf2buffer_wire(
 						buffer, ldns_rr_rdf(rr, i));
+				}
 			}
 		}
-		
 		if (rdl_pos != 0) {
 			ldns_buffer_write_u16_at(buffer, rdl_pos,
 			                         ldns_buffer_position(buffer)
@@ -177,13 +238,15 @@ ldns_rr2buffer_wire(ldns_buffer *buffer, const ldns_rr *rr, int section)
 			/* remember pos for later */
 			rdl_pos = ldns_buffer_position(buffer);
 			ldns_buffer_write_u16(buffer, 0);
-		}	
-
-		for (i = 0; i < ldns_rr_rd_count(rr); i++) {
-			(void) ldns_rdf2buffer_wire(
-					buffer, ldns_rr_rdf(rr, i));
 		}
-		
+		if (ldns_rr_get_type(rr) == LDNS_RR_TYPE_HIP) {
+			(void) ldns_hip_rdata2buffer_wire(buffer, rr);
+		} else {
+			for (i = 0; i < ldns_rr_rd_count(rr); i++) {
+				(void) ldns_rdf2buffer_wire(
+						buffer, ldns_rr_rdf(rr, i));
+			}
+		}
 		if (rdl_pos != 0) {
 			ldns_buffer_write_u16_at(buffer, rdl_pos,
 			                         ldns_buffer_position(buffer)
@@ -216,11 +279,13 @@ ldns_status
 ldns_rr_rdata2buffer_wire(ldns_buffer *buffer, const ldns_rr *rr)
 {
 	uint16_t i;
+	if (ldns_rr_get_type(rr) == LDNS_RR_TYPE_HIP) {
+		return ldns_hip_rdata2buffer_wire(buffer, rr);
+	}
 	/* convert all the rdf's */
 	for (i = 0; i < ldns_rr_rd_count(rr); i++) {
-		(void) ldns_rdf2buffer_wire(buffer, ldns_rr_rdf(rr, i));
+		(void) ldns_rdf2buffer_wire(buffer, ldns_rr_rdf(rr,i));
 	}
-
 	return ldns_buffer_status(buffer);
 }
 

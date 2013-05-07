@@ -165,8 +165,14 @@ ldns_wire2rdf(ldns_rr *rr, const uint8_t *wire, size_t max, size_t *pos)
 	uint16_t rd_length;
 	ldns_rdf *cur_rdf = NULL;
 	ldns_rdf_type cur_rdf_type;
-	const ldns_rr_descriptor *descriptor = ldns_rr_descript(ldns_rr_get_type(rr));
+	const ldns_rr_descriptor *descriptor;
 	ldns_status status;
+	uint8_t  hip_hit_length;
+	uint16_t hip_pubkey_length;
+
+	assert(rr != NULL);
+
+	descriptor = ldns_rr_descript(ldns_rr_get_type(rr));
 
 	if (*pos + 2 > max) {
 		return LDNS_STATUS_PACKET_OVERFLOW;
@@ -181,14 +187,86 @@ ldns_wire2rdf(ldns_rr *rr, const uint8_t *wire, size_t max, size_t *pos)
 
 	end = *pos + (size_t) rd_length;
 
-	for (rdf_index = 0;
-	     rdf_index < ldns_rr_descriptor_maximum(descriptor); rdf_index++) {
-		if (*pos >= end) {
-			break;
+	if (ldns_rr_get_type(rr) == LDNS_RR_TYPE_HIP) {
+
+		/* From RFC 5205 section 5. HIP RR Storage Format:
+		 *************************************************
+
+	0                   1                   2                   3
+	0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+	+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+	|  HIT length   | PK algorithm  |          PK length            |
+	+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+	|                                                               |
+	~                           HIT                                 ~
+	|                                                               |
+	+                     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+	|                     |                                         |
+	+-+-+-+-+-+-+-+-+-+-+-+                                         +
+	|                           Public Key                          |
+	~                                                               ~
+	|                                                               |
+	+                               +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+	|                               |                               |
+	+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+                               +
+	|                                                               |
+	~                       Rendezvous Servers                      ~
+	|                                                               |
+	+             +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+	|             |
+	+-+-+-+-+-+-+-+                                                    */
+
+		/* Space for HIT length, PK algorithm, PK length available? */
+		if (*pos + 4 > end) {
+			return LDNS_STATUS_PACKET_OVERFLOW;
 		}
+		/* Get HIT length and PK length */
+		hip_hit_length = wire[*pos];
+		hip_pubkey_length = ldns_read_uint16(&wire[*pos + 2]);
+
+		/* Space for HIT length, PK algorithm, PK length, HIT and
+		 * Public Key  available?
+		 */
+		if (*pos + 4 + hip_hit_length + hip_pubkey_length > end) {
+			return LDNS_STATUS_PACKET_OVERFLOW;
+		}
+		/* Read PK algorithm rdf */
+		cur_rdf = ldns_rdf_new_frm_data(LDNS_RDF_TYPE_INT8,
+				1, &wire[*pos + 1]);
+		if (cur_rdf) {
+			ldns_rr_push_rdf(rr, cur_rdf);
+		}
+		*pos += 4;
+
+		/* Read HIT rdf */
+		cur_rdf = ldns_rdf_new_frm_data(LDNS_RDF_TYPE_HEX,
+				hip_hit_length, &wire[*pos]);
+		if (cur_rdf) {
+			ldns_rr_push_rdf(rr, cur_rdf);
+		}
+		*pos += hip_hit_length;
+
+		/* Read Public Key rdf */
+		cur_rdf = ldns_rdf_new_frm_data(LDNS_RDF_TYPE_B64,
+				hip_pubkey_length, &wire[*pos]);
+		if (cur_rdf) {
+			ldns_rr_push_rdf(rr, cur_rdf);
+		}
+		*pos += hip_pubkey_length;
+
+		/* Variable number of Rendezvous Servers may follow */
+		rdf_index = 3;
+	} else {
+		rdf_index = 0;
+	}
+	while (*pos < end &&
+			rdf_index < ldns_rr_descriptor_maximum(descriptor)) {
+
 		cur_rdf_length = 0;
 
-		cur_rdf_type = ldns_rr_descriptor_field_type(descriptor, rdf_index);
+		cur_rdf_type = ldns_rr_descriptor_field_type(
+				descriptor, rdf_index);
+
 		/* handle special cases immediately, set length
 		   for fixed length rdata and do them below */
 		switch (cur_rdf_type) {
@@ -244,7 +322,11 @@ ldns_wire2rdf(ldns_rr *rr, const uint8_t *wire, size_t max, size_t *pos)
 			}
 			break;
 		case LDNS_RDF_TYPE_INT16_DATA:
-			cur_rdf_length = (size_t) ldns_read_uint16(&wire[*pos]) + 2;
+			if (*pos + 2 > end) {
+				return LDNS_STATUS_PACKET_OVERFLOW;
+			}
+			cur_rdf_length =
+				(size_t) ldns_read_uint16(&wire[*pos]) + 2;
 			break;
 		case LDNS_RDF_TYPE_B32_EXT:
 		case LDNS_RDF_TYPE_NSEC3_NEXT_OWNER:
@@ -283,7 +365,8 @@ ldns_wire2rdf(ldns_rr *rr, const uint8_t *wire, size_t max, size_t *pos)
 			}
 			memcpy(data, &wire[*pos], cur_rdf_length);
 
-			cur_rdf = ldns_rdf_new(cur_rdf_type, cur_rdf_length, data);
+			cur_rdf = ldns_rdf_new(cur_rdf_type,
+					cur_rdf_length, data);
 			*pos = *pos + cur_rdf_length;
 		}
 
@@ -291,7 +374,11 @@ ldns_wire2rdf(ldns_rr *rr, const uint8_t *wire, size_t max, size_t *pos)
 			ldns_rr_push_rdf(rr, cur_rdf);
 			cur_rdf = NULL;
 		}
-	}
+
+		rdf_index++;
+
+	} /* while (rdf_index < ldns_rr_descriptor_maximum(descriptor)) */
+
 
 	return LDNS_STATUS_OK;
 }
