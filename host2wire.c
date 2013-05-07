@@ -124,7 +124,7 @@ ldns_hip_rdata2buffer_wire(ldns_buffer *buffer, const ldns_rr *rr)
 
 		ldns_buffer_write_u8(buffer,
 				 (uint8_t) ldns_rdf_size(ldns_rr_rdf(rr, 1)));
-		ldns_rdf2buffer_wire(buffer, ldns_rr_rdf(rr, 0));
+		(void) ldns_rdf2buffer_wire(buffer, ldns_rr_rdf(rr, 0));
 		ldns_buffer_write_u16(buffer,
 				(uint16_t) ldns_rdf_size(ldns_rr_rdf(rr, 2)));
 		i = 1;
