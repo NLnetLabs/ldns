@@ -58,6 +58,15 @@ increased by one.
 When updating a serial number, records of type NSEC, NSEC3, RRSIG and DNSKEY
 will be skipped when printing the zone.
 
+.TP
+\fB-u\fR \fIRR type\fR
+Mark \fIRR type\fR for printing in unknown type format
+
+.TP
+\fB-U\fR \fIRR type\fR
+Mark \fIRR type\fR for \fBnot\fR printing in unknown type format
+When only \fB-U\fR options are given, all types are printed in
+unknown type format except the given RR types
 
 .TP
 \fB-v\fR

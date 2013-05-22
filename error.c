@@ -137,6 +137,9 @@ ldns_lookup_table ldns_error_str[] = {
         { LDNS_STATUS_INVALID_TAG, 
 		"Conversion error, a non-zero sequence of US-ASCII letters "
 		"and numbers in lower case expected" },
+        { LDNS_STATUS_TYPE_NOT_IN_BITMAP, 
+		"The RR type bitmap rdata field did not have "
+		"a bit reserved for the specific RR type" },
 	{ 0, NULL }
 };
 

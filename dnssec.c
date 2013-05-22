@@ -1338,37 +1338,119 @@ ldns_nsec3_hash_name_frm_nsec3(const ldns_rr *nsec, ldns_rdf *name)
 }
 
 bool
-ldns_nsec_bitmap_covers_type(const ldns_rdf *nsec_bitmap, ldns_rr_type type)
+ldns_nsec_bitmap_covers_type(const  ldns_rdf* bitmap, ldns_rr_type type)
 {
-	uint8_t window_block_nr;
-	uint8_t bitmap_length;
-	uint16_t cur_type;
-	uint16_t pos = 0;
-	uint16_t bit_pos;
-	uint8_t *data;
+	uint8_t* dptr;
+	uint8_t* dend;
 
-	if (nsec_bitmap == NULL) {
+	/* From RFC3845 Section 2.1.2:
+	 *
+	 *	"The RR type space is split into 256 window blocks, each re-
+	 *	 presenting the low-order 8 bits of the 16-bit RR type space."
+	 */
+	uint8_t  window = type >> 8;
+	uint8_t subtype = type & 0xff;
+
+	if (! bitmap) {
 		return false;
 	}
-	data = ldns_rdf_data(nsec_bitmap);
-	while(pos < ldns_rdf_size(nsec_bitmap)) {
-		window_block_nr = data[pos];
-		bitmap_length = data[pos + 1];
-		pos += 2;
+	assert(ldns_rdf_get_type(bitmap) == LDNS_RDF_TYPE_BITMAP);
 
-		for (bit_pos = 0; bit_pos < (bitmap_length) * 8; bit_pos++) {
-			if (ldns_get_bit(&data[pos], bit_pos)) {
-				cur_type = 256 * (uint16_t) window_block_nr + bit_pos;
-				if (cur_type == type) {
-					return true;
-				}
-			}
+	dptr = ldns_rdf_data(bitmap);
+	dend = ldns_rdf_data(bitmap) + ldns_rdf_size(bitmap);
+
+	/* Type Bitmap = ( Window Block # | Bitmap Length | Bitmap ) +
+	 *                 dptr[0]          dptr[1]         dptr[2:]
+	 */
+	while (dptr < dend && dptr[0] <= window) {
+
+		if (dptr[0] == window && subtype / 8 < dptr[1] &&
+				dptr + dptr[1] + 2 <= dend) {
+
+			return dptr[2 + subtype / 8] & (1 << (subtype % 8));
 		}
-
-		pos += (uint16_t) bitmap_length;
+		dptr += dptr[1] + 2; /* next window */
 	}
 	return false;
 }
+
+ldns_status
+ldns_nsec_bitmap_set_type(ldns_rdf* bitmap, ldns_rr_type type)
+{
+	uint8_t* dptr;
+	uint8_t* dend;
+
+	/* From RFC3845 Section 2.1.2:
+	 *
+	 *	"The RR type space is split into 256 window blocks, each re-
+	 *	 presenting the low-order 8 bits of the 16-bit RR type space."
+	 */
+	uint8_t  window = type >> 8;
+	uint8_t subtype = type & 0xff;
+
+	if (! bitmap) {
+		return false;
+	}
+	assert(ldns_rdf_get_type(bitmap) == LDNS_RDF_TYPE_BITMAP);
+
+	dptr = ldns_rdf_data(bitmap);
+	dend = ldns_rdf_data(bitmap) + ldns_rdf_size(bitmap);
+
+	/* Type Bitmap = ( Window Block # | Bitmap Length | Bitmap ) +
+	 *                 dptr[0]          dptr[1]         dptr[2:]
+	 */
+	while (dptr < dend && dptr[0] <= window) {
+
+		if (dptr[0] == window && subtype / 8 < dptr[1] &&
+				dptr + dptr[1] + 2 <= dend) {
+
+			dptr[2 + subtype / 8] |= (1 << (subtype % 8));
+			return LDNS_STATUS_OK;
+		}
+		dptr += dptr[1] + 2; /* next window */
+	}
+	return LDNS_STATUS_TYPE_NOT_IN_BITMAP;
+}
+
+ldns_status
+ldns_nsec_bitmap_clear_type(ldns_rdf* bitmap, ldns_rr_type type)
+{
+	uint8_t* dptr;
+	uint8_t* dend;
+
+	/* From RFC3845 Section 2.1.2:
+	 *
+	 *	"The RR type space is split into 256 window blocks, each re-
+	 *	 presenting the low-order 8 bits of the 16-bit RR type space."
+	 */
+	uint8_t  window = type >> 8;
+	uint8_t subtype = type & 0xff;
+
+	if (! bitmap) {
+		return false;
+	}
+
+	assert(ldns_rdf_get_type(bitmap) == LDNS_RDF_TYPE_BITMAP);
+
+	dptr = ldns_rdf_data(bitmap);
+	dend = ldns_rdf_data(bitmap) + ldns_rdf_size(bitmap);
+
+	/* Type Bitmap = ( Window Block # | Bitmap Length | Bitmap ) +
+	 *                 dptr[0]          dptr[1]         dptr[2:]
+	 */
+	while (dptr < dend && dptr[0] <= window) {
+
+		if (dptr[0] == window && subtype / 8 < dptr[1] &&
+				dptr + dptr[1] + 2 <= dend) {
+
+			dptr[2 + subtype / 8] &= ~(1 << (subtype % 8));
+			return LDNS_STATUS_OK;
+		}
+		dptr += dptr[1] + 2; /* next window */
+	}
+	return LDNS_STATUS_TYPE_NOT_IN_BITMAP;
+}
+
 
 bool
 ldns_nsec_covers_name(const ldns_rr *nsec, const ldns_rdf *name)

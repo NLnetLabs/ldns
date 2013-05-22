@@ -135,7 +135,10 @@ enum ldns_enum_rdf_type
 	 *  maximum length of 255 octets.
 	 * For URI.
 	 */
-	LDNS_RDF_TYPE_MULTI_STR
+	LDNS_RDF_TYPE_MULTI_STR,
+
+	/* Aliases */
+	LDNS_RDF_TYPE_BITMAP = LDNS_RDF_TYPE_NSEC
 };
 typedef enum ldns_enum_rdf_type ldns_rdf_type;
 

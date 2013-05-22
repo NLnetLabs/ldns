@@ -1,4 +1,8 @@
 1.6.17
+	* -u and -U parameter for ldns-read-zone to mark/unmark a RR type
+	  for printing as unknown type
+	* New output format flag (and accompanying funtions) to print certain
+	  RR's as unknown type
 	* New RR types HIP, NINFO, RKEY, CDS, EUI48, EUI64, URI, CAA and TA.
 	* New RR type TKEY, but without operational practice.
 	* Fix b{32,64}_{ntop,pton} detection and handling.

@@ -359,6 +359,23 @@ struct ldns_struct_rr_descriptor
 };
 typedef struct ldns_struct_rr_descriptor ldns_rr_descriptor;
 
+
+/**
+ * Create a rr type bitmap rdf providing enough space to set all 
+ * known (to ldns) rr types.
+ * \param[out] rdf the constructed rdf
+ * \return LDNS_STATUS_OK if all went well.
+ */
+ldns_status ldns_rdf_bitmap_known_rr_types_space(ldns_rdf** rdf);
+
+/**
+ * Create a rr type bitmap rdf with at least all known (to ldns) rr types set.
+ * \param[out] rdf the constructed rdf
+ * \return LDNS_STATUS_OK if all went well.
+ */
+ldns_status ldns_rdf_bitmap_known_rr_types(ldns_rdf** rdf);
+
+
 /**
  * creates a new rr structure.
  * \return ldns_rr *

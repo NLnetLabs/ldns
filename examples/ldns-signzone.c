@@ -368,9 +368,8 @@ main(int argc, char *argv[])
 	char *prog = strdup(argv[0]);
 	ldns_status result;
 
-	ldns_output_format fmt = { ldns_output_format_default->flags, NULL };
-	void **hashmap = NULL;
-
+	ldns_output_format_storage fmt_st;
+	ldns_output_format* fmt = ldns_output_format_init(&fmt_st);
 	
 	inception = 0;
 	expiration = 0;
@@ -389,11 +388,10 @@ main(int argc, char *argv[])
 			}
 			break;
 		case 'b':
-			fmt.flags |= LDNS_COMMENT_BUBBLEBABBLE;
-			fmt.flags |= LDNS_COMMENT_FLAGS;
-			fmt.flags |= LDNS_COMMENT_NSEC3_CHAIN;
-			fmt.flags |= LDNS_COMMENT_LAYOUT;
-			hashmap = &fmt.data;
+			ldns_output_format_set(fmt, LDNS_COMMENT_FLAGS
+						  | LDNS_COMMENT_LAYOUT      
+						  | LDNS_COMMENT_NSEC3_CHAIN
+						  | LDNS_COMMENT_BUBBLEBABBLE);
 			break;
 		case 'd':
 			add_keys = false;
@@ -767,7 +765,7 @@ main(int argc, char *argv[])
 			nsec3_salt_length,
 			nsec3_salt,
 			signflags,
-			(ldns_rbtree_t**) hashmap);
+			&fmt_st.hashmap);
 	} else {
 		result = ldns_dnssec_zone_sign_flg(signed_zone,
 				added_rrs,
@@ -796,7 +794,7 @@ main(int argc, char *argv[])
 					   outputfile_name, strerror(errno));
 			} else {
 				ldns_dnssec_zone_print_fmt(
-						outputfile, &fmt, signed_zone);
+						outputfile, fmt, signed_zone);
 				fclose(outputfile);
 			}
 		}

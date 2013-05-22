@@ -43,29 +43,35 @@ extern "C" {
  * Represent a NULL pointer (in stead of a pointer to a ldns_rr as "; (null)" 
  * as opposed to outputting nothing at all in such a case.
  */
-#define LDNS_COMMENT_NULLS		0x0001
+/*	Flag Name			Flag Nr.	Has data associated
+	---------------------------------------------------------------------*/
+#define LDNS_COMMENT_NULLS		(1 <<  0)
 /** Show key id with DNSKEY RR's as comment */
-#define LDNS_COMMENT_KEY_ID		0x0002
+#define LDNS_COMMENT_KEY_ID		(1 <<  1)
 /** Show if a DNSKEY is a ZSK or KSK as comment */
-#define LDNS_COMMENT_KEY_TYPE		0x0004
+#define LDNS_COMMENT_KEY_TYPE		(1 <<  2)
 /** Show DNSKEY key size as comment */
-#define LDNS_COMMENT_KEY_SIZE		0x0008
+#define LDNS_COMMENT_KEY_SIZE		(1 <<  3)
+/** Provide bubblebabble representation for DS RR's as comment */
+#define LDNS_COMMENT_BUBBLEBABBLE	(1 <<  4)
+/** Show when a NSEC3 RR has the optout flag set as comment */
+#define LDNS_COMMENT_FLAGS		(1 <<  5)
+/** Show the unhashed owner and next owner names for NSEC3 RR's as comment */
+#define LDNS_COMMENT_NSEC3_CHAIN	(1 <<  6)	/* yes */
+/** Print mark up */
+#define LDNS_COMMENT_LAYOUT		(1 <<  7)
+/** Also comment KEY_ID with RRSIGS **/
+#define LDNS_COMMENT_RRSIGS		(1 <<  8)
+#define LDNS_FMT_ZEROIZE_RRSIGS		(1 <<  9)
+#define LDNS_FMT_PAD_SOA_SERIAL		(1 << 10)
+#define LDNS_FMT_RFC3597		(1 << 11)	/* yes */
+
+#define LDNS_FMT_FLAGS_WITH_DATA			    2
+
 /** Show key id, type and size as comment for DNSKEY RR's */
 #define LDNS_COMMENT_KEY		(LDNS_COMMENT_KEY_ID  \
 					|LDNS_COMMENT_KEY_TYPE\
 					|LDNS_COMMENT_KEY_SIZE)
-/** Provide bubblebabble representation for DS RR's as comment */
-#define LDNS_COMMENT_BUBBLEBABBLE	0x0010
-/** Show when a NSEC3 RR has the optout flag set as comment */
-#define LDNS_COMMENT_FLAGS		0x0020
-/** Show the unhashed owner and next owner names for NSEC3 RR's as comment */
-#define LDNS_COMMENT_NSEC3_CHAIN	0x0040
-/** Print mark up */
-#define LDNS_COMMENT_LAYOUT		0x0080
-/** Also comment KEY_ID with RRSIGS **/
-#define LDNS_COMMENT_RRSIGS		0x0100
-#define LDNS_FMT_ZEROIZE_RRSIGS		0x0200
-#define LDNS_FMT_PAD_SOA_SERIAL		0x0400
 
 /**
  * Output format specifier
@@ -87,6 +93,18 @@ struct ldns_struct_output_format
 typedef struct ldns_struct_output_format ldns_output_format;
 
 /**
+ * Output format struct with additional data for flags that use them.
+ * This struct may not be initialized directly. Use ldns_output_format_init
+ * to initialize.
+ */
+struct ldns_struct_output_format_storage
+{	int   flags;
+	ldns_rbtree_t* hashmap;    /* for LDNS_FMT_NSEC3_CHAIN */
+	ldns_rdf*      bitmap;     /* for LDNS_FMT_RFC3597     */
+};
+typedef struct ldns_struct_output_format_storage ldns_output_format_storage;
+
+/**
  * Standard output format record that disables commenting in the textual 
  * representation of Resource Records completely.
  */
@@ -106,6 +124,55 @@ extern const ldns_output_format *ldns_output_format_default;
  * bubblebabble representation of DS RR's.
  */
 extern const ldns_output_format *ldns_output_format_bubblebabble;
+
+/**
+ * Initialize output format storage to the default value.
+ * \param[in] fmt A reference to an output_format_ storage struct
+ * \return The initialized storage struct typecasted to ldns_output_format
+ */
+INLINE
+ldns_output_format* ldns_output_format_init(ldns_output_format_storage* fmt) {
+	fmt->flags   = ldns_output_format_default->flags;
+	fmt->hashmap = NULL;
+	fmt->bitmap  = NULL;
+	return (ldns_output_format*)fmt;
+}
+
+/**
+ * Set an ouput format flag.
+ */
+INLINE void ldns_output_format_set(ldns_output_format* fmt, int flag) {
+        fmt->flags |= flag;
+}
+
+/**
+ * Clear an ouput format flag.
+ */
+INLINE void ldns_output_format_clear(ldns_output_format* fmt, int flag) {
+        fmt->flags &= !flag;
+}
+
+/**
+ * Makes sure the LDNS_FMT_RFC3597 is set in the output format.
+ * Marks the type to be printed in RFC3597 format.
+ * /param[in] fmt the output format to update
+ * /param[in] the type to be printed in RFC3597 format
+ * /return LDNS_STATUS_OK on success
+ */
+ldns_status
+ldns_output_format_set_type(ldns_output_format* fmt, ldns_rr_type type);
+
+/**
+ * Makes sure the LDNS_FMT_RFC3597 is set in the output format.
+ * Marks the type to not be printed in RFC3597 format. When no other types
+ * have been marked before, all known types (except the given one) will be
+ * marked for printing in RFC3597 format.
+ * /param[in] fmt the output format to update
+ * /param[in] the type not to be printed in RFC3597 format
+ * /return LDNS_STATUS_OK on success
+ */
+ldns_status
+ldns_output_format_clear_type(ldns_output_format* fmt, ldns_rr_type type);
 
 /**
  * Converts an ldns packet opcode value to its mnemonic, and adds that

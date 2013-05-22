@@ -2380,6 +2380,125 @@ static ldns_rr_descriptor rdata_field_descriptors[] = {
 #define LDNS_RDATA_FIELD_DESCRIPTORS_COUNT \
 	(sizeof(rdata_field_descriptors)/sizeof(rdata_field_descriptors[0]))
 
+
+/*---------------------------------------------------------------------------*
+ * The functions below return an bitmap RDF with the space required to set
+ * or unset all known RR types. Arguably these functions are better situated
+ * in rdata.c, however for the space calculation it is necesarry to walk
+ * through rdata_field_descriptors which is not easily possible from anywhere
+ * other than rr.c where it is declared static.
+ *
+ * Alternatively rr.c could have provided an iterator for rr_type or 
+ * rdf_descriptors, but this seemed overkill for internal use only.
+ */
+static ldns_rr_descriptor* rdata_field_descriptors_end =
+	&rdata_field_descriptors[LDNS_RDATA_FIELD_DESCRIPTORS_COUNT];
+
+/* From RFC3845:
+ *
+ * 2.1.2.  The List of Type Bit Map(s) Field
+ * 
+ *    The RR type space is split into 256 window blocks, each representing
+ *    the low-order 8 bits of the 16-bit RR type space.  Each block that
+ *    has at least one active RR type is encoded using a single octet
+ *    window number (from 0 to 255), a single octet bitmap length (from 1
+ *    to 32) indicating the number of octets used for the window block's
+ *    bitmap, and up to 32 octets (256 bits) of bitmap.
+ * 
+ *    Window blocks are present in the NSEC RR RDATA in increasing
+ *    numerical order.
+ * 
+ *    "|" denotes concatenation
+ * 
+ *    Type Bit Map(s) Field = ( Window Block # | Bitmap Length | Bitmap ) +
+ * 
+ *    <cut>
+ * 
+ *    Blocks with no types present MUST NOT be included.  Trailing zero
+ *    octets in the bitmap MUST be omitted.  The length of each block's
+ *    bitmap is determined by the type code with the largest numerical
+ *    value within that block, among the set of RR types present at the
+ *    NSEC RR's owner name.  Trailing zero octets not specified MUST be
+ *    interpreted as zero octets.
+ */
+static ldns_status
+ldns_rdf_bitmap_known_rr_types_set(ldns_rdf** rdf, int value)
+{
+	uint8_t  window;		/*  most significant octet of type */
+	uint8_t  subtype;		/* least significant octet of type */
+	uint16_t windows[256]		/* Max subtype per window */
+#ifndef S_SPLINT_S
+	                      = { 0 }
+#endif
+	                             ;
+	ldns_rr_descriptor* d;	/* used to traverse rdata_field_descriptors */
+	size_t i;		/* used to traverse windows array */
+
+	size_t sz;			/* size needed for type bitmap rdf */
+	uint8_t* data = NULL;		/* rdf data */
+	uint8_t* dptr;			/* used to itraverse rdf data */
+
+	assert(rdf != NULL);
+
+	/* Which windows need to be in the bitmap rdf?
+	 */
+	for (d=rdata_field_descriptors; d < rdata_field_descriptors_end; d++) {
+		window  = d->_type >> 8;
+		subtype = d->_type & 0xff;
+		if (windows[window] < subtype) {
+			windows[window] = subtype;
+		}
+	}
+
+	/* How much space do we need in the rdf for those windows?
+	 */
+	sz = 0;
+	for (i = 0; i < 256; i++) {
+		if (windows[i]) {
+			sz += windows[i] / 8 + 3;
+		}
+	}
+	if (sz > 0) {
+		/* Format rdf data according RFC3845 Section 2.1.2 (see above)
+		 */
+		dptr = data = LDNS_XMALLOC(uint8_t, sz);
+		if (!data) {
+			return LDNS_STATUS_MEM_ERR;
+		}
+		for (i = 0; i < 256; i++) {
+			if (windows[i]) {
+				*dptr++ = (uint8_t)i;
+				*dptr++ = (uint8_t)(windows[i] / 8 + 1);
+				memset(dptr, value, dptr[-1]);
+				dptr += dptr[-1];
+			}
+		}
+	}
+	/* Allocate and return rdf structure for the data
+	 */
+	*rdf = ldns_rdf_new(LDNS_RDF_TYPE_BITMAP, sz, data);
+	if (!*rdf) {
+		LDNS_FREE(data);
+		return LDNS_STATUS_MEM_ERR;
+	}
+	return LDNS_STATUS_OK;
+}
+
+ldns_status
+ldns_rdf_bitmap_known_rr_types_space(ldns_rdf** rdf)
+{
+	return ldns_rdf_bitmap_known_rr_types_set(rdf, 0);
+}
+
+ldns_status
+ldns_rdf_bitmap_known_rr_types(ldns_rdf** rdf)
+{
+	return ldns_rdf_bitmap_known_rr_types_set(rdf, 255);
+}
+/* End of RDF bitmap functions
+ *---------------------------------------------------------------------------*/
+
+
 const ldns_rr_descriptor *
 ldns_rr_descript(uint16_t type)
 {
