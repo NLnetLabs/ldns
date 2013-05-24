@@ -1138,7 +1138,12 @@ ldns_resolver_prepare_query_pkt(ldns_pkt **query_pkt, ldns_resolver *r,
 
 	/* prepare a question pkt from the parameters
 	 * and then send this */
-	*query_pkt = ldns_pkt_query_new(ldns_rdf_clone(name), t, c, flags);
+	if (t == LDNS_RR_TYPE_IXFR) {
+		*query_pkt = ldns_pkt_ixfr_request_new(ldns_rdf_clone(name),
+			c, flags, NULL);
+	} else {
+		*query_pkt = ldns_pkt_query_new(ldns_rdf_clone(name), t, c, flags);
+	}
 	if (!*query_pkt) {
 		return LDNS_STATUS_ERR;
 	}

@@ -18,6 +18,8 @@
 	  for dane needed X509_check_ca function in openssl.
 	* Fix ldns_dnssec_zone_new_frm_fp_l to allow the last parsed line of a
 	  zone to be an NSEC3 (or its RRSIG) covering an empty non terminal.
+	* New functions: ldns_pkt_ixfr_request_new and
+	  ldns_pkt_ixfr_request_new_frm_str.
 
 1.6.16	2012-11-13
 	* Fix Makefile to build pyldns with BSD make
