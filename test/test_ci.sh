@@ -35,5 +35,59 @@ do
 	fi
 	tpkg -b $BUILD_DIR/test -a $BUILD_DIR exe $TESTFN
 done
-# END
 
+# -----------------------------------------------------------------------------
+# ----  Testing part
+#
+( cd test; tpkg -q -n `ls result.*|wc -l` report >/dev/null )
+
+# -----------------------------------------------------------------------------
+# ----  Reusable reporting part
+#
+if test "$?" -eq "0"; then STATUS="PASS"; else STATUS="FAIL"; fi
+CI_ID=2
+
+REPOS=$(basename $(pwd))
+REPOS=${REPOS%.git}
+CI_URI="https://gitlab-ci.nlnetlabs.nl/projects/$CI_ID/builds/%H"
+while [ $# -ge 1 ]
+do
+	(
+		git log -1 --format="From %H %ad%nFrom: %an <%ae>"
+		BRANCH=$(
+			for W in $( git log -1 --format=%d | tr "()," "   " )
+			do echo $W
+			done | grep -v HEAD | head -1
+			)
+		BRANCH="${BRANCH#origin/}"
+		echo "X-Git-Refname: $BRANCH"
+		if [ -z "$BRANCH" -o "$BRANCH" = "master" ]
+		then
+			BRANCH=""
+		else
+			BRANCH="/$BRANCH"
+		fi
+		git log -1 --format="Subject: [git: $REPOS$BRANCH][$STATUS] %s"
+		echo "To: $1"
+		echo "Date: `LC_ALL=C date '+%a, %e %b %Y %T %z (%Z)'`"
+		echo "X-Git-Repository: $REPOS"
+		git log -2 --format="X-Git-Oldrev: %H"
+		git log -1 --format="X-Git-Newrev: %H"
+		echo
+		uname -a
+		echo
+		git log -1 --format="$CI_URI"
+		echo
+
+		# -------------------------------------------------------------
+		# ----  Repository specific reporting part
+		# ----
+			( cd test; tpkg report )
+		# ----
+		# -------------------------------------------------------------
+
+
+	) | sendmail $1
+	shift
+done
+test "$STATUS" = "PASS"
