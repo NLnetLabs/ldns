@@ -17,6 +17,18 @@ else
         NO_REGRESSION=0
 fi
 
+if [ -z "$TPKG" -o ! -x "$TPKG" ]
+then
+        if which tpkg > /dev/null       ; then TPKG=`which tpkg`
+        elif [ -x $HOME/bin/tpkg ]      ; then TPKG=$HOME/bin/tpkg
+        elif [ -x $HOME/local/bin/tpkg ]; then TPKG=$HOME/local/bin/tpkg
+        elif [ -x /home/tpkg/bin/tpkg ] ; then TPKG=/home/tpkg/bin/tpkg
+        else
+                echo Did not find tpkg program!
+                exit -1
+        fi
+fi
+
 # RUN THE TESTS
 for tests in $BUILD_DIR/test/*.tpkg 
 do
@@ -33,13 +45,13 @@ do
 	then
 		continue
 	fi
-	tpkg -b $BUILD_DIR/test -a $BUILD_DIR exe $TESTFN
+	$TPKG -b $BUILD_DIR/test -a $BUILD_DIR exe $TESTFN
 done
 
 # -----------------------------------------------------------------------------
 # ----  Testing part
 #
-( cd test; tpkg -q -n `ls result.*|wc -l` report >/dev/null )
+( cd test; $TPKG -q -n `ls result.*|wc -l` report >/dev/null )
 
 # -----------------------------------------------------------------------------
 # ----  Reusable reporting part
@@ -82,7 +94,7 @@ do
 		# -------------------------------------------------------------
 		# ----  Repository specific reporting part
 		# ----
-			( cd test; tpkg report )
+			( cd test; $TPKG report )
 		# ----
 		# -------------------------------------------------------------
 
