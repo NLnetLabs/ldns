@@ -56,7 +56,7 @@ done
 # -----------------------------------------------------------------------------
 # ----  Reusable reporting part
 #
-if test "$?" -eq "0"; then STATUS="PASS"; else STATUS="FAIL"; fi
+if test "$?" -eq "0"; then STATUS="pass"; else STATUS="FAIL"; fi
 CI_ID=2
 
 REPOS=$(basename $(pwd))
@@ -64,6 +64,7 @@ REPOS=${REPOS%.git}
 CI_URI="https://gitlab-ci.nlnetlabs.nl/projects/$CI_ID/builds/%H"
 while [ $# -ge 1 ]
 do
+	echo "Sending mail to $1... ($# >= 1)"
 	(
 		git log -1 --format="From %H %ad%nFrom: %an <%ae>"
 		BRANCH=$(
@@ -102,4 +103,4 @@ do
 	) | sendmail $1
 	shift
 done
-test "$STATUS" = "PASS"
+test "$STATUS" = "pass"
