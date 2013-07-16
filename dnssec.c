@@ -731,7 +731,7 @@ ldns_dnssec_create_nsec_bitmap(ldns_rr_type rr_type_list[],
 	if (sz > 0) {
 		/* Format rdf data according RFC3845 Section 2.1.2 (see above)
 		 */
-		dptr = data = LDNS_XMALLOC(uint8_t, sz);
+		dptr = data = LDNS_CALLOC(uint8_t, sz);
 		if (!data) {
 			return NULL;
 		}
