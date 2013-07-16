@@ -654,103 +654,119 @@ ldns_key_rr2ds(const ldns_rr *key, ldns_hash h)
 	return ds;
 }
 
+/* From RFC3845:
+ *
+ * 2.1.2.  The List of Type Bit Map(s) Field
+ * 
+ *    The RR type space is split into 256 window blocks, each representing
+ *    the low-order 8 bits of the 16-bit RR type space.  Each block that
+ *    has at least one active RR type is encoded using a single octet
+ *    window number (from 0 to 255), a single octet bitmap length (from 1
+ *    to 32) indicating the number of octets used for the window block's
+ *    bitmap, and up to 32 octets (256 bits) of bitmap.
+ * 
+ *    Window blocks are present in the NSEC RR RDATA in increasing
+ *    numerical order.
+ * 
+ *    "|" denotes concatenation
+ * 
+ *    Type Bit Map(s) Field = ( Window Block # | Bitmap Length | Bitmap ) +
+ * 
+ *    <cut>
+ * 
+ *    Blocks with no types present MUST NOT be included.  Trailing zero
+ *    octets in the bitmap MUST be omitted.  The length of each block's
+ *    bitmap is determined by the type code with the largest numerical
+ *    value within that block, among the set of RR types present at the
+ *    NSEC RR's owner name.  Trailing zero octets not specified MUST be
+ *    interpreted as zero octets.
+ */
 ldns_rdf *
 ldns_dnssec_create_nsec_bitmap(ldns_rr_type rr_type_list[],
                                size_t size,
                                ldns_rr_type nsec_type)
 {
-	size_t i;
-	uint8_t *bitmap;
-	uint16_t bm_len = 0;
-	uint16_t i_type;
-	ldns_rdf *bitmap_rdf;
+	uint8_t  window;		/*  most significant octet of type */
+	uint8_t  subtype;		/* least significant octet of type */
+	uint16_t windows[256]		/* Max subtype per window */
+#ifndef S_SPLINT_S
+	                      = { 0 }
+#endif
+	                             ;
+	ldns_rr_type* d;	/* used to traverse rr_type_list*/
+	size_t i;		/* used to traverse windows array */
 
-	uint8_t *data = NULL;
-	uint8_t cur_data[32];
-	uint8_t cur_window = 0;
-	uint8_t cur_window_max = 0;
-	uint16_t cur_data_size = 0;
+	size_t sz;			/* size needed for type bitmap rdf */
+	uint8_t* data = NULL;		/* rdf data */
+	uint8_t* dptr;			/* used to itraverse rdf data */
+	ldns_rdf* rdf;			/* bitmap rdf to return */
 
 	if (nsec_type != LDNS_RR_TYPE_NSEC &&
 	    nsec_type != LDNS_RR_TYPE_NSEC3) {
 		return NULL;
 	}
 
-	i_type = 0;
-	for (i = 0; i < size; i++) {
-		if (i_type < rr_type_list[i])
-			i_type = rr_type_list[i];
-	}
-	if (i_type < nsec_type) {
-		i_type = nsec_type;
+	/* The NSEC type itself is in the bitmap always
+	 */
+	windows[nsec_type >> 8] = nsec_type & 0xff;
+
+	/* Which other windows need to be in the bitmap rdf?
+	 */
+	for (d = rr_type_list; d < rr_type_list + size; d++) {
+		window  = *d >> 8;
+		subtype = *d & 0xff;
+		if (windows[window] < subtype) {
+			windows[window] = subtype;
+		}
 	}
 
-	bm_len = i_type / 8 + 2;
-	bitmap = LDNS_XMALLOC(uint8_t, bm_len);
-        if(!bitmap) return NULL;
-	for (i = 0; i < bm_len; i++) {
-		bitmap[i] = 0;
+	/* How much space do we need in the rdf for those windows?
+	 */
+	sz = 0;
+	for (i = 0; i < 256; i++) {
+		if (windows[i]) {
+			sz += windows[i] / 8 + 3;
+		}
 	}
+	if (sz > 0) {
+		/* Format rdf data according RFC3845 Section 2.1.2 (see above)
+		 */
+		dptr = data = LDNS_XMALLOC(uint8_t, sz);
+		if (!data) {
+			return NULL;
+		}
+		for (i = 0; i < 256; i++) {
+			if (windows[i]) {
+				*dptr++ = (uint8_t)i;
+				*dptr++ = (uint8_t)(windows[i] / 8 + 1);
 
-	for (i = 0; i < size; i++) {
-		i_type = rr_type_list[i];
-		ldns_set_bit(bitmap + (int) i_type / 8,
-				   (int) (7 - (i_type % 8)),
-				   true);
-	}
+				/* Now let windows[i] index the bitmap
+				 * within data
+				 */
+				windows[i] = (uint16_t)(dptr - data);
 
-	/* fold it into windows TODO: can this be done directly? */
-	memset(cur_data, 0, 32);
-	for (i = 0; i < bm_len; i++) {
-		if (i / 32 > cur_window) {
-			/* check, copy, new */
-			if (cur_window_max > 0) {
-				/* this window has stuff, add it */
-				data = LDNS_XREALLOC(data,
-								 uint8_t,
-								 cur_data_size + cur_window_max + 3);
-                                if(!data) {
-                                        LDNS_FREE(bitmap);
-                                        return NULL;
-                                }
-				data[cur_data_size] = cur_window;
-				data[cur_data_size + 1] = cur_window_max + 1;
-				memcpy(data + cur_data_size + 2,
-					  cur_data,
-					  cur_window_max+1);
-				cur_data_size += cur_window_max + 3;
+				dptr += dptr[-1];
 			}
-			cur_window++;
-			cur_window_max = 0;
-			memset(cur_data, 0, 32);
-		}
-		cur_data[i%32] = bitmap[i];
-		if (bitmap[i] > 0) {
-			cur_window_max = i%32;
 		}
 	}
-	if (cur_window_max > 0 || cur_data[0] != 0) {
-		/* this window has stuff, add it */
-		data = LDNS_XREALLOC(data,
-						 uint8_t,
-						 cur_data_size + cur_window_max + 3);
-                if(!data) {
-                        LDNS_FREE(bitmap);
-                        return NULL;
-                }
-		data[cur_data_size] = cur_window;
-		data[cur_data_size + 1] = cur_window_max + 1;
-		memcpy(data + cur_data_size + 2, cur_data, cur_window_max+1);
-		cur_data_size += cur_window_max + 3;
+
+	/* Set the bits?
+	 */
+	subtype = nsec_type & 0xff;
+	data[windows[nsec_type >> 8] + subtype/8] |= (0x80 >> (subtype % 8));
+	for (d = rr_type_list; d < rr_type_list + size; d++) {
+		subtype = *d & 0xff;
+		data[windows[*d >> 8] + subtype/8] |= (0x80 >> (subtype % 8));
 	}
-	bitmap_rdf = ldns_rdf_new_frm_data(LDNS_RDF_TYPE_NSEC,
-								cur_data_size,
-								data);
 
-	LDNS_FREE(bitmap);
-	LDNS_FREE(data);
-
-	return bitmap_rdf;
+	/* Allocate and return rdf structure for the data
+	 */
+	rdf = ldns_rdf_new(LDNS_RDF_TYPE_BITMAP, sz, data);
+	if (!rdf) {
+		LDNS_FREE(data);
+		return NULL;
+	}
+	return rdf;
 }
 
 int
@@ -1367,7 +1383,7 @@ ldns_nsec_bitmap_covers_type(const  ldns_rdf* bitmap, ldns_rr_type type)
 		if (dptr[0] == window && subtype / 8 < dptr[1] &&
 				dptr + dptr[1] + 2 <= dend) {
 
-			return dptr[2 + subtype / 8] & (1 << (subtype % 8));
+			return dptr[2 + subtype / 8] & (0x80 >> (subtype % 8));
 		}
 		dptr += dptr[1] + 2; /* next window */
 	}
@@ -1404,7 +1420,7 @@ ldns_nsec_bitmap_set_type(ldns_rdf* bitmap, ldns_rr_type type)
 		if (dptr[0] == window && subtype / 8 < dptr[1] &&
 				dptr + dptr[1] + 2 <= dend) {
 
-			dptr[2 + subtype / 8] |= (1 << (subtype % 8));
+			dptr[2 + subtype / 8] |= (0x80 >> (subtype % 8));
 			return LDNS_STATUS_OK;
 		}
 		dptr += dptr[1] + 2; /* next window */
@@ -1443,7 +1459,7 @@ ldns_nsec_bitmap_clear_type(ldns_rdf* bitmap, ldns_rr_type type)
 		if (dptr[0] == window && subtype / 8 < dptr[1] &&
 				dptr + dptr[1] + 2 <= dend) {
 
-			dptr[2 + subtype / 8] &= ~(1 << (subtype % 8));
+			dptr[2 + subtype / 8] &= ~(0x80 >> (subtype % 8));
 			return LDNS_STATUS_OK;
 		}
 		dptr += dptr[1] + 2; /* next window */
