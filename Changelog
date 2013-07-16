@@ -1,4 +1,5 @@
 1.6.17
+	* bugfix #504: GPOS RR has three rdata fields. Thanks Jelte Jansen.
 	* -u and -U parameter for ldns-read-zone to mark/unmark a RR type
 	  for printing as unknown type
 	* New output format flag (and accompanying funtions) to print certain
