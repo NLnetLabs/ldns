@@ -690,7 +690,7 @@ ldns_dnssec_create_nsec_bitmap(ldns_rr_type rr_type_list[],
 	uint8_t  subtype;		/* least significant octet of type */
 	uint16_t windows[256]		/* Max subtype per window */
 #ifndef S_SPLINT_S
-	                      = { 0 }
+	                      = { 0 }	/* Initialize ALL elements with 0 */
 #endif
 	                             ;
 	ldns_rr_type* d;	/* used to traverse rr_type_list*/
@@ -705,10 +705,6 @@ ldns_dnssec_create_nsec_bitmap(ldns_rr_type rr_type_list[],
 	    nsec_type != LDNS_RR_TYPE_NSEC3) {
 		return NULL;
 	}
-
-	/* The NSEC type itself is in the bitmap always
-	 */
-	windows[nsec_type >> 8] = nsec_type & 0xff;
 
 	/* Which other windows need to be in the bitmap rdf?
 	 */
@@ -752,8 +748,6 @@ ldns_dnssec_create_nsec_bitmap(ldns_rr_type rr_type_list[],
 
 	/* Set the bits?
 	 */
-	subtype = nsec_type & 0xff;
-	data[windows[nsec_type >> 8] + subtype/8] |= (0x80 >> (subtype % 8));
 	for (d = rr_type_list; d < rr_type_list + size; d++) {
 		subtype = *d & 0xff;
 		data[windows[*d >> 8] + subtype/8] |= (0x80 >> (subtype % 8));
