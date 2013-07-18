@@ -217,6 +217,10 @@
 			case LDNS_RDF_TYPE_NSEC3_NEXT_OWNER:
 			    return "NSEC3_NEXT_OWNER";
 			case LDNS_RDF_TYPE_ILNP64:     return "ILNP64";
+                        case LDNS_RDF_TYPE_EUI48:      return "EUI48";
+                        case LDNS_RDF_TYPE_EUI64:      return "EUI64";
+                        case LDNS_RDF_TYPE_TAG:        return "TAG";
+                        case LDNS_RDF_TYPE_LONG_STR:   return "LONG_STR";
 			}
 		}
 		return 0;

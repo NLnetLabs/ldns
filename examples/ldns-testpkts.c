@@ -230,7 +230,7 @@ static void adjustline(char* line, struct entry* e,
 }
 
 /** create new entry */
-static struct entry* new_entry()
+static struct entry* new_entry(void)
 {
 	struct entry* e = LDNS_MALLOC(struct entry);
 	memset(e, 0, sizeof(*e));
