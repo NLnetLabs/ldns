@@ -16,6 +16,8 @@
 	* Miscellaneous prototype fixes. Thanks Dag-Erling Smørgrav.
 	* Make sure executables are linked against libcrypto with the 
 	  LIBSSL_LDFLAGS. Thanks Leo Baltus.
+	* bugfix #490: Get rid of type-punned pointer warnings.
+	  Thanks Adam Tkac.
 	* Add --disable-dane option to configure and check availability of the
 	  for dane needed X509_check_ca function in openssl.
 	* Fix ldns_dnssec_zone_new_frm_fp_l to allow the last parsed line of a
