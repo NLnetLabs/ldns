@@ -2,7 +2,8 @@
 # Copyright 2009, Wouter Wijngaards, NLnet Labs.   
 # BSD licensed.
 #
-# Version 24
+# Version 25
+# 2013-07-18 Enable ACX_CHECK_COMPILER_FLAG to test for -Wstrict-prototypes
 # 2013-06-25 FLTO has --disable-flto option.
 # 2013-05-03 Update W32_SLEEP for newer mingw that links but not defines it.
 # 2013-03-22 Fix ACX_RSRC_VERSION for long version numbers.
