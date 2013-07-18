@@ -1242,34 +1242,6 @@ ldns_rdf2buffer_str_long_str(ldns_buffer *output, const ldns_rdf *rdf)
 }
 
 ldns_status
-ldns_rdf2buffer_str_multi_str(ldns_buffer *output, const ldns_rdf *rdf)
-{
-	size_t pos = 0;
-	if (ldns_rdf_size(rdf) < pos + 1) {
-               	return LDNS_STATUS_WIRE_RDATA_ERR;
-	}
-	ldns_buffer_printf(output, "\"");
-	while (pos < ldns_rdf_size(rdf)) {
-		if (ldns_rdf_size(rdf) < pos + 1) {
-                	return LDNS_STATUS_WIRE_RDATA_ERR;
-		}
-		if (ldns_rdf_size(rdf) < pos + 1 + ldns_rdf_data(rdf)[pos]) {
-                	return LDNS_STATUS_WIRE_RDATA_ERR;
-		}
-		ldns_characters2buffer_str(output,
-				 ldns_rdf_data(rdf)[pos],
-				&ldns_rdf_data(rdf)[pos + 1]);
-		/* 
-		 * if (ldns_rdf_data(rdf)[pos] < 255)
-		 * 	break;
-		 */
-		pos += 1 + ldns_rdf_data(rdf)[pos];
-	}
-	ldns_buffer_printf(output, "\"");
-	return ldns_buffer_status(output);
-}
-
-ldns_status
 ldns_rdf2buffer_str_fmt(ldns_buffer *buffer,
 		const ldns_output_format* fmt, const ldns_rdf *rdf)
 {
@@ -1382,9 +1354,6 @@ ldns_rdf2buffer_str_fmt(ldns_buffer *buffer,
 			break;
 		case LDNS_RDF_TYPE_LONG_STR:
 			res = ldns_rdf2buffer_str_long_str(buffer, rdf);
-			break;
-		case LDNS_RDF_TYPE_MULTI_STR:
-			res = ldns_rdf2buffer_str_multi_str(buffer, rdf);
 			break;
 		}
 	} else {

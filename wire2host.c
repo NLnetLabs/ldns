@@ -311,16 +311,6 @@ ldns_wire2rdf(ldns_rr *rr, const uint8_t *wire, size_t max, size_t *pos)
 			cur_rdf_length = ((size_t) wire[*pos]) + 1;
 			break;
 
-		case LDNS_RDF_TYPE_MULTI_STR:
-			cur_rdf_length = 0;
-			while (*pos + cur_rdf_length < end) {
-				str_sz = wire[*pos + cur_rdf_length];
-				cur_rdf_length += str_sz + 1;
-				if (str_sz < 255) {
-					break;
-				}
-			}
-			break;
 		case LDNS_RDF_TYPE_INT16_DATA:
 			if (*pos + 2 > end) {
 				return LDNS_STATUS_PACKET_OVERFLOW;

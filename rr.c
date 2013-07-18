@@ -92,8 +92,7 @@ INLINE bool
 ldns_rdf_type_maybe_quoted(ldns_rdf_type rdf_type)
 {
 	return  rdf_type == LDNS_RDF_TYPE_STR ||
-		rdf_type == LDNS_RDF_TYPE_LONG_STR ||
-		rdf_type == LDNS_RDF_TYPE_MULTI_STR;
+		rdf_type == LDNS_RDF_TYPE_LONG_STR;
 }
 
 /*
@@ -1985,7 +1984,7 @@ static const ldns_rdf_type type_eui64_wireformat[] = {
 static const ldns_rdf_type type_uri_wireformat[] = {
 	LDNS_RDF_TYPE_INT16,
 	LDNS_RDF_TYPE_INT16,
-	LDNS_RDF_TYPE_MULTI_STR
+	LDNS_RDF_TYPE_LONG_STR
 };
 static const ldns_rdf_type type_caa_wireformat[] = {
 	LDNS_RDF_TYPE_INT8,

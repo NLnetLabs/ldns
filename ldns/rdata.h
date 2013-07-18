@@ -128,15 +128,6 @@ enum ldns_enum_rdf_type
 	 */
 	LDNS_RDF_TYPE_LONG_STR,
 
-	/** A <character-string> encoding of the value field as specified in
-	 *  section 5.1 of [RFC1035], encoded as a sequence of one or more 
-	 *  <character-string> (as specified in section 3.3 of [RFC1035]),
-	 *  where all but the last <character-string> are filled up to the 
-	 *  maximum length of 255 octets.
-	 * For URI.
-	 */
-	LDNS_RDF_TYPE_MULTI_STR,
-
 	/* Aliases */
 	LDNS_RDF_TYPE_BITMAP = LDNS_RDF_TYPE_NSEC
 };
