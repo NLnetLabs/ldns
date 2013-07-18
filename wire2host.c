@@ -159,7 +159,6 @@ ldns_wire2rdf(ldns_rr *rr, const uint8_t *wire, size_t max, size_t *pos)
 {
 	size_t end;
 	size_t cur_rdf_length;
-	size_t str_sz;
 	uint8_t rdf_index;
 	uint8_t *data;
 	uint16_t rd_length;
