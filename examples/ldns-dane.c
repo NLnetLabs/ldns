@@ -218,7 +218,8 @@ ldns_err(const char* s, ldns_status err)
 ldns_status
 ssl_connect_and_get_cert_chain(
 		X509** cert, STACK_OF(X509)** extra_certs,
-	       	SSL* ssl, ldns_rdf* address, uint16_t port,
+	       	SSL* ssl, const char* name_str,
+		ldns_rdf* address, uint16_t port,
 		ldns_dane_transport transport)
 {
 	struct sockaddr_storage *a = NULL;
@@ -267,6 +268,7 @@ ssl_connect_and_get_cert_chain(
 		fprintf(stderr, "SSL_clear\n");
 		return LDNS_STATUS_SSL_ERR;
 	}
+	SSL_set_tlsext_host_name(ssl, name_str);
 	SSL_set_connect_state(ssl);
 	(void) SSL_set_mode(ssl, SSL_MODE_AUTO_RETRY);
 	if (! SSL_set_fd(ssl, sock)) {
@@ -1682,7 +1684,7 @@ main(int argc, char* const* argv)
 			assert(address != NULL);
 			
 			s = ssl_connect_and_get_cert_chain(&cert, &extra_certs,
-					ssl, address, port, transport);
+					ssl, name_str, address,port, transport);
 			if (s == LDNS_STATUS_NETWORK_ERR) {
 				fprintf(stderr, "Could not connect to ");
 				ldns_rdf_print(stderr, address);
