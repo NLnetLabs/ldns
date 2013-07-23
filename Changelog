@@ -26,6 +26,8 @@
 	  ldns_pkt_ixfr_request_new_frm_str.
 	* bugfix #507: ldnsx Fix use of non-existent variables and not
 	  properly referring to instance variable.  Patch from shussain.
+	* bugfix #508: ldnsx Adding NSEC3PARAM to known/allowable RR type
+	  dictionary.  Patch from shussain.
 
 1.6.16	2012-11-13
 	* Fix Makefile to build pyldns with BSD make
