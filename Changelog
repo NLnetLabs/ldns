@@ -28,6 +28,8 @@
 	  properly referring to instance variable.  Patch from shussain.
 	* bugfix #508: ldnsx Adding NSEC3PARAM to known/allowable RR type
 	  dictionary.  Patch from shussain.
+	* bugfix #517: ldns_resolver_new_frm_fp error when invoked using a NULL
+	  file pointer.
 
 1.6.16	2012-11-13
 	* Fix Makefile to build pyldns with BSD make
