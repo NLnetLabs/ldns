@@ -109,6 +109,18 @@ ldns_rr_list* _ldns_pkt_question(ldns_pkt* p) {
 
 /* clone data when pushed in */
 
+%newobject _ldns_pkt_query_new;
+%rename (__ldns_pkt_query_new) ldns_pkt_query_new;
+%inline
+%{
+  ldns_pkt * _ldns_pkt_query_new(ldns_rdf *rr_name, ldns_rr_type rr_type,
+      ldns_rr_class rr_class, uint16_t flags)
+  {
+    return ldns_pkt_query_new(ldns_rdf_clone(rr_name), rr_type, rr_class,
+             flags);
+  }
+%}
+
 %rename(__ldns_pkt_push_rr) ldns_pkt_push_rr;
 %inline %{
 bool _ldns_pkt_push_rr(ldns_pkt* p, ldns_pkt_section sec, ldns_rr *rr) {
@@ -170,7 +182,7 @@ This simple example instances a resolver in order to resolve NS for nic.cz.
                :param flags: packet flags
                :returns: new ldns_pkt object
             """
-            return _ldns.ldns_pkt_query_new(rr_name, rr_type, rr_class, flags)
+            return _ldns._ldns_pkt_query_new(rr_name, rr_type, rr_class, flags)
 
         @staticmethod
         def new_query_frm_str(rr_name, rr_type, rr_class, flags, raiseException = True):
