@@ -729,7 +729,7 @@ ldns_resolver_new_frm_fp_l(ldns_resolver **res, FILE *fp, int *line_nr)
                                 do {
                                         c = fgetc(myfp);
                                 } while(c != EOF && c != '\n');
-                                if(c=='\n' && line_nr) (*line_nr)++;
+                                if(c=='\n') (*line_nr)++;
                         }
 			/* and read next to prepare for further parsing */
                         oldline = *line_nr;

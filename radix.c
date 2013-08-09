@@ -202,8 +202,8 @@ ldns_radix_insert(ldns_radix_t* tree, uint8_t* key, radix_strlen_t len,
 			/** Find some space in the array for the first byte */
 			if (!ldns_radix_array_space(prefix, key[0])) {
 				LDNS_FREE(add);
-				LDNS_FREE(prefix);
 				LDNS_FREE(prefix->array);
+				LDNS_FREE(prefix);
 				return LDNS_STATUS_MEM_ERR;
 			}
 			/** Set relational pointers */
@@ -216,8 +216,8 @@ ldns_radix_insert(ldns_radix_t* tree, uint8_t* key, radix_strlen_t len,
 					len, &prefix->array[0].str,
 					&prefix->array[0].len)) {
 					LDNS_FREE(add);
-					LDNS_FREE(prefix);
 					LDNS_FREE(prefix->array);
+					LDNS_FREE(prefix);
 					return LDNS_STATUS_MEM_ERR;
 				}
 			}
