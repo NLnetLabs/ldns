@@ -30,6 +30,7 @@
 	  dictionary.  Patch from shussain.
 	* bugfix #517: ldns_resolver_new_frm_fp error when invoked using a NULL
 	  file pointer.
+	* Fix buffer overflow in fget_token and bget_token.
 
 1.6.16	2012-11-13
 	* Fix Makefile to build pyldns with BSD make
