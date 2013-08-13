@@ -268,7 +268,9 @@ ssl_connect_and_get_cert_chain(
 		fprintf(stderr, "SSL_clear\n");
 		return LDNS_STATUS_SSL_ERR;
 	}
-	SSL_set_tlsext_host_name(ssl, name_str);
+#ifdef SSL_CTRL_SET_TLSEXT_HOSTNAME
+	(void) SSL_set_tlsext_host_name(ssl, name_str);
+#endif
 	SSL_set_connect_state(ssl);
 	(void) SSL_set_mode(ssl, SSL_MODE_AUTO_RETRY);
 	if (! SSL_set_fd(ssl, sock)) {

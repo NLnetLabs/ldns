@@ -1,29 +1,30 @@
 1.6.17
-	* bugfix #497: Properly test for EOF when reading key files with drill.
-	* bugfix #504: GPOS RR has three rdata fields. Thanks Jelte Jansen.
-	* -u and -U parameter for ldns-read-zone to mark/unmark a RR type
-	  for printing as unknown type
-	* New output format flag (and accompanying funtions) to print certain
-	  RR's as unknown type
-	* New RR types HIP, NINFO, RKEY, CDS, EUI48, EUI64, URI, CAA and TA.
-	* New RR type TKEY, but without operational practice.
-	* Fix b{32,64}_{ntop,pton} detection and handling.
-	* -T option for ldns-dane that has specific exit status for PKIX
-	  validated connections without (secure) TLSA records.
-	* Bind to source address for resolvers. drill binds to source with -I.
-	  Thanks Bryan Duff.
-	* README now shows preferred way to configure for examples and drill.
-	* Miscellaneous prototype fixes. Thanks Dag-Erling Smørgrav.
-	* Make sure executables are linked against libcrypto with the 
-	  LIBSSL_LDFLAGS. Thanks Leo Baltus.
-	* bugfix #490: Get rid of type-punned pointer warnings.
-	  Thanks Adam Tkac.
-	* Add --disable-dane option to configure and check availability of the
-	  for dane needed X509_check_ca function in openssl.
 	* Fix ldns_dnssec_zone_new_frm_fp_l to allow the last parsed line of a
 	  zone to be an NSEC3 (or its RRSIG) covering an empty non terminal.
+	* Add --disable-dane option to configure and check availability of the
+	  for dane needed X509_check_ca function in openssl.
+	* bugfix #490: Get rid of type-punned pointer warnings.
+	  Thanks Adam Tkac.
+	* Make sure executables are linked against libcrypto with the 
+	  LIBSSL_LDFLAGS. Thanks Leo Baltus.
+	* Miscellaneous prototype fixes. Thanks Dag-Erling Smørgrav.
+	* README now shows preferred way to configure for examples and drill.
+	* Bind to source address for resolvers. drill binds to source with -I.
+	  Thanks Bryan Duff.
+	* -T option for ldns-dane that has specific exit status for PKIX
+	  validated connections without (secure) TLSA records.
+	* Fix b{32,64}_{ntop,pton} detection and handling.
+	* New RR type TKEY, but without operational practice.
+	* New RR types HIP, NINFO, RKEY, CDS, EUI48, EUI64, URI, CAA and TA.
+	* New output format flag (and accompanying funtions) to print certain
+	  RR's as unknown type
+	* -u and -U parameter for ldns-read-zone to mark/unmark a RR type
+	  for printing as unknown type
+	* bugfix #504: GPOS RR has three rdata fields. Thanks Jelte Jansen.
+	* bugfix #497: Properly test for EOF when reading key files with drill.
 	* New functions: ldns_pkt_ixfr_request_new and
 	  ldns_pkt_ixfr_request_new_frm_str.
+	* Use SNI with ldns-dane
 	* bugfix #507: ldnsx Fix use of non-existent variables and not
 	  properly referring to instance variable.  Patch from shussain.
 	* bugfix #508: ldnsx Adding NSEC3PARAM to known/allowable RR type
