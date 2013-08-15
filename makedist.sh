@@ -1,8 +1,8 @@
 #!/bin/sh
 
 #
-# Build a LDNS distribution tar from the SVN repository.
-# Ripped from NSD. Adapted by Miek
+# Build a LDNS distribution tar from the GIT repository.
+# Ripped from NSD. Adapted by Miek. Adapted by Willem
 #
 
 # Abort script on unexpected errors.
@@ -14,7 +14,7 @@ cwd=`pwd`
 # Utility functions.
 usage () {
     cat >&2 <<EOF
-Usage $0: [-h] [-s] [-d SVN_root]
+Usage $0: [-h] [-s] [-c <tag/branch>]
 Generate a distribution tar file for libdns.
 
     -h           This usage information.
@@ -23,7 +23,7 @@ Generate a distribution tar file for libdns.
     -rc <nr>     Build a release candidate, the given string will be added
                  to the version number 
                  (which will then be ldns-<version>rc<number>)
-    -d SVN_root  Retrieve the libdns source from the specified repository.
+    -c <tag/br>  Checkout this tag or branch (defaults to master).
 EOF
     exit 1
 }
@@ -76,7 +76,7 @@ replace_all () {
     replace_text "$1" "@date@" "`date +'%b %e, %Y'`"
 }
     
-
+CHECKOUT="master"
 SNAPSHOT="no"
 RC="no"
 
@@ -86,8 +86,8 @@ while [ "$1" ]; do
         "-h")
             usage
             ;;
-        "-d")
-            SVNROOT="$2"
+        "-c")
+            CHECKOUT="$2"
             shift
             ;;
         "-s")
@@ -104,13 +104,7 @@ while [ "$1" ]; do
     shift
 done
 
-# Check if SVNROOT is specified.
-if [ -z "$SVNROOT" ]; then
-    error "SVNROOT must be specified (using -d)"
-fi
-
 # Start the packaging process.
-info "SVNROOT  is $SVNROOT"
 info "SNAPSHOT is $SNAPSHOT"
 
 #question "Do you wish to continue with these settings?" || error "User abort."
@@ -122,10 +116,10 @@ temp_dir=`mktemp -d ldns-dist-XXXXXX`
 info "Directory '$temp_dir' created."
 cd $temp_dir
 
-info "Exporting source from SVN."
-svn export "$SVNROOT" ldns || error_cleanup "SVN command failed"
-
-cd ldns || error_cleanup "LDNS not exported correctly from SVN"
+info "Exporting source from GIT"
+git clone git://git.nlnetlabs.nl/ldns/ || error_cleanup "git command failed"
+cd ldns || error_cleanup "LDNS not exported correctly from git"
+git checkout "$CHECKOUT" || error_cleanup "Could not checkout $CHECKOUT"
 
 info "Running  Libtoolize script (libtoolize)."
 libtoolize -c --install || libtoolize -c || error_cleanup "Libtoolize failed."
