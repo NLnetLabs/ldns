@@ -11,6 +11,7 @@
 #include "config.h"
 #include <unistd.h>
 #include <stdlib.h>
+#include <sys/time.h>
 
 #include <ldns/ldns.h>
 
@@ -245,74 +246,25 @@ verify_next_hashed_name(ldns_dnssec_zone* zone, ldns_dnssec_name *name)
 {
 	ldns_rbnode_t *next_node;
 	ldns_dnssec_name *next_name;
-	ldns_dnssec_name *cur_next_name = NULL;
-	ldns_dnssec_name *cur_first_name = NULL;
 	int cmp;
 	char *next_owner_str;
 	ldns_rdf *next_owner_dname;
 
-	if (!name->hashed_name) {
-		name->hashed_name = ldns_nsec3_hash_name_frm_nsec3(
-				name->nsec, name->name);
-	}
-	next_node = ldns_rbtree_first(zone->names);
-	while (next_node != LDNS_RBTREE_NULL) {
-		next_name = (ldns_dnssec_name *)next_node->data;
-		/* skip over names that have no NSEC3 records (whether it
-		 * actually should or should not should have been checked
-		 * already */
-		if (!next_name->nsec) {
-			next_node = ldns_rbtree_next(next_node);
-			continue;
-		}
-		if (!next_name->hashed_name) {
-			next_name->hashed_name =
-				ldns_nsec3_hash_name_frm_nsec3(name->nsec,
-						next_name->name);
-		}
-		/* we keep track of what 'so far' is the next hashed name;
-		 * it must of course be 'larger' than the current name
-		 * if we find one that is larger, but smaller than what we
-		 * previously thought was the next one, that one is the next
-		 */
-		cmp = ldns_dname_compare(name->hashed_name,
-				next_name->hashed_name);
-		if (cmp < 0) {
-			if (!cur_next_name) {
-				cur_next_name = next_name;
-			} else {
-				cmp = ldns_dname_compare(
-						next_name->hashed_name,
-						cur_next_name->hashed_name);
-				if (cmp < 0) {
-					cur_next_name = next_name;
-				}
-			}
-		}
-		/* in case the hashed name of the nsec we are checking is the
-		 * last one, we need the first hashed name of the zone */
-		if (!cur_first_name) {
-			cur_first_name = next_name;
-		} else {
-			cmp = ldns_dname_compare(next_name->hashed_name,
-					cur_first_name->hashed_name);
-		       	if (cmp < 0) {
-				cur_first_name = next_name;
-			}
-		}
+	assert(name->hashed_name);
+
+	next_node = ldns_rbtree_search(zone->hashed_names, name->hashed_name);
+	assert(next_node);
+	do {
 		next_node = ldns_rbtree_next(next_node);
-	}
-	if (!cur_next_name) {
-		cur_next_name = cur_first_name;
-	}
-	assert(cur_next_name != NULL);
-       	/* Because this function is called on nsec occurrence,
-	 * there must be a cur_next_name!
-	 */
+		if (next_node == LDNS_RBTREE_NULL) {
+			next_node = ldns_rbtree_first(zone->hashed_names);
+		}
+		next_name = (ldns_dnssec_name *) next_node->data;
+	} while (! next_name->nsec);
 
 	next_owner_str = ldns_rdf2str(ldns_nsec3_next_owner(name->nsec));
 	next_owner_dname = ldns_dname_new_frm_str(next_owner_str);
-	cmp = ldns_dname_compare(next_owner_dname, cur_next_name->hashed_name);
+	cmp = ldns_dname_compare(next_owner_dname, next_name->hashed_name);
 	ldns_rdf_deep_free(next_owner_dname);
 	LDNS_FREE(next_owner_str);
 	if (cmp != 0) {
@@ -321,9 +273,9 @@ verify_next_hashed_name(ldns_dnssec_zone* zone, ldns_dnssec_name *name)
 			ldns_rdf_print(stdout, name->name);
 			fprintf(myerr, " points to the wrong next hashed owner"
 					" name\n\tshould point to ");
-			ldns_rdf_print(myerr, cur_next_name->name);
+			ldns_rdf_print(myerr, next_name->name);
 			fprintf(myerr, ", whose hashed name is ");
-			ldns_rdf_print(myerr, cur_next_name->hashed_name);
+			ldns_rdf_print(myerr, next_name->hashed_name);
 			fprintf(myerr, "\n");
 		}
 		return LDNS_STATUS_ERR;
@@ -458,7 +410,7 @@ verify_dnssec_name(ldns_rdf *zone_name, ldns_dnssec_zone* zone,
 	/* for NSEC chain checks */
 
 	name = (ldns_dnssec_name *) cur_node->data;
-	if (verbosity >= 3) {
+	if (verbosity >= 5) {
 		fprintf(myout, "Checking: ");
 		ldns_rdf_print(myout, name->name);
 		fprintf(myout, "\n");
@@ -703,6 +655,23 @@ error:
 	return result;
 }
 
+void timelog(const char* msg) /* DEBUGING (remove me) */
+{
+	static struct timeval start;
+	static double dstart;
+	struct timeval now;
+	double dnow;
+
+	if (! msg) {
+		gettimeofday(&start, NULL);
+		dstart = start.tv_sec + ((double)start.tv_usec / 1000000);
+	} else if (verbosity > 3) {
+		gettimeofday(&now, NULL);
+		dnow = now.tv_sec + ((double)now.tv_usec / 1000000);
+		fprintf(myout, "%10.6f %s\n", (dnow - dstart), msg);
+	}
+}
+
 int
 main(int argc, char **argv)
 {
@@ -720,6 +689,7 @@ main(int argc, char **argv)
 	ldns_rr_list *keys = ldns_rr_list_new();
 	size_t nkeys = 0;
 
+	timelog(NULL);  /* DEBUGING (remove me) */
 	check_time = ldns_time(NULL);
 	myout = stdout;
 	myerr = stderr;
@@ -897,6 +867,7 @@ main(int argc, char **argv)
 	s = ldns_dnssec_zone_new_frm_fp_l(&dnssec_zone, fp, NULL, 0,
 			LDNS_RR_CLASS_IN, &line_nr);
 	if (s == LDNS_STATUS_OK) {
+		timelog("zone loaded"); /* DEBUGING (remove me) */
 		if (!dnssec_zone->soa) {
 			if (verbosity > 0) {
 				fprintf(myerr,
@@ -913,7 +884,7 @@ main(int argc, char **argv)
 					"glue in the zone\n");
 			}
 		}
-
+		timelog("glue marked");
 		if (verbosity >= 5) {
 			ldns_dnssec_zone_print(myout, dnssec_zone);
 		}
@@ -921,6 +892,7 @@ main(int argc, char **argv)
 		result = verify_dnssec_zone(dnssec_zone,
 				dnssec_zone->soa->name, keys, apexonly,
 				percentage);
+		timelog("zone verified");
 
 		if (result == LDNS_STATUS_OK) {
 			if (verbosity >= 3) {

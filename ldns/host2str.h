@@ -99,7 +99,7 @@ typedef struct ldns_struct_output_format ldns_output_format;
  */
 struct ldns_struct_output_format_storage
 {	int   flags;
-	ldns_rbtree_t* hashmap;    /* for LDNS_FMT_NSEC3_CHAIN */
+	ldns_rbtree_t* hashmap;    /* for LDNS_COMMENT_NSEC3_CHAIN */
 	ldns_rdf*      bitmap;     /* for LDNS_FMT_RFC3597     */
 };
 typedef struct ldns_struct_output_format_storage ldns_output_format_storage;

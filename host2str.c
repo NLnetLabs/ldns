@@ -1603,7 +1603,10 @@ ldns_rr2buffer_str_fmt(ldns_buffer *output,
 							"from: ");
 						(void) ldns_rdf2buffer_str(
 							output,
-							(ldns_rdf*)node->data);
+							ldns_dnssec_name_name(
+							   (ldns_dnssec_name*)
+							   node->data
+							));
 					}
 					ldns_rdf_free(key);
 				}
@@ -1617,8 +1620,11 @@ ldns_rr2buffer_str_fmt(ldns_buffer *output,
 						ldns_buffer_printf(output,
 							" to: ");
 						(void) ldns_rdf2buffer_str(
-							output, 
-							(ldns_rdf*)node->data);
+							output,
+							ldns_dnssec_name_name(
+							   (ldns_dnssec_name*)
+							   node->data
+							));
 					}
 					ldns_rdf_free(key);
 				}

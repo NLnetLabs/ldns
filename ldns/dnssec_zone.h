@@ -93,6 +93,13 @@ struct ldns_struct_dnssec_zone {
 	ldns_dnssec_name *soa;
 	/** tree of ldns_dnssec_names */
 	ldns_rbtree_t *names;
+	/** tree of ldns_dnssec_names by nsec3 hashes (when applicible) */
+	ldns_rbtree_t *hashed_names;
+	/** points to the first added NSEC3 rr whose parameters will be 
+	 *  assumed for all subsequent NSEC3 rr's and which will be used
+	 *  to calculate hashed names
+	 */
+	ldns_rr *_nsec3params;
 };
 typedef struct ldns_struct_dnssec_zone ldns_dnssec_zone;
 

@@ -387,7 +387,7 @@ ldns_status ldns_nsec_bitmap_set_type(ldns_rdf* bitmap, ldns_rr_type type);
  * \return LDNS_STATUS_OK on success. LDNS_STATUS_TYPE_NOT_IN_BITMAP is 
  *         returned when the bitmap does not contain the bit to set.
  */
-ldns_status ldns_nsec_bitmap_clear_type(ldns_rdf* rdf, ldns_rr_type t);
+ldns_status ldns_nsec_bitmap_clear_type(ldns_rdf* bitmap, ldns_rr_type type);
 
 /**
  * Checks coverage of NSEC(3) RR name span
