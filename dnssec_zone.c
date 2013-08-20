@@ -799,8 +799,8 @@ ldns_dnssec_zone_hashed_names_from_nsec3(
 	ldns_rbnode_t* current_node;
 	ldns_dnssec_name* current_name;
 
-	assert(zone);
-	assert(nsec3rr);
+	assert(zone != NULL);
+	assert(nsec3rr != NULL);
 
 	if (zone->hashed_names) {
 		ldns_traverse_postorder(zone->hashed_names,
@@ -832,7 +832,7 @@ ldns_dnssec_name_make_hashed_name(ldns_dnssec_zone *zone,
 {
 	ldns_rbnode_t* new_node;
 
-	assert(name);
+	assert(name != NULL);
 	if (! zone->_nsec3params) {
 		if (! nsec3rr) {
 			return;

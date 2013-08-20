@@ -250,10 +250,10 @@ verify_next_hashed_name(ldns_dnssec_zone* zone, ldns_dnssec_name *name)
 	char *next_owner_str;
 	ldns_rdf *next_owner_dname;
 
-	assert(name->hashed_name);
+	assert(name->hashed_name != NULL);
 
 	next_node = ldns_rbtree_search(zone->hashed_names, name->hashed_name);
-	assert(next_node);
+	assert(next_node != NULL);
 	do {
 		next_node = ldns_rbtree_next(next_node);
 		if (next_node == LDNS_RBTREE_NULL) {
@@ -664,10 +664,10 @@ void timelog(const char* msg) /* DEBUGING (remove me) */
 
 	if (! msg) {
 		gettimeofday(&start, NULL);
-		dstart = start.tv_sec + ((double)start.tv_usec / 1000000);
+		dstart = (double)start.tv_sec + (start.tv_usec / 1000000.0);
 	} else if (verbosity > 3) {
 		gettimeofday(&now, NULL);
-		dnow = now.tv_sec + ((double)now.tv_usec / 1000000);
+		dnow = (double)now.tv_sec + (now.tv_usec / 1000000.0);
 		fprintf(myout, "%10.6f %s\n", (dnow - dstart), msg);
 	}
 }
