@@ -1,4 +1,4 @@
-1.6.17
+1.7.0
 	* Fix ldns_dnssec_zone_new_frm_fp_l to allow the last parsed line of a
 	  zone to be an NSEC3 (or its RRSIG) covering an empty non terminal.
 	* Add --disable-dane option to configure and check availability of the
@@ -37,9 +37,12 @@
 	  Thanks NIC MX (nicmexico.mx)
 	* ldns-dane setup new ssl session for each new connect to prevent hangs
 	* Parsing from and to wire and presentation format for draft rr types
-	  should be explicitely enabled with the --enable-draft-rrtypes option
+	  must be explicitely enabled with the --enable-draft-rrtypes option
 	  to conifigure. This applies to: NINFO, RKEY, CDS, EUI48, EUI64, URI
 	  and TA
+	* Bump version to 1.7.0
+	* The version of shared library now has similar scheme as libunbound.
+	  ldns 1.7.0 will have shared library version (SONAME) 2.0.0
 
 1.6.16	2012-11-13
 	* Fix Makefile to build pyldns with BSD make
