@@ -384,12 +384,6 @@ ssl_interact(SSL* ssl)
 }
 
 
-void
-ssl_shutdown(SSL* ssl)
-{
-	while (SSL_shutdown(ssl) == 0);
-}
-
 ldns_rr_list*
 rr_list_filter_rr_type(ldns_rr_list* l, ldns_rr_type t)
 {
@@ -1631,13 +1625,13 @@ main(int argc, char* const* argv)
 	    SSL_CTX_use_certificate_chain_file(ctx, cert_file) != 1) {
 		ssl_err("error loading certificate");
 	}
-	ssl = SSL_new(ctx);
-	if (! ssl) {
-		ssl_err("could not SSL_new");
-	}
 
 	if (cert_file) { /* ssl load certificate */
 
+		ssl = SSL_new(ctx);
+		if (! ssl) {
+			ssl_err("could not SSL_new");
+		}
 		cert = SSL_get_certificate(ssl);
 		if (! cert) {
 			ssl_err("could not SSL_get_certificate");
@@ -1661,6 +1655,7 @@ main(int argc, char* const* argv)
 			     break;
 		default:     break; /* suppress warning */
 		}
+		SSL_free(ssl);
 
 	} else {/* No certificate file given, creation/validation via TLS. */
 
@@ -1681,6 +1676,10 @@ main(int argc, char* const* argv)
 		/* for all addresses, setup SSL and retrieve certificates */
 		for (i = 0; i < ldns_rr_list_rr_count(addresses); i++) {
 
+			ssl = SSL_new(ctx);
+			if (! ssl) {
+				ssl_err("could not SSL_new");
+			}
 			address = ldns_rr_a_address(
 					ldns_rr_list_rr(addresses, i));
 			assert(address != NULL);
@@ -1718,7 +1717,8 @@ main(int argc, char* const* argv)
 				     break;
 			default:     break; /* suppress warning */
 			}
-			ssl_shutdown(ssl);
+			while (SSL_shutdown(ssl) == 0);
+			SSL_free(ssl);
 		} /* end for all addresses */
 	} /* end No certification file */
 
@@ -1732,7 +1732,6 @@ main(int argc, char* const* argv)
 	ldns_rr_list_deep_free(tlsas);
 
 	/* cleanup */
-	SSL_free(ssl);
 	SSL_CTX_free(ctx);
 
 	if (store) {

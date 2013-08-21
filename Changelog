@@ -35,6 +35,7 @@
 	* Fix buffer overflow in fget_token and bget_token.
 	* ldns-verify-zone NSEC3 checking from quadratic to linear performance.
 	  Thanks NIC MX (nicmexico.mx)
+	* ldns-dane setup new ssl session for each new connect to prevent hangs
 
 1.6.16	2012-11-13
 	* Fix Makefile to build pyldns with BSD make
