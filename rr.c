@@ -1975,6 +1975,7 @@ static const ldns_rdf_type type_lp_wireformat[] = {
 	LDNS_RDF_TYPE_INT16,
 	LDNS_RDF_TYPE_DNAME
 };
+#ifdef DRAFT_RRTYPES
 static const ldns_rdf_type type_eui48_wireformat[] = {
 	LDNS_RDF_TYPE_EUI48
 };
@@ -1986,6 +1987,7 @@ static const ldns_rdf_type type_uri_wireformat[] = {
 	LDNS_RDF_TYPE_INT16,
 	LDNS_RDF_TYPE_LONG_STR
 };
+#endif
 static const ldns_rdf_type type_caa_wireformat[] = {
 	LDNS_RDF_TYPE_INT8,
 	LDNS_RDF_TYPE_TAG,
