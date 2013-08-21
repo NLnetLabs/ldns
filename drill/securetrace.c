@@ -156,6 +156,9 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 
 	/* empty non-terminal check */
 	bool ent;
+	ldns_rr  *nsecrr;      /* The nsec that proofs the non-terminal */
+	ldns_rdf *hashed_name; /* The query hashed with nsec3 params */
+	ldns_rdf *label0;      /* The first label of an nsec3 owner name */
 
 	/* glue handling */
 	ldns_rr_list *new_ns_addr;
@@ -382,8 +385,27 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 				/* there might be an empty non-terminal, in which case we need to continue */
 				ent = false;
 				for (j = 0; j < ldns_rr_list_rr_count(nsec_rrs); j++) {
-					if (ldns_dname_is_subdomain(ldns_rr_rdf(ldns_rr_list_rr(nsec_rrs, j), 0), labels[i])) {
+					nsecrr = ldns_rr_list_rr(nsec_rrs, j);
+					/* For NSEC when the next name is a subdomain of the question */
+					if (ldns_rr_get_type(nsecrr) == LDNS_RR_TYPE_NSEC &&
+							ldns_dname_is_subdomain(ldns_rr_rdf(nsecrr, 0), labels[i])) {
 						ent = true;
+
+					/* For NSEC3, the hash matches the name and the type bitmap is empty*/
+					} else if (ldns_rr_get_type(nsecrr) == LDNS_RR_TYPE_NSEC3) {
+						hashed_name = ldns_nsec3_hash_name_frm_nsec3(nsecrr, labels[i]);
+						label0 = ldns_dname_label(ldns_rr_owner(nsecrr), 0);
+						if (hashed_name && label0 &&
+								ldns_dname_compare(hashed_name, label0) == 0 &&
+								ldns_nsec3_bitmap(nsecrr) == NULL) {
+							ent = true;
+						}
+						if (label0) {
+							LDNS_FREE(label0);
+						}
+						if (hashed_name) {
+							LDNS_FREE(hashed_name);
+						}
 					}
 				}
 				if (!ent) {
