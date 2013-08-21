@@ -339,6 +339,15 @@ case "$enable_dane" in
       ;;
 esac
 
+AC_ARG_ENABLE(draft-rrtypes, AC_HELP_STRING([--enable-draft-rrtypes], [Enable draft RRtypes.]))
+case "$enable_draft_rrtypes" in
+	yes)
+		AC_DEFINE_UNQUOTED([DRAFT_RRTYPES], [], [Define this to enable draft RRtypes.])
+		;;
+	no|*)
+		;;
+esac
+
 AC_SUBST(LIBSSL_CPPFLAGS)
 AC_SUBST(LIBSSL_LDFLAGS)
 AC_SUBST(LIBSSL_LIBS)
