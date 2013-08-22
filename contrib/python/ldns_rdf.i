@@ -823,7 +823,8 @@ specified in the (16-bit) type field with a value from ldns_rdf_type."
                Returns a clone of the given dname with the labels reversed.
 
                When reversing non-dnames a "." (root name) dname is returned.
-               
+
+               :throws Exception: When used on non-dname rdfs.
                :return: (:class:`ldns_rdf`) Clone of the dname with the labels
                    reversed or ".".
 
@@ -836,6 +837,8 @@ specified in the (16-bit) type field with a value from ldns_rdf_type."
                 " to be deprecated in future releases." +
                 " Convert the ldns_rdf to ldsn_dname and the use its" +
                 " methods.", PendingDeprecationWarning, stacklevel=2)
+            if self.get_type() != _ldns.LDNS_RDF_TYPE_DNAME:
+                raise Exception("Operand must be a dname rdf.")
             return _ldns.ldns_dname_reverse(self)
             #parameters: const ldns_rdf *,
             #retvals: ldns_rdf *

@@ -602,7 +602,7 @@ if True:
     rdf = ldns.ldns_rdf_new_frm_str(ldns.LDNS_RDF_TYPE_DNAME, "www.nic.cz.")
     try:
         ret = rdf.label_count()
-        if not isinstance(ret, int):
+        if (not isinstance(ret, int)) and (not isinstance(ret, long)):
             set_error()
         if ret != 3:
             set_error()
@@ -611,7 +611,7 @@ if True:
     rdf = ldns.ldns_rdf_new_frm_str(ldns.LDNS_RDF_TYPE_A, "127.0.0.1")
     try:
         ret = rdf.label_count()
-        if not isinstance(ret, int):
+        if (not isinstance(ret, int)) and (not isinstance(ret, long)):
             set_error()
         if ret != 0:
             set_error()
@@ -720,8 +720,9 @@ if True:
     rdf = ldns.ldns_rdf_new_frm_str(ldns.LDNS_RDF_TYPE_A, "127.0.0.1")
     try:
         ret = rdf.reverse()
-        if not isinstance(ret, ldns.ldns_rdf):
-            set_error()
+        set_error()
+    except Exception:
+        pass
     except:
         set_error()
 
