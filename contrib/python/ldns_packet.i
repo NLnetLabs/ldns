@@ -445,7 +445,7 @@ This simple example instances a resolver in order to resolve NS for nic.cz."
                .. note::
                    The type checking of parameter `rr_name` is benevolent.
                    It allows also to pass a dname :class:`ldns_rdf` object.
-                   This will probably change in future
+                   This will probably change in future.
             """
             if (not isinstance(rr_name, ldns_dname)) and \
                isinstance(rr_name, ldns_rdf) and \

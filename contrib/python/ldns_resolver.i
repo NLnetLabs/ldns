@@ -80,9 +80,34 @@
   }
 %}
 
+%newobject _ldns_resolver_dnssec_anchors;
+%rename(__ldns_resolver_dnssec_anchors) ldns_resolver_dnssec_anchors;
+%inline
+%{
+  ldns_rr_list * _ldns_resolver_dnssec_anchors(const ldns_resolver *res)
+  {
+    return ldns_rr_list_clone(ldns_resolver_dnssec_anchors(res));
+  }
+%}
+
 /* End of pull cloning. */
 
 /* Clone data on push. */
+
+%rename(__ldns_resolver_set_dnssec_anchors) ldns_resolver_set_dnssec_anchors;
+%inline
+%{
+  void _ldns_resolver_set_dnssec_anchors(ldns_resolver *res,
+    ldns_rr_list * rrl)
+  {
+    ldns_rr_list *rrl_clone = NULL;
+    if (rrl != NULL) {
+      rrl_clone = ldns_rr_list_clone(rrl);
+    }
+    /* May leak memory, when overwriting pointer value. */
+    ldns_resolver_set_dnssec_anchors(res, rrl_clone);
+  }
+%}
 
 /* End of push cloning. */
 
@@ -393,37 +418,51 @@ record."
             #retvals: bool
 
         def dec_nameserver_count(self):
-            """Decrement the resolver's nameserver count.
+            """
+               Decrement the resolver's name server count.
             """
             _ldns.ldns_resolver_dec_nameserver_count(self)
             #parameters: ldns_resolver *,
             #retvals: 
 
         def defnames(self):
+            """
+               Does the resolver apply default domain name.
+
+               :return: (bool)
+            """
             return _ldns.ldns_resolver_defnames(self)
             #parameters: const ldns_resolver *,
             #retvals: bool
 
         def dnsrch(self):
+            """
+               Does the resolver apply search list.
+
+               :return: (bool)
+            """
             return _ldns.ldns_resolver_dnsrch(self)
             #parameters: const ldns_resolver *,
             #retvals: bool
 
         def dnssec(self):
-            """Does the resolver do DNSSEC.
+            """
+               Does the resolver do DNSSEC.
                
-               :return: (bool) true: yes, false: no
+               :return: (bool) True: yes, False: no.
             """
             return _ldns.ldns_resolver_dnssec(self)
             #parameters: const ldns_resolver *,
             #retvals: bool
 
         def dnssec_anchors(self):
-            """Get the resolver's DNSSEC anchors.
-               
-               :return: (ldns_rr_list \*) an rr_list containg trusted DNSSEC anchors
             """
-            return _ldns.ldns_resolver_dnssec_anchors(self)
+               Get the resolver's DNSSEC anchors.
+               
+               :return: (:class:`ldns_rr_list`) An rr list containing trusted
+                   DNSSEC anchors.
+            """
+            return _ldns._ldns_resolver_dnssec_anchors(self)
             #parameters: const ldns_resolver *,
             #retvals: ldns_rr_list *
 
@@ -788,15 +827,16 @@ record."
             #parameters: ldns_resolver *,bool,
             #retvals: 
 
-        def set_dnssec_anchors(self,l):
-            """Set the resolver's DNSSEC anchor list directly.
-               
+        def set_dnssec_anchors(self, l):
+            """
+               Set the resolver's DNSSEC anchor list directly.
                RRs should be of type DS or DNSKEY.
                
-               :param l:
-                   the list of RRs to use as trust anchors
+               :param l: The list of RRs to use as trust anchors.
+               :type l: :class:`ldns_rr_list`
+               :throws TypeError: When arguments of inappropriate types.
             """
-            _ldns.ldns_resolver_set_dnssec_anchors(self,l)
+            _ldns._ldns_resolver_set_dnssec_anchors(self, l)
             #parameters: ldns_resolver *,ldns_rr_list *,
             #retvals: 
 
