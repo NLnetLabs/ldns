@@ -37,15 +37,15 @@ master_doc = 'index'
 
 # General substitutions.
 project = 'pyLDNS'
-copyright = '2009, Karel Slany, Zdenek Vasicek'
+copyright = '2009-2013, Karel Slany, Zdenek Vasicek'
 
 # The default replacements for |version| and |release|, also used in various
 # other places throughout the built documents.
 #
 # The short X.Y version.
-version = '1.6'
+version = '1.7'
 # The full version, including alpha/beta/rc tags.
-release = '1.6.14'
+release = '1.7.0'
 
 # There are two options for replacing |today|: either, you set today to some
 # non-false value, then it is used:
