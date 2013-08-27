@@ -90,6 +90,22 @@
   }
 %}
 
+%newobject _ldns_resolver_domain;
+%rename(__ldns_resolver_domain) ldns_resolver_domain;
+%inline
+%{
+  ldns_rdf * _ldns_resolver_domain(const ldns_resolver *res)
+  {
+    /* Prevents assertion failures. */
+    ldns_rdf *rdf;
+    rdf = ldns_resolver_domain(res);
+    if (rdf != NULL) {
+      rdf = ldns_rdf_clone(rdf);
+    }
+    return rdf;
+  }
+%}
+
 /* End of pull cloning. */
 
 /* Clone data on push. */
@@ -106,6 +122,20 @@
     }
     /* May leak memory, when overwriting pointer value. */
     ldns_resolver_set_dnssec_anchors(res, rrl_clone);
+  }
+%}
+
+%rename(__ldns_resolver_set_domain) ldns_resolver_set_domain;
+%inline
+%{
+  void _ldns_resolver_set_domain(ldns_resolver *res, ldns_rdf *rdf)
+  {
+    ldns_rdf *rdf_clone = NULL;
+    if (rdf != NULL) {
+      rdf_clone = ldns_rdf_clone(rdf);
+    }
+    /* May leak memory, when overwriting pointer value. */
+    ldns_resolver_set_domain(res, rdf_clone);
   }
 %}
 
@@ -467,20 +497,26 @@ record."
             #retvals: ldns_rr_list *
 
         def dnssec_cd(self):
-            """Does the resolver set the CD bit.
+            """
+               Does the resolver set the CD bit.
                
-               :return: (bool) true: yes, false: no
+               :return: (bool) True: yes, False: no.
             """
             return _ldns.ldns_resolver_dnssec_cd(self)
             #parameters: const ldns_resolver *,
             #retvals: bool
 
         def domain(self):
-            """What is the default dname to add to relative queries.
-               
-               :return: (ldns_rdf \*) the dname which is added
             """
-            return _ldns.ldns_resolver_domain(self)
+               What is the default dname to add to relative queries.
+               
+               :return: (:class:`ldns_dname`) The dname which is added.
+            """
+            dname = _ldns._ldns_resolver_domain(self)
+            if dname != None:
+                return ldns_dname(_ldns._ldns_resolver_domain(self), clone=False)
+            else:
+                return dname
             #parameters: const ldns_resolver *,
             #retvals: ldns_rdf *
 
@@ -787,28 +823,28 @@ record."
             #parameters: ldns_resolver *,ldns_pkt *,
             #retvals: ldns_status,ldns_pkt **
 
-        def set_debug(self,b):
+        def set_debug(self, b):
             """Set the resolver debugging.
                
                :param b:
                    true: debug on: false debug off
             """
-            _ldns.ldns_resolver_set_debug(self,b)
+            _ldns.ldns_resolver_set_debug(self, b)
             #parameters: ldns_resolver *,bool,
             #retvals: 
 
-        def set_defnames(self,b):
+        def set_defnames(self, b):
             """Whether the resolver uses the name set with _set_domain.
                
                :param b:
                    true: use the defaults, false: don't use them
             """
-            _ldns.ldns_resolver_set_defnames(self,b)
+            _ldns.ldns_resolver_set_defnames(self, b)
             #parameters: ldns_resolver *,bool,
             #retvals: 
 
-        def set_dnsrch(self,b):
-            """Whether the resolver uses the searchlist.
+        def set_dnsrch(self, b):
+            """Whether the resolver uses the search list.
                
                :param b:
                    true: use the list, false: don't use the list
@@ -817,13 +853,13 @@ record."
             #parameters: ldns_resolver *,bool,
             #retvals: 
 
-        def set_dnssec(self,b):
+        def set_dnssec(self, b):
             """Whether the resolver uses DNSSEC.
                
                :param b:
                    true: use DNSSEC, false: don't use DNSSEC
             """
-            _ldns.ldns_resolver_set_dnssec(self,b)
+            _ldns.ldns_resolver_set_dnssec(self, b)
             #parameters: ldns_resolver *,bool,
             #retvals: 
 
@@ -850,15 +886,33 @@ record."
             #parameters: ldns_resolver *,bool,
             #retvals: 
 
-        def set_domain(self,rd):
-            """Set the resolver's default domain.
-               
-               This gets appended when no absolute name is given
-               
-               :param rd:
-                   the name to append
+        def set_domain(self, rd):
             """
-            _ldns.ldns_resolver_set_domain(self,rd)
+               Set the resolver's default domain.
+               This gets appended when no absolute name is given.
+               
+               :param rd: The name to append.
+               :type rd: :class:`ldns_dname`
+
+               .. note::
+                   The type checking of parameter `rd` is benevolent.
+                   It allows also to pass a dname :class:`ldns_rdf` object.
+                   This will probably change in future.
+            """
+            # Has to be able to pass None.
+            if (not isinstance(rd, ldns_dname)) and \
+               isinstance(rd, ldns_rdf) and \
+               rd.get_type() == _ldns.LDNS_RDF_TYPE_DNAME:
+                warnings.warn("The ldns_resolver.set_domain() method" +
+                    " will drop the possibility to accept ldns_rdf." +
+                    " Convert argument to ldns_dname.",
+                    PendingDeprecationWarning, stacklevel=2)
+            if (not isinstance(rd, ldns_rdf)) and (rd != None):
+                raise TypeError("Parameter must be derived from ldns_rdf.")
+            if (isinstance(rd, ldns_rdf)) and \
+               (rd.get_type() != _ldns.LDNS_RDF_TYPE_DNAME):
+                raise Exception("Operands must be ldns_dname.")
+            _ldns._ldns_resolver_set_domain(self, rd)
             #parameters: ldns_resolver *,ldns_rdf *,
             #retvals: 
 
