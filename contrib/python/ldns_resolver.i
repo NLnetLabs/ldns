@@ -67,6 +67,26 @@
 
 %rename(ldns_resolver) ldns_struct_resolver;
 
+
+/* Clone data on pull. */
+
+%newobject _ldns_axfr_last_pkt;
+%rename(__ldns_axfr_last_pkt) ldns_axfr_last_pkt;
+%inline
+%{
+  ldns_pkt * _ldns_axfr_last_pkt(const ldns_resolver *res)
+  {
+    return ldns_pkt_clone(ldns_axfr_last_pkt(res));
+  }
+%}
+
+/* End of pull cloning. */
+
+/* Clone data on push. */
+
+/* End of push cloning. */
+
+
 /* ========================================================================= */
 /* Debugging related code. */
 /* ========================================================================= */
@@ -153,7 +173,8 @@ record."
 
         @staticmethod
         def new_frm_file(filename = "/etc/resolv.conf", raiseException=True):
-            """Creates a resolver object from given filename
+            """
+               Creates a resolver object from given filename
                
                :param filename: Name of file which contains resolver
                    informations (usually /etc/resolv.conf).
@@ -164,42 +185,65 @@ record."
                :throws TypeError: When arguments of inappropriate types.
                :throws Exception: When `raiseException` set and resolver
                    couldn't be created.
-               :return: resolver object or None. If the object can't be created and raiseException is True, an exception occurs.
+               :return: (:class:`ldns_resolver`) Resolver object or None.
+                   An exception occurs if the object can't be created and
+                   'raiseException' is True.
             """
             status, resolver = _ldns.ldns_resolver_new_frm_file(filename)
             if status != LDNS_STATUS_OK:
-                if (raiseException): raise Exception("Can't create resolver, error: %d" % status)
+                if (raiseException):
+                    raise Exception("Can't create resolver, error: %d" % status)
                 return None
             return resolver
 
         @staticmethod
         def new_frm_fp(file, raiseException=True):
-            """Creates a resolver object from file
+            """
+               Creates a resolver object from file
                
-               :param file: a file object
-               :param raiseException: if True, an exception occurs in case a resolver object can't be created
-               :return: resolver object or None. If the object can't be created and raiseException is True, an exception occurs.
+               :param file: A file object.
+               :type file: file
+               :param raiseException: If True, an exception occurs in case a
+                   resolver object can't be created.
+               :type raiseException: bool
+               :throws TypeError: When arguments of inappropriate types.
+               :throws Exception: When `raiseException` set and resolver
+                   couldn't be created.
+               :return: (:class:`ldns_resolver`) Resolver object or None.
+                   An exception occurs if the object can't be created and
+                   `raiseException` is True.
             """
             status, resolver = _ldns.ldns_resolver_new_frm_fp(file)
             if status != LDNS_STATUS_OK:
-                if (raiseException): raise Exception("Can't create resolver, error: %d" % status)
+                if (raiseException):
+                    raise Exception("Can't create resolver, error: %d" % status)
                 return None
             return resolver
 
         @staticmethod
         def new_frm_fp_l(file, raiseException=True):
-            """Creates a resolver object from file
+            """
+               Creates a resolver object from file
                
-               :param file: a file object
-               :param raiseException: if True, an exception occurs in case a resolver instance can't be created
+               :param file: A file object.
+               :type file: file
+               :param raiseException: If True, an exception occurs in case a
+                   resolver instance can't be created.
+               :type raiseException: bool
+               :throws TypeError: When arguments of inappropriate types.
+               :throws Exception: When `raiseException` set and resolver
+                   couldn't be created.
                :return: 
-                  * resolver - resolver instance or None. If an instance can't be created and raiseException is True, an exception occurs.
+                  * (:class:`ldns_resolver`) Resolver instance or None.
+                      An exception occurs if an instance can't be created and
+                      `raiseException` is True.
 
-                  * line - the line number (for debugging)
+                  * (int) - The line number. (e.g., for debugging)
             """
             status, resolver, line = _ldns.ldns_resolver_new_frm_fp_l(file)
             if status != LDNS_STATUS_OK:
-                if (raiseException): raise Exception("Can't create resolver, error: %d" % status)
+                if (raiseException):
+                    raise Exception("Can't create resolver, error: %d" % status)
                 return None
             return resolver, line
 
@@ -208,6 +252,7 @@ record."
         #
 
         # High level functions
+
         def get_addr_by_name(self, name, aclass = _ldns.LDNS_RR_CLASS_IN, flags = _ldns.LDNS_RD):
             """Ask the resolver about name and return all address records
 
@@ -259,17 +304,64 @@ record."
             return _ldns.ldns_get_rr_list_name_by_addr(self, rdf, aclass, flags)
 
         def print_to_file(self,output):
-            """Print a resolver (in sofar that is possible) state to output."""
+            """Print a resolver (in so far that is possible) state to output."""
             _ldns.ldns_resolver_print(output,self)
 
+        def axfr_complete(self):
+            """
+               Returns True if the axfr transfer has completed
+               (i.e., 2 SOA RRs and no errors were encountered).
+
+               :return: (bool)
+            """
+            return _ldns.ldns_axfr_complete(self)
+            #parameters: const ldns_resolver *,
+            #retvals: bool
+
+        def axfr_last_pkt(self):
+            """
+               Returns a last packet that was sent by the server in the AXFR
+               transfer (usable for instance to get the error code on failure).
+
+               :return: (:class:`ldns_pkt`) Last packet of the AXFR transfer.
+            """
+            return _ldns._ldns_axfr_last_pkt(self)
+            #parameters: const ldns_resolver *,
+            #retvals: ldns_pkt *
+
+        def axfr_next(self):
+            """
+               Get the next stream of RRs in a AXFR.
+
+               :return: (:class:`ldns_rr`) The next RR from the AXFR stream.
+            """
+            return _ldns.ldns_axfr_next(self)
+            #parameters: ldns_resolver *,
+            #retvals: ldns_rr *
+
         def axfr_start(self, domain, aclass):
-            """Prepares the resolver for an axfr query. The query is sent and the answers can be read with axfr_next
+            """
+               Prepares the resolver for an axfr query. The query is sent and
+               the answers can be read with :meth:`axfr_next`.
+
+               :param domain: Domain to axfr.
+               :type domain: :class:`dlsn_dname`
+               :param aclass: The class to use.
+               :type aclass: ldns_rr_class
+               :throws TypeError: When arguments of inappropriate types.
+               :return: (ldns_status) The status of the transfer.
+
+               .. note::
+                   The type checking of parameter `domain` is benevolent.
+                   It allows also to pass a dname :class:`ldns_rdf` object.
+                   This will probably change in future.
 
                **Usage**
                ::
     
                   status = resolver.axfr_start("nic.cz", ldns.LDNS_RR_CLASS_IN)
-                  if (status != ldns.LDNS_STATUS_OK): raise Exception("Can't start AXFR, error: %s" % ldns.ldns_get_errorstr_by_id(status))
+                  if (status != ldns.LDNS_STATUS_OK):
+                      raise Exception("Can't start AXFR, error: %s" % ldns.ldns_get_errorstr_by_id(status))
                   #Print the results
                   while True:
                        rr = resolver.axfr_next()
@@ -277,8 +369,8 @@ record."
                           break
 
                        print rr
-
             """
+            # TODO -- Add checking for ldns_rdf and ldns_dname.
             rdf = domain
             if isinstance(domain, str):
                 rdf = _ldns.ldns_dname_new_frm_str(domain)
@@ -286,32 +378,15 @@ record."
             #parameters: ldns_resolver *resolver, ldns_rdf *domain, ldns_rr_class c
             #retvals: int
 
-        def axfr_complete(self):
-            """returns true if the axfr transfer has completed (i.e. 2 SOA RRs and no errors were encountered)"""
-            return _ldns.ldns_axfr_complete(self)
-            #parameters: const ldns_resolver *,
-            #retvals: bool
-
-        def axfr_last_pkt(self):
-            """returns a pointer to the last ldns_pkt that was sent by the server in the AXFR transfer uasable for instance to get the error code on failure"""
-            return _ldns.ldns_axfr_last_pkt(self)
-            #parameters: const ldns_resolver *,
-            #retvals: ldns_pkt *
-
-        def axfr_next(self):
-            """get the next stream of RRs in a AXFR"""
-            return _ldns.ldns_axfr_next(self)
-            #parameters: ldns_resolver *,
-            #retvals: ldns_rr *
-
         #
         # LDNS_RESOLVER_METHODS_
         #
 
         def debug(self):
-            """Get the debug status of the resolver.
+            """
+               Get the debug status of the resolver.
                
-               :return: (bool) true if so, otherwise false
+               :return: (bool) True if so, otherwise False.
             """
             return _ldns.ldns_resolver_debug(self)
             #parameters: const ldns_resolver *,

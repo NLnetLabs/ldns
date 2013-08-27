@@ -10,7 +10,7 @@
 	  ldns_pkt.set_authority(), ldns_pkt.set_edns_data(),
 	  ldns_pkt.set_question(), ldns_pkt.set_tsig().
 	* Added pull cloning for ldns_pkt.answerfrom(), ldns_pkt.edns_data(),
-	  ldns_pkt.tsig().
+	  ldns_pkt.tsig(), ldns_resolver.axfr_last_pkt().
 	* Method ldns_rdf.reverse() now throws an exception when not applied
 	  on dname rdfs. This is to prevent assertion fails in ldns' C code.
 
