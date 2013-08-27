@@ -1,4 +1,5 @@
 1.7.0
+	* Fixed memory leaks when destroying ldns_resolver.
 	* Removed ldns_pkt.section_count() because it is marked static in the
 	  library.
 	* Added ldns_pkt.new().

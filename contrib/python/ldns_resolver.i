@@ -14,8 +14,8 @@
  *       notice, this list of conditions and the following disclaimer in the
  *       documentation and/or other materials provided with the distribution.
  *     * Neither the name of the organization nor the names of its
- *       contributors may be used to endorse or promote products derived from this
- *       software without specific prior written permission.
+ *       contributors may be used to endorse or promote products derived from
+ *       this software without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
@@ -28,18 +28,26 @@
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
- ******************************************************************************/
+ *****************************************************************************/
 
+
+/* ========================================================================= */
+/* SWIG setting and definitions. */
+/* ========================================================================= */
+
+/* Creates temporary instance of (ldns_rersolver *). */
 %typemap(in,numinputs=0,noblock=1) (ldns_resolver **r)
 {
- ldns_resolver *$1_res;
- $1 = &$1_res;
+  ldns_resolver *$1_res;
+  $1 = &$1_res;
 }
           
-/* result generation */
+/* Result generation, appends (ldns_resolver *) after the result. */
 %typemap(argout,noblock=1) (ldns_resolver **r)
 {
-  $result = SWIG_Python_AppendOutput($result, SWIG_NewPointerObj(SWIG_as_voidptr($1_res), SWIGTYPE_p_ldns_struct_resolver, SWIG_POINTER_OWN |  0 ));
+  $result = SWIG_Python_AppendOutput($result,
+    SWIG_NewPointerObj(SWIG_as_voidptr($1_res),
+      SWIGTYPE_p_ldns_struct_resolver, SWIG_POINTER_OWN |  0 ));
 }
 
 //TODO: pop_nameserver a podobne funkce musi predat objekt do spravy PYTHONU!!
@@ -50,8 +58,8 @@
 %delobject ldns_resolver_deep_free;
 %delobject ldns_resolver_free;
 
-%nodefaultctor ldns_struct_resolver; //no default constructor & destructor
-%nodefaultdtor ldns_struct_resolver;
+%nodefaultctor ldns_struct_resolver; /* No default constructor. */
+%nodefaultdtor ldns_struct_resolver; /* No default destructor. */
 
 %ignore ldns_struct_resolver::_searchlist;
 %ignore ldns_struct_resolver::_nameservers;
@@ -59,23 +67,59 @@
 
 %rename(ldns_resolver) ldns_struct_resolver;
 
+/* ========================================================================= */
+/* Debugging related code. */
+/* ========================================================================= */
+
 #ifdef LDNS_DEBUG
 %rename(__ldns_resolver_deep_free) ldns_resolver_deep_free;
 %rename(__ldns_resolver_free) ldns_resolver_free;
-%inline %{
-void _ldns_resolver_free (ldns_resolver* r) {
-   printf("******** LDNS_RESOLVER deep free 0x%lX ************\n", (long unsigned int)r);
-   ldns_resolver_deep_free(r);
-}
+%inline
+%{
+  /*!
+   * @brief Prints information about deallocated resolver and deallocates.
+   */
+  void _ldns_resolver_deep_free(ldns_resolver *r)
+  {
+    printf("******** LDNS_RESOLVER deep free 0x%lX ************\n",
+      (long unsigned int) r);
+    ldns_resolver_deep_free(r);
+  }
+
+  /*!
+   * @brief Prints information about deallocated resolver and deallocates.
+   *
+   * @note There should be no need to use this function in the wrapper code, as
+   *    it is likely to leak memory.
+   */
+  void _ldns_resolver_free(ldns_resolver *r)
+  {
+    printf("******** LDNS_RESOLVER free 0x%lX ************\n",
+      (long unsigned int) r);
+    ldns_resolver_free(r);
+  }
 %}
-#else
+#else /* !LDNS_DEBUG */
 %rename(_ldns_resolver_deep_free) ldns_resolver_deep_free;
 %rename(_ldns_resolver_free) ldns_resolver_free;
-#endif
+#endif /* LDNS_DEBUG */
+
+
+/* ========================================================================= */
+/* Added C code. */
+/* ========================================================================= */
+
+/* None. */
+
+
+/* ========================================================================= */
+/* Encapsulating Python code. */
+/* ========================================================================= */
 
 %feature("docstring") ldns_struct_resolver "LDNS resolver object. 
 
-The ldns_resolver object keeps a list of nameservers and can perform queries.
+The :class:`ldns_resolver` object keeps a list of name servers and can perform
+queries.
 
 **Usage**
 
@@ -86,25 +130,41 @@ The ldns_resolver object keeps a list of nameservers and can perform queries.
 >>>    print pkt.answer()
 www.nic.cz.	1757	IN	A	217.31.205.50
 
-This simple example instances a resolver in order to resolve www.nic.cz record of A type. 
-"
+This simple example instances a resolver in order to resolve www.nic.cz A type
+record."
 
 %extend ldns_struct_resolver {
  
- %pythoncode %{
+  %pythoncode
+  %{
         def __init__(self):
-            raise Exception("This class can't be created directly. Please use: new_frm_file(filename), new_frm_fp(file) or new_frm_fp_l(file,line)")
+            """
+               Cannot be created directly from Python.
+            """
+            raise Exception("This class can't be created directly. " +
+                "Please use: new_frm_file(filename), new_frm_fp(file) " +
+                "or new_frm_fp_l(file,line)")
 
-        __swig_destroy__ = _ldns._ldns_resolver_free
+        __swig_destroy__ = _ldns._ldns_resolver_deep_free
 
-        #LDNS_RESOLVER_CONSTRUCTORS_#
+        #
+        # LDNS_RESOLVER_CONSTRUCTORS_
+        #
+
         @staticmethod
         def new_frm_file(filename = "/etc/resolv.conf", raiseException=True):
             """Creates a resolver object from given filename
                
-               :param filename: name of file which contains informations (usually /etc/resolv.conf)
-               :param raiseException: if True, an exception occurs in case a resolver object can't be created
-               :returns: resolver object or None. If the object can't be created and raiseException is True, an exception occurs.
+               :param filename: Name of file which contains resolver
+                   informations (usually /etc/resolv.conf).
+               :type filename: str
+               :param raiseException: If True, an exception occurs in case a
+                   resolver object can't be created.
+               :type raiseException: bool
+               :throws TypeError: When arguments of inappropriate types.
+               :throws Exception: When `raiseException` set and resolver
+                   couldn't be created.
+               :return: resolver object or None. If the object can't be created and raiseException is True, an exception occurs.
             """
             status, resolver = _ldns.ldns_resolver_new_frm_file(filename)
             if status != LDNS_STATUS_OK:
@@ -118,7 +178,7 @@ This simple example instances a resolver in order to resolve www.nic.cz record o
                
                :param file: a file object
                :param raiseException: if True, an exception occurs in case a resolver object can't be created
-               :returns: resolver object or None. If the object can't be created and raiseException is True, an exception occurs.
+               :return: resolver object or None. If the object can't be created and raiseException is True, an exception occurs.
             """
             status, resolver = _ldns.ldns_resolver_new_frm_fp(file)
             if status != LDNS_STATUS_OK:
@@ -132,7 +192,7 @@ This simple example instances a resolver in order to resolve www.nic.cz record o
                
                :param file: a file object
                :param raiseException: if True, an exception occurs in case a resolver instance can't be created
-               :returns: 
+               :return: 
                   * resolver - resolver instance or None. If an instance can't be created and raiseException is True, an exception occurs.
 
                   * line - the line number (for debugging)
@@ -143,7 +203,9 @@ This simple example instances a resolver in order to resolve www.nic.cz record o
                 return None
             return resolver, line
 
-        #_LDNS_RESOLVER_CONSTRUCTORS#
+        #
+        # _LDNS_RESOLVER_CONSTRUCTORS
+        #
 
         # High level functions
         def get_addr_by_name(self, name, aclass = _ldns.LDNS_RR_CLASS_IN, flags = _ldns.LDNS_RD):
@@ -153,7 +215,7 @@ This simple example instances a resolver in order to resolve www.nic.cz record o
                :param aclass: the class to use
                :param flags: give some optional flags to the query
 
-               :returns: RR List object or None
+               :return: RR List object or None
 
                **Usage**
                  >>> addr = resolver.get_addr_by_name("www.google.com", ldns.LDNS_RR_CLASS_IN, ldns.LDNS_RD)
@@ -178,7 +240,7 @@ This simple example instances a resolver in order to resolve www.nic.cz record o
                :param aclass: the class to use
                :param flags: give some optional flags to the query
 
-               :returns: RR List object or None
+               :return: RR List object or None
 
                **Usage**
                  >>> addr = resolver.get_name_by_addr("74.125.43.99", ldns.LDNS_RR_CLASS_IN, ldns.LDNS_RD)
@@ -242,11 +304,14 @@ This simple example instances a resolver in order to resolve www.nic.cz record o
             #parameters: ldns_resolver *,
             #retvals: ldns_rr *
 
-            #LDNS_RESOLVER_METHODS_#
+        #
+        # LDNS_RESOLVER_METHODS_
+        #
+
         def debug(self):
             """Get the debug status of the resolver.
                
-               :returns: (bool) true if so, otherwise false
+               :return: (bool) true if so, otherwise false
             """
             return _ldns.ldns_resolver_debug(self)
             #parameters: const ldns_resolver *,
@@ -272,7 +337,7 @@ This simple example instances a resolver in order to resolve www.nic.cz record o
         def dnssec(self):
             """Does the resolver do DNSSEC.
                
-               :returns: (bool) true: yes, false: no
+               :return: (bool) true: yes, false: no
             """
             return _ldns.ldns_resolver_dnssec(self)
             #parameters: const ldns_resolver *,
@@ -281,7 +346,7 @@ This simple example instances a resolver in order to resolve www.nic.cz record o
         def dnssec_anchors(self):
             """Get the resolver's DNSSEC anchors.
                
-               :returns: (ldns_rr_list \*) an rr_list containg trusted DNSSEC anchors
+               :return: (ldns_rr_list \*) an rr_list containg trusted DNSSEC anchors
             """
             return _ldns.ldns_resolver_dnssec_anchors(self)
             #parameters: const ldns_resolver *,
@@ -290,7 +355,7 @@ This simple example instances a resolver in order to resolve www.nic.cz record o
         def dnssec_cd(self):
             """Does the resolver set the CD bit.
                
-               :returns: (bool) true: yes, false: no
+               :return: (bool) true: yes, false: no
             """
             return _ldns.ldns_resolver_dnssec_cd(self)
             #parameters: const ldns_resolver *,
@@ -299,7 +364,7 @@ This simple example instances a resolver in order to resolve www.nic.cz record o
         def domain(self):
             """What is the default dname to add to relative queries.
                
-               :returns: (ldns_rdf \*) the dname which is added
+               :return: (ldns_rdf \*) the dname which is added
             """
             return _ldns.ldns_resolver_domain(self)
             #parameters: const ldns_resolver *,
@@ -308,7 +373,7 @@ This simple example instances a resolver in order to resolve www.nic.cz record o
         def edns_udp_size(self):
             """Get the resolver's udp size.
                
-               :returns: (uint16_t) the udp mesg size
+               :return: (uint16_t) the udp mesg size
             """
             return _ldns.ldns_resolver_edns_udp_size(self)
             #parameters: const ldns_resolver *,
@@ -317,7 +382,7 @@ This simple example instances a resolver in order to resolve www.nic.cz record o
         def fail(self):
             """Does the resolver only try the first nameserver.
                
-               :returns: (bool) true: yes, fail, false: no, try the others
+               :return: (bool) true: yes, fail, false: no, try the others
             """
             return _ldns.ldns_resolver_fail(self)
             #parameters: const ldns_resolver *,
@@ -326,7 +391,7 @@ This simple example instances a resolver in order to resolve www.nic.cz record o
         def fallback(self):
             """Get the truncation fallback status.
                
-               :returns: (bool) whether the truncation fallback mechanism is used
+               :return: (bool) whether the truncation fallback mechanism is used
             """
             return _ldns.ldns_resolver_fallback(self)
             #parameters: const ldns_resolver *,
@@ -335,7 +400,7 @@ This simple example instances a resolver in order to resolve www.nic.cz record o
         def igntc(self):
             """Does the resolver ignore the TC bit (truncated).
                
-               :returns: (bool) true: yes, false: no
+               :return: (bool) true: yes, false: no
             """
             return _ldns.ldns_resolver_igntc(self)
             #parameters: const ldns_resolver *,
@@ -351,7 +416,7 @@ This simple example instances a resolver in order to resolve www.nic.cz record o
         def ip6(self):
             """Does the resolver use ip6 or ip4.
                
-               :returns: (uint8_t) 0: both, 1: ip4, 2:ip6
+               :return: (uint8_t) 0: both, 1: ip4, 2:ip6
             """
             return _ldns.ldns_resolver_ip6(self)
             #parameters: const ldns_resolver *,
@@ -360,7 +425,7 @@ This simple example instances a resolver in order to resolve www.nic.cz record o
         def nameserver_count(self):
             """How many nameserver are configured in the resolver.
                
-               :returns: (size_t) number of nameservers
+               :return: (size_t) number of nameservers
             """
             return _ldns.ldns_resolver_nameserver_count(self)
             #parameters: const ldns_resolver *,
@@ -371,7 +436,7 @@ This simple example instances a resolver in order to resolve www.nic.cz record o
                
                :param pos:
                    the index to the nameserver
-               :returns: (size_t) the rrt, 0: infinite, >0: undefined (as of * yet)
+               :return: (size_t) the rrt, 0: infinite, >0: undefined (as of * yet)
             """
             return _ldns.ldns_resolver_nameserver_rtt(self,pos)
             #parameters: const ldns_resolver *,size_t,
@@ -380,7 +445,7 @@ This simple example instances a resolver in order to resolve www.nic.cz record o
         def nameservers(self):
             """Return the configured nameserver ip address.
                
-               :returns: (ldns_rdf \*\*) a ldns_rdf pointer to a list of the addresses
+               :return: (ldns_rdf \*\*) a ldns_rdf pointer to a list of the addresses
             """
             return _ldns.ldns_resolver_nameservers(self)
             #parameters: const ldns_resolver *,
@@ -396,7 +461,7 @@ This simple example instances a resolver in order to resolve www.nic.cz record o
         def pop_nameserver(self):
             """pop the last nameserver from the resolver.
                
-               :returns: (ldns_rdf \*) the popped address or NULL if empty
+               :return: (ldns_rdf \*) the popped address or NULL if empty
             """
             return _ldns.ldns_resolver_pop_nameserver(self)
             #parameters: ldns_resolver *,
@@ -405,7 +470,7 @@ This simple example instances a resolver in order to resolve www.nic.cz record o
         def port(self):
             """Get the port the resolver should use.
                
-               :returns: (uint16_t) the port number
+               :return: (uint16_t) the port number
             """
             return _ldns.ldns_resolver_port(self)
             #parameters: const ldns_resolver *,
@@ -421,7 +486,7 @@ This simple example instances a resolver in order to resolve www.nic.cz record o
                    query for this class (may be 0, default to IN)
                :param f:
                    the query flags
-               :returns: * (ldns_status) ldns_pkt* a packet with the reply from the nameserver
+               :return: * (ldns_status) ldns_pkt* a packet with the reply from the nameserver
                          * (ldns_pkt \*\*) query packet class 
             """
             return _ldns.ldns_resolver_prepare_query_pkt(self,name,t,c,f)
@@ -435,7 +500,7 @@ This simple example instances a resolver in order to resolve www.nic.cz record o
                
                :param rr:
                    the RR to add as a trust anchor.
-               :returns: (ldns_status) a status
+               :return: (ldns_status) a status
             """
             return _ldns.ldns_resolver_push_dnssec_anchor(self,rr)
             #parameters: ldns_resolver *,ldns_rr *,
@@ -448,7 +513,7 @@ This simple example instances a resolver in order to resolve www.nic.cz record o
                
                :param n:
                    the ip address
-               :returns: (ldns_status) ldns_status a status
+               :return: (ldns_status) ldns_status a status
             """
             return _ldns.ldns_resolver_push_nameserver(self,n)
             #parameters: ldns_resolver *,ldns_rdf *,
@@ -461,7 +526,7 @@ This simple example instances a resolver in order to resolve www.nic.cz record o
                
                :param rr:
                    the resource record
-               :returns: (ldns_status) ldns_status a status
+               :return: (ldns_status) ldns_status a status
             """
             return _ldns.ldns_resolver_push_nameserver_rr(self,rr)
             #parameters: ldns_resolver *,ldns_rr *,
@@ -472,7 +537,7 @@ This simple example instances a resolver in order to resolve www.nic.cz record o
                
                :param rrlist:
                    the rr_list to push
-               :returns: (ldns_status) ldns_status a status
+               :return: (ldns_status) ldns_status a status
             """
             return _ldns.ldns_resolver_push_nameserver_rr_list(self,rrlist)
             #parameters: ldns_resolver *,ldns_rr_list *,
@@ -495,7 +560,7 @@ This simple example instances a resolver in order to resolve www.nic.cz record o
                :param atype: the RR type to use
                :param aclass: the RR class to use
                :param flags: give some optional flags to the query
-               :returns: (ldns_pkt) a packet with the reply from the nameserver if _defnames is true the default domain will be added
+               :return: (ldns_pkt) a packet with the reply from the nameserver if _defnames is true the default domain will be added
             """
             return _ldns.ldns_resolver_query(self,name,atype,aclass,flags)
             #parameters: const ldns_resolver *,const ldns_rdf *,ldns_rr_type,ldns_rr_class,uint16_t,
@@ -504,7 +569,7 @@ This simple example instances a resolver in order to resolve www.nic.cz record o
         def random(self):
             """Does the resolver randomize the nameserver before usage.
                
-               :returns: (bool) true: yes, false: no
+               :return: (bool) true: yes, false: no
             """
             return _ldns.ldns_resolver_random(self)
             #parameters: const ldns_resolver *,
@@ -513,7 +578,7 @@ This simple example instances a resolver in order to resolve www.nic.cz record o
         def recursive(self):
             """Is the resolver set to recurse.
                
-               :returns: (bool) true if so, otherwise false
+               :return: (bool) true if so, otherwise false
             """
             return _ldns.ldns_resolver_recursive(self)
             #parameters: const ldns_resolver *,
@@ -522,7 +587,7 @@ This simple example instances a resolver in order to resolve www.nic.cz record o
         def retrans(self):
             """Get the retransmit interval.
                
-               :returns: (uint8_t) the retransmit interval
+               :return: (uint8_t) the retransmit interval
             """
             return _ldns.ldns_resolver_retrans(self)
             #parameters: const ldns_resolver *,
@@ -531,7 +596,7 @@ This simple example instances a resolver in order to resolve www.nic.cz record o
         def retry(self):
             """Get the number of retries.
                
-               :returns: (uint8_t) the number of retries
+               :return: (uint8_t) the number of retries
             """
             return _ldns.ldns_resolver_retry(self)
             #parameters: const ldns_resolver *,
@@ -540,7 +605,7 @@ This simple example instances a resolver in order to resolve www.nic.cz record o
         def rtt(self):
             """Return the used round trip times for the nameservers.
                
-               :returns: (size_t \*) a size_t* pointer to the list. yet)
+               :return: (size_t \*) a size_t* pointer to the list. yet)
             """
             return _ldns.ldns_resolver_rtt(self)
             #parameters: const ldns_resolver *,
@@ -556,7 +621,7 @@ This simple example instances a resolver in order to resolve www.nic.cz record o
                    query for this class (may be 0, default to IN)
                :param flags:
                    the query flags
-               :returns: (ldns_pkt \*) ldns_pkt* a packet with the reply from the nameserver
+               :return: (ldns_pkt \*) ldns_pkt* a packet with the reply from the nameserver
             """
             return _ldns.ldns_resolver_search(self,rdf,t,c,flags)
             #parameters: const ldns_resolver *,const ldns_rdf *,ldns_rr_type,ldns_rr_class,uint16_t,
@@ -565,7 +630,7 @@ This simple example instances a resolver in order to resolve www.nic.cz record o
         def searchlist(self):
             """What is the searchlist as used by the resolver.
                
-               :returns: (ldns_rdf \*\*) a ldns_rdf pointer to a list of the addresses
+               :return: (ldns_rdf \*\*) a ldns_rdf pointer to a list of the addresses
             """
             return _ldns.ldns_resolver_searchlist(self)
             #parameters: const ldns_resolver *,
@@ -574,7 +639,7 @@ This simple example instances a resolver in order to resolve www.nic.cz record o
         def searchlist_count(self):
             """Return the resolver's searchlist count.
                
-               :returns: (size_t) the searchlist count
+               :return: (size_t) the searchlist count
             """
             return _ldns.ldns_resolver_searchlist_count(self)
             #parameters: const ldns_resolver *,
@@ -590,7 +655,7 @@ This simple example instances a resolver in order to resolve www.nic.cz record o
                    query for this class (may be 0, default to IN)
                :param flags:
                    the query flags
-               :returns: * (ldns_status) ldns_pkt* a packet with the reply from the nameserver
+               :return: * (ldns_status) ldns_pkt* a packet with the reply from the nameserver
                          * (ldns_pkt \*\*) 
             """
             return _ldns.ldns_resolver_send(self,name,t,c,flags)
@@ -601,7 +666,7 @@ This simple example instances a resolver in order to resolve www.nic.cz record o
             """Send the given packet to a nameserver.
                
                :param query_pkt:
-               :returns: * (ldns_status) 
+               :return: * (ldns_status) 
                          * (ldns_pkt \*\*) 
             """
             return _ldns.ldns_resolver_send_pkt(self,query_pkt)
@@ -886,7 +951,7 @@ This simple example instances a resolver in order to resolve www.nic.cz record o
         def timeout(self):
             """What is the timeout on socket connections.
                
-               :returns: (struct timeval) the timeout as struct timeval
+               :return: (struct timeval) the timeout as struct timeval
             """
             return _ldns.ldns_resolver_timeout(self)
             #parameters: const ldns_resolver *,
@@ -899,7 +964,7 @@ This simple example instances a resolver in order to resolve www.nic.cz record o
                    the keyset to check
                :param trusted_keys:
                    the subset of trusted keys in the 'keys' rrset
-               :returns: (bool) true if at least one of the provided keys is a configured trust anchor
+               :return: (bool) true if at least one of the provided keys is a configured trust anchor
             """
             return _ldns.ldns_resolver_trusted_key(self,keys,trusted_keys)
             #parameters: const ldns_resolver *,ldns_rr_list *,ldns_rr_list *,
@@ -908,7 +973,7 @@ This simple example instances a resolver in order to resolve www.nic.cz record o
         def tsig_algorithm(self):
             """Return the tsig algorithm as used by the nameserver.
                
-               :returns: (char \*) the algorithm used.
+               :return: (char \*) the algorithm used.
             """
             return _ldns.ldns_resolver_tsig_algorithm(self)
             #parameters: const ldns_resolver *,
@@ -917,7 +982,7 @@ This simple example instances a resolver in order to resolve www.nic.cz record o
         def tsig_keydata(self):
             """Return the tsig keydata as used by the nameserver.
                
-               :returns: (char \*) the keydata used.
+               :return: (char \*) the keydata used.
             """
             return _ldns.ldns_resolver_tsig_keydata(self)
             #parameters: const ldns_resolver *,
@@ -926,7 +991,7 @@ This simple example instances a resolver in order to resolve www.nic.cz record o
         def tsig_keyname(self):
             """Return the tsig keyname as used by the nameserver.
                
-               :returns: (char \*) the name used.
+               :return: (char \*) the name used.
             """
             return _ldns.ldns_resolver_tsig_keyname(self)
             #parameters: const ldns_resolver *,
@@ -935,12 +1000,14 @@ This simple example instances a resolver in order to resolve www.nic.cz record o
         def usevc(self):
             """Does the resolver use tcp or udp.
                
-               :returns: (bool) true: tcp, false: udp
+               :return: (bool) true: tcp, false: udp
             """
             return _ldns.ldns_resolver_usevc(self)
             #parameters: const ldns_resolver *,
             #retvals: bool
 
-            #_LDNS_RESOLVER_METHODS#
- %}
+        #
+        # _LDNS_RESOLVER_METHODS
+        #
+  %}
 } 
