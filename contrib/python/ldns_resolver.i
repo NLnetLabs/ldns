@@ -53,6 +53,7 @@
 //TODO: pop_nameserver a podobne funkce musi predat objekt do spravy PYTHONU!!
 %newobject ldns_resolver_pop_nameserver;
 %newobject ldns_resolver_query;
+%newobject ldns_resolver_search;
 %newobject ldns_axfr_next;
 %newobject ldns_get_rr_list_addr_by_name;
 %newobject ldns_get_rr_list_name_by_addr;
@@ -220,7 +221,7 @@ record."
             """
             raise Exception("This class can't be created directly. " +
                 "Please use: new_frm_file(filename), new_frm_fp(file) " +
-                "or new_frm_fp_l(file,line)")
+                "or new_frm_fp_l(file, line)")
 
         __swig_destroy__ = _ldns._ldns_resolver_deep_free
 
@@ -231,7 +232,7 @@ record."
         @staticmethod
         def new_frm_file(filename = "/etc/resolv.conf", raiseException=True):
             """
-               Creates a resolver object from given filename
+               Creates a resolver object from given file name
                
                :param filename: Name of file which contains resolver
                    informations (usually /etc/resolv.conf).
@@ -611,172 +612,219 @@ record."
                :return: (size_t) The rrt, 0: infinite,
                    >0: undefined (as of * yet).
             """
-            return _ldns.ldns_resolver_nameserver_rtt(self,pos)
+            return _ldns.ldns_resolver_nameserver_rtt(self, pos)
             #parameters: const ldns_resolver *,size_t,
             #retvals: size_t
 
         def nameservers(self):
-            """Return the configured nameserver ip address.
-               
-               :return: (ldns_rdf \*\*) a ldns_rdf pointer to a list of the addresses
             """
+               Return the configured name server ip address.
+               
+               :return: (ldns_rdf \*\*) A ldns_rdf pointer to a list of the
+                   addresses.
+            """
+            # TODO -- Convert to list of ldns_rdf.
             return _ldns.ldns_resolver_nameservers(self)
             #parameters: const ldns_resolver *,
             #retvals: ldns_rdf **
 
         def nameservers_randomize(self):
-            """randomize the nameserver list in the resolver
+            """
+               Randomize the name server list in the resolver.
             """
             _ldns.ldns_resolver_nameservers_randomize(self)
             #parameters: ldns_resolver *,
             #retvals: 
 
         def pop_nameserver(self):
-            """pop the last nameserver from the resolver.
+            """
+               Pop the last name server from the resolver.
                
-               :return: (ldns_rdf \*) the popped address or NULL if empty
+               :return: (:class:`ldns_rdf`) The popped address or None if empty.
             """
             return _ldns.ldns_resolver_pop_nameserver(self)
             #parameters: ldns_resolver *,
             #retvals: ldns_rdf *
 
         def port(self):
-            """Get the port the resolver should use.
+            """
+               Get the port the resolver should use.
                
-               :return: (uint16_t) the port number
+               :return: (uint16_t) The port number.
             """
             return _ldns.ldns_resolver_port(self)
             #parameters: const ldns_resolver *,
             #retvals: uint16_t
 
-        def prepare_query_pkt(self,name,t,c,f):
-            """Form a query packet from a resolver and name/type/class combo.
-               
-               :param name:
-               :param t:
-                   query for this type (may be 0, defaults to A)
-               :param c:
-                   query for this class (may be 0, default to IN)
-               :param f:
-                   the query flags
-               :return: * (ldns_status) ldns_pkt* a packet with the reply from the nameserver
-                         * (ldns_pkt \*\*) query packet class 
+        def prepare_query_pkt(self, name, t, c, f, raiseException=True):
             """
-            return _ldns.ldns_resolver_prepare_query_pkt(self,name,t,c,f)
+               Form a query packet from a resolver and name/type/class combo.
+               
+               :param name: Query for this name.
+               :type name: :class:`ldns_dname` or str
+               :param t: Query for this type (may be 0, defaults to A).
+               :type t: ldns_rr_type
+               :param c: Query for this class (may be 0, default to IN).
+               :type c: ldns_rr_class
+               :param f: The query flags.
+               :type f: uint16_t
+               :throws TypeError: When arguments of inappropriate types.
+               :throws Exception: When `raiseException` set and resolver
+                   couldn't be created.
+               :return: (:class:`ldns_pkt`) Query packet or None.
+                   An exception occurs if the object can't be created and
+                   'raiseException' is True.
+            """
+            rdf = name
+            if isinstance(name, str):
+                rdf = _ldns.ldns_dname_new_frm_str(name)
+            status, pkt = _ldns.ldns_resolver_prepare_query_pkt(self, rdf, t, c, f)
+            if status != LDNS_STATUS_OK:
+                if (raiseException):
+                    raise Exception("Can't create resolver, error: %d" % status)
+                return None
+            return pkt
             #parameters: ldns_resolver *,const ldns_rdf *,ldns_rr_type,ldns_rr_class,uint16_t,
             #retvals: ldns_status,ldns_pkt **
 
-        def push_dnssec_anchor(self,rr):
-            """Push a new trust anchor to the resolver.
-               
-               It must be a DS or DNSKEY rr
-               
-               :param rr:
-                   the RR to add as a trust anchor.
-               :return: (ldns_status) a status
+        def push_dnssec_anchor(self, rr):
             """
-            return _ldns.ldns_resolver_push_dnssec_anchor(self,rr)
+               Push a new trust anchor to the resolver.
+               It must be a DS or DNSKEY rr.
+               
+               :param rr: The RR to add as a trust anchor.
+               :type rr: DS of DNSKEY :class:`ldns_rr`
+               :throws TypeError: When arguments of inappropriate types.
+               :return: (ldns_status) A status.
+            """
+            return _ldns.ldns_resolver_push_dnssec_anchor(self, rr)
             #parameters: ldns_resolver *,ldns_rr *,
             #retvals: ldns_status
 
-        def push_nameserver(self,n):
-            """push a new nameserver to the resolver.
-               
+        def push_nameserver(self, n):
+            """
+               Push a new name server to the resolver.
                It must be an IP address v4 or v6.
                
-               :param n:
-                   the ip address
-               :return: (ldns_status) ldns_status a status
+               :param n: The ip address.
+               :type n: :class:`ldns_rdf` of A or AAAA type.
+               :throws TypeError: When arguments of inappropriate types.
+               :return: (ldns_status) A status.
             """
-            return _ldns.ldns_resolver_push_nameserver(self,n)
+            return _ldns.ldns_resolver_push_nameserver(self, n)
             #parameters: ldns_resolver *,ldns_rdf *,
             #retvals: ldns_status
 
-        def push_nameserver_rr(self,rr):
-            """push a new nameserver to the resolver.
-               
-               It must be an A or AAAA RR record type
-               
-               :param rr:
-                   the resource record
-               :return: (ldns_status) ldns_status a status
+        def push_nameserver_rr(self, rr):
             """
-            return _ldns.ldns_resolver_push_nameserver_rr(self,rr)
+               Push a new name server to the resolver.
+               It must be an A or AAAA RR record type.
+               
+               :param rr: The resource record.
+               :type rr: :class:`ldns_rr` of A or AAAA type.
+               :throws TypeError: When arguments of inappropriate types.
+               :return: (ldns_status) A status.
+            """
+            return _ldns.ldns_resolver_push_nameserver_rr(self, rr)
             #parameters: ldns_resolver *,ldns_rr *,
             #retvals: ldns_status
 
-        def push_nameserver_rr_list(self,rrlist):
-            """push a new nameserver rr_list to the resolver.
-               
-               :param rrlist:
-                   the rr_list to push
-               :return: (ldns_status) ldns_status a status
+        def push_nameserver_rr_list(self, rrlist):
             """
-            return _ldns.ldns_resolver_push_nameserver_rr_list(self,rrlist)
+               Push a new name server rr_list to the resolver.
+               
+               :param rrlist: The rr list to push.
+               :type rrlist: :class:`ldns_rr_list`
+               :throws TypeError: When arguments of inappropriate types.
+               :return: (ldns_status) A status.
+            """
+            return _ldns.ldns_resolver_push_nameserver_rr_list(self, rrlist)
             #parameters: ldns_resolver *,ldns_rr_list *,
             #retvals: ldns_status
 
-        def push_searchlist(self,rd):
-            """Push a new rd to the resolver's searchlist.
-               
-               :param rd:
-                   to push
+        def push_searchlist(self, rd):
             """
-            _ldns.ldns_resolver_push_searchlist(self,rd)
+               Push a new rd to the resolver's search-list.
+               
+               :param rd: To push.
+               :param rd: :class:`ldns_dname` or str
+               :throws TypeError: When arguments of inappropriate types.
+
+               .. note:
+                   The function does not return any return status,
+                   so the caller must ensure the correctness of the passed
+                   values.
+            """
+            rdf = rd
+            if isinstance(rd, str):
+                rdf = _ldns.ldns_dname_new_frm_str(rd)
+            _ldns.ldns_resolver_push_searchlist(self, rdf)
             #parameters: ldns_resolver *,ldns_rdf *,
             #retvals: 
 
         def query(self,name,atype=_ldns.LDNS_RR_TYPE_A,aclass=_ldns.LDNS_RR_CLASS_IN,flags=_ldns.LDNS_RD):
-            """Send a query to a nameserver.
-               
-               :param name: (ldns_rdf) the name to look for
-               :param atype: the RR type to use
-               :param aclass: the RR class to use
-               :param flags: give some optional flags to the query
-               :return: (ldns_pkt) a packet with the reply from the nameserver if _defnames is true the default domain will be added
             """
-            return _ldns.ldns_resolver_query(self,name,atype,aclass,flags)
+               Send a query to a name server.
+               
+               :param name: The name to look for.
+               :type name: :class:`ldns_rdf`
+               :param atype: The RR type to use.
+               :type atype: ldns_rr_type
+               :param aclass: The RR class to use.
+               :type aclass: ldns_rr_class
+               :param flags: Give some optional flags to the query.
+               :type flags: uint16_t
+               :return: (:class:`ldns_pkt`) A packet with the reply from the
+                   name server if _defnames is true the default domain will
+                   be added.
+            """
+            return _ldns.ldns_resolver_query(self, name, atype, aclass, flags)
             #parameters: const ldns_resolver *,const ldns_rdf *,ldns_rr_type,ldns_rr_class,uint16_t,
             #retvals: ldns_pkt *
 
         def random(self):
-            """Does the resolver randomize the nameserver before usage.
+            """
+               Does the resolver randomize the name server before usage?
                
-               :return: (bool) true: yes, false: no
+               :return: (bool) True: yes, False: no.
             """
             return _ldns.ldns_resolver_random(self)
             #parameters: const ldns_resolver *,
             #retvals: bool
 
         def recursive(self):
-            """Is the resolver set to recurse.
+            """
+               Is the resolver set to recurse?
                
-               :return: (bool) true if so, otherwise false
+               :return: (bool) True if so, otherwise False.
             """
             return _ldns.ldns_resolver_recursive(self)
             #parameters: const ldns_resolver *,
             #retvals: bool
 
         def retrans(self):
-            """Get the retransmit interval.
+            """
+               Get the retransmit interval.
                
-               :return: (uint8_t) the retransmit interval
+               :return: (uint8_t) The retransmit interval.
             """
             return _ldns.ldns_resolver_retrans(self)
             #parameters: const ldns_resolver *,
             #retvals: uint8_t
 
         def retry(self):
-            """Get the number of retries.
+            """
+               Get the number of retries.
                
-               :return: (uint8_t) the number of retries
+               :return: (uint8_t) The number of retries.
             """
             return _ldns.ldns_resolver_retry(self)
             #parameters: const ldns_resolver *,
             #retvals: uint8_t
 
         def rtt(self):
-            """Return the used round trip times for the nameservers.
+            """
+               Return the used round trip times for the name servers.
                
                :return: (size_t \*) a size_t* pointer to the list. yet)
             """
@@ -784,19 +832,24 @@ record."
             #parameters: const ldns_resolver *,
             #retvals: size_t *
 
-        def search(self,rdf,t,c,flags):
-            """Send the query for using the resolver and take the search list into account The search algorithm is as follows: If the name is absolute, try it as-is, otherwise apply the search list.
-               
-               :param rdf:
-               :param t:
-                   query for this type (may be 0, defaults to A)
-               :param c:
-                   query for this class (may be 0, default to IN)
-               :param flags:
-                   the query flags
-               :return: (ldns_pkt \*) ldns_pkt* a packet with the reply from the nameserver
+        def search(self, name, atype=_ldns.LDNS_RR_TYPE_A, aclass=_ldns.LDNS_RR_CLASS_IN, flags=_ldns.LDNS_RD):
             """
-            return _ldns.ldns_resolver_search(self,rdf,t,c,flags)
+               Send the query for using the resolver and take the search list
+               into account The search algorithm is as follows: If the name is
+               absolute, try it as-is, otherwise apply the search list.
+
+               :param name: The name to look for.
+               :type name: :class:`ldns_rdf`
+               :param atype: The RR type to use.
+               :type atype: ldns_rr_type
+               :param aclass: The RR class to use.
+               :type aclass: ldns_rr_class
+               :param flags: Give some optional flags to the query.
+               :type flags: uint16_t
+               :return: (:class:`ldns_pkt`) A packet with the reply from the
+                   name server.
+            """
+            return _ldns.ldns_resolver_search(self, name, atype, aclass, flags)
             #parameters: const ldns_resolver *,const ldns_rdf *,ldns_rr_type,ldns_rr_class,uint16_t,
             #retvals: ldns_pkt *
 
@@ -960,7 +1013,7 @@ record."
             #retvals: 
 
         def set_fallback(self,fallback):
-            """Set whether the resolvers truncation fallback mechanism is used when ldns_resolver_query() is called.
+            """Set whether the resolvers truncation fallback mechanism is used when :meth:`query` is called.
                
                :param fallback:
                    whether to use the fallback mechanism
