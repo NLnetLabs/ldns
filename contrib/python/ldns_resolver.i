@@ -55,6 +55,7 @@
 %newobject ldns_resolver_query;
 %newobject ldns_axfr_next;
 %newobject ldns_get_rr_list_addr_by_name;
+%newobject ldns_get_rr_list_name_by_addr;
 
 %delobject ldns_resolver_deep_free;
 %delobject ldns_resolver_free;
@@ -313,11 +314,15 @@ record."
             """
                Ask the resolver about name and return all address records.
 
-               :param name: (ldns_rdf) the name to look for
-               :param aclass: the class to use
-               :param flags: give some optional flags to the query
-
-               :return: RR List object or None
+               :param name: The name to look for. String is automatically
+                   converrted to dname.
+               :type name: :class:`ldns_dname` or str
+               :param aclass: The class to use.
+               :type aclass: ldns_rr_class
+               :param flags: Give some optional flags to the query.
+               :type flags: uint16_t
+               :throws TypeError: When arguments of inappropriate types.
+               :return: (:class:`ldns_rr_list`) RR List object or None.
 
                **Usage**
                  >>> addr = resolver.get_addr_by_name("www.google.com", ldns.LDNS_RR_CLASS_IN, ldns.LDNS_RD)
@@ -328,7 +333,6 @@ record."
                  www.l.google.com.	300	IN	A	74.125.43.103
                  www.l.google.com.	300	IN	A	74.125.43.104
                  www.l.google.com.	300	IN	A	74.125.43.147
-                    
             """
             rdf = name
             if isinstance(name, str):
@@ -336,13 +340,19 @@ record."
             return _ldns.ldns_get_rr_list_addr_by_name(self, rdf, aclass, flags)
 
         def get_name_by_addr(self, addr, aclass = _ldns.LDNS_RR_CLASS_IN, flags = _ldns.LDNS_RD):
-            """Ask the resolver about the address and return the name
+            """
+               Ask the resolver about the address and return the name.
 
-               :param name: (ldns_rdf of A or AAAA type) the addr to look for. If a string is given, A or AAAA type is identified automatically
-               :param aclass: the class to use
-               :param flags: give some optional flags to the query
-
-               :return: RR List object or None
+               :param name: (ldns_rdf of A or AAAA type) the addr to look for.
+                   If a string is given, A or AAAA type is identified
+                   automatically.
+               :type name: :class:`ldns_rdf` of A or AAAA type
+               :param aclass: The class to use.
+               :type aclass: ldns_rr_class
+               :param flags: Give some optional flags to the query.
+               :type flags: uint16_t
+               :throws TypeError: When arguments of inappropriate types.
+               :return: (:class:`ldns_rr_list`) RR List object or None.
 
                **Usage**
                  >>> addr = resolver.get_name_by_addr("74.125.43.99", ldns.LDNS_RR_CLASS_IN, ldns.LDNS_RD)
@@ -355,9 +365,9 @@ record."
             rdf = addr
             if isinstance(addr, str):
                 if (addr.find("::") >= 0): #IPv6
-                    rdf =  _ldns.ldns_rdf_new_frm_str(_ldns.LDNS_RDF_TYPE_AAAA, addr)
+                    rdf = _ldns.ldns_rdf_new_frm_str(_ldns.LDNS_RDF_TYPE_AAAA, addr)
                 else:
-                    rdf =  _ldns.ldns_rdf_new_frm_str(_ldns.LDNS_RDF_TYPE_A, addr)
+                    rdf = _ldns.ldns_rdf_new_frm_str(_ldns.LDNS_RDF_TYPE_A, addr)
             return _ldns.ldns_get_rr_list_name_by_addr(self, rdf, aclass, flags)
 
         def print_to_file(self,output):

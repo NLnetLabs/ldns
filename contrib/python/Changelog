@@ -4,7 +4,7 @@
 	  library.
 	* Added ldns_pkt.new().
 	* Marked as returning new object ldns_pkt.get_section_clone(),
-	  ldns_resolver.get_addr_by_name().
+	  ldns_resolver.get_addr_by_name(), ldns_resolver.get_name_by_addr().
 	* Added push cloning for ldns_pkt.safe_push_rr(),
 	  ldns_pkt.safe_push_rr_list(), ldns_pkt.set_additional(),
 	  ldns_pkt.set_answer(), ldns_pkt.set_answerfrom(),
