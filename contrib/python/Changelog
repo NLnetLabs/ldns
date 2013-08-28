@@ -3,7 +3,8 @@
 	* Removed ldns_pkt.section_count() because it is marked static in the
 	  library.
 	* Added ldns_pkt.new().
-	* Marked as returning new object ldns_pkt.get_section_clone().
+	* Marked as returning new object ldns_pkt.get_section_clone(),
+	  ldns_resolver.get_addr_by_name().
 	* Added push cloning for ldns_pkt.safe_push_rr(),
 	  ldns_pkt.safe_push_rr_list(), ldns_pkt.set_additional(),
 	  ldns_pkt.set_answer(), ldns_pkt.set_answerfrom(),

@@ -54,6 +54,7 @@
 %newobject ldns_resolver_pop_nameserver;
 %newobject ldns_resolver_query;
 %newobject ldns_axfr_next;
+%newobject ldns_get_rr_list_addr_by_name;
 
 %delobject ldns_resolver_deep_free;
 %delobject ldns_resolver_free;
@@ -309,7 +310,8 @@ record."
         # High level functions
 
         def get_addr_by_name(self, name, aclass = _ldns.LDNS_RR_CLASS_IN, flags = _ldns.LDNS_RD):
-            """Ask the resolver about name and return all address records
+            """
+               Ask the resolver about name and return all address records.
 
                :param name: (ldns_rdf) the name to look for
                :param aclass: the class to use
@@ -521,50 +523,57 @@ record."
             #retvals: ldns_rdf *
 
         def edns_udp_size(self):
-            """Get the resolver's udp size.
+            """
+               Get the resolver's udp size.
                
-               :return: (uint16_t) the udp mesg size
+               :return: (uint16_t) The udp mesg size.
             """
             return _ldns.ldns_resolver_edns_udp_size(self)
             #parameters: const ldns_resolver *,
             #retvals: uint16_t
 
         def fail(self):
-            """Does the resolver only try the first nameserver.
+            """
+               Does the resolver only try the first name server.
                
-               :return: (bool) true: yes, fail, false: no, try the others
+               :return: (bool) True: yes, fail, False: no, try the others.
             """
             return _ldns.ldns_resolver_fail(self)
             #parameters: const ldns_resolver *,
             #retvals: bool
 
         def fallback(self):
-            """Get the truncation fallback status.
+            """
+               Get the truncation fall-back status.
                
-               :return: (bool) whether the truncation fallback mechanism is used
+               :return: (bool) Whether the truncation fall*back mechanism
+                   is used.
             """
             return _ldns.ldns_resolver_fallback(self)
             #parameters: const ldns_resolver *,
             #retvals: bool
 
         def igntc(self):
-            """Does the resolver ignore the TC bit (truncated).
+            """
+               Does the resolver ignore the TC bit (truncated).
                
-               :return: (bool) true: yes, false: no
+               :return: (bool) True: yes, False: no.
             """
             return _ldns.ldns_resolver_igntc(self)
             #parameters: const ldns_resolver *,
             #retvals: bool
 
         def incr_nameserver_count(self):
-            """Incremental the resolver's nameserver count.
+            """
+               Increment the resolver's name server count.
             """
             _ldns.ldns_resolver_incr_nameserver_count(self)
             #parameters: ldns_resolver *,
             #retvals: 
 
         def ip6(self):
-            """Does the resolver use ip6 or ip4.
+            """
+               Does the resolver use ip6 or ip4.
                
                :return: (uint8_t) 0: both, 1: ip4, 2:ip6
             """
@@ -573,20 +582,24 @@ record."
             #retvals: uint8_t
 
         def nameserver_count(self):
-            """How many nameserver are configured in the resolver.
+            """
+               How many name server are configured in the resolver.
                
-               :return: (size_t) number of nameservers
+               :return: (size_t) Number of name servers.
             """
             return _ldns.ldns_resolver_nameserver_count(self)
             #parameters: const ldns_resolver *,
             #retvals: size_t
 
-        def nameserver_rtt(self,pos):
-            """Return the used round trip time for a specific nameserver.
+        def nameserver_rtt(self, pos):
+            """
+               Return the used round trip time for a specific name server.
                
-               :param pos:
-                   the index to the nameserver
-               :return: (size_t) the rrt, 0: infinite, >0: undefined (as of * yet)
+               :param pos: The index to the name server.
+               :type pos: size_t
+               :throws TypeError: When arguments of inappropriate types.
+               :return: (size_t) The rrt, 0: infinite,
+                   >0: undefined (as of * yet).
             """
             return _ldns.ldns_resolver_nameserver_rtt(self,pos)
             #parameters: const ldns_resolver *,size_t,
@@ -899,7 +912,7 @@ record."
                    It allows also to pass a dname :class:`ldns_rdf` object.
                    This will probably change in future.
             """
-            # Has to be able to pass None.
+            # Has to be able to pass None (and dame string?).
             if (not isinstance(rd, ldns_dname)) and \
                isinstance(rd, ldns_rdf) and \
                rd.get_type() == _ldns.LDNS_RDF_TYPE_DNAME:
