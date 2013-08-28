@@ -131,6 +131,7 @@ ldns_get_rr_list_name_by_addr(ldns_resolver *res, ldns_rdf *addr, ldns_rr_class 
 		/* extract the data we need */
 		names = ldns_pkt_rr_list_by_type(pkt, 
 				LDNS_RR_TYPE_PTR, LDNS_SECTION_ANSWER);
+		ldns_pkt_free(pkt);
 	}
 	return names;
 }
