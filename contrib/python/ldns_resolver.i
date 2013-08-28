@@ -854,18 +854,20 @@ record."
             #retvals: ldns_pkt *
 
         def searchlist(self):
-            """What is the searchlist as used by the resolver.
+            """
+               What is the search-list as used by the resolver.
                
-               :return: (ldns_rdf \*\*) a ldns_rdf pointer to a list of the addresses
+               :return: (ldns_rdf \*\*) A ldns_rdf pointer to a list of the addresses.
             """
             return _ldns.ldns_resolver_searchlist(self)
             #parameters: const ldns_resolver *,
             #retvals: ldns_rdf \*\*
 
         def searchlist_count(self):
-            """Return the resolver's searchlist count.
+            """
+               Return the resolver's search-list count.
                
-               :return: (size_t) the searchlist count
+               :return: (size_t) The search-list count.
             """
             return _ldns.ldns_resolver_searchlist_count(self)
             #parameters: const ldns_resolver *,
@@ -1136,11 +1138,6 @@ record."
             """
             _ldns.ldns_resolver_set_rtt(self,rtt)
             #parameters: ldns_resolver *,size_t *,
-            #retvals: 
-
-        def set_searchlist_count(self,c):
-            _ldns.ldns_resolver_set_searchlist_count(self,c)
-            #parameters: ldns_resolver *,size_t,
             #retvals: 
 
         def set_timeout(self,timeout):
