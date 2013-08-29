@@ -109,6 +109,51 @@
   }
 %}
 
+%newobject _ldns_resolver_tsig_algorithm;
+%rename(__ldns_resolver_tsig_algorithm) ldns_resolver_tsig_algorithm;
+%inline
+%{
+  char * _ldns_resolver_tsig_algorithm(const ldns_resolver *res)
+  {
+    char *str;
+    str = ldns_resolver_tsig_algorithm(res);
+    if (str != NULL) {
+      str = strdup(str);
+    }
+    return str;
+  }
+%}
+
+%newobject _ldns_resolver_tsig_keydata;
+%rename(__ldns_resolver_tsig_keydata) ldns_resolver_tsig_keydata;
+%inline
+%{
+  char * _ldns_resolver_tsig_keydata(const ldns_resolver *res)
+  {
+    char *str;
+    str = ldns_resolver_tsig_keydata(res);
+    if (str != NULL) {
+      str = strdup(str);
+    }
+    return str;
+  }
+%}
+
+%newobject _ldns_resolver_tsig_keyname;
+%rename(__ldns_resolver_tsig_keyname) ldns_resolver_tsig_keyname;
+%inline
+%{
+  char * _ldns_resolver_tsig_keyname(const ldns_resolver *res)
+  {
+    char *str;
+    str = ldns_resolver_tsig_keyname(res);
+    if (str != NULL) {
+      str = strdup(str);
+    }
+    return str;
+  }
+%}
+
 /* End of pull cloning. */
 
 /* Clone data on push. */
@@ -187,7 +232,53 @@
 /* Added C code. */
 /* ========================================================================= */
 
-/* None. */
+%newobject _replacement_ldns_resolver_trusted_key;
+%inline
+%{
+  /*!
+   * @brief Replaces the rrs in the list with their clones.
+   *
+   * Prevents memory corruption when automatically deallocating list content.
+   */
+  void _rr_list_replace_content_with_clones(ldns_rr_list *rrl)
+  {
+    size_t count;
+    unsigned int i;
+
+    if (rrl == NULL) {
+      return;
+    }
+
+    count = ldns_rr_list_rr_count(rrl);
+    for (i = 0; i < count; ++i) {
+      ldns_rr_list_set_rr(rrl,
+        ldns_rr_clone(ldns_rr_list_rr(rrl, i)),
+        i);
+    }
+  }
+
+  /*
+   * @brief Behaves similarly to ldns_resolver_trusted_key().
+   *
+   * Prevents memory leakage by controlling the usage of content cloning.
+   *
+   * @return Newly allocated list of trusted key clones if any found,
+   *     NULL else.
+   */
+  ldns_rr_list * _replacement_ldns_resolver_trusted_key(
+    const ldns_resolver *res, ldns_rr_list *keys)
+  {
+    ldns_rr_list *trusted_keys = ldns_rr_list_new();
+
+    if (ldns_resolver_trusted_key(res, keys, trusted_keys)) {
+      _rr_list_replace_content_with_clones(trusted_keys);
+    } else {
+      ldns_rr_list_deep_free(trusted_keys); trusted_keys = NULL;
+    }
+
+    return trusted_keys;
+  }
+%}
 
 
 /* ========================================================================= */
@@ -669,8 +760,8 @@ record."
                :param f: The query flags.
                :type f: uint16_t
                :throws TypeError: When arguments of inappropriate types.
-               :throws Exception: When `raiseException` set and resolver
-                   couldn't be created.
+               :throws Exception: When `raiseException` set and answer
+                   couldn't be resolved.
                :return: (:class:`ldns_pkt`) Query packet or None.
                    An exception occurs if the object can't be created and
                    'raiseException' is True.
@@ -774,6 +865,7 @@ record."
                :type aclass: ldns_rr_class
                :param flags: Give some optional flags to the query.
                :type flags: uint16_t
+               :throws TypeError: When arguments of inappropriate types.
                :return: (:class:`ldns_pkt`) A packet with the reply from the
                    name server if _defnames is true the default domain will
                    be added.
@@ -846,6 +938,7 @@ record."
                :type aclass: ldns_rr_class
                :param flags: Give some optional flags to the query.
                :type flags: uint16_t
+               :throws TypeError: When arguments of inappropriate types.
                :return: (:class:`ldns_pkt`) A packet with the reply from the
                    name server.
             """
@@ -873,69 +966,87 @@ record."
             #parameters: const ldns_resolver *,
             #retvals: size_t
 
-        def send(self,name,t,c,flags):
-            """Send the query for name as-is.
-               
-               :param name:
-               :param t:
-                   query for this type (may be 0, defaults to A)
-               :param c:
-                   query for this class (may be 0, default to IN)
-               :param flags:
-                   the query flags
-               :return: * (ldns_status) ldns_pkt* a packet with the reply from the nameserver
-                         * (ldns_pkt \*\*) 
+        def send(self, name, atype, aclass, flags, raiseException=True):
             """
-            return _ldns.ldns_resolver_send(self,name,t,c,flags)
+               Send the query for name as-is.
+
+               :param name: The name to look for.
+               :type name: :class:`ldns_rdf`
+               :param atype: The RR type to use.
+               :type atype: ldns_rr_type
+               :param aclass: The RR class to use.
+               :type aclass: ldns_rr_class
+               :param flags: Give some optional flags to the query.
+               :type flags: uint16_t
+               :throws TypeError: When arguments of inappropriate types.
+               :throws Exception: When `raiseException` set and answer
+                   couldn't be resolved.
+               :return: (:class:`ldns_pkt`) A packet with the reply from the
+                   name server.
+            """
+            status, pkt = _ldns.ldns_resolver_send(self, name, atype, aclass, flags)
+            if status != LDNS_STATUS_OK:
+                if (raiseException):
+                    raise Exception("Can't create resolver, error: %d" % status)
+                return None
+            return pkt
             #parameters: ldns_resolver *,const ldns_rdf *,ldns_rr_type,ldns_rr_class,uint16_t,
             #retvals: ldns_status,ldns_pkt **
 
-        def send_pkt(self,query_pkt):
-            """Send the given packet to a nameserver.
-               
-               :param query_pkt:
-               :return: * (ldns_status) 
-                         * (ldns_pkt \*\*) 
+        def send_pkt(self, query_pkt):
             """
+               Send the given packet to a name server.
+               
+               :param query_pkt: Query packet.
+               :type query_pkt: :class:`ldns_pkt`
+               :throws TypeError: When arguments of inappropriate types.
+               :return: * (ldns_status) Return status.
+                        * (:class:`ldns_pkt`) Response packet if returns status ok.
+            """
+            status, answer = _ldns.ldns_resolver_send_pkt(self, query_pkt)
             return _ldns.ldns_resolver_send_pkt(self,query_pkt)
             #parameters: ldns_resolver *,ldns_pkt *,
             #retvals: ldns_status,ldns_pkt **
 
         def set_debug(self, b):
-            """Set the resolver debugging.
+            """
+               Set the resolver debugging.
                
-               :param b:
-                   true: debug on: false debug off
+               :param b: True: debug on, False: debug off.
+               :type b: bool
             """
             _ldns.ldns_resolver_set_debug(self, b)
             #parameters: ldns_resolver *,bool,
             #retvals: 
 
         def set_defnames(self, b):
-            """Whether the resolver uses the name set with _set_domain.
+            """
+               Whether the resolver uses the name set with _set_domain.
                
-               :param b:
-                   true: use the defaults, false: don't use them
+               :param b: True: use the defaults, False: don't use them.
+               :type b: bool
             """
             _ldns.ldns_resolver_set_defnames(self, b)
             #parameters: ldns_resolver *,bool,
             #retvals: 
 
         def set_dnsrch(self, b):
-            """Whether the resolver uses the search list.
-               
-               :param b:
-                   true: use the list, false: don't use the list
             """
-            _ldns.ldns_resolver_set_dnsrch(self,b)
+               Whether the resolver uses the search list.
+               
+               :param b: True: use the list, False: don't use the list.
+               :type b: bool
+            """
+            _ldns.ldns_resolver_set_dnsrch(self, b)
             #parameters: ldns_resolver *,bool,
             #retvals: 
 
         def set_dnssec(self, b):
-            """Whether the resolver uses DNSSEC.
+            """
+               Whether the resolver uses DNSSEC.
                
-               :param b:
-                   true: use DNSSEC, false: don't use DNSSEC
+               :param b: True: use DNSSEC, False: don't use DNSSEC.
+               :type b: bool
             """
             _ldns.ldns_resolver_set_dnssec(self, b)
             #parameters: ldns_resolver *,bool,
@@ -954,13 +1065,14 @@ record."
             #parameters: ldns_resolver *,ldns_rr_list *,
             #retvals: 
 
-        def set_dnssec_cd(self,b):
-            """Whether the resolver uses the checking disable bit.
-               
-               :param b:
-                   true: enable , false: don't use TCP
+        def set_dnssec_cd(self, b):
             """
-            _ldns.ldns_resolver_set_dnssec_cd(self,b)
+               Whether the resolver uses the checking disable bit.
+               
+               :param b: True: enable, False: disable.
+               :type b: bool
+            """
+            _ldns.ldns_resolver_set_dnssec_cd(self, b)
             #parameters: ldns_resolver *,bool,
             #retvals: 
 
@@ -970,279 +1082,327 @@ record."
                This gets appended when no absolute name is given.
                
                :param rd: The name to append.
-               :type rd: :class:`ldns_dname`
+               :type rd: :class:`ldns_dname` or str
+               :throws TypeError: When arguments of inappropriate types.
+               :throws Exception: When `rd` a non dname rdf.
 
                .. note::
                    The type checking of parameter `rd` is benevolent.
                    It allows also to pass a dname :class:`ldns_rdf` object.
                    This will probably change in future.
             """
-            # Has to be able to pass None (and dame string?).
-            if (not isinstance(rd, ldns_dname)) and \
+            # Also has to be able to pass None or dame string.
+            if isinstance(rd, str):
+                dname = _ldns.ldns_dname_new_frm_str(rd)
+            elif (not isinstance(rd, ldns_dname)) and \
                isinstance(rd, ldns_rdf) and \
                rd.get_type() == _ldns.LDNS_RDF_TYPE_DNAME:
                 warnings.warn("The ldns_resolver.set_domain() method" +
                     " will drop the possibility to accept ldns_rdf." +
                     " Convert argument to ldns_dname.",
                     PendingDeprecationWarning, stacklevel=2)
-            if (not isinstance(rd, ldns_rdf)) and (rd != None):
+                dname = rd
+            else:
+                dname = rd
+            if (not isinstance(dname, ldns_rdf)) and (dname != None):
                 raise TypeError("Parameter must be derived from ldns_rdf.")
-            if (isinstance(rd, ldns_rdf)) and \
-               (rd.get_type() != _ldns.LDNS_RDF_TYPE_DNAME):
+            if (isinstance(dname, ldns_rdf)) and \
+               (dname.get_type() != _ldns.LDNS_RDF_TYPE_DNAME):
                 raise Exception("Operands must be ldns_dname.")
-            _ldns._ldns_resolver_set_domain(self, rd)
+            _ldns._ldns_resolver_set_domain(self, dname)
             #parameters: ldns_resolver *,ldns_rdf *,
             #retvals: 
 
-        def set_edns_udp_size(self,s):
-            """Set maximum udp size.
+        def set_edns_udp_size(self, s):
+            """
+               Set maximum udp size.
                
-               :param s:
-                   the udp max size
+               :param s: The udp max size.
+               :type s: uint16_t
+               :throws TypeError: When arguments of inappropriate types.
             """
             _ldns.ldns_resolver_set_edns_udp_size(self,s)
             #parameters: ldns_resolver *,uint16_t,
             #retvals: 
 
-        def set_fail(self,b):
-            """Whether or not to fail after one failed query.
-               
-               :param b:
-                   true: yes fail, false: continue with next nameserver
+        def set_fail(self, b):
             """
-            _ldns.ldns_resolver_set_fail(self,b)
+               Whether or not to fail after one failed query.
+               
+               :param b: True: yes fail, False: continue with next name server.
+               :type b: bool
+            """
+            _ldns.ldns_resolver_set_fail(self, b)
             #parameters: ldns_resolver *,bool,
             #retvals: 
 
-        def set_fallback(self,fallback):
-            """Set whether the resolvers truncation fallback mechanism is used when :meth:`query` is called.
-               
-               :param fallback:
-                   whether to use the fallback mechanism
+        def set_fallback(self, fallback):
             """
-            _ldns.ldns_resolver_set_fallback(self,fallback)
+               Set whether the resolvers truncation fall-back mechanism is used
+               when :meth:`query` is called.
+               
+               :param fallback: Whether to use the fall-back mechanism.
+               :type fallback: bool
+            """
+            _ldns.ldns_resolver_set_fallback(self, fallback)
             #parameters: ldns_resolver *,bool,
             #retvals: 
 
-        def set_igntc(self,b):
-            """Whether or not to ignore the TC bit.
-               
-               :param b:
-                   true: yes ignore, false: don't ignore
+        def set_igntc(self, b):
             """
-            _ldns.ldns_resolver_set_igntc(self,b)
+               Whether or not to ignore the TC bit.
+               
+               :param b: True: yes ignore, False: don't ignore.
+               :type b: bool
+            """
+            _ldns.ldns_resolver_set_igntc(self, b)
             #parameters: ldns_resolver *,bool,
             #retvals: 
 
-        def set_ip6(self,i):
-            """Whether the resolver uses ip6.
-               
-               :param i:
-                   0: no pref, 1: ip4, 2: ip6
+        def set_ip6(self, i):
             """
-            _ldns.ldns_resolver_set_ip6(self,i)
+               Whether the resolver uses ip6.
+               
+               :param i: 0: no pref, 1: ip4, 2: ip6
+               :type i: uint8_t
+               :throws TypeError: When arguments of inappropriate types.
+            """
+            _ldns.ldns_resolver_set_ip6(self, i)
             #parameters: ldns_resolver *,uint8_t,
             #retvals: 
 
-        def set_nameserver_count(self,c):
-            """Set the resolver's nameserver count directly.
-               
-               :param c:
-                   the nameserver count
+        def set_nameserver_count(self, c):
             """
-            _ldns.ldns_resolver_set_nameserver_count(self,c)
+               Set the resolver's name server count directly.
+               
+               :param c: The name server count.
+               :type c: size_t
+               :throws TypeError: When arguments of inappropriate types.
+            """
+            _ldns.ldns_resolver_set_nameserver_count(self, c)
             #parameters: ldns_resolver *,size_t,
             #retvals: 
 
-        def set_nameserver_rtt(self,pos,value):
-            """Set round trip time for a specific nameserver.
-               
-               Note this currently differentiates between: unreachable and reachable.
-               
-               :param pos:
-                   the nameserver position
-               :param value:
-                   the rtt
+        def set_nameserver_rtt(self, pos, value):
             """
-            _ldns.ldns_resolver_set_nameserver_rtt(self,pos,value)
+               Set round trip time for a specific name server.
+               Note this currently differentiates between: unreachable and
+               reachable.
+               
+               :param pos: The name server position.
+               :type pos: size_t
+               :param value: The rtt.
+               :type value: size_t
+               :throws TypeError: When arguments of inappropriate types.
+            """
+            _ldns.ldns_resolver_set_nameserver_rtt(self, pos, value)
             #parameters: ldns_resolver *,size_t,size_t,
             #retvals: 
 
-        def set_nameservers(self,rd):
-            """Set the resolver's nameserver count directly by using an rdf list.
-               
-               :param rd:
-                   the resolver addresses
+        def set_nameservers(self, rd):
             """
-            _ldns.ldns_resolver_set_nameservers(self,rd)
+               Set the resolver's name server count directly by using an
+               rdf list.
+               
+               :param rd: The resolver addresses.
+               :type rd: ldns_rdf \*\*
+               :throws TypeError: When arguments of inappropriate types.
+            """
+            _ldns.ldns_resolver_set_nameservers(self, rd)
             #parameters: ldns_resolver *,ldns_rdf **,
             #retvals: 
 
-        def set_port(self,p):
-            """Set the port the resolver should use.
-               
-               :param p:
-                   the port number
+        def set_port(self, p):
             """
-            _ldns.ldns_resolver_set_port(self,p)
+               Set the port the resolver should use.
+               
+               :param p: The port number.
+               :type p: uint16_t
+               :throws TypeError: When arguments of inappropriate types.
+            """
+            _ldns.ldns_resolver_set_port(self, p)
             #parameters: ldns_resolver *,uint16_t,
             #retvals: 
 
-        def set_random(self,b):
-            """Should the nameserver list be randomized before each use.
-               
-               :param b:
-                   true: randomize, false: don't
+        def set_random(self, b):
             """
-            _ldns.ldns_resolver_set_random(self,b)
+               Should the name server list be randomized before each use.
+               
+               :param b: True: randomize, False: don't.
+               :type b: bool
+            """
+            _ldns.ldns_resolver_set_random(self, b)
             #parameters: ldns_resolver *,bool,
             #retvals: 
 
-        def set_recursive(self,b):
-            """Set the resolver recursion.
-               
-               :param b:
-                   true: set to recurse, false: unset
+        def set_recursive(self, b):
             """
-            _ldns.ldns_resolver_set_recursive(self,b)
+               Set the resolver recursion.
+               
+               :param b: True: set to recurse, False: unset.
+               :type b: bool
+            """
+            _ldns.ldns_resolver_set_recursive(self, b)
             #parameters: ldns_resolver *,bool,
             #retvals: 
 
-        def set_retrans(self,re):
-            """Set the resolver retrans timeout (in seconds).
-               
-               :param re:
-                   the retransmission interval in seconds
+        def set_retrans(self, re):
             """
-            _ldns.ldns_resolver_set_retrans(self,re)
+               Set the resolver retrans time-out (in seconds).
+               
+               :param re: The retransmission interval in seconds.
+               :type re: uint8_t
+               :throws TypeError: When arguments of inappropriate types.
+            """
+            _ldns.ldns_resolver_set_retrans(self, re)
             #parameters: ldns_resolver *,uint8_t,
             #retvals: 
 
-        def set_retry(self,re):
-            """Set the resolver retry interval (in seconds).
+        def set_retry(self, re):
+            """
+               Set the resolver retry interval (in seconds).
                
-               :param re:
-                   the retry interval
+               :param re: The retry interval.
+               :type re: uint8_t
+               :throws TypeError: When arguments of inappropriate types.
             """
             _ldns.ldns_resolver_set_retry(self,re)
             #parameters: ldns_resolver *,uint8_t,
             #retvals: 
 
-        def set_rtt(self,rtt):
-            """Set round trip time for all nameservers.
-               
+        def set_rtt(self, rtt):
+            """
+               Set round trip time for all name servers.
                Note this currently differentiates between: unreachable and reachable.
                
-               :param rtt:
-                   a list with the times
+               :param rtt: A list with the times.
+               :type rtt: size \*
+               :throws TypeError: When arguments of inappropriate types.
             """
-            _ldns.ldns_resolver_set_rtt(self,rtt)
+            _ldns.ldns_resolver_set_rtt(self, rtt)
             #parameters: ldns_resolver *,size_t *,
             #retvals: 
 
-        def set_timeout(self,timeout):
-            """Set the resolver's socket time out when talking to remote hosts.
+        def set_timeout(self, timeout):
+            """
+               Set the resolver's socket time out when talking to remote hosts.
                
-               :param timeout:
-                   the timeout to use
+               :param timeout: The time-out to use.
+               :param timeout: struct timeval
+               :throws TypeError: When arguments of inappropriate types.
             """
             _ldns.ldns_resolver_set_timeout(self,timeout)
             #parameters: ldns_resolver *,struct timeval,
             #retvals: 
 
-        def set_tsig_algorithm(self,tsig_algorithm):
-            """Set the tsig algorithm.
-               
-               :param tsig_algorithm:
-                   the tsig algorithm
+        def set_tsig_algorithm(self, tsig_algorithm):
             """
-            _ldns.ldns_resolver_set_tsig_algorithm(self,tsig_algorithm)
+               Set the tsig algorithm.
+               
+               :param tsig_algorithm: The tsig algorithm.
+               :param tsig_algorithm: str
+               :throws TypeError: When arguments of inappropriate types.
+            """
+            _ldns.ldns_resolver_set_tsig_algorithm(self, tsig_algorithm)
             #parameters: ldns_resolver *,char *,
             #retvals: 
 
-        def set_tsig_keydata(self,tsig_keydata):
-            """Set the tsig key data.
-               
-               :param tsig_keydata:
-                   the key data
+        def set_tsig_keydata(self, tsig_keydata):
             """
-            _ldns.ldns_resolver_set_tsig_keydata(self,tsig_keydata)
+               Set the tsig key data.
+               
+               :param tsig_keydata: The key data.
+               :type tsig_keydata: str
+               :throws TypeError: When arguments of inappropriate types.
+            """
+            _ldns.ldns_resolver_set_tsig_keydata(self, tsig_keydata)
             #parameters: ldns_resolver *,char *,
             #retvals: 
 
-        def set_tsig_keyname(self,tsig_keyname):
-            """Set the tsig key name.
-               
-               :param tsig_keyname:
-                   the tsig key name
+        def set_tsig_keyname(self, tsig_keyname):
             """
-            _ldns.ldns_resolver_set_tsig_keyname(self,tsig_keyname)
+               Set the tsig key name.
+               
+               :param tsig_keyname: The tsig key name.
+               :type tsig_keyname: str
+               :throws TypeError: When arguments of inappropriate types.
+            """
+            _ldns.ldns_resolver_set_tsig_keyname(self, tsig_keyname)
             #parameters: ldns_resolver *,char *,
             #retvals: 
 
-        def set_usevc(self,b):
-            """Whether the resolver uses a virtual circuit (TCP).
-               
-               :param b:
-                   true: use TCP, false: don't use TCP
+        def set_usevc(self, b):
             """
-            _ldns.ldns_resolver_set_usevc(self,b)
+               Whether the resolver uses a virtual circuit (TCP).
+               
+               :param b: True: use TCP, False: don't use TCP.
+               :type b: bool
+            """
+            _ldns.ldns_resolver_set_usevc(self, b)
             #parameters: ldns_resolver *,bool,
             #retvals: 
 
         def timeout(self):
-            """What is the timeout on socket connections.
+            """
+               What is the time-out on socket connections.
                
-               :return: (struct timeval) the timeout as struct timeval
+               :return: (struct timeval) The time-out.
             """
             return _ldns.ldns_resolver_timeout(self)
             #parameters: const ldns_resolver *,
             #retvals: struct timeval
 
-        def trusted_key(self,keys,trusted_keys):
-            """Returns true if at least one of the provided keys is a trust anchor.
-               
-               :param keys:
-                   the keyset to check
-               :param trusted_keys:
-                   the subset of trusted keys in the 'keys' rrset
-               :return: (bool) true if at least one of the provided keys is a configured trust anchor
+        def trusted_key(self, keys):
             """
-            return _ldns.ldns_resolver_trusted_key(self,keys,trusted_keys)
+               Returns true if at least one of the provided keys is a trust
+               anchor.
+               
+               :param keys: The key set to check.
+               :type keys: :class:`ldns_rr_list`
+               :throws TypeError: When arguments of inappropriate types.
+               :return: (:class:`ldns_rr_list`) List of trusted keys if at
+                   least one of the provided keys is a configured trust anchor,
+                   None else.
+            """
+            return _ldns._replacement_ldns_resolver_trusted_key(self, keys)
             #parameters: const ldns_resolver *,ldns_rr_list *,ldns_rr_list *,
             #retvals: bool
 
         def tsig_algorithm(self):
-            """Return the tsig algorithm as used by the nameserver.
-               
-               :return: (char \*) the algorithm used.
             """
-            return _ldns.ldns_resolver_tsig_algorithm(self)
+               Return the tsig algorithm as used by the name server.
+               
+               :return: (str) The algorithm used.
+            """
+            return _ldns._ldns_resolver_tsig_algorithm(self)
             #parameters: const ldns_resolver *,
             #retvals: char *
 
         def tsig_keydata(self):
-            """Return the tsig keydata as used by the nameserver.
-               
-               :return: (char \*) the keydata used.
             """
-            return _ldns.ldns_resolver_tsig_keydata(self)
+               Return the tsig key data as used by the name server.
+               
+               :return: (str) The key data used.
+            """
+            return _ldns._ldns_resolver_tsig_keydata(self)
             #parameters: const ldns_resolver *,
             #retvals: char *
 
         def tsig_keyname(self):
-            """Return the tsig keyname as used by the nameserver.
-               
-               :return: (char \*) the name used.
             """
-            return _ldns.ldns_resolver_tsig_keyname(self)
+               Return the tsig key name as used by the name server.
+               
+               :return: (str) The name used.
+            """
+            return _ldns._ldns_resolver_tsig_keyname(self)
             #parameters: const ldns_resolver *,
             #retvals: char *
 
         def usevc(self):
-            """Does the resolver use tcp or udp.
+            """
+               Does the resolver use tcp or udp.
                
-               :return: (bool) true: tcp, false: udp
+               :return: (bool) True: tcp, False: udp.
             """
             return _ldns.ldns_resolver_usevc(self)
             #parameters: const ldns_resolver *,

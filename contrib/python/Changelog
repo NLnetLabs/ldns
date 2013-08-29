@@ -1,4 +1,6 @@
 1.7.0
+	* Changed the behaviour of ldns_resolver.trusted_key() in order to prevent
+	  memory corrupotion and leaks.
 	* Fixed memory leaks when destroying ldns_resolver.
 	* Removed ldns_pkt.section_count(), ldns_pkt.set_searchlist_count()
 	  because it is marked static in the library.
@@ -14,7 +16,9 @@
 	  ldns_resolver.set_dnssec_anchors(), ldns_resolver.set_domain().
 	* Added pull cloning for ldns_pkt.answerfrom(), ldns_pkt.edns_data(),
 	  ldns_pkt.tsig(), ldns_resolver.axfr_last_pkt(),
-	  ldns_resolver.dnssec_anchors(), ldns_resolver.domain().
+	  ldns_resolver.dnssec_anchors(), ldns_resolver.domain(),
+	  ldns_resolver.tsig_algorithm(), ldns_resolver.tsig_keydata(),
+	  ldns_resolver.tsig_keyname().
 	* Method ldns_rdf.reverse() now throws an exception when not applied
 	  on dname rdfs. This is to prevent assertion fails in ldns' C code.
 
