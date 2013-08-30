@@ -858,7 +858,7 @@ record."
                Send a query to a name server.
                
                :param name: The name to look for.
-               :type name: :class:`ldns_rdf`
+               :type name: :class:`ldns_dname` or str
                :param atype: The RR type to use.
                :type atype: ldns_rr_type
                :param aclass: The RR class to use.
@@ -870,7 +870,12 @@ record."
                    name server if _defnames is true the default domain will
                    be added.
             """
-            return _ldns.ldns_resolver_query(self, name, atype, aclass, flags)
+            # Explicit conversion from string to ldns_rdf prevents memory leaks.
+            # TODO -- Find out why.
+            dname = name
+            if isinstance(name, str):
+                dname = _ldns.ldns_dname_new_frm_str(name)
+            return _ldns.ldns_resolver_query(self, dname, atype, aclass, flags)
             #parameters: const ldns_resolver *,const ldns_rdf *,ldns_rr_type,ldns_rr_class,uint16_t,
             #retvals: ldns_pkt *
 
@@ -931,7 +936,7 @@ record."
                absolute, try it as-is, otherwise apply the search list.
 
                :param name: The name to look for.
-               :type name: :class:`ldns_rdf`
+               :type name: :class:`ldns_dname` or str
                :param atype: The RR type to use.
                :type atype: ldns_rr_type
                :param aclass: The RR class to use.
@@ -942,7 +947,12 @@ record."
                :return: (:class:`ldns_pkt`) A packet with the reply from the
                    name server.
             """
-            return _ldns.ldns_resolver_search(self, name, atype, aclass, flags)
+            # Explicit conversion from string to ldns_rdf prevents memory leaks.
+            # TODO -- Find out why.
+            dname = name
+            if isinstance(name, str):
+                dname = _ldns.ldns_dname_new_frm_str(name)
+            return _ldns.ldns_resolver_search(self, dname, atype, aclass, flags)
             #parameters: const ldns_resolver *,const ldns_rdf *,ldns_rr_type,ldns_rr_class,uint16_t,
             #retvals: ldns_pkt *
 
@@ -971,7 +981,7 @@ record."
                Send the query for name as-is.
 
                :param name: The name to look for.
-               :type name: :class:`ldns_rdf`
+               :type name: :class:`ldns_dname` or str
                :param atype: The RR type to use.
                :type atype: ldns_rr_type
                :param aclass: The RR class to use.
@@ -984,7 +994,12 @@ record."
                :return: (:class:`ldns_pkt`) A packet with the reply from the
                    name server.
             """
-            status, pkt = _ldns.ldns_resolver_send(self, name, atype, aclass, flags)
+            # Explicit conversion from string to ldns_rdf prevents memory leaks.
+            # TODO -- Find out why.
+            dname = name
+            if isinstance(name, str):
+                dname = _ldns.ldns_dname_new_frm_str(name)
+            status, pkt = _ldns.ldns_resolver_send(self, dname, atype, aclass, flags)
             if status != LDNS_STATUS_OK:
                 if (raiseException):
                     raise Exception("Can't create resolver, error: %d" % status)
