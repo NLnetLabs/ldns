@@ -50,7 +50,7 @@
       SWIGTYPE_p_ldns_struct_resolver, SWIG_POINTER_OWN |  0 ));
 }
 
-//TODO: pop_nameserver a podobne funkce musi predat objekt do spravy PYTHONU!!
+%newobject ldns_resolver_new;
 %newobject ldns_resolver_pop_nameserver;
 %newobject ldns_resolver_query;
 %newobject ldns_resolver_search;
@@ -319,6 +319,30 @@ record."
         #
         # LDNS_RESOLVER_CONSTRUCTORS_
         #
+
+        @staticmethod
+        def new():
+            """
+               Creates a new resolver object.
+
+               :return: (:class:`ldns_resolver`) New resolver object or None.
+
+               .. note::
+                   The returned resolver object is unusable unless some
+                   name servers are added.
+
+               **Usage**
+                 >>> resolver = ldns.ldns_resolver.new()
+                 >>> ns_addr = ldns.ldns_rdf.new_frm_str("8.8.8.8", ldns.LDNS_RDF_TYPE_A)
+                 >>> if not ns_addr: raise Exception("Can't create resolver address.")
+                 >>> status = resolver.push_nameserver(ns_addr)
+                 >>> if status != ldns.LDNS_STATUS_OK: raise Exception("Can't push resolver address.")
+                 >>> pkt = resolver.query("www.nic.cz.", ldns.LDNS_RR_TYPE_A, ldns.LDNS_RR_CLASS_IN, ldns.LDNS_RD)
+                 >>> if (pkt) and (pkt.answer()):
+                 >>>     print pkt.answer()
+                 www.nic.cz.     1265    IN      A       217.31.205.50
+            """
+            return _ldns.ldns_resolver_new()
 
         @staticmethod
         def new_frm_file(filename = "/etc/resolv.conf", raiseException=True):

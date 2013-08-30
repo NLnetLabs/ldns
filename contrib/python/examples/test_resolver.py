@@ -235,6 +235,18 @@ if True:
 #if not error_detected:
 if True:
     method_name = class_name + ".edns_udp_size()"
+    try:
+        resolver = ldns.ldns_resolver.new()
+        if not isinstance(resolver, ldns.ldns_resolver):
+            set_error()
+    except:
+        set_error()
+
+
+
+#if not error_detected:
+if True:
+    method_name = class_name + ".edns_udp_size()"
     resolver = ldns.ldns_resolver.new_frm_file("/etc/resolv.conf")
     resolver.set_edns_udp_size(4096)
     try:
