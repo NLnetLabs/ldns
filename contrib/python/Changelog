@@ -2,7 +2,7 @@
 	* Changed the behaviour of ldns_resolver.trusted_key() in order to prevent
 	  memory corrupotion and leaks.
 	* Fixed memory leaks when destroying ldns_resolver.
-	* Removed ldns_pkt.section_count(), ldns_pkt.set_searchlist_count()
+	* Removed ldns_pkt.section_count(), ldns_resolver.set_searchlist_count()
 	  because it is marked static in the library.
 	* Added ldns_pkt.new(), ldns_resolver.new().
 	* Marked as returning new object ldns_pkt.get_section_clone(),
