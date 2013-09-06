@@ -28,22 +28,44 @@ then
                 exit -1
         fi
 fi
-
+if [ "x`uname -o`" = "xGNU/Linux" ]
+then
+	ON_LINUX=1
+else
+	ON_LINUX=0
+fi
+chmod +x $BUILD_DIR/packaging/ldns-config
+BINAPI=`$BUILD_DIR/packaging/ldns-config --libversion`
+BINAPI=${BINAPI#*.}
+if [ "x$BINAPI" = "x0.0" ]
+then
+	BINAPI_CHANGED=1
+else
+	BINAPI_CHANGED=0
+fi
 # RUN THE TESTS
 for tests in $BUILD_DIR/test/*.tpkg 
 do
 	TESTFN=`basename $tests`
 	TESTNR=`echo $TESTFN | sed 's/-.*$//g'`
-	if [ ! -z "$ONLY_TEST" ]
-	then
-		if [ x$ONLY_TEST != x$TESTNR ]
-		then
-			continue
-		fi
-	fi
-	if [ $NO_REGRESSION = 1 -a $TESTNR -ge 30 ]
+	if [ ! -z "$ONLY_TEST" -a x$ONLY_TEST != x$TESTNR ]
 	then
 		continue
+
+	elif [ x$TESTNR != x$TESTFN ] # cause codingstyle.tpkg has no number
+	then
+		if [ $NO_REGRESSION = 1 -a $TESTNR -ge 30 ]
+		then
+			continue
+
+		elif [ $ON_LINUX = 1 -a $TESTNR -eq 2  ]
+		then
+			continue # splint doesn't work on linux
+
+		elif [ $BINAPI_CHANGED = 1 -a $TESTNR -eq 32  ]
+		then
+			continue # Unbound regression testing not possible
+		fi
 	fi
 	$TPKG -b $BUILD_DIR/test -a $BUILD_DIR exe $TESTFN
 done
