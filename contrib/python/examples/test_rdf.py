@@ -408,6 +408,20 @@ if True:
 
 #if not error_detected:
 if True:
+    method_name = "ldns_rdf.data_as_bytearray()"
+    rdf = ldns.ldns_rdf_new_frm_str(ldns.LDNS_RDF_TYPE_DNAME, "www.nic.cz.")
+    try:
+        ret = rdf.data_as_bytearray()
+        if not isinstance(ret, bytearray):
+            set_error()
+        if len(ret) != 12:
+            set_error()
+    except:
+        set_error()
+
+
+#if not error_detected:
+if True:
     method_name = "ldns_rdf.dname_compare()"
     rdf1 = ldns.ldns_rdf_new_frm_str(ldns.LDNS_RDF_TYPE_DNAME, "www.nic.cz.")
     rdf2 = ldns.ldns_rdf_new_frm_str(ldns.LDNS_RDF_TYPE_DNAME, "nic.cz.")

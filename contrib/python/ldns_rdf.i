@@ -228,6 +228,26 @@
 %}
 
 
+%inline
+%{
+  /*!
+   * @brief Returns the rdf data organised into a list of bytes.
+   */
+  PyObject * ldns_rdf_data_as_bytearray(const ldns_rdf *rdf)
+  {
+    Py_ssize_t len;
+    uint8_t *data;
+
+    assert(rdf != NULL);
+
+    len = ldns_rdf_size(rdf);
+    data = ldns_rdf_data(rdf);
+
+    return PyByteArray_FromStringAndSize((char *) data, len);
+  }
+%}
+
+
 /* ========================================================================= */
 /* Encapsulating Python code. */
 /* ========================================================================= */
@@ -467,6 +487,16 @@ specified in the (16-bit) type field with a value from ldns_rdf_type."
             return _ldns.ldns_rdf_data(self)
             #parameters: const ldns_rdf *,
             #retvals: uint8_t *
+
+        def data_as_bytearray(self):
+            """
+               Returns the data of the rdf as a bytearray.
+
+               :return: (bytearray) Bytearray containing the rdf data.
+            """
+            return _ldns.ldns_rdf_data_as_bytearray(self)
+            #parameters: const ldns_rdf *,
+            #retvals: bytearray
 
         def get_type(self):
             """

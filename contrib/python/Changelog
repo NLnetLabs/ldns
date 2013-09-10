@@ -1,4 +1,6 @@
 1.7.0
+	* Added ldns_rdf.data_as_bytearray(). The method returns a bytearray object
+	  containing rdf data.
 	* Changed the behaviour of ldns_resolver.trusted_key() in order to prevent
 	  memory corrupotion and leaks.
 	* Fixed memory leaks when destroying ldns_resolver.
