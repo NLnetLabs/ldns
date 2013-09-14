@@ -19,54 +19,36 @@ fi
 
 if [ -z "$TPKG" -o ! -x "$TPKG" ]
 then
-        if which tpkg > /dev/null       ; then TPKG=`which tpkg`
-        elif [ -x $HOME/bin/tpkg ]      ; then TPKG=$HOME/bin/tpkg
+        if which tpkg > /dev/null	; then TPKG=`which tpkg`
+        elif [ -x $HOME/bin/tpkg ]	; then TPKG=$HOME/bin/tpkg
         elif [ -x $HOME/local/bin/tpkg ]; then TPKG=$HOME/local/bin/tpkg
-        elif [ -x /home/tpkg/bin/tpkg ] ; then TPKG=/home/tpkg/bin/tpkg
+        elif [ -x /home/tpkg/bin/tpkg ]	; then TPKG=/home/tpkg/bin/tpkg
+        elif [ -x ../tpkg/tpkg ]	; then TPKG=../tpkg/tpkg
         else
                 echo Did not find tpkg program!
                 exit -1
         fi
-fi
-if [ "x`uname -o`" = "xGNU/Linux" ]
-then
-	ON_LINUX=1
-else
-	ON_LINUX=0
-fi
-chmod +x $BUILD_DIR/packaging/ldns-config
-BINAPI=`$BUILD_DIR/packaging/ldns-config --libversion`
-BINAPI=${BINAPI#*.}
-if [ "x$BINAPI" = "x0.0" ]
-then
-	BINAPI_CHANGED=1
-else
-	BINAPI_CHANGED=0
 fi
 # RUN THE TESTS
 for tests in $BUILD_DIR/test/*.tpkg 
 do
 	TESTFN=`basename $tests`
 	TESTNR=`echo $TESTFN | sed 's/-.*$//g'`
-	if [ ! -z "$ONLY_TEST" -a x$ONLY_TEST != x$TESTNR ]
-	then
-		continue
-
-	elif [ x$TESTNR != x$TESTFN ] # cause codingstyle.tpkg has no number
-	then
-		if [ $NO_REGRESSION = 1 -a $TESTNR -ge 30 ]
-		then
-			continue
-
-		elif [ $ON_LINUX = 1 -a $TESTNR -eq 2  ]
-		then
-			continue # splint doesn't work on linux
-
-		elif [ $BINAPI_CHANGED = 1 -a $TESTNR -eq 32  ]
-		then
-			continue # Unbound regression testing not possible
-		fi
-	fi
+	[ ! -z "$ONLY_TEST" -a x$ONLY_TEST != x$TESTNR ] && continue
+	case $TESTNR in
+	[3-9][0-9]*)	[ $NO_REGRESSION = 1 ] && continue
+			;;
+	esac
+	case $TESTNR in
+	02)	# splint doesn't work on linux
+		[ "x`uname -o`" = "xGNU/Linux" ] && continue
+		;;
+	32)	# No backwards compatibility regression testing 
+		# when .so had major version bumb.
+		chmod +x $BUILD_DIR/packaging/ldns-config
+		BINAPI=`$BUILD_DIR/packaging/ldns-config --libversion`
+		[ "x${BINAPI#*.}" = "x0.0" ] && continue
+	esac
 	$TPKG -b $BUILD_DIR/test -a $BUILD_DIR exe $TESTFN
 done
 
