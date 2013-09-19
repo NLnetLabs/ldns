@@ -147,6 +147,7 @@
 /ldns/common.h
 /ldns/config.h
 /ldns/config.h.in
+/ldns/config.h.in~
 /ldns/net.h
 /ldns/util.h
 /ldns_wrapper.lo
