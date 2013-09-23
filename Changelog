@@ -44,6 +44,7 @@
 	* The version of shared library now has similar scheme as libunbound.
 	  ldns 1.7.0 will have shared library version (SONAME) 2.0.0
 	* bugfix #521: drill trace continue on empty non-terminals with NSEC3
+	* bugfix #525: Fix documentation of ldns_resolver_set_retry
 
 1.6.16	2012-11-13
 	* Fix Makefile to build pyldns with BSD make

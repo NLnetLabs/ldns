@@ -481,9 +481,10 @@ void ldns_resolver_set_retrans(ldns_resolver *r, uint8_t re);
 void ldns_resolver_set_fallback(ldns_resolver *r, bool fallback);
 
 /**
- * Set the resolver retry interval (in seconds)
+ * Set the number of times a resolver should retry a nameserver before the
+ * next one is tried.
  * \param[in] r the resolver
- * \param[in] re the retry interval
+ * \param[in] re the number of retries
  */
 void ldns_resolver_set_retry(ldns_resolver *r, uint8_t re);
 
