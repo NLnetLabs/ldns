@@ -381,11 +381,11 @@ bool ldns_nsec_bitmap_covers_type(const ldns_rdf* bitmap, ldns_rr_type type);
 ldns_status ldns_nsec_bitmap_set_type(ldns_rdf* bitmap, ldns_rr_type type);
 
 /**
- * Check if RR type t is enumerated in the type bitmap rdf and sets the bit.
+ * Check if RR type t is enumerated in the type bitmap rdf and clears the bit.
  * \param[in] bitmap the RR type bitmap rdf to look in
- * \param[in] type the type to for which the bit to set
+ * \param[in] type the type to for which the bit to clear
  * \return LDNS_STATUS_OK on success. LDNS_STATUS_TYPE_NOT_IN_BITMAP is 
- *         returned when the bitmap does not contain the bit to set.
+ *         returned when the bitmap does not contain the bit to clear.
  */
 ldns_status ldns_nsec_bitmap_clear_type(ldns_rdf* bitmap, ldns_rr_type type);
 
