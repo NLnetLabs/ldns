@@ -540,7 +540,7 @@ ldns_send_buffer(ldns_pkt **result, ldns_resolver *r, ldns_buffer *qb, ldns_rdf 
 		send_status = LDNS_STATUS_ERR;
 
 		/* reply_bytes implicitly handles our error */
-		if (1 == ldns_resolver_usevc(r)) {
+		if (ldns_resolver_usevc(r)) {
 			for (retries = ldns_resolver_retry(r); retries > 0; retries--) {
 				send_status = 
 					ldns_tcp_send_from(&reply_bytes, qb, 
