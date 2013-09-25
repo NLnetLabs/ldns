@@ -36,15 +36,15 @@ void print_usage(const char* progname)
 		"\t\toffset the existing number with "
 			"<number>.  With YYYYMMDDxx\n"
 		"\t\tthe serial is formatted as a datecounter"
-			", and with unixtime as the\n"
-		"\t\tnumber of seconds since 1-1-1970."
-			"  However, on serial number"
-		"\n\t\tdecrease, +1 is used in stead"
+			", and with unixtime as\n"
+		"\t\tthe number of seconds since 1-1-1970."
+			"  However, on serial\n"
+		"\t\tnumber decrease, +1 is used in stead"
 			".  (implies -s)\n");
 	printf("\t-u <rr type>\n");
 	printf("\t\tMark <rr type> for printing in unknown type format\n");
 	printf("\t-U <rr type>\n");
-	printf("\t\tMark <rr type> for not printing in unknown type format\n");
+	printf("\t\tMark <rr type> for not printing in unknown type format.\n");
 	printf("\t\tWhen only -U options are given, all types are printed in"
 		"\n\t\tunknown type format except the given RR types\n");
 	printf("\t-v shows the version and exits\n");
