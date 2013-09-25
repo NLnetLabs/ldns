@@ -223,7 +223,7 @@ find_or_create_pubkey(const char *keyfile_name_base, ldns_key *key, ldns_zone *o
 	}
 
 	/* find the public key in the zone, or in a
-	 * seperate file
+	 * separate file
 	 * we 'generate' one anyway, 
 	 * then match that to any present in the zone,
 	 * if it matches, we drop our own. If not,

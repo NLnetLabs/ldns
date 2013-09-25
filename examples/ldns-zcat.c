@@ -95,7 +95,7 @@ main(int argc, char **argv)
 		}
 
 		zrr = ldns_zone_rrs(z);
-		soa = ldns_zone_soa(z); /* SOA is stored seperately */
+		soa = ldns_zone_soa(z); /* SOA is stored separately */
 
 		fprintf(stderr, "%s\n", argv[i]);
 

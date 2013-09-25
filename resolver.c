@@ -1240,7 +1240,7 @@ ldns_resolver_send(ldns_pkt **answer, ldns_resolver *r, const ldns_rdf *name,
 
 	/* if tsig values are set, tsign it */
 	/* TODO: make last 3 arguments optional too? maybe make complete
-	         rr instead of seperate values in resolver (and packet)
+	         rr instead of separate values in resolver (and packet)
 	  Jelte
 	  should this go in pkt_prepare?
 	*/

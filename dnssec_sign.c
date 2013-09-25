@@ -566,7 +566,7 @@ ldns_dnssec_addresses_on_glue_list(
  * when walking the tree with the ldns_dnssec_name_node_next_nonglue()
  * function. But watch out! Names that are partially occluded (like glue with
  * the same name as the delegation) will not be marked and should specifically 
- * be taken into account seperately.
+ * be taken into account separately.
  *
  * When glue_list is given (not NULL), in the process of marking the names, all
  * glue resource records will be pushed to that list, even glue at delegation names.
@@ -659,7 +659,7 @@ ldns_dnssec_zone_mark_and_get_glue(ldns_dnssec_zone *zone,
  * when walking the tree with the ldns_dnssec_name_node_next_nonglue()
  * function. But watch out! Names that are partially occluded (like glue with
  * the same name as the delegation) will not be marked and should specifically 
- * be taken into account seperately.
+ * be taken into account separately.
  *
  * \param[in] zone the zone in which to mark the names
  * \return LDNS_STATUS_OK on success, an error code otherwise

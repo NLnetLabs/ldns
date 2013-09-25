@@ -182,7 +182,7 @@ main(int argc, char *argv[])
 	/* generate a new key */
 	key = ldns_key_new_frm_algorithm(algorithm, bits);
 
-	/* set the owner name in the key - this is a /seperate/ step */
+	/* set the owner name in the key - this is a /separate/ step */
 	ldns_key_set_pubkey_owner(key, domain);
 
 	/* ksk flag */

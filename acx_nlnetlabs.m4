@@ -22,7 +22,7 @@
 # 2010-07-02 Add check for ss_family (for minix).
 # 2010-04-26 Fix to use CPPFLAGS for CHECK_COMPILER_FLAGS.
 # 2010-03-01 Fix RPATH using CONFIG_COMMANDS to run at the very end.
-# 2010-02-18 WITH_SSL outputs the LIBSSL_LDFLAGS, LIBS, CPPFLAGS seperate, -ldl
+# 2010-02-18 WITH_SSL outputs the LIBSSL_LDFLAGS, LIBS, CPPFLAGS separate, -ldl
 # 2010-02-01 added ACX_CHECK_MEMCMP_SIGNED, AHX_MEMCMP_BROKEN
 # 2010-01-20 added AHX_COONFIG_STRLCAT
 # 2009-07-14 U_CHAR detection improved for windows crosscompile.

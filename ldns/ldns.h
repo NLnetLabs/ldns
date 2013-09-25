@@ -26,7 +26,7 @@ faster than Perl.
 
 The first main tool to use ldns is Drill, from which part of the library was
 derived. From version 1.0.0 on, drill is included in the ldns release
-and will not be distributed seperately anymore. The library also includes some
+and will not be distributed separately anymore. The library also includes some
 other examples and tools to show how it can be used. These can be found in the
 examples/ directory in the tarball.
 

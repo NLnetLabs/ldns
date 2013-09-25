@@ -126,13 +126,13 @@ ldns_lookup_table ldns_error_str[] = {
 		"The validation path "
 		"did not end in a self-signed certificate" },
         { LDNS_STATUS_INVALID_ILNP64, 
-		"Conversion error, 4 colon seperated hex numbers expected" },
+		"Conversion error, 4 colon separated hex numbers expected" },
         { LDNS_STATUS_INVALID_EUI48, 
 		"Conversion error, 6 two character hex numbers "
-		"seperated by dashes expected (i.e. xx-xx-xx-xx-xx-xx" },
+		"separated by dashes expected (i.e. xx-xx-xx-xx-xx-xx" },
         { LDNS_STATUS_INVALID_EUI64, 
 		"Conversion error, 8 two character hex numbers "
-		"seperated by dashes expected (i.e. xx-xx-xx-xx-xx-xx-xx-xx" },
+		"separated by dashes expected (i.e. xx-xx-xx-xx-xx-xx-xx-xx" },
 	{ LDNS_STATUS_WIRE_RDATA_ERR, "invalid rdata in wire format" },
         { LDNS_STATUS_INVALID_TAG, 
 		"Conversion error, a non-zero sequence of US-ASCII letters "

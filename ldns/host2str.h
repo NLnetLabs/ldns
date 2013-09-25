@@ -587,7 +587,7 @@ ldns_status ldns_rdf2buffer_str_time(ldns_buffer *output, const ldns_rdf *rdf);
 
 /** 
  * Converts an LDNS_RDF_TYPE_ILNP64 rdata element to 4 hexadecimal numbers
- * seperated by colons and adds it to the output buffer 
+ * separated by colons and adds it to the output buffer 
  * \param[in] *rdf The rdata to convert
  * \param[in] *output The buffer to add the data to
  * \return LDNS_STATUS_OK on success, and error status on failure
@@ -597,7 +597,7 @@ ldns_status ldns_rdf2buffer_str_ilnp64(ldns_buffer *output,
 
 /** 
  * Converts an LDNS_RDF_TYPE_EUI48 rdata element to 6 hexadecimal numbers
- * seperated by dashes and adds it to the output buffer 
+ * separated by dashes and adds it to the output buffer 
  * \param[in] *rdf The rdata to convert
  * \param[in] *output The buffer to add the data to
  * \return LDNS_STATUS_OK on success, and error status on failure
@@ -607,7 +607,7 @@ ldns_status ldns_rdf2buffer_str_eui48(ldns_buffer *output,
 
 /** 
  * Converts an LDNS_RDF_TYPE_EUI64 rdata element to 8 hexadecimal numbers
- * seperated by dashes and adds it to the output buffer 
+ * separated by dashes and adds it to the output buffer 
  * \param[in] *rdf The rdata to convert
  * \param[in] *output The buffer to add the data to
  * \return LDNS_STATUS_OK on success, and error status on failure
