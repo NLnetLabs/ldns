@@ -655,23 +655,6 @@ error:
 	return result;
 }
 
-void timelog(const char* msg) /* DEBUGING (remove me) */
-{
-	static struct timeval start;
-	static double dstart;
-	struct timeval now;
-	double dnow;
-
-	if (! msg) {
-		gettimeofday(&start, NULL);
-		dstart = (double)start.tv_sec + (start.tv_usec / 1000000.0);
-	} else if (verbosity > 3) {
-		gettimeofday(&now, NULL);
-		dnow = (double)now.tv_sec + (now.tv_usec / 1000000.0);
-		fprintf(myout, "%10.6f %s\n", (dnow - dstart), msg);
-	}
-}
-
 int
 main(int argc, char **argv)
 {
@@ -689,7 +672,6 @@ main(int argc, char **argv)
 	ldns_rr_list *keys = ldns_rr_list_new();
 	size_t nkeys = 0;
 
-	timelog(NULL);  /* DEBUGING (remove me) */
 	check_time = ldns_time(NULL);
 	myout = stdout;
 	myerr = stderr;
@@ -867,7 +849,6 @@ main(int argc, char **argv)
 	s = ldns_dnssec_zone_new_frm_fp_l(&dnssec_zone, fp, NULL, 0,
 			LDNS_RR_CLASS_IN, &line_nr);
 	if (s == LDNS_STATUS_OK) {
-		timelog("zone loaded"); /* DEBUGING (remove me) */
 		if (!dnssec_zone->soa) {
 			if (verbosity > 0) {
 				fprintf(myerr,
@@ -884,7 +865,6 @@ main(int argc, char **argv)
 					"glue in the zone\n");
 			}
 		}
-		timelog("glue marked");
 		if (verbosity >= 5) {
 			ldns_dnssec_zone_print(myout, dnssec_zone);
 		}
@@ -892,7 +872,6 @@ main(int argc, char **argv)
 		result = verify_dnssec_zone(dnssec_zone,
 				dnssec_zone->soa->name, keys, apexonly,
 				percentage);
-		timelog("zone verified");
 
 		if (result == LDNS_STATUS_OK) {
 			if (verbosity >= 3) {
