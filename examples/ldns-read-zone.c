@@ -42,11 +42,19 @@ void print_usage(const char* progname)
 		"\t\tnumber decrease, +1 is used in stead"
 			".  (implies -s)\n");
 	printf("\t-u <rr type>\n");
-	printf("\t\tMark <rr type> for printing in unknown type format\n");
+	printf("\t\tMark <rr type> for printing in unknown type format.\n");
+	printf("\t\tThis option may be given multiple times.\n");
+	printf("\t\t-u is not meant to be used together with -U.\n");
 	printf("\t-U <rr type>\n");
 	printf("\t\tMark <rr type> for not printing in unknown type format.\n");
-	printf("\t\tWhen only -U options are given, all types are printed in"
-		"\n\t\tunknown type format except the given RR types\n");
+	printf("\t\tThis option may be given multiple times.\n");
+	printf(
+	"\t\tThe first occurrence of the -U option marks all RR types for"
+	"\n\t\tprinting in unknown type format except for the given <rr type>."
+	"\n\t\tSubsequent -U options will clear the mark for those <rr type>s"
+	"\n\t\ttoo, so that only the given <rr type>s will be printed in the"
+	"\n\t\tpresentation format specific for those <rr type>s.\n");
+	printf("\t\t-U is not meant to be used together with -u.\n");
 	printf("\t-v shows the version and exits\n");
 	printf("\t-z sort the zone (implies -c).\n");
 	printf("\nif no file is given standard input is read\n");

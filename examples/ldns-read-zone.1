@@ -60,13 +60,21 @@ will be skipped when printing the zone.
 
 .TP
 \fB-u\fR \fIRR type\fR
-Mark \fIRR type\fR for printing in unknown type format
+Mark \fIRR type\fR for printing in unknown type format.
+
+\fB-u\fR is not meant to be used together with \fB-U\fR.
 
 .TP
 \fB-U\fR \fIRR type\fR
 Mark \fIRR type\fR for \fBnot\fR printing in unknown type format.
-When only \fB-U\fR options are given, all types are printed in
-unknown type format except the given RR types
+
+The first occurrence of the \fB-U\fR option marks all RR types for printing
+in unknown type format except for the given \fIRR type\fR.
+Subsequent \fB-U\fR options will clear the mark for those \fIRR type\fRs too,
+so that only the given \fIRR type\fRs will be printed in the presentation 
+format specific for those \fIRR type\fRs.
+
+\fB-U\fR is not meant to be used together with \fB-u\fR.
 
 .TP
 \fB-v\fR
