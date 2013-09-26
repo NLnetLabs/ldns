@@ -86,7 +86,10 @@ enum ldns_enum_rdf_type
 	LDNS_RDF_TYPE_PERIOD,
 	/** tsig time 48 bits */
 	LDNS_RDF_TYPE_TSIGTIME,
-	LDNS_RDF_TYPE_TSIG,
+	/** Represents the Public Key Algorithm, HIT and Public Key fields
+	    for the HIP RR types.  A HIP specific rdf type is used because of
+	    the unusual layout in wireformat (see RFC 5205 Section 5) */
+	LDNS_RDF_TYPE_HIP,
 	/** variable length any type rdata where the length
 	    is specified by the first 2 bytes */
 	LDNS_RDF_TYPE_INT16_DATA,

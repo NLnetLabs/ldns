@@ -813,15 +813,6 @@ ldns_str2rdf_unknown( ATTR_UNUSED(ldns_rdf **rd)
 }
 
 ldns_status
-ldns_str2rdf_tsig( ATTR_UNUSED(ldns_rdf **rd)
-		 , ATTR_UNUSED(const char *str)
-		 )
-{
-	/* there is no string representation for TSIG rrs */
-	return LDNS_STATUS_NOT_IMPL;
-}
-
-ldns_status
 ldns_str2rdf_service( ATTR_UNUSED(ldns_rdf **rd)
 		    , ATTR_UNUSED(const char *str)
 		    )

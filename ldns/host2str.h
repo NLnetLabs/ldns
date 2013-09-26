@@ -466,15 +466,6 @@ ldns_status ldns_rdf2buffer_str_int16_data(ldns_buffer *output, const ldns_rdf *
  */
 ldns_status ldns_rdf2buffer_str_ipseckey(ldns_buffer *output, const ldns_rdf *rdf);
 
-/** 
- * Converts an LDNS_RDF_TYPE_TSIG rdata element to string format and adds it to the output buffer 
- * \param[in] *rdf The rdata to convert
- * \param[in] *output The buffer to add the data to
- * \return LDNS_STATUS_OK on success, and error status on failure
- */
-ldns_status ldns_rdf2buffer_str_tsig(ldns_buffer *output, const ldns_rdf *rdf);
-
-
 /**
  * Converts the data in the rdata field to presentation
  * format (as char *) and appends it to the given buffer

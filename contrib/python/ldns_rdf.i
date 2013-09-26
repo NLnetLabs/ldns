@@ -205,7 +205,7 @@
 			case LDNS_RDF_TYPE_TIME:       return "TIME";
 			case LDNS_RDF_TYPE_PERIOD:     return "PERIOD";
 			case LDNS_RDF_TYPE_TSIGTIME:   return "TSIGTIME";
-			case LDNS_RDF_TYPE_TSIG:       return "TSIG";
+			case LDNS_RDF_TYPE_HIP:        return "HIP";
 			case LDNS_RDF_TYPE_INT16_DATA: return "INT16_DATA";
 			case LDNS_RDF_TYPE_SERVICE:    return "SERVICE";
 			case LDNS_RDF_TYPE_LOC:        return "LOC";

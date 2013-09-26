@@ -1160,13 +1160,6 @@ ldns_rdf2buffer_str_ipseckey(ldns_buffer *output, const ldns_rdf *rdf)
 }
 
 ldns_status
-ldns_rdf2buffer_str_tsig(ldns_buffer *output, const ldns_rdf *rdf)
-{
-	/* TSIG RRs have no presentation format, make them #size <data> */
-	return ldns_rdf2buffer_str_unknown(output, rdf);
-}
-
-ldns_status
 ldns_rdf2buffer_str_ilnp64(ldns_buffer *output, const ldns_rdf *rdf)
 {
 	if (ldns_rdf_size(rdf) != 8) {
@@ -1333,9 +1326,6 @@ ldns_rdf2buffer_str_fmt(ldns_buffer *buffer,
 			break;
 		case LDNS_RDF_TYPE_IPSECKEY:
 			res = ldns_rdf2buffer_str_ipseckey(buffer, rdf);
-			break;
-		case LDNS_RDF_TYPE_TSIG:
-			res = ldns_rdf2buffer_str_tsig(buffer, rdf);
 			break;
 		case LDNS_RDF_TYPE_INT16_DATA:
 			res = ldns_rdf2buffer_str_int16_data(buffer, rdf);
