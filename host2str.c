@@ -1262,7 +1262,7 @@ ldns_rdf2buffer_str_hip(ldns_buffer *output, const ldns_rdf *rdf)
 
 		ldns_buffer_printf(output, "%02x", (int) *data);
 	}
-	ldns_buffer_write_u8(output, ' ');
+	ldns_buffer_write_u8(output, (uint8_t) ' ');
 
 	if (ldns_buffer_reserve(output,
 				ldns_b64_ntop_calculate_size(pk_size))) {

@@ -1544,7 +1544,7 @@ ldns_str2rdf_hip(ldns_rdf **rd, const char *str)
 			LDNS_FREE(data);
 			return LDNS_STATUS_INVALID_HEX;
 		}
-		*dp = hi << 4 | lo;
+		*dp = (uint8_t) hi << 4 | lo;
 	}
 	if ((written = ldns_b64_pton(pk, dp, pk_wire_size)) <= 0) {
 
