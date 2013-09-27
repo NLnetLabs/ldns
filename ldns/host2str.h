@@ -606,6 +606,15 @@ ldns_status ldns_rdf2buffer_str_eui48(ldns_buffer *output,
 ldns_status ldns_rdf2buffer_str_eui64(ldns_buffer *output,
 		const ldns_rdf *rdf);
 
+ldns_status ldns_rdf2buffer_str_tag(ldns_buffer *output,
+		const ldns_rdf *rdf);
+
+ldns_status ldns_rdf2buffer_str_long_str(ldns_buffer *output,
+	       	const ldns_rdf *rdf);
+
+ldns_status ldns_rdf2buffer_str_hip(ldns_buffer *output,
+		const ldns_rdf *rdf);
+
 /**
  * Converts the data in the rdata field to presentation format and
  * returns that as a char *.

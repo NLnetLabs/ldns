@@ -127,7 +127,7 @@ ldns_rr_new_frm_str_internal(ldns_rr **newrr, const char *str,
 	char  *type = NULL;
 	char  *rdata = NULL;
 	char  *rd = NULL;
-	char  *	b64 = NULL;
+	char  *xtok = NULL; /* For RDF types with spaces (i.e. extra tokens) */
 	size_t rd_strlen;
 	const char *delimiters;
 	ssize_t c;
@@ -161,7 +161,7 @@ ldns_rr_new_frm_str_internal(ldns_rr **newrr, const char *str,
 	rr_buf = LDNS_MALLOC(ldns_buffer);
 	rd_buf = LDNS_MALLOC(ldns_buffer);
 	rd = LDNS_XMALLOC(char, LDNS_MAX_RDFLEN);
-	b64 = LDNS_XMALLOC(char, LDNS_MAX_RDFLEN);
+	xtok = LDNS_XMALLOC(char, LDNS_MAX_RDFLEN);
 	if (rr_buf) {
 		rr_buf->_data = NULL;
 	}
@@ -169,7 +169,7 @@ ldns_rr_new_frm_str_internal(ldns_rr **newrr, const char *str,
 		rd_buf->_data = NULL;
 	}
 	if (!new || !owner || !ttl || !clas || !rdata ||
-			!rr_buf || !rd_buf || !rd || !b64) {
+			!rr_buf || !rd_buf || !rd || !xtok) {
 
 		goto memerror;
 	}
@@ -487,10 +487,10 @@ ldns_rr_new_frm_str_internal(ldns_rr **newrr, const char *str,
 				 * rdf types may contain spaces).
 				 */
 				if (r_cnt == r_max - 1) {
-					c = ldns_bget_token(rd_buf, b64,
+					c = ldns_bget_token(rd_buf, xtok,
 							"\n", LDNS_MAX_RDFLEN);
 					if (c != -1) {
-						rd = strncat(rd, b64,
+						(void) strncat(rd, xtok,
 							LDNS_MAX_RDFLEN -
 							strlen(rd) - 1);
 					}
@@ -499,6 +499,50 @@ ldns_rr_new_frm_str_internal(ldns_rr **newrr, const char *str,
 						ldns_rr_descriptor_field_type(
 							desc, r_cnt), rd);
 				break;
+
+			case LDNS_RDF_TYPE_HIP:
+				/*
+				 * In presentation format this RDATA type has
+				 * three tokens: An algorithm byte, then a
+				 * variable length HIT (in hexbytes) and then
+				 * a variable length Public Key (in base64).
+				 *
+				 * We have just read the algorithm, so we need
+				 * two more tokens: HIT and Public Key.
+				 */
+				do {
+					/* Read and append HIT */
+					if (ldns_bget_token(rd_buf,
+							xtok, delimiters,
+							LDNS_MAX_RDFLEN) == -1)
+						break;
+
+					(void) strncat(rd, " ",
+							LDNS_MAX_RDFLEN -
+							strlen(rd) - 1);
+					(void) strncat(rd, xtok,
+							LDNS_MAX_RDFLEN -
+							strlen(rd) - 1);
+
+					/* Read and append Public Key*/
+					if (ldns_bget_token(rd_buf,
+							xtok, delimiters,
+							LDNS_MAX_RDFLEN) == -1)
+						break;
+
+					(void) strncat(rd, " ",
+							LDNS_MAX_RDFLEN -
+							strlen(rd) - 1);
+					(void) strncat(rd, xtok,
+							LDNS_MAX_RDFLEN -
+							strlen(rd) - 1);
+				} while (false);
+
+				r = ldns_rdf_new_frm_str(
+						ldns_rr_descriptor_field_type(
+							desc, r_cnt), rd);
+				break;
+
 			case LDNS_RDF_TYPE_DNAME:
 				r = ldns_rdf_new_frm_str(
 						ldns_rr_descriptor_field_type(
@@ -555,7 +599,7 @@ ldns_rr_new_frm_str_internal(ldns_rr **newrr, const char *str,
 
 	} /* for (done = false, r_cnt = 0; !done && r_cnt < r_max; r_cnt++) */
 	LDNS_FREE(rd);
-	LDNS_FREE(b64);
+	LDNS_FREE(xtok);
 	ldns_buffer_free(rd_buf);
 	ldns_buffer_free(rr_buf);
 	LDNS_FREE(rdata);
@@ -594,7 +638,7 @@ error:
 	LDNS_FREE(clas);
 	LDNS_FREE(hex_data);
 	LDNS_FREE(hex_data_str);
-	LDNS_FREE(b64);
+	LDNS_FREE(xtok);
 	LDNS_FREE(rd);
 	LDNS_FREE(rdata);
 	ldns_rr_free(new);
@@ -1928,37 +1972,9 @@ static const ldns_rdf_type type_tlsa_wireformat[] = {
 	LDNS_RDF_TYPE_INT8,
 	LDNS_RDF_TYPE_HEX
 };
-
-/** 
- * With HIP, wire and presentation format are out of step.
- * In presentation format, we have:
- * - a PK algorithm presented as integer in range [0..255]
- * - a variable length HIT field presented as hexstring
- * - a variable length Public Key field presented as Base64
- *
- * Unfortunately in the wireformat the lengths of the variable
- * length HIT and Public Key fields do not directly preceed them.
- * In stead we have:
- * - 1 byte  HIT length: h
- * - 1 byte  PK algorithm
- * - 2 bytes Public Key length: p
- * - h bytes HIT
- * - p bytes Public Key
- *
- * In ldns those deviations from the conventions for rdata fields are best 
- * tackeled by letting the array refered to by the descriptor for HIP represent
- * host format only.
- *
- * BEWARE! Unlike other RR types, actual HIP wire format does not directly
- * follow the RDF types enumerated in the array pointed to by _wireformat in
- * its descriptor record.
- */
-static const ldns_rdf_type type_hip_hostformat[] = {
-	LDNS_RDF_TYPE_INT8,
-	LDNS_RDF_TYPE_HEX,
-	LDNS_RDF_TYPE_B64
+static const ldns_rdf_type type_hip_wireformat[] = {
+	LDNS_RDF_TYPE_HIP
 };
-
 static const ldns_rdf_type type_nid_wireformat[] = {
 	LDNS_RDF_TYPE_INT16,
 	LDNS_RDF_TYPE_ILNP64
@@ -2115,12 +2131,8 @@ static ldns_rr_descriptor rdata_field_descriptors[] = {
 	 * Hip ends with 0 or more Rendezvous Servers represented as dname's.
 	 * Hence the LDNS_RDF_TYPE_DNAME _variable field and the _maximum field
 	 * set to 0.
-	 *
-	 * BEWARE! Unlike other RR types, actual HIP wire format does not 
-	 * directly follow the RDF types enumerated in the array pointed to
-	 * by _wireformat. For more info see type_hip_hostformat declaration.
 	 */
-	{LDNS_RR_TYPE_HIP, "HIP", 3, 3, type_hip_hostformat, LDNS_RDF_TYPE_DNAME, LDNS_RR_NO_COMPRESS, 0 },
+	{LDNS_RR_TYPE_HIP, "HIP", 1, 1, type_hip_wireformat, LDNS_RDF_TYPE_DNAME, LDNS_RR_NO_COMPRESS, 0 },
 
 #ifdef DRAFT_RRTYPES
 	/* 56 */

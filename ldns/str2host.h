@@ -277,6 +277,17 @@ ldns_status ldns_str2rdf_tag(ldns_rdf **rd, const char *str);
  */
 ldns_status ldns_str2rdf_long_str(ldns_rdf **rd, const char *str);
 
+/**
+ * Convert a "<algorithm> <hit> <pk>" encoding of the value field as specified 
+ * in Section 6. of [RFC5205], encoded as wireformat as specified in Section 5.
+ * of [RFC5205].
+ * \param[in] rd the rdf where to put the data
+ * \param[in] str the string to be converted
+ * \return ldns_status
+ */
+ldns_status ldns_str2rdf_hip(ldns_rdf **rd, const char *str);
+
+
 #ifdef __cplusplus
 }
 #endif

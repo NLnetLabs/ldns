@@ -309,6 +309,9 @@ ldns_rdf_new_frm_str(ldns_rdf_type type, const char *str)
 	case LDNS_RDF_TYPE_PERIOD:
 		status = ldns_str2rdf_period(&rdf, str);
 		break;
+	case LDNS_RDF_TYPE_HIP:
+		status = ldns_str2rdf_hip(&rdf, str);
+		break;
 	case LDNS_RDF_TYPE_SERVICE:
 		status = ldns_str2rdf_service(&rdf, str);
 		break;
