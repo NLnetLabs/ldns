@@ -221,7 +221,7 @@ don't randomize the nameserver list before sending queries.
 The exit status is 0 if the looked up answer is secure and trusted,
 or insecure.
 The exit status is not 0 if the looked up answer is untrusted or bogus,
-or an error occerred while performing the lookup.
+or an error occurred while performing the lookup.
 
 .SH "FILES"
 .TP

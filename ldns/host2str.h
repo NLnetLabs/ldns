@@ -40,7 +40,7 @@ extern "C" {
 #define LDNS_APL_NEGATION       0x80
 
 /** 
- * Represent a NULL pointer (in stead of a pointer to a ldns_rr as "; (null)" 
+ * Represent a NULL pointer (instead of a pointer to a ldns_rr as "; (null)" 
  * as opposed to outputting nothing at all in such a case.
  */
 /*	Flag Name			Flag Nr.	Has data associated
