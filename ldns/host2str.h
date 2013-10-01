@@ -606,12 +606,33 @@ ldns_status ldns_rdf2buffer_str_eui48(ldns_buffer *output,
 ldns_status ldns_rdf2buffer_str_eui64(ldns_buffer *output,
 		const ldns_rdf *rdf);
 
+/** 
+ * Adds the LDNS_RDF_TYPE_TAG rdata to the output buffer,
+ * provided it contains only alphanumeric characters.
+ * \param[in] *rdf The rdata to convert
+ * \param[in] *output The buffer to add the data to
+ * \return LDNS_STATUS_OK on success, and error status on failure
+ */
 ldns_status ldns_rdf2buffer_str_tag(ldns_buffer *output,
 		const ldns_rdf *rdf);
 
+/** 
+ * Adds the LDNS_RDF_TYPE_LONG_STR rdata to the output buffer, in-between 
+ * double quotes and all non printable characters properly escaped.
+ * \param[in] *rdf The rdata to convert
+ * \param[in] *output The buffer to add the data to
+ * \return LDNS_STATUS_OK on success, and error status on failure
+ */
 ldns_status ldns_rdf2buffer_str_long_str(ldns_buffer *output,
 	       	const ldns_rdf *rdf);
 
+/** 
+ * Converts an LDNS_RDF_TYPE_HIP rdata element to presentation format for
+ * the algorithm, HIT and Public Key and adds it the output buffer .
+ * \param[in] *rdf The rdata to convert
+ * \param[in] *output The buffer to add the data to
+ * \return LDNS_STATUS_OK on success, and error status on failure
+ */
 ldns_status ldns_rdf2buffer_str_hip(ldns_buffer *output,
 		const ldns_rdf *rdf);
 
