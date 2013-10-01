@@ -46,6 +46,7 @@
 	* bugfix #521: drill trace continue on empty non-terminals with NSEC3
 	* bugfix #525: Fix documentation of ldns_resolver_set_retry
 	* Remove unused LDNS_RDF_TYPE_TSIG and associated functions.
+	* Fix ldns_nsec_covers_name for zones with an apex only. Thanks Miek.
 
 1.6.16	2012-11-13
 	* Fix Makefile to build pyldns with BSD make

@@ -1499,9 +1499,11 @@ ldns_nsec_covers_name(const ldns_rr *nsec, const ldns_rdf *name)
 	if(ldns_dname_compare(nsec_owner, nsec_next) > 0) {
 		result = (ldns_dname_compare(nsec_owner, name) <= 0 ||
 				ldns_dname_compare(name, nsec_next) < 0);
-	} else {
+	} else if(ldns_dname_compare(nsec_owner, nsec_next) < 0) {
 		result = (ldns_dname_compare(nsec_owner, name) <= 0 &&
 		          ldns_dname_compare(name, nsec_next) < 0);
+	} else {
+		result = true;
 	}
 
 	ldns_rdf_deep_free(nsec_next);
