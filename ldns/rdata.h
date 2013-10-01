@@ -408,6 +408,34 @@ ldns_rdf *ldns_rdf_clone(const ldns_rdf *rd);
  */
 int ldns_rdf_compare(const ldns_rdf *rd1, const ldns_rdf *rd2);
 
+/**
+ * Gets the algorithm value, the HIT and Public Key data from the rdf with
+ * type LDNS_RDF_TYPE_HIP.
+ * \param[in] rdf the rdf with type LDNS_RDF_TYPE_HIP
+ * \param[out] alg      the algorithm
+ * \param[out] hit_size the size of the HIT data
+ * \param[out] hit      the hit data
+ * \param[out] pk_size  the size of the Public Key data
+ * \param[out] pk       the  Public Key data
+ * \return LDNS_STATUS_OK on success, and the error otherwise
+ */
+ldns_status ldns_rdf_hip_get_alg_hit_pk(ldns_rdf *rdf, uint8_t* alg,
+		uint8_t *hit_size, uint8_t** hit,
+		uint16_t *pk_size, uint8_t** pk);
+
+/**
+ * Creates a new LDNS_RDF_TYPE_HIP rdf from given data.
+ * \param[out] rdf      the newly created LDNS_RDF_TYPE_HIP rdf
+ * \param[in]  alg      the algorithm
+ * \param[in]  hit_size the size of the HIT data
+ * \param[in]  hit      the hit data
+ * \param[in]  pk_size  the size of the Public Key data
+ * \param[in]  pk       the  Public Key data
+ * \return LDNS_STATUS_OK on success, and the error otherwise
+ */
+ldns_status ldns_rdf_hip_new_frm_alg_hit_pk(ldns_rdf** rdf, uint8_t alg,
+		uint8_t hit_size, uint8_t *hit, uint16_t pk_size, uint8_t *pk);
+
 #ifdef __cplusplus
 }
 #endif

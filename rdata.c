@@ -519,6 +519,67 @@ ldns_rdf_address_reverse(ldns_rdf *rd)
 }
 
 ldns_status
+ldns_rdf_hip_get_alg_hit_pk(ldns_rdf *rdf, uint8_t* alg,
+                            uint8_t *hit_size, uint8_t** hit,
+                            uint16_t *pk_size, uint8_t** pk)
+{
+	uint8_t *data;
+	size_t rdf_size;
+
+	if (! rdf || ! alg || ! hit || ! hit_size || ! pk || ! pk_size) {
+		return LDNS_STATUS_INVALID_POINTER;
+
+	} else if (ldns_rdf_get_type(rdf) != LDNS_RDF_TYPE_HIP) {
+		return LDNS_STATUS_INVALID_RDF_TYPE;
+
+	}
+       	else if ((rdf_size = ldns_rdf_size(rdf)) < 6) {
+		return LDNS_STATUS_WIRE_RDATA_ERR;
+	}
+	data = ldns_rdf_data(rdf);
+	*hit_size = data[0];
+	*alg      = data[1];
+	*pk_size  = ldns_read_uint16(data + 2);
+	*hit      = data + 4;
+	*pk       = data + 4 + *hit_size;
+	if (*hit_size == 0 || *pk_size == 0 ||
+			rdf_size < (size_t) *hit_size + *pk_size + 4) {
+		return LDNS_STATUS_WIRE_RDATA_ERR;
+	}
+	return LDNS_STATUS_OK;
+}
+
+ldns_status
+ldns_rdf_hip_new_frm_alg_hit_pk(ldns_rdf** rdf, uint8_t alg,
+                                uint8_t hit_size, uint8_t *hit,
+				uint16_t pk_size, uint8_t *pk)
+{
+	uint8_t *data;
+
+	if (! rdf) {
+		return LDNS_STATUS_INVALID_POINTER;
+	}
+	if (4 + hit_size + pk_size > LDNS_MAX_RDFLEN) {
+		return LDNS_STATUS_RDATA_OVERFLOW;
+	}
+	data = LDNS_XMALLOC(uint8_t, 4 + hit_size + pk_size);
+	if (data == NULL) {
+		return LDNS_STATUS_MEM_ERR;
+	}
+	data[0] = hit_size;
+	data[1] = alg;
+	ldns_write_uint16(data + 2, pk_size);
+	memcpy(data + 4, hit, hit_size);
+	memcpy(data + 4 + hit_size, pk, pk_size);
+	*rdf = ldns_rdf_new(LDNS_RDF_TYPE_HIP, 4 + hit_size + pk_size, data);
+	if (! *rdf) {
+		LDNS_FREE(data);
+		return LDNS_STATUS_MEM_ERR;
+	}
+	return LDNS_STATUS_OK;
+}
+
+ldns_status
 ldns_octet(char *word, size_t *length)
 {
     char *s; 

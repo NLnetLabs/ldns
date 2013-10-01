@@ -140,6 +140,9 @@ ldns_lookup_table ldns_error_str[] = {
         { LDNS_STATUS_TYPE_NOT_IN_BITMAP, 
 		"The RR type bitmap rdata field did not have "
 		"a bit reserved for the specific RR type" },
+        { LDNS_STATUS_INVALID_RDF_TYPE, 
+		"The rdata field was not of the expected type" },
+        { LDNS_STATUS_RDATA_OVERFLOW, "Rdata size overflow" },
 	{ 0, NULL }
 };
 
