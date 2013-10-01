@@ -47,6 +47,8 @@
 	* bugfix #525: Fix documentation of ldns_resolver_set_retry
 	* Remove unused LDNS_RDF_TYPE_TSIG and associated functions.
 	* Fix ldns_nsec_covers_name for zones with an apex only. Thanks Miek.
+	* Configure option to build perl bindings: --with-p5-net-ldns
+	  (Net::LDNS is a contribution from Erik Ostlyngen)
 
 1.6.16	2012-11-13
 	* Fix Makefile to build pyldns with BSD make

@@ -411,6 +411,17 @@ uint32_t ldns_pkt_querytime(const ldns_pkt *p);
 size_t ldns_pkt_size(const ldns_pkt *p);
 
 /**
+ * Return the number of RRs in the given section.
+ * Returns the sum of all RRs when LDNS_SECTION_ANY is given.
+ * Returns the sum of all non-question RRs when LDNS_SECTION_ANY_NOQUESTION
+ * is given.
+ * \param[in] p the packet
+ * \param[in] s the section
+ * \return the number of RRs in the given section
+ */
+uint16_t ldns_pkt_section_count(const ldns_pkt *p, ldns_pkt_section s);
+
+/**
  * Return the packet's tsig pseudo rr's
  * \param[in] p the packet
  * \return the tsig rr

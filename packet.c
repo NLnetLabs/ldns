@@ -379,7 +379,7 @@ ldns_pkt_rr(ldns_pkt *pkt, ldns_pkt_section sec, ldns_rr *rr)
 	return result;
 }
 
-static uint16_t
+uint16_t
 ldns_pkt_section_count(const ldns_pkt *packet, ldns_pkt_section s)
 {
 	switch(s) {

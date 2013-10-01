@@ -120,6 +120,7 @@ info "Exporting source from GIT"
 git clone git://git.nlnetlabs.nl/ldns/ || error_cleanup "git command failed"
 cd ldns || error_cleanup "LDNS not exported correctly from git"
 git checkout "$CHECKOUT" || error_cleanup "Could not checkout $CHECKOUT"
+git submodule update --init || error_cleanup "Could not checkout submodules"
 
 info "Running  Libtoolize script (libtoolize)."
 libtoolize -c --install || libtoolize -c || error_cleanup "Libtoolize failed."
