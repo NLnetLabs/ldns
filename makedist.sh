@@ -120,7 +120,8 @@ info "Exporting source from GIT"
 git clone git://git.nlnetlabs.nl/ldns/ || error_cleanup "git command failed"
 cd ldns || error_cleanup "LDNS not exported correctly from git"
 git checkout "$CHECKOUT" || error_cleanup "Could not checkout $CHECKOUT"
-git submodule update --init || error_cleanup "Could not checkout submodules"
+git submodule update --init || error_cleanup "Could not update submodules"
+(cd contrib/Net-LDNS; git checkout master) || error_cleanup "Could not checkout Net-LDNS contribution"
 
 info "Running  Libtoolize script (libtoolize)."
 libtoolize -c --install || libtoolize -c || error_cleanup "Libtoolize failed."
@@ -139,6 +140,7 @@ rm -r autom4te* drill/autom4te* examples/autom4te* || error_cleanup "Failed to r
 # custom removes
 find . -name .c-mode-rc.el -exec rm {} \;
 find . -name .cvsignore -exec rm {} \;
+find . -name ".git*" -exec rm -fr {} \;
 rm -rf lua 
 rm -rf masterdont 
 rm makedist.sh || error_cleanup "Failed to remove makedist.sh."
