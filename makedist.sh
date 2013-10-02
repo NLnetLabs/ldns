@@ -140,7 +140,8 @@ rm -r autom4te* drill/autom4te* examples/autom4te* || error_cleanup "Failed to r
 # custom removes
 find . -name .c-mode-rc.el -exec rm {} \;
 find . -name .cvsignore -exec rm {} \;
-find . -name ".git*" -exec rm -fr {} \;
+rm  -f .gitignore .gitmodules contrib/Net-LDNS/.git
+rm -rf .git
 rm -rf lua 
 rm -rf masterdont 
 rm makedist.sh || error_cleanup "Failed to remove makedist.sh."
