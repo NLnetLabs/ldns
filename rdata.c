@@ -528,12 +528,9 @@ ldns_rdf_hip_get_alg_hit_pk(ldns_rdf *rdf, uint8_t* alg,
 
 	if (! rdf || ! alg || ! hit || ! hit_size || ! pk || ! pk_size) {
 		return LDNS_STATUS_INVALID_POINTER;
-
 	} else if (ldns_rdf_get_type(rdf) != LDNS_RDF_TYPE_HIP) {
 		return LDNS_STATUS_INVALID_RDF_TYPE;
-
-	}
-       	else if ((rdf_size = ldns_rdf_size(rdf)) < 6) {
+	} else if ((rdf_size = ldns_rdf_size(rdf)) < 6) {
 		return LDNS_STATUS_WIRE_RDATA_ERR;
 	}
 	data = ldns_rdf_data(rdf);
