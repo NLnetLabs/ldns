@@ -49,6 +49,7 @@
 	* Fix ldns_nsec_covers_name for zones with an apex only. Thanks Miek.
 	* Configure option to build perl bindings: --with-p5-net-ldns
 	  (Net::LDNS is a contribution from Erik Ostlyngen)
+	* bugfix #527: Move -lssl before -lcrypto when linking
 
 1.6.16	2012-11-13
 	* Fix Makefile to build pyldns with BSD make
