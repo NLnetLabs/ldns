@@ -31,6 +31,22 @@ typedef struct ldns_tsig_credentials_struct
     /* XXX More eventually. */
 } ldns_tsig_credentials;
 
+
+/**
+ * Contains parameters for CGA
+*/
+typedef struct ldns_cga_parameters_struct
+{
+    char modifier[16];
+    unsigned char subnet_prefix[8];
+    unsigned char collision_count;
+		int public_key_len;
+    char *public_key;
+		int extension_fields_len;
+    char *extension_fields;
+} ldns_cga_parameters;
+
+
 char *ldns_tsig_algorithm(ldns_tsig_credentials *);
 char *ldns_tsig_keyname(ldns_tsig_credentials *);
 char *ldns_tsig_keydata(ldns_tsig_credentials *);
@@ -93,6 +109,23 @@ ldns_status ldns_pkt_tsig_sign(ldns_pkt *pkt, const char *key_name, const char *
  */
 ldns_status ldns_pkt_tsig_sign_next(ldns_pkt *pkt, const char *key_name, const char *key_data, uint16_t fudge,
     const char *algorithm_name, ldns_rdf *query_mac, int tsig_timers_only);
+
+/**
+ * concatenates cga parameters.
+ * \param[out] buffer the output buffer (should be NULL pointer, will be dynamically allocated)
+ * \param[out] len the buffer length (should be pointer to int)
+ * \param[in] param the cga parameters
+ * \return status (OK if success)
+ */
+ldns_status ldns_concat_cga_parameters(char *buffer, int *len, ldns_cga_parameters *param);
+
+/**
+ * performes cga verification [RFC3972].
+ * \param[in] ns the sockaddr_in6 struct containing the ip address of the remote name server
+ * \param[in] param the cga parameters
+ * \return status (OK if success)
+ */
+ldns_status ldns_cga_verify(sockaddr_in6 *ns, ldns_cga_parameters *param);
 
 #ifdef __cplusplus
 }

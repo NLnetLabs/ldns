@@ -54,6 +54,7 @@ ldns_lookup_table ldns_error_str[] = {
         { LDNS_STATUS_CRYPTO_SIG_NOT_INCEPTED, "DNSSEC signature not incepted yet" },
 	{ LDNS_STATUS_CRYPTO_TSIG_BOGUS, "Bogus TSIG signature" },
 	{ LDNS_STATUS_CRYPTO_TSIG_ERR, "Could not create TSIG signature" },
+	{ LDNS_STATUS_CRYPTO_TSIG_BAD_OTHER_DATA, "Bad TSIG other data" },
         { LDNS_STATUS_CRYPTO_EXPIRATION_BEFORE_INCEPTION, "DNSSEC signature has expiration date earlier than inception date" },
 	{ LDNS_STATUS_ENGINE_KEY_NOT_LOADED, "Unable to load private key from engine" },
         { LDNS_STATUS_NSEC3_ERR, "Error in NSEC3 denial of existence proof" },

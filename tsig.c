@@ -468,3 +468,95 @@ ldns_pkt_tsig_sign_next(ldns_pkt *pkt, const char *key_name, const char *key_dat
 	return status;
 }
 #endif /* HAVE_SSL */
+
+
+ldns_status
+ldns_concat_cga_parameters(char *buffer, int *len, ldns_cga_parameters *param)
+{
+	if (len == NULL || param == NULL) {
+		return LDNS_STATUS_NULL;
+	}
+
+	*len = 25 + param->public_key_len +	param->extension_fields_len;
+	buffer = LDNS_XMALLOC(char, *len);
+
+	if (!buffer) {
+		return LDNS_STATUS_MEM_ERR;
+	}
+
+	memcpy(buffer, &param->modifier, 16);
+	memcpy(buffer + 16, &param->subnet_prefix, 8);
+	memcpy(buffer + 24, &param->collision_count, 1);
+	memcpy(buffer + 25, param->public_key, param->public_key_len);
+	memcpy(buffer + 25 + param->public_key_len, param->extension_fields,
+			param->extension_fields_len);
+
+	return LDNS_STATUS_OK;
+}
+
+ldns_status
+ldns_cga_verify(sockaddr_in6 *ns, ldns_cga_parameters *param)
+{
+	ldns_status status = LDNS_STATUS_OK;
+	char *concat = NULL;
+	int concat_len = 0;
+	unsigned char hash[LDNS_SHA1_DIGEST_LENGTH], id[8];
+	uint16_t i;
+	unsigned char sec;
+
+	/* collision count must be 0, 1 or 2 */
+	if (param->collision_count > 2) {
+		status = LDNS_STATUS_CRYPTO_TSIG_BAD_OTHER_DATA;
+		return status;
+	}
+
+	/* subnet prefix must match */
+	if (memcmp(&ns->sin6_addr, &param->subnet_prefix, 8) != 0) {
+		status = LDNS_STATUS_CRYPTO_TSIG_BAD_OTHER_DATA;
+		return status;
+	}
+
+	/* generate hash1 */
+	status = ldns_concat_cga_parameters(concat, &concat_len, param);
+
+	if (status != LDNS_STATUS_OK) {
+		return status;
+	}
+
+	(void)ldns_sha1(concat, concat_len, hash);
+	memcpy(id, &ns->sin6_addr + 8, 8);
+
+	/* extract the sec parameter */
+	sec = id[0] >> 5;
+
+	/* hash1 must match the interface ID of the address */
+  /* ignoring bits 0, 1, 2, 6 and 7 of the first byte */
+	hash[0] &= 0x1c;
+	id[0] &= 0x1c;
+
+	for (i = 0; i < 8; i++) {
+		if (hash[i] ^ id[i] != 0) {
+			status = LDNS_STATUS_CRYPTO_TSIG_BAD_OTHER_DATA;
+			goto clean;
+		}
+	}
+
+	/* generate hash2 */
+	for (i = 16; i < 25; i++) {
+		concat[i] = 0;
+	}
+
+	(void)ldns_sha1(concat, concat_len, hash);
+
+	/* 2 * sec leftmost bytes of hash2 must be zero */
+	for (i = 0; i < 2 * sec; i++) {
+		if (hash[i++] != 0 || hash[i] != 0) {
+			status = LDNS_STATUS_CRYPTO_TSIG_BAD_OTHER_DATA;
+			goto clean;
+		}
+	}
+
+	clean:
+	LDNS_FREE(concat);
+	return status;
+}
