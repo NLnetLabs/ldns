@@ -9,18 +9,6 @@
 #ifndef LDNS_TSIG_H
 #define LDNS_TSIG_H
 
-#include <ldns/config.h>
-
-#include <ldns/ldns.h>
-
-#include <netinet/in.h>
-#include <sys/socket.h>
-#include <netdb.h>
-#include <arpa/inet.h>
-#include <sys/time.h>
-#include <errno.h>
-#include <fcntl.h>
-
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -129,7 +117,7 @@ ldns_status ldns_pkt_tsig_sign_next(ldns_pkt *pkt, const char *key_name, const c
  * \param[in] param the cga parameters
  * \return status (OK if success)
  */
-ldns_status ldns_concat_cga_parameters(char *buffer, int *len, ldns_cga_parameters *param);
+ldns_status ldns_concat_cga_parameters(unsigned char *buffer, int *len, ldns_cga_parameters *param);
 
 /**
  * performes cga verification [RFC3972].
@@ -137,7 +125,7 @@ ldns_status ldns_concat_cga_parameters(char *buffer, int *len, ldns_cga_paramete
  * \param[in] param the cga parameters
  * \return status (OK if success)
  */
-ldns_status ldns_cga_verify(sockaddr_in6 *ns, ldns_cga_parameters *param);
+ldns_status ldns_cga_verify(struct sockaddr_in6 *ns, ldns_cga_parameters *param);
 
 #ifdef __cplusplus
 }

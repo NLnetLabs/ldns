@@ -71,9 +71,9 @@ LDNS_LOBJS_EX	= ^linktest\.c$$
 LDNS_ALL_LOBJS	= $(LDNS_LOBJS) $(LIBLOBJS)
 LIB		= libldns.la
 
-LDNS_HEADERS	= buffer.h dane.h dname.h dnssec.h dnssec_sign.h dnssec_verify.h dnssec_zone.h duration.h error.h higher.h host2str.h host2wire.h keys.h ldns.h packet.h parse.h radix.h rbtree.h rdata.h resolver.h rr_functions.h rr.h sha1.h sha2.h str2host.h update.h wire2host.h zone.h 
+LDNS_HEADERS	= buffer.h dane.h dname.h dnssec.h dnssec_sign.h dnssec_verify.h dnssec_zone.h duration.h error.h higher.h host2str.h host2wire.h keys.h ldns.h packet.h parse.h radix.h rbtree.h rdata.h resolver.h rr_functions.h rr.h sha1.h sha2.h str2host.h tsig.h update.h wire2host.h zone.h 
 LDNS_HEADERS_EX	= ^config\.h|common\.h|util\.h|net\.h$$
-LDNS_HEADERS_GEN= common.h util.h net.h tsig.h
+LDNS_HEADERS_GEN= common.h util.h net.h
 
 PYLDNS_I_FILES	= $(pywrapdir)/file_py3.i $(pywrapdir)/ldns_buffer.i $(pywrapdir)/ldns_dname.i $(pywrapdir)/ldns_dnssec.i $(pywrapdir)/ldns.i $(pywrapdir)/ldns_key.i $(pywrapdir)/ldns_packet.i $(pywrapdir)/ldns_rdf.i $(pywrapdir)/ldns_resolver.i $(pywrapdir)/ldns_rr.i $(pywrapdir)/ldns_zone.i
 
@@ -474,7 +474,6 @@ depend:
 				-e 's?$$(srcdir)/ldns/common.h?ldns/common.h?g' \
 				-e 's?$$(srcdir)/ldns/util.h?ldns/util.h?g' \
 				-e 's?$$(srcdir)/ldns/net.h?ldns/net.h?g' \
-				-e 's?$$(srcdir)/ldns/tsig.h?ldns/tsig.h?g' \
 				-e 's!\(.*\)\.o[ :]*!'"$$subdir/"'\1.lo '"$$subdir/"'\1.o: !g' \
 				-e 's?^\.\/??g' -e 's? \.\/? ?g' \
 				>> $(DEPEND_TMP) ;\

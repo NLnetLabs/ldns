@@ -18,13 +18,6 @@
 #include <openssl/md5.h>
 #endif /* HAVE_SSL */
 
-#ifdef HAVE_NETINET_IN_H
-#include <netinet/in.h>
-#endif
-#ifdef HAVE_SYS_SOCKET_H
-#include <sys/socket.h>
-#endif
-
 char *
 ldns_tsig_algorithm(ldns_tsig_credentials *tc)
 {
@@ -478,14 +471,14 @@ ldns_pkt_tsig_sign_next(ldns_pkt *pkt, const char *key_name, const char *key_dat
 
 
 ldns_status
-ldns_concat_cga_parameters(char *buffer, int *len, ldns_cga_parameters *param)
+ldns_concat_cga_parameters(unsigned char *buffer, int *len, ldns_cga_parameters *param)
 {
 	if (len == NULL || param == NULL) {
 		return LDNS_STATUS_NULL;
 	}
 
 	*len = 25 + param->public_key_len +	param->extension_fields_len;
-	buffer = LDNS_XMALLOC(char, *len);
+	buffer = LDNS_XMALLOC(unsigned char, *len);
 
 	if (!buffer) {
 		return LDNS_STATUS_MEM_ERR;
@@ -502,10 +495,10 @@ ldns_concat_cga_parameters(char *buffer, int *len, ldns_cga_parameters *param)
 }
 
 ldns_status
-ldns_cga_verify(sockaddr_in6 *ns, ldns_cga_parameters *param)
+ldns_cga_verify(struct sockaddr_in6 *ns, ldns_cga_parameters *param)
 {
 	ldns_status status = LDNS_STATUS_OK;
-	char *concat = NULL;
+	unsigned char *concat = NULL;
 	int concat_len = 0;
 	unsigned char hash[LDNS_SHA1_DIGEST_LENGTH], id[8];
 	uint16_t i;
@@ -542,7 +535,7 @@ ldns_cga_verify(sockaddr_in6 *ns, ldns_cga_parameters *param)
 	id[0] &= 0x1c;
 
 	for (i = 0; i < 8; i++) {
-		if (hash[i] ^ id[i] != 0) {
+		if ((hash[i] ^ id[i]) != 0) {
 			status = LDNS_STATUS_CRYPTO_TSIG_BAD_OTHER_DATA;
 			goto clean;
 		}

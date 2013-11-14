@@ -805,7 +805,7 @@ else
   AC_SUBST(ldns_build_config_have_attr_unused, 0)
 fi
 
-CONFIG_FILES="Makefile ldns/common.h ldns/net.h ldns/util.h ldns/tsig.h packaging/libldns.pc packaging/ldns-config $DRILL_CONFIG $EXAMPLES_CONFIG"
+CONFIG_FILES="Makefile ldns/common.h ldns/net.h ldns/util.h packaging/libldns.pc packaging/ldns-config $DRILL_CONFIG $EXAMPLES_CONFIG"
 AC_SUBST(CONFIG_FILES)
 AC_CONFIG_FILES([$CONFIG_FILES])
 
