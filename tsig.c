@@ -18,6 +18,13 @@
 #include <openssl/md5.h>
 #endif /* HAVE_SSL */
 
+#ifdef HAVE_NETINET_IN_H
+#include <netinet/in.h>
+#endif
+#ifdef HAVE_SYS_SOCKET_H
+#include <sys/socket.h>
+#endif
+
 char *
 ldns_tsig_algorithm(ldns_tsig_credentials *tc)
 {

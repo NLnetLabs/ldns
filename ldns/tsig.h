@@ -9,6 +9,18 @@
 #ifndef LDNS_TSIG_H
 #define LDNS_TSIG_H
 
+#include <ldns/config.h>
+
+#include <ldns/ldns.h>
+
+#include <netinet/in.h>
+#include <sys/socket.h>
+#include <netdb.h>
+#include <arpa/inet.h>
+#include <sys/time.h>
+#include <errno.h>
+#include <fcntl.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
