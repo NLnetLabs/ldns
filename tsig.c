@@ -482,6 +482,7 @@ ldns_pkt_tsig_sign_next(ldns_pkt *pkt, const char *key_name, const char *key_dat
 #endif /* HAVE_SSL */
 
 
+/* MM: kan deze functie static? */
 ldns_status
 ldns_concat_cga_parameters(unsigned char *buffer, int *len, ldns_cga_parameters *param)
 {
@@ -530,8 +531,8 @@ ldns_cga_verify(struct sockaddr_in6 *ns, ldns_cga_parameters *param)
 
 	/* generate hash1 */
 	status = ldns_concat_cga_parameters(concat, &concat_len, param);
-
 	if (status != LDNS_STATUS_OK) {
+		/* we can return safely, concat has not been allocated yet */
 		return status;
 	}
 
@@ -542,7 +543,7 @@ ldns_cga_verify(struct sockaddr_in6 *ns, ldns_cga_parameters *param)
 	sec = id[0] >> 5;
 
 	/* hash1 must match the interface ID of the address */
-  /* ignoring bits 0, 1, 2, 6 and 7 of the first byte */
+	/* ignoring bits 0, 1, 2, 6 and 7 of the first byte */
 	hash[0] &= 0x1c;
 	id[0] &= 0x1c;
 
