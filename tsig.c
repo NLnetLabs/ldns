@@ -276,23 +276,34 @@ bool
 ldns_pkt_tsig_verify(ldns_pkt *pkt, uint8_t *wire, size_t wirelen, const char *key_name,
 	const char *key_data, ldns_rdf *orig_mac_rdf)
 {
-	return ldns_pkt_tsig_verify_next(pkt, wire, wirelen, key_name, key_data, orig_mac_rdf, 0);
+	if (!ldns_pkt_tsig_verify_next_ws(pkt, wire, wirelen, key_name, key_data, orig_mac_rdf, 0)
+			!= LDNS_STATUS_OK) {
+		return false;
+	}
+	return true;
 }
 
 ldns_status
 ldns_pkt_tsig_verify_ws(ldns_pkt *pkt, uint8_t *wire, size_t wirelen, const char *key_name,
 	const char *key_data, ldns_rdf *orig_mac_rdf)
 {
-	if (!ldns_pkt_tsig_verify_next(pkt, wire, wirelen, key_name, key_data, orig_mac_rdf, 0)) {
-		return LDNS_STATUS_CRYPTO_TSIG_BOGUS;
-	}
-	return LDNS_STATUS_OK;
+	return ldns_pkt_tsig_verify_next_ws(pkt, wire, wirelen, key_name, key_data, orig_mac_rdf, 0);
 }
-
 
 
 bool
 ldns_pkt_tsig_verify_next(ldns_pkt *pkt, uint8_t *wire, size_t wirelen, const char* key_name,
+	const char *key_data, ldns_rdf *orig_mac_rdf, int tsig_timers_only)
+{
+	if (ldns_pkt_tsig_verify_next_ws(pkt, wire, wirelen, key_name, key_data, orig_mac_rdf, 0)
+			!= LDNS_STATUS_OK) {
+		return false;
+	}
+	return true;
+}
+
+ldns_status
+ldns_pkt_tsig_verify_next_ws(ldns_pkt *pkt, uint8_t *wire, size_t wirelen, const char* key_name,
 	const char *key_data, ldns_rdf *orig_mac_rdf, int tsig_timers_only)
 {
 	ldns_rdf *fudge_rdf;
@@ -312,9 +323,14 @@ ldns_pkt_tsig_verify_next(ldns_pkt *pkt, uint8_t *wire, size_t wirelen, const ch
 
 	ldns_rr *orig_tsig = ldns_pkt_tsig(pkt);
 
-	if (!orig_tsig || ldns_rr_rd_count(orig_tsig) <= 6) {
+	if (!orig_tsig) {
 		ldns_rdf_deep_free(key_name_rdf);
-		return false;
+		return LDNS_STATUS_MEM_ERR;
+	}
+
+	if (ldns_rr_rd_count(orig_tsig) <= 6) {
+		ldns_rdf_deep_free(key_name_rdf);
+		return LDNS_STATUS_CRYPTO_TSIG_BOGUS;
 	}
 	algorithm_rdf = ldns_rr_rdf(orig_tsig, 0);
 	time_signed_rdf = ldns_rr_rdf(orig_tsig, 1);
@@ -341,7 +357,7 @@ ldns_pkt_tsig_verify_next(ldns_pkt *pkt, uint8_t *wire, size_t wirelen, const ch
 
 	if (status != LDNS_STATUS_OK) {
 		ldns_rdf_deep_free(key_name_rdf);
-		return false;
+		return status;
 	}
 	/* Put back the values */
 	ldns_pkt_set_tsig(pkt, orig_tsig);
@@ -351,10 +367,10 @@ ldns_pkt_tsig_verify_next(ldns_pkt *pkt, uint8_t *wire, size_t wirelen, const ch
 
 	if (ldns_rdf_compare(pkt_mac_rdf, my_mac_rdf) == 0) {
 		ldns_rdf_deep_free(my_mac_rdf);
-		return true;
+		return LDNS_STATUS_OK;
 	} else {
 		ldns_rdf_deep_free(my_mac_rdf);
-		return false;
+		return LDNS_STATUS_CRYPTO_TSIG_BOGUS;
 	}
 }
 #endif /* HAVE_SSL */
@@ -482,8 +498,14 @@ ldns_pkt_tsig_sign_next(ldns_pkt *pkt, const char *key_name, const char *key_dat
 #endif /* HAVE_SSL */
 
 
-/* MM: kan deze functie static? */
-ldns_status
+/**
+ * concatenates cga parameters.
+ * \param[out] buffer the output buffer (should be NULL pointer, will be dynamically allocated)
+ * \param[out] len the buffer length (should be pointer to int)
+ * \param[in] param the cga parameters
+ * \return status (OK if success)
+ */
+static ldns_status
 ldns_concat_cga_parameters(unsigned char *buffer, int *len, ldns_cga_parameters *param)
 {
 	if (len == NULL || param == NULL) {
@@ -507,6 +529,8 @@ ldns_concat_cga_parameters(unsigned char *buffer, int *len, ldns_cga_parameters 
 	return LDNS_STATUS_OK;
 }
 
+
+/* TODO: wire to host conversion (ntoh) */
 ldns_status
 ldns_cga_verify(struct sockaddr_in6 *ns, ldns_cga_parameters *param)
 {
@@ -519,21 +543,22 @@ ldns_cga_verify(struct sockaddr_in6 *ns, ldns_cga_parameters *param)
 
 	/* collision count must be 0, 1 or 2 */
 	if (param->collision_count > 2) {
-		status = LDNS_STATUS_CRYPTO_TSIG_BAD_OTHER_DATA;
+		status = LDNS_STATUS_CRYPTO_TSIG_BOGUS;
 		return status;
 	}
 
 	/* subnet prefix must match */
 	if (memcmp(&ns->sin6_addr, &param->subnet_prefix, 8) != 0) {
-		status = LDNS_STATUS_CRYPTO_TSIG_BAD_OTHER_DATA;
+		status = LDNS_STATUS_CRYPTO_TSIG_BOGUS;
 		return status;
 	}
 
 	/* generate hash1 */
 	status = ldns_concat_cga_parameters(concat, &concat_len, param);
 	if (status != LDNS_STATUS_OK) {
-		/* we can return safely, concat has not been allocated yet */
-		return status;
+		/* try to free concat, to prevent memory leak in case of
+     * more future error statuses added to the function */
+		goto clean;
 	}
 
 	(void)ldns_sha1(concat, concat_len, hash);
@@ -542,14 +567,14 @@ ldns_cga_verify(struct sockaddr_in6 *ns, ldns_cga_parameters *param)
 	/* extract the sec parameter */
 	sec = id[0] >> 5;
 
-	/* hash1 must match the interface ID of the address */
-	/* ignoring bits 0, 1, 2, 6 and 7 of the first byte */
+	/* hash1 must match the interface ID of the address,
+	 * ignoring bits 0, 1, 2, 6 and 7 of the first byte */
 	hash[0] &= 0x1c;
 	id[0] &= 0x1c;
 
 	for (i = 0; i < 8; i++) {
 		if ((hash[i] ^ id[i]) != 0) {
-			status = LDNS_STATUS_CRYPTO_TSIG_BAD_OTHER_DATA;
+			status = LDNS_STATUS_CRYPTO_TSIG_BOGUS;
 			goto clean;
 		}
 	}
@@ -561,10 +586,12 @@ ldns_cga_verify(struct sockaddr_in6 *ns, ldns_cga_parameters *param)
 
 	(void)ldns_sha1(concat, concat_len, hash);
 
-	/* 2 * sec leftmost bytes of hash2 must be zero */
-	for (i = 0; i < 2 * sec; i++) {
+	/* 2*sec leftmost bytes of hash2 must be zero */
+	sec *= 2;
+
+	for (i = 0; i < sec; i++) {
 		if (hash[i++] != 0 || hash[i] != 0) {
-			status = LDNS_STATUS_CRYPTO_TSIG_BAD_OTHER_DATA;
+			status = LDNS_STATUS_CRYPTO_TSIG_BOGUS;
 			goto clean;
 		}
 	}

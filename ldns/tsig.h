@@ -124,15 +124,6 @@ ldns_status ldns_pkt_tsig_sign_next(ldns_pkt *pkt, const char *key_name, const c
     const char *algorithm_name, ldns_rdf *query_mac, int tsig_timers_only);
 
 /**
- * concatenates cga parameters.
- * \param[out] buffer the output buffer (should be NULL pointer, will be dynamically allocated)
- * \param[out] len the buffer length (should be pointer to int)
- * \param[in] param the cga parameters
- * \return status (OK if success)
- */
-ldns_status ldns_concat_cga_parameters(unsigned char *buffer, int *len, ldns_cga_parameters *param);
-
-/**
  * performes cga verification [RFC3972].
  * \param[in] ns the sockaddr_in6 struct containing the ip address of the remote name server
  * \param[in] param the cga parameters
