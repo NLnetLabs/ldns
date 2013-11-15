@@ -279,6 +279,18 @@ ldns_pkt_tsig_verify(ldns_pkt *pkt, uint8_t *wire, size_t wirelen, const char *k
 	return ldns_pkt_tsig_verify_next(pkt, wire, wirelen, key_name, key_data, orig_mac_rdf, 0);
 }
 
+ldns_status
+ldns_pkt_tsig_verify_ws(ldns_pkt *pkt, uint8_t *wire, size_t wirelen, const char *key_name,
+	const char *key_data, ldns_rdf *orig_mac_rdf)
+{
+	if (!ldns_pkt_tsig_verify_next(pkt, wire, wirelen, key_name, key_data, orig_mac_rdf, 0)) {
+		return LDNS_STATUS_CRYPTO_TSIG_BOGUS;
+	}
+	return LDNS_STATUS_OK;
+}
+
+
+
 bool
 ldns_pkt_tsig_verify_next(ldns_pkt *pkt, uint8_t *wire, size_t wirelen, const char* key_name,
 	const char *key_data, ldns_rdf *orig_mac_rdf, int tsig_timers_only)

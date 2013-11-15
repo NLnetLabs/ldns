@@ -75,6 +75,19 @@ bool ldns_pkt_tsig_verify(ldns_pkt *pkt, uint8_t *wire, size_t wire_size, const 
  * \param[in] key_name the name of the shared key
  * \param[in] key_data the key in base 64 format
  * \param[in] mac original mac
+ * \return LDNS_STATUS_OK if tsig is correct, error status otherwise
+ */
+ldns_status ldns_pkt_tsig_verify_ws(ldns_pkt *pkt, uint8_t *wire, size_t wire_size, const char *key_name, const char *key_data, ldns_rdf *mac);
+
+/**
+ * verifies the tsig rr for the given packet and key.
+ * The wire must be given too because tsig does not sign normalized packets.
+ * \param[in] pkt the packet to verify
+ * \param[in] wire needed to verify the mac
+ * \param[in] wire_size size of wire
+ * \param[in] key_name the name of the shared key
+ * \param[in] key_data the key in base 64 format
+ * \param[in] mac original mac
  * \param[in] tsig_timers_only must be zero for the first packet and positive for subsequent packets. If zero, all digest
    components are used to verify the _mac. If non-zero, only the TSIG timers are used to verify the mac.
  * \return true if tsig is correct, false if not, or if tsig is not set
