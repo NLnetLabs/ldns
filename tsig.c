@@ -295,7 +295,7 @@ bool
 ldns_pkt_tsig_verify_next(ldns_pkt *pkt, uint8_t *wire, size_t wirelen, const char* key_name,
 	const char *key_data, ldns_rdf *orig_mac_rdf, int tsig_timers_only)
 {
-	if (ldns_pkt_tsig_verify_next_ws(pkt, wire, wirelen, key_name, key_data, orig_mac_rdf, 0)
+	if (ldns_pkt_tsig_verify_next_ws(pkt, wire, wirelen, key_name, key_data, orig_mac_rdf, tsig_timers_only)
 			!= LDNS_STATUS_OK) {
 		return false;
 	}
@@ -501,42 +501,43 @@ ldns_pkt_tsig_sign_next(ldns_pkt *pkt, const char *key_name, const char *key_dat
 /**
  * concatenates cga parameters.
  * \param[out] buffer the output buffer (should be NULL pointer, will be dynamically allocated)
- * \param[out] len the buffer length (should be pointer to int)
  * \param[in] param the cga parameters
  * \return status (OK if success)
  */
 static ldns_status
-ldns_concat_cga_parameters(unsigned char *buffer, int *len, ldns_cga_parameters *param)
+ldns_concat_cga_parameters(ldns_buffer *buffer, ldns_cga_parameters *param)
 {
-	if (len == NULL || param == NULL) {
+	if (param == NULL) {
 		return LDNS_STATUS_NULL;
 	}
 
-	*len = 25 + param->public_key_len +	param->extension_fields_len;
-	buffer = LDNS_XMALLOC(unsigned char, *len);
+	buffer = ldns_buffer_new(25 + param->public_key_len + param->extension_fields_len);
 
 	if (!buffer) {
 		return LDNS_STATUS_MEM_ERR;
 	}
 
-	memcpy(buffer, &param->modifier, 16);
-	memcpy(buffer + 16, &param->subnet_prefix, 8);
-	memcpy(buffer + 24, &param->collision_count, 1);
-	memcpy(buffer + 25, param->public_key, param->public_key_len);
-	memcpy(buffer + 25 + param->public_key_len, param->extension_fields,
-			param->extension_fields_len);
+	ldns_buffer_write(buffer, &param->modifier, 16);
+	ldns_buffer_write(buffer, &param->subnet_prefix, 8);
+	ldns_buffer_write(buffer, &param->collision_count, 1);
+	ldns_buffer_write(buffer, param->public_key, param->public_key_len);
+	ldns_buffer_write(buffer, param->extension_fields, param->extension_fields_len);
 
 	return LDNS_STATUS_OK;
 }
 
 
-/* TODO: wire to host conversion (ntoh) */
-ldns_status
+/**
+ * performes cga verification [RFC3972].
+ * \param[in] ns the sockaddr_in6 struct containing the ip address of the remote name server
+ * \param[in] param the cga parameters
+ * \return status (OK if success)
+ */
+static ldns_status
 ldns_cga_verify(struct sockaddr_in6 *ns, ldns_cga_parameters *param)
 {
 	ldns_status status = LDNS_STATUS_OK;
-	unsigned char *concat = NULL;
-	int concat_len = 0;
+	ldns_buffer *concat = NULL;
 	unsigned char hash[LDNS_SHA1_DIGEST_LENGTH], id[8];
 	uint16_t i;
 	unsigned char sec;
@@ -554,37 +555,33 @@ ldns_cga_verify(struct sockaddr_in6 *ns, ldns_cga_parameters *param)
 	}
 
 	/* generate hash1 */
-	status = ldns_concat_cga_parameters(concat, &concat_len, param);
+	status = ldns_concat_cga_parameters(concat, param);
 	if (status != LDNS_STATUS_OK) {
 		/* try to free concat, to prevent memory leak in case of
      * more future error statuses added to the function */
 		goto clean;
 	}
 
-	(void)ldns_sha1(concat, concat_len, hash);
+	(void)ldns_sha1(ldns_buffer_begin(concat), ldns_buffer_capacity(concat), hash);
 	memcpy(id, &ns->sin6_addr + 8, 8);
 
 	/* extract the sec parameter */
 	sec = id[0] >> 5;
 
-	/* hash1 must match the interface ID of the address,
+	/* hash1 (first 8 octets) must match the interface ID of the address,
 	 * ignoring bits 0, 1, 2, 6 and 7 of the first byte */
 	hash[0] &= 0x1c;
 	id[0] &= 0x1c;
 
-	for (i = 0; i < 8; i++) {
-		if ((hash[i] ^ id[i]) != 0) {
-			status = LDNS_STATUS_CRYPTO_TSIG_BOGUS;
-			goto clean;
-		}
+	if (memcmp(hash, id, 8) != 0) {
+		status = LDNS_STATUS_CRYPTO_TSIG_BOGUS;
+		goto clean;
 	}
 
 	/* generate hash2 */
-	for (i = 16; i < 25; i++) {
-		concat[i] = 0;
-	}
+	memset(ldns_buffer_at(concat, 16), 0, 9);
 
-	(void)ldns_sha1(concat, concat_len, hash);
+	(void)ldns_sha1(ldns_buffer_begin(concat), ldns_buffer_capacity(concat), hash);
 
 	/* 2*sec leftmost bytes of hash2 must be zero */
 	sec *= 2;
@@ -597,6 +594,6 @@ ldns_cga_verify(struct sockaddr_in6 *ns, ldns_cga_parameters *param)
 	}
 
 	clean:
-	LDNS_FREE(concat);
+	ldns_buffer_free(concat);
 	return status;
 }

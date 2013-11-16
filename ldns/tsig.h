@@ -37,13 +37,13 @@ typedef struct ldns_tsig_credentials_struct
 */
 typedef struct ldns_cga_parameters_struct
 {
-    char modifier[16];
-    unsigned char subnet_prefix[8];
-    unsigned char collision_count;
-		int public_key_len;
-    char *public_key;
-		int extension_fields_len;
-    char *extension_fields;
+    uint8_t modifier[16];
+    uint8_t subnet_prefix[8];
+    uint8_t collision_count;
+		uint8_t public_key_len;
+    uint8_t *public_key;
+		uint8_t extension_fields_len;
+    uint8_t *extension_fields;
 } ldns_cga_parameters;
 
 
@@ -96,6 +96,22 @@ bool ldns_pkt_tsig_verify_next(ldns_pkt *pkt, uint8_t *wire, size_t wire_size, c
     int tsig_timers_only);
 
 /**
+ * verifies the tsig rr for the given packet and key.
+ * The wire must be given too because tsig does not sign normalized packets.
+ * \param[in] pkt the packet to verify
+ * \param[in] wire needed to verify the mac
+ * \param[in] wire_size size of wire
+ * \param[in] key_name the name of the shared key
+ * \param[in] key_data the key in base 64 format
+ * \param[in] mac original mac
+ * \param[in] tsig_timers_only must be zero for the first packet and positive for subsequent packets. If zero, all digest
+   components are used to verify the _mac. If non-zero, only the TSIG timers are used to verify the mac.
+ * \return LDNS_STATUS_OK if tsig is correct, error status otherwise
+ */
+ldns_status ldns_pkt_tsig_verify_next_ws(ldns_pkt *pkt, uint8_t *wire, size_t wire_size, const char *key_name, const char *key_data, ldns_rdf *mac,
+    int tsig_timers_only);
+
+/**
  * creates a tsig rr for the given packet and key.
  * \param[in] pkt the packet to sign
  * \param[in] key_name the name of the shared key
@@ -122,14 +138,6 @@ ldns_status ldns_pkt_tsig_sign(ldns_pkt *pkt, const char *key_name, const char *
  */
 ldns_status ldns_pkt_tsig_sign_next(ldns_pkt *pkt, const char *key_name, const char *key_data, uint16_t fudge,
     const char *algorithm_name, ldns_rdf *query_mac, int tsig_timers_only);
-
-/**
- * performes cga verification [RFC3972].
- * \param[in] ns the sockaddr_in6 struct containing the ip address of the remote name server
- * \param[in] param the cga parameters
- * \return status (OK if success)
- */
-ldns_status ldns_cga_verify(struct sockaddr_in6 *ns, ldns_cga_parameters *param);
 
 #ifdef __cplusplus
 }
