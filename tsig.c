@@ -385,7 +385,7 @@ ldns_pkt_tsig_verify(ldns_pkt *pkt, uint8_t *wire, size_t wirelen, const char *k
 
 ldns_status
 ldns_pkt_tsig_verify_ws(ldns_pkt *pkt, uint8_t *wire, size_t wirelen, const char *key_name,
-	const char *key_data, ldns_rdf *orig_mac_rdf, const struct sockaddr_storage *ns_out, socklen_t ns_out_len)
+	const char *key_data, ldns_rdf *orig_mac_rdf, const struct sockaddr_storage *ns_out, size_t ns_out_len)
 {
 	return ldns_pkt_tsig_verify_next_ws(pkt, wire, wirelen, key_name, key_data, orig_mac_rdf, 0, ns_out, ns_out_len);
 }
@@ -405,7 +405,7 @@ ldns_pkt_tsig_verify_next(ldns_pkt *pkt, uint8_t *wire, size_t wirelen, const ch
 ldns_status
 ldns_pkt_tsig_verify_next_ws(ldns_pkt *pkt, uint8_t *wire, size_t wirelen, const char* key_name,
 	const char *key_data, ldns_rdf *orig_mac_rdf, int tsig_timers_only, const struct sockaddr_storage *ns_out,
-	socklen_t ns_out_len)
+	size_t ns_out_len)
 {
 	ldns_rdf *fudge_rdf;
 	ldns_rdf *algorithm_rdf;
@@ -474,7 +474,7 @@ ldns_pkt_tsig_verify_next_ws(ldns_pkt *pkt, uint8_t *wire, size_t wirelen, const
 
 		ns_in = ldns_rdf2native_sockaddr_storage(ldns_pkt_answerfrom(pkt), 0, &ns_in_len);
 
-		if (!ns_in || (size_t)ns_out_len != ns_in_len) {
+		if (!ns_in || ns_out_len != ns_in_len) {
 			status = LDNS_STATUS_CRYPTO_TSIG_ERR;
 			goto clean;
 		}
