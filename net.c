@@ -516,7 +516,7 @@ ldns_send_buffer(ldns_pkt **result, ldns_resolver *r, ldns_buffer *qb, ldns_rdf 
 		ns = ldns_rdf2native_sockaddr_storage(ns_array[i],
 				ldns_resolver_port(r), &ns_len);
 
-
+    // shouldn't ns be checked if NULL?
 #ifndef S_SPLINT_S
 		if ((ns->ss_family == AF_INET) &&
 				(ldns_resolver_ip6(r) == LDNS_RESOLV_INET6)) {
@@ -591,7 +591,6 @@ ldns_send_buffer(ldns_pkt **result, ldns_resolver *r, ldns_buffer *qb, ldns_rdf 
 			return status;
 		}
 		
-		LDNS_FREE(ns);
 		gettimeofday(&tv_e, NULL);
 
 		if (reply) {
@@ -611,6 +610,8 @@ ldns_send_buffer(ldns_pkt **result, ldns_resolver *r, ldns_buffer *qb, ldns_rdf 
 			}
 		}
 
+		LDNS_FREE(ns);
+
 		/* wait retrans seconds... */
 		sleep((unsigned int) ldns_resolver_retrans(r));
 	}
@@ -626,11 +627,13 @@ ldns_send_buffer(ldns_pkt **result, ldns_resolver *r, ldns_buffer *qb, ldns_rdf 
 	if (tsig_mac && reply && reply_bytes) {
 		status = ldns_pkt_tsig_verify_ws(reply, reply_bytes, reply_size,
 			ldns_resolver_tsig_keyname(r),
-			ldns_resolver_tsig_keydata(r), tsig_mac);
+			ldns_resolver_tsig_keydata(r), tsig_mac, ns, (socklen_t)ns_len);
 	}
 #else
 	(void)tsig_mac;
 #endif /* HAVE_SSL */
+
+	LDNS_FREE(ns);
 
 	LDNS_FREE(reply_bytes);
 	if (result) {

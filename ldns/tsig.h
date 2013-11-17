@@ -77,7 +77,8 @@ bool ldns_pkt_tsig_verify(ldns_pkt *pkt, uint8_t *wire, size_t wire_size, const 
  * \param[in] mac original mac
  * \return LDNS_STATUS_OK if tsig is correct, error status otherwise
  */
-ldns_status ldns_pkt_tsig_verify_ws(ldns_pkt *pkt, uint8_t *wire, size_t wire_size, const char *key_name, const char *key_data, ldns_rdf *mac);
+ldns_status ldns_pkt_tsig_verify_ws(ldns_pkt *pkt, uint8_t *wire, size_t wire_size, const char *key_name, const char *key_data, ldns_rdf *mac,
+    const struct sockaddr_storage *ns, socklen_t ns_len);
 
 /**
  * verifies the tsig rr for the given packet and key.
@@ -109,7 +110,7 @@ bool ldns_pkt_tsig_verify_next(ldns_pkt *pkt, uint8_t *wire, size_t wire_size, c
  * \return LDNS_STATUS_OK if tsig is correct, error status otherwise
  */
 ldns_status ldns_pkt_tsig_verify_next_ws(ldns_pkt *pkt, uint8_t *wire, size_t wire_size, const char *key_name, const char *key_data, ldns_rdf *mac,
-    int tsig_timers_only);
+    int tsig_timers_only, const struct sockaddr_storage *ns, socklen_t ns_len);
 
 /**
  * creates a tsig rr for the given packet and key.

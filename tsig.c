@@ -119,6 +119,7 @@ ldns_tsig_prepare_pkt_wire(uint8_t *wire, size_t wire_len, size_t *result_len)
 	*result_len = pos;
 	wire2 = LDNS_XMALLOC(uint8_t, *result_len);
 	if(!wire2) {
+		*result_len = 0; // =bugfix?
 		return NULL;
 	}
 	memcpy(wire2, wire, *result_len);
@@ -271,12 +272,111 @@ ldns_tsig_mac_new(ldns_rdf **tsig_mac, uint8_t *pkt_wire, size_t pkt_wire_size,
 #endif /*  HAVE_SSL */
 
 
+/**
+ * concatenates cga parameters.
+ * \param[out] buffer the output buffer (should be NULL pointer, will be dynamically allocated)
+ * \param[in] param the cga parameters
+ * \return status (OK if success)
+ */
+static ldns_status
+ldns_concat_cga_parameters(ldns_buffer *buffer, ldns_cga_parameters *param)
+{
+	if (param == NULL) {
+		return LDNS_STATUS_NULL;
+	}
+
+	buffer = ldns_buffer_new(25 + param->public_key_len + param->extension_fields_len);
+
+	if (!buffer) {
+		return LDNS_STATUS_MEM_ERR;
+	}
+
+	ldns_buffer_write(buffer, &param->modifier, 16);
+	ldns_buffer_write(buffer, &param->subnet_prefix, 8);
+	ldns_buffer_write(buffer, &param->collision_count, 1);
+	ldns_buffer_write(buffer, param->public_key, param->public_key_len);
+	ldns_buffer_write(buffer, param->extension_fields, param->extension_fields_len);
+
+	return LDNS_STATUS_OK;
+}
+
+
+/**
+ * performes cga verification [RFC3972].
+ * \param[in] ns the sockaddr_in6 struct containing the ip address of the remote name server
+ * \param[in] param the cga parameters
+ * \return status (OK if success)
+ */
+static ldns_status
+ldns_cga_verify(struct sockaddr_in6 *ns, ldns_cga_parameters *param)
+{
+	ldns_status status = LDNS_STATUS_OK;
+	ldns_buffer *concat = NULL;
+	unsigned char hash[LDNS_SHA1_DIGEST_LENGTH], id[8];
+	uint16_t i;
+	unsigned char sec;
+
+	/* collision count must be 0, 1 or 2 */
+	if (param->collision_count > 2) {
+		return LDNS_STATUS_CRYPTO_TSIG_BOGUS;
+	}
+
+	/* subnet prefix must match */
+	if (memcmp(&ns->sin6_addr, &param->subnet_prefix, 8) != 0) {
+		return LDNS_STATUS_CRYPTO_TSIG_BOGUS;
+	}
+
+	/* generate hash1 */
+	status = ldns_concat_cga_parameters(concat, param);
+	if (status != LDNS_STATUS_OK) {
+		/* try to free concat, to prevent memory leak in case of
+     * more future error statuses added to the function */
+		goto clean;
+	}
+
+	(void)ldns_sha1(ldns_buffer_begin(concat), ldns_buffer_capacity(concat), hash);
+	memcpy(id, &ns->sin6_addr + 8, 8);
+
+	/* extract the sec parameter */
+	sec = id[0] >> 5;
+
+	/* hash1 (first 8 octets) must match the interface ID of the address,
+	 * ignoring bits 0, 1, 2, 6 and 7 of the first byte */
+	hash[0] &= 0x1c;
+	id[0] &= 0x1c;
+
+	if (memcmp(hash, id, 8) != 0) {
+		status = LDNS_STATUS_CRYPTO_TSIG_BOGUS;
+		goto clean;
+	}
+
+	/* generate hash2 */
+	memset(ldns_buffer_at(concat, 16), 0, 9);
+
+	(void)ldns_sha1(ldns_buffer_begin(concat), ldns_buffer_capacity(concat), hash);
+
+	/* 2*sec leftmost bytes of hash2 must be zero */
+	sec *= 2;
+
+	for (i = 0; i < sec; i++) {
+		if (hash[i++] != 0 || hash[i] != 0) {
+			status = LDNS_STATUS_CRYPTO_TSIG_BOGUS;
+			goto clean;
+		}
+	}
+
+	clean:
+	ldns_buffer_free(concat);
+	return status;
+}
+
+
 #ifdef HAVE_SSL
 bool
 ldns_pkt_tsig_verify(ldns_pkt *pkt, uint8_t *wire, size_t wirelen, const char *key_name,
 	const char *key_data, ldns_rdf *orig_mac_rdf)
 {
-	if (!ldns_pkt_tsig_verify_next_ws(pkt, wire, wirelen, key_name, key_data, orig_mac_rdf, 0)
+	if (!ldns_pkt_tsig_verify_next_ws(pkt, wire, wirelen, key_name, key_data, orig_mac_rdf, 0, NULL, 0)
 			!= LDNS_STATUS_OK) {
 		return false;
 	}
@@ -285,9 +385,9 @@ ldns_pkt_tsig_verify(ldns_pkt *pkt, uint8_t *wire, size_t wirelen, const char *k
 
 ldns_status
 ldns_pkt_tsig_verify_ws(ldns_pkt *pkt, uint8_t *wire, size_t wirelen, const char *key_name,
-	const char *key_data, ldns_rdf *orig_mac_rdf)
+	const char *key_data, ldns_rdf *orig_mac_rdf, const struct sockaddr_storage *ns_out, socklen_t ns_out_len)
 {
-	return ldns_pkt_tsig_verify_next_ws(pkt, wire, wirelen, key_name, key_data, orig_mac_rdf, 0);
+	return ldns_pkt_tsig_verify_next_ws(pkt, wire, wirelen, key_name, key_data, orig_mac_rdf, 0, ns_out, ns_out_len);
 }
 
 
@@ -295,7 +395,7 @@ bool
 ldns_pkt_tsig_verify_next(ldns_pkt *pkt, uint8_t *wire, size_t wirelen, const char* key_name,
 	const char *key_data, ldns_rdf *orig_mac_rdf, int tsig_timers_only)
 {
-	if (ldns_pkt_tsig_verify_next_ws(pkt, wire, wirelen, key_name, key_data, orig_mac_rdf, tsig_timers_only)
+	if (ldns_pkt_tsig_verify_next_ws(pkt, wire, wirelen, key_name, key_data, orig_mac_rdf, tsig_timers_only, NULL, 0)
 			!= LDNS_STATUS_OK) {
 		return false;
 	}
@@ -304,7 +404,8 @@ ldns_pkt_tsig_verify_next(ldns_pkt *pkt, uint8_t *wire, size_t wirelen, const ch
 
 ldns_status
 ldns_pkt_tsig_verify_next_ws(ldns_pkt *pkt, uint8_t *wire, size_t wirelen, const char* key_name,
-	const char *key_data, ldns_rdf *orig_mac_rdf, int tsig_timers_only)
+	const char *key_data, ldns_rdf *orig_mac_rdf, int tsig_timers_only, const struct sockaddr_storage *ns_out,
+	socklen_t ns_out_len)
 {
 	ldns_rdf *fudge_rdf;
 	ldns_rdf *algorithm_rdf;
@@ -317,10 +418,15 @@ ldns_pkt_tsig_verify_next_ws(ldns_pkt *pkt, uint8_t *wire, size_t wirelen, const
 	ldns_rdf *key_name_rdf = ldns_rdf_new_frm_str(LDNS_RDF_TYPE_DNAME, key_name);
 	uint16_t pkt_id, orig_pkt_id;
 	ldns_status status;
+	struct sockaddr_storage *ns_in;
+	size_t ns_in_len;
+	struct sockaddr_in6 *out_in6, *in_in6;
 
 	uint8_t *prepared_wire = NULL;
 	size_t prepared_wire_size = 0;
+	char *algorithm_name = NULL;
 
+	// save pointer to the packet's tsig rr
 	ldns_rr *orig_tsig = ldns_pkt_tsig(pkt);
 
 	if (!orig_tsig) {
@@ -331,14 +437,20 @@ ldns_pkt_tsig_verify_next_ws(ldns_pkt *pkt, uint8_t *wire, size_t wirelen, const
 	if (ldns_rr_rd_count(orig_tsig) <= 6) {
 		ldns_rdf_deep_free(key_name_rdf);
 		return LDNS_STATUS_CRYPTO_TSIG_BOGUS;
-	}
+	}	// get the contents of the rdata fields
 	algorithm_rdf = ldns_rr_rdf(orig_tsig, 0);
-	time_signed_rdf = ldns_rr_rdf(orig_tsig, 1);
+	time_signed_rdf = ldns_rr_rdf(orig_tsig, 1); // NOTE: not being checked?
 	fudge_rdf = ldns_rr_rdf(orig_tsig, 2);
 	pkt_mac_rdf = ldns_rr_rdf(orig_tsig, 3);
 	orig_id_rdf = ldns_rr_rdf(orig_tsig, 4);
 	error_rdf = ldns_rr_rdf(orig_tsig, 5);
 	other_data_rdf = ldns_rr_rdf(orig_tsig, 6);
+
+	algorithm_name = ldns_rdf2str(algorithm_rdf);
+	if(!algorithm_name) {
+		ldns_rdf_deep_free(key_name_rdf);
+		return LDNS_STATUS_MEM_ERR;
+	}
 
 	/* remove temporarily */
 	ldns_pkt_set_tsig(pkt, NULL);
@@ -347,31 +459,84 @@ ldns_pkt_tsig_verify_next_ws(ldns_pkt *pkt, uint8_t *wire, size_t wirelen, const
 	orig_pkt_id = ldns_rdf2native_int16(orig_id_rdf);
 	ldns_pkt_set_id(pkt, orig_pkt_id);
 
+	// copy the wire, but with the tsig rr removed (NOTE: check if is NULL?)
 	prepared_wire = ldns_tsig_prepare_pkt_wire(wire, wirelen, &prepared_wire_size);
 
-	status = ldns_tsig_mac_new(&my_mac_rdf, prepared_wire, prepared_wire_size,
-			key_data, key_name_rdf, fudge_rdf, algorithm_rdf,
-			time_signed_rdf, error_rdf, other_data_rdf, orig_mac_rdf, tsig_timers_only);
+	if (strcasecmp(algorithm_name, "cga-tsig.") == 0) {
+		// NOTE: is the resolver's source IP address in ns implicitly the same?
+		// answerfrom(pkt)
 
-	LDNS_FREE(prepared_wire);
+		/* IP check */
+		if (!ns_out) {
+			status = LDNS_STATUS_CRYPTO_TSIG_ERR;
+			goto clean;
+		}
 
-	if (status != LDNS_STATUS_OK) {
-		ldns_rdf_deep_free(key_name_rdf);
-		return status;
+		ns_in = ldns_rdf2native_sockaddr_storage(ldns_pkt_answerfrom(pkt), 0, &ns_in_len);
+
+		if (!ns_in || (size_t)ns_out_len != ns_in_len) {
+			status = LDNS_STATUS_CRYPTO_TSIG_ERR;
+			goto clean;
+		}
+
+#ifndef S_SPLINT_S
+		if ((ns_in->ss_family != AF_INET6) || (ns_out->ss_family != AF_INET6)) {
+			LDNS_FREE(ns_in);
+			status = LDNS_STATUS_CRYPTO_TSIG_ERR;
+			goto clean;
+		}
+#endif
+
+		out_in6 = (struct sockaddr_in6*)ns_out;
+		in_in6 = (struct sockaddr_in6*)ns_in;
+
+		if (memcmp(&out_in6->sin6_addr, &in_in6->sin6_addr, LDNS_IP6ADDRLEN) != 0) {
+			LDNS_FREE(ns_in);
+			status = LDNS_STATUS_CRYPTO_TSIG_ERR;
+			goto clean;
+		}
+
+		LDNS_FREE(ns_in);
+
+		/* CGA check */
+		status = ldns_cga_verify(out_in6, NULL); // TODO: pass parameters
+
+		if (status != LDNS_STATUS_OK) {
+			goto clean;
+		}
+
+		/* signature check */
+
+	} else {
+		// calculate the mac
+		status = ldns_tsig_mac_new(&my_mac_rdf, prepared_wire, prepared_wire_size,
+				key_data, key_name_rdf, fudge_rdf, algorithm_rdf,
+				time_signed_rdf, error_rdf, other_data_rdf, orig_mac_rdf, tsig_timers_only);
+
+		if (status != LDNS_STATUS_OK) {
+			goto clean;
+		}
+
+		// compare the macs
+		if (ldns_rdf_compare(pkt_mac_rdf, my_mac_rdf) == 0) {
+			ldns_rdf_deep_free(my_mac_rdf);
+			status = LDNS_STATUS_OK;
+		} else {
+			ldns_rdf_deep_free(my_mac_rdf);
+			status = LDNS_STATUS_CRYPTO_TSIG_BOGUS;
+		}
 	}
+
+	clean:
+	LDNS_FREE(prepared_wire);
+	ldns_rdf_deep_free(key_name_rdf);
+
 	/* Put back the values */
+	/* NOTE: pkt has not been used in the meantime, remove this? */
 	ldns_pkt_set_tsig(pkt, orig_tsig);
 	ldns_pkt_set_id(pkt, pkt_id);
 
-	ldns_rdf_deep_free(key_name_rdf);
-
-	if (ldns_rdf_compare(pkt_mac_rdf, my_mac_rdf) == 0) {
-		ldns_rdf_deep_free(my_mac_rdf);
-		return LDNS_STATUS_OK;
-	} else {
-		ldns_rdf_deep_free(my_mac_rdf);
-		return LDNS_STATUS_CRYPTO_TSIG_BOGUS;
-	}
+	return status;
 }
 #endif /* HAVE_SSL */
 
@@ -496,104 +661,3 @@ ldns_pkt_tsig_sign_next(ldns_pkt *pkt, const char *key_name, const char *key_dat
 	return status;
 }
 #endif /* HAVE_SSL */
-
-
-/**
- * concatenates cga parameters.
- * \param[out] buffer the output buffer (should be NULL pointer, will be dynamically allocated)
- * \param[in] param the cga parameters
- * \return status (OK if success)
- */
-static ldns_status
-ldns_concat_cga_parameters(ldns_buffer *buffer, ldns_cga_parameters *param)
-{
-	if (param == NULL) {
-		return LDNS_STATUS_NULL;
-	}
-
-	buffer = ldns_buffer_new(25 + param->public_key_len + param->extension_fields_len);
-
-	if (!buffer) {
-		return LDNS_STATUS_MEM_ERR;
-	}
-
-	ldns_buffer_write(buffer, &param->modifier, 16);
-	ldns_buffer_write(buffer, &param->subnet_prefix, 8);
-	ldns_buffer_write(buffer, &param->collision_count, 1);
-	ldns_buffer_write(buffer, param->public_key, param->public_key_len);
-	ldns_buffer_write(buffer, param->extension_fields, param->extension_fields_len);
-
-	return LDNS_STATUS_OK;
-}
-
-
-/**
- * performes cga verification [RFC3972].
- * \param[in] ns the sockaddr_in6 struct containing the ip address of the remote name server
- * \param[in] param the cga parameters
- * \return status (OK if success)
- */
-static ldns_status
-ldns_cga_verify(struct sockaddr_in6 *ns, ldns_cga_parameters *param)
-{
-	ldns_status status = LDNS_STATUS_OK;
-	ldns_buffer *concat = NULL;
-	unsigned char hash[LDNS_SHA1_DIGEST_LENGTH], id[8];
-	uint16_t i;
-	unsigned char sec;
-
-	/* collision count must be 0, 1 or 2 */
-	if (param->collision_count > 2) {
-		status = LDNS_STATUS_CRYPTO_TSIG_BOGUS;
-		return status;
-	}
-
-	/* subnet prefix must match */
-	if (memcmp(&ns->sin6_addr, &param->subnet_prefix, 8) != 0) {
-		status = LDNS_STATUS_CRYPTO_TSIG_BOGUS;
-		return status;
-	}
-
-	/* generate hash1 */
-	status = ldns_concat_cga_parameters(concat, param);
-	if (status != LDNS_STATUS_OK) {
-		/* try to free concat, to prevent memory leak in case of
-     * more future error statuses added to the function */
-		goto clean;
-	}
-
-	(void)ldns_sha1(ldns_buffer_begin(concat), ldns_buffer_capacity(concat), hash);
-	memcpy(id, &ns->sin6_addr + 8, 8);
-
-	/* extract the sec parameter */
-	sec = id[0] >> 5;
-
-	/* hash1 (first 8 octets) must match the interface ID of the address,
-	 * ignoring bits 0, 1, 2, 6 and 7 of the first byte */
-	hash[0] &= 0x1c;
-	id[0] &= 0x1c;
-
-	if (memcmp(hash, id, 8) != 0) {
-		status = LDNS_STATUS_CRYPTO_TSIG_BOGUS;
-		goto clean;
-	}
-
-	/* generate hash2 */
-	memset(ldns_buffer_at(concat, 16), 0, 9);
-
-	(void)ldns_sha1(ldns_buffer_begin(concat), ldns_buffer_capacity(concat), hash);
-
-	/* 2*sec leftmost bytes of hash2 must be zero */
-	sec *= 2;
-
-	for (i = 0; i < sec; i++) {
-		if (hash[i++] != 0 || hash[i] != 0) {
-			status = LDNS_STATUS_CRYPTO_TSIG_BOGUS;
-			goto clean;
-		}
-	}
-
-	clean:
-	ldns_buffer_free(concat);
-	return status;
-}
