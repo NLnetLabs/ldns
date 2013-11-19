@@ -36,10 +36,6 @@
 	* ldns-verify-zone NSEC3 checking from quadratic to linear performance.
 	  Thanks NIC MX (nicmexico.mx)
 	* ldns-dane setup new ssl session for each new connect to prevent hangs
-	* Parsing from and to wire and presentation format for draft rr types
-	  must be explicitely enabled with the --enable-draft-rrtypes option
-	  to conifigure. This applies to: NINFO, RKEY, CDS, EUI48, EUI64, URI
-	  and TA
 	* Bump version to 1.7.0
 	* The version of shared library now has similar scheme as libunbound.
 	  ldns 1.7.0 will have shared library version (SONAME) 2.0.0
@@ -53,9 +49,10 @@
 	* Optimize TSIG digest function name comparison (Thanks Marc Buijsman)
 	* Compare names case insensitive with ldns_pkt_rr_list_by_name and
 	  ldns_pkt_rr_list_by_name_and_type (thanks Johannes Naab)
-	* Replace --enable-draft-rrtypes with a seperate --enable for each
-	  draft RR type: --enable-rrtype-ninfo, --enable-rrtype-rkey,
-	  --enable-rrtype-cds, --enable-rrtype-uri and --enable-rrtype-ta
+	* A separate --enable for each draft RR type: --enable-rrtype-ninfo,
+	  --enable-rrtype-rkey, --enable-rrtype-cds, --enable-rrtype-uri and
+	  --enable-rrtype-ta
+	* bugfix #530: Don't sign and verify duplicate RRs (Thanks Jelte Jansen)
 
 1.6.16	2012-11-13
 	* Fix Makefile to build pyldns with BSD make

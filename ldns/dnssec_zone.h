@@ -126,7 +126,8 @@ void ldns_dnssec_rrs_free(ldns_dnssec_rrs *rrs);
 void ldns_dnssec_rrs_deep_free(ldns_dnssec_rrs *rrs);
 
 /**
- * Adds an RR to the list of RRs. The list will remain ordered
+ * Adds an RR to the list of RRs. The list will remain ordered.
+ * If an equal RR already exists, this RR will not be added.
  *
  * \param[in] rrs the list to add to
  * \param[in] rr the RR to add
