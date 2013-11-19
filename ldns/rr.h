@@ -204,9 +204,8 @@ enum ldns_enum_rr_type
 	LDNS_RR_TYPE_L64 = 106, /* RFC 6742 */
 	LDNS_RR_TYPE_LP = 107, /* RFC 6742 */
 
-	/** draft-jabley-dnsext-eui48-eui64-rrtypes */
-	LDNS_RR_TYPE_EUI48 = 108,
-	LDNS_RR_TYPE_EUI64 = 109,
+	LDNS_RR_TYPE_EUI48 = 108, /* RFC 7043 */
+	LDNS_RR_TYPE_EUI64 = 109, /* RFC 7043 */
 
 	LDNS_RR_TYPE_TKEY = 249, /* RFC 2930 */
 	LDNS_RR_TYPE_TSIG = 250,

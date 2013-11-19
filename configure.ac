@@ -390,10 +390,42 @@ case "$enable_dane" in
       ;;
 esac
 
-AC_ARG_ENABLE(draft-rrtypes, AC_HELP_STRING([--enable-draft-rrtypes], [Enable draft RRtypes.]))
-case "$enable_draft_rrtypes" in
+AC_ARG_ENABLE(rrtype-ninfo, AC_HELP_STRING([--enable-rrtype-ninfo], [Enable draft RR type ninfo.]))
+case "$enable_rrtype_ninfo" in
 	yes)
-		AC_DEFINE_UNQUOTED([DRAFT_RRTYPES], [], [Define this to enable draft RRtypes.])
+		AC_DEFINE_UNQUOTED([RRTYPE_NINFO], [], [Define this to enable RR type NINFO.])
+		;;
+	no|*)
+		;;
+esac
+AC_ARG_ENABLE(rrtype-rkey, AC_HELP_STRING([--enable-rrtype-rkey], [Enable draft RR type rkey.]))
+case "$enable_rrtype_rkey" in
+	yes)
+		AC_DEFINE_UNQUOTED([RRTYPE_RKEY], [], [Define this to enable RR type RKEY.])
+		;;
+	no|*)
+		;;
+esac
+AC_ARG_ENABLE(rrtype-cds, AC_HELP_STRING([--enable-rrtype-cds], [Enable draft RR type cds.]))
+case "$enable_rrtype_cds" in
+	yes)
+		AC_DEFINE_UNQUOTED([RRTYPE_CDS], [], [Define this to enable RR type CDS.])
+		;;
+	no|*)
+		;;
+esac
+AC_ARG_ENABLE(rrtype-uri, AC_HELP_STRING([--enable-rrtype-uri], [Enable draft RR type uri.]))
+case "$enable_rrtype_uri" in
+	yes)
+		AC_DEFINE_UNQUOTED([RRTYPE_URI], [], [Define this to enable RR type URI.])
+		;;
+	no|*)
+		;;
+esac
+AC_ARG_ENABLE(rrtype-ta, AC_HELP_STRING([--enable-rrtype-ta], [Enable draft RR type ta.]))
+case "$enable_rrtype_ta" in
+	yes)
+		AC_DEFINE_UNQUOTED([RRTYPE_TA], [], [Define this to enable RR type TA.])
 		;;
 	no|*)
 		;;
