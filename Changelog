@@ -51,6 +51,8 @@
 	  (Net::LDNS is a contribution from Erik Ostlyngen)
 	* bugfix #527: Move -lssl before -lcrypto when linking
 	* Optimize TSIG digest function name comparison (Thanks Marc Buijsman)
+	* Compare names case insensitive with ldns_pkt_rr_list_by_name and
+	  ldns_pkt_rr_list_by_name_and_type (thanks Johannes Naab)
 
 1.6.16	2012-11-13
 	* Fix Makefile to build pyldns with BSD make

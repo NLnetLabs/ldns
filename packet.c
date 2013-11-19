@@ -266,7 +266,7 @@ ldns_pkt_rr_list_by_name(ldns_pkt *packet,
 	ret = NULL;
 
 	for(i = 0; i < ldns_rr_list_rr_count(rrs); i++) {
-		if (ldns_rdf_compare(ldns_rr_owner(
+		if (ldns_dname_compare(ldns_rr_owner(
 						ldns_rr_list_rr(rrs, i)), 
 					ownername) == 0) {
 			/* owner names match */
@@ -337,7 +337,7 @@ ldns_pkt_rr_list_by_name_and_type(const ldns_pkt *packet,
 
 	for(i = 0; i < ldns_rr_list_rr_count(rrs); i++) {
 		if (type == ldns_rr_get_type(ldns_rr_list_rr(rrs, i)) &&
-		    ldns_rdf_compare(ldns_rr_owner(ldns_rr_list_rr(rrs, i)),
+		    ldns_dname_compare(ldns_rr_owner(ldns_rr_list_rr(rrs, i)),
 		                     ownername
 		                    ) == 0
 		   ) {
