@@ -272,41 +272,6 @@ ldns_tsig_mac_new(ldns_rdf **tsig_mac, uint8_t *pkt_wire, size_t pkt_wire_size,
 }
 #endif /*  HAVE_SSL */
 
-#ifdef HAVE_SSL
-static ldns_status
-ldns_tsig_cga_sig(ldns_rdf *cga_sig, uint8_t *pkt_wire, size_t pkt_wire_size,
-		ldns_rdf *time_signed_rdf, ldns_cga_rdfs *rdfs)
-{
-	ldns_rdf *wire_rdf;
-	ldns_buffer *concat = NULL;
-
-	if (!pkt_wire || !time_signed_rdf || !rdfs) {
-		return LDNS_STATUS_NULL;
-	}
-
-	/* create an RDF encapsulating the wire */
-	wire_rdf = ldns_rdf_new(LDNS_RDF_TYPE_UNKNOWN, pkt_wire_size, pkt_wire);
-
-	// extension fields not mentioned in draft (but should probably be included)
-	ldns_rdf* cmpts_rdfs[7] = {rdfs->modifier,
-                             rdfs->prefix,
-                             rdfs->coll_count,
-                             rdfs->pub_key,
-                             wire_rdf,
-                             rdfs->ip_tag
-                             time_signed_rdf};
-
-	/* concatenate the input */
-	status = ldns_cga_concat_data(cmpts_rdfs, 7, concat);
-
-	if (status != LDNS_STATUS_OK) {
-		return status; // we can return safely, concat has not been allocated yet
-	}
-
-	ldns_buffer_free(concat);
-}
-#endif /*  HAVE_SSL */
-
 /**
  * extracts the length of a DER-encoded ASN.1 structure of type SubjectPublicKeyInfo.
  * \param[in] spki pointer to first byte of the encoded SubjectPublicKeyInfo structure
@@ -749,6 +714,43 @@ ldns_cga_concat_data(ldns_rdf **rdfs, uint8_t num, ldns_buffer *buffer)
 }
 
 
+#ifdef HAVE_SSL
+static ldns_status
+ldns_tsig_cga_sig(ldns_rdf *cga_sig, uint8_t *pkt_wire, size_t pkt_wire_size,
+		ldns_rdf *time_signed_rdf, ldns_cga_rdfs *rdfs)
+{
+	ldns_status status;
+	ldns_rdf *wire_rdf;
+	ldns_buffer *concat = NULL;
+
+	if (!pkt_wire || !time_signed_rdf || !rdfs) {
+		return LDNS_STATUS_NULL;
+	}
+
+	/* create an RDF encapsulating the wire */
+	wire_rdf = ldns_rdf_new(LDNS_RDF_TYPE_UNKNOWN, pkt_wire_size, pkt_wire);
+
+	// extension fields not mentioned in draft (but should probably be included)
+	ldns_rdf* cmpts_rdfs[7] = {rdfs->modifier,
+                             rdfs->prefix,
+                             rdfs->coll_count,
+                             rdfs->pub_key,
+                             wire_rdf,
+                             rdfs->ip_tag,
+                             time_signed_rdf};
+
+	/* concatenate the input */
+	status = ldns_cga_concat_data(cmpts_rdfs, 7, concat);
+
+	if (status != LDNS_STATUS_OK) {
+		return status; // we can return safely, concat has not been allocated yet
+	}
+
+	ldns_buffer_free(concat);
+}
+#endif /*  HAVE_SSL */
+
+
 /**
  * performes CGA verification of an IPv6 address [RFC3972].
  * \param[in] ns the sockaddr_in6 struct containing the IP address of the remote name server
@@ -976,7 +978,7 @@ ldns_pkt_tsig_verify_next_ws(ldns_pkt *pkt, uint8_t *wire, size_t wirelen, const
 		}
 
 		/* 3. signature check (4) */
-		status = ldns_tsig_cga_sig
+		//status = ldns_tsig_cga_sig
 
 	} else {
 		// calculate the mac
