@@ -412,7 +412,7 @@ ldns_cga2rdf(ldns_rdf *other_data_rdf, ldns_cga_rdfs *rdfs) {
 		return LDNS_STATUS_CRYPTO_TSIG_BOGUS;
 	}
 
-	/* return NULL if no CGA-TSIG data */
+	/* return if no CGA-TSIG data */
 	if (cga_tsig_len == 0) {
 		return LDNS_STATUS_NO_DATA;
 	}
