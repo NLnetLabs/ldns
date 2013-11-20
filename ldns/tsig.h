@@ -20,6 +20,20 @@ extern "C" {
  */
 
 
+/* NOTE: any change in the following constants requires adaptment of ldns_cga2rdf() */
+#define CT_LEN_SIZE          1
+#define CT_ALGO_NAME_SIZE    2
+#define CT_TYPE_SIZE         2
+#define CT_IP_TAG_SIZE       16
+#define CT_PARAM_LEN_SIZE    1
+#define CT_MODIFIER_SIZE     CT_IP_TAG_SIZE
+#define CT_PREFIX_SIZE       8
+#define CT_COLL_COUNT_SIZE   1
+#define CT_SIG_LEN_SIZE      1
+#define CT_OLD_PK_LEN_SIZE   1
+#define CT_OLD_SIG_LEN_SIZE  1
+
+
 /**
  * Contains credentials for TSIG
 */
@@ -33,18 +47,22 @@ typedef struct ldns_tsig_credentials_struct
 
 
 /**
- * Contains parameters for CGA
+ * Contains RDFs for fields in CGA-TSIG other data
 */
-typedef struct ldns_cga_parameters_struct
+typedef struct ldns_cga_rdfs_struct
 {
-    uint8_t modifier[16];
-    uint8_t subnet_prefix[8];
-    uint8_t collision_count;
-		uint8_t public_key_len;
-    uint8_t *public_key;
-		uint8_t extension_fields_len;
-    uint8_t *extension_fields;
-} ldns_cga_parameters;
+		ldns_rdf *algo_name;
+		ldns_rdf *type;
+		ldns_rdf *ip_tag;
+		ldns_rdf *modifier;
+		ldns_rdf *prefix;
+		ldns_rdf *coll_count;
+		ldns_rdf *pub_key;
+		ldns_rdf *ext_fields;
+		ldns_rdf *sig;
+		ldns_rdf *old_pub_key;
+		ldns_rdf *old_sig;
+} ldns_cga_rdfs;
 
 
 char *ldns_tsig_algorithm(ldns_tsig_credentials *);
