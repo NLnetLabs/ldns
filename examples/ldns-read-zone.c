@@ -20,7 +20,7 @@ void print_usage(const char* progname)
 	printf("Usage: %s [OPTIONS] <zonefile>\n", progname);
 	printf("\tReads the zonefile and prints it.\n");
 	printf("\tThe RR count of the zone is printed to stderr.\n");
-	printf("\t-b include bubblebabble of DS's.\n");
+	printf("\t-b include Bubble Babble encoding of DS's.\n");
 	printf("\t-0 zeroize timestamps and signature in RRSIG records.\n");
 	printf("\t-c canonicalize all rrs in the zone.\n");
 	printf("\t-d only show DNSSEC data from the zone\n");

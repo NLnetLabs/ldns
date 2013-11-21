@@ -53,6 +53,7 @@
 	  --enable-rrtype-rkey, --enable-rrtype-cds, --enable-rrtype-uri and
 	  --enable-rrtype-ta
 	* bugfix #530: Don't sign and verify duplicate RRs (Thanks Jelte Jansen)
+	* bugfix #505: Manpage and usage output fixes (Thanks Tomas Hozza)
 
 1.6.16	2012-11-13
 	* Fix Makefile to build pyldns with BSD make
