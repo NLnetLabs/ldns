@@ -387,15 +387,16 @@ ldns_cga2rdf(ldns_rdf *other_data_rdf, ldns_cga_rdfs *rdfs) {
 		return LDNS_STATUS_NULL;
 	}
 
-	/* first 2 bytes contain other data's length */
-	other_len = (uint32_t)ldns_rdf_size(other_data_rdf) - 2;
+	other_len = (uint32_t)ldns_rdf_size(other_data_rdf);
 
-	if (other_len <= 0) {
+	/* first 2 bytes encode other data's length */
+	if (other_len <= 2) {
 		return LDNS_STATUS_CRYPTO_TSIG_BOGUS;
 	}
 
 	/* point to the first byte of the real other data */
 	data = ldns_rdf_data(other_data_rdf) + 2;
+	other_len -= 2;
 
 	/* get cga-tsig len */
 	if (!ldns_cga_available(pos, CT_LEN_SIZE, other_len)) {
