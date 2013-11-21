@@ -999,6 +999,10 @@ ldns_pkt_tsig_verify_next_ws(ldns_pkt *pkt, uint8_t *wire, size_t wirelen, const
 	ldns_pkt_set_tsig(pkt, orig_tsig);
 	ldns_pkt_set_id(pkt, pkt_id);
 
+	ldns_cga_rdfs_deep_free(rdfs);
+	RSA_free(pk);
+	RSA_free(opk);
+
 	return status;
 }
 #endif /* HAVE_SSL */
