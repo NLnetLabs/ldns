@@ -272,63 +272,6 @@ ldns_tsig_mac_new(ldns_rdf **tsig_mac, uint8_t *pkt_wire, size_t pkt_wire_size,
 }
 #endif /*  HAVE_SSL */
 
-/**
- * extracts the length of a DER-encoded ASN.1 structure of type SubjectPublicKeyInfo.
- * \param[in] spki pointer to first byte of the encoded SubjectPublicKeyInfo structure
- * \param[in] max_len maximum length assertion (0 = no maximum)
- * \return the size of the structure, or -1 if error
- */
-static int32_t
-ldns_cga_spki_der_len(uint8_t *spki, uint32_t max_len) {
-	uint8_t i, num = 0;
-	uint32_t len = 0;
-
-	/* should have at least 10 bytes for tag and length fields */
-	if (!spki || (max_len != 0 && max_len < 10)) {
-		return -1;
-	}
-
-	/* expecting SEQUENCE tag in first byte */
-	if ((spki[0] ^ 0x30) != 0) {
-		return -1;
-	}
-
-	/* check if bytes following the second byte encode length or not */
-	if ((spki[1] & 0x80) != 0) {
-		num = (spki[1] & 0x7f);
-
-		/* more than 4 won't fit in an int32 */
-		if (num > 4) {
-			return -1;
-		}
-
-		for (i = 0; i < num; i++) {
-			len = len << 8;
-			len |= (uint32_t)spki[2+i];
-		}
-
-		/* add the encoding bytes */
-		len += num;
-
-	} else {
-		len = (uint32_t)spki[1];
-	}
-
-	/* add the first and second byte */
-	len += 2;
-
-	/* reserve first bit for error (and also return error if not 0) */
-	if ((len & (1<<31)) != 0) {
-		return -1;
-	}
-
-	/* check against max_len */
-	if (max_len != 0 && len > max_len) {
-		return -1;
-	}
-
-	return (int32_t)len;
-}
 
 /**
  * frees the ldns_cga_rdfs structure and its components.
@@ -374,13 +317,16 @@ ldns_cga_available(size_t pos, int32_t count, uint8_t size) {
  * copies the CGA-TSIG data fields to RDFs, assuming it is at front of Other Data.
  * \param[in] other_data_rdf pointer to the Other Data RDF
  * \param[out] rdfs the output ldns_cga_rdfs structure (will be allocated)
+ * \param[out] pk the parsed RSA public key (will be allocated)
+ * \param[out] opk the parsed old RSA public key (will be allocated, or NULL if none)
  * \return status (OK if success)
  */
 static ldns_status
-ldns_cga2rdf(ldns_rdf *other_data_rdf, ldns_cga_rdfs *rdfs) {
+ldns_cga2rdf(ldns_rdf *other_data_rdf, ldns_cga_rdfs *rdfs, RSA *pk, RSA *opk) {
 	uint8_t other_len, cga_tsig_len, param_len, sig_len, old_pk_len, old_sig_len;
-	int32_t pk_len, ext_len;
-	uint8_t *data;
+	uint16_t pk_len;
+	int32_t ext_len;
+	uint8_t *data, *pkp;
 	uint32_t pos = 0;
 
 	if (!other_data_rdf) {
@@ -540,22 +486,29 @@ ldns_cga2rdf(ldns_rdf *other_data_rdf, ldns_cga_rdfs *rdfs) {
 	ext_len = param_len - CT_MODIFIER_SIZE - CT_PREFIX_SIZE - CT_COLL_COUNT_SIZE; // max length
 
 	// expect a public key by default (i.e. ext_len > 0)
-	if (ext_len == 0 || !ldns_cga_available(pos, ext_len, cga_tsig_len)) {
+	if (ext_len <= 0 || !ldns_cga_available(pos, ext_len, cga_tsig_len)) {
 		ldns_cga_rdfs_deep_free(rdfs);
 		return LDNS_STATUS_CRYPTO_TSIG_BOGUS;
 	}
 
-	pk_len = ldns_cga_spki_der_len(data + pos, ext_len); // extract real public key length
+	// 1.2.840.113549.1.1.1 = 2A 86 48 86 F7 0D 01 01 01 (RSA ID)
 
-	if (pk_len < 0) {
+	pkp = data + pos;
+
+	pk = d2i_RSA_PUBKEY(NULL, (const unsigned char**)&pkp, ext_len);
+
+	if (!pk) {
 		ldns_cga_rdfs_deep_free(rdfs);
-		return LDNS_STATUS_CRYPTO_TSIG_BOGUS;
+		return LDNS_STATUS_ERR;
 	}
+
+	pk_len = (uint16_t)(pkp - (data + pos));
 
 	rdfs->pub_key = ldns_rdf_new_frm_data(LDNS_RDF_TYPE_UNKNOWN, pk_len, data + pos);
 
 	if (!rdfs->pub_key) {
 		ldns_cga_rdfs_deep_free(rdfs);
+		RSA_free(pk);
 		return LDNS_STATUS_MEM_ERR;
 	}
 
@@ -569,6 +522,7 @@ ldns_cga2rdf(ldns_rdf *other_data_rdf, ldns_cga_rdfs *rdfs) {
 
 		if (!rdfs->ext_fields) {
 			ldns_cga_rdfs_deep_free(rdfs);
+			RSA_free(pk);
 			return LDNS_STATUS_MEM_ERR;
 		}
 
@@ -580,6 +534,7 @@ ldns_cga2rdf(ldns_rdf *other_data_rdf, ldns_cga_rdfs *rdfs) {
 	/* get signature len */
 	if (!ldns_cga_available(pos, CT_SIG_LEN_SIZE, cga_tsig_len)) {
 		ldns_cga_rdfs_deep_free(rdfs);
+		RSA_free(pk);
 		return LDNS_STATUS_CRYPTO_TSIG_BOGUS;
 	}
 
@@ -593,6 +548,7 @@ ldns_cga2rdf(ldns_rdf *other_data_rdf, ldns_cga_rdfs *rdfs) {
 	// expect a signature (i.e. sig_len > 0)
 	if (sig_len == 0 || !ldns_cga_available(pos, sig_len, cga_tsig_len)) {
 		ldns_cga_rdfs_deep_free(rdfs);
+		RSA_free(pk);
 		return LDNS_STATUS_CRYPTO_TSIG_BOGUS;
 	}
 
@@ -600,6 +556,7 @@ ldns_cga2rdf(ldns_rdf *other_data_rdf, ldns_cga_rdfs *rdfs) {
 
 	if (!rdfs->sig) {
 		ldns_cga_rdfs_deep_free(rdfs);
+		RSA_free(pk);
 		return LDNS_STATUS_MEM_ERR;
 	}
 
@@ -608,6 +565,7 @@ ldns_cga2rdf(ldns_rdf *other_data_rdf, ldns_cga_rdfs *rdfs) {
 	/* get old public key len */
 	if (!ldns_cga_available(pos, CT_OLD_PK_LEN_SIZE, cga_tsig_len)) {
 		ldns_cga_rdfs_deep_free(rdfs);
+		RSA_free(pk);
 		return LDNS_STATUS_CRYPTO_TSIG_BOGUS;
 	}
 
@@ -621,6 +579,24 @@ ldns_cga2rdf(ldns_rdf *other_data_rdf, ldns_cga_rdfs *rdfs) {
 	if (old_pk_len > 0) {
 		if (!ldns_cga_available(pos, old_pk_len, cga_tsig_len)) {
 			ldns_cga_rdfs_deep_free(rdfs);
+			RSA_free(pk);
+			return LDNS_STATUS_CRYPTO_TSIG_BOGUS;
+		}
+
+		pkp = data + pos;
+
+		opk = d2i_RSA_PUBKEY(NULL, (const unsigned char**)&pkp, old_pk_len);
+
+		if (!opk) {
+			ldns_cga_rdfs_deep_free(rdfs);
+			RSA_free(pk);
+			return LDNS_STATUS_ERR;
+		}
+
+		if ((uint16_t)(pkp - (data + pos)) != (uint16_t)old_pk_len) {
+			ldns_cga_rdfs_deep_free(rdfs);
+			RSA_free(pk);
+			RSA_free(opk);
 			return LDNS_STATUS_CRYPTO_TSIG_BOGUS;
 		}
 
@@ -628,17 +604,22 @@ ldns_cga2rdf(ldns_rdf *other_data_rdf, ldns_cga_rdfs *rdfs) {
 
 		if (!rdfs->old_pub_key) {
 			ldns_cga_rdfs_deep_free(rdfs);
+			RSA_free(pk);
+			RSA_free(opk);
 			return LDNS_STATUS_MEM_ERR;
 		}
 
 		pos += old_pk_len;
 	} else {
 		rdfs->old_pub_key = NULL;
+		opk = NULL;
 	}
 
 	/* get old signature len */
 	if (!ldns_cga_available(pos, CT_OLD_SIG_LEN_SIZE, cga_tsig_len)) {
 		ldns_cga_rdfs_deep_free(rdfs);
+		RSA_free(pk);
+		RSA_free(opk);
 		return LDNS_STATUS_CRYPTO_TSIG_BOGUS;
 	}
 
@@ -652,6 +633,8 @@ ldns_cga2rdf(ldns_rdf *other_data_rdf, ldns_cga_rdfs *rdfs) {
 	if (old_sig_len > 0) {
 		if (!ldns_cga_available(pos, old_sig_len, cga_tsig_len)) {
 			ldns_cga_rdfs_deep_free(rdfs);
+			RSA_free(pk);
+			RSA_free(opk);
 			return LDNS_STATUS_CRYPTO_TSIG_BOGUS;
 		}
 
@@ -659,6 +642,8 @@ ldns_cga2rdf(ldns_rdf *other_data_rdf, ldns_cga_rdfs *rdfs) {
 
 		if (!rdfs->old_sig) {
 			ldns_cga_rdfs_deep_free(rdfs);
+			RSA_free(pk);
+			RSA_free(opk);
 			return LDNS_STATUS_MEM_ERR;
 		}
 
@@ -670,6 +655,8 @@ ldns_cga2rdf(ldns_rdf *other_data_rdf, ldns_cga_rdfs *rdfs) {
 	/* check size constraints */
 	if (ldns_cga_available(pos, 1, cga_tsig_len)) {
 			ldns_cga_rdfs_deep_free(rdfs);
+			RSA_free(pk);
+			RSA_free(opk);
 			return LDNS_STATUS_CRYPTO_TSIG_BOGUS;
 	}
 
@@ -886,6 +873,8 @@ ldns_pkt_tsig_verify_next_ws(ldns_pkt *pkt, uint8_t *wire, size_t wirelen, const
 	size_t ns_in_len;
 	struct sockaddr_in6 *out_in6, *in_in6;
 	ldns_cga_rdfs *rdfs = NULL;
+	RSA *pk = NULL;
+	RSA *opk = NULL;
 
 	uint8_t *prepared_wire = NULL;
 	size_t prepared_wire_size = 0;
@@ -964,7 +953,7 @@ ldns_pkt_tsig_verify_next_ws(ldns_pkt *pkt, uint8_t *wire, size_t wirelen, const
 		LDNS_FREE(ns_in);
 
 		/* extract CGA-TSIG data fields */
-		status = ldns_cga2rdf(other_data_rdf, rdfs);
+		status = ldns_cga2rdf(other_data_rdf, rdfs, pk, opk);
 
 		if (status != LDNS_STATUS_OK) {
 			status = LDNS_STATUS_CRYPTO_TSIG_BOGUS; // better to check for server error
