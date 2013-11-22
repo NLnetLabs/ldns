@@ -1124,9 +1124,14 @@ ldns_pkt_tsig_sign_next(ldns_pkt *pkt, const char *key_name, const char *key_dat
 		goto clean;
 	}
 
-	status = ldns_tsig_mac_new(&mac_rdf, pkt_wire, pkt_wire_len,
-			key_data, key_name_rdf, fudge_rdf, algorithm_rdf,
-			time_signed_rdf, error_rdf, other_data_rdf, query_mac, tsig_timers_only);
+	if (strcasecmp(algorithm_name, "cga-tsig.") == 0) {
+
+		// create empty mac rdf here
+	} else {
+		status = ldns_tsig_mac_new(&mac_rdf, pkt_wire, pkt_wire_len,
+				key_data, key_name_rdf, fudge_rdf, algorithm_rdf,
+				time_signed_rdf, error_rdf, other_data_rdf, query_mac, tsig_timers_only);
+	}
 
 	if (!mac_rdf) {
 		goto clean;
@@ -1161,7 +1166,7 @@ ldns_pkt_tsig_sign_next(ldns_pkt *pkt, const char *key_name, const char *key_dat
 	LDNS_FREE(pkt_wire);
 	ldns_rdf_free(key_name_rdf);
 	ldns_rdf_free(algorithm_rdf);
-	ldns_rdf_free(time_signed_rdf);
+	ldns_rdf_free(time_signed_rdf); // should be deep_free?
 	ldns_rdf_free(fudge_rdf);
 	ldns_rdf_free(orig_id_rdf);
 	ldns_rdf_free(error_rdf);
