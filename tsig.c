@@ -714,8 +714,6 @@ ldns_tsig_concat_data(ldns_rdf **rdfs, uint8_t num, ldns_buffer *buffer)
  * \param[out] buffer the output buffer (will be allocated)
  * \return status (OK if success)
  */
-#ifdef HAVE_SSL
-static ldns_status
 ldns_cga_concat_msg(uint8_t *pkt_wire, size_t pkt_wire_size,
 		ldns_rdf *time_signed_rdf, ldns_cga_rdfs *rdfs, ldns_buffer *buffer)
 {
@@ -757,7 +755,6 @@ ldns_cga_concat_msg(uint8_t *pkt_wire, size_t pkt_wire_size,
 
 	return status; 
 }
-#endif /*  HAVE_SSL */
 
 
 /**
