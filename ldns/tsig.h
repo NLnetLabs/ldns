@@ -57,7 +57,7 @@ typedef struct ldns_cga_rdfs_struct
 		ldns_rdf *modifier;
 		ldns_rdf *prefix;
 		ldns_rdf *coll_count;
-		ldns_rdf *pub_key;
+		ldns_rdf *pub_key;     // the complete encoded SubjectPublicKeyInfo block
 		ldns_rdf *ext_fields;
 		ldns_rdf *sig;
 		ldns_rdf *old_pub_key;
