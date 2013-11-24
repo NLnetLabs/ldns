@@ -316,15 +316,16 @@ ldns_cga_available(size_t pos, int32_t count, uint8_t size)
 }
 
 /**
- * easily create RDFs from CGA-TSIG data fields.
+ * convert CGA-TSIG data to RDFs.
  * \param[in] rdfs the ldns_cga_rdfs structure
  * \param[in] rdf pointer to the relevant field in rdfs
  * \param[in] data the data
  * \param[in] len the length of data (NULL if not variable)
+ * \param[in] h2n positive to do host to network conversion, if data is not in network order (0 otherwise)
  * \return status (OK if success)
  */
-ldns_status
-ldns_cga_rdf_new(ldns_cga_rdfs *rdfs, ldns_rdf **rdf, const void *data, size_t *len)
+static ldns_status
+ldns_cga_data2rdf(ldns_cga_rdfs *rdfs, ldns_rdf **rdf, const void *data, size_t *len, uint8_t h2n)
 {
 	ldns_rdf_type type;
 	size_t size;
@@ -361,13 +362,36 @@ ldns_cga_rdf_new(ldns_cga_rdfs *rdfs, ldns_rdf **rdf, const void *data, size_t *
 		return LDNS_STATUS_INVALID_POINTER;
 	}
 
-	*rdf = ldns_rdf_new_frm_data(type, size, data);
+	if (h2n && type == LDNS_RDF_TYPE_INT8) {
+		*rdf = ldns_native2rdf_int8(type, *(uint8_t*)data);
+	} else if (h2n && type == LDNS_RDF_TYPE_INT16) {
+		*rdf = ldns_native2rdf_int16(type, *(uint16_t*)data);
+	} else {
+		*rdf = ldns_rdf_new_frm_data(type, size, data);
+	}
 
 	if (!*rdf) {
 		return LDNS_STATUS_MEM_ERR;
 	}
 
 	return LDNS_STATUS_OK;
+}
+
+/**
+ * convert CGA-TSIG data to host representation.
+ * \param[in] data the data
+ * \param[in] len the length of data
+ * \return the integer representation
+ */
+static uint16_t
+ldns_cga_data2host(const void *data, size_t len)
+{
+	if (len == 1) {
+		return (uint16_t)*(uint8_t*)data;
+	} else if (len == 2) {
+		return ldns_read_uint16(data);
+	}
+	return 0;
 }
 
 /**
@@ -381,8 +405,7 @@ ldns_cga_rdf_new(ldns_cga_rdfs *rdfs, ldns_rdf **rdf, const void *data, size_t *
 static ldns_status
 ldns_cga_od2rdf(ldns_rdf *other_data_rdf, ldns_cga_rdfs *rdfs, RSA *pubk, RSA *opubk)
 {
-	uint8_t other_len, cga_tsig_len, param_len, sig_len, old_pubk_len, old_sig_len;
-	uint16_t pubk_len;
+	uint16_t other_len, cga_tsig_len, param_len, sig_len, pubk_len, old_pubk_len, old_sig_len;
 	int32_t ext_len;
 	uint8_t *data, *pubkp;
 	uint32_t pos = 0;
@@ -392,7 +415,7 @@ ldns_cga_od2rdf(ldns_rdf *other_data_rdf, ldns_cga_rdfs *rdfs, RSA *pubk, RSA *o
 		return LDNS_STATUS_NULL;
 	}
 
-	other_len = (uint32_t)ldns_rdf_size(other_data_rdf);
+	other_len = (uint16_t)ldns_rdf_size(other_data_rdf);
 
 	/* first 2 bytes encode other data's length */
 	if (other_len <= 2) {
@@ -408,9 +431,7 @@ ldns_cga_od2rdf(ldns_rdf *other_data_rdf, ldns_cga_rdfs *rdfs, RSA *pubk, RSA *o
 		return LDNS_STATUS_CRYPTO_TSIG_BOGUS;
 	}
 
-	assert(CT_LEN_SIZE == 1);
-
-	cga_tsig_len = data[pos];
+	cga_tsig_len = ldns_cga_data2host(data + pos, CT_LEN_SIZE);
 
 	/* check size constraints */
 	if (cga_tsig_len + CT_LEN_SIZE > other_len) {
@@ -439,14 +460,14 @@ ldns_cga_od2rdf(ldns_rdf *other_data_rdf, ldns_cga_rdfs *rdfs, RSA *pubk, RSA *o
 		return LDNS_STATUS_CRYPTO_TSIG_BOGUS;
 	}
 
-	status = ldns_cga_rdf_new(rdfs, &(rdfs->algo_name), data + pos, NULL);
+	status = ldns_cga_data2rdf(rdfs, &(rdfs->algo_name), data + pos, NULL, 0);
 
 	if (status != LDNS_STATUS_OK) {
 		LDNS_FREE(rdfs);
 		return status;
 	}
 
-	if (ldns_rdf2native_int16(rdfs->algo_name) != 0) {
+	if (ldns_cga_data2host(ldns_rdf_data(rdfs->algo_name), CT_ALGO_NAME_SIZE) != 0) {
 		ldns_cga_rdfs_deep_free(rdfs);
 		return LDNS_STATUS_CRYPTO_UNKNOWN_ALGO;
 	}
@@ -459,14 +480,14 @@ ldns_cga_od2rdf(ldns_rdf *other_data_rdf, ldns_cga_rdfs *rdfs, RSA *pubk, RSA *o
 		return LDNS_STATUS_CRYPTO_TSIG_BOGUS;
 	}
 
-	status = ldns_cga_rdf_new(rdfs, &(rdfs->type), data + pos, NULL);
+	status = ldns_cga_data2rdf(rdfs, &(rdfs->type), data + pos, NULL, 0);
 
 	if (status != LDNS_STATUS_OK) {
 		ldns_cga_rdfs_deep_free(rdfs);
 		return status;
 	}
 
-	if (ldns_rdf2native_int16(rdfs->type) != 1) {
+	if (ldns_cga_data2host(ldns_rdf_data(rdfs->type), CT_TYPE_SIZE) != 1) {
 		ldns_cga_rdfs_deep_free(rdfs);
 		return LDNS_STATUS_CRYPTO_UNKNOWN_ALGO;
 	}
@@ -479,7 +500,7 @@ ldns_cga_od2rdf(ldns_rdf *other_data_rdf, ldns_cga_rdfs *rdfs, RSA *pubk, RSA *o
 		return LDNS_STATUS_CRYPTO_TSIG_BOGUS;
 	}
 
-	status = ldns_cga_rdf_new(rdfs, &(rdfs->ip_tag), data + pos, NULL);
+	status = ldns_cga_data2rdf(rdfs, &(rdfs->ip_tag), data + pos, NULL, 0);
 
 	if (status != LDNS_STATUS_OK) {
 		ldns_cga_rdfs_deep_free(rdfs);
@@ -494,9 +515,7 @@ ldns_cga_od2rdf(ldns_rdf *other_data_rdf, ldns_cga_rdfs *rdfs, RSA *pubk, RSA *o
 		return LDNS_STATUS_CRYPTO_TSIG_BOGUS;
 	}
 
-	assert(CT_PARAM_LEN_SIZE == 1);
-
-	param_len = data[pos];
+	param_len = ldns_cga_data2host(data + pos, CT_PARAM_LEN_SIZE);
 
 	pos += CT_PARAM_LEN_SIZE;
 
@@ -512,7 +531,7 @@ ldns_cga_od2rdf(ldns_rdf *other_data_rdf, ldns_cga_rdfs *rdfs, RSA *pubk, RSA *o
 		return LDNS_STATUS_CRYPTO_TSIG_BOGUS;
 	}
 
-	status = ldns_cga_rdf_new(rdfs, &(rdfs->modifier), data + pos, NULL);
+	status = ldns_cga_data2rdf(rdfs, &(rdfs->modifier), data + pos, NULL, 0);
 
 	if (status != LDNS_STATUS_OK) {
 		ldns_cga_rdfs_deep_free(rdfs);
@@ -527,7 +546,7 @@ ldns_cga_od2rdf(ldns_rdf *other_data_rdf, ldns_cga_rdfs *rdfs, RSA *pubk, RSA *o
 		return LDNS_STATUS_CRYPTO_TSIG_BOGUS;
 	}
 
-	status = ldns_cga_rdf_new(rdfs, &(rdfs->prefix), data + pos, NULL);
+	status = ldns_cga_data2rdf(rdfs, &(rdfs->prefix), data + pos, NULL, 0);
 
 	if (status != LDNS_STATUS_OK) {
 		ldns_cga_rdfs_deep_free(rdfs);
@@ -542,7 +561,7 @@ ldns_cga_od2rdf(ldns_rdf *other_data_rdf, ldns_cga_rdfs *rdfs, RSA *pubk, RSA *o
 		return LDNS_STATUS_CRYPTO_TSIG_BOGUS;
 	}
 
-	status = ldns_cga_rdf_new(rdfs, &(rdfs->coll_count), data + pos, NULL);
+	status = ldns_cga_data2rdf(rdfs, &(rdfs->coll_count), data + pos, NULL, 0);
 
 	if (status != LDNS_STATUS_OK) {
 		ldns_cga_rdfs_deep_free(rdfs);
@@ -573,7 +592,7 @@ ldns_cga_od2rdf(ldns_rdf *other_data_rdf, ldns_cga_rdfs *rdfs, RSA *pubk, RSA *o
 
 	pubk_len = (uint16_t)(pubkp - (data + pos));
 
-	status = ldns_cga_rdf_new(rdfs, &(rdfs->pub_key), data + pos, (size_t*)&pubk_len);
+	status = ldns_cga_data2rdf(rdfs, &(rdfs->pub_key), data + pos, (size_t*)&pubk_len, 0);
 
 	if (status != LDNS_STATUS_OK) {
 		ldns_cga_rdfs_deep_free(rdfs);
@@ -587,7 +606,7 @@ ldns_cga_od2rdf(ldns_rdf *other_data_rdf, ldns_cga_rdfs *rdfs, RSA *pubk, RSA *o
 	ext_len -= pubk_len;
 
 	if (ext_len > 0) {
-		status = ldns_cga_rdf_new(rdfs, &(rdfs->ext_fields), data + pos, (size_t*)&ext_len);
+		status = ldns_cga_data2rdf(rdfs, &(rdfs->ext_fields), data + pos, (size_t*)&ext_len, 0);
 
 		if (status != LDNS_STATUS_OK) {
 			ldns_cga_rdfs_deep_free(rdfs);
@@ -607,9 +626,7 @@ ldns_cga_od2rdf(ldns_rdf *other_data_rdf, ldns_cga_rdfs *rdfs, RSA *pubk, RSA *o
 		return LDNS_STATUS_CRYPTO_TSIG_BOGUS;
 	}
 
-	assert(CT_SIG_LEN_SIZE == 1);
-
-	sig_len = data[pos];
+	sig_len = ldns_cga_data2host(data + pos, CT_SIG_LEN_SIZE);
 
 	pos += CT_SIG_LEN_SIZE;
 
@@ -621,7 +638,7 @@ ldns_cga_od2rdf(ldns_rdf *other_data_rdf, ldns_cga_rdfs *rdfs, RSA *pubk, RSA *o
 		return LDNS_STATUS_CRYPTO_TSIG_BOGUS;
 	}
 
-	status = ldns_cga_rdf_new(rdfs, &(rdfs->sig), data + pos, (size_t*)&sig_len);
+	status = ldns_cga_data2rdf(rdfs, &(rdfs->sig), data + pos, (size_t*)&sig_len, 0);
 
 	if (status != LDNS_STATUS_OK) {
 		ldns_cga_rdfs_deep_free(rdfs);
@@ -638,9 +655,7 @@ ldns_cga_od2rdf(ldns_rdf *other_data_rdf, ldns_cga_rdfs *rdfs, RSA *pubk, RSA *o
 		return LDNS_STATUS_CRYPTO_TSIG_BOGUS;
 	}
 
-	assert(CT_OLD_PK_LEN_SIZE == 1);
-
-	old_pubk_len = data[pos];
+	old_pubk_len = ldns_cga_data2host(data + pos, CT_OLD_PK_LEN_SIZE);
 
 	pos += CT_OLD_PK_LEN_SIZE;
 
@@ -669,7 +684,7 @@ ldns_cga_od2rdf(ldns_rdf *other_data_rdf, ldns_cga_rdfs *rdfs, RSA *pubk, RSA *o
 			return LDNS_STATUS_CRYPTO_TSIG_BOGUS;
 		}
 
-		status = ldns_cga_rdf_new(rdfs, &(rdfs->old_pub_key), data + pos, (size_t*)&old_pubk_len);
+		status = ldns_cga_data2rdf(rdfs, &(rdfs->old_pub_key), data + pos, (size_t*)&old_pubk_len, 0);
 
 		if (status != LDNS_STATUS_OK) {
 			ldns_cga_rdfs_deep_free(rdfs);
@@ -692,9 +707,7 @@ ldns_cga_od2rdf(ldns_rdf *other_data_rdf, ldns_cga_rdfs *rdfs, RSA *pubk, RSA *o
 		return LDNS_STATUS_CRYPTO_TSIG_BOGUS;
 	}
 
-	assert(CT_OLD_SIG_LEN_SIZE == 1);
-
-	old_sig_len = data[pos];
+	old_sig_len = ldns_cga_data2host(data + pos, CT_OLD_SIG_LEN_SIZE);
 
 	pos += CT_OLD_SIG_LEN_SIZE;
 
@@ -707,7 +720,7 @@ ldns_cga_od2rdf(ldns_rdf *other_data_rdf, ldns_cga_rdfs *rdfs, RSA *pubk, RSA *o
 			return LDNS_STATUS_CRYPTO_TSIG_BOGUS;
 		}
 
-		status = ldns_cga_rdf_new(rdfs, &(rdfs->old_sig), data + pos, (size_t*)&old_sig_len);
+		status = ldns_cga_data2rdf(rdfs, &(rdfs->old_sig), data + pos, (size_t*)&old_sig_len, 0);
 
 		if (status != LDNS_STATUS_OK) {
 			ldns_cga_rdfs_deep_free(rdfs);
@@ -941,14 +954,10 @@ ldns_cga_verify(struct sockaddr_in6 *ns, ldns_cga_rdfs *rdfs)
 	                           rdfs->pub_key,
 	                           rdfs->ext_fields};
 
-	assert(ldns_rdf_get_type(rdfs->coll_count) == LDNS_RDF_TYPE_INT8);
-
 	/* collision count must be 0, 1 or 2 */
-	if (ldns_rdf2native_int8(rdfs->coll_count) > 2) {
+	if (ldns_cga_data2host(ldns_rdf_data(rdfs->coll_count), CT_COLL_COUNT_SIZE) > 2) {
 		return LDNS_STATUS_CRYPTO_TSIG_BOGUS;
 	}
-
-	assert(ldns_rdf_size(rdfs->prefix) == 8);
 
 	/* subnet prefix must match */
 	if (memcmp(&ns->sin6_addr, ldns_rdf_data(rdfs->prefix), 8) != 0) {
@@ -1264,6 +1273,7 @@ ldns_pkt_tsig_sign_next_2(ldns_pkt *pkt, const char *key_name, const char *key_d
 	unsigned char *sig_buf = NULL;
 	int pubk_len = 0;
 	unsigned int sig_len = 0;
+	uint16_t val = 0;
 
 	// suppress compile warning
 	RSA_free(old_pvt_key);
@@ -1348,37 +1358,53 @@ ldns_pkt_tsig_sign_next_2(ldns_pkt *pkt, const char *key_name, const char *key_d
 			goto clean;
 		}
 
-		/* initialize */
-		cga_rdfs->algo_name = NULL;
-		cga_rdfs->type = NULL;
+		/* set encryption algorithm */
+		val = 0;
+
+		status = ldns_cga_data2rdf(cga_rdfs, &(cga_rdfs->algo_name),
+				&val, NULL, 1);
+
+		if (status != LDNS_STATUS_OK) {
+			goto clean;
+		}
+
+		/* set validation algorithm */
+		val = 1;
+
+		status = ldns_cga_data2rdf(cga_rdfs, &(cga_rdfs->type),
+				&val, NULL, 1);
+
+		if (status != LDNS_STATUS_OK) {
+			goto clean;
+		}
 
 		/* set IP tag */
-		status = ldns_cga_rdf_new(cga_rdfs, &(cga_rdfs->ip_tag),
-				ip_tag, NULL);
+		status = ldns_cga_data2rdf(cga_rdfs, &(cga_rdfs->ip_tag),
+				ip_tag, NULL, 0);
 
 		if (status != LDNS_STATUS_OK) {
 			goto clean;
 		}
 
 		/* set modifier */
-		status = ldns_cga_rdf_new(cga_rdfs, &(cga_rdfs->modifier),
-				modifier, NULL);
+		status = ldns_cga_data2rdf(cga_rdfs, &(cga_rdfs->modifier),
+				modifier, NULL, 0);
 
 		if (status != LDNS_STATUS_OK) {
 			goto clean;
 		}
 
 		/* set prefix */
-		status = ldns_cga_rdf_new(cga_rdfs, &(cga_rdfs->prefix),
-				prefix, NULL);
+		status = ldns_cga_data2rdf(cga_rdfs, &(cga_rdfs->prefix),
+				prefix, NULL, 0);
 
 		if (status != LDNS_STATUS_OK) {
 			goto clean;
 		}
 
 		/* set collision count */
-		status = ldns_cga_rdf_new(cga_rdfs, &(cga_rdfs->coll_count),
-				&coll_count, NULL);
+		status = ldns_cga_data2rdf(cga_rdfs, &(cga_rdfs->coll_count),
+				&coll_count, NULL, 0);
 
 		if (status != LDNS_STATUS_OK) {
 			goto clean;
@@ -1393,8 +1419,8 @@ ldns_pkt_tsig_sign_next_2(ldns_pkt *pkt, const char *key_name, const char *key_d
 		}
 
 		/* set public key */
-		status = ldns_cga_rdf_new(cga_rdfs, &(cga_rdfs->pub_key),
-				pubk_buf, (size_t*)&pubk_len);
+		status = ldns_cga_data2rdf(cga_rdfs, &(cga_rdfs->pub_key),
+				pubk_buf, (size_t*)&pubk_len, 0);
 
 		if (status != LDNS_STATUS_OK) {
 			goto clean;
@@ -1417,8 +1443,8 @@ ldns_pkt_tsig_sign_next_2(ldns_pkt *pkt, const char *key_name, const char *key_d
 			}
 
 			/* set old public key */
-			status = ldns_cga_rdf_new(cga_rdfs, &(cga_rdfs->old_pub_key),
-					pubk_buf, (size_t*)&pubk_len);
+			status = ldns_cga_data2rdf(cga_rdfs, &(cga_rdfs->old_pub_key),
+					pubk_buf, (size_t*)&pubk_len, 0);
 
 			if (status != LDNS_STATUS_OK) {
 				goto clean;
@@ -1459,8 +1485,8 @@ ldns_pkt_tsig_sign_next_2(ldns_pkt *pkt, const char *key_name, const char *key_d
 		}
 
 		/* set signature */
-		status = ldns_cga_rdf_new(cga_rdfs, &(cga_rdfs->sig),
-				sig_buf, (size_t*)&sig_len);
+		status = ldns_cga_data2rdf(cga_rdfs, &(cga_rdfs->sig),
+				sig_buf, (size_t*)&sig_len, 0);
 
 		LDNS_FREE(sig_buf);
 
