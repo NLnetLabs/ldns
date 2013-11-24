@@ -625,7 +625,7 @@ ldns_send_buffer(ldns_pkt **result, ldns_resolver *r, ldns_buffer *qb, ldns_rdf 
 	}
 #ifdef HAVE_SSL
 	if (tsig_mac && reply && reply_bytes) {
-		status = ldns_pkt_tsig_verify_ws(reply, reply_bytes, reply_size,
+		status = ldns_pkt_tsig_verify_2(reply, reply_bytes, reply_size,
 			ldns_resolver_tsig_keyname(r),
 			ldns_resolver_tsig_keydata(r), tsig_mac, ns, ns_len);
 	}
