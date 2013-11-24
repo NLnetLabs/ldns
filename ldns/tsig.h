@@ -20,7 +20,6 @@ extern "C" {
  */
 
 
-/* NOTE: any change in the following constants requires adaptment of ldns_cga2rdf() */
 #define CT_LEN_SIZE          1
 #define CT_ALGO_NAME_SIZE    2
 #define CT_TYPE_SIZE         2
