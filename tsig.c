@@ -331,22 +331,16 @@ ldns_cga_data2rdf(ldns_cga_rdfs *rdfs, ldns_rdf **rdf, const void *data, size_t 
 	size_t size;
 
 	if (rdf == &(rdfs->algo_name)) {
-		type = LDNS_RDF_TYPE_INT16;
 		size = CT_ALGO_NAME_SIZE;
 	} else if (rdf == &(rdfs->type)) {
-		type = LDNS_RDF_TYPE_INT16;
 		size = CT_TYPE_SIZE;
 	} else if (rdf == &(rdfs->ip_tag)) {
-		type = LDNS_RDF_TYPE_UNKNOWN;
 		size = CT_IP_TAG_SIZE;
 	} else if (rdf == &(rdfs->modifier)) {
-		type = LDNS_RDF_TYPE_UNKNOWN;
 		size = CT_MODIFIER_SIZE;
 	} else if (rdf == &(rdfs->prefix)) {
-		type = LDNS_RDF_TYPE_UNKNOWN;
 		size = CT_PREFIX_SIZE;
 	} else if (rdf == &(rdfs->coll_count)) {
-		type = LDNS_RDF_TYPE_INT8;
 		size = CT_COLL_COUNT_SIZE;
 	} else if (rdf == &(rdfs->pub_key)
 	        || rdf == &(rdfs->ext_fields)
@@ -356,10 +350,17 @@ ldns_cga_data2rdf(ldns_cga_rdfs *rdfs, ldns_rdf **rdf, const void *data, size_t 
 		if (!len) {
 			return LDNS_STATUS_NULL;
 		}
-		type = LDNS_RDF_TYPE_UNKNOWN;
 		size = *len;
 	} else {
 		return LDNS_STATUS_INVALID_POINTER;
+	}
+
+	if (!len && size == 1) {
+		type = LDNS_RDF_TYPE_INT8;
+	} else if (!len && size == 2) {
+		type = LDNS_RDF_TYPE_INT16;
+	} else {
+		type = LDNS_RDF_TYPE_UNKNOWN;
 	}
 
 	if (h2n && type == LDNS_RDF_TYPE_INT8) {
