@@ -404,7 +404,7 @@ ldns_cga_data2host(const void *data, size_t len)
  * \return status (OK if success)
  */
 static ldns_status
-ldns_od2cga_rdfs(ldns_rdf *other_data_rdf, ldns_cga_rdfs *rdfs, RSA *pubk, RSA *opubk)
+ldns_tsig_od2cga_rdfs(ldns_rdf *other_data_rdf, ldns_cga_rdfs *rdfs, RSA *pubk, RSA *opubk)
 {
 	uint16_t other_len, cga_tsig_len, param_len, sig_len, pubk_len, old_pubk_len, old_sig_len;
 	int32_t ext_len;
@@ -848,7 +848,7 @@ ldns_cga_concat_msg(uint8_t *pkt_wire, size_t pkt_wire_size,
  * \return status (OK if success)
  */
 static ldns_status
-ldns_cga_rdfs2od(ldns_cga_rdfs *rdfs, ldns_rdf *other_data_rdf)
+ldns_cga_rdfs2tsig_od(ldns_cga_rdfs *rdfs, ldns_rdf *other_data_rdf)
 {
 	uint8_t cga_tsig_len, param_len, sig_len;
 	uint8_t old_pubk_len = 0;
@@ -1142,7 +1142,7 @@ ldns_pkt_tsig_verify_next_2(ldns_pkt *pkt, uint8_t *wire, size_t wirelen, const 
 		LDNS_FREE(ns_in);
 
 		/* extract CGA-TSIG data fields */
-		status = ldns_od2cga_rdfs(other_data_rdf, cga_rdfs, pubk, opubk);
+		status = ldns_tsig_od2cga_rdfs(other_data_rdf, cga_rdfs, pubk, opubk);
 
 		if (status != LDNS_STATUS_OK) {
 			status = LDNS_STATUS_CRYPTO_TSIG_BOGUS; // better to check for server error
@@ -1496,7 +1496,7 @@ ldns_pkt_tsig_sign_next_2(ldns_pkt *pkt, const char *key_name, const char *key_d
 		}
 
 		/* create Other Data RDF */
-		status = ldns_cga_rdfs2od(cga_rdfs, other_data_rdf);
+		status = ldns_cga_rdfs2tsig_od(cga_rdfs, other_data_rdf);
 
 		if (status != LDNS_STATUS_OK) {
 			goto clean;
