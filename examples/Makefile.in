@@ -67,7 +67,9 @@ MAIN_SOURCES = ldns-read-zone.c \
 		  ldns-testns.c \
 		  ldns-compare-zones.c \
 		  ldns-gen-zone.c \
-		  ldnsd.c
+		  ldnsd.c \
+		  ldns-cgatsig-ns.c \
+		  ldns-cgatsig-query.c
 
 MAIN_SSL_SOURCES = ldns-signzone.c \
 		  ldns-verify-zone.c \
@@ -102,6 +104,18 @@ ldnsd.prg: ldnsd.o
 	fi
 
 ldnsd.stc: ldnsd.o
+	@if test ! -f $@ -o $< -nt $@; then \
+	echo $(LINK_STATIC) $(LIBNSL_LDFLAGS) -o $@ $^ ; \
+	$(LINK_STATIC) $(LIBNSL_LDFLAGS) -o $@ $^ ; \
+	fi
+
+ldns-cgatsig-ns.prg: ldns-cgatsig-ns.o
+	@if test ! -f $(@:.prg=) -o $< -nt $(@:.prg=); then \
+	echo $(LINK) $(LIBNSL_LIBS) -o $(@:.prg=) $^ ; \
+	$(LINK) $(LIBNSL_LIBS) -o $(@:.prg=) $^ ; \
+	fi
+
+ldns-cgatsig-ns.stc: ldns-cgatsig-ns.o
 	@if test ! -f $@ -o $< -nt $@; then \
 	echo $(LINK_STATIC) $(LIBNSL_LDFLAGS) -o $@ $^ ; \
 	$(LINK_STATIC) $(LIBNSL_LDFLAGS) -o $@ $^ ; \

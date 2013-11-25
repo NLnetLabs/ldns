@@ -79,9 +79,9 @@ PYLDNS_I_FILES	= $(pywrapdir)/file_py3.i $(pywrapdir)/ldns_buffer.i $(pywrapdir)
 
 DRILL_LOBJS	= drill/chasetrace.lo drill/dnssec.lo drill/drill.lo drill/drill_util.lo drill/error.lo drill/root.lo drill/securetrace.lo drill/work.lo
 
-EXAMPLE_LOBJS	= examples/ldns-chaos.lo examples/ldns-compare-zones.lo examples/ldns-dane.lo examples/ldnsd.lo examples/ldns-dpa.lo examples/ldns-gen-zone.lo examples/ldns-key2ds.lo examples/ldns-keyfetcher.lo examples/ldns-keygen.lo examples/ldns-mx.lo examples/ldns-notify.lo examples/ldns-nsec3-hash.lo examples/ldns-read-zone.lo examples/ldns-resolver.lo examples/ldns-revoke.lo examples/ldns-rrsig.lo examples/ldns-signzone.lo examples/ldns-test-edns.lo examples/ldns-testns.lo examples/ldns-testpkts.lo examples/ldns-update.lo examples/ldns-verify-zone.lo examples/ldns-version.lo examples/ldns-walk.lo examples/ldns-zcat.lo examples/ldns-zsplit.lo
-EXAMPLE_PROGS	= examples/ldns-chaos examples/ldns-compare-zones examples/ldnsd examples/ldns-gen-zone examples/ldns-key2ds examples/ldns-keyfetcher examples/ldns-keygen examples/ldns-mx examples/ldns-notify examples/ldns-read-zone examples/ldns-resolver examples/ldns-rrsig examples/ldns-test-edns examples/ldns-update examples/ldns-version examples/ldns-walk examples/ldns-zcat examples/ldns-zsplit 
-EX_PROGS_BASENM	= ldns-chaos ldns-compare-zones ldns-dane ldnsd ldns-dpa ldns-gen-zone ldns-key2ds ldns-keyfetcher ldns-keygen ldns-mx ldns-notify ldns-nsec3-hash ldns-read-zone ldns-resolver ldns-revoke ldns-rrsig ldns-signzone ldns-test-edns ldns-testns ldns-testpkts ldns-update ldns-verify-zone ldns-version ldns-walk ldns-zcat ldns-zsplit 
+EXAMPLE_LOBJS	= examples/ldns-chaos.lo examples/ldns-compare-zones.lo examples/ldns-dane.lo examples/ldnsd.lo examples/ldns-dpa.lo examples/ldns-gen-zone.lo examples/ldns-key2ds.lo examples/ldns-keyfetcher.lo examples/ldns-keygen.lo examples/ldns-mx.lo examples/ldns-notify.lo examples/ldns-nsec3-hash.lo examples/ldns-read-zone.lo examples/ldns-resolver.lo examples/ldns-revoke.lo examples/ldns-rrsig.lo examples/ldns-signzone.lo examples/ldns-test-edns.lo examples/ldns-testns.lo examples/ldns-testpkts.lo examples/ldns-update.lo examples/ldns-verify-zone.lo examples/ldns-version.lo examples/ldns-walk.lo examples/ldns-zcat.lo examples/ldns-zsplit.lo examples/ldns-cgatsig-ns.lo examples/ldns-cgatsig-query.lo
+EXAMPLE_PROGS	= examples/ldns-chaos examples/ldns-compare-zones examples/ldnsd examples/ldns-gen-zone examples/ldns-key2ds examples/ldns-keyfetcher examples/ldns-keygen examples/ldns-mx examples/ldns-notify examples/ldns-read-zone examples/ldns-resolver examples/ldns-rrsig examples/ldns-test-edns examples/ldns-update examples/ldns-version examples/ldns-walk examples/ldns-zcat examples/ldns-zsplit examples/ldns-cgatsig-ns examples/ldns-cgatsig-query
+EX_PROGS_BASENM	= ldns-chaos ldns-compare-zones ldns-dane ldnsd ldns-dpa ldns-gen-zone ldns-key2ds ldns-keyfetcher ldns-keygen ldns-mx ldns-notify ldns-nsec3-hash ldns-read-zone ldns-resolver ldns-revoke ldns-rrsig ldns-signzone ldns-test-edns ldns-testns ldns-testpkts ldns-update ldns-verify-zone ldns-version ldns-walk ldns-zcat ldns-zsplit ldns-cgatsig-ns ldns-cgatsig-query
 EXAMPLE_PROGS_EX= ^examples/ldns-testpkts\.c|examples/ldns-testns\.c|examples/ldns-dane\.c|examples/ldns-dpa\.c|examples/ldns-nsec3-hash\.c|examples/ldns-revoke\.c|examples/ldns-signzone\.c|examples/ldns-verify-zone\.c$$
 TESTNS		= examples/ldns-testns
 TESTNS_LOBJS	= examples/ldns-testns.lo examples/ldns-testpkts.lo
@@ -941,6 +941,22 @@ examples/ldns-zsplit.lo examples/ldns-zsplit.o: $(srcdir)/examples/ldns-zsplit.c
  $(srcdir)/ldns/higher.h $(srcdir)/ldns/host2wire.h ldns/net.h $(srcdir)/ldns/str2host.h $(srcdir)/ldns/update.h \
  $(srcdir)/ldns/wire2host.h $(srcdir)/ldns/rr_functions.h $(srcdir)/ldns/parse.h $(srcdir)/ldns/radix.h \
  $(srcdir)/ldns/sha1.h $(srcdir)/ldns/sha2.h
+examples/ldns-cgatsig-ns.lo examples/ldns-cgatsig-ns.o: $(srcdir)/examples/ldns-cgatsig-ns.c ldns/config.h $(srcdir)/ldns/ldns.h ldns/util.h ldns/common.h \
+ $(srcdir)/ldns/buffer.h $(srcdir)/ldns/error.h $(srcdir)/ldns/dane.h $(srcdir)/ldns/rdata.h $(srcdir)/ldns/rr.h \
+ $(srcdir)/ldns/dname.h $(srcdir)/ldns/dnssec.h $(srcdir)/ldns/packet.h $(srcdir)/ldns/keys.h $(srcdir)/ldns/zone.h \
+ $(srcdir)/ldns/resolver.h $(srcdir)/ldns/tsig.h $(srcdir)/ldns/dnssec_zone.h $(srcdir)/ldns/rbtree.h \
+ $(srcdir)/ldns/host2str.h $(srcdir)/ldns/dnssec_verify.h $(srcdir)/ldns/dnssec_sign.h $(srcdir)/ldns/duration.h \
+ $(srcdir)/ldns/higher.h $(srcdir)/ldns/host2wire.h ldns/net.h $(srcdir)/ldns/str2host.h $(srcdir)/ldns/update.h \
+ $(srcdir)/ldns/wire2host.h $(srcdir)/ldns/rr_functions.h $(srcdir)/ldns/parse.h $(srcdir)/ldns/radix.h \
+ $(srcdir)/ldns/sha1.h $(srcdir)/ldns/sha2.h
+examples/ldns-cgatsig-query.lo examples/ldns-cgatsig-query.o: $(srcdir)/examples/ldns-cgatsig-query.c ldns/config.h $(srcdir)/ldns/ldns.h ldns/util.h \
+ ldns/common.h $(srcdir)/ldns/buffer.h $(srcdir)/ldns/error.h $(srcdir)/ldns/dane.h $(srcdir)/ldns/rdata.h \
+ $(srcdir)/ldns/rr.h $(srcdir)/ldns/dname.h $(srcdir)/ldns/dnssec.h $(srcdir)/ldns/packet.h $(srcdir)/ldns/keys.h \
+ $(srcdir)/ldns/zone.h $(srcdir)/ldns/resolver.h $(srcdir)/ldns/tsig.h $(srcdir)/ldns/dnssec_zone.h $(srcdir)/ldns/rbtree.h \
+ $(srcdir)/ldns/host2str.h $(srcdir)/ldns/dnssec_verify.h $(srcdir)/ldns/dnssec_sign.h $(srcdir)/ldns/duration.h \
+ $(srcdir)/ldns/higher.h $(srcdir)/ldns/host2wire.h ldns/net.h $(srcdir)/ldns/str2host.h $(srcdir)/ldns/update.h \
+ $(srcdir)/ldns/wire2host.h $(srcdir)/ldns/rr_functions.h $(srcdir)/ldns/parse.h $(srcdir)/ldns/radix.h \
+ $(srcdir)/ldns/sha1.h $(srcdir)/ldns/sha2.h
 drill/chasetrace.lo drill/chasetrace.o: $(srcdir)/drill/chasetrace.c $(srcdir)/drill/drill.h ldns/config.h \
  $(srcdir)/drill/drill_util.h $(srcdir)/ldns/ldns.h ldns/util.h ldns/common.h $(srcdir)/ldns/buffer.h \
  $(srcdir)/ldns/error.h $(srcdir)/ldns/dane.h $(srcdir)/ldns/rdata.h $(srcdir)/ldns/rr.h $(srcdir)/ldns/dname.h \
@@ -1033,3 +1049,5 @@ examples/ldns-revoke: examples/ldns-revoke.lo examples/ldns-revoke.o $(LIB)
 examples/ldns-signzone: examples/ldns-signzone.lo examples/ldns-signzone.o $(LIB)
 examples/ldns-verify-zone: examples/ldns-verify-zone.lo examples/ldns-verify-zone.o $(LIB)
 examples/ldns-testns: examples/ldns-testns.lo examples/ldns-testns.o examples/ldns-testpkts.lo examples/ldns-testpkts.o  $(LIB)
+examples/ldns-cgatsig-ns: examples/ldns-cgatsig-ns.lo examples/ldns-cgatsig-ns.o $(LIB)
+examples/ldns-cgatsig-query: examples/ldns-cgatsig-query.lo examples/ldns-cgatsig-query.o $(LIB)
