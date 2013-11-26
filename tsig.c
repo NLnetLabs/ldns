@@ -1330,26 +1330,6 @@ ldns_pkt_tsig_sign_next_2(ldns_pkt *pkt, const char *key_name, const char *key_d
 			status = LDNS_STATUS_CRYPTO_TSIG_ERR;
 			goto clean;
 		}
-/*
-		bp = BIO_new(BIO_s_mem());
-
-		if (!bp) {
-			status = LDNS_STATUS_MEM_ERR;
-			goto clean;
-		}
-
-		if (BIO_puts(key_data) <= 0) {
-			status = LDNS_STATUS_CRYPTO_TSIG_ERR;
-			goto clean;
-		}
-
-		pvtk = PEM_read_bio_RSAPrivateKey(bp, NULL, NULL, NULL);
-
-		if (!pvtk) {
-			status = LDNS_STATUS_CRYPTO_TSIG_ERR;
-			goto clean;
-		}
-*/
 
 		/* allocate structure holding the RDFs */
 		cga_rdfs = LDNS_MALLOC(ldns_cga_rdfs);
