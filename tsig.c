@@ -396,7 +396,7 @@ ldns_cga_data2host(const void *data, size_t len)
 }
 
 /**
- * copies the CGA-TSIG data fields to RDFs, assuming it is at front of Other Data.
+ * copies the CGA-TSIG data fields to RDFs, assuming it is at front of Other Data; could perhaps be implemented like RDATA parsing.
  * \param[in] other_data_rdf pointer to the Other Data RDF
  * \param[out] rdfs the output ldns_cga_rdfs structure (will be allocated)
  * \param[out] pubk the parsed RSA public key (will be allocated)

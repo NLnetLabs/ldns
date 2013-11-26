@@ -33,10 +33,9 @@
 
 void usage(FILE *output)
 {
-	fprintf(output, "Usage: ldns-cgatsig-ns <address> <port> <zone> <zonefile>\n");
+	fprintf(output, "Usage: ldns-cgatsig-ns <address> <port> <zone> <zonefile> <private key> <public key> <modifier> <collision count>\n");
 	fprintf(output, "Listens on the specified port and answers queries for the given zone\n");
 	fprintf(output, "This is NOT a full-fledged authoritative nameserver!\n");
-	/* may need additional params for cga-tsig */
 }
 
 static int udp_bind(int sock, int port, const char *my_address)
@@ -89,11 +88,49 @@ get_rrset(const ldns_zone *zone, const ldns_rdf *owner_name, const ldns_rr_type 
 }
 
 int
+Base64Decode(FILE *fp, char **buffer)
+{
+	BIO *bio, *b64;
+	long in_len;
+	int out_len;
+
+	fseek(fp, 0, SEEK_END);
+	in_len = ftell(fp) - 1;
+	rewind(fp);
+
+	*buffer = malloc(in_len);
+
+	if (!*buffer) {
+		return 0;
+	}
+
+	b64 = BIO_new(BIO_f_base64());
+	bio = BIO_new_fp(fp, BIO_NOCLOSE);
+	bio = BIO_push(b64, bio);
+	BIO_set_flags(bio, BIO_FLAGS_BASE64_NO_NL);
+	out_len = BIO_read(bio, *buffer, in_len);
+	BIO_free_all(bio);
+
+	if (out_len < 1) {
+		free(*buffer);
+		return 0;
+	}
+
+	(*buffer)[out_len] = '\0';
+
+	return out_len;
+}
+
+int
 main(int argc, char **argv)
 {
 	/* arguments */
 	int port;
 	const char *zone_file;
+	const char *pvtk_file;
+	const char *pubk_file;
+	const char *modf_file;
+	int coll_count;
 	/* network */
 	int sock;
 	ssize_t nb;
@@ -107,7 +144,10 @@ main(int argc, char **argv)
 	ldns_pkt *query_pkt;
 	ldns_pkt *answer_pkt;
 	size_t answer_size;
+	ldns_rr_list *query_ad;
 	ldns_rr *query_rr;
+	ldns_rr *query_tsig;
+	ldns_rr *temp_rr;
 	ldns_rr_list *answer_qr;
 	ldns_rr_list *answer_an;
 	ldns_rr_list *answer_ns;
@@ -116,10 +156,19 @@ main(int argc, char **argv)
 	/* zone */
 	ldns_zone *zone;
 	int line_nr;
-	FILE *zone_fp;
+	FILE *fp;
 	/* use this to listen on specified interfaces later? */
 	char *my_address = NULL;
-	if (argc < 5) {
+	/* cga-tsig */
+	RSA *pvtk;
+	RSA *pubk;
+	char *modf;
+	long modf_len;
+	uint8_t ip_tag[16] = {0};
+	uint8_t prefix[8] = {1, 2, 3, 4, 5, 6, 7, 8};
+	int i;
+
+	if (argc < 9) {
 		usage(stderr);
 		exit(EXIT_FAILURE);
 	} else {
@@ -135,22 +184,72 @@ main(int argc, char **argv)
 			exit(EXIT_FAILURE);
 		}
 		zone_file = argv[4];
+		pvtk_file = argv[5];
+		pubk_file = argv[6];
+		modf_file = argv[7];
+		coll_count = atoi(argv[8]);
 	}
+
 	printf("Reading zone file %s\n", zone_file);
-	zone_fp = fopen(zone_file, "r");
-	if (!zone_fp) {
+	fp = fopen(zone_file, "r");
+	if (!fp) {
 		fprintf(stderr, "Unable to open %s: %s\n", zone_file, strerror(errno));
 		exit(EXIT_FAILURE);
 	}
 	line_nr = 0;
-	status = ldns_zone_new_frm_fp_l(&zone, zone_fp, origin, 0, LDNS_RR_CLASS_IN, &line_nr);
+	status = ldns_zone_new_frm_fp_l(&zone, fp, origin, 0, LDNS_RR_CLASS_IN, &line_nr);
 	if (status != LDNS_STATUS_OK) {
 		printf("Zone reader failed, aborting\n");
 		exit(EXIT_FAILURE);
 	} else {
 		printf("Read %u resource records in zone file\n", (unsigned int) ldns_zone_rr_count(zone));
 	}
-	fclose(zone_fp);
+	fclose(fp);
+
+	printf("Reading private key file %s\n", pvtk_file);
+	fp = fopen(pvtk_file, "r");
+	if (!fp) {
+		fprintf(stderr, "Unable to open %s: %s\n", pvtk_file, strerror(errno));
+		exit(EXIT_FAILURE);
+	}
+	pvtk = PEM_read_RSAPrivateKey(fp, NULL, NULL, NULL);
+	if (!pvtk) {
+		printf("Private key loader failed, aborting\n");
+		exit(EXIT_FAILURE);
+	} else {
+		printf("Loaded private key\n");
+	}
+	fclose(fp);
+
+	printf("Reading public key file %s\n", pubk_file);
+	fp = fopen(pubk_file, "r");
+	if (!fp) {
+		fprintf(stderr, "Unable to open %s: %s\n", pubk_file, strerror(errno));
+		exit(EXIT_FAILURE);
+	}
+	pubk = PEM_read_RSAPublicKey(fp, NULL, NULL, NULL);
+	if (!pubk) {
+		printf("Public key loader failed, aborting\n");
+		exit(EXIT_FAILURE);
+	} else {
+		printf("Loaded public key\n");
+	}
+	fclose(fp);
+
+	printf("Reading modifier file %s\n", modf_file);
+	fp = fopen(modf_file, "r");
+	if (!fp) {
+		fprintf(stderr, "Unable to open %s: %s\n", modf_file, strerror(errno));
+		exit(EXIT_FAILURE);
+	}
+	modf_len = Base64Decode(fp, &modf);
+	if (!modf_len) {
+		printf("Modifier loader failed, aborting\n");
+		exit(EXIT_FAILURE);
+	} else {
+		printf("Loaded modifier\n");
+	}
+	fclose(fp);
 
 	printf("Listening on port %d\n", port);
 	sock =  socket(AF_INET, SOCK_DGRAM, 0);
@@ -208,7 +307,35 @@ main(int argc, char **argv)
 		ldns_pkt_push_rr_list(answer_pkt, LDNS_SECTION_AUTHORITY, answer_ns);
 		ldns_pkt_push_rr_list(answer_pkt, LDNS_SECTION_ADDITIONAL, answer_ad);
 
-		/* Add CGA-TSIG record (sign pkt) */
+		query_ad = ldns_pkt_additional(query_pkt);
+		query_tsig = NULL;
+
+		/*
+		if there is a TSIG RR, it must be the last and only one in the AD section
+		*/
+		for (i = ldns_rr_list_rr_count(query_ad) - 1; i >= 0; i--) {
+			temp_rr = ldns_rr_list_rr(query_ad, i);
+			if (ldns_rr_get_type(temp_rr) == LDNS_RR_TYPE_TSIG) {
+				if (query_tsig) {
+					query_tsig = NULL; // more than 1 TSIG RR, ignore for now
+					break;
+				}
+				query_tsig = temp_rr;
+			} else if (!query_tsig) {
+					break; // last AD RR is not TSIG, ingore for now
+			}
+		}
+
+		if (query_tsig && strcasecmp(ldns_rdf2str(ldns_rr_rdf(query_tsig, 0)),
+		                             "cga-tsig.") == 0) {
+			status = ldns_pkt_tsig_sign_2(answer_pkt,
+					ldns_rdf_data(ldns_rr_owner(query_tsig)), NULL, pvtk, pubk,
+					NULL, NULL, 300, "cga-tsig.", ldns_rr_rdf(query_tsig, 3),
+					(uint8_t*)&ip_tag, modf, (uint8_t*)&prefix, coll_count);
+			if (status != LDNS_STATUS_OK) {
+				printf("Error signing packet: %s\n", ldns_get_errorstr_by_id(status));
+			}
+		}
 
 		status = ldns_pkt2wire(&outbuf, answer_pkt, &answer_size);
 
@@ -231,6 +358,7 @@ main(int argc, char **argv)
 	 *
 	 * ldns_rdf_deep_free(origin);
 	 * ldns_zone_deep_free(zone);
+	 * free(modf);
 	 * return 0;
 	 */
 }
