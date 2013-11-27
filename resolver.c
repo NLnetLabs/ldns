@@ -1057,12 +1057,21 @@ ldns_pkt *
 ldns_resolver_query(const ldns_resolver *r, const ldns_rdf *name,
 	ldns_rr_type t, ldns_rr_class c, uint16_t flags)
 {
-	ldns_pkt* pkt = NULL;
-	if (ldns_resolver_query_status(&pkt, (ldns_resolver *)r,
-				name, t, c, flags) != LDNS_STATUS_OK) {
-		ldns_pkt_free(pkt);
-	}
+	ldns_pkt *pkt = NULL;
+	(void)ldns_resolver_query_ws(&pkt, r, name, t, c, flags);
 	return pkt;
+}
+
+ldns_status
+ldns_resolver_query_ws(ldns_pkt **answer, const ldns_resolver *r,
+	const ldns_rdf *name, ldns_rr_type t, ldns_rr_class c, uint16_t flags)
+{
+	ldns_status s = ldns_resolver_query_status(answer, (ldns_resolver *)r,
+				name, t, c, flags);
+	if (s != LDNS_STATUS_OK && s != LDNS_STATUS_CRYPTO_TSIG_BOGUS) {
+		ldns_pkt_free(*answer);
+	}
+	return s;
 }
 
 static size_t *
@@ -1102,7 +1111,7 @@ ldns_resolver_send_pkt(ldns_pkt **answer, ldns_resolver *r,
 	size_t *rtt;
 
 	stat = ldns_send(&answer_pkt, (ldns_resolver *)r, query_pkt);
-	if (stat != LDNS_STATUS_OK) {
+	if (stat != LDNS_STATUS_OK && stat != LDNS_STATUS_CRYPTO_TSIG_BOGUS) {
 		if(answer_pkt) {
 			ldns_pkt_free(answer_pkt);
 			answer_pkt = NULL;
@@ -1244,19 +1253,40 @@ ldns_resolver_send(ldns_pkt **answer, ldns_resolver *r, const ldns_rdf *name,
 	  Jelte
 	  should this go in pkt_prepare?
 	*/
-	if (ldns_resolver_tsig_keyname(r) && ldns_resolver_tsig_keydata(r)) {
+	if (ldns_resolver_tsig_keyname(r)) {
 #ifdef HAVE_SSL
-		status = ldns_pkt_tsig_sign(query_pkt,
-		                            ldns_resolver_tsig_keyname(r),
-		                            ldns_resolver_tsig_keydata(r),
-		                            300, ldns_resolver_tsig_algorithm(r), NULL);
+		if (ldns_resolver_tsig_keydata(r)) {
+			status = ldns_pkt_tsig_sign(query_pkt,
+																	ldns_resolver_tsig_keyname(r),
+																	ldns_resolver_tsig_keydata(r),
+																	300, ldns_resolver_tsig_algorithm(r), NULL);
+		} else {
+			/*
+			 * if keyname but no keydata, assume CGA-TSIG request;
+			 * function will return error if algorithm != "cga-tsig.",
+			 * so no explicit need to check here
+			 */
+			status = ldns_pkt_tsig_sign_2(query_pkt,
+																	ldns_resolver_tsig_keyname(r),
+																	NULL,
+																	NULL,
+																	NULL,
+																	NULL,
+																	NULL,
+																	300, ldns_resolver_tsig_algorithm(r),
+																	NULL,
+																	NULL,
+																	NULL,
+																	NULL,
+																	0, 1);
+		}
 		if (status != LDNS_STATUS_OK) {
 			ldns_pkt_free(query_pkt);
-			return LDNS_STATUS_CRYPTO_TSIG_ERR;
+			return status;
 		}
 #else
 		ldns_pkt_free(query_pkt);
-	        return LDNS_STATUS_CRYPTO_TSIG_ERR;
+		return LDNS_STATUS_CRYPTO_TSIG_ERR;
 #endif /* HAVE_SSL */
 	}
 

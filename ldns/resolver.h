@@ -683,6 +683,23 @@ ldns_pkt* ldns_resolver_query(const ldns_resolver *r, const ldns_rdf *name, ldns
 
 
 /**
+ * Send a query to a nameserver
+ * \param[out] **answer a pointer to a ldns_pkt pointer (initialized by this function)
+ * \param[in] *r operate using this resolver 
+ *               (despite the const in the declaration,
+ *                the struct is altered as a side-effect)
+ * \param[in] *name query for this name
+ * \param[in] *t query for this type (may be 0, defaults to A)
+ * \param[in] *c query for this class (may be 0, default to IN)
+ * \param[in] flags the query flags
+ *
+ * \return ldns_status LDNS_STATUS_OK on success
+ * if _defnames is true the default domain will be added
+ */
+ldns_status ldns_resolver_query_ws(ldns_pkt **answer, const ldns_resolver *r, const ldns_rdf *name, ldns_rr_type t, ldns_rr_class c, uint16_t flags);
+
+
+/**
  * Create a new resolver structure
  * \return ldns_resolver* pointer to new strcture
  */

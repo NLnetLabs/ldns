@@ -162,8 +162,9 @@ main(int argc, char **argv)
 	/* cga-tsig */
 	RSA *pvtk;
 	RSA *pubk;
-	char *modf;
-	long modf_len;
+	//char *modf;
+	uint8_t modf[16] = {0};
+	long modf_len = 16;
 	uint8_t ip_tag[16] = {0};
 	uint8_t prefix[8] = {1, 2, 3, 4, 5, 6, 7, 8};
 	int i;
@@ -242,7 +243,7 @@ main(int argc, char **argv)
 		fprintf(stderr, "Unable to open %s: %s\n", modf_file, strerror(errno));
 		exit(EXIT_FAILURE);
 	}
-	modf_len = Base64Decode(fp, &modf);
+	//modf_len = Base64Decode(fp, &modf);
 	if (!modf_len) {
 		printf("Modifier loader failed, aborting\n");
 		exit(EXIT_FAILURE);
@@ -307,33 +308,37 @@ main(int argc, char **argv)
 		ldns_pkt_push_rr_list(answer_pkt, LDNS_SECTION_AUTHORITY, answer_ns);
 		ldns_pkt_push_rr_list(answer_pkt, LDNS_SECTION_ADDITIONAL, answer_ad);
 
-		query_ad = ldns_pkt_additional(query_pkt);
-		query_tsig = NULL;
-
-		/*
-		if there is a TSIG RR, it must be the last and only one in the AD section
-		*/
-		for (i = ldns_rr_list_rr_count(query_ad) - 1; i >= 0; i--) {
-			temp_rr = ldns_rr_list_rr(query_ad, i);
-			if (ldns_rr_get_type(temp_rr) == LDNS_RR_TYPE_TSIG) {
-				if (query_tsig) {
-					query_tsig = NULL; // more than 1 TSIG RR, ignore for now
-					break;
-				}
-				query_tsig = temp_rr;
-			} else if (!query_tsig) {
-					break; // last AD RR is not TSIG, ingore for now
-			}
-		}
+//		query_ad = ldns_pkt_additional(query_pkt);
+//		query_tsig = NULL;
+//printf("COUNT: %i\n", ldns_rr_list_rr_count(query_ad));
+//		/*
+//		if there is a TSIG RR, it must be the last and only one in the AD section
+//		*/
+//		for (i = ldns_rr_list_rr_count(query_ad) - 1; i >= 0; i--) {
+//			temp_rr = ldns_rr_list_rr(query_ad, i);
+//			if (ldns_rr_get_type(temp_rr) == LDNS_RR_TYPE_TSIG) {
+//				if (query_tsig) {
+//					query_tsig = NULL; // more than 1 TSIG RR, ignore for now
+//					break;
+//				}
+//				query_tsig = temp_rr;
+//				printf("Found TSIG RR\n");
+//			} else if (!query_tsig) {
+//					break; // last AD RR is not TSIG, ignore for now
+//			}
+//		}
+		query_tsig = ldns_pkt_tsig(query_pkt);
 
 		if (query_tsig && strcasecmp(ldns_rdf2str(ldns_rr_rdf(query_tsig, 0)),
 		                             "cga-tsig.") == 0) {
 			status = ldns_pkt_tsig_sign_2(answer_pkt,
-					ldns_rdf_data(ldns_rr_owner(query_tsig)), NULL, pvtk, pubk,
+					ldns_rdf2str(ldns_rr_owner(query_tsig)), NULL, pvtk, pubk,
 					NULL, NULL, 300, "cga-tsig.", ldns_rr_rdf(query_tsig, 3),
-					(uint8_t*)&ip_tag, modf, (uint8_t*)&prefix, coll_count);
+					ip_tag, modf, prefix, coll_count, 0);
 			if (status != LDNS_STATUS_OK) {
 				printf("Error signing packet: %s\n", ldns_get_errorstr_by_id(status));
+			} else {
+				printf("Successfully signed a packet\n");
 			}
 		}
 

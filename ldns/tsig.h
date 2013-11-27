@@ -162,12 +162,13 @@ ldns_status ldns_pkt_tsig_sign(ldns_pkt *pkt, const char *key_name, const char *
  * \param[in] modifier the CGA modifier (for CGA-TSIG)
  * \param[in] prefix the network prefix of the host's IPv6 address (for CGA-TSIG)
  * \param[in] coll_count the CGA collision count (for CGA-TSIG)
+ * \param[in] request_only do not sign but only request the resolver to sign (for CGA-TSIG)
  * \return status (OK if success)
  */
 ldns_status ldns_pkt_tsig_sign_2(ldns_pkt *pkt, const char *key_name, const char *key_data,
     RSA *pvt_key, RSA *pub_key, RSA *old_pvt_key, RSA *old_pub_key,
     uint16_t fudge, const char *algorithm_name, ldns_rdf *query_mac, uint8_t *ip_tag,
-    uint8_t *modifier, uint8_t *prefix, size_t coll_count);
+    uint8_t *modifier, uint8_t *prefix, size_t coll_count, int request_only);
 
 /**
  * creates a tsig rr for the given packet and key.
@@ -200,6 +201,7 @@ ldns_status ldns_pkt_tsig_sign_next(ldns_pkt *pkt, const char *key_name, const c
  * \param[in] modifier the CGA modifier (for CGA-TSIG)
  * \param[in] prefix the network prefix of the host's IPv6 address (for CGA-TSIG)
  * \param[in] coll_count the CGA collision count (for CGA-TSIG)
+ * \param[in] request_only do not sign but only request the resolver to sign (for CGA-TSIG)
  * \param[in] tsig_timers_only must be zero for the first packet and positive for subsequent packets. If zero, all digest
    components are used to create the query_mac. If non-zero, only the TSIG timers are used to create the query_mac.
  * \return status (OK if success)
@@ -207,7 +209,7 @@ ldns_status ldns_pkt_tsig_sign_next(ldns_pkt *pkt, const char *key_name, const c
 ldns_status ldns_pkt_tsig_sign_next_2(ldns_pkt *pkt, const char *key_name, const char *key_data,
     RSA *pvt_key, RSA *pub_key, RSA *old_pvt_key, RSA *old_pub_key,
     uint16_t fudge, const char *algorithm_name, ldns_rdf *query_mac, uint8_t *ip_tag,
-    uint8_t *modifier, uint8_t *prefix, uint8_t coll_count, int tsig_timers_only);
+    uint8_t *modifier, uint8_t *prefix, uint8_t coll_count, int request_only, int tsig_timers_only);
 
 #ifdef __cplusplus
 }
