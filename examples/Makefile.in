@@ -68,14 +68,14 @@ MAIN_SOURCES = ldns-read-zone.c \
 		  ldns-compare-zones.c \
 		  ldns-gen-zone.c \
 		  ldnsd.c \
-		  ldns-cgatsig-ns.c \
 		  ldns-cgatsig-query.c
 
 MAIN_SSL_SOURCES = ldns-signzone.c \
 		  ldns-verify-zone.c \
 		  ldns-revoke.c \
 		  ldns-nsec3-hash.c \
-		  ldns-dane.c
+		  ldns-dane.c \
+		  ldns-cgatsig-ns.c
 
 OTHER_SOURCES = ldns-testpkts.c
 
