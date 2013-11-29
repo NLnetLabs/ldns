@@ -162,11 +162,11 @@ main(int argc, char **argv)
 	/* cga-tsig */
 	RSA *pvtk;
 	RSA *pubk;
-	//char *modf;
-	uint8_t modf[16] = {0};
-	long modf_len = 16;
+	char *modf;
+	//uint8_t modf[16] = {0};
+	long modf_len = 0;
 	uint8_t ip_tag[16] = {0};
-	uint8_t prefix[8] = {1, 2, 3, 4, 5, 6, 7, 8};
+	uint8_t prefix[8] = {0x20, 0x01, 0x06, 0x10, 0x01, 0x58, 0x10, 0x40};
 	int i;
 
 	if (argc < 9) {
@@ -189,6 +189,11 @@ main(int argc, char **argv)
 		pubk_file = argv[6];
 		modf_file = argv[7];
 		coll_count = atoi(argv[8]);
+		if (coll_count < 0 || coll_count > 2) {
+			fprintf(stderr, "Collision count must be 0, 1, or 2\n");
+			usage(stderr);
+			exit(EXIT_FAILURE);
+		}
 	}
 
 	printf("Reading zone file %s\n", zone_file);
@@ -243,9 +248,12 @@ main(int argc, char **argv)
 		fprintf(stderr, "Unable to open %s: %s\n", modf_file, strerror(errno));
 		exit(EXIT_FAILURE);
 	}
-	//modf_len = Base64Decode(fp, &modf);
+	modf_len = Base64Decode(fp, &modf);
 	if (!modf_len) {
 		printf("Modifier loader failed, aborting\n");
+		exit(EXIT_FAILURE);
+	} else if (modf_len != 16) {
+		printf("Modifier is not 16 bytes, aborting\n");
 		exit(EXIT_FAILURE);
 	} else {
 		printf("Loaded modifier\n");

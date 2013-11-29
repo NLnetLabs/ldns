@@ -7,7 +7,6 @@
 
 #include "config.h"
 #include <ldns/ldns.h>
-
 static int
 usage(FILE *output) {
 	fprintf(output, "Usage: ldns-cgatsig-query <qname> [<port>] [<no tsig>] [<resolver file>]\n");

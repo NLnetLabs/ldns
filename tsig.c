@@ -17,6 +17,7 @@
 #ifdef HAVE_SSL
 #include <openssl/hmac.h>
 #include <openssl/md5.h>
+#include <openssl/sha.h>
 #endif /* HAVE_SSL */
 
 char *
@@ -341,7 +342,7 @@ ldns_cga_rdfs_deep_free(ldns_cga_rdfs *rdfs)
  * \return boolean int indicating if it is available
  */
 static int
-ldns_cga_available(size_t pos, int32_t count, uint8_t size)
+ldns_cga_available(size_t pos, int32_t count, uint16_t size)
 {
 	if (count < 0) {
 		return 0;
@@ -383,7 +384,7 @@ ldns_cga_data2rdf(ldns_cga_rdfs *rdfs, ldns_rdf **rdf, const void *data, int len
 	        || rdf == &(rdfs->old_pub_key)
 	        || rdf == &(rdfs->old_sig)) {
 		if (len < 0) {
-			return LDNS_STATUS_NULL;
+			return LDNS_STATUS_ERR;
 		}
 		size = (size_t)len;
 	} else {
@@ -420,7 +421,7 @@ ldns_cga_data2rdf(ldns_cga_rdfs *rdfs, ldns_rdf **rdf, const void *data, int len
  * \return the integer representation
  */
 static uint16_t
-ldns_cga_data2host(const void *data, size_t len)
+ldns_cga_data2host(void *data, size_t len)
 {
 	if (len == 1) {
 		return (uint16_t)*(uint8_t*)data;
@@ -882,9 +883,9 @@ ldns_cga_concat_msg(uint8_t *pkt_wire, size_t pkt_wire_size,
 static ldns_status
 ldns_cga_rdfs2tsig_od(ldns_cga_rdfs *rdfs, ldns_rdf **other_data_rdf)
 {
-	uint8_t cga_tsig_len, param_len, sig_len;
-	uint8_t old_pubk_len = 0;
-	uint8_t old_sig_len = 0;
+	uint16_t cga_tsig_len, param_len, sig_len;
+	uint16_t old_pubk_len = 0;
+	uint16_t old_sig_len = 0;
 	ldns_rdf *ctl_rdf, *pl_rdf, *sl_rdf, *opkl_rdf, *osl_rdf;
 	ldns_buffer *buffer = NULL;
 	ldns_status status = LDNS_STATUS_OK;
@@ -892,7 +893,13 @@ ldns_cga_rdfs2tsig_od(ldns_cga_rdfs *rdfs, ldns_rdf **other_data_rdf)
 	/* calculate lengths */
 	param_len = CT_MODIFIER_SIZE + CT_PREFIX_SIZE + CT_COLL_COUNT_SIZE
 	            + ldns_rdf_size(rdfs->pub_key);
+
+	if (rdfs->ext_fields) {
+		param_len += ldns_rdf_size(rdfs->ext_fields);
+	}
+
 	sig_len = ldns_rdf_size(rdfs->sig);
+
 	cga_tsig_len = CT_ALGO_NAME_SIZE + CT_TYPE_SIZE + CT_IP_TAG_SIZE + CT_PARAM_LEN_SIZE
   	             + param_len + CT_SIG_LEN_SIZE + sig_len + CT_OLD_PK_LEN_SIZE
 	               + CT_OLD_SIG_LEN_SIZE;
@@ -907,12 +914,12 @@ ldns_cga_rdfs2tsig_od(ldns_cga_rdfs *rdfs, ldns_rdf **other_data_rdf)
 		cga_tsig_len += old_sig_len;
 	}
 
-	/* temporarily encapsulate the length fields in RDFs */
-	ctl_rdf = ldns_rdf_new(LDNS_RDF_TYPE_INT8, CT_LEN_SIZE, &cga_tsig_len);
-	pl_rdf = ldns_rdf_new(LDNS_RDF_TYPE_INT8, CT_PARAM_LEN_SIZE, &param_len);
-	sl_rdf = ldns_rdf_new(LDNS_RDF_TYPE_INT8, CT_SIG_LEN_SIZE, &sig_len);
-	opkl_rdf = ldns_rdf_new(LDNS_RDF_TYPE_INT8, CT_OLD_PK_LEN_SIZE, &old_pubk_len);
-	osl_rdf = ldns_rdf_new(LDNS_RDF_TYPE_INT8, CT_OLD_SIG_LEN_SIZE, &old_sig_len);
+	/* put the length fields in RDFs for the concat operation*/
+	ctl_rdf = ldns_native2rdf_int16(LDNS_RDF_TYPE_INT16, cga_tsig_len);
+	pl_rdf = ldns_native2rdf_int16(LDNS_RDF_TYPE_INT16, param_len);
+	sl_rdf = ldns_native2rdf_int16(LDNS_RDF_TYPE_INT16, sig_len);
+	opkl_rdf = ldns_native2rdf_int16(LDNS_RDF_TYPE_INT16, old_pubk_len);
+	osl_rdf = ldns_native2rdf_int16(LDNS_RDF_TYPE_INT16, old_sig_len);
 
 	if (!ctl_rdf || !pl_rdf || !sl_rdf || !opkl_rdf || !osl_rdf) {
 		status = LDNS_STATUS_MEM_ERR;
@@ -1004,8 +1011,9 @@ ldns_cga_verify(struct sockaddr_in6 *ns, ldns_cga_rdfs *rdfs)
 		return status; // we can return safely, concat has not been allocated yet
 	}
 
-	(void)ldns_sha1(ldns_buffer_begin(concat), ldns_buffer_capacity(concat), hash);
-	memcpy(id, &ns->sin6_addr + 8, 8);
+	(void)SHA1(ldns_buffer_begin(concat), ldns_buffer_capacity(concat), hash);
+
+	memcpy(id, ns->sin6_addr.s6_addr + 8, 8);
 
 	/* extract the sec parameter */
 	sec = id[0] >> 5;
@@ -1023,7 +1031,7 @@ ldns_cga_verify(struct sockaddr_in6 *ns, ldns_cga_rdfs *rdfs)
 	/* generate hash2 */
 	memset(ldns_buffer_at(concat, 16), 0, 9);
 
-	(void)ldns_sha1(ldns_buffer_begin(concat), ldns_buffer_capacity(concat), hash);
+	(void)SHA1(ldns_buffer_begin(concat), ldns_buffer_capacity(concat), hash);
 
 	/* 2*sec leftmost bytes of hash2 must be zero */
 	sec *= 2;
@@ -1140,7 +1148,16 @@ ldns_pkt_tsig_verify_next_2(ldns_pkt *pkt, uint8_t *wire, size_t wirelen, const 
 	if (strcasecmp(algorithm_name, "cga-tsig.") == 0) {
 		// NOTE: is the resolver's source IP address in ns implicitly the same?
 		// answerfrom(pkt)
+/*
+		ldns_rdf *hc;
+		ldns_str2rdf_aaaa(&hc, "2001:610:158:1040:2845:1291:6255:5e95");
+		ns_in = ldns_rdf2native_sockaddr_storage(hc, 0, &ns_in_len);
 
+		if (!ns_in) {
+			status = LDNS_STATUS_NULL;
+			goto clean;
+		}
+*/
 		/* 1. IP check (3) */
 		ns_in = ldns_rdf2native_sockaddr_storage(ldns_pkt_answerfrom(pkt), 0, &ns_in_len);
 
@@ -1185,6 +1202,7 @@ ldns_pkt_tsig_verify_next_2(ldns_pkt *pkt, uint8_t *wire, size_t wirelen, const 
 
 		/* 2. CGA check (1) */
 		status = ldns_cga_verify(out_in6, cga_rdfs);
+		//status = ldns_cga_verify(ns_in, cga_rdfs);
 
 		if (status != LDNS_STATUS_OK) {
 			goto clean;
@@ -1198,7 +1216,7 @@ ldns_pkt_tsig_verify_next_2(ldns_pkt *pkt, uint8_t *wire, size_t wirelen, const 
 			goto clean;
 		}
 
-		(void)ldns_sha1(ldns_buffer_begin(concat), ldns_buffer_capacity(concat), hash);
+		(void)SHA1(ldns_buffer_begin(concat), ldns_buffer_capacity(concat), hash);
 
 		if (!RSA_verify(NID_sha1, hash, LDNS_SHA1_DIGEST_LENGTH,
 				ldns_rdf_data(cga_rdfs->sig), ldns_rdf_size(cga_rdfs->sig), pubk)) {
@@ -1241,8 +1259,16 @@ ldns_pkt_tsig_verify_next_2(ldns_pkt *pkt, uint8_t *wire, size_t wirelen, const 
 	ldns_pkt_set_id(pkt, pkt_id);
 
 	ldns_cga_rdfs_deep_free(cga_rdfs);
-	RSA_free(pubk);
-	RSA_free(opubk);
+
+	if (pubk) {
+		RSA_free(pubk);
+		pubk = NULL;
+	}
+
+	if (opubk) {
+		RSA_free(opubk);
+		opubk = NULL;
+	}
 
 	ldns_buffer_free(concat);
 
@@ -1471,7 +1497,7 @@ ldns_pkt_tsig_sign_next_2(ldns_pkt *pkt, const char *key_name, const char *key_d
 			}
 
 			/* digest the concatenation */
-			(void)ldns_sha1(ldns_buffer_begin(concat), ldns_buffer_capacity(concat), hash);
+			(void)SHA1(ldns_buffer_begin(concat), ldns_buffer_capacity(concat), hash);
 
 			/* sign */
 			sig_buf = LDNS_XMALLOC(unsigned char, RSA_size(pvt_key));

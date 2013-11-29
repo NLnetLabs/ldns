@@ -20,17 +20,17 @@ extern "C" {
  */
 
 
-#define CT_LEN_SIZE          1
+#define CT_LEN_SIZE          2
 #define CT_ALGO_NAME_SIZE    2
 #define CT_TYPE_SIZE         2
 #define CT_IP_TAG_SIZE       16
-#define CT_PARAM_LEN_SIZE    1
+#define CT_PARAM_LEN_SIZE    2
 #define CT_MODIFIER_SIZE     CT_IP_TAG_SIZE
 #define CT_PREFIX_SIZE       8
 #define CT_COLL_COUNT_SIZE   1
-#define CT_SIG_LEN_SIZE      1
-#define CT_OLD_PK_LEN_SIZE   1
-#define CT_OLD_SIG_LEN_SIZE  1
+#define CT_SIG_LEN_SIZE      2
+#define CT_OLD_PK_LEN_SIZE   2
+#define CT_OLD_SIG_LEN_SIZE  2
 
 
 /**
