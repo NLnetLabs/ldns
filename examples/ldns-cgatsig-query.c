@@ -82,9 +82,6 @@ main(int argc, char *argv[])
 		exit(EXIT_FAILURE);
 	}
 
-//status = ldns_pkt_tsig_verify_2(ldns_pkt *pkt, uint8_t *wire, size_t wirelen, const char *key_name,
-//	const char *key_data, ldns_rdf *orig_mac_rdf, const struct sockaddr_storage *ns_out, size_t ns_out_len)
-
 	/* retrieve the resource records from the answer section */
 	rrs = ldns_pkt_rr_list_by_type(p, qtype, LDNS_SECTION_ANSWER);
 	if (!rrs) {

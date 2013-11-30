@@ -1146,18 +1146,6 @@ ldns_pkt_tsig_verify_next_2(ldns_pkt *pkt, uint8_t *wire, size_t wirelen, const 
 	prepared_wire = ldns_tsig_prepare_pkt_wire(wire, wirelen, &prepared_wire_size);
 
 	if (strcasecmp(algorithm_name, "cga-tsig.") == 0) {
-		// NOTE: is the resolver's source IP address in ns implicitly the same?
-		// answerfrom(pkt)
-/*
-		ldns_rdf *hc;
-		ldns_str2rdf_aaaa(&hc, "2001:610:158:1040:2845:1291:6255:5e95");
-		ns_in = ldns_rdf2native_sockaddr_storage(hc, 0, &ns_in_len);
-
-		if (!ns_in) {
-			status = LDNS_STATUS_NULL;
-			goto clean;
-		}
-*/
 		/* 1. IP check (3) */
 		ns_in = ldns_rdf2native_sockaddr_storage(ldns_pkt_answerfrom(pkt), 0, &ns_in_len);
 
@@ -1173,8 +1161,6 @@ ldns_pkt_tsig_verify_next_2(ldns_pkt *pkt, uint8_t *wire, size_t wirelen, const 
 
 #ifndef S_SPLINT_S
 		if ((ns_out->ss_family != AF_INET6) || (ns_in->ss_family != AF_INET6)) {
-			//printf("%s\n", inet_ntoa(((struct sockaddr_in*)ns_out)->sin_addr));
-			//printf("%s\n", inet_ntoa(((struct sockaddr_in*)ns_in)->sin_addr));
 			LDNS_FREE(ns_in);
 			status = LDNS_STATUS_CRYPTO_TSIG_BOGUS;
 			goto clean;
@@ -1202,7 +1188,6 @@ ldns_pkt_tsig_verify_next_2(ldns_pkt *pkt, uint8_t *wire, size_t wirelen, const 
 
 		/* 2. CGA check (1) */
 		status = ldns_cga_verify(out_in6, cga_rdfs);
-		//status = ldns_cga_verify(ns_in, cga_rdfs);
 
 		if (status != LDNS_STATUS_OK) {
 			goto clean;
@@ -1253,8 +1238,11 @@ ldns_pkt_tsig_verify_next_2(ldns_pkt *pkt, uint8_t *wire, size_t wirelen, const 
 	LDNS_FREE(prepared_wire);
 	ldns_rdf_deep_free(key_name_rdf);
 
-	/* Put back the values */
-	/* NOTE: pkt has not been used in the meantime, remove this? */
+	/* Put back the values
+	 * NOTE: pkt has not been used for generating anything in the meantime,
+   *       ldns_tsig_prepare_pkt_wire() removes the TSIG without touching pkt.
+	 *       Remove this?
+	 */
 	ldns_pkt_set_tsig(pkt, orig_tsig);
 	ldns_pkt_set_id(pkt, pkt_id);
 
@@ -1337,8 +1325,10 @@ ldns_pkt_tsig_sign_next_2(ldns_pkt *pkt, const char *key_name, const char *key_d
 	uint16_t val = 0;
 
 	// suppress compile warning
-	RSA_free(old_pvt_key);
-	old_pvt_key = NULL;
+	if (old_pvt_key) {
+		RSA_free(old_pvt_key);
+		old_pvt_key = NULL;
+	}
 	//
 
 	algorithm_rdf = ldns_rdf_new_frm_str(LDNS_RDF_TYPE_DNAME, algorithm_name);

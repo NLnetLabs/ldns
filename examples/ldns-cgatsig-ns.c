@@ -283,7 +283,6 @@ main(int argc, char **argv)
 	fclose(fp);
 
 	printf("Listening on port %d\n", port);
-	//memset(&addr_me, 0, sizeof(addr_me));
 
 	/* bind: try all ports in that range */
 	b = udp_bind(&sock, port, my_address, &addr_me);
@@ -345,25 +344,6 @@ main(int argc, char **argv)
 		ldns_pkt_push_rr_list(answer_pkt, LDNS_SECTION_ADDITIONAL, answer_ad);
 
 		if (addr_me.ss_family == AF_INET6) {
-//			query_ad = ldns_pkt_additional(query_pkt);
-//			query_tsig = NULL;
-//	printf("COUNT: %i\n", ldns_rr_list_rr_count(query_ad));
-//			/*
-//			if there is a TSIG RR, it must be the last and only one in the AD section
-//			*/
-//			for (i = ldns_rr_list_rr_count(query_ad) - 1; i >= 0; i--) {
-//				temp_rr = ldns_rr_list_rr(query_ad, i);
-//				if (ldns_rr_get_type(temp_rr) == LDNS_RR_TYPE_TSIG) {
-//					if (query_tsig) {
-//						query_tsig = NULL; // more than 1 TSIG RR, ignore for now
-//						break;
-//					}
-//					query_tsig = temp_rr;
-//					printf("Found TSIG RR\n");
-//				} else if (!query_tsig) {
-//						break; // last AD RR is not TSIG, ignore for now
-//				}
-//			}
 			query_tsig = ldns_pkt_tsig(query_pkt);
 
 			if (query_tsig && strcasecmp(ldns_rdf2str(ldns_rr_rdf(query_tsig, 0)),
