@@ -38,29 +38,51 @@ void usage(FILE *output)
 	fprintf(output, "This is NOT a full-fledged authoritative nameserver!\n");
 }
 
-static int udp_bind(int sock, int port, const char *my_address)
+static int udp_bind(int *sock, int port, const char *my_address, struct sockaddr_storage *addr)
 {
-    struct sockaddr_in addr;
-    in_addr_t maddr = INADDR_ANY;
+    struct in_addr maddr4;
+    struct in6_addr maddr6 = IN6ADDR_ANY_INIT;
+    int prot = AF_INET6;
+    struct sockaddr_in *ipv4;
+    struct sockaddr_in6 *ipv6;
+
+    maddr4.s_addr = INADDR_ANY;
 
     if (my_address) {
 #ifdef AF_INET6
-        if (inet_pton(AF_INET6, my_address, &maddr) < 1) {
+        if (inet_pton(AF_INET6, my_address, &maddr6) < 1) {
 #else
-	if (0) {
+    if (0) {
 #endif
-            if (inet_pton(AF_INET, my_address, &maddr) < 1) {
+            prot = AF_INET;
+            if (inet_pton(AF_INET, my_address, &maddr4) < 1) {
                 return -2;
             }
         }
     }
 
+    *sock = socket(prot, SOCK_DGRAM, 0);
+    if (*sock < 0) {
+        return -3;
+
+    }
+    if (prot == AF_INET) {
+        ipv4 = (struct sockaddr_in*)addr;
 #ifndef S_SPLINT_S
-    addr.sin_family = AF_INET;
+        ipv4->sin_family = prot;
 #endif
-    addr.sin_port = (in_port_t) htons((uint16_t)port);
-    addr.sin_addr.s_addr = maddr;
-    return bind(sock, (struct sockaddr *)&addr, (socklen_t) sizeof(addr));
+        ipv4->sin_port = (in_port_t) htons((uint16_t)port);
+        ipv4->sin_addr = maddr4;
+    } else {
+        ipv6 = (struct sockaddr_in6*)addr;
+#ifndef S_SPLINT_S
+        ipv6->sin6_family = prot;
+#endif
+        ipv6->sin6_port = (in_port_t) htons((uint16_t)port);
+        ipv6->sin6_addr = maddr6;
+    }
+
+    return bind(*sock, (struct sockaddr *)addr, (socklen_t) sizeof(*addr));
 }
 
 /* this will probably be moved to a better place in the library itself */
@@ -134,8 +156,9 @@ main(int argc, char **argv)
 	/* network */
 	int sock;
 	ssize_t nb;
-	struct sockaddr addr_me;
+	struct sockaddr_storage addr_me;
 	struct sockaddr addr_him;
+	struct sockaddr_in6 *addr6;
 	socklen_t hislen = (socklen_t) sizeof(addr_him);
 	uint8_t inbuf[INBUF_SIZE];
 	uint8_t *outbuf;
@@ -163,17 +186,16 @@ main(int argc, char **argv)
 	RSA *pvtk;
 	RSA *pubk;
 	char *modf;
-	//uint8_t modf[16] = {0};
 	long modf_len = 0;
 	uint8_t ip_tag[16] = {0};
-	uint8_t prefix[8] = {0x20, 0x01, 0x06, 0x10, 0x01, 0x58, 0x10, 0x40};
-	int i;
+	uint8_t prefix[8] = {0};
+	int b, i;
 
 	if (argc < 9) {
 		usage(stderr);
 		exit(EXIT_FAILURE);
 	} else {
-	    my_address = argv[1];
+		my_address = argv[1];
 		port = atoi(argv[2]);
 		if (port < 1) {
 			usage(stderr);
@@ -261,17 +283,23 @@ main(int argc, char **argv)
 	fclose(fp);
 
 	printf("Listening on port %d\n", port);
-	sock =  socket(AF_INET, SOCK_DGRAM, 0);
-	if (sock < 0) {
-		fprintf(stderr, "%s: socket(): %s\n", argv[0], strerror(errno));
-		exit(1);
-	}
-	memset(&addr_me, 0, sizeof(addr_me));
+	//memset(&addr_me, 0, sizeof(addr_me));
 
 	/* bind: try all ports in that range */
-	if (udp_bind(sock, port, my_address)) {
-		fprintf(stderr, "%s: cannot bind(): %s\n", argv[0], strerror(errno));
+	b = udp_bind(&sock, port, my_address, &addr_me);
+	if (b) {
+		if (b == -3) {
+        fprintf(stderr, "%s: socket(): %s\n", argv[0], strerror(errno));
+        exit(1);
+		} else {
+			fprintf(stderr, "%s: cannot bind(): %s\n", argv[0], strerror(errno));
+		}
 		exit(errno);
+	}
+
+	if (addr_me.ss_family == AF_INET6) {
+		addr6 = (struct sockaddr_in6*)&addr_me;
+		memcpy(prefix, &(addr6->sin6_addr), 8);
 	}
 
 	/* Done. Now receive */
@@ -316,37 +344,39 @@ main(int argc, char **argv)
 		ldns_pkt_push_rr_list(answer_pkt, LDNS_SECTION_AUTHORITY, answer_ns);
 		ldns_pkt_push_rr_list(answer_pkt, LDNS_SECTION_ADDITIONAL, answer_ad);
 
-//		query_ad = ldns_pkt_additional(query_pkt);
-//		query_tsig = NULL;
-//printf("COUNT: %i\n", ldns_rr_list_rr_count(query_ad));
-//		/*
-//		if there is a TSIG RR, it must be the last and only one in the AD section
-//		*/
-//		for (i = ldns_rr_list_rr_count(query_ad) - 1; i >= 0; i--) {
-//			temp_rr = ldns_rr_list_rr(query_ad, i);
-//			if (ldns_rr_get_type(temp_rr) == LDNS_RR_TYPE_TSIG) {
-//				if (query_tsig) {
-//					query_tsig = NULL; // more than 1 TSIG RR, ignore for now
-//					break;
+		if (addr_me.ss_family == AF_INET6) {
+//			query_ad = ldns_pkt_additional(query_pkt);
+//			query_tsig = NULL;
+//	printf("COUNT: %i\n", ldns_rr_list_rr_count(query_ad));
+//			/*
+//			if there is a TSIG RR, it must be the last and only one in the AD section
+//			*/
+//			for (i = ldns_rr_list_rr_count(query_ad) - 1; i >= 0; i--) {
+//				temp_rr = ldns_rr_list_rr(query_ad, i);
+//				if (ldns_rr_get_type(temp_rr) == LDNS_RR_TYPE_TSIG) {
+//					if (query_tsig) {
+//						query_tsig = NULL; // more than 1 TSIG RR, ignore for now
+//						break;
+//					}
+//					query_tsig = temp_rr;
+//					printf("Found TSIG RR\n");
+//				} else if (!query_tsig) {
+//						break; // last AD RR is not TSIG, ignore for now
 //				}
-//				query_tsig = temp_rr;
-//				printf("Found TSIG RR\n");
-//			} else if (!query_tsig) {
-//					break; // last AD RR is not TSIG, ignore for now
 //			}
-//		}
-		query_tsig = ldns_pkt_tsig(query_pkt);
+			query_tsig = ldns_pkt_tsig(query_pkt);
 
-		if (query_tsig && strcasecmp(ldns_rdf2str(ldns_rr_rdf(query_tsig, 0)),
-		                             "cga-tsig.") == 0) {
-			status = ldns_pkt_tsig_sign_2(answer_pkt,
-					ldns_rdf2str(ldns_rr_owner(query_tsig)), NULL, pvtk, pubk,
-					NULL, NULL, 300, "cga-tsig.", ldns_rr_rdf(query_tsig, 3),
-					ip_tag, modf, prefix, coll_count, 0);
-			if (status != LDNS_STATUS_OK) {
-				printf("Error signing packet: %s\n", ldns_get_errorstr_by_id(status));
-			} else {
-				printf("Successfully signed a packet\n");
+			if (query_tsig && strcasecmp(ldns_rdf2str(ldns_rr_rdf(query_tsig, 0)),
+																	 "cga-tsig.") == 0) {
+				status = ldns_pkt_tsig_sign_2(answer_pkt,
+						ldns_rdf2str(ldns_rr_owner(query_tsig)), NULL, pvtk, pubk,
+						NULL, NULL, 300, "cga-tsig.", ldns_rr_rdf(query_tsig, 3),
+						ip_tag, modf, prefix, coll_count, 0);
+				if (status != LDNS_STATUS_OK) {
+					printf("Error signing packet: %s\n", ldns_get_errorstr_by_id(status));
+				} else {
+					printf("Successfully signed a packet\n");
+				}
 			}
 		}
 

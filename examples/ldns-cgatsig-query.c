@@ -10,7 +10,7 @@
 
 static int
 usage(FILE *output) {
-	fprintf(output, "Usage: ldns-cgatsig-query <qname> [<port>] [<no tsig>] [<resolver file>]\n");
+	fprintf(output, "Usage: ldns-cgatsig-query <qname> [<port> <no tsig> <resolver file>]\n");
 	fprintf(output, "  query for <qname, A, IN>\n");
 	return 0;
 }
@@ -49,6 +49,7 @@ main(int argc, char *argv[])
 			rin = argv[4];
 		}
 	}
+
 	/* create a new resolver from input file (or default /etc/resolv.conf) */
 
 	/* adjust so that either resolv.conf contains address of ldnsd,
@@ -58,6 +59,7 @@ main(int argc, char *argv[])
 	 */
 	s = ldns_resolver_new_frm_file(&res, rin);
 	if (s != LDNS_STATUS_OK) {
+		printf("Error: %s\n", ldns_get_errorstr_by_id(s));
 		exit(EXIT_FAILURE);
 	}
 
@@ -76,6 +78,7 @@ main(int argc, char *argv[])
 	}
 
 	if (s != LDNS_STATUS_OK && s != LDNS_STATUS_CRYPTO_TSIG_BOGUS) {
+		printf("Error: %s\n", ldns_get_errorstr_by_id(s));
 		exit(EXIT_FAILURE);
 	}
 
