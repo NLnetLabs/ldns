@@ -33,9 +33,18 @@
 
 void usage(FILE *output)
 {
-	fprintf(output, "Usage: ldns-cgatsig-ns <address> <port> <zone> <zonefile> <private key> <public key> <modifier> <collision count>\n");
 	fprintf(output, "Listens on the specified port and answers queries for the given zone\n");
-	fprintf(output, "This is NOT a full-fledged authoritative nameserver!\n");
+	fprintf(output, "Answers are signed with CGA-TSIG if requested\n");
+	fprintf(output, "This is NOT a full-fledged authoritative nameserver!\n\n");
+	fprintf(output, "Usage: ldns-cgatsig-ns <address> <port> <zone> <zonefile> <private key> <public key> <modifier> <collision count>\n");
+	fprintf(output, "  address           the IP address (CGA) to bind to\n");
+	fprintf(output, "  port              the port to bind to\n");
+	fprintf(output, "  zone              the zone's root domain name\n");
+	fprintf(output, "  zonefile          a zone file with RRs in BIND format\n");
+	fprintf(output, "  private key       the RSA private key in OpenSSL PEM format\n");
+	fprintf(output, "  public key        the RSA public key in OpenSSL PEM format\n");
+	fprintf(output, "  modifier          the 16-byte CGA modifier in base64 format\n");
+	fprintf(output, "  collision count   the CGA collision count (0, 1, or 2)\n");
 }
 
 static int udp_bind(int *sock, int port, const char *my_address, struct sockaddr_storage *addr)

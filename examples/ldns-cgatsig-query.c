@@ -10,8 +10,13 @@
 
 static int
 usage(FILE *output) {
+	fprintf(output, "Query for <qname, A, IN>\n\n");
 	fprintf(output, "Usage: ldns-cgatsig-query <qname> [<port> <no tsig> <resolver file>]\n");
-	fprintf(output, "  query for <qname, A, IN>\n");
+	fprintf(output, "  qname           the domain name to query for\n");
+	fprintf(output, "  port            the remote port to send the query to (default 53)\n");
+	fprintf(output, "  no tsig         do not request for CGA-TSIG if not equal to 0 (default 0)\n");
+	fprintf(output, "  resolver file   a resolver file with the IP address to connect to;\n");
+	fprintf(output, "                  same format as /etc/resolv.conf (defaults to that file)\n");
 	return 0;
 }
 
