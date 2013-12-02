@@ -15,12 +15,12 @@
 */
 
 /* #define LITTLE_ENDIAN * This should be #define'd already, if true. */
-/* #define SHA1HANDSOFF * Copies data before messing with it. */
 
 #include <ldns/config.h>
 #include <ldns/ldns.h>
 #include <strings.h>
 
+#define SHA1HANDSOFF 1 /* Copies data before messing with it. */
 #define rol(value, bits) (((value) << (bits)) | ((value) >> (32 - (bits))))
 
 /* blk0() and blk() perform the initial expand. */
@@ -122,21 +122,19 @@ ldns_sha1_update(ldns_sha1_ctx *context, const unsigned char *data, unsigned int
 {
     unsigned int i;
     unsigned int j;
-    unsigned char d[len];
 
-    (void)memcpy((void*)d, data, len);
     j = (unsigned)(uint32_t)((context->count >> 3) & 63);
     context->count += (len << 3);
     if ((j + len) > 63) {
-        memmove(&context->buffer[j], d, (i = 64 - j));
+        memmove(&context->buffer[j], data, (i = 64 - j));
         ldns_sha1_transform(context->state, context->buffer);
         for ( ; i + 63 < len; i += 64) {
-            ldns_sha1_transform(context->state, &d[i]);
+            ldns_sha1_transform(context->state, &data[i]);
         }
         j = 0;
     }
     else i = 0;
-    memmove(&context->buffer[j], &d[i], len - i);
+    memmove(&context->buffer[j], &data[i], len - i);
 }
 
 
