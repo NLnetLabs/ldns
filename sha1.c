@@ -122,19 +122,21 @@ ldns_sha1_update(ldns_sha1_ctx *context, const unsigned char *data, unsigned int
 {
     unsigned int i;
     unsigned int j;
+    unsigned char d[len];
 
+    (void)memcpy((void*)d, data, len);
     j = (unsigned)(uint32_t)((context->count >> 3) & 63);
     context->count += (len << 3);
     if ((j + len) > 63) {
-        memmove(&context->buffer[j], data, (i = 64 - j));
+        memmove(&context->buffer[j], d, (i = 64 - j));
         ldns_sha1_transform(context->state, context->buffer);
         for ( ; i + 63 < len; i += 64) {
-            ldns_sha1_transform(context->state, &data[i]);
+            ldns_sha1_transform(context->state, &d[i]);
         }
         j = 0;
     }
     else i = 0;
-    memmove(&context->buffer[j], &data[i], len - i);
+    memmove(&context->buffer[j], &d[i], len - i);
 }
 
 
