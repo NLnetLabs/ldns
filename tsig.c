@@ -1011,7 +1011,7 @@ ldns_cga_verify(struct sockaddr_in6 *ns, ldns_cga_rdfs *rdfs)
 		return status; // we can return safely, concat has not been allocated yet
 	}
 
-	(void)SHA1(ldns_buffer_begin(concat), ldns_buffer_capacity(concat), hash);
+	(void)ldns_sha1(ldns_buffer_begin(concat), ldns_buffer_capacity(concat), hash);
 
 	memcpy(id, ns->sin6_addr.s6_addr + 8, 8);
 
@@ -1031,7 +1031,7 @@ ldns_cga_verify(struct sockaddr_in6 *ns, ldns_cga_rdfs *rdfs)
 	/* generate hash2 */
 	memset(ldns_buffer_at(concat, 16), 0, 9);
 
-	(void)SHA1(ldns_buffer_begin(concat), ldns_buffer_capacity(concat), hash);
+	(void)ldns_sha1(ldns_buffer_begin(concat), ldns_buffer_capacity(concat), hash);
 
 	/* 2*sec leftmost bytes of hash2 must be zero */
 	sec *= 2;
@@ -1201,7 +1201,7 @@ ldns_pkt_tsig_verify_next_2(ldns_pkt *pkt, uint8_t *wire, size_t wirelen, const 
 			goto clean;
 		}
 
-		(void)SHA1(ldns_buffer_begin(concat), ldns_buffer_capacity(concat), hash);
+		(void)ldns_sha1(ldns_buffer_begin(concat), ldns_buffer_capacity(concat), hash);
 
 		if (!RSA_verify(NID_sha1, hash, LDNS_SHA1_DIGEST_LENGTH,
 				ldns_rdf_data(cga_rdfs->sig), ldns_rdf_size(cga_rdfs->sig), pubk)) {
@@ -1487,7 +1487,7 @@ ldns_pkt_tsig_sign_next_2(ldns_pkt *pkt, const char *key_name, const char *key_d
 			}
 
 			/* digest the concatenation */
-			(void)SHA1(ldns_buffer_begin(concat), ldns_buffer_capacity(concat), hash);
+			(void)ldns_sha1(ldns_buffer_begin(concat), ldns_buffer_capacity(concat), hash);
 
 			/* sign */
 			sig_buf = LDNS_XMALLOC(unsigned char, RSA_size(pvt_key));
