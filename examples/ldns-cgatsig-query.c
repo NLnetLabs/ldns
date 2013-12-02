@@ -58,7 +58,7 @@ main(int argc, char *argv[])
 	/* create a new resolver from input file (or default /etc/resolv.conf) */
 
 	if (!rin) {
-		printf("Warning: no resolver file specified, using %s instead\n", LDNS_RESOLV_CONF);
+		printf("Warning: no resolver file specified, using %s\n", LDNS_RESOLV_CONF);
 	}
 
 	/* adjust so that either resolv.conf contains address of ldnsd,
