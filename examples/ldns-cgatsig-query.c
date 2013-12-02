@@ -78,29 +78,31 @@ main(int argc, char *argv[])
 	s = ldns_resolver_query_ws(&p, res, qname, qtype, LDNS_RR_CLASS_IN, LDNS_RD);
 	ldns_rdf_deep_free(qname);
 
+	ldns_pkt_print(stdout, p);
+
 	if (!no_tsig) {
-		printf("Status after TSIG verification: %s\n", ldns_get_errorstr_by_id(s));
+		printf("\nStatus after TSIG verification: %s\n", ldns_get_errorstr_by_id(s));
 	}
 
 	if (s != LDNS_STATUS_OK && s != LDNS_STATUS_CRYPTO_TSIG_BOGUS) {
-		printf("Error: %s\n", ldns_get_errorstr_by_id(s));
+		printf("\nError: %s\n", ldns_get_errorstr_by_id(s));
 		exit(EXIT_FAILURE);
 	}
 
 	/* retrieve the resource records from the answer section */
-	rrs = ldns_pkt_rr_list_by_type(p, qtype, LDNS_SECTION_ANSWER);
-	if (!rrs) {
-		fprintf(stderr,
-			" *** invalid answer name %s after query for %s\n",
-			argv[1], argv[1]);
-											ldns_pkt_free(p);
-											ldns_resolver_deep_free(res);
-		exit(EXIT_FAILURE);
-	} else {
-		ldns_rr_list_sort(rrs);
-		ldns_rr_list_print(stdout, rrs);
+//	rrs = ldns_pkt_rr_list_by_type(p, qtype, LDNS_SECTION_ANSWER);
+//	if (!rrs) {
+//		fprintf(stderr,
+//			" *** invalid answer name %s after query for %s\n",
+//			argv[1], argv[1]);
+//											ldns_pkt_free(p);
+//											ldns_resolver_deep_free(res);
+//		exit(EXIT_FAILURE);
+//	} else {
+//		ldns_rr_list_sort(rrs);
+//		ldns_rr_list_print(stdout, rrs);
 		ldns_rr_list_deep_free(rrs);
-	}
+//	}
 
 	ldns_pkt_free(p);
 	ldns_resolver_deep_free(res);

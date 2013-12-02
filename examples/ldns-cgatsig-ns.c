@@ -362,9 +362,9 @@ main(int argc, char **argv)
 						NULL, NULL, 300, "cga-tsig.", ldns_rr_rdf(query_tsig, 3),
 						ip_tag, modf, prefix, coll_count, 0);
 				if (status != LDNS_STATUS_OK) {
-					printf("Error signing packet: %s\n", ldns_get_errorstr_by_id(status));
+					printf("\nError signing packet: %s\n\n", ldns_get_errorstr_by_id(status));
 				} else {
-					printf("Successfully signed a packet\n");
+					printf("\nSuccessfully signed a packet\n\n");
 				}
 			}
 		}
