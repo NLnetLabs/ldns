@@ -41,9 +41,9 @@ void usage(FILE *output)
 	fprintf(output, "  port              the port to bind to\n");
 	fprintf(output, "  zone              the zone's root domain name\n");
 	fprintf(output, "  zonefile          a zone file with RRs in BIND format\n");
-	fprintf(output, "  private key       the RSA private key in OpenSSL PEM format\n");
-	fprintf(output, "  public key        the RSA public key in OpenSSL PEM format\n");
-	fprintf(output, "  modifier          the 16-byte CGA modifier in base64 format\n");
+	fprintf(output, "  private key       a file with the RSA private key in OpenSSL PEM format\n");
+	fprintf(output, "  public key        a file with the RSA public key in OpenSSL PEM format\n");
+	fprintf(output, "  modifier          a file with the 16-byte CGA modifier in base64 format\n");
 	fprintf(output, "  collision count   the CGA collision count (0, 1, or 2)\n");
 }
 
