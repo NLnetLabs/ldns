@@ -17,7 +17,6 @@
 #ifdef HAVE_SSL
 #include <openssl/hmac.h>
 #include <openssl/md5.h>
-#include <openssl/sha.h>
 #endif /* HAVE_SSL */
 
 char *
