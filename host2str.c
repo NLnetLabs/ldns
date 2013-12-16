@@ -1995,10 +1995,12 @@ ldns_key2buffer_str(ldns_buffer *output, const ldns_key *k)
 					break;
 #endif
 				default:
+#ifdef STDERR_MSGS
 					fprintf(stderr, "Warning: unknown signature ");
 					fprintf(stderr,
 						   "algorithm type %u\n",
 						   ldns_key_algorithm(k));
+#endif
 					ldns_buffer_printf(output,
 								    "Algorithm: %u (Unknown)\n",
 								    ldns_key_algorithm(k));

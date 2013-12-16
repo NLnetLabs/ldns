@@ -183,7 +183,7 @@ else
 fi
 
 # add option to disable installation of ldns-config script
-AC_ARG_ENABLE(ldns-config, [ --disable-ldns-config	disable installation of ldns-config (default=enabled)],
+AC_ARG_ENABLE(ldns-config, AC_HELP_STRING([--disable-ldns-config], [disable installation of ldns-config (default=enabled)]),
 	enable_ldns_config=$enableval, enable_ldns_config=yes)
 if test "x$enable_ldns_config" = xyes; then
 	AC_SUBST(INSTALL_CONFIG, [install-config])
@@ -196,6 +196,16 @@ else
 	AC_SUBST(UNINSTALL_CONFIG, [""])
 	AC_SUBST(UNINSTALL_CONFIG_MANPAGE, [""])
 fi
+
+# add option to disable library printing to stderr
+AC_ARG_ENABLE(stderr-msgs, AC_HELP_STRING([--disable-stderr-msgs], [Disable printing to stderr]), enable_stderr_msgs=$enableval, enable_stderr_msgs=yes)
+case "$enable_stderr_msgs" in
+    no)
+        ;;
+    *)  dnl default
+        AC_DEFINE_UNQUOTED([STDERR_MSGS], [1], [Define this to enable messages to stderr.])
+        ;;
+esac
 
 # check for python
 PYTHON_X_CFLAGS=""
