@@ -15,7 +15,7 @@ includedir	= @includedir@
 doxygen		= @doxygen@
 pywrapdir       = $(srcdir)/contrib/python
 pyldnsxwrapdir  = $(srcdir)/contrib/ldnsx
-p5_dns_ldns_dir = $(srcdir)/contrib/Net-LDNS
+p5_dns_ldns_dir = $(srcdir)/contrib/DNS-LDNS
 PERL		= @PERL@
 swig		= @swig@
 swigpy_flags	= -python @SWIGPY3@
@@ -253,10 +253,10 @@ _ldns.la: ldns_wrapper.lo libldns.la
 $(p5_dns_ldns_dir)/Makefile: $(p5_dns_ldns_dir)/Makefile.PL
 	BUILDDIR=`pwd`; cd $(p5_dns_ldns_dir); $(PERL) Makefile.PL PREFIX="$(prefix)" LIBS="-L$$BUILDDIR/.libs -lldns" INC="-I$$BUILDDIR"
 
-$(p5_dns_ldns_dir)/blib/arch/auto/Net/LDNS/LDNS.so: $(p5_dns_ldns_dir)/Makefile
+$(p5_dns_ldns_dir)/blib/arch/auto/DNS/LDNS/LDNS.so: $(p5_dns_ldns_dir)/Makefile
 	cd $(p5_dns_ldns_dir); $(MAKE)
 
-p5-dns-ldns: $(p5_dns_ldns_dir)/blib/arch/auto/Net/LDNS/LDNS.so
+p5-dns-ldns: $(p5_dns_ldns_dir)/blib/arch/auto/DNS/LDNS/LDNS.so
 
 install-p5-dns-ldns: $(p5_dns_ldns_dir)/Makefile
 	cd $(p5_dns_ldns_dir); $(MAKE) install
