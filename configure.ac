@@ -297,7 +297,7 @@ else
 fi
 
 # check for perl
-ldns_with_p5_net_ldns=no
+ldns_with_p5_dns_ldns=no
 AC_ARG_WITH(p5-dns-ldns, AC_HELP_STRING([--with-p5-dns-ldns], 
  [generate DNS::LDNS perl bindings]), 
  [],[ withval="no" ])
