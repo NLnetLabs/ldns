@@ -298,8 +298,8 @@ fi
 
 # check for perl
 ldns_with_p5_net_ldns=no
-AC_ARG_WITH(p5-net-ldns, AC_HELP_STRING([--with-p5-net-ldns], 
- [generate Net::LDNS perl bindings]), 
+AC_ARG_WITH(p5-dns-ldns, AC_HELP_STRING([--with-p5-dns-ldns], 
+ [generate DNS::LDNS perl bindings]), 
  [],[ withval="no" ])
 ldns_have_perl=no
 if test x_$withval != x_no; then
@@ -307,17 +307,17 @@ if test x_$withval != x_no; then
    if test -z "$PERL"; then
       AC_MSG_ERROR([Cannot find perl in your system path])
    fi
-   AC_SUBST(P5_NET_LDNS, "p5-net-ldns")dnl
-   AC_SUBST(TEST_P5_NET_LDNS, "test-p5-net-ldns")dnl
-   AC_SUBST(INSTALL_P5_NET_LDNS, "install-p5-net-ldns")dnl
-   AC_SUBST(UNINSTALL_P5_NET_LDNS, "uninstall-p5-net-ldns")dnl
-   AC_SUBST(CLEAN_P5_NET_LDNS, "clean-p5-net-ldns")
+   AC_SUBST(P5_DNS_LDNS, "p5-dns-ldns")dnl
+   AC_SUBST(TEST_P5_DNS_LDNS, "test-p5-dns-ldns")dnl
+   AC_SUBST(INSTALL_P5_DNS_LDNS, "install-p5-dns-ldns")dnl
+   AC_SUBST(UNINSTALL_P5_DNS_LDNS, "uninstall-p5-dns-ldns")dnl
+   AC_SUBST(CLEAN_P5_DNS_LDNS, "clean-p5-dns-ldns")
 else
-   AC_SUBST(P5_NET_LDNS, "")dnl
-   AC_SUBST(TEST_P5_NET_LDNS, "")dnl
-   AC_SUBST(INSTALL_P5_NET_LDNS, "")dnl
-   AC_SUBST(UNINSTALL_P5_NET_LDNS, "")dnl
-   AC_SUBST(CLEAN_P5_NET_LDNS, "")
+   AC_SUBST(P5_DNS_LDNS, "")dnl
+   AC_SUBST(TEST_P5_DNS_LDNS, "")dnl
+   AC_SUBST(INSTALL_P5_DNS_LDNS, "")dnl
+   AC_SUBST(UNINSTALL_P5_DNS_LDNS, "")dnl
+   AC_SUBST(CLEAN_P5_DNS_LDNS, "")
 fi
 
 # Use libtool
