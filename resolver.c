@@ -1350,7 +1350,9 @@ ldns_axfr_next(ldns_resolver *resolver)
 		resolver->_axfr_i = 0;
 		if (status != LDNS_STATUS_OK) {
 			/* TODO: make status return type of this function (...api change) */
+#ifdef STDERR_MSGS
 			fprintf(stderr, "Error parsing rr during AXFR: %s\n", ldns_get_errorstr_by_id(status));
+#endif
 
 			/* we must now also close the socket, otherwise subsequent uses of the
 			   same resolver structure will fail because the link is still open or
@@ -1365,6 +1367,7 @@ ldns_axfr_next(ldns_resolver *resolver)
 			return NULL;
 		} else if (ldns_pkt_get_rcode(resolver->_cur_axfr_pkt) != 0) {
 			rcode = ldns_lookup_by_id(ldns_rcodes, (int) ldns_pkt_get_rcode(resolver->_cur_axfr_pkt));
+#ifdef STDERR_MSGS
 			if (rcode) {
 				fprintf(stderr, "Error in AXFR: %s\n", 
 						rcode->name);
@@ -1373,6 +1376,7 @@ ldns_axfr_next(ldns_resolver *resolver)
 						(int) ldns_pkt_get_rcode(
 						resolver->_cur_axfr_pkt));
 			}
+#endif
 
 			/* we must now also close the socket, otherwise subsequent uses of the
 			   same resolver structure will fail because the link is still open or

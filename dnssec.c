@@ -997,7 +997,9 @@ ldns_nsec3_hash_name(ldns_rdf *name,
 	/* prepare the owner name according to the draft section bla */
 	cann = ldns_rdf_clone(name);
 	if(!cann) {
+#ifdef STDERR_MSGS
 		fprintf(stderr, "Memory error\n");
+#endif
 		return NULL;
 	}
 	ldns_dname2canonical(cann);
@@ -1042,11 +1044,13 @@ ldns_nsec3_hash_name(ldns_rdf *name,
                 hashed_owner_b32,
                 ldns_b32_ntop_calculate_size(hashed_owner_str_len)+1);
 	if (hashed_owner_b32_len < 1) {
+#ifdef STDERR_MSGS
 		fprintf(stderr, "Error in base32 extended hex encoding ");
 		fprintf(stderr, "of hashed owner name (name: ");
 		ldns_rdf_print(stderr, name);
 		fprintf(stderr, ", return code: %u)\n",
 		        (unsigned int) hashed_owner_b32_len);
+#endif
 		LDNS_FREE(hashed_owner_b32);
 		return NULL;
 	}
@@ -1054,7 +1058,9 @@ ldns_nsec3_hash_name(ldns_rdf *name,
 
 	status = ldns_str2rdf_dname(&hashed_owner, hashed_owner_b32);
 	if (status != LDNS_STATUS_OK) {
+#ifdef STDERR_MSGS
 		fprintf(stderr, "Error creating rdf from %s\n", hashed_owner_b32);
+#endif
 		LDNS_FREE(hashed_owner_b32);
 		return NULL;
 	}

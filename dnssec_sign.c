@@ -940,7 +940,9 @@ ldns_dnssec_remove_signatures( ldns_dnssec_rrs *signatures
 		ldns_key_list_set_use(key_list, false);
 		break;
 		default:
+#ifdef STDERR_MSGS
 			fprintf(stderr, "[XX] unknown return value from callback\n");
+#endif
 			break;
 		}
 		return NULL;
@@ -992,7 +994,9 @@ ldns_dnssec_remove_signatures( ldns_dnssec_rrs *signatures
 			LDNS_FREE(cur_rr);
 			break;
 		default:
+#ifdef STDERR_MSGS
 			fprintf(stderr, "[XX] unknown return value from callback\n");
+#endif
 			break;
 		}
 		cur_rr = next_rr;

@@ -54,10 +54,8 @@ ldns_dnssec_rrs_add_rr(ldns_dnssec_rrs *rrs, ldns_rr *rr)
 
 	/* this could be done more efficiently; name and type should already
 	   be equal */
-	cmp = ldns_rr_compare(rrs->rr,
-					  rr);
-	/* should we error on equal? */
-	if (cmp <= 0) {
+	cmp = ldns_rr_compare(rrs->rr, rr);
+	if (cmp < 0) {
 		if (rrs->next) {
 			return ldns_dnssec_rrs_add_rr(rrs->next, rr);
 		} else {
@@ -74,6 +72,7 @@ ldns_dnssec_rrs_add_rr(ldns_dnssec_rrs *rrs, ldns_rr *rr)
 		rrs->rr = rr;
 		rrs->next = new_rrs;
 	}
+	/* Silently ignore equal rr's */
 	return LDNS_STATUS_OK;
 }
 

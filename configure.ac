@@ -183,7 +183,7 @@ else
 fi
 
 # add option to disable installation of ldns-config script
-AC_ARG_ENABLE(ldns-config, [ --disable-ldns-config	disable installation of ldns-config (default=enabled)],
+AC_ARG_ENABLE(ldns-config, AC_HELP_STRING([--disable-ldns-config], [disable installation of ldns-config (default=enabled)]),
 	enable_ldns_config=$enableval, enable_ldns_config=yes)
 if test "x$enable_ldns_config" = xyes; then
 	AC_SUBST(INSTALL_CONFIG, [install-config])
@@ -196,6 +196,16 @@ else
 	AC_SUBST(UNINSTALL_CONFIG, [""])
 	AC_SUBST(UNINSTALL_CONFIG_MANPAGE, [""])
 fi
+
+# add option to disable library printing to stderr
+AC_ARG_ENABLE(stderr-msgs, AC_HELP_STRING([--disable-stderr-msgs], [Disable printing to stderr]), enable_stderr_msgs=$enableval, enable_stderr_msgs=yes)
+case "$enable_stderr_msgs" in
+    no)
+        ;;
+    *)  dnl default
+        AC_DEFINE_UNQUOTED([STDERR_MSGS], [1], [Define this to enable messages to stderr.])
+        ;;
+esac
 
 # check for python
 PYTHON_X_CFLAGS=""
@@ -287,9 +297,9 @@ else
 fi
 
 # check for perl
-ldns_with_p5_net_ldns=no
-AC_ARG_WITH(p5-net-ldns, AC_HELP_STRING([--with-p5-net-ldns], 
- [generate Net::LDNS perl bindings]), 
+ldns_with_p5_dns_ldns=no
+AC_ARG_WITH(p5-dns-ldns, AC_HELP_STRING([--with-p5-dns-ldns], 
+ [generate DNS::LDNS perl bindings]), 
  [],[ withval="no" ])
 ldns_have_perl=no
 if test x_$withval != x_no; then
@@ -297,17 +307,17 @@ if test x_$withval != x_no; then
    if test -z "$PERL"; then
       AC_MSG_ERROR([Cannot find perl in your system path])
    fi
-   AC_SUBST(P5_NET_LDNS, "p5-net-ldns")dnl
-   AC_SUBST(TEST_P5_NET_LDNS, "test-p5-net-ldns")dnl
-   AC_SUBST(INSTALL_P5_NET_LDNS, "install-p5-net-ldns")dnl
-   AC_SUBST(UNINSTALL_P5_NET_LDNS, "uninstall-p5-net-ldns")dnl
-   AC_SUBST(CLEAN_P5_NET_LDNS, "clean-p5-net-ldns")
+   AC_SUBST(P5_DNS_LDNS, "p5-dns-ldns")dnl
+   AC_SUBST(TEST_P5_DNS_LDNS, "test-p5-dns-ldns")dnl
+   AC_SUBST(INSTALL_P5_DNS_LDNS, "install-p5-dns-ldns")dnl
+   AC_SUBST(UNINSTALL_P5_DNS_LDNS, "uninstall-p5-dns-ldns")dnl
+   AC_SUBST(CLEAN_P5_DNS_LDNS, "clean-p5-dns-ldns")
 else
-   AC_SUBST(P5_NET_LDNS, "")dnl
-   AC_SUBST(TEST_P5_NET_LDNS, "")dnl
-   AC_SUBST(INSTALL_P5_NET_LDNS, "")dnl
-   AC_SUBST(UNINSTALL_P5_NET_LDNS, "")dnl
-   AC_SUBST(CLEAN_P5_NET_LDNS, "")
+   AC_SUBST(P5_DNS_LDNS, "")dnl
+   AC_SUBST(TEST_P5_DNS_LDNS, "")dnl
+   AC_SUBST(INSTALL_P5_DNS_LDNS, "")dnl
+   AC_SUBST(UNINSTALL_P5_DNS_LDNS, "")dnl
+   AC_SUBST(CLEAN_P5_DNS_LDNS, "")
 fi
 
 # Use libtool
@@ -390,10 +400,42 @@ case "$enable_dane" in
       ;;
 esac
 
-AC_ARG_ENABLE(draft-rrtypes, AC_HELP_STRING([--enable-draft-rrtypes], [Enable draft RRtypes.]))
-case "$enable_draft_rrtypes" in
+AC_ARG_ENABLE(rrtype-ninfo, AC_HELP_STRING([--enable-rrtype-ninfo], [Enable draft RR type ninfo.]))
+case "$enable_rrtype_ninfo" in
 	yes)
-		AC_DEFINE_UNQUOTED([DRAFT_RRTYPES], [], [Define this to enable draft RRtypes.])
+		AC_DEFINE_UNQUOTED([RRTYPE_NINFO], [], [Define this to enable RR type NINFO.])
+		;;
+	no|*)
+		;;
+esac
+AC_ARG_ENABLE(rrtype-rkey, AC_HELP_STRING([--enable-rrtype-rkey], [Enable draft RR type rkey.]))
+case "$enable_rrtype_rkey" in
+	yes)
+		AC_DEFINE_UNQUOTED([RRTYPE_RKEY], [], [Define this to enable RR type RKEY.])
+		;;
+	no|*)
+		;;
+esac
+AC_ARG_ENABLE(rrtype-cds, AC_HELP_STRING([--enable-rrtype-cds], [Enable draft RR type cds.]))
+case "$enable_rrtype_cds" in
+	yes)
+		AC_DEFINE_UNQUOTED([RRTYPE_CDS], [], [Define this to enable RR type CDS.])
+		;;
+	no|*)
+		;;
+esac
+AC_ARG_ENABLE(rrtype-uri, AC_HELP_STRING([--enable-rrtype-uri], [Enable draft RR type uri.]))
+case "$enable_rrtype_uri" in
+	yes)
+		AC_DEFINE_UNQUOTED([RRTYPE_URI], [], [Define this to enable RR type URI.])
+		;;
+	no|*)
+		;;
+esac
+AC_ARG_ENABLE(rrtype-ta, AC_HELP_STRING([--enable-rrtype-ta], [Enable draft RR type ta.]))
+case "$enable_rrtype_ta" in
+	yes)
+		AC_DEFINE_UNQUOTED([RRTYPE_TA], [], [Define this to enable RR type TA.])
 		;;
 	no|*)
 		;;

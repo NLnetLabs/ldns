@@ -36,10 +36,6 @@
 	* ldns-verify-zone NSEC3 checking from quadratic to linear performance.
 	  Thanks NIC MX (nicmexico.mx)
 	* ldns-dane setup new ssl session for each new connect to prevent hangs
-	* Parsing from and to wire and presentation format for draft rr types
-	  must be explicitely enabled with the --enable-draft-rrtypes option
-	  to conifigure. This applies to: NINFO, RKEY, CDS, EUI48, EUI64, URI
-	  and TA
 	* Bump version to 1.7.0
 	* The version of shared library now has similar scheme as libunbound.
 	  ldns 1.7.0 will have shared library version (SONAME) 2.0.0
@@ -47,10 +43,20 @@
 	* bugfix #525: Fix documentation of ldns_resolver_set_retry
 	* Remove unused LDNS_RDF_TYPE_TSIG and associated functions.
 	* Fix ldns_nsec_covers_name for zones with an apex only. Thanks Miek.
-	* Configure option to build perl bindings: --with-p5-net-ldns
+	* Configure option to build perl bindings: --with-p5-dns-ldns
 	  (Net::LDNS is a contribution from Erik Ostlyngen)
 	* bugfix #527: Move -lssl before -lcrypto when linking
 	* Optimize TSIG digest function name comparison (Thanks Marc Buijsman)
+	* Compare names case insensitive with ldns_pkt_rr_list_by_name and
+	  ldns_pkt_rr_list_by_name_and_type (thanks Johannes Naab)
+	* A separate --enable for each draft RR type: --enable-rrtype-ninfo,
+	  --enable-rrtype-rkey, --enable-rrtype-cds, --enable-rrtype-uri and
+	  --enable-rrtype-ta
+	* bugfix #530: Don't sign and verify duplicate RRs (Thanks Jelte Jansen)
+	* bugfix #505: Manpage and usage output fixes (Thanks Tomas Hozza)
+	* Adjust ldns_sha1() so that the input data is not modified (Thanks
+	  Marc Buijsman)
+	* Disable printing to stderr with --disable-stderr-msgs configure option
 
 1.6.16	2012-11-13
 	* Fix Makefile to build pyldns with BSD make

@@ -15,7 +15,7 @@ includedir	= @includedir@
 doxygen		= @doxygen@
 pywrapdir       = $(srcdir)/contrib/python
 pyldnsxwrapdir  = $(srcdir)/contrib/ldnsx
-p5_net_ldns_dir = $(srcdir)/contrib/Net-LDNS
+p5_dns_ldns_dir = $(srcdir)/contrib/DNS-LDNS
 PERL		= @PERL@
 swig		= @swig@
 swigpy_flags	= -python @SWIGPY3@
@@ -103,7 +103,7 @@ LINK_EXE	= $(LIBTOOL) --mode=link $(CC) $(CFLAGS) $(LDFLAGS) $(LIBSSL_LDFLAGS)
 .PHONY: install uninstall install-doc uninstall-doc uninstall-pyldns
 .PHONY: install-h uninstall-h install-lib uninstall-lib install-pyldns
 
-all:	setup-builddir lib linktest manpages @P5_NET_LDNS@ @PYLDNS@ @DRILL@ @EXAMPLES@
+all:	setup-builddir lib linktest manpages @P5_DNS_LDNS@ @PYLDNS@ @DRILL@ @EXAMPLES@
 
 .SUFFIXES: .c .o .a .lo .h .i
 
@@ -250,29 +250,29 @@ ldns_wrapper.lo: $(pywrapdir)/ldns_wrapper.c ldns/config.h
 _ldns.la: ldns_wrapper.lo libldns.la 
 	$(LIBTOOL) --tag=CC --mode=link $(CC) $(CFLAGS) $(PYTHON_CFLAGS) $(LDFLAGS) $(PYTHON_LDFLAGS) -module -version-number $(version_info) -no-undefined -o $@ ldns_wrapper.lo -rpath $(python_site) -L. -L.libs -lldns $(LIBS)
 
-$(p5_net_ldns_dir)/Makefile: $(p5_net_ldns_dir)/Makefile.PL
-	BUILDDIR=`pwd`; cd $(p5_net_ldns_dir); $(PERL) Makefile.PL PREFIX="$(prefix)" LIBS="-L$$BUILDDIR/.libs -lldns" INC="-I$$BUILDDIR"
+$(p5_dns_ldns_dir)/Makefile: $(p5_dns_ldns_dir)/Makefile.PL
+	BUILDDIR=`pwd`; cd $(p5_dns_ldns_dir); $(PERL) Makefile.PL PREFIX="$(prefix)" LIBS="-L$$BUILDDIR/.libs -lldns" INC="-I$$BUILDDIR"
 
-$(p5_net_ldns_dir)/blib/arch/auto/Net/LDNS/LDNS.so: $(p5_net_ldns_dir)/Makefile
-	cd $(p5_net_ldns_dir); $(MAKE)
+$(p5_dns_ldns_dir)/blib/arch/auto/DNS/LDNS/LDNS.so: $(p5_dns_ldns_dir)/Makefile
+	cd $(p5_dns_ldns_dir); $(MAKE)
 
-p5-net-ldns: $(p5_net_ldns_dir)/blib/arch/auto/Net/LDNS/LDNS.so
+p5-dns-ldns: $(p5_dns_ldns_dir)/blib/arch/auto/DNS/LDNS/LDNS.so
 
-install-p5-net-ldns: $(p5_net_ldns_dir)/Makefile
-	cd $(p5_net_ldns_dir); $(MAKE) install
+install-p5-dns-ldns: $(p5_dns_ldns_dir)/Makefile
+	cd $(p5_dns_ldns_dir); $(MAKE) install
 
-uninstall-p5-net-ldns: $(p5_net_ldns_dir)/Makefile
-	cd $(p5_net_ldns_dir); $(MAKE) uninstall
+uninstall-p5-dns-ldns: $(p5_dns_ldns_dir)/Makefile
+	cd $(p5_dns_ldns_dir); $(MAKE) uninstall
 
-clean-p5-net-ldns: $(p5_net_ldns_dir)/Makefile
-	cd $(p5_net_ldns_dir); $(MAKE) clean
+clean-p5-dns-ldns: $(p5_dns_ldns_dir)/Makefile
+	cd $(p5_dns_ldns_dir); $(MAKE) clean
 
-test-p5-net-ldns: $(p5_net_ldns_dir)/Makefile
-	cd $(p5_net_ldns_dir); $(MAKE) test
+test-p5-dns-ldns: $(p5_dns_ldns_dir)/Makefile
+	cd $(p5_dns_ldns_dir); $(MAKE) test
 
-install: install-h install-lib @INSTALL_CONFIG@ install-manpages $(pyldns_inst) $(pyldnsx_inst) @INSTALL_P5_NET_LDNS@ @INSTALL_DRILL@ @INSTALL_EXAMPLES@
+install: install-h install-lib @INSTALL_CONFIG@ install-manpages $(pyldns_inst) $(pyldnsx_inst) @INSTALL_P5_DNS_LDNS@ @INSTALL_DRILL@ @INSTALL_EXAMPLES@
 
-uninstall: uninstall-manpages @UNINSTALL_CONFIG@ uninstall-h uninstall-lib $(pyldns_uninst) $(pyldnsx_uninst) @UNINSTALL_P5_NET_LDNS@ @UNINSTALL_DRILL@ @UNINSTALL_EXAMPLES@
+uninstall: uninstall-manpages @UNINSTALL_CONFIG@ uninstall-h uninstall-lib $(pyldns_uninst) $(pyldnsx_uninst) @UNINSTALL_P5_DNS_LDNS@ @UNINSTALL_DRILL@ @UNINSTALL_EXAMPLES@
 
 destclean: uninstall
 
@@ -354,7 +354,7 @@ clean-lib:
 	$(LIBTOOL) --mode clean rm -f $(pywrapdir)/ldns_wrapper.c
 	$(LIBTOOL) --mode clean rm -f $(pywrapdir)/ldns.py
 
-clean: @CLEAN_DRILL@ @CLEAN_EXAMPLES@ @CLEAN_P5_NET_LDNS@ clean-manpages clean-lib  putdown-builddir
+clean: @CLEAN_DRILL@ @CLEAN_EXAMPLES@ @CLEAN_P5_DNS_LDNS@ clean-manpages clean-lib  putdown-builddir
 
 realclean: clean docclean
 	rm -f config.status
@@ -419,7 +419,7 @@ allclean: test-clean clean
 test-clean:
 	tpkg -b test clean
 
-test: @TEST_P5_NET_LDNS@
+test: @TEST_P5_DNS_LDNS@
 	if test -x "`which bash`"; then bash test/test_all.sh; else sh test/test_all.sh; fi
 
 

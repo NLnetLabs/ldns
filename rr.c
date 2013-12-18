@@ -1991,13 +1991,13 @@ static const ldns_rdf_type type_lp_wireformat[] = {
 	LDNS_RDF_TYPE_INT16,
 	LDNS_RDF_TYPE_DNAME
 };
-#ifdef DRAFT_RRTYPES
 static const ldns_rdf_type type_eui48_wireformat[] = {
 	LDNS_RDF_TYPE_EUI48
 };
 static const ldns_rdf_type type_eui64_wireformat[] = {
 	LDNS_RDF_TYPE_EUI64
 };
+#ifdef RRTYPE_URI
 static const ldns_rdf_type type_uri_wireformat[] = {
 	LDNS_RDF_TYPE_INT16,
 	LDNS_RDF_TYPE_INT16,
@@ -2134,19 +2134,22 @@ static ldns_rr_descriptor rdata_field_descriptors[] = {
 	 */
 	{LDNS_RR_TYPE_HIP, "HIP", 1, 1, type_hip_wireformat, LDNS_RDF_TYPE_DNAME, LDNS_RR_NO_COMPRESS, 0 },
 
-#ifdef DRAFT_RRTYPES
+#ifdef RRTYPE_NINFO
 	/* 56 */
 	{LDNS_RR_TYPE_NINFO, "NINFO", 1, 0, NULL, LDNS_RDF_TYPE_STR, LDNS_RR_NO_COMPRESS, 0 },
+#else
+{LDNS_RR_TYPE_NULL, "TYPE56", 1, 1, type_0_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 0 },
+#endif
+#ifdef RRTYPE_RKEY
 	/* 57 */
 	{LDNS_RR_TYPE_RKEY, "RKEY", 4, 4, type_key_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 0 },
 #else
-{LDNS_RR_TYPE_NULL, "TYPE56", 1, 1, type_0_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 0 },
 {LDNS_RR_TYPE_NULL, "TYPE57", 1, 1, type_0_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 0 },
 #endif
 	/* 58 */
 	{LDNS_RR_TYPE_TALINK, "TALINK", 2, 2, type_talink_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 2 },
 
-#ifdef DRAFT_RRTYPES
+#ifdef RRTYPE_CDS
 	/* 59 */
 	{LDNS_RR_TYPE_CDS, "CDS", 4, 4, type_ds_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 0 },
 #else
@@ -2213,16 +2216,10 @@ static ldns_rr_descriptor rdata_field_descriptors[] = {
 	{LDNS_RR_TYPE_L64, "L64", 2, 2, type_l64_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 0 },
 	/* 107 */
 	{LDNS_RR_TYPE_LP, "LP", 2, 2, type_lp_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 1 },
-
-#ifdef DRAFT_RRTYPES
 	/* 108 */
 	{LDNS_RR_TYPE_EUI48, "EUI48", 1, 1, type_eui48_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 0 },
 	/* 109 */
 	{LDNS_RR_TYPE_EUI64, "EUI64", 1, 1, type_eui64_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 0 },
-#else
-{LDNS_RR_TYPE_NULL, "TYPE108", 1, 1, type_0_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 0 },
-{LDNS_RR_TYPE_NULL, "TYPE109", 1, 1, type_0_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 0 },
-#endif
 
 {LDNS_RR_TYPE_NULL, "TYPE110", 1, 1, type_0_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 0 },
 {LDNS_RR_TYPE_NULL, "TYPE111", 1, 1, type_0_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 0 },
@@ -2386,7 +2383,7 @@ static ldns_rr_descriptor rdata_field_descriptors[] = {
 	/* ANY: A request for all (available) records */
 {LDNS_RR_TYPE_NULL, "TYPE255", 1, 1, type_0_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 0 },
 
-#ifdef DRAFT_RRTYPES
+#ifdef RRTYPE_URI
 	/* 256 */
 	{LDNS_RR_TYPE_URI, "URI", 3, 3, type_uri_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 0 },
 #else
@@ -2397,7 +2394,7 @@ static ldns_rr_descriptor rdata_field_descriptors[] = {
 
 /* split in array, no longer contiguous */
 
-#ifdef DRAFT_RRTYPES
+#ifdef RRTYPE_TA
 	/* 32768 */
 	{LDNS_RR_TYPE_TA, "TA", 4, 4, type_ds_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 0 },
 #else

@@ -37,7 +37,7 @@ INSTALLATION
 5. make install
 
 
-* Building from subversion repository
+* Building from repository
 
 If you are building from the repository you will need to have (gnu)
 autotools like libtool and autoreconf installed. A list of all the commands

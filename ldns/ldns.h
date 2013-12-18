@@ -37,9 +37,9 @@ Feature list
   - TSIG support,
   - DNSSEC support; signing and verification,
   - small size,
-  - online documentation as well as manual pages. 
+  - online documentation as well as manual pages.
 
-If you want to send us patches please use the code from subversion (trunk). 
+If you want to send us patches please use the code from git.
 
 \section using_ldns Using ldns
 
