@@ -29,11 +29,11 @@ usage(FILE *stream, const char *progname)
 	fprintf(stream, "\n\targuments may be placed in random order\n");
 	fprintf(stream, "\n  Options:\n");
 	fprintf(stream, "\t-D\t\tenable DNSSEC (DO bit)\n");
-	fprintf(stream, "\t-I\t\tsource address to query from\n");
 #ifdef HAVE_SSL
 	fprintf(stream, "\t-T\t\ttrace from the root down to <name>\n");
 	fprintf(stream, "\t-S\t\tchase signature(s) from <name> to a know key [*]\n");
 #endif /*HAVE_SSL*/
+	fprintf(stream, "\t-I <address>\tsource address to query from\n");
 	fprintf(stream, "\t-V <number>\tverbosity (0-5)\n");
 	fprintf(stream, "\t-Q\t\tquiet mode (overrules -V)\n");
 	fprintf(stream, "\n");

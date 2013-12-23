@@ -125,7 +125,7 @@ print_usage(const char* progname)
 	printf("\t-t <tlsafile>\tdo not use DNS, "
 	       "but read TLSA record(s) from <tlsafile>\n"
 	      );
-	printf("\t-T\t\tReturns exit status 2 for PKIX validated connections\n"
+	printf("\t-T\t\tReturn exit status 2 for PKIX validated connections\n"
 	       "\t\t\twithout (secure) TLSA records(s)\n");
 	printf("\t-u\t\tuse UDP transport instead of TCP\n");
 	printf("\t-v\t\tshow version and exit\n");
