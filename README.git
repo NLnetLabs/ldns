@@ -15,7 +15,7 @@
 # it is needed)
 libtoolize -c --install
 autoreconf --install
-./configure --with-examples --with-drill # --with-pyldns
+./configure --with-examples --with-drill # --with-pyldns --with-p5-dns-ldns
 make
 make doc  # needs doxygen for the html pages
 (cd pcat && autoreconf && ./configure && make)

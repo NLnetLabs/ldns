@@ -17,7 +17,7 @@ fi
 test_tool_avail "dig"
 
 echo start the test at `date` in `pwd`
-$TPKG clean
+[ "$1" = "clean" -o "$2" = "clean" ] && $TPKG clean
 $TPKG -a ../.. fake 01-compile.tpkg
 $TPKG -a ../.. fake 02-lint.tpkg		# Works only on FreeBSD really
 $TPKG -a ../.. fake 07-compile-examples.tpkg
