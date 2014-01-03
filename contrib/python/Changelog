@@ -1,4 +1,4 @@
-1.7.0
+1.6.17
 	* Added ldns_rdf.data_as_bytearray(). The method returns a bytearray object
 	  containing rdf data.
 	* Changed the behaviour of ldns_resolver.trusted_key() in order to prevent

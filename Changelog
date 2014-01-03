@@ -1,4 +1,4 @@
-1.7.0
+1.6.17
 	* Fix ldns_dnssec_zone_new_frm_fp_l to allow the last parsed line of a
 	  zone to be an NSEC3 (or its RRSIG) covering an empty non terminal.
 	* Add --disable-dane option to configure and check availability of the
@@ -36,9 +36,6 @@
 	* ldns-verify-zone NSEC3 checking from quadratic to linear performance.
 	  Thanks NIC MX (nicmexico.mx)
 	* ldns-dane setup new ssl session for each new connect to prevent hangs
-	* Bump version to 1.7.0
-	* The version of shared library now has similar scheme as libunbound.
-	  ldns 1.7.0 will have shared library version (SONAME) 2.0.0
 	* bugfix #521: drill trace continue on empty non-terminals with NSEC3
 	* bugfix #525: Fix documentation of ldns_resolver_set_retry
 	* Remove unused LDNS_RDF_TYPE_TSIG and associated functions.

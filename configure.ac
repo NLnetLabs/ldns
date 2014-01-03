@@ -5,42 +5,15 @@ sinclude(acx_nlnetlabs.m4)
 
 # must be numbers. ac_defun because of later processing.
 m4_define([VERSION_MAJOR],[1])
-m4_define([VERSION_MINOR],[7])
-m4_define([VERSION_MICRO],[0])
+m4_define([VERSION_MINOR],[6])
+m4_define([VERSION_MICRO],[17])
 AC_INIT(ldns, m4_defn([VERSION_MAJOR]).m4_defn([VERSION_MINOR]).m4_defn([VERSION_MICRO]), libdns@nlnetlabs.nl, libdns)
 AC_CONFIG_SRCDIR([packet.c])
 # needed to build correct soname
 AC_SUBST(LDNS_VERSION_MAJOR, [VERSION_MAJOR])
 AC_SUBST(LDNS_VERSION_MINOR, [VERSION_MINOR])
 AC_SUBST(LDNS_VERSION_MICRO, [VERSION_MICRO])
-
-LIBLDNS_CURRENT=2
-LIBLDNS_REVISION=0
-LIBLDNS_AGE=0
-# 1.6.16 had 1:6:16
-# 1.7.0  has 2:0:0
-
-#   Current  -- the number of the binary API that we're implementing
-#   Revision -- which iteration of the implementation of the binary
-#               API are we supplying?
-#   Age      -- How many previous binary API versions do we also
-#               support?
-#
-# If we release a new version that does not change the binary API,
-# increment Revision.
-#
-# If we release a new version that changes the binary API, but does
-# not break programs compiled against the old binary API, increment
-# Current and Age.  Set Revision to 0, since this is the first
-# implementation of the new API.
-#
-# Otherwise, we're changing the binary API and breaking bakward
-# compatibility with old binaries.  Increment Current.  Set Age to 0,
-# since we're backward compatible with no previous APIs.  Set Revision
-# to 0 too.
-AC_SUBST(LIBLDNS_CURRENT)
-AC_SUBST(LIBLDNS_REVISION)
-AC_SUBST(LIBLDNS_AGE)
+AC_SUBST(VERSION_INFO, [VERSION_MAJOR:VERSION_MINOR:VERSION_MICRO])
 
 AC_AIX
 LT_INIT

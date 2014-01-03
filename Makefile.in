@@ -2,7 +2,7 @@
 # See the file LICENSE for the license
 SHELL 		= @SHELL@
 VERSION         = @PACKAGE_VERSION@
-version_info	= @LIBLDNS_CURRENT@:@LIBLDNS_REVISION@:@LIBLDNS_AGE@
+version_info	= @VERSION_INFO@
 srcdir 		= @srcdir@
 prefix  	= @prefix@
 exec_prefix 	= @exec_prefix@
