@@ -53,7 +53,8 @@
 	* bugfix #505: Manpage and usage output fixes (Thanks Tomas Hozza)
 	* Adjust ldns_sha1() so that the input data is not modified (Thanks
 	  Marc Buijsman)
-	* Disable printing to stderr with --disable-stderr-msgs configure option
+	* Messages to stderr are now off by default and can be reenabled with
+	  the --enable-stderr-msgs configure option.
 
 1.6.16	2012-11-13
 	* Fix Makefile to build pyldns with BSD make

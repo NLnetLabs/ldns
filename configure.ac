@@ -171,11 +171,11 @@ else
 fi
 
 # add option to disable library printing to stderr
-AC_ARG_ENABLE(stderr-msgs, AC_HELP_STRING([--disable-stderr-msgs], [Disable printing to stderr]), enable_stderr_msgs=$enableval, enable_stderr_msgs=yes)
+AC_ARG_ENABLE(stderr-msgs, AC_HELP_STRING([--enable-stderr-msgs], [Enable printing to stderr (default=disabled)]), enable_stderr_msgs=$enableval, enable_stderr_msgs=no)
 case "$enable_stderr_msgs" in
-    no)
+    no) dnl default
         ;;
-    *)  dnl default
+    *)  
         AC_DEFINE_UNQUOTED([STDERR_MSGS], [1], [Define this to enable messages to stderr.])
         ;;
 esac
