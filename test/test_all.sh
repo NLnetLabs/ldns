@@ -17,10 +17,15 @@ fi
 test_tool_avail "dig"
 
 echo start the test at `date` in `pwd`
-$TPKG clean
+[ "$1" = "clean" -o "$2" = "clean" ] && $TPKG clean
 $TPKG -a ../.. fake 01-compile.tpkg
+$TPKG -a ../.. fake 02-lint.tpkg		# Works only on FreeBSD really
 $TPKG -a ../.. fake 07-compile-examples.tpkg
 $TPKG -a ../.. fake 16-compile-builddir.tpkg
+$TPKG -a ../.. fake 30-load-pyldns.tpkg
+$TPKG -a ../.. fake 31-load-pyldnsx.tpkg
+$TPKG -a ../.. fake 32-unbound-regression.tpkg
+$TPKG -a ../.. fake 33-test-unbound-latest.tpkg
 $TPKG -a ../.. fake 999-compile-nossl.tpkg
 
 for tests in *.tpkg

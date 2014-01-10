@@ -183,27 +183,27 @@ struct socket_service* server_service_create(struct addrinfo *ai)
 		return 0;
 	}
 	if(setsockopt(s, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on)) < 0) {
-		return 0;
+		goto error;
 	}
 #ifdef IPV6_V6ONLY
 	if(ai->ai_protocol == AF_INET6 &&
 		setsockopt(s, IPPROTO_IPV6, IPV6_V6ONLY, &on, sizeof(on)) < 0) {
-		return 0;
+		goto error;
 	}
 #endif
 	if(bind(s, ai->ai_addr, ai->ai_addrlen) == -1) {
-		return 0;
+		goto error;
 	}
 	if(ai->ai_socktype == SOCK_STREAM &&
 	   listen(s, TCP_LISTEN_BACKLOG) == -1) {
-		return 0;
+		goto error;
 	}
 
 	/* create service struct */
 	svr = (struct socket_service*)malloc(sizeof(struct socket_service));
 	if(!svr) {
 		errno = ENOMEM;
-		return 0;
+		goto error;
 	}
 	memset(svr, 0, sizeof(struct socket_service));
 	svr->tcp_state = svr_tcp_listen;
@@ -213,9 +213,14 @@ struct socket_service* server_service_create(struct addrinfo *ai)
 	svr->buffer = ldns_buffer_new(SERVER_BUFFER_SIZE);
 	if(!svr->buffer) {
 		errno = ENOMEM;
-		return 0;
+		free(svr);
+		goto error;
 	}
 	return svr;
+
+error:
+	close(s);
+	return 0;
 }
 
 void server_service_free(struct socket_service* svr)
@@ -246,11 +251,13 @@ handle_listen(struct server_info_t *sinfo, struct socket_service* listen_v)
 	}
 	if(fcntl(newfd, F_SETFL, O_NONBLOCK) == -1) {
 		printf("Error fnctl: %s\n", strerror(errno));
+		close(newfd);
 		return;
 	}
 	sh = (struct socket_service*)malloc(sizeof(struct socket_service));
 	if(!sh) {
 		printf("out of memory\n");
+		close(newfd);
 		return;
 	}
 	memset(sh, 0, sizeof(struct socket_service));

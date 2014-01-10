@@ -4,7 +4,7 @@
 # only show those ranges or not (-v)
 # single numbers: 4
 # ranges: 5-10 (inclusive)
-# seperated by comma's
+# separated by comma's
 # -v reverse
 
 use strict;

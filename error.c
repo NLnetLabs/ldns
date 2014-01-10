@@ -124,6 +124,24 @@ ldns_lookup_table ldns_error_str[] = {
 	{ LDNS_STATUS_DANE_PKIX_NO_SELF_SIGNED_TRUST_ANCHOR,
 		"The validation path "
 		"did not end in a self-signed certificate" },
+        { LDNS_STATUS_INVALID_ILNP64, 
+		"Conversion error, 4 colon separated hex numbers expected" },
+        { LDNS_STATUS_INVALID_EUI48, 
+		"Conversion error, 6 two character hex numbers "
+		"separated by dashes expected (i.e. xx-xx-xx-xx-xx-xx" },
+        { LDNS_STATUS_INVALID_EUI64, 
+		"Conversion error, 8 two character hex numbers "
+		"separated by dashes expected (i.e. xx-xx-xx-xx-xx-xx-xx-xx" },
+	{ LDNS_STATUS_WIRE_RDATA_ERR, "invalid rdata in wire format" },
+        { LDNS_STATUS_INVALID_TAG, 
+		"Conversion error, a non-zero sequence of US-ASCII letters "
+		"and numbers in lower case expected" },
+        { LDNS_STATUS_TYPE_NOT_IN_BITMAP, 
+		"The RR type bitmap rdata field did not have "
+		"a bit reserved for the specific RR type" },
+        { LDNS_STATUS_INVALID_RDF_TYPE, 
+		"The rdata field was not of the expected type" },
+        { LDNS_STATUS_RDATA_OVERFLOW, "Rdata size overflow" },
 	{ 0, NULL }
 };
 

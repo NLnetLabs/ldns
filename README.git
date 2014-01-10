@@ -1,6 +1,5 @@
-
-# The ldns subversion repository can found at:
-# www.nlnetlabs.nl/ldns/svn/
+# The ldns git repository can found at:
+# git.nlnetlabs.nl/ldns/
 
 # small list of commands to build all on a linux system
 # libtoolize is needed for most other targets
@@ -10,17 +9,14 @@
 # the correct versions may need to be set. On those
 # systems, the 'autoreconf' line should be changed to:
 # AUTOMAKE=automake-1.10 ACLOCAL=aclocal-1.10 autoreconf
-# (and these systems probably need gmake instead of make)
 
 # older versions of libtoolize do not support --install
 # so you might need to remove that (with newer versions
 # it is needed)
 libtoolize -c --install
 autoreconf --install
-./configure
+./configure --with-examples --with-drill # --with-pyldns --with-p5-dns-ldns
 make
 make doc  # needs doxygen for the html pages
-(cd examples && autoreconf && ./configure && make)
-(cd drill && autoreconf && ./configure && make)
 (cd pcat && autoreconf && ./configure && make)
 (cd examples/nsd-test && autoreconf && ./configure && make)

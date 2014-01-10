@@ -1,0 +1,6 @@
+[submodule "contrib/Net-LDNS"]
+	path = contrib/Net-LDNS
+	url = https://github.com/erikoest/Net-LDNS
+[submodule "contrib/DNS-LDNS"]
+	path = contrib/DNS-LDNS
+	url = https://github.com/erikoest/DNS-LDNS
