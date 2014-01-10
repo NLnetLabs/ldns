@@ -1,4 +1,4 @@
-1.6.17
+1.6.17	2014-01-10
 	* Added ldns_rdf.data_as_bytearray(). The method returns a bytearray object
 	  containing rdf data.
 	* Changed the behaviour of ldns_resolver.trusted_key() in order to prevent
@@ -24,7 +24,7 @@
 	* Method ldns_rdf.reverse() now throws an exception when not applied
 	  on dname rdfs. This is to prevent assertion fails in ldns' C code.
 
-1.6.16
+1.6.16	2012-11-13
 	* Fix typo in ldns_struct_pkt.opcode2str
 
 1.6.14	2012-10-23
