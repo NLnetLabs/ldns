@@ -1,4 +1,4 @@
-1.6.17
+1.6.17	2014-01-10
 	* Fix ldns_dnssec_zone_new_frm_fp_l to allow the last parsed line of a
 	  zone to be an NSEC3 (or its RRSIG) covering an empty non terminal.
 	* Add --disable-dane option to configure and check availability of the
@@ -41,7 +41,7 @@
 	* Remove unused LDNS_RDF_TYPE_TSIG and associated functions.
 	* Fix ldns_nsec_covers_name for zones with an apex only. Thanks Miek.
 	* Configure option to build perl bindings: --with-p5-dns-ldns
-	  (Net::LDNS is a contribution from Erik Ostlyngen)
+	  (DNS::LDNS is a contribution from Erik Ostlyngen)
 	* bugfix #527: Move -lssl before -lcrypto when linking
 	* Optimize TSIG digest function name comparison (Thanks Marc Buijsman)
 	* Compare names case insensitive with ldns_pkt_rr_list_by_name and
