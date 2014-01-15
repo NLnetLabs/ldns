@@ -995,25 +995,34 @@ ldns_resolver_search_status(ldns_pkt** pkt,
 	ldns_rdf **search_list;
 	size_t i;
 	ldns_status s = LDNS_STATUS_OK;
+	ldns_rdf root_dname = { 1, LDNS_RDF_TYPE_DNAME, (void *)"" };
 
 	if (ldns_dname_absolute(name)) {
 		/* query as-is */
 		return ldns_resolver_query_status(pkt, r, name, t, c, flags);
 	} else if (ldns_resolver_dnsrch(r)) {
 		search_list = ldns_resolver_searchlist(r);
-		for (i = 0; i < ldns_resolver_searchlist_count(r); i++) {
-			new_name = ldns_dname_cat_clone(name, search_list[i]);
+		for (i = 0; i <= ldns_resolver_searchlist_count(r); i++) {
+			if (i == ldns_resolver_searchlist_count(r)) {
+				new_name = ldns_dname_cat_clone(name,
+						&root_dname);
+			} else {
+				new_name = ldns_dname_cat_clone(name,
+						search_list[i]);
+			}
 
 			s = ldns_resolver_query_status(pkt, r,
 					new_name, t, c, flags);
 			ldns_rdf_free(new_name);
-			if (pkt) {
-				if (s == LDNS_STATUS_OK && *pkt &&
+			if (pkt && *pkt) {
+				if (s == LDNS_STATUS_OK && 
 						ldns_pkt_get_rcode(*pkt) ==
 						LDNS_RCODE_NOERROR) {
+
 					return LDNS_STATUS_OK;
 				}
 				ldns_pkt_free(*pkt);
+				*pkt = NULL;
 			}
 		}
 	}
@@ -1346,6 +1355,8 @@ ldns_axfr_next(ldns_resolver *resolver)
 						(int) ldns_pkt_get_rcode(
 						resolver->_cur_axfr_pkt));
 			}
+#else
+			(void)rcode; /* Suppress unused warning */
 #endif
 
 			/* we must now also close the socket, otherwise subsequent uses of the
