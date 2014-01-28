@@ -280,6 +280,10 @@ read_n_bytes(int sock, uint8_t* buf, size_t sz)
 		if(nb < 0) {
 			log_msg("recv(): %s\n", strerror(errno));
 			return;
+		} else if(nb == 0) {
+			log_msg("recv: remote end closed the channel\n");
+			memset(buf+count, 0, sz-count);
+			return;
 		}
 		count += nb;
 	}

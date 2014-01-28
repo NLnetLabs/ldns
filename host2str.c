@@ -598,29 +598,28 @@ ldns_rr_type2buffer_str(ldns_buffer *output, const ldns_rr_type type)
 
 	descriptor = ldns_rr_descript(type);
 
-	if (descriptor && descriptor->_name) {
-		ldns_buffer_printf(output, "%s", descriptor->_name);
-	} else {
-		/* exceptions for pseudotypes */
-		switch (type) {
-			case LDNS_RR_TYPE_IXFR:
-				ldns_buffer_printf(output, "IXFR");
-				break;
-			case LDNS_RR_TYPE_AXFR:
-				ldns_buffer_printf(output, "AXFR");
-				break;
-			case LDNS_RR_TYPE_MAILA:
-				ldns_buffer_printf(output, "MAILA");
-				break;
-			case LDNS_RR_TYPE_MAILB:
-				ldns_buffer_printf(output, "MAILB");
-				break;
-			case LDNS_RR_TYPE_ANY:
-				ldns_buffer_printf(output, "ANY");
-				break;
-			default:
+	switch (type) {
+		case LDNS_RR_TYPE_IXFR:
+			ldns_buffer_printf(output, "IXFR");
+			break;
+		case LDNS_RR_TYPE_AXFR:
+			ldns_buffer_printf(output, "AXFR");
+			break;
+		case LDNS_RR_TYPE_MAILA:
+			ldns_buffer_printf(output, "MAILA");
+			break;
+		case LDNS_RR_TYPE_MAILB:
+			ldns_buffer_printf(output, "MAILB");
+			break;
+		case LDNS_RR_TYPE_ANY:
+			ldns_buffer_printf(output, "ANY");
+			break;
+		default:
+			if (descriptor && descriptor->_name) {
+				ldns_buffer_printf(output, "%s", descriptor->_name);
+			} else {
 				ldns_buffer_printf(output, "TYPE%u", type);
-		}
+			}
 	}
 	return ldns_buffer_status(output);
 }
