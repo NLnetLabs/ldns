@@ -511,7 +511,7 @@ ldns_dnssec_zone_find_rrset(ldns_dnssec_zone *zone,
 {
 	ldns_rbnode_t *node;
 
-	if (!zone || !dname) {
+	if (!zone || !dname || !zone->names) {
 		return NULL;
 	}
 

@@ -11,6 +11,115 @@
 #include "drill.h"
 #include <ldns/ldns.h>
 
+/* Cache all RRs from rr_list "rr_list" to "referrals" database for lookup
+ * later on.  Print the NS RRs that were not already present.
+ */
+static void add_rr_list_to_referrals(
+    ldns_dnssec_zone *referrals, ldns_rr_list *rr_list)
+{
+	size_t i;
+	ldns_rr *rr;
+	ldns_dnssec_rrsets *rrset;
+	ldns_dnssec_rrs *rrs;
+
+	for (i = 0; i < ldns_rr_list_rr_count(rr_list); i++) {
+		rr = ldns_rr_list_rr(rr_list, i);
+		/* Check if a RR equal to "rr" is present in "referrals" */
+		rrset = ldns_dnssec_zone_find_rrset(
+		    referrals, ldns_rr_owner(rr), ldns_rr_get_type(rr));
+		if (rrset) {
+			for (rrs = rrset->rrs; rrs; rrs = rrs->next)
+				if (ldns_rr_compare(rr, rrs->rr) == 0)
+					break;
+			if (rrs) continue; /* "rr" is present, next! */
+		}
+		if (ldns_rr_get_type(rr) == LDNS_RR_TYPE_NS && verbosity != -1)
+			ldns_rr_print(stdout, rr);
+		(void) ldns_dnssec_zone_add_rr(referrals, rr);
+	}
+}
+
+/* Cache all RRs from packet "p" to "referrals" database for lookup later on.
+ * Print the NS RRs that were not already present.
+ */
+static void add_referrals(ldns_dnssec_zone *referrals, ldns_pkt *p)
+{
+	add_rr_list_to_referrals(referrals, ldns_pkt_all_noquestion(p));
+}
+
+/* Equip name-server "res" with the name-servers authoritative for as much
+ * of "name" as possible.  Lookup addresses if needed.
+ */
+static bool set_nss_for_name(
+    ldns_resolver *res, ldns_dnssec_zone *referrals, ldns_rdf *name,
+    ldns_resolver *local_res, ldns_rr_class c)
+{
+	ldns_dnssec_rrsets *nss = NULL;
+	ldns_dnssec_rrs *nss_rrs;
+	ldns_dnssec_rrsets *as = NULL;
+	ldns_dnssec_rrs *as_rrs;
+	ldns_rdf *lookup = ldns_rdf_clone(name);
+	ldns_rdf *new_lookup;
+	ldns_rr_list *addrs;
+
+	/* nss will become the rrset of as much of "name" as possible */
+	for (;;) {
+		nss = ldns_dnssec_zone_find_rrset(
+		    referrals, lookup, LDNS_RR_TYPE_NS);
+		if (nss != NULL)
+			break;
+		new_lookup = ldns_dname_left_chop(lookup);
+		ldns_rdf_deep_free(lookup);
+		lookup = new_lookup;
+		if (ldns_rdf_size(lookup) == 0) {
+			error("No referrals for name found");
+			return false;
+		}
+	}
+
+	/* remove the old nameserver from the resolver */
+	while(ldns_resolver_pop_nameserver(res));
+
+	/* Find and add the address records for the rrset as name-servers */
+	for (nss_rrs = nss->rrs; nss_rrs; nss_rrs = nss_rrs->next) {
+
+		if ((as = ldns_dnssec_zone_find_rrset(
+		    referrals, ldns_rr_rdf(nss_rrs->rr, 0), LDNS_RR_TYPE_A)))
+			for (as_rrs = as->rrs; as_rrs; as_rrs = as_rrs->next)
+				ldns_resolver_push_nameserver(
+				    res, ldns_rr_rdf(as_rrs->rr, 0));
+
+		if ((as = ldns_dnssec_zone_find_rrset(
+		    referrals, ldns_rr_rdf(nss_rrs->rr, 0), LDNS_RR_TYPE_AAAA)))
+			for (as_rrs = as->rrs; as_rrs; as_rrs = as_rrs->next)
+				ldns_resolver_push_nameserver(
+				    res, ldns_rr_rdf(as_rrs->rr, 0));
+	}
+	/* Is our resolver equipped with name-servers? Good! We're done */
+	if (ldns_resolver_nameserver_count(res) > 0)
+		return true;
+
+	/* Lookup addresses with local resolver add add to "referrals" database */
+	addrs = ldns_rr_list_new();
+	for (nss_rrs = nss->rrs; nss_rrs; nss_rrs = nss_rrs->next)
+		addrs = ldns_rr_list_cat_clone(addrs,
+		    ldns_get_rr_list_addr_by_name(
+			local_res, ldns_rr_rdf(nss_rrs->rr, 0), c, 0));
+
+	if (ldns_rr_list_rr_count(addrs) == 0)
+		error("Could not find the nameserver ip addr; abort");
+
+	else if (ldns_resolver_push_nameserver_rr_list(res, addrs) !=
+	    LDNS_STATUS_OK)
+
+		error("Error adding new nameservers");
+	else
+		return true;
+
+	add_rr_list_to_referrals(referrals, addrs);
+	return false;
+}
+
 /**
  * trace down from the root to name
  */
@@ -26,21 +135,14 @@ do_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 {
 	ldns_resolver *res;
 	ldns_pkt *p;
-	ldns_rr_list *new_nss_a;
-	ldns_rr_list *new_nss_aaaa;
 	ldns_rr_list *final_answer;
 	ldns_rr_list *new_nss;
-	ldns_rr_list *ns_addr;
+	ldns_rr_list *cname;
 	uint16_t loop_count;
-	ldns_rdf *pop; 
 	ldns_status status;
-	size_t i;
+	ldns_dnssec_zone* referrals;
 	
 	loop_count = 0;
-	new_nss_a = NULL;
-	new_nss_aaaa = NULL;
-	new_nss = NULL;
-	ns_addr = NULL;
 	final_answer = NULL;
 	p = ldns_pkt_new();
 	res = ldns_resolver_new();
@@ -92,7 +194,6 @@ do_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 	status = ldns_resolver_send(&p, res, ldns_dname_new_frm_str("."), LDNS_RR_TYPE_NS, c, 0);
 	/* p can still be NULL */
 
-
 	if (ldns_pkt_empty(p)) {
 		warning("No root server information received");
 	} 
@@ -101,11 +202,16 @@ do_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 		if (!ldns_pkt_empty(p)) {
 			drill_pkt_print(stdout, local_res, p);
 		}
+		referrals = ldns_dnssec_zone_new();
+		add_referrals(referrals, p);
 	} else {
 		error("cannot use local resolver");
 		return NULL;
 	}
-
+	if (! set_nss_for_name(res, referrals, name, local_res, c)) {
+		ldns_pkt_free(p); 
+		return NULL;
+	}
 	status = ldns_resolver_send(&p, res, name, t, c, 0);
 
 	while(status == LDNS_STATUS_OK && 
@@ -115,89 +221,58 @@ do_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 			/* some error occurred, bail out */
 			return NULL;
 		}
+		add_referrals(referrals, p);
 
-		new_nss_a = ldns_pkt_rr_list_by_type(p,
-				LDNS_RR_TYPE_A, LDNS_SECTION_ADDITIONAL);
-		new_nss_aaaa = ldns_pkt_rr_list_by_type(p,
-				LDNS_RR_TYPE_AAAA, LDNS_SECTION_ADDITIONAL);
-		new_nss = ldns_pkt_rr_list_by_type(p,
-				LDNS_RR_TYPE_NS, LDNS_SECTION_AUTHORITY);
-
-		if (verbosity != -1) {
-			ldns_rr_list_print(stdout, new_nss);
-		}
 		/* checks itself for verbosity */
 		drill_pkt_print_footer(stdout, local_res, p);
 		
-		/* remove the old nameserver from the resolver */
-		while(ldns_resolver_pop_nameserver(res)) { /* do it */ }
-
-		/* also check for new_nss emptyness */
-
-		if (!new_nss_aaaa && !new_nss_a) {
-			/* 
-			 * no nameserver found!!! 
-			 * try to resolve the names we do got 
-			 */
-			for(i = 0; i < ldns_rr_list_rr_count(new_nss); i++) {
-				/* get the name of the nameserver */
-				pop = ldns_rr_rdf(ldns_rr_list_rr(new_nss, i), 0);
-				if (!pop) {
-					break;
-				}
-
-				ldns_rr_list_print(stdout, new_nss);
-				ldns_rdf_print(stdout, pop);
-				/* retrieve it's addresses */
-				ns_addr = ldns_rr_list_cat_clone(ns_addr,
-					ldns_get_rr_list_addr_by_name(local_res, pop, c, 0));
-			}
-
-			if (ns_addr) {
-				if (ldns_resolver_push_nameserver_rr_list(res, ns_addr) != 
-						LDNS_STATUS_OK) {
-					error("Error adding new nameservers");
-					ldns_pkt_free(p); 
-					return NULL;
-				}
-				ldns_rr_list_free(ns_addr);
-			} else {
-				ldns_rr_list_print(stdout, ns_addr);
-				error("Could not find the nameserver ip addr; abort");
-				ldns_pkt_free(p);
-				return NULL;
-			}
+		if (! set_nss_for_name(res, referrals, name, local_res, c)) {
+			ldns_pkt_free(p); 
+			return NULL;
 		}
-
-		/* add the new ones */
-		if (new_nss_aaaa) {
-			if (ldns_resolver_push_nameserver_rr_list(res, new_nss_aaaa) != 
-					LDNS_STATUS_OK) {
-				error("adding new nameservers");
-				ldns_pkt_free(p); 
-				return NULL;
-			}
-		}
-		if (new_nss_a) {
-			if (ldns_resolver_push_nameserver_rr_list(res, new_nss_a) != 
-					LDNS_STATUS_OK) {
-				error("adding new nameservers");
-				ldns_pkt_free(p); 
-				return NULL;
-			}
-		}
-
 		if (loop_count++ > 20) {
 			/* unlikely that we are doing something usefull */
 			error("Looks like we are looping");
 			ldns_pkt_free(p); 
 			return NULL;
 		}
-		
 		status = ldns_resolver_send(&p, res, name, t, c, 0);
-		new_nss_aaaa = NULL;
-		new_nss_a = NULL;
-		ns_addr = NULL;
+
+		/* Exit trace on error */
+		if (status != LDNS_STATUS_OK)
+			break;
+
+		/* An answer might be the desired answer (and no referral) */
+		if (ldns_pkt_reply_type(p) != LDNS_PACKET_ANSWER)
+			continue;
+
+		/* Exit trace when the requested type is found */
+		if (ldns_rr_list_rr_count(
+		    ldns_pkt_rr_list_by_type(p, t, LDNS_SECTION_ANSWER)) > 0)
+			break;
+
+		/* Get the CNAMEs from the answer */
+		cname = ldns_pkt_rr_list_by_type(
+		    p, LDNS_RR_TYPE_CNAME, LDNS_SECTION_ANSWER);
+
+		/* No CNAME either: exit trace */
+		if (ldns_rr_list_rr_count(cname) == 0)
+			break;
+
+		/* Print CNAME referral */
+		ldns_rr_list_print(stdout, cname);
+
+		/* restart with the CNAME */
+		name = ldns_rr_rdf(ldns_rr_list_rr(cname, 0), 0);
+
+		/* remove the old nameserver from the resolver */
+		while(ldns_resolver_pop_nameserver(res)) { /* do it */ }
+
+		/* Restart trace from the root up */
+		(void) ldns_resolver_push_nameserver_rr_list(
+		    res, global_dns_root);
+
+		status = ldns_resolver_send(&p, res, name, t, c, 0);
 	}
 
 	status = ldns_resolver_send(&p, res, name, t, c, 0);
