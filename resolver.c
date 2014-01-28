@@ -1126,6 +1126,7 @@ ldns_resolver_send_pkt(ldns_pkt **answer, ldns_resolver *r,
 					ldns_pkt_set_edns_udp_size(query_pkt
 							, 4096);
 					ldns_pkt_free(answer_pkt);
+					answer_pkt = NULL;
 					/* Nameservers should not become 
 					 * unreachable because fragments are
 					 * dropped (network error). We might
