@@ -86,13 +86,13 @@ static bool set_nss_for_name(
 		if ((as = ldns_dnssec_zone_find_rrset(
 		    referrals, ldns_rr_rdf(nss_rrs->rr, 0), LDNS_RR_TYPE_A)))
 			for (as_rrs = as->rrs; as_rrs; as_rrs = as_rrs->next)
-				ldns_resolver_push_nameserver(
+				(void) ldns_resolver_push_nameserver(
 				    res, ldns_rr_rdf(as_rrs->rr, 0));
 
 		if ((as = ldns_dnssec_zone_find_rrset(
 		    referrals, ldns_rr_rdf(nss_rrs->rr, 0), LDNS_RR_TYPE_AAAA)))
 			for (as_rrs = as->rrs; as_rrs; as_rrs = as_rrs->next)
-				ldns_resolver_push_nameserver(
+				(void) ldns_resolver_push_nameserver(
 				    res, ldns_rr_rdf(as_rrs->rr, 0));
 	}
 	/* Is our resolver equipped with name-servers? Good! We're done */
