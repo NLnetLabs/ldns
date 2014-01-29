@@ -69,7 +69,7 @@ struct ldns_struct_resolver
 	/**  Round trip time; 0 -> infinity. Unit: ms? */
 	size_t *_rtt;
 
-	/**  Wether or not to be recursive */
+	/**  Whether or not to be recursive */
 	bool _recursive;
 
 	/**  Print debug information */
@@ -101,7 +101,7 @@ struct ldns_struct_resolver
 	bool _usevc;
 	/**  Whether to ignore the tc bit */
 	bool _igntc;
-	/**  Whether to use ip6, 0->does not matter, 1 is IPv4, 2 is IPv6 */
+	/**  Whether to use ip6: 0->does not matter, 1 is IPv4, 2 is IPv6 */
 	uint8_t _ip6;
 	/**  If true append the default domain */
 	bool _defnames;
