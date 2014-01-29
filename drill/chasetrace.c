@@ -125,9 +125,9 @@ static bool set_nss_for_name(
  */
 
 /* same naive method as in drill0.9 
- * We resolver _ALL_ the names, which is ofcourse not needed
+ * We resolve _ALL_ the names, which is of course not needed.
  * We _do_ use the local resolver to do that, so it still is
- * fast, but it can be made to run much faster
+ * fast, but it can be made to run much faster.
  */
 ldns_pkt *
 do_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
@@ -218,7 +218,7 @@ do_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 	      ldns_pkt_reply_type(p) == LDNS_PACKET_REFERRAL) {
 
 		if (!p) {
-			/* some error occurred, bail out */
+			/* some error occurred -- bail out */
 			return NULL;
 		}
 		add_referrals(referrals, p);
@@ -231,7 +231,7 @@ do_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 			return NULL;
 		}
 		if (loop_count++ > 20) {
-			/* unlikely that we are doing something usefull */
+			/* unlikely that we are doing anything useful */
 			error("Looks like we are looping");
 			ldns_pkt_free(p); 
 			return NULL;

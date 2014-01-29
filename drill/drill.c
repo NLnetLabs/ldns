@@ -31,7 +31,7 @@ usage(FILE *stream, const char *progname)
 	fprintf(stream, "\t-D\t\tenable DNSSEC (DO bit)\n");
 #ifdef HAVE_SSL
 	fprintf(stream, "\t-T\t\ttrace from the root down to <name>\n");
-	fprintf(stream, "\t-S\t\tchase signature(s) from <name> to a know key [*]\n");
+	fprintf(stream, "\t-S\t\tchase signature(s) from <name> to a known key [*]\n");
 #endif /*HAVE_SSL*/
 	fprintf(stream, "\t-I <address>\tsource address to query from\n");
 	fprintf(stream, "\t-V <number>\tverbosity (0-5)\n");
@@ -495,7 +495,7 @@ main(int argc, char *argv[])
 
 	/* set the nameserver to use */
 	if (!serv) {
-		/* no server given make a resolver from /etc/resolv.conf */
+		/* no server given -- make a resolver from /etc/resolv.conf */
 		status = ldns_resolver_new_frm_file(&res, resolv_conf_file);
 		if (status != LDNS_STATUS_OK) {
 			warning("Could not create a resolver structure: %s (%s)\n"
