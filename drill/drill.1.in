@@ -74,8 +74,8 @@ DS and NSEC) this is \fInot\fR automaticly enabled.
 
 .TP
 \fB\-T
-Trace \fIname\fR from the root down. When using this option the @server and
-the type arguments are not used.
+Trace \fIname\fR from the root down. When using this option the @server
+arguments is not used.
 
 .TP
 \fB\-S
