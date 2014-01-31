@@ -1363,9 +1363,7 @@ ldns_str2rdf_eui48(ldns_rdf **rd, const char *str)
 
 	if (sscanf(str, "%2x-%2x-%2x-%2x-%2x-%2x%n",
 			&a, &b, &c, &d, &e, &f, &l) != 6 ||
-			l != (int)strlen(str) || /* more data to read */
-			strpbrk(str, "+-")       /* signed hexes */
-			) {
+			l != (int)strlen(str)) {
 		return LDNS_STATUS_INVALID_EUI48;
 	} else {
 		bytes[0] = a;
@@ -1388,9 +1386,7 @@ ldns_str2rdf_eui64(ldns_rdf **rd, const char *str)
 
 	if (sscanf(str, "%2x-%2x-%2x-%2x-%2x-%2x-%2x-%2x%n",
 			&a, &b, &c, &d, &e, &f, &g, &h, &l) != 8 ||
-			l != (int)strlen(str) || /* more data to read */
-			strpbrk(str, "+-")       /* signed hexes */
-			) {
+			l != (int)strlen(str)) {
 		return LDNS_STATUS_INVALID_EUI64;
 	} else {
 		bytes[0] = a;
