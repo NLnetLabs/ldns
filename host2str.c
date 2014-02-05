@@ -820,7 +820,7 @@ ldns_rdf2buffer_str_wks(ldns_buffer *output, const ldns_rdf *rdf)
 #endif
 
 	for (current_service = 0;
-	     current_service < ldns_rdf_size(rdf) * 7; current_service++) {
+	     current_service < (ldns_rdf_size(rdf)-1)*8; current_service++) {
 		if (ldns_get_bit(&(ldns_rdf_data(rdf)[1]), current_service)) {
 			service = getservbyport((int) htons(current_service),
 			                        proto_name);
