@@ -145,9 +145,10 @@ ldns_status ldns_rdf2wire(uint8_t **dest, const ldns_rdf *rdf, size_t *size);
  *
  * \param[out] dest pointer to the array of bytes to be created
  * \param[in] rr the rr to convert
+ * \param[in] section the rr section, determines how the rr is written.
  * \param[out] size the size of the converted result
  */
-ldns_status ldns_rr2wire(uint8_t **dest, const ldns_rr *rr, int, size_t *size);
+ldns_status ldns_rr2wire(uint8_t **dest, const ldns_rr *rr, int section, size_t *size);
 
 /**
  * Allocates an array of uint8_t at dest, and puts the wireformat of the
