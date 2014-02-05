@@ -1286,7 +1286,6 @@ ldns_axfr_next(ldns_resolver *resolver)
 	ldns_rr *cur_rr;
 	uint8_t *packet_wire;
 	size_t packet_wire_size;
-	ldns_lookup_table *rcode;
 	ldns_status status;
 
 	/* check if start() has been called */
@@ -1346,8 +1345,10 @@ ldns_axfr_next(ldns_resolver *resolver)
 
 			return NULL;
 		} else if (ldns_pkt_get_rcode(resolver->_cur_axfr_pkt) != 0) {
-			rcode = ldns_lookup_by_id(ldns_rcodes, (int) ldns_pkt_get_rcode(resolver->_cur_axfr_pkt));
 #ifdef STDERR_MSGS
+			ldns_lookup_table *rcode = ldns_lookup_by_id(
+				ldns_rcodes,(int) ldns_pkt_get_rcode(
+				resolver->_cur_axfr_pkt));
 			if (rcode) {
 				fprintf(stderr, "Error in AXFR: %s\n", 
 						rcode->name);
