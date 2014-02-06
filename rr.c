@@ -476,7 +476,7 @@ ldns_rr_new_frm_str_internal(ldns_rr **newrr, const char *str,
 			}
 			LDNS_FREE(hex_data_str);
 
-		} else {
+		} else if(rd_strlen > 0 || quoted) {
 			/* Normal RR */
 			switch(ldns_rr_descriptor_field_type(desc, r_cnt)) {
 
