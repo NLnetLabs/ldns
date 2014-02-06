@@ -1357,8 +1357,6 @@ ldns_axfr_next(ldns_resolver *resolver)
 						(int) ldns_pkt_get_rcode(
 						resolver->_cur_axfr_pkt));
 			}
-#else
-			(void)rcode; /* Suppress unused warning */
 #endif
 
 			/* we must now also close the socket, otherwise subsequent uses of the
