@@ -2,6 +2,9 @@ TBD
 	* Fix lookup of relative names in ldns_resolver_search.
 	* bugfix #548: Double free for answers > 4096 in ldns_resolver_send_pkt
 	* Follow CNAME's when tracing with drill (TODO dnssec trace)
+	* Fix #551 change Regent to Copyright holder in BSD license in
+	  some of the headings of the file, to match the opensource.org
+	  BSD license.
 
 1.6.17	2014-01-10
 	* Fix ldns_dnssec_zone_new_frm_fp_l to allow the last parsed line of a
