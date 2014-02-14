@@ -16,6 +16,9 @@ AC_SUBST(LDNS_VERSION_MICRO, [VERSION_MICRO])
 AC_SUBST(VERSION_INFO, [VERSION_MAJOR:VERSION_MINOR:VERSION_MICRO])
 
 AC_AIX
+if test "$ac_cv_header_minix_config_h" = "yes"; then
+	AC_DEFINE(_NETBSD_SOURCE,1, [Enable for compile on Minix])
+fi
 LT_INIT
 AC_CONFIG_MACRO_DIR([m4])
 
