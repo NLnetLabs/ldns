@@ -165,6 +165,7 @@ no-examples-config-h:
 	     echo "or build examples there." ; \
 	     exit -1 ; \
 	fi
+
 $(EXAMPLE_PROGS):
 	$(LINK_EXE) $@.lo $(LIBS) -lldns -o $@
 
