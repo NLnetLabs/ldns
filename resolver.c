@@ -1171,7 +1171,6 @@ ldns_resolver_prepare_query_pkt(ldns_pkt **query_pkt, ldns_resolver *r,
 	/* prepare a question pkt from the parameters
 	 * and then send this */
 	if (t == LDNS_RR_TYPE_IXFR) {
-		soa = ldns_rr_new();
 		ldns_rdf *owner_rdf;
 		ldns_rdf *mname_rdf;
 		ldns_rdf *rname_rdf;
@@ -1180,6 +1179,7 @@ ldns_resolver_prepare_query_pkt(ldns_pkt **query_pkt, ldns_resolver *r,
 		ldns_rdf *retry_rdf;
 		ldns_rdf *expire_rdf;
 		ldns_rdf *minimum_rdf;
+		soa = ldns_rr_new();
 
 		if (!soa) {
 			return LDNS_STATUS_ERR;
