@@ -128,6 +128,8 @@ struct ldns_struct_resolver
 	uint16_t _axfr_i;
 	/* EDNS0 available buffer size */
 	uint16_t _edns_udp_size;
+	/* serial for IXFR */
+	uint32_t _serial;
 
 	/* Optional tsig key for signing queries,
 	outgoing messages are signed if and only if both are set
@@ -753,6 +755,20 @@ bool ldns_axfr_complete(const ldns_resolver *resolver);
  * \return ldns_pkt the last packet sent
  */
 ldns_pkt *ldns_axfr_last_pkt(const ldns_resolver *res);
+
+/**
+ * Get the serial for requesting IXFR.
+ * \param[in] r the resolver
+ * \param[in] serial serial
+ */
+void ldns_resolver_set_ixfr_serial(ldns_resolver *r, uint32_t serial);
+
+/**
+ * Get the serial for requesting IXFR.
+ * \param[in] res the resolver
+ * \return uint32_t serial
+ */
+uint32_t ldns_resolver_get_ixfr_serial(const ldns_resolver *res);
 
 /**
  * Randomize the nameserver list in the resolver

@@ -19,6 +19,19 @@
 /* query debug, 2 hex dumps */
 int		verbosity;
 
+static int
+is_ixfr_with_serial(const char* name, uint32_t *serial)
+{
+	char* end;
+	if (strlen(name) > 5 &&
+		strncasecmp(name, "IXFR", 4) == 0 &&
+		name[4] == '=') {
+		*serial = (uint32_t) strtol((name+5), &end, 10);
+		return 1;
+	}
+	return 0;
+}
+
 static void
 usage(FILE *stream, const char *progname)
 {
@@ -113,8 +126,8 @@ main(int argc, char *argv[])
 	ldns_buffer	*query_buffer = NULL;
 	ldns_rdf 	*serv_rdf;
 	ldns_rdf 	*src_rdf = NULL;
-        ldns_rr_type 	type;
-        ldns_rr_class	clas;
+	ldns_rr_type 	type;
+	ldns_rr_class	clas;
 #if 0
 	ldns_pkt_opcode opcode = LDNS_PACKET_QUERY;
 #endif
@@ -130,7 +143,7 @@ main(int argc, char *argv[])
 	ldns_rr		*axfr_rr;
 	ldns_status	status;
 	char *type_str;
-	
+	uint32_t	serial = 0;
 	/* list of keys used in dnssec operations */
 	ldns_rr_list	*key_list = ldns_rr_list_new(); 
 	/* what key verify the current answer */
@@ -453,6 +466,10 @@ main(int argc, char *argv[])
 			if (type != 0) {
 				int_type = 0;
 				continue;
+			} else if (is_ixfr_with_serial(argv[i], &serial)) {
+				type = LDNS_RR_TYPE_IXFR;
+				int_type = 0;
+				continue;
 			}
 		}
 		/* if it matches a class, it's a class */
@@ -516,7 +533,7 @@ main(int argc, char *argv[])
 		if (!serv_rdf) {
 			/* try to resolv the name if possible */
 			status = ldns_resolver_new_frm_file(&cmdline_res, resolv_conf_file);
-			
+
 			if (status != LDNS_STATUS_OK) {
 				error("%s", "@server ip could not be converted");
 			}
@@ -554,6 +571,7 @@ main(int argc, char *argv[])
 		}
 	}
 	/* set the resolver options */
+	ldns_resolver_set_ixfr_serial(res, serial);
 	ldns_resolver_set_port(res, qport);
 	ldns_resolver_set_source(res, src_rdf);
 	if (verbosity >= 5) {
@@ -682,7 +700,6 @@ main(int argc, char *argv[])
 			if (!qname) {
 				error("%s", "making qname");
 			}
-
 			status = ldns_resolver_prepare_query_pkt(&qpkt, res, qname, type, clas, qflags);
 			if(status != LDNS_STATUS_OK) {
 				error("%s", "making query: %s", 

@@ -638,6 +638,7 @@ ldns_resolver_new(void)
 	ldns_resolver_set_recursive(r, false);
 	ldns_resolver_set_dnsrch(r, true);
 	ldns_resolver_set_source(r, NULL);
+	ldns_resolver_set_ixfr_serial(r, 0);
 
 	/* randomize the nameserver to be queried
 	 * when there are multiple
@@ -1165,16 +1166,74 @@ ldns_resolver_prepare_query_pkt(ldns_pkt **query_pkt, ldns_resolver *r,
                                 ldns_rr_class c, uint16_t flags)
 {
 	struct timeval now;
+	ldns_rr* soa = NULL;
 
 	/* prepare a question pkt from the parameters
 	 * and then send this */
 	if (t == LDNS_RR_TYPE_IXFR) {
+		soa = ldns_rr_new(q);
+		ldns_rdf *owner_rdf;
+		ldns_rdf *mname_rdf;
+		ldns_rdf *rname_rdf;
+		ldns_rdf *serial_rdf;
+		ldns_rdf *refresh_rdf;
+		ldns_rdf *retry_rdf;
+		ldns_rdf *expire_rdf;
+		ldns_rdf *minimum_rdf;
+
+		if (!soa) {
+			return LDNS_STATUS_ERR;
+		}
+		owner_rdf = ldns_rdf_clone(name);
+		if (!owner_rdf) {
+			ldns_rr_free(soa);
+			return LDNS_STATUS_ERR;
+		}
+		ldns_rr_set_owner(soa, owner_rdf);
+		ldns_rr_set_type(soa, LDNS_RR_TYPE_SOA);
+		ldns_rr_set_class(soa, c);
+		ldns_rr_set_question(soa, false);
+		if (ldns_str2rdf_dname(&mname_rdf, ".") != LDNS_STATUS_OK) {
+			ldns_rr_free(soa);
+			return LDNS_STATUS_ERR;
+		} else	ldns_rr_push_rdf(soa, mname_rdf);
+		if (ldns_str2rdf_dname(&rname_rdf, ".") != LDNS_STATUS_OK) {
+			ldns_rr_free(soa);
+			return LDNS_STATUS_ERR;
+		} else	ldns_rr_push_rdf(soa, rname_rdf);
+		serial_rdf = ldns_native2rdf_int32(LDNS_RDF_TYPE_INT32, ldns_resolver_get_ixfr_serial(r));
+		if (!serial_rdf) {
+			ldns_rr_free(soa);
+			return LDNS_STATUS_ERR;
+		} else	ldns_rr_push_rdf(soa, serial_rdf);
+		refresh_rdf = ldns_native2rdf_int32(LDNS_RDF_TYPE_INT32, 0);
+		if (!refresh_rdf) {
+			ldns_rr_free(soa);
+			return LDNS_STATUS_ERR;
+		} else	ldns_rr_push_rdf(soa, refresh_rdf);
+		retry_rdf = ldns_native2rdf_int32(LDNS_RDF_TYPE_INT32, 0);
+		if (!retry_rdf) {
+			ldns_rr_free(soa);
+			return LDNS_STATUS_ERR;
+		} else	ldns_rr_push_rdf(soa, retry_rdf);
+		expire_rdf = ldns_native2rdf_int32(LDNS_RDF_TYPE_INT32, 0);
+		if (!expire_rdf) {
+			ldns_rr_free(soa);
+			return LDNS_STATUS_ERR;
+		} else	ldns_rr_push_rdf(soa, expire_rdf);
+		minimum_rdf = ldns_native2rdf_int32(LDNS_RDF_TYPE_INT32, 0);
+		if (!minimum_rdf) {
+			ldns_rr_free(soa);
+			return LDNS_STATUS_ERR;
+		} else	ldns_rr_push_rdf(soa, minimum_rdf);
+
 		*query_pkt = ldns_pkt_ixfr_request_new(ldns_rdf_clone(name),
-			c, flags, NULL);
+			c, flags, soa);
 	} else {
 		*query_pkt = ldns_pkt_query_new(ldns_rdf_clone(name), t, c, flags);
 	}
 	if (!*query_pkt) {
+		ldns_rr_free(soa);
 		return LDNS_STATUS_ERR;
 	}
 
@@ -1211,7 +1270,6 @@ ldns_resolver_prepare_query_pkt(ldns_pkt **query_pkt, ldns_resolver *r,
 
 	return LDNS_STATUS_OK;
 }
-
 
 ldns_status
 ldns_resolver_send(ldns_pkt **answer, ldns_resolver *r, const ldns_rdf *name,
@@ -1410,6 +1468,19 @@ ldns_axfr_last_pkt(const ldns_resolver *res)
 {
 	return res->_cur_axfr_pkt;
 }
+
+void
+ldns_resolver_set_ixfr_serial(ldns_resolver *r, uint32_t serial)
+{
+	r->_serial = serial;
+}
+
+uint32_t
+ldns_resolver_get_ixfr_serial(const ldns_resolver *res)
+{
+	return res->_serial;
+}
+
 
 /* random isn't really that good */
 void
