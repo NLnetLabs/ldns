@@ -611,7 +611,7 @@ ldns_dnssec_zone_new_frm_fp_l(ldns_dnssec_zone** z, FILE* fp, ldns_rdf* origin,
 	ldns_rr_list* todo_nsec3s = ldns_rr_list_new();
 	ldns_rr_list* todo_nsec3_rrsigs = ldns_rr_list_new();
 
-	ldns_status status = LDNS_STATUS_OK;
+	ldns_status status;
 
 #ifdef FASTER_DNSSEC_ZONE_NEW_FRM_FP
 	ldns_zone* zone = NULL;
@@ -638,11 +638,11 @@ ldns_dnssec_zone_new_frm_fp_l(ldns_dnssec_zone** z, FILE* fp, ldns_rdf* origin,
 	}
 
 #ifdef FASTER_DNSSEC_ZONE_NEW_FRM_FP
-	if (ldns_zone_soa(zone))
+	if (ldns_zone_soa(zone)) {
 		status = ldns_dnssec_zone_add_rr(newzone, ldns_zone_soa(zone));
-	if (status != LDNS_STATUS_OK)
-	       	goto error;
-
+		if (status != LDNS_STATUS_OK)
+			goto error;
+	}
 	for (i = 0; i < ldns_rr_list_rr_count(ldns_zone_rrs(zone)); i++) {
 		cur_rr = ldns_rr_list_rr(ldns_zone_rrs(zone), i);
 		status = LDNS_STATUS_OK;
