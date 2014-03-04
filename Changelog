@@ -5,6 +5,7 @@ TBD
 	* Fix #551 change Regent to Copyright holder in BSD license in
 	  some of the headings of the file, to match the opensource.org
 	  BSD license.
+	* -e option makes ldns-compare-zones exit with status code 2 on difference
 
 1.6.17	2014-01-10
 	* Fix ldns_dnssec_zone_new_frm_fp_l to allow the last parsed line of a
