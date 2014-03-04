@@ -69,17 +69,17 @@ void print_usage(const char* progname)
 	exit(EXIT_SUCCESS);
 }
 
-void exclude_type(ldns_rdf **types2show, ldns_rr_type t)
+void exclude_type(ldns_rdf **show_types, ldns_rr_type t)
 {
 	ldns_status s;
 
-	assert(types2show);
+	assert(show_types != NULL);
 
-	if (! *types2show && LDNS_STATUS_OK !=
-			(s = ldns_rdf_bitmap_known_rr_types(types2show)))
+	if (! *show_types && LDNS_STATUS_OK !=
+			(s = ldns_rdf_bitmap_known_rr_types(show_types)))
 		goto fail;
 
-	s =  ldns_nsec_bitmap_clear_type(*types2show, t);
+	s =  ldns_nsec_bitmap_clear_type(*show_types, t);
 	if (s == LDNS_STATUS_OK)
 		return;
 fail:
@@ -89,17 +89,17 @@ fail:
 	exit(EXIT_FAILURE);
 }
 
-void include_type(ldns_rdf **types2show, ldns_rr_type t)
+void include_type(ldns_rdf **show_types, ldns_rr_type t)
 {
 	ldns_status s;
 
-	assert(types2show);
+	assert(show_types != NULL);
 
-	if (! *types2show && LDNS_STATUS_OK !=
-			(s = ldns_rdf_bitmap_known_rr_types_space(types2show)))
+	if (! *show_types && LDNS_STATUS_OK !=
+			(s = ldns_rdf_bitmap_known_rr_types_space(show_types)))
 		goto fail;
 
-	s =  ldns_nsec_bitmap_set_type(*types2show, t);
+	s =  ldns_nsec_bitmap_set_type(*show_types, t);
 	if (s == LDNS_STATUS_OK)
 		return;
 fail:
@@ -126,7 +126,7 @@ main(int argc, char **argv)
 	ldns_rr *cur_rr;
 	ldns_output_format_storage fmt_storage;
 	ldns_output_format* fmt = ldns_output_format_init(&fmt_storage);
-	ldns_rdf *types2show = NULL;
+	ldns_rdf *show_types = NULL;
 
 	ldns_soa_serial_increment_func_t soa_serial_increment_func = NULL;
 	int soa_serial_increment_func_data = 0;
@@ -145,16 +145,16 @@ main(int argc, char **argv)
                 		canonicalize = true;
                 		break;
                 	case 'd':
-				include_type(&types2show, LDNS_RR_TYPE_RRSIG);
-				include_type(&types2show, LDNS_RR_TYPE_NSEC);
-				include_type(&types2show, LDNS_RR_TYPE_NSEC3);
+				include_type(&show_types, LDNS_RR_TYPE_RRSIG);
+				include_type(&show_types, LDNS_RR_TYPE_NSEC);
+				include_type(&show_types, LDNS_RR_TYPE_NSEC3);
 				break;
 			case 'e':
-				exclude_type(&types2show, 
+				exclude_type(&show_types, 
 					ldns_get_rr_type_by_name(optarg));
 				break;
 			case 'E':
-				include_type(&types2show, 
+				include_type(&show_types, 
 					ldns_get_rr_type_by_name(optarg));
 				break;
 			case 'h':
@@ -168,9 +168,9 @@ main(int argc, char **argv)
 				break;
 			case 's':
 			case 'S':
-				exclude_type(&types2show, LDNS_RR_TYPE_RRSIG);
-				exclude_type(&types2show, LDNS_RR_TYPE_NSEC);
-				exclude_type(&types2show, LDNS_RR_TYPE_NSEC3);
+				exclude_type(&show_types, LDNS_RR_TYPE_RRSIG);
+				exclude_type(&show_types, LDNS_RR_TYPE_NSEC);
+				exclude_type(&show_types, LDNS_RR_TYPE_NSEC3);
 				if (c == 's') break;
 				if (*optarg == '+' || *optarg == '-') {
 					soa_serial_increment_func_data =
@@ -264,13 +264,13 @@ main(int argc, char **argv)
                 exit(EXIT_FAILURE);
 	}
 
-	if (types2show) {
+	if (show_types) {
 		if (print_soa)
-			print_soa = ldns_nsec_bitmap_covers_type(types2show,
+			print_soa = ldns_nsec_bitmap_covers_type(show_types,
 					LDNS_RR_TYPE_SOA);
 		stripped_list = ldns_rr_list_new();
 		while ((cur_rr = ldns_rr_list_pop_rr(ldns_zone_rrs(z))))
-			if (ldns_nsec_bitmap_covers_type(types2show,
+			if (ldns_nsec_bitmap_covers_type(show_types,
 						ldns_rr_get_type(cur_rr)))
 				ldns_rr_list_push_rr(stripped_list, cur_rr);
 			else
