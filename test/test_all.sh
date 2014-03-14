@@ -25,7 +25,6 @@ $TPKG -a ../.. fake 16-compile-builddir.tpkg
 $TPKG -a ../.. fake 30-load-pyldns.tpkg
 $TPKG -a ../.. fake 31-load-pyldnsx.tpkg
 $TPKG -a ../.. fake 32-unbound-regression.tpkg
-$TPKG -a ../.. fake 33-test-unbound-latest.tpkg
 $TPKG -a ../.. fake 999-compile-nossl.tpkg
 
 for tests in *.tpkg
