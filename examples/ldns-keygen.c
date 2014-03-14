@@ -140,7 +140,7 @@ main(int argc, char *argv[])
 		}
 		break;
 	case LDNS_SIGN_DSA:
-		if (bits < 512 || bits > 4096) {
+		if (bits < 512 || bits > 1024) {
 			fprintf(stderr, "For DSA, the key size must be between ");
 			fprintf(stderr, " 512 and 1024 bytes. Aborting.\n");
 			exit(1);
