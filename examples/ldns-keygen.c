@@ -133,6 +133,9 @@ main(int argc, char *argv[])
 	switch (algorithm) {
 	case LDNS_SIGN_RSAMD5:
 	case LDNS_SIGN_RSASHA1:
+	case LDNS_SIGN_RSASHA1_NSEC3:
+	case LDNS_SIGN_RSASHA256:
+	case LDNS_SIGN_RSASHA512:
 		if (bits < 512 || bits > 4096) {
 			fprintf(stderr, "For RSA, the key size must be between ");
 			fprintf(stderr, " 512 and 4096 bytes. Aborting.\n");
@@ -140,6 +143,7 @@ main(int argc, char *argv[])
 		}
 		break;
 	case LDNS_SIGN_DSA:
+	case LDNS_SIGN_DSA_NSEC3:
 		if (bits < 512 || bits > 1024) {
 			fprintf(stderr, "For DSA, the key size must be between ");
 			fprintf(stderr, " 512 and 1024 bytes. Aborting.\n");
