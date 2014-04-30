@@ -10,6 +10,7 @@ TBD
 	* bugfix #563: Correct DNSKEY from DSA private key. Thanks Peter Koch.
 	* bugfix #562: ldns-keygen match DSA key maximum size with library.
 	  And check keysizes with all algorithms. Thanks Peter Koch.
+	* ldns-verify-zone accepts only one single zonefile as argument.
 
 1.6.17	2014-01-10
 	* Fix ldns_dnssec_zone_new_frm_fp_l to allow the last parsed line of a
