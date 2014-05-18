@@ -126,7 +126,7 @@ enum ldns_enum_status {
 	LDNS_STATUS_INVALID_TAG,
 	LDNS_STATUS_TYPE_NOT_IN_BITMAP,
 	LDNS_STATUS_INVALID_RDF_TYPE,
-	LDNS_STATUS_RDATA_OVERFLOW,
+	LDNS_STATUS_RDATA_OVERFLOW
 };
 typedef enum ldns_enum_status ldns_status;
 
