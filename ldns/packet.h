@@ -251,6 +251,8 @@ struct ldns_struct_pkt
 	uint8_t _edns_extended_rcode;
 	/** EDNS Version */
 	uint8_t _edns_version;
+        /* OPT pseudo-RR presence flag */
+        uint8_t _edns_present;
 	/** Reserved EDNS data bits */
 	uint16_t _edns_z;
 	/** Arbitrary EDNS rdata */

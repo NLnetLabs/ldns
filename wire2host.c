@@ -477,6 +477,7 @@ ldns_wire2pkt(ldns_pkt **packet_p, const uint8_t *wire, size_t max)
 	if(have_edns)
 		ldns_pkt_set_arcount(packet, ldns_pkt_arcount(packet)
                         - have_edns);
+        packet->_edns_present = have_edns;
 
 	*packet_p = packet;
 	return status;
