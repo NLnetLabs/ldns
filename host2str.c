@@ -511,7 +511,7 @@ ldns_rdf2buffer_str_hex(ldns_buffer *output, const ldns_rdf *rdf)
 	return ldns_buffer_status(output);
 }
 
-ldns_status
+static ldns_status
 ldns_rdf2buffer_str_type_fmt(ldns_buffer *output,
 		const ldns_output_format* fmt, const ldns_rdf *rdf)
 {
@@ -836,7 +836,7 @@ ldns_rdf2buffer_str_wks(ldns_buffer *output, const ldns_rdf *rdf)
 	return ldns_buffer_status(output);
 }
 
-ldns_status
+static ldns_status
 ldns_rdf2buffer_str_nsec_fmt(ldns_buffer *output,
 		const ldns_output_format* fmt, const ldns_rdf *rdf)
 {
@@ -1279,7 +1279,7 @@ ldns_rdf2buffer_str_hip(ldns_buffer *output, const ldns_rdf *rdf)
 	return ldns_buffer_status(output);
 }
 
-ldns_status
+static ldns_status
 ldns_rdf2buffer_str_fmt(ldns_buffer *buffer,
 		const ldns_output_format* fmt, const ldns_rdf *rdf)
 {
