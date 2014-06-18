@@ -1324,7 +1324,6 @@ ldns_key_dsa2bin(unsigned char *data, DSA *k, uint16_t *size)
 	/* See RFC2536 */
 	*size = (uint16_t)BN_num_bytes(k->p);
 	T = (*size - 64) / 8;
-	memcpy(data, &T, 1);
 
 	if (T > 8) {
 #ifdef STDERR_MSGS
@@ -1335,12 +1334,13 @@ ldns_key_dsa2bin(unsigned char *data, DSA *k, uint16_t *size)
 	}
 
 	/* size = 64 + (T * 8); */
+	memset(data, 0, 21 + *size * 3);
 	data[0] = (unsigned char)T;
 	BN_bn2bin(k->q, data + 1 ); 		/* 20 octects */
 	BN_bn2bin(k->p, data + 21 ); 		/* offset octects */
-	BN_bn2bin(k->g, data + 21 + *size); 	/* offset octets */
-	BN_bn2bin(k->pub_key, data + 21 + *size + *size); /* offset octets */
-	*size = 21 + (*size * 3);
+	BN_bn2bin(k->g, data + 21 + *size * 2 - BN_num_bytes(k->g));
+	BN_bn2bin(k->pub_key,data + 21 + *size * 3 - BN_num_bytes(k->pub_key));
+	*size = 21 + *size * 3;
 	return true;
 }
 

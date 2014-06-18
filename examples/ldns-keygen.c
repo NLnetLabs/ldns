@@ -10,6 +10,9 @@
 
 #include <ldns/ldns.h>
 
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 #include <errno.h>
 
 #ifdef HAVE_SSL
@@ -48,6 +51,7 @@ int
 main(int argc, char *argv[])
 {
 	int c;
+	int fd;
 	char *prog;
 
 	/* default key size */
@@ -133,6 +137,9 @@ main(int argc, char *argv[])
 	switch (algorithm) {
 	case LDNS_SIGN_RSAMD5:
 	case LDNS_SIGN_RSASHA1:
+	case LDNS_SIGN_RSASHA1_NSEC3:
+	case LDNS_SIGN_RSASHA256:
+	case LDNS_SIGN_RSASHA512:
 		if (bits < 512 || bits > 4096) {
 			fprintf(stderr, "For RSA, the key size must be between ");
 			fprintf(stderr, " 512 and 4096 bytes. Aborting.\n");
@@ -140,7 +147,8 @@ main(int argc, char *argv[])
 		}
 		break;
 	case LDNS_SIGN_DSA:
-		if (bits < 512 || bits > 4096) {
+	case LDNS_SIGN_DSA_NSEC3:
+		if (bits < 512 || bits > 1024) {
 			fprintf(stderr, "For DSA, the key size must be between ");
 			fprintf(stderr, " 512 and 1024 bytes. Aborting.\n");
 			exit(1);
@@ -250,20 +258,20 @@ main(int argc, char *argv[])
 	/* print the priv key to stderr */
 	filename = LDNS_XMALLOC(char, strlen(owner) + 21);
 	snprintf(filename, strlen(owner) + 20, "K%s+%03u+%05u.private", owner, algorithm, (unsigned int) ldns_key_keytag(key));
-	file = fopen(filename, "w");
-	if (!file) {
-		fprintf(stderr, "Unable to open %s: %s\n", filename, strerror(errno));
-		ldns_key_deep_free(key);
-		free(owner);
-		ldns_rr_free(pubkey);
-		ldns_rr_free(ds);
-		LDNS_FREE(filename);
-		exit(EXIT_FAILURE);
-	} else {
-		ldns_key_print(file, key);
-		fclose(file);
-		LDNS_FREE(filename);
+	/* use open() here to prevent creating world-readable private keys (CVE-2014-3209)*/
+	fd = open(filename, O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR);
+	if (fd < 0) {
+		goto fail;
 	}
+
+	file = fdopen(fd, "w");
+	if (!file) {
+		goto fail;
+	}
+
+	ldns_key_print(file, key);
+	fclose(file);
+	LDNS_FREE(filename);
 
 	/* print the DS to .ds */
 	if (algorithm != LDNS_SIGN_HMACMD5 &&
@@ -296,6 +304,15 @@ main(int argc, char *argv[])
 	ldns_rr_free(pubkey);
 	ldns_rr_free(ds);
 	exit(EXIT_SUCCESS);
+
+fail:
+	fprintf(stderr, "Unable to open %s: %s\n", filename, strerror(errno));
+	ldns_key_deep_free(key);
+	free(owner);
+	ldns_rr_free(pubkey);
+	ldns_rr_free(ds);
+	LDNS_FREE(filename);
+	exit(EXIT_FAILURE);
 }
 #else
 int
