@@ -670,6 +670,18 @@ ldns_rr_new_question_frm_str(ldns_rr **newrr, const char *str,
 	                                    true);
 }
 
+static int
+ldns_rr_is_whitespace_line(char* line, int line_len)
+{
+	int i;
+	for (i = 0; i < line_len; i++) {
+		if (!isspace((int)line[i])) {
+			return 0;
+		}
+	}
+	return 1;
+}
+
 ldns_status
 ldns_rr_new_frm_fp(ldns_rr **newrr, FILE *fp, uint32_t *ttl, ldns_rdf **origin, ldns_rdf **prev)
 {
@@ -745,6 +757,9 @@ ldns_rr_new_frm_fp_l(ldns_rr **newrr, FILE *fp, uint32_t *default_ttl, ldns_rdf 
 		s = LDNS_STATUS_SYNTAX_TTL;
 	} else if (strncmp(line, "$INCLUDE", 8) == 0) {
 		s = LDNS_STATUS_SYNTAX_INCLUDE;
+	} else if (ldns_rr_is_whitespace_line(line, size)) {
+		LDNS_FREE(line);
+		return LDNS_STATUS_SYNTAX_EMPTY;
 	} else {
 		if (origin && *origin) {
 			s = ldns_rr_new_frm_str(&rr, (const char*) line, ttl, *origin, prev);
