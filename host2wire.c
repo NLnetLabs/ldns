@@ -28,6 +28,9 @@ ldns_dname2buffer_wire_compress(ldns_buffer *buffer, const ldns_rdf *name, ldns_
 	ldns_rbnode_t *node;
 	uint8_t *data;
 	size_t size;
+	ldns_rdf *label;
+	ldns_rdf *rest;
+	ldns_status s;
 
 	/* If no tree, just add the data */
 	if(!compression_data)
@@ -53,7 +56,7 @@ ldns_dname2buffer_wire_compress(ldns_buffer *buffer, const ldns_rdf *name, ldns_
 	if((node = ldns_rbtree_search(compression_data, ldns_rdf_data(name))) != NULL)
 	{
 		/* Found */
-		uint16_t position = (49152 | (uint16_t)node->data);
+		uint16_t position = (0xC000 | (uint16_t) (intptr_t) node->data);
 		if (ldns_buffer_reserve(buffer, 2))
 		{
 			ldns_buffer_write_u16(buffer, position);
@@ -70,14 +73,14 @@ ldns_dname2buffer_wire_compress(ldns_buffer *buffer, const ldns_rdf *name, ldns_
 			return LDNS_STATUS_MEM_ERR;
 		}
 		node->key = strdup((const char *)ldns_rdf_data(name));
-		node->data = (void *)ldns_buffer_position(buffer);
+		node->data = (void *) (intptr_t) ldns_buffer_position(buffer);
 		if(!ldns_rbtree_insert(compression_data,node))
 		{
 			/* fprintf(stderr,"Name not found but now it's there?\n"); */
 		}
 
-		ldns_rdf *label = ldns_dname_label(name,0);
-		ldns_rdf *rest = ldns_dname_left_chop(name);
+		label = ldns_dname_label(name, 0);
+		rest = ldns_dname_left_chop(name);
 		size = ldns_rdf_size(label) - 1; /* Don't want the final zero */
 		data = ldns_rdf_data(label);
 		if(ldns_buffer_reserve(buffer, size))
@@ -85,7 +88,7 @@ ldns_dname2buffer_wire_compress(ldns_buffer *buffer, const ldns_rdf *name, ldns_
 			ldns_buffer_write(buffer, data, size);
 		}
 		ldns_rdf_free(label);
-		ldns_status s = ldns_dname2buffer_wire_compress(buffer, rest, compression_data);
+		s = ldns_dname2buffer_wire_compress(buffer, rest, compression_data);
 		ldns_rdf_free(rest);
 		return s;
 	}
@@ -254,9 +257,18 @@ ldns_rr2buffer_wire_compress(ldns_buffer *buffer, const ldns_rr *rr, int section
 			rdl_pos = ldns_buffer_position(buffer);
 			ldns_buffer_write_u16(buffer, 0);
 		}
-		for (i = 0; i < ldns_rr_rd_count(rr); i++) {
-			(void) ldns_rdf2buffer_wire_compress(
-					buffer, ldns_rr_rdf(rr, i), compression_data);
+		if (LDNS_RR_COMPRESS ==
+		    ldns_rr_descript(ldns_rr_get_type(rr))->_compress) {
+
+			for (i = 0; i < ldns_rr_rd_count(rr); i++) {
+				(void) ldns_rdf2buffer_wire_compress(buffer,
+				    ldns_rr_rdf(rr, i), compression_data);
+			}
+		} else {
+			for (i = 0; i < ldns_rr_rd_count(rr); i++) {
+				(void) ldns_rdf2buffer_wire(
+				    buffer, ldns_rr_rdf(rr, i));
+			}
 		}
 		if (rdl_pos != 0) {
 			ldns_buffer_write_u16_at(buffer, rdl_pos,
