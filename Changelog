@@ -13,6 +13,7 @@ TBD
 	* ldns-verify-zone accepts only one single zonefile as argument.
 	* bugfix #573: ldns-keygen write private keys with mode 0600.
 	  Thanks Leon Weber
+	* Fix configure to make ldns compile with LibreSSL 2.0
 
 1.6.17	2014-01-10
 	* Fix ldns_dnssec_zone_new_frm_fp_l to allow the last parsed line of a

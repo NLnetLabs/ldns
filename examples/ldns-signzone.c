@@ -473,7 +473,9 @@ main(int argc, char *argv[])
 		case 'E':
 			ENGINE_load_builtin_engines();
 			ENGINE_load_dynamic();
+#ifdef HAVE_ENGINE_LOAD_CRYPTODEV
 			ENGINE_load_cryptodev();
+#endif
 			engine = ENGINE_by_id(optarg);
 			if (!engine) {
 				printf("No such engine: %s\n", optarg);
