@@ -56,7 +56,7 @@ ldns_dname2buffer_wire_compress(ldns_buffer *buffer, const ldns_rdf *name, ldns_
 	if((node = ldns_rbtree_search(compression_data, ldns_rdf_data(name))) != NULL)
 	{
 		/* Found */
-		uint16_t position = (0xC000 | (uint16_t) (intptr_t) node->data);
+		uint16_t position = (uint16_t) (intptr_t) node->data | 0xC000;
 		if (ldns_buffer_reserve(buffer, 2))
 		{
 			ldns_buffer_write_u16(buffer, position);

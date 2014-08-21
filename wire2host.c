@@ -405,7 +405,7 @@ ldns_wire2pkt(ldns_pkt **packet_p, const uint8_t *wire, size_t max)
 	ldns_rr *rr;
 	ldns_pkt *packet = ldns_pkt_new();
 	ldns_status status = LDNS_STATUS_OK;
-	int have_edns = 0;
+	uint8_t have_edns = 0;
 
 	uint8_t data[4];
 

@@ -671,9 +671,9 @@ ldns_rr_new_question_frm_str(ldns_rr **newrr, const char *str,
 }
 
 static int
-ldns_rr_is_whitespace_line(char* line, int line_len)
+ldns_rr_is_whitespace_line(char* line, ssize_t line_len)
 {
-	int i;
+	ssize_t i;
 	for (i = 0; i < line_len; i++) {
 		if (!isspace((int)line[i])) {
 			return 0;
