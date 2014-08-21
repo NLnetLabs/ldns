@@ -376,9 +376,7 @@ main(int argc, char *argv[])
 						tsig_algorithm[strlen(optarg) - tsig_separator2 - 1] = '\0';
 					} else {
 						tsig_separator2 = strlen(optarg);
-						tsig_algorithm = xmalloc(26);
-						strncpy(tsig_algorithm, "hmac-md5.sig-alg.reg.int.", 25);
-						tsig_algorithm[25] = '\0';
+						tsig_algorithm = strdup("hmac-md5.sig-alg.reg.int");
 					}
 					tsig_name = xmalloc(tsig_separator + 1);
 					tsig_data = xmalloc(tsig_separator2 - tsig_separator);
@@ -599,6 +597,39 @@ main(int argc, char *argv[])
 	}
 
 	if (tsig_name && tsig_data) {
+		/* With dig TSIG keys are also specified with -y,
+		 * but format with drill is: -y <name:key[:algo]>
+		 *             and with dig: -y [hmac:]name:key
+		 *
+		 * When we detect an unknown tsig algorithm in algo,
+		 * but a known algorithm in name, we cane assume dig
+		 * order was used.
+		 *
+		 * Following if statement is to anticipate and correct dig order
+		 */
+		if (   strcasecmp(tsig_algorithm, "hmac-md5.sig-alg.reg.int")
+		    && strcasecmp(tsig_algorithm, "hmac-md5")
+		    && strcasecmp(tsig_algorithm, "hmac-sha1")
+		    && strcasecmp(tsig_algorithm, "hmac-sha256")
+		    && (
+		       strcasecmp(tsig_name, "hmac-md5.sig-alg.reg.int")  == 0
+		    || strcasecmp(tsig_name, "hmac-md5")                  == 0
+		    || strcasecmp(tsig_name, "hmac-sha1")                 == 0
+		    || strcasecmp(tsig_name, "hmac-sha256")               == 0
+		       )) {
+
+			/* Roll options */
+			char *tmp_tsig_algorithm = tsig_name;
+			tsig_name      = tsig_data;
+			tsig_data      = tsig_algorithm;
+			tsig_algorithm = tmp_tsig_algorithm;
+		}
+
+		if (strcasecmp(tsig_algorithm, "hmac-md5") == 0) {
+			free(tsig_algorithm);
+			tsig_algorithm = strdup("hmac-md5.sig-alg.reg.int");
+		}
+
 		ldns_resolver_set_tsig_keyname(res, tsig_name);
 		ldns_resolver_set_tsig_keydata(res, tsig_data);
 		ldns_resolver_set_tsig_algorithm(res, tsig_algorithm);
