@@ -1943,7 +1943,7 @@ static const ldns_rdf_type type_dhcid_wireformat[] = {
 static const ldns_rdf_type type_talink_wireformat[] = {
 	LDNS_RDF_TYPE_DNAME, LDNS_RDF_TYPE_DNAME
 };
-static const ldns_rdf_type type_openpgpkey_wireformat[] = {
+/*@unused@*/ static const ldns_rdf_type type_openpgpkey_wireformat[] = {
 	LDNS_RDF_TYPE_B64
 };
 /* nsec3 is some vars, followed by same type of data of nsec */
