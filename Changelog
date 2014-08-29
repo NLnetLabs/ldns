@@ -18,6 +18,7 @@ TBD
 	  (-y <[algo:]name:key> i.s.o. -y <name:key[:algo]>)
 	* CDNSKEY and OPENPGPKEY draft rr types.
 	  enable with: --enable-rrtype-cdnskey and --enable-rrtype-openpgpkey
+	* bugfix #608: Correct comment about escaped characters
 
 1.6.17	2014-01-10
 	* Fix ldns_dnssec_zone_new_frm_fp_l to allow the last parsed line of a

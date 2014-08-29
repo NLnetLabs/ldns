@@ -248,11 +248,11 @@ ldns_str2rdf_int8(ldns_rdf **rd, const char *bytestr)
 
 
 /*
- * Checks whether the escaped value at **s is an octal value or
+ * Checks whether the escaped value at **s is an decimal value or
  * a 'normally' escaped character (and not eos)
  *
  * The string pointer at *s is increased by either 0 (on error), 1 (on
- * normal escapes), or 3 (on octals)
+ * normal escapes), or 3 (on decimals)
  *
  * Returns the number of bytes read from the escaped string, or
  * 0 on error
