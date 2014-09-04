@@ -273,9 +273,15 @@ ldns_pkt_rr_list_by_name(ldns_pkt *packet,
 			if (ret == NULL) {
 				ret = ldns_rr_list_new();
 			}
-			ldns_rr_list_push_rr(ret, ldns_rr_list_rr(rrs, i));
+			ldns_rr_list_push_rr(ret,
+					     ldns_rr_clone(
+						ldns_rr_list_rr(rrs, i))
+					    );
 		}
 	}
+
+	ldns_rr_list_deep_free(rrs);
+
 	return ret;
 }
 
