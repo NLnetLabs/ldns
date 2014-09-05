@@ -392,22 +392,6 @@ case "$enable_rrtype_rkey" in
 	no|*)
 		;;
 esac
-AC_ARG_ENABLE(rrtype-cds, AC_HELP_STRING([--enable-rrtype-cds], [Enable draft RR type cds.]))
-case "$enable_rrtype_cds" in
-	yes)
-		AC_DEFINE_UNQUOTED([RRTYPE_CDS], [], [Define this to enable RR type CDS.])
-		;;
-	no|*)
-		;;
-esac
-AC_ARG_ENABLE(rrtype-cdnskey, AC_HELP_STRING([--enable-rrtype-cdnskey], [Enable draft RR type cdnskey.]))
-case "$enable_rrtype_cdnskey" in
-	yes)
-		AC_DEFINE_UNQUOTED([RRTYPE_CDNSKEY], [], [Define this to enable RR type CDNSKEY.])
-		;;
-	no|*)
-		;;
-esac
 AC_ARG_ENABLE(rrtype-openpgpkey, AC_HELP_STRING([--enable-rrtype-openpgpkey], [Enable draft RR type openpgpkey.]))
 case "$enable_rrtype_openpgpkey" in
 	yes)
