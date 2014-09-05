@@ -87,9 +87,9 @@ ldns_dname2buffer_wire_compress(ldns_buffer *buffer, const ldns_rdf *name, ldns_
 		{
 			ldns_buffer_write(buffer, data, size);
 		}
-		ldns_rdf_free(label);
+		ldns_rdf_deep_free(label);
 		s = ldns_dname2buffer_wire_compress(buffer, rest, compression_data);
-		ldns_rdf_free(rest);
+		ldns_rdf_deep_free(rest);
 		return s;
 	}
 }
