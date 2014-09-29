@@ -348,7 +348,7 @@ ldns_rr_new_frm_str_internal(ldns_rr **newrr, const char *str,
 		case LDNS_RDF_TYPE_WKS        : /* it is the last rd field. */
 		case LDNS_RDF_TYPE_IPSECKEY   :
 		case LDNS_RDF_TYPE_NSEC       :	if (r_cnt == r_max - 1) {
-							delimiters = "\n\t";
+							delimiters = "\n";
 							break;
 						}
 		default                       :	delimiters = "\n\t "; 
