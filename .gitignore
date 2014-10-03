@@ -10,6 +10,8 @@
 /compat/b64_ntop.o
 /compat/b64_pton.lo
 /compat/b64_pton.o
+/compat/strlcpy.o
+/compat/strlcpy.lo
 /config.guess
 /config.h
 /config.log
