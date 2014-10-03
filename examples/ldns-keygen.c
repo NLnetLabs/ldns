@@ -31,7 +31,7 @@ usage(FILE *fp, char *prog) {
 	fprintf(fp, "  The following files will be created:\n");
 	fprintf(fp, "    K<name>+<alg>+<id>.key\tPublic key in RR format\n");
 	fprintf(fp, "    K<name>+<alg>+<id>.private\tPrivate key in key format\n");
-	fprintf(fp, "    K<name>+<alg>+<id>.ds\tDS in RR format (only for DNSSEC keys)\n");
+	fprintf(fp, "    K<name>+<alg>+<id>.ds\tDS in RR format (only for DNSSEC KSK keys)\n");
 	fprintf(fp, "  The base name (K<name>+<alg>+<id> will be printed to stdout\n");
 }
 
@@ -274,7 +274,7 @@ main(int argc, char *argv[])
 	LDNS_FREE(filename);
 
 	/* print the DS to .ds */
-	if (algorithm != LDNS_SIGN_HMACMD5 &&
+	if (ksk && algorithm != LDNS_SIGN_HMACMD5 &&
 		algorithm != LDNS_SIGN_HMACSHA1 &&
 		algorithm != LDNS_SIGN_HMACSHA256) {
 		filename = LDNS_XMALLOC(char, strlen(owner) + 16);
