@@ -157,26 +157,48 @@ struct dane_param_choice_struct {
 typedef struct dane_param_choice_struct dane_param_choice;
 
 dane_param_choice dane_certificate_usage_table[] = {
-	{ "CA constraint"			, 0 },
-	{ "CA-constraint"			, 0 },
-	{ "Service certificate constraint"	, 1 },
-	{ "Service-certificate-constraint"	, 1 },
-	{ "Trust anchor assertion"		, 2 },
-	{ "Trust-anchor-assertion"		, 2 },
-	{ "anchor"				, 2 },
-	{ "Domain-issued certificate"		, 3 },
-	{ "Domain-issued-certificate"		, 3 },
+	{ "PKIX-TA"				,   0 },
+	{ "CA constraint"			,   0 },
+	{ "CA-constraint"			,   0 },
+	{ "PKIX-EE"				,   1 },
+	{ "Service certificate constraint"	,   1 },
+	{ "Service-certificate-constraint"	,   1 },
+	{ "DANE-TA"				,   2 },
+	{ "Trust anchor assertion"		,   2 },
+	{ "Trust-anchor-assertion"		,   2 },
+	{ "anchor"				,   2 },
+	{ "DANE-EE"				,   3 },
+	{ "Domain-issued certificate"		,   3 },
+	{ "Domain-issued-certificate"		,   3 },
+	{ "PrivCert"				, 255 },
 	{ NULL, -1 }
 };
 
 dane_param_choice dane_selector_table[] = {
-	{ "Full certificate"	, 0 },
-	{ "Full-certificate"	, 0 },
-	{ "certificate"		, 0 },
-	{ "SubjectPublicKeyInfo", 1 },
-	{ "PublicKey"		, 1 },
-	{ "pubkey"		, 1 },
-	{ "key"			, 1 },
+	{ "Cert"		,   0 },
+	{ "Full certificate"	,   0 },
+	{ "Full-certificate"	,   0 },
+	{ "certificate"		,   0 },
+	{ "SPKI"		,   1 },
+	{ "SubjectPublicKeyInfo",   1 },
+	{ "PublicKey"		,   1 },
+	{ "pubkey"		,   1 },
+	{ "key"			,   1 },
+	{ "PrivSel"		, 255 },
+	{ NULL, -1 }
+};
+
+dane_param_choice dane_matching_type_table[] = {
+	{ "Full"		,   0 },
+	{ "no-hash-used"	,   0 },
+	{ "no hash used"	,   0 },
+	{ "SHA2-256"		,   1 },
+	{ "sha256"		,   1 },
+	{ "sha-256"		,   1 },
+	{ "SHA2-512"		,   2 },
+	{ "sha512"		,   2 },
+	{ "sha-512"		,   2 },
+	{ "PrivMatch"		, 255 },
 	{ NULL, -1 }
 };
 
@@ -1532,8 +1554,7 @@ main(int argc, char* const* argv)
 					dane_certificate_usage_table);
 			argc--;
 		} else {
-			certificate_usage =
-				LDNS_TLSA_USAGE_DOMAIN_ISSUED_CERTIFICATE;
+			certificate_usage = LDNS_TLSA_USAGE_DANE_EE;
 		}
 		if (argc > 0) {
 			selector = dane_int_within_range_table(
@@ -1541,35 +1562,16 @@ main(int argc, char* const* argv)
 					dane_selector_table);
 			argc--;
 		} else {
-			selector = LDNS_TLSA_SELECTOR_FULL_CERTIFICATE;
+			selector = LDNS_TLSA_SELECTOR_SPKI;
 		}
 		if (argc > 0) {
-			if (*argv && /* strlen(argv) > 0 */
-					(strncasecmp(*argv, "no-hash-used",
-						strlen(*argv)) == 0 ||
-					strncasecmp(*argv, "no hash used",
-						strlen(*argv)) == 0 )) {
-				matching_type =
-					LDNS_TLSA_MATCHING_TYPE_NO_HASH_USED;
+			matching_type = dane_int_within_range_table(
+					*argv++, 2, "matching type",
+					dane_matching_type_table);
 
-			} else if (strcasecmp(*argv, "sha256") == 0 ||
-					strcasecmp(*argv, "sha-256") == 0) {
-
-				matching_type = LDNS_TLSA_MATCHING_TYPE_SHA256;
-
-			} else if (strcasecmp(*argv, "sha512") == 0 ||
-					strcasecmp(*argv, "sha-512") == 0) {
-
-				matching_type = LDNS_TLSA_MATCHING_TYPE_SHA512;
-
-			} else {
-				matching_type = dane_int_within_range(
-						*argv, 2, "matching type");
-			}
-			argv++;
 			argc--;
 		} else {
-			matching_type = LDNS_TLSA_MATCHING_TYPE_SHA256;
+			matching_type = LDNS_TLSA_MATCHING_TYPE_SHA2_256;
 		}
 		if (argc > 0) {
 

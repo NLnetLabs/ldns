@@ -42,13 +42,19 @@ extern "C" {
 enum ldns_enum_tlsa_certificate_usage
 {
 	/** CA constraint */
-	LDNS_TLSA_USAGE_CA_CONSTRAINT			= 0,
+	LDNS_TLSA_USAGE_PKIX_TA				=   0,
+	LDNS_TLSA_USAGE_CA_CONSTRAINT			=   0,
 	/** Sevice certificate constraint */
-	LDNS_TLSA_USAGE_SERVICE_CERTIFICATE_CONSTRAINT	= 1,
+	LDNS_TLSA_USAGE_PKIX_EE				=   1,
+	LDNS_TLSA_USAGE_SERVICE_CERTIFICATE_CONSTRAINT	=   1,
 	/** Trust anchor assertion */
-	LDNS_TLSA_USAGE_TRUST_ANCHOR_ASSERTION		= 2,
+	LDNS_TLSA_USAGE_DANE_TA				=   2,
+	LDNS_TLSA_USAGE_TRUST_ANCHOR_ASSERTION		=   2,
 	/** Domain issued certificate */
-	LDNS_TLSA_USAGE_DOMAIN_ISSUED_CERTIFICATE	= 3
+	LDNS_TLSA_USAGE_DANE_EE				=   3,
+	LDNS_TLSA_USAGE_DOMAIN_ISSUED_CERTIFICATE	=   3,
+	/** Reserved for Private Use */
+	LDNS_TLSA_USAGE_PRIVCERT			= 255
 };
 typedef enum ldns_enum_tlsa_certificate_usage ldns_tlsa_certificate_usage;
 
@@ -61,13 +67,18 @@ enum ldns_enum_tlsa_selector
 	 * Full certificate: the Certificate binary structure
 	 * as defined in [RFC5280]
 	 */
-	LDNS_TLSA_SELECTOR_FULL_CERTIFICATE	= 0,
+	LDNS_TLSA_SELECTOR_CERT			=   0,
+	LDNS_TLSA_SELECTOR_FULL_CERTIFICATE	=   0,
 
 	/** 
 	 * SubjectPublicKeyInfo: DER-encoded binary structure
 	 * as defined in [RFC5280]
 	 */
-	LDNS_TLSA_SELECTOR_SUBJECTPUBLICKEYINFO	= 1
+	LDNS_TLSA_SELECTOR_SPKI			=   1,
+	LDNS_TLSA_SELECTOR_SUBJECTPUBLICKEYINFO	=   1,
+
+	/** Reserved for Private Use */
+	LDNS_TLSA_SELECTOR_PRIVSEL		= 255
 };
 typedef enum ldns_enum_tlsa_selector ldns_tlsa_selector;
 
@@ -77,11 +88,16 @@ typedef enum ldns_enum_tlsa_selector ldns_tlsa_selector;
 enum ldns_enum_tlsa_matching_type
 {
 	/** Exact match on selected content */
-	LDNS_TLSA_MATCHING_TYPE_NO_HASH_USED	= 0,
+	LDNS_TLSA_MATCHING_FULL			=   0,
+	LDNS_TLSA_MATCHING_TYPE_NO_HASH_USED	=   0,
 	/** SHA-256 hash of selected content [RFC6234] */
-	LDNS_TLSA_MATCHING_TYPE_SHA256		= 1,
+	LDNS_TLSA_MATCHING_TYPE_SHA2_256	=   1,
+	LDNS_TLSA_MATCHING_TYPE_SHA256		=   1,
 	/** SHA-512 hash of selected content [RFC6234] */
-	LDNS_TLSA_MATCHING_TYPE_SHA512		= 2
+	LDNS_TLSA_MATCHING_TYPE_SHA2_512	=   2,
+	LDNS_TLSA_MATCHING_TYPE_SHA512		=   2,
+	/** Reserved for Private Use */
+	LDNS_TLSA_MATCHING_TYPE_PRIVMATCH	= 255
 };
 typedef enum ldns_enum_tlsa_matching_type ldns_tlsa_matching_type;
 
