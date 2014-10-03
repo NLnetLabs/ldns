@@ -670,16 +670,15 @@ ldns_rr_new_question_frm_str(ldns_rr **newrr, const char *str,
 	                                    true);
 }
 
-static int
-ldns_rr_is_whitespace_line(char* line, ssize_t line_len)
+static char *
+ldns_strip_ws(char *line)
 {
-	ssize_t i;
-	for (i = 0; i < line_len; i++) {
-		if (!isspace((int)line[i])) {
-			return 0;
-		}
-	}
-	return 1;
+	char *s = line, *e;
+
+	for (s = line; *s && isspace(*s); s++);
+	for (e = strchr(s, 0); e-2 > s && isspace(e[-1]) && e[-2] != '\\'; e--);
+	*e = 0;
+	return s;
 }
 
 ldns_status
@@ -698,7 +697,6 @@ ldns_rr_new_frm_fp_l(ldns_rr **newrr, FILE *fp, uint32_t *default_ttl, ldns_rdf 
 	ldns_rdf *tmp;
 	ldns_status s;
 	ssize_t size;
-	int offset = 0;
 
 	if (default_ttl) {
 		ttl = *default_ttl;
@@ -734,11 +732,8 @@ ldns_rr_new_frm_fp_l(ldns_rr **newrr, FILE *fp, uint32_t *default_ttl, ldns_rdf 
 			ldns_rdf_deep_free(*origin);
 			*origin = NULL;
 		}
-		offset = 8;
-		while (isspace(line[offset])) {
-			offset++;
-		}
-		tmp = ldns_rdf_new_frm_str(LDNS_RDF_TYPE_DNAME, line + offset);
+		tmp = ldns_rdf_new_frm_str(LDNS_RDF_TYPE_DNAME,
+				ldns_strip_ws(line + 8));
 		if (!tmp) {
 			/* could not parse what next to $ORIGIN */
 			LDNS_FREE(line);
@@ -747,17 +742,14 @@ ldns_rr_new_frm_fp_l(ldns_rr **newrr, FILE *fp, uint32_t *default_ttl, ldns_rdf 
 		*origin = tmp;
 		s = LDNS_STATUS_SYNTAX_ORIGIN;
 	} else if (strncmp(line, "$TTL", 4) == 0 && isspace(line[4])) {
-		offset = 5;
-		while (isspace(line[offset])) {
-			offset++;
-		}
 		if (default_ttl) {
-			*default_ttl = ldns_str2period(line + offset, &endptr);
+			*default_ttl = ldns_str2period(
+					ldns_strip_ws(line + 5), &endptr);
 		}
 		s = LDNS_STATUS_SYNTAX_TTL;
 	} else if (strncmp(line, "$INCLUDE", 8) == 0) {
 		s = LDNS_STATUS_SYNTAX_INCLUDE;
-	} else if (ldns_rr_is_whitespace_line(line, size)) {
+	} else if (!*ldns_strip_ws(line)) {
 		LDNS_FREE(line);
 		return LDNS_STATUS_SYNTAX_EMPTY;
 	} else {
