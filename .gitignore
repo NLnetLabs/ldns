@@ -1,4 +1,5 @@
 /.libs/
+.*.swp
 /_ldns.la
 /Makefile
 /aclocal.m4
