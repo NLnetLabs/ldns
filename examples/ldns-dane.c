@@ -73,17 +73,19 @@ print_usage(const char* progname)
 			"resource record(s) that would "
 			"authenticate the connection.\n");
 	printf("\n\t<usage>"
-			"\t\t0: CA constraint\n"
-			"\t\t\t1: Service certificate constraint\n"
-			"\t\t\t2: Trust anchor assertion\n"
-			"\t\t\t3: Domain-issued certificate (default)\n");
+			"\t\t0 | PKIX-TA  : CA constraint\n"
+			"\t\t\t1 | PKIX-EE  : Service certificate constraint\n"
+			"\t\t\t2 | DANE-TA  : Trust anchor assertion\n"
+			"\t\t\t3 | DANE-EE  : Domain-issued certificate "
+			"(default)\n");
 	printf("\n\t<selector>"
-			"\t0: Full certificate (default)\n"
-			"\t\t\t1: SubjectPublicKeyInfo\n");
+			"\t0 | Cert     : Full certificate\n"
+			"\t\t\t1 | SPKI     : SubjectPublicKeyInfo "
+			"(default)\n");
 	printf("\n\t<type>"
-			"\t\t0: No hash used\n"
-			"\t\t\t1: SHA-256 (default)\n"
-			"\t\t\t2: SHA-512\n");
+			"\t\t0 | Full     : No hash used\n"
+			"\t\t\t1 | SHA2-256 : SHA-256 (default)\n"
+			"\t\t\t2 | SHA2-512 : SHA-512\n");
 
 	printf("OPTIONS:\n");
 	printf("\t-h\t\tshow this text\n");
