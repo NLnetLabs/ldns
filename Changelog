@@ -26,6 +26,10 @@ TBD
 	  Thanks Max Liebkies
 	* bugfix #613: Allow tab as whitespace too in last rdata field of types
 	  of variable length.  Thanks Xiali Yan
+	* bugfix: strip trailing whitespace from $ORIGIN lines in zone files
+	* Let ldns-keygen output .ds files only for KSK keys
+	* Parse RFC7218 TLSA mnemonics, but do not output them
+	* Let ldns-dane use SPKI as the default selector i.s.o. Cert
 
 1.6.17	2014-01-10
 	* Fix ldns_dnssec_zone_new_frm_fp_l to allow the last parsed line of a
