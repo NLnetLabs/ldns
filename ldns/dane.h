@@ -88,7 +88,7 @@ typedef enum ldns_enum_tlsa_selector ldns_tlsa_selector;
 enum ldns_enum_tlsa_matching_type
 {
 	/** Exact match on selected content */
-	LDNS_TLSA_MATCHING_FULL			=   0,
+	LDNS_TLSA_MATCHING_TYPE_FULL		=   0,
 	LDNS_TLSA_MATCHING_TYPE_NO_HASH_USED	=   0,
 	/** SHA-256 hash of selected content [RFC6234] */
 	LDNS_TLSA_MATCHING_TYPE_SHA2_256	=   1,
