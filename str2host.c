@@ -777,29 +777,68 @@ ldns_str2rdf_cert_alg(ldns_rdf **rd, const char *str)
 	return st;
 }
 
+static ldns_lookup_table ldns_tlsa_certificate_usages[] = {
+	{ LDNS_TLSA_USAGE_PKIX_TA		, "PKIX-TA"  },
+	{ LDNS_TLSA_USAGE_PKIX_EE		, "PKIX-EE"  },
+	{ LDNS_TLSA_USAGE_DANE_TA		, "DANE-TA"  },
+	{ LDNS_TLSA_USAGE_DANE_EE		, "DANE-EE"  },
+	{ LDNS_TLSA_USAGE_PRIVCERT		, "PrivCert" }
+};
+
+static ldns_lookup_table ldns_tlsa_selectors[] = {
+	{ LDNS_TLSA_SELECTOR_CERT		, "Cert" },
+	{ LDNS_TLSA_SELECTOR_SPKI		, "SPKI" },
+	{ LDNS_TLSA_SELECTOR_PRIVSEL		, "PrivSel" }
+};
+
+static ldns_lookup_table ldns_tlsa_matching_types[] = {
+	{ LDNS_TLSA_MATCHING_TYPE_FULL		, "Full"      },
+	{ LDNS_TLSA_MATCHING_TYPE_SHA2_256	, "SHA2-256"  },
+	{ LDNS_TLSA_MATCHING_TYPE_SHA2_512	, "SHA2-512"  },
+	{ LDNS_TLSA_MATCHING_TYPE_PRIVMATCH	, "PrivMatch" }
+};
+
+static ldns_status
+ldns_str2rdf_mnemonic4int8(ldns_lookup_table *lt,
+		ldns_rdf **rd, const char *str)
+{
+	if ((lt = ldns_lookup_by_name(lt, str))) {
+		/* it was given as a integer */
+		*rd = ldns_native2rdf_int8(LDNS_RDF_TYPE_INT8, (uint8_t) lt->id);
+		if (!*rd)
+			return LDNS_STATUS_ERR;
+		else
+			return LDNS_STATUS_OK;
+	}
+	return ldns_str2rdf_int8(rd, str);
+}
+
 /* An alg field can either be specified as a 8 bits number
  * or by its symbolic name. Handle both
  */
 ldns_status
 ldns_str2rdf_alg(ldns_rdf **rd, const char *str)
 {
-	ldns_lookup_table *lt;
-	ldns_status st;
+	return ldns_str2rdf_mnemonic4int8(ldns_algorithms, rd, str);
+}
 
-	lt = ldns_lookup_by_name(ldns_algorithms, str);
-	st = LDNS_STATUS_OK;
+ldns_status
+ldns_str2rdf_certificate_usage(ldns_rdf **rd, const char *str)
+{
+	return ldns_str2rdf_mnemonic4int8(
+			ldns_tlsa_certificate_usages, rd, str);
+}
 
-	if (lt) {
-		/* it was given as a integer */
-		*rd = ldns_native2rdf_int8(LDNS_RDF_TYPE_INT8, (uint8_t) lt->id);
-		if (!*rd) {
-			st = LDNS_STATUS_ERR;
-		}
-	} else {
-		/* try as-is (a number) */
-		st = ldns_str2rdf_int8(rd, str);
-	}
-	return st;
+ldns_status
+ldns_str2rdf_selector(ldns_rdf **rd, const char *str)
+{
+	return ldns_str2rdf_mnemonic4int8(ldns_tlsa_selectors, rd, str);
+}
+
+ldns_status
+ldns_str2rdf_matching_type(ldns_rdf **rd, const char *str)
+{
+	return ldns_str2rdf_mnemonic4int8(ldns_tlsa_matching_types, rd, str);
 }
 
 ldns_status

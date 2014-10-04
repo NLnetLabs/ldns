@@ -567,11 +567,7 @@ ldns_rdf2buffer_str_cert_alg(ldns_buffer *output, const ldns_rdf *rdf)
 ldns_status
 ldns_rdf2buffer_str_alg(ldns_buffer *output, const ldns_rdf *rdf)
 {
-	/* don't use algorithm mnemonics in the presentation format
-	   this kind of got sneaked into the rfc's */
-        uint8_t data = ldns_rdf_data(rdf)[0];
-		ldns_buffer_printf(output, "%d", data);
-	return ldns_buffer_status(output);
+	return ldns_rdf2buffer_str_int8(output, rdf);
 }
 
 static void
@@ -1293,7 +1289,11 @@ ldns_rdf2buffer_str_fmt(ldns_buffer *buffer,
 		case LDNS_RDF_TYPE_DNAME:
 			res = ldns_rdf2buffer_str_dname(buffer, rdf);
 			break;
-		case LDNS_RDF_TYPE_INT8:
+		case LDNS_RDF_TYPE_INT8: /* Don't output mnemonics for these */
+		case LDNS_RDF_TYPE_ALG:
+		case LDNS_RDF_TYPE_CERTIFICATE_USAGE:
+		case LDNS_RDF_TYPE_SELECTOR:
+		case LDNS_RDF_TYPE_MATCHING_TYPE:
 			res = ldns_rdf2buffer_str_int8(buffer, rdf);
 			break;
 		case LDNS_RDF_TYPE_INT16:
@@ -1343,9 +1343,6 @@ ldns_rdf2buffer_str_fmt(ldns_buffer *buffer,
 			break;
 		case LDNS_RDF_TYPE_CERT_ALG:
 			res = ldns_rdf2buffer_str_cert_alg(buffer, rdf);
-			break;
-		case LDNS_RDF_TYPE_ALG:
-			res = ldns_rdf2buffer_str_alg(buffer, rdf);
 			break;
 		case LDNS_RDF_TYPE_UNKNOWN:
 			res = ldns_rdf2buffer_str_unknown(buffer, rdf);

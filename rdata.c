@@ -351,6 +351,15 @@ ldns_rdf_new_frm_str(ldns_rdf_type type, const char *str)
 	case LDNS_RDF_TYPE_LONG_STR:
 		status = ldns_str2rdf_long_str(&rdf, str);
 		break;
+	case LDNS_RDF_TYPE_CERTIFICATE_USAGE:
+		status = ldns_str2rdf_certificate_usage(&rdf, str);
+		break;
+	case LDNS_RDF_TYPE_SELECTOR:
+		status = ldns_str2rdf_selector(&rdf, str);
+		break;
+	case LDNS_RDF_TYPE_MATCHING_TYPE:
+		status = ldns_str2rdf_matching_type(&rdf, str);
+		break;
 	case LDNS_RDF_TYPE_NONE:
 	default:
 		/* default default ??? */

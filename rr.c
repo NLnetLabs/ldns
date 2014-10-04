@@ -1977,9 +1977,9 @@ static const ldns_rdf_type type_tsig_wireformat[] = {
 	LDNS_RDF_TYPE_INT16_DATA
 };
 static const ldns_rdf_type type_tlsa_wireformat[] = {
-	LDNS_RDF_TYPE_INT8,
-	LDNS_RDF_TYPE_INT8,
-	LDNS_RDF_TYPE_INT8,
+	LDNS_RDF_TYPE_CERTIFICATE_USAGE,
+	LDNS_RDF_TYPE_SELECTOR,
+	LDNS_RDF_TYPE_MATCHING_TYPE,
 	LDNS_RDF_TYPE_HEX
 };
 static const ldns_rdf_type type_hip_wireformat[] = {

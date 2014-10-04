@@ -202,6 +202,9 @@ ldns_wire2rdf(ldns_rr *rr, const uint8_t *wire, size_t max, size_t *pos)
 			break;
 		case LDNS_RDF_TYPE_CLASS:
 		case LDNS_RDF_TYPE_ALG:
+		case LDNS_RDF_TYPE_CERTIFICATE_USAGE:
+		case LDNS_RDF_TYPE_SELECTOR:
+		case LDNS_RDF_TYPE_MATCHING_TYPE:
 		case LDNS_RDF_TYPE_INT8:
 			cur_rdf_length = LDNS_RDF_SIZE_BYTE;
 			break;
