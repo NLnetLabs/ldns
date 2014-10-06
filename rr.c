@@ -670,14 +670,19 @@ ldns_rr_new_question_frm_str(ldns_rr **newrr, const char *str,
 	                                    true);
 }
 
+/* Strip whitespace from the start and the end of <line>.  */
 static char *
 ldns_strip_ws(char *line)
 {
 	char *s = line, *e;
 
-	for (s = line; *s && isspace(*s); s++);
-	for (e = strchr(s, 0); e-2 > s && isspace(e[-1]) && e[-2] != '\\'; e--);
+	for (s = line; *s && isspace(*s); s++)
+		;
+
+	for (e = strchr(s, 0); e > s+2 && isspace(e[-1]) && e[-2] != '\\'; e--)
+		;
 	*e = 0;
+
 	return s;
 }
 
