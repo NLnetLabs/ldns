@@ -1704,6 +1704,9 @@ ldns_signing_algorithm ldns_get_signing_algorithm_by_name(const char* name)
                 {LDNS_PRIVATEOID, "PRIVATEOID"},
                 {0, NULL}};
         ldns_lookup_table* lt = ldns_signing_algorithms;
+	ldns_signing_algorithm a;
+	char *endptr;
+
         while(lt->name) {
                 if(strcasecmp(lt->name, name) == 0)
                         return lt->id;
@@ -1715,7 +1718,9 @@ ldns_signing_algorithm ldns_get_signing_algorithm_by_name(const char* name)
                         return lt->id;
                 lt++;
         }
-        if(atoi(name) != 0)
-                return atoi(name);
+	a = strtol(name, &endptr, 10);
+	if (*name && !*endptr)
+		return a;
+
         return 0;
 }
