@@ -30,6 +30,8 @@ TBD
 	* Let ldns-keygen output .ds files only for KSK keys
 	* Parse RFC7218 TLSA mnemonics, but do not output them
 	* Let ldns-dane use SPKI as the default selector i.s.o. Cert
+	* bugfix: Fit left over NSEC3s once more before adding empty non
+	  terminals.  Thanks Stuart Browne
 
 1.6.17	2014-01-10
 	* Fix ldns_dnssec_zone_new_frm_fp_l to allow the last parsed line of a

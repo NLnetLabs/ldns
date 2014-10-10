@@ -604,11 +604,19 @@ ldns_dnssec_zone_new_frm_fp_l(ldns_dnssec_zone** z, FILE* fp, ldns_rdf* origin,
 	ldns_rdf *my_prev = NULL;
 
 	ldns_dnssec_zone *newzone = ldns_dnssec_zone_new();
+	/* NSEC3s may occur before the names they refer to. We must remember
+	   them and add them to the name later on, after the name is read.
+	   We track not yet  matching NSEC3s*n the todo_nsec3s list */
+	ldns_rr_list* todo_nsec3s = ldns_rr_list_new();
 	/* when reading NSEC3s, there is a chance that we encounter nsecs
 	   for empty nonterminals, whose nonterminals we cannot derive yet
-	   because the needed information is to be read later. in that case
-	   we keep a list of those nsec3's and retry to add them later */
-	ldns_rr_list* todo_nsec3s = ldns_rr_list_new();
+	   because the needed information is to be read later.
+
+	   nsec3_ents (where ent is e.n.t.; i.e. empty non terminal) will
+	   hold the NSEC3s that still didn't have a matching name in the
+	   zone tree, even after all names were read.  They can only match
+	   after the zone is equiped with all the empty non terminals. */
+	ldns_rr_list* todo_nsec3_ents = ldns_rr_list_new();
 	ldns_rr_list* todo_nsec3_rrsigs = ldns_rr_list_new();
 
 	ldns_status status;
@@ -690,23 +698,25 @@ ldns_dnssec_zone_new_frm_fp_l(ldns_dnssec_zone** z, FILE* fp, ldns_rdf* origin,
 		}
 	}
 
-	if (ldns_rr_list_rr_count(todo_nsec3s) > 0) {
-		(void) ldns_dnssec_zone_add_empty_nonterminals(newzone);
-		for (i = 0; status == LDNS_STATUS_OK &&
-				i < ldns_rr_list_rr_count(todo_nsec3s); i++) {
-			cur_rr = ldns_rr_list_rr(todo_nsec3s, i);
-			status = ldns_dnssec_zone_add_rr(newzone, cur_rr);
-		}
-	} 
-	if (ldns_rr_list_rr_count(todo_nsec3_rrsigs) > 0) {
-		for (i = 0; status == LDNS_STATUS_OK &&
-				i < ldns_rr_list_rr_count(todo_nsec3_rrsigs);
-				i++){
-			cur_rr = ldns_rr_list_rr(todo_nsec3_rrsigs, i);
-			status = ldns_dnssec_zone_add_rr(newzone, cur_rr);
-		}
+	for (i = 0; status == LDNS_STATUS_OK &&
+			i < ldns_rr_list_rr_count(todo_nsec3s); i++) {
+		cur_rr = ldns_rr_list_rr(todo_nsec3s, i);
+		status = ldns_dnssec_zone_add_rr(newzone, cur_rr);
+		if (status == LDNS_STATUS_DNSSEC_NSEC3_ORIGINAL_NOT_FOUND)
+			ldns_rr_list_push_rr(todo_nsec3_ents, cur_rr);
 	}
-
+	if (ldns_rr_list_rr_count(todo_nsec3_ents) > 0)
+		(void) ldns_dnssec_zone_add_empty_nonterminals(newzone);
+	for (i = 0; status == LDNS_STATUS_OK &&
+			i < ldns_rr_list_rr_count(todo_nsec3_ents); i++) {
+		cur_rr = ldns_rr_list_rr(todo_nsec3s, i);
+		status = ldns_dnssec_zone_add_rr(newzone, cur_rr);
+	}
+	for (i = 0; status == LDNS_STATUS_OK &&
+			i < ldns_rr_list_rr_count(todo_nsec3_rrsigs); i++) {
+		cur_rr = ldns_rr_list_rr(todo_nsec3_rrsigs, i);
+		status = ldns_dnssec_zone_add_rr(newzone, cur_rr);
+	}
 	if (z) {
 		*z = newzone;
 		newzone = NULL;
@@ -721,6 +731,7 @@ error:
 	}
 #endif
 	ldns_rr_list_free(todo_nsec3_rrsigs);
+	ldns_rr_list_free(todo_nsec3_ents);
 	ldns_rr_list_free(todo_nsec3s);
 
 	if (my_origin) {
