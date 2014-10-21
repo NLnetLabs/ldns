@@ -1143,7 +1143,7 @@ ldns_dnssec_zone_add_empty_nonterminals_nsec3(
 				ldns_dnssec_name_make_hashed_name(
 						zone, new_name, NULL);
 				if (node)
-					ldns_dnssec_zone_add_rr(zone,
+					(void) ldns_dnssec_zone_add_rr(zone,
 							(ldns_rr *)node->data);
 			}
 			ldns_rdf_deep_free(l1);
