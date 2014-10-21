@@ -593,6 +593,17 @@ rr_is_rrsig_covering(ldns_rr* rr, ldns_rr_type t)
  */
 #define FASTER_DNSSEC_ZONE_NEW_FRM_FP 1 /* Because of L2 cache efficiency */
 
+static ldns_status
+ldns_dnssec_zone_add_empty_nonterminals_nsec3(
+		ldns_dnssec_zone *zone, ldns_rbtree_t *nsec3s);
+
+static void
+ldns_todo_nsec3_ents_node_free(ldns_rbnode_t *node, void *arg) {
+	(void) arg;
+	ldns_rdf_deep_free((ldns_rdf *)node->key);
+	LDNS_FREE(node);
+}
+
 ldns_status
 ldns_dnssec_zone_new_frm_fp_l(ldns_dnssec_zone** z, FILE* fp, ldns_rdf* origin,
 	       	uint32_t ttl, ldns_rr_class ATTR_UNUSED(c), int* line_nr)
@@ -616,7 +627,9 @@ ldns_dnssec_zone_new_frm_fp_l(ldns_dnssec_zone** z, FILE* fp, ldns_rdf* origin,
 	   hold the NSEC3s that still didn't have a matching name in the
 	   zone tree, even after all names were read.  They can only match
 	   after the zone is equiped with all the empty non terminals. */
-	ldns_rr_list* todo_nsec3_ents = ldns_rr_list_new();
+	/* ldns_rr_list* todo_nsec3_ents = ldns_rr_list_new(); */
+	ldns_rbtree_t todo_nsec3_ents;
+	ldns_rbnode_t *new_node;
 	ldns_rr_list* todo_nsec3_rrsigs = ldns_rr_list_new();
 
 	ldns_status status;
@@ -630,6 +643,7 @@ ldns_dnssec_zone_new_frm_fp_l(ldns_dnssec_zone** z, FILE* fp, ldns_rdf* origin,
 	uint32_t  my_ttl = ttl;
 #endif
 
+	ldns_rbtree_init(&todo_nsec3_ents, ldns_dname_compare_v);
 	if (!newzone || !todo_nsec3s || !todo_nsec3_rrsigs ) {
 		status = LDNS_STATUS_MEM_ERR;
 		goto error;
@@ -702,16 +716,24 @@ ldns_dnssec_zone_new_frm_fp_l(ldns_dnssec_zone** z, FILE* fp, ldns_rdf* origin,
 			i < ldns_rr_list_rr_count(todo_nsec3s); i++) {
 		cur_rr = ldns_rr_list_rr(todo_nsec3s, i);
 		status = ldns_dnssec_zone_add_rr(newzone, cur_rr);
-		if (status == LDNS_STATUS_DNSSEC_NSEC3_ORIGINAL_NOT_FOUND)
-			ldns_rr_list_push_rr(todo_nsec3_ents, cur_rr);
+		if (status == LDNS_STATUS_DNSSEC_NSEC3_ORIGINAL_NOT_FOUND) {
+			if (!(new_node = LDNS_MALLOC(ldns_rbnode_t))) {
+				status = LDNS_STATUS_MEM_ERR;
+				break;
+			}
+			new_node->key  = ldns_dname_label(ldns_rr_owner(cur_rr), 0);
+			new_node->data = cur_rr;
+			if (!ldns_rbtree_insert(&todo_nsec3_ents, new_node)) {
+				LDNS_FREE(new_node);
+				status = LDNS_STATUS_MEM_ERR;
+				break;
+			}
+			status = LDNS_STATUS_OK;
+		}
 	}
-	if (ldns_rr_list_rr_count(todo_nsec3_ents) > 0)
-		(void) ldns_dnssec_zone_add_empty_nonterminals(newzone);
-	for (i = 0; status == LDNS_STATUS_OK &&
-			i < ldns_rr_list_rr_count(todo_nsec3_ents); i++) {
-		cur_rr = ldns_rr_list_rr(todo_nsec3s, i);
-		status = ldns_dnssec_zone_add_rr(newzone, cur_rr);
-	}
+	if (todo_nsec3_ents.count > 0)
+		(void) ldns_dnssec_zone_add_empty_nonterminals_nsec3(
+				newzone, &todo_nsec3_ents);
 	for (i = 0; status == LDNS_STATUS_OK &&
 			i < ldns_rr_list_rr_count(todo_nsec3_rrsigs); i++) {
 		cur_rr = ldns_rr_list_rr(todo_nsec3_rrsigs, i);
@@ -731,7 +753,8 @@ error:
 	}
 #endif
 	ldns_rr_list_free(todo_nsec3_rrsigs);
-	ldns_rr_list_free(todo_nsec3_ents);
+	ldns_traverse_postorder(&todo_nsec3_ents,
+			ldns_todo_nsec3_ents_node_free, NULL);
 	ldns_rr_list_free(todo_nsec3s);
 
 	if (my_origin) {
@@ -1011,8 +1034,9 @@ ldns_dnssec_zone_print(FILE *out, ldns_dnssec_zone *zone)
 	ldns_dnssec_zone_print_fmt(out, ldns_output_format_default, zone);
 }
 
-ldns_status
-ldns_dnssec_zone_add_empty_nonterminals(ldns_dnssec_zone *zone)
+static ldns_status
+ldns_dnssec_zone_add_empty_nonterminals_nsec3(
+		ldns_dnssec_zone *zone, ldns_rbtree_t *nsec3s)
 {
 	ldns_dnssec_name *new_name;
 	ldns_rdf *cur_name;
@@ -1075,12 +1099,34 @@ ldns_dnssec_zone_add_empty_nonterminals(ldns_dnssec_zone *zone)
 				/* We have an empty nonterminal, add it to the
 				 * tree
 				 */
+				ldns_rbnode_t *node = NULL;
+				ldns_rdf *ent_name;
+
+				if (!(ent_name = ldns_dname_clone_from(
+						next_name, i)))
+					return LDNS_STATUS_MEM_ERR;
+
+				if (nsec3s && zone->_nsec3params) {
+					ldns_rdf *ent_hashed_name;
+
+					if (!(ent_hashed_name =
+					    ldns_nsec3_hash_name_frm_nsec3(
+							zone->_nsec3params,
+							ent_name)))
+						return LDNS_STATUS_MEM_ERR;
+					node = ldns_rbtree_search(nsec3s, 
+							ent_hashed_name);
+					if (!node) {
+						ldns_rdf_deep_free(l1);
+						ldns_rdf_deep_free(l2);
+						continue;
+					}
+				}
 				new_name = ldns_dnssec_name_new();
 				if (!new_name) {
 					return LDNS_STATUS_MEM_ERR;
 				}
-				new_name->name = ldns_dname_clone_from(next_name,
-				                                       i);
+				new_name->name = ent_name;
 				if (!new_name->name) {
 					ldns_dnssec_name_free(new_name);
 					return LDNS_STATUS_MEM_ERR;
@@ -1096,6 +1142,9 @@ ldns_dnssec_zone_add_empty_nonterminals(ldns_dnssec_zone *zone)
 				(void)ldns_rbtree_insert(zone->names, new_node);
 				ldns_dnssec_name_make_hashed_name(
 						zone, new_name, NULL);
+				if (node)
+					ldns_dnssec_zone_add_rr(zone,
+							(ldns_rr *)node->data);
 			}
 			ldns_rdf_deep_free(l1);
 			ldns_rdf_deep_free(l2);
@@ -1111,6 +1160,12 @@ ldns_dnssec_zone_add_empty_nonterminals(ldns_dnssec_zone *zone)
 		}
 	}
 	return LDNS_STATUS_OK;
+}
+
+ldns_status
+ldns_dnssec_zone_add_empty_nonterminals(ldns_dnssec_zone *zone)
+{
+	return ldns_dnssec_zone_add_empty_nonterminals_nsec3(zone, NULL);
 }
 
 bool
