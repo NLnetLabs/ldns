@@ -675,7 +675,7 @@ static void print_usage(FILE *out, const char *progname)
 	fprintf(out, "\t-k <file>\tspecify a file that contains a "
 	       "trusted DNSKEY or DS rr.\n\t\t\t"
 	       "This option may be given more than once.\n"
-	       "\t\t\tDefault is %s", LDNS_TRUST_ANCHOR_FILE);
+	       "\t\t\tDefault is %s\n", LDNS_TRUST_ANCHOR_FILE);
 	fprintf(out, "\t-p [0-100]\tonly checks this percentage of "
 	       "the zone.\n\t\t\tDefaults to 100\n");
 	fprintf(out, "\t-S\t\tchase signature(s) to a known key. "
