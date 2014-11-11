@@ -1376,7 +1376,7 @@ ldns_axfr_next(ldns_resolver *resolver)
 		}
 		return cur_rr;
 	} else {
-		packet_wire = ldns_tcp_read_wire(resolver->_socket, &packet_wire_size);
+               packet_wire = ldns_tcp_read_wire_timeout(resolver->_socket, &packet_wire_size, resolver->_timeout);
 		if(!packet_wire)
 			return NULL;
 
