@@ -627,7 +627,6 @@ ldns_dnssec_zone_new_frm_fp_l(ldns_dnssec_zone** z, FILE* fp, ldns_rdf* origin,
 	   hold the NSEC3s that still didn't have a matching name in the
 	   zone tree, even after all names were read.  They can only match
 	   after the zone is equiped with all the empty non terminals. */
-	/* ldns_rr_list* todo_nsec3_ents = ldns_rr_list_new(); */
 	ldns_rbtree_t todo_nsec3_ents;
 	ldns_rbnode_t *new_node;
 	ldns_rr_list* todo_nsec3_rrsigs = ldns_rr_list_new();
@@ -636,14 +635,17 @@ ldns_dnssec_zone_new_frm_fp_l(ldns_dnssec_zone** z, FILE* fp, ldns_rdf* origin,
 
 #ifdef FASTER_DNSSEC_ZONE_NEW_FRM_FP
 	ldns_zone* zone = NULL;
-	status = ldns_zone_new_frm_fp_l(&zone, fp, origin,ttl, c, line_nr);
-	if (status != LDNS_STATUS_OK)
-		goto error;
 #else
 	uint32_t  my_ttl = ttl;
 #endif
 
 	ldns_rbtree_init(&todo_nsec3_ents, ldns_dname_compare_v);
+
+#ifdef FASTER_DNSSEC_ZONE_NEW_FRM_FP
+	status = ldns_zone_new_frm_fp_l(&zone, fp, origin,ttl, c, line_nr);
+	if (status != LDNS_STATUS_OK)
+		goto error;
+#endif
 	if (!newzone || !todo_nsec3s || !todo_nsec3_rrsigs ) {
 		status = LDNS_STATUS_MEM_ERR;
 		goto error;
