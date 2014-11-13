@@ -201,12 +201,6 @@ main(int argc, char *argv[])
 
 	ldns_init_random(NULL, 0);
 
-	if (argc == 0) {
-		usage(stdout, progname);
-		result = EXIT_FAILURE;
-		goto exit;
-	}
-
 	/* string from orig drill: "i:w:I46Sk:TNp:b:DsvhVcuaq:f:xr" */
 	/* global first, query opt next, option with parm's last
 	 * and sorted */ /*  "46DITSVQf:i:w:q:achuvxzy:so:p:b:k:" */
