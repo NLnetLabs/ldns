@@ -12,6 +12,7 @@ datarootdir	= @datarootdir@
 datadir		= @datadir@
 libdir		= @libdir@
 includedir	= @includedir@
+sysconfdir      = @sysconfdir@
 doxygen		= @doxygen@
 pywrapdir       = $(srcdir)/contrib/python
 pyldnsxwrapdir  = $(srcdir)/contrib/ldnsx
@@ -27,13 +28,21 @@ pyldnsx_uninst	= @PYLDNSXUNINST@
 libtool		= @libtool@
 CONFIG_FILES	= @CONFIG_FILES@
 
+LDNS_TRUST_ANCHOR_FILE = @LDNS_TRUST_ANCHOR_FILE@
+DEFAULT_CAFILE = @DEFAULT_CAFILE@
+DEFAULT_CAPATH = @DEFAULT_CAPATH@
+
+edit = sed \
+	-e 's|@LDNS_TRUST_ANCHOR_FILE[@]|$(LDNS_TRUST_ANCHOR_FILE)|g' \
+	-e 's|@DEFAULT_CAFILE[@]|$(DEFAULT_CAFILE)|g' \
+	-e 's|@DEFAULT_CAPATH[@]|$(DEFAULT_CAPATH)|g'
+
 # override $U variable which is used by autotools for deansification (for
 # K&R C compilers), but causes problems if $U is defined in the env).
 U=
-
 CC 		= @CC@
 CFLAGS		= @CFLAGS@
-CPPFLAGS	= -I. -I$(srcdir) @CPPFLAGS@ @DEFS@
+CPPFLAGS	= -I. -I$(srcdir) @CPPFLAGS@ @DEFS@ -DLDNS_TRUST_ANCHOR_FILE="\"$(LDNS_TRUST_ANCHOR_FILE)\""
 LDFLAGS		= @LDFLAGS@
 LIBS 		= @LIBS@
 LIBOBJDIR	= compat/
@@ -129,7 +138,7 @@ putdown-builddir:
 	if test -d drill    -a ! -f drill/README   ; then rmdir drill    || : ; fi
 	if test -d compat   -a ! -f compat/malloc.c; then rmdir compat   || : ; fi
 
-drill: no-drill-config-h drill/drill
+drill: no-drill-config-h drill/drill drill/drill.1
 no-drill-config-h:
 	@if test -e $(srcdir)/drill/config.h -o -e drill/config.h ; \
 	then echo "A config.h was detected in the drill subdirectory." ; \
@@ -138,10 +147,14 @@ no-drill-config-h:
 	     echo "or build drill there." ; \
 	     exit -1 ; \
 	fi
+
 drill/drill: $(DRILL_LOBJS) $(LIB)
 	$(LINK_EXE) $(DRILL_LOBJS) $(LIBS) $(LIBSSL_LIBS) -lldns -o drill/drill
 
-install-drill: drill/drill
+drill/drill.1: $(srcdir)/drill/drill.1.in
+	$(edit) $(srcdir)/drill/drill.1.in > drill/drill.1
+
+install-drill: drill/drill drill/drill.1
 	$(INSTALL) -m 755 -d $(DESTDIR)$(bindir)
 	$(INSTALL) -m 755 -d $(DESTDIR)$(mandir)
 	$(INSTALL) -m 755 -d $(DESTDIR)$(mandir)/man1
@@ -154,9 +167,9 @@ uninstall-drill:
 	test ! -d $(DESTDIR)$(bindir) || rmdir -p $(DESTDIR)$(bindir) || : ;
 
 clean-drill:
-	$(LIBTOOL) --mode clean rm -f $(DRILL_LOBJS) drill/drill
+	$(LIBTOOL) --mode clean rm -f $(DRILL_LOBJS) drill/drill drill/drill.1
 
-examples: no-examples-config-h $(EXAMPLE_PROGS) $(TESTNS) $(LDNS_DPA) $(LDNS_DANE) $(EX_SSL_PROGS)
+examples: no-examples-config-h $(EXAMPLE_PROGS) $(TESTNS) $(LDNS_DPA) $(LDNS_DANE) $(EX_SSL_PROGS) examples/ldns-dane.1 examples/ldns-verify-zone.1
 no-examples-config-h:
 	@if test -e $(srcdir)/examples/config.h -o -e examples/config.h ; \
 	then echo "A config.h was detected in the examples subdirectory." ; \
@@ -183,7 +196,13 @@ $(LDNS_DANE):
 $(EX_SSL_PROGS):
 	$(LINK_EXE) $@.lo $(LIBS) $(LIBSSL_LIBS) -lldns -o $@
 
-install-examples: $(EXAMPLE_PROGS) $(TESTNS) $(LDNS_DPA) $(LDNS_DANE) $(EX_SSL_PROGS)
+examples/ldns-dane.1: $(srcdir)/examples/ldns-dane.1.in
+	$(edit) $(srcdir)/examples/ldns-dane.1.in > examples/ldns-dane.1
+
+examples/ldns-verify-zone.1: $(srcdir)/examples/ldns-verify-zone.1.in
+	$(edit) $(srcdir)/examples/ldns-verify-zone.1.in > examples/ldns-verify-zone.1
+
+install-examples: $(EXAMPLE_PROGS) $(TESTNS) $(LDNS_DPA) $(LDNS_DANE) $(EX_SSL_PROGS) examples/ldns-dane.1 examples/ldns-verify-zone.1
 	$(INSTALL) -m 755 -d $(DESTDIR)$(bindir)
 	$(INSTALL) -m 755 -d $(DESTDIR)$(mandir)
 	$(INSTALL) -m 755 -d $(DESTDIR)$(mandir)/man1
@@ -206,6 +225,7 @@ clean-examples:
 	$(LIBTOOL) --mode clean rm -f $(EXAMPLE_PROGS) 
 	$(LIBTOOL) --mode clean rm -f $(TESTNS) $(LDNS_DPA) $(LDNS_DANE) $(EX_SSL_PROGS)
 	$(LIBTOOL) --mode clean rm -f $(EXAMPLE_LOBJS)
+	$(LIBTOOL) --mode clean rm -f examples/ldns-dane.1 examples/ldns-verify-zone.1
 
 linktest: $(srcdir)/linktest.c libldns.la
 	$(COMP_LIB) $(LIBSSL_CPPFLAGS) -c $(srcdir)/linktest.c -o linktest.lo

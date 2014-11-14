@@ -121,14 +121,12 @@ This does not work with the --with-drill option.
 Please remove the config.h from the drill subdirectory 
 or do not use the --with-drill option.])
 	fi
-	DRILL_CONFIG=" drill/drill.1"
 else
 	AC_SUBST(DRILL,[""])
 	AC_SUBST(INSTALL_DRILL,[""])
 	AC_SUBST(UNINSTALL_DRILL,[""])
 	AC_SUBST(CLEAN_DRILL,[""])
 	AC_SUBST(LINT_DRILL,[""])
-	DRILL_CONFIG=""
 fi
 
 
@@ -148,14 +146,12 @@ This does not work with the --with-examples option.
 Please remove the config.h from the examples subdirectory 
 or do not use the --with-examples option.])
 	fi
-	EXAMPLES_CONFIG=" examples/ldns-dane.1 examples/ldns-verify-zone.1"
 else
 	AC_SUBST(EXAMPLES,[""])
 	AC_SUBST(INSTALL_EXAMPLES,[""])
 	AC_SUBST(UNINSTALL_EXAMPLES,[""])
 	AC_SUBST(CLEAN_EXAMPLES,[""])
 	AC_SUBST(LINT_EXAMPLES,[""])
-	EXAMPLES_CONFIG=""
 fi
 
 # add option to disable installation of ldns-config script
@@ -627,23 +623,11 @@ fi
 AC_DEFINE([SYSCONFDIR], [sysconfdir], [System configuration dir])
 
 AC_ARG_WITH(trust-anchor, AC_HELP_STRING([--with-trust-anchor=KEYFILE], [Default location of the trust anchor file for drill and ldns-dane. [default=SYSCONFDIR/unbound/root.key]]), [
- LDNS_TRUST_ANCHOR_FILE="$withval"
+ AC_SUBST([LDNS_TRUST_ANCHOR_FILE], ["$withval"])
+ AC_MSG_NOTICE([Default trust anchor: $withval])
 ],[
- if test "x$LDNS_TRUST_ANCHOR_FILE" = "x"; then
-  if test "x$sysconfdir" = 'x${prefix}/etc' ; then
-   if test "x$prefix" = 'xNONE' ; then
-    LDNS_TRUST_ANCHOR_FILE="/etc/unbound/root.key"
-   else
-    LDNS_TRUST_ANCHOR_FILE="${prefix}/etc/unbound/root.key"
-   fi
-  else
-    LDNS_TRUST_ANCHOR_FILE="${sysconfdir}/unbound/root.key"
-  fi
- fi
+ AC_SUBST([LDNS_TRUST_ANCHOR_FILE], ["\$(sysconfdir)/unbound/root.key"])
 ])
-AC_DEFINE_UNQUOTED([LDNS_TRUST_ANCHOR_FILE], ["$LDNS_TRUST_ANCHOR_FILE"], [Default trust anchor file])
-AC_SUBST(LDNS_TRUST_ANCHOR_FILE)
-AC_MSG_NOTICE([Default trust anchor: $LDNS_TRUST_ANCHOR_FILE])
 
 AC_ARG_WITH(ca-file, AC_HELP_STRING([--with-ca-file=CAFILE], [File containing CA certificates for ldns-dane]), [
  AC_DEFINE([HAVE_DANE_CA_FILE], [1], [Is a CAFILE given at configure time])
@@ -823,7 +807,7 @@ else
   AC_SUBST(ldns_build_config_have_attr_unused, 0)
 fi
 
-CONFIG_FILES="Makefile ldns/common.h ldns/net.h ldns/util.h packaging/libldns.pc packaging/ldns-config $DRILL_CONFIG $EXAMPLES_CONFIG"
+CONFIG_FILES="Makefile ldns/common.h ldns/net.h ldns/util.h packaging/libldns.pc packaging/ldns-config"
 AC_SUBST(CONFIG_FILES)
 AC_CONFIG_FILES([$CONFIG_FILES])
 
