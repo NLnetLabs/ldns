@@ -72,13 +72,14 @@ ldns_dname2buffer_wire_compress(ldns_buffer *buffer, const ldns_rdf *name, ldns_
 		{
 			return LDNS_STATUS_MEM_ERR;
 		}
-		node->key = strdup((const char *)ldns_rdf_data(name));
-		node->data = (void *) (intptr_t) ldns_buffer_position(buffer);
-		if(!ldns_rbtree_insert(compression_data,node))
-		{
-			/* fprintf(stderr,"Name not found but now it's there?\n"); */
+		if (ldns_buffer_position(buffer) < 16384) {
+			node->key = strdup((const char *)ldns_rdf_data(name));
+			node->data = (void *) (intptr_t) ldns_buffer_position(buffer);
+			if(!ldns_rbtree_insert(compression_data,node))
+			{
+				/* fprintf(stderr,"Name not found but now it's there?\n"); */
+			}
 		}
-
 		label = ldns_dname_label(name, 0);
 		rest = ldns_dname_left_chop(name);
 		size = ldns_rdf_size(label) - 1; /* Don't want the final zero */
