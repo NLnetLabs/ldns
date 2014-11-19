@@ -36,6 +36,8 @@ TBD
 	  Thanks Peter Koch
 	* bugfix #697: Double free with ldns-dane create
 	  Thanks Carsten Strotmann
+	* bugfix #623: Do not redefine bool type and boolean values
+	  Thanks Jakob Petsovits
 
 1.6.17	2014-01-10
 	* Fix ldns_dnssec_zone_new_frm_fp_l to allow the last parsed line of a
