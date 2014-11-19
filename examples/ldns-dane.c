@@ -1071,7 +1071,7 @@ dane_create(ldns_rr_list* tlsas, ldns_rdf* tlsa_owner,
 			selected_cert);
 	LDNS_ERR(s, "could not create tlsa rr");
 
-	ldns_rr_set_owner(tlsa_rr, tlsa_owner);
+	ldns_rr_set_owner(tlsa_rr, ldns_rdf_clone(tlsa_owner));
 			     
 	if (! ldns_rr_list_contains_rr(tlsas, tlsa_rr)) {
 		if (! ldns_rr_list_push_rr(tlsas, tlsa_rr)) {
