@@ -663,6 +663,100 @@ ldns_resolver_new(void)
 	return r;
 }
 
+ldns_resolver *
+ldns_resolver_clone(ldns_resolver *src)
+{
+	ldns_resolver *dst;
+	size_t i;
+
+	assert(src);
+
+	if (!(dst = LDNS_MALLOC(ldns_resolver))) return NULL;
+	(void) memcpy(dst, src, sizeof(ldns_resolver));
+
+	if (dst->_searchlist_count == 0)
+		dst->_searchlist = NULL;
+	else {
+		if (!(dst->_searchlist =
+		    LDNS_XMALLOC(ldns_rdf *, dst->_searchlist_count)))
+			goto error;
+		for (i = 0; i < dst->_searchlist_count; i++)
+			if (!(dst->_searchlist[i] =
+			    ldns_rdf_clone(src->_searchlist[i]))) {
+				dst->_searchlist_count = i;
+				goto error_searchlist;
+			}
+	}
+	if (dst->_nameserver_count == 0) {
+		dst->_nameservers = NULL;
+		dst->_rtt = NULL;
+	} else {
+		if (!(dst->_nameservers =
+		    LDNS_XMALLOC(ldns_rdf *, dst->_nameserver_count)))
+			goto error_searchlist;
+		for (i = 0; i < dst->_nameserver_count; i++)
+			if (!(dst->_nameservers[i] =
+			    ldns_rdf_clone(src->_nameservers[i]))) {
+				dst->_nameserver_count = i;
+				goto error_nameservers;
+			}
+		if (!(dst->_rtt =
+		    LDNS_XMALLOC(size_t, dst->_nameserver_count)))
+			goto error_nameservers;
+		(void) memcpy(dst->_rtt, src->_rtt,
+		    sizeof(size_t) * dst->_nameserver_count);
+	}
+	if (dst->_domain && (!(dst->_domain = ldns_rdf_clone(src->_domain))))
+		goto error_rtt;
+
+	if (dst->_tsig_keyname &&
+	    (!(dst->_tsig_keyname = strdup(src->_tsig_keyname))))
+		goto error_domain;
+
+	if (dst->_tsig_keydata &&
+	    (!(dst->_tsig_keydata = strdup(src->_tsig_keydata))))
+		goto error_tsig_keyname;
+
+	if (dst->_tsig_algorithm &&
+	    (!(dst->_tsig_algorithm = strdup(src->_tsig_algorithm))))
+		goto error_tsig_keydata;
+
+	if (dst->_cur_axfr_pkt &&
+	    (!(dst->_cur_axfr_pkt = ldns_pkt_clone(src->_cur_axfr_pkt))))
+		goto error_tsig_algorithm;
+
+	if (dst->_dnssec_anchors &&
+	    (!(dst->_dnssec_anchors=ldns_rr_list_clone(src->_dnssec_anchors))))
+		goto error_cur_axfr_pkt;
+
+	return dst;
+
+error_cur_axfr_pkt:
+	ldns_pkt_free(dst->_cur_axfr_pkt);
+error_tsig_algorithm:
+	LDNS_FREE(dst->_tsig_algorithm);
+error_tsig_keydata:
+	LDNS_FREE(dst->_tsig_keydata);
+error_tsig_keyname:
+	LDNS_FREE(dst->_tsig_keyname);
+error_domain:
+	ldns_rdf_deep_free(dst->_domain);
+error_rtt:
+	LDNS_FREE(dst->_rtt);
+error_nameservers:
+	for (i = 0; i < dst->_nameserver_count; i++)
+		ldns_rdf_deep_free(dst->_nameservers[i]);
+	LDNS_FREE(dst->_nameservers);
+error_searchlist:
+	for (i = 0; i < dst->_searchlist_count; i++)
+		ldns_rdf_deep_free(dst->_searchlist[i]);
+	LDNS_FREE(dst->_searchlist);
+error:
+	LDNS_FREE(dst);
+	return NULL;
+}
+
+
 ldns_status
 ldns_resolver_new_frm_fp(ldns_resolver **res, FILE *fp)
 {

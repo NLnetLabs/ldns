@@ -686,9 +686,16 @@ ldns_pkt* ldns_resolver_query(const ldns_resolver *r, const ldns_rdf *name, ldns
 
 /**
  * Create a new resolver structure
- * \return ldns_resolver* pointer to new strcture
+ * \return ldns_resolver* pointer to new structure
  */
 ldns_resolver* ldns_resolver_new(void);
+
+/**
+ * Clone a resolver
+ * \param[in] r the resolver to clone
+ * \return ldns_resolver* pointer to new structure
+ */
+ldns_resolver* ldns_resolver_clone(ldns_resolver *r);
 
 /**
  * Create a resolver structure from a file like /etc/resolv.conf

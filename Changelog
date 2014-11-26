@@ -42,6 +42,10 @@ TBD
 	  Thanks Shussain
 	* bugfix #575: ldns_pkt_clone() does not copy timestamp field
 	  Thanks Calle Dybedahl 
+	* bugfix #584: ldns-update fixes.  Send update to port 53, bring manpage
+	  in sync with the usage text, and don't alter the ldns_resolver passed
+	  to ldns_update_soa_zone_mname().  Created a ldns_resolver_clone()
+	  function in the process.  Thanks Nicholas Riley.
 
 1.6.17	2014-01-10
 	* Fix ldns_dnssec_zone_new_frm_fp_l to allow the last parsed line of a
