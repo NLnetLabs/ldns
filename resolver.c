@@ -669,7 +669,7 @@ ldns_resolver_clone(ldns_resolver *src)
 	ldns_resolver *dst;
 	size_t i;
 
-	assert(src);
+	assert(src != NULL);
 
 	if (!(dst = LDNS_MALLOC(ldns_resolver))) return NULL;
 	(void) memcpy(dst, src, sizeof(ldns_resolver));
