@@ -79,8 +79,8 @@ if (defined $options{'m'}) {
 			my @parts = split /[\t ]*\|[\t ]*/, $_;
 			$functions = shift @parts;
 			$see_also = join ', ', @parts;
-			print "{$functions}\n";
-			print "{$see_also}\n";
+			#print "{$functions}\n";
+			#print "{$see_also}\n";
 			my @funcs = split /[\t ]*,[\t ]*/, $functions;
 			my @also = split /[\t ]*,[\t ]*/, $see_also;
 			$manpages{$funcs[0]} = \@funcs;
