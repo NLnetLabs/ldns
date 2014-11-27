@@ -245,7 +245,7 @@ mancheck:
 	sh -c 'find . -name \*.\[13\] -exec troff -z {} \;' 2>&1 | sed "s/^\.\///" | sed "s/\(:[0\-9]\+:\)/\1 warning:/g"
 
 doxygen: manpages
-	if test ! -e doc/header.html ; then \
+	@if test ! -e doc/header.html ; then \
 		$(INSTALL) -c -m 644 $(srcdir)/doc/header.html doc/ ; \
 	fi ;
 	$(doxygen) $(srcdir)/libdns.doxygen
@@ -257,9 +257,26 @@ manpages: $(srcdir)/doc/function_manpages
 	@$(INSTALL) -d doc
 	@cat $(srcdir)/ldns/*.h \
 	| $(srcdir)/doc/doxyparse.pl \
-		-m $(srcdir)/doc/function_manpages 2>&1 \
+		-m $(srcdir)/doc/function_manpages \
 	| grep -v ^doxygen | grep -v ^cat  > doc/ldns_manpages
 
+manpage-create-errors: $(srcdir)/doc/function_manpages 
+	@$(INSTALL) -d doc
+	@cat $(srcdir)/ldns/*.h \
+	| $(srcdir)/doc/doxyparse.pl -e \
+		-m $(srcdir)/doc/function_manpages >/dev/null
+
+manpage-errors:
+	@for m in `cat $(srcdir)/ldns/*.h | $(srcdir)/doc/doxyparse.pl -m $(srcdir)/doc/function_manpages 2>&1 | grep -v ^doxygen | grep -v ^cat` ; do\
+		LC_ALL=en_US.UTF-8 MANROFFSEQ='' MANWIDTH=80 \
+			man --warnings -E UTF-8 -l -Tutf8 -Z doc/man/man3/$${m}.3 2>&1 >/dev/null \
+			| awk "-vpage=$${m}.3" '{printf("%s: ", page);print}'; \
+		if ! lexgrog $${m}.3 >/dev/null 2>&1 ; \
+		then \
+			echo doc/man/man3/$${m}.3: manpage-has-bad-whatis-entry; \
+		fi; \
+	done
+	
 pyldns: _ldns.la
 
 $(pywrapdir)/ldns_wrapper.c: $(PYLDNS_I_FILES) ldns/config.h
