@@ -267,7 +267,8 @@ manpage-create-errors: $(srcdir)/doc/function_manpages
 		-m $(srcdir)/doc/function_manpages >/dev/null
 
 manpage-errors:
-	@for m in `cat $(srcdir)/ldns/*.h | $(srcdir)/doc/doxyparse.pl -m $(srcdir)/doc/function_manpages 2>&1 | grep -v ^doxygen | grep -v ^cat` ; do\
+	@man --version >/dev/null 2>&1 && \
+	for m in `cat $(srcdir)/ldns/*.h | $(srcdir)/doc/doxyparse.pl -m $(srcdir)/doc/function_manpages 2>&1 | grep -v ^doxygen | grep -v ^cat` ; do\
 		LC_ALL=en_US.UTF-8 MANROFFSEQ='' MANWIDTH=80 \
 			man --warnings -E UTF-8 -l -Tutf8 -Z doc/man/man3/$${m}.3 2>&1 >/dev/null \
 			| awk "-vpage=$${m}.3" '{printf("%s: ", page);print}'; \
@@ -275,7 +276,7 @@ manpage-errors:
 		then \
 			echo doc/man/man3/$${m}.3: manpage-has-bad-whatis-entry; \
 		fi; \
-	done
+	done || echo "WARNING!: Cannot detect manpage errors on `uname`"
 	
 pyldns: _ldns.la
 
