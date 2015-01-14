@@ -337,7 +337,7 @@ foreach (keys %api) {
 	next if (/ / || /^$/);
 	if (not $unique{$_}) {
 		print STDERR "no man page for $_\n" if $report_errors;
-		$errors += 1;
+		#$errors += 1;
 	}
 }
 
