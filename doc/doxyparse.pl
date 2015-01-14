@@ -35,7 +35,7 @@ my %see_also;
 
 my $BASE="doc/man";
 my $MAN_SECTION = "3";
-my $MAN_HEADER = ".TH ldns $MAN_SECTION \"30 May 2006\"\n";
+my $MAN_HEADER = ".ad l\n.TH ldns $MAN_SECTION \"30 May 2006\"\n";
 my $MAN_MIDDLE = ".SH AUTHOR
 The ldns team at NLnet Labs. Which consists out of
 Jelte Jansen and Miek Gieben.
@@ -60,8 +60,8 @@ use of Doxygen and some perl.
 getopts("em:",\%options);
 # if -m manpage file is given process that file
 # parse the file which tells us what manpages go together
-my $functions, $see_also;
-my $i = -1;
+my $functions, $see_also, $shorts;
+my $i = 0;
 my $report_errors = defined $options{'e'};
 my $errors = 0;
 my %unique;
@@ -78,16 +78,22 @@ if (defined $options{'m'}) {
 			if (/^$/) { next; }
 			my @parts = split /[\t ]*\|[\t ]*/, $_;
 			$functions = shift @parts;
-			$see_also = join ', ', @parts;
+			@parts = split /[\t ]*-[\t ]*/, join ', ', @parts;
+			$see_also = shift @parts;
+			if (! $see_also) {
+				@parts = split /[\t ]*-[\t ]*/, $_;
+				$functions = shift @parts;
+			}
 			#print "{$functions}\n";
 			#print "{$see_also}\n";
 			my @funcs = split /[\t ]*,[\t ]*/, $functions;
 			my @also = split /[\t ]*,[\t ]*/, $see_also;
 			$manpages{$funcs[0]} = \@funcs;
 			$see_also{$funcs[0]} = \@also;
+			$shorts{$funcs[0]} = join '', @parts;
 			foreach (@funcs) {
 				if ($unique{$_}) {
-					push $unique{$_}, ($i,);
+					push @{$unique{$_}}, ($i,);
 				} else {
 					$unique{$_} = [$i];
 				}
@@ -249,6 +255,7 @@ while($i < $max) {
 foreach (keys %manpages) {
 	$name = $manpages{$_};
 	$also = $see_also{$_};
+	my $shrt = $shorts{$_};
 
 	$filename = @$name[0];
 	$filename = "$BASE/man$MAN_SECTION/$filename.$MAN_SECTION";
@@ -261,6 +268,9 @@ foreach (keys %manpages) {
 	print MAN  $MAN_HEADER;
 	print MAN  ".SH NAME\n";
 	print MAN  join ", ", @$name;
+	if ($shrt) {
+		print MAN " \\- $shrt";
+	}
 	print MAN  "\n\n";
 	print MAN  ".SH SYNOPSIS\n";
 
