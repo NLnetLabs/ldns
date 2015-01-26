@@ -46,6 +46,8 @@ TBD
 	  in sync with the usage text, and don't alter the ldns_resolver passed
 	  to ldns_update_soa_zone_mname().  Created a ldns_resolver_clone()
 	  function in the process.  Thanks Nicholas Riley.
+	* bugfix #633: ldns_pkt_clone() parameter isn't const.
+	  Thanks Jakop Petsovits
 
 1.6.17	2014-01-10
 	* Fix ldns_dnssec_zone_new_frm_fp_l to allow the last parsed line of a

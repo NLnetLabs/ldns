@@ -1105,7 +1105,7 @@ ldns_pkt_reply_type(ldns_pkt *p)
 }
 
 ldns_pkt *
-ldns_pkt_clone(ldns_pkt *pkt)
+ldns_pkt_clone(const ldns_pkt *pkt)
 {
 	ldns_pkt *new_pkt;
 	

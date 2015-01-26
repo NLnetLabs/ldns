@@ -811,7 +811,7 @@ ldns_pkt *ldns_pkt_ixfr_request_new(ldns_rdf *rr_name, ldns_rr_class rr_class, u
  * \param[in] pkt the packet to clone
  * \return ldns_pkt* pointer to the new packet
  */
-ldns_pkt *ldns_pkt_clone(ldns_pkt *pkt);
+ldns_pkt *ldns_pkt_clone(const ldns_pkt *pkt);
 
 /**
  * directly set the additional section
