@@ -17,9 +17,9 @@ ldns-dane \- verify or create TLS authentication with DANE (RFC6698)
 
 .B ldns-dane
 .IR [OPTIONS]
+.IR create
 .IR name
 .IR port
-.IR create
 .PP
           [
 .IR Certificate-usage
