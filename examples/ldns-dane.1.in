@@ -125,7 +125,7 @@ select the \fIoffset\fRth certificate offset from the end
 of the validation chain. 0 means the last certificate, 1 the one but last,
 2 the second but last, etc.
 
-When \fIoffset\fR is -1 (the default), the last certificate
+When \fIoffset\fR is \-1 (the default), the last certificate
 is used (like with 0) that MUST be self-signed. This can help to make
 sure that the intended (self signed) trust anchor is actually present
 in the server certificate chain (which is a DANE requirement).
