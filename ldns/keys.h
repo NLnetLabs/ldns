@@ -553,7 +553,7 @@ ldns_key *ldns_key_list_pop_key(ldns_key_list *key_list);
 ldns_rr *ldns_key2rr(const ldns_key *k);
 
 /**
- * print a private key to the file ouput
+ * print a private key to the file output
  * 
  * \param[in] output the FILE descriptor where to print to
  * \param[in] k the ldns_key to print

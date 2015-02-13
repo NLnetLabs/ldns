@@ -621,7 +621,7 @@ dane_query(ldns_rr_list** rrs, ldns_resolver* r,
 	}
 	*rrs = ldns_pkt_rr_list_by_type(p, t, LDNS_SECTION_ANSWER);
 
-	if (! ldns_resolver_dnssec(r)) { /* DNSSEC explicitely disabled,
+	if (! ldns_resolver_dnssec(r)) { /* DNSSEC explicitly disabled,
 					    anything goes */
 		ldns_pkt_free(p);
 		return LDNS_STATUS_OK;

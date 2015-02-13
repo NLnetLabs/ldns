@@ -377,7 +377,7 @@ retrieve_dnskeys(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 		authority_list = NULL;
 		
 		if (loop_count++ > 20) {
-			/* unlikely that we are doing something usefull */
+			/* unlikely that we are doing something useful */
 			fprintf(stderr, "Looks like we are looping");
 			ldns_pkt_free(p); 
 			return NULL;

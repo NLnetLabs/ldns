@@ -356,7 +356,7 @@ ldns_dane_select_certificate(X509** selected_cert,
 	assert(selected_cert != NULL);
 	assert(cert != NULL);
 
-	/* With PKIX validation explicitely turned off (pkix_validation_store
+	/* With PKIX validation explicitly turned off (pkix_validation_store
 	 *  == NULL), treat the "CA constraint" and "Service certificate
 	 * constraint" the same as "Trust anchor assertion" and "Domain issued
 	 * certificate" respectively.

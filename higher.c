@@ -2,7 +2,7 @@
  * higher.c
  *
  * Specify some higher level functions that would
- * be usefull to would be developers
+ * be useful to would be developers
  *
  * a Net::DNS like library for C
  *

@@ -133,7 +133,7 @@ ldns_status ldns_dane_create_tlsa_owner(ldns_rdf** tlsa_owner,
 
 #if LDNS_BUILD_CONFIG_HAVE_SSL
 /**
- * Creates a LDNS_RDF_TYPE_HEX type rdf based on the binary data choosen by
+ * Creates a LDNS_RDF_TYPE_HEX type rdf based on the binary data chosen by
  * the selector and encoded using matching_type.
  *
  * \param[out] rdf The created created rdf of type LDNS_RDF_TYPE_HEX.
@@ -162,7 +162,7 @@ ldns_status ldns_dane_cert2rdf(ldns_rdf** rdf, X509* cert,
  *            "CA constraint" or "Service Certificate Constraint" to 
  *            validate the certificate and, in case of "CA constraint",
  *            select the CA.
- *            When pkix_validation_store is NULL, validation is explicitely
+ *            When pkix_validation_store is NULL, validation is explicitly
  *            turned off and the behaviour is then the same as for "Trust
  *            anchor assertion" and "Domain issued certificate" respectively.
  * \param[in] cert_usage Which certificate to use and how to validate.

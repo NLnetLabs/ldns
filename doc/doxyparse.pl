@@ -1,6 +1,6 @@
 #!/usr/bin/env perl
 
-# Doxygen is usefull for html documentation, but sucks 
+# Doxygen is useful for html documentation, but sucks
 # in making manual pages. Still tool also parses the .h
 # files with the doxygen documentation and creates
 # the man page we want
@@ -53,7 +53,7 @@ MERCHANTABILITY or
 FITNESS FOR A PARTICULAR PURPOSE.
 ";
 my $MAN_FOOTER = ".SH REMARKS
-This manpage was automaticly generated from the ldns source code by
+This manpage was automatically generated from the ldns source code by
 use of Doxygen and some perl.
 ";
 

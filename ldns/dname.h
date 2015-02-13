@@ -165,7 +165,7 @@ int ldns_dname_match_wildcard(const ldns_rdf *dname, const ldns_rdf *wildcard);
 
 /**
  * check if middle lays in the interval defined by prev and next
- * prev <= middle < next. This is usefull for nsec checking
+ * prev <= middle < next. This is useful for nsec checking
  * \param[in] prev the previous dname
  * \param[in] middle the dname to check
  * \param[in] next the next dname
