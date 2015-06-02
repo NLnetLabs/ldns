@@ -150,7 +150,7 @@ struct sockaddr_storage;
 
 #define INBUF_SIZE 4096         /* max size for incoming queries */
 #define DEFAULT_PORT 53		/* default if no -p port is specified */
-#define CONN_BACKLOG 5		/* 5 connections queued up for tcp */
+#define CONN_BACKLOG 256	/* connections queued up for tcp */
 static const char* prog_name = "ldns-testns";
 static FILE* logfile = 0;
 static int do_verbose = 0;
