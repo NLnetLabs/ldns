@@ -396,14 +396,6 @@ case "$enable_rrtype_openpgpkey" in
 	no|*)
 		;;
 esac
-AC_ARG_ENABLE(rrtype-uri, AC_HELP_STRING([--enable-rrtype-uri], [Enable draft RR type uri.]))
-case "$enable_rrtype_uri" in
-	yes)
-		AC_DEFINE_UNQUOTED([RRTYPE_URI], [], [Define this to enable RR type URI.])
-		;;
-	no|*)
-		;;
-esac
 AC_ARG_ENABLE(rrtype-ta, AC_HELP_STRING([--enable-rrtype-ta], [Enable draft RR type ta.]))
 case "$enable_rrtype_ta" in
 	yes)

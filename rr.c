@@ -2012,13 +2012,11 @@ static const ldns_rdf_type type_eui48_wireformat[] = {
 static const ldns_rdf_type type_eui64_wireformat[] = {
 	LDNS_RDF_TYPE_EUI64
 };
-#ifdef RRTYPE_URI
 static const ldns_rdf_type type_uri_wireformat[] = {
 	LDNS_RDF_TYPE_INT16,
 	LDNS_RDF_TYPE_INT16,
 	LDNS_RDF_TYPE_LONG_STR
 };
-#endif
 static const ldns_rdf_type type_caa_wireformat[] = {
 	LDNS_RDF_TYPE_INT8,
 	LDNS_RDF_TYPE_TAG,
@@ -2401,12 +2399,8 @@ static ldns_rr_descriptor rdata_field_descriptors[] = {
 	/* ANY: A request for all (available) records */
 {LDNS_RR_TYPE_NULL, "TYPE255", 1, 1, type_0_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 0 },
 
-#ifdef RRTYPE_URI
 	/* 256 */
 	{LDNS_RR_TYPE_URI, "URI", 3, 3, type_uri_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 0 },
-#else
-{LDNS_RR_TYPE_NULL, "TYPE256", 1, 1, type_0_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 0 },
-#endif
 	/* 257 */
 	{LDNS_RR_TYPE_CAA, "CAA", 3, 3, type_caa_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 0 },
 

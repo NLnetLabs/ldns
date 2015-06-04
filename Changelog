@@ -52,6 +52,7 @@ TBD
 	  Thanks Erwin Lansing
 	* Spelling fixes.  Thanks Andreas Schulze
 	* Hyphen used as minus in manpages.  Thanks Andreas Schulze.
+	* RFC7553 RR Type URI is supported by default.
 
 1.6.17	2014-01-10
 	* Fix ldns_dnssec_zone_new_frm_fp_l to allow the last parsed line of a
