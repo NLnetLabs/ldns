@@ -1806,7 +1806,8 @@ ldns_convert_dsa_rrsig_rdf2asn1(ldns_buffer *target_buffer,
 #ifdef USE_ECDSA
 #ifndef S_SPLINT_S
 ldns_rdf *
-ldns_convert_ecdsa_rrsig_asn12rdf(const ldns_buffer *sig, const long sig_len)
+ldns_convert_ecdsa_rrsig_asn1len2rdf(const ldns_buffer *sig,
+	const long sig_len, int num_bytes)
 {
         ECDSA_SIG* ecdsa_sig;
 	unsigned char *data = (unsigned char*)ldns_buffer_begin(sig);
@@ -1815,16 +1816,22 @@ ldns_convert_ecdsa_rrsig_asn12rdf(const ldns_buffer *sig, const long sig_len)
         if(!ecdsa_sig) return NULL;
 
         /* "r | s". */
-        data = LDNS_XMALLOC(unsigned char,
-                BN_num_bytes(ecdsa_sig->r) + BN_num_bytes(ecdsa_sig->s));
+        if(BN_num_bytes(ecdsa_sig->r) > num_bytes ||
+		BN_num_bytes(ecdsa_sig->s) > num_bytes) {
+                ECDSA_SIG_free(ecdsa_sig);
+		return NULL; /* numbers too big for passed curve size */
+	}
+        data = LDNS_XMALLOC(unsigned char, num_bytes*2);
         if(!data) {
                 ECDSA_SIG_free(ecdsa_sig);
                 return NULL;
         }
-        BN_bn2bin(ecdsa_sig->r, data);
-        BN_bn2bin(ecdsa_sig->s, data+BN_num_bytes(ecdsa_sig->r));
-	rdf = ldns_rdf_new(LDNS_RDF_TYPE_B64, (size_t)(
-		BN_num_bytes(ecdsa_sig->r) + BN_num_bytes(ecdsa_sig->s)), data);
+	/* write the bignums (in big-endian) a little offset if the BN code
+	 * wants to write a shorter number of bytes, with zeroes prefixed */
+	memset(data, 0, num_bytes*2);
+        BN_bn2bin(ecdsa_sig->r, data+num_bytes-BN_num_bytes(ecdsa_sig->r));
+        BN_bn2bin(ecdsa_sig->s, data+num_bytes*2-BN_num_bytes(ecdsa_sig->s));
+	rdf = ldns_rdf_new(LDNS_RDF_TYPE_B64, (size_t)(num_bytes*2), data);
         ECDSA_SIG_free(ecdsa_sig);
         return rdf;
 }

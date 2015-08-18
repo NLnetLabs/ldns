@@ -511,13 +511,19 @@ ldns_convert_dsa_rrsig_rdf2asn1(ldns_buffer *target_buffer,
  * Converts the ECDSA signature from ASN1 representation (as 
  * used by OpenSSL) to raw signature data as used in DNS
  * This routine is only present if ldns is compiled with ecdsa support.
+ * The older ldns_convert_ecdsa_rrsig_asn12rdf routine could not (always)
+ * construct a valid rdf because it did not have the num_bytes parameter.
+ * The num_bytes parameter is 32 for p256 and 48 for p384 (bits/8).
  *
  * \param[in] sig The signature in ASN1 format
  * \param[in] sig_len The length of the signature
+ * \param[in] num_bytes number of bytes for values in the curve, the curve
+ * 		size divided by 8.
  * \return a new rdf with the signature
  */
 ldns_rdf *
-ldns_convert_ecdsa_rrsig_asn12rdf(const ldns_buffer *sig, const long sig_len);
+ldns_convert_ecdsa_rrsig_asn1len2rdf(const ldns_buffer *sig,
+	const long sig_len, int num_bytes);
 
 /**
  * Converts the RRSIG signature RDF (from DNS) to a buffer with the 
