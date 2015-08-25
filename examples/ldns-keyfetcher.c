@@ -725,7 +725,6 @@ main(int argc, char *argv[])
 		fprintf(stderr, "no answer packet received, stub resolver config:\n");
 		ldns_resolver_print(stderr, res);
 	}
-	printf("\n");
 
 	ldns_rdf_deep_free(domain);
 	ldns_resolver_deep_free(res);
