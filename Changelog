@@ -54,6 +54,8 @@ TBD
 	* Hyphen used as minus in manpages.  Thanks Andreas Schulze.
 	* RFC7553 RR Type URI is supported by default.
 	* Fix ECDSA signature generation, do not omit leading zeroes.
+	* bugfix: Get rid of superfluous newline in ldns-keyfetcher
+	  Thanks Jan-Piet Mens
 
 1.6.17	2014-01-10
 	* Fix ldns_dnssec_zone_new_frm_fp_l to allow the last parsed line of a
