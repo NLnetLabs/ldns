@@ -91,6 +91,8 @@ print_usage(const char* progname)
 	printf("\t-h\t\tshow this text\n");
 	printf("\t-4\t\tTLS connect IPv4 only\n");
 	printf("\t-6\t\tTLS connect IPv6 only\n");
+	printf("\t-r <address>\t"
+	       "use resolver at <address> instead of local resolver\n");
 	printf("\t-a <address>\t"
 	       "don't resolve <name>, but connect to <address>(es)\n");
 	printf("\t-b\t\t"
@@ -581,14 +583,21 @@ read_key_file(const char *filename, ldns_rr_list *keys)
 
 
 ldns_status
-dane_setup_resolver(ldns_resolver** res,
+dane_setup_resolver(ldns_resolver** res, ldns_rdf* nameserver_addr,
 		ldns_rr_list* keys, bool dnssec_off)
 {
 	ldns_status s;
 
 	assert(res != NULL);
 
-	s = ldns_resolver_new_frm_file(res, NULL);
+	if (nameserver_addr) {
+		*res = ldns_resolver_new();
+		if (*res) {
+			s = ldns_resolver_push_nameserver(*res, nameserver_addr);
+		}
+	} else {
+	        s = ldns_resolver_new_frm_file(res, NULL);
+	}
 	if (s == LDNS_STATUS_OK) {
 		ldns_resolver_set_dnssec(*res, ! dnssec_off);
 
@@ -1121,6 +1130,21 @@ dane_verify(ldns_rr_list* tlsas, ldns_rdf* address,
 	return false;
 }
 
+/**
+ * Return either an A or AAAA rdf, based on the given
+ * string. If it it not a valid ip address, return null.
+ *
+ * Caller receives ownership of returned rdf (if not null),
+ * and must free it.
+ */
+static inline ldns_rdf* rdf_addr_frm_str(const char* str) {
+	ldns_rdf *a = ldns_rdf_new_frm_str(LDNS_RDF_TYPE_A, str);
+	if (!a) {
+		a = ldns_rdf_new_frm_str(LDNS_RDF_TYPE_AAAA, str);
+	}
+	return a;
+}
+
 
 int
 main(int argc, char* const* argv)
@@ -1167,6 +1191,7 @@ main(int argc, char* const* argv)
 	uint16_t      port = 0;		/* supress uninitialized warning */
 
 	ldns_resolver* res            = NULL;
+	ldns_rdf*      nameserver_rdf = NULL;
 	ldns_rdf*      tlsa_owner     = NULL;
 	char*          tlsa_owner_str = NULL;
 	ldns_rr_list*  tlsas          = NULL;
@@ -1202,7 +1227,7 @@ main(int argc, char* const* argv)
 	if (! keys || ! addresses) {
 		MEMERR("ldns_rr_list_new");
 	}
-	while((c = getopt(argc, argv, "46a:bc:df:hik:no:p:sSt:TuvV:")) != -1){
+	while((c = getopt(argc, argv, "46a:bc:df:hik:no:p:r:sSt:TuvV:")) != -1){
 		switch(c) {
 		case 'h':
 			print_usage("ldns-dane");
@@ -1212,6 +1237,19 @@ main(int argc, char* const* argv)
 			break;
 		case '6':
 			ai_family = AF_INET6;
+			break;
+		case 'r':
+			if (nameserver_rdf) {
+				fprintf(stderr, "Can only specify -r once\n");
+				exit(EXIT_FAILURE);
+			}
+			nameserver_rdf = rdf_addr_frm_str(optarg);
+			if (!nameserver_rdf) {
+				fprintf(stderr,
+				        "Could not interpret address %s\n",
+				        optarg);
+				exit(EXIT_FAILURE);
+			}
 			break;
 		case 'a':
 			s = ldns_str2rdf_a(&address, optarg);
@@ -1504,8 +1542,8 @@ main(int argc, char* const* argv)
 			LDNS_ERR(s, "could not read tlas from file");
 		} else {
 			/* lookup tlsas */
-			s = dane_setup_resolver(&res, keys,
-					assume_dnssec_validity);
+			s = dane_setup_resolver(&res, nameserver_rdf,
+			                        keys, assume_dnssec_validity);
 			LDNS_ERR(s, "could not dane_setup_resolver");
 			s = dane_query(&tlsas, res, tlsa_owner,
 					LDNS_RR_TYPE_TLSA, LDNS_RR_CLASS_IN,
@@ -1665,8 +1703,8 @@ main(int argc, char* const* argv)
 
 		/* We need addresses to connect to */
 		if (ldns_rr_list_rr_count(addresses) == 0) {
-			s = dane_setup_resolver(&res, keys,
-					assume_dnssec_validity);
+			s = dane_setup_resolver(&res, nameserver_rdf,
+			                        keys, assume_dnssec_validity);
 			LDNS_ERR(s, "could not dane_setup_resolver");
 			ldns_rr_list_free(addresses);
 			addresses =dane_lookup_addresses(res, name, ai_family);
@@ -1738,6 +1776,9 @@ main(int argc, char* const* argv)
 	/* cleanup */
 	SSL_CTX_free(ctx);
 
+	if (nameserver_rdf) {
+		ldns_rdf_deep_free(nameserver_rdf);
+	}
 	if (store) {
 		X509_STORE_free(store);
 	}
