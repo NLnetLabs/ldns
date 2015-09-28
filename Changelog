@@ -56,6 +56,8 @@ TBD
 	* Fix ECDSA signature generation, do not omit leading zeroes.
 	* bugfix: Get rid of superfluous newline in ldns-keyfetcher
 	  Thanks Jan-Piet Mens
+	* bugfix: -U option to ldns-signzone to sign with every algorithm
+	  Thanks Guido Kroon
 
 1.6.17	2014-01-10
 	* Fix ldns_dnssec_zone_new_frm_fp_l to allow the last parsed line of a
