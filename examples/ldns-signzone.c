@@ -39,6 +39,7 @@ usage(FILE *fp, const char *prog) {
 	fprintf(fp, "  -o <domain>\torigin for the zone\n");
 	fprintf(fp, "  -v\t\tprint version and exit\n");
 	fprintf(fp, "  -A\t\tsign DNSKEY with all keys instead of minimal\n");
+	fprintf(fp, "  -U\t\tSign with every unique algorithm in the provided keys\n");
 	fprintf(fp, "  -E <name>\tuse <name> as the crypto engine for signing\n");
 	fprintf(fp, "           \tThis can have a lot of extra options, see the manual page for more info\n");
 	fprintf(fp, "  -k <id>,<int>\tuse key id with algorithm int from engine\n");
@@ -378,7 +379,7 @@ main(int argc, char *argv[])
 
 	OPENSSL_config(NULL);
 
-	while ((c = getopt(argc, argv, "a:bde:f:i:k:no:ps:t:vAE:K:")) != -1) {
+	while ((c = getopt(argc, argv, "a:bde:f:i:k:no:ps:t:vAUE:K:")) != -1) {
 		switch (c) {
 		case 'a':
 			nsec3_algorithm = (uint8_t) atoi(optarg);
@@ -568,6 +569,9 @@ main(int argc, char *argv[])
 		case 'K':
 			printf("Not implemented yet\n");
 			exit(EXIT_FAILURE);
+			break;
+		case 'U':
+			signflags |= LDNS_SIGN_WITH_ALL_ALGORITHMS;
 			break;
 		case 's':
 			if (strlen(optarg) % 2 != 0) {

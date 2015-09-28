@@ -1023,39 +1023,78 @@ ldns_dnssec_zone_create_rrsigs(ldns_dnssec_zone *zone,
 
 /** If there are KSKs use only them and mark ZSKs unused */
 static void
-ldns_key_list_filter_for_dnskey(ldns_key_list *key_list)
+ldns_key_list_filter_for_dnskey(ldns_key_list *key_list, int flags)
 {
-	int saw_ksk = 0;
+	bool algos[256] = { false };
+	ldns_signing_algorithm saw_ksk = 0;
+	ldns_key *key;
 	size_t i;
-	for(i=0; i<ldns_key_list_key_count(key_list); i++)
-		if((ldns_key_flags(ldns_key_list_key(key_list, i))&LDNS_KEY_SEP_KEY)) {
-			saw_ksk = 1;
-			break;
-		}
-	if(!saw_ksk)
+
+	if (!ldns_key_list_key_count(key_list))
 		return;
-	for(i=0; i<ldns_key_list_key_count(key_list); i++)
-		if(!(ldns_key_flags(ldns_key_list_key(key_list, i))&LDNS_KEY_SEP_KEY))
-			ldns_key_set_use(ldns_key_list_key(key_list, i), 0);
+
+	for (i = 0; i < ldns_key_list_key_count(key_list); i++) {
+		key = ldns_key_list_key(key_list, i);
+		if ((ldns_key_flags(key) & LDNS_KEY_SEP_KEY) && !saw_ksk)
+			saw_ksk = ldns_key_algorithm(key);
+		algos[ldns_key_algorithm(key)] = true;
+	}
+	if (!saw_ksk)
+		return;
+	else
+		algos[saw_ksk] = 0;
+
+	for (i =0; i < ldns_key_list_key_count(key_list); i++) {
+		key = ldns_key_list_key(key_list, i);
+		if (!(ldns_key_flags(key) & LDNS_KEY_SEP_KEY)) {
+			/* We have a ZSK.
+			 * Still use it if it has a unique algorithm though!
+			 */
+			if ((flags & LDNS_SIGN_WITH_ALL_ALGORITHMS) &&
+			    algos[ldns_key_algorithm(key)])
+				algos[ldns_key_algorithm(key)] = false;
+			else
+				ldns_key_set_use(key, 0);
+		}
+	}
 }
 
 /** If there are no ZSKs use KSK as ZSK */
 static void
-ldns_key_list_filter_for_non_dnskey(ldns_key_list *key_list)
+ldns_key_list_filter_for_non_dnskey(ldns_key_list *key_list, int flags)
 {
-	int saw_zsk = 0;
+	bool algos[256] = { false };
+	ldns_signing_algorithm saw_zsk = 0;
+	ldns_key *key;
 	size_t i;
-	for(i=0; i<ldns_key_list_key_count(key_list); i++)
-		if(!(ldns_key_flags(ldns_key_list_key(key_list, i))&LDNS_KEY_SEP_KEY)) {
-			saw_zsk = 1;
-			break;
-		}
-	if(!saw_zsk)
+	
+	if (!ldns_key_list_key_count(key_list))
 		return;
-	/* else filter all KSKs */
-	for(i=0; i<ldns_key_list_key_count(key_list); i++)
-		if((ldns_key_flags(ldns_key_list_key(key_list, i))&LDNS_KEY_SEP_KEY))
-			ldns_key_set_use(ldns_key_list_key(key_list, i), 0);
+
+	for (i = 0; i < ldns_key_list_key_count(key_list); i++) {
+		key = ldns_key_list_key(key_list, i);
+		if (!(ldns_key_flags(key) & LDNS_KEY_SEP_KEY) && !saw_zsk)
+			saw_zsk = ldns_key_algorithm(key);
+		algos[ldns_key_algorithm(key)] = true;
+	}
+	if (!saw_zsk)
+		return;
+	else
+		algos[saw_zsk] = 0;
+
+	for (i = 0; i < ldns_key_list_key_count(key_list); i++) {
+		key = ldns_key_list_key(key_list, i);
+		if((ldns_key_flags(key) & LDNS_KEY_SEP_KEY)) {
+			/* We have a KSK.
+			 * Still use it if it has a unique algorithm though!
+			 */
+			if ((flags & LDNS_SIGN_WITH_ALL_ALGORITHMS) &&
+			    algos[ldns_key_algorithm(key)])
+				algos[ldns_key_algorithm(key)] = false;
+			else
+				ldns_key_set_use(key, 0);
+		}
+	}
 }
 
 ldns_status
@@ -1114,10 +1153,10 @@ ldns_dnssec_zone_create_rrsigs_flg( ldns_dnssec_zone *zone
 											arg);
 				if(!(flags&LDNS_SIGN_DNSKEY_WITH_ZSK) &&
 					cur_rrset->type == LDNS_RR_TYPE_DNSKEY)
-					ldns_key_list_filter_for_dnskey(key_list);
+					ldns_key_list_filter_for_dnskey(key_list, flags);
 
 				if(cur_rrset->type != LDNS_RR_TYPE_DNSKEY)
-					ldns_key_list_filter_for_non_dnskey(key_list);
+					ldns_key_list_filter_for_non_dnskey(key_list, flags);
 
 				/* TODO: just set count to zero? */
 				rr_list = ldns_rr_list_new();
@@ -1170,7 +1209,7 @@ ldns_dnssec_zone_create_rrsigs_flg( ldns_dnssec_zone *zone
 										key_list,
 										func,
 										arg);
-			ldns_key_list_filter_for_non_dnskey(key_list);
+			ldns_key_list_filter_for_non_dnskey(key_list, flags);
 
 			rr_list = ldns_rr_list_new();
 			ldns_rr_list_push_rr(rr_list, cur_name->nsec);

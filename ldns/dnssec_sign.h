@@ -13,6 +13,7 @@ extern "C" {
 
 /** Sign flag that makes DNSKEY type signed by all keys, not only by SEP keys*/
 #define LDNS_SIGN_DNSKEY_WITH_ZSK 1
+#define LDNS_SIGN_WITH_ALL_ALGORITHMS 2 
 
 /**
  * Create an empty RRSIG RR (i.e. without the actual signature data)
