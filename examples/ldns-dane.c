@@ -586,7 +586,7 @@ ldns_status
 dane_setup_resolver(ldns_resolver** res, ldns_rdf* nameserver_addr,
 		ldns_rr_list* keys, bool dnssec_off)
 {
-	ldns_status s;
+	ldns_status s = LDNS_STATUS_OK;
 
 	assert(res != NULL);
 
