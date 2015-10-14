@@ -605,7 +605,7 @@ ldns_todo_nsec3_ents_node_free(ldns_rbnode_t *node, void *arg) {
 }
 
 ldns_status
-ldns_dnssec_zone_new_frm_fp_l(ldns_dnssec_zone** z, FILE* fp, ldns_rdf* origin,
+ldns_dnssec_zone_new_frm_fp_l(ldns_dnssec_zone** z, FILE* fp, const ldns_rdf* origin,
 	       	uint32_t ttl, ldns_rr_class ATTR_UNUSED(c), int* line_nr)
 {
 	ldns_rr* cur_rr;
@@ -772,7 +772,7 @@ error:
 }
 
 ldns_status
-ldns_dnssec_zone_new_frm_fp(ldns_dnssec_zone** z, FILE* fp, ldns_rdf* origin,
+ldns_dnssec_zone_new_frm_fp(ldns_dnssec_zone** z, FILE* fp, const ldns_rdf* origin,
 		uint32_t ttl, ldns_rr_class ATTR_UNUSED(c))
 {
 	return ldns_dnssec_zone_new_frm_fp_l(z, fp, origin, ttl, c, NULL);

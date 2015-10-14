@@ -377,7 +377,7 @@ ldns_dnssec_zone *ldns_dnssec_zone_new(void);
  * \return ldns_status mesg with an error or LDNS_STATUS_OK
  */
 ldns_status ldns_dnssec_zone_new_frm_fp(ldns_dnssec_zone** z, FILE* fp,
-		ldns_rdf* origin, uint32_t ttl, ldns_rr_class c);
+		const ldns_rdf* origin, uint32_t ttl, ldns_rr_class c);
 
 /**
  * Create a new dnssec zone from a file, keep track of the line numbering
@@ -391,7 +391,7 @@ ldns_status ldns_dnssec_zone_new_frm_fp(ldns_dnssec_zone** z, FILE* fp,
  * \return ldns_status mesg with an error or LDNS_STATUS_OK
  */
 ldns_status ldns_dnssec_zone_new_frm_fp_l(ldns_dnssec_zone** z, FILE* fp,
-		ldns_rdf* origin, uint32_t ttl, ldns_rr_class c, int* line_nr);
+		const ldns_rdf* origin, uint32_t ttl, ldns_rr_class c, int* line_nr);
 
 /**
  * Frees the given zone structure, and its rbtree of dnssec_names

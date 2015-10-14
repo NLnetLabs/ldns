@@ -135,7 +135,7 @@ ldns_rr_list *ldns_zone_glue_rr_list(const ldns_zone *z);
  *
  * \return ldns_status mesg with an error or LDNS_STATUS_OK
  */
-ldns_status ldns_zone_new_frm_fp(ldns_zone **z, FILE *fp, ldns_rdf *origin, uint32_t ttl, ldns_rr_class c);
+ldns_status ldns_zone_new_frm_fp(ldns_zone **z, FILE *fp, const ldns_rdf *origin, uint32_t ttl, ldns_rr_class c);
 
 /**
  * Create a new zone from a file, keep track of the line numbering
@@ -148,7 +148,7 @@ ldns_status ldns_zone_new_frm_fp(ldns_zone **z, FILE *fp, ldns_rdf *origin, uint
  *
  * \return ldns_status mesg with an error or LDNS_STATUS_OK
  */
-ldns_status ldns_zone_new_frm_fp_l(ldns_zone **z, FILE *fp, ldns_rdf *origin, uint32_t ttl, ldns_rr_class c, int *line_nr);
+ldns_status ldns_zone_new_frm_fp_l(ldns_zone **z, FILE *fp, const ldns_rdf *origin, uint32_t ttl, ldns_rr_class c, int *line_nr);
 
 /**
  * Frees the allocated memory for the zone, and the rr_list structure in it
