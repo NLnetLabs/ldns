@@ -248,7 +248,7 @@ ldns_status ldns_dane_verify_rr(const ldns_rr* tlsa_rr,
  *         LDNS_STATUS_DANE_TLSA_DID_NOT_MATCH when none of the TLSA's matched,
  *         or other ldns_status errors.
  */
-ldns_status ldns_dane_verify(ldns_rr_list* tlsas,
+ldns_status ldns_dane_verify(const ldns_rr_list* tlsas,
 		X509* cert, STACK_OF(X509)* extra_certs,
 		X509_STORE* pkix_validation_store);
 #endif /* LDNS_BUILD_CONFIG_HAVE_SSL */

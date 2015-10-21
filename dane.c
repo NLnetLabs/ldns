@@ -699,7 +699,7 @@ ldns_dane_verify_rr(const ldns_rr* tlsa_rr,
 
 
 ldns_status
-ldns_dane_verify(ldns_rr_list* tlsas,
+ldns_dane_verify(const ldns_rr_list* tlsas,
 		X509* cert, STACK_OF(X509)* extra_certs,
 		X509_STORE* pkix_validation_store)
 {
@@ -709,39 +709,42 @@ ldns_dane_verify(ldns_rr_list* tlsas,
 
 	assert(cert != NULL);
 
-	if (tlsas && ldns_rr_list_rr_count(tlsas) > 0) {
-		tlsas = ldns_dane_filter_unusable_records(tlsas);
-		if (! tlsas) {
-			return LDNS_STATUS_MEM_ERR;
-		}
-	}
-	if (! tlsas || ldns_rr_list_rr_count(tlsas) == 0) {
+	if (! tlsas || ldns_rr_list_rr_count(tlsas) == 0)
 		/* No TLSA's, so regular PKIX validation
 		 */
 		return ldns_dane_pkix_validate(cert, extra_certs,
 				pkix_validation_store);
-	} else {
-		for (i = 0; i < ldns_rr_list_rr_count(tlsas); i++) {
-			tlsa_rr = ldns_rr_list_rr(tlsas, i);
-			ps = s;
-			s = ldns_dane_verify_rr(tlsa_rr, cert, extra_certs,
-					pkix_validation_store);
 
-			if (s != LDNS_STATUS_DANE_TLSA_DID_NOT_MATCH &&
-			    s != LDNS_STATUS_DANE_PKIX_DID_NOT_VALIDATE) {
+	else if (!(tlsas = ldns_dane_filter_unusable_records(tlsas)))
+		return LDNS_STATUS_MEM_ERR;
 
-				/* which would be LDNS_STATUS_OK (match)
-				 * or some fatal error preventing use from
-				 * trying the next TLSA record.
-				 */
-				break;
-			}
-			s = (s > ps ? s : ps); /* prefer PKIX_DID_NOT_VALIDATE
-						* over   TLSA_DID_NOT_MATCH
-						*/
-		}
-		ldns_rr_list_free(tlsas);
+	else if (ldns_rr_list_rr_count(tlsas) == 0) {
+		/* No TLSA's, so regular PKIX validation
+		 */
+		ldns_rr_list_free((ldns_rr_list *)tlsas);
+		return ldns_dane_pkix_validate(cert, extra_certs,
+				pkix_validation_store);
 	}
+	for (i = 0; i < ldns_rr_list_rr_count(tlsas); i++) {
+		tlsa_rr = ldns_rr_list_rr(tlsas, i);
+		ps = s;
+		s = ldns_dane_verify_rr(tlsa_rr, cert, extra_certs,
+				pkix_validation_store);
+
+		if (s != LDNS_STATUS_DANE_TLSA_DID_NOT_MATCH &&
+		    s != LDNS_STATUS_DANE_PKIX_DID_NOT_VALIDATE) {
+
+			/* which would be LDNS_STATUS_OK (match)
+			 * or some fatal error preventing use from
+			 * trying the next TLSA record.
+			 */
+			break;
+		}
+		s = (s > ps ? s : ps); /* prefer PKIX_DID_NOT_VALIDATE
+					* over   TLSA_DID_NOT_MATCH
+					*/
+	}
+	ldns_rr_list_free((ldns_rr_list *)tlsas);
 	return s;
 }
 #endif /* HAVE_SSL */
