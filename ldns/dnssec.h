@@ -369,7 +369,7 @@ ldns_rdf *ldns_nsec3_hash_name_frm_nsec3(const ldns_rr *nsec, const ldns_rdf *na
  * \param[in] type the type to check for
  * \return true when t is found and set, otherwise return false
  */
-bool ldns_nsec_bitmap_covers_type(const const ldns_rdf* bitmap, ldns_rr_type type);
+bool ldns_nsec_bitmap_covers_type(const ldns_rdf* bitmap, ldns_rr_type type);
 
 /**
  * Checks if RR type t is enumerated in the type bitmap rdf and sets the bit.
