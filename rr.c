@@ -111,8 +111,8 @@ ldns_rdf_type_maybe_quoted(ldns_rdf_type rdf_type)
  */
 static ldns_status
 ldns_rr_new_frm_str_internal(ldns_rr **newrr, const char *str,
-                             uint32_t default_ttl, ldns_rdf *origin,
-		             ldns_rdf **prev, bool question)
+							 uint32_t default_ttl, const ldns_rdf *origin,
+							 ldns_rdf **prev, bool question)
 {
 	ldns_rr *new;
 	const ldns_rr_descriptor *desc;
@@ -647,8 +647,8 @@ error:
 
 ldns_status
 ldns_rr_new_frm_str(ldns_rr **newrr, const char *str,
-                    uint32_t default_ttl, ldns_rdf *origin,
-		    ldns_rdf **prev)
+                    uint32_t default_ttl, const ldns_rdf *origin,
+				    ldns_rdf **prev)
 {
 	return ldns_rr_new_frm_str_internal(newrr,
 	                                    str,
@@ -660,7 +660,7 @@ ldns_rr_new_frm_str(ldns_rr **newrr, const char *str,
 
 ldns_status
 ldns_rr_new_question_frm_str(ldns_rr **newrr, const char *str,
-                             ldns_rdf *origin, ldns_rdf **prev)
+                             const ldns_rdf *origin, ldns_rdf **prev)
 {
 	return ldns_rr_new_frm_str_internal(newrr,
 	                                    str,

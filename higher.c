@@ -21,8 +21,8 @@
 #endif /* HAVE_SSL */
 
 ldns_rr_list *
-ldns_get_rr_list_addr_by_name(ldns_resolver *res, ldns_rdf *name, ldns_rr_class c, 
-		uint16_t flags)
+ldns_get_rr_list_addr_by_name(ldns_resolver *res, const ldns_rdf *name,
+		ldns_rr_class c, uint16_t flags)
 {
 	ldns_pkt *pkt;
 	ldns_rr_list *aaaa;
@@ -104,8 +104,8 @@ ldns_get_rr_list_addr_by_name(ldns_resolver *res, ldns_rdf *name, ldns_rr_class 
 }
 
 ldns_rr_list *
-ldns_get_rr_list_name_by_addr(ldns_resolver *res, ldns_rdf *addr, ldns_rr_class c, 
-		uint16_t flags)
+ldns_get_rr_list_name_by_addr(ldns_resolver *res, const ldns_rdf *addr,
+		ldns_rr_class c, uint16_t flags)
 {
 	ldns_pkt *pkt;
 	ldns_rr_list *names;
@@ -262,8 +262,8 @@ ldns_get_rr_list_hosts_frm_file(char *filename)
 }
 
 uint16_t
-ldns_getaddrinfo(ldns_resolver *res, ldns_rdf *node, ldns_rr_class c, 
-		ldns_rr_list **ret)
+ldns_getaddrinfo(ldns_resolver *res, const ldns_rdf *node,
+		ldns_rr_class c, ldns_rr_list **ret)
 {
 	ldns_rdf_type t;
 	uint16_t names_found;
@@ -302,7 +302,7 @@ ldns_getaddrinfo(ldns_resolver *res, ldns_rdf *node, ldns_rr_class c,
 }
 
 bool
-ldns_nsec_type_check(ldns_rr *nsec, ldns_rr_type t)
+ldns_nsec_type_check(const ldns_rr *nsec, ldns_rr_type t)
 {
 	switch (ldns_rr_get_type(nsec)) {
 	case LDNS_RR_TYPE_NSEC	: if (ldns_rr_rd_count(nsec) < 2) {

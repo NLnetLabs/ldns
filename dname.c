@@ -87,7 +87,7 @@ ldns_dname_cat_clone(const ldns_rdf *rd1, const ldns_rdf *rd2)
 }
 
 ldns_status
-ldns_dname_cat(ldns_rdf *rd1, ldns_rdf *rd2)
+ldns_dname_cat(ldns_rdf *rd1, const ldns_rdf *rd2)
 {
 	uint16_t left_size;
 	uint16_t size;

@@ -351,7 +351,7 @@ ldns_rdf *ldns_native2rdf_int16_data(size_t size, uint8_t *data);
  * \param[in] *rd rdf to be reversed
  * \return the reversed rdf (a newly created rdf)
  */
-ldns_rdf *ldns_rdf_address_reverse(ldns_rdf *rd);
+ldns_rdf *ldns_rdf_address_reverse(const ldns_rdf *rd);
 
 /**
  * returns the native uint8_t representation from the rdf.

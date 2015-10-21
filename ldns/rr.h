@@ -412,7 +412,7 @@ void ldns_rr_free(ldns_rr *rr);
  * \return a status msg describing an error or LDNS_STATUS_OK
  */
 ldns_status ldns_rr_new_frm_str(ldns_rr **n, const char *str,
-                                uint32_t default_ttl, ldns_rdf *origin,
+                                uint32_t default_ttl, const ldns_rdf *origin,
                                 ldns_rdf **prev);
 
 /**
@@ -429,7 +429,7 @@ ldns_status ldns_rr_new_frm_str(ldns_rr **n, const char *str,
  * \return a status msg describing an error or LDNS_STATUS_OK
  */
 ldns_status ldns_rr_new_question_frm_str(ldns_rr **n, const char *str,
-                                ldns_rdf *origin, ldns_rdf **prev);
+                                const ldns_rdf *origin, ldns_rdf **prev);
 
 /**
  * creates a new rr from a file containing a string.
