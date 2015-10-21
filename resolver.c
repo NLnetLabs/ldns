@@ -285,7 +285,7 @@ ldns_resolver_pop_nameserver(ldns_resolver *r)
 }
 
 ldns_status
-ldns_resolver_push_nameserver(ldns_resolver *r, ldns_rdf *n)
+ldns_resolver_push_nameserver(ldns_resolver *r, const ldns_rdf *n)
 {
 	ldns_rdf **nameservers;
 	size_t ns_count;
@@ -332,7 +332,7 @@ ldns_resolver_push_nameserver(ldns_resolver *r, ldns_rdf *n)
 }
 
 ldns_status
-ldns_resolver_push_nameserver_rr(ldns_resolver *r, ldns_rr *rr)
+ldns_resolver_push_nameserver_rr(ldns_resolver *r, const ldns_rr *rr)
 {
 	ldns_rdf *address;
 	if ((!rr) || (ldns_rr_get_type(rr) != LDNS_RR_TYPE_A &&
@@ -348,7 +348,7 @@ ldns_resolver_push_nameserver_rr(ldns_resolver *r, ldns_rr *rr)
 }
 
 ldns_status
-ldns_resolver_push_nameserver_rr_list(ldns_resolver *r, ldns_rr_list *rrlist)
+ldns_resolver_push_nameserver_rr_list(ldns_resolver *r, const ldns_rr_list *rrlist)
 {
 	ldns_rr *rr;
 	ldns_status stat;

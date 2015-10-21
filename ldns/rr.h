@@ -649,7 +649,7 @@ void ldns_rr_list_deep_free(ldns_rr_list *rr_list);
  * \param[in] right the rightside
  * \return a left with right concatenated to it
  */
-bool ldns_rr_list_cat(ldns_rr_list *left, ldns_rr_list *right);
+bool ldns_rr_list_cat(ldns_rr_list *left, const ldns_rr_list *right);
 
 /**
  * concatenates two ldns_rr_lists together, but makes clones of the rr's 
@@ -658,7 +658,7 @@ bool ldns_rr_list_cat(ldns_rr_list *left, ldns_rr_list *right);
  * \param[in] right the rightside
  * \return a new rr_list with leftside/rightside concatenated
  */
-ldns_rr_list* ldns_rr_list_cat_clone(ldns_rr_list *left, ldns_rr_list *right);
+ldns_rr_list* ldns_rr_list_cat_clone(const ldns_rr_list *left, const ldns_rr_list *right);
 
 /**
  * pushes an rr to an rrlist.
@@ -698,14 +698,14 @@ ldns_rr_list* ldns_rr_list_pop_rr_list(ldns_rr_list *rr_list, size_t size);
  * \param[in] rr the rr to check
  * \return true if rr_list contains rr, false otherwise
  */
-bool ldns_rr_list_contains_rr(const ldns_rr_list *rr_list, ldns_rr *rr); 
+bool ldns_rr_list_contains_rr(const ldns_rr_list *rr_list, const ldns_rr *rr); 
 
 /**
  * checks if an rr_list is a rrset.
  * \param[in] rr_list the rr_list to check
  * \return true if it is an rrset otherwise false
  */
-bool ldns_is_rrset(ldns_rr_list *rr_list);
+bool ldns_is_rrset(const ldns_rr_list *rr_list);
 
 /**
  * pushes an rr to an rrset (which really are rr_list's).
@@ -795,7 +795,7 @@ int ldns_rr_compare_no_rdata(const ldns_rr *rr1, const ldns_rr *rr2);
  *         -1 if rr1_buf comes before rr2_buf
  *         +1 if rr2_buf comes before rr1_buf
  */
-int ldns_rr_compare_wire(ldns_buffer *rr1_buf, ldns_buffer *rr2_buf);
+int ldns_rr_compare_wire(const ldns_buffer *rr1_buf, const ldns_buffer *rr2_buf);
 
 /**
  * returns true of the given rr's are equal.
@@ -836,14 +836,14 @@ void ldns_rr2canonical(ldns_rr *rr);
  * \param[in] rr_list the rr_list to work on
  * \return void
  */
-void ldns_rr_list2canonical(ldns_rr_list *rr_list);
+void ldns_rr_list2canonical(const ldns_rr_list *rr_list);
 
 /** 
  * counts the number of labels of the ownername.
  * \param[in] rr count the labels of this rr
  * \return the number of labels
  */
-uint8_t ldns_rr_label_count(ldns_rr *rr);
+uint8_t ldns_rr_label_count(const ldns_rr *rr);
 
 /**
  * returns the resource record descriptor for the given rr type.
@@ -889,7 +889,7 @@ ldns_rdf_type ldns_rr_descriptor_field_type(const ldns_rr_descriptor *descriptor
  * \return a new rr list with only the RRs that match 
  *
  */
-ldns_rr_list *ldns_rr_list_subtype_by_rdf(ldns_rr_list *l, ldns_rdf *r, size_t pos);
+ldns_rr_list *ldns_rr_list_subtype_by_rdf(const ldns_rr_list *l, const ldns_rdf *r, size_t pos);
 
 /**
  * convert an rdf of type LDNS_RDF_TYPE_TYPE to an actual

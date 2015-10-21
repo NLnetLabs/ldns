@@ -20,8 +20,8 @@
 #endif /* HAVE_SSL */
 
 ldns_rr *
-ldns_create_empty_rrsig(ldns_rr_list *rrset,
-                        ldns_key *current_key)
+ldns_create_empty_rrsig(const ldns_rr_list *rrset,
+                        const ldns_key *current_key)
 {
 	uint32_t orig_ttl;
 	ldns_rr_class orig_class;

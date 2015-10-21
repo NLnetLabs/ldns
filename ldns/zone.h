@@ -99,7 +99,7 @@ void ldns_zone_set_rrs(ldns_zone *z, ldns_rr_list *rrlist);
  * \param[in] list the list to add
  * \return a true on succes otherwise falsed
  */
-bool ldns_zone_push_rr_list(ldns_zone *z, ldns_rr_list *list);
+bool ldns_zone_push_rr_list(ldns_zone *z, const ldns_rr_list *list);
 
 /**
  * push an single rr to a zone structure. This function use pointer

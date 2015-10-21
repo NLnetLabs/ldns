@@ -22,8 +22,8 @@ extern "C" {
  * \return signature rr
  */
 ldns_rr *
-ldns_create_empty_rrsig(ldns_rr_list *rrset,
-                        ldns_key *key);
+ldns_create_empty_rrsig(const ldns_rr_list *rrset,
+                        const ldns_key *key);
 
 /**
  * Sign the buffer which contains the wiredata of an rrset, and the

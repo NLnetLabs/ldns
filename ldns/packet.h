@@ -486,7 +486,7 @@ ldns_rr_list *ldns_pkt_get_section_clone(const ldns_pkt *p, ldns_pkt_section s);
  * \param[in] s the packet's section
  * \return a list with the rr's or NULL if none were found
  */
-ldns_rr_list *ldns_pkt_rr_list_by_name(ldns_pkt *p, ldns_rdf *r, ldns_pkt_section s);
+ldns_rr_list *ldns_pkt_rr_list_by_name(const ldns_pkt *p, const ldns_rdf *r, ldns_pkt_section s);
 /**
  * return all the rr with a specific type from a packet. Optionally
  * specify from which section in the packet
@@ -514,7 +514,7 @@ ldns_rr_list *ldns_pkt_rr_list_by_name_and_type(const ldns_pkt *packet, const ld
  * \param[in] sec in which section to look
  * \param[in] rr the rr to look for
  */
-bool ldns_pkt_rr(ldns_pkt *pkt, ldns_pkt_section sec, ldns_rr *rr);
+bool ldns_pkt_rr(const ldns_pkt *pkt, ldns_pkt_section sec, const ldns_rr *rr);
 
 
 /**
@@ -660,7 +660,7 @@ void ldns_pkt_set_tsig(ldns_pkt *p, ldns_rr *t);
  * \param[in] p the packet to examine
  * \return the type of packet
  */
-ldns_pkt_type ldns_pkt_reply_type(ldns_pkt *p);
+ldns_pkt_type ldns_pkt_reply_type(const ldns_pkt *p);
 
 /**
  * return the packet's edns udp size
@@ -792,7 +792,7 @@ ldns_status ldns_pkt_ixfr_request_new_frm_str(ldns_pkt **p, const char *rr_name,
  * \param[in] flags packet flags
  * \return ldns_pkt* a pointer to the new pkt
  */
-ldns_pkt *ldns_pkt_query_new(ldns_rdf *rr_name, ldns_rr_type rr_type, ldns_rr_class rr_class, uint16_t flags);
+ldns_pkt *ldns_pkt_query_new(const ldns_rdf *rr_name, ldns_rr_type rr_type, ldns_rr_class rr_class, uint16_t flags);
 
 /**
  * creates an IXFR request packet for the given name, type and class.
@@ -803,7 +803,7 @@ ldns_pkt *ldns_pkt_query_new(ldns_rdf *rr_name, ldns_rr_type rr_type, ldns_rr_cl
  * \param[in] soa soa record to be added to the authority section
  * \return ldns_pkt* a pointer to the new pkt
  */
-ldns_pkt *ldns_pkt_ixfr_request_new(ldns_rdf *rr_name, ldns_rr_class rr_class, uint16_t flags, ldns_rr* soa);
+ldns_pkt *ldns_pkt_ixfr_request_new(const ldns_rdf *rr_name, ldns_rr_class rr_class, uint16_t flags, ldns_rr* soa);
 
 /**
  * clones the given packet, creating a fully allocated copy

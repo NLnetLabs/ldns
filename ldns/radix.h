@@ -135,7 +135,7 @@ ldns_status ldns_radix_insert(ldns_radix_t* tree, uint8_t* key,
  * @return: unlinked data or NULL if not present.
  *
  */
-void* ldns_radix_delete(ldns_radix_t* tree, uint8_t* key, radix_strlen_t len);
+void* ldns_radix_delete(ldns_radix_t* tree, const uint8_t* key, radix_strlen_t len);
 
 /**
  * Search data in the tree.
@@ -145,7 +145,7 @@ void* ldns_radix_delete(ldns_radix_t* tree, uint8_t* key, radix_strlen_t len);
  * @return: the radix node or NULL if not found.
  *
  */
-ldns_radix_node_t* ldns_radix_search(ldns_radix_t* tree, uint8_t* key,
+ldns_radix_node_t* ldns_radix_search(ldns_radix_t* tree, const uint8_t* key,
 	radix_strlen_t len);
 
 /**
@@ -159,7 +159,7 @@ ldns_radix_node_t* ldns_radix_search(ldns_radix_t* tree, uint8_t* key,
  * @return 1 if exact match, 0 otherwise.
  *
  */
-int ldns_radix_find_less_equal(ldns_radix_t* tree, uint8_t* key,
+int ldns_radix_find_less_equal(ldns_radix_t* tree, const uint8_t* key,
 	radix_strlen_t len, ldns_radix_node_t** result);
 
 /**
@@ -168,7 +168,7 @@ int ldns_radix_find_less_equal(ldns_radix_t* tree, uint8_t* key,
  * @return: the radix node with the first element.
  *
  */
-ldns_radix_node_t* ldns_radix_first(ldns_radix_t* tree);
+ldns_radix_node_t* ldns_radix_first(const ldns_radix_t* tree);
 
 /**
  * Get the last element in the tree.
@@ -176,7 +176,7 @@ ldns_radix_node_t* ldns_radix_first(ldns_radix_t* tree);
  * @return: the radix node with the last element.
  *
  */
-ldns_radix_node_t* ldns_radix_last(ldns_radix_t* tree);
+ldns_radix_node_t* ldns_radix_last(const ldns_radix_t* tree);
 
 /**
  * Next element.
@@ -231,7 +231,7 @@ void ldns_radix_traverse_postorder(ldns_radix_node_t* node,
  * @param tree: tree.
  *
  */
-void ldns_radix_printf(FILE* fd, ldns_radix_t* tree);
+void ldns_radix_printf(FILE* fd, const ldns_radix_t* tree);
 
 #ifdef __cplusplus
 }
