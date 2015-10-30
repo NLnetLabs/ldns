@@ -111,8 +111,8 @@ ldns_rdf_type_maybe_quoted(ldns_rdf_type rdf_type)
  */
 static ldns_status
 ldns_rr_new_frm_str_internal(ldns_rr **newrr, const char *str,
-                             uint32_t default_ttl, ldns_rdf *origin,
-		             ldns_rdf **prev, bool question)
+							 uint32_t default_ttl, const ldns_rdf *origin,
+							 ldns_rdf **prev, bool question)
 {
 	ldns_rr *new;
 	const ldns_rr_descriptor *desc;
@@ -647,8 +647,8 @@ error:
 
 ldns_status
 ldns_rr_new_frm_str(ldns_rr **newrr, const char *str,
-                    uint32_t default_ttl, ldns_rdf *origin,
-		    ldns_rdf **prev)
+                    uint32_t default_ttl, const ldns_rdf *origin,
+				    ldns_rdf **prev)
 {
 	return ldns_rr_new_frm_str_internal(newrr,
 	                                    str,
@@ -660,7 +660,7 @@ ldns_rr_new_frm_str(ldns_rr **newrr, const char *str,
 
 ldns_status
 ldns_rr_new_question_frm_str(ldns_rr **newrr, const char *str,
-                             ldns_rdf *origin, ldns_rdf **prev)
+                             const ldns_rdf *origin, ldns_rdf **prev)
 {
 	return ldns_rr_new_frm_str_internal(newrr,
 	                                    str,
@@ -1009,7 +1009,7 @@ ldns_rr_list_deep_free(ldns_rr_list *rr_list)
 
 /* add right to left. So we modify *left! */
 bool
-ldns_rr_list_cat(ldns_rr_list *left, ldns_rr_list *right)
+ldns_rr_list_cat(ldns_rr_list *left, const ldns_rr_list *right)
 {
 	size_t r_rr_count;
 	size_t i;
@@ -1032,7 +1032,7 @@ ldns_rr_list_cat(ldns_rr_list *left, ldns_rr_list *right)
 }
 
 ldns_rr_list *
-ldns_rr_list_cat_clone(ldns_rr_list *left, ldns_rr_list *right)
+ldns_rr_list_cat_clone(const ldns_rr_list *left, const ldns_rr_list *right)
 {
 	size_t l_rr_count;
 	size_t r_rr_count;
@@ -1071,7 +1071,7 @@ ldns_rr_list_cat_clone(ldns_rr_list *left, ldns_rr_list *right)
 }
 
 ldns_rr_list *
-ldns_rr_list_subtype_by_rdf(ldns_rr_list *l, ldns_rdf *r, size_t pos)
+ldns_rr_list_subtype_by_rdf(const ldns_rr_list *l, const ldns_rdf *r, size_t pos)
 {
 	size_t i;
 	ldns_rr_list *subtyped;
@@ -1212,7 +1212,7 @@ ldns_rr_list_pop_rr_list(ldns_rr_list *rr_list, size_t howmany)
 
 
 bool
-ldns_rr_list_contains_rr(const ldns_rr_list *rr_list, ldns_rr *rr)
+ldns_rr_list_contains_rr(const ldns_rr_list *rr_list, const ldns_rr *rr)
 {
 	size_t i;
 
@@ -1231,7 +1231,7 @@ ldns_rr_list_contains_rr(const ldns_rr_list *rr_list, ldns_rr *rr)
 }
 
 bool
-ldns_is_rrset(ldns_rr_list *rr_list)
+ldns_is_rrset(const ldns_rr_list *rr_list)
 {
 	ldns_rr_type t;
 	ldns_rr_class c;
@@ -1572,7 +1572,7 @@ ldns_rr_compare_no_rdata(const ldns_rr *rr1, const ldns_rr *rr2)
 	return 0;
 }
 
-int ldns_rr_compare_wire(ldns_buffer *rr1_buf, ldns_buffer *rr2_buf)
+int ldns_rr_compare_wire(const ldns_buffer *rr1_buf, const ldns_buffer *rr2_buf)
 {
         size_t rr1_len, rr2_len, min_len, i, offset;
 
@@ -1805,7 +1805,7 @@ ldns_rr2canonical(ldns_rr *rr)
 }
 
 void
-ldns_rr_list2canonical(ldns_rr_list *rr_list)
+ldns_rr_list2canonical(const ldns_rr_list *rr_list)
 {
 	size_t i;
 	for (i = 0; i < ldns_rr_list_rr_count(rr_list); i++) {
@@ -1814,7 +1814,7 @@ ldns_rr_list2canonical(ldns_rr_list *rr_list)
 }
 
 uint8_t
-ldns_rr_label_count(ldns_rr *rr)
+ldns_rr_label_count(const ldns_rr *rr)
 {
 	if (!rr) {
 		return 0;

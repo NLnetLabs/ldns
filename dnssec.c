@@ -81,7 +81,7 @@ ldns_dnssec_get_dnskey_for_rrsig(const ldns_rr *rrsig,
 }
 
 ldns_rdf *
-ldns_nsec_get_bitmap(ldns_rr *nsec) {
+ldns_nsec_get_bitmap(const ldns_rr *nsec) {
 	if (ldns_rr_get_type(nsec) == LDNS_RR_TYPE_NSEC) {
 		return ldns_rr_rdf(nsec, 1);
 	} else if (ldns_rr_get_type(nsec) == LDNS_RR_TYPE_NSEC3) {
@@ -94,9 +94,9 @@ ldns_nsec_get_bitmap(ldns_rr *nsec) {
 /*return the owner name of the closest encloser for name from the list of rrs */
 /* this is NOT the hash, but the original name! */
 ldns_rdf *
-ldns_dnssec_nsec3_closest_encloser(ldns_rdf *qname,
+ldns_dnssec_nsec3_closest_encloser(const ldns_rdf *qname,
                                    ATTR_UNUSED(ldns_rr_type qtype),
-                                   ldns_rr_list *nsec3s)
+                                   const ldns_rr_list *nsec3s)
 {
 	/* remember parameters, they must match */
 	uint8_t algorithm;
@@ -215,7 +215,7 @@ ldns_dnssec_pkt_has_rrsigs(const ldns_pkt *pkt)
 
 ldns_rr_list *
 ldns_dnssec_pkt_get_rrsigs_for_name_and_type(const ldns_pkt *pkt,
-									ldns_rdf *name,
+									const ldns_rdf *name,
 									ldns_rr_type type)
 {
 	uint16_t t_netorder;
@@ -298,7 +298,7 @@ ldns_calc_keytag(const ldns_rr *key)
 	return ac16;
 }
 
-uint16_t ldns_calc_keytag_raw(uint8_t* key, size_t keysize)
+uint16_t ldns_calc_keytag_raw(const uint8_t* key, size_t keysize)
 {
 	unsigned int i;
 	uint32_t ac32;
@@ -327,14 +327,14 @@ uint16_t ldns_calc_keytag_raw(uint8_t* key, size_t keysize)
 
 #ifdef HAVE_SSL
 DSA *
-ldns_key_buf2dsa(ldns_buffer *key)
+ldns_key_buf2dsa(const ldns_buffer *key)
 {
-	return ldns_key_buf2dsa_raw((unsigned char*)ldns_buffer_begin(key),
+	return ldns_key_buf2dsa_raw((const unsigned char*)ldns_buffer_begin(key),
 						   ldns_buffer_position(key));
 }
 
 DSA *
-ldns_key_buf2dsa_raw(unsigned char* key, size_t len)
+ldns_key_buf2dsa_raw(const unsigned char* key, size_t len)
 {
 	uint8_t T;
 	uint16_t length;
@@ -386,14 +386,14 @@ ldns_key_buf2dsa_raw(unsigned char* key, size_t len)
 }
 
 RSA *
-ldns_key_buf2rsa(ldns_buffer *key)
+ldns_key_buf2rsa(const ldns_buffer *key)
 {
-	return ldns_key_buf2rsa_raw((unsigned char*)ldns_buffer_begin(key),
+	return ldns_key_buf2rsa_raw((const unsigned char*)ldns_buffer_begin(key),
 						   ldns_buffer_position(key));
 }
 
 RSA *
-ldns_key_buf2rsa_raw(unsigned char* key, size_t len)
+ldns_key_buf2rsa_raw(const unsigned char* key, size_t len)
 {
 	uint16_t offset;
 	uint16_t exp;
@@ -452,7 +452,7 @@ ldns_key_buf2rsa_raw(unsigned char* key, size_t len)
 }
 
 int
-ldns_digest_evp(unsigned char* data, unsigned int len, unsigned char* dest,
+ldns_digest_evp(const unsigned char* data, unsigned int len, unsigned char* dest,
 	const EVP_MD* md)
 {
 	EVP_MD_CTX* ctx;
@@ -764,10 +764,10 @@ ldns_dnssec_create_nsec_bitmap(ldns_rr_type rr_type_list[],
 }
 
 int
-ldns_dnssec_rrsets_contains_type(ldns_dnssec_rrsets *rrsets,
+ldns_dnssec_rrsets_contains_type(const ldns_dnssec_rrsets *rrsets,
                                  ldns_rr_type type)
 {
-	ldns_dnssec_rrsets *cur_rrset = rrsets;
+	const ldns_dnssec_rrsets *cur_rrset = rrsets;
 	while (cur_rrset) {
 		if (cur_rrset->type == type) {
 			return 1;
@@ -778,8 +778,8 @@ ldns_dnssec_rrsets_contains_type(ldns_dnssec_rrsets *rrsets,
 }
 
 ldns_rr *
-ldns_dnssec_create_nsec(ldns_dnssec_name *from,
-                        ldns_dnssec_name *to,
+ldns_dnssec_create_nsec(const ldns_dnssec_name *from,
+                        const ldns_dnssec_name *to,
                         ldns_rr_type nsec_type)
 {
 	ldns_rr *nsec_rr;
@@ -832,14 +832,14 @@ ldns_dnssec_create_nsec(ldns_dnssec_name *from,
 }
 
 ldns_rr *
-ldns_dnssec_create_nsec3(ldns_dnssec_name *from,
-					ldns_dnssec_name *to,
-					ldns_rdf *zone_name,
+ldns_dnssec_create_nsec3(const ldns_dnssec_name *from,
+					const ldns_dnssec_name *to,
+					const ldns_rdf *zone_name,
 					uint8_t algorithm,
 					uint8_t flags,
 					uint16_t iterations,
 					uint8_t salt_length,
-					uint8_t *salt)
+					const uint8_t *salt)
 {
 	ldns_rr *nsec_rr;
 	ldns_rr_type types[65536];
@@ -971,11 +971,11 @@ ldns_create_nsec(ldns_rdf *cur_owner, ldns_rdf *next_owner, ldns_rr_list *rrs)
 }
 
 ldns_rdf *
-ldns_nsec3_hash_name(ldns_rdf *name,
+ldns_nsec3_hash_name(const ldns_rdf *name,
 				 uint8_t algorithm,
 				 uint16_t iterations,
 				 uint8_t salt_length,
-				 uint8_t *salt)
+				 const uint8_t *salt)
 {
 	size_t hashed_owner_str_len;
 	ldns_rdf *cann;
@@ -1075,7 +1075,7 @@ ldns_nsec3_add_param_rdfs(ldns_rr *rr,
 					 uint8_t flags,
 					 uint16_t iterations,
 					 uint8_t salt_length,
-					 uint8_t *salt)
+					 const uint8_t *salt)
 {
 	ldns_rdf *salt_rdf = NULL;
 	uint8_t *salt_data = NULL;
@@ -1121,7 +1121,7 @@ ldns_nsec3_add_param_rdfs(ldns_rr *rr,
 }
 
 static int
-rr_list_delegation_only(ldns_rdf *origin, ldns_rr_list *rr_list)
+rr_list_delegation_only(const ldns_rdf *origin, const ldns_rr_list *rr_list)
 {
 	size_t i;
 	ldns_rr *cur_rr;
@@ -1141,14 +1141,14 @@ rr_list_delegation_only(ldns_rdf *origin, ldns_rr_list *rr_list)
 /* this will NOT return the NSEC3  completed, you will have to run the
    finalize function on the rrlist later! */
 ldns_rr *
-ldns_create_nsec3(ldns_rdf *cur_owner,
-                  ldns_rdf *cur_zone,
-                  ldns_rr_list *rrs,
+ldns_create_nsec3(const ldns_rdf *cur_owner,
+                  const ldns_rdf *cur_zone,
+                  const ldns_rr_list *rrs,
                   uint8_t algorithm,
                   uint8_t flags,
                   uint16_t iterations,
                   uint8_t salt_length,
-                  uint8_t *salt,
+                  const uint8_t *salt,
                   bool emptynonterminal)
 {
 	size_t i;
@@ -1329,7 +1329,7 @@ ldns_nsec3_bitmap(const ldns_rr *nsec3_rr)
 }
 
 ldns_rdf *
-ldns_nsec3_hash_name_frm_nsec3(const ldns_rr *nsec, ldns_rdf *name)
+ldns_nsec3_hash_name_frm_nsec3(const ldns_rr *nsec, const ldns_rdf *name)
 {
 	uint8_t algorithm;
 	uint16_t iterations;
@@ -1354,7 +1354,7 @@ ldns_nsec3_hash_name_frm_nsec3(const ldns_rr *nsec, ldns_rdf *name)
 }
 
 bool
-ldns_nsec_bitmap_covers_type(const  ldns_rdf* bitmap, ldns_rr_type type)
+ldns_nsec_bitmap_covers_type(const ldns_rdf* bitmap, ldns_rr_type type)
 {
 	uint8_t* dptr;
 	uint8_t* dend;
@@ -1520,8 +1520,8 @@ ldns_nsec_covers_name(const ldns_rr *nsec, const ldns_rdf *name)
 /* sig may be null - if so look in the packet */
 
 ldns_status
-ldns_pkt_verify_time(ldns_pkt *p, ldns_rr_type t, ldns_rdf *o, 
-		ldns_rr_list *k, ldns_rr_list *s, 
+ldns_pkt_verify_time(const ldns_pkt *p, ldns_rr_type t, const ldns_rdf *o, 
+		const ldns_rr_list *k, const ldns_rr_list *s, 
 		time_t check_time, ldns_rr_list *good_keys)
 {
 	ldns_rr_list *rrset;
@@ -1542,7 +1542,7 @@ ldns_pkt_verify_time(ldns_pkt *p, ldns_rr_type t, ldns_rdf *o,
 
 	if (s) {
 		/* if s is not NULL, the sigs are given to use */
-		sigs = s;
+		sigs = (ldns_rr_list *)s;
 	} else {
 		/* otherwise get them from the packet */
 		sigs = ldns_pkt_rr_list_by_name_and_type(p, o,
@@ -1584,8 +1584,8 @@ ldns_pkt_verify_time(ldns_pkt *p, ldns_rr_type t, ldns_rdf *o,
 }
 
 ldns_status
-ldns_pkt_verify(ldns_pkt *p, ldns_rr_type t, ldns_rdf *o, 
-		ldns_rr_list *k, ldns_rr_list *s, ldns_rr_list *good_keys)
+ldns_pkt_verify(const ldns_pkt *p, ldns_rr_type t, const ldns_rdf *o, 
+		const ldns_rr_list *k, const ldns_rr_list *s, ldns_rr_list *good_keys)
 {
 	return ldns_pkt_verify_time(p, t, o, k, s, ldns_time(NULL), good_keys);
 }

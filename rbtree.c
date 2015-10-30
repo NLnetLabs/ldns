@@ -545,7 +545,7 @@ ldns_rbtree_find_less_equal(ldns_rbtree_t *rbtree, const void *key, ldns_rbnode_
  *
  */
 ldns_rbnode_t *
-ldns_rbtree_first (ldns_rbtree_t *rbtree)
+ldns_rbtree_first(const ldns_rbtree_t *rbtree)
 {
 	ldns_rbnode_t *node = rbtree->root;
 
@@ -556,7 +556,7 @@ ldns_rbtree_first (ldns_rbtree_t *rbtree)
 }
 
 ldns_rbnode_t *
-ldns_rbtree_last (ldns_rbtree_t *rbtree)
+ldns_rbtree_last(const ldns_rbtree_t *rbtree)
 {
 	ldns_rbnode_t *node = rbtree->root;
 
@@ -571,7 +571,7 @@ ldns_rbtree_last (ldns_rbtree_t *rbtree)
  *
  */
 ldns_rbnode_t *
-ldns_rbtree_next (ldns_rbnode_t *node)
+ldns_rbtree_next(ldns_rbnode_t *node)
 {
 	ldns_rbnode_t *parent;
 

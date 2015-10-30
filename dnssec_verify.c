@@ -1088,8 +1088,8 @@ ldns_dnssec_trust_tree_contains_keys(ldns_dnssec_trust_tree *tree,
 
 ldns_status
 ldns_verify_time(
-		ldns_rr_list *rrset,
-		ldns_rr_list *rrsig, 
+		const ldns_rr_list *rrset,
+		const ldns_rr_list *rrsig, 
 		const ldns_rr_list *keys, 
 		time_t check_time,
 		ldns_rr_list *good_keys
@@ -1809,7 +1809,7 @@ ldns_dnssec_verify_denial_nsec3(ldns_rr *rr,
 
 #ifdef USE_GOST
 EVP_PKEY*
-ldns_gost2pkey_raw(unsigned char* key, size_t keylen)
+ldns_gost2pkey_raw(const unsigned char* key, size_t keylen)
 {
 	/* prefix header for X509 encoding */
 	uint8_t asn[37] = { 0x30, 0x63, 0x30, 0x1c, 0x06, 0x06, 0x2a, 0x85, 
@@ -1832,8 +1832,8 @@ ldns_gost2pkey_raw(unsigned char* key, size_t keylen)
 }
 
 static ldns_status
-ldns_verify_rrsig_gost_raw(unsigned char* sig, size_t siglen, 
-	ldns_buffer* rrset, unsigned char* key, size_t keylen)
+ldns_verify_rrsig_gost_raw(const unsigned char* sig, size_t siglen, 
+	const ldns_buffer* rrset, const unsigned char* key, size_t keylen)
 {
 	EVP_PKEY *evp_key;
 	ldns_status result;
@@ -1856,7 +1856,7 @@ ldns_verify_rrsig_gost_raw(unsigned char* sig, size_t siglen,
 
 #ifdef USE_ECDSA
 EVP_PKEY*
-ldns_ecdsa2pkey_raw(unsigned char* key, size_t keylen, uint8_t algo)
+ldns_ecdsa2pkey_raw(const unsigned char* key, size_t keylen, uint8_t algo)
 {
 	unsigned char buf[256+2]; /* sufficient for 2*384/8+1 */
         const unsigned char* pp = buf;
@@ -2002,7 +2002,7 @@ ldns_verify_rrsig_buffers_raw(unsigned char* sig, size_t siglen,
  * @param sig: signature to take TTL and wildcard values from
  */
 static void
-ldns_rrset_use_signature_ttl(ldns_rr_list* rrset_clone, ldns_rr* rrsig)
+ldns_rrset_use_signature_ttl(ldns_rr_list* rrset_clone, const ldns_rr* rrsig)
 {
 	uint32_t orig_ttl;
 	uint16_t i;
@@ -2051,7 +2051,7 @@ ldns_rrset_use_signature_ttl(ldns_rr_list* rrset_clone, ldns_rr* rrsig)
  * @return OK or more specific error.
  */
 static ldns_status
-ldns_rrsig2rawsig_buffer(ldns_buffer* rawsig_buf, ldns_rr* rrsig)
+ldns_rrsig2rawsig_buffer(ldns_buffer* rawsig_buf, const ldns_rr* rrsig)
 {
 	uint8_t sig_algo;
        
@@ -2136,7 +2136,7 @@ ldns_rrsig2rawsig_buffer(ldns_buffer* rawsig_buf, ldns_rr* rrsig)
  * @return status code LDNS_STATUS_OK if all is fine.
  */
 static ldns_status
-ldns_rrsig_check_timestamps(ldns_rr* rrsig, time_t now)
+ldns_rrsig_check_timestamps(const ldns_rr* rrsig, time_t now)
 {
 	int32_t inception, expiration;
 	
@@ -2171,7 +2171,7 @@ ldns_rrsig_check_timestamps(ldns_rr* rrsig, time_t now)
  */
 static ldns_status
 ldns_prepare_for_verify(ldns_buffer* rawsig_buf, ldns_buffer* verify_buf, 
-	ldns_rr_list* rrset_clone, ldns_rr* rrsig)
+	ldns_rr_list* rrset_clone, const ldns_rr* rrsig)
 {
 	ldns_status result;
 
@@ -2218,7 +2218,7 @@ ldns_prepare_for_verify(ldns_buffer* rawsig_buf, ldns_buffer* verify_buf,
  */
 static ldns_status
 ldns_verify_test_sig_key(ldns_buffer* rawsig_buf, ldns_buffer* verify_buf, 
-	ldns_rr* rrsig, ldns_rr* key)
+	const ldns_rr* rrsig, ldns_rr* key)
 {
 	uint8_t sig_algo;
        
@@ -2285,8 +2285,8 @@ ldns_verify_test_sig_key(ldns_buffer* rawsig_buf, ldns_buffer* verify_buf,
  */
 ldns_status
 ldns_verify_rrsig_keylist_time(
-		ldns_rr_list *rrset,
-		ldns_rr *rrsig,
+		const ldns_rr_list *rrset,
+		const ldns_rr *rrsig,
 		const ldns_rr_list *keys, 
 		time_t check_time,
 		ldns_rr_list *good_keys)
@@ -2334,8 +2334,8 @@ ldns_verify_rrsig_keylist(ldns_rr_list *rrset,
 }
 
 ldns_status
-ldns_verify_rrsig_keylist_notime(ldns_rr_list *rrset,
-					 ldns_rr *rrsig,
+ldns_verify_rrsig_keylist_notime(const ldns_rr_list *rrset,
+					 const ldns_rr *rrsig,
 					 const ldns_rr_list *keys, 
 					 ldns_rr_list *good_keys)
 {
@@ -2482,8 +2482,8 @@ ldns_verify_rrsig_evp(ldns_buffer *sig,
 }
 
 ldns_status
-ldns_verify_rrsig_evp_raw(unsigned char *sig, size_t siglen, 
-					 ldns_buffer *rrset, EVP_PKEY *key, const EVP_MD *digest_type)
+ldns_verify_rrsig_evp_raw(const unsigned char *sig, size_t siglen, 
+					 const ldns_buffer *rrset, EVP_PKEY *key, const EVP_MD *digest_type)
 {
 	EVP_MD_CTX ctx;
 	int res;

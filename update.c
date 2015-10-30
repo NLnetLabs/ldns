@@ -24,8 +24,8 @@
  */
 
 ldns_pkt *
-ldns_update_pkt_new(ldns_rdf *zone_rdf, ldns_rr_class c,
-    ldns_rr_list *pr_rrlist, ldns_rr_list *up_rrlist, ldns_rr_list *ad_rrlist)
+ldns_update_pkt_new(const ldns_rdf *zone_rdf, ldns_rr_class c,
+    const ldns_rr_list *pr_rrlist, const ldns_rr_list *up_rrlist, const ldns_rr_list *ad_rrlist)
 {
 	ldns_pkt *p;
 
@@ -67,7 +67,7 @@ ldns_update_pkt_new(ldns_rdf *zone_rdf, ldns_rr_class c,
 }
 
 ldns_status
-ldns_update_pkt_tsig_add(ldns_pkt *p, ldns_resolver *r)
+ldns_update_pkt_tsig_add(ldns_pkt *p, const ldns_resolver *r)
 {
 #ifdef HAVE_SSL
 	uint16_t fudge = 300; /* Recommended fudge. [RFC2845 6.4]  */

@@ -1654,7 +1654,7 @@ ldns_read_anchor_file(const char *filename)
 }
 
 char *
-ldns_key_get_file_base_name(ldns_key *key)
+ldns_key_get_file_base_name(const ldns_key *key)
 {
 	ldns_buffer *buffer;
 	char *file_base_name;

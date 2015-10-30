@@ -598,7 +598,7 @@ ldns_rr * ldns_read_anchor_file(const char *filename);
  * \param[in] key the key to get the file name from
  * \returns A string containing the file base name
  */
-char *ldns_key_get_file_base_name(ldns_key *key);
+char *ldns_key_get_file_base_name(const ldns_key *key);
 
 /**
  * See if a key algorithm is supported

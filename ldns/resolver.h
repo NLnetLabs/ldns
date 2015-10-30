@@ -570,7 +570,7 @@ void ldns_resolver_set_random(ldns_resolver *r, bool b);
  * \param[in] n the ip address
  * \return ldns_status a status
  */
-ldns_status ldns_resolver_push_nameserver(ldns_resolver *r, ldns_rdf *n);
+ldns_status ldns_resolver_push_nameserver(ldns_resolver *r, const ldns_rdf *n);
 
 /**
  * Push a new nameserver to the resolver. It must be an
@@ -579,7 +579,7 @@ ldns_status ldns_resolver_push_nameserver(ldns_resolver *r, ldns_rdf *n);
  * \param[in] rr the resource record
  * \return ldns_status a status
  */
-ldns_status ldns_resolver_push_nameserver_rr(ldns_resolver *r, ldns_rr *rr);
+ldns_status ldns_resolver_push_nameserver_rr(ldns_resolver *r, const ldns_rr *rr);
 
 /**
  * Push a new nameserver rr_list to the resolver.
@@ -587,7 +587,7 @@ ldns_status ldns_resolver_push_nameserver_rr(ldns_resolver *r, ldns_rr *rr);
  * \param[in] rrlist the rr_list to push
  * \return ldns_status a status
  */
-ldns_status ldns_resolver_push_nameserver_rr_list(ldns_resolver *r, ldns_rr_list *rrlist);
+ldns_status ldns_resolver_push_nameserver_rr_list(ldns_resolver *r, const ldns_rr_list *rrlist);
 
 /**
  * Send the query for using the resolver and take the search list into account

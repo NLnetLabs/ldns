@@ -250,8 +250,8 @@ ldns_pkt_edns_data(const ldns_pkt *packet)
 
 /* return only those rr that share the ownername */
 ldns_rr_list *
-ldns_pkt_rr_list_by_name(ldns_pkt *packet,
-                         ldns_rdf *ownername,
+ldns_pkt_rr_list_by_name(const ldns_pkt *packet,
+                         const ldns_rdf *ownername,
                          ldns_pkt_section sec)
 {
 	ldns_rr_list *rrs;
@@ -360,7 +360,7 @@ ldns_pkt_rr_list_by_name_and_type(const ldns_pkt *packet,
 }
 
 bool
-ldns_pkt_rr(ldns_pkt *pkt, ldns_pkt_section sec, ldns_rr *rr)
+ldns_pkt_rr(const ldns_pkt *pkt, ldns_pkt_section sec, const ldns_rr *rr)
 {
 	bool result = false;
 
@@ -836,7 +836,7 @@ ldns_pkt_set_flags(ldns_pkt *packet, uint16_t flags)
 
 
 static ldns_rr*
-ldns_pkt_authsoa(ldns_rdf* rr_name, ldns_rr_class rr_class)
+ldns_pkt_authsoa(const ldns_rdf* rr_name, ldns_rr_class rr_class)
 {
 	ldns_rr* soa_rr = ldns_rr_new();
 	ldns_rdf *owner_rdf;
@@ -996,7 +996,7 @@ ldns_pkt_ixfr_request_new_frm_str(ldns_pkt **p, const char *name,
 }
 
 static ldns_pkt *
-ldns_pkt_query_new_internal(ldns_rdf *rr_name, ldns_rr_type rr_type,
+ldns_pkt_query_new_internal(const ldns_rdf *rr_name, ldns_rr_type rr_type,
 	ldns_rr_class rr_class,	uint16_t flags, ldns_rr* authsoa_rr)
 {
 	ldns_pkt *packet;
@@ -1024,7 +1024,7 @@ ldns_pkt_query_new_internal(ldns_rdf *rr_name, ldns_rr_type rr_type,
 		rr_class = LDNS_RR_CLASS_IN;
 	}
 
-	ldns_rr_set_owner(question_rr, rr_name);
+	ldns_rr_set_owner(question_rr, ldns_rdf_clone(rr_name));
 	ldns_rr_set_type(question_rr, rr_type);
 	ldns_rr_set_class(question_rr, rr_class);
         ldns_rr_set_question(question_rr, true);
@@ -1039,7 +1039,7 @@ ldns_pkt_query_new_internal(ldns_rdf *rr_name, ldns_rr_type rr_type,
 }
 
 ldns_pkt *
-ldns_pkt_query_new(ldns_rdf *rr_name, ldns_rr_type rr_type,
+ldns_pkt_query_new(const ldns_rdf *rr_name, ldns_rr_type rr_type,
 	ldns_rr_class rr_class,	uint16_t flags)
 {
 	return ldns_pkt_query_new_internal(rr_name, rr_type,
@@ -1047,7 +1047,7 @@ ldns_pkt_query_new(ldns_rdf *rr_name, ldns_rr_type rr_type,
 }
 
 ldns_pkt *
-ldns_pkt_ixfr_request_new(ldns_rdf *rr_name, ldns_rr_class rr_class,
+ldns_pkt_ixfr_request_new(const ldns_rdf *rr_name, ldns_rr_class rr_class,
 	uint16_t flags, ldns_rr* soa)
 {
 	ldns_rr* authsoa_rr = soa;
@@ -1059,7 +1059,7 @@ ldns_pkt_ixfr_request_new(ldns_rdf *rr_name, ldns_rr_class rr_class,
 }
 
 ldns_pkt_type
-ldns_pkt_reply_type(ldns_pkt *p)
+ldns_pkt_reply_type(const ldns_pkt *p)
 {
 	ldns_rr_list *tmp;
 

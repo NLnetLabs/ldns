@@ -410,7 +410,7 @@ ldns_rdf_new_frm_fp_l(ldns_rdf **rdf, ldns_rdf_type type, FILE *fp, int *line_nr
 }
 
 ldns_rdf *
-ldns_rdf_address_reverse(ldns_rdf *rd)
+ldns_rdf_address_reverse(const ldns_rdf *rd)
 {
 	uint8_t buf_4[LDNS_IP4ADDRLEN];
 	uint8_t buf_6[LDNS_IP6ADDRLEN * 2];
@@ -475,7 +475,7 @@ ldns_rdf_address_reverse(ldns_rdf *rd)
 			/* some foo magic to reverse the nibbles ... */
 
 			for (nbit = 127; nbit >= 0; nbit = nbit - 4) {
-				/* calculate octett (8 bit) */
+				/* calculate octet (8 bit) */
 				octet = ( ((unsigned int) nbit) & 0x78) >> 3;
 				/* calculate nibble */
 				nnibble = ( ((unsigned int) nbit) & 0x04) >> 2;

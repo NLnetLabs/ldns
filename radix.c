@@ -311,7 +311,7 @@ ldns_radix_insert(ldns_radix_t* tree, uint8_t* key, radix_strlen_t len,
  * Delete data from the tree.
  *
  */
-void* ldns_radix_delete(ldns_radix_t* tree, uint8_t* key, radix_strlen_t len)
+void* ldns_radix_delete(ldns_radix_t* tree, const uint8_t* key, radix_strlen_t len)
 {
     ldns_radix_node_t* del = ldns_radix_search(tree, key, len);
     void* data = NULL;
@@ -331,7 +331,7 @@ void* ldns_radix_delete(ldns_radix_t* tree, uint8_t* key, radix_strlen_t len)
  *
  */
 ldns_radix_node_t*
-ldns_radix_search(ldns_radix_t* tree, uint8_t* key, radix_strlen_t len)
+ldns_radix_search(ldns_radix_t* tree, const uint8_t* key, radix_strlen_t len)
 {
 	ldns_radix_node_t* node = NULL;
 	radix_strlen_t pos = 0;
@@ -377,7 +377,7 @@ ldns_radix_search(ldns_radix_t* tree, uint8_t* key, radix_strlen_t len)
  *
  */
 int
-ldns_radix_find_less_equal(ldns_radix_t* tree, uint8_t* key,
+ldns_radix_find_less_equal(ldns_radix_t* tree, const uint8_t* key,
 	radix_strlen_t len, ldns_radix_node_t** result)
 {
 	ldns_radix_node_t* node = NULL;
@@ -477,7 +477,7 @@ ldns_radix_find_less_equal(ldns_radix_t* tree, uint8_t* key,
  *
  */
 ldns_radix_node_t*
-ldns_radix_first(ldns_radix_t* tree)
+ldns_radix_first(const ldns_radix_t* tree)
 {
 	ldns_radix_node_t* first = NULL;
 	if (!tree || !tree->root) {
@@ -496,7 +496,7 @@ ldns_radix_first(ldns_radix_t* tree)
  *
  */
 ldns_radix_node_t*
-ldns_radix_last(ldns_radix_t* tree)
+ldns_radix_last(const ldns_radix_t* tree)
 {
 	if (!tree || !tree->root) {
 		return NULL;
@@ -621,7 +621,7 @@ ldns_radix_node_print(FILE* fd, ldns_radix_node_t* node,
  *
  */
 void
-ldns_radix_printf(FILE* fd, ldns_radix_t* tree)
+ldns_radix_printf(FILE* fd, const ldns_radix_t* tree)
 {
 	if (!fd || !tree) {
 		return;

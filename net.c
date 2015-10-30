@@ -827,7 +827,7 @@ ldns_tcp_read_wire(int sockfd, size_t *size)
 
 #ifndef S_SPLINT_S
 ldns_rdf *
-ldns_sockaddr_storage2rdf(struct sockaddr_storage *sock, uint16_t *port)
+ldns_sockaddr_storage2rdf(const struct sockaddr_storage *sock, uint16_t *port)
 {
         ldns_rdf *addr;
         struct sockaddr_in *data_in;
@@ -862,7 +862,7 @@ ldns_sockaddr_storage2rdf(struct sockaddr_storage *sock, uint16_t *port)
 
 /* code from resolver.c */
 ldns_status
-ldns_axfr_start(ldns_resolver *resolver, ldns_rdf *domain, ldns_rr_class class) 
+ldns_axfr_start(ldns_resolver *resolver, const ldns_rdf *domain, ldns_rr_class class) 
 {
         ldns_pkt *query;
         ldns_buffer *query_wire;

@@ -164,14 +164,14 @@ int ldns_rbtree_find_less_equal(ldns_rbtree_t *rbtree, const void *key,
  * @param rbtree: tree
  * @return: smallest element or NULL if tree empty.
  */
-ldns_rbnode_t *ldns_rbtree_first(ldns_rbtree_t *rbtree);
+ldns_rbnode_t *ldns_rbtree_first(const ldns_rbtree_t *rbtree);
 
 /**
  * Returns last (largest) node in the tree
  * @param rbtree: tree
  * @return: largest element or NULL if tree empty.
  */
-ldns_rbnode_t *ldns_rbtree_last(ldns_rbtree_t *rbtree);
+ldns_rbnode_t *ldns_rbtree_last(const ldns_rbtree_t *rbtree);
 
 /**
  * Returns next larger node in the tree
