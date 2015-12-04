@@ -40,7 +40,7 @@ Send to query to this server. If not specified use the nameservers from
 .PP
 \fItype\fR
 Ask for this RR type. If type is not given on the command line it defaults
-to 'A'. Except when doing to reverse lookup when it defaults to 'PTR'.
+to 'A'. Except when doing a reverse lookup when it defaults to 'PTR'.
 
 .PP
 \fIclass\fR
@@ -212,7 +212,7 @@ of the query. This can be used in conjunction with \-f.
 
 .TP
 \fB\-x
-Do a reverse loopup. The type argument is not used, it is preset to PTR.
+Do a reverse lookup. The type argument is not used, it is preset to PTR.
 
 .TP
 \fB\-y \fI<name:key[:algo]>\fR
