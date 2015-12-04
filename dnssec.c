@@ -688,9 +688,9 @@ ldns_dnssec_create_nsec_bitmap(ldns_rr_type rr_type_list[],
 {
 	uint8_t  window;		/*  most significant octet of type */
 	uint8_t  subtype;		/* least significant octet of type */
-	uint16_t windows[256]		/* Max subtype per window */
+	int      windows[256]		/* Max subtype per window */
 #ifndef S_SPLINT_S
-	                      = { 0 }	/* Initialize ALL elements with 0 */
+	                      = { -1 }	/* Initialize ALL elements with 0 */
 #endif
 	                             ;
 	ldns_rr_type* d;	/* used to traverse rr_type_list*/
@@ -720,7 +720,7 @@ ldns_dnssec_create_nsec_bitmap(ldns_rr_type rr_type_list[],
 	 */
 	sz = 0;
 	for (i = 0; i < 256; i++) {
-		if (windows[i]) {
+		if (windows[i] >= 0) {
 			sz += windows[i] / 8 + 3;
 		}
 	}
@@ -732,14 +732,14 @@ ldns_dnssec_create_nsec_bitmap(ldns_rr_type rr_type_list[],
 			return NULL;
 		}
 		for (i = 0; i < 256; i++) {
-			if (windows[i]) {
+			if (windows[i] >= 0) {
 				*dptr++ = (uint8_t)i;
 				*dptr++ = (uint8_t)(windows[i] / 8 + 1);
 
 				/* Now let windows[i] index the bitmap
 				 * within data
 				 */
-				windows[i] = (uint16_t)(dptr - data);
+				windows[i] = (int)(dptr - data);
 
 				dptr += dptr[-1];
 			}
