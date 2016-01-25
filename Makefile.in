@@ -281,7 +281,7 @@ manpage-errors:
 pyldns: _ldns.la
 
 $(pywrapdir)/ldns_wrapper.c: $(PYLDNS_I_FILES) ldns/config.h
-	$(swig) $(swigpy_flags) -o $@ $(CPPFLAGS) $(PYTHON_CPPFLAGS) $(pywrapdir)/ldns.i
+	$(swig) $(swigpy_flags) -o $@ $(PYTHON_CPPFLAGS) $(pywrapdir)/ldns.i
 
 ldns_wrapper.lo: $(pywrapdir)/ldns_wrapper.c ldns/config.h
 	$(COMP_LIB) -I./include/ldns $(PYTHON_CPPFLAGS) $(PYTHON_X_CFLAGS) -c $(pywrapdir)/ldns_wrapper.c -o $@
