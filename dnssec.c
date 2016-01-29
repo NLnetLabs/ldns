@@ -688,11 +688,8 @@ ldns_dnssec_create_nsec_bitmap(ldns_rr_type rr_type_list[],
 {
 	uint8_t  window;		/*  most significant octet of type */
 	uint8_t  subtype;		/* least significant octet of type */
-	int      windows[256]		/* Max subtype per window */
-#ifndef S_SPLINT_S
-	                      = { -1 }	/* Initialize ALL elements with 0 */
-#endif
-	                             ;
+	int      windows[256];		/* Max subtype per window */
+	uint8_t  windowpresent[256];	/* bool if window appears in bitmap */
 	ldns_rr_type* d;	/* used to traverse rr_type_list*/
 	size_t i;		/* used to traverse windows array */
 
@@ -705,12 +702,15 @@ ldns_dnssec_create_nsec_bitmap(ldns_rr_type rr_type_list[],
 	    nsec_type != LDNS_RR_TYPE_NSEC3) {
 		return NULL;
 	}
+	memset(windows, 0, sizeof(int)*256);
+	memset(windowpresent, 0, 256);
 
 	/* Which other windows need to be in the bitmap rdf?
 	 */
 	for (d = rr_type_list; d < rr_type_list + size; d++) {
 		window  = *d >> 8;
 		subtype = *d & 0xff;
+		windowpresent[window] = 1;
 		if (windows[window] < subtype) {
 			windows[window] = subtype;
 		}
@@ -720,7 +720,7 @@ ldns_dnssec_create_nsec_bitmap(ldns_rr_type rr_type_list[],
 	 */
 	sz = 0;
 	for (i = 0; i < 256; i++) {
-		if (windows[i] >= 0) {
+		if (windowpresent[i]) {
 			sz += windows[i] / 8 + 3;
 		}
 	}
@@ -732,7 +732,7 @@ ldns_dnssec_create_nsec_bitmap(ldns_rr_type rr_type_list[],
 			return NULL;
 		}
 		for (i = 0; i < 256; i++) {
-			if (windows[i] >= 0) {
+			if (windowpresent[i]) {
 				*dptr++ = (uint8_t)i;
 				*dptr++ = (uint8_t)(windows[i] / 8 + 1);
 
