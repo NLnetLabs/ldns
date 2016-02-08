@@ -180,6 +180,7 @@ enum ldns_enum_rr_type
 	LDNS_RR_TYPE_NSEC3PARAM = 51, /* RFC 5155 */
 	LDNS_RR_TYPE_NSEC3PARAMS = 51,
 	LDNS_RR_TYPE_TLSA = 52, /* RFC 6698 */
+	LDNS_RR_TYPE_SMIMEA = 53, /* draft-ietf-dane-smime */
 
 	LDNS_RR_TYPE_HIP = 55, /* RFC 5205 */
 
@@ -193,6 +194,7 @@ enum ldns_enum_rr_type
 	LDNS_RR_TYPE_CDNSKEY = 60, /* RFC 7344 */
 	/** draft-ietf-dane-openpgpkey */
 	LDNS_RR_TYPE_OPENPGPKEY = 61,
+	LDNS_RR_TYPE_CSYNC = 62, /* RFC 7477 */
 
 	LDNS_RR_TYPE_SPF = 99, /* RFC 4408 */
 
