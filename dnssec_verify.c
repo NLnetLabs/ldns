@@ -2492,7 +2492,12 @@ ldns_verify_rrsig_evp_raw(const unsigned char *sig, size_t siglen,
 	EVP_MD_CTX *ctx;
 	int res;
 
+#ifdef HAVE_EVP_MD_CTX_NEW
 	ctx = EVP_MD_CTX_new();
+#else
+	ctx = (EVP_MD_CTX*)malloc(sizeof(*ctx));
+	if(ctx) EVP_MD_CTX_init(ctx);
+#endif
 	if(!ctx)
 		return LDNS_STATUS_MEM_ERR;
 	

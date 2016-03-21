@@ -429,7 +429,12 @@ ldns_sign_public_evp(ldns_buffer *to_sign,
 		return NULL;
 	}
 
+#ifdef HAVE_EVP_MD_CTX_NEW
 	ctx = EVP_MD_CTX_new();
+#else
+	ctx = (EVP_MD_CTX*)malloc(sizeof(*ctx));
+	if(ctx) EVP_MD_CTX_init(ctx);
+#endif
 	if(!ctx) {
 		ldns_buffer_free(b64sig);
 		return NULL;
