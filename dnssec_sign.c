@@ -122,6 +122,7 @@ ldns_sign_public_buffer(ldns_buffer *sign_buf, ldns_key *current_key)
 	ldns_rdf *b64rdf = NULL;
 
 	switch(ldns_key_algorithm(current_key)) {
+#ifdef USE_DSA
 	case LDNS_SIGN_DSA:
 	case LDNS_SIGN_DSA_NSEC3:
 		b64rdf = ldns_sign_public_evp(
@@ -129,6 +130,7 @@ ldns_sign_public_buffer(ldns_buffer *sign_buf, ldns_key *current_key)
 				   ldns_key_evp_key(current_key),
 				   EVP_dss1());
 		break;
+#endif /* USE_DSA */
 	case LDNS_SIGN_RSASHA1:
 	case LDNS_SIGN_RSASHA1_NSEC3:
 		b64rdf = ldns_sign_public_evp(
@@ -308,6 +310,7 @@ ldns_sign_public(ldns_rr_list *rrset, ldns_key_list *keys)
 ldns_rdf *
 ldns_sign_public_dsa(ldns_buffer *to_sign, DSA *key)
 {
+#ifdef USE_DSA
 	unsigned char *sha1_hash;
 	ldns_rdf *sigdata_rdf;
 	ldns_buffer *b64sig;
@@ -363,6 +366,10 @@ ldns_sign_public_dsa(ldns_buffer *to_sign, DSA *key)
         DSA_SIG_free(sig);
 
 	return sigdata_rdf;
+#else
+	(void)to_sign; (void)key;
+	return NULL;
+#endif
 }
 
 #ifdef USE_ECDSA
@@ -373,7 +380,7 @@ ldns_pkey_is_ecdsa(EVP_PKEY* pkey)
 {
         EC_KEY* ec;
         const EC_GROUP* g;
-        if(EVP_PKEY_type(pkey->type) != EVP_PKEY_EC)
+        if(EVP_PKEY_base_id(pkey) != EVP_PKEY_EC)
                 return 0;
         ec = EVP_PKEY_get1_EC_KEY(pkey);
         g = EC_KEY_get0_group(ec);
@@ -404,7 +411,7 @@ ldns_sign_public_evp(ldns_buffer *to_sign,
 	unsigned int siglen;
 	ldns_rdf *sigdata_rdf;
 	ldns_buffer *b64sig;
-	EVP_MD_CTX ctx;
+	EVP_MD_CTX *ctx;
 	const EVP_MD *md_type;
 	int r;
 
@@ -422,46 +429,61 @@ ldns_sign_public_evp(ldns_buffer *to_sign,
 		return NULL;
 	}
 
-	EVP_MD_CTX_init(&ctx);
-	r = EVP_SignInit(&ctx, md_type);
+	ctx = EVP_MD_CTX_new();
+	if(!ctx) {
+		ldns_buffer_free(b64sig);
+		return NULL;
+	}
+
+	r = EVP_SignInit(ctx, md_type);
 	if(r == 1) {
-		r = EVP_SignUpdate(&ctx, (unsigned char*)
+		r = EVP_SignUpdate(ctx, (unsigned char*)
 					    ldns_buffer_begin(to_sign),
 					    ldns_buffer_position(to_sign));
 	} else {
 		ldns_buffer_free(b64sig);
+		EVP_MD_CTX_destroy(ctx);
 		return NULL;
 	}
 	if(r == 1) {
-		r = EVP_SignFinal(&ctx, (unsigned char*)
+		r = EVP_SignFinal(ctx, (unsigned char*)
 					   ldns_buffer_begin(b64sig), &siglen, key);
 	} else {
 		ldns_buffer_free(b64sig);
+		EVP_MD_CTX_destroy(ctx);
 		return NULL;
 	}
 	if(r != 1) {
 		ldns_buffer_free(b64sig);
+		EVP_MD_CTX_destroy(ctx);
 		return NULL;
 	}
 
 	/* unfortunately, OpenSSL output is differenct from DNS DSA format */
 #ifndef S_SPLINT_S
+#ifdef USE_DSA
 	if (EVP_PKEY_type(key->type) == EVP_PKEY_DSA) {
 		sigdata_rdf = ldns_convert_dsa_rrsig_asn12rdf(b64sig, siglen);
+	}
+#endif
+#if defined(USE_DSA) && defined(USE_ECDSA)
+	else
+#endif
 #ifdef USE_ECDSA
-        } else if(EVP_PKEY_type(key->type) == EVP_PKEY_EC &&
+        if(EVP_PKEY_base_id(key) == EVP_PKEY_EC &&
                 ldns_pkey_is_ecdsa(key)) {
                 sigdata_rdf = ldns_convert_ecdsa_rrsig_asn1len2rdf(
 			b64sig, siglen, ldns_pkey_is_ecdsa(key));
+	}
 #endif
-	} else {
+	else {
 		/* ok output for other types is the same */
 		sigdata_rdf = ldns_rdf_new_frm_data(LDNS_RDF_TYPE_B64, siglen,
 									 ldns_buffer_begin(b64sig));
 	}
 #endif /* splint */
 	ldns_buffer_free(b64sig);
-	EVP_MD_CTX_cleanup(&ctx);
+	EVP_MD_CTX_destroy(ctx);
 	return sigdata_rdf;
 }
 

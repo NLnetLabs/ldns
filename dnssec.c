@@ -1707,6 +1707,7 @@ ldns_rdf *
 ldns_convert_dsa_rrsig_asn12rdf(const ldns_buffer *sig,
 						  const long sig_len)
 {
+#ifdef USE_DSA
 	ldns_rdf *sigdata_rdf;
 	DSA_SIG *dsasig;
 	unsigned char *dsasig_data = (unsigned char*)ldns_buffer_begin(sig);
@@ -1750,12 +1751,17 @@ ldns_convert_dsa_rrsig_asn12rdf(const ldns_buffer *sig,
 	DSA_SIG_free(dsasig);
 
 	return sigdata_rdf;
+#else
+	(void)sig; (void)sig_len;
+	return NULL;
+#endif
 }
 
 ldns_status
 ldns_convert_dsa_rrsig_rdf2asn1(ldns_buffer *target_buffer,
 						  const ldns_rdf *sig_rdf)
 {
+#ifdef USE_DSA
 	/* the EVP api wants the DER encoding of the signature... */
 	BIGNUM *R, *S;
 	DSA_SIG *dsasig;
@@ -1801,6 +1807,10 @@ ldns_convert_dsa_rrsig_rdf2asn1(ldns_buffer *target_buffer,
 	free(raw_sig);
 
 	return ldns_buffer_status(target_buffer);
+#else
+	(void)target_buffer; (void)sig_rdf;
+	return LDNS_STATUS_CRYPTO_ALGO_NOT_IMPL;
+#endif
 }
 
 #ifdef USE_ECDSA
@@ -1810,14 +1820,21 @@ ldns_convert_ecdsa_rrsig_asn1len2rdf(const ldns_buffer *sig,
 	const long sig_len, int num_bytes)
 {
         ECDSA_SIG* ecdsa_sig;
+	BIGNUM *r, *s;
 	unsigned char *data = (unsigned char*)ldns_buffer_begin(sig);
         ldns_rdf* rdf;
 	ecdsa_sig = d2i_ECDSA_SIG(NULL, (const unsigned char **)&data, sig_len);
         if(!ecdsa_sig) return NULL;
 
+#ifdef HAVE_ECDSA_SIG_GET0
+	ECDSA_SIG_get0(&r, &s, ecdsa_sig);
+#else
+	r = ecdsa_sig->r;
+	s = ecdsa_sig->s;
+#endif
         /* "r | s". */
-        if(BN_num_bytes(ecdsa_sig->r) > num_bytes ||
-		BN_num_bytes(ecdsa_sig->s) > num_bytes) {
+        if(BN_num_bytes(r) > num_bytes ||
+		BN_num_bytes(s) > num_bytes) {
                 ECDSA_SIG_free(ecdsa_sig);
 		return NULL; /* numbers too big for passed curve size */
 	}
@@ -1829,8 +1846,8 @@ ldns_convert_ecdsa_rrsig_asn1len2rdf(const ldns_buffer *sig,
 	/* write the bignums (in big-endian) a little offset if the BN code
 	 * wants to write a shorter number of bytes, with zeroes prefixed */
 	memset(data, 0, num_bytes*2);
-        BN_bn2bin(ecdsa_sig->r, data+num_bytes-BN_num_bytes(ecdsa_sig->r));
-        BN_bn2bin(ecdsa_sig->s, data+num_bytes*2-BN_num_bytes(ecdsa_sig->s));
+        BN_bn2bin(r, data+num_bytes-BN_num_bytes(r));
+        BN_bn2bin(s, data+num_bytes*2-BN_num_bytes(s));
 	rdf = ldns_rdf_new(LDNS_RDF_TYPE_B64, (size_t)(num_bytes*2), data);
         ECDSA_SIG_free(ecdsa_sig);
         return rdf;
@@ -1840,35 +1857,48 @@ ldns_status
 ldns_convert_ecdsa_rrsig_rdf2asn1(ldns_buffer *target_buffer,
         const ldns_rdf *sig_rdf)
 {
-        ECDSA_SIG* sig;
-	int raw_sig_len;
+        /* convert from two BIGNUMs in the rdata buffer, to ASN notation.
+	 * ASN preable:  30440220 <R 32bytefor256> 0220 <S 32bytefor256>
+	 * the '20' is the length of that field (=bnsize).
+	 * the '44' is the total remaining length.
+	 * if negative, start with leading zero.
+	 * if starts with 00s, remove them from the number.
+	 */
+        uint8_t pre[] = {0x30, 0x44, 0x02, 0x20};
+        int pre_len = 4;
+        uint8_t mid[] = {0x02, 0x20};
+        int mid_len = 2;
+        int raw_sig_len, r_high, s_high, r_rem=0, s_rem=0;
         long bnsize = (long)ldns_rdf_size(sig_rdf) / 2;
+        uint8_t* d = ldns_rdf_data(sig_rdf);
         /* if too short, or not even length, do not bother */
         if(bnsize < 16 || (size_t)bnsize*2 != ldns_rdf_size(sig_rdf))
                 return LDNS_STATUS_ERR;
-        
-        /* use the raw data to parse two evenly long BIGNUMs, "r | s". */
-        sig = ECDSA_SIG_new();
-        if(!sig) return LDNS_STATUS_MEM_ERR;
-        sig->r = BN_bin2bn((const unsigned char*)ldns_rdf_data(sig_rdf),
-                bnsize, sig->r);
-        sig->s = BN_bin2bn((const unsigned char*)ldns_rdf_data(sig_rdf)+bnsize,
-                bnsize, sig->s);
-        if(!sig->r || !sig->s) {
-                ECDSA_SIG_free(sig);
-                return LDNS_STATUS_MEM_ERR;
+        /* strip leading zeroes from r (but not last one) */
+        while(r_rem < bnsize-1 && d[r_rem] == 0)
+                r_rem++;
+        /* strip leading zeroes from s (but not last one) */
+        while(s_rem < bnsize-1 && d[bnsize+s_rem] == 0)
+                s_rem++;
+
+        r_high = ((d[0+r_rem]&0x80)?1:0);
+        s_high = ((d[bnsize+s_rem]&0x80)?1:0);
+        raw_sig_len = pre_len + r_high + bnsize - r_rem + mid_len + s_high + bnsize - s_rem;
+        if(ldns_buffer_reserve(target_buffer, (size_t) raw_sig_len)) {
+                ldns_buffer_write_u8(target_buffer, pre[0]);
+                ldns_buffer_write_u8(target_buffer, raw_sig_len-2);
+                ldns_buffer_write_u8(target_buffer, pre[2]);
+                ldns_buffer_write_u8(target_buffer, bnsize + r_high - r_rem);
+                if(r_high)
+                        ldns_buffer_write_u8(target_buffer, 0);
+                ldns_buffer_write(target_buffer, d+r_rem, bnsize-r_rem);
+                ldns_buffer_write(target_buffer, mid, mid_len-1);
+                ldns_buffer_write_u8(target_buffer, bnsize + s_high - s_rem);
+                if(s_high)
+                        ldns_buffer_write_u8(target_buffer, 0);
+                ldns_buffer_write(target_buffer, d+bnsize+s_rem, bnsize-s_rem);
         }
-
-	raw_sig_len = i2d_ECDSA_SIG(sig, NULL);
-	if (ldns_buffer_reserve(target_buffer, (size_t) raw_sig_len)) {
-                unsigned char* pp = (unsigned char*)
-			ldns_buffer_current(target_buffer);
-	        raw_sig_len = i2d_ECDSA_SIG(sig, &pp);
-                ldns_buffer_skip(target_buffer, (ssize_t) raw_sig_len);
-	}
-        ECDSA_SIG_free(sig);
-
-	return ldns_buffer_status(target_buffer);
+        return ldns_buffer_status(target_buffer);
 }
 
 #endif /* S_SPLINT_S */

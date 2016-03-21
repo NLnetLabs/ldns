@@ -377,8 +377,6 @@ main(int argc, char *argv[])
 	
 	keys = ldns_key_list_new();
 
-	OPENSSL_config(NULL);
-
 	while ((c = getopt(argc, argv, "a:bde:f:i:k:no:ps:t:vAUE:K:")) != -1) {
 		switch (c) {
 		case 'a':

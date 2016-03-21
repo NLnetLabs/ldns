@@ -1935,6 +1935,7 @@ ldns_verify_rrsig_buffers_raw(unsigned char* sig, size_t siglen,
 {
 	/* check for right key */
 	switch(algo) {
+#ifdef USE_DSA
 	case LDNS_DSA:
 	case LDNS_DSA_NSEC3:
 		return ldns_verify_rrsig_dsa_raw(sig,
@@ -1943,6 +1944,7 @@ ldns_verify_rrsig_buffers_raw(unsigned char* sig, size_t siglen,
 								   key,
 								   keylen);
 		break;
+#endif
 	case LDNS_RSASHA1:
 	case LDNS_RSASHA1_NSEC3:
 		return ldns_verify_rrsig_rsasha1_raw(sig,
@@ -2088,6 +2090,7 @@ ldns_rrsig2rawsig_buffer(ldns_buffer* rawsig_buf, const ldns_rr* rrsig)
 			return LDNS_STATUS_MEM_ERR;
 		}
 		break;
+#ifdef USE_DSA
 	case LDNS_DSA:
 	case LDNS_DSA_NSEC3:
 		/* EVP takes rfc2459 format, which is a tad longer than dns format */
@@ -2104,6 +2107,7 @@ ldns_rrsig2rawsig_buffer(ldns_buffer* rawsig_buf, const ldns_rr* rrsig)
 			return LDNS_STATUS_MEM_ERR;
 		}
 		break;
+#endif
 #ifdef USE_ECDSA
         case LDNS_ECDSAP256SHA256:
         case LDNS_ECDSAP384SHA384:
@@ -2485,18 +2489,20 @@ ldns_status
 ldns_verify_rrsig_evp_raw(const unsigned char *sig, size_t siglen, 
 					 const ldns_buffer *rrset, EVP_PKEY *key, const EVP_MD *digest_type)
 {
-	EVP_MD_CTX ctx;
+	EVP_MD_CTX *ctx;
 	int res;
 
-	EVP_MD_CTX_init(&ctx);
+	ctx = EVP_MD_CTX_new();
+	if(!ctx)
+		return LDNS_STATUS_MEM_ERR;
 	
-	EVP_VerifyInit(&ctx, digest_type);
-	EVP_VerifyUpdate(&ctx,
+	EVP_VerifyInit(ctx, digest_type);
+	EVP_VerifyUpdate(ctx,
 				  ldns_buffer_begin(rrset),
 				  ldns_buffer_position(rrset));
-	res = EVP_VerifyFinal(&ctx, sig, (unsigned int) siglen, key);
+	res = EVP_VerifyFinal(ctx, sig, (unsigned int) siglen, key);
 	
-	EVP_MD_CTX_cleanup(&ctx);
+	EVP_MD_CTX_destroy(ctx);
 	
 	if (res == 1) {
 		return LDNS_STATUS_OK;
@@ -2545,6 +2551,7 @@ ldns_status
 ldns_verify_rrsig_dsa_raw(unsigned char* sig, size_t siglen,
 					 ldns_buffer* rrset, unsigned char* key, size_t keylen)
 {
+#ifdef USE_DSA
 	EVP_PKEY *evp_key;
 	ldns_status result;
 
@@ -2560,7 +2567,10 @@ ldns_verify_rrsig_dsa_raw(unsigned char* sig, size_t siglen,
 	}
 	EVP_PKEY_free(evp_key);
 	return result;
-
+#else
+	(void)sig; (void)siglen; (void)rrset; (void)key; (void)keylen;
+	return LDNS_STATUS_CRYPTO_ALGO_NOT_IMPL;
+#endif
 }
 
 ldns_status

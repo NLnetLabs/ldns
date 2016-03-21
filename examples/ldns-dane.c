@@ -1678,9 +1678,10 @@ main(int argc, char* const* argv)
 		if (! cert) {
 			ssl_err("could not SSL_get_certificate");
 		}
-#ifndef S_SPLINT_S
-		extra_certs = ctx->extra_certs;
-#endif
+		if(!SSL_CTX_get_extra_chain_certs(ctx, &extra_certs)) {
+			ssl_err("could not SSL_CTX_get_extra_chain_certs");
+		}
+		/* I don't know if we have to stack-free the extra_certs */
 
 		switch (mode) {
 		case CREATE: dane_create(tlsas, tlsa_owner, certificate_usage,
