@@ -301,7 +301,7 @@ tmp_LIBS=$LIBS
 
 ACX_WITH_SSL_OPTIONAL
 
-AC_CHECK_FUNCS([EVP_sha256 ENGINE_load_cryptodev EVP_PKEY_keygen ECDSA_SIG_get0])
+AC_CHECK_FUNCS([EVP_sha256 ENGINE_load_cryptodev EVP_PKEY_keygen ECDSA_SIG_get0 EVP_MD_CTX_new])
 
 # for macosx, see if glibtool exists and use that
 # BSD's need to know the version...
