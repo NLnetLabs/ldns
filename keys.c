@@ -35,6 +35,12 @@ ldns_lookup_table ldns_signing_algorithms[] = {
         { LDNS_SIGN_ECDSAP256SHA256, "ECDSAP256SHA256" },
         { LDNS_SIGN_ECDSAP384SHA384, "ECDSAP384SHA384" },
 #endif
+#ifdef USE_ED25519
+	{ LDNS_SIGN_ED25519, "ED25519" },
+#endif
+#ifdef USE_ED448
+	{ LDNS_SIGN_ED448, "ED448" },
+#endif
 #ifdef USE_DSA
         { LDNS_SIGN_DSA, "DSA" },
         { LDNS_SIGN_DSA_NSEC3, "DSA-NSEC3-SHA1" },
@@ -246,7 +252,7 @@ ldns_key_new_frm_fp_ecdsa_l(FILE* fp, ldns_algorithm alg, int* line_nr)
         BIGNUM* bn;
         EVP_PKEY* evp_key;
         EC_KEY* ec;
-	if (ldns_fget_keyword_data_l(fp, "PrivateKey", ": ", token, "\n", 
+	if (ldns_fget_keyword_data_l(fp, "PrivateKey", ": ", token, "\n",
 		sizeof(token), line_nr) == -1)
 		return NULL;
 	if(ldns_str2rdf_b64(&b64rdf, token) != LDNS_STATUS_OK)
@@ -288,7 +294,159 @@ ldns_key_new_frm_fp_ecdsa_l(FILE* fp, ldns_algorithm alg, int* line_nr)
         return evp_key;
 }
 #endif
-	
+
+#ifdef USE_ED25519
+/** turn private key buffer into EC_KEY structure */
+static EC_KEY*
+ldns_ed25519_priv_raw(uint8_t* pkey, int plen)
+{
+	const unsigned char* pp;
+	uint8_t buf[256];
+	int buflen = 0;
+	uint8_t pre[] = {0x30, 0x32, 0x02, 0x01, 0x01, 0x04, 0x20};
+	int pre_len = 7;
+	uint8_t post[] = {0xa0, 0x0b, 0x06, 0x09, 0x2b, 0x06, 0x01, 0x04,
+		0x01, 0xda, 0x47, 0x0f, 0x01};
+	int post_len = 13;
+	int i;
+	/* ASN looks like this for ED25519
+	 * 30320201010420 <32byteskey>
+	 * andparameters a00b06092b06010401da470f01
+	 * (noparameters, preamble is 30250201010420).
+	 * the key is reversed (little endian).
+	 */
+	buflen = pre_len + plen + post_len;
+	if((size_t)buflen > sizeof(buf))
+		return NULL;
+	memmove(buf, pre, pre_len);
+	/* reverse the pkey into the buf */
+	for(i=0; i<plen; i++)
+		buf[pre_len+i] = pkey[plen-1-i];
+	memmove(buf+pre_len+plen, post, post_len);
+	pp = buf;
+	return d2i_ECPrivateKey(NULL, &pp, buflen);
+}
+
+/** read ED25519 private key */
+static EVP_PKEY*
+ldns_key_new_frm_fp_ed25519_l(FILE* fp, int* line_nr)
+{
+	char token[16384];
+        ldns_rdf* b64rdf = NULL;
+        EVP_PKEY* evp_key;
+        EC_KEY* ec;
+	if (ldns_fget_keyword_data_l(fp, "PrivateKey", ": ", token, "\n",
+		sizeof(token), line_nr) == -1)
+		return NULL;
+	if(ldns_str2rdf_b64(&b64rdf, token) != LDNS_STATUS_OK)
+		return NULL;
+
+	/* we use d2i_ECPrivateKey because it calculates the public key
+	 * from the private part, which others, EC_KEY_set_private_key,
+	 * and o2i methods, do not do */
+	/* for that the private key has to be encoded in ASN1 notation
+	 * with a X25519 prefix on it */
+
+	ec = ldns_ed25519_priv_raw(ldns_rdf_data(b64rdf),
+		(int)ldns_rdf_size(b64rdf));
+	ldns_rdf_deep_free(b64rdf);
+	if(!ec) return NULL;
+	if(EC_GROUP_get_curve_name(EC_KEY_get0_group(ec)) != NID_X25519) {
+		/* wrong group, bad asn conversion */
+                EC_KEY_free(ec);
+		return NULL;
+	}
+
+        evp_key = EVP_PKEY_new();
+        if(!evp_key) {
+                EC_KEY_free(ec);
+                return NULL;
+        }
+        if (!EVP_PKEY_assign_EC_KEY(evp_key, ec)) {
+		EVP_PKEY_free(evp_key);
+                EC_KEY_free(ec);
+                return NULL;
+	}
+        return evp_key;
+}
+#endif
+
+#ifdef USE_ED448
+/** turn private key buffer into EC_KEY structure */
+static EC_KEY*
+ldns_ed448_priv_raw(uint8_t* pkey, int plen)
+{
+	const unsigned char* pp;
+	uint8_t buf[256];
+	int buflen = 0;
+	uint8_t pre[] = {0x30, 0x4b, 0x02, 0x01, 0x01, 0x04, 0x39};
+	int pre_len = 7;
+	uint8_t post[] = {0xa0, 0x0b, 0x06, 0x09, 0x2b, 0x06, 0x01, 0x04,
+		0x01, 0xda, 0x47, 0x0f, 0x02};
+	int post_len = 13;
+	int i;
+	/* ASN looks like this for ED25519
+	 * And for ED448, the parameters are ...02 instead of ...01
+	 * For ED25519 it was:
+	 * 30320201010420 <32byteskey>
+	 * andparameters a00b06092b06010401da470f01
+	 * (noparameters, preamble is 30250201010420).
+	 * the key is reversed (little endian).
+	 *
+	 * For ED448 the key is 57 bytes, and that changes lengths.
+	 * 304b0201010439 <57bytekey> a00b06092b06010401da470f02
+	 */
+	buflen = pre_len + plen + post_len;
+	if((size_t)buflen > sizeof(buf))
+		return NULL;
+	memmove(buf, pre, pre_len);
+	/* reverse the pkey into the buf */
+	for(i=0; i<plen; i++)
+		buf[pre_len+i] = pkey[plen-1-i];
+	memmove(buf+pre_len+plen, post, post_len);
+	pp = buf;
+	return d2i_ECPrivateKey(NULL, &pp, buflen);
+}
+
+/** read ED448 private key */
+static EVP_PKEY*
+ldns_key_new_frm_fp_ed448_l(FILE* fp, int* line_nr)
+{
+	char token[16384];
+        ldns_rdf* b64rdf = NULL;
+        EVP_PKEY* evp_key;
+        EC_KEY* ec;
+	if (ldns_fget_keyword_data_l(fp, "PrivateKey", ": ", token, "\n", 
+		sizeof(token), line_nr) == -1)
+		return NULL;
+	if(ldns_str2rdf_b64(&b64rdf, token) != LDNS_STATUS_OK)
+		return NULL;
+
+	/* convert private key into ASN notation and then convert that */
+	ec = ldns_ed448_priv_raw(ldns_rdf_data(b64rdf),
+		(int)ldns_rdf_size(b64rdf));
+	ldns_rdf_deep_free(b64rdf);
+	if(!ec) return NULL;
+	if(EC_GROUP_get_curve_name(EC_KEY_get0_group(ec)) != NID_X448) {
+		/* wrong group, bad asn conversion */
+                EC_KEY_free(ec);
+		return NULL;
+	}
+
+        evp_key = EVP_PKEY_new();
+        if(!evp_key) {
+                EC_KEY_free(ec);
+                return NULL;
+        }
+        if (!EVP_PKEY_assign_EC_KEY(evp_key, ec)) {
+		EVP_PKEY_free(evp_key);
+                EC_KEY_free(ec);
+                return NULL;
+	}
+	return evp_key;
+}
+#endif
+
 ldns_status
 ldns_key_new_frm_fp_l(ldns_key **key, FILE *fp, int *line_nr)
 {
@@ -432,6 +590,26 @@ ldns_key_new_frm_fp_l(ldns_key **key, FILE *fp, int *line_nr)
 # endif
 #endif
         }
+	if (strncmp(d, "15 ED25519", 3) == 0) {
+#ifdef USE_ED25519
+                alg = LDNS_SIGN_ED25519;
+#else
+# ifdef STDERR_MSGS
+		fprintf(stderr, "Warning: ED25519 not compiled into this ");
+		fprintf(stderr, "version of ldns, use --enable-ed25519\n");
+# endif
+#endif
+        }
+	if (strncmp(d, "16 ED448", 3) == 0) {
+#ifdef USE_ED448
+                alg = LDNS_SIGN_ED448;
+#else
+# ifdef STDERR_MSGS
+		fprintf(stderr, "Warning: ED448 not compiled into this ");
+		fprintf(stderr, "version of ldns, use --enable-ed448\n");
+# endif
+#endif
+        }
 	if (strncmp(d, "157 HMAC-MD5", 4) == 0) {
 		alg = LDNS_SIGN_HMACMD5;
 	}
@@ -513,6 +691,32 @@ ldns_key_new_frm_fp_l(ldns_key **key, FILE *fp, int *line_nr)
                         ldns_key_set_algorithm(k, alg);
                         ldns_key_set_evp_key(k,
                                 ldns_key_new_frm_fp_ecdsa_l(fp, (ldns_algorithm)alg, line_nr));
+#ifndef S_SPLINT_S
+			if(!k->_key.key) {
+				ldns_key_free(k);
+				return LDNS_STATUS_ERR;
+			}
+#endif /* splint */
+			break;
+#endif
+#ifdef USE_ED25519
+		case LDNS_SIGN_ED25519:
+                        ldns_key_set_algorithm(k, alg);
+                        ldns_key_set_evp_key(k,
+                                ldns_key_new_frm_fp_ed25519_l(fp, line_nr));
+#ifndef S_SPLINT_S
+			if(!k->_key.key) {
+				ldns_key_free(k);
+				return LDNS_STATUS_ERR;
+			}
+#endif /* splint */
+			break;
+#endif
+#ifdef USE_ED448
+		case LDNS_SIGN_ED448:
+                        ldns_key_set_algorithm(k, alg);
+                        ldns_key_set_evp_key(k,
+                                ldns_key_new_frm_fp_ed448_l(fp, line_nr));
 #ifndef S_SPLINT_S
 			if(!k->_key.key) {
 				ldns_key_free(k);
@@ -1008,6 +1212,62 @@ ldns_key_new_frm_algorithm(ldns_signing_algorithm alg, uint16_t size)
 			return NULL;
 #endif /* ECDSA */
 			break;
+#ifdef USE_ED25519
+		case LDNS_SIGN_ED25519:
+#ifdef HAVE_EVP_PKEY_KEYGEN
+			ctx = EVP_PKEY_CTX_new_id(EVP_PKEY_EC, NULL);
+			if(!ctx) {
+				ldns_key_free(k);
+				return NULL;
+			}
+			if(EVP_PKEY_keygen_init(ctx) <= 0) {
+				ldns_key_free(k);
+				EVP_PKEY_CTX_free(ctx);
+				return NULL;
+			}
+			if (EVP_PKEY_CTX_set_ec_paramgen_curve_nid(ctx,
+				NID_X25519) <= 0) {
+				ldns_key_free(k);
+				EVP_PKEY_CTX_free(ctx);
+				return NULL;
+			}
+			if (EVP_PKEY_keygen(ctx, &k->_key.key) <= 0) {
+				ldns_key_free(k);
+				EVP_PKEY_CTX_free(ctx);
+				return NULL;
+			}
+			EVP_PKEY_CTX_free(ctx);
+#endif
+			break;
+#endif /* ED25519 */
+#ifdef USE_ED448
+		case LDNS_SIGN_ED448:
+#ifdef HAVE_EVP_PKEY_KEYGEN
+			ctx = EVP_PKEY_CTX_new_id(EVP_PKEY_EC, NULL);
+			if(!ctx) {
+				ldns_key_free(k);
+				return NULL;
+			}
+			if(EVP_PKEY_keygen_init(ctx) <= 0) {
+				ldns_key_free(k);
+				EVP_PKEY_CTX_free(ctx);
+				return NULL;
+			}
+			if (EVP_PKEY_CTX_set_ec_paramgen_curve_nid(ctx,
+				NID_X448) <= 0) {
+				ldns_key_free(k);
+				EVP_PKEY_CTX_free(ctx);
+				return NULL;
+			}
+			if (EVP_PKEY_keygen(ctx, &k->_key.key) <= 0) {
+				ldns_key_free(k);
+				EVP_PKEY_CTX_free(ctx);
+				return NULL;
+			}
+			EVP_PKEY_CTX_free(ctx);
+#endif
+			break;
+#endif /* ED448 */
 	}
 	ldns_key_set_algorithm(k, alg);
 	return k;
@@ -1613,6 +1873,44 @@ ldns_key2rr(const ldns_key *k)
 			return NULL;
 #endif /* ECDSA */
                         break;
+#ifdef USE_ED25519
+                case LDNS_SIGN_ED25519:
+			ldns_rr_push_rdf(pubkey, ldns_native2rdf_int8(
+				LDNS_RDF_TYPE_ALG, ldns_key_algorithm(k)));
+                        bin = NULL;
+                        ec = EVP_PKEY_get1_EC_KEY(k->_key.key);
+                        EC_KEY_set_conv_form(ec, POINT_CONVERSION_UNCOMPRESSED);
+                        size = (uint16_t)i2o_ECPublicKey(ec, NULL);
+                        if(!i2o_ECPublicKey(ec, &bin)) {
+                                EC_KEY_free(ec);
+                                ldns_rr_free(pubkey);
+                                return NULL;
+                        }
+                        /* down the reference count for ec, its still assigned
+                         * to the pkey */
+                        EC_KEY_free(ec);
+			internal_data = 1;
+			break;
+#endif
+#ifdef USE_ED448
+                case LDNS_SIGN_ED448:
+			ldns_rr_push_rdf(pubkey, ldns_native2rdf_int8(
+				LDNS_RDF_TYPE_ALG, ldns_key_algorithm(k)));
+                        bin = NULL;
+                        ec = EVP_PKEY_get1_EC_KEY(k->_key.key);
+                        EC_KEY_set_conv_form(ec, POINT_CONVERSION_UNCOMPRESSED);
+                        size = (uint16_t)i2o_ECPublicKey(ec, NULL);
+                        if(!i2o_ECPublicKey(ec, &bin)) {
+                                EC_KEY_free(ec);
+                                ldns_rr_free(pubkey);
+                                return NULL;
+                        }
+                        /* down the reference count for ec, its still assigned
+                         * to the pkey */
+                        EC_KEY_free(ec);
+			internal_data = 1;
+			break;
+#endif
 		case LDNS_SIGN_HMACMD5:
 		case LDNS_SIGN_HMACSHA1:
 		case LDNS_SIGN_HMACSHA256:

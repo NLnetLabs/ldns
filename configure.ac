@@ -301,7 +301,7 @@ tmp_LIBS=$LIBS
 
 ACX_WITH_SSL_OPTIONAL
 
-AC_CHECK_FUNCS([EVP_sha256 ENGINE_load_cryptodev EVP_PKEY_keygen ECDSA_SIG_get0 EVP_MD_CTX_new])
+AC_CHECK_FUNCS([EVP_sha256 ENGINE_load_cryptodev EVP_PKEY_keygen ECDSA_SIG_get0 EVP_MD_CTX_new EVP_PKEY_base_id])
 
 # for macosx, see if glibtool exists and use that
 # BSD's need to know the version...
@@ -370,16 +370,31 @@ case "$enable_dsa" in
       ;;
 esac
 
-AC_ARG_ENABLE(ed25519, AC_HELP_STRING([--enable-ed25519], [Enable ed25519 support (experimental)]))
+AC_ARG_ENABLE(ed25519, AC_HELP_STRING([--enable-ed25519], [Enable ED25519 support (experimental)]))
 case "$enable_ed25519" in
     yes)
       if test "x$HAVE_SSL" != "xyes"; then
-        AC_MSG_ERROR([DSA enabled, but no SSL support])
+        AC_MSG_ERROR([ED25519 enabled, but no SSL support])
       fi
       AC_CHECK_DECLS([NID_X25519], [], [AC_MSG_ERROR([OpenSSL does not support the EDDSA curve: please upgrade OpenSSL or rerun with --disable-ed25519])], [AC_INCLUDES_DEFAULT
 #include <openssl/evp.h>
       ])
       AC_DEFINE_UNQUOTED([USE_ED25519], [1], [Define this to enable ED25519 support.])
+      ;;
+    *|no) dnl default
+      ;;
+esac
+
+AC_ARG_ENABLE(ed448, AC_HELP_STRING([--enable-ed448], [Enable ED448 support (experimental)]))
+case "$enable_ed448" in
+    yes)
+      if test "x$HAVE_SSL" != "xyes"; then
+        AC_MSG_ERROR([ED448 enabled, but no SSL support])
+      fi
+      AC_CHECK_DECLS([NID_X448], [], [AC_MSG_ERROR([OpenSSL does not support the EDDSA curve: please upgrade OpenSSL or rerun with --disable-ed448])], [AC_INCLUDES_DEFAULT
+#include <openssl/evp.h>
+      ])
+      AC_DEFINE_UNQUOTED([USE_ED448], [1], [Define this to enable ED448 support.])
       ;;
     *|no) dnl default
       ;;

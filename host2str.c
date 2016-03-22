@@ -57,6 +57,12 @@ ldns_lookup_table ldns_algorithms[] = {
         { LDNS_ECDSAP256SHA256, "ECDSAP256SHA256"},
         { LDNS_ECDSAP384SHA384, "ECDSAP384SHA384"},
 #endif
+#ifdef USE_ED25519
+	{ LDNS_ED25519, "ED25519"},
+#endif
+#ifdef USE_ED448
+	{ LDNS_ED448, "ED448"},
+#endif
         { LDNS_INDIRECT, "INDIRECT" },
         { LDNS_PRIVATEDNS, "PRIVATEDNS" },
         { LDNS_PRIVATEOID, "PRIVATEOID" },
@@ -2284,6 +2290,60 @@ ldns_key2buffer_str(ldns_buffer *output, const ldns_key *k)
 				goto error;
 #endif /* ECDSA */
                                 break;
+#ifdef USE_ED25519
+			case LDNS_SIGN_ED25519:
+                                ldns_buffer_printf(output, "Private-key-format: v1.2\n");
+				ldns_buffer_printf(output, "Algorithm: %d (", ldns_key_algorithm(k));
+                                status=ldns_algorithm2buffer_str(output, (ldns_algorithm)ldns_key_algorithm(k));
+				ldns_buffer_printf(output, ")\n");
+                                ldns_buffer_printf(output, "PrivateKey: ");
+				if(k->_key.key) {
+                                        EC_KEY* ec = EVP_PKEY_get1_EC_KEY(k->_key.key);
+                                        const BIGNUM* b = EC_KEY_get0_private_key(ec);
+                                        i = (uint16_t)BN_bn2bin(b, bignum);
+                                        if (i > LDNS_MAX_KEYLEN) {
+                                                goto error;
+                                        }
+                                        b64_bignum =  ldns_rdf_new_frm_data(LDNS_RDF_TYPE_B64, i, bignum);
+                                        if (ldns_rdf2buffer_str(output, b64_bignum) != LDNS_STATUS_OK) {
+						ldns_rdf_deep_free(b64_bignum);
+                                                goto error;
+                                        }
+                                        ldns_rdf_deep_free(b64_bignum);
+                                        /* down reference count in EC_KEY
+                                         * its still assigned to the PKEY */
+                                        EC_KEY_free(ec);
+				}
+				ldns_buffer_printf(output, "\n");
+				break;
+#endif /* USE_ED25519 */
+#ifdef USE_ED448
+			case LDNS_SIGN_ED448:
+                                ldns_buffer_printf(output, "Private-key-format: v1.2\n");
+				ldns_buffer_printf(output, "Algorithm: %d (", ldns_key_algorithm(k));
+                                status=ldns_algorithm2buffer_str(output, (ldns_algorithm)ldns_key_algorithm(k));
+				ldns_buffer_printf(output, ")\n");
+                                ldns_buffer_printf(output, "PrivateKey: ");
+				if(k->_key.key) {
+                                        EC_KEY* ec = EVP_PKEY_get1_EC_KEY(k->_key.key);
+                                        const BIGNUM* b = EC_KEY_get0_private_key(ec);
+                                        i = (uint16_t)BN_bn2bin(b, bignum);
+                                        if (i > LDNS_MAX_KEYLEN) {
+                                                goto error;
+                                        }
+                                        b64_bignum =  ldns_rdf_new_frm_data(LDNS_RDF_TYPE_B64, i, bignum);
+                                        if (ldns_rdf2buffer_str(output, b64_bignum) != LDNS_STATUS_OK) {
+						ldns_rdf_deep_free(b64_bignum);
+                                                goto error;
+                                        }
+                                        ldns_rdf_deep_free(b64_bignum);
+                                        /* down reference count in EC_KEY
+                                         * its still assigned to the PKEY */
+                                        EC_KEY_free(ec);
+				}
+				ldns_buffer_printf(output, "\n");
+				break;
+#endif /* USE_ED448 */
 			case LDNS_SIGN_HMACMD5:
 				/* there's not much of a format defined for TSIG */
 				/* It's just a binary blob, Same for all algorithms */

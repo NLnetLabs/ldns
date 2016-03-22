@@ -173,6 +173,24 @@ EVP_PKEY* ldns_gost2pkey_raw(const unsigned char* key, size_t keylen);
  */
 EVP_PKEY* ldns_ecdsa2pkey_raw(const unsigned char* key, size_t keylen, uint8_t algo);
 
+/**
+ * Converts a holding buffer with key material to EVP PKEY in openssl.
+ * Only available if ldns was compiled with ED25519.
+ * \param[in] key data to convert
+ * \param[in] keylen length of the key data
+ * \return the key or NULL on error.
+ */
+EVP_PKEY* ldns_ed255192pkey_raw(const unsigned char* key, size_t keylen);
+
+/**
+ * Converts a holding buffer with key material to EVP PKEY in openssl.
+ * Only available if ldns was compiled with ED448.
+ * \param[in] key data to convert
+ * \param[in] keylen length of the key data
+ * \return the key or NULL on error.
+ */
+EVP_PKEY* ldns_ed4482pkey_raw(const unsigned char* key, size_t keylen);
+
 #endif /* LDNS_BUILD_CONFIG_HAVE_SSL */
 
 #if LDNS_BUILD_CONFIG_HAVE_SSL
@@ -536,6 +554,56 @@ ldns_convert_ecdsa_rrsig_asn1len2rdf(const ldns_buffer *sig,
  */
 ldns_status
 ldns_convert_ecdsa_rrsig_rdf2asn1(ldns_buffer *target_buffer,
+        const ldns_rdf *sig_rdf);
+
+/**
+ * Converts the ECDSA signature from ASN1 representation (as
+ * used by OpenSSL) to raw signature data as used in DNS
+ * This routine is only present if ldns is compiled with ED25519 support.
+ *
+ * \param[in] sig The signature in ASN1 format
+ * \param[in] sig_len The length of the signature
+ * \return a new rdf with the signature
+ */
+ldns_rdf *
+ldns_convert_ed25519_rrsig_asn12rdf(const ldns_buffer *sig, long sig_len);
+
+/**
+ * Converts the RRSIG signature RDF (from DNS) to a buffer with the
+ * signature in ASN1 format as openssl uses it.
+ * This routine is only present if ldns is compiled with ED25519 support.
+ *
+ * \param[out] target_buffer buffer to place the signature data in ASN1.
+ * \param[in] sig_rdf The signature rdf to convert
+ * \return LDNS_STATUS_OK on success, error code otherwise
+ */
+ldns_status
+ldns_convert_ed25519_rrsig_rdf2asn1(ldns_buffer *target_buffer,
+        const ldns_rdf *sig_rdf);
+
+/**
+ * Converts the ECDSA signature from ASN1 representation (as
+ * used by OpenSSL) to raw signature data as used in DNS
+ * This routine is only present if ldns is compiled with ED448 support.
+ *
+ * \param[in] sig The signature in ASN1 format
+ * \param[in] sig_len The length of the signature
+ * \return a new rdf with the signature
+ */
+ldns_rdf *
+ldns_convert_ed448_rrsig_asn12rdf(const ldns_buffer *sig, long sig_len);
+
+/**
+ * Converts the RRSIG signature RDF (from DNS) to a buffer with the
+ * signature in ASN1 format as openssl uses it.
+ * This routine is only present if ldns is compiled with ED448 support.
+ *
+ * \param[out] target_buffer buffer to place the signature data in ASN1.
+ * \param[in] sig_rdf The signature rdf to convert
+ * \return LDNS_STATUS_OK on success, error code otherwise
+ */
+ldns_status
+ldns_convert_ed448_rrsig_rdf2asn1(ldns_buffer *target_buffer,
         const ldns_rdf *sig_rdf);
 
 #endif /* LDNS_BUILD_CONFIG_HAVE_SSL */

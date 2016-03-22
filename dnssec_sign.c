@@ -174,6 +174,22 @@ ldns_sign_public_buffer(ldns_buffer *sign_buf, ldns_key *current_key)
 				   EVP_sha384());
                 break;
 #endif
+#ifdef USE_ED25519
+        case LDNS_SIGN_ED25519:
+		b64rdf = ldns_sign_public_evp(
+				   sign_buf,
+				   ldns_key_evp_key(current_key),
+				   EVP_sha512());
+                break;
+#endif
+#ifdef USE_ED448
+        case LDNS_SIGN_ED448:
+		b64rdf = ldns_sign_public_evp(
+				   sign_buf,
+				   ldns_key_evp_key(current_key),
+				   EVP_sha512());
+                break;
+#endif
 	case LDNS_SIGN_RSAMD5:
 		b64rdf = ldns_sign_public_evp(
 				   sign_buf,
@@ -409,7 +425,7 @@ ldns_sign_public_evp(ldns_buffer *to_sign,
 				 const EVP_MD *digest_type)
 {
 	unsigned int siglen;
-	ldns_rdf *sigdata_rdf;
+	ldns_rdf *sigdata_rdf = NULL;
 	ldns_buffer *b64sig;
 	EVP_MD_CTX *ctx;
 	const EVP_MD *md_type;
@@ -464,29 +480,51 @@ ldns_sign_public_evp(ldns_buffer *to_sign,
 		return NULL;
 	}
 
-	/* unfortunately, OpenSSL output is differenct from DNS DSA format */
-#ifndef S_SPLINT_S
+	/* OpenSSL output is different, convert it */
+	r = 0;
 #ifdef USE_DSA
+	/* unfortunately, OpenSSL output is different from DNS DSA format */
 	if (EVP_PKEY_type(key->type) == EVP_PKEY_DSA) {
+		r = 1;
 		sigdata_rdf = ldns_convert_dsa_rrsig_asn12rdf(b64sig, siglen);
 	}
 #endif
-#if defined(USE_DSA) && defined(USE_ECDSA)
-	else
-#endif
-#ifdef USE_ECDSA
-        if(EVP_PKEY_base_id(key) == EVP_PKEY_EC &&
-                ldns_pkey_is_ecdsa(key)) {
-                sigdata_rdf = ldns_convert_ecdsa_rrsig_asn1len2rdf(
-			b64sig, siglen, ldns_pkey_is_ecdsa(key));
+#if defined(USE_ECDSA) || defined(USE_ED25519) || defined(USE_ED448)
+	if(
+#  ifdef HAVE_EVP_PKEY_BASE_ID
+		EVP_PKEY_base_id(key)
+#  else
+		EVP_PKEY_type(key->type)
+#  endif
+		== EVP_PKEY_EC) {
+#  ifdef USE_ECDSA
+                if(ldns_pkey_is_ecdsa(key)) {
+			r = 1;
+			sigdata_rdf = ldns_convert_ecdsa_rrsig_asn1len2rdf(
+				b64sig, siglen, ldns_pkey_is_ecdsa(key));
+		}
+#  endif /* USE_ECDSA */
+#  ifdef USE_ED25519
+		if(EVP_PKEY_id(key) == NID_X25519) {
+			r = 1;
+			sigdata_rdf = ldns_convert_ed25519_rrsig_asn12rdf(
+				b64sig, siglen);
+		}
+#  endif /* USE_ED25519 */
+#  ifdef USE_ED448
+		if(EVP_PKEY_id(key) == NID_X448) {
+			r = 1;
+			sigdata_rdf = ldns_convert_ed448_rrsig_asn12rdf(
+				b64sig, siglen);
+		}
+#  endif /* USE_ED448 */
 	}
-#endif
-	else {
+#endif /* PKEY_EC */
+	if(r == 0) {
 		/* ok output for other types is the same */
 		sigdata_rdf = ldns_rdf_new_frm_data(LDNS_RDF_TYPE_B64, siglen,
 									 ldns_buffer_begin(b64sig));
 	}
-#endif /* splint */
 	ldns_buffer_free(b64sig);
 	EVP_MD_CTX_destroy(ctx);
 	return sigdata_rdf;

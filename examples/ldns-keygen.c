@@ -218,6 +218,12 @@ main(int argc, char *argv[])
 		break;
 	case LDNS_SIGN_ECDSAP256SHA256:
 #endif
+#ifdef USE_ED25519
+	case LDNS_SIGN_ED25519:
+#endif
+#ifdef USE_ED448
+	case LDNS_SIGN_ED448:
+#endif
 	case LDNS_SIGN_RSASHA256:
 	case LDNS_SIGN_RSASHA512:
 		ds = ldns_key_rr2ds(pubkey, LDNS_SHA256);
