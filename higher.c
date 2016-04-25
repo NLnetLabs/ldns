@@ -216,6 +216,9 @@ ldns_get_rr_list_hosts_frm_fp_l(FILE *fp, int *line_nr)
 				}
 				(void)strlcpy(addr, word, LDNS_MAX_LINELEN+1);
 			} else {
+				/* Stop parsing line when a comment begins. */
+				if (word[0] == '#')
+					break;
 				/* la al la la */
 				if (ip6) {
 					snprintf(rr_str, LDNS_MAX_LINELEN, 
