@@ -227,8 +227,8 @@ ldns_get_rr_list_hosts_frm_fp_l(FILE *fp, int *line_nr)
 				parse_result = ldns_rr_new_frm_str(&rr, rr_str, 0, NULL, NULL);
 				if (parse_result == LDNS_STATUS_OK && ldns_rr_owner(rr) && ldns_rr_rd_count(rr) > 0) {
 					ldns_rr_list_push_rr(list, ldns_rr_clone(rr));
+					ldns_rr_free(rr);
 				}
-				ldns_rr_free(rr);
 			}
 		}
 		ldns_buffer_free(linebuf);
