@@ -711,8 +711,8 @@ ldns_dnssec_create_nsec_bitmap(ldns_rr_type rr_type_list[],
 		window  = *d >> 8;
 		subtype = *d & 0xff;
 		windowpresent[window] = 1;
-		if (windows[window] < subtype) {
-			windows[window] = subtype;
+		if (windows[window] < (int)subtype) {
+			windows[window] = (int)subtype;
 		}
 	}
 
