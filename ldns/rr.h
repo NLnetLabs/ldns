@@ -37,7 +37,7 @@ extern "C" {
 #define LDNS_RR_OVERHEAD	10
 
 /* The first fields are contiguous and can be referenced instantly */
-#define LDNS_RDATA_FIELD_DESCRIPTORS_COMMON 258
+#define LDNS_RDATA_FIELD_DESCRIPTORS_COMMON 259
 
 
 
@@ -223,6 +223,7 @@ enum ldns_enum_rr_type
 	LDNS_RR_TYPE_ANY = 255,
 	LDNS_RR_TYPE_URI = 256, /* RFC 7553 */
 	LDNS_RR_TYPE_CAA = 257, /* RFC 6844 */
+	LDNS_RR_TYPE_AVC = 258, /* Cisco's DNS-AS RR, see www.dns-as.org */
 
 	/** DNSSEC Trust Authorities */
 	LDNS_RR_TYPE_TA = 32768,
