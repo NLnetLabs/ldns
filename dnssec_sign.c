@@ -483,11 +483,13 @@ ldns_sign_public_evp(ldns_buffer *to_sign,
 	/* OpenSSL output is different, convert it */
 	r = 0;
 #ifdef USE_DSA
+#ifndef S_SPLINT_S
 	/* unfortunately, OpenSSL output is different from DNS DSA format */
 	if (EVP_PKEY_type(key->type) == EVP_PKEY_DSA) {
 		r = 1;
 		sigdata_rdf = ldns_convert_dsa_rrsig_asn12rdf(b64sig, siglen);
 	}
+#endif
 #endif
 #if defined(USE_ECDSA) || defined(USE_ED25519) || defined(USE_ED448)
 	if(
@@ -501,7 +503,7 @@ ldns_sign_public_evp(ldns_buffer *to_sign,
                 if(ldns_pkey_is_ecdsa(key)) {
 			r = 1;
 			sigdata_rdf = ldns_convert_ecdsa_rrsig_asn1len2rdf(
-				b64sig, siglen, ldns_pkey_is_ecdsa(key));
+				b64sig, (long)siglen, ldns_pkey_is_ecdsa(key));
 		}
 #  endif /* USE_ECDSA */
 #  ifdef USE_ED25519
@@ -1090,7 +1092,11 @@ ldns_dnssec_zone_create_rrsigs(ldns_dnssec_zone *zone,
 static void
 ldns_key_list_filter_for_dnskey(ldns_key_list *key_list, int flags)
 {
-	bool algos[256] = { false };
+	bool algos[256]
+#ifndef S_SPLINT_S
+	                = { false }
+#endif
+	                           ;
 	ldns_signing_algorithm saw_ksk = 0;
 	ldns_key *key;
 	size_t i;
@@ -1128,7 +1134,11 @@ ldns_key_list_filter_for_dnskey(ldns_key_list *key_list, int flags)
 static void
 ldns_key_list_filter_for_non_dnskey(ldns_key_list *key_list, int flags)
 {
-	bool algos[256] = { false };
+	bool algos[256]
+#ifndef S_SPLINT_S
+	                = { false }
+#endif
+	                           ;
 	ldns_signing_algorithm saw_zsk = 0;
 	ldns_key *key;
 	size_t i;

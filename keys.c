@@ -1088,11 +1088,13 @@ ldns_key_new_frm_algorithm(ldns_signing_algorithm alg, uint16_t size)
 				EVP_PKEY_CTX_free(ctx);
 				return NULL;
 			}
+#ifndef S_SPLINT_S
 			if (EVP_PKEY_keygen(ctx, &k->_key.key) <= 0) {
 				ldns_key_free(k);
 				EVP_PKEY_CTX_free(ctx);
 				return NULL;
 			}
+#endif
 			EVP_PKEY_CTX_free(ctx);
 #else /* HAVE_EVP_PKEY_KEYGEN */
 			r = RSA_generate_key((int)size, RSA_F4, NULL, NULL);
