@@ -1024,7 +1024,7 @@ ldns_pkt_query_new_internal(const ldns_rdf *rr_name, ldns_rr_type rr_type,
 		rr_class = LDNS_RR_CLASS_IN;
 	}
 
-	ldns_rr_set_owner(question_rr, ldns_rdf_clone(rr_name));
+	ldns_rr_set_owner(question_rr, rr_name);
 	ldns_rr_set_type(question_rr, rr_type);
 	ldns_rr_set_class(question_rr, rr_class);
         ldns_rr_set_question(question_rr, true);
