@@ -779,31 +779,33 @@ ldns_status ldns_pkt_query_new_frm_str(ldns_pkt **p, const char *rr_name, ldns_r
  * \param[in] rr_name the name to query for (as string)
  * \param[in] rr_class the class to query for
  * \param[in] flags packet flags
- * \param[in] soa soa record to be added to the authority section
+ * \param[in] soa soa record to be added to the authority section (not copied).
  * \return LDNS_STATUS_OK or a ldns_status mesg with the error
  */
 ldns_status ldns_pkt_ixfr_request_new_frm_str(ldns_pkt **p, const char *rr_name, ldns_rr_class rr_class, uint16_t flags, ldns_rr* soa);
 
 /**
  * creates a packet with a query in it for the given name, type and class.
- * \param[in] rr_name the name to query for
+ * \param[in] rr_name the name to query for (not copied).
+ *            The returned packet will take ownership of rr_name, so the caller should not free it.
  * \param[in] rr_type the type to query for
  * \param[in] rr_class the class to query for
  * \param[in] flags packet flags
  * \return ldns_pkt* a pointer to the new pkt
  */
-ldns_pkt *ldns_pkt_query_new(const ldns_rdf *rr_name, ldns_rr_type rr_type, ldns_rr_class rr_class, uint16_t flags);
+ldns_pkt *ldns_pkt_query_new(ldns_rdf *rr_name, ldns_rr_type rr_type, ldns_rr_class rr_class, uint16_t flags);
 
 /**
  * creates an IXFR request packet for the given name, type and class.
  * adds the SOA record to the authority section.
- * \param[in] rr_name the name to query for
+ * \param[in] rr_name the name to query for (not copied).
+ *            The returned packet will take ownership of rr_name, so the caller should not free it.
  * \param[in] rr_class the class to query for
  * \param[in] flags packet flags
- * \param[in] soa soa record to be added to the authority section
+ * \param[in] soa soa record to be added to the authority section (not copied).
  * \return ldns_pkt* a pointer to the new pkt
  */
-ldns_pkt *ldns_pkt_ixfr_request_new(const ldns_rdf *rr_name, ldns_rr_class rr_class, uint16_t flags, ldns_rr* soa);
+ldns_pkt *ldns_pkt_ixfr_request_new(ldns_rdf *rr_name, ldns_rr_class rr_class, uint16_t flags, ldns_rr* soa);
 
 /**
  * clones the given packet, creating a fully allocated copy

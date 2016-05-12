@@ -24,7 +24,7 @@
  */
 
 ldns_pkt *
-ldns_update_pkt_new(const ldns_rdf *zone_rdf, ldns_rr_class c,
+ldns_update_pkt_new(ldns_rdf *zone_rdf, ldns_rr_class c,
     const ldns_rr_list *pr_rrlist, const ldns_rr_list *up_rrlist, const ldns_rr_list *ad_rrlist)
 {
 	ldns_pkt *p;

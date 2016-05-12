@@ -996,7 +996,7 @@ ldns_pkt_ixfr_request_new_frm_str(ldns_pkt **p, const char *name,
 }
 
 static ldns_pkt *
-ldns_pkt_query_new_internal(const ldns_rdf *rr_name, ldns_rr_type rr_type,
+ldns_pkt_query_new_internal(ldns_rdf *rr_name, ldns_rr_type rr_type,
 	ldns_rr_class rr_class,	uint16_t flags, ldns_rr* authsoa_rr)
 {
 	ldns_pkt *packet;
@@ -1039,7 +1039,7 @@ ldns_pkt_query_new_internal(const ldns_rdf *rr_name, ldns_rr_type rr_type,
 }
 
 ldns_pkt *
-ldns_pkt_query_new(const ldns_rdf *rr_name, ldns_rr_type rr_type,
+ldns_pkt_query_new(ldns_rdf *rr_name, ldns_rr_type rr_type,
 	ldns_rr_class rr_class,	uint16_t flags)
 {
 	return ldns_pkt_query_new_internal(rr_name, rr_type,
@@ -1047,7 +1047,7 @@ ldns_pkt_query_new(const ldns_rdf *rr_name, ldns_rr_type rr_type,
 }
 
 ldns_pkt *
-ldns_pkt_ixfr_request_new(const ldns_rdf *rr_name, ldns_rr_class rr_class,
+ldns_pkt_ixfr_request_new(ldns_rdf *rr_name, ldns_rr_class rr_class,
 	uint16_t flags, ldns_rr* soa)
 {
 	ldns_rr* authsoa_rr = soa;
