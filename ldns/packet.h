@@ -235,7 +235,7 @@ struct ldns_struct_pkt
 	/** Header section */
 	ldns_hdr *_header;
 	/* extra items needed in a packet */
-	/** The size of the wire format of the packet in octets */
+	/** an rdf (A or AAAA) with the IP address of the server it is from */
 	ldns_rdf *_answerfrom;
         /** Timestamp of the time the packet was sent or created */
 	struct timeval timestamp;
