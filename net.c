@@ -900,6 +900,21 @@ ldns_axfr_start(ldns_resolver *resolver, const ldns_rdf *domain, ldns_rr_class c
 	        ns = ldns_rdf2native_sockaddr_storage(
 	        	resolver->_nameservers[ns_i],
 			ldns_resolver_port(resolver), &ns_len);
+#ifndef S_SPLINT_S
+		if ((ns->ss_family == AF_INET) &&
+				(ldns_resolver_ip6(resolver) == LDNS_RESOLV_INET6)) {
+			/* not reachable */
+			LDNS_FREE(ns);
+			continue;
+		}
+
+		if ((ns->ss_family == AF_INET6) &&
+				 (ldns_resolver_ip6(resolver) == LDNS_RESOLV_INET)) {
+			/* not reachable */
+			LDNS_FREE(ns);
+			continue;
+		}
+#endif
 
 		resolver->_socket = ldns_tcp_connect_from(
 				ns, (socklen_t)ns_len,

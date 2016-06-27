@@ -68,6 +68,7 @@ TBD
 	  The dns algorithm number is not yet allocated. These features are
 	  not fully implemented yet.
 	* Fix _answerfrom comment in ldns_struct_pkt.
+	* Fix drill axfr ipv4/ipv6 queries.
 
 1.6.17	2014-01-10
 	* Fix ldns_dnssec_zone_new_frm_fp_l to allow the last parsed line of a
