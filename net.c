@@ -902,16 +902,18 @@ ldns_axfr_start(ldns_resolver *resolver, const ldns_rdf *domain, ldns_rr_class c
 			ldns_resolver_port(resolver), &ns_len);
 #ifndef S_SPLINT_S
 		if ((ns->ss_family == AF_INET) &&
-				(ldns_resolver_ip6(resolver) == LDNS_RESOLV_INET6)) {
+			(ldns_resolver_ip6(resolver) == LDNS_RESOLV_INET6)) {
 			/* not reachable */
 			LDNS_FREE(ns);
+			ns = NULL;
 			continue;
 		}
 
 		if ((ns->ss_family == AF_INET6) &&
-				 (ldns_resolver_ip6(resolver) == LDNS_RESOLV_INET)) {
+			 (ldns_resolver_ip6(resolver) == LDNS_RESOLV_INET)) {
 			/* not reachable */
 			LDNS_FREE(ns);
+			ns = NULL;
 			continue;
 		}
 #endif
