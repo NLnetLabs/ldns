@@ -23,7 +23,7 @@
 
 #define LDNS_MAX_PACKETLEN         65535
 
-/* allow flags to be given to mk_query */
+/* allow flags to be given to ldns_pkt_query_new */
 #define LDNS_QR		1       /* QueRy - query flag */
 #define LDNS_AA		2       /* Authoritative Answer - server flag */
 #define LDNS_TC		4       /* TrunCated - server flag */
