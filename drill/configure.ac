@@ -258,9 +258,6 @@ AH_BOTTOM([
 #include <ws2tcpip.h>
 #endif
 
-extern char *optarg;
-extern int optind, opterr;
-
 #ifndef EXIT_FAILURE
 #define EXIT_FAILURE  1
 #endif
