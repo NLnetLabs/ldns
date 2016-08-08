@@ -70,6 +70,7 @@ TBD
 	* Fix _answerfrom comment in ldns_struct_pkt.
 	* Fix drill axfr ipv4/ipv6 queries.
 	* Fix comment referring to mk_query in packet.h to pkt_query_new.
+	* Fix description of QR flag in packet.h.
 
 1.6.17	2014-01-10
 	* Fix ldns_dnssec_zone_new_frm_fp_l to allow the last parsed line of a
