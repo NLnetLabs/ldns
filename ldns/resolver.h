@@ -641,7 +641,7 @@ ldns_status ldns_resolver_prepare_query_pkt(ldns_pkt **q, ldns_resolver *r, cons
  * \param[in] c query for this class (may be 0, default to IN)
  * \param[in] flags the query flags
  *
- * \return ldns_pkt* a packet with the reply from the nameserver
+ * \return ldns_status LDNS_STATUS_OK on success
  */
 ldns_status ldns_resolver_send(ldns_pkt **answer, ldns_resolver *r, const ldns_rdf *name, ldns_rr_type t, ldns_rr_class c, uint16_t flags);
 
