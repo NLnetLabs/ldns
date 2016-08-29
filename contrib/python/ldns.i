@@ -139,6 +139,8 @@ uint32_t ldns_read_timeval_usec(struct timeval* t) {
 %include "ldns_resolver.i"
 %include "ldns_rr.i"
 
+%include <ldns/rr.h>
+
 %inline %{
 int Python_str_Check(PyObject *o) {
 #if PY_VERSION_HEX>=0x03000000
@@ -168,7 +170,6 @@ int Python_str_Check(PyObject *o) {
   %include <ldns/packet.h>
   %include <ldns/rdata.h>
   %include <ldns/resolver.h>
-  %include <ldns/rr.h>
 %include <ldns/str2host.h>
 %include <ldns/tsig.h>
   %include <ldns/update.h>
