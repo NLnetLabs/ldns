@@ -375,13 +375,31 @@ ldns_key_buf2dsa_raw(const unsigned char* key, size_t len)
 		BN_free(Y);
 		return NULL;
 	}
+#if OPENSSL_VERSION_NUMBER < 0x10100000
 #ifndef S_SPLINT_S
 	dsa->p = P;
 	dsa->q = Q;
 	dsa->g = G;
 	dsa->pub_key = Y;
 #endif /* splint */
+#else /* OPENSSL_VERSION_NUMBER */
+	if (!DSA_set0_pqg(dsa, P, Q, G)) {
+		/* QPG not yet attached, need to free */
+		BN_free(Q);
+		BN_free(P);
+		BN_free(G);
 
+		DSA_free(dsa);
+		BN_free(Y);
+		return NULL;
+	}
+	if (!DSA_set0_key(dsa, Y, NULL)) {
+		/* QPG attached, cleaned up by DSA_fre() */
+		DSA_free(dsa);
+		BN_free(Y);
+		return NULL;
+	}
+#endif /* OPENSSL_VERSION_NUMBER */
 	return dsa;
 }
 
@@ -443,10 +461,19 @@ ldns_key_buf2rsa_raw(const unsigned char* key, size_t len)
 		BN_free(modulus);
 		return NULL;
 	}
+#if OPENSSL_VERSION_NUMBER < 0x10100000
 #ifndef S_SPLINT_S
 	rsa->n = modulus;
 	rsa->e = exponent;
 #endif /* splint */
+#else /* OPENSSL_VERSION_NUMBER */
+	if (!RSA_set0_key(rsa, modulus, exponent, NULL)) {
+		BN_free(exponent);
+		BN_free(modulus);
+		RSA_free(rsa);
+		return NULL;
+	}
+#endif /* OPENSSL_VERSION_NUMBER */
 
 	return rsa;
 }
@@ -1820,14 +1847,14 @@ ldns_convert_ecdsa_rrsig_asn1len2rdf(const ldns_buffer *sig,
 	const long sig_len, int num_bytes)
 {
         ECDSA_SIG* ecdsa_sig;
-	BIGNUM *r, *s;
+	const BIGNUM *r, *s;
 	unsigned char *data = (unsigned char*)ldns_buffer_begin(sig);
         ldns_rdf* rdf;
 	ecdsa_sig = d2i_ECDSA_SIG(NULL, (const unsigned char **)&data, sig_len);
         if(!ecdsa_sig) return NULL;
 
 #ifdef HAVE_ECDSA_SIG_GET0
-	ECDSA_SIG_get0(&r, &s, ecdsa_sig);
+	ECDSA_SIG_get0(ecdsa_sig, &r, &s);
 #else
 	r = ecdsa_sig->r;
 	s = ecdsa_sig->s;

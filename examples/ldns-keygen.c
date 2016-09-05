@@ -189,6 +189,11 @@ main(int argc, char *argv[])
 
 	/* generate a new key */
 	key = ldns_key_new_frm_algorithm(algorithm, bits);
+	if(!key) {
+		fprintf(stderr, "cannot generate key of algorithm %s\n",
+			ldns_pkt_algorithm2str(algorithm));
+		exit(EXIT_FAILURE);
+	}
 
 	/* set the owner name in the key - this is a /separate/ step */
 	ldns_key_set_pubkey_owner(key, domain);

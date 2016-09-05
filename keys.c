@@ -776,15 +776,17 @@ ldns_key_new_frm_fp_rsa_l(FILE *f, int *line_nr)
          *     // ...
 	 *
 	 */
-	char *d;
+	char *b;
 	RSA *rsa;
 	uint8_t *buf;
 	int i;
+	BIGNUM *n=NULL, *e=NULL, *d=NULL, *p=NULL, *q=NULL,
+		*dmp1=NULL, *dmq1=NULL, *iqmp=NULL;
 
-	d = LDNS_XMALLOC(char, LDNS_MAX_LINELEN);
+	b = LDNS_XMALLOC(char, LDNS_MAX_LINELEN);
 	buf = LDNS_XMALLOC(uint8_t, LDNS_MAX_LINELEN);
 	rsa = RSA_new();
-	if (!d || !rsa || !buf) {
+	if (!b || !rsa || !buf) {
                 goto error;
 	}
 
@@ -793,95 +795,121 @@ ldns_key_new_frm_fp_rsa_l(FILE *f, int *line_nr)
 	 */
 
 	/* Modules, rsa->n */
-	if (ldns_fget_keyword_data_l(f, "Modulus", ": ", d, "\n", LDNS_MAX_LINELEN, line_nr) == -1) {
+	if (ldns_fget_keyword_data_l(f, "Modulus", ": ", b, "\n", LDNS_MAX_LINELEN, line_nr) == -1) {
 		goto error;
 	}
-	i = ldns_b64_pton((const char*)d, buf, ldns_b64_ntop_calculate_size(strlen(d)));
+	i = ldns_b64_pton((const char*)b, buf, ldns_b64_ntop_calculate_size(strlen(b)));
 #ifndef S_SPLINT_S
-	rsa->n = BN_bin2bn((const char unsigned*)buf, i, NULL);
-	if (!rsa->n) {
+	n = BN_bin2bn((const char unsigned*)buf, i, NULL);
+	if (!n) {
 		goto error;
 	}
 
 	/* PublicExponent, rsa->e */
-	if (ldns_fget_keyword_data_l(f, "PublicExponent", ": ", d, "\n", LDNS_MAX_LINELEN, line_nr) == -1) {
+	if (ldns_fget_keyword_data_l(f, "PublicExponent", ": ", b, "\n", LDNS_MAX_LINELEN, line_nr) == -1) {
 		goto error;
 	}
-	i = ldns_b64_pton((const char*)d, buf, ldns_b64_ntop_calculate_size(strlen(d)));
-	rsa->e = BN_bin2bn((const char unsigned*)buf, i, NULL);
-	if (!rsa->e) {
+	i = ldns_b64_pton((const char*)b, buf, ldns_b64_ntop_calculate_size(strlen(b)));
+	e = BN_bin2bn((const char unsigned*)buf, i, NULL);
+	if (!e) {
 		goto error;
 	}
 
 	/* PrivateExponent, rsa->d */
-	if (ldns_fget_keyword_data_l(f, "PrivateExponent", ": ", d, "\n", LDNS_MAX_LINELEN, line_nr) == -1) {
+	if (ldns_fget_keyword_data_l(f, "PrivateExponent", ": ", b, "\n", LDNS_MAX_LINELEN, line_nr) == -1) {
 		goto error;
 	}
-	i = ldns_b64_pton((const char*)d, buf, ldns_b64_ntop_calculate_size(strlen(d)));
-	rsa->d = BN_bin2bn((const char unsigned*)buf, i, NULL);
-	if (!rsa->d) {
+	i = ldns_b64_pton((const char*)b, buf, ldns_b64_ntop_calculate_size(strlen(b)));
+	d = BN_bin2bn((const char unsigned*)buf, i, NULL);
+	if (!d) {
 		goto error;
 	}
 
 	/* Prime1, rsa->p */
-	if (ldns_fget_keyword_data_l(f, "Prime1", ": ", d, "\n", LDNS_MAX_LINELEN, line_nr) == -1) {
+	if (ldns_fget_keyword_data_l(f, "Prime1", ": ", b, "\n", LDNS_MAX_LINELEN, line_nr) == -1) {
 		goto error;
 	}
-	i = ldns_b64_pton((const char*)d, buf, ldns_b64_ntop_calculate_size(strlen(d)));
-	rsa->p = BN_bin2bn((const char unsigned*)buf, i, NULL);
-	if (!rsa->p) {
+	i = ldns_b64_pton((const char*)b, buf, ldns_b64_ntop_calculate_size(strlen(b)));
+	p = BN_bin2bn((const char unsigned*)buf, i, NULL);
+	if (!p) {
 		goto error;
 	}
 
 	/* Prime2, rsa->q */
-	if (ldns_fget_keyword_data_l(f, "Prime2", ": ", d, "\n", LDNS_MAX_LINELEN, line_nr) == -1) {
+	if (ldns_fget_keyword_data_l(f, "Prime2", ": ", b, "\n", LDNS_MAX_LINELEN, line_nr) == -1) {
 		goto error;
 	}
-	i = ldns_b64_pton((const char*)d, buf, ldns_b64_ntop_calculate_size(strlen(d)));
-	rsa->q = BN_bin2bn((const char unsigned*)buf, i, NULL);
-	if (!rsa->q) {
+	i = ldns_b64_pton((const char*)b, buf, ldns_b64_ntop_calculate_size(strlen(b)));
+	q = BN_bin2bn((const char unsigned*)buf, i, NULL);
+	if (!q) {
 		goto error;
 	}
 
 	/* Exponent1, rsa->dmp1 */
-	if (ldns_fget_keyword_data_l(f, "Exponent1", ": ", d, "\n", LDNS_MAX_LINELEN, line_nr) == -1) {
+	if (ldns_fget_keyword_data_l(f, "Exponent1", ": ", b, "\n", LDNS_MAX_LINELEN, line_nr) == -1) {
 		goto error;
 	}
-	i = ldns_b64_pton((const char*)d, buf, ldns_b64_ntop_calculate_size(strlen(d)));
-	rsa->dmp1 = BN_bin2bn((const char unsigned*)buf, i, NULL);
-	if (!rsa->dmp1) {
+	i = ldns_b64_pton((const char*)b, buf, ldns_b64_ntop_calculate_size(strlen(b)));
+	dmp1 = BN_bin2bn((const char unsigned*)buf, i, NULL);
+	if (!dmp1) {
 		goto error;
 	}
 
 	/* Exponent2, rsa->dmq1 */
-	if (ldns_fget_keyword_data_l(f, "Exponent2", ": ", d, "\n", LDNS_MAX_LINELEN, line_nr) == -1) {
+	if (ldns_fget_keyword_data_l(f, "Exponent2", ": ", b, "\n", LDNS_MAX_LINELEN, line_nr) == -1) {
 		goto error;
 	}
-	i = ldns_b64_pton((const char*)d, buf, ldns_b64_ntop_calculate_size(strlen(d)));
-	rsa->dmq1 = BN_bin2bn((const char unsigned*)buf, i, NULL);
-	if (!rsa->dmq1) {
+	i = ldns_b64_pton((const char*)b, buf, ldns_b64_ntop_calculate_size(strlen(b)));
+	dmq1 = BN_bin2bn((const char unsigned*)buf, i, NULL);
+	if (!dmq1) {
 		goto error;
 	}
 
 	/* Coefficient, rsa->iqmp */
-	if (ldns_fget_keyword_data_l(f, "Coefficient", ": ", d, "\n", LDNS_MAX_LINELEN, line_nr) == -1) {
+	if (ldns_fget_keyword_data_l(f, "Coefficient", ": ", b, "\n", LDNS_MAX_LINELEN, line_nr) == -1) {
 		goto error;
 	}
-	i = ldns_b64_pton((const char*)d, buf, ldns_b64_ntop_calculate_size(strlen(d)));
-	rsa->iqmp = BN_bin2bn((const char unsigned*)buf, i, NULL);
-	if (!rsa->iqmp) {
+	i = ldns_b64_pton((const char*)b, buf, ldns_b64_ntop_calculate_size(strlen(b)));
+	iqmp = BN_bin2bn((const char unsigned*)buf, i, NULL);
+	if (!iqmp) {
 		goto error;
 	}
 #endif /* splint */
 
+#if OPENSSL_VERSION_NUMBER < 0x10100000
+	rsa->n = n;
+	rsa->e = e;
+	rsa->d = d;
+	rsa->p = p;
+	rsa->q = q;
+	rsa->dmp1 = dmp1;
+	rsa->dmq1 = dmq1;
+	rsa->iqmp = iqmp;
+#else
+	if(!RSA_set0_key(rsa, n, e, d))
+		goto error;
+	if(!RSA_set0_factors(rsa, p, q))
+		goto error;
+	if(!RSA_set0_crt_params(rsa, dmp1, dmq1, iqmp))
+		goto error;
+#endif
+
 	LDNS_FREE(buf);
-	LDNS_FREE(d);
+	LDNS_FREE(b);
 	return rsa;
 
 error:
 	RSA_free(rsa);
-	LDNS_FREE(d);
+	LDNS_FREE(b);
 	LDNS_FREE(buf);
+	BN_free(n);
+	BN_free(e);
+	BN_free(d);
+	BN_free(p);
+	BN_free(q);
+	BN_free(dmp1);
+	BN_free(dmq1);
+	BN_free(iqmp);
 	return NULL;
 }
 
@@ -898,6 +926,7 @@ ldns_key_new_frm_fp_dsa_l(FILE *f, ATTR_UNUSED(int *line_nr))
 	char *d;
 	DSA *dsa;
 	uint8_t *buf;
+	BIGNUM *p=NULL, *q=NULL, *g=NULL, *priv_key=NULL, *pub_key=NULL;
 
 	d = LDNS_XMALLOC(char, LDNS_MAX_LINELEN);
 	buf = LDNS_XMALLOC(uint8_t, LDNS_MAX_LINELEN);
@@ -914,8 +943,8 @@ ldns_key_new_frm_fp_dsa_l(FILE *f, ATTR_UNUSED(int *line_nr))
 	}
 	i = ldns_b64_pton((const char*)d, buf, ldns_b64_ntop_calculate_size(strlen(d)));
 #ifndef S_SPLINT_S
-	dsa->p = BN_bin2bn((const char unsigned*)buf, i, NULL);
-	if (!dsa->p) {
+	p = BN_bin2bn((const char unsigned*)buf, i, NULL);
+	if (!p) {
 		goto error;
 	}
 
@@ -924,8 +953,8 @@ ldns_key_new_frm_fp_dsa_l(FILE *f, ATTR_UNUSED(int *line_nr))
 		goto error;
 	}
 	i = ldns_b64_pton((const char*)d, buf, ldns_b64_ntop_calculate_size(strlen(d)));
-	dsa->q = BN_bin2bn((const char unsigned*)buf, i, NULL);
-	if (!dsa->q) {
+	q = BN_bin2bn((const char unsigned*)buf, i, NULL);
+	if (!q) {
 		goto error;
 	}
 
@@ -934,8 +963,8 @@ ldns_key_new_frm_fp_dsa_l(FILE *f, ATTR_UNUSED(int *line_nr))
 		goto error;
 	}
 	i = ldns_b64_pton((const char*)d, buf, ldns_b64_ntop_calculate_size(strlen(d)));
-	dsa->g = BN_bin2bn((const char unsigned*)buf, i, NULL);
-	if (!dsa->g) {
+	g = BN_bin2bn((const char unsigned*)buf, i, NULL);
+	if (!g) {
 		goto error;
 	}
 
@@ -944,8 +973,8 @@ ldns_key_new_frm_fp_dsa_l(FILE *f, ATTR_UNUSED(int *line_nr))
 		goto error;
 	}
 	i = ldns_b64_pton((const char*)d, buf, ldns_b64_ntop_calculate_size(strlen(d)));
-	dsa->priv_key = BN_bin2bn((const char unsigned*)buf, i, NULL);
-	if (!dsa->priv_key) {
+	priv_key = BN_bin2bn((const char unsigned*)buf, i, NULL);
+	if (!priv_key) {
 		goto error;
 	}
 
@@ -954,11 +983,24 @@ ldns_key_new_frm_fp_dsa_l(FILE *f, ATTR_UNUSED(int *line_nr))
 		goto error;
 	}
 	i = ldns_b64_pton((const char*)d, buf, ldns_b64_ntop_calculate_size(strlen(d)));
-	dsa->pub_key = BN_bin2bn((const char unsigned*)buf, i, NULL);
-	if (!dsa->pub_key) {
+	pub_key = BN_bin2bn((const char unsigned*)buf, i, NULL);
+	if (!pub_key) {
 		goto error;
 	}
 #endif /* splint */
+
+#if OPENSSL_VERSION_NUMBER < 0x10100000
+	dsa->p = p;
+	dsa->q = q;
+	dsa->g = g;
+	dsa->priv_key = priv_key;
+	dsa->pub_key = pub_key;
+#else
+	if(!DSA_set0_pqg(dsa, p, q, g))
+		goto error;
+	if(!DSA_set0_key(dsa, pub_key, priv_key))
+		goto error;
+#endif
 
 	LDNS_FREE(buf);
 	LDNS_FREE(d);
@@ -969,6 +1011,11 @@ error:
 	LDNS_FREE(d);
 	LDNS_FREE(buf);
         DSA_free(dsa);
+	BN_free(p);
+	BN_free(q);
+	BN_free(g);
+	BN_free(priv_key);
+	BN_free(pub_key);
 	return NULL;
 }
 
@@ -1611,27 +1658,34 @@ static bool
 ldns_key_rsa2bin(unsigned char *data, RSA *k, uint16_t *size)
 {
 	int i,j;
+	const BIGNUM *n=NULL, *e=NULL;
 	
 	if (!k) {
 		return false;
 	}
+#if OPENSSL_VERSION_NUMBER < 0x10100000
+	n = k->n;
+	e = k->e;
+#else
+	RSA_get0_key(k, &n, &e, NULL);
+#endif
 	
-	if (BN_num_bytes(k->e) <= 256) {
+	if (BN_num_bytes(e) <= 256) {
 		/* normally only this path is executed (small factors are
 		 * more common 
 		 */
-		data[0] = (unsigned char) BN_num_bytes(k->e);
-		i = BN_bn2bin(k->e, data + 1);  
-		j = BN_bn2bin(k->n, data + i + 1);
+		data[0] = (unsigned char) BN_num_bytes(e);
+		i = BN_bn2bin(e, data + 1);  
+		j = BN_bn2bin(n, data + i + 1);
 		*size = (uint16_t) i + j;
-	} else if (BN_num_bytes(k->e) <= 65536) {
+	} else if (BN_num_bytes(e) <= 65536) {
 		data[0] = 0;
 		/* BN_bn2bin does bigendian, _uint16 also */
-		ldns_write_uint16(data + 1, (uint16_t) BN_num_bytes(k->e)); 
+		ldns_write_uint16(data + 1, (uint16_t) BN_num_bytes(e)); 
 
-		BN_bn2bin(k->e, data + 3); 
-		BN_bn2bin(k->n, data + 4 + BN_num_bytes(k->e));
-		*size = (uint16_t) BN_num_bytes(k->n) + 6;
+		BN_bn2bin(e, data + 3); 
+		BN_bn2bin(n, data + 4 + BN_num_bytes(e));
+		*size = (uint16_t) BN_num_bytes(n) + 6;
 	} else {
 		return false;
 	}

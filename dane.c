@@ -327,8 +327,8 @@ ldns_dane_pkix_get_last_self_signed(X509** out_cert,
 
 	}
 	(void) X509_verify_cert(vrfy_ctx);
-	if (vrfy_ctx->error == X509_V_ERR_SELF_SIGNED_CERT_IN_CHAIN ||
-	    vrfy_ctx->error == X509_V_ERR_DEPTH_ZERO_SELF_SIGNED_CERT){
+	if (X509_STORE_CTX_get_error(vrfy_ctx) == X509_V_ERR_SELF_SIGNED_CERT_IN_CHAIN ||
+	    X509_STORE_CTX_get_error(vrfy_ctx) == X509_V_ERR_DEPTH_ZERO_SELF_SIGNED_CERT){
 
 		*out_cert = X509_STORE_CTX_get_current_cert( vrfy_ctx);
 		s = LDNS_STATUS_OK;
