@@ -66,11 +66,13 @@ TBD
 	* Prepare for ED25519, ED448 support: todo convert* routines in
 	  dnssec.h, once openssl has support for signing with these algorithms.
 	  The dns algorithm number is not yet allocated. These features are
-	  not fully implemented yet.
+	  not fully implemented yet, openssl (1.1) does not support the
+	  algorithms enough to generate keys and sign and verify with them.
 	* Fix _answerfrom comment in ldns_struct_pkt.
 	* Fix drill axfr ipv4/ipv6 queries.
 	* Fix comment referring to mk_query in packet.h to pkt_query_new.
 	* Fix description of QR flag in packet.h.
+	* Fix for openssl 1.1.0 API changes.
 
 1.6.17	2014-01-10
 	* Fix ldns_dnssec_zone_new_frm_fp_l to allow the last parsed line of a

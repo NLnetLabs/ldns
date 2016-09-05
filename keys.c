@@ -888,8 +888,13 @@ ldns_key_new_frm_fp_rsa_l(FILE *f, int *line_nr)
 #else
 	if(!RSA_set0_key(rsa, n, e, d))
 		goto error;
+	n = NULL;
+	e = NULL;
+	d = NULL;
 	if(!RSA_set0_factors(rsa, p, q))
 		goto error;
+	p = NULL;
+	q = NULL;
 	if(!RSA_set0_crt_params(rsa, dmp1, dmq1, iqmp))
 		goto error;
 #endif
@@ -998,6 +1003,9 @@ ldns_key_new_frm_fp_dsa_l(FILE *f, ATTR_UNUSED(int *line_nr))
 #else
 	if(!DSA_set0_pqg(dsa, p, q, g))
 		goto error;
+	p = NULL;
+	q = NULL;
+	g = NULL;
 	if(!DSA_set0_key(dsa, pub_key, priv_key))
 		goto error;
 #endif
