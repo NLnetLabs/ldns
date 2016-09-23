@@ -145,6 +145,7 @@
 /host2wire.lo
 /host2wire.o
 /include/
+/install-sh
 /keys.lo
 /keys.o
 /ldns/common.h
