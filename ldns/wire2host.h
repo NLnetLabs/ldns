@@ -99,9 +99,6 @@ extern "C" {
 
 /* Counter of the question section */
 #define LDNS_QDCOUNT_OFF		4
-/*
-#define	QDCOUNT(wirebuf)		(ntohs(*(uint16_t *)(wirebuf+QDCOUNT_OFF)))
-*/
 #define	LDNS_QDCOUNT(wirebuf)		(ldns_read_uint16(wirebuf+LDNS_QDCOUNT_OFF))
 
 /* Counter of the answer section */
