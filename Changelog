@@ -79,6 +79,8 @@ TBD
 	  Thanks Christoph Egger
 	* bugfix #796 - #792: Fix miscellaneous compiler warning issues.
 	  Thanks Ngie Cooper
+	* bugfix #769: Add support for :: in an IPv6 address
+	  Thanks Hajimu UMEMOTO
 
 1.6.17	2014-01-10
 	* Fix ldns_dnssec_zone_new_frm_fp_l to allow the last parsed line of a

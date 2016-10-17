@@ -166,6 +166,9 @@ main(int argc, char *argv[])
 
 	int		result = 0;
 
+	struct in6_addr s6addr;
+	char canon_addr[INET6_ADDRSTRLEN], *p;
+
 #ifdef USE_WINSOCK
 	int r;
 	WSADATA wsa_data;
@@ -739,6 +742,15 @@ main(int argc, char *argv[])
 			if (strchr(name, ':')) {
 				if (strchr(name, '.')) {
 					error("Syntax error: both '.' and ':' seen in address\n");
+				}
+				if (inet_pton(AF_INET6, name, &s6addr) == 1) {
+					p = canon_addr;
+					for (i = 0; i < 16; i += 2) {
+						if (i > 0)
+							*p++ = ':';
+						p += sprintf(p, "%02x%02x", s6addr.s6_addr[i], s6addr.s6_addr[i + 1]);
+					}
+					name = canon_addr;
 				}
 				name2 = malloc(IP6_ARPA_MAX_LEN + 20);
 				c = 0;
