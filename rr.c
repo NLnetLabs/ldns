@@ -600,9 +600,14 @@ ldns_rr_new_frm_str_internal(ldns_rr **newrr, const char *str,
 	} /* for (done = false, r_cnt = 0; !done && r_cnt < r_max; r_cnt++) */
 	LDNS_FREE(rd);
 	LDNS_FREE(xtok);
-	ldns_buffer_free(rd_buf);
 	ldns_buffer_free(rr_buf);
 	LDNS_FREE(rdata);
+	if (ldns_buffer_remaining(rd_buf) > 0) {
+		ldns_buffer_free(rd_buf);
+		ldns_rr_free(new);
+		return LDNS_STATUS_SYNTAX_SUPERFLUOUS_TEXT_ERR;
+	}
+	ldns_buffer_free(rd_buf);
 
 	if (!question && desc && !was_unknown_rr_format &&
 			ldns_rr_rd_count(new) < r_min) {

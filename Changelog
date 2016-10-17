@@ -81,6 +81,8 @@ TBD
 	  Thanks Ngie Cooper
 	* bugfix #769: Add support for :: in an IPv6 address
 	  Thanks Hajimu UMEMOTO
+	* bugfix #760: Detect superfluous text in presentation format
+	  Thanks Xiali Yan
 
 1.6.17	2014-01-10
 	* Fix ldns_dnssec_zone_new_frm_fp_l to allow the last parsed line of a

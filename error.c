@@ -143,6 +143,8 @@ ldns_lookup_table ldns_error_str[] = {
         { LDNS_STATUS_INVALID_RDF_TYPE, 
 		"The rdata field was not of the expected type" },
         { LDNS_STATUS_RDATA_OVERFLOW, "Rdata size overflow" },
+	{ LDNS_STATUS_SYNTAX_SUPERFLUOUS_TEXT_ERR,
+		"Syntax error, superfluous text present" },
 	{ 0, NULL }
 };
 
