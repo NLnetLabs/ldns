@@ -14,8 +14,6 @@
 #include <openssl/err.h>
 #endif
 
-#define IP6_ARPA_MAX_LEN 65
-
 /* query debug, 2 hex dumps */
 int		verbosity;
 
@@ -119,7 +117,6 @@ main(int argc, char *argv[])
         char 		*serv;
         char 		*src = NULL;
         const char 	*name;
-        char 		*name2;
 	char		*progname;
 	char 		*query_file = NULL;
 	char		*answer_file = NULL;
@@ -166,8 +163,8 @@ main(int argc, char *argv[])
 
 	int		result = 0;
 
-	struct in6_addr s6addr;
-	char canon_addr[INET6_ADDRSTRLEN], *p;
+	uint8_t         s6addr[16];
+	char            ip6_arpa_str[74];
 
 #ifdef USE_WINSOCK
 	int r;
@@ -740,64 +737,48 @@ main(int argc, char *argv[])
 		case DRILL_REVERSE:
 			/* ipv4 or ipv6 addr? */
 			if (strchr(name, ':')) {
-				if (strchr(name, '.')) {
-					error("Syntax error: both '.' and ':' seen in address\n");
+				if (!inet_pton(AF_INET6, name, &s6addr)) {
+					error("Syntax error: cannot parse IPv6 address\n");
 				}
-				if (inet_pton(AF_INET6, name, &s6addr) == 1) {
-					p = canon_addr;
-					for (i = 0; i < 16; i += 2) {
-						if (i > 0)
-							*p++ = ':';
-						p += sprintf(p, "%02x%02x", s6addr.s6_addr[i], s6addr.s6_addr[i + 1]);
-					}
-					name = canon_addr;
-				}
-				name2 = malloc(IP6_ARPA_MAX_LEN + 20);
-				c = 0;
-				for (i=0; i<(int)strlen(name); i++) {
-					if (i >= IP6_ARPA_MAX_LEN) {
-						error("%s", "reverse argument to long");
-					}
-					if (name[i] == ':') {
-						if (i < (int) strlen(name) && name[i + 1] == ':') {
-							error("%s", ":: not supported (yet)");
-						} else {
-							if (i + 2 == (int) strlen(name) || name[i + 2] == ':') {
-								name2[c++] = '0';
-								name2[c++] = '.';
-								name2[c++] = '0';
-								name2[c++] = '.';
-								name2[c++] = '0';
-								name2[c++] = '.';
-							} else if (i + 3 == (int) strlen(name) || name[i + 3] == ':') {
-								name2[c++] = '0';
-								name2[c++] = '.';
-								name2[c++] = '0';
-								name2[c++] = '.';
-							} else if (i + 4 == (int) strlen(name) || name[i + 4] == ':') {
-								name2[c++] = '0';
-								name2[c++] = '.';
-							}
-						}
-					} else {
-						name2[c++] = name[i];
-						name2[c++] = '.';
-					}
-				}
-				name2[c++] = '\0';
+				(void) snprintf(ip6_arpa_str, sizeof(ip6_arpa_str),
+				    "%x.%x.%x.%x.%x.%x.%x.%x."
+				    "%x.%x.%x.%x.%x.%x.%x.%x."
+				    "%x.%x.%x.%x.%x.%x.%x.%x."
+				    "%x.%x.%x.%x.%x.%x.%x.%x.ip6.arpa.",
+				    (unsigned int)(s6addr[15] & 0x0F),
+				    (unsigned int)(s6addr[15] >> 4),
+				    (unsigned int)(s6addr[14] & 0x0F),
+				    (unsigned int)(s6addr[14] >> 4),
+				    (unsigned int)(s6addr[13] & 0x0F),
+				    (unsigned int)(s6addr[13] >> 4),
+				    (unsigned int)(s6addr[12] & 0x0F),
+				    (unsigned int)(s6addr[12] >> 4),
+				    (unsigned int)(s6addr[11] & 0x0F),
+				    (unsigned int)(s6addr[11] >> 4),
+				    (unsigned int)(s6addr[10] & 0x0F),
+				    (unsigned int)(s6addr[10] >> 4),
+				    (unsigned int)(s6addr[9] & 0x0F),
+				    (unsigned int)(s6addr[9] >> 4),
+				    (unsigned int)(s6addr[8] & 0x0F),
+				    (unsigned int)(s6addr[8] >> 4),
+				    (unsigned int)(s6addr[7] & 0x0F),
+				    (unsigned int)(s6addr[7] >> 4),
+				    (unsigned int)(s6addr[6] & 0x0F),
+				    (unsigned int)(s6addr[6] >> 4),
+				    (unsigned int)(s6addr[5] & 0x0F),
+				    (unsigned int)(s6addr[5] >> 4),
+				    (unsigned int)(s6addr[4] & 0x0F),
+				    (unsigned int)(s6addr[4] >> 4),
+				    (unsigned int)(s6addr[3] & 0x0F),
+				    (unsigned int)(s6addr[3] >> 4),
+				    (unsigned int)(s6addr[2] & 0x0F),
+				    (unsigned int)(s6addr[2] >> 4),
+				    (unsigned int)(s6addr[1] & 0x0F),
+				    (unsigned int)(s6addr[1] >> 4),
+				    (unsigned int)(s6addr[0] & 0x0F),
+				    (unsigned int)(s6addr[0] >> 4));
 
-				qname = ldns_dname_new_frm_str(name2);
-				qname_tmp = ldns_dname_reverse(qname);
-				ldns_rdf_deep_free(qname);
-				qname = qname_tmp;
-				qname_tmp = ldns_dname_new_frm_str("ip6.arpa.");
-				status = ldns_dname_cat(qname, qname_tmp);
-				if (status != LDNS_STATUS_OK) {
-					error("%s", "could not create reverse address for ip6: %s\n", ldns_get_errorstr_by_id(status));
-				}
-				ldns_rdf_deep_free(qname_tmp);
-
-				free(name2);
+				qname = ldns_dname_new_frm_str(ip6_arpa_str);
 			} else {
 				qname = ldns_dname_new_frm_str(name);
 				qname_tmp = ldns_dname_reverse(qname);
