@@ -288,29 +288,6 @@ find_or_create_pubkey(const char *keyfile_name_base, ldns_key *key, ldns_zone *o
 	}
 }
 
-static void
-strip_dnssec_records(ldns_zone *zone)
-{
-	ldns_rr_list *new_list;
-	ldns_rr *cur_rr;
-	
-	new_list = ldns_rr_list_new();
-	
-	while ((cur_rr = ldns_rr_list_pop_rr(ldns_zone_rrs(zone)))) {
-		if (ldns_rr_get_type(cur_rr) == LDNS_RR_TYPE_RRSIG ||
-		    ldns_rr_get_type(cur_rr) == LDNS_RR_TYPE_NSEC ||
-		    ldns_rr_get_type(cur_rr) == LDNS_RR_TYPE_NSEC3
-		   ) {
-			
-			ldns_rr_free(cur_rr);
-		} else {
-			ldns_rr_list_push_rr(new_list, cur_rr);
-		}
-	}
-	ldns_rr_list_free(ldns_zone_rrs(zone));
-	ldns_zone_set_rrs(zone, new_list);
-}
-
 int
 main(int argc, char *argv[])
 {
