@@ -1944,7 +1944,7 @@ ldns_print_bignum_b64_line(ldns_buffer* output, const char* label, const BIGNUM*
 			LDNS_FREE(bignumbuf);
 			return 0;
 		}
-		b64_bignum =  ldns_rdf_new_frm_data(LDNS_RDF_TYPE_B64, i, bignumbuf);
+		b64_bignum =  ldns_rdf_new_frm_data(LDNS_RDF_TYPE_B64, (size_t)i, bignumbuf);
 		if (ldns_rdf2buffer_str(output, b64_bignum) != LDNS_STATUS_OK) {
 			ldns_rdf_deep_free(b64_bignum);
 			LDNS_FREE(bignumbuf);

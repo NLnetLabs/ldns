@@ -191,7 +191,7 @@ main(int argc, char *argv[])
 	key = ldns_key_new_frm_algorithm(algorithm, bits);
 	if(!key) {
 		fprintf(stderr, "cannot generate key of algorithm %s\n",
-			ldns_pkt_algorithm2str(algorithm));
+			ldns_pkt_algorithm2str((ldns_algorithm)algorithm));
 		exit(EXIT_FAILURE);
 	}
 

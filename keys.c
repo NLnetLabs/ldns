@@ -877,6 +877,7 @@ ldns_key_new_frm_fp_rsa_l(FILE *f, int *line_nr)
 #endif /* splint */
 
 #if OPENSSL_VERSION_NUMBER < 0x10100000
+# ifndef S_SPLINT_S
 	rsa->n = n;
 	rsa->e = e;
 	rsa->d = d;
@@ -885,6 +886,7 @@ ldns_key_new_frm_fp_rsa_l(FILE *f, int *line_nr)
 	rsa->dmp1 = dmp1;
 	rsa->dmq1 = dmq1;
 	rsa->iqmp = iqmp;
+# endif
 #else
 	if(!RSA_set0_key(rsa, n, e, d))
 		goto error;
@@ -995,11 +997,13 @@ ldns_key_new_frm_fp_dsa_l(FILE *f, ATTR_UNUSED(int *line_nr))
 #endif /* splint */
 
 #if OPENSSL_VERSION_NUMBER < 0x10100000
+# ifndef S_SPLINT_S
 	dsa->p = p;
 	dsa->q = q;
 	dsa->g = g;
 	dsa->priv_key = priv_key;
 	dsa->pub_key = pub_key;
+# endif
 #else
 	if(!DSA_set0_pqg(dsa, p, q, g))
 		goto error;
