@@ -306,7 +306,7 @@ main(int argc, char **argv)
 
 	for(i=0; i<argc; i++)
 	{
-		struct addrinfo hints, *res0, *res;
+		struct addrinfo hints, *res0, *ai_res;
 		int error;
 		int default_family = AF_INET;
 
@@ -322,13 +322,13 @@ main(int argc, char **argv)
 				gai_strerror(error));
 			continue;
 		}
-		for (res = res0; res; res = res->ai_next) {
-			int s = socket(res->ai_family, res->ai_socktype, 
-				res->ai_protocol);
+		for (ai_res = res0; ai_res; ai_res = ai_res->ai_next) {
+			int s = socket(ai_res->ai_family, ai_res->ai_socktype, 
+				ai_res->ai_protocol);
 			if(s == -1)
 				continue;
 			/* send the notify */
-			notify_host(s, res, wire, wiresize, argv[i]);
+			notify_host(s, ai_res, wire, wiresize, argv[i]);
 		}
 		freeaddrinfo(res0);
 	}

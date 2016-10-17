@@ -67,7 +67,7 @@ ldns_dname2buffer_wire_compress(ldns_buffer *buffer, const ldns_rdf *name, ldns_
 	{
 		/* Not found. Write cache entry, take off first label, write it, */
 		/* try again with the rest of the name. */
-		ldns_rbnode_t *node = LDNS_MALLOC(ldns_rbnode_t);
+		node = LDNS_MALLOC(ldns_rbnode_t);
 		if(!node)
 		{
 			return LDNS_STATUS_MEM_ERR;

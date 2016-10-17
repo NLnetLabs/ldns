@@ -312,8 +312,7 @@ do_chase(ldns_resolver *res,
 	    ldns_rr_list *trusted_keys,
 	    ldns_pkt *pkt_o,
 	    uint16_t qflags,
-	    ldns_rr_list * ATTR_UNUSED(prev_key_list),
-	    int verbosity)
+	    ldns_rr_list * ATTR_UNUSED(prev_key_list))
 {
 	ldns_rr_list *rrset = NULL;
 	ldns_status result;

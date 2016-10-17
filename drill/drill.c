@@ -693,8 +693,7 @@ main(int argc, char *argv[])
 					ldns_resolver_set_dnssec_anchors(res, ldns_rr_list_clone(key_list));
 					result = do_chase(res, qname, type,
 					                  clas, key_list, 
-					                  pkt, qflags, NULL,
-								   verbosity);
+					                  pkt, qflags, NULL);
 					if (result == LDNS_STATUS_OK) {
 						if (verbosity != -1) {
 							mesg("Chase successful");
