@@ -288,7 +288,7 @@ find_or_create_pubkey(const char *keyfile_name_base, ldns_key *key, ldns_zone *o
 	}
 }
 
-void
+static void
 strip_dnssec_records(ldns_zone *zone)
 {
 	ldns_rr_list *new_list;

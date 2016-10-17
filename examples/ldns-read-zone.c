@@ -15,7 +15,7 @@
 
 #include <errno.h>
 
-void print_usage(const char* progname)
+static void print_usage(const char* progname)
 {
 	printf("Usage: %s [OPTIONS] <zonefile>\n", progname);
 	printf("\tReads the zonefile and prints it.\n");
@@ -69,7 +69,7 @@ void print_usage(const char* progname)
 	exit(EXIT_SUCCESS);
 }
 
-void exclude_type(ldns_rdf **show_types, ldns_rr_type t)
+static void exclude_type(ldns_rdf **show_types, ldns_rr_type t)
 {
 	ldns_status s;
 
@@ -89,7 +89,7 @@ fail:
 	exit(EXIT_FAILURE);
 }
 
-void include_type(ldns_rdf **show_types, ldns_rr_type t)
+static void include_type(ldns_rdf **show_types, ldns_rr_type t)
 {
 	ldns_status s;
 

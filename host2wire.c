@@ -354,7 +354,7 @@ ldns_hdr2buffer_wire(ldns_buffer *buffer, const ldns_pkt *packet)
 	return ldns_buffer_status(buffer);
 }
 
-void
+static void
 compression_node_free(ldns_rbnode_t *node, void *arg)
 {
 	(void)arg; /* Yes, dear compiler, it is used */

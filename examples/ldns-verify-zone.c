@@ -55,7 +55,7 @@ print_type(FILE* stream, ldns_rr_type type)
 	}
 }
 
-ldns_status
+static ldns_status
 read_key_file(const char *filename, ldns_rr_list *keys)
 {
 	ldns_status status = LDNS_STATUS_ERR;

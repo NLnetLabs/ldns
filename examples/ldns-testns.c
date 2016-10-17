@@ -188,6 +188,7 @@ static void error(const char* msg, ...)
 	exit(EXIT_FAILURE);
 }
 
+void verbose(int lvl, const char* msg, ...) ATTR_FORMAT(printf, 2, 3);
 void verbose(int ATTR_UNUSED(lvl), const char* msg, ...)
 {
 	va_list args;

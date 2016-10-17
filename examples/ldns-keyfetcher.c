@@ -507,7 +507,7 @@ retrieve_dnskeys(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
  * for the root zone and A records for those NS RRs.
  * Read them, check them, and append the a records to the rr list given.
  */
-ldns_rr_list *
+static ldns_rr_list *
 read_root_hints(const char *filename)
 {
 	FILE *fp = NULL;

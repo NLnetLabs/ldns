@@ -58,7 +58,7 @@
 
 /* int verbosity = 3; */
 
-void
+static void
 print_usage(const char* progname)
 {
 	printf("Usage: %s [OPTIONS] verify <name> <port>\n", progname);
@@ -137,7 +137,7 @@ print_usage(const char* progname)
 	exit(EXIT_SUCCESS);
 }
 
-int
+static int
 dane_int_within_range(const char* arg, int max, const char* name)
 {
 	char* endptr; /* utility var for strtol usage */
@@ -206,7 +206,7 @@ dane_param_choice dane_matching_type_table[] = {
 	{ NULL, -1 }
 };
 
-int
+static int
 dane_int_within_range_table(const char* arg, int max, const char* name,
 		dane_param_choice table[])
 {
@@ -222,7 +222,7 @@ dane_int_within_range_table(const char* arg, int max, const char* name,
 	return dane_int_within_range(arg, max, name);
 }
 
-void
+static void
 ssl_err(const char* s)
 {
 	fprintf(stderr, "error: %s\n", s);
@@ -230,7 +230,7 @@ ssl_err(const char* s)
 	exit(EXIT_FAILURE);
 }
 
-void
+static void
 ldns_err(const char* s, ldns_status err)
 {
 	if (err == LDNS_STATUS_SSL_ERR) {
@@ -241,7 +241,7 @@ ldns_err(const char* s, ldns_status err)
 	}
 }
 
-ldns_status
+static ldns_status
 ssl_connect_and_get_cert_chain(
 		X509** cert, STACK_OF(X509)** extra_certs,
 	       	SSL* ssl, const char* name_str,
@@ -322,7 +322,7 @@ ssl_connect_and_get_cert_chain(
 }
 
 
-void
+static void
 ssl_interact(SSL* ssl)
 {
 	fd_set rfds;
@@ -410,7 +410,7 @@ ssl_interact(SSL* ssl)
 }
 
 
-ldns_rr_list*
+static ldns_rr_list*
 rr_list_filter_rr_type(ldns_rr_list* l, ldns_rr_type t)
 {
 	size_t i;
@@ -440,7 +440,7 @@ rr_list_filter_rr_type(ldns_rr_list* l, ldns_rr_type t)
  *
  * This to check what would happen if PKIX validation was successfull always.
  */
-ldns_rr_list*
+static ldns_rr_list*
 dane_no_pkix_transform(const ldns_rr_list* tlas)
 {
 	size_t i;
@@ -502,7 +502,7 @@ dane_no_pkix_transform(const ldns_rr_list* tlas)
 	return r;
 }
 
-void
+static void
 print_rr_as_TYPEXXX(FILE* out, ldns_rr* rr)
 {
 	size_t i, sz;
@@ -533,7 +533,7 @@ print_rr_as_TYPEXXX(FILE* out, ldns_rr* rr)
 	LDNS_FREE(str);
 }
 
-void
+static void
 print_rr_list_as_TYPEXXX(FILE* out, ldns_rr_list* l)
 {
 	size_t i;
@@ -543,7 +543,7 @@ print_rr_list_as_TYPEXXX(FILE* out, ldns_rr_list* l)
 	}
 }
 
-ldns_status
+static ldns_status
 read_key_file(const char *filename, ldns_rr_list *keys)
 {
 	ldns_status status = LDNS_STATUS_ERR;
@@ -582,7 +582,7 @@ read_key_file(const char *filename, ldns_rr_list *keys)
 }
 
 
-ldns_status
+static ldns_status
 dane_setup_resolver(ldns_resolver** res, ldns_rdf* nameserver_addr,
 		ldns_rr_list* keys, bool dnssec_off)
 {
@@ -611,7 +611,7 @@ dane_setup_resolver(ldns_resolver** res, ldns_rdf* nameserver_addr,
 }
 
 
-ldns_status
+static ldns_status
 dane_query(ldns_rr_list** rrs, ldns_resolver* r,
 		ldns_rdf *name, ldns_rr_type t, ldns_rr_class c,
 		bool insecure_is_ok)
@@ -716,7 +716,7 @@ cleanup:
 }
 
 
-ldns_rr_list*
+static ldns_rr_list*
 dane_lookup_addresses(ldns_resolver* res, ldns_rdf* dname,
 		int ai_family)
 {
@@ -783,7 +783,7 @@ dane_lookup_addresses(ldns_resolver* res, ldns_rdf* dname,
 	return r;
 }
 
-ldns_status
+static ldns_status
 dane_read_tlsas_from_file(ldns_rr_list** tlsas,
 		char* filename, ldns_rdf* origin)
 {
@@ -875,7 +875,7 @@ error:
 	return s;
 }
 
-bool
+static bool
 dane_wildcard_label_cmp(uint8_t iw, const char* w, uint8_t il, const char* l)
 {
 	if (iw == 0) { /* End of match label */
@@ -918,7 +918,7 @@ dane_wildcard_label_cmp(uint8_t iw, const char* w, uint8_t il, const char* l)
 	return iw == 0 && il == 0;
 }
 
-bool
+static bool
 dane_label_matches_label(ldns_rdf* w, ldns_rdf* l)
 {
 	uint8_t iw;
@@ -931,7 +931,7 @@ dane_label_matches_label(ldns_rdf* w, ldns_rdf* l)
 			il, (const char*)ldns_rdf_data(l) + 1);
 }
 
-bool
+static bool
 dane_name_matches_server_name(const char* name_str, ldns_rdf* server_name)
 {
 	ldns_rdf* name;
@@ -971,7 +971,7 @@ dane_name_matches_server_name(const char* name_str, ldns_rdf* server_name)
 	return true;
 }
 
-bool
+static bool
 dane_X509_any_subject_alt_name_matches_server_name(
 		X509 *cert, ldns_rdf* server_name)
 {
@@ -1005,7 +1005,7 @@ dane_X509_any_subject_alt_name_matches_server_name(
 	return false;
 }
 
-bool
+static bool
 dane_X509_subject_name_matches_server_name(X509 *cert, ldns_rdf* server_name)
 {
 	X509_NAME* subject_name;
@@ -1033,7 +1033,7 @@ dane_X509_subject_name_matches_server_name(X509 *cert, ldns_rdf* server_name)
 	}
 }
 
-bool
+static bool
 dane_verify_server_name(X509* cert, ldns_rdf* server_name)
 {
 	ldns_rdf* server_name_lc;
@@ -1051,7 +1051,7 @@ dane_verify_server_name(X509* cert, ldns_rdf* server_name)
 	return r;
 }
 
-void
+static void
 dane_create(ldns_rr_list* tlsas, ldns_rdf* tlsa_owner,
 		ldns_tlsa_certificate_usage certificate_usage, int offset,
 		ldns_tlsa_selector          selector,
@@ -1089,7 +1089,7 @@ dane_create(ldns_rr_list* tlsas, ldns_rdf* tlsa_owner,
 	}
 }
 
-bool
+static bool
 dane_verify(ldns_rr_list* tlsas, ldns_rdf* address,
 		X509* cert, STACK_OF(X509)* extra_certs,
 		X509_STORE* validate_store,

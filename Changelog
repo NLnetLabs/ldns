@@ -77,7 +77,8 @@ TBD
 	* bugfix #641: Include install-sh in .gitignore
 	* bugfix #825: Module import breaks with newer SWIG versions.
 	  Thanks Christoph Egger
-	* bugfix #796: Fix -Wshadow issues.  Thanks Ngie Cooper
+	* bugfix #796 - #792: Fix miscellaneous compiler warning issues.
+	  Thanks Ngie Cooper
 
 1.6.17	2014-01-10
 	* Fix ldns_dnssec_zone_new_frm_fp_l to allow the last parsed line of a

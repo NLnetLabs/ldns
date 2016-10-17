@@ -925,7 +925,7 @@ handle_query(uint8_t* inbuf, ssize_t inlen, struct entry* entries, int* count,
 }
 
 /** delete the list of reply packets */
-void delete_replylist(struct reply_packet* replist)
+static void delete_replylist(struct reply_packet* replist)
 {
 	struct reply_packet *p=replist, *np;
 	while(p) {
