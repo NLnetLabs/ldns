@@ -145,6 +145,8 @@ ldns_lookup_table ldns_error_str[] = {
         { LDNS_STATUS_RDATA_OVERFLOW, "Rdata size overflow" },
 	{ LDNS_STATUS_SYNTAX_SUPERFLUOUS_TEXT_ERR,
 		"Syntax error, superfluous text present" },
+        { LDNS_STATUS_NSEC3_DOMAINNAME_OVERFLOW,
+		"The NSEC3 domainname length overflow" },
 	{ 0, NULL }
 };
 

@@ -887,6 +887,10 @@ ldns_dnssec_zone_create_nsec3s_mkmap(ldns_dnssec_zone *zone,
 		nsec_ttl = LDNS_DEFAULT_TTL;
 	}
 
+	if (ldns_rdf_size(zone->soa->name) > 222) {
+		return LDNS_STATUS_NSEC3_DOMAINNAME_OVERFLOW;
+	}
+
 	if (zone->hashed_names) {
 		ldns_traverse_postorder(zone->hashed_names,
 				ldns_hashed_names_node_free, NULL);

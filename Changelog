@@ -86,6 +86,8 @@ TBD
 	* bugfix #708: warnings and errors with xcode 6.1/7.0
 	* bugfix #754: Memory leak in ldns_str2rdf_ipseckey
 	  Thanks Xiali Yan
+	* bugfix #661: Fail NSEC3 signing when NSEC domainname length
+	  would overflow.  Thanks Jan-Piet Mens.
 
 1.6.17	2014-01-10
 	* Fix ldns_dnssec_zone_new_frm_fp_l to allow the last parsed line of a
