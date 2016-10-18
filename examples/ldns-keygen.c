@@ -57,6 +57,7 @@ main(int argc, char *argv[])
 	/* default key size */
 	uint16_t def_bits = 1024;
 	uint16_t bits = def_bits;
+	bool had_bits = false;
 	bool ksk;
 
 	FILE *file;
@@ -98,7 +99,8 @@ main(int argc, char *argv[])
 			if (bits == 0) {
 				fprintf(stderr, "%s: %s %d", prog, "Can not parse the -b argument, setting it to the default\n", (int) def_bits);
 				bits = def_bits;
-			}
+			} else
+				had_bits = true;
 			break;
 		case 'k':
 			ksk = true;
@@ -142,7 +144,7 @@ main(int argc, char *argv[])
 	case LDNS_SIGN_RSASHA512:
 		if (bits < 512 || bits > 4096) {
 			fprintf(stderr, "For RSA, the key size must be between ");
-			fprintf(stderr, " 512 and 4096 bytes. Aborting.\n");
+			fprintf(stderr, " 512 and 4096 bits. Aborting.\n");
 			exit(1);
 		}
 		break;
@@ -150,7 +152,7 @@ main(int argc, char *argv[])
 	case LDNS_SIGN_DSA_NSEC3:
 		if (bits < 512 || bits > 1024) {
 			fprintf(stderr, "For DSA, the key size must be between ");
-			fprintf(stderr, " 512 and 1024 bytes. Aborting.\n");
+			fprintf(stderr, " 512 and 1024 bits. Aborting.\n");
 			exit(1);
 		}
 		break;
@@ -165,10 +167,66 @@ main(int argc, char *argv[])
 #ifdef USE_ECDSA
 	case LDNS_SIGN_ECDSAP256SHA256:
 	case LDNS_SIGN_ECDSAP384SHA384:
+		break;
 #endif
 	case LDNS_SIGN_HMACMD5:
+		if (!had_bits) {
+			bits = 512;
+		} else if (bits < 1 || bits > 512) {
+			fprintf(stderr, "For hmac-md5, the key size must be ");
+			fprintf(stderr, "between 1 and 512 bits. Aborting.\n");
+			exit(1);
+		}
+		break;
 	case LDNS_SIGN_HMACSHA1:
+		if (!had_bits) {
+			bits = 160;
+		} else if (bits < 1 || bits > 160) {
+			fprintf(stderr, "For hmac-sha1, the key size must be ");
+			fprintf(stderr, "between 1 and 160 bits. Aborting.\n");
+			exit(1);
+		}
+		break;
+
+	case LDNS_SIGN_HMACSHA224:
+		if (!had_bits) {
+			bits = 224;
+		} else if (bits < 1 || bits > 224) {
+			fprintf(stderr, "For hmac-sha224, the key size must be ");
+			fprintf(stderr, "between 1 and 224 bits. Aborting.\n");
+			exit(1);
+		}
+		break;
+
 	case LDNS_SIGN_HMACSHA256:
+		if (!had_bits) {
+			bits = 256;
+		} else if (bits < 1 || bits > 256) {
+			fprintf(stderr, "For hmac-sha256, the key size must be ");
+			fprintf(stderr, "between 1 and 256 bits. Aborting.\n");
+			exit(1);
+		}
+		break;
+
+	case LDNS_SIGN_HMACSHA384:
+		if (!had_bits) {
+			bits = 384;
+		} else if (bits < 1 || bits > 384) {
+			fprintf(stderr, "For hmac-sha384, the key size must be ");
+			fprintf(stderr, "between 1 and 384 bits. Aborting.\n");
+			exit(1);
+		}
+		break;
+
+	case LDNS_SIGN_HMACSHA512:
+		if (!had_bits) {
+			bits = 512;
+		} else if (bits < 1 || bits > 512) {
+			fprintf(stderr, "For hmac-sha512, the key size must be ");
+			fprintf(stderr, "between 1 and 512 bits. Aborting.\n");
+			exit(1);
+		}
+		break;
 	default:
 		break;
 	}

@@ -106,7 +106,10 @@ enum ldns_enum_signing_algorithm
 #endif
 	LDNS_SIGN_HMACMD5	 = 157,	/* not official! This type is for TSIG, not DNSSEC */
 	LDNS_SIGN_HMACSHA1	 = 158,	/* not official! This type is for TSIG, not DNSSEC */
-	LDNS_SIGN_HMACSHA256 = 159  /* ditto */
+	LDNS_SIGN_HMACSHA256 = 159,  /* ditto */
+	LDNS_SIGN_HMACSHA224 = 162,  /* ditto */
+	LDNS_SIGN_HMACSHA384 = 164,  /* ditto */
+	LDNS_SIGN_HMACSHA512 = 165  /* ditto */
 };
 typedef enum ldns_enum_signing_algorithm ldns_signing_algorithm;
 

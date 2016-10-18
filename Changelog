@@ -88,6 +88,8 @@ TBD
 	  Thanks Xiali Yan
 	* bugfix #661: Fail NSEC3 signing when NSEC domainname length
 	  would overflow.  Thanks Jan-Piet Mens.
+	* bugfix #771: hmac-sha224, hmac-sha384 and hmac-sha512 keys.
+	  Thanks Harald Jenny
 
 1.6.17	2014-01-10
 	* Fix ldns_dnssec_zone_new_frm_fp_l to allow the last parsed line of a

@@ -2202,9 +2202,24 @@ ldns_key2buffer_str(ldns_buffer *output, const ldns_key *k)
 		        ldns_buffer_printf(output, "Algorithm: 158 (HMAC_SHA1)\n");
 				status = ldns_hmac_key2buffer_str(output, k);
 				break;
+			case LDNS_SIGN_HMACSHA224:
+		        ldns_buffer_printf(output, "Private-key-format: v1.2\n");
+		        ldns_buffer_printf(output, "Algorithm: 162 (HMAC_SHA224)\n");
+				status = ldns_hmac_key2buffer_str(output, k);
+				break;
 			case LDNS_SIGN_HMACSHA256:
 		        ldns_buffer_printf(output, "Private-key-format: v1.2\n");
 		        ldns_buffer_printf(output, "Algorithm: 159 (HMAC_SHA256)\n");
+				status = ldns_hmac_key2buffer_str(output, k);
+				break;
+			case LDNS_SIGN_HMACSHA384:
+		        ldns_buffer_printf(output, "Private-key-format: v1.2\n");
+		        ldns_buffer_printf(output, "Algorithm: 164 (HMAC_SHA384)\n");
+				status = ldns_hmac_key2buffer_str(output, k);
+				break;
+			case LDNS_SIGN_HMACSHA512:
+		        ldns_buffer_printf(output, "Private-key-format: v1.2\n");
+		        ldns_buffer_printf(output, "Algorithm: 165 (HMAC_SHA512)\n");
 				status = ldns_hmac_key2buffer_str(output, k);
 				break;
 		}
