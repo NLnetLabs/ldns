@@ -1134,7 +1134,7 @@ ldns_rdf2buffer_str_ipseckey(ldns_buffer *output, const ldns_rdf *rdf)
 	public_key_size = ldns_rdf_size(rdf) - offset;
 	public_key_data = LDNS_XMALLOC(uint8_t, public_key_size);
         if(!public_key_data) {
-                ldns_rdf_free(gateway);
+                ldns_rdf_deep_free(gateway);
                 return LDNS_STATUS_MEM_ERR;
         }
 	memcpy(public_key_data, &data[offset], public_key_size);
@@ -1142,7 +1142,7 @@ ldns_rdf2buffer_str_ipseckey(ldns_buffer *output, const ldns_rdf *rdf)
 			public_key_size, public_key_data);
         if(!public_key) {
                 LDNS_FREE(public_key_data);
-                ldns_rdf_free(gateway);
+                ldns_rdf_deep_free(gateway);
                 return LDNS_STATUS_MEM_ERR;
         }
 
@@ -1154,8 +1154,8 @@ ldns_rdf2buffer_str_ipseckey(ldns_buffer *output, const ldns_rdf *rdf)
 	ldns_buffer_printf(output, " ");
 	(void) ldns_rdf2buffer_str(output, public_key);
 
-	ldns_rdf_free(gateway);
-	ldns_rdf_free(public_key);
+	ldns_rdf_deep_free(gateway);
+	ldns_rdf_deep_free(public_key);
 
 	return ldns_buffer_status(output);
 }
