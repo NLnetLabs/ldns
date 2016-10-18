@@ -719,7 +719,7 @@ ldns_status ldns_resolver_new_frm_fp_l(ldns_resolver **r, FILE *fp, int *line_nr
 /**
  * Configure a resolver by means of a resolv.conf file
  * The file may be NULL in which case there will  be
- * looked the RESOLV_CONF (defaults to /etc/resolv.conf
+ * looked the RESOLV_CONF (defaults to /etc/resolv.conf)
  * \param[out] r the new resolver
  * \param[in] filename the filename to use
  * \return LDNS_STATUS_OK or the error
