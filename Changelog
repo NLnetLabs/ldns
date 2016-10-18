@@ -92,6 +92,8 @@ TBD
 	  Thanks Harald Jenny
 	* bugfix #680: ldns fails to reject invalidly formatted
 	  RFC 7553 URI RRs.  Thanks Robert Edmonds
+	* bugfix #678: Use poll i.s.o. select to support > 1024 fds
+	  Thanks William King
 
 1.6.17	2014-01-10
 	* Fix ldns_dnssec_zone_new_frm_fp_l to allow the last parsed line of a

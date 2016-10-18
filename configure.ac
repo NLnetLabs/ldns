@@ -181,6 +181,13 @@ case "$enable_stderr_msgs" in
         ;;
 esac
 
+AX_HAVE_POLL(
+  [AX_CONFIG_FEATURE_ENABLE(poll)],
+  [AX_CONFIG_FEATURE_DISABLE(poll)])
+AX_CONFIG_FEATURE(
+  [poll], [This platform supports poll(7)],
+  [HAVE_POLL], [This platform supports poll(7).])
+
 # check for python
 PYTHON_X_CFLAGS=""
 ldns_with_pyldns=no
@@ -832,6 +839,15 @@ void *memmove(void *dest, const void *src, size_t n);
 #ifndef HAVE_STRLCPY
 size_t strlcpy(char *dst, const char *src, size_t siz);
 #endif
+
+#ifdef USE_WINSOCK
+#define SOCK_INVALID INVALID_SOCKET
+#define close_socket(_s) if (_s > SOCK_INVALID) {closesocket(_s); _s = SOCK_INVALID;}
+#else
+#define SOCK_INVALID -1
+#define close_socket(_s) if (_s > SOCK_INVALID) {close(_s); _s = SOCK_INVALID;}
+#endif
+
 #ifdef __cplusplus
 }
 #endif

@@ -30,6 +30,9 @@
 #include <sys/time.h>
 #include <errno.h>
 #include <fcntl.h>
+#ifdef HAVE_POLL
+#include <poll.h>
+#endif
 
 ldns_status
 ldns_send(ldns_pkt **result_packet, ldns_resolver *r, const ldns_pkt *query_pkt)
@@ -150,6 +153,7 @@ static int
 ldns_sock_wait(int sockfd, struct timeval timeout, int write)
 {
 	int ret;
+#ifndef HAVE_POLL
 #ifndef S_SPLINT_S
 	fd_set fds;
 	FD_ZERO(&fds);
@@ -158,6 +162,20 @@ ldns_sock_wait(int sockfd, struct timeval timeout, int write)
 		ret = select(sockfd+1, NULL, &fds, NULL, &timeout);
 	else
 		ret = select(sockfd+1, &fds, NULL, NULL, &timeout);
+#endif
+#else
+	struct pollfd pfds[2];
+
+	memset(&pfds[0], 0, sizeof(pfds[0]) * 2);
+
+	pfds[0].fd = sockfd;
+	pfds[0].events = POLLIN|POLLERR;
+
+	if (write) {
+		pfds[0].events |= POLLOUT;
+	}
+	
+	ret = poll(pfds, 1, timeout.tv_sec * 1000 + timeout.tv_usec / 1000);
 #endif
 	if(ret == 0)
 		/* timeout expired */
@@ -178,30 +196,30 @@ ldns_tcp_connect_from(const struct sockaddr_storage *to, socklen_t tolen,
 
 #ifndef S_SPLINT_S
 	if ((sockfd = socket((int)((struct sockaddr*)to)->sa_family, SOCK_STREAM, 
-					IPPROTO_TCP)) == -1) {
+					IPPROTO_TCP)) == SOCK_INVALID) {
 		return 0;
 	}
 #endif
-	if (from && bind(sockfd, (const struct sockaddr*)from, fromlen) == -1){
+	if (from && bind(sockfd, (const struct sockaddr*)from, fromlen) == SOCK_INVALID){
 		return 0;
 	}
 
 	/* perform nonblocking connect, to be able to wait with select() */
 	ldns_sock_nonblock(sockfd);
-	if (connect(sockfd, (struct sockaddr*)to, tolen) == -1) {
+	if (connect(sockfd, (struct sockaddr*)to, tolen) == SOCK_INVALID) {
 #ifndef USE_WINSOCK
 #ifdef EINPROGRESS
 		if(errno != EINPROGRESS) {
 #else
 		if(1) {
 #endif
-			close(sockfd);
+			close_socket(sockfd);
 			return 0;
 		}
 #else /* USE_WINSOCK */
 		if(WSAGetLastError() != WSAEINPROGRESS &&
 			WSAGetLastError() != WSAEWOULDBLOCK) {
-			closesocket(sockfd);
+			close_socket(sockfd);
 			return 0;
 		}
 #endif
@@ -214,11 +232,7 @@ ldns_tcp_connect_from(const struct sockaddr_storage *to, socklen_t tolen,
 		socklen_t len = (socklen_t)sizeof(error);
 
 		if(!ldns_sock_wait(sockfd, timeout, 1)) {
-#ifndef USE_WINSOCK
-			close(sockfd);
-#else
-			closesocket(sockfd);
-#endif
+			close_socket(sockfd);
 			return 0;
 		}
 
@@ -237,7 +251,7 @@ ldns_tcp_connect_from(const struct sockaddr_storage *to, socklen_t tolen,
 			continue; /* try again */
 #endif
 		else if(error != 0) {
-			close(sockfd);
+			close_socket(sockfd);
 			/* error in errno for our user */
 			errno = error;
 			return 0;
@@ -248,7 +262,7 @@ ldns_tcp_connect_from(const struct sockaddr_storage *to, socklen_t tolen,
 		else if(error == WSAEWOULDBLOCK)
 			continue;
 		else if(error != 0) {
-			closesocket(sockfd);
+			close_socket(sockfd);
 			errno = error;
 			return 0;
 		}
@@ -285,11 +299,7 @@ ldns_tcp_bgsend_from(ldns_buffer *qbin,
 	}
 	
 	if (ldns_tcp_send_query(qbin, sockfd, to, tolen) == 0) {
-#ifndef USE_WINSOCK
-		close(sockfd);
-#else
-		closesocket(sockfd);
-#endif
+		close_socket(sockfd);
 		return 0;
 	}
 	
@@ -324,11 +334,7 @@ ldns_tcp_send_from(uint8_t **result,  ldns_buffer *qbin,
 	}
 
 	answer = ldns_tcp_read_wire_timeout(sockfd, answer_size, timeout);
-#ifndef USE_WINSOCK
-	close(sockfd);
-#else
-	closesocket(sockfd);
-#endif
+	close_socket(sockfd);
 
 	if (*answer_size == 0) {
 		/* oops */
@@ -387,11 +393,7 @@ ldns_udp_bgsend_from(ldns_buffer *qbin,
 	}
 
 	if (ldns_udp_send_query(qbin, sockfd, to, tolen) == 0) {
-#ifndef USE_WINSOCK
-		close(sockfd);
-#else
-		closesocket(sockfd);
-#endif
+		close_socket(sockfd);
 		return 0;
 	}
 	return sockfd;
@@ -422,11 +424,7 @@ ldns_udp_send_from(uint8_t **result, ldns_buffer *qbin,
 
 	/* wait for an response*/
 	if(!ldns_sock_wait(sockfd, timeout, 0)) {
-#ifndef USE_WINSOCK
-		close(sockfd);
-#else
-                closesocket(sockfd);
-#endif
+		close_socket(sockfd);
 		return LDNS_STATUS_NETWORK_ERR;
 	}
 
@@ -436,11 +434,7 @@ ldns_udp_send_from(uint8_t **result, ldns_buffer *qbin,
         ldns_sock_nonblock(sockfd);
 
 	answer = ldns_udp_read_wire(sockfd, answer_size, NULL, NULL);
-#ifndef USE_WINSOCK
-	close(sockfd);
-#else
-        closesocket(sockfd);
-#endif
+	close_socket(sockfd);
 
 	if (*answer_size == 0) {
 		/* oops */
@@ -892,7 +886,7 @@ ldns_axfr_start(ldns_resolver *resolver, const ldns_rdf *domain, ldns_rr_class c
          * @hostname is used */
         for (ns_i = 0;
              ns_i < ldns_resolver_nameserver_count(resolver) &&
-             resolver->_socket == 0;
+             resolver->_socket == SOCK_INVALID;
              ns_i++) {
 		if (ns != NULL) {
 			LDNS_FREE(ns);
@@ -924,7 +918,7 @@ ldns_axfr_start(ldns_resolver *resolver, const ldns_rdf *domain, ldns_rr_class c
 				ldns_resolver_timeout(resolver));
 	}
 
-	if (resolver->_socket == 0) {
+	if (resolver->_socket == SOCK_INVALID) {
 		ldns_pkt_free(query);
 		LDNS_FREE(ns);
 		return LDNS_STATUS_NETWORK_ERR;
@@ -939,11 +933,7 @@ ldns_axfr_start(ldns_resolver *resolver, const ldns_rdf *domain, ldns_rr_class c
 		if (status != LDNS_STATUS_OK) {
 			/* to prevent problems on subsequent calls to 
 			 * ldns_axfr_start we have to close the socket here! */
-#ifndef USE_WINSOCK
-			close(resolver->_socket);
-#else
-			closesocket(resolver->_socket);
-#endif
+			close_socket(resolver->_socket);
 			resolver->_socket = 0;
 
 			ldns_pkt_free(query);
@@ -961,12 +951,8 @@ ldns_axfr_start(ldns_resolver *resolver, const ldns_rdf *domain, ldns_rr_class c
         if(!query_wire) {
                 ldns_pkt_free(query);
                 LDNS_FREE(ns);
-#ifndef USE_WINSOCK
-		close(resolver->_socket);
-#else
-		closesocket(resolver->_socket);
-#endif
-		resolver->_socket = 0;
+
+		close_socket(resolver->_socket);
 
                 return LDNS_STATUS_MEM_ERR;
         }
@@ -978,11 +964,7 @@ ldns_axfr_start(ldns_resolver *resolver, const ldns_rdf *domain, ldns_rr_class c
 
 		/* to prevent problems on subsequent calls to ldns_axfr_start
 		 * we have to close the socket here! */
-#ifndef USE_WINSOCK
-		close(resolver->_socket);
-#else
-		closesocket(resolver->_socket);
-#endif
+		close_socket(resolver->_socket);
 		resolver->_socket = 0;
 
                 return status;
@@ -997,12 +979,8 @@ ldns_axfr_start(ldns_resolver *resolver, const ldns_rdf *domain, ldns_rr_class c
 		/* to prevent problems on subsequent calls to ldns_axfr_start
 		 * we have to close the socket here! */
 
-#ifndef USE_WINSOCK
-		close(resolver->_socket);
-#else
-		closesocket(resolver->_socket);
-#endif
-		resolver->_socket = 0;
+
+		close_socket(resolver->_socket);
 
                 return LDNS_STATUS_NETWORK_ERR;
         }
