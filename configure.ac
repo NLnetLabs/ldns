@@ -660,9 +660,16 @@ ACX_FUNC_IOCTLSOCKET
 ACX_CHECK_FORMAT_ATTRIBUTE
 ACX_CHECK_UNUSED_ATTRIBUTE
 
-# check OSX deployment target which is needed
+# check OSX deployment target, if needed
 if echo $build_os | grep darwin > /dev/null; then
- 	export MACOSX_DEPLOYMENT_TARGET="10.4"
+  sdk_p=`xcode-select -print-path`;
+  sdk_v="$( /usr/bin/xcrun --show-sdk-version )";
+  case $sdk_v in
+       10.11|10.10) sdk_c="10.10";;
+       10.9|10.8)   sdk_c="10.7";;
+  esac
+  export MACOSX_DEPLOYMENT_TARGET="${sdk_c}";
+  export CFLAGS="$CFLAGS -mmacosx-version-min=${sdk_c} -isysroot ${sdk_p}/Platforms/MacOSX.platform/Developer/SDKs/MacOSX${sdk_v}.sdk";
 fi
 
 AC_DEFINE([SYSCONFDIR], [sysconfdir], [System configuration dir])
