@@ -175,7 +175,8 @@ ldns_sock_wait(int sockfd, struct timeval timeout, int write)
 		pfds[0].events |= POLLOUT;
 	}
 	
-	ret = poll(pfds, 1, timeout.tv_sec * 1000 + timeout.tv_usec / 1000);
+	ret = poll(pfds, 1, (int)(timeout.tv_sec * 1000
+				+ timeout.tv_usec / 1000));
 #endif
 	if(ret == 0)
 		/* timeout expired */
