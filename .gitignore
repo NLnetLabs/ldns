@@ -163,7 +163,8 @@
 /linktest.lo
 /linktest.o
 /ltmain.sh
-/m4/
+/m4/lt*.m4
+/m4/libtool.m4
 /net.lo
 /net.o
 /packaging/ldns-config
