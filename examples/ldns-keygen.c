@@ -345,7 +345,10 @@ main(int argc, char *argv[])
 	/* print the DS to .ds */
 	if (ksk && algorithm != LDNS_SIGN_HMACMD5 &&
 		algorithm != LDNS_SIGN_HMACSHA1 &&
-		algorithm != LDNS_SIGN_HMACSHA256) {
+		algorithm != LDNS_SIGN_HMACSHA224 &&
+		algorithm != LDNS_SIGN_HMACSHA256 &&
+		algorithm != LDNS_SIGN_HMACSHA384 &&
+		algorithm != LDNS_SIGN_HMACSHA512) {
 		filename = LDNS_XMALLOC(char, strlen(owner) + 16);
 		snprintf(filename, strlen(owner) + 15, "K%s+%03u+%05u.ds", owner, algorithm, (unsigned int) ldns_key_keytag(key));
 		file = fopen(filename, "w");
