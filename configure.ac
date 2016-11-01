@@ -410,9 +410,11 @@ case "$enable_ed448" in
 esac
 
 AC_ARG_ENABLE(dane, AC_HELP_STRING([--disable-dane], [Disable DANE support]))
+AC_ARG_ENABLE(dane-ta-usage, AC_HELP_STRING([--disable-dane-ta-usage], [Disable DANE-TA usage type support]))
 case "$enable_dane" in
     no)
       AC_SUBST(ldns_build_config_use_dane, 0)
+      AC_SUBST(ldns_build_config_use_dane_ta_usage, 0)
       ;;
     *) dnl default
       if test "x$HAVE_SSL" != "xyes"; then
@@ -421,6 +423,18 @@ case "$enable_dane" in
       AC_CHECK_FUNC(X509_check_ca, [], [AC_MSG_ERROR([OpenSSL does not support DANE: please upgrade OpenSSL or rerun with --disable-dane])])
       AC_DEFINE_UNQUOTED([USE_DANE], [1], [Define this to enable DANE support.])
       AC_SUBST(ldns_build_config_use_dane, 1)
+      case "$enable_dane_ta_usage" in
+          no)
+            AC_SUBST(ldns_build_config_use_dane_ta_usage, 0)
+            ;;
+          *) dnl default
+	    LIBS="$LIBS -lssl"
+            AC_CHECK_FUNC(SSL_get0_dane, [], [AC_MSG_ERROR([OpenSSL does not support offline DANE verification (Needed for the DANE-TA usage type).  Please upgrade OpenSSL to version >= 1.1.0 or rerun with --disable-dane-ta-usage])])
+            LIBSSL_LIBS="$LIBSSL_LIBS -lssl"
+            AC_DEFINE_UNQUOTED([USE_DANE_TA_USAGE], [1], [Define this to enable DANE-TA usage type support.])
+            AC_SUBST(ldns_build_config_use_dane_ta_usage, 1)
+            ;;
+      esac
       ;;
 esac
 

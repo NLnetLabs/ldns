@@ -147,6 +147,16 @@ ldns_lookup_table ldns_error_str[] = {
 		"Syntax error, superfluous text present" },
         { LDNS_STATUS_NSEC3_DOMAINNAME_OVERFLOW,
 		"The NSEC3 domainname length overflow" },
+#if OPENSSL_VERSION_NUMBER < 0x10100000
+        { LDNS_STATUS_DANE_NEED_OPENSSL_GE_1_1_FOR_DANE_TA,
+		"ldns needs to be linked with OpenSSL >= 1.1.0 to be able "
+       		"to verify the DANE-TA usage type." },
+#else
+        { LDNS_STATUS_DANE_NEED_OPENSSL_GE_1_1_FOR_DANE_TA,
+		"ldns depends on the availability of the SSL_get0_dane() and "
+		"X509_STORE_CTX_set0_dane() functions within OpenSSL >= 1.1.0 "
+		"to be able to verify the DANE-TA usage type." },
+#endif
 	{ 0, NULL }
 };
 
