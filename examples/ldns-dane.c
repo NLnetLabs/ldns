@@ -61,12 +61,16 @@
 static void
 print_usage(const char* progname)
 {
+#ifdef USE_DANE_VERIY
 	printf("Usage: %s [OPTIONS] verify <name> <port>\n", progname);
 	printf("   or: %s [OPTIONS] -t <tlsafile> verify\n", progname);
 	printf("\n\tVerify the TLS connection at <name>:<port> or"
 	       "\n\tuse TLSA record(s) from <tlsafile> to verify the\n"
 			"\tTLS service they reference.\n");
 	printf("\n   or: %s [OPTIONS] create <name> <port> [<usage> "
+#else
+	printf("Usage: %s [OPTIONS] create <name> <port> [<usage> "
+#endif
 			"[<selector> [<type>]]]\n", progname);
 	printf("\n\tUse the TLS connection(s) to <name> <port> "
 			"to create the TLSA\n\t"
@@ -322,6 +326,7 @@ ssl_connect_and_get_cert_chain(
 }
 
 
+#ifdef USE_DANE_VERIFY
 static void
 ssl_interact(SSL* ssl)
 {
@@ -408,6 +413,7 @@ ssl_interact(SSL* ssl)
 
 	} /* for (;;) */
 }
+#endif /* USE_DANE_VERIFY */
 
 
 static ldns_rr_list*
@@ -1089,6 +1095,7 @@ dane_create(ldns_rr_list* tlsas, ldns_rdf* tlsa_owner,
 	}
 }
 
+#ifdef USE_DANE_VERIFY
 static bool
 dane_verify(ldns_rr_list* tlsas, ldns_rdf* address,
 		X509* cert, STACK_OF(X509)* extra_certs,
@@ -1129,6 +1136,7 @@ dane_verify(ldns_rr_list* tlsas, ldns_rdf* address,
 			ldns_get_errorstr_by_id(s));
 	return false;
 }
+#endif /* USE_DANE_VERIFY */
 
 /**
  * Return either an A or AAAA rdf, based on the given
@@ -1398,6 +1406,7 @@ main(int argc, char* const* argv)
 		argc--;
 		argv++;
 
+#ifdef USE_DANE_VERIFY
 	} else if (strncasecmp(*argv, "verify", strlen(*argv)) == 0) {
 
 		mode = VERIFY;
@@ -1406,9 +1415,20 @@ main(int argc, char* const* argv)
 
 	} else {
 		fprintf(stderr, "Specify create or verify mode\n");
+#else
+	} else {
+		fprintf(stderr, "Specify create mode\n");
+#endif
 		exit(EXIT_FAILURE);
 	}
 
+#ifndef USE_DANE_VERIFY
+	(void)transport_str;
+	(void)transport_rdf;
+	(void)port_str;
+	(void)port_rdf;
+	(void)interact;
+#else
 	if (mode == VERIFY && argc == 0) {
 
 		if (! tlsas_file) {
@@ -1508,7 +1528,9 @@ main(int argc, char* const* argv)
 		}
 
 
-	} else if (argc < 2) {
+	} else 
+#endif /* USE_DANE_VERIFY */
+		if (argc < 2) {
 
 		print_usage("ldns-dane");
 
@@ -1689,6 +1711,7 @@ main(int argc, char* const* argv)
 					     cert, extra_certs, store,
 					     verify_server_name, name);
 			     break;
+#ifdef USE_DANE_VERIFY
 		case VERIFY: if (! dane_verify(tlsas, NULL,
 			                       cert, extra_certs, store,
 					       verify_server_name, name,
@@ -1696,6 +1719,7 @@ main(int argc, char* const* argv)
 				     success = false;
 			     }
 			     break;
+#endif
 		default:     break; /* suppress warning */
 		}
 		SSL_free(ssl);
@@ -1748,6 +1772,7 @@ main(int argc, char* const* argv)
 						     verify_server_name, name);
 				     break;
 
+#ifdef USE_DANE_VERIFY
 			case VERIFY: if (! dane_verify(tlsas, address,
 						cert, extra_certs, store,
 						verify_server_name, name,
@@ -1758,6 +1783,7 @@ main(int argc, char* const* argv)
 					     ssl_interact(ssl);
 				     }
 				     break;
+#endif
 			default:     break; /* suppress warning */
 			}
 			while (SSL_shutdown(ssl) == 0);

@@ -504,6 +504,7 @@ memerror:
 }
 
 
+#ifdef USE_DANE_VERIFY
 /* Return tlsas that actually are TLSA resource records with known values
  * for the Certificate usage, Selector and Matching type rdata fields.
  */
@@ -592,8 +593,10 @@ ldns_dane_match_any_cert_with_data(STACK_OF(X509)* chain,
 	}
 	return s;
 }
-#endif
+#endif /* !defined(USE_DANE_TA_USAGE) */
+#endif /* USE_DANE_VERIFY */
 
+#ifdef USE_DANE_VERIFY
 ldns_status
 ldns_dane_verify_rr(const ldns_rr* tlsa_rr,
 		X509* cert, STACK_OF(X509)* extra_certs,
@@ -933,5 +936,6 @@ ldns_dane_verify(const ldns_rr_list* tlsas,
 	ldns_rr_list_free(usable_tlsas);
 	return s;
 }
+#endif /* USE_DANE_VERIFY */
 #endif /* HAVE_SSL */
 #endif /* USE_DANE */
