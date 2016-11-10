@@ -1095,7 +1095,7 @@ dane_create(ldns_rr_list* tlsas, ldns_rdf* tlsa_owner,
 	}
 }
 
-#ifdef USE_DANE_VERIFY
+#if defined(USE_DANE_VERIFY) && OPENSSL_VERSION_NUMBER < 0x10100000
 static bool
 dane_verify(ldns_rr_list* tlsas, ldns_rdf* address,
 		X509* cert, STACK_OF(X509)* extra_certs,
@@ -1136,7 +1136,7 @@ dane_verify(ldns_rr_list* tlsas, ldns_rdf* address,
 			ldns_get_errorstr_by_id(s));
 	return false;
 }
-#endif /* USE_DANE_VERIFY */
+#endif /* defined(USE_DANE_VERIFY) && OPENSSL_VERSION_NUMBER < 0x10100000 */
 
 /**
  * Return either an A or AAAA rdf, based on the given
@@ -1162,6 +1162,11 @@ main(int argc, char* const* argv)
 
 	ldns_status   s;
 	size_t        i;
+
+#if OPENSSL_VERSION_NUMBER >= 0x10100000
+	size_t        j, usable_tlsas = 0;
+	X509_STORE_CTX *store_ctx = NULL;
+#endif /* OPENSSL_VERSION_NUMBER >= 0x10100000 */
 
 	bool print_tlsa_as_type52   = false;
 	bool assume_dnssec_validity = false;
@@ -1681,7 +1686,14 @@ main(int argc, char* const* argv)
 		}
 	}
 
+#if OPENSSL_VERSION_NUMBER < 0x10100000
 	ctx =  SSL_CTX_new(SSLv23_client_method());
+#else
+	ctx =  SSL_CTX_new(TLS_client_method());
+	if (ctx && SSL_CTX_dane_enable(ctx) <= 0) {
+		ssl_err("could not SSL_CTX_dane_enable");
+	}
+#endif
 	if (! ctx) {
 		ssl_err("could not SSL_CTX_new");
 	}
@@ -1712,6 +1724,7 @@ main(int argc, char* const* argv)
 					     verify_server_name, name);
 			     break;
 #ifdef USE_DANE_VERIFY
+#if OPENSSL_VERSION_NUMBER < 0x10100000
 		case VERIFY: if (! dane_verify(tlsas, NULL,
 			                       cert, extra_certs, store,
 					       verify_server_name, name,
@@ -1719,7 +1732,82 @@ main(int argc, char* const* argv)
 				     success = false;
 			     }
 			     break;
-#endif
+#else /* OPENSSL_VERSION_NUMBER < 0x10100000 */
+		case VERIFY: 
+			     usable_tlsas = 0;
+			     SSL_set_connect_state(ssl);
+			     if (SSL_dane_enable(ssl, name_str) <= 0) {
+			     	ssl_err("could not SSL_dane_enable");
+			     }
+			     if (!verify_server_name) {
+			     	SSL_dane_set_flags(ssl, DANE_FLAG_NO_DANE_EE_NAMECHECKS);
+			     }
+			     for (j = 0; j < ldns_rr_list_rr_count(tlsas); j++) {
+			     	int ret;
+			     	ldns_rr *tlsa_rr = ldns_rr_list_rr(tlsas, j);
+
+			     	if (ldns_rr_get_type(tlsa_rr) != LDNS_RR_TYPE_TLSA) {
+			     		fprintf(stderr, "Skipping non TLSA RR: ");
+			     		ldns_rr_print(stderr, tlsa_rr);
+			     		fprintf(stderr, "\n");
+			     		continue;
+			     	}
+			     	if (ldns_rr_rd_count(tlsa_rr) != 4) {
+			     		fprintf(stderr, "Skipping TLSA with wrong rdata RR: ");
+			     		ldns_rr_print(stderr, tlsa_rr);
+			     		fprintf(stderr, "\n");
+			     		continue;
+			     	}
+			     	ret = SSL_dane_tlsa_add(ssl,
+			     			ldns_rdf2native_int8(ldns_rr_rdf(tlsa_rr, 0)),
+			     			ldns_rdf2native_int8(ldns_rr_rdf(tlsa_rr, 1)),
+			     			ldns_rdf2native_int8(ldns_rr_rdf(tlsa_rr, 2)),
+			     			ldns_rdf_data(ldns_rr_rdf(tlsa_rr, 3)),
+			     			ldns_rdf_size(ldns_rr_rdf(tlsa_rr, 3)));
+			     	if (ret < 0) {
+			     		ssl_err("could not SSL_dane_tlsa_add");
+			     	}
+			     	if (ret == 0) {
+			     		fprintf(stderr, "Skipping unusable TLSA RR: ");
+			     		ldns_rr_print(stderr, tlsa_rr);
+			     		fprintf(stderr, "\n");
+			     		continue;
+			     	}
+			     	usable_tlsas += 1;
+			     }
+			     if (!usable_tlsas) {
+			     	fprintf(stderr, "No usable TLSA records were found.\n"
+			     			"PKIX validation without DANE will be performed.\n");
+			     }
+			     if (!(store_ctx = X509_STORE_CTX_new())) {
+				     ssl_err("could not SSL_new");
+			     }
+			     if (!X509_STORE_CTX_init(store_ctx, store, cert, extra_certs)) {
+				     ssl_err("could not X509_STORE_CTX_init");
+			     }
+			     X509_STORE_CTX_set_default(store_ctx,
+					     SSL_is_server(ssl) ? "ssl_client" : "ssl_server");
+			     X509_VERIFY_PARAM_set1(X509_STORE_CTX_get0_param(store_ctx),
+					     SSL_get0_param(ssl));
+			     X509_STORE_CTX_set0_dane(store_ctx, SSL_get0_dane(ssl));
+			     X509_NAME_print_ex_fp(stdout,
+					     X509_get_subject_name(cert), 0, 0);
+			     if (X509_verify_cert(store_ctx)) {
+				fprintf(stdout, " %s-validated successfully\n",
+						  usable_tlsas 
+						? "dane" : "PKIX");
+			     } else {
+				fprintf(stdout, " did not dane-validate, because: %s\n",
+						X509_verify_cert_error_string(
+							X509_STORE_CTX_get_error(store_ctx)));
+				success = false;
+			     }
+			     if (store_ctx) {
+				     X509_STORE_CTX_free(store_ctx);
+			     }
+			     break;
+#endif /* OPENSSL_VERSION_NUMBER < 0x10100000 */
+#endif /* ifdef USE_DANE_VERIFY */
 		default:     break; /* suppress warning */
 		}
 		SSL_free(ssl);
@@ -1750,7 +1838,54 @@ main(int argc, char* const* argv)
 			address = ldns_rr_a_address(
 					ldns_rr_list_rr(addresses, i));
 			assert(address != NULL);
-			
+#if OPENSSL_VERSION_NUMBER >= 0x10100000
+			if (mode == VERIFY) {
+				usable_tlsas = 0;
+				if (SSL_dane_enable(ssl, name_str) <= 0) {
+					ssl_err("could not SSL_dane_enable");
+				}
+				if (!verify_server_name) {
+					SSL_dane_set_flags(ssl, DANE_FLAG_NO_DANE_EE_NAMECHECKS);
+				}
+				for (j = 0; j < ldns_rr_list_rr_count(tlsas); j++) {
+					int ret;
+					ldns_rr *tlsa_rr = ldns_rr_list_rr(tlsas, j);
+
+					if (ldns_rr_get_type(tlsa_rr) != LDNS_RR_TYPE_TLSA) {
+						fprintf(stderr, "Skipping non TLSA RR: ");
+						ldns_rr_print(stderr, tlsa_rr);
+						fprintf(stderr, "\n");
+						continue;
+					}
+					if (ldns_rr_rd_count(tlsa_rr) != 4) {
+						fprintf(stderr, "Skipping TLSA with wrong rdata RR: ");
+						ldns_rr_print(stderr, tlsa_rr);
+						fprintf(stderr, "\n");
+						continue;
+					}
+					ret = SSL_dane_tlsa_add(ssl,
+							ldns_rdf2native_int8(ldns_rr_rdf(tlsa_rr, 0)),
+							ldns_rdf2native_int8(ldns_rr_rdf(tlsa_rr, 1)),
+							ldns_rdf2native_int8(ldns_rr_rdf(tlsa_rr, 2)),
+							ldns_rdf_data(ldns_rr_rdf(tlsa_rr, 3)),
+							ldns_rdf_size(ldns_rr_rdf(tlsa_rr, 3)));
+					if (ret < 0) {
+						ssl_err("could not SSL_dane_tlsa_add");
+					}
+					if (ret == 0) {
+						fprintf(stderr, "Skipping unusable TLSA RR: ");
+						ldns_rr_print(stderr, tlsa_rr);
+						fprintf(stderr, "\n");
+						continue;
+					}
+					usable_tlsas += 1;
+				}
+				if (!usable_tlsas) {
+					fprintf(stderr, "No usable TLSA records were found.\n"
+							"PKIX validation without DANE will be performed.\n");
+				}
+			}
+#endif /* OPENSSL_VERSION_NUMBER >= 0x10100000 */
 			s = ssl_connect_and_get_cert_chain(&cert, &extra_certs,
 					ssl, name_str, address,port, transport);
 			if (s == LDNS_STATUS_NETWORK_ERR) {
@@ -1763,8 +1898,27 @@ main(int argc, char* const* argv)
 				continue;
 			}
 			LDNS_ERR(s, "could not get cert chain from ssl");
-			switch (mode) {
+#if OPENSSL_VERSION_NUMBER >= 0x10100000
 
+			if (mode == VERIFY) {
+				char *address_str = ldns_rdf2str(address);
+				long verify_result = SSL_get_verify_result(ssl);
+
+				fprintf(stdout, "%s", address_str ? address_str : "<address>");
+				free(address_str);
+
+				if (verify_result == X509_V_OK) {
+					fprintf(stdout, " %s-validated successfully\n",
+							  usable_tlsas 
+							? "dane" : "PKIX");
+				} else {
+					fprintf(stdout, " did not dane-validate, because: %s\n",
+							X509_verify_cert_error_string(verify_result));
+					success = false;
+				}
+			}
+#endif /* OPENSSL_VERSION_NUMBER >= 0x10100000 */
+			switch (mode) {
 			case CREATE: dane_create(tlsas, tlsa_owner,
 						     certificate_usage, offset,
 						     selector, matching_type,
@@ -1772,18 +1926,21 @@ main(int argc, char* const* argv)
 						     verify_server_name, name);
 				     break;
 
-#ifdef USE_DANE_VERIFY
-			case VERIFY: if (! dane_verify(tlsas, address,
+			case VERIFY:
+#if OPENSSL_VERSION_NUMBER < 0x10100000
+				     if (! dane_verify(tlsas, address,
 						cert, extra_certs, store,
 						verify_server_name, name,
 						assume_pkix_validity)) {
 					success = false;
 
-				     } else if (interact) {
+				     }
+#endif /* OPENSSL_VERSION_NUMBER < 0x10100000 */
+				     if (success && interact) {
 					     ssl_interact(ssl);
 				     }
 				     break;
-#endif
+
 			default:     break; /* suppress warning */
 			}
 			while (SSL_shutdown(ssl) == 0);
