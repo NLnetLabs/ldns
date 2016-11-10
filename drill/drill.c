@@ -497,8 +497,14 @@ main(int argc, char *argv[])
 	if (src) {
 		src_rdf = ldns_rdf_new_addr_frm_str(src);
 		if(!src_rdf) {
-			fprintf(stderr, "-I must be (or resolve) to a valid IP[v6] address.\n");
+			fprintf(stderr, "-I must be a valid IP[v6] address.\n");
 			exit(EXIT_FAILURE);
+		}
+		if (ldns_rdf_size(src_rdf) == 4) {
+			qfamily = LDNS_RESOLV_INET;
+
+		} else if (ldns_rdf_size(src_rdf) == 16) {
+			qfamily = LDNS_RESOLV_INET6;
 		}
 	}
 
