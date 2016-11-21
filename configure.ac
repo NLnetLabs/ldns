@@ -5,15 +5,30 @@ sinclude(acx_nlnetlabs.m4)
 
 # must be numbers. ac_defun because of later processing.
 m4_define([VERSION_MAJOR],[1])
-m4_define([VERSION_MINOR],[6])
-m4_define([VERSION_MICRO],[17])
+m4_define([VERSION_MINOR],[7])
+m4_define([VERSION_MICRO],[0])
 AC_INIT(ldns, m4_defn([VERSION_MAJOR]).m4_defn([VERSION_MINOR]).m4_defn([VERSION_MICRO]), libdns@nlnetlabs.nl, libdns)
 AC_CONFIG_SRCDIR([packet.c])
 # needed to build correct soname
 AC_SUBST(LDNS_VERSION_MAJOR, [VERSION_MAJOR])
 AC_SUBST(LDNS_VERSION_MINOR, [VERSION_MINOR])
 AC_SUBST(LDNS_VERSION_MICRO, [VERSION_MICRO])
-AC_SUBST(VERSION_INFO, [VERSION_MAJOR:VERSION_MINOR:VERSION_MICRO])
+
+# Library version
+# ---------------
+# current:revision:age
+# (binary-api-number):(which-binary-api-version):(how-many-nrs-backwardscompat)
+# if source code changes increment revision
+# if any interfaces have been added/removed/changed since last update then
+#   increment current and set revision to 0
+# if any interfaces have been added since the last public release then increment age
+# if any interfaces have been removed or changed since the last public release then
+#   set age to 0
+#
+# ldns-1.6.17 and before had a .so with version same as VERSION_INFO
+# ldns-1.7.0 will have libversion 2:0:0
+#
+AC_SUBST(VERSION_INFO, [2:0:0])
 
 AC_AIX
 if test "$ac_cv_header_minix_config_h" = "yes"; then
