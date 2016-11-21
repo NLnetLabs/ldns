@@ -251,6 +251,9 @@ ldns_dname_new(uint16_t s, void *d)
 {
         ldns_rdf *rd;
 
+        if (!s || !d) {
+                return NULL;
+        }
         rd = LDNS_MALLOC(ldns_rdf);
         if (!rd) {
                 return NULL;
