@@ -480,12 +480,12 @@ case "$enable_rrtype_rkey" in
 	no|*)
 		;;
 esac
-AC_ARG_ENABLE(rrtype-openpgpkey, AC_HELP_STRING([--enable-rrtype-openpgpkey], [Enable draft RR type openpgpkey.]))
+AC_ARG_ENABLE(rrtype-openpgpkey, AC_HELP_STRING([--disable-rrtype-openpgpkey], [Disable openpgpkey RR type.]))
 case "$enable_rrtype_openpgpkey" in
-	yes)
-		AC_DEFINE_UNQUOTED([RRTYPE_OPENPGPKEY], [], [Define this to enable RR type OPENPGPKEY.])
+	no)
 		;;
-	no|*)
+	yes|*)
+		AC_DEFINE_UNQUOTED([RRTYPE_OPENPGPKEY], [], [Define this to enable RR type OPENPGPKEY.])
 		;;
 esac
 AC_ARG_ENABLE(rrtype-ta, AC_HELP_STRING([--enable-rrtype-ta], [Enable draft RR type ta.]))

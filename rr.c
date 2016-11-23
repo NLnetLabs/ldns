@@ -1950,9 +1950,11 @@ static const ldns_rdf_type type_dhcid_wireformat[] = {
 static const ldns_rdf_type type_talink_wireformat[] = {
 	LDNS_RDF_TYPE_DNAME, LDNS_RDF_TYPE_DNAME
 };
-/*@unused@*/ static const ldns_rdf_type type_openpgpkey_wireformat[] = {
+#ifdef RRTYPE_OPENPGPKEY
+static const ldns_rdf_type type_openpgpkey_wireformat[] = {
 	LDNS_RDF_TYPE_B64
 };
+#endif
 static const ldns_rdf_type type_csync_wireformat[] = {
 	LDNS_RDF_TYPE_INT32, LDNS_RDF_TYPE_INT16, LDNS_RDF_TYPE_NSEC
 };
