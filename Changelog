@@ -1,4 +1,4 @@
-TBD
+1.7.0	2016-11-??
 	* Fix lookup of relative names in ldns_resolver_search.
 	* bugfix #548: Double free for answers > 4096 in ldns_resolver_send_pkt
 	* Follow CNAME's when tracing with drill (TODO dnssec trace)
@@ -94,6 +94,10 @@ TBD
 	  RFC 7553 URI RRs.  Thanks Robert Edmonds
 	* bugfix #678: Use poll i.s.o. select to support > 1024 fds
 	  Thanks William King
+	* Use OpenSSL DANE functions for verification (unless explicitly
+	  disabled with --disable-dane-ta-usage).
+	* Bumb .so version
+	* Include OPENPGPKEY RR type by default
 
 1.6.17	2014-01-10
 	* Fix ldns_dnssec_zone_new_frm_fp_l to allow the last parsed line of a
