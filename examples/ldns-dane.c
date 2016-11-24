@@ -600,6 +600,8 @@ dane_setup_resolver(ldns_resolver** res, ldns_rdf* nameserver_addr,
 		*res = ldns_resolver_new();
 		if (*res) {
 			s = ldns_resolver_push_nameserver(*res, nameserver_addr);
+		} else {
+			s = LDNS_STATUS_MEM_ERR;
 		}
 	} else {
 	        s = ldns_resolver_new_frm_file(res, NULL);
