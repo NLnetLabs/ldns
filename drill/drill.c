@@ -647,7 +647,7 @@ main(int argc, char *argv[])
 				error("%s", "parsing query name");
 			}
 			/* don't care about return packet */
-			(void)do_trace(res, qname, type, clas);
+			do_trace(res, qname, type, clas);
 			clear_root();
 			break;
 		case DRILL_SECTRACE:

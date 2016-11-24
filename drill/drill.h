@@ -32,7 +32,7 @@
 extern ldns_rr_list *global_dns_root;
 extern int verbosity;
 
-ldns_pkt *do_trace(ldns_resolver *res,
+void do_trace(ldns_resolver *res,
 			    ldns_rdf *name,
 			    ldns_rr_type type, 
 			    ldns_rr_class c);
