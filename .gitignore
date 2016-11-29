@@ -13,6 +13,8 @@
 /compat/b64_pton.o
 /compat/strlcpy.o
 /compat/strlcpy.lo
+/compat/timegm.o
+/compat/timegm.lo
 /config.guess
 /config.h
 /config.log
