@@ -53,7 +53,7 @@ ldns_dname2buffer_wire_compress(ldns_buffer *buffer, const ldns_rdf *name, ldns_
 	}
 
 	/* Can we find the name in the tree? */
-	if((node = ldns_rbtree_search(compression_data, ldns_rdf_data(name))) != NULL)
+	if((node = ldns_rbtree_search(compression_data, name)) != NULL)
 	{
 		/* Found */
 		uint16_t position = (uint16_t) (intptr_t) node->data | 0xC000;
@@ -73,7 +73,7 @@ ldns_dname2buffer_wire_compress(ldns_buffer *buffer, const ldns_rdf *name, ldns_
 			return LDNS_STATUS_MEM_ERR;
 		}
 		if (ldns_buffer_position(buffer) < 16384) {
-			node->key = strdup((const char *)ldns_rdf_data(name));
+			node->key = ldns_rdf_clone(name);
 			node->data = (void *) (intptr_t) ldns_buffer_position(buffer);
 			if(!ldns_rbtree_insert(compression_data,node))
 			{
@@ -358,7 +358,7 @@ static void
 compression_node_free(ldns_rbnode_t *node, void *arg)
 {
 	(void)arg; /* Yes, dear compiler, it is used */
-	free((void *)node->key);
+	ldns_rdf_deep_free((ldns_rdf *)node->key);
 	LDNS_FREE(node);
 }
 
@@ -372,7 +372,7 @@ ldns_pkt2buffer_wire(ldns_buffer *buffer, const ldns_pkt *packet)
 	ldns_rr *edns_rr;
 	uint8_t edata[4];
 
-	ldns_rbtree_t *compression_data = ldns_rbtree_create((int (*)(const void *, const void *))strcasecmp);
+	ldns_rbtree_t *compression_data = ldns_rbtree_create((int (*)(const void *, const void *))ldns_dname_compare);
 	
 	(void) ldns_hdr2buffer_wire(buffer, packet);
 
