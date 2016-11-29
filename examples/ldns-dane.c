@@ -1714,9 +1714,13 @@ main(int argc, char* const* argv)
 		if (! cert) {
 			ssl_err("could not SSL_get_certificate");
 		}
+#ifndef SSL_CTX_get_extra_chain_certs
+		extra_certs = ctx->extra_certs;
+#else
 		if(!SSL_CTX_get_extra_chain_certs(ctx, &extra_certs)) {
 			ssl_err("could not SSL_CTX_get_extra_chain_certs");
 		}
+#endif
 		switch (mode) {
 		case CREATE: dane_create(tlsas, tlsa_owner, certificate_usage,
 					     offset, selector, matching_type,
