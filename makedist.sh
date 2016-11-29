@@ -76,7 +76,7 @@ replace_all () {
     replace_text "$1" "@date@" "`date +'%b %e, %Y'`"
 }
     
-CHECKOUT="master"
+CHECKOUT=""
 SNAPSHOT="no"
 RC="no"
 
@@ -103,6 +103,16 @@ while [ "$1" ]; do
     esac
     shift
 done
+
+if [ -z "$CHECKOUT" ]
+then
+	if [ "$RC" = "no" ]
+	then
+		CHECKOUT=master
+	else
+		CHECKOUT=develop
+	fi
+fi
 
 # Start the packaging process.
 info "SNAPSHOT is $SNAPSHOT"
@@ -156,7 +166,7 @@ RECONFIGURE="no"
 
 if [ "$RC" != "no" ]; then
     info "Building LDNS release candidate $RC."
-    version2="${version}rc$RC"
+    version2="${version}-rc$RC"
     info "Version number: $version2"
 
     replace_text "configure.ac" "AC_INIT(ldns, $version" "AC_INIT(ldns, $version2"
