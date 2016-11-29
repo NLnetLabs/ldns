@@ -1715,7 +1715,9 @@ main(int argc, char* const* argv)
 			ssl_err("could not SSL_get_certificate");
 		}
 #ifndef SSL_CTX_get_extra_chain_certs
+#ifndef S_SPLINT_S
 		extra_certs = ctx->extra_certs;
+#endif /* splint */
 #else
 		if(!SSL_CTX_get_extra_chain_certs(ctx, &extra_certs)) {
 			ssl_err("could not SSL_CTX_get_extra_chain_certs");
