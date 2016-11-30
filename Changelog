@@ -98,6 +98,7 @@
 	  disabled with --disable-dane-ta-usage).
 	* Bumb .so version
 	* Include OPENPGPKEY RR type by default
+	* rdata processing for SMIMEA RR type
 
 1.6.17	2014-01-10
 	* Fix ldns_dnssec_zone_new_frm_fp_l to allow the last parsed line of a
