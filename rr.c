@@ -2152,7 +2152,7 @@ static ldns_rr_descriptor rdata_field_descriptors[] = {
 	/* 52 */
 	{LDNS_RR_TYPE_TLSA, "TLSA", 4, 4, type_tlsa_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 0 },
 
-{LDNS_RR_TYPE_NULL, "TYPE53", 1, 1, type_0_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 0 },
+	{LDNS_RR_TYPE_SMIMEA, "SMIMEA", 4, 4, type_tlsa_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 0 },
 {LDNS_RR_TYPE_NULL, "TYPE54", 1, 1, type_0_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 0 },
 
 	/* 55
