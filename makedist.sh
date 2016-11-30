@@ -248,6 +248,7 @@ case $OSTYPE in
         	;;
 esac
 echo $sha > ldns-$version.tar.gz.sha1
+gpg --armor --detach-sig ldns-$version.tar.gz
 
 info "LDNS distribution created successfully."
 info "SHA1sum: $sha"
