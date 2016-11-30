@@ -1097,7 +1097,7 @@ dane_create(ldns_rr_list* tlsas, ldns_rdf* tlsa_owner,
 	}
 }
 
-#if defined(USE_DANE_VERIFY) && ( OPENSSL_VERSION_NUMBER < 0x10100000 || defined(HAVE_LIBRESSL )
+#if defined(USE_DANE_VERIFY) && ( OPENSSL_VERSION_NUMBER < 0x10100000 || defined(HAVE_LIBRESSL) )
 static bool
 dane_verify(ldns_rr_list* tlsas, ldns_rdf* address,
 		X509* cert, STACK_OF(X509)* extra_certs,
