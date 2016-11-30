@@ -92,7 +92,7 @@ ACX_CHECK_COMPILER_FLAG(Wall, [CFLAGS="-Wall $CFLAGS"])
 ACX_CHECK_COMPILER_FLAG(W, [CFLAGS="-W $CFLAGS"])
 ACX_CHECK_COMPILER_FLAG(Wwrite-strings, [CFLAGS="-Wwrite-strings $CFLAGS"])
 ACX_CHECK_COMPILER_FLAG(Wstrict-prototypes, [CFLAGS="-Wstrict-prototypes $CFLAGS"])
-ACX_CHECK_COMPILER_FLAG(Wshadow, [CFLAGS="-Wshadow $CFLAGS"])
+#ACX_CHECK_COMPILER_FLAG(Wshadow, [CFLAGS="-Wshadow $CFLAGS"])
 ACX_CHECK_COMPILER_FLAG(Wunused-function, [CFLAGS="-Wunused-function $CFLAGS"])
 ACX_CHECK_COMPILER_FLAG(Wmissing-prototypes, [CFLAGS="-Wmissing-prototypes $CFLAGS"])
 
