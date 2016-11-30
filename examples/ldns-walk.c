@@ -259,7 +259,7 @@ main(int argc, char *argv[])
 				full = true;
 			} else if (strncmp(argv[i], "-s", 3) == 0) {
 				if (i + 1 < argc) {
-					if (!ldns_str2rdf_dname(&startpoint, argv[i + 1]) == LDNS_STATUS_OK) {
+					if (ldns_str2rdf_dname(&startpoint, argv[i + 1]) != LDNS_STATUS_OK) {
 						printf("Bad start point name: %s\n", argv[i + 1]);
 						exit(1);
 					}
