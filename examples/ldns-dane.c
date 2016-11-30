@@ -1097,7 +1097,7 @@ dane_create(ldns_rr_list* tlsas, ldns_rdf* tlsa_owner,
 	}
 }
 
-#if defined(USE_DANE_VERIFY) && OPENSSL_VERSION_NUMBER < 0x10100000
+#if defined(USE_DANE_VERIFY) && ( OPENSSL_VERSION_NUMBER < 0x10100000 || defined(HAVE_LIBRESSL )
 static bool
 dane_verify(ldns_rr_list* tlsas, ldns_rdf* address,
 		X509* cert, STACK_OF(X509)* extra_certs,
@@ -1165,7 +1165,7 @@ main(int argc, char* const* argv)
 	ldns_status   s;
 	size_t        i;
 
-#if OPENSSL_VERSION_NUMBER >= 0x10100000
+#if OPENSSL_VERSION_NUMBER >= 0x10100000 && ! defined(HAVE_LIBRESSL)
 	size_t        j, usable_tlsas = 0;
 	X509_STORE_CTX *store_ctx = NULL;
 #endif /* OPENSSL_VERSION_NUMBER >= 0x10100000 */
@@ -1688,7 +1688,7 @@ main(int argc, char* const* argv)
 		}
 	}
 
-#if OPENSSL_VERSION_NUMBER < 0x10100000
+#if OPENSSL_VERSION_NUMBER < 0x10100000 || defined(HAVE_LIBRESSL)
 	ctx =  SSL_CTX_new(SSLv23_client_method());
 #else
 	ctx =  SSL_CTX_new(TLS_client_method());
@@ -1730,7 +1730,7 @@ main(int argc, char* const* argv)
 					     verify_server_name, name);
 			     break;
 #ifdef USE_DANE_VERIFY
-#if OPENSSL_VERSION_NUMBER < 0x10100000
+#if OPENSSL_VERSION_NUMBER < 0x10100000 || defined(HAVE_LIBRESSL)
 		case VERIFY: if (! dane_verify(tlsas, NULL,
 			                       cert, extra_certs, store,
 					       verify_server_name, name,
@@ -1844,7 +1844,7 @@ main(int argc, char* const* argv)
 			address = ldns_rr_a_address(
 					ldns_rr_list_rr(addresses, i));
 			assert(address != NULL);
-#if OPENSSL_VERSION_NUMBER >= 0x10100000
+#if OPENSSL_VERSION_NUMBER >= 0x10100000  && ! defined(HAVE_LIBRESSL)
 			if (mode == VERIFY) {
 				usable_tlsas = 0;
 				if (SSL_dane_enable(ssl, name_str) <= 0) {
@@ -1904,7 +1904,7 @@ main(int argc, char* const* argv)
 				continue;
 			}
 			LDNS_ERR(s, "could not get cert chain from ssl");
-#if OPENSSL_VERSION_NUMBER >= 0x10100000
+#if OPENSSL_VERSION_NUMBER >= 0x10100000 && ! defined(HAVE_LIBRESSL)
 
 			if (mode == VERIFY) {
 				char *address_str = ldns_rdf2str(address);
@@ -1934,7 +1934,7 @@ main(int argc, char* const* argv)
 
 #ifdef USE_DANE_VERIFY
 			case VERIFY:
-#if OPENSSL_VERSION_NUMBER < 0x10100000
+#if OPENSSL_VERSION_NUMBER < 0x10100000 || defined(HAVE_LIBRESSL)
 				     if (! dane_verify(tlsas, address,
 						cert, extra_certs, store,
 						verify_server_name, name,

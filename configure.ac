@@ -324,7 +324,15 @@ tmp_LDFLAGS=$LDFLAGS
 tmp_LIBS=$LIBS
 
 ACX_WITH_SSL_OPTIONAL
-
+if test "x$HAVE_SSL" != "xyes"; then
+	AC_MSG_CHECKING([for LibreSSL])
+	if grep VERSION_TEXT $ssldir/include/openssl/opensslv.h | grep "LibreSSL" >/dev/null; then
+		AC_MSG_RESULT([yes])
+		AC_DEFINE([HAVE_LIBRESSL], [1], [Define if we have LibreSSL])
+	else
+		AC_MSG_RESULT([no])
+	fi
+fi
 AC_CHECK_FUNCS([EVP_sha256 ENGINE_load_cryptodev EVP_PKEY_keygen ECDSA_SIG_get0 EVP_MD_CTX_new EVP_PKEY_base_id])
 
 # for macosx, see if glibtool exists and use that

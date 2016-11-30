@@ -147,7 +147,7 @@ ldns_lookup_table ldns_error_str[] = {
 		"Syntax error, superfluous text present" },
         { LDNS_STATUS_NSEC3_DOMAINNAME_OVERFLOW,
 		"The NSEC3 domainname length overflow" },
-#if OPENSSL_VERSION_NUMBER < 0x10100000
+#if OPENSSL_VERSION_NUMBER < 0x10100000 || defined(HAVE_LIBRESSL)
         { LDNS_STATUS_DANE_NEED_OPENSSL_GE_1_1_FOR_DANE_TA,
 		"ldns needs to be linked with OpenSSL >= 1.1.0 to be able "
        		"to verify the DANE-TA usage type." },

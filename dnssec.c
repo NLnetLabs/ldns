@@ -375,7 +375,7 @@ ldns_key_buf2dsa_raw(const unsigned char* key, size_t len)
 		BN_free(Y);
 		return NULL;
 	}
-#if OPENSSL_VERSION_NUMBER < 0x10100000
+#if OPENSSL_VERSION_NUMBER < 0x10100000 || defined(HAVE_LIBRESSL)
 #ifndef S_SPLINT_S
 	dsa->p = P;
 	dsa->q = Q;
@@ -461,7 +461,7 @@ ldns_key_buf2rsa_raw(const unsigned char* key, size_t len)
 		BN_free(modulus);
 		return NULL;
 	}
-#if OPENSSL_VERSION_NUMBER < 0x10100000
+#if OPENSSL_VERSION_NUMBER < 0x10100000 || defined(HAVE_LIBRESSL)
 #ifndef S_SPLINT_S
 	rsa->n = modulus;
 	rsa->e = exponent;
