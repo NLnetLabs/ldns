@@ -22,7 +22,6 @@
 
 #ifndef LDNS_DANE_H
 #define LDNS_DANE_H
-#if LDNS_BUILD_CONFIG_USE_DANE
 
 #include <ldns/common.h>
 #include <ldns/rdata.h>
@@ -116,6 +115,7 @@ enum ldns_enum_dane_transport
 typedef enum ldns_enum_dane_transport ldns_dane_transport;
 
 
+#if LDNS_BUILD_CONFIG_USE_DANE
 /**
  * Creates a dname consisting of the given name, prefixed by the service port
  * and type of transport: _<EM>port</EM>._<EM>transport</EM>.<EM>name</EM>.
@@ -280,11 +280,11 @@ ldns_status ldns_dane_verify(const ldns_rr_list* tlsas,
 		X509* cert, STACK_OF(X509)* extra_certs,
 		X509_STORE* pkix_validation_store);
 #endif /* LDNS_BUILD_CONFIG_HAVE_SSL */
+#endif /* LDNS_BUILD_CONFIG_USE_DANE */
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* LDNS_BUILD_CONFIG_USE_DANE */
 #endif /* LDNS_DANE_H */
 

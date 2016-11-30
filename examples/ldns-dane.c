@@ -1932,6 +1932,7 @@ main(int argc, char* const* argv)
 						     verify_server_name, name);
 				     break;
 
+#ifdef USE_DANE_VERIFY
 			case VERIFY:
 #if OPENSSL_VERSION_NUMBER < 0x10100000
 				     if (! dane_verify(tlsas, address,
@@ -1946,6 +1947,7 @@ main(int argc, char* const* argv)
 					     ssl_interact(ssl);
 				     }
 				     break;
+#endif /* USE_DANE_VERIFY */
 
 			default:     break; /* suppress warning */
 			}
@@ -2003,6 +2005,9 @@ main(int argc, char **argv)
 int
 main(int argc, char **argv)
 {
+	(void)argc;
+	(void)argv;
+
 	fprintf(stderr, "dane support was disabled with this build of ldns, "
 			"and has not been compiled in\n");
 	return 1;
