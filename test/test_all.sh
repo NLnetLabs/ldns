@@ -26,6 +26,7 @@ $TPKG -a ../.. fake 30-load-pyldns.tpkg
 $TPKG -a ../.. fake 31-load-pyldnsx.tpkg
 $TPKG -a ../.. fake 32-unbound-regression.tpkg
 $TPKG -a ../.. fake 999-compile-nossl.tpkg
+which indent || $TPKG -a ../.. fake codingstyle.tpkg
 
 for tests in *.tpkg
 do
