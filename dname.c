@@ -530,10 +530,11 @@ ldns_dname_str_absolute(const char *dname_str)
         for(s=dname_str; *s; s++) {
                 if(*s == '\\') {
                         if(s[1] && s[2] && s[3] /* check length */
-                                && isdigit(s[1]) && isdigit(s[2]) && 
-                                isdigit(s[3]))
+                                && isdigit((unsigned char)s[1])
+				&& isdigit((unsigned char)s[2])
+				&& isdigit((unsigned char)s[3]))
                                 s += 3;
-                        else if(!s[1] || isdigit(s[1])) /* escape of nul,0-9 */
+                        else if(!s[1] || isdigit((unsigned char)s[1])) /* escape of nul,0-9 */
                                 return 0; /* parse error */
                         else s++; /* another character escaped */
                 }

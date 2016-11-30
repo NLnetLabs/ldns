@@ -1218,7 +1218,7 @@ ldns_rdf2buffer_str_tag(ldns_buffer *output, const ldns_rdf *rdf)
 	chars = ldns_rdf_data(rdf) + 1;
 	while (nchars > 0) {
 		ch = (char)*chars++;
-		if (! isalnum(ch)) {
+		if (! isalnum((unsigned char)ch)) {
 			return LDNS_STATUS_WIRE_RDATA_ERR;
 		}
 		ldns_buffer_printf(output, "%c", ch);

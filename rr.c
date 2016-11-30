@@ -686,10 +686,10 @@ ldns_strip_ws(char *line)
 {
 	char *s = line, *e;
 
-	for (s = line; *s && isspace(*s); s++)
+	for (s = line; *s && isspace((unsigned char)*s); s++)
 		;
 
-	for (e = strchr(s, 0); e > s+2 && isspace(e[-1]) && e[-2] != '\\'; e--)
+	for (e = strchr(s, 0); e > s+2 && isspace((unsigned char)e[-1]) && e[-2] != '\\'; e--)
 		;
 	*e = 0;
 
@@ -742,7 +742,7 @@ ldns_rr_new_frm_fp_l(ldns_rr **newrr, FILE *fp, uint32_t *default_ttl, ldns_rdf 
 		return LDNS_STATUS_SYNTAX_EMPTY;
 	}
 
-	if (strncmp(line, "$ORIGIN", 7) == 0 && isspace(line[7])) {
+	if (strncmp(line, "$ORIGIN", 7) == 0 && isspace((unsigned char)line[7])) {
 		if (*origin) {
 			ldns_rdf_deep_free(*origin);
 			*origin = NULL;
@@ -756,7 +756,7 @@ ldns_rr_new_frm_fp_l(ldns_rr **newrr, FILE *fp, uint32_t *default_ttl, ldns_rdf 
 		}
 		*origin = tmp;
 		s = LDNS_STATUS_SYNTAX_ORIGIN;
-	} else if (strncmp(line, "$TTL", 4) == 0 && isspace(line[4])) {
+	} else if (strncmp(line, "$TTL", 4) == 0 && isspace((unsigned char)line[4])) {
 		if (default_ttl) {
 			*default_ttl = ldns_str2period(
 					ldns_strip_ws(line + 5), &endptr);

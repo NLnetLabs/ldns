@@ -177,7 +177,7 @@ static bool str_keyword(const char** str, const char* keyword)
 	if(strncmp(*str, keyword, len) != 0)
 		return false;
 	*str += len;
-	while(isspace(**str))
+	while(isspace((unsigned char)**str))
 		(*str)++;
 	return true;
 }
@@ -220,7 +220,7 @@ static void matchline(const char* line, struct entry* e)
 				error("expected = or : in MATCH: %s", line);
 			parse++;
 			e->ixfr_soa_serial = (uint32_t)strtol(parse, (char**)&parse, 10);
-			while(isspace(*parse)) 
+			while(isspace((unsigned char)*parse)) 
 				parse++;
 		} else {
 			error("could not parse MATCH: '%s'", parse);
@@ -298,11 +298,11 @@ static void adjustline(const char* line, struct entry* e,
 			e->copy_id = true;
 		} else if(str_keyword(&parse, "sleep=")) {
 			e->sleeptime = strtol(parse, (char**)&parse, 10);
-			while(isspace(*parse)) 
+			while(isspace((unsigned char)*parse)) 
 				parse++;
 		} else if(str_keyword(&parse, "packet_sleep=")) {
 			pkt->packet_sleep = strtol(parse, (char**)&parse, 10);
-			while(isspace(*parse)) 
+			while(isspace((unsigned char)*parse)) 
 				parse++;
 		} else {
 			error("could not parse ADJUST: '%s'", parse);
@@ -338,7 +338,7 @@ static void get_origin(const char* name, int lineno, ldns_rdf** origin, char* pa
 	*origin = NULL;
 
 	end=parse;
-	while(!isspace(*end) && !isendline(*end))
+	while(!isspace((unsigned char)*end) && !isendline(*end))
 		end++;
 	store = *end;
 	*end = 0;
@@ -376,7 +376,7 @@ static struct entry* read_datafile(const char* name)
 		parse = line;
 		lineno ++;
 		
-		while(isspace(*parse))
+		while(isspace((unsigned char)*parse))
 			parse++;
 		/* test for keywords */
 		if(isendline(*parse))
