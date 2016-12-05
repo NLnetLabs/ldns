@@ -782,20 +782,23 @@ static ldns_lookup_table ldns_tlsa_certificate_usages[] = {
 	{ LDNS_TLSA_USAGE_PKIX_EE		, "PKIX-EE"  },
 	{ LDNS_TLSA_USAGE_DANE_TA		, "DANE-TA"  },
 	{ LDNS_TLSA_USAGE_DANE_EE		, "DANE-EE"  },
-	{ LDNS_TLSA_USAGE_PRIVCERT		, "PrivCert" }
+	{ LDNS_TLSA_USAGE_PRIVCERT		, "PrivCert" },
+        { 0, NULL }
 };
 
 static ldns_lookup_table ldns_tlsa_selectors[] = {
 	{ LDNS_TLSA_SELECTOR_CERT		, "Cert" },
 	{ LDNS_TLSA_SELECTOR_SPKI		, "SPKI" },
-	{ LDNS_TLSA_SELECTOR_PRIVSEL		, "PrivSel" }
+	{ LDNS_TLSA_SELECTOR_PRIVSEL		, "PrivSel" },
+        { 0, NULL }
 };
 
 static ldns_lookup_table ldns_tlsa_matching_types[] = {
 	{ LDNS_TLSA_MATCHING_TYPE_FULL		, "Full"      },
 	{ LDNS_TLSA_MATCHING_TYPE_SHA2_256	, "SHA2-256"  },
 	{ LDNS_TLSA_MATCHING_TYPE_SHA2_512	, "SHA2-512"  },
-	{ LDNS_TLSA_MATCHING_TYPE_PRIVMATCH	, "PrivMatch" }
+	{ LDNS_TLSA_MATCHING_TYPE_PRIVMATCH	, "PrivMatch" },
+        { 0, NULL }
 };
 
 static ldns_status
