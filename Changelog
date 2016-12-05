@@ -58,6 +58,8 @@
 	  Thanks Jan-Piet Mens
 	* bugfix: -U option to ldns-signzone to sign with every algorithm
 	  Thanks Guido Kroon
+	* const function parameters whenever possible.
+	  Thanks Ray Bellis
 	* bugfix #725: allow RR-types on the type bitmap window border
 	  Thanks Pieter Lexis
 	* bugfix #726: 2 typos in drill manpage.
@@ -99,6 +101,8 @@
 	* Bumb .so version
 	* Include OPENPGPKEY RR type by default
 	* rdata processing for SMIMEA RR type
+	* Fix crash in displaying TLSA RR's.
+	  Thanks Andreas Schulze
 
 1.6.17	2014-01-10
 	* Fix ldns_dnssec_zone_new_frm_fp_l to allow the last parsed line of a
