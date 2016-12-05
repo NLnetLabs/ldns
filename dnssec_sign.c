@@ -396,8 +396,13 @@ ldns_pkey_is_ecdsa(EVP_PKEY* pkey)
 {
         EC_KEY* ec;
         const EC_GROUP* g;
+#ifdef HAVE_EVP_PKEY_BASE_ID
         if(EVP_PKEY_base_id(pkey) != EVP_PKEY_EC)
                 return 0;
+#else
+        if(EVP_PKEY_type(key->type) != EVP_PKEY_EC)
+                return 0;
+#endif
         ec = EVP_PKEY_get1_EC_KEY(pkey);
         g = EC_KEY_get0_group(ec);
         if(!g) {
