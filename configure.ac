@@ -433,6 +433,22 @@ esac
 AC_ARG_ENABLE(dane, AC_HELP_STRING([--disable-dane], [Disable DANE support]))
 AC_ARG_ENABLE(dane-verify, AC_HELP_STRING([--disable-dane-verify], [Disable DANE verify support]))
 AC_ARG_ENABLE(dane-ta-usage, AC_HELP_STRING([--disable-dane-ta-usage], [Disable DANE-TA usage type support]))
+
+AC_ARG_ENABLE(full-dane,, [
+	enable_dane_ta_usage=yes
+	enable_dane_verify=yes
+	enable_dane=yes
+])
+AC_ARG_ENABLE(no-dane-ta-usage,, [
+	enable_dane_ta_usage=no
+	enable_dane_verify=yes
+	enable_dane=yes
+])
+AC_ARG_ENABLE(no-dane-verify,, [
+	enable_dane_ta_usage=no
+	enable_dane_verify=no
+	enable_dane=yes
+])
 case "$enable_dane" in
     no)
       AC_SUBST(ldns_build_config_use_dane, 0)
