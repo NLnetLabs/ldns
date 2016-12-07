@@ -103,6 +103,8 @@
 	* rdata processing for SMIMEA RR type
 	* Fix crash in displaying TLSA RR's.
 	  Thanks Andreas Schulze
+	* Update ldns-key2ds man page to mention GOST and SHA384 hash
+	  functions.  Thanks Harald Jenny
 
 1.6.17	2014-01-10
 	* Fix ldns_dnssec_zone_new_frm_fp_l to allow the last parsed line of a
