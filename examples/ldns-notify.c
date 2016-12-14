@@ -182,6 +182,7 @@ main(int argc, char **argv)
 	uint8_t *wire = NULL;
 	size_t wiresize = 0;
 	const char *port = "53";
+	char *keydata;
 
 	srandom(time(NULL) ^ getpid());
 
@@ -203,14 +204,14 @@ main(int argc, char **argv)
                 case 'y':
 			tsig_cred.algorithm = (char*)"hmac-md5.sig-alg.reg.int.";
 			tsig_cred.keyname = optarg;
-			tsig_cred.keydata = strchr(optarg, ':');
-			if (tsig_cred.keydata == NULL) {
+			keydata = strchr(optarg, ':');
+			if (keydata == NULL) {
 				printf("TSIG argument is not in form "
 					"key:data: %s\n", optarg);
 				exit(1);
 			}
-			*tsig_cred.keydata = '\0';
-			tsig_cred.keydata++;
+			*keydata++ = '\0';
+			tsig_cred.keydata = keydata;
 			printf("Sign with %s : %s\n", tsig_cred.keyname,
 				tsig_cred.keydata);
 			break;
