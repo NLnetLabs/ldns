@@ -18,19 +18,19 @@
 #include <openssl/md5.h>
 #endif /* HAVE_SSL */
 
-char *
+const char *
 ldns_tsig_algorithm(const ldns_tsig_credentials *tc)
 {
 	return tc->algorithm;
 }
 
-char *
+const char *
 ldns_tsig_keyname(const ldns_tsig_credentials *tc)
 {
 	return tc->keyname;
 }
 
-char *
+const char *
 ldns_tsig_keydata(const ldns_tsig_credentials *tc)
 {
 	return tc->keydata;

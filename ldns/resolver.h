@@ -312,21 +312,24 @@ size_t ldns_resolver_nameserver_rtt(const ldns_resolver *r, size_t pos);
 /**
  * Return the tsig keyname as used by the nameserver
  * \param[in] r the resolver
- * \return the name used.
+ * \return the name used. Still owned by the resolver - change using
+ * ldns_resolver_set_tsig_keyname().
  */
-char *ldns_resolver_tsig_keyname(const ldns_resolver *r);
+const char *ldns_resolver_tsig_keyname(const ldns_resolver *r);
 /**
  * Return the tsig algorithm as used by the nameserver
  * \param[in] r the resolver
- * \return the algorithm used.
+ * \return the algorithm used. Still owned by the resolver - change using
+ * ldns_resolver_set_tsig_algorithm().
  */
-char *ldns_resolver_tsig_algorithm(const ldns_resolver *r);
+const char *ldns_resolver_tsig_algorithm(const ldns_resolver *r);
 /**
  * Return the tsig keydata as used by the nameserver
  * \param[in] r the resolver
- * \return the keydata used.
+ * \return the keydata used. Still owned by the resolver - change using
+ * ldns_resolver_set_tsig_keydata().
  */
-char *ldns_resolver_tsig_keydata(const ldns_resolver *r);
+const char *ldns_resolver_tsig_keydata(const ldns_resolver *r);
 /**
  * pop the last nameserver from the resolver.
  * \param[in] r the resolver
@@ -521,23 +524,23 @@ void ldns_resolver_set_edns_udp_size(ldns_resolver *r, uint16_t s);
 /**
  * Set the tsig key name
  * \param[in] r the resolver
- * \param[in] tsig_keyname the tsig key name
+ * \param[in] tsig_keyname the tsig key name (copied into resolver)
  */
-void ldns_resolver_set_tsig_keyname(ldns_resolver *r, char *tsig_keyname);
+void ldns_resolver_set_tsig_keyname(ldns_resolver *r, const char *tsig_keyname);
 
 /**
  * Set the tsig algorithm
  * \param[in] r the resolver
- * \param[in] tsig_algorithm the tsig algorithm
+ * \param[in] tsig_algorithm the tsig algorithm (copied into resolver)
  */
-void ldns_resolver_set_tsig_algorithm(ldns_resolver *r, char *tsig_algorithm);
+void ldns_resolver_set_tsig_algorithm(ldns_resolver *r, const char *tsig_algorithm);
 
 /**
  * Set the tsig key data
  * \param[in] r the resolver
- * \param[in] tsig_keydata the key data
+ * \param[in] tsig_keydata the key data (copied into resolver)
  */
-void ldns_resolver_set_tsig_keydata(ldns_resolver *r, char *tsig_keydata);
+void ldns_resolver_set_tsig_keydata(ldns_resolver *r, const char *tsig_keydata);
 
 /**
  * Set round trip time for all nameservers. Note this currently

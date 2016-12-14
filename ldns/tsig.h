@@ -25,15 +25,15 @@ extern "C" {
 */
 typedef struct ldns_tsig_credentials_struct
 {
-    char *algorithm;
-    char *keyname;
-    char *keydata;
+    const char *algorithm;
+    const char *keyname;
+    const char *keydata;
     /* XXX More eventually. */
 } ldns_tsig_credentials;
 
-char *ldns_tsig_algorithm(const ldns_tsig_credentials *);
-char *ldns_tsig_keyname(const ldns_tsig_credentials *);
-char *ldns_tsig_keydata(const ldns_tsig_credentials *);
+const char *ldns_tsig_algorithm(const ldns_tsig_credentials *);
+const char *ldns_tsig_keyname(const ldns_tsig_credentials *);
+const char *ldns_tsig_keydata(const ldns_tsig_credentials *);
 char *ldns_tsig_keyname_clone(const ldns_tsig_credentials *);
 char *ldns_tsig_keydata_clone(const ldns_tsig_credentials *);
 

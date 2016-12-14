@@ -203,19 +203,19 @@ ldns_resolver_timeout(const ldns_resolver *r)
 	return r->_timeout;
 }
 
-char *
+const char *
 ldns_resolver_tsig_keyname(const ldns_resolver *r)
 {
 	return r->_tsig_keyname;
 }
 
-char *
+const char *
 ldns_resolver_tsig_algorithm(const ldns_resolver *r)
 {
 	return r->_tsig_algorithm;
 }
 
-char *
+const char *
 ldns_resolver_tsig_keydata(const ldns_resolver *r)
 {
 	return r->_tsig_keydata;
@@ -577,21 +577,21 @@ ldns_resolver_push_searchlist(ldns_resolver *r, ldns_rdf *d)
 }
 
 void
-ldns_resolver_set_tsig_keyname(ldns_resolver *r, char *tsig_keyname)
+ldns_resolver_set_tsig_keyname(ldns_resolver *r, const char *tsig_keyname)
 {
 	LDNS_FREE(r->_tsig_keyname);
 	r->_tsig_keyname = strdup(tsig_keyname);
 }
 
 void
-ldns_resolver_set_tsig_algorithm(ldns_resolver *r, char *tsig_algorithm)
+ldns_resolver_set_tsig_algorithm(ldns_resolver *r, const char *tsig_algorithm)
 {
 	LDNS_FREE(r->_tsig_algorithm);
 	r->_tsig_algorithm = strdup(tsig_algorithm);
 }
 
 void
-ldns_resolver_set_tsig_keydata(ldns_resolver *r, char *tsig_keydata)
+ldns_resolver_set_tsig_keydata(ldns_resolver *r, const char *tsig_keydata)
 {
 	LDNS_FREE(r->_tsig_keydata);
 	r->_tsig_keydata = strdup(tsig_keydata);
