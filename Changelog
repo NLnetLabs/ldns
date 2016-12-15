@@ -108,6 +108,7 @@
 	* Add sha384 and sha512 tsig algorithm. Thanks Michael Weiser
 	* Clarify data ownership with consts for tsig parameters.
 	  Thanks Michael Weiser
+	* bugfix: Fix detection of DSA support with OpenSSL >= 1.1.0
 
 1.6.17	2014-01-10
 	* Fix ldns_dnssec_zone_new_frm_fp_l to allow the last parsed line of a

@@ -128,7 +128,12 @@ ldns_sign_public_buffer(ldns_buffer *sign_buf, ldns_key *current_key)
 		b64rdf = ldns_sign_public_evp(
 				   sign_buf,
 				   ldns_key_evp_key(current_key),
-				   EVP_dss1());
+# ifdef HAVE_EVP_DSS1
+				   EVP_dss1()
+# else
+				   EVP_sha1()
+# endif
+				   );
 		break;
 #endif /* USE_DSA */
 	case LDNS_SIGN_RSASHA1:
@@ -332,6 +337,7 @@ ldns_sign_public_dsa(ldns_buffer *to_sign, DSA *key)
 	ldns_buffer *b64sig;
 
 	DSA_SIG *sig;
+	const BIGNUM *R, *S;
 	uint8_t *data;
 	size_t pad;
 
@@ -361,17 +367,23 @@ ldns_sign_public_dsa(ldns_buffer *to_sign, DSA *key)
         }
 
 	data[0] = 1;
-	pad = 20 - (size_t) BN_num_bytes(sig->r);
+# ifdef HAVE_DSA_SIG_GET0
+	DSA_SIG_get0(sig, &R, &S);
+# else
+	R = sig->r;
+	S = sig->s;
+# endif
+	pad = 20 - (size_t) BN_num_bytes(R);
 	if (pad > 0) {
 		memset(data + 1, 0, pad);
 	}
-	BN_bn2bin(sig->r, (unsigned char *) (data + 1) + pad);
+	BN_bn2bin(R, (unsigned char *) (data + 1) + pad);
 
-	pad = 20 - (size_t) BN_num_bytes(sig->s);
+	pad = 20 - (size_t) BN_num_bytes(S);
 	if (pad > 0) {
 		memset(data + 1 + SHA_DIGEST_LENGTH, 0, pad);
 	}
-	BN_bn2bin(sig->s, (unsigned char *) (data + 1 + SHA_DIGEST_LENGTH + pad));
+	BN_bn2bin(S, (unsigned char *) (data + 1 + SHA_DIGEST_LENGTH + pad));
 
 	sigdata_rdf = ldns_rdf_new_frm_data(LDNS_RDF_TYPE_B64,
 								 1 + 2 * SHA_DIGEST_LENGTH,
@@ -490,7 +502,11 @@ ldns_sign_public_evp(ldns_buffer *to_sign,
 #ifdef USE_DSA
 #ifndef S_SPLINT_S
 	/* unfortunately, OpenSSL output is different from DNS DSA format */
+# ifdef HAVE_EVP_PKEY_BASE_ID
+	if (EVP_PKEY_base_id(key) == EVP_PKEY_DSA) {
+# else
 	if (EVP_PKEY_type(key->type) == EVP_PKEY_DSA) {
+# endif
 		r = 1;
 		sigdata_rdf = ldns_convert_dsa_rrsig_asn12rdf(b64sig, siglen);
 	}

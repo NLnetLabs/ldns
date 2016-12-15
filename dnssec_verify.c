@@ -2698,7 +2698,12 @@ ldns_verify_rrsig_dsa_raw(unsigned char* sig, size_t siglen,
 								siglen,
 								rrset,
 								evp_key,
-								EVP_dss1());
+# ifdef HAVE_EVP_DSS1
+								EVP_dss1()
+# else
+								EVP_sha1()
+# endif
+								);
 	} else {
 		result = LDNS_STATUS_SSL_ERR;
 	}

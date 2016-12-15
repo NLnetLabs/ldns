@@ -1196,11 +1196,24 @@ ldns_key_new_frm_algorithm(ldns_signing_algorithm alg, uint16_t size)
 		case LDNS_SIGN_DSA_NSEC3:
 #ifdef USE_DSA
 #ifdef HAVE_SSL
+# if OPENSSL_VERSION_NUMBER < 0x00908000L
 			d = DSA_generate_parameters((int)size, NULL, 0, NULL, NULL, NULL, NULL);
 			if (!d) {
 				ldns_key_free(k);
 				return NULL;
 			}
+
+# else
+			if (! (d = DSA_new())) {
+				ldns_key_free(k);
+				return NULL;
+			}
+			if (! DSA_generate_parameters_ex(d, (int)size, NULL, 0, NULL, NULL, NULL)) {
+				DSA_free(d);
+				ldns_key_free(k);
+				return NULL;
+			}
+# endif
 			if (DSA_generate_key(d) != 1) {
 				ldns_key_free(k);
 				return NULL;
@@ -1735,13 +1748,26 @@ static bool
 ldns_key_dsa2bin(unsigned char *data, DSA *k, uint16_t *size)
 {
 	uint8_t T;
+	const BIGNUM *p, *q, *g;
+	const BIGNUM *pub_key, *priv_key;
 
 	if (!k) {
 		return false;
 	}
 	
 	/* See RFC2536 */
-	*size = (uint16_t)BN_num_bytes(k->p);
+# ifdef HAVE_DSA_GET0_PQG
+	DSA_get0_pqg(k, &p, &q, &g);
+# else
+	p = k->p; q = k->q; g = k->g;
+# endif
+# ifdef HAVE_DSA_GET0_KEY
+	DSA_get0_key(k, &pub_key, &priv_key);
+# else
+	pub_key = k->pub_key; priv_key = k->priv_key;
+# endif
+	(void)priv_key;
+	*size = (uint16_t)BN_num_bytes(p);
 	T = (*size - 64) / 8;
 
 	if (T > 8) {
@@ -1755,10 +1781,10 @@ ldns_key_dsa2bin(unsigned char *data, DSA *k, uint16_t *size)
 	/* size = 64 + (T * 8); */
 	memset(data, 0, 21 + *size * 3);
 	data[0] = (unsigned char)T;
-	BN_bn2bin(k->q, data + 1 ); 		/* 20 octects */
-	BN_bn2bin(k->p, data + 21 ); 		/* offset octects */
-	BN_bn2bin(k->g, data + 21 + *size * 2 - BN_num_bytes(k->g));
-	BN_bn2bin(k->pub_key,data + 21 + *size * 3 - BN_num_bytes(k->pub_key));
+	BN_bn2bin(q, data + 1 ); 		/* 20 octects */
+	BN_bn2bin(p, data + 21 ); 		/* offset octects */
+	BN_bn2bin(g, data + 21 + *size * 2 - BN_num_bytes(g));
+	BN_bn2bin(pub_key,data + 21 + *size * 3 - BN_num_bytes(pub_key));
 	*size = 21 + *size * 3;
 	return true;
 }

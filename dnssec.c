@@ -1737,6 +1737,7 @@ ldns_convert_dsa_rrsig_asn12rdf(const ldns_buffer *sig,
 #ifdef USE_DSA
 	ldns_rdf *sigdata_rdf;
 	DSA_SIG *dsasig;
+	const BIGNUM *R, *S;
 	unsigned char *dsasig_data = (unsigned char*)ldns_buffer_begin(sig);
 	size_t byte_offset;
 
@@ -1754,22 +1755,28 @@ ldns_convert_dsa_rrsig_asn12rdf(const ldns_buffer *sig,
                 return NULL;
         }
 	dsasig_data[0] = 0;
-	byte_offset = (size_t) (20 - BN_num_bytes(dsasig->r));
+# ifdef HAVE_DSA_SIG_GET0
+	DSA_SIG_get0(dsasig, &R, &S);
+# else
+	R = dsasig->r;
+	S = dsasig->s;
+# endif
+	byte_offset = (size_t) (20 - BN_num_bytes(R));
 	if (byte_offset > 20) {
                 DSA_SIG_free(dsasig);
                 LDNS_FREE(dsasig_data);
 		return NULL;
 	}
 	memset(&dsasig_data[1], 0, byte_offset);
-	BN_bn2bin(dsasig->r, &dsasig_data[1 + byte_offset]);
-	byte_offset = (size_t) (20 - BN_num_bytes(dsasig->s));
+	BN_bn2bin(R, &dsasig_data[1 + byte_offset]);
+	byte_offset = (size_t) (20 - BN_num_bytes(S));
 	if (byte_offset > 20) {
                 DSA_SIG_free(dsasig);
                 LDNS_FREE(dsasig_data);
 		return NULL;
 	}
 	memset(&dsasig_data[21], 0, byte_offset);
-	BN_bn2bin(dsasig->s, &dsasig_data[21 + byte_offset]);
+	BN_bn2bin(S, &dsasig_data[21 + byte_offset]);
 
 	sigdata_rdf = ldns_rdf_new(LDNS_RDF_TYPE_B64, 41, dsasig_data);
         if(!sigdata_rdf) {
@@ -1816,9 +1823,13 @@ ldns_convert_dsa_rrsig_rdf2asn1(ldns_buffer *target_buffer,
 		BN_free(S);
 		return LDNS_STATUS_MEM_ERR;
 	}
-
+# ifdef HAVE_DSA_SIG_SET0
+       if (! DSA_SIG_set0(dsasig, R, S))
+	       return LDNS_STATUS_SSL_ERR;
+# else
 	dsasig->r = R;
 	dsasig->s = S;
+# endif
 
 	raw_sig_len = i2d_DSA_SIG(dsasig, &raw_sig);
 	if (raw_sig_len < 0) {
