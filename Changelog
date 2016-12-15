@@ -105,6 +105,9 @@
 	  Thanks Andreas Schulze
 	* Update ldns-key2ds man page to mention GOST and SHA384 hash
 	  functions.  Thanks Harald Jenny
+	* Add sha384 and sha512 tsig algorithm. Thanks Michael Weiser
+	* Clarify data ownership with consts for tsig parameters.
+	  Thanks Michael Weiser
 
 1.6.17	2014-01-10
 	* Fix ldns_dnssec_zone_new_frm_fp_l to allow the last parsed line of a
