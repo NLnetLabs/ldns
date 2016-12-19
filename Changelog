@@ -1,4 +1,4 @@
-1.7.0	2016-12-??
+1.7.0	2016-12-19
 	* Fix lookup of relative names in ldns_resolver_search.
 	* bugfix #548: Double free for answers > 4096 in ldns_resolver_send_pkt
 	* Follow CNAME's when tracing with drill (TODO dnssec trace)
