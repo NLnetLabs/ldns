@@ -23,7 +23,7 @@ Generate a distribution tar file for libdns.
     -rc <nr>     Build a release candidate, the given string will be added
                  to the version number 
                  (which will then be ldns-<version>rc<number>)
-    -c <tag/br>  Checkout this tag or branch (defaults to master).
+    -c <tag/br>  Checkout this tag or branch (defaults to current branch).
 EOF
     exit 1
 }
@@ -108,9 +108,9 @@ if [ -z "$CHECKOUT" ]
 then
 	if [ "$RC" = "no" ]
 	then
-		CHECKOUT=master
+		CHECKOUT=`(git status | head -1 | awk '{print$3}') || echo master`
 	else
-		CHECKOUT=develop
+		CHECKOUT=`(git status | head -1 | awk '{print$3}') || echo develop`
 	fi
 fi
 
@@ -231,23 +231,28 @@ echo "ostype $OSTYPE"
 case $OSTYPE in
         linux*)
                 sha=`sha1sum ldns-$version.tar.gz |  awk '{ print $1 }'`
+                sha2=`sha256sum ldns-$version.tar.gz |  awk '{ print $1 }'`
                 ;;
         freebsd*)
                 sha=`sha1  ldns-$version.tar.gz |  awk '{ print $5 }'`
+                sha2=`sha256  ldns-$version.tar.gz |  awk '{ print $4 }'`
                 ;;
         *)
         	uname=`uname`
         	case $uname in
         		Linux*)
                         	sha=`sha1sum ldns-$version.tar.gz |  awk '{ print $1 }'`
+                		sha2=`sha256sum ldns-$version.tar.gz |  awk '{ print $1 }'`
                         	;;
 		        FreeBSD*)
                 		sha=`sha1  ldns-$version.tar.gz |  awk '{ print $4 }'`
+                		sha2=`sha256  ldns-$version.tar.gz |  awk '{ print $4 }'`
 		                ;;
 		esac
         	;;
 esac
 echo $sha > ldns-$version.tar.gz.sha1
+echo $sha2 > ldns-$version.tar.gz.sha256
 gpg --armor --detach-sig ldns-$version.tar.gz
 
 info "LDNS distribution created successfully."
