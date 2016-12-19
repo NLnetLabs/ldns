@@ -126,6 +126,9 @@ uint32_t ldns_read_timeval_usec(struct timeval* t) {
 %immutable ldns_struct_rr_descriptor::_name;
 %immutable ldns_error_str;
 %immutable ldns_signing_algorithms;
+%immutable ldns_tsig_credentials_struct::algorithm;
+%immutable ldns_tsig_credentials_struct::keyname;
+%immutable ldns_tsig_credentials_struct::keydata;
 
 //*_new_frm_fp_l
 %apply int *OUTPUT { (int *line_nr) };
