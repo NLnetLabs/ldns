@@ -110,6 +110,8 @@
 	  Thanks Michael Weiser
 	* bugfix: Fix detection of DSA support with OpenSSL >= 1.1.0
 	* bugfix #1160: Provide sha256 for release tarballs
+	* --enable-gost-anyway compiles GOST support with OpenSSL >= 1.1.0
+	  even when the GOST engine is not available.
 
 1.6.17	2014-01-10
 	* Fix ldns_dnssec_zone_new_frm_fp_l to allow the last parsed line of a
