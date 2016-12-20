@@ -2,7 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.57)
-AC_INIT(pcat, 1.6.17, libdns@nlnetlabs.nl,pcat)
+AC_INIT(pcat, 1.7.0, libdns@nlnetlabs.nl,pcat)
 AC_CONFIG_SRCDIR([pcat.c])
 
 OURCPPFLAGS=''

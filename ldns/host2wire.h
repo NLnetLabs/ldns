@@ -40,12 +40,30 @@ extern "C" {
 ldns_status ldns_dname2buffer_wire(ldns_buffer *buffer, const ldns_rdf *name);
 
 /**
+ * Copies the dname data to the buffer in wire format
+ * \param[out] *buffer buffer to append the result to
+ * \param[in] *name rdata dname to convert
+ * \param[out] *compression_data data structure holding state for compression
+ * \return ldns_status
+ */
+ldns_status ldns_dname2buffer_wire_compress(ldns_buffer *buffer, const ldns_rdf *name, ldns_rbtree_t *compression_data);
+
+/**
  * Copies the rdata data to the buffer in wire format
  * \param[out] *output buffer to append the result to
  * \param[in] *rdf rdata to convert
  * \return ldns_status
  */
 ldns_status ldns_rdf2buffer_wire(ldns_buffer *output, const ldns_rdf *rdf);
+
+/**
+ * Copies the rdata data to the buffer in wire format
+ * \param[out] *output buffer to append the result to
+ * \param[in] *rdf rdata to convert
+ * \param[out] *compression_data data structure holding state for compression
+ * \return ldns_status
+ */
+ldns_status ldns_rdf2buffer_wire_compress(ldns_buffer *output, const ldns_rdf *rdf, ldns_rbtree_t *compression_data);
 
 /**
  * Copies the rdata data to the buffer in wire format
@@ -69,6 +87,20 @@ ldns_status ldns_rdf2buffer_wire_canonical(ldns_buffer *output,
 ldns_status ldns_rr2buffer_wire(ldns_buffer *output,
 						  const ldns_rr *rr,
 						  int section);
+
+/**
+ * Copies the rr data to the buffer in wire format while doing DNAME compression
+ * \param[out] *output buffer to append the result to
+ * \param[in] *rr resource record to convert
+ * \param[in] section the section in the packet this rr is supposed to be in
+ *            (to determine whether to add rdata or not)
+ * \param[out] *compression_data data structure holding state information for compression
+ * \return ldns_status
+ */
+ldns_status ldns_rr2buffer_wire_compress(ldns_buffer *output,
+						  const ldns_rr *rr,
+						  int section,
+						  ldns_rbtree_t *compression_data);
 
 /**
  * Copies the rr data to the buffer in wire format, in canonical format
