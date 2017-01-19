@@ -364,9 +364,7 @@ install-pc: packaging/libldns.pc
 uninstall-pc:
 	$(LIBTOOL) --mode=uninstall rm -f $(DESTDIR)$(libdir)/pkgconfig/ldns.pc
 	test ! -d $(DESTDIR)$(libdir)/pkgconfig || rmdir -p $(DESTDIR)$(libdir)/pkgconfig || echo "ok, dir already gone"
-	test ! -d $(DESTDIR)$(libdir) || rmdir -p $(DESTDIR)$(libdir) || echo "ok, dir already gone"
 
-	
 install-lib: lib
 	$(INSTALL) -m 755 -d $(DESTDIR)$(libdir)
 	$(LIBTOOL) --mode=install cp libldns.la $(DESTDIR)$(libdir)
