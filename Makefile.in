@@ -308,9 +308,9 @@ clean-p5-dns-ldns: $(p5_dns_ldns_dir)/Makefile
 test-p5-dns-ldns: $(p5_dns_ldns_dir)/Makefile
 	cd $(p5_dns_ldns_dir); $(MAKE) test
 
-install: install-h install-lib @INSTALL_CONFIG@ install-manpages $(pyldns_inst) $(pyldnsx_inst) @INSTALL_P5_DNS_LDNS@ @INSTALL_DRILL@ @INSTALL_EXAMPLES@
+install: install-h install-lib install-pc @INSTALL_CONFIG@ install-manpages $(pyldns_inst) $(pyldnsx_inst) @INSTALL_P5_DNS_LDNS@ @INSTALL_DRILL@ @INSTALL_EXAMPLES@
 
-uninstall: uninstall-manpages @UNINSTALL_CONFIG@ uninstall-h uninstall-lib $(pyldns_uninst) $(pyldnsx_uninst) @UNINSTALL_P5_DNS_LDNS@ @UNINSTALL_DRILL@ @UNINSTALL_EXAMPLES@
+uninstall: uninstall-manpages @UNINSTALL_CONFIG@ uninstall-h uninstall-lib uninstall-pc $(pyldns_uninst) $(pyldnsx_uninst) @UNINSTALL_P5_DNS_LDNS@ @UNINSTALL_DRILL@ @UNINSTALL_EXAMPLES@
 
 destclean: uninstall
 
@@ -355,6 +355,18 @@ uninstall-h:
 	test ! -d $(DESTDIR)$(includedir)/ldns || rmdir -p $(DESTDIR)$(includedir)/ldns || echo "ok, dir already gone"
 	exit 0
 
+packaging/libldns.pc: packaging/libldns.pc.in
+	./config.status $@
+
+install-pc: packaging/libldns.pc
+	$(INSTALL) -m 644 packaging/libldns.pc $(DESTDIR)$(libdir)/pkgconfig/ldns.pc
+
+uninstall-pc:
+	$(LIBTOOL) --mode=uninstall rm -f $(DESTDIR)$(libdir)/pkgconfig/ldns.pc
+	test ! -d $(DESTDIR)$(libdir)/pkgconfig || rmdir -p $(DESTDIR)$(libdir)/pkgconfig || echo "ok, dir already gone"
+	test ! -d $(DESTDIR)$(libdir) || rmdir -p $(DESTDIR)$(libdir) || echo "ok, dir already gone"
+
+	
 install-lib: lib
 	$(INSTALL) -m 755 -d $(DESTDIR)$(libdir)
 	$(LIBTOOL) --mode=install cp libldns.la $(DESTDIR)$(libdir)

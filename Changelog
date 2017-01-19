@@ -1,3 +1,7 @@
+1.7.1	????-??-??
+	* bugfix #1209: make install ldns.pc file
+	  Thanks Oleksandr Natalenko
+
 1.7.0	2016-12-20
 	* Fix lookup of relative names in ldns_resolver_search.
 	* bugfix #548: Double free for answers > 4096 in ldns_resolver_send_pkt
