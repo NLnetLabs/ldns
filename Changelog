@@ -1,4 +1,5 @@
 1.7.1	????-??-??
+	* ldns-notify can use all supported hash algorithms with -y.
 	* bugfix #1209: make install ldns.pc file
 	  Thanks Oleksandr Natalenko
 
