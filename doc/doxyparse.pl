@@ -37,8 +37,7 @@ my $BASE="doc/man";
 my $MAN_SECTION = "3";
 my $MAN_HEADER = ".ad l\n.TH ldns $MAN_SECTION \"30 May 2006\"\n";
 my $MAN_MIDDLE = ".SH AUTHOR
-The ldns team at NLnet Labs. Which consists out of
-Jelte Jansen and Miek Gieben.
+The ldns team at NLnet Labs.
 
 .SH REPORTING BUGS
 Please report bugs to ldns-team\@nlnetlabs.nl or in 
