@@ -257,9 +257,9 @@ manpages: $(srcdir)/doc/function_manpages
 	@if [ -f $(srcdir)/doc/man/man3/ldns_rr.3 ] ; \
 	then \
 		echo "Copying manpages..."; \
-		for m in "$(srcdir)/doc/man/man3/*.3" ; \
+		for m in $(srcdir)/doc/man/man3/*.3 ; \
 		do \
-			$(INSTALL) -d "$${m}" doc/man/man3; \
+			$(INSTALL) -c -C -m 444 $${m} doc/man/man3/ ; \
 		done; \
 	else \
 		echo "Generating manpages..."; \
