@@ -54,7 +54,7 @@ question () {
 # working directory.
 cleanup () {
     info "Deleting temporary working directory."
-    cd $cwd && rm -rf $temp_dir
+    cd $cwd && rm -rf $temp_dir && rm -rf $doc_dir
 }
 
 error_cleanup () {
@@ -123,6 +123,7 @@ info "SNAPSHOT is $SNAPSHOT"
 # Creating temp directory
 info "Creating temporary working directory"
 temp_dir=`mktemp -d ldns-dist-XXXXXX`
+doc_dir=`mktemp -d ldns-dist-XXXXXX`
 info "Directory '$temp_dir' created."
 cd $temp_dir
 
@@ -205,6 +206,16 @@ fi
 info "Renaming LDNS directory to ldns-$version."
 cd ..
 mv ldns ldns-$version || error_cleanup "Failed to rename LDNS directory."
+
+info "Building the manpages"
+(
+ 	srcdir=`pwd`
+	cd "../$doc_dir"
+	"${srcdir}/ldns-$version/configure" --disable-dane
+	make manpages
+	cp -prv doc/ldns_manpages "${srcdir}/ldns-$version/doc/ldns_manpages"
+	cp -prv doc/man "${srcdir}/ldns-$version/doc/man"
+)
 
 tarfile="../ldns-$version.tar.gz"
 

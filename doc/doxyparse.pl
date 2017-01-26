@@ -52,8 +52,7 @@ MERCHANTABILITY or
 FITNESS FOR A PARTICULAR PURPOSE.
 ";
 my $MAN_FOOTER = ".SH REMARKS
-This manpage was automatically generated from the ldns source code by
-use of Doxygen and some perl.
+This manpage was automatically generated from the ldns source code.
 ";
 
 getopts("em:",\%options);

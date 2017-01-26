@@ -243,7 +243,7 @@ libldns.la-export-all: $(LDNS_ALL_LOBJS)
 mancheck:
 	sh -c 'find . -name \*.\[13\] -exec troff -z {} \;' 2>&1 | sed "s/^\.\///" | sed "s/\(:[0\-9]\+:\)/\1 warning:/g"
 
-doxygen: manpages
+doxygen:
 	@if test ! -e doc/header.html ; then \
 		$(INSTALL) -c -m 644 $(srcdir)/doc/header.html doc/ ; \
 	fi ;
@@ -253,11 +253,20 @@ doc: manpages $(doxygen)
 	@$(INSTALL) -d doc
 
 manpages: $(srcdir)/doc/function_manpages 
-	@$(INSTALL) -d doc
-	@cat $(srcdir)/ldns/*.h \
-	| $(srcdir)/doc/doxyparse.pl \
-		-m $(srcdir)/doc/function_manpages \
-	| grep -v ^doxygen | grep -v ^cat  > doc/ldns_manpages
+	@$(INSTALL) -d doc/man/man3
+	@if [ -f $(srcdir)/doc/man/man3/ldns_rr.3 ] ; \
+	then \
+		echo "Copying manpages..."; \
+		for m in "$(srcdir)/doc/man/man3/*.3" ; \
+		do \
+			$(INSTALL) -d "$${m}" doc/man/man3; \
+		done; \
+	else \
+		echo "Generating manpages..."; \
+		cat $(srcdir)/ldns/*.h \
+			| $(srcdir)/doc/doxyparse.pl -m $(srcdir)/doc/function_manpages \
+			| grep -v ^doxygen | grep -v ^cat  > doc/ldns_manpages; \
+	fi
 
 manpage-create-errors: $(srcdir)/doc/function_manpages 
 	@$(INSTALL) -d doc
