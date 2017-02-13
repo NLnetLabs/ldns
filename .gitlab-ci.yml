@@ -1,9 +1,9 @@
 before_script:
-  - echo Hopsakidee
-  - whoami
+  - git submodule update --init
+  - pwd
+  - git log -1
+  - ls
 
 hopsakidee:
   script:
-    - printenv
-    - ls -l
-    - git status
+    - test/test_ci.sh
