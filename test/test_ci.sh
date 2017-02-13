@@ -93,7 +93,8 @@ do
 		echo
 		uname -a
 		echo
-		git log -1 --format="$CI_URI"
+		echo "$CI_URI"
+		printenv
 		echo
 
 		# -------------------------------------------------------------
