@@ -3,4 +3,4 @@ before_script:
 
 tpkg-tests:
   script:
-    - test/test_ci.sh willem@nlnetlabs.nl
+    - test/test_ci.sh ldns-team@nlnetlabs.nl
