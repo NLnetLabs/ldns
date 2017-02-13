@@ -1,0 +1,9 @@
+before_script:
+  - echo Hopsakidee
+  - whoami
+
+hopsakidee:
+  script:
+    - whoami
+    - ps axw
+    - printenv
