@@ -6,4 +6,4 @@ before_script:
 
 hopsakidee:
   script:
-    - test/test_ci.sh
+    - test/test_ci.sh willem@nlnetlabs.nl
