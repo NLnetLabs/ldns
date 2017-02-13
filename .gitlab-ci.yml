@@ -1,0 +1,6 @@
+before_script:
+  - git submodule update --init
+
+tpkg-tests:
+  script:
+    - test/test_ci.sh ldns-team@nlnetlabs.nl

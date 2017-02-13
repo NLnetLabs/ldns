@@ -10,11 +10,11 @@ else
 	ONLY_TEST=""
 fi
 
-if git log HEAD^..HEAD | grep -q 'git:NO REGRESSION'
+if git log HEAD^..HEAD | grep -q 'git:REGRESSION'
 then
-	NO_REGRESSION=1
+	NO_REGRESSION=0
 else
-        NO_REGRESSION=0
+        NO_REGRESSION=1
 fi
 
 if [ -z "$TPKG" -o ! -x "$TPKG" ]
@@ -65,7 +65,7 @@ CI_ID=2
 
 REPOS=$(basename $(pwd))
 REPOS=${REPOS%.git}
-CI_URI="https://gitlab-ci.nlnetlabs.nl/projects/$CI_ID/builds/%H"
+CI_URI="${CI_PROJECT_URL}/builds/${CI_BUILD_ID}"
 while [ $# -ge 1 ]
 do
 	echo "Sending mail to $1... ($# >= 1)"
@@ -93,7 +93,7 @@ do
 		echo
 		uname -a
 		echo
-		git log -1 --format="$CI_URI"
+		echo "$CI_URI"
 		echo
 
 		# -------------------------------------------------------------
