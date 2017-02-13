@@ -10,11 +10,11 @@ else
 	ONLY_TEST=""
 fi
 
-if git log HEAD^..HEAD | grep -q 'git:NO REGRESSION'
+if git log HEAD^..HEAD | grep -q 'git:REGRESSION'
 then
-	NO_REGRESSION=1
+	NO_REGRESSION=0
 else
-        NO_REGRESSION=0
+        NO_REGRESSION=1
 fi
 
 if [ -z "$TPKG" -o ! -x "$TPKG" ]
