@@ -65,7 +65,7 @@ CI_ID=2
 
 REPOS=$(basename $(pwd))
 REPOS=${REPOS%.git}
-CI_URI="https://gitlab-ci.nlnetlabs.nl/projects/$CI_ID/builds/%H"
+CI_URI="${CI_PROJECT_URL}/builds/${CI_BUILD_ID}"
 while [ $# -ge 1 ]
 do
 	echo "Sending mail to $1... ($# >= 1)"

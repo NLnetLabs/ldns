@@ -1,9 +1,6 @@
 before_script:
   - git submodule update --init
-  - pwd
-  - git log -1
-  - ls
 
 hopsakidee:
   script:
-    - test/test_ci.sh willem@nlnetlabs.nl
+    - test/test_ci.sh ldns-team@nlnetlabs.nl
