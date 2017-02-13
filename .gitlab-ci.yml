@@ -7,3 +7,4 @@ hopsakidee:
     - whoami
     - ps axw
     - printenv
+    - false
