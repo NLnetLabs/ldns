@@ -256,11 +256,17 @@ manpages: $(srcdir)/doc/function_manpages
 	@$(INSTALL) -d doc/man/man3
 	@if [ -f $(srcdir)/doc/man/man3/ldns_rr.3 ] ; \
 	then \
-		echo "Copying manpages..."; \
-		for m in $(srcdir)/doc/man/man3/*.3 ; \
-		do \
-			$(INSTALL) -c -C -m 444 $${m} doc/man/man3/ ; \
-		done; \
+		if test -d ldns ; then \
+			echo "is builddir srcdir" > ldns/YES ; \
+			if [ ! -f $(srcdir)/ldns/YES ]; then \
+				echo "Copying manpages..."; \
+				for m in $(srcdir)/doc/man/man3/*.3 ; \
+				do \
+					$(INSTALL) -c -C -m 444 $${m} doc/man/man3/ ; \
+				done; \
+			fi ;\
+			rm -f ldns/YES; \
+		fi; \
 	else \
 		echo "Generating manpages..."; \
 		cat $(srcdir)/ldns/*.h \
