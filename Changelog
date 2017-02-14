@@ -2,6 +2,8 @@
 	* ldns-notify can use all supported hash algorithms with -y.
 	* bugfix #1209: make install ldns.pc file
 	  Thanks Oleksandr Natalenko
+	* bugfix #1218: Only chase DS if signer is parent of owner.
+	  Thanks Emil Natan
 
 1.7.0	2016-12-20
 	* Fix lookup of relative names in ldns_resolver_search.

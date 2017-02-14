@@ -415,14 +415,17 @@ ldns_dnssec_build_data_chain(ldns_resolver *res,
 		                                              new_chain);
 	}
 	if (type != LDNS_RR_TYPE_DNSKEY) {
-		ldns_dnssec_build_data_chain_dnskey(res,
-		                                    qflags,
-		                                    pkt,
-		                                    signatures,
-		                                    new_chain,
-		                                    key_name,
-		                                    c
-		                                   );
+		if (type != LDNS_RR_TYPE_DS ||
+				ldns_dname_is_subdomain(name, key_name)) {
+			ldns_dnssec_build_data_chain_dnskey(res,
+			                                    qflags,
+			                                    pkt,
+			                                    signatures,
+			                                    new_chain,
+			                                    key_name,
+			                                    c
+			                                   );
+		}
 	} else {
 		ldns_dnssec_build_data_chain_other(res,
 		                                   qflags,
