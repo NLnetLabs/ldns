@@ -4,6 +4,8 @@
 	  Thanks Oleksandr Natalenko
 	* bugfix #1218: Only chase DS if signer is parent of owner.
 	  Thanks Emil Natan
+	* bugfix #617: Retry WKS service and protocol names lower case.
+	  Thanks Siali Yan
 
 1.7.0	2016-12-20
 	* Fix lookup of relative names in ldns_resolver_search.

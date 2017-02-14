@@ -1088,7 +1088,10 @@ ldns_str2rdf_wks(ldns_rdf **rd, const char *str)
 	ldns_buffer *str_buf;
 
 	char *proto_str = NULL;
+	char *lc_proto_str = NULL;
 	char *token;
+	char *lc_token;
+	char *c;
 	if(strlen(str) == 0)
 		token = LDNS_XMALLOC(char, 50);
 	else 	token = LDNS_XMALLOC(char, strlen(str)+2);
@@ -1106,7 +1109,13 @@ ldns_str2rdf_wks(ldns_rdf **rd, const char *str)
 	while(ldns_bget_token(str_buf, token, "\t\n ", strlen(str)) > 0) {
 		if (!proto_str) {
 			proto_str = strdup(token);
-			if (!proto_str) {
+			lc_proto_str = strdup(token);
+			for (c = lc_proto_str; *c; c++) {
+				*c = tolower(*c);
+			}
+			if (!proto_str || !lc_proto_str) {
+				free(proto_str);
+				free(lc_proto_str);
 				LDNS_FREE(bitmap);
 				LDNS_FREE(token);
 	                        ldns_buffer_free(str_buf);
@@ -1114,6 +1123,19 @@ ldns_str2rdf_wks(ldns_rdf **rd, const char *str)
 			}
 		} else {
 			serv = getservbyname(token, proto_str);
+			if (!serv) {
+				serv = getservbyname(token, lc_proto_str);
+			}
+			if (!serv && (lc_token = strdup(token))) {
+				for (c = lc_token; *c; c++) {
+					*c = tolower(*c);
+				}
+				serv = getservbyname(lc_token, proto_str);
+				if (!serv) {
+					serv = getservbyname(lc_token, lc_proto_str);
+				}
+				free(lc_token);
+			}
 			if (serv) {
 				serv_port = (int) ntohs((uint16_t) serv->s_port);
 			} else {
@@ -1126,6 +1148,7 @@ ldns_str2rdf_wks(ldns_rdf **rd, const char *str)
 				        LDNS_FREE(token);
 	                                ldns_buffer_free(str_buf);
 				        free(proto_str);
+				        free(lc_proto_str);
 				        return LDNS_STATUS_INVALID_STR;
                                 }
 				bitmap = b2;
@@ -1143,6 +1166,7 @@ ldns_str2rdf_wks(ldns_rdf **rd, const char *str)
 		LDNS_FREE(token);
 	        ldns_buffer_free(str_buf);
 	        free(proto_str);
+	        free(lc_proto_str);
 		return LDNS_STATUS_INVALID_STR;
 	}
 
@@ -1152,10 +1176,14 @@ ldns_str2rdf_wks(ldns_rdf **rd, const char *str)
 	        ldns_buffer_free(str_buf);
 	        LDNS_FREE(bitmap);
 	        free(proto_str);
+	        free(lc_proto_str);
 	        return LDNS_STATUS_INVALID_STR;
         }
     if (proto_str)
 		proto = getprotobyname(proto_str);
+    	if (!proto) {
+		proto = getprotobyname(lc_proto_str);
+	}
 	if (proto) {
 		data[0] = (uint8_t) proto->p_proto;
 	} else if (proto_str) {
@@ -1170,6 +1198,7 @@ ldns_str2rdf_wks(ldns_rdf **rd, const char *str)
 	ldns_buffer_free(str_buf);
 	LDNS_FREE(bitmap);
 	free(proto_str);
+	free(lc_proto_str);
 #ifdef HAVE_ENDSERVENT
 	endservent();
 #endif
