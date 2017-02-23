@@ -20,7 +20,7 @@ drill \- get (debug) information out of DNS(SEC)
 
 .SH DESCRIPTION
 \fBdrill\fR is a tool to designed to get all sorts of information out of the
-DNS. It is specificly designed to be used with DNSSEC. 
+DNS. It is specifically designed to be used with DNSSEC.
 .PP
 The name \fBdrill\fR is a pun on \fBdig\fR. With \fBdrill\fR you should be able
 get even more information than with \fBdig\fR.

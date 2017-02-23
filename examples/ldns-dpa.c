@@ -1914,7 +1914,7 @@ usage(FILE *output)
 	fprintf(output, "\t-u <matchnamelist>:\tCount all occurrences of matchname\n");
 	fprintf(output, "\t-ua:\t\tShow average value of every -u matchname\n");
 	fprintf(output, "\t-uac:\t\tShow average count of every -u matchname\n");
-	fprintf(output, "\t-um <number>:\tOnly show -u results that occured more than number times\n");
+	fprintf(output, "\t-um <number>:\tOnly show -u results that occurred more than number times\n");
 	fprintf(output, "\t-v <level>:\tbe more verbose\n");
 	fprintf(output, "\t-notip <file>:\tDump pcap packets that were not recognized as\n\t\t\tIP packets to file\n");
 	fprintf(output, "\t-baddns <file>:\tDump mangled dns packets to file\n");
