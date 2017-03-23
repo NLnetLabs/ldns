@@ -2,6 +2,7 @@
 	* ldns-notify can use all supported hash algorithms with -y.
 	* bugfix #1209: make install ldns.pc file
 	  Thanks Oleksandr Natalenko
+	* removed duplicate condition in ldns_udp_send_query.
 
 1.7.0	2016-12-20
 	* Fix lookup of relative names in ldns_resolver_search.
