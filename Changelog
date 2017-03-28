@@ -8,6 +8,7 @@
 	  Thanks Siali Yan
 	* Spelling errors in binaries and man pages
 	  Thanks Andreas Schulze
+	* removed duplicate condition in ldns_udp_send_query.
 
 1.7.0	2016-12-20
 	* Fix lookup of relative names in ldns_resolver_search.

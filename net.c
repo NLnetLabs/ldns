@@ -676,9 +676,6 @@ ldns_udp_send_query(ldns_buffer *qbin, int sockfd, const struct sockaddr_storage
 	if (bytes == -1 || (size_t)bytes != ldns_buffer_position(qbin)) {
 		return 0;
 	}
-	if ((size_t) bytes != ldns_buffer_position(qbin)) {
-		return 0;
-	}
 	return bytes;
 }
 
