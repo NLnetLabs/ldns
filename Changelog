@@ -1,5 +1,5 @@
 1.7.1	????-??-??
-	* bugfix: Only one signature per RRset needs to be valid with
+	* bugfix #1245: Only one signature per RRset needs to be valid with
 	  ldns-verify-zone.  Thanks Emil Natan.
 	* ldns-notify can use all supported hash algorithms with -y.
 	* bugfix #1209: make install ldns.pc file
