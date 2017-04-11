@@ -26,6 +26,7 @@
  */
 
 #define LDNS_EDNS_MASK_DO_BIT 0x8000
+#define LDNS_EDNS_MASK_UNASSIGNED (0xFFFF & ~LDNS_EDNS_MASK_DO_BIT)
 
 /* TODO defines for 3600 */
 /* convert to and from numerical flag values */
@@ -240,6 +241,19 @@ ldns_pkt_set_edns_do(ldns_pkt *packet, bool value)
 	} else {
 		packet->_edns_z = packet->_edns_z & ~LDNS_EDNS_MASK_DO_BIT;
 	}
+}
+
+uint16_t
+ldns_pkt_edns_unassigned(const ldns_pkt *packet)
+{
+	return (packet->_edns_z & LDNS_EDNS_MASK_UNASSIGNED);
+}
+
+void
+ldns_pkt_set_edns_unassigned(ldns_pkt *packet, uint16_t value)
+{
+	packet->_edns_z = (packet->_edns_z & ~LDNS_EDNS_MASK_UNASSIGNED)
+			| (value & LDNS_EDNS_MASK_UNASSIGNED);
 }
 
 ldns_rdf *
