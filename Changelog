@@ -1,4 +1,6 @@
 1.7.1	????-??-??
+	* bugfix #1256: Check parse limit before t increment
+	  Thanks Stephan Zeisberg
 	* bugfix #1245: Only one signature per RRset needs to be valid with
 	  ldns-verify-zone.  Thanks Emil Natan.
 	* ldns-notify can use all supported hash algorithms with -y.
