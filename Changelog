@@ -1,4 +1,6 @@
 1.7.1	????-??-??
+	* bugfix #1257: Free after reallocing to 0 size
+	  Thanks Stephan Zeisberg
 	* bugfix #1256: Check parse limit before t increment
 	  Thanks Stephan Zeisberg
 	* bugfix #1245: Only one signature per RRset needs to be valid with
