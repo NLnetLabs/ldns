@@ -140,13 +140,7 @@ libtoolize -c --install || libtoolize -c || error_cleanup "Libtoolize failed."
 info "Building configure script (autoconf)."
 autoreconf || error_cleanup "Autoconf failed."
 
-info "Building configure script for examples (autoconf)."
-cd examples && autoreconf && cd .. || error_cleanup "Autoconf failed."
-
-info "Building configure script for drill (autoconf)."
-cd drill && autoreconf && cd .. || error_cleanup "Autoconf failed."
-
-rm -r autom4te* drill/autom4te* examples/autom4te* || error_cleanup "Failed to remove autoconf cache directory."
+rm -r autom4te* || error_cleanup "Failed to remove autoconf cache directory." 
 
 # custom removes
 find . -name .c-mode-rc.el -exec rm {} \;
@@ -171,8 +165,6 @@ if [ "$RC" != "no" ]; then
     info "Version number: $version2"
 
     replace_text "configure.ac" "AC_INIT(ldns, $version" "AC_INIT(ldns, $version2"
-    replace_text "drill/configure.ac" "AC_INIT(ldns, $version" "AC_INIT(ldns, $version2"
-    replace_text "examples/configure.ac" "AC_INIT(ldns, $version" "AC_INIT(ldns, $version2"
     version="$version2"
     RECONFIGURE="yes"
 fi
@@ -183,8 +175,6 @@ if [ "$SNAPSHOT" = "yes" ]; then
     info "Snapshot version number: $version2"
 
     replace_text "configure.ac" "AC_INIT(ldns, $version" "AC_INIT(ldns, $version2"
-    replace_text "drill/configure.ac" "AC_INIT(ldns, $version" "AC_INIT(ldns, $version2"
-    replace_text "examples/configure.ac" "AC_INIT(ldns, $version" "AC_INIT(ldns, $version2"
     version="$version2"
     RECONFIGURE="yes"
 fi
@@ -193,13 +183,7 @@ if [ "$RECONFIGURE" = "yes" ]; then
     info "Rebuilding configure script (autoconf)."
     autoreconf || error_cleanup "Autoconf failed."
 
-    info "Rebuilding configure script for examples (autoconf)."
-    cd examples && autoreconf && cd .. || error_cleanup "Autoconf failed."
-
-    info "Rebuilding configure script for drill (autoconf)."
-    cd drill && autoreconf && cd .. || error_cleanup "Autoconf failed."
-    
-    rm -r autom4te* drill/autom4te* examples/autom4te* || error_cleanup "Failed to remove autoconf cache directory."
+    rm -r autom4te* || error_cleanup "Failed to remove autoconf cache directory."
 fi
 
 
