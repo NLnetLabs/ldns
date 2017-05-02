@@ -1548,11 +1548,11 @@ ldns_str2rdf_long_str(ldns_rdf **rd, const char *str)
 ldns_status
 ldns_str2rdf_hip(ldns_rdf **rd, const char *str)
 {
-	const char *hit = strchr(str, ' ') + 1;
-	const char *pk  = hit == NULL ? NULL : strchr(hit, ' ') + 1;
+	const char *hit = str == NULL ? NULL : strchr(str, ' ');
+	const char *pk  = hit == NULL ? NULL : strchr(hit + 1, ' ');
 	size_t hit_size = hit == NULL ? 0
-	                : pk  == NULL ? strlen(hit) : (size_t) (pk - hit) - 1;
-	size_t  pk_size = pk  == NULL ? 0 : strlen(pk);
+	                : pk  == NULL ? strlen(hit + 1) : (size_t) (pk - hit) - 1;
+	size_t  pk_size = pk  == NULL ? 0 : strlen(pk + 1);
 	size_t hit_wire_size = (hit_size + 1) / 2;
 	size_t  pk_wire_size = ldns_b64_pton_calculate_size(pk_size);
 	size_t rdf_size = 4 + hit_wire_size + pk_wire_size;
@@ -1571,6 +1571,8 @@ ldns_str2rdf_hip(ldns_rdf **rd, const char *str)
 
 		return LDNS_STATUS_SYNTAX_ERR;
 	}
+	hit += 1;
+	pk  += 1;
 	if ((data = LDNS_XMALLOC(uint8_t, rdf_size)) == NULL) {
 
 		return LDNS_STATUS_MEM_ERR;
