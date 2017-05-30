@@ -358,6 +358,22 @@ ldns_key_new_frm_fp_ed25519_l(FILE* fp, int* line_nr)
 }
 #endif
 
+#if defined(USE_ED448)
+/* debug printout routine */
+static void print_hex(const char* str, uint8_t* d, int len)
+{
+	const char hex[] = "0123456789abcdef";
+	int i;
+	printf("%s [len=%d]: ", str, len);
+	for(i=0; i<len; i++) {
+		int x = (d[i]&0xf0)>>4;
+		int y = (d[i]&0x0f);
+		printf("%c%c", hex[x], hex[y]);
+	}
+	printf("\n");
+}
+#endif
+
 #ifdef USE_ED448
 /** turn private key buffer into EC_KEY structure */
 static EVP_PKEY*
@@ -1790,6 +1806,10 @@ ldns_key_ed4482bin(unsigned char* data, EVP_PKEY* k, uint16_t* size)
 {
 	int i;
 	unsigned char* pp = NULL;
+	unsigned len = i2d_PUBKEY(k, &pp);
+	/* printout ASN format for pubkey */
+	print_hex("ed448 pubkey i2d", pp, len);
+	free(pp); pp = NULL;
 	/* untested, not sure what the lengths are for the prefix */
 	if(i2d_PUBKEY(k, &pp) != 12 + 56) {
 		/* expect 12 byte(ASN header) and 56 byte(pubkey) */
@@ -1806,22 +1826,6 @@ ldns_key_ed4482bin(unsigned char* data, EVP_PKEY* k, uint16_t* size)
 #endif /* USE_ED448 */
 #endif /* splint */
 #endif /* HAVE_SSL */
-
-#if defined(USE_ED448)
-/* debug printout routine */
-static void print_hex(const char* str, uint8_t* d, int len)
-{
-	const char hex[] = "0123456789abcdef";
-	int i;
-	printf("%s [len=%d]: ", str, len);
-	for(i=0; i<len; i++) {
-		int x = (d[i]&0xf0)>>4;
-		int y = (d[i]&0x0f);
-		printf("%c%c", hex[x], hex[y]);
-	}
-	printf("\n");
-}
-#endif
 
 ldns_rr *
 ldns_key2rr(const ldns_key *k)

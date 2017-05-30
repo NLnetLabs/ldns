@@ -1957,6 +1957,52 @@ ldns_ed25519_key2buffer_str(ldns_buffer *output, EVP_PKEY *p)
 }
 #endif
 
+#if defined(USE_ED448)
+/* debug printout routine */
+static void ed448_print_hex(const char* str, uint8_t* d, int len)
+{
+	const char hex[] = "0123456789abcdef";
+	int i;
+	printf("%s [len=%d]: ", str, len);
+	for(i=0; i<len; i++) {
+		int x = (d[i]&0xf0)>>4;
+		int y = (d[i]&0x0f);
+		printf("%c%c", hex[x], hex[y]);
+	}
+	printf("\n");
+}
+#endif
+
+#if defined(HAVE_SSL) && defined(USE_ED448)
+static ldns_status
+ldns_ed448_key2buffer_str(ldns_buffer *output, EVP_PKEY *p)
+{
+	unsigned char* pp = NULL;
+	int ret;
+	ldns_rdf *b64_bignum;
+	ldns_status status;
+
+	ldns_buffer_printf(output, "PrivateKey: ");
+
+	ret = i2d_PrivateKey(p, &pp);
+	/* printout hex to find length of ASN */
+	ed448_print_hex("ED448 privkey i2d", pp, ret);
+	/* some-ASN (??) + 56byte key */
+	if(ret != 16 + 56) {
+		OPENSSL_free(pp);
+		return LDNS_STATUS_ERR;
+	}
+	b64_bignum = ldns_rdf_new_frm_data(LDNS_RDF_TYPE_B64,
+		(size_t)ret-16, pp+16);
+	status = ldns_rdf2buffer_str(output, b64_bignum);
+
+	ldns_rdf_deep_free(b64_bignum);
+	OPENSSL_free(pp);
+	ldns_buffer_printf(output, "\n");
+	return status;
+}
+#endif
+
 /** print one b64 encoded bignum to a line in the keybuffer */
 static int
 ldns_print_bignum_b64_line(ldns_buffer* output, const char* label, const BIGNUM* num)
@@ -2198,16 +2244,8 @@ ldns_key2buffer_str(ldns_buffer *output, const ldns_key *k)
 				ldns_buffer_printf(output, "Algorithm: %d (", ldns_key_algorithm(k));
                                 status=ldns_algorithm2buffer_str(output, (ldns_algorithm)ldns_key_algorithm(k));
 				ldns_buffer_printf(output, ")\n");
-				if(k->_key.key) {
-                                        EC_KEY* ec = EVP_PKEY_get1_EC_KEY(k->_key.key);
-                                        const BIGNUM* b = EC_KEY_get0_private_key(ec);
-					if(!ldns_print_bignum_b64_line(output, "PrivateKey", b))
-						goto error;
-                                        /* down reference count in EC_KEY
-                                         * its still assigned to the PKEY */
-                                        EC_KEY_free(ec);
-				}
-				ldns_buffer_printf(output, "\n");
+				status = ldns_ed448_key2buffer_str(output,
+					k->_key.key);
 				break;
 #endif /* USE_ED448 */
 			case LDNS_SIGN_HMACMD5:
