@@ -184,7 +184,7 @@ ldns_sign_public_buffer(ldns_buffer *sign_buf, ldns_key *current_key)
 		b64rdf = ldns_sign_public_evp(
 				   sign_buf,
 				   ldns_key_evp_key(current_key),
-				   EVP_sha512());
+				   NULL);
                 break;
 #endif
 #ifdef USE_ED448
@@ -192,7 +192,7 @@ ldns_sign_public_buffer(ldns_buffer *sign_buf, ldns_key *current_key)
 		b64rdf = ldns_sign_public_evp(
 				   sign_buf,
 				   ldns_key_evp_key(current_key),
-				   EVP_sha512());
+				   NULL);
                 break;
 #endif
 	case LDNS_SIGN_RSAMD5:
@@ -456,8 +456,19 @@ ldns_sign_public_evp(ldns_buffer *to_sign,
 
 	/* initializes a signing context */
 	md_type = digest_type;
+#ifdef USE_ED25519
+	if(EVP_PKEY_id(key) == NID_ED25519) {
+		/* digest must be NULL for ED25519 sign and verify */
+		md_type = NULL;
+	} else
+#endif
+#ifdef USE_ED448
+	if(EVP_PKEY_id(key) == NID_ED448) {
+		md_type = NULL;
+	} else
+#endif
 	if(!md_type) {
-		/* unknown message difest */
+		/* unknown message digest */
 		ldns_buffer_free(b64sig);
 		return NULL;
 	}
@@ -473,23 +484,32 @@ ldns_sign_public_evp(ldns_buffer *to_sign,
 		return NULL;
 	}
 
-	r = EVP_SignInit(ctx, md_type);
-	if(r == 1) {
-		r = EVP_SignUpdate(ctx, (unsigned char*)
-					    ldns_buffer_begin(to_sign),
-					    ldns_buffer_position(to_sign));
-	} else {
-		ldns_buffer_free(b64sig);
-		EVP_MD_CTX_destroy(ctx);
-		return NULL;
-	}
-	if(r == 1) {
-		r = EVP_SignFinal(ctx, (unsigned char*)
-					   ldns_buffer_begin(b64sig), &siglen, key);
-	} else {
-		ldns_buffer_free(b64sig);
-		EVP_MD_CTX_destroy(ctx);
-		return NULL;
+#if defined(USE_ED25519) || defined(USE_ED448)
+	if(md_type == NULL) {
+		/* for these methods we must use the one-shot DigestSign */
+		r = EVP_DigestSignInit(ctx, NULL, md_type, NULL, key);
+		if(r == 1) {
+			size_t siglen_sizet = ldns_buffer_capacity(b64sig);
+			r = EVP_DigestSign(ctx,
+				(unsigned char*)ldns_buffer_begin(b64sig),
+				&siglen_sizet,
+				(unsigned char*)ldns_buffer_begin(to_sign),
+				ldns_buffer_position(to_sign));
+			siglen = (unsigned int)siglen_sizet;
+		}
+	} else
+#endif
+	if(md_type != NULL) {
+		r = EVP_SignInit(ctx, md_type);
+		if(r == 1) {
+			r = EVP_SignUpdate(ctx, (unsigned char*)
+						    ldns_buffer_begin(to_sign),
+						    ldns_buffer_position(to_sign));
+		}
+		if(r == 1) {
+			r = EVP_SignFinal(ctx, (unsigned char*)
+						   ldns_buffer_begin(b64sig), &siglen, key);
+		}
 	}
 	if(r != 1) {
 		ldns_buffer_free(b64sig);
@@ -512,7 +532,7 @@ ldns_sign_public_evp(ldns_buffer *to_sign,
 	}
 #endif
 #endif
-#if defined(USE_ECDSA) || defined(USE_ED25519) || defined(USE_ED448)
+#if defined(USE_ECDSA)
 	if(
 #  ifdef HAVE_EVP_PKEY_BASE_ID
 		EVP_PKEY_base_id(key)
@@ -527,20 +547,6 @@ ldns_sign_public_evp(ldns_buffer *to_sign,
 				b64sig, (long)siglen, ldns_pkey_is_ecdsa(key));
 		}
 #  endif /* USE_ECDSA */
-#  ifdef USE_ED25519
-		if(EVP_PKEY_id(key) == NID_X25519) {
-			r = 1;
-			sigdata_rdf = ldns_convert_ed25519_rrsig_asn12rdf(
-				b64sig, siglen);
-		}
-#  endif /* USE_ED25519 */
-#  ifdef USE_ED448
-		if(EVP_PKEY_id(key) == NID_X448) {
-			r = 1;
-			sigdata_rdf = ldns_convert_ed448_rrsig_asn12rdf(
-				b64sig, siglen);
-		}
-#  endif /* USE_ED448 */
 	}
 #endif /* PKEY_EC */
 	if(r == 0) {

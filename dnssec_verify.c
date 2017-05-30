@@ -1858,27 +1858,19 @@ ldns_verify_rrsig_gost_raw(const unsigned char* sig, size_t siglen,
 EVP_PKEY*
 ldns_ed255192pkey_raw(const unsigned char* key, size_t keylen)
 {
-        const unsigned char* pp = key; /* pp gets modified by o2i() */
+	/* ASN1 for ED25519 is 302a300506032b6570032100 <32byteskey> */
+	uint8_t pre[] = {0x30, 0x2a, 0x30, 0x05, 0x06, 0x03, 0x2b, 0x65,
+		0x70, 0x03, 0x21, 0x00};
+        int pre_len = 12;
+	uint8_t buf[256];
         EVP_PKEY *evp_key;
-        EC_KEY *ec;
-	if(keylen != 32)
+	/* pp gets modified by d2i() */
+        const unsigned char* pp = (unsigned char*)buf;
+	if(keylen != 32 || keylen + pre_len > sizeof(buf))
 		return NULL; /* wrong length */
-        ec = EC_KEY_new_by_curve_name(NID_X25519);
-	if(!ec) return NULL;
-        if(!o2i_ECPublicKey(&ec, &pp, (int)keylen)) {
-                EC_KEY_free(ec);
-                return NULL;
-	}
-        evp_key = EVP_PKEY_new();
-        if(!evp_key) {
-                EC_KEY_free(ec);
-                return NULL;
-        }
-        if (!EVP_PKEY_assign_EC_KEY(evp_key, ec)) {
-		EVP_PKEY_free(evp_key);
-		EC_KEY_free(ec);
-		return NULL;
-	}
+	memmove(buf, pre, pre_len);
+	memmove(buf+pre_len, key, keylen);
+	evp_key = d2i_PUBKEY(NULL, &pp, (int)(pre_len+keylen));
         return evp_key;
 }
 
@@ -1894,8 +1886,7 @@ ldns_verify_rrsig_ed25519_raw(unsigned char* sig, size_t siglen,
 		/* could not convert key */
 		return LDNS_STATUS_CRYPTO_BOGUS;
         }
-	result = ldns_verify_rrsig_evp_raw(sig, siglen, rrset, evp_key,
-		EVP_sha512());
+	result = ldns_verify_rrsig_evp_raw(sig, siglen, rrset, evp_key, NULL);
 	EVP_PKEY_free(evp_key);
 	return result;
 }
@@ -1910,7 +1901,7 @@ ldns_ed4482pkey_raw(const unsigned char* key, size_t keylen)
         EC_KEY *ec;
 	if(keylen != 57)
 		return NULL; /* wrong length */
-        ec = EC_KEY_new_by_curve_name(NID_X448);
+        ec = EC_KEY_new_by_curve_name(NID_ED448);
 	if(!ec) return NULL;
         if(!o2i_ECPublicKey(&ec, &pp, (int)keylen)) {
                 EC_KEY_free(ec);
@@ -1941,8 +1932,7 @@ ldns_verify_rrsig_ed448_raw(unsigned char* sig, size_t siglen,
 		/* could not convert key */
 		return LDNS_STATUS_CRYPTO_BOGUS;
         }
-	result = ldns_verify_rrsig_evp_raw(sig, siglen, rrset, evp_key,
-		EVP_sha512());
+	result = ldns_verify_rrsig_evp_raw(sig, siglen, rrset, evp_key, NULL);
 	EVP_PKEY_free(evp_key);
 	return result;
 }
@@ -2188,6 +2178,12 @@ ldns_rrsig2rawsig_buffer(ldns_buffer* rawsig_buf, const ldns_rr* rrsig)
 #ifdef USE_GOST
 	case LDNS_ECC_GOST:
 #endif
+#ifdef USE_ED25519
+	case LDNS_ED25519:
+#endif
+#ifdef USE_ED448
+	case LDNS_ED448:
+#endif
 		if (ldns_rr_rdf(rrsig, 8) == NULL) {
 			return LDNS_STATUS_MISSING_RDATA_FIELDS_RRSIG;
 		}
@@ -2228,32 +2224,6 @@ ldns_rrsig2rawsig_buffer(ldns_buffer* rawsig_buf, const ldns_rr* rrsig)
 			return LDNS_STATUS_MEM_ERR;
                 }
                 break;
-#endif
-#ifdef USE_ED25519
-	case LDNS_ED25519:
-                /* EVP produces an ASN prefix on the signature, which is
-                 * not used in the DNS */
-		if (ldns_rr_rdf(rrsig, 8) == NULL) {
-			return LDNS_STATUS_MISSING_RDATA_FIELDS_RRSIG;
-		}
-		if (ldns_convert_ed25519_rrsig_rdf2asn1(
-			rawsig_buf, ldns_rr_rdf(rrsig, 8)) != LDNS_STATUS_OK) {
-			return LDNS_STATUS_MEM_ERR;
-                }
-		break;
-#endif
-#ifdef USE_ED448
-	case LDNS_ED448:
-                /* EVP produces an ASN prefix on the signature, which is
-                 * not used in the DNS */
-		if (ldns_rr_rdf(rrsig, 8) == NULL) {
-			return LDNS_STATUS_MISSING_RDATA_FIELDS_RRSIG;
-		}
-		if (ldns_convert_ed448_rrsig_rdf2asn1(
-			rawsig_buf, ldns_rr_rdf(rrsig, 8)) != LDNS_STATUS_OK) {
-			return LDNS_STATUS_MEM_ERR;
-                }
-		break;
 #endif
 	case LDNS_DH:
 	case LDNS_ECC:
@@ -2633,11 +2603,23 @@ ldns_verify_rrsig_evp_raw(const unsigned char *sig, size_t siglen,
 	if(!ctx)
 		return LDNS_STATUS_MEM_ERR;
 	
-	EVP_VerifyInit(ctx, digest_type);
-	EVP_VerifyUpdate(ctx,
-				  ldns_buffer_begin(rrset),
-				  ldns_buffer_position(rrset));
-	res = EVP_VerifyFinal(ctx, sig, (unsigned int) siglen, key);
+#if defined(USE_ED25519) || defined(USE_ED448)
+	if(!digest_type) {
+		res = EVP_DigestVerifyInit(ctx, NULL, digest_type, NULL, key);
+		if(res == 1) {
+			res = EVP_DigestVerify(ctx, sig, siglen,
+				ldns_buffer_begin(rrset),
+				ldns_buffer_position(rrset));
+		}
+	} else
+#endif
+	if(digest_type) {
+		EVP_VerifyInit(ctx, digest_type);
+		EVP_VerifyUpdate(ctx,
+					  ldns_buffer_begin(rrset),
+					  ldns_buffer_position(rrset));
+		res = EVP_VerifyFinal(ctx, sig, (unsigned int) siglen, key);
+	}
 	
 	EVP_MD_CTX_destroy(ctx);
 	
