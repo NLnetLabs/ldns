@@ -461,7 +461,7 @@ ldns_send_buffer(ldns_pkt **result, ldns_resolver *r, ldns_buffer *qb, ldns_rdf 
 	uint8_t i;
 
 	struct sockaddr_storage *src = NULL;
-	size_t src_len;
+	size_t src_len = 0;
 	struct sockaddr_storage *ns;
 	size_t ns_len;
 	struct timeval tv_s;
