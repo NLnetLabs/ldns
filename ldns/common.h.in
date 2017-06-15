@@ -15,6 +15,10 @@
 #ifndef LDNS_COMMON_H
 #define LDNS_COMMON_H
 
+#ifdef IS_CMAKE_BUILD
+#include <ldns/config.h>
+#endif
+
 /*
  * The build configuration that is used in the distributed headers,
  * as detected and determined by the auto configure script.

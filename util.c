@@ -467,7 +467,7 @@ ldns_bubblebabble(uint8_t *data, size_t len)
  */
 #ifdef HAVE_B64_NTOP
 int ldns_b64_ntop(const uint8_t* src, size_t srclength,
-		char *target, size_t targsize);
+		char *target, size_t targsize)
 {
 	return b64_ntop(src, srclength, target, targsize);
 }
