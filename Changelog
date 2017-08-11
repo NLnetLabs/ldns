@@ -20,6 +20,8 @@
 	* ldns_wire2pkt: fix null pointer dereference if pkt allocation fails
 	  and fix memory leak with more EDNS sections
 	  Thanks Jan Vcelak
+	* bugfix #1399: ldns_pkt2wire() Python binding is broken.
+	  Thanks James Raftery
 
 1.7.0	2016-12-20
 	* Fix lookup of relative names in ldns_resolver_search.
