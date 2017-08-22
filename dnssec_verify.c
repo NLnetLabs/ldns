@@ -2615,6 +2615,8 @@ ldns_verify_rrsig_evp_raw(const unsigned char *sig, size_t siglen,
 				ldns_buffer_position(rrset));
 		}
 	} else
+#else
+	res = 0;
 #endif
 	if(digest_type) {
 		EVP_VerifyInit(ctx, digest_type);
@@ -2628,6 +2630,7 @@ ldns_verify_rrsig_evp_raw(const unsigned char *sig, size_t siglen,
 	
 	if (res == 1) {
 		return LDNS_STATUS_OK;
+
 	} else if (res == 0) {
 		return LDNS_STATUS_CRYPTO_BOGUS;
 	}

@@ -389,6 +389,7 @@ ldns_pkt_rr(const ldns_pkt *pkt, ldns_pkt_section sec, const ldns_rr *rr)
 		return ldns_rr_list_contains_rr(ldns_pkt_additional(pkt), rr);
 	case LDNS_SECTION_ANY:
 		result = ldns_rr_list_contains_rr(ldns_pkt_question(pkt), rr);
+		/* fallthrough */
 	case LDNS_SECTION_ANY_NOQUESTION:
 		result = result
 		    || ldns_rr_list_contains_rr(ldns_pkt_answer(pkt), rr)

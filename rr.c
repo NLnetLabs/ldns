@@ -351,6 +351,7 @@ ldns_rr_new_frm_str_internal(ldns_rr **newrr, const char *str,
 							delimiters = "\n";
 							break;
 						}
+						/* fallthrough */
 		default                       :	delimiters = "\n\t "; 
 		}
 
