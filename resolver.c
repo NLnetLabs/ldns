@@ -1132,6 +1132,7 @@ ldns_resolver_search(const ldns_resolver *r,const  ldns_rdf *name,
 	if (ldns_resolver_search_status(&pkt, (ldns_resolver *)r,
 				name, t, c, flags) != LDNS_STATUS_OK) {
 		ldns_pkt_free(pkt);
+		return NULL;
 	}
 	return pkt;
 }
@@ -1165,6 +1166,7 @@ ldns_resolver_query(const ldns_resolver *r, const ldns_rdf *name,
 	if (ldns_resolver_query_status(&pkt, (ldns_resolver *)r,
 				name, t, c, flags) != LDNS_STATUS_OK) {
 		ldns_pkt_free(pkt);
+		return NULL;
 	}
 	return pkt;
 }
@@ -1240,6 +1242,7 @@ ldns_resolver_send_pkt(ldns_pkt **answer, ldns_resolver *r,
 				    ldns_pkt_tc(answer_pkt)) {
 					ldns_resolver_set_usevc(r, true);
 					ldns_pkt_free(answer_pkt);
+					answer_pkt = NULL;
 					stat = ldns_send(&answer_pkt, r, query_pkt);
 					ldns_resolver_set_usevc(r, false);
 				}
