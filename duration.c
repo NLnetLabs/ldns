@@ -215,9 +215,10 @@ digits_in_number(time_t duration)
 char*
 ldns_duration2string(const ldns_duration_type* duration)
 {
-    char* str = NULL, *num = NULL;
+    char* str = NULL;
     size_t count = 2;
     int T = 0;
+    char num[80];
 
     if (!duration) {
         return NULL;
@@ -251,61 +252,55 @@ ldns_duration2string(const ldns_duration_type* duration)
         count++;
     }
 
-    str = (char*) calloc(count, sizeof(char));
+    if (!(str = (char*) calloc(count, sizeof(char))))
+	    return NULL;
     str[0] = 'P';
     str[1] = '\0';
 
     if (duration->years > 0) {
         count = digits_in_number(duration->years);
-        num = (char*) calloc(count+2, sizeof(char));
+	if (count > sizeof(num) - 2) return NULL; /* int's > 256 bits */
         snprintf(num, count+2, "%uY", (unsigned int) duration->years);
         str = strncat(str, num, count+2);
-        free((void*) num);
     }
     if (duration->months > 0) {
         count = digits_in_number(duration->months);
-        num = (char*) calloc(count+2, sizeof(char));
+	if (count > sizeof(num) - 2) return NULL;
         snprintf(num, count+2, "%uM", (unsigned int) duration->months);
         str = strncat(str, num, count+2);
-        free((void*) num);
     }
     if (duration->weeks > 0) {
         count = digits_in_number(duration->weeks);
-        num = (char*) calloc(count+2, sizeof(char));
+	if (count > sizeof(num) - 2) return NULL;
         snprintf(num, count+2, "%uW", (unsigned int) duration->weeks);
         str = strncat(str, num, count+2);
-        free((void*) num);
     }
     if (duration->days > 0) {
         count = digits_in_number(duration->days);
-        num = (char*) calloc(count+2, sizeof(char));
+	if (count > sizeof(num) - 2) return NULL;
         snprintf(num, count+2, "%uD", (unsigned int) duration->days);
         str = strncat(str, num, count+2);
-        free((void*) num);
     }
     if (T) {
         str = strncat(str, "T", 1);
     }
     if (duration->hours > 0) {
         count = digits_in_number(duration->hours);
-        num = (char*) calloc(count+2, sizeof(char));
+	if (count > sizeof(num) - 2) return NULL;
         snprintf(num, count+2, "%uH", (unsigned int) duration->hours);
         str = strncat(str, num, count+2);
-        free((void*) num);
     }
     if (duration->minutes > 0) {
         count = digits_in_number(duration->minutes);
-        num = (char*) calloc(count+2, sizeof(char));
+	if (count > sizeof(num) - 2) return NULL;
         snprintf(num, count+2, "%uM", (unsigned int) duration->minutes);
         str = strncat(str, num, count+2);
-        free((void*) num);
     }
     if (duration->seconds > 0) {
         count = digits_in_number(duration->seconds);
-        num = (char*) calloc(count+2, sizeof(char));
+	if (count > sizeof(num) - 2) return NULL;
         snprintf(num, count+2, "%uS", (unsigned int) duration->seconds);
         str = strncat(str, num, count+2);
-        free((void*) num);
     }
     return str;
 }
