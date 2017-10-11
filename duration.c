@@ -197,14 +197,17 @@ ldns_duration_create_from_string(const char* str)
 static size_t
 digits_in_number(time_t duration)
 {
-    uint32_t period = (uint32_t) duration;
-    size_t count = 0;
+	unsigned int i = (unsigned int) duration;
+	size_t n = 1;
 
-    while (period > 0) {
-        count++;
-        period /= 10;
-    }
-    return count;
+	while (i >= 100000000) {
+		n += 8;
+		i /= 100000000;
+	}
+	if (i >= 10000) { n += 4; i /= 10000; }
+	if (i >= 100  ) { n += 2; i /= 100; }
+	if (i >= 10   ) { n += 1; }
+	return n;
 }
 
 
@@ -218,7 +221,7 @@ ldns_duration2string(const ldns_duration_type* duration)
     char* str = NULL;
     size_t count = 2;
     int T = 0;
-    char num[80];
+    char num[sizeof(unsigned int) + 2];
 
     if (!duration) {
         return NULL;
@@ -259,25 +262,25 @@ ldns_duration2string(const ldns_duration_type* duration)
 
     if (duration->years > 0) {
         count = digits_in_number(duration->years);
-	if (count > sizeof(num) - 2) return NULL; /* int's > 256 bits */
+	assert(count <= sizeof(num) - 2);
         snprintf(num, count+2, "%uY", (unsigned int) duration->years);
         str = strncat(str, num, count+2);
     }
     if (duration->months > 0) {
         count = digits_in_number(duration->months);
-	if (count > sizeof(num) - 2) return NULL;
+	assert(count <= sizeof(num) - 2);
         snprintf(num, count+2, "%uM", (unsigned int) duration->months);
         str = strncat(str, num, count+2);
     }
     if (duration->weeks > 0) {
         count = digits_in_number(duration->weeks);
-	if (count > sizeof(num) - 2) return NULL;
+	assert(count <= sizeof(num) - 2);
         snprintf(num, count+2, "%uW", (unsigned int) duration->weeks);
         str = strncat(str, num, count+2);
     }
     if (duration->days > 0) {
         count = digits_in_number(duration->days);
-	if (count > sizeof(num) - 2) return NULL;
+	assert(count <= sizeof(num) - 2);
         snprintf(num, count+2, "%uD", (unsigned int) duration->days);
         str = strncat(str, num, count+2);
     }
@@ -286,19 +289,19 @@ ldns_duration2string(const ldns_duration_type* duration)
     }
     if (duration->hours > 0) {
         count = digits_in_number(duration->hours);
-	if (count > sizeof(num) - 2) return NULL;
+	assert(count <= sizeof(num) - 2);
         snprintf(num, count+2, "%uH", (unsigned int) duration->hours);
         str = strncat(str, num, count+2);
     }
     if (duration->minutes > 0) {
         count = digits_in_number(duration->minutes);
-	if (count > sizeof(num) - 2) return NULL;
+	assert(count <= sizeof(num) - 2);
         snprintf(num, count+2, "%uM", (unsigned int) duration->minutes);
         str = strncat(str, num, count+2);
     }
     if (duration->seconds > 0) {
         count = digits_in_number(duration->seconds);
-	if (count > sizeof(num) - 2) return NULL;
+	assert(count <= sizeof(num) - 2);
         snprintf(num, count+2, "%uS", (unsigned int) duration->seconds);
         str = strncat(str, num, count+2);
     }
