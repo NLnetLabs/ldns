@@ -479,7 +479,7 @@ ldns_rdf2buffer_str_b64(ldns_buffer *output, const ldns_rdf *rdf)
 	char *b64;
 
 	if (ldns_rdf_size(rdf) == 0) {
-		ldns_buffer_printf(output, "-");
+		ldns_buffer_printf(output, "0");
 		return ldns_buffer_status(output);
 	} else
 		size = ldns_b64_ntop_calculate_size(ldns_rdf_size(rdf));
