@@ -1180,6 +1180,7 @@ ldns_resolver_backup_rtt(ldns_resolver *r)
 	if (old_rtt && ldns_resolver_nameserver_count(r)) {
 		new_rtt = LDNS_XMALLOC(size_t
 				, ldns_resolver_nameserver_count(r));
+		if (!new_rtt) return NULL;
 		memcpy(new_rtt, old_rtt, sizeof(size_t)
 				* ldns_resolver_nameserver_count(r));
 		ldns_resolver_set_rtt(r, new_rtt);
