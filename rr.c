@@ -2545,10 +2545,10 @@ ldns_rdf_bitmap_known_rr_types_set(ldns_rdf** rdf, int value)
 		/* Format rdf data according RFC3845 Section 2.1.2 (see above)
 		 */
 		dptr = data = LDNS_XMALLOC(uint8_t, sz);
-		memset(data, value, sz);
 		if (!data) {
 			return LDNS_STATUS_MEM_ERR;
 		}
+		memset(data, value, sz);
 		for (i = 0; i < 256; i++) {
 			if (windows[i]) {
 				*dptr++ = (uint8_t)i;
