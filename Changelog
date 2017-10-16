@@ -1,5 +1,5 @@
 1.7.1	????-??-??
-	* bugfix #1566: Possible NULL Pointer Dereference
+	* bugfix #1566, #1568: Possible NULL Pointer Dereference
 	  Thanks Bill Parker
 	* bugfix #1260: Anticipate strchr returning NULL on unfound char
 	  Thanks Stephan Zeisberg

@@ -1047,24 +1047,18 @@ ldns_key_new_frm_fp_hmac_l( FILE *f
 			  , size_t *hmac_size
 			  )
 {
-	size_t i, bufsz;
+	size_t bufsz;
 	char d[LDNS_MAX_LINELEN];
 	unsigned char *buf = NULL;
 
-	if (ldns_fget_keyword_data_l(f, "Key", ": ", d, "\n", LDNS_MAX_LINELEN, line_nr) == -1) {
-		goto error;
-	}
-	bufsz = ldns_b64_ntop_calculate_size(strlen(d));
-	buf = LDNS_XMALLOC(unsigned char, bufsz);
-	i = (size_t) ldns_b64_pton((const char*)d, buf, bufsz);
-
-	*hmac_size = i;
+	*hmac_size = ldns_fget_keyword_data_l(f, "Key", ": ", d, "\n",
+	                                      LDNS_MAX_LINELEN, line_nr) == -1
+	           ? 0
+		   : (buf = LDNS_XMALLOC( unsigned char, (bufsz =
+	                    ldns_b64_ntop_calculate_size(strlen(d))))) == NULL
+		   ? 0
+	           : (size_t) ldns_b64_pton((const char*)d, buf, bufsz);
 	return buf;
-
-	error:
-	LDNS_FREE(buf);
-	*hmac_size = 0;
-	return NULL;
 }
 #endif /* HAVE_SSL */
 
