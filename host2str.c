@@ -476,8 +476,17 @@ ldns_status
 ldns_rdf2buffer_str_b64(ldns_buffer *output, const ldns_rdf *rdf)
 {
 	size_t size = ldns_b64_ntop_calculate_size(ldns_rdf_size(rdf));
-	char *b64 = LDNS_XMALLOC(char, size);
-	if(!b64) return LDNS_STATUS_MEM_ERR;
+	char *b64;
+
+	if (ldns_rdf_size(rdf) == 0) {
+		ldns_buffer_printf(output, "-");
+		return ldns_buffer_status(output);
+	} else
+		size = ldns_b64_ntop_calculate_size(ldns_rdf_size(rdf));
+
+	if (!(b64 = LDNS_XMALLOC(char, size)))
+		return LDNS_STATUS_MEM_ERR;
+
 	if (ldns_b64_ntop(ldns_rdf_data(rdf), ldns_rdf_size(rdf), b64, size)) {
 		ldns_buffer_printf(output, "%s", b64);
 	}

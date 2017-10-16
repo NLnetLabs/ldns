@@ -584,6 +584,11 @@ ldns_str2rdf_b64(ldns_rdf **rd, const char *str)
 	uint8_t *buffer;
 	int16_t i;
 
+	if (*str == '-' && str[1] == '\0') {
+		*rd = ldns_rdf_new_frm_data(LDNS_RDF_TYPE_B64, 0, NULL);
+		return *rd ? LDNS_STATUS_OK : LDNS_STATUS_MEM_ERR;
+	}
+
 	buffer = LDNS_XMALLOC(uint8_t, ldns_b64_ntop_calculate_size(strlen(str)));
         if(!buffer) {
                 return LDNS_STATUS_MEM_ERR;

@@ -2038,6 +2038,16 @@ static const ldns_rdf_type type_caa_wireformat[] = {
 	LDNS_RDF_TYPE_TAG,
 	LDNS_RDF_TYPE_LONG_STR
 };
+#ifdef RRTYPE_DOA
+static const ldns_rdf_type type_doa_wireformat[] = {
+	LDNS_RDF_TYPE_INT32,
+	LDNS_RDF_TYPE_INT32,
+	LDNS_RDF_TYPE_INT8,
+	LDNS_RDF_TYPE_STR,
+	LDNS_RDF_TYPE_B64
+};
+#endif
+
 /** \endcond */
 
 /** \cond */
@@ -2425,6 +2435,12 @@ static ldns_rr_descriptor rdata_field_descriptors[] = {
 	{LDNS_RR_TYPE_AVC, "AVC", 1, 0, NULL, LDNS_RDF_TYPE_STR, LDNS_RR_NO_COMPRESS, 0 },
 #else
 {LDNS_RR_TYPE_NULL, "TYPE258", 1, 1, type_0_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 0 },
+#endif
+#ifdef RRTYPE_DOA
+	/* 259 */
+	{LDNS_RR_TYPE_DOA, "DOA", 5, 5, type_doa_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 0 },
+#else
+{LDNS_RR_TYPE_NULL, "TYPE259", 1, 1, type_0_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 0 },
 #endif
 
 /* split in array, no longer contiguous */

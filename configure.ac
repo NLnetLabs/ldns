@@ -639,6 +639,15 @@ case "$enable_rrtype_avc" in
 	no|*)
 		;;
 esac
+AC_ARG_ENABLE(rrtype-doa, AC_HELP_STRING([--enable-rrtype-doa], [Enable draft RR type DOA.]))
+case "$enable_rrtype_doa" in
+	yes)
+		AC_DEFINE_UNQUOTED([RRTYPE_DOA], [], [Define this to enable RR type DOA.])
+		;;
+	no|*)
+		;;
+esac
+
 
 AC_SUBST(LIBSSL_CPPFLAGS)
 AC_SUBST(LIBSSL_LDFLAGS)

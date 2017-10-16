@@ -36,9 +36,6 @@ extern "C" {
 /** The bytes TTL, CLASS and length use up in an rr */
 #define LDNS_RR_OVERHEAD	10
 
-/* The first fields are contiguous and can be referenced instantly */
-#define LDNS_RDATA_FIELD_DESCRIPTORS_COMMON 259
-
 
 
 /**
@@ -223,6 +220,7 @@ enum ldns_enum_rr_type
 	LDNS_RR_TYPE_URI = 256, /* RFC 7553 */
 	LDNS_RR_TYPE_CAA = 257, /* RFC 6844 */
 	LDNS_RR_TYPE_AVC = 258, /* Cisco's DNS-AS RR, see www.dns-as.org */
+	LDNS_RR_TYPE_DOA = 259, /* draft-durand-doa-over-dns */
 
 	/** DNSSEC Trust Authorities */
 	LDNS_RR_TYPE_TA = 32768,
@@ -237,6 +235,9 @@ enum ldns_enum_rr_type
 	LDNS_RR_TYPE_COUNT = LDNS_RR_TYPE_LAST - LDNS_RR_TYPE_FIRST + 1
 };
 typedef enum ldns_enum_rr_type ldns_rr_type;
+
+/* The first fields are contiguous and can be referenced instantly */
+#define LDNS_RDATA_FIELD_DESCRIPTORS_COMMON (LDNS_RR_TYPE_DOA + 1)
 
 /**
  * Resource Record
