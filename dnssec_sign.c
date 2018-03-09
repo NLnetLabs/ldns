@@ -1257,12 +1257,15 @@ ldns_dnssec_zone_create_rrsigs_flg( ldns_dnssec_zone *zone
 											key_list,
 											func,
 											arg);
-				if(!(flags&LDNS_SIGN_DNSKEY_WITH_ZSK) &&
-					cur_rrset->type == LDNS_RR_TYPE_DNSKEY)
-					ldns_key_list_filter_for_dnskey(key_list, flags);
-
-				if(cur_rrset->type != LDNS_RR_TYPE_DNSKEY)
+				if(cur_rrset->type == LDNS_RR_TYPE_DNSKEY ||
+				   cur_rrset->type == LDNS_RR_TYPE_CDNSKEY ||
+				   cur_rrset->type == LDNS_RR_TYPE_CDS) {
+					if(!(flags&LDNS_SIGN_DNSKEY_WITH_ZSK)) {
+						ldns_key_list_filter_for_dnskey(key_list, flags);
+					}
+				} else {
 					ldns_key_list_filter_for_non_dnskey(key_list, flags);
+				}
 
 				/* TODO: just set count to zero? */
 				rr_list = ldns_rr_list_new();
