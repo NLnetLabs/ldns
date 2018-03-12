@@ -1,4 +1,6 @@
 1.7.1	????-??-??
+	* bugfix #3437: CDS & CDNSKEY RRsets should be signed with the KSK
+	  Thanks Tony Finch
 	* bugfix #1566, #1568, #1569, #1570: Potential NULL Dereferences
 	  Thanks Bill Parker
 	* bugfix #1260: Anticipate strchr returning NULL on unfound char
