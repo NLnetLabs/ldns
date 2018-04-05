@@ -1966,22 +1966,6 @@ ldns_ed25519_key2buffer_str(ldns_buffer *output, EVP_PKEY *p)
 }
 #endif
 
-#if defined(USE_ED448)
-/* debug printout routine */
-static void ed448_print_hex(const char* str, uint8_t* d, int len)
-{
-	const char hex[] = "0123456789abcdef";
-	int i;
-	printf("%s [len=%d]: ", str, len);
-	for(i=0; i<len; i++) {
-		int x = (d[i]&0xf0)>>4;
-		int y = (d[i]&0x0f);
-		printf("%c%c", hex[x], hex[y]);
-	}
-	printf("\n");
-}
-#endif
-
 #if defined(HAVE_SSL) && defined(USE_ED448)
 static ldns_status
 ldns_ed448_key2buffer_str(ldns_buffer *output, EVP_PKEY *p)
@@ -1994,10 +1978,8 @@ ldns_ed448_key2buffer_str(ldns_buffer *output, EVP_PKEY *p)
 	ldns_buffer_printf(output, "PrivateKey: ");
 
 	ret = i2d_PrivateKey(p, &pp);
-	/* printout hex to find length of ASN */
-	ed448_print_hex("ED448 privkey i2d", pp, ret);
-	/* some-ASN (??) + 56byte key */
-	if(ret != 16 + 56) {
+	/* some-ASN + 57byte key */
+	if(ret != 16 + 57) {
 		OPENSSL_free(pp);
 		return LDNS_STATUS_ERR;
 	}
