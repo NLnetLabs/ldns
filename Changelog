@@ -27,6 +27,7 @@
 	* bugfix #1399: ldns_pkt2wire() Python binding is broken.
 	  Thanks James Raftery
 	* ED25519 and ED448 support.
+	* ldns-notify: can have IPv6 address as argument.
 
 1.7.0	2016-12-20
 	* Fix lookup of relative names in ldns_resolver_search.

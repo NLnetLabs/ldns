@@ -351,6 +351,7 @@ main(int argc, char **argv)
 			printf("# sending to %s\n", argv[i]);
 		memset(&hints, 0, sizeof(hints));
 		hints.ai_family = default_family;
+		if(strchr(argv[i], ':')) hints.ai_family = AF_INET6;
 		hints.ai_socktype = SOCK_DGRAM;
 		hints.ai_protocol = IPPROTO_UDP;
 		error = getaddrinfo(argv[i], port, &hints, &res0);
