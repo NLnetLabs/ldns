@@ -189,7 +189,7 @@ $(LDNS_DPA):
 		 -o $(LDNS_DPA)
 
 $(LDNS_DANE):
-	$(LINK_EXE) $(LDNS_DANE_LOBJS) $(LIBS) $(LIBSSL_SSL_LIBS) -lldns \
+	$(LINK_EXE) $(LDNS_DANE_LOBJS) -lldns $(LIBS) $(LIBSSL_SSL_LIBS) \
 		 -o $(LDNS_DANE)
 
 $(EX_SSL_PROGS):
