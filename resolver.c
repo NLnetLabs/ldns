@@ -1108,7 +1108,8 @@ ldns_resolver_search_status(ldns_pkt** pkt,
 
 			s = ldns_resolver_query_status(pkt, r,
 					new_name, t, c, flags);
-			ldns_rdf_free(new_name);
+			ldns_rdf_deep_free(new_name);
+
 			if (pkt && *pkt) {
 				if (s == LDNS_STATUS_OK && 
 						ldns_pkt_get_rcode(*pkt) ==
