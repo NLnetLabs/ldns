@@ -36,7 +36,7 @@ do
 	TESTNR=`echo $TESTFN | sed 's/-.*$//g'`
 	[ ! -z "$ONLY_TEST" -a x$ONLY_TEST != x$TESTNR ] && continue
 	case $TESTNR in
-	[3-9][0-9]*)	[ $NO_REGRESSION = 1 ] && continue
+	[3-5][0-9]*)	[ $NO_REGRESSION = 1 ] && continue
 			;;
 	esac
 	case $TESTNR in
