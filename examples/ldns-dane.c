@@ -1692,6 +1692,14 @@ main(int argc, char* const* argv)
 	ctx =  SSL_CTX_new(SSLv23_client_method());
 #else
 	ctx =  SSL_CTX_new(TLS_client_method());
+	if ((CAfile || CApath)) {
+		if (SSL_CTX_load_verify_locations(
+				ctx, CAfile, CApath) != 1) {
+			ssl_err("error loading CA certificates");
+		}
+	} else {
+		SSL_CTX_set_default_verify_dir(ctx);
+	}
 	if (ctx && SSL_CTX_dane_enable(ctx) <= 0) {
 		ssl_err("could not SSL_CTX_dane_enable");
 	}
