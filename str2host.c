@@ -614,15 +614,19 @@ ldns_str2rdf_b32_ext(ldns_rdf **rd, const char *str)
 	uint8_t *buffer;
 	int i;
 	/* first byte contains length of actual b32 data */
-	uint8_t len = ldns_b32_pton_calculate_size(strlen(str));
+	size_t slen = strlen(str);
+	uint32_t len = ldns_b32_pton_calculate_size(slen);
+	if (len > 255) {
+		return LDNS_STATUS_INVALID_B32_EXT;
+	}
 	buffer = LDNS_XMALLOC(uint8_t, len + 1);
         if(!buffer) {
                 return LDNS_STATUS_MEM_ERR;
         }
 	buffer[0] = len;
 
-	i = ldns_b32_pton_extended_hex((const char*)str, strlen(str), buffer + 1,
-							 ldns_b32_ntop_calculate_size(strlen(str)));
+	i = ldns_b32_pton_extended_hex((const char*)str, slen, buffer + 1,
+							 ldns_b32_ntop_calculate_size(slen));
 	if (i < 0) {
                 LDNS_FREE(buffer);
 		return LDNS_STATUS_INVALID_B32_EXT;
@@ -1144,7 +1148,7 @@ ldns_str2rdf_wks(ldns_rdf **rd, const char *str)
 			if (serv) {
 				serv_port = (int) ntohs((uint16_t) serv->s_port);
 			} else {
-				serv_port = atoi(token);
+				serv_port = (uint16_t) atoi(token);
 			}
 			if (serv_port / 8 >= bm_len) {
 				uint8_t *b2 = LDNS_XREALLOC(bitmap, uint8_t, (serv_port / 8) + 1);
@@ -1334,6 +1338,8 @@ ldns_str2rdf_ipseckey(ldns_rdf **rd, const char *str)
 		status = ldns_str2rdf_aaaa(&gateway_rdf, gateway);
 	} else if (gateway_type == 3) {
 		status = ldns_str2rdf_dname(&gateway_rdf, gateway);
+	} else if (gateway_type > 3) {
+		status = LDNS_STATUS_INVALID_STR;
 	}
 
 	if (status != LDNS_STATUS_OK) {
