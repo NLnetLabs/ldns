@@ -615,7 +615,7 @@ ldns_str2rdf_b32_ext(ldns_rdf **rd, const char *str)
 	int i;
 	/* first byte contains length of actual b32 data */
 	size_t slen = strlen(str);
-	uint32_t len = ldns_b32_pton_calculate_size(slen);
+	size_t len = ldns_b32_pton_calculate_size(slen);
 	if (len > 255) {
 		return LDNS_STATUS_INVALID_B32_EXT;
 	}
@@ -1148,7 +1148,15 @@ ldns_str2rdf_wks(ldns_rdf **rd, const char *str)
 			if (serv) {
 				serv_port = (int) ntohs((uint16_t) serv->s_port);
 			} else {
-				serv_port = (uint16_t) atoi(token);
+				serv_port = atoi(token);
+			}
+			if (sev_port < 0 || sev_port > 65535) {
+				LDNS_FREE(bitmap);
+			        LDNS_FREE(token);
+                                ldns_buffer_free(str_buf);
+			        free(proto_str);
+			        free(lc_proto_str);
+			        return LDNS_STATUS_INVALID_STR;
 			}
 			if (serv_port / 8 >= bm_len) {
 				uint8_t *b2 = LDNS_XREALLOC(bitmap, uint8_t, (serv_port / 8) + 1);
