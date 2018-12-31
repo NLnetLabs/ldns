@@ -1150,7 +1150,7 @@ ldns_str2rdf_wks(ldns_rdf **rd, const char *str)
 			} else {
 				serv_port = atoi(token);
 			}
-			if (sev_port < 0 || sev_port > 65535) {
+			if (serv_port < 0 || serv_port > 65535) {
 				LDNS_FREE(bitmap);
 			        LDNS_FREE(token);
                                 ldns_buffer_free(str_buf);
