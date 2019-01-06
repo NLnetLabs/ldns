@@ -16,8 +16,10 @@
 
 #ifdef HAVE_SSL
 #include <openssl/ssl.h>
-#include <openssl/engine.h>
 #include <openssl/rand.h>
+#ifndef OPENSSL_NO_ENGINE
+#include <openssl/engine.h>
+#endif
 #endif /* HAVE_SSL */
 
 ldns_lookup_table ldns_signing_algorithms[] = {
@@ -99,7 +101,7 @@ ldns_key_new_frm_fp(ldns_key **k, FILE *fp)
 	return ldns_key_new_frm_fp_l(k, fp, NULL);
 }
 
-#ifdef HAVE_SSL
+#if defined(HAVE_SSL) && !defined(OPENSSL_NO_ENGINE)
 ldns_status
 ldns_key_new_frm_engine(ldns_key **key, ENGINE *e, char *key_id, ldns_algorithm alg)
 {
