@@ -37,6 +37,7 @@ usage(FILE *fp, const char *prog) {
 	fprintf(fp, "  -f <file>\toutput zone to file (default <name>.signed)\n");
 	fprintf(fp, "  -i <date>\tinception date\n");
 	fprintf(fp, "  -o <domain>\torigin for the zone\n");
+	fprintf(fp, "  -u\t\tset SOA serial to the number of seconds since 1-1-1970\n");
 	fprintf(fp, "  -v\t\tprint version and exit\n");
 	fprintf(fp, "  -A\t\tsign DNSKEY with all keys instead of minimal\n");
 	fprintf(fp, "  -U\t\tSign with every unique algorithm in the provided keys\n");
@@ -323,6 +324,7 @@ main(int argc, char *argv[])
 	
 	bool use_nsec3 = false;
 	int signflags = 0;
+	bool unixtime_serial = false;
 
 	/* Add the given keys to the zone if they are not yet present */
 	bool add_keys = true;
@@ -354,7 +356,7 @@ main(int argc, char *argv[])
 	
 	keys = ldns_key_list_new();
 
-	while ((c = getopt(argc, argv, "a:bde:f:i:k:no:ps:t:vAUE:K:")) != -1) {
+	while ((c = getopt(argc, argv, "a:bde:f:i:k:no:ps:t:uvAUE:K:")) != -1) {
 		switch (c) {
 		case 'a':
 			nsec3_algorithm = (uint8_t) atoi(optarg);
@@ -438,6 +440,9 @@ main(int argc, char *argv[])
 			break;
 		case 'p':
 			nsec3_flags = nsec3_flags | LDNS_NSEC3_VARS_OPTOUT_MASK;
+			break;
+		case 'u':
+			unixtime_serial = true;
 			break;
 		case 'v':
 			printf("zone signer version %s (ldns version %s)\n", LDNS_VERSION, ldns_version());
@@ -710,6 +715,10 @@ main(int argc, char *argv[])
 	}
 
 	signed_zone = ldns_dnssec_zone_new();
+	if (unixtime_serial) {
+		ldns_rr_soa_increment_func_int(ldns_zone_soa(orig_zone),
+			ldns_soa_serial_unixtime, 0);
+	}
 	if (ldns_dnssec_zone_add_rr(signed_zone, ldns_zone_soa(orig_zone)) !=
 	    LDNS_STATUS_OK) {
 		fprintf(stderr,
