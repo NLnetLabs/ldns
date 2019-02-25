@@ -1252,7 +1252,7 @@ ldns_resolver_send_pkt(ldns_pkt **answer, ldns_resolver *r,
 		}
 	}
 
-	if (answer) {
+	if (answer && answer_pkt) {
 		*answer = answer_pkt;
 	}
 
