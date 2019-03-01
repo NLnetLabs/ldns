@@ -147,6 +147,7 @@ struct sockaddr_storage;
 #include <netinet/igmp.h>
 #endif
 #include <errno.h>
+#include <signal.h>
 
 #define INBUF_SIZE 4096         /* max size for incoming queries */
 #define DEFAULT_PORT 53		/* default if no -p port is specified */
@@ -499,6 +500,9 @@ main(int argc, char **argv)
 	log_msg("Reading datafile %s\n", datafile);
 	entries = read_datafile(datafile, 0);
 
+#ifdef SIGPIPE
+        (void)signal(SIGPIPE, SIG_IGN);
+#endif
 #ifdef USE_WINSOCK
 	if(WSAStartup(MAKEWORD(2,2), &wsa_data) != 0)
 		error("WSAStartup failed\n");

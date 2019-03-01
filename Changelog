@@ -31,6 +31,7 @@
 	* ED25519 and ED448 support.
 	* ldns-notify: can have IPv6 address as argument.
 	* Fix time sensitive TSIG compare vulnerability.
+	* Fix that ldns-testns ignores sigpipe.
 
 1.7.0	2016-12-20
 	* Fix lookup of relative names in ldns_resolver_search.
