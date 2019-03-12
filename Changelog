@@ -1,6 +1,10 @@
 1.7.1	????-??-??
+	* bugfix #4106: find the SDK on MacOS X <= 10.6
+	  Thanks Bill Cole
+	* bugfix #4155: ldns-config contains never used variables
+	  Thanks Petr Menšík
 	* bugfix #4221: drill -x crashes with malformed IPv4 address 
-	  Tahnks Oleksandr Tymoshenko
+	  Thanks Oleksandr Tymoshenko
 	* bugfix #3437: CDS & CDNSKEY RRsets should be signed with the KSK
 	  Thanks Tony Finch
 	* bugfix #1566, #1568, #1569, #1570: Potential NULL Dereferences
