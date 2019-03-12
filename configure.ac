@@ -855,12 +855,18 @@ ACX_CHECK_UNUSED_ATTRIBUTE
 if echo $build_os | grep darwin > /dev/null; then
   sdk_p=`xcode-select -print-path`;
   sdk_v="$( /usr/bin/xcrun --show-sdk-version )";
+  # xcrun only got that option in 10.7
+  if test -z "$sdk_v" ; then
+     sdk_c="10.6"
+     sdk_v="10.6"
+  fi
+  SYSROOT="$( find ${sdk_p} -name MacOSX${sdk_v}.sdk )"
   case $sdk_v in
        10.9|10.8)   sdk_c="10.7";;
        10.11|10.10|*) sdk_c="10.10";;
   esac
   export MACOSX_DEPLOYMENT_TARGET="${sdk_c}";
-  export CFLAGS="$CFLAGS -mmacosx-version-min=${sdk_c} -isysroot ${sdk_p}/Platforms/MacOSX.platform/Developer/SDKs/MacOSX${sdk_v}.sdk";
+  export CFLAGS="$CFLAGS -mmacosx-version-min=${sdk_c} -isysroot ${SYSROOT}"
 fi
 
 AC_DEFINE([SYSCONFDIR], [sysconfdir], [System configuration dir])
