@@ -1799,6 +1799,7 @@ main(int argc, char* const* argv)
 			     if (!usable_tlsas) {
 			     	fprintf(stderr, "No usable TLSA records were found.\n"
 			     			"PKIX validation without DANE will be performed.\n");
+				exit_success = no_tlsas_exit_status;
 			     }
 			     if (!(store_ctx = X509_STORE_CTX_new())) {
 				     ssl_err("could not SSL_new");
@@ -1904,6 +1905,8 @@ main(int argc, char* const* argv)
 				if (!usable_tlsas) {
 					fprintf(stderr, "No usable TLSA records were found.\n"
 							"PKIX validation without DANE will be performed.\n");
+
+					exit_success = no_tlsas_exit_status;
 					if (assume_pkix_validity)
 						SSL_set_verify(ssl, SSL_VERIFY_PEER, _ldns_tls_verify_always_ok);
 				}
