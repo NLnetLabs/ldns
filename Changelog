@@ -1,4 +1,6 @@
 1.7.1	????-??-??
+	* bugfix: Manage verification paths for OpenSSL >= 1.1.0
+	  Thanks Marco Davids
 	* bugfix #4106: find the SDK on MacOS X <= 10.6
 	  Thanks Bill Cole
 	* bugfix #4155: ldns-config contains never used variables

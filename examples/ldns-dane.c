@@ -61,7 +61,7 @@
 static void
 print_usage(const char* progname)
 {
-#ifdef USE_DANE_VERIY
+#ifdef USE_DANE_VERIFY
 	printf("Usage: %s [OPTIONS] verify <name> <port>\n", progname);
 	printf("   or: %s [OPTIONS] -t <tlsafile> verify\n", progname);
 	printf("\n\tVerify the TLS connection at <name>:<port> or"
@@ -1140,6 +1140,15 @@ dane_verify(ldns_rr_list* tlsas, ldns_rdf* address,
 }
 #endif /* defined(USE_DANE_VERIFY) && OPENSSL_VERSION_NUMBER < 0x10100000 */
 
+#if OPENSSL_VERSION_NUMBER >= 0x10100000  && ! defined(HAVE_LIBRESSL)
+static int _ldns_tls_verify_always_ok(int ok, X509_STORE_CTX *ctx)
+{
+	(void)ok;
+	(void)ctx;
+	return 1;
+}
+#endif
+
 /**
  * Return either an A or AAAA rdf, based on the given
  * string. If it it not a valid ip address, return null.
@@ -1695,6 +1704,12 @@ main(int argc, char* const* argv)
 	if (ctx && SSL_CTX_dane_enable(ctx) <= 0) {
 		ssl_err("could not SSL_CTX_dane_enable");
 	}
+	if (CAfile || CApath) {
+		if (!SSL_CTX_load_verify_locations(ctx, CAfile, CApath))
+			ssl_err("could not set verify locations\n");
+
+	} else if (!SSL_CTX_set_default_verify_paths(ctx))
+		ssl_err("could not set default verify paths\n");
 #endif
 	if (! ctx) {
 		ssl_err("could not SSL_CTX_new");
@@ -1870,7 +1885,7 @@ main(int argc, char* const* argv)
 						continue;
 					}
 					ret = SSL_dane_tlsa_add(ssl,
-							ldns_rdf2native_int8(ldns_rr_rdf(tlsa_rr, 0)),
+							ldns_rdf2native_int8(ldns_rr_rdf(tlsa_rr, 0)) | (assume_pkix_validity ? 2 : 0),
 							ldns_rdf2native_int8(ldns_rr_rdf(tlsa_rr, 1)),
 							ldns_rdf2native_int8(ldns_rr_rdf(tlsa_rr, 2)),
 							ldns_rdf_data(ldns_rr_rdf(tlsa_rr, 3)),
@@ -1889,6 +1904,8 @@ main(int argc, char* const* argv)
 				if (!usable_tlsas) {
 					fprintf(stderr, "No usable TLSA records were found.\n"
 							"PKIX validation without DANE will be performed.\n");
+					if (assume_pkix_validity)
+						SSL_set_verify(ssl, SSL_VERIFY_PEER, _ldns_tls_verify_always_ok);
 				}
 			}
 #endif /* OPENSSL_VERSION_NUMBER >= 0x10100000 */
