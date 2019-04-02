@@ -2606,11 +2606,10 @@ ldns_verify_rrsig_evp_raw(const unsigned char *sig, size_t siglen,
 				ldns_buffer_begin(rrset),
 				ldns_buffer_position(rrset));
 		}
-	} else
+	} else {
 #else
-	res = 0;
-#endif
 	if(digest_type) {
+#endif
 		EVP_VerifyInit(ctx, digest_type);
 		EVP_VerifyUpdate(ctx,
 					  ldns_buffer_begin(rrset),
