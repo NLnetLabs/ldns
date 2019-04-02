@@ -2608,6 +2608,7 @@ ldns_verify_rrsig_evp_raw(const unsigned char *sig, size_t siglen,
 		}
 	} else {
 #else
+	res = 0;
 	if(digest_type) {
 #endif
 		EVP_VerifyInit(ctx, digest_type);

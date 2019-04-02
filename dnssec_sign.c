@@ -499,6 +499,7 @@ ldns_sign_public_evp(ldns_buffer *to_sign,
 		}
 	} else {
 #else
+	r = 0;
 	if(md_type != NULL) {
 #endif
 		r = EVP_SignInit(ctx, md_type);
