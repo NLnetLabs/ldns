@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/env bash
 
 #
 # Build a LDNS distribution tar from the GIT repository.
@@ -9,7 +9,7 @@
 set -e
 
 # Remember the current working directory.
-cwd=`pwd`
+cwd=$(pwd)
 
 # Utility functions.
 usage () {
@@ -39,7 +39,7 @@ error () {
 
 question () {
     printf "%s (y/n) " "$*"
-    read answer
+    read -r answer
     case "$answer" in
         [Yy]|[Yy][Ee][Ss])
             return 0
@@ -54,7 +54,7 @@ question () {
 # working directory.
 cleanup () {
     info "Deleting temporary working directory."
-    cd $cwd && rm -rf $temp_dir && rm -rf $doc_dir
+    cd "$cwd" && rm -rf "$temp_dir" && rm -rf "$doc_dir"
 }
 
 error_cleanup () {
@@ -73,7 +73,7 @@ replace_all () {
     info "Updating '$1' with the version number."
     replace_text "$1" "@version@" "$version"
     info "Updating '$1' with today's date."
-    replace_text "$1" "@date@" "`date +'%b %e, %Y'`"
+    replace_text "$1" "@date@" "$(date +'%b %e, %Y')"
 }
     
 CHECKOUT=""
@@ -108,9 +108,9 @@ if [ -z "$CHECKOUT" ]
 then
 	if [ "$RC" = "no" ]
 	then
-		CHECKOUT=`(git status | head -1 | awk '{print$3}') || echo master`
+		CHECKOUT=$( (git status | head -1 | awk '{print$3}') || echo master)
 	else
-		CHECKOUT=`(git status | head -1 | awk '{print$3}') || echo develop`
+		CHECKOUT=$( (git status | head -1 | awk '{print$3}') || echo develop)
 	fi
 fi
 
@@ -122,10 +122,10 @@ info "SNAPSHOT is $SNAPSHOT"
 
 # Creating temp directory
 info "Creating temporary working directory"
-temp_dir=`mktemp -d ldns-dist-XXXXXX`
-doc_dir=`mktemp -d ldns-dist-XXXXXX`
+temp_dir=$(mktemp -d ldns-dist-XXXXXX)
+doc_dir=$(mktemp -d ldns-dist-XXXXXX)
 info "Directory '$temp_dir' created."
-cd $temp_dir
+cd "$temp_dir"
 
 info "Exporting source from GIT"
 git clone git://git.nlnetlabs.nl/ldns/ || error_cleanup "git command failed"
@@ -152,7 +152,7 @@ rm -rf masterdont
 rm makedist.sh || error_cleanup "Failed to remove makedist.sh."
 
 info "Determining LDNS version."
-version=`./configure --version | head -1 | awk '{ print $3 }'` || \
+version=$(./configure --version | head -1 | awk '{ print $3 }') || \
     error_cleanup "Cannot determine version number."
 
 info "LDNS version: $version"
@@ -171,7 +171,7 @@ fi
 
 if [ "$SNAPSHOT" = "yes" ]; then
     info "Building LDNS snapshot."
-    version2="${version}_`date +%Y%m%d`"
+    version2="${version}_$(date +%Y%m%d)"
     info "Snapshot version number: $version2"
 
     replace_text "configure.ac" "AC_INIT(ldns, $version" "AC_INIT(ldns, $version2"
@@ -189,11 +189,11 @@ fi
 
 info "Renaming LDNS directory to ldns-$version."
 cd ..
-mv ldns ldns-$version || error_cleanup "Failed to rename LDNS directory."
+mv ldns ldns-"$version" || error_cleanup "Failed to rename LDNS directory."
 
 info "Building the manpages"
 (
- 	srcdir=`pwd`
+ 	srcdir=$(pwd)
 	cd "../$doc_dir"
 	"${srcdir}/ldns-$version/configure" --disable-dane
 	make manpages
@@ -203,52 +203,52 @@ info "Building the manpages"
 
 tarfile="../ldns-$version.tar.gz"
 
-if [ -f $tarfile ]; then
+if [ -f "$tarfile" ]; then
     (question "The file $tarfile already exists.  Overwrite?" \
-        && rm -f $tarfile) || error_cleanup "User abort."
+        && rm -f "$tarfile") || error_cleanup "User abort."
 fi
 
 info "Deleting the test directory"
-rm -rf ldns-$version/test/
+rm -rf "ldns-$version/test/"
 
 info "Deleting the pcat directory"
-rm -rf ldns-$version/pcat/
+rm -rf "ldns-$version/pcat/"
 
 info "Deleting the nsd-test directory"
-rm -rf ldns-$version/examples/nsd-test/
+rm -rf "ldns-$version/examples/nsd-test/"
 
 info "Creating tar ldns-$version.tar.gz"
-tar czf ../ldns-$version.tar.gz ldns-$version || error_cleanup "Failed to create tar file."
+tar czf "../ldns-$version.tar.gz" "ldns-$version" || error_cleanup "Failed to create tar file."
 
 cleanup
 
 echo "ostype $OSTYPE"
 case $OSTYPE in
         linux*)
-                sha=`sha1sum ldns-$version.tar.gz |  awk '{ print $1 }'`
-                sha2=`sha256sum ldns-$version.tar.gz |  awk '{ print $1 }'`
+                sha=$(sha1sum "ldns-$version.tar.gz" |  awk '{ print $1 }')
+                sha2=$(sha256sum "ldns-$version.tar.gz" |  awk '{ print $1 }')
                 ;;
         freebsd*)
-                sha=`sha1  ldns-$version.tar.gz |  awk '{ print $5 }'`
-                sha2=`sha256  ldns-$version.tar.gz |  awk '{ print $4 }'`
+                sha=$(sha1  "ldns-$version.tar.gz" |  awk '{ print $5 }')
+                sha2=$(sha256  "ldns-$version.tar.gz" |  awk '{ print $4 }')
                 ;;
         *)
-        	uname=`uname`
+        	uname=$(uname)
         	case $uname in
         		Linux*)
-                        	sha=`sha1sum ldns-$version.tar.gz |  awk '{ print $1 }'`
-                		sha2=`sha256sum ldns-$version.tar.gz |  awk '{ print $1 }'`
+                        	sha=$(sha1sum "ldns-$version.tar.gz" | awk '{ print $1 }')
+                		sha2=$(sha256sum "ldns-$version.tar.gz" | awk '{ print $1 }')
                         	;;
 		        FreeBSD*)
-                		sha=`sha1  ldns-$version.tar.gz |  awk '{ print $4 }'`
-                		sha2=`sha256  ldns-$version.tar.gz |  awk '{ print $4 }'`
+                		sha=$(sha1 "ldns-$version.tar.gz" | awk '{ print $4 }')
+                		sha2=$(sha256 "ldns-$version.tar.gz" | awk '{ print $4 }')
 		                ;;
 		esac
         	;;
 esac
-echo $sha > ldns-$version.tar.gz.sha1
-echo $sha2 > ldns-$version.tar.gz.sha256
-gpg --armor --detach-sig ldns-$version.tar.gz
+echo "$sha" > "ldns-$version.tar.gz.sha1"
+echo "$sha2" > "ldns-$version.tar.gz.sha256"
+gpg --armor --detach-sig "ldns-$version.tar.gz"
 
 info "LDNS distribution created successfully."
 info "SHA1sum: $sha"
