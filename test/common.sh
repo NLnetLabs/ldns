@@ -1,3 +1,5 @@
+#!/usr/bin/env bash
+
 # common.sh - an include file for commonly used functions for test code.
 # BSD licensed (see LICENSE file).
 #
@@ -47,7 +49,7 @@ info () {
 # test if 'tool' is available in path and complain otherwise.
 # $1: tool
 test_tool_avail () {
-	if test ! -x "`command -v $1 2>&1`"; then
+	if test ! -x "$(command -v "$1" 2>&1)"; then
 		echo No "$1" in path
 		exit 1
 	fi
@@ -55,7 +57,7 @@ test_tool_avail () {
 
 # get ldns-testns tool in LDNS_TESTNS variable.
 get_ldns_testns () {
-	if test -x "`command -v ldns-testns 2>&1`"; then
+	if test -x "$(command -v ldns-testns 2>&1)"; then
 		LDNS_TESTNS=ldns-testns
 	else
 		LDNS_TESTNS=/home/wouter/bin/ldns-testns
@@ -64,7 +66,7 @@ get_ldns_testns () {
 
 # get make tool in MAKE variable, gmake is used if present.
 get_make () {
-	if test -x "`command -v gmake 2>&1`"; then
+	if test -x "$(command -v gmake 2>&1)"; then
 		MAKE=gmake
 	else
 		MAKE=make
@@ -73,7 +75,7 @@ get_make () {
 
 # get cc tool in CC variable, gcc is used if present.
 get_gcc () {
-	if test -x "`command -v gcc 2>&1`"; then
+	if test -x "$(command -v gcc 2>&1)"; then
 		CC=gcc
 	else
 		CC=cc
@@ -82,9 +84,9 @@ get_gcc () {
 
 # get pcat, pcat-print and pcat-diff
 get_pcat () {
-	PCAT=`command -v pcat`
-	PCAT_PRINT=`command -v pcat-print`
-	PCAT_DIFF=`command -v pcat-diff`
+	PCAT=$(command -v pcat)
+	PCAT_PRINT=$(command -v pcat-print)
+	PCAT_DIFF=$(command -v pcat-diff)
 }
 
 # set SKIP=1 if the name is in list and tool is not available.
@@ -92,8 +94,8 @@ get_pcat () {
 # $2: list of packages that need the tool.
 # #3: name of the tool required.
 skip_if_in_list () {
-	if echo $2 | grep $1 >/dev/null; then
-		if test ! -x "`command -v $3 2>&1`"; then
+	if echo "$2" | grep "$1" >/dev/null; then
+		if test ! -x "$(command -v "$3" 2>&1)"; then
 			SKIP=1;
 		fi
 	fi
@@ -112,17 +114,17 @@ get_random_port () {
 	collisions=0
 	while test "$cont" = 1; do
 		#netstat -n -A ip -A ip6 -a | sed -e "s/^.*:\([0-9]*\) .*$/\1/"
-		RND_PORT=$(( $RANDOM + 5354 ))
+		RND_PORT=$(( RANDOM + 5354 ))
 		# depending on uname try to check for collisions in port numbers
-		case "`uname`" in
+		case "$(uname)" in
 		linux|Linux)
-			plist=`netstat -n -A ip -A ip6 -a | sed -e 's/^.*:\([0-9]*\) .*$/\1/'`
+			plist=$(netstat -n -A ip -A ip6 -a | sed -e 's/^.*:\([0-9]*\) .*$/\1/')
 		;;
 		FreeBSD|freebsd|NetBSD|netbsd|OpenBSD|openbsd)
-			plist=`netstat -n -a | grep "^[ut][dc]p[46] " | sed -e 's/^.*\.\([0-9]*\) .*$/\1/'`
+			plist=$(netstat -n -a | grep "^[ut][dc]p[46] " | sed -e 's/^.*\.\([0-9]*\) .*$/\1/')
 		;;
 		Solaris|SunOS)
-			plist=`netstat -n -a | sed -e 's/^.*\.\([0-9]*\) .*$/\1/' | grep '^[0-9]*$'`
+			plist=$(netstat -n -a | sed -e 's/^.*\.\([0-9]*\) .*$/\1/' | grep '^[0-9]*$')
 		;;
 		*)
 			plist=""
@@ -130,9 +132,9 @@ get_random_port () {
 		esac
 		cont=0
 		for (( i=0 ; i < $1 ; i++ )); do
-			if echo "$plist" | grep '^'`expr $i + $RND_PORT`'$' >/dev/null 2>&1; then
+			if echo "$plist" | grep '^'"$(expr $i + $RND_PORT)"'$' >/dev/null 2>&1; then
 				cont=1;
-				collisions=`expr $collisions + 1`
+				collisions=$((collisions + 1))
 			fi
 		done
 		if test $collisions = $MAXCOLLISION; then
@@ -149,14 +151,14 @@ wait_server_up () {
 	local MAX_UP_TRY=120
 	local WAIT_THRES=30
 	local try
-	for (( try=0 ; try <= $MAX_UP_TRY ; try++ )) ; do
-		if test -f $1 && fgrep "$2" $1 >/dev/null; then
+	for (( try=0 ; try <= MAX_UP_TRY ; try++ )) ; do
+		if test -f "$1" && grep -F "$2" "$1" >/dev/null; then
 			#echo "done on try $try"
 			break;
 		fi
 		if test $try -eq $MAX_UP_TRY; then
 			echo "Server in $1 did not go up!"
-			cat $1
+			cat "$1"
 			exit 1;
 		fi
 		if test $try -ge $WAIT_THRES; then
@@ -200,18 +202,18 @@ wait_server_up_or_fail () {
 	local MAX_UP_TRY=120
 	local WAIT_THRES=30
 	local try
-	for (( try=0 ; try <= $MAX_UP_TRY ; try++ )) ; do
-		if test -f $1 && fgrep "$2" $1 >/dev/null; then
+	for (( try=0 ; try <= MAX_UP_TRY ; try++ )) ; do
+		if test -f "$1" && grep -F "$2" "$1" >/dev/null; then
 			echo "done on try $try"
 			break;
 		fi
-		if test -f $1 && fgrep "$3" $1 >/dev/null; then
+		if test -f "$1" && grep -F "$3" "$1" >/dev/null; then
 			echo "failed on try $try"
 			break;
 		fi
 		if test $try -eq $MAX_UP_TRY; then
 			echo "Server in $1 did not go up!"
-			cat $1
+			cat "$1"
 			exit 1;
 		fi
 		if test $try -ge $WAIT_THRES; then
@@ -226,9 +228,9 @@ kill_pid () {
 	local MAX_DOWN_TRY=120
 	local WAIT_THRES=30
 	local try
-	kill $1
-	for (( try=0 ; try <= $MAX_DOWN_TRY ; try++ )) ; do
-		if kill -0 $1 >/dev/null 2>&1; then
+	kill "$1"
+	for (( try=0 ; try <= MAX_DOWN_TRY ; try++ )) ; do
+		if kill -0 "$1" >/dev/null 2>&1; then
 			:
 		else
 			#echo "done on try $try"
@@ -236,13 +238,13 @@ kill_pid () {
 		fi
 		if test $try -eq $MAX_DOWN_TRY; then
 			echo "Server in $1 did not go down! Send SIGKILL"
-			kill -9 $1 >/dev/null 2>&1
+			kill -9 "$1" >/dev/null 2>&1
 		fi
 		if test $try -ge $WAIT_THRES; then
 			sleep 1
 		fi
 		# re-send the signal
-		kill $1 >/dev/null 2>&1
+		kill "$1" >/dev/null 2>&1
 	done
 	return 0
 }
