@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # do ldns tests
 cd test
 . common.sh
