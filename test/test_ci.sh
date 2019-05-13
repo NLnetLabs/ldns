@@ -19,7 +19,7 @@ fi
 
 if [ -z "$TPKG" -o ! -x "$TPKG" ]
 then
-        if which tpkg > /dev/null	; then TPKG=`which tpkg`
+        if which tpkg > /dev/null	; then TPKG=`command -v tpkg`
         elif [ -x $HOME/bin/tpkg ]	; then TPKG=$HOME/bin/tpkg
         elif [ -x $HOME/local/bin/tpkg ]; then TPKG=$HOME/local/bin/tpkg
         elif [ -x /home/tpkg/bin/tpkg ]	; then TPKG=/home/tpkg/bin/tpkg

@@ -4,7 +4,7 @@ cd test
 . common.sh
 
 # find tpkg
-if test -x "`which tpkg 2>&1`"; then
+if test -x "`command -v tpkg 2>&1`"; then
 	TPKG=tpkg
 else
 	TPKG=$1

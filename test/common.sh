@@ -47,7 +47,7 @@ info () {
 # test if 'tool' is available in path and complain otherwise.
 # $1: tool
 test_tool_avail () {
-	if test ! -x "`which $1 2>&1`"; then
+	if test ! -x "`command -v $1 2>&1`"; then
 		echo No "$1" in path
 		exit 1
 	fi
@@ -55,7 +55,7 @@ test_tool_avail () {
 
 # get ldns-testns tool in LDNS_TESTNS variable.
 get_ldns_testns () {
-	if test -x "`which ldns-testns 2>&1`"; then
+	if test -x "`command -v ldns-testns 2>&1`"; then
 		LDNS_TESTNS=ldns-testns
 	else
 		LDNS_TESTNS=/home/wouter/bin/ldns-testns
@@ -64,7 +64,7 @@ get_ldns_testns () {
 
 # get make tool in MAKE variable, gmake is used if present.
 get_make () {
-	if test -x "`which gmake 2>&1`"; then
+	if test -x "`command -v gmake 2>&1`"; then
 		MAKE=gmake
 	else
 		MAKE=make
@@ -73,7 +73,7 @@ get_make () {
 
 # get cc tool in CC variable, gcc is used if present.
 get_gcc () {
-	if test -x "`which gcc 2>&1`"; then
+	if test -x "`command -v gcc 2>&1`"; then
 		CC=gcc
 	else
 		CC=cc
@@ -82,9 +82,9 @@ get_gcc () {
 
 # get pcat, pcat-print and pcat-diff
 get_pcat () {
-	PCAT=`which pcat`
-	PCAT_PRINT=`which pcat-print`
-	PCAT_DIFF=`which pcat-diff`
+	PCAT=`command -v pcat`
+	PCAT_PRINT=`command -v pcat-print`
+	PCAT_DIFF=`command -v pcat-diff`
 }
 
 # set SKIP=1 if the name is in list and tool is not available.
@@ -93,7 +93,7 @@ get_pcat () {
 # #3: name of the tool required.
 skip_if_in_list () {
 	if echo $2 | grep $1 >/dev/null; then
-		if test ! -x "`which $3 2>&1`"; then
+		if test ! -x "`command -v $3 2>&1`"; then
 			SKIP=1;
 		fi
 	fi

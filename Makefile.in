@@ -291,7 +291,7 @@ manpage-errors:
 			echo doc/man/man3/$${m}.3: manpage-has-bad-whatis-entry; \
 		fi; \
 	done || echo "WARNING!: Cannot detect manpage errors on `uname`"
-	
+
 pyldns: _ldns.la
 
 $(pywrapdir)/ldns_wrapper.c: $(PYLDNS_I_FILES) ldns/config.h
@@ -483,7 +483,7 @@ test-clean:
 	tpkg -b test clean
 
 test: @TEST_P5_DNS_LDNS@
-	if test -x "`which bash`"; then bash test/test_all.sh; else sh test/test_all.sh; fi
+	if test -x "`command -v bash`"; then bash test/test_all.sh; else sh test/test_all.sh; fi
 
 
 # Recreate symbols file, only needed when API changes
