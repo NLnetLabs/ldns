@@ -167,7 +167,7 @@ DESTDIR=$ldnsinstall make install || error_cleanup "ldns make install failed"
 cd ..
 
 # Build OpenSSL nonstatic
-sslinstallnonstatic="(pwd)/sslinstallnonstatic"
+sslinstallnonstatic="$(pwd)/sslinstallnonstatic"
 mkdir openssl-nonstatic
 cd openssl-nonstatic
 # remove openssl-a.b.c/ and put in openssl-nonstatic directory
