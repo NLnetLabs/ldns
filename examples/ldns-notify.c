@@ -290,6 +290,7 @@ main(int argc, char **argv)
 	ldns_rr_set_class(question, LDNS_RR_CLASS_IN);
 	ldns_rr_set_owner(question, ldns_zone_name);
 	ldns_rr_set_type(question, LDNS_RR_TYPE_SOA);
+	ldns_rr_set_question(question, true);
 	ldns_pkt_set_opcode(notify, LDNS_PACKET_NOTIFY);
 	ldns_pkt_push_rr(notify, LDNS_SECTION_QUESTION, question);
 	ldns_pkt_set_aa(notify, true);
