@@ -17,6 +17,11 @@
 #ifdef HAVE_SSL
 #include <openssl/ssl.h>
 #include <openssl/rand.h>
+#include <openssl/bn.h>
+#include <openssl/rsa.h>
+#ifdef USE_DSA
+#include <openssl/dsa.h>
+#endif
 #ifndef OPENSSL_NO_ENGINE
 #include <openssl/engine.h>
 #endif
