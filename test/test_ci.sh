@@ -24,7 +24,7 @@ then
         elif [ -x $HOME/local/bin/tpkg ]; then TPKG=$HOME/local/bin/tpkg
         elif [ -x /home/tpkg/bin/tpkg ]	; then TPKG=/home/tpkg/bin/tpkg
         elif [ -x ../tpkg/tpkg ]	; then TPKG=../tpkg/tpkg
-        elif [ -x test/tpkg/tpkg ]	; then TPKG=testtpkg/tpkg
+        elif [ -x test/tpkg/tpkg ]	; then TPKG=test/tpkg/tpkg
         else
                 echo Did not find tpkg program!
                 exit -1
