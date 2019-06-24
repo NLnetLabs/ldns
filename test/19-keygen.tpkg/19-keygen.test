@@ -1,0 +1,147 @@
+# #-- 05-nm.test --#
+# source the master var file when it's there
+[ -f ../.tpkg.var.master ] && source ../.tpkg.var.master
+# use .tpkg.var.test for in test variable passing
+[ -f .tpkg.var.test ] && source .tpkg.var.test
+# svnserve resets the path, you may need to adjust it, like this:
+PATH=$PATH:/usr/sbin:/sbin:/usr/local/bin:/usr/local/sbin:.
+
+LIB=../../lib/
+export LD_LIBRARY_PATH=$LIB:$LD_LIBRARY_PATH
+result=0
+
+#
+# create keys
+# 
+RSA=`../../examples/ldns-keygen -b 512 -r /dev/zero -a RSASHA1 rsa.com`
+ECDSA=`../../examples/ldns-keygen -r /dev/zero -a ECDSAP384SHA384 ecdsa.com`
+HMAC=`../../examples/ldns-keygen -b 512 -r /dev/zero -a hmac-md5.sig-alg.reg.int hmac.com`
+
+#
+# Test whether readzone agrees
+#
+
+cat $RSA.key > 1
+../../examples/ldns-read-zone $RSA.key | tail -1 | sed -e "s/3600[	 ]*IN/IN/" > 2
+d=`diff 1 2`
+fail=$?
+if [ $fail != 0 ]; then
+   echo "RSA Error: readzone on generated key differs:"
+   echo "Generated key:"
+   cat 1
+   echo "Readzone part:"
+   cat 2
+   echo "Diff:"
+   echo $d
+   result=1
+fi;
+cat $ECDSA.key > 1
+../../examples/ldns-read-zone $ECDSA.key | tail -1  | sed -e "s/3600[	 ]*IN/IN/" > 2
+d=`diff 1 2`
+fail=$?
+if [ $fail != 0 ]; then
+   echo "ECDSA Error: readzone on generated key differs:"
+   echo "Generated key:"
+   cat 1
+   echo "Readzone part:"
+   cat 2
+   echo "Diff:"
+   echo $d
+   result=1
+fi;
+
+cat $HMAC.key > 1
+../../examples/ldns-read-zone $HMAC.key | tail -1  | sed -e "s/3600[	 ]*IN/IN/" > 2
+d=`diff 1 2`
+fail=$?
+if [ $fail != 0 ]; then
+   echo "HMAC Error: readzone on generated key differs:"
+   echo "Generated key:"
+   cat 1
+   echo "Readzone part:"
+   cat 2
+   echo "Diff:"
+   echo $d
+   result=1
+fi;
+ 
+RSASHA256=`../../examples/ldns-keygen -b 512 -r /dev/zero -a RSASHA256 256.com`
+fail=$?
+if [ $fail == 0 ]; then
+  cat $RSASHA256.key > 1
+  ../../examples/ldns-read-zone $RSASHA256.key | tail -1 | sed -e "s/3600[	 ]*IN/IN/" > 2
+  d=`diff 1 2`
+  fail=$?
+  if [ $fail != 0 ]; then
+     echo "RSASHA256 Error: readzone on generated key differs:"
+     echo "Generated key:"
+     cat 1
+     echo "Readzone part:"
+     cat 2
+     echo "Diff:"
+     echo $d
+     result=1
+  fi;
+  grep 512b $RSASHA256.key >& /dev/null
+  fail=$?
+  if [ $fail != 0 ]; then
+    echo "RSASHA256 key does not appear to be 512 bits"
+    result=$fail
+    cat $RSASHA256.key
+  fi;
+  rm $RSASHA256.*
+else
+   echo "RSASHA256 not supported"
+fi;
+ 
+RSASHA512=`../../examples/ldns-keygen -b 512 -r /dev/zero -a RSASHA512 -b 1024 512.com`
+fail=$?
+if [ $fail == 0 ]; then
+  cat $RSASHA512.key > 1
+  ../../examples/ldns-read-zone $RSASHA512.key | tail -1 | sed -e "s/3600[	 ]*IN/IN/" > 2
+  d=`diff 1 2`
+  fail=$?
+  if [ $fail != 0 ]; then
+     echo "RSASHA512 Error: readzone on generated key differs:"
+     echo "Generated key:"
+     cat 1
+     echo "Readzone part:"
+     cat 2
+     echo "Diff:"
+     echo $d
+     result=1
+  fi;
+  grep 1024b $RSASHA512.key >& /dev/null
+  fail=$?
+  if [ $fail != 0 ]; then
+     echo "RSASHA512 key does not appear to be 1024 bits"
+     result=$fail
+     cat $RSASHA512.key
+  fi;
+  rm $RSASHA512.*
+else
+  echo "RSASHA512 not supported"
+fi;
+
+grep 512b $RSA.key >& /dev/null
+fail=$?
+if [ $fail != 0 ]; then
+   echo "RSA key does not appear to be 512 bits"
+   result=$fail
+   cat $RSA.key
+fi;
+grep 384b $ECDSA.key >& /dev/null
+fail=$?
+if [ $fail != 0 ]; then
+   echo "ECDSA key does not appear to be 384 bits"
+   result=$fail
+   cat $ECDSA.key
+fi;
+
+rm $RSA.*
+rm $ECDSA.*
+rm $HMAC.*
+echo "exit $result"
+
+exit $result;
+

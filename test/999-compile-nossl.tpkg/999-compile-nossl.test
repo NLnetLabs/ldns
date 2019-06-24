@@ -1,0 +1,43 @@
+[ -f ../.tpkg.var.master ] && source ../.tpkg.var.master
+
+export PATH=$PATH:/usr/sbin:/sbin:/usr/local/bin:/usr/local/sbin:.
+
+# first arg is the build dir
+TPKG_BUILD=$1
+
+cd $TPKG_BUILD
+ORIGDIR=`pwd`
+
+case $OSTYPE in
+        linux*)
+		TMP=`mktemp -d`
+                libtoolize && autoreconf && \
+		cd $TMP && \
+                $ORIGDIR/configure --without-ssl && \
+                make
+        ;;
+        freebsd*)
+		TMP=`mktemp -t /tmp -d`
+                libtoolize && \
+                autoconf259 && autoheader259 && \
+		cd $TMP && \
+                $ORIGDIR//configure --without-ssl && \
+                gmake
+        ;;
+        darwin*)
+		TMP=`mktemp -d`
+                glibtoolize && \
+                autoconf && autoheader && \
+		export MACOSX_DEPLOYMENT_TARGET=10.4 && \
+		cd $TMP && \
+                $ORIGDIR//configure --without-ssl && \
+                make
+        ;;
+esac
+
+cd $ORIGDIR
+RES=$?
+echo "DIR:"
+echo $TMP
+rm -rf $TMP
+exit $RES

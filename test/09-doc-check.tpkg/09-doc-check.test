@@ -1,0 +1,40 @@
+# #-- 05-nm.test --#
+# source the master var file when it's there
+[ -f ../.tpkg.var.master ] && source ../.tpkg.var.master
+# use .tpkg.var.test for in test variable passing
+[ -f .tpkg.var.test ] && source .tpkg.var.test
+# svnserve resets the path, you may need to adjust it, like this:
+PATH=$PATH:/usr/sbin:/sbin:/usr/local/bin:/usr/local/sbin:.
+
+: > report
+echo 0 > exit_code
+for target in doc manpage-create-errors manpage-errors
+do
+	(	cd $1
+		if ! make $target 2>&1
+		then
+			echo 1 > exit_code
+		fi
+
+	) >make-out
+
+	A=`cat make-out | wc -l`
+	if [[ $A -gt 1 ]]
+	then
+		(	echo "***"
+			echo "*** make $target"
+			echo "***"
+			echo ""
+			cat make-out
+			echo ""
+
+		) >>report
+	fi
+done
+
+A=`cat report | wc -l`
+if [[ $A -gt 0 ]]; then
+	cat report
+fi
+exit `cat exit_code`
+

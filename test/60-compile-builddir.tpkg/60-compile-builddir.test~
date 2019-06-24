@@ -1,0 +1,50 @@
+[ -f ../.tpkg.var.master ] && source ../.tpkg.var.master
+
+export PATH=$PATH:/usr/sbin:/sbin:/usr/local/bin:/usr/local/sbin:.
+
+# first arg is the build dir
+TPKG_BUILD=$1
+
+echo $TPKG_BUILD
+cd $TPKG_BUILD
+
+case $OSTYPE in
+        linux*)
+                libtoolize && autoreconf && \
+		cd drill && autoreconf && cd .. && \;
+                mkdir -p b && cd b && \
+		if [ -e b/Makefile ]; then
+			(cd b; make clean)
+		fi
+		if [ -e b/drill/Makefile ]; then
+			(cd b/drill; make clean)
+		fi
+		if [ -e b/examples/Makefile ]; then
+			(cd b/examples; make clean)
+		fi
+                ../configure && \
+                make && \
+		mkdir -p drill && cd drill && \
+		../../drill/configure && make
+        ;;
+        freebsd*)
+		if [ -e b/Makefile ]; then
+			(cd b; gmake realclean)
+		fi
+		if [ -e b/drill/Makefile ]; then
+			(cd b/drill; gmake clean)
+		fi
+		if [ -e b/examples/Makefile ]; then
+			(cd b/examples; gmake clean)
+		fi
+                libtoolize && \
+                autoconf-2.59 && autoheader-2.59 && \
+                ( cd drill ;  autoconf-2.59 && autoheader-2.59 ) && \
+		pwd && ls && \
+		mkdir -p b && cd b && \
+                ../configure && \
+                gmake && \
+		mkdir -p drill && cd drill && \
+		../../drill/configure && gmake
+        ;;
+esac

@@ -1,0 +1,4 @@
+Synopsis: tpkg  -a ../../ exe 32-unbound-regression.tpkg
+-a path: path is where the source lives
+as the test is executed in it own subsdir it will
+need ../../ is you use a relative path
