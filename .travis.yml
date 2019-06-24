@@ -9,6 +9,7 @@ addons:
       - lcov
       - doxygen
       - graphviz
+      - indent
 matrix:
   include:
     - os: linux

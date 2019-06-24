@@ -55,7 +55,7 @@ fi
         || ./configure  --enable-sha2 --disable-gost --with-drill --with-examples --disable-dane-ta-usage \
         || ./configure --disable-sha2 --disable-gost --with-drill --with-examples --disable-dane-ta-usage
 
-        ) && $mk && rmdir -f python-site
+        ) && $mk && (rmdir python-site || true)
       )
    )
 
