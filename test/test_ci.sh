@@ -54,5 +54,5 @@ do
 done
 
 cd test
-$TPKG r
+exec $TPKG r
 
