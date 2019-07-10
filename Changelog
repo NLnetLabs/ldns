@@ -40,6 +40,7 @@
 	* Fix that ldns-testns ignores sigpipe.
 	* Fix that ldns-notify sets the query RR as question RR, this
 	  removes the wrong TTL and 0 rdata from the packet printout.
+	* Allow -T flag to be used together with drill -x
 
 1.7.0	2016-12-20
 	* Fix lookup of relative names in ldns_resolver_search.
