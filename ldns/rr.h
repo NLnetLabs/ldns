@@ -223,6 +223,9 @@ enum ldns_enum_rr_type
 	LDNS_RR_TYPE_AVC = 258, /* Cisco's DNS-AS RR, see www.dns-as.org */
 	LDNS_RR_TYPE_DOA = 259, /* draft-durand-doa-over-dns */
 
+	/** draft-ietf-mboned-driad-amt-discovery **/
+	LDNS_RR_TYPE_AMTRELAY = 260,
+
 	/** DNSSEC Trust Authorities */
 	LDNS_RR_TYPE_TA = 32768,
 	/* RFC 4431, 5074, DNSSEC Lookaside Validation */
@@ -238,7 +241,7 @@ enum ldns_enum_rr_type
 typedef enum ldns_enum_rr_type ldns_rr_type;
 
 /* The first fields are contiguous and can be referenced instantly */
-#define LDNS_RDATA_FIELD_DESCRIPTORS_COMMON (LDNS_RR_TYPE_DOA + 1)
+#define LDNS_RDATA_FIELD_DESCRIPTORS_COMMON (LDNS_RR_TYPE_AMTRELAY + 1)
 
 /**
  * Resource Record
