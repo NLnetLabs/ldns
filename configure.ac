@@ -860,22 +860,31 @@ ACX_FUNC_IOCTLSOCKET
 ACX_CHECK_FORMAT_ATTRIBUTE
 ACX_CHECK_UNUSED_ATTRIBUTE
 
-# check OSX deployment target, if needed
-if echo $build_os | grep darwin > /dev/null; then
-  sdk_p=`xcode-select -print-path`;
-  sdk_v="$( /usr/bin/xcrun --show-sdk-version )";
-  # xcrun only got that option in 10.7
-  if test -z "$sdk_v" ; then
-     sdk_c="10.6"
-     sdk_v="10.6"
-  fi
-  SYSROOT="$( find ${sdk_p} -name MacOSX${sdk_v}.sdk )"
-  case $sdk_v in
-       10.9|10.8)   sdk_c="10.7";;
-       10.11|10.10|*) sdk_c="10.10";;
-  esac
-  export MACOSX_DEPLOYMENT_TARGET="${sdk_c}";
-  export CFLAGS="$CFLAGS -mmacosx-version-min=${sdk_c} -isysroot ${SYSROOT}"
+AC_ARG_WITH(xcode-sdk, AC_HELP_STRING([--with-xcode-sdk], 
+ [Set xcode SDK version. Default is autodetect]), 
+ [],[with_xcode_sdk="yes"])
+if test "x_$with_xcode_sdk" != "x_no" ; then
+   # check OSX deployment target, if needed
+   if echo $build_os | grep darwin > /dev/null; then
+     sdk_p=`xcode-select -print-path`;
+     if test "x_$with_xcode_sdk" = "x_yes" ; then
+        sdk_v="$( /usr/bin/xcrun --show-sdk-version 2>/dev/null )"
+     else
+        sdk_v="$with_xcode_sdk"
+     fi
+     # xcrun only got that option in 10.7
+     if test -z "$sdk_v" ; then
+        sdk_c="10.6"
+        sdk_v="10.6"
+     fi
+     SYSROOT="$( find ${sdk_p} -name MacOSX${sdk_v}.sdk )"
+     case $sdk_v in
+          10.9|10.8)   sdk_c="10.7";;
+          10.11|10.10|*) sdk_c="10.10";;
+     esac
+     export MACOSX_DEPLOYMENT_TARGET="${sdk_c}";
+     export CFLAGS="$CFLAGS -mmacosx-version-min=${sdk_c} -isysroot ${SYSROOT}"
+   fi
 fi
 
 AC_DEFINE([SYSCONFDIR], [sysconfdir], [System configuration dir])
