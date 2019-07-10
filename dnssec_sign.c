@@ -497,9 +497,11 @@ ldns_sign_public_evp(ldns_buffer *to_sign,
 				ldns_buffer_position(to_sign));
 			siglen = (unsigned int)siglen_sizet;
 		}
-	} else
-#endif
+	} else {
+#else
+	r = 0;
 	if(md_type != NULL) {
+#endif
 		r = EVP_SignInit(ctx, md_type);
 		if(r == 1) {
 			r = EVP_SignUpdate(ctx, (unsigned char*)
