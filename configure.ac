@@ -647,6 +647,15 @@ case "$enable_rrtype_doa" in
 	no|*)
 		;;
 esac
+AC_ARG_ENABLE(rrtype-amtrelay, AC_HELP_STRING([--enable-rrtype-amtrelay], [Enable draft RR type AMTRELAY.]))
+case "$enable_rrtype_amtrelay" in
+	yes)
+		AC_DEFINE_UNQUOTED([RRTYPE_AMTRELAY], [], [Define this to enable RR type AMTRELAY.])
+		;;
+	no|*)
+		;;
+esac
+
 
 
 AC_SUBST(LIBSSL_CPPFLAGS)

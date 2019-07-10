@@ -1,0 +1,8 @@
+No arguments are used for this test.
+
+The example tool ldns-read-zone is used to read the zone from
+19-keygen-inputzone that contains a number of different RRs. The output
+is compared to 19-keygen-outputzone.
+
+With this test the zone reading functions are checked to see if they have
+not regressed.

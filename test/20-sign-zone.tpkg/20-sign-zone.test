@@ -1,0 +1,19 @@
+[ -f ../.tpkg.var.master ] && source ../.tpkg.var.master
+
+export PATH=$PATH:/usr/sbin:/sbin:/usr/local/bin:/usr/local/sbin:.
+
+LD_LIBRARY_PATH=../../lib:$LD_LIBRARY_PATH \
+../../examples/ldns-signzone -b jelte.nlnetlabs.nl Kjelte.nlnetlabs.nl.+005+09693 
+
+if [[ $? -ne 0 ]]; then 
+	echo "Signer failed"
+	exit 1
+fi
+
+../../examples/ldns-verify-zone jelte.nlnetlabs.nl.signed
+
+if [[ $? -ne 0 ]]; then
+	echo "Verification failed"
+	exit 2
+fi
+exit 0

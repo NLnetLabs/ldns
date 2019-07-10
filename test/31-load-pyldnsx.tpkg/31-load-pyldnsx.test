@@ -1,0 +1,9 @@
+[ -f ../.tpkg.var.master ] && source ../.tpkg.var.master
+
+export PATH=$PATH:/usr/sbin:/sbin:/usr/local/bin:/usr/local/sbin:.
+
+# first arg is the build dir
+TPKG_BUILD=$1
+
+LD_LIBRARY_PATH=$TPKG_BUILD/.libs PYTHONPATH=$TPKG_BUILD/python-site python -c "import ldnsx"
+

@@ -456,7 +456,7 @@
 %{
   void _ldns_rr_set_owner(ldns_rr *rr, ldns_rdf *rdf)
   {
-    return ldns_rr_set_owner(rr, ldns_rdf_clone(rdf));
+    ldns_rr_set_owner(rr, ldns_rdf_clone(rdf));
   }
 %}
 

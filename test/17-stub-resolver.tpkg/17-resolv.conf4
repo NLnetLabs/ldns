@@ -1,0 +1,6 @@
+domain jelte.nlnetlabs.nl
+search nlnetlabs.nl
+search fluim.net
+sortlist 192.168.8.0/255.255.255.0 195.169.215.155
+nameserver 192.168.8.8
+nameserver 192.168.8.21

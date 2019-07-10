@@ -347,6 +347,7 @@ ldns_rr_new_frm_str_internal(ldns_rr **newrr, const char *str,
 		case LDNS_RDF_TYPE_LOC        : /* tain whitespace, only if */
 		case LDNS_RDF_TYPE_WKS        : /* it is the last rd field. */
 		case LDNS_RDF_TYPE_IPSECKEY   :
+		case LDNS_RDF_TYPE_AMTRELAY   :
 		case LDNS_RDF_TYPE_NSEC       :	if (r_cnt == r_max - 1) {
 							delimiters = "\n";
 							break;
@@ -2052,6 +2053,12 @@ static const ldns_rdf_type type_doa_wireformat[] = {
 	LDNS_RDF_TYPE_B64
 };
 #endif
+#ifdef RRTYPE_AMTRELAY
+static const ldns_rdf_type type_amtrelay_wireformat[] = {
+	LDNS_RDF_TYPE_AMTRELAY
+};
+#endif
+
 
 /** \endcond */
 
@@ -2446,6 +2453,12 @@ static ldns_rr_descriptor rdata_field_descriptors[] = {
 	{LDNS_RR_TYPE_DOA, "DOA", 5, 5, type_doa_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 0 },
 #else
 {LDNS_RR_TYPE_NULL, "TYPE259", 1, 1, type_0_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 0 },
+#endif
+#ifdef RRTYPE_AMTRELAY
+	/* 260 */
+	{LDNS_RR_TYPE_AMTRELAY, "AMTRELAY", 1, 1, type_amtrelay_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 0 },
+#else
+{LDNS_RR_TYPE_NULL, "TYPE260", 1, 1, type_0_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 0 },
 #endif
 
 /* split in array, no longer contiguous */
