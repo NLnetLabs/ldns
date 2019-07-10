@@ -1,0 +1,4 @@
+domain jelte.nlnetlabs.nl
+options rotate attempts inet6
+nameserver 192.168.8.8
+nameserver 192.168.8.21

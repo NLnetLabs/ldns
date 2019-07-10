@@ -24,6 +24,7 @@ then
         elif [ -x $HOME/local/bin/tpkg ]; then TPKG=$HOME/local/bin/tpkg
         elif [ -x /home/tpkg/bin/tpkg ]	; then TPKG=/home/tpkg/bin/tpkg
         elif [ -x ../tpkg/tpkg ]	; then TPKG=../tpkg/tpkg
+        elif [ -x test/tpkg/tpkg ]	; then TPKG=`pwd`/test/tpkg/tpkg
         else
                 echo Did not find tpkg program!
                 exit -1
@@ -52,59 +53,6 @@ do
 	$TPKG -b $BUILD_DIR/test -a $BUILD_DIR exe $TESTFN
 done
 
-# -----------------------------------------------------------------------------
-# ----  Testing part
-#
-( cd test; $TPKG -q -n `ls result.*|wc -l` report >/dev/null )
+cd test
+exec $TPKG -n -1 r
 
-# -----------------------------------------------------------------------------
-# ----  Reusable reporting part
-#
-if test "$?" -eq "0"; then STATUS="pass"; else STATUS="FAIL"; fi
-CI_ID=2
-
-REPOS=$(basename $(pwd))
-REPOS=${REPOS%.git}
-CI_URI="${CI_PROJECT_URL}/builds/${CI_BUILD_ID}"
-while [ $# -ge 1 ]
-do
-	echo "Sending mail to $1... ($# >= 1)"
-	(
-		git log -1 --format="From %H %ad%nFrom: %an <%ae>"
-		BRANCH=$(
-			for W in $( git log -1 --format=%d | tr "()," "   " )
-			do echo $W
-			done | grep -v HEAD | head -1
-			)
-		BRANCH="${BRANCH#origin/}"
-		echo "X-Git-Refname: $BRANCH"
-		if [ -z "$BRANCH" -o "$BRANCH" = "master" ]
-		then
-			BRANCH=""
-		else
-			BRANCH="/$BRANCH"
-		fi
-		git log -1 --format="Subject: [git: $REPOS$BRANCH][$STATUS] %s"
-		echo "To: $1"
-		echo "Date: `LC_ALL=C date '+%a, %e %b %Y %T %z (%Z)'`"
-		echo "X-Git-Repository: $REPOS"
-		git log -2 --format="X-Git-Oldrev: %H"
-		git log -1 --format="X-Git-Newrev: %H"
-		echo
-		uname -a
-		echo
-		echo "$CI_URI"
-		echo
-
-		# -------------------------------------------------------------
-		# ----  Repository specific reporting part
-		# ----
-			( cd test; $TPKG report )
-		# ----
-		# -------------------------------------------------------------
-
-
-	) | sendmail $1
-	shift
-done
-test "$STATUS" = "pass"

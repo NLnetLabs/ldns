@@ -1,0 +1,44 @@
+# Standard installation pathnames
+# See the file LICENSE for the license
+SHELL = @SHELL@
+VERSION = @PACKAGE_VERSION@
+basesrcdir = $(shell basename `pwd`)
+srcdir = @srcdir@
+prefix  = @prefix@
+exec_prefix = @exec_prefix@
+bindir = @bindir@
+mandir = @mandir@
+
+CC = @CC@
+CFLAGS = @CFLAGS@
+CPPFLAGS = @CPPFLAGS@
+LDFLAGS = @LDFLAGS@
+LIBS = @LIBS@
+
+COMPILE         = $(CC) $(CPPFLAGS) $(CFLAGS)
+LINK            = $(CC) $(CFLAGS) $(LDFLAGS)
+
+HEADER		= config.h
+TESTS		= 15-unit-tests-rrtypes
+
+.PHONY:	all clean realclean
+%.o:
+	$(COMPILE) -c $(srcdir)/$*.c
+
+all:	$(TESTS)
+
+15-unit-tests-rrtypes:	15-unit-tests-rrtypes.o
+		$(LINK) -o $@ $+ $(LIBS)
+
+clean:
+	rm -f *.o
+	rm -f $(TESTS)
+	rm -f lua-rns
+
+realclean: clean
+	rm -rf autom4te.cache/
+	rm -f config.log config.status aclocal.m4 config.h.in configure Makefile
+	rm -f config.h
+
+confclean: clean
+	rm -rf config.log config.status config.h Makefile
