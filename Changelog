@@ -48,6 +48,8 @@
 	  Thanks Thom Wiggers
 	* bugfix #4214: Various fixes and leaks found by coverity.
 	  Thanks Petr Menšík 
+	* Feature #3394: An -I option to ldns-notify to specify a source
+	  IP address to send to notify from.  Thanks Geert Hendrickx
 
 1.7.0	2016-12-20
 	* Fix lookup of relative names in ldns_resolver_search.
