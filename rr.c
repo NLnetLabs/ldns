@@ -434,16 +434,18 @@ ldns_rr_new_frm_str_internal(ldns_rr **newrr, const char *str,
 			while(cur_hex_data_size < 2 * hex_data_size) {
 				c = ldns_bget_token(rd_buf, rd,
 						delimiters, LDNS_MAX_RDFLEN);
-				if (c == -1 || 
-				    (size_t)cur_hex_data_size + rd_strlen >
-				    2 * (size_t)hex_data_size) {
-
+				if (c == -1) {
 					status = LDNS_STATUS_SYNTAX_RDATA_ERR;
 					goto error;
 				}
 				rd_strlen = strlen(rd);
+				if ((size_t)cur_hex_data_size + rd_strlen >
+				    2 * (size_t)hex_data_size) {
+					status = LDNS_STATUS_SYNTAX_RDATA_ERR;
+					goto error;
+				}
 				strlcpy(hex_data_str + cur_hex_data_size, rd,
-						rd_strlen);
+						rd_strlen + 1);
 
 				cur_hex_data_size += rd_strlen;
 			}
