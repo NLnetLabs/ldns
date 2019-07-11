@@ -46,6 +46,8 @@
 	  Thanks Jitka Plesníková
 	* bugfix #4248: drill -DT fails for CNAME domain
 	  Thanks Thom Wiggers
+	* bugfix #4214: Various fixes and leaks found by coverity.
+	  Thanks Petr Menšík 
 
 1.7.0	2016-12-20
 	* Fix lookup of relative names in ldns_resolver_search.
