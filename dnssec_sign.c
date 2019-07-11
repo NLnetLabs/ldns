@@ -17,6 +17,11 @@
 #include <openssl/rand.h>
 #include <openssl/err.h>
 #include <openssl/md5.h>
+#include <openssl/bn.h>
+#include <openssl/rsa.h>
+#ifdef USE_DSA
+#include <openssl/dsa.h>
+#endif
 #endif /* HAVE_SSL */
 
 ldns_rr *
@@ -497,9 +502,11 @@ ldns_sign_public_evp(ldns_buffer *to_sign,
 				ldns_buffer_position(to_sign));
 			siglen = (unsigned int)siglen_sizet;
 		}
-	} else
-#endif
+	} else {
+#else
+	r = 0;
 	if(md_type != NULL) {
+#endif
 		r = EVP_SignInit(ctx, md_type);
 		if(r == 1) {
 			r = EVP_SignUpdate(ctx, (unsigned char*)

@@ -16,8 +16,15 @@
 
 #ifdef HAVE_SSL
 #include <openssl/ssl.h>
-#include <openssl/engine.h>
 #include <openssl/rand.h>
+#include <openssl/bn.h>
+#include <openssl/rsa.h>
+#ifdef USE_DSA
+#include <openssl/dsa.h>
+#endif
+#ifndef OPENSSL_NO_ENGINE
+#include <openssl/engine.h>
+#endif
 #endif /* HAVE_SSL */
 
 ldns_lookup_table ldns_signing_algorithms[] = {
@@ -99,7 +106,7 @@ ldns_key_new_frm_fp(ldns_key **k, FILE *fp)
 	return ldns_key_new_frm_fp_l(k, fp, NULL);
 }
 
-#ifdef HAVE_SSL
+#if defined(HAVE_SSL) && !defined(OPENSSL_NO_ENGINE)
 ldns_status
 ldns_key_new_frm_engine(ldns_key **key, ENGINE *e, char *key_id, ldns_algorithm alg)
 {
@@ -358,22 +365,6 @@ ldns_key_new_frm_fp_ed25519_l(FILE* fp, int* line_nr)
 }
 #endif
 
-#if defined(USE_ED448)
-/* debug printout routine */
-static void print_hex(const char* str, uint8_t* d, int len)
-{
-	const char hex[] = "0123456789abcdef";
-	int i;
-	printf("%s [len=%d]: ", str, len);
-	for(i=0; i<len; i++) {
-		int x = (d[i]&0xf0)>>4;
-		int y = (d[i]&0x0f);
-		printf("%c%c", hex[x], hex[y]);
-	}
-	printf("\n");
-}
-#endif
-
 #ifdef USE_ED448
 /** turn private key buffer into EC_KEY structure */
 static EVP_PKEY*
@@ -382,31 +373,20 @@ ldns_ed448_priv_raw(uint8_t* pkey, int plen)
 	const unsigned char* pp;
 	uint8_t buf[256];
 	int buflen = 0;
-	uint8_t pre[] = {0x30, 0x4b, 0x02, 0x01, 0x01, 0x04, 0x39};
-	int pre_len = 7;
-	uint8_t post[] = {0xa0, 0x0b, 0x06, 0x09, 0x2b, 0x06, 0x01, 0x04,
-		0x01, 0xda, 0x47, 0x0f, 0x02};
-	int post_len = 13;
-	int i;
-	/* ASN looks like this for ED25519
-	 * And for ED448, the parameters are ...02 instead of ...01
-	 * For ED25519 it was:
-	 * 30320201010420 <32byteskey>
-	 * andparameters a00b06092b06010401da470f01
-	 * (noparameters, preamble is 30250201010420).
+	uint8_t pre[] = {0x30, 0x47, 0x02, 0x01, 0x00, 0x30, 0x05, 0x06, 0x03, 0x2b, 0x65, 0x71, 0x04, 0x3b, 0x04, 0x39};
+	int pre_len = 16;
+	/* ASN looks like this for ED448
+	 * 3047020100300506032b6571043b0439 <57bytekey>
 	 * the key is reversed (little endian).
-	 *
-	 * For ED448 the key is 57 bytes, and that changes lengths.
-	 * 304b0201010439 <57bytekey> a00b06092b06010401da470f02
 	 */
-	buflen = pre_len + plen + post_len;
+	buflen = pre_len + plen;
 	if((size_t)buflen > sizeof(buf))
 		return NULL;
 	memmove(buf, pre, pre_len);
-	/* reverse the pkey into the buf */
-	for(i=0; i<plen; i++)
-		buf[pre_len+i] = pkey[plen-1-i];
-	memmove(buf+pre_len+plen, post, post_len);
+	memmove(buf+pre_len, pkey, plen);
+	/* reverse the pkey into the buf - key is not reversed it seems */
+	/* for(i=0; i<plen; i++)
+		buf[pre_len+i] = pkey[plen-1-i]; */
 	pp = buf;
 	return d2i_PrivateKey(NID_ED448, NULL, &pp, buflen);
 }
@@ -1800,21 +1780,16 @@ ldns_key_ed4482bin(unsigned char* data, EVP_PKEY* k, uint16_t* size)
 {
 	int i;
 	unsigned char* pp = NULL;
-	unsigned len = i2d_PUBKEY(k, &pp);
-	/* printout ASN format for pubkey */
-	print_hex("ed448 pubkey i2d", pp, len);
-	free(pp); pp = NULL;
-	/* untested, not sure what the lengths are for the prefix */
-	if(i2d_PUBKEY(k, &pp) != 12 + 56) {
-		/* expect 12 byte(ASN header) and 56 byte(pubkey) */
+	if(i2d_PUBKEY(k, &pp) != 12 + 57) {
+		/* expect 12 byte(ASN header) and 57 byte(pubkey) */
 		free(pp);
 		return false;
 	}
 	/* omit ASN header */
-	for(i=0; i<56; i++)
+	for(i=0; i<57; i++)
 		data[i] = pp[i+12];
 	free(pp);
-	*size = 56;
+	*size = 57;
 	return true;
 }
 #endif /* USE_ED448 */

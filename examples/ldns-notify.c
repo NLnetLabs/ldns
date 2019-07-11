@@ -290,6 +290,7 @@ main(int argc, char **argv)
 	ldns_rr_set_class(question, LDNS_RR_CLASS_IN);
 	ldns_rr_set_owner(question, ldns_zone_name);
 	ldns_rr_set_type(question, LDNS_RR_TYPE_SOA);
+	ldns_rr_set_question(question, true);
 	ldns_pkt_set_opcode(notify, LDNS_PACKET_NOTIFY);
 	ldns_pkt_push_rr(notify, LDNS_SECTION_QUESTION, question);
 	ldns_pkt_set_aa(notify, true);
@@ -351,6 +352,7 @@ main(int argc, char **argv)
 			printf("# sending to %s\n", argv[i]);
 		memset(&hints, 0, sizeof(hints));
 		hints.ai_family = default_family;
+		if(strchr(argv[i], ':')) hints.ai_family = AF_INET6;
 		hints.ai_socktype = SOCK_DGRAM;
 		hints.ai_protocol = IPPROTO_UDP;
 		error = getaddrinfo(argv[i], port, &hints, &res0);

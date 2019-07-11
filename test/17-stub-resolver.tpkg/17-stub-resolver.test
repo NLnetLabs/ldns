@@ -1,0 +1,79 @@
+[ -f ../.tpkg.var.master ] && source ../.tpkg.var.master
+
+export PATH=$PATH:/usr/sbin:/sbin:/usr/local/bin:/usr/local/sbin:.
+
+RESULT=0
+
+echo "17-resolv.conf1:"
+cat 17-resolv.conf1
+echo ""
+
+LD_LIBRARY_PATH=../../lib:$LD_LIBRARY_PATH \
+../../examples/ldns-resolver 17-resolv.conf1
+
+if [[ $? -ne 0 ]]; then 
+        RESULT=1
+fi
+
+echo ""
+echo "17-resolv.conf2:"
+cat 17-resolv.conf2
+echo ""
+
+LD_LIBRARY_PATH=../../lib:$LD_LIBRARY_PATH \
+../../examples/ldns-resolver 17-resolv.conf2
+
+if [[ $? -ne 0 ]]; then 
+        RESULT=1
+fi
+
+echo ""
+echo "17-resolv.conf3:"
+cat 17-resolv.conf3
+echo ""
+
+LD_LIBRARY_PATH=../../lib:$LD_LIBRARY_PATH \
+../../examples/ldns-resolver 17-resolv.conf3
+
+if [[ $? -ne 0 ]]; then 
+        RESULT=1
+fi
+
+echo ""
+echo "17-resolv.conf4:"
+cat 17-resolv.conf4
+echo ""
+
+LD_LIBRARY_PATH=../../lib:$LD_LIBRARY_PATH \
+../../examples/ldns-resolver 17-resolv.conf4
+
+if [[ $? -ne 0 ]]; then 
+        RESULT=1
+fi
+
+echo ""
+echo "17-resolv.conf5:"
+cat 17-resolv.conf5
+echo ""
+
+LD_LIBRARY_PATH=../../lib:$LD_LIBRARY_PATH \
+../../examples/ldns-resolver 17-resolv.conf5
+
+if [[ $? -ne 0 ]]; then 
+        RESULT=1
+fi
+
+echo ""
+echo "17-resolv.conf6:"
+cat 17-resolv.conf6
+echo ""
+
+LD_LIBRARY_PATH=../../lib:$LD_LIBRARY_PATH \
+../../examples/ldns-resolver 17-resolv.conf6
+
+if [[ $? -ne 0 ]]; then 
+        RESULT=1
+fi
+
+
+exit $RESULT

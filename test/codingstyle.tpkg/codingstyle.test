@@ -1,0 +1,50 @@
+# #-- codingstyle.test --#
+# source the master var file when it's there
+[ -f ../.tpkg.var.master ] && source ../.tpkg.var.master
+# use .tpkg.var.test for in test variable passing
+[ -f .tpkg.var.test ] && source .tpkg.var.test
+# svnserve resets the path, you may need to adjust it, like this:
+PATH=$PATH:/usr/sbin:/sbin:/usr/local/bin:/usr/local/sbin:.
+
+L=90
+OPT="-ncs -sai -nut -ce -nfca -nlp -ncdb -br -ts08 -i8 -nbad"
+
+st=0
+for i in ../../*.c; do
+
+        case $i in
+        "../../util.c" | "../../host2str.c" | "../../resolver.c")
+                continue;;
+        "../../error.c" | "../../rr.c" | "../../str2host.c")
+                continue;;
+        "../../keys.c" | "../../linktest.c" | "../../dnssec.c")
+                continue;;
+        "../../packet.c" | "../../parse.c")
+                continue;;
+        esac
+
+        case $OSTYPE in
+        linux*)
+                diff -w -u $i <(cat $i | indent -l$L $OPT) | grep ^---
+                ;;
+        *bsd*) 
+                diff -w -u $i <(cat $i | gindent -l$L $OPT)| grep ^---
+                ;;
+        darwin*)
+		echo "Warning: Codingstyle not checked on osx"
+		exit 0
+                ;;
+        solaris*)
+		echo "Warning: Codingstyle not checked on solaris"
+		exit 0
+                ;;
+        esac
+              
+        if [[ $? -eq 1 ]]; then
+                st=1
+        fi
+done
+if [[ $st -eq 0 ]]; then
+        exit 1
+fi
+exit 0

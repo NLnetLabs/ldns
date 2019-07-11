@@ -1,0 +1,23 @@
+# #-- 03-run.test --#
+# source the master var file when it's there
+[ -f ../.tpkg.var.master ] && source ../.tpkg.var.master
+# use .tpkg.var.test for in test variable passing
+[ -f .tpkg.var.test ] && source .tpkg.var.test
+# svnserve resets the path, you may need to adjust it, like this:
+PATH=$PATH:/usr/sbin:/sbin:/usr/local/bin:/usr/local/sbin:.
+
+# first arg is the build dir
+TPKG_BUILD=$1
+
+cd $TPKG_BUILD
+cd drill/
+LD_LIBRARY_PATH="../.libs:$LD_LIBRARY_PATH" DYLD_LIBRARY_PATH="../.libs:$DYLD_LIBRARY_PATH" ./drill @k.root-servers.net mx miek.nl && \
+LD_LIBRARY_PATH="../.libs:$LD_LIBRARY_PATH" DYLD_LIBRARY_PATH="../.libs:$DYLD_LIBRARY_PATH" ./drill  mx miek.nl 
+if [[ $? -ne 0 ]]; then
+        exit 1
+fi
+
+LD_LIBRARY_PATH="../.libs:$LD_LIBRARY_PATH" DYLD_LIBRARY_PATH="../.libs:$DYLD_LIBRARY_PATH" ./drill @ mx miek.nl
+if [[ $? -ne 1 ]]; then
+        exit 1
+fi

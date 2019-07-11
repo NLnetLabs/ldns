@@ -1,0 +1,19 @@
+# #-- 05-nm.test --#
+# source the master var file when it's there
+[ -f ../.tpkg.var.master ] && source ../.tpkg.var.master
+# use .tpkg.var.test for in test variable passing
+[ -f .tpkg.var.test ] && source .tpkg.var.test
+# svnserve resets the path, you may need to adjust it, like this:
+PATH=$PATH:/usr/sbin:/sbin:/usr/local/bin:/usr/local/sbin:.
+
+LIB=../../lib/
+export LD_LIBRARY_PATH=$LIB:$LD_LIBRARY_PATH
+
+# get the libdns symbols
+../../examples/ldns-read-zone -b 08-zonereader.inputzone > 08-zonereader.current
+
+diff 08-zonereader.current 08-zonereader.outputzone
+fail=$?
+rm -f 08-zonereader.current
+
+exit $fail

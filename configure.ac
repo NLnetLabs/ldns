@@ -513,33 +513,29 @@ case "$enable_dsa" in
       ;;
 esac
 
-AC_ARG_ENABLE(ed25519, AC_HELP_STRING([--enable-ed25519], [Enable ED25519 support (experimental)]))
+AC_ARG_ENABLE(ed25519, AC_HELP_STRING([--disable-ed25519], [Disable (experimental) ED25519 support. Default is detect]))
 case "$enable_ed25519" in
-    yes)
-      if test "x$HAVE_SSL" != "xyes"; then
-        AC_MSG_ERROR([ED25519 enabled, but no SSL support])
-      fi
-      AC_CHECK_DECLS([NID_ED25519], [], [AC_MSG_ERROR([OpenSSL does not support the EDDSA curve: please upgrade OpenSSL or rerun with --disable-ed25519])], [AC_INCLUDES_DEFAULT
+    no) ;;
+    *) dnl default
+      AC_CHECK_DECLS([NID_ED25519], [
+      	AC_DEFINE_UNQUOTED([USE_ED25519], [1], [Define this to enable ED25519 support.])
+      ], [if test "x$enable_ed25519" = "xyes"; then AC_MSG_ERROR([OpenSSL does not support ED25519 and you used --enable-ed25519.])
+      fi ], [AC_INCLUDES_DEFAULT
 #include <openssl/evp.h>
       ])
-      AC_DEFINE_UNQUOTED([USE_ED25519], [1], [Define this to enable ED25519 support.])
-      ;;
-    *|no) dnl default
       ;;
 esac
 
-AC_ARG_ENABLE(ed448, AC_HELP_STRING([--enable-ed448], [Enable ED448 support (experimental)]))
+AC_ARG_ENABLE(ed448, AC_HELP_STRING([--disable-ed448], [Disable (experimental) ED448 support. Default is detect]))
 case "$enable_ed448" in
-    yes)
-      if test "x$HAVE_SSL" != "xyes"; then
-        AC_MSG_ERROR([ED448 enabled, but no SSL support])
-      fi
-      AC_CHECK_DECLS([NID_ED448], [], [AC_MSG_ERROR([OpenSSL does not support the EDDSA curve: please upgrade OpenSSL or rerun with --disable-ed448])], [AC_INCLUDES_DEFAULT
+    no) ;;
+    *) dnl default
+      AC_CHECK_DECLS([NID_ED448], [
+      	AC_DEFINE_UNQUOTED([USE_ED448], [1], [Define this to enable ED448 support.])
+      ], [if test "x$enable_ed448" = "xyes"; then AC_MSG_ERROR([OpenSSL does not support ED448 and you used --enable-ed448.])
+      fi ], [AC_INCLUDES_DEFAULT
 #include <openssl/evp.h>
       ])
-      AC_DEFINE_UNQUOTED([USE_ED448], [1], [Define this to enable ED448 support.])
-      ;;
-    *|no) dnl default
       ;;
 esac
 
@@ -590,7 +586,7 @@ case "$enable_dane" in
                 *) dnl default
       	    LIBS="-lssl $LIBS"
                   AC_CHECK_FUNC(SSL_get0_dane, [], [AC_MSG_ERROR([OpenSSL does not support offline DANE verification (Needed for the DANE-TA usage type).  Please upgrade OpenSSL to version >= 1.1.0 or rerun with --disable-dane-verify or --disable-dane-ta-usage])])
-                  LIBSSL_LIBS="$LIBSSL_LIBS -lssl"
+                  LIBSSL_LIBS="-lssl $LIBSSL_LIBS"
                   AC_SUBST(ldns_build_config_use_dane_ta_usage, 1)
                   AC_DEFINE_UNQUOTED([USE_DANE_TA_USAGE], [1], [Define this to enable DANE-TA usage type support.])
                   ;;
@@ -647,6 +643,15 @@ case "$enable_rrtype_doa" in
 	no|*)
 		;;
 esac
+AC_ARG_ENABLE(rrtype-amtrelay, AC_HELP_STRING([--enable-rrtype-amtrelay], [Enable draft RR type AMTRELAY.]))
+case "$enable_rrtype_amtrelay" in
+	yes)
+		AC_DEFINE_UNQUOTED([RRTYPE_AMTRELAY], [], [Define this to enable RR type AMTRELAY.])
+		;;
+	no|*)
+		;;
+esac
+
 
 
 AC_SUBST(LIBSSL_CPPFLAGS)
@@ -851,16 +856,31 @@ ACX_FUNC_IOCTLSOCKET
 ACX_CHECK_FORMAT_ATTRIBUTE
 ACX_CHECK_UNUSED_ATTRIBUTE
 
-# check OSX deployment target, if needed
-if echo $build_os | grep darwin > /dev/null; then
-  sdk_p=`xcode-select -print-path`;
-  sdk_v="$( /usr/bin/xcrun --show-sdk-version )";
-  case $sdk_v in
-       10.9|10.8)   sdk_c="10.7";;
-       10.11|10.10|*) sdk_c="10.10";;
-  esac
-  export MACOSX_DEPLOYMENT_TARGET="${sdk_c}";
-  export CFLAGS="$CFLAGS -mmacosx-version-min=${sdk_c} -isysroot ${sdk_p}/Platforms/MacOSX.platform/Developer/SDKs/MacOSX${sdk_v}.sdk";
+AC_ARG_WITH(xcode-sdk, AC_HELP_STRING([--with-xcode-sdk], 
+ [Set xcode SDK version. Default is autodetect]), 
+ [],[with_xcode_sdk="yes"])
+if test "x_$with_xcode_sdk" != "x_no" ; then
+   # check OSX deployment target, if needed
+   if echo $build_os | grep darwin > /dev/null; then
+     sdk_p=`xcode-select -print-path`;
+     if test "x_$with_xcode_sdk" = "x_yes" ; then
+        sdk_v="$( /usr/bin/xcrun --show-sdk-version 2>/dev/null )"
+     else
+        sdk_v="$with_xcode_sdk"
+     fi
+     # xcrun only got that option in 10.7
+     if test -z "$sdk_v" ; then
+        sdk_c="10.6"
+        sdk_v="10.6"
+     fi
+     SYSROOT="$( find ${sdk_p} -name MacOSX${sdk_v}.sdk )"
+     case $sdk_v in
+          10.9|10.8)   sdk_c="10.7";;
+          10.11|10.10|*) sdk_c="10.10";;
+     esac
+     export MACOSX_DEPLOYMENT_TARGET="${sdk_c}";
+     export CFLAGS="$CFLAGS -mmacosx-version-min=${sdk_c} -isysroot ${SYSROOT}"
+   fi
 fi
 
 AC_DEFINE([SYSCONFDIR], [sysconfdir], [System configuration dir])

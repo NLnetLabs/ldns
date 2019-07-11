@@ -28,6 +28,14 @@
 #include <time.h>
 #include <sys/time.h>
 
+#ifdef HAVE_SSL
+#include <openssl/bn.h>
+#include <openssl/rsa.h>
+#ifdef USE_DSA
+#include <openssl/dsa.h>
+#endif
+#endif
+
 #ifndef INET_ADDRSTRLEN
 #define INET_ADDRSTRLEN 16
 #endif
@@ -1290,6 +1298,93 @@ ldns_rdf2buffer_str_hip(ldns_buffer *output, const ldns_rdf *rdf)
 	return ldns_buffer_status(output);
 }
 
+/* implementation mimiced from ldns_rdf2buffer_str_ipseckey */
+ldns_status
+ldns_rdf2buffer_str_amtrelay(ldns_buffer *output, const ldns_rdf *rdf)
+{
+	/* wire format from
+	 * draft-ietf-mboned-driad-amt-discovery Section 4.2  
+	 */
+	uint8_t *data = ldns_rdf_data(rdf);
+	uint8_t precedence;
+	uint8_t discovery_optional;
+	uint8_t relay_type;
+
+	ldns_rdf *relay = NULL;
+	uint8_t *relay_data;
+
+	size_t offset = 0;
+	ldns_status status;
+
+	if (ldns_rdf_size(rdf) < 2) {
+		return LDNS_STATUS_WIRE_RDATA_ERR;
+	}
+	precedence = data[0];
+	discovery_optional = ((data[1] & 0x80) >> 7);
+	relay_type = data[1] & 0x7F;
+	offset = 2;
+
+	switch (relay_type) {
+		case 0:
+			/* no relay */
+			break;
+		case 1:
+			relay_data = LDNS_XMALLOC(uint8_t, LDNS_IP4ADDRLEN);
+                        if(!relay_data)
+                                return LDNS_STATUS_MEM_ERR;
+			if (ldns_rdf_size(rdf) < offset + LDNS_IP4ADDRLEN) {
+				return LDNS_STATUS_ERR;
+			}
+			memcpy(relay_data, &data[offset], LDNS_IP4ADDRLEN);
+			relay = ldns_rdf_new(LDNS_RDF_TYPE_A,
+					LDNS_IP4ADDRLEN , relay_data);
+			offset += LDNS_IP4ADDRLEN;
+                        if(!relay) {
+                                LDNS_FREE(relay_data);
+                                return LDNS_STATUS_MEM_ERR;
+                        }
+			break;
+		case 2:
+			relay_data = LDNS_XMALLOC(uint8_t, LDNS_IP6ADDRLEN);
+                        if(!relay_data)
+                                return LDNS_STATUS_MEM_ERR;
+			if (ldns_rdf_size(rdf) < offset + LDNS_IP6ADDRLEN) {
+				return LDNS_STATUS_ERR;
+			}
+			memcpy(relay_data, &data[offset], LDNS_IP6ADDRLEN);
+			offset += LDNS_IP6ADDRLEN;
+			relay =
+				ldns_rdf_new(LDNS_RDF_TYPE_AAAA,
+						LDNS_IP6ADDRLEN, relay_data);
+                        if(!relay) {
+                                LDNS_FREE(relay_data);
+                                return LDNS_STATUS_MEM_ERR;
+                        }
+			break;
+		case 3:
+			status = ldns_wire2dname(&relay, data,
+					ldns_rdf_size(rdf), &offset);
+                        if(status != LDNS_STATUS_OK)
+                                return status;
+			break;
+		default:
+			/* error? */
+			break;
+	}
+
+	if (ldns_rdf_size(rdf) != offset) {
+		return LDNS_STATUS_ERR;
+	}
+	ldns_buffer_printf(output, "%u %u %u ",
+			precedence, discovery_optional, relay_type);
+	if (relay)
+	  	(void) ldns_rdf2buffer_str(output, relay);
+
+	ldns_rdf_deep_free(relay);
+	return ldns_buffer_status(output);
+}
+
+
 static ldns_status
 ldns_rdf2buffer_str_fmt(ldns_buffer *buffer,
 		const ldns_output_format* fmt, const ldns_rdf *rdf)
@@ -1404,6 +1499,9 @@ ldns_rdf2buffer_str_fmt(ldns_buffer *buffer,
 			break;
 		case LDNS_RDF_TYPE_LONG_STR:
 			res = ldns_rdf2buffer_str_long_str(buffer, rdf);
+			break;
+		case LDNS_RDF_TYPE_AMTRELAY:
+			res = ldns_rdf2buffer_str_amtrelay(buffer, rdf);
 			break;
 		}
 	} else {
@@ -1966,22 +2064,6 @@ ldns_ed25519_key2buffer_str(ldns_buffer *output, EVP_PKEY *p)
 }
 #endif
 
-#if defined(USE_ED448)
-/* debug printout routine */
-static void ed448_print_hex(const char* str, uint8_t* d, int len)
-{
-	const char hex[] = "0123456789abcdef";
-	int i;
-	printf("%s [len=%d]: ", str, len);
-	for(i=0; i<len; i++) {
-		int x = (d[i]&0xf0)>>4;
-		int y = (d[i]&0x0f);
-		printf("%c%c", hex[x], hex[y]);
-	}
-	printf("\n");
-}
-#endif
-
 #if defined(HAVE_SSL) && defined(USE_ED448)
 static ldns_status
 ldns_ed448_key2buffer_str(ldns_buffer *output, EVP_PKEY *p)
@@ -1994,10 +2076,8 @@ ldns_ed448_key2buffer_str(ldns_buffer *output, EVP_PKEY *p)
 	ldns_buffer_printf(output, "PrivateKey: ");
 
 	ret = i2d_PrivateKey(p, &pp);
-	/* printout hex to find length of ASN */
-	ed448_print_hex("ED448 privkey i2d", pp, ret);
-	/* some-ASN (??) + 56byte key */
-	if(ret != 16 + 56) {
+	/* some-ASN + 57byte key */
+	if(ret != 16 + 57) {
 		OPENSSL_free(pp);
 		return LDNS_STATUS_ERR;
 	}
@@ -2012,6 +2092,7 @@ ldns_ed448_key2buffer_str(ldns_buffer *output, EVP_PKEY *p)
 }
 #endif
 
+#if defined(HAVE_SSL)
 /** print one b64 encoded bignum to a line in the keybuffer */
 static int
 ldns_print_bignum_b64_line(ldns_buffer* output, const char* label, const BIGNUM* num)
@@ -2041,6 +2122,7 @@ ldns_print_bignum_b64_line(ldns_buffer* output, const char* label, const BIGNUM*
 	LDNS_FREE(bignumbuf);
 	return 1;
 }
+#endif
 
 ldns_status
 ldns_key2buffer_str(ldns_buffer *output, const ldns_key *k)

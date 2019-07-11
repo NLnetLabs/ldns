@@ -212,7 +212,7 @@ ldns_rr_new_frm_str_internal(ldns_rr **newrr, const char *str,
 			if (!type) {
 				goto memerror;
 			}
-			strncpy(type, ttl, strlen(ttl) + 1);
+			strlcpy(type, ttl, strlen(ttl) + 1);
 		}
 	} else {
 		if (-1 == ldns_bget_token(
@@ -231,7 +231,7 @@ ldns_rr_new_frm_str_internal(ldns_rr **newrr, const char *str,
 			if (!type) {
 				goto memerror;
 			}
-			strncpy(type, clas, strlen(clas) + 1);
+			strlcpy(type, clas, strlen(clas) + 1);
 		}
 	}
 	/* the rest should still be waiting for us */
@@ -347,6 +347,7 @@ ldns_rr_new_frm_str_internal(ldns_rr **newrr, const char *str,
 		case LDNS_RDF_TYPE_LOC        : /* tain whitespace, only if */
 		case LDNS_RDF_TYPE_WKS        : /* it is the last rd field. */
 		case LDNS_RDF_TYPE_IPSECKEY   :
+		case LDNS_RDF_TYPE_AMTRELAY   :
 		case LDNS_RDF_TYPE_NSEC       :	if (r_cnt == r_max - 1) {
 							delimiters = "\n";
 							break;
@@ -433,18 +434,18 @@ ldns_rr_new_frm_str_internal(ldns_rr **newrr, const char *str,
 			while(cur_hex_data_size < 2 * hex_data_size) {
 				c = ldns_bget_token(rd_buf, rd,
 						delimiters, LDNS_MAX_RDFLEN);
-				if (c != -1) {
-					rd_strlen = strlen(rd);
-				}
-				if (c == -1 || 
-				    (size_t)cur_hex_data_size + rd_strlen >
-				    2 * (size_t)hex_data_size) {
-
+				if (c == -1) {
 					status = LDNS_STATUS_SYNTAX_RDATA_ERR;
 					goto error;
 				}
-				strncpy(hex_data_str + cur_hex_data_size, rd,
-						rd_strlen);
+				rd_strlen = strlen(rd);
+				if ((size_t)cur_hex_data_size + rd_strlen >
+				    2 * (size_t)hex_data_size) {
+					status = LDNS_STATUS_SYNTAX_RDATA_ERR;
+					goto error;
+				}
+				strlcpy(hex_data_str + cur_hex_data_size, rd,
+						rd_strlen + 1);
 
 				cur_hex_data_size += rd_strlen;
 			}
@@ -1959,6 +1960,11 @@ static const ldns_rdf_type type_openpgpkey_wireformat[] = {
 static const ldns_rdf_type type_csync_wireformat[] = {
 	LDNS_RDF_TYPE_INT32, LDNS_RDF_TYPE_INT16, LDNS_RDF_TYPE_NSEC
 };
+static const ldns_rdf_type type_zonemd_wireformat[] = {
+	LDNS_RDF_TYPE_INT32,
+	LDNS_RDF_TYPE_INT8, LDNS_RDF_TYPE_INT8, LDNS_RDF_TYPE_HEX
+};
+
 /* nsec3 is some vars, followed by same type of data of nsec */
 static const ldns_rdf_type type_nsec3_wireformat[] = {
 /*	LDNS_RDF_TYPE_NSEC3_VARS, LDNS_RDF_TYPE_NSEC3_NEXT_OWNER, LDNS_RDF_TYPE_NSEC*/
@@ -2047,6 +2053,12 @@ static const ldns_rdf_type type_doa_wireformat[] = {
 	LDNS_RDF_TYPE_B64
 };
 #endif
+#ifdef RRTYPE_AMTRELAY
+static const ldns_rdf_type type_amtrelay_wireformat[] = {
+	LDNS_RDF_TYPE_AMTRELAY
+};
+#endif
+
 
 /** \endcond */
 
@@ -2201,7 +2213,7 @@ static ldns_rr_descriptor rdata_field_descriptors[] = {
 #endif
 
 {LDNS_RR_TYPE_CSYNC, "CSYNC", 3, 3, type_csync_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 0 },
-{LDNS_RR_TYPE_NULL, "TYPE63", 1, 1, type_0_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 0 },
+{LDNS_RR_TYPE_ZONEMD, "ZONEMD", 4, 4, type_zonemd_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 0 },
 {LDNS_RR_TYPE_NULL, "TYPE64", 1, 1, type_0_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 0 },
 {LDNS_RR_TYPE_NULL, "TYPE65", 1, 1, type_0_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 0 },
 {LDNS_RR_TYPE_NULL, "TYPE66", 1, 1, type_0_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 0 },
@@ -2441,6 +2453,12 @@ static ldns_rr_descriptor rdata_field_descriptors[] = {
 	{LDNS_RR_TYPE_DOA, "DOA", 5, 5, type_doa_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 0 },
 #else
 {LDNS_RR_TYPE_NULL, "TYPE259", 1, 1, type_0_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 0 },
+#endif
+#ifdef RRTYPE_AMTRELAY
+	/* 260 */
+	{LDNS_RR_TYPE_AMTRELAY, "AMTRELAY", 1, 1, type_amtrelay_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 0 },
+#else
+{LDNS_RR_TYPE_NULL, "TYPE260", 1, 1, type_0_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 0 },
 #endif
 
 /* split in array, no longer contiguous */

@@ -1,4 +1,12 @@
 1.7.1	????-??-??
+	* bugfix: Manage verification paths for OpenSSL >= 1.1.0
+	  Thanks Marco Davids
+	* bugfix #4106: find the SDK on MacOS X <= 10.6
+	  Thanks Bill Cole
+	* bugfix #4155: ldns-config contains never used variables
+	  Thanks Petr Menšík
+	* bugfix #4221: drill -x crashes with malformed IPv4 address 
+	  Thanks Oleksandr Tymoshenko
 	* bugfix #3437: CDS & CDNSKEY RRsets should be signed with the KSK
 	  Thanks Tony Finch
 	* bugfix #1566, #1568, #1569, #1570: Potential NULL Dereferences
@@ -26,6 +34,18 @@
 	  Thanks Jan Vcelak
 	* bugfix #1399: ldns_pkt2wire() Python binding is broken.
 	  Thanks James Raftery
+	* ED25519 and ED448 support. Default is to autodetect support in
+	  OpenSSL.  Disable with --disable-ed25519 and --disable-ed448.
+	* ldns-notify: can have IPv6 address as argument.
+	* Fix time sensitive TSIG compare vulnerability.
+	* Fix that ldns-testns ignores sigpipe.
+	* Fix that ldns-notify sets the query RR as question RR, this
+	  removes the wrong TTL and 0 rdata from the packet printout.
+	* Allow -T flag to be used together with drill -x
+	* Python bindings compile with swig 4.0
+	  Thanks Jitka Plesníková
+	* bugfix #4248: drill -DT fails for CNAME domain
+	  Thanks Thom Wiggers
 
 1.7.0	2016-12-20
 	* Fix lookup of relative names in ldns_resolver_search.

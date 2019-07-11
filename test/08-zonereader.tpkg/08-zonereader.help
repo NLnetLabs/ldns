@@ -1,0 +1,8 @@
+No arguments are used for this test.
+
+The example tool ldns-read-zone is used to read the zone from
+08-zonereader-inputzone that contains a number of different RRs. The output
+is compared to 08-zonereader-outputzone.
+
+With this test the zone reading functions are checked to see if they have
+not regressed.

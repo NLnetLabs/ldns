@@ -1899,27 +1899,19 @@ ldns_verify_rrsig_ed25519_raw(unsigned char* sig, size_t siglen,
 EVP_PKEY*
 ldns_ed4482pkey_raw(const unsigned char* key, size_t keylen)
 {
-        const unsigned char* pp = key; /* pp gets modified by o2i() */
+	/* ASN1 for ED448 is 3043300506032b6571033a00 <57byteskey> */
+	uint8_t pre[] = {0x30, 0x43, 0x30, 0x05, 0x06, 0x03, 0x2b, 0x65,
+		0x71, 0x03, 0x3a, 0x00};
+        int pre_len = 12;
+	uint8_t buf[256];
         EVP_PKEY *evp_key;
-        EC_KEY *ec;
-	if(keylen != 57)
+	/* pp gets modified by d2i() */
+        const unsigned char* pp = (unsigned char*)buf;
+	if(keylen != 57 || keylen + pre_len > sizeof(buf))
 		return NULL; /* wrong length */
-        ec = EC_KEY_new_by_curve_name(NID_ED448);
-	if(!ec) return NULL;
-        if(!o2i_ECPublicKey(&ec, &pp, (int)keylen)) {
-                EC_KEY_free(ec);
-                return NULL;
-	}
-        evp_key = EVP_PKEY_new();
-        if(!evp_key) {
-                EC_KEY_free(ec);
-                return NULL;
-        }
-        if (!EVP_PKEY_assign_EC_KEY(evp_key, ec)) {
-		EVP_PKEY_free(evp_key);
-		EC_KEY_free(ec);
-		return NULL;
-	}
+	memmove(buf, pre, pre_len);
+	memmove(buf+pre_len, key, keylen);
+	evp_key = d2i_PUBKEY(NULL, &pp, (int)(pre_len+keylen));
         return evp_key;
 }
 
@@ -2614,11 +2606,11 @@ ldns_verify_rrsig_evp_raw(const unsigned char *sig, size_t siglen,
 				ldns_buffer_begin(rrset),
 				ldns_buffer_position(rrset));
 		}
-	} else
+	} else {
 #else
 	res = 0;
-#endif
 	if(digest_type) {
+#endif
 		EVP_VerifyInit(ctx, digest_type);
 		EVP_VerifyUpdate(ctx,
 					  ldns_buffer_begin(rrset),

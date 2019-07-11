@@ -221,6 +221,7 @@
                         case LDNS_RDF_TYPE_EUI64:      return "EUI64";
                         case LDNS_RDF_TYPE_TAG:        return "TAG";
                         case LDNS_RDF_TYPE_LONG_STR:   return "LONG_STR";
+			case LDNS_RDF_TYPE_AMTRELAY:   return "AMTRELAY";
                         case LDNS_RDF_TYPE_CERTIFICATE_USAGE:
                             return "CERTIFICATE_USAGE";
                         case LDNS_RDF_TYPE_SELECTOR:   return "SELECTOR";

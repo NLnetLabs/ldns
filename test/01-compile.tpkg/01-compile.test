@@ -1,0 +1,61 @@
+[ -f ../.tpkg.var.master ] && source ../.tpkg.var.master
+
+export PATH=$PATH:/usr/sbin:/sbin:/usr/local/bin:/usr/local/sbin:.
+
+# first arg is the build dir
+TPKG_BUILD=$1
+mkdir -p $TPKG_BUILD/python-site
+
+cd $TPKG_BUILD
+
+conf=`which autoreconf` ||\
+conf=`which autoreconf-2.59` ||\
+conf=`which autoreconf-2.61` ||\
+conf=`which autoreconf259`
+
+# mk=`which gmake` ||\ We are BSD compatible nowadays
+mk=`which make`
+
+loot=`which glibtoolize` ||\
+loot=`which libtoolize`
+
+echo "configure: $conf"
+echo "toolize: $loot"
+echo "make: $mk"
+
+if [ ! $mk ] || [ ! $conf ] || [ ! $loot ] ; then
+	echo "Error, one or more build tools not found, aborting"
+	exit 1
+fi;
+
+if [ -e Makefile ]; then
+   $mk distclean
+fi
+
+(    $loot -c --install                                                      \
+||   $loot -c                                                                \
+||   $loot                                                                   \
+) && $conf                                                                   \
+&& (  ( (  ./configure PYTHON_SITE_PKG=$TPKG_BUILD/python-site --enable-sha2  --enable-gost --with-drill --with-examples --with-pyldns \
+        || ./configure PYTHON_SITE_PKG=$TPKG_BUILD/python-site --disable-sha2  --enable-gost --with-drill --with-examples --with-pyldns \
+        || ./configure PYTHON_SITE_PKG=$TPKG_BUILD/python-site  --enable-sha2 --disable-gost --with-drill --with-examples --with-pyldns \
+        || ./configure PYTHON_SITE_PKG=$TPKG_BUILD/python-site --disable-sha2 --disable-gost --with-drill --with-examples --with-pyldns \
+        || ./configure PYTHON_SITE_PKG=$TPKG_BUILD/python-site --disable-dane-ta-usage --enable-sha2  --enable-gost --with-drill --with-examples --with-pyldns \
+        || ./configure PYTHON_SITE_PKG=$TPKG_BUILD/python-site --disable-dane-ta-usage --disable-sha2  --enable-gost --with-drill --with-examples --with-pyldns \
+        || ./configure PYTHON_SITE_PKG=$TPKG_BUILD/python-site --disable-dane-ta-usage  --enable-sha2 --disable-gost --with-drill --with-examples --with-pyldns \
+        || ./configure PYTHON_SITE_PKG=$TPKG_BUILD/python-site --disable-dane-ta-usage --disable-sha2 --disable-gost --with-drill --with-examples --with-pyldns
+        ) && $mk && $mk install-pyldns && make install-pyldnsx 
+      ) \
+   || ( (  ./configure  --enable-sha2  --enable-gost --with-drill --with-examples \
+        || ./configure --disable-sha2  --enable-gost --with-drill --with-examples \
+        || ./configure  --enable-sha2 --disable-gost --with-drill --with-examples \
+        || ./configure --disable-sha2 --disable-gost --with-drill --with-examples \
+        || ./configure  --enable-sha2  --enable-gost --with-drill --with-examples --disable-dane-ta-usage \
+        || ./configure --disable-sha2  --enable-gost --with-drill --with-examples --disable-dane-ta-usage \
+        || ./configure  --enable-sha2 --disable-gost --with-drill --with-examples --disable-dane-ta-usage \
+        || ./configure --disable-sha2 --disable-gost --with-drill --with-examples --disable-dane-ta-usage
+
+        ) && $mk && (rmdir python-site || true)
+      )
+   )
+

@@ -177,7 +177,7 @@ enum ldns_enum_rr_type
 	LDNS_RR_TYPE_NSEC3PARAM = 51, /* RFC 5155 */
 	LDNS_RR_TYPE_NSEC3PARAMS = 51,
 	LDNS_RR_TYPE_TLSA = 52, /* RFC 6698 */
-	LDNS_RR_TYPE_SMIMEA = 53, /* draft-ietf-dane-smime */
+	LDNS_RR_TYPE_SMIMEA = 53, /* RFC 8162 */
 
 	LDNS_RR_TYPE_HIP = 55, /* RFC 5205 */
 
@@ -191,6 +191,7 @@ enum ldns_enum_rr_type
 	LDNS_RR_TYPE_CDNSKEY = 60, /* RFC 7344 */
 	LDNS_RR_TYPE_OPENPGPKEY = 61, /* RFC 7929 */
 	LDNS_RR_TYPE_CSYNC = 62, /* RFC 7477 */
+	LDNS_RR_TYPE_ZONEMD = 63, /* draft-wessels-dns-zone-digest */
 
 	LDNS_RR_TYPE_SPF = 99, /* RFC 4408 */
 
@@ -222,6 +223,9 @@ enum ldns_enum_rr_type
 	LDNS_RR_TYPE_AVC = 258, /* Cisco's DNS-AS RR, see www.dns-as.org */
 	LDNS_RR_TYPE_DOA = 259, /* draft-durand-doa-over-dns */
 
+	/** draft-ietf-mboned-driad-amt-discovery **/
+	LDNS_RR_TYPE_AMTRELAY = 260,
+
 	/** DNSSEC Trust Authorities */
 	LDNS_RR_TYPE_TA = 32768,
 	/* RFC 4431, 5074, DNSSEC Lookaside Validation */
@@ -237,7 +241,7 @@ enum ldns_enum_rr_type
 typedef enum ldns_enum_rr_type ldns_rr_type;
 
 /* The first fields are contiguous and can be referenced instantly */
-#define LDNS_RDATA_FIELD_DESCRIPTORS_COMMON (LDNS_RR_TYPE_DOA + 1)
+#define LDNS_RDATA_FIELD_DESCRIPTORS_COMMON (LDNS_RR_TYPE_AMTRELAY + 1)
 
 /**
  * Resource Record
