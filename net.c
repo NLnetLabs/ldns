@@ -202,6 +202,7 @@ ldns_tcp_connect_from(const struct sockaddr_storage *to, socklen_t tolen,
 	}
 #endif
 	if (from && bind(sockfd, (const struct sockaddr*)from, fromlen) == SOCK_INVALID){
+		close_socket(sockfd);
 		return 0;
 	}
 
@@ -337,7 +338,7 @@ ldns_tcp_send_from(uint8_t **result,  ldns_buffer *qbin,
 	answer = ldns_tcp_read_wire_timeout(sockfd, answer_size, timeout);
 	close_socket(sockfd);
 
-	if (*answer_size == 0) {
+	if (!answer) {
 		/* oops */
 		return LDNS_STATUS_NETWORK_ERR;
 	}
@@ -390,6 +391,7 @@ ldns_udp_bgsend_from(ldns_buffer *qbin,
 	}
 
 	if (from && bind(sockfd, (const struct sockaddr*)from, fromlen) == -1){
+		close_socket(sockfd);
 		return 0;
 	}
 
@@ -437,7 +439,7 @@ ldns_udp_send_from(uint8_t **result, ldns_buffer *qbin,
 	answer = ldns_udp_read_wire(sockfd, answer_size, NULL, NULL);
 	close_socket(sockfd);
 
-	if (*answer_size == 0) {
+	if (!answer) {
 		/* oops */
 		return LDNS_STATUS_NETWORK_ERR;
 	}
@@ -571,6 +573,9 @@ ldns_send_buffer(ldns_pkt **result, ldns_resolver *r, ldns_buffer *qb, ldns_rdf 
 		if (!reply_bytes) {
 			/* the current nameserver seems to have a problem, blacklist it */
 			if (ldns_resolver_fail(r)) {
+				if(src) {
+					LDNS_FREE(src);
+				}
 				LDNS_FREE(ns);
 				return LDNS_STATUS_ERR;
 			} else {
@@ -914,6 +919,9 @@ ldns_axfr_start(ldns_resolver *resolver, const ldns_rdf *domain, ldns_rr_class c
 				ns, (socklen_t)ns_len,
 				src, (socklen_t)src_len,
 				ldns_resolver_timeout(resolver));
+	}
+	if (src) {
+		LDNS_FREE(src);
 	}
 
 	if (resolver->_socket == SOCK_INVALID) {

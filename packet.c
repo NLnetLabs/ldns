@@ -943,11 +943,13 @@ ldns_pkt_query_new_frm_str_internal(ldns_pkt **p, const char *name,
 	}
 
 	if (!ldns_pkt_set_flags(packet, flags)) {
+		ldns_pkt_free(packet);
 		return LDNS_STATUS_ERR;
 	}
 
 	question_rr = ldns_rr_new();
 	if (!question_rr) {
+		ldns_pkt_free(packet);
 		return LDNS_STATUS_MEM_ERR;
 	}
 
