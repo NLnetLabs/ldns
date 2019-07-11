@@ -28,6 +28,14 @@
 #include <time.h>
 #include <sys/time.h>
 
+#ifdef HAVE_SSL
+#include <openssl/bn.h>
+#include <openssl/rsa.h>
+#ifdef USE_DSA
+#include <openssl/dsa.h>
+#endif
+#endif
+
 #ifndef INET_ADDRSTRLEN
 #define INET_ADDRSTRLEN 16
 #endif
