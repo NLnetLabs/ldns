@@ -212,7 +212,7 @@ ldns_rr_new_frm_str_internal(ldns_rr **newrr, const char *str,
 			if (!type) {
 				goto memerror;
 			}
-			strncpy(type, ttl, strlen(ttl) + 1);
+			strlcpy(type, ttl, strlen(ttl) + 1);
 		}
 	} else {
 		if (-1 == ldns_bget_token(
@@ -231,7 +231,7 @@ ldns_rr_new_frm_str_internal(ldns_rr **newrr, const char *str,
 			if (!type) {
 				goto memerror;
 			}
-			strncpy(type, clas, strlen(clas) + 1);
+			strlcpy(type, clas, strlen(clas) + 1);
 		}
 	}
 	/* the rest should still be waiting for us */
@@ -434,9 +434,6 @@ ldns_rr_new_frm_str_internal(ldns_rr **newrr, const char *str,
 			while(cur_hex_data_size < 2 * hex_data_size) {
 				c = ldns_bget_token(rd_buf, rd,
 						delimiters, LDNS_MAX_RDFLEN);
-				if (c != -1) {
-					rd_strlen = strlen(rd);
-				}
 				if (c == -1 || 
 				    (size_t)cur_hex_data_size + rd_strlen >
 				    2 * (size_t)hex_data_size) {
@@ -444,7 +441,8 @@ ldns_rr_new_frm_str_internal(ldns_rr **newrr, const char *str,
 					status = LDNS_STATUS_SYNTAX_RDATA_ERR;
 					goto error;
 				}
-				strncpy(hex_data_str + cur_hex_data_size, rd,
+				rd_strlen = strlen(rd);
+				strlcpy(hex_data_str + cur_hex_data_size, rd,
 						rd_strlen);
 
 				cur_hex_data_size += rd_strlen;
