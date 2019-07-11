@@ -513,33 +513,29 @@ case "$enable_dsa" in
       ;;
 esac
 
-AC_ARG_ENABLE(ed25519, AC_HELP_STRING([--enable-ed25519], [Enable ED25519 support (experimental)]))
+AC_ARG_ENABLE(ed25519, AC_HELP_STRING([--disable-ed25519], [Disable (experimental) ED25519 support. Default is detect]))
 case "$enable_ed25519" in
-    yes)
-      if test "x$HAVE_SSL" != "xyes"; then
-        AC_MSG_ERROR([ED25519 enabled, but no SSL support])
-      fi
-      AC_CHECK_DECLS([NID_ED25519], [], [AC_MSG_ERROR([OpenSSL does not support the EDDSA curve: please upgrade OpenSSL or rerun with --disable-ed25519])], [AC_INCLUDES_DEFAULT
+    no) ;;
+    *) dnl default
+      AC_CHECK_DECLS([NID_ED25519], [
+      	AC_DEFINE_UNQUOTED([USE_ED25519], [1], [Define this to enable ED25519 support.])
+      ], [if test "x$enable_ed25519" = "xyes"; then AC_MSG_ERROR([OpenSSL does not support ED25519 and you used --enable-ed25519.])
+      fi ], [AC_INCLUDES_DEFAULT
 #include <openssl/evp.h>
       ])
-      AC_DEFINE_UNQUOTED([USE_ED25519], [1], [Define this to enable ED25519 support.])
-      ;;
-    *|no) dnl default
       ;;
 esac
 
-AC_ARG_ENABLE(ed448, AC_HELP_STRING([--enable-ed448], [Enable ED448 support (experimental)]))
+AC_ARG_ENABLE(ed448, AC_HELP_STRING([--disable-ed448], [Disable (experimental) ED448 support. Default is detect]))
 case "$enable_ed448" in
-    yes)
-      if test "x$HAVE_SSL" != "xyes"; then
-        AC_MSG_ERROR([ED448 enabled, but no SSL support])
-      fi
-      AC_CHECK_DECLS([NID_ED448], [], [AC_MSG_ERROR([OpenSSL does not support the EDDSA curve: please upgrade OpenSSL or rerun with --disable-ed448])], [AC_INCLUDES_DEFAULT
+    no) ;;
+    *) dnl default
+      AC_CHECK_DECLS([NID_ED448], [
+      	AC_DEFINE_UNQUOTED([USE_ED448], [1], [Define this to enable ED448 support.])
+      ], [if test "x$enable_ed448" = "xyes"; then AC_MSG_ERROR([OpenSSL does not support ED448 and you used --enable-ed448.])
+      fi ], [AC_INCLUDES_DEFAULT
 #include <openssl/evp.h>
       ])
-      AC_DEFINE_UNQUOTED([USE_ED448], [1], [Define this to enable ED448 support.])
-      ;;
-    *|no) dnl default
       ;;
 esac
 
