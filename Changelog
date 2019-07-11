@@ -44,6 +44,8 @@
 	* Allow -T flag to be used together with drill -x
 	* Python bindings compile with swig 4.0
 	  Thanks Jitka Plesníková
+	* bugfix #4248: drill -DT fails for CNAME domain
+	  Thanks Thom Wiggers
 
 1.7.0	2016-12-20
 	* Fix lookup of relative names in ldns_resolver_search.
