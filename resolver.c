@@ -1533,14 +1533,14 @@ void
 ldns_axfr_abort(ldns_resolver *resolver)
 {
 	/* Only abort if an actual AXFR is in progress */
-	if (resolver->_socket != 0)
+	if (resolver->_socket != -1)
 	{
 #ifndef USE_WINSOCK
 		close(resolver->_socket);
 #else
 		closesocket(resolver->_socket);
 #endif
-		resolver->_socket = 0;
+		resolver->_socket = -1;
 	}
 }
 
