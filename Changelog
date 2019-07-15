@@ -54,6 +54,8 @@
 	  ldns_tcp_connect2, ldns_udp_bgsend2 and ldns_tcp_bgsend2,
 	  that return -1 on failure and allow socket number 0
 	  to be returned too.  Thanks Joerg Sonnenberger
+	* Bugfix #1447: More verbose reporting of chasing problems with
+	  ldns-verify-zone.  Thanks Stephane Guedon
 
 1.7.0	2016-12-20
 	* Fix lookup of relative names in ldns_resolver_search.
