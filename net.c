@@ -198,12 +198,12 @@ ldns_tcp_connect_from(const struct sockaddr_storage *to, socklen_t tolen,
 #ifndef S_SPLINT_S
 	if ((sockfd = socket((int)((struct sockaddr*)to)->sa_family, SOCK_STREAM, 
 					IPPROTO_TCP)) == SOCK_INVALID) {
-		return 0;
+		return -1;
 	}
 #endif
 	if (from && bind(sockfd, (const struct sockaddr*)from, fromlen) == SOCK_INVALID){
 		close_socket(sockfd);
-		return 0;
+		return -1;
 	}
 
 	/* perform nonblocking connect, to be able to wait with select() */
@@ -216,13 +216,13 @@ ldns_tcp_connect_from(const struct sockaddr_storage *to, socklen_t tolen,
 		if(1) {
 #endif
 			close_socket(sockfd);
-			return 0;
+			return -1;
 		}
 #else /* USE_WINSOCK */
 		if(WSAGetLastError() != WSAEINPROGRESS &&
 			WSAGetLastError() != WSAEWOULDBLOCK) {
 			close_socket(sockfd);
-			return 0;
+			return -1;
 		}
 #endif
 		/* error was only telling us that it would block */
@@ -235,7 +235,7 @@ ldns_tcp_connect_from(const struct sockaddr_storage *to, socklen_t tolen,
 
 		if(!ldns_sock_wait(sockfd, timeout, 1)) {
 			close_socket(sockfd);
-			return 0;
+			return -1;
 		}
 
 		/* check if there is a pending error for nonblocking connect */
@@ -256,7 +256,7 @@ ldns_tcp_connect_from(const struct sockaddr_storage *to, socklen_t tolen,
 			close_socket(sockfd);
 			/* error in errno for our user */
 			errno = error;
-			return 0;
+			return -1;
 		}
 #else /* USE_WINSOCK */
 		if(error == WSAEINPROGRESS)
@@ -266,7 +266,7 @@ ldns_tcp_connect_from(const struct sockaddr_storage *to, socklen_t tolen,
 		else if(error != 0) {
 			close_socket(sockfd);
 			errno = error;
-			return 0;
+			return -1;
 		}
 #endif /* USE_WINSOCK */
 		/* connected */
@@ -283,6 +283,14 @@ int
 ldns_tcp_connect(const struct sockaddr_storage *to, socklen_t tolen, 
 		struct timeval timeout)
 {
+	int s = ldns_tcp_connect_from(to, tolen, NULL, 0, timeout);
+	return s > 0 ? s : 0;
+}
+
+int
+ldns_tcp_connect2(const struct sockaddr_storage *to, socklen_t tolen, 
+		struct timeval timeout)
+{
 	return ldns_tcp_connect_from(to, tolen, NULL, 0, timeout);
 }
 
@@ -296,13 +304,9 @@ ldns_tcp_bgsend_from(ldns_buffer *qbin,
 	
 	sockfd = ldns_tcp_connect_from(to, tolen, from, fromlen, timeout);
 	
-	if (sockfd == 0) {
-		return 0;
-	}
-	
-	if (ldns_tcp_send_query(qbin, sockfd, to, tolen) == 0) {
+	if (sockfd >= 0 && ldns_tcp_send_query(qbin, sockfd, to, tolen) == 0) {
 		close_socket(sockfd);
-		return 0;
+		return -1;
 	}
 	
 	return sockfd;
@@ -313,9 +317,17 @@ ldns_tcp_bgsend(ldns_buffer *qbin,
 		const struct sockaddr_storage *to, socklen_t tolen, 
 		struct timeval timeout)
 {
-	return ldns_tcp_bgsend_from(qbin, to, tolen, NULL, 0, timeout);
+	int s = ldns_tcp_bgsend_from(qbin, to, tolen, NULL, 0, timeout);
+	return s > 0 ? s : 0;
 }
 
+int
+ldns_tcp_bgsend2(ldns_buffer *qbin,
+		const struct sockaddr_storage *to, socklen_t tolen, 
+		struct timeval timeout)
+{
+	return ldns_tcp_bgsend_from(qbin, to, tolen, NULL, 0, timeout);
+}
 
 /* keep in mind that in DNS tcp messages the first 2 bytes signal the
  * amount data to expect
@@ -331,7 +343,7 @@ ldns_tcp_send_from(uint8_t **result,  ldns_buffer *qbin,
 	
 	sockfd = ldns_tcp_bgsend_from(qbin, to, tolen, from, fromlen, timeout);
 	
-	if (sockfd == 0) {
+	if (sockfd == -1) {
 		return LDNS_STATUS_ERR;
 	}
 
@@ -369,8 +381,23 @@ ldns_udp_connect(const struct sockaddr_storage *to, struct timeval ATTR_UNUSED(t
 #ifndef S_SPLINT_S
 	if ((sockfd = socket((int)((struct sockaddr*)to)->sa_family, SOCK_DGRAM, 
 					IPPROTO_UDP)) 
-			== -1) {
+			== SOCK_INVALID) {
                 return 0;
+        }
+#endif
+	return sockfd;
+}
+
+int
+ldns_udp_connect2(const struct sockaddr_storage *to, struct timeval ATTR_UNUSED(timeout))
+{
+	int sockfd;
+
+#ifndef S_SPLINT_S
+	if ((sockfd = socket((int)((struct sockaddr*)to)->sa_family, SOCK_DGRAM, 
+					IPPROTO_UDP)) 
+			== SOCK_INVALID) {
+                return -1;
         }
 #endif
 	return sockfd;
@@ -384,26 +411,35 @@ ldns_udp_bgsend_from(ldns_buffer *qbin,
 {
 	int sockfd;
 
-	sockfd = ldns_udp_connect(to, timeout);
+	sockfd = ldns_udp_connect2(to, timeout);
 
-	if (sockfd == 0) {
-		return 0;
+	if (sockfd == -1) {
+		return -1;
 	}
 
 	if (from && bind(sockfd, (const struct sockaddr*)from, fromlen) == -1){
 		close_socket(sockfd);
-		return 0;
+		return -1;
 	}
 
 	if (ldns_udp_send_query(qbin, sockfd, to, tolen) == 0) {
 		close_socket(sockfd);
-		return 0;
+		return -1;
 	}
 	return sockfd;
 }
 
 int
 ldns_udp_bgsend(ldns_buffer *qbin,
+		const struct sockaddr_storage *to  , socklen_t tolen, 
+		struct timeval timeout)
+{
+	s = ldns_udp_bgsend_from(qbin, to, tolen, NULL, 0, timeout);
+	return s > 0 ? s : 0;
+}
+
+int
+ldns_udp_bgsend2(ldns_buffer *qbin,
 		const struct sockaddr_storage *to  , socklen_t tolen, 
 		struct timeval timeout)
 {
@@ -421,7 +457,7 @@ ldns_udp_send_from(uint8_t **result, ldns_buffer *qbin,
 
 	sockfd = ldns_udp_bgsend_from(qbin, to, tolen, from, fromlen, timeout);
 
-	if (sockfd == 0) {
+	if (sockfd == -1) {
 		return LDNS_STATUS_SOCKET_ERROR;
 	}
 
