@@ -19,12 +19,9 @@ fi
 
 if [ -z "$TPKG" -o ! -x "$TPKG" ]
 then
-        if which tpkg > /dev/null	; then TPKG=`which tpkg`
-        elif [ -x $HOME/bin/tpkg ]	; then TPKG=$HOME/bin/tpkg
-        elif [ -x $HOME/local/bin/tpkg ]; then TPKG=$HOME/local/bin/tpkg
-        elif [ -x /home/tpkg/bin/tpkg ]	; then TPKG=/home/tpkg/bin/tpkg
-        elif [ -x ../tpkg/tpkg ]	; then TPKG=../tpkg/tpkg
+        if [ -x tpkg/tpkg ]	; then TPKG=`pwd`/tpkg/tpkg
         elif [ -x test/tpkg/tpkg ]	; then TPKG=`pwd`/test/tpkg/tpkg
+        elif which tpkg > /dev/null	; then TPKG=`which tpkg`
         else
                 echo Did not find tpkg program!
                 exit -1
