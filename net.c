@@ -434,7 +434,7 @@ ldns_udp_bgsend(ldns_buffer *qbin,
 		const struct sockaddr_storage *to  , socklen_t tolen, 
 		struct timeval timeout)
 {
-	s = ldns_udp_bgsend_from(qbin, to, tolen, NULL, 0, timeout);
+	int s = ldns_udp_bgsend_from(qbin, to, tolen, NULL, 0, timeout);
 	return s > 0 ? s : 0;
 }
 
