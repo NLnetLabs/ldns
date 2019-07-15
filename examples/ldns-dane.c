@@ -33,7 +33,6 @@
 #include <fcntl.h>
 
 #include <ldns/ldns.h>
-#include <errno.h>
 
 #ifdef USE_DANE
 #ifdef HAVE_SSL

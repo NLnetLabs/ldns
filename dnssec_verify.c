@@ -1586,8 +1586,6 @@ ldns_dnssec_verify_denial_nsec3_match( ldns_rr *rr
 	bool wildcard_covered = false;
 	ldns_rdf *zone_name;
 	ldns_rdf *hashed_name;
-	/* self assignment to suppress uninitialized warning */
-	ldns_rdf *next_closer = next_closer;
 	ldns_rdf *hashed_next_closer;
 	size_t i;
 	ldns_status result = LDNS_STATUS_DNSSEC_NSEC_RR_NOT_COVERED;
@@ -1662,6 +1660,7 @@ ldns_dnssec_verify_denial_nsec3_match( ldns_rr *rr
 				}
 			}
 		}
+		ldns_rdf_deep_free(hashed_name);
 		result = LDNS_STATUS_DNSSEC_NSEC_RR_NOT_COVERED;
 		/* wildcard no data? section 8.7 */
 		closest_encloser = ldns_dnssec_nsec3_closest_encloser(
@@ -1751,7 +1750,9 @@ ldns_dnssec_verify_denial_nsec3_match( ldns_rr *rr
 			/* Query name *is* the "next closer". */
 			hashed_next_closer = hashed_name;
 		} else {
-
+			ldns_rdf *next_closer;
+			
+			ldns_rdf_deep_free(hashed_name);
 			/* "next closer" has less labels than the query name.
 			 * Create the name and hash it.
 			 */
@@ -1765,6 +1766,7 @@ ldns_dnssec_verify_denial_nsec3_match( ldns_rr *rr
 					next_closer
 					);
 			(void) ldns_dname_cat(hashed_next_closer, zone_name);
+			ldns_rdf_deep_free(next_closer);
 		}
 		/* Find the NSEC3 that covers the "next closer" */
 		for (i = 0; i < ldns_rr_list_rr_count(nsecs); i++) {
@@ -1779,15 +1781,7 @@ ldns_dnssec_verify_denial_nsec3_match( ldns_rr *rr
 				break;
 			}
 		}
-		if (ldns_dname_label_count(closest_encloser) + 1
-		    < ldns_dname_label_count(ldns_rr_owner(rr))) {
-
-			/* "next closer" has less labels than the query name.
-			 * Dispose of the temporary variables that held that name.
-			 */
-			ldns_rdf_deep_free(hashed_next_closer);
-			ldns_rdf_deep_free(next_closer);
-		}
+		ldns_rdf_deep_free(hashed_next_closer);
 		ldns_rdf_deep_free(closest_encloser);
 	}
 
