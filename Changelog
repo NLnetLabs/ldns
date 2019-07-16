@@ -56,6 +56,9 @@
 	  to be returned too.  Thanks Joerg Sonnenberger
 	* Bugfix #1447: More verbose reporting of chasing problems with
 	  ldns-verify-zone.  Thanks Stephane Guedon
+	* OpenSSL engine support with ldns-signzone.
+	  See also https://penzin.net/ldns-signzone/
+	  Many thanks Vadim Penzin.
 
 1.7.0	2016-12-20
 	* Fix lookup of relative names in ldns_resolver_search.
