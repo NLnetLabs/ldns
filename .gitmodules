@@ -1,6 +1,6 @@
 [submodule "contrib/DNS-LDNS"]
 	path = contrib/DNS-LDNS
-	url = https://github.com/wtoorop/DNS-LDNS
+	url = https://github.com/erikoest/DNS-LDNS
 [submodule "test/tpkg"]
 	path = test/tpkg
 	url = https://github.com/NLnetLabs/tpkg.git
