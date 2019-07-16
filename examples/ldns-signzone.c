@@ -3,9 +3,6 @@
  * 
  * (c) NLnet Labs, 2005 - 2008
  * See the file LICENSE for the license
- *
- * Portions of engine support by Vadim Penzin <vadim@penzin.net>, 2018.
- * I hereby place my work on this program into the public domain.
  */
 
 #include <stdio.h>
@@ -25,7 +22,9 @@
 #include <ldns/keys.h>
 
 #include <openssl/conf.h>
+#ifndef OPENSSL_NO_ENGINE
 #include <openssl/engine.h>
+#endif
 #include <openssl/err.h>
 
 #define MAX_FILENAME_LEN 250
@@ -47,10 +46,12 @@ usage(FILE *fp, const char *prog) {
 	fprintf(fp, "  -v\t\tprint version and exit\n");
 	fprintf(fp, "  -A\t\tsign DNSKEY with all keys instead of minimal\n");
 	fprintf(fp, "  -U\t\tSign with every unique algorithm in the provided keys\n");
+#ifndef OPENSSL_NO_ENGINE
 	fprintf(fp, "  -E <name>\tuse <name> as the crypto engine for signing\n");
 	fprintf(fp, "           \tThis can have a lot of extra options, see the manual page for more info\n");
 	fprintf(fp, "  -k <algorithm>,<key>\tuse `key' with `algorithm' from engine as ZSK\n");
 	fprintf(fp, "  -K <algorithm>,<key>\tuse `key' with `algorithm' from engine as KSK\n");
+#endif
 	fprintf(fp, "  -n\t\tuse NSEC3 instead of NSEC.\n");
 	fprintf(fp, "\t\tIf you use NSEC3, you can specify the following extra options:\n");
 	fprintf(fp, "\t\t-a [algorithm] hashing algorithm\n");
@@ -64,6 +65,7 @@ usage(FILE *fp, const char *prog) {
 	fprintf(fp, "  will be read from the file called <base name>.key. If that does not exist,\n");
 	fprintf(fp, "  a default DNSKEY will be generated from the private key and added to the zone.\n");
 	fprintf(fp, "  A date can be a timestamp (seconds since the epoch), or of\n  the form <YYYYMMdd[hhmmss]>\n");
+#ifndef OPENSSL_NO_ENGINE
 	fprintf(fp, "  For -k or -K, the algorithm can be specified as an integer or a symbolic name:" );
 
 #define __LIST(x) fprintf ( fp, " %3d: %-15s", LDNS_SIGN_ ## x, # x )
@@ -93,6 +95,7 @@ usage(FILE *fp, const char *prog) {
 	fprintf ( fp, "\n" );
 
 #undef __LIST
+#endif
 }
 
 static void check_tm(struct tm tm)
@@ -323,6 +326,7 @@ find_or_create_pubkey(const char *keyfile_name_base, ldns_key *key, ldns_zone *o
 	}
 }
 
+#ifndef OPENSSL_NO_ENGINE
 /*
  * For keys coming from the engine (-k or -K), parse algoritm specification.
  */
@@ -474,11 +478,18 @@ init_openssl_engine ( const char * const id )
 {
 	ENGINE *e = NULL;
 
+#ifdef HAVE_ERR_LOAD_CRYPTO_STRINGS
+        ERR_load_crypto_strings();
+#endif
+#if OPENSSL_VERSION_NUMBER < 0x10100000 || defined(HAVE_LIBRESSL) || !defined(HAVE_OPENSSL_INIT_CRYPTO)
+        OpenSSL_add_all_algorithms();
+#else
 	if ( !OPENSSL_init_crypto ( OPENSSL_INIT_LOAD_CONFIG, NULL ) ) {
 		fprintf ( stderr, "OPENSSL_init_crypto(3) failed.\n" );
 		ERR_print_errors_fp ( stderr );
 		exit ( EXIT_FAILURE );
 	}
+#endif
 
 	if ( (e = ENGINE_by_id ( id )) == NULL ) {
 		fprintf ( stderr, "ENGINE_by_id(3) failed.\n" );
@@ -523,6 +534,7 @@ shutdown_openssl ( ENGINE * const e )
 	CRYPTO_cleanup_all_ex_data ();
 	ERR_free_strings ();
 }
+#endif
 
 int
 main(int argc, char *argv[])
@@ -532,8 +544,9 @@ main(int argc, char *argv[])
 	int line_nr = 0;
 	int c;
 	int argi;
+#ifndef OPENSSL_NO_ENGINE
 	ENGINE *engine = NULL;
-
+#endif
 	ldns_zone *orig_zone;
 	ldns_rr_list *orig_rrs = NULL;
 	ldns_rr *orig_soa = NULL;
@@ -543,8 +556,10 @@ main(int argc, char *argv[])
 	char *keyfile_name = NULL;
 	FILE *keyfile = NULL;
 	ldns_key *key = NULL;
+#ifndef OPENSSL_NO_ENGINE
 	ldns_key *eng_ksk = NULL; /* KSK specified with -K */
 	ldns_key *eng_zsk = NULL; /* ZSK specified with -k */
+#endif
 	ldns_key_list *keys;
 	ldns_status s;
 	size_t i;
@@ -683,15 +698,29 @@ main(int argc, char *argv[])
 			signflags |= LDNS_SIGN_DNSKEY_WITH_ZSK;
 			break;
 		case 'E':
+#ifndef OPENSSL_NO_ENGINE
 			engine = init_openssl_engine ( optarg );
 			break;
+#else
+			/* fallthrough */
+#endif
 		case 'k':
+#ifndef OPENSSL_NO_ENGINE
 			eng_zsk = load_key ( optarg, engine );
 			break;
+#else
+			/* fallthrough */
+#endif
 		case 'K':
+#ifndef OPENSSL_NO_ENGINE
 			eng_ksk = load_key ( optarg, engine );
 			/* I apologize for that, there is no API. */
 			eng_ksk -> _extra.dnssec.flags |= LDNS_KEY_SEP_KEY;
+#else
+			fprintf(stderr, "%s compiled without engine support\n"
+			              , prog);
+			exit(EXIT_FAILURE);
+#endif
 			break;
 		case 'U':
 			signflags |= LDNS_SIGN_WITH_ALL_ALGORITHMS;
@@ -851,6 +880,7 @@ main(int argc, char *argv[])
 		argi++;
 	}
 
+#ifndef OPENSSL_NO_ENGINE
        /*
 	* The user may have loaded a KSK and a ZSK from the engine.
 	* Since these keys carry no meta-information which is
@@ -877,6 +907,7 @@ main(int argc, char *argv[])
 				  ttl,
 				  inception,
 				  expiration );
+#endif
 	
 	if (ldns_key_list_key_count(keys) < 1) {
 		fprintf(stderr, "Error: no keys to sign with. Aborting.\n\n");
@@ -983,7 +1014,11 @@ main(int argc, char *argv[])
 	
 	LDNS_FREE(outputfile_name);
 
+#ifndef OPENSSL_NO_ENGINE
 	shutdown_openssl ( engine );
+#else
+	CRYPTO_cleanup_all_ex_data();
+#endif
 
 	free(prog);
 	exit(EXIT_SUCCESS);
