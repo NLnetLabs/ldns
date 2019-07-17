@@ -32,7 +32,7 @@ fi
 for tests in "$BUILD_DIR"/test/*.tpkg
 do
 	TESTFN="$(basename "$tests")"
-	TESTNR=${TESTNR%-*}
+	TESTNR=${TESTFN%-*}
 	[ -n "$ONLY_TEST" ] && [ x"$ONLY_TEST" != x"$TESTNR" ] && continue
 	case "$TESTNR" in
 	[3-5][0-9]*)	[ $NO_REGRESSION = 1 ] && continue
