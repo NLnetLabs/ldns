@@ -10,6 +10,12 @@ addons:
       - doxygen
       - graphviz
       - indent
+  homebrew:
+    packages:
+      - gnu-indent
+      - doxygen
+      - openssl
+      - indent
 matrix:
   include:
     - os: linux

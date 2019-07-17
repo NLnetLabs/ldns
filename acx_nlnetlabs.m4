@@ -646,7 +646,7 @@ AC_DEFUN([ACX_SSL_CHECKS], [
     if test x_$withval != x_no; then
         AC_MSG_CHECKING(for SSL)
         if test x_$withval = x_ -o x_$withval = x_yes; then
-            withval="/usr/local/ssl /usr/lib/ssl /usr/ssl /usr/pkg /usr/local /opt/local /usr/sfw /usr"
+            withval="/usr/local/ssl /usr/lib/ssl /usr/ssl /usr/pkg /usr/local /opt/local /usr/local/opt/openssl /usr/sfw /usr"
         fi
         for dir in $withval; do
             ssldir="$dir"
@@ -751,7 +751,7 @@ AC_DEFUN([ACX_WITH_SSL],
 [
 AC_ARG_WITH(ssl, AC_HELP_STRING([--with-ssl=pathname],
                                     [enable SSL (will check /usr/local/ssl
-                            /usr/lib/ssl /usr/ssl /usr/pkg /usr/local /opt/local /usr/sfw /usr)]),[
+                            /usr/lib/ssl /usr/ssl /usr/pkg /usr/local /opt/local /usr/local/opt/openssl /usr/sfw /usr)]),[
         ],[
             withval="yes"
         ])
@@ -770,7 +770,7 @@ AC_DEFUN([ACX_WITH_SSL_OPTIONAL],
 [
 AC_ARG_WITH(ssl, AC_HELP_STRING([--with-ssl=pathname],
                                 [enable SSL (will check /usr/local/ssl
-                                /usr/lib/ssl /usr/ssl /usr/pkg /usr/local /opt/local /usr/sfw /usr)]),[
+                                /usr/lib/ssl /usr/ssl /usr/pkg /usr/local /opt/local /usr/local/opt/openssl /usr/sfw /usr)]),[
         ],[
             withval="yes"
         ])
