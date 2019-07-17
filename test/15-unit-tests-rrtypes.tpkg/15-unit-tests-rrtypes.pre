@@ -31,8 +31,9 @@ if [ ! $mk ] || [ ! $conf ] || [ ! $hdr ] ; then
 	exit 1
 fi;
 
-$conf 15-unit-tests-rrtypes.configure.ac > configure && \
-chmod +x configure && \
-$hdr 15-unit-tests-rrtypes.configure.ac &&\
-eval ./configure --with-ldns=../../ "$opts" && \
+#$conf 15-unit-tests-rrtypes.configure.ac > configure && \
+#chmod +x configure && \
+#$hdr 15-unit-tests-rrtypes.configure.ac &&\
+#eval ./configure --with-ldns=../../ "$opts" && \
+../../config.status --file 15-unit-tests-rrtypes.Makefile
 $mk -f 15-unit-tests-rrtypes.Makefile

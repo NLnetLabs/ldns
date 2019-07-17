@@ -31,11 +31,10 @@ if [ ! $mk ] || [ ! $conf ] || [ ! $hdr ] ; then
 	exit 1
 fi;
 
-
-
-$conf 13-unit-tests-base.configure.ac > configure && \
-chmod +x configure && \
-$hdr 13-unit-tests-base.configure.ac &&\
-eval ./configure --with-ldns=../../ "$opts" && \
+#$conf 13-unit-tests-base.configure.ac > configure && \
+#chmod +x configure && \
+#$hdr 13-unit-tests-base.configure.ac &&\
+#eval ./configure --with-ldns=../../ "$opts" && \
+../../config.status --file 13-unit-tests-base.Makefile
 $mk -f 13-unit-tests-base.Makefile
 

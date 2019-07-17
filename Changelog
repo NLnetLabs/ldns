@@ -59,6 +59,8 @@
 	* OpenSSL engine support with ldns-signzone.
 	  See also https://penzin.net/ldns-signzone/
 	  Many thanks Vadim Penzin.
+	* Various improvements found with shellcheck.
+	  Thanks Jeffrey Walton
 
 1.7.0	2016-12-20
 	* Fix lookup of relative names in ldns_resolver_search.

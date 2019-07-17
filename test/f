@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # get all the functions from ldns
 
@@ -8,6 +8,6 @@ rr.h tsig.h util.h zone.h"
 
 # we need two grep ldns_ ...
 for i in $FILES; do 
-        cpp -I.. ../ldns/$i  | egrep '.*? .*?\(.*' | grep ldns_  | \
+        cpp -I.. "../ldns/$i"  | grep -E '.*? .*?\(.*' | grep ldns_  | \
         awk '{ print $2 }' | sed 's/^\*//' | sed 's/(.*$//' | grep ldns_
 done
