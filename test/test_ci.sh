@@ -5,7 +5,7 @@ echo "PATH=$PATH" > "$BUILD_DIR/test/.tpkg.var.master"
 
 if git log HEAD^..HEAD | grep -q 'git:TEST [0-9][0-9]*'
 then
-	ONLY_TEST=$( ( cd "$BUILD_DIR" ; git log HEAD^..HEAD ) | grep 'git:TEST [0-9][0-9]*' | sed 's/^.*git:TEST \([0-9][0-9]*\).*$/\1/g')
+	ONLY_TEST=$(git log HEAD^..HEAD | grep 'git:TEST [0-9][0-9]*' | sed 's/^.*git:TEST \([0-9][0-9]*\).*$/\1/g')
 else
 	ONLY_TEST=""
 fi
@@ -32,7 +32,7 @@ fi
 for tests in "$BUILD_DIR"/test/*.tpkg
 do
 	TESTFN="$(basename "$tests")"
-	TESTNR="$(echo "$TESTFN" | sed 's/-.*$//g')"
+	TESTNR=${TESTNR%-*}
 	[ -n "$ONLY_TEST" ] && [ x"$ONLY_TEST" != x"$TESTNR" ] && continue
 	case "$TESTNR" in
 	[3-5][0-9]*)	[ $NO_REGRESSION = 1 ] && continue
@@ -51,5 +51,5 @@ do
 	$TPKG -b "$BUILD_DIR/test" -a "$BUILD_DIR" exe "$TESTFN"
 done
 
-cd test
-exec $TPKG -n -1 r
+cd test || echo "Where is the test directory?" && exit 1
+exec "$TPKG" -n -1 r

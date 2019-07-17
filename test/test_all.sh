@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 
 # do ldns tests
-cd test
+cd test || echo "Must be executed from srcdir" && exit -1
 . common.sh
 
 # find tpkg
-if [ -z "$TPKG" -o ! -x "$TPKG" ]
+if [ -z "$TPKG" ] || [ ! -x "$TPKG" ]
 then
         if [ -x tpkg/tpkg ]		; then TPKG="$(pwd)/tpkg/tpkg"
         elif [ -x test/tpkg/tpkg ]	; then TPKG="$(pwd)/test/tpkg/tpkg"
@@ -29,7 +29,7 @@ echo start the test at "$(date)" in "$(pwd)"
 $TPKG -a ../.. fake 01-compile.tpkg
 
 # Works only on FreeBSD really
-if [[ "$is_freebsd" -ne 0 ]]; then
+if [[ "$is_freebsd" -eq 0 ]]; then
     $TPKG -a ../.. fake 02-lint.tpkg
 fi
 
