@@ -51,5 +51,5 @@ do
 	$TPKG -b "$BUILD_DIR/test" -a "$BUILD_DIR" exe "$TESTFN"
 done
 
-cd test || { echo "Where is the test directory?"; exit 1 }
-exec "$TPKG" -n -1 r
+cd test || { echo "Where is the test directory?"; exit 1; }
+exec $TPKG -n -1 r
