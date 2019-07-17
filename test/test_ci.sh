@@ -40,7 +40,7 @@ do
 	esac
 	case $TESTNR in
 	02)	# splint doesn't work on linux
-		[ "x$(uname -o)" = "xGNU/Linux" ] && continue
+		[ "x$(uname -s)" = "xLinux" ] && continue
 		;;
 	32)	# No backwards compatibility regression testing 
 		# when .so had major version bumb.

@@ -11,9 +11,9 @@ mandir = @mandir@
 
 CC = @CC@
 CFLAGS = @CFLAGS@
-CPPFLAGS = @CPPFLAGS@
-LDFLAGS = @LDFLAGS@
-LIBS = @LIBS@
+CPPFLAGS = @CPPFLAGS@ @LIBSSL_CPPFLAGS@ -I../..
+LDFLAGS = @LDFLAGS@ @LIBSSL_LDFLAGS@ -L../../.libs
+LIBS = @LIBS@ @LIBSSL_SSL_LIBS@ -lldns
 
 # Hmmm gcc 4.6.1 expects $(LIBS) as the last argument
 

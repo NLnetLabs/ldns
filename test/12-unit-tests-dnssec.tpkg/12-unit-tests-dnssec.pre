@@ -31,9 +31,10 @@ fi;
 opts=`../../config.status --config`
 echo options: $opts
 
-$conf 12-unit-tests-dnssec.configure.ac > configure && \
-chmod +x configure && \
-$hdr 12-unit-tests-dnssec.configure.ac &&\
-eval ./configure --with-ldns=../../ "$opts" && \
+#$conf 12-unit-tests-dnssec.configure.ac > configure && \
+#chmod +x configure && \
+#$hdr 12-unit-tests-dnssec.configure.ac &&\
+#eval ./configure --with-ldns=../.. "$opts" && \
+../../config.status --file 12-unit-tests-dnssec.Makefile
 $mk -f 12-unit-tests-dnssec.Makefile
 
