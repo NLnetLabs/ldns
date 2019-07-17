@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # do ldns tests
-cd test || echo "Must be executed from srcdir" && exit -1
+cd test || { echo "Must be executed from srcdir"; exit -1 }
 . common.sh
 
 # find tpkg
