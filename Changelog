@@ -34,10 +34,31 @@
 	  Thanks Jan Vcelak
 	* bugfix #1399: ldns_pkt2wire() Python binding is broken.
 	  Thanks James Raftery
-	* ED25519 and ED448 support.
+	* ED25519 and ED448 support. Default is to autodetect support in
+	  OpenSSL.  Disable with --disable-ed25519 and --disable-ed448.
 	* ldns-notify: can have IPv6 address as argument.
 	* Fix time sensitive TSIG compare vulnerability.
 	* Fix that ldns-testns ignores sigpipe.
+	* Fix that ldns-notify sets the query RR as question RR, this
+	  removes the wrong TTL and 0 rdata from the packet printout.
+	* Allow -T flag to be used together with drill -x
+	* Python bindings compile with swig 4.0
+	  Thanks Jitka Plesníková
+	* bugfix #4248: drill -DT fails for CNAME domain
+	  Thanks Thom Wiggers
+	* bugfix #4214: Various fixes and leaks found by coverity.
+	  Thanks Petr Menšík 
+	* Feature #3394: An -I option to ldns-notify to specify a source
+	  IP address to send to notify from.  Thanks Geert Hendrickx
+	* Bugfix #279: New API functions ldns_udp_connect2,
+	  ldns_tcp_connect2, ldns_udp_bgsend2 and ldns_tcp_bgsend2,
+	  that return -1 on failure and allow socket number 0
+	  to be returned too.  Thanks Joerg Sonnenberger
+	* Bugfix #1447: More verbose reporting of chasing problems with
+	  ldns-verify-zone.  Thanks Stephane Guedon
+	* OpenSSL engine support with ldns-signzone.
+	  See also https://penzin.net/ldns-signzone/
+	  Many thanks Vadim Penzin.
 
 1.7.0	2016-12-20
 	* Fix lookup of relative names in ldns_resolver_search.

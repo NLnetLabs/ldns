@@ -445,6 +445,7 @@ ldns_str2rdf_str(ldns_rdf **rd, const char *str)
 		*++dp = ch;
 	}
 	if (! str) {
+		LDNS_FREE(data);
 		return LDNS_STATUS_SYNTAX_BAD_ESCAPE;
 	}
 	length = (size_t)(dp - data);
@@ -1542,6 +1543,7 @@ ldns_str2rdf_long_str(ldns_rdf **rd, const char *str)
 		}
 	}
 	if (! str) {
+		LDNS_FREE(data);
 		return LDNS_STATUS_SYNTAX_BAD_ESCAPE;
 	}
 	if (!(length = (size_t)(dp - data))) {
@@ -1655,5 +1657,146 @@ ldns_str2rdf_hip(ldns_rdf **rd, const char *str)
 		LDNS_FREE(data);
 		return LDNS_STATUS_MEM_ERR;
 	}
+	return LDNS_STATUS_OK;
+}
+
+
+/* Implementation mimics ldns_str2rdf_ipseckey */
+ldns_status
+ldns_str2rdf_amtrelay(ldns_rdf **rd, const char *str)
+{
+	/* From draft-ietf-mboned-driad-amt-discovery
+	 *      Section 4.2. AMTRELAY RData Format
+	 *************************************************
+
+	 0                   1                   2                   3
+	 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+	+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+	|   precedence  |D|    type     |                               |
+	+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+                               +
+	~                            relay                              ~
+	+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+  */
+
+	uint8_t precedence = 0;
+	uint8_t relay_type = 0;
+	uint8_t discovery_optional = 0;
+	char* relay = NULL;
+	uint8_t *data;
+	ldns_buffer *str_buf;
+	char *token;
+	int token_count = 0;
+	int amtrelay_len = 0;
+	ldns_rdf* relay_rdf = NULL;
+	ldns_status status = LDNS_STATUS_OK;
+	
+	if(strlen(str) == 0)
+		token = LDNS_XMALLOC(char, 256);
+	else	token = LDNS_XMALLOC(char, strlen(str)+2);
+	if(!token) return LDNS_STATUS_MEM_ERR;
+
+	str_buf = LDNS_MALLOC(ldns_buffer);
+	if(!str_buf) {LDNS_FREE(token); return LDNS_STATUS_MEM_ERR;}
+	ldns_buffer_new_frm_data(str_buf, (char *)str, strlen(str));
+	if(ldns_buffer_status(str_buf) != LDNS_STATUS_OK) {
+		LDNS_FREE(str_buf);
+		LDNS_FREE(token);
+		return LDNS_STATUS_MEM_ERR;
+	}
+	while(ldns_bget_token(str_buf, token, "\t\n ", strlen(str)) > 0) {
+		switch (token_count) {
+		case 0:
+			precedence = (uint8_t)atoi(token);
+			break;
+		case 1:
+			discovery_optional = (uint8_t)atoi(token);
+			if (discovery_optional != 0 &&
+			    discovery_optional != 1) {
+				LDNS_FREE(relay);
+				LDNS_FREE(token);
+				ldns_buffer_free(str_buf);
+				return LDNS_STATUS_INVALID_STR;
+			}
+			break;
+		case 2:
+			relay_type = (uint8_t)atoi(token);
+			break;
+		case 3:
+			relay = strdup(token);
+			if (!relay || (relay_type == 0 &&
+					(token[0] != '.' || token[1] != '\0'))) {
+				LDNS_FREE(relay);
+				LDNS_FREE(token);
+				ldns_buffer_free(str_buf);
+				return LDNS_STATUS_INVALID_STR;
+			}
+			break;
+		default:
+			LDNS_FREE(token);
+			ldns_buffer_free(str_buf);
+			return LDNS_STATUS_INVALID_STR;
+			break;
+		}
+		token_count++;
+	}
+	if (!relay && relay_type > 0) {
+		if (relay)
+			LDNS_FREE(relay);
+		LDNS_FREE(token);
+		ldns_buffer_free(str_buf);
+		return LDNS_STATUS_INVALID_STR;
+	}
+
+	if (relay_type == 1) {
+		status = ldns_str2rdf_a(&relay_rdf, relay);
+	} else if (relay_type == 2) {
+		status = ldns_str2rdf_aaaa(&relay_rdf, relay);
+	} else if (relay_type == 3) {
+		status = ldns_str2rdf_dname(&relay_rdf, relay);
+	} else if (relay_type > 3) {
+		status = LDNS_STATUS_INVALID_STR;
+	}
+
+	if (status != LDNS_STATUS_OK) {
+		if (relay)
+			LDNS_FREE(relay);
+		LDNS_FREE(token);
+		ldns_buffer_free(str_buf);
+		return LDNS_STATUS_INVALID_STR;
+	}
+
+	/* now copy all into one amtrelay rdf */
+	if (relay_type)
+		amtrelay_len = 2 + (int)ldns_rdf_size(relay_rdf);
+	else
+		amtrelay_len = 2;
+
+	data = LDNS_XMALLOC(uint8_t, amtrelay_len);
+	if(!data) {
+		if (relay)
+			LDNS_FREE(relay);
+		LDNS_FREE(token);
+		ldns_buffer_free(str_buf);
+		if (relay_rdf) ldns_rdf_free(relay_rdf);
+		return LDNS_STATUS_MEM_ERR;
+	}
+
+	data[0] = precedence;
+	data[1] = relay_type;
+	data[1] |= (discovery_optional << 7);
+
+	if (relay_type) {
+		memcpy(data + 2,
+			ldns_rdf_data(relay_rdf), ldns_rdf_size(relay_rdf));
+	}
+	*rd = ldns_rdf_new_frm_data( LDNS_RDF_TYPE_AMTRELAY
+	                           , (uint16_t) amtrelay_len, data);
+
+	if (relay)
+		LDNS_FREE(relay);
+	LDNS_FREE(token);
+	ldns_buffer_free(str_buf);
+	ldns_rdf_free(relay_rdf);
+	LDNS_FREE(data);
+	if(!*rd) return LDNS_STATUS_MEM_ERR;
 	return LDNS_STATUS_OK;
 }

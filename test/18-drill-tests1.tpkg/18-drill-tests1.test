@@ -1,0 +1,82 @@
+# test for drill
+[ -f ../.tpkg.var.master ] && source ../.tpkg.var.master
+. ../common.sh
+
+export PATH=$PATH:/usr/sbin:/sbin:/usr/local/bin:/usr/local/sbin:.
+
+export LD_LIBRARY_PATH="../../lib:$LD_LIBRARY_PATH"
+export DYLD_LIBRARY_PATH="../../lib:$DYLD_LIBRARY_PATH"
+TMPF1="tmpf1"
+TMPF2="tmpf2"
+
+# start fake server
+../../examples/ldns-testns -r test1-server-data > $TMPF1 &
+PID=$!
+echo "PID1 IS $PID"
+ps waux | grep testns
+wait_ldns_testns_up $TMPF1
+PORT=`cat $TMPF1 | grep Listening | cut -d ' ' -f 4`
+if test -z "$PORT"; then
+	echo "ldns-testns did not come up"
+	cat $TMPF1
+	kill $PID
+	kill -9 $PID
+	exit 1
+fi
+echo "ldns-testns listening on port $PORT"
+
+../../drill/drill -p $PORT www.kanariepiet.com. @localhost
+../../drill/drill -p $PORT www.kanariepiet.com. @localhost | grep -v WHEN | grep -v time | grep -v HEADER | grep -v SERVER > $TMPF2
+if [[ $? -ne 0 ]]; then 
+	echo "Error querying fake server"
+	echo "Server output:"
+	cat $TMPF1
+        RESULT=1
+fi
+../../drill/drill -p $PORT -t CH TXT server.stop. @localhost
+
+echo "diff test1-answer-output $TMPF2"
+diff test1-answer-output $TMPF2
+
+if [[ $? -ne 0 ]]; then 
+	echo "Error, answer not printed correctly"
+        RESULT=1
+fi
+
+# make sure testns server is stopped
+kill $PID >/dev/null 2>&1
+kill -9 $PID >/dev/null 2>&1
+
+PORT=
+# start fake server
+../../examples/ldns-testns -r test2-server-data > $TMPF1 &
+PID=$!
+echo "PID2 IS $PID"
+ps waux | grep testns
+wait_ldns_testns_up $TMPF1
+PORT=`cat $TMPF1 | grep Listening | cut -d " " -f 4`
+
+echo "../../drill/drill -p $PORT -k test2-key -S @localhost  ok.ok.test.jelte.nlnetlabs.nl"
+../../drill/drill -p $PORT -k test2-key -S @localhost  ok.ok.test.jelte.nlnetlabs.nl> $TMPF2
+cat $TMPF2
+
+if [[ $? -ne 0 ]]; then 
+	cat $TMPF2
+	if grep "No trusted keys found in tree: first error was: DNSSEC signature has expired" $TMPF2; then
+		echo "yes it is expired"
+	else
+		echo "Error in chase"
+		RESULT=1
+	fi
+fi
+../../drill/drill -p $PORT -t CH TXT server.stop. @localhost
+
+# make sure testns server is stopped
+kill $PID >/dev/null 2>&1
+kill -9 $PID >/dev/null 2>&1
+
+rm -f $TMPF1
+rm -f $TMPF2
+echo "DONE"
+
+exit $RESULT

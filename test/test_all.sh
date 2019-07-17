@@ -5,14 +5,20 @@ cd test
 . common.sh
 
 # find tpkg
-if test -x "$(command -v tpkg 2>&1)"; then
-	TPKG=tpkg
-else
-	TPKG="$1"
-	if [ -z "$TPKG" ]
-	then
-	TPKG="$HOME/repos/tpkg/tpkg"
-	fi
+if [ -z "$TPKG" -o ! -x "$TPKG" ]
+then
+        if [ -x tpkg/tpkg ]		; then TPKG="$(pwd)/tpkg/tpkg"
+        elif [ -x test/tpkg/tpkg ]	; then TPKG="$(pwd)/test/tpkg/tpkg"
+        elif command -v tpkg > /dev/null; then TPKG="$(command -v tpkg)"
+        else
+		TPKG=$1
+		if [ -z "$TPKG" ]
+		then
+			TPKG=$HOME/repos/tpkg/tpkg
+                	echo Did not find tpkg program!
+                	exit -1
+		fi
+        fi
 fi
 
 is_freebsd=$(uname -s 2>&1 | grep -i -c 'freebsd')

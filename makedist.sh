@@ -128,17 +128,19 @@ info "Directory '$temp_dir' created."
 cd "$temp_dir"
 
 info "Exporting source from GIT"
-git clone git://git.nlnetlabs.nl/ldns/ || error_cleanup "git command failed"
+git clone https://github.com/NLnetLabs/ldns.git || error_cleanup "git command failed"
 cd ldns || error_cleanup "LDNS not exported correctly from git"
 git checkout "$CHECKOUT" || error_cleanup "Could not checkout $CHECKOUT"
 git submodule update --init || error_cleanup "Could not update submodules"
 (cd contrib/DNS-LDNS; git checkout master) || error_cleanup "Could not checkout DNS-LDNS contribution"
 
 info "Running  Libtoolize script (libtoolize)."
+[ -f ../../install-sh ] && mv ../../install-sh ../../install-sh.bak
 libtoolize -c --install || libtoolize -c || error_cleanup "Libtoolize failed."
+[ -f ../../install-sh.bak ] && mv ../../install-sh.bak ../../install-sh
 
 info "Building configure script (autoconf)."
-autoreconf || error_cleanup "Autoconf failed."
+autoreconf -vfi || error_cleanup "Autoconf failed."
 
 rm -r autom4te* || error_cleanup "Failed to remove autoconf cache directory." 
 
@@ -181,7 +183,7 @@ fi
 
 if [ "$RECONFIGURE" = "yes" ]; then
     info "Rebuilding configure script (autoconf)."
-    autoreconf || error_cleanup "Autoconf failed."
+    autoreconf -vfi || error_cleanup "Autoconf failed."
 
     rm -r autom4te* || error_cleanup "Failed to remove autoconf cache directory."
 fi

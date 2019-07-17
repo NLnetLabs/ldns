@@ -530,16 +530,28 @@ add_keys_with_matching_ds(ldns_dnssec_rrsets* from_keys, ldns_rr_list *dss,
 	}
 }
 
+static ldns_resolver *p_ldns_new_res(ldns_resolver** new_res, ldns_status *s)
+{
+	assert(new_res && s);
+	if (!(*s = ldns_resolver_new_frm_file(new_res, NULL))) {
+		ldns_resolver_set_dnssec(*new_res, 1);
+		ldns_resolver_set_dnssec_cd(*new_res, 1);
+		return *new_res;
+	}
+	ldns_resolver_free(*new_res);
+	return (*new_res = NULL);
+}
+
 static ldns_status
 sigchase(ldns_resolver* res, ldns_rdf *zone_name, ldns_dnssec_rrsets *zonekeys,
 		ldns_rr_list *keys)
 {
 	ldns_dnssec_rrs* cur_key;
 	ldns_status status;
-	bool free_resolver = false;
-	ldns_rdf* parent_name;
-	ldns_rr_list* parent_keys;
-	ldns_rr_list* ds_keys;
+	ldns_resolver* new_res = NULL;
+	ldns_rdf* parent_name = NULL;
+	ldns_rr_list* parent_keys = NULL;
+	ldns_rr_list* ds_keys = NULL;
 
 	add_keys_with_matching_ds(zonekeys, keys, keys);
 
@@ -554,63 +566,66 @@ sigchase(ldns_resolver* res, ldns_rdf *zone_name, ldns_dnssec_rrsets *zonekeys,
 
 	/* Continue online on validation failure when the -S option was given.
 	 */
-	if (do_sigchase && 
-	    status == LDNS_STATUS_CRYPTO_NO_MATCHING_KEYTAG_DNSKEY &&
-	    ldns_dname_label_count(zone_name) > 0 ) {
-
-		if (!res) {
-			if ((status = ldns_resolver_new_frm_file(&res, NULL))){
-				ldns_resolver_free(res);
-				if (verbosity > 0) {
-					fprintf(myerr,
-						"Could not create resolver: "
-						"%s\n",
-						ldns_get_errorstr_by_id(status)
-						);
-				}
-				return status;
-			}
-			free_resolver = true;
-			ldns_resolver_set_dnssec(res,1);
-			ldns_resolver_set_dnssec_cd(res, 1);
-		}
-		if ((parent_name = ldns_dname_left_chop(zone_name))) {
-			/*
-			 * Use the (authenticated) keys of the parent zone ...
-			 */
-			parent_keys = ldns_fetch_valid_domain_keys(res,
-					parent_name, keys, &status);
-			ldns_rdf_deep_free(parent_name);
-
-			/*
-			 * ... to validate the DS for the zone ...
-			 */
-			ds_keys = ldns_validate_domain_ds(res, zone_name,
-					parent_keys);
-			ldns_rr_list_free(parent_keys);
-
-			/*
-			 * ... to use it to add the KSK to the trusted keys ...
-			 */
-			add_keys_with_matching_ds(zonekeys, ds_keys, keys);
-			ldns_rr_list_free(ds_keys);
-
-			/*
-			 * ... to validate all zonekeys ...
-			 */
-			status = verify_dnssec_rrset(zone_name, zone_name,
-					zonekeys, keys);
-		} else {
-			status = LDNS_STATUS_MEM_ERR;
-		}
-		if (free_resolver) {
-			ldns_resolver_deep_free(res);
+	if (  !do_sigchase
+	    || status != LDNS_STATUS_CRYPTO_NO_MATCHING_KEYTAG_DNSKEY
+	    || ldns_dname_label_count(zone_name) == 0 ) {
+		if (verbosity > 0) {
+			fprintf(myerr, "Cannot chase the root: %s\n"
+			             , ldns_get_errorstr_by_id(status));
 		}
 
+	} else if (!res && !(res = p_ldns_new_res(&new_res, &status))) {
+		if (verbosity > 0) {
+			fprintf(myerr, "Could not create resolver: %s\n"
+			             , ldns_get_errorstr_by_id(status));
+		}
+	} else if (!(parent_name = ldns_dname_left_chop(zone_name))) {
+		status = LDNS_STATUS_MEM_ERR;
+
+	/*
+	 * Use the (authenticated) keys of the parent zone ...
+	 */
+	} else if (!(parent_keys = ldns_fetch_valid_domain_keys(res,
+				parent_name, keys, &status))) {
+		if (verbosity > 0) {
+			fprintf(myerr,
+				"Could not get valid DNSKEY RRset to "
+				"validate domain's DS: %s\n",
+				ldns_get_errorstr_by_id(status)
+				);
+		}
+	/*
+	 * ... to validate the DS for the zone ...
+	 */
+	} else if (!(ds_keys = ldns_validate_domain_ds(res, zone_name,
+				parent_keys))) {
+		status = LDNS_STATUS_CRYPTO_NO_TRUSTED_DS;
+		if (verbosity > 0) {
+			fprintf(myerr,
+				"Could not get valid DS RRset for domain: %s\n",
+				ldns_get_errorstr_by_id(status)
+				);
+		}
+	} else {
+		/*
+		 * ... to use it to add the KSK to the trusted keys ...
+		 */
+		add_keys_with_matching_ds(zonekeys, ds_keys, keys);
+
+		/*
+		 * ... to validate all zonekeys ...
+		 */
+		status = verify_dnssec_rrset(zone_name, zone_name,
+				zonekeys, keys);
 	}
 	/*
 	 * ... so they can all be added to our list of trusted keys.
 	 */
+	ldns_resolver_deep_free(new_res);
+	ldns_rdf_deep_free(parent_name);
+	ldns_rr_list_free(parent_keys);
+	ldns_rr_list_free(ds_keys);
+
 	if (status == LDNS_STATUS_OK)
 		for (cur_key = zonekeys->rrs; cur_key; cur_key = cur_key->next)
 			ldns_rr_list_push_rr(keys, cur_key->rr);

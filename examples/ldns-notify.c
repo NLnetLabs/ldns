@@ -28,6 +28,7 @@ usage(void)
 	fprintf(stderr, "Ldns notify utility\n\n");
 	fprintf(stderr, " Supported options:\n");
 	fprintf(stderr, "\t-z zone\t\tThe zone\n");
+	fprintf(stderr, "\t-I <address>\tsource address to query from\n");
 	fprintf(stderr, "\t-s version\tSOA version number to include\n");
 	fprintf(stderr, "\t-y <name:key[:algo]>\tspecify named base64 tsig key"
 	                ", and optional an\n\t\t\t"
@@ -173,7 +174,6 @@ main(int argc, char **argv)
 	/* LDNS types */
 	ldns_pkt *notify;
 	ldns_rr *question;
-	ldns_resolver *res;
 	ldns_rdf *ldns_zone_name = NULL;
 	ldns_status status;
 	const char *zone_name = NULL;
@@ -185,10 +185,12 @@ main(int argc, char **argv)
 	const char *port = "53";
 	char *tsig_sep;
 	const char *tsig_name = NULL, *tsig_data = NULL, *tsig_algo = NULL;
+	int error;
+	struct addrinfo from_hints, *from0 = NULL;
 
 	srandom(time(NULL) ^ getpid());
 
-        while ((c = getopt(argc, argv, "vhdp:r:s:y:z:")) != -1) {
+        while ((c = getopt(argc, argv, "vhdp:r:s:y:z:I:")) != -1) {
                 switch (c) {
                 case 'd':
 			verbose++;
@@ -260,6 +262,19 @@ main(int argc, char **argv)
 				exit(1);
 			}
                         break;
+		case 'I':
+			memset(&from_hints, 0, sizeof(from_hints));
+			from_hints.ai_family = AF_UNSPEC;
+			from_hints.ai_socktype = SOCK_DGRAM;
+			from_hints.ai_protocol = IPPROTO_UDP;
+			from_hints.ai_flags = AI_NUMERICHOST;
+			error = getaddrinfo(optarg, 0, &from_hints, &from0);
+			if (error) {
+				printf("bad address: %s: %s\n", optarg,
+					gai_strerror(error));
+				exit(EXIT_FAILURE);
+			}
+			break;
 		case 'v':
 			version();
 			/* fallthrough */
@@ -278,9 +293,8 @@ main(int argc, char **argv)
 
 	notify = ldns_pkt_new();
 	question = ldns_rr_new();
-	res = ldns_resolver_new();
 
-	if (!notify || !question || !res) {
+	if (!notify || !question) {
 		/* bail out */
 		printf("error: cannot create ldns types\n");
 		exit(1);
@@ -290,6 +304,7 @@ main(int argc, char **argv)
 	ldns_rr_set_class(question, LDNS_RR_CLASS_IN);
 	ldns_rr_set_owner(question, ldns_zone_name);
 	ldns_rr_set_type(question, LDNS_RR_TYPE_SOA);
+	ldns_rr_set_question(question, true);
 	ldns_pkt_set_opcode(notify, LDNS_PACKET_NOTIFY);
 	ldns_pkt_push_rr(notify, LDNS_SECTION_QUESTION, question);
 	ldns_pkt_set_aa(notify, true);
@@ -344,14 +359,13 @@ main(int argc, char **argv)
 	for(i=0; i<argc; i++)
 	{
 		struct addrinfo hints, *res0, *ai_res;
-		int error;
-		int default_family = AF_INET;
+		int default_family = AF_UNSPEC;
 
 		if(verbose)
 			printf("# sending to %s\n", argv[i]);
 		memset(&hints, 0, sizeof(hints));
 		hints.ai_family = default_family;
-		if(strchr(argv[i], ':')) hints.ai_family = AF_INET6;
+		/* if(strchr(argv[i], ':')) hints.ai_family = AF_INET6; */
 		hints.ai_socktype = SOCK_DGRAM;
 		hints.ai_protocol = IPPROTO_UDP;
 		error = getaddrinfo(argv[i], port, &hints, &res0);
@@ -361,10 +375,19 @@ main(int argc, char **argv)
 			continue;
 		}
 		for (ai_res = res0; ai_res; ai_res = ai_res->ai_next) {
-			int s = socket(ai_res->ai_family, ai_res->ai_socktype, 
+			int s;
+
+			if (from0 && ai_res->ai_family != from0->ai_family)
+				continue;
+
+		        s = socket(ai_res->ai_family, ai_res->ai_socktype, 
 				ai_res->ai_protocol);
 			if(s == -1)
 				continue;
+			if (from0 && bind(s, from0->ai_addr, from0->ai_addrlen)) {
+				perror("Could not bind to source IP");
+				exit(EXIT_FAILURE);
+			}
 			/* send the notify */
 			notify_host(s, ai_res, wire, wiresize, argv[i]);
 		}

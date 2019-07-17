@@ -1,0 +1,16 @@
+;; flags: qr rd ra ; QUERY: 1, ANSWER: 1, AUTHORITY: 2, ADDITIONAL: 2 
+;; QUESTION SECTION:
+;; www.kanariepiet.com.	IN	A
+
+;; ANSWER SECTION:
+www.kanariepiet.com.	68060	IN	A	82.94.237.50
+
+;; AUTHORITY SECTION:
+kanariepiet.com.	68060	IN	NS	ns2.hexon-is.nl.
+kanariepiet.com.	68060	IN	NS	ns1.hexon-is.nl.
+
+;; ADDITIONAL SECTION:
+ns1.hexon-is.nl.	24512	IN	A	82.94.237.2
+ns2.hexon-is.nl.	24512	IN	A	212.204.219.91
+
+;; MSG SIZE  rcvd: 132

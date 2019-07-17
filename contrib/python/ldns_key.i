@@ -41,7 +41,7 @@
   $result = SWIG_Python_AppendOutput($result, SWIG_NewPointerObj(SWIG_as_voidptr($1_key), SWIGTYPE_p_ldns_struct_key, SWIG_POINTER_OWN |  0 ));
 }
 
-%exception ldns_key_set_pubkey_owner(ldns_key *k, ldns_rdf *r)  %{ $action Py_INCREF(obj1); %}
+%typemap(argout) ldns_rdf *r "Py_INCREF($input);"
 
 %nodefaultctor ldns_struct_key; //no default constructor & destructor
 %nodefaultdtor ldns_struct_key;

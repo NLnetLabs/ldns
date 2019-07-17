@@ -28,6 +28,14 @@
 #include <time.h>
 #include <sys/time.h>
 
+#ifdef HAVE_SSL
+#include <openssl/bn.h>
+#include <openssl/rsa.h>
+#ifdef USE_DSA
+#include <openssl/dsa.h>
+#endif
+#endif
+
 #ifndef INET_ADDRSTRLEN
 #define INET_ADDRSTRLEN 16
 #endif
@@ -1094,12 +1102,12 @@ ldns_rdf2buffer_str_ipseckey(ldns_buffer *output, const ldns_rdf *rdf)
 			/* no gateway */
 			break;
 		case 1:
-			gateway_data = LDNS_XMALLOC(uint8_t, LDNS_IP4ADDRLEN);
-                        if(!gateway_data)
-                                return LDNS_STATUS_MEM_ERR;
 			if (ldns_rdf_size(rdf) < offset + LDNS_IP4ADDRLEN) {
 				return LDNS_STATUS_ERR;
 			}
+			gateway_data = LDNS_XMALLOC(uint8_t, LDNS_IP4ADDRLEN);
+                        if(!gateway_data)
+                                return LDNS_STATUS_MEM_ERR;
 			memcpy(gateway_data, &data[offset], LDNS_IP4ADDRLEN);
 			gateway = ldns_rdf_new(LDNS_RDF_TYPE_A,
 					LDNS_IP4ADDRLEN , gateway_data);
@@ -1110,12 +1118,12 @@ ldns_rdf2buffer_str_ipseckey(ldns_buffer *output, const ldns_rdf *rdf)
                         }
 			break;
 		case 2:
-			gateway_data = LDNS_XMALLOC(uint8_t, LDNS_IP6ADDRLEN);
-                        if(!gateway_data)
-                                return LDNS_STATUS_MEM_ERR;
 			if (ldns_rdf_size(rdf) < offset + LDNS_IP6ADDRLEN) {
 				return LDNS_STATUS_ERR;
 			}
+			gateway_data = LDNS_XMALLOC(uint8_t, LDNS_IP6ADDRLEN);
+                        if(!gateway_data)
+                                return LDNS_STATUS_MEM_ERR;
 			memcpy(gateway_data, &data[offset], LDNS_IP6ADDRLEN);
 			offset += LDNS_IP6ADDRLEN;
 			gateway =
@@ -1138,6 +1146,7 @@ ldns_rdf2buffer_str_ipseckey(ldns_buffer *output, const ldns_rdf *rdf)
 	}
 
 	if (ldns_rdf_size(rdf) <= offset) {
+                ldns_rdf_deep_free(gateway);
 		return LDNS_STATUS_ERR;
 	}
 	public_key_size = ldns_rdf_size(rdf) - offset;
@@ -1290,6 +1299,94 @@ ldns_rdf2buffer_str_hip(ldns_buffer *output, const ldns_rdf *rdf)
 	return ldns_buffer_status(output);
 }
 
+/* implementation mimiced from ldns_rdf2buffer_str_ipseckey */
+ldns_status
+ldns_rdf2buffer_str_amtrelay(ldns_buffer *output, const ldns_rdf *rdf)
+{
+	/* wire format from
+	 * draft-ietf-mboned-driad-amt-discovery Section 4.2  
+	 */
+	uint8_t *data = ldns_rdf_data(rdf);
+	uint8_t precedence;
+	uint8_t discovery_optional;
+	uint8_t relay_type;
+
+	ldns_rdf *relay = NULL;
+	uint8_t *relay_data;
+
+	size_t offset = 0;
+	ldns_status status;
+
+	if (ldns_rdf_size(rdf) < 2) {
+		return LDNS_STATUS_WIRE_RDATA_ERR;
+	}
+	precedence = data[0];
+	discovery_optional = ((data[1] & 0x80) >> 7);
+	relay_type = data[1] & 0x7F;
+	offset = 2;
+
+	switch (relay_type) {
+		case 0:
+			/* no relay */
+			break;
+		case 1:
+			if (ldns_rdf_size(rdf) < offset + LDNS_IP4ADDRLEN) {
+				return LDNS_STATUS_ERR;
+			}
+			relay_data = LDNS_XMALLOC(uint8_t, LDNS_IP4ADDRLEN);
+                        if(!relay_data)
+                                return LDNS_STATUS_MEM_ERR;
+			memcpy(relay_data, &data[offset], LDNS_IP4ADDRLEN);
+			relay = ldns_rdf_new(LDNS_RDF_TYPE_A,
+					LDNS_IP4ADDRLEN , relay_data);
+			offset += LDNS_IP4ADDRLEN;
+                        if(!relay) {
+                                LDNS_FREE(relay_data);
+                                return LDNS_STATUS_MEM_ERR;
+                        }
+			break;
+		case 2:
+			if (ldns_rdf_size(rdf) < offset + LDNS_IP6ADDRLEN) {
+				return LDNS_STATUS_ERR;
+			}
+			relay_data = LDNS_XMALLOC(uint8_t, LDNS_IP6ADDRLEN);
+                        if(!relay_data)
+                                return LDNS_STATUS_MEM_ERR;
+			memcpy(relay_data, &data[offset], LDNS_IP6ADDRLEN);
+			offset += LDNS_IP6ADDRLEN;
+			relay =
+				ldns_rdf_new(LDNS_RDF_TYPE_AAAA,
+						LDNS_IP6ADDRLEN, relay_data);
+                        if(!relay) {
+                                LDNS_FREE(relay_data);
+                                return LDNS_STATUS_MEM_ERR;
+                        }
+			break;
+		case 3:
+			status = ldns_wire2dname(&relay, data,
+					ldns_rdf_size(rdf), &offset);
+                        if(status != LDNS_STATUS_OK)
+                                return status;
+			break;
+		default:
+			/* error? */
+			break;
+	}
+
+	if (ldns_rdf_size(rdf) != offset) {
+                ldns_rdf_deep_free(relay);
+		return LDNS_STATUS_ERR;
+	}
+	ldns_buffer_printf(output, "%u %u %u ",
+			precedence, discovery_optional, relay_type);
+	if (relay)
+	  	(void) ldns_rdf2buffer_str(output, relay);
+
+	ldns_rdf_deep_free(relay);
+	return ldns_buffer_status(output);
+}
+
+
 static ldns_status
 ldns_rdf2buffer_str_fmt(ldns_buffer *buffer,
 		const ldns_output_format* fmt, const ldns_rdf *rdf)
@@ -1404,6 +1501,9 @@ ldns_rdf2buffer_str_fmt(ldns_buffer *buffer,
 			break;
 		case LDNS_RDF_TYPE_LONG_STR:
 			res = ldns_rdf2buffer_str_long_str(buffer, rdf);
+			break;
+		case LDNS_RDF_TYPE_AMTRELAY:
+			res = ldns_rdf2buffer_str_amtrelay(buffer, rdf);
 			break;
 		}
 	} else {

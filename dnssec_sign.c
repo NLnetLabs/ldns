@@ -17,6 +17,11 @@
 #include <openssl/rand.h>
 #include <openssl/err.h>
 #include <openssl/md5.h>
+#include <openssl/bn.h>
+#include <openssl/rsa.h>
+#ifdef USE_DSA
+#include <openssl/dsa.h>
+#endif
 #endif /* HAVE_SSL */
 
 ldns_rr *
@@ -234,8 +239,6 @@ ldns_sign_public(ldns_rr_list *rrset, ldns_key_list *keys)
 
 	new_owner = NULL;
 
-	signatures = ldns_rr_list_new();
-
 	/* prepare a signature and add all the know data
 	 * prepare the rrset. Sign this together.  */
 	rrset_clone = ldns_rr_list_clone(rrset);
@@ -251,6 +254,8 @@ ldns_sign_public(ldns_rr_list *rrset, ldns_key_list *keys)
 	}
 	/* sort */
 	ldns_rr_list_sort(rrset_clone);
+
+	signatures = ldns_rr_list_new();
 
 	for (key_count = 0;
 		key_count < ldns_key_list_key_count(keys);

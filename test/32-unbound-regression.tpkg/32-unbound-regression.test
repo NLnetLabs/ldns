@@ -1,0 +1,119 @@
+[ -f ../.tpkg.var.master ] && source ../.tpkg.var.master
+
+export PATH=$PATH:/usr/sbin:/sbin:/usr/local/bin:/usr/local/sbin:.
+
+# first arg is the build dir
+TPKG_BUILD=$1
+HERE=`pwd`
+export LD_LIBRARY_PATH=$TPKG_BUILD/.libs:$HERE
+# .so.2 should be backwards compatible with .so.1 for unbound
+ln -s $TPKG_BUILD/.libs/libldns.so.2 libldns.so.1
+
+if [ -z "$UNBOUND_BUILD" -o ! -d "$UNBOUND_BUILD" ]
+then
+	while true
+	do
+		UNBOUND_BUILD=`ls -1d $HOME/src/unbound-[0-9]*.[0-9]*.[0-9]* \
+		             | tail -1`
+		test -d "$UNBOUND_BUILD" && break
+		UNBOUND_BUILD=`ls -1d $HOME/src/unbound-[0-9]*.[0-9]*.[0-9]* \
+		             | tail -1`
+		test -d "$UNBOUND_BUILD" && break
+
+                echo "ERROR: Did not find already compiled unbound"
+		exit 1
+	done
+fi
+
+if [ -z "$TPKG" -o ! -x "$TPKG" ]
+then
+        if which tpkg > /dev/null       ; then TPKG=`which tpkg`
+        elif [ -x $HOME/bin/tpkg ]      ; then TPKG=$HOME/bin/tpkg
+        elif [ -x $HOME/local/bin/tpkg ]; then TPKG=$HOME/local/bin/tpkg
+        elif [ -x /home/tpkg/bin/tpkg ] ; then TPKG=/home/tpkg/bin/tpkg
+        else
+                echo "ERROR: Did not find tpkg program"
+                exit 1
+        fi
+fi
+
+LDNS_VERSION=`/bin/sh $TPKG_BUILD/packaging/ldns-config --version`
+
+if test ! -d testdata
+then
+	(cd $UNBOUND_BUILD ; tar cf - `find . -type f ! -path "*/.svn" ! -path "*/.svn/*"`) | tar xf -
+	ln -s libunbound.so.4 .libs/libunbound.so || true
+fi
+
+get_lo0_ip4() {
+        if test -x /sbin/ifconfig
+        then
+                LO0_IP4=`/sbin/ifconfig lo0 | grep '[^0-9]127\.' | sed -e 's/^[^1]*\(127\.[0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\)[^0-9]*.*$/\1/g'`
+                if ( echo $LO0_IP4 | grep '^127\.[0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*$' > /dev/null )
+                then
+                        return
+                fi
+        fi
+        LO0_IP4=127.0.0.1
+}
+get_lo0_ip4
+export LO0_IP4
+if test "x$LO0_IP4" = "x127.0.0.1"
+then
+        ALT_LOOPBACK=false
+else
+        ALT_LOOPBACK=true
+fi
+
+HERE=`pwd`
+if $HERE/unbound -h | grep -q " ldns $LDNS_VERSION,"
+then
+	for t in `(cd $HERE/testdata; ls -1 *.tpkg|grep -v '^0[016]')`
+	do
+		if ! $ALT_LOOPBACK
+                then
+                        $TPKG -b $HERE/testdata -a $HERE exe $t
+                        continue
+                fi
+                # We have alternative 127.0.0.1 number
+		if ( echo $t | grep '6\.tpkg$' ) # skip IPv6 tests
+                then
+                        continue
+                elif test "$t" = "edns_cache.tpkg" # This one is IPv6 too!
+                then
+                        continue
+                fi
+                cp -p "testdata/$t" "testdata/$t.bak"
+                "$TPKG" -b "$HERE/testdata" e "$t"
+                find "$HERE/testdata/${t%.tpkg}.dir" -type f \
+                                -exec grep -q '127\.0\.0\.1' {} \; -print | {
+                        while read f
+                        do
+                                sed "s/127\.0\.0\.1/${LO0_IP4}/g" "$f" > "$f._"
+                                mv "$f._" "$f"
+                        done
+                }
+                find "$HERE/testdata/${t%.tpkg}.dir" -type d \
+                                -name "127.0.0.1" -print | {
+                        while read d
+                        do
+                                mv -v "$d" "${d%127.0.0.1}${LO0_IP4}"
+                        done
+                }
+                "$TPKG" -b "$HERE/testdata" c "$t"
+		rm -fr "testdata/${t%.tpkg}.dir"
+                "$TPKG" -b "$HERE/testdata" -a "$HERE" exe "$t"
+                mv "testdata/$t.bak" "testdata/$t"
+	done
+	if ( cd testdata; $TPKG -q -n `ls result.*|wc -l` report >/dev/null )
+	then
+		echo "All unbound tests sucesfully with ldns $LDNS_VERSION"
+		exit 0
+	else
+		echo "ERROR: Some unbound tests failed with ldns $LDNS_VERSION"
+		$TPKG -b $HERE/testdata -a $HERE r
+	fi
+else
+	echo "ERROR: Unbound did not dynamically load our ldns $LDNS_VERSION"
+fi
+exit 1

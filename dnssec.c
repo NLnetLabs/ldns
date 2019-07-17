@@ -23,6 +23,11 @@
 #include <openssl/rand.h>
 #include <openssl/err.h>
 #include <openssl/md5.h>
+#include <openssl/bn.h>
+#include <openssl/rsa.h>
+#ifdef USE_DSA
+#include <openssl/dsa.h>
+#endif
 #endif
 
 ldns_rr *
@@ -149,6 +154,7 @@ ldns_dnssec_nsec3_closest_encloser(const ldns_rdf *qname,
 	                LDNS_FREE(salt);
 	                ldns_rdf_deep_free(zone_name);
 	                ldns_rdf_deep_free(sname);
+			ldns_rdf_deep_free(hashed_sname);
                         return NULL;
                 }
 
@@ -1556,6 +1562,7 @@ ldns_pkt_verify_time(const ldns_pkt *p, ldns_rr_type t, const ldns_rdf *o,
 	ldns_rr_list *sigs_covered;
 	ldns_rdf *rdf_t;
 	ldns_rr_type t_netorder;
+	ldns_status status;
 
 	if (!k) {
 		return LDNS_STATUS_ERR;
@@ -1607,7 +1614,9 @@ ldns_pkt_verify_time(const ldns_pkt *p, ldns_rr_type t, const ldns_rdf *o,
 		}
 		return LDNS_STATUS_ERR;
 	}
-	return ldns_verify_time(rrset, sigs, k, check_time, good_keys);
+	status = ldns_verify_time(rrset, sigs, k, check_time, good_keys);
+	ldns_rr_list_deep_free(rrset);
+	return status;
 }
 
 ldns_status
