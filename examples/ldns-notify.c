@@ -344,11 +344,13 @@ main(int argc, char **argv)
 	}
 
 	status = ldns_pkt2wire(&wire, notify, &wiresize);
-	if(wiresize == 0) {
+	if (status) {
+		printf("Error converting notify packet to hex: %s\n",
+				ldns_get_errorstr_by_id(status));
+	} else if(wiresize == 0) {
 		printf("Error converting notify packet to hex.\n");
 		exit(1);
 	}
-
 	if(do_hexdump && verbose > 1) {
 		printf("Hexdump of notify packet:\n");
 		for(i=0; i<(int)wiresize; i++)

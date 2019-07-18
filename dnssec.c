@@ -371,7 +371,6 @@ ldns_key_buf2dsa_raw(const unsigned char* key, size_t len)
 	offset += length;
 
 	Y = BN_bin2bn(key+offset, (int)length, NULL);
-	offset += length;
 
 	/* create the key and set its properties */
 	if(!Q || !P || !G || !Y || !(dsa = DSA_new())) {

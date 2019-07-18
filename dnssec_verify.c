@@ -906,8 +906,9 @@ ldns_dnssec_derive_trust_tree_dnskey_rrset_time(
 				cur_status = ldns_verify_rrsig_time(
 						cur_rrset, cur_sig_rr, 
 						cur_parent_rr, check_time);
-				(void) ldns_dnssec_trust_tree_add_parent(new_tree,
-				            cur_parent_tree, cur_sig_rr, cur_status);
+				if (ldns_dnssec_trust_tree_add_parent(new_tree,
+				            cur_parent_tree, cur_sig_rr, cur_status))
+					ldns_dnssec_trust_tree_free(cur_parent_tree);
 			}
 		}
 	}
@@ -1021,8 +1022,10 @@ ldns_dnssec_derive_trust_tree_no_sig_time(
 						data_chain->parent, 
 						cur_parent_rr,
 						check_time);
-			(void) ldns_dnssec_trust_tree_add_parent(new_tree,
-			            cur_parent_tree, NULL, result);
+			if (ldns_dnssec_trust_tree_add_parent(new_tree,
+			            cur_parent_tree, NULL, result))
+				ldns_dnssec_trust_tree_free(cur_parent_tree);
+
 		}
 	}
 }

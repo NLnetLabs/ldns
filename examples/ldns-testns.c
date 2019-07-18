@@ -326,7 +326,7 @@ handle_tcp(int tcp_sock, struct entry* entries, int *count)
 	struct sockaddr_storage addr_him;
 	socklen_t hislen;
 	uint8_t inbuf[INBUF_SIZE];
-	uint16_t tcplen;
+	uint16_t tcplen = 0;
 	struct handle_tcp_userdata userdata;
 
 	/* accept */

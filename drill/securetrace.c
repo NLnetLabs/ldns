@@ -241,7 +241,7 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 			goto done;
 		}
 	}
-	labels = LDNS_XMALLOC(ldns_rdf*, labels_count + 2);
+	labels = LDNS_CALLOC(ldns_rdf*, labels_count + 2);
 	if (!labels) {
 		goto done;
 	}
@@ -256,6 +256,13 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 	 */
 	for(i = (ssize_t)labels_count + 1; i > 0; i--) {
 		status = ldns_resolver_send(&local_p, res, labels[i], LDNS_RR_TYPE_NS, c, 0);
+		if (status != LDNS_STATUS_OK) {
+			fprintf(stderr, "Error sending query: %s\n", ldns_get_errorstr_by_id(status));
+			result = status;
+			goto done;
+		}
+
+		/* TODO: handle status */
 
 		if (verbosity >= 5) {
 			ldns_pkt_print(stdout, local_p);

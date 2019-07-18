@@ -366,6 +366,10 @@ main(int argc, char *argv[])
 #ifdef HAVE_SSL
 				if (strchr(optarg, ':')) {
 					tsig_separator = (size_t) (strchr(optarg, ':') - optarg);
+					if (tsig_algorithm) {
+						free(tsig_algorithm);
+						tsig_algorithm = NULL;
+					}
 					if (strchr(optarg + tsig_separator + 1, ':')) {
 						tsig_separator2 = (size_t) (strchr(optarg + tsig_separator + 1, ':') - optarg);
 						tsig_algorithm = xmalloc(strlen(optarg) - tsig_separator2);

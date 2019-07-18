@@ -183,7 +183,6 @@ ldns_duration_create_from_string(const char* str)
             return NULL;
         } else {
             duration->weeks = (time_t) atoi(str+1);
-            str = W;
         }
     }
     return duration;

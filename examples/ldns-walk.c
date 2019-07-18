@@ -120,7 +120,7 @@ create_plus_1_dname(ldns_rdf *dname)
 	return label;
 }
 
-static ldns_status
+static void 
 query_type_bitmaps(ldns_resolver *res, 
                    uint16_t res_flags,
                    const ldns_rdf *name,
@@ -191,11 +191,8 @@ query_type_bitmaps(ldns_resolver *res,
 				}
 			}
 		}
-		
 		pos += (uint16_t) bitmap_length;
 	}
-	
-	return LDNS_STATUS_OK;
 }
 
 
@@ -639,7 +636,7 @@ main(int argc, char *argv[])
 			/* ok, so now we know all the types present at this name,
 			 * query for those one by one (...)
 			 */
-			status = query_type_bitmaps(res, LDNS_RD, ldns_rr_owner(nsec_rr),
+			query_type_bitmaps(res, LDNS_RD, ldns_rr_owner(nsec_rr),
 			                   ldns_rr_rdf(nsec_rr, 1));
 			/* print this nsec and its signatures too */
 			ldns_rr_print(stdout, nsec_rr);

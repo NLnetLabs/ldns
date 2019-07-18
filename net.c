@@ -355,12 +355,7 @@ ldns_tcp_send_from(uint8_t **result,  ldns_buffer *qbin,
 		return LDNS_STATUS_NETWORK_ERR;
 	}
 
-	/* resize accordingly */
-	*result = LDNS_XREALLOC(answer, uint8_t, (size_t)*answer_size);
-        if(!*result) {
-                LDNS_FREE(answer);
-                return LDNS_STATUS_MEM_ERR;
-        }
+	*result = answer;
 	return LDNS_STATUS_OK;
 }
 
@@ -622,10 +617,12 @@ ldns_send_buffer(ldns_pkt **result, ldns_resolver *r, ldns_buffer *qb, ldns_rdf 
 		
 		status = ldns_wire2pkt(&reply, reply_bytes, reply_size);
 		if (status != LDNS_STATUS_OK) {
+			if(src) LDNS_FREE(src);
 			LDNS_FREE(reply_bytes);
 			LDNS_FREE(ns);
 			return status;
 		}
+		assert(reply);
 		
 		LDNS_FREE(ns);
 		gettimeofday(&tv_e, NULL);

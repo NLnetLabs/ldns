@@ -57,13 +57,13 @@ ldns_status
 ldns_str2rdf_time(ldns_rdf **rd, const char *time)
 {
 	/* convert a time YYYYDDMMHHMMSS to wireformat */
-	uint16_t *r = NULL;
+	uint32_t *r = NULL;
 	struct tm tm;
 	uint32_t l;
 	char *end;
 
 	/* Try to scan the time... */
-	r = (uint16_t*)LDNS_MALLOC(uint32_t);
+	r = (uint32_t *)LDNS_MALLOC(uint32_t);
         if(!r) return LDNS_STATUS_MEM_ERR;
 
 	memset(&tm, 0, sizeof(tm));
@@ -197,10 +197,10 @@ ldns_status
 ldns_str2rdf_int32(ldns_rdf **rd, const char *longstr)
 {
 	char *end;
-	uint16_t *r = NULL;
+	uint32_t *r = NULL;
 	uint32_t l;
 
-	r = (uint16_t*)LDNS_MALLOC(uint32_t);
+	r = (uint32_t*)LDNS_MALLOC(uint32_t);
         if(!r) return LDNS_STATUS_MEM_ERR;
 	errno = 0; /* must set to zero before call,
 			note race condition on errno */
@@ -1579,7 +1579,7 @@ ldns_str2rdf_hip(ldns_rdf **rd, const char *str)
 	size_t rdf_size = 4 + hit_wire_size + pk_wire_size;
 
 	char *endptr; /* utility var for strtol usage */
-	int algorithm = strtol(str, &endptr, 10);
+	int algorithm = str == NULL ? 0 : strtol(str, &endptr, 10);
 
 	uint8_t *data, *dp;
 	int hi, lo, written;

@@ -118,7 +118,6 @@ main(int argc, char **argv)
 	argv += optind;
 
 	if (argc != 2) {
-		argc -= optind;
 		argv -= optind;
 		usage(argv[0]);
 		exit(EXIT_FAILURE);

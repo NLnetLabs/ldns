@@ -483,7 +483,7 @@ ldns_rdf2buffer_str_str(ldns_buffer *output, const ldns_rdf *rdf)
 ldns_status
 ldns_rdf2buffer_str_b64(ldns_buffer *output, const ldns_rdf *rdf)
 {
-	size_t size = ldns_b64_ntop_calculate_size(ldns_rdf_size(rdf));
+	size_t size;
 	char *b64;
 
 	if (ldns_rdf_size(rdf) == 0) {
@@ -2327,6 +2327,7 @@ ldns_key2buffer_str(ldns_buffer *output, const ldns_key *k)
 				ldns_buffer_printf(output, "Algorithm: %d (", ldns_key_algorithm(k));
                                 status=ldns_algorithm2buffer_str(output, (ldns_algorithm)ldns_key_algorithm(k));
 				ldns_buffer_printf(output, ")\n");
+				if (status) break;
 				status = ldns_ed25519_key2buffer_str(output,
 					k->_key.key);
 				break;
@@ -2337,6 +2338,7 @@ ldns_key2buffer_str(ldns_buffer *output, const ldns_key *k)
 				ldns_buffer_printf(output, "Algorithm: %d (", ldns_key_algorithm(k));
                                 status=ldns_algorithm2buffer_str(output, (ldns_algorithm)ldns_key_algorithm(k));
 				ldns_buffer_printf(output, ")\n");
+				if (status) break;
 				status = ldns_ed448_key2buffer_str(output,
 					k->_key.key);
 				break;

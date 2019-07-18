@@ -764,7 +764,7 @@ ldns_resolver_new_frm_fp(ldns_resolver **res, FILE *fp)
 ldns_status
 ldns_resolver_new_frm_fp_l(ldns_resolver **res, FILE *fp, int *line_nr)
 {
-	ldns_resolver *r;
+	ldns_resolver *r = NULL;
 	const char *keyword[LDNS_RESOLV_KEYWORDS];
 	char word[LDNS_MAX_LINELEN + 1];
 	int8_t expect;
@@ -800,7 +800,6 @@ ldns_resolver_new_frm_fp_l(ldns_resolver **res, FILE *fp, int *line_nr)
 	keyword[LDNS_RESOLV_SORTLIST] = "sortlist";
 	keyword[LDNS_RESOLV_OPTIONS] = "options";
 	keyword[LDNS_RESOLV_ANCHOR] = "anchor";
-	expect = LDNS_RESOLV_KEYWORD;
 
 	r = ldns_resolver_new();
 	if (!r) {
@@ -860,6 +859,7 @@ ldns_resolver_new_frm_fp_l(ldns_resolver **res, FILE *fp, int *line_nr)
 				gtr = ldns_fget_token_l(myfp, word, LDNS_PARSE_NORMAL, 0, line_nr);
 				if (gtr == 0) {
 					if(!fp) fclose(myfp);
+					ldns_resolver_deep_free(r);
 					return LDNS_STATUS_SYNTAX_MISSING_VALUE_ERR;
 				}
                                 if(word[0] == '#') {
@@ -868,8 +868,8 @@ ldns_resolver_new_frm_fp_l(ldns_resolver **res, FILE *fp, int *line_nr)
                                 }
 				tmp = ldns_rdf_new_frm_str(LDNS_RDF_TYPE_DNAME, word);
 				if (!tmp) {
-					ldns_resolver_deep_free(r);
 					if(!fp) fclose(myfp);
+					ldns_resolver_deep_free(r);
 					return LDNS_STATUS_SYNTAX_DNAME_ERR;
 				}
 
@@ -882,6 +882,7 @@ ldns_resolver_new_frm_fp_l(ldns_resolver **res, FILE *fp, int *line_nr)
 				gtr = ldns_fget_token_l(myfp, word, LDNS_PARSE_NORMAL, 0, line_nr);
 				if (gtr == 0) {
 					if(!fp) fclose(myfp);
+					ldns_resolver_deep_free(r);
 					return LDNS_STATUS_SYNTAX_MISSING_VALUE_ERR;
 				}
                                 if(word[0] == '#') {

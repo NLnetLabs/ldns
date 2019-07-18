@@ -61,7 +61,7 @@ main(int argc, char *argv[])
 
 	if (argc == 3) {
 		/* optional type arg */
-		type_name = strdup(argv[2]);
+		type_name = argv[2];
 		t = ldns_rdf2rr_type(
 			ldns_rdf_new_frm_str(LDNS_RDF_TYPE_TYPE, type_name));
 		if (t == 0) {

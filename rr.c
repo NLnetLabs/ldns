@@ -395,6 +395,7 @@ ldns_rr_new_frm_str_internal(ldns_rr **newrr, const char *str,
 				rd_buf, rd, delimiters, LDNS_MAX_RDFLEN))) {
 
 			done = true;
+			(void)done; /* we're breaking, so done not read anymore */
 			break;
 		}
 		/* hmmz, rfc3597 specifies that any type can be represented 
