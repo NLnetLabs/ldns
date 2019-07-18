@@ -273,7 +273,7 @@ handle_udp(int udp_sock, struct entry* entries, int *count)
 		&userdata, do_verbose?logfile:0);
 }
 
-static void
+static int
 read_n_bytes(int sock, uint8_t* buf, size_t sz)
 {
 	size_t count = 0;
@@ -281,14 +281,14 @@ read_n_bytes(int sock, uint8_t* buf, size_t sz)
 		ssize_t nb = recv(sock, (void*)(buf+count), sz-count, 0);
 		if(nb < 0) {
 			log_msg("recv(): %s\n", strerror(errno));
-			return;
+			return -1;
 		} else if(nb == 0) {
 			log_msg("recv: remote end closed the channel\n");
-			memset(buf+count, 0, sz-count);
-			return;
+			return sz-count;
 		}
 		count += nb;
 	}
+	return 0;
 }
 
 static void
@@ -338,7 +338,8 @@ handle_tcp(int tcp_sock, struct entry* entries, int *count)
 	userdata.s = s;
 
 	/* tcp recv */
-	read_n_bytes(s, (uint8_t*)&tcplen, sizeof(tcplen));
+	if (read_n_bytes(s, (uint8_t*)&tcplen, sizeof(tcplen)))
+		return;
 	tcplen = ntohs(tcplen);
 	if(tcplen >= INBUF_SIZE) {
 		log_msg("query %d bytes too large, buffer %d bytes.\n",
@@ -350,7 +351,8 @@ handle_tcp(int tcp_sock, struct entry* entries, int *count)
 #endif
 		return;
 	}
-	read_n_bytes(s, inbuf, tcplen);
+	if (read_n_bytes(s, inbuf, tcplen))
+		return;
 
 	handle_query(inbuf, (ssize_t) tcplen, entries, count, transport_tcp, 
 		send_tcp, &userdata, do_verbose?logfile:0);
