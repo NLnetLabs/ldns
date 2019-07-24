@@ -156,8 +156,17 @@ rm makedist.sh || error_cleanup "Failed to remove makedist.sh."
 info "Determining LDNS version."
 version=$(./configure --version | head -1 | awk '{ print $3 }') || \
     error_cleanup "Cannot determine version number."
-
+( cd contrib/DNS-LDNS; dzil build && mv -v DNS-LDNS-*.tar.gz .. )
+perl_tarball="$(cd contrib; echo DNS-LDNS-*.tar.gz)"
+perl_version="${perl_tarball%.tar.gz}"
+perl_version="${perl_version#DNS-LDNS-}"
+( cd contrib				&&
+  rm -fr DNS-LDNS			&&
+  tar xzvf "$perl_tarball"		&&
+  mv "DNS-LDNS-$perl_version" DNS-LDNS	&&
+  rm -f "$perl_tarball"			 )
 info "LDNS version: $version"
+info "DNS-LDNS perl module version: $perl_version"
 
 RECONFIGURE="no"
 
