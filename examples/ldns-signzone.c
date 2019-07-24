@@ -336,7 +336,7 @@ parse_algspec ( const char * const p )
 	if ( p == NULL )
 		return 0;
 
-	if ( isdigit ( *p ) ) {
+	if ( isdigit ( (const unsigned char)*p ) ) {
 		const char *nptr = NULL;
 		const long id = strtol ( p, (char **) &nptr, 10 );
 		return id > 0 && nptr != NULL && *nptr == ',' ? id : 0;

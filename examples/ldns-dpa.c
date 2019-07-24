@@ -987,10 +987,10 @@ match_str(type_operator operator,
 		valuedup = strdup(value);
 		mvaluedup = strdup(mvalue);
 		for (i = 0; i < strlen(valuedup); i++) {
-			valuedup[i] = tolower(valuedup[i]);
+			valuedup[i] = tolower((unsigned char)valuedup[i]);
 		}
 		for (i = 0; i < strlen(mvaluedup); i++) {
-			mvaluedup[i] = tolower(mvaluedup[i]);
+			mvaluedup[i] = tolower((unsigned char)mvaluedup[i]);
 		}
 		result = strstr(valuedup, mvaluedup) != 0;
 		free(valuedup);

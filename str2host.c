@@ -1121,7 +1121,7 @@ ldns_str2rdf_wks(ldns_rdf **rd, const char *str)
 			proto_str = strdup(token);
 			lc_proto_str = strdup(token);
 			for (c = lc_proto_str; *c; c++) {
-				*c = tolower(*c);
+				*c = tolower((unsigned char)*c);
 			}
 			if (!proto_str || !lc_proto_str) {
 				free(proto_str);
@@ -1138,7 +1138,7 @@ ldns_str2rdf_wks(ldns_rdf **rd, const char *str)
 			}
 			if (!serv && (lc_token = strdup(token))) {
 				for (c = lc_token; *c; c++) {
-					*c = tolower(*c);
+					*c = tolower((unsigned char)*c);
 				}
 				serv = getservbyname(lc_token, proto_str);
 				if (!serv) {
