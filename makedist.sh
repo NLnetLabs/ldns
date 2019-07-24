@@ -158,6 +158,7 @@ version=$(./configure --version | head -1 | awk '{ print $3 }') || \
     error_cleanup "Cannot determine version number."
 
 info "LDNS version: $version"
+exit 0
 
 RECONFIGURE="no"
 
