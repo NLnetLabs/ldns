@@ -125,6 +125,7 @@ ldns_rr_new_frm_str_internal(ldns_rr **newrr, const char *str,
 	ldns_rr_class clas_val;
 	char  *clas = NULL;
 	char  *type = NULL;
+	size_t type_sz;
 	char  *rdata = NULL;
 	char  *rd = NULL;
 	char  *xtok = NULL; /* For RDF types with spaces (i.e. extra tokens) */
@@ -208,11 +209,12 @@ ldns_rr_new_frm_str_internal(ldns_rr **newrr, const char *str,
 		 */
 		if (clas_val == 0) {
 			clas_val = LDNS_RR_CLASS_IN;
-			type = LDNS_XMALLOC(char, strlen(ttl) + 1);
+			type_sz = strlen(ttl) + 1;
+			type = LDNS_XMALLOC(char, type_sz);
 			if (!type) {
 				goto memerror;
 			}
-			strlcpy(type, ttl, strlen(ttl) + 1);
+			strlcpy(type, ttl, type_sz);
 		}
 	} else {
 		if (-1 == ldns_bget_token(
@@ -227,11 +229,12 @@ ldns_rr_new_frm_str_internal(ldns_rr **newrr, const char *str,
 		 */
 		if (clas_val == 0) {
 			clas_val = LDNS_RR_CLASS_IN;
-			type = LDNS_XMALLOC(char, strlen(clas) + 1);
+			type_sz = strlen(clas) + 1;
+			type = LDNS_XMALLOC(char, type_sz);
 			if (!type) {
 				goto memerror;
 			}
-			strlcpy(type, clas, strlen(clas) + 1);
+			strlcpy(type, clas, type_sz);
 		}
 	}
 	/* the rest should still be waiting for us */
