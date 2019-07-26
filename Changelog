@@ -64,7 +64,7 @@
 	* PR #36 Update manpage of ldns-notify to mention algorithm
 	  support with TSIG.  Thanks Anand Buddhdev
 	* Compile warnings with signed char input to to_lower()
-	  and is_digit() with NetDNS.  Thanks Håvard Eidnes
+	  and is_digit() with NetBSD.  Thanks Håvard Eidnes
 	* Missing Makefile.PL in DNS-LDNS perl module contribution.
 	  Thanks Jaap Akkerhuis
 
