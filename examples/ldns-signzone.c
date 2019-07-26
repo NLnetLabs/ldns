@@ -438,7 +438,8 @@ load_key ( const char * const p, ENGINE * const e )
 	printf ( "Engine key id: %s, algo %d\n", id, alg );
 
 	/* Attempt to load the key from the engine. */
-	status = ldns_key_new_frm_engine ( &key, e, (char *) id, alg );
+	status = ldns_key_new_frm_engine (
+			&key, e, (char *) id, (ldns_algorithm)alg );
 	if ( status != LDNS_STATUS_OK ) {
 		ERR_print_errors_fp ( stderr );
 		exit ( EXIT_FAILURE );
