@@ -5,7 +5,12 @@
  * See the file LICENSE for the license
  */
 
+#include <stdio.h>
+
 #include "config.h"
+
+#ifdef HAVE_SSL
+
 #include <stdlib.h>
 #include <unistd.h>
 
@@ -16,16 +21,16 @@
 #include <ldns/ldns.h>
 #include <ldns/keys.h>
 
-#ifdef HAVE_SSL
 #include <openssl/conf.h>
+#ifndef OPENSSL_NO_ENGINE
 #include <openssl/engine.h>
-#endif /* HAVE_SSL */
+#endif
+#include <openssl/err.h>
 
 #define MAX_FILENAME_LEN 250
-int verbosity = 1;
 
-#ifdef HAVE_SSL
-#include <openssl/err.h>
+char *prog;
+int verbosity = 1;
 
 static void
 usage(FILE *fp, const char *prog) {
@@ -37,14 +42,16 @@ usage(FILE *fp, const char *prog) {
 	fprintf(fp, "  -f <file>\toutput zone to file (default <name>.signed)\n");
 	fprintf(fp, "  -i <date>\tinception date\n");
 	fprintf(fp, "  -o <domain>\torigin for the zone\n");
+	fprintf(fp, "  -u\t\tset SOA serial to the number of seconds since 1-1-1970\n");
 	fprintf(fp, "  -v\t\tprint version and exit\n");
 	fprintf(fp, "  -A\t\tsign DNSKEY with all keys instead of minimal\n");
 	fprintf(fp, "  -U\t\tSign with every unique algorithm in the provided keys\n");
+#ifndef OPENSSL_NO_ENGINE
 	fprintf(fp, "  -E <name>\tuse <name> as the crypto engine for signing\n");
 	fprintf(fp, "           \tThis can have a lot of extra options, see the manual page for more info\n");
-	fprintf(fp, "  -k <id>,<int>\tuse key id with algorithm int from engine\n");
-	fprintf(fp, "  -K <id>,<int>\tuse key id with algorithm int from engine as KSK\n");
-	fprintf(fp, "\t\tif no key is given (but an external one is used through the engine support, it might be necessary to provide the right algorithm number.\n");
+	fprintf(fp, "  -k <algorithm>,<key>\tuse `key' with `algorithm' from engine as ZSK\n");
+	fprintf(fp, "  -K <algorithm>,<key>\tuse `key' with `algorithm' from engine as KSK\n");
+#endif
 	fprintf(fp, "  -n\t\tuse NSEC3 instead of NSEC.\n");
 	fprintf(fp, "\t\tIf you use NSEC3, you can specify the following extra options:\n");
 	fprintf(fp, "\t\t-a [algorithm] hashing algorithm\n");
@@ -58,6 +65,37 @@ usage(FILE *fp, const char *prog) {
 	fprintf(fp, "  will be read from the file called <base name>.key. If that does not exist,\n");
 	fprintf(fp, "  a default DNSKEY will be generated from the private key and added to the zone.\n");
 	fprintf(fp, "  A date can be a timestamp (seconds since the epoch), or of\n  the form <YYYYMMdd[hhmmss]>\n");
+#ifndef OPENSSL_NO_ENGINE
+	fprintf(fp, "  For -k or -K, the algorithm can be specified as an integer or a symbolic name:" );
+
+#define __LIST(x) fprintf ( fp, " %3d: %-15s", LDNS_SIGN_ ## x, # x )
+
+	fprintf ( fp, "\n " );
+	__LIST ( RSAMD5 );
+	__LIST ( DSA );
+	__LIST ( RSASHA1 );
+	fprintf ( fp, "\n " );
+	__LIST ( DSA_NSEC3 );
+	__LIST ( RSASHA1_NSEC3 );
+	__LIST ( RSASHA256 );
+	fprintf ( fp, "\n " );
+	__LIST ( RSASHA512 );
+	__LIST ( ECC_GOST );
+	__LIST ( ECDSAP256SHA256 );
+	fprintf ( fp, "\n " );
+	__LIST ( ECDSAP384SHA384 );
+
+#ifdef USE_ED25519
+	__LIST ( ED25519 );
+#endif
+
+#ifdef USE_ED448
+	__LIST ( ED448 );
+#endif
+	fprintf ( fp, "\n" );
+
+#undef __LIST
+#endif
 }
 
 static void check_tm(struct tm tm)
@@ -288,6 +326,216 @@ find_or_create_pubkey(const char *keyfile_name_base, ldns_key *key, ldns_zone *o
 	}
 }
 
+#ifndef OPENSSL_NO_ENGINE
+/*
+ * For keys coming from the engine (-k or -K), parse algoritm specification.
+ */
+static enum ldns_enum_signing_algorithm
+parse_algspec ( const char * const p )
+{
+	if ( p == NULL )
+		return 0;
+
+	if ( isdigit ( (const unsigned char)*p ) ) {
+		const char *nptr = NULL;
+		const long id = strtol ( p, (char **) &nptr, 10 );
+		return id > 0 && nptr != NULL && *nptr == ',' ? id : 0;
+	}
+
+#define __MATCH(x)							\
+	if ( !memcmp ( # x, p, sizeof ( # x ) - 1 )			\
+	     && p [ sizeof ( # x ) - 1 ] == ',' ) {			\
+		return LDNS_SIGN_ ## x;					\
+	}
+
+	__MATCH ( RSAMD5 );
+	__MATCH ( RSASHA1 );
+	__MATCH ( DSA );
+	__MATCH ( RSASHA1_NSEC3 );
+	__MATCH ( RSASHA256 );
+	__MATCH ( RSASHA512 );
+	__MATCH ( DSA_NSEC3 );
+	__MATCH ( ECC_GOST );
+	__MATCH ( ECDSAP256SHA256 );
+	__MATCH ( ECDSAP384SHA384 );
+
+#ifdef USE_ED25519
+	__MATCH ( ED25519 );
+#endif
+
+#ifdef USE_ED448
+	__MATCH ( ED448 );
+#endif
+
+#undef __MATCH
+
+	return 0;
+}
+
+/*
+ * For keys coming from the engine (-k or -K), parse key specification
+ * in the form of <algorithm>,<key-id>. No whitespace is allowed
+ * between <algorithm> and the comma, and between the comma and
+ * <key-id>. <key-id> format is specific to the engine at hand, i.e.
+ * it can be the old OpenSC syntax or a PKCS #11 URI as defined in RFC 7512
+ * and (partially) supported by OpenSC (as of 20180312).
+ */
+static const char *
+parse_keyspec ( const char * const p,
+		enum ldns_enum_signing_algorithm * const algorithm,
+		const char ** const id )
+{
+	const char * const comma = strchr ( p, ',' );
+
+	if ( comma == NULL || !(*algorithm = parse_algspec ( p )) )
+		return NULL;
+	return comma [ 1 ] ? *id = comma + 1 : NULL;
+}
+
+/*
+ * Load a key from the engine.
+ */
+static ldns_key *
+load_key ( const char * const p, ENGINE * const e )
+{
+	enum ldns_enum_signing_algorithm alg = 0;
+	const char *id = NULL;
+	ldns_status status = LDNS_STATUS_ERR;
+	ldns_key *key = NULL;
+
+	/* Parse key specification. */
+	if ( parse_keyspec ( p, &alg, &id ) == NULL ) {
+		fprintf ( stderr,
+			  "Failed to parse key specification `%s'.\n",
+			  p );
+		usage ( stderr, prog );
+		exit ( EXIT_FAILURE );
+	}
+
+	/* Validate that the algorithm can be used for signing. */
+	switch ( alg ) {
+	case LDNS_SIGN_RSAMD5:
+	case LDNS_SIGN_RSASHA1:
+	case LDNS_SIGN_RSASHA1_NSEC3:
+	case LDNS_SIGN_RSASHA256:
+	case LDNS_SIGN_RSASHA512:
+	case LDNS_SIGN_DSA:
+	case LDNS_SIGN_DSA_NSEC3:
+	case LDNS_SIGN_ECC_GOST:
+#ifdef USE_ECDSA
+	case LDNS_SIGN_ECDSAP256SHA256:
+	case LDNS_SIGN_ECDSAP384SHA384:
+#endif
+		break;
+	default:
+		fprintf ( stderr,
+			  "Algorithm %d cannot be used for signing.\n",
+			  alg );
+		usage ( stderr, prog );
+		exit ( EXIT_FAILURE );
+	}
+
+	printf ( "Engine key id: %s, algo %d\n", id, alg );
+
+	/* Attempt to load the key from the engine. */
+	status = ldns_key_new_frm_engine ( &key, e, (char *) id, alg );
+	if ( status != LDNS_STATUS_OK ) {
+		ERR_print_errors_fp ( stderr );
+		exit ( EXIT_FAILURE );
+	}
+
+	return key;
+}
+
+/*
+ * For keys coming from the engine (-k or -K), set key parameters
+ * and determine whether the key is listed in the zone file.
+ */
+static void
+post_process_engine_key ( ldns_key_list * const keys,
+			  ldns_key * const key,
+			  ldns_zone * const zone,
+			  const bool add_keys,
+			  const uint32_t ttl,
+			  const uint32_t inception,
+			  const uint32_t expiration )
+{
+	if ( key == NULL ) return;
+
+	if ( expiration ) ldns_key_set_expiration ( key, expiration );
+
+	if ( inception ) ldns_key_set_inception ( key, inception );
+
+	ldns_key_list_push_key ( keys, key );
+	find_or_create_pubkey ( "", key, zone, add_keys, ttl );
+}
+
+/*
+ * Initialize OpenSSL, for versions 1.1 and newer. 
+ */
+static ENGINE *
+init_openssl_engine ( const char * const id )
+{
+	ENGINE *e = NULL;
+
+#ifdef HAVE_ERR_LOAD_CRYPTO_STRINGS
+        ERR_load_crypto_strings();
+#endif
+#if OPENSSL_VERSION_NUMBER < 0x10100000 || defined(HAVE_LIBRESSL) || !defined(HAVE_OPENSSL_INIT_CRYPTO)
+        OpenSSL_add_all_algorithms();
+#else
+	if ( !OPENSSL_init_crypto ( OPENSSL_INIT_LOAD_CONFIG, NULL ) ) {
+		fprintf ( stderr, "OPENSSL_init_crypto(3) failed.\n" );
+		ERR_print_errors_fp ( stderr );
+		exit ( EXIT_FAILURE );
+	}
+#endif
+
+	if ( (e = ENGINE_by_id ( id )) == NULL ) {
+		fprintf ( stderr, "ENGINE_by_id(3) failed.\n" );
+		ERR_print_errors_fp ( stderr );
+		exit ( EXIT_FAILURE );
+	}
+
+	if (  !ENGINE_set_default_DSA ( e ) ) {
+		fprintf ( stderr, "ENGINE_set_default_DSA(3) failed.\n" );
+		ERR_print_errors_fp ( stderr );
+		exit ( EXIT_FAILURE );
+	}
+
+	if (  !ENGINE_set_default_RSA ( e ) ) {
+		fprintf ( stderr, "ENGINE_set_default_RSA(3) failed.\n" );
+		ERR_print_errors_fp ( stderr );
+		exit ( EXIT_FAILURE );
+	}
+
+	return e;
+}
+
+/*
+ * De-initialize OpenSSL, for versions 1.1 and newer.
+ *
+ * All of that is not strictly necessary because the process exits
+ * anyway, however, when an engine is used, this is the only hope
+ * of letting the engine's driver know that the program terminates
+ * (for the fear that the driver's reference counting may go awry, etc.)
+ * Still, there is no guarantee that this function helps...
+ */
+static void
+shutdown_openssl ( ENGINE * const e )
+{
+	if ( e != NULL ) {
+		ENGINE_free ( e );
+		ENGINE_cleanup ();
+	}
+
+	CONF_modules_unload ( 1 );
+	EVP_cleanup ();
+	CRYPTO_cleanup_all_ex_data ();
+	ERR_free_strings ();
+}
+#endif
+
 int
 main(int argc, char *argv[])
 {
@@ -296,8 +544,9 @@ main(int argc, char *argv[])
 	int line_nr = 0;
 	int c;
 	int argi;
+#ifndef OPENSSL_NO_ENGINE
 	ENGINE *engine = NULL;
-
+#endif
 	ldns_zone *orig_zone;
 	ldns_rr_list *orig_rrs = NULL;
 	ldns_rr *orig_soa = NULL;
@@ -307,6 +556,10 @@ main(int argc, char *argv[])
 	char *keyfile_name = NULL;
 	FILE *keyfile = NULL;
 	ldns_key *key = NULL;
+#ifndef OPENSSL_NO_ENGINE
+	ldns_key *eng_ksk = NULL; /* KSK specified with -K */
+	ldns_key *eng_zsk = NULL; /* ZSK specified with -k */
+#endif
 	ldns_key_list *keys;
 	ldns_status s;
 	size_t i;
@@ -315,14 +568,9 @@ main(int argc, char *argv[])
 	char *outputfile_name = NULL;
 	FILE *outputfile;
 	
-	/* tmp vars for engine keys */
-	char *eng_key_l;
-	size_t eng_key_id_len;
-	char *eng_key_id;
-	int eng_key_algo;
-	
 	bool use_nsec3 = false;
 	int signflags = 0;
+	bool unixtime_serial = false;
 
 	/* Add the given keys to the zone if they are not yet present */
 	bool add_keys = true;
@@ -343,18 +591,18 @@ main(int argc, char *argv[])
 	uint32_t ttl = LDNS_DEFAULT_TTL;
 	ldns_rr_class class = LDNS_RR_CLASS_IN;	
 	
-	char *prog = strdup(argv[0]);
 	ldns_status result;
 
 	ldns_output_format_storage fmt_st;
 	ldns_output_format* fmt = ldns_output_format_init(&fmt_st);
 	
+	prog = strdup(argv[0]);
 	inception = 0;
 	expiration = 0;
 	
 	keys = ldns_key_list_new();
 
-	while ((c = getopt(argc, argv, "a:bde:f:i:k:no:ps:t:vAUE:K:")) != -1) {
+	while ((c = getopt(argc, argv, "a:bde:f:i:k:no:ps:t:uvAUE:K:")) != -1) {
 		switch (c) {
 		case 'a':
 			nsec3_algorithm = (uint8_t) atoi(optarg);
@@ -439,6 +687,9 @@ main(int argc, char *argv[])
 		case 'p':
 			nsec3_flags = nsec3_flags | LDNS_NSEC3_VARS_OPTOUT_MASK;
 			break;
+		case 'u':
+			unixtime_serial = true;
+			break;
 		case 'v':
 			printf("zone signer version %s (ldns version %s)\n", LDNS_VERSION, ldns_version());
 			exit(EXIT_SUCCESS);
@@ -447,103 +698,29 @@ main(int argc, char *argv[])
 			signflags |= LDNS_SIGN_DNSKEY_WITH_ZSK;
 			break;
 		case 'E':
-			ENGINE_load_builtin_engines();
-			ENGINE_load_dynamic();
-#ifdef HAVE_ENGINE_LOAD_CRYPTODEV
-			ENGINE_load_cryptodev();
-#endif
-			engine = ENGINE_by_id(optarg);
-			if (!engine) {
-				printf("No such engine: %s\n", optarg);
-				engine = ENGINE_get_first();
-				printf("Available engines:\n");
-				while (engine) {
-					printf("%s\n", ENGINE_get_id(engine));
-					engine = ENGINE_get_next(engine);
-				}
-				exit(EXIT_FAILURE);
-			} else {
-				if (!ENGINE_init(engine)) {
-					printf("The engine couldn't initialize\n");
-					exit(EXIT_FAILURE);
-				}
-				ENGINE_set_default_RSA(engine);
-				ENGINE_set_default_DSA(engine);
-				ENGINE_set_default(engine, 0);
-			}
+#ifndef OPENSSL_NO_ENGINE
+			engine = init_openssl_engine ( optarg );
 			break;
+#else
+			/* fallthrough */
+#endif
 		case 'k':
-			eng_key_l = strchr(optarg, ',');
-			if (eng_key_l && strlen(eng_key_l) > 1) {
-				if (eng_key_l > optarg) {
-					eng_key_id_len = (size_t) (eng_key_l - optarg);
-					eng_key_id = malloc(eng_key_id_len + 1);
-					memcpy(eng_key_id, optarg, eng_key_id_len);
-					eng_key_id[eng_key_id_len] = '\0';
-				} else {
-					/* no id given, use default from engine */
-					eng_key_id = NULL;
-				}
-
-				eng_key_algo = atoi(eng_key_l + 1);
-
-				printf("Engine key id: %s, algo %d\n", eng_key_id, eng_key_algo);
-
-				s = ldns_key_new_frm_engine(&key, engine, eng_key_id, eng_key_algo);
-				if (s == LDNS_STATUS_OK) {
-					/* must be dnssec key */
-					switch (ldns_key_algorithm(key)) {
-					case LDNS_SIGN_RSAMD5:
-					case LDNS_SIGN_RSASHA1:
-					case LDNS_SIGN_RSASHA1_NSEC3:
-					case LDNS_SIGN_RSASHA256:
-					case LDNS_SIGN_RSASHA512:
-					case LDNS_SIGN_DSA:
-					case LDNS_SIGN_DSA_NSEC3:
-					case LDNS_SIGN_ECC_GOST:
-#ifdef USE_ECDSA
-					case LDNS_SIGN_ECDSAP256SHA256:
-					case LDNS_SIGN_ECDSAP384SHA384:
-#endif
-						ldns_key_list_push_key(keys, key);
-						/*printf("Added key at %p:\n", key);*/
-						/*ldns_key_print(stdout, key);*/
-						break;
-					default:
-						fprintf(stderr, "Warning, key not suitable for signing, ignoring key with algorithm %u\n", ldns_key_algorithm(key));
-						break;
-					}
-					if (expiration != 0) {
-						ldns_key_set_expiration(key,
-								expiration);
-					}
-					if (inception != 0) {
-						ldns_key_set_inception(key,
-								inception);
-					}
-				} else {
-					printf("Error reading key '%s' from engine: %s\n", eng_key_id, ldns_get_errorstr_by_id(s));
-					#ifdef HAVE_SSL
-							if (ERR_peek_error()) {
-								ERR_load_crypto_strings();
-								ERR_print_errors_fp(stderr);
-								ERR_free_strings();
-							}
-					#endif
-					exit(EXIT_FAILURE);
-				}
-
-				if (eng_key_id) {
-					free(eng_key_id);
-				}
-			} else {
-				printf("Error: bad engine key specification (should be: -k <id>,<algorithm>)).\n");
-				exit(EXIT_FAILURE);
-			}
+#ifndef OPENSSL_NO_ENGINE
+			eng_zsk = load_key ( optarg, engine );
 			break;
+#else
+			/* fallthrough */
+#endif
 		case 'K':
-			printf("Not implemented yet\n");
+#ifndef OPENSSL_NO_ENGINE
+			eng_ksk = load_key ( optarg, engine );
+			/* I apologize for that, there is no API. */
+			eng_ksk -> _extra.dnssec.flags |= LDNS_KEY_SEP_KEY;
+#else
+			fprintf(stderr, "%s compiled without engine support\n"
+			              , prog);
 			exit(EXIT_FAILURE);
+#endif
 			break;
 		case 'U':
 			signflags |= LDNS_SIGN_WITH_ALL_ALGORITHMS;
@@ -702,6 +879,35 @@ main(int argc, char *argv[])
 		}
 		argi++;
 	}
+
+#ifndef OPENSSL_NO_ENGINE
+       /*
+	* The user may have loaded a KSK and a ZSK from the engine.
+	* Since these keys carry no meta-information which is
+	* relevant to DNS (origin, TTL, etc), and because that
+	* information becomes known only after the command line
+	* and the zone file are parsed completely, the program
+	* needs to post-process these keys before they become usable.
+	*/
+
+	/* The engine's KSK. */
+	post_process_engine_key ( keys,
+				  eng_ksk,
+				  orig_zone,
+				  add_keys,
+				  ttl,
+				  inception,
+				  expiration );
+
+	/* The engine's ZSK. */
+	post_process_engine_key ( keys,
+				  eng_zsk,
+				  orig_zone,
+				  add_keys,
+				  ttl,
+				  inception,
+				  expiration );
+#endif
 	
 	if (ldns_key_list_key_count(keys) < 1) {
 		fprintf(stderr, "Error: no keys to sign with. Aborting.\n\n");
@@ -710,6 +916,10 @@ main(int argc, char *argv[])
 	}
 
 	signed_zone = ldns_dnssec_zone_new();
+	if (unixtime_serial) {
+		ldns_rr_soa_increment_func_int(ldns_zone_soa(orig_zone),
+			ldns_soa_serial_unixtime, 0);
+	}
 	if (ldns_dnssec_zone_add_rr(signed_zone, ldns_zone_soa(orig_zone)) !=
 	    LDNS_STATUS_OK) {
 		fprintf(stderr,
@@ -803,17 +1013,23 @@ main(int argc, char *argv[])
 	ldns_rr_list_deep_free(added_rrs);
 	
 	LDNS_FREE(outputfile_name);
-	
+
+#ifndef OPENSSL_NO_ENGINE
+	shutdown_openssl ( engine );
+#else
 	CRYPTO_cleanup_all_ex_data();
+#endif
 
 	free(prog);
 	exit(EXIT_SUCCESS);
 }
-#else
+
+#else /* !HAVE_SSL */
 int
-main(int argc, char **argv)
+main(int argc __attribute__((unused)),
+     char **argv __attribute__((unused)))
 {
-	fprintf(stderr, "ldns-signzone needs OpenSSL support, which has not been compiled in\n");
-	return 1;
+       fprintf(stderr, "ldns-signzone needs OpenSSL support, which has not been compiled in\n");
+       return 1;
 }
 #endif /* HAVE_SSL */

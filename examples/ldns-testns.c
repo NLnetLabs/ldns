@@ -147,6 +147,7 @@ struct sockaddr_storage;
 #include <netinet/igmp.h>
 #endif
 #include <errno.h>
+#include <signal.h>
 
 #define INBUF_SIZE 4096         /* max size for incoming queries */
 #define DEFAULT_PORT 53		/* default if no -p port is specified */
@@ -272,7 +273,7 @@ handle_udp(int udp_sock, struct entry* entries, int *count)
 		&userdata, do_verbose?logfile:0);
 }
 
-static void
+static int
 read_n_bytes(int sock, uint8_t* buf, size_t sz)
 {
 	size_t count = 0;
@@ -280,14 +281,14 @@ read_n_bytes(int sock, uint8_t* buf, size_t sz)
 		ssize_t nb = recv(sock, (void*)(buf+count), sz-count, 0);
 		if(nb < 0) {
 			log_msg("recv(): %s\n", strerror(errno));
-			return;
+			return -1;
 		} else if(nb == 0) {
 			log_msg("recv: remote end closed the channel\n");
-			memset(buf+count, 0, sz-count);
-			return;
+			return sz-count;
 		}
 		count += nb;
 	}
+	return 0;
 }
 
 static void
@@ -325,7 +326,7 @@ handle_tcp(int tcp_sock, struct entry* entries, int *count)
 	struct sockaddr_storage addr_him;
 	socklen_t hislen;
 	uint8_t inbuf[INBUF_SIZE];
-	uint16_t tcplen;
+	uint16_t tcplen = 0;
 	struct handle_tcp_userdata userdata;
 
 	/* accept */
@@ -337,7 +338,8 @@ handle_tcp(int tcp_sock, struct entry* entries, int *count)
 	userdata.s = s;
 
 	/* tcp recv */
-	read_n_bytes(s, (uint8_t*)&tcplen, sizeof(tcplen));
+	if (read_n_bytes(s, (uint8_t*)&tcplen, sizeof(tcplen)))
+		return;
 	tcplen = ntohs(tcplen);
 	if(tcplen >= INBUF_SIZE) {
 		log_msg("query %d bytes too large, buffer %d bytes.\n",
@@ -349,7 +351,8 @@ handle_tcp(int tcp_sock, struct entry* entries, int *count)
 #endif
 		return;
 	}
-	read_n_bytes(s, inbuf, tcplen);
+	if (read_n_bytes(s, inbuf, tcplen))
+		return;
 
 	handle_query(inbuf, (ssize_t) tcplen, entries, count, transport_tcp, 
 		send_tcp, &userdata, do_verbose?logfile:0);
@@ -499,6 +502,9 @@ main(int argc, char **argv)
 	log_msg("Reading datafile %s\n", datafile);
 	entries = read_datafile(datafile, 0);
 
+#ifdef SIGPIPE
+        (void)signal(SIGPIPE, SIG_IGN);
+#endif
 #ifdef USE_WINSOCK
 	if(WSAStartup(MAKEWORD(2,2), &wsa_data) != 0)
 		error("WSAStartup failed\n");

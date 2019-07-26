@@ -1,0 +1,35 @@
+[ -f ../.tpkg.var.master ] && source ../.tpkg.var.master
+
+export PATH=$PATH:/usr/sbin:/sbin:/usr/local/bin:/usr/local/sbin:.
+
+# first arg is the build dir
+TPKG_BUILD=$1
+
+echo $TPKG_BUILD
+cd $TPKG_BUILD
+
+conf=`which autoreconf` ||\
+conf=`which autoreconf-2.59` ||\
+conf=`which autoreconf-2.61` ||\
+conf=`which autoreconf259`
+
+mk=`which gmake` ||\
+mk=`which make`
+
+loot=`which glibtoolize` ||\
+loot=`which libtoolize`
+
+echo "configure: $conf"
+echo "toolize: $loot"
+echo "make: $mk"
+
+if [ ! $mk ] || [ ! $conf ] || [ ! $loot ] ; then
+	echo "Error, one or more build tools not found, aborting"
+	exit 1
+fi;
+
+make realclean || true
+$loot && $conf && mkdir -p b && cd b && \
+	../configure --disable-sha2 --disable-gost --disable-dane-ta-usage && \
+	$mk
+
