@@ -147,8 +147,8 @@ no-drill-config-h:
 	     exit -1 ; \
 	fi
 
-drill/drill: $(DRILL_LOBJS) $(LIB)
-	$(LINK_EXE) $(DRILL_LOBJS) $(LIBS) $(LIBSSL_LIBS) -lldns -o drill/drill
+drill/drill: $(DRILL_LOBJS) $(LIB) $(LIBLOBJS)
+	$(LINK_EXE) $(DRILL_LOBJS) $(LIBLOBJS) $(LIBS) $(LIBSSL_LIBS) -lldns -o drill/drill
 
 drill/drill.1: $(srcdir)/drill/drill.1.in
 	$(edit) $(srcdir)/drill/drill.1.in > drill/drill.1
@@ -179,21 +179,21 @@ no-examples-config-h:
 	fi
 
 $(EXAMPLE_PROGS):
-	$(LINK_EXE) $@.lo $(LIBS) -lldns -o $@
+	$(LINK_EXE) $@.lo $(LIBLOBJS) $(LIBS) -lldns -o $@
 
 $(TESTNS):
-	$(LINK_EXE) $(TESTNS_LOBJS) $(LIBS) -lldns -o $(TESTNS)
+	$(LINK_EXE) $(TESTNS_LOBJS) $(LIBLOBJS) $(LIBS) -lldns -o $(TESTNS)
 
 $(LDNS_DPA):
-	$(LINK_EXE) $(LDNS_DPA_LOBJS) $(LIBS) $(LIBPCAP_LIBS) -lldns \
+	$(LINK_EXE) $(LDNS_DPA_LOBJS) $(LIBLOBJS) $(LIBS) $(LIBPCAP_LIBS) -lldns \
 		 -o $(LDNS_DPA)
 
 $(LDNS_DANE):
-	$(LINK_EXE) $(LDNS_DANE_LOBJS) $(LIBS) $(LIBSSL_SSL_LIBS) -lldns \
+	$(LINK_EXE) $(LDNS_DANE_LOBJS) $(LIBLOBJS) -lldns $(LIBS) $(LIBSSL_SSL_LIBS) \
 		 -o $(LDNS_DANE)
 
 $(EX_SSL_PROGS):
-	$(LINK_EXE) $@.lo $(LIBS) $(LIBSSL_LIBS) -lldns -o $@
+	$(LINK_EXE) $@.lo $(LIBLOBJS) $(LIBS) $(LIBSSL_LIBS) -lldns -o $@
 
 examples/ldns-dane.1: $(srcdir)/examples/ldns-dane.1.in
 	$(edit) $(srcdir)/examples/ldns-dane.1.in > examples/ldns-dane.1
@@ -243,7 +243,7 @@ libldns.la-export-all: $(LDNS_ALL_LOBJS)
 mancheck:
 	sh -c 'find . -name \*.\[13\] -exec troff -z {} \;' 2>&1 | sed "s/^\.\///" | sed "s/\(:[0\-9]\+:\)/\1 warning:/g"
 
-doxygen: manpages
+doxygen:
 	@if test ! -e doc/header.html ; then \
 		$(INSTALL) -c -m 644 $(srcdir)/doc/header.html doc/ ; \
 	fi ;
@@ -253,11 +253,26 @@ doc: manpages $(doxygen)
 	@$(INSTALL) -d doc
 
 manpages: $(srcdir)/doc/function_manpages 
-	@$(INSTALL) -d doc
-	@cat $(srcdir)/ldns/*.h \
-	| $(srcdir)/doc/doxyparse.pl \
-		-m $(srcdir)/doc/function_manpages \
-	| grep -v ^doxygen | grep -v ^cat  > doc/ldns_manpages
+	@$(INSTALL) -d doc/man/man3
+	@if [ -f $(srcdir)/doc/man/man3/ldns_rr.3 ] ; \
+	then \
+		if test -d ldns ; then \
+			echo "is builddir srcdir" > ldns/YES ; \
+			if [ ! -f $(srcdir)/ldns/YES ]; then \
+				echo "Copying manpages..."; \
+				for m in $(srcdir)/doc/man/man3/*.3 ; \
+				do \
+					$(INSTALL) -c -C -m 444 $${m} doc/man/man3/ ; \
+				done; \
+			fi ;\
+			rm -f ldns/YES; \
+		fi; \
+	else \
+		echo "Generating manpages..."; \
+		cat $(srcdir)/ldns/*.h \
+			| $(srcdir)/doc/doxyparse.pl -m $(srcdir)/doc/function_manpages \
+			| grep -v ^doxygen | grep -v ^cat  > doc/ldns_manpages; \
+	fi
 
 manpage-create-errors: $(srcdir)/doc/function_manpages 
 	@$(INSTALL) -d doc
@@ -276,7 +291,7 @@ manpage-errors:
 			echo doc/man/man3/$${m}.3: manpage-has-bad-whatis-entry; \
 		fi; \
 	done || echo "WARNING!: Cannot detect manpage errors on `uname`"
-	
+
 pyldns: _ldns.la
 
 $(pywrapdir)/ldns_wrapper.c: $(PYLDNS_I_FILES) ldns/config.h
@@ -308,9 +323,9 @@ clean-p5-dns-ldns: $(p5_dns_ldns_dir)/Makefile
 test-p5-dns-ldns: $(p5_dns_ldns_dir)/Makefile
 	cd $(p5_dns_ldns_dir); $(MAKE) test
 
-install: install-h install-lib @INSTALL_CONFIG@ install-manpages $(pyldns_inst) $(pyldnsx_inst) @INSTALL_P5_DNS_LDNS@ @INSTALL_DRILL@ @INSTALL_EXAMPLES@
+install: install-h install-lib install-pc @INSTALL_CONFIG@ install-manpages $(pyldns_inst) $(pyldnsx_inst) @INSTALL_P5_DNS_LDNS@ @INSTALL_DRILL@ @INSTALL_EXAMPLES@
 
-uninstall: uninstall-manpages @UNINSTALL_CONFIG@ uninstall-h uninstall-lib $(pyldns_uninst) $(pyldnsx_uninst) @UNINSTALL_P5_DNS_LDNS@ @UNINSTALL_DRILL@ @UNINSTALL_EXAMPLES@
+uninstall: uninstall-manpages @UNINSTALL_CONFIG@ uninstall-h uninstall-lib uninstall-pc $(pyldns_uninst) $(pyldnsx_uninst) @UNINSTALL_P5_DNS_LDNS@ @UNINSTALL_DRILL@ @UNINSTALL_EXAMPLES@
 
 destclean: uninstall
 
@@ -354,6 +369,16 @@ uninstall-h:
 		rm -f $(DESTDIR)$(includedir)/ldns/$$i; done
 	test ! -d $(DESTDIR)$(includedir)/ldns || rmdir -p $(DESTDIR)$(includedir)/ldns || echo "ok, dir already gone"
 	exit 0
+
+packaging/libldns.pc: packaging/libldns.pc.in
+	./config.status $@
+
+install-pc: packaging/libldns.pc
+	$(INSTALL) -m 644 packaging/libldns.pc $(DESTDIR)$(libdir)/pkgconfig/ldns.pc
+
+uninstall-pc:
+	$(LIBTOOL) --mode=uninstall rm -f $(DESTDIR)$(libdir)/pkgconfig/ldns.pc
+	test ! -d $(DESTDIR)$(libdir)/pkgconfig || rmdir -p $(DESTDIR)$(libdir)/pkgconfig || echo "ok, dir already gone"
 
 install-lib: lib
 	$(INSTALL) -m 755 -d $(DESTDIR)$(libdir)
@@ -458,7 +483,7 @@ test-clean:
 	tpkg -b test clean
 
 test: @TEST_P5_DNS_LDNS@
-	if test -x "`which bash`"; then bash test/test_all.sh; else sh test/test_all.sh; fi
+	./test/test_all.sh
 
 
 # Recreate symbols file, only needed when API changes

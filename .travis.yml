@@ -1,0 +1,35 @@
+sudo: false
+language: c
+addons:
+  apt:
+    packages:
+      - libssl-dev
+      - python
+      - valgrind
+      - lcov
+      - doxygen
+      - graphviz
+      - indent
+  homebrew:
+    packages:
+      - gnu-indent
+      - doxygen
+      - openssl
+      - indent
+matrix:
+  include:
+    - os: linux
+      compiler: gcc
+      env: VALGRIND=true  ANALYSIS=true  COVERAGE=true  DOXYGEN=true
+#    - os: linux
+#      compiler: clang
+#      env: VALGRIND=true  ANALYSIS=true  COVERAGE=true  DOXYGEN=true
+#    - os: osx
+#      compiler: gcc
+#      env: VALGRIND=true  ANALYSIS=true  COVERAGE=true  DOXYGEN=true
+    - os: osx
+      compiler: clang
+      env: VALGRIND=true  ANALYSIS=true  COVERAGE=true  DOXYGEN=true
+script:
+  - test/test_ci.sh
+

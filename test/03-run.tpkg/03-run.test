@@ -1,0 +1,21 @@
+# #-- 03-run.test --#
+# source the master var file when it's there
+[ -f ../.tpkg.var.master ] && source ../.tpkg.var.master
+# use .tpkg.var.test for in test variable passing
+[ -f .tpkg.var.test ] && source .tpkg.var.test
+# svnserve resets the path, you may need to adjust it, like this:
+PATH=$PATH:/usr/sbin:/sbin:/usr/local/bin:/usr/local/sbin:.
+
+# first arg is the build dir
+TPKG_BUILD=$1
+
+cd $TPKG_BUILD
+cd drill/
+# this segfaulted once - nothing should be running on this port
+LD_LIBRARY_PATH="../.libs:$LD_LIBRARY_PATH" DYLD_LIBRARY_PATH="../.libs:$DYLD_LIBRARY_PATH" ./drill @localhost mx miek.nl -p 5333
+fail=$?
+if [ $fail -eq 1 ]; then
+        #success
+        exit 0;
+fi
+exit $fail

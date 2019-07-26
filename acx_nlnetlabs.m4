@@ -646,7 +646,7 @@ AC_DEFUN([ACX_SSL_CHECKS], [
     if test x_$withval != x_no; then
         AC_MSG_CHECKING(for SSL)
         if test x_$withval = x_ -o x_$withval = x_yes; then
-            withval="/usr/local/ssl /usr/lib/ssl /usr/ssl /usr/pkg /usr/local /opt/local /usr/sfw /usr"
+            withval="/usr/local/ssl /usr/lib/ssl /usr/ssl /usr/pkg /usr/local /opt/local /usr/local/opt/openssl /usr/sfw /usr"
         fi
         for dir in $withval; do
             ssldir="$dir"
@@ -688,8 +688,8 @@ AC_DEFUN([ACX_SSL_CHECKS], [
                 # check if -lwsock32 or -lgdi32 are needed.	
                 BAKLIBS="$LIBS"
                 BAKSSLLIBS="$LIBSSL_LIBS"
-                LIBS="$LIBS -lgdi32"
-                LIBSSL_LIBS="$LIBSSL_LIBS -lgdi32"
+		LIBS="$LIBS -lgdi32 -lws2_32"
+		LIBSSL_LIBS="$LIBSSL_LIBS -lgdi32 -lws2_32"
                 AC_MSG_CHECKING([if -lcrypto needs -lgdi32])
                 AC_TRY_LINK([], [
                     int HMAC_Update(void);
@@ -751,7 +751,7 @@ AC_DEFUN([ACX_WITH_SSL],
 [
 AC_ARG_WITH(ssl, AC_HELP_STRING([--with-ssl=pathname],
                                     [enable SSL (will check /usr/local/ssl
-                            /usr/lib/ssl /usr/ssl /usr/pkg /usr/local /opt/local /usr/sfw /usr)]),[
+                            /usr/lib/ssl /usr/ssl /usr/pkg /usr/local /opt/local /usr/local/opt/openssl /usr/sfw /usr)]),[
         ],[
             withval="yes"
         ])
@@ -770,7 +770,7 @@ AC_DEFUN([ACX_WITH_SSL_OPTIONAL],
 [
 AC_ARG_WITH(ssl, AC_HELP_STRING([--with-ssl=pathname],
                                 [enable SSL (will check /usr/local/ssl
-                                /usr/lib/ssl /usr/ssl /usr/pkg /usr/local /opt/local /usr/sfw /usr)]),[
+                                /usr/lib/ssl /usr/ssl /usr/pkg /usr/local /opt/local /usr/local/opt/openssl /usr/sfw /usr)]),[
         ],[
             withval="yes"
         ])
@@ -839,7 +839,11 @@ dnl see if on windows
 if test "$ac_cv_header_windows_h" = "yes"; then
 	AC_DEFINE(USE_WINSOCK, 1, [Whether the windows socket API is used])
 	USE_WINSOCK="1"
-	LIBS="$LIBS -lws2_32"
+	if echo $LIBS | grep 'lws2_32' >/dev/null; then
+		:
+	else
+		LIBS="$LIBS -lws2_32"
+	fi
 fi
 ],
 dnl no quick getaddrinfo, try mingw32 and winsock2 library.

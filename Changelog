@@ -1,3 +1,73 @@
+1.7.1	2019-07-26
+	* bugfix: Manage verification paths for OpenSSL >= 1.1.0
+	  Thanks Marco Davids
+	* bugfix #4106: find the SDK on MacOS X <= 10.6
+	  Thanks Bill Cole
+	* bugfix #4155: ldns-config contains never used variables
+	  Thanks Petr Menšík
+	* bugfix #4221: drill -x crashes with malformed IPv4 address 
+	  Thanks Oleksandr Tymoshenko
+	* bugfix #3437: CDS & CDNSKEY RRsets should be signed with the KSK
+	  Thanks Tony Finch
+	* bugfix #1566, #1568, #1569, #1570: Potential NULL Dereferences
+	  Thanks Bill Parker
+	* bugfix #1260: Anticipate strchr returning NULL on unfound char
+	  Thanks Stephan Zeisberg
+	* bugfix #1257: Free after reallocing to 0 size
+	  Thanks Stephan Zeisberg
+	* bugfix #1256: Check parse limit before t increment
+	  Thanks Stephan Zeisberg
+	* bugfix #1245: Only one signature per RRset needs to be valid with
+	  ldns-verify-zone.  Thanks Emil Natan.
+	* ldns-notify can use all supported hash algorithms with -y.
+	* bugfix #1209: make install ldns.pc file
+	  Thanks Oleksandr Natalenko
+	* bugfix #1218: Only chase DS if signer is parent of owner.
+	  Thanks Emil Natan
+	* bugfix #617: Retry WKS service and protocol names lower case.
+	  Thanks Siali Yan
+	* Spelling errors in binaries and man pages
+	  Thanks Andreas Schulze
+	* removed duplicate condition in ldns_udp_send_query.
+	* ldns_wire2pkt: fix null pointer dereference if pkt allocation fails
+	  and fix memory leak with more EDNS sections
+	  Thanks Jan Vcelak
+	* bugfix #1399: ldns_pkt2wire() Python binding is broken.
+	  Thanks James Raftery
+	* ED25519 and ED448 support. Default is to autodetect support in
+	  OpenSSL.  Disable with --disable-ed25519 and --disable-ed448.
+	* ldns-notify: can have IPv6 address as argument.
+	* Fix time sensitive TSIG compare vulnerability.
+	* Fix that ldns-testns ignores sigpipe.
+	* Fix that ldns-notify sets the query RR as question RR, this
+	  removes the wrong TTL and 0 rdata from the packet printout.
+	* Allow -T flag to be used together with drill -x
+	* Python bindings compile with swig 4.0
+	  Thanks Jitka Plesníková
+	* bugfix #4248: drill -DT fails for CNAME domain
+	  Thanks Thom Wiggers
+	* bugfix #4214: Various fixes and leaks found by coverity.
+	  Thanks Petr Menšík 
+	* Feature #3394: An -I option to ldns-notify to specify a source
+	  IP address to send to notify from.  Thanks Geert Hendrickx
+	* Bugfix #279: New API functions ldns_udp_connect2,
+	  ldns_tcp_connect2, ldns_udp_bgsend2 and ldns_tcp_bgsend2,
+	  that return -1 on failure and allow socket number 0
+	  to be returned too.  Thanks Joerg Sonnenberger
+	* Bugfix #1447: More verbose reporting of chasing problems with
+	  ldns-verify-zone.  Thanks Stephane Guedon
+	* OpenSSL engine support with ldns-signzone.
+	  See also https://penzin.net/ldns-signzone/
+	  Many thanks Vadim Penzin.
+	* Various improvements found with shellcheck.
+	  Thanks Jeffrey Walton
+	* PR #36 Update manpage of ldns-notify to mention algorithm
+	  support with TSIG.  Thanks Anand Buddhdev
+	* Compile warnings with signed char input to to_lower()
+	  and is_digit() with NetBSD.  Thanks Håvard Eidnes
+	* Missing Makefile.PL in DNS-LDNS perl module contribution.
+	  Thanks Jaap Akkerhuis
+
 1.7.0	2016-12-20
 	* Fix lookup of relative names in ldns_resolver_search.
 	* bugfix #548: Double free for answers > 4096 in ldns_resolver_send_pkt

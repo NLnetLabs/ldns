@@ -62,13 +62,10 @@ insert_ds(ldns_rdf *dsowner, uint32_t ttl)
                  * 2147483647 or 0x7FFFFFFF
                  */
                 snprintf(digeststr, 65,
-                        "%08x%08x%08x%08x%08x%08x%08x%08x%08x%08x%08x%08x%08x%08x%08x%08x",
+                        "%08x%08x%08x%08x%08x%08x%08x%08x",
                         (unsigned) rand()%RAND_MAX, (unsigned) rand()%RAND_MAX, (unsigned) rand()%RAND_MAX,
                         (unsigned) rand()%RAND_MAX, (unsigned) rand()%RAND_MAX, (unsigned) rand()%RAND_MAX,
-                        (unsigned) rand()%RAND_MAX, (unsigned) rand()%RAND_MAX, (unsigned) rand()%RAND_MAX,
-                        (unsigned) rand()%RAND_MAX, (unsigned) rand()%RAND_MAX, (unsigned) rand()%RAND_MAX,
-                        (unsigned) rand()%RAND_MAX, (unsigned) rand()%RAND_MAX, (unsigned) rand()%RAND_MAX,
-                        (unsigned) rand()%RAND_MAX);
+                        (unsigned) rand()%RAND_MAX, (unsigned) rand()%RAND_MAX);
                 dsownerstr = ldns_rdf2str(dsowner);
                 fprintf(stdout, "%s\t%u\tIN\tDS\t%d %d %d %s\n", dsownerstr, (unsigned) ttl, keytag, ALGO, DIGESTTYPE, digeststr);
         }

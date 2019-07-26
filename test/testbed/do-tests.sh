@@ -8,12 +8,12 @@ cd testdata;
 for test in `ls *.tpkg`; do
 	SKIP=0
 	if echo $NEED_SPLINT | grep $test >/dev/null; then
-		if test ! -x "`which splint`"; then
+		if test ! -x "`command -v splint`"; then
 			SKIP=1;
 		fi
 	fi
 	if echo $NEED_DOXYGEN | grep $test >/dev/null; then
-		if test ! -x "`which doxygen`"; then
+		if test ! -x "`command -v doxygen`"; then
 			SKIP=1;
 		fi
 	fi

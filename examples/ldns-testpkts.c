@@ -35,6 +35,7 @@ static const char* prog_name = "ldns-testpkts";
 void verbose(int lvl, const char* msg, ...) ATTR_FORMAT(printf, 2, 3);
 
 /** print error and exit */
+static void error(const char* msg, ...) __attribute__((noreturn));
 static void error(const char* msg, ...)
 {
 	va_list args;

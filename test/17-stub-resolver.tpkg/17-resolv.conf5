@@ -1,0 +1,4 @@
+domain jelte.nlnetlabs.nl
+options debug
+nameserver 192.168.8.8
+nameserver 192.168.8.21

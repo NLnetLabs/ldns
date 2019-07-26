@@ -1,0 +1,39 @@
+# #-- 10-older-test.pre--#
+# source the master var file when it's there
+[ -f ../.tpkg.var.master ] && source ../.tpkg.var.master
+# use .tpkg.var.test for in test variable passing
+[ -f .tpkg.var.test ] && source .tpkg.var.test
+# svnserve resets the path, you may need to adjust it, like this:
+export PATH=$PATH:/usr/sbin:/sbin:/usr/local/bin:/usr/local/sbin:.
+
+conf=`which autoconf` ||\
+conf=`which autoconf-2.59` ||\
+conf=`which autoconf-2.61` ||\
+conf=`which autoconf259`
+
+hdr=`which autoheader` ||\
+hdr=`which autoheader-2.59` ||\
+hdr=`which autoheader-2.61` ||\
+hdr=`which autoheader259`
+
+mk=`which gmake` ||\
+mk=`which make`
+
+echo "autoconf: $conf"
+echo "autoheader: $hdr"
+echo "make: $mk"
+
+opts=`../../config.status --config`
+echo options: $opts
+
+if [ ! $mk ] || [ ! $conf ] || [ ! $hdr ] ; then
+	echo "Error, one or more build tools not found, aborting"
+	exit 1
+fi;
+
+#$conf 15-unit-tests-rrtypes.configure.ac > configure && \
+#chmod +x configure && \
+#$hdr 15-unit-tests-rrtypes.configure.ac &&\
+#eval ./configure --with-ldns=../../ "$opts" && \
+../../config.status --file 15-unit-tests-rrtypes.Makefile
+$mk -f 15-unit-tests-rrtypes.Makefile

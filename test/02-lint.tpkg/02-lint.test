@@ -1,0 +1,14 @@
+[ -f ../.tpkg.var.master ] && source ../.tpkg.var.master
+
+export PATH=$PATH:/usr/sbin:/sbin:/usr/local/bin:/usr/local/sbin:.
+
+TPKG_BUILD=$1
+cd $TPKG_BUILD
+case $OSTYPE in
+        linux*)
+        make lint
+        ;;
+        freebsd*)
+        gmake lint
+        ;;
+esac

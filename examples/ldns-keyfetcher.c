@@ -447,6 +447,7 @@ retrieve_dnskeys(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 
 		if (!p) {
 			fprintf(stderr, "no packet received\n");
+			LDNS_FREE(last_nameservers);
 			return NULL;
 		}
 
@@ -454,12 +455,14 @@ retrieve_dnskeys(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 			fprintf(stderr, "Error: nameserver at ");
 			ldns_rdf_print(stderr, last_nameservers[nss_i]);
 			fprintf(stderr, " not responding. Unable to check RRset here, aborting.\n");
+			LDNS_FREE(last_nameservers);
 			return NULL;
 		}
 
 		if (ldns_pkt_get_rcode(p) != LDNS_RCODE_NOERROR) {
 			printf("Error in packet:\n");
 			ldns_pkt_print(stdout, p);
+			LDNS_FREE(last_nameservers);
 			return NULL;
 		}
 
