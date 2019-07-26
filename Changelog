@@ -1,4 +1,4 @@
-1.7.1	2019-07-2?
+1.7.1	2019-07-26
 	* bugfix: Manage verification paths for OpenSSL >= 1.1.0
 	  Thanks Marco Davids
 	* bugfix #4106: find the SDK on MacOS X <= 10.6

@@ -27,7 +27,7 @@ AC_SUBST(LDNS_VERSION_MICRO, [VERSION_MICRO])
 #
 # ldns-1.6.17 and before had a .so with version same as VERSION_INFO
 # ldns-1.7.0 has libversion 2:0:0
-# ldns-1.7.1 will have libversion 3:0:1
+# ldns-1.7.1 has libversion 3:0:1
 #
 AC_SUBST(VERSION_INFO, [3:0:0])
 
