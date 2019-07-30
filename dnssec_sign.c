@@ -417,7 +417,7 @@ ldns_pkey_is_ecdsa(EVP_PKEY* pkey)
         if(EVP_PKEY_base_id(pkey) != EVP_PKEY_EC)
                 return 0;
 #else
-        if(EVP_PKEY_type(key->type) != EVP_PKEY_EC)
+        if(EVP_PKEY_type(pkey->type) != EVP_PKEY_EC)
                 return 0;
 #endif
         ec = EVP_PKEY_get1_EC_KEY(pkey);
