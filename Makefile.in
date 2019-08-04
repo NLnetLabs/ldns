@@ -370,7 +370,7 @@ uninstall-h:
 	test ! -d $(DESTDIR)$(includedir)/ldns || rmdir -p $(DESTDIR)$(includedir)/ldns || echo "ok, dir already gone"
 	exit 0
 
-packaging/libldns.pc: packaging/libldns.pc.in
+packaging/libldns.pc: $(srcdir)/packaging/libldns.pc.in
 	./config.status $@
 
 install-pc: packaging/libldns.pc
