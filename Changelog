@@ -1,5 +1,5 @@
 ...
-	* bugfix #70: heap Out-of-bound Read vulnerability in
+	* bugfix #50: heap Out-of-bound Read vulnerability in
 	  rr_frm_str_internal reported by pokerfacett.
 
 1.7.1	2019-07-26
