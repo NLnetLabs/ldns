@@ -365,12 +365,12 @@ ldns_rr_new_frm_str_internal(ldns_rr **newrr, const char *str,
 				ldns_buffer_remaining(rd_buf) > 0){
 
 			/* skip spaces */
-			while (sldns_buffer_remaining(strbuf) > 0 &&
+			while (ldns_buffer_remaining(rd_buf) > 0 &&
 				*(ldns_buffer_current(rd_buf)) == ' ') {
 				ldns_buffer_skip(rd_buf, 1);
 			}
 
-			if (sldns_buffer_remaining(strbuf) > 0 &&
+			if (ldns_buffer_remaining(rd_buf) > 0 &&
 				*(ldns_buffer_current(rd_buf)) == '\"') {
 				delimiters = "\"\0";
 				ldns_buffer_skip(rd_buf, 1);
