@@ -365,15 +365,18 @@ ldns_rr_new_frm_str_internal(ldns_rr **newrr, const char *str,
 				ldns_buffer_remaining(rd_buf) > 0){
 
 			/* skip spaces */
-			while (*(ldns_buffer_current(rd_buf)) == ' ') {
+			while (sldns_buffer_remaining(strbuf) > 0 &&
+				*(ldns_buffer_current(rd_buf)) == ' ') {
 				ldns_buffer_skip(rd_buf, 1);
 			}
 
-			if (*(ldns_buffer_current(rd_buf)) == '\"') {
+			if (sldns_buffer_remaining(strbuf) > 0 &&
+				*(ldns_buffer_current(rd_buf)) == '\"') {
 				delimiters = "\"\0";
 				ldns_buffer_skip(rd_buf, 1);
 				quoted = true;
-			} else if (ldns_rr_descriptor_field_type(desc, r_cnt)
+			}
+			if (!quoted && ldns_rr_descriptor_field_type(desc, r_cnt)
 					== LDNS_RDF_TYPE_LONG_STR) {
 
 				status = LDNS_STATUS_SYNTAX_RDATA_ERR;
