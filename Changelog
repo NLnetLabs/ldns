@@ -1,6 +1,8 @@
 ...
 	* bugfix #50: heap Out-of-bound Read vulnerability in
 	  rr_frm_str_internal reported by pokerfacett.
+	* bugfix #51: Heap Out-of-bound Read vulnerability in
+	  ldns_nsec3_salt_data reported by pokerfacett.
 
 1.7.1	2019-07-26
 	* bugfix: Manage verification paths for OpenSSL >= 1.1.0
