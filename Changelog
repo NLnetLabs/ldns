@@ -19,9 +19,9 @@
 	  Thanks Bill Parker
 	* bugfix #1260: Anticipate strchr returning NULL on unfound char
 	  Thanks Stephan Zeisberg
-	* bugfix #1257: Free after reallocing to 0 size
+	* bugfix #1257: Free after reallocing to 0 size (CVE-2017-1000232)
 	  Thanks Stephan Zeisberg
-	* bugfix #1256: Check parse limit before t increment
+	* bugfix #1256: Check parse limit before t increment (CVE-2017-1000231)
 	  Thanks Stephan Zeisberg
 	* bugfix #1245: Only one signature per RRset needs to be valid with
 	  ldns-verify-zone.  Thanks Emil Natan.
