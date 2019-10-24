@@ -525,7 +525,7 @@ void ldns_rr_set_class(ldns_rr *rr, ldns_rr_class rr_class);
  * \param[in] *rr the rr to operate on
  * \param[in] *f the rdf to set
  * \param[in] position the position the set the rdf
- * \return  the old value in the rr, NULL on failyre
+ * \return  the old value in the rr, NULL on failure
  */
 ldns_rdf* ldns_rr_set_rdf(ldns_rr *rr, const ldns_rdf *f, size_t position);
 
