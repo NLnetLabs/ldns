@@ -137,7 +137,7 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 	ldns_rr_list *correct_key_list;
 	ldns_rr_list *trusted_ds_rrs;
 	bool new_keys_trusted = false;
-	ldns_rr_list *current_correct_keys;
+	ldns_rr_list *current_correct_keys = NULL;
 	ldns_rr_list *dataset;
 
 	ldns_rr_list *nsec_rrs = NULL;
