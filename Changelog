@@ -4,6 +4,7 @@
 	* bugfix #51: Heap Out-of-bound Read vulnerability in
 	  ldns_nsec3_salt_data reported by pokerfacett.
 	* Fix memory leak in examples/ldns-testns handle_tcp routine.
+	* Detect fixed time memory compare for openssl 0.9.8.
 
 1.7.1	2019-07-26
 	* bugfix: Manage verification paths for OpenSSL >= 1.1.0
