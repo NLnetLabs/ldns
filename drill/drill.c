@@ -994,9 +994,11 @@ main(int argc, char *argv[])
 	xfree(tsig_algorithm);
 
 #ifdef HAVE_SSL
+#if OPENSSL_VERSION_NUMBER < 0x10100000L || defined(HAVE_LIBRESSL)
 	CRYPTO_cleanup_all_ex_data();
 	ERR_free_strings();
 	EVP_cleanup();
+#endif
 #endif
 #ifdef USE_WINSOCK
 	WSACleanup();

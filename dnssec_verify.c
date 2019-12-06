@@ -597,7 +597,9 @@ ldns_dnssec_trust_tree_print_sm_fmt(FILE *out,
 						if (tree->parent_status[i]
 						    == LDNS_STATUS_SSL_ERR) {
 							printf("; SSL Error: ");
+#if OPENSSL_VERSION_NUMBER < 0x10100000L || defined(HAVE_LIBRESSL)
 							ERR_load_crypto_strings();
+#endif
 							ERR_print_errors_fp(stdout);
 							printf("\n");
 						}
