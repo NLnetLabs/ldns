@@ -1,5 +1,12 @@
 1.7.2	2019-??-??
 	* bufix: Revert unused variables in ldns-config removal patch.
+	* bugfix #50: heap Out-of-bound Read vulnerability in
+	  rr_frm_str_internal reported by pokerfacett.
+	* bugfix #51: Heap Out-of-bound Read vulnerability in
+	  ldns_nsec3_salt_data reported by pokerfacett.
+	* Fix memory leak in examples/ldns-testns handle_tcp routine.
+	* Detect fixed time memory compare for openssl 0.9.8.
+	* Fix compile warning by variable initialisation for older gcc.
 
 1.7.1	2019-07-26
 	* bugfix: Manage verification paths for OpenSSL >= 1.1.0
@@ -16,9 +23,9 @@
 	  Thanks Bill Parker
 	* bugfix #1260: Anticipate strchr returning NULL on unfound char
 	  Thanks Stephan Zeisberg
-	* bugfix #1257: Free after reallocing to 0 size
+	* bugfix #1257: Free after reallocing to 0 size (CVE-2017-1000232)
 	  Thanks Stephan Zeisberg
-	* bugfix #1256: Check parse limit before t increment
+	* bugfix #1256: Check parse limit before t increment (CVE-2017-1000231)
 	  Thanks Stephan Zeisberg
 	* bugfix #1245: Only one signature per RRset needs to be valid with
 	  ldns-verify-zone.  Thanks Emil Natan.

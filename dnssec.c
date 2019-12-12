@@ -1332,6 +1332,8 @@ ldns_nsec3_salt_data(const ldns_rr *nsec3_rr)
 	ldns_rdf *salt_rdf = ldns_nsec3_salt(nsec3_rr);
 	if (salt_rdf && ldns_rdf_size(salt_rdf) > 0) {
 	    	salt_length = ldns_rdf_data(salt_rdf)[0];
+		if((size_t)salt_length+1 > ldns_rdf_size(salt_rdf))
+			return NULL;
 		salt = LDNS_XMALLOC(uint8_t, salt_length);
                 if(!salt) return NULL;
 		memcpy(salt, &ldns_rdf_data(salt_rdf)[1], salt_length);

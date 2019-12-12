@@ -15,6 +15,7 @@
 #include <ldns/ldns.h>
 
 #ifdef HAVE_SSL
+#include <openssl/ui.h>
 #include <openssl/ssl.h>
 #include <openssl/rand.h>
 #include <openssl/bn.h>

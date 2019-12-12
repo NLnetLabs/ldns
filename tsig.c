@@ -354,7 +354,13 @@ ldns_pkt_tsig_verify_next(ldns_pkt *pkt, const uint8_t *wire, size_t wirelen, co
 		return false;
 	}
 	/* use time insensitive memory compare */
-	if(CRYPTO_memcmp(ldns_rdf_data(pkt_mac_rdf), ldns_rdf_data(my_mac_rdf),
+	if(
+#ifdef HAVE_CRYPTO_MEMCMP
+	    CRYPTO_memcmp
+#else
+	    memcmp
+#endif
+		(ldns_rdf_data(pkt_mac_rdf), ldns_rdf_data(my_mac_rdf),
 		ldns_rdf_size(my_mac_rdf)) == 0) {
 		ldns_rdf_deep_free(my_mac_rdf);
 		return true;
