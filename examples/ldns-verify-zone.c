@@ -935,7 +935,7 @@ main(int argc, char **argv)
 		ldns_dnssec_zone_deep_free(dnssec_zone);
 	} else {
 		if (verbosity > 0) {
-			fprintf(myerr, "%s at %d\n",
+			fprintf(myerr, "%s at line %d\n",
 				ldns_get_errorstr_by_id(s), line_nr);
 		}
                 exit(EXIT_FAILURE);

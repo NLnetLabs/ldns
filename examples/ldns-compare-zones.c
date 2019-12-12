@@ -133,7 +133,7 @@ main(int argc, char **argv)
 						  LDNS_RR_CLASS_IN, &line_nr1);
 	if (s != LDNS_STATUS_OK) {
 		fclose(fp1);
-		fprintf(stderr, "%s: %s at %d\n",
+		fprintf(stderr, "%s: %s at line %d\n",
 			   fn1,
 			   ldns_get_errorstr_by_id(s),
 			   line_nr1);
@@ -153,7 +153,7 @@ main(int argc, char **argv)
 	if (s != LDNS_STATUS_OK) {
 		ldns_zone_deep_free(z1);
 		fclose(fp2);
-		fprintf(stderr, "%s: %s at %d\n",
+		fprintf(stderr, "%s: %s at line %d\n",
 			   fn2,
 			   ldns_get_errorstr_by_id(s),
 			   line_nr2);

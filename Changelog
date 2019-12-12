@@ -1,5 +1,7 @@
 1.7.2	2019-??-??
-	* bufix: Revert unused variables in ldns-config removal patch.
+	* bugfix #38: Print "line" before line number when printing
+	  zone parse errors. Thanks Petr Špaček.
+	* bugfix: Revert unused variables in ldns-config removal patch.
 	* bugfix #50: heap Out-of-bound Read vulnerability in
 	  rr_frm_str_internal reported by pokerfacett.
 	* bugfix #51: Heap Out-of-bound Read vulnerability in
