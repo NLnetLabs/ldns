@@ -119,8 +119,28 @@ AC_CHECK_TYPE(uint64_t, unsigned long long)
 AC_CHECK_PROG(doxygen, doxygen, doxygen)
 
 # check to see if libraries are needed for these functions.
-AC_SEARCH_LIBS([socket], [socket])
-AC_SEARCH_LIBS([inet_pton], [nsl])
+AC_CHECK_FUNC([socket],
+    [],
+    [AC_SEARCH_LIBS([socket], [socket])
+])
+
+# modern Linux provides inet_ntop in -lsocket.
+# modern OS X provides inet_ntop in -lc.
+# modern Solaris provides inet_ntop in -lsocket -lnsl.
+# older Solaris provides inet_ntop in -lresolv.
+AC_CHECK_FUNC([inet_ntop],
+    [],
+    [AC_SEARCH_LIBS([inet_ntop], [socket c nsl resolv])
+])
+
+# modern Linux provides inet_pton in -lsocket.
+# modern OS X provides inet_pton in -lc.
+# modern Solaris provides inet_pton in -lsocket -lnsl.
+# older Solaris provides inet_pton in -lresolv.
+AC_CHECK_FUNC([inet_pton],
+    [],
+    [AC_SEARCH_LIBS([inet_pton], [socket c nsl resolv])
+])
 
 
 AC_ARG_WITH(drill, AC_HELP_STRING([--with-drill], 
