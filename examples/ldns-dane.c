@@ -1703,6 +1703,20 @@ main(int argc, char* const* argv)
 	if (ctx && SSL_CTX_dane_enable(ctx) <= 0) {
 		ssl_err("could not SSL_CTX_dane_enable");
 	}
+
+	/* Use TLSv1.0 or above for connection. */
+	long flags = 0;
+# ifdef SSL_OP_NO_SSLv2
+	flags |= SSL_OP_NO_SSLv2;
+# endif
+# ifdef SSL_OP_NO_SSLv3
+	flags |= SSL_OP_NO_SSLv3;
+# endif
+# ifdef SSL_OP_NO_COMPRESSION
+	flags |= SSL_OP_NO_COMPRESSION;
+# endif
+	SSL_CTX_set_options(ctx, flags);
+
 	if (CAfile || CApath) {
 		if (!SSL_CTX_load_verify_locations(ctx, CAfile, CApath))
 			ssl_err("could not set verify locations\n");
