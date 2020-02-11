@@ -139,6 +139,14 @@ info "Running  Libtoolize script (libtoolize)."
 libtoolize -c --install || libtoolize -c || error_cleanup "Libtoolize failed."
 [ -f ../../install-sh.bak ] && mv ../../install-sh.bak ../../install-sh
 
+# Allow libtool to install the distro's config.guess and config.sub. It avoids a pesky
+# error message. After libtool is finished, update the scripts from Savannah. This step
+# is useful for downlevel clients like OS X and Solaris (and existing scripts with bugs).
+info "Fetching latest config.guess and config.sub"
+wget -q -O config.guess 'http://git.savannah.gnu.org/gitweb/?p=config.git;a=blob_plain;f=config.guess;hb=HEAD' || error_cleanup "Failed to fetch config.guess"
+wget -q -O config.sub 'http://git.savannah.gnu.org/gitweb/?p=config.git;a=blob_plain;f=config.sub;hb=HEAD' || error_cleanup "Failed to fetch config.sub"
+chmod a+x config.guess config.sub
+
 info "Building configure script (autoconf)."
 autoreconf -vfi || error_cleanup "Autoconf failed."
 
