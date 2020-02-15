@@ -1,5 +1,7 @@
 /.libs/
 .*.swp
+*~
+\#*\#
 /_ldns.la
 /Makefile
 /aclocal.m4
@@ -153,7 +155,6 @@
 /ldns/common.h
 /ldns/config.h
 /ldns/config.h.in
-/ldns/config.h.in~
 /ldns/net.h
 /ldns/util.h
 /ldns_wrapper.lo
