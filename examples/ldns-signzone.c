@@ -72,10 +72,14 @@ usage(FILE *fp, const char *prog) {
 
 	fprintf ( fp, "\n " );
 	__LIST ( RSAMD5 );
+#ifdef USE_DSA
 	__LIST ( DSA );
+#endif
 	__LIST ( RSASHA1 );
 	fprintf ( fp, "\n " );
+#ifdef USE_DSA
 	__LIST ( DSA_NSEC3 );
+#endif
 	__LIST ( RSASHA1_NSEC3 );
 	__LIST ( RSASHA256 );
 	fprintf ( fp, "\n " );
@@ -350,11 +354,15 @@ parse_algspec ( const char * const p )
 
 	__MATCH ( RSAMD5 );
 	__MATCH ( RSASHA1 );
+#ifdef USE_DSA
 	__MATCH ( DSA );
+#endif
 	__MATCH ( RSASHA1_NSEC3 );
 	__MATCH ( RSASHA256 );
 	__MATCH ( RSASHA512 );
+#ifdef USE_DSA
 	__MATCH ( DSA_NSEC3 );
+#endif
 	__MATCH ( ECC_GOST );
 	__MATCH ( ECDSAP256SHA256 );
 	__MATCH ( ECDSAP384SHA384 );
@@ -419,8 +427,10 @@ load_key ( const char * const p, ENGINE * const e )
 	case LDNS_SIGN_RSASHA1_NSEC3:
 	case LDNS_SIGN_RSASHA256:
 	case LDNS_SIGN_RSASHA512:
+#ifdef USE_DSA
 	case LDNS_SIGN_DSA:
 	case LDNS_SIGN_DSA_NSEC3:
+#endif
 	case LDNS_SIGN_ECC_GOST:
 #ifdef USE_ECDSA
 	case LDNS_SIGN_ECDSAP256SHA256:
@@ -995,9 +1005,13 @@ main(int argc, char *argv[])
 
 #ifdef HAVE_SSL
 		if (ERR_peek_error()) {
+#if OPENSSL_VERSION_NUMBER < 0x10100000L || defined(HAVE_LIBRESSL)
 			ERR_load_crypto_strings();
+#endif
 			ERR_print_errors_fp(stderr);
+#if OPENSSL_VERSION_NUMBER < 0x10100000L || defined(HAVE_LIBRESSL)
 			ERR_free_strings();
+#endif
 		}
 #endif
 		exit(EXIT_FAILURE);
@@ -1018,7 +1032,9 @@ main(int argc, char *argv[])
 #ifndef OPENSSL_NO_ENGINE
 	shutdown_openssl ( engine );
 #else
+#if OPENSSL_VERSION_NUMBER < 0x10100000 || defined(HAVE_LIBRESSL)
 	CRYPTO_cleanup_all_ex_data();
+#endif
 #endif
 
 	free(prog);

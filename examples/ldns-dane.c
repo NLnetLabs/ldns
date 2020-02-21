@@ -1680,9 +1680,11 @@ main(int argc, char* const* argv)
 		assert(0);
 	}
 
+#if OPENSSL_VERSION_NUMBER < 0x10100000 || defined(HAVE_LIBRESSL)
 	/* ssl inititalize */
 	SSL_load_error_strings();
 	SSL_library_init();
+#endif
 
 	/* ssl load validation store */
 	if (! assume_pkix_validity || CAfile || CApath) {
