@@ -30,6 +30,6 @@ fi;
 
 make realclean || true
 $loot && $conf && mkdir -p b && cd b && \
-	../configure --disable-sha2 --disable-gost --disable-dane-ta-usage && \
+	../configure CFLAGS="-Werror=implicit-function-declaration  -DOPENSSL_API_COMPAT=0x10100000L" --with-drill --with-examples --disable-gost --disable-dane-ta-usage && \
 	$mk
 
