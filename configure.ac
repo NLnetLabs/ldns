@@ -881,7 +881,7 @@ AC_ARG_WITH(xcode-sdk, AC_HELP_STRING([--with-xcode-sdk],
  [],[with_xcode_sdk="yes"])
 if test "x_$with_xcode_sdk" != "x_no" ; then
    # check OSX deployment target, if needed
-   if echo $build_os | grep darwin > /dev/null; then
+   if echo $target_os | grep darwin > /dev/null; then
      sdk_p=`xcode-select -print-path`;
      if test "x_$with_xcode_sdk" = "x_yes" ; then
         sdk_v="$( /usr/bin/xcrun --show-sdk-version 2>/dev/null )"
