@@ -148,6 +148,7 @@ main(int argc, char *argv[])
 			exit(1);
 		}
 		break;
+#ifdef USE_DSA
 	case LDNS_SIGN_DSA:
 	case LDNS_SIGN_DSA_NSEC3:
 		if (bits < 512 || bits > 1024) {
@@ -156,6 +157,7 @@ main(int argc, char *argv[])
 			exit(1);
 		}
 		break;
+#endif /* USE_DSA */
 #ifdef USE_GOST
 	case LDNS_SIGN_ECC_GOST:
 		if(!ldns_key_EVP_load_gost_id()) {

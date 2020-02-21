@@ -49,10 +49,14 @@
 ldns_lookup_table ldns_algorithms[] = {
         { LDNS_RSAMD5, "RSAMD5" },
         { LDNS_DH, "DH" },
+#ifdef USE_DSA
         { LDNS_DSA, "DSA" },
+#endif /* USE_DSA */
         { LDNS_ECC, "ECC" },
         { LDNS_RSASHA1, "RSASHA1" },
+#ifdef USE_DSA
         { LDNS_DSA_NSEC3, "DSA-NSEC3-SHA1" },
+#endif /* USE_DSA */
         { LDNS_RSASHA1_NSEC3, "RSASHA1-NSEC3-SHA1" },
 #ifdef USE_SHA2
 	{ LDNS_RSASHA256, "RSASHA256"},
@@ -2133,7 +2137,9 @@ ldns_key2buffer_str(ldns_buffer *output, const ldns_key *k)
 	unsigned char  *bignum;
 #ifdef HAVE_SSL
 	RSA *rsa;
+#ifdef USE_DSA
 	DSA *dsa;
+#endif /* USE_DSA */
 #endif /* HAVE_SSL */
 
 	if (!k) {
@@ -2243,6 +2249,7 @@ ldns_key2buffer_str(ldns_buffer *output, const ldns_key *k)
 
 				RSA_free(rsa);
 				break;
+#ifdef USE_DSA
 			case LDNS_SIGN_DSA:
 			case LDNS_SIGN_DSA_NSEC3:
 				dsa = ldns_key_dsa_key(k);
@@ -2283,6 +2290,7 @@ ldns_key2buffer_str(ldns_buffer *output, const ldns_key *k)
 						goto error;
 				}
 				break;
+#endif /* USE_DSA */
 			case LDNS_SIGN_ECC_GOST:
 				/* no format defined, use blob */
 #if defined(HAVE_SSL) && defined(USE_GOST)

@@ -905,6 +905,7 @@ error:
 	return NULL;
 }
 
+#ifdef USE_DSA
 DSA *
 ldns_key_new_frm_fp_dsa(FILE *f)
 {
@@ -1015,6 +1016,7 @@ error:
 	BN_free(pub_key);
 	return NULL;
 }
+#endif /* USE_DSA */
 
 unsigned char *
 ldns_key_new_frm_fp_hmac(FILE *f, size_t *hmac_size)
@@ -1149,9 +1151,9 @@ ldns_key_new_frm_algorithm(ldns_signing_algorithm alg, uint16_t size)
 #endif /* HAVE_EVP_PKEY_KEYGEN */
 #endif /* HAVE_SSL */
 			break;
+#ifdef USE_DSA
 		case LDNS_SIGN_DSA:
 		case LDNS_SIGN_DSA_NSEC3:
-#ifdef USE_DSA
 #ifdef HAVE_SSL
 # if OPENSSL_VERSION_NUMBER < 0x00908000L
 			d = DSA_generate_parameters((int)size, NULL, 0, NULL, NULL, NULL, NULL);
@@ -1878,10 +1880,10 @@ ldns_key2rr(const ldns_key *k)
 #endif
 			size++;
 			break;
+#ifdef USE_DSA
 		case LDNS_SIGN_DSA:
 			ldns_rr_push_rdf(pubkey,
 					ldns_native2rdf_int8(LDNS_RDF_TYPE_ALG, LDNS_DSA));
-#ifdef USE_DSA
 #ifdef HAVE_SSL
 			dsa = ldns_key_dsa_key(k);
 			if (dsa) {
@@ -1901,10 +1903,10 @@ ldns_key2rr(const ldns_key *k)
 #endif /* HAVE_SSL */
 #endif /* USE_DSA */
 			break;
+#ifdef USE_DSA
 		case LDNS_SIGN_DSA_NSEC3:
 			ldns_rr_push_rdf(pubkey,
 					ldns_native2rdf_int8(LDNS_RDF_TYPE_ALG, LDNS_DSA_NSEC3));
-#ifdef USE_DSA
 #ifdef HAVE_SSL
 			dsa = ldns_key_dsa_key(k);
 			if (dsa) {
@@ -2165,7 +2167,9 @@ ldns_signing_algorithm ldns_get_signing_algorithm_by_name(const char* name)
         ldns_lookup_table aliases[] = {
                 /* from bind dnssec-keygen */
                 {LDNS_SIGN_HMACMD5, "HMAC-MD5"},
+#ifdef USE_DSA
                 {LDNS_SIGN_DSA_NSEC3, "NSEC3DSA"},
+#endif /* USE_DSA */
                 {LDNS_SIGN_RSASHA1_NSEC3, "NSEC3RSASHA1"},
                 /* old ldns usage, now RFC names */
 #ifdef USE_DSA

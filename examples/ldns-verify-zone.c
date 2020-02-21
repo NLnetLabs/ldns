@@ -113,7 +113,9 @@ print_rr_status_error(FILE* stream, ldns_rr* rr, ldns_status status)
 	if (status != LDNS_STATUS_OK) {
 		print_rr_error(stream, rr, ldns_get_errorstr_by_id(status));
 		if (verbosity > 0 && status == LDNS_STATUS_SSL_ERR) {
+#if OPENSSL_VERSION_NUMBER < 0x10100000 || defined(HAVE_LIBRESSL)
 			ERR_load_crypto_strings();
+#endif
 			ERR_print_errors_fp(stream);
 		}
 	}

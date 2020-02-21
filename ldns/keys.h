@@ -45,10 +45,14 @@ enum ldns_enum_algorithm
 {
         LDNS_RSAMD5             = 1,   /* RFC 4034,4035 */
         LDNS_DH                 = 2,
+#ifdef USE_DSA
         LDNS_DSA                = 3,
+#endif /* USE_DSA */
         LDNS_ECC                = 4,
         LDNS_RSASHA1            = 5,
+#ifdef USE_DSA
         LDNS_DSA_NSEC3          = 6,
+#endif /* USE_DSA */
         LDNS_RSASHA1_NSEC3      = 7,
         LDNS_RSASHA256          = 8,   /* RFC 5702 */
         LDNS_RSASHA512          = 10,  /* RFC 5702 */
@@ -90,11 +94,15 @@ enum ldns_enum_signing_algorithm
 {
 	LDNS_SIGN_RSAMD5	 = LDNS_RSAMD5,
 	LDNS_SIGN_RSASHA1	 = LDNS_RSASHA1,
+#ifdef USE_DSA
 	LDNS_SIGN_DSA		 = LDNS_DSA,
+#endif /* USE_DSA */
 	LDNS_SIGN_RSASHA1_NSEC3  = LDNS_RSASHA1_NSEC3,
 	LDNS_SIGN_RSASHA256	 = LDNS_RSASHA256,
 	LDNS_SIGN_RSASHA512	 = LDNS_RSASHA512,
+#ifdef USE_DSA
 	LDNS_SIGN_DSA_NSEC3	 = LDNS_DSA_NSEC3,
+#endif /* USE_DSA */
 	LDNS_SIGN_ECC_GOST       = LDNS_ECC_GOST,
         LDNS_SIGN_ECDSAP256SHA256 = LDNS_ECDSAP256SHA256,
         LDNS_SIGN_ECDSAP384SHA384 = LDNS_ECDSAP384SHA384,

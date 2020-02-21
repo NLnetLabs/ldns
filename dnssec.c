@@ -332,6 +332,7 @@ uint16_t ldns_calc_keytag_raw(const uint8_t* key, size_t keysize)
 }
 
 #ifdef HAVE_SSL
+#ifdef USE_DSA
 DSA *
 ldns_key_buf2dsa(const ldns_buffer *key)
 {
@@ -407,6 +408,7 @@ ldns_key_buf2dsa_raw(const unsigned char* key, size_t len)
 #endif /* OPENSSL_VERSION_NUMBER */
 	return dsa;
 }
+#endif /* USE_DSA */
 
 RSA *
 ldns_key_buf2rsa(const ldns_buffer *key)
