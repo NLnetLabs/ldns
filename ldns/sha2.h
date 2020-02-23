@@ -116,7 +116,7 @@ void ldns_sha512_final(uint8_t[LDNS_SHA512_DIGEST_LENGTH], ldns_sha512_CTX*);
  *             available
  * \return the SHA1 digest of the given data
  */
-unsigned char *ldns_sha256(unsigned char *data, unsigned int data_len, unsigned char *digest);
+unsigned char *ldns_sha256(const unsigned char *data, unsigned int data_len, unsigned char *digest);
 
 /**
  * Convenience function to digest a fixed block of data at once.
@@ -128,7 +128,7 @@ unsigned char *ldns_sha256(unsigned char *data, unsigned int data_len, unsigned 
  *             available
  * \return the SHA1 digest of the given data
  */
-unsigned char *ldns_sha384(unsigned char *data, unsigned int data_len, unsigned char *digest);
+unsigned char *ldns_sha384(const unsigned char *data, unsigned int data_len, unsigned char *digest);
 
 /**
  * Convenience function to digest a fixed block of data at once.
@@ -140,7 +140,7 @@ unsigned char *ldns_sha384(unsigned char *data, unsigned int data_len, unsigned 
  *             available
  * \return the SHA1 digest of the given data
  */
-unsigned char *ldns_sha512(unsigned char *data, unsigned int data_len, unsigned char *digest);
+unsigned char *ldns_sha512(const unsigned char *data, unsigned int data_len, unsigned char *digest);
 
 #ifdef	__cplusplus
 }

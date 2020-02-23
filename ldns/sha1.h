@@ -29,7 +29,7 @@ void ldns_sha1_final(unsigned char digest[LDNS_SHA1_DIGEST_LENGTH], ldns_sha1_ct
  *             available
  * \return the SHA1 digest of the given data
  */
-unsigned char *ldns_sha1(unsigned char *data, unsigned int data_len, unsigned char *digest);
+unsigned char *ldns_sha1(const unsigned char *data, unsigned int data_len, unsigned char *digest);
 
 #ifdef __cplusplus
 }
