@@ -482,7 +482,7 @@ allclean: test-clean clean
 test-clean:
 	tpkg -b test clean
 
-test: @TEST_P5_DNS_LDNS@
+check test: @TEST_P5_DNS_LDNS@
 	./test/test_all.sh
 
 

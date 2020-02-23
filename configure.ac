@@ -362,7 +362,7 @@ AC_CHECK_FUNCS([EVP_sha256 EVP_sha384 EVP_sha512 ENGINE_load_cryptodev EVP_PKEY_
 # check if SHA-NI and function attributes are available.
 # since there's a runtime switch, check for get_cpuid, too.
 
-AC_MSG_CHECKING([if $CC supports x86 SHA function attributes])
+AC_MSG_CHECKING([if $CC supports x86 SHA and function attributes])
 AC_COMPILE_IFELSE(
   [AC_LANG_SOURCE([
     #include <cpuid.h>
