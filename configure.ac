@@ -359,6 +359,43 @@ AC_CHECK_FUNCS([EVP_sha256 EVP_sha384 EVP_sha512 ENGINE_load_cryptodev EVP_PKEY_
 #AC_CHECK_PROG(glibtool, glibtool, [glibtool], )
 #AC_CHECK_PROGS(libtool, [libtool15 libtool], [./libtool])
 
+# check if SHA-NI and function attributes are available.
+# since there's a runtime switch, check for get_cpuid, too.
+
+AC_MSG_CHECKING([if $CC supports x86 SHA function attributes])
+AC_COMPILE_IFELSE(
+  [AC_LANG_SOURCE([
+    #include <cpuid.h>
+    #include <immintrin.h>
+    #include <emmintrin.h>
+    __attribute__ ((target ("sse4.2,sha")))
+    void test_x86(void)
+    {
+        __m128i x;
+        int y;
+        unsigned int a,b,c,d;
+
+        x=_mm_setzero_si128();
+        x=_mm_sha1msg1_epu32(x,x);
+        x=_mm_sha1msg2_epu32(x,x);
+        x=_mm_sha1nexte_epu32(x,x);
+        x=_mm_sha1rnds4_epu32(x,x,0);
+        x=_mm_sha256msg1_epu32(x,x);
+        x=_mm_sha256msg2_epu32(x,x);
+        x=_mm_sha256rnds2_epu32(x,x,x);
+
+        y = __get_cpuid(1, &a, &b, &c, &d);
+    }
+  ])],
+  [
+    AC_MSG_RESULT([yes])
+    AC_DEFINE([LDNS_X86_SHA_AVAILABLE], [1], [Enable x86 SHA-NI])
+  ],
+  [
+    AC_MSG_RESULT([no])
+  ]
+)
+
 AC_ARG_ENABLE(sha2, AC_HELP_STRING([--disable-sha2], [Disable SHA256 and SHA512 RRSIG support]))
 case "$enable_sha2" in
     no)
