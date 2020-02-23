@@ -49,7 +49,7 @@ check_desc(const ldns_rr_descriptor* desc, int type)
 }
 
 static int
-check_descriptors()
+check_descriptors(void)
 {
 	int start = 0;
 	int end = LDNS_RDATA_FIELD_DESCRIPTORS_COMMON /* 250 */;
