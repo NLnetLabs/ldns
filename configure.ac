@@ -384,7 +384,7 @@ AC_COMPILE_IFELSE(
         x=_mm_sha256msg2_epu32(x,x);
         x=_mm_sha256rnds2_epu32(x,x,x);
 
-        y = __get_cpuid(1, &a, &b, &c, &d);
+        y = __get_cpuid_count(1, 0, &a, &b, &c, &d);
     }
   ])],
   [

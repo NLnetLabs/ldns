@@ -131,7 +131,7 @@ ldns_sha1_transform_x86(uint32_t state[5], const unsigned char buffer[LDNS_SHA1_
 #endif
 
     /* Set shuffle mask */
-    MASK = _mm_set_epi8(3,2,1,0, 7,6,5,4, 11,10,9,8, 15,14,13,12);
+    MASK = _mm_set_epi8(0,1,2,3, 4,5,6,7, 8,9,10,11, 12,13,14,15);
 
     /* Load initial values */
     ABCD = _mm_loadu_si128(CONST_M128_CAST(state));
@@ -143,14 +143,14 @@ ldns_sha1_transform_x86(uint32_t state[5], const unsigned char buffer[LDNS_SHA1_
     E0_SAVE = E0;
 
     /* Rounds 0-3 */
-    MSG0 = _mm_loadu_si128(CONST_M128_CAST(block+0));
+    MSG0 = _mm_loadu_si128(CONST_M128_CAST(block->c+0));
     MSG0 = _mm_shuffle_epi8(MSG0, MASK);
     E0 = _mm_add_epi32(E0, MSG0);
     E1 = ABCD;
     ABCD = _mm_sha1rnds4_epu32(ABCD, E0, 0);
 
     /* Rounds 4-7 */
-    MSG1 = _mm_loadu_si128(CONST_M128_CAST(block+16));
+    MSG1 = _mm_loadu_si128(CONST_M128_CAST(block->c+16));
     MSG1 = _mm_shuffle_epi8(MSG1, MASK);
     E1 = _mm_sha1nexte_epu32(E1, MSG1);
     E0 = ABCD;
@@ -158,7 +158,7 @@ ldns_sha1_transform_x86(uint32_t state[5], const unsigned char buffer[LDNS_SHA1_
     MSG0 = _mm_sha1msg1_epu32(MSG0, MSG1);
 
     /* Rounds 8-11 */
-    MSG2 = _mm_loadu_si128(CONST_M128_CAST(block+32));
+    MSG2 = _mm_loadu_si128(CONST_M128_CAST(block->c+32));
     MSG2 = _mm_shuffle_epi8(MSG2, MASK);
     E0 = _mm_sha1nexte_epu32(E0, MSG2);
     E1 = ABCD;
@@ -167,7 +167,7 @@ ldns_sha1_transform_x86(uint32_t state[5], const unsigned char buffer[LDNS_SHA1_
     MSG0 = _mm_xor_si128(MSG0, MSG2);
 
     /* Rounds 12-15 */
-    MSG3 = _mm_loadu_si128(CONST_M128_CAST(block+48));
+    MSG3 = _mm_loadu_si128(CONST_M128_CAST(block->c+48));
     MSG3 = _mm_shuffle_epi8(MSG3, MASK);
     E1 = _mm_sha1nexte_epu32(E1, MSG3);
     E0 = ABCD;
@@ -339,12 +339,16 @@ SHA1_TRANSFORM_FN get_sha1_transform_fn(void)
         SHA1_TRANSFORM_FN tfn = &ldns_sha1_transform;
 
 #if defined(LDNS_X86_SHA_AVAILABLE)
-        enum { SHA_FLAG = 1<<29 };
+        enum { SSE2_FLAG = 1<<26, SHA_FLAG = 1<<29 };
         unsigned int a, b, c, d;
-        if (__get_cpuid(7, &a, &b, &c, &d))
+        if (__get_cpuid_count(0, 0, &a, &b, &c, &d) && a >= 7)
         {
-            if ((b & SHA_FLAG) == SHA_FLAG) {
-                tfn = &ldns_sha1_transform_x86;
+            if (__get_cpuid_count(1, 0, &a, &b, &c, &d) && (d & SSE2_FLAG) == SSE2_FLAG)
+            {
+                if (__get_cpuid_count(7, 0, &a, &b, &c, &d) && (b & SHA_FLAG) == SHA_FLAG)
+                {
+                    tfn = &ldns_sha1_transform_x86;
+                }
             }
         }
 #endif
