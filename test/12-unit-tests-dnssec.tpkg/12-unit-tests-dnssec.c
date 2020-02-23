@@ -6,7 +6,7 @@
 #include <ldns/ldns.h>
 
 
-ldns_status 
+ldns_status
 check_ldns_calc_keytag_part(const char *key_str, uint16_t expected_keytag)
 {
 	uint16_t keytag;
@@ -35,7 +35,7 @@ check_ldns_calc_keytag_part(const char *key_str, uint16_t expected_keytag)
 }
 
 ldns_status
-check_ldns_calc_keytag() 
+check_ldns_calc_keytag(void)
 {
 	const char *key_str;
 	uint16_t expected_keytag;
@@ -72,10 +72,10 @@ check_ldns_calc_keytag()
 }
 
 ldns_status
-check_ldns_canonicalization()
+check_ldns_canonicalization(void)
 {
-	const char *rr_str1 = "bla.nl. 1000 IN NS ns1.bla.nl.";
-	const char *rr_str2 = "BLA.NL. 1000 IN NS NS1.BlA.Nl.";
+	const char rr_str1[] = "bla.nl. 1000 IN NS ns1.bla.nl.";
+	const char rr_str2[] = "BLA.NL. 1000 IN NS NS1.BlA.Nl.";
 	
 	ldns_rr *rr1, *rr2;
 	ldns_status status = LDNS_STATUS_ERR;
