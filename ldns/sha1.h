@@ -1,6 +1,13 @@
 #ifndef LDNS_SHA1_H
 #define LDNS_SHA1_H
 
+/* Standard Posix header for uint32_t and friends */
+#include <stdint.h>
+
+#if LDNS_BUILD_CONFIG_HAVE_INTTYPES_H
+# include <inttypes.h>
+#endif
+
 #ifdef __cplusplus
 extern "C" {
 #endif

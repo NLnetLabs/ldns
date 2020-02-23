@@ -46,23 +46,16 @@
 #ifndef __LDNS_SHA2_H__
 #define __LDNS_SHA2_H__
 
+/* Standard Posix header for uint32_t and friends */
+#include <stdint.h>
+
+#if LDNS_BUILD_CONFIG_HAVE_INTTYPES_H
+# include <inttypes.h>
+#endif
+
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-
-/*
- * Import u_intXX_t size_t type definitions from system headers.  You
- * may need to change this, or define these things yourself in this
- * file.
- */
-#include <sys/types.h>
-
-#if LDNS_BUILD_CONFIG_HAVE_INTTYPES_H
-
-#include <inttypes.h>
-
-#endif /* LDNS_BUILD_CONFIG_HAVE_INTTYPES_H */
 
 
 /*** SHA-256/384/512 Various Length Definitions ***********************/
