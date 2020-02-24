@@ -398,15 +398,23 @@ ldns_sha1_final(unsigned char digest[LDNS_SHA1_DIGEST_LENGTH], ldns_sha1_ctx *co
 {
     unsigned int i;
     unsigned char finalcount[8];
+    unsigned long long pad[4];
 
     SHA1_TRANSFORM_FN sha1_transform_fn = get_sha1_transform_fn();
+    pad[0] = pad[1] = pad[2] = pad[3] = 0;  /* 32 bytes of 0 */
 
     for (i = 0; i < 8; i++) {
         finalcount[i] = (unsigned char)((context->count >>
             ((7 - (i & 7)) * 8)) & 255);  /* Endian independent */
     }
     ldns_sha1_update(context, (unsigned char *)"\200", 1);
-    while ((context->count & 504) != 448) {
+    while ((context->count & 504) < 448 - 32*8) {  /* bits */
+        ldns_sha1_update(context, (unsigned char *)pad, 32);
+    }
+    while ((context->count & 504) < 448 -  8*8) {  /* bits */
+        ldns_sha1_update(context, (unsigned char *)pad, 8);
+    }
+    while ((context->count & 504) != 448) {  /* bits */
         ldns_sha1_update(context, (unsigned char *)"\0", 1);
     }
     ldns_sha1_update(context, finalcount, 8);  /* Should cause a SHA1Transform() */
