@@ -120,17 +120,12 @@ ldns_sha1_transform_x86(uint32_t state[5], const unsigned char buffer[LDNS_SHA1_
 {
     __m128i ABCD, ABCD_SAVE, E0, E0_SAVE, E1;
     __m128i MASK, MSG0, MSG1, MSG2, MSG3;
-    CHAR64LONG16* block;
 
-#ifdef SHA1HANDSOFF
-    unsigned char workspace[LDNS_SHA1_BLOCK_LENGTH];
-    block = (CHAR64LONG16 *)workspace;
-    memcpy(block, buffer, LDNS_SHA1_BLOCK_LENGTH);
-#else
-    block = (CHAR64LONG16 *)buffer;
-#endif
+    /* No need for SHA1HANDSOFF. _mm_loadu_si128 is an   */
+    /* unaligned load and it will not segfault on a byte */
+    /* aligned buffer. Ditto for _mm_storeu_si128.       */
 
-    /* Set shuffle mask */
+    /* Shuffle mask */
     MASK = _mm_set_epi8(0,1,2,3, 4,5,6,7, 8,9,10,11, 12,13,14,15);
 
     /* Load initial values */
@@ -143,14 +138,14 @@ ldns_sha1_transform_x86(uint32_t state[5], const unsigned char buffer[LDNS_SHA1_
     E0_SAVE = E0;
 
     /* Rounds 0-3 */
-    MSG0 = _mm_loadu_si128(CONST_M128_CAST(block->c+0));
+    MSG0 = _mm_loadu_si128(CONST_M128_CAST(buffer+0));
     MSG0 = _mm_shuffle_epi8(MSG0, MASK);
     E0 = _mm_add_epi32(E0, MSG0);
     E1 = ABCD;
     ABCD = _mm_sha1rnds4_epu32(ABCD, E0, 0);
 
     /* Rounds 4-7 */
-    MSG1 = _mm_loadu_si128(CONST_M128_CAST(block->c+16));
+    MSG1 = _mm_loadu_si128(CONST_M128_CAST(buffer+16));
     MSG1 = _mm_shuffle_epi8(MSG1, MASK);
     E1 = _mm_sha1nexte_epu32(E1, MSG1);
     E0 = ABCD;
@@ -158,7 +153,7 @@ ldns_sha1_transform_x86(uint32_t state[5], const unsigned char buffer[LDNS_SHA1_
     MSG0 = _mm_sha1msg1_epu32(MSG0, MSG1);
 
     /* Rounds 8-11 */
-    MSG2 = _mm_loadu_si128(CONST_M128_CAST(block->c+32));
+    MSG2 = _mm_loadu_si128(CONST_M128_CAST(buffer+32));
     MSG2 = _mm_shuffle_epi8(MSG2, MASK);
     E0 = _mm_sha1nexte_epu32(E0, MSG2);
     E1 = ABCD;
@@ -167,7 +162,7 @@ ldns_sha1_transform_x86(uint32_t state[5], const unsigned char buffer[LDNS_SHA1_
     MSG0 = _mm_xor_si128(MSG0, MSG2);
 
     /* Rounds 12-15 */
-    MSG3 = _mm_loadu_si128(CONST_M128_CAST(block->c+48));
+    MSG3 = _mm_loadu_si128(CONST_M128_CAST(buffer+48));
     MSG3 = _mm_shuffle_epi8(MSG3, MASK);
     E1 = _mm_sha1nexte_epu32(E1, MSG3);
     E0 = ABCD;
@@ -339,11 +334,18 @@ SHA1_TRANSFORM_FN get_sha1_transform_fn(void)
         SHA1_TRANSFORM_FN tfn = &ldns_sha1_transform;
 
 #if defined(LDNS_X86_SHA_AVAILABLE)
-        enum { SSE2_FLAG = 1<<26, SHA_FLAG = 1<<29 };
+        /* SSE2: verify the cpu supports SSE2    */
+        /* XSAVE: verify the cpu supports XSAVE  */
+        /* OSXSAVE: verify the OS supports XSAVE */
+        /* SHA: verify the cpu supports SHA      */
+        enum { SSE2_FLAG = 1<<26, XSAVE_FLAG = 1<<26, OSXSAVE_FLAG = 1<<27, SHA_FLAG = 1<<29 };
         unsigned int a, b, c, d;
         if (__get_cpuid_count(0, 0, &a, &b, &c, &d) && a >= 7)
         {
-            if (__get_cpuid_count(1, 0, &a, &b, &c, &d) && (d & SSE2_FLAG) == SSE2_FLAG)
+            /* Check XSAVE and OSXSAVE for legacy i386 and i586 hardware.         */
+            /* The checks have not been needed in practice since about year 2000. */
+            if (__get_cpuid_count(1, 0, &a, &b, &c, &d) && (d & SSE2_FLAG) == SSE2_FLAG &&
+               (c & XSAVE_FLAG) == XSAVE_FLAG && (c & OSXSAVE_FLAG) == OSXSAVE_FLAG)
             {
                 if (__get_cpuid_count(7, 0, &a, &b, &c, &d) && (b & SHA_FLAG) == SHA_FLAG)
                 {
@@ -372,7 +374,7 @@ ldns_sha1_update(ldns_sha1_ctx *context, const unsigned char *data, unsigned int
 
     SHA1_TRANSFORM_FN sha1_transform_fn = get_sha1_transform_fn();
 
-    j = (unsigned)(uint32_t)((context->count >> 3) & 63);
+    j = (unsigned int)((context->count >> 3) & 63);
     context->count += (len << 3);
     if ((j + len) > 63) {
         memmove(&context->buffer[j], data, (i = 64 - j));
