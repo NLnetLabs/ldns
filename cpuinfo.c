@@ -1,3 +1,12 @@
+/*
+ * cpuinfo.c -- functions for processor capabilities
+ *
+ * Copyright (c) 2020, NLnet Labs. All rights reserved.
+ *
+ * See LICENSE for the license.
+ *
+ */
+
 #include <ldns/config.h>
 #include <ldns/cpuinfo.h>
 

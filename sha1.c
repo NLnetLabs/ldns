@@ -14,6 +14,12 @@
  *   34AA973C D4C4DAA4 F61EEB2B DBAD2731 6534016F
 */
 
+/*
+ * updated by Jeffrey Walton <noloader@gmail.com>, FEB 2020
+ *   added x86 SHA-1 acceleration when available
+ *   copyright assigned to LDNS project
+ */
+
 /* #define LITTLE_ENDIAN * This should be #define'd already, if true. */
 
 #include <ldns/config.h>

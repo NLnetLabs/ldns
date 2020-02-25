@@ -40,6 +40,12 @@
  * $Id: sha2.c,v 1.1 2001/11/08 00:01:51 adg Exp adg $
  */
 
+/*
+ * updated by Jeffrey Walton <noloader@gmail.com>, FEB 2020
+ *   added x86 SHA-256 acceleration when available
+ *   copyright assigned to LDNS project
+ */
+
 #include <ldns/config.h>
 #include <ldns/cpuinfo.h>
 #include <ldns/sha2.h>
