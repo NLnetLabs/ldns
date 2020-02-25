@@ -10,5 +10,5 @@ export LD_LIBRARY_PATH="../../lib:$LD_LIBRARY_PATH"
 export DYLD_LIBRARY_PATH="../../lib:$DYLD_LIBRARY_PATH"
 
 # run the test
-./13-unit-tests-base
+./13-unit-tests-sha
 exit $?

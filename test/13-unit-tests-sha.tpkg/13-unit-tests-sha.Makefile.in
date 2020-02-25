@@ -19,7 +19,7 @@ COMPILE         = $(CC) $(CPPFLAGS) $(CFLAGS)
 LINK            = $(CC) $(CFLAGS) $(LDFLAGS)
 
 HEADER		= config.h
-TESTS		= 13-unit-tests-base
+TESTS		= 13-unit-tests-sha
 
 .PHONY:	all clean realclean
 %.o:
@@ -27,7 +27,7 @@ TESTS		= 13-unit-tests-base
 
 all:	$(TESTS)
 
-13-unit-tests-base:	13-unit-tests-base.o
+13-unit-tests-sha:	13-unit-tests-sha.o
 		$(LINK) -o $@ $+ $(LIBS)
 
 clean:
