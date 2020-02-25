@@ -107,7 +107,7 @@ void ldns_sha512_final(uint8_t[LDNS_SHA512_DIGEST_LENGTH], ldns_sha512_CTX*);
  * \param[out] digest the length of data in bytes
  *             This pointer MUST have LDNS_SHA256_DIGEST_LENGTH bytes
  *             available
- * \return the SHA1 digest of the given data
+ * \return the SHA-256 digest of the given data
  */
 unsigned char *ldns_sha256(const unsigned char *data, unsigned int data_len, unsigned char *digest);
 
@@ -119,7 +119,7 @@ unsigned char *ldns_sha256(const unsigned char *data, unsigned int data_len, uns
  * \param[out] digest the length of data in bytes
  *             This pointer MUST have LDNS_SHA384_DIGEST_LENGTH bytes
  *             available
- * \return the SHA1 digest of the given data
+ * \return the SHA-384 digest of the given data
  */
 unsigned char *ldns_sha384(const unsigned char *data, unsigned int data_len, unsigned char *digest);
 
@@ -131,7 +131,7 @@ unsigned char *ldns_sha384(const unsigned char *data, unsigned int data_len, uns
  * \param[out] digest the length of data in bytes
  *             This pointer MUST have LDNS_SHA512_DIGEST_LENGTH bytes
  *             available
- * \return the SHA1 digest of the given data
+ * \return the SHA-512 digest of the given data
  */
 unsigned char *ldns_sha512(const unsigned char *data, unsigned int data_len, unsigned char *digest);
 
