@@ -368,9 +368,9 @@ ldns_sha1_update(ldns_sha1_ctx *context, const unsigned char *data, unsigned int
 {
     unsigned int i;
     unsigned int j;
+    SHA1_TRANSFORM_FN sha1_transform_fn;
 
-    SHA1_TRANSFORM_FN sha1_transform_fn = get_sha1_transform_fn();
-
+    sha1_transform_fn = get_sha1_transform_fn();
     j = (unsigned int)((context->count >> 3) & 63);
     context->count += (len << 3);
     if ((j + len) > 63) {
@@ -396,8 +396,9 @@ ldns_sha1_final(unsigned char digest[LDNS_SHA1_DIGEST_LENGTH], ldns_sha1_ctx *co
     unsigned int i;
     unsigned char finalcount[8];
     unsigned long long pad[3];
+    SHA1_TRANSFORM_FN sha1_transform_fn;
 
-    SHA1_TRANSFORM_FN sha1_transform_fn = get_sha1_transform_fn();
+    sha1_transform_fn = get_sha1_transform_fn();
     pad[0] = pad[1] = pad[2] = 0;  /* 24 bytes of 0 */
 
     for (i = 0; i < 8; i++) {

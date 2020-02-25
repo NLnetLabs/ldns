@@ -755,6 +755,7 @@ void
 ldns_sha256_update(ldns_sha256_CTX* context, const sha2_byte *data, size_t len)
 {
 	size_t freespace, usedspace;
+	SHA256_TRANSFORM_FN sha256_transform_fn;
 
 	if (len == 0) {
 		/* Calling with no data is valid - we do nothing */
@@ -765,8 +766,7 @@ ldns_sha256_update(ldns_sha256_CTX* context, const sha2_byte *data, size_t len)
 	assert(context != NULL && data != NULL);
 
 	usedspace = (context->bitcount >> 3) % LDNS_SHA256_BLOCK_LENGTH;
-
-	SHA256_TRANSFORM_FN sha256_transform_fn = get_sha256_transform_fn();
+	sha256_transform_fn = get_sha256_transform_fn();
 
 	if (usedspace > 0) {
 		/* Calculate how much free space is available in the buffer */
@@ -816,16 +816,16 @@ ldns_sha256_final(sha2_byte digest[], ldns_sha256_CTX* context)
 {
 	sha2_word32	*d = (sha2_word32*)digest;
 	size_t usedspace;
+	SHA256_TRANSFORM_FN sha256_transform_fn;
 	ldns_sha2_buffer_union cast_var;
 
 	/* Sanity check: */
-	assert(context != NULL);
+	assert(context != NULL && digest != NULL);
 
 	/* If no digest buffer is passed, we don't bother doing this: */
 	if (digest != NULL) {
 		usedspace = (context->bitcount >> 3) % LDNS_SHA256_BLOCK_LENGTH;
-
-		SHA256_TRANSFORM_FN sha256_transform_fn = get_sha256_transform_fn();
+		sha256_transform_fn = get_sha256_transform_fn();
 
 #if BYTE_ORDER == LITTLE_ENDIAN
 		/* Convert FROM host byte order */
@@ -868,12 +868,10 @@ ldns_sha256_final(sha2_byte digest[], ldns_sha256_CTX* context)
 			int	j;
 			for (j = 0; j < 8; j++) {
 				REVERSE32(context->state[j],context->state[j]);
-				*d++ = context->state[j];
 			}
 		}
-#else
-		MEMCPY_BCOPY(d, context->state, LDNS_SHA256_DIGEST_LENGTH);
 #endif
+		MEMCPY_BCOPY(d, context->state, LDNS_SHA256_DIGEST_LENGTH);
 	}
 
 	/* Clean up state data: */
