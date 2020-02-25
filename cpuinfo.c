@@ -18,10 +18,17 @@
 # include <intrin.h>
 #endif
 
-#ifndef UNUSED
-# define UNUSED(x) ((void)(x))
+#if defined(LDNS_GCC_CPUID_BUILTIN_AVAILABLE) || \
+    defined(LDNS_MSVC_CPUID_INTRIN_AVAILABLE) || \
+    defined(LDNS_GCC_INLINE_ASM_AVAILABLE)
+# define LDNS_WANT_CPUID 1
 #endif
 
+#ifndef LDNS_UNUSED
+# define LDNS_UNUSED(x) ((void)(x))
+#endif
+
+#if defined(LDNS_WANT_CPUID)
 static int
 ldns_cpuid(int func, int subfunc, unsigned int* a, unsigned int* b, unsigned int* c, unsigned int* d)
 {
@@ -34,7 +41,7 @@ ldns_cpuid(int func, int subfunc, unsigned int* a, unsigned int* b, unsigned int
     __cpuidex(reg, func, subfunc);
     *a = reg[0]; *b = reg[1]; *c = reg[2]; *d = reg[3];
     return 1;
-#elif defined(LDNS_GCC_X86_INLINE_ASM_AVAILABLE)
+#elif defined(LDNS_GCC_INLINE_ASM_AVAILABLE)
     int reg[4];
     __asm__
     (
@@ -64,9 +71,12 @@ ldns_cpuid(int func, int subfunc, unsigned int* a, unsigned int* b, unsigned int
     *a = reg[0]; *b = reg[1]; *c = reg[2]; *d = reg[3];
     return 1;
 #else
+    LDNS_UNUSED(func); LDNS_UNUSED(subfunc);
+    LDNS_UNUSED(a); LDNS_UNUSED(b); LDNS_UNUSED(c); LDNS_UNUSED(d);
     return 0;
 #endif
 }
+#endif  /* LDNS_WANT_CPUID */
 
 static int
 ldns_cpu_x86_sha(void)
@@ -78,6 +88,7 @@ ldns_cpu_x86_sha(void)
         /* Default feature, off */
         int temp_sha_feature = 0;
 
+#if defined(LDNS_WANT_CPUID)
         /* SSE2: verify the cpu supports SSE2; XSAVE: verify the cpu supports XSAVE  */
         /* OSXSAVE: verify the OS supports XSAVE; SHA: verify the cpu supports SHA   */
         enum { SSE2_FLAG = 1<<26, XSAVE_FLAG = 1<<26, OSXSAVE_FLAG = 1<<27, SHA_FLAG = 1<<29 };
@@ -96,6 +107,7 @@ ldns_cpu_x86_sha(void)
                 }
             }
         }
+#endif /* LDNS_WANT_CPUID */
 
         if (sha_feature == -1)
         {

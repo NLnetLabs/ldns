@@ -383,7 +383,7 @@ AC_LINK_IFELSE(
   ]
 )
 
-AC_MSG_CHECKING([if $CC supports GCC x86 inline assembly])
+AC_MSG_CHECKING([if $CC supports GCC inline assembly])
 AC_LINK_IFELSE(
   [AC_LANG_SOURCE([
     void main(void)
@@ -405,7 +405,7 @@ AC_LINK_IFELSE(
   ])],
   [
     AC_MSG_RESULT([yes])
-    AC_DEFINE([LDNS_GCC_X86_INLINE_ASM_AVAILABLE], [1], [Enable GCC x86 inline assembly])
+    AC_DEFINE([LDNS_GCC_INLINE_ASM_AVAILABLE], [1], [Enable GCC inline assembly])
   ],
   [
     AC_MSG_RESULT([no])
