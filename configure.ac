@@ -376,7 +376,36 @@ AC_LINK_IFELSE(
   ])],
   [
     AC_MSG_RESULT([yes])
-    AC_DEFINE([LDNS_GCC_CPUID_AVAILABLE], [1], [Enable GCC CPUID builtin])
+    AC_DEFINE([LDNS_GCC_CPUID_BUILTIN_AVAILABLE], [1], [Enable GCC CPUID builtin])
+  ],
+  [
+    AC_MSG_RESULT([no])
+  ]
+)
+
+AC_MSG_CHECKING([if $CC supports GCC inline assembly])
+AC_LINK_IFELSE(
+  [AC_LANG_SOURCE([
+    void main(void)
+    {
+      [int reg[4];]
+      __asm__
+      (
+        // save ebx in case -fPIC is being used
+# if defined(__x86_64__) || defined(__amd64__)
+        "pushq %%rbx; cpuid; mov %%ebx, %%edi; popq %%rbx"
+# else
+        "push %%ebx; cpuid; mov %%ebx, %%edi; pop %%ebx"
+# endif
+        : "=a" (reg[0]), "=D" (reg[1]), "=c" (reg[2]), "=d" (reg[3])
+        : "a" (0), "c" (0)
+        : "cc"
+      );
+    }
+  ])],
+  [
+    AC_MSG_RESULT([yes])
+    AC_DEFINE([LDNS_GCC_INLINE_ASM_AVAILABLE], [1], [Enable GCC inline assembly])
   ],
   [
     AC_MSG_RESULT([no])
@@ -395,7 +424,7 @@ AC_LINK_IFELSE(
   ])],
   [
     AC_MSG_RESULT([yes])
-    AC_DEFINE([LDNS_MSVC_CPUID_AVAILABLE], [1], [Enable MSVC CPUID intrinsic])
+    AC_DEFINE([LDNS_MSVC_CPUID_INTRIN_AVAILABLE], [1], [Enable MSVC CPUID intrinsic])
   ],
   [
     AC_MSG_RESULT([no])

@@ -10,11 +10,11 @@
 #include <ldns/config.h>
 #include <ldns/cpuinfo.h>
 
-#if defined(LDNS_GCC_CPUID_AVAILABLE)
+#if defined(LDNS_GCC_CPUID_BUILTIN_AVAILABLE)
 # include <cpuid.h>
 #endif
 
-#if defined(LDNS_MSVC_CPUID_AVAILABLE)
+#if defined(LDNS_MSVC_CPUID_INTRIN_AVAILABLE)
 # include <intrin.h>
 #endif
 
@@ -25,16 +25,16 @@
 static int
 ldns_cpuid(int func, int subfunc, unsigned int* a, unsigned int* b, unsigned int* c, unsigned int* d)
 {
-#if defined(LDNS_GCC_CPUID_AVAILABLE)
+#if defined(LDNS_GCC_CPUID_BUILTIN_AVAILABLE)
     return __get_cpuid_count(func, subfunc, a, b, c, d);
-#elif defined(LDNS_MSVC_CPUID_AVAILABLE)
+#elif defined(LDNS_MSVC_CPUID_INTRIN_AVAILABLE)
     int reg[4];
     __cpuidex(reg, 0, 0);
     if (func > reg[0]) { return 0; }
     __cpuidex(reg, func, subfunc);
     *a = reg[0]; *b = reg[1]; *c = reg[2]; *d = reg[3];
     return 1;
-#elif defined(__GNUC__)
+#elif defined(LDNS_GCC_INLINE_ASM_AVAILABLE)
     int reg[4];
     __asm__
     (
