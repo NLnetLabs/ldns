@@ -34,7 +34,7 @@ ldns_cpuid(int func, int subfunc, unsigned int* a, unsigned int* b, unsigned int
     __cpuidex(reg, func, subfunc);
     *a = reg[0]; *b = reg[1]; *c = reg[2]; *d = reg[3];
     return 1;
-#elif defined(LDNS_GCC_INLINE_ASM_AVAILABLE)
+#elif defined(LDNS_GCC_X86_INLINE_ASM_AVAILABLE)
     int reg[4];
     __asm__
     (

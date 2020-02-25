@@ -383,12 +383,12 @@ AC_LINK_IFELSE(
   ]
 )
 
-AC_MSG_CHECKING([if $CC supports GCC inline assembly])
+AC_MSG_CHECKING([if $CC supports GCC x86 inline assembly])
 AC_LINK_IFELSE(
   [AC_LANG_SOURCE([
     void main(void)
     {
-      [int reg[4];]
+      int aa, bb, cc, dd;
       __asm__
       (
         // save ebx in case -fPIC is being used
@@ -397,7 +397,7 @@ AC_LINK_IFELSE(
 # else
         "push %%ebx; cpuid; mov %%ebx, %%edi; pop %%ebx"
 # endif
-        : "=a" (reg[0]), "=D" (reg[1]), "=c" (reg[2]), "=d" (reg[3])
+        : "=a" (aa), "=D" (bb), "=c" (cc), "=d" (dd)
         : "a" (0), "c" (0)
         : "cc"
       );
@@ -405,7 +405,7 @@ AC_LINK_IFELSE(
   ])],
   [
     AC_MSG_RESULT([yes])
-    AC_DEFINE([LDNS_GCC_INLINE_ASM_AVAILABLE], [1], [Enable GCC inline assembly])
+    AC_DEFINE([LDNS_GCC_X86_INLINE_ASM_AVAILABLE], [1], [Enable GCC x86 inline assembly])
   ],
   [
     AC_MSG_RESULT([no])
