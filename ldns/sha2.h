@@ -1,7 +1,7 @@
 /*
  * FILE:	sha2.h
  * AUTHOR:	Aaron D. Gifford - http://www.aarongifford.com/
- * 
+ *
  * Copyright (c) 2000-2001, Aaron D. Gifford
  * All rights reserved.
  *
@@ -15,7 +15,7 @@
  *    configure.ac
  *  - Removed _End and _Data functions
  *  - Added ldns_shaX(data, len, digest) functions
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
@@ -27,7 +27,7 @@
  * 3. Neither the name of the copyright holder nor the names of contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTOR(S) ``AS IS'' AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -46,8 +46,8 @@
 #ifndef __LDNS_SHA2_H__
 #define __LDNS_SHA2_H__
 
-/* Standard Posix header for uint32_t and friends */
-#include <stdint.h>
+#include <stdint.h>  /* uint32_t and friends */
+#include <stddef.h>  /* size_t and NULL */
 
 #if LDNS_BUILD_CONFIG_HAVE_INTTYPES_H
 # include <inttypes.h>

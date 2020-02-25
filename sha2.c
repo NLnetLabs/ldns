@@ -1,7 +1,7 @@
 /*
  * FILE:	sha2.c
  * AUTHOR:	Aaron D. Gifford - http://www.aarongifford.com/
- * 
+ *
  * Copyright (c) 2000-2001, Aaron D. Gifford
  * All rights reserved.
  *
@@ -11,8 +11,8 @@
  * - Renamed (external) functions and constants to fit ldns style
  * - Removed _End and _Data functions
  * - Added ldns_shaX(data, len, digest) convenience functions
- * - Removed prototypes of _Transform functions and made those static
- * 
+ * - Removed prototypes of _transform functions and made those static
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
@@ -24,7 +24,7 @@
  * 3. Neither the name of the copyright holder nor the names of contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTOR(S) ``AS IS'' AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -41,9 +41,20 @@
  */
 
 #include <ldns/config.h>
-#include <string.h>	/* memcpy()/memset() or bcopy()/bzero() */
-#include <assert.h>	/* assert() */
+#include <ldns/cpuinfo.h>
 #include <ldns/sha2.h>
+#include <string.h>  /* memcpy, memset, bcopy, bzero */
+#include <stddef.h>  /* size_t and NULL */
+#include <assert.h>  /* assert */
+
+#if defined(LDNS_X86_SHA_AVAILABLE)
+# include <smmintrin.h>  /* _mm_extract_epi32 */
+# include <tmmintrin.h>  /* _mm_shuffle_epi8 */
+# include <emmintrin.h>  /* _mm_shuffle_epi32 */
+# include <immintrin.h>  /* _mm_sha1msg1_epu32 and friends */
+# define M128_CAST(x) ((__m128i *)(void *)(x))
+# define CONST_M128_CAST(x) ((const __m128i *)(const void *)(x))
+#endif  /* LDNS_X86_SHA_AVAILABLE */
 
 /*
  * ASSERT NOTE:
@@ -83,7 +94,7 @@
  *
  * And for little-endian machines, add:
  *
- *   #define BYTE_ORDER LITTLE_ENDIAN 
+ *   #define BYTE_ORDER LITTLE_ENDIAN
  *
  * Or for big-endian machines:
  *
@@ -312,14 +323,6 @@ static const sha2_word64 sha512_initial_hash_value[8] = {
 };
 
 /*** SHA-256: *********************************************************/
-void ldns_sha256_init(ldns_sha256_CTX* context) {
-	if (context == (ldns_sha256_CTX*)0) {
-		return;
-	}
-	MEMCPY_BCOPY(context->state, ldns_sha256_initial_hash_value, LDNS_SHA256_DIGEST_LENGTH);
-	MEMSET_BZERO(context->buffer, LDNS_SHA256_BLOCK_LENGTH);
-	context->bitcount = 0;
-}
 
 #ifdef SHA2_UNROLL_TRANSFORM
 
@@ -358,8 +361,9 @@ void ldns_sha256_init(ldns_sha256_CTX* context) {
 	(h) = T1 + Sigma0_256(a) + Maj((a), (b), (c)); \
 	j++
 
-static void ldns_sha256_Transform(ldns_sha256_CTX* context,
-                                  const sha2_word32* data) {
+static void
+ldns_sha256_transform(ldns_sha256_CTX* context, const sha2_word32* data)
+{
 	sha2_word32	a, b, c, d, e, f, g, h, s0, s1;
 	sha2_word32	T1, *W256;
 	int		j;
@@ -417,8 +421,9 @@ static void ldns_sha256_Transform(ldns_sha256_CTX* context,
 
 #else /* SHA2_UNROLL_TRANSFORM */
 
-static void ldns_sha256_Transform(ldns_sha256_CTX* context,
-                                  const sha2_word32* data) {
+static void
+ldns_sha256_transform(ldns_sha256_CTX* context, const sha2_word32* data)
+{
 	sha2_word32	a, b, c, d, e, f, g, h, s0, s1;
 	sha2_word32	T1, T2, *W256;
 	int		j;
@@ -463,11 +468,11 @@ static void ldns_sha256_Transform(ldns_sha256_CTX* context,
 		/* Part of the message block expansion: */
 		s0 = W256[(j+1)&0x0f];
 		s0 = sigma0_256(s0);
-		s1 = W256[(j+14)&0x0f];	
+		s1 = W256[(j+14)&0x0f];
 		s1 = sigma1_256(s1);
 
 		/* Apply the SHA-256 compression function to update a..h */
-		T1 = h + Sigma1_256(e) + Ch(e, f, g) + K256[j] + 
+		T1 = h + Sigma1_256(e) + Ch(e, f, g) + K256[j] +
 		     (W256[j&0x0f] += s1 + W256[(j+9)&0x0f] + s0);
 		T2 = Sigma0_256(a) + Maj(a, b, c);
 		h = g;
@@ -499,7 +504,250 @@ static void ldns_sha256_Transform(ldns_sha256_CTX* context,
 
 #endif /* SHA2_UNROLL_TRANSFORM */
 
-void ldns_sha256_update(ldns_sha256_CTX* context, const sha2_byte *data, size_t len) {
+#if defined(LDNS_X86_SHA_AVAILABLE)
+# if defined(__GNUC__)
+__attribute__ ((target ("sse4.2,sha")))
+static void
+ldns_sha256_transform_x86(ldns_sha256_CTX* context, const sha2_word32* data)
+# else
+static void
+ldns_sha256_transform_x86(ldns_sha256_CTX* context, const sha2_word32* data)
+# endif
+{
+    __m128i STATE0, STATE1;
+    __m128i MSG, TMP, MASK;
+    __m128i MSG0, MSG1, MSG2, MSG3;
+    __m128i ABEF_SAVE, CDGH_SAVE;
+
+    /* Shuffle mask */
+    MASK = _mm_set_epi32(0x0c0d0e0f, 0x08090a0b, 0x04050607, 0x00010203);
+
+    /* Load initial values */
+    TMP = _mm_loadu_si128(CONST_M128_CAST(context->state+0));
+    STATE1 = _mm_loadu_si128(CONST_M128_CAST(context->state+4));
+
+    /* Shuffle */
+    TMP = _mm_shuffle_epi32(TMP, 0xB1);          /* CDAB */
+    STATE1 = _mm_shuffle_epi32(STATE1, 0x1B);    /* EFGH */
+    STATE0 = _mm_alignr_epi8(TMP, STATE1, 8);    /* ABEF */
+    STATE1 = _mm_blend_epi16(STATE1, TMP, 0xF0); /* CDGH */
+
+    /* Save current state */
+    ABEF_SAVE = STATE0;
+    CDGH_SAVE = STATE1;
+
+    /* Rounds 0-3 */
+    MSG = _mm_loadu_si128(CONST_M128_CAST(data+0));
+    MSG0 = _mm_shuffle_epi8(MSG, MASK);
+    MSG = _mm_add_epi32(MSG0, _mm_set_epi32(K256[3], K256[2], K256[1], K256[0]));
+    STATE1 = _mm_sha256rnds2_epu32(STATE1, STATE0, MSG);
+    MSG = _mm_shuffle_epi32(MSG, 0x0E);
+    STATE0 = _mm_sha256rnds2_epu32(STATE0, STATE1, MSG);
+
+    /* Rounds 4-7 */
+    MSG1 = _mm_loadu_si128(CONST_M128_CAST(data+4));
+    MSG1 = _mm_shuffle_epi8(MSG1, MASK);
+    MSG = _mm_add_epi32(MSG1, _mm_set_epi32(K256[7], K256[6], K256[5], K256[4]));
+    STATE1 = _mm_sha256rnds2_epu32(STATE1, STATE0, MSG);
+    MSG = _mm_shuffle_epi32(MSG, 0x0E);
+    STATE0 = _mm_sha256rnds2_epu32(STATE0, STATE1, MSG);
+    MSG0 = _mm_sha256msg1_epu32(MSG0, MSG1);
+
+    /* Rounds 8-11 */
+    MSG2 = _mm_loadu_si128(CONST_M128_CAST(data+8));
+    MSG2 = _mm_shuffle_epi8(MSG2, MASK);
+    MSG = _mm_add_epi32(MSG2, _mm_set_epi32(K256[11], K256[10], K256[9], K256[8]));
+    STATE1 = _mm_sha256rnds2_epu32(STATE1, STATE0, MSG);
+    MSG = _mm_shuffle_epi32(MSG, 0x0E);
+    STATE0 = _mm_sha256rnds2_epu32(STATE0, STATE1, MSG);
+    MSG1 = _mm_sha256msg1_epu32(MSG1, MSG2);
+
+    /* Rounds 12-15 */
+    MSG3 = _mm_loadu_si128(CONST_M128_CAST(data+12));
+    MSG3 = _mm_shuffle_epi8(MSG3, MASK);
+    MSG = _mm_add_epi32(MSG3, _mm_set_epi32(K256[15], K256[14], K256[13], K256[12]));
+    STATE1 = _mm_sha256rnds2_epu32(STATE1, STATE0, MSG);
+    TMP = _mm_alignr_epi8(MSG3, MSG2, 4);
+    MSG0 = _mm_add_epi32(MSG0, TMP);
+    MSG0 = _mm_sha256msg2_epu32(MSG0, MSG3);
+    MSG = _mm_shuffle_epi32(MSG, 0x0E);
+    STATE0 = _mm_sha256rnds2_epu32(STATE0, STATE1, MSG);
+    MSG2 = _mm_sha256msg1_epu32(MSG2, MSG3);
+
+    /* Rounds 16-19 */
+    MSG = _mm_add_epi32(MSG0, _mm_set_epi32(K256[19], K256[18], K256[17], K256[16]));
+    STATE1 = _mm_sha256rnds2_epu32(STATE1, STATE0, MSG);
+    TMP = _mm_alignr_epi8(MSG0, MSG3, 4);
+    MSG1 = _mm_add_epi32(MSG1, TMP);
+    MSG1 = _mm_sha256msg2_epu32(MSG1, MSG0);
+    MSG = _mm_shuffle_epi32(MSG, 0x0E);
+    STATE0 = _mm_sha256rnds2_epu32(STATE0, STATE1, MSG);
+    MSG3 = _mm_sha256msg1_epu32(MSG3, MSG0);
+
+    /* Rounds 20-23 */
+    MSG = _mm_add_epi32(MSG1, _mm_set_epi32(K256[23], K256[22], K256[21], K256[20]));
+    STATE1 = _mm_sha256rnds2_epu32(STATE1, STATE0, MSG);
+    TMP = _mm_alignr_epi8(MSG1, MSG0, 4);
+    MSG2 = _mm_add_epi32(MSG2, TMP);
+    MSG2 = _mm_sha256msg2_epu32(MSG2, MSG1);
+    MSG = _mm_shuffle_epi32(MSG, 0x0E);
+    STATE0 = _mm_sha256rnds2_epu32(STATE0, STATE1, MSG);
+    MSG0 = _mm_sha256msg1_epu32(MSG0, MSG1);
+
+    /* Rounds 24-27 */
+    MSG = _mm_add_epi32(MSG2, _mm_set_epi32(K256[27], K256[26], K256[25], K256[24]));
+    STATE1 = _mm_sha256rnds2_epu32(STATE1, STATE0, MSG);
+    TMP = _mm_alignr_epi8(MSG2, MSG1, 4);
+    MSG3 = _mm_add_epi32(MSG3, TMP);
+    MSG3 = _mm_sha256msg2_epu32(MSG3, MSG2);
+    MSG = _mm_shuffle_epi32(MSG, 0x0E);
+    STATE0 = _mm_sha256rnds2_epu32(STATE0, STATE1, MSG);
+    MSG1 = _mm_sha256msg1_epu32(MSG1, MSG2);
+
+    /* Rounds 28-31 */
+    MSG = _mm_add_epi32(MSG3, _mm_set_epi32(K256[31], K256[30], K256[29], K256[28]));
+    STATE1 = _mm_sha256rnds2_epu32(STATE1, STATE0, MSG);
+    TMP = _mm_alignr_epi8(MSG3, MSG2, 4);
+    MSG0 = _mm_add_epi32(MSG0, TMP);
+    MSG0 = _mm_sha256msg2_epu32(MSG0, MSG3);
+    MSG = _mm_shuffle_epi32(MSG, 0x0E);
+    STATE0 = _mm_sha256rnds2_epu32(STATE0, STATE1, MSG);
+    MSG2 = _mm_sha256msg1_epu32(MSG2, MSG3);
+
+    /* Rounds 32-35 */
+    MSG = _mm_add_epi32(MSG0, _mm_set_epi32(K256[35], K256[34], K256[33], K256[32]));
+    STATE1 = _mm_sha256rnds2_epu32(STATE1, STATE0, MSG);
+    TMP = _mm_alignr_epi8(MSG0, MSG3, 4);
+    MSG1 = _mm_add_epi32(MSG1, TMP);
+    MSG1 = _mm_sha256msg2_epu32(MSG1, MSG0);
+    MSG = _mm_shuffle_epi32(MSG, 0x0E);
+    STATE0 = _mm_sha256rnds2_epu32(STATE0, STATE1, MSG);
+    MSG3 = _mm_sha256msg1_epu32(MSG3, MSG0);
+
+    /* Rounds 36-39 */
+    MSG = _mm_add_epi32(MSG1, _mm_set_epi32(K256[39], K256[38], K256[37], K256[36]));
+    STATE1 = _mm_sha256rnds2_epu32(STATE1, STATE0, MSG);
+    TMP = _mm_alignr_epi8(MSG1, MSG0, 4);
+    MSG2 = _mm_add_epi32(MSG2, TMP);
+    MSG2 = _mm_sha256msg2_epu32(MSG2, MSG1);
+    MSG = _mm_shuffle_epi32(MSG, 0x0E);
+    STATE0 = _mm_sha256rnds2_epu32(STATE0, STATE1, MSG);
+    MSG0 = _mm_sha256msg1_epu32(MSG0, MSG1);
+
+    /* Rounds 40-43 */
+    MSG = _mm_add_epi32(MSG2, _mm_set_epi32(K256[43], K256[42], K256[41], K256[40]));
+    STATE1 = _mm_sha256rnds2_epu32(STATE1, STATE0, MSG);
+    TMP = _mm_alignr_epi8(MSG2, MSG1, 4);
+    MSG3 = _mm_add_epi32(MSG3, TMP);
+    MSG3 = _mm_sha256msg2_epu32(MSG3, MSG2);
+    MSG = _mm_shuffle_epi32(MSG, 0x0E);
+    STATE0 = _mm_sha256rnds2_epu32(STATE0, STATE1, MSG);
+    MSG1 = _mm_sha256msg1_epu32(MSG1, MSG2);
+
+    /* Rounds 44-47 */
+    MSG = _mm_add_epi32(MSG3, _mm_set_epi32(K256[47], K256[46], K256[45], K256[44]));
+    STATE1 = _mm_sha256rnds2_epu32(STATE1, STATE0, MSG);
+    TMP = _mm_alignr_epi8(MSG3, MSG2, 4);
+    MSG0 = _mm_add_epi32(MSG0, TMP);
+    MSG0 = _mm_sha256msg2_epu32(MSG0, MSG3);
+    MSG = _mm_shuffle_epi32(MSG, 0x0E);
+    STATE0 = _mm_sha256rnds2_epu32(STATE0, STATE1, MSG);
+    MSG2 = _mm_sha256msg1_epu32(MSG2, MSG3);
+
+    /* Rounds 48-51 */
+    MSG = _mm_add_epi32(MSG0, _mm_set_epi32(K256[51], K256[50], K256[49], K256[48]));
+    STATE1 = _mm_sha256rnds2_epu32(STATE1, STATE0, MSG);
+    TMP = _mm_alignr_epi8(MSG0, MSG3, 4);
+    MSG1 = _mm_add_epi32(MSG1, TMP);
+    MSG1 = _mm_sha256msg2_epu32(MSG1, MSG0);
+    MSG = _mm_shuffle_epi32(MSG, 0x0E);
+    STATE0 = _mm_sha256rnds2_epu32(STATE0, STATE1, MSG);
+    MSG3 = _mm_sha256msg1_epu32(MSG3, MSG0);
+
+    /* Rounds 52-55 */
+    MSG = _mm_add_epi32(MSG1, _mm_set_epi32(K256[55], K256[54], K256[53], K256[52]));
+    STATE1 = _mm_sha256rnds2_epu32(STATE1, STATE0, MSG);
+    TMP = _mm_alignr_epi8(MSG1, MSG0, 4);
+    MSG2 = _mm_add_epi32(MSG2, TMP);
+    MSG2 = _mm_sha256msg2_epu32(MSG2, MSG1);
+    MSG = _mm_shuffle_epi32(MSG, 0x0E);
+    STATE0 = _mm_sha256rnds2_epu32(STATE0, STATE1, MSG);
+
+    /* Rounds 56-59 */
+    MSG = _mm_add_epi32(MSG2, _mm_set_epi32(K256[59], K256[58], K256[57], K256[56]));
+    STATE1 = _mm_sha256rnds2_epu32(STATE1, STATE0, MSG);
+    TMP = _mm_alignr_epi8(MSG2, MSG1, 4);
+    MSG3 = _mm_add_epi32(MSG3, TMP);
+    MSG3 = _mm_sha256msg2_epu32(MSG3, MSG2);
+    MSG = _mm_shuffle_epi32(MSG, 0x0E);
+    STATE0 = _mm_sha256rnds2_epu32(STATE0, STATE1, MSG);
+
+    /* Rounds 60-63 */
+    MSG = _mm_add_epi32(MSG3, _mm_set_epi32(K256[63], K256[62], K256[61], K256[60]));
+    STATE1 = _mm_sha256rnds2_epu32(STATE1, STATE0, MSG);
+    MSG = _mm_shuffle_epi32(MSG, 0x0E);
+    STATE0 = _mm_sha256rnds2_epu32(STATE0, STATE1, MSG);
+
+    /* Combine state  */
+    STATE0 = _mm_add_epi32(STATE0, ABEF_SAVE);
+    STATE1 = _mm_add_epi32(STATE1, CDGH_SAVE);
+
+    /* Shuffle */
+    TMP = _mm_shuffle_epi32(STATE0, 0x1B);       /* FEBA */
+    STATE1 = _mm_shuffle_epi32(STATE1, 0xB1);    /* DCHG */
+    STATE0 = _mm_blend_epi16(TMP, STATE1, 0xF0); /* DCBA */
+    STATE1 = _mm_alignr_epi8(STATE1, TMP, 8);    /* ABEF */
+
+    /* Save state */
+    _mm_storeu_si128(M128_CAST(context->state+0), STATE0);
+    _mm_storeu_si128(M128_CAST(context->state+4), STATE1);
+}
+#endif  /* LDNS_X86_SHA_AVAILABLE */
+
+void
+ldns_sha256_init(ldns_sha256_CTX* context)
+{
+	if (context == NULL) {
+		return;
+	}
+	MEMCPY_BCOPY(context->state, ldns_sha256_initial_hash_value, LDNS_SHA256_DIGEST_LENGTH);
+	MEMSET_BZERO(context->buffer, LDNS_SHA256_BLOCK_LENGTH);
+	context->bitcount = 0;
+}
+
+typedef void (*SHA256_TRANSFORM_FN)(ldns_sha256_CTX* context, const sha2_word32* data);
+
+/* Function pointer to a SHA implementation */
+
+SHA256_TRANSFORM_FN get_sha256_transform_fn(void)
+{
+    /* Potential race in the double check'd init below. The */
+    /* worst case is two threads each set function pointer. */
+    static SHA256_TRANSFORM_FN sha256_transform_fn = NULL;
+
+    if (sha256_transform_fn == NULL)
+    {
+        /* Default C transform */
+        SHA256_TRANSFORM_FN tfn = &ldns_sha256_transform;
+
+#if defined(LDNS_X86_SHA_AVAILABLE)
+        if (ldns_cpu_x86_sha256())
+        {
+            tfn = &ldns_sha256_transform_x86;
+        }
+#endif
+
+        if (sha256_transform_fn == NULL) {
+            sha256_transform_fn = tfn;
+        }
+    }
+
+    return sha256_transform_fn;
+}
+
+void
+ldns_sha256_update(ldns_sha256_CTX* context, const sha2_byte *data, size_t len)
+{
 	size_t freespace, usedspace;
 
 	if (len == 0) {
@@ -508,9 +756,12 @@ void ldns_sha256_update(ldns_sha256_CTX* context, const sha2_byte *data, size_t 
 	}
 
 	/* Sanity check: */
-	assert(context != (ldns_sha256_CTX*)0 && data != (sha2_byte*)0);
+	assert(context != NULL && data != NULL);
 
 	usedspace = (context->bitcount >> 3) % LDNS_SHA256_BLOCK_LENGTH;
+
+	SHA256_TRANSFORM_FN sha256_transform_fn = get_sha256_transform_fn();
+
 	if (usedspace > 0) {
 		/* Calculate how much free space is available in the buffer */
 		freespace = LDNS_SHA256_BLOCK_LENGTH - usedspace;
@@ -521,7 +772,7 @@ void ldns_sha256_update(ldns_sha256_CTX* context, const sha2_byte *data, size_t 
 			context->bitcount += freespace << 3;
 			len -= freespace;
 			data += freespace;
-			ldns_sha256_Transform(context, (sha2_word32*)context->buffer);
+			sha256_transform_fn(context, (sha2_word32*)context->buffer);
 		} else {
 			/* The buffer is not yet full */
 			MEMCPY_BCOPY(&context->buffer[usedspace], data, len);
@@ -534,7 +785,7 @@ void ldns_sha256_update(ldns_sha256_CTX* context, const sha2_byte *data, size_t 
 	}
 	while (len >= LDNS_SHA256_BLOCK_LENGTH) {
 		/* Process as many complete blocks as we can */
-		ldns_sha256_Transform(context, (sha2_word32*)data);
+		sha256_transform_fn(context, (sha2_word32*)data);
 		context->bitcount += LDNS_SHA256_BLOCK_LENGTH << 3;
 		len -= LDNS_SHA256_BLOCK_LENGTH;
 		data += LDNS_SHA256_BLOCK_LENGTH;
@@ -550,21 +801,26 @@ void ldns_sha256_update(ldns_sha256_CTX* context, const sha2_byte *data, size_t 
 }
 
 typedef union _ldns_sha2_buffer_union {
-        uint8_t*  theChars;
-        uint64_t* theLongs;
+    uint8_t*  theChars;
+    uint64_t* theLongs;
 } ldns_sha2_buffer_union;
 
-void ldns_sha256_final(sha2_byte digest[], ldns_sha256_CTX* context) {
+void
+ldns_sha256_final(sha2_byte digest[], ldns_sha256_CTX* context)
+{
 	sha2_word32	*d = (sha2_word32*)digest;
 	size_t usedspace;
 	ldns_sha2_buffer_union cast_var;
 
 	/* Sanity check: */
-	assert(context != (ldns_sha256_CTX*)0);
+	assert(context != NULL);
 
 	/* If no digest buffer is passed, we don't bother doing this: */
-	if (digest != (sha2_byte*)0) {
+	if (digest != NULL) {
 		usedspace = (context->bitcount >> 3) % LDNS_SHA256_BLOCK_LENGTH;
+
+		SHA256_TRANSFORM_FN sha256_transform_fn = get_sha256_transform_fn();
+
 #if BYTE_ORDER == LITTLE_ENDIAN
 		/* Convert FROM host byte order */
 		REVERSE64(context->bitcount,context->bitcount);
@@ -581,7 +837,7 @@ void ldns_sha256_final(sha2_byte digest[], ldns_sha256_CTX* context) {
 					MEMSET_BZERO(&context->buffer[usedspace], LDNS_SHA256_BLOCK_LENGTH - usedspace);
 				}
 				/* Do second-to-last transform: */
-				ldns_sha256_Transform(context, (sha2_word32*)context->buffer);
+				sha256_transform_fn(context, (sha2_word32*)context->buffer);
 
 				/* And set-up for the last transform: */
 				MEMSET_BZERO(context->buffer, ldns_sha256_SHORT_BLOCK_LENGTH);
@@ -598,7 +854,7 @@ void ldns_sha256_final(sha2_byte digest[], ldns_sha256_CTX* context) {
 		cast_var.theLongs[ldns_sha256_SHORT_BLOCK_LENGTH / 8] = context->bitcount;
 
 		/* final transform: */
-		ldns_sha256_Transform(context, (sha2_word32*)context->buffer);
+		sha256_transform_fn(context, (sha2_word32*)context->buffer);
 
 #if BYTE_ORDER == LITTLE_ENDIAN
 		{
@@ -631,8 +887,10 @@ ldns_sha256(const unsigned char *data, unsigned int data_len, unsigned char *dig
 }
 
 /*** SHA-512: *********************************************************/
-void ldns_sha512_init(ldns_sha512_CTX* context) {
-	if (context == (ldns_sha512_CTX*)0) {
+void
+ldns_sha512_init(ldns_sha512_CTX* context)
+{
+	if (context == NULL) {
 		return;
 	}
 	MEMCPY_BCOPY(context->state, sha512_initial_hash_value, LDNS_SHA512_DIGEST_LENGTH);
@@ -676,8 +934,9 @@ void ldns_sha512_init(ldns_sha512_CTX* context) {
 	(h) = T1 + Sigma0_512(a) + Maj((a), (b), (c)); \
 	j++
 
-static void ldns_sha512_Transform(ldns_sha512_CTX* context,
-                                  const sha2_word64* data) {
+static void
+ldns_sha512_transform(ldns_sha512_CTX* context, const sha2_word64* data)
+{
 	sha2_word64	a, b, c, d, e, f, g, h, s0, s1;
 	sha2_word64	T1, *W512 = (sha2_word64*)context->buffer;
 	int		j;
@@ -732,8 +991,9 @@ static void ldns_sha512_Transform(ldns_sha512_CTX* context,
 
 #else /* SHA2_UNROLL_TRANSFORM */
 
-static void ldns_sha512_Transform(ldns_sha512_CTX* context,
-                                  const sha2_word64* data) {
+static void
+ldns_sha512_transform(ldns_sha512_CTX* context, const sha2_word64* data)
+{
 	sha2_word64	a, b, c, d, e, f, g, h, s0, s1;
 	sha2_word64	T1, T2, *W512 = (sha2_word64*)context->buffer;
 	int		j;
@@ -812,7 +1072,9 @@ static void ldns_sha512_Transform(ldns_sha512_CTX* context,
 
 #endif /* SHA2_UNROLL_TRANSFORM */
 
-void ldns_sha512_update(ldns_sha512_CTX* context, const sha2_byte *data, size_t len) {
+void
+ldns_sha512_update(ldns_sha512_CTX* context, const sha2_byte *data, size_t len)
+{
 	size_t freespace, usedspace;
 
 	if (len == 0) {
@@ -821,7 +1083,7 @@ void ldns_sha512_update(ldns_sha512_CTX* context, const sha2_byte *data, size_t 
 	}
 
 	/* Sanity check: */
-	assert(context != (ldns_sha512_CTX*)0 && data != (sha2_byte*)0);
+	assert(context != NULL && data != NULL);
 
 	usedspace = (context->bitcount[0] >> 3) % LDNS_SHA512_BLOCK_LENGTH;
 	if (usedspace > 0) {
@@ -834,7 +1096,7 @@ void ldns_sha512_update(ldns_sha512_CTX* context, const sha2_byte *data, size_t 
 			ADDINC128(context->bitcount, freespace << 3);
 			len -= freespace;
 			data += freespace;
-			ldns_sha512_Transform(context, (sha2_word64*)context->buffer);
+			ldns_sha512_transform(context, (sha2_word64*)context->buffer);
 		} else {
 			/* The buffer is not yet full */
 			MEMCPY_BCOPY(&context->buffer[usedspace], data, len);
@@ -847,7 +1109,7 @@ void ldns_sha512_update(ldns_sha512_CTX* context, const sha2_byte *data, size_t 
 	}
 	while (len >= LDNS_SHA512_BLOCK_LENGTH) {
 		/* Process as many complete blocks as we can */
-		ldns_sha512_Transform(context, (sha2_word64*)data);
+		ldns_sha512_transform(context, (sha2_word64*)data);
 		ADDINC128(context->bitcount, LDNS_SHA512_BLOCK_LENGTH << 3);
 		len -= LDNS_SHA512_BLOCK_LENGTH;
 		data += LDNS_SHA512_BLOCK_LENGTH;
@@ -862,7 +1124,9 @@ void ldns_sha512_update(ldns_sha512_CTX* context, const sha2_byte *data, size_t 
 	(void)usedspace;
 }
 
-static void ldns_sha512_Last(ldns_sha512_CTX* context) {
+static void
+ldns_sha512_Last(ldns_sha512_CTX* context)
+{
 	size_t usedspace;
 	ldns_sha2_buffer_union cast_var;
 
@@ -884,7 +1148,7 @@ static void ldns_sha512_Last(ldns_sha512_CTX* context) {
 				MEMSET_BZERO(&context->buffer[usedspace], LDNS_SHA512_BLOCK_LENGTH - usedspace);
 			}
 			/* Do second-to-last transform: */
-			ldns_sha512_Transform(context, (sha2_word64*)context->buffer);
+			ldns_sha512_transform(context, (sha2_word64*)context->buffer);
 
 			/* And set-up for the last transform: */
 			MEMSET_BZERO(context->buffer, LDNS_SHA512_BLOCK_LENGTH - 2);
@@ -902,17 +1166,19 @@ static void ldns_sha512_Last(ldns_sha512_CTX* context) {
 	cast_var.theLongs[ldns_sha512_SHORT_BLOCK_LENGTH / 8 + 1] = context->bitcount[0];
 
 	/* final transform: */
-	ldns_sha512_Transform(context, (sha2_word64*)context->buffer);
+	ldns_sha512_transform(context, (sha2_word64*)context->buffer);
 }
 
-void ldns_sha512_final(sha2_byte digest[], ldns_sha512_CTX* context) {
+void
+ldns_sha512_final(sha2_byte digest[], ldns_sha512_CTX* context)
+{
 	sha2_word64	*d = (sha2_word64*)digest;
 
 	/* Sanity check: */
-	assert(context != (ldns_sha512_CTX*)0);
+	assert(context != NULL);
 
 	/* If no digest buffer is passed, we don't bother doing this: */
-	if (digest != (sha2_byte*)0) {
+	if (digest != NULL) {
 		ldns_sha512_Last(context);
 
 		/* Save the hash data for output: */
@@ -946,7 +1212,7 @@ ldns_sha512(const unsigned char *data, unsigned int data_len, unsigned char *dig
 
 /*** SHA-384: *********************************************************/
 void ldns_sha384_init(ldns_sha384_CTX* context) {
-	if (context == (ldns_sha384_CTX*)0) {
+	if (context == NULL) {
 		return;
 	}
 	MEMCPY_BCOPY(context->state, sha384_initial_hash_value, LDNS_SHA512_DIGEST_LENGTH);
@@ -962,10 +1228,10 @@ void ldns_sha384_final(sha2_byte digest[], ldns_sha384_CTX* context) {
 	sha2_word64	*d = (sha2_word64*)digest;
 
 	/* Sanity check: */
-	assert(context != (ldns_sha384_CTX*)0);
+	assert(context != NULL);
 
 	/* If no digest buffer is passed, we don't bother doing this: */
-	if (digest != (sha2_byte*)0) {
+	if (digest != NULL) {
 		ldns_sha512_Last((ldns_sha512_CTX*)context);
 
 		/* Save the hash data for output: */

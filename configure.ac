@@ -359,22 +359,62 @@ AC_CHECK_FUNCS([EVP_sha256 EVP_sha384 EVP_sha512 ENGINE_load_cryptodev EVP_PKEY_
 #AC_CHECK_PROG(glibtool, glibtool, [glibtool], )
 #AC_CHECK_PROGS(libtool, [libtool15 libtool], [./libtool])
 
-# check if SHA-NI and function attributes are available.
-# since there's a runtime switch, check for get_cpuid, too.
+# check if CPUID and SHA-NI and function attributes are available.
+# the link test is needed due to new compilers on old platforms
+# with old assemblers and old linkers.
 
-AC_MSG_CHECKING([if $CC supports x86 SHA and function attributes])
-AC_COMPILE_IFELSE(
+AC_MSG_CHECKING([if $CC supports GCC cpuid builtin])
+AC_LINK_IFELSE(
   [AC_LANG_SOURCE([
     #include <cpuid.h>
-    #include <immintrin.h>
-    #include <emmintrin.h>
-    __attribute__ ((target ("sse4.2,sha")))
-    void test_x86(void)
+    void main(void)
     {
-        __m128i x;
         int y;
         unsigned int a,b,c,d;
+        y = __get_cpuid_count(0, 0, &a, &b, &c, &d);
+    }
+  ])],
+  [
+    AC_MSG_RESULT([yes])
+    AC_DEFINE([LDNS_GCC_CPUID_AVAILABLE], [1], [Enable GCC CPUID builtin])
+  ],
+  [
+    AC_MSG_RESULT([no])
+  ]
+)
 
+AC_MSG_CHECKING([if $CC supports MSVC cpuid intrinsic])
+AC_LINK_IFELSE(
+  [AC_LANG_SOURCE([
+    #include <intrin.h>
+    void main(void)
+    {
+        [int reg[4];]
+        __cpuidex(reg, 0, 0);
+    }
+  ])],
+  [
+    AC_MSG_RESULT([yes])
+    AC_DEFINE([LDNS_MSVC_CPUID_AVAILABLE], [1], [Enable MSVC CPUID intrinsic])
+  ],
+  [
+    AC_MSG_RESULT([no])
+  ]
+)
+
+AC_MSG_CHECKING([if $CC supports x86 SHA intrinsics])
+AC_LINK_IFELSE(
+  [AC_LANG_SOURCE([
+    #include <immintrin.h>
+    #include <emmintrin.h>
+    #if defined(__GNUC__)
+    __attribute__ ((target ("sse4.2,sha")))
+    void main(void)
+    #else
+    void main(void)
+    #endif
+    {
+        __m128i x;
         x=_mm_setzero_si128();
         x=_mm_sha1msg1_epu32(x,x);
         x=_mm_sha1msg2_epu32(x,x);
@@ -383,8 +423,6 @@ AC_COMPILE_IFELSE(
         x=_mm_sha256msg1_epu32(x,x);
         x=_mm_sha256msg2_epu32(x,x);
         x=_mm_sha256rnds2_epu32(x,x,x);
-
-        y = __get_cpuid_count(1, 0, &a, &b, &c, &d);
     }
   ])],
   [

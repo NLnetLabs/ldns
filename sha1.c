@@ -1,10 +1,10 @@
 /*
  * modified for ldns by Jelte Jansen, original taken from OpenBSD:
- * 
+ *
  * SHA-1 in C
  * By Steve Reid <steve@edmweb.com>
  * 100% Public Domain
- * 
+ *
  * Test Vectors (from FIPS PUB 180-1)
  * "abc"
  *   A9993E36 4706816A BA3E2571 7850C26C 9CD0D89D
@@ -17,11 +17,12 @@
 /* #define LITTLE_ENDIAN * This should be #define'd already, if true. */
 
 #include <ldns/config.h>
-#include <ldns/ldns.h>
-#include <strings.h>
+#include <ldns/cpuinfo.h>
+#include <ldns/sha1.h>
+#include <string.h>  /* memcpy, memset, bcopy, bzero */
+#include <stddef.h>  /* size_t and NULL */
 
 #if defined(LDNS_X86_SHA_AVAILABLE)
-# include <cpuid.h>      /* __get_cpuid */
 # include <smmintrin.h>  /* _mm_extract_epi32 */
 # include <tmmintrin.h>  /* _mm_shuffle_epi8 */
 # include <emmintrin.h>  /* _mm_shuffle_epi32 */
@@ -114,9 +115,14 @@ ldns_sha1_transform(uint32_t state[5], const unsigned char buffer[LDNS_SHA1_BLOC
 
 
 #if defined(LDNS_X86_SHA_AVAILABLE)
+# if defined(__GNUC__)
 __attribute__ ((target ("sse4.2,sha")))
 void
 ldns_sha1_transform_x86(uint32_t state[5], const unsigned char buffer[LDNS_SHA1_BLOCK_LENGTH])
+# else
+void
+ldns_sha1_transform_x86(uint32_t state[5], const unsigned char buffer[LDNS_SHA1_BLOCK_LENGTH])
+# endif
 {
     __m128i ABCD, ABCD_SAVE, E0, E0_SAVE, E1;
     __m128i MASK, MSG0, MSG1, MSG2, MSG3;
@@ -334,24 +340,9 @@ SHA1_TRANSFORM_FN get_sha1_transform_fn(void)
         SHA1_TRANSFORM_FN tfn = &ldns_sha1_transform;
 
 #if defined(LDNS_X86_SHA_AVAILABLE)
-        /* SSE2: verify the cpu supports SSE2    */
-        /* XSAVE: verify the cpu supports XSAVE  */
-        /* OSXSAVE: verify the OS supports XSAVE */
-        /* SHA: verify the cpu supports SHA      */
-        enum { SSE2_FLAG = 1<<26, XSAVE_FLAG = 1<<26, OSXSAVE_FLAG = 1<<27, SHA_FLAG = 1<<29 };
-        unsigned int a, b, c, d;
-        if (__get_cpuid_count(0, 0, &a, &b, &c, &d) && a >= 7)
+        if (ldns_cpu_x86_sha1())
         {
-            /* Check XSAVE and OSXSAVE for legacy i386 and i586 hardware.         */
-            /* The checks have not been needed in practice since about year 2000. */
-            if (__get_cpuid_count(1, 0, &a, &b, &c, &d) && (d & SSE2_FLAG) == SSE2_FLAG &&
-               (c & XSAVE_FLAG) == XSAVE_FLAG && (c & OSXSAVE_FLAG) == OSXSAVE_FLAG)
-            {
-                if (__get_cpuid_count(7, 0, &a, &b, &c, &d) && (b & SHA_FLAG) == SHA_FLAG)
-                {
-                    tfn = &ldns_sha1_transform_x86;
-                }
-            }
+            tfn = &ldns_sha1_transform_x86;
         }
 #endif
 
@@ -377,7 +368,7 @@ ldns_sha1_update(ldns_sha1_ctx *context, const unsigned char *data, unsigned int
     j = (unsigned int)((context->count >> 3) & 63);
     context->count += (len << 3);
     if ((j + len) > 63) {
-        memmove(&context->buffer[j], data, (i = 64 - j));
+        memcpy(&context->buffer[j], data, (i = 64 - j));
         sha1_transform_fn(context->state, context->buffer);
         for ( ; i + 63 < len; i += 64) {
             sha1_transform_fn(context->state, &data[i]);
@@ -387,7 +378,7 @@ ldns_sha1_update(ldns_sha1_ctx *context, const unsigned char *data, unsigned int
     else {
         i = 0;
     }
-    memmove(&context->buffer[j], &data[i], len - i);
+    memcpy(&context->buffer[j], &data[i], len - i);
 }
 
 
