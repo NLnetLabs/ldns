@@ -375,7 +375,7 @@ case "$enable_sha2" in
         ;;
 esac
 
-# check wether gost also works
+# check whether gost also works
 AC_DEFUN([AC_CHECK_GOST_WORKS],
 [AC_REQUIRE([AC_PROG_CC])
 AC_MSG_CHECKING([if GOST works])
@@ -558,6 +558,109 @@ case "$enable_ed448" in
       ])
       ;;
 esac
+
+# check if CPUID and SHA-NI and function attributes are available.
+# the link test is needed due to new compilers on old platforms
+# with old assemblers and old linkers.
+
+AC_MSG_CHECKING([if $CC supports GCC cpuid builtin])
+AC_LINK_IFELSE(
+  [AC_LANG_SOURCE([
+    #include <cpuid.h>
+    void main(void)
+    {
+        int y;
+        unsigned int a,b,c,d;
+        y = __get_cpuid_count(0, 0, &a, &b, &c, &d);
+    }
+  ])],
+  [
+    AC_MSG_RESULT([yes])
+    AC_DEFINE([LDNS_GCC_CPUID_BUILTIN_AVAILABLE], [1], [Enable GCC CPUID builtin])
+  ],
+  [
+    AC_MSG_RESULT([no])
+  ]
+)
+
+AC_MSG_CHECKING([if $CC supports GCC cpuid inline assembly])
+AC_LINK_IFELSE(
+  [AC_LANG_SOURCE([
+    void main(void)
+    {
+      int aa, bb, cc, dd;
+      __asm__
+      (
+# if defined(__x86_64__) || defined(__amd64__)
+        "pushq %%rbx; cpuid; mov %%ebx, %%edi; popq %%rbx"
+# else
+        "push %%ebx; cpuid; mov %%ebx, %%edi; pop %%ebx"
+# endif
+        : "=a" (aa), "=D" (bb), "=c" (cc), "=d" (dd)
+        : "a" (0), "c" (0)
+        : "cc"
+      );
+    }
+  ])],
+  [
+    AC_MSG_RESULT([yes])
+    AC_DEFINE([LDNS_GCC_CPUID_INLINE_ASM_AVAILABLE], [1], [Enable GCC cpuid inline assembly])
+  ],
+  [
+    AC_MSG_RESULT([no])
+  ]
+)
+
+AC_MSG_CHECKING([if $CC supports MSVC cpuid intrinsic])
+AC_LINK_IFELSE(
+  [AC_LANG_SOURCE([
+    #include <intrin.h>
+    void main(void)
+    {
+        [int reg[4];]
+        __cpuidex(reg, 0, 0);
+    }
+  ])],
+  [
+    AC_MSG_RESULT([yes])
+    AC_DEFINE([LDNS_MSVC_CPUID_INTRIN_AVAILABLE], [1], [Enable MSVC CPUID intrinsic])
+  ],
+  [
+    AC_MSG_RESULT([no])
+  ]
+)
+
+AC_MSG_CHECKING([if $CC supports x86 SHA intrinsics])
+AC_LINK_IFELSE(
+  [AC_LANG_SOURCE([
+    #include <emmintrin.h>
+    #include <immintrin.h>
+    #if defined(__GNUC__)
+    __attribute__ ((target ("sse4.2,sha")))
+    void main(void)
+    #else
+    void main(void)
+    #endif
+    {
+        __m128i x;
+        x=_mm_setzero_si128();
+        x=_mm_sha1msg1_epu32(x,x);
+        x=_mm_sha1msg2_epu32(x,x);
+        x=_mm_sha1nexte_epu32(x,x);
+        x=_mm_sha1rnds4_epu32(x,x,0);
+        x=_mm_sha256msg1_epu32(x,x);
+        x=_mm_sha256msg2_epu32(x,x);
+        x=_mm_sha256rnds2_epu32(x,x,x);
+    }
+  ])],
+  [
+    AC_MSG_RESULT([yes])
+    AC_DEFINE([LDNS_X86_SHA_AVAILABLE], [1], [Enable x86 SHA-NI])
+  ],
+  [
+    AC_MSG_RESULT([no])
+  ]
+)
 
 AC_ARG_ENABLE(dane, AC_HELP_STRING([--disable-dane], [Disable DANE support]))
 AC_ARG_ENABLE(dane-verify, AC_HELP_STRING([--disable-dane-verify], [Disable DANE verify support]))

@@ -1,5 +1,9 @@
-sudo: false
 language: c
+sudo: false
+
+git:
+  depth: 4
+
 addons:
   apt:
     packages:
@@ -16,20 +20,47 @@ addons:
       - doxygen
       - openssl
       - indent
-matrix:
+
+jobs:
   include:
     - os: linux
+      name: GCC on Linux, Amd64
       compiler: gcc
+      arch: amd64
       env: VALGRIND=true  ANALYSIS=true  COVERAGE=true  DOXYGEN=true
-#    - os: linux
-#      compiler: clang
-#      env: VALGRIND=true  ANALYSIS=true  COVERAGE=true  DOXYGEN=true
-#    - os: osx
-#      compiler: gcc
-#      env: VALGRIND=true  ANALYSIS=true  COVERAGE=true  DOXYGEN=true
-    - os: osx
+    - os: linux
+      name: Clang on Linux, Amd64
       compiler: clang
+      arch: amd64
+      env: VALGRIND=true  ANALYSIS=true  COVERAGE=true  DOXYGEN=true
+    - os: osx
+      name: Clang on OS X, Amd64
+      compiler: clang
+      arch: amd64
+      env: VALGRIND=true  ANALYSIS=true  COVERAGE=true  DOXYGEN=true
+    - os: linux
+      name: GCC on Linux, Aarch64
+      compiler: gcc
+      arch: arm64
+      dist: bionic
+      env: VALGRIND=true  ANALYSIS=true  COVERAGE=true  DOXYGEN=true
+    - os: linux
+      name: Clang on Linux, Aarch64
+      compiler: clang
+      arch: arm64
+      dist: bionic
+      env: VALGRIND=true  ANALYSIS=true  COVERAGE=true  DOXYGEN=true
+    - os: linux
+      name: GCC on Linux, PowerPC64
+      compiler: gcc
+      arch: ppc64le
+      dist: bionic
+      env: VALGRIND=true  ANALYSIS=true  COVERAGE=true  DOXYGEN=true
+    - os: linux
+      name: Clang on Linux, PowerPC64
+      compiler: clang
+      arch: ppc64le
+      dist: bionic
       env: VALGRIND=true  ANALYSIS=true  COVERAGE=true  DOXYGEN=true
 script:
   - test/test_ci.sh
-

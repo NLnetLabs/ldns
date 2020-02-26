@@ -1,7 +1,7 @@
 /*
  * FILE:	sha2.h
  * AUTHOR:	Aaron D. Gifford - http://www.aarongifford.com/
- * 
+ *
  * Copyright (c) 2000-2001, Aaron D. Gifford
  * All rights reserved.
  *
@@ -15,7 +15,7 @@
  *    configure.ac
  *  - Removed _End and _Data functions
  *  - Added ldns_shaX(data, len, digest) functions
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
@@ -27,7 +27,7 @@
  * 3. Neither the name of the copyright holder nor the names of contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTOR(S) ``AS IS'' AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -46,23 +46,16 @@
 #ifndef __LDNS_SHA2_H__
 #define __LDNS_SHA2_H__
 
+#include <stdint.h>  /* uint32_t and friends */
+#include <stddef.h>  /* size_t and NULL */
+
+#if LDNS_BUILD_CONFIG_HAVE_INTTYPES_H
+# include <inttypes.h>
+#endif
+
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-
-/*
- * Import u_intXX_t size_t type definitions from system headers.  You
- * may need to change this, or define these things yourself in this
- * file.
- */
-#include <sys/types.h>
-
-#if LDNS_BUILD_CONFIG_HAVE_INTTYPES_H
-
-#include <inttypes.h>
-
-#endif /* LDNS_BUILD_CONFIG_HAVE_INTTYPES_H */
 
 
 /*** SHA-256/384/512 Various Length Definitions ***********************/
@@ -114,9 +107,9 @@ void ldns_sha512_final(uint8_t[LDNS_SHA512_DIGEST_LENGTH], ldns_sha512_CTX*);
  * \param[out] digest the length of data in bytes
  *             This pointer MUST have LDNS_SHA256_DIGEST_LENGTH bytes
  *             available
- * \return the SHA1 digest of the given data
+ * \return the SHA-256 digest of the given data
  */
-unsigned char *ldns_sha256(unsigned char *data, unsigned int data_len, unsigned char *digest);
+unsigned char *ldns_sha256(const unsigned char *data, unsigned int data_len, unsigned char *digest);
 
 /**
  * Convenience function to digest a fixed block of data at once.
@@ -126,9 +119,9 @@ unsigned char *ldns_sha256(unsigned char *data, unsigned int data_len, unsigned 
  * \param[out] digest the length of data in bytes
  *             This pointer MUST have LDNS_SHA384_DIGEST_LENGTH bytes
  *             available
- * \return the SHA1 digest of the given data
+ * \return the SHA-384 digest of the given data
  */
-unsigned char *ldns_sha384(unsigned char *data, unsigned int data_len, unsigned char *digest);
+unsigned char *ldns_sha384(const unsigned char *data, unsigned int data_len, unsigned char *digest);
 
 /**
  * Convenience function to digest a fixed block of data at once.
@@ -138,9 +131,9 @@ unsigned char *ldns_sha384(unsigned char *data, unsigned int data_len, unsigned 
  * \param[out] digest the length of data in bytes
  *             This pointer MUST have LDNS_SHA512_DIGEST_LENGTH bytes
  *             available
- * \return the SHA1 digest of the given data
+ * \return the SHA-512 digest of the given data
  */
-unsigned char *ldns_sha512(unsigned char *data, unsigned int data_len, unsigned char *digest);
+unsigned char *ldns_sha512(const unsigned char *data, unsigned int data_len, unsigned char *digest);
 
 #ifdef	__cplusplus
 }

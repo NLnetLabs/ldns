@@ -3,7 +3,7 @@
 
 AC_PREREQ(2.57)
 AC_INIT(drill, 1.1.0, ldns-team@nlnetlabs.nl, ldns-team)
-AC_CONFIG_SRCDIR([13-unit-tests-base.c])
+AC_CONFIG_SRCDIR([11-unit-tests-base.c])
 
 AC_AIX
 # Checks for programs.
@@ -91,6 +91,6 @@ AH_BOTTOM([
 
 #AC_DEFINE_UNQUOTED(SYSCONFDIR, "$sysconfdir")
 
-AC_CONFIG_FILES([13-unit-tests-base.Makefile])
+AC_CONFIG_FILES([11-unit-tests-base.Makefile])
 AC_CONFIG_HEADER([config.h])
 AC_OUTPUT

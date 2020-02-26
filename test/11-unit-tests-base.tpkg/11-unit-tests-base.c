@@ -5,28 +5,31 @@
 
 #include <ldns/ldns.h>
 
+/* Avoid signedness warnings */
+#define CH_PTR(ptr) ((char*)(ptr))
+#define UCH_PTR(ptr) ((unsigned char*)(ptr))
+
 void print_data_ar(const uint8_t *data, const size_t len) {
 	size_t i;
-	
+
 	for (i = 0; i < len; i++) {
 		printf("%02x ", data[i]);
 	}
 }
 
-
 int
 test_base64_encode(uint8_t *data, size_t data_len, const char *expect_result)
 {
 	int result;
-	
+
 	char *text;
 	size_t text_len;
 
 	text_len = ldns_b64_ntop_calculate_size(data_len);
 	text = malloc(text_len);
-	
+
 	result = ldns_b64_ntop(data, data_len, text, text_len);
-	
+
 	text_len = result;
 
 	if (result < 0) {
@@ -43,7 +46,7 @@ test_base64_encode(uint8_t *data, size_t data_len, const char *expect_result)
 			printf("Data:\t");
 			print_data_ar(data, data_len);
 			printf("\n");
-			
+
 			result = 2;
 		} else {
 			result = 0;
@@ -57,20 +60,20 @@ int
 test_base64_decode(const char *str, const uint8_t *expect_data, size_t expect_data_len)
 {
 	int result;
-	
+
 	uint8_t *data;
 	size_t data_len;
 
 	size_t i;
 
 	data_len = ldns_b64_pton_calculate_size(strlen(str));
-	
+
 	data = malloc(data_len);
-	
+
 	result = ldns_b64_pton(str, data, data_len);
-	
+
 	data_len = result;
-	
+
 	if (result < 0) {
 		printf("Error 2 decoding base64 test data (return code %d): %s\n", result, str);
 		result = 1;
@@ -102,7 +105,7 @@ test_base64_decode(const char *str, const uint8_t *expect_data, size_t expect_da
 			}
 		}
 	}
-	
+
 	return result;
 }
 
@@ -110,15 +113,15 @@ int
 test_base32_encode(uint8_t *data, size_t data_len, const char *expect_result)
 {
 	int result;
-	
+
 	char *text;
 	size_t text_len;
 
 	text_len = ldns_b32_ntop_calculate_size(data_len) + 10;
 	text = malloc(text_len);
-	
+
 	result = ldns_b32_ntop(data, data_len, text, text_len);
-	
+
 	if (result < 0) {
 		printf("Error 3 encoding base32 test data (result %d):\n", result);
 		print_data_ar(data, data_len);
@@ -133,7 +136,7 @@ test_base32_encode(uint8_t *data, size_t data_len, const char *expect_result)
 			printf("Data:\t");
 			print_data_ar(data, data_len);
 			printf("\n");
-			
+
 			result = 2;
 		} else {
 			result = 0;
@@ -147,20 +150,20 @@ int
 test_base32_decode(const char *str, const uint8_t *expect_data, size_t expect_data_len)
 {
 	int result;
-	
+
 	uint8_t *data;
 	size_t data_len;
 
 	size_t i;
 
 	data_len = ldns_b32_pton_calculate_size(strlen(str))  +  10;
-	
+
 	data = malloc(data_len);
-	
+
 	result = ldns_b32_pton(str, strlen(str), data, data_len);
-	
+
 	data_len = result;
-	
+
 	if (result < 0) {
 		printf("Error 4 decoding base32 test data (result %d): %s\n", result, str);
 		result = 1;
@@ -192,7 +195,7 @@ test_base32_decode(const char *str, const uint8_t *expect_data, size_t expect_da
 			}
 		}
 	}
-	
+
 	return result;
 }
 
@@ -200,16 +203,16 @@ int
 test_base32_encode_extended_hex(uint8_t *data, size_t data_len, const char *expect_result)
 {
 	int result;
-	
+
 	char *text;
 	size_t text_len;
 
 	text_len = ldns_b32_ntop_calculate_size(data_len) + 10;
 	text = malloc(text_len);
-	
+
 	result = ldns_b32_ntop_extended_hex(data, data_len, text, text_len);
-	
-	
+
+
 	if (result < 0) {
 		printf("Error 5 encoding base32 extended hex test data (result %d):\n", result);
 		print_data_ar(data, data_len);
@@ -225,7 +228,7 @@ test_base32_encode_extended_hex(uint8_t *data, size_t data_len, const char *expe
 			printf("Data:\t");
 			print_data_ar(data, data_len);
 			printf("\n");
-			
+
 			result = 2;
 		} else {
 			result = 0;
@@ -239,20 +242,20 @@ int
 test_base32_decode_extended_hex(const char *str, const uint8_t *expect_data, size_t expect_data_len)
 {
 	int result;
-	
+
 	uint8_t *data;
 	size_t data_len;
 
 	size_t i;
 
 	data_len = ldns_b32_pton_calculate_size(strlen(str)) + 10;
-	
+
 	data = malloc(data_len);
-	
+
 	result = ldns_b32_pton_extended_hex(str, strlen(str), data, data_len);
-	
+
 	data_len = result;
-	
+
 	if (result < 0) {
 		printf("Error 6 decoding base32 extended hex test data (result %d): %s\n", result, str);
 		result = 1;
@@ -284,94 +287,7 @@ test_base32_decode_extended_hex(const char *str, const uint8_t *expect_data, siz
 			}
 		}
 	}
-	
-	return result;
-}
 
-
-
-int
-test_sha1(char *data, const char *expect_result_str)
-{
-	int result;
-	char *digest, *d;
-	unsigned int digest_len;
-	uint8_t *expect_result;
-	size_t data_len;
-	
-	data_len = strlen(data);
-
-	expect_result = malloc(strlen(expect_result_str) / 2);
-	(void) ldns_hexstring_to_data(expect_result, expect_result_str);
-
-
-	digest_len = LDNS_SHA1_DIGEST_LENGTH;
-	digest = malloc(digest_len);
-	
-	d = ldns_sha1(data, data_len, digest);
-
-	if (!d) {
-		printf("Error in digest of test data (digesting failed):\n");
-		print_data_ar(data, data_len);
-		printf("\n");
-		result = 1;
-	} else {
-		if (strncmp(expect_result, digest, digest_len) != 0) {
-			printf("Bad sha1 digest: got: ");
-			print_data_ar(digest, digest_len);
-			printf("Expected:                 ");
-			printf("%s\n", expect_result);
-			printf("Data:\t%s\n", data);
-			
-			result = 2;
-		} else {
-			result = 0;
-		}
-	}
-	free(digest);
-	free(expect_result);
-	return result;
-}
-
-int
-test_sha256(char *data, const char *expect_result_str)
-{
-	int result;
-	char *digest, *d;
-	unsigned int digest_len;
-	uint8_t *expect_result;
-	size_t data_len;
-	
-	data_len = strlen(data);
-
-	expect_result = malloc(strlen(expect_result_str) / 2);
-	(void) ldns_hexstring_to_data(expect_result, expect_result_str);
-
-	digest_len = LDNS_SHA256_DIGEST_LENGTH;
-	digest = malloc(digest_len);
-	
-	d = ldns_sha256(data, data_len, digest);
-
-	if (!d) {
-		printf("Error in digest of test data (digesting failed):\n");
-		print_data_ar(data, data_len);
-		printf("\n");
-		result = 1;
-	} else {
-		if (strncmp(expect_result, digest, digest_len) != 0) {
-			printf("Bad sha256 digest: got: ");
-			print_data_ar(digest, digest_len);
-			printf("Expected:                 ");
-			printf("%s\n", expect_result);
-			printf("Data:\t%s\n", data);
-			
-			result = 2;
-		} else {
-			result = 0;
-		}
-	}
-	free(digest);
-	free(expect_result);
 	return result;
 }
 
@@ -380,8 +296,6 @@ main(void)
 {
 	uint8_t *data;
 	size_t data_len;
-	char *text;
-	size_t text_len;
 
 	int result = EXIT_SUCCESS;
 
@@ -590,7 +504,7 @@ main(void)
 		result = EXIT_FAILURE;
 	}
 	free(data);
-	
+
 
 	/* BASE64("fo") = "Zm8=" */
 	/* BASE32("fo") = "MZXQ====" */
@@ -799,26 +713,6 @@ main(void)
 		result = EXIT_FAILURE;
 	}
 	if (test_base32_decode_extended_hex("46chvg6v0b8tbdmgv3qfvvhovsfati1q", data, data_len) != 0) {
-		result = EXIT_FAILURE;
-	}
-
-	if (test_sha1("abc", "A9993E364706816ABA3E25717850C26C9CD0D89D") != 0) {
-		result = EXIT_FAILURE;
-	}
-	if (test_sha1("", "da39a3ee5e6b4b0d3255bfef95601890afd80709") != 0) {
-		result = EXIT_FAILURE;
-	}
-	if (test_sha1("Test vector from febooti.com", "a7631795f6d59cd6d14ebd0058a6394a4b93d868") != 0) {
-		result = EXIT_FAILURE;
-	}
-	if (test_sha1("abcdbcdecdefdefgefghfghighijhijkijkljklmklmnlmnomnopnopq", "84983E441C3BD26EBAAE4AA1F95129E5E54670F1") != 0) {
-		result = EXIT_FAILURE;
-	}
-
-	if (test_sha256("", "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855") != 0) {
-		result = EXIT_FAILURE;
-	}
-	if (test_sha256("Test vector from febooti.com", "077b18fe29036ada4890bdec192186e10678597a67880290521df70df4bac9ab") != 0) {
 		result = EXIT_FAILURE;
 	}
 
