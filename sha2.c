@@ -868,10 +868,12 @@ ldns_sha256_final(sha2_byte digest[], ldns_sha256_CTX* context)
 			int	j;
 			for (j = 0; j < 8; j++) {
 				REVERSE32(context->state[j],context->state[j]);
+				*d++ = context->state[j];
 			}
 		}
-#endif
+#else
 		MEMCPY_BCOPY(d, context->state, LDNS_SHA256_DIGEST_LENGTH);
+#endif
 	}
 
 	/* Clean up state data: */
