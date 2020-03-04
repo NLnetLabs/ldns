@@ -1,4 +1,3 @@
-sudo: false
 language: c
 addons:
   apt:
@@ -16,20 +15,90 @@ addons:
       - doxygen
       - openssl
       - indent
-matrix:
+
+jobs:
   include:
     - os: linux
+      name: GCC on Linux, Amd64
       compiler: gcc
+      arch: amd64
       env: VALGRIND=true  ANALYSIS=true  COVERAGE=true  DOXYGEN=true
-#    - os: linux
-#      compiler: clang
-#      env: VALGRIND=true  ANALYSIS=true  COVERAGE=true  DOXYGEN=true
-#    - os: osx
-#      compiler: gcc
-#      env: VALGRIND=true  ANALYSIS=true  COVERAGE=true  DOXYGEN=true
-    - os: osx
+    - os: linux
+      name: Clang on Linux, Amd64
       compiler: clang
+      arch: amd64
       env: VALGRIND=true  ANALYSIS=true  COVERAGE=true  DOXYGEN=true
-script:
-  - test/test_ci.sh
+    - os: osx
+      name: Clang on OS X, Amd64
+      compiler: clang
+      arch: amd64
+      env: VALGRIND=true  ANALYSIS=true  COVERAGE=true  DOXYGEN=true
+    - os: linux
+      name: UBsan, GCC on Linux, Amd64
+      compiler: gcc
+      arch: amd64
+      dist: bionic
+      env: UBSAN=true
+    - os: linux
+      name: UBsan, Clang on Linux, Amd64
+      compiler: clang
+      arch: amd64
+      dist: bionic
+      env: UBSAN=true
+    - os: linux
+      name: Asan, GCC on Linux, Amd64
+      compiler: gcc
+      arch: amd64
+      dist: bionic
+      env: ASAN=true
+    - os: linux
+      name: Asan, Clang on Linux, Amd64
+      compiler: clang
+      arch: amd64
+      dist: bionic
+      env: ASAN=true
+    - os: linux
+      name: GCC on Linux, Aarch64
+      compiler: gcc
+      arch: arm64
+      dist: bionic
+      env: VALGRIND=true  ANALYSIS=true  COVERAGE=true  DOXYGEN=true
+    - os: linux
+      name: Clang on Linux, Aarch64
+      compiler: clang
+      arch: arm64
+      dist: bionic
+      env: VALGRIND=true  ANALYSIS=true  COVERAGE=true  DOXYGEN=true
+    - os: linux
+      name: GCC on Linux, PowerPC64
+      compiler: gcc
+      arch: ppc64le
+      dist: bionic
+      env: VALGRIND=true  ANALYSIS=true  COVERAGE=true  DOXYGEN=true
+    - os: linux
+      name: Clang on Linux, PowerPC64
+      compiler: clang
+      arch: ppc64le
+      dist: bionic
+      env: VALGRIND=true  ANALYSIS=true  COVERAGE=true  DOXYGEN=true
+    - os: linux
+      name: GCC on Linux, s390x
+      compiler: gcc
+      arch: s390x
+      dist: bionic
+      env: VALGRIND=true  ANALYSIS=true  COVERAGE=true  DOXYGEN=true
+    - os: linux
+      name: Clang on Linux, s390x
+      compiler: clang
+      arch: s390x
+      dist: bionic
+      env: VALGRIND=true  ANALYSIS=true  COVERAGE=true  DOXYGEN=true
 
+script:
+  - |
+    if [ "$UBSAN" = "true" ]; then
+      export CFLAGS="-DNDEBUG -g2 -O3 -fsanitize=undefined -fno-sanitize-recover"
+    elif [ "$ASAN" = "true" ]; then
+      export CFLAGS="-DNDEBUG -g2 -O3 -fsanitize=address"
+    fi
+    test/test_ci.sh
