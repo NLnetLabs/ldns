@@ -840,8 +840,9 @@ AC_CHECK_TYPE(in_port_t, [], [AC_DEFINE([in_port_t], [uint16_t], [in_port_t])], 
 #endif])
 ACX_CHECK_SS_FAMILY
 
-AC_FUNC_MALLOC
-AC_FUNC_REALLOC
+# AC_FUNC_MALLOC suffers false failures and causes Asan failures.
+# AC_FUNC_MALLOC
+# AC_FUNC_REALLOC
 
 AC_REPLACE_FUNCS(b64_pton)
 AC_REPLACE_FUNCS(b64_ntop)
