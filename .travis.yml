@@ -1,9 +1,4 @@
 language: c
-sudo: false
-
-git:
-  depth: 4
-
 addons:
   apt:
     packages:
@@ -39,6 +34,30 @@ jobs:
       arch: amd64
       env: VALGRIND=true  ANALYSIS=true  COVERAGE=true  DOXYGEN=true
     - os: linux
+      name: UBsan, GCC on Linux, Amd64
+      compiler: gcc
+      arch: amd64
+      dist: bionic
+      env: UBSAN=true
+    - os: linux
+      name: UBsan, Clang on Linux, Amd64
+      compiler: clang
+      arch: amd64
+      dist: bionic
+      env: UBSAN=true
+    - os: linux
+      name: Asan, GCC on Linux, Amd64
+      compiler: gcc
+      arch: amd64
+      dist: bionic
+      env: ASAN=true
+    - os: linux
+      name: Asan, Clang on Linux, Amd64
+      compiler: clang
+      arch: amd64
+      dist: bionic
+      env: ASAN=true
+    - os: linux
       name: GCC on Linux, Aarch64
       compiler: gcc
       arch: arm64
@@ -62,5 +81,24 @@ jobs:
       arch: ppc64le
       dist: bionic
       env: VALGRIND=true  ANALYSIS=true  COVERAGE=true  DOXYGEN=true
+    - os: linux
+      name: GCC on Linux, s390x
+      compiler: gcc
+      arch: s390x
+      dist: bionic
+      env: VALGRIND=true  ANALYSIS=true  COVERAGE=true  DOXYGEN=true
+    - os: linux
+      name: Clang on Linux, s390x
+      compiler: clang
+      arch: s390x
+      dist: bionic
+      env: VALGRIND=true  ANALYSIS=true  COVERAGE=true  DOXYGEN=true
+
 script:
-  - test/test_ci.sh
+  - |
+    if [ "$UBSAN" = "true" ]; then
+      export CFLAGS="-DNDEBUG -g2 -O3 -fsanitize=undefined -fno-sanitize-recover"
+    elif [ "$ASAN" = "true" ]; then
+      export CFLAGS="-DNDEBUG -g2 -O3 -fsanitize=address"
+    fi
+    test/test_ci.sh

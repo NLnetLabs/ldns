@@ -536,14 +536,26 @@ static void
 shutdown_openssl ( ENGINE * const e )
 {
 	if ( e != NULL ) {
+#ifdef HAVE_ENGINE_FREE
 		ENGINE_free ( e );
+#endif
+#ifdef HAVE_ENGINE_CLEANUP
 		ENGINE_cleanup ();
+#endif
 	}
 
+#ifdef HAVE_CONF_MODULES_UNLOAD
 	CONF_modules_unload ( 1 );
+#endif
+#ifdef HAVE_EVP_CLEANUP
 	EVP_cleanup ();
+#endif
+#ifdef HAVE_CRYPTO_CLEANUP_ALL_EX_DATA
 	CRYPTO_cleanup_all_ex_data ();
+#endif
+#ifdef HAVE_ERR_FREE_STRINGS
 	ERR_free_strings ();
+#endif
 }
 #endif
 
@@ -1006,11 +1018,15 @@ main(int argc, char *argv[])
 #ifdef HAVE_SSL
 		if (ERR_peek_error()) {
 #if OPENSSL_VERSION_NUMBER < 0x10100000L || defined(HAVE_LIBRESSL)
+#ifdef HAVE_ERR_LOAD_CRYPTO_STRINGS
 			ERR_load_crypto_strings();
+#endif
 #endif
 			ERR_print_errors_fp(stderr);
 #if OPENSSL_VERSION_NUMBER < 0x10100000L || defined(HAVE_LIBRESSL)
-			ERR_free_strings();
+#ifdef HAVE_ERR_FREE_STRINGS
+			ERR_free_strings ();
+#endif
 #endif
 		}
 #endif
@@ -1033,7 +1049,9 @@ main(int argc, char *argv[])
 	shutdown_openssl ( engine );
 #else
 #if OPENSSL_VERSION_NUMBER < 0x10100000 || defined(HAVE_LIBRESSL)
-	CRYPTO_cleanup_all_ex_data();
+#ifdef HAVE_CRYPTO_CLEANUP_ALL_EX_DATA
+	CRYPTO_cleanup_all_ex_data ();
+#endif
 #endif
 #endif
 
