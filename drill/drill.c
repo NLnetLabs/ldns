@@ -995,9 +995,15 @@ main(int argc, char *argv[])
 
 #ifdef HAVE_SSL
 #if OPENSSL_VERSION_NUMBER < 0x10100000L || defined(HAVE_LIBRESSL)
-	CRYPTO_cleanup_all_ex_data();
-	ERR_free_strings();
-	EVP_cleanup();
+#ifdef HAVE_CRYPTO_CLEANUP_ALL_EX_DATA
+	CRYPTO_cleanup_all_ex_data ();
+#endif
+#ifdef HAVE_ERR_FREE_STRINGS
+	ERR_free_strings ();
+#endif
+#ifdef HAVE_EVP_CLEANUP
+	EVP_cleanup ();
+#endif
 #endif
 #endif
 #ifdef USE_WINSOCK

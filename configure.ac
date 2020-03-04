@@ -352,7 +352,8 @@ if grep VERSION_TEXT $ssldir/include/openssl/opensslv.h | grep "LibreSSL" >/dev/
 else
 	AC_MSG_RESULT([no])
 fi
-AC_CHECK_FUNCS([EVP_sha256 EVP_sha384 EVP_sha512 ENGINE_load_cryptodev EVP_PKEY_keygen ECDSA_SIG_get0 EVP_MD_CTX_new EVP_PKEY_base_id DSA_SIG_set0 DSA_SIG_get0 EVP_dss1 DSA_get0_pqg DSA_get0_key OPENSSL_init_ssl OPENSSL_init_crypto ERR_load_crypto_strings CRYPTO_memcmp])
+AC_CHECK_HEADERS([openssl/ssl.h openssl/evp.h openssl/engine.h openssl/conf.h])
+AC_CHECK_FUNCS([EVP_sha256 EVP_sha384 EVP_sha512 ENGINE_load_cryptodev EVP_PKEY_keygen ECDSA_SIG_get0 EVP_MD_CTX_new EVP_PKEY_base_id DSA_SIG_set0 DSA_SIG_get0 EVP_dss1 DSA_get0_pqg DSA_get0_key EVP_cleanup ENGINE_cleanup ENGINE_free CRYPTO_cleanup_all_ex_data ERR_free_strings CONF_modules_unload OPENSSL_init_ssl OPENSSL_init_crypto ERR_load_crypto_strings CRYPTO_memcmp])
 
 # for macosx, see if glibtool exists and use that
 # BSD's need to know the version...
@@ -386,10 +387,18 @@ if test -n "$ssldir"; then
 fi
 AC_RUN_IFELSE([AC_LANG_SOURCE([[
 #include <string.h>
+#ifdef HAVE_OPENSSL_SSL_H
 #include <openssl/ssl.h>
+#endif
+#ifdef HAVE_OPENSSL_EVP_H
 #include <openssl/evp.h>
+#endif
+#ifdef HAVE_OPENSSL_ENGINE_H
 #include <openssl/engine.h>
+#endif
+#ifdef HAVE_OPENSSL_CONF_H
 #include <openssl/conf.h>
+#endif
 /* routine to load gost (from sldns) */
 int load_gost_id(void)
 {
@@ -1108,5 +1117,3 @@ AC_OUTPUT
 COPY_HEADER_FILES(ldns/, ldns/)
 
 dnl AC_CONFIG_SUBDIRS([drill])
-
-
