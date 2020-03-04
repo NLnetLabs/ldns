@@ -215,6 +215,39 @@ ldns_dane_cert2rdf(ldns_rdf** rdf, X509* cert,
 	}
 }
 
+/* OpenSSL's X509_V_FLAG_PARTIAL_CHAIN allows one to use an
+ * intermediate CA (i.e., non-root) to root trust. It is
+ * incredibly useful to prune paths from a trust model.
+ * For example, with X509_V_FLAG_PARTIAL_CHAIN, one can use
+ * Let's Encrypt CA certificate alone to verify a server.
+ * Without the flag one must trust the IdentTrust Root CA,
+ * which brings in the entire PKI, including issuers for
+ * revocation, server certificates, client certificates.
+ * code signing certificates and time stamping.
+ */
+
+#ifdef X509_V_FLAG_PARTIAL_CHAIN
+/* Always returns 1 (true). In the case of error, behavior
+ * falls back to behavior before X509_V_FLAG_PARTIAL_CHAIN.
+ */
+static int
+ldns_dane_set_verifier_context(X509_STORE_CTX* ctx)
+{
+	if (ctx)
+	{
+		X509_VERIFY_PARAM* param = NULL;
+
+		param = X509_VERIFY_PARAM_new();
+		if (param)
+		{
+			X509_VERIFY_PARAM_set_flags(param, X509_V_FLAG_PARTIAL_CHAIN);
+			X509_STORE_CTX_set0_param(ctx, param);    /* ctx owns param */
+		}
+	}
+	return 1;
+}
+#endif
+
 
 /* Ordinary PKIX validation of cert (with extra_certs to help)
  * against the CA's in store
@@ -223,8 +256,8 @@ static ldns_status
 ldns_dane_pkix_validate(X509* cert, STACK_OF(X509)* extra_certs,
 		X509_STORE* store)
 {
-	X509_STORE_CTX* vrfy_ctx;
-	ldns_status s;
+	ldns_status s = LDNS_STATUS_SSL_ERR;
+	X509_STORE_CTX* vrfy_ctx = NULL;
 
 	if (! store) {
 		return LDNS_STATUS_DANE_PKIX_DID_NOT_VALIDATE;
@@ -237,6 +270,11 @@ ldns_dane_pkix_validate(X509* cert, STACK_OF(X509)* extra_certs,
 	} else if (X509_STORE_CTX_init(vrfy_ctx, store,
 				cert, extra_certs) != 1) {
 		s = LDNS_STATUS_SSL_ERR;
+
+#ifdef X509_V_FLAG_PARTIAL_CHAIN
+	} else if (! ldns_dane_set_verifier_context(vrfy_ctx)) {
+		/* Never taken. Errors are non-fatal. */
+#endif
 
 	} else if (X509_verify_cert(vrfy_ctx) == 1) {
 
@@ -257,9 +295,9 @@ static ldns_status
 ldns_dane_pkix_validate_and_get_chain(STACK_OF(X509)** chain, X509* cert,
 		STACK_OF(X509)* extra_certs, X509_STORE* store)
 {
-	ldns_status s;
+	ldns_status s = LDNS_STATUS_SSL_ERR;
 	X509_STORE* empty_store = NULL;
-	X509_STORE_CTX* vrfy_ctx;
+	X509_STORE_CTX* vrfy_ctx = NULL;
 
 	assert(chain != NULL);
 
@@ -275,6 +313,11 @@ ldns_dane_pkix_validate_and_get_chain(STACK_OF(X509)** chain, X509* cert,
 	} else if (X509_STORE_CTX_init(vrfy_ctx, store,
 					cert, extra_certs) != 1) {
 		goto exit_free_vrfy_ctx;
+
+#ifdef X509_V_FLAG_PARTIAL_CHAIN
+	} else if (! ldns_dane_set_verifier_context(vrfy_ctx)) {
+		/* Never taken. Errors are non-fatal. */
+#endif
 
 	} else if (X509_verify_cert(vrfy_ctx) == 1) {
 
@@ -305,9 +348,9 @@ static ldns_status
 ldns_dane_pkix_get_chain(STACK_OF(X509)** chain,
 		X509* cert, STACK_OF(X509)* extra_certs)
 {
-	ldns_status s;
+	ldns_status s = LDNS_STATUS_SSL_ERR;
 	X509_STORE* empty_store = NULL;
-	X509_STORE_CTX* vrfy_ctx;
+	X509_STORE_CTX* vrfy_ctx = NULL;
 
 	assert(chain != NULL);
 
@@ -322,6 +365,11 @@ ldns_dane_pkix_get_chain(STACK_OF(X509)** chain,
 					cert, extra_certs) != 1) {
 		goto exit_free_vrfy_ctx;
 	}
+
+#ifdef X509_V_FLAG_PARTIAL_CHAIN
+	(void)ldns_dane_set_verifier_context(vrfy_ctx);
+#endif
+
 	(void) X509_verify_cert(vrfy_ctx);
 	*chain = X509_STORE_CTX_get1_chain(vrfy_ctx);
 	if (! *chain) {
@@ -366,9 +414,9 @@ static ldns_status
 ldns_dane_pkix_get_last_self_signed(X509** out_cert,
 		X509* cert, STACK_OF(X509)* extra_certs)
 {
-	ldns_status s;
+	ldns_status s = LDNS_STATUS_SSL_ERR;
 	X509_STORE* empty_store = NULL;
-	X509_STORE_CTX* vrfy_ctx;
+	X509_STORE_CTX* vrfy_ctx = NULL;
 
 	assert(out_cert != NULL);
 
@@ -383,6 +431,11 @@ ldns_dane_pkix_get_last_self_signed(X509** out_cert,
 		goto exit_free_vrfy_ctx;
 
 	}
+
+#ifdef X509_V_FLAG_PARTIAL_CHAIN
+	(void)ldns_dane_set_verifier_context(vrfy_ctx);
+#endif
+
 	(void) X509_verify_cert(vrfy_ctx);
 	if (X509_STORE_CTX_get_error(vrfy_ctx) == X509_V_ERR_SELF_SIGNED_CERT_IN_CHAIN ||
 	    X509_STORE_CTX_get_error(vrfy_ctx) == X509_V_ERR_DEPTH_ZERO_SELF_SIGNED_CERT){
@@ -407,7 +460,7 @@ ldns_dane_select_certificate(X509** selected_cert,
 		X509_STORE* pkix_validation_store,
 		ldns_tlsa_certificate_usage cert_usage, int offset)
 {
-	ldns_status s;
+	ldns_status s = LDNS_STATUS_SSL_ERR;
 	STACK_OF(X509)* pkix_validation_chain = NULL;
 
 	assert(selected_cert != NULL);
@@ -514,8 +567,8 @@ ldns_dane_create_tlsa_rr(ldns_rr** tlsa,
 		ldns_tlsa_matching_type     matching_type,
 		X509* cert)
 {
-	ldns_rdf* rdf;
-	ldns_status s;
+	ldns_status s = LDNS_STATUS_SSL_ERR;
+	ldns_rdf* rdf = NULL;
 
 	assert(tlsa != NULL);
 	assert(cert != NULL);
@@ -600,8 +653,8 @@ static ldns_status
 ldns_dane_match_cert_with_data(X509* cert, ldns_tlsa_selector selector,
 		ldns_tlsa_matching_type matching_type, ldns_rdf* data)
 {
-	ldns_status s;
-	ldns_rdf* match_data;
+	ldns_status s = LDNS_STATUS_SSL_ERR;
+	ldns_rdf* match_data = NULL;
 
 	s = ldns_dane_cert2rdf(&match_data, cert, selector, matching_type);
 	if (s == LDNS_STATUS_OK) {
@@ -625,8 +678,8 @@ ldns_dane_match_any_cert_with_data(STACK_OF(X509)* chain,
 		ldns_rdf* data, bool ca)
 {
 	ldns_status s = LDNS_STATUS_DANE_TLSA_DID_NOT_MATCH;
+	X509* cert = NULL;
 	size_t n, i;
-	X509* cert;
 
 	n = (size_t)sk_X509_num(chain);
 	for (i = 0; i < n; i++) {
@@ -733,6 +786,10 @@ ldns_dane_verify_rr(const ldns_rr* tlsa_rr,
 		X509_STORE_CTX_set0_dane(store_ctx, SSL_get0_dane(ssl));
 		if (SSL_get_verify_callback(ssl))
 			X509_STORE_CTX_set_verify_cb(store_ctx, SSL_get_verify_callback(ssl));
+
+#ifdef X509_V_FLAG_PARTIAL_CHAIN
+		(void)ldns_dane_set_verifier_context(store_ctx);
+#endif
 
 		ret = X509_verify_cert(store_ctx);
 		if (!ret) {
@@ -948,6 +1005,10 @@ ldns_dane_verify(const ldns_rr_list* tlsas,
 		X509_STORE_CTX_set0_dane(store_ctx, SSL_get0_dane(ssl));
 		if (SSL_get_verify_callback(ssl))
 			X509_STORE_CTX_set_verify_cb(store_ctx, SSL_get_verify_callback(ssl));
+
+#ifdef X509_V_FLAG_PARTIAL_CHAIN
+		ldns_dane_set_verifier_context(store_ctx);
+#endif
 
 		ret = X509_verify_cert(store_ctx);
 		if (!ret) {
