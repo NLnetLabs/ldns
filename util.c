@@ -295,10 +295,10 @@ ldns_gmtime64_r(int64_t clock, struct tm *result)
 static int64_t
 ldns_serial_arithmitics_time(int32_t time, time_t now)
 {
-	int32_t offset = time - (int32_t) now;
+	/* Casting due to https://github.com/NLnetLabs/ldns/issues/71 */
+	int32_t offset = (int32_t) ((uint32_t) time - (uint32_t) now);
 	return (int64_t) now + offset;
 }
-
 
 struct tm *
 ldns_serial_arithmitics_gmtime_r(int32_t time, time_t now, struct tm *result)
