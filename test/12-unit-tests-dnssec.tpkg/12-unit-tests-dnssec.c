@@ -37,7 +37,7 @@ check_ldns_calc_keytag_part(const char *key_str, uint16_t expected_keytag)
 }
 
 ldns_status
-check_ldns_calc_keytag()
+check_ldns_calc_keytag(void)
 {
 	const char *key_str;
 	uint16_t expected_keytag;
@@ -74,7 +74,7 @@ check_ldns_calc_keytag()
 }
 
 ldns_status
-check_ldns_canonicalization()
+check_ldns_canonicalization(void)
 {
 	const char rr_str1[] = "bla.nl. 1000 IN NS ns1.bla.nl.";
 	const char rr_str2[] = "BLA.NL. 1000 IN NS NS1.BlA.Nl.";

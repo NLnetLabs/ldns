@@ -65,7 +65,8 @@ test_base64_decode(const char *str, const uint8_t *expect_data, size_t expect_da
 
 	data_len = ldns_b64_pton_calculate_size(strlen(str));
 	
-	data = malloc(data_len);
+	if(!(data = malloc(data_len)))
+		return -1;
 	
 	result = ldns_b64_pton(str, data, data_len);
 	
@@ -102,7 +103,7 @@ test_base64_decode(const char *str, const uint8_t *expect_data, size_t expect_da
 			}
 		}
 	}
-	
+	free(data);
 	return result;
 }
 
@@ -155,7 +156,8 @@ test_base32_decode(const char *str, const uint8_t *expect_data, size_t expect_da
 
 	data_len = ldns_b32_pton_calculate_size(strlen(str))  +  10;
 	
-	data = malloc(data_len);
+	if (!(data = malloc(data_len)))
+		return -1;
 	
 	result = ldns_b32_pton(str, strlen(str), data, data_len);
 	
@@ -192,7 +194,7 @@ test_base32_decode(const char *str, const uint8_t *expect_data, size_t expect_da
 			}
 		}
 	}
-	
+	free(data);
 	return result;
 }
 
@@ -247,7 +249,8 @@ test_base32_decode_extended_hex(const char *str, const uint8_t *expect_data, siz
 
 	data_len = ldns_b32_pton_calculate_size(strlen(str)) + 10;
 	
-	data = malloc(data_len);
+	if (!(data = malloc(data_len)))
+		return -1;
 	
 	result = ldns_b32_pton_extended_hex(str, strlen(str), data, data_len);
 	
@@ -284,7 +287,7 @@ test_base32_decode_extended_hex(const char *str, const uint8_t *expect_data, siz
 			}
 		}
 	}
-	
+	free(data);
 	return result;
 }
 
@@ -818,6 +821,7 @@ main(void)
 	if (test_sha256("Test vector from febooti.com", "077b18fe29036ada4890bdec192186e10678597a67880290521df70df4bac9ab") != 0) {
 		result = EXIT_FAILURE;
 	}
+	free(data);
 
 	printf("unit test is %s\n", result==EXIT_SUCCESS?"ok":"fail");
 	exit(result);
