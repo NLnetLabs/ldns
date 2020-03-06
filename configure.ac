@@ -615,7 +615,7 @@ case "$enable_dane" in
                 *) dnl default
                   LIBS="-lssl -lcrypto $LIBS"
                   AC_CHECK_FUNC(SSL_get0_dane, [], [AC_MSG_ERROR([OpenSSL does not support offline DANE verification (Needed for the DANE-TA usage type).  Please upgrade OpenSSL to version >= 1.1.0 or rerun with --disable-dane-verify or --disable-dane-ta-usage])])
-                  LIBSSL_LIBS="-lssl -lcrypto"
+                  LIBSSL_LIBS="-lssl -lcrypto"; LIBSSL_SSL_LIBS="-lssl -lcrypto"
                   AC_SUBST(ldns_build_config_use_dane_ta_usage, 1)
                   AC_DEFINE_UNQUOTED([USE_DANE_TA_USAGE], [1], [Define this to enable DANE-TA usage type support.])
                   ;;
@@ -682,13 +682,11 @@ case "$enable_rrtype_amtrelay" in
 esac
 
 
-
+# LIBSSL_SSL_LIBS is used by some unit tests
 AC_SUBST(LIBSSL_CPPFLAGS)
 AC_SUBST(LIBSSL_LDFLAGS)
 AC_SUBST(LIBSSL_LIBS)
-
-# Used by some of the unit tests
-AC_SUBST(LIBSSL_SSL_LIBS, [$LIBSSL_LIBS])
+AC_SUBST(LIBSSL_SSL_LIBS)
 
 CPPFLAGS=$tmp_CPPFLAGS
 LDFLAGS=$tmp_LDFLAGS
