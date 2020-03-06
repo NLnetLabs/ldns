@@ -5,10 +5,6 @@
 
 #include <ldns/ldns.h>
 
-/* Avoid signedness warnings */
-#define CH_PTR(ptr) ((char*)(ptr))
-#define UCH_PTR(ptr) ((unsigned char*)(ptr))
-
 void print_data_ar(const uint8_t *data, const size_t len) {
 	size_t i;
 	
@@ -305,7 +301,7 @@ test_sha1(const void *data, const void *expect_result_str)
 	
 	data_len = strlen(data);
 
-	expect_result = malloc(strlen(CH_PTR(expect_result_str)) / 2);
+	expect_result = malloc(strlen((char *)expect_result_str) / 2);
 	(void) ldns_hexstring_to_data(expect_result, expect_result_str);
 
 	digest_len = LDNS_SHA1_DIGEST_LENGTH;
@@ -319,12 +315,12 @@ test_sha1(const void *data, const void *expect_result_str)
 		printf("\n");
 		result = 1;
 	} else {
-		if (strncmp(CH_PTR(expect_result), CH_PTR(digest), digest_len) != 0) {
+		if (strncmp((char *)expect_result, (char *)digest, digest_len) != 0) {
 			printf("Bad sha1 digest: got: ");
 			print_data_ar(digest, digest_len);
 			printf("Expected:                 ");
-			printf("%s\n", CH_PTR(expect_result));
-			printf("Data:\t%s\n", CH_PTR(data));
+			printf("%s\n", (char *)expect_result);
+			printf("Data:\t%s\n", (char *)data);
 			
 			result = 2;
 		} else {
@@ -347,7 +343,7 @@ test_sha256(const void *data, const void *expect_result_str)
 	
 	data_len = strlen(data);
 
-	expect_result = malloc(strlen(CH_PTR(expect_result_str)) / 2);
+	expect_result = malloc(strlen((char *)expect_result_str) / 2);
 	(void) ldns_hexstring_to_data(expect_result, expect_result_str);
 
 	digest_len = LDNS_SHA256_DIGEST_LENGTH;
@@ -361,12 +357,12 @@ test_sha256(const void *data, const void *expect_result_str)
 		printf("\n");
 		result = 1;
 	} else {
-		if (strncmp(CH_PTR(expect_result), CH_PTR(digest), digest_len) != 0) {
+		if (strncmp((char *)expect_result, (char *)digest, digest_len) != 0) {
 			printf("Bad sha256 digest: got: ");
 			print_data_ar(digest, digest_len);
 			printf("Expected:                 ");
-			printf("%s\n", CH_PTR(expect_result));
-			printf("Data:\t%s\n", CH_PTR(data));
+			printf("%s\n", (char *)expect_result);
+			printf("Data:\t%s\n", (char *)data);
 			
 			result = 2;
 		} else {
