@@ -50,7 +50,7 @@ AC_PROG_MAKE_SET
 # Extra (sp)lint flags for NetBSD
 AC_CANONICAL_HOST
 case "$host_os" in
-	netbsd*) LINTFLAGS="'-D__RENAME(x)=' -D_NETINET_IN_H_ $LINTFLAGS" 
+	netbsd*) LINTFLAGS="'-D__RENAME(x)=' -D_NETINET_IN_H_ $LINTFLAGS"
 		 ;;
 	*)       LINTFLAGS="$LINTFLAGS"
 		 ;;
@@ -143,8 +143,8 @@ AC_CHECK_FUNC([inet_pton],
 ])
 
 
-AC_ARG_WITH(drill, AC_HELP_STRING([--with-drill], 
- [Also build drill.]), 
+AC_ARG_WITH(drill, AC_HELP_STRING([--with-drill],
+ [Also build drill.]),
  [],[with_drill="no"])
 if test x_$with_drill != x_no ; then
 	AC_SUBST(DRILL,[drill])
@@ -156,7 +156,7 @@ if test x_$with_drill != x_no ; then
 		AC_MSG_ERROR([
 A config.h was detected in the drill subdirectory.
 This does not work with the --with-drill option.
-Please remove the config.h from the drill subdirectory 
+Please remove the config.h from the drill subdirectory
 or do not use the --with-drill option.])
 	fi
 else
@@ -168,8 +168,8 @@ else
 fi
 
 
-AC_ARG_WITH(examples, AC_HELP_STRING([--with-examples], 
- [Also build examples.]), 
+AC_ARG_WITH(examples, AC_HELP_STRING([--with-examples],
+ [Also build examples.]),
  [],[with_examples="no"])
 if test x_$with_examples != x_no ; then
 	AC_SUBST(EXAMPLES,[examples])
@@ -181,7 +181,7 @@ if test x_$with_examples != x_no ; then
 		AC_MSG_ERROR([
 A config.h was detected in the examples subdirectory.
 This does not work with the --with-examples option.
-Please remove the config.h from the examples subdirectory 
+Please remove the config.h from the examples subdirectory
 or do not use the --with-examples option.])
 	fi
 else
@@ -212,7 +212,7 @@ AC_ARG_ENABLE(stderr-msgs, AC_HELP_STRING([--enable-stderr-msgs], [Enable printi
 case "$enable_stderr_msgs" in
     no) dnl default
         ;;
-    *)  
+    *)
         AC_DEFINE_UNQUOTED([STDERR_MSGS], [1], [Define this to enable messages to stderr.])
         ;;
 esac
@@ -228,8 +228,8 @@ AX_CONFIG_FEATURE(
 PYTHON_X_CFLAGS=""
 ldns_with_pyldns=no
 ldns_with_pyldnsx=no
-AC_ARG_WITH(pyldns, AC_HELP_STRING([--with-pyldns], 
- [generate python library, or --without-pyldns to disable Python support.]), 
+AC_ARG_WITH(pyldns, AC_HELP_STRING([--with-pyldns],
+ [generate python library, or --without-pyldns to disable Python support.]),
  [],[ withval="no" ])
 ldns_have_python=no
 if test x_$withval != x_no; then
@@ -284,8 +284,8 @@ fi
 AC_SUBST(PYTHON_X_CFLAGS)
 
 # Check for pyldnsx
-AC_ARG_WITH(pyldnsx, AC_HELP_STRING([--without-pyldnsx], 
-  [Do not install the ldnsx python module, or --with-pyldnsx to install it.]), 
+AC_ARG_WITH(pyldnsx, AC_HELP_STRING([--without-pyldnsx],
+  [Do not install the ldnsx python module, or --with-pyldnsx to install it.]),
   [],[ withval="with_pyldns" ])
 if test x_$withval != x_no; then
   if test x_$ldns_with_pyldns != x_no; then
@@ -315,8 +315,8 @@ fi
 
 # check for perl
 ldns_with_p5_dns_ldns=no
-AC_ARG_WITH(p5-dns-ldns, AC_HELP_STRING([--with-p5-dns-ldns], 
- [generate DNS::LDNS perl bindings]), 
+AC_ARG_WITH(p5-dns-ldns, AC_HELP_STRING([--with-p5-dns-ldns],
+ [generate DNS::LDNS perl bindings]),
  [],[ withval="no" ])
 ldns_have_perl=no
 if test x_$withval != x_no; then
@@ -353,7 +353,7 @@ else
 	AC_MSG_RESULT([no])
 fi
 AC_CHECK_HEADERS([openssl/ssl.h openssl/evp.h openssl/engine.h openssl/conf.h])
-AC_CHECK_FUNCS([EVP_sha256 EVP_sha384 EVP_sha512 ENGINE_load_cryptodev EVP_PKEY_keygen ECDSA_SIG_get0 EVP_MD_CTX_new EVP_PKEY_base_id DSA_SIG_set0 DSA_SIG_get0 EVP_dss1 DSA_get0_pqg DSA_get0_key EVP_cleanup ENGINE_cleanup ENGINE_free CRYPTO_cleanup_all_ex_data ERR_free_strings CONF_modules_unload OPENSSL_init_ssl OPENSSL_init_crypto ERR_load_crypto_strings CRYPTO_memcmp])
+AC_CHECK_FUNCS([EVP_sha256 EVP_sha384 EVP_sha512 EVP_PKEY_keygen ECDSA_SIG_get0 EVP_MD_CTX_new EVP_PKEY_base_id DSA_SIG_set0 DSA_SIG_get0 EVP_dss1 DSA_get0_pqg DSA_get0_key EVP_cleanup ENGINE_cleanup ENGINE_free CRYPTO_cleanup_all_ex_data ERR_free_strings CONF_modules_unload OPENSSL_init_ssl OPENSSL_init_crypto ERR_load_crypto_strings CRYPTO_memcmp])
 
 # for macosx, see if glibtool exists and use that
 # BSD's need to know the version...
@@ -443,7 +443,7 @@ int load_gost_id(void)
 	EVP_PKEY_asn1_get0_info(&gost_id, NULL, NULL, NULL, NULL, meth);
 	return gost_id;
 }
-int main(void) { 
+int main(void) {
 	EVP_MD_CTX* ctx;
 	const EVP_MD* md;
 	unsigned char digest[64]; /* its a 256-bit digest, so uses 32 bytes */
@@ -613,9 +613,9 @@ case "$enable_dane" in
                   AC_SUBST(ldns_build_config_use_dane_ta_usage, 0)
                   ;;
                 *) dnl default
-      	    LIBS="-lssl $LIBS"
+                  LIBS="-lssl -lcrypto $LIBS"
                   AC_CHECK_FUNC(SSL_get0_dane, [], [AC_MSG_ERROR([OpenSSL does not support offline DANE verification (Needed for the DANE-TA usage type).  Please upgrade OpenSSL to version >= 1.1.0 or rerun with --disable-dane-verify or --disable-dane-ta-usage])])
-                  LIBSSL_LIBS="-lssl $LIBSSL_LIBS"
+                  LIBSSL_LIBS="-lssl -lcrypto"
                   AC_SUBST(ldns_build_config_use_dane_ta_usage, 1)
                   AC_DEFINE_UNQUOTED([USE_DANE_TA_USAGE], [1], [Define this to enable DANE-TA usage type support.])
                   ;;
@@ -799,7 +799,7 @@ AC_CHECK_LIB(pcap, pcap_open_offline, [
     ]
 )
 AC_CHECK_HEADERS([netinet/in_systm.h net/if.h netinet/ip.h netinet/udp.h netinet/igmp.h netinet/if_ether.h netinet/ip6.h net/ethernet.h netinet/ip_compat.h],,, [
-AC_INCLUDES_DEFAULT 
+AC_INCLUDES_DEFAULT
 #ifdef HAVE_NETINET_IN_SYSTM_H
 #include <netinet/in_systm.h>
 #endif
@@ -886,8 +886,8 @@ ACX_FUNC_IOCTLSOCKET
 ACX_CHECK_FORMAT_ATTRIBUTE
 ACX_CHECK_UNUSED_ATTRIBUTE
 
-AC_ARG_WITH(xcode-sdk, AC_HELP_STRING([--with-xcode-sdk], 
- [Set xcode SDK version. Default is autodetect]), 
+AC_ARG_WITH(xcode-sdk, AC_HELP_STRING([--with-xcode-sdk],
+ [Set xcode SDK version. Default is autodetect]),
  [],[with_xcode_sdk="yes"])
 if test "x_$with_xcode_sdk" != "x_no" ; then
    # check OSX deployment target, if needed
