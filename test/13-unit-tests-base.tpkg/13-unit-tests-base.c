@@ -5,6 +5,10 @@
 
 #include <ldns/ldns.h>
 
+/* Avoid signedness warnings */
+#define CH_PTR(ptr) ((char*)(ptr))
+#define UCH_PTR(ptr) ((unsigned char*)(ptr))
+
 void print_data_ar(const uint8_t *data, const size_t len) {
 	size_t i;
 	
@@ -291,19 +295,18 @@ test_base32_decode_extended_hex(const char *str, const uint8_t *expect_data, siz
 
 
 int
-test_sha1(char *data, const char *expect_result_str)
+test_sha1(const void *data, const void *expect_result_str)
 {
 	int result;
-	char *digest, *d;
+	unsigned char *digest, *d;
 	unsigned int digest_len;
 	uint8_t *expect_result;
 	size_t data_len;
 	
 	data_len = strlen(data);
 
-	expect_result = malloc(strlen(expect_result_str) / 2);
+	expect_result = malloc(strlen(CH_PTR(expect_result_str)) / 2);
 	(void) ldns_hexstring_to_data(expect_result, expect_result_str);
-
 
 	digest_len = LDNS_SHA1_DIGEST_LENGTH;
 	digest = malloc(digest_len);
@@ -316,12 +319,12 @@ test_sha1(char *data, const char *expect_result_str)
 		printf("\n");
 		result = 1;
 	} else {
-		if (strncmp(expect_result, digest, digest_len) != 0) {
+		if (strncmp(CH_PTR(expect_result), CH_PTR(digest), digest_len) != 0) {
 			printf("Bad sha1 digest: got: ");
 			print_data_ar(digest, digest_len);
 			printf("Expected:                 ");
-			printf("%s\n", expect_result);
-			printf("Data:\t%s\n", data);
+			printf("%s\n", CH_PTR(expect_result));
+			printf("Data:\t%s\n", CH_PTR(data));
 			
 			result = 2;
 		} else {
@@ -334,17 +337,17 @@ test_sha1(char *data, const char *expect_result_str)
 }
 
 int
-test_sha256(char *data, const char *expect_result_str)
+test_sha256(const void *data, const void *expect_result_str)
 {
 	int result;
-	char *digest, *d;
+	unsigned char *digest, *d;
 	unsigned int digest_len;
 	uint8_t *expect_result;
 	size_t data_len;
 	
 	data_len = strlen(data);
 
-	expect_result = malloc(strlen(expect_result_str) / 2);
+	expect_result = malloc(strlen(CH_PTR(expect_result_str)) / 2);
 	(void) ldns_hexstring_to_data(expect_result, expect_result_str);
 
 	digest_len = LDNS_SHA256_DIGEST_LENGTH;
@@ -358,12 +361,12 @@ test_sha256(char *data, const char *expect_result_str)
 		printf("\n");
 		result = 1;
 	} else {
-		if (strncmp(expect_result, digest, digest_len) != 0) {
+		if (strncmp(CH_PTR(expect_result), CH_PTR(digest), digest_len) != 0) {
 			printf("Bad sha256 digest: got: ");
 			print_data_ar(digest, digest_len);
 			printf("Expected:                 ");
-			printf("%s\n", expect_result);
-			printf("Data:\t%s\n", data);
+			printf("%s\n", CH_PTR(expect_result));
+			printf("Data:\t%s\n", CH_PTR(data));
 			
 			result = 2;
 		} else {
@@ -380,8 +383,6 @@ main(void)
 {
 	uint8_t *data;
 	size_t data_len;
-	char *text;
-	size_t text_len;
 
 	int result = EXIT_SUCCESS;
 

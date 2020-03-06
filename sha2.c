@@ -621,7 +621,7 @@ void ldns_sha256_final(sha2_byte digest[], ldns_sha256_CTX* context) {
 }
 
 unsigned char *
-ldns_sha256(unsigned char *data, unsigned int data_len, unsigned char *digest)
+ldns_sha256(const unsigned char *data, unsigned int data_len, unsigned char *digest)
 {
     ldns_sha256_CTX ctx;
     ldns_sha256_init(&ctx);
@@ -935,7 +935,7 @@ void ldns_sha512_final(sha2_byte digest[], ldns_sha512_CTX* context) {
 }
 
 unsigned char *
-ldns_sha512(unsigned char *data, unsigned int data_len, unsigned char *digest)
+ldns_sha512(const unsigned char *data, unsigned int data_len, unsigned char *digest)
 {
     ldns_sha512_CTX ctx;
     ldns_sha512_init(&ctx);
@@ -988,7 +988,7 @@ void ldns_sha384_final(sha2_byte digest[], ldns_sha384_CTX* context) {
 }
 
 unsigned char *
-ldns_sha384(unsigned char *data, unsigned int data_len, unsigned char *digest)
+ldns_sha384(const unsigned char *data, unsigned int data_len, unsigned char *digest)
 {
     ldns_sha384_CTX ctx;
     ldns_sha384_init(&ctx);
