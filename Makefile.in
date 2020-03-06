@@ -151,7 +151,7 @@ no-drill-config-h:
 	fi
 
 drill/drill: $(DRILL_LOBJS) $(LIB) $(LIBLOBJS)
-	$(LINK_EXE) $(DRILL_LOBJS) $(LIBLOBJS) $(LIBS) $(LIBSSL_LIBS) -lldns -o drill/drill
+	$(LINK_EXE) $(DRILL_LOBJS) $(LIBLOBJS) -lldns $(LIBS) $(LIBSSL_LIBS) -o drill/drill
 
 drill/drill.1: $(srcdir)/drill/drill.1.in
 	$(edit) $(srcdir)/drill/drill.1.in > drill/drill.1
@@ -182,13 +182,13 @@ no-examples-config-h:
 	fi
 
 $(EXAMPLE_PROGS):
-	$(LINK_EXE) $@.lo $(LIBLOBJS) $(LIBS) -lldns -o $@
+	$(LINK_EXE) $@.lo $(LIBLOBJS) -lldns $(LIBS) -o $@
 
 $(TESTNS):
-	$(LINK_EXE) $(TESTNS_LOBJS) $(LIBLOBJS) $(LIBS) -lldns -o $(TESTNS)
+	$(LINK_EXE) $(TESTNS_LOBJS) $(LIBLOBJS) -lldns $(LIBS) -o $(TESTNS)
 
 $(LDNS_DPA):
-	$(LINK_EXE) $(LDNS_DPA_LOBJS) $(LIBLOBJS) $(LIBS) $(LIBPCAP_LIBS) -lldns \
+	$(LINK_EXE) $(LDNS_DPA_LOBJS) $(LIBLOBJS) -lldns $(LIBS) $(LIBPCAP_LIBS) \
 		 -o $(LDNS_DPA)
 
 $(LDNS_DANE):
@@ -196,7 +196,7 @@ $(LDNS_DANE):
 		 -o $(LDNS_DANE)
 
 $(EX_SSL_PROGS):
-	$(LINK_EXE) $@.lo $(LIBLOBJS) $(LIBS) $(LIBSSL_LIBS) -lldns -o $@
+	$(LINK_EXE) $@.lo $(LIBLOBJS) -lldns $(LIBS) $(LIBSSL_LIBS) -o $@
 
 examples/ldns-dane.1: $(srcdir)/examples/ldns-dane.1.in
 	$(edit) $(srcdir)/examples/ldns-dane.1.in > examples/ldns-dane.1
@@ -231,7 +231,7 @@ clean-examples:
 
 linktest: $(srcdir)/linktest.c libldns.la
 	$(COMP_LIB) $(LIBSSL_CPPFLAGS) -c $(srcdir)/linktest.c -o linktest.lo
-	$(LINK_EXE) linktest.lo $(LIBS) $(LIBSSL_LIBS) -lldns -o linktest
+	$(LINK_EXE) linktest.lo -lldns $(LIBS) $(LIBSSL_LIBS) -o linktest
 
 lib: libldns.la
 
