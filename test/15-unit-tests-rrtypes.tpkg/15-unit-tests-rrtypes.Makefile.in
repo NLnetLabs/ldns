@@ -8,6 +8,7 @@ prefix  = @prefix@
 exec_prefix = @exec_prefix@
 bindir = @bindir@
 mandir = @mandir@
+dataroot = @dataroot@
 
 CC = @CC@
 CFLAGS = @CFLAGS@
