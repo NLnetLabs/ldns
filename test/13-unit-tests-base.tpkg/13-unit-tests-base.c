@@ -821,6 +821,7 @@ main(void)
 	if (test_sha256("Test vector from febooti.com", "077b18fe29036ada4890bdec192186e10678597a67880290521df70df4bac9ab") != 0) {
 		result = EXIT_FAILURE;
 	}
+	free(data);
 
 	printf("unit test is %s\n", result==EXIT_SUCCESS?"ok":"fail");
 	exit(result);
