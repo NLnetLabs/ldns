@@ -118,6 +118,9 @@ all:	setup-builddir lib linktest manpages @P5_DNS_LDNS@ @PYLDNS@ @DRILL@ @EXAMPL
 .c.lo:
 	$(COMP_LIB) $(LIBSSL_CPPFLAGS) -c $< -o $@
 
+.c.o:
+	$(COMP_LIB) $(LIBSSL_CPPFLAGS) -c $< -o $@
+
 $(LDNS_LOBJS) $(LIBLOBJS) $(DRILL_LOBJS) $(EXAMPLE_LOBJS):
 	$(COMP_LIB) $(LIBSSL_CPPFLAGS) -c $(srcdir)/$(@:.lo=.c) -o $@
 
