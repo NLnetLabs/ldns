@@ -1,4 +1,8 @@
 language: c
+
+git:
+  depth: 5
+
 addons:
   apt:
     packages:
@@ -93,12 +97,92 @@ jobs:
       arch: s390x
       dist: bionic
       env: VALGRIND=true  ANALYSIS=true  COVERAGE=true  DOXYGEN=true
+    - os: linux
+      name: Android armv7a, Linux, Amd64
+      compiler: clang
+      arch: amd64
+      dist: bionic
+      env:
+        - ANDROID=yes
+        - AUTOTOOLS_HOST=armv7a-linux-androideabi
+        - OPENSSL_HOST=android-arm
+        - ANDROID_CPU=armv7a
+        - ANDROID_API=23
+        - ANDROID_PREFIX="$HOME/android$ANDROID_API-$ANDROID_CPU"
+        - ANDROID_SDK_ROOT="$HOME/android-sdk"
+        - ANDROID_NDK_ROOT="$HOME/android-ndk"
+    - os: linux
+      name: Android aarch64, Linux, Amd64
+      compiler: clang
+      arch: amd64
+      dist: bionic
+      env:
+        - ANDROID=yes
+        - AUTOTOOLS_HOST=aarch64-linux-android
+        - OPENSSL_HOST=android-arm64
+        - ANDROID_CPU=aarch64
+        - ANDROID_API=23
+        - ANDROID_PREFIX="$HOME/android$ANDROID_API-$ANDROID_CPU"
+        - ANDROID_SDK_ROOT="$HOME/android-sdk"
+        - ANDROID_NDK_ROOT="$HOME/android-ndk"
+    - os: linux
+      name: Android x86, Linux, Amd64
+      compiler: clang
+      arch: amd64
+      dist: bionic
+      env:
+        - ANDROID=yes
+        - AUTOTOOLS_HOST=i686-linux-android
+        - OPENSSL_HOST=android-x86
+        - ANDROID_CPU=x86
+        - ANDROID_API=23
+        - ANDROID_PREFIX="$HOME/android$ANDROID_API-$ANDROID_CPU"
+        - ANDROID_SDK_ROOT="$HOME/android-sdk"
+        - ANDROID_NDK_ROOT="$HOME/android-ndk"
+    - os: linux
+      name: Android x86_64, Linux, Amd64
+      compiler: clang
+      arch: amd64
+      dist: bionic
+      env:
+        - ANDROID=yes
+        - AUTOTOOLS_HOST=x86_64-linux-android
+        - OPENSSL_HOST=android-x86_64
+        - ANDROID_CPU=x86_64
+        - ANDROID_API=23
+        - ANDROID_PREFIX="$HOME/android$ANDROID_API-$ANDROID_CPU"
+        - ANDROID_SDK_ROOT="$HOME/android-sdk"
+        - ANDROID_NDK_ROOT="$HOME/android-ndk"
+
+before_script:
+  - |
+    if [ "$ANDROID" = "yes" ]; then
+      ./contrib/android/install_tools.sh
+    fi
 
 script:
   - |
     if [ "$UBSAN" = "true" ]; then
       export CFLAGS="-DNDEBUG -g2 -O3 -fsanitize=undefined -fno-sanitize-recover"
+      ./test/test_ci.sh
     elif [ "$ASAN" = "true" ]; then
       export CFLAGS="-DNDEBUG -g2 -O3 -fsanitize=address"
+      ./test/test_ci.sh
+    elif [ "$ANDROID" = "yes" ]; then
+      export AUTOTOOLS_BUILD="$(./config.guess)"
+      export PKG_CONFIG_PATH="$ANDROID_PREFIX/lib/pkgconfig"
+      ./contrib/android/install_ndk.sh
+      source ./contrib/android/setenv_android.sh
+      ./contrib/android/install_openssl.sh
+      ./contrib/android/bootstrap_ldns.sh
+      ./configure \
+        --build="$AUTOTOOLS_BUILD" --host="$AUTOTOOLS_HOST" \
+        --prefix="$ANDROID_PREFIX" \
+        --with-ssl="$ANDROID_PREFIX" --disable-gost \
+        --with-drill --with-examples
+      make -j 2
+      make install
+    else
+      # Default case for mosts tests
+      ./test/test_ci.sh
     fi
-    test/test_ci.sh

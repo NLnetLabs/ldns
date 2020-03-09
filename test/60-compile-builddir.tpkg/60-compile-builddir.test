@@ -28,7 +28,37 @@ if [ ! $mk ] || [ ! $conf ] || [ ! $loot ] ; then
 	exit 1
 fi;
 
+# Only run this test when OpenSSL >= 1.1.0. Use objdump or nm to
+# inspect import symbols in libldns.so. nm works on semi-modern OS X.
+# otool is OS X disassembler. dis is the Solaris disassembler.
+OPENSSL_DANE_ENABLE=0
+LDNS_SHARED_OBJ=".libs/libldns.so"
+
+if [ `uname -s 2>&1 | grep -i -c Darwin` -ne 0 ]; then
+    LDNS_SHARED_OBJ=".libs/libldns.dylib"
+fi
+
+if [ ! -f "$LDNS_SHARED_OBJ" ]; then
+    echo "Failed to find $LDNS_SHARED_OBJ. Skipping test. Marking as success."
+    exit 0
+fi
+
+if [ x`command -v objdump 2>/dev/null` != "x" ]; then
+    OPENSSL_DANE_ENABLE=`objdump -T "$LDNS_SHARED_OBJ" 2>&1 | grep -i -c SSL_dane_enable`
+elif [ x`command -v nm 2>/dev/null` != "x" ]; then
+    OPENSSL_DANE_ENABLE=`nm -g -u "$LDNS_SHARED_OBJ" 2>&1 | grep -i -c SSL_dane_enable`
+elif [ x`command -v otool 2>/dev/null` != "x" ]; then
+    OPENSSL_DANE_ENABLE=`otool -tv "$LDNS_SHARED_OBJ" 2>&1 | grep -i -c SSL_dane_enable`
+elif [ x`command -v dis 2>/dev/null` != "x" ]; then
+    OPENSSL_DANE_ENABLE=`dis "$LDNS_SHARED_OBJ" 2>&1 | grep -i -c SSL_dane_enable`
+fi
+
+if [ "$OPENSSL_DANE_ENABLE" -eq 0 ]; then
+    echo "OpenSSL is too old. Skipping test. Marking as success."
+    exit 0
+fi
+
 make realclean || true
-$loot && $conf && mkdir -p b && cd b && \
-	../configure CFLAGS="-Werror=implicit-function-declaration  -DOPENSSL_API_COMPAT=0x10100000L" --with-drill --with-examples --disable-gost --disable-dane-verify --disable-dane-ta-usage && \
+$loot && $conf && mkdir -p builddir && cd builddir && \
+	../configure CFLAGS="-Werror=implicit-function-declaration -DOPENSSL_API_COMPAT=0x10100000L" --with-drill --with-examples --disable-gost && \
 	$mk
