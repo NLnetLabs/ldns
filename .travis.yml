@@ -15,10 +15,10 @@ addons:
       - indent
   homebrew:
     packages:
-      - gnu-indent
-      - doxygen
       - openssl
-      - indent
+      - doxygen
+      - findent
+    update: true
 
 jobs:
   include:
