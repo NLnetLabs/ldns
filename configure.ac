@@ -860,6 +860,16 @@ AC_REPLACE_FUNCS(snprintf)
 AC_REPLACE_FUNCS(strlcpy)
 AC_REPLACE_FUNCS(memmove)
 AC_FUNC_FORK
+AC_MSG_CHECKING([compile of fork])
+AC_COMPILE_IFELSE([AC_LANG_PROGRAM([
+#include <unistd.h>
+], [
+	(void)fork();
+])], [
+	AC_MSG_RESULT(yes)
+	AC_DEFINE([HAVE_FORK_AVAILABLE], 1, [if fork is available for compile])
+], [	AC_MSG_RESULT(no)
+])
 AC_CHECK_FUNCS([endprotoent endservent sleep random fcntl strtoul bzero memset b32_ntop b32_pton])
 if test "x$HAVE_B32_NTOP" = "xyes"; then
 	AC_SUBST(ldns_build_config_have_b32_ntop, 1)

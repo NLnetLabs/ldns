@@ -410,7 +410,7 @@ forkit(int number)
 	int i;
 	for(i=0; i<number; i++)
 	{
-#ifndef HAVE_FORK
+#if !defined(HAVE_FORK) || !defined(HAVE_FORK_AVAILABLE)
 #ifndef USE_WINSOCK
 		log_msg("fork() not available.\n");
 		exit(1);
