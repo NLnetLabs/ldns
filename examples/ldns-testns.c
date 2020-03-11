@@ -149,6 +149,14 @@ struct sockaddr_storage;
 #include <errno.h>
 #include <signal.h>
 
+#ifdef HAVE_TARGETCONDITIONALS_H
+#include <TargetConditionals.h>
+#endif
+
+#if defined(TARGET_OS_TV) || defined(TARGET_OS_WATCH)
+#undef HAVE_FORK
+#endif
+
 #define INBUF_SIZE 4096         /* max size for incoming queries */
 #define DEFAULT_PORT 53		/* default if no -p port is specified */
 #define CONN_BACKLOG 256	/* connections queued up for tcp */
