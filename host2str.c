@@ -855,6 +855,8 @@ ldns_rdf2buffer_str_wks(ldns_buffer *output, const ldns_rdf *rdf)
 			endservent();
 #endif
 		}
+		/* exit from loop before integer overflow */
+		if(current_service == 65535) { break; }
 	}
 	return ldns_buffer_status(output);
 }
