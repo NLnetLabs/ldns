@@ -103,6 +103,9 @@ AC_CHECK_HEADERS([getopt.h time.h],,, [AC_INCLUDES_DEFAULT])
 AC_CHECK_HEADERS([winsock2.h ws2tcpip.h],,, [AC_INCLUDES_DEFAULT])
 # end mingw32 tests
 
+# Check for Apple header. This uncovers TARGET_OS_IPHONE, TARGET_OS_TV or TARGET_OS_WATCH
+AC_CHECK_HEADERS([TargetConditionals.h])
+
 ACX_DETERMINE_EXT_FLAGS_UNBOUND
 
 AC_C_INLINE

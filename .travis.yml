@@ -15,10 +15,10 @@ addons:
       - indent
   homebrew:
     packages:
-      - gnu-indent
-      - doxygen
       - openssl
-      - indent
+      - doxygen
+      - findent
+    update: true
 
 jobs:
   include:
@@ -97,6 +97,94 @@ jobs:
       arch: s390x
       dist: bionic
       env: VALGRIND=true  ANALYSIS=true  COVERAGE=true  DOXYGEN=true
+    - os: osx
+      osx_image: xcode10.1
+      name: iPhoneOS, armv7, iOS
+      arch: amd64
+      env:
+        - IOS=yes
+        - AUTOTOOLS_HOST=armv7-apple-ios
+        - OPENSSL_HOST=ios-cross
+        - IOS_CPU=armv7s
+        - IOS_SDK=iPhoneOS
+        - IOS_PREFIX="$HOME/$IOS_SDK-$IOS_CPU"
+    - os: osx
+      osx_image: xcode10.1
+      name: iPhoneOS, arm64, iOS
+      arch: amd64
+      env:
+        - IOS=yes
+        - AUTOTOOLS_HOST=aarch64-apple-ios
+        - OPENSSL_HOST=ios64-cross
+        - IOS_CPU=arm64
+        - IOS_SDK=iPhoneOS
+        - IOS_PREFIX="$HOME/$IOS_SDK-$IOS_CPU"
+    - os: osx
+      osx_image: xcode10.1
+      name: AppleTVOS, arm64, iOS
+      arch: amd64
+      env:
+        - IOS=yes
+        - AUTOTOOLS_HOST=aarch64-apple-ios
+        - OPENSSL_HOST=ios64-cross
+        - IOS_CPU=arm64
+        - IOS_SDK=AppleTVOS
+        - IOS_PREFIX="$HOME/$IOS_SDK-$IOS_CPU"
+    - os: osx
+      osx_image: xcode10.1
+      name: WatchOS, armv7, iOS
+      arch: amd64
+      env:
+        - IOS=yes
+        - AUTOTOOLS_HOST=armv7-apple-ios
+        - OPENSSL_HOST=ios-cross
+        - IOS_CPU=armv7k
+        - IOS_SDK=WatchOS
+        - IOS_PREFIX="$HOME/$IOS_SDK-$IOS_CPU"
+    - os: osx
+      osx_image: xcode10.1
+      name: iPhoneSimulator, i386, OS X
+      arch: amd64
+      env:
+        - IOS=yes
+        - AUTOTOOLS_HOST=i386-apple-ios
+        - OPENSSL_HOST=iphoneos-cross
+        - IOS_CPU=i386
+        - IOS_SDK=iPhoneSimulator
+        - IOS_PREFIX="$HOME/$IOS_SDK-$IOS_CPU"
+    - os: osx
+      osx_image: xcode10.1
+      name: iPhoneSimulator, x86_64, OS X
+      arch: amd64
+      env:
+        - IOS=yes
+        - AUTOTOOLS_HOST=x86_64-apple-ios
+        - OPENSSL_HOST=iphoneos-cross
+        - IOS_CPU=x86_64
+        - IOS_SDK=iPhoneSimulator
+        - IOS_PREFIX="$HOME/$IOS_SDK-$IOS_CPU"
+    - os: osx
+      osx_image: xcode10.1
+      name: AppleTVSimulator, x86_64, OS X
+      arch: amd64
+      env:
+        - IOS=yes
+        - AUTOTOOLS_HOST=x86_64-apple-ios
+        - OPENSSL_HOST=iphoneos-cross
+        - IOS_CPU=x86_64
+        - IOS_SDK=AppleTVSimulator
+        - IOS_PREFIX="$HOME/$IOS_SDK-$IOS_CPU"
+    - os: osx
+      osx_image: xcode10.1
+      name: WatchSimulator, i386, OS X
+      arch: amd64
+      env:
+        - IOS=yes
+        - AUTOTOOLS_HOST=i386-apple-ios
+        - OPENSSL_HOST=iphoneos-cross
+        - IOS_CPU=i386
+        - IOS_SDK=WatchSimulator
+        - IOS_PREFIX="$HOME/$IOS_SDK-$IOS_CPU"
     - os: linux
       name: Android armv7a, Linux, Amd64
       compiler: clang
@@ -158,6 +246,8 @@ before_script:
   - |
     if [ "$ANDROID" = "yes" ]; then
       ./contrib/android/install_tools.sh
+    elif [ "$IOS" = "yes" ]; then
+      ./contrib/ios/install_tools.sh
     fi
 
 script:
@@ -168,6 +258,19 @@ script:
     elif [ "$ASAN" = "true" ]; then
       export CFLAGS="-DNDEBUG -g2 -O3 -fsanitize=address"
       ./test/test_ci.sh
+    elif [ "$IOS" = "yes" ]; then
+      export AUTOTOOLS_BUILD="$(./config.guess)"
+      export PKG_CONFIG_PATH="$IOS_PREFIX/lib/pkgconfig"
+      source ./contrib/ios/setenv_ios.sh
+      ./contrib/ios/install_openssl.sh
+      ./contrib/ios/bootstrap_ldns.sh
+      ./configure \
+        --build="$AUTOTOOLS_BUILD" --host="$AUTOTOOLS_HOST" \
+        --prefix="$IOS_PREFIX" \
+        --with-ssl="$IOS_PREFIX" --disable-gost \
+        --with-drill --with-examples
+      make -j 2
+      make install
     elif [ "$ANDROID" = "yes" ]; then
       export AUTOTOOLS_BUILD="$(./config.guess)"
       export PKG_CONFIG_PATH="$ANDROID_PREFIX/lib/pkgconfig"
