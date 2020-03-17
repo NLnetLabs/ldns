@@ -1,4 +1,4 @@
-1.7.2	2019-??-??
+1.7.2	2020-??-??
 	* bugfix #38: Print "line" before line number when printing
 	  zone parse errors. Thanks Petr Špaček.
 	* bugfix: Revert unused variables in ldns-config removal patch.

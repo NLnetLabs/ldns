@@ -5,6 +5,57 @@
 
 #include <ldns/ldns.h>
 
+int test_duration(void)
+{
+	ldns_duration_type *d1 = NULL, *d2 = NULL;
+	char *s1 = NULL, *s2 = NULL, *s3 = NULL;
+	int r = -1;
+
+	if (!(d1 = ldns_duration_create()))
+		fprintf(stderr, "ldns_duration_create() returned NULL\n");
+
+	else if (!(s1 = ldns_duration2string(d1)))
+		fprintf(stderr, "ldns_duration2string() returned NULL\n");
+
+	else if (!(d2 = ldns_duration_create_from_string("PT0S")))
+		fprintf( stderr
+		       , "ldns_duration_create_from_string(\"P0D\") returned NULL\n");
+
+	else if (ldns_duration_compare(d1, d2))
+		fprintf(stderr, "0 durations not equal\n");
+
+	else if ((d1->years = 1), (d1->months = 3), 0)
+		; /* pass */
+
+	else if (!(s2 = ldns_duration2string(d1)))
+		fprintf(stderr, "ldns_duration2string() returned NULL\n");
+
+	else if (strcmp(s2, "P1Y3M"))
+		fprintf(stderr, "\"%s\" should have been \"P1Y3M\"\n", s2);
+
+	else if ((d1->minutes = 3), 0)
+		; /* pass */
+
+	else if (!(s3 = ldns_duration2string(d1)))
+		fprintf(stderr, "ldns_duration2string() returned NULL\n");
+
+	else if (strcmp(s3, "P1Y3MT3M"))
+		fprintf(stderr, "\"%s\" should have been \"P1Y3MT3M\"\n", s3);
+
+	else if (ldns_duration_compare(d1, d2) <= 0)
+		fprintf(stderr, "ldns_duration_compare() error\n");
+	else
+		r = 0;
+
+	if (d1)	ldns_duration_cleanup(d1);
+	if (d2)	ldns_duration_cleanup(d2);
+	if (s1)	free(s1);
+	if (s2)	free(s2);
+	if (s3)	free(s3);
+	return r;
+}
+
+
 void print_data_ar(const uint8_t *data, const size_t len) {
 	size_t i;
 	
@@ -822,6 +873,9 @@ main(void)
 		result = EXIT_FAILURE;
 	}
 	free(data);
+
+	if (test_duration())
+		result = EXIT_FAILURE;
 
 	printf("unit test is %s\n", result==EXIT_SUCCESS?"ok":"fail");
 	exit(result);
