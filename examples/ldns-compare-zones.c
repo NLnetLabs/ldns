@@ -232,7 +232,6 @@ main(int argc, char **argv)
 			rr_chg = rr_cmp = -1;
 		}
 		if (rr_cmp < 0) {
-			i++;
 			if ((rrx != NULL) && (ldns_dname_compare(ldns_rr_owner(rr1), 
 											 ldns_rr_owner(rrx)
 											 ) != 0)) {
@@ -254,8 +253,8 @@ main(int argc, char **argv)
 				printf("%c-", op);
 				ldns_rr_print(stdout, rr1);
 			}
+			i++;
 		} else if (rr_cmp > 0) {
-			j++;
 			if ((rrx != NULL) && (ldns_dname_compare(ldns_rr_owner(rr2),
 											 ldns_rr_owner(rrx)
 											 ) != 0)) {
@@ -277,9 +276,8 @@ main(int argc, char **argv)
 				printf("%c+", op);
 				ldns_rr_print(stdout, rr2);
 			}
-		} else {
-			i++;
 			j++;
+		} else {
 			if ((rrx != NULL) && (ldns_dname_compare(ldns_rr_owner(rr1),
 											 ldns_rr_owner(rrx)
 											 ) != 0)) {
@@ -326,6 +324,8 @@ main(int argc, char **argv)
 				printf("%c=", op);
 				ldns_rr_print(stdout, rr1);
 			}
+			i++;
+			j++;
 		}
 	}
 
