@@ -310,8 +310,7 @@ main(int argc, char **argv)
 					    ; (k - i) < nc1 && (l - j) < nc2 &&
 							ldns_rr_compare(ldns_rr_list_rr(rrl1, k),
 							ldns_rr_list_rr(rrl2, l)) == 0
-					    ; k++, l++){
-					}
+					    ; k++, l++);
 					if ((k - i) < nc1) {
 						op = OP_CHG;
 						num_chg++;
