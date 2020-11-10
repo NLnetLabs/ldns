@@ -44,6 +44,11 @@ usage(FILE *fp, const char *prog) {
 	fprintf(fp, "  -o <domain>\torigin for the zone\n");
 	fprintf(fp, "  -u\t\tset SOA serial to the number of seconds since 1-1-1970\n");
 	fprintf(fp, "  -v\t\tprint version and exit\n");
+	fprintf(fp, "  -z <algorithm>\tAdd ZONEMD resource record\n");
+	fprintf(fp, "                \t"
+	            "<algorithm> can be 1 for SHA384 or 2 for SHA512\n");
+	fprintf(fp, "                \t"
+	            "this option can be given more than once\n");
 	fprintf(fp, "  -A\t\tsign DNSKEY with all keys instead of minimal\n");
 	fprintf(fp, "  -U\t\tSign with every unique algorithm in the provided keys\n");
 #ifndef OPENSSL_NO_ENGINE
@@ -559,6 +564,47 @@ shutdown_openssl ( ENGINE * const e )
 }
 #endif
 
+static bool ldns_rr_list_push_rrs(ldns_rr_list *rr_list, ldns_dnssec_rrs *rrs)
+{
+	while (rrs && ldns_rr_list_push_rr(rr_list, rrs->rr))
+		rrs = rrs->next;
+	return !rrs;
+}
+
+static ldns_rr_list *ldns_dnssec_zone2rr_list(ldns_dnssec_zone *zone)
+{
+	ldns_rr_list *rr_list = zone ? ldns_rr_list_new() : NULL;
+	ldns_rbnode_t *node;
+	ldns_dnssec_name *name;
+	ldns_dnssec_rrsets *rrsets;
+
+	if (!rr_list)
+		return NULL;
+
+	/* Walking the zone->names rbtree starts at the apex */
+	node = ldns_rbtree_first(zone->names);
+	while (node != LDNS_RBTREE_NULL) {
+		name = (ldns_dnssec_name *) node->data;
+		for (rrsets = name->rrsets; rrsets; rrsets = rrsets->next) {
+			if (!ldns_rr_list_push_rrs(rr_list, rrsets->rrs))
+				goto error;
+			if (!ldns_rr_list_push_rrs(rr_list, rrsets->signatures))
+				goto error;
+		}
+		if (name->nsec) {
+			if (!ldns_rr_list_push_rr(rr_list, name->nsec))
+				goto error;
+			if (!ldns_rr_list_push_rrs(rr_list, name->nsec_signatures))
+				goto error;
+		}
+		node = ldns_rbtree_next(node);
+	}
+	return rr_list;
+error:
+	ldns_rr_list_free(rr_list);
+	return NULL;
+}
+
 int
 main(int argc, char *argv[])
 {
@@ -618,14 +664,20 @@ main(int argc, char *argv[])
 
 	ldns_output_format_storage fmt_st;
 	ldns_output_format* fmt = ldns_output_format_init(&fmt_st);
-	
+
+	const EVP_MD *add_zonemd[2] = { NULL, NULL };
+	const char *zonemd_algs[2] = { "SHA384", "SHA512" };
+	ldns_rr *zonemd_rrs[2] = { NULL, NULL };
+	size_t n_zonemd_algs = sizeof(add_zonemd) / sizeof(const EVP_MD *);
+	bool zonemds = false;
+
 	prog = strdup(argv[0]);
 	inception = 0;
 	expiration = 0;
 	
 	keys = ldns_key_list_new();
 
-	while ((c = getopt(argc, argv, "a:bde:f:i:k:no:ps:t:uvAUE:K:")) != -1) {
+	while ((c = getopt(argc, argv, "a:bde:f:i:k:no:ps:t:uvz:AUE:K:")) != -1) {
 		switch (c) {
 		case 'a':
 			nsec3_algorithm = (uint8_t) atoi(optarg);
@@ -671,7 +723,7 @@ main(int argc, char *argv[])
 			}
 			break;
 		case 'f':
-			outputfile_name = LDNS_XMALLOC(char, MAX_FILENAME_LEN);
+			outputfile_name = LDNS_XMALLOC(char, MAX_FILENAME_LEN + 1);
 			strncpy(outputfile_name, optarg, MAX_FILENAME_LEN);
 			break;
 		case 'i':
@@ -716,6 +768,35 @@ main(int argc, char *argv[])
 		case 'v':
 			printf("zone signer version %s (ldns version %s)\n", LDNS_VERSION, ldns_version());
 			exit(EXIT_SUCCESS);
+			break;
+		case 'z':
+			switch (atoi(optarg)) {
+			case 1:
+				if (add_zonemd[0])
+					break;
+				add_zonemd[0] = EVP_get_digestbyname("sha384");
+				if (!add_zonemd[0])
+					fprintf(stderr, "SHA384 not supported "
+					    "for ZONEMD. Continuing without it.\n");
+				else
+					zonemds = true;
+				break;
+			case 2:	if (add_zonemd[1])
+					break;
+				add_zonemd[1] = EVP_get_digestbyname("sha512");
+				if (!add_zonemd[1])
+					fprintf(stderr, "SHA512 not supported "
+					    "for ZONEMD. Continuing without it.\n");
+				else
+					zonemds = true;
+				break;
+			default:
+				fprintf(stderr, "Unknown ZONEMD <algorithm>: %s.\n"
+				    "Should be 1 for SHA384 or 2 for SHA512\n",
+				    optarg);
+				exit(EXIT_FAILURE);
+				break;
+			}
 			break;
 		case 'A':
 			signflags |= LDNS_SIGN_DNSKEY_WITH_ZSK;
@@ -963,7 +1044,120 @@ main(int argc, char *argv[])
 			  ldns_rr_list_rr(ldns_zone_rrs(orig_zone), i));
 		}
 	}
+	if (zonemds) {
+		/* Remove apex ZONEMD resource records from zone
+		 */
+		ldns_rbnode_t *node;
 
+		/* - find the apex */
+		node = ldns_rbtree_search(
+		    signed_zone->names, ldns_rr_owner(orig_soa));
+		if (node != NULL && node != LDNS_RBTREE_NULL) {
+			ldns_dnssec_name *apex = (ldns_dnssec_name *)node->data;
+			ldns_dnssec_rrsets **rrsets_ref = &apex->rrsets;
+
+			/* - find ZONEMD at apex */
+			for (  rrsets_ref = &apex->rrsets
+			    ; *rrsets_ref
+			    ;  rrsets_ref = &(*rrsets_ref)->next) {
+				ldns_dnssec_rrsets *zonemd_rrset;
+
+				if ((*rrsets_ref)->type != LDNS_RR_TYPE_ZONEMD)
+					continue;
+				zonemd_rrset = (*rrsets_ref);
+
+				/* - unlink the found ZONEMD rrset */
+				*rrsets_ref = zonemd_rrset->next;
+
+				/* - free the ZONEMD rrset */
+				zonemd_rrset->next = NULL;
+				ldns_dnssec_rrsets_free(zonemd_rrset);
+				break;
+			}
+		}
+	}
+	/* Add fresh ZONEMD records at apex */
+	for (i = 0; i < n_zonemd_algs; i++) {
+		ldns_rr *zonemd_rr;
+		ldns_rdf *rdf = NULL;
+
+		if (!add_zonemd[i])
+			continue;
+		zonemd_rr = ldns_rr_new_frm_type(LDNS_RR_TYPE_ZONEMD);
+		if (!zonemd_rr) {
+			fprintf(stderr, "Error creating "
+					"ZONEMD rr with algorithm %s. "
+					"Continuing without it.\n"
+				      , zonemd_algs[i]);
+			continue;
+		}
+		ldns_rr_set_class(zonemd_rr, ldns_rr_get_class(orig_soa));
+		ldns_rr_set_ttl(zonemd_rr, ldns_rr_ttl(orig_soa));
+		do {
+			ldns_status st;
+			void *md_buf;
+
+			/* - set owner */
+			rdf = ldns_rdf_clone(ldns_rr_owner(orig_soa));
+			if (!rdf)
+				break;
+			ldns_rr_set_owner(zonemd_rr, rdf);
+
+			/* - set serial rdata field */
+			rdf = ldns_rdf_clone(ldns_rr_rdf(orig_soa, 2));
+			if (!rdf)
+				break;
+			(void) ldns_rr_set_rdf(zonemd_rr, rdf, 0);
+
+			/* - set scheme rdata field */
+			/*   currently we only support SIMPLE scheme */
+			rdf = ldns_native2rdf_int8(
+			    LDNS_RDF_TYPE_INT8, 1);
+			if (!rdf)
+				break;
+			(void) ldns_rr_set_rdf(zonemd_rr, rdf, 1);
+
+			/* - set algorithm rdata field */
+			rdf = ldns_native2rdf_int8(
+			    LDNS_RDF_TYPE_INT8, (uint8_t)(i + 1));
+			if (!rdf)
+				break;
+			(void) ldns_rr_set_rdf(zonemd_rr, rdf, 2);
+
+			/* - set digest rdata field */
+			md_buf = calloc(EVP_MD_size(add_zonemd[i]), 1);
+			if (!md_buf) {
+				rdf = NULL;
+				break;
+			}
+			rdf = ldns_rdf_new( LDNS_RDF_TYPE_HEX
+					  , EVP_MD_size(add_zonemd[i])
+					  , md_buf);
+			if (!rdf)
+				break;
+			(void) ldns_rr_set_rdf(zonemd_rr, rdf, 3);
+
+			st = ldns_dnssec_zone_add_rr(
+			    signed_zone, zonemd_rr);
+			if (st) {
+				fprintf( stderr
+				       , "Error adding ZONEMD to zone:"
+					 " %s\nContinuing without it.\n"
+				       , ldns_get_errorstr_by_id(st));
+				ldns_rr_free(zonemd_rr);
+				break;
+			}
+			zonemd_rrs[i] = zonemd_rr;
+		} while (0);
+		if (!rdf) {
+			fprintf(stderr, "Memory error allocating for "
+					"ZONEMD RR with algorithm %s. "
+					"Continuing without it.\n"
+				      , zonemd_algs[i]);
+			ldns_rr_free(zonemd_rr);
+			continue;
+		}
+	}
 	/* list to store newly created rrs, so we can free them later */
 	added_rrs = ldns_rr_list_new();
 
@@ -999,6 +1193,150 @@ main(int argc, char *argv[])
 	}
 
 	if (signed_zone) {
+		ldns_status zonemd_result = LDNS_STATUS_OK;
+		EVP_MD_CTX *ctxs[2] = { NULL, NULL };
+
+		zonemds = false;
+		for (i = 0; i < n_zonemd_algs; i++) {
+			if (zonemd_rrs[i]) {
+				ctxs[i] = EVP_MD_CTX_create();
+				if (!EVP_DigestInit(ctxs[i], add_zonemd[i])) {
+					fprintf( stderr
+					       , "Error initializing hashing "
+					         "algorithm %s for ZONEMD. "
+					         "Continuing without it.\n"
+					       , zonemd_algs[i]);
+					EVP_MD_CTX_destroy(ctxs[i]);
+					ctxs[i] = NULL;
+				} else
+					zonemds = true;
+			}
+		}
+		if (zonemds) do {
+			ldns_buffer *buf = ldns_buffer_new(LDNS_MAX_PACKETLEN);
+			ldns_rr_list *rr_list;
+			size_t j;
+			ldns_dnssec_rrsets *zonemd;
+			ldns_rr_list *rrsigs;
+
+			if (!buf) {
+				fprintf( stderr
+				       , "Error allocating buffer for "
+				         "ZONEMD digest(s)\n");
+				break;
+			}
+			rr_list = ldns_dnssec_zone2rr_list(signed_zone);
+			if (!rr_list) {
+				fprintf( stderr
+				       , "Error making ZONEMD digest(s)\n");
+				ldns_buffer_free(buf);
+				break;
+			}
+			ldns_rr_list_sort(rr_list);
+			for (i = 0; i < ldns_rr_list_rr_count(rr_list); i++) {
+				ldns_rr *rr = ldns_rr_list_rr(rr_list, i);
+				
+				/* Skip apex ZONEMD RRs */
+				if (ldns_rr_get_type(rr) == LDNS_RR_TYPE_ZONEMD
+				&& !ldns_dname_compare( ldns_rr_owner(rr)
+				                      , ldns_rr_owner(orig_soa))) {
+					continue;
+				}
+				/* Skip RRSIGs for apex ZONEMD RRs */
+				if (ldns_rr_get_type(rr) == LDNS_RR_TYPE_RRSIG
+				&&  LDNS_RR_TYPE_ZONEMD == ldns_rdf2rr_type(
+						ldns_rr_rrsig_typecovered(rr))
+				&& !ldns_dname_compare( ldns_rr_owner(rr)
+				                      , ldns_rr_owner(orig_soa))) {
+					continue;
+				}
+				zonemd_result = ldns_rr2buffer_wire(
+				    buf, rr, LDNS_SECTION_ANSWER);
+				if (zonemd_result)
+					break;
+
+				for (j = 0; j < n_zonemd_algs; j++) {
+					if (!ctxs[j])
+						continue;
+					EVP_DigestUpdate(ctxs[j],
+					    ldns_buffer_begin(buf),
+					    ldns_buffer_position(buf));
+				}
+				ldns_buffer_clear(buf);
+			}
+			if (zonemd_result) {
+				ldns_rr_list_free(rr_list);
+				ldns_buffer_free(buf);
+				break;
+			}
+			for (j = 0; j < n_zonemd_algs; j++) {
+				if (!ctxs[j])
+					continue;
+				EVP_DigestFinal_ex(ctxs[j],
+				  ldns_rdf_data(ldns_rr_rdf(zonemd_rrs[j], 3)),
+				  0);
+			}
+			ldns_buffer_free(buf);
+
+			/* Resign ZONEMD rrset */
+			/* - sign (create new signatures)  */
+			ldns_rr_list_set_rr_count(rr_list, 0);
+			for (j = 0; j < n_zonemd_algs; j++) {
+				if (!zonemd_rrs[j])
+					continue;
+				ldns_rr_list_push_rr(rr_list, zonemd_rrs[j]);
+			}
+			rrsigs = ldns_sign_public(rr_list, keys);
+			if (!rrsigs) {
+				zonemd_result = LDNS_STATUS_MEM_ERR;
+				ldns_rr_list_free(rr_list);
+				break;
+			}
+
+			/* - find ZONEMD rrset */
+			zonemd = ldns_dnssec_zone_find_rrset(signed_zone,
+			    ldns_rr_owner(orig_soa), LDNS_RR_TYPE_ZONEMD);
+			assert(zonemd);
+
+			/* - remove old signatures */
+			ldns_dnssec_rrs_free(zonemd->signatures);
+			zonemd->signatures = NULL;
+
+			/* - provision the new signatures */
+			if (ldns_rr_list_rr_count(rrsigs)) {
+				ldns_rr *rrsig = ldns_rr_list_rr(rrsigs, 0);
+
+				zonemd->signatures = ldns_dnssec_rrs_new();
+				if (!zonemd->signatures) {
+					zonemd_result = LDNS_STATUS_MEM_ERR;
+					ldns_rr_list_free(rrsigs);
+					ldns_rr_list_free(rr_list);
+					break;
+				}
+				zonemd->signatures->rr = rrsig;
+				if (added_rrs)
+					ldns_rr_list_push_rr(added_rrs, rrsig);
+			}
+			for (i = 1; i < ldns_rr_list_rr_count(rrsigs); i++) {
+				ldns_rr *rrsig = ldns_rr_list_rr(rrsigs, i);
+
+				zonemd_result = ldns_dnssec_rrs_add_rr(
+				    zonemd->signatures, rrsig);
+				if (zonemd_result)
+					break;
+				if (added_rrs)
+					ldns_rr_list_push_rr(added_rrs, rrsig);
+			}
+
+			ldns_rr_list_free(rrsigs);
+			ldns_rr_list_free(rr_list);
+		} while(0);
+		if (zonemd_result != LDNS_STATUS_OK) {
+			fprintf( stderr
+			       , "Error calculating ZONEMD digest(s): %s\n"
+			       , ldns_get_errorstr_by_id(result));
+		}
+
 		if (strncmp(outputfile_name, "-", 2) == 0) {
 			ldns_dnssec_zone_print(stdout, signed_zone);
 		} else {
