@@ -476,6 +476,8 @@ ldns_status ldns_dnssec_zone_add_empty_nonterminals(ldns_dnssec_zone *zone);
  */
 bool ldns_dnssec_zone_is_nsec3_optout(const ldns_dnssec_zone* zone);
 
+ldns_status ldns_dnssec_zone_verify_zonemd(ldns_dnssec_zone *zone);
+
 #ifdef __cplusplus
 }
 #endif

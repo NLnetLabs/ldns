@@ -922,6 +922,13 @@ main(int argc, char **argv)
 				dnssec_zone->soa->name, keys, apexonly,
 				percentage);
 
+		if (!result) {
+			result = ldns_dnssec_zone_verify_zonemd(dnssec_zone);
+			if (result && verbosity > 3) {
+				fprintf(myerr,
+				        "Could not validate zone digest\n");
+			}
+		}
 		if (result == LDNS_STATUS_OK) {
 			if (verbosity >= 3) {
 				fprintf(myout,

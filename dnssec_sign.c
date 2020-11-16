@@ -24,6 +24,9 @@
 #endif
 #endif /* HAVE_SSL */
 
+#define LDNS_SIGN_WITH_ZONEMD ( LDNS_SIGN_WITH_ZONEMD_SIMPLE_SHA384 \
+                              | LDNS_SIGN_WITH_ZONEMD_SIMPLE_SHA512 )
+
 ldns_rr *
 ldns_create_empty_rrsig(const ldns_rr_list *rrset,
                         const ldns_key *current_key)
@@ -1365,6 +1368,8 @@ ldns_dnssec_zone_sign(ldns_dnssec_zone *zone,
 	return ldns_dnssec_zone_sign_flg(zone, new_rrs, key_list, func, arg, 0);
 }
 
+ldns_status dnssec_zone_equip_zonemd(
+		ldns_dnssec_zone *zone, int flags, ldns_key_list *key_list);
 ldns_status
 ldns_dnssec_zone_sign_flg(ldns_dnssec_zone *zone,
 				  ldns_rr_list *new_rrs,
@@ -1374,17 +1379,33 @@ ldns_dnssec_zone_sign_flg(ldns_dnssec_zone *zone,
 				  int flags)
 {
 	ldns_status result = LDNS_STATUS_OK;
+	ldns_dnssec_rrsets zonemd_rrset;
+	bool zonemd_added = false;
 
 	if (!zone || !new_rrs || !key_list) {
 		return LDNS_STATUS_ERR;
 	}
+	if (flags & LDNS_SIGN_WITH_ZONEMD) {
+		ldns_dnssec_rrsets **rrsets_ref = &zone->soa->rrsets;
 
+		while (*rrsets_ref
+		   && (*rrsets_ref)->type < LDNS_RR_TYPE_ZONEMD)
+			rrsets_ref = &(*rrsets_ref)->next;
+		if (!*rrsets_ref
+		||  (*rrsets_ref)->type > LDNS_RR_TYPE_ZONEMD) {
+			zonemd_rrset.rrs = NULL;
+			zonemd_rrset.type = LDNS_RR_TYPE_ZONEMD;
+			zonemd_rrset.signatures = NULL;
+			zonemd_rrset.next = *rrsets_ref;
+			*rrsets_ref = &zonemd_rrset;
+			zonemd_added = true;
+		}
+	}
 	/* zone is already sorted */
 	result = ldns_dnssec_zone_mark_glue(zone);
 	if (result != LDNS_STATUS_OK) {
 		return result;
 	}
-
 	/* check whether we need to add nsecs */
 	if (zone->names && !((ldns_dnssec_name *)zone->names->root->data)->nsec) {
 		result = ldns_dnssec_zone_create_nsecs(zone, new_rrs);
@@ -1392,7 +1413,6 @@ ldns_dnssec_zone_sign_flg(ldns_dnssec_zone *zone,
 			return result;
 		}
 	}
-
 	result = ldns_dnssec_zone_create_rrsigs_flg(zone,
 					new_rrs,
 					key_list,
@@ -1400,7 +1420,18 @@ ldns_dnssec_zone_sign_flg(ldns_dnssec_zone *zone,
 					arg,
 					flags);
 
-	return result;
+	if (zonemd_added) {
+		ldns_dnssec_rrsets **rrsets_ref
+		    = &zone->soa->rrsets;
+
+		while (*rrsets_ref
+		   && (*rrsets_ref)->type < LDNS_RR_TYPE_ZONEMD)
+			rrsets_ref = &(*rrsets_ref)->next;
+		*rrsets_ref = zonemd_rrset.next;
+	}
+	return flags & LDNS_SIGN_WITH_ZONEMD
+	     ? dnssec_zone_equip_zonemd(zone, flags, key_list)
+	     : result;
 }
 
 ldns_status
@@ -1436,6 +1467,8 @@ ldns_dnssec_zone_sign_nsec3_flg_mkmap(ldns_dnssec_zone *zone,
 {
 	ldns_rr *nsec3, *nsec3param;
 	ldns_status result = LDNS_STATUS_OK;
+	bool zonemd_added = false;
+	ldns_dnssec_rrsets zonemd_rrset;
 
 	/* zone is already sorted */
 	result = ldns_dnssec_zone_mark_glue(zone);
@@ -1481,6 +1514,23 @@ ldns_dnssec_zone_sign_nsec3_flg_mkmap(ldns_dnssec_zone *zone,
 				}
 				ldns_rr_list_push_rr(new_rrs, nsec3param);
 			}
+			if (signflags & LDNS_SIGN_WITH_ZONEMD) {
+				ldns_dnssec_rrsets **rrsets_ref
+				    = &zone->soa->rrsets;
+
+				while (*rrsets_ref
+				   && (*rrsets_ref)->type < LDNS_RR_TYPE_ZONEMD)
+					rrsets_ref = &(*rrsets_ref)->next;
+				if (!*rrsets_ref
+				||  (*rrsets_ref)->type > LDNS_RR_TYPE_ZONEMD) {
+					zonemd_rrset.rrs = NULL;
+					zonemd_rrset.type = LDNS_RR_TYPE_ZONEMD;
+					zonemd_rrset.signatures = NULL;
+					zonemd_rrset.next = *rrsets_ref;
+					*rrsets_ref = &zonemd_rrset;
+					zonemd_added = true;
+				}
+			}
 			result = ldns_dnssec_zone_create_nsec3s_mkmap(zone,
 											new_rrs,
 											algorithm,
@@ -1489,6 +1539,15 @@ ldns_dnssec_zone_sign_nsec3_flg_mkmap(ldns_dnssec_zone *zone,
 											salt_length,
 											salt,
 											map);
+			if (zonemd_added) {
+				ldns_dnssec_rrsets **rrsets_ref
+				    = &zone->soa->rrsets;
+
+				while (*rrsets_ref
+				   && (*rrsets_ref)->type < LDNS_RR_TYPE_ZONEMD)
+					rrsets_ref = &(*rrsets_ref)->next;
+				*rrsets_ref = zonemd_rrset.next;
+			}
 			if (result != LDNS_STATUS_OK) {
 				return result;
 			}
@@ -1501,8 +1560,12 @@ ldns_dnssec_zone_sign_nsec3_flg_mkmap(ldns_dnssec_zone *zone,
 						arg,
 						signflags);
 	}
+	if (result || !zone->names)
+		return result;
 
-	return result;
+	return signflags & LDNS_SIGN_WITH_ZONEMD
+	     ? dnssec_zone_equip_zonemd(zone, signflags, key_list)
+	     : result;
 }
 
 ldns_status
