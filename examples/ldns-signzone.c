@@ -44,11 +44,10 @@ usage(FILE *fp, const char *prog) {
 	fprintf(fp, "  -o <domain>\torigin for the zone\n");
 	fprintf(fp, "  -u\t\tset SOA serial to the number of seconds since 1-1-1970\n");
 	fprintf(fp, "  -v\t\tprint version and exit\n");
-	fprintf(fp, "  -z <algorithm>\tAdd ZONEMD resource record\n");
-	fprintf(fp, "                \t"
-	            "<algorithm> can be 1 for SHA384 or 2 for SHA512\n");
-	fprintf(fp, "                \t"
-	            "this option can be given more than once\n");
+	fprintf(fp, "  -z <[scheme:]hash>\tAdd ZONEMD resource record\n");
+	fprintf(fp, "\t\t<scheme> should be \"simple\" (or 1)\n");
+	fprintf(fp, "\t\t<hash> should be \"sha384\" or \"sha512\" (or 1 or 2)\n");
+	fprintf(fp, "\t\tthis option can be given more than once\n");
 	fprintf(fp, "  -A\t\tsign DNSKEY with all keys instead of minimal\n");
 	fprintf(fp, "  -U\t\tSign with every unique algorithm in the provided keys\n");
 #ifndef OPENSSL_NO_ENGINE
@@ -595,7 +594,7 @@ int str2zonemd_signflag(const char *str, const char **reason)
 	if (!strcasecmp(str, "2") || !strcasecmp(str, "sha512"))
 		return LDNS_SIGN_WITH_ZONEMD_SIMPLE_SHA512;
 
-	if (reason) *reason = reason[2];
+	if (reason) *reason = reasons[2];
 	return 0;
 }
 
