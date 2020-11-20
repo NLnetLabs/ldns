@@ -1407,7 +1407,13 @@ ldns_dnssec_zone_sign_flg(ldns_dnssec_zone *zone,
 		return result;
 	}
 	/* check whether we need to add nsecs */
-	if (zone->names && !((ldns_dnssec_name *)zone->names->root->data)->nsec) {
+	if ((flags & LDNS_SIGN_NO_KEYS_NO_NSECS)
+	&&  ldns_key_list_key_count(key_list) < 1)
+		; /* pass */
+
+	else if (zone->names
+	     && !((ldns_dnssec_name *)zone->names->root->data)->nsec) {
+
 		result = ldns_dnssec_zone_create_nsecs(zone, new_rrs);
 		if (result != LDNS_STATUS_OK) {
 			return result;
@@ -1487,7 +1493,13 @@ ldns_dnssec_zone_sign_nsec3_flg_mkmap(ldns_dnssec_zone *zone,
 		}
 
 		nsec3 = ((ldns_dnssec_name *)zone->names->root->data)->nsec;
-		if (nsec3 && ldns_rr_get_type(nsec3) == LDNS_RR_TYPE_NSEC3) {
+
+		/* check whether we need to add nsecs */
+		if ((signflags & LDNS_SIGN_NO_KEYS_NO_NSECS)
+		&&  ldns_key_list_key_count(key_list) < 1)
+			; /* pass */
+
+		else if (nsec3 && ldns_rr_get_type(nsec3) == LDNS_RR_TYPE_NSEC3) {
 			/* no need to recreate */
 		} else {
 			if (!ldns_dnssec_zone_find_rrset(zone,

@@ -80,6 +80,10 @@ Calculate the zone's digest and add those as ZONEMD RRs. The (optional)
 `sha512' (or 2).  This option can be given more than once.
 
 .TP
+\fB-Z\fR
+Allow ZONEMDs to be added without signing
+
+.TP
 \fB-A\fR
 Sign the DNSKEY record with all keys.  By default it is signed with a
 minimal number of keys, to keep the response size for the DNSKEY query

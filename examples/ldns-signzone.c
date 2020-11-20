@@ -48,6 +48,7 @@ usage(FILE *fp, const char *prog) {
 	fprintf(fp, "\t\t<scheme> should be \"simple\" (or 1)\n");
 	fprintf(fp, "\t\t<hash> should be \"sha384\" or \"sha512\" (or 1 or 2)\n");
 	fprintf(fp, "\t\tthis option can be given more than once\n");
+	fprintf(fp, "  -Z\t\tAllow ZONEMDs to be added without signing\n");
 	fprintf(fp, "  -A\t\tsign DNSKEY with all keys instead of minimal\n");
 	fprintf(fp, "  -U\t\tSign with every unique algorithm in the provided keys\n");
 #ifndef OPENSSL_NO_ENGINE
@@ -668,7 +669,7 @@ main(int argc, char *argv[])
 	
 	keys = ldns_key_list_new();
 
-	while ((c = getopt(argc, argv, "a:bde:f:i:k:no:ps:t:uvz:AUE:K:")) != -1) {
+	while ((c = getopt(argc, argv, "a:bde:f:i:k:no:ps:t:uvz:ZAUE:K:")) != -1) {
 		switch (c) {
 		case 'a':
 			nsec3_algorithm = (uint8_t) atoi(optarg);
@@ -771,6 +772,9 @@ main(int argc, char *argv[])
 				       , reason, optarg);
 				exit(EXIT_FAILURE);
 			}
+			break;
+		case 'Z':
+			signflags |= LDNS_SIGN_NO_KEYS_NO_NSECS;
 			break;
 		case 'A':
 			signflags |= LDNS_SIGN_DNSKEY_WITH_ZSK;
@@ -986,8 +990,9 @@ main(int argc, char *argv[])
 				  inception,
 				  expiration );
 #endif
-	
-	if (ldns_key_list_key_count(keys) < 1) {
+	if (ldns_key_list_key_count(keys) < 1 
+	&&  !(signflags & LDNS_SIGN_NO_KEYS_NO_NSECS)) {
+			
 		fprintf(stderr, "Error: no keys to sign with. Aborting.\n\n");
 		usage(stderr, prog);
 		exit(EXIT_FAILURE);

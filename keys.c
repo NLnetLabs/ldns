@@ -1446,7 +1446,7 @@ ldns_key_set_keytag(ldns_key *k, uint16_t tag)
 size_t
 ldns_key_list_key_count(const ldns_key_list *key_list)
 {
-	        return key_list->_key_count;
+	return key_list ? key_list->_key_count : 0;
 }       
 
 ldns_key *
