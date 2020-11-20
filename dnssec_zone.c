@@ -370,9 +370,10 @@ ldns_dnssec_name_free_internal(ldns_dnssec_name *name,
 			ldns_dnssec_rrs_free_internal(name->nsec_signatures, deep);
 		}
 		if (name->hashed_name) {
-			if (deep) {
-				ldns_rdf_deep_free(name->hashed_name);
-			}
+			/* Hashed name is always allocated when signing,
+			 * so always deep free
+			 */
+			ldns_rdf_deep_free(name->hashed_name);
 		}
 		LDNS_FREE(name);
 	}
@@ -793,10 +794,21 @@ ldns_dnssec_name_node_deep_free(ldns_rbnode_t *node, void *arg) {
 	LDNS_FREE(node);
 }
 
+static void
+ldns_hashed_names_node_free(ldns_rbnode_t *node, void *arg) {
+	(void) arg;
+	LDNS_FREE(node);
+}
+
 void
 ldns_dnssec_zone_free(ldns_dnssec_zone *zone)
 {
 	if (zone) {
+		if (zone->hashed_names) {
+			ldns_traverse_postorder(zone->hashed_names,
+					ldns_hashed_names_node_free, NULL);
+			LDNS_FREE(zone->hashed_names);
+		}
 		if (zone->names) {
 			/* destroy all name structures within the tree */
 			ldns_traverse_postorder(zone->names,
@@ -812,6 +824,11 @@ void
 ldns_dnssec_zone_deep_free(ldns_dnssec_zone *zone)
 {
 	if (zone) {
+		if (zone->hashed_names) {
+			ldns_traverse_postorder(zone->hashed_names,
+					ldns_hashed_names_node_free, NULL);
+			LDNS_FREE(zone->hashed_names);
+		}
 		if (zone->names) {
 			/* destroy all name structures within the tree */
 			ldns_traverse_postorder(zone->names,
@@ -832,12 +849,6 @@ ldns_dname_compare_v(const void *a, const void *b) {
 static void
 ldns_dnssec_name_make_hashed_name(ldns_dnssec_zone *zone,
 		ldns_dnssec_name* name, ldns_rr* nsec3rr);
-
-static void
-ldns_hashed_names_node_free(ldns_rbnode_t *node, void *arg) {
-	(void) arg;
-	LDNS_FREE(node);
-}
 
 static void
 ldns_dnssec_zone_hashed_names_from_nsec3(
@@ -908,20 +919,22 @@ ldns_dnssec_name_make_hashed_name(ldns_dnssec_zone *zone,
 static ldns_rbnode_t *
 ldns_dnssec_zone_find_nsec3_original(ldns_dnssec_zone *zone, ldns_rr *rr) {
 	ldns_rdf *hashed_name;
+	ldns_rbnode_t *to_return;
 
-	hashed_name = ldns_dname_label(ldns_rr_owner(rr), 0);
-	if (hashed_name == NULL) {
-		return NULL;
-	}
 	if (ldns_rr_get_type(rr) == LDNS_RR_TYPE_NSEC3 && ! zone->_nsec3params){
 
 		ldns_dnssec_zone_hashed_names_from_nsec3(zone, rr);
 	}
 	if (zone->hashed_names == NULL) {
-		ldns_rdf_deep_free(hashed_name);
 		return NULL;
 	}
-	return  ldns_rbtree_search(zone->hashed_names, hashed_name);
+	hashed_name = ldns_dname_label(ldns_rr_owner(rr), 0);
+	if (hashed_name == NULL) {
+		return NULL;
+	}
+	to_return = ldns_rbtree_search(zone->hashed_names, hashed_name);
+	ldns_rdf_deep_free(hashed_name);
+	return to_return;
 }
 
 ldns_status
@@ -1127,6 +1140,7 @@ ldns_dnssec_zone_add_empty_nonterminals_nsec3(
 					}
 					node = ldns_rbtree_search(nsec3s, 
 							ent_hashed_name);
+					ldns_rdf_deep_free(ent_hashed_name);
 					if (!node) {
 						ldns_rdf_deep_free(l1);
 						ldns_rdf_deep_free(l2);
@@ -1205,34 +1219,6 @@ ldns_dnssec_zone_is_nsec3_optout(const ldns_dnssec_zone* zone)
 /*
  * Stuff for calculating and verifying zone digests
  */
-static ldns_status
-rr_list2dnssec_rrs(ldns_rr_list *rr_list, ldns_dnssec_rrs **rrs)
-{
-	ldns_rr *rr = NULL;
-
-	if (!rr_list || !rrs)
-		return LDNS_STATUS_NULL;
-
-	if (ldns_rr_list_rr_count(rr_list) == 0)
-		return LDNS_STATUS_OK;
-
-	if (!*rrs) {
-		if (!(*rrs = ldns_dnssec_rrs_new()))
-			return LDNS_STATUS_MEM_ERR;
-		(*rrs)->rr = ldns_rr_list_pop_rr(rr_list);
-
-	}
-	while ((rr = ldns_rr_list_pop_rr(rr_list))) {
-		ldns_status st;
-	       
-		if ((st = ldns_dnssec_rrs_add_rr(*rrs, rr))) {
-			ldns_rr_list_push_rr(rr_list, rr);
-			return st;
-		}
-	}
-	return LDNS_STATUS_OK;
-}
-
 typedef enum dnssec_zone_rr_iter_state {
 	  DNSSEC_ZONE_RR_ITER_LT_RRSIG
 	, DNSSEC_ZONE_RR_ITER_RRSIGs_NO_NSEC
@@ -1783,9 +1769,41 @@ ldns_dnssec_zone_verify_zonemd(ldns_dnssec_zone *zone)
 }
 
 #ifdef HAVE_SSL
+static ldns_status
+rr_list2dnssec_rrs(ldns_rr_list *rr_list, ldns_dnssec_rrs **rrs,
+		ldns_rr_list *new_rrs)
+{
+	ldns_rr *rr = NULL;
+
+	if (!rr_list || !rrs)
+		return LDNS_STATUS_NULL;
+
+	if (ldns_rr_list_rr_count(rr_list) == 0)
+		return LDNS_STATUS_OK;
+
+	if (!*rrs) {
+		if (!(*rrs = ldns_dnssec_rrs_new()))
+			return LDNS_STATUS_MEM_ERR;
+		(*rrs)->rr = ldns_rr_list_pop_rr(rr_list);
+		if (new_rrs)
+			ldns_rr_list_push_rr(new_rrs, (*rrs)->rr);
+	}
+	while ((rr = ldns_rr_list_pop_rr(rr_list))) {
+		ldns_status st;
+	       
+		if ((st = ldns_dnssec_rrs_add_rr(*rrs, rr))) {
+			ldns_rr_list_push_rr(rr_list, rr);
+			return st;
+		} else if (new_rrs)
+			ldns_rr_list_push_rr(new_rrs, rr);
+	}
+	return LDNS_STATUS_OK;
+}
+
+
 ldns_status
-dnssec_zone_equip_zonemd(
-		ldns_dnssec_zone *zone, int signflags, ldns_key_list *key_list)
+dnssec_zone_equip_zonemd(ldns_dnssec_zone *zone,
+		ldns_rr_list *new_rrs, ldns_key_list *key_list, int signflags)
 {
 	ldns_status st = LDNS_STATUS_OK;
 	zone_digester zd;
@@ -1841,9 +1859,10 @@ dnssec_zone_equip_zonemd(
 	}
 	if ((zonemd_rrsigs = ldns_sign_public(zonemd_rr_list, key_list)))
 		st = rr_list2dnssec_rrs(  zonemd_rrsigs
-		                       , &zonemd_rrset->signatures);
+		                       , &zonemd_rrset->signatures, new_rrs);
 	if (!st)
-		st = rr_list2dnssec_rrs(zonemd_rr_list, &zonemd_rrset->rrs);
+		st = rr_list2dnssec_rrs(  zonemd_rr_list
+		                       , &zonemd_rrset->rrs, new_rrs);
 	ldns_rr_list_deep_free(zonemd_rr_list);
 	ldns_rr_list_deep_free(zonemd_rrsigs);
 	return st;

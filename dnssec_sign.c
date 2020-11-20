@@ -1368,8 +1368,8 @@ ldns_dnssec_zone_sign(ldns_dnssec_zone *zone,
 	return ldns_dnssec_zone_sign_flg(zone, new_rrs, key_list, func, arg, 0);
 }
 
-ldns_status dnssec_zone_equip_zonemd(
-		ldns_dnssec_zone *zone, int flags, ldns_key_list *key_list);
+ldns_status dnssec_zone_equip_zonemd(ldns_dnssec_zone *zone,
+		ldns_rr_list *new_rrs, ldns_key_list *key_list, int flags);
 ldns_status
 ldns_dnssec_zone_sign_flg(ldns_dnssec_zone *zone,
 				  ldns_rr_list *new_rrs,
@@ -1430,7 +1430,7 @@ ldns_dnssec_zone_sign_flg(ldns_dnssec_zone *zone,
 		*rrsets_ref = zonemd_rrset.next;
 	}
 	return flags & LDNS_SIGN_WITH_ZONEMD
-	     ? dnssec_zone_equip_zonemd(zone, flags, key_list)
+	     ? dnssec_zone_equip_zonemd(zone, new_rrs, key_list, flags)
 	     : result;
 }
 
@@ -1564,7 +1564,7 @@ ldns_dnssec_zone_sign_nsec3_flg_mkmap(ldns_dnssec_zone *zone,
 		return result;
 
 	return signflags & LDNS_SIGN_WITH_ZONEMD
-	     ? dnssec_zone_equip_zonemd(zone, signflags, key_list)
+	     ? dnssec_zone_equip_zonemd(zone, new_rrs, key_list, signflags)
 	     : result;
 }
 

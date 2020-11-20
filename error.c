@@ -162,8 +162,8 @@ ldns_lookup_table ldns_error_str[] = {
 	{ LDNS_STATUS_ZONEMD_INVALID_SOA,
 		"Missing or invalid SOA to associate with ZONEMD RR" },
 	{ LDNS_STATUS_NO_ZONEMD,
-		"NSEC and NSEC3 RRs say that ZONEMD exists, "
-	        "but it is not present in the zone" },
+		"NSEC(3) RRs indicate that a ZONEMD exists, "
+	        "but it is not found in the zone" },
 	{ LDNS_STATUS_NO_VALID_ZONEMD,
 		"No ZONEMD matching the zone data was found" },
 	{ 0, NULL }

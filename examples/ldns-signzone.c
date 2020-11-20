@@ -1097,7 +1097,7 @@ main(int argc, char *argv[])
 	ldns_dnssec_zone_free(signed_zone);
 	ldns_zone_deep_free(orig_zone);
 	ldns_rr_list_deep_free(added_rrs);
-	
+	ldns_rdf_deep_free(origin);
 	LDNS_FREE(outputfile_name);
 
 #ifndef OPENSSL_NO_ENGINE

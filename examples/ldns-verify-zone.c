@@ -924,9 +924,17 @@ main(int argc, char **argv)
 
 		if (!result) {
 			result = ldns_dnssec_zone_verify_zonemd(dnssec_zone);
-			if (result && verbosity > 3) {
-				fprintf(myerr,
-				        "Could not validate zone digest\n");
+			if (verbosity > 3) {
+				if (result)
+					fprintf( myerr
+					       , "Could not validate"
+					         " zone digest: %s\n"
+					       , ldns_get_errorstr_by_id(
+						       result));
+				else
+					fprintf( myout
+					       , "Zone digest matched"
+					         " the zone content\n");
 			}
 		}
 		if (result == LDNS_STATUS_OK) {
