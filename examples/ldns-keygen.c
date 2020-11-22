@@ -382,7 +382,7 @@ main(int argc, char *argv[])
 		fclose(file);
 		if (symlink_create) {
 			if (create_symlink(filename, ".key") != 0) {
-				goto silent_fail;
+				goto silentfail;
 			}
 		}
 		LDNS_FREE(filename);
@@ -406,7 +406,7 @@ main(int argc, char *argv[])
 	fclose(file);
 	if (symlink_create) {
 		if (create_symlink(filename, ".private") != 0) {
-			goto silent_fail;
+			goto silentfail;
 		}
 	}
 	LDNS_FREE(filename);
@@ -437,7 +437,7 @@ main(int argc, char *argv[])
 			fclose(file);
 			if (symlink_create) {
 				if (create_symlink(filename, ".ds") != 0) {
-					goto silent_fail;
+					goto silentfail;
 				}
 			}
 			LDNS_FREE(filename);
