@@ -345,25 +345,46 @@ handle_tcp(int tcp_sock, struct entry* entries, int *count)
 	}
 	userdata.s = s;
 
-	/* tcp recv */
-	if (read_n_bytes(s, (uint8_t*)&tcplen, sizeof(tcplen)))
-		return;
-	tcplen = ntohs(tcplen);
-	if(tcplen >= INBUF_SIZE) {
-		log_msg("query %d bytes too large, buffer %d bytes.\n",
-			tcplen, INBUF_SIZE);
+	while(1) {
+		/* tcp recv */
+		if (read_n_bytes(s, (uint8_t*)&tcplen, sizeof(tcplen)))
+			return;
+		tcplen = ntohs(tcplen);
+		if(tcplen >= INBUF_SIZE) {
+			log_msg("query %d bytes too large, buffer %d bytes.\n",
+				tcplen, INBUF_SIZE);
 #ifndef USE_WINSOCK
-		close(s);
+			close(s);
 #else
-		closesocket(s);
+			closesocket(s);
 #endif
-		return;
-	}
-	if (read_n_bytes(s, inbuf, tcplen))
-		return;
+			return;
+		}
+		if (read_n_bytes(s, inbuf, tcplen))
+			return;
 
-	handle_query(inbuf, (ssize_t) tcplen, entries, count, transport_tcp, 
-		send_tcp, &userdata, do_verbose?logfile:0);
+		handle_query(inbuf, (ssize_t) tcplen, entries, count, transport_tcp, 
+			send_tcp, &userdata, do_verbose?logfile:0);
+
+		/* another query straight away? */
+		if(1) {
+			fd_set rset;
+			struct timeval tv;
+			int ret;
+			FD_ZERO(&rset);
+			FD_SET(s, &rset);
+			tv.tv_sec = 0;
+			tv.tv_usec = 100*1000;
+			ret = select(s+1, &rset, NULL, NULL, &tv);
+			if(ret < 0) {
+				error("select(): %s\n", strerror(errno));
+			}
+			if(ret == 0) {
+				/* timeout */
+				break;
+			}
+		}
+	}
 #ifndef USE_WINSOCK
 	close(s);
 #else
