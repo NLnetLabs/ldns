@@ -12,6 +12,8 @@
 	* Fix #92: ldns-testns.c:429:15: error: 'fork' is unavailable: not
 	  available on tvOS.
 	* Fix for #93: fix packaging/libldns.pc Makefile rule.
+	* ldns-testns can answer several queries over one tcp connection,
+	  if they arrive within 100msec of each other.
 
 1.7.1	2019-07-26
 	* bugfix: Manage verification paths for OpenSSL >= 1.1.0
