@@ -14,6 +14,7 @@
 	* Fix for #93: fix packaging/libldns.pc Makefile rule.
 	* ldns-testns can answer several queries over one tcp connection,
 	  if they arrive within 100msec of each other.
+	* Fix so that ldns-testns does not leak sockets if the read fails.
 
 1.7.1	2019-07-26
 	* bugfix: Manage verification paths for OpenSSL >= 1.1.0

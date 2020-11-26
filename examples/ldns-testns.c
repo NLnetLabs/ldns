@@ -347,8 +347,14 @@ handle_tcp(int tcp_sock, struct entry* entries, int *count)
 
 	while(1) {
 		/* tcp recv */
-		if (read_n_bytes(s, (uint8_t*)&tcplen, sizeof(tcplen)))
+		if (read_n_bytes(s, (uint8_t*)&tcplen, sizeof(tcplen))) {
+#ifndef USE_WINSOCK
+			close(s);
+#else
+			closesocket(s);
+#endif
 			return;
+		}
 		tcplen = ntohs(tcplen);
 		if(tcplen >= INBUF_SIZE) {
 			log_msg("query %d bytes too large, buffer %d bytes.\n",
@@ -360,8 +366,14 @@ handle_tcp(int tcp_sock, struct entry* entries, int *count)
 #endif
 			return;
 		}
-		if (read_n_bytes(s, inbuf, tcplen))
+		if (read_n_bytes(s, inbuf, tcplen)) {
+#ifndef USE_WINSOCK
+			close(s);
+#else
+			closesocket(s);
+#endif
 			return;
+		}
 
 		handle_query(inbuf, (ssize_t) tcplen, entries, count, transport_tcp, 
 			send_tcp, &userdata, do_verbose?logfile:0);
