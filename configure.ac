@@ -683,6 +683,14 @@ case "$enable_rrtype_amtrelay" in
 	no|*)
 		;;
 esac
+AC_ARG_ENABLE(rrtype-svcb-https, AC_HELP_STRING([--enable-rrtype-svcb-https], [Enable draft RR types SVCB and HTTPS.]))
+case "$enable_rrtype_svcb_https" in
+	yes)
+		AC_DEFINE_UNQUOTED([RRTYPE_SVCB_HTTPS], [], [Define this to enable RR types SVCB and HTTPS.])
+		;;
+	no|*)
+		;;
+esac
 
 
 
