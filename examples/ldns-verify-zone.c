@@ -709,6 +709,8 @@ static void print_usage(FILE *out, const char *progname)
 	       "and verifies all signatures\n");
 	fprintf(out, "It also checks the NSEC(3) chain, but it "
 	       "will error on opted-out delegations\n");
+	fprintf(out, "It also checks whether ZONEMDs are present, and if so, "
+	       "needs one of them to match the zone's data.\n");
 	fprintf(out, "\nOPTIONS:\n");
 	fprintf(out, "\t-h\t\tshow this text\n");
 	fprintf(out, "\t-a\t\tapex only, check only the zone apex\n");

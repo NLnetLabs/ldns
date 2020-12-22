@@ -13,6 +13,8 @@ RRSIG resource records are checked against the DNSKEY set at the zone apex.
 
 Each name is checked for an NSEC(3), if appropriate.
 
+If ZONEMD resource records are present, one of them needs to match the zone content.
+
 .SH OPTIONS
 .TP
 \fB-h\fR
