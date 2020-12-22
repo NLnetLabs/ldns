@@ -1415,8 +1415,8 @@ ldns_str2rdf_ipseckey(ldns_rdf **rd, const char *str)
 		LDNS_FREE(publickey);
 	LDNS_FREE(token);
 	ldns_buffer_free(str_buf);
-	ldns_rdf_free(gateway_rdf);
-	ldns_rdf_free(publickey_rdf);
+	ldns_rdf_deep_free(gateway_rdf);
+	ldns_rdf_deep_free(publickey_rdf);
 	LDNS_FREE(data);
 	if(!*rd) return LDNS_STATUS_MEM_ERR;
 	return LDNS_STATUS_OK;

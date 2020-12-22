@@ -1764,7 +1764,7 @@ ldns_rr2buffer_str_fmt(ldns_buffer *output,
 							   node->data
 							));
 					}
-					ldns_rdf_free(key);
+					ldns_rdf_deep_free(key);
 				}
 				key = ldns_b32_ext2dname(
 						ldns_nsec3_next_owner(rr));
@@ -1782,7 +1782,7 @@ ldns_rr2buffer_str_fmt(ldns_buffer *output,
 							   node->data
 							));
 					}
-					ldns_rdf_free(key);
+					ldns_rdf_deep_free(key);
 				}
 			}
 			ldns_buffer_printf(output, "}");

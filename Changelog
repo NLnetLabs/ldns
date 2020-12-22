@@ -12,6 +12,7 @@
 	* Fix #92: ldns-testns.c:429:15: error: 'fork' is unavailable: not
 	  available on tvOS.
 	* Fix for #93: fix packaging/libldns.pc Makefile rule.
+	* ZONEMD support in ldns-signzone and ldns-verify-zone
 	* ldns-testns can answer several queries over one tcp connection,
 	  if they arrive within 100msec of each other.
 	* Fix so that ldns-testns does not leak sockets if the read fails.

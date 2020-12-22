@@ -44,6 +44,11 @@ usage(FILE *fp, const char *prog) {
 	fprintf(fp, "  -o <domain>\torigin for the zone\n");
 	fprintf(fp, "  -u\t\tset SOA serial to the number of seconds since 1-1-1970\n");
 	fprintf(fp, "  -v\t\tprint version and exit\n");
+	fprintf(fp, "  -z <[scheme:]hash>\tAdd ZONEMD resource record\n");
+	fprintf(fp, "\t\t<scheme> should be \"simple\" (or 1)\n");
+	fprintf(fp, "\t\t<hash> should be \"sha384\" or \"sha512\" (or 1 or 2)\n");
+	fprintf(fp, "\t\tthis option can be given more than once\n");
+	fprintf(fp, "  -Z\t\tAllow ZONEMDs to be added without signing\n");
 	fprintf(fp, "  -A\t\tsign DNSKEY with all keys instead of minimal\n");
 	fprintf(fp, "  -U\t\tSign with every unique algorithm in the provided keys\n");
 #ifndef OPENSSL_NO_ENGINE
@@ -559,6 +564,41 @@ shutdown_openssl ( ENGINE * const e )
 }
 #endif
 
+int str2zonemd_signflag(const char *str, const char **reason)
+{
+	char *colon;
+
+	static const char *reasons[] = {
+	      "Unknown <scheme>, should be \"simple\""
+	    , "Syntax error in <hash>, should be \"sha384\" or \"sha512\""
+	    , "Unknown <hash>, should be \"sha384\" or \"sha512\""
+	};
+
+	if (!str)
+		return LDNS_STATUS_NULL;
+
+	if ((colon = strchr(str, ':'))) {
+		if ((colon - str != 1 || str[0] != '1')
+		&&  (colon - str != 6 || strncasecmp(str, "simple", 6))) {
+			if (reason) *reason = reasons[0];
+			return 0;
+		}
+
+		if (strchr(colon + 1, ':')) {
+			if (reason) *reason = reasons[1];
+			return 0;
+		}
+		return str2zonemd_signflag(colon + 1, reason);
+	}
+	if (!strcasecmp(str, "1") || !strcasecmp(str, "sha384"))
+		return LDNS_SIGN_WITH_ZONEMD_SIMPLE_SHA384;
+	if (!strcasecmp(str, "2") || !strcasecmp(str, "sha512"))
+		return LDNS_SIGN_WITH_ZONEMD_SIMPLE_SHA512;
+
+	if (reason) *reason = reasons[2];
+	return 0;
+}
+
 int
 main(int argc, char *argv[])
 {
@@ -618,14 +658,18 @@ main(int argc, char *argv[])
 
 	ldns_output_format_storage fmt_st;
 	ldns_output_format* fmt = ldns_output_format_init(&fmt_st);
-	
+
+	/* For parson zone digest parameters */
+	int flag;
+	const char *reason = NULL;
+
 	prog = strdup(argv[0]);
 	inception = 0;
 	expiration = 0;
 	
 	keys = ldns_key_list_new();
 
-	while ((c = getopt(argc, argv, "a:bde:f:i:k:no:ps:t:uvAUE:K:")) != -1) {
+	while ((c = getopt(argc, argv, "a:bde:f:i:k:no:ps:t:uvz:ZAUE:K:")) != -1) {
 		switch (c) {
 		case 'a':
 			nsec3_algorithm = (uint8_t) atoi(optarg);
@@ -671,7 +715,7 @@ main(int argc, char *argv[])
 			}
 			break;
 		case 'f':
-			outputfile_name = LDNS_XMALLOC(char, MAX_FILENAME_LEN);
+			outputfile_name = LDNS_XMALLOC(char, MAX_FILENAME_LEN + 1);
 			strncpy(outputfile_name, optarg, MAX_FILENAME_LEN);
 			break;
 		case 'i':
@@ -716,6 +760,21 @@ main(int argc, char *argv[])
 		case 'v':
 			printf("zone signer version %s (ldns version %s)\n", LDNS_VERSION, ldns_version());
 			exit(EXIT_SUCCESS);
+			break;
+		case 'z':
+			flag = str2zonemd_signflag(optarg, &reason);
+			if (flag)
+				signflags |= flag;
+			else {
+				fprintf( stderr
+				       , "%s\nwith zone digest parameters:"
+				         " \"%s\"\n"
+				       , reason, optarg);
+				exit(EXIT_FAILURE);
+			}
+			break;
+		case 'Z':
+			signflags |= LDNS_SIGN_NO_KEYS_NO_NSECS;
 			break;
 		case 'A':
 			signflags |= LDNS_SIGN_DNSKEY_WITH_ZSK;
@@ -931,8 +990,9 @@ main(int argc, char *argv[])
 				  inception,
 				  expiration );
 #endif
-	
-	if (ldns_key_list_key_count(keys) < 1) {
+	if (ldns_key_list_key_count(keys) < 1 
+	&&  !(signflags & LDNS_SIGN_NO_KEYS_NO_NSECS)) {
+			
 		fprintf(stderr, "Error: no keys to sign with. Aborting.\n\n");
 		usage(stderr, prog);
 		exit(EXIT_FAILURE);
@@ -963,7 +1023,6 @@ main(int argc, char *argv[])
 			  ldns_rr_list_rr(ldns_zone_rrs(orig_zone), i));
 		}
 	}
-
 	/* list to store newly created rrs, so we can free them later */
 	added_rrs = ldns_rr_list_new();
 
@@ -1042,7 +1101,7 @@ main(int argc, char *argv[])
 	ldns_dnssec_zone_free(signed_zone);
 	ldns_zone_deep_free(orig_zone);
 	ldns_rr_list_deep_free(added_rrs);
-	
+	ldns_rdf_deep_free(origin);
 	LDNS_FREE(outputfile_name);
 
 #ifndef OPENSSL_NO_ENGINE

@@ -736,6 +736,11 @@ static void print_usage(FILE *out, const char *progname)
 	       "for validating it regardless.\n");
 	fprintf(out, "\t-v\t\tshows the version and exits\n");
 	fprintf(out, "\t-V [0-5]\tset verbosity level (default 3)\n");
+	fprintf(out, "\t-Z\t\tRequires a valid ZONEMD RR to be present.\n");
+	fprintf(out, "\t\t\tWhen given once, this option will permit verifying"
+	       "\n\t\t\tjust the ZONEMD RR of an unsigned zone. When given "
+	       "\n\t\t\tmore than once, the zone needs to be validly DNSSEC"
+	       "\n\t\t\tsigned as well.");
 	fprintf(out, "\n<period>s are given in ISO 8601 duration format: "
 	       "P[n]Y[n]M[n]DT[n]H[n]M[n]S\n");
 	fprintf(out, "\nif no file is given standard input is read\n");
@@ -758,12 +763,14 @@ main(int argc, char **argv)
 	ldns_rr_list *keys = ldns_rr_list_new();
 	size_t nkeys = 0;
 	const char *progname = argv[0];
+	int zonemd_required = 0;
+	ldns_dnssec_rrsets *zonemd_rrset;
 
 	check_time = ldns_time(NULL);
 	myout = stdout;
 	myerr = stderr;
 
-	while ((c = getopt(argc, argv, "ae:hi:k:vV:p:St:")) != -1) {
+	while ((c = getopt(argc, argv, "ae:hi:k:vV:p:St:Z")) != -1) {
 		switch(c) {
                 case 'a':
                         apexonly = true;
@@ -859,6 +866,9 @@ main(int argc, char **argv)
 		case 'V':
 			verbosity = atoi(optarg);
 			break;
+		case 'Z':
+			zonemd_required += 1;
+			break;
 		}
 	}
 	if (do_sigchase && nkeys == 0) {
@@ -897,53 +907,73 @@ main(int argc, char **argv)
 
 	s = ldns_dnssec_zone_new_frm_fp_l(&dnssec_zone, fp, NULL, 0,
 			LDNS_RR_CLASS_IN, &line_nr);
-	if (s == LDNS_STATUS_OK) {
-		if (!dnssec_zone->soa) {
-			if (verbosity > 0) {
-				fprintf(myerr,
-					"; Error: no SOA in the zone\n");
-			}
-			exit(EXIT_FAILURE);
-		}
-
-		result = ldns_dnssec_zone_mark_glue(dnssec_zone);
-		if (result != LDNS_STATUS_OK) {
-			if (verbosity > 0) {
-				fprintf(myerr,
-					"There were errors identifying the "
-					"glue in the zone\n");
-			}
-		}
-		if (verbosity >= 5) {
-			ldns_dnssec_zone_print(myout, dnssec_zone);
-		}
-
-		result = verify_dnssec_zone(dnssec_zone,
-				dnssec_zone->soa->name, keys, apexonly,
-				percentage);
-
-		if (result == LDNS_STATUS_OK) {
-			if (verbosity >= 3) {
-				fprintf(myout,
-					"Zone is verified and complete\n");
-			}
-		} else {
-			if (verbosity > 0) {
-				fprintf(myerr,
-					"There were errors in the zone\n");
-			}
-		}
-
-		ldns_dnssec_zone_deep_free(dnssec_zone);
-	} else {
+	if (s != LDNS_STATUS_OK) {
 		if (verbosity > 0) {
 			fprintf(myerr, "%s at line %d\n",
 				ldns_get_errorstr_by_id(s), line_nr);
 		}
                 exit(EXIT_FAILURE);
 	}
-	fclose(fp);
+	if (!dnssec_zone->soa) {
+		if (verbosity > 0) {
+			fprintf(myerr,
+				"; Error: no SOA in the zone\n");
+		}
+		exit(EXIT_FAILURE);
+	}
 
+	result = ldns_dnssec_zone_mark_glue(dnssec_zone);
+	if (result != LDNS_STATUS_OK) {
+		if (verbosity > 0) {
+			fprintf(myerr,
+				"There were errors identifying the "
+				"glue in the zone\n");
+		}
+	}
+	if (verbosity >= 5) {
+		ldns_dnssec_zone_print(myout, dnssec_zone);
+	}
+	zonemd_rrset = ldns_dnssec_zone_find_rrset(dnssec_zone,
+				dnssec_zone->soa->name, LDNS_RR_TYPE_ZONEMD);
+
+	if (zonemd_required == 1
+	&&  !ldns_dnssec_zone_find_rrset(dnssec_zone,
+			       	dnssec_zone->soa->name, LDNS_RR_TYPE_DNSKEY))
+		; /* pass */
+	else
+		result = verify_dnssec_zone(dnssec_zone,
+				dnssec_zone->soa->name, keys, apexonly,
+				percentage);
+
+	if (zonemd_required && !zonemd_rrset) {
+		fprintf(myerr, "ZONEMD was required but not found\n");
+		result = LDNS_STATUS_NO_ZONEMD;
+
+	} else if (result == LDNS_STATUS_OK) {
+		result = ldns_dnssec_zone_verify_zonemd(dnssec_zone);
+		if (verbosity <= 3)
+			; /* pass */
+		
+		else if (result)
+			fprintf( myerr, "Could not validate zone digest: %s\n"
+			       , ldns_get_errorstr_by_id(result));
+
+		/* Result is also SUCCESS with proven ZONEMD absence,
+		 * then we should not print "matched the content"
+		 */
+		else if (zonemd_rrset)
+			fprintf( myout
+			       , "Zone digest matched the zone content\n");
+	}
+	if (result == LDNS_STATUS_OK) {
+		if (verbosity >= 3) {
+			fprintf(myout, "Zone is verified and complete\n");
+		}
+	} else if (verbosity > 0)
+		fprintf(myerr, "There were errors in the zone\n");
+
+	ldns_dnssec_zone_deep_free(dnssec_zone);
+	fclose(fp);
 	exit(result);
 }
 
