@@ -1500,7 +1500,7 @@ zone_digester_update(zone_digester *zd, ldns_rr *rr)
 	buf._fixed = 1;
 	buf._status = LDNS_STATUS_OK;
 
-	if ((st = ldns_rr2buffer_wire(&buf, rr, LDNS_SECTION_ANSWER)))
+	if ((st = ldns_rr2buffer_wire_canonical(&buf, rr, LDNS_SECTION_ANSWER)))
 		return st;
 
 	if (zd->simple_sha384)
