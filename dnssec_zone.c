@@ -1239,12 +1239,36 @@ typedef struct dnssec_zone_rr_iter {
 	ldns_rbnode_t            *nsec3_node;
 	ldns_dnssec_name         *nsec3_name;
 	dnssec_zone_rr_iter_state state;
+	ldns_rdf                 *apex_name;
+	uint8_t                   apex_labs;
 } dnssec_zone_rr_iter;
 
 INLINE void
 dnssec_zone_rr_iter_set_state_for_next_name(dnssec_zone_rr_iter *i)
 {
-	if(!i->name) {
+	/* Make sure the i->name is "in zone" (i.e. below the apex) */
+	if (i->apex_name) {
+		ldns_rdf *name = (ldns_rdf *)i->node->key;
+
+		while (i->name && name != i->apex_name        /* not apex */
+
+		&& (  ldns_dname_label_count(name) != i->apex_labs
+		   || ldns_dname_compare(name, i->apex_name)) /* not apex */
+
+		&& !ldns_dname_is_subdomain(name, i->apex_name) /* no sub */) {
+
+			/* next name */
+			i->node = ldns_rbtree_next(i->node);
+			if (i->node == LDNS_RBTREE_NULL)
+				i->name = NULL;
+			else {
+				i->name = (ldns_dnssec_name *)i->node->data;
+				name = (ldns_rdf *)i->node->key;
+			}
+		}
+	}
+	/* determine state */
+	if (!i->name) {
 		if (!i->nsec3_name)
 			i->state = DNSSEC_ZONE_RR_ITER_FINI;
 		else {
@@ -1413,6 +1437,12 @@ dnssec_zone_rr_iter_first(dnssec_zone_rr_iter *i, ldns_dnssec_zone *zone)
 
 	memset(i, 0, sizeof(*i));
 	i->zone = zone;
+	if (zone->soa && zone->soa->name) {
+		i->apex_name = zone->soa->name;
+		i->apex_labs = ldns_dname_label_count(i->apex_name);
+	} else
+		i->apex_name = NULL;
+
 
 	i->node = ldns_rbtree_first(zone->names);
 	i->name = i->node == LDNS_RBTREE_NULL ? NULL
