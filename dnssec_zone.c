@@ -1479,6 +1479,8 @@ struct struct_zone_digester {
         ldns_sha512_CTX sha512_CTX;
         unsigned simple_sha384 : 1;
         unsigned simple_sha512 : 1;
+        unsigned double_sha384 : 1;
+        unsigned double_sha512 : 1;
 };
 typedef struct struct_zone_digester zone_digester;
 
@@ -1498,11 +1500,27 @@ zone_digester_add(zone_digester *zd, zonemd_scheme scheme, zonemd_hash hash)
 	case ZONEMD_SCHEME_SIMPLE:
 		switch (hash) {
 		case ZONEMD_HASH_SHA384:
+			if (zd->double_sha384)
+				return LDNS_STATUS_ZONEMD_DOUBLE_OCCURRENCE;
+
+			else if (zd->simple_sha384) {
+				zd->simple_sha384 = 0;
+				zd->double_sha384 = 1;
+				return LDNS_STATUS_ZONEMD_DOUBLE_OCCURRENCE;
+			}
 			ldns_sha384_init(&zd->sha384_CTX);
 			zd->simple_sha384 = 1;
 			break;
 
 		case ZONEMD_HASH_SHA512:
+			if (zd->double_sha512)
+				return LDNS_STATUS_ZONEMD_DOUBLE_OCCURRENCE;
+
+			else if (zd->simple_sha512) {
+				zd->simple_sha512 = 0;
+				zd->double_sha512 = 1;
+				return LDNS_STATUS_ZONEMD_DOUBLE_OCCURRENCE;
+			}
 			ldns_sha512_init(&zd->sha512_CTX);
 			zd->simple_sha512 = 1;
 			break;
