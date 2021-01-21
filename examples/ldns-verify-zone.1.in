@@ -80,6 +80,11 @@ Requires a valid ZONEMD RR to be present. When given once, this option will
 permit verifying only the ZONEMD RR of an unsigned zone. When given more than
 once, the zone needs to be validly DNSSEC signed as well.
 
+.TP
+\fB-ZZZ\fR
+When three times a \fB-Z\fR option is given, the ZONEMD RR to be verified is
+considered "detached" and does not need to have valid signatures.
+
 .LP
 \fIperiod\fRs are given in ISO 8601 duration format:
 .RS
