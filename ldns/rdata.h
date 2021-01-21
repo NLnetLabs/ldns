@@ -142,6 +142,9 @@ enum ldns_enum_rdf_type
 	/** draft-ietf-mboned-driad-amt-discovery **/
 	LDNS_RDF_TYPE_AMTRELAY,
 
+	/** draft-ietf-dnsop-svcb-https **/
+	LDNS_RDF_TYPE_SVCPARAMS,
+
 	/* Aliases */
 	LDNS_RDF_TYPE_BITMAP = LDNS_RDF_TYPE_NSEC
 };
@@ -165,7 +168,22 @@ enum ldns_enum_cert_algorithm
 };
 typedef enum ldns_enum_cert_algorithm ldns_cert_algorithm;
 
-
+/**
+ * keys types in SVCPARAMS rdata fields
+ */
+enum ldns_enum_svcparam_key
+{
+	LDNS_SVCPARAM_KEY_MANDATORY		= 0,
+	LDNS_SVCPARAM_KEY_ALPN			= 1,
+	LDNS_SVCPARAM_KEY_NO_DEFAULT_ALPN	= 2,
+	LDNS_SVCPARAM_KEY_PORT			= 3,
+	LDNS_SVCPARAM_KEY_IPV4HINT		= 4,
+	LDNS_SVCPARAM_KEY_ECHCONFIG		= 5,
+	LDNS_SVCPARAM_KEY_IPV6HINT		= 6,
+	LDNS_SVCPARAM_KEY_LAST_KEY		= 6,
+	LDNS_SVCPARAM_KEY_RESERVED		= 65535
+};
+typedef	enum ldns_enum_svcparam_key ldns_svcparam_key;
 
 /**
  * Resource record data field.

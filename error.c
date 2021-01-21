@@ -168,6 +168,22 @@ ldns_lookup_table ldns_error_str[] = {
 	        "but it is not found in the zone" },
 	{ LDNS_STATUS_NO_VALID_ZONEMD,
 		"No ZONEMD matching the zone data was found" },
+	{ LDNS_STATUS_SYNTAX_SVCPARAM_KEY_ERR, "Syntax error in a key in "
+		"the ServiceParam rdata field of SVCB or HTTPS RR" },
+	{ LDNS_STATUS_SYNTAX_SVCPARAM_VALUE_ERR, "Syntax error in a value in "
+		"the ServiceParam rdata field of SVCB or HTTPS RR" },
+	{ LDNS_STATUS_RESERVED_SVCPARAM_KEY,
+		"key65535 is reserved and MUST NOT be used "
+		"in the ServiceParam rdata field of SVCB or HTTPS RR" },
+	{ LDNS_STATUS_NO_SVCPARAM_VALUE_EXPECTED,
+		"A value was found for a key that SHOULD not have a value "
+		"in the ServiceParam rdata field of SVCB or HTTPS RR" },
+	{ LDNS_STATUS_SVCPARAM_KEY_MORE_THAN_ONCE,
+		"A key was found more than once "
+		"in the ServiceParam rdata field of SVCB or HTTPS RR" },
+	{ LDNS_STATUS_INVALID_SVCPARAM_VALUE,
+		"Invalid wireformat of a value "
+		"in the ServiceParam rdata field of SVCB or HTTPS RR" },
 	{ 0, NULL }
 };
 
