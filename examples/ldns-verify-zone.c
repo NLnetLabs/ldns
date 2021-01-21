@@ -431,7 +431,8 @@ verify_nsec(ldns_dnssec_zone* zone, ldns_rbnode_t *cur_node,
 
 static ldns_status
 verify_dnssec_name(ldns_rdf *zone_name, ldns_dnssec_zone* zone,
-		ldns_rbnode_t *cur_node, ldns_rr_list *keys)
+		ldns_rbnode_t *cur_node, ldns_rr_list *keys,
+		bool detached_zonemd)
 {
 	ldns_status result = LDNS_STATUS_OK;
 	ldns_status status;
@@ -492,7 +493,10 @@ verify_dnssec_name(ldns_rdf *zone_name, ldns_dnssec_zone* zone,
 			      cur_rrset->type == LDNS_RR_TYPE_DS)) ||
 			    (!on_delegation_point &&
 			     cur_rrset->type != LDNS_RR_TYPE_RRSIG &&
-			     cur_rrset->type != LDNS_RR_TYPE_NSEC)) {
+			     cur_rrset->type != LDNS_RR_TYPE_NSEC &&
+
+			     (   cur_rrset->type != LDNS_RR_TYPE_ZONEMD
+			     || !detached_zonemd || cur_rrset->signatures))) {
 
 				status = verify_dnssec_rrset(zone_name,
 						name->name, cur_rrset, keys);
@@ -636,7 +640,8 @@ sigchase(ldns_resolver* res, ldns_rdf *zone_name, ldns_dnssec_rrsets *zonekeys,
 
 static ldns_status
 verify_dnssec_zone(ldns_dnssec_zone *dnssec_zone, ldns_rdf *zone_name,
-		ldns_rr_list *keys, bool apexonly, int percentage) 
+		ldns_rr_list *keys, bool apexonly, int percentage,
+		bool detached_zonemd) 
 {
 	ldns_rbnode_t *cur_node;
 	ldns_dnssec_rrsets *cur_key_rrset;
@@ -688,7 +693,8 @@ verify_dnssec_zone(ldns_dnssec_zone *dnssec_zone, ldns_rdf *zone_name,
 			if (percentage == 100 
 			    || ((random() % 100) >= 100 - percentage)) {
 				status = verify_dnssec_name(zone_name,
-						dnssec_zone, cur_node, keys);
+						dnssec_zone, cur_node, keys,
+						detached_zonemd);
 				update_error(&result, status);
 				if (apexonly)
 					break;
@@ -709,6 +715,8 @@ static void print_usage(FILE *out, const char *progname)
 	       "and verifies all signatures\n");
 	fprintf(out, "It also checks the NSEC(3) chain, but it "
 	       "will error on opted-out delegations\n");
+	fprintf(out, "It also checks whether ZONEMDs are present, and if so, "
+	       "needs one of them to match the zone's data.\n");
 	fprintf(out, "\nOPTIONS:\n");
 	fprintf(out, "\t-h\t\tshow this text\n");
 	fprintf(out, "\t-a\t\tapex only, check only the zone apex\n");
@@ -740,7 +748,8 @@ static void print_usage(FILE *out, const char *progname)
 	fprintf(out, "\t\t\tWhen given once, this option will permit verifying"
 	       "\n\t\t\tjust the ZONEMD RR of an unsigned zone. When given "
 	       "\n\t\t\tmore than once, the zone needs to be validly DNSSEC"
-	       "\n\t\t\tsigned as well.");
+	       "\n\t\t\tsigned as well. With three times a -Z option (-ZZZ)"
+	       "\n\t\t\ta ZONEMD RR without signatures is allowed.");
 	fprintf(out, "\n<period>s are given in ISO 8601 duration format: "
 	       "P[n]Y[n]M[n]DT[n]H[n]M[n]S\n");
 	fprintf(out, "\nif no file is given standard input is read\n");
@@ -939,32 +948,30 @@ main(int argc, char **argv)
 	if (zonemd_required == 1
 	&&  !ldns_dnssec_zone_find_rrset(dnssec_zone,
 			       	dnssec_zone->soa->name, LDNS_RR_TYPE_DNSKEY))
-		; /* pass */
+		result = LDNS_STATUS_OK;
 	else
 		result = verify_dnssec_zone(dnssec_zone,
 				dnssec_zone->soa->name, keys, apexonly,
-				percentage);
+				percentage, zonemd_required > 2);
 
-	if (zonemd_required && !zonemd_rrset) {
-		fprintf(myerr, "ZONEMD was required but not found\n");
-		result = LDNS_STATUS_NO_ZONEMD;
-
-	} else if (result == LDNS_STATUS_OK) {
-		result = ldns_dnssec_zone_verify_zonemd(dnssec_zone);
-		if (verbosity <= 3)
-			; /* pass */
+	if (zonemd_rrset) {
+		ldns_status zonemd_result
+		    = ldns_dnssec_zone_verify_zonemd(dnssec_zone);
 		
-		else if (result)
+		if (zonemd_result)
 			fprintf( myerr, "Could not validate zone digest: %s\n"
 			       , ldns_get_errorstr_by_id(result));
 
-		/* Result is also SUCCESS with proven ZONEMD absence,
-		 * then we should not print "matched the content"
-		 */
-		else if (zonemd_rrset)
+		else if (verbosity > 3)
 			fprintf( myout
 			       , "Zone digest matched the zone content\n");
-	}
+
+		if (zonemd_result)
+			result = zonemd_result;
+
+	} else if (zonemd_required)
+		result = LDNS_STATUS_NO_ZONEMD;
+
 	if (result == LDNS_STATUS_OK) {
 		if (verbosity >= 3) {
 			fprintf(myout, "Zone is verified and complete\n");

@@ -1,0 +1,42 @@
+[ -f ../.tpkg.var.master ] && source ../.tpkg.var.master
+
+export LD_LIBRARY_PATH="../../lib:${LD_LIBRARY_PATH}"
+
+# These must succeed
+#
+for ZONE in	A.1.Simple-EXAMPLE-Zone \
+		A.2.Complex-EXAMPLE-Zone \
+		A.3.EXAMPLE-Zone-with-multiple-digests \
+		A.4.The-URI.ARPA-Zone \
+		A.5.The-ROOT-SERVERS.NET-Zone
+do
+	echo Verifying ${ZONE}
+	if [ "${ZONE}" = "A.4.The-URI.ARPA-Zone" ]
+	then
+		# Allow DNSSEC to fail (ZONEMD has no signature)
+		#
+		../../examples/ldns-verify-zone -ZZZV 4 -t 20181021203928 ${ZONE}
+	else
+		../../examples/ldns-verify-zone -ZV 4 ${ZONE}
+	fi
+	if [[ $? -ne 0 ]]; then 
+		echo "ZONE ${ZONE} failed"
+		exit 1
+	fi
+done
+
+# These must fail
+#
+for ZONE in 	repeated-ZONEMD-scheme-and-algorithm
+do
+	echo Verifying ${ZONE}
+	../../examples/ldns-verify-zone -ZV 4 ${ZONE}
+	
+	if [[ $? -eq 0 ]]; then
+		echo "ZONE ${ZONE} validated (which it should not)"
+		exit 1
+	fi
+done
+
+
+exit 0

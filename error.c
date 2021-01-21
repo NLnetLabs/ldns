@@ -157,6 +157,8 @@ ldns_lookup_table ldns_error_str[] = {
 		"X509_STORE_CTX_set0_dane() functions within OpenSSL >= 1.1.0 "
 		"to be able to verify the DANE-TA usage type." },
 #endif
+	{ LDNS_STATUS_ZONEMD_DOUBLE_OCCURRENCE, "A ZONEMD with the same "
+		"<scheme> and hash algorithm occurred more than once." },
 	{ LDNS_STATUS_ZONEMD_UNKNOWN_SCHEME, "Unknown ZONEMD <scheme>" },
 	{ LDNS_STATUS_ZONEMD_UNKNOWN_HASH, "Unknown ZONEMD hash algorithm" },
 	{ LDNS_STATUS_ZONEMD_INVALID_SOA,

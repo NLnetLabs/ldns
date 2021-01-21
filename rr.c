@@ -583,10 +583,12 @@ ldns_rr_new_frm_str_internal(ldns_rr **newrr, const char *str,
 						    LDNS_RDF_TYPE_DNAME, ".")
 					    );
 
-				} else if (r && rd_strlen >= 1 && origin &&
-						!ldns_dname_str_absolute(rd)) {
+				} else if (r && rd_strlen >= 1
+				    && (origin || rr_type == LDNS_RR_TYPE_SOA)
+				    && !ldns_dname_str_absolute(rd)) {
 
-					status = ldns_dname_cat(r, origin);
+					status = ldns_dname_cat(r, origin
+					    ? origin : ldns_rr_owner(new));
 					if (status != LDNS_STATUS_OK) {
 						goto error;
 					}

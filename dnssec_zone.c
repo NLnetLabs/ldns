@@ -1239,12 +1239,36 @@ typedef struct dnssec_zone_rr_iter {
 	ldns_rbnode_t            *nsec3_node;
 	ldns_dnssec_name         *nsec3_name;
 	dnssec_zone_rr_iter_state state;
+	ldns_rdf                 *apex_name;
+	uint8_t                   apex_labs;
 } dnssec_zone_rr_iter;
 
 INLINE void
 dnssec_zone_rr_iter_set_state_for_next_name(dnssec_zone_rr_iter *i)
 {
-	if(!i->name) {
+	/* Make sure the i->name is "in zone" (i.e. below the apex) */
+	if (i->apex_name) {
+		ldns_rdf *name = (ldns_rdf *)i->node->key;
+
+		while (i->name && name != i->apex_name        /* not apex */
+
+		&& (  ldns_dname_label_count(name) != i->apex_labs
+		   || ldns_dname_compare(name, i->apex_name)) /* not apex */
+
+		&& !ldns_dname_is_subdomain(name, i->apex_name) /* no sub */) {
+
+			/* next name */
+			i->node = ldns_rbtree_next(i->node);
+			if (i->node == LDNS_RBTREE_NULL)
+				i->name = NULL;
+			else {
+				i->name = (ldns_dnssec_name *)i->node->data;
+				name = (ldns_rdf *)i->node->key;
+			}
+		}
+	}
+	/* determine state */
+	if (!i->name) {
 		if (!i->nsec3_name)
 			i->state = DNSSEC_ZONE_RR_ITER_FINI;
 		else {
@@ -1413,6 +1437,12 @@ dnssec_zone_rr_iter_first(dnssec_zone_rr_iter *i, ldns_dnssec_zone *zone)
 
 	memset(i, 0, sizeof(*i));
 	i->zone = zone;
+	if (zone->soa && zone->soa->name) {
+		i->apex_name = zone->soa->name;
+		i->apex_labs = ldns_dname_label_count(i->apex_name);
+	} else
+		i->apex_name = NULL;
+
 
 	i->node = ldns_rbtree_first(zone->names);
 	i->name = i->node == LDNS_RBTREE_NULL ? NULL
@@ -1449,6 +1479,8 @@ struct struct_zone_digester {
         ldns_sha512_CTX sha512_CTX;
         unsigned simple_sha384 : 1;
         unsigned simple_sha512 : 1;
+        unsigned double_sha384 : 1;
+        unsigned double_sha512 : 1;
 };
 typedef struct struct_zone_digester zone_digester;
 
@@ -1468,11 +1500,27 @@ zone_digester_add(zone_digester *zd, zonemd_scheme scheme, zonemd_hash hash)
 	case ZONEMD_SCHEME_SIMPLE:
 		switch (hash) {
 		case ZONEMD_HASH_SHA384:
+			if (zd->double_sha384)
+				return LDNS_STATUS_ZONEMD_DOUBLE_OCCURRENCE;
+
+			else if (zd->simple_sha384) {
+				zd->simple_sha384 = 0;
+				zd->double_sha384 = 1;
+				return LDNS_STATUS_ZONEMD_DOUBLE_OCCURRENCE;
+			}
 			ldns_sha384_init(&zd->sha384_CTX);
 			zd->simple_sha384 = 1;
 			break;
 
 		case ZONEMD_HASH_SHA512:
+			if (zd->double_sha512)
+				return LDNS_STATUS_ZONEMD_DOUBLE_OCCURRENCE;
+
+			else if (zd->simple_sha512) {
+				zd->simple_sha512 = 0;
+				zd->double_sha512 = 1;
+				return LDNS_STATUS_ZONEMD_DOUBLE_OCCURRENCE;
+			}
 			ldns_sha512_init(&zd->sha512_CTX);
 			zd->simple_sha512 = 1;
 			break;
@@ -1500,7 +1548,7 @@ zone_digester_update(zone_digester *zd, ldns_rr *rr)
 	buf._fixed = 1;
 	buf._status = LDNS_STATUS_OK;
 
-	if ((st = ldns_rr2buffer_wire(&buf, rr, LDNS_SECTION_ANSWER)))
+	if ((st = ldns_rr2buffer_wire_canonical(&buf, rr, LDNS_SECTION_ANSWER)))
 		return st;
 
 	if (zd->simple_sha384)
