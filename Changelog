@@ -17,7 +17,9 @@
 	  if they arrive within 100msec of each other.
 	* Fix so that ldns-testns does not leak sockets if the read fails.
 	* SVCB and HTTPS draft rrtypes.
-	  Enable with --enable-rrtype-svcb-https
+	  Enable with --enable-rrtype-svcb-https.
+	* bugfix #117: Assertion failure with DNSSEC validating of 
+	  non existence of RR types at the root.  Thanks ZjYwMj
 
 1.7.1	2019-07-26
 	* bugfix: Manage verification paths for OpenSSL >= 1.1.0

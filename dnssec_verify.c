@@ -1503,7 +1503,7 @@ ldns_dnssec_verify_denial(ldns_rr *rr,
                           ldns_rr_list *rrsigs)
 {
 	ldns_rdf *rr_name;
-	ldns_rdf *wildcard_name;
+	ldns_rdf *wildcard_name = NULL;
 	ldns_rdf *chopped_dname;
 	ldns_rr *cur_nsec;
 	size_t i;
@@ -1514,14 +1514,19 @@ ldns_dnssec_verify_denial(ldns_rr *rr,
 	bool type_covered = false;
 	bool wildcard_covered = false;
 	bool wildcard_type_covered = false;
+	bool rr_name_is_root = false;
 
-	wildcard_name = ldns_dname_new_frm_str("*");
 	rr_name = ldns_rr_owner(rr);
-	chopped_dname = ldns_dname_left_chop(rr_name);
-	result = ldns_dname_cat(wildcard_name, chopped_dname);
-	ldns_rdf_deep_free(chopped_dname);
-	if (result != LDNS_STATUS_OK) {
-		return result;
+	rr_name_is_root =     ldns_rdf_size(rr_name) == 1
+	                  && *ldns_rdf_data(rr_name) == 0;
+	if (!rr_name_is_root) {
+		wildcard_name = ldns_dname_new_frm_str("*");
+		chopped_dname = ldns_dname_left_chop(rr_name);
+		result = ldns_dname_cat(wildcard_name, chopped_dname);
+		ldns_rdf_deep_free(chopped_dname);
+		if (result != LDNS_STATUS_OK) {
+			return result;
+		}
 	}
 	
 	for  (i = 0; i < ldns_rr_list_rr_count(nsecs); i++) {
@@ -1548,6 +1553,9 @@ ldns_dnssec_verify_denial(ldns_rr *rr,
 			name_covered = true;
 		}
 		
+		if (rr_name_is_root)
+			continue;
+
 		if (ldns_dname_compare(wildcard_name,
 						   ldns_rr_owner(cur_nsec)) == 0) {
 			if (ldns_nsec_bitmap_covers_type(ldns_nsec_get_bitmap(cur_nsec),
@@ -1568,6 +1576,9 @@ ldns_dnssec_verify_denial(ldns_rr *rr,
 		return LDNS_STATUS_DNSSEC_NSEC_RR_NOT_COVERED;
 	}
 	
+	if (rr_name_is_root)
+		return LDNS_STATUS_OK;
+
 	if (wildcard_type_covered || !wildcard_covered) {
 		return LDNS_STATUS_DNSSEC_NSEC_WILDCARD_NOT_COVERED;
 	}
