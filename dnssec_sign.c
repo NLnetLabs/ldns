@@ -815,17 +815,24 @@ ldns_dnssec_zone_create_nsecs(ldns_dnssec_zone *zone,
 	uint32_t nsec_ttl;
 	ldns_dnssec_rrsets *soa;
 
-	/* the TTL of NSEC rrs should be set to the minimum TTL of
-	 * the zone SOA (RFC4035 Section 2.3)
+	/* The TTL value for any NSEC RR SHOULD be the same TTL value as the
+	 * lesser of the MINIMUM field of the SOA record and the TTL of the SOA
+	 * itself. This matches the definition of the TTL for negative
+	 * responses in [RFC2308]. (draft-ietf-dnsop-nsec-ttl-01 update of
+	 * RFC4035 Section 2.3)
 	 */
 	soa = ldns_dnssec_name_find_rrset(zone->soa, LDNS_RR_TYPE_SOA);
 
 	/* did the caller actually set it? if not,
 	 * fall back to default ttl
 	 */
-	if (soa && soa->rrs && soa->rrs->rr
-			&& (ldns_rr_rdf(soa->rrs->rr, 6) != NULL)) {
-		nsec_ttl = ldns_rdf2native_int32(ldns_rr_rdf(soa->rrs->rr, 6));
+	if (soa && soa->rrs && soa->rrs->rr) {
+		ldns_rr  *soa_rr  = soa->rrs->rr;
+		ldns_rdf *min_rdf = ldns_rr_rdf(soa_rr, 6);
+
+		nsec_ttl = min_rdf == NULL
+		       || ldns_rr_ttl(soa_rr) < ldns_rdf2native_int32(min_rdf)
+		        ? ldns_rr_ttl(soa_rr) : ldns_rdf2native_int32(min_rdf);
 	} else {
 		nsec_ttl = LDNS_DEFAULT_TTL;
 	}
@@ -909,17 +916,24 @@ ldns_dnssec_zone_create_nsec3s_mkmap(ldns_dnssec_zone *zone,
 		return LDNS_STATUS_ERR;
 	}
 
-	/* the TTL of NSEC rrs should be set to the minimum TTL of
-	 * the zone SOA (RFC4035 Section 2.3)
+	/* The TTL value for any NSEC RR SHOULD be the same TTL value as the
+	 * lesser of the MINIMUM field of the SOA record and the TTL of the SOA
+	 * itself. This matches the definition of the TTL for negative
+	 * responses in [RFC2308]. (draft-ietf-dnsop-nsec-ttl-01 update of
+	 * RFC4035 Section 2.3)
 	 */
 	soa = ldns_dnssec_name_find_rrset(zone->soa, LDNS_RR_TYPE_SOA);
 
 	/* did the caller actually set it? if not,
 	 * fall back to default ttl
 	 */
-	if (soa && soa->rrs && soa->rrs->rr
-			&& ldns_rr_rdf(soa->rrs->rr, 6) != NULL) {
-		nsec_ttl = ldns_rdf2native_int32(ldns_rr_rdf(soa->rrs->rr, 6));
+	if (soa && soa->rrs && soa->rrs->rr) {
+		ldns_rr  *soa_rr  = soa->rrs->rr;
+		ldns_rdf *min_rdf = ldns_rr_rdf(soa_rr, 6);
+
+		nsec_ttl = min_rdf == NULL
+		       || ldns_rr_ttl(soa_rr) < ldns_rdf2native_int32(min_rdf)
+		        ? ldns_rr_ttl(soa_rr) : ldns_rdf2native_int32(min_rdf);
 	} else {
 		nsec_ttl = LDNS_DEFAULT_TTL;
 	}

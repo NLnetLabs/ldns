@@ -2235,7 +2235,7 @@ static ldns_rr_descriptor rdata_field_descriptors[] = {
 	/* 64 */
 	{LDNS_RR_TYPE_SVCB, "SVCB", 2, 3, type_svcb_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 0 },
 	/* 65 */
-	{LDNS_RR_TYPE_HTTPS, "HTTPS", 1, 1, type_svcb_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 0 },
+	{LDNS_RR_TYPE_HTTPS, "HTTPS", 2, 3, type_svcb_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 0 },
 
 #else
 {LDNS_RR_TYPE_NULL, "TYPE64", 1, 1, type_0_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 0 },
