@@ -20,6 +20,8 @@
 	  Enable with --enable-rrtype-svcb-https.
 	* bugfix #117: Assertion failure with DNSSEC validating of 
 	  non existence of RR types at the root.  Thanks ZjYwMj
+	* Set NSEC(3) ttls to the minimum of the MINIMUM field of the SOA
+	  record and the TTL of the SOA itself. draft-ietf-dnsop-nsec-ttl
 
 1.7.1	2019-07-26
 	* bugfix: Manage verification paths for OpenSSL >= 1.1.0
