@@ -27,13 +27,14 @@ ldns_fget_token(FILE *f, char *token, const char *delim, size_t limit)
 	return ldns_fget_token_l(f, token, delim, limit, NULL);
 }
 
-ssize_t
-ldns_fget_token_l(FILE *f, char *token, const char *delim, size_t limit, int *line_nr)
+ldns_status
+ldns_fget_token_l_st(FILE *f, char **token, size_t *limit, bool fixed
+                    , const char *delim, int *line_nr)
 {
 	int c, prev_c;
 	int p; /* 0 -> no parenthese seen, >0 nr of ( seen */
 	int com, quoted;
-	char *t;
+	char *t, *old_token;
 	size_t i;
 	const char *d;
 	const char *del;
@@ -45,13 +46,26 @@ ldns_fget_token_l(FILE *f, char *token, const char *delim, size_t limit, int *li
 	} else {
 		del = delim;
 	}
+	if (!token || !limit)
+		return LDNS_STATUS_NULL;
 
+	if (fixed) {
+		if (*token == NULL || *limit == 0)
+			return LDNS_STATUS_NULL;
+
+	} else if (*token == NULL) {
+		*limit = LDNS_MAX_LINELEN;
+		if (!(*token = LDNS_XMALLOC(char, *limit + 1)))
+			return LDNS_STATUS_MEM_ERR;
+
+	} else if (*limit == 0)
+		return LDNS_STATUS_ERR;
 	p = 0;
 	i = 0;
 	com = 0;
 	quoted = 0;
 	prev_c = 0;
-	t = token;
+	t = *token;
 	if (del[0] == '"') {
 		quoted = 1;
 	}
@@ -79,7 +93,8 @@ ldns_fget_token_l(FILE *f, char *token, const char *delim, size_t limit, int *li
 		if (p < 0) {
 			/* more ) then ( - close off the string */
 			*t = '\0';
-			return 0;
+			return i == 0 ? LDNS_STATUS_SYNTAX_EMPTY
+			              : LDNS_STATUS_OK;
 		}
 
 		/* do something with comments ; */
@@ -113,14 +128,27 @@ ldns_fget_token_l(FILE *f, char *token, const char *delim, size_t limit, int *li
 			continue;
 		}
 
-		if (c == '\n' && p != 0 && t > token) {
+		if (c == '\n' && p != 0 && t > *token) {
 			/* in parentheses */
 			if (line_nr) {
 				*line_nr = *line_nr + 1;
 			}
-			if (limit > 0 && (i >= limit || (size_t)(t-token) >= limit)) {
-				*t = '\0';
-				return -1;
+			if (*limit > 0
+			&&  (i >= *limit || (size_t)(t - *token) >= *limit)) {
+				if (fixed) {
+					*t = '\0';
+					return LDNS_STATUS_SYNTAX_ERR;
+				}
+				old_token = *token;
+				*limit *= 2;
+				*token = LDNS_XREALLOC(*token, char, *limit + 1);
+				if (*token == NULL) {
+					*token = old_token;
+					*t = '\0';
+					return LDNS_STATUS_MEM_ERR;
+				}
+				if (*token != old_token)
+					t = *token + (t - old_token);
 			}
 			*t++ = ' ';
 			prev_c = c;
@@ -139,9 +167,22 @@ ldns_fget_token_l(FILE *f, char *token, const char *delim, size_t limit, int *li
 		if (c != '\0' && c != '\n') {
 			i++;
 		}
-		if (limit > 0 && (i >= limit || (size_t)(t-token) >= limit)) {
-			*t = '\0';
-			return -1;
+		if (*limit > 0
+		&&  (i >= *limit || (size_t)(t - *token) >= *limit)) {
+			if (fixed) {
+				*t = '\0';
+				return LDNS_STATUS_SYNTAX_ERR;
+			}
+			old_token = *token;
+			*limit *= 2;
+			*token = LDNS_XREALLOC(*token, char, *limit + 1);
+			if (*token == NULL) {
+				*token = old_token;
+				*t = '\0';
+				return LDNS_STATUS_MEM_ERR;
+			}
+			if (*token != old_token)
+				t = *token + (t - old_token);
 		}
 		if (c != '\0' && c != '\n') {
 			*t++ = c;
@@ -152,17 +193,13 @@ ldns_fget_token_l(FILE *f, char *token, const char *delim, size_t limit, int *li
 	}
 	*t = '\0';
 	if (c == EOF) {
-		return (ssize_t)i;
+		return i == 0 ? LDNS_STATUS_SYNTAX_EMPTY : LDNS_STATUS_OK;
 	}
 
-	if (i == 0) {
-		/* nothing read */
-		return -1;
-	}
 	if (p != 0) {
-		return -1;
+		return LDNS_STATUS_SYNTAX_ERR;
 	}
-	return (ssize_t)i;
+	return i == 0 ? LDNS_STATUS_SYNTAX_EMPTY : LDNS_STATUS_OK;
 
 tokenread:
 	if(*del == '"') /* do not skip over quotes, they are significant */
@@ -170,10 +207,19 @@ tokenread:
 	else	ldns_fskipcs_l(f, del, line_nr);
 	*t = '\0';
 	if (p != 0) {
-		return -1;
+		return LDNS_STATUS_SYNTAX_ERR;
 	}
+	return i == 0 ? LDNS_STATUS_SYNTAX_EMPTY : LDNS_STATUS_OK;
+}
 
-	return (ssize_t)i;
+
+ssize_t
+ldns_fget_token_l(FILE *f, char *token, const char *delim, size_t limit, int *line_nr)
+{
+	if (ldns_fget_token_l_st(f, &token, &limit, true, delim, line_nr))
+		return -1;
+	else
+		return (ssize_t)strlen(token);
 }
 
 ssize_t

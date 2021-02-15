@@ -22,6 +22,8 @@
 	  non existence of RR types at the root.  Thanks ZjYwMj
 	* Set NSEC(3) ttls to the minimum of the MINIMUM field of the SOA
 	  record and the TTL of the SOA itself. draft-ietf-dnsop-nsec-ttl
+	* bugfix #119: Let example tools read longer RR's than
+	  LDNS_MAX_LINELEN
 
 1.7.1	2019-07-26
 	* bugfix: Manage verification paths for OpenSSL >= 1.1.0
