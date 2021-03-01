@@ -348,14 +348,37 @@ tmp_CPPFLAGS=$CPPFLAGS
 tmp_LDFLAGS=$LDFLAGS
 tmp_LIBS=$LIBS
 
-ACX_WITH_SSL_OPTIONAL
-AC_MSG_CHECKING([for LibreSSL])
-if grep VERSION_TEXT $ssldir/include/openssl/opensslv.h | grep "LibreSSL" >/dev/null; then
-	AC_MSG_RESULT([yes])
-	AC_DEFINE([HAVE_LIBRESSL], [1], [Define if we have LibreSSL])
-else
-	AC_MSG_RESULT([no])
+PKG_WITH_MODULES([openssl], [openssl], [
+    # used later for compilation
+    LIBSSL_CPPFLAGS="$openssl_CFLAGS"
+    LIBSSL_LDFLAGS="$openssl_LIBS"
+    LIBSSL_LIBS="$openssl_LIBS"
+    LIBSSL_SSL_LIBS="$openssl_LIBS"
+
+    # used for feature detection and will be reverted
+    CPPFLAGS="$CPPFLAGS $openssl_CFLAGS"
+    LDFLAGS="$LDFLAGS $openssl_LIBS"
+    LIBS="$LIBS $openssl_LIBS"
+
+    HAVE_SSL=yes
+    AC_DEFINE_UNQUOTED([HAVE_SSL], [], [Define if SSL available])
+    AC_SUBST(HAVE_SSL)
+])
+
+if test "$HAVE_SSL" = yes; then
+    PKG_CHECK_VAR([ssldir], [openssl], [prefix])
+
+    AC_MSG_CHECKING([for LibreSSL])
+    if grep VERSION_TEXT $ssldir/include/openssl/opensslv.h | grep "LibreSSL" >/dev/null; then
+        AC_MSG_RESULT([yes])
+        AC_DEFINE([HAVE_LIBRESSL], [1], [Define if we have LibreSSL])
+    else
+        AC_MSG_RESULT([no])
+    fi
 fi
+
+AC_SUBST(RUNTIME_PATH)
+
 AC_CHECK_HEADERS([openssl/ssl.h openssl/evp.h openssl/engine.h openssl/conf.h])
 AC_CHECK_FUNCS([EVP_sha256 EVP_sha384 EVP_sha512 EVP_PKEY_keygen ECDSA_SIG_get0 EVP_MD_CTX_new EVP_PKEY_base_id DSA_SIG_set0 DSA_SIG_get0 EVP_dss1 DSA_get0_pqg DSA_get0_key EVP_cleanup ENGINE_cleanup ENGINE_free CRYPTO_cleanup_all_ex_data ERR_free_strings CONF_modules_unload OPENSSL_init_ssl OPENSSL_init_crypto ERR_load_crypto_strings CRYPTO_memcmp])
 
