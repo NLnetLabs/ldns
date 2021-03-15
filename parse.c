@@ -216,6 +216,8 @@ tokenread:
 ssize_t
 ldns_fget_token_l(FILE *f, char *token, const char *delim, size_t limit, int *line_nr)
 {
+	if (limit == 0)
+		limit = LDNS_MAX_LINELEN;
 	if (ldns_fget_token_l_st(f, &token, &limit, true, delim, line_nr))
 		return -1;
 	else
