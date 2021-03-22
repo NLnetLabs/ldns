@@ -2132,7 +2132,7 @@ parse_svcparam_ipv6hint(const char **s, uint8_t **dp, uint8_t *eod)
 	}
 	for (;;) {
 		const char *ipv6_start = *s;
-		char        ipv6_str[40];
+		char        ipv6_str[INET6_ADDRSTRLEN];
 		size_t      len;
 
 		while (isxdigit(**s) || **s == ':')
@@ -2323,9 +2323,9 @@ ldns_str2rdf_svcparams(ldns_rdf **rd, const char *str)
 
 	length = strlen(str);
 	/* Worst case space requirement. We'll realloc to actual size later. */
-	if (!(dp = data = LDNS_XMALLOC(uint8_t, length)))
+	if (!(dp = data = LDNS_XMALLOC(uint8_t, length * 4)))
 		return LDNS_STATUS_MEM_ERR;
-	eod = data + length;
+	eod = data + length * 4;
 
 	/* Fill data with parsed bytes */
 	for (;;) {
