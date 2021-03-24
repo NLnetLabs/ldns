@@ -2403,8 +2403,12 @@ ldns_verify_rrsig_keylist_time(
 		ldns_rr_list *good_keys)
 {
 	ldns_status result;
-	ldns_rr_list *valid = ldns_rr_list_new();
-	if (!valid)
+	ldns_rr_list *valid;
+
+	if (!good_keys)
+		valid = NULL;
+
+	else if (!(valid = ldns_rr_list_new()))
 		return LDNS_STATUS_MEM_ERR;
 
 	result = ldns_verify_rrsig_keylist_notime(rrset, rrsig, keys, valid);

@@ -170,53 +170,32 @@ static ldns_status
 verify_rrs(ldns_rr_list* rrset_rrs, ldns_dnssec_rrs* cur_sig,
 		ldns_rr_list* keys)
 {
-	ldns_rr_list* good_keys;
 	ldns_status status, result = LDNS_STATUS_OK;
-	int one_signature_verified = 0;
 	ldns_dnssec_rrs *cur_sig_bak = cur_sig;
-	int is_dnskey_rrset = ldns_rr_list_rr_count(rrset_rrs) > 0 &&
-	    ldns_rr_get_type(ldns_rr_list_rr(rrset_rrs, 0)) == LDNS_RR_TYPE_DNSKEY;
 
+	/* A single valid signature validates the RRset */
 	while (cur_sig) {
-		good_keys = ldns_rr_list_new();
 		status = ldns_verify_rrsig_keylist_time(rrset_rrs, cur_sig->rr,
-				keys, check_time, good_keys);
+				keys, check_time, NULL);
 		status = status ? status 
 				: rrsig_check_time_margins(cur_sig->rr);
-		if (status == LDNS_STATUS_OK) {
-			one_signature_verified += 1;
-
-		} else if (!is_dnskey_rrset && (!no_nomatch_msg ||
-		    status != LDNS_STATUS_CRYPTO_NO_MATCHING_KEYTAG_DNSKEY)) {
-
-			print_rrs_status_error(myerr, rrset_rrs, status,
-					cur_sig);
-		} 
-		update_error(&result, status);
-		ldns_rr_list_free(good_keys);
+		if (status == LDNS_STATUS_OK) 
+			return LDNS_STATUS_OK;
 		cur_sig = cur_sig->next;
 	}
-	if (one_signature_verified)
-		return LDNS_STATUS_OK;
-
-	else if (is_dnskey_rrset &&
-	    result == LDNS_STATUS_CRYPTO_NO_MATCHING_KEYTAG_DNSKEY) {
-
-		/* Without any valid signature, do print all errors
-		 * with DNSKEYs too.
-		 */
-		for (cur_sig = cur_sig_bak; cur_sig; cur_sig = cur_sig->next) {
-			good_keys = ldns_rr_list_new();
-			status = ldns_verify_rrsig_keylist_time(rrset_rrs,
-			    cur_sig->rr, keys, check_time, good_keys);
-			status = status ? status 
-			       : rrsig_check_time_margins(cur_sig->rr);
- 			if (!no_nomatch_msg || status !=
-			    LDNS_STATUS_CRYPTO_NO_MATCHING_KEYTAG_DNSKEY)
-				print_rrs_status_error(
-				    myerr, rrset_rrs, status, cur_sig);
-			ldns_rr_list_free(good_keys);
-		}
+	/* Without any valid signature, do print all errors.  */
+	for (cur_sig = cur_sig_bak; cur_sig; cur_sig = cur_sig->next) {
+		status = ldns_verify_rrsig_keylist_time(rrset_rrs,
+		    cur_sig->rr, keys, check_time, NULL);
+		status = status ? status 
+		       : rrsig_check_time_margins(cur_sig->rr);
+		if (!status)
+			; /* pass */
+		else if (!no_nomatch_msg || status !=
+		    LDNS_STATUS_CRYPTO_NO_MATCHING_KEYTAG_DNSKEY)
+			print_rrs_status_error(
+			    myerr, rrset_rrs, status, cur_sig);
+		update_error(&result, status);
 	}
 	return result;
 }
