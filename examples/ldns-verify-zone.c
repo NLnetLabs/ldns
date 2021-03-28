@@ -939,7 +939,7 @@ main(int argc, char **argv)
 		
 		if (zonemd_result)
 			fprintf( myerr, "Could not validate zone digest: %s\n"
-			       , ldns_get_errorstr_by_id(result));
+			       , ldns_get_errorstr_by_id(zonemd_result));
 
 		else if (verbosity > 3)
 			fprintf( myout
