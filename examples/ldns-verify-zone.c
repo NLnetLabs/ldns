@@ -175,13 +175,12 @@ verify_rrs(ldns_rr_list* rrset_rrs, ldns_dnssec_rrs* cur_sig,
 
 	/* A single valid signature validates the RRset */
 	while (cur_sig) {
-		status = ldns_verify_rrsig_keylist_time(rrset_rrs, cur_sig->rr,
-				keys, check_time, NULL);
-		status = status ? status 
-				: rrsig_check_time_margins(cur_sig->rr);
-		if (status == LDNS_STATUS_OK) 
+		if (ldns_verify_rrsig_keylist_time( rrset_rrs, cur_sig->rr
+		                                  , keys, check_time, NULL)
+		||  rrsig_check_time_margins(cur_sig->rr))
+			cur_sig = cur_sig->next;
+		else
 			return LDNS_STATUS_OK;
-		cur_sig = cur_sig->next;
 	}
 	/* Without any valid signature, do print all errors.  */
 	for (cur_sig = cur_sig_bak; cur_sig; cur_sig = cur_sig->next) {
