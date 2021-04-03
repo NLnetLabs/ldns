@@ -2104,6 +2104,49 @@ ldns_pktheader2buffer_str(ldns_buffer *output, const ldns_pkt *pkt)
 }
 
 ldns_status
+ldns_pkt2buffer_str_fmt_short(ldns_buffer *output,
+		const ldns_output_format *fmt, const ldns_pkt *pkt)
+{
+	uint16_t i;
+	ldns_status status = LDNS_STATUS_OK;
+
+	if (!pkt) {
+		ldns_buffer_printf(output, "null");
+		return LDNS_STATUS_OK;
+	}
+
+	if (ldns_buffer_status_ok(output)) {
+		for (i = 0; i < ldns_pkt_ancount(pkt); i++) {
+			const ldns_rr *rr = ldns_rr_list_rr( ldns_pkt_answer(pkt), i);
+			if(rr) {
+				for (size_t i2 = 0; i2 < ldns_rr_rd_count(rr); i2++) {
+					ldns_rdf *rdf = ldns_rr_rdf(rr, i2);
+					if(!rdf)
+						continue;
+					status = ldns_rdf2buffer_str_fmt(output,
+							fmt, rdf);
+					ldns_buffer_printf(output, " ");
+				}
+				ldns_buffer_printf(output, "\n");
+			}
+			/*
+			status = ldns_rr2buffer_str_fmt(output, fmt,
+				       ldns_rr_list_rr(
+					       ldns_pkt_answer(pkt), i));
+					      */
+			if (status != LDNS_STATUS_OK) {
+				return status;
+			}
+
+		}
+
+	} else {
+		return ldns_buffer_status(output);
+	}
+	return status;
+}
+
+ldns_status
 ldns_pkt2buffer_str_fmt(ldns_buffer *output, 
 		const ldns_output_format *fmt, const ldns_pkt *pkt)
 {
@@ -2841,6 +2884,38 @@ void
 ldns_pkt_print(FILE *output, const ldns_pkt *pkt)
 {
 	ldns_pkt_print_fmt(output, ldns_output_format_default, pkt);
+}
+
+
+char *
+ldns_pkt2str_fmt_short(const ldns_output_format *fmt, const ldns_pkt *pkt)
+{
+	char *result = NULL;
+	ldns_buffer *tmp_buffer = ldns_buffer_new(LDNS_MAX_PACKETLEN);
+
+	if (!tmp_buffer) {
+		return NULL;
+	}
+	if (ldns_pkt2buffer_str_fmt_short(tmp_buffer, fmt, pkt)
+			== LDNS_STATUS_OK) {
+		/* export and return string, destroy rest */
+		result = ldns_buffer_export2str(tmp_buffer);
+	}
+
+	ldns_buffer_free(tmp_buffer);
+	return result;
+}
+
+void
+ldns_pkt_print_short(FILE *output, const ldns_pkt *pkt)
+{
+	char *str = ldns_pkt2str_fmt_short(ldns_output_format_default, pkt);
+	if (str) {
+		fprintf(output, "%s", str);
+	} else {
+		fprintf(output, ";Unable to convert packet to string\n");
+	}
+	LDNS_FREE(str);
 }
 
 void
