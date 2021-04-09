@@ -347,11 +347,12 @@ ldns_rr_new_frm_str_internal(ldns_rr **newrr, const char *str,
 		switch (ldns_rr_descriptor_field_type(desc, r_cnt)) {
 		case LDNS_RDF_TYPE_B64        :
 		case LDNS_RDF_TYPE_HEX        : /* These rdf types may con- */
-		case LDNS_RDF_TYPE_LOC        : /* tain whitespace, only if */
-		case LDNS_RDF_TYPE_WKS        : /* it is the last rd field. */
+		case LDNS_RDF_TYPE_NSEC       : /* tain whitespace, only if */
+		case LDNS_RDF_TYPE_LOC        : /* it is the last rd field. */
+		case LDNS_RDF_TYPE_WKS        :
 		case LDNS_RDF_TYPE_IPSECKEY   :
 		case LDNS_RDF_TYPE_AMTRELAY   :
-		case LDNS_RDF_TYPE_NSEC       :	if (r_cnt == r_max - 1) {
+		case LDNS_RDF_TYPE_SVCPARAMS  :	if (r_cnt == r_max - 1) {
 							delimiters = "\n";
 							break;
 						}
@@ -582,10 +583,12 @@ ldns_rr_new_frm_str_internal(ldns_rr **newrr, const char *str,
 						    LDNS_RDF_TYPE_DNAME, ".")
 					    );
 
-				} else if (r && rd_strlen >= 1 && origin &&
-						!ldns_dname_str_absolute(rd)) {
+				} else if (r && rd_strlen >= 1
+				    && (origin || rr_type == LDNS_RR_TYPE_SOA)
+				    && !ldns_dname_str_absolute(rd)) {
 
-					status = ldns_dname_cat(r, origin);
+					status = ldns_dname_cat(r, origin
+					    ? origin : ldns_rr_owner(new));
 					if (status != LDNS_STATUS_OK) {
 						goto error;
 					}
@@ -714,42 +717,23 @@ ldns_rr_new_frm_fp(ldns_rr **newrr, FILE *fp, uint32_t *ttl, ldns_rdf **origin, 
 ldns_status
 ldns_rr_new_frm_fp_l(ldns_rr **newrr, FILE *fp, uint32_t *default_ttl, ldns_rdf **origin, ldns_rdf **prev, int *line_nr)
 {
-	char *line;
+	char *line = NULL;
+	size_t limit = 0;
 	const char *endptr;  /* unused */
 	ldns_rr *rr;
 	uint32_t ttl;
 	ldns_rdf *tmp;
 	ldns_status s;
-	ssize_t size;
 
 	if (default_ttl) {
 		ttl = *default_ttl;
 	} else {
 		ttl = 0;
 	}
-
-	line = LDNS_XMALLOC(char, LDNS_MAX_LINELEN + 1);
-	if (!line) {
-		return LDNS_STATUS_MEM_ERR;
-	}
-
 	/* read an entire line in from the file */
-	if ((size = ldns_fget_token_l(fp, line, LDNS_PARSE_SKIP_SPACE, LDNS_MAX_LINELEN, line_nr)) == -1) {
-		LDNS_FREE(line);
-		/* if last line was empty, we are now at feof, which is not
-		 * always a parse error (happens when for instance last line
-		 * was a comment)
-		 */
-		return LDNS_STATUS_SYNTAX_ERR;
-	}
-
-	/* we can have the situation, where we've read ok, but still got
-	 * no bytes to play with, in this case size is 0
-	 */
-	if (size == 0) {
-		LDNS_FREE(line);
-		return LDNS_STATUS_SYNTAX_EMPTY;
-	}
+	if ((s = ldns_fget_token_l_st( fp, &line, &limit, false
+	                             , LDNS_PARSE_SKIP_SPACE, line_nr)))
+		return s;
 
 	if (strncmp(line, "$ORIGIN", 7) == 0 && isspace((unsigned char)line[7])) {
 		if (*origin) {
@@ -1971,7 +1955,13 @@ static const ldns_rdf_type type_zonemd_wireformat[] = {
 	LDNS_RDF_TYPE_INT32,
 	LDNS_RDF_TYPE_INT8, LDNS_RDF_TYPE_INT8, LDNS_RDF_TYPE_HEX
 };
-
+#ifdef RRTYPE_SVCB_HTTPS
+static const ldns_rdf_type type_svcb_wireformat[] = {
+	LDNS_RDF_TYPE_INT16,
+	LDNS_RDF_TYPE_DNAME, 
+	LDNS_RDF_TYPE_SVCPARAMS
+};
+#endif
 /* nsec3 is some vars, followed by same type of data of nsec */
 static const ldns_rdf_type type_nsec3_wireformat[] = {
 /*	LDNS_RDF_TYPE_NSEC3_VARS, LDNS_RDF_TYPE_NSEC3_NEXT_OWNER, LDNS_RDF_TYPE_NSEC*/
@@ -2218,11 +2208,20 @@ static ldns_rr_descriptor rdata_field_descriptors[] = {
 #else
 {LDNS_RR_TYPE_NULL, "TYPE61", 1, 1, type_0_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 0 },
 #endif
+	/* 62 */
+	{LDNS_RR_TYPE_CSYNC, "CSYNC", 3, 3, type_csync_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 0 },
+	/* 63 */
+	{LDNS_RR_TYPE_ZONEMD, "ZONEMD", 4, 4, type_zonemd_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 0 },
+#ifdef RRTYPE_SVCB_HTTPS
+	/* 64 */
+	{LDNS_RR_TYPE_SVCB, "SVCB", 2, 3, type_svcb_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 0 },
+	/* 65 */
+	{LDNS_RR_TYPE_HTTPS, "HTTPS", 2, 3, type_svcb_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 0 },
 
-{LDNS_RR_TYPE_CSYNC, "CSYNC", 3, 3, type_csync_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 0 },
-{LDNS_RR_TYPE_ZONEMD, "ZONEMD", 4, 4, type_zonemd_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 0 },
+#else
 {LDNS_RR_TYPE_NULL, "TYPE64", 1, 1, type_0_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 0 },
 {LDNS_RR_TYPE_NULL, "TYPE65", 1, 1, type_0_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 0 },
+#endif
 {LDNS_RR_TYPE_NULL, "TYPE66", 1, 1, type_0_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 0 },
 {LDNS_RR_TYPE_NULL, "TYPE67", 1, 1, type_0_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 0 },
 {LDNS_RR_TYPE_NULL, "TYPE68", 1, 1, type_0_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 0 },

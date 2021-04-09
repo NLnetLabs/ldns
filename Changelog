@@ -12,6 +12,18 @@
 	* Fix #92: ldns-testns.c:429:15: error: 'fork' is unavailable: not
 	  available on tvOS.
 	* Fix for #93: fix packaging/libldns.pc Makefile rule.
+	* ZONEMD support in ldns-signzone and ldns-verify-zone
+	* ldns-testns can answer several queries over one tcp connection,
+	  if they arrive within 100msec of each other.
+	* Fix so that ldns-testns does not leak sockets if the read fails.
+	* SVCB and HTTPS draft rrtypes.
+	  Enable with --enable-rrtype-svcb-https.
+	* bugfix #117: Assertion failure with DNSSEC validating of 
+	  non existence of RR types at the root.  Thanks ZjYwMj
+	* Set NSEC(3) ttls to the minimum of the MINIMUM field of the SOA
+	  record and the TTL of the SOA itself. draft-ietf-dnsop-nsec-ttl
+	* bugfix #119: Let example tools read longer RR's than
+	  LDNS_MAX_LINELEN
 
 1.7.1	2019-07-26
 	* bugfix: Manage verification paths for OpenSSL >= 1.1.0

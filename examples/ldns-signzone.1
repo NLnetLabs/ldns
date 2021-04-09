@@ -66,8 +66,22 @@ YYYYMMDD[hhmmss], or a timestamp.
 Use this as the origin of the zone
 
 .TP
+\fB-u\fR
+set SOA serial to the number of seconds since 1-1-1970
+
+.TP
 \fB-v\fR
 Print the version and exit
+
+.TP
+\fB-z\fR \fI[scheme:]hash\fR
+Calculate the zone's digest and add those as ZONEMD RRs. The (optional)
+`scheme' must be `simple` (or 1) and `hash' should be `sha384' (or 1) or
+`sha512' (or 2).  This option can be given more than once.
+
+.TP
+\fB-Z\fR
+Allow ZONEMDs to be added without signing
 
 .TP
 \fB-A\fR

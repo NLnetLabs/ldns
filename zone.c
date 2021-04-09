@@ -245,7 +245,11 @@ ldns_zone_new_frm_fp_l(ldns_zone **z, FILE *fp, const ldns_rdf *origin, uint32_t
 			}
 			
 			/* a normal RR - as sofar the DNS is normal */
-			if (!ldns_zone_push_rr(newzone, rr)) goto error;
+			if (!ldns_zone_push_rr(newzone, rr)) {
+				ldns_rr_free(rr);
+				goto error;
+			}
+			break;
 
 		case LDNS_STATUS_SYNTAX_EMPTY:
 			/* empty line was seen */
