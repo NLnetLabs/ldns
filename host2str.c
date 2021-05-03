@@ -1393,7 +1393,22 @@ ldns_rdf2buffer_str_amtrelay(ldns_buffer *output, const ldns_rdf *rdf)
 }
 
 #ifdef RRTYPE_SVCB_HTTPS
-ldns_status svcparam_key2buffer_str(ldns_buffer *output, uint16_t key);
+static ldns_status
+svcparam_key2buffer_str(ldns_buffer *output, uint16_t key)
+{
+	static const char *key_strings[] = {
+		"mandatory", "alpn", "no-default-alpn", "port",
+		"ipv4hint", "ech", "ipv6hint"
+	};
+	static const size_t key_strings_len = sizeof( key_strings)
+	                                    / sizeof(*key_strings);
+
+	if (key < key_strings_len)
+		ldns_buffer_printf(output, "%s", key_strings[key]);
+	else
+		ldns_buffer_printf(output, "key%d", (int)key);
+	return	ldns_buffer_status(output);
+}
 
 static ldns_status
 svcparam_mandatory2buffer_str(ldns_buffer *output, size_t sz, uint8_t *data)
@@ -1439,13 +1454,16 @@ svcparam_alpn2buffer_str(ldns_buffer *output, size_t sz, uint8_t *data)
 		for (data += 1; data < eot; data += 1) {
 			uint8_t ch = *data;
 
-			if (isprint(ch) || ch == '\t') {
-				if (ch == '"' ||  ch == ',' || ch == '\\')
-					ldns_buffer_write_u8(output, '\\');
+			if (ch == '"' || ch == '\\')
+				ldns_buffer_printf(output, "\\\\\\%c", ch);
+
+			else if (ch == ',')
+				ldns_buffer_printf(output, "\\\\%c", ch);
+
+			else if (isprint(ch) || ch == ' ' || ch == '\t')
 				ldns_buffer_write_u8(output, ch);
-			} else
-				ldns_buffer_printf(output, "\\%03u"
-				                         , (unsigned)ch);
+			else
+				ldns_buffer_printf(output, "\\%03u", (unsigned)ch);
 		}
 	}
 	if (quote)
@@ -1548,70 +1566,64 @@ svcparam_value2buffer_str(ldns_buffer *output, size_t sz, uint8_t *data)
 	return ldns_buffer_status(output);
 }
 
+
 ldns_status
-ldns_rdf2buffer_str_svcparams(ldns_buffer *output, const ldns_rdf *rdf)
+ldns_rdf2buffer_str_svcparam(ldns_buffer *output, const ldns_rdf *rdf)
 {
-	uint8_t    *data, *dp, *next_dp = NULL;
-	size_t      sz;
-	ldns_status st;
+	uint8_t          *data;
+	ldns_svcparam_key key;
+	uint16_t          val_sz;
+	ldns_status       st;
 
-	if (!output)
+	if (!output || !rdf || !(data = ldns_rdf_data(rdf)))
 		return LDNS_STATUS_NULL;
-
-	if (!rdf || !(data = ldns_rdf_data(rdf)) || !(sz = ldns_rdf_size(rdf)))
-		/* No svcparams is just fine. Just nothing to print. */
-		return LDNS_STATUS_OK;
 	
-	for (dp = data; dp + 4 < data + sz; dp = next_dp) {
-		ldns_svcparam_key key    = ldns_read_uint16(dp);
-		uint16_t          val_sz = ldns_read_uint16(dp + 2);
+	if (ldns_rdf_size(rdf) < 4)
+		return LDNS_STATUS_WIRE_RDATA_ERR;
 
-		if ((next_dp = dp + 4 + val_sz) > data + sz)
-			return LDNS_STATUS_RDATA_OVERFLOW;
+	key = ldns_read_uint16(data);
+	val_sz = ldns_read_uint16(data + 2);
 
-		if (dp > data)
-			ldns_buffer_write_u8(output, ' ');
+	if ((st = svcparam_key2buffer_str(output, key)))
+		return st;
 
-		if ((st = svcparam_key2buffer_str(output, key)))
-			return st;
+	if (val_sz == 0)
+		return LDNS_STATUS_OK;
 
-		if (val_sz == 0)
-			continue;
-		dp += 4;
-		ldns_buffer_write_u8(output, '=');
-		switch (key) {
-		case LDNS_SVCPARAM_KEY_MANDATORY:
-			st = svcparam_mandatory2buffer_str(output, val_sz, dp);
-			break;
-		case LDNS_SVCPARAM_KEY_ALPN:
-			st = svcparam_alpn2buffer_str(output, val_sz, dp);
-			break;
-		case LDNS_SVCPARAM_KEY_NO_DEFAULT_ALPN:
-			return LDNS_STATUS_NO_SVCPARAM_VALUE_EXPECTED;
-		case LDNS_SVCPARAM_KEY_PORT:
-			st = svcparam_port2buffer_str(output, val_sz, dp);
-			break;
-		case LDNS_SVCPARAM_KEY_IPV4HINT:
-			st = svcparam_ipv4hint2buffer_str(output, val_sz, dp);
-			break;
-		case LDNS_SVCPARAM_KEY_ECHCONFIG:
-			st = svcparam_echconfig2buffer_str(output, val_sz, dp);
-			break;
-		case LDNS_SVCPARAM_KEY_IPV6HINT:
-			st = svcparam_ipv6hint2buffer_str(output, val_sz, dp);
-			break;
-		default:
-			st = svcparam_value2buffer_str(output, val_sz, dp);
-			break;
-		}
-		if (st)
-			return st;
+	data += 4;
+	ldns_buffer_write_u8(output, '=');
+	switch (key) {
+	case LDNS_SVCPARAM_KEY_MANDATORY:
+		st = svcparam_mandatory2buffer_str(output, val_sz, data);
+		break;
+	case LDNS_SVCPARAM_KEY_ALPN:
+		st = svcparam_alpn2buffer_str(output, val_sz, data);
+		break;
+	case LDNS_SVCPARAM_KEY_NO_DEFAULT_ALPN:
+		return LDNS_STATUS_NO_SVCPARAM_VALUE_EXPECTED;
+	case LDNS_SVCPARAM_KEY_PORT:
+		st = svcparam_port2buffer_str(output, val_sz, data);
+		break;
+	case LDNS_SVCPARAM_KEY_IPV4HINT:
+		st = svcparam_ipv4hint2buffer_str(output, val_sz, data);
+		break;
+	case LDNS_SVCPARAM_KEY_ECHCONFIG:
+		st = svcparam_echconfig2buffer_str(output, val_sz, data);
+		break;
+	case LDNS_SVCPARAM_KEY_IPV6HINT:
+		st = svcparam_ipv6hint2buffer_str(output, val_sz, data);
+		break;
+	default:
+		st = svcparam_value2buffer_str(output, val_sz, data);
+		break;
 	}
+	if (st)
+		return st;
 	return ldns_buffer_status(output);
 }
 #else	/* #ifdef RRTYPE_SVCB_HTTPS */
 ldns_status
-ldns_rdf2buffer_str_svcparams(ldns_buffer *output, const ldns_rdf *rdf)
+ldns_rdf2buffer_str_svcparam(ldns_buffer *output, const ldns_rdf *rdf)
 {
 	(void)output; (void)rdf;
 	return LDNS_STATUS_NOT_IMPL;
@@ -1736,8 +1748,8 @@ ldns_rdf2buffer_str_fmt(ldns_buffer *buffer,
 		case LDNS_RDF_TYPE_AMTRELAY:
 			res = ldns_rdf2buffer_str_amtrelay(buffer, rdf);
 			break;
-		case LDNS_RDF_TYPE_SVCPARAMS:
-			res = ldns_rdf2buffer_str_svcparams(buffer, rdf);
+		case LDNS_RDF_TYPE_SVCPARAM:
+			res = ldns_rdf2buffer_str_svcparam(buffer, rdf);
 			break;
 		}
 	} else {

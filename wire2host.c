@@ -260,6 +260,13 @@ ldns_wire2rdf(ldns_rr *rr, const uint8_t *wire, size_t max, size_t *pos)
 			/* length is stored in first byte */
 			cur_rdf_length = ((size_t) wire[*pos]) + 1;
 			break;
+		case LDNS_RDF_TYPE_SVCPARAM:
+			if (*pos + 4 > end) {
+				return LDNS_STATUS_PACKET_OVERFLOW;
+			}
+			cur_rdf_length =
+				(size_t) ldns_read_uint16(&wire[*pos + 2]) + 4;
+			break;
 		case LDNS_RDF_TYPE_APL:
 		case LDNS_RDF_TYPE_B64:
 		case LDNS_RDF_TYPE_HEX:
@@ -273,7 +280,6 @@ ldns_wire2rdf(ldns_rr *rr, const uint8_t *wire, size_t max, size_t *pos)
 		case LDNS_RDF_TYPE_IPSECKEY:
 		case LDNS_RDF_TYPE_LONG_STR:
 		case LDNS_RDF_TYPE_AMTRELAY:
-		case LDNS_RDF_TYPE_SVCPARAMS:
 		case LDNS_RDF_TYPE_NONE:
 			/*
 			 * Read to end of rr rdata

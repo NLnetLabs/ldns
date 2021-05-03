@@ -1808,609 +1808,525 @@ network_uint16_cmp(const void *a, const void *b)
 	return ((int)ldns_read_uint16(a)) - ((int)ldns_read_uint16(b));
 }
 
-static ldns_status parse_svcparam_key(const char **s, ldns_svcparam_key *key);
-static ldns_status
-parse_svcparam_mandatory(const char **s, uint8_t **dp, uint8_t *eod)
-{
-	bool quoted = false;
-	uint8_t *keys = *dp;
-	int prev_key;
-
-	if (**s == '"') {
-		*s += 1;
-		quoted = true;
-	}
-	for (;;) {
-		ldns_status st;
-		ldns_svcparam_key key;
-
-		if ((st = parse_svcparam_key(s, &key)))
-			return st;
-
-		if (*dp + 2 > eod)
-			return LDNS_STATUS_RDATA_OVERFLOW;
-		
-		ldns_write_uint16(*dp, key);
-		*dp += 2;
-
-		if (**s == ',')
-			*s += 1;
-		else
-			break;
-	}
-	if (quoted) {
-		if (**s != '"')
-			return LDNS_STATUS_INVALID_STR;
-		*s += 1;
-	}
-	if (*dp - keys == 0)
-		return LDNS_STATUS_SYNTAX_SVCPARAM_VALUE_ERR;
-
-	if (**s && !isspace(**s))
-		return LDNS_STATUS_SYNTAX_SVCPARAM_VALUE_ERR;
-
-	/* In draft-ietf-dnsop-svcb-https-02 Section 7:
-	 *
-	 *     In wire format, the keys are represented by their numeric
-	 *     values in network byte order, concatenated in ascending order.
-	 */
-	qsort(keys, (*dp - keys) / 2, 2, network_uint16_cmp);
-
-	/* In draft-ietf-dnsop-svcb-https-02 Section 7:
-	 *
-	 *     Keys ...<snip>... MUST NOT appear more than once.
-	 */
-	prev_key = -1;
-	while (keys < *dp) {
-		uint16_t key = ldns_read_uint16(keys);
-
-		if (key == prev_key) {
-			/* "Be conservative in what you send,
-			 *  be liberal in what you accept"
-			 *
-			 * Instead of
-			 *   `return LDNS_STATUS_SVCPARAM_KEY_MORE_THAN_ONCE;`,
-			 *
-			 * we eliminate the double occurrence.
-			 */
-			memmove(keys - 2, keys, *dp - keys);
-			*dp -= 2;
-		} else {
-			prev_key = key;
-			keys += 2;
-		}
-	}
-	return LDNS_STATUS_OK;
-}
-
 INLINE bool parse_escape2(uint8_t *ch_p, const char** str_p)
 { *str_p += 1; return parse_escape(ch_p, str_p); }
 
-static ldns_status
-parse_svcparam_alpn(const char **s, uint8_t **dp, uint8_t *eod)
+
+static int 
+svcbparam_lookup_key(const char *key, size_t key_len)
 {
-	uint8_t *val;
-	size_t len;
-
-	if (*dp + 1 > eod)
-		return LDNS_STATUS_RDATA_OVERFLOW;
-	*dp += 1;
-	val = *dp;
-	if (**s == '"') {
-		*s += 1;
-		while (**s != '"') {
-			if (**s == 0)
-				return LDNS_STATUS_INVALID_STR;
-
-			else if (**s == ',') {
-				len = *dp - val;
-				if (len == 0 || len > 255)
-					return LDNS_STATUS_INVALID_STR;
-				val[-1] = len;
-				if (*dp + 1 > eod)
-					return LDNS_STATUS_RDATA_OVERFLOW;
-				*dp += 1;
-				val = *dp;
-				*s += 1;
-
-			} else if (*dp + 1 > eod)
-				return LDNS_STATUS_RDATA_OVERFLOW;
-
-			else if (**s != '\\')
-				*(*dp)++ = (uint8_t)*(*s)++;
-
-			else if (!parse_escape2(*dp, s))
-				return LDNS_STATUS_SYNTAX_BAD_ESCAPE;
-			else
-				*dp += 1;
-		}
-		*s += 1;
-
-	} else while (**s && !isspace(**s)) {
-		if (**s == ',') {
-			len = *dp - val;
-			if (len == 0 || len > 255)
-				return LDNS_STATUS_INVALID_STR;
-			val[-1] = len;
-			if (*dp + 1 > eod)
-				return LDNS_STATUS_RDATA_OVERFLOW;
-			*dp += 1;
-			val = *dp;
-			*s += 1;
-
-		} else if (*dp + 1 > eod)
-			return LDNS_STATUS_RDATA_OVERFLOW;
-
-		else if (**s != '\\')
-			*(*dp)++ = (uint8_t)*(*s)++;
-
-		else if (!parse_escape2(*dp, s))
-			return LDNS_STATUS_SYNTAX_BAD_ESCAPE;
-		else
-			*dp += 1;
-	}
-	len = *dp - val;
-	if (len == 0 || len > 255)
-		return LDNS_STATUS_INVALID_STR;
-	val[-1] = len;
-	return **s && !isspace(**s) ? LDNS_STATUS_SYNTAX_SVCPARAM_VALUE_ERR
-	                            : LDNS_STATUS_OK;
-}
-
-static ldns_status
-parse_svcparam_value(const char **s, uint8_t **dp, uint8_t *eod)
-{
-	if (**s == '"') {
-		*s += 1;
-		while (**s != '"') {
-			if (**s == 0)
-				return LDNS_STATUS_INVALID_STR;
-
-			else if (*dp + 1 > eod)
-				return LDNS_STATUS_RDATA_OVERFLOW;
-
-			else if (**s != '\\')
-				*(*dp)++ = (uint8_t)*(*s)++;
-
-			else if (!parse_escape2(*dp, s))
-				return LDNS_STATUS_SYNTAX_BAD_ESCAPE;
-			else
-				*dp += 1;
-		}
-		*s += 1;
-
-	} else while (**s && !isspace(**s)) {
-		if (*dp + 1 > eod)
-			return LDNS_STATUS_RDATA_OVERFLOW;
-
-		else if (**s != '\\')
-			*(*dp)++ = (uint8_t)*(*s)++;
-
-		else if (!parse_escape2(*dp, s))
-			return LDNS_STATUS_SYNTAX_BAD_ESCAPE;
-		else
-			*dp += 1;
-	}
-	return **s && !isspace(**s) ? LDNS_STATUS_SYNTAX_SVCPARAM_VALUE_ERR
-	                            : LDNS_STATUS_OK;
-}
-
-static ldns_status
-parse_svcparam_port(const char **s, uint8_t **dp, uint8_t *eod)
-{
-	uint8_t *val = *dp;
-	ldns_status st;
-	size_t len;
-	char num_str[6];
+	char buf[64];
 	char *endptr;
-	unsigned long int num;
+	unsigned long int key_value;
 
-	if ((st = parse_svcparam_value(s, dp, eod)))
-		return st;
-	len = *dp - val;
-	if (len == 0 || len > 5)
-		return LDNS_STATUS_SYNTAX_SVCPARAM_VALUE_ERR;
+	if (key_len >= 4  && key_len <= 8 && !strncmp(key, "key", 3)) {
+		memcpy(buf, key + 3, key_len - 3);
+		buf[key_len - 3] = 0;
+		key_value = strtoul(buf, &endptr, 10);
+		if (endptr > buf	/* digits seen */
+		&& *endptr == 0		/* no non-digit chars after digits */
+		&&  key_value <= 65535)	/* no overflow */
+			return key_value;
 
-	memcpy(num_str, val, len);
-	num_str[len] = 0;
-	num = strtoul(num_str, &endptr, 10);
-	if (*endptr)
-		return LDNS_STATUS_SYNTAX_SVCPARAM_VALUE_ERR;
+	} else switch (key_len) {
+	case sizeof("mandatory")-1:
+		if (!strncmp(key, "mandatory", sizeof("mandatory")-1))
+			return LDNS_SVCPARAM_KEY_MANDATORY;
+		if (!strncmp(key, "echconfig", sizeof("echconfig")-1))
+			return LDNS_SVCPARAM_KEY_ECH; /* allow "echconfig as well as "ech" */
+		break;
 
-	ldns_write_uint16(val, num);
-	*dp = val + 2;
+	case sizeof("alpn")-1:
+		if (!strncmp(key, "alpn", sizeof("alpn")-1))
+			return LDNS_SVCPARAM_KEY_ALPN;
+		if (!strncmp(key, "port", sizeof("port")-1))
+			return LDNS_SVCPARAM_KEY_PORT;
+		break;
+
+	case sizeof("no-default-alpn")-1:
+		if (!strncmp( key  , "no-default-alpn"
+		            , sizeof("no-default-alpn")-1))
+			return LDNS_SVCPARAM_KEY_NO_DEFAULT_ALPN;
+		break;
+
+	case sizeof("ipv4hint")-1:
+		if (!strncmp(key, "ipv4hint", sizeof("ipv4hint")-1))
+			return LDNS_SVCPARAM_KEY_IPV4HINT;
+		if (!strncmp(key, "ipv6hint", sizeof("ipv6hint")-1))
+			return LDNS_SVCPARAM_KEY_IPV6HINT;
+		break;
+	case sizeof("ech")-1:
+		if (!strncmp(key, "ech", sizeof("ech")-1))
+			return LDNS_SVCPARAM_KEY_ECH;
+		break;
+	default:
+		break;
+	}
+	return -1;
+}
+
+static ldns_status
+svcbparam_mandatory_value(ldns_rdf **rd, const char *val, size_t len)
+{
+	uint16_t *data;
+	size_t i, count, count_bak;
+	const char *next_key_str;
+	uint16_t *key_wire_dst;
+	int key;
+
+	assert(rd);
+
+	for (i = 0, count = 1; i < len; i++) {
+		if (val[i] == ',')
+			count += 1;
+		if (count > ((65535 - 2 * sizeof(uint16_t)) / sizeof(uint16_t)))
+			return LDNS_STATUS_RDATA_OVERFLOW;
+	}
+	count_bak = count;
+
+	/* count == number of comma's in val + 1 
+	 * so actually the number of SvcParam keys in val
+	 */
+	if (!(data = LDNS_XMALLOC(uint16_t, 2 + count)))
+		return LDNS_STATUS_MEM_ERR;
+	data[0] = htons(LDNS_SVCPARAM_KEY_MANDATORY);
+	data[1] = htons(sizeof(uint16_t) * count);
+	key_wire_dst = (void *)&data[2];
+
+	while (count) {
+		if (count == 1) { /* Last element */
+			key = svcbparam_lookup_key(val, len);
+			if (key < 0)
+				break;
+			*key_wire_dst++ = htons(key);
+
+		} else if (!(next_key_str = strchr(val, ',')))
+			break;
+
+		else {
+			key = svcbparam_lookup_key(val, next_key_str - val);
+			if (key < 0)
+				break;
+			*key_wire_dst++ = htons(key);
+
+			len -= (next_key_str + 1) - val;
+			val  =  next_key_str + 1; /* skip the comma */
+		}
+		count--;
+	}
+	if (count) {
+		LDNS_FREE(data);
+		return LDNS_STATUS_SYNTAX_RDATA_ERR;
+	}
+	if (!(*rd = ldns_rdf_new(LDNS_RDF_TYPE_SVCPARAM
+	                        , (2 + count_bak) * sizeof(uint16_t), data))) {
+		LDNS_FREE(data);
+		return LDNS_STATUS_MEM_ERR;
+	}
+	qsort(data + 2, count_bak, sizeof(uint16_t), network_uint16_cmp);
+	return LDNS_STATUS_OK;
+}
+
+static const char* parse_alpn_next_unescaped_comma(const char *val, size_t len)
+{
+	while (len) {
+		/* Only return when the comma is not escaped*/
+		if (*val == '\\'){
+			++val;
+			if (!--len)
+				break;
+		} else if (*val == ',')
+				return val;
+
+		val++;
+		len--;
+	}
+	return NULL;
+}
+
+static size_t
+parse_alpn_copy_unescaped(uint8_t *dst, const char *src, size_t len)
+{
+	uint8_t *orig_dst = dst;
+
+	while (len) {
+		if (*src == '\\') {
+			src++;
+			len--;
+			if (!len)
+				break;
+		}
+		*dst++ = *src++;
+		len--;
+	}
+	return (size_t)(dst - orig_dst);
+}
+static ldns_status
+svcbparam_alpn_value(ldns_rdf **rd, const char *val, size_t len)
+{
+	uint8_t    *data, *dst;
+	const char *next_str;
+	size_t      str_len;
+	size_t      dst_len;
+
+	if (!(data = LDNS_XMALLOC(uint8_t, len + 2 * sizeof(uint16_t))))
+		return LDNS_STATUS_MEM_ERR;
+	
+	ldns_write_uint16(data, LDNS_SVCPARAM_KEY_ALPN);
+	dst = data + 4;
+	while (len) {
+		size_t dst_len;
+
+		next_str = parse_alpn_next_unescaped_comma(val, len);
+		str_len = next_str ? (size_t)(next_str - val) : len;
+
+		if (str_len > 255) {
+			LDNS_FREE(data);
+			return LDNS_STATUS_SYNTAX_RDATA_ERR;
+		}
+		dst_len = parse_alpn_copy_unescaped(dst + 1, val, str_len);
+		*dst++ = dst_len;
+		 dst  += dst_len;
+
+		if (!next_str)
+			break;
+
+		/* skip the comma for the next iteration */
+		len -= next_str - val + 1;
+		val  = next_str + 1;
+	}
+	dst_len = dst - data;
+	if (dst_len - 2 * sizeof(uint16_t) < len) {
+		data = LDNS_XREALLOC((dst = data), uint8_t, dst_len);
+		if (! data) {
+			LDNS_FREE(dst);
+			return LDNS_STATUS_MEM_ERR;
+		}
+	}
+	if (!(*rd = ldns_rdf_new( LDNS_RDF_TYPE_SVCPARAM, dst_len, data))) {
+		LDNS_FREE(data);
+		return LDNS_STATUS_MEM_ERR;
+	}
+	ldns_write_uint16(data + 2, dst_len - 2 * sizeof(uint16_t));
 	return LDNS_STATUS_OK;
 }
 
 static ldns_status
-parse_svcparam_ipv4hint(const char **s, uint8_t **dp, uint8_t *eod)                
-{                                                                               
-	bool quoted = false;
+svcbparam_port_value(ldns_rdf **rd, const char *val, size_t len)
+{
+	char buf[9];
+	unsigned long int port;
+	char *endptr = NULL;
+	uint16_t *data;
 
-	if (**s == '"') {
-		*s += 1;
-		quoted = true;
+	assert(rd);
+
+	if (len > sizeof(buf) - 1)
+		return LDNS_STATUS_SYNTAX_RDATA_ERR;
+	else {
+		memcpy(buf, val, len);
+		buf[len] = 0;
 	}
-	for (;;) {
-		const char *ipv4_start = *s;
-		char        ipv4_str[16];
-		size_t      len;
+	port = strtoul(buf, &endptr, 10);
+	if (endptr <= buf	/* digits seen */
+	|| *endptr != 0		/* no non-digit chars after digits */
+	||  port > 65535) 	/* no overflow */
+		return LDNS_STATUS_SYNTAX_RDATA_ERR;
 
-		while (isdigit(**s) || **s == '.')
-			*s += 1;
-		
-		len = *s - ipv4_start;
-		if (len == 0 || len > 15)
-			return LDNS_STATUS_SYNTAX_SVCPARAM_VALUE_ERR;
+	if (!(data = LDNS_XMALLOC(uint16_t, 3)))
+		return LDNS_STATUS_MEM_ERR;
 
-		if (*dp + 4 > eod)
-			return LDNS_STATUS_RDATA_OVERFLOW;
+	if (!(*rd = ldns_rdf_new( LDNS_RDF_TYPE_SVCPARAM
+	                        , 3 * sizeof(uint16_t), data)))
+		return LDNS_STATUS_MEM_ERR;
 
-		memcpy(ipv4_str, ipv4_start, len);
-		ipv4_str[len] = 0;
-		if (inet_pton(AF_INET, ipv4_str, *dp) != 1)
-			return LDNS_STATUS_SYNTAX_SVCPARAM_VALUE_ERR;
-
-		*dp += 4;
-		if (**s == ',')
-			*s += 1;
-		else
-			break;
-	}
-	if (quoted) {
-		if (**s != '"')
-			return LDNS_STATUS_INVALID_STR;
-		*s += 1;
-	}
-	return **s && !isspace(**s) ? LDNS_STATUS_SYNTAX_SVCPARAM_VALUE_ERR
-	                            : LDNS_STATUS_OK;
+	data[0] = htons(LDNS_SVCPARAM_KEY_PORT);
+	data[1] = htons(sizeof(uint16_t));
+	data[2] = htons(port);
+	return LDNS_STATUS_OK;
 }
 
 static ldns_status
-parse_svcparam_echconfig(const char **s, uint8_t **dp, uint8_t *eod)                
-{                                                                               
-	bool quoted = false;
-	const char *b64_str;
-	size_t len, pad, out_len;
+svcbparam_ipv4hint_value(ldns_rdf **rd, const char *val, size_t len)
+{
+	uint16_t *data;
+	size_t i, count, rdata_len;
+	char ip4_str[INET_ADDRSTRLEN+1];
+	char *next_ip4_str;
+	uint8_t *ipv4_wire_dst;
+
+	assert(rd);
+
+	for (i = 0, count = 1; i < len; i++) {
+		if (val[i] == ',')
+			count += 1;
+		if (count > ((65535 - 2 * sizeof(uint16_t)) / LDNS_IP4ADDRLEN))
+			return LDNS_STATUS_RDATA_OVERFLOW;
+	}
+
+	/* count == number of comma's in val + 1 
+	 * so actually the number of IPv4 addresses in val
+	 */
+	rdata_len = 2 * sizeof(uint16_t) + count * LDNS_IP4ADDRLEN;
+	if (!(data = LDNS_XMALLOC(uint16_t, rdata_len / 2)))
+		return LDNS_STATUS_MEM_ERR;
+	data[0] = htons(LDNS_SVCPARAM_KEY_IPV4HINT);
+	data[1] = htons(LDNS_IP4ADDRLEN * count);
+	ipv4_wire_dst = (void *)&data[2];
+
+	while (count) {
+		if (count == 1) { /* Last address */
+			memcpy(ip4_str, val, len);
+			ip4_str[len] = 0;
+			if (inet_pton(AF_INET, ip4_str, ipv4_wire_dst) != 1)
+				break;
+
+		} else if (!(next_ip4_str = strchr(val, ',')))
+			break;
+
+		else if (next_ip4_str - val >= (int)sizeof(ip4_str))
+			break;
+
+		else {
+			memcpy(ip4_str, val, next_ip4_str - val);
+			ip4_str[next_ip4_str - val] = 0;
+			if (inet_pton(AF_INET, ip4_str, ipv4_wire_dst) != 1)
+				break;
+
+			len -= (next_ip4_str + 1) - val;
+			val  =  next_ip4_str + 1; /* skip the comma */
+		}
+		ipv4_wire_dst += LDNS_IP4ADDRLEN;
+		count--;
+	}
+	if (count) {
+		LDNS_FREE(data);
+		return LDNS_STATUS_SYNTAX_RDATA_ERR;
+	}
+	if (!(*rd = ldns_rdf_new(LDNS_RDF_TYPE_SVCPARAM, rdata_len, data))) {
+		LDNS_FREE(data);
+		return LDNS_STATUS_MEM_ERR;
+	}
+	return LDNS_STATUS_OK;
+}
+
+static ldns_status
+svcbparam_ech_value(ldns_rdf **rd, const char *val, size_t len)
+{
+	uint8_t *data;
+	size_t pad, out_len;
 	char in_buf[4096];
 	char *in = in_buf;
 	int out;
 
-	if (**s == '"') {
-		*s += 1;
-		quoted = true;
-	}
-	b64_str = *s;
-	while (isalnum(**s) || **s == '+' || **s == '/' || **s == '=')
-		*s += 1;
-
-	len = *s - b64_str;
 	pad = len % 4;
 	pad = pad ? 4 - pad : 0;
 	if (len == 0 || pad == 3)
 		return LDNS_STATUS_SYNTAX_SVCPARAM_VALUE_ERR;
 
-	if (quoted) {
-		if (**s != '"')
-			return LDNS_STATUS_INVALID_STR;
-		*s += 1;
-	}
-	if (**s && !isspace(**s))
-		return LDNS_STATUS_SYNTAX_SVCPARAM_VALUE_ERR;
-	
 	out_len = ldns_b64_pton_calculate_size(len);
-	if (*dp + out_len > eod)
-		return LDNS_STATUS_RDATA_OVERFLOW;
-
-	if (len + pad > sizeof(in_buf) - 1
-	&& !(in = LDNS_XMALLOC(char, len + pad + 1)))
+	if (!(data = LDNS_XMALLOC(uint8_t, 2 * sizeof(uint16_t) + out_len)))
 		return LDNS_STATUS_MEM_ERR;
 
-	memcpy(in, b64_str, len);
+	ldns_write_uint16(data, LDNS_SVCPARAM_KEY_ECH);
+	if (len + pad > sizeof(in_buf) - 1
+	&& !(in = LDNS_XMALLOC(char, len + pad + 1))) {
+		LDNS_FREE(data);
+		return LDNS_STATUS_MEM_ERR;
+	}
+	memcpy(in, val, len);
 	while (pad--)
 		in[len++] = '=';
 	in[len] = 0;
-	out = ldns_b64_pton(in, *dp, out_len);
+	out = ldns_b64_pton(in, data + 4, out_len);
 	if (in != in_buf)
 		LDNS_FREE(in);
 
-	if (out <= 0)
+	if (out <= 0 || (size_t)out > out_len) {
+		LDNS_FREE(data);
 		return LDNS_STATUS_SYNTAX_SVCPARAM_VALUE_ERR;
-
-	*dp += out;
+	}
+	ldns_write_uint16(data + 2, out);
+	if (!(*rd = ldns_rdf_new( LDNS_RDF_TYPE_SVCPARAM
+	                        , out + 2 * sizeof(uint16_t), data))) {
+		LDNS_FREE(data);
+		return LDNS_STATUS_MEM_ERR;
+	}
 	return LDNS_STATUS_OK;
 }
 
 static ldns_status
-parse_svcparam_ipv6hint(const char **s, uint8_t **dp, uint8_t *eod)                
-{                                                                               
-	bool quoted = false;
+svcbparam_ipv6hint_value(ldns_rdf **rd, const char *val, size_t len)
+{
+	uint16_t *data;
+	size_t i, count, rdata_len;
+	char ip6_str[INET6_ADDRSTRLEN+1];
+	char *next_ip6_str;
+	uint8_t *ipv6_wire_dst;
 
-	if (**s == '"') {
-		*s += 1;
-		quoted = true;
-	}
-	for (;;) {
-		const char *ipv6_start = *s;
-		char        ipv6_str[INET6_ADDRSTRLEN];
-		size_t      len;
+	assert(rd);
 
-		while (isxdigit(**s) || **s == ':' || **s == '.')
-			*s += 1;
-		
-		len = *s - ipv6_start;
-		if (len == 0 || len > INET6_ADDRSTRLEN)
-			return LDNS_STATUS_SYNTAX_SVCPARAM_VALUE_ERR;
-
-		if (*dp + 16 > eod)
+	for (i = 0, count = 1; i < len; i++) {
+		if (val[i] == ',')
+			count += 1;
+		if (count > ((65535 - 2 * sizeof(uint16_t)) / LDNS_IP6ADDRLEN))
 			return LDNS_STATUS_RDATA_OVERFLOW;
-
-		memcpy(ipv6_str, ipv6_start, len);
-		ipv6_str[len] = 0;
-		if (inet_pton(AF_INET6, ipv6_str, *dp) != 1)
-			return LDNS_STATUS_SYNTAX_SVCPARAM_VALUE_ERR;
-
-		*dp += 16;
-		if (**s == ',')
-			*s += 1;
-		else
-			break;
 	}
-	if (quoted) {
-		if (**s != '"')
-			return LDNS_STATUS_INVALID_STR;
-		*s += 1;
-	}
-	return **s && !isspace(**s) ? LDNS_STATUS_SYNTAX_SVCPARAM_VALUE_ERR
-	                            : LDNS_STATUS_OK;
-}
 
-struct struct_svcparam_key_def {
-	const char *str;
-	size_t      len;
-};
-typedef struct struct_svcparam_key_def svcparam_key_def;
-
-static svcparam_key_def svcparam_key_defs[] = { { "mandatory"      ,  9 }
-                                              , { "alpn"           ,  4 }
-                                              , { "no-default-alpn", 15 }
-                                              , { "port"           ,  4 }
-                                              , { "ipv4hint"       ,  8 }
-                                              , { "echconfig"      ,  9 }
-                                              , { "ipv6hint"       ,  8 } };
-
-static const size_t svcparam_key_defs_len = sizeof(svcparam_key_defs)
-                                          / sizeof(svcparam_key_def);
-
-/* svcparam_key2buffer_str() should actually be in host2str.c, but we need the
- * svcparam_key_defs for it and it is not an exposed symbol anyway.
- */
-ldns_status svcparam_key2buffer_str(ldns_buffer *output, uint16_t key)
-{
-	if (key <= LDNS_SVCPARAM_KEY_LAST_KEY)
-		ldns_buffer_write_string(output, svcparam_key_defs[key].str);
-	else
-		ldns_buffer_printf(output, "key%d", (int)key);
-	return	ldns_buffer_status(output);
-}
-
-static ldns_status
-parse_svcparam_key(const char **s, ldns_svcparam_key *key)
-{
-	size_t i, len;
-	const char *key_str = *s;
-	char num_str[6];
-	char *endptr;
-	unsigned long int num;
-
-	/* parse key */
-	while (islower(**s) || isdigit(**s) || **s == '-')
-		*s += 1;
-
-	len = *s - key_str;
-	for (i = 0; i < svcparam_key_defs_len; i++) {
-		if (len == svcparam_key_defs[i].len
-		&& !strncmp(key_str, svcparam_key_defs[i].str, len)) {
-			*key = i;
-			return LDNS_STATUS_OK;
-		}
-	}
-	if (len < 4 || len > 8 || strncmp(key_str, "key", 3))
-		return LDNS_STATUS_SYNTAX_SVCPARAM_KEY_ERR;
-
-	memcpy(num_str, key_str + 3, len - 3);
-	num_str[len - 3] = 0;
-	num = strtoul(num_str, &endptr, 10);
-	if (*endptr || num > 65535)
-		return LDNS_STATUS_SYNTAX_SVCPARAM_KEY_ERR;
-
-	/* key65535 is Reserved to be an ("Invalid key"), though there is no
-	 * physiological reason to deny usage. We restrict ourselves to the
-	 * anatomical limitations only to maximize serviceability.
-	 * ```
-	 * if (num == 65535)
-	 * 	return LDNS_STATUS_RESERVED_SVCPARAM_KEY;
-	 * ```
+	/* count == number of comma's in val + 1 
+	 * so actually the number of IPv6 addresses in val
 	 */
-	*key = num;
-	return LDNS_STATUS_OK;
-}
+	rdata_len = 2 * sizeof(uint16_t) + count * LDNS_IP6ADDRLEN;
+	if (!(data = LDNS_XMALLOC(uint16_t, rdata_len / 2)))
+		return LDNS_STATUS_MEM_ERR;
+	data[0] = htons(LDNS_SVCPARAM_KEY_IPV6HINT);
+	data[1] = htons(LDNS_IP6ADDRLEN * count);
+	ipv6_wire_dst = (void *)&data[2];
 
-static ldns_status
-parse_svcparam(const char **s, uint8_t **dp, uint8_t *eod)
-{
-	ldns_svcparam_key key;
-	ldns_status st;
-	uint8_t *val;
+	while (count) {
+		if (count == 1) { /* Last address */
+			memcpy(ip6_str, val, len);
+			ip6_str[len] = 0;
+			if (inet_pton(AF_INET6, ip6_str, ipv6_wire_dst) != 1)
+				break;
 
-	if (*dp + 4 > eod)
-		return LDNS_STATUS_RDATA_OVERFLOW;
-	
-	if ((st = parse_svcparam_key(s, &key)))
-		return st;
+		} else if (!(next_ip6_str = strchr(val, ',')))
+			break;
 
-	ldns_write_uint16(*dp, key);
-	ldns_write_uint16(*dp + 2, 0);
-	*dp += 4;
-	if (isspace(**s) || !**s)
-		return LDNS_STATUS_OK;
+		else if (next_ip6_str - val >= (int)sizeof(ip6_str))
+			break;
 
-	else if (**s != '=')
-		return LDNS_STATUS_SYNTAX_ERR;
-	*s += 1;
-	val = *dp;
-	switch(key) {
-	case LDNS_SVCPARAM_KEY_MANDATORY:
-		st = parse_svcparam_mandatory(s, dp, eod);
-		break;
-	case LDNS_SVCPARAM_KEY_ALPN:
-		st = parse_svcparam_alpn(s, dp, eod);
-		break;
-	case LDNS_SVCPARAM_KEY_NO_DEFAULT_ALPN:
-		return LDNS_STATUS_NO_SVCPARAM_VALUE_EXPECTED;
-	case LDNS_SVCPARAM_KEY_PORT:
-		st = parse_svcparam_port(s, dp, eod);
-		break;
-	case LDNS_SVCPARAM_KEY_IPV4HINT:
-		st = parse_svcparam_ipv4hint(s, dp, eod);
-		break;
-	case LDNS_SVCPARAM_KEY_ECHCONFIG:
-		st = parse_svcparam_echconfig(s, dp, eod);
-		break;
-	case LDNS_SVCPARAM_KEY_IPV6HINT:
-		st = parse_svcparam_ipv6hint(s, dp, eod);
-		break;
-	default:
-		st = parse_svcparam_value(s, dp, eod);
-		break;
+		else {
+			memcpy(ip6_str, val, next_ip6_str - val);
+			ip6_str[next_ip6_str - val] = 0;
+			if (inet_pton(AF_INET6, ip6_str, ipv6_wire_dst) != 1)
+				break;
+
+			len -= (next_ip6_str + 1) - val;
+			val  =  next_ip6_str + 1; /* skip the comma */
+		}
+		ipv6_wire_dst += LDNS_IP6ADDRLEN;
+		count--;
 	}
-	if (st)
-		return st;
-	ldns_write_uint16(val - 2, *dp - val);
+	if (count) {
+		LDNS_FREE(data);
+		return LDNS_STATUS_SYNTAX_RDATA_ERR;
+	}
+	if (!(*rd = ldns_rdf_new(LDNS_RDF_TYPE_SVCPARAM, rdata_len, data))) {
+		LDNS_FREE(data);
+		return LDNS_STATUS_MEM_ERR;
+	}
 	return LDNS_STATUS_OK;
-}
-
-static int
-svcparam_ptr_cmp(const void *a, const void *b)
-{
-	uint8_t *x = *(uint8_t **)a          , *y = *(uint8_t **)b;
-	uint16_t x_type = ldns_read_uint16(x),  y_type = ldns_read_uint16(y);
-	uint16_t x_len                       ,  y_len;
-
-	if (x_type != y_type)
-		return x_type > y_type ? 1 : -1;
-
-	x_len = ldns_read_uint16(x + 2);
-	y_len = ldns_read_uint16(y + 2);
-
-	return  x_len != y_len
-	     ? (x_len >  y_len ? 1 : -1)
-	     : (x_len == 0     ? 0 : memcmp(x + 4, y + 4, x_len));
 }
 
 ldns_status
-ldns_str2rdf_svcparams(ldns_rdf **rd, const char *str)
+ldns_str2rdf_svcparam(ldns_rdf **rd, const char *str)
 {
-	uint8_t *data, *dp, *eod, *p, *new_data;
-	ldns_status st = LDNS_STATUS_OK;
-	size_t length, i;
-	size_t nparams = 0;
-	uint8_t **svcparams;
-	int prev_key;
+	const char *key_str = str;
+	const char *val_str, *end_of_val_str;
+	int key;
+	size_t key_len;
+	size_t val_len = 0;
+	uint8_t *data, *dp;
 
 	if (!rd || !str)
 		return LDNS_STATUS_NULL;
 
-	length = strlen(str);
-	/* Worst case space requirement. We'll realloc to actual size later. */
-	if (!(dp = data = LDNS_XMALLOC(uint8_t, length * 4)))
-		return LDNS_STATUS_MEM_ERR;
-	eod = data + length * 4;
+	if ((val_str = strchr(str, '='))) {
+		key_len  = val_str - str;
+		val_str += 1;
+	} else
+		key_len = strlen(str);
 
-	/* Fill data with parsed bytes */
-	for (;;) {
-		while (isspace(*str))
-			str += 1;
-		if(!*str)
-			break;
-		if ((st = parse_svcparam(&str, &dp, eod))) {
+	if ((key = svcbparam_lookup_key(key_str, key_len)) < 0)
+		return LDNS_STATUS_SYNTAX_RDATA_ERR;
+
+	if (val_str) {
+		val_len  = strlen(val_str);
+		if (*val_str == '"') {
+			val_str += 1;
+			val_len -= 1;
+			if (val_len > 0 && val_str[val_len - 1] == '"')
+				val_len -= 1;
+		}
+	}
+	if (!val_len) {
+		if (!(data = LDNS_XMALLOC(uint8_t, 2 * sizeof(uint16_t))))
+			return LDNS_STATUS_MEM_ERR;
+		
+		ldns_write_uint16(data, key);
+		ldns_write_uint16(data + sizeof(uint16_t), 0);
+		if (!(*rd = ldns_rdf_new( LDNS_RDF_TYPE_SVCPARAM
+		                        , 2 * sizeof(uint16_t), data))) {
 			LDNS_FREE(data);
-			return st;
+			return LDNS_STATUS_MEM_ERR;
 		}
-		nparams += 1;
+		return LDNS_STATUS_OK;
 	}
 
-	/* draft-ietf-dnsop-svcb-https-02 in Section 2.2:
-	 *
-	 *     SvcParamKeys SHALL appear in increasing numeric order
-	 *
-	 * A svcparams array (with pointers to the individual key, value pairs)
-	 * is created to qsort the pairs in increasing numeric order.
-	 */
-	if (!(svcparams = LDNS_XMALLOC(uint8_t *, nparams))) {
-		LDNS_FREE(data);
+	switch (key) {
+	case LDNS_SVCPARAM_KEY_MANDATORY:
+		return svcbparam_mandatory_value(rd, val_str, val_len);
+	case LDNS_SVCPARAM_KEY_NO_DEFAULT_ALPN:
+		return LDNS_STATUS_NO_SVCPARAM_VALUE_EXPECTED;
+	case LDNS_SVCPARAM_KEY_PORT:
+		return svcbparam_port_value(rd, val_str, val_len);
+	case LDNS_SVCPARAM_KEY_IPV4HINT:
+		return svcbparam_ipv4hint_value(rd, val_str, val_len);
+	case LDNS_SVCPARAM_KEY_ECH:
+		return svcbparam_ech_value(rd, val_str, val_len);
+	case LDNS_SVCPARAM_KEY_IPV6HINT:
+		return svcbparam_ipv6hint_value(rd, val_str, val_len);
+	default:
+		break;
+	}
+	if (!(data = LDNS_XMALLOC(uint8_t, 2 * sizeof(uint16_t) + val_len)))
 		return LDNS_STATUS_MEM_ERR;
+	
+	ldns_write_uint16(data, key);
+	ldns_write_uint16(data + sizeof(uint16_t), val_len);
+	dp = data + 2 * sizeof(uint16_t);
+	end_of_val_str = val_str + val_len;
+	while (val_str < end_of_val_str) {
+		if (*val_str != '\\')
+			*dp++ = (uint8_t)*val_str++;
+
+		else if (!parse_escape2(dp, &val_str)) {
+			LDNS_FREE(data);
+			return LDNS_STATUS_SYNTAX_BAD_ESCAPE;
+		} else
+			dp += 1;
 	}
-	for ( p = data, i = 0
-	    ; p < dp && i < nparams
-	    ; p += 4 + ldns_read_uint16(p + 2))
-		svcparams[i++] = p;
-
-	qsort(svcparams, i, sizeof(uint8_t *), svcparam_ptr_cmp);
-
-	/* Write out the (key, value) pairs to a newly allocated data in
-	 * sorted order.
-	 */
-	length = dp - data;
-	if (!(new_data = LDNS_XMALLOC(uint8_t, length))) {
+	assert(val_len >= dp - data - 2 * sizeof(uint16_t));
+	if (key == LDNS_SVCPARAM_KEY_ALPN) {
+		ldns_status st = svcbparam_alpn_value(
+			rd, (const char *)data + 2 * sizeof(uint16_t)
+			  , dp - data - 2 * sizeof(uint16_t));
 		LDNS_FREE(data);
-		LDNS_FREE(svcparams);
-		return LDNS_STATUS_MEM_ERR;
+		return st;
 	}
-	prev_key = -1;
-	for ( p = new_data, i = 0
-	    ; p < new_data + length && i < nparams
-	    ; p += 4 + ldns_read_uint16(p + 2), i += 1) {
-		uint16_t key = ldns_read_uint16(svcparams[i]);
-
-		/* In draft-ietf-dnsop-svcb-https-02 Section 2.1:
-		 *
-		 *     SvcParams ...<snip>... keys MUST NOT be repeated.
-		 *
-		 * ldns will not impose this limitation on the library user,
-		 * but we can merge completely equal repetitions into one.
-		 * So, not doing
-		 * ```
-		 * if (key == prev_key)
-		 * 	return LDNS_STATUS_SVCPARAM_KEY_MORE_THAN_ONCE;
-		 * ```
-		 * but instead:
-		 */
-		if (key == prev_key && ldns_read_uint16(svcparams[i] + 2)
-		                    == ldns_read_uint16(svcparams[i - 1] + 2)
-		&&  0 == memcmp( svcparams[i    ] + 4
-		               , svcparams[i - 1] + 4
-		               , ldns_read_uint16(svcparams[i] + 2))) {
-			p -= 4 + ldns_read_uint16(svcparams[i] + 2);
-			continue;
+	if (val_len > dp - data - 2 * sizeof(uint16_t)) {
+		/* Lose the overmeasure */
+		val_len = dp - data - 2 * sizeof(uint16_t);
+		data = LDNS_XREALLOC( dp = data, uint8_t
+		                    , 2 * sizeof(uint16_t) + val_len);
+		if (! data) {
+			LDNS_FREE(dp);
+			return LDNS_STATUS_MEM_ERR;
 		}
-		memcpy(p, svcparams[i], 4 + ldns_read_uint16(svcparams[i] + 2));
-		prev_key = key;
+		ldns_write_uint16(data + sizeof(uint16_t), val_len);
 	}
-	LDNS_FREE(data);
-	LDNS_FREE(svcparams);
-
-	/* Create rdf */
-	*rd = ldns_rdf_new(LDNS_RDF_TYPE_SVCPARAMS, p - new_data, new_data);
-	if (! *rd) {
-		LDNS_FREE(new_data);
+	if (!(*rd = ldns_rdf_new( LDNS_RDF_TYPE_SVCPARAM
+				, 2 * sizeof(uint16_t) + val_len, data))) {
+		LDNS_FREE(data);
 		return LDNS_STATUS_MEM_ERR;
 	}
 	return LDNS_STATUS_OK;
 }
+
 #else	/* #ifdef RRTYPE_SVCB_HTTPS */
 ldns_status
-ldns_str2rdf_svcparams(ldns_rdf **rd, const char *str)
+ldns_str2rdf_svcparam(ldns_rdf **rd, const char *str)
 {
 	(void)rd; (void)str;
 	return LDNS_STATUS_NOT_IMPL;

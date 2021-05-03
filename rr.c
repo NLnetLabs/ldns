@@ -87,6 +87,45 @@ ldns_rr_free(ldns_rr *rr)
 	}
 }
 
+/**
+ * insert rd_field member at the indicated spot
+ * \param[in] *rr rr to operate on
+ * \param[in] spot On which position in the list to insert the field
+ * \param[in] *f the data field member to set
+ * \return bool
+ */
+static bool
+ldns_rr_insert_rdf(ldns_rr *rr, size_t spot, const ldns_rdf *f)
+{
+	size_t rd_count;
+	ldns_rdf **rdata_fields;
+
+	rd_count = ldns_rr_rd_count(rr);
+
+	/* grow the array */
+	rdata_fields = LDNS_XREALLOC(
+		rr->_rdata_fields, ldns_rdf *, rd_count + 1);
+	if (!rdata_fields) {
+		return false;
+	}
+
+	/* add the new member */
+	rr->_rdata_fields = rdata_fields;
+
+	if (spot < rd_count)
+		memmove( rr->_rdata_fields + spot + 1
+		       , rr->_rdata_fields + spot
+		       , sizeof(*rr->_rdata_fields) * (rd_count - spot));
+
+	else if (spot > rd_count)
+		spot = rd_count;
+
+	rr->_rdata_fields[spot] = (ldns_rdf*)f;
+
+	ldns_rr_set_rd_count(rr, rd_count + 1);
+	return true;
+}
+
 /* Syntactic sugar for ldns_rr_new_frm_str_internal */
 INLINE bool
 ldns_rdf_type_maybe_quoted(ldns_rdf_type rdf_type)
@@ -351,8 +390,7 @@ ldns_rr_new_frm_str_internal(ldns_rr **newrr, const char *str,
 		case LDNS_RDF_TYPE_LOC        : /* it is the last rd field. */
 		case LDNS_RDF_TYPE_WKS        :
 		case LDNS_RDF_TYPE_IPSECKEY   :
-		case LDNS_RDF_TYPE_AMTRELAY   :
-		case LDNS_RDF_TYPE_SVCPARAMS  :	if (r_cnt == r_max - 1) {
+		case LDNS_RDF_TYPE_AMTRELAY   :	if (r_cnt == r_max - 1) {
 							delimiters = "\n";
 							break;
 						}
@@ -604,7 +642,25 @@ ldns_rr_new_frm_str_internal(ldns_rr **newrr, const char *str,
 				status = LDNS_STATUS_SYNTAX_RDATA_ERR;
 				goto error;
 			}
-			ldns_rr_push_rdf(new, r);
+			if (ldns_rdf_get_type(r) == LDNS_RDF_TYPE_SVCPARAM
+			&&  ldns_rdf_size(r) >= 2) {
+				size_t pos = ldns_rr_rd_count(new);
+				uint16_t key = ldns_read_uint16(ldns_rdf_data(r));
+
+				while (pos > 0) {
+					ldns_rdf *ird = ldns_rr_rdf(new, pos - 1);
+
+					if (ldns_rdf_get_type(ird)
+					   != LDNS_RDF_TYPE_SVCPARAM
+					|| ldns_rdf_size(ird) < 2
+					|| key >=
+					   ldns_read_uint16(ldns_rdf_data(ird)))
+						break;
+					pos -= 1;
+				}
+				ldns_rr_insert_rdf(new, pos, r);
+			} else
+				ldns_rr_push_rdf(new, r);
 		}
 		if (quoted) {
 			if (ldns_buffer_available(rd_buf, 1)) {
@@ -1958,8 +2014,7 @@ static const ldns_rdf_type type_zonemd_wireformat[] = {
 #ifdef RRTYPE_SVCB_HTTPS
 static const ldns_rdf_type type_svcb_wireformat[] = {
 	LDNS_RDF_TYPE_INT16,
-	LDNS_RDF_TYPE_DNAME, 
-	LDNS_RDF_TYPE_SVCPARAMS
+	LDNS_RDF_TYPE_DNAME
 };
 #endif
 /* nsec3 is some vars, followed by same type of data of nsec */
@@ -2214,9 +2269,9 @@ static ldns_rr_descriptor rdata_field_descriptors[] = {
 	{LDNS_RR_TYPE_ZONEMD, "ZONEMD", 4, 4, type_zonemd_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 0 },
 #ifdef RRTYPE_SVCB_HTTPS
 	/* 64 */
-	{LDNS_RR_TYPE_SVCB, "SVCB", 2, 3, type_svcb_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 0 },
+	{LDNS_RR_TYPE_SVCB, "SVCB", 2, 2, type_svcb_wireformat, LDNS_RDF_TYPE_SVCPARAM, LDNS_RR_NO_COMPRESS, 0 },
 	/* 65 */
-	{LDNS_RR_TYPE_HTTPS, "HTTPS", 2, 3, type_svcb_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 0 },
+	{LDNS_RR_TYPE_HTTPS, "HTTPS", 2, 2, type_svcb_wireformat, LDNS_RDF_TYPE_SVCPARAM, LDNS_RR_NO_COMPRESS, 0 },
 
 #else
 {LDNS_RR_TYPE_NULL, "TYPE64", 1, 1, type_0_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 0 },

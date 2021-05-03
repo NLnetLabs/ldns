@@ -647,12 +647,12 @@ ldns_status ldns_rdf2buffer_str_amtrelay(ldns_buffer *output,
 		const ldns_rdf *rdf);
 
 /** 
- * Converts an LDNS_RDF_TYPE_SVCPARAMS rdata element to presentation format.
+ * Converts an LDNS_RDF_TYPE_SVCPARAM rdata element to presentation format.
  * \param[in] *rdf The rdata to convert
  * \param[in] *output The buffer to add the data to
  * \return LDNS_STATUS_OK on success, and error status on failure
  */
-ldns_status ldns_rdf2buffer_str_svcparams(ldns_buffer *output,
+ldns_status ldns_rdf2buffer_str_svcparam(ldns_buffer *output,
 		const ldns_rdf *rdf);
 
 /**
