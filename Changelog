@@ -24,6 +24,7 @@
 	  record and the TTL of the SOA itself. draft-ietf-dnsop-nsec-ttl
 	* bugfix #119: Let example tools read longer RR's than
 	  LDNS_MAX_LINELEN
+	* Add SVCPARAMS to python ldns_rdf_type2str function.
 
 1.7.1	2019-07-26
 	* bugfix: Manage verification paths for OpenSSL >= 1.1.0
