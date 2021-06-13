@@ -35,7 +35,7 @@
 /* SWIG setting and definitions. */
 /* ========================================================================= */
 
-/* Creates temporary instance of (ldns_rersolver *). */
+/* Creates temporary instance of (ldns_resolver *). */
 %typemap(in,numinputs=0,noblock=1) (ldns_resolver **r)
 {
   ldns_resolver *$1_res;
