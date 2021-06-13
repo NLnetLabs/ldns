@@ -730,7 +730,7 @@ ldns_status ldns_resolver_new_frm_fp_l(ldns_resolver **r, FILE *fp, int *line_nr
 ldns_status ldns_resolver_new_frm_file(ldns_resolver **r, const char *filename);
 
 /**
- * Frees the allocated space for this resolver. Only frees the resolver pionter! You should probably be using _deep_free.
+ * Frees the allocated space for this resolver. Only frees the resolver pointer! You should probably be using _deep_free.
  * \param res resolver to free
  */
 void ldns_resolver_free(ldns_resolver *res);
