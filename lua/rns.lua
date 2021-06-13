@@ -3,7 +3,7 @@ dofile("rns-lib.lua")
 
 -- echo whatever is received
 
--- this function specifies the mutalation to the packet
+-- this function specifies the mutatation to the packet
 function lua_packet_mangle(orig_packet)
 	-- MANGLE IT
 	local rr1 = record.new_frm_str("www.miek.nl IN A 127.0.0.1")
