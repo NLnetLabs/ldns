@@ -286,6 +286,6 @@ script:
       make -j 2
       make install
     else
-      # Default case for mosts tests
+      # Default case for most tests
       ./test/test_ci.sh
     fi
