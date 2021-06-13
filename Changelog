@@ -334,7 +334,7 @@
 	* bugfix #433: Allocate rdf using ldns_rdf_new in ldns_dname_label
 	* bugfix #432: Use LDNS_MALLOC & LDNS_FREE i.s.o. malloc & free
 	* bugfix #431: Added error message for LDNS_STATUS_INVALID_B32_EXT
-	* bugfix #427: Explicitely link ssl with the programs that use it.
+	* bugfix #427: Explicitly link ssl with the programs that use it.
 	* Fix reading \DDD: Error on values that are outside range (>255).
 	* bugfix #429: fix doxyparse.pl fails on NetBSD because specified
 	  path to perl.
