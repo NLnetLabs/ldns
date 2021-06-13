@@ -59,7 +59,7 @@ usage(FILE *stream, const char *progname)
 	fprintf(stream, "\t-6\t\tstay on ip6\n");
 	fprintf(stream, "\t-a\t\tfallback to EDNS0 and TCP if the answer is truncated\n");
 	fprintf(stream, "\t-b <bufsize>\tuse <bufsize> as the buffer size (defaults to 512 b)\n");
-	fprintf(stream, "\t-c <file>\tuse file for rescursive nameserver configuration"
+	fprintf(stream, "\t-c <file>\tuse file for recursive nameserver configuration"
 			"\n\t\t\t(/etc/resolv.conf)\n");
 	fprintf(stream, "\t-k <file>\tspecify a file that contains a trusted DNSSEC key [**]\n");
 	fprintf(stream, "\t\t\tUsed to verify any signatures in the current answer.\n");
