@@ -180,7 +180,7 @@ main(int argc, char *argv[])
 			
 			for(i = 0; i < ldns_rr_list_rr_count(rrsig_type); i++) {
 				memset(&incep, 0, sizeof(incep));
-				if (ldns_serial_arithmitics_gmtime_r(
+				if (ldns_serial_arithmetics_gmtime_r(
 						ldns_rdf2native_time_t(
 						ldns_rr_rrsig_inception(
 						ldns_rr_list_rr(rrsig_type, i))),
@@ -192,7 +192,7 @@ main(int argc, char *argv[])
 					incep_buf[0] = '\0';
 				}
 				memset(&expir, 0, sizeof(expir));
-				if (ldns_serial_arithmitics_gmtime_r(
+				if (ldns_serial_arithmetics_gmtime_r(
 						ldns_rdf2native_time_t(
 						ldns_rr_rrsig_expiration(
 						ldns_rr_list_rr(rrsig_type, i))),
