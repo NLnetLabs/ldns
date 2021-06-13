@@ -497,7 +497,7 @@ class packet:
 
 		Example returned value: "NOERROR"
 
-		possilbe rcodes (via ldns): "FORMERR", "MASK", "NOERROR",
+		possible rcodes (via ldns): "FORMERR", "MASK", "NOERROR",
 		"NOTAUTH", "NOTIMPL", "NOTZONE", "NXDOMAIN",
 		"NXRSET", "REFUSED", "SERVFAIL", "SHIFT", 
 		"YXDOMAIN", "YXRRSET"
