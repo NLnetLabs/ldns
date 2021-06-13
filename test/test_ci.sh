@@ -43,7 +43,7 @@ do
 		[ "x$(uname -s)" = "xLinux" ] && continue
 		;;
 	32)	# No backwards compatibility regression testing 
-		# when .so had major version bumb.
+		# when .so had major version bump.
 		chmod +x "$BUILD_DIR/packaging/ldns-config"
 		BINAPI=$("$BUILD_DIR/packaging/ldns-config" --libversion)
 		[ "x${BINAPI#*.}" = "x0.0" ] && continue
