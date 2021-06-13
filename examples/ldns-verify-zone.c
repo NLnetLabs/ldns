@@ -660,7 +660,7 @@ verify_dnssec_zone(ldns_dnssec_zone *dnssec_zone, ldns_rdf *zone_name,
 			 */
 			assert( cur_node->data == dnssec_zone->soa );
 			/* 
-			 * Allthough the percentage option doesn't make sense
+			 * Although the percentage option doesn't make sense
 			 * here, we set it to 100 to force the first node to 
 			 * be checked.
 			 */

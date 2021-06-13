@@ -776,7 +776,7 @@ ldns_key_new_frm_fp_rsa_l(FILE *f, int *line_nr)
 	}
 
 	/* I could use functions again, but that seems an overkill,
-	 * allthough this also looks tedious
+	 * although this also looks tedious
 	 */
 
 	/* Modules, rsa->n */
