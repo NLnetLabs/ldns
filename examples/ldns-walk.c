@@ -169,7 +169,7 @@ query_type_bitmaps(ldns_resolver *res,
 							ldns_pkt_print(stdout, answer_pkt);
 						}
 						/* hmm, this does not give us the right records
-						 * when askking for type NS above the delegation
+						 * when asking for type NS above the delegation
 						 * (or, in fact, when the delegated zone is 
 						 * served by this server either)
 						 * do we need to special case NS like NSEC?
