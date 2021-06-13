@@ -589,7 +589,7 @@ rr_is_rrsig_covering(ldns_rr* rr, ldns_rr_type t)
 /* When the zone is first read into an list and then inserted into an
  * ldns_dnssec_zone (rbtree) the nodes of the rbtree are allocated close (next)
  * to each other. Because ldns-verify-zone (the only program that uses this
- * function) uses the rbtree mostly for sequentual walking, this results
+ * function) uses the rbtree mostly for sequential walking, this results
  * in a speed increase (of 15% on linux) because we have less CPU-cache misses.
  */
 #define FASTER_DNSSEC_ZONE_NEW_FRM_FP 1 /* Because of L2 cache efficiency */
