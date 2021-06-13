@@ -204,7 +204,7 @@ This class can contains all types of keys that are used in DNSSEC. Mostly used t
         def expiration(self):
             """return the key's expiration date
                
-               :returns: (uint32_t) the experiration date
+               :returns: (uint32_t) the expiration date
             """
             return _ldns.ldns_key_expiration(self)
             #parameters: const ldns_key *,
