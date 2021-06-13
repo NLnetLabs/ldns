@@ -1,7 +1,7 @@
 * Classes of Manglement
 
 from higher to lower level:
-	- deliberatly mess up a resolver ability to recurse
+	- deliberately mess up a resolver ability to recurse
 	- move RRsets to different sections
 	- fiddle with the ID
 	- add/delete RRs
