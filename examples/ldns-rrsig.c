@@ -2,7 +2,7 @@
  * ldns-rrsig prints out the inception and expiration dates in a more readable 
  * way than the normal RRSIG presentation format
  *
- * for a particulary domain
+ * for a particularly domain
  * (c) NLnet Labs, 2005 - 2008
  * See the file LICENSE for the license
  */
