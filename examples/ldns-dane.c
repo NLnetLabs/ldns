@@ -1681,7 +1681,7 @@ main(int argc, char* const* argv)
 	}
 
 #if OPENSSL_VERSION_NUMBER < 0x10100000 || defined(HAVE_LIBRESSL)
-	/* ssl inititalize */
+	/* ssl initialize */
 	SSL_load_error_strings();
 	SSL_library_init();
 #endif
