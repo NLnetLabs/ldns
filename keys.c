@@ -84,7 +84,7 @@ ldns_key_new(void)
 	if (!newkey) {
 		return NULL;
 	} else {
-		/* some defaults - not sure wether to do this */
+		/* some defaults - not sure whether to do this */
 		ldns_key_set_use(newkey, true);
 		ldns_key_set_flags(newkey, LDNS_KEY_ZONE_KEY);
 		ldns_key_set_origttl(newkey, 0);

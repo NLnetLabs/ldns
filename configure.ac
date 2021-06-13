@@ -380,7 +380,7 @@ case "$enable_sha2" in
         ;;
 esac
 
-# check wether gost also works
+# check whether gost also works
 AC_DEFUN([AC_CHECK_GOST_WORKS],
 [AC_REQUIRE([AC_PROG_CC])
 AC_MSG_CHECKING([if GOST works])
