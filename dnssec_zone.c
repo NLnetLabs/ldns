@@ -1714,7 +1714,7 @@ ldns_dnssec_zone_verify_zonemd(ldns_dnssec_zone *zone)
 	if (!zonemd) {
 		ldns_rbnode_t *nsec3_node;
 
-		/* we need proof of non-existance for ZONEMD at the apex */
+		/* we need proof of non-existence for ZONEMD at the apex */
 		if (zone->soa->nsec) {
 			if (ldns_nsec_bitmap_covers_type(ldns_nsec_get_bitmap(
 							zone->soa->nsec),
