@@ -60,7 +60,7 @@
 	  - CERT RR supported
 	  - LOC RR support
 	* All non supported RRs are handled as unknown
-	* If no namservers found in /etc/resolv.conf 
+	* If no nameservers found in /etc/resolv.conf 
 	  default to 127.0.0.1
 	* Various bugs fixed
 	  - Close sockets after using them
