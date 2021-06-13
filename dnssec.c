@@ -912,7 +912,7 @@ ldns_dnssec_create_nsec3(const ldns_dnssec_name *from,
 	cur_rrsets = from->rrsets;
 	while (cur_rrsets) {
 		/* Do not include non-authoritative rrsets on the delegation point
-		 * in the type bitmap. Potentionally not skipping insecure
+		 * in the type bitmap. Potentially not skipping insecure
 		 * delegation should have been done earlier, in function
 		 * ldns_dnssec_zone_create_nsec3s, or even earlier in:
 		 * ldns_dnssec_zone_sign_nsec3_flg .
