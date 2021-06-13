@@ -377,7 +377,7 @@ ldns_init_random(FILE *fd, unsigned int size)
 		RAND_seed(seed, (int) size);
 #else
 		/* Seed the standard prng, only uses the first
-		 * unsigned sizeof(unsiged int) bytes found in the entropy pool
+		 * unsigned sizeof(unsigned int) bytes found in the entropy pool
 		 */
 		memcpy(&seed_i, seed, sizeof(seed_i));
 		srandom(seed_i);
