@@ -910,7 +910,7 @@
 	* ldns-dpa was added to the examples - this is the Dns Packet
 	  Analyzer tool.
 	* ldnsd - as very, very simple nameserver impl.
-	* ldns-zsplit - split zones for parrallel signing
+	* ldns-zsplit - split zones for parallel signing
 	* ldns-zcat - cat split zones back together
 	* ldns-keyfetcher - Fetches DNSKEY records with a few (non-strong,
 	  non-DNSSEC) anti-spoofing techniques.
