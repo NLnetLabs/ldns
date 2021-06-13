@@ -823,7 +823,7 @@ class resource_record:
 			return -1
 
 	def protocol(self):
-		""" Returns proticol of the DNSKEY"""
+		""" Returns protocol of the DNSKEY"""
 		t = self.rr_type() 
 		if t == "DNSKEY":
 			return int(self[5])
