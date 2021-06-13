@@ -400,7 +400,7 @@ insert your long list here.
 <section title="Examples">
 <t>
 A small example, which queries a nameserver on localhost
-to diplay the MX records for miek.nl.
+to display the MX records for miek.nl.
 </t>
 
 <t>
