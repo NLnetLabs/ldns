@@ -250,7 +250,7 @@ bool ldns_resolver_dnssec_cd(const ldns_resolver *r);
 /**
  * Get the resolver's DNSSEC anchors
  * \param[in] r the resolver
- * \return an rr_list containg trusted DNSSEC anchors
+ * \return an rr_list containing trusted DNSSEC anchors
  */
 ldns_rr_list * ldns_resolver_dnssec_anchors(const ldns_resolver *r);
 /**
