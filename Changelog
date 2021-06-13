@@ -426,7 +426,7 @@
 	* bugfix #380: Minimizing effect of discrepancies in sizeof(bool) at
 	  build time and when used.
 	* bugfix #383: Fix detection of empty nonterminals of multiple labels.
-	* Fixed the ommission of rrsets in nsec(3)s and rrsigs to all occluded
+	* Fixed the omission of rrsets in nsec(3)s and rrsigs to all occluded
 	  names (in stead of just the ones that contain glue only) and all
 	  occluded records on the delegation points (in stead of just the glue).
 	* Clarify the operation of ldns_dnssec_mark_glue and the usage of
