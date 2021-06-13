@@ -110,7 +110,7 @@ typedef struct ldns_struct_output_format_storage ldns_output_format_storage;
  */
 extern const ldns_output_format *ldns_output_format_nocomments;
 /**
- * Standard output format record that annotated only DNSKEY RR's with commenti
+ * Standard output format record that annotated only DNSKEY RR's with comment
  * text.
  */
 extern const ldns_output_format *ldns_output_format_onlykeyids;
