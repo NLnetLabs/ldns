@@ -820,7 +820,7 @@
 28 Nov 2007 1.2.2:
 	* Added support for HMAC-MD5 keys in generator
 	* Added a new example tool (written by Ondrej Sury): ldns-compare-zones
-	* ldns-keygen now checks key sizes for rfc conformancy
+	* ldns-keygen now checks key sizes for rfc conformance
 	* ldns-signzone outputs SSL error if present
 	* Fixed manpages (thanks to Ondrej Sury)
 	* Fixed Makefile for -j <x>
