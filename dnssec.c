@@ -434,7 +434,7 @@ ldns_key_buf2rsa_raw(const unsigned char* key, size_t len)
 			return NULL;
 		/* need some smart comment here XXX*/
 		/* the exponent is too large so it's places
-		 * futher...???? */
+		 * further...???? */
 		memmove(&int16, key+1, 2);
 		exp = ntohs(int16);
 		offset = 3;

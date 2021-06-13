@@ -2174,7 +2174,7 @@ ldns_pkt2buffer_str_fmt(ldns_buffer *output,
 
 		}
 		ldns_buffer_printf(output, "\n");
-		/* add some futher fields */
+		/* add some further fields */
 		ldns_buffer_printf(output, ";; Query time: %d msec\n",
 				ldns_pkt_querytime(pkt));
 		if (ldns_pkt_edns(pkt)) {
