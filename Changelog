@@ -1003,7 +1003,7 @@
 13 Jun 2005: 0.65: ldns-team
 	* Repository is online at:
 	  http://www.nlnetlabs.nl/ldns/svn/
-	* Apply reference copying throuhgout ldns, except in 2
+	* Apply reference copying throughout ldns, except in 2
 	  places in the ldns_resolver structure (._domain and
 	 ._nameservers)
 	* Usual array of bugfixes
