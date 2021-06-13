@@ -392,7 +392,7 @@ usage(FILE *fp)
         fprintf(fp, "    2. hex dump\t\tquery in hex, network order\n");
         fprintf(fp, "    3. hex dump\t\tanswer of FILE 1 in hex, network order\n");
         fprintf(fp, "    4. hex dump\t\tanswer of FILE 2 in hex, network order\n\n");
-        fprintf(fp, " If a difference in the query is spotted the sequence nmuber\n");
+        fprintf(fp, " If a difference in the query is spotted the sequence number\n");
         fprintf(fp, " is prefixed by a 'q: ' and the query data is printed:\n");
         fprintf(fp, "    1. q: xxx:yyy\tdecimal sequence numbers\n");
         fprintf(fp, "    2. hex dump\t\tquery in hex, network order\n");
