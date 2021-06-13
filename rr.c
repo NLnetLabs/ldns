@@ -2491,7 +2491,7 @@ static ldns_rr_descriptor rdata_field_descriptors[] = {
 /*---------------------------------------------------------------------------*
  * The functions below return an bitmap RDF with the space required to set
  * or unset all known RR types. Arguably these functions are better situated
- * in rdata.c, however for the space calculation it is necesarry to walk
+ * in rdata.c, however for the space calculation it is necessary to walk
  * through rdata_field_descriptors which is not easily possible from anywhere
  * other than rr.c where it is declared static.
  *
