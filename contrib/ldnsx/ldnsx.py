@@ -320,7 +320,7 @@ class resolver:
 			pkt = self._ldns_resolver.query(name, _rr_type, _rr_class, _flags)
 		except KeyboardInterrupt: #Since so much time is spent waiting on ldns, this is very common place for Ctr-C to fall
 			raise
-		except: #Since the ldns exceptiion is not very descriptive...
+		except: #Since the ldns exception is not very descriptive...
 			raise Exception("ldns backend ran into problems. Likely, the name you were querying for, %s, was invalid." % name)
 		#Deal with failed queries
 		if not pkt:

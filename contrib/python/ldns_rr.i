@@ -562,7 +562,7 @@ to create :class:`ldns_rr` instances.
                :type prev: :class:`ldns_rdf`
                :param raiseException: If True, an exception occurs in case a rr
                    instance can't be created.
-               :throws Exception: If `raiseExceprion` is set and fails.
+               :throws Exception: If `raiseException` is set and fails.
                :throws TypeError: When parameters of incorrect types.
                :return: (:class:`ldns_rr`) RR instance or None.
 
@@ -612,7 +612,7 @@ to create :class:`ldns_rr` instances.
                :type prev: :class:`ldns_rdf`
                :param raiseException: If True, an exception occurs in case
                    a rr instance can't be created.
-               :throws Exception: If `raiseExceprion` is set and fails.
+               :throws Exception: If `raiseException` is set and fails.
                :throws TypeError: When parameters of incorrect types.
                :return: (:class:`ldns_rr`) RR instance or None. If the object
                    can't be created and `raiseException` is True,
@@ -657,7 +657,7 @@ to create :class:`ldns_rr` instances.
                :type prev: :class:`ldns_rdf`
                :param raiseException: If True, an exception occurs in case when
                    a rr instance can't be created.
-               :throws Exception: If `raiseExceprion` is set and fails.
+               :throws Exception: If `raiseException` is set and fails.
                :throws TypeError: When parameters of incorrect types.
                :return: None when fails, otherwise a tuple containing:
 
