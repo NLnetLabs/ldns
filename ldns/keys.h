@@ -431,7 +431,7 @@ void ldns_key_set_flags(ldns_key *k, uint16_t flags);
 /**
  * Set the keylist's key count to count
  * \param[in] key the key
- * \param[in] count the cuont
+ * \param[in] count the count
  */
 void ldns_key_list_set_key_count(ldns_key_list *key, size_t count);
 

@@ -514,7 +514,7 @@ void _ldns_key_list_free (ldns_key_list* k) {
             """Set the keylist's key count to count.
                
                :param count:
-                   the cuont
+                   the count
             """
             _ldns.ldns_key_list_set_key_count(self,count)
             #parameters: ldns_key_list *,size_t,
