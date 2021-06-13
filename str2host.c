@@ -304,7 +304,7 @@ parse_char(uint8_t *ch_p, const char** str_p)
 
 /*
  * No special care is taken, all dots are translated into
- * label seperators.
+ * label separators.
  * Could be made more efficient....we do 3 memcpy's in total...
  */
 ldns_status
