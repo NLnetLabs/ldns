@@ -1653,7 +1653,7 @@ to create :class:`ldns_rr` instances.
                Sets the type in the rr.
                
                :param rr_type: Set to this type.
-               :type rr_type: ineteger
+               :type rr_type: integer
                :throws TypeError: when `rr_type` of non-integer type.
             """
             _ldns.ldns_rr_set_type(self, rr_type)
@@ -1695,7 +1695,7 @@ to create :class:`ldns_rr` instances.
             """
                Calculates the uncompressed size of an RR.
                
-               :return: (inetger) size of the rr.
+               :return: (integer) size of the rr.
             """
             return _ldns.ldns_rr_uncompressed_size(self)
             #parameters: const ldns_rr *,
@@ -2441,7 +2441,7 @@ In order to create a class instance use :meth:`ldns_rr_descriptor`.
                
                :param field: The field number.
                :type field: positive int
-               :throws TypeError: when `field` of non-inetger type.
+               :throws TypeError: when `field` of non-integer type.
                :return: (int) the rdf type for the field.
             """
             return _ldns.ldns_rr_descriptor_field_type(self, field)
