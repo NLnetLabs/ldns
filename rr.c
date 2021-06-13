@@ -823,7 +823,7 @@ ldns_rr_set_rdf(ldns_rr *rr, const ldns_rdf *f, size_t position)
 
 	rd_count = ldns_rr_rd_count(rr);
 	if (position < rd_count) {
-		/* dicard the old one */
+		/* discard the old one */
 		pop = rr->_rdata_fields[position];
 		rr->_rdata_fields[position] = (ldns_rdf*)f;
 		return pop;
