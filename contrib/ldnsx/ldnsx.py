@@ -284,7 +284,7 @@ class resolver:
 
 			If the version of ldnsx you are using is old, it is possible that there could be new rr_types that
 			we don't recognise mnemonic for. You can still use the number XXX or the string "TYPEXXX". To
-			determine what rr_type menmonics we support, please refer to resolver.supported_rr_types()
+			determine what rr_type mnemonics we support, please refer to resolver.supported_rr_types()
 
 		"""
 		# Determine rr_type int
