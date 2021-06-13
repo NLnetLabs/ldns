@@ -716,7 +716,7 @@ ldns_dnssec_zone_mark_and_get_glue(ldns_dnssec_zone *zone,
 			 * FIXME! If there are labels in between the SOA and
 			 * the cut, going from the authoritative space (below
 			 * the SOA) up into occluded space again, will not be
-			 * detected with the contruct below!
+			 * detected with the construct below!
 			 */
 			if (ldns_dname_is_subdomain(owner, cut) &&
 					!ldns_dnssec_rrsets_contains_type(
