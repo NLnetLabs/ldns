@@ -76,7 +76,7 @@ extern "C" {
 /**
  * Output format specifier
  *
- * Determines how Packets, Resource Records and Resource record data fiels are
+ * Determines how Packets, Resource Records and Resource record data field are
  * formatted when printing or converting to string.
  * Currently it is only used to specify what aspects of a Resource Record are
  * annotated in the comment section of the textual representation the record.
