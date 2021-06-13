@@ -11,7 +11,7 @@
 	* Lint fixes for the code
 	* Bugzilla was setup for drill
 	* Bug #97 (drill); -S crash was fixed
-	* Add -Q (quiet) flag was added. This supresses output from drill.
+	* Add -Q (quiet) flag was added. This suppresses output from drill.
 
 1.0-pre2: 20 Jun 2005: drill-team
 	* Second prerelease
