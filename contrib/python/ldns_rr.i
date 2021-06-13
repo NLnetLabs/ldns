@@ -1424,9 +1424,9 @@ to create :class:`ldns_rr` instances.
 
         def rrsig_set_expiration(self, f):
             """
-               Sets the expireation date of a LDNS_RR_TYPE_RRSIG rr.
+               Sets the expiration date of a LDNS_RR_TYPE_RRSIG rr.
                
-               :param f: The expireation date to set.
+               :param f: The expiration date to set.
                :type f: :class:`ldns_rdf`
                :throws TypeError: when `f` of non-:class:`ldns_rdf` type.
                :return: (bool) True on success, False otherwise.

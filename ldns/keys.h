@@ -531,7 +531,7 @@ uint32_t ldns_key_inception(const ldns_key *k);
 /**
  * return the key's expiration date
  * \param[in] k the key
- * \return the experiration date
+ * \return the expiration date
  */
 uint32_t ldns_key_expiration(const ldns_key *k);
 /**
