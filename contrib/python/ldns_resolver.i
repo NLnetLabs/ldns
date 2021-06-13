@@ -431,7 +431,7 @@ record."
                Ask the resolver about name and return all address records.
 
                :param name: The name to look for. String is automatically
-                   converrted to dname.
+                   converted to dname.
                :type name: :class:`ldns_dname` or str
                :param aclass: The class to use.
                :type aclass: ldns_rr_class
