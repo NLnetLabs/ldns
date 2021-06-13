@@ -121,7 +121,7 @@ ldns_key | ldns_key_new, ldns_key_new_frm_algorithm,ldns_key_new_frm_fp,ldns_key
 
 ### MIEK TOT HIER TOT HIER
 
-# errr.h
+# error.h
 ldns_get_errorstr_by_id, ldns_status - errors
 
 ### net.h
