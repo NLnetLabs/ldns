@@ -745,7 +745,7 @@
 	* DLV RR type added
 	* TCP fallback system has been improved
 	* HMAC-SHA256 TSIG support has been added.
-	* TTLS are now correcly set in NSEC(3) records when signing zones
+	* TTLS are now correctly set in NSEC(3) records when signing zones
 
 	EXAMPLE TOOLS:
 	* New example: ldns-revoke to revoke DNSKEYs according to RFC5011
