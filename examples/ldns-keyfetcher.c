@@ -1,6 +1,6 @@
 /*
  * ldns-keyfetcher retrieves the DNSKEYS for a certain domain
- * It traces the authoritatives nameservers down from the root
+ * It traces the authoritative nameservers down from the root
  * And uses TCP, to minimize spoofing danger.
  *
  * (c) NLnet Labs, 2006 - 2008
