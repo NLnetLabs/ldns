@@ -497,7 +497,7 @@ case "$enable_gost" in
         AC_CHECK_FUNC(EVP_PKEY_set_type_str, [],[AC_MSG_ERROR([OpenSSL >= 1.0.0 is needed for GOST support or rerun with --disable-gost])])
         AC_CHECK_FUNC(EC_KEY_new, [], [AC_MSG_ERROR([No ECC functions found in OpenSSL: please upgrade OpenSSL or rerun with --disable-gost])])
 	AC_CHECK_GOST_WORKS
-	AC_ARG_ENABLE(gost-anyway, AC_HELP_STRING([--enable-gost-anyway], [Enable GOST even whithout a GOST engine installed]))
+	AC_ARG_ENABLE(gost-anyway, AC_HELP_STRING([--enable-gost-anyway], [Enable GOST even without a GOST engine installed]))
 	if test "$ac_cv_c_gost_works" != "no" -o "$enable_gost_anyway" = "yes"; then
 		if test "$ac_cv_c_gost_works" = "no"; then
 			AC_MSG_RESULT([no, but compiling with GOST support anyway])
