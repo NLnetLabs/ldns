@@ -204,7 +204,7 @@ class resolver:
 			            defaults to settings from /etc/resolv.conf
 			* dnssec -- should the resolver try and use dnssec or not?
 		    * tcp -- should the resolver use TCP
-		             'auto' is a depricated work around for old ldns problems
+		             'auto' is a deprecated work around for old ldns problems
 		    * port -- the port to use, must be the same for all nameservers
 
 			"""
