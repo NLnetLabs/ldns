@@ -238,7 +238,7 @@ class resolver:
 			* rr_type -- the record type to query for
 			* rr_class -- the class to query for, defaults to IN (Internet)
 			* flags -- the flags to send the query with 
-			* tries -- the number of times to attempt to acheive query in case of packet loss, etc
+			* tries -- the number of times to attempt to achieve query in case of packet loss, etc
 			
 			**Examples**
 			
