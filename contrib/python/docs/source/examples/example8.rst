@@ -14,4 +14,4 @@ Signing consists of three steps
 
 2. In the second step, the private and public key is readed and public key is inserted into zone (as DNSKEY). 
 
-3. In the last step, the DNSSEC zone instace is created and all the RRs from zone file are copied here. Then, all the records are signed using :meth:`ldns.ldns_zone.sign` method. If the signing was successfull, the content of DNSSEC zone is written to a file.
+3. In the last step, the DNSSEC zone instance is created and all the RRs from zone file are copied here. Then, all the records are signed using :meth:`ldns.ldns_zone.sign` method. If the signing was successful, the content of DNSSEC zone is written to a file.
