@@ -196,7 +196,7 @@ ldns_tsig_mac_new(ldns_rdf **tsig_mac, const uint8_t *pkt_wire, size_t pkt_wire_
 		return LDNS_STATUS_MEM_ERR;
 	}
 	/*
-	 * prepare the digestable information
+	 * prepare the digestible information
 	 */
 	data_buffer = ldns_buffer_new(LDNS_MAX_PACKETLEN);
 	if (!data_buffer) {
