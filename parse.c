@@ -39,7 +39,7 @@ ldns_fget_token_l_st(FILE *f, char **token, size_t *limit, bool fixed
 	const char *d;
 	const char *del;
 
-	/* standard delimeters */
+	/* standard delimiters */
 	if (!delim) {
 		/* from isspace(3) */
 		del = LDNS_PARSE_NORMAL;
