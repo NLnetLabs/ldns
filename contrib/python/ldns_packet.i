@@ -736,7 +736,7 @@ This simple example instances a resolver in order to resolve NS for nic.cz."
             """
                Return the packet's edns data.
                
-               :return: (:class:`ldns_rdf`) The ensd data.
+               :return: (:class:`ldns_rdf`) The edns data.
             """
             return _ldns._ldns_pkt_edns_data(self)
             #parameters: const ldns_pkt *,
