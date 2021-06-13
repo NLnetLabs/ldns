@@ -68,7 +68,7 @@ A small abstract will come here, TBD.
 <section title="Introduction">
 <t>
 LibDNS (or lDNS) is modelled after the Net::DNS perl library. It has
-been shown that Net::DNS  can be used vefficiently for
+been shown that Net::DNS  can be used efficiently for
 programming DNS aware applications. We want to bring the same
 level of efficiency to C programmers.
 </t>
