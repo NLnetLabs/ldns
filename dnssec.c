@@ -1908,7 +1908,7 @@ ldns_convert_ecdsa_rrsig_rdf2asn1(ldns_buffer *target_buffer,
         const ldns_rdf *sig_rdf)
 {
         /* convert from two BIGNUMs in the rdata buffer, to ASN notation.
-	 * ASN preable:  30440220 <R 32bytefor256> 0220 <S 32bytefor256>
+	 * ASN preamble:  30440220 <R 32bytefor256> 0220 <S 32bytefor256>
 	 * the '20' is the length of that field (=bnsize).
 	 * the '44' is the total remaining length.
 	 * if negative, start with leading zero.
