@@ -849,7 +849,7 @@ void ldns_pkt_set_answer(ldns_pkt *p, ldns_rr_list *rr);
 void ldns_pkt_set_question(ldns_pkt *p, ldns_rr_list *rr);
 
 /**
- * directly set the auhority section
+ * directly set the authority section
  * \param[in] p packet to operate on
  * \param[in] rr rrlist to set
  */
