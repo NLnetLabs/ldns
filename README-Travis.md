@@ -239,7 +239,7 @@ If you are working from a developer machine you probably already have the necess
 
 The fourth step builds OpenSSL. OpenSSL is built for iOS using the scripts `contrib/ios/install_openssl.sh`. The script downloads, configures and installs the latest release version of the OpenSSL libraries. OpenSSL is configured with `--prefix="$IOS_PREFIX"` so the headers are placed in `$IOS_PREFIX/include` directory, and the libraries are placed in the `$IOS_PREFIX/lib` directory.
 
-`IOS_PREFIX` is the value `$HOME/$IOS_SDK-$IOS_CPU`. The scheme handles both iOS SDKs and cpu architectures so the pair recieves a unique installation directory. The libraries will be installed in `$HOME/iPhoneOS-armv7s`, `$HOME/iPhoneOS-arm64`, `$HOME/iPhoneSimulator-i386`, etc. For Autotools projects, the appropriate `PKG_CONFIG_PATH` is exported.
+`IOS_PREFIX` is the value `$HOME/$IOS_SDK-$IOS_CPU`. The scheme handles both iOS SDKs and cpu architectures so the pair receives a unique installation directory. The libraries will be installed in `$HOME/iPhoneOS-armv7s`, `$HOME/iPhoneOS-arm64`, `$HOME/iPhoneSimulator-i386`, etc. For Autotools projects, the appropriate `PKG_CONFIG_PATH` is exported.
 
 `PKG_CONFIG_PATH` is an important variable. It is the userland equivalent to sysroot, and allows Autotools to find non-system headers and libraries for an architecture. Typical `PKG_CONFIG_PATH` are `$HOME/iPhoneOS-armv7s/lib/pkgconfig` and `$HOME/iPhoneOS-arm64/lib/pkgconfig`.
 
