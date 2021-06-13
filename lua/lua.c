@@ -266,7 +266,7 @@ l_pkt_print(lua_State *L)
 
 /*
 ===========
- NETWORKIBG
+ NETWORKING
 ===========
  */
 
