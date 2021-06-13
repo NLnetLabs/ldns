@@ -21,7 +21,7 @@ ldns_dnssec_data_chain_new(void)
 	ldns_dnssec_data_chain *nc = LDNS_CALLOC(ldns_dnssec_data_chain, 1);
         if(!nc) return NULL;
 	/* 
-	 * not needed anymore because CALLOC initalizes everything to zero.
+	 * not needed anymore because CALLOC initializes everything to zero.
 
 	nc->rrset = NULL;
 	nc->parent_type = 0;
