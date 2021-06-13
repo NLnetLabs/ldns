@@ -143,7 +143,7 @@ retrieve_dnskeys(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 		/* remove the old nameserver from the resolver */
 		while((pop = ldns_resolver_pop_nameserver(res))) { ldns_rdf_deep_free(pop); }
 
-		/* also check for new_nss emptyness */
+		/* also check for new_nss emptiness */
 
 		if (!new_nss_aaaa && !new_nss_a) {
 			/* 
