@@ -309,7 +309,7 @@ unsigned char *ldns_key_new_frm_fp_hmac(FILE *fp, size_t *hmac_size);
 unsigned char *ldns_key_new_frm_fp_hmac_l(FILE *fp, int *line_nr, size_t *hmac_size);
 #endif /* LDNS_BUILD_CONFIG_HAVE_SSL */
 
-/* acces write functions */
+/* access write functions */
 /**
  * Set the key's algorithm
  * \param[in] k the key
