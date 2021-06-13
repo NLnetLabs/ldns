@@ -17,7 +17,7 @@
 /**
  * Main unit test program. Setup, teardown and report errors.
  * @param argc: arg count.
- * @param argv: array of commandline arguments.
+ * @param argv: array of command line arguments.
  */
 int main(int argc, char* argv[])
 {
