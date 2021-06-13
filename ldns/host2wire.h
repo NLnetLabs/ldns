@@ -130,7 +130,7 @@ ldns_status ldns_rrsig2buffer_wire(ldns_buffer *output, const ldns_rr *sigrr);
  * Converts an rr's rdata to wireformat, while excluding
  * the ownername and all the stuff before the rdata.
  * This is needed in DNSSEC keytag calculation, the ds
- * calcalution from the key and maybe elsewhere.
+ * calculation from the key and maybe elsewhere.
  *
  * \param[out] *output buffer where to put the result
  * \param[in] *rr rr to operate on
