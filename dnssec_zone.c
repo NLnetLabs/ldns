@@ -323,7 +323,7 @@ ldns_dnssec_name_new(void)
 		return NULL;
 	}
 	/*
-	 * not needed anymore because CALLOC initalizes everything to zero.
+	 * not needed anymore because CALLOC initializes everything to zero.
 
 	new_name->name = NULL;
 	new_name->rrsets = NULL;
