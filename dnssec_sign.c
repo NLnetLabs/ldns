@@ -694,7 +694,7 @@ ldns_dnssec_zone_mark_and_get_glue(ldns_dnssec_zone *zone,
 	/* When the cut is caused by a delegation, below_delegation will be 1.
 	 * When caused by a DNAME, below_delegation will be 0.
 	 */
-	int below_delegation = -1; /* init suppresses comiler warning */
+	int below_delegation = -1; /* init suppresses compiler warning */
 	ldns_status s;
 
 	if (!zone || !zone->names) {
