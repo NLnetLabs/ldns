@@ -716,7 +716,7 @@
 	  from Shane Kerr, bug id 188)
 	* zone.c memory leaks on error and allocation checks fixed (patch
 	from Shane Kerr, bug id 189)
-	* ldns-zplit output and error messages fixed (patch from Shane Kerr,
+	* ldns-zsplit output and error messages fixed (patch from Shane Kerr,
 	  bug id 190)
 	* Fixed potential buffer overflow in ldns_str2rdf_dname
 	* Signing code no longer signs delegation NS rrsets
