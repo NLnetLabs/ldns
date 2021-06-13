@@ -929,7 +929,7 @@
 	API:
 	Changed:
 	* renamed ldns/dns.h to ldns/ldns.h
-	* ldns_rr_new_frm_str() is extented with an extra variable which
+	* ldns_rr_new_frm_str() is extended with an extra variable which
 	  in common use may be NULL. This trickles through to:
 	  o ldns_rr_new_frm_fp
 	  o ldns_rr_new_frm_fp_l
