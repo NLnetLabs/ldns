@@ -284,7 +284,7 @@ l_server_socket_udp(lua_State *L)
 		return 0;
 	}
 
-	/* use default timeout - maybe this gets to be configureable */
+	/* use default timeout - maybe this gets to be configurable */
 	timeout.tv_sec = LDNS_DEFAULT_TIMEOUT_SEC;
 	timeout.tv_usec = LDNS_DEFAULT_TIMEOUT_USEC;
 
@@ -317,7 +317,7 @@ l_client_socket_udp(lua_State *L)
 		return 0;
 	}
 
-	/* use default timeout - maybe this gets to be configureable */
+	/* use default timeout - maybe this gets to be configurable */
 	timeout.tv_sec = LDNS_DEFAULT_TIMEOUT_SEC;
 	timeout.tv_usec = LDNS_DEFAULT_TIMEOUT_USEC;
 
