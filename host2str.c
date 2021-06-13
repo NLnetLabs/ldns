@@ -1305,7 +1305,7 @@ ldns_rdf2buffer_str_hip(ldns_buffer *output, const ldns_rdf *rdf)
 	return ldns_buffer_status(output);
 }
 
-/* implementation mimiced from ldns_rdf2buffer_str_ipseckey */
+/* implementation mimicked from ldns_rdf2buffer_str_ipseckey */
 ldns_status
 ldns_rdf2buffer_str_amtrelay(ldns_buffer *output, const ldns_rdf *rdf)
 {
