@@ -398,7 +398,7 @@
 	* Update of libdns.vim (thanks Miek Gieben)
 	* Added the ldnsx Python module to our contrib section, which adds even
 	  more pythonisticism to the usage of ldns with  Python. (Many thanks
-	  to Christpher Olah and Paul Wouters)
+	  to Christopher Olah and Paul Wouters)
 	  The ldnsx module is automatically installed when --with-pyldns is
 	  used with configuring, but may explicitly be excluded with the
 	  --without-pyldnsx option to configure.
