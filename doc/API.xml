@@ -336,7 +336,7 @@ Returns a pointer to a ldns_rr_list of representing the additional
 section of the packet.
 	
 </t>
-<t hangText=" void ldsn_pkt_print(ldns_pkt *pkt):">
+<t hangText=" void ldns_pkt_print(ldns_pkt *pkt):">
 Prints the packet data on the standard output in an ASCII format similar
 to that used in DNS zone files. See RFC1035.
       
