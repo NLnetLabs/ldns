@@ -355,9 +355,9 @@ bool ldns_pkt_ad(const ldns_pkt *p);
  */
 ldns_pkt_opcode ldns_pkt_get_opcode(const ldns_pkt *p);
 /**
- * Return the packet's respons code
+ * Return the packet's response code
  * \param[in] p the packet
- * \return the respons code
+ * \return the response code
  */
 ldns_pkt_rcode ldns_pkt_get_rcode(const ldns_pkt *p);
 /**
@@ -586,7 +586,7 @@ void ldns_pkt_set_ad(ldns_pkt *p, bool b);
  */
 void ldns_pkt_set_opcode(ldns_pkt *p, ldns_pkt_opcode c);
 /**
- * Set the packet's respons code
+ * Set the packet's response code
  * \param[in] p the packet
  * \param[in] c the rcode
  */

@@ -30,7 +30,7 @@ extern "C" {
  */
 
 /**
- * Sends a buffer to an ip using udp and return the respons as a ldns_pkt
+ * Sends a buffer to an ip using udp and return the response as a ldns_pkt
  * \param[in] qbin the ldns_buffer to be send
  * \param[in] to the ip addr to send to
  * \param[in] tolen length of the ip addr
@@ -90,7 +90,7 @@ int ldns_tcp_bgsend2(ldns_buffer *qbin, const struct sockaddr_storage *to, sockl
 int ldns_tcp_bgsend(ldns_buffer *qbin, const struct sockaddr_storage *to, socklen_t tolen, struct timeval timeout);
 
 /**
- * Sends a buffer to an ip using tcp and return the respons as a ldns_pkt
+ * Sends a buffer to an ip using tcp and return the response as a ldns_pkt
  * \param[in] qbin the ldns_buffer to be send
  * \param[in] qbin the ldns_buffer to be send
  * \param[in] to the ip addr to send to
