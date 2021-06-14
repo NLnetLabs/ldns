@@ -295,7 +295,7 @@
 	  in sync.
 	* Let ldns_pkt_push_rr now return false on (memory) errors.
 	* Make buffer_export comply to documentation and fix buffer2str
-	* Various improvements and fixes of pyldns from Katel Slany
+	* Various improvements and fixes of pyldns from Karel Slany
 	  now documented in their own Changelog.
 	* bugfix: Make ldns_resolver_pop_nameserver clear the array when
 	  there was only one.
