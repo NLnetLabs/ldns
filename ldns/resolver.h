@@ -766,7 +766,7 @@ bool ldns_axfr_complete(const ldns_resolver *resolver);
 
 /**
  * Returns a pointer to the last ldns_pkt that was sent by the server in the AXFR transfer
- * uasable for instance to get the error code on failure
+ * usable for instance to get the error code on failure
  * \param[in] res the resolver that was used in the axfr transfer
  * \return ldns_pkt the last packet sent
  */
