@@ -823,7 +823,7 @@ ldns_rr_set_rdf(ldns_rr *rr, const ldns_rdf *f, size_t position)
 
 	rd_count = ldns_rr_rd_count(rr);
 	if (position < rd_count) {
-		/* dicard the old one */
+		/* discard the old one */
 		pop = rr->_rdata_fields[position];
 		rr->_rdata_fields[position] = (ldns_rdf*)f;
 		return pop;
@@ -2491,7 +2491,7 @@ static ldns_rr_descriptor rdata_field_descriptors[] = {
 /*---------------------------------------------------------------------------*
  * The functions below return an bitmap RDF with the space required to set
  * or unset all known RR types. Arguably these functions are better situated
- * in rdata.c, however for the space calculation it is necesarry to walk
+ * in rdata.c, however for the space calculation it is necessary to walk
  * through rdata_field_descriptors which is not easily possible from anywhere
  * other than rr.c where it is declared static.
  *

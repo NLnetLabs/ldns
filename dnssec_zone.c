@@ -323,7 +323,7 @@ ldns_dnssec_name_new(void)
 		return NULL;
 	}
 	/*
-	 * not needed anymore because CALLOC initalizes everything to zero.
+	 * not needed anymore because CALLOC initializes everything to zero.
 
 	new_name->name = NULL;
 	new_name->rrsets = NULL;
@@ -589,7 +589,7 @@ rr_is_rrsig_covering(ldns_rr* rr, ldns_rr_type t)
 /* When the zone is first read into an list and then inserted into an
  * ldns_dnssec_zone (rbtree) the nodes of the rbtree are allocated close (next)
  * to each other. Because ldns-verify-zone (the only program that uses this
- * function) uses the rbtree mostly for sequentual walking, this results
+ * function) uses the rbtree mostly for sequential walking, this results
  * in a speed increase (of 15% on linux) because we have less CPU-cache misses.
  */
 #define FASTER_DNSSEC_ZONE_NEW_FRM_FP 1 /* Because of L2 cache efficiency */
@@ -1714,7 +1714,7 @@ ldns_dnssec_zone_verify_zonemd(ldns_dnssec_zone *zone)
 	if (!zonemd) {
 		ldns_rbnode_t *nsec3_node;
 
-		/* we need proof of non-existance for ZONEMD at the apex */
+		/* we need proof of non-existence for ZONEMD at the apex */
 		if (zone->soa->nsec) {
 			if (ldns_nsec_bitmap_covers_type(ldns_nsec_get_bitmap(
 							zone->soa->nsec),

@@ -266,7 +266,7 @@ l_pkt_print(lua_State *L)
 
 /*
 ===========
- NETWORKIBG
+ NETWORKING
 ===========
  */
 
@@ -284,11 +284,11 @@ l_server_socket_udp(lua_State *L)
 		return 0;
 	}
 
-	/* use default timeout - maybe this gets to be configureable */
+	/* use default timeout - maybe this gets to be configurable */
 	timeout.tv_sec = LDNS_DEFAULT_TIMEOUT_SEC;
 	timeout.tv_usec = LDNS_DEFAULT_TIMEOUT_USEC;
 
-	/* socklen isn't really usefull here */
+	/* socklen isn't really useful here */
 	to = ldns_rdf2native_sockaddr_storage(ip, port, &socklen);
 	if (!to) {
 		return 0;
@@ -317,11 +317,11 @@ l_client_socket_udp(lua_State *L)
 		return 0;
 	}
 
-	/* use default timeout - maybe this gets to be configureable */
+	/* use default timeout - maybe this gets to be configurable */
 	timeout.tv_sec = LDNS_DEFAULT_TIMEOUT_SEC;
 	timeout.tv_usec = LDNS_DEFAULT_TIMEOUT_USEC;
 
-	/* socklen isn't really usefull here */
+	/* socklen isn't really useful here */
 	to = ldns_rdf2native_sockaddr_storage(ip, port, &socklen);
 	if (!to) {
 		return 0;

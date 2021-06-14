@@ -1,4 +1,4 @@
-1.7.2	2020-??-??
+1.7.2	2021-??-??
 	* bugfix #38: Print "line" before line number when printing
 	  zone parse errors. Thanks Petr Špaček.
 	* bugfix: Revert unused variables in ldns-config removal patch.
@@ -25,6 +25,7 @@
 	* bugfix #119: Let example tools read longer RR's than
 	  LDNS_MAX_LINELEN
 	* Add SVCPARAMS to python ldns_rdf_type2str function.
+	* PR #134 Miscellaneous spelling fixes. Thanks jsoref!
 
 1.7.1	2019-07-26
 	* bugfix: Manage verification paths for OpenSSL >= 1.1.0
@@ -295,7 +296,7 @@
 	  in sync.
 	* Let ldns_pkt_push_rr now return false on (memory) errors.
 	* Make buffer_export comply to documentation and fix buffer2str
-	* Various improvements and fixes of pyldns from Katel Slany
+	* Various improvements and fixes of pyldns from Karel Slany
 	  now documented in their own Changelog.
 	* bugfix: Make ldns_resolver_pop_nameserver clear the array when
 	  there was only one.
@@ -334,7 +335,7 @@
 	* bugfix #433: Allocate rdf using ldns_rdf_new in ldns_dname_label
 	* bugfix #432: Use LDNS_MALLOC & LDNS_FREE i.s.o. malloc & free
 	* bugfix #431: Added error message for LDNS_STATUS_INVALID_B32_EXT
-	* bugfix #427: Explicitely link ssl with the programs that use it.
+	* bugfix #427: Explicitly link ssl with the programs that use it.
 	* Fix reading \DDD: Error on values that are outside range (>255).
 	* bugfix #429: fix doxyparse.pl fails on NetBSD because specified
 	  path to perl.
@@ -398,7 +399,7 @@
 	* Update of libdns.vim (thanks Miek Gieben)
 	* Added the ldnsx Python module to our contrib section, which adds even
 	  more pythonisticism to the usage of ldns with  Python. (Many thanks
-	  to Christpher Olah and Paul Wouters)
+	  to Christopher Olah and Paul Wouters)
 	  The ldnsx module is automatically installed when --with-pyldns is
 	  used with configuring, but may explicitly be excluded with the
 	  --without-pyldnsx option to configure.
@@ -426,7 +427,7 @@
 	* bugfix #380: Minimizing effect of discrepancies in sizeof(bool) at
 	  build time and when used.
 	* bugfix #383: Fix detection of empty nonterminals of multiple labels.
-	* Fixed the ommission of rrsets in nsec(3)s and rrsigs to all occluded
+	* Fixed the omission of rrsets in nsec(3)s and rrsigs to all occluded
 	  names (in stead of just the ones that contain glue only) and all
 	  occluded records on the delegation points (in stead of just the glue).
 	* Clarify the operation of ldns_dnssec_mark_glue and the usage of
@@ -716,7 +717,7 @@
 	  from Shane Kerr, bug id 188)
 	* zone.c memory leaks on error and allocation checks fixed (patch
 	from Shane Kerr, bug id 189)
-	* ldns-zplit output and error messages fixed (patch from Shane Kerr,
+	* ldns-zsplit output and error messages fixed (patch from Shane Kerr,
 	  bug id 190)
 	* Fixed potential buffer overflow in ldns_str2rdf_dname
 	* Signing code no longer signs delegation NS rrsets
@@ -745,7 +746,7 @@
 	* DLV RR type added
 	* TCP fallback system has been improved
 	* HMAC-SHA256 TSIG support has been added.
-	* TTLS are now correcly set in NSEC(3) records when signing zones
+	* TTLS are now correctly set in NSEC(3) records when signing zones
 
 	EXAMPLE TOOLS:
 	* New example: ldns-revoke to revoke DNSKEYs according to RFC5011
@@ -820,7 +821,7 @@
 28 Nov 2007 1.2.2:
 	* Added support for HMAC-MD5 keys in generator
 	* Added a new example tool (written by Ondrej Sury): ldns-compare-zones
-	* ldns-keygen now checks key sizes for rfc conformancy
+	* ldns-keygen now checks key sizes for rfc conformance
 	* ldns-signzone outputs SSL error if present
 	* Fixed manpages (thanks to Ondrej Sury)
 	* Fixed Makefile for -j <x>
@@ -910,7 +911,7 @@
 	* ldns-dpa was added to the examples - this is the Dns Packet
 	  Analyzer tool.
 	* ldnsd - as very, very simple nameserver impl.
-	* ldns-zsplit - split zones for parrallel signing
+	* ldns-zsplit - split zones for parallel signing
 	* ldns-zcat - cat split zones back together
 	* ldns-keyfetcher - Fetches DNSKEY records with a few (non-strong,
 	  non-DNSSEC) anti-spoofing techniques.
@@ -929,7 +930,7 @@
 	API:
 	Changed:
 	* renamed ldns/dns.h to ldns/ldns.h
-	* ldns_rr_new_frm_str() is extented with an extra variable which
+	* ldns_rr_new_frm_str() is extended with an extra variable which
 	  in common use may be NULL. This trickles through to:
 	  o ldns_rr_new_frm_fp
 	  o ldns_rr_new_frm_fp_l
@@ -1003,7 +1004,7 @@
 13 Jun 2005: 0.65: ldns-team
 	* Repository is online at:
 	  http://www.nlnetlabs.nl/ldns/svn/
-	* Apply reference copying throuhgout ldns, except in 2
+	* Apply reference copying throughout ldns, except in 2
 	  places in the ldns_resolver structure (._domain and
 	 ._nameservers)
 	* Usual array of bugfixes

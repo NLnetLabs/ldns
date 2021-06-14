@@ -180,7 +180,7 @@ ldns_zone_new(void)
 	return z;
 }
 
-/* we regocnize:
+/* we recognize:
  * $TTL, $ORIGIN
  */
 ldns_status

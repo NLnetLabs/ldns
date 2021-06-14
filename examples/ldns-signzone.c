@@ -337,7 +337,7 @@ find_or_create_pubkey(const char *keyfile_name_base, ldns_key *key, ldns_zone *o
 
 #ifndef OPENSSL_NO_ENGINE
 /*
- * For keys coming from the engine (-k or -K), parse algoritm specification.
+ * For keys coming from the engine (-k or -K), parse algorithm specification.
  */
 static enum ldns_enum_signing_algorithm
 parse_algspec ( const char * const p )

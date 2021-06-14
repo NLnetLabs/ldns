@@ -76,11 +76,11 @@ extern "C" {
 /**
  * Output format specifier
  *
- * Determines how Packets, Resource Records and Resource record data fiels are
+ * Determines how Packets, Resource Records and Resource record data field are
  * formatted when printing or converting to string.
  * Currently it is only used to specify what aspects of a Resource Record are
  * annotated in the comment section of the textual representation the record.
- * This is speciefed with flags and potential exra data (such as for example
+ * This is specified with flags and potential extra data (such as for example
  * a lookup map of hashes to real names for annotation NSEC3 records).
  */
 struct ldns_struct_output_format
@@ -110,7 +110,7 @@ typedef struct ldns_struct_output_format_storage ldns_output_format_storage;
  */
 extern const ldns_output_format *ldns_output_format_nocomments;
 /**
- * Standard output format record that annotated only DNSKEY RR's with commenti
+ * Standard output format record that annotated only DNSKEY RR's with comment
  * text.
  */
 extern const ldns_output_format *ldns_output_format_onlykeyids;

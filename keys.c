@@ -84,7 +84,7 @@ ldns_key_new(void)
 	if (!newkey) {
 		return NULL;
 	} else {
-		/* some defaults - not sure wether to do this */
+		/* some defaults - not sure whether to do this */
 		ldns_key_set_use(newkey, true);
 		ldns_key_set_flags(newkey, LDNS_KEY_ZONE_KEY);
 		ldns_key_set_origttl(newkey, 0);
@@ -776,7 +776,7 @@ ldns_key_new_frm_fp_rsa_l(FILE *f, int *line_nr)
 	}
 
 	/* I could use functions again, but that seems an overkill,
-	 * allthough this also looks tedious
+	 * although this also looks tedious
 	 */
 
 	/* Modules, rsa->n */

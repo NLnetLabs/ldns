@@ -309,7 +309,7 @@ unsigned char *ldns_key_new_frm_fp_hmac(FILE *fp, size_t *hmac_size);
 unsigned char *ldns_key_new_frm_fp_hmac_l(FILE *fp, int *line_nr, size_t *hmac_size);
 #endif /* LDNS_BUILD_CONFIG_HAVE_SSL */
 
-/* acces write functions */
+/* access write functions */
 /**
  * Set the key's algorithm
  * \param[in] k the key
@@ -431,7 +431,7 @@ void ldns_key_set_flags(ldns_key *k, uint16_t flags);
 /**
  * Set the keylist's key count to count
  * \param[in] key the key
- * \param[in] count the cuont
+ * \param[in] count the count
  */
 void ldns_key_list_set_key_count(ldns_key_list *key, size_t count);
 
@@ -531,7 +531,7 @@ uint32_t ldns_key_inception(const ldns_key *k);
 /**
  * return the key's expiration date
  * \param[in] k the key
- * \return the experiration date
+ * \return the expiration date
  */
 uint32_t ldns_key_expiration(const ldns_key *k);
 /**

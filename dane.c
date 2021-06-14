@@ -32,7 +32,7 @@
 /* OpenSSL context options. At the moment, disable SSLv2, SSLv3
  * and Compression, if available. TLSv1.0 is allowed at the moment.
  * TLSv1.1 is the first to provide elliptic curves, so it is usually
- * allowed in a TLS stack. TLSv1.2 is the first to provide authenc
+ * allowed in a TLS stack. TLSv1.2 is the first to provide authentication
  * modes of operation, like GCM. The defines below are a moving
  * target based on OpenSSL library version. Grep is useful to find
  * the defines: grep -IR SSL_OP_NO_ /usr/include/openssl.
@@ -250,7 +250,7 @@ ldns_dane_pkix_validate(X509* cert, STACK_OF(X509)* extra_certs,
 }
 
 
-/* Orinary PKIX validation of cert (with extra_certs to help)
+/* Ordinary PKIX validation of cert (with extra_certs to help)
  * against the CA's in store, but also return the validation chain.
  */
 static ldns_status

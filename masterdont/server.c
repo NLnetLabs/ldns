@@ -250,7 +250,7 @@ handle_listen(struct server_info_t *sinfo, struct socket_service* listen_v)
 		return;
 	}
 	if(fcntl(newfd, F_SETFL, O_NONBLOCK) == -1) {
-		printf("Error fnctl: %s\n", strerror(errno));
+		printf("Error fcntl: %s\n", strerror(errno));
 		close(newfd);
 		return;
 	}

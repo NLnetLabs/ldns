@@ -817,7 +817,7 @@ int ldns_rr_compare_wire(const ldns_buffer *rr1_buf, const ldns_buffer *rr2_buf)
 bool ldns_rr_compare_ds(const ldns_rr *rr1, const ldns_rr *rr2);
 
 /**
- * compares two rr listss.
+ * compares two rr lists.
  * \param[in] rrl1 the first one
  * \param[in] rrl2 the second one
  * \return 0 if equal

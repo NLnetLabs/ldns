@@ -658,7 +658,7 @@ ldns_dnssec_addresses_on_glue_list(
 						/* ldns_rr_list_push_rr()
 						 * returns false when unable
 						 * to increase the capacity
-						 * of the ldsn_rr_list
+						 * of the ldns_rr_list
 						 */
 					}
 				}
@@ -694,7 +694,7 @@ ldns_dnssec_zone_mark_and_get_glue(ldns_dnssec_zone *zone,
 	/* When the cut is caused by a delegation, below_delegation will be 1.
 	 * When caused by a DNAME, below_delegation will be 0.
 	 */
-	int below_delegation = -1; /* init suppresses comiler warning */
+	int below_delegation = -1; /* init suppresses compiler warning */
 	ldns_status s;
 
 	if (!zone || !zone->names) {
@@ -716,7 +716,7 @@ ldns_dnssec_zone_mark_and_get_glue(ldns_dnssec_zone *zone,
 			 * FIXME! If there are labels in between the SOA and
 			 * the cut, going from the authoritative space (below
 			 * the SOA) up into occluded space again, will not be
-			 * detected with the contruct below!
+			 * detected with the construct below!
 			 */
 			if (ldns_dname_is_subdomain(owner, cut) &&
 					!ldns_dnssec_rrsets_contains_type(

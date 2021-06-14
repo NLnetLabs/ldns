@@ -418,7 +418,7 @@ ldns_rdf2buffer_str_time(ldns_buffer *output, const ldns_rdf *rdf)
 	char date_buf[16];
 
 	memset(&tm, 0, sizeof(tm));
-	if (ldns_serial_arithmitics_gmtime_r(ldns_rdf2native_int32(rdf), time(NULL), &tm)
+	if (ldns_serial_arithmetics_gmtime_r(ldns_rdf2native_int32(rdf), time(NULL), &tm)
 	    && strftime(date_buf, 15, "%Y%m%d%H%M%S", &tm)) {
 		ldns_buffer_printf(output, "%s", date_buf);
 	}
@@ -713,8 +713,8 @@ ldns_rdf2buffer_str_loc(ldns_buffer *output, const ldns_rdf *rdf)
 	uint32_t longitude;
 	uint32_t latitude;
 	uint32_t altitude;
-	char northerness;
-	char easterness;
+	char latitude_hemisphere;
+	char longitude_hemisphere;
 	uint32_t h;
 	uint32_t m;
 	double s;
@@ -738,10 +738,10 @@ ldns_rdf2buffer_str_loc(ldns_buffer *output, const ldns_rdf *rdf)
 		altitude = ldns_read_uint32(&ldns_rdf_data(rdf)[12]);
 
 		if (latitude > equator) {
-			northerness = 'N';
+			latitude_hemisphere = 'N';
 			latitude = latitude - equator;
 		} else {
-			northerness = 'S';
+			latitude_hemisphere = 'S';
 			latitude = equator - latitude;
 		}
 		h = latitude / (1000 * 60 * 60);
@@ -750,13 +750,13 @@ ldns_rdf2buffer_str_loc(ldns_buffer *output, const ldns_rdf *rdf)
 		latitude = latitude % (1000 * 60);
 		s = (double) latitude / 1000.0;
 		ldns_buffer_printf(output, "%02u %02u %0.3f %c ",
-			h, m, s, northerness);
+			h, m, s, latitude_hemisphere);
 
 		if (longitude > equator) {
-			easterness = 'E';
+			longitude_hemisphere = 'E';
 			longitude = longitude - equator;
 		} else {
-			easterness = 'W';
+			longitude_hemisphere = 'W';
 			longitude = equator - longitude;
 		}
 		h = longitude / (1000 * 60 * 60);
@@ -765,8 +765,7 @@ ldns_rdf2buffer_str_loc(ldns_buffer *output, const ldns_rdf *rdf)
 		longitude = longitude % (1000 * 60);
 		s = (double) longitude / (1000.0);
 		ldns_buffer_printf(output, "%02u %02u %0.3f %c ",
-			h, m, s, easterness);
-
+			h, m, s, longitude_hemisphere);
 
 		s = ((double) altitude) / 100;
 		s -= 100000;
@@ -1305,7 +1304,7 @@ ldns_rdf2buffer_str_hip(ldns_buffer *output, const ldns_rdf *rdf)
 	return ldns_buffer_status(output);
 }
 
-/* implementation mimiced from ldns_rdf2buffer_str_ipseckey */
+/* implementation mimicked from ldns_rdf2buffer_str_ipseckey */
 ldns_status
 ldns_rdf2buffer_str_amtrelay(ldns_buffer *output, const ldns_rdf *rdf)
 {
@@ -2174,7 +2173,7 @@ ldns_pkt2buffer_str_fmt(ldns_buffer *output,
 
 		}
 		ldns_buffer_printf(output, "\n");
-		/* add some futher fields */
+		/* add some further fields */
 		ldns_buffer_printf(output, ";; Query time: %d msec\n",
 				ldns_pkt_querytime(pkt));
 		if (ldns_pkt_edns(pkt)) {

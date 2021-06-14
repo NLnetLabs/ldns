@@ -1209,9 +1209,9 @@ main(int argc, char* const* argv)
 	int           ai_family = AF_UNSPEC;
 	int           transport = LDNS_DANE_TRANSPORT_TCP;
 
-	char*         name_str = NULL;	/* supress uninitialized warning */
+	char*         name_str = NULL;	/* suppress uninitialized warning */
 	ldns_rdf*     name;
-	uint16_t      port = 0;		/* supress uninitialized warning */
+	uint16_t      port = 0;		/* suppress uninitialized warning */
 
 	ldns_resolver* res            = NULL;
 	ldns_rdf*      nameserver_rdf = NULL;
@@ -1681,7 +1681,7 @@ main(int argc, char* const* argv)
 	}
 
 #if OPENSSL_VERSION_NUMBER < 0x10100000 || defined(HAVE_LIBRESSL)
-	/* ssl inititalize */
+	/* ssl initialize */
 	SSL_load_error_strings();
 	SSL_library_init();
 #endif

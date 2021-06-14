@@ -32,14 +32,14 @@ ldns_fget_token_l_st(FILE *f, char **token, size_t *limit, bool fixed
                     , const char *delim, int *line_nr)
 {
 	int c, prev_c;
-	int p; /* 0 -> no parenthese seen, >0 nr of ( seen */
+	int p; /* 0 -> no parentheses seen, >0 nr of ( seen */
 	int com, quoted;
 	char *t, *old_token;
 	size_t i;
 	const char *d;
 	const char *del;
 
-	/* standard delimeters */
+	/* standard delimiters */
 	if (!delim) {
 		/* from isspace(3) */
 		del = LDNS_PARSE_NORMAL;
@@ -271,7 +271,7 @@ ssize_t
 ldns_bget_token(ldns_buffer *b, char *token, const char *delim, size_t limit)
 {
 	int c, lc;
-	int p; /* 0 -> no parenthese seen, >0 nr of ( seen */
+	int p; /* 0 -> no parentheses seen, >0 nr of ( seen */
 	int com, quoted;
 	char *t;
 	size_t i;

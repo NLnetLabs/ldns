@@ -1,6 +1,6 @@
 /*
  * a error2str function to make sense of all the
- * error codes we have laying ardoun
+ * error codes we have laying around
  *
  * a Net::DNS like library for C
  * LibDNS Team @ NLnet Labs
