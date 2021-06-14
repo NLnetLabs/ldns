@@ -204,7 +204,7 @@ ldns_status ldns_dnssec_rrsets_set_type(ldns_dnssec_rrsets *rrsets,
 ldns_status ldns_dnssec_rrsets_add_rr(ldns_dnssec_rrsets *rrsets, ldns_rr *rr);
 
 /**
- * Print the given list of rrsets to the fiven file descriptor
+ * Print the given list of rrsets to the given file descriptor
  * 
  * \param[in] out the file descriptor to print to
  * \param[in] rrsets the list of RRsets to print
@@ -215,7 +215,7 @@ void ldns_dnssec_rrsets_print(FILE *out,
 		bool follow);
 
 /**
- * Print the given list of rrsets to the fiven file descriptor
+ * Print the given list of rrsets to the given file descriptor
  * 
  * \param[in] out the file descriptor to print to
  * \param[in] fmt the format of the textual representation
