@@ -74,7 +74,7 @@
 	* Dig is no longer needed to build drill
 
 0.7: Oct 21 2004: Miek
-	* reworked interal code
+	* reworked internal code
 	* DNSSEC is working, except the secure resolving
 	* build updates
 	* more sane options parsing
