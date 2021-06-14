@@ -1,6 +1,6 @@
 LDNSX: Easy DNS (including DNSSEC) via ldns.
 
-ldns is a great library. It is a powerfull tool for
+ldns is a great library. It is a powerful tool for
 working with DNS. python-ldns it is a straight up clone of the C
 interface, however that is not a very good interface for python. Its
 documentation is incomplete and some functions don't work as
