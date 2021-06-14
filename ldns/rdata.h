@@ -261,7 +261,7 @@ uint8_t *ldns_rdf_data(const ldns_rdf *rd);
 /**
  * allocates a new rdf structure and fills it.
  * This function DOES NOT copy the contents from
- * the buffer, unlinke ldns_rdf_new_frm_data()
+ * the buffer, unlike ldns_rdf_new_frm_data()
  * \param[in] type type of the rdf
  * \param[in] size size of the buffer
  * \param[in] data pointer to the buffer to be copied
@@ -272,7 +272,7 @@ ldns_rdf *ldns_rdf_new(ldns_rdf_type type, size_t size, void *data);
 /**
  * allocates a new rdf structure and fills it.
  * This function _does_ copy the contents from
- * the buffer, unlinke ldns_rdf_new()
+ * the buffer, unlike ldns_rdf_new()
  * \param[in] type type of the rdf
  * \param[in] size size of the buffer
  * \param[in] data pointer to the buffer to be copied
