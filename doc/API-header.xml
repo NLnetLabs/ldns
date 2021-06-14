@@ -99,7 +99,7 @@ its cryptography.
 <t>
 As said, lDNS is modelled after Net::DNS, therefor its application API
 looks very much like the one used for Net::DNS. Some modification are made
-ofcourse, because not all functionality of Perl can be caught in C.
+of course, because not all functionality of Perl can be caught in C.
 </t>
 
 <t>
