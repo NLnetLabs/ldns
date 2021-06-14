@@ -658,7 +658,7 @@ ldns_dnssec_addresses_on_glue_list(
 						/* ldns_rr_list_push_rr()
 						 * returns false when unable
 						 * to increase the capacity
-						 * of the ldsn_rr_list
+						 * of the ldns_rr_list
 						 */
 					}
 				}
