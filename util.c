@@ -312,6 +312,13 @@ ldns_serial_arithmetics_gmtime_r(int32_t time, time_t now, struct tm *result)
 #endif
 }
 
+/* alias function because of previously used wrong spelling */
+struct tm *
+ldns_serial_arithmitics_gmtime_r(int32_t time, time_t now, struct tm *result)
+{
+	return ldns_serial_arithmetics_gmtime_r(time, now, result);
+}
+
 /**
  * Init the random source
  * applications should call this if they need entropy data within ldns
