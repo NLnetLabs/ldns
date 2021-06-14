@@ -713,7 +713,7 @@ ldns_rdf2buffer_str_loc(ldns_buffer *output, const ldns_rdf *rdf)
 	uint32_t longitude;
 	uint32_t latitude;
 	uint32_t altitude;
-	char northerness;
+	char northerliness;
 	char easterness;
 	uint32_t h;
 	uint32_t m;
@@ -738,10 +738,10 @@ ldns_rdf2buffer_str_loc(ldns_buffer *output, const ldns_rdf *rdf)
 		altitude = ldns_read_uint32(&ldns_rdf_data(rdf)[12]);
 
 		if (latitude > equator) {
-			northerness = 'N';
+			northerliness = 'N';
 			latitude = latitude - equator;
 		} else {
-			northerness = 'S';
+			northerliness = 'S';
 			latitude = equator - latitude;
 		}
 		h = latitude / (1000 * 60 * 60);
@@ -750,7 +750,7 @@ ldns_rdf2buffer_str_loc(ldns_buffer *output, const ldns_rdf *rdf)
 		latitude = latitude % (1000 * 60);
 		s = (double) latitude / 1000.0;
 		ldns_buffer_printf(output, "%02u %02u %0.3f %c ",
-			h, m, s, northerness);
+			h, m, s, northerliness);
 
 		if (longitude > equator) {
 			easterness = 'E';

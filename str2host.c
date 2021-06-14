@@ -926,7 +926,7 @@ ldns_str2rdf_loc(ldns_rdf **rd, const char *str)
 	uint8_t vert_pre_b = 1, vert_pre_e = 3;
 
 	double s = 0.0;
-	bool northerness;
+	bool northerliness;
 	bool easterness;
 
 	char *my_str = (char *) str;
@@ -963,9 +963,9 @@ north:
 	}
 
 	if (*my_str == 'N') {
-		northerness = true;
+		northerliness = true;
 	} else if (*my_str == 'S') {
-		northerness = false;
+		northerliness = false;
 	} else {
 		return LDNS_STATUS_INVALID_STR;
 	}
@@ -979,7 +979,7 @@ north:
 	latitude = (uint32_t) s;
 	latitude += 1000 * 60 * m;
 	latitude += 1000 * 60 * 60 * h;
-	if (northerness) {
+	if (northerliness) {
 		latitude = equator + latitude;
 	} else {
 		latitude = equator - latitude;
