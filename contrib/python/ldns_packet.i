@@ -1346,7 +1346,7 @@ This simple example instances a resolver in order to resolve NS for nic.cz."
 
         def set_rcode(self, c):
             """
-               Set the packet's respons code.
+               Set the packet's response code.
                
                :param c: The rcode.
                :type c: uint8_t
