@@ -751,7 +751,7 @@ to create :class:`ldns_rr` instances.
                :type origin: :class:`ldns_dname`
                :param prev: When the owner is white spaces use this.
                :type prev: :class:`ldns_rdf`
-               :param raiseException: Iif True, an exception occurs in case
+               :param raiseException: If True, an exception occurs in case
                    a resolver object can't be created.
                :throws Exception: If `raiseException` is set and the input
                    cannot be read.
