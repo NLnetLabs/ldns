@@ -926,8 +926,8 @@ ldns_str2rdf_loc(ldns_rdf **rd, const char *str)
 	uint8_t vert_pre_b = 1, vert_pre_e = 3;
 
 	double s = 0.0;
-	bool northerness;
-	bool easterness;
+	bool northern_hemisphere;
+	bool eastern_hemisphere;
 
 	char *my_str = (char *) str;
 
@@ -963,9 +963,9 @@ north:
 	}
 
 	if (*my_str == 'N') {
-		northerness = true;
+		northern_hemisphere = true;
 	} else if (*my_str == 'S') {
-		northerness = false;
+		northern_hemisphere = false;
 	} else {
 		return LDNS_STATUS_INVALID_STR;
 	}
@@ -979,7 +979,7 @@ north:
 	latitude = (uint32_t) s;
 	latitude += 1000 * 60 * m;
 	latitude += 1000 * 60 * 60 * h;
-	if (northerness) {
+	if (northern_hemisphere) {
 		latitude = equator + latitude;
 	} else {
 		latitude = equator - latitude;
@@ -1020,9 +1020,9 @@ east:
 	}
 
 	if (*my_str == 'E') {
-		easterness = true;
+		eastern_hemisphere = true;
 	} else if (*my_str == 'W') {
-		easterness = false;
+		eastern_hemisphere = false;
 	} else {
 		return LDNS_STATUS_INVALID_STR;
 	}
@@ -1037,7 +1037,7 @@ east:
 	longitude += 1000 * 60 * m;
 	longitude += 1000 * 60 * 60 * h;
 
-	if (easterness) {
+	if (eastern_hemisphere) {
 		longitude += equator;
 	} else {
 		longitude = equator - longitude;
