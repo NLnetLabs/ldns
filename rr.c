@@ -1797,6 +1797,8 @@ ldns_rr2canonical(ldns_rr *rr)
         	case LDNS_RR_TYPE_DNAME:
         	case LDNS_RR_TYPE_A6:
         	case LDNS_RR_TYPE_RRSIG:
+        	case LDNS_RR_TYPE_NSEC:
+        	case LDNS_RR_TYPE_NSEC3:
 			for (i = 0; i < ldns_rr_rd_count(rr); i++) {
 				ldns_dname2canonical(ldns_rr_rdf(rr, i));
 			}
