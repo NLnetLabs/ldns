@@ -887,6 +887,8 @@ main(int argc, char *argv[])
 						fprintf(stdout,
 							";; query again with TCP (-t argument), or EDNS0 (-b for buffer size)\n");
 					}
+				} else {
+					ldns_pkt_print_short(stdout, pkt);
 				}
 				if (qds) {
 					if (verbosity != -1) {

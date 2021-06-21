@@ -803,6 +803,16 @@ void ldns_rr_print_fmt(FILE *output,
 void ldns_pkt_print(FILE *output, const ldns_pkt *pkt);
 
 /**
+ * Prints the answer in the DNS packet to the given file stream
+ * (in presentation format)
+ *
+ * \param[in] output the file stream to print to
+ * \param[in] pkt the packet to print
+ * \return void
+ */
+void ldns_pkt_print_short(FILE *output, const ldns_pkt *pkt);
+
+/**
  * Prints the data in the DNS packet to the given file stream
  * (in presentation format)
  *
