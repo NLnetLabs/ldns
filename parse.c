@@ -187,6 +187,9 @@ ldns_fget_token_l_st(FILE *f, char **token, size_t *limit, bool fixed
 		if (c != '\0' && c != '\n') {
 			*t++ = c;
 		}
+		if (c == '\n' && line_nr) {
+			*line_nr = *line_nr + 1;
+		}
 		if (c == '\\' && prev_c == '\\')
 			prev_c = 0;
 		else	prev_c = c;
