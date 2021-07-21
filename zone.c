@@ -261,7 +261,7 @@ ldns_zone_new_frm_fp_l(ldns_zone **z, FILE *fp, const ldns_rdf *origin, uint32_t
 			break;
 		case LDNS_STATUS_SYNTAX_INCLUDE:
 			ret = LDNS_STATUS_SYNTAX_INCLUDE_ERR_NOTIMPL;
-			break;
+			goto error;
 		default:
 			ret = s;
 			goto error;

@@ -26,6 +26,8 @@
 	  LDNS_MAX_LINELEN
 	* Add SVCPARAMS to python ldns_rdf_type2str function.
 	* PR #134 Miscellaneous spelling fixes. Thanks jsoref!
+	* Fix that ldns-read-zone and ldns_zone_new_frm_fp_l properly return
+	  the $INCLUDE not implemented error.
 
 1.7.1	2019-07-26
 	* bugfix: Manage verification paths for OpenSSL >= 1.1.0
