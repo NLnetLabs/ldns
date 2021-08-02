@@ -416,7 +416,10 @@ ldns_pkey_is_ecdsa(EVP_PKEY* pkey)
 {
         EC_KEY* ec;
         const EC_GROUP* g;
-#ifdef HAVE_EVP_PKEY_BASE_ID
+#ifdef HAVE_EVP_PKEY_GET_BASE_ID
+        if(EVP_PKEY_get_base_id(pkey) != EVP_PKEY_EC)
+                return 0;
+#elif defined(HAVE_EVP_PKEY_BASE_ID)
         if(EVP_PKEY_base_id(pkey) != EVP_PKEY_EC)
                 return 0;
 #else
@@ -532,7 +535,9 @@ ldns_sign_public_evp(ldns_buffer *to_sign,
 #ifdef USE_DSA
 #ifndef S_SPLINT_S
 	/* unfortunately, OpenSSL output is different from DNS DSA format */
-# ifdef HAVE_EVP_PKEY_BASE_ID
+# ifdef HAVE_EVP_PKEY_GET_BASE_ID
+	if (EVP_PKEY_get_base_id(key) == EVP_PKEY_DSA) {
+# elif defined(HAVE_EVP_PKEY_BASE_ID)
 	if (EVP_PKEY_base_id(key) == EVP_PKEY_DSA) {
 # else
 	if (EVP_PKEY_type(key->type) == EVP_PKEY_DSA) {
@@ -544,7 +549,9 @@ ldns_sign_public_evp(ldns_buffer *to_sign,
 #endif
 #if defined(USE_ECDSA)
 	if(
-#  ifdef HAVE_EVP_PKEY_BASE_ID
+#  ifdef HAVE_EVP_PKEY_GET_BASE_ID
+		EVP_PKEY_get_base_id(key)
+#  elif defined(HAVE_EVP_PKEY_BASE_ID)
 		EVP_PKEY_base_id(key)
 #  else
 		EVP_PKEY_type(key->type)

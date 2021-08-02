@@ -30,6 +30,7 @@
 	  the $INCLUDE not implemented error.
 	* Fix that ldns-read-zone and ldns_zone_new_frm_fp_l count the line
 	  number for an empty line after a comment.
+	* Fix #135: Fix compile with OpenSSL-3.0.0-beta2.
 
 1.7.1	2019-07-26
 	* bugfix: Manage verification paths for OpenSSL >= 1.1.0

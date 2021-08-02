@@ -357,7 +357,7 @@ else
 	AC_MSG_RESULT([no])
 fi
 AC_CHECK_HEADERS([openssl/ssl.h openssl/evp.h openssl/engine.h openssl/conf.h])
-AC_CHECK_FUNCS([EVP_sha256 EVP_sha384 EVP_sha512 EVP_PKEY_keygen ECDSA_SIG_get0 EVP_MD_CTX_new EVP_PKEY_base_id DSA_SIG_set0 DSA_SIG_get0 EVP_dss1 DSA_get0_pqg DSA_get0_key EVP_cleanup ENGINE_cleanup ENGINE_free CRYPTO_cleanup_all_ex_data ERR_free_strings CONF_modules_unload OPENSSL_init_ssl OPENSSL_init_crypto ERR_load_crypto_strings CRYPTO_memcmp])
+AC_CHECK_FUNCS([EVP_sha256 EVP_sha384 EVP_sha512 EVP_PKEY_keygen ECDSA_SIG_get0 EVP_MD_CTX_new EVP_PKEY_base_id DSA_SIG_set0 DSA_SIG_get0 EVP_dss1 DSA_get0_pqg DSA_get0_key EVP_cleanup ENGINE_cleanup ENGINE_free CRYPTO_cleanup_all_ex_data ERR_free_strings CONF_modules_unload OPENSSL_init_ssl OPENSSL_init_crypto ERR_load_crypto_strings CRYPTO_memcmp EVP_PKEY_get_base_id])
 
 # for macosx, see if glibtool exists and use that
 # BSD's need to know the version...
@@ -387,7 +387,11 @@ AC_MSG_CHECKING([if GOST works])
 if test c${cross_compiling} = cno; then
 BAKCFLAGS="$CFLAGS"
 if test -n "$ssldir"; then
+    if test ! -d "$ssldir/lib" -a -d "$ssldir/lib64"; then
+	CFLAGS="$CFLAGS -Wl,-rpath,$ssldir/lib64"
+    else
 	CFLAGS="$CFLAGS -Wl,-rpath,$ssldir/lib"
+    fi
 fi
 AC_RUN_IFELSE([AC_LANG_SOURCE([[
 #include <string.h>
@@ -617,9 +621,11 @@ case "$enable_dane" in
                   AC_SUBST(ldns_build_config_use_dane_ta_usage, 0)
                   ;;
                 *) dnl default
+		  danetmpLIBS="$LIBS"
                   LIBS="-lssl -lcrypto $LIBS"
                   AC_CHECK_FUNC(SSL_get0_dane, [], [AC_MSG_ERROR([OpenSSL does not support offline DANE verification (Needed for the DANE-TA usage type).  Please upgrade OpenSSL to version >= 1.1.0 or rerun with --disable-dane-verify or --disable-dane-ta-usage])])
-                  LIBSSL_LIBS="-lssl -lcrypto"
+                  LIBSSL_LIBS="-lssl $LIBSSL_LIBS"
+		  LIBS="$danetmpLIBS"
                   AC_SUBST(ldns_build_config_use_dane_ta_usage, 1)
                   AC_DEFINE_UNQUOTED([USE_DANE_TA_USAGE], [1], [Define this to enable DANE-TA usage type support.])
                   ;;
@@ -699,7 +705,12 @@ AC_SUBST(LIBSSL_CPPFLAGS)
 AC_SUBST(LIBSSL_LDFLAGS)
 AC_SUBST(LIBSSL_LIBS)
 if test "x$HAVE_SSL" = "xyes"; then
-AC_SUBST(LIBSSL_SSL_LIBS, ["-lssl $LIBSSL_LIBS"])
+    if echo "$LIBSSL_LIBS" | grep -- "-lssl" >/dev/null 2>&1; then
+	LIBSSL_SSL_LIBS="$LIBSSL_LIBS"
+    else
+	LIBSSL_SSL_LIBS="-lssl $LIBSSL_LIBS"
+    fi
+    AC_SUBST(LIBSSL_SSL_LIBS, "$LIBSSL_SSL_LIBS")
 fi
 CPPFLAGS=$tmp_CPPFLAGS
 LDFLAGS=$tmp_LDFLAGS
