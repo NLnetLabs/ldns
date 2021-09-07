@@ -147,6 +147,15 @@ ldns_status ldns_rr_rdata2buffer_wire(ldns_buffer *output, const ldns_rr *rr);
 ldns_status ldns_pkt2buffer_wire(ldns_buffer *output, const ldns_pkt *pkt);
 
 /**
+ * Copies the packet data to the buffer in wire format
+ * \param[out] *output buffer to append the result to
+ * \param[in] *pkt packet to convert
+ * \param[out] *compression_data data structure holding state for compression
+ * \return ldns_status
+ */
+ldns_status ldns_pkt2buffer_wire_compress(ldns_buffer *output, const ldns_pkt *pkt, ldns_rbtree_t *compression_data);
+
+/**
  * Copies the rr_list data to the buffer in wire format
  * \param[out] *output buffer to append the result to
  * \param[in] *rrlist rr_list to to convert
