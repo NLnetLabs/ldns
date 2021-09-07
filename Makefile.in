@@ -168,7 +168,7 @@ no-drill-config-h:
 	fi
 
 drill/drill: $(DRILL_LOBJS) $(LIB) $(LIBLOBJS)
-	$(LINK_EXE) $(DRILL_LOBJS) $(LIBLOBJS) -lldns $(LIBSSL_LIBS) $(LIBS) -o drill/drill
+	$(LINK_EXE) $(DRILL_LOBJS) $(LIBLOBJS) $(LIB) $(LIBSSL_LIBS) $(LIBS) -o drill/drill
 
 drill/drill.1: $(srcdir)/drill/drill.1.in
 	$(edit) $(srcdir)/drill/drill.1.in > drill/drill.1
@@ -200,23 +200,23 @@ no-examples-config-h:
 
 # Need LIBSSL_LIBS
 $(EXAMPLE_PROGS):
-	$(LINK_EXE) $@.lo $(LIBLOBJS) -lldns $(LIBSSL_LIBS) $(LIBS) -o $@
+	$(LINK_EXE) $@.lo $(LIBLOBJS) $(LIB) $(LIBSSL_LIBS) $(LIBS) -o $@
 
 # Need LIBSSL_LIBS
 $(TESTNS):
-	$(LINK_EXE) $(TESTNS_LOBJS) $(LIBLOBJS) -lldns $(LIBSSL_LIBS) $(LIBS) -o $(TESTNS)
+	$(LINK_EXE) $(TESTNS_LOBJS) $(LIBLOBJS) $(LIB) $(LIBSSL_LIBS) $(LIBS) -o $(TESTNS)
 
 # Need LIBSSL_LIBS
 $(LDNS_DPA):
-	$(LINK_EXE) $(LDNS_DPA_LOBJS) $(LIBLOBJS) -lldns $(LIBPCAP_LIBS) $(LIBSSL_LIBS) $(LIBS) \
+	$(LINK_EXE) $(LDNS_DPA_LOBJS) $(LIBLOBJS) $(LIB) $(LIBPCAP_LIBS) $(LIBSSL_LIBS) $(LIBS) \
 		 -o $(LDNS_DPA)
 
 $(LDNS_DANE):
-	$(LINK_EXE) $(LDNS_DANE_LOBJS) $(LIBLOBJS) -lldns $(LIBSSL_SSL_LIBS) $(LIBS) \
+	$(LINK_EXE) $(LDNS_DANE_LOBJS) $(LIBLOBJS) $(LIB) $(LIBSSL_SSL_LIBS) $(LIBS) \
 		 -o $(LDNS_DANE)
 
 $(EX_SSL_PROGS):
-	$(LINK_EXE) $@.lo $(LIBLOBJS) -lldns $(LIBSSL_LIBS) $(LIBS) -o $@
+	$(LINK_EXE) $@.lo $(LIBLOBJS) $(LIB) $(LIBSSL_LIBS) $(LIBS) -o $@
 
 examples/ldns-dane.1: $(srcdir)/examples/ldns-dane.1.in
 	$(edit) $(srcdir)/examples/ldns-dane.1.in > examples/ldns-dane.1
@@ -251,7 +251,7 @@ clean-examples:
 
 linktest: $(srcdir)/linktest.c libldns.la
 	$(COMP_LIB) $(LIBSSL_CPPFLAGS) -c $(srcdir)/linktest.c -o linktest.lo
-	$(LINK_EXE) linktest.lo -lldns $(LIBSSL_LIBS) $(LIBS) -o linktest
+	$(LINK_EXE) linktest.lo $(LIB) $(LIBSSL_LIBS) $(LIBS) -o linktest
 
 lib: libldns.la
 
@@ -324,10 +324,10 @@ ldns_wrapper.lo: $(pywrapdir)/ldns_wrapper.c ldns/config.h
 	$(COMP_LIB) -I./include/ldns $(LIBSSL_CPPFLAGS) $(PYTHON_CPPFLAGS) $(PYTHON_X_CFLAGS) -c $(pywrapdir)/ldns_wrapper.c -o $@
 
 _ldns.la: ldns_wrapper.lo libldns.la
-	$(LIBTOOL) --tag=CC --mode=link $(CC) $(CFLAGS) $(PYTHON_CFLAGS) $(LDFLAGS) -module -version-info $(version_info) -no-undefined -o $@ ldns_wrapper.lo -rpath $(python_site) -L. -L.libs -lldns $(PYTHON_LIBS) $(LIBS)
+	$(LIBTOOL) --tag=CC --mode=link $(CC) $(CFLAGS) $(PYTHON_CFLAGS) $(LDFLAGS) -module -version-info $(version_info) -no-undefined -o $@ ldns_wrapper.lo -rpath $(python_site) $(LIB) $(PYTHON_LIBS) $(LIBS)
 
 $(p5_dns_ldns_dir)/Makefile: $(p5_dns_ldns_dir)/Makefile.PL
-	BUILDDIR=`pwd`; cd $(p5_dns_ldns_dir); LD_LIBRARY_PATH="$$BUILDDIR/.libs:$$LD_LIBRARY_PATH" DYLD_LIBRARY_PATH="$$BUILDDIR/.libs:$$DYLD_LIBRARY_PATH" $(PERL) Makefile.PL LIBS="-L$$BUILDDIR/.libs -lldns" INC="-I$$BUILDDIR"
+	BUILDDIR=`pwd`; cd $(p5_dns_ldns_dir); LD_LIBRARY_PATH="$$BUILDDIR/.libs:$$LD_LIBRARY_PATH" DYLD_LIBRARY_PATH="$$BUILDDIR/.libs:$$DYLD_LIBRARY_PATH" $(PERL) Makefile.PL LIBS="$$BUILDDIR/$(LIB)" INC="-I$$BUILDDIR"
 
 $(p5_dns_ldns_dir)/blib/arch/auto/DNS/LDNS/LDNS.so: $(p5_dns_ldns_dir)/Makefile
 	cd $(p5_dns_ldns_dir); $(MAKE)
