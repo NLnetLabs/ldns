@@ -173,6 +173,8 @@ main(int argc, char *argv[])
 	int r;
 	WSADATA wsa_data;
 #endif
+	ldns_output_format_storage fmt_storage;
+	ldns_output_format* fmt = ldns_output_format_init(&fmt_storage);
 
 	int_type = -1; serv = NULL; type = 0; 
 	int_clas = -1; name = NULL; clas = 0;
@@ -247,6 +249,7 @@ main(int argc, char *argv[])
 				verbosity = atoi(optarg);
 				break;
 			case 'Q':
+				fmt->flags |= LDNS_FMT_SHORT;
 				verbosity = -1;
 				break;
 			case 'f':
@@ -879,8 +882,8 @@ main(int argc, char *argv[])
 				mesg("No packet received");
 				result = EXIT_FAILURE;
 			} else {
+				ldns_pkt_print_fmt(stdout, fmt, pkt);
 				if (verbosity != -1) {
-					ldns_pkt_print(stdout, pkt);
 					if (ldns_pkt_tc(pkt)) {
 						fprintf(stdout,
 							"\n;; WARNING: The answer packet was truncated; you might want to\n");

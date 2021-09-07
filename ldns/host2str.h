@@ -65,6 +65,8 @@ extern "C" {
 #define LDNS_FMT_ZEROIZE_RRSIGS		(1 <<  9)
 #define LDNS_FMT_PAD_SOA_SERIAL		(1 << 10)
 #define LDNS_FMT_RFC3597		(1 << 11)	/* yes */
+/** Prints only answer section of packets and only rdata of RRs **/
+#define LDNS_FMT_SHORT			(1 << 12)
 
 #define LDNS_FMT_FLAGS_WITH_DATA			    2
 
