@@ -1,0 +1,13 @@
+[ -f ../.tpkg.var.master ] && source ../.tpkg.var.master
+
+export PATH=$PATH:/usr/sbin:/sbin:/usr/local/bin:/usr/local/sbin:.
+
+export LD_LIBRARY_PATH=../../lib:$LD_LIBRARY_PATH
+
+OUTPUT=`../../examples/ldns-read-zone 26-loc-centimetre.db`
+
+if [[ $? -eq 0 ]]; then 
+    echo $OUTPUT | grep 0.10m
+else
+        exit 1
+fi
