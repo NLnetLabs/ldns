@@ -1817,45 +1817,50 @@ ldns_rr2buffer_str_fmt(ldns_buffer *output,
 		fmt_st = (ldns_output_format_storage*)
 			  ldns_output_format_default;
 	}
-	if (!rr) {
-		if (LDNS_COMMENT_NULLS & fmt_st->flags) {
-			ldns_buffer_printf(output, "; (null)\n");
+	if (!(fmt_st->flags & LDNS_FMT_SHORT)) {
+		if (!rr) {
+			if (LDNS_COMMENT_NULLS & fmt_st->flags) {
+				ldns_buffer_printf(output, "; (null)\n");
+			}
+			return ldns_buffer_status(output);
 		}
-		return ldns_buffer_status(output);
-	}
-	if (ldns_rr_owner(rr)) {
-		status = ldns_rdf2buffer_str_dname(output, ldns_rr_owner(rr));
-	}
-	if (status != LDNS_STATUS_OK) {
-		return status;
-	}
+		if (ldns_rr_owner(rr)) {
+			status = ldns_rdf2buffer_str_dname(output, ldns_rr_owner(rr));
+		}
+		if (status != LDNS_STATUS_OK) {
+			return status;
+		}
 
-	/* TTL should NOT be printed if it is a question */
-	if (!ldns_rr_is_question(rr)) {
-		ldns_buffer_printf(output, "\t%d", ldns_rr_ttl(rr));
-	}
+		/* TTL should NOT be printed if it is a question */
+		if (!ldns_rr_is_question(rr)) {
+			ldns_buffer_printf(output, "\t%d", ldns_rr_ttl(rr));
+		}
 
-	ldns_buffer_printf(output, "\t");
-	status = ldns_rr_class2buffer_str(output, ldns_rr_get_class(rr));
-	if (status != LDNS_STATUS_OK) {
-		return status;
-	}
-	ldns_buffer_printf(output, "\t");
-
-	if (ldns_output_format_covers_type(fmt, ldns_rr_get_type(rr))) {
-		return ldns_rr2buffer_str_rfc3597(output, rr);
-	}
-	status = ldns_rr_type2buffer_str(output, ldns_rr_get_type(rr));
-	if (status != LDNS_STATUS_OK) {
-		return status;
-	}
-
-	if (ldns_rr_rd_count(rr) > 0) {
 		ldns_buffer_printf(output, "\t");
-	} else if (!ldns_rr_is_question(rr)) {
-		ldns_buffer_printf(output, "\t\\# 0");
-	}
+		status = ldns_rr_class2buffer_str(output, ldns_rr_get_class(rr));
+		if (status != LDNS_STATUS_OK) {
+			return status;
+		}
+		ldns_buffer_printf(output, "\t");
 
+		if (ldns_output_format_covers_type(fmt, ldns_rr_get_type(rr))) {
+			return ldns_rr2buffer_str_rfc3597(output, rr);
+		}
+		status = ldns_rr_type2buffer_str(output, ldns_rr_get_type(rr));
+		if (status != LDNS_STATUS_OK) {
+			return status;
+		}
+
+		if (ldns_rr_rd_count(rr) > 0) {
+			ldns_buffer_printf(output, "\t");
+		} else if (!ldns_rr_is_question(rr)) {
+			ldns_buffer_printf(output, "\t\\# 0");
+		}
+	} else if (ldns_rr_rd_count(rr) == 0) {
+		/* assert(fmt_st->flags & LDNS_FMT_SHORT); */
+
+		ldns_buffer_printf(output, "# 0");
+	}
 	for (i = 0; i < ldns_rr_rd_count(rr); i++) {
 		/* ldns_rdf2buffer_str handles NULL input fine! */
 		if ((fmt_st->flags & LDNS_FMT_ZEROIZE_RRSIGS) &&
@@ -2111,13 +2116,18 @@ ldns_pkt2buffer_str_fmt(ldns_buffer *output,
 	char *tmp;
 	struct timeval time;
 	time_t time_tt;
+	int short_fmt = fmt && (fmt->flags & LDNS_FMT_SHORT);
 
 	if (!pkt) {
 		ldns_buffer_printf(output, "null");
 		return LDNS_STATUS_OK;
 	}
 
-	if (ldns_buffer_status_ok(output)) {
+	if (!ldns_buffer_status_ok(output)) {
+		return ldns_buffer_status(output);
+	}
+
+	if (!short_fmt) {
 		status = ldns_pktheader2buffer_str(output, pkt);
 		if (status != LDNS_STATUS_OK) {
 			return status;
@@ -2139,15 +2149,16 @@ ldns_pkt2buffer_str_fmt(ldns_buffer *output,
 		ldns_buffer_printf(output, "\n");
 
 		ldns_buffer_printf(output, ";; ANSWER SECTION:\n");
-		for (i = 0; i < ldns_pkt_ancount(pkt); i++) {
-			status = ldns_rr2buffer_str_fmt(output, fmt,
-				       ldns_rr_list_rr(
-					       ldns_pkt_answer(pkt), i));
-			if (status != LDNS_STATUS_OK) {
-				return status;
-			}
-
+	}
+	for (i = 0; i < ldns_pkt_ancount(pkt); i++) {
+		status = ldns_rr2buffer_str_fmt(output, fmt,
+			       ldns_rr_list_rr(
+				       ldns_pkt_answer(pkt), i));
+		if (status != LDNS_STATUS_OK) {
+			return status;
 		}
+	}
+	if (!short_fmt) {
 		ldns_buffer_printf(output, "\n");
 
 		ldns_buffer_printf(output, ";; AUTHORITY SECTION:\n");
@@ -2217,8 +2228,6 @@ ldns_pkt2buffer_str_fmt(ldns_buffer *output,
 
 		ldns_buffer_printf(output, ";; MSG SIZE  rcvd: %d\n",
 				(int)ldns_pkt_size(pkt));
-	} else {
-		return ldns_buffer_status(output);
 	}
 	return status;
 }
