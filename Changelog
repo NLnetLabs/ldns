@@ -31,6 +31,20 @@
 	* Fix that ldns-read-zone and ldns_zone_new_frm_fp_l count the line
 	  number for an empty line after a comment.
 	* Fix #135: Fix compile with OpenSSL-3.0.0-beta2.
+	* PR #107: Added ldns_pkt2buffer_wire_compress() to make dname 
+	  compression optional when converting packets to wire format.
+	  Thanks Eli Lindsey
+	* Option to ldns-keygen to create symlinks with known names 
+	  (i.e. without the key id) to the created files.
+	  Thanks Andreas Schulze
+	* Fix #121: Correct handling of centimetres by LOC parser.
+	  Thanks Felipe Gasper
+	* PR #126: Link with libldns.la in Makefile.in.
+	  Thanks orbea
+	* PR #127: Addes option -Q to drill to give short answer.
+	  Thanks niknah
+	* PR #133: Update m4 files for python modules.
+	  Thanks Petr Menšík
 
 1.7.1	2019-07-26
 	* bugfix: Manage verification paths for OpenSSL >= 1.1.0
