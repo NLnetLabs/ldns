@@ -606,14 +606,6 @@ ldns_rr_new_frm_str_internal(ldns_rr **newrr, const char *str,
 			}
 			ldns_rr_push_rdf(new, r);
 		}
-		if (quoted) {
-			if (ldns_buffer_available(rd_buf, 1)) {
-				ldns_buffer_skip(rd_buf, 1);
-			} else {
-				done = true;
-			}
-		}
-
 	} /* for (done = false, r_cnt = 0; !done && r_cnt < r_max; r_cnt++) */
 	LDNS_FREE(rd);
 	LDNS_FREE(xtok);
