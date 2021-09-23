@@ -1551,15 +1551,15 @@ ldns_str2rdf_long_str(ldns_rdf **rd, const char *str)
 	}
 	if (!(length = (size_t)(dp - data))) {
 		LDNS_FREE(data);
-		return LDNS_STATUS_SYNTAX_EMPTY;
+		data = NULL;
+	} else {
+		/* Lose the overmeasure */
+		data = LDNS_XREALLOC(dp = data, uint8_t, length);
+		if (! data) {
+			LDNS_FREE(dp);
+			return LDNS_STATUS_MEM_ERR;
+		}
 	}
-	/* Lose the overmeasure */
-	data = LDNS_XREALLOC(dp = data, uint8_t, length);
-	if (! data) {
-		LDNS_FREE(dp);
-		return LDNS_STATUS_MEM_ERR;
-	}
-
 	/* Create rdf */
 	*rd = ldns_rdf_new(LDNS_RDF_TYPE_LONG_STR, length, data);
 	if (! *rd) {

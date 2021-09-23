@@ -45,6 +45,7 @@
 	  Thanks niknah
 	* PR #133: Update m4 files for python modules.
 	  Thanks Petr Menšík
+	* Bufix CAA value fields may be empty: Thanks Robert Mortimer
 
 1.7.1	2019-07-26
 	* bugfix: Manage verification paths for OpenSSL >= 1.1.0
