@@ -1,0 +1,18 @@
+++_added.justazone.example.	3600	IN	TXT	"added"
+~+a1.justazone.example.	3600	IN	A	192.0.2.1
+~-a1.justazone.example.	3600	IN	A	192.0.2.2
+~-a2.justazone.example.	3600	IN	A	192.0.2.1
+~+a2.justazone.example.	3600	IN	A	192.0.2.2
+~-a3.justazone.example.	3600	IN	A	192.0.2.1
+~+a3.justazone.example.	3600	IN	A	192.0.2.2
+~-a3.justazone.example.	3600	IN	A	203.0.113.1
+~+a3.justazone.example.	3600	IN	A	203.0.113.2
+~+delegation1.justazone.example.	3600	IN	NS	ns2.delegation1.justazone.example.
+++delegation2.justazone.example.	3600	IN	NS	ns1.delegation2.justazone.example.
+--delegation4.justazone.example.	3600	IN	NS	ns1.delegation3.justazone.example.
+~+grow2to3.justazone.example.	3600	IN	TXT	"three"
+~-shrink2to1.justazone.example.	3600	IN	TXT	"two"
+~-shrink3to2.justazone.example.	3600	IN	TXT	"three"
+--zz.justazone.example.	3600	IN	TXT	"top"
+--zz.justazone.example.	3600	IN	TXT	"zZZZzzz"
+	+2	-2	~7

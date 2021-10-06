@@ -1,0 +1,30 @@
+$ORIGIN justazone.example.
+
+@		SOA	@ hostmaster (
+			1
+			1800       ; refresh (30 minutes)
+			900        ; retry (15 minutes)
+			604800     ; expire (1 week)
+			86400      ; minimum (1 day)
+			)
+; This delegation will grow to 2 records
+; this change was undetected in ldns < 1.7.2
+delegation1	NS	ns1.delegation1
+		NS	ns2.delegation1
+; delegation2 is not in zone1
+delegation2	NS	ns1.delegation2
+delegation3	NS	ns1.delegation3
+
+delegation5	NS	ns1.delegation5
+a1		A	192.0.2.1
+a2		A	192.0.2.2
+a3		A	192.0.2.2
+		A	198.51.100.1
+		A	203.0.113.2
+shrink3to2	TXT	one
+		TXT	two
+shrink2to1	TXT	one
+grow2to3	TXT	one
+		TXT	two
+		TXT	three
+_added		TXT	added
