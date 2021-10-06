@@ -1,0 +1,19 @@
+# #-- 05-nm.test --#
+# source the master var file when it's there
+[ -f ../.tpkg.var.master ] && source ../.tpkg.var.master
+# use .tpkg.var.test for in test variable passing
+[ -f .tpkg.var.test ] && source .tpkg.var.test
+# svnserve resets the path, you may need to adjust it, like this:
+PATH=$PATH:/usr/sbin:/sbin:/usr/local/bin:/usr/local/sbin:.
+
+LIB=../../lib/
+export LD_LIBRARY_PATH=$LIB:$LD_LIBRARY_PATH
+
+# get the libdns symbols
+../../examples/ldns-compare-zones -as 10-ldns-compare-zones.zone1 10-ldns-compare-zones.zone2 > 10-ldns-compare-zones.out
+
+diff 10-ldns-compare-zones.out 10-ldns-compare-zones.diffs
+fail=$?
+rm -f 10-ldns-compare-zones.out
+
+exit $fail
