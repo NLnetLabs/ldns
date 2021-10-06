@@ -46,6 +46,9 @@
 	* PR #133: Update m4 files for python modules.
 	  Thanks Petr Menšík
 	* Bufix CAA value fields may be empty: Thanks Robert Mortimer
+	* PR #108: Fix for ldns-compare-zones net detecting when first zone
+	  has a RRset that shrinks from two to one RRs, or grows from one
+	  to two RRs. Thanks Emilio Caballero
 
 1.7.1	2019-07-26
 	* bugfix: Manage verification paths for OpenSSL >= 1.1.0
