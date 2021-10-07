@@ -97,6 +97,7 @@ ACX_CHECK_COMPILER_FLAG(Wstrict-prototypes, [CFLAGS="-Wstrict-prototypes $CFLAGS
 #ACX_CHECK_COMPILER_FLAG(Wshadow, [CFLAGS="-Wshadow $CFLAGS"])
 ACX_CHECK_COMPILER_FLAG(Wunused-function, [CFLAGS="-Wunused-function $CFLAGS"])
 ACX_CHECK_COMPILER_FLAG(Wmissing-prototypes, [CFLAGS="-Wmissing-prototypes $CFLAGS"])
+ACX_CHECK_COMPILER_FLAG(fno-strict-aliasing, [CFLAGS="-fno-strict-aliasing $CFLAGS"])
 
 AC_CHECK_HEADERS([getopt.h time.h],,, [AC_INCLUDES_DEFAULT])
 

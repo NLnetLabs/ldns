@@ -554,7 +554,7 @@ typedef union _ldns_sha2_buffer_union {
         uint64_t* theLongs;
 } ldns_sha2_buffer_union;
 
-void ldns_sha256_final(sha2_byte digest[], ldns_sha256_CTX* context) {
+void ldns_sha256_final(sha2_byte digest[LDNS_SHA256_DIGEST_LENGTH], ldns_sha256_CTX* context) {
 	sha2_word32	*d = (sha2_word32*)digest;
 	size_t usedspace;
 	ldns_sha2_buffer_union cast_var;
@@ -905,7 +905,7 @@ static void ldns_sha512_Last(ldns_sha512_CTX* context) {
 	ldns_sha512_Transform(context, (sha2_word64*)context->buffer);
 }
 
-void ldns_sha512_final(sha2_byte digest[], ldns_sha512_CTX* context) {
+void ldns_sha512_final(sha2_byte digest[LDNS_SHA512_DIGEST_LENGTH], ldns_sha512_CTX* context) {
 	sha2_word64	*d = (sha2_word64*)digest;
 
 	/* Sanity check: */
@@ -958,7 +958,7 @@ void ldns_sha384_update(ldns_sha384_CTX* context, const sha2_byte* data, size_t 
 	ldns_sha512_update((ldns_sha512_CTX*)context, data, len);
 }
 
-void ldns_sha384_final(sha2_byte digest[], ldns_sha384_CTX* context) {
+void ldns_sha384_final(sha2_byte digest[LDNS_SHA384_DIGEST_LENGTH], ldns_sha384_CTX* context) {
 	sha2_word64	*d = (sha2_word64*)digest;
 
 	/* Sanity check: */

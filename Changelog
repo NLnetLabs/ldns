@@ -49,6 +49,8 @@
 	* PR #108: Fix for ldns-compare-zones net detecting when first zone
 	  has a RRset that shrinks from two to one RRs, or grows from one
 	  to two RRs. Thanks Emilio Caballero
+	* Fix #131: Drill sig chasing breaks with gcc-11 and
+	  strict-aliasing. Thanks Stanislav Levin
 
 1.7.1	2019-07-26
 	* bugfix: Manage verification paths for OpenSSL >= 1.1.0
