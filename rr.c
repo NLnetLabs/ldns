@@ -111,8 +111,9 @@ ldns_rdf_type_maybe_quoted(ldns_rdf_type rdf_type)
  */
 static ldns_status
 ldns_rr_new_frm_str_internal(ldns_rr **newrr, const char *str,
-							 uint32_t default_ttl, const ldns_rdf *origin,
-							 ldns_rdf **prev, bool question)
+                             uint32_t default_ttl, const ldns_rdf *origin,
+                             ldns_rdf **prev, bool question,
+			     bool *explicit_ttl)
 {
 	ldns_rr *new;
 	const ldns_rr_descriptor *desc;
@@ -198,6 +199,9 @@ ldns_rr_new_frm_str_internal(ldns_rr **newrr, const char *str,
 		} else {
 			ttl_val = default_ttl;
 		}
+		if (explicit_ttl)
+			*explicit_ttl = false;
+
 		/* we not ASSUMING the TTL is missing and that
 		 * the rest of the RR is still there. That is
 		 * CLASS TYPE RDATA
@@ -217,6 +221,9 @@ ldns_rr_new_frm_str_internal(ldns_rr **newrr, const char *str,
 			strlcpy(type, ttl, type_sz);
 		}
 	} else {
+		if (explicit_ttl)
+			*explicit_ttl = true;
+
 		if (-1 == ldns_bget_token(
 				rr_buf, clas, "\t\n ", LDNS_SYNTAX_DATALEN)) {
 
@@ -259,7 +266,7 @@ ldns_rr_new_frm_str_internal(ldns_rr **newrr, const char *str,
 	}
 	ldns_buffer_new_frm_data(rd_buf, rdata, strlen(rdata));
 
-	if (strlen(owner) <= 1 && strncmp(owner, "@", 1) == 0) {
+	if (strncmp(owner, "@", 1) == 0) {
 		if (origin) {
 			ldns_rr_set_owner(new, ldns_rdf_clone(origin));
 		} else if (prev && *prev) {
@@ -669,7 +676,8 @@ ldns_rr_new_frm_str(ldns_rr **newrr, const char *str,
 	                                    default_ttl,
 	                                    origin,
 	                                    prev,
-	                                    false);
+	                                    false,
+					    NULL);
 }
 
 ldns_status
@@ -681,7 +689,8 @@ ldns_rr_new_question_frm_str(ldns_rr **newrr, const char *str,
 	                                    0,
 	                                    origin,
 	                                    prev,
-	                                    true);
+	                                    true,
+					    NULL);
 }
 
 /* Strip whitespace from the start and the end of <line>.  */
@@ -707,7 +716,9 @@ ldns_rr_new_frm_fp(ldns_rr **newrr, FILE *fp, uint32_t *ttl, ldns_rdf **origin, 
 }
 
 ldns_status
-ldns_rr_new_frm_fp_l(ldns_rr **newrr, FILE *fp, uint32_t *default_ttl, ldns_rdf **origin, ldns_rdf **prev, int *line_nr)
+_ldns_rr_new_frm_fp_l_internal(ldns_rr **newrr, FILE *fp,
+		uint32_t *default_ttl, ldns_rdf **origin, ldns_rdf **prev,
+		int *line_nr, bool *explicit_ttl)
 {
 	char *line = NULL;
 	size_t limit = 0;
@@ -754,9 +765,11 @@ ldns_rr_new_frm_fp_l(ldns_rr **newrr, FILE *fp, uint32_t *default_ttl, ldns_rdf 
 		return LDNS_STATUS_SYNTAX_EMPTY;
 	} else {
 		if (origin && *origin) {
-			s = ldns_rr_new_frm_str(&rr, (const char*) line, ttl, *origin, prev);
+			s = ldns_rr_new_frm_str_internal(&rr, (const char*)line,
+				ttl, *origin, prev, false, explicit_ttl);
 		} else {
-			s = ldns_rr_new_frm_str(&rr, (const char*) line, ttl, NULL, prev);
+			s = ldns_rr_new_frm_str_internal(&rr, (const char*)line,
+				ttl, NULL, prev, false, explicit_ttl);
 		}
 	}
 	LDNS_FREE(line);
@@ -769,6 +782,14 @@ ldns_rr_new_frm_fp_l(ldns_rr **newrr, FILE *fp, uint32_t *default_ttl, ldns_rdf 
 		}
 	}
 	return s;
+}
+
+ldns_status
+ldns_rr_new_frm_fp_l(ldns_rr **newrr, FILE *fp, uint32_t *default_ttl,
+		ldns_rdf **origin, ldns_rdf **prev, int *line_nr)
+{
+	return _ldns_rr_new_frm_fp_l_internal(newrr, fp, default_ttl, origin,
+			prev, line_nr, NULL);
 }
 
 void

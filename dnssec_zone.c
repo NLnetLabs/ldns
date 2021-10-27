@@ -605,9 +605,13 @@ ldns_todo_nsec3_ents_node_free(ldns_rbnode_t *node, void *arg) {
 	LDNS_FREE(node);
 }
 
+ldns_status _ldns_rr_new_frm_fp_l_internal(ldns_rr **newrr, FILE *fp,
+		uint32_t *default_ttl, ldns_rdf **origin, ldns_rdf **prev,
+		int *line_nr, bool *explicit_ttl);
+
 ldns_status
 ldns_dnssec_zone_new_frm_fp_l(ldns_dnssec_zone** z, FILE* fp, const ldns_rdf* origin,
-	       	uint32_t ttl, ldns_rr_class ATTR_UNUSED(c), int* line_nr)
+		uint32_t default_ttl, ldns_rr_class ATTR_UNUSED(c), int* line_nr)
 {
 	ldns_rr* cur_rr;
 	size_t i;
@@ -637,13 +641,19 @@ ldns_dnssec_zone_new_frm_fp_l(ldns_dnssec_zone** z, FILE* fp, const ldns_rdf* or
 #ifdef FASTER_DNSSEC_ZONE_NEW_FRM_FP
 	ldns_zone* zone = NULL;
 #else
-	uint32_t  my_ttl = ttl;
+	ldns_rr  *prev_rr = NULL;
+	uint32_t   my_ttl = default_ttl;
+	/* RFC 1035 Section 5.1, says 'Omitted class and TTL values are default
+	 * to the last explicitly stated values.'
+	 */
+	bool ttl_from_TTL = false;
+	bool explicit_ttl = false;
 #endif
 
 	ldns_rbtree_init(&todo_nsec3_ents, ldns_dname_compare_v);
 
 #ifdef FASTER_DNSSEC_ZONE_NEW_FRM_FP
-	status = ldns_zone_new_frm_fp_l(&zone, fp, origin,ttl, c, line_nr);
+	status = ldns_zone_new_frm_fp_l(&zone, fp, origin, default_ttl, c, line_nr);
 	if (status != LDNS_STATUS_OK)
 		goto error;
 #endif
@@ -673,13 +683,61 @@ ldns_dnssec_zone_new_frm_fp_l(ldns_dnssec_zone** z, FILE* fp, const ldns_rdf* or
 		status = LDNS_STATUS_OK;
 #else
 	while (!feof(fp)) {
+		/* If ttl came from $TTL line, then it should be the default.
+		 * (RFC 2308 Section 4)
+		 * Otherwise it "defaults to the last explicitly stated value"
+		 * (RFC 1035 Section 5.1)
+		 */
+		if (ttl_from_TTL)
+			my_ttl = default_ttl;
 		status = ldns_rr_new_frm_fp_l(&cur_rr, fp, &my_ttl, &my_origin,
-				&my_prev, line_nr);
-
+				&my_prev, line_nr, &explicit_ttl);
 #endif
 		switch (status) {
 		case LDNS_STATUS_OK:
+#ifndef FASTER_DNSSEC_ZONE_NEW_FRM_FP
+			if (explicit_ttl) {
+				if (!ttl_from_TTL) {
+					/* No $TTL, so ttl "defaults to the
+					 * last explicitly stated value"
+					 * (RFC 1035 Section 5.1)
+					 */
+					my_ttl = ldns_rr_ttl(cur_rr);
+				}
+			/* When ttl is implicit, try to adhere to the rules as
+			 * much as posssible. (also for compatibility with bind)
+			 * This was changed when fixing an issue with ZONEMD
+			 * which hashes the TTL too.
+			 */
+			} else if (ldns_rr_get_type(cur_rr) == LDNS_RR_TYPE_SIG
+			       ||  ldns_rr_get_type(cur_rr) == LDNS_RR_TYPE_RRSIG) {
+				if (ldns_rr_rd_count(cur_rr) >= 4
+				&&  ldns_rdf_get_type(ldns_rr_rdf(cur_rr, 3)) == LDNS_RDF_TYPE_INT32)
 
+					/* SIG without explicit ttl get ttl
+					 * from the original_ttl field
+					 * (RFC 2535 Section 7.2)
+					 *
+					 * Similarly for RRSIG, but stated less
+					 * specifically in the spec.
+					 * (RFC 4034 Section 3)
+					 */
+					ldns_rr_set_ttl(cur_rr,
+					    ldns_rdf2native_int32(
+					        ldns_rr_rdf(rr, 3)));
+
+			} else if (prev_rr
+			       &&  ldns_rr_get_type(prev_rr) == ldns_rr_get_type(cur_rr)
+			       &&  ldns_dname_compare( ldns_rr_owner(prev_rr)
+			                             , ldns_rr_owner(cur_rr)) == 0)
+
+				/* "TTLs of all RRs in an RRSet must be the same"
+				 * (RFC 2881 Section 5.2)
+				 */
+				ldns_rr_set_ttl(cur_rr, ldns_rr_ttl(prev_rr));
+
+			prev_rr = cur_rr;
+#endif
 			status = ldns_dnssec_zone_add_rr(newzone, cur_rr);
 			if (status ==
 				LDNS_STATUS_DNSSEC_NSEC3_ORIGINAL_NOT_FOUND) {
@@ -699,9 +757,16 @@ ldns_dnssec_zone_new_frm_fp_l(ldns_dnssec_zone** z, FILE* fp, const ldns_rdf* or
 
 			break;
 
+		case LDNS_STATUS_SYNTAX_TTL:	/* the ttl was set*/
+#ifndef FASTER_DNSSEC_ZONE_NEW_FRM_FP
+			default_ttl = my_ttl;
+			ttl_from_TTL = true;
+#endif
+			status = LDNS_STATUS_OK;
+			break;
+
 
 		case LDNS_STATUS_SYNTAX_EMPTY:	/* empty line was seen */
-		case LDNS_STATUS_SYNTAX_TTL:	/* the ttl was set*/
 		case LDNS_STATUS_SYNTAX_ORIGIN:	/* the origin was set*/
 			status = LDNS_STATUS_OK;
 			break;

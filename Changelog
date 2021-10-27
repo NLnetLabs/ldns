@@ -51,6 +51,8 @@
 	  to two RRs. Thanks Emilio Caballero
 	* Fix #131: Drill sig chasing breaks with gcc-11 and
 	  strict-aliasing. Thanks Stanislav Levin
+	* Fix #130: Unless $TLL is defined, ttl defaults to the last
+	  explicitly stated value. Thanks Benno
 
 1.7.1	2019-07-26
 	* bugfix: Manage verification paths for OpenSSL >= 1.1.0
