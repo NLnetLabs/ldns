@@ -53,6 +53,7 @@
 	  strict-aliasing. Thanks Stanislav Levin
 	* Fix #130: Unless $TLL is defined, ttl defaults to the last
 	  explicitly stated value. Thanks Benno
+	* Fix #48: Missing UNSIGNED legend with drill. Thanks reedjc
 
 1.7.1	2019-07-26
 	* bugfix: Manage verification paths for OpenSSL >= 1.1.0
