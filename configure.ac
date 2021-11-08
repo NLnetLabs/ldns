@@ -359,6 +359,22 @@ else
 fi
 AC_CHECK_HEADERS([openssl/ssl.h openssl/evp.h openssl/engine.h openssl/conf.h])
 AC_CHECK_FUNCS([EVP_sha256 EVP_sha384 EVP_sha512 EVP_PKEY_keygen ECDSA_SIG_get0 EVP_MD_CTX_new EVP_PKEY_base_id DSA_SIG_set0 DSA_SIG_get0 EVP_dss1 DSA_get0_pqg DSA_get0_key EVP_cleanup ENGINE_cleanup ENGINE_free CRYPTO_cleanup_all_ex_data ERR_free_strings CONF_modules_unload OPENSSL_init_ssl OPENSSL_init_crypto ERR_load_crypto_strings CRYPTO_memcmp EVP_PKEY_get_base_id])
+AC_MSG_CHECKING([Checking for OpenSSL >= 3.0.0])
+AC_COMPILE_IFELSE([AC_LANG_PROGRAM([
+#include <openssl/ssl.h>
+#if OPENSSL_VERSION_MAJOR >= 3
+#define SOMETHING
+#else
+This fails compiling.
+So either no OpenSSL at all (the include already failed), or the version < 3.0.0
+#endif
+], [
+])], [
+	AC_MSG_RESULT(yes)
+	CFLAGS="-DOPENSSL_API_COMPAT=10100 $CFLAGS"
+], [	AC_MSG_RESULT(no)
+])
+
 
 # for macosx, see if glibtool exists and use that
 # BSD's need to know the version...
