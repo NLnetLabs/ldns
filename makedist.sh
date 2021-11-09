@@ -180,7 +180,7 @@ RECONFIGURE="no"
 
 if [ "$RC" != "no" ]; then
     info "Building LDNS release candidate $RC."
-    version2="${version}-rc$RC"
+    version2="${version}-rc.$RC"
     info "Version number: $version2"
 
     replace_text "configure.ac" "AC_INIT(ldns, $version" "AC_INIT(ldns, $version2"
