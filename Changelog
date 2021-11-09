@@ -54,6 +54,8 @@
 	* Fix #130: Unless $TLL is defined, ttl defaults to the last
 	  explicitly stated value. Thanks Benno
 	* Fix #48: Missing UNSIGNED legend with drill. Thanks reedjc
+	* Fix #143: EVP_PKEY_base_id became a macro with OpenSSL > 3.0
+	  Thanks Daniel J. Luke
 
 1.7.1	2019-07-26
 	* bugfix: Manage verification paths for OpenSSL >= 1.1.0

@@ -358,7 +358,12 @@ else
 	AC_MSG_RESULT([no])
 fi
 AC_CHECK_HEADERS([openssl/ssl.h openssl/evp.h openssl/engine.h openssl/conf.h])
-AC_CHECK_FUNCS([EVP_sha256 EVP_sha384 EVP_sha512 EVP_PKEY_keygen ECDSA_SIG_get0 EVP_MD_CTX_new EVP_PKEY_base_id DSA_SIG_set0 DSA_SIG_get0 EVP_dss1 DSA_get0_pqg DSA_get0_key EVP_cleanup ENGINE_cleanup ENGINE_free CRYPTO_cleanup_all_ex_data ERR_free_strings CONF_modules_unload OPENSSL_init_ssl OPENSSL_init_crypto ERR_load_crypto_strings CRYPTO_memcmp EVP_PKEY_get_base_id])
+AC_CHECK_FUNCS([EVP_sha256 EVP_sha384 EVP_sha512 EVP_PKEY_keygen ECDSA_SIG_get0 EVP_MD_CTX_new DSA_SIG_set0 DSA_SIG_get0 EVP_dss1 DSA_get0_pqg DSA_get0_key EVP_cleanup ENGINE_cleanup ENGINE_free CRYPTO_cleanup_all_ex_data ERR_free_strings CONF_modules_unload OPENSSL_init_ssl OPENSSL_init_crypto ERR_load_crypto_strings CRYPTO_memcmp EVP_PKEY_get_base_id])
+AC_CHECK_DECLS([EVP_PKEY_base_id], [
+	AC_DEFINE_UNQUOTED([HAVE_EVP_PKEY_BASE_ID], [1], [Define to 1 if you have the EVP_PKEY_base_id function or macro.])
+], [], [AC_INCLUDES_DEFAULT
+#include <openssl/evp.h>
+])
 AC_MSG_CHECKING([Checking for OpenSSL >= 3.0.0])
 AC_COMPILE_IFELSE([AC_LANG_PROGRAM([
 #include <openssl/ssl.h>
