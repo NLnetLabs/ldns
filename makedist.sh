@@ -155,8 +155,8 @@ rm -r autom4te* || error_cleanup "Failed to remove autoconf cache directory."
 # custom removes
 find . -name .c-mode-rc.el -exec rm {} \;
 find . -name .cvsignore -exec rm {} \;
-rm  -f .gitignore .gitmodules contrib/DNS-LDNS/.git
-rm -rf .git
+rm  -f .gitignore .gitmodules contrib/DNS-LDNS/.git .travis.yml .gitlab-ci.yml
+rm -rf .git .github
 rm -rf lua 
 rm -rf masterdont 
 rm makedist.sh || error_cleanup "Failed to remove makedist.sh."
