@@ -562,13 +562,16 @@ esac
 AC_ARG_ENABLE(dsa, AC_HELP_STRING([--disable-dsa], [Disable DSA support]))
 case "$enable_dsa" in
     no)
+      AC_SUBST(ldns_build_config_use_dsa, 0)
       ;;
     *) dnl default
       # detect if DSA is supported, and turn it off if not.
       AC_CHECK_FUNC(DSA_SIG_new, [
 	AC_DEFINE_UNQUOTED([USE_DSA], [1], [Define this to enable DSA support.])
+	AC_SUBST(ldns_build_config_use_dsa, 1)
       ], [if test "x$enable_dsa" = "xyes"; then AC_MSG_ERROR([OpenSSL does not support DSA and you used --enable-dsa.])
-	  fi ])
+	  fi
+	  AC_SUBST(ldns_build_config_use_dsa, 0)])
       ;;
 esac
 
