@@ -65,7 +65,7 @@
 # endif
 #endif
 
-#ifdef USE_DANE_VERIFY
+#if defined(USE_DANE_VERIFY) && defined(USE_DANE_TA_USAGE)
 static SSL_CTX*
 ldns_dane_new_ssl_context(void)
 {
