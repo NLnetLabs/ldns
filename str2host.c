@@ -1849,7 +1849,7 @@ parse_svcparam_mandatory(const char **s, uint8_t **dp, uint8_t *eod)
 	if (*dp - keys == 0)
 		return LDNS_STATUS_SYNTAX_SVCPARAM_VALUE_ERR;
 
-	if (**s && !isspace(**s))
+	if (**s && !isspace((unsigned char)**s))
 		return LDNS_STATUS_SYNTAX_SVCPARAM_VALUE_ERR;
 
 	/* In draft-ietf-dnsop-svcb-https-02 Section 7:
@@ -1929,7 +1929,7 @@ parse_svcparam_alpn(const char **s, uint8_t **dp, uint8_t *eod)
 		}
 		*s += 1;
 
-	} else while (**s && !isspace(**s)) {
+	} else while (**s && !isspace((unsigned char)**s)) {
 		if (**s == ',') {
 			len = *dp - val;
 			if (len == 0 || len > 255)
@@ -1956,8 +1956,9 @@ parse_svcparam_alpn(const char **s, uint8_t **dp, uint8_t *eod)
 	if (len == 0 || len > 255)
 		return LDNS_STATUS_INVALID_STR;
 	val[-1] = len;
-	return **s && !isspace(**s) ? LDNS_STATUS_SYNTAX_SVCPARAM_VALUE_ERR
-	                            : LDNS_STATUS_OK;
+	return **s && !isspace((unsigned char)**s)
+	     ? LDNS_STATUS_SYNTAX_SVCPARAM_VALUE_ERR
+	     : LDNS_STATUS_OK;
 }
 
 static ldns_status
@@ -1982,7 +1983,7 @@ parse_svcparam_value(const char **s, uint8_t **dp, uint8_t *eod)
 		}
 		*s += 1;
 
-	} else while (**s && !isspace(**s)) {
+	} else while (**s && !isspace((unsigned char)**s)) {
 		if (*dp + 1 > eod)
 			return LDNS_STATUS_RDATA_OVERFLOW;
 
@@ -1994,8 +1995,9 @@ parse_svcparam_value(const char **s, uint8_t **dp, uint8_t *eod)
 		else
 			*dp += 1;
 	}
-	return **s && !isspace(**s) ? LDNS_STATUS_SYNTAX_SVCPARAM_VALUE_ERR
-	                            : LDNS_STATUS_OK;
+	return **s && !isspace((unsigned char)**s)
+	     ? LDNS_STATUS_SYNTAX_SVCPARAM_VALUE_ERR
+	     : LDNS_STATUS_OK;
 }
 
 static ldns_status
@@ -2039,7 +2041,7 @@ parse_svcparam_ipv4hint(const char **s, uint8_t **dp, uint8_t *eod)
 		char        ipv4_str[16];
 		size_t      len;
 
-		while (isdigit(**s) || **s == '.')
+		while (isdigit((unsigned char)**s) || **s == '.')
 			*s += 1;
 		
 		len = *s - ipv4_start;
@@ -2065,8 +2067,9 @@ parse_svcparam_ipv4hint(const char **s, uint8_t **dp, uint8_t *eod)
 			return LDNS_STATUS_INVALID_STR;
 		*s += 1;
 	}
-	return **s && !isspace(**s) ? LDNS_STATUS_SYNTAX_SVCPARAM_VALUE_ERR
-	                            : LDNS_STATUS_OK;
+	return **s && !isspace((unsigned char)**s)
+	     ? LDNS_STATUS_SYNTAX_SVCPARAM_VALUE_ERR
+	     : LDNS_STATUS_OK;
 }
 
 static ldns_status
@@ -2084,7 +2087,9 @@ parse_svcparam_echconfig(const char **s, uint8_t **dp, uint8_t *eod)
 		quoted = true;
 	}
 	b64_str = *s;
-	while (isalnum(**s) || **s == '+' || **s == '/' || **s == '=')
+	while (isalnum((unsigned char)**s) || **s == '+'
+	                                   || **s == '/'
+	                                   || **s == '=')
 		*s += 1;
 
 	len = *s - b64_str;
@@ -2098,7 +2103,7 @@ parse_svcparam_echconfig(const char **s, uint8_t **dp, uint8_t *eod)
 			return LDNS_STATUS_INVALID_STR;
 		*s += 1;
 	}
-	if (**s && !isspace(**s))
+	if (**s && !isspace((unsigned char)**s))
 		return LDNS_STATUS_SYNTAX_SVCPARAM_VALUE_ERR;
 	
 	out_len = ldns_b64_pton_calculate_size(len);
@@ -2138,7 +2143,7 @@ parse_svcparam_ipv6hint(const char **s, uint8_t **dp, uint8_t *eod)
 		char        ipv6_str[INET6_ADDRSTRLEN];
 		size_t      len;
 
-		while (isxdigit(**s) || **s == ':' || **s == '.')
+		while (isxdigit((unsigned char)**s) || **s == ':' || **s == '.')
 			*s += 1;
 		
 		len = *s - ipv6_start;
@@ -2164,8 +2169,9 @@ parse_svcparam_ipv6hint(const char **s, uint8_t **dp, uint8_t *eod)
 			return LDNS_STATUS_INVALID_STR;
 		*s += 1;
 	}
-	return **s && !isspace(**s) ? LDNS_STATUS_SYNTAX_SVCPARAM_VALUE_ERR
-	                            : LDNS_STATUS_OK;
+	return **s && !isspace((unsigned char)**s)
+	     ? LDNS_STATUS_SYNTAX_SVCPARAM_VALUE_ERR
+	     : LDNS_STATUS_OK;
 }
 
 struct struct_svcparam_key_def {
@@ -2207,7 +2213,8 @@ parse_svcparam_key(const char **s, ldns_svcparam_key *key)
 	unsigned long int num;
 
 	/* parse key */
-	while (islower(**s) || isdigit(**s) || **s == '-')
+	while (islower((unsigned char)**s) || isdigit((unsigned char)**s)
+	                                   || **s == '-')
 		*s += 1;
 
 	len = *s - key_str;
@@ -2255,7 +2262,7 @@ parse_svcparam(const char **s, uint8_t **dp, uint8_t *eod)
 	ldns_write_uint16(*dp, key);
 	ldns_write_uint16(*dp + 2, 0);
 	*dp += 4;
-	if (isspace(**s) || !**s)
+	if (isspace((unsigned char)**s) || !**s)
 		return LDNS_STATUS_OK;
 
 	else if (**s != '=')
@@ -2332,7 +2339,7 @@ ldns_str2rdf_svcparams(ldns_rdf **rd, const char *str)
 
 	/* Fill data with parsed bytes */
 	for (;;) {
-		while (isspace(*str))
+		while (isspace((unsigned char)*str))
 			str += 1;
 		if(!*str)
 			break;
