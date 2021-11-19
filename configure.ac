@@ -577,12 +577,16 @@ esac
 
 AC_ARG_ENABLE(ed25519, AC_HELP_STRING([--disable-ed25519], [Disable (experimental) ED25519 support. Default is detect]))
 case "$enable_ed25519" in
-    no) ;;
+    no)
+      AC_SUBST(ldns_build_config_use_ed25519, 0)
+      ;;
     *) dnl default
       AC_CHECK_DECLS([NID_ED25519], [
       	AC_DEFINE_UNQUOTED([USE_ED25519], [1], [Define this to enable ED25519 support.])
+        AC_SUBST(ldns_build_config_use_ed25519, 1)
       ], [if test "x$enable_ed25519" = "xyes"; then AC_MSG_ERROR([OpenSSL does not support ED25519 and you used --enable-ed25519.])
-      fi ], [AC_INCLUDES_DEFAULT
+          fi
+	  AC_SUBST(ldns_build_config_use_ed25519, 0)], [AC_INCLUDES_DEFAULT
 #include <openssl/evp.h>
       ])
       ;;
@@ -590,12 +594,16 @@ esac
 
 AC_ARG_ENABLE(ed448, AC_HELP_STRING([--disable-ed448], [Disable (experimental) ED448 support. Default is detect]))
 case "$enable_ed448" in
-    no) ;;
+    no)
+      AC_SUBST(ldns_build_config_use_ed448, 0)
+      ;;
     *) dnl default
       AC_CHECK_DECLS([NID_ED448], [
       	AC_DEFINE_UNQUOTED([USE_ED448], [1], [Define this to enable ED448 support.])
+        AC_SUBST(ldns_build_config_use_ed448, 1)
       ], [if test "x$enable_ed448" = "xyes"; then AC_MSG_ERROR([OpenSSL does not support ED448 and you used --enable-ed448.])
-      fi ], [AC_INCLUDES_DEFAULT
+          fi
+          AC_SUBST(ldns_build_config_use_ed448, 0)], [AC_INCLUDES_DEFAULT
 #include <openssl/evp.h>
       ])
       ;;
