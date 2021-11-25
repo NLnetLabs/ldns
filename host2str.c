@@ -1833,7 +1833,7 @@ ldns_rr2buffer_str_fmt(ldns_buffer *output,
 
 		/* TTL should NOT be printed if it is a question */
 		if (!ldns_rr_is_question(rr)) {
-			ldns_buffer_printf(output, "\t%d", ldns_rr_ttl(rr));
+			ldns_buffer_printf(output, "\t%u", (unsigned)ldns_rr_ttl(rr));
 		}
 
 		ldns_buffer_printf(output, "\t");
