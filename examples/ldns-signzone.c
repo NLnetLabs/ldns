@@ -1027,6 +1027,23 @@ main(int argc, char *argv[])
 	added_rrs = ldns_rr_list_new();
 
 	if (use_nsec3) {
+		if (verbosity < 1)
+			; /* pass */
+
+		else if (nsec3_iterations > 500)
+			fprintf(stderr, "Warning! NSEC3 iterations larger than "
+			    "500 may cause validating resolvers to return "
+			    "SERVFAIL!\n"
+			    "See: https://datatracker.ietf.org/doc/html/"
+			    "draft-hardaker-dnsop-nsec3-guidance-03#section-4\n");
+
+		else if (nsec3_iterations > 100)
+			fprintf(stderr, "Warning! NSEC3 iterations larger than "
+			    "100 may cause validating resolvers to return "
+			    "insecure responses!\n"
+			    "See: https://datatracker.ietf.org/doc/html/"
+			    "draft-hardaker-dnsop-nsec3-guidance-03#section-4\n");
+
 		result = ldns_dnssec_zone_sign_nsec3_flg_mkmap(signed_zone,
 			added_rrs,
 			keys,
