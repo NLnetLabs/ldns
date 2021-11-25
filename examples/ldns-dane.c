@@ -1175,7 +1175,9 @@ main(int argc, char* const* argv)
 
 #if OPENSSL_VERSION_NUMBER >= 0x10100000 && ! defined(HAVE_LIBRESSL)
 	size_t        j, usable_tlsas = 0;
+# ifdef USE_DANE_VERIFY
 	X509_STORE_CTX *store_ctx = NULL;
+# endif /* USE_DANE_VERIFY */
 #endif /* OPENSSL_VERSION_NUMBER >= 0x10100000 */
 
 	bool print_tlsa_as_type52   = false;
