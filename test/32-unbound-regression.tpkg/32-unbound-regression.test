@@ -107,7 +107,7 @@ then
 	done
 	if ( cd testdata; $TPKG -q -n `ls result.*|wc -l` report >/dev/null )
 	then
-		echo "All unbound tests sucesfully with ldns $LDNS_VERSION"
+		echo "All unbound tests successfully with ldns $LDNS_VERSION"
 		exit 0
 	else
 		echo "ERROR: Some unbound tests failed with ldns $LDNS_VERSION"

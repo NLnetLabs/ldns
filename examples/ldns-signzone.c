@@ -44,6 +44,11 @@ usage(FILE *fp, const char *prog) {
 	fprintf(fp, "  -o <domain>\torigin for the zone\n");
 	fprintf(fp, "  -u\t\tset SOA serial to the number of seconds since 1-1-1970\n");
 	fprintf(fp, "  -v\t\tprint version and exit\n");
+	fprintf(fp, "  -z <[scheme:]hash>\tAdd ZONEMD resource record\n");
+	fprintf(fp, "\t\t<scheme> should be \"simple\" (or 1)\n");
+	fprintf(fp, "\t\t<hash> should be \"sha384\" or \"sha512\" (or 1 or 2)\n");
+	fprintf(fp, "\t\tthis option can be given more than once\n");
+	fprintf(fp, "  -Z\t\tAllow ZONEMDs to be added without signing\n");
 	fprintf(fp, "  -A\t\tsign DNSKEY with all keys instead of minimal\n");
 	fprintf(fp, "  -U\t\tSign with every unique algorithm in the provided keys\n");
 #ifndef OPENSSL_NO_ENGINE
@@ -72,10 +77,14 @@ usage(FILE *fp, const char *prog) {
 
 	fprintf ( fp, "\n " );
 	__LIST ( RSAMD5 );
+#ifdef USE_DSA
 	__LIST ( DSA );
+#endif
 	__LIST ( RSASHA1 );
 	fprintf ( fp, "\n " );
+#ifdef USE_DSA
 	__LIST ( DSA_NSEC3 );
+#endif
 	__LIST ( RSASHA1_NSEC3 );
 	__LIST ( RSASHA256 );
 	fprintf ( fp, "\n " );
@@ -328,7 +337,7 @@ find_or_create_pubkey(const char *keyfile_name_base, ldns_key *key, ldns_zone *o
 
 #ifndef OPENSSL_NO_ENGINE
 /*
- * For keys coming from the engine (-k or -K), parse algoritm specification.
+ * For keys coming from the engine (-k or -K), parse algorithm specification.
  */
 static enum ldns_enum_signing_algorithm
 parse_algspec ( const char * const p )
@@ -350,11 +359,15 @@ parse_algspec ( const char * const p )
 
 	__MATCH ( RSAMD5 );
 	__MATCH ( RSASHA1 );
+#ifdef USE_DSA
 	__MATCH ( DSA );
+#endif
 	__MATCH ( RSASHA1_NSEC3 );
 	__MATCH ( RSASHA256 );
 	__MATCH ( RSASHA512 );
+#ifdef USE_DSA
 	__MATCH ( DSA_NSEC3 );
+#endif
 	__MATCH ( ECC_GOST );
 	__MATCH ( ECDSAP256SHA256 );
 	__MATCH ( ECDSAP384SHA384 );
@@ -419,8 +432,10 @@ load_key ( const char * const p, ENGINE * const e )
 	case LDNS_SIGN_RSASHA1_NSEC3:
 	case LDNS_SIGN_RSASHA256:
 	case LDNS_SIGN_RSASHA512:
+#ifdef USE_DSA
 	case LDNS_SIGN_DSA:
 	case LDNS_SIGN_DSA_NSEC3:
+#endif
 	case LDNS_SIGN_ECC_GOST:
 #ifdef USE_ECDSA
 	case LDNS_SIGN_ECDSAP256SHA256:
@@ -526,16 +541,63 @@ static void
 shutdown_openssl ( ENGINE * const e )
 {
 	if ( e != NULL ) {
+#ifdef HAVE_ENGINE_FREE
 		ENGINE_free ( e );
+#endif
+#ifdef HAVE_ENGINE_CLEANUP
 		ENGINE_cleanup ();
+#endif
 	}
 
+#ifdef HAVE_CONF_MODULES_UNLOAD
 	CONF_modules_unload ( 1 );
+#endif
+#ifdef HAVE_EVP_CLEANUP
 	EVP_cleanup ();
+#endif
+#ifdef HAVE_CRYPTO_CLEANUP_ALL_EX_DATA
 	CRYPTO_cleanup_all_ex_data ();
+#endif
+#ifdef HAVE_ERR_FREE_STRINGS
 	ERR_free_strings ();
+#endif
 }
 #endif
+
+int str2zonemd_signflag(const char *str, const char **reason)
+{
+	char *colon;
+
+	static const char *reasons[] = {
+	      "Unknown <scheme>, should be \"simple\""
+	    , "Syntax error in <hash>, should be \"sha384\" or \"sha512\""
+	    , "Unknown <hash>, should be \"sha384\" or \"sha512\""
+	};
+
+	if (!str)
+		return LDNS_STATUS_NULL;
+
+	if ((colon = strchr(str, ':'))) {
+		if ((colon - str != 1 || str[0] != '1')
+		&&  (colon - str != 6 || strncasecmp(str, "simple", 6))) {
+			if (reason) *reason = reasons[0];
+			return 0;
+		}
+
+		if (strchr(colon + 1, ':')) {
+			if (reason) *reason = reasons[1];
+			return 0;
+		}
+		return str2zonemd_signflag(colon + 1, reason);
+	}
+	if (!strcasecmp(str, "1") || !strcasecmp(str, "sha384"))
+		return LDNS_SIGN_WITH_ZONEMD_SIMPLE_SHA384;
+	if (!strcasecmp(str, "2") || !strcasecmp(str, "sha512"))
+		return LDNS_SIGN_WITH_ZONEMD_SIMPLE_SHA512;
+
+	if (reason) *reason = reasons[2];
+	return 0;
+}
 
 int
 main(int argc, char *argv[])
@@ -596,14 +658,18 @@ main(int argc, char *argv[])
 
 	ldns_output_format_storage fmt_st;
 	ldns_output_format* fmt = ldns_output_format_init(&fmt_st);
-	
+
+	/* For parson zone digest parameters */
+	int flag;
+	const char *reason = NULL;
+
 	prog = strdup(argv[0]);
 	inception = 0;
 	expiration = 0;
 	
 	keys = ldns_key_list_new();
 
-	while ((c = getopt(argc, argv, "a:bde:f:i:k:no:ps:t:uvAUE:K:")) != -1) {
+	while ((c = getopt(argc, argv, "a:bde:f:i:k:no:ps:t:uvz:ZAUE:K:")) != -1) {
 		switch (c) {
 		case 'a':
 			nsec3_algorithm = (uint8_t) atoi(optarg);
@@ -649,7 +715,7 @@ main(int argc, char *argv[])
 			}
 			break;
 		case 'f':
-			outputfile_name = LDNS_XMALLOC(char, MAX_FILENAME_LEN);
+			outputfile_name = LDNS_XMALLOC(char, MAX_FILENAME_LEN + 1);
 			strncpy(outputfile_name, optarg, MAX_FILENAME_LEN);
 			break;
 		case 'i':
@@ -694,6 +760,21 @@ main(int argc, char *argv[])
 		case 'v':
 			printf("zone signer version %s (ldns version %s)\n", LDNS_VERSION, ldns_version());
 			exit(EXIT_SUCCESS);
+			break;
+		case 'z':
+			flag = str2zonemd_signflag(optarg, &reason);
+			if (flag)
+				signflags |= flag;
+			else {
+				fprintf( stderr
+				       , "%s\nwith zone digest parameters:"
+				         " \"%s\"\n"
+				       , reason, optarg);
+				exit(EXIT_FAILURE);
+			}
+			break;
+		case 'Z':
+			signflags |= LDNS_SIGN_NO_KEYS_NO_NSECS;
 			break;
 		case 'A':
 			signflags |= LDNS_SIGN_DNSKEY_WITH_ZSK;
@@ -909,8 +990,9 @@ main(int argc, char *argv[])
 				  inception,
 				  expiration );
 #endif
-	
-	if (ldns_key_list_key_count(keys) < 1) {
+	if (ldns_key_list_key_count(keys) < 1 
+	&&  !(signflags & LDNS_SIGN_NO_KEYS_NO_NSECS)) {
+			
 		fprintf(stderr, "Error: no keys to sign with. Aborting.\n\n");
 		usage(stderr, prog);
 		exit(EXIT_FAILURE);
@@ -941,11 +1023,27 @@ main(int argc, char *argv[])
 			  ldns_rr_list_rr(ldns_zone_rrs(orig_zone), i));
 		}
 	}
-
 	/* list to store newly created rrs, so we can free them later */
 	added_rrs = ldns_rr_list_new();
 
 	if (use_nsec3) {
+		if (verbosity < 1)
+			; /* pass */
+
+		else if (nsec3_iterations > 500)
+			fprintf(stderr, "Warning! NSEC3 iterations larger than "
+			    "500 may cause validating resolvers to return "
+			    "SERVFAIL!\n"
+			    "See: https://datatracker.ietf.org/doc/html/"
+			    "draft-hardaker-dnsop-nsec3-guidance-03#section-4\n");
+
+		else if (nsec3_iterations > 100)
+			fprintf(stderr, "Warning! NSEC3 iterations larger than "
+			    "100 may cause validating resolvers to return "
+			    "insecure responses!\n"
+			    "See: https://datatracker.ietf.org/doc/html/"
+			    "draft-hardaker-dnsop-nsec3-guidance-03#section-4\n");
+
 		result = ldns_dnssec_zone_sign_nsec3_flg_mkmap(signed_zone,
 			added_rrs,
 			keys,
@@ -995,9 +1093,17 @@ main(int argc, char *argv[])
 
 #ifdef HAVE_SSL
 		if (ERR_peek_error()) {
+#if OPENSSL_VERSION_NUMBER < 0x10100000L || defined(HAVE_LIBRESSL)
+#ifdef HAVE_ERR_LOAD_CRYPTO_STRINGS
 			ERR_load_crypto_strings();
+#endif
+#endif
 			ERR_print_errors_fp(stderr);
-			ERR_free_strings();
+#if OPENSSL_VERSION_NUMBER < 0x10100000L || defined(HAVE_LIBRESSL)
+#ifdef HAVE_ERR_FREE_STRINGS
+			ERR_free_strings ();
+#endif
+#endif
 		}
 #endif
 		exit(EXIT_FAILURE);
@@ -1012,13 +1118,17 @@ main(int argc, char *argv[])
 	ldns_dnssec_zone_free(signed_zone);
 	ldns_zone_deep_free(orig_zone);
 	ldns_rr_list_deep_free(added_rrs);
-	
+	ldns_rdf_deep_free(origin);
 	LDNS_FREE(outputfile_name);
 
 #ifndef OPENSSL_NO_ENGINE
 	shutdown_openssl ( engine );
 #else
-	CRYPTO_cleanup_all_ex_data();
+#if OPENSSL_VERSION_NUMBER < 0x10100000 || defined(HAVE_LIBRESSL)
+#ifdef HAVE_CRYPTO_CLEANUP_ALL_EX_DATA
+	CRYPTO_cleanup_all_ex_data ();
+#endif
+#endif
 #endif
 
 	free(prog);

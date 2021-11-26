@@ -1175,7 +1175,9 @@ main(int argc, char* const* argv)
 
 #if OPENSSL_VERSION_NUMBER >= 0x10100000 && ! defined(HAVE_LIBRESSL)
 	size_t        j, usable_tlsas = 0;
+# ifdef USE_DANE_VERIFY
 	X509_STORE_CTX *store_ctx = NULL;
+# endif /* USE_DANE_VERIFY */
 #endif /* OPENSSL_VERSION_NUMBER >= 0x10100000 */
 
 	bool print_tlsa_as_type52   = false;
@@ -1209,9 +1211,9 @@ main(int argc, char* const* argv)
 	int           ai_family = AF_UNSPEC;
 	int           transport = LDNS_DANE_TRANSPORT_TCP;
 
-	char*         name_str = NULL;	/* supress uninitialized warning */
+	char*         name_str = NULL;	/* suppress uninitialized warning */
 	ldns_rdf*     name;
-	uint16_t      port = 0;		/* supress uninitialized warning */
+	uint16_t      port = 0;		/* suppress uninitialized warning */
 
 	ldns_resolver* res            = NULL;
 	ldns_rdf*      nameserver_rdf = NULL;
@@ -1680,9 +1682,11 @@ main(int argc, char* const* argv)
 		assert(0);
 	}
 
-	/* ssl inititalize */
+#if OPENSSL_VERSION_NUMBER < 0x10100000 || defined(HAVE_LIBRESSL)
+	/* ssl initialize */
 	SSL_load_error_strings();
 	SSL_library_init();
+#endif
 
 	/* ssl load validation store */
 	if (! assume_pkix_validity || CAfile || CApath) {
@@ -1703,6 +1707,20 @@ main(int argc, char* const* argv)
 	if (ctx && SSL_CTX_dane_enable(ctx) <= 0) {
 		ssl_err("could not SSL_CTX_dane_enable");
 	}
+
+	/* Use TLSv1.0 or above for connection. */
+	long flags = 0;
+# ifdef SSL_OP_NO_SSLv2
+	flags |= SSL_OP_NO_SSLv2;
+# endif
+# ifdef SSL_OP_NO_SSLv3
+	flags |= SSL_OP_NO_SSLv3;
+# endif
+# ifdef SSL_OP_NO_COMPRESSION
+	flags |= SSL_OP_NO_COMPRESSION;
+# endif
+	SSL_CTX_set_options(ctx, flags);
+
 	if (CAfile || CApath) {
 		if (!SSL_CTX_load_verify_locations(ctx, CAfile, CApath))
 			ssl_err("could not set verify locations\n");

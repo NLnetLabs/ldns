@@ -133,7 +133,7 @@ main(int argc, char **argv)
 						  LDNS_RR_CLASS_IN, &line_nr1);
 	if (s != LDNS_STATUS_OK) {
 		fclose(fp1);
-		fprintf(stderr, "%s: %s at %d\n",
+		fprintf(stderr, "%s: %s at line %d\n",
 			   fn1,
 			   ldns_get_errorstr_by_id(s),
 			   line_nr1);
@@ -153,7 +153,7 @@ main(int argc, char **argv)
 	if (s != LDNS_STATUS_OK) {
 		ldns_zone_deep_free(z1);
 		fclose(fp2);
-		fprintf(stderr, "%s: %s at %d\n",
+		fprintf(stderr, "%s: %s at line %d\n",
 			   fn2,
 			   ldns_get_errorstr_by_id(s),
 			   line_nr2);
@@ -232,7 +232,6 @@ main(int argc, char **argv)
 			rr_chg = rr_cmp = -1;
 		}
 		if (rr_cmp < 0) {
-			i++;
 			if ((rrx != NULL) && (ldns_dname_compare(ldns_rr_owner(rr1), 
 											 ldns_rr_owner(rrx)
 											 ) != 0)) {
@@ -254,8 +253,8 @@ main(int argc, char **argv)
 				printf("%c-", op);
 				ldns_rr_print(stdout, rr1);
 			}
+			i++;
 		} else if (rr_cmp > 0) {
-			j++;
 			if ((rrx != NULL) && (ldns_dname_compare(ldns_rr_owner(rr2),
 											 ldns_rr_owner(rrx)
 											 ) != 0)) {
@@ -277,9 +276,8 @@ main(int argc, char **argv)
 				printf("%c+", op);
 				ldns_rr_print(stdout, rr2);
 			}
-		} else {
-			i++;
 			j++;
+		} else {
 			if ((rrx != NULL) && (ldns_dname_compare(ldns_rr_owner(rr1),
 											 ldns_rr_owner(rrx)
 											 ) != 0)) {
@@ -294,6 +292,7 @@ main(int argc, char **argv)
 				      ldns_dname_compare(ldns_rr_owner(rr1), 
 					                 ldns_rr_owner(ldns_rr_list_rr(rrl1, k))) == 0
 				    ; k++);
+                                
 
 				for ( l = j + 1
 				    ; l < rrc2 &&
@@ -308,14 +307,14 @@ main(int argc, char **argv)
 					nc1 = k - i;
 					nc2 = l - j;
 					for ( k = i + 1, l = j + 1
-					    ; k < nc1 && l < nc2 &&
-					      ldns_rr_compare(ldns_rr_list_rr(rrl1, k),
-					                      ldns_rr_list_rr(rrl2, l)) == 0
+					    ; (k - i) < nc1 && (l - j) < nc2 &&
+							ldns_rr_compare(ldns_rr_list_rr(rrl1, k),
+							ldns_rr_list_rr(rrl2, l)) == 0
 					    ; k++, l++);
-					if (k < nc1) {
+					if ((k - i) < nc1) {
 						op = OP_CHG;
 						num_chg++;
-					} else {
+                                       } else {
 						op = OP_EQ;
 						num_eq++;
 					}
@@ -326,6 +325,8 @@ main(int argc, char **argv)
 				printf("%c=", op);
 				ldns_rr_print(stdout, rr1);
 			}
+			i++;
+			j++;
 		}
 	}
 

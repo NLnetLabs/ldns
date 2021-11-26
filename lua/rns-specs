@@ -1,7 +1,7 @@
 * Classes of Manglement
 
 from higher to lower level:
-	- deliberatly mess up a resolver ability to recurse
+	- deliberately mess up a resolver ability to recurse
 	- move RRsets to different sections
 	- fiddle with the ID
 	- add/delete RRs
@@ -104,7 +104,7 @@ ldns_* provides it. Should we use that?????
 Example:
 
 Suppose we have a mangling operation that mangles RR (at the rr-level):
-transpose_rr(packet, rr1_postition, rr2_position) 
+transpose_rr(packet, rr1_position, rr2_position) 
 
 The 2 rr's are now flipped. We could also use rand0 for the position
 thereby letting the system decide. All these mangling functions should

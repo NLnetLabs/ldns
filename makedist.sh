@@ -139,6 +139,14 @@ info "Running  Libtoolize script (libtoolize)."
 libtoolize -c --install || libtoolize -c || error_cleanup "Libtoolize failed."
 [ -f ../../install-sh.bak ] && mv ../../install-sh.bak ../../install-sh
 
+# Allow libtool to install the distro's config.guess and config.sub. It avoids a pesky
+# error message. After libtool is finished, update the scripts from Savannah. This step
+# is useful for downlevel clients like OS X and Solaris (and existing scripts with bugs).
+info "Fetching latest config.guess and config.sub"
+wget -q -O config.guess 'http://git.savannah.gnu.org/gitweb/?p=config.git;a=blob_plain;f=config.guess;hb=HEAD' || error_cleanup "Failed to fetch config.guess"
+wget -q -O config.sub 'http://git.savannah.gnu.org/gitweb/?p=config.git;a=blob_plain;f=config.sub;hb=HEAD' || error_cleanup "Failed to fetch config.sub"
+chmod a+x config.guess config.sub
+
 info "Building configure script (autoconf)."
 autoreconf -vfi || error_cleanup "Autoconf failed."
 
@@ -147,8 +155,8 @@ rm -r autom4te* || error_cleanup "Failed to remove autoconf cache directory."
 # custom removes
 find . -name .c-mode-rc.el -exec rm {} \;
 find . -name .cvsignore -exec rm {} \;
-rm  -f .gitignore .gitmodules contrib/DNS-LDNS/.git
-rm -rf .git
+rm  -f .gitignore .gitmodules contrib/DNS-LDNS/.git .travis.yml .gitlab-ci.yml
+rm -rf .git .github
 rm -rf lua 
 rm -rf masterdont 
 rm makedist.sh || error_cleanup "Failed to remove makedist.sh."
@@ -172,7 +180,7 @@ RECONFIGURE="no"
 
 if [ "$RC" != "no" ]; then
     info "Building LDNS release candidate $RC."
-    version2="${version}-rc$RC"
+    version2="${version}-rc.$RC"
     info "Version number: $version2"
 
     replace_text "configure.ac" "AC_INIT(ldns, $version" "AC_INIT(ldns, $version2"

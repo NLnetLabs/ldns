@@ -834,7 +834,7 @@ handle_query(uint8_t* inbuf, ssize_t inlen, struct entry* entries, int* count,
 	status = ldns_wire2pkt(&query_pkt, inbuf, (size_t)inlen);
 	if (status != LDNS_STATUS_OK) {
 		verbose(1, "Got bad packet: %s\n", ldns_get_errorstr_by_id(status));
-		ldns_rdf_free(stop_command);
+		ldns_rdf_deep_free(stop_command);
 		return;
 	}
 	
@@ -855,7 +855,7 @@ handle_query(uint8_t* inbuf, ssize_t inlen, struct entry* entries, int* count,
 	if(!entry || !entry->reply_list) {
 		verbose(1, "no answer packet for this query, no reply.\n");
 		ldns_pkt_free(query_pkt);
-		ldns_rdf_free(stop_command);
+		ldns_rdf_deep_free(stop_command);
 		return;
 	}
 	for(p = entry->reply_list; p; p = p->next)
@@ -874,7 +874,7 @@ handle_query(uint8_t* inbuf, ssize_t inlen, struct entry* entries, int* count,
 				if (status != LDNS_STATUS_OK) {
 					verbose(1, "Error creating answer: %s\n", ldns_get_errorstr_by_id(status));
 					ldns_pkt_free(query_pkt);
-					ldns_rdf_free(stop_command);
+					ldns_rdf_deep_free(stop_command);
 					return;
 				}
 				ldns_pkt_free(answer_pkt);
@@ -899,7 +899,7 @@ handle_query(uint8_t* inbuf, ssize_t inlen, struct entry* entries, int* count,
 			if (status != LDNS_STATUS_OK) {
 				verbose(1, "Error creating answer: %s\n", ldns_get_errorstr_by_id(status));
 				ldns_pkt_free(query_pkt);
-				ldns_rdf_free(stop_command);
+				ldns_rdf_deep_free(stop_command);
 				return;
 			}
 			ldns_pkt_free(answer_pkt);
@@ -922,7 +922,7 @@ handle_query(uint8_t* inbuf, ssize_t inlen, struct entry* entries, int* count,
 		answer_size = 0;
 	}
 	ldns_pkt_free(query_pkt);
-	ldns_rdf_free(stop_command);
+	ldns_rdf_deep_free(stop_command);
 }
 
 /** delete the list of reply packets */

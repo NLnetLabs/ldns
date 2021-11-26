@@ -40,15 +40,29 @@ edit = sed \
 # override $U variable which is used by autotools for deansification (for
 # K&R C compilers), but causes problems if $U is defined in the env).
 U=
+
+# set all of the tools due to cross-compiles. libtool uses most of them.
+# https://www.gnu.org/software/make/manual/html_node/Implicit-Variables.html
 CC 		= @CC@
+CXX		= @CXX@
+CPP		= @CPP@
+LD 		= @LD@
+AS 		= @AS@
+AR 		= @AR@
+RANLIB	= @RANLIB@
+STRIP	= @STRIP@
+
+# Unbound project specific flags
 CFLAGS		= @CFLAGS@
 CPPFLAGS	= -I. -I$(srcdir) @CPPFLAGS@ @DEFS@ -DLDNS_TRUST_ANCHOR_FILE="\"$(LDNS_TRUST_ANCHOR_FILE)\""
+ARFLAGS		= @ARFLAGS@
 LDFLAGS		= @LDFLAGS@
+
 LIBS 		= @LIBS@
 LIBOBJDIR	= compat/
 LIBOBJS		= @LIBOBJS@
 PYTHON_CPPFLAGS	= @PYTHON_CPPFLAGS@
-PYTHON_LDFLAGS	= @PYTHON_LDFLAGS@
+PYTHON_LIBS	= @PYTHON_LIBS@
 PYTHON_X_CFLAGS = @PYTHON_X_CFLAGS@
 LIBSSL_CPPFLAGS = @LIBSSL_CPPFLAGS@
 LIBSSL_LDFLAGS  = @LIBSSL_LDFLAGS@
@@ -72,15 +86,15 @@ LINTFLAGS       += -D"__BEGIN_DECLS=" -D"__ssize_t=ssize_t" -D"__intptr_t=intptr
 LINTFLAGS       += -D"_RuneLocale=int"
 DEPFLAG		= @DEPFLAG@
 
-INSTALL		= $(srcdir)/install-sh 
+INSTALL		= $(srcdir)/install-sh
 
 LIBLOBJS	= $(LIBOBJS:.o=.lo)
-LDNS_LOBJS	= buffer.lo dane.lo dname.lo dnssec.lo dnssec_sign.lo dnssec_verify.lo dnssec_zone.lo duration.lo error.lo higher.lo host2str.lo host2wire.lo keys.lo net.lo packet.lo parse.lo radix.lo rbtree.lo rdata.lo resolver.lo rr.lo rr_functions.lo sha1.lo sha2.lo str2host.lo tsig.lo update.lo util.lo wire2host.lo zone.lo 
+LDNS_LOBJS	= buffer.lo dane.lo dname.lo dnssec.lo dnssec_sign.lo dnssec_verify.lo dnssec_zone.lo duration.lo error.lo higher.lo host2str.lo host2wire.lo keys.lo net.lo packet.lo parse.lo radix.lo rbtree.lo rdata.lo resolver.lo rr.lo rr_functions.lo sha1.lo sha2.lo str2host.lo tsig.lo update.lo util.lo wire2host.lo zone.lo
 LDNS_LOBJS_EX	= ^linktest\.c$$
 LDNS_ALL_LOBJS	= $(LDNS_LOBJS) $(LIBLOBJS)
 LIB		= libldns.la
 
-LDNS_HEADERS	= buffer.h dane.h dname.h dnssec.h dnssec_sign.h dnssec_verify.h dnssec_zone.h duration.h error.h higher.h host2str.h host2wire.h keys.h ldns.h packet.h parse.h radix.h rbtree.h rdata.h resolver.h rr_functions.h rr.h sha1.h sha2.h str2host.h tsig.h update.h wire2host.h zone.h 
+LDNS_HEADERS	= buffer.h dane.h dname.h dnssec.h dnssec_sign.h dnssec_verify.h dnssec_zone.h duration.h error.h higher.h host2str.h host2wire.h keys.h ldns.h packet.h parse.h radix.h rbtree.h rdata.h resolver.h rr_functions.h rr.h sha1.h sha2.h str2host.h tsig.h update.h wire2host.h zone.h
 LDNS_HEADERS_EX	= ^config\.h|common\.h|util\.h|net\.h$$
 LDNS_HEADERS_GEN= common.h util.h net.h
 
@@ -89,8 +103,8 @@ PYLDNS_I_FILES	= $(pywrapdir)/file_py3.i $(pywrapdir)/ldns_buffer.i $(pywrapdir)
 DRILL_LOBJS	= drill/chasetrace.lo drill/dnssec.lo drill/drill.lo drill/drill_util.lo drill/error.lo drill/root.lo drill/securetrace.lo drill/work.lo
 
 EXAMPLE_LOBJS	= examples/ldns-chaos.lo examples/ldns-compare-zones.lo examples/ldns-dane.lo examples/ldnsd.lo examples/ldns-dpa.lo examples/ldns-gen-zone.lo examples/ldns-key2ds.lo examples/ldns-keyfetcher.lo examples/ldns-keygen.lo examples/ldns-mx.lo examples/ldns-notify.lo examples/ldns-nsec3-hash.lo examples/ldns-read-zone.lo examples/ldns-resolver.lo examples/ldns-revoke.lo examples/ldns-rrsig.lo examples/ldns-signzone.lo examples/ldns-test-edns.lo examples/ldns-testns.lo examples/ldns-testpkts.lo examples/ldns-update.lo examples/ldns-verify-zone.lo examples/ldns-version.lo examples/ldns-walk.lo examples/ldns-zcat.lo examples/ldns-zsplit.lo
-EXAMPLE_PROGS	= examples/ldns-chaos examples/ldns-compare-zones examples/ldnsd examples/ldns-gen-zone examples/ldns-key2ds examples/ldns-keyfetcher examples/ldns-keygen examples/ldns-mx examples/ldns-notify examples/ldns-read-zone examples/ldns-resolver examples/ldns-rrsig examples/ldns-test-edns examples/ldns-update examples/ldns-version examples/ldns-walk examples/ldns-zcat examples/ldns-zsplit 
-EX_PROGS_BASENM	= ldns-chaos ldns-compare-zones ldns-dane ldnsd ldns-dpa ldns-gen-zone ldns-key2ds ldns-keyfetcher ldns-keygen ldns-mx ldns-notify ldns-nsec3-hash ldns-read-zone ldns-resolver ldns-revoke ldns-rrsig ldns-signzone ldns-test-edns ldns-testns ldns-testpkts ldns-update ldns-verify-zone ldns-version ldns-walk ldns-zcat ldns-zsplit 
+EXAMPLE_PROGS	= examples/ldns-chaos examples/ldns-compare-zones examples/ldnsd examples/ldns-gen-zone examples/ldns-key2ds examples/ldns-keyfetcher examples/ldns-keygen examples/ldns-mx examples/ldns-notify examples/ldns-read-zone examples/ldns-resolver examples/ldns-rrsig examples/ldns-test-edns examples/ldns-update examples/ldns-version examples/ldns-walk examples/ldns-zcat examples/ldns-zsplit
+EX_PROGS_BASENM	= ldns-chaos ldns-compare-zones ldns-dane ldnsd ldns-dpa ldns-gen-zone ldns-key2ds ldns-keyfetcher ldns-keygen ldns-mx ldns-notify ldns-nsec3-hash ldns-read-zone ldns-resolver ldns-revoke ldns-rrsig ldns-signzone ldns-test-edns ldns-testns ldns-testpkts ldns-update ldns-verify-zone ldns-version ldns-walk ldns-zcat ldns-zsplit
 EXAMPLE_PROGS_EX= ^examples/ldns-testpkts\.c|examples/ldns-testns\.c|examples/ldns-dane\.c|examples/ldns-dpa\.c|examples/ldns-nsec3-hash\.c|examples/ldns-revoke\.c|examples/ldns-signzone\.c|examples/ldns-verify-zone\.c$$
 TESTNS		= examples/ldns-testns
 TESTNS_LOBJS	= examples/ldns-testns.lo examples/ldns-testpkts.lo
@@ -118,6 +132,10 @@ all:	setup-builddir lib linktest manpages @P5_DNS_LDNS@ @PYLDNS@ @DRILL@ @EXAMPL
 .c.lo:
 	$(COMP_LIB) $(LIBSSL_CPPFLAGS) -c $< -o $@
 
+# Need libtool compile
+.c.o:
+	$(COMP_LIB) $(LIBSSL_CPPFLAGS) -c $< -o $@
+
 $(LDNS_LOBJS) $(LIBLOBJS) $(DRILL_LOBJS) $(EXAMPLE_LOBJS):
 	$(COMP_LIB) $(LIBSSL_CPPFLAGS) -c $(srcdir)/$(@:.lo=.c) -o $@
 
@@ -130,12 +148,14 @@ setup-builddir:
 	@if test ! -d include ; then $(INSTALL) -d include; fi
 	@if test ! -h include/ldns ; then ln -s ../ldns include/ldns || echo "include/ldns exists"; fi
 
+# builddir/ is used by 60-compile-builddir
 putdown-builddir:
 	rm -f include/ldns lib config.h
 	test ! -d include  || rmdir include  || :
 	if test -d examples -a ! -f examples/README; then rmdir examples || : ; fi
 	if test -d drill    -a ! -f drill/README   ; then rmdir drill    || : ; fi
 	if test -d compat   -a ! -f compat/malloc.c; then rmdir compat   || : ; fi
+	rm -rf builddir/
 
 drill: no-drill-config-h drill/drill drill/drill.1
 no-drill-config-h:
@@ -148,7 +168,7 @@ no-drill-config-h:
 	fi
 
 drill/drill: $(DRILL_LOBJS) $(LIB) $(LIBLOBJS)
-	$(LINK_EXE) $(DRILL_LOBJS) $(LIBLOBJS) $(LIBS) $(LIBSSL_LIBS) -lldns -o drill/drill
+	$(LINK_EXE) $(DRILL_LOBJS) $(LIBLOBJS) $(LIB) $(LIBSSL_LIBS) $(LIBS) -o drill/drill
 
 drill/drill.1: $(srcdir)/drill/drill.1.in
 	$(edit) $(srcdir)/drill/drill.1.in > drill/drill.1
@@ -178,22 +198,25 @@ no-examples-config-h:
 	     exit -1 ; \
 	fi
 
+# Need LIBSSL_LIBS
 $(EXAMPLE_PROGS):
-	$(LINK_EXE) $@.lo $(LIBLOBJS) $(LIBS) -lldns -o $@
+	$(LINK_EXE) $@.lo $(LIBLOBJS) $(LIB) $(LIBSSL_LIBS) $(LIBS) -o $@
 
+# Need LIBSSL_LIBS
 $(TESTNS):
-	$(LINK_EXE) $(TESTNS_LOBJS) $(LIBLOBJS) $(LIBS) -lldns -o $(TESTNS)
+	$(LINK_EXE) $(TESTNS_LOBJS) $(LIBLOBJS) $(LIB) $(LIBSSL_LIBS) $(LIBS) -o $(TESTNS)
 
+# Need LIBSSL_LIBS
 $(LDNS_DPA):
-	$(LINK_EXE) $(LDNS_DPA_LOBJS) $(LIBLOBJS) $(LIBS) $(LIBPCAP_LIBS) -lldns \
+	$(LINK_EXE) $(LDNS_DPA_LOBJS) $(LIBLOBJS) $(LIB) $(LIBPCAP_LIBS) $(LIBSSL_LIBS) $(LIBS) \
 		 -o $(LDNS_DPA)
 
 $(LDNS_DANE):
-	$(LINK_EXE) $(LDNS_DANE_LOBJS) $(LIBLOBJS) -lldns $(LIBS) $(LIBSSL_SSL_LIBS) \
+	$(LINK_EXE) $(LDNS_DANE_LOBJS) $(LIBLOBJS) $(LIB) $(LIBSSL_SSL_LIBS) $(LIBS) \
 		 -o $(LDNS_DANE)
 
 $(EX_SSL_PROGS):
-	$(LINK_EXE) $@.lo $(LIBLOBJS) $(LIBS) $(LIBSSL_LIBS) -lldns -o $@
+	$(LINK_EXE) $@.lo $(LIBLOBJS) $(LIB) $(LIBSSL_LIBS) $(LIBS) -o $@
 
 examples/ldns-dane.1: $(srcdir)/examples/ldns-dane.1.in
 	$(edit) $(srcdir)/examples/ldns-dane.1.in > examples/ldns-dane.1
@@ -221,14 +244,14 @@ uninstall-examples:
 	test ! -d $(DESTDIR)$(bindir) || rmdir -p $(DESTDIR)$(bindir) || : ;
 
 clean-examples:
-	$(LIBTOOL) --mode clean rm -f $(EXAMPLE_PROGS) 
+	$(LIBTOOL) --mode clean rm -f $(EXAMPLE_PROGS)
 	$(LIBTOOL) --mode clean rm -f $(TESTNS) $(LDNS_DPA) $(LDNS_DANE) $(EX_SSL_PROGS)
 	$(LIBTOOL) --mode clean rm -f $(EXAMPLE_LOBJS)
 	$(LIBTOOL) --mode clean rm -f examples/ldns-dane.1 examples/ldns-verify-zone.1
 
 linktest: $(srcdir)/linktest.c libldns.la
 	$(COMP_LIB) $(LIBSSL_CPPFLAGS) -c $(srcdir)/linktest.c -o linktest.lo
-	$(LINK_EXE) linktest.lo $(LIBS) $(LIBSSL_LIBS) -lldns -o linktest
+	$(LINK_EXE) linktest.lo $(LIB) $(LIBSSL_LIBS) $(LIBS) -o linktest
 
 lib: libldns.la
 
@@ -252,7 +275,7 @@ doxygen:
 doc: manpages $(doxygen)
 	@$(INSTALL) -d doc
 
-manpages: $(srcdir)/doc/function_manpages 
+manpages: $(srcdir)/doc/function_manpages
 	@$(INSTALL) -d doc/man/man3
 	@if [ -f $(srcdir)/doc/man/man3/ldns_rr.3 ] ; \
 	then \
@@ -274,7 +297,7 @@ manpages: $(srcdir)/doc/function_manpages
 			| grep -v ^doxygen | grep -v ^cat  > doc/ldns_manpages; \
 	fi
 
-manpage-create-errors: $(srcdir)/doc/function_manpages 
+manpage-create-errors: $(srcdir)/doc/function_manpages
 	@$(INSTALL) -d doc
 	@cat $(srcdir)/ldns/*.h \
 	| $(srcdir)/doc/doxyparse.pl -e \
@@ -300,8 +323,8 @@ $(pywrapdir)/ldns_wrapper.c: $(PYLDNS_I_FILES) ldns/config.h
 ldns_wrapper.lo: $(pywrapdir)/ldns_wrapper.c ldns/config.h
 	$(COMP_LIB) -I./include/ldns $(LIBSSL_CPPFLAGS) $(PYTHON_CPPFLAGS) $(PYTHON_X_CFLAGS) -c $(pywrapdir)/ldns_wrapper.c -o $@
 
-_ldns.la: ldns_wrapper.lo libldns.la 
-	$(LIBTOOL) --tag=CC --mode=link $(CC) $(CFLAGS) $(PYTHON_CFLAGS) $(LDFLAGS) $(PYTHON_LDFLAGS) -module -version-info $(version_info) -no-undefined -o $@ ldns_wrapper.lo -rpath $(python_site) -L. -L.libs -lldns $(LIBS)
+_ldns.la: ldns_wrapper.lo libldns.la
+	$(LIBTOOL) --tag=CC --mode=link $(CC) $(CFLAGS) $(PYTHON_CFLAGS) $(LDFLAGS) -module -version-info $(version_info) -no-undefined -o $@ ldns_wrapper.lo -rpath $(python_site) -L. -L.libs $(LIB) $(PYTHON_LIBS) $(LIBS)
 
 $(p5_dns_ldns_dir)/Makefile: $(p5_dns_ldns_dir)/Makefile.PL
 	BUILDDIR=`pwd`; cd $(p5_dns_ldns_dir); LD_LIBRARY_PATH="$$BUILDDIR/.libs:$$LD_LIBRARY_PATH" DYLD_LIBRARY_PATH="$$BUILDDIR/.libs:$$DYLD_LIBRARY_PATH" $(PERL) Makefile.PL LIBS="-L$$BUILDDIR/.libs -lldns" INC="-I$$BUILDDIR"
@@ -327,7 +350,7 @@ install: install-h install-lib install-pc @INSTALL_CONFIG@ install-manpages $(py
 
 uninstall: uninstall-manpages @UNINSTALL_CONFIG@ uninstall-h uninstall-lib uninstall-pc $(pyldns_uninst) $(pyldnsx_uninst) @UNINSTALL_P5_DNS_LDNS@ @UNINSTALL_DRILL@ @UNINSTALL_EXAMPLES@
 
-destclean: uninstall
+distclean: uninstall
 
 install-config:
 	$(INSTALL) -d $(DESTDIR)$(bindir)
@@ -370,11 +393,11 @@ uninstall-h:
 	test ! -d $(DESTDIR)$(includedir)/ldns || rmdir -p $(DESTDIR)$(includedir)/ldns || echo "ok, dir already gone"
 	exit 0
 
-packaging/libldns.pc: packaging/libldns.pc.in
-	./config.status $@
+packaging/libldns.pc: $(srcdir)/packaging/libldns.pc.in
+	./config.status --file=$@
 
 install-pc: packaging/libldns.pc
-	$(INSTALL) -m 644 packaging/libldns.pc $(DESTDIR)$(libdir)/pkgconfig/ldns.pc
+	$(INSTALL) -m 644 $(srcdir)/packaging/libldns.pc $(DESTDIR)$(libdir)/pkgconfig/ldns.pc
 
 uninstall-pc:
 	$(LIBTOOL) --mode=uninstall rm -f $(DESTDIR)$(libdir)/pkgconfig/ldns.pc
@@ -385,7 +408,7 @@ install-lib: lib
 	$(LIBTOOL) --mode=install cp libldns.la $(DESTDIR)$(libdir)
 	$(LIBTOOL) --mode=finish $(DESTDIR)$(libdir)
 
-uninstall-lib:	
+uninstall-lib:
 	$(LIBTOOL) --mode=uninstall rm -f $(DESTDIR)$(libdir)/libldns.la
 	test ! -d $(DESTDIR)$(libdir) || rmdir -p $(DESTDIR)$(libdir) || echo "ok, dir already gone"
 
@@ -395,7 +418,7 @@ install-pyldns: @PYLDNS@
 	$(LIBTOOL) --mode=install cp _ldns.la $(DESTDIR)$(python_site)
 	$(LIBTOOL) --mode=finish $(DESTDIR)$(python_site)
 
-uninstall-pyldns:	
+uninstall-pyldns:
 	rm -f $(DESTDIR)$(python_site)/ldns/*
 	test ! -d $(DESTDIR)$(python_site)/ldns || rmdir $(DESTDIR)$(python_site)/ldns || echo "ok, dir already gone"
 
@@ -450,7 +473,7 @@ docclean:
 	rm -f doc/ldns_manpages
 
 distclean: realclean
-	rm -fr autom4te.cache 
+	rm -fr autom4te.cache
 	rm -f config.guess config.sub configure ltmain.sh ldns/config.h.in
 
 ## No need for changes here

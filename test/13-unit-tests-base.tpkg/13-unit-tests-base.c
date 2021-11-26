@@ -5,6 +5,57 @@
 
 #include <ldns/ldns.h>
 
+int test_duration(void)
+{
+	ldns_duration_type *d1 = NULL, *d2 = NULL;
+	char *s1 = NULL, *s2 = NULL, *s3 = NULL;
+	int r = -1;
+
+	if (!(d1 = ldns_duration_create()))
+		fprintf(stderr, "ldns_duration_create() returned NULL\n");
+
+	else if (!(s1 = ldns_duration2string(d1)))
+		fprintf(stderr, "ldns_duration2string() returned NULL\n");
+
+	else if (!(d2 = ldns_duration_create_from_string("PT0S")))
+		fprintf( stderr
+		       , "ldns_duration_create_from_string(\"P0D\") returned NULL\n");
+
+	else if (ldns_duration_compare(d1, d2))
+		fprintf(stderr, "0 durations not equal\n");
+
+	else if ((d1->years = 1), (d1->months = 3), 0)
+		; /* pass */
+
+	else if (!(s2 = ldns_duration2string(d1)))
+		fprintf(stderr, "ldns_duration2string() returned NULL\n");
+
+	else if (strcmp(s2, "P1Y3M"))
+		fprintf(stderr, "\"%s\" should have been \"P1Y3M\"\n", s2);
+
+	else if ((d1->minutes = 3), 0)
+		; /* pass */
+
+	else if (!(s3 = ldns_duration2string(d1)))
+		fprintf(stderr, "ldns_duration2string() returned NULL\n");
+
+	else if (strcmp(s3, "P1Y3MT3M"))
+		fprintf(stderr, "\"%s\" should have been \"P1Y3MT3M\"\n", s3);
+
+	else if (ldns_duration_compare(d1, d2) <= 0)
+		fprintf(stderr, "ldns_duration_compare() error\n");
+	else
+		r = 0;
+
+	if (d1)	ldns_duration_cleanup(d1);
+	if (d2)	ldns_duration_cleanup(d2);
+	if (s1)	free(s1);
+	if (s2)	free(s2);
+	if (s3)	free(s3);
+	return r;
+}
+
+
 void print_data_ar(const uint8_t *data, const size_t len) {
 	size_t i;
 	
@@ -65,7 +116,8 @@ test_base64_decode(const char *str, const uint8_t *expect_data, size_t expect_da
 
 	data_len = ldns_b64_pton_calculate_size(strlen(str));
 	
-	data = malloc(data_len);
+	if(!(data = malloc(data_len)))
+		return -1;
 	
 	result = ldns_b64_pton(str, data, data_len);
 	
@@ -102,7 +154,7 @@ test_base64_decode(const char *str, const uint8_t *expect_data, size_t expect_da
 			}
 		}
 	}
-	
+	free(data);
 	return result;
 }
 
@@ -155,7 +207,8 @@ test_base32_decode(const char *str, const uint8_t *expect_data, size_t expect_da
 
 	data_len = ldns_b32_pton_calculate_size(strlen(str))  +  10;
 	
-	data = malloc(data_len);
+	if (!(data = malloc(data_len)))
+		return -1;
 	
 	result = ldns_b32_pton(str, strlen(str), data, data_len);
 	
@@ -192,7 +245,7 @@ test_base32_decode(const char *str, const uint8_t *expect_data, size_t expect_da
 			}
 		}
 	}
-	
+	free(data);
 	return result;
 }
 
@@ -247,7 +300,8 @@ test_base32_decode_extended_hex(const char *str, const uint8_t *expect_data, siz
 
 	data_len = ldns_b32_pton_calculate_size(strlen(str)) + 10;
 	
-	data = malloc(data_len);
+	if (!(data = malloc(data_len)))
+		return -1;
 	
 	result = ldns_b32_pton_extended_hex(str, strlen(str), data, data_len);
 	
@@ -284,26 +338,25 @@ test_base32_decode_extended_hex(const char *str, const uint8_t *expect_data, siz
 			}
 		}
 	}
-	
+	free(data);
 	return result;
 }
 
 
 
 int
-test_sha1(char *data, const char *expect_result_str)
+test_sha1(const void *data, const void *expect_result_str)
 {
 	int result;
-	char *digest, *d;
+	unsigned char *digest, *d;
 	unsigned int digest_len;
 	uint8_t *expect_result;
 	size_t data_len;
 	
 	data_len = strlen(data);
 
-	expect_result = malloc(strlen(expect_result_str) / 2);
+	expect_result = malloc(strlen((char *)expect_result_str) / 2);
 	(void) ldns_hexstring_to_data(expect_result, expect_result_str);
-
 
 	digest_len = LDNS_SHA1_DIGEST_LENGTH;
 	digest = malloc(digest_len);
@@ -316,12 +369,12 @@ test_sha1(char *data, const char *expect_result_str)
 		printf("\n");
 		result = 1;
 	} else {
-		if (strncmp(expect_result, digest, digest_len) != 0) {
+		if (strncmp((char *)expect_result, (char *)digest, digest_len) != 0) {
 			printf("Bad sha1 digest: got: ");
 			print_data_ar(digest, digest_len);
 			printf("Expected:                 ");
-			printf("%s\n", expect_result);
-			printf("Data:\t%s\n", data);
+			printf("%s\n", (char *)expect_result);
+			printf("Data:\t%s\n", (char *)data);
 			
 			result = 2;
 		} else {
@@ -334,17 +387,17 @@ test_sha1(char *data, const char *expect_result_str)
 }
 
 int
-test_sha256(char *data, const char *expect_result_str)
+test_sha256(const void *data, const void *expect_result_str)
 {
 	int result;
-	char *digest, *d;
+	unsigned char *digest, *d;
 	unsigned int digest_len;
 	uint8_t *expect_result;
 	size_t data_len;
 	
 	data_len = strlen(data);
 
-	expect_result = malloc(strlen(expect_result_str) / 2);
+	expect_result = malloc(strlen((char *)expect_result_str) / 2);
 	(void) ldns_hexstring_to_data(expect_result, expect_result_str);
 
 	digest_len = LDNS_SHA256_DIGEST_LENGTH;
@@ -358,12 +411,12 @@ test_sha256(char *data, const char *expect_result_str)
 		printf("\n");
 		result = 1;
 	} else {
-		if (strncmp(expect_result, digest, digest_len) != 0) {
+		if (strncmp((char *)expect_result, (char *)digest, digest_len) != 0) {
 			printf("Bad sha256 digest: got: ");
 			print_data_ar(digest, digest_len);
 			printf("Expected:                 ");
-			printf("%s\n", expect_result);
-			printf("Data:\t%s\n", data);
+			printf("%s\n", (char *)expect_result);
+			printf("Data:\t%s\n", (char *)data);
 			
 			result = 2;
 		} else {
@@ -380,8 +433,6 @@ main(void)
 {
 	uint8_t *data;
 	size_t data_len;
-	char *text;
-	size_t text_len;
 
 	int result = EXIT_SUCCESS;
 
@@ -821,6 +872,10 @@ main(void)
 	if (test_sha256("Test vector from febooti.com", "077b18fe29036ada4890bdec192186e10678597a67880290521df70df4bac9ab") != 0) {
 		result = EXIT_FAILURE;
 	}
+	free(data);
+
+	if (test_duration())
+		result = EXIT_FAILURE;
 
 	printf("unit test is %s\n", result==EXIT_SUCCESS?"ok":"fail");
 	exit(result);

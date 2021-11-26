@@ -59,7 +59,7 @@ usage(FILE *stream, const char *progname)
 	fprintf(stream, "\t-6\t\tstay on ip6\n");
 	fprintf(stream, "\t-a\t\tfallback to EDNS0 and TCP if the answer is truncated\n");
 	fprintf(stream, "\t-b <bufsize>\tuse <bufsize> as the buffer size (defaults to 512 b)\n");
-	fprintf(stream, "\t-c <file>\tuse file for rescursive nameserver configuration"
+	fprintf(stream, "\t-c <file>\tuse file for recursive nameserver configuration"
 			"\n\t\t\t(/etc/resolv.conf)\n");
 	fprintf(stream, "\t-k <file>\tspecify a file that contains a trusted DNSSEC key [**]\n");
 	fprintf(stream, "\t\t\tUsed to verify any signatures in the current answer.\n");
@@ -173,6 +173,8 @@ main(int argc, char *argv[])
 	int r;
 	WSADATA wsa_data;
 #endif
+	ldns_output_format_storage fmt_storage;
+	ldns_output_format* fmt = ldns_output_format_init(&fmt_storage);
 
 	int_type = -1; serv = NULL; type = 0; 
 	int_clas = -1; name = NULL; clas = 0;
@@ -247,6 +249,7 @@ main(int argc, char *argv[])
 				verbosity = atoi(optarg);
 				break;
 			case 'Q':
+				fmt->flags |= LDNS_FMT_SHORT;
 				verbosity = -1;
 				break;
 			case 'f':
@@ -879,8 +882,8 @@ main(int argc, char *argv[])
 				mesg("No packet received");
 				result = EXIT_FAILURE;
 			} else {
+				ldns_pkt_print_fmt(stdout, fmt, pkt);
 				if (verbosity != -1) {
-					ldns_pkt_print(stdout, pkt);
 					if (ldns_pkt_tc(pkt)) {
 						fprintf(stdout,
 							"\n;; WARNING: The answer packet was truncated; you might want to\n");
@@ -994,9 +997,17 @@ main(int argc, char *argv[])
 	xfree(tsig_algorithm);
 
 #ifdef HAVE_SSL
-	CRYPTO_cleanup_all_ex_data();
-	ERR_free_strings();
-	EVP_cleanup();
+#if OPENSSL_VERSION_NUMBER < 0x10100000L || defined(HAVE_LIBRESSL)
+#ifdef HAVE_CRYPTO_CLEANUP_ALL_EX_DATA
+	CRYPTO_cleanup_all_ex_data ();
+#endif
+#ifdef HAVE_ERR_FREE_STRINGS
+	ERR_free_strings ();
+#endif
+#ifdef HAVE_EVP_CLEANUP
+	EVP_cleanup ();
+#endif
+#endif
 #endif
 #ifdef USE_WINSOCK
 	WSACleanup();

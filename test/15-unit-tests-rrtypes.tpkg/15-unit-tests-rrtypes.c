@@ -13,7 +13,7 @@ err(const ldns_rr_descriptor* desc, const char* why)
 }
 
 static int
-check_desc(const ldns_rr_descriptor* desc, int type)
+check_desc(const ldns_rr_descriptor* desc, ldns_rr_type type)
 {
 	int i;
 	int dcount = 0;
@@ -49,14 +49,14 @@ check_desc(const ldns_rr_descriptor* desc, int type)
 }
 
 static int
-check_descriptors()
+check_descriptors(void)
 {
-	int start = 0;
-	int end = LDNS_RDATA_FIELD_DESCRIPTORS_COMMON /* 250 */;
-	int i;
+	ldns_rr_type start = LDNS_RR_TYPE_FIRST;
+	ldns_rr_type end = LDNS_RDATA_FIELD_DESCRIPTORS_COMMON /* 250 */;
+	ldns_rr_type i;
 	for(i=start; i<end; i++) {
 		if(!check_desc(ldns_rr_descript(i), i)) {
-			printf("Type %d failed\n", i);
+			printf("Type %d failed\n", (int)i);
 			return 0;
 		}
 	}

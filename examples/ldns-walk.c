@@ -169,7 +169,7 @@ query_type_bitmaps(ldns_resolver *res,
 							ldns_pkt_print(stdout, answer_pkt);
 						}
 						/* hmm, this does not give us the right records
-						 * when askking for type NS above the delegation
+						 * when asking for type NS above the delegation
 						 * (or, in fact, when the delegated zone is 
 						 * served by this server either)
 						 * do we need to special case NS like NSEC?
@@ -608,7 +608,7 @@ main(int argc, char *argv[])
 	}
 	if (!next_dname) {
 		/* apparently the zone also has prepended data (i.e. a.example and www.a.example, 
- 		 * The www comes after the a but befpre a\\000, so we need to make another name (\\000.a)
+ 		 * The www comes after the a but before a\\000, so we need to make another name (\\000.a)
 		 */
 		if (last_dname_p) {
 			ldns_rdf_deep_free(last_dname_p);
