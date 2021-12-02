@@ -397,7 +397,7 @@ packaging/libldns.pc: $(srcdir)/packaging/libldns.pc.in
 	./config.status --file=$@
 
 install-pc: packaging/libldns.pc
-	$(INSTALL) -m 644 $(srcdir)/packaging/libldns.pc $(DESTDIR)$(libdir)/pkgconfig/ldns.pc
+	$(INSTALL) -m 644 packaging/libldns.pc $(DESTDIR)$(libdir)/pkgconfig/ldns.pc
 
 uninstall-pc:
 	$(LIBTOOL) --mode=uninstall rm -f $(DESTDIR)$(libdir)/pkgconfig/ldns.pc
