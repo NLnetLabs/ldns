@@ -6,7 +6,7 @@ sinclude(acx_nlnetlabs.m4)
 # must be numbers. ac_defun because of later processing.
 m4_define([VERSION_MAJOR],[1])
 m4_define([VERSION_MINOR],[8])
-m4_define([VERSION_MICRO],[0])
+m4_define([VERSION_MICRO],[1])
 AC_INIT(ldns, m4_defn([VERSION_MAJOR]).m4_defn([VERSION_MINOR]).m4_defn([VERSION_MICRO]), libdns@nlnetlabs.nl, libdns)
 AC_CONFIG_SRCDIR([packet.c])
 # needed to build correct soname
