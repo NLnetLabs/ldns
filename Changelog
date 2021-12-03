@@ -1,3 +1,8 @@
+1.8.1	2021-12-03
+	* bugfix #146: ldns-1.7.1 had soname 3.0, so ldns-1.8.x soname
+	  needs to larger.
+	* Undo PR#123 fix ldns.pc installation when building out-of-source
+
 1.8.0	2021-11-26
 	* bugfix #38: Print "line" before line number when printing
 	  zone parse errors. Thanks Petr Špaček.
