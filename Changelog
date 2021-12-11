@@ -1,5 +1,6 @@
 1.8.2	2022-??-??
-	
+	* bugfix #147: Allow for tabs in whitespace before quoted rdata
+	  fields. Thanks Felipe Gasper
 
 1.8.1	2021-12-03
 	* bugfix #146: ldns-1.7.1 had soname 3.0, so ldns-1.8.x soname
