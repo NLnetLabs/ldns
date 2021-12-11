@@ -372,9 +372,9 @@ ldns_rr_new_frm_str_internal(ldns_rr **newrr, const char *str,
 				desc, r_cnt)) &&
 				ldns_buffer_remaining(rd_buf) > 0){
 
-			/* skip spaces */
+			/* skip spaces & tabs */
 			while (ldns_buffer_remaining(rd_buf) > 0 &&
-				*(ldns_buffer_current(rd_buf)) == ' ') {
+				NULL != strchr( LDNS_PARSE_NO_NL, *(ldns_buffer_current(rd_buf)) )) {
 				ldns_buffer_skip(rd_buf, 1);
 			}
 
