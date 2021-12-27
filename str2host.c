@@ -1550,6 +1550,9 @@ ldns_str2rdf_long_str(ldns_rdf **rd, const char *str)
 		return LDNS_STATUS_SYNTAX_BAD_ESCAPE;
 	}
 	if (!(length = (size_t)(dp - data))) {
+		/* An empty string is a data buffer of 0 bytes.  The rdf for 
+		 * this long string has to have length 0 and point to NULL.
+		 */
 		LDNS_FREE(data);
 		data = NULL;
 	} else {
