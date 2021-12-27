@@ -235,8 +235,14 @@ ldns_status ldns_key_new_frm_fp_l(ldns_key **k, FILE *fp, int *line_nr);
 /**
  * Read the key with the given id from the given engine and store it
  * in the given ldns_key structure. The algorithm type is set
+ * 
+ * \param[out] key the new ldns_key structure
+ * \param[in] e the engine from which to read the key
+ * \param[in] key_id the id of the key with which to lookup the key in the engine
+ * \param[in] a the algorithm to set for this key
+ * \return an error or LDNS_STATUS_OK
  */
-ldns_status ldns_key_new_frm_engine(ldns_key **key, ENGINE *e, char *key_id, ldns_algorithm);
+ldns_status ldns_key_new_frm_engine(ldns_key **key, ENGINE *e, char *key_id, ldns_algorithm a);
 
 
 /**

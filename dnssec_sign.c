@@ -328,14 +328,6 @@ ldns_sign_public(ldns_rr_list *rrset, ldns_key_list *keys)
 	return signatures;
 }
 
-/**
- * Sign data with DSA
- *
- * \param[in] to_sign The ldns_buffer containing raw data that is
- *                    to be signed
- * \param[in] key The DSA key structure to sign with
- * \return ldns_rdf for the RRSIG ldns_rr
- */
 ldns_rdf *
 ldns_sign_public_dsa(ldns_buffer *to_sign, DSA *key)
 {
@@ -676,20 +668,6 @@ ldns_dnssec_addresses_on_glue_list(
 	return LDNS_STATUS_OK;
 }
 
-/**
- * Marks the names in the zone that are occluded. Those names will be skipped
- * when walking the tree with the ldns_dnssec_name_node_next_nonglue()
- * function. But watch out! Names that are partially occluded (like glue with
- * the same name as the delegation) will not be marked and should specifically 
- * be taken into account separately.
- *
- * When glue_list is given (not NULL), in the process of marking the names, all
- * glue resource records will be pushed to that list, even glue at delegation names.
- *
- * \param[in] zone the zone in which to mark the names
- * \param[in] glue_list the list to which to push the glue rrs
- * \return LDNS_STATUS_OK on success, an error code otherwise
- */
 ldns_status
 ldns_dnssec_zone_mark_and_get_glue(ldns_dnssec_zone *zone, 
 	ldns_rr_list *glue_list)
@@ -769,16 +747,6 @@ ldns_dnssec_zone_mark_and_get_glue(ldns_dnssec_zone *zone,
 	return LDNS_STATUS_OK;
 }
 
-/**
- * Marks the names in the zone that are occluded. Those names will be skipped
- * when walking the tree with the ldns_dnssec_name_node_next_nonglue()
- * function. But watch out! Names that are partially occluded (like glue with
- * the same name as the delegation) will not be marked and should specifically 
- * be taken into account separately.
- *
- * \param[in] zone the zone in which to mark the names
- * \return LDNS_STATUS_OK on success, an error code otherwise
- */
 ldns_status
 ldns_dnssec_zone_mark_glue(ldns_dnssec_zone *zone)
 {

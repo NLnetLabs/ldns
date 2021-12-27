@@ -196,6 +196,10 @@ ldns_status ldns_rr2wire(uint8_t **dest, const ldns_rr *rr, int section, size_t 
  * given packet in that array. The result_size value contains the
  * length of the array, if it succeeds, and 0 otherwise (in which case
  * the function also returns NULL)
+ *
+ * \param[out] dest pointer to the array of bytes to be created
+ * \param[in] p the packet to convert
+ * \param[out] size the size of the converted result
  */
 ldns_status ldns_pkt2wire(uint8_t **dest, const ldns_pkt *p, size_t *size);
 

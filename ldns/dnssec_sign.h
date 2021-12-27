@@ -49,9 +49,10 @@ ldns_rr_list *ldns_sign_public(ldns_rr_list *rrset, ldns_key_list *keys);
 #if LDNS_BUILD_CONFIG_HAVE_SSL
 /**
  * Sign a buffer with the DSA key (hash with SHA1)
- * \param[in] to_sign buffer with the data
- * \param[in] key the key to use
- * \return a ldns_rdf with the signed data
+ *
+ * \param[in] to_sign The ldns_buffer containing raw data that is to be signed
+ * \param[in] key The DSA key structure to sign with
+ * \return a ldns_rdf for the RRSIG ldns_rr
  */
 ldns_rdf *ldns_sign_public_dsa(ldns_buffer *to_sign, DSA *key);
 
@@ -112,7 +113,7 @@ ldns_dnssec_zone_mark_and_get_glue(
  * be taken into account separately.
  *
  * \param[in] zone the zone in which to mark the names
- * \return LDNS_STATUS_OK on succesful completion
+ * \return LDNS_STATUS_OK on succesful completion, an error code otherwise
  */
 ldns_status
 ldns_dnssec_zone_mark_glue(ldns_dnssec_zone *zone);
