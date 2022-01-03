@@ -136,7 +136,7 @@ AC_CHECK_FUNC([socket],
 # older Solaris provides inet_ntop in -lresolv.
 AC_CHECK_FUNC([inet_ntop],
     [],
-    [AC_SEARCH_LIBS([inet_ntop], [socket c nsl resolv])
+    [AC_SEARCH_LIBS([inet_ntop], [socket c nsl resolv], [ac_cv_func_inet_ntop=yes])
 ])
 
 # modern Linux provides inet_pton in -lsocket.
@@ -145,7 +145,7 @@ AC_CHECK_FUNC([inet_ntop],
 # older Solaris provides inet_pton in -lresolv.
 AC_CHECK_FUNC([inet_pton],
     [],
-    [AC_SEARCH_LIBS([inet_pton], [socket c nsl resolv])
+    [AC_SEARCH_LIBS([inet_pton], [socket c nsl resolv], [ac_cv_func_inet_pton=yes])
 ])
 
 

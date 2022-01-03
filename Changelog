@@ -3,6 +3,7 @@
 	  fields. Thanks Felipe Gasper
 	* bugfix #149: Add some missing [out] annotations to doxygen
 	  parameters. Thanks aldot.
+	* Fix build error on Solaris 10 with inet_ntop redeclaration error.
 
 1.8.1	2021-12-03
 	* bugfix #146: ldns-1.7.1 had soname 3.0, so ldns-1.8.x soname
