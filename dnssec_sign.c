@@ -1133,17 +1133,22 @@ ldns_key_list_filter_for_dnskey(ldns_key_list *key_list, int flags)
 	if (!ldns_key_list_key_count(key_list))
 		return;
 
+	/* Mark all KSKs */
 	for (i = 0; i < ldns_key_list_key_count(key_list); i++) {
 		key = ldns_key_list_key(key_list, i);
-		if ((ldns_key_flags(key) & LDNS_KEY_SEP_KEY) && !saw_ksk)
-			saw_ksk = ldns_key_algorithm(key);
-		algos[ldns_key_algorithm(key)] = true;
+		if ((ldns_key_flags(key) & LDNS_KEY_SEP_KEY)) {
+			if (!saw_ksk)
+				saw_ksk = ldns_key_algorithm(key);
+			algos[ldns_key_algorithm(key)] = true;
+		}
 	}
 	if (!saw_ksk)
-		return;
-	else
-		algos[saw_ksk] = 0;
+		return; /* No KSKs means sign using all ZSKs */
 
+	/* Deselect the ZSKs so they do not sign DNSKEY RRs.
+	 * Except with the LDNS_SIGN_WITH_ALL_ALGORITHMS flag, then use it,
+	 * but only if it has an algorithm for which there is no KSK
+	 */
 	for (i =0; i < ldns_key_list_key_count(key_list); i++) {
 		key = ldns_key_list_key(key_list, i);
 		if (!(ldns_key_flags(key) & LDNS_KEY_SEP_KEY)) {
@@ -1151,15 +1156,15 @@ ldns_key_list_filter_for_dnskey(ldns_key_list *key_list, int flags)
 			 * Still use it if it has a unique algorithm though!
 			 */
 			if ((flags & LDNS_SIGN_WITH_ALL_ALGORITHMS) &&
-			    algos[ldns_key_algorithm(key)])
-				algos[ldns_key_algorithm(key)] = false;
+			    !algos[ldns_key_algorithm(key)])
+				algos[ldns_key_algorithm(key)] = true;
 			else
 				ldns_key_set_use(key, 0);
 		}
 	}
 }
 
-/** If there are no ZSKs use KSK as ZSK */
+/** If there are no ZSKs use KSKs as ZSK too */
 static void
 ldns_key_list_filter_for_non_dnskey(ldns_key_list *key_list, int flags)
 {
@@ -1175,17 +1180,22 @@ ldns_key_list_filter_for_non_dnskey(ldns_key_list *key_list, int flags)
 	if (!ldns_key_list_key_count(key_list))
 		return;
 
+	/* Mark all ZSKs */
 	for (i = 0; i < ldns_key_list_key_count(key_list); i++) {
 		key = ldns_key_list_key(key_list, i);
-		if (!(ldns_key_flags(key) & LDNS_KEY_SEP_KEY) && !saw_zsk)
-			saw_zsk = ldns_key_algorithm(key);
-		algos[ldns_key_algorithm(key)] = true;
+		if (!(ldns_key_flags(key) & LDNS_KEY_SEP_KEY)) {
+			if (!saw_zsk)
+				saw_zsk = ldns_key_algorithm(key);
+			algos[ldns_key_algorithm(key)] = true;
+		}
 	}
 	if (!saw_zsk)
-		return;
-	else
-		algos[saw_zsk] = 0;
+		return; /* No ZSKs means sign using all KSKs */
 
+	/* Deselect the KSKs so they do not sign non DNSKEY RRs.
+	 * Except with the LDNS_SIGN_WITH_ALL_ALGORITHMS flag, then use it,
+	 * but only if it has an algorithm for which there is no ZSK
+	 */
 	for (i = 0; i < ldns_key_list_key_count(key_list); i++) {
 		key = ldns_key_list_key(key_list, i);
 		if((ldns_key_flags(key) & LDNS_KEY_SEP_KEY)) {
@@ -1193,8 +1203,8 @@ ldns_key_list_filter_for_non_dnskey(ldns_key_list *key_list, int flags)
 			 * Still use it if it has a unique algorithm though!
 			 */
 			if ((flags & LDNS_SIGN_WITH_ALL_ALGORITHMS) &&
-			    algos[ldns_key_algorithm(key)])
-				algos[ldns_key_algorithm(key)] = false;
+			    !algos[ldns_key_algorithm(key)])
+				algos[ldns_key_algorithm(key)] = true;
 			else
 				ldns_key_set_use(key, 0);
 		}
