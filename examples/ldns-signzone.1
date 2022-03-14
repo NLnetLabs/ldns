@@ -92,6 +92,12 @@ SEP keys, the DNSKEY RRset is signed with the non\-SEP keys.  This option
 turns off the default and all keys are used to sign the DNSKEY RRset.
 
 .TP
+\fB-U\fR
+Sign with every unique algorithm in the provided keys.  The DNSKEY set
+is signed with all the SEP keys, plus all the non\-SEP keys that have an
+algorithm that was not presen in the SEP key set.
+
+.TP
 \fB-E\fR \fIname\fR
 Use the EVP cryptographic engine with the given name for signing. This
 can have some extra options; see ENGINE OPTIONS for more information.
