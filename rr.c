@@ -20,6 +20,12 @@
 #define LDNS_TTL_DATALEN    21
 #define LDNS_RRLIST_INIT    8
 
+#define _IS_WHITESPACE(chr) \
+    ( NULL != strchr( LDNS_PARSE_NO_NL, chr) )
+
+#define _BUFFER_IS_AT_WHITESPACE(rd_buf) \
+    _IS_WHITESPACE(*(ldns_buffer_current(rd_buf)))
+
 ldns_rr *
 ldns_rr_new(void)
 {
@@ -372,9 +378,9 @@ ldns_rr_new_frm_str_internal(ldns_rr **newrr, const char *str,
 				desc, r_cnt)) &&
 				ldns_buffer_remaining(rd_buf) > 0){
 
-			/* skip spaces & tabs */
+			/* skip whitespace */
 			while (ldns_buffer_remaining(rd_buf) > 0 &&
-				NULL != strchr( LDNS_PARSE_NO_NL, *(ldns_buffer_current(rd_buf)) )) {
+				_BUFFER_IS_AT_WHITESPACE(rd_buf)) {
 				ldns_buffer_skip(rd_buf, 1);
 			}
 
@@ -396,9 +402,9 @@ ldns_rr_new_frm_str_internal(ldns_rr **newrr, const char *str,
 		 * _maximum() only
 		 */
 
-		/* skip spaces */
+		/* skip whitespace */
 		while (ldns_buffer_position(rd_buf) < ldns_buffer_limit(rd_buf)
-				&& *(ldns_buffer_current(rd_buf)) == ' '
+				&& _BUFFER_IS_AT_WHITESPACE(rd_buf)
 				&& !quoted) {
 
 			ldns_buffer_skip(rd_buf, 1);
@@ -420,7 +426,7 @@ ldns_rr_new_frm_str_internal(ldns_rr **newrr, const char *str,
 
 		/* unknown RR data */
 		if (strncmp(rd, "\\#", 2) == 0 && !quoted &&
-				(rd_strlen == 2 || rd[2]==' ')) {
+				(rd_strlen == 2 || _IS_WHITESPACE(rd[2]))) {
 
 			was_unknown_rr_format = 1;
 			/* go back to before \#
