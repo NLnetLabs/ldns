@@ -2451,7 +2451,7 @@ ldns_key2buffer_str(ldns_buffer *output, const ldns_key *k)
 					const BIGNUM *n=NULL, *e=NULL, *d=NULL,
 						*p=NULL, *q=NULL, *dmp1=NULL,
 						*dmq1=NULL, *iqmp=NULL;
-#if OPENSSL_VERSION_NUMBER < 0x10100000 || defined(HAVE_LIBRESSL)
+#if OPENSSL_VERSION_NUMBER < 0x10100000 || (defined(HAVE_LIBRESSL) && LIBRESSL_VERSION_NUMBER < 0x20700000)
 					n = rsa->n;
 					e = rsa->e;
 					d = rsa->d;
@@ -2504,7 +2504,7 @@ ldns_key2buffer_str(ldns_buffer *output, const ldns_key *k)
 				if(1) {
 					const BIGNUM *p=NULL, *q=NULL, *g=NULL,
 						*priv_key=NULL, *pub_key=NULL;
-#if OPENSSL_VERSION_NUMBER < 0x10100000 || defined(HAVE_LIBRESSL)
+#if OPENSSL_VERSION_NUMBER < 0x10100000 || (defined(HAVE_LIBRESSL) && LIBRESSL_VERSION_NUMBER < 0x20700000)
 #ifndef S_SPLINT_S
 					p = dsa->p;
 					q = dsa->q;
