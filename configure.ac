@@ -1176,7 +1176,7 @@ else
   AC_SUBST(ldns_build_config_have_attr_unused, 0)
 fi
 
-CONFIG_FILES="Makefile ldns/common.h ldns/net.h ldns/util.h packaging/libldns.pc packaging/ldns-config"
+CONFIG_FILES="Makefile libdns.doxygen ldns/common.h ldns/net.h ldns/util.h packaging/libldns.pc packaging/ldns-config"
 AC_SUBST(CONFIG_FILES)
 AC_CONFIG_FILES([$CONFIG_FILES])
 
