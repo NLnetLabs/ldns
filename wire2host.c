@@ -185,7 +185,7 @@ ldns_wire2rdf(ldns_rr *rr, const uint8_t *wire, size_t max, size_t *pos)
 	end = *pos + (size_t) rd_length;
 
 	rdf_index = 0;
-	while (*pos < end &&
+	while (*pos < end && 
 			rdf_index < ldns_rr_descriptor_maximum(descriptor)) {
 
 		cur_rdf_length = 0;
@@ -312,6 +312,104 @@ ldns_wire2rdf(ldns_rr *rr, const uint8_t *wire, size_t max, size_t *pos)
 }
 
 
+
+/* Parse the additional section like wire2rr with a case for EDNS options */
+// @TODO remove static?
+static ldns_status
+ldns_wire2rr_additional(ldns_pkt* packet, ldns_rr **rr_p, const uint8_t *wire,
+	size_t max, size_t *pos)
+{
+	size_t end;
+	ldns_rdf *owner = NULL;
+	ldns_rr *rr = ldns_rr_new();
+	ldns_status status;
+	ldns_rr_type rr_type;
+	uint16_t rd_length;
+
+	status = ldns_wire2dname(&owner, wire, max, pos);
+	LDNS_STATUS_CHECK_GOTO(status, status_error);
+
+	ldns_rr_set_owner(rr, owner);
+
+	if (*pos + 4 > max) {
+		status = LDNS_STATUS_PACKET_OVERFLOW;
+		goto status_error;
+	}
+
+	rr_type = ldns_read_uint16(&wire[*pos]);
+	ldns_rr_set_type(rr, rr_type);
+	*pos = *pos + 2;
+
+	ldns_rr_set_class(rr, ldns_read_uint16(&wire[*pos]));
+	*pos = *pos + 2;
+
+	if (*pos + 4 > max) {
+		status = LDNS_STATUS_PACKET_OVERFLOW;
+		goto status_error;
+	}
+	ldns_rr_set_ttl(rr, ldns_read_uint32(&wire[*pos]));
+
+	*pos = *pos + 4;
+
+	if (rr_type != LDNS_RR_TYPE_OPT)
+		status = ldns_wire2rdf(rr, wire, max, pos);
+	else {
+		ldns_edns_option* edns;
+		ldns_edns_option_code option_code;
+		uint16_t option_size;
+		uint8_t *option_data;
+
+		if (*pos + 2 > max) {
+			status =  LDNS_STATUS_PACKET_OVERFLOW;
+			goto status_error;
+		}
+
+		rd_length = ldns_read_uint16(&wire[*pos]);
+		*pos = *pos + 2;
+
+		if (*pos + rd_length > max) {
+			status =  LDNS_STATUS_PACKET_OVERFLOW;
+			goto status_error;
+		}
+
+		end = *pos + (size_t) rd_length;
+
+		while (*pos < end) { // @TODO fix for multiple EDNS opts?
+			option_code = ldns_read_uint16(&wire[*pos]);
+			option_size = ldns_read_uint16(&wire[*pos + 2]);
+			*pos = *pos + 4;
+
+			option_data = LDNS_XMALLOC(uint8_t, option_size);
+			if (!option_data) {
+				status = LDNS_STATUS_MEM_ERR;
+				goto status_error;
+			}
+			memcpy(option_data, &wire[*pos], option_size);
+
+			printf("HERE: ldns_wire2rr_additional():option code: %d\n", option_code);
+			printf("HERE: ldns_wire2rr_additional():option size: %d\n", option_size);
+
+			edns = ldns_edns_new(option_code, option_size, option_data);
+
+			// @TODO push edns to packet/rr list (1) with function (2)
+			packet->_edns_options = edns;
+
+			*pos = *pos + option_size;
+		}
+
+	}
+
+	LDNS_STATUS_CHECK_GOTO(status, status_error);
+    ldns_rr_set_question(rr, false);
+
+	*rr_p = rr;
+	return LDNS_STATUS_OK;
+
+status_error:
+	ldns_rr_free(rr);
+	return status;
+}
+
 /* TODO:
          can *pos be incremented at READ_INT? or maybe use something like
          RR_CLASS(wire)?
@@ -411,12 +509,16 @@ ldns_wire2pkt(ldns_pkt **packet_p, const uint8_t *wire, size_t max)
 	ldns_pkt *packet = ldns_pkt_new();
 	ldns_status status = LDNS_STATUS_OK;
 	uint8_t have_edns = 0;
+	// ldns_rdf *edns;
+	ldns_edns_option *edns;
 
 	uint8_t data[4];
 
 	if (!packet) {
 		return LDNS_STATUS_MEM_ERR;
 	}
+
+	printf("HERE: ldns_wire2pkt()\n");
 
 	status = ldns_wire2pkt_hdr(packet, wire, max, &pos);
 	LDNS_STATUS_CHECK_GOTO(status, status_error);
@@ -456,7 +558,10 @@ ldns_wire2pkt(ldns_pkt **packet_p, const uint8_t *wire, size_t max)
 		}
 	}
 	for (i = 0; i < ldns_pkt_arcount(packet); i++) {
-		status = ldns_wire2rr(&rr, wire, max, &pos, LDNS_SECTION_ADDITIONAL);
+
+		status = ldns_wire2rr_additional(packet ,&rr, wire, max, &pos);
+
+		// status = ldns_wire2rr(&rr, wire, max, &pos, LDNS_SECTION_ADDITIONAL);
 		if (status == LDNS_STATUS_PACKET_OVERFLOW) {
 			status = LDNS_STATUS_WIRE_INCOMPLETE_ADDITIONAL;
 		}
@@ -468,10 +573,16 @@ ldns_wire2pkt(ldns_pkt **packet_p, const uint8_t *wire, size_t max)
 			ldns_pkt_set_edns_extended_rcode(packet, data[0]);
 			ldns_pkt_set_edns_version(packet, data[1]);
 			ldns_pkt_set_edns_z(packet, ldns_read_uint16(&data[2]));
-			/* edns might not have rdfs */
-			if (ldns_rr_rdf(rr, 0)) {
-				ldns_rdf_deep_free(ldns_pkt_edns_data(packet));
-				ldns_pkt_set_edns_data(packet, ldns_rdf_clone(ldns_rr_rdf(rr, 0)));
+			/* edns is already parsed here in ldns_wire2rr_additional() */
+
+			if (packet->_edns_options != NULL) {
+				edns = packet->_edns_options; // @TODO loop-ify
+
+
+		printf("HERE: edns code: %d\n", ldns_edns_get_code(edns));
+
+				// ldns_rdf_deep_free(ldns_pkt_edns_data(packet));
+				// ldns_pkt_set_edns_data(packet, ldns_edns_get_data(edns));
 			}
 			ldns_rr_free(rr);
 			have_edns += 1;

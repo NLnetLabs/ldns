@@ -36,6 +36,7 @@
 #include <ldns/common.h>
 #include <ldns/rr.h>
 #include <sys/time.h>
+#include <ldns/edns.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -257,6 +258,10 @@ struct ldns_struct_pkt
 	uint16_t _edns_z;
 	/** Arbitrary EDNS rdata */
 	ldns_rdf *_edns_data;
+
+    /** Structured ENDS options */
+    ldns_edns_option *_edns_options; // @TODO rewrite into "edns_option_list" struct
+
 	/**  Question section */
 	ldns_rr_list	*_question;
 	/**  Answer section */
@@ -719,7 +724,7 @@ uint16_t ldns_pkt_edns_unassigned(const ldns_pkt *packet);
 void ldns_pkt_set_edns_unassigned(ldns_pkt *packet, uint16_t value);
 
 /**
- * returns true if this packet needs and EDNS rr to be sent.
+ * returns true if this packet needs an EDNS rr to be sent.
  * At the moment the only reason is an expected packet
  * size larger than 512 bytes, but for instance dnssec would
  * be a good reason too.
@@ -759,6 +764,18 @@ void ldns_pkt_set_edns_z(ldns_pkt *packet, uint16_t z);
  * \param[in] data the data
  */
 void ldns_pkt_set_edns_data(ldns_pkt *packet, ldns_rdf *data);
+
+
+// *
+//  * Set the packet's edns data
+//  * \param[in] packet the packet
+//  * \param[in] data the data
+//  * \return 0 is there is no next EDNS option in the 
+ 
+// uint16_t ldns_pkt_get_next_edns_option(ldns_pkt *packet, );
+
+
+
 
 /**
  * allocates and initializes a ldns_pkt structure.

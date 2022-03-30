@@ -123,6 +123,7 @@ Or you can just use the menu above to browse through the API docs.
 #include <ldns/rbtree.h>
 #include <ldns/sha1.h>
 #include <ldns/sha2.h>
+#include <ldns/edns.h>
 
 #ifdef __cplusplus
 extern "C" {

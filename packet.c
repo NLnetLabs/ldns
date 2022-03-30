@@ -798,6 +798,8 @@ ldns_pkt_new(void)
 	ldns_pkt_set_edns_data(packet, NULL);
 	packet->_edns_present = false;
 	
+	packet->_edns_options = NULL; //@TODO change this to set_function/list function
+
 	ldns_pkt_set_tsig(packet, NULL);
 	
 	return packet;
