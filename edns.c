@@ -96,3 +96,149 @@ ldns_edns_free(ldns_edns_option *edns)
         LDNS_FREE(edns);
     }
 }
+
+ldns_edns_option_list*
+ldns_edns_option_list_new()
+{
+    ldns_edns_option_list *options_list = LDNS_MALLOC(ldns_edns_option_list);
+    if(!options_list) {
+        return NULL;
+    }
+
+    options_list->_option_count = 0;
+    options_list->_options = NULL;
+    return options_list;
+}
+
+void
+ldns_edns_option_list_free(ldns_edns_option_list *options_list)
+{
+    if (options_list) {
+        LDNS_FREE(options_list->_options);
+        LDNS_FREE(options_list);
+    }
+}
+
+void
+ldns_edns_option_list_deep_free(ldns_edns_option_list *options_list)
+{
+    size_t i;
+
+    if (options_list) {
+        for (i=0; i < ldns_edns_option_list_get_count(options_list); i++) {
+            ldns_edns_free(ldns_edns_option_list_get_option(options_list, i));
+        }
+        ldns_edns_option_list_free(options_list);
+    }
+}
+
+
+size_t
+ldns_edns_option_list_get_count(const ldns_edns_option_list *options_list)
+{
+    if (options_list) {
+        return options_list->_option_count;
+    } else {
+        return 0;
+    }
+}
+
+void
+ldns_edns_option_list_set_count(ldns_edns_option_list *options_list, size_t count)
+{
+    assert(options_list); // @TODO does this check need to check more?
+    options_list->_option_count = count;
+}
+
+ldns_edns_option *
+ldns_edns_option_list_get_option(const ldns_edns_option_list *options_list, size_t index)
+{
+    if (index < ldns_edns_option_list_get_count(options_list)) {
+        return options_list->_options[index];
+    } else {
+        return NULL;
+    }
+}
+
+ldns_edns_option *
+ldns_edns_option_list_set_option(ldns_edns_option_list *options_list,
+    const ldns_edns_option *option, size_t index)
+{
+    ldns_edns_option* old;
+
+    assert(options_list != NULL);
+
+    if (index < ldns_edns_option_list_get_count(options_list)) {
+        return NULL;
+    }
+
+    if (option == NULL) {
+        return NULL;
+    }
+
+    old = ldns_edns_option_list_get_option(options_list, index);
+
+    /* overwrite the pointer of "old" */
+    options_list->_options[index] = (ldns_edns_option*)option;
+    return old;
+}
+
+bool
+ldns_edns_option_list_push(ldns_edns_option_list *options_list,
+    const ldns_edns_option *option)
+{
+    assert(options_list != NULL);
+
+    if (option != NULL) {
+
+        // @TODO rethink reallocing per push
+
+        options_list->_options = LDNS_XREALLOC(options_list->_options, ldns_edns_option *,
+            options_list->_option_count + 1);
+        if (!options_list) {
+            return false;
+        }
+        ldns_edns_option_list_set_option(options_list, option,
+            options_list->_option_count);
+        options_list->_option_count += 1;
+
+        return true;
+    }
+    return false;
+}
+
+ldns_edns_option *
+ldns_edns_option_list_pop(ldns_edns_option_list *options_list)
+{
+    ldns_edns_option ** new_list;
+    ldns_edns_option* pop;
+    size_t count;
+
+    assert(options_list != NULL);
+
+    count = ldns_edns_option_list_get_count(options_list);
+
+    /* get the last option from the list */
+    pop = ldns_edns_option_list_get_option(options_list, count-1);
+
+    if (count <= 0){
+        return NULL;
+    }
+
+    // @TODO rethink reallocing per pop
+
+    /* shrink the array */
+    new_list = LDNS_XREALLOC(options_list->_options, ldns_edns_option *, count -1);
+    if (new_list == NULL){
+        return NULL;
+        // @TODO not sure about returning NULL here, as ldns_rr_list_pop_rr
+        // just skips the failure
+    }
+
+    options_list->_options = new_list;
+
+    ldns_edns_option_list_set_count(options_list, count - 1);
+
+    return pop;
+}
+
