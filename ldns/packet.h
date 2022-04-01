@@ -35,8 +35,8 @@
 #include <ldns/error.h>
 #include <ldns/common.h>
 #include <ldns/rr.h>
-#include <sys/time.h>
 #include <ldns/edns.h>
+#include <sys/time.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -258,10 +258,6 @@ struct ldns_struct_pkt
 	uint16_t _edns_z;
 	/** Arbitrary EDNS rdata */
 	ldns_rdf *_edns_data;
-
-    /** Structured ENDS options */
-    ldns_edns_option *_edns_options; // @TODO rewrite into "edns_option_list" struct
-
 	/**  Question section */
 	ldns_rr_list	*_question;
 	/**  Answer section */
@@ -512,7 +508,6 @@ ldns_rr_list *ldns_pkt_rr_list_by_type(const ldns_pkt *p, ldns_rr_type t, ldns_p
  */
 ldns_rr_list *ldns_pkt_rr_list_by_name_and_type(const ldns_pkt *packet, const ldns_rdf *ownername, ldns_rr_type type, ldns_pkt_section sec);
 
-
 /**
  * check to see if an rr exist in the packet
  * \param[in] pkt the packet to examine
@@ -724,7 +719,7 @@ uint16_t ldns_pkt_edns_unassigned(const ldns_pkt *packet);
 void ldns_pkt_set_edns_unassigned(ldns_pkt *packet, uint16_t value);
 
 /**
- * returns true if this packet needs an EDNS rr to be sent.
+ * returns true if this packet needs and EDNS rr to be sent.
  * At the moment the only reason is an expected packet
  * size larger than 512 bytes, but for instance dnssec would
  * be a good reason too.
@@ -733,6 +728,14 @@ void ldns_pkt_set_edns_unassigned(ldns_pkt *packet, uint16_t value);
  * \return true if packet needs edns rr
  */
 bool ldns_pkt_edns(const ldns_pkt *packet);
+
+/**
+ * Returns a list of structured EDNS options
+ *
+ * \param[in] packet the packet which contains the parsed EDNS data
+ * \return list of ldns_edns_option structs
+ */
+ldns_edns_option_list* ldns_pkt_edns_option_list(const ldns_pkt *packet);
 
 /**
  * Set the packet's edns udp size
@@ -764,18 +767,6 @@ void ldns_pkt_set_edns_z(ldns_pkt *packet, uint16_t z);
  * \param[in] data the data
  */
 void ldns_pkt_set_edns_data(ldns_pkt *packet, ldns_rdf *data);
-
-
-// *
-//  * Set the packet's edns data
-//  * \param[in] packet the packet
-//  * \param[in] data the data
-//  * \return 0 is there is no next EDNS option in the 
- 
-// uint16_t ldns_pkt_get_next_edns_option(ldns_pkt *packet, );
-
-
-
 
 /**
  * allocates and initializes a ldns_pkt structure.

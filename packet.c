@@ -738,13 +738,62 @@ ldns_pkt_safe_push_rr_list(ldns_pkt *p, ldns_pkt_section s, ldns_rr_list *list)
 }
 
 bool
-ldns_pkt_edns(const ldns_pkt *pkt) {
+ldns_pkt_edns(const ldns_pkt *pkt)
+{
 	return (ldns_pkt_edns_udp_size(pkt) > 0 ||
 		ldns_pkt_edns_extended_rcode(pkt) > 0 ||
 		ldns_pkt_edns_data(pkt) ||
 		ldns_pkt_edns_do(pkt) ||
                 pkt->_edns_present
 	       );
+}
+
+ldns_edns_option_list*
+ldns_pkt_edns_option_list(const ldns_pkt *packet)
+{
+	size_t pos = 0;
+	ldns_edns_option_list* edns_list;
+	size_t max = ldns_rdf_size(ldns_pkt_edns_data(packet)); // @TODO is this ugly?
+	const uint8_t* wire = ldns_rdf_data(ldns_pkt_edns_data(packet)); // @TODO is this ugly?
+
+
+	// @TODO do checks so we don't read into un-auth memory (max !< 4)
+
+
+	edns_list = ldns_edns_option_list_new();
+	if (edns_list == NULL) {
+		return NULL;
+	}
+
+	while (pos < max) {
+		ldns_edns_option* edns;
+		uint8_t *data;
+		ldns_edns_option_code code = ldns_read_uint16(&wire[pos]);
+		size_t size = ldns_read_uint16(&wire[pos+2]);
+		pos += 4;
+
+		data = LDNS_XMALLOC(uint8_t, size);
+
+		// @TODO think about commented-out code
+		// if (!data) {
+			// status = LDNS_STATUS_MEM_ERR;
+			// goto status_error;
+			// printf("HERE: DATA == NULL\n");
+		// }
+		memcpy(data, &wire[pos], size);
+		pos += size;
+
+		edns = ldns_edns_new(code, size, data);
+
+		if (edns != NULL) {
+			ldns_edns_option_list_push(edns_list, edns);
+		}
+
+		// @TODO what do we do in case of edns == NULL?
+
+	}
+
+	return edns_list;
 }
 
 
@@ -797,8 +846,6 @@ ldns_pkt_new(void)
 	ldns_pkt_set_edns_z(packet, 0);
 	ldns_pkt_set_edns_data(packet, NULL);
 	packet->_edns_present = false;
-	
-	packet->_edns_options = NULL; //@TODO change this to set_function/list function
 
 	ldns_pkt_set_tsig(packet, NULL);
 	
