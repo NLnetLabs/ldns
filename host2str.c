@@ -2107,6 +2107,175 @@ ldns_pktheader2buffer_str(ldns_buffer *output, const ldns_pkt *pkt)
 	return ldns_buffer_status(output);
 }
 
+
+
+
+
+static void // @TODO change this <-
+ldns_edns_option_list2buffer_str(ldns_buffer *output, ldns_edns_option_list* edns_list)
+{
+	size_t count = ldns_edns_option_list_get_count(edns_list);
+	size_t i, j;
+	size_t size;
+	uint8_t* data;
+
+	for (i = 0; i < count; i++) {
+		ldns_edns_option_code code;
+		ldns_edns_option* edns = ldns_edns_option_list_get_option(edns_list, i);
+
+		// @TODO write parser for OPT records "; NSID: " "; EDE: 9 (DNSKEY Missing):"
+		code = ldns_edns_get_code(edns);
+
+		// @TODO make function
+		switch(code) {
+			case LDNS_EDNS_LLQ:
+				ldns_buffer_printf(output, ";; Long-Lived Query:");
+				break;
+			case LDNS_EDNS_UL:
+				ldns_buffer_printf(output, ";; Update Lease:");
+				break;
+			case LDNS_EDNS_NSID:
+				ldns_buffer_printf(output, ";; NSID:");
+				break;
+			case LDNS_EDNS_DAU:
+				ldns_buffer_printf(output, ";; :");
+				break;
+			case LDNS_EDNS_DHU:
+				ldns_buffer_printf(output, ";; :");
+				break;
+			case LDNS_EDNS_N3U:
+				ldns_buffer_printf(output, ";; :");
+				break;
+			case LDNS_EDNS_CLIENT_SUBNET:
+				ldns_buffer_printf(output, ";; CLIENT-SUBNET:");
+				break;
+			case LDNS_EDNS_KEEPALIVE:
+				ldns_buffer_printf(output, ";; KEEPALIVE:");
+				break;
+			case LDNS_EDNS_PADDING:
+				ldns_buffer_printf(output, ";; PADDING:");
+				break;
+			case LDNS_EDNS_EDE:
+				ldns_buffer_printf(output, ";; EDE:");
+				break;
+			case LDNS_EDNS_CLIENT_TAG:
+				ldns_buffer_printf(output, ";; CLIENT-TAG:");
+				break;
+
+			default:
+				ldns_buffer_printf(output, ";; OPT=%d:", code);
+				break;
+		}
+
+		size = ldns_edns_get_size(edns);
+		data = ldns_edns_get_data(edns);
+
+		if (code == LDNS_EDNS_EDE && size >= 2) {
+			uint16_t ede = data[1];
+
+			// @TODO make function
+			switch (ede) {
+			case LDNS_EDE_OTHER:
+				ldns_buffer_printf(output, " 0 (Other): ");
+				break;
+			case LDNS_EDE_UNSUPPORTED_DNSKEY_ALG:
+				ldns_buffer_printf(output, "1 (Unsupported DNSKEY Algorithm)");
+				break;
+			case LDNS_EDE_UNSUPPORTED_DS_DIGEST:
+				ldns_buffer_printf(output, " 2 (Unsupported DS Digest type)");
+				break;
+			case LDNS_EDE_STALE_ANSWER:
+				ldns_buffer_printf(output, " 3 (Stale Answer)");
+				break;
+			case LDNS_EDE_FORGED_ANSWER:
+				ldns_buffer_printf(output, " 4 (Forged Answer)");
+				break;
+			case LDNS_EDE_DNSSEC_INDETERMINATE:
+				ldns_buffer_printf(output, " 5 (DNSSEC Indeterminate)");
+				break;
+			case LDNS_EDE_DNSSEC_BOGUS:
+				ldns_buffer_printf(output, " 6 (DNSSEC Bogus)");
+				break;
+			case LDNS_EDE_SIGNATURE_EXPIRED:
+				ldns_buffer_printf(output, " 7 (Signature Expired)");
+				break;
+			case LDNS_EDE_SIGNATURE_NOT_YET_VALID:
+				ldns_buffer_printf(output, " 8 (Signature Not Yet Valid)");
+				break;
+			case LDNS_EDE_DNSKEY_MISSING:
+				ldns_buffer_printf(output, " 9 (DNSKEY Missing)");
+				break;
+			case LDNS_EDE_RRSIGS_MISSING:
+				ldns_buffer_printf(output, " 10 (RRSIGs Missing)");
+				break;
+			case LDNS_EDE_NO_ZONE_KEY_BIT_SET:
+				ldns_buffer_printf(output, " 11 (No Zone Key Bit Set)");
+				break;
+			case LDNS_EDE_NSEC_MISSING:
+				ldns_buffer_printf(output, " 12 (NSEC Missing)");
+				break;
+			case LDNS_EDE_CACHED_ERROR:
+				ldns_buffer_printf(output, " 13 (Cached Error)");
+				break;
+			case LDNS_EDE_NOT_READY:
+				ldns_buffer_printf(output, " 14 (Not Ready)");
+				break;
+			case LDNS_EDE_BLOCKED:
+				ldns_buffer_printf(output, " 15 (Blocked)");
+				break;
+			case LDNS_EDE_CENSORED:
+				ldns_buffer_printf(output, " 16 (Censored)");
+				break;
+			case LDNS_EDE_FILTERED:
+				ldns_buffer_printf(output, " 17 (Filtered)");
+				break;
+			case LDNS_EDE_PROHIBITED:
+				ldns_buffer_printf(output, " 18 (Prohibited)");
+				break;
+			case LDNS_EDE_STALE_NXDOMAIN_ANSWER:
+				ldns_buffer_printf(output, " 19 (NXDOMAIN Answer)");
+				break;
+			case LDNS_EDE_NOT_AUTHORITATIVE:
+				ldns_buffer_printf(output, " 20 (Not Authoritative)");
+				break;
+			case LDNS_EDE_NOT_SUPPORTED:
+				ldns_buffer_printf(output, " 21 (Not Supported)");
+				break;
+			case LDNS_EDE_NO_REACHABLE_AUTHORITY:
+				ldns_buffer_printf(output, " 22 (No Reachable Authority)");
+				break;
+			case LDNS_EDE_NETWORK_ERROR:
+				ldns_buffer_printf(output, " 23 (Network Error)");
+				break;
+			case LDNS_EDE_INVALID_DATA:
+				ldns_buffer_printf(output, " 24 (Invalid Data)");
+				break;
+			default:
+				ldns_buffer_printf(output, " %02x", data[0]);
+				ldns_buffer_printf(output, " %02x:", data[1]);
+				break;
+			}
+
+			data += 2;
+			size -= 2;
+		}
+
+		if (size > 2) {
+			/* format the hex bytes */
+			ldns_buffer_printf(output, ":");
+			for (j = 0; j < size; j++) {
+				ldns_buffer_printf(output, " %02x", data[j]);
+			}
+
+			/* format the human-readable string */
+			ldns_buffer_printf(output, " (");
+			ldns_characters2buffer_str(output, size, data);
+			ldns_buffer_printf(output, ")\n");
+		}
+	}
+}
+
+
 ldns_status
 ldns_pkt2buffer_str_fmt(ldns_buffer *output, 
 		const ldns_output_format *fmt, const ldns_pkt *pkt)
@@ -2183,6 +2352,7 @@ ldns_pkt2buffer_str_fmt(ldns_buffer *output,
 			}
 
 		}
+
 		ldns_buffer_printf(output, "\n");
 		/* add some further fields */
 		ldns_buffer_printf(output, ";; Query time: %d msec\n",
@@ -2203,14 +2373,21 @@ ldns_pkt2buffer_str_fmt(ldns_buffer *output,
 			ldns_buffer_printf(output, " ; udp: %u\n",
 					   ldns_pkt_edns_udp_size(pkt));
 
+			// @TODO make old output configurable?
+
 			if (ldns_pkt_edns_data(pkt)) {
-				ldns_buffer_printf(output, ";; Data: ");
+				ldns_edns_option_list* edns_list;
+				// ldns_buffer_printf(output, ";; Data: ");
 
-				// @TODO loop through options on the newly created ldns_edns_opt
-				// struct and create 
+				/* parse the EDNS data into separate EDNS options
+				 * and add them to the list */
+				edns_list = ldns_pkt_edns_option_list(pkt);
 
-				(void)ldns_rdf2buffer_str(output,
-							  ldns_pkt_edns_data(pkt));
+				ldns_edns_option_list2buffer_str(output, edns_list);
+
+
+				// (void)ldns_rdf2buffer_str(output,
+				// 			  ldns_pkt_edns_data(pkt));
 				ldns_buffer_printf(output, "\n");
 			}
 		}
