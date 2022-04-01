@@ -699,8 +699,6 @@ main(int argc, char *argv[])
 		ldns_resolver_set_tsig_algorithm(res, tsig_algorithm);
 	}
 	
-	printf("HERE: drill:main() PURPOSE: %d\n", PURPOSE);
-
 	/* main switching part of drill */
 	switch(PURPOSE) {
 		case DRILL_TRACE:
