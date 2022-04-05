@@ -732,7 +732,7 @@ bool ldns_pkt_edns(const ldns_pkt *packet);
 /**
  * Returns a list of structured EDNS options
  *
- * \param[in] packet the packet which contains the parsed EDNS data
+ * \param[in] packet the packet which contains the EDNS data
  * \return list of ldns_edns_option structs
  */
 ldns_edns_option_list* ldns_pkt_edns_option_list(const ldns_pkt *packet);

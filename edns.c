@@ -126,7 +126,7 @@ ldns_edns_option_list_deep_free(ldns_edns_option_list *options_list)
 
     if (options_list) {
         for (i=0; i < ldns_edns_option_list_get_count(options_list); i++) {
-            ldns_edns_free(ldns_edns_option_list_get_option(options_list, i));
+            ldns_edns_deep_free(ldns_edns_option_list_get_option(options_list, i));
         }
         ldns_edns_option_list_free(options_list);
     }
@@ -218,24 +218,19 @@ ldns_edns_option_list_pop(ldns_edns_option_list *options_list)
 
     count = ldns_edns_option_list_get_count(options_list);
 
-    /* get the last option from the list */
-    pop = ldns_edns_option_list_get_option(options_list, count-1);
-
-    if (count <= 0){
+    if (count == 0){
         return NULL;
     }
+    /* get the last option from the list */
+    pop = ldns_edns_option_list_get_option(options_list, count-1);
 
     // @TODO rethink reallocing per pop
 
     /* shrink the array */
     new_list = LDNS_XREALLOC(options_list->_options, ldns_edns_option *, count -1);
-    if (new_list == NULL){
-        return NULL;
-        // @TODO not sure about returning NULL here, as ldns_rr_list_pop_rr
-        // just skips the failure
+    if (new_list){
+        options_list->_options = new_list;
     }
-
-    options_list->_options = new_list;
 
     ldns_edns_option_list_set_count(options_list, count - 1);
 

@@ -2661,8 +2661,6 @@ ldns_pkt2buffer_str_fmt(ldns_buffer *output,
 			ldns_buffer_printf(output, " ; udp: %u\n",
 					   ldns_pkt_edns_udp_size(pkt));
 
-			// @TODO make old output configurable?
-
 			if (ldns_pkt_edns_data(pkt)) {
 				ldns_edns_option_list* edns_list;
 				// ldns_buffer_printf(output, ";; Data: ");

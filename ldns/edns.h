@@ -25,7 +25,7 @@ extern "C" {
  */
 enum ldns_enum_edns_option
 {
-    LDNS_EDNS_LLQ = 1, /* http://files.dns-sd.org/draft-sekar-dns-llq.txt */
+    LDNS_EDNS_LLQ = 1, /* RFC8764 */
     LDNS_EDNS_UL = 2, /* http://files.dns-sd.org/draft-sekar-dns-ul.txt */
     LDNS_EDNS_NSID = 3, /* RFC5001 */
     /* 4 draft-cheshire-edns0-owner-option */
@@ -33,10 +33,15 @@ enum ldns_enum_edns_option
     LDNS_EDNS_DHU = 6, /* RFC6975 */
     LDNS_EDNS_N3U = 7, /* RFC6975 */
     LDNS_EDNS_CLIENT_SUBNET = 8, /* RFC7871 */
-    LDNS_EDNS_KEEPALIVE = 11, /* draft-ietf-dnsop-edns-tcp-keepalive*/
+    LDNS_EDNS_EXPIRE = 9, /* RFC7314 */
+    LDNS_EDNS_COOKIE = 10, /* RFC7873 */
+    LDNS_EDNS_KEEPALIVE = 11, /* RFC7828*/
     LDNS_EDNS_PADDING = 12, /* RFC7830 */
+    LDNS_EDNS_CHAIN = 13, /* RFC7901 */
+    LDNS_EDNS_KEY_TAG = 14, /* RFC8145 */
     LDNS_EDNS_EDE = 15, /* RFC8914 */
     LDNS_EDNS_CLIENT_TAG = 16 /* draft-bellis-dnsop-edns-tags-01 */
+    LDNS_EDNS_SERVER_TAG = 17 /* draft-bellis-dnsop-edns-tags-01 */
 };
 typedef enum ldns_enum_edns_option ldns_edns_option_code;
 
@@ -69,7 +74,9 @@ enum ldns_edns_enum_ede_code
     LDNS_EDE_NOT_SUPPORTED = 21,
     LDNS_EDE_NO_REACHABLE_AUTHORITY = 22,
     LDNS_EDE_NETWORK_ERROR = 23,
-    LDNS_EDE_INVALID_DATA = 24
+    LDNS_EDE_INVALID_DATA = 24,
+    LDNS_EDE_SIGNATURE_EXPIRED_BEFORE_VALID = 25,
+    LDNS_EDE_TOO_EARLY = 26
 };
 typedef enum ldns_edns_enum_ede_code ldns_edns_ede_code;
 
@@ -118,7 +125,7 @@ typedef struct ldns_struct_edns_option_list ldns_edns_option_list;
 size_t ldns_edns_get_size(const ldns_edns_option *edns);
 
 /**
- * returns the size of the EDNS data.
+ * returns the option code of the EDNS data.
  * \param[in] *edns the EDNS struct to read from
  * \return uint16_t with the size
  */
@@ -139,7 +146,7 @@ uint8_t *ldns_edns_get_data(const ldns_edns_option *edns);
  * This function DOES NOT copy the contents from the buffer
  * \param[in] code the EDNS code
  * \param[in] size size of the buffer
- * \param[in] data pointer to the buffer to be copied
+ * \param[in] data pointer to the buffer to be assigned
  * \return the new EDNS structure or NULL on failure
  */
 ldns_edns_option *ldns_edns_new(ldns_edns_option_code code, size_t size, void *data);

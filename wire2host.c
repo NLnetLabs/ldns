@@ -185,7 +185,7 @@ ldns_wire2rdf(ldns_rr *rr, const uint8_t *wire, size_t max, size_t *pos)
 	end = *pos + (size_t) rd_length;
 
 	rdf_index = 0;
-	while (*pos < end && 
+	while (*pos < end &&
 			rdf_index < ldns_rr_descriptor_maximum(descriptor)) {
 
 		cur_rdf_length = 0;
@@ -468,7 +468,7 @@ ldns_wire2pkt(ldns_pkt **packet_p, const uint8_t *wire, size_t max)
 			ldns_pkt_set_edns_version(packet, data[1]);
 			ldns_pkt_set_edns_z(packet, ldns_read_uint16(&data[2]));
 			/* edns might not have rdfs */
-			if (ldns_rr_get_type(rr) == LDNS_RR_TYPE_OPT) {
+			if (ldns_rr_rdf(rr, 0)) {
 				ldns_rdf_deep_free(ldns_pkt_edns_data(packet));
 				ldns_pkt_set_edns_data(packet, ldns_rdf_clone(ldns_rr_rdf(rr, 0)));
 			}
