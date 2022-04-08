@@ -25,23 +25,23 @@ extern "C" {
  */
 enum ldns_enum_edns_option
 {
-    LDNS_EDNS_LLQ = 1, /* RFC8764 */
-    LDNS_EDNS_UL = 2, /* http://files.dns-sd.org/draft-sekar-dns-ul.txt */
-    LDNS_EDNS_NSID = 3, /* RFC5001 */
-    /* 4 draft-cheshire-edns0-owner-option */
-    LDNS_EDNS_DAU = 5, /* RFC6975 */
-    LDNS_EDNS_DHU = 6, /* RFC6975 */
-    LDNS_EDNS_N3U = 7, /* RFC6975 */
-    LDNS_EDNS_CLIENT_SUBNET = 8, /* RFC7871 */
-    LDNS_EDNS_EXPIRE = 9, /* RFC7314 */
-    LDNS_EDNS_COOKIE = 10, /* RFC7873 */
-    LDNS_EDNS_KEEPALIVE = 11, /* RFC7828*/
-    LDNS_EDNS_PADDING = 12, /* RFC7830 */
-    LDNS_EDNS_CHAIN = 13, /* RFC7901 */
-    LDNS_EDNS_KEY_TAG = 14, /* RFC8145 */
-    LDNS_EDNS_EDE = 15, /* RFC8914 */
-    LDNS_EDNS_CLIENT_TAG = 16 /* draft-bellis-dnsop-edns-tags-01 */
-    LDNS_EDNS_SERVER_TAG = 17 /* draft-bellis-dnsop-edns-tags-01 */
+	LDNS_EDNS_LLQ = 1, /* RFC8764 */
+	LDNS_EDNS_UL = 2, /* http://files.dns-sd.org/draft-sekar-dns-ul.txt */
+	LDNS_EDNS_NSID = 3, /* RFC5001 */
+	/* 4 draft-cheshire-edns0-owner-option */
+	LDNS_EDNS_DAU = 5, /* RFC6975 */
+	LDNS_EDNS_DHU = 6, /* RFC6975 */
+	LDNS_EDNS_N3U = 7, /* RFC6975 */
+	LDNS_EDNS_CLIENT_SUBNET = 8, /* RFC7871 */
+	LDNS_EDNS_EXPIRE = 9, /* RFC7314 */
+	LDNS_EDNS_COOKIE = 10, /* RFC7873 */
+	LDNS_EDNS_KEEPALIVE = 11, /* RFC7828*/
+	LDNS_EDNS_PADDING = 12, /* RFC7830 */
+	LDNS_EDNS_CHAIN = 13, /* RFC7901 */
+	LDNS_EDNS_KEY_TAG = 14, /* RFC8145 */
+	LDNS_EDNS_EDE = 15, /* RFC8914 */
+	LDNS_EDNS_CLIENT_TAG = 16, /* draft-bellis-dnsop-edns-tags-01 */
+	LDNS_EDNS_SERVER_TAG = 17 /* draft-bellis-dnsop-edns-tags-01 */
 };
 typedef enum ldns_enum_edns_option ldns_edns_option_code;
 
@@ -50,54 +50,54 @@ typedef enum ldns_enum_edns_option ldns_edns_option_code;
  */
 enum ldns_edns_enum_ede_code
 {
-    LDNS_EDE_OTHER = 0,
-    LDNS_EDE_UNSUPPORTED_DNSKEY_ALG = 1,
-    LDNS_EDE_UNSUPPORTED_DS_DIGEST = 2,
-    LDNS_EDE_STALE_ANSWER = 3,
-    LDNS_EDE_FORGED_ANSWER = 4,
-    LDNS_EDE_DNSSEC_INDETERMINATE = 5,
-    LDNS_EDE_DNSSEC_BOGUS = 6,
-    LDNS_EDE_SIGNATURE_EXPIRED = 7,
-    LDNS_EDE_SIGNATURE_NOT_YET_VALID = 8,
-    LDNS_EDE_DNSKEY_MISSING = 9,
-    LDNS_EDE_RRSIGS_MISSING = 10,
-    LDNS_EDE_NO_ZONE_KEY_BIT_SET = 11,
-    LDNS_EDE_NSEC_MISSING = 12,
-    LDNS_EDE_CACHED_ERROR = 13,
-    LDNS_EDE_NOT_READY = 14,
-    LDNS_EDE_BLOCKED = 15,
-    LDNS_EDE_CENSORED = 16,
-    LDNS_EDE_FILTERED = 17,
-    LDNS_EDE_PROHIBITED = 18,
-    LDNS_EDE_STALE_NXDOMAIN_ANSWER = 19,
-    LDNS_EDE_NOT_AUTHORITATIVE = 20,
-    LDNS_EDE_NOT_SUPPORTED = 21,
-    LDNS_EDE_NO_REACHABLE_AUTHORITY = 22,
-    LDNS_EDE_NETWORK_ERROR = 23,
-    LDNS_EDE_INVALID_DATA = 24,
-    LDNS_EDE_SIGNATURE_EXPIRED_BEFORE_VALID = 25,
-    LDNS_EDE_TOO_EARLY = 26
+	LDNS_EDE_OTHER = 0,
+	LDNS_EDE_UNSUPPORTED_DNSKEY_ALG = 1,
+	LDNS_EDE_UNSUPPORTED_DS_DIGEST = 2,
+	LDNS_EDE_STALE_ANSWER = 3,
+	LDNS_EDE_FORGED_ANSWER = 4,
+	LDNS_EDE_DNSSEC_INDETERMINATE = 5,
+	LDNS_EDE_DNSSEC_BOGUS = 6,
+	LDNS_EDE_SIGNATURE_EXPIRED = 7,
+	LDNS_EDE_SIGNATURE_NOT_YET_VALID = 8,
+	LDNS_EDE_DNSKEY_MISSING = 9,
+	LDNS_EDE_RRSIGS_MISSING = 10,
+	LDNS_EDE_NO_ZONE_KEY_BIT_SET = 11,
+	LDNS_EDE_NSEC_MISSING = 12,
+	LDNS_EDE_CACHED_ERROR = 13,
+	LDNS_EDE_NOT_READY = 14,
+	LDNS_EDE_BLOCKED = 15,
+	LDNS_EDE_CENSORED = 16,
+	LDNS_EDE_FILTERED = 17,
+	LDNS_EDE_PROHIBITED = 18,
+	LDNS_EDE_STALE_NXDOMAIN_ANSWER = 19,
+	LDNS_EDE_NOT_AUTHORITATIVE = 20,
+	LDNS_EDE_NOT_SUPPORTED = 21,
+	LDNS_EDE_NO_REACHABLE_AUTHORITY = 22,
+	LDNS_EDE_NETWORK_ERROR = 23,
+	LDNS_EDE_INVALID_DATA = 24,
+	LDNS_EDE_SIGNATURE_EXPIRED_BEFORE_VALID = 25,
+	LDNS_EDE_TOO_EARLY = 26
 };
 typedef enum ldns_edns_enum_ede_code ldns_edns_ede_code;
 
 /**
  * The struct that stores an ordered EDNS option.
  * An EDNS option is structed as follows:
-                   +0 (MSB)                            +1 (LSB)
-       +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
-    0: |                          OPTION-CODE                          |
-       +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
-    2: |                         OPTION-LENGTH                         |
-       +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
-    4: |                                                               |
-       /                          OPTION-DATA                          /
-       /                                                               /
-       +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
+  +0 (MSB)                            +1 (LSB)
+     +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
+  0: |                          OPTION-CODE                          |
+     +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
+  2: |                         OPTION-LENGTH                         |
+     +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
+  4: |                                                               |
+     /                          OPTION-DATA                          /
+     /                                                               /
+     +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
  */
 struct ldns_struct_edns_option {
-        ldns_edns_option_code _code;
-        size_t                _size;
-        void                 *_data;
+		ldns_edns_option_code _code;
+		size_t                _size;
+		void                 *_data;
 };
 typedef struct ldns_struct_edns_option ldns_edns_option;
 
@@ -107,8 +107,9 @@ typedef struct ldns_struct_edns_option ldns_edns_option;
  */
 struct ldns_struct_edns_option_list
 {
-    size_t _option_count;
-    ldns_edns_option **_options;
+	size_t _option_count;
+	size_t _options_size; /* the total size of the options in the list*/
+	ldns_edns_option **_options;
 };
 typedef struct ldns_struct_edns_option_list ldns_edns_option_list;
 
@@ -138,7 +139,6 @@ ldns_edns_option_code ldns_edns_get_code(const ldns_edns_option *edns);
  */
 uint8_t *ldns_edns_get_data(const ldns_edns_option *edns);
 
-
 /* Constructors and destructors*/
 
 /**
@@ -161,7 +161,7 @@ void ldns_edns_free(ldns_edns_option *edns);
  */
 ldns_edns_option_list* ldns_edns_option_list_new(void);
 void ldns_edns_option_list_free(ldns_edns_option_list *options_list);
-void ldns_edns_list_deep_free(ldns_edns_option_list *options_list);
+void ldns_edns_option_list_deep_free(ldns_edns_option_list *options_list);
 
 /* edns_option_list functions */
 
@@ -183,10 +183,18 @@ void ldns_edns_option_list_set_count(ldns_edns_option_list *options_list, size_t
  * returns the EDNS option as the specified index in the list of EDNS options.
  * \param[in] options_list  the EDNS options_list to read from
  * \param[in] index         the location of the EDNS option to get in the list
- * \return the EDNS option located at the index
+ * \return the EDNS option located at the index or NULL on failure
  */
 ldns_edns_option* ldns_edns_option_list_get_option(const ldns_edns_option_list *options_list,
-    size_t index);
+	size_t index);
+
+
+/**
+ * returns the total size of all the individual EDNS options in the EDNS list.
+ * \param[in] options_list  the EDNS options_list to read from
+ * \return the total size of the options combined
+ */
+size_t ldns_edns_option_list_get_options_size(const ldns_edns_option_list *options_list);
 
 /**
  * adds an EDNS option to the list of options at the specified index. Also
@@ -196,7 +204,7 @@ ldns_edns_option* ldns_edns_option_list_get_option(const ldns_edns_option_list *
  * \return the EDNS option previously located at the index
  */
 ldns_edns_option * ldns_edns_option_list_set_option(ldns_edns_option_list *options_list,
-    const ldns_edns_option *option, size_t index);
+	const ldns_edns_option *option, size_t index);
 
 /**
  * adds an EDNS option at the end of the list of options.
@@ -205,7 +213,7 @@ ldns_edns_option * ldns_edns_option_list_set_option(ldns_edns_option_list *optio
  * \return true on success and false of failure
  */
 bool ldns_edns_option_list_push(ldns_edns_option_list *options_list,
-    const ldns_edns_option *option);
+	const ldns_edns_option *option);
 
 /**
  * removes and returns the EDNS option at the end of the list of options.
