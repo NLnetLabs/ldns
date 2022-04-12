@@ -2230,7 +2230,7 @@ ldns_edns_dau2buffer_str(ldns_buffer* output, uint8_t* data, size_t len)
 	size_t i;
 	ldns_lookup_table *lt;
 
-	ldns_buffer_printf(output, "; DAU:");
+	ldns_buffer_printf(output, "; DNSSEC Algorithm Understood (DAU):");
 
 	for(i = 0; i <len; i++) {
 		lt = ldns_lookup_by_id(ldns_algorithms, data[i]);
@@ -2249,7 +2249,7 @@ ldns_edns_dhu2buffer_str(ldns_buffer* output, uint8_t* data, size_t len)
 	size_t i;
 	ldns_lookup_table *lt;
 
-	ldns_buffer_printf(output, "; DHU:");
+	ldns_buffer_printf(output, "; DS Hash Understood (DHU):");
 
 	for(i = 0; i < len; i++) {
 		lt = ldns_lookup_by_id(ldns_hashes, data[i]);
@@ -2267,7 +2267,7 @@ ldns_edns_d3u2buffer_str(ldns_buffer* output, uint8_t* data, size_t len)
 {
 	size_t i;
 
-	ldns_buffer_printf(output, "; D3U:");
+	ldns_buffer_printf(output, "; NSEC3 Hash Understood (N3U):");
 
 	for(i=0; i<len; i++) {
 		if(data[i] == 1) {
@@ -2343,6 +2343,41 @@ ldns_edns_subnet2buffer_str(ldns_buffer* output, uint8_t* data, size_t len)
 }
 
 static ldns_status
+ldns_edns_expire2buffer_str(ldns_buffer* output, uint8_t* data, size_t len)
+{
+
+	ldns_buffer_printf(output, "; EXPIRE:");
+
+	if (!(len == 0) || len == 4) {
+		ldns_buffer_printf(output, "malformed expire ");
+		ldns_edns_hex_data2buffer_str(output, data, len);
+
+		return ldns_buffer_status(output);
+	}
+
+	// @TODO change this to be more accurate output
+	ldns_edns_hex_data2buffer_str(output, data, len);
+
+	return ldns_buffer_status(output);
+}
+
+
+static ldns_status
+ldns_edns_cookie2buffer_str(ldns_buffer* output, uint8_t* data, size_t len)
+{
+	ldns_buffer_printf(output, "; COOKIE:");
+
+	/* the size of an EDNS cookie is restricted by RFC 7873 */
+	if (!(len == 8 || (len >= 16 && len < 40))) {
+		ldns_buffer_printf(output, "malformed cookie ");
+		ldns_edns_hex_data2buffer_str(output, data, len);
+	}
+	ldns_edns_hex_data2buffer_str(output, data, len);
+
+	return ldns_buffer_status(output);
+}
+
+static ldns_status
 ldns_edns_keepalive2buffer_str(ldns_buffer* output, uint8_t* data, size_t len)
 {
 	uint16_t timeout;
@@ -2375,6 +2410,48 @@ ldns_edns_padding2buffer_str(ldns_buffer* output, uint8_t* data, size_t len)
 }
 
 static ldns_status
+ldns_edns_chain2buffer_str(ldns_buffer* output, uint8_t* data, size_t len)
+{
+	ldns_rdf** temp = NULL;
+
+	ldns_buffer_printf(output, "; CHAIN: ");
+
+	if (ldns_str2rdf_dname(temp, (char*) data) != LDNS_STATUS_OK) {
+		ldns_buffer_printf(output, "malformed chain ");
+		ldns_edns_hex_data2buffer_str(output, data, len);
+
+		return ldns_buffer_status(output);
+	}
+
+	ldns_characters2buffer_str(output, len, data);
+
+	return ldns_buffer_status(output);
+}
+
+static ldns_status
+ldns_edns_key_tag2buffer_str(ldns_buffer* output, uint8_t* data, size_t len)
+{
+	size_t i;
+
+	ldns_buffer_printf(output, "; KEY TAG: ");
+
+	if(len < 2 || len % 2 != 0) {
+		ldns_buffer_printf(output, "malformed key tag ");
+		ldns_edns_hex_data2buffer_str(output, data, len);
+
+		return ldns_buffer_status(output);
+	}
+
+	for (i = 0; i < len; i += 2) {
+		uint16_t tag = ldns_read_uint16(data);
+
+		ldns_buffer_printf(output, " %hu", tag);
+	}
+
+	return ldns_buffer_status(output);
+}
+
+static ldns_status
 ldns_edns_ede2buffer_str(ldns_buffer* output, uint8_t* data, size_t len)
 {
 	size_t i;
@@ -2388,15 +2465,14 @@ ldns_edns_ede2buffer_str(ldns_buffer* output, uint8_t* data, size_t len)
 		return ldns_buffer_status(output);
 	}
 
-	/* currently all EDE options fit into one byte, so skip the first */
-	ede = data[1];
+	ede = ldns_read_uint16(data);
 
 	switch (ede) {
 	case LDNS_EDE_OTHER:
 		ldns_buffer_printf(output, " 0 (Other): ");
 		break;
 	case LDNS_EDE_UNSUPPORTED_DNSKEY_ALG:
-		ldns_buffer_printf(output, "1 (Unsupported DNSKEY Algorithm)");
+		ldns_buffer_printf(output, " 1 (Unsupported DNSKEY Algorithm)");
 		break;
 	case LDNS_EDE_UNSUPPORTED_DS_DIGEST:
 		ldns_buffer_printf(output, " 2 (Unsupported DS Digest type)");
@@ -2467,6 +2543,12 @@ ldns_edns_ede2buffer_str(ldns_buffer* output, uint8_t* data, size_t len)
 	case LDNS_EDE_INVALID_DATA:
 		ldns_buffer_printf(output, " 24 (Invalid Data)");
 		break;
+	case LDNS_EDE_SIGNATURE_EXPIRED_BEFORE_VALID:
+		ldns_buffer_printf(output, " 25 (Signature Expired Before Valid)");
+		break;
+	case LDNS_EDE_TOO_EARLY:
+		ldns_buffer_printf(output, " 26 (Too Early)");
+		break;
 	default:
 		ldns_buffer_printf(output, " %02x", data[0]);
 		ldns_buffer_printf(output, " %02x:", data[1]);
@@ -2487,7 +2569,7 @@ ldns_edns_ede2buffer_str(ldns_buffer* output, uint8_t* data, size_t len)
 		/* format the human-readable string */
 		ldns_buffer_printf(output, " (");
 		ldns_characters2buffer_str(output, len, data);
-		ldns_buffer_printf(output, ")\n");
+		ldns_buffer_printf(output, ")");
 	}
 
 	return ldns_buffer_status(output);
@@ -2497,13 +2579,38 @@ static ldns_status
 ldns_edns_client_tag2buffer_str(ldns_buffer* output, uint8_t* data, size_t len)
 {
 	ldns_buffer_printf(output, "; CLIENT-TAG:");
+
+	if (len > 2) {
+		ldns_buffer_printf(output, "malformed client-tag ");
+		ldns_edns_hex_data2buffer_str(output, data, len);
+
+		return ldns_buffer_status(output);
+	}
+
+	ldns_edns_hex_data2buffer_str(output, data, len);
+
+	return ldns_buffer_status(output);
+}
+
+static ldns_status
+ldns_edns_server_tag2buffer_str(ldns_buffer* output, uint8_t* data, size_t len)
+{
+	ldns_buffer_printf(output, "; SERVER-TAG:");
+
+	if (len > 2) {
+		ldns_buffer_printf(output, "malformed server-tag ");
+		ldns_edns_hex_data2buffer_str(output, data, len);
+
+		return ldns_buffer_status(output);
+	}
+
 	ldns_edns_hex_data2buffer_str(output, data, len);
 
 	return ldns_buffer_status(output);
 }
 
 static ldns_status //@TODO change static?
-ldns_edns_list2buffer_str(ldns_buffer *output, ldns_edns_option_list* edns_list)
+ldns_edns_option_list2buffer_str(ldns_buffer *output, ldns_edns_option_list* edns_list)
 {
 	size_t count = ldns_edns_option_list_get_count(edns_list);
 	size_t i, size;
@@ -2514,6 +2621,10 @@ ldns_edns_list2buffer_str(ldns_buffer *output, ldns_edns_option_list* edns_list)
 	for (i = 0; i < count; i++) {
 		ldns_edns_option_code code;
 		ldns_edns_option* edns = ldns_edns_option_list_get_option(edns_list, i);
+
+		if (!edns) {
+			break;
+		}
 
 		code = ldns_edns_get_code(edns);
 		size = ldns_edns_get_size(edns);
@@ -2541,11 +2652,23 @@ ldns_edns_list2buffer_str(ldns_buffer *output, ldns_edns_option_list* edns_list)
 		case LDNS_EDNS_CLIENT_SUBNET:
 			ldns_edns_subnet2buffer_str(output, data, size);
 			break;
+		case LDNS_EDNS_EXPIRE:
+			ldns_edns_expire2buffer_str(output, data, size);
+			break;
+		case LDNS_EDNS_COOKIE:
+			ldns_edns_cookie2buffer_str(output, data, size);
+			break;
 		case LDNS_EDNS_KEEPALIVE:
 			ldns_edns_keepalive2buffer_str(output, data, size);
 			break;
 		case LDNS_EDNS_PADDING:
 			ldns_edns_padding2buffer_str(output, data, size);
+			break;
+		case LDNS_EDNS_CHAIN:
+			ldns_edns_chain2buffer_str(output, data, size);
+			break;
+		case LDNS_EDNS_KEY_TAG:
+			ldns_edns_key_tag2buffer_str(output, data, size);
 			break;
 		case LDNS_EDNS_EDE:
 			ldns_edns_ede2buffer_str(output, data, size);
@@ -2553,11 +2676,15 @@ ldns_edns_list2buffer_str(ldns_buffer *output, ldns_edns_option_list* edns_list)
 		case LDNS_EDNS_CLIENT_TAG:
 			ldns_edns_client_tag2buffer_str(output, data, size);
 			break;
+		case LDNS_EDNS_SERVER_TAG:
+			ldns_edns_server_tag2buffer_str(output, data, size);
+			break;
 		default:
 			ldns_buffer_printf(output, "; OPT=%d:", code);
 			ldns_edns_hex_data2buffer_str(output, data, size);
 			break;
 		}
+		ldns_buffer_printf(output, "\n");
 	}
 
 	return ldns_buffer_status(output);
@@ -2663,18 +2790,19 @@ ldns_pkt2buffer_str_fmt(ldns_buffer *output,
 
 			if (ldns_pkt_edns_data(pkt)) {
 				ldns_edns_option_list* edns_list;
-				// ldns_buffer_printf(output, ";; Data: ");
-
 				/* parse the EDNS data into separate EDNS options
 				 * and add them to the list */
-				edns_list = ldns_pkt_edns_option_list(pkt);
-
-				ldns_edns_list2buffer_str(output, edns_list);
-
-
-				// (void)ldns_rdf2buffer_str(output,
-				// 			  ldns_pkt_edns_data(pkt));
-				ldns_buffer_printf(output, "\n");
+				if ((edns_list = ldns_pkt_edns_get_option_list(pkt))) {
+					ldns_edns_option_list2buffer_str(output, edns_list);
+					/* TODO: We need to free for now, but maybe we
+					 * should do this differently eventually
+					 * use a member in pkt or something...
+					 */
+					ldns_edns_option_list_deep_free(edns_list);
+				} else {
+					ldns_buffer_printf(output, ";; Data: ");
+					(void)ldns_rdf2buffer_str(output, ldns_pkt_edns_data(pkt));
+				}
 			}
 		}
 		if (ldns_pkt_tsig(pkt)) {
