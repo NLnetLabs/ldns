@@ -107,7 +107,7 @@ typedef struct ldns_struct_edns_option ldns_edns_option;
  */
 struct ldns_struct_edns_option_list
 {
-	size_t _option_count;
+	size_t _option_count; /* the number of EDNS options in the list */
 	size_t _options_size; /* the total size of the options serialized */
 	ldns_edns_option **_options;
 };
@@ -150,8 +150,8 @@ ldns_buffer *ldns_edns_get_wireformat_buffer(const ldns_edns_option *edns);
 /* Constructors and destructors*/
 
 /**
- * allocates a new EDNS structure and fills it.
- * This function DOES NOT copy the contents from the buffer
+ * allocates a new EDNS structure and fills it. This function *DOES NOT* copy
+ * the contents from the data parameter.
  * \param[in] code the EDNS code
  * \param[in] size size of the buffer
  * \param[in] data pointer to the buffer to be assigned
@@ -159,18 +159,48 @@ ldns_buffer *ldns_edns_get_wireformat_buffer(const ldns_edns_option *edns);
  */
 ldns_edns_option *ldns_edns_new(ldns_edns_option_code code, size_t size, void *data);
 
-// @TODO write this/determine if we need it
+/**
+ * allocates a new EDNS structure and fills it. This function *DOES* copy
+ * the contents from the data parameter.
+ * \param[in] code the EDNS code
+ * \param[in] size size of the buffer
+ * \param[in] data pointer to the buffer to be assigned
+ * \return the new EDNS structure or NULL on failure
+ */
 ldns_edns_option *ldns_edns_new_from_data(ldns_edns_option_code code, size_t size, const void *data);
 
+/**
+ * clone an EDNS option
+ * \param[in] the EDNS option
+ * \return the new EDNS structure
+ */
+ldns_edns_option *ldns_edns_clone(ldns_edns_option *edns);
+
+/**
+ * free the EDNS option. Use deep_free if the _data member is allocated.
+ * \param[in] the EDNS option to free
+ */
 void ldns_edns_deep_free(ldns_edns_option *edns);
 void ldns_edns_free(ldns_edns_option *edns);
-
 
 /**
  * allocates space for a new list of EDNS options
  * \return the new EDNS option list or NULL on failure
  */
 ldns_edns_option_list* ldns_edns_option_list_new(void);
+
+/**
+ * clone the EDNS options list and it's contents
+ * \param[in] options_list  the EDNS options_list to read from
+ * \return the new EDNS option list
+ */
+ldns_edns_option_list *ldns_edns_option_list_clone(ldns_edns_option_list *options_list);
+
+/**
+ * free the EDNS option list. Use deep_free to free the options options
+ * in the list as well.
+ * \param[in] the EDNS option to free
+ */
 void ldns_edns_option_list_free(ldns_edns_option_list *options_list);
 void ldns_edns_option_list_deep_free(ldns_edns_option_list *options_list);
 

@@ -131,6 +131,20 @@ ldns_edns_new_from_data(ldns_edns_option_code code, size_t size, const void *dat
 	return edns;
 }
 
+ldns_edns_option *
+ldns_edns_clone(ldns_edns_option *edns)
+{
+	ldns_edns_option *new_option;
+
+	assert(edns != NULL);
+
+	new_option = ldns_edns_new_from_data(ldns_edns_get_code(edns),
+		ldns_edns_get_size(edns),
+		ldns_edns_get_data(edns));
+
+	return new_option;
+}
+
 void
 ldns_edns_deep_free(ldns_edns_option *edns)
 {
@@ -164,6 +178,32 @@ ldns_edns_option_list_new()
 	return option_list;
 }
 
+ldns_edns_option_list *
+ldns_edns_option_list_clone(ldns_edns_option_list *old_list)
+{
+	size_t i;
+	ldns_edns_option_list *new_list;
+
+	if (!old_list) {
+		return NULL;
+	}
+
+	new_list = ldns_edns_option_list_new();
+	if (!new_list) {
+		return NULL;
+	}
+
+	new_list->_option_count = old_list->_option_count;
+
+	/* adding options also updates the total options size */
+	for (i = 0; i < old_list->_option_count; i++) {
+		ldns_edns_option_list_push(new_list,
+			ldns_edns_clone(ldns_edns_option_list_get_option(old_list, i)));
+	}
+
+	return new_list;
+}
+
 void
 ldns_edns_option_list_free(ldns_edns_option_list *option_list)
 {
@@ -185,7 +225,6 @@ ldns_edns_option_list_deep_free(ldns_edns_option_list *option_list)
 		ldns_edns_option_list_free(option_list);
 	}
 }
-
 
 size_t
 ldns_edns_option_list_get_count(const ldns_edns_option_list *option_list)
