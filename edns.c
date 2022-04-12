@@ -39,6 +39,37 @@ ldns_edns_get_data(const ldns_edns_option *edns)
 	return edns->_data;
 }
 
+ldns_buffer *
+ldns_edns_get_wireformat_buffer(const ldns_edns_option *edns)
+{
+	uint16_t option;
+	size_t size;
+	uint8_t* data;
+	ldns_buffer* buffer;
+
+	if (edns == NULL) {
+		return NULL;
+	}
+
+	option = ldns_edns_get_code(edns);
+	size = ldns_edns_get_size(edns);
+	data = ldns_edns_get_data(edns);
+
+	buffer = ldns_buffer_new(size + 4);
+
+	if (buffer == NULL) {
+		return NULL;
+	}
+
+	ldns_buffer_write_u16(buffer, option);
+	ldns_buffer_write_u16(buffer, size);
+	ldns_buffer_write(buffer, data, size);
+
+	ldns_buffer_flip(buffer);
+
+	return buffer;
+}
+
 /* write */
 void
 ldns_edns_set_size(ldns_edns_option *edns, size_t size)
@@ -71,9 +102,32 @@ ldns_edns_new(ldns_edns_option_code code, size_t size, void *data)
 	if (!edns) {
 		return NULL;
 	}
-	ldns_edns_set_size(edns, size);
 	ldns_edns_set_code(edns, code);
+	ldns_edns_set_size(edns, size);
 	ldns_edns_set_data(edns, data);
+
+	return edns;
+}
+
+ldns_edns_option *
+ldns_edns_new_from_data(ldns_edns_option_code code, size_t size, const void *data)
+{
+	ldns_edns_option *edns;
+	edns = LDNS_MALLOC(ldns_edns_option);
+	if (!edns) {
+		return NULL;
+	}
+	edns->_data = LDNS_XMALLOC(uint8_t, size);
+	if (!edns->_data) {
+		LDNS_FREE(edns);
+		return NULL;
+	}
+
+	/* set the values */
+	ldns_edns_set_code(edns, code);
+	ldns_edns_set_size(edns, size);
+	memcpy(edns->_data, data, size);
+
 	return edns;
 }
 
@@ -146,7 +200,7 @@ ldns_edns_option_list_get_count(const ldns_edns_option_list *option_list)
 void
 ldns_edns_option_list_set_count(ldns_edns_option_list *option_list, size_t count)
 {
-	assert(option_list); // @TODO does this check need to check more?
+	assert(option_list);
 	option_list->_option_count = count;
 }
 
@@ -196,7 +250,7 @@ ldns_edns_option_list_set_option(ldns_edns_option_list *option_list,
 
 	option_list->_options_size += (ldns_edns_get_size(option) + 4);
 
-	/* overwrite the pointer of "old" */
+	/* overwrite the pointer of the old entry */
 	option_list->_options[index] = (ldns_edns_option*)option;
 	return old;
 }
@@ -209,8 +263,7 @@ ldns_edns_option_list_push(ldns_edns_option_list *option_list,
 
 	if (option != NULL) {
 
-		// @TODO rethink reallocing per push
-
+		/* grow the array */
 		option_list->_options = LDNS_XREALLOC(option_list->_options,
 			ldns_edns_option *, option_list->_option_count + 1);
 		if (!option_list) {
@@ -242,8 +295,6 @@ ldns_edns_option_list_pop(ldns_edns_option_list *option_list)
 	/* get the last option from the list */
 	pop = ldns_edns_option_list_get_option(option_list, count-1);
 
-	// @TODO rethink reallocing per pop
-
 	/* shrink the array */
 	new_list = LDNS_XREALLOC(option_list->_options, ldns_edns_option *, count -1);
 	if (new_list){
@@ -260,3 +311,46 @@ ldns_edns_option_list_pop(ldns_edns_option_list *option_list)
 	return pop;
 }
 
+ldns_buffer *
+ldns_edns_option_list2wireformat_buffer(const ldns_edns_option_list *option_list)
+{
+	size_t i, list_size, options_size, option, size;
+	ldns_buffer* buffer;
+	ldns_edns_option *edns;
+	uint8_t* data = NULL;
+
+	/* get the number of EDNS options in the list*/
+	list_size = ldns_edns_option_list_get_count(option_list);
+
+	/* create buffer the size of the total EDNS wireformat options */
+	options_size = ldns_edns_option_list_get_options_size(option_list);
+	buffer = ldns_buffer_new(options_size);
+
+	/* write individual serialized EDNS options to final buffer*/
+	for (i = 0; i < list_size; i++) {
+		edns = ldns_edns_option_list_get_option(option_list, i);
+
+		if (edns == NULL) {
+			/* this shouldn't be possible */
+			return NULL;
+		}
+
+		option = ldns_edns_get_code(edns);
+		size = ldns_edns_get_size(edns);
+		data = ldns_edns_get_data(edns);
+
+		/* make sure the option fits */
+		if (ldns_buffer_capacity(buffer) > size + 4) {
+			ldns_buffer_free(buffer);
+			return NULL;
+		}
+
+		ldns_buffer_write_u16(buffer, option);
+		ldns_buffer_write_u16(buffer, size);
+		ldns_buffer_write(buffer, data, size);
+	}
+
+	ldns_buffer_flip(buffer);
+
+	return buffer;
+}

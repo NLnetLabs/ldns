@@ -95,9 +95,9 @@ typedef enum ldns_edns_enum_ede_code ldns_edns_ede_code;
      +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
  */
 struct ldns_struct_edns_option {
-		ldns_edns_option_code _code;
-		size_t                _size;
-		void                 *_data;
+	ldns_edns_option_code _code;
+	size_t                _size;
+	void                 *_data;
 };
 typedef struct ldns_struct_edns_option ldns_edns_option;
 
@@ -108,7 +108,7 @@ typedef struct ldns_struct_edns_option ldns_edns_option;
 struct ldns_struct_edns_option_list
 {
 	size_t _option_count;
-	size_t _options_size; /* the total size of the options in the list*/
+	size_t _options_size; /* the total size of the options serialized */
 	ldns_edns_option **_options;
 };
 typedef struct ldns_struct_edns_option_list ldns_edns_option_list;
@@ -134,10 +134,18 @@ ldns_edns_option_code ldns_edns_get_code(const ldns_edns_option *edns);
 
 /**
  * returns the EDNS option data.
- * \param[in] *edns the rdf to read from
- * \return uint8_t* pointer to the rdf's data
+ * \param[in] *edns the EDNS option to read from
+ * \return uint8_t* pointer to the EDNS option's data
  */
 uint8_t *ldns_edns_get_data(const ldns_edns_option *edns);
+
+
+/**
+ * serialise the EDNS option into wireformat.
+ * \param[in] *edns the EDNS option to read from
+ * \return ldns_buffer* the buffer containing the data
+ */
+ldns_buffer *ldns_edns_get_wireformat_buffer(const ldns_edns_option *edns);
 
 /* Constructors and destructors*/
 
@@ -150,6 +158,9 @@ uint8_t *ldns_edns_get_data(const ldns_edns_option *edns);
  * \return the new EDNS structure or NULL on failure
  */
 ldns_edns_option *ldns_edns_new(ldns_edns_option_code code, size_t size, void *data);
+
+// @TODO write this/determine if we need it
+ldns_edns_option *ldns_edns_new_from_data(ldns_edns_option_code code, size_t size, const void *data);
 
 void ldns_edns_deep_free(ldns_edns_option *edns);
 void ldns_edns_free(ldns_edns_option *edns);
@@ -221,6 +232,13 @@ bool ldns_edns_option_list_push(ldns_edns_option_list *options_list,
  * \return the EDNS option at the end of the list, or NULL on failure
  */
 ldns_edns_option* ldns_edns_option_list_pop(ldns_edns_option_list *options_list);
+
+/**
+ * serializes all the EDNS options into a single wireformat buffer
+ * \param[in] options_list  the EDNS options_list to combine into one wireformat
+ * \return the filled buffer or NULL on failure
+ */
+ldns_buffer *ldns_edns_option_list2wireformat_buffer(const ldns_edns_option_list *option_list);
 
 #ifdef __cplusplus
 }
