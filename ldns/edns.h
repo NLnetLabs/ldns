@@ -245,7 +245,7 @@ size_t ldns_edns_option_list_get_options_size(const ldns_edns_option_list *optio
  * \return the EDNS option previously located at the index
  */
 ldns_edns_option * ldns_edns_option_list_set_option(ldns_edns_option_list *options_list,
-	const ldns_edns_option *option, size_t index);
+	ldns_edns_option *option, size_t index);
 
 /**
  * adds an EDNS option at the end of the list of options.

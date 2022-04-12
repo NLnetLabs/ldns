@@ -266,7 +266,7 @@ ldns_edns_option_list_get_options_size(const ldns_edns_option_list *option_list)
 
 ldns_edns_option *
 ldns_edns_option_list_set_option(ldns_edns_option_list *option_list,
-	const ldns_edns_option *option, size_t index)
+	ldns_edns_option *option, size_t index)
 {
 	ldns_edns_option* old;
 
@@ -289,8 +289,7 @@ ldns_edns_option_list_set_option(ldns_edns_option_list *option_list,
 
 	option_list->_options_size += (ldns_edns_get_size(option) + 4);
 
-	/* overwrite the pointer of the old entry */
-	option_list->_options[index] = (ldns_edns_option*)option;
+	option_list->_options[index] = option;
 	return old;
 }
 
