@@ -384,7 +384,7 @@ class resolver:
 			>>>       tlds.append(rr.owner())
 
 		"""
-		#Dname seems to be unecessary on some computers, but it is on others. Avoid bugs.
+		#Dname seems to be unnecessary on some computers, but it is on others. Avoid bugs.
 		if self._ldns_resolver.axfr_start(ldns.ldns_dname(name), ldns.LDNS_RR_CLASS_IN) != ldns.LDNS_STATUS_OK:
 			raise Exception("Starting AXFR failed. Error: %s" % ldns.ldns_get_errorstr_by_id(status))
 		pres = self._ldns_resolver.axfr_next()
