@@ -174,25 +174,25 @@ void
 print_known_differences(FILE *output)
 {
 	size_t i;
-	size_t differents = 0;
+	size_t difference_count = 0;
 	size_t total;
 	double percentage;
 	
 	qsort(known_differences, known_differences_size, sizeof(known_differences_count),
 	      compare_known_differences);
 	for (i = 0; i < known_differences_size; i++) {
-		differents += known_differences[i].count;
+		difference_count += known_differences[i].count;
 	}
 
-	total = differents + sames;
+	total = difference_count + sames;
 
 	for (i = 0; i < known_differences_size; i++) {
-		percentage = (double) (((double) known_differences[i].count / (double)differents) * 100.0);
+		percentage = (double) (((double) known_differences[i].count / (double)difference_count) * 100.0);
 		fprintf(output, "%-48s", known_differences[i].descr);
 		fprintf(output, "%8u\t(%02.2f%%)\n", (unsigned int) known_differences[i].count, percentage);
 	}
 
-	fprintf(output, "Total number of differences: %u (100%%)\n", (unsigned int) differents);
+	fprintf(output, "Total number of differences: %u (100%%)\n", (unsigned int) difference_count);
 	fprintf(output, "Number of packets the same after normalization: %u\n", (unsigned int) sames);
 	fprintf(output, "Number of packets exactly the same on the wire: %u\n", (unsigned int) bytesames);
 	fprintf(output, "Total number of packets inspected: %u\n", (unsigned int) total);
