@@ -23,14 +23,10 @@ ldns_dname2buffer_wire(ldns_buffer *buffer, const ldns_rdf *name)
 }
 
 ldns_status
-ldns_dname2buffer_wire_compress(ldns_buffer *buffer, const ldns_rdf *name, ldns_rbtree_t *compression_data)
+ldns_dname2buffer_wire_compress(ldns_buffer *buffer, const ldns_rdf *name, ldns_llnode_t *compression_data)
 {
-	ldns_rbnode_t *node;
-	uint8_t *data;
-	size_t size;
-	ldns_rdf *label;
-	ldns_rdf *rest;
-	ldns_status s;
+	ldns_llnode_t *node_ref, *node = compression_data;
+	size_t len, som = 0; /* size of match from the end */
 
 	/* If no tree, just add the data */
 	if(!compression_data)
@@ -42,67 +38,61 @@ ldns_dname2buffer_wire_compress(ldns_buffer *buffer, const ldns_rdf *name, ldns_
 		return ldns_buffer_status(buffer);
 	}
 
-	/* No labels left, write final zero */
-	if(ldns_dname_label_count(name)==0)
-	{
-		if(ldns_buffer_reserve(buffer,1))
-		{
-			ldns_buffer_write_u8(buffer, 0);
-		}
-		return ldns_buffer_status(buffer);
-	}
+	/* Not sure if "owner" below is guaranteed of TYPE_DNAME */
+	if (ldns_rdf_get_type(name) != LDNS_RDF_TYPE_DNAME) return LDNS_STATUS_INVALID_RDF_TYPE;
 
-	/* Can we find the name in the tree? */
-	if((node = ldns_rbtree_search(compression_data, name)) != NULL)
+	if (ldns_rdf_size(name) > 256) return LDNS_STATUS_DOMAINNAME_OVERFLOW;
+
+	for (ldns_llnode_t *n; (n = node->next) != NULL; node = n)
 	{
-		/* Found */
-		uint16_t position = (uint16_t) (intptr_t) node->data | 0xC000;
+		char  *lp1, *lp2, *lps;
+
+		if (node->som != som) continue; /* som is a stitching point */
+
+		/* for an early dname we first scan backward from the som point */
+		lp1 = lps = node->dname + node->dsize - som;
+
+		lp2 = (char*) ldns_rdf_data(name) + ldns_rdf_size(name) - som;
+
+		while (node->dname <= --lp1 && (char*) ldns_rdf_data(name) <= --lp2)
+		{
+			if (*lp1 != *lp2) break;
+		}
+		lp1++;
+
+		/* secondly, we parse early dname forward to get label boundary right */
+		for (lp2 = node->dname; lp2 < lp1; ) lp2 += *(uint8_t*) lp2 + 1;
+
+		if (lps - lp2 > 1) /* growing som: update */
+		{
+			som += lps - lp2;
+			node_ref = node;
+		}
+	}
+	/* populate the node, and the buffer */
+	node->som = som;
+	node->dsize = ldns_rdf_size(name);
+	node->buffer_start = ldns_buffer_position(buffer);
+	memcpy(node->dname, ldns_rdf_data(name), ldns_rdf_size(name));
+
+	if ( (node->next = LDNS_CALLOC(ldns_llnode_t, 1)) == NULL) return LDNS_STATUS_MEM_ERR;
+
+	len = ldns_rdf_size(name) - som;
+	if (ldns_buffer_reserve(buffer, len))
+	{
+		/* if som = 0 => final 0 is included */
+		ldns_buffer_write(buffer, ldns_rdf_data(name), len);
+	}
+	if (som)
+	{
+		uint16_t position = (uint16_t) (node_ref->buffer_start + 
+		                                node_ref->dsize - som) | 0xC000;
 		if (ldns_buffer_reserve(buffer, 2))
 		{
 			ldns_buffer_write_u16(buffer, position);
 		}
-		return ldns_buffer_status(buffer);
 	}
-	else
-	{
-		/* Not found. Write cache entry, take off first label, write it, */
-		/* try again with the rest of the name. */
-		if (ldns_buffer_position(buffer) < 16384) {
-			ldns_rdf *key;
-
-			node = LDNS_MALLOC(ldns_rbnode_t);
-			if(!node)
-			{
-				return LDNS_STATUS_MEM_ERR;
-			}
-
-			key = ldns_rdf_clone(name);
-			if (!key) {
-				LDNS_FREE(node);
-				return LDNS_STATUS_MEM_ERR;
-			}
-			node->key = key;
-			node->data = (void *) (intptr_t) ldns_buffer_position(buffer);
-			if(!ldns_rbtree_insert(compression_data,node))
-			{
-				/* fprintf(stderr,"Name not found but now it's there?\n"); */
-				ldns_rdf_deep_free(key);
-				LDNS_FREE(node);
-			}
-		}
-		label = ldns_dname_label(name, 0);
-		rest = ldns_dname_left_chop(name);
-		size = ldns_rdf_size(label) - 1; /* Don't want the final zero */
-		data = ldns_rdf_data(label);
-		if(ldns_buffer_reserve(buffer, size))
-		{
-			ldns_buffer_write(buffer, data, size);
-		}
-		ldns_rdf_deep_free(label);
-		s = ldns_dname2buffer_wire_compress(buffer, rest, compression_data);
-		ldns_rdf_deep_free(rest);
-		return s;
-	}
+	return ldns_buffer_status(buffer);
 }
 
 ldns_status
@@ -112,7 +102,7 @@ ldns_rdf2buffer_wire(ldns_buffer *buffer, const ldns_rdf *rdf)
 }
 
 ldns_status
-ldns_rdf2buffer_wire_compress(ldns_buffer *buffer, const ldns_rdf *rdf, ldns_rbtree_t *compression_data)
+ldns_rdf2buffer_wire_compress(ldns_buffer *buffer, const ldns_rdf *rdf, ldns_llnode_t *compression_data)
 {
 	/* If it's a DNAME, call that function to get compression */
 	if(compression_data && ldns_rdf_get_type(rdf) == LDNS_RDF_TYPE_DNAME)
@@ -247,7 +237,7 @@ ldns_rr2buffer_wire(ldns_buffer *buffer, const ldns_rr *rr, int section)
 }
 
 ldns_status
-ldns_rr2buffer_wire_compress(ldns_buffer *buffer, const ldns_rr *rr, int section, ldns_rbtree_t *compression_data)
+ldns_rr2buffer_wire_compress(ldns_buffer *buffer, const ldns_rr *rr, int section, ldns_llnode_t *compression_data)
 {
 	uint16_t i;
 	uint16_t rdl_pos = 0;
@@ -364,30 +354,27 @@ ldns_hdr2buffer_wire(ldns_buffer *buffer, const ldns_pkt *packet)
 	return ldns_buffer_status(buffer);
 }
 
-static void
-compression_node_free(ldns_rbnode_t *node, void *arg)
-{
-	(void)arg; /* Yes, dear compiler, it is used */
-	ldns_rdf_deep_free((ldns_rdf *)node->key);
-	LDNS_FREE(node);
-}
-
 ldns_status
 ldns_pkt2buffer_wire(ldns_buffer *buffer, const ldns_pkt *packet)
 {
 	ldns_status status;
-	ldns_rbtree_t *compression_data = ldns_rbtree_create((int (*)(const void *, const void *))ldns_dname_compare);
+
+	ldns_llnode_t *compression_data = LDNS_CALLOC(ldns_llnode_t, 1);
+	if (!compression_data) return LDNS_STATUS_MEM_ERR;
 
 	status = ldns_pkt2buffer_wire_compress(buffer, packet, compression_data);
 
-	ldns_traverse_postorder(compression_data,compression_node_free,NULL);
-	ldns_rbtree_free(compression_data);
+	for (ldns_llnode_t *ptr; compression_data; compression_data = ptr)
+	{
+		ptr = compression_data->next;
+		LDNS_FREE(compression_data);
+	}
 
 	return status;
 }
 
 ldns_status
-ldns_pkt2buffer_wire_compress(ldns_buffer *buffer, const ldns_pkt *packet, ldns_rbtree_t *compression_data)
+ldns_pkt2buffer_wire_compress(ldns_buffer *buffer, const ldns_pkt *packet, ldns_llnode_t *compression_data)
 {
 	ldns_rr_list *rr_list;
 	uint16_t i;
