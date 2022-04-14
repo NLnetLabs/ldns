@@ -350,7 +350,7 @@ install: install-h install-lib install-pc @INSTALL_CONFIG@ install-manpages $(py
 
 uninstall: uninstall-manpages @UNINSTALL_CONFIG@ uninstall-h uninstall-lib uninstall-pc $(pyldns_uninst) $(pyldnsx_uninst) @UNINSTALL_P5_DNS_LDNS@ @UNINSTALL_DRILL@ @UNINSTALL_EXAMPLES@
 
-distclean: uninstall
+destclean: uninstall
 
 install-config:
 	$(INSTALL) -d $(DESTDIR)$(bindir)
