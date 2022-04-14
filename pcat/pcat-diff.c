@@ -498,7 +498,7 @@ compare_to_file(ldns_pkt *qp, ldns_pkt *pkt1, ldns_pkt *pkt2)
 
 		/* first, try query match */
 		
-		/* special case for unparseable queries */
+		/* special case for unparsable queries */
 		if (!qp) {
 			if (strncmp(query_match, "BADPACKET\n", 11) == 0 ||
 			    strncmp(query_match, "*\n", 3) == 0
@@ -664,7 +664,7 @@ compare_to_file(ldns_pkt *qp, ldns_pkt *pkt1, ldns_pkt *pkt2)
 		/* ok the query matches, now look at both answers */
 
 		/* special case if one packet is null (ie. one server
-		   answers and one doesnt) */
+		   answers and one doesn't) */
 		if (same && (!pkt1 || !pkt2)) {
 			if (strncmp(answer_match, "NOANSWER\n", 10) == 0 || 
 			    strncmp(answer_match, "*\n", 3) == 0
