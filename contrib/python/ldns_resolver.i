@@ -350,7 +350,7 @@ record."
                Creates a resolver object from given file name
                
                :param filename: Name of file which contains resolver
-                   informations (usually /etc/resolv.conf).
+                   information (usually /etc/resolv.conf).
                :type filename: str
                :param raiseException: If True, an exception occurs in case a
                    resolver object can't be created.
