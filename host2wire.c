@@ -56,7 +56,8 @@ ldns_dname2buffer_wire_compress(ldns_buffer *buffer, const ldns_rdf *name, ldns_
 
 		while (node->dname <= --lp1 && (char*) ldns_rdf_data(name) <= --lp2)
 		{
-			if (*lp1 != *lp2) break;
+			if (LDNS_DNAME_NORMALIZE((int) *lp1)  !=
+			    LDNS_DNAME_NORMALIZE((int) *lp2)) break;
 		}
 		lp1++;
 
