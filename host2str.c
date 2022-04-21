@@ -1482,7 +1482,7 @@ svcparam_ipv4hint2buffer_str(ldns_buffer *output, size_t sz, uint8_t *data)
 }
 
 static ldns_status
-svcparam_echconfig2buffer_str(ldns_buffer *output, size_t sz, uint8_t *data)
+svcparam_ech2buffer_str(ldns_buffer *output, size_t sz, uint8_t *data)
 {
 	size_t str_sz = ldns_b64_ntop_calculate_size(sz);
 	int written;
@@ -1561,7 +1561,7 @@ ldns_rdf2buffer_str_svcparams(ldns_buffer *output, const ldns_rdf *rdf)
 		/* No svcparams is just fine. Just nothing to print. */
 		return LDNS_STATUS_OK;
 	
-	for (dp = data; dp + 4 < data + sz; dp = next_dp) {
+	for (dp = data; dp + 4 <= data + sz; dp = next_dp) {
 		ldns_svcparam_key key    = ldns_read_uint16(dp);
 		uint16_t          val_sz = ldns_read_uint16(dp + 2);
 
@@ -1593,8 +1593,8 @@ ldns_rdf2buffer_str_svcparams(ldns_buffer *output, const ldns_rdf *rdf)
 		case LDNS_SVCPARAM_KEY_IPV4HINT:
 			st = svcparam_ipv4hint2buffer_str(output, val_sz, dp);
 			break;
-		case LDNS_SVCPARAM_KEY_ECHCONFIG:
-			st = svcparam_echconfig2buffer_str(output, val_sz, dp);
+		case LDNS_SVCPARAM_KEY_ECH:
+			st = svcparam_ech2buffer_str(output, val_sz, dp);
 			break;
 		case LDNS_SVCPARAM_KEY_IPV6HINT:
 			st = svcparam_ipv6hint2buffer_str(output, val_sz, dp);
