@@ -254,7 +254,7 @@ ldns_edns_option * ldns_edns_option_list_set_option(ldns_edns_option_list *optio
  * \return true on success and false of failure
  */
 bool ldns_edns_option_list_push(ldns_edns_option_list *options_list,
-	const ldns_edns_option *option);
+	ldns_edns_option *option);
 
 /**
  * removes and returns the EDNS option at the end of the list of options.

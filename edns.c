@@ -295,7 +295,7 @@ ldns_edns_option_list_set_option(ldns_edns_option_list *option_list,
 
 bool
 ldns_edns_option_list_push(ldns_edns_option_list *option_list,
-	const ldns_edns_option *option)
+	ldns_edns_option *option)
 {
 	assert(option_list != NULL);
 
