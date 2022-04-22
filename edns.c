@@ -12,8 +12,10 @@
 
 #include <ldns/ldns.h>
 
+#define LDNS_OPTIONLIST_INIT 8
+
 /*
- * Access functions 
+ * Access functions
  * functions to get and set type checking
  */
 
@@ -173,6 +175,7 @@ ldns_edns_option_list_new()
 	}
 
 	option_list->_option_count = 0;
+	option_list->_option_capacity = 0;
 	option_list->_options_size = 0;
 	option_list->_options = NULL;
 	return option_list;
@@ -297,34 +300,58 @@ bool
 ldns_edns_option_list_push(ldns_edns_option_list *option_list,
 	ldns_edns_option *option)
 {
+	size_t cap;
+	size_t option_count;
+
 	assert(option_list != NULL);
 
-	if (option != NULL) {
+	if (option == NULL) {
+		return false;
+	}
 
-		/* grow the array */
-		option_list->_options = LDNS_XREALLOC(option_list->_options,
-			ldns_edns_option *, option_list->_option_count + 1);
-		if (!option_list) {
+	cap = option_list->_option_capacity;
+	option_count = ldns_edns_option_list_get_count(option_list);
+
+	/* verify we need to grow the array to fit the new option */
+	if (option_count+1 > cap) {
+		ldns_edns_option **new_list;
+
+		/* initialize the capacity if needed, otherwise grow by doubling */
+		if (cap == 0) {
+			cap = LDNS_OPTIONLIST_INIT; /* initial list size */
+		} else {
+			cap *= 2;
+		}
+
+		new_list = LDNS_XREALLOC(option_list->_options,
+			ldns_edns_option *, cap);
+
+		if (!new_list) {
 			return false;
 		}
-		ldns_edns_option_list_set_option(option_list, option,
-			option_list->_option_count);
-		option_list->_option_count += 1;
 
-		return true;
+		option_list->_options = new_list;
+		option_list->_option_capacity = cap;
 	}
-	return false;
+
+	/* add the new option */
+	ldns_edns_option_list_set_option(option_list, option,
+		option_list->_option_count);
+	option_list->_option_count += 1;
+
+	return true;
 }
 
 ldns_edns_option *
 ldns_edns_option_list_pop(ldns_edns_option_list *option_list)
 {
-	ldns_edns_option ** new_list;
 	ldns_edns_option* pop;
 	size_t count;
+	size_t cap;
 
 	assert(option_list != NULL);
 
+	cap = option_list->_option_capacity;
 	count = ldns_edns_option_list_get_count(option_list);
 
 	if (count == 0){
@@ -334,12 +361,20 @@ ldns_edns_option_list_pop(ldns_edns_option_list *option_list)
 	pop = ldns_edns_option_list_get_option(option_list, count-1);
 
 	/* shrink the array */
-	new_list = LDNS_XREALLOC(option_list->_options, ldns_edns_option *, count -1);
-	if (new_list){
-		option_list->_options = new_list;
+	if (cap > LDNS_OPTIONLIST_INIT && count-1 <= cap/2) {
+		ldns_edns_option **new_list;
+
+		cap /= 2;
+
+		new_list = LDNS_XREALLOC(option_list->_options,
+			ldns_edns_option *, cap);
+		if (new_list) {
+			option_list->_options = new_list;
+		}
+		/* if the realloc fails, the capacity for the list remains unchanged */
 	}
 
-	/* shrink the total EDNS size if the popped EDNS option exists */
+	/* shrink the total EDNS size of the options if the popped EDNS option exists */
 	if (pop != NULL) {
 		option_list->_options_size -= (ldns_edns_get_size(pop) + 4);
 	}

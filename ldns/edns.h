@@ -108,6 +108,7 @@ typedef struct ldns_struct_edns_option ldns_edns_option;
 struct ldns_struct_edns_option_list
 {
 	size_t _option_count; /* the number of EDNS options in the list */
+   size_t _option_capacity; /* the amount of options that fit into the list */
 	size_t _options_size; /* the total size of the options serialized */
 	ldns_edns_option **_options;
 };
