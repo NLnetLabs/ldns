@@ -211,7 +211,7 @@ main(int argc, char *argv[])
 	/* global first, query opt next, option with parm's last
 	 * and sorted */ /*  "46DITSVQf:i:w:q:achuvxzy:so:p:b:k:" */
 	                               
-	while ((c = getopt(argc, argv, "46ab:c:d:e:Df:hi:I:k:o:p:q:Qr:sStTuvV:w:xy:z")) != -1) {
+	while ((c = getopt(argc, argv, "46ab:c:d:Df:hi:I:k:o:p:q:Qr:sStTuvV:w:xy:z")) != -1) {
 		switch(c) {
 			/* global options */
 			case '4':
@@ -291,27 +291,6 @@ main(int argc, char *argv[])
 			case 'c':
 				resolv_conf_file = optarg;
 				break;
-			case 'e':
-				if (strstr(optarg, "nsid")) {
-					ldns_edns_option *edns;
-					edns_list = ldns_edns_option_list_new();
-
-					/* create NSID EDNS*/
-					edns = ldns_edns_new_from_data(LDNS_EDNS_NSID, 0, NULL);
-
-					if (edns_list == NULL || edns == NULL) {
-						error("EDNS option could not be allocated");
-						break;
-					}
-
-					// @TODO rethink this error
-					if (!(ldns_edns_option_list_push(edns_list, edns))) {
-						error("EDNS option could not be attached");
-						break;
-					}
-
-					break;
-				}
 			case 't':
 				qusevc = true;
 				break;
@@ -478,6 +457,30 @@ main(int argc, char *argv[])
 			}
 			serv = argv[i] + 1;
 			continue;
+		}
+		/* if ^+ then it's an EDNS option */
+		if (argv[i][0] == '+') {
+			if (strstr(argv[i], "nsid")) {
+				ldns_edns_option *edns;
+				edns_list = ldns_edns_option_list_new();
+
+				/* create NSID EDNS*/
+				edns = ldns_edns_new_from_data(LDNS_EDNS_NSID, 0, NULL);
+
+				if (edns_list == NULL || edns == NULL) {
+					error("EDNS option could not be allocated");
+					break;
+				}
+
+				if (!(ldns_edns_option_list_push(edns_list, edns))) {
+					error("EDNS option NSID could not be attached");
+					break;
+				}
+			}
+			else {
+				error("Requested EDNS option not supported");
+				break;
+			}
 		}
 		/* if has a dot, it's a name */
 		if (strchr(argv[i], '.')) {
