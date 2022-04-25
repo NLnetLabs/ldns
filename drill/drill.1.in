@@ -222,6 +222,15 @@ specify named base64 tsig key, and optional an algorithm (defaults to hmac-md5.s
 \fB\-z \fR
 don't randomize the nameserver list before sending queries.
 
+
+.SS EDNS QUERY OPTIONS
+
+.TP
+\fB\+nsid \fR
+When set, this EDNS option includes an EDNS name server ID request in the query.
+
+
+
 .SH "EXIT STATUS"
 The exit status is 0 if the looked up answer is secure and trusted,
 or insecure.
