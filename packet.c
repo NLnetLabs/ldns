@@ -769,8 +769,9 @@ ldns_pkt_edns_get_option_list(const ldns_pkt *packet)
 	size_t max;
 	const uint8_t* wire;
 
-	if (!ldns_pkt_edns_data(packet))
+	if (!ldns_pkt_edns_data(packet)) {
 		return NULL;
+	}
 
 	/* return the list if it already exists */
 	if (packet->_edns_list != NULL) {
@@ -779,9 +780,9 @@ ldns_pkt_edns_get_option_list(const ldns_pkt *packet)
 
 	/* if the list doesn't exists, we create it by parsing the _edns_data */
 
+	assert(ldns_pkt_edns_data(packet));
 	max = ldns_rdf_size(ldns_pkt_edns_data(packet));
 	wire = ldns_rdf_data(ldns_pkt_edns_data(packet));
-	// @TODO do checks so we don't read into un-auth memory (max !< 4)
 
 	edns_list = ldns_edns_option_list_new();
 	if (edns_list == NULL) {
