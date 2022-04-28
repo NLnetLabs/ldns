@@ -2355,7 +2355,7 @@ ldns_edns_expire2buffer_str(ldns_buffer* output, uint8_t* data, size_t len)
 		return ldns_buffer_status(output);
 	}
 
-	// @TODO change this to be more accurate output
+	// TODO can this output be more accurate?
 	ldns_edns_hex_data2buffer_str(output, data, len);
 
 	return ldns_buffer_status(output);
@@ -2551,7 +2551,7 @@ ldns_edns_ede2buffer_str(ldns_buffer* output, uint8_t* data, size_t len)
 		break;
 	default:
 		ldns_buffer_printf(output, " %02x", data[0]);
-		ldns_buffer_printf(output, " %02x:", data[1]);
+		ldns_buffer_printf(output, " %02x", data[1]);
 		break;
 	}
 
@@ -2609,14 +2609,12 @@ ldns_edns_server_tag2buffer_str(ldns_buffer* output, uint8_t* data, size_t len)
 	return ldns_buffer_status(output);
 }
 
-static ldns_status //@TODO change static?
+ldns_status
 ldns_edns_option_list2buffer_str(ldns_buffer *output, ldns_edns_option_list* edns_list)
 {
 	size_t count = ldns_edns_option_list_get_count(edns_list);
 	size_t i, size;
 	uint8_t* data;
-
-	// @TODO parse malformed? of in packet.c:ldns_pkt_edns_option_list() ?
 
 	for (i = 0; i < count; i++) {
 		ldns_edns_option_code code;

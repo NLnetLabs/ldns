@@ -516,6 +516,17 @@ ldns_status ldns_rr2buffer_str_fmt(ldns_buffer *output,
 ldns_status ldns_pkt2buffer_str(ldns_buffer *output, const ldns_pkt *pkt);
 
 /**
+ * Converts the list of EDNS options to presentation
+ * format (as char *) and appends it to the given buffer
+ *
+ * \param[in] output pointer to the buffer to append the data to
+ * \param[in] edns_list the list of EDNS options
+ * \return status
+ */
+ldns_status ldns_edns_option_list2buffer_str(ldns_buffer *output,
+        ldns_edns_option_list* edns_list);
+
+/**
  * Converts the data in the DNS packet to presentation
  * format (as char *) and appends it to the given buffer
  *

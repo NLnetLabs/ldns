@@ -778,7 +778,9 @@ ldns_pkt_edns_get_option_list(const ldns_pkt *packet)
 		return packet->_edns_list;
 	}
 
-	/* if the list doesn't exists, we create it by parsing the _edns_data */
+	/* if the list doesn't exists, we create it by parsing the
+	 * packet->_edns_data
+	 */
 
 	assert(ldns_pkt_edns_data(packet));
 	max = ldns_rdf_size(ldns_pkt_edns_data(packet));
@@ -792,14 +794,15 @@ ldns_pkt_edns_get_option_list(const ldns_pkt *packet)
 	while (pos < max) {
 		ldns_edns_option* edns;
 		uint8_t *data;
-		if (pos + 4 > max) {
+		if (pos + 4 > max) { /* make sure the header is  */
 			ldns_edns_option_list_deep_free(edns_list);
 			return NULL;
 		}
 		ldns_edns_option_code code = ldns_read_uint16(&wire[pos]);
 		size_t size = ldns_read_uint16(&wire[pos+2]);
 		pos += 4;
-		if (pos + size > max) {
+
+		if (pos + size > max) { /* make sure the size fits the data */
 			ldns_edns_option_list_deep_free(edns_list);
 			return NULL;
 		}
