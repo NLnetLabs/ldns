@@ -476,6 +476,7 @@ main(int argc, char *argv[])
 					error("EDNS option NSID could not be attached");
 					break;
 				}
+				continue;
 			}
 			else {
 				error("Requested EDNS option not supported");
