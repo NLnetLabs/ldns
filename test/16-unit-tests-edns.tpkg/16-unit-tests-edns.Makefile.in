@@ -28,7 +28,7 @@ TESTS		= 16-unit-tests-edns
 
 all:	$(TESTS)
 
-13-unit-tests-base:	16-unit-tests-edns.o
+16-unit-tests-edns:	16-unit-tests-edns.o
 		$(LINK) -o $@ $+ $(LIBS)
 
 clean:
