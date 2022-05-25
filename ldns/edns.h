@@ -215,13 +215,6 @@ void ldns_edns_option_list_deep_free(ldns_edns_option_list *options_list);
 size_t ldns_edns_option_list_get_count(const ldns_edns_option_list *options_list);
 
 /**
- * sets the number of options in the EDNS options list.
- * \param[in] options_list  the EDNS options_list with the associated counter
- * \param[in] count         the new cnumber of EDNS options in the list
- */
-void ldns_edns_option_list_set_count(ldns_edns_option_list *options_list, size_t count);
-
-/**
  * returns the EDNS option as the specified index in the list of EDNS options.
  * \param[in] options_list  the EDNS options_list to read from
  * \param[in] index         the location of the EDNS option to get in the list
@@ -245,7 +238,7 @@ size_t ldns_edns_option_list_get_options_size(const ldns_edns_option_list *optio
  * \param[in] option        the EDNS option to add to the list
  * \return the EDNS option previously located at the index
  */
-ldns_edns_option * ldns_edns_option_list_set_option(ldns_edns_option_list *options_list,
+ldns_edns_option *ldns_edns_option_list_set_option(ldns_edns_option_list *options_list,
 	ldns_edns_option *option, size_t index);
 
 /**
