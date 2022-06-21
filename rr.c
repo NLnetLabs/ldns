@@ -741,9 +741,10 @@ _ldns_rr_new_frm_fp_l_internal(ldns_rr **newrr, FILE *fp,
 	}
 	/* read an entire line in from the file */
 	if ((s = ldns_fget_token_l_st( fp, &line, &limit, false
-	                             , LDNS_PARSE_SKIP_SPACE, line_nr)))
+	                             , LDNS_PARSE_SKIP_SPACE, line_nr))) {
 		LDNS_FREE(line);
 		return s;
+	}
 
 	if (strncmp(line, "$ORIGIN", 7) == 0 && isspace((unsigned char)line[7])) {
 		if (*origin) {
