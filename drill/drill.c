@@ -460,7 +460,7 @@ main(int argc, char *argv[])
 		}
 		/* if ^+ then it's an EDNS option */
 		if (argv[i][0] == '+') {
-			if (strstr(argv[i], "nsid")) {
+			(strncmp(argv[i]+1, "nsid", 4))
 				ldns_edns_option *edns;
 				edns_list = ldns_edns_option_list_new();
 
@@ -479,7 +479,7 @@ main(int argc, char *argv[])
 				continue;
 			}
 			else {
-				error("Requested EDNS option not supported");
+				error("Unsupported argument after '+'");
 				break;
 			}
 		}
