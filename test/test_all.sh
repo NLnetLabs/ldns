@@ -41,12 +41,16 @@ $TPKG -a ../.. fake 32-unbound-regression.tpkg
 $TPKG -a ../.. fake 999-compile-nossl.tpkg
 command -v indent || $TPKG -a ../.. fake codingstyle.tpkg
 
+failed=0
 for tests in *.tpkg
 do
 	COMMAND="$TPKG -a ../.. exe $(basename "$tests")"
 	echo "$COMMAND"
 	$COMMAND
+	if [ $? -ne 0 ]; then ((failed=failed+1)); fi
 done 
 echo finished the test at "$(date)" in "$(pwd)"
 $TPKG report
 cd ..
+
+exit $failed

@@ -724,12 +724,12 @@ case "$enable_rrtype_amtrelay" in
 	no|*)
 		;;
 esac
-AC_ARG_ENABLE(rrtype-svcb-https, AC_HELP_STRING([--enable-rrtype-svcb-https], [Enable draft RR types SVCB and HTTPS.]))
+AC_ARG_ENABLE(rrtype-svcb-https, AC_HELP_STRING([--disable-rrtype-svcb-https], [Disable RR types SVCB and HTTPS.]))
 case "$enable_rrtype_svcb_https" in
-	yes)
-		AC_DEFINE_UNQUOTED([RRTYPE_SVCB_HTTPS], [], [Define this to enable RR types SVCB and HTTPS.])
+	no)
 		;;
-	no|*)
+	yes|*)
+		AC_DEFINE_UNQUOTED([RRTYPE_SVCB_HTTPS], [], [Define this to enable RR types SVCB and HTTPS.])
 		;;
 esac
 
@@ -1176,7 +1176,7 @@ else
   AC_SUBST(ldns_build_config_have_attr_unused, 0)
 fi
 
-CONFIG_FILES="Makefile ldns/common.h ldns/net.h ldns/util.h packaging/libldns.pc packaging/ldns-config"
+CONFIG_FILES="Makefile libdns.doxygen ldns/common.h ldns/net.h ldns/util.h packaging/libldns.pc packaging/ldns-config"
 AC_SUBST(CONFIG_FILES)
 AC_CONFIG_FILES([$CONFIG_FILES])
 

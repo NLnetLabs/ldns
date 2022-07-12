@@ -20,6 +20,12 @@
 #define LDNS_TTL_DATALEN    21
 #define LDNS_RRLIST_INIT    8
 
+#define _IS_WHITESPACE(chr) \
+    ( NULL != strchr( LDNS_PARSE_NO_NL, chr) )
+
+#define _BUFFER_IS_AT_WHITESPACE(rd_buf) \
+    _IS_WHITESPACE(*(ldns_buffer_current(rd_buf)))
+
 ldns_rr *
 ldns_rr_new(void)
 {
@@ -372,9 +378,9 @@ ldns_rr_new_frm_str_internal(ldns_rr **newrr, const char *str,
 				desc, r_cnt)) &&
 				ldns_buffer_remaining(rd_buf) > 0){
 
-			/* skip spaces & tabs */
+			/* skip whitespace */
 			while (ldns_buffer_remaining(rd_buf) > 0 &&
-				NULL != strchr( LDNS_PARSE_NO_NL, *(ldns_buffer_current(rd_buf)) )) {
+				_BUFFER_IS_AT_WHITESPACE(rd_buf)) {
 				ldns_buffer_skip(rd_buf, 1);
 			}
 
@@ -396,9 +402,9 @@ ldns_rr_new_frm_str_internal(ldns_rr **newrr, const char *str,
 		 * _maximum() only
 		 */
 
-		/* skip spaces */
+		/* skip whitespace */
 		while (ldns_buffer_position(rd_buf) < ldns_buffer_limit(rd_buf)
-				&& *(ldns_buffer_current(rd_buf)) == ' '
+				&& _BUFFER_IS_AT_WHITESPACE(rd_buf)
 				&& !quoted) {
 
 			ldns_buffer_skip(rd_buf, 1);
@@ -420,7 +426,7 @@ ldns_rr_new_frm_str_internal(ldns_rr **newrr, const char *str,
 
 		/* unknown RR data */
 		if (strncmp(rd, "\\#", 2) == 0 && !quoted &&
-				(rd_strlen == 2 || rd[2]==' ')) {
+				(rd_strlen == 2 || _IS_WHITESPACE(rd[2]))) {
 
 			was_unknown_rr_format = 1;
 			/* go back to before \#
@@ -1318,7 +1324,7 @@ ldns_rr_set_push_rr(ldns_rr_list *rr_list, ldns_rr *rr)
 			return false;
 		}
 		/* ok, still alive - check if the rr already
-		 * exists - if so, dont' add it */
+		 * exists - if so, don't add it */
 		for(i = 0; i < rr_count; i++) {
 			if(ldns_rr_compare(
 					ldns_rr_list_rr(rr_list, i), rr) == 0) {
@@ -2228,9 +2234,9 @@ static ldns_rr_descriptor rdata_field_descriptors[] = {
 	{LDNS_RR_TYPE_ZONEMD, "ZONEMD", 4, 4, type_zonemd_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 0 },
 #ifdef RRTYPE_SVCB_HTTPS
 	/* 64 */
-	{LDNS_RR_TYPE_SVCB, "SVCB", 2, 3, type_svcb_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 0 },
+	{LDNS_RR_TYPE_SVCB, "SVCB", 2, 3, type_svcb_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 1 },
 	/* 65 */
-	{LDNS_RR_TYPE_HTTPS, "HTTPS", 2, 3, type_svcb_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 0 },
+	{LDNS_RR_TYPE_HTTPS, "HTTPS", 2, 3, type_svcb_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 1 },
 
 #else
 {LDNS_RR_TYPE_NULL, "TYPE64", 1, 1, type_0_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 0 },

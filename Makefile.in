@@ -167,7 +167,7 @@ no-drill-config-h:
 	     exit -1 ; \
 	fi
 
-drill/drill: $(DRILL_LOBJS) $(LIB) $(LIBLOBJS)
+drill/drill: all $(DRILL_LOBJS) $(LIB) $(LIBLOBJS)
 	$(LINK_EXE) $(DRILL_LOBJS) $(LIBLOBJS) $(LIB) $(LIBSSL_LIBS) $(LIBS) -o drill/drill
 
 drill/drill.1: $(srcdir)/drill/drill.1.in
@@ -188,7 +188,7 @@ uninstall-drill:
 clean-drill:
 	$(LIBTOOL) --mode clean rm -f $(DRILL_LOBJS) drill/drill drill/drill.1
 
-examples: no-examples-config-h $(EXAMPLE_PROGS) $(TESTNS) $(LDNS_DPA) $(LDNS_DANE) $(EX_SSL_PROGS) examples/ldns-dane.1 examples/ldns-verify-zone.1
+examples: no-examples-config-h all $(EXAMPLE_PROGS) $(TESTNS) $(LDNS_DPA) $(LDNS_DANE) $(EX_SSL_PROGS) examples/ldns-dane.1 examples/ldns-verify-zone.1
 no-examples-config-h:
 	@if test -e $(srcdir)/examples/config.h -o -e examples/config.h ; \
 	then echo "A config.h was detected in the examples subdirectory." ; \
@@ -350,7 +350,7 @@ install: install-h install-lib install-pc @INSTALL_CONFIG@ install-manpages $(py
 
 uninstall: uninstall-manpages @UNINSTALL_CONFIG@ uninstall-h uninstall-lib uninstall-pc $(pyldns_uninst) $(pyldnsx_uninst) @UNINSTALL_P5_DNS_LDNS@ @UNINSTALL_DRILL@ @UNINSTALL_EXAMPLES@
 
-distclean: uninstall
+destclean: uninstall
 
 install-config:
 	$(INSTALL) -d $(DESTDIR)$(bindir)
@@ -505,7 +505,7 @@ allclean: test-clean clean
 test-clean:
 	tpkg -b test clean
 
-test: @TEST_P5_DNS_LDNS@
+test: examples drill @TEST_P5_DNS_LDNS@
 	./test/test_all.sh
 
 
