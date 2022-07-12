@@ -97,7 +97,7 @@ contrib/build-solaris.sh
 KNOWN ISSUES
 
 A complete list of currently known open issues can be found here:
-http://www.nlnetlabs.nl/projects/ldns/bugs
+https://github.com/NLnetLabs/ldns/issues
 
 * pyldns
 Compiling pyldns produces many ``unused parameter'' warnings.  Those are

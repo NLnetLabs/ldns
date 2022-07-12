@@ -23,7 +23,7 @@ BuildRequires:  python-devel, swig
 %endif
 
 %description
-ldns is a library with the aim to simplify DNS programing in C. All
+ldns is a library with the aim to simplify DNS programming in C. All
 lowlevel DNS/DNSSEC operations are supported. We also define a higher
 level API which allows a programmer to (for instance) create or sign
 packets.

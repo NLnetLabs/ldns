@@ -253,7 +253,7 @@ ldns_zone_new_frm_fp_l(ldns_zone **z, FILE *fp, const ldns_rdf *origin,
 					my_ttl = ldns_rr_ttl(rr);
 				}
 			/* When ttl is implicit, try to adhere to the rules as
-			 * much as posssible. (also for compatibility with bind)
+			 * much as possible. (also for compatibility with bind)
 			 * This was changed when fixing an issue with ZONEMD
 			 * which hashes the TTL too.
 			 */

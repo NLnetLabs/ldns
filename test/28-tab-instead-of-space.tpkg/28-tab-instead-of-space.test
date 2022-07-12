@@ -1,0 +1,15 @@
+# #-- 28-tab-instead-of-space.test --#
+# source the master var file when it's there
+[ -f ../.tpkg.var.master ] && source ../.tpkg.var.master
+
+export PATH=$PATH:/usr/sbin:/sbin:/usr/local/bin:/usr/local/sbin:.
+
+export LD_LIBRARY_PATH=../../lib:$LD_LIBRARY_PATH
+
+OUTPUT=`../../examples/ldns-read-zone 28-tab-instead-of-space.db`
+
+if [[ $? -eq 0 ]]; then
+    echo $OUTPUT | grep customer-service
+else
+        exit 1
+fi

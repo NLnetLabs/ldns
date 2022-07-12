@@ -216,7 +216,7 @@ The ``zone.txt`` file contains the following records::
                
                :param rr:
                    the rr to add
-               :returns: (bool) a true on succes otherwise falsed
+               :returns: (bool) a true on success otherwise falsed
             """
             return _ldns.ldns_zone_push_rr(self,rr)
             #parameters: ldns_zone *,ldns_rr *,
@@ -229,7 +229,7 @@ The ``zone.txt`` file contains the following records::
                
                :param list:
                    the list to add
-               :returns: (bool) a true on succes otherwise falsed
+               :returns: (bool) a true on success otherwise falsed
             """
             return _ldns.ldns_zone_push_rr_list(self,list)
             #parameters: ldns_zone *,ldns_rr_list *,

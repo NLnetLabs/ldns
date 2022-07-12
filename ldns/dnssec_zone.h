@@ -53,7 +53,7 @@ struct ldns_struct_dnssec_name
 	 * Usually, the name is a pointer to the owner name of the first rr for
 	 * this name, but sometimes there is no actual data to point to, 
 	 * for instance in
-	 * names representing empty nonterminals. If so, set alloced to true to
+	 * names representing empty nonterminals. If so, set name_alloced to true to
 	 * indicate that this data must also be freed when the name is freed
 	 */
 	bool name_alloced;

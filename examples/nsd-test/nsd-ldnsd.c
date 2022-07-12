@@ -83,7 +83,7 @@ main(int argc, char **argv)
 				usage(stdout);
 				exit(EXIT_FAILURE);
 			} else {
-				fprintf(stderr, "quiting after %d qs\n", (int)maxcount);
+				fprintf(stderr, "quitting after %d qs\n", (int)maxcount);
 			}
 		} else {
 			fprintf(stderr, "Use -Number for max count\n");
