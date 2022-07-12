@@ -2765,7 +2765,6 @@ ldns_pkt2buffer_str_fmt(ldns_buffer *output,
 			}
 
 		}
-
 		ldns_buffer_printf(output, "\n");
 		/* add some further fields */
 		ldns_buffer_printf(output, ";; Query time: %d msec\n",
@@ -2786,17 +2785,15 @@ ldns_pkt2buffer_str_fmt(ldns_buffer *output,
 			ldns_buffer_printf(output, " ; udp: %u\n",
 					   ldns_pkt_edns_udp_size(pkt));
 
-			if (ldns_pkt_edns_data(pkt)) {
+			if (pkt->_edns_list)
+				ldns_edns_option_list2buffer_str(output, pkt->_edns_list);
+
+			else if (ldns_pkt_edns_data(pkt)) {
 				ldns_edns_option_list* edns_list;
 				/* parse the EDNS data into separate EDNS options
 				 * and add them to the list */
-				if ((edns_list = ldns_pkt_edns_get_option_list(pkt))) {
+				if ((edns_list = ldns_pkt_edns_get_option_list((ldns_pkt *)pkt))) {
 					ldns_edns_option_list2buffer_str(output, edns_list);
-					/* TODO: We need to free for now, but maybe we
-					 * should do this differently eventually
-					 * use a member in pkt or something...
-					 */
-					ldns_edns_option_list_deep_free(edns_list);
 				} else {
 					ldns_buffer_printf(output, ";; Data: ");
 					(void)ldns_rdf2buffer_str(output, ldns_pkt_edns_data(pkt));
