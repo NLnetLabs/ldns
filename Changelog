@@ -8,6 +8,9 @@
 	* Enable compile of SVCB and HTTPS support by default.
 	* bugfix #179: Free line memory even if zone file parsing fails
 	  Thanks Claudius Zingerli
+	* bugfix #166: Grow buffer when writing chars and fixed size
+	  strings when converting to presentation format, preventing
+	  potential assersion errors.
 
 1.8.1	2021-12-03
 	* bugfix #146: ldns-1.7.1 had soname 3.0, so ldns-1.8.x soname
