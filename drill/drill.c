@@ -479,7 +479,7 @@ main(int argc, char *argv[])
 				continue;
 			}
 			else {
-				error("Requested EDNS option not supported");
+				error("Unsupported argument after '+'");
 				break;
 			}
 		}
