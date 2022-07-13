@@ -460,7 +460,7 @@ main(int argc, char *argv[])
 		}
 		/* if ^+ then it's an EDNS option */
 		if (argv[i][0] == '+') {
-			if (strcmp(argv[i]+1, "nsid")) {
+			if (!strcmp(argv[i]+1, "nsid")) {
 				ldns_edns_option *edns;
 				edns_list = ldns_edns_option_list_new();
 
