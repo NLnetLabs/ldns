@@ -49,32 +49,18 @@
 ldns_lookup_table ldns_algorithms[] = {
         { LDNS_RSAMD5, "RSAMD5" },
         { LDNS_DH, "DH" },
-#ifdef USE_DSA
         { LDNS_DSA, "DSA" },
-#endif /* USE_DSA */
         { LDNS_ECC, "ECC" },
         { LDNS_RSASHA1, "RSASHA1" },
-#ifdef USE_DSA
         { LDNS_DSA_NSEC3, "DSA-NSEC3-SHA1" },
-#endif /* USE_DSA */
         { LDNS_RSASHA1_NSEC3, "RSASHA1-NSEC3-SHA1" },
-#ifdef USE_SHA2
 	{ LDNS_RSASHA256, "RSASHA256"},
 	{ LDNS_RSASHA512, "RSASHA512"},
-#endif
-#ifdef USE_GOST
 	{ LDNS_ECC_GOST, "ECC-GOST"},
-#endif
-#ifdef USE_ECDSA
         { LDNS_ECDSAP256SHA256, "ECDSAP256SHA256"},
         { LDNS_ECDSAP384SHA384, "ECDSAP384SHA384"},
-#endif
-#ifdef USE_ED25519
 	{ LDNS_ED25519, "ED25519"},
-#endif
-#ifdef USE_ED448
 	{ LDNS_ED448, "ED448"},
-#endif
         { LDNS_INDIRECT, "INDIRECT" },
         { LDNS_PRIVATEDNS, "PRIVATEDNS" },
         { LDNS_PRIVATEOID, "PRIVATEOID" },

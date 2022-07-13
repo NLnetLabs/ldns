@@ -45,26 +45,18 @@ enum ldns_enum_algorithm
 {
         LDNS_RSAMD5             = 1,   /* RFC 4034,4035 */
         LDNS_DH                 = 2,
-#if LDNS_BUILD_CONFIG_USE_DSA
         LDNS_DSA                = 3,
-#endif /* LDNS_BUILD_CONFIG_USE_DSA */
         LDNS_ECC                = 4,
         LDNS_RSASHA1            = 5,
-#if LDNS_BUILD_CONFIG_USE_DSA
         LDNS_DSA_NSEC3          = 6,
-#endif /* LDNS_BUILD_CONFIG_USE_DSA */
         LDNS_RSASHA1_NSEC3      = 7,
         LDNS_RSASHA256          = 8,   /* RFC 5702 */
         LDNS_RSASHA512          = 10,  /* RFC 5702 */
         LDNS_ECC_GOST           = 12,  /* RFC 5933 */
         LDNS_ECDSAP256SHA256    = 13,  /* RFC 6605 */
         LDNS_ECDSAP384SHA384    = 14,  /* RFC 6605 */
-#if LDNS_BUILD_CONFIG_USE_ED25519
 	LDNS_ED25519		= 15,  /* RFC 8080 */
-#endif /* LDNS_BUILD_CONFIG_USE_ED25519 */
-#if LDNS_BUILD_CONFIG_USE_ED448
 	LDNS_ED448		= 16,  /* RFC 8080 */
-#endif /* LDNS_BUILD_CONFIG_USE_ED448 */
         LDNS_INDIRECT           = 252,
         LDNS_PRIVATEDNS         = 253,
         LDNS_PRIVATEOID         = 254
