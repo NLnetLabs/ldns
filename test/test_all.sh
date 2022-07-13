@@ -40,7 +40,7 @@ $TPKG -a ../.. fake 31-load-pyldnsx.tpkg
 $TPKG -a ../.. fake 32-unbound-regression.tpkg
 $TPKG -a ../.. fake 999-compile-nossl.tpkg
 command -v indent || $TPKG -a ../.. fake codingstyle.tpkg
-grep -q '^#define HAVE_SSL 1' ../ldns/config.h || (
+grep -q '^#define HAVE_SSL ' ../ldns/config.h || (
 	$TPKG -a ../.. fake 19-keygen.tpkg
 	$TPKG -a ../.. fake 20-sign-zone.tpkg
 	$TPKG -a ../.. fake 25-ZONEMD.tpkg
