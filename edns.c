@@ -388,12 +388,17 @@ ldns_edns_option_list2wireformat_buffer(const ldns_edns_option_list *option_list
 	ldns_edns_option *edns;
 	uint8_t* data = NULL;
 
+	if (!option_list)
+		return NULL;
+
 	/* get the number of EDNS options in the list*/
 	list_size = ldns_edns_option_list_get_count(option_list);
 
 	/* create buffer the size of the total EDNS wireformat options */
 	options_size = ldns_edns_option_list_get_options_size(option_list);
 	buffer = ldns_buffer_new(options_size);
+	if (!buffer)
+		return NULL;
 
 	/* write individual serialized EDNS options to final buffer*/
 	for (i = 0; i < list_size; i++) {

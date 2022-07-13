@@ -460,7 +460,7 @@ main(int argc, char *argv[])
 		}
 		/* if ^+ then it's an EDNS option */
 		if (argv[i][0] == '+') {
-			(strncmp(argv[i]+1, "nsid", 4))
+			if (strcmp(argv[i]+1, "nsid")) {
 				ldns_edns_option *edns;
 				edns_list = ldns_edns_option_list_new();
 
@@ -902,11 +902,8 @@ main(int argc, char *argv[])
 					}
 
 					if (edns_list) {
-						/* attach the structed EDNS options for completeness */
+						/* attach the structed EDNS options */
 						ldns_pkt_set_edns_option_list(qpkt, edns_list);
-
-						/* write the structured EDNS data to unstructured data */
-						ldns_pkt_edns_write_option_list_to_edns_data(qpkt, edns_list);
 					}
 
 					status = ldns_resolver_send_pkt(&pkt, res, qpkt);
@@ -1033,7 +1030,6 @@ main(int argc, char *argv[])
 	ldns_rr_list_deep_free(key_list);
 	ldns_rr_list_deep_free(cmdline_rr_list);
 	ldns_rdf_deep_free(trace_start_name);
-	ldns_edns_option_list_deep_free(edns_list);
 	xfree(progname);
 	xfree(tsig_name);
 	xfree(tsig_data);
