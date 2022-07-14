@@ -311,7 +311,6 @@ ldns_wire2rdf(ldns_rr *rr, const uint8_t *wire, size_t max, size_t *pos)
 	return LDNS_STATUS_OK;
 }
 
-
 /* TODO:
          can *pos be incremented at READ_INT? or maybe use something like
          RR_CLASS(wire)?

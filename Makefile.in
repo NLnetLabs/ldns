@@ -89,12 +89,12 @@ DEPFLAG		= @DEPFLAG@
 INSTALL		= $(srcdir)/install-sh
 
 LIBLOBJS	= $(LIBOBJS:.o=.lo)
-LDNS_LOBJS	= buffer.lo dane.lo dname.lo dnssec.lo dnssec_sign.lo dnssec_verify.lo dnssec_zone.lo duration.lo error.lo higher.lo host2str.lo host2wire.lo keys.lo net.lo packet.lo parse.lo radix.lo rbtree.lo rdata.lo resolver.lo rr.lo rr_functions.lo sha1.lo sha2.lo str2host.lo tsig.lo update.lo util.lo wire2host.lo zone.lo
+LDNS_LOBJS	= buffer.lo dane.lo dname.lo dnssec.lo dnssec_sign.lo dnssec_verify.lo dnssec_zone.lo duration.lo error.lo higher.lo host2str.lo host2wire.lo keys.lo net.lo packet.lo parse.lo radix.lo rbtree.lo rdata.lo resolver.lo rr.lo rr_functions.lo sha1.lo sha2.lo str2host.lo tsig.lo update.lo util.lo wire2host.lo zone.lo edns.lo
 LDNS_LOBJS_EX	= ^linktest\.c$$
 LDNS_ALL_LOBJS	= $(LDNS_LOBJS) $(LIBLOBJS)
 LIB		= libldns.la
 
-LDNS_HEADERS	= buffer.h dane.h dname.h dnssec.h dnssec_sign.h dnssec_verify.h dnssec_zone.h duration.h error.h higher.h host2str.h host2wire.h keys.h ldns.h packet.h parse.h radix.h rbtree.h rdata.h resolver.h rr_functions.h rr.h sha1.h sha2.h str2host.h tsig.h update.h wire2host.h zone.h
+LDNS_HEADERS	= buffer.h dane.h dname.h dnssec.h dnssec_sign.h dnssec_verify.h dnssec_zone.h duration.h error.h higher.h host2str.h host2wire.h keys.h ldns.h packet.h parse.h radix.h rbtree.h rdata.h resolver.h rr_functions.h rr.h sha1.h sha2.h str2host.h tsig.h update.h wire2host.h zone.h edns.h
 LDNS_HEADERS_EX	= ^config\.h|common\.h|util\.h|net\.h$$
 LDNS_HEADERS_GEN= common.h util.h net.h
 
@@ -641,6 +641,7 @@ dnssec_zone.lo dnssec_zone.o: $(srcdir)/dnssec_zone.c ldns/config.h $(srcdir)/ld
  $(srcdir)/ldns/wire2host.h $(srcdir)/ldns/rr_functions.h $(srcdir)/ldns/parse.h $(srcdir)/ldns/radix.h \
  $(srcdir)/ldns/sha1.h $(srcdir)/ldns/sha2.h
 duration.lo duration.o: $(srcdir)/duration.c ldns/config.h $(srcdir)/ldns/duration.h
+edns.lo edns.o: $(srcdir)/edns.c $(srcdir)/ldns/ldns.h ldns/common.h
 error.lo error.o: $(srcdir)/error.c ldns/config.h $(srcdir)/ldns/ldns.h ldns/util.h ldns/common.h \
  $(srcdir)/ldns/buffer.h $(srcdir)/ldns/error.h $(srcdir)/ldns/dane.h $(srcdir)/ldns/rdata.h $(srcdir)/ldns/rr.h \
  $(srcdir)/ldns/dname.h $(srcdir)/ldns/dnssec.h $(srcdir)/ldns/packet.h $(srcdir)/ldns/keys.h $(srcdir)/ldns/zone.h \
@@ -799,6 +800,7 @@ zone.lo zone.o: $(srcdir)/zone.c ldns/config.h $(srcdir)/ldns/ldns.h ldns/util.h
  $(srcdir)/ldns/higher.h $(srcdir)/ldns/host2wire.h ldns/net.h $(srcdir)/ldns/str2host.h $(srcdir)/ldns/update.h \
  $(srcdir)/ldns/wire2host.h $(srcdir)/ldns/rr_functions.h $(srcdir)/ldns/parse.h $(srcdir)/ldns/radix.h \
  $(srcdir)/ldns/sha1.h $(srcdir)/ldns/sha2.h
+edns.lo edns.o: $(srcdir)/edns.c ldns/config.h $(srcdir)/ldns/edns.h
 compat/b64_ntop.lo compat/b64_ntop.o: $(srcdir)/compat/b64_ntop.c ldns/config.h
 compat/b64_pton.lo compat/b64_pton.o: $(srcdir)/compat/b64_pton.c ldns/config.h
 compat/calloc.lo compat/calloc.o: $(srcdir)/compat/calloc.c ldns/config.h

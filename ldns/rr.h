@@ -156,7 +156,7 @@ enum ldns_enum_rr_type
 	LDNS_RR_TYPE_DNAME = 39,
 	/**  dnsind-kitchen-sink-02.txt */
 	LDNS_RR_TYPE_SINK = 40,
-	/**  Pseudo OPT record... */
+	/**  OPT record RFC 6891 */
 	LDNS_RR_TYPE_OPT = 41,
 	/**  RFC3123 */
 	LDNS_RR_TYPE_APL = 42,
