@@ -759,37 +759,28 @@ ldns_pkt_edns(const ldns_pkt *pkt)
 }
 
 ldns_edns_option_list*
-ldns_pkt_edns_get_option_list(ldns_pkt *packet)
+pkt_edns_data2edns_option_list(const ldns_rdf *edns_data)
 {
 	size_t pos = 0;
 	ldns_edns_option_list* edns_list;
 	size_t max;
 	const uint8_t* wire;
 
-	/* return the list if it already exists */
-	if (packet->_edns_list != NULL) {
-		return packet->_edns_list;
-	}
-
-	/* if the list doesn't exists, we create it by parsing the
-	 * packet->_edns_data
-	 */
-	if (!ldns_pkt_edns_data(packet)) {
+	if (!edns_data)
 		return NULL;
-	}
 
-	assert(ldns_pkt_edns_data(packet));
-	max = ldns_rdf_size(ldns_pkt_edns_data(packet));
-	wire = ldns_rdf_data(ldns_pkt_edns_data(packet));
-
-	edns_list = ldns_edns_option_list_new();
-	if (edns_list == NULL) {
+	max = ldns_rdf_size(edns_data);
+	wire = ldns_rdf_data(edns_data);
+	if (!max)
 		return NULL;
-	}
+
+	if (!(edns_list = ldns_edns_option_list_new()))
+		return NULL;
 
 	while (pos < max) {
 		ldns_edns_option* edns;
 		uint8_t *data;
+
 		if (pos + 4 > max) { /* make sure the header is  */
 			ldns_edns_option_list_deep_free(edns_list);
 			return NULL;
@@ -817,12 +808,30 @@ ldns_pkt_edns_get_option_list(ldns_pkt *packet)
 			ldns_edns_option_list_deep_free(edns_list);
 			return NULL;
 		}
-		ldns_edns_option_list_push(edns_list, edns);
-
+		if (!ldns_edns_option_list_push(edns_list, edns)) {
+			ldns_edns_option_list_deep_free(edns_list);
+			return NULL;
+		}
 	}
+	return edns_list;
 
-	packet->_edns_list = edns_list;
-	return packet->_edns_list;
+}
+
+ldns_edns_option_list*
+ldns_pkt_edns_get_option_list(ldns_pkt *packet)
+{
+	/* return the list if it already exists */
+	if (packet->_edns_list != NULL)
+		return packet->_edns_list;
+
+	/* if the list doesn't exists, we create it by parsing the
+	 * packet->_edns_data
+	 */
+	if (!ldns_pkt_edns_data(packet))
+		return NULL;
+
+	return ( packet->_edns_list
+	       = pkt_edns_data2edns_option_list(ldns_pkt_edns_data(packet)));
 }
 
 

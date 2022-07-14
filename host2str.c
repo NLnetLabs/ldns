@@ -43,6 +43,10 @@
 #define INET6_ADDRSTRLEN 46
 #endif
 
+/* Internal helper function */
+ldns_edns_option_list*
+pkt_edns_data2edns_option_list(const ldns_rdf *edns_data);
+
 /* lookup tables for standard DNS stuff  */
 
 /* Taken from RFC 2535, section 7.  */
@@ -2778,8 +2782,9 @@ ldns_pkt2buffer_str_fmt(ldns_buffer *output,
 				ldns_edns_option_list* edns_list;
 				/* parse the EDNS data into separate EDNS options
 				 * and add them to the list */
-				if ((edns_list = ldns_pkt_edns_get_option_list((ldns_pkt *)pkt))) {
+				if ((edns_list = pkt_edns_data2edns_option_list(ldns_pkt_edns_data(pkt)))) {
 					ldns_edns_option_list2buffer_str(output, edns_list);
+					ldns_edns_option_list_deep_free(edns_list);
 				} else {
 					ldns_buffer_printf(output, ";; Data: ");
 					(void)ldns_rdf2buffer_str(output, ldns_pkt_edns_data(pkt));
