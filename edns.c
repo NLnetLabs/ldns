@@ -202,8 +202,11 @@ ldns_edns_option_list_clone(ldns_edns_option_list *old_list)
 
 	/* adding options also updates the total options size */
 	for (i = 0; i < old_list->_option_count; i++) {
-		ldns_edns_option_list_push(new_list,
-			ldns_edns_clone(ldns_edns_option_list_get_option(old_list, i)));
+		if (!(ldns_edns_option_list_push(new_list,
+			ldns_edns_clone(ldns_edns_option_list_get_option(old_list, i))))){
+			ldns_edns_option_list_deep_free(new_list);
+			return NULL;
+		}
 	}
 
 	return new_list;
@@ -350,7 +353,7 @@ ldns_edns_option_list_pop(ldns_edns_option_list *option_list)
 	cap = option_list->_option_capacity;
 	count = ldns_edns_option_list_get_count(option_list);
 
-	if (count == 0){
+	if (count == 0) {
 		return NULL;
 	}
 	/* get the last option from the list */
@@ -388,8 +391,9 @@ ldns_edns_option_list2wireformat_buffer(const ldns_edns_option_list *option_list
 	ldns_edns_option *edns;
 	uint8_t* data = NULL;
 
-	if (!option_list)
+	if (!option_list) {
 		return NULL;
+	}
 
 	/* get the number of EDNS options in the list*/
 	list_size = ldns_edns_option_list_get_count(option_list);
@@ -397,8 +401,10 @@ ldns_edns_option_list2wireformat_buffer(const ldns_edns_option_list *option_list
 	/* create buffer the size of the total EDNS wireformat options */
 	options_size = ldns_edns_option_list_get_options_size(option_list);
 	buffer = ldns_buffer_new(options_size);
-	if (!buffer)
+	
+	if (!buffer) {
 		return NULL;
+	}
 
 	/* write individual serialized EDNS options to final buffer*/
 	for (i = 0; i < list_size; i++) {
