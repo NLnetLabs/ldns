@@ -907,6 +907,7 @@ main(int argc, char *argv[])
 					}
 
 					status = ldns_resolver_send_pkt(&pkt, res, qpkt);
+					ldns_pkt_free(qpkt);
 
 					if (status != LDNS_STATUS_OK) {
 						error("error sending query: %s"
