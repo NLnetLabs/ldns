@@ -13,6 +13,7 @@
 	  potential assersion errors.
 	* bugfix #46: Print network errors when secure tracing.
 	  Thanks reedjc
+	* EDNS0 Option handling and conversion into presentation format.
 
 1.8.1	2021-12-03
 	* bugfix #146: ldns-1.7.1 had soname 3.0, so ldns-1.8.x soname
