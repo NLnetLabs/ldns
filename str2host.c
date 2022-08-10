@@ -2133,8 +2133,8 @@ parse_svcparam_ech(const char **s, uint8_t **dp, uint8_t *eod)
 }
 
 static ldns_status
-parse_svcparam_ipv6hint(const char **s, uint8_t **dp, uint8_t *eod)                
-{                                                                               
+parse_svcparam_ipv6hint(const char **s, uint8_t **dp, uint8_t *eod)
+{
 	bool quoted = false;
 
 	if (**s == '"') {
@@ -2189,7 +2189,8 @@ static svcparam_key_def svcparam_key_defs[] = { { "mandatory"      ,  9 }
                                               , { "port"           ,  4 }
                                               , { "ipv4hint"       ,  8 }
                                               , { "ech"            ,  3 }
-                                              , { "ipv6hint"       ,  8 } };
+                                              , { "ipv6hint"       ,  8 }
+                                              , { "dohpath"        ,  7 } };
 
 static const size_t svcparam_key_defs_len = sizeof(svcparam_key_defs)
                                           / sizeof(svcparam_key_def);
@@ -2297,6 +2298,9 @@ parse_svcparam(const char **s, uint8_t **dp, uint8_t *eod)
 		break;
 	case LDNS_SVCPARAM_KEY_IPV6HINT:
 		st = parse_svcparam_ipv6hint(s, dp, eod);
+		break;
+	case LDNS_SVCPARAM_KEY_DOHPATH:
+		st = parse_svcparam_value(s, dp, eod);
 		break;
 	default:
 		st = parse_svcparam_value(s, dp, eod);

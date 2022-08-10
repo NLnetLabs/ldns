@@ -1520,6 +1520,31 @@ svcparam_ipv6hint2buffer_str(ldns_buffer *output, size_t sz, uint8_t *data)
 }
 
 static ldns_status
+svcparam_dohpath2buffer_str(ldns_buffer *output, size_t sz, uint8_t *data)
+{
+	int i;
+
+	/* TODO: If the "alpn" SvcParam indicates support for HTTP,
+	 *	"dohpath" MUST be present. */
+
+	/* TODO: The URI Template MUST contain a "?dns" variable  */
+
+	for (i = 0; i < sz; i++) {
+		uint8_t ch = data[i];
+
+		if (isprint(ch) || ch == '\t') {
+			if (ch == '"' ||  ch == ',' || ch == '\\')
+				ldns_buffer_write_char(output, '\\');
+			ldns_buffer_write_char(output, ch);
+		} else
+			ldns_buffer_printf(output, "\\%03u", (unsigned)ch);
+		}
+	}
+
+	return ldns_buffer_status(output);
+}
+
+static ldns_status
 svcparam_value2buffer_str(ldns_buffer *output, size_t sz, uint8_t *data)
 {
 	uint8_t *eod = data + sz, *dp;
@@ -1597,6 +1622,9 @@ ldns_rdf2buffer_str_svcparams(ldns_buffer *output, const ldns_rdf *rdf)
 			break;
 		case LDNS_SVCPARAM_KEY_IPV6HINT:
 			st = svcparam_ipv6hint2buffer_str(output, val_sz, dp);
+			break;
+		case LDNS_SVCPARAM_KEY_DOHPATH:
+			st = svcparam_dohpath2buffer_str(output, val_sz, dp);
 			break;
 		default:
 			st = svcparam_value2buffer_str(output, val_sz, dp);
