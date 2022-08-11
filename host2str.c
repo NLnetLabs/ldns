@@ -1522,7 +1522,7 @@ svcparam_ipv6hint2buffer_str(ldns_buffer *output, size_t sz, uint8_t *data)
 static ldns_status
 svcparam_dohpath2buffer_str(ldns_buffer *output, size_t sz, uint8_t *data)
 {
-	int i;
+	size_t i;
 
 	/* TODO: If the "alpn" SvcParam indicates support for HTTP,
 	 *	"dohpath" MUST be present. */
@@ -1538,7 +1538,6 @@ svcparam_dohpath2buffer_str(ldns_buffer *output, size_t sz, uint8_t *data)
 			ldns_buffer_write_char(output, ch);
 		} else
 			ldns_buffer_printf(output, "\\%03u", (unsigned)ch);
-		}
 	}
 
 	return ldns_buffer_status(output);
