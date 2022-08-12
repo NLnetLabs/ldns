@@ -29,10 +29,11 @@ AC_SUBST(LDNS_VERSION_MICRO, [VERSION_MICRO])
 # ldns-1.7.0 had libversion 2:0:0
 # ldns-1.7.1 had libversion 3:0:0 (though it should have had 3:0:1)
 # ldns-1.8.0 had libversion 4:0:2 (though it should have had 4:0:1)
-# ldns-1.8.1 has libversion 5:0:2
-# ldns-1.8.1 has libversion 6:0:3
+# ldns-1.8.1 had libversion 5:0:2
+# ldns-1.8.1 had libversion 6:0:3
+# ldns-1.8.2 has libversion 7:0:4
 #
-AC_SUBST(VERSION_INFO, [6:0:3])
+AC_SUBST(VERSION_INFO, [7:0:4])
 
 AC_AIX
 if test "$ac_cv_header_minix_config_h" = "yes"; then

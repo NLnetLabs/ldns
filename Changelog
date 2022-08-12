@@ -1,4 +1,4 @@
-1.8.2	2022-??-??
+1.8.2	2022-08-12
 	* bugfix #147: Allow for tabs in whitespace before quoted rdata
 	  fields. Thanks Felipe Gasper
 	* bugfix #149: Add some missing [out] annotations to doxygen
