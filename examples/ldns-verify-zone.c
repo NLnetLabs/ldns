@@ -437,7 +437,8 @@ verify_dnssec_name(ldns_rdf *zone_name, ldns_dnssec_zone* zone,
 					fprintf(myerr, "\t");
 					print_type(myerr, cur_rrset->type);
 					fprintf(myerr, " has signature(s),"
-							" but is glue\n");
+							" but is occluded"
+							" (or glue)\n");
 				}
 				result = LDNS_STATUS_ERR;
 			}
@@ -448,7 +449,8 @@ verify_dnssec_name(ldns_rdf *zone_name, ldns_dnssec_zone* zone,
 				fprintf(myerr, "Error: ");
 				ldns_rdf_print(myerr, name->name);
 				fprintf(myerr, " has an NSEC(3),"
-						" but is glue\n");
+						" but is occluded"
+						" (or glue)\n");
 			}
 			result = LDNS_STATUS_ERR;
 		}
