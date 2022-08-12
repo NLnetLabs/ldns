@@ -180,7 +180,8 @@ enum ldns_enum_svcparam_key
 	LDNS_SVCPARAM_KEY_IPV4HINT		= 4,
 	LDNS_SVCPARAM_KEY_ECH			= 5,
 	LDNS_SVCPARAM_KEY_IPV6HINT		= 6,
-	LDNS_SVCPARAM_KEY_LAST_KEY		= 6,
+        LDNS_SVCPARAM_KEY_DOHPATH               = 7,
+	LDNS_SVCPARAM_KEY_LAST_KEY		= 7,
 	LDNS_SVCPARAM_KEY_RESERVED		= 65535
 };
 typedef	enum ldns_enum_svcparam_key ldns_svcparam_key;

@@ -2189,7 +2189,8 @@ static svcparam_key_def svcparam_key_defs[] = { { "mandatory"      ,  9 }
                                               , { "port"           ,  4 }
                                               , { "ipv4hint"       ,  8 }
                                               , { "ech"            ,  3 }
-                                              , { "ipv6hint"       ,  8 } };
+                                              , { "ipv6hint"       ,  8 }
+                                              , { "dohpath"        ,  7 } };
 
 static const size_t svcparam_key_defs_len = sizeof(svcparam_key_defs)
                                           / sizeof(svcparam_key_def);
