@@ -777,7 +777,7 @@ void ldns_pkt_set_edns_data(ldns_pkt *packet, ldns_rdf *data);
  * Set the packet's structured EDNS data. Once an edns_option_list is set 
  * (or get), the option list will be used for converting into wireformat. 
  * \param[in] packet the packet
- * \param[in] data the data
+ * \param[in] list the options list that will create the data
  */
 void ldns_pkt_set_edns_option_list(ldns_pkt *packet, ldns_edns_option_list *list);
 

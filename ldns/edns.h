@@ -172,14 +172,14 @@ ldns_edns_option *ldns_edns_new_from_data(ldns_edns_option_code code, size_t siz
 
 /**
  * clone an EDNS option
- * \param[in] the EDNS option
+ * \param[in] edns the EDNS option
  * \return the new EDNS structure
  */
 ldns_edns_option *ldns_edns_clone(ldns_edns_option *edns);
 
 /**
  * free the EDNS option. Use deep_free if the _data member is allocated.
- * \param[in] the EDNS option to free
+ * \param[in] edns the EDNS option to free
  */
 void ldns_edns_deep_free(ldns_edns_option *edns);
 void ldns_edns_free(ldns_edns_option *edns);
@@ -200,7 +200,7 @@ ldns_edns_option_list *ldns_edns_option_list_clone(ldns_edns_option_list *option
 /**
  * free the EDNS option list. Use deep_free to free the options options
  * in the list as well.
- * \param[in] the EDNS option to free
+ * \param[in] options_list the EDNS option to free
  */
 void ldns_edns_option_list_free(ldns_edns_option_list *options_list);
 void ldns_edns_option_list_deep_free(ldns_edns_option_list *options_list);
@@ -236,6 +236,7 @@ size_t ldns_edns_option_list_get_options_size(const ldns_edns_option_list *optio
  * returns the option that was previously at that index.
  * \param[in] options_list  the EDNS options_list to add to
  * \param[in] option        the EDNS option to add to the list
+ * \param[in] index         the index in the list where to set the option
  * \return the EDNS option previously located at the index
  */
 ldns_edns_option *ldns_edns_option_list_set_option(ldns_edns_option_list *options_list,
@@ -259,7 +260,7 @@ ldns_edns_option* ldns_edns_option_list_pop(ldns_edns_option_list *options_list)
 
 /**
  * serializes all the EDNS options into a single wireformat buffer
- * \param[in] options_list  the EDNS options_list to combine into one wireformat
+ * \param[in] option_list  the EDNS options_list to combine into one wireformat
  * \return the filled buffer or NULL on failure
  */
 ldns_buffer *ldns_edns_option_list2wireformat_buffer(const ldns_edns_option_list *option_list);
