@@ -6,7 +6,7 @@ sinclude(acx_nlnetlabs.m4)
 # must be numbers. ac_defun because of later processing.
 m4_define([VERSION_MAJOR],[1])
 m4_define([VERSION_MINOR],[8])
-m4_define([VERSION_MICRO],[1])
+m4_define([VERSION_MICRO],[2])
 AC_INIT(ldns, m4_defn([VERSION_MAJOR]).m4_defn([VERSION_MINOR]).m4_defn([VERSION_MICRO]), libdns@nlnetlabs.nl, libdns)
 AC_CONFIG_SRCDIR([packet.c])
 # needed to build correct soname
@@ -29,9 +29,11 @@ AC_SUBST(LDNS_VERSION_MICRO, [VERSION_MICRO])
 # ldns-1.7.0 had libversion 2:0:0
 # ldns-1.7.1 had libversion 3:0:0 (though it should have had 3:0:1)
 # ldns-1.8.0 had libversion 4:0:2 (though it should have had 4:0:1)
-# ldns-1.8.1 has libversion 5:0:2
+# ldns-1.8.1 had libversion 5:0:2
+# ldns-1.8.1 had libversion 6:0:3
+# ldns-1.8.2 has libversion 7:0:4
 #
-AC_SUBST(VERSION_INFO, [5:0:2])
+AC_SUBST(VERSION_INFO, [7:0:4])
 
 AC_AIX
 if test "$ac_cv_header_minix_config_h" = "yes"; then
@@ -136,7 +138,7 @@ AC_CHECK_FUNC([socket],
 # older Solaris provides inet_ntop in -lresolv.
 AC_CHECK_FUNC([inet_ntop],
     [],
-    [AC_SEARCH_LIBS([inet_ntop], [socket c nsl resolv])
+    [AC_SEARCH_LIBS([inet_ntop], [socket c nsl resolv], [ac_cv_func_inet_ntop=yes])
 ])
 
 # modern Linux provides inet_pton in -lsocket.
@@ -145,7 +147,7 @@ AC_CHECK_FUNC([inet_ntop],
 # older Solaris provides inet_pton in -lresolv.
 AC_CHECK_FUNC([inet_pton],
     [],
-    [AC_SEARCH_LIBS([inet_pton], [socket c nsl resolv])
+    [AC_SEARCH_LIBS([inet_pton], [socket c nsl resolv], [ac_cv_func_inet_pton=yes])
 ])
 
 
@@ -724,12 +726,12 @@ case "$enable_rrtype_amtrelay" in
 	no|*)
 		;;
 esac
-AC_ARG_ENABLE(rrtype-svcb-https, AC_HELP_STRING([--enable-rrtype-svcb-https], [Enable draft RR types SVCB and HTTPS.]))
+AC_ARG_ENABLE(rrtype-svcb-https, AC_HELP_STRING([--disable-rrtype-svcb-https], [Disable RR types SVCB and HTTPS.]))
 case "$enable_rrtype_svcb_https" in
-	yes)
-		AC_DEFINE_UNQUOTED([RRTYPE_SVCB_HTTPS], [], [Define this to enable RR types SVCB and HTTPS.])
+	no)
 		;;
-	no|*)
+	yes|*)
+		AC_DEFINE_UNQUOTED([RRTYPE_SVCB_HTTPS], [], [Define this to enable RR types SVCB and HTTPS.])
 		;;
 esac
 
@@ -1176,7 +1178,7 @@ else
   AC_SUBST(ldns_build_config_have_attr_unused, 0)
 fi
 
-CONFIG_FILES="Makefile ldns/common.h ldns/net.h ldns/util.h packaging/libldns.pc packaging/ldns-config"
+CONFIG_FILES="Makefile libdns.doxygen ldns/common.h ldns/net.h ldns/util.h packaging/libldns.pc packaging/ldns-config"
 AC_SUBST(CONFIG_FILES)
 AC_CONFIG_FILES([$CONFIG_FILES])
 

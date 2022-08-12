@@ -1550,6 +1550,9 @@ ldns_str2rdf_long_str(ldns_rdf **rd, const char *str)
 		return LDNS_STATUS_SYNTAX_BAD_ESCAPE;
 	}
 	if (!(length = (size_t)(dp - data))) {
+		/* An empty string is a data buffer of 0 bytes.  The rdf for 
+		 * this long string has to have length 0 and point to NULL.
+		 */
 		LDNS_FREE(data);
 		data = NULL;
 	} else {
@@ -2073,7 +2076,7 @@ parse_svcparam_ipv4hint(const char **s, uint8_t **dp, uint8_t *eod)
 }
 
 static ldns_status
-parse_svcparam_echconfig(const char **s, uint8_t **dp, uint8_t *eod)                
+parse_svcparam_ech(const char **s, uint8_t **dp, uint8_t *eod)
 {                                                                               
 	bool quoted = false;
 	const char *b64_str;
@@ -2185,8 +2188,9 @@ static svcparam_key_def svcparam_key_defs[] = { { "mandatory"      ,  9 }
                                               , { "no-default-alpn", 15 }
                                               , { "port"           ,  4 }
                                               , { "ipv4hint"       ,  8 }
-                                              , { "echconfig"      ,  9 }
-                                              , { "ipv6hint"       ,  8 } };
+                                              , { "ech"            ,  3 }
+                                              , { "ipv6hint"       ,  8 }
+                                              , { "dohpath"        ,  7 } };
 
 static const size_t svcparam_key_defs_len = sizeof(svcparam_key_defs)
                                           / sizeof(svcparam_key_def);
@@ -2224,6 +2228,11 @@ parse_svcparam_key(const char **s, ldns_svcparam_key *key)
 			*key = i;
 			return LDNS_STATUS_OK;
 		}
+	}
+	/* Also allow "echconfig" from earlier draft versions. */
+	if (len == 9 && !strncmp(key_str, "echconfig", 9)) {
+		*key = LDNS_SVCPARAM_KEY_ECH;
+		return LDNS_STATUS_OK;
 	}
 	if (len < 4 || len > 8 || strncmp(key_str, "key", 3))
 		return LDNS_STATUS_SYNTAX_SVCPARAM_KEY_ERR;
@@ -2284,8 +2293,8 @@ parse_svcparam(const char **s, uint8_t **dp, uint8_t *eod)
 	case LDNS_SVCPARAM_KEY_IPV4HINT:
 		st = parse_svcparam_ipv4hint(s, dp, eod);
 		break;
-	case LDNS_SVCPARAM_KEY_ECHCONFIG:
-		st = parse_svcparam_echconfig(s, dp, eod);
+	case LDNS_SVCPARAM_KEY_ECH:
+		st = parse_svcparam_ech(s, dp, eod);
 		break;
 	case LDNS_SVCPARAM_KEY_IPV6HINT:
 		st = parse_svcparam_ipv6hint(s, dp, eod);

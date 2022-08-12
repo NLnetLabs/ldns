@@ -631,7 +631,7 @@ ldns_dnssec_zone_new_frm_fp_l(ldns_dnssec_zone** z, FILE* fp, const ldns_rdf* or
 	   nsec3_ents (where ent is e.n.t.; i.e. empty non terminal) will
 	   hold the NSEC3s that still didn't have a matching name in the
 	   zone tree, even after all names were read.  They can only match
-	   after the zone is equiped with all the empty non terminals. */
+	   after the zone is equipped with all the empty non terminals. */
 	ldns_rbtree_t todo_nsec3_ents;
 	ldns_rbnode_t *new_node;
 	ldns_rr_list* todo_nsec3_rrsigs = ldns_rr_list_new();
@@ -705,7 +705,7 @@ ldns_dnssec_zone_new_frm_fp_l(ldns_dnssec_zone** z, FILE* fp, const ldns_rdf* or
 					my_ttl = ldns_rr_ttl(cur_rr);
 				}
 			/* When ttl is implicit, try to adhere to the rules as
-			 * much as posssible. (also for compatibility with bind)
+			 * much as possible. (also for compatibility with bind)
 			 * This was changed when fixing an issue with ZONEMD
 			 * which hashes the TTL too.
 			 */

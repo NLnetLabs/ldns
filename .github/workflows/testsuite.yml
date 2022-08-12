@@ -1,0 +1,39 @@
+on:
+  push:
+    branches:
+      - '*'
+    tags-ignore:
+      - '*'
+  pull_request:
+
+jobs:
+  linux:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        submodules: recursive
+    - run: libtoolize -ci
+    - run: autoreconf -fi
+    - run: ./configure
+    - run: make test
+
+  mac:
+    runs-on: macos-latest
+
+    steps:
+    - run: brew install automake libtool
+    - uses: actions/checkout@v3
+      with:
+        submodules: recursive
+    - run: glibtoolize -ci
+    - run: autoreconf -fi
+
+    # macOS’s system OpenSSL (LibreSSL, actually) isn’t meant for linking,
+    # and Homebrew’s# OpenSSL isn’t CI-friendly. So build without OpenSSL.
+    - run: ./configure --without-ssl --disable-sha2 --disable-gost --disable-ecdsa --disable-dane
+
+    # As of now the test suite requires OpenSSL, so no tests.
+    # cf. https://github.com/NLnetLabs/ldns/issues/162
+    - run: make

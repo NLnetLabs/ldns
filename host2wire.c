@@ -396,6 +396,9 @@ ldns_pkt2buffer_wire_compress(ldns_buffer *buffer, const ldns_pkt *packet, ldns_
 	ldns_rr *edns_rr;
 	uint8_t edata[4];
 
+	ldns_buffer *edns_buf = NULL;
+	ldns_rdf    *edns_rdf = NULL;
+
 	(void) ldns_hdr2buffer_wire(buffer, packet);
 
 	rr_list = ldns_pkt_question(packet);
@@ -440,11 +443,16 @@ ldns_pkt2buffer_wire_compress(ldns_buffer *buffer, const ldns_pkt *packet, ldns_
 		ldns_write_uint16(&edata[2], ldns_pkt_edns_z(packet));
 		ldns_rr_set_ttl(edns_rr, ldns_read_uint32(edata));
 		/* don't forget to add the edns rdata (if any) */
-		if (packet->_edns_data)
-			ldns_rr_push_rdf (edns_rr, packet->_edns_data);
+		if ((edns_buf = ldns_edns_option_list2wireformat_buffer(packet->_edns_list))) {
+			edns_rdf = ldns_rdf_new( LDNS_RDF_TYPE_UNKNOWN
+			                       , ldns_buffer_limit(edns_buf)
+			                       , ldns_buffer_export(edns_buf));
+			ldns_buffer_free(edns_buf);
+		}
+		ldns_rr_push_rdf(edns_rr, edns_rdf ? edns_rdf : packet->_edns_data);
 		(void)ldns_rr2buffer_wire_compress(buffer, edns_rr, LDNS_SECTION_ADDITIONAL, compression_data);
 		/* take the edns rdata back out of the rr before we free rr */
-		if (packet->_edns_data)
+		if (!edns_rdf)
 			(void)ldns_rr_pop_rdf (edns_rr);
 		ldns_rr_free(edns_rr);
 	}

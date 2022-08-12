@@ -40,13 +40,22 @@ $TPKG -a ../.. fake 31-load-pyldnsx.tpkg
 $TPKG -a ../.. fake 32-unbound-regression.tpkg
 $TPKG -a ../.. fake 999-compile-nossl.tpkg
 command -v indent || $TPKG -a ../.. fake codingstyle.tpkg
+grep -q '^#define HAVE_SSL ' ../ldns/config.h || (
+	$TPKG -a ../.. fake 19-keygen.tpkg
+	$TPKG -a ../.. fake 20-sign-zone.tpkg
+	$TPKG -a ../.. fake 25-ZONEMD.tpkg
+)
 
+failed=0
 for tests in *.tpkg
 do
 	COMMAND="$TPKG -a ../.. exe $(basename "$tests")"
 	echo "$COMMAND"
 	$COMMAND
+	if [ $? -ne 0 ]; then ((failed=failed+1)); fi
 done 
 echo finished the test at "$(date)" in "$(pwd)"
 $TPKG report
 cd ..
+
+exit $failed

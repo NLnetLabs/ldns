@@ -1,7 +1,27 @@
+1.8.2	2022-08-12
+	* bugfix #147: Allow for tabs in whitespace before quoted rdata
+	  fields. Thanks Felipe Gasper
+	* bugfix #149: Add some missing [out] annotations to doxygen
+	  parameters. Thanks aldot.
+	* Fix build error on Solaris 10 with inet_ntop redeclaration error.
+	* Fix -U flag with ldns-signzone. Thanks Ulrich and Jonathan
+	* Enable compile of SVCB and HTTPS support by default.
+	* bugfix #179: Free line memory even if zone file parsing fails
+	  Thanks Claudius Zingerli
+	* bugfix #166: Grow buffer when writing chars and fixed size
+	  strings when converting to presentation format, preventing
+	  potential assersion errors.
+	* bugfix #46: Print network errors when secure tracing.
+	  Thanks reedjc
+	* EDNS0 Option handling and conversion into presentation format.
+	* bugfix #145: ldns-verify-zone should not call occluded records
+	  glue. Thanks Habbie
+
 1.8.1	2021-12-03
 	* bugfix #146: ldns-1.7.1 had soname 3.0, so ldns-1.8.x soname
-	  needs to larger.
+	  needs to larger. Thanks Leah Neukirchen & Felipe Gasper
 	* Undo PR#123 fix ldns.pc installation when building out-of-source
+	  Thanks Axel Xu
 
 1.8.0	2021-11-26
 	* bugfix #38: Print "line" before line number when printing
@@ -46,7 +66,7 @@
 	  Thanks Felipe Gasper
 	* PR #126: Link with libldns.la in Makefile.in.
 	  Thanks orbea
-	* PR #127: Addes option -Q to drill to give short answer.
+	* PR #127: Added option -Q to drill to give short answer.
 	  Thanks niknah
 	* PR #133: Update m4 files for python modules.
 	  Thanks Petr Menšík
@@ -234,7 +254,7 @@
 	  Thanks William King
 	* Use OpenSSL DANE functions for verification (unless explicitly
 	  disabled with --disable-dane-ta-usage).
-	* Bumb .so version
+	* Bump .so version
 	* Include OPENPGPKEY RR type by default
 	* rdata processing for SMIMEA RR type
 	* Fix crash in displaying TLSA RR's.
@@ -304,7 +324,7 @@
 	* bugfix #505: Manpage and usage output fixes (Thanks Tomas Hozza)
 	* Adjust ldns_sha1() so that the input data is not modified (Thanks
 	  Marc Buijsman)
-	* Messages to stderr are now off by default and can be reenabled with
+	* Messages to stderr are now off by default and can be re-enabled with
 	  the --enable-stderr-msgs configure option.
 
 1.6.16	2012-11-13
@@ -647,7 +667,7 @@
 	* --enable-gost : use the GOST algorithm (experimental).
 	* Added some missing options to drill manpage
 	* Some fixes to --without-ssl option
-	* Fixed quote parsing withing strings
+	* Fixed quote parsing within strings
 	* Bitmask fix in EDNS handling
 	* Fixed non-fqdn domain name completion for rdata field domain
 	  names of length 1
@@ -936,7 +956,7 @@
 	* -r was killed in favor of -o <header bit mnemonic> which
 	  allows for a header bits setting (and maybe more in the
 	  future)
-	* DNSSEC is never automaticaly set, even when you query
+	* DNSSEC is never automatically set, even when you query
 	  for DNSKEY/RRSIG or DS.
 	* Implement a crude RTT check, it now distinguishes between
 	  reachable and unreachable.
@@ -1008,7 +1028,7 @@
 	* char *_when was removed from the ldns_pkt structure
 
 18 Oct 2005: 1.0.0: ldns-team
-	* Commited a patch from Håkan Olsson
+	* Committed a patch from Håkan Olsson
 	* Added UPDATE support (Jakob Schlyter and Håkan Olsson)
 	* License change: ldns is now BSD licensed
 	* ldns now depends on SSL
@@ -1050,7 +1070,7 @@
 
 23 May 2005: 0.60: ldns-team
 	* Removed config.h from the header installed files
-	  (you're not supposed to include that in a libary)
+	  (you're not supposed to include that in a library)
 	* Further tweaking
 	  - DNSSEC signing/verification works
 	  - Assorted bug fixes and tweaks (memory management)

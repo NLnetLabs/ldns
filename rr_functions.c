@@ -24,7 +24,7 @@
  * return a specific rdf
  * \param[in] type type of RR
  * \param[in] rr   the rr itself
- * \param[in] pos  at which postion to get it
+ * \param[in] pos  at which position to get it
  * \return the rdf sought
  */
 static ldns_rdf *
@@ -41,7 +41,7 @@ ldns_rr_function(ldns_rr_type type, const ldns_rr *rr, size_t pos)
  * \param[in] type type of RR
  * \param[in] rr   the rr itself
  * \param[in] rdf  the rdf to set
- * \param[in] pos  at which postion to set it
+ * \param[in] pos  at which position to set it
  * \return true or false
  */
 static bool
