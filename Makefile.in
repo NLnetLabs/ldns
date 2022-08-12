@@ -157,7 +157,7 @@ putdown-builddir:
 	if test -d compat   -a ! -f compat/malloc.c; then rmdir compat   || : ; fi
 	rm -rf builddir/
 
-drill: no-drill-config-h drill/drill drill/drill.1
+drill: setup-builddir no-drill-config-h drill/drill drill/drill.1
 no-drill-config-h:
 	@if test -e $(srcdir)/drill/config.h -o -e drill/config.h ; \
 	then echo "A config.h was detected in the drill subdirectory." ; \
@@ -188,7 +188,7 @@ uninstall-drill:
 clean-drill:
 	$(LIBTOOL) --mode clean rm -f $(DRILL_LOBJS) drill/drill drill/drill.1
 
-examples: no-examples-config-h $(EXAMPLE_PROGS) $(TESTNS) $(LDNS_DPA) $(LDNS_DANE) $(EX_SSL_PROGS) examples/ldns-dane.1 examples/ldns-verify-zone.1
+examples: setup-builddir no-examples-config-h $(LIB) $(EXAMPLE_PROGS) $(TESTNS) $(LDNS_DPA) $(LDNS_DANE) $(EX_SSL_PROGS) examples/ldns-dane.1 examples/ldns-verify-zone.1
 no-examples-config-h:
 	@if test -e $(srcdir)/examples/config.h -o -e examples/config.h ; \
 	then echo "A config.h was detected in the examples subdirectory." ; \
