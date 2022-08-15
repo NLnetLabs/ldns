@@ -1,6 +1,9 @@
 1.8.3	2022-08-15
-	* bugfix #183: Assertion failure with OPT record without rdata
-	  Thanks Anand Buddhdev
+	* bugfix #183: Assertion failure with OPT record without rdata.
+	  This caused packet creation with only a DO bit (for DNSSEC OK)
+	  to crash. Thanks Anand Buddhdev and others for reporting this
+	  so quickly.
+	* Fix for syntax error in pyldns
 
 1.8.2	2022-08-12
 	* bugfix #147: Allow for tabs in whitespace before quoted rdata
