@@ -449,10 +449,7 @@ ldns_pkt2buffer_wire_compress(ldns_buffer *buffer, const ldns_pkt *packet, ldns_
 			                       , ldns_buffer_export(edns_buf));
 			ldns_buffer_free(edns_buf);
 		}
-		if (edns_rdf)
-			ldns_rr_push_rdf(edns_rr, edns_rdf);
-		else if (packet->_edns_data)
-			ldns_rr_push_rdf(edns_rr, packet->_edns_data);
+		ldns_rr_push_rdf(edns_rr, edns_rdf ? edns_rdf : packet->_edns_data);
 		(void)ldns_rr2buffer_wire_compress(buffer, edns_rr, LDNS_SECTION_ADDITIONAL, compression_data);
 		/* take the edns rdata back out of the rr before we free rr */
 		if (!edns_rdf)
