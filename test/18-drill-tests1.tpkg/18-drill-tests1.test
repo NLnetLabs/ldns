@@ -58,7 +58,6 @@ PORT=`cat $TMPF1 | grep Listening | cut -d " " -f 4`
 
 echo "../../drill/drill -p $PORT -k test2-key -S @localhost  ok.ok.test.jelte.nlnetlabs.nl"
 ../../drill/drill -p $PORT -k test2-key -S @localhost  ok.ok.test.jelte.nlnetlabs.nl> $TMPF2
-cat $TMPF2
 
 if [[ $? -ne 0 ]]; then 
 	cat $TMPF2
