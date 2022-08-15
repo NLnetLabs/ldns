@@ -449,10 +449,16 @@ ldns_pkt2buffer_wire_compress(ldns_buffer *buffer, const ldns_pkt *packet, ldns_
 			                       , ldns_buffer_export(edns_buf));
 			ldns_buffer_free(edns_buf);
 		}
-		ldns_rr_push_rdf(edns_rr, edns_rdf ? edns_rdf : packet->_edns_data);
+		if (edns_rdf)
+			ldns_rr_push_rdf(edns_rr, edns_rdf);
+		else if (packet->_edns_data)
+			ldns_rr_push_rdf(edns_rr, packet->_edns_data);
 		(void)ldns_rr2buffer_wire_compress(buffer, edns_rr, LDNS_SECTION_ADDITIONAL, compression_data);
-		/* take the edns rdata back out of the rr before we free rr */
-		if (!edns_rdf)
+		/* if the rdata of the OPT came from packet->_edns_data
+		 * we need to take it back out of the edns_rr before we free it
+		 * so packet->_edns_data doesn't get freed
+		 */
+		if (!edns_rdf && packet->_edns_data)
 			(void)ldns_rr_pop_rdf (edns_rr);
 		ldns_rr_free(edns_rr);
 	}
