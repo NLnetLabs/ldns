@@ -924,6 +924,10 @@ ldns_dnssec_zone_hashed_names_from_nsec3(
 
 	assert(zone != NULL);
 	assert(nsec3rr != NULL);
+	if (zone == NULL || nsec3rr == NULL) {
+		return;
+	}
+
 
 	if (zone->hashed_names) {
 		ldns_traverse_postorder(zone->hashed_names,
@@ -956,6 +960,11 @@ ldns_dnssec_name_make_hashed_name(ldns_dnssec_zone *zone,
 	ldns_rbnode_t* new_node;
 
 	assert(name != NULL);
+
+	if (name == NULL) {
+		return;
+	}
+
 	if (! zone->_nsec3params) {
 		if (! nsec3rr) {
 			return;

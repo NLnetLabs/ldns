@@ -24,6 +24,11 @@ size_t
 ldns_edns_get_size(const ldns_edns_option *edns)
 {
 	assert(edns != NULL);
+
+	if (edns == NULL) {
+		return 0;
+	}
+
 	return edns->_size;
 }
 
@@ -31,6 +36,11 @@ ldns_edns_option_code
 ldns_edns_get_code(const ldns_edns_option *edns)
 {
 	assert(edns != NULL);
+
+	if (edns == NULL) {
+		return 0;
+	}
+
 	return edns->_code;
 }
 
@@ -77,6 +87,11 @@ void
 ldns_edns_set_size(ldns_edns_option *edns, size_t size)
 {
 	assert(edns != NULL);
+
+	if (edns == NULL) {
+		return;
+	}
+
 	edns->_size = size;
 }
 
@@ -84,6 +99,11 @@ void
 ldns_edns_set_code(ldns_edns_option *edns, ldns_edns_option_code code)
 {
 	assert(edns != NULL);
+
+	if (edns == NULL) {
+		return;
+	}
+
 	edns->_code = code;
 }
 
@@ -92,6 +112,11 @@ ldns_edns_set_data(ldns_edns_option *edns, void *data)
 {
 	/* only copy the pointer */
 	assert(edns != NULL);
+
+	if (edns == NULL) {
+		return;
+	}
+
 	edns->_data = data;
 }
 
@@ -139,6 +164,10 @@ ldns_edns_clone(ldns_edns_option *edns)
 	ldns_edns_option *new_option;
 
 	assert(edns != NULL);
+
+	if (edns == NULL) {
+		return NULL;
+	}
 
 	new_option = ldns_edns_new_from_data(ldns_edns_get_code(edns),
 		ldns_edns_get_size(edns),
@@ -249,6 +278,11 @@ ldns_edns_option_list_get_option(const ldns_edns_option_list *option_list, size_
 {
 	if (option_list && index < ldns_edns_option_list_get_count(option_list)) {
 		assert(option_list->_options[index]);
+
+		if (option_list->_options[index] == NULL) {
+			return NULL;
+		}
+
 		return option_list->_options[index];
 	} else {
 		return NULL;
@@ -273,6 +307,10 @@ ldns_edns_option_list_set_option(ldns_edns_option_list *option_list,
 	ldns_edns_option* old;
 
 	assert(option_list != NULL);
+
+	if (option_list == NULL) {
+		return NULL;
+	}
 
 	if (index > ldns_edns_option_list_get_count(option_list)) {
 		return NULL;
@@ -349,6 +387,10 @@ ldns_edns_option_list_pop(ldns_edns_option_list *option_list)
 	size_t cap;
 
 	assert(option_list != NULL);
+
+	if (option_list == NULL) {
+		return false;
+	}
 
 	cap = option_list->_option_capacity;
 	count = ldns_edns_option_list_get_count(option_list);

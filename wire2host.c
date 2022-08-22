@@ -169,6 +169,10 @@ ldns_wire2rdf(ldns_rr *rr, const uint8_t *wire, size_t max, size_t *pos)
 
 	assert(rr != NULL);
 
+	if (rr == NULL) {
+		return LDNS_STATUS_INTERNAL_ERR;
+	}
+
 	descriptor = ldns_rr_descript(ldns_rr_get_type(rr));
 
 	if (*pos + 2 > max) {
