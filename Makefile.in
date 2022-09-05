@@ -270,7 +270,7 @@ doxygen:
 	@if test ! -e doc/header.html ; then \
 		$(INSTALL) -c -m 644 $(srcdir)/doc/header.html doc/ ; \
 	fi ;
-	$(doxygen) $(srcdir)/libdns.doxygen
+	$(doxygen) libdns.doxygen
 
 doc: manpages $(doxygen)
 	@$(INSTALL) -d doc
