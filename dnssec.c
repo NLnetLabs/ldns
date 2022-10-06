@@ -285,6 +285,7 @@ ldns_calc_keytag(const ldns_rr *key)
 	}
 
 	if (ldns_rr_get_type(key) != LDNS_RR_TYPE_DNSKEY &&
+	    ldns_rr_get_type(key) != LDNS_RR_TYPE_CDNSKEY &&
 	    ldns_rr_get_type(key) != LDNS_RR_TYPE_KEY
 	    ) {
 		return 0;
