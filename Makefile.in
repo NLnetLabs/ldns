@@ -137,7 +137,7 @@ all:	setup-builddir lib linktest manpages @P5_DNS_LDNS@ @PYLDNS@ @DRILL@ @EXAMPL
 	$(COMP_LIB) $(LIBSSL_CPPFLAGS) -c $< -o $@
 
 $(LDNS_LOBJS) $(LIBLOBJS) $(DRILL_LOBJS) $(EXAMPLE_LOBJS):
-	$(COMP_LIB) $(LIBSSL_CPPFLAGS) -c $(srcdir)/$(@:.lo=.c) -o $@
+	$(COMP_LIB) $(LIBSSL_CPPFLAGS) -c $(@:.lo=.c) -o $@
 
 setup-builddir:
 	@if test ! -d compat ; then mkdir compat ; fi
