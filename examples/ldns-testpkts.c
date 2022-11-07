@@ -506,12 +506,24 @@ read_entry(FILE* in, const char* name, int *lineno, uint32_t* default_ttl,
 
 			reading_hex_ednsdata = true;
 		} else if(str_keyword(&parse, "HEX_EDNSDATA_END")) {
+			ldns_buffer* edns = NULL;
 			if (!reading_hex_ednsdata) {
 				error("%s line %d: HEX_EDNSDATA_END read but no"
 					"HEX_EDNSDATA_BEGIN keyword seen", name, *lineno);
 			}
 			reading_hex_ednsdata = false;
+
+			edns = data_buffer2wire(hex_ednsdata_buffer);
+
+			/* add read-in EDNS directly to the reply */
+			ldns_pkt_set_edns_data(cur_reply->reply,
+				ldns_rdf_new_frm_data(LDNS_RDF_TYPE_UNKNOWN,
+					ldns_buffer_limit(edns),
+					ldns_buffer_begin(edns)));
+
+			/* store raw EDNS for matching */
 			cur_reply->raw_ednsdata = data_buffer2wire(hex_ednsdata_buffer);
+
 			ldns_buffer_free(hex_ednsdata_buffer);
 			hex_ednsdata_buffer = NULL;
 		} else if(reading_hex_ednsdata) {
@@ -895,21 +907,6 @@ handle_query(uint8_t* inbuf, ssize_t inlen, struct entry* entries, int* count,
 		} else {
 			answer_pkt = ldns_pkt_clone(p->reply);
 			adjust_packet(entry, answer_pkt, query_pkt);
-
-			/* add EDNS from canned reply */
-
-			if (p->raw_ednsdata) {
-				ldns_pkt_set_edns_udp_size(answer_pkt, ldns_pkt_edns_udp_size(query_pkt));
-				ldns_pkt_set_edns_extended_rcode(answer_pkt, ldns_pkt_edns_extended_rcode(query_pkt));
-				ldns_pkt_set_edns_version(answer_pkt, ldns_pkt_edns_version(query_pkt));
-				answer_pkt->_edns_present = true;
-				ldns_pkt_set_edns_z(answer_pkt, ldns_pkt_edns_z(query_pkt));
-				ldns_pkt_set_edns_data(answer_pkt,
-						ldns_rdf_new_frm_data(LDNS_RDF_TYPE_UNKNOWN,
-				                        ldns_buffer_limit(p->raw_ednsdata),
-				                        ldns_buffer_export(p->raw_ednsdata)));
-			}
-
 			if(verbose_out) ldns_pkt_print(verbose_out, answer_pkt);
 			status = ldns_pkt2wire(&outbuf, answer_pkt, &answer_size);
 			verbose(1, "Answer packet size: %u bytes.\n", (unsigned int)answer_size);
