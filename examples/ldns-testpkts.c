@@ -524,6 +524,7 @@ read_entry(FILE* in, const char* name, int *lineno, uint32_t* default_ttl,
 			/* store raw EDNS for matching */
 			cur_reply->raw_ednsdata = data_buffer2wire(hex_ednsdata_buffer);
 
+			ldns_buffer_free(edns);
 			ldns_buffer_free(hex_ednsdata_buffer);
 			hex_ednsdata_buffer = NULL;
 		} else if(reading_hex_ednsdata) {
