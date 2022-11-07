@@ -85,6 +85,7 @@ entry_add_reply(struct entry* entry)
 	pkt->packet_sleep = 0;
 	pkt->reply = ldns_pkt_new();
 	pkt->reply_from_hex = NULL;
+	pkt->raw_ednsdata = NULL;
 	/* link at end */
 	while(*p)
 		p = &((*p)->next);
@@ -324,11 +325,11 @@ data_buffer2wire(ldns_buffer *data_buffer)
 	size_t wirelen;
 	uint8_t *data_wire = (uint8_t *) ldns_buffer_begin(data_buffer);
 	uint8_t *wire = LDNS_XMALLOC(uint8_t, LDNS_MAX_PACKETLEN);
-	
+
 	hexbuf = LDNS_XMALLOC(uint8_t, LDNS_MAX_PACKETLEN);
 	for (data_buf_pos = 0; data_buf_pos < ldns_buffer_position(data_buffer); data_buf_pos++) {
 		c = (int) data_wire[data_buf_pos];
-		
+
 		if (state < 2 && !isascii(c)) {
 			/*verbose("non ascii character found in file: (%d) switching to raw mode\n", c);*/
 			state = 2;
@@ -502,6 +503,7 @@ read_entry(FILE* in, const char* name, int *lineno, uint32_t* default_ttl,
 			ldns_buffer_printf(hex_data_buffer, line);
 		} else if(str_keyword(&parse, "HEX_EDNSDATA_BEGIN")) {
 			hex_ednsdata_buffer = ldns_buffer_new(LDNS_MAX_PACKETLEN);
+
 			reading_hex_ednsdata = true;
 		} else if(str_keyword(&parse, "HEX_EDNSDATA_END")) {
 			if (!reading_hex_ednsdata) {
@@ -893,6 +895,21 @@ handle_query(uint8_t* inbuf, ssize_t inlen, struct entry* entries, int* count,
 		} else {
 			answer_pkt = ldns_pkt_clone(p->reply);
 			adjust_packet(entry, answer_pkt, query_pkt);
+
+			/* add EDNS from canned reply */
+
+			if (p->raw_ednsdata) {
+				ldns_pkt_set_edns_udp_size(answer_pkt, ldns_pkt_edns_udp_size(query_pkt));
+				ldns_pkt_set_edns_extended_rcode(answer_pkt, ldns_pkt_edns_extended_rcode(query_pkt));
+				ldns_pkt_set_edns_version(answer_pkt, ldns_pkt_edns_version(query_pkt));
+				answer_pkt->_edns_present = true;
+				ldns_pkt_set_edns_z(answer_pkt, ldns_pkt_edns_z(query_pkt));
+				ldns_pkt_set_edns_data(answer_pkt,
+						ldns_rdf_new_frm_data(LDNS_RDF_TYPE_UNKNOWN,
+				                        ldns_buffer_limit(p->raw_ednsdata),
+				                        ldns_buffer_export(p->raw_ednsdata)));
+			}
+
 			if(verbose_out) ldns_pkt_print(verbose_out, answer_pkt);
 			status = ldns_pkt2wire(&outbuf, answer_pkt, &answer_size);
 			verbose(1, "Answer packet size: %u bytes.\n", (unsigned int)answer_size);
