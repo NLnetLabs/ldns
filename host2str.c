@@ -2402,11 +2402,11 @@ ldns_edns_padding2buffer_str(ldns_buffer* output, uint8_t* data, size_t len)
 static ldns_status
 ldns_edns_chain2buffer_str(ldns_buffer* output, uint8_t* data, size_t len)
 {
-	ldns_rdf** temp = NULL;
+	ldns_rdf* temp = NULL;
 
 	ldns_buffer_printf(output, "; CHAIN: ");
 
-	if (ldns_str2rdf_dname(temp, (char*) data) != LDNS_STATUS_OK) {
+	if (ldns_str2rdf_dname(&temp, (char*) data) != LDNS_STATUS_OK) {
 		ldns_buffer_printf(output, "malformed chain ");
 		ldns_edns_hex_data2buffer_str(output, data, len);
 
