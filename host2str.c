@@ -2274,11 +2274,16 @@ ldns_edns_subnet2buffer_str(ldns_buffer* output, uint8_t* data, size_t len)
 {
 	uint16_t family;
 	uint8_t source, scope;
+
+	ldns_buffer_printf(output, "; CLIENT SUBNET: ");
+
 	if(len < 4) {
 		ldns_buffer_printf(output, "malformed subnet ");
 		ldns_edns_hex_data2buffer_str(output, data, len);
 		return ldns_buffer_status(output);
 	}
+
+
 	family = ldns_read_uint16(data);
 	source = data[2];
 	scope = data[3];
@@ -2746,6 +2751,7 @@ ldns_pkt2buffer_str_fmt(ldns_buffer *output,
 		ldns_buffer_printf(output, "\n");
 
 		ldns_buffer_printf(output, ";; ADDITIONAL SECTION:\n");
+
 		for (i = 0; i < ldns_pkt_arcount(pkt); i++) {
 			status = ldns_rr2buffer_str_fmt(output, fmt,
 				       ldns_rr_list_rr(
@@ -2788,6 +2794,7 @@ ldns_pkt2buffer_str_fmt(ldns_buffer *output,
 				} else {
 					ldns_buffer_printf(output, ";; Data: ");
 					(void)ldns_rdf2buffer_str(output, ldns_pkt_edns_data(pkt));
+					ldns_buffer_printf(output, "\n");
 				}
 			}
 		}

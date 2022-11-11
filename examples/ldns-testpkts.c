@@ -85,6 +85,7 @@ entry_add_reply(struct entry* entry)
 	pkt->packet_sleep = 0;
 	pkt->reply = ldns_pkt_new();
 	pkt->reply_from_hex = NULL;
+	pkt->raw_ednsdata = NULL;
 	/* link at end */
 	while(*p)
 		p = &((*p)->next);
@@ -324,11 +325,11 @@ data_buffer2wire(ldns_buffer *data_buffer)
 	size_t wirelen;
 	uint8_t *data_wire = (uint8_t *) ldns_buffer_begin(data_buffer);
 	uint8_t *wire = LDNS_XMALLOC(uint8_t, LDNS_MAX_PACKETLEN);
-	
+
 	hexbuf = LDNS_XMALLOC(uint8_t, LDNS_MAX_PACKETLEN);
 	for (data_buf_pos = 0; data_buf_pos < ldns_buffer_position(data_buffer); data_buf_pos++) {
 		c = (int) data_wire[data_buf_pos];
-		
+
 		if (state < 2 && !isascii(c)) {
 			/*verbose("non ascii character found in file: (%d) switching to raw mode\n", c);*/
 			state = 2;
@@ -502,14 +503,28 @@ read_entry(FILE* in, const char* name, int *lineno, uint32_t* default_ttl,
 			ldns_buffer_printf(hex_data_buffer, line);
 		} else if(str_keyword(&parse, "HEX_EDNSDATA_BEGIN")) {
 			hex_ednsdata_buffer = ldns_buffer_new(LDNS_MAX_PACKETLEN);
+
 			reading_hex_ednsdata = true;
 		} else if(str_keyword(&parse, "HEX_EDNSDATA_END")) {
+			ldns_buffer* edns = NULL;
 			if (!reading_hex_ednsdata) {
 				error("%s line %d: HEX_EDNSDATA_END read but no"
 					"HEX_EDNSDATA_BEGIN keyword seen", name, *lineno);
 			}
 			reading_hex_ednsdata = false;
+
+			edns = data_buffer2wire(hex_ednsdata_buffer);
+
+			/* add read-in EDNS directly to the reply */
+			ldns_pkt_set_edns_data(cur_reply->reply,
+				ldns_rdf_new_frm_data(LDNS_RDF_TYPE_UNKNOWN,
+					ldns_buffer_limit(edns),
+					ldns_buffer_begin(edns)));
+
+			/* store raw EDNS for matching */
 			cur_reply->raw_ednsdata = data_buffer2wire(hex_ednsdata_buffer);
+
+			ldns_buffer_free(edns);
 			ldns_buffer_free(hex_ednsdata_buffer);
 			hex_ednsdata_buffer = NULL;
 		} else if(reading_hex_ednsdata) {
