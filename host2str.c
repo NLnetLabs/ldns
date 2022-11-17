@@ -2391,7 +2391,7 @@ ldns_edns_keepalive2buffer_str(ldns_buffer* output, uint8_t* data, size_t len)
 		ldns_buffer_printf(output, "no timeout value (only valid for client option)");
 	} else {
 		timeout = ldns_read_uint16(data);
-		ldns_buffer_printf(output, "timeout value in units of 100ms %u", (int)timeout);
+		ldns_buffer_printf(output, "%.1f", ((float)timeout)/10);
 	}
 	return ldns_buffer_status(output);
 }
