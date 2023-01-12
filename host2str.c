@@ -835,10 +835,6 @@ ldns_rdf2buffer_str_wks(ldns_buffer *output, const ldns_rdf *rdf)
 		ldns_buffer_printf(output, "%u ", protocol_nr);
 	}
 
-#ifdef HAVE_ENDPROTOENT
-	endprotoent();
-#endif
-
 	for (current_service = 0;
 	     current_service < (ldns_rdf_size(rdf)-1)*8; current_service++) {
 		if (ldns_get_bit(&(ldns_rdf_data(rdf)[1]), current_service)) {
@@ -856,6 +852,11 @@ ldns_rdf2buffer_str_wks(ldns_buffer *output, const ldns_rdf *rdf)
 		/* exit from loop before integer overflow */
 		if(current_service == 65535) { break; }
 	}
+
+#ifdef HAVE_ENDPROTOENT
+	endprotoent();
+#endif
+
 	return ldns_buffer_status(output);
 }
 
