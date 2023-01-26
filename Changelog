@@ -1,6 +1,7 @@
 1.8.4	2022-??-??
 	* Fix building documentation in build directory.
 	  Thanks Michael Tokarev
+	* Updated the configure script for split openssl directories.
 
 1.8.3	2022-08-15
 	* bugfix #183: Assertion failure with OPT record without rdata.
