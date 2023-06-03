@@ -764,9 +764,13 @@ find_match(struct entry* entries, ldns_pkt* query_pkt,
 			continue;
 		}
 		if(p->match_qname) {
-			if(!get_owner(query_pkt) || !get_owner(reply) ||
-				ldns_dname_compare(
-				get_owner(query_pkt), get_owner(reply)) != 0) {
+			if (!get_owner(query_pkt) || !get_owner(reply)
+			|| (  !p->copy_query
+			   &&  ldns_dname_compare( get_owner(query_pkt)
+			                         , get_owner(reply)))
+			|| (   p->copy_query
+			   && !ldns_dname_match_wildcard( get_owner(query_pkt)
+			                                , get_owner(reply)))) {
 				verbose(3, "bad qname\n");
 				continue;
 			}
