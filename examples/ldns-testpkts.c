@@ -431,6 +431,10 @@ get_origin(const char* name, int lineno, ldns_rdf** origin, char* parse)
 		ldns_get_errorstr_by_id(status), parse);
 }
 
+extern int listen_addresses;
+extern struct sockaddr_in  ipv4_addr;
+extern struct sockaddr_in6 ipv6_addr;
+
 /* Reads one entry from file. Returns entry or NULL on error. */
 struct entry*
 read_entry(FILE* in, const char* name, int *lineno, uint32_t* default_ttl, 
@@ -454,8 +458,48 @@ read_entry(FILE* in, const char* name, int *lineno, uint32_t* default_ttl,
 		while(isspace((int)*parse))
 			parse++;
 		/* test for keywords */
-		if(isendline(*parse))
+		if(isendline(*parse)) {
+			if (!current
+			&&  strncasecmp(parse, "; listen-addresses: ", 20) == 0) {
+				char *ipv4 = parse + 20, sep;
+				char *ipv6, *eoa;
+				while(isspace((int)*ipv4))
+					ipv4++;
+				ipv6 = ipv4;
+				while (*ipv6 && *ipv6 != ',' && !isspace((int)*ipv6))
+					ipv6++;
+				sep = *ipv6;
+				*ipv6++ = 0;
+				if (inet_pton( AF_INET, ipv4
+				             , (void *)&ipv4_addr.sin_addr) != 1) {
+					fprintf( stderr
+					       , "Error parsing listen-address"
+					         ": \"%s\"\n", ipv4);
+					exit(1);
+				}
+				if (!sep) {
+					fprintf( stderr
+					       , "Error missing ipv6 "
+					         "listen-address\n");
+					exit(1);
+				}
+				while(isspace((int)*ipv6))
+					ipv6++;
+				eoa = ipv6;
+				while (*eoa && *eoa!= ',' && !isspace((int)*eoa))
+					eoa++;
+				*eoa = 0;
+				if (inet_pton( AF_INET6, ipv6
+				             , (void *)&ipv6_addr.sin6_addr) != 1) {
+					fprintf( stderr
+					       , "Error parsing listen-address"
+					         ": \"%s\"\n", ipv6);
+					exit(1);
+				}
+				listen_addresses = 1;
+			}
 			continue; /* skip comment and empty lines */
+		}
 		if(str_keyword(&parse, "ENTRY_BEGIN")) {
 			if(current) {
 				error("%s line %d: previous entry does not ENTRY_END", 

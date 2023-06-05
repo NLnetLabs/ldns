@@ -217,6 +217,23 @@ void verbose(int ATTR_UNUSED(lvl), const char* msg, ...)
 	va_end(args);
 }
 
+/** shared by this file and ldns_testpkts.c */
+int listen_addresses = 0;
+struct sockaddr_in  ipv4_addr;
+struct sockaddr_in6 ipv6_addr;
+
+static int bind_port_addr(int sock, int port, int fam)
+{
+	if (fam == AF_INET6) {
+		ipv6_addr.sin6_port = (in_port_t)htons((uint16_t)port);
+    		return bind(sock, (struct sockaddr *)&ipv6_addr
+		                , (socklen_t)sizeof(ipv6_addr));
+	}
+	ipv4_addr.sin_port = (in_port_t)htons((uint16_t)port);
+	return bind(sock, (struct sockaddr *)&ipv4_addr
+	                , (socklen_t) sizeof(ipv4_addr));
+}
+
 static int bind_port(int sock, int port, int fam)
 {
     struct sockaddr_in addr;
@@ -415,7 +432,7 @@ handle_tcp(int tcp_sock, struct entry* entries, int *count)
 }
 
 /** shared by the service and main routine (forked and threaded) */
-static int udp_sock, tcp_sock;
+static int udp_sock, tcp_sock, udp_sock2, tcp_sock2;
 static struct entry* entries;
 
 /** 
@@ -438,10 +455,20 @@ service(void)
 		FD_ZERO(&eset);
 		FD_SET(udp_sock, &rset);
 		FD_SET(tcp_sock, &rset);
+		if (listen_addresses) {
+			FD_SET(udp_sock2, &rset);
+			FD_SET(tcp_sock2, &rset);
+		}
 #endif
 		maxfd = udp_sock;
 		if(tcp_sock > maxfd)
 			maxfd = tcp_sock;
+		if (listen_addresses) {
+			if(udp_sock2 > maxfd)
+				maxfd = udp_sock2;
+			if(tcp_sock2 > maxfd)
+				maxfd = tcp_sock2;
+		}
 		if(select(maxfd+1, &rset, &wset, &eset, NULL) < 0) {
 			error("select(): %s\n", strerror(errno));
 		}
@@ -450,6 +477,14 @@ service(void)
 		}
 		if(FD_ISSET(tcp_sock, &rset)) {
 			handle_tcp(tcp_sock, entries, &count);
+		}
+		if (listen_addresses) {
+			if(FD_ISSET(udp_sock2, &rset)) {
+				handle_udp(udp_sock2, entries, &count);
+			}
+			if(FD_ISSET(tcp_sock2, &rset)) {
+				handle_tcp(tcp_sock2, entries, &count);
+			}
 		}
 	}
 }
@@ -547,10 +582,26 @@ main(int argc, char **argv)
 
 	if(argc == 0 || argc > 1)
 		usage();
-	
+	memset(&ipv4_addr, 0, sizeof(ipv4_addr));
+	ipv4_addr.sin_family = AF_INET;
+	memset(&ipv6_addr, 0, sizeof(ipv6_addr));
+	ipv6_addr.sin6_family = AF_INET6;
 	datafile = argv[0];
 	log_msg("Reading datafile %s\n", datafile);
 	entries = read_datafile(datafile, 0);
+	if (listen_addresses) {
+		char ipv4_str[17];
+		char ipv6_str[50];
+		
+		log_msg( "Listening on %s and %s\n"
+		       , inet_ntop( AF_INET
+		                  , (void *)&ipv4_addr.sin_addr
+		                  , ipv4_str, sizeof(ipv4_str))
+		       , inet_ntop(AF_INET6
+		                  , (void *)&ipv6_addr.sin6_addr
+		                  , ipv6_str, sizeof(ipv6_str))
+		       );
+	}
 
 #ifdef SIGPIPE
         (void)signal(SIGPIPE, SIG_IGN);
@@ -560,29 +611,43 @@ main(int argc, char **argv)
 		error("WSAStartup failed\n");
 #endif
 	
-	if((udp_sock = socket(fam, SOCK_DGRAM, 0)) < 0) {
-		error("udp socket(): %s\n", strerror(errno));
+	if (listen_addresses) {
+		if(port == 0)
+			port = 53;
+		if((udp_sock = socket(AF_INET, SOCK_DGRAM, 0)) < 0) {
+			error("udp ipv4 socket(): %s\n", strerror(errno));
+		}
+		if((tcp_sock = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
+			error("tcp ipv4 socket(): %s\n", strerror(errno));
+		}
+		if((udp_sock2 = socket(AF_INET6, SOCK_DGRAM, 0)) < 0) {
+			error("udp ipv6 socket(): %s\n", strerror(errno));
+		}
+		if((tcp_sock2 = socket(AF_INET6, SOCK_STREAM, 0)) < 0) {
+			error("tcp ipv6 socket(): %s\n", strerror(errno));
+		}
+	} else {
+		if((udp_sock = socket(fam, SOCK_DGRAM, 0)) < 0) {
+			error("udp socket(): %s\n", strerror(errno));
+		}
+		if((tcp_sock = socket(fam, SOCK_STREAM, 0)) < 0) {
+			error("tcp socket(): %s\n", strerror(errno));
+		}
 	}
-	if((tcp_sock = socket(fam, SOCK_STREAM, 0)) < 0) {
-		error("tcp socket(): %s\n", strerror(errno));
-	}
+
 	c = 1;
 	if(setsockopt(tcp_sock, SOL_SOCKET, SO_REUSEADDR, (void*)&c, (socklen_t) sizeof(int)) < 0) {
 		error("setsockopt(SO_REUSEADDR): %s\n", strerror(errno));
 	}
+	if (listen_addresses) {
+		c = 1;
+		if(setsockopt(tcp_sock2, SOL_SOCKET, SO_REUSEADDR, (void*)&c, (socklen_t) sizeof(int)) < 0) {
+			error("setsockopt(SO_REUSEADDR): %s\n", strerror(errno));
+		}
+	}
 
 	/* bind ip4 */
-	if (port > 0) {
-		if (bind_port(udp_sock, port, fam)) {
-			error("cannot bind(): %s\n", strerror(errno));
-		}
-		if (bind_port(tcp_sock, port, fam)) {
-			error("cannot bind(): %s\n", strerror(errno));
-		}
-		if (listen(tcp_sock, CONN_BACKLOG) < 0) {
-			error("listen(): %s\n", strerror(errno));
-		}
-	} else {
+	if (port == 0) {
 		random_port_success = false;
 		while (!random_port_success) {
 			port = (random() % 64510) + 1025;
@@ -624,6 +689,35 @@ main(int argc, char **argv)
 				}
 			}
 		
+		}
+	} else if (listen_addresses) {
+		if (bind_port_addr(udp_sock, port, AF_INET)) {
+			error("cannot bind() UDP IPv4: %s\n", strerror(errno));
+		}
+		if (bind_port_addr(tcp_sock, port, AF_INET)) {
+			error("cannot bind() TCP IPv4: %s\n", strerror(errno));
+		}
+		if (listen(tcp_sock, CONN_BACKLOG) < 0) {
+			error("listen(): %s\n", strerror(errno));
+		}
+		if (bind_port_addr(udp_sock2, port, AF_INET6)) {
+			error("cannot bind() UDP IPv6: %s\n", strerror(errno));
+		}
+		if (bind_port_addr(tcp_sock2, port, AF_INET6)) {
+			error("cannot bind() TCP IPv6: %s\n", strerror(errno));
+		}
+		if (listen(tcp_sock2, CONN_BACKLOG) < 0) {
+			error("listen(): %s\n", strerror(errno));
+		}
+	} else {		
+		if (bind_port(udp_sock, port, fam)) {
+			error("cannot bind(): %s\n", strerror(errno));
+		}
+		if (bind_port(tcp_sock, port, fam)) {
+			error("cannot bind(): %s\n", strerror(errno));
+		}
+		if (listen(tcp_sock, CONN_BACKLOG) < 0) {
+			error("listen(): %s\n", strerror(errno));
 		}
 	}
 	log_msg("Listening on port %d\n", port);
