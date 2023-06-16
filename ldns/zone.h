@@ -151,6 +151,21 @@ ldns_status ldns_zone_new_frm_fp(ldns_zone **z, FILE *fp, const ldns_rdf *origin
 ldns_status ldns_zone_new_frm_fp_l(ldns_zone **z, FILE *fp, const ldns_rdf *origin, uint32_t ttl, ldns_rr_class c, int *line_nr);
 
 /**
+ * Create a new zone from a file, keep track of the line numbering,
+ * filtering out the specified RR type
+ * \param[out] z the new zone
+ * \param[in] *fp the filepointer to use
+ * \param[in] *origin the zones' origin
+ * \param[in] ttl default ttl to use
+ * \param[in] c default class to use (IN)
+ * \param[out] line_nr used for error msg, to get to the line number
+ * \param[in] exc excluded RR type
+ *
+ * \return ldns_status mesg with an error or LDNS_STATUS_OK
+ */
+ldns_status ldns_zone_new_frm_fp_l_e(ldns_zone **z, FILE *fp, const ldns_rdf *origin, uint32_t ttl, ldns_rr_class c, int *line_nr, ldns_rr_type exc);
+
+/**
  * Frees the allocated memory for the zone, and the rr_list structure in it
  * \param[in] zone the zone to free
  */

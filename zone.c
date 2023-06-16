@@ -198,6 +198,13 @@ ldns_status
 ldns_zone_new_frm_fp_l(ldns_zone **z, FILE *fp, const ldns_rdf *origin,
 	uint32_t default_ttl, ldns_rr_class ATTR_UNUSED(c), int *line_nr)
 {
+	return ldns_zone_new_frm_fp_l_e(z, fp, origin, default_ttl, c, line_nr, 0);
+}
+
+ldns_status
+ldns_zone_new_frm_fp_l_e(ldns_zone **z, FILE *fp, const ldns_rdf *origin,
+	uint32_t default_ttl, ldns_rr_class ATTR_UNUSED(c), int *line_nr, ldns_rr_type exc)
+{
 	ldns_zone *newzone;
 	ldns_rr *rr, *prev_rr = NULL;
 	uint32_t my_ttl;
@@ -299,6 +306,11 @@ ldns_zone_new_frm_fp_l(ldns_zone **z, FILE *fp, const ldns_rdf *origin,
 				if (!my_origin) {
 					my_origin = ldns_rdf_clone(ldns_rr_owner(rr));
 				}
+				continue;
+			}
+			/* skip excluded RR type */
+			else if (ldns_rr_get_type(rr) == exc) {
+				ldns_rr_free(rr);
 				continue;
 			}
 			
