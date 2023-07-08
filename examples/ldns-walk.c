@@ -570,7 +570,7 @@ main(int argc, char *argv[])
 		if (!rrlist) {
 			fflush(stdout);
 			fprintf(stderr, "Zone does not seem to be DNSSEC secured,"
-			                "or it uses NSEC3.\n");
+			                " or it uses NSEC3.\n");
 			fflush(stderr);
 			goto exit;
 		}
