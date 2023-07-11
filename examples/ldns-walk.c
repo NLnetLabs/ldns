@@ -324,7 +324,7 @@ main(int argc, char *argv[])
 	/* create a new resolver from /etc/resolv.conf */
 	if(!serv) {
 		if (ldns_resolver_new_frm_file(&res, NULL) != LDNS_STATUS_OK) {
-			fprintf(stderr, "%s", "Could not create resolver obj");
+			fprintf(stderr, "%s\n", "Could not create resolver obj.");
 			result = EXIT_FAILURE;
 			goto exit;
 		}
@@ -345,7 +345,7 @@ main(int argc, char *argv[])
 			status = ldns_resolver_new_frm_file(&cmdline_res, NULL);
 			
 			if (status != LDNS_STATUS_OK) {
-				fprintf(stderr, "%s", "@server ip could not be converted");
+				fprintf(stderr, "%s\n", "@server ip could not be converted");
 				result = EXIT_FAILURE;
 				goto exit;
 			}
@@ -359,7 +359,7 @@ main(int argc, char *argv[])
 			ldns_rdf_deep_free(cmdline_dname);
                         ldns_resolver_deep_free(cmdline_res);
 			if (!cmdline_rr_list) {
-				fprintf(stderr, "%s %s", "could not find any address for the name: ", serv);
+				fprintf(stderr, "%s %s\n", "Could not find any address for the name:", serv);
 				result = EXIT_FAILURE;
 				goto exit;
 			} else {
@@ -367,7 +367,7 @@ main(int argc, char *argv[])
 						res, 
 						cmdline_rr_list
 					) != LDNS_STATUS_OK) {
-					fprintf(stderr, "%s", "pushing nameserver");
+					fprintf(stderr, "%s\n", "pushing nameserver");
 					result = EXIT_FAILURE;
 					ldns_rr_list_deep_free(cmdline_rr_list);
 					goto exit;
@@ -376,7 +376,7 @@ main(int argc, char *argv[])
 			}
 		} else {
 			if (ldns_resolver_push_nameserver(res, serv_rdf) != LDNS_STATUS_OK) {
-				fprintf(stderr, "%s", "pushing nameserver");
+				fprintf(stderr, "%s\n", "pushing nameserver");
 				result = EXIT_FAILURE;
 				goto exit;
 			} else {
