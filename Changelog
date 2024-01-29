@@ -2,6 +2,12 @@
 	* Fix building documentation in build directory.
 	  Thanks Michael Tokarev
 	* Updated the configure script for split openssl directories.
+	* Fix for windows compile; asctime_r compat, search for inet_ntop
+	  in ws2_32, avoid double decl of inet_ntop, check for symlink call,
+	  include config.h in edns.c, have socket compare use correct
+	  signedness, add -u repo option to makewin.sh, fix quoting in
+	  makewin.sh and check return value of bind and connect in net.c
+	  for failure instead of a socket type.
 
 1.8.3	2022-08-15
 	* bugfix #183: Assertion failure with OPT record without rdata.

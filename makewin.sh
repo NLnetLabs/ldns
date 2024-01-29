@@ -17,6 +17,7 @@ cross_flag_nonstatic=""
 RC="no"
 SNAPSHOT="no"
 CHECKOUT=""
+GITREPO=""
 # the destination is a zipfile in the start directory ldns-a.b.c.zip
 # the start directory is a git repository, and it is copied to build from.
 
@@ -49,6 +50,8 @@ while [ "$1" ]; do
 		echo "	-s		snapshot, current date appended to version"
 		echo "	-rc <nr>	release candidate, the number is added to version"
 		echo "			ldns-<version>rc<nr>."
+		echo "  -u git_url	Retrieve the source from the specified repository url."
+		echo "			Detected from the working copy if not specified."
 		echo "	-c <tag/br>	Checkout this tag or branch, (defaults to current"
 		echo "			branch)."
 		echo "	-wssl <file>	Pass openssl.tar.gz file, use absolute path."
@@ -64,6 +67,10 @@ while [ "$1" ]; do
 		;;
 	"-rc")
 		RC="$2"
+		shift
+		;;
+	"-u")
+		GITREPO="$2"
 		shift
 		;;
 	"-wssl")
@@ -85,6 +92,10 @@ then
                 CHECKOUT=$( (git status | head -n 1 | awk '{print$3}') || echo develop)
         fi
 fi
+if [ -z "$GITREPO" ]
+then
+	GITREPO=`git config remote.origin.url`
+fi
 
 # this script creates a temp directory $cdir.
 # this directory contains subdirectories:
@@ -99,11 +110,11 @@ fi
 # sslinstall-nonstatic/ : install of nonstatic openssl compile
 
 info "exporting source into $cdir/ldns"
-git clone git://git.nlnetlabs.nl/ldns/ ldns || error_cleanup "git command failed"
+git clone "$GITREPO" ldns || error_cleanup "git command failed"
 (cd ldns; git checkout "$CHECKOUT") || error_cleanup "Could not checkout $CHECKOUT"
 #svn export . $cdir/ldns
 info "exporting source into $cdir/ldns-nonstatic"
-git clone git://git.nlnetlabs.nl/ldns/ ldns-nonstatic || error_cleanup "git command failed"
+git clone "$GITREPO" ldns-nonstatic || error_cleanup "git command failed"
 (cd ldns-nonstatic; git checkout "$CHECKOUT") || error_cleanup "Could not checkout $CHECKOUT"
 #svn export . $cdir/ldns-nonstatic
 
@@ -139,7 +150,7 @@ else
 	sslflags="no-shared no-asm -DOPENSSL_NO_CAPIENG mingw"
 fi
 info "winssl: Configure $sslflags"
-CC="${warch}-w64-mingw32-gcc" AR="${warch}-w64-mingw32-ar" RANLIB="${warch}-w64-mingw32-ranlib" WINDRES="${warch}-w64-mingw32-windres" ./Configure --prefix="$sslinstall" "$sslflags" || error_cleanup "OpenSSL Configure failed"
+CC="${warch}-w64-mingw32-gcc" AR="${warch}-w64-mingw32-ar" RANLIB="${warch}-w64-mingw32-ranlib" WINDRES="${warch}-w64-mingw32-windres" ./Configure --prefix="$sslinstall" $sslflags || error_cleanup "OpenSSL Configure failed"
 info "winssl: make"
 make || error_cleanup "make failed for $WINSSL"
 info "winssl: make install_sw"
@@ -157,7 +168,7 @@ libtoolize -ci
 autoreconf -fi
 ldns_flag="--with-examples --with-drill"
 info "ldns: Configure $cross_flag $ldns_flag"
-$configure "$cross_flag" "$ldns_flag" || error_cleanup "ldns configure failed"
+$configure $cross_flag $ldns_flag || error_cleanup "ldns configure failed"
 info "ldns: make"
 make || error_cleanup "ldns make failed"
 # do not strip debug symbols, could be useful for stack traces
@@ -196,7 +207,7 @@ libtoolize -ci
 autoreconf -fi
 ldns_flag_nonstatic="--with-examples --with-drill"
 info "ldnsnonstatic: Configure $cross_flag_nonstatic $ldns_flag_nonstatic"
-$configure "$cross_flag_nonstatic" "$ldns_flag_nonstatic" || error_cleanup "ldns configure failed"
+$configure $cross_flag_nonstatic $ldns_flag_nonstatic || error_cleanup "ldns configure failed"
 info "ldnsnonstatic: make"
 make || error_cleanup "ldns make failed"
 # do not strip debug symbols, could be useful for stack traces

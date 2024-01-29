@@ -814,6 +814,7 @@ compat/ctime_r.lo compat/ctime_r.o: $(srcdir)/compat/ctime_r.c ldns/config.h
 compat/fake-rfc2553.lo compat/fake-rfc2553.o: $(srcdir)/compat/fake-rfc2553.c ldns/config.h ldns/common.h \
  $(srcdir)/compat/fake-rfc2553.h
 compat/gmtime_r.lo compat/gmtime_r.o: $(srcdir)/compat/gmtime_r.c ldns/config.h
+compat/asctime_r.lo compat/asctime_r.o: $(srcdir)/compat/asctime_r.c ldns/config.h
 compat/inet_aton.lo compat/inet_aton.o: $(srcdir)/compat/inet_aton.c ldns/config.h
 compat/inet_ntop.lo compat/inet_ntop.o: $(srcdir)/compat/inet_ntop.c ldns/config.h
 compat/inet_pton.lo compat/inet_pton.o: $(srcdir)/compat/inet_pton.c ldns/config.h

@@ -137,20 +137,21 @@ AC_CHECK_FUNC([socket],
 # modern OS X provides inet_ntop in -lc.
 # modern Solaris provides inet_ntop in -lsocket -lnsl.
 # older Solaris provides inet_ntop in -lresolv.
+# Windows provides inet_ntop in -lws2_32.
 AC_CHECK_FUNC([inet_ntop],
     [],
-    [AC_SEARCH_LIBS([inet_ntop], [socket c nsl resolv], [ac_cv_func_inet_ntop=yes])
+    [AC_SEARCH_LIBS([inet_ntop], [socket c nsl resolv ws2_32], [ac_cv_func_inet_ntop=yes])
 ])
 
 # modern Linux provides inet_pton in -lsocket.
 # modern OS X provides inet_pton in -lc.
 # modern Solaris provides inet_pton in -lsocket -lnsl.
 # older Solaris provides inet_pton in -lresolv.
+# Windows provides inet_pton in -lws2_32.
 AC_CHECK_FUNC([inet_pton],
     [],
-    [AC_SEARCH_LIBS([inet_pton], [socket c nsl resolv], [ac_cv_func_inet_pton=yes])
+    [AC_SEARCH_LIBS([inet_pton], [socket c nsl resolv ws2_32], [ac_cv_func_inet_pton=yes])
 ])
-
 
 AC_ARG_WITH(drill, AC_HELP_STRING([--with-drill],
  [Also build drill.]),
@@ -736,7 +737,12 @@ case "$enable_rrtype_svcb_https" in
 		;;
 esac
 
-
+if echo "$tmp_LIBS" | grep "ws2_32" >/dev/null; then
+	if echo "$LIBSSL_LIBS" | grep "ws2_32" >/dev/null; then
+		# only need it once.
+		LIBSSL_LIBS=`echo "$LIBSSL_LIBS" | sed -e 's/ -lws2_32//' -e 's/^-lws2_32//'`
+	fi
+fi
 
 AC_SUBST(LIBSSL_CPPFLAGS)
 AC_SUBST(LIBSSL_LDFLAGS)
@@ -900,6 +906,29 @@ AC_CHECK_TYPE(in_port_t, [], [AC_DEFINE([in_port_t], [uint16_t], [in_port_t])], 
 #endif])
 ACX_CHECK_SS_FAMILY
 
+AC_CHECK_DECLS([inet_pton,inet_ntop], [], [], [
+AC_INCLUDES_DEFAULT
+#ifdef HAVE_NETINET_IN_H
+#include <netinet/in.h>
+#endif
+
+#ifdef HAVE_NETINET_TCP_H
+#include <netinet/tcp.h>
+#endif
+
+#ifdef HAVE_ARPA_INET_H
+#include <arpa/inet.h>
+#endif
+
+#ifdef HAVE_WINSOCK2_H
+#include <winsock2.h>
+#endif
+
+#ifdef HAVE_WS2TCPIP_H
+#include <ws2tcpip.h>
+#endif
+])
+
 # AC_FUNC_MALLOC suffers false failures and causes Asan failures.
 # AC_FUNC_MALLOC
 # AC_FUNC_REALLOC
@@ -909,6 +938,7 @@ AC_REPLACE_FUNCS(b64_ntop)
 AC_REPLACE_FUNCS(calloc)
 AC_REPLACE_FUNCS(timegm)
 AC_REPLACE_FUNCS(gmtime_r)
+AC_REPLACE_FUNCS(asctime_r)
 AC_REPLACE_FUNCS(ctime_r)
 AC_REPLACE_FUNCS(localtime_r)
 AC_REPLACE_FUNCS(isblank)
@@ -930,7 +960,7 @@ AC_COMPILE_IFELSE([AC_LANG_PROGRAM([
 	AC_DEFINE([HAVE_FORK_AVAILABLE], 1, [if fork is available for compile])
 ], [	AC_MSG_RESULT(no)
 ])
-AC_CHECK_FUNCS([endprotoent endservent sleep random fcntl strtoul bzero memset b32_ntop b32_pton])
+AC_CHECK_FUNCS([endprotoent endservent sleep random fcntl strtoul bzero memset b32_ntop b32_pton symlink])
 if test "x$HAVE_B32_NTOP" = "xyes"; then
 	AC_SUBST(ldns_build_config_have_b32_ntop, 1)
 else
@@ -1114,6 +1144,9 @@ time_t timegm (struct tm *tm);
 #ifndef HAVE_GMTIME_R
 struct tm *gmtime_r(const time_t *timep, struct tm *result);
 #endif
+#ifndef HAVE_ASCTIME_R
+char *asctime_r(const struct tm *tm, char *buf);
+#endif
 #ifndef HAVE_LOCALTIME_R
 struct tm *localtime_r(const time_t *timep, struct tm *result);
 #endif
@@ -1128,10 +1161,10 @@ int isascii(int c);
 int snprintf (char *str, size_t count, const char *fmt, ...);
 int vsnprintf (char *str, size_t count, const char *fmt, va_list arg);
 #endif /* HAVE_SNPRINTF */
-#ifndef HAVE_INET_PTON
+#if !defined(HAVE_INET_PTON) && !HAVE_DECL_INET_PTON
 int inet_pton(int af, const char* src, void* dst);
 #endif /* HAVE_INET_PTON */
-#ifndef HAVE_INET_NTOP
+#if !defined(HAVE_INET_NTOP) && !HAVE_DECL_INET_NTOP
 const char *inet_ntop(int af, const void *src, char *dst, size_t size);
 #endif
 #ifndef HAVE_INET_ATON
@@ -1145,7 +1178,7 @@ size_t strlcpy(char *dst, const char *src, size_t siz);
 #endif
 
 #ifdef USE_WINSOCK
-#define SOCK_INVALID INVALID_SOCKET
+#define SOCK_INVALID ((INT_PTR)INVALID_SOCKET)
 #define close_socket(_s) do { if (_s != SOCK_INVALID) {closesocket(_s); _s = -1;} } while(0)
 #else
 #define SOCK_INVALID -1
