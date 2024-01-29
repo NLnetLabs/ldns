@@ -85,6 +85,7 @@ LINTFLAGS       += -D"__BEGIN_DECLS=" -D"__ssize_t=ssize_t" -D"__intptr_t=intptr
 # FreeBSD 9
 LINTFLAGS       += -D"_RuneLocale=int"
 DEPFLAG		= @DEPFLAG@
+EXEEXT=@EXEEXT@
 
 INSTALL		= $(srcdir)/install-sh
 
@@ -177,16 +178,16 @@ install-drill: drill/drill drill/drill.1
 	$(INSTALL) -m 755 -d $(DESTDIR)$(bindir)
 	$(INSTALL) -m 755 -d $(DESTDIR)$(mandir)
 	$(INSTALL) -m 755 -d $(DESTDIR)$(mandir)/man1
-	$(LIBTOOL) --mode=install cp drill/drill $(DESTDIR)$(bindir)
+	$(LIBTOOL) --mode=install cp drill/drill$(EXEEXT) $(DESTDIR)$(bindir)
 	$(INSTALL) -m 644 drill/drill.1 $(DESTDIR)$(mandir)/man1/drill.1
 
 uninstall-drill:
-	rm -f $(DESTDIR)$(bindir)/drill $(DESTDIR)$(mandir)/man1/drill.1
+	rm -f $(DESTDIR)$(bindir)/drill$(EXEEXT) $(DESTDIR)$(mandir)/man1/drill.1
 	test ! -d $(DESTDIR)$(mandir) || rmdir -p $(DESTDIR)$(mandir)/man1 || :;
 	test ! -d $(DESTDIR)$(bindir) || rmdir -p $(DESTDIR)$(bindir) || : ;
 
 clean-drill:
-	$(LIBTOOL) --mode clean rm -f $(DRILL_LOBJS) drill/drill drill/drill.1
+	$(LIBTOOL) --mode clean rm -f $(DRILL_LOBJS) drill/drill$(EXEEXT) drill/drill.1
 
 examples: setup-builddir no-examples-config-h $(LIB) $(EXAMPLE_PROGS) $(TESTNS) $(LDNS_DPA) $(LDNS_DANE) $(EX_SSL_PROGS) examples/ldns-dane.1 examples/ldns-verify-zone.1
 no-examples-config-h:
@@ -229,7 +230,7 @@ install-examples: $(EXAMPLE_PROGS) $(TESTNS) $(LDNS_DPA) $(LDNS_DANE) $(EX_SSL_P
 	$(INSTALL) -m 755 -d $(DESTDIR)$(mandir)
 	$(INSTALL) -m 755 -d $(DESTDIR)$(mandir)/man1
 	for p in $(EXAMPLE_PROGS) $(TESTNS) $(LDNS_DPA) $(LDNS_DANE) $(EX_SSL_PROGS) ; do \
-		$(LIBTOOL) --mode=install cp $$p $(DESTDIR)$(bindir) ; \
+		$(LIBTOOL) --mode=install cp $$p$(EXEEXT) $(DESTDIR)$(bindir) ; \
 		if test -f $$p.1 ; \
 		then $(INSTALL) -m 644 $$p.1 $(DESTDIR)$(mandir)/man1 ; \
 		else $(INSTALL) -m 644 $(srcdir)/$$p.1 $(DESTDIR)$(mandir)/man1 ; \
@@ -238,13 +239,15 @@ install-examples: $(EXAMPLE_PROGS) $(TESTNS) $(LDNS_DPA) $(LDNS_DANE) $(EX_SSL_P
 
 uninstall-examples:
 	for p in $(EX_PROGS_BASENM) ; do \
-		rm -f $(DESTDIR)$(bindir)/$$p $(DESTDIR)$(mandir)/man1/$$p.1 ;\
+		rm -f $(DESTDIR)$(bindir)/$$p$(EXEEXT) $(DESTDIR)$(mandir)/man1/$$p.1 ;\
 	done
 	test ! -d $(DESTDIR)$(mandir) || rmdir -p $(DESTDIR)$(mandir)/man1 || :;
 	test ! -d $(DESTDIR)$(bindir) || rmdir -p $(DESTDIR)$(bindir) || : ;
 
 clean-examples:
-	$(LIBTOOL) --mode clean rm -f $(EXAMPLE_PROGS)
+	for p in $(EX_PROGS_BASENM) ; do \
+		$(LIBTOOL) --mode clean rm -f $$p$(EXEEXT) ;\
+	done
 	$(LIBTOOL) --mode clean rm -f $(TESTNS) $(LDNS_DPA) $(LDNS_DANE) $(EX_SSL_PROGS)
 	$(LIBTOOL) --mode clean rm -f $(EXAMPLE_LOBJS)
 	$(LIBTOOL) --mode clean rm -f examples/ldns-dane.1 examples/ldns-verify-zone.1
