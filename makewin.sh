@@ -50,7 +50,7 @@ while [ "$1" ]; do
 		echo "	-s		snapshot, current date appended to version"
 		echo "	-rc <nr>	release candidate, the number is added to version"
 		echo "			ldns-<version>rc<nr>."
-		echo "  -u git_url	Retrieve the source from the specified repository url."
+		echo "	-u git_url	Retrieve the source from the specified repository url."
 		echo "			Detected from the working copy if not specified."
 		echo "	-c <tag/br>	Checkout this tag or branch, (defaults to current"
 		echo "			branch)."
@@ -150,6 +150,9 @@ else
 	sslflags="no-shared no-asm -DOPENSSL_NO_CAPIENG mingw"
 fi
 info "winssl: Configure $sslflags"
+if test -f "/usr/${warch}-w64-mingw32/sys-root/mingw/bin/libssp-0.dll" ; then
+	export __CNF_LDLIBS="-l:libssp.a"
+fi
 CC="${warch}-w64-mingw32-gcc" AR="${warch}-w64-mingw32-ar" RANLIB="${warch}-w64-mingw32-ranlib" WINDRES="${warch}-w64-mingw32-windres" ./Configure --prefix="$sslinstall" $sslflags || error_cleanup "OpenSSL Configure failed"
 info "winssl: make"
 make || error_cleanup "make failed for $WINSSL"
@@ -167,8 +170,13 @@ if test ! -f install-sh -a -f ../../install-sh; then cp ../../install-sh . ; fi
 libtoolize -ci
 autoreconf -fi
 ldns_flag="--with-examples --with-drill"
-info "ldns: Configure $cross_flag $ldns_flag"
-$configure $cross_flag $ldns_flag || error_cleanup "ldns configure failed"
+if test -f "/usr/${warch}-w64-mingw32/sys-root/mingw/bin/libssp-0.dll" ; then
+	info "ldns: Configure $cross_flag $ldns_flag LDFLAGS=\"-fstack-protector\" LIBS=\"-l:libssp.a\""
+	$configure $cross_flag $ldns_flag LDFLAGS="-fstack-protector" LIBS="-l:libssp.a" || error_cleanup "ldns configure failed"
+else
+	info "ldns: Configure $cross_flag $ldns_flag"
+	$configure $cross_flag $ldns_flag || error_cleanup "ldns configure failed"
+fi
 info "ldns: make"
 make || error_cleanup "ldns make failed"
 # do not strip debug symbols, could be useful for stack traces
@@ -189,7 +197,7 @@ else
 	sslflags_nonstatic="shared no-asm -DOPENSSL_NO_CAPIENG mingw"
 fi
 info "winsslnonstatic: Configure $sslflags_nonstatic"
-CC="${warch}-w64-mingw32-gcc" AR="${warch}-w64-mingw32-ar" RANLIB="${warch}-w64-mingw32-ranlib" WINDRES="${warch}-w64-mingw32-windres" ./Configure --prefix="$sslinstallnonstatic" "$sslflags_nonstatic" || error_cleanup "OpenSSL Configure failed"
+CC="${warch}-w64-mingw32-gcc" AR="${warch}-w64-mingw32-ar" RANLIB="${warch}-w64-mingw32-ranlib" WINDRES="${warch}-w64-mingw32-windres" ./Configure --prefix="$sslinstallnonstatic" $sslflags_nonstatic || error_cleanup "OpenSSL Configure failed"
 info "winsslnonstatic: make"
 make || error_cleanup "make failed for $WINSSL"
 info "winsslnonstatic: make install_sw"
@@ -206,8 +214,13 @@ if test ! -f install-sh -a -f ../../install-sh; then cp ../../install-sh . ; fi
 libtoolize -ci
 autoreconf -fi
 ldns_flag_nonstatic="--with-examples --with-drill"
-info "ldnsnonstatic: Configure $cross_flag_nonstatic $ldns_flag_nonstatic"
-$configure $cross_flag_nonstatic $ldns_flag_nonstatic || error_cleanup "ldns configure failed"
+if test -f "/usr/${warch}-w64-mingw32/sys-root/mingw/bin/libssp-0.dll" ; then
+	info "ldnsnonstatic: Configure $cross_flag_nonstatic $ldns_flag_nonstatic LDFLAGS=\"-fstack-protector\" LIBS=\"-l:libssp.a\""
+	$configure $cross_flag_nonstatic $ldns_flag_nonstatic LDFLAGS="-fstack-protector" LIBS="-l:libssp.a" || error_cleanup "ldns configure failed"
+else
+	info "ldnsnonstatic: Configure $cross_flag_nonstatic $ldns_flag_nonstatic"
+	$configure $cross_flag_nonstatic $ldns_flag_nonstatic || error_cleanup "ldns configure failed"
+fi
 info "ldnsnonstatic: make"
 make || error_cleanup "ldns make failed"
 # do not strip debug symbols, could be useful for stack traces

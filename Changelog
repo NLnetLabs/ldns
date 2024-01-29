@@ -8,6 +8,7 @@
 	  signedness, add -u repo option to makewin.sh, fix quoting in
 	  makewin.sh and check return value of bind and connect in net.c
 	  for failure instead of a socket type. And fix to install .exe files.
+	  Fix to compile with OpenSSL 3.2. Update acx_nlnetlabs.m4 to 48.
 
 1.8.3	2022-08-15
 	* bugfix #183: Assertion failure with OPT record without rdata.
