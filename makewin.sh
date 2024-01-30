@@ -248,10 +248,12 @@ cp ../ldns/README .
 cp ../ldns/Changelog .
 info "copy static exe"
 for x in "$installplace"/bin/* ; do
-	cp "$x" "$(basename "$x").exe"
+	cp "$x" .
 done
 # but the shell script stays a script file
-mv ldns-config.exe ldns-config
+if test -f ldns-config.exe; then
+	mv ldns-config.exe ldns-config
+fi
 info "copy include"
 mkdir include
 mkdir include/ldns
