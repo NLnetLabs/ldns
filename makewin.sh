@@ -215,8 +215,8 @@ libtoolize -ci
 autoreconf -fi
 ldns_flag_nonstatic="--with-examples --with-drill"
 if test -f "/usr/${warch}-w64-mingw32/sys-root/mingw/bin/libssp-0.dll" ; then
-	info "ldnsnonstatic: Configure $cross_flag_nonstatic $ldns_flag_nonstatic LDFLAGS=\"-fstack-protector\" LIBS=\"-l:libssp.a\""
-	$configure $cross_flag_nonstatic $ldns_flag_nonstatic LDFLAGS="-fstack-protector" LIBS="-l:libssp.a" || error_cleanup "ldns configure failed"
+	info "ldnsnonstatic: Configure $cross_flag_nonstatic $ldns_flag_nonstatic LDFLAGS=\"-fstack-protector\" LIBS=\"-lssp\""
+	$configure $cross_flag_nonstatic $ldns_flag_nonstatic LDFLAGS="-fstack-protector" LIBS="-lssp" || error_cleanup "ldns configure failed"
 else
 	info "ldnsnonstatic: Configure $cross_flag_nonstatic $ldns_flag_nonstatic"
 	$configure $cross_flag_nonstatic $ldns_flag_nonstatic || error_cleanup "ldns configure failed"
@@ -240,9 +240,20 @@ installplacenonstatic="$ldnsinstallnonstatic/usr/$warch-w64-mingw32/sys-root/min
 cp "$installplace"/lib/libldns.a .
 cp "$installplacenonstatic"/lib/libldns.dll.a .
 cp "$installplacenonstatic"/bin/*.dll .
-cp "$sslinstallnonstatic"/lib/*.dll.a .
+if test -d "$sslinstallnonstatic"/lib64; then
+	cp "$sslinstallnonstatic"/lib64/*.dll.a .
+else
+	cp "$sslinstallnonstatic"/lib/*.dll.a .
+fi
 cp "$sslinstallnonstatic"/bin/*.dll .
-cp "$sslinstallnonstatic"/lib/engines-*/*.dll .
+if test -d "$sslinstallnonstatic"/lib64; then
+	cp "$sslinstallnonstatic"/lib64/engines-*/*.dll .
+else
+	cp "$sslinstallnonstatic"/lib/engines-*/*.dll .
+fi
+if test -f "/usr/${warch}-w64-mingw32/sys-root/mingw/bin/libssp-0.dll" ; then
+	cp "/usr/${warch}-w64-mingw32/sys-root/mingw/bin/libssp-0.dll" .
+fi
 cp ../ldns/LICENSE .
 cp ../ldns/README .
 cp ../ldns/Changelog .
@@ -270,13 +281,15 @@ for x in man1/*.1; do groff -man -Tascii -Z "$x" | grotty -cbu > cat1/"$(basenam
 info "create cat3"
 mkdir cat3
 for x in man3/*.3; do groff -man -Tascii -Z "$x" | grotty -cbu > cat3/"$(basename "$x" .3).txt"; done
+add_files=""
+if test -f ldns-config; then add_files="$add_files ldns-config"; fi
 rm -f "../../$file"
 info "$file contents"
 # show contents of directory we are zipping up.
 du -s ./*
 # zip it
 info "zip $file"
-zip -r ../../"$file" LICENSE README libldns.a *.dll *.dll.a Changelog *.exe include man1 man3 cat1 cat3
+zip -r ../../"$file" LICENSE README libldns.a *.dll *.dll.a Changelog *.exe $add_files include man1 man3 cat1 cat3
 info "Testing $file"
 (cd ../.. ; zip -T "$file" ) || error_cleanup "errors in zipfile $file"
 cd ..
