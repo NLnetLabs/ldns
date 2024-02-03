@@ -57,17 +57,24 @@ wait_ldns_testns_up $TMPF1
 PORT=`cat $TMPF1 | grep Listening | cut -d " " -f 4`
 
 echo "../../drill/drill -p $PORT -k test2-key -S @localhost  ok.ok.test.jelte.nlnetlabs.nl"
-../../drill/drill -p $PORT -k test2-key -S @localhost  ok.ok.test.jelte.nlnetlabs.nl> $TMPF2
 
-if [[ $? -ne 0 ]]; then 
-	cat $TMPF2
-	if grep "No trusted keys found in tree: first error was: DNSSEC signature has expired" $TMPF2; then
-		echo "yes it is expired"
-	else
-		echo "Error in chase"
-		RESULT=1
-	fi
+if ../../drill/drill -h | grep \\s\\-S\\s >/dev/null; then
+    ../../drill/drill -p $PORT -k test2-key -S @localhost  ok.ok.test.jelte.nlnetlabs.nl> $TMPF2
+
+    if [[ $? -ne 0 ]]; then 
+        cat $TMPF2
+        if grep "No trusted keys found in tree: first error was: DNSSEC signature has expired" $TMPF2; then
+            echo "yes it is expired"
+        else
+            echo "Error in chase"
+            RESULT=1
+        fi
+    fi
+
+else
+    echo "SKIP (drill lacks -S)"
 fi
+
 ../../drill/drill -p $PORT -t CH TXT server.stop. @localhost
 
 # make sure testns server is stopped
