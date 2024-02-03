@@ -168,7 +168,7 @@ ldns_edns_free(ldns_edns_option *edns)
 }
 
 ldns_edns_option_list*
-ldns_edns_option_list_new()
+ldns_edns_option_list_new(void)
 {
 	ldns_edns_option_list *option_list = LDNS_MALLOC(ldns_edns_option_list);
 	if(!option_list) {
