@@ -27,6 +27,7 @@ pyldnsx_inst	= @PYLDNSXINST@
 pyldnsx_uninst	= @PYLDNSXUNINST@
 libtool		= @libtool@
 CONFIG_FILES	= @CONFIG_FILES@
+top_builddir	= @top_builddir@
 
 LDNS_TRUST_ANCHOR_FILE = @LDNS_TRUST_ANCHOR_FILE@
 DEFAULT_CAFILE = @DEFAULT_CAFILE@
@@ -169,7 +170,7 @@ no-drill-config-h:
 	fi
 
 drill/drill: $(DRILL_LOBJS) $(LIB) $(LIBLOBJS)
-	$(LINK_EXE) $(DRILL_LOBJS) $(LIBLOBJS) $(LIB) $(LIBSSL_LIBS) $(LIBS) -o drill/drill
+	$(LINK_EXE) $(DRILL_LOBJS) $(LIBLOBJS) $(LIB) $(LIBSSL_LIBS) $(LIBS) -o drill/drill $(top_builddir)/libldns.la
 
 drill/drill.1: $(srcdir)/drill/drill.1.in
 	$(edit) $(srcdir)/drill/drill.1.in > drill/drill.1
@@ -201,23 +202,23 @@ no-examples-config-h:
 
 # Need LIBSSL_LIBS
 $(EXAMPLE_PROGS):
-	$(LINK_EXE) $@.lo $(LIBLOBJS) $(LIB) $(LIBSSL_LIBS) $(LIBS) -o $@
+	$(LINK_EXE) $@.lo $(LIBLOBJS) $(LIB) $(LIBSSL_LIBS) $(LIBS) -o $@ $(top_builddir)/libldns.la
 
 # Need LIBSSL_LIBS
 $(TESTNS):
-	$(LINK_EXE) $(TESTNS_LOBJS) $(LIBLOBJS) $(LIB) $(LIBSSL_LIBS) $(LIBS) -o $(TESTNS)
+	$(LINK_EXE) $(TESTNS_LOBJS) $(LIBLOBJS) $(LIB) $(LIBSSL_LIBS) $(LIBS) -o $(TESTNS) $(top_builddir)/libldns.la
 
 # Need LIBSSL_LIBS
 $(LDNS_DPA):
 	$(LINK_EXE) $(LDNS_DPA_LOBJS) $(LIBLOBJS) $(LIB) $(LIBPCAP_LIBS) $(LIBSSL_LIBS) $(LIBS) \
-		 -o $(LDNS_DPA)
+		 -o $(LDNS_DPA) $(top_builddir)/libldns.la
 
 $(LDNS_DANE):
 	$(LINK_EXE) $(LDNS_DANE_LOBJS) $(LIBLOBJS) $(LIB) $(LIBSSL_SSL_LIBS) $(LIBS) \
-		 -o $(LDNS_DANE)
+		 -o $(LDNS_DANE) $(top_builddir)/libldns.la
 
 $(EX_SSL_PROGS):
-	$(LINK_EXE) $@.lo $(LIBLOBJS) $(LIB) $(LIBSSL_LIBS) $(LIBS) -o $@
+	$(LINK_EXE) $@.lo $(LIBLOBJS) $(LIB) $(LIBSSL_LIBS) $(LIBS) -o $@ $(top_builddir)/libldns.la
 
 examples/ldns-dane.1: $(srcdir)/examples/ldns-dane.1.in
 	$(edit) $(srcdir)/examples/ldns-dane.1.in > examples/ldns-dane.1
@@ -254,7 +255,7 @@ clean-examples:
 
 linktest: $(srcdir)/linktest.c libldns.la
 	$(COMP_LIB) $(LIBSSL_CPPFLAGS) -c $(srcdir)/linktest.c -o linktest.lo
-	$(LINK_EXE) linktest.lo $(LIB) $(LIBSSL_LIBS) $(LIBS) -o linktest
+	$(LINK_EXE) linktest.lo $(LIB) $(LIBSSL_LIBS) $(LIBS) -o linktest $(top_builddir)/libldns.la
 
 lib: libldns.la
 
