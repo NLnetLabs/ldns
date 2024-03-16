@@ -236,6 +236,9 @@ enum ldns_enum_rr_type
 	/* type codes from nsec3 experimental phase
 	LDNS_RR_TYPE_NSEC3 = 65324,
 	LDNS_RR_TYPE_NSEC3PARAMS = 65325, */
+
+	LDNS_RR_TYPE_DELEG = 65287,
+
 	LDNS_RR_TYPE_FIRST = 0,
 	LDNS_RR_TYPE_LAST  = 65535,
 	LDNS_RR_TYPE_COUNT = LDNS_RR_TYPE_LAST - LDNS_RR_TYPE_FIRST + 1

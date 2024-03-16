@@ -1293,7 +1293,9 @@ ldns_dnssec_zone_create_rrsigs_flg( ldns_dnssec_zone *zone
 						ldns_rr_list_type(rr_list) 
 							== LDNS_RR_TYPE_NSEC ||
 						ldns_rr_list_type(rr_list) 
-							== LDNS_RR_TYPE_NSEC3) {
+							== LDNS_RR_TYPE_NSEC3 ||
+						ldns_rr_list_type(rr_list) 
+							== LDNS_RR_TYPE_DELEG) {
 					siglist = ldns_sign_public(rr_list, key_list);
 					for (i = 0; i < ldns_rr_list_rr_count(siglist); i++) {
 						if (cur_rrset->signatures) {

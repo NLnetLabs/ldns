@@ -57,6 +57,7 @@ usage(FILE *fp, const char *prog) {
 	fprintf(fp, "  -k <algorithm>,<key>\tuse `key' with `algorithm' from engine as ZSK\n");
 	fprintf(fp, "  -K <algorithm>,<key>\tuse `key' with `algorithm' from engine as KSK\n");
 #endif
+	fprintf(fp, "  -D\t\tSynthesize NS records from DELEG referrals\n");
 	fprintf(fp, "  -n\t\tuse NSEC3 instead of NSEC.\n");
 	fprintf(fp, "\t\tIf you use NSEC3, you can specify the following extra options:\n");
 	fprintf(fp, "\t\t-a [algorithm] hashing algorithm\n");
@@ -599,6 +600,104 @@ int str2zonemd_signflag(const char *str, const char **reason)
 	return 0;
 }
 
+
+void process_DELEG_( ldns_dnssec_zone* zone, ldns_rdf* owner
+                   , ldns_rdf* target, ldns_rdf* params)
+{
+	uint8_t* dp, *next_dp, *data = params ? ldns_rdf_data(params) : NULL;
+	size_t   sz = params ? ldns_rdf_size(params) : 0;
+	ldns_rr* NS;
+	ldns_rdf* apex = zone->soa->name;
+
+	if (ldns_rdf_size(target) == 1)
+		target = owner;
+
+	NS = ldns_rr_new_frm_type(LDNS_RR_TYPE_NS);
+	ldns_rr_set_owner(NS, ldns_rdf_clone(owner));
+	ldns_rr_set_rdf(NS, ldns_rdf_clone(target), 0);
+	ldns_dnssec_zone_add_rr(zone, NS);
+	if (!ldns_dname_is_subdomain(target, apex))
+		return;
+	for (dp = data; dp + 4 <= data + sz; dp = next_dp) {
+		ldns_svcparam_key key    = ldns_read_uint16(dp);
+		uint16_t          val_sz = ldns_read_uint16(dp + 2);
+
+		if ((next_dp = dp + 4 + val_sz) > data + sz) {
+			/* LDNS_STATUS_RDATA_OVERFLOW */
+			break;
+		}
+		dp += 4;
+		switch (key) {
+		case LDNS_SVCPARAM_KEY_IPV4HINT:
+			while (val_sz >= 4) {
+				ldns_rr* A = ldns_rr_new_frm_type(
+						LDNS_RR_TYPE_A);
+				ldns_rdf* ipv4 = ldns_rdf_new_frm_data(
+					LDNS_RDF_TYPE_A, 4, dp);
+
+				ldns_rr_set_owner(A, ldns_rdf_clone(target));
+				ldns_rr_set_rdf(A, ipv4, 0);
+				ldns_dnssec_zone_add_rr(zone, A);
+				val_sz -= 4;
+			}
+			break;
+		case LDNS_SVCPARAM_KEY_IPV6HINT:
+			while (val_sz >= 16) {
+				ldns_rr* AAAA = ldns_rr_new_frm_type(
+						LDNS_RR_TYPE_AAAA);
+				ldns_rdf* ipv6 = ldns_rdf_new_frm_data(
+					LDNS_RDF_TYPE_AAAA, 16, dp);
+
+				ldns_rr_set_owner(AAAA, ldns_rdf_clone(target));
+				ldns_rr_set_rdf(AAAA, ipv6, 0);
+				ldns_dnssec_zone_add_rr(zone, AAAA);
+				val_sz -= 16;
+			}
+			break;
+		default:
+			break;
+		}
+		dp += val_sz;
+	}
+}
+
+void process_DELEG(ldns_dnssec_zone *zone, ldns_rr* rr)
+{
+	ldns_rdf* owner = ldns_rr_owner(rr);
+	ldns_rdf* priority = ldns_rr_rdf(rr, 0);
+	ldns_rdf* target = ldns_rr_rdf(rr, 1);
+	ldns_rdf* params = ldns_rr_rdf(rr, 2);
+	ldns_resolver* res;
+	ldns_pkt* p;
+	ldns_rr_list* svcbs;
+	size_t i;
+
+	if (ldns_rdf2native_int16(priority) != 0) {
+		process_DELEG_(zone, owner, target, params);
+		return;
+	}
+	if (ldns_resolver_new_frm_file(&res, NULL) != LDNS_STATUS_OK)
+		return;
+	p = ldns_resolver_search( res, target, LDNS_RR_TYPE_SVCB
+				, LDNS_RR_CLASS_IN, LDNS_RD);
+	if (!p)
+		return;
+	svcbs = ldns_pkt_rr_list_by_type( p, LDNS_RR_TYPE_SVCB
+					   , LDNS_SECTION_ANSWER);
+	if (!svcbs)
+		return;
+
+	for (i = 0; i < ldns_rr_list_rr_count(svcbs); i++) {
+		ldns_rr* SVCB = ldns_rr_list_rr(svcbs, i);
+		ldns_rdf* config_target = ldns_rr_rdf(SVCB, 1);
+
+		if (ldns_rdf_size(config_target) == 1)
+			config_target = target;
+		params = ldns_rr_rdf(SVCB, 2);
+		process_DELEG_(zone, owner, config_target, params);
+	}
+}
+
 int
 main(int argc, char *argv[])
 {
@@ -627,6 +726,7 @@ main(int argc, char *argv[])
 	ldns_status s;
 	size_t i;
 	ldns_rr_list *added_rrs;
+	ldns_rr_list *deleg_rrs = NULL;
 
 	char *outputfile_name = NULL;
 	FILE *outputfile;
@@ -669,7 +769,7 @@ main(int argc, char *argv[])
 	
 	keys = ldns_key_list_new();
 
-	while ((c = getopt(argc, argv, "a:bde:f:i:k:no:ps:t:uvz:ZAUE:K:")) != -1) {
+	while ((c = getopt(argc, argv, "a:bde:f:i:k:no:ps:t:uvz:ZAUE:K:D")) != -1) {
 		switch (c) {
 		case 'a':
 			nsec3_algorithm = (uint8_t) atoi(optarg);
@@ -832,6 +932,9 @@ main(int argc, char *argv[])
 				exit(EXIT_FAILURE);
 			}
 			nsec3_iterations = (uint16_t) nsec3_iterations_cmd;
+			break;
+		case 'D':
+			deleg_rrs = ldns_rr_list_new();
 			break;
 		default:
 			usage(stderr, prog);
@@ -1012,17 +1115,28 @@ main(int argc, char *argv[])
 	for (i = 0;
 	     i < ldns_rr_list_rr_count(ldns_zone_rrs(orig_zone));
 	     i++) {
-		if (ldns_dnssec_zone_add_rr(signed_zone, 
-		         ldns_rr_list_rr(ldns_zone_rrs(orig_zone), 
-		         i)) !=
+		ldns_rr *rr = ldns_rr_list_rr(ldns_zone_rrs(orig_zone), i);
+		if (ldns_dnssec_zone_add_rr(signed_zone, rr) !=
 		    LDNS_STATUS_OK) {
 			fprintf(stderr,
 			        "Error adding RR to dnssec zone");
 			fprintf(stderr, ", skipping record:\n");
 			ldns_rr_print(stderr, 
 			  ldns_rr_list_rr(ldns_zone_rrs(orig_zone), i));
+		} else if (deleg_rrs && ldns_rr_get_type(rr) == LDNS_RR_TYPE_DELEG) {
+			ldns_rr_list_push_rr(deleg_rrs, rr);
 		}
 	}
+	for (i = 0; i < ldns_rr_list_rr_count(deleg_rrs); i++) {
+		ldns_rr *rr = ldns_rr_list_rr(deleg_rrs, i);
+
+		if (ldns_dnssec_zone_find_rrset( signed_zone, ldns_rr_owner(rr)
+		                               , LDNS_RR_TYPE_NS))
+			continue;
+		process_DELEG(signed_zone, rr);
+	}
+	ldns_rr_list_free(deleg_rrs);
+
 	/* list to store newly created rrs, so we can free them later */
 	added_rrs = ldns_rr_list_new();
 
