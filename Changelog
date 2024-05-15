@@ -1,4 +1,4 @@
-1.8.4	2022-??-??
+1.8.4	2024-??-??
 	* Fix building documentation in build directory.
 	  Thanks Michael Tokarev
 	* Updated the configure script for split openssl directories.
@@ -8,9 +8,11 @@
 	  signedness, add -u repo option to makewin.sh, fix quoting in
 	  makewin.sh and check return value of bind and connect in net.c
 	  for failure instead of a socket type. And fix to install .exe files.
-	  Fix to compile with OpenSSL 3.2. Update acx_nlnetlabs.m4 to 48.
-	  Fix to compile DLLs, and pick out of the lib64 dir, and include
+	* Fix to compile with OpenSSL 3.2. Update acx_nlnetlabs.m4 to 48.
+	* Fix to compile DLLs, and pick out of the lib64 dir, and include
 	  libssp-0.dll and ldns-config.
+	* bugfix #237: Resolver uses nameserver commented out in
+	  /etc/resolv.conf
 
 1.8.3	2022-08-15
 	* bugfix #183: Assertion failure with OPT record without rdata.
