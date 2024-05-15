@@ -12,7 +12,8 @@
 	* Fix to compile DLLs, and pick out of the lib64 dir, and include
 	  libssp-0.dll and ldns-config.
 	* bugfix #237: Resolver uses nameserver commented out in
-	  /etc/resolv.conf
+	  /etc/resolv.conf. Thanks grembo.
+	* Added RESINFO draft rrtype. Enable with --enable-rrtype-resinfo
 
 1.8.3	2022-08-15
 	* bugfix #183: Assertion failure with OPT record without rdata.

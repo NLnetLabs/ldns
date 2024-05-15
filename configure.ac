@@ -715,12 +715,12 @@ case "$enable_rrtype_doa" in
 	no|*)
 		;;
 esac
-AC_ARG_ENABLE(rrtype-amtrelay, AS_HELP_STRING([--enable-rrtype-amtrelay],[Enable draft RR type AMTRELAY.]))
+AC_ARG_ENABLE(rrtype-amtrelay, AS_HELP_STRING([--disable-rrtype-amtrelay],[Disable RR type AMTRELAY.]))
 case "$enable_rrtype_amtrelay" in
-	yes)
-		AC_DEFINE_UNQUOTED([RRTYPE_AMTRELAY], [], [Define this to enable RR type AMTRELAY.])
+	no)
 		;;
-	no|*)
+	yes|*)
+		AC_DEFINE_UNQUOTED([RRTYPE_AMTRELAY], [], [Define this to enable RR type AMTRELAY.])
 		;;
 esac
 AC_ARG_ENABLE(rrtype-svcb-https, AS_HELP_STRING([--disable-rrtype-svcb-https],[Disable RR types SVCB and HTTPS.]))
@@ -731,6 +731,15 @@ case "$enable_rrtype_svcb_https" in
 		AC_DEFINE_UNQUOTED([RRTYPE_SVCB_HTTPS], [], [Define this to enable RR types SVCB and HTTPS.])
 		;;
 esac
+AC_ARG_ENABLE(rrtype-resinfo, AS_HELP_STRING([--enable-rrtype-resinfo],[Enable RR type RESINFO.]))
+case "$enable_rrtype_resinfo" in
+	yes)
+		AC_DEFINE_UNQUOTED([RRTYPE_RESINFO], [], [Define this to enable RR type RESINFO.])
+		;;
+	no|*)
+		;;
+esac
+
 
 if echo "$tmp_LIBS" | grep "ws2_32" >/dev/null; then
 	if echo "$LIBSSL_LIBS" | grep "ws2_32" >/dev/null; then
