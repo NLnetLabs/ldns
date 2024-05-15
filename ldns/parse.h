@@ -59,7 +59,8 @@ ssize_t ldns_fget_token(FILE *f, char *token, const char *delim, size_t limit);
 /** 
  * returns a token/char from the stream F.
  * This function deals with ( and ) in the stream,
- * and ignores when it finds them.
+ * and ignores when it finds them. This function also handles and ignores
+ * zonefile format comments starting with ;
  * \param[in] *f the file to read from
  * \param[out] *token the token is put here
  * \param[in] *delim chars at which the parsing should stop
@@ -68,6 +69,21 @@ ssize_t ldns_fget_token(FILE *f, char *token, const char *delim, size_t limit);
  * \return 0 on error of EOF of F otherwise return the length of what is read
  */
 ssize_t ldns_fget_token_l(FILE *f, char *token, const char *delim, size_t limit, int *line_nr);
+
+/** 
+ * returns a token/char from the stream F.
+ * This function deals with ( and ) in the stream,
+ * and ignores when it finds them. This function also handles and ignores
+ * comments such as they can be used in resolv.conf files. Starting with
+ * either ; or #.
+ * \param[in] *f the file to read from
+ * \param[out] *token the token is put here
+ * \param[in] *delim chars at which the parsing should stop
+ * \param[in] *limit how much to read. If 0 use builtin maximum
+ * \param[in] line_nr pointer to an integer containing the current line number (for debugging purposes)
+ * \return 0 on error of EOF of F otherwise return the length of what is read
+ */
+ssize_t ldns_fget_token_l_resolv_conf(FILE *f, char *token, const char *delim, size_t limit, int *line_nr);
 
 /** 
  * returns a token/char from the stream f.
