@@ -1836,8 +1836,10 @@ ldns_convert_dsa_rrsig_rdf2asn1(ldns_buffer *target_buffer,
 		return LDNS_STATUS_MEM_ERR;
 	}
 # ifdef HAVE_DSA_SIG_SET0
-       if (! DSA_SIG_set0(dsasig, R, S))
-	       return LDNS_STATUS_SSL_ERR;
+	if (! DSA_SIG_set0(dsasig, R, S)) {
+		DSA_SIG_free(dsasig);
+		return LDNS_STATUS_SSL_ERR;
+	}
 # else
 	dsasig->r = R;
 	dsasig->s = S;
