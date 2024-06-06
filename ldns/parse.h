@@ -131,7 +131,7 @@ ssize_t ldns_bget_token(ldns_buffer *b, char *token, const char *delim, size_t l
  * \param[in] k_del keyword delimiter 
  * \param[out] data the data found 
  * \param[in] d_del the data delimiter
- * \param[in] data_limit maximum size the the data buffer
+ * \param[in] data_limit maximum size the data buffer
  * \return the number of character read
  */
 ssize_t ldns_fget_keyword_data(FILE *f, const char *keyword, const char *k_del, char *data, const char *d_del, size_t data_limit);
@@ -144,7 +144,7 @@ ssize_t ldns_fget_keyword_data(FILE *f, const char *keyword, const char *k_del, 
  * \param[in] k_del keyword delimiter 
  * \param[out] data the data found 
  * \param[in] d_del the data delimiter
- * \param[in] data_limit maximum size the the data buffer
+ * \param[in] data_limit maximum size the data buffer
  * \param[in] line_nr pointer to an integer containing the current line number (for
 debugging purposes)
  * \return the number of character read
@@ -159,7 +159,7 @@ ssize_t ldns_fget_keyword_data_l(FILE *f, const char *keyword, const char *k_del
  * \param[in] k_del keyword delimiter 
  * \param[out] data the data found 
  * \param[in] d_del the data delimiter
- * \param[in] data_limit maximum size the the data buffer
+ * \param[in] data_limit maximum size the data buffer
  * \return the number of character read
  */
 ssize_t ldns_bget_keyword_data(ldns_buffer *b, const char *keyword, const char *k_del, char *data, const char *d_del, size_t data_limit);

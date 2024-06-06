@@ -959,7 +959,7 @@ ldns_create_nsec(ldns_rdf *cur_owner, ldns_rdf *next_owner, ldns_rr_list *rrs)
 {
 	/* we do not do any check here - garbage in, garbage out */
 
-	/* the the start and end names - get the type from the
+	/* the start and end names - get the type from the
 	 * before rrlist */
 
 	/* inefficient, just give it a name, a next name, and a list of rrs */
