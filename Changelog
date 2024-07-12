@@ -23,6 +23,8 @@
 	  Thanks Fabrice Fontaine
 	* PR #224: Portable executable progs don't underlink to libldns
 	  Thanks Ørjan Malde
+	* PR #216 Update declaration for function with no argument
+	  Thanks Ed Maste
 
 1.8.3	2022-08-15
 	* bugfix #183: Assertion failure with OPT record without rdata.
