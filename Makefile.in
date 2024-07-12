@@ -647,10 +647,10 @@ dnssec_zone.lo dnssec_zone.o: setup-builddir $(srcdir)/dnssec_zone.c ldns/config
  $(srcdir)/ldns/str2host.h $(srcdir)/ldns/update.h $(srcdir)/ldns/wire2host.h $(srcdir)/ldns/rr_functions.h \
  $(srcdir)/ldns/parse.h $(srcdir)/ldns/radix.h $(srcdir)/ldns/sha1.h $(srcdir)/ldns/sha2.h
 duration.lo duration.o: setup-builddir $(srcdir)/duration.c ldns/config.h $(srcdir)/ldns/duration.h
-edns.lo edns.o: setup-builddir $(srcdir)/edns.c $(srcdir)/ldns/ldns.h ldns/util.h ldns/common.h $(srcdir)/ldns/buffer.h \
- $(srcdir)/ldns/error.h $(srcdir)/ldns/dane.h $(srcdir)/ldns/rdata.h $(srcdir)/ldns/rr.h $(srcdir)/ldns/dname.h \
- $(srcdir)/ldns/dnssec.h $(srcdir)/ldns/packet.h $(srcdir)/ldns/edns.h $(srcdir)/ldns/keys.h $(srcdir)/ldns/zone.h \
- $(srcdir)/ldns/resolver.h $(srcdir)/ldns/tsig.h $(srcdir)/ldns/dnssec_zone.h $(srcdir)/ldns/rbtree.h \
+edns.lo edns.o: setup-builddir $(srcdir)/edns.c ldns/config.h $(srcdir)/ldns/ldns.h ldns/util.h ldns/common.h \
+ $(srcdir)/ldns/buffer.h $(srcdir)/ldns/error.h $(srcdir)/ldns/dane.h $(srcdir)/ldns/rdata.h $(srcdir)/ldns/rr.h \
+ $(srcdir)/ldns/dname.h $(srcdir)/ldns/dnssec.h $(srcdir)/ldns/packet.h $(srcdir)/ldns/edns.h $(srcdir)/ldns/keys.h \
+ $(srcdir)/ldns/zone.h $(srcdir)/ldns/resolver.h $(srcdir)/ldns/tsig.h $(srcdir)/ldns/dnssec_zone.h $(srcdir)/ldns/rbtree.h \
  $(srcdir)/ldns/host2str.h $(srcdir)/ldns/dnssec_verify.h $(srcdir)/ldns/dnssec_sign.h $(srcdir)/ldns/duration.h \
  $(srcdir)/ldns/higher.h $(srcdir)/ldns/host2wire.h ldns/net.h $(srcdir)/ldns/str2host.h $(srcdir)/ldns/update.h \
  $(srcdir)/ldns/wire2host.h $(srcdir)/ldns/rr_functions.h $(srcdir)/ldns/parse.h $(srcdir)/ldns/radix.h \
@@ -813,6 +813,7 @@ zone.lo zone.o: setup-builddir $(srcdir)/zone.c ldns/config.h $(srcdir)/ldns/ldn
  $(srcdir)/ldns/higher.h $(srcdir)/ldns/host2wire.h ldns/net.h $(srcdir)/ldns/str2host.h $(srcdir)/ldns/update.h \
  $(srcdir)/ldns/wire2host.h $(srcdir)/ldns/rr_functions.h $(srcdir)/ldns/parse.h $(srcdir)/ldns/radix.h \
  $(srcdir)/ldns/sha1.h $(srcdir)/ldns/sha2.h
+compat/asctime_r.lo compat/asctime_r.o: setup-builddir $(srcdir)/compat/asctime_r.c ldns/config.h
 compat/b64_ntop.lo compat/b64_ntop.o: setup-builddir $(srcdir)/compat/b64_ntop.c ldns/config.h
 compat/b64_pton.lo compat/b64_pton.o: setup-builddir $(srcdir)/compat/b64_pton.c ldns/config.h
 compat/calloc.lo compat/calloc.o: setup-builddir $(srcdir)/compat/calloc.c ldns/config.h
