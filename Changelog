@@ -35,6 +35,8 @@
 	  Thanks Felipe Gasper
 	* PR #192: Makefile.in: build config.h before any object
 	  To make "make --shuffle" work. Thanks Sergei Trofimovich
+	* PR #191: 16-unit-tests-edns: Fix leak & warnings
+	  Thanks Felipe Gasper
 
 1.8.3	2022-08-15
 	* bugfix #183: Assertion failure with OPT record without rdata.
