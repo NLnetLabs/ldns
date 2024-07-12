@@ -23,12 +23,14 @@
 	  Thanks Fabrice Fontaine
 	* PR #224: Portable executable progs don't underlink to libldns
 	  Thanks Ørjan Malde
-	* PR #216 Update declaration for function with no argument
+	* PR #216: Update declaration for function with no argument
 	  Thanks Ed Maste
-	* PR #214 fix the build in FreeBSD's base system
+	* PR #214: fix the build in FreeBSD's base system
 	  Thanks Pierre Pronchery and Dag-Erling Smørgrav
-	* PR #206 improve 'next-label' algorithm in ldns-walk
+	* PR #206: improve 'next-label' algorithm in ldns-walk
 	  Thanks Jelte Jansen
+	* PR #205: Add functions to extract RFC 8914 extended errors
+	  Thanks Roland van Rijswijk-Deij
 
 1.8.3	2022-08-15
 	* bugfix #183: Assertion failure with OPT record without rdata.
