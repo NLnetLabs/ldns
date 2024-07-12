@@ -27,6 +27,8 @@
 	  Thanks Ed Maste
 	* PR #214 fix the build in FreeBSD's base system
 	  Thanks Pierre Pronchery and Dag-Erling Smørgrav
+	* PR #206 improve 'next-label' algorithm in ldns-walk
+	  Thanks Jelte Jansen
 
 1.8.3	2022-08-15
 	* bugfix #183: Assertion failure with OPT record without rdata.
