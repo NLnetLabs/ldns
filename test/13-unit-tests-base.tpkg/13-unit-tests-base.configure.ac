@@ -2,7 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.57)
-AC_INIT(drill, 1.1.0, ldns-team@nlnetlabs.nl, ldns-team)
+AC_INIT(drill, 1.1.0, dns-team@nlnetlabs.nl, ldns-team)
 AC_CONFIG_SRCDIR([13-unit-tests-base.c])
 
 AC_AIX

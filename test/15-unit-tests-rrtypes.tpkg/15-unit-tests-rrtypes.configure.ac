@@ -2,7 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.57)
-AC_INIT(libdns, 1.1.0, libdns@nlnetlabs.nl,libdns)
+AC_INIT(libdns, 1.1.0, dns-team@nlnetlabs.nl,libdns)
 AC_CONFIG_SRCDIR([15-unit-tests-rrtypes.c])
 
 OURCPPFLAGS=''
