@@ -33,8 +33,6 @@
 	  Thanks Roland van Rijswijk-Deij
 	* PR #203: Expand CI: Cygwin, BSDs, musl libc, 32-bit, and big-endian
 	  Thanks Felipe Gasper
-	* PR #192: Makefile.in: build config.h before any object
-	  To make "make --shuffle" work. Thanks Sergei Trofimovich
 	* PR #191: 16-unit-tests-edns: Fix leak & warnings
 	  Thanks Felipe Gasper
 
