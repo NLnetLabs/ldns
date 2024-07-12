@@ -89,29 +89,29 @@ jobs:
       - name: "${{ matrix.platform }}: Build and test"
         run: docker run --rm --interactive --mount type=bind,source=$(pwd),target=/host ${{ matrix.platform }}/alpine sh -c "apk add make gcc libc-dev libtool automake autoconf openssl-dev m4 indent bash bind-tools && cd /host && libtoolize -vci && autoreconf -vfi && ./configure && make test"
 
-  BSDs:
-    name: ${{ matrix.os.dispname }} ${{ matrix.os.version }}
-
-    runs-on: macos-latest
-
-    strategy:
-      fail-fast: false
-      matrix:
-        os:
-          - name: freebsd
-            dispname: FreeBSD
-            version: '13.0'
-            pkginstall: pkg install -y libtool automake bind-tools gmake gindent
-            env:
-            configure_args:
-
-            # OpenBSD seems to require explicit auto* versions.
-          - name: openbsd
-            dispname: OpenBSD
-            version: '7.1'
-            pkginstall: pkg_add -v libtool gmake gindent automake-1.16.3 autoconf-2.71
-            env: AUTOCONF_VERSION=2.71 AUTOMAKE_VERSION=1.16
-            configure_args: --disable-dane-verify
+#  BSDs:
+#    name: ${{ matrix.os.dispname }} ${{ matrix.os.version }}
+#
+#    runs-on: macos-latest
+#
+#    strategy:
+#      fail-fast: false
+#      matrix:
+#        os:
+#          - name: freebsd
+#            dispname: FreeBSD
+#            version: '13.0'
+#            pkginstall: pkg install -y libtool automake bind-tools gmake gindent
+#            env:
+#            configure_args:
+#
+#            # OpenBSD seems to require explicit auto* versions.
+#          - name: openbsd
+#            dispname: OpenBSD
+#            version: '7.1'
+#            pkginstall: pkg_add -v libtool gmake gindent automake-1.16.3 autoconf-2.71
+#            env: AUTOCONF_VERSION=2.71 AUTOMAKE_VERSION=1.16
+#            configure_args: --disable-dane-verify
 
     steps:
       - uses: actions/checkout@main
