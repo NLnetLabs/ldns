@@ -510,6 +510,10 @@ void ldns_sha256_update(ldns_sha256_CTX* context, const sha2_byte *data, size_t 
 	/* Sanity check: */
 	assert(context != (ldns_sha256_CTX*)0 && data != (sha2_byte*)0);
 
+	if (context == (ldns_sha256_CTX*)0 || data == (sha2_byte*)0) {
+		return;
+	}
+
 	usedspace = (context->bitcount >> 3) % LDNS_SHA256_BLOCK_LENGTH;
 	if (usedspace > 0) {
 		/* Calculate how much free space is available in the buffer */
@@ -561,6 +565,10 @@ void ldns_sha256_final(sha2_byte digest[LDNS_SHA256_DIGEST_LENGTH], ldns_sha256_
 
 	/* Sanity check: */
 	assert(context != (ldns_sha256_CTX*)0);
+
+	if (context == (ldns_sha256_CTX*)0) {
+		return;	
+	}
 
 	/* If no digest buffer is passed, we don't bother doing this: */
 	if (digest != (sha2_byte*)0) {
@@ -823,6 +831,10 @@ void ldns_sha512_update(ldns_sha512_CTX* context, const sha2_byte *data, size_t 
 	/* Sanity check: */
 	assert(context != (ldns_sha512_CTX*)0 && data != (sha2_byte*)0);
 
+	if (context == (ldns_sha512_CTX*)0 || data == (sha2_byte*)0) {
+		return;
+	}
+
 	usedspace = (context->bitcount[0] >> 3) % LDNS_SHA512_BLOCK_LENGTH;
 	if (usedspace > 0) {
 		/* Calculate how much free space is available in the buffer */
@@ -911,6 +923,10 @@ void ldns_sha512_final(sha2_byte digest[LDNS_SHA512_DIGEST_LENGTH], ldns_sha512_
 	/* Sanity check: */
 	assert(context != (ldns_sha512_CTX*)0);
 
+	if (context = (ldns_sha512_CTX*)0) {
+		return;
+	}
+
 	/* If no digest buffer is passed, we don't bother doing this: */
 	if (digest != (sha2_byte*)0) {
 		ldns_sha512_Last(context);
@@ -963,6 +979,10 @@ void ldns_sha384_final(sha2_byte digest[LDNS_SHA384_DIGEST_LENGTH], ldns_sha384_
 
 	/* Sanity check: */
 	assert(context != (ldns_sha384_CTX*)0);
+
+	if (context == (ldns_sha384_CTX*)0) {
+		return;
+	}
 
 	/* If no digest buffer is passed, we don't bother doing this: */
 	if (digest != (sha2_byte*)0) {

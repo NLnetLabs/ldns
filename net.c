@@ -512,6 +512,10 @@ ldns_send_buffer(ldns_pkt **result, ldns_resolver *r, ldns_buffer *qb, ldns_rdf 
 
 	assert(r != NULL);
 
+	if (r == NULL) {
+		return LDNS_STATUS_INTERNAL_ERR;
+	}
+
 	status = LDNS_STATUS_OK;
 	rtt = ldns_resolver_rtt(r);
 	ns_array = ldns_resolver_nameservers(r);
@@ -624,6 +628,11 @@ ldns_send_buffer(ldns_pkt **result, ldns_resolver *r, ldns_buffer *qb, ldns_rdf 
 		}
 		assert(reply);
 		
+		if (reply == NULL) {
+			LDNS_FREE(ns);
+			return LDNS_STATUS_INTERNAL_ERR;
+		}
+
 		LDNS_FREE(ns);
 		gettimeofday(&tv_e, NULL);
 

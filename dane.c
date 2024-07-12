@@ -97,6 +97,12 @@ ldns_dane_create_tlsa_owner(ldns_rdf** tlsa_owner, const ldns_rdf* name,
 	assert(name != NULL);
 	assert(ldns_rdf_get_type(name) == LDNS_RDF_TYPE_DNAME);
 
+	if (tlsa_owner == NULL || name == NULL ||
+		ldns_rdf_get_type(name) != LDNS_RDF_TYPE_DNAME) {
+		// @TODO correct error?
+		return LDNS_STATUS_INTERNAL_ERR;
+	}
+
 	s = (size_t)snprintf(buf, LDNS_MAX_DOMAINLEN, "X_%d", (int)port);
 	buf[0] = (char)(s - 1);
 
@@ -145,6 +151,11 @@ ldns_dane_cert2rdf(ldns_rdf** rdf, X509* cert,
 
 	assert(rdf != NULL);
 	assert(cert != NULL);
+
+	if (rdf == NULL || cert == NULL) {
+		// @TODO correct error?
+		return LDNS_STATUS_INTERNAL_ERR;
+	}
 
 	switch(selector) {
 	case LDNS_TLSA_SELECTOR_FULL_CERTIFICATE:
@@ -263,6 +274,11 @@ ldns_dane_pkix_validate_and_get_chain(STACK_OF(X509)** chain, X509* cert,
 
 	assert(chain != NULL);
 
+	if (chain == NULL) {
+		// @TODO correct error?
+		return LDNS_STATUS_INTERNAL_ERR;
+	}
+
 	if (! store) {
 		store = empty_store = X509_STORE_new();
 	}
@@ -310,6 +326,11 @@ ldns_dane_pkix_get_chain(STACK_OF(X509)** chain,
 	X509_STORE_CTX* vrfy_ctx;
 
 	assert(chain != NULL);
+
+	if (chain == NULL) {
+		// @TODO correct error?
+		return LDNS_STATUS_INTERNAL_ERR;
+	}
 
 	empty_store = X509_STORE_new();
 	s = LDNS_STATUS_SSL_ERR;
@@ -372,6 +393,11 @@ ldns_dane_pkix_get_last_self_signed(X509** out_cert,
 
 	assert(out_cert != NULL);
 
+	if (out_cert == NULL) {
+		// @TODO correct error?
+		return LDNS_STATUS_INTERNAL_ERR;
+	}
+
 	empty_store = X509_STORE_new();
 	s = LDNS_STATUS_SSL_ERR;
 	vrfy_ctx = X509_STORE_CTX_new();
@@ -412,6 +438,11 @@ ldns_dane_select_certificate(X509** selected_cert,
 
 	assert(selected_cert != NULL);
 	assert(cert != NULL);
+
+	if (selected_cert == NULL || cert == NULL) {
+		// @TODO correct error?
+		return LDNS_STATUS_INTERNAL_ERR;
+	}
 
 	/* With PKIX validation explicitly turned off (pkix_validation_store
 	 *  == NULL), treat the "CA constraint" and "Service certificate
@@ -519,6 +550,11 @@ ldns_dane_create_tlsa_rr(ldns_rr** tlsa,
 
 	assert(tlsa != NULL);
 	assert(cert != NULL);
+
+	if (tlsa == NULL || cert == NULL) {
+		// @TODO correct error?
+		return LDNS_STATUS_INTERNAL_ERR;
+	}
 
 	/* create rr */
 	*tlsa = ldns_rr_new_frm_type(LDNS_RR_TYPE_TLSA);
@@ -857,6 +893,11 @@ ldns_dane_verify(const ldns_rr_list* tlsas,
 	ldns_status s = LDNS_STATUS_OK;
 
 	assert(cert != NULL);
+
+	if (cert == NULL) {
+		// @TODO correct error?
+		return LDNS_STATUS_INTERNAL_ERR;
+	}
 
 	if (! tlsas || ldns_rr_list_rr_count(tlsas) == 0)
 		/* No TLSA's, so regular PKIX validation

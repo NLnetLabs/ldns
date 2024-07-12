@@ -24,6 +24,11 @@ size_t
 ldns_rdf_size(const ldns_rdf *rd)
 {
 	assert(rd != NULL);
+
+	if (rd == NULL) {
+		return 0;
+	}
+
 	return rd->_size;
 }
 
@@ -31,6 +36,12 @@ ldns_rdf_type
 ldns_rdf_get_type(const ldns_rdf *rd)
 {
 	assert(rd != NULL);
+
+	if (rd == NULL) {
+		return 0;
+	}
+
+
 	return rd->_type;
 }
 
@@ -38,6 +49,11 @@ uint8_t *
 ldns_rdf_data(const ldns_rdf *rd)
 {
 	assert(rd != NULL);
+
+	if (rd == NULL) {
+		return NULL;
+	}
+
 	return rd->_data;
 }
 
@@ -46,6 +62,11 @@ void
 ldns_rdf_set_size(ldns_rdf *rd, size_t size)
 {
 	assert(rd != NULL);
+
+	if (rd == NULL) {
+		return;
+	}
+
 	rd->_size = size;
 }
 
@@ -53,6 +74,11 @@ void
 ldns_rdf_set_type(ldns_rdf *rd, ldns_rdf_type type)
 {
 	assert(rd != NULL);
+
+	if (rd == NULL) {
+		return;
+	}
+
 	rd->_type = type;
 }
 
@@ -61,6 +87,11 @@ ldns_rdf_set_data(ldns_rdf *rd, void *data)
 {
 	/* only copy the pointer */
 	assert(rd != NULL);
+
+	if (rd == NULL) {
+		return;
+	}
+
 	rd->_data = data;
 }
 
@@ -222,6 +253,11 @@ ldns_rdf *
 ldns_rdf_clone(const ldns_rdf *rd)
 {
 	assert(rd != NULL);
+
+	if (rd == NULL) {
+		return NULL;
+	}
+
 	return (ldns_rdf_new_frm_data( ldns_rdf_get_type(rd),
 		ldns_rdf_size(rd), ldns_rdf_data(rd)));
 }

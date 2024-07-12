@@ -183,6 +183,12 @@ ldns_radix_insert(ldns_radix_t* tree, uint8_t* key, radix_strlen_t len,
 	if (!ldns_radix_find_prefix(tree, key, len, &prefix, &pos)) {
 		/** No prefix found */
 		assert(tree->root == NULL);
+
+		if (tree->root != NULL) {
+			LDNS_FREE(add);
+			return LDNS_STATUS_INTERNAL_ERR;
+		}
+
 		if (len == 0) {
 			/**
 			 * Example 1: The root:
@@ -237,6 +243,12 @@ ldns_radix_insert(ldns_radix_t* tree, uint8_t* key, radix_strlen_t len,
 		/** Prefix found */
 		uint8_t byte = key[pos];
 		assert(pos < len);
+
+		if (pos >= len) {
+			LDNS_FREE(add);
+			return LDNS_STATUS_INTERNAL_ERR;
+		}
+
 		if (byte < prefix->offset ||
 			(byte - prefix->offset) >= prefix->len) {
 			/** Find some space in the array for the byte. */
@@ -252,6 +264,12 @@ ldns_radix_insert(ldns_radix_t* tree, uint8_t* key, radix_strlen_t len,
 			}
 			assert(byte >= prefix->offset);
 			assert((byte - prefix->offset) <= prefix->len);
+
+			if (byte < prefix->offset || (byte - prefix->offset) > prefix->len) {
+				LDNS_FREE(add);
+				return LDNS_STATUS_INTERNAL_ERR;
+			}
+
 			byte -= prefix->offset;
 			if (pos+1 < len) {
 				/** Create remainder of the string. */
@@ -563,6 +581,11 @@ ldns_radix_prev(ldns_radix_node_t* node)
 		ldns_radix_node_t* prev;
 		node = node->parent;
 		assert(node->len > 0);
+
+		if (node->len <= 0) {
+			return NULL;
+		}
+
 		prev = ldns_radix_prev_from_index(node, index);
 		if (prev) {
 			return prev;
@@ -839,6 +862,11 @@ ldns_radix_array_space(ldns_radix_node_t* node, uint8_t byte)
 	/** Is there an array? */
 	if (!node->array) {
 		assert(node->capacity == 0);
+
+		if (node->capacity != 0) {
+			return 0;
+		}
+
 		/** No array, create new array */
 		node->array = LDNS_MALLOC(ldns_radix_array_t);
 		if (!node->array) {
@@ -853,6 +881,10 @@ ldns_radix_array_space(ldns_radix_node_t* node, uint8_t byte)
 	/** Array exist */
 	assert(node->array != NULL);
 	assert(node->capacity > 0);
+
+	if (node->array == NULL || node->capacity <= 0) {
+		return 0;
+	}
 
 	if (node->len == 0) {
 		/** Unused array */
@@ -929,6 +961,11 @@ ldns_radix_array_grow(ldns_radix_node_t* node, unsigned need)
 	}
 	assert(node->len <= node->capacity);
 	assert(node->capacity < size);
+
+	if (node->len <= node->capacity || node->capacity >= size) {
+		return 0;
+	}
+
 	memcpy(&a[0], &node->array[0], node->len*sizeof(ldns_radix_array_t));
 	LDNS_FREE(node->array);
 	node->array = a;
@@ -1016,6 +1053,11 @@ ldns_radix_array_split(ldns_radix_array_t* array, uint8_t* key,
 		 * ----| [n+s] ldns
 		 **/
 		assert(strlen_to_add < array->len);
+
+		if (strlen_to_add >= array->len) {
+			return 0;
+		}
+
 		/** Store the remainder in the split string */
 		if (array->len - strlen_to_add > 1) {
 			if (!ldns_radix_prefix_remainder(strlen_to_add+1,
@@ -1070,6 +1112,11 @@ ldns_radix_array_split(ldns_radix_array_t* array, uint8_t* key,
 		uint8_t* split_str = NULL;
 		radix_strlen_t split_len = 0;
 		assert(array->len < strlen_to_add);
+
+		if (array->len >= strlen_to_add) {
+			return 0;
+		}
+
 		if (strlen_to_add - array->len > 1) {
 			if (!ldns_radix_prefix_remainder(array->len+1,
 				str_to_add, strlen_to_add, &split_str,
@@ -1112,6 +1159,11 @@ ldns_radix_array_split(ldns_radix_array_t* array, uint8_t* key,
 			str_to_add, strlen_to_add);
 		assert(common_len < array->len);
 		assert(common_len < strlen_to_add);
+
+		if (common_len >= array->len | common_len >= strlen_to_add) {
+			return 0;
+		}
+
 		/** Create the new common node. */
 		common = ldns_radix_new_node(NULL, (uint8_t*)"", 0);
 		if (!common) {
@@ -1388,6 +1440,11 @@ ldns_radix_cleanup_onechild(ldns_radix_node_t* node)
 
 	/** Node has one child, merge the child node into the parent node. */
 	assert(parent_index < parent->len);
+
+	if (parent_index >= parent->len) {
+		return;
+	}
+
 	join_len = parent->array[parent_index].len + node->array[0].len + 1;
 
 	join_str = LDNS_XMALLOC(uint8_t, join_len);
@@ -1430,6 +1487,11 @@ ldns_radix_cleanup_leaf(ldns_radix_node_t* node)
 	ldns_radix_node_t* parent = node->parent;
 	/** Delete lead node and fix parent array. */
 	assert(parent_index < parent->len);
+
+	if (parent_index >= parent->len) {
+		return;
+	}
+
 	ldns_radix_node_free(node, NULL);
 	LDNS_FREE(parent->array[parent_index].str);
 	parent->array[parent_index].str = NULL;
@@ -1511,6 +1573,11 @@ ldns_radix_node_array_free_front(ldns_radix_node_t* node)
 	}
 	assert(n < node->len);
 	assert((int) n <= (255 - (int) node->offset));
+
+	if (n >= node->len || (int) n > (255 - (int) node->offset)) {
+		return;
+	}
+
 	memmove(&node->array[0], &node->array[n],
 		(node->len - n)*sizeof(ldns_radix_array_t));
 	node->offset += n;
@@ -1546,6 +1613,11 @@ ldns_radix_node_array_free_end(ldns_radix_node_t* node)
 		return;
 	}
 	assert(n < node->len);
+
+	if (n >= node->len) {
+		return;
+	}
+
 	node->len -= n;
 	ldns_radix_array_reduce(node);
 	return;
