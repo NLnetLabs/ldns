@@ -228,7 +228,7 @@ enum ldns_enum_rr_type
 	/** RFC 8777 **/
 	LDNS_RR_TYPE_AMTRELAY = 260,
 
-	/** draft-ietf-add-resolver-info */
+	/** RFC 9606 */
 	LDNS_RR_TYPE_RESINFO = 261,
 
 	/** DNSSEC Trust Authorities */

@@ -731,12 +731,12 @@ case "$enable_rrtype_svcb_https" in
 		AC_DEFINE_UNQUOTED([RRTYPE_SVCB_HTTPS], [], [Define this to enable RR types SVCB and HTTPS.])
 		;;
 esac
-AC_ARG_ENABLE(rrtype-resinfo, AS_HELP_STRING([--enable-rrtype-resinfo],[Enable RR type RESINFO.]))
+AC_ARG_ENABLE(rrtype-resinfo, AS_HELP_STRING([--enable-rrtype-resinfo],[Disable RR type RESINFO.]))
 case "$enable_rrtype_resinfo" in
-	yes)
-		AC_DEFINE_UNQUOTED([RRTYPE_RESINFO], [], [Define this to enable RR type RESINFO.])
+	no)
 		;;
-	no|*)
+	yes|*)
+		AC_DEFINE_UNQUOTED([RRTYPE_RESINFO], [], [Define this to enable RR type RESINFO.])
 		;;
 esac
 
