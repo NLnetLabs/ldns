@@ -1,4 +1,4 @@
-1.8.4	2024-??-??
+1.8.4	2024-07-??
 	* Fix building documentation in build directory.
 	  Thanks Michael Tokarev
 	* Updated the configure script for split openssl directories.
