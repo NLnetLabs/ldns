@@ -21,6 +21,8 @@
 	  Thanks William S Fulton
 	* PR #227: keys.c: fix build with libressl >= 3.8.1
 	  Thanks Fabrice Fontaine
+	* PR #224: Portable executable progs don't underlink to libldns
+	  Thanks Ørjan Malde
 
 1.8.3	2022-08-15
 	* bugfix #183: Assertion failure with OPT record without rdata.
