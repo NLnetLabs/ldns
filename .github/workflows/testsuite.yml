@@ -125,7 +125,7 @@ jobs:
           shell: bash
           run: |
             export DUMMY12345=1 ${{ matrix.os.env }}
-            sudo ${{ matrix.os.pkginstall }}
+            sudo ${{ matrix.os.pkginstall }} || ${{ matrix.os.pkginstall }}
             libtoolize -vci
             autoreconf -vfi
             ./configure ${{ matrix.os.configure_args }}

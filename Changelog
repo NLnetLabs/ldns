@@ -31,6 +31,8 @@
 	  Thanks Jelte Jansen
 	* PR #205: Add functions to extract RFC 8914 extended errors
 	  Thanks Roland van Rijswijk-Deij
+	* PR #203: Expand CI: Cygwin, BSDs, musl libc, 32-bit, and big-endian
+	  Thanks Felipe Gasper
 
 1.8.3	2022-08-15
 	* bugfix #183: Assertion failure with OPT record without rdata.
