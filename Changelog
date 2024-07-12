@@ -15,6 +15,7 @@
 	  /etc/resolv.conf. Thanks grembo.
 	* Added RESINFO rrtype.
 	* Added WALLET rrtype.
+	* PR#241: Fix coverity cited problems. Thanks Enji Cooper.
 
 1.8.3	2022-08-15
 	* bugfix #183: Assertion failure with OPT record without rdata.
