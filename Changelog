@@ -13,7 +13,8 @@
 	  libssp-0.dll and ldns-config.
 	* bugfix #237: Resolver uses nameserver commented out in
 	  /etc/resolv.conf. Thanks grembo.
-	* Added RESINFO draft rrtype. Enable with --enable-rrtype-resinfo
+	* Added RESINFO rrtype.
+	* Added WALLET rrtype.
 
 1.8.3	2022-08-15
 	* bugfix #183: Assertion failure with OPT record without rdata.

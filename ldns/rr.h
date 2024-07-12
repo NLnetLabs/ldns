@@ -231,6 +231,9 @@ enum ldns_enum_rr_type
 	/** RFC 9606 */
 	LDNS_RR_TYPE_RESINFO = 261,
 
+	/** https://iana.org/assignments/dns-parameters/WALLET/wallet-completed-template */
+	LDNS_RR_TYPE_WALLET = 262,
+
 	/** DNSSEC Trust Authorities */
 	LDNS_RR_TYPE_TA = 32768,
 	/* RFC 4431, 5074, DNSSEC Lookaside Validation */
@@ -246,7 +249,7 @@ enum ldns_enum_rr_type
 typedef enum ldns_enum_rr_type ldns_rr_type;
 
 /* The first fields are contiguous and can be referenced instantly */
-#define LDNS_RDATA_FIELD_DESCRIPTORS_COMMON (LDNS_RR_TYPE_RESINFO + 1)
+#define LDNS_RDATA_FIELD_DESCRIPTORS_COMMON (LDNS_RR_TYPE_WALLET + 1)
 
 /**
  * Resource Record
