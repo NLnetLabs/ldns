@@ -130,6 +130,13 @@ static void matchline(char* line, struct entry* e)
 			e->ixfr_soa_serial = (uint32_t)strtol(parse, (char**)&parse, 10);
 			while(isspace((int)*parse)) 
 				parse++;
+		} else if(str_keyword(&parse, "udp_size")) {
+			if(*parse != '=' && *parse != ':')
+				error("expected = or : in MATCH: %s", line);
+			parse++;
+			e->match_udp_size = (uint32_t)strtol(parse, (char**)&parse, 10);
+			while(isspace((int)*parse)) 
+				parse++;
 		} else {
 			error("could not parse MATCH: '%s'", parse);
 		}
@@ -243,6 +250,7 @@ static struct entry* new_entry(void)
 	e->match_serial = false;
 	e->ixfr_soa_serial = 0;
 	e->match_transport = transport_any;
+	e->match_udp_size = 0;
 	e->reply_list = NULL;
 	e->copy_id = false;
 	e->copy_query = false;
@@ -756,9 +764,13 @@ find_match(struct entry* entries, ldns_pkt* query_pkt,
 			continue;
 		}
 		if(p->match_qname) {
-			if(!get_owner(query_pkt) || !get_owner(reply) ||
-				ldns_dname_compare(
-				get_owner(query_pkt), get_owner(reply)) != 0) {
+			if (!get_owner(query_pkt) || !get_owner(reply)
+			|| (  !p->copy_query
+			   &&  ldns_dname_compare( get_owner(query_pkt)
+			                         , get_owner(reply)))
+			|| (   p->copy_query
+			   && !ldns_dname_match_wildcard( get_owner(query_pkt)
+			                                , get_owner(reply)))) {
 				verbose(3, "bad qname\n");
 				continue;
 			}
@@ -793,6 +805,12 @@ find_match(struct entry* entries, ldns_pkt* query_pkt,
 		}
 		if(p->match_transport != transport_any && p->match_transport != transport) {
 			verbose(3, "bad transport\n");
+			continue;
+		}
+		if(p->match_udp_size > 0 && transport == transport_udp && (
+			!ldns_pkt_edns(query_pkt) ||
+			ldns_pkt_edns_udp_size(query_pkt) < p->match_udp_size)) {
+			verbose(3, "bad udp_size\n");
 			continue;
 		}
 		if(p->match_all && !match_all(query_pkt, reply, p->match_ttl)) {

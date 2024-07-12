@@ -20,13 +20,14 @@ p5_dns_ldns_dir = $(srcdir)/contrib/DNS-LDNS
 PERL		= @PERL@
 swig		= @swig@
 swigpy_flags	= -python @SWIGPY3@
-python_site	= @PYTHON_SITE_PKG@
+python_site	= @PYTHON_PLATFORM_SITE_PKG@
 pyldns_inst	= @PYLDNSINST@
 pyldns_uninst	= @PYLDNSUNINST@
 pyldnsx_inst	= @PYLDNSXINST@
 pyldnsx_uninst	= @PYLDNSXUNINST@
 libtool		= @libtool@
 CONFIG_FILES	= @CONFIG_FILES@
+top_builddir	= @top_builddir@
 
 LDNS_TRUST_ANCHOR_FILE = @LDNS_TRUST_ANCHOR_FILE@
 DEFAULT_CAFILE = @DEFAULT_CAFILE@
@@ -85,6 +86,7 @@ LINTFLAGS       += -D"__BEGIN_DECLS=" -D"__ssize_t=ssize_t" -D"__intptr_t=intptr
 # FreeBSD 9
 LINTFLAGS       += -D"_RuneLocale=int"
 DEPFLAG		= @DEPFLAG@
+EXEEXT=@EXEEXT@
 
 INSTALL		= $(srcdir)/install-sh
 
@@ -168,7 +170,7 @@ no-drill-config-h:
 	fi
 
 drill/drill: $(DRILL_LOBJS) $(LIB) $(LIBLOBJS)
-	$(LINK_EXE) $(DRILL_LOBJS) $(LIBLOBJS) $(LIB) $(LIBSSL_LIBS) $(LIBS) -o drill/drill
+	$(LINK_EXE) $(DRILL_LOBJS) $(LIBLOBJS) $(LIB) $(LIBSSL_LIBS) $(LIBS) -o drill/drill $(top_builddir)/libldns.la
 
 drill/drill.1: $(srcdir)/drill/drill.1.in
 	$(edit) $(srcdir)/drill/drill.1.in > drill/drill.1
@@ -177,16 +179,16 @@ install-drill: drill/drill drill/drill.1
 	$(INSTALL) -m 755 -d $(DESTDIR)$(bindir)
 	$(INSTALL) -m 755 -d $(DESTDIR)$(mandir)
 	$(INSTALL) -m 755 -d $(DESTDIR)$(mandir)/man1
-	$(LIBTOOL) --mode=install cp drill/drill $(DESTDIR)$(bindir)
+	$(LIBTOOL) --mode=install cp drill/drill$(EXEEXT) $(DESTDIR)$(bindir)
 	$(INSTALL) -m 644 drill/drill.1 $(DESTDIR)$(mandir)/man1/drill.1
 
 uninstall-drill:
-	rm -f $(DESTDIR)$(bindir)/drill $(DESTDIR)$(mandir)/man1/drill.1
+	rm -f $(DESTDIR)$(bindir)/drill$(EXEEXT) $(DESTDIR)$(mandir)/man1/drill.1
 	test ! -d $(DESTDIR)$(mandir) || rmdir -p $(DESTDIR)$(mandir)/man1 || :;
 	test ! -d $(DESTDIR)$(bindir) || rmdir -p $(DESTDIR)$(bindir) || : ;
 
 clean-drill:
-	$(LIBTOOL) --mode clean rm -f $(DRILL_LOBJS) drill/drill drill/drill.1
+	$(LIBTOOL) --mode clean rm -f $(DRILL_LOBJS) drill/drill$(EXEEXT) drill/drill.1
 
 examples: setup-builddir no-examples-config-h $(LIB) $(EXAMPLE_PROGS) $(TESTNS) $(LDNS_DPA) $(LDNS_DANE) $(EX_SSL_PROGS) examples/ldns-dane.1 examples/ldns-verify-zone.1
 no-examples-config-h:
@@ -200,23 +202,23 @@ no-examples-config-h:
 
 # Need LIBSSL_LIBS
 $(EXAMPLE_PROGS):
-	$(LINK_EXE) $@.lo $(LIBLOBJS) $(LIB) $(LIBSSL_LIBS) $(LIBS) -o $@
+	$(LINK_EXE) $@.lo $(LIBLOBJS) $(LIB) $(LIBSSL_LIBS) $(LIBS) -o $@ $(top_builddir)/libldns.la
 
 # Need LIBSSL_LIBS
 $(TESTNS):
-	$(LINK_EXE) $(TESTNS_LOBJS) $(LIBLOBJS) $(LIB) $(LIBSSL_LIBS) $(LIBS) -o $(TESTNS)
+	$(LINK_EXE) $(TESTNS_LOBJS) $(LIBLOBJS) $(LIB) $(LIBSSL_LIBS) $(LIBS) -o $(TESTNS) $(top_builddir)/libldns.la
 
 # Need LIBSSL_LIBS
 $(LDNS_DPA):
 	$(LINK_EXE) $(LDNS_DPA_LOBJS) $(LIBLOBJS) $(LIB) $(LIBPCAP_LIBS) $(LIBSSL_LIBS) $(LIBS) \
-		 -o $(LDNS_DPA)
+		 -o $(LDNS_DPA) $(top_builddir)/libldns.la
 
 $(LDNS_DANE):
 	$(LINK_EXE) $(LDNS_DANE_LOBJS) $(LIBLOBJS) $(LIB) $(LIBSSL_SSL_LIBS) $(LIBS) \
-		 -o $(LDNS_DANE)
+		 -o $(LDNS_DANE) $(top_builddir)/libldns.la
 
 $(EX_SSL_PROGS):
-	$(LINK_EXE) $@.lo $(LIBLOBJS) $(LIB) $(LIBSSL_LIBS) $(LIBS) -o $@
+	$(LINK_EXE) $@.lo $(LIBLOBJS) $(LIB) $(LIBSSL_LIBS) $(LIBS) -o $@ $(top_builddir)/libldns.la
 
 examples/ldns-dane.1: $(srcdir)/examples/ldns-dane.1.in
 	$(edit) $(srcdir)/examples/ldns-dane.1.in > examples/ldns-dane.1
@@ -229,7 +231,7 @@ install-examples: $(EXAMPLE_PROGS) $(TESTNS) $(LDNS_DPA) $(LDNS_DANE) $(EX_SSL_P
 	$(INSTALL) -m 755 -d $(DESTDIR)$(mandir)
 	$(INSTALL) -m 755 -d $(DESTDIR)$(mandir)/man1
 	for p in $(EXAMPLE_PROGS) $(TESTNS) $(LDNS_DPA) $(LDNS_DANE) $(EX_SSL_PROGS) ; do \
-		$(LIBTOOL) --mode=install cp $$p $(DESTDIR)$(bindir) ; \
+		$(LIBTOOL) --mode=install cp $$p$(EXEEXT) $(DESTDIR)$(bindir) ; \
 		if test -f $$p.1 ; \
 		then $(INSTALL) -m 644 $$p.1 $(DESTDIR)$(mandir)/man1 ; \
 		else $(INSTALL) -m 644 $(srcdir)/$$p.1 $(DESTDIR)$(mandir)/man1 ; \
@@ -238,20 +240,22 @@ install-examples: $(EXAMPLE_PROGS) $(TESTNS) $(LDNS_DPA) $(LDNS_DANE) $(EX_SSL_P
 
 uninstall-examples:
 	for p in $(EX_PROGS_BASENM) ; do \
-		rm -f $(DESTDIR)$(bindir)/$$p $(DESTDIR)$(mandir)/man1/$$p.1 ;\
+		rm -f $(DESTDIR)$(bindir)/$$p$(EXEEXT) $(DESTDIR)$(mandir)/man1/$$p.1 ;\
 	done
 	test ! -d $(DESTDIR)$(mandir) || rmdir -p $(DESTDIR)$(mandir)/man1 || :;
 	test ! -d $(DESTDIR)$(bindir) || rmdir -p $(DESTDIR)$(bindir) || : ;
 
 clean-examples:
-	$(LIBTOOL) --mode clean rm -f $(EXAMPLE_PROGS)
+	for p in $(EX_PROGS_BASENM) ; do \
+		$(LIBTOOL) --mode clean rm -f $$p$(EXEEXT) ;\
+	done
 	$(LIBTOOL) --mode clean rm -f $(TESTNS) $(LDNS_DPA) $(LDNS_DANE) $(EX_SSL_PROGS)
 	$(LIBTOOL) --mode clean rm -f $(EXAMPLE_LOBJS)
 	$(LIBTOOL) --mode clean rm -f examples/ldns-dane.1 examples/ldns-verify-zone.1
 
 linktest: $(srcdir)/linktest.c libldns.la
 	$(COMP_LIB) $(LIBSSL_CPPFLAGS) -c $(srcdir)/linktest.c -o linktest.lo
-	$(LINK_EXE) linktest.lo $(LIB) $(LIBSSL_LIBS) $(LIBS) -o linktest
+	$(LINK_EXE) linktest.lo $(LIB) $(LIBSSL_LIBS) $(LIBS) -o linktest $(top_builddir)/libldns.la
 
 lib: libldns.la
 
@@ -814,6 +818,7 @@ compat/ctime_r.lo compat/ctime_r.o: $(srcdir)/compat/ctime_r.c ldns/config.h
 compat/fake-rfc2553.lo compat/fake-rfc2553.o: $(srcdir)/compat/fake-rfc2553.c ldns/config.h ldns/common.h \
  $(srcdir)/compat/fake-rfc2553.h
 compat/gmtime_r.lo compat/gmtime_r.o: $(srcdir)/compat/gmtime_r.c ldns/config.h
+compat/asctime_r.lo compat/asctime_r.o: $(srcdir)/compat/asctime_r.c ldns/config.h
 compat/inet_aton.lo compat/inet_aton.o: $(srcdir)/compat/inet_aton.c ldns/config.h
 compat/inet_ntop.lo compat/inet_ntop.o: $(srcdir)/compat/inet_ntop.c ldns/config.h
 compat/inet_pton.lo compat/inet_pton.o: $(srcdir)/compat/inet_pton.c ldns/config.h

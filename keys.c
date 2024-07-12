@@ -132,7 +132,7 @@ ldns_key_new_frm_engine(ldns_key **key, ENGINE *e, char *key_id, ldns_algorithm 
 }
 #endif
 
-#ifdef USE_GOST
+#if defined(USE_GOST) && !defined(OPENSSL_NO_ENGINE)
 /** store GOST engine reference loaded into OpenSSL library */
 ENGINE* ldns_gost_engine = NULL;
 
