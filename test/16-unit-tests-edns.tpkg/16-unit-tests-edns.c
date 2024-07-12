@@ -34,10 +34,12 @@ check_option_entries(ldns_edns_option *edns, ldns_edns_option_code code,
 
 	buf = ldns_edns_get_wireformat_buffer(edns);
 	if (ldns_buffer_read_u16(buf) != code) {
+		ldns_buffer_free(buf);
 		printf("Error: EDNS type is incorrect\n");
 		return 0;
 	}
 	if (ldns_buffer_read_u16(buf) != size) {
+		ldns_buffer_free(buf);
 		printf("Error: EDNS length is incorrect\n");
 		return 0;	
 	}
@@ -46,15 +48,17 @@ check_option_entries(ldns_edns_option *edns, ldns_edns_option_code code,
 		if (ldns_buffer_read_u8_at(buf, i+4) != hex_data[i]) {
 			printf("Error: EDNS data is incorrect: %d, %d\n",
 				ldns_buffer_read_u8_at(buf, i+4), hex_data[i]);
+			ldns_buffer_free(buf);
 			return 0;
 		}
 	}
 
+	ldns_buffer_free(buf);
 	return 1;
 }
 
 static int
-check_option()
+check_option(void)
 {
 	ldns_edns_option *edns;
 	ldns_edns_option *clone;
@@ -119,7 +123,7 @@ static int check_option_list_entries(ldns_edns_option_list *list,
 }
 
 static int
-check_option_list()
+check_option_list(void)
 {
 	size_t size, i;
 	ldns_edns_option_list* list;
