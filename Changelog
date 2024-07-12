@@ -17,6 +17,10 @@
 	* Added WALLET rrtype.
 	* PR #241: Fix coverity cited problems. Thanks Enji Cooper.
 	* PR #233: Several Python SWIG issues. Thanks Florian Weimer.
+	* PR #231: const ldns_rdf * typemap fixes to support swig-4.2.0
+	  Thanks William S Fulton
+	* PR #227: keys.c: fix build with libressl >= 3.8.1
+	  Thanks Fabrice Fontaine
 
 1.8.3	2022-08-15
 	* bugfix #183: Assertion failure with OPT record without rdata.
