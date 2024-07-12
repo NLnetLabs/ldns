@@ -112,21 +112,21 @@ jobs:
 #            pkginstall: pkg_add -v libtool gmake gindent automake-1.16.3 autoconf-2.71
 #            env: AUTOCONF_VERSION=2.71 AUTOMAKE_VERSION=1.16
 #            configure_args: --disable-dane-verify
-
-    steps:
-      - uses: actions/checkout@main
-        with:
-          submodules: recursive
-      - name: Build and test on ${{ matrix.os.name }}
-        uses: cross-platform-actions/action@master
-        with:
-          operating_system: ${{ matrix.os.name }}
-          version: ${{ matrix.os.version }}
-          shell: bash
-          run: |
-            export DUMMY12345=1 ${{ matrix.os.env }}
-            sudo ${{ matrix.os.pkginstall }} || ${{ matrix.os.pkginstall }}
-            libtoolize -vci
-            autoreconf -vfi
-            ./configure ${{ matrix.os.configure_args }}
-            gmake test
+#
+#    steps:
+#      - uses: actions/checkout@main
+#        with:
+#          submodules: recursive
+#      - name: Build and test on ${{ matrix.os.name }}
+#        uses: cross-platform-actions/action@master
+#        with:
+#          operating_system: ${{ matrix.os.name }}
+#          version: ${{ matrix.os.version }}
+#          shell: bash
+#          run: |
+#            export DUMMY12345=1 ${{ matrix.os.env }}
+#            sudo ${{ matrix.os.pkginstall }} || ${{ matrix.os.pkginstall }}
+#            libtoolize -vci
+#            autoreconf -vfi
+#            ./configure ${{ matrix.os.configure_args }}
+#            gmake test
