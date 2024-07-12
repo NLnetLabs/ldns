@@ -85,7 +85,7 @@ freedom in the packet mangling. (ghe ghe :-) )
 
 To keep matters interesting some sort of randomness is required in some
 step, otherwise each packet is mangled in the same way. Also this
-randomness together with the Lua script needs to be logged so the the 
+randomness together with the Lua script needs to be logged so the 
 actual mangling can be replayed.
 
 :Packet Mangling: address the different elements:
