@@ -8,36 +8,130 @@ on:
 
 jobs:
   linux:
+    name: Linux (Ubuntu)
+
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@main
       with:
         submodules: recursive
-    - run: libtoolize -ci
-    - run: autoreconf -fi
+    - run: libtoolize -vci
+    - run: autoreconf -vfi
     - run: ./configure
       env:
         CFLAGS: -g2 -O0 -fsanitize=address,undefined -fno-sanitize-recover
     - run: make test
 
   mac:
+    name: macOS
+
     runs-on: macos-latest
 
     steps:
     - run: brew install automake libtool
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@main
       with:
         submodules: recursive
-    - run: glibtoolize -ci
-    - run: autoreconf -fi
+    - run: glibtoolize -vci
+    - run: autoreconf -vfi
 
     # macOS’s system OpenSSL (LibreSSL, actually) isn’t meant for linking,
     # and Homebrew’s# OpenSSL isn’t CI-friendly. So build without OpenSSL.
     - run: ./configure --without-ssl --disable-sha2 --disable-gost --disable-ecdsa --disable-dane
       env:
         CFLAGS: -g2 -O0 -fsanitize=address,undefined -fno-sanitize-recover
+    - run: make test
 
-    # As of now the test suite requires OpenSSL, so no tests.
-    # cf. https://github.com/NLnetLabs/ldns/issues/162
-    - run: make
+  # Pending https://github.com/NLnetLabs/ldns/issues/197,
+  # only builds succeed here.
+  cygwin:
+    name: Cygwin
+
+    runs-on: windows-latest
+
+    steps:
+      - name: Make git ignore line breaks
+        run: git config --global core.autocrlf false
+      - name: Set up Cygwin
+        uses: cygwin/cygwin-install-action@master
+        with:
+            packages: make gcc-g++ bash libtool automake autoconf libssl-devel bind-utils
+      - uses: actions/checkout@main
+        with:
+          submodules: recursive
+      - shell: C:\cygwin\bin\bash.exe --login --norc -eo pipefail -o igncr '{0}'
+        name: Build
+        run: |
+            cd $GITHUB_WORKSPACE
+            libtoolize -vci
+            autoreconf -vfi
+            ./configure
+            make
+
+  qemu-alpine:
+    name: Linux (Alpine, ${{ matrix.platform }})
+
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        platform:
+          - i386
+          - arm32v6
+          - arm32v7
+          - arm64v8
+          - s390x
+
+    steps:
+      - uses: actions/checkout@main
+        with:
+            submodules: recursive
+      - name: Get the qemu container
+        run: docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+      - name: "${{ matrix.platform }}: Build and test"
+        run: docker run --rm --interactive --mount type=bind,source=$(pwd),target=/host ${{ matrix.platform }}/alpine sh -c "apk add make gcc libc-dev libtool automake autoconf openssl-dev m4 indent bash bind-tools && cd /host && libtoolize -vci && autoreconf -vfi && ./configure && make test"
+
+
+#  BSDs:
+#    name: ${{ matrix.os.dispname }} ${{ matrix.os.version }}
+#
+#    runs-on: macos-latest
+#
+#    strategy:
+#      fail-fast: false
+#      matrix:
+#        os:
+#          - name: freebsd
+#            dispname: FreeBSD
+#            version: '13.0'
+#            pkginstall: pkg install -y libtool automake bind-tools gmake gindent
+#            env:
+#            configure_args:
+#
+#            # OpenBSD seems to require explicit auto* versions.
+#          - name: openbsd
+#            dispname: OpenBSD
+#            version: '7.1'
+#            pkginstall: pkg_add -v libtool gmake gindent automake-1.16.3 autoconf-2.71
+#            env: AUTOCONF_VERSION=2.71 AUTOMAKE_VERSION=1.16
+#            configure_args: --disable-dane-verify
+#
+#    steps:
+#      - uses: actions/checkout@main
+#        with:
+#          submodules: recursive
+#      - name: Build and test on ${{ matrix.os.name }}
+#        uses: cross-platform-actions/action@master
+#        with:
+#          operating_system: ${{ matrix.os.name }}
+#          version: ${{ matrix.os.version }}
+#          shell: bash
+#          run: |
+#            export DUMMY12345=1 ${{ matrix.os.env }}
+#            sudo ${{ matrix.os.pkginstall }} || ${{ matrix.os.pkginstall }}
+#            libtoolize -vci
+#            autoreconf -vfi
+#            ./configure ${{ matrix.os.configure_args }}
+#            gmake test
