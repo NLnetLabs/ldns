@@ -152,7 +152,8 @@ setup-builddir:
 
 # builddir/ is used by 60-compile-builddir
 putdown-builddir:
-	rm -f include/ldns lib config.h
+	rm -rf include/ldns
+	rm -f lib config.h
 	test ! -d include  || rmdir include  || :
 	if test -d examples -a ! -f examples/README; then rmdir examples || : ; fi
 	if test -d drill    -a ! -f drill/README   ; then rmdir drill    || : ; fi

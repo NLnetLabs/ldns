@@ -19,6 +19,8 @@ jobs:
     - run: libtoolize -vci
     - run: autoreconf -vfi
     - run: ./configure
+      env:
+        CFLAGS: -g2 -O0 -fsanitize=address,undefined -fno-sanitize-recover
     - run: make test
 
   mac:
@@ -37,6 +39,8 @@ jobs:
     # macOS’s system OpenSSL (LibreSSL, actually) isn’t meant for linking,
     # and Homebrew’s# OpenSSL isn’t CI-friendly. So build without OpenSSL.
     - run: ./configure --without-ssl --disable-sha2 --disable-gost --disable-ecdsa --disable-dane
+      env:
+        CFLAGS: -g2 -O0 -fsanitize=address,undefined -fno-sanitize-recover
     - run: make test
 
   # Pending https://github.com/NLnetLabs/ldns/issues/197,
@@ -88,6 +92,7 @@ jobs:
         run: docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
       - name: "${{ matrix.platform }}: Build and test"
         run: docker run --rm --interactive --mount type=bind,source=$(pwd),target=/host ${{ matrix.platform }}/alpine sh -c "apk add make gcc libc-dev libtool automake autoconf openssl-dev m4 indent bash bind-tools && cd /host && libtoolize -vci && autoreconf -vfi && ./configure && make test"
+
 
 #  BSDs:
 #    name: ${{ matrix.os.dispname }} ${{ matrix.os.version }}
