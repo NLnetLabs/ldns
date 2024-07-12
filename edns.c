@@ -42,6 +42,44 @@ ldns_edns_get_data(const ldns_edns_option *edns)
 	return edns->_data;
 }
 
+ldns_status 
+ldns_edns_ede_get_code(const ldns_edns_option *edns, uint16_t *ede_code)
+{
+	assert(edns != NULL);
+	assert(ede_code != NULL);
+
+	if (edns->_code != LDNS_EDNS_EDE) return LDNS_STATUS_NOT_EDE;
+
+	if (edns->_size < 2) return LDNS_STATUS_EDE_OPTION_MALFORMED;
+
+	*ede_code = (uint16_t) ntohs(*((uint16_t*) edns->_data));
+
+	return LDNS_STATUS_OK;
+}
+
+ldns_status 
+ldns_edns_ede_get_text(const ldns_edns_option* edns, char **ede_text)
+{
+	assert(edns != NULL);
+	assert(ede_text != NULL);
+
+	if (edns->_code != LDNS_EDNS_EDE) return LDNS_STATUS_NOT_EDE;
+
+	if (edns->_size < 2) return LDNS_STATUS_EDE_OPTION_MALFORMED;
+
+	*ede_text = NULL;
+
+	if (edns->_size > 2)
+	{
+		*ede_text = (char*) malloc((edns->_size - 1) * sizeof(char));
+
+		memset(*ede_text, 0, edns->_size - 1);
+		memcpy(*ede_text, &edns->_data[2], edns->_size - 2);
+	}
+
+	return LDNS_STATUS_OK;
+}
+
 ldns_buffer *
 ldns_edns_get_wireformat_buffer(const ldns_edns_option *edns)
 {
