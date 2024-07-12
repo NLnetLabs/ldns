@@ -25,6 +25,8 @@
 	  Thanks Ørjan Malde
 	* PR #216 Update declaration for function with no argument
 	  Thanks Ed Maste
+	* PR #214 fix the build in FreeBSD's base system
+	  Thanks Pierre Pronchery and Dag-Erling Smørgrav
 
 1.8.3	2022-08-15
 	* bugfix #183: Assertion failure with OPT record without rdata.
