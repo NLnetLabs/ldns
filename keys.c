@@ -23,8 +23,12 @@
 #ifdef USE_DSA
 #include <openssl/dsa.h>
 #endif
-#ifndef OPENSSL_NO_ENGINE
+#if defined(HAVE_OPENSSL_ENGINE_H) && !defined(OPENSSL_NO_ENGINE)
 #include <openssl/engine.h>
+#else
+#  ifndef OPENSSL_NO_ENGINE
+#  define OPENSSL_NO_ENGINE
+#  endif
 #endif
 #endif /* HAVE_SSL */
 
