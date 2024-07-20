@@ -1,4 +1,4 @@
-1.8.4	2024-07-??
+1.8.4	2024-07-19
 	* Fix building documentation in build directory.
 	  Thanks Michael Tokarev
 	* Updated the configure script for split openssl directories.
@@ -36,6 +36,8 @@
 	* PR #191: 16-unit-tests-edns: Fix leak & warnings
 	  Thanks Felipe Gasper
 	* Added NXNAME rrtype.
+	* PR #242: Openssl no engine improved support #242
+	  Thanks Petr Menšík
 
 1.8.3	2022-08-15
 	* bugfix #183: Assertion failure with OPT record without rdata.
