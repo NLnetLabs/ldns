@@ -23,8 +23,12 @@
 #ifdef USE_DSA
 #include <openssl/dsa.h>
 #endif
-#ifndef OPENSSL_NO_ENGINE
+#if defined(HAVE_OPENSSL_ENGINE_H) && !defined(OPENSSL_NO_ENGINE)
 #include <openssl/engine.h>
+#else
+#  ifndef OPENSSL_NO_ENGINE
+#  define OPENSSL_NO_ENGINE
+#  endif
 #endif
 #endif /* HAVE_SSL */
 
@@ -116,16 +120,12 @@ ldns_key_new_frm_engine(ldns_key **key, ENGINE *e, char *key_id, ldns_algorithm 
 	k = ldns_key_new();
         if(!k) return LDNS_STATUS_MEM_ERR;
 #ifndef S_SPLINT_S
-	k->_key.key = ENGINE_load_private_key(e, key_id, UI_OpenSSL(), NULL);
-        if(!k->_key.key) {
-                ldns_key_free(k);
-                return LDNS_STATUS_ERR;
-        }
 	ldns_key_set_algorithm(k, (ldns_signing_algorithm) alg);
+	k->_key.key = ENGINE_load_private_key(e, key_id, UI_OpenSSL(), NULL);
 	if (!k->_key.key) {
                 ldns_key_free(k);
 		return LDNS_STATUS_ENGINE_KEY_NOT_LOADED;
-	} 
+	}
 #endif /* splint */
 	*key = k;
 	return LDNS_STATUS_OK;
