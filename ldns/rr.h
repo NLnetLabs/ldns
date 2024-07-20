@@ -210,6 +210,8 @@ enum ldns_enum_rr_type
 	LDNS_RR_TYPE_EUI48 = 108, /* RFC 7043 */
 	LDNS_RR_TYPE_EUI64 = 109, /* RFC 7043 */
 
+	LDNS_RR_TYPE_NXNAME = 128, /* draft-ietf-dnsop-compact-denial-of-existence */
+
 	LDNS_RR_TYPE_TKEY = 249, /* RFC 2930 */
 	LDNS_RR_TYPE_TSIG = 250,
 	LDNS_RR_TYPE_IXFR = 251,
