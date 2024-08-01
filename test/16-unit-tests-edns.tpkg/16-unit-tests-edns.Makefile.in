@@ -13,8 +13,8 @@ datarootdir = @datarootdir@
 CC = @CC@
 CFLAGS = @CFLAGS@
 CPPFLAGS = @CPPFLAGS@ @LIBSSL_CPPFLAGS@ -I../..
-LDFLAGS = @LDFLAGS@ @LIBSSL_LDFLAGS@ -L../../.libs
-LIBS = @LIBS@ @LIBSSL_SSL_LIBS@ -lldns
+LDFLAGS = @LDFLAGS@ @LIBSSL_LDFLAGS@
+LIBS = @LIBS@ @LIBSSL_SSL_LIBS@
 
 COMPILE         = $(CC) $(CPPFLAGS) $(CFLAGS)
 LINK            = $(CC) $(CFLAGS) $(LDFLAGS)
@@ -29,7 +29,7 @@ TESTS		= 16-unit-tests-edns
 all:	$(TESTS)
 
 16-unit-tests-edns:	16-unit-tests-edns.o
-		$(LINK) -o $@ $+ $(LIBS)
+		$(LINK) -o $@ $+ ../../.libs/libldns.a $(LIBS)
 
 clean:
 	rm -f *.o
