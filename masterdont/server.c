@@ -240,23 +240,23 @@ handle_listen(struct server_info_t *sinfo, struct socket_service* listen_v)
 	int newfd;
 
 	if(sinfo->num_tcp >= MAX_TCP) {
-		printf("Error: incoming tcp query, but MAX_TCP reached (%d)\n",
+		fprintf(stderr, "Error: incoming tcp query, but MAX_TCP reached (%d)\n",
 			MAX_TCP);
 		return;
 	}
 
 	if((newfd=accept(listen_v->s, NULL, NULL)) == -1) {
-		printf("Error tcp accept: %s", strerror(errno));
+		fprintf(stderr, "Error tcp accept: %s", strerror(errno));
 		return;
 	}
 	if(fcntl(newfd, F_SETFL, O_NONBLOCK) == -1) {
-		printf("Error fcntl: %s\n", strerror(errno));
+		fprintf(stderr, "Error fcntl: %s\n", strerror(errno));
 		close(newfd);
 		return;
 	}
 	sh = (struct socket_service*)malloc(sizeof(struct socket_service));
 	if(!sh) {
-		printf("out of memory\n");
+		fprintf(stderr, "malloc: %s\n", strerror(errno));
 		close(newfd);
 		return;
 	}
