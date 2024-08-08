@@ -2,7 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.57)
-AC_INIT(ldns, 1.7.0, libdns@nlnetlabs.nl,libdns)
+AC_INIT(ldns, 1.7.0, dns-team@nlnetlabs.nl,libdns)
 AC_CONFIG_SRCDIR([nsd-ldnsd.c])
 
 OURCPPFLAGS='-D_POSIX_C_SOURCE=200112 -D_XOPEN_SOURCE=600 -D__EXTENSIONS__ -D__BSD_VISIBLE'

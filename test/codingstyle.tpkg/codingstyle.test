@@ -9,6 +9,8 @@ PATH=$PATH:/usr/sbin:/sbin:/usr/local/bin:/usr/local/sbin:.
 L=90
 OPT="-ncs -sai -nut -ce -nfca -nlp -ncdb -br -ts08 -i8 -nbad"
 
+LC_OSTYPE=$(echo $OSTYPE | tr 'A-Z' 'a-z')
+
 st=0
 for i in ../../*.c; do
 
@@ -23,11 +25,11 @@ for i in ../../*.c; do
                 continue;;
         esac
 
-        case $OSTYPE in
+        case $LC_OSTYPE in
         linux*)
                 diff -w -u $i <(cat $i | indent -l$L $OPT) | grep ^---
                 ;;
-        *bsd*) 
+        *bsd*)
                 diff -w -u $i <(cat $i | gindent -l$L $OPT)| grep ^---
                 ;;
         darwin*)

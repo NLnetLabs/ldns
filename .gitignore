@@ -17,6 +17,7 @@
 /compat/strlcpy.lo
 /compat/timegm.o
 /compat/timegm.lo
+/compile
 /config.guess
 /config.h
 /config.log
@@ -158,10 +159,12 @@
 /ldns/config.h
 /ldns/config.h.in
 /ldns/net.h
+/ldns/stamp-h1
 /ldns/util.h
 /ldns_wrapper.lo
 /ldns_wrapper.o
 /lib
+/libdns.doxygen
 /libldns.la
 /libtool
 /linktest
@@ -170,6 +173,7 @@
 /ltmain.sh
 /m4/lt*.m4
 /m4/libtool.m4
+/missing
 /net.lo
 /net.o
 /packaging/ldns-config

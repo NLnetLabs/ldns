@@ -34,10 +34,12 @@ check_option_entries(ldns_edns_option *edns, ldns_edns_option_code code,
 
 	buf = ldns_edns_get_wireformat_buffer(edns);
 	if (ldns_buffer_read_u16(buf) != code) {
+		ldns_buffer_free(buf);
 		printf("Error: EDNS type is incorrect\n");
 		return 0;
 	}
 	if (ldns_buffer_read_u16(buf) != size) {
+		ldns_buffer_free(buf);
 		printf("Error: EDNS length is incorrect\n");
 		return 0;	
 	}
@@ -46,15 +48,17 @@ check_option_entries(ldns_edns_option *edns, ldns_edns_option_code code,
 		if (ldns_buffer_read_u8_at(buf, i+4) != hex_data[i]) {
 			printf("Error: EDNS data is incorrect: %d, %d\n",
 				ldns_buffer_read_u8_at(buf, i+4), hex_data[i]);
+			ldns_buffer_free(buf);
 			return 0;
 		}
 	}
 
+	ldns_buffer_free(buf);
 	return 1;
 }
 
 static int
-check_option()
+check_option(void)
 {
 	ldns_edns_option *edns;
 	ldns_edns_option *clone;
@@ -74,7 +78,7 @@ check_option()
 		return 0;
 	}
 
-	ldns_edns_free(edns);
+	ldns_edns_deep_free(edns);
 
 	edns = ldns_edns_new_from_data(LDNS_EDNS_EDE, 4, hex_data);
 
@@ -90,7 +94,6 @@ check_option()
 
 	ldns_edns_deep_free(edns);
 	ldns_edns_deep_free(clone);
-
 	return 1;
 }
 
@@ -119,7 +122,7 @@ static int check_option_list_entries(ldns_edns_option_list *list,
 }
 
 static int
-check_option_list()
+check_option_list(void)
 {
 	size_t size, i;
 	ldns_edns_option_list* list;
@@ -181,6 +184,7 @@ check_option_list()
 		if (ldns_buffer_read_u8(buf) != hex_data[i]) {
 			printf("Error: EDNS data is incorrect: %d, %d\n",
 				ldns_buffer_read_u8_at(buf, i), hex_data[i]);
+			ldns_buffer_free(buf);
 			return 0;
 		}
 	}
@@ -191,9 +195,12 @@ check_option_list()
 		if (ldns_buffer_read_u8(buf) != hex_data2[i]) {
 			printf("Error: EDNS data is incorrect: %d, %d\n",
 				ldns_buffer_read_u8_at(buf, i), hex_data2[i]);
+			ldns_buffer_free(buf);
 			return 0;
 		}
 	}
+	ldns_buffer_free(buf);
+	buf = NULL;
 
 	/* Replace the first option with a copy of the second */
 	option = ldns_edns_new_from_data(LDNS_EDNS_PADDING, 5, hex_data2);
@@ -228,6 +235,7 @@ check_option_list()
 
 	if (!(check_option_list_entries(clone, option, 1, LDNS_EDNS_PADDING, 5, hex_data2))) {
 		printf("Error: EDNS list entries are incorrect\n");
+		ldns_edns_option_list_deep_free(clone);
 		return 0;
 	}
 
@@ -241,7 +249,7 @@ check_option_list()
 		return 0;
 	}
 
-	ldns_edns_option_list_free(clone);
+	ldns_edns_option_list_deep_free(clone);
 
 	ldns_edns_option_list_deep_free(list);
 
