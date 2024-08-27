@@ -62,6 +62,12 @@ check_ldns_calc_keytag(void)
 		result = LDNS_STATUS_ERR;
 	}
 
+	key_str = "jelte.nlnetlabs.nl. IN CDNSKEY 256 3 5 AQOraLfzarHAlFskVGwAGnX0LRjlcOiO6y5WM4Kz+QvZ9vX28h4lOvnf d5tkxnZm7ERLTAJoFq+1w/wl7VXs2Isz75BSZ7LQh3OT2xXnS6VT5ZxX ko/UCOdoGiKZZ63jHZ0jNSTCYy8+5rfvwRD8s3gGuErp5KcHg3V8VLUK SDNNEQ==";
+	expected_keytag = 42860;
+	if (check_ldns_calc_keytag_part(key_str, expected_keytag) != LDNS_STATUS_OK) {
+		result = LDNS_STATUS_ERR;
+	}
+
 /* template for adding extra keys
 	key_str = "";
 	expected_keytag = ;
