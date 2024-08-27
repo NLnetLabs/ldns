@@ -1681,8 +1681,8 @@ ldns_rr_compare(const ldns_rr *rr1, const ldns_rr *rr2)
 	return result;
 }
 
-/* convert dnskey to a ds with the given algorithm,
- * then compare the result with the given ds */
+/* convert (c)dnskey to a (c)ds with the given algorithm,
+ * then compare the result with the given (c)ds */
 static int
 ldns_rr_compare_ds_dnskey(ldns_rr *ds,
                           ldns_rr *dnskey)
@@ -1692,8 +1692,10 @@ ldns_rr_compare_ds_dnskey(ldns_rr *ds,
 	ldns_hash algo;
 
 	if (!dnskey || !ds ||
-	    ldns_rr_get_type(ds) != LDNS_RR_TYPE_DS ||
-	    ldns_rr_get_type(dnskey) != LDNS_RR_TYPE_DNSKEY) {
+	    (ldns_rr_get_type(ds) != LDNS_RR_TYPE_DS &&
+	     ldns_rr_get_type(ds) != LDNS_RR_TYPE_CDS) ||
+	    (ldns_rr_get_type(dnskey) != LDNS_RR_TYPE_DNSKEY &&
+	     ldns_rr_get_type(dnskey) != LDNS_RR_TYPE_CDNSKEY)) {
 		return false;
 	}
 
@@ -1726,6 +1728,12 @@ ldns_rr_compare_ds(const ldns_rr *orr1, const ldns_rr *orr2)
 		result = ldns_rr_compare_ds_dnskey(rr1, rr2);
 	} else if (ldns_rr_get_type(rr1) == LDNS_RR_TYPE_DNSKEY &&
 	    ldns_rr_get_type(rr2) == LDNS_RR_TYPE_DS) {
+		result = ldns_rr_compare_ds_dnskey(rr2, rr1);
+	} else if (ldns_rr_get_type(rr1) == LDNS_RR_TYPE_CDS &&
+	    ldns_rr_get_type(rr2) == LDNS_RR_TYPE_CDNSKEY) {
+		result = ldns_rr_compare_ds_dnskey(rr1, rr2);
+	} else if (ldns_rr_get_type(rr1) == LDNS_RR_TYPE_CDNSKEY &&
+	    ldns_rr_get_type(rr2) == LDNS_RR_TYPE_CDS) {
 		result = ldns_rr_compare_ds_dnskey(rr2, rr1);
 	} else {
 		result = (ldns_rr_compare(rr1, rr2) == 0);
