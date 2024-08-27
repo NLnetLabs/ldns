@@ -1,6 +1,6 @@
 1.8.5	2024-??-??
 	* PR #246: Make ldns_calc_keytag() available for CDNSKEY RR
-	  Thanks tgreenx and ghost
+	  Thanks tgreenx and pnax
 	* PR #247: Make ldns_key_rr2ds() available for CDNSKEY RR
 	  Thanks tgreenx
 	* PR #248: Make ldns_rr_compare_{ds,ds_dnskey}() available for
