@@ -3,6 +3,10 @@
 	  Thanks tgreenx and ghost
 	* PR #247: Make ldns_key_rr2ds() available for CDNSKEY RR
 	  Thanks tgreenx
+	* PR #248: Make ldns_rr_compare_{ds,ds_dnskey}() available for
+	  CDS and CDNSKEY RRs. Thanks tgreenx
+	* PR #245: Make drill trace use IPv6 when used with -6
+	  Thanks Paul Radford 
 
 1.8.4	2024-07-19
 	* Fix building documentation in build directory.
