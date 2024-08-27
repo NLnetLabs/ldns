@@ -1,3 +1,9 @@
+1.8.5	2024-??-??
+	* PR #246: Make ldns_calc_keytag() available for CDNSKEY RR
+	  Thanks tgreenx and ghost
+	* PR #247: Make ldns_key_rr2ds() available for CDNSKEY RR
+	  Thanks tgreenx
+
 1.8.4	2024-07-19
 	* Fix building documentation in build directory.
 	  Thanks Michael Tokarev
