@@ -390,12 +390,6 @@ ldns_rr_new_frm_str_internal(ldns_rr **newrr, const char *str,
 				ldns_buffer_skip(rd_buf, 1);
 				quoted = true;
 			}
-			if (!quoted && ldns_rr_descriptor_field_type(desc, r_cnt)
-					== LDNS_RDF_TYPE_LONG_STR) {
-
-				status = LDNS_STATUS_SYNTAX_RDATA_ERR;
-				goto error;
-			}
 		}
 
 		/* because number of fields can be variable, we can't rely on

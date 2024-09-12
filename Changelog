@@ -7,6 +7,8 @@
 	  CDS and CDNSKEY RRs. Thanks tgreenx
 	* PR #245: Make drill trace use IPv6 when used with -6
 	  Thanks Paul Radford 
+	* Fix #254: Unquoted "value" rdata for CAA records fail to validate.
+	  Follows the long string unquoted syntax from RFC8659, section 4.1.1.
 
 1.8.4	2024-07-19
 	* Fix building documentation in build directory.
