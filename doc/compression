@@ -1,0 +1,41 @@
+
+DNS Packet Compression Algorithm
+================================
+
+Original algo was not performant enough and caused vulnerability to denials of
+service. Specifically, building rbtree for a DNS request containing many lables
+is a bad idea because 1/ the tree is built pro-actively, even before the actual
+need to compress anything; 2/ rbtree is inadequate choice because adding
+elements leeds to re-balancing, which, in due turn, calls many comparisons.
+
+ldns_llnode_t type is added to host2wire.h, and implementation of
+ldns_dname2buffer_wire_compress() function is re-designed. The new algo is lazy.
+
+Consider five DNAMEs being put on the wire:
+
+
+start
+  ^    o              #
+  |    o              #
+  |    o    x         #
+  D    o    x---------C
+  N    o    x
+  A    o    x              ~
+  M    o----A    *         ~
+  E    o         *         ~
+  |    o---------B         ~
+  |    o                   ~
+  ------------------------------>
+        packet on the wire     end
+
+
+Every time we add another dname, we move left to right measuring size of match
+(som) from the end between the dname being added and a dname seen earlier. We
+consider early dname only if the current som equates to the one stored for that
+early dname (refer to A and C being such stitching points). Thus iterating, we
+seek the greatest som and remember corresponding dname. Finally, we just splice
+the beginning (minus som) of the dname being added with the reference to the
+early dname remembered. Also adding another node to the linked list
+(ldns_llnode_t) containing the som/dname having just been processed.
+
+Vitaly Zuevsky
