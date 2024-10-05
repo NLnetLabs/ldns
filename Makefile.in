@@ -132,11 +132,11 @@ all:	setup-builddir lib linktest manpages @P5_DNS_LDNS@ @PYLDNS@ @DRILL@ @EXAMPL
 .SUFFIXES: .c .o .a .lo .h .i
 
 .c.lo:
-	$(COMP_LIB) $(LIBSSL_CPPFLAGS) -c $< -o $@
+	$(COMP_LIB) $(LIBSSL_CPPFLAGS) -c $(srcdir)/$< -o $@
 
 # Need libtool compile
 .c.o:
-	$(COMP_LIB) $(LIBSSL_CPPFLAGS) -c $< -o $@
+	$(COMP_LIB) $(LIBSSL_CPPFLAGS) -c $(srcdir)/$< -o $@
 
 $(LDNS_LOBJS) $(LIBLOBJS) $(DRILL_LOBJS) $(EXAMPLE_LOBJS):
 	$(COMP_LIB) $(LIBSSL_CPPFLAGS) -c $(srcdir)/$(@:.lo=.c) -o $@
