@@ -42,6 +42,10 @@ ldns_buffer_new_frm_data(ldns_buffer *buffer, const void *data, size_t size)
 {
 	assert(data != NULL);
 
+	if (data == NULL) {
+		return;
+	}
+
 	buffer->_position = 0; 
 	buffer->_limit = buffer->_capacity = size;
 	buffer->_fixed = 0;
@@ -64,6 +68,10 @@ ldns_buffer_set_capacity(ldns_buffer *buffer, size_t capacity)
 	ldns_buffer_invariant(buffer);
 	assert(buffer->_position <= capacity);
 	assert(!buffer->_fixed);
+
+	if (buffer->_position > capacity || buffer->_fixed) {
+		return false;
+	}
 
 	data = (uint8_t *) LDNS_XREALLOC(buffer->_data, uint8_t, capacity);
 	if (!data) {
@@ -105,6 +113,11 @@ ldns_buffer_printf(ldns_buffer *buffer, const char *format, ...)
 	if (ldns_buffer_status_ok(buffer)) {
 		ldns_buffer_invariant(buffer);
 		assert(buffer->_limit == buffer->_capacity);
+
+		if (buffer->_limit != buffer->_capacity) {
+			// @TODO set: buffer->_status = LDNS_STATUS_INTERNAL_ERR; ?
+			return -1;
+		}
 
 		remaining = ldns_buffer_remaining(buffer);
 		va_start(args, format);

@@ -186,6 +186,10 @@ ldns_resolver_nameserver_rtt(const ldns_resolver *r, size_t pos)
 
 	assert(r != NULL);
 
+	if (r == NULL) {
+		return 0;
+	}
+
 	rtt = ldns_resolver_rtt(r);
 
 	if (pos >= ldns_resolver_nameserver_count(r)) {
@@ -255,6 +259,10 @@ ldns_resolver_pop_nameserver(ldns_resolver *r)
 	size_t *rtt;
 
 	assert(r != NULL);
+
+	if (r == NULL) {
+		return NULL;
+	}
 
 	ns_count = ldns_resolver_nameserver_count(r);
 	nameservers = ldns_resolver_nameservers(r);
@@ -509,6 +517,10 @@ ldns_resolver_set_nameserver_rtt(ldns_resolver *r, size_t pos, size_t value)
 
 	assert(r != NULL);
 
+	if (r == NULL) {
+		return;
+	}
+
 	rtt = ldns_resolver_rtt(r);
 
 	if (pos >= ldns_resolver_nameserver_count(r)) {
@@ -668,6 +680,10 @@ ldns_resolver_clone(ldns_resolver *src)
 	size_t i;
 
 	assert(src != NULL);
+
+	if (src == NULL) {
+		return NULL;
+	}
 
 	if (!(dst = LDNS_MALLOC(ldns_resolver))) return NULL;
 	(void) memcpy(dst, src, sizeof(ldns_resolver));
@@ -1347,6 +1363,10 @@ ldns_resolver_send(ldns_pkt **answer, ldns_resolver *r, const ldns_rdf *name,
 	assert(r != NULL);
 	assert(name != NULL);
 
+	if (r == NULL || name == NULL) {
+		return LDNS_STATUS_INTERNAL_ERR;
+	}
+
 	answer_pkt = NULL;
 
 	/* do all the preprocessing here, then fire of an query to
@@ -1546,6 +1566,10 @@ ldns_resolver_nameservers_randomize(ldns_resolver *r)
 
 	/* should I check for ldns_resolver_random?? */
 	assert(r != NULL);
+
+	if (r == NULL) {
+		return;
+	}
 
 	ns = ldns_resolver_nameservers(r);
 	rtt = ldns_resolver_rtt(r);

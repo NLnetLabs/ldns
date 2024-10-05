@@ -981,6 +981,11 @@ void
 ldns_rr_list_set_rr_count(ldns_rr_list *rr_list, size_t count)
 {
 	assert(count <= rr_list->_rr_capacity);
+
+	if (count > rr_list->_rr_capacity) {
+		return;
+	}
+
 	rr_list->_rr_count = count;
 }
 
@@ -1297,6 +1302,10 @@ ldns_rr_set_push_rr(ldns_rr_list *rr_list, ldns_rr *rr)
 
 	assert(rr != NULL);
 
+	if (rr == NULL) {
+		return false;
+	}
+
 	rr_count = ldns_rr_list_rr_count(rr_list);
 
 	if (rr_count == 0) {
@@ -1563,6 +1572,10 @@ ldns_rr_compare_no_rdata(const ldns_rr *rr1, const ldns_rr *rr2)
 	assert(rr1 != NULL);
 	assert(rr2 != NULL);
 
+	if (rr1 == NULL || rr2 == NULL) {
+		return 0;
+	}
+
 	rr1_len = ldns_rr_uncompressed_size(rr1);
 	rr2_len = ldns_rr_uncompressed_size(rr2);
 
@@ -1747,6 +1760,10 @@ ldns_rr_list_compare(const ldns_rr_list *rrl1, const ldns_rr_list *rrl2)
 
 	assert(rrl1 != NULL);
 	assert(rrl2 != NULL);
+
+	if (rrl1 == NULL || rrl2 == NULL) {
+		return 0;
+	}
 
 	for (i = 0; i < ldns_rr_list_rr_count(rrl1) && i < ldns_rr_list_rr_count(rrl2); i++) {
 		rr_cmp = ldns_rr_compare(ldns_rr_list_rr(rrl1, i), ldns_rr_list_rr(rrl2, i));
@@ -2583,6 +2600,10 @@ ldns_rdf_bitmap_known_rr_types_set(ldns_rdf** rdf, int value)
 
 	assert(rdf != NULL);
 
+	if (rdf == NULL) {
+		return LDNS_STATUS_INTERNAL_ERR;
+	}
+
 	/* Which windows need to be in the bitmap rdf?
 	 */
 	for (d=rdata_field_descriptors; d < rdata_field_descriptors_end; d++) {
@@ -2693,6 +2714,13 @@ ldns_rr_descriptor_field_type(const ldns_rr_descriptor *descriptor,
 	assert(descriptor != NULL);
 	assert(index < descriptor->_maximum
 	       || descriptor->_variable != LDNS_RDF_TYPE_NONE);
+
+	if (descriptor == NULL ||
+		(index > descriptor->_maximum 
+		|| descriptor->_variable == LDNS_RDF_TYPE_NONE)) {
+		return LDNS_RDF_TYPE_NONE;
+	}
+
 	if (index < descriptor->_maximum) {
 		return descriptor->_wireformat[index];
 	} else {
