@@ -247,7 +247,7 @@ static void
 usage(FILE *fp, char *prog)
 {
         fprintf(fp, "%s domain [zone] ip tsig_name tsig_alg tsig_hmac\n", prog);
-        fprintf(fp, "  send a dynamic update packet to <ip>\n\n");
+        fprintf(fp, "  send a dynamic update\n\n");
         fprintf(fp, "  Use 'none' instead of ip to remove any previous address\n");
         fprintf(fp, "  If 'zone'  is not specified, try to figure it out from the zone's SOA\n");
         fprintf(fp, "  Example: %s my.example.org 1.2.3.4\n", prog);
