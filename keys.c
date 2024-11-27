@@ -30,6 +30,9 @@
 #  define OPENSSL_NO_ENGINE
 #  endif
 #endif
+# if OPENSSL_VERSION_NUMBER >= 0x30000000L
+#include <openssl/core_names.h>
+# endif
 #endif /* HAVE_SSL */
 
 ldns_lookup_table ldns_signing_algorithms[] = {
@@ -228,6 +231,7 @@ ldns_key_new_frm_fp_gost_l(FILE* fp, int* line_nr)
 
 #ifdef USE_ECDSA
 /** calculate public key from private key */
+#if OPENSSL_VERSION_NUMBER < 0x30000000L
 static int
 ldns_EC_KEY_calc_public(EC_KEY* ec)
 {
@@ -252,59 +256,114 @@ ldns_EC_KEY_calc_public(EC_KEY* ec)
         EC_POINT_free(pub_key);
         return 1;
 }
+#endif /* OPENSSL_VERSION_NUMBER >= 0x30000000L */
+#endif /* USE_ECDSA */
 
 /** read ECDSA private key */
 static EVP_PKEY*
 ldns_key_new_frm_fp_ecdsa_l(FILE* fp, ldns_algorithm alg, int* line_nr)
 {
-	char token[16384];
-        ldns_rdf* b64rdf = NULL;
-        unsigned char* pp;
-        BIGNUM* bn;
-        EVP_PKEY* evp_key;
-        EC_KEY* ec;
-	if (ldns_fget_keyword_data_l(fp, "PrivateKey", ": ", token, "\n",
-		sizeof(token), line_nr) == -1)
-		return NULL;
-	if(ldns_str2rdf_b64(&b64rdf, token) != LDNS_STATUS_OK)
-		return NULL;
-        pp = (unsigned char*)ldns_rdf_data(b64rdf);
+    char token[16384];
+    ldns_rdf* b64rdf = NULL;
+    unsigned char* pp;
 
-        if(alg == LDNS_ECDSAP256SHA256)
-                ec = EC_KEY_new_by_curve_name(NID_X9_62_prime256v1);
-        else if(alg == LDNS_ECDSAP384SHA384)
-                ec = EC_KEY_new_by_curve_name(NID_secp384r1);
-        else    ec = NULL;
-        if(!ec) {
-	        ldns_rdf_deep_free(b64rdf);
-                return NULL;
-        }
-	bn = BN_bin2bn(pp, (int)ldns_rdf_size(b64rdf), NULL);
-	ldns_rdf_deep_free(b64rdf);
-        if(!bn) {
-                EC_KEY_free(ec);
-                return NULL;
-        }
-        EC_KEY_set_private_key(ec, bn);
-        BN_free(bn);
-        if(!ldns_EC_KEY_calc_public(ec)) {
-                EC_KEY_free(ec);
-                return NULL;
-        }
-
-        evp_key = EVP_PKEY_new();
-        if(!evp_key) {
-                EC_KEY_free(ec);
-                return NULL;
-        }
-        if (!EVP_PKEY_assign_EC_KEY(evp_key, ec)) {
-		EVP_PKEY_free(evp_key);
-                EC_KEY_free(ec);
-                return NULL;
-	}
-        return evp_key;
-}
+#if OPENSSL_VERSION_NUMBER >= 0x30000000L
+	EVP_PKEY* evp_key = NULL;
+    EVP_PKEY_CTX *ctx = EVP_PKEY_CTX_new_id(EVP_PKEY_EC, NULL);
+    const char *n = NULL;
+    char *group_name = NULL;
+#else
+	BIGNUM* bn;
+	EC_KEY* ec;
 #endif
+
+    if (ldns_fget_keyword_data_l(fp, "PrivateKey", ": ", token, "\n",
+                                 sizeof(token), line_nr) == -1)
+        return NULL;
+    if(ldns_str2rdf_b64(&b64rdf, token) != LDNS_STATUS_OK)
+        return NULL;
+    pp = (unsigned char*)ldns_rdf_data(b64rdf);
+
+#if OPENSSL_VERSION_NUMBER >= 0x30000000L
+    if(alg == LDNS_ECDSAP256SHA256) {
+        n = EC_curve_nid2nist(NID_X9_62_prime256v1);
+    } else if(alg == LDNS_ECDSAP384SHA384) {
+        n = EC_curve_nid2nist(NID_secp384r1);
+    }
+
+    if(n) {
+        group_name = OPENSSL_zalloc(strlen(n) + 1);
+    } else {
+        ldns_rdf_deep_free(b64rdf);
+        return NULL;
+    }
+
+    if(group_name) {
+        int ret = 0;
+        OSSL_PARAM params[3] = { 0 };
+
+        memcpy(group_name, n, strlen(n));
+
+        params[0] =
+			OSSL_PARAM_construct_utf8_string(OSSL_PKEY_PARAM_GROUP_NAME,
+											 group_name, 0);
+
+        params[1] =
+			OSSL_PARAM_construct_octet_string(OSSL_PKEY_PARAM_PUB_KEY,
+											  pp, ldns_rdf_size(b64rdf));
+
+        params[2] = OSSL_PARAM_construct_end();
+
+        if(EVP_PKEY_fromdata_init(ctx) > 0) {
+            ret = EVP_PKEY_fromdata(ctx, &evp_key, EVP_PKEY_PUBLIC_KEY,
+                                    params);
+        }
+
+        if(group_name) {
+            OPENSSL_clear_free(group_name, strlen(n));
+        }
+
+        if(ret <= 0) {
+            ldns_rdf_deep_free(b64rdf);
+            return NULL;
+        }
+    }
+#else
+    if(alg == LDNS_ECDSAP256SHA256)
+        ec = EC_KEY_new_by_curve_name(NID_X9_62_prime256v1);
+    else if(alg == LDNS_ECDSAP384SHA384)
+        ec = EC_KEY_new_by_curve_name(NID_secp384r1);
+    else    ec = NULL;
+    if(!ec) {
+        ldns_rdf_deep_free(b64rdf);
+        return NULL;
+    }
+    bn = BN_bin2bn(pp, (int)ldns_rdf_size(b64rdf), NULL);
+    ldns_rdf_deep_free(b64rdf);
+    if(!bn) {
+        EC_KEY_free(ec);
+        return NULL;
+    }
+    EC_KEY_set_private_key(ec, bn);
+    BN_free(bn);
+    if(!ldns_EC_KEY_calc_public(ec)) {
+        EC_KEY_free(ec);
+        return NULL;
+    }
+
+    evp_key = EVP_PKEY_new();
+    if(!evp_key) {
+        EC_KEY_free(ec);
+        return NULL;
+    }
+    if (!EVP_PKEY_assign_EC_KEY(evp_key, ec)) {
+        EVP_PKEY_free(evp_key);
+        EC_KEY_free(ec);
+        return NULL;
+    }
+#endif /* OPENSSL_VERSION_NUMBER >= 0x30000000L */
+    return evp_key;
+}
 
 #ifdef USE_ED25519
 /** turn private key buffer into EC_KEY structure */
@@ -421,10 +480,14 @@ ldns_key_new_frm_fp_l(ldns_key **key, FILE *fp, int *line_nr)
 	ldns_signing_algorithm alg;
 	ldns_rr *key_rr;
 #ifdef HAVE_SSL
+#if OPENSSL_VERSION_NUMBER >= 0x30000000L
+    EVP_PKEY *pkey;
+#else
 	RSA *rsa;
 #ifdef USE_DSA
 	DSA *dsa;
 #endif
+#endif /* OPENSSL_VERSION_NUMBER >= 0x30000000L */
 	unsigned char *hmac;
 	size_t hmac_size;
 #endif /* HAVE_SSL */
@@ -614,12 +677,21 @@ ldns_key_new_frm_fp_l(ldns_key **key, FILE *fp, int *line_nr)
 #endif
 			ldns_key_set_algorithm(k, alg);
 #ifdef HAVE_SSL
+#if OPENSSL_VERSION_NUMBER >= 0x30000000L
+            pkey = ldns_pkey_new_frm_fp_rsa_l(fp, line_nr);
+            if (!pkey) {
+                ldns_key_free(k);
+                return LDNS_STATUS_ERR;
+            }
+            ldns_key_set_evp_key(k, pkey);
+#else
 			rsa = ldns_key_new_frm_fp_rsa_l(fp, line_nr);
 			if (!rsa) {
 				ldns_key_free(k);
 				return LDNS_STATUS_ERR;
 			}
 			ldns_key_assign_rsa_key(k, rsa);
+#endif /* OPENSSL_VERSION_NUMBER >= 0x30000000L */
 #endif /* HAVE_SSL */
 			break;
 #ifdef USE_DSA
@@ -627,12 +699,21 @@ ldns_key_new_frm_fp_l(ldns_key **key, FILE *fp, int *line_nr)
 		case LDNS_SIGN_DSA_NSEC3:
 			ldns_key_set_algorithm(k, alg);
 #ifdef HAVE_SSL
+#if OPENSSL_VERSION_NUMBER >= 0x30000000L
+            pkey = ldns_pkey_new_frm_fp_dsa_l(fp, line_nr);
+            if (!pkey) {
+                ldns_key_free(k);
+                return LDNS_STATUS_ERR;
+            }
+            ldns_key_set_evp_key(k, pkey);
+#else
 			dsa = ldns_key_new_frm_fp_dsa_l(fp, line_nr);
 			if (!dsa) {
 				ldns_key_free(k);
 				return LDNS_STATUS_ERR;
 			}
 			ldns_key_assign_dsa_key(k, dsa);
+#endif /* OPENSSL_VERSION_NUMBER >= 0x30000000L */
 #endif /* HAVE_SSL */
 			break;
 #endif /* USE_DSA */
@@ -727,12 +808,271 @@ ldns_key_new_frm_fp_l(ldns_key **key, FILE *fp, int *line_nr)
 }
 
 #ifdef HAVE_SSL
+# if OPENSSL_VERSION_NUMBER >= 0x30000000L
+EVP_PKEY *
+ldns_pkey_new_frm_fp_rsa(FILE *f)
+{
+    return ldns_pkey_new_frm_fp_rsa_l(f, NULL);
+}
+# endif
+
+#ifndef OPENSSL_NO_DEPRECATED_3_0
 RSA *
 ldns_key_new_frm_fp_rsa(FILE *f)
 {
 	return ldns_key_new_frm_fp_rsa_l(f, NULL);
 }
+#endif
 
+# if OPENSSL_VERSION_NUMBER >= 0x30000000L
+EVP_PKEY *
+ldns_pkey_new_frm_fp_rsa_l(FILE *f, int *line_nr)
+{
+    /* we parse
+     * Modulus:
+     * PublicExponent:
+     * PrivateExponent:
+     * Prime1:
+     * Prime2:
+     * Exponent1:
+     * Exponent2:
+     * Coefficient:
+     *
+     * man 3 RSA:
+     *
+     * struct
+     *     {
+     *     BIGNUM *n;              // public modulus
+     *     BIGNUM *e;              // public exponent
+     *     BIGNUM *d;              // private exponent
+     *     BIGNUM *p;              // secret prime factor
+     *     BIGNUM *q;              // secret prime factor
+     *     BIGNUM *dmp1;           // d mod (p-1)
+     *     BIGNUM *dmq1;           // d mod (q-1)
+     *     BIGNUM *iqmp;           // q^-1 mod p
+     *     // ...
+     *
+     */
+    char *b;
+    int num_params = 0;
+    EVP_PKEY_CTX *ctx = NULL;
+    OSSL_PARAM params[9];
+    EVP_PKEY *pkey = NULL;
+    uint8_t *buf;
+    size_t n_len=0, e_len=0, d_len=0, p_len=0, q_len=0,
+    dmp1_len=0, dmq1_len=0, iqmp_len=0;
+    unsigned char *n=NULL, *e=NULL, *d=NULL, *p=NULL, *q=NULL,
+    *dmp1=NULL, *dmq1=NULL, *iqmp=NULL;
+
+    b = LDNS_XMALLOC(char, LDNS_MAX_LINELEN);
+    buf = LDNS_XMALLOC(uint8_t, LDNS_MAX_LINELEN);
+    if (!b || !buf) {
+        goto error;
+    }
+
+    /* I could use functions again, but that seems an overkill,
+     * although this also looks tedious
+     */
+
+    /* Modules, rsa->n */
+    if (ldns_fget_keyword_data_l(f, "Modulus", ": ", b, "\n", LDNS_MAX_LINELEN, line_nr) == -1) {
+        goto error;
+    }
+    n_len = ldns_b64_pton((const char*)b, buf, ldns_b64_ntop_calculate_size(strlen(b)));
+#ifndef S_SPLINT_S
+    n = OPENSSL_zalloc(n_len);
+    if (!n) {
+        goto error;
+    }
+    memcpy(n, buf, n_len);
+    ldns_swap_bytes(n, n_len);
+
+    /* PublicExponent, rsa->e */
+    if (ldns_fget_keyword_data_l(f, "PublicExponent", ": ", b, "\n", LDNS_MAX_LINELEN, line_nr) == -1) {
+        goto error;
+    }
+    e_len = ldns_b64_pton((const char*)b, buf, ldns_b64_ntop_calculate_size(strlen(b)));
+    if (!e) {
+        goto error;
+    }
+    e = OPENSSL_zalloc(e_len);
+    if (!e) {
+        goto error;
+    }
+    memcpy(e, buf, e_len);
+    ldns_swap_bytes(e, e_len);
+
+    /* PrivateExponent, rsa->d */
+    if (ldns_fget_keyword_data_l(f, "PrivateExponent", ": ", b, "\n", LDNS_MAX_LINELEN, line_nr) == -1) {
+        goto error;
+    }
+    d_len = ldns_b64_pton((const char*)b, buf, ldns_b64_ntop_calculate_size(strlen(b)));
+    if (!d) {
+        goto error;
+    }
+    d = OPENSSL_zalloc(d_len);
+    if (!d) {
+        goto error;
+    }
+    memcpy(d, buf, d_len);
+    ldns_swap_bytes(d, d_len);
+
+    /* Prime1, rsa->p */
+    if (ldns_fget_keyword_data_l(f, "Prime1", ": ", b, "\n", LDNS_MAX_LINELEN, line_nr) == -1) {
+        goto error;
+    }
+    p_len = ldns_b64_pton((const char*)b, buf, ldns_b64_ntop_calculate_size(strlen(b)));
+    if (!p) {
+        goto error;
+    }
+    p = OPENSSL_zalloc(p_len);
+    if (!p) {
+        goto error;
+    }
+    memcpy(p, buf, p_len);
+    ldns_swap_bytes(p, p_len);
+
+    /* Prime2, rsa->q */
+    if (ldns_fget_keyword_data_l(f, "Prime2", ": ", b, "\n", LDNS_MAX_LINELEN, line_nr) == -1) {
+        goto error;
+    }
+    q_len = ldns_b64_pton((const char*)b, buf, ldns_b64_ntop_calculate_size(strlen(b)));
+    if (!q) {
+        goto error;
+    }
+    q = OPENSSL_zalloc(q_len);
+    if (!q) {
+        goto error;
+    }
+    memcpy(q, buf, q_len);
+    ldns_swap_bytes(q, q_len);
+
+    /* Exponent1, rsa->dmp1 */
+    if (ldns_fget_keyword_data_l(f, "Exponent1", ": ", b, "\n", LDNS_MAX_LINELEN, line_nr) == -1) {
+        goto error;
+    }
+    dmp1_len = ldns_b64_pton((const char*)b, buf, ldns_b64_ntop_calculate_size(strlen(b)));
+    if (!dmp1) {
+        goto error;
+    }
+    dmp1 = OPENSSL_zalloc(dmp1_len);
+    if (!dmp1) {
+        goto error;
+    }
+    memcpy(dmp1, buf, dmp1_len);
+    ldns_swap_bytes(dmp1, dmp1_len);
+
+    /* Exponent2, rsa->dmq1 */
+    if (ldns_fget_keyword_data_l(f, "Exponent2", ": ", b, "\n", LDNS_MAX_LINELEN, line_nr) == -1) {
+        goto error;
+    }
+    dmq1_len = ldns_b64_pton((const char*)b, buf, ldns_b64_ntop_calculate_size(strlen(b)));
+    if (!dmq1) {
+        goto error;
+    }
+    dmq1 = OPENSSL_zalloc(dmq1_len);
+    if (!dmq1) {
+        goto error;
+    }
+    memcpy(dmq1, buf, dmq1_len);
+    ldns_swap_bytes(dmq1, dmq1_len);
+
+    /* Coefficient, rsa->iqmp */
+    if (ldns_fget_keyword_data_l(f, "Coefficient", ": ", b, "\n", LDNS_MAX_LINELEN, line_nr) == -1) {
+        goto error;
+    }
+    iqmp_len = ldns_b64_pton((const char*)b, buf, ldns_b64_ntop_calculate_size(strlen(b)));
+    if (!iqmp) {
+        goto error;
+    }
+    iqmp = OPENSSL_zalloc(iqmp_len);
+    if (!iqmp) {
+        goto error;
+    }
+    memcpy(iqmp, buf, iqmp_len);
+    ldns_swap_bytes(iqmp, iqmp_len);
+#endif /* splint */
+
+    if (n) {
+        params[num_params++] =
+            OSSL_PARAM_construct_BN(OSSL_PKEY_PARAM_RSA_N, n, n_len);
+    }
+
+    if (e) {
+        params[num_params++] =
+            OSSL_PARAM_construct_BN(OSSL_PKEY_PARAM_RSA_E, e, e_len);
+    }
+
+    if (d) {
+        params[num_params++] =
+            OSSL_PARAM_construct_BN(OSSL_PKEY_PARAM_RSA_D, d, d_len);
+    }
+
+    if (p) {
+        params[num_params++] =
+            OSSL_PARAM_construct_BN(OSSL_PKEY_PARAM_RSA_FACTOR1, p, p_len);
+    }
+
+    if (q) {
+        params[num_params++] =
+            OSSL_PARAM_construct_BN(OSSL_PKEY_PARAM_RSA_FACTOR2, q, q_len);
+    }
+
+    if (dmp1) {
+        params[num_params++] =
+            OSSL_PARAM_construct_BN(OSSL_PKEY_PARAM_RSA_EXPONENT1, dmp1,
+                                    dmp1_len);
+    }
+
+    if (dmq1) {
+        params[num_params++] =
+            OSSL_PARAM_construct_BN(OSSL_PKEY_PARAM_RSA_EXPONENT1, dmq1,
+                                    dmq1_len);
+    }
+
+    if (iqmp) {
+        params[num_params++] =
+            OSSL_PARAM_construct_BN(OSSL_PKEY_PARAM_RSA_COEFFICIENT1, iqmp,
+                                    iqmp_len);
+    }
+
+    params[num_params++] = OSSL_PARAM_construct_end();
+
+    ctx = EVP_PKEY_CTX_new_id(EVP_PKEY_RSA, NULL);
+
+    if(EVP_PKEY_fromdata_init(ctx) <= 0) {
+        goto error;
+    }
+
+    if (EVP_PKEY_fromdata(ctx, &pkey, EVP_PKEY_KEYPAIR, params) <= 0) {
+        goto error;
+    }
+
+    EVP_PKEY_CTX_free(ctx);
+
+    LDNS_FREE(buf);
+    LDNS_FREE(b);
+    EVP_PKEY_CTX_free(ctx);
+    return pkey;
+
+error:
+    EVP_PKEY_free(pkey);
+    EVP_PKEY_CTX_free(ctx);
+    LDNS_FREE(b);
+    LDNS_FREE(buf);
+    OPENSSL_clear_free(n, n_len);
+    OPENSSL_clear_free(e, e_len);
+    OPENSSL_clear_free(d, d_len);
+    OPENSSL_clear_free(p, p_len);
+    OPENSSL_clear_free(q, q_len);
+    OPENSSL_clear_free(dmp1, dmp1_len);
+    OPENSSL_clear_free(dmq1, dmq1_len);
+    OPENSSL_clear_free(iqmp, iqmp_len);
+    return NULL;
+}
+#endif
+
+#ifndef OPENSSL_NO_DEPRECATED_3_0
 RSA *
 ldns_key_new_frm_fp_rsa_l(FILE *f, int *line_nr)
 {
@@ -904,8 +1244,152 @@ error:
 	BN_free(iqmp);
 	return NULL;
 }
+#endif /* OPENSSL_NO_DEPRECATED_3_0 */
 
 #ifdef USE_DSA
+# if OPENSSL_VERSION_NUMBER >= 0x30000000L
+EVP_PKEY *
+ldns_pkey_new_frm_fp_dsa(FILE *f)
+{
+    return ldns_pkey_new_frm_fp_dsa_l(f, NULL);
+}
+
+EVP_PKEY *
+ldns_pkey_new_frm_fp_dsa_l(FILE *f, ATTR_UNUSED(int *line_nr))
+{
+    char *d;
+    int num_params = 0;
+    EVP_PKEY_CTX *ctx = NULL;
+    OSSL_PARAM params[9];
+    EVP_PKEY *pkey = NULL;
+    uint8_t *buf;
+    size_t p_len=0, q_len=0, g_len=0, priv_key_len=0, pub_key_len=0;
+    unsigned char *p=NULL, *q=NULL, *g=NULL, *priv_key=NULL, *pub_key=NULL;
+
+    d = LDNS_XMALLOC(char, LDNS_MAX_LINELEN);
+    buf = LDNS_XMALLOC(uint8_t, LDNS_MAX_LINELEN);
+    if (!d || !buf) {
+        goto error;
+    }
+
+    /* the line parser removes the () from the input... */
+
+    /* Prime, dsa->p */
+    if (ldns_fget_keyword_data_l(f, "Primep", ": ", d, "\n", LDNS_MAX_LINELEN, line_nr) == -1) {
+        goto error;
+    }
+    p_len = ldns_b64_pton((const char*)d, buf, ldns_b64_ntop_calculate_size(strlen(d)));
+#ifndef S_SPLINT_S
+    p = OPENSSL_zalloc(p_len);
+    if (!p) {
+        goto error;
+    }
+    memcpy(p, buf, p_len);
+
+    /* Subprime, dsa->q */
+    if (ldns_fget_keyword_data_l(f, "Subprimeq", ": ", d, "\n", LDNS_MAX_LINELEN, line_nr) == -1) {
+        goto error;
+    }
+    q_len = ldns_b64_pton((const char*)d, buf, ldns_b64_ntop_calculate_size(strlen(d)));
+    q = OPENSSL_zalloc(p_len);
+    if (!q) {
+        goto error;
+    }
+    memcpy(q, buf, q_len);
+
+    /* Base, dsa->g */
+    if (ldns_fget_keyword_data_l(f, "Baseg", ": ", d, "\n", LDNS_MAX_LINELEN, line_nr) == -1) {
+        goto error;
+    }
+    g_len = ldns_b64_pton((const char*)d, buf, ldns_b64_ntop_calculate_size(strlen(d)));
+    g = OPENSSL_zalloc(g_len);
+    if (!g) {
+        goto error;
+    }
+    memcpy(g, buf, g_len);
+
+    /* Private key, dsa->priv_key */
+    if (ldns_fget_keyword_data_l(f, "Private_valuex", ": ", d, "\n", LDNS_MAX_LINELEN, line_nr) == -1) {
+        goto error;
+    }
+    priv_key_len = ldns_b64_pton((const char*)d, buf, ldns_b64_ntop_calculate_size(strlen(d)));
+    priv_key = OPENSSL_zalloc(g_len);
+    if (!priv_key) {
+        goto error;
+    }
+    memcpy(priv_key, buf, priv_key_len);
+
+    /* Public key, dsa->priv_key */
+    if (ldns_fget_keyword_data_l(f, "Public_valuey", ": ", d, "\n", LDNS_MAX_LINELEN, line_nr) == -1) {
+        goto error;
+    }
+    pub_key_len = ldns_b64_pton((const char*)d, buf, ldns_b64_ntop_calculate_size(strlen(d)));
+    pub_key = OPENSSL_zalloc(g_len);
+    if (!pub_key) {
+        goto error;
+    }
+    memcpy(pub_key, buf, pub_key_len);
+#endif /* splint */
+
+    if (p) {
+        params[num_params++] =
+            OSSL_PARAM_construct_BN(OSSL_PKEY_PARAM_FFC_P, p, p_len);
+    }
+
+    if (q) {
+        params[num_params++] =
+            OSSL_PARAM_construct_BN(OSSL_PKEY_PARAM_FFC_Q, q, q_len);
+    }
+
+    if (g) {
+        params[num_params++] =
+            OSSL_PARAM_construct_BN(OSSL_PKEY_PARAM_FFC_G, g, g_len);
+    }
+
+    if (priv_key) {
+        params[num_params++] =
+            OSSL_PARAM_construct_BN(OSSL_PKEY_PARAM_PRIV_KEY, priv_key,
+                                    priv_key_len);
+    }
+
+    if (pub_key) {
+        params[num_params++] =
+            OSSL_PARAM_construct_BN(OSSL_PKEY_PARAM_PUB_KEY, pub_key,
+                                    pub_key_len);
+    }
+
+    params[num_params++] = OSSL_PARAM_construct_end();
+
+    ctx = EVP_PKEY_CTX_new_id(EVP_PKEY_DSA, NULL);
+
+    if(EVP_PKEY_fromdata_init(ctx) <= 0) {
+        goto error;
+    }
+
+    if (EVP_PKEY_fromdata(ctx, &pkey, EVP_PKEY_KEYPAIR, params) <= 0) {
+        goto error;
+    }
+
+    EVP_PKEY_CTX_free(ctx);
+
+    LDNS_FREE(buf);
+    LDNS_FREE(d);
+
+    return pkey;
+
+error:
+    LDNS_FREE(d);
+    LDNS_FREE(buf);
+    EVP_PKEY_CTX_free(ctx);
+    EVP_PKEY_free(pkey);
+    OPENSSL_clear_free(p, p_len);
+    OPENSSL_clear_free(q, q_len);
+    OPENSSL_clear_free(g, g_len);
+    OPENSSL_clear_free(priv_key, priv_key_len);
+    OPENSSL_clear_free(pub_key, pub_key_len);
+    return NULL;
+}
+#else
 DSA *
 ldns_key_new_frm_fp_dsa(FILE *f)
 {
@@ -1016,6 +1500,7 @@ error:
 	BN_free(pub_key);
 	return NULL;
 }
+#endif /* OPENSSL_VERSION_NUMBER >= 0x30000000L */
 #endif /* USE_DSA */
 
 unsigned char *
@@ -1084,17 +1569,21 @@ ldns_key_new_frm_algorithm(ldns_signing_algorithm alg, uint16_t size)
 {
 	ldns_key *k;
 #ifdef HAVE_SSL
-#ifdef USE_DSA
+# if OPENSSL_VERSION_NUMBER >= 0x30000000L
+	EVP_PKEY_CTX *ctx = NULL;
+# else
+#  ifdef USE_DSA
 	DSA *d;
-#endif /* USE_DSA */
+#  endif /* USE_DSA */
 #  ifdef USE_ECDSA
-        EC_KEY *ec = NULL;
+	EC_KEY *ec = NULL;
 #  endif
 #  ifdef HAVE_EVP_PKEY_KEYGEN
 	EVP_PKEY_CTX *ctx;
 #  else
 	RSA *r;
 #  endif
+# endif /* OPENSSL_VERSION_NUMBER >= 0x30000000L */
 #else
 	int i;
 	uint16_t offset = 0;
@@ -1138,7 +1627,7 @@ ldns_key_new_frm_algorithm(ldns_signing_algorithm alg, uint16_t size)
 			EVP_PKEY_CTX_free(ctx);
 #else /* HAVE_EVP_PKEY_KEYGEN */
 			r = RSA_generate_key((int)size, RSA_F4, NULL, NULL);
-                        if(!r) {
+			if(!r) {
 				ldns_key_free(k);
 				return NULL;
 			}
@@ -1155,14 +1644,39 @@ ldns_key_new_frm_algorithm(ldns_signing_algorithm alg, uint16_t size)
 		case LDNS_SIGN_DSA:
 		case LDNS_SIGN_DSA_NSEC3:
 #ifdef HAVE_SSL
-# if OPENSSL_VERSION_NUMBER < 0x00908000L
+# if OPENSSL_VERSION_NUMBER >= 0x30000000L
+			ctx = EVP_PKEY_CTX_new_id(EVP_PKEY_DSA, NULL);
+			if(!ctx) {
+				ldns_key_free(k);
+				return NULL;
+			}
+			if(EVP_PKEY_keygen_init(ctx) <= 0) {
+				ldns_key_free(k);
+				EVP_PKEY_CTX_free(ctx);
+				return NULL;
+			}
+			if (EVP_PKEY_CTX_set_dsa_paramgen_bits(ctx, size) <= 0) {
+				ldns_key_free(k);
+				EVP_PKEY_CTX_free(ctx);
+				return NULL;
+			}
+#ifndef S_SPLINT_S
+			if (EVP_PKEY_keygen(ctx, &k->_key.key) <= 0) {
+				ldns_key_free(k);
+				EVP_PKEY_CTX_free(ctx);
+				return NULL;
+			}
+#endif
+			EVP_PKEY_CTX_free(ctx);
+#else
+#if OPENSSL_VERSION_NUMBER < 0x00908000L
 			d = DSA_generate_parameters((int)size, NULL, 0, NULL, NULL, NULL, NULL);
 			if (!d) {
 				ldns_key_free(k);
 				return NULL;
 			}
 
-# else
+#else
 			if (! (d = DSA_new())) {
 				ldns_key_free(k);
 				return NULL;
@@ -1172,13 +1686,14 @@ ldns_key_new_frm_algorithm(ldns_signing_algorithm alg, uint16_t size)
 				ldns_key_free(k);
 				return NULL;
 			}
-# endif
+#  endif
 			if (DSA_generate_key(d) != 1) {
 				ldns_key_free(k);
 				return NULL;
 			}
 			ldns_key_set_dsa_key(k, d);
 			DSA_free(d);
+#endif /* OPENSSL_VERSION_NUMBER >= 0x30000000L */
 #endif /* HAVE_SSL */
 #endif /* USE_DSA */
 			break;
@@ -1197,10 +1712,10 @@ ldns_key_new_frm_algorithm(ldns_signing_algorithm alg, uint16_t size)
 			ldns_key_set_hmac_size(k, size);
 
 			hmac = LDNS_XMALLOC(unsigned char, size);
-                        if(!hmac) {
+			if(!hmac) {
 				ldns_key_free(k);
 				return NULL;
-                        }
+			}
 #ifdef HAVE_SSL
 			if (RAND_bytes(hmac, (int) size) != 1) {
 				LDNS_FREE(hmac);
@@ -1209,13 +1724,13 @@ ldns_key_new_frm_algorithm(ldns_signing_algorithm alg, uint16_t size)
 			}
 #else
 			while (offset + sizeof(i) < size) {
-			  i = random();
-			  memcpy(&hmac[offset], &i, sizeof(i));
-			  offset += sizeof(i);
+				i = random();
+				memcpy(&hmac[offset], &i, sizeof(i));
+				offset += sizeof(i);
 			}
 			if (offset < size) {
-			  i = random();
-			  memcpy(&hmac[offset], &i, size - offset);
+				i = random();
+				memcpy(&hmac[offset], &i, size - offset);
 			}
 #endif /* HAVE_SSL */
 			ldns_key_set_hmac_key(k, hmac);
@@ -1226,45 +1741,79 @@ ldns_key_new_frm_algorithm(ldns_signing_algorithm alg, uint16_t size)
 #if defined(HAVE_SSL) && defined(USE_GOST)
 			ldns_key_set_evp_key(k, ldns_gen_gost_key());
 #ifndef S_SPLINT_S
-                        if(!k->_key.key) {
-                                ldns_key_free(k);
-                                return NULL;
-                        }
+			if(!k->_key.key) {
+				ldns_key_free(k);
+				return NULL;
+			}
 #endif /* splint */
 #else
 			ldns_key_free(k);
 			return NULL;
 #endif /* HAVE_SSL and USE_GOST */
-                        break;
-                case LDNS_SIGN_ECDSAP256SHA256:
-                case LDNS_SIGN_ECDSAP384SHA384:
+			break;
+		case LDNS_SIGN_ECDSAP256SHA256:
+		case LDNS_SIGN_ECDSAP384SHA384:
 #ifdef USE_ECDSA
-                        if(alg == LDNS_SIGN_ECDSAP256SHA256)
-                                ec = EC_KEY_new_by_curve_name(NID_X9_62_prime256v1);
-                        else if(alg == LDNS_SIGN_ECDSAP384SHA384)
-                                ec = EC_KEY_new_by_curve_name(NID_secp384r1);
-                        if(!ec) {
-                                ldns_key_free(k);
-                                return NULL;
-                        }
-                        if(!EC_KEY_generate_key(ec)) {
-                                ldns_key_free(k);
-                                EC_KEY_free(ec);
-                                return NULL;
-                        }
-#ifndef S_SPLINT_S
-                        k->_key.key = EVP_PKEY_new();
-                        if(!k->_key.key) {
-                                ldns_key_free(k);
-                                EC_KEY_free(ec);
-                                return NULL;
-                        }
-                        if (!EVP_PKEY_assign_EC_KEY(k->_key.key, ec)) {
-                                ldns_key_free(k);
-                                EC_KEY_free(ec);
-                                return NULL;
+# if OPENSSL_VERSION_NUMBER >= 0x30000000L
+			ctx = EVP_PKEY_CTX_new_id(EVP_PKEY_EC, NULL);
+			if(!ctx) {
+				ldns_key_free(k);
+				return NULL;
 			}
-#endif /* splint */
+			if(EVP_PKEY_keygen_init(ctx) <= 0) {
+				ldns_key_free(k);
+				EVP_PKEY_CTX_free(ctx);
+				return NULL;
+			}
+			if(alg == LDNS_SIGN_ECDSAP256SHA256) {
+				if(EVP_PKEY_CTX_set_ec_paramgen_curve_nid(ctx, NID_X9_62_prime256v1) <= 0) {
+					ldns_key_free(k);
+					EVP_PKEY_CTX_free(ctx);
+					return NULL;
+				}
+			} else if(alg == LDNS_SIGN_ECDSAP384SHA384) {
+				if(EVP_PKEY_CTX_set_ec_paramgen_curve_nid(ctx, NID_secp384r1) <= 0) {
+					ldns_key_free(k);
+					EVP_PKEY_CTX_free(ctx);
+					return NULL;
+				}
+			}
+#ifndef S_SPLINT_S
+			if (EVP_PKEY_keygen(ctx, &k->_key.key) <= 0) {
+				ldns_key_free(k);
+				EVP_PKEY_CTX_free(ctx);
+				return NULL;
+			}
+#endif
+			EVP_PKEY_CTX_free(ctx);
+# else
+			if(alg == LDNS_SIGN_ECDSAP256SHA256)
+				ec = EC_KEY_new_by_curve_name(NID_X9_62_prime256v1);
+			else if(alg == LDNS_SIGN_ECDSAP384SHA384)
+				ec = EC_KEY_new_by_curve_name(NID_secp384r1);
+			if(!ec) {
+				ldns_key_free(k);
+				return NULL;
+			}
+			if(!EC_KEY_generate_key(ec)) {
+				ldns_key_free(k);
+				EC_KEY_free(ec);
+				return NULL;
+			}
+#  ifndef S_SPLINT_S
+			k->_key.key = EVP_PKEY_new();
+			if(!k->_key.key) {
+				ldns_key_free(k);
+				EC_KEY_free(ec);
+				return NULL;
+			}
+			if (!EVP_PKEY_assign_EC_KEY(k->_key.key, ec)) {
+				ldns_key_free(k);
+				EC_KEY_free(ec);
+				return NULL;
+			}
+#  endif /* splint */
+# endif /* if OPENSSL_VERSION_NUMBER >= 0x30000000L */
 #else
 			ldns_key_free(k);
 			return NULL;
@@ -1352,6 +1901,7 @@ ldns_key_set_evp_key(ldns_key *k, EVP_PKEY *e)
 	k->_key.key = e;
 }
 
+#ifndef OPENSSL_NO_DEPRECATED_3_0
 void
 ldns_key_set_rsa_key(ldns_key *k, RSA *r)
 {
@@ -1391,6 +1941,7 @@ ldns_key_assign_dsa_key(ldns_key *k, DSA *d)
 	(void)k; (void)d;
 #endif
 }
+#endif /* OPENSSL_NO_DEPRECATED_3_0 */
 #endif /* splint */
 #endif /* HAVE_SSL */
 
@@ -1490,6 +2041,7 @@ ldns_key_evp_key(const ldns_key *k)
 	return k->_key.key;
 }
 
+#ifndef OPENSSL_NO_DEPRECATED_3_0
 RSA *
 ldns_key_rsa_key(const ldns_key *k)
 {
@@ -1514,6 +2066,7 @@ ldns_key_dsa_key(const ldns_key *k)
 	return NULL;
 #endif
 }
+#endif /* OPENSSL_NO_DEPRECATED_3_0 */
 #endif /* splint */
 #endif /* HAVE_SSL */
 
@@ -1650,6 +2203,7 @@ ldns_key_list_pop_key(ldns_key_list *key_list)
 
 #ifdef HAVE_SSL
 #ifndef S_SPLINT_S
+#ifndef OPENSSL_NO_DEPRECATED_3_0
 /* data pointer must be large enough (LDNS_MAX_KEYLEN) */
 static bool
 ldns_key_rsa2bin(unsigned char *data, RSA *k, uint16_t *size)
@@ -1736,6 +2290,87 @@ ldns_key_dsa2bin(unsigned char *data, DSA *k, uint16_t *size)
 	return true;
 }
 #endif /* USE_DSA */
+#endif /* OPENSSL_NO_DEPRECATED_3_0 */
+
+#if OPENSSL_VERSION_NUMBER >= 0x30000000L
+/* data pointer must be large enough (LDNS_MAX_KEYLEN) */
+static bool
+ldns_key_rsa2bin(unsigned char *data, EVP_PKEY *k, uint16_t *size)
+{
+	int i,j;
+	BIGNUM *n=NULL, *e=NULL;
+
+	if (!k) {
+		return false;
+	}
+
+	EVP_PKEY_get_bn_param(k, OSSL_PKEY_PARAM_RSA_E, &e);
+	EVP_PKEY_get_bn_param(k, OSSL_PKEY_PARAM_RSA_N, &n);
+
+	if (BN_num_bytes(e) <= 256) {
+		/* normally only this path is executed (small factors are
+		 * more common
+		 */
+		data[0] = (unsigned char) BN_num_bytes(e);
+		i = BN_bn2bin(e, data + 1);
+		j = BN_bn2bin(n, data + i + 1);
+		*size = (uint16_t) i + j;
+	} else if (BN_num_bytes(e) <= 65536) {
+		data[0] = 0;
+		/* BN_bn2bin does bigendian, _uint16 also */
+		ldns_write_uint16(data + 1, (uint16_t) BN_num_bytes(e));
+
+		BN_bn2bin(e, data + 3);
+		BN_bn2bin(n, data + 4 + BN_num_bytes(e));
+		*size = (uint16_t) BN_num_bytes(n) + 6;
+	} else {
+		return false;
+	}
+	return true;
+}
+
+#ifdef USE_DSA
+/* data pointer must be large enough (LDNS_MAX_KEYLEN) */
+static bool
+ldns_key_dsa2bin(unsigned char *data, EVP_PKEY *k, uint16_t *size)
+{
+	uint8_t T;
+	BIGNUM *p, *q, *g;
+	BIGNUM *pub_key;
+
+	if (!k) {
+		return false;
+	}
+
+	/* See RFC2536 */
+	EVP_PKEY_get_bn_param(k, OSSL_PKEY_PARAM_FFC_P, &p);
+	EVP_PKEY_get_bn_param(k, OSSL_PKEY_PARAM_FFC_Q, &q);
+	EVP_PKEY_get_bn_param(k, OSSL_PKEY_PARAM_FFC_G, &g);
+	EVP_PKEY_get_bn_param(k, OSSL_PKEY_PARAM_PUB_KEY, &pub_key);
+
+	*size = (uint16_t)BN_num_bytes(p);
+	T = (*size - 64) / 8;
+
+	if (T > 8) {
+#ifdef STDERR_MSGS
+		fprintf(stderr, "DSA key with T > 8 (ie. > 1024 bits)");
+		fprintf(stderr, " not implemented\n");
+#endif
+		return false;
+	}
+
+	/* size = 64 + (T * 8); */
+	memset(data, 0, 21 + *size * 3);
+	data[0] = (unsigned char)T;
+	BN_bn2bin(q, data + 1 ); 		/* 20 octects */
+	BN_bn2bin(p, data + 21 ); 		/* offset octects */
+	BN_bn2bin(g, data + 21 + *size * 2 - BN_num_bytes(g));
+	BN_bn2bin(pub_key,data + 21 + *size * 3 - BN_num_bytes(pub_key));
+	*size = 21 + *size * 3;
+	return true;
+}
+#endif /* USE_DSA */
+#endif /* OPENSSL_VERSION_NUMBER >= 0x30000000L */
 
 #ifdef USE_GOST
 static bool
@@ -1812,14 +2447,18 @@ ldns_key2rr(const ldns_key *k)
 	unsigned char *bin = NULL;
 	uint16_t size = 0;
 #ifdef HAVE_SSL
+#if OPENSSL_VERSION_NUMBER >= 0x30000000L
+	EVP_PKEY *pkey = NULL;
+#else
 	RSA *rsa = NULL;
 #ifdef USE_DSA
 	DSA *dsa = NULL;
 #endif /* USE_DSA */
-#endif /* HAVE_SSL */
 #ifdef USE_ECDSA
-        EC_KEY* ec;
+		EC_KEY* ec;
 #endif
+#endif /* OPENSSL_VERSION_NUMBER >= 0x30000000L */
+#endif /* HAVE_SSL */
 	int internal_data = 0;
 
 	if (!k) {
@@ -1862,6 +2501,22 @@ ldns_key2rr(const ldns_key *k)
 			ldns_rr_push_rdf(pubkey,
 						  ldns_native2rdf_int8(LDNS_RDF_TYPE_ALG, ldns_key_algorithm(k)));
 #ifdef HAVE_SSL
+#if OPENSSL_VERSION_NUMBER >= 0x30000000L
+			pkey = ldns_key_evp_key(k);
+			if (pkey) {
+				bin = LDNS_XMALLOC(unsigned char, LDNS_MAX_KEYLEN);
+				if (!bin) {
+										ldns_rr_free(pubkey);
+					return NULL;
+				}
+				if (!ldns_key_rsa2bin(bin, pkey, &size)) {
+								LDNS_FREE(bin);
+										ldns_rr_free(pubkey);
+					return NULL;
+				}
+				internal_data = 1;
+			}
+#else
 			rsa =  ldns_key_rsa_key(k);
 			if (rsa) {
 				bin = LDNS_XMALLOC(unsigned char, LDNS_MAX_KEYLEN);
@@ -1877,7 +2532,8 @@ ldns_key2rr(const ldns_key *k)
 				RSA_free(rsa);
 				internal_data = 1;
 			}
-#endif
+#endif /* OPENSSL_VERSION_NUMBER >= 0x30000000L */
+#endif /* HAVE_SSL */
 			size++;
 			break;
 #ifdef USE_DSA
@@ -1885,6 +2541,22 @@ ldns_key2rr(const ldns_key *k)
 			ldns_rr_push_rdf(pubkey,
 					ldns_native2rdf_int8(LDNS_RDF_TYPE_ALG, LDNS_DSA));
 #ifdef HAVE_SSL
+#if OPENSSL_VERSION_NUMBER >= 0x30000000L
+			pkey = ldns_key_evp_key(k);
+			if (pkey) {
+				bin = LDNS_XMALLOC(unsigned char, LDNS_MAX_KEYLEN);
+				if (!bin) {
+										ldns_rr_free(pubkey);
+					return NULL;
+				}
+				if (!ldns_key_dsa2bin(bin, pkey, &size)) {
+								LDNS_FREE(bin);
+										ldns_rr_free(pubkey);
+					return NULL;
+				}
+				internal_data = 1;
+			}
+#else
 			dsa = ldns_key_dsa_key(k);
 			if (dsa) {
 				bin = LDNS_XMALLOC(unsigned char, LDNS_MAX_KEYLEN);
@@ -1900,6 +2572,7 @@ ldns_key2rr(const ldns_key *k)
 				DSA_free(dsa);
 				internal_data = 1;
 			}
+#endif /* OPENSSL_VERSION_NUMBER >= 0x30000000L */
 #endif /* HAVE_SSL */
 #endif /* USE_DSA */
 			break;
@@ -1908,6 +2581,22 @@ ldns_key2rr(const ldns_key *k)
 			ldns_rr_push_rdf(pubkey,
 					ldns_native2rdf_int8(LDNS_RDF_TYPE_ALG, LDNS_DSA_NSEC3));
 #ifdef HAVE_SSL
+#if OPENSSL_VERSION_NUMBER >= 0x30000000L
+			pkey = ldns_key_evp_key(k);
+			if (pkey) {
+				bin = LDNS_XMALLOC(unsigned char, LDNS_MAX_KEYLEN);
+				if (!bin) {
+										ldns_rr_free(pubkey);
+					return NULL;
+				}
+				if (!ldns_key_dsa2bin(bin, pkey, &size)) {
+								LDNS_FREE(bin);
+										ldns_rr_free(pubkey);
+					return NULL;
+				}
+				internal_data = 1;
+			}
+#else
 			dsa = ldns_key_dsa_key(k);
 			if (dsa) {
 				bin = LDNS_XMALLOC(unsigned char, LDNS_MAX_KEYLEN);
@@ -1923,6 +2612,7 @@ ldns_key2rr(const ldns_key *k)
 				DSA_free(dsa);
 				internal_data = 1;
 			}
+#endif /* OPENSSL_VERSION_NUMBER >= 0x30000000L */
 #endif /* HAVE_SSL */
 #endif /* USE_DSA */
 			break;
@@ -1952,18 +2642,17 @@ ldns_key2rr(const ldns_key *k)
                 case LDNS_SIGN_ECDSAP384SHA384:
 #ifdef USE_ECDSA
 			ldns_rr_push_rdf(pubkey, ldns_native2rdf_int8(
-				LDNS_RDF_TYPE_ALG, ldns_key_algorithm(k)));
-                        bin = NULL;
+								LDNS_RDF_TYPE_ALG, ldns_key_algorithm(k)));
+			bin = NULL;
+
+#if OPENSSL_VERSION_NUMBER >= 0x30000000L
 #ifndef S_SPLINT_S
-                        ec = EVP_PKEY_get1_EC_KEY(k->_key.key);
+			size = EVP_PKEY_get1_encoded_public_key(pkey, &bin);
 #endif
-                        EC_KEY_set_conv_form(ec, POINT_CONVERSION_UNCOMPRESSED);
-                        size = (uint16_t)i2o_ECPublicKey(ec, NULL);
-                        if(!i2o_ECPublicKey(ec, &bin)) {
-                                EC_KEY_free(ec);
-                                ldns_rr_free(pubkey);
-                                return NULL;
-                        }
+			if(size <= 0) {
+				ldns_rr_free(pubkey);
+				return NULL;
+			}
 			if(size > 1) {
 				/* move back one byte to shave off the 0x02
 				 * 'uncompressed' indicator that openssl made
@@ -1973,12 +2662,33 @@ ldns_key2rr(const ldns_key *k)
 				size -= 1;
 				memmove(bin, bin+1, size);
 			}
-                        /* down the reference count for ec, its still assigned
-                         * to the pkey */
-                        EC_KEY_free(ec);
-			internal_data = 1;
 #else
-                        ldns_rr_free(pubkey);
+#ifndef S_SPLINT_S
+			ec = EVP_PKEY_get1_EC_KEY(k->_key.key);
+#endif
+			EC_KEY_set_conv_form(ec, POINT_CONVERSION_UNCOMPRESSED);
+			size = (uint16_t)i2o_ECPublicKey(ec, NULL);
+			if(!i2o_ECPublicKey(ec, &bin)) {
+				EC_KEY_free(ec);
+				ldns_rr_free(pubkey);
+				return NULL;
+			}
+			if(size > 1) {
+				/* move back one byte to shave off the 0x02
+				 * 'uncompressed' indicator that openssl made
+				 * Actually its 0x04 (from implementation).
+				 */
+				assert(bin[0] == POINT_CONVERSION_UNCOMPRESSED);
+				size -= 1;
+				memmove(bin, bin+1, size);
+			}
+			/* down the reference count for ec, its still assigned
+			 * to the pkey */
+			EC_KEY_free(ec);
+			internal_data = 1;
+#endif /* OPENSSL_VERSION_NUMBER >= 0x30000000L */
+#else
+			ldns_rr_free(pubkey);
 			return NULL;
 #endif /* ECDSA */
                         break;

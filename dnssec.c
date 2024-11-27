@@ -28,6 +28,9 @@
 #ifdef USE_DSA
 #include <openssl/dsa.h>
 #endif
+#if OPENSSL_VERSION_NUMBER >= 0x30000000L
+#include <openssl/core_names.h>
+#endif
 #endif
 
 ldns_rr *
@@ -334,6 +337,7 @@ uint16_t ldns_calc_keytag_raw(const uint8_t* key, size_t keysize)
 
 #ifdef HAVE_SSL
 #ifdef USE_DSA
+#ifndef OPENSSL_NO_DEPRECATED_3_0
 DSA *
 ldns_key_buf2dsa(const ldns_buffer *key)
 {
@@ -409,8 +413,111 @@ ldns_key_buf2dsa_raw(const unsigned char* key, size_t len)
 #endif /* OPENSSL_VERSION_NUMBER */
 	return dsa;
 }
+#endif /* OPENSSL_NO_DEPRECATED_3_0 */
+
+#if OPENSSL_VERSION_NUMBER >= 0x30000000L
+
+EVP_PKEY *
+ldns_dsa2pkey(const ldns_buffer *key)
+{
+	return ldns_dsa2pkey_raw((const unsigned char*)ldns_buffer_begin(key),
+						   ldns_buffer_position(key));
+}
+
+EVP_PKEY *
+ldns_dsa2pkey_raw(const unsigned char* key, size_t len)
+{
+	uint8_t T;
+	uint16_t length;
+	uint16_t offset;
+	EVP_PKEY_CTX *ctx;
+	OSSL_PARAM params[5];
+	EVP_PKEY *pkey = NULL;
+	unsigned char *Q = NULL;
+	unsigned char *P = NULL;
+	unsigned char *G = NULL;
+	unsigned char *Y = NULL;
+
+	if(len == 0)
+		return NULL;
+	T = (uint8_t)key[0];
+	length = (64 + T * 8);
+	offset = 1;
+
+	if (T > 8) {
+		return NULL;
+	}
+	if(len < (size_t)1 + SHA_DIGEST_LENGTH + 3*length)
+		return NULL;
+
+	Q = OPENSSL_zalloc(SHA_DIGEST_LENGTH);
+	P = OPENSSL_zalloc(length);
+	G = OPENSSL_zalloc(length);
+	Y = OPENSSL_zalloc(length);
+
+	if (!Q || !P || !G || !Y) {
+		OPENSSL_clear_free(Q, SHA_DIGEST_LENGTH);
+		OPENSSL_clear_free(P, length);
+		OPENSSL_clear_free(G, length);
+		OPENSSL_clear_free(Y, length);
+	}
+
+	memcpy(Q, key+offset, SHA_DIGEST_LENGTH);
+	ldns_swap_bytes(Q, SHA_DIGEST_LENGTH);
+	offset += SHA_DIGEST_LENGTH;
+
+	memcpy(P, key+offset, length);
+	ldns_swap_bytes(P, length);
+	offset += length;
+
+	memcpy(G, key+offset, length);
+	ldns_swap_bytes(G, length);
+	offset += length;
+
+	memcpy(Y, key+offset, length);
+	ldns_swap_bytes(Y, length);
+
+	/* Exponent */
+
+	params[0] =
+		OSSL_PARAM_construct_BN(OSSL_PKEY_PARAM_FFC_Q, Q, SHA_DIGEST_LENGTH);
+
+	params[1] = OSSL_PARAM_construct_BN(OSSL_PKEY_PARAM_FFC_P, P, length);
+
+	params[2] = OSSL_PARAM_construct_BN(OSSL_PKEY_PARAM_FFC_G, G, length);
+
+	params[3] = OSSL_PARAM_construct_BN(OSSL_PKEY_PARAM_PUB_KEY, Y, length);
+
+	params[4] = OSSL_PARAM_construct_end();
+
+	ctx = EVP_PKEY_CTX_new_id(EVP_PKEY_DSA, NULL);
+
+	if(EVP_PKEY_fromdata_init(ctx) <= 0) {
+		OPENSSL_clear_free(Q, SHA_DIGEST_LENGTH);
+		OPENSSL_clear_free(P, length);
+		OPENSSL_clear_free(G, length);
+		OPENSSL_clear_free(Y, length);
+		return NULL;
+	}
+
+	if (EVP_PKEY_fromdata(ctx, &pkey, EVP_PKEY_KEYPAIR, params) <= 0) {
+		EVP_PKEY_CTX_free(ctx);
+		OPENSSL_clear_free(Q, SHA_DIGEST_LENGTH);
+		OPENSSL_clear_free(P, length);
+		OPENSSL_clear_free(G, length);
+		OPENSSL_clear_free(Y, length);
+		return NULL;
+	}
+
+	EVP_PKEY_CTX_free(ctx);
+
+	return pkey;
+}
+#endif /* OPENSSL_VERSION_NUMBER >= 0x30000000L */
+
 #endif /* USE_DSA */
 
+#ifndef OPENSSL_NO_DEPRECATED_3_0
 RSA *
 ldns_key_buf2rsa(const ldns_buffer *key)
 {
@@ -485,6 +592,95 @@ ldns_key_buf2rsa_raw(const unsigned char* key, size_t len)
 
 	return rsa;
 }
+#endif /* OPENSSL_NO_DEPRECATED_3_0 */
+
+#if OPENSSL_VERSION_NUMBER >= 0x30000000L
+EVP_PKEY *
+ldns_rsa2pkey(const ldns_buffer *key)
+{
+	return ldns_rsa2pkey_raw((const unsigned char*)ldns_buffer_begin(key),
+						   ldns_buffer_position(key));
+}
+
+EVP_PKEY *
+ldns_rsa2pkey_raw(const unsigned char* key, size_t len)
+{
+	uint16_t offset;
+	uint16_t exp;
+	uint16_t int16;
+	EVP_PKEY_CTX *ctx;
+	OSSL_PARAM params[3];
+	EVP_PKEY *pkey = NULL;
+	unsigned char *modulus = NULL;
+	unsigned char *exponent = NULL;
+
+	if (len == 0)
+		return NULL;
+	if (key[0] == 0) {
+		if(len < 3)
+			return NULL;
+		/* need some smart comment here XXX*/
+		/* the exponent is too large so it's places
+		 * further...???? */
+		memmove(&int16, key+1, 2);
+		exp = ntohs(int16);
+		offset = 3;
+	} else {
+		exp = key[0];
+		offset = 1;
+	}
+
+	/* key length at least one */
+	if(len < (size_t)offset + exp + 1)
+		return NULL;
+
+	/* Exponent */
+	exponent = OPENSSL_zalloc(exp);
+	memcpy(exponent, key+offset, exp);
+	if (!exponent) {
+		return NULL;
+	}
+	ldns_swap_bytes(exponent, exp);
+	offset += exp;
+
+	/* Modulus */
+	modulus = OPENSSL_zalloc(len - offset);
+	if(!modulus) {
+		OPENSSL_clear_free(exponent, exp);
+		return NULL;
+	}
+	/* length of the buffer must match the key length! */
+	memcpy(modulus, key+offset, len-offset);
+	ldns_swap_bytes(modulus, len - offset);
+
+	params[0] =
+		OSSL_PARAM_construct_BN(OSSL_PKEY_PARAM_RSA_N, modulus, len - offset);
+
+	params[1] =
+		OSSL_PARAM_construct_BN(OSSL_PKEY_PARAM_RSA_E, exponent, exp);
+
+	params[2] = OSSL_PARAM_construct_end();
+
+	ctx = EVP_PKEY_CTX_new_id(EVP_PKEY_RSA, NULL);
+
+	if(EVP_PKEY_fromdata_init(ctx) <= 0) {
+		OPENSSL_clear_free(modulus, len - offset);
+		OPENSSL_clear_free(exponent, exp);
+		return NULL;
+	}
+
+	if (EVP_PKEY_fromdata(ctx, &pkey, EVP_PKEY_KEYPAIR, params) <= 0) {
+		EVP_PKEY_CTX_free(ctx);
+		OPENSSL_clear_free(modulus, len - offset);
+		OPENSSL_clear_free(exponent, exp);
+		return NULL;
+	}
+
+	EVP_PKEY_CTX_free(ctx);
+
+	return pkey;
+}
+#endif /* OPENSSL_VERSION_NUMBER >= 0x30000000L */
 
 int
 ldns_digest_evp(const unsigned char* data, unsigned int len, unsigned char* dest,
