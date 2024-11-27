@@ -388,6 +388,7 @@ int b32_pton_extended_hex(const char* src_text, size_t src_text_length,
 
 #endif /* ! LDNS_BUILD_CONFIG_HAVE_B32_PTON */
 
+void ldns_swap_bytes(unsigned char *buf, size_t len);
 
 #ifdef __cplusplus
 }
