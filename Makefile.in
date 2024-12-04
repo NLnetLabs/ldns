@@ -88,7 +88,7 @@ LINTFLAGS       += -D"_RuneLocale=int"
 DEPFLAG		= @DEPFLAG@
 EXEEXT=@EXEEXT@
 
-INSTALL		= $(srcdir)/install-sh
+INSTALL		= install
 
 LIBLOBJS	= $(LIBOBJS:.o=.lo)
 LDNS_LOBJS	= buffer.lo dane.lo dname.lo dnssec.lo dnssec_sign.lo dnssec_verify.lo dnssec_zone.lo duration.lo error.lo higher.lo host2str.lo host2wire.lo keys.lo net.lo packet.lo parse.lo radix.lo rbtree.lo rdata.lo resolver.lo rr.lo rr_functions.lo sha1.lo sha2.lo str2host.lo tsig.lo update.lo util.lo wire2host.lo zone.lo edns.lo
@@ -116,6 +116,8 @@ LDNS_DANE	= examples/ldns-dane
 LDNS_DANE_LOBJS	= examples/ldns-dane.lo
 EX_SSL_PROGS	= examples/ldns-nsec3-hash examples/ldns-revoke examples/ldns-signzone examples/ldns-verify-zone
 EX_SSL_LOBJS	= examples/ldns-nsec3-hash.lo examples/ldns-revoke.lo examples/ldns-signzone.lo examples/ldns-verify-zone.lo
+TEST_DIGEST	= test/test_digest
+TEST_DIGEST_LOBJS = test/test_digest.lo
 
 COMPILE		= $(CC) $(CPPFLAGS) $(CFLAGS)
 COMP_LIB	= $(LIBTOOL) --mode=compile $(CC) $(CPPFLAGS) $(CFLAGS)
@@ -148,6 +150,7 @@ setup-builddir:
 	@if test ! -h config.h ; then ln -s ldns/config.h . ; fi
 	@if test ! -h lib ; then ln -s .libs lib ; fi ;
 	@if test ! -d include ; then $(INSTALL) -d include; fi
+	@if test ! -d test ; then mkdir test ; fi
 	@if test ! -h include/ldns ; then ln -s ../ldns include/ldns || echo "include/ldns exists"; fi
 
 # builddir/ is used by 60-compile-builddir
@@ -208,6 +211,10 @@ $(EXAMPLE_PROGS):
 # Need LIBSSL_LIBS
 $(TESTNS):
 	$(LINK_EXE) $(TESTNS_LOBJS) $(LIBLOBJS) $(LIB) $(LIBSSL_LIBS) $(LIBS) -o $(TESTNS) $(top_builddir)/libldns.la
+
+# Need LIBSSL_LIBS
+$(TEST_DIGEST): setup-builddir $(TEST_DIGEST_LOBJS)
+	$(LINK_EXE) $(TEST_DIGEST_LOBJS) $(LIBLOBJS) $(LIB) $(LIBSSL_LIBS) $(LIBS) -o $(TEST_DIGEST) $(top_builddir)/libldns.la
 
 # Need LIBSSL_LIBS
 $(LDNS_DPA):
@@ -510,7 +517,10 @@ allclean: test-clean clean
 test-clean:
 	tpkg -b test clean
 
-test: examples drill @TEST_P5_DNS_LDNS@
+test_native: $(TEST_DIGEST)
+	./$(TEST_DIGEST)
+
+test: examples drill @TEST_P5_DNS_LDNS@ test_native
 	./test/test_all.sh
 
 
@@ -1114,6 +1124,8 @@ drill/work.lo drill/work.o: $(srcdir)/drill/work.c $(srcdir)/drill/drill.h ldns/
  $(srcdir)/ldns/host2wire.h ldns/net.h $(srcdir)/ldns/str2host.h $(srcdir)/ldns/update.h \
  $(srcdir)/ldns/wire2host.h $(srcdir)/ldns/rr_functions.h $(srcdir)/ldns/parse.h $(srcdir)/ldns/radix.h \
  $(srcdir)/ldns/sha1.h $(srcdir)/ldns/sha2.h
+test/test_digest.lo test/test_digest.o: $(srcdir)/test/test_digest.c ldns/config.h $(srcdir)/ldns/ldns.h ldns/util.h \
+ ldns/common.h $(srcdir)/ldns/sha1.h $(srcdir)/ldns/sha2.h
 examples/ldns-chaos: examples/ldns-chaos.lo examples/ldns-chaos.o $(LIB)
 examples/ldns-compare-zones: examples/ldns-compare-zones.lo examples/ldns-compare-zones.o $(LIB)
 examples/ldnsd: examples/ldnsd.lo examples/ldnsd.o $(LIB)
@@ -1139,3 +1151,4 @@ examples/ldns-revoke: examples/ldns-revoke.lo examples/ldns-revoke.o $(LIB)
 examples/ldns-signzone: examples/ldns-signzone.lo examples/ldns-signzone.o $(LIB)
 examples/ldns-verify-zone: examples/ldns-verify-zone.lo examples/ldns-verify-zone.o $(LIB)
 examples/ldns-testns: examples/ldns-testns.lo examples/ldns-testns.o examples/ldns-testpkts.lo examples/ldns-testpkts.o  $(LIB)
+test/test_digest: test/test_digest.lo $(LIB)
