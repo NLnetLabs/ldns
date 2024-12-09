@@ -792,3 +792,16 @@ b32_pton_extended_hex(const char* src, size_t src_sz,
 
 #endif /* ! HAVE_B32_PTON */
 
+void
+ldns_swap_bytes(unsigned char *buf, size_t len)
+{
+#if BYTE_ORDER == LITTLE_ENDIAN
+    size_t i, j, temp;
+    for(i = 0, j = len - 1; i < j; i++, j--) {
+        temp = buf[i];
+        buf[i] = buf[j];
+        buf[j] = temp;
+    }
+#endif
+}
+

@@ -34,6 +34,9 @@
 #ifdef USE_DSA
 #include <openssl/dsa.h>
 #endif
+#if OPENSSL_VERSION_NUMBER >= 0x30000000L
+#include <openssl/core_names.h>
+#endif
 #endif
 
 #ifndef INET_ADDRSTRLEN
@@ -2963,10 +2966,14 @@ ldns_key2buffer_str(ldns_buffer *output, const ldns_key *k)
 	ldns_status status = LDNS_STATUS_OK;
 	unsigned char  *bignum;
 #ifdef HAVE_SSL
+#if OPENSSL_VERSION_NUMBER >= 0x30000000L
+	EVP_PKEY *pkey = NULL;
+#else
 	RSA *rsa;
 #ifdef USE_DSA
 	DSA *dsa;
 #endif /* USE_DSA */
+#endif /* OPENSSL_VERSION_NUMBER >= 0x30000000L */
 #endif /* HAVE_SSL */
 
 	if (!k) {
@@ -2988,7 +2995,11 @@ ldns_key2buffer_str(ldns_buffer *output, const ldns_key *k)
 			case LDNS_SIGN_RSAMD5:
 				/* copied by looking at dnssec-keygen output */
 				/* header */
+#if OPENSSL_VERSION_NUMBER >= 0x30000000L
+				pkey = ldns_key_evp_key(k);
+#else
 				rsa = ldns_key_rsa_key(k);
+#endif
 
 				ldns_buffer_printf(output,"Private-key-format: v1.2\n");
 				switch(ldns_key_algorithm(k)) {
@@ -3037,10 +3048,25 @@ ldns_key2buffer_str(ldns_buffer *output, const ldns_key *k)
 
 #ifndef S_SPLINT_S
 				if(1) {
-					const BIGNUM *n=NULL, *e=NULL, *d=NULL,
+					BIGNUM *n=NULL, *e=NULL, *d=NULL,
 						*p=NULL, *q=NULL, *dmp1=NULL,
 						*dmq1=NULL, *iqmp=NULL;
-#if OPENSSL_VERSION_NUMBER < 0x10100000 || (defined(HAVE_LIBRESSL) && LIBRESSL_VERSION_NUMBER < 0x20700000)
+#if OPENSSL_VERSION_NUMBER >= 0x30000000L
+					EVP_PKEY_get_bn_param(pkey, OSSL_PKEY_PARAM_RSA_E, &e);
+					EVP_PKEY_get_bn_param(pkey, OSSL_PKEY_PARAM_RSA_N, &n);
+					EVP_PKEY_get_bn_param(pkey, OSSL_PKEY_PARAM_RSA_D, &d);
+					EVP_PKEY_get_bn_param(pkey, OSSL_PKEY_PARAM_RSA_FACTOR1,
+										  &p);
+					EVP_PKEY_get_bn_param(pkey, OSSL_PKEY_PARAM_RSA_FACTOR2,
+										  &q);
+					EVP_PKEY_get_bn_param(pkey, OSSL_PKEY_PARAM_RSA_EXPONENT1,
+										  &dmp1);
+					EVP_PKEY_get_bn_param(pkey, OSSL_PKEY_PARAM_RSA_EXPONENT2,
+										  &dmq1);
+					EVP_PKEY_get_bn_param(pkey,
+										  OSSL_PKEY_PARAM_RSA_COEFFICIENT1,
+										  &iqmp);
+#elif OPENSSL_VERSION_NUMBER < 0x10100000 || (defined(HAVE_LIBRESSL) && LIBRESSL_VERSION_NUMBER < 0x20700000)
 					n = rsa->n;
 					e = rsa->e;
 					d = rsa->d;
@@ -3074,12 +3100,18 @@ ldns_key2buffer_str(ldns_buffer *output, const ldns_key *k)
 				}
 #endif /* splint */
 
+#if OPENSSL_VERSION_NUMBER < 0x30000000L
 				RSA_free(rsa);
+#endif
 				break;
 #ifdef USE_DSA
 			case LDNS_SIGN_DSA:
 			case LDNS_SIGN_DSA_NSEC3:
+#if OPENSSL_VERSION_NUMBER >= 0x30000000L
+				pkey = ldns_key_evp_key(k);
+#else
 				dsa = ldns_key_dsa_key(k);
+#endif
 
 				ldns_buffer_printf(output,"Private-key-format: v1.2\n");
 				if (ldns_key_algorithm(k) == LDNS_SIGN_DSA) {
@@ -3091,9 +3123,17 @@ ldns_key2buffer_str(ldns_buffer *output, const ldns_key *k)
 				/* print to buf, convert to bin, convert to b64,
 				 * print to buf */
 				if(1) {
-					const BIGNUM *p=NULL, *q=NULL, *g=NULL,
+					BIGNUM *p=NULL, *q=NULL, *g=NULL,
 						*priv_key=NULL, *pub_key=NULL;
-#if OPENSSL_VERSION_NUMBER < 0x10100000 || (defined(HAVE_LIBRESSL) && LIBRESSL_VERSION_NUMBER < 0x20700000)
+#if OPENSSL_VERSION_NUMBER >= 0x30000000L
+					EVP_PKEY_get_bn_param(pkey, OSSL_PKEY_PARAM_FFC_P, &p);
+					EVP_PKEY_get_bn_param(pkey, OSSL_PKEY_PARAM_FFC_Q, &q);
+					EVP_PKEY_get_bn_param(pkey, OSSL_PKEY_PARAM_FFC_G, &g);
+					EVP_PKEY_get_bn_param(pkey, OSSL_PKEY_PARAM_PRIV_KEY,
+										  &priv_key);
+					EVP_PKEY_get_bn_param(pkey, OSSL_PKEY_PARAM_PUB_KEY,
+										  &pub_key);
+#elif OPENSSL_VERSION_NUMBER < 0x10100000 || (defined(HAVE_LIBRESSL) && LIBRESSL_VERSION_NUMBER < 0x20700000)
 #ifndef S_SPLINT_S
 					p = dsa->p;
 					q = dsa->q;
@@ -3117,6 +3157,10 @@ ldns_key2buffer_str(ldns_buffer *output, const ldns_key *k)
 						goto error;
 				}
 				break;
+
+#if OPENSSL_VERSION_NUMBER < 0x30000000L
+				DSA_free(dsa);
+#endif
 #endif /* USE_DSA */
 			case LDNS_SIGN_ECC_GOST:
 				/* no format defined, use blob */
@@ -3137,20 +3181,28 @@ ldns_key2buffer_str(ldns_buffer *output, const ldns_key *k)
 			case LDNS_SIGN_ECDSAP256SHA256:
 			case LDNS_SIGN_ECDSAP384SHA384:
 #ifdef USE_ECDSA
-                                ldns_buffer_printf(output, "Private-key-format: v1.2\n");
+				ldns_buffer_printf(output, "Private-key-format: v1.2\n");
 				ldns_buffer_printf(output, "Algorithm: %d (", ldns_key_algorithm(k));
-                                status=ldns_algorithm2buffer_str(output, (ldns_algorithm)ldns_key_algorithm(k));
+				status=ldns_algorithm2buffer_str(output, (ldns_algorithm)ldns_key_algorithm(k));
 #ifndef S_SPLINT_S
 				ldns_buffer_printf(output, ")\n");
-                                if(k->_key.key) {
-                                        EC_KEY* ec = EVP_PKEY_get1_EC_KEY(k->_key.key);
-                                        const BIGNUM* b = EC_KEY_get0_private_key(ec);
+				if(k->_key.key) {
+#if OPENSSL_VERSION_NUMBER >= 0x30000000L
+					BIGNUM *b = NULL;
+					EVP_PKEY_get_bn_param(k->_key.key,
+										  OSSL_PKEY_PARAM_PRIV_KEY, &b);
+#else
+					EC_KEY* ec = EVP_PKEY_get1_EC_KEY(k->_key.key);
+					const BIGNUM* b = EC_KEY_get0_private_key(ec);
+#endif
 					if(!ldns_print_bignum_b64_line(output, "PrivateKey", b))
 						goto error;
-                                        /* down reference count in EC_KEY
-                                         * its still assigned to the PKEY */
-                                        EC_KEY_free(ec);
-                                }
+#if OPENSSL_VERSION_NUMBER < 0x30000000L
+					/* down reference count in EC_KEY
+					 * its still assigned to the PKEY */
+					EC_KEY_free(ec);
+#endif
+				}
 #endif /* splint */
 #else
 				goto error;
