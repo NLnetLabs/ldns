@@ -26,7 +26,7 @@
 static void 
 usage(char *prog)
 {
-	printf("Usage: %s [-v] [-i] [-d] [-c] [-u] [-s] [-e] "
+	printf("Usage: %s [-v] [-i] [-d] [-c] [-u] [-s] [-Z] [-e] "
 	       "<zonefile1> <zonefile2>\n", prog);
 	printf("       -i - print inserted\n");
 	printf("       -d - print deleted\n");
@@ -35,6 +35,7 @@ usage(char *prog)
 	printf("       -U - print unchanged records in changed names\n");
 	printf("       -a - print all differences (-i -d -c)\n");
 	printf("       -s - do not exclude SOA record from comparison\n");
+	printf("       -Z - exclude ZONEMD records from comparison\n");
 	printf("       -z - do not sort zones\n");
 	printf("       -e - exit with status 2 on changed zones\n");
 	printf("       -h - show usage and exit\n");
@@ -61,10 +62,11 @@ main(int argc, char **argv)
 	bool		opt_deleted = false, opt_inserted  = false;
 	bool            opt_changed = false, opt_unchanged = false, opt_Unchanged = false;
         bool		sort = true, inc_soa = false;
+	ldns_rr_type	exc_rr_type = 0;
 	bool		opt_exit_status = false;
 	char		op = 0;
 
-	while ((c = getopt(argc, argv, "ahvdicuUesz")) != -1) {
+	while ((c = getopt(argc, argv, "ahvdicuUesZz")) != -1) {
 		switch (c) {
 		case 'h':
 			usage(argv[0]);
@@ -82,6 +84,9 @@ main(int argc, char **argv)
 			break;
 		case 's':
 			inc_soa = true;
+			break;
+		case 'Z':
+			exc_rr_type = LDNS_RR_TYPE_ZONEMD;
 			break;
 		case 'z':
 			sort = false;
@@ -129,8 +134,8 @@ main(int argc, char **argv)
 		exit(EXIT_FAILURE);
 	}
 	/* Read first zone */
-	s = ldns_zone_new_frm_fp_l(&z1, fp1, NULL, 0, 
-						  LDNS_RR_CLASS_IN, &line_nr1);
+	s = ldns_zone_new_frm_fp_l_e(&z1, fp1, NULL, 0,
+						  LDNS_RR_CLASS_IN, &line_nr1, exc_rr_type);
 	if (s != LDNS_STATUS_OK) {
 		fclose(fp1);
 		fprintf(stderr, "%s: %s at line %d\n",
@@ -148,8 +153,8 @@ main(int argc, char **argv)
 		exit(EXIT_FAILURE);
 	}
 	/* Read second zone */
-	s = ldns_zone_new_frm_fp_l(&z2, fp2, NULL, 0,
-						  LDNS_RR_CLASS_IN, &line_nr2);
+	s = ldns_zone_new_frm_fp_l_e(&z2, fp2, NULL, 0,
+						  LDNS_RR_CLASS_IN, &line_nr2, exc_rr_type);
 	if (s != LDNS_STATUS_OK) {
 		ldns_zone_deep_free(z1);
 		fclose(fp2);
