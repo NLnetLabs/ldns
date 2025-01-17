@@ -2513,6 +2513,9 @@ static ldns_rr_descriptor rdata_field_descriptors[] = {
 #endif
 	/* 32769 */
 	{LDNS_RR_TYPE_DLV, "DLV", 4, 4, type_ds_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 0 }
+#ifdef RRTYPE_IDELEG
+      , {LDNS_RR_TYPE_IDELEG, "IDELEG", 2, 3, type_svcb_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 1 },
+#endif
 };
 /** \endcond */
 

@@ -739,6 +739,14 @@ case "$enable_rrtype_resinfo" in
 		AC_DEFINE_UNQUOTED([RRTYPE_RESINFO], [], [Define this to enable RR type RESINFO.])
 		;;
 esac
+AC_ARG_ENABLE(rrtype-ideleg, AS_HELP_STRING([--enable-rrtype-ideleg],[Enable draft RR type ideleg.]))
+case "$enable_rrtype_ideleg" in
+	yes)
+		AC_DEFINE_UNQUOTED([RRTYPE_IDELEG], [], [Define this to enable RR type IDELEG.])
+		;;
+	no|*)
+		;;
+esac
 
 
 if echo "$tmp_LIBS" | grep "ws2_32" >/dev/null; then
