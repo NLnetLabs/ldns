@@ -938,9 +938,10 @@ main(int argc, char **argv)
 
 	if (zonemd_required == 1
 	&&  !ldns_dnssec_zone_find_rrset(dnssec_zone,
-			       	dnssec_zone->soa->name, LDNS_RR_TYPE_DNSKEY))
+				dnssec_zone->soa->name, LDNS_RR_TYPE_DNSKEY)) {
+		ldns_rr_list_deep_free(keys);
 		result = LDNS_STATUS_OK;
-	else
+	} else
 		result = verify_dnssec_zone(dnssec_zone,
 				dnssec_zone->soa->name, keys, apexonly,
 				percentage, zonemd_required > 2);
@@ -972,7 +973,6 @@ main(int argc, char **argv)
 
 	ldns_dnssec_zone_deep_free(dnssec_zone);
 	fclose(fp);
-	ldns_rr_list_deep_free(keys);
 	exit(result);
 }
 
