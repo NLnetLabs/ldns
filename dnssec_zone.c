@@ -71,8 +71,9 @@ ldns_dnssec_rrs_add_rr(ldns_dnssec_rrs *rrs, ldns_rr *rr)
 		new_rrs->next = rrs->next;
 		rrs->rr = rr;
 		rrs->next = new_rrs;
-	}
-	/* Silently ignore equal rr's */
+	} else
+		return LDNS_STATUS_EQUAL_RR;
+
 	return LDNS_STATUS_OK;
 }
 
@@ -732,25 +733,37 @@ ldns_dnssec_zone_new_frm_fp_l(ldns_dnssec_zone** z, FILE* fp, const ldns_rdf* or
 				 */
 				ldns_rr_set_ttl(cur_rr, ldns_rr_ttl(prev_rr));
 
-			prev_rr = cur_rr;
 #endif
 			status = ldns_dnssec_zone_add_rr(newzone, cur_rr);
-			if (status ==
-				LDNS_STATUS_DNSSEC_NSEC3_ORIGINAL_NOT_FOUND) {
-
+			switch(status) {
+			case LDNS_STATUS_DNSSEC_NSEC3_ORIGINAL_NOT_FOUND:
 				if (rr_is_rrsig_covering(cur_rr,
 							LDNS_RR_TYPE_NSEC3)){
 					ldns_rr_list_push_rr(todo_nsec3_rrsigs,
 							cur_rr);
 				} else {
 					ldns_rr_list_push_rr(todo_nsec3s,
-						       	cur_rr);
+							cur_rr);
 				}
 				status = LDNS_STATUS_OK;
-
-			} else if (status != LDNS_STATUS_OK)
+				break;
+			case LDNS_STATUS_EQUAL_RR:
+				ldns_rr_free(cur_rr);
+#ifndef FASTER_DNSSEC_ZONE_NEW_FRM_FP
+				cur_rr = prev_rr;
+#else
+				cur_rr = NULL;
+#endif
+				status = LDNS_STATUS_OK;
+				break;
+			case LDNS_STATUS_OK:
+				break;
+			default:
 				goto error;
-
+			}
+#ifndef FASTER_DNSSEC_ZONE_NEW_FRM_FP
+			prev_rr = cur_rr;
+#endif
 			break;
 
 		case LDNS_STATUS_SYNTAX_TTL:	/* the ttl was set*/
