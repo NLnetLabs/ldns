@@ -2588,6 +2588,14 @@ ldns_rdf_bitmap_known_rr_types_set(ldns_rdf** rdf, int value)
 	for (d=rdata_field_descriptors; d < rdata_field_descriptors_end; d++) {
 		window  = d->_type >> 8;
 		subtype = d->_type & 0xff;
+
+		/* In the code below, windows[window] == 0 means that the
+		 * window is not in use. So subtype == 0 is a problem. The
+		 * easiest solution is to set subtype to 1, that marks the
+		 * window as in use and doesn't have negative effects.
+		 */
+		if (subtype == 0)
+			subtype = 1;
 		if (windows[window] < subtype) {
 			windows[window] = subtype;
 		}
