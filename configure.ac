@@ -5,8 +5,8 @@ sinclude(acx_nlnetlabs.m4)
 
 # must be numbers. ac_defun because of later processing.
 m4_define([VERSION_MAJOR],[1])
-m4_define([VERSION_MINOR],[8])
-m4_define([VERSION_MICRO],[4])
+m4_define([VERSION_MINOR],[9])
+m4_define([VERSION_MICRO],[0])
 AC_INIT([ldns],m4_defn([VERSION_MAJOR]).m4_defn([VERSION_MINOR]).m4_defn([VERSION_MICRO]),[dns-team@nlnetlabs.nl],[libdns])
 AC_CONFIG_SRCDIR([packet.c])
 # needed to build correct soname
@@ -33,6 +33,7 @@ AC_SUBST(LDNS_VERSION_MICRO, [VERSION_MICRO])
 # ldns-1.8.1 had libversion 6:0:3
 # ldns-1.8.2 had libversion 7:0:4
 # ldns-1.8.3 has libversion 8:0:5
+# ldns-1.9.0 will have libversion 9:0:6 (new behaviour for dnssec_rrs_add_rr)
 #
 AC_SUBST(VERSION_INFO, [9:0:6])
 
