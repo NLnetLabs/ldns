@@ -315,7 +315,6 @@ int ldns_dnssec_name_cmp(const void *a, const void *b);
  *
  * \param[in] name The ldns_dnssec_name to add the RR to
  * \param[in] rr The RR to add
- * \return LDNS_STATUS_OK on success, error code otherwise
  * \return LDNS_STATUS_OK on success and LDNS_STATUS_EQUAL_ERR when and
  *         RR with equal ownername, class, type and rdata already exists,
  *         and an error code otherwise
@@ -420,7 +419,9 @@ void ldns_dnssec_zone_deep_free(ldns_dnssec_zone *zone);
  *
  * \param[in] zone the zone to add the RR to
  * \param[in] rr The RR to add
- * \return LDNS_STATUS_OK on success, an error code otherwise
+ * \return LDNS_STATUS_OK on success and LDNS_STATUS_EQUAL_ERR when and
+ *         RR with equal ownername, class, type and rdata already exists,
+ *         and an error code otherwise
  */
 ldns_status ldns_dnssec_zone_add_rr(ldns_dnssec_zone *zone,
 							 ldns_rr *rr);
