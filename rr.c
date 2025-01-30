@@ -1990,6 +1990,15 @@ static const ldns_rdf_type type_svcb_wireformat[] = {
 	LDNS_RDF_TYPE_SVCPARAMS
 };
 #endif
+#ifdef RRTYPE_DSYNC
+static const ldns_rdf_type type_dsync_wireformat[] = {
+	LDNS_RDF_TYPE_TYPE,
+	LDNS_RDF_TYPE_INT8,
+	LDNS_RDF_TYPE_INT16,
+	LDNS_RDF_TYPE_DNAME
+};
+#endif
+
 /* nsec3 is some vars, followed by same type of data of nsec */
 static const ldns_rdf_type type_nsec3_wireformat[] = {
 /*	LDNS_RDF_TYPE_NSEC3_VARS, LDNS_RDF_TYPE_NSEC3_NEXT_OWNER, LDNS_RDF_TYPE_NSEC*/
@@ -2083,6 +2092,12 @@ static const ldns_rdf_type type_amtrelay_wireformat[] = {
 	LDNS_RDF_TYPE_AMTRELAY
 };
 #endif
+#ifdef RRTYPE_CLA_IPN
+static const ldns_rdf_type type_ipn_wireformat[] = {
+	LDNS_RDF_TYPE_IPN
+};
+#endif
+
 
 
 /** \endcond */
@@ -2250,7 +2265,11 @@ static ldns_rr_descriptor rdata_field_descriptors[] = {
 {LDNS_RR_TYPE_NULL, "TYPE64", 1, 1, type_0_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 0 },
 {LDNS_RR_TYPE_NULL, "TYPE65", 1, 1, type_0_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 0 },
 #endif
+#ifdef RRTYPE_DSYNC
+{LDNS_RR_TYPE_DSYNC, "DSYNC", 4, 4, type_dsync_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 0 },
+#else
 {LDNS_RR_TYPE_NULL, "TYPE66", 1, 1, type_0_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 0 },
+#endif
 {LDNS_RR_TYPE_NULL, "TYPE67", 1, 1, type_0_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 0 },
 {LDNS_RR_TYPE_NULL, "TYPE68", 1, 1, type_0_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 0 },
 {LDNS_RR_TYPE_NULL, "TYPE69", 1, 1, type_0_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 0 },
@@ -2501,8 +2520,16 @@ static ldns_rr_descriptor rdata_field_descriptors[] = {
 {LDNS_RR_TYPE_NULL, "TYPE261", 1, 1, type_0_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 0 },
 #endif
 	/* 262 */
-	{LDNS_RR_TYPE_WALLET, "TXT", 1, 0, NULL, LDNS_RDF_TYPE_STR, LDNS_RR_NO_COMPRESS, 0 },
-
+	{LDNS_RR_TYPE_WALLET, "WALLET", 1, 0, NULL, LDNS_RDF_TYPE_STR, LDNS_RR_NO_COMPRESS, 0 },
+#ifdef RRTYPE_CLA_IPN
+	/* 263 */
+	{LDNS_RR_TYPE_CLA, "CLA", 1, 0, NULL, LDNS_RDF_TYPE_STR, LDNS_RR_NO_COMPRESS, 0 },
+	/* 264 */
+	{LDNS_RR_TYPE_IPN, "IPN", 1, 1, type_ipn_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 0 },
+#else
+{LDNS_RR_TYPE_NULL, "TYPE263", 1, 1, type_0_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 0 },
+{LDNS_RR_TYPE_NULL, "TYPE264", 1, 1, type_0_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 0 },
+#endif
 /* split in array, no longer contiguous */
 
 #ifdef RRTYPE_TA
