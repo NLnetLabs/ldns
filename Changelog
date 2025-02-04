@@ -9,6 +9,8 @@
 	  Thanks Paul Radford 
 	* Fix #254: Unquoted "value" rdata for CAA records fail to validate.
 	  Follows the long string unquoted syntax from RFC8659, section 4.1.1.
+	* Fix #266: ldns-read-zone -u fails if a type is the only type in a
+	  window and the type modulo 256 is equal to zero.
 
 1.8.4	2024-07-19
 	* Fix building documentation in build directory.
