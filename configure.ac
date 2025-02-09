@@ -74,7 +74,7 @@ ACX_CHECK_COMPILER_FLAG(xc99, [C99FLAG="-xc99"])
 AC_DEFUN([COPY_FILES],
 [
 for file in $1; do
-	sh $srcdir/install-sh -m 644 $file $2
+	install -m 644 $file $2
 done
 ])
 
