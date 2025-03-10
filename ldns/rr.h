@@ -245,6 +245,7 @@ enum ldns_enum_rr_type
 	LDNS_RR_TYPE_NSEC3 = 65324,
 	LDNS_RR_TYPE_NSEC3PARAMS = 65325, */
 
+	/* draft-wesplaap-deleg-02 */
 	LDNS_RR_TYPE_DELEG = 65432,
 
 	LDNS_RR_TYPE_FIRST = 0,

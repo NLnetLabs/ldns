@@ -61,7 +61,9 @@ usage(FILE *fp, const char *prog) {
 	fprintf(fp, "  -k <algorithm>,<key>\tuse `key' with `algorithm' from engine as ZSK\n");
 	fprintf(fp, "  -K <algorithm>,<key>\tuse `key' with `algorithm' from engine as KSK\n");
 #endif
+#ifdef RRTYPE_DELEG                                                 
 	fprintf(fp, "  -D\t\tSynthesize NS records from DELEG referrals\n");
+#endif
 	fprintf(fp, "  -n\t\tuse NSEC3 instead of NSEC.\n");
 	fprintf(fp, "\t\tIf you use NSEC3, you can specify the following extra options:\n");
 	fprintf(fp, "\t\t-a [algorithm] hashing algorithm\n");
@@ -604,7 +606,7 @@ int str2zonemd_signflag(const char *str, const char **reason)
 	return 0;
 }
 
-
+#ifdef RRTYPE_DELEG
 void process_DELEG_( ldns_dnssec_zone* zone, ldns_rdf* owner
                    , ldns_rdf* target, ldns_rdf* params)
 {
@@ -701,6 +703,7 @@ void process_DELEG(ldns_dnssec_zone *zone, ldns_rr* rr)
 		process_DELEG_(zone, owner, config_target, params);
 	}
 }
+#endif
 
 int
 main(int argc, char *argv[])
@@ -730,7 +733,9 @@ main(int argc, char *argv[])
 	ldns_status s;
 	size_t i;
 	ldns_rr_list *added_rrs;
+#ifdef RRTYPE_DELEG
 	ldns_rr_list *deleg_rrs = NULL;
+#endif
 
 	char *outputfile_name = NULL;
 	FILE *outputfile;
@@ -938,7 +943,12 @@ main(int argc, char *argv[])
 			nsec3_iterations = (uint16_t) nsec3_iterations_cmd;
 			break;
 		case 'D':
+#ifdef RRTYPE_DELEG
 			deleg_rrs = ldns_rr_list_new();
+#else
+			fprintf(stderr, "error: -D option not implemented.\nThis version of ldns was compiled without DELEG support\n");
+			exit(EXIT_FAILURE);
+#endif
 			break;
 		default:
 			usage(stderr, prog);
@@ -1127,10 +1137,13 @@ main(int argc, char *argv[])
 			fprintf(stderr, ", skipping record:\n");
 			ldns_rr_print(stderr, 
 			  ldns_rr_list_rr(ldns_zone_rrs(orig_zone), i));
+#ifdef RRTYPE_DELEG
 		} else if (deleg_rrs && ldns_rr_get_type(rr) == LDNS_RR_TYPE_DELEG) {
 			ldns_rr_list_push_rr(deleg_rrs, rr);
+#endif
 		}
 	}
+#ifdef RRTYPE_DELEG
 	for (i = 0; i < ldns_rr_list_rr_count(deleg_rrs); i++) {
 		ldns_rr *rr = ldns_rr_list_rr(deleg_rrs, i);
 
@@ -1140,7 +1153,7 @@ main(int argc, char *argv[])
 		process_DELEG(signed_zone, rr);
 	}
 	ldns_rr_list_free(deleg_rrs);
-
+#endif
 	/* list to store newly created rrs, so we can free them later */
 	added_rrs = ldns_rr_list_new();
 
