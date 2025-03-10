@@ -142,8 +142,11 @@ enum ldns_enum_rdf_type
 	/** draft-ietf-mboned-driad-amt-discovery **/
 	LDNS_RDF_TYPE_AMTRELAY,
 
-	/** draft-ietf-dnsop-svcb-https **/
+	/** RFC9460 **/
 	LDNS_RDF_TYPE_SVCPARAMS,
+
+	/** draft-wesplaap-deleg **/
+	LDNS_RDF_TYPE_DELEG_PARAMS,
 
 	/* Aliases */
 	LDNS_RDF_TYPE_BITMAP = LDNS_RDF_TYPE_NSEC

@@ -358,19 +358,20 @@ ldns_rr_new_frm_str_internal(ldns_rr **newrr, const char *str,
 		quoted = false;
 
 		switch (ldns_rr_descriptor_field_type(desc, r_cnt)) {
-		case LDNS_RDF_TYPE_B64        :
-		case LDNS_RDF_TYPE_HEX        : /* These rdf types may con- */
-		case LDNS_RDF_TYPE_NSEC       : /* tain whitespace, only if */
-		case LDNS_RDF_TYPE_LOC        : /* it is the last rd field. */
-		case LDNS_RDF_TYPE_WKS        :
-		case LDNS_RDF_TYPE_IPSECKEY   :
-		case LDNS_RDF_TYPE_AMTRELAY   :
-		case LDNS_RDF_TYPE_SVCPARAMS  :	if (r_cnt == r_max - 1) {
-							delimiters = "\n";
-							break;
-						}
-						/* fallthrough */
-		default                       :	delimiters = "\n\t "; 
+		case LDNS_RDF_TYPE_B64         :
+		case LDNS_RDF_TYPE_HEX         : /* These rdf types may con- */
+		case LDNS_RDF_TYPE_NSEC        : /* tain whitespace, only if */
+		case LDNS_RDF_TYPE_LOC         : /* it is the last rd field. */
+		case LDNS_RDF_TYPE_WKS         :
+		case LDNS_RDF_TYPE_IPSECKEY    :
+		case LDNS_RDF_TYPE_AMTRELAY    :
+		case LDNS_RDF_TYPE_SVCPARAMS   :
+		case LDNS_RDF_TYPE_DELEG_PARAMS: if (r_cnt == r_max - 1) {
+		                                         delimiters = "\n";
+		                                         break;
+		                                 }
+		                                 /* fallthrough */
+		default                        : delimiters = "\n\t "; 
 		}
 
 		if (ldns_rdf_type_maybe_quoted(
@@ -1990,6 +1991,13 @@ static const ldns_rdf_type type_svcb_wireformat[] = {
 	LDNS_RDF_TYPE_SVCPARAMS
 };
 #endif
+#ifdef RRTYPE_DELEG
+static const ldns_rdf_type type_deleg_wireformat[] = {
+	LDNS_RDF_TYPE_INT16,
+	LDNS_RDF_TYPE_DNAME, 
+	LDNS_RDF_TYPE_DELEG_PARAMS
+};
+#endif
 /* nsec3 is some vars, followed by same type of data of nsec */
 static const ldns_rdf_type type_nsec3_wireformat[] = {
 /*	LDNS_RDF_TYPE_NSEC3_VARS, LDNS_RDF_TYPE_NSEC3_NEXT_OWNER, LDNS_RDF_TYPE_NSEC*/
@@ -2515,7 +2523,7 @@ static ldns_rr_descriptor rdata_field_descriptors[] = {
 	{LDNS_RR_TYPE_DLV, "DLV", 4, 4, type_ds_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 0 },
 #ifdef RRTYPE_DELEG
 	/* 65432 */
-	{LDNS_RR_TYPE_DELEG, "DELEG", 2, 3, type_svcb_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 1 },
+	{LDNS_RR_TYPE_DELEG, "DELEG", 2, 3, type_deleg_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 1 },
 #endif
 };
 /** \endcond */
