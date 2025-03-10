@@ -1547,8 +1547,8 @@ svcparam_value2buffer_str(ldns_buffer *output, size_t sz, uint8_t *data)
 	return ldns_buffer_status(output);
 }
 
-ldns_status
-ldns_rdf2buffer_str_svcparams(ldns_buffer *output, const ldns_rdf *rdf)
+static ldns_status
+ldns_rdf2buffer_str_svcparams_(ldns_buffer *output, const ldns_rdf *rdf, bool deleg)
 {
 	uint8_t    *data, *dp, *next_dp = NULL;
 	size_t      sz;
@@ -1571,7 +1571,15 @@ ldns_rdf2buffer_str_svcparams(ldns_buffer *output, const ldns_rdf *rdf)
 		if (dp > data)
 			ldns_buffer_write_char(output, ' ');
 
-		if ((st = svcparam_key2buffer_str(output, key)))
+		if (deleg && key == LDNS_SVCPARAM_KEY_IPV4HINT) {
+			ldns_buffer_write_chars(output, "Glue4");
+			if ((st = ldns_buffer_status(output)))
+				return st;
+		} else if (deleg &&  key == LDNS_SVCPARAM_KEY_IPV6HINT) {
+			ldns_buffer_write_chars(output, "Glue6");
+			if ((st = ldns_buffer_status(output)))
+				return st;
+		} else if ((st = svcparam_key2buffer_str(output, key)))
 			return st;
 
 		if (val_sz == 0)
@@ -1608,9 +1616,35 @@ ldns_rdf2buffer_str_svcparams(ldns_buffer *output, const ldns_rdf *rdf)
 	}
 	return ldns_buffer_status(output);
 }
+
+ldns_status
+ldns_rdf2buffer_str_svcparams(ldns_buffer *output, const ldns_rdf *rdf)
+{
+	return ldns_rdf2buffer_str_svcparams_(output, rdf, false);
+}
+# ifdef RRTYPE_DELEG
+ldns_status
+ldns_rdf2buffer_str_deleg_params(ldns_buffer *output, const ldns_rdf *rdf)
+{
+	return ldns_rdf2buffer_str_svcparams_(output, rdf, true);
+}
+# else
+ldns_status
+ldns_rdf2buffer_str_deleg_params(ldns_buffer *output, const ldns_rdf *rdf)
+{
+	(void)output; (void)rdf;
+	return LDNS_STATUS_NOT_IMPL;
+}
+# endif
 #else	/* #ifdef RRTYPE_SVCB_HTTPS */
 ldns_status
 ldns_rdf2buffer_str_svcparams(ldns_buffer *output, const ldns_rdf *rdf)
+{
+	(void)output; (void)rdf;
+	return LDNS_STATUS_NOT_IMPL;
+}
+ldns_status
+ldns_rdf2buffer_str_deleg_params(ldns_buffer *output, const ldns_rdf *rdf)
 {
 	(void)output; (void)rdf;
 	return LDNS_STATUS_NOT_IMPL;
@@ -1737,6 +1771,9 @@ ldns_rdf2buffer_str_fmt(ldns_buffer *buffer,
 			break;
 		case LDNS_RDF_TYPE_SVCPARAMS:
 			res = ldns_rdf2buffer_str_svcparams(buffer, rdf);
+			break;
+		case LDNS_RDF_TYPE_DELEG_PARAMS:
+			res = ldns_rdf2buffer_str_deleg_params(buffer, rdf);
 			break;
 		}
 	} else {

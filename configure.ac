@@ -748,6 +748,14 @@ case "$enable_rrtype_ideleg" in
 		;;
 esac
 
+AC_ARG_ENABLE(rrtype-deleg, AS_HELP_STRING([--enable-rrtype-deleg],[Enable draft RR type DELEG.]))
+case "$enable_rrtype_deleg" in
+	yes)
+		AC_DEFINE_UNQUOTED([RRTYPE_DELEG], [], [Define this to enable RR type DELEG.])
+		;;
+	no|*)
+		;;
+esac
 
 if echo "$tmp_LIBS" | grep "ws2_32" >/dev/null; then
 	if echo "$LIBSSL_LIBS" | grep "ws2_32" >/dev/null; then

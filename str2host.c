@@ -2217,8 +2217,7 @@ parse_svcparam_key(const char **s, ldns_svcparam_key *key)
 	unsigned long int num;
 
 	/* parse key */
-	while (islower((unsigned char)**s) || isdigit((unsigned char)**s)
-	                                   || **s == '-')
+	while (isalnum((unsigned char)**s) || **s == '-')
 		*s += 1;
 
 	len = *s - key_str;
@@ -2229,6 +2228,19 @@ parse_svcparam_key(const char **s, ldns_svcparam_key *key)
 			return LDNS_STATUS_OK;
 		}
 	}
+#ifdef RRTYPE_DELEG
+	if (len == 5 && !strncmp(key_str, "Glue", 4)) {
+		switch(key_str[4]) {
+		case '4':
+			*key = LDNS_SVCPARAM_KEY_IPV4HINT;
+			return LDNS_STATUS_OK;
+		case '6':
+			*key = LDNS_SVCPARAM_KEY_IPV6HINT;
+			return LDNS_STATUS_OK;
+		default: break;
+		}
+	} else
+#endif
 	/* Also allow "echconfig" from earlier draft versions. */
 	if (len == 9 && !strncmp(key_str, "echconfig", 9)) {
 		*key = LDNS_SVCPARAM_KEY_ECH;
@@ -2327,8 +2339,8 @@ svcparam_ptr_cmp(const void *a, const void *b)
 	     : (x_len == 0     ? 0 : memcmp(x + 4, y + 4, x_len));
 }
 
-ldns_status
-ldns_str2rdf_svcparams(ldns_rdf **rd, const char *str)
+static ldns_status
+ldns_str2rdf_svcparams_(ldns_rdf **rd, const char *str, ldns_rdf_type rdf_type)
 {
 	uint8_t *data, *dp, *eod, *p, *new_data;
 	ldns_status st = LDNS_STATUS_OK;
@@ -2420,16 +2432,43 @@ ldns_str2rdf_svcparams(ldns_rdf **rd, const char *str)
 	LDNS_FREE(svcparams);
 
 	/* Create rdf */
-	*rd = ldns_rdf_new(LDNS_RDF_TYPE_SVCPARAMS, p - new_data, new_data);
+	*rd = ldns_rdf_new(rdf_type, p - new_data, new_data);
 	if (! *rd) {
 		LDNS_FREE(new_data);
 		return LDNS_STATUS_MEM_ERR;
 	}
 	return LDNS_STATUS_OK;
 }
+
+ldns_status
+ldns_str2rdf_svcparams(ldns_rdf **rd, const char *str)
+{
+	return ldns_str2rdf_svcparams_(rd, str, LDNS_RDF_TYPE_SVCPARAMS);
+}
+# ifdef RRTYPE_DELEG
+ldns_status
+ldns_str2rdf_deleg_params(ldns_rdf **rd, const char *str)
+{
+	return ldns_str2rdf_svcparams_(rd, str, LDNS_RDF_TYPE_DELEG_PARAMS);
+}
+# else
+ldns_status
+ldns_str2rdf_deleg_params(ldns_rdf **rd, const char *str)
+{
+	(void)rd; (void)str;
+	return LDNS_STATUS_NOT_IMPL;
+}
+# endif
 #else	/* #ifdef RRTYPE_SVCB_HTTPS */
 ldns_status
 ldns_str2rdf_svcparams(ldns_rdf **rd, const char *str)
+{
+	(void)rd; (void)str;
+	return LDNS_STATUS_NOT_IMPL;
+}
+
+ldns_status
+ldns_str2rdf_deleg_params(ldns_rdf **rd, const char *str)
 {
 	(void)rd; (void)str;
 	return LDNS_STATUS_NOT_IMPL;
