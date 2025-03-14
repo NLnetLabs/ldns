@@ -128,6 +128,12 @@ ldns_resolver_dnssec_cd(const ldns_resolver *r)
 	return r->_dnssec_cd;
 }
 
+bool
+ldns_resolver_deleg(const ldns_resolver *r)
+{
+	return r->_deleg;
+}
+
 ldns_rr_list *
 ldns_resolver_dnssec_anchors(const ldns_resolver *r)
 {
@@ -388,6 +394,12 @@ ldns_resolver_set_dnssec(ldns_resolver *r, bool d)
 }
 
 void
+ldns_resolver_set_deleg(ldns_resolver *r, bool d)
+{
+	r->_deleg = d;
+}
+
+void
 ldns_resolver_set_dnssec_cd(ldns_resolver *r, bool d)
 {
 	r->_dnssec_cd = d;
@@ -632,6 +644,7 @@ ldns_resolver_new(void)
 	ldns_resolver_set_edns_udp_size(r, 0);
 	ldns_resolver_set_dnssec(r, false);
 	ldns_resolver_set_dnssec_cd(r, false);
+	ldns_resolver_set_deleg(r, false);
 	ldns_resolver_set_dnssec_anchors(r, NULL);
 	ldns_resolver_set_ip6(r, LDNS_RESOLV_INETANY);
 	ldns_resolver_set_igntc(r, false);
@@ -1312,6 +1325,15 @@ ldns_resolver_prepare_query_pkt(ldns_pkt **query_pkt, ldns_resolver *r,
 			ldns_pkt_set_cd(*query_pkt, true);
 		}
 	}
+#ifdef RRTYPE_DELEG
+	/* set DE bit if necessary */
+	if (ldns_resolver_deleg(r)) {
+		if (ldns_resolver_edns_udp_size(r) == 0) {
+			ldns_resolver_set_edns_udp_size(r, 4096);
+		}
+		ldns_pkt_set_edns_de(*query_pkt, true);
+	}
+#endif
 
 	/* transfer the udp_edns_size from the resolver to the packet */
 	if (ldns_resolver_edns_udp_size(r) != 0) {

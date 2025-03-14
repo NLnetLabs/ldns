@@ -93,6 +93,8 @@ struct ldns_struct_resolver
 
 	/**  Whether to do DNSSEC */
 	bool _dnssec;
+	/**  Whether to set the EDNS DE bit */
+	bool _deleg;
 	/**  Whether to set the CD bit on DNSSEC requests */
 	bool _dnssec_cd;
 	/** Optional trust anchors for complete DNSSEC validation */
@@ -247,6 +249,12 @@ bool ldns_resolver_dnssec(const ldns_resolver *r);
  * \return true: yes, false: no
  */
 bool ldns_resolver_dnssec_cd(const ldns_resolver *r);
+/**
+ * Does the resolver set the DE bit
+ * \param[in] r the resolver
+ * \return true: yes, false: no
+ */
+bool ldns_resolver_deleg(const ldns_resolver *r);
 /**
  * Get the resolver's DNSSEC anchors
  * \param[in] r the resolver
@@ -448,6 +456,12 @@ void ldns_resolver_set_dnsrch(ldns_resolver *r, bool b);
  * \param[in] b true: use DNSSEC, false: don't use DNSSEC
  */
 void ldns_resolver_set_dnssec(ldns_resolver *r, bool b);
+/**
+ * Whether the resolver uses the DE bit when sending queries
+ * \param[in] r the resolver
+ * \param[in] b true: ask DELEG, false: don't ask DELEG 
+ */
+void ldns_resolver_set_deleg(ldns_resolver *r, bool b);
 
 /**
  * Whether the resolver uses the checking disable bit

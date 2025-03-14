@@ -40,6 +40,9 @@ usage(FILE *stream, const char *progname)
 	fprintf(stream, "\n\targuments may be placed in random order\n");
 	fprintf(stream, "\n  Options:\n");
 	fprintf(stream, "\t-D\t\tenable DNSSEC (DO bit)\n");
+#ifdef RRTYPE_DELEG
+	fprintf(stream, "\t-E\t\tenable DELEG referrals (DE bit)\n");
+#endif
 #ifdef HAVE_SSL
 	fprintf(stream, "\t-T\t\ttrace from the root down to <name>\n");
 	fprintf(stream, "\t-S\t\tchase signature(s) from <name> to a known key [*]\n");
@@ -152,6 +155,9 @@ main(int argc, char *argv[])
 	uint16_t	qport;
 	uint8_t		qfamily;
 	bool		qdnssec;
+#ifdef RRTYPE_DELEG
+	bool		qdeleg;
+#endif
 	bool		qfallback;
 	bool		qds;
 	bool		qusevc;
@@ -196,6 +202,9 @@ main(int argc, char *argv[])
 	qport = LDNS_PORT;
 	verbosity = 2;
 	qdnssec = false;
+#ifdef RRTYPE_DELEG
+	qdeleg = false;
+#endif
 	qfamily = LDNS_RESOLV_INETANY;
 	qfallback = false;
 	qds = false;
@@ -211,7 +220,7 @@ main(int argc, char *argv[])
 	/* global first, query opt next, option with parm's last
 	 * and sorted */ /*  "46DITSVQf:i:w:q:achuvxzy:so:p:b:k:" */
 	                               
-	while ((c = getopt(argc, argv, "46ab:c:d:Df:hi:I:k:o:p:q:Qr:sStTuvV:w:xy:z")) != -1) {
+	while ((c = getopt(argc, argv, "46ab:c:d:DEf:hi:I:k:o:p:q:Qr:sStTuvV:w:xy:z")) != -1) {
 		switch(c) {
 			/* global options */
 			case '4':
@@ -223,6 +232,16 @@ main(int argc, char *argv[])
 			case 'D':
 				qdnssec = true;
 				break;
+#ifdef RRTYPE_DELEG
+			case 'E':
+				qdeleg = true;
+				break;
+#else
+			case 'E':
+				fprintf(stderr, "Error: option -E is not implemented.\n");
+				exit(EXIT_FAILURE);
+				break;
+#endif
 			case 'I':
 				src = optarg;
 				break;
@@ -626,6 +645,9 @@ main(int argc, char *argv[])
 				error("%s", "@server ip could not be converted");
 			}
 			ldns_resolver_set_dnssec(cmdline_res, qdnssec);
+#ifdef RRTYPE_DELEG
+			ldns_resolver_set_deleg(cmdline_res, qdeleg);
+#endif
 			ldns_resolver_set_ip6(cmdline_res, qfamily);
 			ldns_resolver_set_fallback(cmdline_res, qfallback);
 			ldns_resolver_set_usevc(cmdline_res, qusevc);
@@ -668,6 +690,9 @@ main(int argc, char *argv[])
 		ldns_resolver_set_debug(res, false);
 	}
 	ldns_resolver_set_dnssec(res, qdnssec);
+#ifdef RRTYPE_DELEG
+	ldns_resolver_set_deleg(res, qdeleg);
+#endif
 /*	ldns_resolver_set_dnssec_cd(res, qdnssec);*/
 	ldns_resolver_set_ip6(res, qfamily);
 	ldns_resolver_set_fallback(res, qfallback);
