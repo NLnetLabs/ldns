@@ -265,6 +265,7 @@ ldns_pkt_set_edns_de(ldns_pkt *packet, bool value)
 bool
 ldns_pkt_edns_de(const ldns_pkt *packet)
 {
+	(void)packet;
 	return false;
 }
 
