@@ -2810,6 +2810,9 @@ ldns_pkt2buffer_str_fmt(ldns_buffer *output,
 			if (ldns_pkt_edns_do(pkt)) {
 				ldns_buffer_printf(output, " do");
 			}
+			if (ldns_pkt_edns_de(pkt)) {
+				ldns_buffer_printf(output, " de");
+			}
 			/* the extended rcode is the value set, shifted four bits,
 			 * and or'd with the original rcode */
 			if (ldns_pkt_edns_extended_rcode(pkt)) {
