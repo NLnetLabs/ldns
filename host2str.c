@@ -1225,6 +1225,34 @@ ldns_rdf2buffer_str_eui64(ldns_buffer *output, const ldns_rdf *rdf)
 }
 
 ldns_status
+ldns_rdf2buffer_str_unquoted(ldns_buffer *output, const ldns_rdf *rdf)
+{
+	size_t amount, i;
+	uint8_t ch;
+	if(ldns_rdf_size(rdf) < 1) {
+		return LDNS_STATUS_WIRE_RDATA_ERR;
+	}
+	if((int)ldns_rdf_size(rdf) < (int)ldns_rdf_data(rdf)[0] + 1) {
+		return LDNS_STATUS_WIRE_RDATA_ERR;
+	}
+	amount = ldns_rdf_data(rdf)[0];
+	for(i=0; i<amount; i++) {
+		ch = ldns_rdf_data(rdf)[1+i];
+		if (isprint((int)ch) || ch == '\t') {
+			if (ch == '\"' || ch == '\\' || ch == '\'' ||
+				ch == '(' || ch == ')' || isspace((int)ch))
+				ldns_buffer_printf(output, "\\%c", ch);
+			else
+				ldns_buffer_printf(output, "%c", ch);
+		} else {
+			ldns_buffer_printf(output, "\\%03u",
+                                (unsigned)(uint8_t) ch);
+		}
+	}
+	return ldns_buffer_status(output);
+}
+
+ldns_status
 ldns_rdf2buffer_str_tag(ldns_buffer *output, const ldns_rdf *rdf)
 {
 	size_t nchars;
@@ -1725,6 +1753,9 @@ ldns_rdf2buffer_str_fmt(ldns_buffer *buffer,
 			break;
 		case LDNS_RDF_TYPE_EUI64:
 			res = ldns_rdf2buffer_str_eui64(buffer, rdf);
+			break;
+		case LDNS_RDF_TYPE_UNQUOTED:
+			res = ldns_rdf2buffer_str_unquoted(buffer, rdf);
 			break;
 		case LDNS_RDF_TYPE_TAG:
 			res = ldns_rdf2buffer_str_tag(buffer, rdf);

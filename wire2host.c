@@ -230,6 +230,7 @@ ldns_wire2rdf(ldns_rr *rr, const uint8_t *wire, size_t max, size_t *pos)
 			break;
 		case LDNS_RDF_TYPE_STR:
 		case LDNS_RDF_TYPE_NSEC3_SALT:
+		case LDNS_RDF_TYPE_UNQUOTED:
 		case LDNS_RDF_TYPE_TAG:
 			/* len is stored in first byte
 			 * it should be in the rdf too, so just

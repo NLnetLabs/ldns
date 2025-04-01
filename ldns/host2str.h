@@ -619,6 +619,16 @@ ldns_status ldns_rdf2buffer_str_eui48(ldns_buffer *output,
 ldns_status ldns_rdf2buffer_str_eui64(ldns_buffer *output,
 		const ldns_rdf *rdf);
 
+/**
+ * Adds the LDNS_RDF_TYPE_UNQUOTED rdata to the output buffer,
+ * it escapes nonprinting and special characters.
+ * \param[in] *rdf The rdata to convert
+ * \param[in] *output The buffer to add the data to
+ * \return LDNS_STATUS_OK on success, and error status on failure
+ */
+ldns_status ldns_rdf2buffer_str_unquoted(ldns_buffer *output,
+		const ldns_rdf *rdf);
+
 /** 
  * Adds the LDNS_RDF_TYPE_TAG rdata to the output buffer,
  * provided it contains only alphanumeric characters.

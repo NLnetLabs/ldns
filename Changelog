@@ -16,6 +16,7 @@
 	* Add ldns-verify-zone -s option. It checks all signature results,
 	  instead of passing by when one RRSIG validates. That prints output
 	  for spurious RRSIGs, the failures for them.
+	* Fix RR types NSAP-PTR, GPOS and RESINFO to print unquoted strings.
 
 1.8.4	2024-07-19
 	* Fix building documentation in build directory.
