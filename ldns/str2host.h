@@ -324,12 +324,21 @@ ldns_status ldns_str2rdf_amtrelay(ldns_rdf **rd, const char *str);
 
 /**
  * Convert a series of "key[=<value>]" encodings to wireformat as described in
- * [draft-ietf-dnsop-svcb-https].
+ * [RFC9460].
  * \param[out] rd the rdf where to put the data
  * \param[in] str the string to be converted
  * \return ldns_status
  */
 ldns_status ldns_str2rdf_svcparams(ldns_rdf **rd, const char *str);
+
+/**
+ * Convert a series of "key[=<value>]" encodings to wireformat as described in
+ * [draft-wesplaap-deleg].
+ * \param[out] rd the rdf where to put the data
+ * \param[in] str the string to be converted
+ * \return ldns_status
+ */
+ldns_status ldns_str2rdf_deleg_params(ldns_rdf **rd, const char *str);
 
 
 #ifdef __cplusplus

@@ -844,7 +844,11 @@ ldns_dnssec_create_nsec(const ldns_dnssec_name *from,
 		 * in the type bitmap */
 		if ((on_delegation_point && (
 				cur_rrsets->type == LDNS_RR_TYPE_NS 
-			     || cur_rrsets->type == LDNS_RR_TYPE_DS))
+			     || cur_rrsets->type == LDNS_RR_TYPE_DS
+#ifdef RRTYPE_DELEG
+			     || cur_rrsets->type == LDNS_RR_TYPE_DELEG
+#endif
+			     ))
 			|| (!on_delegation_point &&
 				cur_rrsets->type != LDNS_RR_TYPE_RRSIG
 			     && cur_rrsets->type != LDNS_RR_TYPE_NSEC)) {
@@ -921,7 +925,11 @@ ldns_dnssec_create_nsec3(const ldns_dnssec_name *from,
 		 */
 		if ((on_delegation_point && (
 				cur_rrsets->type == LDNS_RR_TYPE_NS
-			     || cur_rrsets->type == LDNS_RR_TYPE_DS))
+			     || cur_rrsets->type == LDNS_RR_TYPE_DS
+#ifdef RRTYPE_DELEG
+			     || cur_rrsets->type == LDNS_RR_TYPE_DELEG
+#endif
+			     ))
 			|| (!on_delegation_point &&
 				cur_rrsets->type != LDNS_RR_TYPE_RRSIG)) {
 

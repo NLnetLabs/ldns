@@ -241,9 +241,16 @@ enum ldns_enum_rr_type
 	/* RFC 4431, 5074, DNSSEC Lookaside Validation */
 	LDNS_RR_TYPE_DLV = 32769,
 
+	/* draft-homburg-deleg-inctremental-deleg */
+	LDNS_RR_TYPE_IDELEG = 65280,
+
 	/* type codes from nsec3 experimental phase
 	LDNS_RR_TYPE_NSEC3 = 65324,
 	LDNS_RR_TYPE_NSEC3PARAMS = 65325, */
+
+	/* draft-wesplaap-deleg-02 */
+	LDNS_RR_TYPE_DELEG = 65432,
+
 	LDNS_RR_TYPE_FIRST = 0,
 	LDNS_RR_TYPE_LAST  = 65535,
 	LDNS_RR_TYPE_COUNT = LDNS_RR_TYPE_LAST - LDNS_RR_TYPE_FIRST + 1

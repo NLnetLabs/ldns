@@ -273,6 +273,7 @@ ldns_wire2rdf(ldns_rr *rr, const uint8_t *wire, size_t max, size_t *pos)
 		case LDNS_RDF_TYPE_LONG_STR:
 		case LDNS_RDF_TYPE_AMTRELAY:
 		case LDNS_RDF_TYPE_SVCPARAMS:
+		case LDNS_RDF_TYPE_DELEG_PARAMS:
 		case LDNS_RDF_TYPE_NONE:
 			/*
 			 * Read to end of rr rdata

@@ -26,6 +26,9 @@
  */
 
 #define LDNS_EDNS_MASK_DO_BIT 0x8000
+#ifdef RRTYPE_DELEG
+# define LDNS_EDNS_MASK_DE_BIT 0x2000
+#endif
 #define LDNS_EDNS_MASK_UNASSIGNED (0xFFFF & ~LDNS_EDNS_MASK_DO_BIT)
 
 /* TODO defines for 3600 */
@@ -242,6 +245,37 @@ ldns_pkt_set_edns_do(ldns_pkt *packet, bool value)
 		packet->_edns_z = packet->_edns_z & ~LDNS_EDNS_MASK_DO_BIT;
 	}
 }
+#ifdef RRTYPE_DELEG
+bool
+ldns_pkt_edns_de(const ldns_pkt *packet)
+{
+	return (packet->_edns_z & LDNS_EDNS_MASK_DE_BIT);
+}
+
+void
+ldns_pkt_set_edns_de(ldns_pkt *packet, bool value)
+{
+	if (value) {
+		packet->_edns_z = packet->_edns_z | LDNS_EDNS_MASK_DE_BIT;
+	} else {
+		packet->_edns_z = packet->_edns_z & ~LDNS_EDNS_MASK_DE_BIT;
+	}
+}
+#else
+bool
+ldns_pkt_edns_de(const ldns_pkt *packet)
+{
+	(void)packet;
+	return false;
+}
+
+void
+ldns_pkt_set_edns_de(ldns_pkt *packet, bool value)
+{
+	(void)packet;
+	(void)value;
+}
+#endif
 
 uint16_t
 ldns_pkt_edns_unassigned(const ldns_pkt *packet)
