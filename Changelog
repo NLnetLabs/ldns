@@ -11,7 +11,13 @@
 	  Follows the long string unquoted syntax from RFC8659, section 4.1.1.
 	* Fix #266: ldns-read-zone -u fails if a type is the only type in a
 	  window and the type modulo 256 is equal to zero.
-	* Fix memory leak when trying to read zones that have equal RRs.
+	* Fix #271: Intermittent build failure with multi-job
+	  builds (make -j).
+	* Add ldns-verify-zone -s option. It checks all signature results,
+	  instead of passing by when one RRSIG validates. That prints output
+	  for spurious RRSIGs, the failures for them.
+	* Fix RR types NSAP-PTR, GPOS and RESINFO to print unquoted strings.
+  * Fix memory leak when trying to read zones that have equal RRs.
 	  the ldns_dnssec_*_add_rr() functions now return LDNS_STATUS_EQUAL_RR
 	  when an already existing RR is tried to be added. This is a API
 	  change, hence this also bumps the version to 1.9.0

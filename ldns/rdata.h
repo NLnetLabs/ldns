@@ -123,6 +123,9 @@ enum ldns_enum_rdf_type
 	/** 8 * 8 bit hex numbers separated by dashes. For EUI64. */
 	LDNS_RDF_TYPE_EUI64,
 
+	/** Character string without quotes. */
+	LDNS_RDF_TYPE_UNQUOTED,
+
 	/** A non-zero sequence of US-ASCII letters and numbers in lower case.
 	 *  For CAA.
 	 */
