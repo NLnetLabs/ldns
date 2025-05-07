@@ -725,6 +725,13 @@ bool ldns_rr_list_contains_rr(const ldns_rr_list *rr_list, const ldns_rr *rr);
 bool ldns_is_rrset(const ldns_rr_list *rr_list);
 
 /**
+ * checks if an rr_list is a rrset, including checking for TTL.
+ * \param[in] rr_list the rr_list to check
+ * \return true if it is an rrset otherwise false
+ */
+bool ldns_is_rrset_strict(const ldns_rr_list *rr_list);
+
+/**
  * pushes an rr to an rrset (which really are rr_list's).
  * \param[in] *rr_list the rrset to push the rr to
  * \param[in] *rr the rr to push
