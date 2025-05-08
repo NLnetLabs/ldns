@@ -17,6 +17,10 @@
 	  instead of passing by when one RRSIG validates. That prints output
 	  for spurious RRSIGs, the failures for them.
 	* Fix RR types NSAP-PTR, GPOS and RESINFO to print unquoted strings.
+  * Fix memory leak when trying to read zones that have equal RRs.
+	  the ldns_dnssec_*_add_rr() functions now return LDNS_STATUS_EQUAL_RR
+	  when an already existing RR is tried to be added. This is a API
+	  change, hence this also bumps the version to 1.9.0
 
 1.8.4	2024-07-19
 	* Fix building documentation in build directory.

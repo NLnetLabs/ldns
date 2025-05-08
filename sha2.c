@@ -737,6 +737,7 @@ static void ldns_sha512_Transform(ldns_sha512_CTX* context,
 	sha2_word64	a, b, c, d, e, f, g, h, s0, s1;
 	sha2_word64	T1, T2, *W512 = (sha2_word64*)context->buffer;
 	int		j;
+	sha2_word64	aligned;
 
 	/* initialize registers with the prev. intermediate value */
 	a = context->state[0];
@@ -752,7 +753,8 @@ static void ldns_sha512_Transform(ldns_sha512_CTX* context,
 	do {
 #if BYTE_ORDER == LITTLE_ENDIAN
 		/* Convert TO host byte order */
-		REVERSE64(*data++, W512[j]);
+		memcpy(&aligned, data++, sizeof(aligned));
+		REVERSE64(aligned, W512[j]);
 		/* Apply the SHA-512 compression function to update a..h */
 		T1 = h + Sigma1_512(e) + Ch(e, f, g) + K512[j] + W512[j];
 #else /* BYTE_ORDER == LITTLE_ENDIAN */

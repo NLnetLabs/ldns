@@ -410,6 +410,14 @@ ldns_rdf2buffer_str_int32(ldns_buffer *output, const ldns_rdf *rdf)
 }
 
 ldns_status
+ldns_rdf2buffer_str_int64(ldns_buffer *output, const ldns_rdf *rdf)
+{
+	uint64_t data = ldns_read_uint64(ldns_rdf_data(rdf));
+	ldns_buffer_printf(output, "%llu", (unsigned long long) data);
+	return ldns_buffer_status(output);
+}
+
+ldns_status
 ldns_rdf2buffer_str_time(ldns_buffer *output, const ldns_rdf *rdf)
 {
 	/* create a YYYYMMDDHHMMSS string if possible */
@@ -1671,6 +1679,10 @@ ldns_rdf2buffer_str_fmt(ldns_buffer *buffer,
 			break;
 		case LDNS_RDF_TYPE_INT32:
 			res = ldns_rdf2buffer_str_int32(buffer, rdf);
+			break;
+		case LDNS_RDF_TYPE_INT64:
+		case LDNS_RDF_TYPE_IPN:
+			res = ldns_rdf2buffer_str_int64(buffer, rdf);
 			break;
 		case LDNS_RDF_TYPE_PERIOD:
 			res = ldns_rdf2buffer_str_period(buffer, rdf);

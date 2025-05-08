@@ -54,6 +54,8 @@ enum ldns_enum_rdf_type
 	LDNS_RDF_TYPE_INT16,
 	/** 32 bits */
 	LDNS_RDF_TYPE_INT32,
+	/** 64 bits */
+	LDNS_RDF_TYPE_INT64,
 	/** A record */
 	LDNS_RDF_TYPE_A,
 	/** AAAA record */
@@ -70,6 +72,7 @@ enum ldns_enum_rdf_type
 	LDNS_RDF_TYPE_HEX,
 	/** nsec type codes */
 	LDNS_RDF_TYPE_NSEC,
+	LDNS_RDF_TYPE_BITMAP = LDNS_RDF_TYPE_NSEC,
 	/** a RR type */
 	LDNS_RDF_TYPE_TYPE,
 	/** a class */
@@ -148,8 +151,8 @@ enum ldns_enum_rdf_type
 	/** draft-ietf-dnsop-svcb-https **/
 	LDNS_RDF_TYPE_SVCPARAMS,
 
-	/* Aliases */
-	LDNS_RDF_TYPE_BITMAP = LDNS_RDF_TYPE_NSEC
+	/** draft-johnson-dns-ipn-cla-07 **/
+	LDNS_RDF_TYPE_IPN
 };
 typedef enum ldns_enum_rdf_type ldns_rdf_type;
 

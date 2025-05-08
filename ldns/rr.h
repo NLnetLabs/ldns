@@ -194,6 +194,7 @@ enum ldns_enum_rr_type
 	LDNS_RR_TYPE_ZONEMD = 63, /* RFC 8976 */
 	LDNS_RR_TYPE_SVCB = 64, /* RFC 9460 */
 	LDNS_RR_TYPE_HTTPS = 65, /* RFC 9460 */
+	LDNS_RR_TYPE_DSYNC = 66, /* draft-ietf-dnsop-generalized-notify */
 
 	LDNS_RR_TYPE_SPF = 99, /* RFC 4408 */
 
@@ -236,6 +237,12 @@ enum ldns_enum_rr_type
 	/** https://iana.org/assignments/dns-parameters/WALLET/wallet-completed-template */
 	LDNS_RR_TYPE_WALLET = 262,
 
+	/** https://www.iana.org/assignments/dns-parameters/CLA/cla-completed-template */
+	LDNS_RR_TYPE_CLA = 263,
+
+	/** https://www.iana.org/assignments/dns-parameters/IPN/ipn-completed-template */
+	LDNS_RR_TYPE_IPN = 264,
+
 	/** DNSSEC Trust Authorities */
 	LDNS_RR_TYPE_TA = 32768,
 	/* RFC 4431, 5074, DNSSEC Lookaside Validation */
@@ -251,7 +258,7 @@ enum ldns_enum_rr_type
 typedef enum ldns_enum_rr_type ldns_rr_type;
 
 /* The first fields are contiguous and can be referenced instantly */
-#define LDNS_RDATA_FIELD_DESCRIPTORS_COMMON (LDNS_RR_TYPE_WALLET + 1)
+#define LDNS_RDATA_FIELD_DESCRIPTORS_COMMON (LDNS_RR_TYPE_IPN + 1)
 
 /**
  * Resource Record

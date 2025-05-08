@@ -587,6 +587,7 @@ main(void)
 		result = EXIT_FAILURE;
 	}
 	free(data);
+	data = NULL;
 
 	/* tests from josfessons draft */
 	/* BASE64("") = "" */

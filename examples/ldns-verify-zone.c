@@ -779,6 +779,7 @@ main(int argc, char **argv)
                         break;
 		case 'h':
 			print_usage(stdout, progname);
+			ldns_rr_list_deep_free(keys);
 			exit(EXIT_SUCCESS);
 			break;
 		case 'e':
@@ -792,6 +793,7 @@ main(int argc, char **argv)
 						"P[n]Y[n]M[n]DT[n]H[n]M[n]S\n"
 						);
 				}
+				ldns_rr_list_deep_free(keys);
                                 exit(EXIT_FAILURE);
 			}
 			if (c == 'e')
@@ -817,6 +819,7 @@ main(int argc, char **argv)
 						"%s: %s\n",optarg,
 						ldns_get_errorstr_by_id(s));
 				}
+				ldns_rr_list_deep_free(keys);
                                 exit(EXIT_FAILURE);
 			}
 			if (ldns_rr_list_rr_count(keys) == nkeys) {
@@ -825,6 +828,7 @@ main(int argc, char **argv)
 						"No keys found in file %s\n",
 						optarg);
 				}
+				ldns_rr_list_deep_free(keys);
 				exit(EXIT_FAILURE);
 			}
 			nkeys = ldns_rr_list_rr_count(keys);
@@ -837,6 +841,7 @@ main(int argc, char **argv)
 						"percentage needs to fall "
 						"between 0..100\n");
 				}
+				ldns_rr_list_deep_free(keys);
                                 exit(EXIT_FAILURE);
                         }
                         srandom(time(NULL) ^ getpid());
@@ -866,6 +871,7 @@ main(int argc, char **argv)
 		case 'v':
 			printf("verify-zone version %s (ldns version %s)\n",
 					LDNS_VERSION, ldns_version());
+			ldns_rr_list_deep_free(keys);
 			exit(EXIT_SUCCESS);
 			break;
 		case 'V':
@@ -885,6 +891,7 @@ main(int argc, char **argv)
 				fprintf(myerr, "Unable to chase "
 						"signature without keys.\n");
 			}
+			ldns_rr_list_deep_free(keys);
 			exit(EXIT_FAILURE);
 		}
 	}
@@ -903,10 +910,12 @@ main(int argc, char **argv)
 				fprintf(myerr, "Unable to open %s: %s\n",
 					filename, strerror(errno));
 			}
+			ldns_rr_list_deep_free(keys);
 			exit(EXIT_FAILURE);
 		}
 	} else {
 		print_usage(stderr, progname);
+		ldns_rr_list_deep_free(keys);
 		exit(EXIT_FAILURE);
 	}
 
@@ -917,6 +926,7 @@ main(int argc, char **argv)
 			fprintf(myerr, "%s at line %d\n",
 				ldns_get_errorstr_by_id(s), line_nr);
 		}
+		ldns_rr_list_deep_free(keys);
                 exit(EXIT_FAILURE);
 	}
 	if (!dnssec_zone->soa) {
@@ -924,6 +934,7 @@ main(int argc, char **argv)
 			fprintf(myerr,
 				"; Error: no SOA in the zone\n");
 		}
+		ldns_rr_list_deep_free(keys);
 		exit(EXIT_FAILURE);
 	}
 
@@ -943,9 +954,10 @@ main(int argc, char **argv)
 
 	if (zonemd_required == 1
 	&&  !ldns_dnssec_zone_find_rrset(dnssec_zone,
-			       	dnssec_zone->soa->name, LDNS_RR_TYPE_DNSKEY))
+				dnssec_zone->soa->name, LDNS_RR_TYPE_DNSKEY)) {
+		ldns_rr_list_deep_free(keys);
 		result = LDNS_STATUS_OK;
-	else
+	} else
 		result = verify_dnssec_zone(dnssec_zone,
 				dnssec_zone->soa->name, keys, apexonly,
 				percentage, zonemd_required > 2);
