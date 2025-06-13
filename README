@@ -1,7 +1,11 @@
 DEVELOPMENT VISION
 
 Note: ldns has been in maintenance mode since 2020, with no plans for major
-features. We will continue to make occasional use of ldns in an experimental
+features. We welcome PRs from contributors who want to add new functionality. 
+We also actively fix bugs, so users can continue to rely on ldns if its 
+current features meet their needs.
+
+We will continue to make occasional use of ldns in an experimental
 setting, such as during an IETF Hackathon to build a proof of concept for an
 Internet Draft.
 
@@ -24,7 +28,6 @@ Contents:
 		Solaris
 	KNOWN ISSUES
 		pyldns
-        Your Support
 
 Project page:
 http://www.nlnetlabs.nl/ldns/
