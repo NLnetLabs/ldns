@@ -1082,9 +1082,10 @@ ldns_resolver_search_status(ldns_pkt** pkt,
 						LDNS_RCODE_NOERROR) {
 
 					return LDNS_STATUS_OK;
+				} else if (i < ldns_resolver_searchlist_count(r)) {
+					ldns_pkt_free(*pkt);
+					*pkt = NULL;
 				}
-				ldns_pkt_free(*pkt);
-				*pkt = NULL;
 			}
 		}
 	}
