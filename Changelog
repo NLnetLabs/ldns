@@ -22,6 +22,8 @@
 	  when an already existing RR is tried to be added. This is a API
 	  change, hence this also bumps the version to 1.9.0
 	* PR #282: ensure returning pkt with LDNS_STATUS_OK. Thanks grobian.
+	* PR #286: Fix RR Type AMTRELAY type nogateway, to print relay '.',
+	  and memory leaks in parsing it.
 
 1.8.4	2024-07-19
 	* Fix building documentation in build directory.
