@@ -1422,6 +1422,8 @@ ldns_rdf2buffer_str_amtrelay(ldns_buffer *output, const ldns_rdf *rdf)
 			precedence, discovery_optional, relay_type);
 	if (relay)
 	  	(void) ldns_rdf2buffer_str(output, relay);
+	else
+		ldns_buffer_printf(output, ".");
 
 	ldns_rdf_deep_free(relay);
 	return ldns_buffer_status(output);
