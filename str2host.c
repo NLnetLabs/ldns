@@ -1830,6 +1830,7 @@ ldns_str2rdf_amtrelay(ldns_rdf **rd, const char *str)
 			LDNS_FREE(relay);
 		LDNS_FREE(token);
 		ldns_buffer_free(str_buf);
+		ldns_rdf_deep_free(relay_rdf);
 		return LDNS_STATUS_INVALID_STR;
 	}
 
@@ -1845,7 +1846,7 @@ ldns_str2rdf_amtrelay(ldns_rdf **rd, const char *str)
 			LDNS_FREE(relay);
 		LDNS_FREE(token);
 		ldns_buffer_free(str_buf);
-		if (relay_rdf) ldns_rdf_free(relay_rdf);
+		ldns_rdf_deep_free(relay_rdf);
 		return LDNS_STATUS_MEM_ERR;
 	}
 
@@ -1864,7 +1865,7 @@ ldns_str2rdf_amtrelay(ldns_rdf **rd, const char *str)
 		LDNS_FREE(relay);
 	LDNS_FREE(token);
 	ldns_buffer_free(str_buf);
-	ldns_rdf_free(relay_rdf);
+	ldns_rdf_deep_free(relay_rdf);
 	LDNS_FREE(data);
 	if(!*rd) return LDNS_STATUS_MEM_ERR;
 	return LDNS_STATUS_OK;
