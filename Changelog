@@ -34,6 +34,8 @@
 	  Thanks pemensik
 	* PR #188: Homogenize paths for source files during compilation
 	  Thanks duthils
+	* Fix #283: ldns-walk fails after update from 1.8.3 to 1.8.4
+	  Thanks jschauma
 
 1.8.4	2024-07-19
 	* Fix building documentation in build directory.
