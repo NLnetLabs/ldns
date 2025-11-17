@@ -30,6 +30,8 @@
 	* PR #249: If RNG is already seeded, return early.
 	  Thanks crrodriguez
 	* PR #221: Improve error messages. Thanks jschauma
+	* PR #256: Use SWIG_AppendOutput to support swig 4.3
+	  Thanks pemensik
 
 1.8.4	2024-07-19
 	* Fix building documentation in build directory.
