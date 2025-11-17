@@ -195,6 +195,8 @@ enum ldns_enum_rr_type
 	LDNS_RR_TYPE_SVCB = 64, /* RFC 9460 */
 	LDNS_RR_TYPE_HTTPS = 65, /* RFC 9460 */
 	LDNS_RR_TYPE_DSYNC = 66, /* RFC 9859 */
+	LDNS_RR_TYPE_HHIT = 67, /* draft-ietf-drip-registries-28 */
+	LDNS_RR_TYPE_BRID = 68, /* draft-ietf-drip-registries-28 */
 
 	LDNS_RR_TYPE_SPF = 99, /* RFC 4408 */
 

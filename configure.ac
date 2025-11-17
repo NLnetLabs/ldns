@@ -763,6 +763,15 @@ case "$enable_rrtypes_cla_ipn" in
 	no|*)
 		;;
 esac
+AC_ARG_ENABLE(rrtypes-hhit-brid, AS_HELP_STRING([--enable-rrtypes-hhit-brid],[Enable draft RR types HHIT and BRID.]))
+if test "x$enable_draft_rrtypes" = "xyes"; then enable_rrtypes_hhit_brid="yes"; fi
+case "$enable_rrtypes_hhit_brid" in
+	yes)
+		AC_DEFINE_UNQUOTED([RRTYPE_HHIT_BRID], [], [Define this to enable RR types HHIT and BRID.])
+		;;
+	no|*)
+		;;
+esac
 
 
 if echo "$tmp_LIBS" | grep "ws2_32" >/dev/null; then

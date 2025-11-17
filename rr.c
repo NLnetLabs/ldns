@@ -2038,6 +2038,14 @@ static const ldns_rdf_type type_dsync_wireformat[] = {
 	LDNS_RDF_TYPE_DNAME
 };
 #endif
+#ifdef RRTYPE_HHIT_BRID
+static const ldns_rdf_type type_hhit_wireformat[] = {
+	LDNS_RDF_TYPE_B64
+};
+static const ldns_rdf_type type_brid_wireformat[] = {
+	LDNS_RDF_TYPE_B64
+};
+#endif
 
 /* nsec3 is some vars, followed by same type of data of nsec */
 static const ldns_rdf_type type_nsec3_wireformat[] = {
@@ -2306,12 +2314,20 @@ static ldns_rr_descriptor rdata_field_descriptors[] = {
 {LDNS_RR_TYPE_NULL, "TYPE65", 1, 1, type_0_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 0 },
 #endif
 #ifdef RRTYPE_DSYNC
-{LDNS_RR_TYPE_DSYNC, "DSYNC", 4, 4, type_dsync_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 1 },
+	/* 66 */
+	{LDNS_RR_TYPE_DSYNC, "DSYNC", 4, 4, type_dsync_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 1 },
 #else
 {LDNS_RR_TYPE_NULL, "TYPE66", 1, 1, type_0_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 0 },
 #endif
+#ifdef RRTYPE_HHIT_BRID
+	/* 67 */
+	{LDNS_RR_TYPE_HHIT, "HHIT", 1, 1, type_hhit_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 0 },
+	/* 68 */
+	{LDNS_RR_TYPE_BRID, "BRID", 1, 1, type_brid_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 0 },
+#else
 {LDNS_RR_TYPE_NULL, "TYPE67", 1, 1, type_0_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 0 },
 {LDNS_RR_TYPE_NULL, "TYPE68", 1, 1, type_0_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 0 },
+#endif
 {LDNS_RR_TYPE_NULL, "TYPE69", 1, 1, type_0_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 0 },
 {LDNS_RR_TYPE_NULL, "TYPE70", 1, 1, type_0_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 0 },
 {LDNS_RR_TYPE_NULL, "TYPE71", 1, 1, type_0_wireformat, LDNS_RDF_TYPE_NONE, LDNS_RR_NO_COMPRESS, 0 },
