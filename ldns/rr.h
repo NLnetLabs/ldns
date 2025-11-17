@@ -194,7 +194,7 @@ enum ldns_enum_rr_type
 	LDNS_RR_TYPE_ZONEMD = 63, /* RFC 8976 */
 	LDNS_RR_TYPE_SVCB = 64, /* RFC 9460 */
 	LDNS_RR_TYPE_HTTPS = 65, /* RFC 9460 */
-	LDNS_RR_TYPE_DSYNC = 66, /* draft-ietf-dnsop-generalized-notify */
+	LDNS_RR_TYPE_DSYNC = 66, /* RFC 9859 */
 
 	LDNS_RR_TYPE_SPF = 99, /* RFC 4408 */
 

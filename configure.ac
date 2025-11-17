@@ -746,13 +746,12 @@ case "$enable_rrtype_resinfo" in
 		AC_DEFINE_UNQUOTED([RRTYPE_RESINFO], [], [Define this to enable RR type RESINFO.])
 		;;
 esac
-AC_ARG_ENABLE(rrtype-dsync, AS_HELP_STRING([--enable-rrtype-dsync],[Enable draft RR type DSYNC.]))
-if test "x$enable_draft_rrtypes" = "xyes"; then enable_rrtype_dsync="yes"; fi
+AC_ARG_ENABLE(rrtype-dsync, AS_HELP_STRING([--disable-rrtype-dsync],[Disable RR type DSYNC.]))
 case "$enable_rrtype_dsync" in
-	yes)
-		AC_DEFINE_UNQUOTED([RRTYPE_DSYNC], [], [Define this to enable RR type DSYNC.])
+	no)
 		;;
-	no|*)
+	yes|*)
+		AC_DEFINE_UNQUOTED([RRTYPE_DSYNC], [], [Define this to enable RR type DSYNC.])
 		;;
 esac
 AC_ARG_ENABLE(rrtypes-cla-ipn, AS_HELP_STRING([--enable-rrtypes-cla-ipn],[Enable draft RR types CLA and IPN.]))
