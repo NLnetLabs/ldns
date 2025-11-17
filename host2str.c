@@ -2590,6 +2590,18 @@ ldns_edns_ede2buffer_str(ldns_buffer* output, uint8_t* data, size_t len)
 	case LDNS_EDE_TOO_EARLY:
 		ldns_buffer_printf(output, " 26 (Too Early)");
 		break;
+	case LDNS_EDE_UNSUPPORTED_NSEC3_ITERATIONS_VALUE:
+		ldns_buffer_printf(output, " 27 (Unsupported NSEC3 Iterations Value)");
+		break;
+	case LDNS_EDE_UNABLE_TO_CONFORM_TO_POLICY:
+		ldns_buffer_printf(output, " 28 (Unable to conform to policy)");
+		break;
+	case LDNS_EDE_SYNTHESIZED:
+		ldns_buffer_printf(output, " 29 (Synthesized)");
+		break;
+	case LDNS_EDE_INVALID_QUERY_TYPE:
+		ldns_buffer_printf(output, " 30 (Invalid Query Type)");
+		break;
 	default:
 		ldns_buffer_printf(output, " %02x", data[0]);
 		ldns_buffer_printf(output, " %02x", data[1]);
@@ -2817,6 +2829,9 @@ ldns_pkt2buffer_str_fmt(ldns_buffer *output,
 				   ldns_pkt_edns_version(pkt));
 			if (ldns_pkt_edns_do(pkt)) {
 				ldns_buffer_printf(output, " do");
+			}
+			if (ldns_pkt_edns_co(pkt)) {
+				ldns_buffer_printf(output, " co");
 			}
 			/* the extended rcode is the value set, shifted four bits,
 			 * and or'd with the original rcode */

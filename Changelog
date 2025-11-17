@@ -24,6 +24,8 @@
 	* PR #282: ensure returning pkt with LDNS_STATUS_OK. Thanks grobian.
 	* PR #286: Fix RR Type AMTRELAY type nogateway, to print relay '.',
 	  and memory leaks in parsing it.
+	* DSYNC is no longer a draft RR type and compiled by default
+	* RFC 9824 support: Compact Denial of Existence in DNSSEC
 
 1.8.4	2024-07-19
 	* Fix building documentation in build directory.
