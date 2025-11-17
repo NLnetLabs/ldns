@@ -32,6 +32,24 @@ extern "C" {
 #endif
 
 /**
+ * Linked list node holding state for compression
+ * Order of dnames matters but not controlled, so
+ * single walk in the order will suffice for this algo
+ */
+typedef
+struct ldns_llnode_t
+{
+	struct ldns_llnode_t *next;
+
+	size_t               som; /* size of match from the end */
+	size_t               buffer_start; /* offset of the start */
+
+	size_t               dsize;
+	char                 dname[256]; /* size limit per RFC1035 */
+}
+ldns_llnode_t;
+
+/**
  * Copies the dname data to the buffer in wire format
  * \param[out] *buffer buffer to append the result to
  * \param[in] *name rdata dname to convert
@@ -46,7 +64,7 @@ ldns_status ldns_dname2buffer_wire(ldns_buffer *buffer, const ldns_rdf *name);
  * \param[out] *compression_data data structure holding state for compression
  * \return ldns_status
  */
-ldns_status ldns_dname2buffer_wire_compress(ldns_buffer *buffer, const ldns_rdf *name, ldns_rbtree_t *compression_data);
+ldns_status ldns_dname2buffer_wire_compress(ldns_buffer *buffer, const ldns_rdf *name, ldns_llnode_t *compression_data);
 
 /**
  * Copies the rdata data to the buffer in wire format
@@ -63,7 +81,7 @@ ldns_status ldns_rdf2buffer_wire(ldns_buffer *output, const ldns_rdf *rdf);
  * \param[out] *compression_data data structure holding state for compression
  * \return ldns_status
  */
-ldns_status ldns_rdf2buffer_wire_compress(ldns_buffer *output, const ldns_rdf *rdf, ldns_rbtree_t *compression_data);
+ldns_status ldns_rdf2buffer_wire_compress(ldns_buffer *output, const ldns_rdf *rdf, ldns_llnode_t *compression_data);
 
 /**
  * Copies the rdata data to the buffer in wire format
@@ -100,7 +118,7 @@ ldns_status ldns_rr2buffer_wire(ldns_buffer *output,
 ldns_status ldns_rr2buffer_wire_compress(ldns_buffer *output,
 						  const ldns_rr *rr,
 						  int section,
-						  ldns_rbtree_t *compression_data);
+						  ldns_llnode_t *compression_data);
 
 /**
  * Copies the rr data to the buffer in wire format, in canonical format
@@ -153,7 +171,7 @@ ldns_status ldns_pkt2buffer_wire(ldns_buffer *output, const ldns_pkt *pkt);
  * \param[out] *compression_data data structure holding state for compression
  * \return ldns_status
  */
-ldns_status ldns_pkt2buffer_wire_compress(ldns_buffer *output, const ldns_pkt *pkt, ldns_rbtree_t *compression_data);
+ldns_status ldns_pkt2buffer_wire_compress(ldns_buffer *output, const ldns_pkt *pkt, ldns_llnode_t *compression_data);
 
 /**
  * Copies the rr_list data to the buffer in wire format
