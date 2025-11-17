@@ -26,6 +26,7 @@
 	  and memory leaks in parsing it.
 	* DSYNC is no longer a draft RR type and compiled by default
 	* RFC 9824 support: Compact Denial of Existence in DNSSEC
+	* The HHIT and BRID draft RR types
 
 1.8.4	2024-07-19
 	* Fix building documentation in build directory.
