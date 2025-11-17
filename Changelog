@@ -29,6 +29,7 @@
 	* The HHIT and BRID draft RR types
 	* PR #249: If RNG is already seeded, return early.
 	  Thanks crrodriguez
+	* PR #221: Improve error messages. Thanks jschauma
 
 1.8.4	2024-07-19
 	* Fix building documentation in build directory.
