@@ -36,6 +36,8 @@
 	  Thanks duthils
 	* Fix #283: ldns-walk fails after update from 1.8.3 to 1.8.4
 	  Thanks jschauma
+	* PR #200: Allow compiled tests to link to ldns statically via
+	  environment variable. Thanks FGasper and pemensik
 
 1.8.4	2024-07-19
 	* Fix building documentation in build directory.
