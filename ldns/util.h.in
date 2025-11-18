@@ -72,8 +72,10 @@ ldns_read_uint16(const void *src)
 #ifdef ALLOW_UNALIGNED_ACCESSES
 	return ntohs(*(const uint16_t *) src);
 #else
+# ifndef __clang_analyzer__
 	const uint8_t *p = (const uint8_t *) src;
 	return ((uint16_t) p[0] << 8) | (uint16_t) p[1];
+# endif
 #endif
 }
 
