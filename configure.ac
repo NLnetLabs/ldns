@@ -1226,7 +1226,7 @@ size_t strlcpy(char *dst, const char *src, size_t siz);
 #define close_socket(_s) do { if (_s != SOCK_INVALID) {closesocket(_s); _s = -1;} } while(0)
 #else
 #define SOCK_INVALID -1
-#define close_socket(_s) do { if (_s != SOCK_INVALID) {close(_s); _s = -1;} } while(0)
+#define close_socket(_s) do { if (_s != SOCK_INVALID) {close(_s >= -1 ? _s : -1); _s = -1;} } while(0)
 #endif
 
 #ifdef __cplusplus
