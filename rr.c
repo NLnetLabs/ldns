@@ -405,8 +405,8 @@ ldns_rr_new_frm_str_internal(ldns_rr **newrr, const char *str,
 		}
 
 		pre_data_pos = ldns_buffer_position(rd_buf);
-		if (-1 == (c = ldns_bget_token(
-				rd_buf, rd, delimiters, LDNS_MAX_RDFLEN))) {
+		if (-1 == ldns_bget_token(
+				rd_buf, rd, delimiters, LDNS_MAX_RDFLEN)) {
 
 			done = true;
 			(void)done; /* we're breaking, so done not read anymore */
