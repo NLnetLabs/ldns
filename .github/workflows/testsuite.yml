@@ -56,7 +56,7 @@ jobs:
       - name: Set up Cygwin
         uses: cygwin/cygwin-install-action@master
         with:
-            packages: make gcc-g++ bash libtool automake autoconf libssl-devel bind-utils
+            packages: make gcc-g++ bash libtool automake autoconf libssl-devel bind-utils clang
       - uses: actions/checkout@main
         with:
           submodules: recursive
@@ -87,7 +87,7 @@ jobs:
       - name: Get the qemu container
         run: docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
       - name: "${{ matrix.platform }}: Build and test"
-        run: docker run --rm --interactive --mount type=bind,source=$(pwd),target=/host ${{ matrix.platform }}/alpine sh -c "apk add make gcc libc-dev libtool automake autoconf openssl-dev m4 indent bash bind-tools && cd /host && libtoolize -vci && autoreconf -vfi && ./configure && make test"
+        run: docker run --rm --interactive --mount type=bind,source=$(pwd),target=/host ${{ matrix.platform }}/alpine sh -c "apk add make gcc libc-dev libtool automake autoconf openssl-dev m4 indent bash bind-tools clang && cd /host && libtoolize -vci && autoreconf -vfi && ./configure && make test"
 
 
 #  BSDs:
