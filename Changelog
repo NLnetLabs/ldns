@@ -38,6 +38,8 @@
 	  Thanks jschauma
 	* PR #200: Allow compiled tests to link to ldns statically via
 	  environment variable. Thanks FGasper and pemensik
+	* PR #220: Optionally exclude ZONEMD RRs in ldns-compare-zone
+	  Thanks gjherbiet
 
 1.8.4	2024-07-19
 	* Fix building documentation in build directory.
