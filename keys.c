@@ -480,14 +480,14 @@ ldns_key_new_frm_fp_l(ldns_key **key, FILE *fp, int *line_nr)
 	ldns_signing_algorithm alg;
 	ldns_rr *key_rr;
 #ifdef HAVE_SSL
-#if OPENSSL_VERSION_NUMBER >= 0x30000000L
-    EVP_PKEY *pkey;
-#else
+# if OPENSSL_VERSION_NUMBER >= 0x30000000L
+	EVP_PKEY *pkey;
+# else /* OPENSSL_VERSION_NUMBER >= 0x30000000L */
 	RSA *rsa;
-#ifdef USE_DSA
+#  ifdef USE_DSA
 	DSA *dsa;
-#endif
-#endif /* OPENSSL_VERSION_NUMBER >= 0x30000000L */
+#  endif
+# endif /* OPENSSL_VERSION_NUMBER >= 0x30000000L */
 	unsigned char *hmac;
 	size_t hmac_size;
 #endif /* HAVE_SSL */
@@ -506,8 +506,7 @@ ldns_key_new_frm_fp_l(ldns_key **key, FILE *fp, int *line_nr)
 	/* the file is highly structured. Do this in sequence */
 	/* RSA:
 	 * Private-key-format: v1.x.
- 	 * Algorithm: 1 (RSA)
-
+	 * Algorithm: 1 (RSA)
 	 */
 	/* get the key format version number */
 	if (ldns_fget_keyword_data_l(fp, "Private-key-format", ": ", d, "\n",
@@ -677,21 +676,21 @@ ldns_key_new_frm_fp_l(ldns_key **key, FILE *fp, int *line_nr)
 #endif
 			ldns_key_set_algorithm(k, alg);
 #ifdef HAVE_SSL
-#if OPENSSL_VERSION_NUMBER >= 0x30000000L
-            pkey = ldns_pkey_new_frm_fp_rsa_l(fp, line_nr);
-            if (!pkey) {
-                ldns_key_free(k);
-                return LDNS_STATUS_ERR;
-            }
-            ldns_key_set_evp_key(k, pkey);
-#else
+# if OPENSSL_VERSION_NUMBER >= 0x30000000L
+			pkey = ldns_pkey_new_frm_fp_rsa_l(fp, line_nr);
+			if (!pkey) {
+				ldns_key_free(k);
+				return LDNS_STATUS_ERR;
+			}
+			ldns_key_set_evp_key(k, pkey);
+# else /* OPENSSL_VERSION_NUMBER >= 0x30000000L */
 			rsa = ldns_key_new_frm_fp_rsa_l(fp, line_nr);
 			if (!rsa) {
 				ldns_key_free(k);
 				return LDNS_STATUS_ERR;
 			}
 			ldns_key_assign_rsa_key(k, rsa);
-#endif /* OPENSSL_VERSION_NUMBER >= 0x30000000L */
+# endif /* OPENSSL_VERSION_NUMBER >= 0x30000000L */
 #endif /* HAVE_SSL */
 			break;
 #ifdef USE_DSA
@@ -892,9 +891,6 @@ ldns_pkey_new_frm_fp_rsa_l(FILE *f, int *line_nr)
         goto error;
     }
     e_len = ldns_b64_pton((const char*)b, buf, ldns_b64_ntop_calculate_size(strlen(b)));
-    if (!e) {
-        goto error;
-    }
     e = OPENSSL_zalloc(e_len);
     if (!e) {
         goto error;
@@ -907,9 +903,6 @@ ldns_pkey_new_frm_fp_rsa_l(FILE *f, int *line_nr)
         goto error;
     }
     d_len = ldns_b64_pton((const char*)b, buf, ldns_b64_ntop_calculate_size(strlen(b)));
-    if (!d) {
-        goto error;
-    }
     d = OPENSSL_zalloc(d_len);
     if (!d) {
         goto error;
@@ -922,9 +915,6 @@ ldns_pkey_new_frm_fp_rsa_l(FILE *f, int *line_nr)
         goto error;
     }
     p_len = ldns_b64_pton((const char*)b, buf, ldns_b64_ntop_calculate_size(strlen(b)));
-    if (!p) {
-        goto error;
-    }
     p = OPENSSL_zalloc(p_len);
     if (!p) {
         goto error;
@@ -937,9 +927,6 @@ ldns_pkey_new_frm_fp_rsa_l(FILE *f, int *line_nr)
         goto error;
     }
     q_len = ldns_b64_pton((const char*)b, buf, ldns_b64_ntop_calculate_size(strlen(b)));
-    if (!q) {
-        goto error;
-    }
     q = OPENSSL_zalloc(q_len);
     if (!q) {
         goto error;
@@ -952,9 +939,6 @@ ldns_pkey_new_frm_fp_rsa_l(FILE *f, int *line_nr)
         goto error;
     }
     dmp1_len = ldns_b64_pton((const char*)b, buf, ldns_b64_ntop_calculate_size(strlen(b)));
-    if (!dmp1) {
-        goto error;
-    }
     dmp1 = OPENSSL_zalloc(dmp1_len);
     if (!dmp1) {
         goto error;
@@ -967,9 +951,6 @@ ldns_pkey_new_frm_fp_rsa_l(FILE *f, int *line_nr)
         goto error;
     }
     dmq1_len = ldns_b64_pton((const char*)b, buf, ldns_b64_ntop_calculate_size(strlen(b)));
-    if (!dmq1) {
-        goto error;
-    }
     dmq1 = OPENSSL_zalloc(dmq1_len);
     if (!dmq1) {
         goto error;
@@ -982,9 +963,6 @@ ldns_pkey_new_frm_fp_rsa_l(FILE *f, int *line_nr)
         goto error;
     }
     iqmp_len = ldns_b64_pton((const char*)b, buf, ldns_b64_ntop_calculate_size(strlen(b)));
-    if (!iqmp) {
-        goto error;
-    }
     iqmp = OPENSSL_zalloc(iqmp_len);
     if (!iqmp) {
         goto error;
@@ -1047,8 +1025,6 @@ ldns_pkey_new_frm_fp_rsa_l(FILE *f, int *line_nr)
     if (EVP_PKEY_fromdata(ctx, &pkey, EVP_PKEY_KEYPAIR, params) <= 0) {
         goto error;
     }
-
-    EVP_PKEY_CTX_free(ctx);
 
     LDNS_FREE(buf);
     LDNS_FREE(b);
@@ -1643,8 +1619,8 @@ ldns_key_new_frm_algorithm(ldns_signing_algorithm alg, uint16_t size)
 #ifdef USE_DSA
 		case LDNS_SIGN_DSA:
 		case LDNS_SIGN_DSA_NSEC3:
-#ifdef HAVE_SSL
-# if OPENSSL_VERSION_NUMBER >= 0x30000000L
+# ifdef HAVE_SSL
+#  if OPENSSL_VERSION_NUMBER >= 0x30000000L
 			ctx = EVP_PKEY_CTX_new_id(EVP_PKEY_DSA, NULL);
 			if(!ctx) {
 				ldns_key_free(k);
@@ -1660,23 +1636,23 @@ ldns_key_new_frm_algorithm(ldns_signing_algorithm alg, uint16_t size)
 				EVP_PKEY_CTX_free(ctx);
 				return NULL;
 			}
-#ifndef S_SPLINT_S
+#   ifndef S_SPLINT_S
 			if (EVP_PKEY_keygen(ctx, &k->_key.key) <= 0) {
 				ldns_key_free(k);
 				EVP_PKEY_CTX_free(ctx);
 				return NULL;
 			}
-#endif
+#   endif
 			EVP_PKEY_CTX_free(ctx);
-#else
-#if OPENSSL_VERSION_NUMBER < 0x00908000L
+#  else /* OPENSSL_VERSION_NUMBER >= 0x30000000L */
+#   if OPENSSL_VERSION_NUMBER < 0x00908000L
 			d = DSA_generate_parameters((int)size, NULL, 0, NULL, NULL, NULL, NULL);
 			if (!d) {
 				ldns_key_free(k);
 				return NULL;
 			}
 
-#else
+#   else
 			if (! (d = DSA_new())) {
 				ldns_key_free(k);
 				return NULL;
@@ -1686,14 +1662,14 @@ ldns_key_new_frm_algorithm(ldns_signing_algorithm alg, uint16_t size)
 				ldns_key_free(k);
 				return NULL;
 			}
-#  endif
+#   endif
 			if (DSA_generate_key(d) != 1) {
 				ldns_key_free(k);
 				return NULL;
 			}
 			ldns_key_set_dsa_key(k, d);
 			DSA_free(d);
-#endif /* OPENSSL_VERSION_NUMBER >= 0x30000000L */
+#  endif /* OPENSSL_VERSION_NUMBER >= 0x30000000L */
 #endif /* HAVE_SSL */
 #endif /* USE_DSA */
 			break;
@@ -2205,7 +2181,85 @@ ldns_key_list_pop_key(ldns_key_list *key_list)
 
 #ifdef HAVE_SSL
 #ifndef S_SPLINT_S
-#ifndef OPENSSL_NO_DEPRECATED_3_0
+#if OPENSSL_VERSION_NUMBER >= 0x30000000L
+/* data pointer must be large enough (LDNS_MAX_KEYLEN) */
+static bool
+ldns_key_rsa2bin(unsigned char *data, EVP_PKEY *k, uint16_t *size)
+{
+	int i,j;
+	BIGNUM *n=NULL, *e=NULL;
+
+	if (!k) {
+		return false;
+	}
+
+	EVP_PKEY_get_bn_param(k, OSSL_PKEY_PARAM_RSA_E, &e);
+	EVP_PKEY_get_bn_param(k, OSSL_PKEY_PARAM_RSA_N, &n);
+
+	if (BN_num_bytes(e) <= 256) {
+		/* normally only this path is executed (small factors are
+		 * more common
+		 */
+		data[0] = (unsigned char) BN_num_bytes(e);
+		i = BN_bn2bin(e, data + 1);
+		j = BN_bn2bin(n, data + i + 1);
+		*size = (uint16_t) i + j;
+	} else if (BN_num_bytes(e) <= 65536) {
+		data[0] = 0;
+		/* BN_bn2bin does bigendian, _uint16 also */
+		ldns_write_uint16(data + 1, (uint16_t) BN_num_bytes(e));
+
+		BN_bn2bin(e, data + 3);
+		BN_bn2bin(n, data + 4 + BN_num_bytes(e));
+		*size = (uint16_t) BN_num_bytes(n) + 6;
+	} else {
+		return false;
+	}
+	return true;
+}
+
+#ifdef USE_DSA
+/* data pointer must be large enough (LDNS_MAX_KEYLEN) */
+static bool
+ldns_key_dsa2bin(unsigned char *data, EVP_PKEY *k, uint16_t *size)
+{
+	uint8_t T;
+	BIGNUM *p, *q, *g;
+	BIGNUM *pub_key;
+
+	if (!k) {
+		return false;
+	}
+
+	/* See RFC2536 */
+	EVP_PKEY_get_bn_param(k, OSSL_PKEY_PARAM_FFC_P, &p);
+	EVP_PKEY_get_bn_param(k, OSSL_PKEY_PARAM_FFC_Q, &q);
+	EVP_PKEY_get_bn_param(k, OSSL_PKEY_PARAM_FFC_G, &g);
+	EVP_PKEY_get_bn_param(k, OSSL_PKEY_PARAM_PUB_KEY, &pub_key);
+
+	*size = (uint16_t)BN_num_bytes(p);
+	T = (*size - 64) / 8;
+
+	if (T > 8) {
+#ifdef STDERR_MSGS
+		fprintf(stderr, "DSA key with T > 8 (ie. > 1024 bits)");
+		fprintf(stderr, " not implemented\n");
+#endif
+		return false;
+	}
+
+	/* size = 64 + (T * 8); */
+	memset(data, 0, 21 + *size * 3);
+	data[0] = (unsigned char)T;
+	BN_bn2bin(q, data + 1 ); 		/* 20 octects */
+	BN_bn2bin(p, data + 21 ); 		/* offset octects */
+	BN_bn2bin(g, data + 21 + *size * 2 - BN_num_bytes(g));
+	BN_bn2bin(pub_key,data + 21 + *size * 3 - BN_num_bytes(pub_key));
+	*size = 21 + *size * 3;
+	return true;
+}
+#endif /* USE_DSA */
+#else  /* OPENSSL_VERSION_NUMBER >= 0x30000000L */
 /* data pointer must be large enough (LDNS_MAX_KEYLEN) */
 static bool
 ldns_key_rsa2bin(unsigned char *data, RSA *k, uint16_t *size)
@@ -2270,86 +2324,6 @@ ldns_key_dsa2bin(unsigned char *data, DSA *k, uint16_t *size)
 	pub_key = k->pub_key; priv_key = k->priv_key;
 # endif
 	(void)priv_key;
-	*size = (uint16_t)BN_num_bytes(p);
-	T = (*size - 64) / 8;
-
-	if (T > 8) {
-#ifdef STDERR_MSGS
-		fprintf(stderr, "DSA key with T > 8 (ie. > 1024 bits)");
-		fprintf(stderr, " not implemented\n");
-#endif
-		return false;
-	}
-
-	/* size = 64 + (T * 8); */
-	memset(data, 0, 21 + *size * 3);
-	data[0] = (unsigned char)T;
-	BN_bn2bin(q, data + 1 ); 		/* 20 octects */
-	BN_bn2bin(p, data + 21 ); 		/* offset octects */
-	BN_bn2bin(g, data + 21 + *size * 2 - BN_num_bytes(g));
-	BN_bn2bin(pub_key,data + 21 + *size * 3 - BN_num_bytes(pub_key));
-	*size = 21 + *size * 3;
-	return true;
-}
-#endif /* USE_DSA */
-#endif /* OPENSSL_NO_DEPRECATED_3_0 */
-
-#if OPENSSL_VERSION_NUMBER >= 0x30000000L
-/* data pointer must be large enough (LDNS_MAX_KEYLEN) */
-static bool
-ldns_key_rsa2bin(unsigned char *data, EVP_PKEY *k, uint16_t *size)
-{
-	int i,j;
-	BIGNUM *n=NULL, *e=NULL;
-
-	if (!k) {
-		return false;
-	}
-
-	EVP_PKEY_get_bn_param(k, OSSL_PKEY_PARAM_RSA_E, &e);
-	EVP_PKEY_get_bn_param(k, OSSL_PKEY_PARAM_RSA_N, &n);
-
-	if (BN_num_bytes(e) <= 256) {
-		/* normally only this path is executed (small factors are
-		 * more common
-		 */
-		data[0] = (unsigned char) BN_num_bytes(e);
-		i = BN_bn2bin(e, data + 1);
-		j = BN_bn2bin(n, data + i + 1);
-		*size = (uint16_t) i + j;
-	} else if (BN_num_bytes(e) <= 65536) {
-		data[0] = 0;
-		/* BN_bn2bin does bigendian, _uint16 also */
-		ldns_write_uint16(data + 1, (uint16_t) BN_num_bytes(e));
-
-		BN_bn2bin(e, data + 3);
-		BN_bn2bin(n, data + 4 + BN_num_bytes(e));
-		*size = (uint16_t) BN_num_bytes(n) + 6;
-	} else {
-		return false;
-	}
-	return true;
-}
-
-#ifdef USE_DSA
-/* data pointer must be large enough (LDNS_MAX_KEYLEN) */
-static bool
-ldns_key_dsa2bin(unsigned char *data, EVP_PKEY *k, uint16_t *size)
-{
-	uint8_t T;
-	BIGNUM *p, *q, *g;
-	BIGNUM *pub_key;
-
-	if (!k) {
-		return false;
-	}
-
-	/* See RFC2536 */
-	EVP_PKEY_get_bn_param(k, OSSL_PKEY_PARAM_FFC_P, &p);
-	EVP_PKEY_get_bn_param(k, OSSL_PKEY_PARAM_FFC_Q, &q);
-	EVP_PKEY_get_bn_param(k, OSSL_PKEY_PARAM_FFC_G, &g);
-	EVP_PKEY_get_bn_param(k, OSSL_PKEY_PARAM_PUB_KEY, &pub_key);
-
 	*size = (uint16_t)BN_num_bytes(p);
 	T = (*size - 64) / 8;
 
@@ -2643,28 +2617,35 @@ ldns_key2rr(const ldns_key *k)
                 case LDNS_SIGN_ECDSAP256SHA256:
                 case LDNS_SIGN_ECDSAP384SHA384:
 #ifdef USE_ECDSA
+
 			ldns_rr_push_rdf(pubkey, ldns_native2rdf_int8(
 								LDNS_RDF_TYPE_ALG, ldns_key_algorithm(k)));
 			bin = NULL;
 
 #if OPENSSL_VERSION_NUMBER >= 0x30000000L
+			pkey = ldns_key_evp_key(k);
+			fprintf(stderr, "PKEY: %p, size: %d, bin: %p\n", pkey, (int)size, bin);
+			if (pkey) {
 #ifndef S_SPLINT_S
-			size = EVP_PKEY_get1_encoded_public_key(pkey, &bin);
+				size = EVP_PKEY_get1_encoded_public_key(pkey, &bin);
+				fprintf(stderr, "PKEY: %p, size: %d, bin: %p\n", pkey, (int)size, bin);
 #endif
-			if(size <= 0) {
-				ldns_rr_free(pubkey);
-				return NULL;
+				if(size <= 0) {
+					ldns_rr_free(pubkey);
+					return NULL;
+				}
+				if(size > 1) {
+					/* move back one byte to shave off the 0x02
+					 * 'uncompressed' indicator that openssl made
+					 * Actually its 0x04 (from implementation).
+					 */
+					assert(bin[0] == POINT_CONVERSION_UNCOMPRESSED);
+					size -= 1;
+					memmove(bin, bin+1, size);
+				}
+				internal_data = 1;
 			}
-			if(size > 1) {
-				/* move back one byte to shave off the 0x02
-				 * 'uncompressed' indicator that openssl made
-				 * Actually its 0x04 (from implementation).
-				 */
-				assert(bin[0] == POINT_CONVERSION_UNCOMPRESSED);
-				size -= 1;
-				memmove(bin, bin+1, size);
-			}
-#else
+#else /* OPENSSL_VERSION_NUMBER >= 0x30000000L */
 #ifndef S_SPLINT_S
 			ec = EVP_PKEY_get1_EC_KEY(k->_key.key);
 #endif
