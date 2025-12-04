@@ -40,6 +40,10 @@
  */
 /*@ignore@*/
 /* splint barfs on this construct */
+#if (defined(__STDC_VERSION__) && __STDC_VERSION__ >= 202311L)
+/* c23 defines bool already and deprecates stdbool.h */
+#define __bool_true_false_are_defined
+#endif
 #ifndef __bool_true_false_are_defined
 # ifdef HAVE_STDBOOL_H
 #  include <stdbool.h>
