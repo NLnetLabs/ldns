@@ -1523,11 +1523,18 @@ dnssec_zone_rr_iter_first(dnssec_zone_rr_iter *i, ldns_dnssec_zone *zone)
 		: (ldns_dnssec_name *)i->node->data;
 
 	if (zone->hashed_names) {
-		do {
-			i->nsec3_node = ldns_rbtree_first(zone->hashed_names);
-			i->nsec3_name = i->nsec3_node == LDNS_RBTREE_NULL ?NULL
-				      : (ldns_dnssec_name*)i->nsec3_node->data;
-		} while (i->nsec3_name && !i->nsec3_name->nsec);
+		i->nsec3_node = ldns_rbtree_first(zone->hashed_names);
+		i->nsec3_name = i->nsec3_node == LDNS_RBTREE_NULL ? NULL
+			      : (ldns_dnssec_name*)i->nsec3_node->data;
+		/* While there is no NSEC3 RR present at this hashed name,
+		 * skip to the next hashed name.
+		 */
+		while (i->nsec3_name && !i->nsec3_name->nsec) {
+			/* next nsec3 */
+			i->nsec3_node = ldns_rbtree_next(i->nsec3_node);
+			i->nsec3_name = i->nsec3_node == LDNS_RBTREE_NULL ? NULL
+				    : (ldns_dnssec_name*)i->nsec3_node->data;
+		}
 	}
 	dnssec_zone_rr_iter_set_state_for_next_name(i);
 	return dnssec_zone_rr_iter_next(i);
