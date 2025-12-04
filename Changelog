@@ -41,6 +41,8 @@
 	* PR #220: Optionally exclude ZONEMD RRs in ldns-compare-zone
 	  Thanks gjherbiet
 	* Fix #285: A WALLET RR breaks TXT signing. Thanks bortzmeyer
+	* Fix #287: ldns-verify-zone hangs with missing NSEC3 RRs.
+	  Thanks Roy Arends
 
 1.8.4	2024-07-19
 	* Fix building documentation in build directory.
