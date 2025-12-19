@@ -291,7 +291,7 @@ verify_next_hashed_name(ldns_dnssec_zone* zone, ldns_dnssec_name *name)
 	if (cmp != 0) {
 		if (verbosity > 0) {
 			fprintf(myerr, "Error: The NSEC3 record for ");
-			ldns_rdf_print(stdout, name->name);
+			ldns_rdf_print(myerr, name->name);
 			fprintf(myerr, " points to the wrong next hashed owner"
 					" name\n\tshould point to ");
 			ldns_rdf_print(myerr, next_name->name);
