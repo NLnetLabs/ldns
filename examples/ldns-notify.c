@@ -312,11 +312,10 @@ main(int argc, char **argv)
 	if(include_soa) {
 		char buf[10240];
 		ldns_rr *soa_rr=NULL;
-		ldns_rdf *prev=NULL;
 		snprintf(buf, sizeof(buf), "%s 3600 IN SOA . . %u 0 0 0 0",
 			zone_name, (unsigned)soa_version);
 		/*printf("Adding soa %s\n", buf);*/
-		status = ldns_rr_new_frm_str(&soa_rr, buf, 3600, NULL, &prev);
+		status = ldns_rr_new_frm_str(&soa_rr, buf, 3600, NULL, NULL);
 		if(status != LDNS_STATUS_OK) {
 			printf("Error adding SOA version: %s\n",
 				ldns_get_errorstr_by_id(status));
