@@ -2,6 +2,8 @@
 	* Fix #290: ldns-verify-zone prints to stdout instead of myerr
 	  Thanks RoyArends
 	* Fix memory leak in ldns-notify
+	* Prevent "null pointer pass as 2nd argument to memcpy" runtime
+	  error, when size is 0
 	
 1.9.0	2025-12-04
 	* PR #246: Make ldns_calc_keytag() available for CDNSKEY RR

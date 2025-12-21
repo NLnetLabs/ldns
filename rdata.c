@@ -167,7 +167,9 @@ ldns_native2rdf_int16_data(size_t size, uint8_t *data)
 		return NULL;
 	}
 	ldns_write_uint16(rdf_data, size);
-	memcpy(rdf_data + 2, data, size);
+	if (size) {
+		memcpy(rdf_data + 2, data, size);
+	}
 	rdf = ldns_rdf_new(LDNS_RDF_TYPE_INT16_DATA, size + 2, rdf_data);
         if(!rdf)
                 LDNS_FREE(rdf_data);
