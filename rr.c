@@ -2765,16 +2765,19 @@ ldns_rr_descriptor_minimum(const ldns_rr_descriptor *descriptor)
 size_t
 ldns_rr_descriptor_maximum(const ldns_rr_descriptor *descriptor)
 {
+	size_t ret_val = 0;
 	if (descriptor) {
 		if (descriptor->_variable != LDNS_RDF_TYPE_NONE) {
 			/* Should really be SIZE_MAX... bad FreeBSD.  */
-			return UINT_MAX;
+			ret_val = UINT_MAX;
 		} else {
-			return descriptor->_maximum;
+			ret_val = descriptor->_maximum;
 		}
-	} else {
-		return 0;
 	}
+	if (ret_val > LDNS_RR_MAX_DESCRIPTORS) {
+		ret_val = LDNS_RR_MAX_DESCRIPTORS;
+	}
+	return ret_val;
 }
 
 ldns_rdf_type
