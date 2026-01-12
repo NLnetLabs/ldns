@@ -26,11 +26,11 @@ do
     fi
     if [ $arg = "--libs" ]
     then
-        echo "${LDFLAGS} -L${LIBDIR} ${LIBS} -lldns"
+        echo "${LDFLAGS} -L${LIBDIR} -lldns ${LIBS}"
     fi
     if [ $arg = "--python-libs" ]
     then
-        echo "${LDFLAGS} ${PYTHON_LDFLAGS} -L${LIBDIR} ${LIBS} -lldns"
+        echo "${LDFLAGS} ${PYTHON_LDFLAGS} -L${LIBDIR} -lldns ${LIBS}"
     fi
     if [ $arg = "-h" ] || [ $arg = "--help" ]
     then
