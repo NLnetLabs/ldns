@@ -36,6 +36,13 @@ extern "C" {
 /** The bytes TTL, CLASS and length use up in an rr */
 #define LDNS_RR_OVERHEAD	10
 
+/**
+ * Maximum amount of supported rr descriptors
+ * if this is not limited, the memory usage of the ldns process
+ * could grow to several 100MiB's, which could result in remote
+ * DoS on maliciously crafted responses
+ */
+#define LDNS_RR_MAX_DESCRIPTORS  255
 
 
 /**
