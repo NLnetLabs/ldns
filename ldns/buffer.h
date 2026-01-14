@@ -350,14 +350,15 @@ ldns_buffer_available(const ldns_buffer *buffer, size_t count)
 }
 
 /**
- * writes the given data to the buffer at the specified position
+ * writes the portion of the given data that fits at the specified position
+ * of the buffer
  * \param[in] buffer the buffer
  * \param[in] at the position (in number of bytes) to write the data at
  * \param[in] data pointer to the data to write to the buffer
  * \param[in] count the number of bytes of data to write
  */
 INLINE size_t
-ldns_buffer_write_at(ldns_buffer *buffer, size_t at, const void *data, size_t count)
+ldns_buffer_write_available_at(ldns_buffer *buffer, size_t at, const void *data, size_t count)
 {
 	size_t avail = ldns_buffer_remaining_at(buffer, at);
 	size_t copy = count < avail ? count : avail;
@@ -366,7 +367,38 @@ ldns_buffer_write_at(ldns_buffer *buffer, size_t at, const void *data, size_t co
 }
 
 /**
- * writes count bytes of data to the current position of the buffer
+ * writes the given data to the buffer at the specified position
+ * \param[in] buffer the buffer
+ * \param[in] at the position (in number of bytes) to write the data at
+ * \param[in] data pointer to the data to write to the buffer
+ * \param[in] count the number of bytes of data to write
+ */
+INLINE void
+ldns_buffer_write_at(ldns_buffer *buffer, size_t at, const void *data, size_t count)
+{
+	assert(ldns_buffer_available_at(buffer, at, count));
+	memcpy(buffer->_data + at, data, count);
+}
+
+/**
+ * writes the portion of the given data that fits at the current position of
+ * the buffer
+ * \param[in] buffer the buffer
+ * \param[in] data the data to write
+ * \param[in] count the length of the data to write
+ */
+INLINE void
+ldns_buffer_write_available(ldns_buffer *buffer, const void *data, size_t count)
+{
+	size_t copied = ldns_buffer_write_available_at(buffer, buffer->_position, data, count);
+	buffer->_position += copied;
+}
+
+/**
+ * writes bytes of data to the current position of the buffer
+ * when NDEBUG is defined, an assertion is raised when the data does not fit.
+ * when NDEBUG is undefined (for production builds), the amount of data that
+ * fits the buffer at the current position will be written
  * \param[in] buffer the buffer
  * \param[in] data the data to write
  * \param[in] count the length of the data to write
@@ -374,8 +406,8 @@ ldns_buffer_write_at(ldns_buffer *buffer, size_t at, const void *data, size_t co
 INLINE void
 ldns_buffer_write(ldns_buffer *buffer, const void *data, size_t count)
 {
-	size_t copied = ldns_buffer_write_at(buffer, buffer->_position, data, count);
-	buffer->_position += copied;
+	assert(ldns_buffer_available_at(buffer, buffer->_position, count));
+	ldns_buffer_write_available(buffer, data, count);
 }
 
 /**
