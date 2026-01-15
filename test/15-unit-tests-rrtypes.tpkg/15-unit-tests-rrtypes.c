@@ -21,10 +21,10 @@ check_desc(const ldns_rr_descriptor* desc, ldns_rr_type type)
 		printf("Null!\n");
 		return 0;
 	}
-	if(ldns_rr_descriptor_minimum(desc) != desc->_minimum)
+	if(ldns_minimum_rdata_fields(desc) != desc->_minimum)
 		return err(desc, "minimum wrong");
 	if(desc->_variable == LDNS_RDF_TYPE_NONE &&
-		ldns_rr_descriptor_maximum(desc) != desc->_maximum)
+		ldns_maximum_rdata_fields(desc) != desc->_maximum)
 			return err(desc, "maximum wrong");
 	if(desc->_type != type && !(desc->_type == LDNS_RR_TYPE_NULL
 		&& strncmp(desc->_name, "TYPE", 4)==0))

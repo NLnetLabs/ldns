@@ -184,7 +184,7 @@ ldns_wire2rdf(ldns_rr *rr, const uint8_t *wire, size_t max, size_t *pos)
 
 	rdf_index = 0;
 	while (*pos < end &&
-			rdf_index < ldns_rr_descriptor_maximum(descriptor)) {
+			rdf_index < ldns_maximum_rdata_fields(descriptor)) {
 
 		cur_rdf_length = 0;
 
@@ -306,7 +306,7 @@ ldns_wire2rdf(ldns_rr *rr, const uint8_t *wire, size_t max, size_t *pos)
 
 		rdf_index++;
 
-	} /* while (rdf_index < ldns_rr_descriptor_maximum(descriptor)) */
+	} /* while (rdf_index < ldns_maximum_rdata_fields(descriptor)) */
 
 
 	return LDNS_STATUS_OK;

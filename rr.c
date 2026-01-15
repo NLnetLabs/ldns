@@ -58,19 +58,19 @@ ldns_rr_new_frm_type(ldns_rr_type t)
 
 	desc = ldns_rr_descript(t);
 
-	rr->_rdata_fields = LDNS_XMALLOC(ldns_rdf *, ldns_rr_descriptor_minimum(desc));
+	rr->_rdata_fields = LDNS_XMALLOC(ldns_rdf *, ldns_minimum_rdata_fields(desc));
         if(!rr->_rdata_fields) {
                 LDNS_FREE(rr);
                 return NULL;
         }
-	for (i = 0; i < ldns_rr_descriptor_minimum(desc); i++) {
+	for (i = 0; i < ldns_minimum_rdata_fields(desc); i++) {
 		rr->_rdata_fields[i] = NULL;
 	}
 
 	ldns_rr_set_owner(rr, NULL);
 	ldns_rr_set_question(rr, false);
 	/* set the count to minimum */
-	ldns_rr_set_rd_count(rr, ldns_rr_descriptor_minimum(desc));
+	ldns_rr_set_rd_count(rr, ldns_minimum_rdata_fields(desc));
 	ldns_rr_set_class(rr, LDNS_RR_CLASS_IN);
 	ldns_rr_set_ttl(rr, LDNS_DEFAULT_TTL);
 	ldns_rr_set_type(rr, t);
@@ -347,8 +347,8 @@ ldns_rr_new_frm_str_internal(ldns_rr **newrr, const char *str,
 	ldns_rr_set_type(new, rr_type);
 	if (desc) {
 		/* only the rdata remains */
-		r_max = ldns_rr_descriptor_maximum(desc);
-		r_min = ldns_rr_descriptor_minimum(desc);
+		r_max = ldns_maximum_rdata_fields(desc);
+		r_min = ldns_minimum_rdata_fields(desc);
 	} else {
 		r_min = 0;
 		r_max = 1;
@@ -2753,7 +2753,7 @@ ldns_rr_descript(uint16_t type)
 }
 
 size_t
-ldns_rr_descriptor_minimum(const ldns_rr_descriptor *descriptor)
+ldns_minimum_rdata_fields(const ldns_rr_descriptor *descriptor)
 {
 	if (descriptor) {
 		return descriptor->_minimum;
@@ -2763,12 +2763,15 @@ ldns_rr_descriptor_minimum(const ldns_rr_descriptor *descriptor)
 }
 
 size_t
-ldns_rr_descriptor_maximum(const ldns_rr_descriptor *descriptor)
+ldns_maximum_rdata_fields(const ldns_rr_descriptor *descriptor)
 {
 	if (descriptor) {
 		if (descriptor->_variable != LDNS_RDF_TYPE_NONE) {
-			/* Should really be SIZE_MAX... bad FreeBSD.  */
-			return UINT_MAX;
+			/* If we assume a minimum rdata field length of 1,
+			 * then the number of rdata fields can be no more than
+			 * the maximum value of RDLENGTH, i.e. 65535
+			 */
+			return 65535;
 		} else {
 			return descriptor->_maximum;
 		}
@@ -2776,6 +2779,19 @@ ldns_rr_descriptor_maximum(const ldns_rr_descriptor *descriptor)
 		return 0;
 	}
 }
+
+size_t
+ldns_rr_descriptor_minimum(const ldns_rr_descriptor *descriptor)
+{
+	return ldns_minimum_rdata_fields(descriptor);
+}
+
+size_t
+ldns_rr_descriptor_maximum(const ldns_rr_descriptor *descriptor)
+{
+	return ldns_maximum_rdata_fields(descriptor);
+}
+
 
 ldns_rdf_type
 ldns_rr_descriptor_field_type(const ldns_rr_descriptor *descriptor,
