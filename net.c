@@ -518,10 +518,10 @@ static size_t raw_dump_read(void)
 	FILE *fp;
 	size_t count = 0;
 
-	fp = fopen("/tmp/insert_raw_answer", "r");
+	fp = fopen("raw_answer_ldns_buffer_available_at", "r");
 
 	if (fp == NULL) {
-		printf("error opening /tmp/insert_raw_answer\n");
+		printf("error opening raw_answer_ldns_buffer_available_at\n");
 		return 0;
 	}
 
