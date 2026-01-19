@@ -3374,22 +3374,31 @@ ldns_rr2str(const ldns_rr *rr)
 }
 
 char *
-ldns_pkt2str_fmt(const ldns_output_format *fmt, const ldns_pkt *pkt)
+ldns_pkt2str_fmt_status(const ldns_output_format *fmt, const ldns_pkt *pkt,
+		ldns_status *return_status)
 {
 	char *result = NULL;
-	ldns_buffer *tmp_buffer = ldns_buffer_new(LDNS_MAX_PACKETLEN);
+	ldns_status s;
+	ldns_buffer *tmp_buffer = ldns_buffer_new(LDNS_MAX_PACKETLEN * 5);
 
 	if (!tmp_buffer) {
 		return NULL;
 	}
-	if (ldns_pkt2buffer_str_fmt(tmp_buffer, fmt, pkt)
-		       	== LDNS_STATUS_OK) {
+	if ((s = ldns_pkt2buffer_str_fmt(tmp_buffer, fmt, pkt))
+		       == LDNS_STATUS_OK) {
 		/* export and return string, destroy rest */
 		result = ldns_buffer_export2str(tmp_buffer);
 	}
-
 	ldns_buffer_free(tmp_buffer);
+	if (return_status)
+		*return_status = s;
 	return result;
+}
+
+char *
+ldns_pkt2str_fmt(const ldns_output_format *fmt, const ldns_pkt *pkt)
+{
+	return ldns_pkt2str_fmt_status(fmt, pkt, NULL);
 }
 
 char *
@@ -3485,11 +3494,13 @@ void
 ldns_pkt_print_fmt(FILE *output, 
 		const ldns_output_format *fmt, const ldns_pkt *pkt)
 {
-	char *str = ldns_pkt2str_fmt(fmt, pkt);
+	ldns_status s = LDNS_STATUS_OK;
+	char *str = ldns_pkt2str_fmt_status(fmt, pkt, &s);
 	if (str) {
 		fprintf(output, "%s", str);
 	} else {
-		fprintf(output, ";Unable to convert packet to string\n");
+		fprintf(output, ";Unable to convert packet to string%s%s\n",
+			(s ? ": " : ""), (s ? ldns_get_errorstr_by_id(s) : ""));
 	}
 	LDNS_FREE(str);
 }
