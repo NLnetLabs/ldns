@@ -156,4 +156,36 @@ extern ldns_lookup_table ldns_edns_flags[];
 }
 #endif
 
+
+#include <stdio.h>
+#include <stdlib.h>
+
+#define MEMORY_DEBUGGING 1
+#define getMemory {\
+	if (MEMORY_DEBUGGING) { \
+		do { \
+		unsigned long currRealMem = 0; \
+		unsigned long currVirtMem = 0; \
+		char buffer[1024] = ""; \
+		FILE* file = NULL; \
+		file = fopen("/proc/self/status", "r"); \
+		if (file == NULL) { \
+			printf("Call to getMemory FAILED; " \
+				   "linux file proc/self/status not found!\n"); \
+			break; \
+		} \
+		while (fscanf(file, " %1023s", buffer) == 1) { \
+			if (strcmp(buffer, "VmRSS:") == 0) { \
+				(void)!fscanf(file, " %lu", &currRealMem); \
+			} \
+			if (strcmp(buffer, "VmSize:") == 0) { \
+				(void)!fscanf(file, " %lu", &currVirtMem); \
+			} \
+		} \
+		printf("real: %ldMiB, virt: %ldMiB %s %d\n", currRealMem/1024, currVirtMem/1024, __func__, __LINE__); \
+		fclose(file); \
+		} while(0); \
+	} \
+}
+
 #endif /* LDNS_DNS_H */

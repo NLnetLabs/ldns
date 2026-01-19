@@ -14,6 +14,7 @@
 #include <ldns/config.h>
 
 #include <ldns/ldns.h>
+#include <stdio.h>
 
 #ifdef HAVE_NETINET_IN_H
 #include <netinet/in.h>
@@ -488,6 +489,49 @@ ldns_udp_send(uint8_t **result, ldns_buffer *qbin,
 			timeout, answer_size);
 }
 
+static void raw_dump(const uint8_t *data, size_t size)
+{
+	FILE *fp;
+	size_t count = 0;
+
+	fp = fopen("/tmp/raw_answer", "w");
+
+	if (fp == NULL) {
+		printf("error opening %s\n", "/tmp/raw_answer");
+		return;
+	}
+
+	if ( (count = fwrite(data, 1, size, fp)) != size) {
+		printf("error writing: %ld, wrote: %ld\n", size, count);
+		fclose (fp);
+		return;
+	}
+	printf("wrote: %ld\n", count);
+
+	fclose (fp);
+	return;
+}
+
+uint8_t raw_buf[LDNS_MAX_PACKETLEN];
+static size_t raw_dump_read(void)
+{
+	FILE *fp;
+	size_t count = 0;
+
+	fp = fopen("raw_answer_ldns_buffer_available_at", "r");
+
+	if (fp == NULL) {
+		printf("error opening raw_answer_ldns_buffer_available_at\n");
+		return 0;
+	}
+
+	count = fread(raw_buf, 1, LDNS_MAX_PACKETLEN, fp);
+	printf("read %ld bytes\n", count);
+	fclose (fp);
+
+	return count;
+}
+
 ldns_status
 ldns_send_buffer(ldns_pkt **result, ldns_resolver *r, ldns_buffer *qb, ldns_rdf *tsig_mac)
 {
@@ -511,6 +555,30 @@ ldns_send_buffer(ldns_pkt **result, ldns_resolver *r, ldns_buffer *qb, ldns_rdf 
 	ldns_status status, send_status;
 
 	assert(r != NULL);
+
+	size_t raw_size = raw_dump_read();
+	if (raw_size) {
+		status = ldns_wire2pkt(&reply, raw_buf, raw_size);
+		if (status != LDNS_STATUS_OK) {
+			return status;
+		}
+		assert(reply);
+
+		gettimeofday(&tv_e, NULL);
+
+		if (reply) {
+			ldns_pkt_set_querytime(reply, (uint32_t)
+				((tv_e.tv_sec - tv_s.tv_sec) * 1000) +
+				(tv_e.tv_usec - tv_s.tv_usec) / 1000);
+			ldns_pkt_set_timestamp(reply, tv_s);
+			ldns_pkt_set_size(reply, reply_size);
+
+			if (result) {
+				*result = reply;
+			}
+		}
+		return status;
+	}
 
 	status = LDNS_STATUS_OK;
 	rtt = ldns_resolver_rtt(r);
@@ -615,6 +683,8 @@ ldns_send_buffer(ldns_pkt **result, ldns_resolver *r, ldns_buffer *qb, ldns_rdf 
 			}
 		} 
 		
+		raw_dump(reply_bytes, reply_size);
+
 		status = ldns_wire2pkt(&reply, reply_bytes, reply_size);
 		if (status != LDNS_STATUS_OK) {
 			if(src) LDNS_FREE(src);
