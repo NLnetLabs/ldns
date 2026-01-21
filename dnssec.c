@@ -1047,7 +1047,9 @@ ldns_nsec3_hash_name(const ldns_rdf *name,
                 return NULL;
         }
 	memcpy(hashed_owner_str, ldns_rdf_data(cann), ldns_rdf_size(cann));
-	memcpy(hashed_owner_str + ldns_rdf_size(cann), salt, salt_length);
+	if (salt_length) {
+		memcpy(hashed_owner_str + ldns_rdf_size(cann), salt, salt_length);
+	}
 	ldns_rdf_deep_free(cann);
 
 	for (cur_it = iterations + 1; cur_it > 0; cur_it--) {
@@ -1061,7 +1063,9 @@ ldns_nsec3_hash_name(const ldns_rdf *name,
 			return NULL;
 		}
 		memcpy(hashed_owner_str, hash, LDNS_SHA1_DIGEST_LENGTH);
-		memcpy(hashed_owner_str + LDNS_SHA1_DIGEST_LENGTH, salt, salt_length);
+		if (salt_length) {
+			memcpy(hashed_owner_str + LDNS_SHA1_DIGEST_LENGTH, salt, salt_length);
+		}
 		hashed_owner_str_len = LDNS_SHA1_DIGEST_LENGTH + salt_length;
 	}
 
