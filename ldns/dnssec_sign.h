@@ -17,6 +17,7 @@ extern "C" {
 #define LDNS_SIGN_NO_KEYS_NO_NSECS           4
 #define LDNS_SIGN_WITH_ZONEMD_SIMPLE_SHA384  8
 #define LDNS_SIGN_WITH_ZONEMD_SIMPLE_SHA512 16
+#define LDNS_SIGN_ONLY_ZONEMD               32
 
 /**
  * Create an empty RRSIG RR (i.e. without the actual signature data)

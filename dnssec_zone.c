@@ -1932,9 +1932,6 @@ rr_list2dnssec_rrs(ldns_rr_list *rr_list, ldns_dnssec_rrs **rrs,
 
 ldns_status
 dnssec_zone_equip_zonemd(ldns_dnssec_zone *zone,
-		ldns_rr_list *new_rrs, ldns_key_list *key_list, int signflags);
-ldns_status
-dnssec_zone_equip_zonemd(ldns_dnssec_zone *zone,
 		ldns_rr_list *new_rrs, ldns_key_list *key_list, int signflags)
 {
 	ldns_status st = LDNS_STATUS_OK;
@@ -1988,6 +1985,13 @@ dnssec_zone_equip_zonemd(ldns_dnssec_zone *zone,
 		zonemd_rrset->type = LDNS_RR_TYPE_ZONEMD;
 		zonemd_rrset->next = *rrset_ref;
 		*rrset_ref = zonemd_rrset;
+	}
+	if (signflags & LDNS_SIGN_ONLY_ZONEMD) {
+		size_t i;
+
+		for (i = 0; i < ldns_key_list_key_count(key_list); i++) {
+			ldns_key_set_use(ldns_key_list_key(key_list, i), true);
+		}
 	}
 	if ((zonemd_rrsigs = ldns_sign_public(zonemd_rr_list, key_list)))
 		st = rr_list2dnssec_rrs(  zonemd_rrsigs

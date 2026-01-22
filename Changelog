@@ -6,6 +6,8 @@
 	  error, when size is 0
 	* Fix to reserve enough space to convert the largest packets to
 	  presentation format in ldns_pkt2str_fmt. Thanks Peter Kästle
+	* The -O option to calculate (and sign) only the ZONEMD an input
+	  zone with ldns-signzone
 	
 1.9.0	2025-12-04
 	* PR #246: Make ldns_calc_keytag() available for CDNSKEY RR

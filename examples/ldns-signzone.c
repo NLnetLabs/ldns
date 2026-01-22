@@ -53,6 +53,7 @@ usage(FILE *fp, const char *prog) {
 	fprintf(fp, "\t\t<hash> should be \"sha384\" or \"sha512\" (or 1 or 2)\n");
 	fprintf(fp, "\t\tthis option can be given more than once\n");
 	fprintf(fp, "  -Z\t\tAllow ZONEMDs to be added without signing\n");
+	fprintf(fp, "  -O\t\tOnly calculate (and sign) the ZONEMD for the input zone\n");
 	fprintf(fp, "  -A\t\tsign DNSKEY with all keys instead of minimal\n");
 	fprintf(fp, "  -U\t\tSign with every unique algorithm in the provided keys\n");
 #ifndef OPENSSL_NO_ENGINE
@@ -673,7 +674,7 @@ main(int argc, char *argv[])
 	
 	keys = ldns_key_list_new();
 
-	while ((c = getopt(argc, argv, "a:bde:f:i:k:no:ps:t:uvz:ZAUE:K:")) != -1) {
+	while ((c = getopt(argc, argv, "a:bde:f:i:k:no:ps:t:uvz:ZOAUE:K:")) != -1) {
 		switch (c) {
 		case 'a':
 			nsec3_algorithm = (uint8_t) atoi(optarg);
@@ -779,6 +780,9 @@ main(int argc, char *argv[])
 			break;
 		case 'Z':
 			signflags |= LDNS_SIGN_NO_KEYS_NO_NSECS;
+			break;
+		case 'O':
+			signflags |= LDNS_SIGN_ONLY_ZONEMD;
 			break;
 		case 'A':
 			signflags |= LDNS_SIGN_DNSKEY_WITH_ZSK;
@@ -1051,7 +1055,9 @@ main(int argc, char *argv[])
 		result = ldns_dnssec_zone_sign_nsec3_flg_mkmap(signed_zone,
 			added_rrs,
 			keys,
-			ldns_dnssec_default_replace_signatures,
+			( signflags & LDNS_SIGN_ONLY_ZONEMD
+			? ldns_dnssec_default_leave_signatures
+			: ldns_dnssec_default_replace_signatures ),
 			NULL,
 			nsec3_algorithm,
 			nsec3_flags,
@@ -1064,7 +1070,9 @@ main(int argc, char *argv[])
 		result = ldns_dnssec_zone_sign_flg(signed_zone,
 				added_rrs,
 				keys,
-				ldns_dnssec_default_replace_signatures,
+				( signflags & LDNS_SIGN_ONLY_ZONEMD
+				? ldns_dnssec_default_leave_signatures
+				: ldns_dnssec_default_replace_signatures ),
 				NULL,
 				signflags);
 	}
