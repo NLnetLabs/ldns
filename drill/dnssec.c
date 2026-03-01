@@ -185,7 +185,7 @@ ldns_verify_denial(ldns_pkt *pkt, ldns_rdf *name, ldns_rr_type type, ldns_rr_lis
 	if (!pkt) {
 		descriptor = ldns_rr_descript(type);
 
-		printf("NETWORk ERROR! Cannot verify denial for: ");
+		printf("NETWORK ERROR! Cannot verify denial for: ");
 		ldns_rdf_print(stdout, name);
 		printf(" type ");
 		if (descriptor && descriptor->_name)
