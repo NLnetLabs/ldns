@@ -197,13 +197,7 @@ find_key_in_zone(ldns_rr *pubkey_gen, ldns_zone *zone) {
 		key_i++) {
 		pubkey = ldns_rr_list_rr(ldns_zone_rrs(zone), key_i);
 		if (ldns_rr_get_type(pubkey) == LDNS_RR_TYPE_DNSKEY &&
-			(ldns_calc_keytag(pubkey)
-				==
-				ldns_calc_keytag(pubkey_gen) ||
-					 /* KSK has gen-keytag + 1 */
-					 ldns_calc_keytag(pubkey)
-					 ==
-					 ldns_calc_keytag(pubkey_gen) + 1) 
+			ldns_calc_keytag(pubkey) == ldns_calc_keytag(pubkey_gen)
 			   ) {
 				if (verbosity >= 2) {
 					fprintf(stderr, "Found it in the zone!\n");
@@ -293,9 +287,8 @@ find_or_create_pubkey(const char *keyfile_name_base, ldns_key *key, ldns_zone *o
 
 	if (verbosity >= 2) {
 		fprintf(stderr,
-			   "Looking for key with keytag %u or %u\n",
-			   (unsigned int) ldns_calc_keytag(pubkey_gen),
-			   (unsigned int) ldns_calc_keytag(pubkey_gen)+1
+			   "Looking for key with keytag %u\n",
+			   (unsigned int) ldns_calc_keytag(pubkey_gen)
 			   );
 	}
 
