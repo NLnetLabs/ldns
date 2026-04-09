@@ -32,11 +32,12 @@ AC_SUBST(LDNS_VERSION_MICRO, [VERSION_MICRO])
 # ldns-1.8.1 had libversion 5:0:2
 # ldns-1.8.1 had libversion 6:0:3
 # ldns-1.8.2 had libversion 7:0:4
-# ldns-1.8.3 has libversion 8:0:5
-# ldns-1.9.0 has libversion 9:0:6 (new behaviour for dnssec_rrs_add_rr)
-# ldns-1.9.1 will have libversion 10:0:7
+# ldns-1.8.3 had libversion 8:0:5
+# ldns-1.8.4 had libversion 9:0:6
+# ldns-1.9.0 had libversion 9:0:6 (though it should have had 10:0:0)
+# ldns-1.9.1 will have libversion 11:0:0
 #
-AC_SUBST(VERSION_INFO, [10:0:7])
+AC_SUBST(VERSION_INFO, [11:0:0])
 
 AC_USE_SYSTEM_EXTENSIONS
 if test "$ac_cv_header_minix_config_h" = "yes"; then
