@@ -1241,6 +1241,9 @@ ldns_pkt_clone(const ldns_pkt *pkt)
 		return NULL;
 	}
 	new_pkt = ldns_pkt_new();
+	if (!new_pkt) {
+		return NULL;
+	}
 
 	ldns_pkt_set_id(new_pkt, ldns_pkt_id(pkt));
 	ldns_pkt_set_qr(new_pkt, ldns_pkt_qr(pkt));
