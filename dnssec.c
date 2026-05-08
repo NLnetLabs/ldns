@@ -1414,6 +1414,10 @@ ldns_nsec_bitmap_covers_type(const ldns_rdf* bitmap, ldns_rr_type type)
 	}
 	assert(ldns_rdf_get_type(bitmap) == LDNS_RDF_TYPE_BITMAP);
 
+	if (ldns_rdf_get_type(bitmap) != LDNS_RDF_TYPE_BITMAP) {
+		return false;
+	}
+
 	dptr = ldns_rdf_data(bitmap);
 	dend = ldns_rdf_data(bitmap) + ldns_rdf_size(bitmap);
 
@@ -1450,6 +1454,10 @@ ldns_nsec_bitmap_set_type(ldns_rdf* bitmap, ldns_rr_type type)
 		return false;
 	}
 	assert(ldns_rdf_get_type(bitmap) == LDNS_RDF_TYPE_BITMAP);
+
+	if (ldns_rdf_get_type(bitmap) != LDNS_RDF_TYPE_BITMAP) {
+		return false;
+	}
 
 	dptr = ldns_rdf_data(bitmap);
 	dend = ldns_rdf_data(bitmap) + ldns_rdf_size(bitmap);
@@ -1489,6 +1497,10 @@ ldns_nsec_bitmap_clear_type(ldns_rdf* bitmap, ldns_rr_type type)
 	}
 
 	assert(ldns_rdf_get_type(bitmap) == LDNS_RDF_TYPE_BITMAP);
+
+	if (ldns_rdf_get_type(bitmap) != LDNS_RDF_TYPE_BITMAP) {
+		return false;
+	}
 
 	dptr = ldns_rdf_data(bitmap);
 	dend = ldns_rdf_data(bitmap) + ldns_rdf_size(bitmap);

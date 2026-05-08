@@ -45,6 +45,11 @@ ldns_dname_last_label_is_root_label(const ldns_rdf* dname)
 	}
 	assert(src_pos == ldns_rdf_size(dname));
 
+	// @TODO check that this doesn't destory the logic
+	if (src_pos != ldns_rdf_size(dname)) {
+		return 0;
+	}
+
 	return src_pos > 0 && len == 0;
 }
 
@@ -131,6 +136,10 @@ ldns_dname_reverse(const ldns_rdf *dname)
 
 	assert(ldns_rdf_get_type(dname) == LDNS_RDF_TYPE_DNAME);
 	
+	if (!(dname) || !(ldns_rdf_get_type(dname) == LDNS_RDF_TYPE_DNAME)) {
+		return NULL;
+	}
+
 	rd_size = ldns_rdf_size(dname);
 	buf = LDNS_XMALLOC(uint8_t, rd_size);
 	if (! buf) {
@@ -380,6 +389,11 @@ ldns_dname_compare(const ldns_rdf *dname1, const ldns_rdf *dname2)
 	assert(ldns_rdf_get_type(dname1) == LDNS_RDF_TYPE_DNAME);
 	assert(ldns_rdf_get_type(dname2) == LDNS_RDF_TYPE_DNAME);
 
+	if (ldns_rdf_get_type(dname1) != LDNS_RDF_TYPE_DNAME || 
+		ldns_rdf_get_type(dname2) != LDNS_RDF_TYPE_DNAME) {
+		return -1;
+	}
+
 	lc1 = ldns_dname_label_count(dname1);
 	lc2 = ldns_dname_label_count(dname2);
 
@@ -493,6 +507,12 @@ ldns_dname_interval(const ldns_rdf *prev, const ldns_rdf *middle,
 	assert(ldns_rdf_get_type(prev) == LDNS_RDF_TYPE_DNAME);
 	assert(ldns_rdf_get_type(middle) == LDNS_RDF_TYPE_DNAME);
 	assert(ldns_rdf_get_type(next) == LDNS_RDF_TYPE_DNAME);
+
+	if (ldns_rdf_get_type(prev) != LDNS_RDF_TYPE_DNAME ||
+		ldns_rdf_get_type(middle) != LDNS_RDF_TYPE_DNAME ||
+		ldns_rdf_get_type(next) != LDNS_RDF_TYPE_DNAME) {
+		return 0;
+	}
 
 	prev_check = ldns_dname_compare(prev, middle);
 	next_check = ldns_dname_compare(middle, next);

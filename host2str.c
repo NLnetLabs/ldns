@@ -163,6 +163,10 @@ ldns_output_format_set_type(ldns_output_format* fmt, ldns_rr_type t)
 	ldns_status s;
 	
 	assert(fmt != NULL);
+
+	if (fmt == NULL) {
+		return LDNS_STATUS_INTERNAL_ERR;
+	}
 	
 	if (!(fmt_st->flags & LDNS_FMT_RFC3597)) {
 		ldns_output_format_set(fmt, LDNS_FMT_RFC3597);
@@ -183,6 +187,10 @@ ldns_output_format_clear_type(ldns_output_format* fmt, ldns_rr_type t)
 	ldns_status s;
 	
 	assert(fmt != NULL);
+
+	if (fmt == NULL) {
+		return LDNS_STATUS_INTERNAL_ERR;
+	}
 
 	if (!(fmt_st->flags & LDNS_FMT_RFC3597)) {
 		ldns_output_format_set(fmt, LDNS_FMT_RFC3597);
