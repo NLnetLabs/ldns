@@ -1,0 +1,69 @@
+# #-- 21-match-response-with-query.test --#
+# source the master var file when it's there
+[ -f ../.tpkg.var.master ] && source ../.tpkg.var.master
+# use .tpkg.var.test for in test variable passing
+[ -f .tpkg.var.test ] && source .tpkg.var.test
+
+. ../common.sh
+
+ERRORS=0
+
+if [ -z "$TESTNS_PID" ]; then
+	# ldns-testns did not start (because of syntax errors or so)
+	ERRORS=`expr $ERRORS + 1`
+fi
+
+# match transaction id
+if ../../drill/drill -p $TESTNS_PORT @127.0.0.1 ping. TXT >qid-ping.out 2>&1 \
+|| grep -q ' QUERY: 1,' qid-ping.out; then
+	echo "ldns accepted response with different query id"
+	ERRORS=`expr $ERRORS + 1`
+fi
+
+# match port
+if ../../drill/drill -p $TESTNS_PORT @127.0.0.1 ding. TXT >port-ding.out 2>&1 \
+|| grep -q ' QUERY: 1,' port-ding.out; then
+	echo "ldns accepted response coming from a different port"
+	ERRORS=`expr $ERRORS + 1`
+fi
+
+# match address
+if ../../drill/drill -p $TESTNS_PORT @127.0.0.1 cling. TXT >address-cling.out 2>&1 \
+|| grep -q ' QUERY: 1,' address-cling.out; then
+	echo "ldns accepted response coming from a different address"
+	ERRORS=`expr $ERRORS + 1`
+fi
+
+# match qname
+if ../../drill/drill -p $TESTNS_PORT @127.0.0.1 bim. A >qname-bim.out 2>&1 \
+|| grep -q ' QUERY: 1,' qname-bim.out; then
+	echo "ldns accepted response for a different qname"
+	ERRORS=`expr $ERRORS + 1`
+fi
+
+# match qtype
+if ../../drill/drill -p $TESTNS_PORT @127.0.0.1 oki. AAAA >qtype-oki.out 2>&1 \
+|| grep -q ' QUERY: 1,' qtype-oki.out; then
+	echo "ldns accepted response for a different qtype"
+	ERRORS=`expr $ERRORS + 1`
+fi
+
+# match qclass
+if ../../drill/drill -p $TESTNS_PORT @127.0.0.1 hela. TXT >qclass-hela.out 2>&1 \
+|| grep -q ' QUERY: 1,' qclass-hela.out; then
+	echo "ldns accepted response for a different qclass"
+	ERRORS=`expr $ERRORS + 1`
+fi
+
+# match qdcount > 1
+if ../../drill/drill -p $TESTNS_PORT @127.0.0.1 hokus. TXT >qdcount-hokus.out 2>&1 \
+|| grep -q ' QUERY: 2,' qdcount-hokus.out; then
+	echo "ldns accepted response with more than one question"
+	ERRORS=`expr $ERRORS + 1`
+fi
+
+if [ $ERRORS -gt 0 ]; then
+	echo "$ERRORS errors occured"
+	exit 1
+fi
+

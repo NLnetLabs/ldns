@@ -1,0 +1,24 @@
+# #-- 21-match-response-with-query.pre--#
+# source the master var file when it's there
+[ -f ../.tpkg.var.master ] && source ../.tpkg.var.master
+# use .tpkg.var.test for in test variable passing
+[ -f .tpkg.var.test ] && source .tpkg.var.test
+
+. ../common.sh
+
+get_random_port 1
+TESTNS_PORT=$RND_PORT
+echo port: $TESTNS_PORT
+
+# start ldns-testns, be extra verbose
+../../examples/ldns-testns -vvv -l 127.0.0.1 -a 127.0.0.2 -p $TESTNS_PORT 21-match-response-with-query.datafile >testns.log 2>&1 &
+TESTNS_PID=$!
+wait_server_up_or_fail testns.log "Listening on port" "error"
+if grep error testns.log; then
+	cat testns.log
+	exit 1
+fi
+echo "ldns-testns started with PID: $TESTNS_PID"
+echo "export TESTNS_PID=$TESTNS_PID" >> .tpkg.var.test
+echo "export TESTNS_PORT=$TESTNS_PORT" >> .tpkg.var.test
+
