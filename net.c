@@ -514,6 +514,7 @@ ldns_udp_send_from(uint8_t **result, ldns_buffer *qbin,
         ldns_sock_nonblock(sockfd);
 
 	reply_addr_len = sizeof(reply_addr);
+	memset(&reply_addr, 0, reply_addr_len);
 	answer = ldns_udp_read_wire(sockfd, answer_size, &reply_addr,
 		&reply_addr_len);
 	close_socket(sockfd);
@@ -524,6 +525,7 @@ ldns_udp_send_from(uint8_t **result, ldns_buffer *qbin,
 	}
 	/* Check that the reply came from the to addr. */
 	if(ldns_sockaddr_cmp(to, tolen, &reply_addr, reply_addr_len) != 0) {
+		free(answer);
 		return LDNS_STATUS_NETWORK_ERR;
 	}
 
