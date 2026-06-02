@@ -564,6 +564,10 @@ ldns_send_buffer(ldns_pkt **result, ldns_resolver *r, ldns_buffer *qb, ldns_rdf 
 
 	assert(r != NULL);
 
+	/* The query should at least have one question */
+	if(ldns_buffer_limit(qb) < 6 || ldns_buffer_read_u16_at(qb, 4) != 1)
+		return LDNS_STATUS_QDCOUNT_MUST_BE_ONE;
+
 	status = LDNS_STATUS_OK;
 	rtt = ldns_resolver_rtt(r);
 	ns_array = ldns_resolver_nameservers(r);
@@ -655,8 +659,7 @@ ldns_send_buffer(ldns_pkt **result, ldns_resolver *r, ldns_buffer *qb, ldns_rdf 
 			uint16_t txid = ldns_buffer_read_u16_at(qb, 0);
 			if(reply_size < 2 ||
 				ldns_read_uint16(reply_bytes) != txid) {
-				printf("wrong TXID!\n");
-				status = LDNS_STATUS_ERR; /* wrong ID */
+				status = LDNS_STATUS_ID_DID_NOT_MATCH;
 				LDNS_FREE(reply_bytes);
 				reply_bytes = NULL;
 				reply_size = 0;
@@ -671,7 +674,7 @@ ldns_send_buffer(ldns_pkt **result, ldns_resolver *r, ldns_buffer *qb, ldns_rdf 
 					LDNS_FREE(src);
 				}
 				LDNS_FREE(ns);
-				return LDNS_STATUS_ERR;
+				return status ? status : LDNS_STATUS_ERR;
 			} else {
 				LDNS_FREE(ns);
 				continue;
@@ -733,6 +736,26 @@ ldns_send_buffer(ldns_pkt **result, ldns_resolver *r, ldns_buffer *qb, ldns_rdf 
 #endif /* HAVE_SSL */
 
 	LDNS_FREE(reply_bytes);
+	if (reply) {
+		ldns_pkt *query = NULL;
+
+		if(ldns_pkt_qdcount(reply) != 1) {
+			status = LDNS_STATUS_QDCOUNT_MUST_BE_ONE;
+			ldns_pkt_free(reply);
+			reply = NULL;
+
+		} else if(ldns_wire2pkt(&query
+		                , ldns_buffer_begin(qb)
+		                , ldns_buffer_position(qb)) != LDNS_STATUS_OK
+		|| ldns_pkt_qdcount(query) != 1
+		|| ldns_rr_compare(ldns_rr_list_rr(ldns_pkt_question(query),0)
+		                  ,ldns_rr_list_rr(ldns_pkt_question(reply),0))){
+			status = LDNS_STATUS_QUERY_DID_NOT_MATCH;
+			ldns_pkt_free(reply);
+			reply = NULL;
+		}
+		ldns_pkt_free(query);
+	}
 	if (result) {
 		*result = reply;
 	}

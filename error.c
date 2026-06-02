@@ -157,6 +157,12 @@ ldns_lookup_table ldns_error_str[] = {
 		"X509_STORE_CTX_set0_dane() functions within OpenSSL >= 1.1.0 "
 		"to be able to verify the DANE-TA usage type." },
 #endif
+	{ LDNS_STATUS_ID_DID_NOT_MATCH,
+		"Response ID did not match the query ID" },
+	{ LDNS_STATUS_QDCOUNT_MUST_BE_ONE,
+		"The query section MUST contain exactly one question" },
+	{ LDNS_STATUS_QUERY_DID_NOT_MATCH,
+		"The question in the response did not match the query" },
 	{ 0, NULL }
 };
 
