@@ -2153,6 +2153,11 @@ parse_svcparam_ech(const char **s, uint8_t **dp, uint8_t *eod)
 		*s += 1;
 		quoted = true;
 	}
+	if(**s == '0' && *(*s+1) == 0) {
+		/* single 0 represents empty buffer */
+		*s += 1;
+		return LDNS_STATUS_OK;
+	}
 	b64_str = *s;
 	while (isalnum((unsigned char)**s) || **s == '+'
 	                                   || **s == '/'
