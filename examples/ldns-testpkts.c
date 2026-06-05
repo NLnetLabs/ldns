@@ -340,7 +340,7 @@ data_buffer2wire(ldns_buffer *data_buffer)
 	uint8_t *data_wire = (uint8_t *) ldns_buffer_begin(data_buffer);
 	uint8_t *wire = LDNS_XMALLOC(uint8_t, LDNS_MAX_PACKETLEN);
 
-	hexbuf = LDNS_XMALLOC(uint8_t, LDNS_MAX_PACKETLEN);
+	hexbuf = LDNS_XMALLOC(uint8_t, 2*LDNS_MAX_PACKETLEN);
 	for (data_buf_pos = 0; data_buf_pos < ldns_buffer_position(data_buffer); data_buf_pos++) {
 		c = (int) data_wire[data_buf_pos];
 
@@ -354,7 +354,7 @@ data_buffer2wire(ldns_buffer *data_buffer)
 					(c >= 'a' && c <= 'f') ||
 					(c >= 'A' && c <= 'F') )
 				{
-					if (hexbufpos >= LDNS_MAX_PACKETLEN) {
+					if (hexbufpos >= 2*LDNS_MAX_PACKETLEN) {
 						error("buffer overflow");
 						LDNS_FREE(hexbuf);
 						return 0;
@@ -374,7 +374,7 @@ data_buffer2wire(ldns_buffer *data_buffer)
 				}
 				break;
 			case 2:
-				if (hexbufpos >= LDNS_MAX_PACKETLEN) {
+				if (hexbufpos >= 2*LDNS_MAX_PACKETLEN) {
 					error("buffer overflow");
 					LDNS_FREE(hexbuf);
 					return 0;
@@ -385,13 +385,13 @@ data_buffer2wire(ldns_buffer *data_buffer)
 		}
 	}
 
-	if (hexbufpos >= LDNS_MAX_PACKETLEN) {
+	if (hexbufpos >= 2*LDNS_MAX_PACKETLEN) {
 		/*verbose("packet size reached\n");*/
 	}
 	
 	/* lenient mode: length must be multiple of 2 */
 	if (hexbufpos % 2 != 0) {
-		if (hexbufpos >= LDNS_MAX_PACKETLEN) {
+		if (hexbufpos >= 2*LDNS_MAX_PACKETLEN) {
 			error("buffer overflow");
 			LDNS_FREE(hexbuf);
 			return 0;

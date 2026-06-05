@@ -1,3 +1,7 @@
+1.9.?	2026-??-??
+	* Bugfix: ldns-testns needs twice LDNS_MAX_PACKETLEN for the
+	  hexadecimal representation of a packet
+
 1.9.0	2025-12-04
 	* PR #246: Make ldns_calc_keytag() available for CDNSKEY RR
 	  Thanks tgreenx and pnax
