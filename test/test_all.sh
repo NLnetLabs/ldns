@@ -22,6 +22,7 @@ then
 fi
 
 is_freebsd=$(uname -s 2>&1 | grep -i -c 'freebsd')
+is_macos=$(uname -s 2>&1 | grep -i -c 'darwin')
 test_tool_avail "dig"
 
 echo start the test at "$(date)" in "$(pwd)"
@@ -31,6 +32,11 @@ $TPKG -a ../.. fake 01-compile.tpkg
 # Works only on FreeBSD really
 if [[ "$is_freebsd" -eq 0 ]]; then
     $TPKG -a ../.. fake 02-lint.tpkg
+fi
+
+# Test needs to bind to 127.0.0.2 which doesn't work on MacOS
+if [[ "$is_macos" -ne 0 ]]; then
+    $TPKG -a ../.. fake 21-match-response-with-query.tpkg
 fi
 
 $TPKG -a ../.. fake 07-compile-examples.tpkg
