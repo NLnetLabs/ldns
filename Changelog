@@ -1,4 +1,4 @@
-1.9.1	2026-06-09
+1.9.1	2026-06-10
 	* Bugfix: Insufficient verification that responses belong to a
 	  query (CVE-2026-10846). Thanks Pablo Ruiz from 'codecome.ai'
 
