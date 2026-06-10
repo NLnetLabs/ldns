@@ -128,7 +128,11 @@ info "Directory '$temp_dir' created."
 cd "$temp_dir"
 
 info "Exporting source from GIT"
-git clone https://github.com/NLnetLabs/ldns.git || error_cleanup "git command failed"
+if [ -d $HOME/dns/ldns ]; then
+	git clone $HOME/dns/ldns || git clone https://github.com/NLnetLabs/ldns.git || error_cleanup "git command failed"
+else
+	git clone https://github.com/NLnetLabs/ldns.git || error_cleanup "git command failed"
+fi
 cd ldns || error_cleanup "LDNS not exported correctly from git"
 git checkout "$CHECKOUT" || error_cleanup "Could not checkout $CHECKOUT"
 git submodule update --init || error_cleanup "Could not update submodules"
@@ -143,9 +147,15 @@ libtoolize -c --install || libtoolize -c || error_cleanup "Libtoolize failed."
 # error message. After libtool is finished, update the scripts from Savannah. This step
 # is useful for downlevel clients like OS X and Solaris (and existing scripts with bugs).
 info "Fetching latest config.guess and config.sub"
-wget -q -O config.guess 'http://git.savannah.gnu.org/gitweb/?p=config.git;a=blob_plain;f=config.guess;hb=HEAD' || error_cleanup "Failed to fetch config.guess"
-wget -q -O config.sub 'http://git.savannah.gnu.org/gitweb/?p=config.git;a=blob_plain;f=config.sub;hb=HEAD' || error_cleanup "Failed to fetch config.sub"
-chmod a+x config.guess config.sub
+if [ -d $HOME/dns/config ]; then
+	( cd $HOME/dns/config; git pull )
+	( [ -e $HOME/dns/config/config.guess ] && cp -p $HOME/dns/config/config.guess . ) || ( wget -q -O config.guess 'http://git.savannah.gnu.org/gitweb/?p=config.git;a=blob_plain;f=config.guess;hb=HEAD' && chmod a+x config.guess ) || error_cleanup "Failed to fetch config.guess"
+	( [ -e $HOME/dns/config/config.sub ] && cp -p $HOME/dns/config/config.sub . ) || ( wget -q -O config.sub 'http://git.savannah.gnu.org/gitweb/?p=config.git;a=blob_plain;f=config.sub;hb=HEAD' && chmod +x config.sub ) || error_cleanup "Failed to fetch config.sub"
+else
+	wget -q -O config.guess 'http://git.savannah.gnu.org/gitweb/?p=config.git;a=blob_plain;f=config.guess;hb=HEAD' || error_cleanup "Failed to fetch config.guess"
+	wget -q -O config.sub 'http://git.savannah.gnu.org/gitweb/?p=config.git;a=blob_plain;f=config.sub;hb=HEAD' || error_cleanup "Failed to fetch config.sub"
+	chmod a+x config.guess config.sub
+fi
 
 info "Building configure script (autoconf)."
 autoreconf -vfi || error_cleanup "Autoconf failed."
@@ -267,7 +277,8 @@ case $OSTYPE in
 esac
 echo "$sha" > "ldns-$version.tar.gz.sha1"
 echo "$sha2" > "ldns-$version.tar.gz.sha256"
-gpg --armor --detach-sig "ldns-$version.tar.gz"
+echo "gpg --armor --default-key 0xA144323DEAACDF45 --detach-sig --digest-algo SHA256 ldns-$version.tar.gz"
 
 info "LDNS distribution created successfully."
 info "SHA1sum: $sha"
+info "SHA256sum: $sha2"

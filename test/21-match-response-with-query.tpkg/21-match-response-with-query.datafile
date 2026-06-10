@@ -1,0 +1,80 @@
+; Response is for different transaction id
+ENTRY_BEGIN
+MATCH opcode qname qtype
+ADJUST change_id
+REPLY QR
+SECTION QUESTION
+ping	IN	TXT
+SECTION ANSWER
+ping	IN	TXT	pong
+ENTRY_END
+
+; Response came from different port
+ENTRY_BEGIN
+MATCH opcode qname qtype
+ADJUST copy_id change_port
+REPLY QR
+SECTION QUESTION
+ding	IN	TXT
+SECTION ANSWER
+ding	IN	TXT	dong
+ENTRY_END
+
+; Response came from different address
+ENTRY_BEGIN
+MATCH opcode qname qtype
+ADJUST copy_id change_address
+REPLY QR
+SECTION QUESTION
+cling	IN	TXT
+SECTION ANSWER
+cling	IN	TXT	clang
+ENTRY_END
+
+; Answer is for different name (query for bim. A)
+ENTRY_BEGIN
+MATCH opcode qtype
+ADJUST copy_id
+REPLY QR
+SECTION QUESTION
+bam	IN	A
+SECTION ANSWER
+bam	IN	A	192.0.2.0
+ENTRY_END
+
+; Answer is for different type (query for oki. AAAA)
+ENTRY_BEGIN
+MATCH opcode qname
+ADJUST copy_id
+REPLY QR
+SECTION QUESTION
+oki	IN	TXT
+SECTION ANSWER
+oki	IN	TXT	doki
+ENTRY_END
+
+; Answer is for different class
+ENTRY_BEGIN
+MATCH opcode qname qtype
+ADJUST copy_id
+REPLY QR
+SECTION QUESTION
+hela	CH	TXT
+SECTION ANSWER
+hela	CH	TXT	hola
+ENTRY_END
+
+; Answer has more than one question
+ENTRY_BEGIN
+MATCH opcode qname qtype
+ADJUST copy_id
+REPLY QR
+SECTION QUESTION
+hokus	IN	TXT
+pilatus	IN	TXT
+SECTION ANSWER
+hokus	IN	TXT	pokus
+pilatus	IN	TXT	pas
+ENTRY_END
+
+
