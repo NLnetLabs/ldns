@@ -41,6 +41,7 @@
  */
 
 #include <ldns/config.h>
+#include <ldns/common.h>
 #include <string.h>	/* memcpy()/memset() or bcopy()/bzero() */
 #include <assert.h>	/* assert() */
 #include <ldns/sha2.h>
