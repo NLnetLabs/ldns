@@ -17,7 +17,8 @@
 /* #define LITTLE_ENDIAN * This should be #define'd already, if true. */
 
 #include <ldns/config.h>
-#include <ldns/ldns.h>
+#include <ldns/common.h>
+#include <ldns/sha1.h>
 #include <strings.h>
 
 #define SHA1HANDSOFF 1 /* Copies data before messing with it. */
