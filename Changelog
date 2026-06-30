@@ -1,6 +1,7 @@
 1.9.?	2026-??-??
 	* Bugfix: ldns-testns needs twice LDNS_MAX_PACKETLEN for the
 	  hexadecimal representation of a packet
+	* Bugfix: ldns-testns -6 uses the IPv6 address family for the address.
 
 1.9.2	2026-06-10
 	* Fix to set VERSION_INFO to create .so.3 instead of .so.11 which will

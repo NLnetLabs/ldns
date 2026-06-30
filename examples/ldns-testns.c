@@ -567,7 +567,7 @@ main(int argc, char **argv)
 		case '6':
 #ifdef AF_INET6
 			fam = AF_INET6;
-			addr.s6.sin6_family = AF_INET;
+			addr.s6.sin6_family = AF_INET6;
 # if HAVE_DECL_IN6ADDR_ANY
 			addr.s6.sin6_addr = in6addr_any;
 # endif
