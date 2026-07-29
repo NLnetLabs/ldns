@@ -252,21 +252,15 @@ if test x_$withval != x_no; then
 	ldns_have_python=yes
    fi
 
-   # pass additional Python 3 option to SWIG
-   if test `$PYTHON -c "import sys; \
-       ver = sys.version.split()[[0]]; \
-       print(ver >= '3')"` = "True"; then
-       AC_SUBST(SWIGPY3, ["-py3 -DPY3"])
-   fi
-
    # check for SWIG
    if test x_$ldns_have_python != x_no; then
         sinclude(ax_pkg_swig.m4)
 
         # check for >=SWIG-2.0.4 if Python 3.2 used
         if test `$PYTHON -c "import sys; \
-            ver = sys.version.split()[[0]]; \
-            print(ver >= '3.2')"` = "True"; then
+            ver = sys.version.split()[[0]].split('.'); \
+	    print(int(ver[[0]]) > 3 or (int(ver[[0]])==3 and int(ver[[1]])>=2))"` \
+	    = "True"; then
             AX_PKG_SWIG(2.0.4, [], [AC_MSG_ERROR([SWIG-2.0.4 is required to build pyldns for Python 3.2 and greater.])])
         else
             AX_PKG_SWIG
@@ -279,6 +273,21 @@ if test x_$withval != x_no; then
 		AC_SUBST(PYLDNS, "pyldns")
 		AC_SUBST(swig, "$SWIG")
 		ldns_with_pyldns=yes
+	fi
+	# pass additional Python 3 option to SWIG
+	if test `$PYTHON -c "import sys; \
+		ver = sys.version.split()[[0]].split('.')[[0]]; \
+		print(int(ver) >= 3)"` = "True" \
+		-a -n "$available_swig_vernum" ; then
+		# have options when swig is older than 4.1.1
+		check_major=4
+		check_minor=1
+		check_patch=1
+		required_swig_vernum=`expr $check_major \* 10000 \
+		    \+ $check_minor \* 100 \+ $check_patch`
+		if test "$available_swig_vernum" -lt "$required_swig_vernum"; then
+			AC_SUBST(SWIGPY3, ["-py3 -DPY3"])
+		fi
 	fi
    else
 	AC_MSG_RESULT([*** don't have Python, skipping SWIG, no pyldns ***]) # '

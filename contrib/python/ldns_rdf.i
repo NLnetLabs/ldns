@@ -252,6 +252,7 @@
 			case LDNS_RDF_TYPE_INT8:       return "INT8";
 			case LDNS_RDF_TYPE_INT16:      return "INT16";
 			case LDNS_RDF_TYPE_INT32:      return "INT32";
+			case LDNS_RDF_TYPE_INT64:      return "INT64";
 			case LDNS_RDF_TYPE_A:          return "A";
 			case LDNS_RDF_TYPE_AAAA:       return "AAAA";
 			case LDNS_RDF_TYPE_STR:        return "STR";
@@ -282,10 +283,12 @@
 			case LDNS_RDF_TYPE_ILNP64:     return "ILNP64";
                         case LDNS_RDF_TYPE_EUI48:      return "EUI48";
                         case LDNS_RDF_TYPE_EUI64:      return "EUI64";
+                        case LDNS_RDF_TYPE_UNQUOTED:   return "UNQUOTED";
                         case LDNS_RDF_TYPE_TAG:        return "TAG";
                         case LDNS_RDF_TYPE_LONG_STR:   return "LONG_STR";
 			case LDNS_RDF_TYPE_AMTRELAY:   return "AMTRELAY";
                         case LDNS_RDF_TYPE_SVCPARAMS:  return "SVCPARAMS";
+                        case LDNS_RDF_TYPE_IPN:        return "IPN";
                         case LDNS_RDF_TYPE_CERTIFICATE_USAGE:
                             return "CERTIFICATE_USAGE";
                         case LDNS_RDF_TYPE_SELECTOR:   return "SELECTOR";
