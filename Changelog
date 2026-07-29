@@ -4,6 +4,9 @@
 	* Bugfix: ldns-testns -6 uses the IPv6 address family for the address.
 	* Fix #314: Replace removed Python 2 C API macros for SWIG 4.5.0
 	  compatibility
+	* Fix: python rdf2str for added RDF types, and fix python version
+	  check in configure for swig check, and fix to not pass deprecated
+	  option to swig with new swig version.
 
 1.9.2	2026-06-10
 	* Fix to set VERSION_INFO to create .so.3 instead of .so.11 which will
