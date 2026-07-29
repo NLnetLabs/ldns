@@ -151,7 +151,7 @@ int Python_str_Check(PyObject *o) {
 #if PY_VERSION_HEX>=0x03000000
   return PyUnicode_Check(o);
 #else
-  return PyString_Check(o);
+  return PyBytes_Check(o);
 #endif
 }
 %}
@@ -414,7 +414,7 @@ PyObject* ldns_pkt2wire_(const ldns_pkt *pkt)
   tuple = PyTuple_New(2);
   PyTuple_SetItem(tuple, 0, SWIG_From_int(result));
   if (result == LDNS_STATUS_OK)
-     PyTuple_SetItem(tuple, 1, SWIG_FromCharPtrAndSize((char *)arg1, arg3));
+     PyTuple_SetItem(tuple, 1, PyUnicode_FromStringAndSize((char *)arg1, arg3));
   else {
      Py_INCREF(Py_None);
      PyTuple_SetItem(tuple, 1, Py_None);
