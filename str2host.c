@@ -2219,7 +2219,7 @@ parse_svcparam_ipv6hint(const char **s, uint8_t **dp, uint8_t *eod)
 			*s += 1;
 		
 		len = *s - ipv6_start;
-		if (len == 0 || len > INET6_ADDRSTRLEN)
+		if (len == 0 || len >= INET6_ADDRSTRLEN)
 			return LDNS_STATUS_SYNTAX_SVCPARAM_VALUE_ERR;
 
 		if (*dp + 16 > eod)
