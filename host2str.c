@@ -462,7 +462,8 @@ ldns_characters2buffer_str(ldns_buffer* output,
 	uint8_t ch;
 	while (amount > 0) {
 		ch = *characters++;
-		if ((isascii((int)ch) && isgraph((int)ch)) || ch == '\t') {
+		if ((isascii((int)ch) && isgraph((int)ch))
+		|| ch == '\t' || ch == ' ') {
 			if (ch == '\"' || ch == '\\')
 				ldns_buffer_printf(output, "\\%c", ch);
 			else
@@ -1246,7 +1247,7 @@ ldns_rdf2buffer_str_unquoted(ldns_buffer *output, const ldns_rdf *rdf)
 	amount = ldns_rdf_data(rdf)[0];
 	for(i=0; i<amount; i++) {
 		ch = ldns_rdf_data(rdf)[1+i];
-		if ((isascii((int)ch) && isgraph((int)ch)) || ch == '\t') {
+		if (isascii((int)ch) && isgraph((int)ch)) {
 			if (ch == '\"' || ch == '\\' || ch == '\'' ||
 				ch == '(' || ch == ')' || isspace((int)ch))
 				ldns_buffer_printf(output, "\\%c", ch);
@@ -1476,7 +1477,8 @@ svcparam_alpn2buffer_str(ldns_buffer *output, size_t sz, uint8_t *data)
 		for (data += 1; data < eot; data += 1) {
 			uint8_t ch = *data;
 
-			if ((isascii((int)ch) && isgraph((int)ch)) || ch == '\t') {
+			if ((isascii((int)ch) && isgraph((int)ch))
+			|| ch == '\t' || ch == ' ') {
 				if (ch == '"' ||  ch == ',' || ch == '\\')
 					ldns_buffer_write_char(output, '\\');
 				ldns_buffer_write_char(output, ch);
@@ -1562,26 +1564,15 @@ static ldns_status
 svcparam_value2buffer_str(ldns_buffer *output, size_t sz, uint8_t *data)
 {
 	uint8_t *eod = data + sz, *dp;
-	bool quote = false;
 
 	for (dp = data; dp < eod && !isspace(*dp); dp++)
 		; /* pass */
 
-	if ((quote = dp < eod))
+	if (dp < eod) { 
 		ldns_buffer_write_char(output, '"');
-
-	for (dp = data; dp < eod; dp++) {
-		uint8_t ch = *dp;
-
-		if ((isascii((int)ch) && isgraph((int)ch)) || ch == '\t') {
-			if (ch == '"' ||  ch == '\\')
-				ldns_buffer_write_char(output, '\\');
-			ldns_buffer_write_char(output, ch);
-		} else
-			ldns_buffer_printf(output, "\\%03u", (unsigned)ch);
+		ldns_characters2buffer_str(output, eod - dp, data);
+		ldns_buffer_write_char(output, '"');
 	}
-	if (quote)
-		ldns_buffer_write_char(output, '"');
 	return ldns_buffer_status(output);
 }
 
@@ -2246,7 +2237,8 @@ ldns_edns_nsid2buffer_str(ldns_buffer* output, uint8_t* data, size_t len)
 
 	/* print the human-readable text string */
 	for(i = 0; i < len; i++) {
-		if((isascii((int)data[i]) && isgraph((int)data[i])) || data[i] == '\t') {
+		if((isascii((int)data[i]) && isgraph((int)data[i]))
+		|| data[i] == '\t' || data[i] == ' ') {
 			if(!printed) {
 				ldns_buffer_printf(output, " (");
 				printed = 1;
