@@ -1,4 +1,4 @@
-1.9.1	2026-??-??
+1.9.3	2026-??-??
 	* Fix #290: ldns-verify-zone prints to stdout instead of myerr
 	  Thanks RoyArends
 	* Fix memory leak in ldns-notify
@@ -14,6 +14,8 @@
 	* Fix: python rdf2str for added RDF types, and fix python version
 	  check in configure for swig check, and fix to not pass deprecated
 	  option to swig with new swig version.
+	* Fix #316: escaped output depends on the caller's LC_CTYPE
+	  Thanks Dave Cottlehuber 
 
 1.9.2	2026-06-10
 	* Fix to set VERSION_INFO to create .so.3 instead of .so.11 which will

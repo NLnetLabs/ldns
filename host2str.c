@@ -367,7 +367,7 @@ ldns_rdf2buffer_str_dname(ldns_buffer *output, const ldns_rdf *dname)
 				   c == '\\') {
 					ldns_buffer_printf(output, "\\%c",
 							data[src_pos]);
-				} else if (!(isascii(c) && isgraph(c))) {
+				} else if (!(isascii((int)c) && isgraph((int)c))) {
 					ldns_buffer_printf(output, "\\%03u",
 						        data[src_pos]);
 				} else {
@@ -462,7 +462,7 @@ ldns_characters2buffer_str(ldns_buffer* output,
 	uint8_t ch;
 	while (amount > 0) {
 		ch = *characters++;
-		if (isprint((int)ch) || ch == '\t') {
+		if ((isascii((int)ch) && isgraph((int)ch)) || ch == '\t') {
 			if (ch == '\"' || ch == '\\')
 				ldns_buffer_printf(output, "\\%c", ch);
 			else
@@ -1246,7 +1246,7 @@ ldns_rdf2buffer_str_unquoted(ldns_buffer *output, const ldns_rdf *rdf)
 	amount = ldns_rdf_data(rdf)[0];
 	for(i=0; i<amount; i++) {
 		ch = ldns_rdf_data(rdf)[1+i];
-		if (isprint((int)ch) || ch == '\t') {
+		if ((isascii((int)ch) && isgraph((int)ch)) || ch == '\t') {
 			if (ch == '\"' || ch == '\\' || ch == '\'' ||
 				ch == '(' || ch == ')' || isspace((int)ch))
 				ldns_buffer_printf(output, "\\%c", ch);
@@ -1476,7 +1476,7 @@ svcparam_alpn2buffer_str(ldns_buffer *output, size_t sz, uint8_t *data)
 		for (data += 1; data < eot; data += 1) {
 			uint8_t ch = *data;
 
-			if (isprint(ch) || ch == '\t') {
+			if ((isascii((int)ch) && isgraph((int)ch)) || ch == '\t') {
 				if (ch == '"' ||  ch == ',' || ch == '\\')
 					ldns_buffer_write_char(output, '\\');
 				ldns_buffer_write_char(output, ch);
@@ -1573,7 +1573,7 @@ svcparam_value2buffer_str(ldns_buffer *output, size_t sz, uint8_t *data)
 	for (dp = data; dp < eod; dp++) {
 		uint8_t ch = *dp;
 
-		if (isprint(ch) || ch == '\t') {
+		if ((isascii((int)ch) && isgraph((int)ch)) || ch == '\t') {
 			if (ch == '"' ||  ch == '\\')
 				ldns_buffer_write_char(output, '\\');
 			ldns_buffer_write_char(output, ch);
@@ -2246,7 +2246,7 @@ ldns_edns_nsid2buffer_str(ldns_buffer* output, uint8_t* data, size_t len)
 
 	/* print the human-readable text string */
 	for(i = 0; i < len; i++) {
-		if(isprint((unsigned char)data[i]) || data[i] == '\t') {
+		if((isascii((int)data[i]) && isgraph((int)data[i])) || data[i] == '\t') {
 			if(!printed) {
 				ldns_buffer_printf(output, " (");
 				printed = 1;
