@@ -140,7 +140,7 @@ ldns_digest_function(char *name)
 #else
 		return NULL;
 #endif
-	} else if (strcasecmp(name, "hmac-shac384.") == 0) {
+	} else if (strcasecmp(name, "hmac-sha384.") == 0) {
 #ifdef HAVE_EVP_SHA384
 		return EVP_sha384();
 #else
