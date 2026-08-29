@@ -31,33 +31,7 @@
 #define LDNS_BUILD_CONFIG_USE_ED25519      @ldns_build_config_use_ed25519@
 #define LDNS_BUILD_CONFIG_USE_ED448        @ldns_build_config_use_ed448@
 
-/*
- * HAVE_STDBOOL_H is not available when distributed as a library, but no build 
- * configuration variables may be used (like those above) because the header
- * is sometimes only available when using special compiler flags to enable the
- * c99 environment. Because we cannot force the usage of this flag, we have to
- * provide a default type. Below what is suggested by the autoconf manual.
- */
-/*@ignore@*/
-/* splint barfs on this construct */
-#ifndef __bool_true_false_are_defined
-# ifdef HAVE_STDBOOL_H
-#  include <stdbool.h>
-# else
-#  ifndef HAVE__BOOL
-#   ifdef __cplusplus
-typedef bool _Bool;
-#   else
-#    define _Bool signed char
-#   endif
-#  endif
-#  define bool _Bool
-#  define false 0
-#  define true 1
-#  define __bool_true_false_are_defined 1
-# endif
-#endif
-/*@end@*/
+#include <stdbool.h>
 
 #if LDNS_BUILD_CONFIG_HAVE_ATTR_FORMAT
 #define ATTR_FORMAT(archetype, string_index, first_to_check) \
