@@ -15,6 +15,10 @@
 #include <openssl/err.h>
 #include <openssl/md5.h>
 
+# if OPENSSL_VERSION_NUMBER >= 0x30000000L
+#include <openssl/core_names.h>
+# endif
+
 ldns_dnssec_data_chain *
 ldns_dnssec_data_chain_new(void)
 {
@@ -1947,40 +1951,99 @@ ldns_verify_rrsig_ed448_raw(unsigned char* sig, size_t siglen,
 EVP_PKEY*
 ldns_ecdsa2pkey_raw(const unsigned char* key, size_t keylen, uint8_t algo)
 {
+	EVP_PKEY *evp_key = NULL;
 	unsigned char buf[256+2]; /* sufficient for 2*384/8+1 */
-        const unsigned char* pp = buf;
-        EVP_PKEY *evp_key;
-        EC_KEY *ec;
+
+#if OPENSSL_VERSION_NUMBER >= 0x30000000L
+	EVP_PKEY_CTX *ctx = EVP_PKEY_CTX_new_id(EVP_PKEY_EC, NULL);
+	const char *n = NULL;
+	char *group_name = NULL;
+
 	/* check length, which uncompressed must be 2 bignums */
-        if(algo == LDNS_ECDSAP256SHA256) {
+	if(algo == LDNS_ECDSAP256SHA256) {
 		if(keylen != 2*256/8) return NULL;
-                ec = EC_KEY_new_by_curve_name(NID_X9_62_prime256v1);
-        } else if(algo == LDNS_ECDSAP384SHA384) {
+		n = EC_curve_nid2nist(NID_X9_62_prime256v1);
+	} else if(algo == LDNS_ECDSAP384SHA384) {
 		if(keylen != 2*384/8) return NULL;
-                ec = EC_KEY_new_by_curve_name(NID_secp384r1);
-        } else    ec = NULL;
-        if(!ec) return NULL;
+		n = EC_curve_nid2nist(NID_secp384r1);
+	} else {
+		return NULL;
+	}
+
+	if(n) {
+		group_name = OPENSSL_zalloc(strlen(n) + 1);
+	} else {
+		return NULL;
+	}
+
+	if(group_name) {
+		int ret = 0;
+		OSSL_PARAM params[3] = { 0 };
+
+		memcpy(group_name, n, strlen(n));
+
+		/* prepend the 0x02 (from docs) (or actually 0x04 from implementation
+		 * of openssl) for uncompressed data */
+		buf[0] = POINT_CONVERSION_UNCOMPRESSED;
+		memmove(buf+1, key, keylen);
+
+		params[0] =
+		OSSL_PARAM_construct_utf8_string(OSSL_PKEY_PARAM_GROUP_NAME,
+										 group_name, 0);
+
+		params[1] =
+		OSSL_PARAM_construct_octet_string(OSSL_PKEY_PARAM_PUB_KEY,
+										  buf, keylen);
+
+		params[2] = OSSL_PARAM_construct_end();
+
+		if(EVP_PKEY_fromdata_init(ctx) > 0) {
+			ret = EVP_PKEY_fromdata(ctx, &evp_key, EVP_PKEY_PUBLIC_KEY,
+									params);
+		}
+
+		if(group_name) {
+			OPENSSL_clear_free(group_name, strlen(n));
+		}
+
+		if(ret <= 0) {
+			return NULL;
+		}
+	}
+#else
+	const unsigned char* pp = buf;
+	EC_KEY *ec;
+	/* check length, which uncompressed must be 2 bignums */
+	if(algo == LDNS_ECDSAP256SHA256) {
+		if(keylen != 2*256/8) return NULL;
+		ec = EC_KEY_new_by_curve_name(NID_X9_62_prime256v1);
+	} else if(algo == LDNS_ECDSAP384SHA384) {
+		if(keylen != 2*384/8) return NULL;
+		ec = EC_KEY_new_by_curve_name(NID_secp384r1);
+	} else    ec = NULL;
+	if(!ec) return NULL;
 	if(keylen+1 > sizeof(buf))
 		return NULL; /* sanity check */
 	/* prepend the 0x02 (from docs) (or actually 0x04 from implementation
 	 * of openssl) for uncompressed data */
 	buf[0] = POINT_CONVERSION_UNCOMPRESSED;
 	memmove(buf+1, key, keylen);
-        if(!o2i_ECPublicKey(&ec, &pp, (int)keylen+1)) {
-                EC_KEY_free(ec);
-                return NULL;
-        }
-        evp_key = EVP_PKEY_new();
-        if(!evp_key) {
-                EC_KEY_free(ec);
-                return NULL;
-        }
-        if (!EVP_PKEY_assign_EC_KEY(evp_key, ec)) {
+	if(!o2i_ECPublicKey(&ec, &pp, (int)keylen+1)) {
+		EC_KEY_free(ec);
+		return NULL;
+	}
+	evp_key = EVP_PKEY_new();
+	if(!evp_key) {
+		EC_KEY_free(ec);
+		return NULL;
+	}
+	if (!EVP_PKEY_assign_EC_KEY(evp_key, ec)) {
 		EVP_PKEY_free(evp_key);
 		EC_KEY_free(ec);
 		return NULL;
 	}
-        return evp_key;
+#endif /* OPENSSL_VERSION_NUMBER >= 0x30000000L */
+	return evp_key;
 }
 
 static ldns_status
@@ -2684,10 +2747,20 @@ ldns_verify_rrsig_dsa_raw(unsigned char* sig, size_t siglen,
 {
 #ifdef USE_DSA
 	EVP_PKEY *evp_key;
-	ldns_status result;
+	ldns_status result = LDNS_STATUS_OK;
 
+#if OPENSSL_VERSION_NUMBER >= 0x30000000L
+	evp_key = ldns_dsa2pkey_raw(key, keylen);
+	if (!evp_key) {
+		result = LDNS_STATUS_SSL_ERR;
+	}
+#else
 	evp_key = EVP_PKEY_new();
-	if (EVP_PKEY_assign_DSA(evp_key, ldns_key_buf2dsa_raw(key, keylen))) {
+	if (!EVP_PKEY_assign_DSA(evp_key, ldns_key_buf2dsa_raw(key, keylen))) {
+		result = LDNS_STATUS_SSL_ERR;
+	}
+#endif
+	if (result == LDNS_STATUS_OK) {
 		result = ldns_verify_rrsig_evp_raw(sig,
 								siglen,
 								rrset,
@@ -2698,8 +2771,6 @@ ldns_verify_rrsig_dsa_raw(unsigned char* sig, size_t siglen,
 								EVP_sha1()
 # endif
 								);
-	} else {
-		result = LDNS_STATUS_SSL_ERR;
 	}
 	EVP_PKEY_free(evp_key);
 	return result;
@@ -2714,17 +2785,25 @@ ldns_verify_rrsig_rsasha1_raw(unsigned char* sig, size_t siglen,
 						ldns_buffer* rrset, unsigned char* key, size_t keylen)
 {
 	EVP_PKEY *evp_key;
-	ldns_status result;
+	ldns_status result = LDNS_STATUS_OK;
 
+#if OPENSSL_VERSION_NUMBER >= 0x30000000L
+	evp_key = ldns_rsa2pkey_raw(key, keylen);
+	if (!evp_key) {
+		result = LDNS_STATUS_SSL_ERR;
+	}
+#else
 	evp_key = EVP_PKEY_new();
-	if (EVP_PKEY_assign_RSA(evp_key, ldns_key_buf2rsa_raw(key, keylen))) {
+	if (!EVP_PKEY_assign_RSA(evp_key, ldns_key_buf2rsa_raw(key, keylen))) {
+		result = LDNS_STATUS_SSL_ERR;
+	}
+#endif
+	if (result == LDNS_STATUS_OK) {
 		result = ldns_verify_rrsig_evp_raw(sig,
 								siglen,
 								rrset,
 								evp_key,
 								EVP_sha1());
-	} else {
-		result = LDNS_STATUS_SSL_ERR;
 	}
 	EVP_PKEY_free(evp_key);
 
@@ -2740,10 +2819,20 @@ ldns_verify_rrsig_rsasha256_raw(unsigned char* sig,
 {
 #ifdef USE_SHA2
 	EVP_PKEY *evp_key;
-	ldns_status result;
+	ldns_status result = LDNS_STATUS_OK;
 
+#if OPENSSL_VERSION_NUMBER >= 0x30000000L
+	evp_key = ldns_rsa2pkey_raw(key, keylen);
+	if (!evp_key) {
+		result = LDNS_STATUS_SSL_ERR;
+	}
+#else
 	evp_key = EVP_PKEY_new();
-	if (EVP_PKEY_assign_RSA(evp_key, ldns_key_buf2rsa_raw(key, keylen))) {
+	if (!EVP_PKEY_assign_RSA(evp_key, ldns_key_buf2rsa_raw(key, keylen))) {
+		result = LDNS_STATUS_SSL_ERR;
+	}
+#endif
+	if (result == LDNS_STATUS_OK) {
 		result = ldns_verify_rrsig_evp_raw(sig,
 								siglen,
 								rrset,
@@ -2775,10 +2864,20 @@ ldns_verify_rrsig_rsasha512_raw(unsigned char* sig,
 {
 #ifdef USE_SHA2
 	EVP_PKEY *evp_key;
-	ldns_status result;
+	ldns_status result = LDNS_STATUS_OK;
 
+#if OPENSSL_VERSION_NUMBER >= 0x30000000L
+	evp_key = ldns_rsa2pkey_raw(key, keylen);
+	if (!evp_key) {
+		result = LDNS_STATUS_SSL_ERR;
+	}
+#else
 	evp_key = EVP_PKEY_new();
-	if (EVP_PKEY_assign_RSA(evp_key, ldns_key_buf2rsa_raw(key, keylen))) {
+	if (!EVP_PKEY_assign_RSA(evp_key, ldns_key_buf2rsa_raw(key, keylen))) {
+		result = LDNS_STATUS_SSL_ERR;
+	}
+#endif
+	if (result == LDNS_STATUS_OK) {
 		result = ldns_verify_rrsig_evp_raw(sig,
 								siglen,
 								rrset,
@@ -2810,10 +2909,20 @@ ldns_verify_rrsig_rsamd5_raw(unsigned char* sig,
 					    size_t keylen)
 {
 	EVP_PKEY *evp_key;
-	ldns_status result;
+	ldns_status result = LDNS_STATUS_OK;
 
+#if OPENSSL_VERSION_NUMBER >= 0x30000000L
+	evp_key = ldns_rsa2pkey_raw(key, keylen);
+	if (!evp_key) {
+		result = LDNS_STATUS_SSL_ERR;
+	}
+#else
 	evp_key = EVP_PKEY_new();
-	if (EVP_PKEY_assign_RSA(evp_key, ldns_key_buf2rsa_raw(key, keylen))) {
+	if (!EVP_PKEY_assign_RSA(evp_key, ldns_key_buf2rsa_raw(key, keylen))) {
+		result = LDNS_STATUS_SSL_ERR;
+	}
+#endif
+	if (result == LDNS_STATUS_OK) {
 		result = ldns_verify_rrsig_evp_raw(sig,
 								siglen,
 								rrset,
