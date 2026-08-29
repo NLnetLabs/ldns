@@ -1447,8 +1447,9 @@ ldns_nsec_bitmap_set_type(ldns_rdf* bitmap, ldns_rr_type type)
 	uint8_t subtype = type & 0xff;
 
 	if (! bitmap) {
-		return false;
+		return LDNS_STATUS_NULL;
 	}
+
 	assert(ldns_rdf_get_type(bitmap) == LDNS_RDF_TYPE_BITMAP);
 
 	dptr = ldns_rdf_data(bitmap);
@@ -1485,7 +1486,7 @@ ldns_nsec_bitmap_clear_type(ldns_rdf* bitmap, ldns_rr_type type)
 	uint8_t subtype = type & 0xff;
 
 	if (! bitmap) {
-		return false;
+		return LDNS_STATUS_NULL;
 	}
 
 	assert(ldns_rdf_get_type(bitmap) == LDNS_RDF_TYPE_BITMAP);
