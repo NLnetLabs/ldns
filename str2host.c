@@ -778,7 +778,7 @@ ldns_str2rdf_nsec(ldns_rdf **rd, const char *str)
 	}
 
 	while ((c = ldns_bget_token(str_buf, token, delimiters, LDNS_MAX_RDFLEN)) != -1 && c != 0) {
-                if(type_count >= sizeof(type_list)) {
+                if(type_count >= (sizeof(type_list) / sizeof(type_list[0]))) {
 		        LDNS_FREE(str_buf);
 		        LDNS_FREE(token);
                         return LDNS_STATUS_ERR;
