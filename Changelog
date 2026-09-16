@@ -18,6 +18,8 @@
 	  off-by-one stack write. Thanks Dave Cottlehuber
 	* Fix #316: escaped output depends on the caller's LC_CTYPE
 	  Thanks Dave Cottlehuber 
+	* PR #318: signzone not failing on missing/invalid key files.
+	  Thanks Jerry Lundström.
 
 1.9.2	2026-06-10
 	* Fix to set VERSION_INFO to create .so.3 instead of .so.11 which will
