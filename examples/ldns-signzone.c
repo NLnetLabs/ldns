@@ -941,6 +941,7 @@ main(int argc, char *argv[])
 				   "Error: unable to read %s: %s\n",
 				   keyfile_name,
 				   strerror(errno));
+			exit(EXIT_FAILURE);
 		} else {
 			s = ldns_key_new_frm_fp_l(&key, keyfile, &line_nr);
 			fclose(keyfile);
@@ -960,6 +961,7 @@ main(int argc, char *argv[])
 				ldns_key_list_push_key(keys, key);
 			} else {
 				fprintf(stderr, "Error reading key from %s at line %d: %s\n", argv[argi], line_nr, ldns_get_errorstr_by_id(s));
+				exit(EXIT_FAILURE);
 			}
 		}
 		/* and, if not unset by -p, find or create the corresponding DNSKEY record */
