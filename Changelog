@@ -20,6 +20,9 @@
 	  Thanks Dave Cottlehuber 
 	* PR #318: signzone not failing on missing/invalid key files.
 	  Thanks Jerry Lundström.
+	* Fix #317: Free a replaced TSIG record in ldns_wire2pkt()
+	  Thanks Naseeb Dangi <naseebdangi100@gmail.com> and 1820893135-pixel
+	  for the report and the fix.
 
 1.9.2	2026-06-10
 	* Fix to set VERSION_INFO to create .so.3 instead of .so.11 which will
