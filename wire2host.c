@@ -476,6 +476,14 @@ ldns_wire2pkt(ldns_pkt **packet_p, const uint8_t *wire, size_t max)
 			ldns_rr_free(rr);
 			have_edns += 1;
 		} else if (ldns_rr_get_type(rr) == LDNS_RR_TYPE_TSIG) {
+			/* RFC 8945 allows at most one TSIG per message, but a
+			 * malformed one can carry several.  set_tsig() just
+			 * assigns the pointer, so release the record it is about
+			 * to replace - otherwise it (and its owner name) leaks.
+			 */
+			if (ldns_pkt_tsig(packet) != NULL) {
+				ldns_rr_free(ldns_pkt_tsig(packet));
+			}
 			ldns_pkt_set_tsig(packet, rr);
 			ldns_pkt_set_arcount(packet, ldns_pkt_arcount(packet) - 1);
 		} else if (!ldns_rr_list_push_rr(ldns_pkt_additional(packet), rr)) {
