@@ -1624,6 +1624,11 @@ ldns_dnssec_verify_denial_nsec3_match( ldns_rr *rr
                 }
 
 		wildcard = ldns_dname_new_frm_str("*");
+		if (!wildcard) {
+			ldns_rdf_deep_free(closest_encloser);
+			result = LDNS_STATUS_MEM_ERR;
+			goto done;
+		}
 		(void) ldns_dname_cat(wildcard, closest_encloser);
 
 		for (i = 0; i < ldns_rr_list_rr_count(nsecs); i++) {
@@ -1631,6 +1636,13 @@ ldns_dnssec_verify_denial_nsec3_match( ldns_rr *rr
 				ldns_nsec3_hash_name_frm_nsec3(ldns_rr_list_rr(nsecs, 0),
 										 wildcard
 										 );
+			/* hash returns NULL for unsupported algorithms (only SHA-1) */
+			if (!hashed_wildcard_name) {
+				ldns_rdf_deep_free(closest_encloser);
+				ldns_rdf_deep_free(wildcard);
+				result = LDNS_STATUS_CRYPTO_ALGO_NOT_IMPL;
+				goto done;
+			}
 			(void) ldns_dname_cat(hashed_wildcard_name, zone_name);
 
 			if (ldns_nsec_covers_name(ldns_rr_list_rr(nsecs, i),
@@ -1656,6 +1668,10 @@ ldns_dnssec_verify_denial_nsec3_match( ldns_rr *rr
 		hashed_name = ldns_nsec3_hash_name_frm_nsec3(
 		                   ldns_rr_list_rr(nsecs, 0),
 		                   ldns_rr_owner(rr));
+		if (!hashed_name) {
+			result = LDNS_STATUS_CRYPTO_ALGO_NOT_IMPL;
+			goto done;
+		}
 		(void) ldns_dname_cat(hashed_name, zone_name);
 		for (i = 0; i < ldns_rr_list_rr_count(nsecs); i++) {
 			if (ldns_dname_compare(hashed_name,
@@ -1688,11 +1704,22 @@ ldns_dnssec_verify_denial_nsec3_match( ldns_rr *rr
 			goto done;
 		}
 		wildcard = ldns_dname_new_frm_str("*");
+		if (!wildcard) {
+			ldns_rdf_deep_free(closest_encloser);
+			result = LDNS_STATUS_MEM_ERR;
+			goto done;
+		}
 		(void) ldns_dname_cat(wildcard, closest_encloser);
 		for (i = 0; i < ldns_rr_list_rr_count(nsecs); i++) {
 			hashed_wildcard_name =
 				ldns_nsec3_hash_name_frm_nsec3(ldns_rr_list_rr(nsecs, 0),
 					 wildcard);
+			if (!hashed_wildcard_name) {
+				ldns_rdf_deep_free(closest_encloser);
+				ldns_rdf_deep_free(wildcard);
+				result = LDNS_STATUS_CRYPTO_ALGO_NOT_IMPL;
+				goto done;
+			}
 			(void) ldns_dname_cat(hashed_wildcard_name, zone_name);
 
 			if (ldns_dname_compare(hashed_wildcard_name,
@@ -1725,6 +1752,10 @@ ldns_dnssec_verify_denial_nsec3_match( ldns_rr *rr
 														 0),
 											ldns_rr_owner(rr)
 											);
+		if (!hashed_name) {
+			result = LDNS_STATUS_CRYPTO_ALGO_NOT_IMPL;
+			goto done;
+		}
 		(void) ldns_dname_cat(hashed_name, zone_name);
 		for (i = 0; i < ldns_rr_list_rr_count(nsecs); i++) {
 			if (ldns_dname_compare(hashed_name,
@@ -1781,8 +1812,13 @@ ldns_dnssec_verify_denial_nsec3_match( ldns_rr *rr
 					ldns_rr_list_rr(nsecs, 0),
 					next_closer
 					);
-			(void) ldns_dname_cat(hashed_next_closer, zone_name);
 			ldns_rdf_deep_free(next_closer);
+			if (!hashed_next_closer) {
+				ldns_rdf_deep_free(closest_encloser);
+				result = LDNS_STATUS_CRYPTO_ALGO_NOT_IMPL;
+				goto done;
+			}
+			(void) ldns_dname_cat(hashed_next_closer, zone_name);
 		}
 		/* Find the NSEC3 that covers the "next closer" */
 		for (i = 0; i < ldns_rr_list_rr_count(nsecs); i++) {
