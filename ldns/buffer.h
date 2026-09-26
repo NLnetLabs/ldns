@@ -356,11 +356,13 @@ ldns_buffer_available(const ldns_buffer *buffer, size_t count)
  * \param[in] data pointer to the data to write to the buffer
  * \param[in] count the number of bytes of data to write
  */
-INLINE void
+INLINE size_t
 ldns_buffer_write_at(ldns_buffer *buffer, size_t at, const void *data, size_t count)
 {
-	assert(ldns_buffer_available_at(buffer, at, count));
-	memcpy(buffer->_data + at, data, count);
+	size_t avail = ldns_buffer_remaining_at(buffer, at);
+	size_t copy = count < avail ? count : avail;
+	memcpy(buffer->_data + at, data, copy);
+	return copy;
 }
 
 /**
@@ -372,8 +374,8 @@ ldns_buffer_write_at(ldns_buffer *buffer, size_t at, const void *data, size_t co
 INLINE void
 ldns_buffer_write(ldns_buffer *buffer, const void *data, size_t count)
 {
-	ldns_buffer_write_at(buffer, buffer->_position, data, count);
-	buffer->_position += count;
+	size_t copied = ldns_buffer_write_at(buffer, buffer->_position, data, count);
+	buffer->_position += copied;
 }
 
 /**
