@@ -1931,7 +1931,7 @@ ldns_convert_ecdsa_rrsig_rdf2asn1(ldns_buffer *target_buffer,
         uint8_t* d = ldns_rdf_data(sig_rdf);
         /* if too short, or not even length, do not bother */
         if(bnsize < 16 || (size_t)bnsize*2 != ldns_rdf_size(sig_rdf))
-                return LDNS_STATUS_ERR;
+                return LDNS_STATUS_SYNTAX_RDATA_ERR;
         /* strip leading zeroes from r (but not last one) */
         while(r_rem < bnsize-1 && d[r_rem] == 0)
                 r_rem++;
