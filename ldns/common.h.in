@@ -32,26 +32,22 @@
 #define LDNS_BUILD_CONFIG_USE_ED448        @ldns_build_config_use_ed448@
 
 /*
- * HAVE_STDBOOL_H is not available when distributed as a library, but no build 
- * configuration variables may be used (like those above) because the header
- * is sometimes only available when using special compiler flags to enable the
- * c99 environment. Because we cannot force the usage of this flag, we have to
- * provide a default type. Below what is suggested by the autoconf manual.
+ * HAVE_* macros are a recipe for name clashes, and the ldns build does not
+ * produce reasonably namespaced macro definitions for library use. Until that
+ * is addressed, do something resembling a snippet from an older autoconf
+ * manual.
  */
 /*@ignore@*/
 /* splint barfs on this construct */
 #ifndef __bool_true_false_are_defined
-# ifdef HAVE_STDBOOL_H
+# if (defined(__STDC_VERSION__) && __STDC_VERSION__ >= 199900L) || defined(HAVE_STDBOOL_H)
 #  include <stdbool.h>
 # else
-#  ifndef HAVE__BOOL
-#   ifdef __cplusplus
-typedef bool _Bool;
-#   else
-#    define _Bool signed char
-#   endif
+#  ifdef HAVE__BOOL
+#    define bool _Bool
+#  else
+#    define bool signed char
 #  endif
-#  define bool _Bool
 #  define false 0
 #  define true 1
 #  define __bool_true_false_are_defined 1
