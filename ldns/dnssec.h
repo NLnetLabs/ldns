@@ -38,6 +38,10 @@
 extern "C" {
 #endif
 
+#if LDNS_BUILD_CONFIG_HAVE_SSL && !defined(OSSL_DEPRECATEDIN_3_0)
+#define OSSL_DEPRECATEDIN_3_0
+#endif
+
 #define LDNS_MAX_KEYLEN		2048
 #define LDNS_DNSSEC_KEYPROTO	3
 /* default time before sigs expire */
@@ -128,6 +132,8 @@ uint16_t ldns_calc_keytag(const ldns_rr *key);
 uint16_t ldns_calc_keytag_raw(const uint8_t* key, size_t keysize);
 
 #if LDNS_BUILD_CONFIG_HAVE_SSL
+# ifndef OPENSSL_NO_DEPRECATED_3_0
+OSSL_DEPRECATEDIN_3_0
 /**
  * converts a buffer holding key material to a DSA key in openssl.
  *
@@ -135,6 +141,8 @@ uint16_t ldns_calc_keytag_raw(const uint8_t* key, size_t keysize);
  * \return a DSA * structure with the key material
  */
 DSA *ldns_key_buf2dsa(const ldns_buffer *key);
+
+OSSL_DEPRECATEDIN_3_0
 /**
  * Like ldns_key_buf2dsa, but uses raw buffer.
  * \param[in] key the uncompressed wireformat of the key.
@@ -142,6 +150,25 @@ DSA *ldns_key_buf2dsa(const ldns_buffer *key);
  * \return a DSA * structure with the key material
  */
 DSA *ldns_key_buf2dsa_raw(const unsigned char* key, size_t len);
+# endif /* OPENSSL_NO_DEPRECATED_3_0 */
+
+#if OPENSSL_VERSION_NUMBER >= 0x30000000L
+/**
+ * converts a buffer holding DSA key material to an EVP_PKEY key in openssl.
+ *
+ * \param[in] key the key to convert
+ * \return an EVP_PKEY * structure with the key material
+ */
+EVP_PKEY *ldns_dsa2pkey(const ldns_buffer *key);
+
+/**
+ * Like ldns_dsa2pkey, but uses raw buffer.
+ * \param[in] key the uncompressed wireformat of the key.
+ * \param[in] len length of key data
+ * \return an EVP_PKEY * structure with the key material
+ */
+EVP_PKEY *ldns_dsa2pkey_raw(const unsigned char* key, size_t len);
+#endif /* OPENSSL_VERSION_NUMBER >= 0x30000000L */
 
 /**
  * Utility function to calculate hash using generic EVP_MD pointer.
@@ -194,6 +221,8 @@ EVP_PKEY* ldns_ed4482pkey_raw(const unsigned char* key, size_t keylen);
 #endif /* LDNS_BUILD_CONFIG_HAVE_SSL */
 
 #if LDNS_BUILD_CONFIG_HAVE_SSL
+# ifndef OPENSSL_NO_DEPRECATED_3_0
+OSSL_DEPRECATEDIN_3_0
 /**
  * converts a buffer holding key material to a RSA key in openssl.
  *
@@ -202,6 +231,7 @@ EVP_PKEY* ldns_ed4482pkey_raw(const unsigned char* key, size_t keylen);
  */
 RSA *ldns_key_buf2rsa(const ldns_buffer *key);
 
+OSSL_DEPRECATEDIN_3_0
 /**
  * Like ldns_key_buf2rsa, but uses raw buffer.
  * \param[in] key the uncompressed wireformat of the key.
@@ -209,6 +239,25 @@ RSA *ldns_key_buf2rsa(const ldns_buffer *key);
  * \return a RSA * structure with the key material
  */
 RSA *ldns_key_buf2rsa_raw(const unsigned char* key, size_t len);
+# endif /* OPENSSL_NO_DEPRECATED_3_0 */
+
+# if OPENSSL_VERSION_NUMBER >= 0x30000000L
+/**
+ * converts a buffer holding RSA key material to an EVP_PKEY key in openssl.
+ *
+ * \param[in] key the key to convert
+ * \return an EVP_PKEY * structure with the key material
+ */
+EVP_PKEY *ldns_rsa2pkey(const ldns_buffer *key);
+
+/**
+ * Like ldns_rsa2pkey, but uses raw buffer.
+ * \param[in] key the uncompressed wireformat of the key.
+ * \param[in] len length of key data
+ * \return an EVP_PKEY * structure with the key material
+ */
+EVP_PKEY *ldns_rsa2pkey_raw(const unsigned char* key, size_t len);
+# endif /* OPENSSL_VERSION_NUMBER >= 0x30000000L */
 #endif /* LDNS_BUILD_CONFIG_HAVE_SSL */
 
 /** 

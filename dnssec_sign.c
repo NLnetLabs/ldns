@@ -22,6 +22,9 @@
 #ifdef USE_DSA
 #include <openssl/dsa.h>
 #endif
+#if OPENSSL_VERSION_NUMBER >= 0x30000000L
+#include <openssl/core_names.h>
+#endif
 #endif /* HAVE_SSL */
 
 #define LDNS_SIGN_WITH_ZONEMD ( LDNS_SIGN_WITH_ZONEMD_SIMPLE_SHA384 \
@@ -328,6 +331,7 @@ ldns_sign_public(ldns_rr_list *rrset, ldns_key_list *keys)
 	return signatures;
 }
 
+#ifndef OPENSSL_NO_DEPRECATED_3_0
 ldns_rdf *
 ldns_sign_public_dsa(ldns_buffer *to_sign, DSA *key)
 {
@@ -400,6 +404,7 @@ ldns_sign_public_dsa(ldns_buffer *to_sign, DSA *key)
 	return NULL;
 #endif
 }
+#endif /* # OPENSSL_NO_DEPRECATED_3_0 */
 
 #ifdef USE_ECDSA
 #ifndef S_SPLINT_S
@@ -407,35 +412,45 @@ ldns_sign_public_dsa(ldns_buffer *to_sign, DSA *key)
 static int
 ldns_pkey_is_ecdsa(EVP_PKEY* pkey)
 {
-        EC_KEY* ec;
-        const EC_GROUP* g;
-#ifdef HAVE_EVP_PKEY_GET_BASE_ID
-        if(EVP_PKEY_get_base_id(pkey) != EVP_PKEY_EC)
-                return 0;
-#elif defined(HAVE_EVP_PKEY_BASE_ID)
-        if(EVP_PKEY_base_id(pkey) != EVP_PKEY_EC)
-                return 0;
-#else
-        if(EVP_PKEY_type(pkey->type) != EVP_PKEY_EC)
-                return 0;
+#if OPENSSL_VERSION_NUMBER < 0x30000000L
+	EC_KEY* ec;
+	const EC_GROUP* g;
 #endif
-        ec = EVP_PKEY_get1_EC_KEY(pkey);
-        g = EC_KEY_get0_group(ec);
-        if(!g) {
-                EC_KEY_free(ec);
-                return 0;
-        }
-        if(EC_GROUP_get_curve_name(g) == NID_X9_62_prime256v1) {
-                EC_KEY_free(ec);
-                return 32; /* 256/8 */
+
+#ifdef HAVE_EVP_PKEY_GET_BASE_ID
+	if(EVP_PKEY_get_base_id(pkey) != EVP_PKEY_EC)
+		return 0;
+#elif defined(HAVE_EVP_PKEY_BASE_ID)
+	if(EVP_PKEY_base_id(pkey) != EVP_PKEY_EC)
+		return 0;
+#else
+	if(EVP_PKEY_type(pkey->type) != EVP_PKEY_EC)
+		return 0;
+#endif
+
+#if OPENSSL_VERSION_NUMBER >= 0x30000000L
+	int bits = 0;
+	EVP_PKEY_get_int_param(pkey, OSSL_PKEY_PARAM_BITS, &bits);
+	return bits / 8;
+#else
+	ec = EVP_PKEY_get1_EC_KEY(pkey);
+	g = EC_KEY_get0_group(ec);
+	if(!g) {
+		EC_KEY_free(ec);
+		return 0;
 	}
-        if(EC_GROUP_get_curve_name(g) == NID_secp384r1) {
-                EC_KEY_free(ec);
-                return 48; /* 384/8 */
-        }
-        /* downref the eckey, the original is still inside the pkey */
-        EC_KEY_free(ec);
-        return 0;
+	if(EC_GROUP_get_curve_name(g) == NID_X9_62_prime256v1) {
+		EC_KEY_free(ec);
+		return 32; /* 256/8 */
+	}
+	if(EC_GROUP_get_curve_name(g) == NID_secp384r1) {
+		EC_KEY_free(ec);
+		return 48; /* 384/8 */
+	}
+	/* downref the eckey, the original is still inside the pkey */
+	EC_KEY_free(ec);
+	return 0;
+#endif
 }
 #endif /* splint */
 #endif /* USE_ECDSA */
@@ -569,6 +584,7 @@ ldns_sign_public_evp(ldns_buffer *to_sign,
 	return sigdata_rdf;
 }
 
+#ifndef OPENSSL_NO_DEPRECATED_3_0
 ldns_rdf *
 ldns_sign_public_rsasha1(ldns_buffer *to_sign, RSA *key)
 {
@@ -636,6 +652,7 @@ ldns_sign_public_rsamd5(ldns_buffer *to_sign, RSA *key)
 	ldns_buffer_free(b64sig);
 	return sigdata_rdf;
 }
+#endif /* OPENSSL_NO_DEPRECATED_3_0 */
 #endif /* HAVE_SSL */
 
 /**
