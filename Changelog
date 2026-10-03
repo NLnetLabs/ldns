@@ -9,6 +9,9 @@
 	* The -O option to calculate (and sign) only the ZONEMD an input
 	  zone with ldns-signzone
 	* Fix to parse SVCB and HTTPS svcparam ech=0.
+	* Bugfix: ldns-testns needs twice LDNS_MAX_PACKETLEN for the
+	  hexadecimal representation of a packet
+	* Bugfix: ldns-testns -6 uses the IPv6 address family for the address.
 	* Fix #314: Replace removed Python 2 C API macros for SWIG 4.5.0
 	  compatibility
 	* Fix: python rdf2str for added RDF types, and fix python version
@@ -23,6 +26,9 @@
 	* Fix #317: Free a replaced TSIG record in ldns_wire2pkt()
 	  Thanks Naseeb Dangi <naseebdangi100@gmail.com> and 1820893135-pixel
 	  for the report and the fix.
+	* Fix to limit the number of RR types in an NSEC bitmap to prevent an
+	  out of bounds stack write. Thanks to Tristan Madani (@TristanInSec)
+	  from Talence Security for the report.
 
 1.9.2	2026-06-10
 	* Fix to set VERSION_INFO to create .so.3 instead of .so.11 which will

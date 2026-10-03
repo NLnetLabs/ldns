@@ -394,7 +394,7 @@ data_buffer2wire(ldns_buffer *data_buffer)
 		}
 	}
 
-	if (hexbufpos >= LDNS_MAX_PACKETLEN) {
+	if (hexbufpos >= 2*LDNS_MAX_PACKETLEN) {
 		/*verbose("packet size reached\n");*/
 	}
 	
