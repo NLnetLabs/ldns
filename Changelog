@@ -7,6 +7,9 @@
 	* Fix: python rdf2str for added RDF types, and fix python version
 	  check in configure for swig check, and fix to not pass deprecated
 	  option to swig with new swig version.
+	* Fix to limit the number of RR types in an NSEC bitmap to prevent an
+	  out of bounds stack write. Thanks to Tristan Madani (@TristanInSec)
+	  from Talence Security for the report.
 
 1.9.2	2026-06-10
 	* Fix to set VERSION_INFO to create .so.3 instead of .so.11 which will
