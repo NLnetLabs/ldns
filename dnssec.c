@@ -1420,7 +1420,7 @@ ldns_nsec_bitmap_covers_type(const ldns_rdf* bitmap, ldns_rr_type type)
 	/* Type Bitmap = ( Window Block # | Bitmap Length | Bitmap ) +
 	 *                 dptr[0]          dptr[1]         dptr[2:]
 	 */
-	while (dptr < dend && dptr[0] <= window) {
+	while (dptr + 1 < dend && dptr[0] <= window) {
 
 		if (dptr[0] == window && subtype / 8 < dptr[1] &&
 				dptr + dptr[1] + 2 <= dend) {
@@ -1457,7 +1457,7 @@ ldns_nsec_bitmap_set_type(ldns_rdf* bitmap, ldns_rr_type type)
 	/* Type Bitmap = ( Window Block # | Bitmap Length | Bitmap ) +
 	 *                 dptr[0]          dptr[1]         dptr[2:]
 	 */
-	while (dptr < dend && dptr[0] <= window) {
+	while (dptr + 1 < dend && dptr[0] <= window) {
 
 		if (dptr[0] == window && subtype / 8 < dptr[1] &&
 				dptr + dptr[1] + 2 <= dend) {
@@ -1496,7 +1496,7 @@ ldns_nsec_bitmap_clear_type(ldns_rdf* bitmap, ldns_rr_type type)
 	/* Type Bitmap = ( Window Block # | Bitmap Length | Bitmap ) +
 	 *                 dptr[0]          dptr[1]         dptr[2:]
 	 */
-	while (dptr < dend && dptr[0] <= window) {
+	while (dptr + 1 < dend && dptr[0] <= window) {
 
 		if (dptr[0] == window && subtype / 8 < dptr[1] &&
 				dptr + dptr[1] + 2 <= dend) {
