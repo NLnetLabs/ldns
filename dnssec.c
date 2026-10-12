@@ -148,6 +148,13 @@ ldns_dnssec_nsec3_closest_encloser(const ldns_rdf *qname,
 									 iterations,
 									 salt_length,
 									 salt);
+		/* only SHA-1 is implemented; unsupported algorithms return NULL */
+		if (!hashed_sname) {
+			LDNS_FREE(salt);
+			ldns_rdf_deep_free(zone_name);
+			ldns_rdf_deep_free(sname);
+			return NULL;
+		}
 
 		status = ldns_dname_cat(hashed_sname, zone_name);
                 if(status != LDNS_STATUS_OK) {
@@ -889,12 +896,20 @@ ldns_dnssec_create_nsec3(const ldns_dnssec_name *from,
 	}
 
 	nsec_rr = ldns_rr_new_frm_type(LDNS_RR_TYPE_NSEC3);
-	ldns_rr_set_owner(nsec_rr,
-	                  ldns_nsec3_hash_name(ldns_dnssec_name_name(from),
-	                  algorithm,
-	                  iterations,
-	                  salt_length,
-	                  salt));
+	{
+		ldns_rdf *hashed_owner;
+
+		hashed_owner = ldns_nsec3_hash_name(ldns_dnssec_name_name(from),
+		                  algorithm,
+		                  iterations,
+		                  salt_length,
+		                  salt);
+		if (!hashed_owner) {
+			ldns_rr_free(nsec_rr);
+			return NULL;
+		}
+		ldns_rr_set_owner(nsec_rr, hashed_owner);
+	}
 	status = ldns_dname_cat(ldns_rr_owner(nsec_rr), zone_name);
         if(status != LDNS_STATUS_OK) {
                 ldns_rr_free(nsec_rr);
@@ -1208,6 +1223,9 @@ ldns_create_nsec3(const ldns_rdf *cur_owner,
 								 iterations,
 								 salt_length,
 								 salt);
+	if (!hashed_owner) {
+		return NULL;
+	}
 	status = ldns_dname_cat(hashed_owner, cur_zone);
         if(status != LDNS_STATUS_OK) {
 		ldns_rdf_deep_free(hashed_owner);
