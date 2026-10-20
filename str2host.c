@@ -392,7 +392,7 @@ ldns_str2rdf_dname(ldns_rdf **d, const char *str)
 	/* root label */
 	if (1 == len && *str == '.') {
 		*d = ldns_rdf_new_frm_data(LDNS_RDF_TYPE_DNAME, 1, "\0");
-		return LDNS_STATUS_OK;
+		return *d?LDNS_STATUS_OK:LDNS_STATUS_MEM_ERR;
 	}
 
 	/* get on with the rest */
@@ -457,7 +457,7 @@ ldns_str2rdf_dname(ldns_rdf **d, const char *str)
 	len++;
 
 	*d = ldns_rdf_new_frm_data(LDNS_RDF_TYPE_DNAME, len, buf);
-	return LDNS_STATUS_OK;
+	return *d?LDNS_STATUS_OK:LDNS_STATUS_MEM_ERR;
 }
 
 ldns_status
