@@ -32,6 +32,10 @@
 extern "C" {
 #endif
 
+#if LDNS_BUILD_CONFIG_HAVE_SSL && !defined(OSSL_DEPRECATEDIN_3_0)
+#define OSSL_DEPRECATEDIN_3_0
+#endif
+
 extern ldns_lookup_table ldns_signing_algorithms[];
 
 #define LDNS_KEY_ZONE_KEY 0x0100   /* rfc 4034 */
@@ -236,7 +240,27 @@ ldns_status ldns_key_new_frm_fp_l(ldns_key **k, FILE *fp, int *line_nr);
  */
 ldns_status ldns_key_new_frm_engine(ldns_key **key, ENGINE *e, char *key_id, ldns_algorithm a);
 
+# if OPENSSL_VERSION_NUMBER >= 0x30000000L
+/**
+ * frm_fp helper function. This function parses the
+ * remainder of the (RSA) priv. key file generated from bind9
+ * \param[in] fp the file to parse
+ * \return NULL on failure otherwise an EVP_PKEY structure
+ */
+EVP_PKEY *ldns_pkey_new_frm_fp_rsa(FILE *fp);
 
+/**
+ * frm_fp helper function. This function parses the
+ * remainder of the (RSA) priv. key file generated from bind9
+ * \param[in] fp the file to parse
+ * \param[in] line_nr pointer to an integer containing the current line number (for debugging purposes)
+ * \return NULL on failure otherwise an EVP_PKEY structure
+ */
+EVP_PKEY *ldns_pkey_new_frm_fp_rsa_l(FILE *fp, int *line_nr);
+# endif /* OPENSSL_VERSION_NUMBER >= 0x30000000L */
+
+# ifndef OPENSSL_NO_DEPRECATED_3_0
+OSSL_DEPRECATEDIN_3_0
 /**
  * frm_fp helper function. This function parses the
  * remainder of the (RSA) priv. key file generated from bind9
@@ -245,6 +269,7 @@ ldns_status ldns_key_new_frm_engine(ldns_key **key, ENGINE *e, char *key_id, ldn
  */
 RSA *ldns_key_new_frm_fp_rsa(FILE *fp);
 
+OSSL_DEPRECATEDIN_3_0
 /**
  * frm_fp helper function. This function parses the
  * remainder of the (RSA) priv. key file generated from bind9
@@ -253,25 +278,49 @@ RSA *ldns_key_new_frm_fp_rsa(FILE *fp);
  * \return NULL on failure otherwise a RSA structure
  */
 RSA *ldns_key_new_frm_fp_rsa_l(FILE *fp, int *line_nr);
+# endif /* OPENSSL_NO_DEPRECATED_3_0 */
 
 
 # if LDNS_BUILD_CONFIG_USE_DSA
+#  if OPENSSL_VERSION_NUMBER >= 0x30000000L
 /**
  * frm_fp helper function. This function parses the
  * remainder of the (DSA) priv. key file
  * \param[in] fp the file to parse
- * \return NULL on failure otherwise a RSA structure
+ * \return NULL on failure otherwise an EVP_PKEY structure
  */
-DSA *ldns_key_new_frm_fp_dsa(FILE *fp);
+EVP_PKEY *ldns_pkey_new_frm_fp_dsa(FILE *fp);
 
 /**
  * frm_fp helper function. This function parses the
  * remainder of the (DSA) priv. key file
  * \param[in] fp the file to parse
  * \param[in] line_nr pointer to an integer containing the current line number (for debugging purposes)
- * \return NULL on failure otherwise a RSA structure
+ * \return NULL on failure otherwise an EVP_PKEY structure
+ */
+EVP_PKEY *ldns_pkey_new_frm_fp_dsa_l(FILE *fp, int *line_nr);
+#  endif /* OPENSSL_VERSION_NUMBER >= 0x30000000L */
+
+#  ifndef OPENSSL_NO_DEPRECATED_3_0
+OSSL_DEPRECATEDIN_3_0
+/**
+ * frm_fp helper function. This function parses the
+ * remainder of the (DSA) priv. key file
+ * \param[in] fp the file to parse
+ * \return NULL on failure otherwise a DSA structure
+ */
+DSA *ldns_key_new_frm_fp_dsa(FILE *fp);
+
+OSSL_DEPRECATEDIN_3_0
+/**
+ * frm_fp helper function. This function parses the
+ * remainder of the (DSA) priv. key file
+ * \param[in] fp the file to parse
+ * \param[in] line_nr pointer to an integer containing the current line number (for debugging purposes)
+ * \return NULL on failure otherwise a DSA structure
  */
 DSA *ldns_key_new_frm_fp_dsa_l(FILE *fp, int *line_nr);
+#  endif /* OPENSSL_NO_DEPRECATED_3_0 */
 # endif /* LDNS_BUILD_CONFIG_USE_DSA */
 
 /**
@@ -312,6 +361,8 @@ void ldns_key_set_algorithm(ldns_key *k, ldns_signing_algorithm l);
  */
 void ldns_key_set_evp_key(ldns_key *k, EVP_PKEY *e);
 
+# ifndef OPENSSL_NO_DEPRECATED_3_0
+OSSL_DEPRECATEDIN_3_0
 /**
  * Set the key's rsa data.
  * The rsa data should be freed by the user.
@@ -321,6 +372,7 @@ void ldns_key_set_evp_key(ldns_key *k, EVP_PKEY *e);
 void ldns_key_set_rsa_key(ldns_key *k, RSA *r);
 
 # if LDNS_BUILD_CONFIG_USE_DSA
+OSSL_DEPRECATEDIN_3_0
 /**
  * Set the key's dsa data
  * The dsa data should be freed by the user.
@@ -330,6 +382,7 @@ void ldns_key_set_rsa_key(ldns_key *k, RSA *r);
 void ldns_key_set_dsa_key(ldns_key *k, DSA *d);
 # endif /* LDNS_BUILD_CONFIG_USE_DSA */
 
+OSSL_DEPRECATEDIN_3_0
 /**
  * Assign the key's rsa data
  * The rsa data will be freed automatically when the key is freed.
@@ -339,6 +392,7 @@ void ldns_key_set_dsa_key(ldns_key *k, DSA *d);
 void ldns_key_assign_rsa_key(ldns_key *k, RSA *r);
 
 # if LDNS_BUILD_CONFIG_USE_DSA
+OSSL_DEPRECATEDIN_3_0
 /**
  * Assign the key's dsa data
  * The dsa data will be freed automatically when the key is freed.
@@ -346,7 +400,8 @@ void ldns_key_assign_rsa_key(ldns_key *k, RSA *r);
  * \param[in] d the dsa data
  */
 void ldns_key_assign_dsa_key(ldns_key *k, DSA *d);
-# endif /* LDNS_BUILD_CONFIG_USE_DSA */
+#  endif /* LDNS_BUILD_CONFIG_USE_DSA */
+# endif /* OPENSSL_NO_DEPRECATED_3_0 */
 
 /** 
  * Get the PKEY id for GOST, loads GOST into openssl as a side effect.
@@ -451,12 +506,15 @@ size_t ldns_key_list_key_count(const ldns_key_list *key_list);
 ldns_key *ldns_key_list_key(const ldns_key_list *key, size_t nr);
 
 #if LDNS_BUILD_CONFIG_HAVE_SSL
+# ifndef OPENSSL_NO_DEPRECATED_3_0
+OSSL_DEPRECATEDIN_3_0
 /**
  * returns the (openssl) RSA struct contained in the key
  * \param[in] k the key to look in
  * \return the RSA * structure in the key
  */
 RSA *ldns_key_rsa_key(const ldns_key *k);
+# endif /* OPENSSL_NO_DEPRECATED_3_0 */
 /**
  * returns the (openssl) EVP struct contained in the key
  * \param[in] k the key to look in
@@ -465,10 +523,13 @@ RSA *ldns_key_rsa_key(const ldns_key *k);
 EVP_PKEY *ldns_key_evp_key(const ldns_key *k);
 
 # if LDNS_BUILD_CONFIG_USE_DSA
+#  ifndef OPENSSL_NO_DEPRECATED_3_0
+OSSL_DEPRECATEDIN_3_0
 /**
  * returns the (openssl) DSA struct contained in the key
  */
 DSA *ldns_key_dsa_key(const ldns_key *k);
+#  endif /* OPENSSL_NO_DEPRECATED_3_0 */
 # endif /* LDNS_BUILD_CONFIG_USE_DSA */
 #endif /* LDNS_BUILD_CONFIG_HAVE_SSL */
 
