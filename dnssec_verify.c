@@ -2157,7 +2157,8 @@ static ldns_status
 ldns_rrsig2rawsig_buffer(ldns_buffer* rawsig_buf, const ldns_rr* rrsig)
 {
 	uint8_t sig_algo;
-       
+	ldns_status status;
+
 	if (rrsig == NULL) {
 		return LDNS_STATUS_CRYPTO_NO_RRSIG;
 	}
@@ -2204,14 +2205,11 @@ ldns_rrsig2rawsig_buffer(ldns_buffer* rawsig_buf, const ldns_rr* rrsig)
 		if (ldns_rr_rdf(rrsig, 8) == NULL) {
 			return LDNS_STATUS_MISSING_RDATA_FIELDS_RRSIG;
 		}
-		if (ldns_convert_dsa_rrsig_rdf2asn1(
-					rawsig_buf, ldns_rr_rdf(rrsig, 8)) 
-				!= LDNS_STATUS_OK) {
-			/*
-			  if (ldns_rdf2buffer_wire(rawsig_buf,
-			  ldns_rr_rdf(rrsig, 8)) != LDNS_STATUS_OK) {
-			*/
-			return LDNS_STATUS_MEM_ERR;
+
+		status = ldns_convert_dsa_rrsig_rdf2asn1(
+				rawsig_buf, ldns_rr_rdf(rrsig, 8));
+		if (status != LDNS_STATUS_OK) {
+			return status;
 		}
 		break;
 #endif
@@ -2223,12 +2221,13 @@ ldns_rrsig2rawsig_buffer(ldns_buffer* rawsig_buf, const ldns_rr* rrsig)
 		if (ldns_rr_rdf(rrsig, 8) == NULL) {
 			return LDNS_STATUS_MISSING_RDATA_FIELDS_RRSIG;
 		}
-		if (ldns_convert_ecdsa_rrsig_rdf2asn1(
-					rawsig_buf, ldns_rr_rdf(rrsig, 8))
-				!= LDNS_STATUS_OK) {
-			return LDNS_STATUS_MEM_ERR;
-                }
-                break;
+
+		status = ldns_convert_ecdsa_rrsig_rdf2asn1(
+			    rawsig_buf, ldns_rr_rdf(rrsig, 8));
+		if (status != LDNS_STATUS_OK) {
+			return status;
+		}
+		break;
 #endif
 	case LDNS_DH:
 	case LDNS_ECC:
