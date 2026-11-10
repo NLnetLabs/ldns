@@ -16,4 +16,38 @@ if [[ $? -ne 0 ]]; then
 	echo "Verification failed"
 	exit 2
 fi
+
+# Outside-apex data must not change either denial chain or receive RRSIGs.
+cat > authority.zone <<'ZONE'
+jelte.nlnetlabs.nl. 240 IN SOA ns.jelte.nlnetlabs.nl. hostmaster.jelte.nlnetlabs.nl. 1 2 3 4 5
+jelte.nlnetlabs.nl. 240 IN NS ns.jelte.nlnetlabs.nl.
+ns.jelte.nlnetlabs.nl. 240 IN A 192.0.2.1
+a.b.jelte.nlnetlabs.nl. 240 IN A 192.0.2.2
+ZONE
+cp authority.zone with-outside.zone
+cat >> with-outside.zone <<'ZONE'
+before.example. 240 IN A 192.0.2.3
+later.org. 240 IN A 192.0.2.4
+nl. 240 IN A 192.0.2.5
+ZONE
+
+for mode in nsec nsec3 nsec3-optout; do
+	case "$mode" in
+		nsec) options="" ;;
+		nsec3) options="-n -s AABB" ;;
+		nsec3-optout) options="-n -s AABB -p" ;;
+	esac
+	for input in authority with-outside; do
+		../../examples/ldns-signzone $options -i 20200101000000 \
+			-e 20300101000000 -f "$input.$mode" "$input.zone" \
+			Kjelte.nlnetlabs.nl.+005+09693 || exit 3
+	done
+	# Keep the original outside records, but do not sign or deny them.
+	awk '$1 == "before.example." || $1 == "later.org." || $1 == "nl." {
+		if ($4 != "A") exit 1; n++
+	} END {if (n != 3) exit 1}' "with-outside.$mode" || exit 4
+	awk '$1 != "before.example." && $1 != "later.org." && $1 != "nl."' \
+		"with-outside.$mode" > "in-zone.$mode"
+	diff "authority.$mode" "in-zone.$mode" || exit 5
+done
 exit 0
