@@ -89,7 +89,8 @@ ldns_rdf *ldns_sign_public_rsamd5(ldns_buffer *to_sign, RSA *key);
 #endif /* LDNS_BUILD_CONFIG_HAVE_SSL */
 
 /**
- * Marks the names in the zone that are occluded. Those names will be skipped
+ * Marks the names in the zone that are occluded or outside the SOA apex.
+ * Those names will be skipped
  * when walking the tree with the ldns_dnssec_name_node_next_nonglue()
  * function. But watch out! Names that are partially occluded (like glue with
  * the same name as the delegation) will not be marked and should specifically 
@@ -107,7 +108,8 @@ ldns_dnssec_zone_mark_and_get_glue(
 		ldns_dnssec_zone *zone, ldns_rr_list *glue_list);
 
 /**
- * Marks the names in the zone that are occluded. Those names will be skipped
+ * Marks the names in the zone that are occluded or outside the SOA apex.
+ * Those names will be skipped
  * when walking the tree with the ldns_dnssec_name_node_next_nonglue()
  * function. But watch out! Names that are partially occluded (like glue with
  * the same name as the delegation) will not be marked and should specifically 
