@@ -1146,8 +1146,9 @@ ldns_dnssec_zone_add_empty_nonterminals_nsec3(
 		soa_label_count = ldns_dname_label_count(zone->soa->name);
 	}
 	
-	cur_node = ldns_rbtree_first(zone->names);
-	while (cur_node != LDNS_RBTREE_NULL) {
+	cur_node = ldns_dnssec_name_node_next_nonglue(
+			ldns_rbtree_first(zone->names));
+	while (cur_node && cur_node != LDNS_RBTREE_NULL) {
 		next_node = ldns_rbtree_next(cur_node);
 		
 		/* skip glue */
@@ -1159,7 +1160,8 @@ ldns_dnssec_zone_add_empty_nonterminals_nsec3(
 		}
 
 		if (next_node == LDNS_RBTREE_NULL) {
-			next_node = ldns_rbtree_first(zone->names);
+			next_node = ldns_dnssec_name_node_next_nonglue(
+					ldns_rbtree_first(zone->names));
 		}
 		if (! cur_node->data || ! next_node->data) {
 			return LDNS_STATUS_ERR;
@@ -1254,7 +1256,8 @@ ldns_dnssec_zone_add_empty_nonterminals_nsec3(
 		/* we might have inserted a new node after
 		 * the current one so we can't just use next()
 		 */
-		if (next_node != ldns_rbtree_first(zone->names)) {
+		if (next_node != ldns_dnssec_name_node_next_nonglue(
+				ldns_rbtree_first(zone->names))) {
 			cur_node = next_node;
 		} else {
 			cur_node = LDNS_RBTREE_NULL;
@@ -2005,4 +2008,3 @@ dnssec_zone_equip_zonemd(ldns_dnssec_zone *zone,
 }
 
 #endif /* HAVE_SSL */
-
