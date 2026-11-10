@@ -694,6 +694,14 @@ ldns_dnssec_zone_mark_and_get_glue(ldns_dnssec_zone *zone,
 		name = (ldns_dnssec_name *) node->data;
 		owner = ldns_dnssec_name_name(name);
 
+		/* Names outside the SOA apex are not authoritative zone data. */
+		if (zone->soa && zone->soa->name
+		&&  ldns_dname_compare(owner, zone->soa->name) != 0
+		&& !ldns_dname_is_subdomain(owner, zone->soa->name)) {
+			name->is_glue = true;
+			continue;
+		}
+
 		if (cut) { 
 			/* The previous node was a zone cut, or a subdomain
 			 * below a zone cut. Is this node (still) a subdomain
@@ -1687,5 +1695,4 @@ ldns_zone_sign_nsec3(ldns_zone *zone, ldns_key_list *key_list, uint8_t algorithm
 	return signed_zone;
 }
 #endif /* HAVE_SSL */
-
 
