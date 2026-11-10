@@ -121,9 +121,150 @@ check_ldns_canonicalization(void)
 	return status;
 }
 
+
+/* An outside-apex name must not enter the denial chain, even when it
+ * sorts before the apex or has fewer labels than the apex.
+ */
+static int
+check_out_of_zone_names(void)
+{
+	static const struct {
+		const char *rr;
+		int occluded;
+	} records[] = {
+		{"example.com. 240 IN SOA ns.example.com. hostmaster.example.com. 1 2 3 4 5", 0},
+		{"example.com. 240 IN NS ns.example.com.", 0},
+		{"ns.example.com. 240 IN A 192.0.2.1", 0},
+		{"a.b.example.com. 240 IN A 192.0.2.2", 0},
+		{"*.example.com. 240 IN A 192.0.2.3", 0},
+		{"before. 240 IN A 192.0.2.4", 1},
+		{"after.org. 240 IN A 192.0.2.5", 1},
+		{"notexample.com. 240 IN A 192.0.2.6", 1},
+		{"com. 240 IN A 192.0.2.7", 1},
+		{"child.example.com. 240 IN NS ns.child.example.com.", 0},
+		{"ns.child.example.com. 240 IN A 192.0.2.8", 1},
+		{"alias.example.com. 240 IN DNAME target.example.net.", 0},
+		{"under.alias.example.com. 240 IN A 192.0.2.9", 1}
+	};
+	ldns_dnssec_zone *zone = ldns_dnssec_zone_new();
+	ldns_rr_list *glue = ldns_rr_list_new();
+	ldns_rr *rr = NULL;
+	ldns_rdf *name;
+	ldns_rbnode_t *node;
+	size_t i;
+	int result = 1;
+
+	if (!zone || !glue) {
+		ldns_dnssec_zone_deep_free(zone);
+		ldns_rr_list_free(glue);
+		return 0;
+	}
+	for (i = 0; i < sizeof(records) / sizeof(records[0]); i++) {
+		if (ldns_rr_new_frm_str(&rr, records[i].rr, 0, NULL, NULL)
+			!= LDNS_STATUS_OK) {
+			result = 0;
+			goto done;
+		}
+		if (ldns_dnssec_zone_add_rr(zone, rr) != LDNS_STATUS_OK) {
+			ldns_rr_free(rr);
+			result = 0;
+			goto done;
+		}
+	}
+	if (ldns_dnssec_zone_mark_and_get_glue(zone, glue) != LDNS_STATUS_OK) {
+		result = 0;
+		goto done;
+	}
+	for (i = 0; i < sizeof(records) / sizeof(records[0]); i++) {
+		if (ldns_rr_new_frm_str(&rr, records[i].rr, 0, NULL, NULL)
+			!= LDNS_STATUS_OK) {
+			result = 0;
+			goto done;
+		}
+		node = ldns_rbtree_search(zone->names, ldns_rr_owner(rr));
+		if (!node || ((ldns_dnssec_name *)node->data)->is_glue !=
+			(bool)records[i].occluded) {
+			printf("Wrong authority for %s\n", records[i].rr);
+			result = 0;
+		}
+		ldns_rr_free(rr);
+	}
+	/* Only delegation glue belongs in this list, not outside-apex A RRs. */
+	if (ldns_rr_list_rr_count(glue) != 1) result = 0;
+	if (ldns_dnssec_zone_add_empty_nonterminals(zone) != LDNS_STATUS_OK) {
+		result = 0;
+		goto done;
+	}
+	name = ldns_dname_new_frm_str("b.example.com.");
+	node = ldns_rbtree_search(zone->names, name);
+	if (!node || ((ldns_dnssec_name *)node->data)->is_glue) result = 0;
+	ldns_rdf_deep_free(name);
+done:
+	ldns_rr_list_free(glue);
+	ldns_dnssec_zone_deep_free(zone);
+	return result;
+}
+
+
+static int
+check_root_and_missing_apex(void)
+{
+	ldns_dnssec_zone *zone = ldns_dnssec_zone_new();
+	ldns_rr *rr;
+	ldns_rbnode_t *node;
+	int result = 1, root;
+	if (!zone) return 0;
+	if (ldns_rr_new_frm_str(&rr, "a.b.example.com. 240 IN A 192.0.2.1",
+		0, NULL, NULL) != LDNS_STATUS_OK) {
+		ldns_dnssec_zone_deep_free(zone);
+		return 0;
+	}
+	if (ldns_dnssec_zone_add_rr(zone, rr) != LDNS_STATUS_OK) {
+		ldns_rr_free(rr);
+		ldns_dnssec_zone_deep_free(zone);
+		return 0;
+	}
+	for (root = 0; root < 2; root++) {
+		if (root) {
+			if (ldns_rr_new_frm_str(&rr,
+				". 240 IN SOA ns. hostmaster. 1 2 3 4 5",
+				0, NULL, NULL) != LDNS_STATUS_OK) {
+				result = 0;
+				break;
+			}
+			if (ldns_dnssec_zone_add_rr(zone, rr) != LDNS_STATUS_OK) {
+				ldns_rr_free(rr);
+				result = 0;
+				break;
+			}
+		}
+		if (ldns_dnssec_zone_mark_glue(zone) != LDNS_STATUS_OK ||
+			ldns_dnssec_zone_add_empty_nonterminals(zone) != LDNS_STATUS_OK) {
+			result = 0;
+			break;
+		}
+		for (node = ldns_rbtree_first(zone->names);
+			node != LDNS_RBTREE_NULL; node = ldns_rbtree_next(node)) {
+			if (((ldns_dnssec_name *)node->data)->is_glue) result = 0;
+		}
+	}
+	ldns_dnssec_zone_deep_free(zone);
+	return result;
+}
+
 int main(void)
 {
 	int result = EXIT_SUCCESS;
+
+	if (!check_root_and_missing_apex()) {
+		printf("check_root_and_missing_apex() failed.\n");
+		result = EXIT_FAILURE;
+	}
+
+	if (!check_out_of_zone_names()) {
+		printf("check_out_of_zone_names() failed.\n");
+		result = EXIT_FAILURE;
+	}
 
 	if (check_ldns_calc_keytag() != LDNS_STATUS_OK) {
 		printf("ldns_calc_keytag() failed.\n");
