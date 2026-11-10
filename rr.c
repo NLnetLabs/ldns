@@ -147,6 +147,7 @@ ldns_rr_new_frm_str_internal(ldns_rr **newrr, const char *str,
 	/* used for types with unknown number of rdatas */
 	bool done;
 	bool quoted;
+	bool class_first = false;
 
 	ldns_rdf *r = NULL;
 	uint16_t r_cnt;
@@ -225,6 +226,8 @@ ldns_rr_new_frm_str_internal(ldns_rr **newrr, const char *str,
 				goto memerror;
 			}
 			strlcpy(type, ttl, type_sz);
+		} else {
+			class_first = true;
 		}
 	} else {
 		if (explicit_ttl)
@@ -260,6 +263,22 @@ ldns_rr_new_frm_str_internal(ldns_rr **newrr, const char *str,
 		if (-1 == ldns_bget_token(
 				rr_buf, type, "\t\n ", LDNS_SYNTAX_DATALEN)) {
 
+			status = LDNS_STATUS_SYNTAX_TYPE_ERR;
+			goto error;
+		}
+	}
+
+	/* RFC 1035 section 5.1 also permits CLASS TTL TYPE RDATA. */
+	if (class_first && isdigit((unsigned char)type[0])) {
+		ttl_val = (uint32_t) ldns_str2period(type, &endptr);
+		if (*endptr) {
+			status = LDNS_STATUS_SYNTAX_TTL_ERR;
+			goto error;
+		}
+		if (explicit_ttl)
+			*explicit_ttl = true;
+		if (-1 == ldns_bget_token(
+				rr_buf, type, "\t\n ", LDNS_SYNTAX_DATALEN)) {
 			status = LDNS_STATUS_SYNTAX_TYPE_ERR;
 			goto error;
 		}
