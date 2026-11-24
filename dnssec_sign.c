@@ -1406,7 +1406,7 @@ ldns_dnssec_zone_sign_flg(ldns_dnssec_zone *zone,
 	/* zone is already sorted */
 	result = ldns_dnssec_zone_mark_glue(zone);
 	if (result != LDNS_STATUS_OK) {
-		return result;
+		goto unsplice_zonemd;
 	}
 	/* check whether we need to add nsecs */
 	if ((flags & LDNS_SIGN_NO_KEYS_NO_NSECS)
@@ -1418,7 +1418,7 @@ ldns_dnssec_zone_sign_flg(ldns_dnssec_zone *zone,
 
 		result = ldns_dnssec_zone_create_nsecs(zone, new_rrs);
 		if (result != LDNS_STATUS_OK) {
-			return result;
+			goto unsplice_zonemd;
 		}
 	}
 	result = ldns_dnssec_zone_create_rrsigs_flg(zone,
@@ -1428,6 +1428,9 @@ ldns_dnssec_zone_sign_flg(ldns_dnssec_zone *zone,
 					arg,
 					flags);
 
+unsplice_zonemd:
+	/* zonemd_rrset lives on this stack frame, so it must come out of the
+	 * zone on every return path. */
 	if (zonemd_added) {
 		ldns_dnssec_rrsets **rrsets_ref
 		    = &zone->soa->rrsets;
@@ -1437,6 +1440,9 @@ ldns_dnssec_zone_sign_flg(ldns_dnssec_zone *zone,
 			rrsets_ref = &(*rrsets_ref)->next;
 		*rrsets_ref = zonemd_rrset.next;
 	}
+	if (result != LDNS_STATUS_OK)
+		return result;
+
 	return flags & LDNS_SIGN_WITH_ZONEMD
 	     ? dnssec_zone_equip_zonemd(zone, new_rrs, key_list, flags)
 	     : result;
