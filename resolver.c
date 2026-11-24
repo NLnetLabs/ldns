@@ -1097,6 +1097,8 @@ ldns_resolver_search_status(ldns_pkt** pkt,
 		}
 		if (pkt && return_pkt) {
 			*pkt = return_pkt;
+		} else {
+			ldns_pkt_free(return_pkt);
 		}
 	}
 	return s;
