@@ -444,10 +444,14 @@ ldns_pkt2buffer_wire_compress(ldns_buffer *buffer, const ldns_pkt *packet, ldns_
 		ldns_rr_set_ttl(edns_rr, ldns_read_uint32(edata));
 		/* don't forget to add the edns rdata (if any) */
 		if ((edns_buf = ldns_edns_option_list2wireformat_buffer(packet->_edns_list))) {
-			edns_rdf = ldns_rdf_new( LDNS_RDF_TYPE_UNKNOWN
-			                       , ldns_buffer_limit(edns_buf)
-			                       , ldns_buffer_export(edns_buf));
+			size_t edns_len = ldns_buffer_limit(edns_buf);
+			void *edns_data = ldns_buffer_export(edns_buf);
+
 			ldns_buffer_free(edns_buf);
+			/* ldns_rdf_new only takes ownership on success */
+			edns_rdf = ldns_rdf_new(LDNS_RDF_TYPE_UNKNOWN, edns_len, edns_data);
+			if (!edns_rdf)
+				LDNS_FREE(edns_data);
 		}
 		if (edns_rdf)
 			ldns_rr_push_rdf(edns_rr, edns_rdf);
