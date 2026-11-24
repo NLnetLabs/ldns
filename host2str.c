@@ -2381,7 +2381,7 @@ ldns_edns_expire2buffer_str(ldns_buffer* output, uint8_t* data, size_t len)
 
 	ldns_buffer_printf(output, "; EXPIRE:");
 
-	if (!(len == 0) || len == 4) {
+	if (len != 0 && len != 4) {
 		ldns_buffer_printf(output, "malformed expire ");
 		ldns_edns_hex_data2buffer_str(output, data, len);
 
@@ -2446,15 +2446,27 @@ static ldns_status
 ldns_edns_chain2buffer_str(ldns_buffer* output, uint8_t* data, size_t len)
 {
 	ldns_rdf* temp = NULL;
+	char* str;
 
 	ldns_buffer_printf(output, "; CHAIN: ");
 
-	if (ldns_str2rdf_dname(&temp, (char*) data) != LDNS_STATUS_OK) {
+	/* The option payload isn't NUL-terminated, so parse a bounded copy. */
+	str = LDNS_XMALLOC(char, len + 1);
+	if (str == NULL) {
+		return LDNS_STATUS_MEM_ERR;
+	}
+	memcpy(str, data, len);
+	str[len] = '\0';
+
+	if (ldns_str2rdf_dname(&temp, str) != LDNS_STATUS_OK) {
+		LDNS_FREE(str);
 		ldns_buffer_printf(output, "malformed chain ");
 		ldns_edns_hex_data2buffer_str(output, data, len);
 
 		return ldns_buffer_status(output);
 	}
+	LDNS_FREE(str);
+	ldns_rdf_deep_free(temp);
 
 	ldns_characters2buffer_str(output, len, data);
 

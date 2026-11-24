@@ -6,6 +6,10 @@
 #include <time.h>
 #endif
 
+#ifdef HAVE_STRING_H
+#include <string.h>
+#endif
+
 char *asctime_r(const struct tm *tm, char *buf)
 {
 	/* no thread safety. */
