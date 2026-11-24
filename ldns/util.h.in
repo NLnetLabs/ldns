@@ -98,8 +98,8 @@ ldns_read_uint64(const void *src)
 {
 #ifdef ALLOW_UNALIGNED_ACCESSES
 	const uint32_t *p = (const uint32_t *) src;
-	return (  ((uint64_t) ntohl(src[0]) << 32)
-		|  (uint64_t) ntohl(src[1]));
+	return (  ((uint64_t) ntohl(p[0]) << 32)
+		|  (uint64_t) ntohl(p[1]));
 #else
 	const uint8_t *p = (const uint8_t *) src;
 	return (  ((uint64_t) p[0] << 56)
