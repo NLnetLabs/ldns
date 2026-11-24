@@ -2381,7 +2381,7 @@ ldns_edns_expire2buffer_str(ldns_buffer* output, uint8_t* data, size_t len)
 
 	ldns_buffer_printf(output, "; EXPIRE:");
 
-	if (!(len == 0) || len == 4) {
+	if (len != 0 && len != 4) {
 		ldns_buffer_printf(output, "malformed expire ");
 		ldns_edns_hex_data2buffer_str(output, data, len);
 
