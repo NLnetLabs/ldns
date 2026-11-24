@@ -72,6 +72,9 @@ ldns_edns_ede_get_text(const ldns_edns_option* edns, char **ede_text)
 	if (edns->_size > 2)
 	{
 		*ede_text = (char*) malloc((edns->_size - 1) * sizeof(char));
+		if (*ede_text == NULL) {
+			return LDNS_STATUS_MEM_ERR;
+		}
 
 		memset(*ede_text, 0, edns->_size - 1);
 		memcpy(*ede_text, &((char*)edns->_data)[2], edns->_size - 2);
