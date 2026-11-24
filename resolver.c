@@ -1083,6 +1083,11 @@ ldns_resolver_search_status(ldns_pkt** pkt,
 						ldns_pkt_get_rcode(return_pkt)
 						== LDNS_RCODE_NOERROR) {
 
+					if (pkt) {
+						*pkt = return_pkt;
+					} else {
+						ldns_pkt_free(return_pkt);
+					}
 					return LDNS_STATUS_OK;
 				} else if (i < ldns_resolver_searchlist_count(r)) {
 					ldns_pkt_free(return_pkt);
