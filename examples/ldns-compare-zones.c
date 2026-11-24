@@ -213,12 +213,12 @@ main(int argc, char **argv)
 	 */
 	for (i = 0, j = 0; i < rrc1 || j < rrc2;) {
 		if (exc_zonemd) {
-			if (ldns_rr_get_type(ldns_rr_list_rr(rrl1, i))
+			if (i < rrc1 && ldns_rr_get_type(ldns_rr_list_rr(rrl1, i))
 					== LDNS_RR_TYPE_ZONEMD) {
 				i += 1;
 				continue;
 			}
-			if (ldns_rr_get_type(ldns_rr_list_rr(rrl2, j))
+			if (j < rrc2 && ldns_rr_get_type(ldns_rr_list_rr(rrl2, j))
 					== LDNS_RR_TYPE_ZONEMD) {
 				j += 1;
 				continue;
